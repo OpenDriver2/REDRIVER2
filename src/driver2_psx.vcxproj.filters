@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Sources\Frontend">
+      <UniqueIdentifier>{069c4a2c-4fcc-49a8-a88c-83835a884e21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\MemCard">
+      <UniqueIdentifier>{a70b1578-2234-422f-b384-799ac4b30755}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Includes">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="decomp_defs.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="mips_hw_intpret.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="r3000a_regs.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\texture.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="pres.h">
+      <Filter>Includes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\dr2roads.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\objanim.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\overlay.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\replays.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\search.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\ai.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\bcoll3d.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\bcollide.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\bomberman.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\camera.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\overmap.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\cars.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\cell.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\civ_ai.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\convert.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\cop_ai.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\cosmetic.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\cutscene.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\debris.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\denting.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\director.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\draw.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\tile.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\drivinggames.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\e3stuff.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\enviro.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\envsound.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\event.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\felony.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\fmvplay.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\gamesnd.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\glaunch.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\handling.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\job_fx.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\leadai.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\loadsave.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\loadview.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\map.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\mc_snd.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\mdraw.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\mgeneric.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\mission.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\models.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\motion_c.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\objcoll.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\pad.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\pathfind.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\pause.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\pedest.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\players.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\pres.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\roadbits.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\scores.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\shadow.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\sky.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\sound.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\spool.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\system.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\targets.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\texture.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\time.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\wheelforces.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\xaplay.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C\xmplay.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="FRONTEND\femain.c">
+      <Filter>Sources\Frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\CardMain.c">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\Slot.cpp">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\delete.c">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\display.cpp">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\pad.cpp">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\text.cpp">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\cman.cpp">
+      <Filter>Sources\MemCard</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

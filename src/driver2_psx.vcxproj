@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{D062AA21-A7AE-4276-BD3E-A507EEEA0F9C}</ProjectGuid>
+    <RootNamespace>driver2psx</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>INCLUDE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="decomp_defs.h" />
+    <ClInclude Include="mips_hw_intpret.h" />
+    <ClInclude Include="pres.h" />
+    <ClInclude Include="r3000a_regs.h" />
+    <ClInclude Include="include\texture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C\ai.c" />
+    <ClCompile Include="C\bcoll3d.c" />
+    <ClCompile Include="C\bcollide.c" />
+    <ClCompile Include="C\bomberman.c" />
+    <ClCompile Include="C\camera.c" />
+    <ClCompile Include="C\cars.c" />
+    <ClCompile Include="C\cell.c" />
+    <ClCompile Include="C\civ_ai.c" />
+    <ClCompile Include="C\convert.c" />
+    <ClCompile Include="C\cop_ai.c" />
+    <ClCompile Include="C\cosmetic.c" />
+    <ClCompile Include="C\cutscene.c" />
+    <ClCompile Include="C\debris.c" />
+    <ClCompile Include="C\denting.c" />
+    <ClCompile Include="C\director.c" />
+    <ClCompile Include="C\dr2roads.c" />
+    <ClCompile Include="C\draw.c" />
+    <ClCompile Include="C\drivinggames.c" />
+    <ClCompile Include="C\e3stuff.c" />
+    <ClCompile Include="C\enviro.c" />
+    <ClCompile Include="C\envsound.c" />
+    <ClCompile Include="C\event.c" />
+    <ClCompile Include="C\felony.c" />
+    <ClCompile Include="C\fmvplay.c" />
+    <ClCompile Include="C\gamesnd.c" />
+    <ClCompile Include="C\glaunch.c" />
+    <ClCompile Include="C\handling.c" />
+    <ClCompile Include="C\job_fx.c" />
+    <ClCompile Include="C\leadai.c" />
+    <ClCompile Include="C\loadsave.c" />
+    <ClCompile Include="C\loadview.c" />
+    <ClCompile Include="C\map.c" />
+    <ClCompile Include="C\mc_snd.c" />
+    <ClCompile Include="C\mdraw.c" />
+    <ClCompile Include="C\mgeneric.c" />
+    <ClCompile Include="C\mission.c" />
+    <ClCompile Include="C\models.c" />
+    <ClCompile Include="C\motion_c.c" />
+    <ClCompile Include="C\objanim.c" />
+    <ClCompile Include="C\objcoll.c" />
+    <ClCompile Include="C\overlay.c" />
+    <ClCompile Include="C\overmap.c" />
+    <ClCompile Include="C\pad.c" />
+    <ClCompile Include="C\pathfind.c" />
+    <ClCompile Include="C\pause.c" />
+    <ClCompile Include="C\pedest.c" />
+    <ClCompile Include="C\players.c" />
+    <ClCompile Include="C\pres.c" />
+    <ClCompile Include="C\replays.c" />
+    <ClCompile Include="C\roadbits.c" />
+    <ClCompile Include="C\scores.c" />
+    <ClCompile Include="C\search.c" />
+    <ClCompile Include="C\shadow.c" />
+    <ClCompile Include="C\sky.c" />
+    <ClCompile Include="C\sound.c" />
+    <ClCompile Include="C\spool.c" />
+    <ClCompile Include="C\system.c" />
+    <ClCompile Include="C\targets.c" />
+    <ClCompile Include="C\texture.c" />
+    <ClCompile Include="C\tile.c" />
+    <ClCompile Include="C\time.c" />
+    <ClCompile Include="C\wheelforces.c" />
+    <ClCompile Include="C\xaplay.c" />
+    <ClCompile Include="C\xmplay.c" />
+    <ClCompile Include="FRONTEND\femain.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="MEMCARD\CardMain.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\cman.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\delete.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\display.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\pad.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\Slot.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MEMCARD\text.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
