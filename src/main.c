@@ -236,22 +236,126 @@ void /*$ra*/ StepGame()
 	{ // line 340, address 0x5b34c
 	} // line 342, address 0x5b384
 } // line 351, address 0x5b3ec
+
+#define PAL 0
+#define NTSC 1
+
+#define RELEASE_REGION PAL
+#define RELEASE_CD_ID 0
+
 /*
  * Offset 0x5B3EC
  * D:\driver2\game\C\MAIN.C (line 4767)
  * Stack frame base $sp, length 72
  * Saved registers at address -8: ra
  */
-int /*$ra*/ main()
-{ // line 1, address 0x5b3ec
-	{ // line 1, address 0x5b3ec
-		{ // line 1, address 0x5b3ec
-			char *PALScreenNames[4]; // stack address -24
-			char *NTSCScreenNames[4]; // stack address -40
-			char *OPMScreenNames[4]; // stack address -56
-		} // line 1, address 0x5b3ec
-	} // line 1, address 0x5b3ec
-} // line 101, address 0x5b5b4
+int main()
+{
+	SetDispMask(0);
+	VSyncCallbacks(0);
+	ResetCallback(0);
+	ResetGraph();
+	SsSetSerialVol(0, 0, 0);
+
+	SetDispMask(0);
+	SetGraphDebug(0);
+	SetVideoMode(1);
+
+	CdInit();
+
+	SsSetSerialVol(0, 0, 0);
+
+	InitGeom();
+
+	SetGeomOffset(160,128);
+
+	scr_z = 256;
+	SetGeomScreen(256);
+
+	MemCardInit(1);
+
+	InitControllers();
+
+	Init_FileSystem();
+
+	InitSound();
+
+	PlayFMV(99);	// play Infogrames render
+		
+	char *PALScreenNames[4] = {
+		"GFX\\SPLASH2.TIM",
+		"GFX\\SPLASH3.TIM",
+		"GFX\\SPLASH1P.TIM",
+		NULL
+	};
+
+	char *NTSCScreenNames[4] = {
+		"GFX\\SPLASH2.TIM",
+		"GFX\\SPLASH3.TIM",
+		"GFX\\SPLASH1N.TIM",
+		NULL
+	};
+
+	char *OPMScreenNames[4] = {
+		"GFX\\OPM1.TIM",
+		"GFX\\OPM2.TIM",
+		"GFX\\OPM3.TIM",
+		NULL
+	};
+
+	char* screens[] = {
+		OPMScreenNames[0],
+		OPMScreenNames[1],
+		OPMScreenNames[2],
+		OPMScreenNames[3],
+
+		NTSCScreenNames[0],
+		NTSCScreenNames[1],
+		NTSCScreenNames[2],
+		NTSCScreenNames[3],
+
+		PALScreenNames[0],
+		PALScreenNames[1],
+		PALScreenNames[2],
+		PALScreenNames[3],
+	};
+
+#if RELEASE_REGION == NTSC
+	char** hiresScreens = &screens[4];
+#else 
+
+#if RELEASE_REGION == PAL
+	char** hiresScreens = &screens[8];
+#else
+	char** hiresScreens = &screens[0];
+#endif
+
+#endif
+
+	ShowHiresScreens(hiresScreens, 300, 1);
+
+	// intro render
+	PlayFMV(0);
+
+	CheckForCorrectDisc(RELEASE_CD_ID);
+
+	LoadFile("FRONTEND.BIN", 0x1C);
+
+	SpuSetMute(0);
+
+	LoadSoundBankDynamic(0, 0, 0);
+
+	// load menu bank
+	LoadBankFromLump(1, 0);
+
+	InitialiseScoreTables();
+
+	DoFrontend();
+
+	return 1;
+}
+
+
 /*
  * Offset 0x5B5B4
  * D:\driver2\game\C\MAIN.C (line 4893)

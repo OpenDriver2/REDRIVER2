@@ -1,4 +1,6 @@
 
+#include "../decomp_defs.h"
+
 char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
 
 char Med_shake_data[] = { 1, 0xC8, 0xC8, 0x64, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0 };
@@ -14,10 +16,21 @@ char* shake_data[] = { High_shake_data, Med_shake_data, Low_shake_data };
  * Saved registers at address -4: s0 s1 s2 s3 s4 s5 s6 ra
  */
 void /*$ra*/ InitControllers()
-{ // line 2, address 0x6b4e8
+{ 
 	int i; // $s3
 	int j; // $a1
-} // line 36, address 0x6b610
+
+	DuplicatePadData.buffer = NULL;
+	DuplicatePadData.length = 0;
+
+	PadInitDirect(padbuffer[0], padbuffer[1]);
+	PadStartCom();
+
+	// [U]: UNDONE
+
+	//Pads[0].mapnew
+	//Pads[0].shakeptr
+} 
 /*
  * Offset 0x6B610
  * D:\driver2\game\C\PAD.C (line 132)

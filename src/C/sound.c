@@ -3,6 +3,8 @@
 
 long dummylong[3] = { 0, 0, 0 };
 
+long banksize[2] = { 88064, 412672 };
+
 /*
  * Offset 0x7914C
  * D:\driver2\game\C\SOUND.C (line 114)
@@ -10,8 +12,39 @@ long dummylong[3] = { 0, 0, 0 };
  * Saved registers at address -8: s0 s1 s2 s3 ra
  */
 void /*$ra*/ InitSound()
-{ // line 2, address 0x7914c
+{
 	int ct; // $s0
+
+	SpuInit();
+
+	SpuInitMalloc(0x7, banks);
+
+	SpuSetMute(1);
+
+	AllocateReverb(3, 16384);
+
+	for (ct = 0; ct < 2; ct++)
+	{
+		bankaddr[ct] = SpuMalloc(banksize[ct]);
+
+		if (bankaddr[ct] == -1)
+			exit(-1);
+	}
+
+	for (ct = 0; ct < 16; ct++)
+	{
+		channel_lookup[ct] = 1 << ct;
+	}
+	
+	ResetSound();
+
+	XM_OnceOffInit(1);
+
+	SetMasterVolume(gMasterVolume);
+
+	VSyncCallback(VsyncProc);
+
+	SpuSetMute(0);
 } // line 47, address 0x7923c
 /*
  * Offset 0x7923C
@@ -277,8 +310,23 @@ void /*$ra*/ SetChannelVolume(int channel /*$s0*/, int volume /*$t1*/, int proxi
  * Saved registers at address -8: s0 s1 ra
  */
 void /*$ra*/ AllocateReverb(long mode /*$s1*/, long depth /*$s0*/)
-{ // line 1, address 0x7aba4
+{
 	struct SpuReverbAttr r_attr; // stack address -40
+
+	int result = SpuReserveReverbWorkArea(1);
+
+	if (result == 1)
+	{
+		r_attr.mask = 0x7;				// SPU_REV_MODE | SPU_REV_DEPTHL | SPU_REV_DEPTHR ???
+		r_attr.mode = mode | 0x100;		// SPU_REV_MODE_CLEAR_WA  ???
+		r_attr.depth.left = depth;
+		r_attr.depth.right = depth;
+
+		SpuSetReverbModeParam(r_attr);
+
+		SpuSetReverbDepth(depth);
+		SpuSetReverb(1);
+	}
 } // line 16, address 0x7abfc
 /*
  * Offset 0x7AC10

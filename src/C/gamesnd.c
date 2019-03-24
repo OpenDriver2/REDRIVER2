@@ -391,6 +391,17 @@ void /*$ra*/ LoadBankFromLump(int bank /*$s3*/, int lump /*$s2*/)
 	static unsigned int blockLimit[73] = {0}; // address 0x10
 	int length; // $s0
 	char *name; // $s1
+
+	name = "SOUND\\VOICES2.BLK";
+
+	if (blockLimit[1] == 0)
+	{
+		LoadFileSeg(name, blockLimit[0], 0, 292);
+	}
+
+	//LoadFileSeg(name, 0x8018, 0, 292);
+	//LoadSoundBankDynamic(0x8018, );
+
 } // line 21, address 0x52578
 /*
  * Offset 0x52578

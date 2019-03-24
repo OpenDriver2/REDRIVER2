@@ -189,6 +189,9 @@ void /*$ra*/ InitaliseDrawEnv(struct DB *pBuff /*$s0*/, int x /*$s4*/, int y /*$
  */
 void /*$ra*/ Init_FileSystem()
 {
+	CdInit();
+
+	VSync(3);
 }
 /*
  * Offset 0x7F8D8
