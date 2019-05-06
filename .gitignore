@@ -9,7 +9,7 @@
 *.pdb
 *.pch
 *.obj*
-*.db
+# *.db
 *.ipch
 *.suo
 *.exe
