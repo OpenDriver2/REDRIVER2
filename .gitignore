@@ -9,13 +9,21 @@
 *.pdb
 *.pch
 *.obj*
-# *.db
+*.db
 *.ipch
 *.suo
 *.exe
 *.ilk
-libs/
-game/
-symdump-decompile/
-PSX_BINS/
-xmplayer/
+_OLD/
+d1_xm_fix/*
+dump_music/*
+GAME/*
+symdump-decompile/*
+PSX_BINS/*
+PSX_BINS_ITALIAN/*
+psyq/*
+TDR/*
+xmplayer/*
+game_rebuild/*
+src_rebuild/dependencies/*
+src_rebuild/EMULATOR/*
