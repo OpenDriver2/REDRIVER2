@@ -1,0 +1,191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="EMULATOR">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="main\C">
+      <UniqueIdentifier>{56257e33-b2f9-41c4-87dd-943a100b58ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main\FRONTEND">
+      <UniqueIdentifier>{ae03fcd6-0151-4d38-945b-ed2dca3b038e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EMULATOR\ABS.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\CRASHHANDLER.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\EMULATOR.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\GPU_D3D9.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\INLINE_C.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBAPI.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBCD.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBETC.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBGPU.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBGTE.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBMCRD.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBPAD.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBSN.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="EMULATOR\LIBSPU.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
+    <ClCompile Include="THISDUST.C">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="redriver2_psxpc.c">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\MAIN.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\PAD.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\SYSTEM.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\SOUND.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\FMVPLAY.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\E3STUFF.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\GAMESND.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\SCORES.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\FRONTEND\FEMAIN.C">
+      <Filter>main\FRONTEND</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\GLAUNCH.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EMULATOR\ABS.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\ASM.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\CRASHHANDLER.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\EMULATOR.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\EMULATOR_GLOBALS.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\EMULATOR_PLATFORM_SETUP.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\EMULATOR_PRIVATE.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\EMULATOR_SETUP.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\EMULATOR_VERSION.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\GPU_D3D9.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\GTEREG.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\INLINE_C.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\KERNEL.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBAPI.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBCD.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBETC.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBGPU.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBGTE.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBMATH.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBMCRD.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBPAD.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBSN.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\LIBSPU.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\R3000.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\STRINGS.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\TYPES.H">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="THISDUST.H">
+      <Filter>main</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Decompilation.txt">
+      <Filter>main</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

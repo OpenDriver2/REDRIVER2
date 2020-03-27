@@ -1,0 +1,1723 @@
+#include "THISDUST.H"
+#include "PAUSE.H"
+
+
+void PauseMap(int direction);
+void SfxVolume(int direction);
+void MusicVolume(int direction);
+void SaveReplay(int direction);
+void SaveGame(int direction);
+void EnterName();
+
+char EnterScoreText[32] = { 0 };
+
+MENU_ITEM MainPauseItems[9] =
+{
+	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "View map", 3u, 2u, &PauseMap, MENU_QUIT_NONE, NULL },
+	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Effects volume", 13u, 2u, &SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music volume", 21u, 2u, &MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Film director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM MultiplayerPauseItems[7] =
+{
+	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Effects volume", 13u, 2u, &SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music volume", 21u, 2u, &MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+
+MENU_ITEM CutscenePauseItems[6] =
+{
+	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Effects volume", 13u, 2u, &SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music volume", 21u, 2u, &MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM MissionCompleteItems[8] =
+{
+	{ "Save game", 3u, 2u, &SaveGame, MENU_QUIT_NONE, NULL },
+	{ "Next mission", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
+	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save replay", 3u, 2u, &SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM MissionFailedItems[6] =
+{
+	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Exit", 3u, 2u, &SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Retry mission",65u,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM TakeARideFinishedItems[6] =
+{
+	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save replay", 3u, 2u, &SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM DrivingGameFinishedItems[7] =
+{
+	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ &EnterScoreText, 3u, 2u, &EnterName, MENU_QUIT_NONE, NULL },
+	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save replay", 3u, 2u, &SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM MultiplayerFinishedItems[5] =
+{
+	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save replay", 3u, 2u, &SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM ChaseGameFinishedItems[6] =
+{
+	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save replay", 3u, 2u, &SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM YesNoRestartItems[3] =
+{
+	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
+	{ "YES", 1u, 2u, NULL, MENU_QUIT_RESTART, NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM YesNoQuitItems[3] =
+{
+	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
+	{ "YES", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM NoPadItems[1] =
+{
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL}
+};
+
+MENU_ITEM NoMultiPadItems[2] =
+{
+	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_ITEM InvalidPadItems[1] =
+{
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL}
+};
+
+MENU_ITEM InvalidMultiPadItems[2] =
+{
+	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER PauseMenuHeader =
+{ "Game paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
+
+MENU_HEADER MultiplayerPauseHeader =
+{ "Game paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
+
+MENU_HEADER CutscenePauseMenuHeader =
+{ "Game paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
+
+MENU_HEADER MissionCompleteHeader =
+{ "Mission successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
+
+MENU_HEADER MissionFailedHeader =
+{ "Mission failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
+
+MENU_HEADER TakeARideFinishedHeader =
+{ "Game over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
+
+MENU_HEADER DrivingGameFinishedHeader =
+{ "Game over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
+
+MENU_HEADER MultiplayerFinishedHeader =
+{ "Game over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
+
+MENU_HEADER ChaseGameFinishedHeader =
+{ "Game over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
+
+MENU_HEADER NoPadHeader =
+{
+	"Insert controller in slot 1",
+	{ 0, 0, 0, 0 },
+	0u,
+	NoPadItems
+};
+
+MENU_HEADER NoMultiPadHeader =
+{
+	"Insert controller in slot 1",
+	{ 0, 0, 0, 0 },
+	0u,
+	NoMultiPadItems
+};
+
+MENU_HEADER InvalidPadHeader =
+{
+	"Incompatible controller in port 1",
+	{ 0, 0, 0, 0 },
+	0u,
+	InvalidPadItems
+};
+
+MENU_HEADER InvalidMultiPadHeader =
+{
+	"Incompatible controller in port 1",
+	{ 0, 0, 0, 0 },
+	0u,
+	InvalidMultiPadItems
+};
+
+int playerwithcontrol[3] = { 0 };
+
+MENU_HEADER YesNoRestartHeader =
+{ "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
+
+MENU_HEADER YesNoQuitHeader =
+{ "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
+
+
+
+// decompiled code
+// original method signature: 
+// int /*$ra*/ ShowPauseMenu(enum PAUSEMODE mode /*$s0*/)
+ // line 1004, offset 0x0006bf50
+	/* begin block 1 */
+		// Start line: 1005
+		// Start offset: 0x0006BF50
+		// Variables:
+	// 		enum PAUSEMODE passed_mode; // $s2
+
+		/* begin block 1.1 */
+			// Start line: 1062
+			// Start offset: 0x0006C0C0
+		/* end block 1.1 */
+		// End offset: 0x0006C140
+		// End Line: 1085
+
+		/* begin block 1.2 */
+			// Start line: 1092
+			// Start offset: 0x0006C178
+			// Variables:
+		// 		struct RECT rect; // stack offset -32
+		/* end block 1.2 */
+		// End offset: 0x0006C1FC
+		// End Line: 1101
+	/* end block 1 */
+	// End offset: 0x0006C2AC
+	// End Line: 1137
+
+	/* begin block 2 */
+		// Start line: 2008
+	/* end block 2 */
+	// End Line: 2009
+
+int ShowPauseMenu(PAUSEMODE mode)
+
+{
+  int iVar1;
+  uint uVar2;
+  uint uVar3;
+  RECT local_20;
+  
+  uVar2 = (uint)mode;
+  ReadControllers();
+  if (mode == PAUSEMODE_PAUSEP1) {
+    INT_000a15fc = 0;
+    INT_000a1600 = 0;
+    playerwithcontrol = uVar2;
+  }
+  else {
+    if (mode == PAUSEMODE_PAUSEP2) {
+      playerwithcontrol = 0;
+      INT_000a15fc = 1;
+      INT_000a1600 = 0;
+    }
+    else {
+      playerwithcontrol = 0;
+      INT_000a15fc = 0;
+      INT_000a1600 = 1;
+    }
+  }
+  SetDispMask(1);
+  SfxVolume(0);
+  MusicVolume(0);
+  StopPadVibration(0);
+  StopPadVibration(1);
+  InitaliseMenu(mode);
+  gDrawPauseMenus = 1;
+  if (((NoPlayerControl == 0) && (iVar1 = OnScoreTable((SCORE_ENTRY **)0x0), iVar1 != -1)) &&
+     (allownameentry != 0)) {
+    gScoreEntered = 0;
+    sprintf(EnterScoreText,s_Immetti_il_punteggio_00011a20);
+    sprintf(EnterNameText,s_Immetti_il_nome__00011a38);
+  }
+  else {
+    gScoreEntered = 1;
+    sprintf(EnterScoreText,s_Vedi_tabella_00011a4c);
+    sprintf(EnterNameText,s_Alti_punteggi_00011a5c);
+  }
+  uVar3 = uVar2;
+  if (mode == PAUSEMODE_PADERROR) {
+    uVar3 = 0;
+  }
+  PauseReturnValue = 0;
+  do {
+    UpdatePadData();
+    if (uVar2 == 5) {
+      if (pad_connected == 1) {
+        InitaliseMenu((PAUSEMODE)uVar3);
+        uVar2 = uVar3;
+      }
+      else {
+        InitaliseMenu(PAUSEMODE_PADERROR);
+      }
+    }
+    else {
+      if (pad_connected != 1) {
+        uVar2 = 5;
+        InitaliseMenu(PAUSEMODE_PADERROR);
+      }
+    }
+    if (pad_connected < 1) {
+      INT_000a1600 = 1;
+    }
+    ControlMenu();
+    DrawGame();
+  } while (PauseReturnValue == 0);
+  gDrawPauseMenus = 0;
+  if (1 < NumPlayers) {
+    local_20.x = 0;
+    local_20.w = 0x140;
+    local_20.h = 1;
+    local_20.y = (current->draw).clip.y + (current->draw).clip.h;
+    ClearImage2(&local_20,'\0','\0','\0');
+    DrawGame();
+    local_20.x = 0;
+    local_20.w = 0x140;
+    local_20.h = 1;
+    local_20.y = (current->draw).clip.y + (current->draw).clip.h;
+    ClearImage2(&local_20,'\0','\0','\0');
+    DrawGame();
+  }
+  switch(PauseReturnValue) {
+  case 1:
+    pauseflag = 0;
+    break;
+  case 2:
+    EndGame(GAMEMODE_QUIT);
+    break;
+  case 3:
+    EndGame(GAMEMODE_RESTART);
+    break;
+  case 4:
+    EndGame(GAMEMODE_DIRECTOR);
+    break;
+  case 5:
+    EndGame(GAMEMODE_REPLAY);
+    break;
+  case 7:
+    EndGame(GAMEMODE_NEXTMISSION);
+  }
+  return PauseReturnValue;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawPauseMenus()
+ // line 1139, offset 0x0006dcd4
+	/* begin block 1 */
+		// Start line: 4357
+	/* end block 1 */
+	// End Line: 4358
+
+	/* begin block 2 */
+		// Start line: 2278
+	/* end block 2 */
+	// End Line: 2279
+
+	/* begin block 3 */
+		// Start line: 4358
+	/* end block 3 */
+	// End Line: 4359
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void DrawPauseMenus(void)
+
+{
+  if ((gDrawPauseMenus != 0) && (gShowMap == 0)) {
+    if (gEnteringScore == 0) {
+      DrawVisibleMenus();
+    }
+    else {
+      DrawHighScoreMenu(gScorePosition);
+    }
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SaveReplay(int direction /*$a0*/)
+ // line 1153, offset 0x0006d9b0
+	/* begin block 1 */
+		// Start line: 3753
+	/* end block 1 */
+	// End Line: 3754
+
+	/* begin block 2 */
+		// Start line: 2306
+	/* end block 2 */
+	// End Line: 2307
+
+	/* begin block 3 */
+		// Start line: 3754
+	/* end block 3 */
+	// End Line: 3755
+
+void SaveReplay(int direction)
+
+{
+  CallMemoryCard(0x10,1);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SaveGame(int direction /*$a0*/)
+ // line 1158, offset 0x0006d9d4
+	/* begin block 1 */
+		// Start line: 3763
+	/* end block 1 */
+	// End Line: 3764
+
+	/* begin block 2 */
+		// Start line: 3764
+	/* end block 2 */
+	// End Line: 3765
+
+void SaveGame(int direction)
+
+{
+  CallMemoryCard(0x20,1);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ EnterName()
+ // line 1163, offset 0x0006d9f8
+	/* begin block 1 */
+		// Start line: 3773
+	/* end block 1 */
+	// End Line: 3774
+
+	/* begin block 2 */
+		// Start line: 3774
+	/* end block 2 */
+	// End Line: 3775
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void EnterName(void)
+
+{
+  EnterScoreName();
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// int /*$ra*/ MaxMenuStringLength(struct MENU_HEADER *pMenu /*$v0*/)
+ // line 1185, offset 0x0006da18
+	/* begin block 1 */
+		// Start line: 1186
+		// Start offset: 0x0006DA18
+		// Variables:
+	// 		struct MENU_ITEM *pItems; // $s1
+	// 		int max; // $s2
+	// 		int temp; // $s0
+	/* end block 1 */
+	// End offset: 0x0006DAD0
+	// End Line: 1206
+
+	/* begin block 2 */
+		// Start line: 3817
+	/* end block 2 */
+	// End Line: 3818
+
+int MaxMenuStringLength(MENU_HEADER *pMenu)
+
+{
+  byte bVar1;
+  int iVar2;
+  int iVar3;
+  int iVar4;
+  MENU_ITEM *pMVar5;
+  
+  pMVar5 = pMenu->MenuItems;
+  iVar2 = StringWidth(pMenu->Title);
+  bVar1 = pMVar5->Type;
+  while ((bVar1 & 0x80) == 0) {
+    iVar3 = StringWidth(pMVar5->Text);
+    if ((pMVar5->Type & 0x18) != 0) {
+      iVar4 = StringWidth(&DAT_000aa800);
+      iVar3 = iVar3 + iVar4;
+    }
+    if (iVar2 < iVar3) {
+      iVar2 = iVar3;
+    }
+    bVar1 = pMVar5[1].Type;
+    pMVar5 = pMVar5 + 1;
+  }
+  return iVar2;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ InitaliseMenu(enum PAUSEMODE mode /*$a2*/)
+ // line 1216, offset 0x0006c2ac
+	/* begin block 1 */
+		// Start line: 1217
+		// Start offset: 0x0006C2AC
+		// Variables:
+	// 		struct MENU_ITEM *pItem; // $a0
+	// 		int i; // $a1
+	/* end block 1 */
+	// End offset: 0x0006C6B8
+	// End Line: 1388
+
+	/* begin block 2 */
+		// Start line: 2361
+	/* end block 2 */
+	// End Line: 2362
+
+	/* begin block 3 */
+		// Start line: 2441
+	/* end block 3 */
+	// End Line: 2442
+
+void InitaliseMenu(PAUSEMODE mode)
+
+{
+  uchar uVar1;
+  byte bVar2;
+  byte bVar3;
+  MENU_ITEM *pMVar4;
+  MENU_HEADER *pMVar5;
+  MENU_HEADER **ppMVar6;
+  char *pcVar7;
+  MENU_ITEM **ppMVar8;
+  uchar uVar9;
+  int iVar10;
+  
+  ppMVar8 = &ActiveItem3;
+  ppMVar6 = &VisibleMenus3;
+  iVar10 = 2;
+  do {
+    *ppMVar8 = (MENU_ITEM *)0x0;
+    ppMVar8 = ppMVar8 + 1;
+    *ppMVar6 = (MENU_HEADER *)0x0;
+    iVar10 = iVar10 + -1;
+    ppMVar6 = ppMVar6 + 1;
+  } while (-1 < iVar10);
+  allownameentry = 0;
+  switch(mode) {
+  case PAUSEMODE_PAUSE:
+  case PAUSEMODE_PAUSEP1:
+  case PAUSEMODE_PAUSEP2:
+    if ((NumPlayers == 1) && (gMultiplayerLevels == 0)) {
+      if (gInGameCutsceneActive == 0) {
+        ActiveMenu = &PauseMenuHeader;
+      }
+      else {
+        ActiveMenu = &CutscenePauseMenuHeader;
+      }
+    }
+    else {
+      ActiveMenu = &MultiplayerPauseHeader;
+    }
+    break;
+  case PAUSEMODE_GAMEOVER:
+    switch(GameType) {
+    case GAME_GETAWAY:
+    case GAME_CHECKPOINT:
+      if (NumPlayers == 1) {
+        ActiveMenu = &DrivingGameFinishedHeader;
+        allownameentry = 0;
+        gMissionCompletionState = mode;
+        goto LAB_0006c5d0;
+      }
+      break;
+    case GAME_GATERACE:
+    case GAME_TRAILBLAZER:
+    case GAME_SURVIVAL:
+      if (NumPlayers == 1) {
+        ActiveMenu = &DrivingGameFinishedHeader;
+        gMissionCompletionState = mode;
+        allownameentry = (uint)NumPlayers;
+        goto LAB_0006c5d0;
+      }
+      break;
+    default:
+      if (NumPlayers == 1) goto switchD_0006c460_caseD_1;
+      break;
+    case GAME_PURSUIT:
+      goto switchD_0006c3b4_caseD_3;
+    }
+LAB_0006c4c0:
+    ActiveMenu = &MultiplayerFinishedHeader;
+    gMissionCompletionState = mode;
+    break;
+  case PAUSEMODE_COMPLETE:
+    switch(GameType) {
+    case GAME_MISSION:
+      ActiveMenu = &MissionCompleteHeader;
+      gMissionCompletionState = mode;
+      break;
+    default:
+switchD_0006c460_caseD_1:
+      ActiveMenu = &TakeARideFinishedHeader;
+      gMissionCompletionState = mode;
+      break;
+    case GAME_GETAWAY:
+    case GAME_GATERACE:
+    case GAME_CHECKPOINT:
+    case GAME_TRAILBLAZER:
+    case GAME_SURVIVAL:
+    case GAME_COPSANDROBBERS:
+      if (NumPlayers == 1) {
+        ActiveMenu = &DrivingGameFinishedHeader;
+        gMissionCompletionState = mode;
+        allownameentry = (uint)NumPlayers;
+        break;
+      }
+      goto LAB_0006c4c0;
+    case GAME_PURSUIT:
+      goto switchD_0006c3b4_caseD_3;
+    }
+  case PAUSEMODE_PADERROR:
+    if (pad_connected < 0) {
+      if (NumPlayers == 1) {
+        ActiveMenu = &InvalidPadHeader;
+      }
+      else {
+        ActiveMenu = &InvalidMultiPadHeader;
+        if (Pads[0].type != '\x01') {
+          pcVar7 = s_Errore_nell_ingresso_controller_2_00011a6c;
+          goto LAB_0006c5cc;
+        }
+      }
+      pcVar7 = s_Errore_nell_ingresso_controller_1_000119f0;
+    }
+    else {
+      if (NumPlayers == 1) {
+        ActiveMenu = &NoPadHeader;
+      }
+      else {
+        ActiveMenu = &NoMultiPadHeader;
+        if (Pads[0].type != '\0') {
+          pcVar7 = s_Inserisci_un_controller_nell_ing_00011a90;
+          goto LAB_0006c5cc;
+        }
+      }
+      pcVar7 = s_Inserisci_un_controller_nell_ing_000119c8;
+    }
+LAB_0006c5cc:
+    ActiveMenu->Title = pcVar7;
+  }
+  goto LAB_0006c5d0;
+switchD_0006c3b4_caseD_3:
+  ActiveMenu = &ChaseGameFinishedHeader;
+  gMissionCompletionState = mode;
+LAB_0006c5d0:
+  ActiveItem3 = ActiveMenu->MenuItems;
+  VisibleMenus3 = ActiveMenu;
+  ActiveMenuItem = 0;
+  VisibleMenu = 0;
+  uVar1 = ActiveMenu->MenuItems->Type;
+  uVar9 = '\0';
+  pMVar4 = ActiveMenu->MenuItems;
+  while (uVar1 != -0x80) {
+    uVar1 = pMVar4[1].Type;
+    uVar9 = uVar9 + '\x01';
+    pMVar4 = pMVar4 + 1;
+  }
+  ActiveMenu->NumItems = uVar9;
+  iVar10 = MaxMenuStringLength(ActiveMenu);
+  pMVar5 = ActiveMenu;
+  bVar2 = ActiveMenu->NumItems;
+  bVar3 = ActiveMenu->NumItems;
+  (ActiveMenu->Bound).x = (short)((0x130 - iVar10) / 2) + -4;
+  (pMVar5->Bound).w = (short)iVar10 + 0x18;
+  iVar10 = (int)(((uint)bVar2 + 1) * -0xf + 0x100) / 2;
+  (pMVar5->Bound).y = (short)iVar10;
+  (pMVar5->Bound).h = ((ushort)bVar3 + 1) * 0xf + 10;
+  if (iVar10 < 0x30) {
+    (pMVar5->Bound).y = 0x30;
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SetupMenu(struct MENU_HEADER *menu /*$a0*/, int back /*$a1*/)
+ // line 1401, offset 0x0006c6b8
+	/* begin block 1 */
+		// Start line: 1402
+		// Start offset: 0x0006C6B8
+		// Variables:
+	// 		struct MENU_ITEM *pItem; // $a2
+	// 		int count; // $a3
+	/* end block 1 */
+	// End offset: 0x0006C7F4
+	// End Line: 1431
+
+	/* begin block 2 */
+		// Start line: 2819
+	/* end block 2 */
+	// End Line: 2820
+
+	/* begin block 3 */
+		// Start line: 2833
+	/* end block 3 */
+	// End Line: 2834
+
+	/* begin block 4 */
+		// Start line: 2840
+	/* end block 4 */
+	// End Line: 2841
+
+void SetupMenu(MENU_HEADER *menu,int back)
+
+{
+  byte bVar1;
+  byte bVar2;
+  MENU_ITEM *pMVar3;
+  MENU_HEADER *pMVar4;
+  MENU_ITEM *pMVar5;
+  uchar uVar6;
+  
+  _uVar6 = 0;
+  uVar6 = '\0';
+  ActiveMenuItem = 0;
+  if (menu->MenuItems->Type != -0x80) {
+    pMVar5 = menu->MenuItems;
+    do {
+      if ((back != 0) && (pMVar5 == (&ActiveItem3)[VisibleMenu])) {
+        ActiveMenuItem = _uVar6;
+      }
+      pMVar3 = pMVar5 + 1;
+      _uVar6 = _uVar6 + 1;
+      uVar6 = (uchar)_uVar6;
+      pMVar5 = pMVar5 + 1;
+    } while (pMVar3->Type != -0x80);
+  }
+  ActiveMenu = menu;
+  menu->NumItems = uVar6;
+  _uVar6 = MaxMenuStringLength(ActiveMenu);
+  pMVar4 = ActiveMenu;
+  bVar1 = ActiveMenu->NumItems;
+  bVar2 = ActiveMenu->NumItems;
+  (ActiveMenu->Bound).x = (short)((0x130 - _uVar6) / 2) + -4;
+  (pMVar4->Bound).w = (short)_uVar6 + 0x18;
+  _uVar6 = (int)(((uint)bVar1 + 1) * -0xf + 0x100) / 2;
+  (pMVar4->Bound).y = (short)_uVar6;
+  (pMVar4->Bound).h = ((ushort)bVar2 + 1) * 0xf + 10;
+  if (_uVar6 < 0x30) {
+    (pMVar4->Bound).y = 0x30;
+  }
+  (&ActiveItem3)[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawVisibleMenus()
+ // line 1443, offset 0x0006c7f4
+	/* begin block 1 */
+		// Start line: 1445
+		// Start offset: 0x0006C7F4
+		// Variables:
+	// 		struct MENU_HEADER *pActive; // $s5
+	// 		struct MENU_ITEM *pItem; // $s1
+	// 		struct POLY_FT3 *null; // $a0
+	// 		int i; // stack offset -48
+	// 		int ypos; // $s3
+	// 		int xpos; // $fp
+	// 		int width; // $s4
+
+		/* begin block 1.1 */
+			// Start line: 1473
+			// Start offset: 0x0006C8C0
+			// Variables:
+		// 		unsigned char r; // $s6
+		// 		unsigned char b; // $s7
+		// 		int x1; // $s0
+		// 		int x2; // $s2
+		/* end block 1.1 */
+		// End offset: 0x0006CA40
+		// End Line: 1509
+	/* end block 1 */
+	// End offset: 0x0006CBE8
+	// End Line: 1528
+
+	/* begin block 2 */
+		// Start line: 2919
+	/* end block 2 */
+	// End Line: 2920
+
+	/* begin block 3 */
+		// Start line: 2932
+	/* end block 3 */
+	// End Line: 2933
+
+	/* begin block 4 */
+		// Start line: 2933
+	/* end block 4 */
+	// End Line: 2934
+
+	/* begin block 5 */
+		// Start line: 2939
+	/* end block 5 */
+	// End Line: 2940
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void DrawVisibleMenus(void)
+
+{
+  short sVar1;
+  short sVar2;
+  short sVar3;
+  DB *pDVar4;
+  uint uVar5;
+  int iVar6;
+  int x;
+  char *pString;
+  uint *puVar7;
+  short sVar8;
+  MENU_ITEM *pMVar9;
+  int y;
+  int y_00;
+  MENU_HEADER *pMVar10;
+  int r;
+  int b;
+  int x_00;
+  int local_30;
+  
+  if (1 < NumPlayers) {
+    SetFullscreenDrawing();
+  }
+  pMVar10 = (&VisibleMenus3)[VisibleMenu];
+  y = (int)(pMVar10->Bound).y;
+  y_00 = y;
+  if (pMVar10->Title != (char *)0x0) {
+    y_00 = y + 0xf;
+    OutputString(pMVar10->Title,2,(int)(pMVar10->Bound).x,y,(int)(pMVar10->Bound).w,0x80,0x20,0x20);
+  }
+  local_30 = 0;
+  uVar5 = (uint)pMVar10->NumItems;
+  pMVar9 = pMVar10->MenuItems;
+  sVar1 = (pMVar10->Bound).x;
+  x_00 = (int)sVar1;
+  sVar2 = (pMVar10->Bound).w;
+  y = (int)sVar2;
+  if (pMVar10->NumItems != 0) {
+    do {
+      if (pMVar9->Text != (char *)0x0) {
+        r = 0x80;
+        if (pMVar9 == (&ActiveItem3)[VisibleMenu]) {
+          r = 0;
+          b = 0;
+        }
+        else {
+          b = 0x80;
+        }
+        if ((pMVar9->Type & 8) == 0) {
+          if ((pMVar9->Type & 0x10) != 0) {
+            iVar6 = StringWidth(pMVar9->Text);
+            x = StringWidth(&DAT_000aa800);
+            x = x_00 + ((y - iVar6) - x >> 1);
+            iVar6 = StringWidth(pMVar9->Text);
+            iVar6 = x + iVar6;
+            OutputString(pMVar9->Text,1,x,y_00,y,r,0x80,b);
+            pString = MusicVolumeText;
+            goto LAB_0006c9ec;
+          }
+          OutputString(pMVar9->Text,(uint)pMVar9->Justify,x_00,y_00,y,r,0x80,b);
+        }
+        else {
+          iVar6 = StringWidth(pMVar9->Text);
+          x = StringWidth(&DAT_000aa800);
+          x = x_00 + ((y - iVar6) - x >> 1);
+          iVar6 = StringWidth(pMVar9->Text);
+          iVar6 = x + iVar6;
+          OutputString(pMVar9->Text,1,x,y_00,y,r,0x80,b);
+          pString = SfxVolumeText;
+LAB_0006c9ec:
+          OutputString(pString,1,iVar6 + 10,y_00,y,r,0x80,b);
+        }
+        y_00 = y_00 + 0xf;
+        uVar5 = (uint)pMVar10->NumItems;
+      }
+      pMVar9 = pMVar9 + 1;
+      local_30 = local_30 + 1;
+    } while (local_30 < (int)uVar5);
+  }
+  puVar7 = (uint *)current->primptr;
+  *(char *)((int)puVar7 + 3) = '\a';
+  *(char *)((int)puVar7 + 7) = '$';
+  pDVar4 = current;
+  *(undefined2 *)(puVar7 + 2) = 0xffff;
+  *(undefined2 *)((int)puVar7 + 10) = 0xffff;
+  *(undefined2 *)(puVar7 + 4) = 0xffff;
+  *(undefined2 *)((int)puVar7 + 0x12) = 0xffff;
+  *(undefined2 *)(puVar7 + 6) = 0xffff;
+  *(undefined2 *)((int)puVar7 + 0x1a) = 0xffff;
+  *(undefined2 *)((int)puVar7 + 0x16) = 0;
+  *puVar7 = *puVar7 & 0xff000000 | *pDVar4->ot & 0xffffff;
+  *pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar7 & 0xffffff;
+  pString = pDVar4->primptr;
+  pDVar4->primptr = pString + 0x20;
+  pString[0x23] = '\x05';
+  pString[0x27] = '(';
+  *(short *)(pString + 0x28) = sVar1 + -5;
+  sVar3 = (pMVar10->Bound).y;
+  sVar8 = sVar1 + sVar2 + 5;
+  *(short *)(pString + 0x2c) = sVar8;
+  *(short *)(pString + 0x2a) = sVar3 + -5;
+  sVar2 = (pMVar10->Bound).y;
+  *(short *)(pString + 0x30) = sVar1 + -5;
+  *(short *)(pString + 0x2e) = sVar2 + -5;
+  *(short *)(pString + 0x32) = (pMVar10->Bound).y + (pMVar10->Bound).h;
+  *(short *)(pString + 0x34) = sVar8;
+  sVar1 = (pMVar10->Bound).y;
+  sVar2 = (pMVar10->Bound).h;
+  pString[0x24] = '\x10';
+  pString[0x25] = '\x10';
+  pString[0x26] = '\x10';
+  pString[0x27] = '+';
+  pDVar4 = current;
+  *(short *)(pString + 0x36) = sVar1 + sVar2;
+  *(uint *)(pString + 0x20) =
+       *(uint *)(pString + 0x20) & 0xff000000 | *(uint *)*pDVar4->ot & 0xffffff;
+  *(uint *)*pDVar4->ot = *(uint *)*pDVar4->ot & 0xff000000 | (uint)(pString + 0x20) & 0xffffff;
+  pDVar4->primptr = pDVar4->primptr + 0x18;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ ControlMenu()
+ // line 1543, offset 0x0006cbe8
+	/* begin block 1 */
+		// Start line: 1545
+		// Start offset: 0x0006CBE8
+		// Variables:
+	// 		static int debounce; // offset 0x30
+	// 		unsigned short paddata; // $a2
+	// 		unsigned short paddirect; // $a3
+
+		/* begin block 1.1 */
+			// Start line: 1596
+			// Start offset: 0x0006CCD4
+			// Variables:
+		// 		int doit; // $v1
+		/* end block 1.1 */
+		// End offset: 0x0006CD78
+		// End Line: 1621
+
+		/* begin block 1.2 */
+			// Start line: 1675
+			// Start offset: 0x0006CF54
+			// Variables:
+		// 		int i; // $a0
+		/* end block 1.2 */
+		// End offset: 0x0006CFB8
+		// End Line: 1682
+
+		/* begin block 1.3 */
+			// Start line: 1692
+			// Start offset: 0x0006CFD8
+			// Variables:
+		// 		int i; // $a0
+		/* end block 1.3 */
+		// End offset: 0x0006D034
+		// End Line: 1703
+	/* end block 1 */
+	// End offset: 0x0006D034
+	// End Line: 1705
+
+	/* begin block 2 */
+		// Start line: 3196
+	/* end block 2 */
+	// End Line: 3197
+
+	/* begin block 3 */
+		// Start line: 3212
+	/* end block 3 */
+	// End Line: 3213
+
+	/* begin block 4 */
+		// Start line: 3213
+	/* end block 4 */
+	// End Line: 3214
+
+	/* begin block 5 */
+		// Start line: 3233
+	/* end block 5 */
+	// End Line: 3234
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void ControlMenu(void)
+
+{
+  EXIT_VALUE EVar1;
+  bool bVar2;
+  int iVar3;
+  MENU_ITEM *pMVar4;
+  ushort uVar5;
+  MENU_HEADER *menu;
+  ushort uVar6;
+  
+  if (INT_000a1600 == 0) {
+    uVar5 = Pads[1].dirnew;
+    uVar6 = Pads[1].direct;
+    if (playerwithcontrol != 0) {
+      uVar5 = Pads[0].dirnew;
+      uVar6 = Pads[0].direct;
+    }
+  }
+  else {
+    uVar5 = Pads[0].dirnew;
+    uVar6 = Pads[0].direct;
+    if (NumPlayers == 2) {
+      uVar5 = Pads[1].dirnew | Pads[0].dirnew;
+      uVar6 = Pads[1].direct | Pads[0].direct;
+    }
+  }
+  if (gShowMap != 0) {
+    if ((uVar5 & 0x50) == 0) {
+      return;
+    }
+    PauseMap(0);
+    return;
+  }
+  if (((uVar6 & 0xa000) == 0) || (((&ActiveItem3)[VisibleMenu]->Type & 4) == 0)) {
+    DAT_000aa808 = 0;
+    if ((uVar5 & 0x1000) != 0) {
+      ActiveMenuItem = ActiveMenuItem + -1;
+      if (ActiveMenuItem < 0) {
+        ActiveMenuItem = (uint)ActiveMenu->NumItems - 1;
+      }
+      (&ActiveItem3)[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
+      return;
+    }
+    if ((uVar5 & 0x4000) != 0) {
+      ActiveMenuItem = ActiveMenuItem + 1;
+      if ((int)((uint)ActiveMenu->NumItems - 1) < ActiveMenuItem) {
+        ActiveMenuItem = 0;
+      }
+      (&ActiveItem3)[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
+      return;
+    }
+    if ((uVar5 & 0x40) == 0) {
+      if ((uVar5 & 0x10) == 0) {
+        if ((uVar5 & 0x800) == 0) {
+          DAT_000aa808 = 0;
+          return;
+        }
+        if (VisibleMenu != 0) {
+          DAT_000aa808 = 0;
+          return;
+        }
+        iVar3 = 0;
+        if (ActiveMenu->NumItems == '\0') {
+          DAT_000aa808 = 0;
+          return;
+        }
+        pMVar4 = ActiveMenu->MenuItems;
+        while( true ) {
+          if (pMVar4->ExitValue == MENU_QUIT_CONTINUE) {
+            DAT_000aa808 = 0;
+            PauseReturnValue = (uint)pMVar4->ExitValue;
+            return;
+          }
+          iVar3 = iVar3 + 1;
+          if ((int)(uint)ActiveMenu->NumItems <= iVar3) break;
+          pMVar4 = ActiveMenu->MenuItems + iVar3;
+        }
+        DAT_000aa808 = 0;
+        return;
+      }
+      if (VisibleMenu < 1) {
+        iVar3 = 0;
+        if (ActiveMenu->NumItems == '\0') {
+          DAT_000aa808 = 0;
+          return;
+        }
+        EVar1 = ActiveMenu->MenuItems->ExitValue;
+        while( true ) {
+          if (EVar1 == MENU_QUIT_CONTINUE) {
+            DAT_000aa808 = 0;
+            PauseReturnValue = (uint)EVar1;
+            return;
+          }
+          iVar3 = iVar3 + 1;
+          if ((int)(uint)ActiveMenu->NumItems <= iVar3) break;
+          EVar1 = ActiveMenu->MenuItems[iVar3].ExitValue;
+        }
+        DAT_000aa808 = 0;
+        return;
+      }
+    }
+    else {
+      pMVar4 = (&ActiveItem3)[VisibleMenu];
+      if ((pMVar4->Type & 0x40) != 0) {
+        menu = pMVar4->SubMenu;
+        VisibleMenu = VisibleMenu + 1;
+        (&VisibleMenus3)[VisibleMenu] = menu;
+        SetupMenu(menu,0);
+        return;
+      }
+      if ((pMVar4->Type & 2) != 0) {
+        (*pMVar4->func)(0);
+      }
+      EVar1 = (&ActiveItem3)[VisibleMenu]->ExitValue;
+      if (EVar1 == MENU_QUIT_NONE) {
+        return;
+      }
+      if (EVar1 != MENU_QUIT_BACKMENU) {
+        PauseReturnValue = (uint)(&ActiveItem3)[VisibleMenu]->ExitValue;
+        return;
+      }
+    }
+    VisibleMenu = VisibleMenu + -1;
+    SetupMenu((&VisibleMenus3)[VisibleMenu],1);
+    return;
+  }
+  bVar2 = false;
+  if (DAT_000aa808 < 1) {
+    iVar3 = 10;
+  }
+  else {
+    DAT_000aa808 = DAT_000aa808 + -1;
+    iVar3 = 2;
+    if (DAT_000aa808 != 0) goto LAB_0006cd08;
+  }
+  bVar2 = true;
+  DAT_000aa808 = iVar3;
+LAB_0006cd08:
+  if (bVar2) {
+    if ((uVar6 & 0x8000) == 0) {
+      (*(&ActiveItem3)[VisibleMenu]->func)(1);
+    }
+    else {
+      (*(&ActiveItem3)[VisibleMenu]->func)(0xffffffff);
+    }
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ PauseMap(int direction /*$a0*/)
+ // line 1710, offset 0x0006dad0
+	/* begin block 1 */
+		// Start line: 4364
+	/* end block 1 */
+	// End Line: 4365
+
+	/* begin block 2 */
+		// Start line: 4869
+	/* end block 2 */
+	// End Line: 4870
+
+	/* begin block 3 */
+		// Start line: 4870
+	/* end block 3 */
+	// End Line: 4871
+
+void PauseMap(int direction)
+
+{
+  FastForward = gShowMap ^ 1;
+  gShowMap = FastForward;
+  ReadControllers();
+  map_x_shift = 0;
+  map_z_shift = 0;
+  if (FastForward == 0) {
+    InitOverheadMap();
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SfxVolume(int direction /*$a0*/)
+ // line 1725, offset 0x0006db34
+	/* begin block 1 */
+		// Start line: 1726
+		// Start offset: 0x0006DB34
+	/* end block 1 */
+	// End offset: 0x0006DC04
+	// End Line: 1744
+
+	/* begin block 2 */
+		// Start line: 4902
+	/* end block 2 */
+	// End Line: 4903
+
+	/* begin block 3 */
+		// Start line: 4905
+	/* end block 3 */
+	// End Line: 4906
+
+void SfxVolume(int direction)
+
+{
+  if (direction < 0) {
+    gMasterVolume = gMasterVolume + -100;
+  }
+  else {
+    if (0 < direction) {
+      gMasterVolume = gMasterVolume + 100;
+    }
+  }
+  if (gMasterVolume < -10000) {
+    gMasterVolume = -10000;
+  }
+  if (0 < gMasterVolume) {
+    gMasterVolume = 0;
+  }
+  sprintf(SfxVolumeText,(char *)&PTR_DAT_000aa80c,(int)(&DAT_00002710 + gMasterVolume) / 100);
+  SetMasterVolume(gMasterVolume);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ MusicVolume(int direction /*$a0*/)
+ // line 1746, offset 0x0006dc04
+	/* begin block 1 */
+		// Start line: 1747
+		// Start offset: 0x0006DC04
+	/* end block 1 */
+	// End offset: 0x0006DCD4
+	// End Line: 1765
+
+	/* begin block 2 */
+		// Start line: 4942
+	/* end block 2 */
+	// End Line: 4943
+
+	/* begin block 3 */
+		// Start line: 4945
+	/* end block 3 */
+	// End Line: 4946
+
+	/* begin block 4 */
+		// Start line: 4948
+	/* end block 4 */
+	// End Line: 4949
+
+void MusicVolume(int direction)
+
+{
+  if (direction < 0) {
+    gMusicVolume = gMusicVolume + -100;
+  }
+  else {
+    if (0 < direction) {
+      gMusicVolume = gMusicVolume + 100;
+    }
+  }
+  if (gMusicVolume < -10000) {
+    gMusicVolume = -10000;
+  }
+  if (0 < gMusicVolume) {
+    gMusicVolume = 0;
+  }
+  sprintf(MusicVolumeText,(char *)&PTR_DAT_000aa80c,(int)(&DAT_00002710 + gMusicVolume) / 100);
+  SetXMVolume(gMusicVolume);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ EnterScoreName()
+ // line 1787, offset 0x0006d044
+	/* begin block 1 */
+		// Start line: 1789
+		// Start offset: 0x0006D044
+		// Variables:
+	// 		struct SCORE_ENTRY *table; // stack offset -40
+	// 		char *username; // $s3
+	// 		unsigned short npad; // $a1
+	// 		int so; // $s0
+	// 		int co; // $s1
+	// 		int delay; // $s2
+	// 		char c; // $a0
+	// 		char toggle; // $s6
+	/* end block 1 */
+	// End offset: 0x0006D324
+	// End Line: 1941
+
+	/* begin block 2 */
+		// Start line: 3716
+	/* end block 2 */
+	// End Line: 3717
+
+	/* begin block 3 */
+		// Start line: 3717
+	/* end block 3 */
+	// End Line: 3718
+
+	/* begin block 4 */
+		// Start line: 3718
+	/* end block 4 */
+	// End Line: 3719
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void EnterScoreName(void)
+
+{
+  bool bVar1;
+  ushort uVar2;
+  uint uVar3;
+  char *pcVar4;
+  char cVar5;
+  int iVar6;
+  uint uVar7;
+  int iVar8;
+  char *__src;
+  uint uVar9;
+  SCORE_ENTRY *local_28 [2];
+  
+  __src = (char *)0x0;
+  iVar8 = 0;
+  gEnteringScore = 1;
+  uVar9 = 0;
+  if (gScoreEntered == 0) {
+    gScorePosition = OnScoreTable(local_28);
+    if (gScorePosition != -1) {
+      __src = &ScoreName + gScorePosition * 7;
+    }
+  }
+  else {
+    OnScoreTable(local_28);
+    gScorePosition = -1;
+  }
+  uVar7 = 1;
+  iVar6 = 0;
+  CreateScoreNames(local_28[0],&gPlayerScore,gScorePosition);
+  do {
+    ReadControllers();
+    uVar2 = Pads[0].dirnew;
+    if (gScoreEntered == 0) {
+      if ((Pads[0].dirnew & 0x10) != 0) {
+        gEnteringScore = 0;
+        return;
+      }
+      if ((Pads[0].direct & 0x20) == 0) {
+        if ((Pads[0].direct & 0x8000) == 0) {
+          if ((Pads[0].direct & 0x2000) == 0) {
+            iVar8 = 0;
+            goto LAB_0006d1e8;
+          }
+          bVar1 = iVar8 == 0;
+          iVar8 = iVar8 + -1;
+          if (bVar1) {
+            iVar8 = 0x14;
+LAB_0006d1c4:
+            uVar9 = 0;
+            uVar7 = uVar7 + 1;
+          }
+          else {
+            if (iVar8 < 1) {
+              iVar8 = 2;
+              goto LAB_0006d1c4;
+            }
+          }
+          if (0x43 < uVar7) {
+            uVar7 = 0;
+          }
+        }
+        else {
+          bVar1 = iVar8 == 0;
+          iVar8 = iVar8 + -1;
+          if (bVar1) {
+            iVar8 = 0x14;
+LAB_0006d184:
+            uVar9 = 0;
+            uVar7 = uVar7 - 1;
+          }
+          else {
+            if (iVar8 < 1) {
+              iVar8 = 2;
+              goto LAB_0006d184;
+            }
+          }
+          if ((int)uVar7 < 0) {
+            uVar7 = 0x43;
+          }
+        }
+      }
+      else {
+        iVar8 = 1;
+        uVar9 = 0;
+        uVar7 = 0x43;
+      }
+LAB_0006d1e8:
+      cVar5 = (&validchars)[uVar7];
+      uVar3 = uVar9 + 1;
+      if (iVar6 == 5) {
+        cVar5 = -2;
+      }
+      uVar9 = uVar3 & 0xff;
+      if ((uVar3 & 4) == 0) {
+        if (cVar5 == ' ') {
+          __src[iVar6] = '.';
+        }
+        else {
+          __src[iVar6] = cVar5;
+        }
+      }
+      else {
+        __src[iVar6] = '\0';
+      }
+      pcVar4 = __src + iVar6;
+      if ((uVar2 & 0x80) != 0) {
+        if (0 < iVar6) {
+          iVar6 = iVar6 + -1;
+        }
+        pcVar4 = __src + iVar6;
+        *pcVar4 = '\0';
+        pcVar4[1] = '\0';
+      }
+      if ((uVar2 & 0x40) != 0) {
+        if (cVar5 == -2) {
+          *pcVar4 = '\0';
+          strcpy(gPlayerScore.name,__src);
+          AddScoreToTable(local_28[0],gScorePosition);
+          sprintf(EnterScoreText,s_Vedi_tabella_00011a4c);
+          sprintf(EnterNameText,s_Alti_punteggi_00011a5c);
+          gEnteringScore = 0;
+          gScoreEntered = 1;
+          return;
+        }
+        if (cVar5 == -1) {
+          if (0 < iVar6) {
+            iVar6 = iVar6 + -1;
+          }
+          __src[iVar6] = '\0';
+          (__src + iVar6)[1] = '\0';
+        }
+        else {
+          if (iVar6 < 5) {
+            iVar6 = iVar6 + 1;
+            *pcVar4 = cVar5;
+            __src[iVar6] = '\0';
+          }
+        }
+      }
+    }
+    else {
+      if ((Pads[0].dirnew & 0x50) != 0) {
+        gEnteringScore = 0;
+        return;
+      }
+    }
+    DrawGame();
+  } while( true );
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ CreateScoreNames(struct SCORE_ENTRY *table /*$s0*/, struct PLAYER_SCORE *score /*stack 4*/, int position /*stack 8*/)
+ // line 1943, offset 0x0006d324
+	/* begin block 1 */
+		// Start line: 1944
+		// Start offset: 0x0006D324
+		// Variables:
+	// 		char *text; // $s1
+	// 		int min; // $t1
+	// 		int frac; // $v0
+	// 		int i; // $s5
+	/* end block 1 */
+	// End offset: 0x0006D664
+	// End Line: 2012
+
+	/* begin block 2 */
+		// Start line: 4269
+	/* end block 2 */
+	// End Line: 4270
+
+	/* begin block 3 */
+		// Start line: 4272
+	/* end block 3 */
+	// End Line: 4273
+
+	/* begin block 4 */
+		// Start line: 4277
+	/* end block 4 */
+	// End Line: 4278
+
+void CreateScoreNames(SCORE_ENTRY *table,PLAYER_SCORE *score,int position)
+
+{
+  int iVar1;
+  char *pcVar2;
+  char *__s;
+  int iVar3;
+  char *__s_00;
+  char *__s_01;
+  int iVar4;
+  int local_38;
+  int local_34;
+  char *local_30;
+  int local_2c;
+  
+  switch(GameType) {
+  case GAME_PURSUIT:
+  case GAME_GETAWAY:
+  case GAME_CHECKPOINT:
+  case GAME_SURVIVAL:
+    pcVar2 = (char *)0x0;
+    break;
+  case GAME_GATERACE:
+    pcVar2 = s_Coni_barriera_00011ab8;
+    break;
+  case GAME_TRAILBLAZER:
+    pcVar2 = s_Barriere_00011ac8;
+    break;
+  default:
+    goto switchD_0006d388_caseD_6;
+  }
+  iVar3 = 0;
+  __s = ScoreTime;
+  iVar4 = 0;
+  local_38 = 0;
+  local_34 = 0;
+  local_30 = ScoreTime;
+  local_2c = 0;
+  __s_00 = __s;
+  __s_01 = __s;
+  do {
+    if (iVar3 == position) {
+      iVar1 = score->time;
+      if (iVar1 == -1) {
+        sprintf(__s_00,s_________000aa810);
+      }
+      else {
+        sprintf(__s_01,s__d__02d__02d_00011ad4,iVar1 / 180000,
+                iVar1 / 3000 + (iVar1 / 180000) * -0x3c,(iVar1 % 3000) / 0x1e);
+      }
+      ScoreItems[iVar4] = '\0';
+      if ((pcVar2 != (char *)0x0) && ((int)score->items != -1)) {
+        sprintf(ScoreItems + iVar4,s__d__s_000aa818,(int)score->items,pcVar2);
+      }
+      ClearMem(&ScoreName + local_2c,7);
+    }
+    else {
+      iVar1 = table->time;
+      if (iVar1 == -1) {
+        sprintf(__s,s_________000aa810);
+      }
+      else {
+        sprintf(local_30,s__d__02d__02d_00011ad4,iVar1 / 180000,
+                iVar1 / 3000 + (iVar1 / 180000) * -0x3c,(iVar1 % 3000) / 0x1e);
+      }
+      ScoreItems[local_34] = '\0';
+      if ((pcVar2 != (char *)0x0) && ((int)table->items != -1)) {
+        sprintf(ScoreItems + local_34,s__d__s_000aa818,(int)table->items,pcVar2);
+      }
+      sprintf(&ScoreName + local_38,(char *)&PTR_DAT_000aa820,table->name);
+      table = table + 1;
+    }
+    __s = __s + 0x10;
+    iVar4 = iVar4 + 0x10;
+    __s_01 = __s_01 + 0x10;
+    iVar3 = iVar3 + 1;
+    local_38 = local_38 + 7;
+    local_34 = local_34 + 0x10;
+    local_30 = local_30 + 0x10;
+    local_2c = local_2c + 7;
+    __s_00 = __s_00 + 0x10;
+  } while (iVar3 < 5);
+switchD_0006d388_caseD_6:
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawHighScoreMenu(int selection /*stack 0*/)
+ // line 2020, offset 0x0006d694
+	/* begin block 1 */
+		// Start line: 2021
+		// Start offset: 0x0006D694
+		// Variables:
+	// 		struct POLY_FT3 *null; // $a0
+	// 		char text[4]; // stack offset -48
+	// 		unsigned char r; // $s3
+	// 		unsigned char g; // $s5
+	// 		unsigned char b; // $s2
+	// 		int i; // $s0
+	// 		int ypos; // $s4
+	/* end block 1 */
+	// End offset: 0x0006D9B0
+	// End Line: 2075
+
+	/* begin block 2 */
+		// Start line: 4486
+	/* end block 2 */
+	// End Line: 4487
+
+void DrawHighScoreMenu(int selection)
+
+{
+  DB *pDVar1;
+  uint *puVar2;
+  char *pcVar3;
+  int iVar4;
+  int iVar5;
+  int b;
+  int r;
+  int y;
+  int iVar6;
+  char acStack48 [8];
+  
+  OutputString(EnterNameText,2,0xa0,0x46,0,0x80,0x20,0x20);
+  OutputString(&DAT_000aa824,1,0x28,0x5a,0,0x80,0x80,0x20);
+  OutputString(s_Orario_000aa82c,4,0x118,0x5a,0,0x80,0x80,0x20);
+  y = 0x6e;
+  iVar6 = 0;
+  iVar4 = 0;
+  do {
+    r = 0x80;
+    if (iVar4 == selection) {
+      r = 0;
+      b = 0;
+    }
+    else {
+      b = 0x80;
+    }
+    iVar5 = iVar4 + 1;
+    sprintf(acStack48,(char *)&PTR_DAT_000aa834,iVar5);
+    OutputString(acStack48,1,0x28,y,0,r,0x80,b);
+    OutputString(&ScoreName + iVar6,1,0x3c,y,0,r,0x80,b);
+    OutputString(ScoreItems + iVar4 * 0x10,4,0xdc,y,0,r,0x80,b);
+    OutputString(ScoreTime + iVar4 * 0x10,4,0x118,y,0,r,0x80,b);
+    y = y + 0xf;
+    iVar6 = iVar6 + 7;
+    iVar4 = iVar5;
+  } while (iVar5 < 5);
+  puVar2 = (uint *)current->primptr;
+  *(char *)((int)puVar2 + 3) = '\a';
+  *(char *)((int)puVar2 + 7) = '$';
+  pDVar1 = current;
+  *(undefined2 *)(puVar2 + 2) = 0xffff;
+  *(undefined2 *)((int)puVar2 + 10) = 0xffff;
+  *(undefined2 *)(puVar2 + 4) = 0xffff;
+  *(undefined2 *)((int)puVar2 + 0x12) = 0xffff;
+  *(undefined2 *)(puVar2 + 6) = 0xffff;
+  *(undefined2 *)((int)puVar2 + 0x1a) = 0xffff;
+  *(undefined2 *)((int)puVar2 + 0x16) = 0;
+  *puVar2 = *puVar2 & 0xff000000 | *pDVar1->ot & 0xffffff;
+  *pDVar1->ot = *pDVar1->ot & 0xff000000 | (uint)puVar2 & 0xffffff;
+  pcVar3 = pDVar1->primptr;
+  pDVar1->primptr = pcVar3 + 0x20;
+  pcVar3[0x23] = '\x05';
+  *(undefined2 *)(pcVar3 + 0x2a) = 0x41;
+  *(undefined2 *)(pcVar3 + 0x2e) = 0x41;
+  *(undefined2 *)(pcVar3 + 0x32) = 0xc5;
+  *(undefined2 *)(pcVar3 + 0x36) = 0xc5;
+  *(undefined2 *)(pcVar3 + 0x28) = 0x1a;
+  *(undefined2 *)(pcVar3 + 0x2c) = 0x126;
+  *(undefined2 *)(pcVar3 + 0x30) = 0x1a;
+  *(undefined2 *)(pcVar3 + 0x34) = 0x126;
+  pcVar3[0x24] = '\x10';
+  pcVar3[0x25] = '\x10';
+  pcVar3[0x26] = '\x10';
+  pcVar3[0x27] = '+';
+  pDVar1 = current;
+  *(uint *)(pcVar3 + 0x20) =
+       *(uint *)(pcVar3 + 0x20) & 0xff000000 | *(uint *)*current->ot & 0xffffff;
+  *(uint *)*pDVar1->ot = *(uint *)*pDVar1->ot & 0xff000000 | (uint)(pcVar3 + 0x20) & 0xffffff;
+  pDVar1->primptr = pDVar1->primptr + 0x18;
+  return;
+}
+
+
+
+
+

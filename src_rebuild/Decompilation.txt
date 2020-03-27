@@ -1,0 +1,7 @@
+FUNCTION MARKERS FOR DECOMPILATION:
+
+[D] = decompiled
+[F] = final
+[T] = debugged and tested
+
+[A] = altered, for debugging purposes

@@ -1,0 +1,3315 @@
+#include "THISDUST.H"
+#include "MOTION_C.H"
+
+
+LIMBS lRoutes[5][8] = {
+	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
+	{HIPS, RHIP, RKNEE, RFOOT, RTOE, ROOT, ROOT, ROOT},
+	{LOWERBACK, JOINT_1, LSHOULDER, LELBOW, LHAND, LFINGERS, ROOT, ROOT},
+	{JOINT_1, RSHOULDER, RELBOW, RHAND, RFINGERS, ROOT, ROOT, ROOT},
+	{JOINT_1, NECK, HEAD, ROOT, ROOT, ROOT, ROOT, ROOT},
+};
+
+PED_DATA MainPed[23] =
+{
+	{ 0, 68u, &chest1_texture, CHEST_PAL },
+	{ 1, 68u, &chest1_texture, CHEST_PAL },
+	{ 17, 36u, &chest1_texture, CHEST_PAL },
+	{ 6, 68u, &forearm1_texture, ARM_PAL },
+	{ 8, 68u, &head1_texture, NO_PAL },
+	{ 6, 68u, &arm1_texture, CHEST_PAL },
+	{ 8, 36u, &arm1_texture, CHEST_PAL },
+	{ 7, 68u, &forearm1_texture, ARM_PAL },
+	{ 3, 244u, &forearm1_texture, ARM_PAL },
+	{ 6, 68u, &arm1_texture, CHEST_PAL },
+	{ 8, 36u, &arm1_texture, CHEST_PAL },
+	{ 7, 68u, &forearm1_texture, ARM_PAL },
+	{ 3, 244u, &forearm1_texture, ARM_PAL },
+	{ 1, 68u, &jeans_texture, NO_PAL },
+	{ 6, 68u, &jeans_texture, NO_PAL },
+	{ 13, 100u, &jeans_texture, JEANS_PAL },
+	{ 11, 244u, &jeans_texture, JEANS_PAL },
+	{ 6, 63u, &chest1_texture, JEANS_PAL },
+	{ 6, 68u, &arm1_texture, NO_PAL },
+	{ 13, 100u, &jeans_texture, JEANS_PAL },
+	{ 11, 244u, &jeans_texture, JEANS_PAL },
+	{ 6, 63u, &chest1_texture, JEANS_PAL },
+	{ 2, 68u, &jeans_texture, JEANS_PAL }
+};
+
+// FIXME: could be incorrect
+BONE Skel[23] =
+{
+  {
+	ROOT,
+	NULL,
+	1,
+	{ &Skel[LOWERBACK], &Skel[HIPS], NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  },
+  {
+	LOWERBACK,
+	&Skel[ROOT],
+	3,
+	{ &Skel[JOINT_1], &Skel[LHIP], &Skel[RHIP] },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  },
+  {
+	JOINT_1,
+	&Skel[LOWERBACK],
+	3,
+	{ &Skel[NECK], &Skel[LSHOULDER], &Skel[RSHOULDER] },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[0]
+  },
+  {
+	NECK,
+	&Skel[JOINT_1],
+	1,
+	{ &Skel[HEAD], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[14]
+  },
+  {
+	HEAD,
+	&Skel[NECK],
+	0,
+	{ NULL, NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[1]
+  },
+  {
+	LSHOULDER,
+	&Skel[JOINT_1],
+	1,
+	{ &Skel[LELBOW], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  },
+  {
+	LELBOW,
+	&Skel[LSHOULDER],
+	1,
+	{ &Skel[LHAND], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[8]
+  },
+  {
+	LHAND,
+	&Skel[LELBOW],
+	1,
+	{ &Skel[LFINGERS], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[9]
+  },
+  {
+	LFINGERS,
+	&Skel[LHAND],
+	0,
+	{ NULL, NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[10]
+  },
+  {
+	RSHOULDER,
+	&Skel[JOINT_1],
+	1,
+	{ &Skel[RELBOW], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  },
+  {
+	RELBOW,
+	&Skel[RSHOULDER],
+	1,
+	{ &Skel[RHAND], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[2]
+  },
+  {
+	RHAND,
+	&Skel[RELBOW],
+	1,
+	{ &Skel[RFINGERS], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[3]
+  },
+  {
+	RFINGERS,
+	&Skel[RHAND],
+	0,
+	{ NULL, NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[4]
+  },
+  {
+	HIPS,
+	&Skel[0],
+	0,
+	{ &Skel[RHIP], &Skel[LHIP], NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  },
+  {
+	LHIP,
+	&Skel[HIPS],
+	1,
+	{ &Skel[LKNEE], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[15]
+  },
+  {
+	LKNEE,
+	&Skel[LHIP],
+	1,
+	{ &Skel[LFOOT], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[11]
+  },
+  {
+	LFOOT,
+	&Skel[LKNEE],
+	1,
+	{ &Skel[LTOE], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[12]
+  },
+  {
+	LTOE,
+	&Skel[LFOOT],
+	0,
+	{ NULL, NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[13]
+  },
+  {
+	RHIP,
+	&Skel[HIPS],
+	1,
+	{ &Skel[RKNEE], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  },
+  {
+	RKNEE,
+	&Skel[RHIP],
+	1,
+	{ &Skel[RFOOT], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[5]
+  },
+  {
+	RFOOT,
+	&Skel[RKNEE],
+	1,
+	{ &Skel[RFOOT], NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[6]
+  },
+  {
+	RTOE,
+	&Skel[RFOOT],
+	0,
+	{ NULL, NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	&pmTannerModels[7]
+  },
+  {
+	JOINT,
+	&Skel[LOWERBACK],
+	0,
+	{ NULL, NULL, NULL },
+	NULL,
+	NULL,
+	{ 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 },
+	NULL
+  }
+};
+
+int boneIdvals[15] = { 2, 3, 4, 6, 7, 8, 0xA, 0xB, 0xC, 0xF, 0x10, 0x11, 0x13, 0x14, 0x15 };
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ ProcessMotionLump(char *lump_ptr /*$a0*/, int lump_size /*$s0*/)
+ // line 853, offset 0x00069a38
+	/* begin block 1 */
+		// Start line: 5200
+	/* end block 1 */
+	// End Line: 5201
+
+	/* begin block 2 */
+		// Start line: 1706
+	/* end block 2 */
+	// End Line: 1707
+
+	/* begin block 3 */
+		// Start line: 5202
+	/* end block 3 */
+	// End Line: 5203
+
+void ProcessMotionLump(char *lump_ptr,int lump_size)
+
+{
+  if (ThisMotion < 0x18) {
+    memcpy(mallocptr,lump_ptr,lump_size);
+    *(char **)(MotionCaptureData + ThisMotion) = mallocptr;
+    mallocptr = mallocptr + (lump_size + 3U & 0xfffffffc);
+    ThisMotion = ThisMotion + 1;
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SetupPedMotionData(struct PEDESTRIAN *pPed /*$a0*/)
+ // line 944, offset 0x00069ab8
+	/* begin block 1 */
+		// Start line: 5388
+	/* end block 1 */
+	// End Line: 5389
+
+	/* begin block 2 */
+		// Start line: 5389
+	/* end block 2 */
+	// End Line: 5390
+
+void SetupPedMotionData(PEDESTRIAN *pPed)
+
+{
+  pPed->motion = (char *)MotionCaptureData[pPed->type];
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SetupPedestrian(struct PEDESTRIAN *pedptr /*$a0*/)
+ // line 955, offset 0x00069b6c
+	/* begin block 1 */
+		// Start line: 2236
+	/* end block 1 */
+	// End Line: 2237
+
+	/* begin block 2 */
+		// Start line: 1910
+	/* end block 2 */
+	// End Line: 1911
+
+	/* begin block 3 */
+		// Start line: 6507
+	/* end block 3 */
+	// End Line: 6508
+
+	/* begin block 4 */
+		// Start line: 6512
+	/* end block 4 */
+	// End Line: 6513
+
+void SetupPedestrian(PEDESTRIAN *pedptr)
+
+{
+  PED_ACTION_TYPE PVar1;
+  
+  (pedptr->velocity).vy = 10;
+  pedptr->speed = '\n';
+  PVar1 = pedptr->type;
+  (pedptr->dir).vx = 0;
+  (pedptr->dir).vz = 0;
+  pedptr->frame1 = '\0';
+  pedptr->motion = (char *)MotionCaptureData[PVar1];
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawBodySprite(int boneId /*$s1*/, long v1 /*$a1*/, long v2 /*$a2*/, int sz /*$s7*/, int sy /*stack 16*/)
+ // line 978, offset 0x0006520c
+	/* begin block 1 */
+		// Start line: 979
+		// Start offset: 0x0006520C
+		// Variables:
+	// 		struct TEXTURE_DETAILS *body_texture; // $s2
+	// 		int x0; // $s5
+	// 		int x1; // $s6
+	// 		int y0; // $fp
+	// 		int y1; // stack offset -48
+	// 		int dx1; // $s4
+	// 		int dy1; // $s3
+	// 		int z; // $a3
+	// 		int z2; // $a3
+	// 		int dx2; // $t5
+	// 		int dy2; // $t3
+	// 		int width; // $t0
+	// 		int sort_fix; // $a3
+	// 		int angle; // $t3
+	// 		int c; // $t0
+	// 		int s; // $a2
+	// 		int clut; // $a2
+	// 		int tpage; // $t0
+	// 		struct POLY_FT4 *prims; // $t2
+	// 		int z1; // stack offset -44
+	// 		int pal; // $v1
+
+		/* begin block 1.1 */
+			// Start line: 1103
+			// Start offset: 0x000655B0
+			// Variables:
+		// 		int tp; // $v1
+		/* end block 1.1 */
+		// End offset: 0x0006564C
+		// End Line: 1133
+	/* end block 1 */
+	// End offset: 0x0006594C
+	// End Line: 1209
+
+	/* begin block 2 */
+		// Start line: 1956
+	/* end block 2 */
+	// End Line: 1957
+
+	/* begin block 3 */
+		// Start line: 1974
+	/* end block 3 */
+	// End Line: 1975
+
+void DrawBodySprite(int boneId,long v1,long v2,int sz,int sy)
+
+{
+  DB *pDVar1;
+  uint uVar2;
+  int iVar3;
+  byte bVar4;
+  uint uVar5;
+  ulong *puVar6;
+  int iVar7;
+  uint uVar8;
+  uint *puVar9;
+  int iVar10;
+  int iVar11;
+  uint uVar12;
+  TEXTURE_DETAILS *pTVar13;
+  int iVar14;
+  int iVar15;
+  int iVar16;
+  uint uVar17;
+  int iVar18;
+  
+  uVar17 = v1 & 0xffff0000;
+  iVar16 = v1 * 0x10000;
+  uVar2 = v2 & 0xffff0000;
+  iVar15 = iVar16 + v2 * -0x10000;
+  iVar14 = uVar17 - uVar2;
+  uVar12 = boneId & 0x7f;
+  pTVar13 = MainPed[uVar12].ptd;
+  iVar3 = ratan2(iVar15,iVar14);
+  if (bDoingShadow == 0) {
+    iVar7 = gCurrentZ + (scr_z >> 2);
+  }
+  else {
+    iVar7 = sz + (scr_z >> 2);
+  }
+  iVar18 = (scr_z << 0xc) / iVar7;
+  if (iVar7 == 0) {
+    trap(7);
+  }
+  if (uVar12 == 2) {
+    iVar18 = iVar18 + ((int)((uint)*(ushort *)
+                                    ((int)rcossin_tbl +
+                                    (((int)(pDrawingPed->dir).vy + (int)camera_angle.vy) * 8 &
+                                    0x3ff8U) + 2) << 0x10) >> 0x16);
+  }
+  puVar9 = (uint *)current->primptr;
+  if (pDrawingPed->type == PED_ACTION_JUMP) {
+    uVar8 = (uint)(byte)MainPed[uVar12].cWidth + 4;
+  }
+  else {
+    if (bDoingShadow == 0) {
+      if ((pDrawingPed->flags & 0x8000U) == 0) {
+        if ((pDrawingPed->flags & 0x4000U) == 0) {
+          uVar8 = (uint)(byte)MainPed[uVar12].cWidth + 3;
+        }
+        else {
+          uVar8 = (uint)(byte)MainPed[uVar12].cWidth + 8;
+        }
+      }
+      else {
+        uVar8 = (uint)(byte)MainPed[uVar12].cWidth - 3;
+      }
+    }
+    else {
+      uVar8 = (uint)(byte)MainPed[uVar12].cWidth;
+    }
+  }
+  iVar7 = (int)(iVar18 * (int)rcossin_tbl[(-iVar3 & 0xfffU) * 2 + 1] * 3 * (uVar8 & 0x3f)) >> 9;
+  bVar4 = MainPed[uVar12].cAdj & 0xf;
+  iVar11 = iVar15 >> bVar4;
+  iVar10 = iVar14 >> bVar4;
+  iVar3 = (int)(iVar18 * rcossin_tbl[(-iVar3 & 0xfffU) * 2] * (uVar8 & 0x3f)) >> 8;
+  if ((((uVar12 == 0x13) || (uVar12 == 0xf)) && (pDrawingPed->type != PED_ACTION_JUMP)) &&
+     (bDoingShadow == 0)) {
+    iVar15 = -iVar15 >> 3;
+    iVar14 = -iVar14 >> 3;
+  }
+  else {
+    uVar5 = (uint)(MainPed[uVar12].cAdj >> 4);
+    iVar15 = iVar15 >> uVar5;
+    iVar14 = iVar14 >> uVar5;
+  }
+  puVar9[2] = (uVar17 + iVar3 + iVar10 & 0xffff0000) + (iVar16 + iVar7 + iVar11 >> 0x10);
+  puVar9[4] = ((uVar17 - iVar3) + iVar10 & 0xffff0000) + ((iVar16 - iVar7) + iVar11 >> 0x10);
+  puVar9[6] = ((uVar2 + iVar3) - iVar14 & 0xffff0000) + ((v2 * 0x10000 + iVar7) - iVar15 >> 0x10);
+  puVar9[8] = ((uVar2 - iVar3) - iVar14 & 0xffff0000) + ((v2 * 0x10000 - iVar7) - iVar15 >> 0x10);
+  if (bDoingShadow == 0) {
+    uVar17 = (uint)pTVar13->tpageid << 0x10;
+    if (MainPed[uVar12].texPal != NO_PAL) {
+      if (MainPed[uVar12].texPal == JEANS_PAL) {
+        bVar4 = pDrawingPed->pallet >> 4;
+        uVar2 = (uint)bVar4;
+      }
+      else {
+        bVar4 = pDrawingPed->pallet & 0xf;
+        uVar2 = (uint)pDrawingPed->pallet & 0xf;
+      }
+      if (bVar4 != 0) {
+        uVar2 = (uint)civ_clut[(uint)(byte)pTVar13->texture_number * 6 + uVar2] << 0x10;
+        goto LAB_00065688;
+      }
+    }
+    uVar2 = (uint)pTVar13->clutid << 0x10;
+  }
+  else {
+    uVar17 = gShadowTexturePage << 0x10;
+    uVar2 = (uint)(ushort)(&texture_cluts)[gShadowTexturePage * 0x20 + gShadowTextureNum] << 0x10;
+  }
+LAB_00065688:
+  if (uVar12 == 4) {
+    if (bDoingShadow == 0) {
+      iVar3 = (int)((int)camera_angle.vy + (int)(pDrawingPed->dir).vy & 0xfffU) >> 7;
+      puVar9[3] = (*(ushort *)&pTVar13->coords | uVar2) + iVar3;
+      puVar9[5] = (*(ushort *)&(pTVar13->coords).u1 | uVar17) + iVar3;
+      puVar9[7] = (uint)*(ushort *)&(pTVar13->coords).u2 + iVar3;
+      puVar9[9] = (uint)*(ushort *)&(pTVar13->coords).u3 + iVar3;
+      goto LAB_000657dc;
+    }
+  }
+  else {
+    if (bDoingShadow == 0) {
+      if (uVar12 == 2) {
+        puVar9[3] = *(ushort *)&pTVar13->coords | uVar2;
+        puVar9[5] = *(ushort *)&(pTVar13->coords).u1 | uVar17;
+        puVar9[7] = (uint)*(ushort *)&(pTVar13->coords).u2;
+        puVar9[9] = (uint)*(ushort *)&(pTVar13->coords).u3;
+      }
+      else {
+        puVar9[3] = *(ushort *)&(pTVar13->coords).u2 | uVar2;
+        puVar9[5] = *(ushort *)&(pTVar13->coords).u3 | uVar17;
+        puVar9[7] = (uint)*(ushort *)&pTVar13->coords;
+        puVar9[9] = (uint)*(ushort *)&(pTVar13->coords).u1;
+      }
+      goto LAB_000657dc;
+    }
+  }
+  puVar9[3] = shadowuv._0_2_ | uVar2;
+  puVar9[5] = shadowuv._0_2_ | uVar17;
+  puVar9[7] = (uint)shadowuv._0_2_;
+  puVar9[9] = (uint)shadowuv._0_2_;
+LAB_000657dc:
+  *(char *)((int)puVar9 + 3) = '\t';
+  *(char *)((int)puVar9 + 7) = ',';
+  combointensity._0_1_ = '@';
+  if (gNight == 1) {
+    *(char *)(puVar9 + 1) = '@';
+    *(char *)((int)puVar9 + 5) = '@';
+  }
+  else {
+    *(char *)(puVar9 + 1) = (char)((uint)combointensity >> 0x10);
+    *(char *)((int)puVar9 + 5) = (char)((uint)combointensity >> 8);
+  }
+  *(char *)((int)puVar9 + 6) = (char)combointensity;
+  pDVar1 = current;
+  if (bDoingShadow == 0) {
+    iVar3 = sz + sy >> 4;
+    *puVar9 = *puVar9 & 0xff000000 | current->ot[iVar3 + ((int)uVar8 >> 5)] & 0xffffff;
+    puVar6 = pDVar1->ot + iVar3 + ((int)uVar8 >> 5);
+    *puVar6 = *puVar6 & 0xff000000 | (uint)puVar9 & 0xffffff;
+  }
+  else {
+    *puVar9 = *puVar9 & 0xff000000 | current->ot[0x107f] & 0xffffff;
+    puVar6 = pDVar1->ot;
+    puVar6[0x107f] = puVar6[0x107f] & 0xff000000 | (uint)puVar9 & 0xffffff;
+  }
+  current->primptr = current->primptr + 0x28;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ StoreVertexLists()
+ // line 1289, offset 0x0006594c
+	/* begin block 1 */
+		// Start line: 1291
+		// Start offset: 0x0006594C
+		// Variables:
+	// 		int i; // $t1
+	// 		int j; // $a3
+	// 		int numVerts; // $t3
+	// 		struct MODEL *pModel; // $t0
+	// 		struct SVECTOR *pVerts; // $a2
+	// 		int counter; // $t4
+	// 		struct BONE *pBone; // $a0
+	/* end block 1 */
+	// End offset: 0x00065AD8
+	// End Line: 1346
+
+	/* begin block 2 */
+		// Start line: 2632
+	/* end block 2 */
+	// End Line: 2633
+
+	/* begin block 3 */
+		// Start line: 2713
+	/* end block 3 */
+	// End Line: 2714
+
+	/* begin block 4 */
+		// Start line: 2714
+	/* end block 4 */
+	// End Line: 2715
+
+	/* begin block 5 */
+		// Start line: 2720
+	/* end block 5 */
+	// End Line: 2721
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void StoreVertexLists(void)
+
+{
+  undefined2 *puVar1;
+  short *psVar2;
+  BONE *pBVar3;
+  undefined2 *puVar4;
+  SVECTOR *pSVar5;
+  undefined2 *puVar6;
+  short *psVar7;
+  int iVar8;
+  MODEL *pMVar9;
+  int iVar10;
+  int iVar11;
+  int iVar12;
+  int iVar13;
+  
+  iVar12 = 0;
+  iVar13 = 0;
+  pBVar3 = &Skel;
+  iVar11 = 0x15;
+  do {
+    iVar8 = 0;
+    if (pBVar3->pModel == (MODEL **)0x0) {
+      *(undefined4 *)(&cTannerVNumbers + (uint)pBVar3->id * 4) = 0xffffffff;
+    }
+    else {
+      pMVar9 = *pBVar3->pModel;
+      puVar6 = (undefined2 *)pMVar9->vertices;
+      *(int *)(&cTannerVNumbers + ((uint)pBVar3->id & 0x7f) * 4) = iVar13;
+      if (pMVar9->num_vertices != 0) {
+        puVar4 = &vTannerList + iVar12 * 4;
+        do {
+          iVar13 = iVar13 + 1;
+          iVar8 = iVar8 + 1;
+          *puVar4 = *puVar6;
+          iVar12 = iVar12 + 1;
+          puVar4[1] = puVar6[1];
+          puVar1 = puVar6 + 2;
+          puVar6 = puVar6 + 4;
+          puVar4[2] = *puVar1;
+          puVar4 = puVar4 + 4;
+        } while (iVar8 < (int)(uint)pMVar9->num_vertices);
+      }
+    }
+    pBVar3 = pBVar3 + 1;
+    iVar11 = iVar11 + -1;
+  } while (-1 < iVar11);
+  iVar8 = 0;
+  iVar13 = 0;
+  iVar12 = 0;
+  iVar11 = 0;
+  do {
+    iVar10 = *(int *)((int)&pmJerichoModels6 + iVar11);
+    iVar12 = iVar12 + 1;
+    if (iVar10 != 0) {
+      psVar7 = *(short **)(iVar10 + 0x10);
+      *(int *)((int)&cJerichoVNumbers + iVar11) = iVar8;
+      iVar11 = 0;
+      if (*(short *)(iVar10 + 0xc) != 0) {
+        pSVar5 = &vJerichoList + iVar13;
+        do {
+          iVar8 = iVar8 + 1;
+          iVar11 = iVar11 + 1;
+          pSVar5->vx = *psVar7;
+          iVar13 = iVar13 + 1;
+          pSVar5->vy = psVar7[1];
+          psVar2 = psVar7 + 2;
+          psVar7 = psVar7 + 4;
+          pSVar5->vz = *psVar2;
+          pSVar5 = pSVar5 + 1;
+        } while (iVar11 < (int)(uint)*(ushort *)(iVar10 + 0xc));
+      }
+    }
+    iVar11 = iVar12 * 4;
+  } while (iVar12 < 6);
+  vStored = 1;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SetupTannerSkeleton()
+ // line 1355, offset 0x00065ad8
+	/* begin block 1 */
+		// Start line: 1357
+		// Start offset: 0x00065AD8
+		// Variables:
+	// 		int i; // $t1
+	// 		struct BONE *pBone; // $a3
+	// 		char *pC; // $v0
+	// 		struct SVECTOR *store; // $t4
+	// 		struct SVECTOR_NOPAD *pSVNP; // $v1
+	/* end block 1 */
+	// End offset: 0x00065CD8
+	// End Line: 1413
+
+	/* begin block 2 */
+		// Start line: 2892
+	/* end block 2 */
+	// End Line: 2893
+
+	/* begin block 3 */
+		// Start line: 2902
+	/* end block 3 */
+	// End Line: 2903
+
+	/* begin block 4 */
+		// Start line: 2903
+	/* end block 4 */
+	// End Line: 2904
+
+	/* begin block 5 */
+		// Start line: 2913
+	/* end block 5 */
+	// End Line: 2914
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void SetupTannerSkeleton(void)
+
+{
+  short sVar1;
+  SVECTOR *pSVar2;
+  SVECTOR_NOPAD *pSVar3;
+  short sVar4;
+  BONE *pBVar5;
+  undefined4 *puVar6;
+  int iVar7;
+  
+  Skel.pvOrigPos =
+       (SVECTOR_NOPAD *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x92);
+  Skel.pvRotation = (SVECTOR *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x98)
+  ;
+  Skel.vCurrPos.vx = (long)(Skel.pvOrigPos)->vx;
+  Skel.vCurrPos.vy = -(int)(Skel.pvOrigPos)->vy;
+  iVar7 = 0x15;
+  Skel.vOffset.vx = 0;
+  Skel.vOffset.vy = 0;
+  Skel.vOffset.vz = 0;
+  Skel.vCurrPos.vz = -(int)(Skel.pvOrigPos)->vz;
+  pSVar2 = (SVECTOR *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x9e);
+  pSVar3 = (SVECTOR_NOPAD *)(pDrawingPed->motion + 0xe);
+  pBVar5 = &Skel;
+  do {
+    iVar7 = iVar7 + -1;
+    pBVar5[1].pvRotation = pSVar2;
+    pBVar5[1].pvOrigPos = pSVar3;
+    sVar1 = (short)bodyShiftValue;
+    pSVar2 = (SVECTOR *)&pSVar2->pad;
+    pSVar3 = pSVar3 + 1;
+    pBVar5 = pBVar5 + 1;
+  } while (-1 < iVar7);
+  DAT_1f800008._0_2_ = (BONE_000a0900.pvOrigPos)->vx;
+  puVar6 = &DAT_1f800010;
+  iVar7 = 0x14;
+  DAT_1f800008._2_2_ = -(BONE_000a0900.pvOrigPos)->vy;
+  DAT_1f80000c = -(BONE_000a0900.pvOrigPos)->vz;
+  pBVar5 = &BONE_000a0900;
+  do {
+    *(short *)puVar6 = (pBVar5[1].pvOrigPos)->vx - (pBVar5[1].pParent)->pvOrigPos->vx;
+    sVar4 = (pBVar5[1].pParent)->pvOrigPos->vy - (pBVar5[1].pvOrigPos)->vy;
+    *(short *)((int)puVar6 + 2) = sVar4;
+    *(short *)(puVar6 + 1) = (pBVar5[1].pParent)->pvOrigPos->vz - (pBVar5[1].pvOrigPos)->vz;
+    if (pBVar5[1].id == JOINT_1) {
+      *(short *)((int)puVar6 + 2) = sVar4 - sVar1;
+    }
+    puVar6 = puVar6 + 2;
+    iVar7 = iVar7 + -1;
+    pBVar5 = pBVar5 + 1;
+  } while (-1 < iVar7);
+  pBVar5 = &BONE_000a0900;
+  puVar6 = &DAT_1f800008;
+  iVar7 = 0x15;
+  do {
+    sVar1 = *(short *)puVar6;
+    (pBVar5->vCurrPos).vx = (int)sVar1;
+    (pBVar5->vOffset).vx = (int)sVar1;
+    sVar1 = *(short *)((int)puVar6 + 2);
+    iVar7 = iVar7 + -1;
+    (pBVar5->vCurrPos).vy = (int)sVar1;
+    (pBVar5->vOffset).vy = (int)sVar1;
+    sVar1 = *(short *)(puVar6 + 1);
+    puVar6 = puVar6 + 2;
+    (pBVar5->vCurrPos).vz = (int)sVar1;
+    (pBVar5->vOffset).vz = (int)sVar1;
+    pBVar5 = pBVar5 + 1;
+  } while (-1 < iVar7);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ newShowTanner()
+ // line 1421, offset 0x00065cd8
+	/* begin block 1 */
+		// Start line: 1423
+		// Start offset: 0x00065CD8
+		// Variables:
+	// 		struct VECTOR *playerPos; // $a2
+	// 		struct VECTOR *camPos; // $a1
+	// 		struct VECTOR *vJPos; // $s1
+	// 		struct VECTOR v; // stack offset -128
+	// 		struct MODEL *pModel; // $t0
+	// 		struct SVECTOR *mVerts; // $a1
+	// 		int i; // $s2
+	// 		int j; // $a3
+	// 		int c; // $a3
+	// 		int id; // $a2
+	// 		int limbs; // $a0
+	// 		struct BONE *pBone; // $s0
+	// 		int lval; // $t1
+
+		/* begin block 1.1 */
+			// Start line: 1530
+			// Start offset: 0x000660A0
+			// Variables:
+		// 		struct BONE *pBone; // $s0
+		// 		struct VECTOR *v1; // $a2
+		// 		struct VECTOR *v2; // $a1
+
+			/* begin block 1.1.1 */
+				// Start line: 1530
+				// Start offset: 0x000660A0
+				// Variables:
+			// 		struct SVECTOR *data; // $t1
+			// 		long t1; // stack offset -92
+			// 		long t0; // stack offset -96
+			// 		int z2; // stack offset -80
+			// 		int z1; // stack offset -84
+			// 		int z; // stack offset -88
+			/* end block 1.1.1 */
+			// End offset: 0x000661C4
+			// End Line: 1530
+		/* end block 1.1 */
+		// End offset: 0x000661C4
+		// End Line: 1530
+
+		/* begin block 1.2 */
+			// Start line: 1536
+			// Start offset: 0x000661F8
+			// Variables:
+		// 		struct BONE *pBone; // $s0
+		// 		struct VECTOR *v1; // $a0
+		// 		struct VECTOR *v2; // $a2
+
+			/* begin block 1.2.1 */
+				// Start line: 1536
+				// Start offset: 0x000661F8
+				// Variables:
+			// 		struct SVECTOR *data; // $t0
+			// 		long t1; // stack offset -72
+			// 		long t0; // stack offset -76
+			// 		int z2; // stack offset -60
+			// 		int z1; // stack offset -64
+			// 		int z; // stack offset -68
+			/* end block 1.2.1 */
+			// End offset: 0x000661F8
+			// End Line: 1536
+		/* end block 1.2 */
+		// End offset: 0x000661F8
+		// End Line: 1536
+
+		/* begin block 1.3 */
+			// Start line: 1542
+			// Start offset: 0x00066330
+			// Variables:
+		// 		struct SVECTOR v1; // stack offset -112
+		// 		struct SVECTOR v2; // stack offset -104
+		/* end block 1.3 */
+		// End offset: 0x00066330
+		// End Line: 1544
+
+		/* begin block 1.4 */
+			// Start line: 1569
+			// Start offset: 0x0006648C
+			// Variables:
+		// 		struct BONE *pBone; // $s0
+		// 		struct VECTOR *v1; // $a2
+		// 		struct VECTOR *v2; // $a1
+
+			/* begin block 1.4.1 */
+				// Start line: 1569
+				// Start offset: 0x0006648C
+				// Variables:
+			// 		struct SVECTOR *data; // $t1
+			// 		long t1; // stack offset -52
+			// 		long t0; // stack offset -56
+			// 		int z2; // stack offset -40
+			// 		int z1; // stack offset -44
+			// 		int z; // stack offset -48
+			/* end block 1.4.1 */
+			// End offset: 0x0006648C
+			// End Line: 1569
+		/* end block 1.4 */
+		// End offset: 0x0006648C
+		// End Line: 1569
+
+		/* begin block 1.5 */
+			// Start line: 1575
+			// Start offset: 0x000665C8
+			// Variables:
+		// 		int bias; // $a3
+		/* end block 1.5 */
+		// End offset: 0x000665F4
+		// End Line: 1588
+	/* end block 1 */
+	// End offset: 0x00066648
+	// End Line: 1599
+
+	/* begin block 2 */
+		// Start line: 3093
+	/* end block 2 */
+	// End Line: 3094
+
+	/* begin block 3 */
+		// Start line: 3102
+	/* end block 3 */
+	// End Line: 3103
+
+	/* begin block 4 */
+		// Start line: 3103
+	/* end block 4 */
+	// End Line: 3104
+
+	/* begin block 5 */
+		// Start line: 3114
+	/* end block 5 */
+	// End Line: 3115
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void newShowTanner(void)
+
+{
+  LIMBS LVar1;
+  PEDESTRIAN *pPVar2;
+  undefined4 in_zero;
+  int iVar3;
+  int zBias;
+  short *psVar4;
+  uint uVar5;
+  int iVar6;
+  int iVar7;
+  MODEL *pMVar8;
+  uint uVar9;
+  BONE *pBVar10;
+  VECTOR local_80;
+  SVECTOR local_70;
+  SVECTOR local_68;
+  long local_60;
+  long local_5c;
+  int local_58;
+  int local_54;
+  undefined4 local_50;
+  long local_4c;
+  long local_48;
+  int local_44;
+  int local_40;
+  undefined4 local_3c;
+  long local_38;
+  long local_34;
+  int local_30;
+  int local_2c;
+  undefined4 local_28;
+  
+  DAT_1f800000 = (pDrawingPed->position).vx;
+  DAT_1f800004 = (pDrawingPed->position).vy;
+  DAT_1f800008 = (pDrawingPed->position).vz;
+  DAT_1f800010 = camera_position.vx;
+  DAT_1f800014 = camera_position.vy;
+  DAT_1f800018 = camera_position.vz;
+  DAT_1f800020 = (int)(Skel.pvOrigPos)->vx;
+  DAT_1f800024 = -(int)(Skel.pvOrigPos)->vy;
+  DAT_1f800028 = (int)(Skel.pvOrigPos)->vz;
+  local_80.vz = 0;
+  local_80.vy = 0;
+  local_80.vx = 0;
+  setCopControlWord(2,0x2800,0);
+  setCopControlWord(2,0x3000,0);
+  setCopControlWord(2,0x3800,0);
+  zBias = 0;
+  Skel.id = Skel.id | 0x80;
+  iVar3 = 0;
+  do {
+    LVar1 = lRoutes[iVar3 + 1];
+    iVar6 = 1;
+    zBias = zBias + 1;
+    pPVar2 = pDrawingPed;
+    while (pDrawingPed = pPVar2, LVar1 != ROOT) {
+      uVar5 = (uint)LVar1;
+      pBVar10 = &Skel + uVar5;
+      if (pBVar10->id < 0x7f) {
+        uVar9 = (uint)*(byte *)((int)MissionName37 + iVar6 + iVar3 + 0x93);
+        (&DAT_1f800020)[(uint)pBVar10->id * 4] =
+             (&DAT_1f800020)[uVar9 * 4] + (&Skel)[uVar5].vCurrPos.vx;
+        (&DAT_1f800024)[(uint)pBVar10->id * 4] =
+             (&DAT_1f800024)[uVar9 * 4] + (&Skel)[uVar5].vCurrPos.vy;
+        (&DAT_1f800028)[(uint)pBVar10->id * 4] =
+             (&DAT_1f800028)[uVar9 * 4] + (&Skel)[uVar5].vCurrPos.vz;
+        if ((pPVar2->pedType == TANNER_MODEL) && (pBVar10->id == HEAD)) {
+          pPVar2->head_pos =
+               (short)((ulonglong)((longlong)((&DAT_1f800024)[uVar9 * 4] + -0x5e) * 0x55555556) >>
+                      0x20) - (short)((&DAT_1f800024)[uVar9 * 4] + -0x5e >> 0x1f);
+        }
+        pMVar8 = *(&Skel)[uVar5].pModel;
+        if (((((&Skel)[uVar5].pModel != (MODEL **)0x0) && (bDoingShadow == 0)) &&
+            (pDrawingPed->pedType < OTHER_SPRITE)) && (player.cameraView != '\x02')) {
+          psVar4 = (short *)pMVar8->vertices;
+          iVar7 = 0;
+          if (pMVar8->num_vertices != 0) {
+            do {
+              iVar7 = iVar7 + 1;
+              *psVar4 = *psVar4 + ((*(short *)(&DAT_1f800020 + uVar9 * 4) + (short)DAT_1f800000) -
+                                  (short)DAT_1f800010);
+              psVar4[1] = psVar4[1] +
+                          ((*(short *)(&DAT_1f800024 + uVar9 * 4) + (short)DAT_1f800004) -
+                          (short)DAT_1f800014);
+              psVar4[2] = psVar4[2] +
+                          ((*(short *)(&DAT_1f800028 + uVar9 * 4) + (short)DAT_1f800008) -
+                          (short)DAT_1f800018);
+              psVar4 = psVar4 + 4;
+            } while (iVar7 < (int)(uint)pMVar8->num_vertices);
+          }
+        }
+        pBVar10->id = pBVar10->id | 0x80;
+      }
+      iVar6 = iVar6 + 1;
+      LVar1 = lRoutes[iVar6 + iVar3];
+      pPVar2 = pDrawingPed;
+    }
+    iVar3 = zBias * 8;
+  } while (zBias < 5);
+  pBVar10 = &BONE_000a0900;
+  if (pPVar2->pedType < OTHER_SPRITE) {
+    if ((player.cameraView != '\x02') || (bDoingShadow != 0)) {
+      iVar3 = 0x14;
+      do {
+        uVar5 = (uint)pBVar10->id & 0x7f;
+        if (bDoingShadow == 0) {
+          if ((MODEL *)pBVar10->pModel != (MODEL *)0x0) {
+            zBias = (uint)(uVar5 != 4) << 1;
+            if (uVar5 == 2) {
+              zBias = 1;
+            }
+            RenderModel(*(MODEL **)(MODEL *)pBVar10->pModel,(MATRIX *)0x0,&local_80,zBias,0);
+          }
+        }
+        else {
+          if (((uVar5 != 5) && (uVar5 != 9)) &&
+             ((uVar5 != 0xd &&
+              ((((uVar5 != 1 && ((pBVar10->id & 0x7f) != 0)) && (uVar5 != 0x16)) &&
+               ((uVar5 != 0xe && (uVar5 != 0x12)))))))) {
+            uVar9 = (uint)pBVar10->pParent->id & 0x7f;
+            _DAT_1f800200 =
+                 CONCAT22(*(short *)(&DAT_1f800024 + uVar5 * 4) +
+                          (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                          *(short *)(&DAT_1f800020 + uVar5 * 4) +
+                          (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+            _DAT_1f800204 =
+                 _DAT_1f800204 & 0xffff0000 |
+                 (uint)(ushort)(*(short *)(&DAT_1f800028 + uVar5 * 4) +
+                               (*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
+            _DAT_1f800208 =
+                 CONCAT22(*(short *)(&DAT_1f800024 + uVar9 * 4) +
+                          (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                          *(short *)(&DAT_1f800020 + uVar9 * 4) +
+                          (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+            zBias = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
+            uVar5 = (uint)*(ushort *)(&DAT_1f800028 + uVar9 * 4) + zBias;
+            _DAT_1f80020c = _DAT_1f80020c & 0xffff0000 | uVar5 & 0xffff;
+            setCopReg(2,in_zero,_DAT_1f800200);
+            setCopReg(2,0x1f800000,_DAT_1f800204);
+            setCopReg(2,zBias,_DAT_1f800208);
+            setCopReg(2,uVar5,_DAT_1f80020c);
+            copFunction(2,0x280030);
+            local_38 = getCopReg(2,0xc);
+            local_34 = getCopReg(2,0xd);
+            gCurrentZ = getCopReg(2,0x11);
+            local_2c = getCopReg(2,0x12);
+            local_28 = getCopReg(2,0x13);
+            local_30 = gCurrentZ;
+            DrawBodySprite((uint)pBVar10->id,local_38,local_34,gCurrentZ,local_2c);
+          }
+        }
+        iVar3 = iVar3 + -1;
+        pBVar10 = pBVar10 + 1;
+      } while (-1 < iVar3);
+    }
+  }
+  else {
+    iVar3 = 0x15;
+    do {
+      uVar5 = (uint)pBVar10->id & 0x7f;
+      if ((((uVar5 != 5) && (uVar5 != 9)) &&
+          ((uVar5 != 4 && (((uVar5 != 0xd && (uVar5 != 1)) && ((pBVar10->id & 0x7f) != 0)))))) &&
+         (((uVar5 != 0x16 && (uVar5 != 0xe)) && (uVar5 != 0x12)))) {
+        uVar9 = (uint)pBVar10->pParent->id & 0x7f;
+        _DAT_1f800200 =
+             CONCAT22(*(short *)(&DAT_1f800024 + uVar5 * 4) +
+                      (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                      *(short *)(&DAT_1f800020 + uVar5 * 4) +
+                      (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+        _DAT_1f800204 =
+             _DAT_1f800204 & 0xffff0000 |
+             (uint)(ushort)(*(short *)(&DAT_1f800028 + uVar5 * 4) +
+                           (*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
+        _DAT_1f800208 =
+             CONCAT22(*(short *)(&DAT_1f800024 + uVar9 * 4) +
+                      (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                      *(short *)(&DAT_1f800020 + uVar9 * 4) +
+                      (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+        zBias = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
+        uVar5 = (uint)*(ushort *)(&DAT_1f800028 + uVar9 * 4) + zBias;
+        _DAT_1f80020c = _DAT_1f80020c & 0xffff0000 | uVar5 & 0xffff;
+        setCopReg(2,in_zero,_DAT_1f800200);
+        setCopReg(2,0x1f800000,_DAT_1f800204);
+        setCopReg(2,zBias,_DAT_1f800208);
+        setCopReg(2,uVar5,_DAT_1f80020c);
+        copFunction(2,0x280030);
+        local_60 = getCopReg(2,0xc);
+        local_5c = getCopReg(2,0xd);
+        gCurrentZ = getCopReg(2,0x11);
+        local_54 = getCopReg(2,0x12);
+        local_50 = getCopReg(2,0x13);
+        local_58 = gCurrentZ;
+        DrawBodySprite((uint)pBVar10->id,local_60,local_5c,gCurrentZ,local_54);
+      }
+      iVar3 = iVar3 + -1;
+      pBVar10 = pBVar10 + 1;
+    } while (-1 < iVar3);
+    if (switch_detail_distance >> 2 < gCurrentZ) {
+      uVar5 = (uint)BONE_000a09cc.id & 0x7f;
+      uVar9 = (uint)(BONE_000a09cc.pParent)->id & 0x7f;
+      _DAT_1f800200 =
+           CONCAT22(*(short *)(&DAT_1f800024 + uVar5 * 4) +
+                    (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                    *(short *)(&DAT_1f800020 + uVar5 * 4) +
+                    (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+      _DAT_1f800204 =
+           _DAT_1f800204 & 0xffff0000 |
+           (uint)(ushort)(*(short *)(&DAT_1f800028 + uVar5 * 4) +
+                         (*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
+      _DAT_1f800208 =
+           CONCAT22(*(short *)(&DAT_1f800024 + uVar9 * 4) +
+                    (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                    *(short *)(&DAT_1f800020 + uVar9 * 4) +
+                    (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+      iVar3 = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
+      uVar5 = (uint)*(ushort *)(&DAT_1f800028 + uVar9 * 4) + iVar3;
+      _DAT_1f80020c = _DAT_1f80020c & 0xffff0000 | uVar5 & 0xffff;
+      setCopReg(2,in_zero,_DAT_1f800200);
+      setCopReg(2,0x1f800000,_DAT_1f800204);
+      setCopReg(2,iVar3,_DAT_1f800208);
+      setCopReg(2,uVar5,_DAT_1f80020c);
+      copFunction(2,0x280030);
+      local_4c = getCopReg(2,0xc);
+      local_48 = getCopReg(2,0xd);
+      gCurrentZ = getCopReg(2,0x11);
+      local_40 = getCopReg(2,0x12);
+      local_3c = getCopReg(2,0x13);
+      local_44 = gCurrentZ;
+      DrawBodySprite((uint)BONE_000a09cc.id,local_4c,local_48,gCurrentZ,local_40);
+    }
+    else {
+      local_70.vx = *(short *)(&DAT_1f800020 + ((uint)BONE_000a09cc.id & 0x7f) * 4);
+      local_70.vy = *(short *)(&DAT_1f800024 + ((uint)BONE_000a09cc.id & 0x7f) * 4);
+      local_70.vz = *(short *)(&DAT_1f800028 + ((uint)BONE_000a09cc.id & 0x7f) * 4);
+      local_68.vx = *(short *)(&DAT_1f800020 + ((uint)(BONE_000a09cc.pParent)->id & 0x7f) * 4);
+      local_68.vy = *(short *)(&DAT_1f800024 + ((uint)(BONE_000a09cc.pParent)->id & 0x7f) * 4);
+      local_68.vz = *(short *)(&DAT_1f800028 + ((uint)(BONE_000a09cc.pParent)->id & 0x7f) * 4);
+      bAllreadyRotated = 1;
+      DoCivHead(&local_68,&local_70);
+      bAllreadyRotated = 0;
+    }
+  }
+  pBVar10 = &Skel;
+  iVar3 = 0x16;
+  do {
+    iVar3 = iVar3 + -1;
+    pBVar10->id = pBVar10->id & 0x7f;
+    pBVar10 = pBVar10 + 1;
+  } while (-1 < iVar3);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ newRotateBones(struct BONE *poBone /*$a0*/)
+ // line 1606, offset 0x00066648
+	/* begin block 1 */
+		// Start line: 1608
+		// Start offset: 0x00066648
+		// Variables:
+	// 		struct MATRIX mStore[32]; // stack offset -1088
+	// 		struct MATRIX *pMatrix; // $s2
+	// 		struct MATRIX *oMatrix; // $s5
+	// 		struct SVECTOR *svBone; // $s6
+	// 		struct VECTOR *vBoneRotated; // $s3
+	// 		struct BONE *pBone; // $s1
+	// 		int id; // $s0
+	// 		struct SVECTOR *pVerts; // $a3
+	// 		struct SVECTOR *pmVerts; // $s0
+	// 		int numVerts; // $t0
+	// 		struct MODEL *pModel; // $v0
+	// 		int i; // $a2
+	// 		struct SVECTOR *pD; // $a0
+	// 		int c; // $s4
+	// 		int j; // $a1
+	// 		struct VECTOR sv; // stack offset -64
+
+		/* begin block 1.1 */
+			// Start line: 1609
+			// Start offset: 0x00066648
+			// Variables:
+		// 		int cx; // $t2
+		// 		int sx; // $a3
+		// 		int cy; // $a0
+		// 		int sy; // $t0
+		// 		int cz; // $t3
+		// 		int sz; // $t6
+		// 		int stmp; // $v0
+		/* end block 1.1 */
+		// End offset: 0x00066648
+		// End Line: 1609
+	/* end block 1 */
+	// End offset: 0x00066FB8
+	// End Line: 1766
+
+	/* begin block 2 */
+		// Start line: 3674
+	/* end block 2 */
+	// End Line: 3675
+
+	/* begin block 3 */
+		// Start line: 3682
+	/* end block 3 */
+	// End Line: 3683
+
+	/* begin block 4 */
+		// Start line: 3683
+	/* end block 4 */
+	// End Line: 3684
+
+	/* begin block 5 */
+		// Start line: 3684
+	/* end block 5 */
+	// End Line: 3685
+
+	/* begin block 6 */
+		// Start line: 3685
+	/* end block 6 */
+	// End Line: 3686
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void newRotateBones(BONE *poBone)
+
+{
+  short *psVar1;
+  LIMBS LVar2;
+  undefined4 in_zero;
+  undefined4 uVar3;
+  SVECTOR *pSVar4;
+  MODEL *pMVar5;
+  int iVar6;
+  int iVar7;
+  short *psVar8;
+  undefined4 *puVar9;
+  ushort uVar10;
+  int iVar11;
+  int iVar12;
+  uint uVar13;
+  int iVar14;
+  uint uVar15;
+  int iVar16;
+  uint uVar17;
+  int iVar18;
+  uint uVar19;
+  undefined2 *puVar20;
+  uint local_440 [4];
+  uint local_430;
+  uint local_42c;
+  uint local_428;
+  uint local_424;
+  uint auStack1056 [248];
+  uint local_40;
+  uint local_3c;
+  uint local_38;
+  int local_30;
+  
+  DAT_1f800034 = SEXT24((Skel.pvOrigPos)->vx);
+  DAT_1f800038 = SEXT24((Skel.pvOrigPos)->vy);
+  DAT_1f80003c = SEXT24((Skel.pvOrigPos)->vz);
+  local_40 = SEXT24((pDrawingPed->dir).vx);
+  local_3c = SEXT24((pDrawingPed->dir).vy);
+  local_38 = SEXT24((pDrawingPed->dir).vz);
+  iVar6 = (int)rcossin_tbl[(local_3c & 0xfff) * 2 + 1];
+  iVar18 = (int)rcossin_tbl[(local_38 & 0xfff) * 2];
+  iVar16 = (int)rcossin_tbl[(local_38 & 0xfff) * 2 + 1];
+  iVar14 = (int)rcossin_tbl[(local_40 & 0xfff) * 2 + 1];
+  iVar11 = (int)rcossin_tbl[(local_40 & 0xfff) * 2];
+  iVar12 = (int)rcossin_tbl[(local_3c & 0xfff) * 2];
+  uVar13 = (iVar14 * iVar12 + 0x800 >> 0xc) +
+           ((iVar6 * iVar11 + 0x800 >> 0xc) * iVar18 + 0x800 >> 0xc);
+  uVar17 = iVar6 * iVar16 + 0x800 >> 0xc;
+  iVar7 = (int)(short)uVar17;
+  uVar10 = -(short)(iVar16 * iVar11 + 0x800 >> 0xc);
+  uVar15 = iVar14 * iVar16 + 0x800 >> 0xc;
+  iVar6 = (-iVar14 * (iVar6 * iVar18 + 0x800 >> 0xc) + 0x800 >> 0xc) +
+          (iVar11 * iVar12 + 0x800 >> 0xc);
+  DAT_1f800020 = uVar17 & 0xffff | iVar6 * 0x10000;
+  DAT_1f800024 = uVar13 & 0xffff | (uint)(ushort)rcossin_tbl[(local_38 & 0xfff) * 2] << 0x10;
+  DAT_1f800028 = uVar15 & 0xffff | (uint)uVar10 << 0x10;
+  DAT_1f80002c = CONCAT22((short)(((int)(uVar13 * 0x10000) >> 0x10) * iVar18 + 0x800 >> 0xc) -
+                          (short)(iVar7 * (short)uVar10 + 0x800 >> 0xc),
+                          -(short)(iVar12 * iVar16 + 0x800 >> 0xc));
+  DAT_1f800030 = DAT_1f800030 & 0xffff0000 |
+                 (uint)(ushort)((short)(iVar7 * (short)uVar15 + 0x800 >> 0xc) -
+                               (short)((iVar6 * 0x10000 >> 0x10) * iVar18 + 0x800 >> 0xc));
+  _DAT_1f800060 = CONCAT22((undefined2)Skel.vOffset.vy,(undefined2)Skel.vOffset.vx);
+  _DAT_1f800064 = _DAT_1f800064 & 0xffff0000 | (uint)(ushort)Skel.vOffset.vz;
+  local_440[3] = DAT_1f80002c;
+  local_30 = 0;
+  local_440[0] = DAT_1f800020;
+  local_440[1] = DAT_1f800024;
+  local_440[2] = DAT_1f800028;
+  local_430 = DAT_1f800030;
+  local_42c = DAT_1f800034;
+  local_428 = DAT_1f800038;
+  local_424 = DAT_1f80003c;
+  do {
+    iVar7 = local_30 * 8;
+    iVar6 = 1;
+    LVar2 = lRoutes[iVar7 + 1];
+    local_30 = local_30 + 1;
+    while (LVar2 != ROOT) {
+      uVar13 = (uint)LVar2;
+      _DAT_1f800060 =
+           CONCAT22(*(undefined2 *)&(&Skel)[uVar13].vOffset.vy,
+                    *(undefined2 *)&(&Skel)[uVar13].vOffset.vx);
+      _DAT_1f800064 = _DAT_1f800064 & 0xffff0000 | (uint)*(ushort *)&(&Skel)[uVar13].vOffset.vz;
+      if ((bReverseYRotation == 0) || (((&Skel)[uVar13].pParent)->id != ROOT)) {
+        DAT_1f80006a = ((&Skel)[uVar13].pParent)->pvRotation->vy;
+        DAT_1f800068 = -((&Skel)[uVar13].pParent)->pvRotation->vx;
+        DAT_1f80006c = ((&Skel)[uVar13].pParent)->pvRotation->vz;
+      }
+      else {
+        DAT_1f80006a = -((&Skel)[uVar13].pParent)->pvRotation->vy;
+        DAT_1f800068 = ((&Skel)[uVar13].pParent)->pvRotation->vx;
+        DAT_1f80006c = ((&Skel)[uVar13].pParent)->pvRotation->vz;
+      }
+      if (LVar2 == HEAD) {
+        DAT_1f80006a = DAT_1f80006a - pDrawingPed->head_rot;
+      }
+      DAT_1f800000._0_2_ = 0x1000;
+      DAT_1f800004._2_2_ = 0;
+      DAT_1f80000c = 0;
+      DAT_1f800000._2_2_ = 0;
+      DAT_1f800008._0_2_ = 0x1000;
+      DAT_1f80000e = 0;
+      DAT_1f800004._0_2_ = 0;
+      DAT_1f800008._2_2_ = 0;
+      DAT_1f800010._0_2_ = 0x1000;
+      RotMatrixZYX_gte(&DAT_1f800068,0x1f800000);
+      DAT_1f800014 = (int)DAT_1f800060;
+      DAT_1f800018 = (int)DAT_1f800062;
+      DAT_1f80001c = (int)DAT_1f800064;
+      uVar15 = (uint)((&Skel)[uVar13].pParent)->id & 0x7f;
+      DAT_1f800020 = local_440[uVar15 * 8];
+      DAT_1f800024 = local_440[uVar15 * 8 + 1];
+      DAT_1f800028 = local_440[uVar15 * 8 + 2];
+      DAT_1f80002c = local_440[uVar15 * 8 + 3];
+      DAT_1f800030 = local_440[uVar15 * 8 + 4];
+      DAT_1f800034 = local_440[uVar15 * 8 + 5];
+      DAT_1f800038 = local_440[uVar15 * 8 + 6];
+      DAT_1f80003c = local_440[uVar15 * 8 + 7];
+      uVar3 = 0x1f800000;
+      setCopControlWord(2,0,DAT_1f800020);
+      setCopControlWord(2,0x800,DAT_1f800024);
+      setCopControlWord(2,0x1000,DAT_1f800028);
+      setCopControlWord(2,0x1800,DAT_1f80002c);
+      setCopControlWord(2,0x2000,DAT_1f800030);
+      setCopReg(2,0x4800,(uint)(ushort)DAT_1f800000);
+      setCopReg(2,0x5000,(uint)DAT_1f800004._2_2_);
+      setCopReg(2,0x5800,(uint)DAT_1f80000c);
+      copFunction(2,0x49e012);
+      uVar15 = getCopReg(2,0x4800);
+      iVar12 = getCopReg(2,0x5000);
+      uVar19 = getCopReg(2,0x5800);
+      setCopReg(2,0x4800,(uint)DAT_1f800000._2_2_);
+      setCopReg(2,0x5000,(uint)(ushort)DAT_1f800008);
+      setCopReg(2,0x5800,(uint)DAT_1f80000e);
+      copFunction(2,0x49e012);
+      iVar11 = getCopReg(2,0x4800);
+      uVar17 = getCopReg(2,0x5000);
+      iVar14 = getCopReg(2,0x5800);
+      DAT_1f800040 = uVar15 & 0xffff | iVar11 << 0x10;
+      DAT_1f80004c = uVar19 & 0xffff | iVar14 << 0x10;
+      setCopReg(2,0x4800,(uint)(ushort)DAT_1f800004);
+      setCopReg(2,0x5000,(uint)DAT_1f800008._2_2_);
+      setCopReg(2,0x5800,(uint)(ushort)DAT_1f800010);
+      copFunction(2,0x49e012);
+      uVar15 = getCopReg(2,0x4800);
+      iVar11 = getCopReg(2,0x5000);
+      uVar19 = getCopReg(2,0x5800);
+      DAT_1f800044 = uVar15 & 0xffff | iVar12 << 0x10;
+      DAT_1f800048 = uVar17 & 0xffff | iVar11 << 0x10;
+      DAT_1f800050 = DAT_1f800050 & 0xffff0000 | uVar19 & 0xffff;
+      setCopControlWord(2,0x2800,DAT_1f800034);
+      setCopControlWord(2,0x3000,DAT_1f800038);
+      setCopControlWord(2,0x3800,DAT_1f80003c);
+      setCopReg(2,0,_DAT_1f800060);
+      setCopReg(2,0x1f800000,DAT_1f80001c);
+      copFunction(2,0x480012);
+      DAT_1f800054 = getCopReg(2,0x19);
+      DAT_1f800058 = getCopReg(2,0x1a);
+      DAT_1f80005c = getCopReg(2,0x1b);
+      setCopControlWord(2,0,DAT_1f800040);
+      setCopControlWord(2,0x800,DAT_1f800044);
+      setCopControlWord(2,0x1000,DAT_1f800048);
+      setCopControlWord(2,0x1800,DAT_1f80004c);
+      setCopControlWord(2,0x2000,DAT_1f800050);
+      setCopReg(2,in_zero,_DAT_1f800060);
+      setCopReg(2,0x1f800000,_DAT_1f800064);
+      copFunction(2,0x486012);
+      DAT_1f800070 = getCopReg(2,0x19);
+      DAT_1f800074 = getCopReg(2,0x1a);
+      DAT_1f800078 = getCopReg(2,0x1b);
+      LVar2 = (&Skel)[uVar13].id;
+      (&Skel)[uVar13].vCurrPos.vx = DAT_1f800070;
+      (&Skel)[uVar13].vCurrPos.vy = DAT_1f800074;
+      (&Skel)[uVar13].vCurrPos.vz = DAT_1f800078;
+      pSVar4 = GetModelVertPtr((uint)LVar2,0);
+      LVar2 = (&Skel)[uVar13].id;
+      if (((((LVar2 & 0x7f) == 4) || (pDrawingPed->pedType < OTHER_SPRITE)) &&
+          (-1 < (int)((uint)LVar2 << 0x18))) &&
+         (((&Skel)[uVar13].pModel != (MODEL **)0x0 && (pSVar4 != (SVECTOR *)0x0)))) {
+        pMVar5 = *(&Skel)[uVar13].pModel;
+        uVar10 = pMVar5->num_vertices;
+        uVar17 = (uint)uVar10;
+        puVar20 = (undefined2 *)pMVar5->vertices;
+        psVar8 = &DAT_1f800080;
+        uVar15 = uVar17;
+        if (uVar10 != 0) {
+          do {
+            *psVar8 = pSVar4->vx + DAT_1f800060;
+            uVar15 = uVar15 - 1;
+            psVar8[1] = pSVar4->vy + DAT_1f800062;
+            psVar1 = &pSVar4->vz;
+            pSVar4 = pSVar4 + 1;
+            psVar8[2] = *psVar1 + DAT_1f800064;
+            psVar8 = psVar8 + 4;
+          } while (uVar15 != 0);
+        }
+        puVar9 = (undefined4 *)&DAT_1f800080;
+        if (uVar10 != 0) {
+          do {
+            setCopReg(2,in_zero,*puVar9);
+            setCopReg(2,uVar3,puVar9[1]);
+            copFunction(2,0x486012);
+            DAT_1f800070 = getCopReg(2,0x19);
+            DAT_1f800074 = getCopReg(2,0x1a);
+            DAT_1f800078 = getCopReg(2,0x1b);
+            *puVar20 = (undefined2)DAT_1f800070;
+            uVar17 = uVar17 - 1;
+            puVar20[1] = (undefined2)DAT_1f800074;
+            puVar9 = puVar9 + 2;
+            puVar20[2] = (undefined2)DAT_1f800078;
+            puVar20 = puVar20 + 4;
+          } while (uVar17 != 0);
+        }
+      }
+      iVar6 = iVar6 + 1;
+      LVar2 = lRoutes[iVar6 + iVar7];
+      local_440[uVar13 * 8] = DAT_1f800040;
+      local_440[uVar13 * 8 + 1] = DAT_1f800044;
+      local_440[uVar13 * 8 + 2] = DAT_1f800048;
+      local_440[uVar13 * 8 + 3] = DAT_1f80004c;
+      local_440[uVar13 * 8 + 4] = DAT_1f800050;
+      local_440[uVar13 * 8 + 5] = DAT_1f800054;
+      local_440[uVar13 * 8 + 6] = DAT_1f800058;
+      local_440[uVar13 * 8 + 7] = DAT_1f80005c;
+    }
+  } while (local_30 < 5);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// struct SVECTOR * /*$ra*/ GetModelVertPtr(int boneId /*$a1*/, int modelType /*$a1*/)
+ // line 1774, offset 0x00066fb8
+	/* begin block 1 */
+		// Start line: 4462
+	/* end block 1 */
+	// End Line: 4463
+
+	/* begin block 2 */
+		// Start line: 4471
+	/* end block 2 */
+	// End Line: 4472
+
+	/* begin block 3 */
+		// Start line: 4472
+	/* end block 3 */
+	// End Line: 4473
+
+SVECTOR * GetModelVertPtr(int boneId,int modelType)
+
+{
+  int iVar1;
+  
+  if (pDrawingPed->pedType == OTHER_MODEL) {
+    switch(boneId) {
+    case 2:
+      iVar1 = cJerichoVNumbers;
+      break;
+    default:
+      return (SVECTOR *)(&vTannerList + *(int *)(&cTannerVNumbers + (boneId & 0x7fU) * 4) * 4);
+    case 4:
+      iVar1 = DAT_000d7d0c;
+      break;
+    case 6:
+      iVar1 = DAT_000d7d10;
+      break;
+    case 7:
+      iVar1 = DAT_000d7d14;
+      break;
+    case 10:
+      iVar1 = DAT_000d7d18;
+      break;
+    case 0xb:
+      iVar1 = DAT_000d7d1c;
+    }
+    return &vJerichoList + iVar1;
+  }
+  if (*(int *)(&cTannerVNumbers + (boneId & 0x7fU) * 4) == -1) {
+    return (SVECTOR *)0x0;
+  }
+  return (SVECTOR *)(&vTannerList + *(int *)(&cTannerVNumbers + (boneId & 0x7fU) * 4) * 4);
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawCiv(struct PEDESTRIAN *pPed /*$fp*/)
+ // line 1834, offset 0x000670cc
+	/* begin block 1 */
+		// Start line: 1835
+		// Start offset: 0x000670CC
+		// Variables:
+	// 		int i; // $s5
+	// 		struct DVECTOR *outpoints; // $t9
+	// 		long *outlongs; // $s5
+	// 		struct SVECTOR *psrLerpData; // $t8
+	// 		long *zbuff; // $s4
+	// 		struct SVECTOR *pLerpData; // $s0
+	// 		struct SVECTOR pos; // stack offset -160
+	// 		struct VECTOR pos1; // stack offset -152
+	// 		struct SVECTOR *vert1; // $a1
+	// 		struct SVECTOR *vert2; // $a0
+	// 		struct SVECTOR temp1; // stack offset -136
+	// 		struct SVECTOR temp2; // stack offset -128
+	// 		int cnt3; // $a2
+	// 		int bHeadModel; // stack offset -56
+	// 		int shift; // $t0
+	// 		int frame; // $a2
+	// 		struct MATRIX workmatrix; // stack offset -120
+	// 		int j; // $s7
+
+		/* begin block 1.1 */
+			// Start line: 1908
+			// Start offset: 0x000672B8
+			// Variables:
+		// 		int cx; // $v1
+		// 		int sx; // $a0
+		// 		int cy; // $a1
+		// 		int sy; // $t0
+		// 		int cz; // $t3
+		// 		int sz; // $t6
+		// 		int stmp; // $t7
+		/* end block 1.1 */
+		// End offset: 0x000672B8
+		// End Line: 1908
+
+		/* begin block 1.2 */
+			// Start line: 1964
+			// Start offset: 0x000677C0
+			// Variables:
+		// 		struct SVECTOR sV; // stack offset -88
+		// 		struct SVECTOR sV2; // stack offset -80
+		// 		struct VECTOR v; // stack offset -72
+		/* end block 1.2 */
+		// End offset: 0x000677FC
+		// End Line: 1976
+
+		/* begin block 1.3 */
+			// Start line: 1985
+			// Start offset: 0x000677FC
+			// Variables:
+		// 		struct CVECTOR cv; // stack offset -88
+		// 		struct VECTOR pos; // stack offset -80
+		// 		int phase; // $s0
+		/* end block 1.3 */
+		// End offset: 0x000678A0
+		// End Line: 1998
+	/* end block 1 */
+	// End offset: 0x000678A0
+	// End Line: 2001
+
+	/* begin block 2 */
+		// Start line: 4582
+	/* end block 2 */
+	// End Line: 4583
+
+	/* begin block 3 */
+		// Start line: 4595
+	/* end block 3 */
+	// End Line: 4596
+
+	/* begin block 4 */
+		// Start line: 4601
+	/* end block 4 */
+	// End Line: 4602
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void DrawCiv(PEDESTRIAN *pPed)
+
+{
+  bool bVar1;
+  undefined4 in_zero;
+  undefined4 in_at;
+  undefined4 uVar2;
+  undefined4 uVar3;
+  undefined4 uVar4;
+  undefined4 uVar5;
+  int iVar6;
+  undefined4 *puVar7;
+  int iVar8;
+  int iVar9;
+  int iVar10;
+  uint v1;
+  short size;
+  uint boneId;
+  int iVar11;
+  uint uVar12;
+  uint uVar13;
+  int iVar14;
+  uint uVar15;
+  uint uVar16;
+  int iVar17;
+  uint uVar18;
+  int iVar19;
+  undefined2 *puVar20;
+  undefined4 *puVar21;
+  undefined4 *puVar22;
+  int *piVar23;
+  undefined4 *puVar24;
+  uint *puVar25;
+  int *piVar26;
+  int iVar27;
+  undefined4 local_a0;
+  uint local_9c;
+  short local_88;
+  short sStack134;
+  short local_84;
+  short local_80;
+  short sStack126;
+  short local_7c;
+  uint local_78;
+  uint local_74;
+  uint local_70;
+  uint local_6c;
+  uint local_68;
+  CVECTOR local_58 [2];
+  VECTOR local_50;
+  undefined4 local_40;
+  int local_38;
+  CVECTOR *local_34;
+  VECTOR *local_30;
+  
+  puVar25 = &DAT_1f800010;
+  piVar23 = &DAT_1f800210;
+  puVar20 = &DAT_1f800090;
+  local_38 = 0;
+  puVar21 = (undefined4 *)pPed->motion;
+  iVar27 = 0;
+  boneId = (uint)((byte)pPed->frame1 >> 1);
+  puVar7 = puVar21 + boneId * 0x3c;
+  uVar13 = (uint)(*(byte *)((int)&pPed->flags + 1) >> 7);
+  pDrawingPed = pPed;
+  if ((pPed->frame1 & 1U) == 0) {
+    iVar11 = 0x1e;
+    do {
+      *puVar20 = *(undefined2 *)puVar7;
+      iVar11 = iVar11 + -1;
+      puVar20[1] = (short)((int)*(short *)((int)puVar7 + 2) >> uVar13);
+      puVar21 = puVar7 + 1;
+      puVar7 = puVar7 + 2;
+      puVar20[2] = *(undefined2 *)puVar21;
+      puVar20 = puVar20 + 4;
+    } while (0 < iVar11);
+  }
+  else {
+    if ((byte)pPed->frame1 < 0x1e) {
+      puVar21 = puVar21 + (boneId + 1) * 0x3c;
+    }
+    iVar11 = 0x1e;
+    do {
+      uVar2 = *puVar21;
+      uVar4 = puVar21[1];
+      uVar3 = *puVar7;
+      uVar5 = puVar7[1];
+      local_88 = (short)uVar2;
+      local_80 = (short)uVar3;
+      iVar11 = iVar11 + -1;
+      *puVar20 = (short)((int)local_88 + (int)local_80 >> 1);
+      sStack134 = (short)((uint)uVar2 >> 0x10);
+      sStack126 = (short)((uint)uVar3 >> 0x10);
+      puVar21 = puVar21 + 2;
+      puVar20[1] = (short)((int)sStack134 + (int)sStack126 >> uVar13 + 1);
+      local_84 = (short)uVar4;
+      local_7c = (short)uVar5;
+      puVar7 = puVar7 + 2;
+      puVar20[2] = (short)((int)local_84 + (int)local_7c >> 1);
+      puVar20 = puVar20 + 4;
+    } while (0 < iVar11);
+  }
+  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
+  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
+  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
+  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
+  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
+  local_a0 = CONCAT22(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy,
+                      *(short *)&(pDrawingPed->position).vx - (short)camera_position.vx);
+  local_9c = local_9c & 0xffff0000 |
+             (uint)(ushort)(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz);
+  setCopReg(2,in_zero,local_a0);
+  setCopReg(2,in_at,local_9c);
+  copFunction(2,0x486012);
+  uVar2 = getCopReg(2,0x19);
+  uVar3 = getCopReg(2,0x1a);
+  uVar4 = getCopReg(2,0x1b);
+  setCopControlWord(2,0x2800,uVar2);
+  setCopControlWord(2,0x3000,uVar3);
+  setCopControlWord(2,0x3800,uVar4);
+  uVar12 = (uint)(ushort)(pDrawingPed->dir).vy & 0xfff;
+  uVar13 = (uint)(ushort)(pDrawingPed->dir).vz & 0xfff;
+  iVar9 = (int)rcossin_tbl[uVar12 * 2 + 1];
+  iVar19 = (int)rcossin_tbl[uVar13 * 2];
+  iVar17 = (int)rcossin_tbl[uVar13 * 2 + 1];
+  boneId = (uint)(ushort)(pDrawingPed->dir).vx & 0xfff;
+  iVar11 = (int)rcossin_tbl[boneId * 2 + 1];
+  iVar14 = (int)rcossin_tbl[uVar12 * 2];
+  iVar8 = (int)rcossin_tbl[boneId * 2];
+  uVar16 = (iVar11 * iVar14 + 0x800 >> 0xc) +
+           ((iVar9 * iVar8 + 0x800 >> 0xc) * iVar19 + 0x800 >> 0xc);
+  uVar18 = iVar9 * iVar17 + 0x800 >> 0xc;
+  iVar10 = (int)(short)uVar18;
+  boneId = -(iVar17 * iVar8 + 0x800 >> 0xc);
+  uVar12 = iVar11 * iVar17 + 0x800 >> 0xc;
+  iVar6 = (int)(short)uVar12;
+  uVar15 = (-iVar11 * (iVar9 * iVar19 + 0x800 >> 0xc) + 0x800 >> 0xc) +
+           (iVar8 * iVar14 + 0x800 >> 0xc);
+  v1 = (iVar10 * iVar6 + 0x800 >> 0xc) - (((int)(uVar15 * 0x10000) >> 0x10) * iVar19 + 0x800 >> 0xc)
+  ;
+  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
+  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
+  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
+  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
+  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
+  setCopReg(2,0x4800,uVar18 & 0xffff);
+  setCopReg(2,0x5000,(uint)(ushort)rcossin_tbl[uVar13 * 2]);
+  setCopReg(2,0x5800,(uint)(ushort)-(short)(iVar14 * iVar17 + 0x800 >> 0xc));
+  copFunction(2,0x49e012);
+  uVar13 = getCopReg(2,0x4800);
+  iVar8 = getCopReg(2,0x5000);
+  uVar18 = getCopReg(2,0x5800);
+  setCopReg(2,0x4800,uVar15 & 0xffff);
+  setCopReg(2,0x5000,uVar12 & 0xffff);
+  setCopReg(2,0x5800,(uint)(ushort)((short)(((int)(uVar16 * 0x10000) >> 0x10) * iVar19 + 0x800 >>
+                                           0xc) - (short)(iVar10 * (short)boneId + 0x800 >> 0xc)));
+  copFunction(2,0x49e012);
+  iVar11 = getCopReg(2,0x4800);
+  uVar12 = getCopReg(2,0x5000);
+  iVar9 = getCopReg(2,0x5800);
+  local_78 = uVar13 & 0xffff | iVar11 << 0x10;
+  local_6c = uVar18 & 0xffff | iVar9 << 0x10;
+  setCopReg(2,0x4800,uVar16 & 0xffff);
+  setCopReg(2,0x5000,boneId & 0xffff);
+  setCopReg(2,0x5800,v1 & 0xffff);
+  copFunction(2,0x49e012);
+  uVar13 = getCopReg(2,0x4800);
+  iVar11 = getCopReg(2,0x5000);
+  uVar15 = getCopReg(2,0x5800);
+  local_74 = iVar8 << 0x10 | uVar13 & 0xffff;
+  local_70 = uVar12 & 0xffff | iVar11 << 0x10;
+  local_68 = local_68 & 0xffff0000 | uVar15 & 0xffff;
+  setCopControlWord(2,0,local_78);
+  setCopControlWord(2,0x800,local_74);
+  setCopControlWord(2,0x1000,local_70);
+  setCopControlWord(2,0x1800,local_6c);
+  setCopControlWord(2,0x2000,local_68);
+  setCopReg(2,in_zero,_DAT_1f800090);
+  setCopReg(2,in_at,_DAT_1f800094);
+  setCopReg(2,0x1f800090,DAT_1f800098);
+  setCopReg(2,iVar6,DAT_1f80009c);
+  setCopReg(2,boneId,DAT_1f8000a0);
+  setCopReg(2,v1,DAT_1f8000a4);
+  copFunction(2,0x280030);
+  gCurrentZ = getCopReg(2,0x13);
+  local_30 = &local_50;
+  DAT_1f800210 = gCurrentZ;
+  if (gCurrentZ <= switch_detail_distance) {
+    local_34 = local_58;
+    piVar26 = boneIdvals;
+    iVar11 = 0;
+    puVar22 = &DAT_1f800210;
+    puVar21 = &DAT_1f800010;
+    iVar6 = 0xe;
+    puVar7 = (undefined4 *)&DAT_1f800090;
+    do {
+      if (iVar27 < 0x1e) {
+        uVar2 = getCopReg(2,0xc);
+        *puVar21 = uVar2;
+        uVar2 = getCopReg(2,0xd);
+        puVar21[1] = uVar2;
+        uVar2 = getCopReg(2,0xe);
+        puVar21[2] = uVar2;
+        uVar2 = getCopReg(2,0x11);
+        *puVar22 = uVar2;
+        uVar2 = getCopReg(2,0x12);
+        puVar22[1] = uVar2;
+        uVar2 = getCopReg(2,0x13);
+        puVar22[2] = uVar2;
+      }
+      bVar1 = iVar27 < 0x1b;
+      puVar24 = puVar7;
+      if (bVar1) {
+        puVar24 = puVar7 + 6;
+        puVar22 = puVar22 + 3;
+        puVar21 = puVar21 + 3;
+        iVar27 = iVar27 + 3;
+        setCopReg(2,in_zero,*puVar24);
+        setCopReg(2,in_at,puVar7[7]);
+        setCopReg(2,(uint)bVar1,puVar7[8]);
+        setCopReg(2,iVar11,puVar7[9]);
+        setCopReg(2,boneId,puVar7[10]);
+        setCopReg(2,v1,puVar7[0xb]);
+        copFunction(2,0x280030);
+      }
+      boneId = *piVar26;
+      if ((boneId == 4) &&
+         (v1 = 1, iVar11 = DAT_1f800210, DAT_1f800210 <= switch_detail_distance >> 1)) {
+        local_38 = 1;
+      }
+      else {
+        v1 = *puVar25;
+        DrawBodySprite(boneId,v1,puVar25[1],*piVar23,piVar23[1]);
+      }
+      puVar25 = puVar25 + 2;
+      piVar23 = piVar23 + 2;
+      iVar6 = iVar6 + -1;
+      piVar26 = (int *)((uint *)piVar26 + 1);
+      puVar7 = puVar24;
+    } while (-1 < iVar6);
+    if (local_38 != 0) {
+      bAllreadyRotated = 0;
+      DoCivHead((SVECTOR *)&DAT_1f8000b8,(SVECTOR *)&DAT_1f8000b0);
+      local_40 = 0;
+      local_50.pad = 0;
+      setCopControlWord(2,0x2800,0);
+      setCopControlWord(2,0x3000,0);
+      setCopControlWord(2,0x3800,0);
+    }
+    local_50.vx = (pPed->position).vx;
+    local_50.vy = (pPed->position).vy;
+    local_50.vz = (pPed->position).vz;
+    boneId = (uint)(byte)pPed->frame1 & 0xf;
+    uVar13 = boneId * 2;
+    iVar27 = MapHeight(local_30);
+    local_58[0].b = '(';
+    local_58[0].g = '(';
+    local_58[0].r = '(';
+    local_50.vx = local_50.vx - camera_position.vx;
+    local_50.vy = (10 - iVar27) - camera_position.vy;
+    local_50.vz = local_50.vz - camera_position.vz;
+    if (uVar13 < 8) {
+      size = (short)uVar13 + 0x50;
+    }
+    else {
+      size = (short)boneId * -2 + 0x70;
+    }
+    RoundShadow(local_30,local_34,size);
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ SetSkelModelPointers(int type /*$a0*/)
+ // line 2011, offset 0x00069ad8
+	/* begin block 1 */
+		// Start line: 7522
+	/* end block 1 */
+	// End Line: 7523
+
+	/* begin block 2 */
+		// Start line: 7524
+	/* end block 2 */
+	// End Line: 7525
+
+void SetSkelModelPointers(int type)
+
+{
+  if (type == 1) {
+    BONE_000a0944.pModel = &pmJerichoModels6;
+    BONE_000a09cc.pModel = &PTR_000d95bc;
+    BONE_000a0a54.pModel = &PTR_000d95c0;
+    BONE_000a0a98.pModel = &PTR_000d95c4;
+    BONE_000a0b64.pModel = &PTR_000d95c8;
+    BONE_000a0ba8.pModel = &PTR_000d95cc;
+    BONE_000a0c74.pModel = (MODEL **)0x0;
+    return;
+  }
+  BONE_000a0944.pModel = &pmTannerModels17;
+  BONE_000a09cc.pModel = &PTR_000d96e4;
+  BONE_000a0a54.pModel = &PTR_000d9700;
+  BONE_000a0a98.pModel = &PTR_000d9704;
+  BONE_000a0b64.pModel = &PTR_000d96e8;
+  BONE_000a0ba8.pModel = &PTR_000d96ec;
+  BONE_000a0c74.pModel = &PTR_000d971c;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawTanner(struct PEDESTRIAN *pPed /*$s2*/)
+ // line 2041, offset 0x000678d0
+	/* begin block 1 */
+		// Start line: 2042
+		// Start offset: 0x000678D0
+		// Variables:
+	// 		struct VECTOR v; // stack offset -112
+	// 		struct CVECTOR cV; // stack offset -96
+	// 		struct MATRIX mRotStore; // stack offset -88
+	// 		struct MATRIX iMatrix; // stack offset -56
+
+		/* begin block 1.1 */
+			// Start line: 2042
+			// Start offset: 0x000678D0
+		/* end block 1.1 */
+		// End offset: 0x000679E0
+		// End Line: 2061
+
+		/* begin block 1.2 */
+			// Start line: 2067
+			// Start offset: 0x000679E0
+			// Variables:
+		// 		int cx; // $a2
+		// 		int sx; // $t0
+		// 		int cy; // $a0
+		// 		int sy; // $t2
+		// 		int cz; // $t5
+		// 		int sz; // $s0
+		// 		int stmp; // $v1
+		/* end block 1.2 */
+		// End offset: 0x000679E0
+		// End Line: 2067
+	/* end block 1 */
+	// End offset: 0x00067D44
+	// End Line: 2113
+
+	/* begin block 2 */
+		// Start line: 5129
+	/* end block 2 */
+	// End Line: 5130
+
+void DrawTanner(PEDESTRIAN *pPed)
+
+{
+  uint uVar1;
+  int iVar2;
+  uint uVar3;
+  int iVar4;
+  int iVar5;
+  int iVar6;
+  int iVar7;
+  int iVar8;
+  int iVar9;
+  VECTOR local_70;
+  CVECTOR local_60 [2];
+  undefined4 local_58;
+  undefined4 local_54;
+  undefined4 local_50;
+  undefined4 local_4c;
+  undefined4 local_48;
+  undefined4 local_44;
+  undefined4 local_40;
+  undefined4 local_3c;
+  short local_38;
+  undefined2 local_36;
+  undefined2 local_34;
+  short local_32;
+  short local_30;
+  short local_2e;
+  short local_2c;
+  short local_2a;
+  short local_28;
+  int local_24;
+  int local_20;
+  int local_1c;
+  
+  bDoingShadow = 0;
+  local_58 = getCopControlWord(2,0);
+  local_54 = getCopControlWord(2,0x800);
+  local_50 = getCopControlWord(2,0x1000);
+  local_4c = getCopControlWord(2,0x1800);
+  local_48 = getCopControlWord(2,0x2000);
+  local_44 = getCopControlWord(2,0x2800);
+  local_40 = getCopControlWord(2,0x3000);
+  local_3c = getCopControlWord(2,0x3800);
+  pDrawingPed = pPed;
+  SetupTannerSkeleton();
+  if (pPed->pedType == OTHER_MODEL) {
+    BONE_000a09cc.pModel = &PTR_000d95bc;
+    BONE_000a0a54.pModel = &PTR_000d95c0;
+    BONE_000a0944.pModel = &pmJerichoModels6;
+    BONE_000a0a98.pModel = &PTR_000d95c4;
+    BONE_000a0b64.pModel = &PTR_000d95c8;
+    BONE_000a0ba8.pModel = &PTR_000d95cc;
+    BONE_000a0c74.pModel = (MODEL **)0x0;
+  }
+  else {
+    BONE_000a09cc.pModel = &PTR_000d96e4;
+    BONE_000a0a54.pModel = &PTR_000d9700;
+    BONE_000a0a98.pModel = &PTR_000d9704;
+    BONE_000a0944.pModel = &pmTannerModels17;
+    BONE_000a0b64.pModel = &PTR_000d96e8;
+    BONE_000a0ba8.pModel = &PTR_000d96ec;
+    BONE_000a0c74.pModel = &PTR_000d971c;
+  }
+  uVar3 = (uint)(ushort)(pPed->dir).vy & 0xfff;
+  uVar1 = (uint)(ushort)(pPed->dir).vz & 0xfff;
+  iVar2 = (int)rcossin_tbl[uVar3 * 2 + 1];
+  local_32 = rcossin_tbl[uVar1 * 2];
+  iVar9 = (int)local_32;
+  iVar8 = (int)rcossin_tbl[uVar1 * 2 + 1];
+  uVar1 = (uint)(ushort)(pPed->dir).vx & 0xfff;
+  iVar4 = (int)rcossin_tbl[uVar1 * 2 + 1];
+  iVar6 = (int)rcossin_tbl[uVar3 * 2];
+  iVar5 = (int)rcossin_tbl[uVar1 * 2];
+  iVar7 = (iVar4 * iVar6 + 0x800 >> 0xc) + ((iVar2 * iVar5 + 0x800 >> 0xc) * iVar9 + 0x800 >> 0xc);
+  local_38 = (short)(iVar2 * iVar8 + 0x800 >> 0xc);
+  local_2e = -(short)(iVar8 * iVar5 + 0x800 >> 0xc);
+  local_24 = (int)(Skel.pvOrigPos)->vx;
+  local_20 = (int)(Skel.pvOrigPos)->vy;
+  local_1c = (int)(Skel.pvOrigPos)->vz;
+  local_30 = (short)(iVar4 * iVar8 + 0x800 >> 0xc);
+  iVar2 = (-iVar4 * (iVar2 * iVar9 + 0x800 >> 0xc) + 0x800 >> 0xc) + (iVar5 * iVar6 + 0x800 >> 0xc);
+  local_36 = (undefined2)iVar2;
+  local_34 = (undefined2)iVar7;
+  local_2c = -(short)(iVar6 * iVar8 + 0x800 >> 0xc);
+  local_2a = (short)((iVar7 * 0x10000 >> 0x10) * iVar9 + 0x800 >> 0xc) -
+             (short)((int)local_38 * (int)local_2e + 0x800 >> 0xc);
+  local_28 = (short)((int)local_38 * (int)local_30 + 0x800 >> 0xc) -
+             (short)((iVar2 * 0x10000 >> 0x10) * iVar9 + 0x800 >> 0xc);
+  newRotateBones(&BONE_000a0900);
+  setCopControlWord(2,0,local_58);
+  setCopControlWord(2,0x800,local_54);
+  setCopControlWord(2,0x1000,local_50);
+  setCopControlWord(2,0x1800,local_4c);
+  setCopControlWord(2,0x2000,local_48);
+  iCurrBone = 0;
+  newShowTanner();
+  local_70.vx = ((pPed->position).vx - camera_position.vx) + (int)(Skel.pvOrigPos)->vx;
+  local_70.vz = ((pPed->position).vz - camera_position.vz) + (int)(Skel.pvOrigPos)->vz;
+  local_70.vy = MapHeight((VECTOR *)&pPed->position);
+  bDoingShadow = 1;
+  local_70.vy = -camera_position.vy - local_70.vy;
+  if (pPed->padId == '\0') {
+    if (gTimeOfDay == 3) {
+      local_60[0].b = '\f';
+      local_60[0].g = '\f';
+      local_60[0].r = '\f';
+      TannerShadow(&local_70,moon_position + GameLevel,local_60,(pPed->dir).vy);
+    }
+    else {
+      local_60[0].b = ' ';
+      local_60[0].g = ' ';
+      local_60[0].r = ' ';
+      TannerShadow(&local_70,sun_position + GameLevel,local_60,(pPed->dir).vy);
+    }
+  }
+  bDoingShadow = 0;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// int /*$ra*/ DrawCharacter(struct PEDESTRIAN *pPed /*$s1*/)
+ // line 2120, offset 0x00067d44
+	/* begin block 1 */
+		// Start line: 2121
+		// Start offset: 0x00067D44
+		// Variables:
+	// 		struct MATRIX mRotStore; // stack offset -128
+	// 		struct MATRIX iMatrix; // stack offset -96
+	// 		struct CVECTOR cV; // stack offset -64
+	// 		struct VECTOR v; // stack offset -56
+
+		/* begin block 1.1 */
+			// Start line: 2121
+			// Start offset: 0x00067D44
+			// Variables:
+		// 		int cx; // $t0
+		// 		int sx; // $a3
+		// 		int cy; // $a0
+		// 		int sy; // $t2
+		// 		int cz; // $a2
+		// 		int sz; // $t7
+		// 		int stmp; // $v1
+		/* end block 1.1 */
+		// End offset: 0x00067D44
+		// End Line: 2121
+
+		/* begin block 1.2 */
+			// Start line: 2175
+			// Start offset: 0x00068134
+			// Variables:
+		// 		struct CVECTOR cv; // stack offset -40
+		// 		struct VECTOR pos; // stack offset -32
+		// 		int phase; // $s0
+		/* end block 1.2 */
+		// End offset: 0x000681D0
+		// End Line: 2189
+	/* end block 1 */
+	// End offset: 0x000681EC
+	// End Line: 2193
+
+	/* begin block 2 */
+		// Start line: 5336
+	/* end block 2 */
+	// End Line: 5337
+
+	/* begin block 3 */
+		// Start line: 5344
+	/* end block 3 */
+	// End Line: 5345
+
+int DrawCharacter(PEDESTRIAN *pPed)
+
+{
+  uint uVar1;
+  int iVar2;
+  ushort size;
+  undefined4 uVar3;
+  undefined4 uVar4;
+  undefined4 uVar5;
+  undefined4 uVar6;
+  undefined4 uVar7;
+  uint uVar8;
+  CVECTOR local_40 [2];
+  VECTOR local_38;
+  CVECTOR local_28 [2];
+  VECTOR local_20;
+  
+  uVar3 = getCopControlWord(2,0);
+  uVar5 = getCopControlWord(2,0x800);
+  uVar4 = getCopControlWord(2,0x1000);
+  uVar6 = getCopControlWord(2,0x1800);
+  uVar7 = getCopControlWord(2,0x2000);
+  getCopControlWord(2,0x2800);
+  getCopControlWord(2,0x3000);
+  getCopControlWord(2,0x3800);
+  pDrawingPed = pPed;
+  SetupTannerSkeleton();
+  newRotateBones(&BONE_000a0900);
+  setCopControlWord(2,0,uVar3);
+  setCopControlWord(2,0x800,uVar5);
+  setCopControlWord(2,0x1000,uVar4);
+  setCopControlWord(2,0x1800,uVar6);
+  setCopControlWord(2,0x2000,uVar7);
+  iCurrBone = 0;
+  newShowTanner();
+  if ((pUsedPeds->pNext == (PEDESTRIAN *)0x0) && (pPed->pedType == TANNER_MODEL)) {
+    local_38.vx = ((pPed->position).vx - camera_position.vx) + (int)(Skel.pvOrigPos)->vx;
+    local_38.vz = ((pPed->position).vz - camera_position.vz) + (int)(Skel.pvOrigPos)->vz;
+    local_38.vy = MapHeight((VECTOR *)&pPed->position);
+    bDoingShadow = 1;
+    local_38.vy = -camera_position.vy - local_38.vy;
+    if (gTimeOfDay == 3) {
+      local_40[0].b = '\f';
+      local_40[0].g = '\f';
+      local_40[0].r = '\f';
+      TannerShadow(&local_38,moon_position + GameLevel,local_40,(pPed->dir).vy);
+    }
+    else {
+      local_40[0].b = ' ';
+      local_40[0].g = ' ';
+      local_40[0].r = ' ';
+      TannerShadow(&local_38,sun_position + GameLevel,local_40,(pPed->dir).vy);
+    }
+    bDoingShadow = 0;
+  }
+  else {
+    if (pPed->pedType == CIVILIAN) {
+      local_20.vx = (pPed->position).vx;
+      local_20.vy = (pPed->position).vy;
+      local_20.vz = (pPed->position).vz;
+      uVar1 = (uint)(byte)pPed->frame1 & 7;
+      uVar8 = uVar1 * 2;
+      iVar2 = MapHeight(&local_20);
+      local_28[0].b = '(';
+      local_28[0].g = '(';
+      local_28[0].r = '(';
+      local_20.vx = local_20.vx - camera_position.vx;
+      local_20.vy = (0x1e - iVar2) - camera_position.vy;
+      local_20.vz = local_20.vz - camera_position.vz;
+      if (uVar8 < 8) {
+        size = (ushort)uVar8 | 0x50;
+      }
+      else {
+        size = (short)uVar1 * -2 + 0x60;
+      }
+      RoundShadow(&local_20,local_28,size);
+    }
+  }
+  return 1;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ InitTannerShadow()
+ // line 2201, offset 0x000681ec
+	/* begin block 1 */
+		// Start line: 2203
+		// Start offset: 0x000681EC
+		// Variables:
+	// 		struct CVECTOR cV; // stack offset -8
+	// 		int i; // $a3
+	/* end block 1 */
+	// End offset: 0x00068358
+	// End Line: 2247
+
+	/* begin block 2 */
+		// Start line: 5576
+	/* end block 2 */
+	// End Line: 5577
+
+	/* begin block 3 */
+		// Start line: 5585
+	/* end block 3 */
+	// End Line: 5586
+
+	/* begin block 4 */
+		// Start line: 5586
+	/* end block 4 */
+	// End Line: 5587
+
+	/* begin block 5 */
+		// Start line: 5589
+	/* end block 5 */
+	// End Line: 5590
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void InitTannerShadow(void)
+
+{
+  ushort uVar1;
+  ushort uVar2;
+  uchar uVar3;
+  uchar uVar4;
+  undefined *puVar5;
+  POLY_FT4 *pPVar6;
+  int iVar7;
+  uint uVar8;
+  uchar uVar9;
+  uchar uVar10;
+  uchar uVar11;
+  
+  uVar3 = tannerShadow_texture.coords.u0;
+  if (gTimeOfDay == 3) {
+    uVar4 = '\f';
+  }
+  else {
+    uVar4 = ' ';
+  }
+  pPVar6 = ft4TannerShadow;
+  iVar7 = 1;
+  uVar11 = tannerShadow_texture.coords.u0 + '?';
+  uVar10 = tannerShadow_texture.coords.v0 + '\x7f';
+  uVar9 = tannerShadow_texture.coords.v0 + ' ';
+  uVar1 = (&tpagepos)[nperms + 1].x;
+  uVar8 = (uint)(ushort)(&tpagepos)[nperms + 1].y + 0x80;
+  uVar2 = (ushort)uVar8;
+  do {
+    iVar7 = iVar7 + -1;
+    rectTannerWindow.w = 0x40;
+    rectTannerWindow.h = 0x80;
+    rectTannerWindow.x = uVar1;
+    rectTannerWindow.y = uVar2;
+    pPVar6->u0 = uVar11;
+    pPVar6->v0 = uVar9;
+    pPVar6->u1 = uVar3;
+    pPVar6->v1 = uVar9;
+    pPVar6->u2 = uVar11;
+    pPVar6->v2 = uVar10;
+    pPVar6->u3 = uVar3;
+    pPVar6->v3 = uVar10;
+    pPVar6->tpage =
+         (short)(uVar2 & 0x100) >> 4 | (ushort)(((uint)uVar1 & 0x3ff) >> 6) | 0x100 |
+         (ushort)((uVar8 & 0x200) << 2);
+    *(undefined *)((int)&pPVar6->tag + 3) = 9;
+    pPVar6->code = '.';
+    pPVar6->r0 = uVar4;
+    pPVar6->g0 = uVar4;
+    pPVar6->b0 = uVar4;
+    pPVar6 = pPVar6 + 1;
+  } while (-1 < iVar7);
+  puVar5 = &tileTannerClear;
+  iVar7 = 1;
+  do {
+    puVar5[3] = 3;
+    puVar5[7] = 0x60;
+    *(undefined2 *)(puVar5 + 8) = 0;
+    *(undefined2 *)(puVar5 + 10) = 0;
+    *(undefined2 *)(puVar5 + 0xc) = 0x40;
+    *(undefined2 *)(puVar5 + 0xe) = 0x80;
+    puVar5[4] = 0;
+    puVar5[5] = 0;
+    puVar5[6] = 0;
+    iVar7 = iVar7 + -1;
+    puVar5 = puVar5 + 0x10;
+  } while (-1 < iVar7);
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ TannerShadow(struct VECTOR *pPedPos /*$s6*/, struct SVECTOR *pLightPos /*$s7*/, struct CVECTOR *col /*$a2*/, short angle /*$a3*/)
+ // line 2258, offset 0x00068358
+	/* begin block 1 */
+		// Start line: 2259
+		// Start offset: 0x00068358
+		// Variables:
+	// 		int z; // $a1
+	// 		int z0; // stack offset -72
+	// 		int z1; // stack offset -68
+	// 		int z2; // stack offset -64
+	// 		int z3; // stack offset -60
+	// 		struct SVECTOR vert[4]; // stack offset -272
+	// 		struct VECTOR d; // stack offset -240
+	// 		struct DR_ENV *pDE; // $s3
+	// 		struct DRAWENV drEnv; // stack offset -224
+	// 		struct VECTOR cp; // stack offset -128
+	// 		struct SVECTOR ca; // stack offset -112
+	// 		struct VECTOR v1; // stack offset -104
+	// 		int i; // $s4
+	// 		struct VECTOR myVector; // stack offset -88
+	// 		int avalue2; // $v0
+	// 		int w; // $v1
+
+		/* begin block 1.1 */
+			// Start line: 2375
+			// Start offset: 0x00068818
+		/* end block 1.1 */
+		// End offset: 0x00068818
+		// End Line: 2375
+	/* end block 1 */
+	// End offset: 0x00068B2C
+	// End Line: 2434
+
+	/* begin block 2 */
+		// Start line: 5725
+	/* end block 2 */
+	// End Line: 5726
+
+	/* begin block 3 */
+		// Start line: 5737
+	/* end block 3 */
+	// End Line: 5738
+
+/* WARNING: Could not reconcile some variable overlaps */
+
+void TannerShadow(VECTOR *pPedPos,SVECTOR *pLightPos,CVECTOR *col,short angle)
+
+{
+  short sVar1;
+  short sVar2;
+  short sVar3;
+  short sVar4;
+  ushort uVar5;
+  ushort uVar6;
+  undefined4 uVar7;
+  char cVar8;
+  DB *pDVar9;
+  long *plVar10;
+  undefined4 in_zero;
+  undefined4 in_at;
+  int iVar11;
+  int iVar12;
+  int iVar13;
+  int iVar14;
+  long z0;
+  long z1;
+  long z2;
+  long z3;
+  uint uVar15;
+  ulong *puVar16;
+  undefined4 *puVar17;
+  uint *puVar18;
+  undefined4 *puVar19;
+  int iVar20;
+  undefined4 local_110;
+  undefined4 local_10c;
+  undefined4 local_108;
+  undefined4 local_104;
+  undefined4 local_100;
+  undefined4 local_fc;
+  short local_f8;
+  short local_f6;
+  short local_f4;
+  undefined4 local_f0;
+  undefined4 local_ec;
+  undefined4 local_e8;
+  undefined auStack224 [96];
+  long local_80;
+  long local_7c;
+  long local_78;
+  long local_74;
+  undefined4 local_70;
+  undefined4 local_6c;
+  int local_68;
+  int local_64;
+  int local_60;
+  VECTOR local_58;
+  long local_48;
+  long local_44;
+  int local_40;
+  long local_3c;
+  long *local_38;
+  long *local_34;
+  long *local_30;
+  undefined4 *local_2c;
+  
+  memset(&local_f0,0,0x10);
+  memset(&local_58,0,0x10);
+  SetDefDrawEnv(auStack224,0,(int)(current->draw).clip.y,0x140,0x100);
+  puVar18 = (uint *)current->primptr;
+  SetDrawEnv(puVar18,auStack224);
+  pDVar9 = current;
+  *puVar18 = *puVar18 & 0xff000000 | current->ot[0x107f] & 0xffffff;
+  pDVar9->ot[0x107f] = pDVar9->ot[0x107f] & 0xff000000 | (uint)puVar18 & 0xffffff;
+  iVar20 = 3;
+  pDVar9->primptr = pDVar9->primptr + 0x40;
+  Tangle = ratan2(-(int)pLightPos->vx,(int)pLightPos->vz);
+  local_38 = &local_48;
+  local_34 = &local_44;
+  local_2c = (undefined4 *)&local_f8;
+  local_30 = &local_3c;
+  puVar19 = &local_10c;
+  puVar17 = &local_110;
+  local_fc._0_2_ = 0x12;
+  local_f4 = 0x12;
+  local_100 = 0xff80;
+  local_f8 = 0x80;
+  local_f6 = 0;
+  local_110 = 0xff80;
+  local_10c._0_2_ = -0x140;
+  local_108 = 0x80;
+  local_104 = CONCAT22(local_104._2_2_,0xfec0);
+  do {
+    iVar20 = iVar20 + -1;
+    iVar11 = rcos(Tangle);
+    iVar12 = rsin(Tangle);
+    sVar1 = *(short *)puVar17;
+    sVar2 = *(short *)puVar19;
+    iVar13 = rsin(Tangle);
+    iVar14 = rcos(Tangle);
+    sVar3 = *(short *)puVar17;
+    sVar4 = *(short *)puVar19;
+    *(short *)puVar17 =
+         (short)((uint)(((sVar1 * iVar11 >> 0xc) - (sVar2 * iVar12 >> 0xc)) * 0x10000) >> 0x10);
+    puVar17 = puVar17 + 2;
+    *(short *)puVar19 = (short)(sVar3 * iVar13 >> 0xc) + (short)(sVar4 * iVar14 >> 0xc);
+    plVar10 = local_34;
+    puVar19 = puVar19 + 2;
+  } while (-1 < iVar20);
+  uVar5 = *(ushort *)&pPedPos->vx;
+  sVar1 = *(short *)&pPedPos->vy;
+  local_100 = CONCAT22(local_100._2_2_ + sVar1,(short)local_100 + uVar5);
+  uVar6 = *(ushort *)&pPedPos->vz;
+  local_fc = CONCAT22(local_fc._2_2_,(short)local_fc + uVar6);
+  local_f8 = local_f8 + uVar5;
+  local_f6 = local_f6 + sVar1;
+  local_f4 = local_f4 + uVar6;
+  local_110 = CONCAT22(local_110._2_2_ + sVar1,(short)local_110 + uVar5);
+  local_10c = CONCAT22(local_10c._2_2_,(short)local_10c + uVar6);
+  uVar15 = (local_104 & 0xffff) + (uint)uVar6;
+  local_108 = CONCAT22(local_108._2_2_ + sVar1,(short)local_108 + uVar5);
+  local_104 = local_104 & 0xffff0000 | uVar15 & 0xffff;
+  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
+  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
+  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
+  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
+  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
+  setCopControlWord(2,0x2800,local_f0);
+  setCopControlWord(2,0x3000,local_ec);
+  setCopControlWord(2,0x3800,local_e8);
+  setCopReg(2,in_zero,local_110);
+  setCopReg(2,in_at,local_10c);
+  setCopReg(2,&local_f0,local_108);
+  setCopReg(2,uVar15,local_104);
+  setCopReg(2,(uint)uVar6,local_100);
+  setCopReg(2,(uint)uVar5,local_fc);
+  copFunction(2,0x280030);
+  iVar20 = current->id;
+  uVar7 = getCopReg(2,0xc);
+  *(undefined4 *)&ft4TannerShadow[iVar20].x0 = uVar7;
+  uVar7 = getCopReg(2,0xd);
+  *(undefined4 *)&ft4TannerShadow[iVar20].x1 = uVar7;
+  uVar7 = getCopReg(2,0xe);
+  *(undefined4 *)&ft4TannerShadow[iVar20].x2 = uVar7;
+  z0 = getCopReg(2,0x11);
+  *local_38 = z0;
+  z0 = getCopReg(2,0x12);
+  *plVar10 = z0;
+  local_40 = getCopReg(2,0x13);
+  setCopReg(2,in_zero,*local_2c);
+  setCopReg(2,in_at,local_2c[1]);
+  copFunction(2,0x180001);
+  uVar7 = getCopReg(2,0xe);
+  *(undefined4 *)&ft4TannerShadow[current->id].x3 = uVar7;
+  z0 = getCopReg(2,0x13);
+  *local_30 = z0;
+  if (local_48 < local_44) {
+    local_48 = (local_48 + local_44) / 2;
+  }
+  else {
+    local_44 = (local_48 + local_44) / 2;
+  }
+  if (local_40 < local_3c) {
+    local_40 = (local_40 + local_3c) / 2;
+  }
+  else {
+    local_3c = (local_40 + local_3c) / 2;
+  }
+  z0 = 8;
+  if (0x1c < local_48) {
+    z0 = local_48 + -0x14;
+  }
+  z1 = 8;
+  if (0x1c < local_44) {
+    z1 = local_44 + -0x14;
+  }
+  z2 = 8;
+  if (0x1c < local_40) {
+    z2 = local_40 + -0x14;
+  }
+  z3 = 8;
+  if (0x1c < local_3c) {
+    z3 = local_3c + -0x14;
+  }
+  local_48 = z0;
+  local_44 = z1;
+  local_40 = z2;
+  local_3c = z3;
+  SubdivShadow(z0,z1,z2,z3,ft4TannerShadow + current->id);
+  local_68 = (int)pLightPos->vx * 0x6e >> 0xc;
+  local_7c = player.cameraPos.vy;
+  local_78 = player.cameraPos.vz;
+  local_74 = player.cameraPos.pad;
+  local_80 = player.cameraPos.vx;
+  local_70 = camera_angle._0_4_;
+  local_6c = camera_angle._4_4_;
+  local_64 = (int)pLightPos->vy * 0x6e >> 0xc;
+  local_60 = (int)pLightPos->vz * 0x6e >> 0xc;
+  camera_position.vx = (pDrawingPed->position).vx + local_68;
+  camera_position.vy = (pDrawingPed->position).vy + local_64;
+  camera_position.vz = (pDrawingPed->position).vz + local_60;
+  local_58.vx = player.pos[0];
+  local_58.vy = player.pos[1] + -0xac;
+  local_58.vz = player.pos[2];
+  player.cameraPos.vx = camera_position.vx;
+  player.cameraPos.vy = camera_position.vy;
+  player.cameraPos.vz = camera_position.vz;
+  SetBasePos(&local_58);
+  cVar8 = tracking_car;
+  setCopControlWord(2,0xc000,0x200000);
+  setCopControlWord(2,0xc800,0x800000);
+  tracking_car = '\x01';
+  PlaceCameraAtLocation(&player,0);
+  tracking_car = cVar8;
+  newShowTanner();
+  pDVar9 = current;
+  camera_angle._0_4_ = local_70;
+  camera_angle._4_4_ = local_6c;
+  player.cameraPos.vx = local_80;
+  player.cameraPos.vy = local_7c;
+  player.cameraPos.vz = local_78;
+  player.cameraPos.pad = local_74;
+  camera_position.vx = local_80;
+  camera_position.vy = local_7c;
+  camera_position.vz = local_78;
+  camera_position.pad = local_74;
+  *(uint *)(&tileTannerClear + current->id * 0x10) =
+       *(uint *)(&tileTannerClear + current->id * 0x10) & 0xff000000 |
+       current->ot[0x107f] & 0xffffff;
+  puVar16 = pDVar9->ot;
+  puVar16[0x107f] =
+       puVar16[0x107f] & 0xff000000 | (uint)(&tileTannerClear + pDVar9->id * 0x10) & 0xffffff;
+  InitCamera(&player);
+  setCopControlWord(2,0xc000,0xa00000);
+  setCopControlWord(2,0xc800,0x800000);
+  SetDefDrawEnv(auStack224,(int)rectTannerWindow.x,(int)rectTannerWindow.y,(int)rectTannerWindow.w,
+                (int)rectTannerWindow.h);
+  puVar18 = (uint *)current->primptr;
+  SetDrawEnv(puVar18,auStack224);
+  pDVar9 = current;
+  *puVar18 = *puVar18 & 0xff000000 | current->ot[0x107f] & 0xffffff;
+  pDVar9->ot[0x107f] = pDVar9->ot[0x107f] & 0xff000000 | (uint)puVar18 & 0xffffff;
+  pDVar9->primptr = pDVar9->primptr + 0x40;
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DoCivHead(struct SVECTOR *vert1 /*$s1*/, struct SVECTOR *vert2 /*$s3*/)
+ // line 2442, offset 0x00068b2c
+	/* begin block 1 */
+		// Start line: 2443
+		// Start offset: 0x00068B2C
+		// Variables:
+	// 		struct VECTOR headpos; // stack offset -184
+	// 		struct SVECTOR final_rotation; // stack offset -168
+	// 		struct SVECTOR spos1; // stack offset -160
+	// 		struct MODEL *model; // $s5
+	// 		struct MATRIX work2matrix; // stack offset -152
+	// 		struct MATRIX mRotStore; // stack offset -120
+	// 		struct VECTOR pos1; // stack offset -88
+	// 		int pal; // $v1
+	// 		int ci; // $s6
+
+		/* begin block 1.1 */
+			// Start line: 2495
+			// Start offset: 0x00068D38
+			// Variables:
+		// 		int cx; // $v1
+		// 		int sx; // $a0
+		// 		int cy; // $a1
+		// 		int sy; // $t0
+		// 		int cz; // $t3
+		// 		int sz; // $t6
+		// 		int stmp; // $a3
+		/* end block 1.1 */
+		// End offset: 0x00068D38
+		// End Line: 2495
+
+		/* begin block 1.2 */
+			// Start line: 2507
+			// Start offset: 0x00068F98
+			// Variables:
+		// 		int cx; // $v1
+		// 		int sx; // $t3
+		// 		int cy; // $t1
+		// 		int sy; // $a3
+		// 		int stmp; // $v0
+		/* end block 1.2 */
+		// End offset: 0x00068F98
+		// End Line: 2507
+
+		/* begin block 1.3 */
+			// Start line: 2535
+			// Start offset: 0x00069274
+			// Variables:
+		// 		struct MATRIX comb; // stack offset -72
+		/* end block 1.3 */
+		// End offset: 0x00069274
+		// End Line: 2537
+	/* end block 1 */
+	// End offset: 0x0006940C
+	// End Line: 2554
+
+	/* begin block 2 */
+		// Start line: 6379
+	/* end block 2 */
+	// End Line: 6380
+
+	/* begin block 3 */
+		// Start line: 6388
+	/* end block 3 */
+	// End Line: 6389
+
+	/* begin block 4 */
+		// Start line: 6400
+	/* end block 4 */
+	// End Line: 6401
+
+/* WARNING: Could not reconcile some variable overlaps */
+
+void DoCivHead(SVECTOR *vert1,SVECTOR *vert2)
+
+{
+  short sVar1;
+  short sVar2;
+  MODEL *model;
+  int iVar3;
+  undefined4 in_zero;
+  undefined4 in_at;
+  int local_b8;
+  int local_b4;
+  uint uVar4;
+  ushort uVar5;
+  ushort uVar6;
+  ushort uVar7;
+  int local_b0;
+  int iVar8;
+  uint uVar9;
+  uint uVar10;
+  uint uVar11;
+  int iVar12;
+  int iVar13;
+  uint uVar14;
+  int iVar15;
+  uint uVar16;
+  undefined4 local_a0;
+  uint local_9c;
+  uint local_98;
+  uint local_94;
+  uint local_90;
+  uint local_8c;
+  uint local_88;
+  undefined4 local_78;
+  undefined4 local_74;
+  undefined4 local_70;
+  undefined4 local_6c;
+  undefined4 local_68;
+  undefined4 local_64;
+  undefined4 local_60;
+  undefined4 local_5c;
+  VECTOR local_58;
+  uint local_48;
+  uint local_44;
+  uint local_40;
+  uint local_3c;
+  undefined4 local_38;
+  
+  iVar3 = combointensity;
+  model = gPed1HeadModelPtr;
+  if (gPed1HeadModelPtr != (MODEL *)0x0) {
+    local_78 = getCopControlWord(2,0);
+    local_74 = getCopControlWord(2,0x800);
+    local_70 = getCopControlWord(2,0x1000);
+    local_6c = getCopControlWord(2,0x1800);
+    local_68 = getCopControlWord(2,0x2000);
+    local_64 = getCopControlWord(2,0x2800);
+    local_60 = getCopControlWord(2,0x3000);
+    local_5c = getCopControlWord(2,0x3800);
+    if ((pDrawingPed->pallet & 0xf) == 0) {
+      palnumber = -1;
+    }
+    else {
+      palnumber = (uint)civ_clut[(uint)(byte)texturePedHead.texture_number * 6 +
+                                 ((uint)pDrawingPed->pallet & 0xf)] << 0x10;
+    }
+    if (bAllreadyRotated == 0) {
+      if (((pDrawingPed->dir).vx == 0) && ((pDrawingPed->dir).vz == 0)) {
+        uVar5 = (pDrawingPed->dir).vy;
+        if ((uVar5 & 0x3f) == 0) {
+          uVar4 = ((uint)uVar5 & 0xfc0) >> 1;
+          setCopControlWord(2,0,*(undefined4 *)((int)matrixtable.m + uVar4));
+          setCopControlWord(2,0x800,*(undefined4 *)((int)matrixtable.m + uVar4 + 4));
+          setCopControlWord(2,0x1000,*(undefined4 *)((int)matrixtable.m + uVar4 + 8));
+          setCopControlWord(2,0x1800,*(undefined4 *)((int)matrixtable.m + uVar4 + 0xc));
+          setCopControlWord(2,0x2000,*(undefined4 *)((int)matrixtable.m + uVar4 + 0x10));
+        }
+        else {
+          local_90 = 0x1000;
+          local_88 = local_88 & 0xffff0000 |
+                     (uint)(ushort)rcossin_tbl
+                                   [((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2 + 1];
+          local_98 = (uint)(ushort)rcossin_tbl
+                                   [((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2 + 1];
+          local_94 = (uint)(ushort)rcossin_tbl[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2];
+          local_8c = (uint)(ushort)-rcossin_tbl[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2];
+          setCopControlWord(2,0,local_98);
+          setCopControlWord(2,0x800,local_94);
+          setCopControlWord(2,0x1000,0x1000);
+          setCopControlWord(2,0x1800,local_8c);
+          setCopControlWord(2,0x2000,local_88);
+        }
+      }
+      else {
+        uVar9 = (uint)(ushort)(pDrawingPed->dir).vy & 0xfff;
+        uVar4 = (uint)(ushort)(pDrawingPed->dir).vz & 0xfff;
+        local_b0 = (int)rcossin_tbl[uVar9 * 2 + 1];
+        iVar15 = (int)rcossin_tbl[uVar4 * 2];
+        iVar12 = (int)rcossin_tbl[uVar4 * 2 + 1];
+        uVar14 = (uint)(ushort)(pDrawingPed->dir).vx & 0xfff;
+        local_b8 = (int)rcossin_tbl[uVar14 * 2 + 1];
+        iVar8 = (int)rcossin_tbl[uVar9 * 2];
+        local_b4 = (int)rcossin_tbl[uVar14 * 2];
+        uVar9 = (local_b8 * iVar8 + 0x800 >> 0xc) +
+                ((local_b0 * local_b4 + 0x800 >> 0xc) * iVar15 + 0x800 >> 0xc);
+        uVar10 = local_b0 * iVar12 + 0x800 >> 0xc;
+        iVar13 = (int)(short)uVar10;
+        uVar5 = -(short)(iVar12 * local_b4 + 0x800 >> 0xc);
+        uVar14 = local_b8 * iVar12 + 0x800 >> 0xc;
+        local_b8 = (-local_b8 * (local_b0 * iVar15 + 0x800 >> 0xc) + 0x800 >> 0xc) +
+                   (local_b4 * iVar8 + 0x800 >> 0xc);
+        local_98 = uVar10 & 0xffff | local_b8 * 0x10000;
+        local_94 = uVar9 & 0xffff | (uint)(ushort)rcossin_tbl[uVar4 * 2] << 0x10;
+        local_90 = uVar14 & 0xffff | (uint)uVar5 << 0x10;
+        local_8c = CONCAT22((short)(((int)(uVar9 * 0x10000) >> 0x10) * iVar15 + 0x800 >> 0xc) -
+                            (short)(iVar13 * (short)uVar5 + 0x800 >> 0xc),
+                            -(short)(iVar8 * iVar12 + 0x800 >> 0xc));
+        local_88 = local_88 & 0xffff0000 |
+                   (uint)(ushort)((short)(iVar13 * (short)uVar14 + 0x800 >> 0xc) -
+                                 (short)((local_b8 * 0x10000 >> 0x10) * iVar15 + 0x800 >> 0xc));
+        setCopControlWord(2,0,local_98);
+        setCopControlWord(2,0x800,local_94);
+        setCopControlWord(2,0x1000,local_90);
+        setCopControlWord(2,0x1800,local_8c);
+        setCopControlWord(2,0x2000,local_88);
+      }
+      setCopReg(2,in_zero,*(undefined4 *)vert1);
+      setCopReg(2,in_at,*(undefined4 *)&vert1->vz);
+      copFunction(2,0x486012);
+      local_b8 = getCopReg(2,0x19);
+      local_b4 = getCopReg(2,0x1a);
+      local_b0 = getCopReg(2,0x1b);
+    }
+    else {
+      local_b8 = (int)vert1->vx;
+      local_b4 = (int)vert1->vy;
+      local_b0 = (int)vert1->vz;
+    }
+    setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
+    setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
+    setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
+    setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
+    setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
+    local_a0 = CONCAT22((short)local_b4 +
+                        (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+                        (short)local_b8 +
+                        (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+    local_9c = local_9c & 0xffff0000 |
+               (uint)(ushort)((short)local_b0 +
+                             (*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
+    setCopReg(2,in_zero,local_a0);
+    setCopReg(2,in_at,local_9c);
+    copFunction(2,0x486012);
+    local_58.vx = getCopReg(2,0x19);
+    local_58.vy = getCopReg(2,0x1a);
+    local_58.vz = getCopReg(2,0x1b);
+    ratan2((int)vert1->vz - (int)vert2->vz,(int)vert1->vy - (int)vert2->vy);
+    sVar1 = (pDrawingPed->dir).vy;
+    sVar2 = pDrawingPed->head_rot;
+    ratan2((int)vert1->vx - (int)vert2->vx,(int)vert1->vy - (int)vert2->vy,pDrawingPed,
+           (int)vert1->vy,local_b8,local_b4,local_b0);
+    iVar13 = (int)rcossin_tbl[0];
+    uVar4 = (uint)(ushort)(sVar1 - sVar2) & 0xfff;
+    local_b4 = (int)rcossin_tbl[1];
+    local_b8 = rcossin_tbl[uVar4 * 2 + 1] * iVar13 + 0x800 >> 0xc;
+    local_b0 = local_b4 * rcossin_tbl[uVar4 * 2] + 0x800 >> 0xc;
+    uVar14 = local_b0 + (local_b8 * iVar13 + 0x800 >> 0xc);
+    uVar10 = rcossin_tbl[uVar4 * 2 + 1] * local_b4 + 0x800 >> 0xc;
+    uVar5 = -(short)(local_b4 * iVar13 + 0x800 >> 0xc);
+    uVar11 = local_b4 * local_b4 + 0x800 >> 0xc;
+    uVar9 = (-local_b4 * local_b8 + 0x800 >> 0xc) + (iVar13 * rcossin_tbl[uVar4 * 2] + 0x800 >> 0xc)
+    ;
+    local_98 = uVar10 & 0xffff | uVar9 * 0x10000;
+    uVar7 = -(short)local_b0;
+    uVar4 = uVar14 & 0xffff;
+    local_94 = uVar4 | (uint)(ushort)rcossin_tbl[0] << 0x10;
+    local_90 = uVar11 & 0xffff | (uint)uVar5 << 0x10;
+    uVar6 = (short)(((int)(uVar14 * 0x10000) >> 0x10) * iVar13 + 0x800 >> 0xc) -
+            (short)((int)(short)uVar10 * (int)(short)uVar5 + 0x800 >> 0xc);
+    local_8c = CONCAT22(uVar6,uVar7);
+    uVar14 = (uint)(ushort)((short)((int)(short)uVar10 * (int)(short)uVar11 + 0x800 >> 0xc) -
+                           (short)(((int)(uVar9 * 0x10000) >> 0x10) * iVar13 + 0x800 >> 0xc));
+    local_88 = local_88 & 0xffff0000 | uVar14;
+    setCopControlWord(2,0,local_98);
+    setCopControlWord(2,0x800,local_94);
+    setCopControlWord(2,0x1000,local_90);
+    setCopControlWord(2,0x1800,local_8c);
+    setCopControlWord(2,0x2000,local_88);
+    if (gNight != 0) {
+      combointensity = (int)&DAT_00404040;
+    }
+    setCopControlWord(2,0x2800,local_58.vx);
+    setCopControlWord(2,0x3000,local_58.vy);
+    setCopControlWord(2,0x3800,local_58.vz);
+    setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
+    setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
+    setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
+    setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
+    setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
+    setCopReg(2,0x4800,uVar10 & 0xffff);
+    setCopReg(2,0x5000,(uint)(ushort)rcossin_tbl[0]);
+    setCopReg(2,0x5800,(uint)uVar7);
+    copFunction(2,0x49e012);
+    uVar10 = getCopReg(2,0x4800);
+    local_b4 = getCopReg(2,0x5000);
+    uVar16 = getCopReg(2,0x5800);
+    setCopReg(2,0x4800,uVar9 & 0xffff);
+    setCopReg(2,0x5000,uVar11 & 0xffff);
+    setCopReg(2,0x5800,(uint)uVar6);
+    copFunction(2,0x49e012);
+    local_b8 = getCopReg(2,0x4800);
+    uVar9 = getCopReg(2,0x5000);
+    local_b0 = getCopReg(2,0x5800);
+    local_48 = uVar10 & 0xffff | local_b8 << 0x10;
+    local_3c = uVar16 & 0xffff | local_b0 << 0x10;
+    setCopReg(2,0x4800,uVar4);
+    setCopReg(2,0x5000,(uint)uVar5);
+    setCopReg(2,0x5800,uVar14);
+    copFunction(2,0x49e012);
+    uVar4 = getCopReg(2,0x4800);
+    local_b8 = getCopReg(2,0x5000);
+    uVar14 = getCopReg(2,0x5800);
+    local_44 = uVar4 & 0xffff | local_b4 << 0x10;
+    local_40 = uVar9 & 0xffff | local_b8 << 0x10;
+    local_38 = uVar14 & 0xffff | (uint)local_38._2_2_ << 0x10;
+    setCopControlWord(2,0,local_48);
+    setCopControlWord(2,0x800,local_44);
+    setCopControlWord(2,0x1000,local_40);
+    setCopControlWord(2,0x1800,local_3c);
+    setCopControlWord(2,0x2000,local_38);
+    DrawObject(model,(MATRIX *)&local_98,&local_58,1);
+    if (gNight != 0) {
+      combointensity = iVar3;
+    }
+    setCopControlWord(2,0,local_78);
+    setCopControlWord(2,0x800,local_74);
+    setCopControlWord(2,0x1000,local_70);
+    setCopControlWord(2,0x1800,local_6c);
+    setCopControlWord(2,0x2000,local_68);
+    palnumber = -1;
+  }
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DrawObject(struct MODEL *model /*$t8*/, struct MATRIX *matrix /*$a1*/, struct VECTOR *pos /*$a2*/, int z_correct /*$a3*/)
+ // line 2562, offset 0x00069438
+	/* begin block 1 */
+		// Start line: 2563
+		// Start offset: 0x00069438
+		// Variables:
+	// 		struct DVECTOR *outpoints; // $t7
+	// 		short *zbuff; // $t5
+	// 		struct SVECTOR *verts; // $t6
+	// 		char *polys; // $s0
+	// 		int cnt3; // $t1
+	// 		int i; // $s1
+	// 		int z0; // stack offset -40
+	// 		int z1; // stack offset -36
+	// 		int z2; // stack offset -32
+	// 		long *outlongs; // $s2
+	// 		int z; // stack offset -28
+
+		/* begin block 1.1 */
+			// Start line: 2654
+			// Start offset: 0x000697D4
+		/* end block 1.1 */
+		// End offset: 0x00069840
+		// End Line: 2663
+	/* end block 1 */
+	// End offset: 0x00069874
+	// End Line: 2683
+
+	/* begin block 2 */
+		// Start line: 6676
+	/* end block 2 */
+	// End Line: 6677
+
+void DrawObject(MODEL *model,MATRIX *matrix,VECTOR *pos,int z_correct)
+
+{
+  undefined4 uVar1;
+  int iVar2;
+  short sVar3;
+  short sVar4;
+  short sVar5;
+  short sVar6;
+  undefined4 in_zero;
+  undefined4 in_at;
+  uint uVar7;
+  uint uVar8;
+  undefined2 *puVar9;
+  int iVar10;
+  undefined4 *puVar11;
+  undefined4 *puVar12;
+  undefined4 *puVar13;
+  uint uVar14;
+  undefined4 *puVar15;
+  undefined4 *puVar16;
+  undefined4 *puVar17;
+  undefined4 *puVar18;
+  uint uVar19;
+  int local_28;
+  int local_24;
+  uint local_20;
+  
+  uVar7 = 0xaaaaaaab;
+  puVar18 = (undefined4 *)model->vertices;
+  uVar8 = (uint)model->num_vertices / 3;
+  uVar19 = 0;
+  sVar3 = (short)z_correct;
+  if (uVar8 != 0) {
+    puVar13 = &DAT_1f80004c;
+    puVar12 = &DAT_1f800048;
+    puVar11 = &DAT_1f800044;
+    puVar9 = &DAT_1f800240;
+    puVar17 = puVar18 + 4;
+    puVar16 = puVar18 + 2;
+    uVar14 = uVar8;
+    puVar15 = puVar18;
+    do {
+      setCopReg(2,in_zero,*puVar15);
+      setCopReg(2,in_at,puVar15[1]);
+      setCopReg(2,uVar7,*puVar16);
+      setCopReg(2,uVar8,puVar16[1]);
+      setCopReg(2,puVar9,*puVar17);
+      setCopReg(2,puVar11,puVar17[1]);
+      copFunction(2,0x280030);
+      puVar9[-3] = (short)(local_28 >> 3) + sVar3;
+      puVar9[-2] = (short)(local_24 >> 3) + sVar3;
+      puVar9[-1] = (short)((int)local_20 >> 3) + sVar3;
+      uVar1 = getCopReg(2,0xc);
+      *puVar11 = uVar1;
+      uVar1 = getCopReg(2,0xd);
+      *puVar12 = uVar1;
+      uVar1 = getCopReg(2,0xe);
+      *puVar13 = uVar1;
+      local_28 = getCopReg(2,0x11);
+      local_24 = getCopReg(2,0x12);
+      uVar8 = getCopReg(2,0x13);
+      if (zVal < local_28) {
+        zVal = local_28;
+      }
+      if (zVal < local_24) {
+        zVal = local_24;
+      }
+      uVar7 = (uint)(zVal < (int)uVar8);
+      if (zVal < (int)uVar8) {
+        zVal = uVar8;
+      }
+      uVar14 = uVar14 - 1;
+      puVar13 = puVar13 + 3;
+      puVar12 = puVar12 + 3;
+      puVar11 = puVar11 + 3;
+      puVar9 = puVar9 + 3;
+      puVar17 = puVar17 + 6;
+      puVar16 = puVar16 + 6;
+      puVar15 = puVar15 + 6;
+      uVar19 = uVar19 + 3;
+      local_20 = uVar8;
+    } while (0 < (int)uVar14);
+  }
+  iVar10 = (uint)model->num_vertices - uVar19;
+  sVar4 = (short)(local_28 >> 3);
+  sVar5 = (short)(local_24 >> 3);
+  sVar6 = (short)((int)local_20 >> 3);
+  if (iVar10 == 1) {
+    setCopReg(2,in_zero,puVar18[uVar19 * 2]);
+    setCopReg(2,in_at,(puVar18 + uVar19 * 2)[1]);
+    copFunction(2,0x180001);
+    (&DAT_1f80023a)[uVar19] = sVar4 + sVar3;
+    (&DAT_1f80023c)[uVar19] = sVar5 + sVar3;
+    (&DAT_1f80023e)[uVar19] = sVar6 + sVar3;
+    uVar1 = getCopReg(2,0xe);
+    (&DAT_1f800044)[uVar19] = uVar1;
+    iVar10 = getCopReg(2,0x13);
+    if (zVal < iVar10) {
+      zVal = iVar10;
+    }
+    (&DAT_1f800240)[uVar19] = (short)(iVar10 >> 3);
+  }
+  else {
+    if (iVar10 < 2) {
+      if ((uint)model->num_vertices == uVar19) {
+        (&DAT_1f80023a)[uVar19] = sVar4 + sVar3;
+        (&DAT_1f80023c)[uVar19] = sVar5 + sVar3;
+        (&DAT_1f80023e)[uVar19] = sVar6 + sVar3;
+      }
+    }
+    else {
+      if (iVar10 == 2) {
+        setCopReg(2,in_zero,puVar18[uVar19 * 2]);
+        setCopReg(2,in_at,(puVar18 + uVar19 * 2)[1]);
+        copFunction(2,0x180001);
+        (&DAT_1f80023a)[uVar19] = sVar4 + sVar3;
+        (&DAT_1f80023c)[uVar19] = sVar5 + sVar3;
+        (&DAT_1f80023e)[uVar19] = sVar6 + sVar3;
+        uVar1 = getCopReg(2,0xe);
+        (&DAT_1f800044)[uVar19] = uVar1;
+        iVar10 = getCopReg(2,0x13);
+        if (zVal < iVar10) {
+          zVal = iVar10;
+        }
+        (&DAT_1f800240)[uVar19] = (short)(iVar10 >> 3) + sVar3;
+        setCopReg(2,in_zero,puVar18[uVar19 * 2 + 2]);
+        setCopReg(2,in_at,(puVar18 + uVar19 * 2 + 2)[1]);
+        copFunction(2,0x180001);
+        uVar1 = getCopReg(2,0xe);
+        (&DAT_1f800048)[uVar19] = uVar1;
+        iVar10 = getCopReg(2,0x13);
+        if (zVal < iVar10) {
+          zVal = iVar10;
+        }
+        (&DAT_1f800242)[uVar19] = (short)(iVar10 >> 3) + sVar3;
+      }
+    }
+  }
+  iVar10 = model->poly_block;
+  DAT_1f80001c = &DAT_1f800240;
+  uVar8 = (uint)model->num_polys;
+  DAT_1f800018 = model;
+  while (uVar8 = uVar8 - 1, uVar8 != 0xffffffff) {
+    setCopReg(2,0x6000,(&DAT_1f800044)[*(byte *)(iVar10 + 4)]);
+    setCopReg(2,0x7000,(&DAT_1f800044)[*(byte *)(iVar10 + 6)]);
+    setCopReg(2,0x6800,(&DAT_1f800044)[*(byte *)(iVar10 + 5)]);
+    copFunction(2,0x1400006);
+    iVar2 = getCopReg(2,0x18);
+    DAT_1f80003c = iVar10;
+    if (0 < iVar2) {
+      wjmDraw3();
+    }
+    iVar10 = iVar10 + 0x14;
+  }
+  TransparentObject = '\0';
+  return;
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ wjmDraw3()
+ // line 2690, offset 0x00069874
+	/* begin block 1 */
+		// Start line: 2692
+		// Start offset: 0x00069874
+		// Variables:
+	// 		struct POLYFT3 *src; // $a3
+	// 		short *zbuff; // $t2
+	// 		long *outlongs; // $a2
+	// 		struct POLY_FT3 *prims; // $t1
+	// 		unsigned long clut; // $t0
+	// 		unsigned long tpage; // $a1
+	// 		int z; // $a2
+	/* end block 1 */
+	// End offset: 0x00069A38
+	// End Line: 2724
+
+	/* begin block 2 */
+		// Start line: 6971
+	/* end block 2 */
+	// End Line: 6972
+
+	/* begin block 3 */
+		// Start line: 6979
+	/* end block 3 */
+	// End Line: 6980
+
+	/* begin block 4 */
+		// Start line: 6980
+	/* end block 4 */
+	// End Line: 6981
+
+	/* begin block 5 */
+		// Start line: 6982
+	/* end block 5 */
+	// End Line: 6983
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+void wjmDraw3(void)
+
+{
+  undefined2 uVar1;
+  int iVar2;
+  DB *pDVar3;
+  int iVar4;
+  uint uVar5;
+  uint uVar6;
+  uint *puVar7;
+  
+  iVar4 = DAT_1f80003c;
+  iVar2 = DAT_1f80001c;
+  puVar7 = (uint *)current->primptr;
+  puVar7[1] = combointensity;
+  *(char *)((int)puVar7 + 3) = '\a';
+  *(char *)((int)puVar7 + 7) = '$';
+  if (palnumber == -1) {
+    uVar5 = (uint)*(byte *)(iVar4 + 1);
+    uVar6 = (uint)(ushort)(&texture_cluts)[uVar5 * 0x20 + (uint)*(byte *)(iVar4 + 2)] << 0x10;
+  }
+  else {
+    uVar5 = (uint)*(byte *)(iVar4 + 1);
+    uVar6 = palnumber;
+  }
+  uVar1 = (&texture_pages)[uVar5];
+  puVar7[2] = (&DAT_1f800044)[*(byte *)(iVar4 + 4)];
+  puVar7[3] = *(ushort *)(iVar4 + 8) | uVar6;
+  puVar7[4] = (&DAT_1f800044)[*(byte *)(iVar4 + 5)];
+  puVar7[5] = CONCAT22(uVar1,*(undefined2 *)(iVar4 + 10));
+  puVar7[6] = (&DAT_1f800044)[*(byte *)(iVar4 + 6)];
+  puVar7[7] = (uint)*(ushort *)(iVar4 + 0xc);
+  pDVar3 = current;
+  iVar2 = ((int)*(short *)((uint)*(byte *)(iVar4 + 4) * 2 + iVar2) +
+           (int)*(short *)((uint)*(byte *)(iVar4 + 5) * 2 + iVar2) +
+          (int)*(short *)((uint)*(byte *)(iVar4 + 6) * 2 + iVar2)) / 3;
+  *puVar7 = *puVar7 & 0xff000000 | current->ot[iVar2] & 0xffffff;
+  pDVar3->ot[iVar2] = pDVar3->ot[iVar2] & 0xff000000 | (uint)puVar7 & 0xffffff;
+  pDVar3->primptr = pDVar3->primptr + 0x20;
+  return;
+}
+
+
+
+
+
