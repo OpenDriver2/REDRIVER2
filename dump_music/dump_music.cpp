@@ -24,11 +24,13 @@ const double K1[5] = { 0, 0, -0.8125, -0.859375, -0.9375 };
 short vagToPcm(unsigned char soundParameter, int soundData, double* vagPrev1, double* vagPrev2)
 {
 	int resultInt = 0;
+
 	double dTmp1 = 0.0;
 	double dTmp2 = 0.0;
 	double dTmp3 = 0.0;
 
-	if (soundData > 7) soundData -= 16;
+	if (soundData > 7)
+		soundData -= 16;
 
 	dTmp1 = (double)soundData * pow(2, (double)(12 - (soundParameter & 0x0F)));
 
@@ -40,8 +42,11 @@ short vagToPcm(unsigned char soundParameter, int soundData, double* vagPrev1, do
 
 	resultInt = (int)round((*vagPrev1));
 
-	if (resultInt > 32767) resultInt = 32767;
-	if (resultInt < -32768) resultInt = -32768;
+	if (resultInt > 32767)
+		resultInt = 32767;
+
+	if (resultInt < -32768)
+		resultInt = -32768;
 
 	return (short)resultInt;
 }
@@ -60,10 +65,16 @@ void decodeSound(unsigned char* iData, short* oData, int soundSize, int* loopSta
 		if (i % 16 == 0)
 		{
 			sp = iData[i];
-			if ((iData[i + 1] & 0x0E) == 6) (*loopStart) = k;
-			if ((iData[i + 1] & 0x0F) == 3 || (iData[i + 1] & 0x0F) == 7) (*loopLength) = (k + 28) - (*loopStart);
+
+			if ((iData[i + 1] & 0x0E) == 6) 
+				(*loopStart) = k;
+
+			if ((iData[i + 1] & 0x0F) == 3 || (iData[i + 1] & 0x0F) == 7)
+				(*loopLength) = (k + 28) - (*loopStart);
+
 			i += 2;
 		}
+
 		sd = (int)iData[i] & 0x0F;
 		oData[k++] = vagToPcm(sp, sd, &vagPrev1, &vagPrev2);
 		sd = ((int)iData[i] >> 4) & 0x0F;
@@ -367,13 +378,215 @@ int DecompressAndRestoreXM(char* destXM, char* xmData, int srcSize, PCMSample* s
 
 //-----------------------------------------------------------------------------
 
-int main(int argc, char** argv)
+int LoadSoundBank(SAMPLE_DATA* out_sample_info, PCMSample* out_samples, FILE* fp)
 {
-	if (argc <= 1)
+	int numBankSamples = 0;
+	fread(&numBankSamples, sizeof(int), 1, fp);
+
+	printf("bank sounds: %d\n", numBankSamples);
+
+	fread(out_sample_info, sizeof(SAMPLE_DATA), numBankSamples, fp);
+
+	int bankSamplesOffset = ftell(fp);
+
+	printf("bank sounds: %d\n", numBankSamples);
+
+	for (int j = 0; j < numBankSamples; j++)
+	{
+		SAMPLE_DATA& sample = out_sample_info[j];
+		PCMSample& pcmSample = out_samples[j];
+
+		if (sample.loop == 0)
+			sample.length -= 16;
+
+		if (sample.length == 0)
+			continue;
+
+		// read VAG and convert to ADPCM
+		{
+			unsigned char* iData = (unsigned char*)malloc(sample.length);
+
+			pcmSample.length = (sample.length >> 4) * 28;
+			pcmSample.data = new short[pcmSample.length];
+
+			fseek(fp, bankSamplesOffset + sample.address, SEEK_SET);
+			fread(iData, sizeof(char), sample.length, fp);  // Read the audio data
+
+			decodeSound(iData, pcmSample.data, sample.length, &pcmSample.loopStart, &pcmSample.loopLength);
+
+			free(iData);
+
+			printf("sample %d rate=%d loop=%d size=%d\n", j, sample.samplerate, sample.loop, pcmSample.length);
+		}
+	}
+
+	return numBankSamples;
+}
+
+int DoConvertSBK(const char* sbkFileName)
+{
+	char tmpString[_MAX_PATH];
+	snprintf(tmpString, _MAX_PATH, "%s_dec", sbkFileName);
+
+	printf("Loading '%s'...\n", sbkFileName);
+
+	FILE* sbkFp = fopen(sbkFileName, "rb");
+
+	if (!sbkFp)
+	{
+		printf("No such file '%s'!", sbkFileName);
 		return -1;
+	}
 
-	char* fileName = argv[1];
+	CreateDirectoryA(tmpString, NULL);
 
+	PCMSample pcmSamples[80];
+	SAMPLE_DATA sampleDescs[80];
+	memset(pcmSamples, 0, sizeof(PCMSample) * 80);
+	memset(sampleDescs, 0, sizeof(SAMPLE_DATA) * 80);
+
+	int numBankSamples = LoadSoundBank(sampleDescs, pcmSamples, sbkFp);
+
+	for (int i = 0; i < numBankSamples; i++)
+	{
+		PCMSample& sample = pcmSamples[i];
+		SAMPLE_DATA& sampleDesc = sampleDescs[i];
+
+		snprintf(tmpString, _MAX_PATH, "%s_dec\\%d.wav", sbkFileName, i);
+
+		FILE* wavfp = fopen(tmpString, "wb");
+
+		if (wavfp)
+		{
+			// Prepare the WAV file header
+			wavHeader[1] = sample.length * sizeof(short) + 36;  // Size of the "RIFF" chunk
+
+			if (sample.loopLength > 0)
+				wavHeader[1] += 68;
+
+			wavHeader[6] = sampleDesc.samplerate;  // Sampling rate
+			wavHeader[7] = wavHeader[6] * sizeof(short);  // Average bytes per second
+			wavHeader[10] = sample.length * sizeof(short);  // Size of the "data" chunk
+
+			// Write WAV file header, the converted audio data, and the loop positions if used
+			fwrite(&wavHeader, sizeof(int), 11, wavfp);
+			fwrite(sample.data, sizeof(short), sample.length, wavfp);
+			if (sample.loopLength > 0)
+			{
+				smplChunk[13] = sample.loopStart * sizeof(short);
+				smplChunk[14] = sample.loopStart * sizeof(short) + sample.loopLength * sizeof(short);
+				fwrite(&smplChunk, sizeof(int), 17, wavfp);
+			}
+
+			fclose(wavfp);
+		}
+		else
+			printf("Unable to create file %s\n", tmpString);
+
+	}
+
+	return 0;
+}
+
+int DoConvertXMAndSBK(const char* xmFilename)
+{
+	char tmpString[_MAX_PATH];
+	char sbkFileName[_MAX_PATH];
+	strcpy_s(sbkFileName, xmFilename);
+
+	char* extStr = strchr(sbkFileName, '.');
+	if (extStr)
+		strcpy(extStr, ".sbk");
+
+	FILE* psxXmFp = fopen(xmFilename, "rb");
+
+	if (!psxXmFp)
+	{
+		printf("No such file '%s'!", xmFilename);
+		return -1;
+	}
+
+	FILE* sbkFp = fopen(sbkFileName, "rb");
+
+	if (!sbkFp)
+	{
+		printf("No such file '%s'!", sbkFileName);
+		return -1;
+	}
+
+	printf("Loading '%s' & '%s'...\n", xmFilename, sbkFileName);
+
+	PCMSample pcmSamples[80];
+	SAMPLE_DATA sampleDescs[80];
+	memset(pcmSamples, 0, sizeof(PCMSample) * 80);
+	memset(sampleDescs, 0, sizeof(SAMPLE_DATA) * 80);
+
+	int numBankSamples = LoadSoundBank(sampleDescs, pcmSamples, sbkFp);
+
+	// restore XM and save to disk
+	{
+		*extStr = 0;
+
+		printf("--- XM song '%s' ---\n", sbkFileName);
+		sprintf_s(tmpString, "%s_orig.xm", sbkFileName);
+
+		FILE* xmFp = fopen(tmpString, "wb");
+
+		if (xmFp)
+		{
+			fseek(psxXmFp, 0, SEEK_END);
+			int songSize = ftell(psxXmFp);
+			fseek(psxXmFp, 0, SEEK_SET);
+
+			// read the PSX XM
+			char* xmData = (char*)malloc(songSize);
+			fread(xmData, songSize, 1, psxXmFp);
+
+			fclose(psxXmFp);
+
+			// calculate new XM size according to samples
+			int addSize = 0;
+
+			for (int j = 0; j < numBankSamples; j++)
+			{
+				//printf("sample %d rate=%d loop=%d size=%d\n", j, sample.samplerate, sample.loop, sample.length);
+				addSize += pcmSamples[j].length * sizeof(short);
+			}
+
+			int calculatedXMSize = songSize * 4 + addSize;
+
+			// decompress
+			char* newXMData = (char*)malloc(calculatedXMSize);	// the new size is pretty hardcoded setting
+
+			songSize = DecompressAndRestoreXM(newXMData, xmData, songSize, pcmSamples);
+
+			free(xmData);
+			xmData = newXMData;
+
+			fwrite(xmData, 1, songSize, xmFp);
+			fclose(xmFp);
+
+			free(xmData);
+		}
+		else
+			printf("ERROR: can't open '%s' for write!", tmpString);
+	}
+
+	// free samples
+	for (int j = 0; j < numBankSamples; j++)
+	{
+		delete[] pcmSamples[j].data;
+		pcmSamples[j].data = nullptr;
+	}
+
+	// close handles
+	fclose(sbkFp);
+
+	return 0;
+}
+
+int DoExtractMusicFile(const char* fileName)
+{
 	FILE* fp = fopen(fileName, "rb");
 
 	if (!fp)
@@ -389,6 +602,7 @@ int main(int argc, char** argv)
 
 	// max 80 samples per bank
 	PCMSample pcmSamples[80];
+	SAMPLE_DATA sampleDescs[80];
 	song_t songs[XM_SONGS];
 	int numBankSamples = 0;
 
@@ -416,81 +630,10 @@ int main(int argc, char** argv)
 		// Read sound bank and then convert it using vabdecode
 		fseek(fp, offsets.bank_offset, SEEK_SET);
 
-		fread(&numBankSamples, sizeof(int), 1, fp);
+		memset(pcmSamples, 0, sizeof(PCMSample) * 80);
+		memset(sampleDescs, 0, sizeof(SAMPLE_DATA) * 80);
 
-		SAMPLE_DATA* sampleDescs = new SAMPLE_DATA[numBankSamples];
-		fread(sampleDescs, sizeof(SAMPLE_DATA), numBankSamples, fp);
-
-		memset(pcmSamples, 0, sizeof(PCMSample)*80);
-
-		int bankSamplesOffset = ftell(fp);
-
-		printf("bank sounds: %d\n", numBankSamples);
-
-		for (int j = 0; j < numBankSamples; j++)
-		{
-			SAMPLE_DATA& sample = sampleDescs[j];
-			PCMSample& pcmSample = pcmSamples[j];
-
-			if (sample.loop == 0)
-				sample.length -= 16;
-
-			if (sample.length == 0)
-				continue;
-
-			// read VAG and convert to ADPCM
-			{
-				unsigned char* iData = (unsigned char*)malloc(sample.length);
-
-				pcmSample.length = (sample.length >> 4) * 28;
-				pcmSample.data = new short[pcmSample.length];
-
-				fseek(fp, bankSamplesOffset + sample.address, SEEK_SET);
-				fread(iData, sizeof(char), sample.length, fp);  // Read the audio data
-
-				decodeSound(iData, pcmSample.data, sample.length, &pcmSample.loopStart, &pcmSample.loopLength);
-
-				free(iData);
-
-				printf("sample %d rate=%d loop=%d size=%d\n", j, sample.samplerate, sample.loop, pcmSample.length);
-			}
-
-			/*
-			{
-				// Prepare the WAV file header
-				wavHeader[1] = pcmSample.length * sizeof(short) + 36;  // Size of the "RIFF" chunk
-
-				if (pcmSample.loopLength > 0)
-					wavHeader[1] += 68;
-
-				wavHeader[6] = sample.samplerate;						// Sampling rate
-				wavHeader[7] = sample.samplerate * sizeof(short);		// Average bytes per second (sample rate * sample size * channel count)
-				wavHeader[10] = pcmSample.length * sizeof(short);		// Size of the "data" chunk
-
-				char outputFile[256];
-				snprintf(outputFile, sizeof(outputFile), "%s\\%d.wav", songPath, j);
-
-				FILE* fp2;
-				fp2 = fopen(outputFile, "wb");
-
-				if (fp2)
-				{
-					// Write WAV file header, the converted audio data, and the loop positions if used
-					fwrite(&wavHeader, sizeof(int), 11, fp2);
-					fwrite(pcmSample.data, sizeof(short), pcmSample.length, fp2);
-
-					if (pcmSample.loopLength > 0)
-					{
-						smplChunk[13] = pcmSample.loopStart;
-						smplChunk[14] = pcmSample.loopStart + pcmSample.loopLength;
-						fwrite(&smplChunk, sizeof(int), 17, fp2);
-					}
-
-					fclose(fp2);
-				}
-			}
-			*/
-		}
+		numBankSamples = LoadSoundBank(sampleDescs, pcmSamples, fp);
 
 		// restore XM and save to disk
 		{
@@ -501,7 +644,7 @@ int main(int argc, char** argv)
 
 			if (xmFp)
 			{
-				
+
 				// calculate new XM size according to samples
 				int addSize = 0;
 
@@ -520,10 +663,12 @@ int main(int argc, char** argv)
 
 				free(xmData);
 				xmData = newXMData;
-				
+
 				fwrite(xmData, 1, songSize, xmFp);
 				fclose(xmFp);
 			}
+			else
+				printf("ERROR: can't open '%s' for write!", tmpString);
 
 			free(xmData);
 		}
@@ -537,4 +682,59 @@ int main(int argc, char** argv)
 	}
 
 	fclose(fp);
+
+	return 0;
+}
+
+int DoAssembleMusicFile(const char* folder)
+{
+
+
+	return 0;
+}
+
+//-----------------------------------------------------
+
+int main(int argc, char** argv)
+{
+	if (argc <= 1)
+	{
+		printf("usage:\n");
+		printf("\tdump_music -bin2xm MUSIC.BIN\n");
+		printf("\tdump_music -psx2xm FETUNE.XM\n");
+		printf("\tdump_music -sbk2wav SOUNDS.SBK\n");
+
+		return -1;
+	}
+
+	for (int i = 0; i < argc; i++)
+	{
+		if (!_stricmp(argv[i], "-bin2xm"))
+		{
+			if (i + 1 <= argc)
+				DoExtractMusicFile(argv[i + 1]);
+			else
+				printf("-extract must have an argument!");
+		}
+		else if (!_stricmp(argv[i], "-psx2xm"))
+		{
+			if (i + 1 <= argc)
+				DoConvertXMAndSBK(argv[i + 1]);
+			else
+				printf("-psx2xm must have an argument!");
+		}
+		else if (!_stricmp(argv[i], "-sbk2wav"))
+		{
+			if (i + 1 <= argc)
+				DoConvertSBK(argv[i + 1]);
+			else
+				printf("-sbk2wav must have an argument!");
+		}
+		else if (!_stricmp(argv[i], "-a") || !_stricmp(argv[i], "-assemble"))
+		{
+
+		}
+	}
+
+	return 0;
 }
