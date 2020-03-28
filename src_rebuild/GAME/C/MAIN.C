@@ -2081,8 +2081,8 @@ int redriver2_main(void)
 	};
 
 	char *NTSCScreenNames[4] = {
-		//"GFX\\SPLASH2.TIM",
-		//"GFX\\SPLASH3.TIM",
+		"GFX\\SPLASH2.TIM",
+		"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1N.TIM",
 		NULL
 	};

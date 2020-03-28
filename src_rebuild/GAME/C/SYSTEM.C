@@ -9,7 +9,7 @@
 #include <string.h>
 
 char _overlay_buffer[0x50000];		// 0x1C0000
-char _frontend_buffer[0x8000];		// 0xFB400
+char _frontend_buffer[0x50000];		// 0xFB400
 
 char* LevelFiles[] = {
 	"LEVELS\\CHICAGO.LEV",
@@ -46,6 +46,7 @@ char _tempPrimTab2[0x8000];		// 0x119400
 
 // TODO: to game vars
 unsigned char NumPlayers = 1;
+int NewLevel = 1;
 
 // decompiled code
 // original method signature: 

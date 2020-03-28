@@ -1,6 +1,16 @@
 #include "THISDUST.H"
 #include "LOADVIEW.H"
 
+#include "E3STUFF.H"
+#include "SYSTEM.H"
+#include "LIBETC.H"
+#include "../FRONTEND/FEMAIN.H"
+
+DRAWENV load_draw = { 0 };
+DISPENV load_disp = { 0 };
+
+int load_steps = 0;
+int loading_bar_pos = 0;
 
 // decompiled code
 // original method signature: 
@@ -33,72 +43,50 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ShowLoading(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined auStack56[4];
-	undefined local_34;
-	undefined local_33;
-	undefined local_32;
-	undefined2 local_30;
-	undefined2 local_2e;
-	undefined local_2c;
-	undefined local_2b;
-	undefined local_2a;
-	short local_28;
-	undefined2 local_26;
-	undefined local_24;
-	undefined local_23;
-	undefined local_22;
-	undefined2 local_20;
-	undefined2 local_1e;
-	undefined local_1c;
-	undefined local_1b;
-	undefined local_1a;
-	short local_18;
-	undefined2 local_16;
+	POLY_G4 poly;
 
 	if ((NewLevel != 0) || (gInFrontend != 0)) {
 		loading_bar_pos = loading_bar_pos + 1;
-		local_28 = (short)(loading_bar_pos * load_steps);
-		if (0x78 < loading_bar_pos * load_steps) {
-			local_28 = 0x78;
+		poly.x1 = (short)(loading_bar_pos * load_steps);
+		if (120 < loading_bar_pos * load_steps) {
+			poly.x1 = 120;
 		}
-		SetPolyG4(auStack56);
-		local_34 = 0x1e;
-		local_24 = 0x1e;
-		local_33 = 0xb;
-		local_32 = 0xb;
-		local_23 = 0xb;
-		local_22 = 0xb;
-		local_2b = 0xb;
-		local_2a = 0xb;
-		local_1b = 0xb;
-		local_1a = 0xb;
-		local_2c = 0x86;
-		local_1c = 0x86;
-		local_28 = local_28 + 0xb0;
-		local_2e = 0x1b3;
-		local_26 = 0x1b3;
-		local_30 = 0xb0;
-		local_20 = 0xb0;
-		local_1e = 0x1cc;
-		local_16 = 0x1cc;
-		local_18 = local_28;
-		DrawPrim(auStack56);
+
+		SetPolyG4(&poly);
+		poly.r0 = 30;
+		poly.r2 = 30;
+		poly.g0 = 11;
+		poly.b0 = 11;
+		poly.g2 = 11;
+		poly.b2 = 11;
+		poly.g1 = 11;
+		poly.b1 = 11;
+		poly.g3 = 11;
+		poly.b3 = 11;
+		poly.r1 = 122;
+		poly.r3 = 122;
+        poly.x1 = poly.x1 + 0xb0;
+        poly.y0 = 435;
+        poly.y1 = 435;
+        poly.x0 = 176;
+        poly.x2 = 176;
+        poly.y2 = 460;
+        poly.y3 = 460;
+        poly.x3 = poly.x1;
+		DrawPrim(&poly);
 		VSync(0);
 		DrawSync(0);
 		PutDrawEnv(&load_draw);
 		PutDispEnv(&load_disp);
-		DrawPrim(auStack56);
+		DrawPrim(&poly);
 		VSync(0);
 		DrawSync(0);
 		PutDrawEnv(&load_draw);
 		PutDispEnv(&load_disp);
 	}
-	return;
-	*/
 }
 
 
@@ -267,124 +255,118 @@ void FadeGameScreen(int flag, int speed)
 	/* end block 4 */
 	// End Line: 704
 
+// [D]
 void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
+	char local_a0_424;
 	uint uVar2;
-	undefined *puVar3;
-	undefined *puVar4;
-	undefined *puVar5;
-	undefined *puVar6;
+	SPRT *pSVar3;
+	SPRT *pSVar4;
+	POLY_FT3 *pPVar5;
+	POLY_FT3 *pPVar6;
 	uint uVar7;
 	int iVar8;
 	int iVar9;
 	int iVar10;
-	undefined uVar11;
+	unsigned char uVar11;
 	int iVar12;
-	undefined2 local_108;
-	undefined2 local_106;
-	undefined2 local_104;
-	undefined2 local_102;
-	undefined auStack256[40];
-	undefined auStack216[40];
-	undefined auStack176[3];
-	undefined local_ad[4];
-	undefined local_a9;
-	ushort local_a8[28];
-	undefined auStack112[3];
-	undefined local_6d[4];
-	undefined local_69;
-	ushort local_68[28];
-	int local_30;
+	RECT16 dest;
+	SPRT prims[4];
+	POLY_FT3 nulls[4];
+	int fade_step;
 
 	iVar12 = 0xff;
-	local_30 = -4;
+	fade_step = -4;
 	if (effect == 1) {
 		SetDispMask(0);
 	}
-	SetupDefDrawEnv(&load_draw, 0, 0, 0x140, 0x200);
-	SetupDefDispEnv(&load_disp, 0, 0, 0x140, 0x200);
+	SetupDefDrawEnv(&load_draw, 0, 0, 320, 512);
+	SetupDefDispEnv(&load_disp, 0, 0, 320, 512);
 	load_draw.dfe = '\x01';
 	PutDispEnv(&load_disp);
 	PutDrawEnv(&load_draw);
-	Loadfile(screen_name, &DAT_000f3000);
-	LoadClut(&DAT_000f3014, 0x140, 0x1ff);
+
+	Loadfile(screen_name, _frontend_buffer);
+	LoadClut((u_long*)&_frontend_buffer[20], 320, 511);
+
 	DrawSync(0);
-	local_108 = 0x140;
-	local_106 = 0;
-	local_104 = 0xa0;
-	local_102 = 0x1ff;
-	LoadImage(&local_108, &DAT_000f3220);
+	dest.x = 320;
+	dest.y = 0;
+	dest.w = 160;
+	dest.h = 511;
+	LoadImage(&dest, (u_long *)&_frontend_buffer[544]);
+
 	DrawSync(0);
+
 	bVar1 = false;
 	iVar8 = 0;
-	puVar4 = auStack216;
-	puVar6 = auStack112;
-	uVar7 = 0x140;
-	puVar5 = auStack176;
-	puVar3 = auStack256;
+	pSVar4 = prims + 2;
+	pPVar6 = nulls + 2;
+	uVar7 = 320;
+	pPVar5 = nulls;
+	pSVar3 = prims;
 	do {
 		uVar2 = uVar7 & 0x3ff;
 		uVar7 = uVar7 + 0x80;
-		puVar3[3] = 4;
-		puVar3[7] = 100;
-		*(short *)(puVar3 + 8) = (short)(iVar8 << 8);
-		*(undefined2 *)(puVar3 + 10) = 0;
-		puVar3[0xc] = 0;
-		puVar3[0xd] = 0;
-		*(undefined2 *)(puVar3 + 0x10) = 0x100;
-		*(undefined2 *)(puVar3 + 0x12) = 0x100;
-		*(undefined2 *)(puVar3 + 0xe) = 0x7fd4;
-		puVar5[3] = 7;
-		*(undefined2 *)(puVar5 + 8) = 0xffff;
-		*(undefined2 *)(puVar5 + 10) = 0xffff;
-		*(undefined2 *)(puVar5 + 0x10) = 0xffff;
-		*(undefined2 *)(puVar5 + 0x12) = 0xffff;
-		*(undefined2 *)(puVar5 + 0x18) = 0xffff;
-		*(undefined2 *)(puVar5 + 0x1a) = 0xffff;
-		puVar5[7] = 0x24;
-		*(ushort *)(puVar5 + 0x16) = (ushort)((int)uVar2 >> 6) | 0x80;
-		puVar5 = puVar5 + 0x20;
+		setSprt(pSVar3);
+		pSVar3->x0 = (short)(iVar8 << 8);
+		pSVar3->y0 = 0;
+		pSVar3->u0 = '\0';
+		pSVar3->v0 = '\0';
+		pSVar3->w = 0x100;
+		pSVar3->h = 0x100;
+		pSVar3->clut = 0x7fd4;
+
+		setPolyFT3(pPVar5);
+		pPVar5->x0 = -1;
+		pPVar5->y0 = -1;
+		pPVar5->x1 = -1;
+		pPVar5->y1 = -1;
+		pPVar5->x2 = -1;
+		pPVar5->y2 = -1;
+		pPVar5->tpage = (ushort)((int)uVar2 >> 6) | 0x80;
+		pPVar5 = pPVar5 + 1;
 		iVar8 = iVar8 + 1;
-		puVar3 = puVar3 + 0x14;
+		pSVar3 = pSVar3 + 1;
 	} while (iVar8 < 2);
+
 	iVar8 = 0;
 	uVar7 = 0x140;
+
 	do {
 		uVar2 = uVar7 & 0x3ff;
 		uVar7 = uVar7 + 0x80;
-		puVar4[3] = 4;
-		puVar4[7] = 100;
-		*(short *)(puVar4 + 8) = (short)(iVar8 << 8);
-		*(undefined2 *)(puVar4 + 10) = 0x100;
-		puVar4[0xc] = 0;
-		puVar4[0xd] = 0;
-		*(undefined2 *)(puVar4 + 0x10) = 0x100;
-		*(undefined2 *)(puVar4 + 0x12) = 0x100;
-		*(undefined2 *)(puVar4 + 0xe) = 0x7fd4;
-		puVar6[3] = 7;
-		*(undefined2 *)(puVar6 + 8) = 0xffff;
-		*(undefined2 *)(puVar6 + 10) = 0xffff;
-		*(undefined2 *)(puVar6 + 0x10) = 0xffff;
-		*(undefined2 *)(puVar6 + 0x12) = 0xffff;
-		*(undefined2 *)(puVar6 + 0x18) = 0xffff;
-		*(undefined2 *)(puVar6 + 0x1a) = 0xffff;
-		puVar6[7] = 0x24;
-		*(ushort *)(puVar6 + 0x16) = (ushort)((int)uVar2 >> 6) | 0x90;
-		puVar6 = puVar6 + 0x20;
+		setSprt(pSVar4);
+		pSVar4->x0 = (short)(iVar8 << 8);
+		pSVar4->y0 = 0x100;
+		pSVar4->u0 = '\0';
+		pSVar4->v0 = '\0';
+		pSVar4->w = 0x100;
+		pSVar4->h = 0x100;
+		pSVar4->clut = 0x7fd4;
+
+		setPolyFT3(pPVar6);
+		pPVar6->x0 = -1;
+		pPVar6->y0 = -1;
+		pPVar6->x1 = -1;
+		pPVar6->y1 = -1;
+		pPVar6->x2 = -1;
+		pPVar6->y2 = -1;
+		pPVar6->tpage = (ushort)((int)uVar2 >> 6) | 0x90;
+		pPVar6 = pPVar6 + 1;
 		iVar8 = iVar8 + 1;
-		puVar4 = puVar4 + 0x14;
+		pSVar4 = pSVar4 + 1;
 	} while (iVar8 < 2);
+
 	if (effect == 1) {
 		iVar12 = 8;
-		local_30 = 2;
+		fade_step = 2;
 	}
 	else {
 		if (effect == 2) {
-			iVar12 = 0x80;
-			local_30 = -2;
+			iVar12 = 128;
+			fade_step = -2;
 		}
 	}
 	iVar8 = 0;
@@ -392,30 +374,31 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 		if (iVar8 == 2) {
 			SetDispMask(1);
 		}
-		puVar4 = auStack176;
-		puVar5 = auStack256;
+		pPVar5 = nulls;
+		pSVar4 = prims;
 		iVar8 = iVar8 + 1;
 		iVar9 = 3;
-		iVar10 = iVar12 + local_30;
-		puVar3 = puVar5;
+		iVar10 = iVar12 + fade_step;
+		pSVar3 = pSVar4;
 		do {
-			uVar11 = (undefined)iVar12;
-			puVar3[4] = uVar11;
-			puVar3[5] = uVar11;
-			puVar3[6] = uVar11;
+			uVar11 = (unsigned char)iVar12;
+			pSVar3->r0 = uVar11;
+			pSVar3->g0 = uVar11;
+			pSVar3->b0 = uVar11;
 			iVar9 = iVar9 + -1;
-			puVar3 = puVar3 + 0x14;
+			pSVar3 = pSVar3 + 1;
 		} while (-1 < iVar9);
 		iVar12 = 3;
 		do {
-			DrawPrim(puVar4);
-			DrawPrim(puVar5);
-			puVar5 = puVar5 + 0x14;
+			DrawPrim(pPVar5);
+			DrawPrim(pSVar4);
+			pSVar4 = pSVar4 + 1;
 			iVar12 = iVar12 + -1;
-			puVar4 = puVar4 + 0x20;
+			pPVar5 = pPVar5 + 1;
 		} while (-1 < iVar12);
 		DrawSync(0);
 		VSync(0);
+
 		PutDispEnv(&load_disp);
 		PutDrawEnv(&load_draw);
 		if (effect == 1) {
@@ -432,11 +415,10 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	} while (!bVar1);
 	load_steps = 0x18;
 	if (gInFrontend == 0) {
-		load_steps = 0x14;
+		load_steps = 20;
 	}
 	loading_bar_pos = 0;
 	return;
-	*/
 }
 
 

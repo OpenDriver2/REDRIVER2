@@ -9,6 +9,9 @@ int(*GPU_printf)(const char *fmt, ...);
 
 int main()
 {
+	//g_texturelessMode = 1;
+	//g_wireframeMode = 1;
+
 	GPU_printf = printf;
 
 	Emulator_Initialise("DRIVER 2", 800, 600);

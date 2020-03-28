@@ -1,6 +1,7 @@
 #ifndef FEMAIN_H
 #define FEMAIN_H
 
+extern int gInFrontend;
 
 extern void SetVariable(int var); // 0x001C0974
 
