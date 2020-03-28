@@ -176,6 +176,7 @@
     <ClCompile Include="GAME\C\FMVPLAY.C" />
     <ClCompile Include="GAME\C\GAMESND.C" />
     <ClCompile Include="GAME\C\GLAUNCH.C" />
+    <ClCompile Include="GAME\C\LOADVIEW.C" />
     <ClCompile Include="GAME\C\MAIN.C" />
     <ClCompile Include="GAME\C\PAD.C" />
     <ClCompile Include="GAME\C\SCORES.C" />
@@ -214,6 +215,7 @@
     <ClInclude Include="EMULATOR\R3000.H" />
     <ClInclude Include="EMULATOR\STRINGS.H" />
     <ClInclude Include="EMULATOR\TYPES.H" />
+    <ClInclude Include="GAME\FRONTEND\CD_ICON.H" />
     <ClInclude Include="THISDUST.H" />
   </ItemGroup>
   <ItemGroup>

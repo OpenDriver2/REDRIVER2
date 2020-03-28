@@ -1,11 +1,62 @@
 #include "THISDUST.H"
 #include "FEMAIN.H"
 
+#include "CD_ICON.H"
+
+#include <string.h>
+
 #include "LIBGPU.H"
 #include "LIBETC.H"
 
 #include "../C/SYSTEM.H"
 #include "../C/GLAUNCH.H"
+#include "../C/LOADVIEW.H"
+#include "../C/PAD.H"
+
+typedef int(*screenFunc)(int bSetup);
+
+screenFunc fpUserFunctions[] = {
+	CentreScreen,
+	CarSelectScreen,
+	CopDiffLevelScreen,
+	VibroOnOffScreen,
+	MissionSelectScreen,
+	MissionCityScreen,
+	CutSceneCitySelectScreen,
+	CutSceneSelectScreen,
+	SetVolumeScreen,
+	ScoreScreen,
+	SubtitlesOnOffScreen,
+	CityCutOffScreen,
+	ControllerScreen,
+	MainScreen,
+	CheatScreen,
+	ImmunityOnOffScreen,
+	InvincibleOnOffScreen,
+	GamePlayScreen,
+	GameNameScreen,
+	CheatNumlayerSelect,
+};
+
+int bRedrawFrontend = 0;
+int gInFrontend = 0;
+int idle_timer = 0;
+int currPlayer = 0;
+int fePad = 0;
+int ScreenDepth = 0;
+
+GAMETYPE GameType = GAME_MISSION;
+int gCurrentMissionNumber = 0;
+int gIdleReplay = 0;
+
+PSXSCREEN* pCurrScreen = NULL;
+PSXSCREEN* pNewScreen = NULL;
+PSXBUTTON* pCurrButton = NULL;
+
+PSXSCREEN PsxScreens[42] = { 0 };
+struct PSXSCREEN* pScreenStack[10] = { 0 };
+struct PSXBUTTON* pButtonStack[10] = { 0 };
+char* ScreenNames[12] = { 0 };
 
 // decompiled code
 // original method signature: 
@@ -31,7 +82,7 @@
 	/* end block 3 */
 	// End Line: 2415
 
-void SetVariable(int var)
+	void SetVariable(int var)
 {
 	UNIMPLEMENTED();
 	/*
@@ -189,117 +240,115 @@ void SetVariable(int var)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void LoadFrontendScreens(void)
 {
 	UNIMPLEMENTED();
-	/*
-	char cVar1;
-	int iVar2;
-	undefined4 *puVar3;
-	undefined4 *puVar4;
-	undefined4 *puVar5;
-	int iVar6;
-	int offset;
-	undefined4 uVar7;
-	int iVar8;
-	uint uVar9;
-	undefined4 uVar10;
-	int iVar11;
-	undefined4 uVar12;
-	short sVar13;
-	short local_28;
-	undefined2 local_26;
-	undefined2 local_24;
-	undefined2 local_22;
 
-	ShowLoadingScreen(s_GFX_FELOAD_TIM_FRNT__001c07d4, 1, 0xc);
+	unsigned char uVar1;
+	int iVar2;
+	int *local_v1_356;
+	int *piVar3;
+	char *ptr;
+	int iVar4;
+	int offset;
+	int iVar5;
+	uint iNumScreens;
+	int iVar6;
+	int iVar7;
+	int iVar8;
+	short sVar9;
+	RECT16 rect;
+
+	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 0xc);
 	ShowLoading();
-	Loadfile(s_DATA_SCRS_BIN_FRNT__001c07e4, &DAT_000fb400);
-	puVar5 = (undefined4 *)&DAT_000fb414;
-	uVar9 = (uint)DAT_000fb410;
-	if (DAT_000fb410 != 0) {
+	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
+	ptr = _frontend_buffer + 0x14;
+	iNumScreens = (uint)(unsigned char*)_frontend_buffer[16];
+	if (_frontend_buffer[16] != '\0') {
 		offset = 0;
-		iVar11 = 0;
+		iVar7 = 0;
 		do {
-			cVar1 = *(char *)puVar5;
-			iVar6 = 0;
-			iVar2 = (offset * 8 + iVar11 * -7) * 4;
-			iVar8 = iVar11 + 1;
-			(&DAT_FRNT__001c6d51)[iVar2] = cVar1;
-			(&DAT_FRNT__001c6d52)[iVar2] = *(char *)((int)puVar5 + 1);
-			puVar5 = (undefined4 *)((int)puVar5 + 2);
-			if (cVar1 != '\0') {
+			uVar1 = *ptr;
+			iVar4 = 0;
+			iVar2 = (offset * 8 + iVar7 * -7) * 4;
+			iVar5 = iVar7 + 1;
+			(&PsxScreens[0].numButtons)[iVar2] = uVar1;
+			(&PsxScreens[0].userFunctionNum)[iVar2] = ((unsigned char *)ptr)[1];
+			ptr = (char *)((unsigned char *)ptr + 2);
+			if (uVar1 != '\0') {
 				iVar2 = 0;
 				do {
-					puVar3 = &DAT_FRNT__001c6d54 + offset * 8 + iVar11 * -7 + (iVar2 - iVar6);
-					puVar4 = puVar5;
-					if (((uint)puVar5 & 3) == 0) {
+					local_v1_356 = (int *)(&PsxScreens[0].buttons[0].x +
+						(offset * 8 + iVar7 * -7 + (iVar2 - iVar4)) * 2);
+					piVar3 = (int *)ptr;
+					if (((uint)ptr & 3) == 0) {
 						do {
-							uVar7 = puVar4[1];
-							uVar10 = puVar4[2];
-							uVar12 = puVar4[3];
-							*puVar3 = *puVar4;
-							puVar3[1] = uVar7;
-							puVar3[2] = uVar10;
-							puVar3[3] = uVar12;
-							puVar4 = puVar4 + 4;
-							puVar3 = puVar3 + 4;
-						} while (puVar4 != puVar5 + 0xc);
+							iVar2 = piVar3[1];
+							iVar6 = piVar3[2];
+							iVar8 = piVar3[3];
+							*local_v1_356 = *piVar3;
+							local_v1_356[1] = iVar2;
+							local_v1_356[2] = iVar6;
+							local_v1_356[3] = iVar8;
+							piVar3 = piVar3 + 4;
+							local_v1_356 = local_v1_356 + 4;
+						} while (piVar3 != (int *)ptr + 0xc);
 					}
 					else {
 						do {
-							uVar7 = puVar4[1];
-							uVar10 = puVar4[2];
-							uVar12 = puVar4[3];
-							*puVar3 = *puVar4;
-							puVar3[1] = uVar7;
-							puVar3[2] = uVar10;
-							puVar3[3] = uVar12;
-							puVar4 = puVar4 + 4;
-							puVar3 = puVar3 + 4;
-						} while (puVar4 != puVar5 + 0xc);
+							iVar2 = piVar3[1];
+							iVar6 = piVar3[2];
+							iVar8 = piVar3[3];
+							*local_v1_356 = *piVar3;
+							local_v1_356[1] = iVar2;
+							local_v1_356[2] = iVar6;
+							local_v1_356[3] = iVar8;
+							piVar3 = piVar3 + 4;
+							local_v1_356 = local_v1_356 + 4;
+						} while (piVar3 != (int *)ptr + 0xc);
 					}
-					puVar5 = puVar5 + 0xf;
-					iVar6 = iVar6 + 1;
-					uVar7 = puVar4[1];
-					uVar10 = puVar4[2];
-					*puVar3 = *puVar4;
-					puVar3[1] = uVar7;
-					puVar3[2] = uVar10;
-					iVar2 = iVar6 * 0x10;
-				} while (iVar6 < (int)(uint)(byte)(&DAT_FRNT__001c6d51)[(offset * 8 + iVar11 * -7) * 4]);
+					ptr = (char *)((int *)ptr + 0xf);
+					iVar4 = iVar4 + 1;
+					iVar2 = piVar3[1];
+					iVar6 = piVar3[2];
+					*local_v1_356 = *piVar3;
+					local_v1_356[1] = iVar2;
+					local_v1_356[2] = iVar6;
+					iVar2 = iVar4 * 0x10;
+				} while (iVar4 < (int)(uint)(&PsxScreens[0].numButtons)
+					[(offset * 8 + iVar7 * -7) * 4]);
 			}
-			offset = iVar8 * 0x10;
-			iVar11 = iVar8;
-		} while (iVar8 < (int)uVar9);
+			offset = iVar5 * 0x10;
+			iVar7 = iVar5;
+		} while (iVar5 < (int)iNumScreens);
 	}
-	local_24 = 0x40;
-	local_22 = 0x100;
+	rect.w = 0x40;
+	rect.h = 0x100;
 	ShowLoading();
-	LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
-	sVar13 = 0x280;
+	LoadBackgroundFile("DATA\\GFX.RAW");
+	sVar9 = 0x280;
 	offset = 0x30000;
-	iVar11 = 1;
+	iVar7 = 1;
 	do {
-		iVar11 = iVar11 + -1;
+		iVar7 = iVar7 + -1;
 		ShowLoading();
-		LoadfileSeg(s_DATA_GFX_RAW_FRNT__001c07f4, &DAT_000fb400, offset, 0x8000);
-		local_26 = 0x100;
-		local_28 = sVar13;
-		LoadImage(&local_28, &DAT_000fb400);
+		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, offset, 0x8000);
+		rect.y = 0x100;
+		rect.x = sVar9;
+		LoadImage(&rect, (u_long *)_frontend_buffer);
 		DrawSync(0);
-		sVar13 = sVar13 + 0x40;
+		sVar9 = sVar9 + 0x40;
 		offset = offset + 0x8000;
-	} while (-1 < iVar11);
+	} while (-1 < iVar7);
 	ShowLoading();
-	LoadfileSeg(s_DATA_GFX_RAW_FRNT__001c07f4, &DAT_000fb400, 0x58000, 0x8000);
-	local_28 = 0x3c0;
-	local_26 = 0x100;
-	LoadImage(&local_28, &DAT_000fb400);
+	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
+	rect.x = 0x3c0;
+	rect.y = 0x100;
+	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
-	Loadfile(s_DATA_FEFONT_BNK_FRNT__001c0804, &DAT_FRNT__001cbdd8);
+	Loadfile("DATA\\FEFONT.BNK", _overlay_buffer+0xbdd8);
 	PadChecks();
-	return;*/
 }
 
 
@@ -330,59 +379,55 @@ void LoadFrontendScreens(void)
 	/* end block 3 */
 	// End Line: 2960
 
+int mainScreenLoaded = 1;
+
 void LoadBackgroundFile(char *name)
 {
 	UNIMPLEMENTED();
-	/*
+
 	int iVar1;
 	int iVar2;
-	int *piVar3;
-	short local_48;
-	short local_46;
-	undefined2 local_44;
-	undefined2 local_42;
-	int local_40[4];
-	undefined4 local_30;
-	undefined4 local_2c;
-	int local_28;
+	int iVar3;
+	int *piVar4;
+	RECT16 rect;
+	int local_40[6];
 
-	local_40[0] = DAT_FRNT__001c0814;
-	local_40[1] = DAT_FRNT__001c0818;
-	local_40[2] = DAT_FRNT__001c081c;
-	local_40[3] = DAT_FRNT__001c0820;
-	local_30 = DAT_FRNT__001c0824;
-	local_2c = DAT_FRNT__001c0828;
-	local_28 = DAT_FRNT__001c082c;
-	iVar1 = strcmp(name, s_DATA_GFX_RAW_FRNT__001c07f4);
-	DAT_FRNT__001c6ac4 = (uint)(iVar1 == 0);
-	piVar3 = local_40;
-	iVar1 = 5;
-	local_44 = 0x40;
-	local_42 = 0x100;
+	iVar1 = 0x0b;
+	local_40[0] = 0;
+	local_40[1] = 1;
+	local_40[2] = 2;
+	local_40[3] = 3;
+	local_40[4] = 4;
+	local_40[5] = 5;
+	iVar2 = strcmp(name, "DATA\\GFX.RAW");
+	mainScreenLoaded = (iVar2 == 0);
+	piVar4 = local_40;
+	iVar2 = 5;
+	rect.w = 0x40;
+	rect.h = 0x100;
 	do {
 		FEDrawCDicon();
-		iVar2 = *piVar3;
-		LoadfileSeg(name, &DAT_000fb400, iVar2 << 0xf, 0x8000);
-		piVar3 = piVar3 + 1;
+		iVar3 = *piVar4;
+		LoadfileSeg(name, _frontend_buffer, iVar3 << 0xf, 0x8000);
+		piVar4 = piVar4 + 1;
 		FEDrawCDicon();
-		iVar1 = iVar1 + -1;
-		local_46 = (short)(iVar2 / 6);
-		local_48 = ((short)iVar2 + local_46 * -6) * 0x40 + 0x280;
-		local_46 = local_46 * 0x100;
-		LoadImage(&local_48, &DAT_000fb400);
+		iVar2 = iVar2 + -1;
+		rect.y = (short)(iVar3 / 6);
+		rect.x = ((short)iVar3 + rect.y * -6) * 0x40 + 0x280;
+		rect.y = rect.y * 0x100;
+		LoadImage(&rect, (u_long *)_frontend_buffer);
 		FEDrawCDicon();
-		iVar2 = local_28;
-	} while (-1 < iVar1);
-	LoadfileSeg(name, &DAT_000fb400, local_28 << 0xf, 0x800);
+	} while (-1 < iVar2);
+	LoadfileSeg(name, _frontend_buffer, iVar1 << 0xf, 0x800);
 	FEDrawCDicon();
-	local_42 = 1;
-	local_46 = (short)(iVar2 / 6);
-	local_48 = ((short)iVar2 + local_46 * -6) * 0x40 + 0x280;
-	local_46 = local_46 * 0x100;
-	LoadImage(&local_48, &DAT_000fb400);
+	rect.h = 1;
+	rect.y = (short)(iVar1 / 6);
+	rect.x = ((short)iVar1 + rect.y * -6) * 0x40 + 0x280;
+	rect.y = rect.y * 0x100;
+	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 	SetupBackgroundPolys();
-	return;*/
+	return;
 }
 
 
@@ -1369,6 +1414,9 @@ int HandleKeyPress(void)
 void PadChecks(void)
 {
 	UNIMPLEMENTED();
+
+	ReadControllers();	// [A]
+
 	/*
 	uint uVar1;
 	undefined4 *puVar2;
@@ -1475,27 +1523,6 @@ void PadChecks(void)
 	// End Line: 5347
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-int bRedrawFrontend = 0;
-int gInFrontend = 0;
-int idle_timer = 0;
-int currPlayer = 0;
-int fePad = 0;
-int ScreenDepth = 0;
-
-
-GAMETYPE GameType = GAME_MISSION;
-int gCurrentMissionNumber = 0;
-int gIdleReplay = 0;
-
-PSXSCREEN* pCurrScreen = NULL;
-PSXSCREEN* pNewScreen = NULL;
-PSXBUTTON* pCurrButton = NULL;
-
-PSXSCREEN PsxScreens[42];
-struct PSXSCREEN (*pScreenStack[10]);
-struct PSXBUTTON (*pButtonStack[10]);
-char (*ScreenNames[12]);
 
 void DoFrontEnd(void)
 {
@@ -1718,7 +1745,7 @@ void EndFrame(void)
 void carSelectPlayerText()
 { // line 2737, offset 0x001c676c
 	UNIMPLEMENTED();
-//	return null;
+	//	return null;
 }
 
 
@@ -4253,57 +4280,48 @@ int GameNameScreen(int bSetup)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+POLY_FT4 cd_sprite;
+int bCdIconSetup = 0;
+
+// [D]
 void FEInitCdIcon(void)
 {
 	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	ushort *puVar2;
-	undefined2 local_18;
-	undefined2 local_16;
-	undefined2 local_14;
-	undefined2 local_12;
 
-	puVar2 = &DAT_0009bb88;
-	iVar1 = 0xd;
+	ushort *puVar1;
+	int iVar2;
+	RECT16 rect;
+
+	puVar1 = (ushort *)(cd_icon + 10);
+	iVar2 = 0xd;
 	do {
-		iVar1 = iVar1 + -1;
-		*puVar2 = *puVar2 & 0x7fff;
-		puVar2 = puVar2 + 1;
-	} while (-1 < iVar1);
-	DAT_0009bb88 = 0;
-	local_18 = 0x3c0;
-	local_16 = 0x1b2;
-	local_14 = 8;
-	local_12 = 0x20;
-	DAT_0009bba4 = DAT_0009bba4 | 0x8000;
-	DAT_0009bba6 = DAT_0009bba6 | 0x8000;
-	LoadImage(&local_18, &DAT_0009bba4);
-	DAT_FRNT__001c6d23 = 9;
-	DAT_FRNT__001c6d24 = 0x80;
-	DAT_FRNT__001c6d25 = 0x80;
-	DAT_FRNT__001c6d26 = 0x80;
-	DAT_FRNT__001c6d2d = 0xb3;
-	DAT_FRNT__001c6d35 = 0xb3;
-	DAT_FRNT__001c6d27 = 0x2e;
-	DAT_FRNT__001c6d2c = 0;
-	DAT_FRNT__001c6d34 = 0x20;
-	DAT_FRNT__001c6d3c = 0;
-	DAT_FRNT__001c6d3d = 0xd3;
-	DAT_FRNT__001c6d44 = 0x20;
-	DAT_FRNT__001c6d45 = 0xd3;
-	DAT_FRNT__001c6d2e = GetClut(0x3c0, 0x1b1);
-	DAT_FRNT__001c6d36 = GetTPage(0, 0, 0x3c0, 0x100);
-	DAT_FRNT__001c6ac8 = 1;
-	DAT_FRNT__001c6d28 = 0x50;
-	DAT_FRNT__001c6d2a = 0x26;
-	DAT_FRNT__001c6d30 = 0x76;
-	DAT_FRNT__001c6d32 = 0x26;
-	DAT_FRNT__001c6d38 = 0x50;
-	DAT_FRNT__001c6d3a = 0x3b;
-	DAT_FRNT__001c6d40 = 0x76;
-	DAT_FRNT__001c6d42 = 0x3b;
-	return;*/
+		iVar2 = iVar2 + -1;
+		*puVar1 = *puVar1 & 0x7fff;
+		puVar1 = puVar1 + 1;
+	} while (-1 < iVar2);
+	cd_icon[10] = 0;
+	rect.x = 0x3c0;
+	rect.y = 0x1b2;
+	rect.w = 8;
+	rect.h = 0x20;
+	cd_icon[24] = cd_icon[24] | 0x8000;
+	cd_icon[25] = cd_icon[25] | 0x8000;
+	LoadImage(&rect, (u_long *)(cd_icon + 0x18));
+
+	setPolyFT4(&cd_sprite);
+	setRGB0(&cd_sprite, 128, 128, 128);
+	cd_sprite.v0 = 0x4d;
+	cd_sprite.v1 = 0x4d;
+	cd_sprite.u0 = '\0';
+	cd_sprite.u1 = ' ';
+	cd_sprite.u2 = '\0';
+	cd_sprite.v2 = 45;
+	cd_sprite.u3 = ' ';
+	cd_sprite.v3 = 45;
+	cd_sprite.clut = GetClut(960, 433);
+	cd_sprite.tpage = GetTPage(0, 0, 960, 256);
+	bCdIconSetup = 1;
+	setXY4(&cd_sprite, 80, 38, 118, 38, 80, 59, 118, 59);
 }
 
 

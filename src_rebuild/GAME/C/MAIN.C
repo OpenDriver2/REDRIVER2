@@ -2066,8 +2066,6 @@ void SsSetSerialVol(char param_1, short param_2, short param_3)
 	*/
 }
 
-char _overlay_buffer[512*1024];
-
 // [D]
 #ifdef PSX
 int main(void)
@@ -2083,8 +2081,8 @@ int redriver2_main(void)
 	};
 
 	char *NTSCScreenNames[4] = {
-		"GFX\\SPLASH2.TIM",
-		"GFX\\SPLASH3.TIM",
+		//"GFX\\SPLASH2.TIM",
+		//"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1N.TIM",
 		NULL
 	};
@@ -2121,7 +2119,7 @@ int redriver2_main(void)
 
 	PlayFMV(99);	// play infogrames fmv
 
-	ShowHiresScreens(NTSCScreenNames, 300, 1);
+	//ShowHiresScreens(NTSCScreenNames, 300, 1); // [A]
 
 	PlayFMV(0);		// play intro movie
 

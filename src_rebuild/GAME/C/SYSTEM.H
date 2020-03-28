@@ -1,6 +1,8 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+extern char _overlay_buffer[0x50000];		// 0x1C0000
+extern char _frontend_buffer[0x8000];		// 0xFB400
 
 extern void ClearMem(char *mem, int size); // 0x0007F3E8
 

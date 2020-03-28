@@ -106,13 +106,6 @@ void ShowHiresScreens(char **names, int delay, int wait)
 	/* end block 3 */
 	// End Line: 343
 
-// this is temporary shit and should not be used
-extern char _overlay_buffer[512 * 1024];
-
-#ifndef PSX
-#define LoadImage LoadImagePSX		// this is ALSO temporary shit
-#endif // PSX
-
 // [D]
 void FadeInHiresScreen(char *filename)
 {
@@ -179,7 +172,7 @@ void FadeInHiresScreen(char *filename)
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
-	LoadfileSeg(filename, _overlay_buffer, 20, 327552);
+	LoadfileSeg(filename, _overlay_buffer, 20, sizeof(_overlay_buffer));
 	LoadClut((u_long*)_overlay_buffer, 640, 511);
 
 	DrawSync(0);
@@ -346,10 +339,8 @@ void FadeOutHiresScreen(void)
 			// UNCERTAIN CODE
 			// LEARN TO DECOMPILE MIPS FIRST
 			addPrim(&ot, prim);
-			prim++;
-
 			addPrim(&ot, poly);
-			poly++;
+			poly++; prim++;
 		}
 
 		DrawOTag(&ot);

@@ -8,6 +8,8 @@
 
 #include <string.h>
 
+char _overlay_buffer[0x50000];		// 0x1C0000
+char _frontend_buffer[0x8000];		// 0xFB400
 
 char* LevelFiles[] = {
 	"LEVELS\\CHICAGO.LEV",
@@ -298,8 +300,32 @@ void DoCDRetry(void)
 	/* end block 2 */
 	// End Line: 1293
 
+// loads whole file into buffer
 int Loadfile(char *name, char *addr)
 {
+	char namebuffer[64];
+#ifndef PSX
+	int fileSize = 0;
+
+	sprintf(namebuffer, "DRIVER2\\%s", name);
+
+	FILE* fptr = fopen(namebuffer, "rb");
+	if (!fptr)
+	{
+		eprinterr("Cannot open %s!\n", namebuffer);
+		return 0;
+	}
+
+	fseek(fptr, 0, SEEK_END);
+	fileSize = ftell(fptr);
+
+	fseek(fptr, 0, SEEK_SET);
+	int numRead = fread(addr, 1, fileSize, fptr);
+
+	fclose(fptr);
+
+	return numRead;
+#else // PSX
 	UNIMPLEMENTED();
 	return 0;
 
@@ -324,6 +350,7 @@ int Loadfile(char *name, char *addr)
 		}
 	} while (true);
 	*/
+#endif // PSX
 }
 
 
@@ -356,7 +383,7 @@ int Loadfile(char *name, char *addr)
 	// End Line: 1519
 
 
-
+// loads file partially into buffer
 int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 {
 	char namebuffer[64];

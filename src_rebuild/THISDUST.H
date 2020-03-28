@@ -9,9 +9,17 @@
 #include "LIBSPU.H"
 #include "LIBGTE.H"
 
+#ifdef PSX
+
+#else
 #include <EMULATOR.H>
 #include <EMULATOR_PRIVATE.H>
 #include "EMULATOR_PLATFORM_SETUP.H"
+
+#define LoadImage LoadImagePSX		// this is ALSO temporary shit
+//#define ClearImage2 ClearImage
+
+#endif // PSX
 
 #undef eprintf
 #define eprintf(fmt, ...) printf("[GAME] " fmt, ##__VA_ARGS__)
