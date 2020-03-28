@@ -17,12 +17,6 @@ POLYCOORD polycoords[6] =
   { 512, 256, 896, 256, 128, 256 }
 };
 
-DRAW_MODE draw_mode_pal =
-{ 0, 0, 0, 0, 512, 256, 0, 16 };
-
-DRAW_MODE draw_mode_ntsc =
-{ 0, 0, 0, 8, 512, 240, 0, 0 };
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ShowHiresScreens(char **names /*$s1*/, int delay /*$s4*/, int wait /*$s3*/)
@@ -400,15 +394,15 @@ void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 
 	if (h < 0x101) {
 		SetDefDispEnv(env, x, y, w, 256);
-		env->screen.x = draw_mode_pal.framex;
-		framey = draw_mode_pal.framey;
+		env->screen.x = draw_mode.framex;
+		framey = draw_mode.framey;
 		env->screen.h = 255;
 		env->isinter = 0;
 	}
 	else {
 		SetDefDispEnv(env, x, y, w, 512);
-		env->screen.x = draw_mode_pal.framex;
-		framey = draw_mode_pal.framey;
+		env->screen.x = draw_mode.framex;
+		framey = draw_mode.framey;
 		env->screen.h = 255;
 		env->isinter = 1;
 	}

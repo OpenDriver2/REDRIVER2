@@ -4,6 +4,29 @@
 extern char _overlay_buffer[0x50000];		// 0x1C0000
 extern char _frontend_buffer[0x8000];		// 0xFB400
 
+extern DRAW_MODE draw_mode_pal;
+extern DRAW_MODE draw_mode_ntsc;
+
+extern DB MPBuff[2][2];
+extern DB* last;
+extern DB* current;
+
+extern long _tempOT1[0x10];
+extern long _tempOT2[0x10];
+
+extern char _tempPrimTab1[0x8000];		// 0xFB400
+extern char _tempPrimTab2[0x8000];		// 0x119400
+
+extern unsigned char NumPlayers;
+
+#ifdef PAL
+#define draw_mode draw_mode_pal
+#define video_mode MODE_PAL
+#else
+#define draw_mode draw_mode_ntsc
+#define video_mode MODE_NTSC
+#endif // PAL
+
 extern void ClearMem(char *mem, int size); // 0x0007F3E8
 
 extern void setMem8(unsigned char *mem, unsigned char val, int size); // 0x0007F47C

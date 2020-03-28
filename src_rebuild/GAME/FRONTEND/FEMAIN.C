@@ -51,12 +51,16 @@ int gIdleReplay = 0;
 
 PSXSCREEN* pCurrScreen = NULL;
 PSXSCREEN* pNewScreen = NULL;
+
+PSXBUTTON* pNewButton = NULL;
 PSXBUTTON* pCurrButton = NULL;
 
 PSXSCREEN PsxScreens[42] = { 0 };
 struct PSXSCREEN* pScreenStack[10] = { 0 };
 struct PSXBUTTON* pButtonStack[10] = { 0 };
 char* ScreenNames[12] = { 0 };
+
+POLY_FT4 BackgroundPolys[6];
 
 // decompiled code
 // original method signature: 
@@ -205,9 +209,9 @@ char* ScreenNames[12] = { 0 };
 // void /*$ra*/ LoadFrontendScreens()
  // line 1371, offset 0x001c0c1c
 	/* begin block 1 */
-		// Start line: 1373
-		// Start offset: 0x001C0C1C
-		// Variables:
+	// Start line: 1373
+	// Start offset: 0x001C0C1C
+	// Variables:
 	// 		int iTpage; // $s0
 	// 		int iNumScreens; // $t6
 	// 		int i; // $t0
@@ -253,7 +257,7 @@ void LoadFrontendScreens(void)
 	int iVar4;
 	int offset;
 	int iVar5;
-	uint iNumScreens;
+	int iNumScreens;
 	int iVar6;
 	int iVar7;
 	int iVar8;
@@ -263,71 +267,35 @@ void LoadFrontendScreens(void)
 	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 0xc);
 	ShowLoading();
 	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
-	ptr = _frontend_buffer + 0x14;
-	iNumScreens = (uint)(unsigned char*)_frontend_buffer[16];
-	if (_frontend_buffer[16] != '\0') {
-		offset = 0;
-		iVar7 = 0;
-		do {
-			uVar1 = *ptr;
-			iVar4 = 0;
-			iVar2 = (offset * 8 + iVar7 * -7) * 4;
-			iVar5 = iVar7 + 1;
-			(&PsxScreens[0].numButtons)[iVar2] = uVar1;
-			(&PsxScreens[0].userFunctionNum)[iVar2] = ((unsigned char *)ptr)[1];
-			ptr = (char *)((unsigned char *)ptr + 2);
-			if (uVar1 != '\0') {
-				iVar2 = 0;
-				do {
-					local_v1_356 = (int *)(&PsxScreens[0].buttons[0].x +
-						(offset * 8 + iVar7 * -7 + (iVar2 - iVar4)) * 2);
-					piVar3 = (int *)ptr;
-					if (((uint)ptr & 3) == 0) {
-						do {
-							iVar2 = piVar3[1];
-							iVar6 = piVar3[2];
-							iVar8 = piVar3[3];
-							*local_v1_356 = *piVar3;
-							local_v1_356[1] = iVar2;
-							local_v1_356[2] = iVar6;
-							local_v1_356[3] = iVar8;
-							piVar3 = piVar3 + 4;
-							local_v1_356 = local_v1_356 + 4;
-						} while (piVar3 != (int *)ptr + 0xc);
-					}
-					else {
-						do {
-							iVar2 = piVar3[1];
-							iVar6 = piVar3[2];
-							iVar8 = piVar3[3];
-							*local_v1_356 = *piVar3;
-							local_v1_356[1] = iVar2;
-							local_v1_356[2] = iVar6;
-							local_v1_356[3] = iVar8;
-							piVar3 = piVar3 + 4;
-							local_v1_356 = local_v1_356 + 4;
-						} while (piVar3 != (int *)ptr + 0xc);
-					}
-					ptr = (char *)((int *)ptr + 0xf);
-					iVar4 = iVar4 + 1;
-					iVar2 = piVar3[1];
-					iVar6 = piVar3[2];
-					*local_v1_356 = *piVar3;
-					local_v1_356[1] = iVar2;
-					local_v1_356[2] = iVar6;
-					iVar2 = iVar4 * 0x10;
-				} while (iVar4 < (int)(uint)(&PsxScreens[0].numButtons)
-					[(offset * 8 + iVar7 * -7) * 4]);
+
+	ptr = _frontend_buffer + 20; // skip header and number of screens
+	iNumScreens = (int)_frontend_buffer[16];
+
+	if (iNumScreens) 
+	{
+		for (int i = 0; i < iNumScreens; i++)
+		{
+			PsxScreens[i].numButtons = *ptr++;
+			PsxScreens[i].userFunctionNum = *ptr++;
+
+			if (PsxScreens[i].numButtons)
+			{
+				for (int j = 0; j < PsxScreens[i].numButtons; j++)
+				{
+					memcpy(&PsxScreens[i].buttons[j], ptr, sizeof(PSXBUTTON));
+					ptr += sizeof(PSXBUTTON);
+				}
 			}
-			offset = iVar5 * 0x10;
-			iVar7 = iVar5;
-		} while (iVar5 < (int)iNumScreens);
+		}		
 	}
-	rect.w = 0x40;
-	rect.h = 0x100;
+
+	rect.w = 64;
+	rect.h = 256;
+
 	ShowLoading();
 	LoadBackgroundFile("DATA\\GFX.RAW");
-	sVar9 = 0x280;
+
+	sVar9 = 640;
 	offset = 0x30000;
 	iVar7 = 1;
 	do {
@@ -338,15 +306,17 @@ void LoadFrontendScreens(void)
 		rect.x = sVar9;
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 		DrawSync(0);
-		sVar9 = sVar9 + 0x40;
+		sVar9 = sVar9 + 64;
 		offset = offset + 0x8000;
 	} while (-1 < iVar7);
 	ShowLoading();
+
 	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
-	rect.x = 0x3c0;
-	rect.y = 0x100;
+	rect.x = 960;
+	rect.y = 256;
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
+
 	Loadfile("DATA\\FEFONT.BNK", _overlay_buffer+0xbdd8);
 	PadChecks();
 }
@@ -468,134 +438,130 @@ void LoadBackgroundFile(char *name)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetupBackgroundPolys(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 *puVar1;
-	int iVar2;
+	POLY_FT4 *poly;
+	int i;
 
-	puVar1 = &DAT_FRNT__001cbcc0;
-	iVar2 = 5;
+	poly = BackgroundPolys;
+	i = 5;
 	do {
-		*(undefined *)((int)puVar1 + 3) = 9;
-		*(undefined *)(puVar1 + 1) = 0x80;
-		*(undefined *)((int)puVar1 + 5) = 0x80;
-		*(undefined *)((int)puVar1 + 6) = 0x80;
-		*(undefined *)((int)puVar1 + 7) = 0x2c;
-		iVar2 = iVar2 + -1;
-		puVar1 = puVar1 + 10;
-	} while (-1 < iVar2);
-	DAT_FRNT__001cbcc8 = 0;
-	DAT_FRNT__001cbcca = 0;
-	DAT_FRNT__001cbccc = 0;
-	DAT_FRNT__001cbccd = 1;
-	DAT_FRNT__001cbcce = 0x403c;
-	DAT_FRNT__001cbcd0 = 0x100;
-	DAT_FRNT__001cbcd2 = 0;
-	DAT_FRNT__001cbcd4 = 0xff;
-	DAT_FRNT__001cbcd5 = 1;
-	DAT_FRNT__001cbcd6 = 10;
-	DAT_FRNT__001cbcd8 = 0;
-	DAT_FRNT__001cbcda = 0x100;
-	DAT_FRNT__001cbcdc = 0;
-	DAT_FRNT__001cbcdd = 0xff;
-	DAT_FRNT__001cbce0 = 0x100;
-	DAT_FRNT__001cbce2 = 0x100;
-	DAT_FRNT__001cbce4 = 0xff;
-	DAT_FRNT__001cbce5 = 0xff;
-	DAT_FRNT__001cbcf0 = 0x100;
-	DAT_FRNT__001cbcf2 = 0;
-	DAT_FRNT__001cbcf4 = 0;
-	DAT_FRNT__001cbcf5 = 1;
-	DAT_FRNT__001cbcf6 = 0x403c;
-	DAT_FRNT__001cbcf8 = 0x200;
-	DAT_FRNT__001cbcfa = 0;
-	DAT_FRNT__001cbcfc = 0xff;
-	DAT_FRNT__001cbcfd = 1;
-	DAT_FRNT__001cbcfe = 0xb;
-	DAT_FRNT__001cbd00 = 0x100;
-	DAT_FRNT__001cbd02 = 0x100;
-	DAT_FRNT__001cbd04 = 0;
-	DAT_FRNT__001cbd05 = 0xff;
-	DAT_FRNT__001cbd08 = 0x200;
-	DAT_FRNT__001cbd0a = 0x100;
-	DAT_FRNT__001cbd0c = 0xff;
-	DAT_FRNT__001cbd0d = 0xff;
-	DAT_FRNT__001cbd18 = 0x200;
-	DAT_FRNT__001cbd1a = 0;
-	DAT_FRNT__001cbd1c = 0;
-	DAT_FRNT__001cbd1d = 1;
-	DAT_FRNT__001cbd1e = 0x403c;
-	DAT_FRNT__001cbd20 = 0x280;
-	DAT_FRNT__001cbd22 = 0;
-	DAT_FRNT__001cbd24 = 0x80;
-	DAT_FRNT__001cbd25 = 1;
-	DAT_FRNT__001cbd26 = 0xc;
-	DAT_FRNT__001cbd28 = 0x200;
-	DAT_FRNT__001cbd2a = 0x100;
-	DAT_FRNT__001cbd2c = 0;
-	DAT_FRNT__001cbd2d = 0xff;
-	DAT_FRNT__001cbd30 = 0x280;
-	DAT_FRNT__001cbd32 = 0x100;
-	DAT_FRNT__001cbd34 = 0x80;
-	DAT_FRNT__001cbd35 = 0xff;
-	DAT_FRNT__001cbd40 = 0;
-	DAT_FRNT__001cbd42 = 0x100;
-	DAT_FRNT__001cbd44 = 0;
-	DAT_FRNT__001cbd45 = 0;
-	DAT_FRNT__001cbd46 = 0x403c;
-	DAT_FRNT__001cbd48 = 0x100;
-	DAT_FRNT__001cbd4a = 0x100;
-	DAT_FRNT__001cbd4c = 0xff;
-	DAT_FRNT__001cbd4d = 0;
-	DAT_FRNT__001cbd4e = 0xd;
-	DAT_FRNT__001cbd50 = 0;
-	DAT_FRNT__001cbd52 = 0x200;
-	DAT_FRNT__001cbd54 = 0;
-	DAT_FRNT__001cbd55 = 0xff;
-	DAT_FRNT__001cbd58 = 0x100;
-	DAT_FRNT__001cbd5a = 0x200;
-	DAT_FRNT__001cbd5c = 0xff;
-	DAT_FRNT__001cbd5d = 0xff;
-	DAT_FRNT__001cbd68 = 0x100;
-	DAT_FRNT__001cbd6a = 0x100;
-	DAT_FRNT__001cbd6c = 0;
-	DAT_FRNT__001cbd6d = 0;
-	DAT_FRNT__001cbd6e = 0x403c;
-	DAT_FRNT__001cbd70 = 0x200;
-	DAT_FRNT__001cbd72 = 0x100;
-	DAT_FRNT__001cbd74 = 0xff;
-	DAT_FRNT__001cbd75 = 0;
-	DAT_FRNT__001cbd76 = 0xe;
-	DAT_FRNT__001cbd78 = 0x100;
-	DAT_FRNT__001cbd7a = 0x200;
-	DAT_FRNT__001cbd7c = 0;
-	DAT_FRNT__001cbd7d = 0xff;
-	DAT_FRNT__001cbd80 = 0x200;
-	DAT_FRNT__001cbd82 = 0x200;
-	DAT_FRNT__001cbd84 = 0xff;
-	DAT_FRNT__001cbd85 = 0xff;
-	DAT_FRNT__001cbd90 = 0x200;
-	DAT_FRNT__001cbd92 = 0x100;
-	DAT_FRNT__001cbd94 = 0;
-	DAT_FRNT__001cbd95 = 0;
-	DAT_FRNT__001cbd96 = 0x403c;
-	DAT_FRNT__001cbd98 = 0x280;
-	DAT_FRNT__001cbd9a = 0x100;
-	DAT_FRNT__001cbd9c = 0x80;
-	DAT_FRNT__001cbd9d = 0;
-	DAT_FRNT__001cbd9e = 0xf;
-	DAT_FRNT__001cbda0 = 0x200;
-	DAT_FRNT__001cbda2 = 0x200;
-	DAT_FRNT__001cbda4 = 0;
-	DAT_FRNT__001cbda5 = 0xff;
-	DAT_FRNT__001cbda8 = 0x280;
-	DAT_FRNT__001cbdaa = 0x200;
-	DAT_FRNT__001cbdac = 0x80;
-	DAT_FRNT__001cbdad = 0xff;
-	return;
-	*/
+		setPolyFT4(poly);
+		setRGB0(poly, 128, 128, 128);
+
+		i--;
+		poly++;
+	} while (-1 < i);
+
+	BackgroundPolys[0].x0 = 0;
+	BackgroundPolys[0].y0 = 0;
+	BackgroundPolys[0].u0 = '\0';
+	BackgroundPolys[0].v0 = '\x01';
+	BackgroundPolys[0].clut = getClut(960,256);
+	BackgroundPolys[0].x1 = 0x100;
+	BackgroundPolys[0].y1 = 0;
+	BackgroundPolys[0].u1 = -1;
+	BackgroundPolys[0].v1 = '\x01';
+	BackgroundPolys[0].tpage = getTPage(0,0,960,0);
+	BackgroundPolys[0].x2 = 0;
+	BackgroundPolys[0].y2 = 0x100;
+	BackgroundPolys[0].u2 = '\0';
+	BackgroundPolys[0].v2 = -1;
+	BackgroundPolys[0].x3 = 0x100;
+	BackgroundPolys[0].y3 = 0x100;
+	BackgroundPolys[0].u3 = -1;
+	BackgroundPolys[0].v3 = -1;
+	BackgroundPolys[1].x0 = 0x100;
+	BackgroundPolys[1].y0 = 0;
+	BackgroundPolys[1].u0 = '\0';
+	BackgroundPolys[1].v0 = '\x01';
+	BackgroundPolys[1].clut = getClut(960, 256);
+	BackgroundPolys[1].x1 = 0x200;
+	BackgroundPolys[1].y1 = 0;
+	BackgroundPolys[1].u1 = -1;
+	BackgroundPolys[1].v1 = '\x01';
+	BackgroundPolys[1].tpage = getTPage(0, 0, 896, 0);
+	BackgroundPolys[1].x2 = 0x100;
+	BackgroundPolys[1].y2 = 0x100;
+	BackgroundPolys[1].u2 = '\0';
+	BackgroundPolys[1].v2 = -1;
+	BackgroundPolys[1].x3 = 0x200;
+	BackgroundPolys[1].y3 = 0x100;
+	BackgroundPolys[1].u3 = -1;
+	BackgroundPolys[1].v3 = -1;
+	BackgroundPolys[2].x0 = 0x200;
+	BackgroundPolys[2].y0 = 0;
+	BackgroundPolys[2].u0 = '\0';
+	BackgroundPolys[2].v0 = '\x01';
+	BackgroundPolys[2].clut = getClut(960, 256);
+	BackgroundPolys[2].x1 = 0x280;
+	BackgroundPolys[2].y1 = 0;
+	BackgroundPolys[2].u1 = -0x80;
+	BackgroundPolys[2].v1 = '\x01';
+	BackgroundPolys[2].tpage = getTPage(0, 0, 832, 0);
+	BackgroundPolys[2].x2 = 0x200;
+	BackgroundPolys[2].y2 = 0x100;
+	BackgroundPolys[2].u2 = '\0';
+	BackgroundPolys[2].v2 = -1;
+	BackgroundPolys[2].x3 = 0x280;
+	BackgroundPolys[2].y3 = 0x100;
+	BackgroundPolys[2].u3 = -0x80;
+	BackgroundPolys[2].v3 = -1;
+	BackgroundPolys[3].x0 = 0;
+	BackgroundPolys[3].y0 = 0x100;
+	BackgroundPolys[3].u0 = '\0';
+	BackgroundPolys[3].v0 = '\0';
+	BackgroundPolys[3].clut = getClut(960, 256);
+	BackgroundPolys[3].x1 = 0x100;
+	BackgroundPolys[3].y1 = 0x100;
+	BackgroundPolys[3].u1 = -1;
+	BackgroundPolys[3].v1 = '\0';
+	BackgroundPolys[3].tpage = getTPage(0, 0, 768, 0);
+	BackgroundPolys[3].x2 = 0;
+	BackgroundPolys[3].y2 = 0x200;
+	BackgroundPolys[3].u2 = '\0';
+	BackgroundPolys[3].v2 = -1;
+	BackgroundPolys[3].x3 = 0x100;
+	BackgroundPolys[3].y3 = 0x200;
+	BackgroundPolys[3].u3 = -1;
+	BackgroundPolys[3].v3 = -1;
+	BackgroundPolys[4].x0 = 0x100;
+	BackgroundPolys[4].y0 = 0x100;
+	BackgroundPolys[4].u0 = '\0';
+	BackgroundPolys[4].v0 = '\0';
+	BackgroundPolys[4].clut = getClut(960, 256);
+	BackgroundPolys[4].x1 = 0x200;
+	BackgroundPolys[4].y1 = 0x100;
+	BackgroundPolys[4].u1 = -1;
+	BackgroundPolys[4].v1 = '\0';
+	BackgroundPolys[4].tpage = getTPage(0, 0, 704, 0);
+	BackgroundPolys[4].x2 = 0x100;
+	BackgroundPolys[4].y2 = 0x200;
+	BackgroundPolys[4].u2 = '\0';
+	BackgroundPolys[4].v2 = -1;
+	BackgroundPolys[4].x3 = 0x200;
+	BackgroundPolys[4].y3 = 0x200;
+	BackgroundPolys[4].u3 = -1;
+	BackgroundPolys[4].v3 = -1;
+	BackgroundPolys[5].x0 = 0x200;
+	BackgroundPolys[5].y0 = 0x100;
+	BackgroundPolys[5].u0 = '\0';
+	BackgroundPolys[5].v0 = '\0';
+	BackgroundPolys[5].clut = getClut(960, 256);
+	BackgroundPolys[5].x1 = 0x280;
+	BackgroundPolys[5].y1 = 0x100;
+	BackgroundPolys[5].u1 = -0x80;
+	BackgroundPolys[5].v1 = '\0';
+	BackgroundPolys[5].tpage = getTPage(0, 0, 640, 0);
+	BackgroundPolys[5].x2 = 0x200;
+	BackgroundPolys[5].y2 = 0x200;
+	BackgroundPolys[5].u2 = '\0';
+	BackgroundPolys[5].v2 = -1;
+	BackgroundPolys[5].x3 = 0x280;
+	BackgroundPolys[5].y3 = 0x200;
+	BackgroundPolys[5].u3 = -0x80;
+	BackgroundPolys[5].v3 = -1;
 }
 
 
@@ -629,58 +595,61 @@ void SetupBackgroundPolys(void)
 	/* end block 4 */
 	// End Line: 3364
 
+SPRT HighlightSprt;
+POLY_FT4 HighlightDummy;
+
+// [D]
 void SetupScreenSprts(PSXSCREEN *pScr)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	int result;
 
-	DAT_FRNT__001cc590._3_1_ = 4;
-	DAT_FRNT__001cc594 = 0x80;
-	DAT_FRNT__001cc595 = 0x80;
-	DAT_FRNT__001cc596 = 0x80;
-	DAT_FRNT__001cc597 = 100;
-	DAT_FRNT__001cc598 = 0x16c;
-	DAT_FRNT__001cc59a = 0xc6;
-	DAT_FRNT__001cc5a0 = 0x100;
-	DAT_FRNT__001cc59c = 0;
-	DAT_FRNT__001cc59d = 0;
-	DAT_FRNT__001cc5a2 = 0x24;
-	DAT_FRNT__001cc59e = 0x40bc;
-	DAT_FRNT__001cc5a8._3_1_ = 7;
-	DAT_FRNT__001cc5af = 0x24;
-	DAT_FRNT__001cc5b0 = 0xffff;
-	DAT_FRNT__001cc5b2 = 0xffff;
-	DAT_FRNT__001cc5b8 = 0xffff;
-	DAT_FRNT__001cc5ba = 0xffff;
-	DAT_FRNT__001cc5c0 = 0xffff;
-	DAT_FRNT__001cc5c2 = 0xffff;
-	DAT_FRNT__001cc5be = 0x1b;
-	DAT_FRNT__001c6d48 = 0;
+	setSprt(&HighlightSprt);
+	setRGB0(&HighlightSprt, 128, 128, 128);
+	HighlightSprt.code = 'd';
+	HighlightSprt.x0 = 0x16c;
+	HighlightSprt.y0 = 0xc6;
+	HighlightSprt.w = 0x100;
+	HighlightSprt.u0 = '\0';
+	HighlightSprt.v0 = '\0';
+	HighlightSprt.h = 0x24;
+	setClut(&HighlightSprt, 960, 258);
+
+	setPolyFT4(&HighlightDummy);
+	HighlightDummy.code = '$';
+	HighlightDummy.x0 = -1;
+	HighlightDummy.y0 = -1;
+	HighlightDummy.x1 = -1;
+	HighlightDummy.y1 = -1;
+	HighlightDummy.x2 = -1;
+	HighlightDummy.y2 = -1;
+	//setTPage(&HighlightDummy, 0,0, 1728, 256); // feels wrong
+	HighlightDummy.tpage = 0x1b;
+
+	pNewScreen = NULL;
 	pCurrScreen = pScr;
+
 	if (pScr->userFunctionNum == 0) {
-		if (DAT_FRNT__001cbcb8 == (PSXBUTTON *)0x0) {
+		if (pNewButton == NULL) {
 			pCurrButton = pScr->buttons;
 		}
 		else {
-			pCurrButton = DAT_FRNT__001cbcb8;
-			DAT_FRNT__001cbcb8 = (PSXBUTTON *)0x0;
+			pCurrButton = pNewButton;
+			pNewButton = NULL;
 		}
 	}
 	else {
-		iVar1 = (*(code *)(&PTR_CentreScreen_FRNT__001c6a20)[(uint)(byte)pScr->userFunctionNum - 1])(1);
-		if (iVar1 == 0) {
-			if (DAT_FRNT__001cbcb8 == (PSXBUTTON *)0x0) {
+		result = (fpUserFunctions[pScr->userFunctionNum - 1])(1);
+		if (result == 0) {
+			if (pNewButton == NULL) {
 				pCurrButton = pCurrScreen->buttons;
 			}
 			else {
-				pCurrButton = DAT_FRNT__001cbcb8;
-				DAT_FRNT__001cbcb8 = (PSXBUTTON *)0x0;
+				pCurrButton = pNewButton;
+				pNewButton = NULL;
 			}
 		}
 	}
 	return;
-	*/
 }
 
 
@@ -1543,7 +1512,7 @@ void DoFrontEnd(void)
 	SetDispMask(0);
 	ResetGraph(0);
 	SetFEDrawMode();
-	SetVideoMode(1);
+	SetVideoMode(video_mode);
 	EnableDisplay();
 	DrawScreen(pCurrScreen);
 	EndFrame();
@@ -1643,38 +1612,41 @@ void DoFrontEnd(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+
+// [D]
 void SetFEDrawMode(void)
 {
-	UNIMPLEMENTED();
-	/*
-	SetVideoMode(1);
-	SetDefDrawEnv(0xe08c8, (int)draw_mode_pal.x1, (int)draw_mode_pal.y1, 0x280, 0x200);
-	SetDefDispEnv(0xe0924, (int)draw_mode_pal.x1, (int)draw_mode_pal.y1, 0x280, 0x200);
-	SetDefDrawEnv(0xe0948, (int)draw_mode_pal.x1, (int)draw_mode_pal.y1, 0x280, 0x200);
-	SetDefDispEnv(0xe09a4, (int)draw_mode_pal.x1, (int)draw_mode_pal.y1, 0x280, 0x200);
-	MPBuff.draw.isbg = '\0';
-	MPBuff.disp.isinter = '\x01';
-	MPBuff.draw.dfe = '\x01';
-	MPBuff.disp.screen.h = 0x100;
-	MPBuff.primtab = &DAT_000fb400;
-	MPBuff.primptr = &DAT_000fb400;
-	MPBuff.ot = (ulong *)&DAT_000f3000;
-	DB_000e0938.draw.isbg = '\0';
-	DB_000e0938.disp.isinter = '\x01';
-	DB_000e0938.draw.dfe = '\x01';
-	DB_000e0938.disp.screen.h = 0x100;
-	DB_000e0938.primtab = &DAT_00119400;
-	DB_000e0938.primptr = &DAT_00119400;
-	DB_000e0938.ot = (ulong *)&DAT_000f7200;
-	last = &DB_000e0938;
-	current = &MPBuff;
-	MPBuff.disp.screen.x = draw_mode_pal.framex << 1;
-	MPBuff.disp.screen.y = draw_mode_pal.framey;
-	DB_000e0938.disp.screen.y = draw_mode_pal.framey;
-	DB_000e0938.disp.screen.x = MPBuff.disp.screen.x;
-	PutDispEnv(&MPBuff.disp);
+	SetVideoMode(video_mode);
+	SetDefDrawEnv(&MPBuff[0][0].draw, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
+	SetDefDispEnv(&MPBuff[0][0].disp, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
+	SetDefDrawEnv(&MPBuff[0][1].draw, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
+	SetDefDispEnv(&MPBuff[0][1].disp, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
+	MPBuff[0][0].draw.isbg = '\0';
+	MPBuff[0][0].disp.isinter = '\x01';
+	MPBuff[0][0].draw.dfe = '\x01';
+	MPBuff[0][0].disp.screen.h = 256;
+	MPBuff[0][0].primtab = _tempPrimTab1;
+	MPBuff[0][0].primptr = _tempPrimTab1;
+	MPBuff[0][0].ot = (ulong *)_tempOT1;
+	MPBuff[0][1].draw.isbg = '\0';
+	MPBuff[0][1].disp.isinter = '\x01';
+	MPBuff[0][1].draw.dfe = '\x01';
+	MPBuff[0][1].disp.screen.h = 256;
+	MPBuff[0][1].primtab = _tempPrimTab2;
+	MPBuff[0][1].primptr = _tempPrimTab2;
+	MPBuff[0][1].ot = (ulong *)_tempOT2;
+
+	last = &MPBuff[0][1];
+	current = &MPBuff[0][0];
+
+	MPBuff[0][0].disp.screen.x = draw_mode.framex << 1;
+	MPBuff[0][0].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.x = MPBuff[0][0].disp.screen.x;
+
+	PutDispEnv(&MPBuff[0][0].disp);
 	PutDrawEnv(&current->draw);
-	return;*/
+	return;
 }
 
 

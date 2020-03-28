@@ -670,7 +670,7 @@ void LaunchGame(void)
 
 	fakeOtherPlayer = 0;
 	ResetGraph(1);
-	SetVideoMode(1);
+	SetVideoMode(video_mode);
 	gMissionCompletionState = PAUSEMODE_GAMEOVER;
 	gInvincibleCar = (uint)((byte)ActiveCheats >> 2) & 1;
 	gPlayerImmune = (uint)((byte)ActiveCheats >> 3) & 1;

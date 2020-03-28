@@ -176,7 +176,6 @@ void CloseControllers(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int pad_connected = 0;
-unsigned char NumPlayers = 1;
 
 void ReadControllers(void)
 {

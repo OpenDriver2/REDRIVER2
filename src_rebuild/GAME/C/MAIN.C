@@ -2104,7 +2104,7 @@ int redriver2_main(void)
 	SsSetSerialVol(0, 0, 0);
 	SetDispMask(0);
 	SetGraphDebug(0);
-	SetVideoMode(MODE_PAL);
+	SetVideoMode(video_mode);
 	CdInit();
 	SsSetSerialVol(0, 0, 0);
 	SpuInit();

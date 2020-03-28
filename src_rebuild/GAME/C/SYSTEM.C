@@ -28,6 +28,25 @@ char* LoadingScreenNames[] = {
 CdlFILE currentfileinfo;
 char currentfilename[128] = { 0 };
 
+DRAW_MODE draw_mode_pal =
+{ 0, 0, 0, 0, 512, 256, 0, 16 };
+
+DRAW_MODE draw_mode_ntsc =
+{ 0, 0, 0, 8, 512, 240, 0, 0 };
+
+DB MPBuff[2][2];
+DB* last;
+DB* current;
+
+long _tempOT1[0x10];
+long _tempOT2[0x10];
+
+char _tempPrimTab1[0x8000];		// 0xFB400
+char _tempPrimTab2[0x8000];		// 0x119400
+
+// TODO: to game vars
+unsigned char NumPlayers = 1;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ClearMem(char *mem /*$a0*/, int size /*$a1*/)
@@ -756,13 +775,14 @@ void loadsectors(char *addr, int sector, int nsectors)
 void EnableDisplay(void)
 {
 	UNIMPLEMENTED();
+
 	/*
 	ulong **ppuVar1;
 	int iVar2;
 
 	iVar2 = 0;
 	if (NumPlayers != 0) {
-		ppuVar1 = &DB_000e0938.ot;
+		ppuVar1 = &MPBuff[0][1].ot;
 		do {
 			iVar2 = iVar2 + 1;
 			ClearOTagR(ppuVar1[-0x20], (int)&DAT_00001080);

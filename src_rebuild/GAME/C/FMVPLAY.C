@@ -45,7 +45,7 @@ void ReInitSystem(void)
 	StopCallback();
 	ResetCallback();
 	ResetGraph(1);
-	SetVideoMode(1);
+	SetVideoMode(video_mode);
 	InitGeom();
 	SetGeomOffset(0xa0, 0x80);
 	scr_z = 0x100;
