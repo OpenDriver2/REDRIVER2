@@ -516,7 +516,7 @@ void ClearPad(int pad)
 
 void HandleDualShock(void)
 {
-	UNIMPLEMENTED();
+	//UNIMPLEMENTED();
 
 	/*
 	uchar uVar1;

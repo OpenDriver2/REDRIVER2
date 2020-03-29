@@ -41,12 +41,27 @@ screenFunc fpUserFunctions[] = {
 	CheatNumlayerSelect,
 };
 
+char* gfxNames[4] = {
+	"DATA\\CARS\\CCARS.RAW",
+	"DATA\\CARS\\HCARS.RAW",
+	"DATA\\CARS\\VCARS.RAW",
+	"DATA\\CARS\\RCARS.RAW",
+};
+
+char* cutGfxNames[4] = {
+	"DATA\\CUTS\\CCUTS.RAW",
+	"DATA\\CUTS\\HCUTS.RAW",
+	"DATA\\CUTS\\VCUTS.RAW",
+	"DATA\\CUTS\\RCUTS.RAW",
+};
+
+
 int bRedrawFrontend = 0;
 int gInFrontend = 0;
 int bReturnToMain = 0;
 
 int idle_timer = 0;
-int currPlayer = 0;
+int currPlayer = 1;
 int fePad = 0;
 int ScreenDepth = 0;
 
@@ -70,6 +85,24 @@ POLY_FT4 BackgroundPolys[6];
 FE_FONT feFont;
 
 int padsConnected[2] = { 1, 0 };
+
+int CarAvailability[4][10] = {
+	{1,1,1,1,0,0,0,0,0,0},
+	{1,1,1,1,0,0,0,0,0,0},
+	{1,1,1,1,0,0,0,0,0,0},
+	{1,1,1,1,0,0,0,0,0,0},
+};
+
+char carNumLookup[4][10] = {
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+};
+
+RECT16 extraRect = { 0x380, 0x100, 0x40, 0xD };
+int feVariableSave[4] = { -1 };
+
 
 // decompiled code
 // original method signature: 
@@ -327,7 +360,7 @@ void LoadFrontendScreens(void)
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 
-	Loadfile("DATA\\FEFONT.BNK", (char*)(&feFont.CharInfo[7]));
+	Loadfile("DATA\\FEFONT.BNK", (char*)&feFont);
 	//PadChecks();	// [A] there is a bug too
 }
 
@@ -361,10 +394,9 @@ void LoadFrontendScreens(void)
 
 int mainScreenLoaded = 1;
 
+// [D]
 void LoadBackgroundFile(char *name)
 {
-	UNIMPLEMENTED();
-
 	int iVar1;
 	int iVar2;
 	int iVar3;
@@ -694,8 +726,9 @@ int bDoingCutSelect = 0;
 int bDrawExtra = 0;
 
 SPRT extraSprt;
+POLY_FT3 extraDummy;
 
-int loaded[3] = { -1, 255, 0 };
+char loaded[3] = { -1, 255, 0 };
 
 // [D]
 void DrawScreen(PSXSCREEN *pScr)
@@ -821,12 +854,10 @@ void DrawScreen(PSXSCREEN *pScr)
 		SetTextColour(-0x80, '\0', '\0');
 		DisplayOnScreenText();
 		pDVar2 = current;
+
 		if (bDrawExtra != 0) {
-			extraSprt.tag = extraSprt.tag & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-			*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-			feFont.NumFonts = feFont.NumFonts & 0xff000000U | *(uint *)pDVar2->ot[3] & 0xffffff;
-			puVar3 = (u_long *)pDVar2->ot[3];
-			*puVar3 = *puVar3 & 0xff000000 | 0x1cbdb8;
+			addPrim(current->ot + 2, &extraSprt);
+			addPrim(current->ot + 3, &extraDummy);
 		}
 	}
 }
@@ -970,77 +1001,76 @@ void DisplayOnScreenText(void)
 	/* end block 4 */
 	// End Line: 3997
 
+// [D]
 void SetupExtraPoly(char *fileName, int offset, int offset2)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
-	undefined **ppuVar3;
-	undefined4 local_28;
-	undefined4 local_24;
+	char **ppuVar3;
+	RECT16 rect;
 
-	local_28 = DAT_FRNT__001c0884;
-	local_24 = DAT_FRNT__001c0888;
+	rect = extraRect;
 	FEDrawCDicon();
-	Loadfile(fileName, &DAT_0013f400 + offset2);
-	DAT_FRNT__001cc5c8._3_1_ = 4;
-	DAT_FRNT__001cc5cf = 100;
-	DAT_FRNT__001cc5d0 = 100;
-	DAT_FRNT__001cc5d8 = 0xff;
-	DAT_FRNT__001cc5d2 = 0xe2;
-	DAT_FRNT__001cc5cc = 0x80;
-	DAT_FRNT__001cc5cd = 0x80;
-	DAT_FRNT__001cc5ce = 0x80;
-	DAT_FRNT__001cc5d4 = 0;
-	DAT_FRNT__001cc5d5 = 0;
-	uRam001cc5da = 0xdb;
-	DAT_FRNT__001cc5d6 = 0x403c;
-	local_28 = 0x1000380;
-	local_24 = 0xdb0040;
-	LoadImage(&local_28, &DAT_0013f400 + offset2 + offset * 0x8000);
+	Loadfile(fileName, _frontend_buffer + offset2);
+	setSprt(&extraSprt);
+	//extraSprt.tag._3_1_ = 4;
+	//extraSprt.code = 'd';
+	extraSprt.x0 = 100;
+	extraSprt.w = 0xff;
+	extraSprt.y0 = 0xe2;
+	extraSprt.r0 = -0x80;
+	extraSprt.g0 = -0x80;
+	extraSprt.b0 = -0x80;
+	extraSprt.u0 = '\0';
+	extraSprt.v0 = '\0';
+	extraSprt.h = 219;
+	extraSprt.clut = 0x403c;
+
+	rect.x = 896;
+	rect.y = 256;
+	rect.w = 64;
+	rect.h = 219;
+
+	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
 	DrawSync(0);
 	VSync(0);
-	DAT_FRNT__001cbdb8._3_1_ = 7;
-	DAT_FRNT__001cbdbf = 0x24;
-	DAT_FRNT__001cbdc0 = 0xffff;
-	DAT_FRNT__001cbdc2 = 0xffff;
-	DAT_FRNT__001cbdc8 = 0xffff;
-	DAT_FRNT__001cbdca = 0xffff;
-	DAT_FRNT__001cbdd0 = 0xffff;
-	DAT_FRNT__001cbdd2 = 0xffff;
-	DAT_FRNT__001cbdce = 0x1e;
-	DAT_FRNT__001c6a90 = 1;
-	iVar1 = strcmp(fileName, s_DATA_CITY_RAW_FRNT__001c088c);
+	setPolyFT3(&extraDummy);
+	extraDummy.x0 = -1;
+	extraDummy.y0 = -1;
+	extraDummy.x1 = -1;
+	extraDummy.y1 = -1;
+	extraDummy.x2 = -1;
+	extraDummy.y2 = -1;
+	extraDummy.tpage = 0x1e;
+	bDrawExtra = 1;
+	iVar1 = strcmp(fileName, "DATA\\CITY.RAW");
 	if (iVar1 == 0) {
-		DAT_FRNT__001c6a78 = 1;
-		DAT_FRNT__001c6a79 = 0xff;
+		loaded[0] = 1;
+		loaded[0] = 0xff;
 	}
 	iVar1 = 0;
-	ppuVar3 = &PTR_s_DATA_CARS_CCARS_RAW_FRNT__001c078c_FRNT__001c6a10;
+	ppuVar3 = gfxNames;
 	do {
 		iVar2 = strcmp(fileName, *ppuVar3);
 		if (iVar2 == 0) {
-			DAT_FRNT__001c6a78 = 0xff;
-			DAT_FRNT__001c6a79 = (undefined)iVar1;
-			DAT_FRNT__001c6a7a = 0xff;
+			loaded[0] = -1;
+			loaded[1] = (char)iVar1;
+			loaded[2] = -1;
 		}
 		iVar1 = iVar1 + 1;
 		ppuVar3 = ppuVar3 + 1;
 	} while (iVar1 < 4);
 	iVar1 = 0;
-	ppuVar3 = &PTR_s_DATA_CUTS_CCUTS_RAW_FRNT__001c073c_FRNT__001c69a8;
+	ppuVar3 = cutGfxNames;
 	do {
 		iVar2 = strcmp(fileName, *ppuVar3);
 		if (iVar2 == 0) {
-			DAT_FRNT__001c6a79 = 0xff;
-			DAT_FRNT__001c6a7a = (undefined)iVar1;
+			loaded[1] = -1;
+			loaded[2] = (char)iVar1;
 		}
 		iVar1 = iVar1 + 1;
 		ppuVar3 = ppuVar3 + 1;
 	} while (iVar1 < 4);
-	return;
-	*/
 }
 
 
@@ -1133,8 +1163,6 @@ RECT16 storeRect = { 768, 475, 255, 36 };
 // [D]
 void NewSelection(short dir)
 {
-	UNIMPLEMENTED();
-
 	DB *pDVar1;
 	PSXBUTTON *pPVar2;
 	PSXBUTTON *pPVar3;
@@ -1522,6 +1550,7 @@ void PadChecks(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DoFrontEnd(void)
 {
 	UNIMPLEMENTED();
@@ -1842,7 +1871,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 					iVar5 = iVar5 + 4;
 				}
 				else {
-					iVar5 = iVar5 + (uint)feFont.CharInfo[uVar6 + 8].w;
+					iVar5 = iVar5 + (uint)feFont.CharInfo[uVar6].w;
 				}
 				bVar2 = *pbVar9;
 				uVar6 = (uint)bVar2;
@@ -1856,7 +1885,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 					iVar5 = iVar5 + 4;
 				}
 				else {
-					bVar1 = feFont.CharInfo[uVar7 + 8].w;
+					bVar1 = feFont.CharInfo[uVar7].w;
 
 					setSprt(font);
 					setSemiTrans(font, 1);
@@ -1866,24 +1895,17 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 					font->b0 = (unsigned char)b;
 					font->x0 = (short)iVar5;
 					font->y0 = (short)y;
-					font->u0 = feFont.CharInfo[uVar7 + 8].u;
-					uVar3 = feFont.CharInfo[uVar7 + 8].v;
+					font->u0 = feFont.CharInfo[uVar7].u;
+					uVar3 = feFont.CharInfo[uVar7].v;
 					font->w = (ushort)bVar1;
 					font->v0 = uVar3;
 					pDVar4 = current;
-					bVar2 = feFont.CharInfo[uVar7 + 8].h;
+					bVar2 = feFont.CharInfo[uVar7].h;
 					iVar5 = iVar5 + (uint)bVar1;
 					font->clut = 0x407c;
 					font->h = (ushort)bVar2;
 					addPrim(pDVar4->ot+1, font);
-					/*
-					font->tag = font->tag & 0xff000000 | pDVar4->ot[1] & 0xffffff;
-					puVar8 = pDVar4->ot;
-					uVar7 = (uint)font & 0xffffff;
-					*/
-					font = font + 1;
-					//puVar8[1] = puVar8[1] & 0xff000000 | uVar7; // wtf is this?
-				
+					font++;
 				}
 				iVar11 = iVar11 + 1;
 				bVar1 = *pbVar10;
@@ -1891,7 +1913,8 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 				pbVar10 = pbVar10 + 1;
 			} while ((bVar1 != 0) && (iVar11 < 0x20));
 		}
-		*(SPRT **)&current->primptr = font;
+		current->primptr = (char*)font;
+
 		setSprt(font);
 		pDVar4 = current;
 		font->x0 = -1;
@@ -1901,15 +1924,16 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		font->r0 = -1;
 		font->g0 = -1;
 		font->b0 = -1;
-		/*
-		*(undefined2 *)&font[1].r0 = 0xffff;
-		*(undefined2 *)&font[1].b0 = 0xffff;
-		*(undefined2 *)((int)&font[1].tag + 2) = 0x1a;
-		font->tag = font->tag & 0xff000000 | pDVar4->ot[1] & 0xffffff;
-		pDVar4->ot[1] = pDVar4->ot[1] & 0xff000000 | (uint)font & 0xffffff;
-		*/
+
 		addPrim(pDVar4->ot + 1, font);
-		pDVar4->primptr = pDVar4->primptr + 0x20;
+		pDVar4->primptr += sizeof(SPRT);
+
+		//DR_TPAGE* tp = (DR_TPAGE*)pDVar4->primptr;
+
+		//setDrawTPage(tp, 0, 1, 16);
+		//addPrim(pDVar4->ot + 1, tp);
+
+		pDVar4->primptr += sizeof(DR_TPAGE);
 	}
 	return iVar5;
 }
@@ -2210,90 +2234,87 @@ int CentreScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 6958
 
+int carSelection = 0;
+int currSelIndex = 0; 
+
+int wantedCar[2] = { 0 };	// TODO: GLAUNCH
+
+// [D]
 int CarSelectScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	char bVar1;
 	DB *pDVar2;
-	undefined4 *puVar3;
+	int *piVar3;
 	int iVar4;
 	int iVar5;
 	uint *puVar6;
-	undefined4 local_20;
-	undefined4 local_1c;
-	undefined4 local_18;
-	undefined4 local_14;
+	RECT16 rect;
+	RECT16 local_18;
 
-	iVar5 = DAT_FRNT__001c6a0c;
-	local_20 = DAT_FRNT__001c0884;
-	local_1c = DAT_FRNT__001c0888;
+	iVar5 = carSelection;
+	rect = extraRect;
 	if (bSetup == 0) {
-		if ((uRam001cc5dc & 0x10) == 0) {
-			if ((uRam001cc5dc & 0x40) != 0) {
-				if (DAT_FRNT__001c6a8c == 0) {
+		if ((fePad & 0x10U) == 0) {
+			if ((fePad & 0x40U) != 0) {
+				if (currSelIndex == 0) {
 					iVar4 = 9;
-					if (DAT_FRNT__001c6a0c != 0) {
-						iVar4 = DAT_FRNT__001c6a0c + -1;
+					if (carSelection != 0) {
+						iVar4 = carSelection + -1;
 					}
-					while ((DAT_FRNT__001c6a0c = iVar4,
-						*(int *)(&DAT_FRNT__001c6af4 + DAT_FRNT__001c6a0c * 4 + GameLevel * 0x28) == 0 &&
-						(DAT_FRNT__001c6a0c != iVar5))) {
-						iVar4 = DAT_FRNT__001c6a0c + -1;
-						if (DAT_FRNT__001c6a0c + -1 == -1) {
-							DAT_FRNT__001c6a0c = 9;
-							iVar4 = DAT_FRNT__001c6a0c;
+					while ((carSelection = iVar4,
+						CarAvailability[GameLevel * 10 + carSelection] == 0 &&
+						(carSelection != iVar5))) {
+						iVar4 = carSelection + -1;
+						if (carSelection + -1 == -1) {
+							carSelection = 9;
+							iVar4 = carSelection;
 						}
 					}
 				}
 				else {
-					if (DAT_FRNT__001c6a8c != 2) {
-						if (DAT_FRNT__001c6a84 == 1) {
-							feVariableSave[0] = DAT_FRNT__001c6a0c;
-							wantedCar[0] = ZEXT14((byte)(&DAT_FRNT__001c6acc)[DAT_FRNT__001c6a0c + GameLevel * 10]
-							);
+					if (currSelIndex != 2) {
+						if (currPlayer == 1) {
+							feVariableSave[0] = carSelection;
+							wantedCar[0] = (int)carNumLookup[carSelection + GameLevel * 10];
 						}
 						else {
-							wantedCar[1] = ZEXT14((byte)(&DAT_FRNT__001c6acc)[DAT_FRNT__001c6a0c + GameLevel * 10]
-							);
+							wantedCar[1] = (int)carNumLookup[carSelection + GameLevel * 10];
 						}
 						if (NumPlayers == 2) {
-							DAT_FRNT__001c6a84 = DAT_FRNT__001c6a84 + 1;
+							currPlayer = currPlayer + 1;
 							return 0;
 						}
 						return 0;
 					}
-					if (DAT_FRNT__001c6a0c == 9) {
-						DAT_FRNT__001c6a0c = 0;
+					if (carSelection == 9) {
+						carSelection = 0;
 					}
 					else {
-						DAT_FRNT__001c6a0c = DAT_FRNT__001c6a0c + 1;
+						carSelection = carSelection + 1;
 					}
-					while ((*(int *)(&DAT_FRNT__001c6af4 + DAT_FRNT__001c6a0c * 4 + GameLevel * 0x28) == 0 &&
-						(iVar4 = DAT_FRNT__001c6a0c + 1, DAT_FRNT__001c6a0c != iVar5))) {
-						DAT_FRNT__001c6a0c = iVar4;
+					while ((CarAvailability[GameLevel * 10 + carSelection] == 0 &&
+						(iVar4 = carSelection + 1, carSelection != iVar5))) {
+						carSelection = iVar4;
 						if (iVar4 == 10) {
-							DAT_FRNT__001c6a0c = 0;
+							carSelection = 0;
 						}
 					}
 				}
-				local_18 = DAT_FRNT__001c0884;
-				local_14 = DAT_FRNT__001c0888;
-				LoadImage(&local_18, &DAT_0013f400 + DAT_FRNT__001c6a0c * 0x8000);
+				local_18 = extraRect;
+				LoadImage(&local_18, (u_long *)(_frontend_buffer + carSelection * 0x8000));
 				DrawSync(0);
 				DisplayOnScreenText();
+
 				pDVar2 = current;
-				DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-				*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-				DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar2->ot[3] & 0xffffff;
-				puVar6 = (uint *)pDVar2->ot[3];
-				*puVar6 = *puVar6 & 0xff000000 | 0x1cbdb8;
+
+				addPrim(current->ot + 2, &extraSprt);
+				addPrim(current->ot + 3, &extraDummy);
+
 				EndFrame();
 				return 0;
 			}
-			if ((uRam001cc5dc & 0x1000) == 0) {
-				if ((uRam001cc5dc & 0x4000) == 0) {
+			if ((fePad & 0x1000U) == 0) {
+				if ((fePad & 0x4000U) == 0) {
 					return 0;
 				}
 				bVar1 = pCurrButton->d;
@@ -2301,84 +2322,83 @@ int CarSelectScreen(int bSetup)
 			else {
 				bVar1 = pCurrButton->u;
 			}
-			DAT_FRNT__001c6a8c = (uint)bVar1 - 1;
+			currSelIndex = (uint)bVar1 - 1;
 		}
 		else {
 			FESound(0);
-			DAT_FRNT__001c6aac = 1;
-			LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
-			DAT_FRNT__001c6a84 = 1;
-			DAT_FRNT__001c6a90 = 0;
-			DAT_FRNT__001c6a88 = 0;
+			bDoneAllready = 1;
+			LoadBackgroundFile("DATA\\GFX.RAW");
+			currPlayer = 1;
+			bDrawExtra = 0;
+			bDoingCarSelect = 0;
 		}
 		return 0;
 	}
-	DAT_FRNT__001c6a88 = 1;
+	bDoingCarSelect = 1;
 	if (NumPlayers == 1) {
-		DAT_FRNT__001c6b18 = (uint)((byte)AvailableCheats >> 4) & 1;
-		DAT_FRNT__001c6b40 = (uint)((byte)AvailableCheats >> 6) & 1;
-		DAT_FRNT__001c6b68 = (uint)AvailableCheats._1_1_ & 1;
-		DAT_FRNT__001c6b90 = (uint)(AvailableCheats._1_1_ >> 1) & 1;
+		CarAvailability[0][9] = 0;//(uint)((byte)AvailableCheats >> 4) & 1;		// [A]
+		CarAvailability[1][9] = 0;//(uint)((byte)AvailableCheats >> 6) & 1;		// [A]
+		CarAvailability[2][9] = 0;///(uint)AvailableCheats._1_1_ & 1;				// [A]
+		CarAvailability[3][9] = 0;//(uint)(AvailableCheats._1_1_ >> 1) & 1;		// [A]
 	}
 	if ((gFurthestMission == 0x28) && (NumPlayers == 1)) {
 		iVar5 = 4;
-		puVar3 = &DAT_FRNT__001c6b04;
+		piVar3 = (int*)CarAvailability + 4;
 		do {
 			if (iVar5 != 8) {
-				*puVar3 = 1;
+				*piVar3 = 1;
 			}
-			puVar3[10] = 1;
-			puVar3[0x14] = 1;
-			puVar3[0x1e] = 1;
+			piVar3[10] = 1;
+			piVar3[0x14] = 1;
+			piVar3[0x1e] = 1;
 			iVar5 = iVar5 + 1;
-			puVar3 = puVar3 + 1;
+			piVar3 = piVar3 + 1;
 		} while (iVar5 < 9);
 	}
 	else {
-		puVar3 = &DAT_FRNT__001c6b04;
+		piVar3 = (int*)CarAvailability + 4;
 		iVar5 = 4;
 		do {
-			*puVar3 = 0;
-			puVar3[10] = 0;
-			puVar3[0x14] = 0;
-			puVar3[0x1e] = 0;
+			*piVar3 = 0;
+			piVar3[10] = 0;
+			piVar3[0x14] = 0;
+			piVar3[0x1e] = 0;
 			iVar5 = iVar5 + -1;
-			puVar3 = puVar3 + 1;
+			piVar3 = piVar3 + 1;
 		} while (-1 < iVar5);
 	}
-	if (DAT_FRNT__001c6a84 != 1) {
+	if (currPlayer != 1) {
 		if (NumPlayers == 2) {
-			FEPrintStringSized(PTR_s_Giocatore_2_FRNT__001c0000_FRNT__001c6770, 400, 0x104, 0xc00, 0, 0x80, 0x80
-				, 0x80);
+			FEPrintStringSized("Player 2", 400, 0x104, 0xc00, 0,
+				0x80, 0x80, 0x80);
 			return 0;
 		}
 		return 0;
 	}
 	if (feVariableSave[0] == -1) {
-		DAT_FRNT__001c6a0c = 0;
-		if ((int)DAT_FRNT__001c6a79 == GameLevel) {
-			DAT_FRNT__001c6a90 = DAT_FRNT__001c6a84;
-			LoadImage(&local_20, &DAT_0013f400);
+		carSelection = 0;
+		if (loaded[0] == GameLevel) {
+			bDrawExtra = currPlayer;
+			LoadImage(&rect, (u_long*)_frontend_buffer);
 		}
 		else {
-			SetupExtraPoly((&PTR_s_DATA_CARS_CCARS_RAW_FRNT__001c078c_FRNT__001c6a10)[GameLevel], 0, 0);
-			DAT_FRNT__001c6a7b = (undefined)GameLevel;
+			SetupExtraPoly(gfxNames[GameLevel], 0, 0);
+			loaded[0] = GameLevel;
 		}
 	}
 	else {
-		DAT_FRNT__001c6a0c = feVariableSave[0];
-		SetupExtraPoly((&PTR_s_DATA_CARS_CCARS_RAW_FRNT__001c078c_FRNT__001c6a10)[GameLevel],
-			feVariableSave[0], 0);
+		carSelection = feVariableSave[0];
+		SetupExtraPoly(gfxNames[GameLevel], feVariableSave[0], 0);
 	}
-	LoadBackgroundFile(s_DATA_CARS_CARBACK_RAW_FRNT__001c089c);
+	LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
 	feVariableSave[0] = 0xffffffff;
 	feVariableSave[1] = 0xffffffff;
 	feVariableSave[2] = 0xffffffff;
 	feVariableSave[3] = 0xffffffff;
-	DAT_FRNT__001c6a7c = 0xff;
-	DAT_FRNT__001c6a8c = 1;
+	loaded[1] = 0xff;
+	currSelIndex = 1;
 	pCurrButton = pCurrScreen->buttons + 1;
-	return 1;*/
+	return 1;
 }
 
 
@@ -3829,12 +3849,24 @@ int SubtitlesOnOffScreen(int bSetup)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int CityCutOffScreen(int bSetup)
 {
-	UNIMPLEMENTED();
+	PSXSCREEN *pPVar1;
+
+	pPVar1 = pCurrScreen;
+	if (bSetup != 0) {
+		if (gFurthestMission < 0x14) {
+			pCurrScreen->buttons[2].action = 0x300;
+		}
+		else {
+			if (0x1d < gFurthestMission) {
+				return 0;
+			}
+		}
+		pPVar1->buttons[3].action = 0x300;
+	}
 	return 0;
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
 }
 
 
