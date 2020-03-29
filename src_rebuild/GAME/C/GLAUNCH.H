@@ -2,7 +2,9 @@
 #define GLAUNCH_H
 
 extern ACTIVE_CHEATS AvailableCheats;
+extern ACTIVE_CHEATS ActiveCheats;
 extern int gFurthestMission;
+extern int GameLevel;
 
 extern void GameStart(); // 0x00052A28
 

@@ -185,6 +185,7 @@
     <ClCompile Include="GAME\C\SYSTEM.C" />
     <ClCompile Include="GAME\C\TIME.C" />
     <ClCompile Include="GAME\FRONTEND\FEMAIN.C" />
+    <ClCompile Include="GAME\MEMCARD\MCMAIN.C" />
     <ClCompile Include="redriver2_psxpc.c" />
     <ClCompile Include="THISDUST.C">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

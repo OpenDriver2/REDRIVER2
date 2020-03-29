@@ -19,6 +19,7 @@ unsigned long channel_lookup[16]; // offset 0xDD3D8
 struct CHANNEL_DATA channels[16]; // offset 0xDE480
 
 int gMasterVolume = 0;
+int gMusicVolume = 0;
 
 // decompiled code
 // original method signature: 

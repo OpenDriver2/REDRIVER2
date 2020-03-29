@@ -16,6 +16,8 @@
 #include "../C/PRES.H"
 #include "../C/SOUND.H"
 
+#include "../MEMCARD/MAIN.H"
+
 typedef int(*screenFunc)(int bSetup);
 
 screenFunc fpUserFunctions[] = {
@@ -128,12 +130,23 @@ int feVariableSave[4] = { -1 };
 	/* end block 3 */
 	// End Line: 2415
 
+// temporarily here
+int bDoneAllready = 0;
+
+// GLAUNCH.CPP
+int gWantNight = 0;
+int gSubGameNumber = 0;
+int gSubtitles = 0;	// FMV
+int gInvincibleCar = 0;
+int gPlayerImmune = 0;
+
+GAMETYPE StoredGameType;
+
+// [D]
 void SetVariable(int var)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	byte bVar2;
+	char bVar2;
 	GAMETYPE GVar3;
 	uint uVar4;
 
@@ -169,8 +182,8 @@ void SetVariable(int var)
 		GameType = GAME_MISSION;
 		break;
 	case 6:
-		pScreenStack10[ScreenDepth] = pCurrScreen;
-		pButtonStack10[iVar1] = pCurrButton;
+		pScreenStack[ScreenDepth] = pCurrScreen;
+		pButtonStack[iVar1] = pCurrButton;
 		if (uVar4 != 1) {
 			CallMemoryCard(0x81, 0);
 			ReInitFrontend();
@@ -182,14 +195,14 @@ void SetVariable(int var)
 		GVar3 = GameType;
 		if (iVar1 != 0) {
 			GameType = GAME_LOADEDREPLAY;
-			StoredGameType = GVar3;
+			StoredGameType = (GAMETYPE)GVar3;
 			GameStart();
 			return;
 		}
 		goto LAB_FRNT__001c0a68;
 	case 7:
-		pScreenStack10[ScreenDepth] = pCurrScreen;
-		pButtonStack10[iVar1] = pCurrButton;
+		pScreenStack[ScreenDepth] = pCurrScreen;
+		pButtonStack[iVar1] = pCurrButton;
 		if (uVar4 == 0) {
 			CallMemoryCard(0x80, 0);
 		}
@@ -216,16 +229,16 @@ void SetVariable(int var)
 		}
 		break;
 	case 10:
-		bVar2 = (byte)((var & 1U) << 2);
-		ActiveCheats._0_1_ = (byte)ActiveCheats & 0xfb;
+		bVar2 = ((var & 1) << 2);
+		//ActiveCheats._0_1_ = (byte)ActiveCheats & 0xfb;		// [A]
 		gInvincibleCar = uVar4;
 		goto LAB_FRNT__001c0bbc;
 	case 0xb:
-		bVar2 = (byte)((var & 1U) << 3);
-		ActiveCheats._0_1_ = (byte)ActiveCheats & 0xf7;
+		bVar2 = ((var & 1U) << 3);
+		//ActiveCheats._0_1_ = (byte)ActiveCheats & 0xf7;		// [A]
 		gPlayerImmune = uVar4;
 	LAB_FRNT__001c0bbc:
-		ActiveCheats._0_1_ = (byte)ActiveCheats | bVar2;
+		//ActiveCheats._0_1_ = (byte)ActiveCheats | bVar2;		// [A]
 		break;
 	case 0xc:
 		GameLevel = 3;
@@ -240,8 +253,6 @@ void SetVariable(int var)
 		GameType = GAME_IDLEDEMO;
 		gCurrentMissionNumber = uVar4 + 400;
 	}
-	return;
-	*/
 }
 
 
@@ -1297,13 +1308,6 @@ LAB_FRNT__001c1ff4:
 	// End Line: 4614
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// temporarily here
-int bDoneAllready = 0;
-
-// GLAUNCH.CPP
-int gWantNight = 0;
-int gSubGameNumber = 0;
 
 // [D]
 int HandleKeyPress(void)

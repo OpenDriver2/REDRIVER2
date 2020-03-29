@@ -16,7 +16,6 @@
 
 #include "../FRONTEND/FEMAIN.H"
 
-int GameLevel = 0;
 int scr_z = 0;
 
 int levelstartpos[8][4] = {

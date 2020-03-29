@@ -78,8 +78,10 @@ unsigned short RecapFrameLength[19] = {
 };
 
 ACTIVE_CHEATS AvailableCheats = { 0 };
+ACTIVE_CHEATS ActiveCheats = { 0 };
 
 int gFurthestMission = 0;
+int GameLevel = 0;
 
 // decompiled code
 // original method signature: 

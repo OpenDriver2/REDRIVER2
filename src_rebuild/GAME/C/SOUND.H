@@ -1,6 +1,8 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+extern int gMasterVolume;
+extern int gMusicVolume;
 
 extern void InitSound(); // 0x000790E4
 
