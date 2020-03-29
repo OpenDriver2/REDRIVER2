@@ -45,8 +45,7 @@ char _tempPrimTab1[0x8000];		// 0xFB400
 char _tempPrimTab2[0x8000];		// 0x119400
 
 // TODO: to game vars
-unsigned char NumPlayers = 1;
-int NewLevel = 1;
+
 
 // decompiled code
 // original method signature: 

@@ -4,6 +4,7 @@
 #include "PAD.H"
 #include "LIBETC.H"
 #include "SYSTEM.H"
+#include "PRES.H"
 
 #undef v0
 
@@ -439,60 +440,65 @@ void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 	/* end block 3 */
 	// End Line: 1058
 
+int lastrequesteddisc = 0;
+
+// MAP.C
+int gShowMap = 0;
+
+// [D]
 void SetPleaseWait(char *buffer)
 {
 	UNIMPLEMENTED();
 
-	/*
 	CDTYPE CVar1;
-	undefined3 extraout_var;
+	//undefined3 extraout_var;
 	char *filename;
-	DISPENV DStack144;
-	DRAWENV DStack120;
-	undefined2 local_18;
-	undefined2 local_16;
-	undefined2 local_14;
-	undefined2 local_12;
+	DISPENV disp;
+	DRAWENV draw;
+	RECT16 rect;
 
 	DrawSync(0);
 	VSync(0);
 	SetDispMask(0);
-	SetupDefDrawEnv(&DStack120, 0, 0, 0x140, 0x100);
-	SetupDefDispEnv(&DStack144, 0, 0, 0x140, 0x100);
-	DStack120.dfe = '\x01';
-	PutDrawEnv(&DStack120);
-	PutDispEnv(&DStack144);
+	SetupDefDrawEnv(&draw,0,0,320,256);
+	SetupDefDispEnv(&disp,0,0, 320, 256);
+	draw.dfe = '\x01';
+	PutDrawEnv(&draw);
+	PutDispEnv(&disp);
 	LoadFont(buffer);
-	if (buffer == (char *)0x0) {
+	if (buffer == NULL) {
 		SetupDrawBuffers();
 	}
 	else {
 		current->primptr = buffer;
 	}
-	local_18 = 0;
-	local_16 = 0;
-	local_14 = 0x140;
-	local_12 = 0x200;
-	ClearImage(&local_18, 0, 0, 0);
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 320;
+	rect.h = 512;
+	ClearImage(&rect,0,0,0);
 	DrawSync(0);
 	gShowMap = 1;
-	SetTextColour(-0x80, -0x80, -0x80);
-	PrintStringCentred(s_Aspetta____00010870, 0x80);
+	SetTextColour(128, 128, 128);
+	PrintStringCentred("Please wait...",128);
 	gShowMap = 0;
 	VSync(0);
 	SetDispMask(1);
+#ifdef PSX
 	if (lastrequesteddisc == 0) {
-		filename = s__SLES_029_96_1_0001087c;
+		filename = "\\SLES_029.96;1";
 	}
 	else {
-		filename = s__SLES_129_96_1_0001088c;
+		filename = "\\SLES_029.96;1";
 	}
 	CVar1 = DiscSwapped(filename);
-	if (CONCAT31(extraout_var, CVar1) != 4) {
+	if (CVar1 != 4) {
 		ResetCityType();
 	}
-	return;
-	*/
+#else
+	ResetCityType();
+#endif // PSX
+	
 }
 
 

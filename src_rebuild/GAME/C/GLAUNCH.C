@@ -1,6 +1,14 @@
 #include "THISDUST.H"
 #include "GLAUNCH.H"
 
+
+#include "LIBETC.H"
+
+#include "E3STUFF.H"
+#include "PAD.H"
+#include "SOUND.H"
+#include "REPLAYS.H"
+
 MISSION_STEP MissionLadder[68] =
 {
   { 1, 0, 1, 0 },
@@ -80,8 +88,19 @@ unsigned short RecapFrameLength[19] = {
 ACTIVE_CHEATS AvailableCheats = { 0 };
 ACTIVE_CHEATS ActiveCheats = { 0 };
 
-int gFurthestMission = 0;
+int wantedCar[2] = { 0 };
 int GameLevel = 0;
+int gFurthestMission = 0;
+int gWantNight = 0;
+int gSubGameNumber = 0;
+int gInvincibleCar = 0;
+int gPlayerImmune = 0;
+unsigned char NumPlayers = 1;
+int NewLevel = 1;
+GAMETYPE GameType = GAME_MISSION;
+int gCurrentMissionNumber = 0;
+int gInFrontend = 0;
+int AttractMode = 0;
 
 // decompiled code
 // original method signature: 
@@ -115,17 +134,25 @@ int GameLevel = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+#ifndef PSX
+extern void SsSetSerialVol(char param_1, short param_2, short param_3);
+#endif // PSX
+
+int gCopDifficultyLevel = 0;
+int CurrentGameMode = 0;
+int gLoadedReplay = 0;
+int gHaveStoredData = 0;
+GAMETYPE StoredGameType;
+
+// [D]
 void GameStart(void)
 {
-	UNIMPLEMENTED();
-	/*
-
 	int iVar1;
 	int iVar2;
 
 	if (((GameType != GAME_CONTINUEMISSION) && (GameType != GAME_MISSION)) &&
 		(GameType != GAME_REPLAYMISSION)) {
-		SetPleaseWait((char *)0x0);
+		SetPleaseWait(NULL);
 	}
 	DrawSync(0);
 	VSync(0);
@@ -136,6 +163,7 @@ void GameStart(void)
 	iVar1 = gCopDifficultyLevel;
 	NewLevel = 1;
 	gCopDifficultyLevel = iVar1;
+	if (false) goto LAB_00052e68;
 	switch (GameType) {
 	case GAME_MISSION:
 		RunMissionLadder(1);
@@ -239,11 +267,11 @@ void GameStart(void)
 		LaunchGame();
 		gLoadedReplay = 0;
 	}
+LAB_00052e68:
 	wantedCar[1] = -1;
 	wantedCar[0] = -1;
 	gHaveStoredData = 0;
 	ReInitFrontend();
-	return;*/
 }
 
 
@@ -266,7 +294,6 @@ void StartRender(int renderNum)
 {
 	UNIMPLEMENTED();
 	/*
-
 	PlayFMV((uchar)renderNum);
 	ReInitFrontend();
 	return;*/

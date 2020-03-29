@@ -4,6 +4,7 @@
 #include "LIBPAD.H"
 
 extern int numPadsConnected;
+extern int gVibration;
 
 extern void InitControllers(); // 0x0006B480
 

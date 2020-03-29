@@ -1,6 +1,8 @@
 #include "THISDUST.H"
 #include "PRES.H"
+#include "SYSTEM.H"
 
+#include <STRING.H>
 
 FONT_DIGIT fontDigit[] = {
 	{ 2, 0xE },
@@ -34,6 +36,11 @@ char* button_names[11] = {
 };
 
 CVECTOR gFontColour;
+RECT16 fontclutpos;
+short fonttpage = 0;
+short fontclutid = 0;
+char AsciiTable[256] = { 0 };
+OUT_FONTINFO fontinfo[128];
 
 // decompiled code
 // original method signature: 
@@ -98,18 +105,16 @@ void SetTextColour(unsigned char Red, unsigned char Green, unsigned char Blue)
 	/* end block 3 */
 	// End Line: 1344
 
+// [D]
 int StringWidth(char *pString)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
-	byte *pbVar2;
+	char bVar1;
+	char *pbVar2;
 	int iVar3;
 
 	iVar3 = 0;
 	bVar1 = *pString;
-	pbVar2 = (byte *)(pString + 1);
+	pbVar2 = (pString + 1);
 	while (bVar1 != 0) {
 		if (bVar1 == 0x20) {
 			iVar3 = iVar3 + 4;
@@ -120,7 +125,7 @@ int StringWidth(char *pString)
 			}
 			else {
 				if (AsciiTable[(uint)bVar1] != 0xff) {
-					iVar3 = iVar3 + (uint)fontinfo[(byte)AsciiTable[(uint)bVar1]].width;
+					iVar3 = iVar3 + (uint)fontinfo[AsciiTable[(uint)bVar1]].width;
 				}
 			}
 		}
@@ -128,7 +133,6 @@ int StringWidth(char *pString)
 		pbVar2 = pbVar2 + 1;
 	}
 	return iVar3;
-	*/
 }
 
 
@@ -241,15 +245,14 @@ void PrintStringRightAligned(char *pString, int x, int y)
 	/* end block 2 */
 	// End Line: 1554
 
+// [D]
 void PrintStringCentred(char *pString, short y)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
 	iVar1 = StringWidth(pString);
 	PrintString(pString, (0x140 - iVar1) * 0x8000 >> 0x10, (int)y);
-	return;*/
+	return;
 }
 
 
@@ -280,44 +283,46 @@ void PrintStringCentred(char *pString, short y)
 	/* end block 3 */
 	// End Line: 723
 
+// [D]
 void LoadFont(char *buffer)
 {
-	UNIMPLEMENTED();
-	/*
 	int *piVar1;
 	char *pcVar2;
-	int iVar3;
+	u_long *puVar3;
 	int iVar4;
 	int iVar5;
+	int iVar6;
 	int *addr;
-	undefined2 local_18;
-	undefined2 local_16;
-	undefined2 local_14;
-	undefined2 local_12;
+	RECT16 rect;
 
-	fontclutpos.x = 0x3d0;
-	fontclutpos.y = 0x100;
-	fontclutpos.w = 0x10;
+	fontclutpos.x = 976;
+	fontclutpos.y = 256;
+	fontclutpos.w = 16;
 	fontclutpos.h = 1;
-	addr = (int *)&DAT_0011b400;
-	if (buffer != (char *)0x0) {
+	//addr = (int *)&DAT_0011b400;		// [A] FIXME: this font address might be used somewhere else
+	addr = (int*)_frontend_buffer;
+	if (buffer != NULL) {
 		addr = (int *)buffer;
 	}
-	Loadfile(&DAT_00011cc0, (char *)addr);
-	iVar5 = *addr;
-	memcpy(fontinfo, addr + 1, iVar5 * 8);
-	addr = addr + 1 + iVar5 * 2;
+	Loadfile("GFX\\FONT2.FNT", (char *)addr);
+	iVar6 = *addr;
+	memcpy(fontinfo, addr + 1, iVar6 * 8);
+	addr = addr + 1 + iVar6 * 2;
 	pcVar2 = AsciiTable;
+
+	memcpy(AsciiTable, addr, 256);
+	/*
+	// ALIGNED INLINE MEMCPY???
 	if (((uint)addr & 3) == 0) {
 		piVar1 = addr;
 		do {
-			iVar5 = piVar1[1];
-			iVar3 = piVar1[2];
-			iVar4 = piVar1[3];
+			iVar6 = piVar1[1];
+			iVar4 = piVar1[2];
+			iVar5 = piVar1[3];
 			*(int *)pcVar2 = *piVar1;
-			((int *)pcVar2)[1] = iVar5;
-			((int *)pcVar2)[2] = iVar3;
-			((int *)pcVar2)[3] = iVar4;
+			((int *)pcVar2)[1] = iVar6;
+			((int *)pcVar2)[2] = iVar4;
+			((int *)pcVar2)[3] = iVar5;
 			piVar1 = piVar1 + 4;
 			pcVar2 = (char *)((int *)pcVar2 + 4);
 		} while (piVar1 != addr + 0x40);
@@ -325,37 +330,37 @@ void LoadFont(char *buffer)
 	else {
 		piVar1 = addr;
 		do {
-			iVar5 = piVar1[1];
-			iVar3 = piVar1[2];
-			iVar4 = piVar1[3];
+			iVar6 = piVar1[1];
+			iVar4 = piVar1[2];
+			iVar5 = piVar1[3];
 			*(int *)pcVar2 = *piVar1;
-			((int *)pcVar2)[1] = iVar5;
-			((int *)pcVar2)[2] = iVar3;
-			((int *)pcVar2)[3] = iVar4;
+			((int *)pcVar2)[1] = iVar6;
+			((int *)pcVar2)[2] = iVar4;
+			((int *)pcVar2)[3] = iVar5;
 			piVar1 = piVar1 + 4;
 			pcVar2 = (char *)((int *)pcVar2 + 4);
 		} while (piVar1 != addr + 0x40);
-	}
+	}*/
+
 	fontclutid = GetClut((int)fontclutpos.x, (int)fontclutpos.y);
-	iVar5 = 0xf;
-	piVar1 = addr + 0x40;
+	iVar6 = 0xf;
+	puVar3 = (u_long *)(addr + 0x40);
 	do {
-		iVar5 = iVar5 + -1;
-		*(ushort *)piVar1 = *(ushort *)piVar1 & 0x7fff;
-		piVar1 = (int *)((int)piVar1 + 2);
-	} while (-1 < iVar5);
+		iVar6 = iVar6 + -1;
+		*(ushort *)puVar3 = *(ushort *)puVar3 & 0x7fff;
+		puVar3 = (u_long *)((int)puVar3 + 2);
+	} while (-1 < iVar6);
 	*(ushort *)((int)addr + 0x102) = *(ushort *)((int)addr + 0x102) | 0x8000;
 	*(ushort *)(addr + 0x41) = *(ushort *)(addr + 0x41) | 0x8000;
-	LoadImage(&fontclutpos, addr + 0x40);
-	local_18 = 0x3c0;
-	local_16 = 0x1d2;
-	local_14 = 0x40;
-	local_12 = 0x2e;
-	fonttpage = GetTPage(0, 0, 0x3c0, 0x1d2);
-	LoadImage(&local_18, addr + 0x48);
+	LoadImage(&fontclutpos, (u_long *)(addr + 0x40));
+	rect.x = 960;
+	rect.y = 466;
+	rect.w = 64;
+	rect.h = 46;
+	fonttpage = GetTPage(0, 0, 960, 466);
+	LoadImage(&rect, (u_long *)(addr + 0x48));
 	DrawSync(0);
 	return;
-	*/
 }
 
 
@@ -502,87 +507,94 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	/* end block 4 */
 	// End Line: 954
 
+// MAP.C ????
+extern int gShowMap;
+
+// [D]
 int PrintString(char *string, int x, int y)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte button;
-	byte bVar1;
-	uchar uVar2;
+	char chr;
+	char bVar1;
+	unsigned char uVar2;
 	int iVar3;
 	short sVar4;
 	DB *pDVar5;
 	int x_00;
 	char *pcVar6;
 	uint uVar7;
-	uint *prim;
-	byte *pbVar8;
+	SPRT *font;
+	char *pbVar8;
 
 	x_00 = -1;
-	if (current != (DB *)0x0) {
-		prim = (uint *)current->primptr;
+	if (current != NULL) {
+		font = (SPRT *)current->primptr;
 		if (gShowMap != 0) {
-			prim = (uint *)SetFontTPage(prim);
+			font = (SPRT *)SetFontTPage(font);
 		}
-		button = *string;
-		pbVar8 = (byte *)(string + 1);
+		chr = *string;
+		pbVar8 = (string + 1);
 		x_00 = x;
-		while (button != 0) {
-			if (button == 0x20) {
+		while (chr != 0) {
+			if (chr == 0x20) {
 				x_00 = x_00 + 4;
 			}
 			else {
-				if (((button < 0x20) || (0x8a < button)) || (button < 0x80)) {
-					bVar1 = AsciiTable[button];
-					if (AsciiTable[button] == 0xff) {
-						bVar1 = CHAR_ARRAY_000d9fa7[0];
+				if (((chr < 0x20) || (0x8a < chr)) || (chr < 0x80)) {
+					bVar1 = AsciiTable[chr];
+					if (AsciiTable[chr] == 0xff) {
+						bVar1 = AsciiTable[63];
 					}
 					uVar7 = (uint)bVar1;
-					button = fontinfo[uVar7].width;
-					*(char *)((int)prim + 3) = '\x04';
-					*(char *)((int)prim + 7) = 'f';
-					*(uchar *)(prim + 1) = gFontColour.r;
-					*(uchar *)((int)prim + 5) = gFontColour.g;
+					chr = fontinfo[uVar7].width;
+
+					setSprt(font);
+					setSemiTrans(font, 1);
+
+					//*(undefined *)((int)&font->tag + 3) = 4;
+					//font->code = 'f';
+
+					font->r0 = gFontColour.r;
+					font->g0 = gFontColour.g;
 					uVar2 = gFontColour.b;
-					*(short *)(prim + 2) = (short)x_00;
-					*(uchar *)((int)prim + 6) = uVar2;
-					*(short *)((int)prim + 10) = (short)fontinfo[uVar7].offy + (short)y;
-					*(uchar *)(prim + 3) = fontinfo[uVar7].x;
+					font->x0 = (short)x_00;
+					font->b0 = uVar2;
+					font->y0 = (short)fontinfo[uVar7].offy + (short)y;
+					font->u0 = fontinfo[uVar7].x;
 					uVar2 = fontinfo[uVar7].y;
-					*(ushort *)(prim + 4) = (ushort)button;
-					*(char *)((int)prim + 0xd) = uVar2 + -0x2e;
+					font->w = (ushort)chr;
+					font->v0 = uVar2 - 46;
 					sVar4 = fontclutid;
 					iVar3 = gShowMap;
-					*(ushort *)((int)prim + 0x12) = (ushort)fontinfo[uVar7].height;
-					*(short *)((int)prim + 0xe) = sVar4;
+					font->h = (ushort)fontinfo[uVar7].height;
+					font->clut = sVar4;
 					pDVar5 = current;
 					if (iVar3 == 0) {
-						*prim = *prim & 0xff000000 | *current->ot & 0xffffff;
-						*pDVar5->ot = *pDVar5->ot & 0xff000000 | (uint)prim & 0xffffff;
+						addPrim(current->ot, font);
+						//font->tag = font->tag & 0xff000000 | *current->ot & 0xffffff;
+						//*pDVar5->ot = *pDVar5->ot & 0xff000000 | (uint)font & 0xffffff;
 					}
 					else {
-						DrawPrim(prim);
+						DrawPrim(font);
 					}
-					prim = prim + 5;
-					x_00 = x_00 + (uint)button;
+					font = font + 1;
+					x_00 = x_00 + (uint)chr;
 				}
 				else {
 					if (gShowMap == 0) {
-						prim = (uint *)SetFontTPage(prim);
+						font = (SPRT *)SetFontTPage(font);
 					}
-					prim = (uint *)DrawButton(button, prim, x_00, y);
+					font = (SPRT *)DrawButton(chr, font, x_00, y);
 					x_00 = x_00 + 0x18;
 					if (gShowMap != 0) {
-						prim = (uint *)SetFontTPage(prim);
+						font = (SPRT *)SetFontTPage(font);
 					}
 				}
 			}
-			button = *pbVar8;
+			chr = *pbVar8;
 			pbVar8 = pbVar8 + 1;
 		}
 		if (gShowMap == 0) {
-			pcVar6 = (char *)SetFontTPage(prim);
+			pcVar6 = (char *)SetFontTPage(font);
 			current->primptr = pcVar6;
 		}
 		else {
@@ -590,7 +602,6 @@ int PrintString(char *string, int x, int y)
 		}
 	}
 	return x_00;
-	*/
 }
 
 
@@ -741,16 +752,13 @@ short PrintDigit(int x, int y, char *string)
 	/* end block 3 */
 	// End Line: 2128
 
+// [D]
 int PrintStringFeature(char *string, int x, int y, int w, int h, int transparent)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 
 	iVar1 = PrintString(string, x, y);
 	return iVar1;
-	*/
 }
 
 
@@ -1245,36 +1253,29 @@ void * DrawButton(unsigned char button, void *prim, int x, int y)
 	/* end block 3 */
 	// End Line: 2621
 
-void * SetFontTPage(void *prim)
+// [D]
+void* SetFontTPage(void *prim)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	short sVar2;
-	DB *pDVar3;
+	POLY_FT3* null = (POLY_FT3*)prim;
 
-	*(undefined *)((int)prim + 3) = 7;
-	*(undefined *)((int)prim + 7) = 0x26;
-	sVar2 = fonttpage;
-	iVar1 = gShowMap;
-	*(undefined2 *)((int)prim + 8) = 0xffff;
-	*(undefined2 *)((int)prim + 10) = 0xffff;
-	*(undefined2 *)((int)prim + 0x10) = 0xffff;
-	*(undefined2 *)((int)prim + 0x12) = 0xffff;
-	*(undefined2 *)((int)prim + 0x18) = 0xffff;
-	*(undefined2 *)((int)prim + 0x1a) = 0xffff;
-	*(short *)((int)prim + 0x16) = sVar2;
-	pDVar3 = current;
-	if (iVar1 == 0) {
-		*(uint *)prim = *(uint *)prim & 0xff000000 | *current->ot & 0xffffff;
-		*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)prim & 0xffffff;
+	setPolyFT3(null);
+	setSemiTrans(null, 1);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = fonttpage;
+
+	if (gShowMap == 0) {
+		addPrim(current->ot, null);
 	}
 	else {
 		DrawPrim(prim);
 	}
-	return (void *)((int)prim + 0x20);
-	*/
+	return null+1;
 }
 
 

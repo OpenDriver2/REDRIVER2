@@ -57,9 +57,95 @@ char* cutGfxNames[4] = {
 	"DATA\\CUTS\\RCUTS.RAW",
 };
 
+int CutAmounts[5] = {
+	0, 8, 7, 5, 8
+};
+
+int CutAmountsTotal[5] = {
+	0, 8, 15, 20, 40
+};
+
+char* CutSceneNames[28] =
+{
+	"Il fiume rosso",
+	"L'obitorio",
+	"Il testimone",
+	"L'appartamento di Lenny",
+	"La setta cubana",
+	"L'intruso",
+	"L'incontro con Caine",
+	"Partenza dalla citt",
+	"In cerca di indizi",
+	"Partenza",
+	"Osservando l'autocarro",
+	"L'indizio nella Rosanna Soto",
+	"Il cantiere navale",
+	"Il colpo",
+	"L'arresto di Jericho",
+	"Vasquez in Las Vegas",
+	"Lo scambio di Jericho",
+	"Rapina nella banca",
+	"La sala da biliardo",
+	"Il sentiero di guerra di Caine",
+	"Caine a Rio",
+	"Avviso a Jones",
+	"La sparatoria",
+	"La fuga di Lenny",
+	"Lenny takedown",
+	"Back to chicago",
+	"Vasquez and Caine",
+	"Credits"
+};
+
+char* MissionName[37] =
+{
+	"Informazioni sorveglianza",
+	"Insegui il testimone",
+	"Caccia al treno",
+	"Pedinamento della spia",
+	"Scappa e vai al rifugio",
+	"Dai la caccia all'intruso",
+	"Il magazzino di Caine",
+	"Partenza da Chicago",
+	"Segui l'indizio",
+	"Ruba il camion",
+	"Ferma il camion",
+	"Trova l'indizio",
+	"Fuga al traghetto",
+	"Alle banchine",
+	"Ritorna a Jones",
+	"Pedina Jericho",
+	"Insegui Jericho",
+	"Sfuggi ai brasiliani",
+	"Fuga dal casin",
+	"Sorpassa il treno",
+	"Bomba nell'auto",
+	"Fuga dalla bomba nell'auto",
+	"Rapina in banca",
+	"Ruba l'ambulanza",
+	"Sorveglianza",
+	"Ruba le chiavi",
+	"L'affare del C4",
+	"Distruggi il cantiere",
+	"Distruzione dell'autobus",
+	"Ruba l'auto del poliziotto",
+	"I soldi di Caine",
+	"Salva Jones",
+	"Salto nell'imbarcazione",
+	"Jones nei guai",
+	"Rincorri l'uomo armato",
+	"Lenny sta scappando",
+	"Lenny viene acchiappato",
+};
+
+char ScreenTitle[128];
+char ScoreName[128];
+int bDoingScores = 0;
+int bInCutSelect = 0;
+int cutSelection = 0;
+int currCity = 0;
 
 int bRedrawFrontend = 0;
-int gInFrontend = 0;
 int bReturnToMain = 0;
 
 int idle_timer = 0;
@@ -67,8 +153,6 @@ int currPlayer = 1;
 int fePad = 0;
 int ScreenDepth = 0;
 
-GAMETYPE GameType = GAME_MISSION;
-int gCurrentMissionNumber = 0;
 int gIdleReplay = 0;
 
 PSXSCREEN* pCurrScreen = NULL;
@@ -132,15 +216,7 @@ int feVariableSave[4] = { -1 };
 
 // temporarily here
 int bDoneAllready = 0;
-
-// GLAUNCH.CPP
-int gWantNight = 0;
-int gSubGameNumber = 0;
 int gSubtitles = 0;	// FMV
-int gInvincibleCar = 0;
-int gPlayerImmune = 0;
-
-GAMETYPE StoredGameType;
 
 // [D]
 void SetVariable(int var)
@@ -300,8 +376,6 @@ void SetVariable(int var)
 // [D]
 void LoadFrontendScreens(void)
 {
-	UNIMPLEMENTED();
-
 	unsigned char uVar1;
 	int iVar2;
 	int *local_v1_356;
@@ -819,7 +893,7 @@ void DrawScreen(PSXSCREEN *pScr)
 							string = pcVar11;
 							if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
 								((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-								((loaded[2] != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) {
+								((bInCutSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) {
 							LAB_FRNT__001c174c:
 								FEPrintString(string, (int)pPVar6->buttons[0].x * 2 +
 									(int)pPVar6->buttons[0].w,
@@ -843,7 +917,7 @@ void DrawScreen(PSXSCREEN *pScr)
 						string = local_30;
 						if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
 							((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-							((loaded[2] != 0 && ((iVar7 == 0 || (iVar7 == 2))))))
+							((bInCutSelect != 0 && ((iVar7 == 0 || (iVar7 == 2))))))
 							goto LAB_FRNT__001c174c;
 						FEPrintString(string_00,
 							(int)pPVar6->buttons[0].x * 2 + (int)pPVar6->buttons[0].w,
@@ -929,58 +1003,64 @@ void DrawScreen(PSXSCREEN *pScr)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char cutUnlock[] = { 
+	0x02, 0x02, 0x02, 0x04, 0x05, 
+	0x06, 0x07, 0x07, 0x07, 0x09,
+	0x0b, 0x0b, 0x0b, 0x0b, 0x0c,
+	0x0c, 0x0d, 0x0d, 0x0e, 0x0f,
+	0x11, 0x11, 0x11, 0x11, 0x12,
+	0x12, 0x13, 0x13, 0x13, 0x13, 
+	0x15, 0x15, 0x15, 0x15, 0x16, 
+	0x16, 0x16, 0x17, 0x17, 0x17,
+	0x1c };
+
+char* NullStr = "\0";
+
+// [D]
 void DisplayOnScreenText(void)
 {
-	UNIMPLEMENTED();
-	/*
 	uint transparent;
 	char *__src;
 	int iVar1;
 	char **ppcVar2;
 
-	sprintf(&DAT_FRNT__001cc1e0, &DAT_FRNT__001c0830);
-	if (DAT_FRNT__001c6abc == 0) {
+	sprintf(ScreenTitle, NullStr);
+	if (padsConnected[0] == 0) {
 		transparent = (uint)Pads[0].type;
 		if (Pads[0].type == '\0') {
-			__src = s_Inserisci_un_controller_nell_ing_FRNT__001c0834;
-			transparent = 1;
+			__src = "Please insert controller into Port 1";
+				transparent = 1;
 		}
 		else {
 			if (Pads[0].type != '\x01') {
 				return;
 			}
-			__src = s_Errore_nell_ingresso_controller_1_FRNT__001c085c;
+			__src = "Incompatible controller in Port 1";
 		}
 		FEPrintStringSized(__src, 0x28, 400, 0xc00, transparent, 0x40, 0x40, 0x40);
 	}
 	else {
-		if ((DAT_FRNT__001c699c == 0) && (iVar1 = 0, DAT_FRNT__001c6a88 == 0)) {
+		if ((bDoingScores == 0) && (iVar1 = 0, bDoingCarSelect == 0)) {
 			if (0 < ScreenDepth) {
-				ppcVar2 = ScreenNames12;
+				ppcVar2 = ScreenNames;
 				do {
 					if (0 < iVar1) {
-						strcat(&DAT_FRNT__001cc1e0, (char *)&PTR_DAT_FRNT__001c0880);
+						strcat(ScreenTitle, (char *)" - ");
 					}
 					__src = *ppcVar2;
 					ppcVar2 = ppcVar2 + 1;
-					strcat(&DAT_FRNT__001cc1e0, __src);
+					strcat(ScreenTitle, __src);
 					iVar1 = iVar1 + 1;
 				} while (iVar1 < ScreenDepth);
 			}
-			FEPrintStringSized(&DAT_FRNT__001cc1e0, 0x28, 400, 0xc00, 1, 0x40, 0x40, 0x40);
+			FEPrintStringSized(ScreenTitle, 0x28, 400, 0xc00, 1, 0x40, 0x40, 0x40);
 		}
-		if (DAT_FRNT__001c6a80 != 0) {
-			FEPrintStringSized((&PTR_s_Il_fiume_rosso_FRNT__001c0408_FRNT__001c6888)
-				[DAT_FRNT__001c69a0 +
-				*(int *)(&DAT_FRNT__001c69cc + DAT_FRNT__001c6a70 * 4)], 100, 0xe2, 0xc00, 1,
-				0x60, 0x60, 0x60);
+		if (bInCutSelect != 0) {
+			FEPrintStringSized(CutSceneNames[cutSelection + CutAmountsTotal[currCity]], 100, 0xe2,
+				0xc00, 1, 0x60, 0x60, 0x60);
 		}
 	}
-	return;
-	*/
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -1057,7 +1137,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	iVar1 = strcmp(fileName, "DATA\\CITY.RAW");
 	if (iVar1 == 0) {
 		loaded[0] = 1;
-		loaded[0] = 0xff;
+		loaded[1] = -1;
 	}
 	iVar1 = 0;
 	ppuVar3 = gfxNames;
@@ -1250,7 +1330,7 @@ LAB_FRNT__001c1ff4:
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))) &&
 			((bMissionSelect == 0 ||
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 5)))))) &&
-				((loaded[2] == 0 ||
+			((bInCutSelect == 0 ||
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))))) {
 			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
 				(int)pCurrButton->y, 4, 0x80, 0x80, 0x80);
@@ -1777,16 +1857,6 @@ void EndFrame(void)
 }
 
 
-
-// autogenerated function stub: 
-// void carSelectPlayerText() /* carSelectPlayerText method signature is not contained in the debug symbol data. This is likely either a library function or the game was compiled without debug symbols. Please refer to the TDR documentation for additional guidance. */
-void carSelectPlayerText()
-{ // line 2737, offset 0x001c676c
-	UNIMPLEMENTED();
-	//	return null;
-}
-
-
 // decompiled code
 // original method signature: 
 // int /*$ra*/ FEPrintString(char *string /*$t1*/, int x /*$t2*/, int y /*$s4*/, int justification /*$a3*/, int r /*stack 16*/, int g /*stack 20*/, int b /*stack 24*/)
@@ -1890,9 +1960,10 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 				}
 				else {
 					bVar1 = feFont.CharInfo[uVar7].w;
-
 					setSprt(font);
 					setSemiTrans(font, 1);
+
+					//font->tpage = 0x1a;	// [A]
 
 					font->r0 = (unsigned char)r;
 					font->g0 = (unsigned char)g;
@@ -1919,23 +1990,24 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		}
 		current->primptr = (char*)font;
 
-		setSprt(font);
+		/*
+		// this is not SPRT
+		font->code = '&';
 		pDVar4 = current;
 		font->x0 = -1;
 		font->y0 = -1;
 		font->w = -1;
 		font->h = -1;
-		font->r0 = -1;
-		font->g0 = -1;
-		font->b0 = -1;
+		*(undefined2 *)&font[1].r0 = 0xffff;
+		*(undefined2 *)&font[1].b0 = 0xffff;
+		*(undefined2 *)((int)&font[1].tag + 2) = 0x1a;
+		*/
 
-		addPrim(pDVar4->ot + 1, font);
-		pDVar4->primptr += sizeof(SPRT);
+		// [A] - don't use odd poly_ft prims
+		DR_TPAGE* tp = (DR_TPAGE*)pDVar4->primptr;
 
-		//DR_TPAGE* tp = (DR_TPAGE*)pDVar4->primptr;
-
-		//setDrawTPage(tp, 0, 1, 16);
-		//addPrim(pDVar4->ot + 1, tp);
+		setDrawTPage(tp, 0, 0, 0x1a);
+		addPrim(pDVar4->ot+1, tp);
 
 		pDVar4->primptr += sizeof(DR_TPAGE);
 	}
@@ -1972,17 +2044,15 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	/* end block 3 */
 	// End Line: 6467
 
+// [D]
 int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, int r, int g, int b)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
-	byte bVar2;
-	uchar uVar3;
+	char bVar1;
+	char bVar2;
+	unsigned char uVar3;
 	short sVar4;
 	DB *pDVar5;
-	uchar uVar6;
+	unsigned char uVar6;
 	int iVar7;
 	short sVar8;
 	uint uVar9;
@@ -1998,36 +2068,34 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 		while (bVar1 != 0) {
 			bVar1 = *string;
 			uVar9 = (uint)bVar1;
-			string = (char *)((byte *)string + 1);
+			string = (char *)(string + 1);
 			iVar10 = iVar7;
 			if (bVar1 != 10) {
 				if (bVar1 == 0x20) {
 					iVar10 = iVar7 + 4;
 				}
 				else {
-					pFontInfo = feFont.CharInfo + uVar9 + 8;
-					bVar1 = feFont.CharInfo[uVar9 + 8].w;
-					bVar2 = feFont.CharInfo[uVar9 + 8].h;
-					*(undefined *)((int)&font->tag + 3) = 9;
-					font->code = ',';
+					pFontInfo = feFont.CharInfo + uVar9;
+					bVar1 = feFont.CharInfo[uVar9].w;
+					bVar2 = feFont.CharInfo[uVar9].h;
+
+					setPolyFT4(font);
+					//*(undefined *)((int)&font->tag + 3) = 9;
+					//font->code = ',';
 					font->tpage = 0x1a;
-					uVar6 = ',';
-					if (transparent != 0) {
-						uVar6 = '.';
-					}
-					font->code = uVar6;
-					font->r0 = -0x80;
-					font->g0 = -0x80;
-					font->b0 = -0x80;
+					setSemiTrans(font, transparent);
+					font->r0 = 128;
+					font->g0 = 128;
+					font->b0 = 128;
 					font->u0 = pFontInfo->u;
-					font->v0 = feFont.CharInfo[uVar9 + 8].v;
-					font->u1 = feFont.CharInfo[uVar9 + 8].w + pFontInfo->u + -1;
-					font->v1 = feFont.CharInfo[uVar9 + 8].v;
+					font->v0 = feFont.CharInfo[uVar9].v;
+					font->u1 = feFont.CharInfo[uVar9].w + pFontInfo->u + -1;
+					font->v1 = feFont.CharInfo[uVar9].v;
 					font->u2 = pFontInfo->u;
-					font->v2 = feFont.CharInfo[uVar9 + 8].h + feFont.CharInfo[uVar9 + 8].v + -1;
-					font->u3 = feFont.CharInfo[uVar9 + 8].w + pFontInfo->u + -1;
-					uVar6 = feFont.CharInfo[uVar9 + 8].v;
-					uVar3 = feFont.CharInfo[uVar9 + 8].h;
+					font->v2 = feFont.CharInfo[uVar9].h + feFont.CharInfo[uVar9].v + -1;
+					font->u3 = feFont.CharInfo[uVar9].w + pFontInfo->u + -1;
+					uVar6 = feFont.CharInfo[uVar9].v;
+					uVar3 = feFont.CharInfo[uVar9].h;
 					iVar10 = iVar7 + ((int)((uint)bVar1 * scale) >> 0xc);
 					sVar4 = (short)y;
 					sVar8 = sVar4 + (short)((int)((uint)bVar2 * scale) >> 0xc);
@@ -2040,15 +2108,16 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 					font->x3 = (short)iVar10;
 					font->y3 = sVar8;
 					font->clut = 0x407c;
-					font->r0 = (uchar)r;
+					font->r0 = (unsigned char)r;
 					font->v3 = uVar3 + uVar6 + -1;
-					font->g0 = (uchar)g;
-					font->b0 = (uchar)b;
+					font->g0 = (unsigned char)g;
+					font->b0 = (unsigned char)b;
 					pDVar5 = current;
-					font->tag = font->tag & 0xff000000 | current->ot[1] & 0xffffff;
-					uVar9 = (uint)font & 0xffffff;
-					font = font + 1;
-					pDVar5->ot[1] = pDVar5->ot[1] & 0xff000000 | uVar9;
+					addPrim(current->ot + 1, font);
+					//font->tag = font->tag & 0xff000000 | current->ot[1] & 0xffffff;
+					//uVar9 = (uint)font & 0xffffff;
+					font++;
+					///pDVar5->ot[1] = pDVar5->ot[1] & 0xff000000 | uVar9;
 				}
 			}
 			bVar1 = *string;
@@ -2056,7 +2125,7 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 		}
 		*(POLY_FT4 **)&current->primptr = font;
 	}
-	return iVar7;*/
+	return iVar7;
 }
 
 
@@ -2241,7 +2310,6 @@ int CentreScreen(int bSetup)
 int carSelection = 0;
 int currSelIndex = 0; 
 
-int wantedCar[2] = { 0 };	// TODO: GLAUNCH
 
 // [D]
 int CarSelectScreen(int bSetup)

@@ -2093,9 +2093,9 @@ int redriver2_main(void)
 		NULL
 	};
 
-	//__main();
-	//_stacksize = &DAT_00004000;
+	//_stacksize = 0x4000;
 	//_ramsize = 0x200000;
+
 	SetDispMask(0);
 	StopCallback();
 	ResetCallback();
