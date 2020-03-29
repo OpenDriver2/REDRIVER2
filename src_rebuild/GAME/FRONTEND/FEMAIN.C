@@ -14,6 +14,7 @@
 #include "../C/PAD.H"
 #include "../C/TIME.H"
 #include "../C/PRES.H"
+#include "../C/SOUND.H"
 
 typedef int(*screenFunc)(int bSetup);
 
@@ -90,7 +91,7 @@ FE_FONT feFont;
 	/* end block 3 */
 	// End Line: 2415
 
-	void SetVariable(int var)
+void SetVariable(int var)
 {
 	UNIMPLEMENTED();
 	/*
@@ -302,6 +303,7 @@ void LoadFrontendScreens(void)
 	sVar9 = 640;
 	offset = 0x30000;
 	iVar7 = 1;
+	
 	do {
 		iVar7 = iVar7 + -1;
 		ShowLoading();
@@ -314,14 +316,14 @@ void LoadFrontendScreens(void)
 		offset = offset + 0x8000;
 	} while (-1 < iVar7);
 	ShowLoading();
-
+	
 	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
 	rect.x = 960;
 	rect.y = 256;
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 
-	Loadfile("DATA\\FEFONT.BNK", (char*)(feFont.CharInfo+7));
+	Loadfile("DATA\\FEFONT.BNK", (char*)(&feFont.CharInfo[7]));
 	PadChecks();
 }
 
@@ -462,12 +464,12 @@ void SetupBackgroundPolys(void)
 	BackgroundPolys[0].y0 = 0;
 	BackgroundPolys[0].u0 = '\0';
 	BackgroundPolys[0].v0 = '\x01';
-	BackgroundPolys[0].clut = getClut(960,256);
+	BackgroundPolys[0].clut = getClut(960, 256);
 	BackgroundPolys[0].x1 = 0x100;
 	BackgroundPolys[0].y1 = 0;
 	BackgroundPolys[0].u1 = -1;
 	BackgroundPolys[0].v1 = '\x01';
-	BackgroundPolys[0].tpage = getTPage(0,0,960,0);
+	BackgroundPolys[0].tpage = getTPage(0, 0, 640, 0);
 	BackgroundPolys[0].x2 = 0;
 	BackgroundPolys[0].y2 = 0x100;
 	BackgroundPolys[0].u2 = '\0';
@@ -485,7 +487,7 @@ void SetupBackgroundPolys(void)
 	BackgroundPolys[1].y1 = 0;
 	BackgroundPolys[1].u1 = -1;
 	BackgroundPolys[1].v1 = '\x01';
-	BackgroundPolys[1].tpage = getTPage(0, 0, 896, 0);
+	BackgroundPolys[1].tpage = getTPage(0, 0, 704, 0);
 	BackgroundPolys[1].x2 = 0x100;
 	BackgroundPolys[1].y2 = 0x100;
 	BackgroundPolys[1].u2 = '\0';
@@ -503,7 +505,7 @@ void SetupBackgroundPolys(void)
 	BackgroundPolys[2].y1 = 0;
 	BackgroundPolys[2].u1 = -0x80;
 	BackgroundPolys[2].v1 = '\x01';
-	BackgroundPolys[2].tpage = getTPage(0, 0, 832, 0);
+	BackgroundPolys[2].tpage = getTPage(0, 0, 768, 0);
 	BackgroundPolys[2].x2 = 0x200;
 	BackgroundPolys[2].y2 = 0x100;
 	BackgroundPolys[2].u2 = '\0';
@@ -521,7 +523,7 @@ void SetupBackgroundPolys(void)
 	BackgroundPolys[3].y1 = 0x100;
 	BackgroundPolys[3].u1 = -1;
 	BackgroundPolys[3].v1 = '\0';
-	BackgroundPolys[3].tpage = getTPage(0, 0, 768, 0);
+	BackgroundPolys[3].tpage = getTPage(0, 0, 832, 0);
 	BackgroundPolys[3].x2 = 0;
 	BackgroundPolys[3].y2 = 0x200;
 	BackgroundPolys[3].u2 = '\0';
@@ -539,7 +541,7 @@ void SetupBackgroundPolys(void)
 	BackgroundPolys[4].y1 = 0x100;
 	BackgroundPolys[4].u1 = -1;
 	BackgroundPolys[4].v1 = '\0';
-	BackgroundPolys[4].tpage = getTPage(0, 0, 704, 0);
+	BackgroundPolys[4].tpage = getTPage(0, 0, 896, 0);
 	BackgroundPolys[4].x2 = 0x100;
 	BackgroundPolys[4].y2 = 0x200;
 	BackgroundPolys[4].u2 = '\0';
@@ -557,7 +559,7 @@ void SetupBackgroundPolys(void)
 	BackgroundPolys[5].y1 = 0x100;
 	BackgroundPolys[5].u1 = -0x80;
 	BackgroundPolys[5].v1 = '\0';
-	BackgroundPolys[5].tpage = getTPage(0, 0, 640, 0);
+	BackgroundPolys[5].tpage = getTPage(0, 0, 960, 0);
 	BackgroundPolys[5].x2 = 0x200;
 	BackgroundPolys[5].y2 = 0x200;
 	BackgroundPolys[5].u2 = '\0';
@@ -609,7 +611,6 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 	setSprt(&HighlightSprt);
 	setRGB0(&HighlightSprt, 128, 128, 128);
-	HighlightSprt.code = 'd';
 	HighlightSprt.x0 = 0x16c;
 	HighlightSprt.y0 = 0xc6;
 	HighlightSprt.w = 0x100;
@@ -619,7 +620,7 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 	setClut(&HighlightSprt, 960, 258);
 
 	setPolyFT4(&HighlightDummy);
-	HighlightDummy.code = '$';
+	//HighlightDummy.code = '$';
 	HighlightDummy.x0 = -1;
 	HighlightDummy.y0 = -1;
 	HighlightDummy.x1 = -1;
@@ -697,7 +698,7 @@ void DrawScreen(PSXSCREEN *pScr)
 {
 	short sVar1;
 	DB *pDVar2;
-	uint *puVar3;
+	u_long *puVar3;
 	uint uVar4;
 	int local_68;
 	char *string;
@@ -720,18 +721,19 @@ void DrawScreen(PSXSCREEN *pScr)
 	pPVar5 = BackgroundPolys;
 	iVar7 = 5;
 	do {
-		long ot = *(pDVar2->ot + 0xb);
-		addPrim(&ot, pPVar5);
-		/*
-		pPVar5->tag = pPVar5->tag & 0xff000000 | *(uint *)pDVar2->ot[0xb] & 0xffffff;
+		addPrim(&pDVar2->ot[0xb], pPVar5);
 		
-		puVar3 = (uint *)pDVar2->ot[0xb];
-		uVar4 = (uint)pPVar5 & 0xffffff;
+		//pPVar5->tag = (pPVar5->tag & 0xff000000) | ((u_long*)&pDVar2->ot[0xb] & 0xffffff);
 		
-		*puVar3 = *puVar3 & 0xff000000 | uVar4;*/
+		//puVar3 = &pDVar2->ot[0xb];
+		//uVar4 = (uint)pPVar5 & 0xffffff;
+		
+		//*puVar3 = *puVar3 & 0xff000000 | uVar4;
+
 		iVar7 = iVar7 + -1;
 		pPVar5 = pPVar5 + 1;
 	} while (-1 < iVar7);
+
 	if (pScr == NULL) {
 		EndFrame();
 	}
@@ -819,7 +821,7 @@ void DrawScreen(PSXSCREEN *pScr)
 			extraSprt.tag = extraSprt.tag & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
 			*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
 			feFont.NumFonts = feFont.NumFonts & 0xff000000U | *(uint *)pDVar2->ot[3] & 0xffffff;
-			puVar3 = (uint *)pDVar2->ot[3];
+			puVar3 = (u_long *)pDVar2->ot[3];
 			*puVar3 = *puVar3 & 0xff000000 | 0x1cbdb8;
 		}
 	}
@@ -1120,29 +1122,30 @@ void ReInitScreens(void)
 	/* end block 3 */
 	// End Line: 4370
 
+DR_MOVE In;
+DR_MOVE Out;
+RECT16 storeRect = { 768, 475, 255, 36 };
+
 void NewSelection(short dir)
 {
 	UNIMPLEMENTED();
-	/*
+
 	DB *pDVar1;
 	PSXBUTTON *pPVar2;
 	PSXBUTTON *pPVar3;
 	uint uVar4;
-	short local_30;
-	short local_2e;
-	undefined2 local_2c;
-	undefined2 local_2a;
+	RECT16 rect;
 
 	pPVar2 = pCurrButton;
-	uVar4 = SEXT24(dir);
+	uVar4 = dir >> 10; //SEXT24(dir);
 	if (pCurrScreen->numButtons == '\0') {
 		return;
 	}
 	if (uVar4 != 0) {
-		SetDrawMove(&DAT_FRNT__001cc550, &DAT_FRNT__001c6a98, (int)pCurrButton->s_x, (int)pCurrButton->s_y)
-			;
-		DAT_FRNT__001cc550 = DAT_FRNT__001cc550 & 0xff000000 | *(uint *)current->ot[9] & 0xffffff;
-		*(uint *)current->ot[9] = *(uint *)current->ot[9] & 0xff000000 | 0x1cc550;
+		SetDrawMove(&In, &storeRect, (int)pCurrButton->s_x, (int)pCurrButton->s_y);
+		addPrim(current->ot+9, &In);
+		//In.tag = In.tag & 0xff000000 | *(uint *)current->ot[9] & 0xffffff;
+		//*(uint *)current->ot[9] = *(uint *)current->ot[9] & 0xff000000 | 0x1cc550;
 	}
 	pPVar3 = pPVar2;
 	if ((uVar4 & 0x1000) == 0) {
@@ -1173,30 +1176,37 @@ void NewSelection(short dir)
 	}
 	pPVar3 = (PSXBUTTON *)&pCurrScreen[-1].buttons[uVar4 + 7].w;
 LAB_FRNT__001c1ff4:
-	local_30 = pPVar3->s_x;
-	local_2e = pPVar3->s_y;
-	local_2c = 0xff;
-	local_2a = 0x24;
-	SetDrawMove(&DAT_FRNT__001cc570, &local_30, (int)DAT_FRNT__001c6a98, (int)DAT_FRNT__001c6a9a);
+	rect.x = pPVar3->s_x;
+	rect.y = pPVar3->s_y;
+	rect.w = 0xff;
+	rect.h = 0x24;
+	SetDrawMove(&Out, &rect, (int)storeRect.x, (int)storeRect.y);
 	pDVar1 = current;
-	DAT_FRNT__001cc570 = DAT_FRNT__001cc570 & 0xff000000 | *(uint *)current->ot[8] & 0xffffff;
-	*(uint *)current->ot[8] = *(uint *)current->ot[8] & 0xff000000 | 0x1cc570;
-	DAT_FRNT__001cc598 = pPVar3->s_x;
-	DAT_FRNT__001cc59a = pPVar3->s_y;
-	DAT_FRNT__001cc590 = DAT_FRNT__001cc590 & 0xff000000 | *(uint *)pDVar1->ot[6] & 0xffffff;
+	addPrim(current->ot+8, &Out);
+	//Out.tag = Out.tag & 0xff000000 | *(uint *)current->ot[8] & 0xffffff;
+
+	//*(uint *)current->ot[8] = *(uint *)current->ot[8] & 0xff000000 | 0x1cc570;
+	HighlightSprt.x0 = pPVar3->s_x;
+	HighlightSprt.y0 = pPVar3->s_y;
+
+	addPrim(pDVar1->ot+6, &HighlightSprt);
+	//HighlightSprt.tag = HighlightSprt.tag & 0xff000000 | *(uint *)pDVar1->ot[6] & 0xffffff;
 	pCurrButton = pPVar3;
-	*(uint *)pDVar1->ot[6] = *(uint *)pDVar1->ot[6] & 0xff000000 | 0x1cc590;
-	DAT_FRNT__001cc5a8 = DAT_FRNT__001cc5a8 & 0xff000000 | *(uint *)pDVar1->ot[7] & 0xffffff;
-	*(uint *)pDVar1->ot[7] = *(uint *)pDVar1->ot[7] & 0xff000000 | 0x1cc5a8;
+
+	addPrim(pDVar1->ot + 7, &HighlightDummy);
+	//*(uint *)pDVar1->ot[6] = *(uint *)pDVar1->ot[6] & 0xff000000 | 0x1cc590;
+	//HighlightDummy.tag = HighlightDummy.tag & 0xff000000 | *(uint *)pDVar1->ot[7] & 0xffffff;
+	//*(uint *)pDVar1->ot[7] = *(uint *)pDVar1->ot[7] & 0xff000000 | 0x1cc5a8;
 	if (pPVar3->action >> 8 == 3) {
-		FEPrintString(pPVar3->Name, (int)pPVar3->x * 2 + (int)pPVar3->w, (int)pPVar3->y, 4, 0x20, 0x20, 0x20);
+		FEPrintString(pPVar3->Name, (int)pPVar3->x * 2 + (int)pPVar3->w, (int)pPVar3->y, 4, 0x20, 0x20,
+			0x20);
 	}
 	else {
-		if ((((DAT_FRNT__001c6a88 == 0) ||
+		if ((((bDoingCarSelect == 0) ||
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))) &&
-			((DAT_FRNT__001c6ab0 == 0 ||
+			((bMissionSelect == 0 ||
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 5)))))) &&
-				((DAT_FRNT__001c6a80 == 0 ||
+				((loaded[2] == 0 ||
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))))) {
 			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
 				(int)pCurrButton->y, 4, 0x80, 0x80, 0x80);
@@ -1207,7 +1217,6 @@ LAB_FRNT__001c1ff4:
 		}
 	}
 	EndFrame();
-	return;*/
 }
 
 
@@ -1715,12 +1724,14 @@ void EndFrame(void)
 	VSync(0);
 	PutDispEnv(&current->disp);
 	PutDrawEnv(&current->draw);
+
 	pDVar3 = last;
 	pDVar2 = current;
 	ppcVar1 = &last->primtab;
 	current = last;
 	last = pDVar2;
 	pDVar3->primptr = *ppcVar1;
+
 	DrawOTag(pDVar2->ot + 0x10);
 	ClearOTagR(current->ot, 0x10);
 	VSync(0);
@@ -1842,7 +1853,8 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 					bVar1 = feFont.CharInfo[uVar7 + 8].w;
 
 					setSprt(font);
-					font->code = 'f';
+					setSemiTrans(font, 1);
+
 					font->r0 = (unsigned char)r;
 					font->g0 = (unsigned char)g;
 					font->b0 = (unsigned char)b;

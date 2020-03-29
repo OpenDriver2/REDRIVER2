@@ -38,8 +38,8 @@ DB MPBuff[2][2];
 DB* last;
 DB* current;
 
-long _tempOT1[OTSIZE];
-long _tempOT2[OTSIZE];
+u_long _tempOT1[OTSIZE];
+u_long _tempOT2[OTSIZE];
 
 char _tempPrimTab1[0x8000];		// 0xFB400
 char _tempPrimTab2[0x8000];		// 0x119400
@@ -776,20 +776,16 @@ void loadsectors(char *addr, int sector, int nsectors)
 // [D]
 void EnableDisplay(void)
 {
-	ulong *ot;
 	int i;
 
 	i = 0;
 	if (NumPlayers)
 	{
-		ot = MPBuff[0][1].ot;
-		do {
-			
-			ClearOTagR(ot+32, 0x1080);
-			ClearOTagR(ot, 0x1080);
-			ot += 64;
-			i++;
-		} while (i < NumPlayers);
+		for (i = 0; i < NumPlayers; i++)
+		{
+			ClearOTagR(MPBuff[i][0].ot, 0x1080);
+			ClearOTagR(MPBuff[i][1].ot, 0x1080);
+		}
 	}
 }
 
