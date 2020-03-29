@@ -1142,7 +1142,7 @@ void NewSelection(short dir)
 	RECT16 rect;
 
 	pPVar2 = pCurrButton;
-	uVar4 = dir >> 10; //SEXT24(dir);
+	uVar4 = dir;// >> 10; //SEXT24(dir);
 	if (pCurrScreen->numButtons == '\0') {
 		return;
 	}
@@ -1329,8 +1329,7 @@ int HandleKeyPress(void)
 				iVar1 = ScreenDepth;
 				if (iVar3 == 2) {
 					if (((NumPlayers == 2) && (bDoingCarSelect != 0)) && (currPlayer == 2)) {
-						(fpUserFunctions[pCurrScreen->userFunctionNum - 1])
-							(1);
+						(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
 						bRedrawFrontend = 1;
 					}
 					else {
@@ -1353,7 +1352,7 @@ int HandleKeyPress(void)
 							if (ScreenDepth < 0xb) {
 								iVar3 = ScreenDepth + 1;
 							}
-							pNewScreen = PsxScreens + pPVar2->action;
+							pNewScreen = &PsxScreens[pPVar2->action & ~0x100];	// [A] HACK: not decompiled properly
 							ScreenDepth = iVar3;
 						}
 					}
@@ -1419,8 +1418,6 @@ int allowVibration = 1;
 // [D]
 void PadChecks(void)
 {
-	UNIMPLEMENTED();
-
 	int iVar1;
 	int *local_a1_92;
 	int iVar2;
@@ -1558,6 +1555,10 @@ void DoFrontEnd(void)
 	SetDispMask(1);
 	FEInitCdIcon();
 	do {
+#ifndef PSX
+		Emulator_BeginScene();
+#endif // PSX
+
 		PadChecks();
 		if (currPlayer == 2) {
 			if (Pads[1].type < 2) {
@@ -3898,18 +3899,15 @@ int ControllerScreen(int bSetup)
 
 int MainScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	if (bSetup != 0) {
-		if (DAT_FRNT__001c6ab8 == 2) {
+		if (numPadsConnected == 2) {
 			pCurrScreen->buttons[3].action = 0x106;
 		}
 		else {
 			pCurrScreen->buttons[3].action = 0x300;
 		}
 	}
-	return 0;*/
+	return 0;
 }
 
 
@@ -4296,8 +4294,6 @@ int bCdIconSetup = 0;
 // [D]
 void FEInitCdIcon(void)
 {
-	UNIMPLEMENTED();
-
 	ushort *puVar1;
 	int iVar2;
 	RECT16 rect;

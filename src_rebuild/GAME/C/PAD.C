@@ -67,7 +67,7 @@ void InitControllers(void)
 	{
 		pad = &Pads[i];
 
-		pad->active = 0;
+		pad->active = 1;
 		pad->type = 0;
 		pad->dualshock = 0;
 		pad->motors[0] = 0;
@@ -82,7 +82,7 @@ void InitControllers(void)
 		pad->dsactive = 0;
 
 		for (int j = 0; j < 16; j++)
-			pad->mappings.button_lookup[j] = 0;
+			pad->mappings.button_lookup[j] = 1 << (j & 0x1f);
 
 		pad->mappings.swap_analog = 0;
 	}
@@ -381,15 +381,13 @@ void SetDuplicatePadData(char *buffer, int size)
 	/* end block 3 */
 	// End Line: 602
 
+// [D]
 void MapPad(int pad, PADRAW *pData)
 {
-	UNIMPLEMENTED();
-
-	/*
-	uchar uVar1;
+	unsigned char uVar1;
 	ushort uVar2;
 	ushort uVar3;
-	byte bVar4;
+	char bVar4;
 	uint uVar5;
 	char cVar6;
 	char cVar7;
@@ -414,14 +412,14 @@ void MapPad(int pad, PADRAW *pData)
 		Pads[pad].type = '\x04';
 	}
 	uVar11 = Pads[pad].direct;
-	uVar10 = ~(uint)CONCAT11(pData->buttons[0], pData->buttons[1]) & 0xffff;
+	uVar10 = ~(uint)((pData->buttons[0] << 8) | (pData->buttons[1])) & 0xffff;
 	Pads[pad].direct = (ushort)uVar10;
 	Pads[pad].dirnew = (ushort)uVar10 & ~uVar11;
-	Pads[pad].diranalog[0] = pData->analog[0] + -0x80;
-	Pads[pad].diranalog[1] = pData->analog[1] + -0x80;
-	Pads[pad].diranalog[2] = pData->analog[2] + -0x80;
+	Pads[pad].diranalog[0] = pData->analog[0] + 128;
+	Pads[pad].diranalog[1] = pData->analog[1] + 128;
+	Pads[pad].diranalog[2] = pData->analog[2] + 128;
 	uVar1 = Pads[pad].active;
-	Pads[pad].diranalog[3] = pData->analog[3] + -0x80;
+	Pads[pad].diranalog[3] = pData->analog[3] + 128;
 	if (uVar1 != '\0') {
 		uVar11 = 0;
 		uVar9 = 0;
@@ -454,8 +452,6 @@ void MapPad(int pad, PADRAW *pData)
 		Pads[pad].mapanalog[2] = cVar7;
 		Pads[pad].mapanalog[3] = cVar8;
 	}
-	return;
-	*/
 }
 
 
