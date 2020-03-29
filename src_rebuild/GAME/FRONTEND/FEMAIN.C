@@ -43,6 +43,8 @@ screenFunc fpUserFunctions[] = {
 
 int bRedrawFrontend = 0;
 int gInFrontend = 0;
+int bReturnToMain = 0;
+
 int idle_timer = 0;
 int currPlayer = 0;
 int fePad = 0;
@@ -66,6 +68,8 @@ char* ScreenNames[12] = { 0 };
 POLY_FT4 BackgroundPolys[6];
 
 FE_FONT feFont;
+
+int padsConnected[2] = { 1, 0 };
 
 // decompiled code
 // original method signature: 
@@ -324,7 +328,7 @@ void LoadFrontendScreens(void)
 	DrawSync(0);
 
 	Loadfile("DATA\\FEFONT.BNK", (char*)(&feFont.CharInfo[7]));
-	PadChecks();
+	//PadChecks();	// [A] there is a bug too
 }
 
 
@@ -1126,6 +1130,7 @@ DR_MOVE In;
 DR_MOVE Out;
 RECT16 storeRect = { 768, 475, 255, 36 };
 
+// [D]
 void NewSelection(short dir)
 {
 	UNIMPLEMENTED();
@@ -1265,40 +1270,43 @@ LAB_FRNT__001c1ff4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// temporarily here
+int bDoneAllready = 0;
+
+// GLAUNCH.CPP
+int gWantNight = 0;
+int gSubGameNumber = 0;
+
+// [D]
 int HandleKeyPress(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	PSXBUTTON *pPVar2;
 	int iVar3;
 	PSXBUTTON **ppPVar4;
 
-	if ((pCurrScreen == (PSXSCREEN *)0x0) || (pCurrButton == (PSXBUTTON *)0x0)) {
+	if ((pCurrScreen == NULL) || (pCurrButton == NULL)) {
 		iVar3 = 0;
 	}
 	else {
-		if ((pCurrScreen->userFunctionNum != '\0') &&
-			(iVar3 = (*(code *)(&PTR_CentreScreen_FRNT__001c6a20)
-				[(uint)(byte)pCurrScreen->userFunctionNum - 1])(0), iVar3 != 0)) {
-			uRam001cc5dc = 0;
+		if ((pCurrScreen->userFunctionNum != '\0') && (iVar3 = (fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0), iVar3 != 0)) {
+			fePad = 0;
 		}
-		if ((uRam001cc5dc & 0x40) == 0) {
-			if ((uRam001cc5dc & 0x10) == 0) {
-				if ((((uRam001cc5dc & 0x5000) == 0) && ((uRam001cc5dc & 0x8000) == 0)) &&
-					((uRam001cc5dc & 0x2000) == 0)) {
+		if ((fePad & 0x40U) == 0) {
+			if ((fePad & 0x10U) == 0) {
+				if ((((fePad & 0x5000U) == 0) && ((fePad & 0x8000U) == 0)) &&
+					((fePad & 0x2000U) == 0)) {
 					return 1;
 				}
-				NewSelection(uRam001cc5dc);
+				NewSelection(fePad);
 			}
 			else {
 				if (0 < ScreenDepth) {
-					if (DAT_FRNT__001c6aac == 0) {
+					if (bDoneAllready == 0) {
 						FESound(0);
 					}
 					else {
-						DAT_FRNT__001c6aac = 0;
+						bDoneAllready = 0;
 					}
 					ScreenDepth = ScreenDepth + -1;
 					if (ScreenDepth == 0) {
@@ -1306,8 +1314,8 @@ int HandleKeyPress(void)
 						gSubGameNumber = 0;
 						NumPlayers = 1;
 					}
-					DAT_FRNT__001c6d48 = pScreenStack10[ScreenDepth];
-					DAT_FRNT__001cbcb8 = pButtonStack10[ScreenDepth];
+					pNewScreen = pScreenStack[ScreenDepth];
+					pNewButton = pButtonStack[ScreenDepth];
 				}
 			}
 		}
@@ -1320,33 +1328,32 @@ int HandleKeyPress(void)
 				}
 				iVar1 = ScreenDepth;
 				if (iVar3 == 2) {
-					if (((NumPlayers == 2) && (DAT_FRNT__001c6a88 != 0)) && (DAT_FRNT__001c6a84 == 2)) {
-						(*(code *)(&PTR_CentreScreen_FRNT__001c6a20)
-							[(uint)(byte)pCurrScreen->userFunctionNum - 1])(1);
-						DAT_FRNT__001c6aa0 = 1;
+					if (((NumPlayers == 2) && (bDoingCarSelect != 0)) && (currPlayer == 2)) {
+						(fpUserFunctions[pCurrScreen->userFunctionNum - 1])
+							(1);
+						bRedrawFrontend = 1;
 					}
 					else {
-						ppPVar4 = pButtonStack10 + ScreenDepth;
-						pScreenStack10[ScreenDepth] = pCurrScreen;
+						ppPVar4 = pButtonStack + ScreenDepth;
+						pScreenStack[ScreenDepth] = pCurrScreen;
 						pPVar2 = pCurrButton;
 						*ppPVar4 = pCurrButton;
-						ScreenNames12[iVar1] = pPVar2->Name;
+						ScreenNames[iVar1] = pPVar2->Name;
 						GameStart();
 					}
 				}
 				else {
 					if (iVar3 < 3) {
 						if (iVar3 == 1) {
-							pScreenStack10[ScreenDepth] = pCurrScreen;
+							pScreenStack[ScreenDepth] = pCurrScreen;
 							pPVar2 = pCurrButton;
-							pButtonStack10[ScreenDepth] = pCurrButton;
-							ScreenNames12[ScreenDepth] = pPVar2->Name;
+							pButtonStack[ScreenDepth] = pCurrButton;
+							ScreenNames[ScreenDepth] = pPVar2->Name;
 							iVar3 = 10;
 							if (ScreenDepth < 0xb) {
 								iVar3 = ScreenDepth + 1;
 							}
-							DAT_FRNT__001c6d48 =
-								(PSXSCREEN *)(&DAT_FRNT__001c6d50 + (uint)*(byte *)&pPVar2->action * 0x1e4);
+							pNewScreen = PsxScreens + pPVar2->action;
 							ScreenDepth = iVar3;
 						}
 					}
@@ -1355,18 +1362,18 @@ int HandleKeyPress(void)
 							if (iVar3 == 0) {
 								NumPlayers = 1;
 							}
-							DAT_FRNT__001c6d48 = pScreenStack10[iVar3];
-							DAT_FRNT__001cbcb8 = pButtonStack10[iVar3];
+							pNewScreen = pScreenStack[iVar3];
+							pNewButton = pButtonStack[iVar3];
 							ScreenDepth = iVar3;
 						}
 					}
 				}
 			}
 		}
-		DAT_FRNT__001cbdb0 = VSync(0xffffffff);
+		idle_timer = VSync(0xffffffff);
 		iVar3 = 1;
 	}
-	return iVar3;*/
+	return iVar3;
 }
 
 
@@ -1407,80 +1414,78 @@ int HandleKeyPress(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int allowVibration = 1;
+
+// [D]
 void PadChecks(void)
 {
 	UNIMPLEMENTED();
 
-	ReadControllers();	// [A]
+	int iVar1;
+	int *local_a1_92;
+	int iVar2;
+	unsigned char *pbVar3;
 
-	/*
-	uint uVar1;
-	undefined4 *puVar2;
-	int iVar3;
-	byte *pbVar4;
+	// TODO: null check for pCurrScreen
 
-	uVar1 = DAT_FRNT__001c6ab8;
+	iVar1 = numPadsConnected;
 	ReadControllers();
-	puVar2 = &DAT_FRNT__001c6abc;
-	pbVar4 = &Pads[0].type;
-	iVar3 = 1;
-	DAT_FRNT__001c6ab8 = 0;
-	uRam001cc5dc = Pads[0].mapnew;
+	local_a1_92 = padsConnected;
+	pbVar3 = &Pads[0].type;
+	iVar2 = 1;
+	numPadsConnected = 0;
+	fePad = Pads[0].mapnew;
 	do {
-		if (*pbVar4 < 2) {
-			*puVar2 = 0;
+		if (*pbVar3 < 2) {
+			*local_a1_92 = 0;
 		}
 		else {
-			*puVar2 = 1;
-			DAT_FRNT__001c6ab8 = DAT_FRNT__001c6ab8 + 1;
+			*local_a1_92 = 1;
+			numPadsConnected = numPadsConnected + 1;
 		}
-		puVar2 = puVar2 + 1;
-		iVar3 = iVar3 + -1;
-		pbVar4 = pbVar4 + 0x48;
-	} while (-1 < iVar3);
-	if ((uVar1 != DAT_FRNT__001c6ab8) &&
-		(((uVar1 == 2 || (DAT_FRNT__001c6ab8 == 2)) && (ScreenDepth == 0)))) {
-		DAT_FRNT__001c6aa0 = 1;
+		local_a1_92 = local_a1_92 + 1;
+		iVar2 = iVar2 + -1;
+		pbVar3 = pbVar3 + 0x48;
+	} while (-1 < iVar2);
+	if ((iVar1 != numPadsConnected) &&
+		(((iVar1 == 2 || (numPadsConnected == 2)) && (ScreenDepth == 0)))) {
+		bRedrawFrontend = 1;
 		MainScreen(1);
 	}
-	iVar3 = DAT_FRNT__001c6ab4;
-	if (((Pads[0].dualshock == '\0') || (DAT_FRNT__001c6abc == 0)) &&
-		((Pads[1].dualshock == '\0' || (DAT_FRNT__001c6ac0 == 0)))) {
-		if ((DAT_FRNT__001c6ab4 == 1) &&
-			(DAT_FRNT__001c6ab4 = 0, pCurrScreen->userFunctionNum == '\x12')) {
-			DAT_FRNT__001c6aa0 = iVar3;
+	iVar2 = allowVibration;
+	if (((Pads[0].dualshock == '\0') || (padsConnected[0] == 0)) &&
+		((Pads[1].dualshock == '\0' || (padsConnected[1] == 0)))) {
+		if ((allowVibration == 1) && (allowVibration = 0, pCurrScreen->userFunctionNum == 18)) {
+			bRedrawFrontend = iVar2;
 			GamePlayScreen(1);
 		}
 	}
 	else {
-		if ((DAT_FRNT__001c6ab4 == 0) &&
-			(DAT_FRNT__001c6ab4 = 1, pCurrScreen->userFunctionNum == '\x12')) {
-			DAT_FRNT__001c6aa0 = 1;
+		if ((allowVibration == 0) && (allowVibration = 1, pCurrScreen->userFunctionNum == 18)) {
+			bRedrawFrontend = 1;
 			GamePlayScreen(1);
 		}
 	}
-	if ((uVar1 != DAT_FRNT__001c6ab8) &&
-		((((NumPlayers == 2 && (DAT_FRNT__001c6ab8 != (uint)NumPlayers)) || (DAT_FRNT__001c6ab8 == 0))
-			|| (DAT_FRNT__001c6abc == 0)))) {
+	if ((iVar1 != numPadsConnected) &&
+		((((NumPlayers == 2 && (numPadsConnected != (uint)NumPlayers)) || (numPadsConnected == 0)) ||
+		(padsConnected[0] == 0)))) {
 		bReturnToMain = 1;
-		DAT_FRNT__001c6aa0 = 1;
-		uRam001cc5dc = 0x10;
+		bRedrawFrontend = 1;
+		fePad = 0x10;
 		if (pCurrScreen->userFunctionNum != '\0') {
-			(*(code *)(&PTR_CentreScreen_FRNT__001c6a20)[(uint)(byte)pCurrScreen->userFunctionNum - 1])(0)
-				;
+			(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0);
 		}
-		uRam001cc5dc = 0;
+		fePad = 0;
 		if (ScreenDepth != 0) {
 			ReInitScreens();
 		}
 	}
-	if (((DAT_FRNT__001c6aa0 == 0) && (DAT_FRNT__001c6ab8 != uVar1)) &&
-		((gInFrontend != 0 &&
-		((pCurrScreen != (PSXSCREEN *)0x0 && (pCurrScreen->userFunctionNum != '\0')))))) {
-		(*(code *)(&PTR_CentreScreen_FRNT__001c6a20)[(uint)(byte)pCurrScreen->userFunctionNum - 1])(1);
-		DAT_FRNT__001c6aa0 = 1;
+	if (((bRedrawFrontend == 0) && (numPadsConnected != iVar1)) &&
+		((gInFrontend != 0 && ((pCurrScreen != NULL && (pCurrScreen->userFunctionNum != '\0')))))) {
+		(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
+		bRedrawFrontend = 1;
 	}
-	return;*/
+	return;
 }
 
 
@@ -1527,7 +1532,7 @@ void DoFrontEnd(void)
 
 	ResetGraph(1);
 	SetDispMask(0);
-	PadChecks();
+	//PadChecks();		// [A] there is a BUG
 	bRedrawFrontend = 0;
 	gInFrontend = 1;
 	idle_timer = VSync(0xffffffff);

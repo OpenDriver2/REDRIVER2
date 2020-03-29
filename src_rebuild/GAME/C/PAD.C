@@ -1,5 +1,6 @@
 #include "THISDUST.H"
 #include "PAD.H"
+#include "SYSTEM.H"
 #include <string.h>
 
 
@@ -12,7 +13,8 @@ char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0 };
 char* shake_data[] = { High_shake_data, Med_shake_data, Low_shake_data };
 
 struct PAD Pads[2];
-int padsConnected[2];
+int numPadsConnected = 0;
+int pad_connected = 0;
 
 // decompiled code
 // original method signature: 
@@ -175,16 +177,13 @@ void CloseControllers(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int pad_connected = 0;
-
+// [D]
 void ReadControllers(void)
 {
-	UNIMPLEMENTED();
-
 #ifndef PSX
 	Emulator_UpdateInput();
 #endif
-	/*
+
 	char *pData;
 	int pad;
 	int iVar2;
@@ -235,7 +234,6 @@ void ReadControllers(void)
 		if (Pads[1].type == 1)
 			pad_connected = -1;
 	}
-	*/
 }
 
 
@@ -476,17 +474,13 @@ void MapPad(int pad, PADRAW *pData)
 	/* end block 2 */
 	// End Line: 1265
 
+// [D]
 void ClearPad(int pad)
 {
-	UNIMPLEMENTED();
-
-	/*
 	Pads[pad].direct = 0;
 	Pads[pad].dirnew = 0;
 	Pads[pad].mapped = 0;
 	Pads[pad].mapnew = 0;
-	return;
-	*/
 }
 
 

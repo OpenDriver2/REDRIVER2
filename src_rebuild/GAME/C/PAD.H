@@ -3,6 +3,8 @@
 
 #include "LIBPAD.H"
 
+extern int numPadsConnected;
+
 extern void InitControllers(); // 0x0006B480
 
 extern void CloseControllers(); // 0x0006BDF8
