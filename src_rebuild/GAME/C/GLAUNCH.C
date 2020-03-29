@@ -1,7 +1,6 @@
 #include "THISDUST.H"
 #include "GLAUNCH.H"
 
-
 MISSION_STEP MissionLadder[68] =
 {
   { 1, 0, 1, 0 },
@@ -77,6 +76,8 @@ MISSION_STEP MissionLadder[68] =
 unsigned short RecapFrameLength[19] = {
 	0x203, 0x2FC, 0x3C2, 0x496, 0x56D, 0x616, 0x6D4, 0x70E, 0x800, 0x8CD, 0x99A, 0x430, 0x550, 0x5E3, 0x67B, 0x96D, 0xA17, 0xAC9, 0xBB6
 };
+
+int gFurthestMission = 0;
 
 // decompiled code
 // original method signature: 

@@ -16,13 +16,11 @@
 	/* end block 2 */
 	// End Line: 12
 
+// [F]
 void GetTimeStamp(char *buffer)
-
 {
-  if (buffer != (char *)0x0) {
-    sprintf(buffer,s__s__s_000aa9c4,s_Oct_16_2000_00011ea4,s_12_31_27_00011eb0);
-  }
-  return;
+  if (buffer)
+	sprintf(buffer,"%s %s", __DATE__, __TIME__);
 }
 
 

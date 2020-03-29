@@ -12,6 +12,8 @@
 #include "../C/GLAUNCH.H"
 #include "../C/LOADVIEW.H"
 #include "../C/PAD.H"
+#include "../C/TIME.H"
+#include "../C/PRES.H"
 
 typedef int(*screenFunc)(int bSetup);
 
@@ -61,6 +63,8 @@ struct PSXBUTTON* pButtonStack[10] = { 0 };
 char* ScreenNames[12] = { 0 };
 
 POLY_FT4 BackgroundPolys[6];
+
+FE_FONT feFont;
 
 // decompiled code
 // original method signature: 
@@ -317,7 +321,7 @@ void LoadFrontendScreens(void)
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 
-	Loadfile("DATA\\FEFONT.BNK", _overlay_buffer+0xbdd8);
+	Loadfile("DATA\\FEFONT.BNK", (char*)(feFont.CharInfo+7));
 	PadChecks();
 }
 
@@ -679,17 +683,25 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 	/* end block 3 */
 	// End Line: 3526
 
+int bMissionSelect = 0;
+int bDoingCarSelect = 0;
+int bDoingCutSelect = 0;
+int bDrawExtra = 0;
+
+SPRT extraSprt;
+
+int loaded[3] = { -1, 255, 0 };
+
+// [D]
 void DrawScreen(PSXSCREEN *pScr)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	DB *pDVar2;
 	uint *puVar3;
 	uint uVar4;
 	int local_68;
 	char *string;
-	uint *puVar5;
+	POLY_FT4 *pPVar5;
 	PSXSCREEN *pPVar6;
 	int iVar7;
 	PSXBUTTON *pPVar8;
@@ -699,35 +711,40 @@ void DrawScreen(PSXSCREEN *pScr)
 	char *pcVar11;
 	int local_64;
 	int local_60;
-	char acStack88[32];
-	uint local_38;
+	char version_info[32];
+	int numBtnsToDraw;
 	int local_34;
 	char *local_30;
 
 	pDVar2 = current;
-	puVar5 = &DAT_FRNT__001cbcc0;
+	pPVar5 = BackgroundPolys;
 	iVar7 = 5;
 	do {
-		*puVar5 = *puVar5 & 0xff000000 | *(uint *)pDVar2->ot[0xb] & 0xffffff;
-		iVar7 = iVar7 + -1;
+		long ot = *(pDVar2->ot + 0xb);
+		addPrim(&ot, pPVar5);
+		/*
+		pPVar5->tag = pPVar5->tag & 0xff000000 | *(uint *)pDVar2->ot[0xb] & 0xffffff;
+		
 		puVar3 = (uint *)pDVar2->ot[0xb];
-		uVar4 = (uint)puVar5 & 0xffffff;
-		puVar5 = puVar5 + 10;
-		*puVar3 = *puVar3 & 0xff000000 | uVar4;
+		uVar4 = (uint)pPVar5 & 0xffffff;
+		
+		*puVar3 = *puVar3 & 0xff000000 | uVar4;*/
+		iVar7 = iVar7 + -1;
+		pPVar5 = pPVar5 + 1;
 	} while (-1 < iVar7);
-	if (pScr == (PSXSCREEN *)0x0) {
+	if (pScr == NULL) {
 		EndFrame();
 	}
 	else {
-		GetTimeStamp(acStack88);
-		if ((DAT_FRNT__001c69a4 == 0) || (0x27 < gFurthestMission)) {
-			local_38 = (uint)pScr->numButtons;
+		GetTimeStamp(version_info);
+		if ((bDoingCutSelect == 0) || (0x27 < gFurthestMission)) {
+			uVar4 = (uint)pScr->numButtons;
 		}
 		else {
-			local_38 = (uint)pScr->numButtons - 1;
+			uVar4 = (uint)pScr->numButtons - 1;
 		}
 		iVar7 = 0;
-		if (0 < (int)local_38) {
+		if (0 < (int)uVar4) {
 			local_34 = 0;
 			pcVar9 = pScr->buttons[0].Name;
 			pPVar8 = pScr->buttons;
@@ -750,11 +767,12 @@ void DrawScreen(PSXSCREEN *pScr)
 						}
 						else {
 							string = pcVar11;
-							if ((((DAT_FRNT__001c6ab0 != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
-								((DAT_FRNT__001c6a88 != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-								((DAT_FRNT__001c6a80 != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) {
+							if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
+								((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
+								((loaded[2] != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) {
 							LAB_FRNT__001c174c:
-								FEPrintString(string, (int)pPVar6->buttons[0].x * 2 + (int)pPVar6->buttons[0].w,
+								FEPrintString(string, (int)pPVar6->buttons[0].x * 2 +
+									(int)pPVar6->buttons[0].w,
 									(int)pPVar6->buttons[0].y, 4, 0x7c, 0x6c, 0x28);
 								goto LAB_FRNT__001c17ac;
 							}
@@ -773,11 +791,12 @@ void DrawScreen(PSXSCREEN *pScr)
 							goto LAB_FRNT__001c16a8;
 						}
 						string = local_30;
-						if ((((DAT_FRNT__001c6ab0 != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
-							((DAT_FRNT__001c6a88 != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-							((DAT_FRNT__001c6a80 != 0 && ((iVar7 == 0 || (iVar7 == 2))))))
+						if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
+							((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
+							((loaded[2] != 0 && ((iVar7 == 0 || (iVar7 == 2))))))
 							goto LAB_FRNT__001c174c;
-						FEPrintString(string_00, (int)pPVar6->buttons[0].x * 2 + (int)pPVar6->buttons[0].w,
+						FEPrintString(string_00,
+							(int)pPVar6->buttons[0].x * 2 + (int)pPVar6->buttons[0].w,
 							(int)pPVar6->buttons[0].y, 4, 0x80, 0x80, 0x80);
 					}
 				}
@@ -791,20 +810,19 @@ void DrawScreen(PSXSCREEN *pScr)
 				iVar7 = iVar7 + 1;
 				local_34 = local_34 + 0x3c;
 				local_30 = local_30 + 0x3c;
-			} while (iVar7 < (int)local_38);
+			} while (iVar7 < (int)uVar4);
 		}
 		SetTextColour(-0x80, '\0', '\0');
 		DisplayOnScreenText();
 		pDVar2 = current;
-		if (DAT_FRNT__001c6a90 != 0) {
-			DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
+		if (bDrawExtra != 0) {
+			extraSprt.tag = extraSprt.tag & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
 			*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-			DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar2->ot[3] & 0xffffff;
-			puVar5 = (uint *)pDVar2->ot[3];
-			*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
+			feFont.NumFonts = feFont.NumFonts & 0xff000000U | *(uint *)pDVar2->ot[3] & 0xffffff;
+			puVar3 = (uint *)pDVar2->ot[3];
+			*puVar3 = *puVar3 & 0xff000000 | 0x1cbdb8;
 		}
 	}
-	return;*/
 }
 
 
@@ -1686,10 +1704,9 @@ void SetFEDrawMode(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void EndFrame(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char **ppcVar1;
 	DB *pDVar2;
 	DB *pDVar3;
@@ -1707,7 +1724,6 @@ void EndFrame(void)
 	DrawOTag(pDVar2->ot + 0x10);
 	ClearOTagR(current->ot, 0x10);
 	VSync(0);
-	return;*/
 }
 
 
@@ -1775,103 +1791,109 @@ void carSelectPlayerText()
 	/* end block 3 */
 	// End Line: 6237
 
+// [D]
 int FEPrintString(char *string, int x, int y, int justification, int r, int g, int b)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
-	byte bVar2;
-	char cVar3;
+	char bVar1;
+	char bVar2;
+	unsigned char uVar3;
 	DB *pDVar4;
 	int iVar5;
 	uint uVar6;
 	uint uVar7;
-	int iVar8;
-	ulong *puVar9;
-	byte *pbVar10;
-	uint *puVar11;
-	byte *pbVar12;
-	int iVar13;
+	ulong *puVar8;
+	char *pbVar9;
+	SPRT *font;
+	char *pbVar10;
+	int iVar11;
 
-	iVar13 = 0;
+	iVar11 = 0;
 	iVar5 = -1;
-	if (current != (DB *)0x0) {
-		puVar11 = (uint *)current->primptr;
+	if (current != NULL) {
+		font = (SPRT *)current->primptr;
 		bVar1 = *string;
 		uVar7 = (uint)bVar1;
-		pbVar12 = (byte *)(string + 1);
+		pbVar10 = (char *)(string + 1);
 		iVar5 = x;
 		if ((justification & 4U) != 0) {
 			iVar5 = 0;
 			uVar6 = uVar7;
-			pbVar10 = pbVar12;
+			pbVar9 = pbVar10;
 			bVar2 = bVar1;
 			while (bVar2 != 0) {
 				if (uVar6 == 0x20) {
 					iVar5 = iVar5 + 4;
 				}
 				else {
-					iVar5 = iVar5 + (uint)(byte)(&DAT_FRNT__001cbdde)[uVar6 * 4];
+					iVar5 = iVar5 + (uint)feFont.CharInfo[uVar6 + 8].w;
 				}
-				bVar2 = *pbVar10;
+				bVar2 = *pbVar9;
 				uVar6 = (uint)bVar2;
-				pbVar10 = pbVar10 + 1;
+				pbVar9 = pbVar9 + 1;
 			}
 			iVar5 = x - iVar5;
 		}
-		if (bVar1 != 0) {
+		if ((bVar1 != 0) && (true)) {
 			do {
-				iVar8 = uVar7 * 4;
 				if (uVar7 == 0x20) {
 					iVar5 = iVar5 + 4;
 				}
 				else {
-					bVar1 = (&DAT_FRNT__001cbdde)[iVar8];
-					*(char *)((int)puVar11 + 3) = '\x04';
-					*(char *)((int)puVar11 + 7) = 'f';
-					*(char *)(puVar11 + 1) = (char)r;
-					*(char *)((int)puVar11 + 5) = (char)g;
-					*(char *)((int)puVar11 + 6) = (char)b;
-					*(short *)(puVar11 + 2) = (short)iVar5;
-					*(undefined2 *)((int)puVar11 + 10) = (short)y;
-					*(undefined *)(puVar11 + 3) = (&DAT_FRNT__001cbddc)[iVar8];
-					cVar3 = (&DAT_FRNT__001cbddd)[iVar8];
-					*(ushort *)(puVar11 + 4) = (ushort)bVar1;
-					*(char *)((int)puVar11 + 0xd) = cVar3;
+					bVar1 = feFont.CharInfo[uVar7 + 8].w;
+
+					setSprt(font);
+					font->code = 'f';
+					font->r0 = (unsigned char)r;
+					font->g0 = (unsigned char)g;
+					font->b0 = (unsigned char)b;
+					font->x0 = (short)iVar5;
+					font->y0 = (short)y;
+					font->u0 = feFont.CharInfo[uVar7 + 8].u;
+					uVar3 = feFont.CharInfo[uVar7 + 8].v;
+					font->w = (ushort)bVar1;
+					font->v0 = uVar3;
 					pDVar4 = current;
-					bVar2 = (&DAT_FRNT__001cbddf)[iVar8];
+					bVar2 = feFont.CharInfo[uVar7 + 8].h;
 					iVar5 = iVar5 + (uint)bVar1;
-					*(undefined2 *)((int)puVar11 + 0xe) = 0x407c;
-					*(ushort *)((int)puVar11 + 0x12) = (ushort)bVar2;
-					*puVar11 = *puVar11 & 0xff000000 | pDVar4->ot[1] & 0xffffff;
-					puVar9 = pDVar4->ot;
-					uVar7 = (uint)puVar11 & 0xffffff;
-					puVar11 = puVar11 + 5;
-					puVar9[1] = puVar9[1] & 0xff000000 | uVar7;
+					font->clut = 0x407c;
+					font->h = (ushort)bVar2;
+					addPrim(pDVar4->ot+1, font);
+					/*
+					font->tag = font->tag & 0xff000000 | pDVar4->ot[1] & 0xffffff;
+					puVar8 = pDVar4->ot;
+					uVar7 = (uint)font & 0xffffff;
+					*/
+					font = font + 1;
+					//puVar8[1] = puVar8[1] & 0xff000000 | uVar7; // wtf is this?
+				
 				}
-				iVar13 = iVar13 + 1;
-				bVar1 = *pbVar12;
+				iVar11 = iVar11 + 1;
+				bVar1 = *pbVar10;
 				uVar7 = (uint)bVar1;
-				pbVar12 = pbVar12 + 1;
-			} while ((bVar1 != 0) && (iVar13 < 0x20));
+				pbVar10 = pbVar10 + 1;
+			} while ((bVar1 != 0) && (iVar11 < 0x20));
 		}
-		*(uint **)&current->primptr = puVar11;
-		*(char *)((int)puVar11 + 3) = '\a';
-		*(char *)((int)puVar11 + 7) = '&';
+		*(SPRT **)&current->primptr = font;
+		setSprt(font);
 		pDVar4 = current;
-		*(undefined2 *)(puVar11 + 2) = 0xffff;
-		*(undefined2 *)((int)puVar11 + 10) = 0xffff;
-		*(undefined2 *)(puVar11 + 4) = 0xffff;
-		*(undefined2 *)((int)puVar11 + 0x12) = 0xffff;
-		*(undefined2 *)(puVar11 + 6) = 0xffff;
-		*(undefined2 *)((int)puVar11 + 0x1a) = 0xffff;
-		*(undefined2 *)((int)puVar11 + 0x16) = 0x1a;
-		*puVar11 = *puVar11 & 0xff000000 | pDVar4->ot[1] & 0xffffff;
-		pDVar4->ot[1] = pDVar4->ot[1] & 0xff000000 | (uint)puVar11 & 0xffffff;
+		font->x0 = -1;
+		font->y0 = -1;
+		font->w = -1;
+		font->h = -1;
+		font->r0 = -1;
+		font->g0 = -1;
+		font->b0 = -1;
+		/*
+		*(undefined2 *)&font[1].r0 = 0xffff;
+		*(undefined2 *)&font[1].b0 = 0xffff;
+		*(undefined2 *)((int)&font[1].tag + 2) = 0x1a;
+		font->tag = font->tag & 0xff000000 | pDVar4->ot[1] & 0xffffff;
+		pDVar4->ot[1] = pDVar4->ot[1] & 0xff000000 | (uint)font & 0xffffff;
+		*/
+		addPrim(pDVar4->ot + 1, font);
 		pDVar4->primptr = pDVar4->primptr + 0x20;
 	}
-	return iVar5;*/
+	return iVar5;
 }
 
 
@@ -1911,83 +1933,82 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 	/*
 	byte bVar1;
 	byte bVar2;
-	char cVar3;
+	uchar uVar3;
 	short sVar4;
 	DB *pDVar5;
-	char cVar6;
+	uchar uVar6;
 	int iVar7;
-	int iVar8;
-	short sVar9;
-	uint uVar10;
-	char *pcVar11;
-	uint *puVar12;
+	short sVar8;
+	uint uVar9;
+	FE_CHARDATA *pFontInfo;
+	POLY_FT4 *font;
+	int iVar10;
 
 	iVar7 = -1;
-	if (current != (DB *)0x0) {
+	if (current != NULL) {
 		bVar1 = *string;
-		puVar12 = (uint *)current->primptr;
+		font = (POLY_FT4 *)current->primptr;
 		iVar7 = x;
 		while (bVar1 != 0) {
 			bVar1 = *string;
+			uVar9 = (uint)bVar1;
 			string = (char *)((byte *)string + 1);
-			iVar8 = iVar7;
+			iVar10 = iVar7;
 			if (bVar1 != 10) {
-				iVar8 = (uint)bVar1 * 4;
 				if (bVar1 == 0x20) {
-					iVar8 = iVar7 + 4;
+					iVar10 = iVar7 + 4;
 				}
 				else {
-					pcVar11 = &DAT_FRNT__001cbddc + iVar8;
-					bVar1 = (&DAT_FRNT__001cbdde)[iVar8];
-					bVar2 = (&DAT_FRNT__001cbddf)[iVar8];
-					*(char *)((int)puVar12 + 3) = '\t';
-					*(char *)((int)puVar12 + 7) = ',';
-					*(undefined2 *)((int)puVar12 + 0x16) = 0x1a;
-					cVar6 = ',';
+					pFontInfo = feFont.CharInfo + uVar9 + 8;
+					bVar1 = feFont.CharInfo[uVar9 + 8].w;
+					bVar2 = feFont.CharInfo[uVar9 + 8].h;
+					*(undefined *)((int)&font->tag + 3) = 9;
+					font->code = ',';
+					font->tpage = 0x1a;
+					uVar6 = ',';
 					if (transparent != 0) {
-						cVar6 = '.';
+						uVar6 = '.';
 					}
-					*(char *)((int)puVar12 + 7) = cVar6;
-					*(char *)(puVar12 + 1) = -0x80;
-					*(char *)((int)puVar12 + 5) = -0x80;
-					*(char *)((int)puVar12 + 6) = -0x80;
-					*(char *)(puVar12 + 3) = *pcVar11;
-					*(char *)((int)puVar12 + 0xd) = (&DAT_FRNT__001cbddd)[iVar8];
-					*(char *)(puVar12 + 5) = (&DAT_FRNT__001cbdde)[iVar8] + *pcVar11 + -1;
-					*(char *)((int)puVar12 + 0x15) = (&DAT_FRNT__001cbddd)[iVar8];
-					*(char *)(puVar12 + 7) = *pcVar11;
-					*(char *)((int)puVar12 + 0x1d) =
-						(&DAT_FRNT__001cbddf)[iVar8] + (&DAT_FRNT__001cbddd)[iVar8] + -1;
-					*(char *)(puVar12 + 9) = (&DAT_FRNT__001cbdde)[iVar8] + *pcVar11 + -1;
-					cVar6 = (&DAT_FRNT__001cbddd)[iVar8];
-					cVar3 = (&DAT_FRNT__001cbddf)[iVar8];
-					iVar8 = iVar7 + ((int)((uint)bVar1 * scale) >> 0xc);
+					font->code = uVar6;
+					font->r0 = -0x80;
+					font->g0 = -0x80;
+					font->b0 = -0x80;
+					font->u0 = pFontInfo->u;
+					font->v0 = feFont.CharInfo[uVar9 + 8].v;
+					font->u1 = feFont.CharInfo[uVar9 + 8].w + pFontInfo->u + -1;
+					font->v1 = feFont.CharInfo[uVar9 + 8].v;
+					font->u2 = pFontInfo->u;
+					font->v2 = feFont.CharInfo[uVar9 + 8].h + feFont.CharInfo[uVar9 + 8].v + -1;
+					font->u3 = feFont.CharInfo[uVar9 + 8].w + pFontInfo->u + -1;
+					uVar6 = feFont.CharInfo[uVar9 + 8].v;
+					uVar3 = feFont.CharInfo[uVar9 + 8].h;
+					iVar10 = iVar7 + ((int)((uint)bVar1 * scale) >> 0xc);
 					sVar4 = (short)y;
-					sVar9 = sVar4 + (short)((int)((uint)bVar2 * scale) >> 0xc);
-					*(short *)(puVar12 + 2) = (short)iVar7;
-					*(short *)((int)puVar12 + 10) = sVar4;
-					*(short *)(puVar12 + 4) = (short)iVar8;
-					*(short *)((int)puVar12 + 0x12) = sVar4;
-					*(short *)(puVar12 + 6) = (short)iVar7;
-					*(short *)((int)puVar12 + 0x1a) = sVar9;
-					*(short *)(puVar12 + 8) = (short)iVar8;
-					*(short *)((int)puVar12 + 0x22) = sVar9;
-					*(undefined2 *)((int)puVar12 + 0xe) = 0x407c;
-					*(char *)(puVar12 + 1) = (char)r;
-					*(char *)((int)puVar12 + 0x25) = cVar3 + cVar6 + -1;
-					*(char *)((int)puVar12 + 5) = (char)g;
-					*(char *)((int)puVar12 + 6) = (char)b;
+					sVar8 = sVar4 + (short)((int)((uint)bVar2 * scale) >> 0xc);
+					font->x0 = (short)iVar7;
+					font->y0 = sVar4;
+					font->x1 = (short)iVar10;
+					font->y1 = sVar4;
+					font->x2 = (short)iVar7;
+					font->y2 = sVar8;
+					font->x3 = (short)iVar10;
+					font->y3 = sVar8;
+					font->clut = 0x407c;
+					font->r0 = (uchar)r;
+					font->v3 = uVar3 + uVar6 + -1;
+					font->g0 = (uchar)g;
+					font->b0 = (uchar)b;
 					pDVar5 = current;
-					*puVar12 = *puVar12 & 0xff000000 | current->ot[1] & 0xffffff;
-					uVar10 = (uint)puVar12 & 0xffffff;
-					puVar12 = puVar12 + 10;
-					pDVar5->ot[1] = pDVar5->ot[1] & 0xff000000 | uVar10;
+					font->tag = font->tag & 0xff000000 | current->ot[1] & 0xffffff;
+					uVar9 = (uint)font & 0xffffff;
+					font = font + 1;
+					pDVar5->ot[1] = pDVar5->ot[1] & 0xff000000 | uVar9;
 				}
 			}
 			bVar1 = *string;
-			iVar7 = iVar8;
+			iVar7 = iVar10;
 		}
-		*(uint **)&current->primptr = puVar12;
+		*(POLY_FT4 **)&current->primptr = font;
 	}
 	return iVar7;*/
 }
@@ -4331,33 +4352,28 @@ void FEInitCdIcon(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void FEDrawCDicon(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 *puVar1;
+	ushort *puVar1;
 	int iVar2;
-	undefined2 local_10;
-	undefined2 local_e;
-	undefined2 local_c;
-	undefined2 local_a;
+	RECT16 dest;
 
-	DAT_0009bba2 = DAT_0009bb8a;
+	cd_icon[23] = cd_icon[11];
 	iVar2 = 0xb;
-	puVar1 = &DAT_0009bb88;
+	puVar1 = cd_icon + 10;
 	do {
 		iVar2 = iVar2 + -1;
 		puVar1[1] = puVar1[2];
 		puVar1 = puVar1 + 1;
 	} while (-1 < iVar2);
-	local_10 = 0x3c0;
-	local_e = 0x1b1;
-	local_c = 0x10;
-	local_a = 1;
-	LoadImage(&local_10);
-	DrawPrim(&DAT_FRNT__001c6d20);
+	dest.x = 960;
+	dest.y = 433;
+	dest.w = 16;
+	dest.h = 1;
+	LoadImage(&dest, (u_long *)(cd_icon + 10));
+	DrawPrim(&cd_sprite);
 	DrawSync(0);
-	return;*/
 }
 
 

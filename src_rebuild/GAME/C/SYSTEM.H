@@ -11,8 +11,10 @@ extern DB MPBuff[2][2];
 extern DB* last;
 extern DB* current;
 
-extern long _tempOT1[0x10];
-extern long _tempOT2[0x10];
+#define OTSIZE (0x8 << 11)
+
+extern long _tempOT1[OTSIZE];
+extern long _tempOT2[OTSIZE];
 
 extern char _tempPrimTab1[0x8000];		// 0xFB400
 extern char _tempPrimTab2[0x8000];		// 0x119400

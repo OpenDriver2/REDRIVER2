@@ -38,8 +38,8 @@ DB MPBuff[2][2];
 DB* last;
 DB* current;
 
-long _tempOT1[0x10];
-long _tempOT2[0x10];
+long _tempOT1[OTSIZE];
+long _tempOT2[OTSIZE];
 
 char _tempPrimTab1[0x8000];		// 0xFB400
 char _tempPrimTab2[0x8000];		// 0x119400
@@ -773,26 +773,24 @@ void loadsectors(char *addr, int sector, int nsectors)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void EnableDisplay(void)
 {
-	UNIMPLEMENTED();
+	ulong *ot;
+	int i;
 
-	/*
-	ulong **ppuVar1;
-	int iVar2;
-
-	iVar2 = 0;
-	if (NumPlayers != 0) {
-		ppuVar1 = &MPBuff[0][1].ot;
+	i = 0;
+	if (NumPlayers)
+	{
+		ot = MPBuff[0][1].ot;
 		do {
-			iVar2 = iVar2 + 1;
-			ClearOTagR(ppuVar1[-0x20], (int)&DAT_00001080);
-			ClearOTagR(*ppuVar1, (int)&DAT_00001080);
-			ppuVar1 = ppuVar1 + 0x40;
-		} while (iVar2 < (int)(uint)NumPlayers);
+			
+			ClearOTagR(ot+32, 0x1080);
+			ClearOTagR(ot, 0x1080);
+			ot += 64;
+			i++;
+		} while (i < NumPlayers);
 	}
-	return;
-	*/
 }
 
 

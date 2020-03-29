@@ -179,9 +179,11 @@
     <ClCompile Include="GAME\C\LOADVIEW.C" />
     <ClCompile Include="GAME\C\MAIN.C" />
     <ClCompile Include="GAME\C\PAD.C" />
+    <ClCompile Include="GAME\C\PRES.C" />
     <ClCompile Include="GAME\C\SCORES.C" />
     <ClCompile Include="GAME\C\SOUND.C" />
     <ClCompile Include="GAME\C\SYSTEM.C" />
+    <ClCompile Include="GAME\C\TIME.C" />
     <ClCompile Include="GAME\FRONTEND\FEMAIN.C" />
     <ClCompile Include="redriver2_psxpc.c" />
     <ClCompile Include="THISDUST.C">
