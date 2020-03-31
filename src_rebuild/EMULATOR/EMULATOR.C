@@ -1159,6 +1159,8 @@ const char* gte_shader =
 	"		vec4 color = fract(floor(color_16 / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0);\n"
 	"\n"
 	"		fragColor = color * v_color;\n"
+	"		if (fragColor.r == 0.0 && fragColor.b == 0.0 && fragColor.b == 0.0 && fragColor.a == 0.0) { discard; }\n"
+	"\n"
 	"		mat4 dither = mat4(\n"
 	"			-4.0,  +0.0,  -3.0,  +1.0,\n"
 	"			+2.0,  -2.0,  +3.0,  -1.0,\n"
@@ -1167,7 +1169,6 @@ const char* gte_shader =
 	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"
 	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
 	"\n"
-	"		if (fragColor.r == 0.0 && fragColor.b == 0.0 && fragColor.b == 0.0 && fragColor.a == 0.0) { discard; }\n"
 	"	}\n"
 	"#endif\n";
 
