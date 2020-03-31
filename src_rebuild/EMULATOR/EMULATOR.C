@@ -28,7 +28,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL_syswm.h>
+#include <SDL.h>
 
 SDL_Window* g_window = NULL;
 
@@ -1826,6 +1826,8 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 #endif
 
 #if defined(OGL) || defined(OGLES)
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, vramFrameBuffer);
+
 	FILE* f = fopen(outputFileName, "wb");
 	if (f == NULL)
 	{
@@ -1957,19 +1959,30 @@ void Emulator_DoDebugKeys()
 		if (keyboardState[SDL_SCANCODE_1])
 		{
 			g_wireframeMode ^= 1;
+			eprintf("wireframe mode: %d\n", g_wireframeMode);
 		}
 
 		if (keyboardState[SDL_SCANCODE_2])
 		{
 			g_texturelessMode ^= 1;
+			eprintf("textureless mode: %d\n", g_texturelessMode);
 		}
 
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 		if (keyboardState[SDL_SCANCODE_3])
 		{
+			eprintf("saving screenshot\n");
 			Emulator_TakeScreenshot();
 		}
 #endif
+
+		if (keyboardState[SDL_SCANCODE_4])
+		{
+			eprintf("saving VRAM.TGA\n");
+
+			Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+
+		}
 
 		lastTime = currentTime;
 	}
@@ -2405,9 +2418,10 @@ IDirect3DTexture9* Emulator_GenerateTpage(unsigned short tpage, unsigned short c
 	{
 		unsigned short* tpage = (unsigned short*)SDL_malloc(TPAGE_WIDTH * TPAGE_HEIGHT * sizeof(unsigned short));
 #if defined(OGL) || defined(OGLES)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tpage[0]);
+		glReadPixels(tpageX, tpageY, TPAGE_WIDTH, TPAGE_HEIGHT, GL_RGBA, TEXTURE_FORMAT, &tpage[0]);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tpage[0]);
 #endif
-		SDL_free(tpage);
+		
 #if defined(_DEBUG) && 0
 		char buff[64];
 		sprintf(&buff[0], "TPAGE_%d_%d.TGA", tpage, clut);
@@ -2419,6 +2433,7 @@ IDirect3DTexture9* Emulator_GenerateTpage(unsigned short tpage, unsigned short c
 		fwrite(&tpage[0], sizeof(char), 256 * 256 * 2, f);
 		fclose(f);
 #endif
+		SDL_free(tpage);
 		break;
 	}
 	case TP_4BIT:

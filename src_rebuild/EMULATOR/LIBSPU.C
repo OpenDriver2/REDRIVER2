@@ -220,6 +220,13 @@ void SpuInit(void)
 	_SpuInit(0);
 }
 
+
+long SpuSetMute(long on_off)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
 long SpuSetReverb(long on_off)
 {
 	UNIMPLEMENTED();

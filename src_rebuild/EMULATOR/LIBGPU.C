@@ -246,6 +246,12 @@ int ClearImage(RECT16* rect, u_char r, u_char g, u_char b)
 	return 0;
 }
 
+int ClearImage2(RECT16* rect, u_char r, u_char g, u_char b)
+{
+	return ClearImage(rect, r, g, b);
+}
+
+
 int DrawSync(int mode)
 {
 	if (drawsync_callback != NULL)
@@ -550,6 +556,24 @@ void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
 	setDrawMode(p, dfe, dtd, tpage, tw);
 }
 
+void SetDrawMove(DR_MOVE *p, RECT16 *RECT16, int x, int y)
+{
+	char uVar1;
+	ulong uVar2;
+
+	uVar1 = 5;
+	if ((RECT16->w == 0) || (RECT16->h == 0)) {
+		uVar1 = 0;
+	}
+	p->code[0] = 0x1000000;
+	p->code[1] = 0x80000000;
+	*(char *)((int)&p->tag + 3) = uVar1;
+	uVar2 = *(ulong *)RECT16;
+	p->code[3] = y << 0x10 | x & 0xffffU;
+	p->code[2] = uVar2;
+	p->code[4] = *(ulong *)&RECT16->w;
+}
+
 u_long DrawSyncCallback(void(*func)(void))
 {
 	drawsync_callback = func;
@@ -736,7 +760,9 @@ void ParseLinkedPrimitiveList(unsigned int packetStart, unsigned int packetEnd)/
 {
 	unsigned int currentAddress = packetStart;
 
-	while (currentAddress != packetEnd)
+	bool bailout = false;
+
+	while (currentAddress != packetEnd && !bailout)
 	{
 		P_TAG* pTag = (P_TAG*)currentAddress;
 
@@ -811,6 +837,9 @@ void ParseLinkedPrimitiveList(unsigned int packetStart, unsigned int packetEnd)/
 		case 0x24:
 		{
 			POLY_FT3* poly = (POLY_FT3*)pTag;
+			{
+				activeDrawEnv.tpage = poly->tpage;
+			}
 
 			if (lastTpage == 0xFFFF || lastClut == 0xFFFF || lastSemiTrans == 0xFFFF || lastPolyType == 0xFFFF)
 			{
@@ -900,6 +929,10 @@ void ParseLinkedPrimitiveList(unsigned int packetStart, unsigned int packetEnd)/
 		case 0x2C:
 		{
 			POLY_FT4* poly = (POLY_FT4*)pTag;
+
+			{
+				activeDrawEnv.tpage = poly->tpage;
+			}
 
 			if (lastTpage == 0xFFFF || lastClut == 0xFFFF || lastSemiTrans == 0xFFFF || lastPolyType == 0xFFFF)
 			{
@@ -991,6 +1024,10 @@ void ParseLinkedPrimitiveList(unsigned int packetStart, unsigned int packetEnd)/
 		{
 			POLY_GT3* poly = (POLY_GT3*)pTag;
 
+			{
+				activeDrawEnv.tpage = poly->tpage;
+			}
+
 			if (lastTpage == 0xFFFF || lastClut == 0xFFFF || lastSemiTrans == 0xFFFF || lastPolyType == 0xFFFF)
 			{
 				lastPolyType = POLY_TYPE_TRIANGLES;
@@ -1081,6 +1118,10 @@ void ParseLinkedPrimitiveList(unsigned int packetStart, unsigned int packetEnd)/
 		case 0x3C:
 		{
 			POLY_GT4* poly = (POLY_GT4*)pTag;
+
+			{
+				activeDrawEnv.tpage = poly->tpage;
+			}
 
 			if (lastTpage == 0xFFFF || lastClut == 0xFFFF || lastSemiTrans == 0xFFFF || lastPolyType == 0xFFFF)
 			{
@@ -1633,9 +1674,15 @@ void ParseLinkedPrimitiveList(unsigned int packetStart, unsigned int packetEnd)/
 			}
 			break;
 		}
+		case 0x80: {
+			eprinterr("DR_MOVE unimplemented\n");
+			currentAddress += sizeof(DR_MOVE);
+			break;
+		}
 		default:
 			//Unhandled poly type
 			eprinterr("Unhandled primitive type: %02X type2:%02X\n", pTag->code, pTag->code & ~3);
+			bailout = true;
 			break;
 		}
 	}
@@ -1710,6 +1757,10 @@ void ParsePrimitive(P_TAG* pTag)
 	case 0x24:
 	{
 		POLY_FT3* poly = (POLY_FT3*)pTag;
+
+		{
+			activeDrawEnv.tpage = poly->tpage;
+		}
 
 		if (lastTpage == 0xFFFF || lastClut == 0xFFFF || lastSemiTrans == 0xFFFF || lastPolyType == 0xFFFF)
 		{
@@ -1791,6 +1842,10 @@ void ParsePrimitive(P_TAG* pTag)
 	case 0x2C:
 	{
 		POLY_FT4* poly = (POLY_FT4*)pTag;
+
+		{
+			activeDrawEnv.tpage = poly->tpage;
+		}
 
 		if (lastTpage == 0xFFFF || lastClut == 0xFFFF || lastSemiTrans == 0xFFFF || lastPolyType == 0xFFFF)
 		{
@@ -1915,7 +1970,7 @@ void ParsePrimitive(P_TAG* pTag)
 			lastTpage = activeDrawEnv.tpage;
 			lastSemiTrans = semi_transparent;
 			g_splitIndices[g_numSplitIndices].primitiveType = lastPolyType;
-			g_splitIndices[g_numSplitIndices].textureId = Emulator_GenerateTpage(lastTpage, lastClut);
+			g_splitIndices[g_numSplitIndices].textureId = nullWhiteTexture;
 			g_splitIndices[g_numSplitIndices].semiTrans = semi_transparent;
 			g_splitIndices[g_numSplitIndices].abr = (activeDrawEnv.tpage >> 5) & 3;
 			g_splitIndices[g_numSplitIndices++].splitIndex = g_vertexIndex;
@@ -1926,7 +1981,20 @@ void ParsePrimitive(P_TAG* pTag)
 			lastTpage = activeDrawEnv.tpage;
 			lastSemiTrans = semi_transparent;
 			g_splitIndices[g_numSplitIndices].primitiveType = lastPolyType;
-			g_splitIndices[g_numSplitIndices].textureId = Emulator_GenerateTpage(lastTpage, lastClut);
+			g_splitIndices[g_numSplitIndices].textureId = nullWhiteTexture;
+			g_splitIndices[g_numSplitIndices].semiTrans = semi_transparent;
+			g_splitIndices[g_numSplitIndices].abr = (activeDrawEnv.tpage >> 5) & 3;
+			g_splitIndices[g_numSplitIndices - 1].numVertices = numVertices;
+			g_splitIndices[g_numSplitIndices++].splitIndex = g_vertexIndex;
+			numVertices = 0;
+		}
+		else
+		{
+			lastPolyType = POLY_TYPE_TRIANGLES;
+			lastTpage = activeDrawEnv.tpage;
+			lastSemiTrans = semi_transparent;
+			g_splitIndices[g_numSplitIndices].primitiveType = lastPolyType;
+			g_splitIndices[g_numSplitIndices].textureId = nullWhiteTexture;
 			g_splitIndices[g_numSplitIndices].semiTrans = semi_transparent;
 			g_splitIndices[g_numSplitIndices].abr = (activeDrawEnv.tpage >> 5) & 3;
 			g_splitIndices[g_numSplitIndices - 1].numVertices = numVertices;
@@ -2442,7 +2510,8 @@ void ParsePrimitive(P_TAG* pTag)
 		break;
 	}
 
-	g_splitIndices[g_numSplitIndices - 1].numVertices = numVertices;
+	if(g_numSplitIndices > 0)
+		g_splitIndices[g_numSplitIndices - 1].numVertices = numVertices;
 }
 
 void SetSprt16(SPRT_16* p)
@@ -2514,7 +2583,7 @@ void DrawOTag(u_long* p)
 {
 #if defined(OGL) || defined(OGLES)
 	/* Tell the shader to discard black */
-	glUniform1i(glGetUniformLocation(g_defaultShaderProgram, "bDiscardBlack"), TRUE);
+	//glUniform1i(glGetUniformLocation(g_defaultShaderProgram, "bDiscardBlack"), TRUE);
 #endif
 
 	if (activeDrawEnv.dtd)
@@ -2824,6 +2893,7 @@ void DrawPrim(void* p)
 #if defined(OGL) || defined(OGLES)
 		glBufferData(GL_ARRAY_BUFFER, sizeof(struct Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, &g_vertexBuffer[0], GL_STATIC_DRAW);
 #endif
+
 		for (int i = 0; i < g_numSplitIndices; i++)
 		{
 			if (g_texturelessMode)

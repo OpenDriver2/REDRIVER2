@@ -2,6 +2,8 @@
 
 #include "EMULATOR.H"
 
+#include <SDL.h>
+
 SDL_GameController* padHandle[MAX_CONTROLLERS];
 unsigned char* padData[MAX_CONTROLLERS];
 const unsigned char* keyboardState;

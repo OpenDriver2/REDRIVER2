@@ -9,6 +9,12 @@
 
 void(*vsync_callback)(void) = NULL;
 
+int StopCallback(void)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
 int ResetCallback(void)
 {
 	vsync_callback = NULL;
@@ -54,5 +60,11 @@ int VSyncCallback(void(*f)(void))
 
 long GetVideoMode(void)
 {
+	return MODE_NTSC;
+}
+
+long SetVideoMode(long mode)
+{
+	UNIMPLEMENTED();
 	return MODE_NTSC;
 }
