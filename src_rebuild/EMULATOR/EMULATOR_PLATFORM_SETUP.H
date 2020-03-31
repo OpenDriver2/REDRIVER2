@@ -1,6 +1,10 @@
 #ifndef EMULATOR_PLATFORM_SETUP_H
 #define EMULATOR_PLATFORM_SETUP_H
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
+#endif
+
 /*
  * Platform specific emulator setup
  */
@@ -82,7 +86,6 @@
 #elif defined(D3D9)
 #include <Windows.h>
 #include <d3d9.h>
-#include <d3dx9.h>
 #endif
 
 #if !defined (__EMSCRIPTEN__)

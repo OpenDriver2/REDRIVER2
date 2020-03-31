@@ -7,6 +7,9 @@
 
 int(*GPU_printf)(const char *fmt, ...);
 
+extern int g_texturelessMode;
+extern int g_wireframeMode;
+
 int main()
 {
 	//g_texturelessMode = 1;

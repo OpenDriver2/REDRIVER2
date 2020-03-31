@@ -38,8 +38,8 @@ DB MPBuff[2][2];
 DB* last;
 DB* current;
 
-u_long _tempOT1[OTSIZE];
-u_long _tempOT2[OTSIZE];
+OTTYPE _tempOT1[OTSIZE];
+OTTYPE _tempOT2[OTSIZE];
 
 char _tempPrimTab1[0x8000];		// 0xFB400
 char _tempPrimTab2[0x8000];		// 0x119400
@@ -319,6 +319,8 @@ void DoCDRetry(void)
 	/* end block 2 */
 	// End Line: 1293
 
+#include <SDL.h>
+
 // loads whole file into buffer
 int Loadfile(char *name, char *addr)
 {
@@ -343,6 +345,8 @@ int Loadfile(char *name, char *addr)
 
 	fclose(fptr);
 
+	//SDL_Delay(200); // [A] PSX-like CD delay
+	
 	return numRead;
 #else // PSX
 	UNIMPLEMENTED();
@@ -428,6 +432,8 @@ int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 	int numRead = fread(addr, 1, loadsize, fptr);
 
 	fclose(fptr);
+
+	//SDL_Delay(200); // [A] PSX-like CD delay
 
 	return numRead;
 #else // PSX
@@ -782,8 +788,8 @@ void EnableDisplay(void)
 	{
 		for (i = 0; i < NumPlayers; i++)
 		{
-			ClearOTagR(MPBuff[i][0].ot, 0x1080);
-			ClearOTagR(MPBuff[i][1].ot, 0x1080);
+			ClearOTagR((u_long*)MPBuff[i][0].ot, 0x1080);
+			ClearOTagR((u_long*)MPBuff[i][1].ot, 0x1080);
 		}
 	}
 }

@@ -31,7 +31,6 @@ int VSync(int mode)
 		{
 			vsync_callback();
 		}
-
 		Emulator_EndScene();
 		///return (SDL_GetTicks() - startTime / 1000);
 	}

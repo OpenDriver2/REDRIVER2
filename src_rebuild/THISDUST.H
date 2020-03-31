@@ -19229,16 +19229,6 @@ struct FELONY_VALUE // hashcode: 0x8F078047 (dec: -1895333817)
 	short angry; // size=0, offset=2
 };
 
-typedef struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
-{
-	char *primptr; // size=0, offset=0
-	unsigned long *ot; // size=0, offset=4
-	char *primtab; // size=0, offset=8
-	int id; // size=0, offset=12
-	DRAWENV draw; // size=92, offset=16
-	DISPENV disp; // size=20, offset=108
-} DB;
-
 struct _TARGET // hashcode: 0xB3C67F7D (dec: -1278836867)
 {
 	int data[16]; // size=64, offset=0

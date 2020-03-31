@@ -1,7 +1,5 @@
+#include "EMULATOR.H"
 #include "LIBSN.H"
-
-//#include "EMULATOR.H"
-
 #include <stdio.h>
 
 uintptr_t fileHandle = 0;

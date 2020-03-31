@@ -1,6 +1,6 @@
+#include "EMULATOR.H"
 #include "LIBMCRD.H"
 #include <stdio.h>
-#include "EMULATOR.H"
 #include <string.h>
 
 #define MC_HEADER_FRAME_INDEX (0)

@@ -1668,10 +1668,6 @@ void DoFrontEnd(void)
 	SetDispMask(1);
 	FEInitCdIcon();
 	do {
-#ifndef PSX
-		Emulator_BeginScene();
-#endif // PSX
-
 		PadChecks();
 		if (currPlayer == 2) {
 			if (Pads[1].type < 2) {
@@ -1773,14 +1769,14 @@ void SetFEDrawMode(void)
 	MPBuff[0][0].disp.screen.h = 256;
 	MPBuff[0][0].primtab = _tempPrimTab1;
 	MPBuff[0][0].primptr = _tempPrimTab1;
-	MPBuff[0][0].ot = (ulong *)_tempOT1;
+	MPBuff[0][0].ot = _tempOT1;
 	MPBuff[0][1].draw.isbg = '\0';
 	MPBuff[0][1].disp.isinter = '\x01';
 	MPBuff[0][1].draw.dfe = '\x01';
 	MPBuff[0][1].disp.screen.h = 256;
 	MPBuff[0][1].primtab = _tempPrimTab2;
 	MPBuff[0][1].primptr = _tempPrimTab2;
-	MPBuff[0][1].ot = (ulong *)_tempOT2;
+	MPBuff[0][1].ot = _tempOT2;
 
 	last = &MPBuff[0][1];
 	current = &MPBuff[0][0];
@@ -1851,8 +1847,8 @@ void EndFrame(void)
 	last = pDVar2;
 	pDVar3->primptr = *ppcVar1;
 
-	DrawOTag(pDVar2->ot + 0x10);
-	ClearOTagR(current->ot, 0x10);
+	DrawOTag((u_long*)(pDVar2->ot + 0x10));
+	ClearOTagR((u_long*)(current->ot), 0x10);
 	VSync(0);
 }
 
@@ -1961,6 +1957,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 				else {
 					bVar1 = feFont.CharInfo[uVar7].w;
 					setSprt(font);
+					//font->code = 'f';
 					setSemiTrans(font, 1);
 
 					//font->tpage = 0x1a;	// [A]
@@ -2082,8 +2079,9 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 					setPolyFT4(font);
 					//*(undefined *)((int)&font->tag + 3) = 9;
 					//font->code = ',';
-					font->tpage = 0x1a;
 					setSemiTrans(font, transparent);
+					font->tpage = 0x1a;
+					
 					font->r0 = 128;
 					font->g0 = 128;
 					font->b0 = 128;

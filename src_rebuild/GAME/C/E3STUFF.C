@@ -113,7 +113,7 @@ void FadeInHiresScreen(char *filename)
 	SPRT prims[6];
 	POLY_FT3 nulls[6];
 	RECT16 rect;
-	ulong ot;
+	OTTYPE ot;
 
 	POLY_FT3 *poly;
 	SPRT *prim;
@@ -185,7 +185,7 @@ void FadeInHiresScreen(char *filename)
 		VSync(0);
 		PutDispEnv(&disp);
 		PutDrawEnv(&draw);
-		ClearOTagR(&ot, 1);
+		ClearOTagR((u_long*)&ot, 1);
 		
 		poly = nulls;
 		prim = prims;
@@ -208,7 +208,7 @@ void FadeInHiresScreen(char *filename)
 			poly++; prim++;
 		}
 
-		DrawOTag(&ot);
+		DrawOTag((u_long*)&ot);
 		col += 4;
 	} while (col < 140);
 
@@ -271,7 +271,7 @@ void FadeOutHiresScreen(void)
 	SPRT prims[6];
 	POLY_FT3 nulls[6];
 	RECT16 rect;
-	ulong ot;
+	OTTYPE ot;
 
 	POLY_FT3 *poly;
 	SPRT *prim;
@@ -322,7 +322,7 @@ void FadeOutHiresScreen(void)
 		VSync(0);
 		PutDispEnv(&disp);
 		PutDrawEnv(&draw);
-		ClearOTagR(&ot, 1);
+		ClearOTagR((u_long*)&ot, 1);
 
 		poly = nulls;
 		prim = prims;
@@ -338,7 +338,7 @@ void FadeOutHiresScreen(void)
 			poly++; prim++;
 		}
 
-		DrawOTag(&ot);
+		DrawOTag((u_long*)&ot);
 		col -= 4;
 	} while (col > -4);
 

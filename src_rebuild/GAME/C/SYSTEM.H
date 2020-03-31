@@ -4,6 +4,22 @@
 extern char _overlay_buffer[0x50000];		// 0x1C0000
 extern char _frontend_buffer[0x50000];		// 0xFB400
 
+#ifdef USE_32_BIT_ADDR
+typedef uint64_t OTTYPE;
+#else
+typedef unsigned long OTTYPE;
+#endif // USE_32_BIT_ADDR
+
+typedef struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
+{
+	char *primptr; // size=0, offset=0
+	OTTYPE *ot; // size=0, offset=4
+	char *primtab; // size=0, offset=8
+	int id; // size=0, offset=12
+	DRAWENV draw; // size=92, offset=16
+	DISPENV disp; // size=20, offset=108
+} DB;
+
 extern DRAW_MODE draw_mode_pal;
 extern DRAW_MODE draw_mode_ntsc;
 
@@ -14,8 +30,8 @@ extern DB* current;
 #define OTLEN	10
 #define	OTSIZE	(1<<OTLEN)		/* ordering table size */
 
-extern u_long _tempOT1[OTSIZE];
-extern u_long _tempOT2[OTSIZE];
+extern OTTYPE _tempOT1[OTSIZE];
+extern OTTYPE _tempOT2[OTSIZE];
 
 extern char _tempPrimTab1[0x8000];		// 0xFB400
 extern char _tempPrimTab2[0x8000];		// 0x119400

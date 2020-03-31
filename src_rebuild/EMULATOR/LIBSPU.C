@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#define SPU_CENTERNOTE (49152)
+#define SPU_CENTERNOTE (-32768 / 2)
 
 short _spu_voice_centerNote[24] =
 {
@@ -153,7 +153,7 @@ void SpuStart()//(F)
 		_spu_isCalled = 1;
 		EnterCriticalSection();
 		_SpuDataCallback(_spu_FiDMA);
-		event = OpenEvent(HwSPU, EvSpCOMP, EvMdNOINTR, NULL);
+		//event = OpenEvent(HwSPU, EvSpCOMP, EvMdNOINTR, NULL);
 		_spu_EVdma = event;
 		EnableEvent(event);
 		ExitCriticalSection();
@@ -219,7 +219,6 @@ void SpuInit(void)
 {
 	_SpuInit(0);
 }
-
 
 long SpuSetMute(long on_off)
 {
