@@ -244,6 +244,9 @@ int ClearImage2(RECT16* rect, u_char r, u_char g, u_char b)
 
 int DrawSync(int mode)
 {
+	// Update VRAM seems needed to be here
+	Emulator_UpdateVRAM();
+
 	if (drawsync_callback != NULL)
 	{
 		drawsync_callback();

@@ -505,23 +505,23 @@ void LoadBackgroundFile(char *name)
 	do {
 		FEDrawCDicon();
 		iVar3 = *piVar4;
-		LoadfileSeg(name, _frontend_buffer, iVar3 << 0xf, 0x8000);
+		LoadfileSeg(name, _overlay_buffer, iVar3 << 0xf, 0x8000);
 		piVar4 = piVar4 + 1;
 		FEDrawCDicon();
 		iVar2 = iVar2 + -1;
 		rect.y = (short)(iVar3 / 6);
 		rect.x = ((short)iVar3 + rect.y * -6) * 0x40 + 0x280;
 		rect.y = rect.y * 0x100;
-		LoadImage(&rect, (u_long *)_frontend_buffer);
+		LoadImage(&rect, (u_long *)_overlay_buffer);
 		FEDrawCDicon();
 	} while (-1 < iVar2);
-	LoadfileSeg(name, _frontend_buffer, iVar1 << 0xf, 0x800);
+	LoadfileSeg(name, _overlay_buffer, iVar1 << 0xf, 0x800);
 	FEDrawCDicon();
 	rect.h = 1;
 	rect.y = (short)(iVar1 / 6);
 	rect.x = ((short)iVar1 + rect.y * -6) * 0x40 + 0x280;
 	rect.y = rect.y * 0x100;
-	LoadImage(&rect, (u_long *)_frontend_buffer);
+	LoadImage(&rect, (u_long *)_overlay_buffer);
 	DrawSync(0);
 	SetupBackgroundPolys();
 	return;
@@ -2307,7 +2307,8 @@ int CentreScreen(int bSetup)
 
 int carSelection = 0;
 int currSelIndex = 0; 
-
+int lastCutCity = -1;
+int lastCity = -1;
 
 // [D]
 int CarSelectScreen(int bSetup)
@@ -2319,7 +2320,6 @@ int CarSelectScreen(int bSetup)
 	int iVar5;
 	uint *puVar6;
 	RECT16 rect;
-	RECT16 local_18;
 
 	iVar5 = carSelection;
 	rect = extraRect;
@@ -2370,8 +2370,7 @@ int CarSelectScreen(int bSetup)
 						}
 					}
 				}
-				local_18 = extraRect;
-				LoadImage(&local_18, (u_long *)(_frontend_buffer + carSelection * 0x8000));
+				LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
 				DrawSync(0);
 				DisplayOnScreenText();
 
@@ -2447,13 +2446,13 @@ int CarSelectScreen(int bSetup)
 	}
 	if (feVariableSave[0] == -1) {
 		carSelection = 0;
-		if (loaded[0] == GameLevel) {
+		if (loaded[1] == GameLevel) {
 			bDrawExtra = currPlayer;
 			LoadImage(&rect, (u_long*)_frontend_buffer);
 		}
 		else {
 			SetupExtraPoly(gfxNames[GameLevel], 0, 0);
-			loaded[0] = GameLevel;
+			lastCity = GameLevel;
 		}
 	}
 	else {
@@ -2461,11 +2460,11 @@ int CarSelectScreen(int bSetup)
 		SetupExtraPoly(gfxNames[GameLevel], feVariableSave[0], 0);
 	}
 	LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
-	feVariableSave[0] = 0xffffffff;
-	feVariableSave[1] = 0xffffffff;
-	feVariableSave[2] = 0xffffffff;
-	feVariableSave[3] = 0xffffffff;
-	loaded[1] = 0xff;
+	feVariableSave[0] = -1;
+	feVariableSave[1] = -1;
+	feVariableSave[2] = -1;
+	feVariableSave[3] = -1;
+	lastCutCity = -1;
 	currSelIndex = 1;
 	pCurrButton = pCurrScreen->buttons + 1;
 	return 1;

@@ -1120,6 +1120,7 @@ ShaderID g_blit_shader;
 #if defined(OGLES) || defined(OGL)
 GLint u_Projection;
 
+// TODO: 8 bit palettized images and full mode textures
 const char* gte_shader =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"

@@ -2118,7 +2118,7 @@ int redriver2_main(void)
 
 	PlayFMV(99);	// play infogrames fmv
 
-	//ShowHiresScreens(NTSCScreenNames, 300, 1); // [A]
+	//ShowHiresScreens(OPMScreenNames, 300, 1); // [A]
 
 	PlayFMV(0);		// play intro movie
 
