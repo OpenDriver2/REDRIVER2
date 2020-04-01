@@ -4401,7 +4401,7 @@ void FEInitCdIcon(void)
 	int iVar2;
 	RECT16 rect;
 
-	puVar1 = (ushort *)(cd_icon + 10);
+	puVar1 = cd_icon + 10;
 	iVar2 = 0xd;
 	do {
 		iVar2 = iVar2 + -1;
@@ -4416,21 +4416,30 @@ void FEInitCdIcon(void)
 	cd_icon[24] = cd_icon[24] | 0x8000;
 	cd_icon[25] = cd_icon[25] | 0x8000;
 	LoadImage(&rect, (u_long *)(cd_icon + 0x18));
-
 	setPolyFT4(&cd_sprite);
-	setRGB0(&cd_sprite, 128, 128, 128);
-	cd_sprite.v0 = 0x4d;
-	cd_sprite.v1 = 0x4d;
+	cd_sprite.r0 = 128;
+	cd_sprite.g0 = 128;
+	cd_sprite.b0 = 128;
+	cd_sprite.v0 = -0x4d;
+	cd_sprite.v1 = -0x4d;
 	cd_sprite.u0 = '\0';
 	cd_sprite.u1 = ' ';
 	cd_sprite.u2 = '\0';
-	cd_sprite.v2 = 45;
+	cd_sprite.v2 = -0x2d;
 	cd_sprite.u3 = ' ';
-	cd_sprite.v3 = 45;
-	cd_sprite.clut = GetClut(960, 433);
-	cd_sprite.tpage = GetTPage(0, 0, 960, 256);
+	cd_sprite.v3 = -0x2d;
+	cd_sprite.clut = GetClut(0x3c0, 0x1b1);
+	cd_sprite.tpage = GetTPage(0, 0, 0x3c0, 0x100);
 	bCdIconSetup = 1;
-	setXY4(&cd_sprite, 80, 38, 118, 38, 80, 59, 118, 59);
+	cd_sprite.x0 = 0x50;
+	cd_sprite.y0 = 0x26;
+	cd_sprite.x1 = 0x76;
+	cd_sprite.y1 = 0x26;
+	cd_sprite.x2 = 0x50;
+	cd_sprite.y2 = 0x3b;
+	cd_sprite.x3 = 0x76;
+	cd_sprite.y3 = 0x3b;
+	return;
 }
 
 
