@@ -186,8 +186,9 @@ char carNumLookup[4][10] = {
 	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
 };
 
-RECT16 extraRect = { 0x380, 0x100, 0x40, 0xD };
+RECT16 extraRect = { 896, 256, 64, 219 };
 int feVariableSave[4] = { -1 };
+
 
 
 // decompiled code
@@ -484,43 +485,43 @@ void LoadBackgroundFile(char *name)
 {
 	int iVar1;
 	int iVar2;
-	int iVar3;
+	int p;
 	int *piVar4;
 	RECT16 rect;
-	int local_40[6];
+	int pages[6];
 
-	iVar1 = 0x0b;
-	local_40[0] = 0;
-	local_40[1] = 1;
-	local_40[2] = 2;
-	local_40[3] = 3;
-	local_40[4] = 4;
-	local_40[5] = 5;
+	iVar1 = 11;
+	pages[0] = 0;
+	pages[1] = 1;
+	pages[2] = 2;
+	pages[3] = 3;
+	pages[4] = 4;
+	pages[5] = 5;
 	iVar2 = strcmp(name, "DATA\\GFX.RAW");
 	mainScreenLoaded = (iVar2 == 0);
-	piVar4 = local_40;
+	piVar4 = pages;
 	iVar2 = 5;
 	rect.w = 0x40;
 	rect.h = 0x100;
 	do {
 		FEDrawCDicon();
-		iVar3 = *piVar4;
-		LoadfileSeg(name, _overlay_buffer, iVar3 << 0xf, 0x8000);
+		p = *piVar4;
+		LoadfileSeg(name, _overlay_buffer, p * 0x8000, 0x8000);
 		piVar4 = piVar4 + 1;
 		FEDrawCDicon();
 		iVar2 = iVar2 + -1;
-		rect.y = (short)(iVar3 / 6);
-		rect.x = ((short)iVar3 + rect.y * -6) * 0x40 + 0x280;
-		rect.y = rect.y * 0x100;
+		rect.y = (short)(p / 6);
+		rect.x = ((short)p + rect.y * -6) * 64 + 640;
+		rect.y = rect.y * 256;
 		LoadImage(&rect, (u_long *)_overlay_buffer);
 		FEDrawCDicon();
 	} while (-1 < iVar2);
-	LoadfileSeg(name, _overlay_buffer, iVar1 << 0xf, 0x800);
+	LoadfileSeg(name, _overlay_buffer, iVar1 * 0x8000, 0x800);
 	FEDrawCDicon();
 	rect.h = 1;
 	rect.y = (short)(iVar1 / 6);
-	rect.x = ((short)iVar1 + rect.y * -6) * 0x40 + 0x280;
-	rect.y = rect.y * 0x100;
+	rect.x = ((short)iVar1 + rect.y * -6) * 64 + 640;
+	rect.y = rect.y * 256;
 	LoadImage(&rect, (u_long *)_overlay_buffer);
 	DrawSync(0);
 	SetupBackgroundPolys();
@@ -1107,11 +1108,11 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	//extraSprt.tag._3_1_ = 4;
 	//extraSprt.code = 'd';
 	extraSprt.x0 = 100;
-	extraSprt.w = 0xff;
-	extraSprt.y0 = 0xe2;
-	extraSprt.r0 = -0x80;
-	extraSprt.g0 = -0x80;
-	extraSprt.b0 = -0x80;
+	extraSprt.w = 255;
+	extraSprt.y0 = 226;
+	extraSprt.r0 = 128;
+	extraSprt.g0 = 128;
+	extraSprt.b0 = 128;
 	extraSprt.u0 = '\0';
 	extraSprt.v0 = '\0';
 	extraSprt.h = 219;
@@ -2370,6 +2371,7 @@ int CarSelectScreen(int bSetup)
 						}
 					}
 				}
+				rect = extraRect;
 				LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
 				DrawSync(0);
 				DisplayOnScreenText();
