@@ -242,15 +242,23 @@ int ClearImage2(RECT16* rect, u_char r, u_char g, u_char b)
 	return 0;
 }
 
+void DrawAggregatedSplits();
+
 int DrawSync(int mode)
 {
 	// Update VRAM seems needed to be here
-	Emulator_UpdateVRAM();
+	//Emulator_UpdateVRAM();
 
 	if (drawsync_callback != NULL)
 	{
 		drawsync_callback();
 	}
+
+	DrawAggregatedSplits();
+	Emulator_EndScene();
+
+	if (Emulator_BeginScene())
+		ResetPolyState();
 
 	return 0;
 }
@@ -595,9 +603,6 @@ void DrawPrim(void* p)
 	}
 
 	AggregatePTAGsToSplits((u_long*)p, true);
-
-	DrawAggregatedSplits();
-	//Emulator_EndScene();
 }
 
 // parses primitive and pushes it to VBO
