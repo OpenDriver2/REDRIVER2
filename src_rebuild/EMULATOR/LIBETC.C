@@ -7,6 +7,8 @@
 #include <d3d9.h>
 #endif
 
+#include <SDL_timer.h>
+
 void(*vsync_callback)(void) = NULL;
 
 int StopCallback(void)
@@ -23,8 +25,6 @@ int ResetCallback(void)
 
 int VSync(int mode)
 {
-	///static int startTime = SDL_GetTicks();
-
 	if (mode == 0)
 	{
 		if (vsync_callback != NULL)
@@ -32,7 +32,6 @@ int VSync(int mode)
 			vsync_callback();
 		}
 		Emulator_EndScene();
-		///return (SDL_GetTicks() - startTime / 1000);
 	}
 	else if (mode > 0)
 	{
@@ -45,10 +44,9 @@ int VSync(int mode)
 	else if (mode < 0)
 	{
 		//Unimplemented
-		///return (SDL_GetTicks() / 1000);
 	}
 
-	return 0;//Assert?
+	return SDL_GetTicks();
 }
 
 int VSyncCallback(void(*f)(void))
