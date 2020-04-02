@@ -30,13 +30,13 @@ extern void ProcessMapLump(char *lump_ptr, int lump_size); // 0x00040608
 
 extern void DrawAllTheCars(int view); // 0x000407D8
 
-extern void PlotBuildingModelSubdivNxN(struct MODEL *model, int rot, struct _pct *pc, int n); // 0x00040A90
+extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, struct _pct *pc, int n); // 0x00040A90
 
-extern int DrawAllBuildings(unsigned long *objects, int num_buildings, struct DB *disp); // 0x000411F4
+extern int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp); // 0x000411F4
 
-extern void RenderModel(struct MODEL *model, struct MATRIX *matrix, struct VECTOR *pos, int zBias, int flags); // 0x0004143C
+extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags); // 0x0004143C
 
-extern unsigned long normalIndex(struct SVECTOR *verts, unsigned int vidx); // 0x000415E4
+extern unsigned long normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
 
 
 #endif

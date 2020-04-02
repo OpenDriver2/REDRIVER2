@@ -15,12 +15,13 @@ extern int gSubGameNumber;
 extern int gInvincibleCar;
 extern int gPlayerImmune;
 extern unsigned char NumPlayers;
-extern int NewLevel;
+extern char NewLevel;
 extern GAMETYPE GameType;
 extern GAMETYPE StoredGameType;
 extern int gCurrentMissionNumber;
 extern int gInFrontend;
 extern int AttractMode;
+extern char NoPlayerControl;
 
 extern int gCopDifficultyLevel;
 

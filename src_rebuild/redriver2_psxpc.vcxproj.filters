@@ -117,6 +117,30 @@
     <ClCompile Include="GAME\C\REPLAYS.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\EVENT.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\MISSION.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\CUTSCENE.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\TEXTURE.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\SKY.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\DRAW.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\DENTING.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\PEDEST.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

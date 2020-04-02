@@ -13,6 +13,18 @@
 #include "E3STUFF.H"
 #include "GAMESND.H"
 #include "SCORES.H"
+#include "GLAUNCH.H"
+#include "LOADVIEW.H"
+#include "REPLAYS.H"
+#include "EVENT.H"
+#include "MISSION.H"
+#include "CUTSCENE.H"
+#include "TEXTURE.H"
+#include "SKY.H"
+#include "PRES.H"
+#include "DRAW.H"
+#include "DENTING.H"
+#include "PEDEST.H"
 
 #include "../FRONTEND/FEMAIN.H"
 
@@ -643,25 +655,85 @@ void InitModelNames(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char g_allocatedMem[0x200000];	// 0x137400 (_ramsize). TODO: use real malloc
+char* mallocptr = g_allocatedMem;
+
+#define D_MALLOC(size)	mallocptr; mallocptr += size
+
+// TODO: SPOOL?
+char *packed_cell_pointers;
+PACKED_CELL_OBJECT** pcoplist;
+ulong* transparent_buffer;
+ulong* tile_overflow_buffer;
+CELL_OBJECT** coplist;
+
+// system?
+int gameinit = 0;
+int leadAIRequired = 0;
+int leadAILoaded = 0;
+int pathAILoaded = 0;
+int gMusicType = 0;
+int allowSpecSpooling = 0;
+int xa_timeout = 0;
+
+int ThisMotion = 0;
+int IconsLoaded = 0;
+
+// TODO: AI.C?
+SPEECH_QUEUE gSpeechQueue;
+
+// TODO: CAMERA.C
+char cameraview = 0;
+int CameraCnt = 0;
+
+// TODO: DIRECTOR.C
+char tracking_car = 0;
+
+// MISSION
+_MISSION *MissionHeader;
+
+// MGENERIC?
+_PLAYER player[8];
+STREAM_SOURCE* PlayerStartInfo[8];
+int numPlayersToCreate = 0;
+int gStartOnFoot = 0;
+int gSinkingTimer = 100;
+int gTimeInWater = 0x19;
+char InWater = 0;
+int gBobIndex = 0;
+int gWeather = 0;
+int gTimeOfDay = 0;
+int gShowPlayerDamage = 0;
+
+// PHYSICS
+_CAR_DATA car_data[22];	// all cars
+
+// active cars
+_CAR_DATA* active_car_list[20];
+BOUND_BOX bbox[20];
+unsigned char lightsOnDelay[20];
+
+// DRAWGAME.C ???
+int FrAng = 0x200;
+int wetness = 0;
+
+// [D]
 void GameInit(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
-	long lVar2;
-	_PLAYER *p_Var3;
-	STREAM_SOURCE *pSVar4;
+	long lVar1;
+	_PLAYER *p_Var2;
+	STREAM_SOURCE *pSVar3;
+	int iVar4;
 	int iVar5;
 	int iVar6;
-	int iVar7;
 	char local_30[8];
+	short totaldam;
 
 	if (NewLevel == 0) {
-		SetPleaseWait((char *)0x0);
+		SetPleaseWait(NULL);
 	}
 	else {
-		packed_cell_pointers = &DAT_00137400;
-		mallocptr = &DAT_00138400;
+		packed_cell_pointers = D_MALLOC(0x1000);
 	}
 	gameinit = 1;
 	InitGameVariables();
@@ -681,7 +753,7 @@ void GameInit(void)
 		SetupFadePolys();
 	}
 	if (NewLevel != 0) {
-		ShowLoadingScreen(LoadingScreenNames4[GameLevel], 1, 0x24);
+		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 0x24);
 	}
 	if (AttractMode != 0) {
 		TriggerInGameCutscene(0);
@@ -740,12 +812,12 @@ void GameInit(void)
 		LoadGameLevel();
 		IconsLoaded = 1;
 		LoadSky();
-		LoadFont((char *)0x0);
+		LoadFont(NULL);
 	}
-	ClearMem((char *)car_data, (int)&DAT_00003968);
-	player.spoolXZ = (VECTOR *)car_data[0].hd.where.t;
-	car_data[0].hd.where.t[0] = (PlayerStartInfo8[0]->position).vx;
-	car_data[0].hd.where.t[2] = (PlayerStartInfo8[0]->position).vz;
+	ClearMem((char *)car_data, 0x3968);
+	player[0].spoolXZ = (VECTOR *)car_data[0].hd.where.t;
+	car_data[0].hd.where.t[0] = (PlayerStartInfo[0]->position).vx;
+	car_data[0].hd.where.t[2] = (PlayerStartInfo[0]->position).vz;
 	CalcObjectRotationMatrices();
 	InitialiseDenting();
 	cameraview = 0;
@@ -758,7 +830,7 @@ void GameInit(void)
 	if ((NewLevel == 0) && (allowSpecSpooling == 1)) {
 		QuickSpoolSpecial();
 	}
-	iVar5 = 0;
+	iVar4 = 0;
 	int_garage_door();
 	SpoolSYNC();
 	InitialiseCarHandling();
@@ -766,39 +838,40 @@ void GameInit(void)
 	InitDrivingGames();
 	InitThrownBombs();
 	if (0 < numPlayersToCreate) {
-		iVar7 = 0;
 		iVar6 = 0;
+		iVar5 = 0;
 		do {
-			pSVar4 = PlayerStartInfo8[iVar5];
-			local_30[0] = -(char)iVar5;
-			if (iVar5 < (int)(uint)NumPlayers) {
-				local_30[0] = (char)iVar5;
+			pSVar3 = PlayerStartInfo[iVar4];
+			local_30[0] = -(char)iVar4;
+
+			if (iVar4 < (int)(uint)NumPlayers) {
+				local_30[0] = (char)iVar4;
 			}
-			gStartOnFoot = ZEXT14(pSVar4->type == '\x02');
-			InitPlayer((_PLAYER *)((int)player.pos + iVar6),
-				(_CAR_DATA *)((int)car_data[0].hd.where.m + iVar7), pSVar4->controlType,
-				(uint)pSVar4->rotation, (long(*)[4])&pSVar4->position, (uint)pSVar4->model,
-				(uint)pSVar4->palette, local_30);
+			gStartOnFoot = (pSVar3->type == '\x02');
+
+			InitPlayer((_PLAYER *)((int)player[0].pos + iVar5),
+				(_CAR_DATA *)((int)car_data[0].hd.where.m + iVar6), pSVar3->controlType,
+				(uint)pSVar3->rotation, (long(*)[4])&pSVar3->position, (uint)pSVar3->model,
+				(uint)pSVar3->palette, local_30);
+
 			if (gStartOnFoot == 0) {
-				*(undefined2 *)((int)car_data[0].ap.damage + iVar7) = *(undefined2 *)pSVar4->damage;
-				*(undefined2 *)((int)car_data[0].ap.damage + iVar7 + 2) =
-					*(undefined2 *)(pSVar4->damage + 1);
-				*(undefined2 *)((int)car_data[0].ap.damage + iVar7 + 4) =
-					*(undefined2 *)(pSVar4->damage + 2);
-				*(undefined2 *)((int)car_data[0].ap.damage + iVar7 + 6) =
-					*(undefined2 *)(pSVar4->damage + 3);
-				*(undefined2 *)((int)car_data[0].ap.damage + iVar7 + 8) =
-					*(undefined2 *)(pSVar4->damage + 4);
-				*(undefined2 *)((int)car_data[0].ap.damage + iVar7 + 10) =
-					*(undefined2 *)(pSVar4->damage + 5);
-				uVar1 = *(undefined2 *)&pSVar4->totaldamage;
-				(&car_data[0].ap.needsDenting)[iVar7] = '\x01';
-				*(undefined2 *)((int)&car_data[0].totalDamage + iVar7) = uVar1;
+				// copy damage values
+				*(u_short *)((int)car_data[0].ap.damage + iVar6) = *(u_short *)pSVar3->damage;
+				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 2) =*(u_short *)(pSVar3->damage + 1);
+				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 4) =*(u_short *)(pSVar3->damage + 2);
+				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 6) =*(u_short *)(pSVar3->damage + 3);
+				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 8) =*(u_short *)(pSVar3->damage + 4);
+				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 10) =*(u_short *)(pSVar3->damage + 5);
+
+				totaldam = *(short *)&pSVar3->totaldamage;
+				(&car_data[0].ap.needsDenting)[iVar6] = '\x01';
+				*(short *)((int)&car_data[0].totalDamage + iVar6) = totaldam;
 			}
-			iVar7 = iVar7 + 0x29c;
-			iVar5 = iVar5 + 1;
-			iVar6 = iVar6 + 0x74;
-		} while (iVar5 < numPlayersToCreate);
+
+			iVar6 = iVar6 + 0x29c;	//sizeof(_CAR_DATA)
+			iVar4 = iVar4 + 1;
+			iVar5 = iVar5 + 0x74;	// sizeof(_PLAYER)
+		} while (iVar4 < numPlayersToCreate);
 	}
 	if (pathAILoaded != 0) {
 		InitCops();
@@ -829,57 +902,55 @@ void GameInit(void)
 	}
 	FrAng = 0x200;
 	if (gWeather == 1) {
-		wetness = (int)&DAT_00001b58;
+		wetness = 0x1b58;
 	}
 	else {
 		wetness = 0;
 	}
 	if (gTimeOfDay == 2) {
-		iVar5 = 0;
+		iVar4 = 0;
 		do {
-			lVar2 = Random2(0);
-			(&lightsOnDelay)[iVar5] = (uchar)lVar2;
-			iVar5 = iVar5 + 1;
-		} while (iVar5 < 0x14);
+			lVar1 = Random2(0);
+			lightsOnDelay[iVar4] = (unsigned char)lVar1;
+			iVar4 = iVar4 + 1;
+		} while (iVar4 < 0x14);
 	}
 	tracking_car = '\x01';
 	if (NoPlayerControl == 0) {
 		StoreGameFlags();
 	}
 	SetReverbState(0);
-	p_Var3 = &player;
-	iVar5 = 2;
+	p_Var2 = (_PLAYER*)&player;
+	iVar4 = 2;
 	do {
-		(p_Var3->horn).request = '\0';
-		(p_Var3->horn).time = '\0';
-		(p_Var3->horn).on = '\0';
-		iVar5 = iVar5 + -1;
-		p_Var3 = p_Var3 + 1;
-	} while (-1 < iVar5);
+		(p_Var2->horn).request = '\0';
+		(p_Var2->horn).time = '\0';
+		(p_Var2->horn).on = '\0';
+		iVar4 = iVar4 + -1;
+		p_Var2 = p_Var2 + 1;
+	} while (-1 < iVar4);
 	gShowPlayerDamage = 1;
 	InitThunder();
 	GetXAData(-1);
 	SetXAVolume(0);
-	switch (gCurrentMissionNumber) {
-	case 2:
-	case 3:
-	case 6:
-	case 0xb:
-	case 0xd:
-	case 0xe:
-	case 0x13:
-	case 0x1a:
-	case 0x1c:
-	case 0x22:
-	case 0x26:
-		FunkUpDaBGMTunez(1);
+	if (true) {
+		switch (gCurrentMissionNumber) {
+		case 2:
+		case 3:
+		case 6:
+		case 0xb:
+		case 0xd:
+		case 0xe:
+		case 0x13:
+		case 0x1a:
+		case 0x1c:
+		case 0x22:
+		case 0x26:
+			FunkUpDaBGMTunez(1);
+		}
 	}
 	xa_timeout = 0;
-	return;
-	*/
 }
-
-
 
 // decompiled code
 // original method signature: 

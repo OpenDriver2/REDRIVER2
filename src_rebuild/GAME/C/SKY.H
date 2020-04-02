@@ -8,9 +8,9 @@ extern void DrawSkyDome(); // 0x0007795C
 
 extern void DrawLensFlare(); // 0x00077A8C
 
-extern void DisplaySun(struct DVECTOR *pos, struct CVECTOR *col, int flare_col); // 0x000780BC
+extern void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col); // 0x000780BC
 
-extern void DisplayMoon(struct DVECTOR *pos, struct CVECTOR *col, int flip); // 0x00078544
+extern void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip); // 0x00078544
 
 extern void TunnelSkyFade(); // 0x000787B0
 

@@ -4,6 +4,8 @@
 extern char _overlay_buffer[0x50000];		// 0x1C0000
 extern char _frontend_buffer[0x50000];		// 0xFB400
 
+extern char* LoadingScreenNames[];
+
 #ifdef USE_32_BIT_ADDR
 typedef uint64_t OTTYPE;
 #else
@@ -37,7 +39,6 @@ extern char _tempPrimTab1[0x8000];		// 0xFB400
 extern char _tempPrimTab2[0x8000];		// 0x119400
 
 extern unsigned char NumPlayers;
-extern int NewLevel;
 
 #ifdef PAL
 #define draw_mode draw_mode_pal

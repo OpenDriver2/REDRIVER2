@@ -4,6 +4,7 @@
 #include "E3STUFF.H"
 #include "SYSTEM.H"
 #include "LIBETC.H"
+#include "GLAUNCH.H"
 #include "../FRONTEND/FEMAIN.H"
 
 DRAWENV load_draw = { 0 };

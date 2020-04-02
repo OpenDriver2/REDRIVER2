@@ -22,7 +22,7 @@ extern char SetPlayerOwnsChannel(int chan, char player); // 0x0007ABA8
 
 extern int StartSound(int channel, int bank, int sample, int volume, int pitch); // 0x0007A7F8
 
-extern int Start3DTrackingSound(int channel, int bank, int sample, struct VECTOR *position, long *velocity); // 0x0007A994
+extern int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, long *velocity); // 0x0007A994
 
 extern int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z, int volume, int pitch); // 0x0007A894
 
@@ -34,7 +34,7 @@ extern void SetChannelVolume(int channel, int volume, int proximity); // 0x0007A
 
 extern void ComputeDoppler(struct CHANNEL_DATA *ch); // 0x000795C4
 
-extern void SetChannelPosition3(int channel, struct VECTOR *position, long *velocity, int volume, int pitch, int proximity); // 0x0007ABCC
+extern void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volume, int pitch, int proximity); // 0x0007ABCC
 
 extern void PauseXM(); // 0x00079734
 

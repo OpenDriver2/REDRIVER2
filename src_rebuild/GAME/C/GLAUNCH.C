@@ -4,10 +4,14 @@
 
 #include "LIBETC.H"
 
+#include "SYSTEM.H"
+#include "MAIN.H"
 #include "E3STUFF.H"
 #include "PAD.H"
 #include "SOUND.H"
 #include "REPLAYS.H"
+
+#include <string.h>
 
 MISSION_STEP MissionLadder[68] =
 {
@@ -96,7 +100,7 @@ int gSubGameNumber = 0;
 int gInvincibleCar = 0;
 int gPlayerImmune = 0;
 unsigned char NumPlayers = 1;
-int NewLevel = 1;
+char NewLevel = 1;
 GAMETYPE GameType = GAME_MISSION;
 int gCurrentMissionNumber = 0;
 int gInFrontend = 0;
@@ -163,109 +167,113 @@ void GameStart(void)
 	iVar1 = gCopDifficultyLevel;
 	NewLevel = 1;
 	gCopDifficultyLevel = iVar1;
-	if (false) goto LAB_00052e68;
+
+	// Reflections debug checks?
+	if (false)
+		goto LAB_00052e68;
+
 	switch (GameType) {
-	case GAME_MISSION:
-		RunMissionLadder(1);
-		break;
-	case GAME_TAKEADRIVE:
-		iVar1 = 0x3a;
-		if (NumPlayers == 1) {
-			iVar1 = 0x32;
-		}
-		gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 0x1b8;
-		LaunchGame();
-		break;
-	case GAME_IDLEDEMO:
-		iVar2 = LoadAttractReplay(gCurrentMissionNumber);
-		iVar1 = gVibration;
-		gVibration = iVar1;
-		if (iVar2 != 0) {
-			gVibration = 0;
-			CurrentGameMode = 6;
+		case GAME_MISSION:
+			RunMissionLadder(1);
+			break;
+		case GAME_TAKEADRIVE:
+			iVar1 = 0x3a;
+			if (NumPlayers == 1) {
+				iVar1 = 0x32;
+			}
+			gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 0x1b8;
+			LaunchGame();
+			break;
+		case GAME_IDLEDEMO:
+			iVar2 = LoadAttractReplay(gCurrentMissionNumber);
+			iVar1 = gVibration;
+			gVibration = iVar1;
+			if (iVar2 != 0) {
+				gVibration = 0;
+				CurrentGameMode = 6;
+				gLoadedReplay = 1;
+				LaunchGame();
+				gLoadedReplay = 0;
+				gVibration = iVar1;
+			}
+			break;
+		case GAME_PURSUIT:
+			iVar2 = GameLevel * 8 + 0x46;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
+		case GAME_GETAWAY:
+			iVar2 = GameLevel * 8 + 0x66;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
+		case GAME_GATERACE:
+			if (NumPlayers == 1) {
+				iVar1 = 0x86;
+			}
+			else {
+				iVar1 = 0xa4;
+			}
+			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			goto LAB_00052e24;
+		case GAME_CHECKPOINT:
+			if (NumPlayers == 1) {
+				iVar1 = 0xc4;
+			}
+			else {
+				iVar1 = 0xe4;
+			}
+			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			goto LAB_00052e24;
+		case GAME_TRAILBLAZER:
+			iVar2 = GameLevel * 8 + 0x104;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
+		case GAME_SURVIVAL:
+			gCopDifficultyLevel = 2;
+			iVar2 = 0x144;
+			if (NumPlayers == 1) {
+				iVar2 = 0x124;
+			}
+			gCurrentMissionNumber = iVar2 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			LaunchGame();
+			gCopDifficultyLevel = iVar1;
+			break;
+		case GAME_REPLAYMISSION:
+			GameType = GAME_MISSION;
+			iVar1 = FindMissionLadderPos(gCurrentMissionNumber);
+			if (iVar1 != 0) {
+				RunMissionLadder(0);
+			}
+			GameType = GAME_REPLAYMISSION;
+			break;
+		case GAME_COPSANDROBBERS:
+			iVar2 = GameLevel * 8 + 0x1a4;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
+		case GAME_CAPTURETHEFLAG:
+			gCurrentMissionNumber = GameLevel * 8 + 0x160 + gSubGameNumber;
+			LaunchGame();
+			break;
+		case GAME_SECRET:
+			iVar2 = 0x1e4;
+			iVar1 = gWantNight;
+			if (NumPlayers == 1) {
+				iVar2 = 0x1e0;
+			}
+		LAB_00052e1c:
+			gCurrentMissionNumber = iVar2 + iVar1 + gSubGameNumber;
+		LAB_00052e24:
+			LaunchGame();
+			break;
+		case GAME_CONTINUEMISSION:
+			GameType = GAME_MISSION;
+			RunMissionLadder(0);
+			break;
+		case GAME_LOADEDREPLAY:
+			CurrentGameMode = 4;
 			gLoadedReplay = 1;
+			GameType = StoredGameType;
 			LaunchGame();
 			gLoadedReplay = 0;
-			gVibration = iVar1;
-		}
-		break;
-	case GAME_PURSUIT:
-		iVar2 = GameLevel * 8 + 0x46;
-		iVar1 = gWantNight << 2;
-		goto LAB_00052e1c;
-	case GAME_GETAWAY:
-		iVar2 = GameLevel * 8 + 0x66;
-		iVar1 = gWantNight << 2;
-		goto LAB_00052e1c;
-	case GAME_GATERACE:
-		if (NumPlayers == 1) {
-			iVar1 = 0x86;
-		}
-		else {
-			iVar1 = 0xa4;
-		}
-		gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-		goto LAB_00052e24;
-	case GAME_CHECKPOINT:
-		if (NumPlayers == 1) {
-			iVar1 = 0xc4;
-		}
-		else {
-			iVar1 = 0xe4;
-		}
-		gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-		goto LAB_00052e24;
-	case GAME_TRAILBLAZER:
-		iVar2 = GameLevel * 8 + 0x104;
-		iVar1 = gWantNight << 2;
-		goto LAB_00052e1c;
-	case GAME_SURVIVAL:
-		gCopDifficultyLevel = 2;
-		iVar2 = 0x144;
-		if (NumPlayers == 1) {
-			iVar2 = 0x124;
-		}
-		gCurrentMissionNumber = iVar2 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-		LaunchGame();
-		gCopDifficultyLevel = iVar1;
-		break;
-	case GAME_REPLAYMISSION:
-		GameType = GAME_MISSION;
-		iVar1 = FindMissionLadderPos(gCurrentMissionNumber);
-		if (iVar1 != 0) {
-			RunMissionLadder(0);
-		}
-		GameType = GAME_REPLAYMISSION;
-		break;
-	case GAME_COPSANDROBBERS:
-		iVar2 = GameLevel * 8 + 0x1a4;
-		iVar1 = gWantNight << 2;
-		goto LAB_00052e1c;
-	case GAME_CAPTURETHEFLAG:
-		gCurrentMissionNumber = GameLevel * 8 + 0x160 + gSubGameNumber;
-		LaunchGame();
-		break;
-	case GAME_SECRET:
-		iVar2 = 0x1e4;
-		iVar1 = gWantNight;
-		if (NumPlayers == 1) {
-			iVar2 = 0x1e0;
-		}
-	LAB_00052e1c:
-		gCurrentMissionNumber = iVar2 + iVar1 + gSubGameNumber;
-	LAB_00052e24:
-		LaunchGame();
-		break;
-	case GAME_CONTINUEMISSION:
-		GameType = GAME_MISSION;
-		RunMissionLadder(0);
-		break;
-	case GAME_LOADEDREPLAY:
-		CurrentGameMode = 4;
-		gLoadedReplay = 1;
-		GameType = StoredGameType;
-		LaunchGame();
-		gLoadedReplay = 0;
 	}
 LAB_00052e68:
 	wantedCar[1] = -1;
@@ -684,28 +692,35 @@ int FindPrevMissionFromLadderPos(int pos)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int fakeOtherPlayer = 0;
+int gMissionCompletionState = 0;
+char NoPlayerControl = 0;
+
+// TODO: REPLAYS.C
+int quick_replay = 0;
+int AutoDirect = 0;
+int lead_car = 0;
+
+GAMEMODE WantedGameMode = GAMEMODE_NORMAL;
+
+MISSION_DATA MissionStartData;
+MISSION_DATA MissionEndData;
+
+// [D]
 void LaunchGame(void)
 {
-	UNIMPLEMENTED();
-	/*
-
 	bool bVar1;
-	MISSION_DATA *pMVar2;
-	MISSION_DATA *pMVar3;
-	long lVar4;
-	long lVar5;
-	long lVar6;
-	undefined2 local_10;
-	undefined2 local_e;
-	undefined2 local_c;
-	undefined2 local_a;
+	MISSION_DATA *startData;
+	MISSION_DATA *endData;
+	long position[3];
+	RECT16 rect;
 
 	fakeOtherPlayer = 0;
 	ResetGraph(1);
-	SetVideoMode(video_mode);
+	SetVideoMode(1);
 	gMissionCompletionState = PAUSEMODE_GAMEOVER;
-	gInvincibleCar = (uint)((byte)ActiveCheats >> 2) & 1;
-	gPlayerImmune = (uint)((byte)ActiveCheats >> 3) & 1;
+	gInvincibleCar = 0; //(uint)((byte)ActiveCheats >> 2) & 1;			// [A]
+	gPlayerImmune = 0; // //(uint)((byte)ActiveCheats >> 3) & 1;		// [A]
 	if (gLoadedReplay == 0) {
 		GetRandomChase();
 	}
@@ -742,46 +757,57 @@ LAB_000533c8:
 		GameInit();
 		GameLoop();
 		switch (WantedGameMode) {
-		case 0:
-		case 1:
-		case 6:
+		case GAMEMODE_NORMAL:
+		case GAMEMODE_QUIT:
+		case GAMEMODE_DEMO:
 			FadeScreen(0xff);
 			bVar1 = true;
 			break;
-		case 2:
+		case GAMEMODE_RESTART:
 			FadeScreen(0xff);
 			NoPlayerControl = 0;
 			quick_replay = 0;
 			AutoDirect = 0;
-			WantedGameMode = 0;
+			WantedGameMode = GAMEMODE_NORMAL;
 			NewLevel = 0;
 			GetRandomChase();
 			break;
-		case 3:
-		case 4:
+		case GAMEMODE_REPLAY:
+		case GAMEMODE_DIRECTOR:
 			if (1 < (uint)CurrentGameMode - 3) {
 				FadeScreen(0xff);
 			}
 			NoPlayerControl = 1;
-			AutoDirect = ZEXT14(WantedGameMode == 3);
-			quick_replay = ZEXT14(WantedGameMode == 3);
+			AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
+			quick_replay = (WantedGameMode == GAMEMODE_REPLAY);
 			NewLevel = 0;
 			break;
-		case 5:
-			pMVar2 = &MissionStartData;
-			pMVar3 = &MissionEndData;
+		case GAMEMODE_NEXTMISSION:
+			startData = &MissionStartData;
+			endData = &MissionEndData;
+
+			// [A] VALID CODE ?
+			memcpy(&MissionStartData, &MissionEndData, sizeof(MissionEndData));
+
+			/*
+			// another 16 byte aligned memcpy
+
+			startData = &MissionStartData;
+			endData = &MissionEndData;
 			do {
-				lVar4 = (pMVar3->PlayerPos).vx;
-				lVar5 = (pMVar3->PlayerPos).vy;
-				lVar6 = (pMVar3->PlayerPos).vz;
-				*(undefined4 *)&pMVar2->PlayerPos = *(undefined4 *)&pMVar3->PlayerPos;
-				(pMVar2->PlayerPos).vx = lVar4;
-				(pMVar2->PlayerPos).vy = lVar5;
-				(pMVar2->PlayerPos).vz = lVar6;
-				pMVar3 = (MISSION_DATA *)&(pMVar3->PlayerPos).felony;
-				pMVar2 = (MISSION_DATA *)&(pMVar2->PlayerPos).felony;
-			} while (pMVar3 != (MISSION_DATA *)&MissionEndData.CarPos[5].vz);
-			*(long *)&pMVar2->PlayerPos = MissionEndData.CarPos[5].vz;
+				lVar2 = (endData->PlayerPos).vx;
+				lVar3 = (endData->PlayerPos).vy;
+				lVar4 = (endData->PlayerPos).vz;
+				*(undefined4 *)&startData->PlayerPos = *(undefined4 *)&endData->PlayerPos;
+				(startData->PlayerPos).vx = lVar2;
+				(startData->PlayerPos).vy = lVar3;
+				(startData->PlayerPos).vz = lVar4;
+				endData = (MISSION_DATA *)&(endData->PlayerPos).felony;
+				startData = (MISSION_DATA *)&(startData->PlayerPos).felony;
+			} while (endData != (MISSION_DATA *)&MissionEndData.CarPos[5].vz);
+			*(long *)&startData->PlayerPos = MissionEndData.CarPos[5].vz;
+			*/
+
 			gHaveStoredData = 1;
 			FadeScreen(0xff);
 			bVar1 = true;
@@ -795,15 +821,13 @@ LAB_000533c8:
 	NoPlayerControl = 0;
 	SetDispMask(0);
 	EnableDisplay();
-	local_10 = 0;
-	local_e = 0;
-	local_c = 0x200;
-	local_a = 0x200;
-	ClearImage(&local_10, 0, 0, 0);
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 0x200;
+	rect.h = 0x200;
+	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
 	SetDispMask(1);
-	return;
-	*/
 }
 
 
