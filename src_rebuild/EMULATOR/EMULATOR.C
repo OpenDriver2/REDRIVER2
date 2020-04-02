@@ -33,7 +33,7 @@
 SDL_Window* g_window = NULL;
 
 #if defined(VK)
-
+ 
 struct FrameBuffer vramFrameBuffer;
 
 #define MAX_NUM_PHYSICAL_DEVICES (4)
@@ -1114,18 +1114,18 @@ void Emulator_GenerateColourArrayQuad(struct Vertex* vertex, unsigned char* col0
 	vertex[3].a = 255;
 }
 
-ShaderID g_gte_shader;
+ShaderID g_gte_shader_4;
+ShaderID g_gte_shader_8;
+ShaderID g_gte_shader_16;
 ShaderID g_blit_shader;
 
 #if defined(OGLES) || defined(OGL)
 GLint u_Projection;
 
-// TODO: 8 bit palettized images and full mode textures
-const char* gte_shader =
+const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
 	"varying vec4 v_page_clut;\n"
-	"varying vec2 v_pagetype;\n"
 	"#ifdef VERTEX\n"
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
@@ -1135,8 +1135,6 @@ const char* gte_shader =
 	"		v_texcoord = a_texcoord;\n"
 	"		v_color = a_color;\n"
 	"		v_color.xyz *= a_texcoord.z;\n"
-	"		v_pagetype.x = floor(a_position.z / 128.0) + 1.0;\n"
-	"		v_pagetype.y = (4.0 - floor(a_position.z / 128.0));\n"
 	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"
 	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
@@ -1146,14 +1144,14 @@ const char* gte_shader =
 	"#else\n"
 	"	uniform sampler2D s_texture;\n"
 	"	void main() {\n"
-	"		vec2 uv = (v_texcoord.xy * vec2(v_pagetype.x * 0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
+	"		vec2 uv = (v_texcoord.xy * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
 	"		vec2 comp = texture2D(s_texture, uv).rg;\n"
 	"		int index = int(fract(v_texcoord.x / 4.0 + 0.0001) * 4.0);\n"
 	"\n"
-	"		float v = comp[index / 2] * (255.0 / pow(16.0,v_pagetype.x));\n"
+	"		float v = comp[index / 2] * (255.0 / 16.0);\n"
 	"		float f = floor(v);\n"
 	"\n"
-	"		vec2 c = vec2( (v - f) * pow(16.0,v_pagetype.x), f );\n"
+	"		vec2 c = vec2( (v - f) * 16.0, f );\n"
 	"\n"
 	"		vec2 clut_pos = v_page_clut.zw;\n"
 	"		clut_pos.x += mix(c[0], c[1], fract(float(index) / 2.0) * 2.0) / 1024.0;\n"
@@ -1162,9 +1160,8 @@ const char* gte_shader =
 	"		float color_16 = clut_color.y * 256.0 + clut_color.x;\n"
 	"		vec4 color = fract(floor(color_16 / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0);\n"
 	"\n"
+	"		if (color.r == 0.0 && color.b == 0.0 && color.b == 0.0 && color.a == 0.0) { discard; }\n"
 	"		fragColor = color * v_color;\n"
-	"		if (fragColor.r == 0.0 && fragColor.b == 0.0 && fragColor.b == 0.0 && fragColor.a == 0.0) { discard; }\n"
-	"\n"
 	"		mat4 dither = mat4(\n"
 	"			-4.0,  +0.0,  -3.0,  +1.0,\n"
 	"			+2.0,  -2.0,  +3.0,  -1.0,\n"
@@ -1172,7 +1169,88 @@ const char* gte_shader =
 	"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"
 	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"
 	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
+	"	}\n"
+	"#endif\n";
+
+const char* gte_shader_8 =
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"#ifdef VERTEX\n"
+	"	attribute vec4 a_position;\n"
+	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
+	"	attribute vec4 a_color;\n"
+	"	uniform mat4 Projection;\n"
+	"	void main() {\n"
+	"		v_texcoord = a_texcoord;\n"
+	"		v_color = a_color;\n"
+	"		v_color.xyz *= a_texcoord.z;\n"
+	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"
+	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
+	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
+	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
+	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
+	"	}\n"
+	"#else\n"
+	"	uniform sampler2D s_texture;\n"
+	"	void main() {\n"
+	"		vec2 uv = (v_texcoord.xy * vec2(0.5, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
+	"		vec2 comp = texture2D(s_texture, uv).rg;\n"
 	"\n"
+	"		vec2 clut_pos = v_page_clut.zw;\n"
+	"		clut_pos.x += comp[int(mod(v_texcoord.x, 2.0))] * 255.0 / 1024.0;\n"
+	"		vec2 clut_color = texture2D(s_texture, clut_pos).rg * 255.0;\n"
+	"\n"
+	"		float color_16 = clut_color.y * 256.0 + clut_color.x;\n"
+	"		vec4 color = fract(floor(color_16 / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0);\n"
+	"\n"
+	"		if (color.r == 0.0 && color.b == 0.0 && color.b == 0.0 && color.a == 0.0) { discard; }\n"
+	"		fragColor = color * v_color;\n"
+	"		mat4 dither = mat4(\n"
+	"			-4.0,  +0.0,  -3.0,  +1.0,\n"
+	"			+2.0,  -2.0,  +3.0,  -1.0,\n"
+	"			-3.0,  +1.0,  -4.0,  +0.0,\n"
+	"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"
+	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"
+	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
+	"	}\n"
+	"#endif\n";
+
+const char* gte_shader_16 =
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"#ifdef VERTEX\n"
+	"	attribute vec4 a_position;\n"
+	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
+	"	attribute vec4 a_color;\n"
+	"	uniform mat4 Projection;\n"
+	"	void main() {\n"
+	"		vec2 page\n;"
+	"		page.x = fract(a_position.z / 16.0) * 1024.0\n;"
+	"		page.y = floor(a_position.z / 16.0) * 256.0;\n;"
+	"		v_texcoord = a_texcoord;\n"
+	"		v_texcoord.xy += page;\n"
+	"		v_texcoord.xy *= vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
+	"		v_color = a_color;\n"
+	"		v_color.xyz *= a_texcoord.z;\n"
+	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
+	"	}\n"
+	"#else\n"
+	"	uniform sampler2D s_texture;\n"
+	"	void main() {\n"
+	"		vec2 color_rg = texture2D(s_texture, v_texcoord.xy).rg * 255.0;\n"
+	"		float color_16 = color_rg.y * 256.0 + color_rg.x;\n"
+	"		fragColor = fract(floor(color_16 / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0);\n"
+	"\n"
+	"		if (fragColor.r == 0.0 && fragColor.b == 0.0 && fragColor.b == 0.0 && fragColor.a == 0.0) { discard; }\n"
+	"		fragColor *= v_color;\n"
+	"		mat4 dither = mat4(\n"
+	"			-4.0,  +0.0,  -3.0,  +1.0,\n"
+	"			+2.0,  -2.0,  +3.0,  -1.0,\n"
+	"			-3.0,  +1.0,  -4.0,  +0.0,\n"
+	"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"
+	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"
+	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
 	"	}\n"
 	"#endif\n";
 
@@ -1298,8 +1376,12 @@ ShaderID Shader_Compile(const char *source)
 }
 #elif defined(D3D9)
 
-#include "shaders/gte_shader_vs.h"
-#include "shaders/gte_shader_ps.h"
+#include "shaders/gte_shader_4_vs.h"
+#include "shaders/gte_shader_4_ps.h"
+#include "shaders/gte_shader_8_vs.h"
+#include "shaders/gte_shader_8_ps.h"
+#include "shaders/gte_shader_16_vs.h"
+#include "shaders/gte_shader_16_ps.h"
 #include "shaders/blit_shader_vs.h"
 #include "shaders/blit_shader_ps.h"
 
@@ -1327,11 +1409,13 @@ ShaderID Shader_Compile_Internal(const DWORD *vs_data, const DWORD *ps_data)
 
 void Emulator_CreateGlobalShaders()
 {
-	g_gte_shader  = Shader_Compile(gte_shader);
-	g_blit_shader = Shader_Compile(blit_shader);
+	g_gte_shader_4  = Shader_Compile(gte_shader_4);
+	g_gte_shader_8  = Shader_Compile(gte_shader_8);
+	g_gte_shader_16 = Shader_Compile(gte_shader_16);
+	g_blit_shader   = Shader_Compile(blit_shader);
 
 #if defined(OGL) || defined(OGLES)
-	u_Projection = glGetUniformLocation(g_gte_shader, "Projection");
+	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
 #endif
 }
 
@@ -1365,8 +1449,8 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
+	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
 	glGenTextures(1, &vramTexture);
 	glBindTexture(GL_TEXTURE_2D, vramTexture);
@@ -1694,8 +1778,64 @@ int Emulator_Initialise()
 }
 #endif
 
-void Emulator_SetTexture(TextureID texture)
+void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar)
 {
+	float a = 2.0f / (right - left);
+	float b = 2.0f / (top - bottom);
+	float c = 2.0f / (znear - zfar);
+
+	float x = (left + right) / (left - right);
+	float y = (bottom + top) / (bottom - top);
+
+#if defined(OGL) || defined(OGLES) // -1..1
+	float z = (znear + zfar) / (znear - zfar);
+#elif defined(D3D9) // 0..1
+	float z = znear / (znear - zfar);
+#endif
+
+	float ortho[16] = {
+		a, 0, 0, 0,
+		0, b, 0, 0,
+		0, 0, c, 0,
+		x, y, z, 1
+	};
+
+#if defined(OGL) || defined(OGLES)
+	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, ortho);
+#elif defined(D3D9)
+	d3ddev->SetVertexShaderConstantF(u_Projection, ortho, 4);
+#endif
+}
+
+void Emulator_SetShader(const ShaderID &shader)
+{
+#if defined(OGL) || defined(OGLES)
+	glUseProgram(shader);
+#elif defined(D3D9)
+	d3ddev->SetVertexShader(shader.VS);
+	d3ddev->SetPixelShader(shader.PS);
+#elif
+	#error
+#endif
+
+	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, 0.0f, 1.0f);
+}
+
+void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
+{
+	switch (texFormat)
+	{
+		case TF_4_BIT :
+			Emulator_SetShader(g_gte_shader_4);
+			break;
+		case TF_8_BIT :
+			Emulator_SetShader(g_gte_shader_8);
+			break;
+		case TF_16_BIT :
+			Emulator_SetShader(g_gte_shader_16);
+			break;
+	}
+
 	if (g_texturelessMode) {
 		texture = whiteTexture;
 	}
@@ -1732,18 +1872,6 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 	glClear(GL_COLOR_BUFFER_BIT);
 #elif defined(D3D9)
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, 0xFF000000 | (r << 16) | (g << 8) | (b), 1.0f, 0);
-#endif
-}
-
-void Emulator_SetShader(const ShaderID &shader)
-{
-#if defined(OGL) || defined(OGLES)
-    glUseProgram(shader);
-#elif defined(D3D9)
-    d3ddev->SetVertexShader(shader.VS);
-    d3ddev->SetPixelShader(shader.PS);
-#elif
-    #error
 #endif
 }
 
@@ -1847,6 +1975,7 @@ void Emulator_BlitVRAM()
 		return;
 	}
 
+	Emulator_SetTexture(vramTexture, TF_16_BIT);
 	Emulator_SetShader(g_blit_shader);
 
 	u_char l = activeDispEnv.disp.x / 8;
@@ -1866,10 +1995,8 @@ void Emulator_BlitVRAM()
 	};
 
 	Emulator_UpdateVertexBuffer(blit_vertices, 6);
-	Emulator_SetBlendMode(0, 0);
+	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
-
-	Emulator_SetShader(g_gte_shader);
 }
 
 void Emulator_DoPollEvent()
@@ -1931,10 +2058,9 @@ bool Emulator_BeginScene()
 #endif
 
 	Emulator_UpdateVRAM();
-	Emulator_SetTexture(vramTexture);
 	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
 
-	Emulator_SetShader(g_gte_shader);
+	Emulator_SetShader(g_gte_shader_4);
 	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, 0.0f, 1.0f);
 
 	begin_scene_flag = true;
@@ -2145,119 +2271,80 @@ void Emulator_ShutDown()
 	exit(0);
 }
 
-static int g_PreviousBlendMode = -1;
-static int g_PreviousSemiTrans = 0;
+int g_PreviousBlendMode = BM_NONE;
 
-void Emulator_SetBlendMode(int mode, int semiTransparent)
+void Emulator_SetBlendMode(BlendMode blendMode)
 {
-	if (semiTransparent)
+	if (g_PreviousBlendMode == blendMode)
 	{
-		//If previous wasn't semi trans, enable blend
-		if (g_PreviousSemiTrans == 0)
-		{
-#if defined(OGL) || defined(OGLES)
-			glEnable(GL_BLEND);
-#elif defined(D3D9)
-			d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-#endif
-		}
-
-		if (g_PreviousBlendMode != mode)
-		{
-			switch (mode)
-			{
-			case BM_AVERAGE:
-#if defined(OGL) || defined(OGLES)
-				glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
-				glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
-				glBlendEquation(GL_FUNC_ADD);
-#elif defined(D3D9)
-				d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(128, 128, 128, 128));
-				d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-				d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_BLENDFACTOR);
-				d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_BLENDFACTOR);
-#endif
-				break;
-			case BM_ADD:
-#if defined(OGL) || defined(OGLES)
-				glBlendFunc(GL_ONE, GL_ONE);
-				glBlendEquation(GL_FUNC_ADD);
-#elif defined(D3D9)
-				d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-				d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-				d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-#endif
-				break;
-			case BM_SUBTRACT:
-#if defined(OGL) || defined(OGLES)
-				glBlendFunc(GL_ONE, GL_ONE);
-				glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-#elif defined(D3D9)
-				d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
-				d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-				d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-#endif
-				break;
-			case BM_ADD_QUATER_SOURCE:
-#if defined(OGL) || defined(OGLES)
-				glBlendColor(0.25f, 0.25f, 0.25f, 0.25f);
-				glBlendFunc(GL_CONSTANT_COLOR, GL_ONE);
-				glBlendEquation(GL_FUNC_ADD);
-#elif defined(D3D9)
-				d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(64, 64, 64, 64));
-				d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-				d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_BLENDFACTOR);
-				d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-#endif
-				break;
-			}
-
-			g_PreviousBlendMode = mode;
-		}
+		return;
 	}
-	else
-	{
-		//If previous was semi trans disable blend
-		if (g_PreviousSemiTrans)
-		{
+
 #if defined(OGL) || defined(OGLES)
+	if (g_PreviousBlendMode == BM_NONE)
+	{
+		glEnable(GL_BLEND);
+	}
+
+	switch (blendMode)
+	{
+		case BM_NONE:
 			glDisable(GL_BLEND);
+			break;
+		case BM_AVERAGE:
+			glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
+			glBlendEquation(GL_FUNC_ADD);
+			break;
+		case BM_ADD:
+			glBlendFunc(GL_ONE, GL_ONE);
+			glBlendEquation(GL_FUNC_ADD);
+			break;
+		case BM_SUBTRACT:
+			glBlendFunc(GL_ONE, GL_ONE);
+			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+			break;
+		case BM_ADD_QUATER_SOURCE:
+			glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
+			glBlendEquation(GL_FUNC_ADD);
+			break;
+	}
 #elif defined(D3D9)
-			d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-#endif
-		}
+	if (g_PreviousBlendMode == BM_NONE)
+	{
+		d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	}
 
-	g_PreviousSemiTrans = semiTransparent;
-}
-
-void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar)
-{
-	float a = 2.0f / (right - left);
-	float b = 2.0f / (top - bottom);
-	float c = 2.0f / (znear - zfar);
-
-	float x = (left + right) / (left - right);
-	float y = (bottom + top) / (bottom - top);
-
-#if defined(OGL) || defined(OGLES) // -1..1
-	float z = (znear + zfar) / (znear - zfar);
-#elif defined(D3D9) // 0..1
-	float z = znear / (znear - zfar);
+	switch (blendMode)
+	{
+		case BM_NONE:
+			d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			break;
+		case BM_AVERAGE:
+			d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(128, 128, 128, 128));
+			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_BLENDFACTOR);
+			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_BLENDFACTOR);
+			break;
+		case BM_ADD:
+			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			break;
+		case BM_SUBTRACT:
+			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
+			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			break;
+		case BM_ADD_QUATER_SOURCE:
+			d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(64, 64, 64, 64));
+			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_BLENDFACTOR);
+			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			break;
+	}
 #endif
 
-	float ortho[16] = {
-		a, 0, 0, 0,
-		0, b, 0, 0,
-		0, 0, c, 0,
-		x, y, z, 1
-	};
-
-#if defined(OGL) || defined(OGLES)
-	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, &ortho[0]);
-#elif defined(D3D9)
-	d3ddev->SetVertexShaderConstantF(u_Projection, ortho, 4);
-#endif
+	g_PreviousBlendMode = blendMode;
 }
 
 void Emulator_SetPGXPVertexCount(int vertexCount)

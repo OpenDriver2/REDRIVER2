@@ -2072,22 +2072,22 @@ int main(void)
 int redriver2_main(void)
 #endif // PSX
 {
-	char *PALScreenNames[4] = {
-		"GFX\\SPLASH2.TIM",
-		"GFX\\SPLASH3.TIM",
+	char *PALScreenNames[4] = {		// [A] don't show publisher logo
+	//	"GFX\\SPLASH2.TIM",
+	//	"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1P.TIM",
 		NULL
 	};
 
-	char *NTSCScreenNames[4] = {
-		"GFX\\SPLASH2.TIM",
-		"GFX\\SPLASH3.TIM",
+	char *NTSCScreenNames[4] = {		// [A] don't show publisher logo
+	//	"GFX\\SPLASH2.TIM",
+	//	"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1N.TIM",
 		NULL
 	};
 
-	char *OPMScreenNames[4] = {
-		"GFX\\OPM1.TIM",
+	char *OPMScreenNames[4] = {		// [A] don't show publisher logo
+		//"GFX\\OPM1.TIM",
 		"GFX\\OPM2.TIM",
 		"GFX\\OPM3.TIM",
 		NULL
@@ -2116,9 +2116,9 @@ int redriver2_main(void)
 	Init_FileSystem();
 	InitSound();
 
-	PlayFMV(99);	// play infogrames fmv
+	//PlayFMV(99);	// [A] don't show publisher logo
 
-	//ShowHiresScreens(OPMScreenNames, 300, 1); // [A]
+	ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
 
 	PlayFMV(0);		// play intro movie
 
