@@ -2,6 +2,10 @@
 #include "XMPLAY.H"
 
 
+// TODO: replace this file with actual XMPLAY PS2
+// or don't even decompile it?
+
+
 // decompiled code
 // original method signature: 
 // short /*$ra*/ Interpolate(short p /*$a0*/, short p1 /*$a1*/, short p2 /*$a2*/, short v1 /*$a3*/, int v2 /*stack 16*/)
@@ -23,24 +27,27 @@
 	/* end block 3 */
 	// End Line: 475
 
-short Interpolate(short p,short p1,short p2,short v1,int v2)
-
+short Interpolate(short p, short p1, short p2, short v1, int v2)
 {
-  int iVar1;
-  int iVar2;
-  
-  iVar1 = (int)p1;
-  if (iVar1 != (int)p2) {
-    iVar2 = ((int)p2 - iVar1) * 0x10000 >> 0x10;
-    if (iVar2 == 0) {
-      trap(7);
-    }
-    return (short)((uint)(((int)v1 +
-                          (((p - iVar1) * 0x10000 >> 0x10) *
-                          (((int)(short)v2 - (int)v1) * 0x10000 >> 0x10)) / iVar2) * 0x10000) >>
-                  0x10);
-  }
-  return v1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	int iVar2;
+
+	iVar1 = (int)p1;
+	if (iVar1 != (int)p2) {
+		iVar2 = ((int)p2 - iVar1) * 0x10000 >> 0x10;
+		if (iVar2 == 0) {
+			trap(7);
+		}
+		return (short)((uint)(((int)v1 +
+			(((p - iVar1) * 0x10000 >> 0x10) *
+			(((int)(short)v2 - (int)v1) * 0x10000 >> 0x10)) / iVar2) * 0x10000) >>
+			0x10);
+	}
+	return v1;
+	*/
 }
 
 
@@ -61,16 +68,18 @@ short Interpolate(short p,short p1,short p2,short v1,int v2)
 	/* end block 2 */
 	// End Line: 513
 
-ushort GetLogPeriod(uchar note,ushort fine)
-
+ushort GetLogPeriod(unsigned char note, ushort fine)
 {
-  short sVar1;
-  undefined2 extraout_var;
-  int iVar2;
-  
-  iVar2 = (uint)(fine >> 4) + ((uint)note % 0xc) * 8;
-  sVar1 = Interpolate(fine >> 4,0,0xf,logtab[iVar2],(int)(short)logtab[iVar2 + 1]);
-  return (ushort)(CONCAT22(extraout_var,sVar1) >> (uint)note / 0xc);
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	short sVar1;
+	undefined2 extraout_var;
+	int iVar2;
+
+	iVar2 = (uint)(fine >> 4) + ((uint)note % 0xc) * 8;
+	sVar1 = Interpolate(fine >> 4, 0, 0xf, logtab[iVar2], (int)(short)logtab[iVar2 + 1]);
+	return (ushort)(CONCAT22(extraout_var, sVar1) >> (uint)note / 0xc);*/
 }
 
 
@@ -89,12 +98,14 @@ ushort GetLogPeriod(uchar note,ushort fine)
 	/* end block 2 */
 	// End Line: 17051
 
-ushort JPGetPeriod(uchar note,short fine)
-
+ushort JPGetPeriod(unsigned char note, short fine)
 {
-  return ((ushort)note * -0x40 -
-         (short)(((int)((uint)(ushort)fine << 0x10) >> 0x10) -
-                 ((int)((uint)(ushort)fine << 0x10) >> 0x1f) >> 1)) + 0x1e40;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	return ((ushort)note * -0x40 -
+		(short)(((int)((uint)(ushort)fine << 0x10) >> 0x10) -
+		((int)((uint)(ushort)fine << 0x10) >> 0x1f) >> 1)) + 0x1e40;*/
 }
 
 
@@ -115,18 +126,20 @@ ushort JPGetPeriod(uchar note,short fine)
 	/* end block 2 */
 	// End Line: 17073
 
-ushort GetPeriod(uchar note,ushort c2spd)
-
+ushort GetPeriod(unsigned char note, ushort c2spd)
 {
-  ushort uVar1;
-  
-  if (ms->NotAmiga == 1) {
-    uVar1 = JPGetPeriod(note,c2spd);
-  }
-  else {
-    uVar1 = GetLogPeriod(note,c2spd);
-  }
-  return uVar1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	ushort uVar1;
+
+	if (ms->NotAmiga == 1) {
+		uVar1 = JPGetPeriod(note, c2spd);
+	}
+	else {
+		uVar1 = GetLogPeriod(note, c2spd);
+	}
+	return uVar1;*/
 }
 
 
@@ -162,23 +175,24 @@ ushort GetPeriod(uchar note,ushort c2spd)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void XM_Exit(void)
-
 {
-  int SongID;
-  
-  SongID = 0;
-  if (0 < XM_NSA) {
-    do {
-      XM_Quit(SongID);
-      SongID = SongID + 1;
-    } while (SongID < XM_NSA);
-    SongID = 0;
-  }
-  do {
-    XM_CloseVAB(SongID);
-    SongID = SongID + 1;
-  } while (SongID < 8);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int SongID;
+
+	SongID = 0;
+	if (0 < XM_NSA) {
+		do {
+			XM_Quit(SongID);
+			SongID = SongID + 1;
+		} while (SongID < XM_NSA);
+		SongID = 0;
+	}
+	do {
+		XM_CloseVAB(SongID);
+		SongID = SongID + 1;
+	} while (SongID < 8);
+	return;*/
 }
 
 
@@ -193,13 +207,14 @@ void XM_Exit(void)
 	// End Line: 691
 
 void XM_CloseVAB(int VabID)
-
 {
-  if ((&iVABID)[VabID] != -1) {
-    ClearSPU(VabID);
-    (&iVABID)[VabID] = -1;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if ((&iVABID)[VabID] != -1) {
+		ClearSPU(VabID);
+		(&iVABID)[VabID] = -1;
+	}
+	return;*/
 }
 
 
@@ -228,24 +243,25 @@ void XM_CloseVAB(int VabID)
 	// End Line: 709
 
 void XM_CloseVAB2(int VabID)
-
 {
-  ulong *puVar1;
-  int iVar2;
-  
-  iVar2 = (int)(&iVABID)[VabID];
-  if (iVar2 != -1) {
-    if (0 < iVar2) {
-      puVar1 = &xm_l_vag_spu_addr + VabID * 0x80;
-      do {
-        *puVar1 = 0;
-        iVar2 = iVar2 + -1;
-        puVar1 = puVar1 + 1;
-      } while (iVar2 != 0);
-    }
-    (&iVABID)[VabID] = -1;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ulong *puVar1;
+	int iVar2;
+
+	iVar2 = (int)(&iVABID)[VabID];
+	if (iVar2 != -1) {
+		if (0 < iVar2) {
+			puVar1 = &xm_l_vag_spu_addr + VabID * 0x80;
+			do {
+				*puVar1 = 0;
+				iVar2 = iVar2 + -1;
+				puVar1 = puVar1 + 1;
+			} while (iVar2 != 0);
+		}
+		(&iVABID)[VabID] = -1;
+	}
+	return;*/
 }
 
 
@@ -279,17 +295,18 @@ void XM_CloseVAB2(int VabID)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void XM_Update(void)
-
 {
-  int iVar1;
-  
-  XM_SCAN = VSync(1);
-  if (JP_Do_Nothing == 0) {
-    UpdateXMData();
-    iVar1 = VSync(1);
-    XM_SCAN = iVar1 - XM_SCAN;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+
+	XM_SCAN = VSync(1);
+	if (JP_Do_Nothing == 0) {
+		UpdateXMData();
+		iVar1 = VSync(1);
+		XM_SCAN = iVar1 - XM_SCAN;
+	}
+	return;*/
 }
 
 
@@ -303,18 +320,19 @@ void XM_Update(void)
 	/* end block 1 */
 	// End Line: 819
 
-void XM_PlayStart(int Song_ID,int PlayMask)
-
+void XM_PlayStart(int Song_ID, int PlayMask)
 {
-  XMSONG *pXVar1;
-  
-  if (((&XMSongIDs)[Song_ID] != -1) && (PlayMask != 0)) {
-    pXVar1 = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-    mu = pXVar1;
-    pXVar1->PlayMask = PlayMask;
-    pXVar1->XMPlay = '\x01';
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	XMSONG *pXVar1;
+
+	if (((&XMSongIDs)[Song_ID] != -1) && (PlayMask != 0)) {
+		pXVar1 = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+		mu = pXVar1;
+		pXVar1->PlayMask = PlayMask;
+		pXVar1->XMPlay = '\x01';
+	}
+	return;*/
 }
 
 
@@ -329,16 +347,17 @@ void XM_PlayStart(int Song_ID,int PlayMask)
 	// End Line: 4384
 
 void XM_PlayStop(int Song_ID)
-
 {
-  if ((&XMSongIDs)[Song_ID] != -1) {
-    mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-    if (mu->XMPlay != '\0') {
-      mu->XMPlay = '\0';
-      SilenceXM(Song_ID);
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if ((&XMSongIDs)[Song_ID] != -1) {
+		mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+		if (mu->XMPlay != '\0') {
+			mu->XMPlay = '\0';
+			SilenceXM(Song_ID);
+		}
+	}
+	return;*/
 }
 
 
@@ -370,90 +389,93 @@ void XM_PlayStop(int Song_ID)
 	/* end block 3 */
 	// End Line: 919
 
-int InitXMData(uchar *mpp,int XM_ID,int S3MPan)
-
+int InitXMData(unsigned char *mpp, int XM_ID, int S3MPan)
 {
-  byte bVar1;
-  byte bVar2;
-  ulong uVar3;
-  ushort uVar4;
-  uint uVar5;
-  uchar *puVar6;
-  XMHEADER *pXVar7;
-  _func_12 *mpp_00;
-  uchar *mpp_01;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  
-  pXVar7 = (XMHEADER *)XM_HeaderAddress8[XM_ID];
-  mhu = pXVar7;
-  pXVar7->S3MPanning = S3MPan;
-  pXVar7->version = (ushort)mpp[0x3a] + (ushort)mpp[0x3b] * 0x100;
-  pXVar7->songlength = (ushort)mpp[0x40] + (ushort)mpp[0x41] * 0x100;
-  pXVar7->restart = (ushort)mpp[0x42] + (ushort)mpp[0x43] * 0x100;
-  uVar5 = (uint)mpp[0x44] + (uint)mpp[0x45] * 0x100;
-  uVar4 = (ushort)uVar5;
-  pXVar7->XMChannels = uVar4;
-  pXVar7->numpat = (ushort)mpp[0x46] + (ushort)mpp[0x47] * 0x100;
-  pXVar7->numins = (ushort)mpp[0x48] + (ushort)mpp[0x49] * 0x100;
-  pXVar7->flags = (ushort)mpp[0x4a] + (ushort)mpp[0x4b] * 0x100;
-  pXVar7->tempo = (ushort)mpp[0x4c] + (ushort)mpp[0x4d] * 0x100;
-  bVar1 = mpp[0x4e];
-  bVar2 = mpp[0x4f];
-  pXVar7->XMPSXChannels = uVar4;
-  pXVar7->bpm = (ushort)bVar1 + (ushort)bVar2 * 0x100;
-  if (0x18 < (uVar5 & 0xffff)) {
-    pXVar7->XMPSXChannels = 0x18;
-  }
-  iVar8 = 0;
-  mpp_01 = mpp;
-  if (mhu->songlength != 0) {
-    do {
-      mhu->jorders[iVar8] = mpp_01[0x50];
-      iVar8 = iVar8 + 1;
-      mpp_01 = mpp + iVar8;
-    } while (iVar8 < (int)(uint)mhu->songlength);
-  }
-  iVar10 = 0x150;
-  uVar4 = mhu->numpat;
-  iVar8 = 0;
-  if (uVar4 != 0) {
-    do {
-      mpp_00 = (_func_12 *)(mpp + iVar10);
-      iVar9 = iVar8 + 1;
-      mhu->JAP_PAT_ADDR[iVar8] = mpp_00;
-      uVar3 = GetLong((uchar *)mpp_00);
-      *(_func_12 **)(mhu->JAP_PAT_ADDR2 + iVar8) = mpp_00 + uVar3;
-      iVar10 = iVar10 + uVar3 + *(ushort *)(mpp_00 + 7);
-      iVar8 = iVar9;
-    } while (iVar9 < (int)(uint)uVar4);
-  }
-  uVar5 = (uint)mhu->numins;
-  iVar8 = 0;
-  if (mhu->numins != 0) {
-    do {
-      mpp_01 = mpp + iVar10;
-      uVar3 = GetLong(mpp_01);
-      pXVar7 = mhu;
-      uVar4 = *(ushort *)(mpp_01 + 0x1b);
-      if (uVar4 == 0) {
-        puVar6 = (uchar *)0x1234567;
-        *(undefined4 *)((int)mhu->JAP_SampAddr + iVar8) = 0xcdcdcdcd;
-      }
-      else {
-        puVar6 = mpp + iVar10 + uVar3;
-        *(uchar **)((int)mhu->JAP_SampAddr + iVar8) = mpp + iVar10 + 0x1d;
-        uVar3 = uVar3 + (uint)uVar4 * 0x28;
-      }
-      *(uchar **)((int)pXVar7->JAP_SampHdrAddr + iVar8) = puVar6;
-      iVar10 = iVar10 + uVar3;
-      uVar5 = uVar5 - 1;
-      *(uchar **)((int)mhu->JAP_InstrumentOffset + iVar8) = mpp_01;
-      iVar8 = iVar8 + 4;
-    } while (uVar5 != 0);
-  }
-  return (uint)mhu->XMPSXChannels;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	byte bVar2;
+	ulong uVar3;
+	ushort uVar4;
+	uint uVar5;
+	uchar *puVar6;
+	XMHEADER *pXVar7;
+	_func_12 *mpp_00;
+	uchar *mpp_01;
+	int iVar8;
+	int iVar9;
+	int iVar10;
+
+	pXVar7 = (XMHEADER *)XM_HeaderAddress8[XM_ID];
+	mhu = pXVar7;
+	pXVar7->S3MPanning = S3MPan;
+	pXVar7->version = (ushort)mpp[0x3a] + (ushort)mpp[0x3b] * 0x100;
+	pXVar7->songlength = (ushort)mpp[0x40] + (ushort)mpp[0x41] * 0x100;
+	pXVar7->restart = (ushort)mpp[0x42] + (ushort)mpp[0x43] * 0x100;
+	uVar5 = (uint)mpp[0x44] + (uint)mpp[0x45] * 0x100;
+	uVar4 = (ushort)uVar5;
+	pXVar7->XMChannels = uVar4;
+	pXVar7->numpat = (ushort)mpp[0x46] + (ushort)mpp[0x47] * 0x100;
+	pXVar7->numins = (ushort)mpp[0x48] + (ushort)mpp[0x49] * 0x100;
+	pXVar7->flags = (ushort)mpp[0x4a] + (ushort)mpp[0x4b] * 0x100;
+	pXVar7->tempo = (ushort)mpp[0x4c] + (ushort)mpp[0x4d] * 0x100;
+	bVar1 = mpp[0x4e];
+	bVar2 = mpp[0x4f];
+	pXVar7->XMPSXChannels = uVar4;
+	pXVar7->bpm = (ushort)bVar1 + (ushort)bVar2 * 0x100;
+	if (0x18 < (uVar5 & 0xffff)) {
+		pXVar7->XMPSXChannels = 0x18;
+	}
+	iVar8 = 0;
+	mpp_01 = mpp;
+	if (mhu->songlength != 0) {
+		do {
+			mhu->jorders[iVar8] = mpp_01[0x50];
+			iVar8 = iVar8 + 1;
+			mpp_01 = mpp + iVar8;
+		} while (iVar8 < (int)(uint)mhu->songlength);
+	}
+	iVar10 = 0x150;
+	uVar4 = mhu->numpat;
+	iVar8 = 0;
+	if (uVar4 != 0) {
+		do {
+			mpp_00 = (_func_12 *)(mpp + iVar10);
+			iVar9 = iVar8 + 1;
+			mhu->JAP_PAT_ADDR[iVar8] = mpp_00;
+			uVar3 = GetLong((uchar *)mpp_00);
+			*(_func_12 **)(mhu->JAP_PAT_ADDR2 + iVar8) = mpp_00 + uVar3;
+			iVar10 = iVar10 + uVar3 + *(ushort *)(mpp_00 + 7);
+			iVar8 = iVar9;
+		} while (iVar9 < (int)(uint)uVar4);
+	}
+	uVar5 = (uint)mhu->numins;
+	iVar8 = 0;
+	if (mhu->numins != 0) {
+		do {
+			mpp_01 = mpp + iVar10;
+			uVar3 = GetLong(mpp_01);
+			pXVar7 = mhu;
+			uVar4 = *(ushort *)(mpp_01 + 0x1b);
+			if (uVar4 == 0) {
+				puVar6 = (uchar *)0x1234567;
+				*(undefined4 *)((int)mhu->JAP_SampAddr + iVar8) = 0xcdcdcdcd;
+			}
+			else {
+				puVar6 = mpp + iVar10 + uVar3;
+				*(uchar **)((int)mhu->JAP_SampAddr + iVar8) = mpp + iVar10 + 0x1d;
+				uVar3 = uVar3 + (uint)uVar4 * 0x28;
+			}
+			*(uchar **)((int)pXVar7->JAP_SampHdrAddr + iVar8) = puVar6;
+			iVar10 = iVar10 + uVar3;
+			uVar5 = uVar5 - 1;
+			*(uchar **)((int)mhu->JAP_InstrumentOffset + iVar8) = mpp_01;
+			iVar8 = iVar8 + 4;
+		} while (uVar5 != 0);
+	}
+	return (uint)mhu->XMPSXChannels;
+	*/
 }
 
 
@@ -479,10 +501,12 @@ int InitXMData(uchar *mpp,int XM_ID,int S3MPan)
 	/* end block 3 */
 	// End Line: 17265
 
-ulong GetLong(uchar *mpp)
-
+ulong GetLong(unsigned char *mpp)
 {
-  return (uint)*mpp + (uint)mpp[1] * 0x100 + (uint)mpp[2] * 0x10000 + (uint)mpp[3] * 0x1000000;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	return (uint)*mpp + (uint)mpp[1] * 0x100 + (uint)mpp[2] * 0x10000 + (uint)mpp[3] * 0x1000000;*/
 }
 
 
@@ -512,22 +536,23 @@ ulong GetLong(uchar *mpp)
 	// End Line: 7180
 
 void XM_OnceOffInit(int PAL)
-
 {
-  if (PAL == 0) {
-    XM_NSA = 0;
-    PALType = 0;
-    BPMLimit = 0x96;
-    JP_Do_Nothing = 0;
-    return;
-  }
-  if (PAL == 1) {
-    PALType = PAL;
-  }
-  XM_NSA = 0;
-  BPMLimit = 0x96;
-  JP_Do_Nothing = 0;
-  return;
+	UNIMPLEMENTED();
+	/*
+	if (PAL == 0) {
+		XM_NSA = 0;
+		PALType = 0;
+		BPMLimit = 0x96;
+		JP_Do_Nothing = 0;
+		return;
+	}
+	if (PAL == 1) {
+		PALType = PAL;
+	}
+	XM_NSA = 0;
+	BPMLimit = 0x96;
+	JP_Do_Nothing = 0;
+	return;*/
 }
 
 
@@ -560,181 +585,182 @@ void XM_OnceOffInit(int PAL)
 	/* end block 3 */
 	// End Line: 1316
 
-int XM_Init(int VabID,int XM_ID,int SongID,int FirstCh,int Loop,int PlayMask,int PlayType,int SFXNum
-           )
-
+int XM_Init(int VabID, int XM_ID, int SongID, int FirstCh, int Loop, int PlayMask, int PlayType, int SFXNum)
 {
-  ushort uVar1;
-  bool bVar2;
-  XMSONG *pXVar3;
-  XMSONG *pXVar4;
-  XMCHANNEL *pXVar5;
-  uchar *puVar6;
-  short *psVar7;
-  XMHEADER *pXVar8;
-  short *psVar9;
-  int Channel;
-  uint uVar10;
-  int iVar11;
-  
-  if (SongID == -1) {
-    SongID = GetFreeSongID();
-    if (SongID == -1) {
-      return -1;
-    }
-  }
-  else {
-    if (XM_NSA <= SongID) {
-      return -1;
-    }
-    XM_Quit(SongID);
-    (&XMSongIDs)[SongID] = 0;
-  }
-  mu = (XMSONG *)(&XM_SngAddress24)[SongID];
-  mhu = (XMHEADER *)XM_HeaderAddress8[XM_ID];
-  JP_Do_Nothing = 1;
-  mu->XMPlay = '\0';
-  pXVar3 = mu;
-  mu->VabID = (uchar)VabID;
-  pXVar4 = mu;
-  pXVar3->JUp = 0;
-  pXVar4->Status = (uchar)(PlayType & 0x7fU);
-  pXVar3 = mu;
-  pXVar4->SongLoop = Loop;
-  pXVar4->PlayMask = PlayMask;
-  pXVar8 = mhu;
-  pXVar4->SFXNum = SFXNum;
-  pXVar3->HeaderNum = XM_ID;
-  pXVar3->JBPM = 0;
-  pXVar3->PCounter = 3;
-  uVar1 = pXVar8->restart;
-  pXVar3->repcnt = 0;
-  pXVar3->CurPos = 0;
-  pXVar3->SongPos = 0;
-  pXVar3->reppos = uVar1;
-  if ((PlayType & 0x7fU) == 0) {
-    pXVar3->SongPos = (short)SFXNum;
-    pXVar3->CurrentStart = SFXNum;
-  }
-  pXVar8 = mhu;
-  pXVar3 = mu;
-  uVar1 = mhu->tempo;
-  mu->SongSpeed = uVar1;
-  pXVar3->vbtick = uVar1;
-  pXVar3->SongBPM = pXVar8->bpm;
-  uVar1 = pXVar8->flags;
-  pXVar3->patdly = '\0';
-  pXVar4 = mu;
-  pXVar3->NotAmiga = (uint)uVar1;
-  pXVar4->patdly2 = '\0';
-  mu->SongVolume = -0x80;
-  mu->MasterVolume = -0x80;
-  pXVar3 = mu;
-  mu->PlayNext = -1;
-  pXVar3->BPlayNext = -1;
-  pXVar3->FirstCh = FirstCh;
-  pXVar3->PatternPos = 0;
-  pXVar3->posjmp = 1;
-  pXVar3->patbrk = 0;
-  pXVar3->BPlayFlag = 0;
-  pXVar3->UserPan = 0;
-  pXVar3->MaxChans = '\0';
-  pXVar8 = mhu;
-  if (FirstCh == -1) {
-    uVar10 = 0;
-    if (mhu->XMPSXChannels != 0) {
-      iVar11 = 0x58;
-      do {
-        pXVar5 = (XMCHANNEL *)(&mu->Status + iVar11);
-        if ((mu->PlayMask & 1 << (uVar10 & 0x1f)) != 0) {
-          bVar2 = false;
-          Channel = 0;
-          psVar7 = &XMSPU_SFX;
-          psVar9 = psVar7;
-          do {
-            XMCU = pXVar5;
-            if (*psVar7 == 0) {
-              *psVar9 = (short)SongID + 1;
-              pXVar5->SPUChannel = (uchar)Channel;
-              mu->MaxChans = mu->MaxChans + '\x01';
-              InitSPUChannel(Channel);
-              bVar2 = true;
-              break;
-            }
-            psVar7 = psVar7 + 1;
-            Channel = Channel + 1;
-            psVar9 = psVar9 + 1;
-          } while (Channel < 0x18);
-          if (!bVar2) {
-            JPClearSPUFlags(SongID + 1);
-            (&XMSongIDs)[SongID] = -1;
-            JP_Do_Nothing = 0;
-            return -2;
-          }
-        }
-        iVar11 = iVar11 + 0x78;
-        uVar10 = uVar10 + 1;
-        pXVar8 = mhu;
-      } while ((int)uVar10 < (int)(uint)mhu->XMPSXChannels);
-    }
-  }
-  else {
-    uVar10 = 0;
-    if (mhu->XMPSXChannels != 0) {
-      iVar11 = 0x58;
-      do {
-        if ((mu->PlayMask & 1 << (uVar10 & 0x1f)) != 0) {
-          XMCU = (XMCHANNEL *)(&mu->Status + iVar11);
-          ((XMCHANNEL *)(&mu->Status + iVar11))->SPUChannel = (uchar)FirstCh;
-          mu->MaxChans = mu->MaxChans + '\x01';
-          if (FirstCh < 0x18) {
-            InitSPUChannel(FirstCh);
-          }
-          FirstCh = FirstCh + 1;
-          pXVar8 = mhu;
-        }
-        uVar10 = uVar10 + 1;
-        iVar11 = iVar11 + 0x78;
-      } while ((int)uVar10 < (int)(uint)pXVar8->XMPSXChannels);
-    }
-  }
-  iVar11 = 0;
-  if (pXVar8->XMChannels != 0) {
-    Channel = 0;
-    do {
-      puVar6 = &mu->Status;
-      (puVar6 + Channel)[0x99] = '\0';
-      pXVar3 = mu;
-      *(undefined2 *)(puVar6 + Channel + 0xb2) = 0;
-      (&pXVar3->XM_Chnl[0].tmpvolume)[Channel] = '@';
-      (&mu->XM_Chnl[0].retrig)[Channel] = '\0';
-      (&mu->XM_Chnl[0].wavecontrol)[Channel] = '\0';
-      (&mu->XM_Chnl[0].glissando)[Channel] = '\0';
-      (&mu->XM_Chnl[0].panning)[Channel] = -0x80;
-      (&mu->XM_Chnl[0].note)[Channel] = '\0';
-      (&mu->XM_Chnl[0].vol)[Channel] = '\0';
-      (&mu->XM_Chnl[0].eff)[Channel] = '\0';
-      (&mu->XM_Chnl[0].dat)[Channel] = '\0';
-      (&mu->XM_Chnl[0].ins)[Channel] = '\0';
-      (&mu->XM_Chnl[0].ChDead)[Channel] = '\x01';
-      (&mu->XM_Chnl[0].nothing)[Channel] = '\x01';
-      puVar6 = &mu->Status + Channel;
-      puVar6[0x9a] = -2;
-      pXVar3 = mu;
-      *(undefined2 *)(puVar6 + 0x5e) = 0xffff;
-      *(undefined2 *)(puVar6 + 0x60) = 0xffff;
-      *(undefined2 *)(puVar6 + 0x62) = 0;
-      (&pXVar3->XM_Chnl[0].OldSample)[Channel] = -1;
-      (&mu->XM_Chnl[0].Dolby)[Channel] = '\0';
-      iVar11 = iVar11 + 1;
-      Channel = Channel + 0x78;
-    } while (iVar11 < (int)(uint)mhu->XMChannels);
-  }
-  if (PlayType < 0x80) {
-    mu->XMPlay = '\x01';
-  }
-  JP_Do_Nothing = 0;
-  return SongID;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	ushort uVar1;
+	bool bVar2;
+	XMSONG *pXVar3;
+	XMSONG *pXVar4;
+	XMCHANNEL *pXVar5;
+	uchar *puVar6;
+	short *psVar7;
+	XMHEADER *pXVar8;
+	short *psVar9;
+	int Channel;
+	uint uVar10;
+	int iVar11;
+
+	if (SongID == -1) {
+		SongID = GetFreeSongID();
+		if (SongID == -1) {
+			return -1;
+		}
+	}
+	else {
+		if (XM_NSA <= SongID) {
+			return -1;
+		}
+		XM_Quit(SongID);
+		(&XMSongIDs)[SongID] = 0;
+	}
+	mu = (XMSONG *)(&XM_SngAddress24)[SongID];
+	mhu = (XMHEADER *)XM_HeaderAddress8[XM_ID];
+	JP_Do_Nothing = 1;
+	mu->XMPlay = '\0';
+	pXVar3 = mu;
+	mu->VabID = (uchar)VabID;
+	pXVar4 = mu;
+	pXVar3->JUp = 0;
+	pXVar4->Status = (uchar)(PlayType & 0x7fU);
+	pXVar3 = mu;
+	pXVar4->SongLoop = Loop;
+	pXVar4->PlayMask = PlayMask;
+	pXVar8 = mhu;
+	pXVar4->SFXNum = SFXNum;
+	pXVar3->HeaderNum = XM_ID;
+	pXVar3->JBPM = 0;
+	pXVar3->PCounter = 3;
+	uVar1 = pXVar8->restart;
+	pXVar3->repcnt = 0;
+	pXVar3->CurPos = 0;
+	pXVar3->SongPos = 0;
+	pXVar3->reppos = uVar1;
+	if ((PlayType & 0x7fU) == 0) {
+		pXVar3->SongPos = (short)SFXNum;
+		pXVar3->CurrentStart = SFXNum;
+	}
+	pXVar8 = mhu;
+	pXVar3 = mu;
+	uVar1 = mhu->tempo;
+	mu->SongSpeed = uVar1;
+	pXVar3->vbtick = uVar1;
+	pXVar3->SongBPM = pXVar8->bpm;
+	uVar1 = pXVar8->flags;
+	pXVar3->patdly = '\0';
+	pXVar4 = mu;
+	pXVar3->NotAmiga = (uint)uVar1;
+	pXVar4->patdly2 = '\0';
+	mu->SongVolume = -0x80;
+	mu->MasterVolume = -0x80;
+	pXVar3 = mu;
+	mu->PlayNext = -1;
+	pXVar3->BPlayNext = -1;
+	pXVar3->FirstCh = FirstCh;
+	pXVar3->PatternPos = 0;
+	pXVar3->posjmp = 1;
+	pXVar3->patbrk = 0;
+	pXVar3->BPlayFlag = 0;
+	pXVar3->UserPan = 0;
+	pXVar3->MaxChans = '\0';
+	pXVar8 = mhu;
+	if (FirstCh == -1) {
+		uVar10 = 0;
+		if (mhu->XMPSXChannels != 0) {
+			iVar11 = 0x58;
+			do {
+				pXVar5 = (XMCHANNEL *)(&mu->Status + iVar11);
+				if ((mu->PlayMask & 1 << (uVar10 & 0x1f)) != 0) {
+					bVar2 = false;
+					Channel = 0;
+					psVar7 = &XMSPU_SFX;
+					psVar9 = psVar7;
+					do {
+						XMCU = pXVar5;
+						if (*psVar7 == 0) {
+							*psVar9 = (short)SongID + 1;
+							pXVar5->SPUChannel = (uchar)Channel;
+							mu->MaxChans = mu->MaxChans + '\x01';
+							InitSPUChannel(Channel);
+							bVar2 = true;
+							break;
+						}
+						psVar7 = psVar7 + 1;
+						Channel = Channel + 1;
+						psVar9 = psVar9 + 1;
+					} while (Channel < 0x18);
+					if (!bVar2) {
+						JPClearSPUFlags(SongID + 1);
+						(&XMSongIDs)[SongID] = -1;
+						JP_Do_Nothing = 0;
+						return -2;
+					}
+				}
+				iVar11 = iVar11 + 0x78;
+				uVar10 = uVar10 + 1;
+				pXVar8 = mhu;
+			} while ((int)uVar10 < (int)(uint)mhu->XMPSXChannels);
+		}
+	}
+	else {
+		uVar10 = 0;
+		if (mhu->XMPSXChannels != 0) {
+			iVar11 = 0x58;
+			do {
+				if ((mu->PlayMask & 1 << (uVar10 & 0x1f)) != 0) {
+					XMCU = (XMCHANNEL *)(&mu->Status + iVar11);
+					((XMCHANNEL *)(&mu->Status + iVar11))->SPUChannel = (uchar)FirstCh;
+					mu->MaxChans = mu->MaxChans + '\x01';
+					if (FirstCh < 0x18) {
+						InitSPUChannel(FirstCh);
+					}
+					FirstCh = FirstCh + 1;
+					pXVar8 = mhu;
+				}
+				uVar10 = uVar10 + 1;
+				iVar11 = iVar11 + 0x78;
+			} while ((int)uVar10 < (int)(uint)pXVar8->XMPSXChannels);
+		}
+	}
+	iVar11 = 0;
+	if (pXVar8->XMChannels != 0) {
+		Channel = 0;
+		do {
+			puVar6 = &mu->Status;
+			(puVar6 + Channel)[0x99] = '\0';
+			pXVar3 = mu;
+			*(undefined2 *)(puVar6 + Channel + 0xb2) = 0;
+			(&pXVar3->XM_Chnl[0].tmpvolume)[Channel] = '@';
+			(&mu->XM_Chnl[0].retrig)[Channel] = '\0';
+			(&mu->XM_Chnl[0].wavecontrol)[Channel] = '\0';
+			(&mu->XM_Chnl[0].glissando)[Channel] = '\0';
+			(&mu->XM_Chnl[0].panning)[Channel] = -0x80;
+			(&mu->XM_Chnl[0].note)[Channel] = '\0';
+			(&mu->XM_Chnl[0].vol)[Channel] = '\0';
+			(&mu->XM_Chnl[0].eff)[Channel] = '\0';
+			(&mu->XM_Chnl[0].dat)[Channel] = '\0';
+			(&mu->XM_Chnl[0].ins)[Channel] = '\0';
+			(&mu->XM_Chnl[0].ChDead)[Channel] = '\x01';
+			(&mu->XM_Chnl[0].nothing)[Channel] = '\x01';
+			puVar6 = &mu->Status + Channel;
+			puVar6[0x9a] = -2;
+			pXVar3 = mu;
+			*(undefined2 *)(puVar6 + 0x5e) = 0xffff;
+			*(undefined2 *)(puVar6 + 0x60) = 0xffff;
+			*(undefined2 *)(puVar6 + 0x62) = 0;
+			(&pXVar3->XM_Chnl[0].OldSample)[Channel] = -1;
+			(&mu->XM_Chnl[0].Dolby)[Channel] = '\0';
+			iVar11 = iVar11 + 1;
+			Channel = Channel + 0x78;
+		} while (iVar11 < (int)(uint)mhu->XMChannels);
+	}
+	if (PlayType < 0x80) {
+		mu->XMPlay = '\x01';
+	}
+	JP_Do_Nothing = 0;
+	return SongID;*/
 }
 
 
@@ -769,83 +795,85 @@ int XM_Init(int VabID,int XM_ID,int SongID,int FirstCh,int Loop,int PlayMask,int
 	/* end block 4 */
 	// End Line: 1773
 
-int JPlayNote(uchar *j,int pmsk)
-
+int JPlayNote(unsigned char *j, int pmsk)
 {
-  byte bVar1;
-  uchar *puVar2;
-  int iVar3;
-  uchar uVar4;
-  
-  bVar1 = *j;
-  iVar3 = 1;
-  XMC->eff = '\0';
-  uVar4 = '\0';
-  XMC->vol = '\0';
-  XMC->dat = '\0';
-  if (bVar1 == 0x80) {
-    iVar3 = 1;
-    XMC->nothing = '\x01';
-  }
-  else {
-    puVar2 = j + 1;
-    if ((bVar1 & 0x80) == 0) {
-      XMC->nothing = '\0';
-      if (pmsk != 0) {
-        SetNote(bVar1 - 1);
-        XMC->ins = *puVar2;
-        SetInstr(XMC->ins + -1);
-        if (bVar1 != 0x61) {
-          SetPer();
-        }
-        XMC->vol = j[2];
-        XMC->eff = j[3];
-        XMC->dat = j[4];
-      }
-      iVar3 = 5;
-    }
-    else {
-      if ((bVar1 & 1) != 0) {
-        if (pmsk != 0) {
-          XMC->nothing = '\0';
-          uVar4 = *puVar2;
-          SetNote(uVar4 + -1);
-        }
-        puVar2 = j + 2;
-        iVar3 = 2;
-      }
-      if ((bVar1 & 2) != 0) {
-        if (pmsk != 0) {
-          XMC->ins = *puVar2;
-          SetInstr(XMC->ins + -1);
-        }
-        puVar2 = puVar2 + 1;
-        iVar3 = iVar3 + 1;
-      }
-      if ((((bVar1 & 3) != 0) && (uVar4 != 'a')) && (pmsk != 0)) {
-        SetPer();
-      }
-      if ((bVar1 & 4) != 0) {
-        iVar3 = iVar3 + 1;
-        XMC->nothing = '\0';
-        uVar4 = *puVar2;
-        puVar2 = puVar2 + 1;
-        XMC->vol = uVar4;
-      }
-      if ((bVar1 & 8) != 0) {
-        iVar3 = iVar3 + 1;
-        XMC->nothing = '\0';
-        uVar4 = *puVar2;
-        puVar2 = puVar2 + 1;
-        XMC->eff = uVar4;
-      }
-      if ((bVar1 & 0x10) != 0) {
-        iVar3 = iVar3 + 1;
-        XMC->dat = *puVar2;
-      }
-    }
-  }
-  return iVar3;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	uchar *puVar2;
+	int iVar3;
+	uchar uVar4;
+
+	bVar1 = *j;
+	iVar3 = 1;
+	XMC->eff = '\0';
+	uVar4 = '\0';
+	XMC->vol = '\0';
+	XMC->dat = '\0';
+	if (bVar1 == 0x80) {
+		iVar3 = 1;
+		XMC->nothing = '\x01';
+	}
+	else {
+		puVar2 = j + 1;
+		if ((bVar1 & 0x80) == 0) {
+			XMC->nothing = '\0';
+			if (pmsk != 0) {
+				SetNote(bVar1 - 1);
+				XMC->ins = *puVar2;
+				SetInstr(XMC->ins + -1);
+				if (bVar1 != 0x61) {
+					SetPer();
+				}
+				XMC->vol = j[2];
+				XMC->eff = j[3];
+				XMC->dat = j[4];
+			}
+			iVar3 = 5;
+		}
+		else {
+			if ((bVar1 & 1) != 0) {
+				if (pmsk != 0) {
+					XMC->nothing = '\0';
+					uVar4 = *puVar2;
+					SetNote(uVar4 + -1);
+				}
+				puVar2 = j + 2;
+				iVar3 = 2;
+			}
+			if ((bVar1 & 2) != 0) {
+				if (pmsk != 0) {
+					XMC->ins = *puVar2;
+					SetInstr(XMC->ins + -1);
+				}
+				puVar2 = puVar2 + 1;
+				iVar3 = iVar3 + 1;
+			}
+			if ((((bVar1 & 3) != 0) && (uVar4 != 'a')) && (pmsk != 0)) {
+				SetPer();
+			}
+			if ((bVar1 & 4) != 0) {
+				iVar3 = iVar3 + 1;
+				XMC->nothing = '\0';
+				uVar4 = *puVar2;
+				puVar2 = puVar2 + 1;
+				XMC->vol = uVar4;
+			}
+			if ((bVar1 & 8) != 0) {
+				iVar3 = iVar3 + 1;
+				XMC->nothing = '\0';
+				uVar4 = *puVar2;
+				puVar2 = puVar2 + 1;
+				XMC->eff = uVar4;
+			}
+			if ((bVar1 & 0x10) != 0) {
+				iVar3 = iVar3 + 1;
+				XMC->dat = *puVar2;
+			}
+		}
+	}
+	return iVar3;*/
 }
 
 
@@ -888,100 +916,101 @@ int JPlayNote(uchar *j,int pmsk)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void JPlayEffects(void)
-
 {
-  byte bVar1;
-  byte eff;
-  uchar dat;
-  XMCHANNEL *pXVar2;
-  uchar eff_00;
-  uint uVar3;
-  
-  pXVar2 = XMC;
-  bVar1 = XMC->vol;
-  uVar3 = (uint)bVar1;
-  eff = XMC->eff;
-  dat = XMC->dat;
-  XMC->ownper = 0;
-  pXVar2->ownvol = 0;
-  switch(bVar1 >> 4) {
-  case 6:
-    if ((bVar1 & 0xf) != 0) {
-      SPE('\n',bVar1 & 0xf);
-    }
-    break;
-  case 7:
-    if ((bVar1 & 0xf) == 0) break;
-    eff_00 = '\n';
-    goto LAB_00083c88;
-  case 8:
-    SPE('\x0e',bVar1 & 0xf | 0xb0);
-    break;
-  case 9:
-    SPE('\x0e',bVar1 & 0xf | 0xa0);
-    break;
-  case 10:
-    eff_00 = '\x04';
-    goto LAB_00083c88;
-  case 0xb:
-    SPE('\x04',bVar1 & 0xf);
-    break;
-  case 0xc:
-    XMC->panning = bVar1 << 4;
-    break;
-  case 0xd:
-    if ((bVar1 & 0xf) != 0) {
-      DoXMPanSlide(bVar1 & 0xf);
-    }
-    break;
-  case 0xe:
-    if ((bVar1 & 0xf) != 0) {
-      DoXMPanSlide((uchar)((uVar3 & 0xf) << 4));
-    }
-    break;
-  case 0xf:
-    eff_00 = '\x03';
-LAB_00083c88:
-    SPE(eff_00,(uchar)((uVar3 & 0xf) << 4));
-    break;
-  default:
-    uVar3 = uVar3 - 0x10 & 0xff;
-    if (uVar3 < 0x41) {
-      SPE('\f',(uchar)uVar3);
-    }
-  }
-  switch(eff) {
-  case 0x10:
-    ms->SongVolume = dat << 1;
-    break;
-  case 0x11:
-  case 0x15:
-  case 0x21:
-    break;
-  default:
-    if (eff < 0x10) {
-      SPE(eff,dat);
-    }
-    break;
-  case 0x14:
-    SetNote('`');
-    break;
-  case 0x19:
-    XMC->panning = dat;
-    break;
-  case 0x1b:
-    DoS3MRetrig(dat);
-    break;
-  case 0x1d:
-    SPE('\x06',dat);
-  }
-  if (XMC->ownper == 0) {
-    XMC->period = XMC->tmpperiod;
-  }
-  if (XMC->ownvol == 0) {
-    XMC->volume = XMC->tmpvolume;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	byte eff;
+	uchar dat;
+	XMCHANNEL *pXVar2;
+	uchar eff_00;
+	uint uVar3;
+
+	pXVar2 = XMC;
+	bVar1 = XMC->vol;
+	uVar3 = (uint)bVar1;
+	eff = XMC->eff;
+	dat = XMC->dat;
+	XMC->ownper = 0;
+	pXVar2->ownvol = 0;
+	switch (bVar1 >> 4) {
+	case 6:
+		if ((bVar1 & 0xf) != 0) {
+			SPE('\n', bVar1 & 0xf);
+		}
+		break;
+	case 7:
+		if ((bVar1 & 0xf) == 0) break;
+		eff_00 = '\n';
+		goto LAB_00083c88;
+	case 8:
+		SPE('\x0e', bVar1 & 0xf | 0xb0);
+		break;
+	case 9:
+		SPE('\x0e', bVar1 & 0xf | 0xa0);
+		break;
+	case 10:
+		eff_00 = '\x04';
+		goto LAB_00083c88;
+	case 0xb:
+		SPE('\x04', bVar1 & 0xf);
+		break;
+	case 0xc:
+		XMC->panning = bVar1 << 4;
+		break;
+	case 0xd:
+		if ((bVar1 & 0xf) != 0) {
+			DoXMPanSlide(bVar1 & 0xf);
+		}
+		break;
+	case 0xe:
+		if ((bVar1 & 0xf) != 0) {
+			DoXMPanSlide((uchar)((uVar3 & 0xf) << 4));
+		}
+		break;
+	case 0xf:
+		eff_00 = '\x03';
+	LAB_00083c88:
+		SPE(eff_00, (uchar)((uVar3 & 0xf) << 4));
+		break;
+	default:
+		uVar3 = uVar3 - 0x10 & 0xff;
+		if (uVar3 < 0x41) {
+			SPE('\f', (uchar)uVar3);
+		}
+	}
+	switch (eff) {
+	case 0x10:
+		ms->SongVolume = dat << 1;
+		break;
+	case 0x11:
+	case 0x15:
+	case 0x21:
+		break;
+	default:
+		if (eff < 0x10) {
+			SPE(eff, dat);
+		}
+		break;
+	case 0x14:
+		SetNote('`');
+		break;
+	case 0x19:
+		XMC->panning = dat;
+		break;
+	case 0x1b:
+		DoS3MRetrig(dat);
+		break;
+	case 0x1d:
+		SPE('\x06', dat);
+	}
+	if (XMC->ownper == 0) {
+		XMC->period = XMC->tmpperiod;
+	}
+	if (XMC->ownvol == 0) {
+		XMC->volume = XMC->tmpvolume;
+	}
+	return;*/
 }
 
 
@@ -1010,170 +1039,171 @@ LAB_00083c88:
 	/* end block 3 */
 	// End Line: 2247
 
-void SPE(uchar eff,uchar dat)
-
+void SPE(unsigned char eff, unsigned char dat)
 {
-  ushort *puVar1;
-  XMSONG *pXVar2;
-  uint uVar3;
-  uint uVar4;
-  ushort uVar5;
-  
-  pXVar2 = ms;
-  uVar3 = (uint)dat;
-  if (0xf < eff) {
-    return;
-  }
-  uVar5 = (ushort)dat;
-  switch(eff) {
-  case '\0':
-    Arpeggio(dat);
-    break;
-  case '\x01':
-    if (dat != '\0') {
-      XMC->slidespeed = (ushort)dat << 2;
-    }
-    if (ms->vbtick != 0) {
-      XMC->tmpperiod = XMC->tmpperiod - XMC->slidespeed;
-    }
-    break;
-  case '\x02':
-    if (dat != '\0') {
-      XMC->slidespeed = (ushort)dat << 2;
-    }
-    if (ms->vbtick != 0) {
-      XMC->tmpperiod = XMC->tmpperiod + XMC->slidespeed;
-    }
-    break;
-  case '\x03':
-    XMC->kick = '\0';
-    if (dat != '\0') {
-      XMC->portspeed = (ushort)dat << 2;
-    }
-    DoToneSlide();
-    goto LAB_00083f30;
-  case '\x04':
-    if ((dat & 0xf) != 0) {
-      XMC->vibdepth = dat & 0xf;
-    }
-    if ((dat & 0xf0) != 0) {
-      XMC->vibspd = (uchar)((uVar3 & 0xf0) >> 2);
-    }
-    DoVibrato();
-    goto LAB_00083f30;
-  case '\x05':
-    XMC->kick = '\0';
-    DoToneSlide();
-    goto LAB_00083f0c;
-  case '\x06':
-    DoVibrato();
-LAB_00083f0c:
-    if (dat == '\0') {
-      dat = XMC->oldvslide;
-    }
-    XMC->oldvslide = dat;
-    DoVolSlide(dat);
-LAB_00083f30:
-    XMC->ownper = 1;
-    break;
-  case '\a':
-    if ((dat & 0xf) != 0) {
-      XMC->trmdepth = dat & 0xf;
-    }
-    if ((dat & 0xf0) != 0) {
-      XMC->trmspd = (uchar)((uVar3 & 0xf0) >> 2);
-    }
-    DoTremolo();
-    XMC->ownvol = 1;
-    break;
-  case '\b':
-    XMC->panning = dat;
-    break;
-  case '\t':
-    if ((ms->vbtick == 0) && (dat != '\0')) {
-      uVar4 = (uVar3 * 0x200) / 7;
-      XMC->SOffset = (uVar4 + (uVar3 * 0x200 - uVar4 >> 1) >> 2 & 0x7ffffff0) << 1;
-    }
-    break;
-  case '\n':
-    if (dat == '\0') {
-      dat = XMC->oldvslide;
-    }
-    XMC->oldvslide = dat;
-    DoVolSlide(dat);
-    break;
-  case '\v':
-    if (ms->patdly2 == '\0') {
-      ms->patbrk = 0;
-      pXVar2->SongPos = uVar5 - 1;
-      pXVar2->posjmp = 2;
-    }
-    break;
-  case '\f':
-    if (ms->vbtick == 0) {
-      if (dat == -1) {
-        ms->BPlayFlag = 1;
-      }
-      else {
-        if (dat == -2) {
-          ms->BPlayFlag = 0;
-        }
-        else {
-          if (dat == -3) {
-            ms->BPlayFlag = 2;
-          }
-          else {
-            if (dat == -4) {
-              XMC->Dolby = '\0';
-            }
-            else {
-              if (dat == -5) {
-                XMC->Dolby = '\x01';
-              }
-              else {
-                if (dat == -6) {
-                  XMC->Dolby = '\x02';
-                }
-                else {
-                  if (0x40 < dat) {
-                    dat = '@';
-                  }
-                  XMC->tmpvolume = dat + '@';
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    break;
-  case '\r':
-    if (ms->patdly2 == '\0') {
-      puVar1 = &ms->numrow;
-      uVar3 = (uint)(dat >> 4) * 10 + (uVar3 & 0xf) + 1;
-      ms->patbrk = (ushort)uVar3;
-      uVar4 = (uint)*puVar1 + 1;
-      if (uVar4 < uVar3) {
-        pXVar2->patbrk = (ushort)uVar4;
-      }
-      ms->posjmp = 2;
-    }
-    break;
-  case '\x0e':
-    DoEEffects(dat);
-    break;
-  case '\x0f':
-    if ((ms->vbtick == 0) && (ms->patdly2 == '\0')) {
-      if (dat < 0x20) {
-        ms->SongSpeed = uVar5;
-      }
-      else {
-        ms->SongBPM = uVar5;
-      }
-      pXVar2->vbtick = 0;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort *puVar1;
+	XMSONG *pXVar2;
+	uint uVar3;
+	uint uVar4;
+	ushort uVar5;
+
+	pXVar2 = ms;
+	uVar3 = (uint)dat;
+	if (0xf < eff) {
+		return;
+	}
+	uVar5 = (ushort)dat;
+	switch (eff) {
+	case '\0':
+		Arpeggio(dat);
+		break;
+	case '\x01':
+		if (dat != '\0') {
+			XMC->slidespeed = (ushort)dat << 2;
+		}
+		if (ms->vbtick != 0) {
+			XMC->tmpperiod = XMC->tmpperiod - XMC->slidespeed;
+		}
+		break;
+	case '\x02':
+		if (dat != '\0') {
+			XMC->slidespeed = (ushort)dat << 2;
+		}
+		if (ms->vbtick != 0) {
+			XMC->tmpperiod = XMC->tmpperiod + XMC->slidespeed;
+		}
+		break;
+	case '\x03':
+		XMC->kick = '\0';
+		if (dat != '\0') {
+			XMC->portspeed = (ushort)dat << 2;
+		}
+		DoToneSlide();
+		goto LAB_00083f30;
+	case '\x04':
+		if ((dat & 0xf) != 0) {
+			XMC->vibdepth = dat & 0xf;
+		}
+		if ((dat & 0xf0) != 0) {
+			XMC->vibspd = (uchar)((uVar3 & 0xf0) >> 2);
+		}
+		DoVibrato();
+		goto LAB_00083f30;
+	case '\x05':
+		XMC->kick = '\0';
+		DoToneSlide();
+		goto LAB_00083f0c;
+	case '\x06':
+		DoVibrato();
+	LAB_00083f0c:
+		if (dat == '\0') {
+			dat = XMC->oldvslide;
+		}
+		XMC->oldvslide = dat;
+		DoVolSlide(dat);
+	LAB_00083f30:
+		XMC->ownper = 1;
+		break;
+	case '\a':
+		if ((dat & 0xf) != 0) {
+			XMC->trmdepth = dat & 0xf;
+		}
+		if ((dat & 0xf0) != 0) {
+			XMC->trmspd = (uchar)((uVar3 & 0xf0) >> 2);
+		}
+		DoTremolo();
+		XMC->ownvol = 1;
+		break;
+	case '\b':
+		XMC->panning = dat;
+		break;
+	case '\t':
+		if ((ms->vbtick == 0) && (dat != '\0')) {
+			uVar4 = (uVar3 * 0x200) / 7;
+			XMC->SOffset = (uVar4 + (uVar3 * 0x200 - uVar4 >> 1) >> 2 & 0x7ffffff0) << 1;
+		}
+		break;
+	case '\n':
+		if (dat == '\0') {
+			dat = XMC->oldvslide;
+		}
+		XMC->oldvslide = dat;
+		DoVolSlide(dat);
+		break;
+	case '\v':
+		if (ms->patdly2 == '\0') {
+			ms->patbrk = 0;
+			pXVar2->SongPos = uVar5 - 1;
+			pXVar2->posjmp = 2;
+		}
+		break;
+	case '\f':
+		if (ms->vbtick == 0) {
+			if (dat == -1) {
+				ms->BPlayFlag = 1;
+			}
+			else {
+				if (dat == -2) {
+					ms->BPlayFlag = 0;
+				}
+				else {
+					if (dat == -3) {
+						ms->BPlayFlag = 2;
+					}
+					else {
+						if (dat == -4) {
+							XMC->Dolby = '\0';
+						}
+						else {
+							if (dat == -5) {
+								XMC->Dolby = '\x01';
+							}
+							else {
+								if (dat == -6) {
+									XMC->Dolby = '\x02';
+								}
+								else {
+									if (0x40 < dat) {
+										dat = '@';
+									}
+									XMC->tmpvolume = dat + '@';
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		break;
+	case '\r':
+		if (ms->patdly2 == '\0') {
+			puVar1 = &ms->numrow;
+			uVar3 = (uint)(dat >> 4) * 10 + (uVar3 & 0xf) + 1;
+			ms->patbrk = (ushort)uVar3;
+			uVar4 = (uint)*puVar1 + 1;
+			if (uVar4 < uVar3) {
+				pXVar2->patbrk = (ushort)uVar4;
+			}
+			ms->posjmp = 2;
+		}
+		break;
+	case '\x0e':
+		DoEEffects(dat);
+		break;
+	case '\x0f':
+		if ((ms->vbtick == 0) && (ms->patdly2 == '\0')) {
+			if (dat < 0x20) {
+				ms->SongSpeed = uVar5;
+			}
+			else {
+				ms->SongBPM = uVar5;
+			}
+			pXVar2->vbtick = 0;
+		}
+	}
+	return;*/
 }
 
 
@@ -1201,120 +1231,121 @@ LAB_00083f30:
 	/* end block 3 */
 	// End Line: 2595
 
-void DoEEffects(uchar dat)
-
+void DoEEffects(unsigned char dat)
 {
-  byte bVar1;
-  
-  _bVar1 = (uint)dat & 0xf;
-  bVar1 = (byte)_bVar1;
-  _bVar1 = (ushort)_bVar1;
-  switch(dat >> 4) {
-  case '\x01':
-    if (ms->vbtick == 0) {
-      if ((dat & 0xf) == 0) {
-        _bVar1 = (ushort)XMC->oldfslide;
-      }
-      XMC->oldfslide = (uchar)_bVar1;
-      XMC->tmpperiod = XMC->tmpperiod + _bVar1 * 4;
-      return;
-    }
-    break;
-  case '\x02':
-    if (ms->vbtick == 0) {
-      if ((dat & 0xf) == 0) {
-        _bVar1 = (ushort)XMC->oldfslide;
-      }
-      XMC->oldfslide = (uchar)_bVar1;
-      XMC->tmpperiod = XMC->tmpperiod + _bVar1 * -4;
-      return;
-    }
-    break;
-  case '\x03':
-    XMC->glissando = bVar1;
-    return;
-  case '\x04':
-    XMC->wavecontrol = XMC->wavecontrol & 0xf0;
-    XMC->wavecontrol = bVar1 | XMC->wavecontrol;
-    return;
-  case '\x06':
-    if (ms->vbtick == 0) {
-      if ((dat & 0xf) == 0) {
-        ms->reppos = ms->PatternPos - 1;
-        return;
-      }
-      if (ms->repcnt == 0) {
-        ms->repcnt = _bVar1;
-      }
-      else {
-        ms->repcnt = ms->repcnt - 1;
-      }
-      if (ms->repcnt != 0) {
-        ms->PatternPos = ms->reppos;
-        return;
-      }
-    }
-    break;
-  case '\a':
-    XMC->wavecontrol = XMC->wavecontrol & 0xf;
-    XMC->wavecontrol = XMC->wavecontrol | (byte)(_bVar1 << 4);
-    return;
-  case '\b':
-    XMC->panning = (uchar)(_bVar1 << 4);
-    return;
-  case '\t':
-    if ((dat & 0xf) != 0) {
-      if (XMC->retrig == '\0') {
-        XMC->kick = '\x01';
-        XMC->retrig = bVar1;
-      }
-      XMC->retrig = XMC->retrig + -1;
-      return;
-    }
-    break;
-  case '\n':
-    if (ms->vbtick == 0) {
-      if ((dat & 0xf) == 0) {
-        bVar1 = XMC->oldfvslide;
-      }
-      XMC->oldfvslide = bVar1;
-      XMC->tmpvolume = bVar1 + XMC->tmpvolume;
-      if (0x80 < (byte)XMC->tmpvolume) {
-        XMC->tmpvolume = -0x80;
-        return;
-      }
-    }
-    break;
-  case '\v':
-    if (ms->vbtick == 0) {
-      if ((dat & 0xf) == 0) {
-        bVar1 = XMC->oldfvslide;
-      }
-      XMC->oldfvslide = bVar1;
-      XMC->tmpvolume = XMC->tmpvolume - bVar1;
-      if ((byte)XMC->tmpvolume < 0x40) goto LAB_00084490;
-    }
-    break;
-  case '\f':
-    if (_bVar1 <= ms->vbtick) {
-LAB_00084490:
-      XMC->tmpvolume = '@';
-      return;
-    }
-    break;
-  case '\r':
-    if ((uint)ms->vbtick == _bVar1) {
-      XMC->kick = '\x01';
-      return;
-    }
-    XMC->kick = '\0';
-    return;
-  case '\x0e':
-    if ((ms->vbtick == 0) && (ms->patdly2 == '\0')) {
-      ms->patdly = bVar1 + 1;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+
+	_bVar1 = (uint)dat & 0xf;
+	bVar1 = (byte)_bVar1;
+	_bVar1 = (ushort)_bVar1;
+	switch (dat >> 4) {
+	case '\x01':
+		if (ms->vbtick == 0) {
+			if ((dat & 0xf) == 0) {
+				_bVar1 = (ushort)XMC->oldfslide;
+			}
+			XMC->oldfslide = (uchar)_bVar1;
+			XMC->tmpperiod = XMC->tmpperiod + _bVar1 * 4;
+			return;
+		}
+		break;
+	case '\x02':
+		if (ms->vbtick == 0) {
+			if ((dat & 0xf) == 0) {
+				_bVar1 = (ushort)XMC->oldfslide;
+			}
+			XMC->oldfslide = (uchar)_bVar1;
+			XMC->tmpperiod = XMC->tmpperiod + _bVar1 * -4;
+			return;
+		}
+		break;
+	case '\x03':
+		XMC->glissando = bVar1;
+		return;
+	case '\x04':
+		XMC->wavecontrol = XMC->wavecontrol & 0xf0;
+		XMC->wavecontrol = bVar1 | XMC->wavecontrol;
+		return;
+	case '\x06':
+		if (ms->vbtick == 0) {
+			if ((dat & 0xf) == 0) {
+				ms->reppos = ms->PatternPos - 1;
+				return;
+			}
+			if (ms->repcnt == 0) {
+				ms->repcnt = _bVar1;
+			}
+			else {
+				ms->repcnt = ms->repcnt - 1;
+			}
+			if (ms->repcnt != 0) {
+				ms->PatternPos = ms->reppos;
+				return;
+			}
+		}
+		break;
+	case '\a':
+		XMC->wavecontrol = XMC->wavecontrol & 0xf;
+		XMC->wavecontrol = XMC->wavecontrol | (byte)(_bVar1 << 4);
+		return;
+	case '\b':
+		XMC->panning = (uchar)(_bVar1 << 4);
+		return;
+	case '\t':
+		if ((dat & 0xf) != 0) {
+			if (XMC->retrig == '\0') {
+				XMC->kick = '\x01';
+				XMC->retrig = bVar1;
+			}
+			XMC->retrig = XMC->retrig + -1;
+			return;
+		}
+		break;
+	case '\n':
+		if (ms->vbtick == 0) {
+			if ((dat & 0xf) == 0) {
+				bVar1 = XMC->oldfvslide;
+			}
+			XMC->oldfvslide = bVar1;
+			XMC->tmpvolume = bVar1 + XMC->tmpvolume;
+			if (0x80 < (byte)XMC->tmpvolume) {
+				XMC->tmpvolume = -0x80;
+				return;
+			}
+		}
+		break;
+	case '\v':
+		if (ms->vbtick == 0) {
+			if ((dat & 0xf) == 0) {
+				bVar1 = XMC->oldfvslide;
+			}
+			XMC->oldfvslide = bVar1;
+			XMC->tmpvolume = XMC->tmpvolume - bVar1;
+			if ((byte)XMC->tmpvolume < 0x40) goto LAB_00084490;
+		}
+		break;
+	case '\f':
+		if (_bVar1 <= ms->vbtick) {
+		LAB_00084490:
+			XMC->tmpvolume = '@';
+			return;
+		}
+		break;
+	case '\r':
+		if ((uint)ms->vbtick == _bVar1) {
+			XMC->kick = '\x01';
+			return;
+		}
+		XMC->kick = '\0';
+		return;
+	case '\x0e':
+		if ((ms->vbtick == 0) && (ms->patdly2 == '\0')) {
+			ms->patdly = bVar1 + 1;
+		}
+	}
+	return;*/
 }
 
 
@@ -1342,29 +1373,30 @@ LAB_00084490:
 	/* end block 3 */
 	// End Line: 17987
 
-void SetNote(uchar note)
-
+void SetNote(unsigned char note)
 {
-  if (CurrentCh < 0x18) {
-    if (note == '`') {
-      XMC->keyon = '\0';
-      if ((XMC->sample == -2) || (((byte)mh->JAP_InstrumentOffset[XMC->sample][0xe9] & 1) == 0)) {
-        XMC->tmpvolume = '@';
-        return;
-      }
-    }
-    else {
-      XMC->note = note;
-      XMC->kick = '\x01';
-      if ((XMC->wavecontrol & 0x80) == 0) {
-        XMC->trmpos = '\0';
-      }
-      if ((XMC->wavecontrol & 8) == 0) {
-        XMC->vibpos = '\0';
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if (CurrentCh < 0x18) {
+		if (note == '`') {
+			XMC->keyon = '\0';
+			if ((XMC->sample == -2) || (((byte)mh->JAP_InstrumentOffset[XMC->sample][0xe9] & 1) == 0)) {
+				XMC->tmpvolume = '@';
+				return;
+			}
+		}
+		else {
+			XMC->note = note;
+			XMC->kick = '\x01';
+			if ((XMC->wavecontrol & 0x80) == 0) {
+				XMC->trmpos = '\0';
+			}
+			if ((XMC->wavecontrol & 8) == 0) {
+				XMC->vibpos = '\0';
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -1372,30 +1404,33 @@ void SetNote(uchar note)
 // autogenerated function stub: 
 // void /*$ra*/ SetInstr(unsigned char inst /*$a0*/)
 void SetInstr(unsigned char inst)
-{ // line 1372, offset 0x000867e4
+{
+	UNIMPLEMENTED();
+	/*
+	// line 1372, offset 0x000867e4
 	/* begin block 1 */
 		// Start line: 1373
 		// Start offset: 0x000867E4
 		// Variables:
-			unsigned long *j; // $a2
-	/* end block 1 */
-	// End offset: 0x000868D8
-	// End Line: 1433
+	//unsigned long *j; // $a2
+/* end block 1 */
+// End offset: 0x000868D8
+// End Line: 1433
 
-	/* begin block 2 */
-		// Start line: 17965
-	/* end block 2 */
-	// End Line: 17966
+/* begin block 2 */
+	// Start line: 17965
+/* end block 2 */
+// End Line: 17966
 
-	/* begin block 3 */
-		// Start line: 2744
-	/* end block 3 */
-	// End Line: 2745
+/* begin block 3 */
+	// Start line: 2744
+/* end block 3 */
+// End Line: 2745
 
-	/* begin block 4 */
-		// Start line: 17975
-	/* end block 4 */
-	// End Line: 17976
+/* begin block 4 */
+	// Start line: 17975
+/* end block 4 */
+// End Line: 17976
 
 }
 
@@ -1436,58 +1471,59 @@ void SetInstr(unsigned char inst)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void SetPer(void)
-
 {
-  uchar uVar1;
-  uchar uVar2;
-  XMCHANNEL *pXVar3;
-  ushort uVar4;
-  _func_14 *p_Var5;
-  
-  if (0x17 < CurrentCh) {
-    return;
-  }
-  uVar4 = GetPeriod(XMC->note + XMC->transpose,XMC->c2spd);
-  pXVar3 = XMC;
-  uVar1 = XMC->sample;
-  uVar2 = XMC->OldSample;
-  XMC->wantedperiod = uVar4;
-  pXVar3->tmpperiod = uVar4;
-  pXVar3->OldPeriod = 0;
-  pXVar3->SOffset = 0;
-  if (uVar2 != uVar1) {
-    pXVar3->OldSample = uVar1;
-    pXVar3 = XMC;
-    p_Var5 = mh->JAP_InstrumentOffset[XMC->sample];
-    XMC->keyoffspd = (ushort)(byte)p_Var5[0xef];
-    *(_func_14 *)&pXVar3->envflg = p_Var5[0xe9];
-    if ((XMC->envflg & 1) != 0) {
-      *(_func_14 *)&XMC->envpts = p_Var5[0xe1];
-      *(_func_14 *)&XMC->envsus = p_Var5[0xe3];
-      *(_func_14 *)&XMC->envbeg = p_Var5[0xe4];
-      *(_func_14 *)&XMC->envend = p_Var5[0xe5];
-    }
-    *(_func_14 *)&XMC->panenvflg = p_Var5[0xea];
-    if ((XMC->panenvflg & 1) == 0) goto code_r0x000846a8;
-    *(_func_14 *)&XMC->panenvpts = p_Var5[0xe2];
-    *(_func_14 *)&XMC->panenvsus = p_Var5[0xe6];
-    *(_func_14 *)&XMC->panenvbeg = p_Var5[0xe7];
-    *(_func_14 *)&XMC->panenvend = p_Var5[0xe8];
-  }
-  pXVar3 = XMC;
-  if ((XMC->panenvflg & 1) != 0) {
-    XMC->panenvp = 0;
-    pXVar3->panenva = 0;
-    pXVar3->panenvb = 1;
-  }
+	UNIMPLEMENTED();
+	/*
+	uchar uVar1;
+	uchar uVar2;
+	XMCHANNEL *pXVar3;
+	ushort uVar4;
+	_func_14 *p_Var5;
+
+	if (0x17 < CurrentCh) {
+		return;
+	}
+	uVar4 = GetPeriod(XMC->note + XMC->transpose, XMC->c2spd);
+	pXVar3 = XMC;
+	uVar1 = XMC->sample;
+	uVar2 = XMC->OldSample;
+	XMC->wantedperiod = uVar4;
+	pXVar3->tmpperiod = uVar4;
+	pXVar3->OldPeriod = 0;
+	pXVar3->SOffset = 0;
+	if (uVar2 != uVar1) {
+		pXVar3->OldSample = uVar1;
+		pXVar3 = XMC;
+		p_Var5 = mh->JAP_InstrumentOffset[XMC->sample];
+		XMC->keyoffspd = (ushort)(byte)p_Var5[0xef];
+		*(_func_14 *)&pXVar3->envflg = p_Var5[0xe9];
+		if ((XMC->envflg & 1) != 0) {
+			*(_func_14 *)&XMC->envpts = p_Var5[0xe1];
+			*(_func_14 *)&XMC->envsus = p_Var5[0xe3];
+			*(_func_14 *)&XMC->envbeg = p_Var5[0xe4];
+			*(_func_14 *)&XMC->envend = p_Var5[0xe5];
+		}
+		*(_func_14 *)&XMC->panenvflg = p_Var5[0xea];
+		if ((XMC->panenvflg & 1) == 0) goto code_r0x000846a8;
+		*(_func_14 *)&XMC->panenvpts = p_Var5[0xe2];
+		*(_func_14 *)&XMC->panenvsus = p_Var5[0xe6];
+		*(_func_14 *)&XMC->panenvbeg = p_Var5[0xe7];
+		*(_func_14 *)&XMC->panenvend = p_Var5[0xe8];
+	}
+	pXVar3 = XMC;
+	if ((XMC->panenvflg & 1) != 0) {
+		XMC->panenvp = 0;
+		pXVar3->panenva = 0;
+		pXVar3->panenvb = 1;
+	}
 code_r0x000846a8:
-  pXVar3 = XMC;
-  if ((XMC->envflg & 1) != 0) {
-    XMC->envp = 0;
-    pXVar3->enva = 0;
-    pXVar3->envb = 1;
-  }
-  return;
+	pXVar3 = XMC;
+	if ((XMC->envflg & 1) != 0) {
+		XMC->envp = 0;
+		pXVar3->enva = 0;
+		pXVar3->envb = 1;
+	}
+	return;*/
 }
 
 
@@ -1515,36 +1551,37 @@ code_r0x000846a8:
 	/* end block 3 */
 	// End Line: 18092
 
-void Arpeggio(uchar dat)
-
+void Arpeggio(unsigned char dat)
 {
-  XMCHANNEL *pXVar1;
-  byte bVar2;
-  ushort uVar3;
-  uint uVar4;
-  uchar uVar5;
-  
-  uVar5 = XMC->note;
-  if (dat == '\0') {
-    return;
-  }
-  uVar4 = (uint)ms->vbtick;
-  uVar4 = uVar4 - (((uint)((ulonglong)uVar4 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar4 / 3) &
-          0xffff;
-  if (uVar4 == 1) {
-    bVar2 = dat >> 4;
-  }
-  else {
-    bVar2 = dat & 0xf;
-    if (uVar4 != 2) goto LAB_000867ac;
-  }
-  uVar5 = uVar5 + bVar2;
+	UNIMPLEMENTED();
+	/*
+	XMCHANNEL *pXVar1;
+	byte bVar2;
+	ushort uVar3;
+	uint uVar4;
+	uchar uVar5;
+
+	uVar5 = XMC->note;
+	if (dat == '\0') {
+		return;
+	}
+	uVar4 = (uint)ms->vbtick;
+	uVar4 = uVar4 - (((uint)((ulonglong)uVar4 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar4 / 3) &
+		0xffff;
+	if (uVar4 == 1) {
+		bVar2 = dat >> 4;
+	}
+	else {
+		bVar2 = dat & 0xf;
+		if (uVar4 != 2) goto LAB_000867ac;
+	}
+	uVar5 = uVar5 + bVar2;
 LAB_000867ac:
-  uVar3 = GetPeriod(uVar5 + XMC->transpose,XMC->c2spd);
-  pXVar1 = XMC;
-  XMC->period = uVar3;
-  pXVar1->ownper = 1;
-  return;
+	uVar3 = GetPeriod(uVar5 + XMC->transpose, XMC->c2spd);
+	pXVar1 = XMC;
+	XMC->period = uVar3;
+	pXVar1->ownper = 1;
+	return;*/
 }
 
 
@@ -1563,20 +1600,21 @@ LAB_000867ac:
 	/* end block 2 */
 	// End Line: 17936
 
-void DoVolSlide(uchar dat)
-
+void DoVolSlide(unsigned char dat)
 {
-  if (ms->vbtick != 0) {
-    XMC->tmpvolume = XMC->tmpvolume + (dat >> 4);
-    if (0x80 < (byte)XMC->tmpvolume) {
-      XMC->tmpvolume = -0x80;
-    }
-    XMC->tmpvolume = XMC->tmpvolume - (dat & 0xf);
-    if ((byte)XMC->tmpvolume < 0x40) {
-      XMC->tmpvolume = '@';
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if (ms->vbtick != 0) {
+		XMC->tmpvolume = XMC->tmpvolume + (dat >> 4);
+		if (0x80 < (byte)XMC->tmpvolume) {
+			XMC->tmpvolume = -0x80;
+		}
+		XMC->tmpvolume = XMC->tmpvolume - (dat & 0xf);
+		if ((byte)XMC->tmpvolume < 0x40) {
+			XMC->tmpvolume = '@';
+		}
+	}
+	return;*/
 }
 
 
@@ -1606,37 +1644,38 @@ void DoVolSlide(uchar dat)
 	/* end block 3 */
 	// End Line: 3123
 
-void DoXMPanSlide(uchar inf)
-
+void DoXMPanSlide(unsigned char inf)
 {
-  uint uVar1;
-  uchar uVar2;
-  int iVar3;
-  uint uVar4;
-  
-  uVar4 = (uint)inf;
-  if (inf == '\0') {
-    uVar4 = (uint)XMC->pansspd;
-  }
-  else {
-    XMC->pansspd = inf;
-  }
-  uVar1 = uVar4 & 0xf;
-  if (ms->vbtick != 0) {
-    if (uVar4 >> 4 != 0) {
-      uVar1 = 0;
-    }
-    iVar3 = (XMC->panning - uVar1) + (uVar4 >> 4);
-    uVar2 = (uchar)iVar3;
-    if (iVar3 < 0) {
-      uVar2 = '\0';
-    }
-    if (0xff < iVar3) {
-      uVar2 = -1;
-    }
-    XMC->panning = uVar2;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+	uchar uVar2;
+	int iVar3;
+	uint uVar4;
+
+	uVar4 = (uint)inf;
+	if (inf == '\0') {
+		uVar4 = (uint)XMC->pansspd;
+	}
+	else {
+		XMC->pansspd = inf;
+	}
+	uVar1 = uVar4 & 0xf;
+	if (ms->vbtick != 0) {
+		if (uVar4 >> 4 != 0) {
+			uVar1 = 0;
+		}
+		iVar3 = (XMC->panning - uVar1) + (uVar4 >> 4);
+		uVar2 = (uchar)iVar3;
+		if (iVar3 < 0) {
+			uVar2 = '\0';
+		}
+		if (0xff < iVar3) {
+			uVar2 = -1;
+		}
+		XMC->panning = uVar2;
+	}
+	return;*/
 }
 
 
@@ -1659,67 +1698,68 @@ void DoXMPanSlide(uchar inf)
 	/* end block 2 */
 	// End Line: 3435
 
-void DoS3MRetrig(uchar inf)
-
+void DoS3MRetrig(unsigned char inf)
 {
-  byte bVar1;
-  
-  bVar1 = inf >> 4;
-  if ((inf & 0xf) != 0) {
-    XMC->s3mrtgslide = bVar1;
-    XMC->s3mrtgspeed = inf & 0xf;
-  }
-  if (bVar1 != 0) {
-    XMC->s3mrtgslide = bVar1;
-  }
-  if (XMC->s3mrtgspeed == '\0') {
-    return;
-  }
-  if (XMC->retrig != '\0') goto code_r0x000848d8;
-  XMC->kick = '\x01';
-  XMC->retrig = XMC->s3mrtgspeed;
-  if (ms->vbtick == 0) goto code_r0x000848d8;
-  switch(XMC->s3mrtgslide) {
-  case '\x01':
-  case '\x02':
-  case '\x03':
-  case '\x04':
-  case '\x05':
-    XMC->tmpvolume = XMC->tmpvolume - (char)(1 << ((uint)XMC->s3mrtgslide - 1 & 0x1f));
-    break;
-  case '\x06':
-    XMC->tmpvolume = (char)((int)((uint)(byte)XMC->tmpvolume << 1) / 3);
-    break;
-  case '\a':
-    XMC->tmpvolume = (byte)XMC->tmpvolume >> 1;
-    if ((byte)XMC->tmpvolume < 0x40) {
-      XMC->tmpvolume = '@';
-      break;
-    }
-    goto code_r0x000848b8;
-  case '\t':
-  case '\n':
-  case '\v':
-  case '\f':
-  case '\r':
-    XMC->tmpvolume = XMC->tmpvolume + (char)(1 << ((uint)XMC->s3mrtgslide - 9 & 0x1f));
-    break;
-  case '\x0e':
-    XMC->tmpvolume = (char)((int)((uint)(byte)XMC->tmpvolume * 3) >> 1);
-    break;
-  case '\x0f':
-    XMC->tmpvolume = XMC->tmpvolume << 1;
-  }
-  if ((byte)XMC->tmpvolume < 0x40) {
-    XMC->tmpvolume = '@';
-  }
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+
+	bVar1 = inf >> 4;
+	if ((inf & 0xf) != 0) {
+		XMC->s3mrtgslide = bVar1;
+		XMC->s3mrtgspeed = inf & 0xf;
+	}
+	if (bVar1 != 0) {
+		XMC->s3mrtgslide = bVar1;
+	}
+	if (XMC->s3mrtgspeed == '\0') {
+		return;
+	}
+	if (XMC->retrig != '\0') goto code_r0x000848d8;
+	XMC->kick = '\x01';
+	XMC->retrig = XMC->s3mrtgspeed;
+	if (ms->vbtick == 0) goto code_r0x000848d8;
+	switch (XMC->s3mrtgslide) {
+	case '\x01':
+	case '\x02':
+	case '\x03':
+	case '\x04':
+	case '\x05':
+		XMC->tmpvolume = XMC->tmpvolume - (char)(1 << ((uint)XMC->s3mrtgslide - 1 & 0x1f));
+		break;
+	case '\x06':
+		XMC->tmpvolume = (char)((int)((uint)(byte)XMC->tmpvolume << 1) / 3);
+		break;
+	case '\a':
+		XMC->tmpvolume = (byte)XMC->tmpvolume >> 1;
+		if ((byte)XMC->tmpvolume < 0x40) {
+			XMC->tmpvolume = '@';
+			break;
+		}
+		goto code_r0x000848b8;
+	case '\t':
+	case '\n':
+	case '\v':
+	case '\f':
+	case '\r':
+		XMC->tmpvolume = XMC->tmpvolume + (char)(1 << ((uint)XMC->s3mrtgslide - 9 & 0x1f));
+		break;
+	case '\x0e':
+		XMC->tmpvolume = (char)((int)((uint)(byte)XMC->tmpvolume * 3) >> 1);
+		break;
+	case '\x0f':
+		XMC->tmpvolume = XMC->tmpvolume << 1;
+	}
+	if ((byte)XMC->tmpvolume < 0x40) {
+		XMC->tmpvolume = '@';
+	}
 code_r0x000848b8:
-  if (0x80 < (byte)XMC->tmpvolume) {
-    XMC->tmpvolume = -0x80;
-  }
+	if (0x80 < (byte)XMC->tmpvolume) {
+		XMC->tmpvolume = -0x80;
+	}
 code_r0x000848d8:
-  XMC->retrig = XMC->retrig + -1;
-  return;
+	XMC->retrig = XMC->retrig + -1;
+	return;*/
 }
 
 
@@ -1755,33 +1795,34 @@ code_r0x000848d8:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoToneSlide(void)
-
 {
-  ushort uVar1;
-  ushort uVar2;
-  int iVar3;
-  int iVar4;
-  
-  iVar4 = (uint)XMC->period - (uint)XMC->wantedperiod;
-  if (iVar4 != 0) {
-    uVar1 = XMC->portspeed;
-    iVar3 = iVar4;
-    if (iVar4 < 0) {
-      iVar3 = -iVar4;
-    }
-    if ((int)(uint)uVar1 <= iVar3) {
-      uVar2 = -uVar1;
-      if (iVar4 < 1) {
-        uVar2 = uVar1;
-      }
-      XMC->period = XMC->period + uVar2;
-      goto LAB_00086698;
-    }
-  }
-  XMC->period = XMC->wantedperiod;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	ushort uVar2;
+	int iVar3;
+	int iVar4;
+
+	iVar4 = (uint)XMC->period - (uint)XMC->wantedperiod;
+	if (iVar4 != 0) {
+		uVar1 = XMC->portspeed;
+		iVar3 = iVar4;
+		if (iVar4 < 0) {
+			iVar3 = -iVar4;
+		}
+		if ((int)(uint)uVar1 <= iVar3) {
+			uVar2 = -uVar1;
+			if (iVar4 < 1) {
+				uVar2 = uVar1;
+			}
+			XMC->period = XMC->period + uVar2;
+			goto LAB_00086698;
+		}
+	}
+	XMC->period = XMC->wantedperiod;
 LAB_00086698:
-  XMC->tmpperiod = XMC->period;
-  return;
+	XMC->tmpperiod = XMC->period;
+	return;*/
 }
 
 
@@ -1823,46 +1864,47 @@ LAB_00086698:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoVibrato(void)
-
 {
-  ushort uVar1;
-  byte bVar2;
-  uint uVar3;
-  uint uVar4;
-  
-  uVar4 = 0;
-  uVar3 = (uint)((byte)XMC->vibpos >> 2) & 0x1f;
-  bVar2 = XMC->wavecontrol & 3;
-  if (bVar2 == 1) {
-    uVar4 = uVar3 << 3;
-    if ((int)((uint)(byte)XMC->vibpos << 0x18) < 0) {
-      uVar4 = uVar4 ^ 0xff;
-    }
-  }
-  else {
-    if (bVar2 < 2) {
-      if ((XMC->wavecontrol & 3) == 0) {
-        uVar4 = (uint)VibratoTable[uVar3];
-      }
-    }
-    else {
-      if (bVar2 == 2) {
-        uVar4 = 0xff;
-      }
-    }
-  }
-  uVar1 = (ushort)(uVar4 * XMC->vibdepth >> 5) & 0x7fc;
-  if (XMC->vibpos < '\0') {
-    uVar1 = XMC->tmpperiod - uVar1;
-  }
-  else {
-    uVar1 = uVar1 + XMC->tmpperiod;
-  }
-  XMC->period = uVar1;
-  if (ms->vbtick != 0) {
-    XMC->vibpos = XMC->vibpos + XMC->vibspd;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	byte bVar2;
+	uint uVar3;
+	uint uVar4;
+
+	uVar4 = 0;
+	uVar3 = (uint)((byte)XMC->vibpos >> 2) & 0x1f;
+	bVar2 = XMC->wavecontrol & 3;
+	if (bVar2 == 1) {
+		uVar4 = uVar3 << 3;
+		if ((int)((uint)(byte)XMC->vibpos << 0x18) < 0) {
+			uVar4 = uVar4 ^ 0xff;
+		}
+	}
+	else {
+		if (bVar2 < 2) {
+			if ((XMC->wavecontrol & 3) == 0) {
+				uVar4 = (uint)VibratoTable[uVar3];
+			}
+		}
+		else {
+			if (bVar2 == 2) {
+				uVar4 = 0xff;
+			}
+		}
+	}
+	uVar1 = (ushort)(uVar4 * XMC->vibdepth >> 5) & 0x7fc;
+	if (XMC->vibpos < '\0') {
+		uVar1 = XMC->tmpperiod - uVar1;
+	}
+	else {
+		uVar1 = uVar1 + XMC->tmpperiod;
+	}
+	XMC->period = uVar1;
+	if (ms->vbtick != 0) {
+		XMC->vibpos = XMC->vibpos + XMC->vibspd;
+	}
+	return;*/
 }
 
 
@@ -1904,53 +1946,54 @@ void DoVibrato(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoTremolo(void)
-
 {
-  byte bVar1;
-  char cVar2;
-  byte bVar3;
-  uint uVar4;
-  uint uVar5;
-  
-  uVar4 = (uint)((byte)XMC->trmpos >> 2) & 0x1f;
-  bVar1 = XMC->wavecontrol >> 4;
-  bVar3 = bVar1 & 3;
-  uVar5 = 0;
-  if (bVar3 == 1) {
-    uVar5 = uVar4 << 3;
-    if ((int)((uint)(byte)XMC->trmpos << 0x18) < 0) {
-      uVar5 = uVar5 ^ 0xff;
-    }
-  }
-  else {
-    if (bVar3 < 2) {
-      if ((bVar1 & 3) == 0) {
-        uVar5 = (uint)VibratoTable[uVar4];
-      }
-    }
-    else {
-      if (bVar3 == 2) {
-        uVar5 = 0xff;
-      }
-    }
-  }
-  cVar2 = (char)(uVar5 * XMC->trmdepth >> 6);
-  if (XMC->trmpos < '\0') {
-    XMC->volume = XMC->tmpvolume - cVar2;
-    if ((byte)XMC->volume < 0x40) {
-      XMC->volume = '@';
-    }
-  }
-  else {
-    XMC->volume = XMC->tmpvolume + cVar2;
-    if (0x80 < (byte)XMC->volume) {
-      XMC->volume = -0x80;
-    }
-  }
-  if (ms->vbtick != 0) {
-    XMC->trmpos = XMC->trmpos + XMC->trmspd;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	char cVar2;
+	byte bVar3;
+	uint uVar4;
+	uint uVar5;
+
+	uVar4 = (uint)((byte)XMC->trmpos >> 2) & 0x1f;
+	bVar1 = XMC->wavecontrol >> 4;
+	bVar3 = bVar1 & 3;
+	uVar5 = 0;
+	if (bVar3 == 1) {
+		uVar5 = uVar4 << 3;
+		if ((int)((uint)(byte)XMC->trmpos << 0x18) < 0) {
+			uVar5 = uVar5 ^ 0xff;
+		}
+	}
+	else {
+		if (bVar3 < 2) {
+			if ((bVar1 & 3) == 0) {
+				uVar5 = (uint)VibratoTable[uVar4];
+			}
+		}
+		else {
+			if (bVar3 == 2) {
+				uVar5 = 0xff;
+			}
+		}
+	}
+	cVar2 = (char)(uVar5 * XMC->trmdepth >> 6);
+	if (XMC->trmpos < '\0') {
+		XMC->volume = XMC->tmpvolume - cVar2;
+		if ((byte)XMC->volume < 0x40) {
+			XMC->volume = '@';
+		}
+	}
+	else {
+		XMC->volume = XMC->tmpvolume + cVar2;
+		if (0x80 < (byte)XMC->volume) {
+			XMC->volume = -0x80;
+		}
+	}
+	if (ms->vbtick != 0) {
+		XMC->trmpos = XMC->trmpos + XMC->trmspd;
+	}
+	return;*/
 }
 
 
@@ -1964,20 +2007,22 @@ void DoTremolo(void)
 	/* end block 1 */
 	// End Line: 3605
 
-short DoPan(short envpan,short pan)
-
+short DoPan(short envpan, short pan)
 {
-  int iVar1;
-  
-  iVar1 = (int)pan + -0x80;
-  if (iVar1 < 0) {
-    iVar1 = -iVar1;
-  }
-  iVar1 = ((int)envpan + -0x80) * (0x80 - iVar1);
-  if (iVar1 < 0) {
-    iVar1 = iVar1 + 0x7f;
-  }
-  return (short)((uint)(((int)pan + (iVar1 >> 7)) * 0x10000) >> 0x10);
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+
+	iVar1 = (int)pan + -0x80;
+	if (iVar1 < 0) {
+		iVar1 = -iVar1;
+	}
+	iVar1 = ((int)envpan + -0x80) * (0x80 - iVar1);
+	if (iVar1 < 0) {
+		iVar1 = iVar1 + 0x7f;
+	}
+	return (short)((uint)(((int)pan + (iVar1 >> 7)) * 0x10000) >> 0x10);*/
 }
 
 
@@ -1991,10 +2036,9 @@ short DoPan(short envpan,short pan)
 	/* end block 1 */
 	// End Line: 3635
 
-short DoVol(ulong a,short b,short c)
-
+short DoVol(ulong a, short b, short c)
 {
-  return (short)(a * (int)b * (int)c >> 0x17);
+	return (short)(a * (int)b * (int)c >> 0x17);
 }
 
 
@@ -2035,28 +2079,29 @@ short DoVol(ulong a,short b,short c)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void UpdateXMData(void)
-
 {
-  int SC;
-  uchar **ppuVar1;
-  
-  XMTime3 = 0;
-  XMTime2 = 0;
-  XMTime1 = 0;
-  if ((JP_Do_Nothing == 0) && (SC = 0, 0 < XM_NSA)) {
-    ppuVar1 = &XM_SngAddress24;
-    do {
-      ms = (XMSONG *)*ppuVar1;
-      UpdateWithTimer(SC);
-      if (ms->PCounter == 5) {
-        UpdateWithTimer(SC);
-        ms->PCounter = 0;
-      }
-      SC = SC + 1;
-      ppuVar1 = (uchar **)((XMSONG **)ppuVar1 + 1);
-    } while (SC < XM_NSA);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int SC;
+	uchar **ppuVar1;
+
+	XMTime3 = 0;
+	XMTime2 = 0;
+	XMTime1 = 0;
+	if ((JP_Do_Nothing == 0) && (SC = 0, 0 < XM_NSA)) {
+		ppuVar1 = &XM_SngAddress24;
+		do {
+			ms = (XMSONG *)*ppuVar1;
+			UpdateWithTimer(SC);
+			if (ms->PCounter == 5) {
+				UpdateWithTimer(SC);
+				ms->PCounter = 0;
+			}
+			SC = SC + 1;
+			ppuVar1 = (uchar **)((XMSONG **)ppuVar1 + 1);
+		} while (SC < XM_NSA);
+	}
+	return;*/
 }
 
 
@@ -2071,41 +2116,42 @@ void UpdateXMData(void)
 	// End Line: 3711
 
 void UpdateWithTimer(int SC)
-
 {
-  byte bVar1;
-  bool bVar2;
-  XMSONG *pXVar3;
-  int iVar4;
-  int iVar5;
-  
-  ms = (XMSONG *)(&XM_SngAddress24)[SC];
-  aa = aa + 1;
-  bVar1 = ms->XMPlay;
-  if (bVar1 == 1) {
-    if (PALType == (uint)bVar1) {
-      ms->PCounter = ms->PCounter + 1;
-    }
-    iVar4 = BPMLimit;
-    pXVar3 = ms;
-    mh = (XMHEADER *)XM_HeaderAddress8[ms->HeaderNum];
-    iVar5 = ms->JBPM + (uint)ms->SongBPM;
-    bVar2 = iVar5 < BPMLimit;
-    ms->JBPM = iVar5;
-    if (bVar2) {
-      if ((pXVar3->JUp == 0) && (PALType != 0)) {
-        pXVar3->JUp = (uint)bVar1;
-        UpdateEffs();
-        ApplyEffs();
-        UpdateHardware();
-      }
-    }
-    else {
-      pXVar3->JBPM = iVar5 - iVar4;
-      XM_DoFullUpdate(SC);
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	bool bVar2;
+	XMSONG *pXVar3;
+	int iVar4;
+	int iVar5;
+
+	ms = (XMSONG *)(&XM_SngAddress24)[SC];
+	aa = aa + 1;
+	bVar1 = ms->XMPlay;
+	if (bVar1 == 1) {
+		if (PALType == (uint)bVar1) {
+			ms->PCounter = ms->PCounter + 1;
+		}
+		iVar4 = BPMLimit;
+		pXVar3 = ms;
+		mh = (XMHEADER *)XM_HeaderAddress8[ms->HeaderNum];
+		iVar5 = ms->JBPM + (uint)ms->SongBPM;
+		bVar2 = iVar5 < BPMLimit;
+		ms->JBPM = iVar5;
+		if (bVar2) {
+			if ((pXVar3->JUp == 0) && (PALType != 0)) {
+				pXVar3->JUp = (uint)bVar1;
+				UpdateEffs();
+				ApplyEffs();
+				UpdateHardware();
+			}
+		}
+		else {
+			pXVar3->JBPM = iVar5 - iVar4;
+			XM_DoFullUpdate(SC);
+		}
+	}
+	return;*/
 }
 
 
@@ -2120,26 +2166,27 @@ void UpdateWithTimer(int SC)
 	// End Line: 11820
 
 void XM_DoFullUpdate(int SC)
-
 {
-  byte bVar1;
-  
-  ms = (XMSONG *)(&XM_SngAddress24)[SC];
-  bVar1 = ms->XMPlay;
-  if (bVar1 == 1) {
-    mh = (XMHEADER *)XM_HeaderAddress8[ms->HeaderNum];
-    if (ms->JUp == 0) {
-      UpdateEffs();
-      ApplyEffs();
-    }
-    ms->JUp = 0;
-    UpdateHardware();
-    if ((uint)ms->vbtick == (uint)bVar1) {
-      CurrentKeyStat();
-    }
-    UpdatePatternData(SC);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+
+	ms = (XMSONG *)(&XM_SngAddress24)[SC];
+	bVar1 = ms->XMPlay;
+	if (bVar1 == 1) {
+		mh = (XMHEADER *)XM_HeaderAddress8[ms->HeaderNum];
+		if (ms->JUp == 0) {
+			UpdateEffs();
+			ApplyEffs();
+		}
+		ms->JUp = 0;
+		UpdateHardware();
+		if ((uint)ms->vbtick == (uint)bVar1) {
+			CurrentKeyStat();
+		}
+		UpdatePatternData(SC);
+	}
+	return;*/
 }
 
 
@@ -2178,166 +2225,167 @@ void XM_DoFullUpdate(int SC)
 	// End Line: 4104
 
 void UpdatePatternData(int SC)
-
 {
-  ushort *puVar1;
-  short *psVar2;
-  bool bVar3;
-  uchar uVar4;
-  byte bVar5;
-  short sVar6;
-  XMHEADER *pXVar7;
-  XMSONG *pXVar8;
-  XMSONG *pXVar9;
-  ushort uVar10;
-  int iVar11;
-  int iVar12;
-  ulong *puVar13;
-  int iVar14;
-  uint uVar15;
-  uint uVar16;
-  
-  pXVar8 = ms;
-  puVar1 = &ms->SongSpeed;
-  uVar10 = ms->vbtick + 1;
-  ms->vbtick = uVar10;
-  if (uVar10 < *puVar1) {
-    return;
-  }
-  pXVar8->vbtick = 0;
-  pXVar8->PatternPos = pXVar8->PatternPos + 1;
-  if (pXVar8->patdly != '\0') {
-    pXVar8->patdly2 = pXVar8->patdly;
-    ms->patdly = '\0';
-  }
-  uVar4 = ms->patdly2;
-  if ((uVar4 != '\0') && (ms->patdly2 = uVar4 + -1, uVar4 != '\x01')) {
-    ms->PatternPos = ms->PatternPos - 1;
-  }
-  bVar3 = false;
-  if (ms->PatternPos == ms->numrow) {
-    ms->posjmp = 2;
-  }
-  if (ms->BPlayFlag == 2) {
-LAB_00084c54:
-    XM_Quit(SC);
-    return;
-  }
-  if (ms->posjmp == 0) goto LAB_00084e30;
-  if ((ms->posjmp == 2) && (ms->Status == '\x01')) {
-    if (ms->patbrk == 0) goto LAB_00084c54;
-LAB_00084c74:
-    ms->PatternPos = ms->patbrk - 1;
-  }
-  else {
-    if (ms->patbrk != 0) goto LAB_00084c74;
-    ms->PatternPos = 0;
-  }
-  pXVar8 = ms;
-  bVar3 = ms->PatternPos != 0;
-  ms->CurPos = (uint)ms->PatternPos;
-  pXVar9 = ms;
-  if (((int)pXVar8->BPlayNext == -1) || (pXVar8->BPlayFlag == 0)) {
-    psVar2 = &ms->PlayNext;
-    if ((int)*psVar2 == -1) {
-      ms->SongPos = ms->posjmp + ms->SongPos + -1;
-    }
-    else {
-      ms->SongPos = ms->PlayNext;
-      pXVar9->CurrentStart = (int)*psVar2;
-      pXVar9->PlayNext = -1;
-    }
-  }
-  else {
-    pXVar8->BPlayFlag = 0;
-    pXVar8->SongPos = pXVar8->BPlayNext;
-    pXVar8->CurrentStart = (int)pXVar8->BPlayNext;
-    pXVar8->BPlayNext = -1;
-  }
-  pXVar8 = ms;
-  pXVar7 = mh;
-  sVar6 = ms->SongPos;
-  ms->posjmp = 0;
-  pXVar8->patbrk = 0;
-  if ((int)(uint)pXVar7->songlength <= (int)sVar6) {
-    if (pXVar8->SongLoop == 0) {
-      pXVar8->XMPlay = '\0';
-      return;
-    }
-    pXVar8->SongPos = pXVar8->reppos;
-  }
-  if (ms->SongPos < 0) {
-    ms->SongPos = mh->songlength - 1;
-  }
-  pXVar8 = ms;
-  if (ms->Status == '\0') {
-    uVar16 = (uint)mh->jorders[ms->SongPos];
-  }
-  else {
-    uVar16 = ms->SFXNum;
-  }
-  puVar1 = &mh->version;
-  ms->CurrentPattern = (ushort)uVar16;
-  puVar13 = *(ulong **)(puVar1 + uVar16 * 2 + 0xc);
-  pXVar8->PatAdr = puVar13;
-  pXVar8->PatAdr2 = *(ulong **)(puVar1 + uVar16 * 2 + 0x20c);
-  pXVar8->numrow = (ushort)*(byte *)((int)puVar13 + 5) + (ushort)*(byte *)((int)puVar13 + 6) * 0x100
-  ;
-  pXVar8->PatSize = (ushort)*(byte *)((int)puVar13 + 7) + (ushort)*(byte *)(puVar13 + 2) * 0x100;
+	UNIMPLEMENTED();
+	/*
+	ushort *puVar1;
+	short *psVar2;
+	bool bVar3;
+	uchar uVar4;
+	byte bVar5;
+	short sVar6;
+	XMHEADER *pXVar7;
+	XMSONG *pXVar8;
+	XMSONG *pXVar9;
+	ushort uVar10;
+	int iVar11;
+	int iVar12;
+	ulong *puVar13;
+	int iVar14;
+	uint uVar15;
+	uint uVar16;
+
+	pXVar8 = ms;
+	puVar1 = &ms->SongSpeed;
+	uVar10 = ms->vbtick + 1;
+	ms->vbtick = uVar10;
+	if (uVar10 < *puVar1) {
+		return;
+	}
+	pXVar8->vbtick = 0;
+	pXVar8->PatternPos = pXVar8->PatternPos + 1;
+	if (pXVar8->patdly != '\0') {
+		pXVar8->patdly2 = pXVar8->patdly;
+		ms->patdly = '\0';
+	}
+	uVar4 = ms->patdly2;
+	if ((uVar4 != '\0') && (ms->patdly2 = uVar4 + -1, uVar4 != '\x01')) {
+		ms->PatternPos = ms->PatternPos - 1;
+	}
+	bVar3 = false;
+	if (ms->PatternPos == ms->numrow) {
+		ms->posjmp = 2;
+	}
+	if (ms->BPlayFlag == 2) {
+	LAB_00084c54:
+		XM_Quit(SC);
+		return;
+	}
+	if (ms->posjmp == 0) goto LAB_00084e30;
+	if ((ms->posjmp == 2) && (ms->Status == '\x01')) {
+		if (ms->patbrk == 0) goto LAB_00084c54;
+	LAB_00084c74:
+		ms->PatternPos = ms->patbrk - 1;
+	}
+	else {
+		if (ms->patbrk != 0) goto LAB_00084c74;
+		ms->PatternPos = 0;
+	}
+	pXVar8 = ms;
+	bVar3 = ms->PatternPos != 0;
+	ms->CurPos = (uint)ms->PatternPos;
+	pXVar9 = ms;
+	if (((int)pXVar8->BPlayNext == -1) || (pXVar8->BPlayFlag == 0)) {
+		psVar2 = &ms->PlayNext;
+		if ((int)*psVar2 == -1) {
+			ms->SongPos = ms->posjmp + ms->SongPos + -1;
+		}
+		else {
+			ms->SongPos = ms->PlayNext;
+			pXVar9->CurrentStart = (int)*psVar2;
+			pXVar9->PlayNext = -1;
+		}
+	}
+	else {
+		pXVar8->BPlayFlag = 0;
+		pXVar8->SongPos = pXVar8->BPlayNext;
+		pXVar8->CurrentStart = (int)pXVar8->BPlayNext;
+		pXVar8->BPlayNext = -1;
+	}
+	pXVar8 = ms;
+	pXVar7 = mh;
+	sVar6 = ms->SongPos;
+	ms->posjmp = 0;
+	pXVar8->patbrk = 0;
+	if ((int)(uint)pXVar7->songlength <= (int)sVar6) {
+		if (pXVar8->SongLoop == 0) {
+			pXVar8->XMPlay = '\0';
+			return;
+		}
+		pXVar8->SongPos = pXVar8->reppos;
+	}
+	if (ms->SongPos < 0) {
+		ms->SongPos = mh->songlength - 1;
+	}
+	pXVar8 = ms;
+	if (ms->Status == '\0') {
+		uVar16 = (uint)mh->jorders[ms->SongPos];
+	}
+	else {
+		uVar16 = ms->SFXNum;
+	}
+	puVar1 = &mh->version;
+	ms->CurrentPattern = (ushort)uVar16;
+	puVar13 = *(ulong **)(puVar1 + uVar16 * 2 + 0xc);
+	pXVar8->PatAdr = puVar13;
+	pXVar8->PatAdr2 = *(ulong **)(puVar1 + uVar16 * 2 + 0x20c);
+	pXVar8->numrow = (ushort)*(byte *)((int)puVar13 + 5) + (ushort)*(byte *)((int)puVar13 + 6) * 0x100
+		;
+	pXVar8->PatSize = (ushort)*(byte *)((int)puVar13 + 7) + (ushort)*(byte *)(puVar13 + 2) * 0x100;
 LAB_00084e30:
-  if ((ms->patdly2 == '\0') && (ms->PatSize != 0)) {
-    if (mh->version == 0xddba) {
-      if (bVar3) {
-        iVar11 = PACKEDCalcPlayPos(ms->CurPos);
-        ms->CurPos = iVar11;
-      }
-      iVar11 = ms->CurPos;
-      iVar14 = 0;
-      if (mh->XMPSXChannels != 0) {
-        iVar12 = 0x58;
-        do {
-          XMC = (XMCHANNEL *)(&ms->Status + iVar12);
-          XMC->eff = '\0';
-          XMC->vol = '\0';
-          XMC->dat = '\0';
-          iVar14 = iVar14 + 1;
-          iVar12 = iVar12 + 0x78;
-        } while (iVar14 < (int)(uint)mh->XMPSXChannels);
-      }
-      bVar5 = *(byte *)((int)ms->PatAdr2 + iVar11);
-      while (iVar11 = iVar11 + 1, bVar5 != 0xff) {
-        CurrentCh = ZEXT14(bVar5);
-        XMC = ms->XM_Chnl + CurrentCh;
-        iVar14 = JPlayNote((uchar *)((int)ms->PatAdr2 + iVar11),
-                           ms->PlayMask & 1 << (CurrentCh & 0x1fU));
-        iVar11 = iVar11 + iVar14;
-        bVar5 = *(byte *)((int)ms->PatAdr2 + iVar11);
-      }
-    }
-    else {
-      if (bVar3) {
-        iVar11 = CalcPlayPos(ms->CurPos);
-        ms->CurPos = iVar11;
-      }
-      iVar11 = ms->CurPos;
-      if (mh->XMChannels != 0) {
-        iVar14 = 0x58;
-        uVar16 = 0;
-        do {
-          uVar15 = uVar16 + 1;
-          XMC = (XMCHANNEL *)(&ms->Status + iVar14);
-          CurrentCh = uVar16;
-          iVar12 = JPlayNote((uchar *)((int)ms->PatAdr2 + iVar11),
-                             ms->PlayMask & 1 << (uVar16 & 0x1f));
-          iVar14 = iVar14 + 0x78;
-          iVar11 = iVar11 + iVar12;
-          uVar16 = uVar15;
-        } while ((int)uVar15 < (int)(uint)mh->XMChannels);
-      }
-    }
-    ms->CurPos = iVar11;
-  }
-  return;
+	if ((ms->patdly2 == '\0') && (ms->PatSize != 0)) {
+		if (mh->version == 0xddba) {
+			if (bVar3) {
+				iVar11 = PACKEDCalcPlayPos(ms->CurPos);
+				ms->CurPos = iVar11;
+			}
+			iVar11 = ms->CurPos;
+			iVar14 = 0;
+			if (mh->XMPSXChannels != 0) {
+				iVar12 = 0x58;
+				do {
+					XMC = (XMCHANNEL *)(&ms->Status + iVar12);
+					XMC->eff = '\0';
+					XMC->vol = '\0';
+					XMC->dat = '\0';
+					iVar14 = iVar14 + 1;
+					iVar12 = iVar12 + 0x78;
+				} while (iVar14 < (int)(uint)mh->XMPSXChannels);
+			}
+			bVar5 = *(byte *)((int)ms->PatAdr2 + iVar11);
+			while (iVar11 = iVar11 + 1, bVar5 != 0xff) {
+				CurrentCh = ZEXT14(bVar5);
+				XMC = ms->XM_Chnl + CurrentCh;
+				iVar14 = JPlayNote((uchar *)((int)ms->PatAdr2 + iVar11),
+					ms->PlayMask & 1 << (CurrentCh & 0x1fU));
+				iVar11 = iVar11 + iVar14;
+				bVar5 = *(byte *)((int)ms->PatAdr2 + iVar11);
+			}
+		}
+		else {
+			if (bVar3) {
+				iVar11 = CalcPlayPos(ms->CurPos);
+				ms->CurPos = iVar11;
+			}
+			iVar11 = ms->CurPos;
+			if (mh->XMChannels != 0) {
+				iVar14 = 0x58;
+				uVar16 = 0;
+				do {
+					uVar15 = uVar16 + 1;
+					XMC = (XMCHANNEL *)(&ms->Status + iVar14);
+					CurrentCh = uVar16;
+					iVar12 = JPlayNote((uchar *)((int)ms->PatAdr2 + iVar11),
+						ms->PlayMask & 1 << (uVar16 & 0x1f));
+					iVar14 = iVar14 + 0x78;
+					iVar11 = iVar11 + iVar12;
+					uVar16 = uVar15;
+				} while ((int)uVar15 < (int)(uint)mh->XMChannels);
+			}
+		}
+		ms->CurPos = iVar11;
+	}
+	return;*/
 }
 
 
@@ -2373,35 +2421,37 @@ LAB_00084e30:
 	// End Line: 23328
 
 int CalcPlayPos(int StartPos)
-
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  
-  iVar2 = 0;
-  iVar4 = 0;
-  if (0 < StartPos) {
-    do {
-      iVar2 = iVar2 + 1;
-      if (mh->XMChannels != 0) {
-        iVar5 = 0x58;
-        iVar1 = 0;
-        do {
-          iVar3 = iVar1 + 1;
-          XMC = (XMCHANNEL *)(&ms->Status + iVar5);
-          CurrentCh = iVar1;
-          iVar1 = JCalcPat((uchar *)((int)ms->PatAdr2 + iVar4));
-          iVar5 = iVar5 + 0x78;
-          iVar4 = iVar4 + iVar1;
-          iVar1 = iVar3;
-        } while (iVar3 < (int)(uint)mh->XMChannels);
-      }
-    } while (iVar2 < StartPos);
-  }
-  return iVar4;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	int iVar2;
+	int iVar3;
+	int iVar4;
+	int iVar5;
+
+	iVar2 = 0;
+	iVar4 = 0;
+	if (0 < StartPos) {
+		do {
+			iVar2 = iVar2 + 1;
+			if (mh->XMChannels != 0) {
+				iVar5 = 0x58;
+				iVar1 = 0;
+				do {
+					iVar3 = iVar1 + 1;
+					XMC = (XMCHANNEL *)(&ms->Status + iVar5);
+					CurrentCh = iVar1;
+					iVar1 = JCalcPat((uchar *)((int)ms->PatAdr2 + iVar4));
+					iVar5 = iVar5 + 0x78;
+					iVar4 = iVar4 + iVar1;
+					iVar1 = iVar3;
+				} while (iVar3 < (int)(uint)mh->XMChannels);
+			}
+		} while (iVar2 < StartPos);
+	}
+	return iVar4;*/
 }
 
 
@@ -2438,29 +2488,31 @@ int CalcPlayPos(int StartPos)
 	// End Line: 23448
 
 int PACKEDCalcPlayPos(int StartPos)
-
 {
-  byte bVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  
-  iVar3 = 0;
-  iVar4 = 0;
-  if (0 < StartPos) {
-    do {
-      iVar3 = iVar3 + 1;
-      bVar1 = *(byte *)((int)ms->PatAdr2 + iVar4);
-      while (iVar4 = iVar4 + 1, bVar1 != 0xff) {
-        CurrentCh = ZEXT14(bVar1);
-        XMC = ms->XM_Chnl + CurrentCh;
-        iVar2 = JCalcPat((uchar *)((int)ms->PatAdr2 + iVar4));
-        iVar4 = iVar4 + iVar2;
-        bVar1 = *(byte *)((int)ms->PatAdr2 + iVar4);
-      }
-    } while (iVar3 < StartPos);
-  }
-  return iVar4;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	int iVar2;
+	int iVar3;
+	int iVar4;
+
+	iVar3 = 0;
+	iVar4 = 0;
+	if (0 < StartPos) {
+		do {
+			iVar3 = iVar3 + 1;
+			bVar1 = *(byte *)((int)ms->PatAdr2 + iVar4);
+			while (iVar4 = iVar4 + 1, bVar1 != 0xff) {
+				CurrentCh = ZEXT14(bVar1);
+				XMC = ms->XM_Chnl + CurrentCh;
+				iVar2 = JCalcPat((uchar *)((int)ms->PatAdr2 + iVar4));
+				iVar4 = iVar4 + iVar2;
+				bVar1 = *(byte *)((int)ms->PatAdr2 + iVar4);
+			}
+		} while (iVar3 < StartPos);
+	}
+	return iVar4;*/
 }
 
 
@@ -2499,38 +2551,40 @@ int PACKEDCalcPlayPos(int StartPos)
 	/* end block 5 */
 	// End Line: 23430
 
-int JCalcPat(uchar *j)
-
+int JCalcPat(unsigned char *j)
 {
-  byte bVar1;
-  int iVar2;
-  
-  bVar1 = *j;
-  iVar2 = 1;
-  if (bVar1 == 0x80) {
-    return 1;
-  }
-  if ((bVar1 & 0x80) == 0) {
-    iVar2 = 5;
-  }
-  else {
-    if ((bVar1 & 1) != 0) {
-      iVar2 = 2;
-    }
-    if ((bVar1 & 2) != 0) {
-      iVar2 = iVar2 + 1;
-    }
-    if ((bVar1 & 4) != 0) {
-      iVar2 = iVar2 + 1;
-    }
-    if ((bVar1 & 8) != 0) {
-      iVar2 = iVar2 + 1;
-    }
-    if ((bVar1 & 0x10) != 0) {
-      iVar2 = iVar2 + 1;
-    }
-  }
-  return iVar2;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	int iVar2;
+
+	bVar1 = *j;
+	iVar2 = 1;
+	if (bVar1 == 0x80) {
+		return 1;
+	}
+	if ((bVar1 & 0x80) == 0) {
+		iVar2 = 5;
+	}
+	else {
+		if ((bVar1 & 1) != 0) {
+			iVar2 = 2;
+		}
+		if ((bVar1 & 2) != 0) {
+			iVar2 = iVar2 + 1;
+		}
+		if ((bVar1 & 4) != 0) {
+			iVar2 = iVar2 + 1;
+		}
+		if ((bVar1 & 8) != 0) {
+			iVar2 = iVar2 + 1;
+		}
+		if ((bVar1 & 0x10) != 0) {
+			iVar2 = iVar2 + 1;
+		}
+	}
+	return iVar2;*/
 }
 
 
@@ -2572,119 +2626,120 @@ int JCalcPat(uchar *j)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void ApplyEffs(void)
-
 {
-  XMHEADER *pXVar1;
-  XMSONG *pXVar2;
-  short b;
-  short envpan;
-  undefined2 extraout_var;
-  int iVar3;
-  XMCHANNEL *pXVar4;
-  int iVar5;
-  uint uVar6;
-  uchar uVar7;
-  int iVar8;
-  int iVar9;
-  
-  pXVar2 = ms;
-  pXVar1 = mh;
-  ms->XMActiveVoices = 0;
-  uVar7 = pXVar2->MaxChans;
-  uVar6 = 0;
-  if (pXVar1->XMPSXChannels != 0) {
-    iVar8 = 0x58;
-    do {
-      if (uVar7 == '\0') {
-        return;
-      }
-      pXVar4 = (XMCHANNEL *)(&ms->Status + iVar8);
-      if ((ms->PlayMask & 1 << (uVar6 & 0x1f)) != 0) {
-        uVar7 = uVar7 + -1;
-        XMC = pXVar4;
-        if (pXVar4->kick != '\0') {
-          pXVar4->keyon = '\x01';
-          pXVar4 = XMC;
-          XMC->fadevol = 0x7fff;
-          pXVar4->ChDead = '\0';
-        }
-        pXVar4 = XMC;
-        if (XMC->ChDead == '\0') {
-          ms->XMActiveVoices = ms->XMActiveVoices + 1;
-          if (pXVar4->period == 0) {
-            pXVar4->period = 1;
-          }
-          else {
-            if (0x8000 < pXVar4->period) {
-              pXVar4->period = 0x8000;
-            }
-          }
-          b = 0x100;
-          if ((XMC->envflg & 1) != 0) {
-            b = ProcessEnvelope(0x100,XMC->keyon,(uint)XMC->sample);
-          }
-          envpan = 0x80;
-          if ((XMC->panenvflg & 1) != 0) {
-            envpan = ProcessPanEnvelope(0x80,XMC->keyon,(uint)XMC->sample);
-          }
-          pXVar4 = XMC;
-          iVar9 = ((uint)(byte)XMC->volume - 0x40) * (0x40 - (int)XMC->UserVol);
-          if (iVar9 < 0) {
-            iVar9 = iVar9 + 0x3f;
-          }
-          iVar9 = (((iVar9 << 10) >> 0x10) + 0x40) * 0x10000 >> 0x10;
-          if (iVar9 < 0x41) {
-            XMC->RVol = 0;
-            pXVar4->LVol = 0;
-          }
-          else {
-            b = DoVol((int)XMC->fadevol,b,(short)((uint)((iVar9 + -0x40) * 0x10000) >> 0x10));
-            iVar9 = CONCAT22(extraout_var,b) * (uint)ms->SongVolume;
-            if (iVar9 < 0) {
-              iVar9 = iVar9 + 0x7f;
-            }
-            iVar9 = (int)(short)((short)((uint)(iVar9 * 0x200) >> 0x10) * (ushort)ms->MasterVolume);
-            if (iVar9 < 0) {
-              iVar9 = iVar9 + 0x7f;
-            }
-            iVar3 = ((uint)XMC->panning + (uint)(ushort)ms->UserPan) * 0x10000;
-            iVar5 = iVar3 >> 0x10;
-            b = (short)((uint)iVar3 >> 0x10);
-            if (iVar5 < 0) {
-              b = 0;
-            }
-            else {
-              if (0xff < iVar5) {
-                b = 0xff;
-              }
-            }
-            envpan = DoPan(envpan,b);
-            pXVar4 = XMC;
-            b = (short)(iVar9 >> 7);
-            XMC->LVol = b * (0xff - envpan);
-            pXVar4->RVol = b * envpan;
-          }
-          pXVar4 = XMC;
-          if ((XMC->LVol == 0) && (XMC->RVol == 0)) {
-            if (XMC->keyon == '\0') {
-              StpCh((uint)XMC->SPUChannel);
-              XMC->ChDead = '\x01';
-            }
-          }
-          else {
-            if ((XMC->keyon == '\0') &&
-               (iVar9 = (uint)(ushort)XMC->fadevol - (uint)XMC->keyoffspd,
-               XMC->fadevol = (short)iVar9, iVar9 * 0x10000 < 0)) {
-              pXVar4->fadevol = 0;
-            }
-          }
-        }
-      }
-      uVar6 = uVar6 + 1;
-      iVar8 = iVar8 + 0x78;
-    } while ((int)uVar6 < (int)(uint)mh->XMPSXChannels);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	XMHEADER *pXVar1;
+	XMSONG *pXVar2;
+	short b;
+	short envpan;
+	undefined2 extraout_var;
+	int iVar3;
+	XMCHANNEL *pXVar4;
+	int iVar5;
+	uint uVar6;
+	uchar uVar7;
+	int iVar8;
+	int iVar9;
+
+	pXVar2 = ms;
+	pXVar1 = mh;
+	ms->XMActiveVoices = 0;
+	uVar7 = pXVar2->MaxChans;
+	uVar6 = 0;
+	if (pXVar1->XMPSXChannels != 0) {
+		iVar8 = 0x58;
+		do {
+			if (uVar7 == '\0') {
+				return;
+			}
+			pXVar4 = (XMCHANNEL *)(&ms->Status + iVar8);
+			if ((ms->PlayMask & 1 << (uVar6 & 0x1f)) != 0) {
+				uVar7 = uVar7 + -1;
+				XMC = pXVar4;
+				if (pXVar4->kick != '\0') {
+					pXVar4->keyon = '\x01';
+					pXVar4 = XMC;
+					XMC->fadevol = 0x7fff;
+					pXVar4->ChDead = '\0';
+				}
+				pXVar4 = XMC;
+				if (XMC->ChDead == '\0') {
+					ms->XMActiveVoices = ms->XMActiveVoices + 1;
+					if (pXVar4->period == 0) {
+						pXVar4->period = 1;
+					}
+					else {
+						if (0x8000 < pXVar4->period) {
+							pXVar4->period = 0x8000;
+						}
+					}
+					b = 0x100;
+					if ((XMC->envflg & 1) != 0) {
+						b = ProcessEnvelope(0x100, XMC->keyon, (uint)XMC->sample);
+					}
+					envpan = 0x80;
+					if ((XMC->panenvflg & 1) != 0) {
+						envpan = ProcessPanEnvelope(0x80, XMC->keyon, (uint)XMC->sample);
+					}
+					pXVar4 = XMC;
+					iVar9 = ((uint)(byte)XMC->volume - 0x40) * (0x40 - (int)XMC->UserVol);
+					if (iVar9 < 0) {
+						iVar9 = iVar9 + 0x3f;
+					}
+					iVar9 = (((iVar9 << 10) >> 0x10) + 0x40) * 0x10000 >> 0x10;
+					if (iVar9 < 0x41) {
+						XMC->RVol = 0;
+						pXVar4->LVol = 0;
+					}
+					else {
+						b = DoVol((int)XMC->fadevol, b, (short)((uint)((iVar9 + -0x40) * 0x10000) >> 0x10));
+						iVar9 = CONCAT22(extraout_var, b) * (uint)ms->SongVolume;
+						if (iVar9 < 0) {
+							iVar9 = iVar9 + 0x7f;
+						}
+						iVar9 = (int)(short)((short)((uint)(iVar9 * 0x200) >> 0x10) * (ushort)ms->MasterVolume);
+						if (iVar9 < 0) {
+							iVar9 = iVar9 + 0x7f;
+						}
+						iVar3 = ((uint)XMC->panning + (uint)(ushort)ms->UserPan) * 0x10000;
+						iVar5 = iVar3 >> 0x10;
+						b = (short)((uint)iVar3 >> 0x10);
+						if (iVar5 < 0) {
+							b = 0;
+						}
+						else {
+							if (0xff < iVar5) {
+								b = 0xff;
+							}
+						}
+						envpan = DoPan(envpan, b);
+						pXVar4 = XMC;
+						b = (short)(iVar9 >> 7);
+						XMC->LVol = b * (0xff - envpan);
+						pXVar4->RVol = b * envpan;
+					}
+					pXVar4 = XMC;
+					if ((XMC->LVol == 0) && (XMC->RVol == 0)) {
+						if (XMC->keyon == '\0') {
+							StpCh((uint)XMC->SPUChannel);
+							XMC->ChDead = '\x01';
+						}
+					}
+					else {
+						if ((XMC->keyon == '\0') &&
+							(iVar9 = (uint)(ushort)XMC->fadevol - (uint)XMC->keyoffspd,
+								XMC->fadevol = (short)iVar9, iVar9 * 0x10000 < 0)) {
+							pXVar4->fadevol = 0;
+						}
+					}
+				}
+			}
+			uVar6 = uVar6 + 1;
+			iVar8 = iVar8 + 0x78;
+		} while ((int)uVar6 < (int)(uint)mh->XMPSXChannels);
+	}
+	return;*/
 }
 
 
@@ -2727,31 +2782,32 @@ void ApplyEffs(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void UpdateEffs(void)
-
 {
-  uchar uVar1;
-  uint uVar2;
-  uchar uVar3;
-  int iVar4;
-  
-  uVar3 = ms->MaxChans;
-  uVar2 = 0;
-  if (mh->XMPSXChannels != 0) {
-    iVar4 = 0x58;
-    do {
-      if (uVar3 == '\0') {
-        return;
-      }
-      XMC = (XMCHANNEL *)(&ms->Status + iVar4);
-      uVar1 = uVar3 + -1;
-      if (((ms->PlayMask & 1 << (uVar2 & 0x1f)) != 0) && (uVar3 = uVar1, XMC->nothing == '\0')) {
-        JPlayEffects();
-      }
-      uVar2 = uVar2 + 1;
-      iVar4 = iVar4 + 0x78;
-    } while ((int)uVar2 < (int)(uint)mh->XMPSXChannels);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uchar uVar1;
+	uint uVar2;
+	uchar uVar3;
+	int iVar4;
+
+	uVar3 = ms->MaxChans;
+	uVar2 = 0;
+	if (mh->XMPSXChannels != 0) {
+		iVar4 = 0x58;
+		do {
+			if (uVar3 == '\0') {
+				return;
+			}
+			XMC = (XMCHANNEL *)(&ms->Status + iVar4);
+			uVar1 = uVar3 + -1;
+			if (((ms->PlayMask & 1 << (uVar2 & 0x1f)) != 0) && (uVar3 = uVar1, XMC->nothing == '\0')) {
+				JPlayEffects();
+			}
+			uVar2 = uVar2 + 1;
+			iVar4 = iVar4 + 0x78;
+		} while ((int)uVar2 < (int)(uint)mh->XMPSXChannels);
+	}
+	return;*/
 }
 
 
@@ -2773,39 +2829,40 @@ void UpdateEffs(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoDolbySS(void)
-
 {
-  int iVar1;
-  
-  if (MonoMode == '\0') {
-    DVL = ((int)XMC->OldLVol + (int)XMC->OldRVol) / 2;
-    DVR = DVL;
-    return;
-  }
-  if (XMC->Dolby == '\x01') {
-    iVar1 = (int)XMC->OldRVol;
-    if ((int)XMC->OldLVol < iVar1) {
-      DVL = iVar1;
-      DVR = -iVar1;
-      return;
-    }
-    DVL = (int)XMC->OldLVol;
-    DVR = -iVar1;
-    return;
-  }
-  if (XMC->Dolby == '\x02') {
-    DVR = (int)XMC->OldRVol;
-    DVL = -DVR;
-    if (DVR <= (int)XMC->OldLVol) {
-      DVR = (int)XMC->OldLVol;
-      return;
-    }
-  }
-  else {
-    DVL = (int)XMC->OldLVol;
-    DVR = (int)XMC->OldRVol;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+
+	if (MonoMode == '\0') {
+		DVL = ((int)XMC->OldLVol + (int)XMC->OldRVol) / 2;
+		DVR = DVL;
+		return;
+	}
+	if (XMC->Dolby == '\x01') {
+		iVar1 = (int)XMC->OldRVol;
+		if ((int)XMC->OldLVol < iVar1) {
+			DVL = iVar1;
+			DVR = -iVar1;
+			return;
+		}
+		DVL = (int)XMC->OldLVol;
+		DVR = -iVar1;
+		return;
+	}
+	if (XMC->Dolby == '\x02') {
+		DVR = (int)XMC->OldRVol;
+		DVL = -DVR;
+		if (DVR <= (int)XMC->OldLVol) {
+			DVR = (int)XMC->OldLVol;
+			return;
+		}
+	}
+	else {
+		DVL = (int)XMC->OldLVol;
+		DVR = (int)XMC->OldRVol;
+	}
+	return;*/
 }
 
 
@@ -2835,36 +2892,38 @@ void DoDolbySS(void)
 	// End Line: 23985
 
 int GetEmpty(int old)
-
 {
-  byte bVar1;
-  XMCHANNEL *pXVar2;
-  int iVar3;
-  int iVar4;
-  
-  de = de + 1;
-  if ((int)(uint)mh->XMPSXChannels <= de) {
-    de = 0;
-  }
-  dd = de;
-  iVar4 = 0;
-  if (mh->XMPSXChannels != 0) {
-    do {
-      iVar3 = dd + 1;
-      pXVar2 = ms->XM_Chnl + dd;
-      dd = iVar3;
-      if ((int)(uint)mh->XMPSXChannels <= iVar3) {
-        dd = 0;
-      }
-      if ((pXVar2->kick == '\0') && (pXVar2->ChDead == '\x01')) {
-        bVar1 = pXVar2->SPUChannel;
-        pXVar2->SPUChannel = (uchar)old;
-        return (uint)bVar1;
-      }
-      iVar4 = iVar4 + 1;
-    } while (iVar4 < (int)(uint)mh->XMPSXChannels);
-  }
-  return -1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	XMCHANNEL *pXVar2;
+	int iVar3;
+	int iVar4;
+
+	de = de + 1;
+	if ((int)(uint)mh->XMPSXChannels <= de) {
+		de = 0;
+	}
+	dd = de;
+	iVar4 = 0;
+	if (mh->XMPSXChannels != 0) {
+		do {
+			iVar3 = dd + 1;
+			pXVar2 = ms->XM_Chnl + dd;
+			dd = iVar3;
+			if ((int)(uint)mh->XMPSXChannels <= iVar3) {
+				dd = 0;
+			}
+			if ((pXVar2->kick == '\0') && (pXVar2->ChDead == '\x01')) {
+				bVar1 = pXVar2->SPUChannel;
+				pXVar2->SPUChannel = (uchar)old;
+				return (uint)bVar1;
+			}
+			iVar4 = iVar4 + 1;
+		} while (iVar4 < (int)(uint)mh->XMPSXChannels);
+	}
+	return -1;*/
 }
 
 
@@ -2911,128 +2970,129 @@ int GetEmpty(int old)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void UpdateHardware(void)
-
 {
-  short *psVar1;
-  ushort *puVar2;
-  byte bVar3;
-  ushort uVar4;
-  XMSONG *pXVar5;
-  uint uVar6;
-  XMCHANNEL *pXVar7;
-  int Vol1;
-  int Vol2;
-  long Pitch;
-  uint old;
-  uint uVar8;
-  uchar uVar9;
-  int iVar10;
-  uint uVar11;
-  
-  uVar11 = 0;
-  uVar9 = ms->MaxChans;
-  uVar8 = 0;
-  if ((mh->XMPSXChannels != 0) && (uVar9 != '\0')) {
-    iVar10 = 0x58;
-    do {
-      pXVar7 = (XMCHANNEL *)(&ms->Status + iVar10);
-      if (((ms->PlayMask & 1 << (uVar8 & 0x1f)) != 0) &&
-         (uVar9 = uVar9 + -1, XMC = pXVar7, pXVar7->kick != '\0')) {
-        old = (uint)pXVar7->SPUChannel;
-        SpuSetKey(0,1 << (old & 0x1f));
-        uVar6 = GetEmpty(old);
-        if (uVar6 != 0xffffffff) {
-          old = uVar6;
-        }
-        XMC->SPUChannel = (uchar)old;
-        uVar4 = XMC->period;
-        if (ms->NotAmiga == 0) {
-          if (uVar4 == 0) {
-            trap(7);
-          }
-          Pitch = 0xa3ba68 / (int)(uint)uVar4 >> 3;
-        }
-        else {
-          Pitch = GetFreq2((uint)uVar4);
-        }
-        pXVar7 = XMC;
-        psVar1 = &XMC->RVol;
-        XMC->OldLVol = XMC->LVol;
-        pXVar7->OldRVol = *psVar1;
-        DoDolbySS();
-        pXVar7 = XMC;
-        pXVar5 = ms;
-        uVar11 = uVar11 | 1 << (old & 0x1f);
-        puVar2 = &XMC->period;
-        bVar3 = XMC->sample;
-        XMC->SPUPitch = (ushort)Pitch;
-        pXVar7->OldPeriod = *puVar2;
-        PlaySFX((uint)pXVar5->VabID,old,(uint)bVar3,Pitch,DVL,DVR);
-      }
-      uVar8 = uVar8 + 1;
-      iVar10 = iVar10 + 0x78;
-    } while (((int)uVar8 < (int)(uint)mh->XMPSXChannels) && (uVar9 != '\0'));
-  }
-  if (uVar11 != 0) {
-    XMTime1 = 1;
-    SpuSetKey(1,uVar11);
-    SpuFlush(0);
-    aa = 0;
-  }
-  uVar9 = ms->MaxChans;
-  uVar8 = 0;
-  if (mh->XMPSXChannels != 0) {
-    iVar10 = 0x58;
-    do {
-      if (uVar9 == '\0') {
-        return;
-      }
-      pXVar7 = (XMCHANNEL *)(&ms->Status + iVar10);
-      if (((ms->PlayMask & 1 << (uVar8 & 0x1f)) != 0) &&
-         (uVar9 = uVar9 + -1, XMC = pXVar7, pXVar7->ChDead == '\0')) {
-        bVar3 = pXVar7->SPUChannel;
-        if (pXVar7->kick == '\0') {
-          Vol1 = (int)pXVar7->LVol;
-          Vol2 = (int)pXVar7->OldLVol;
-          if ((Vol1 != Vol2) || (pXVar7->RVol != pXVar7->OldRVol)) {
-            if (Vol2 != Vol1) {
-              Vol1 = IntVols(Vol1,Vol2);
-              XMC->OldLVol = (short)Vol1;
-            }
-            if ((int)XMC->OldRVol != (int)XMC->RVol) {
-              Vol1 = IntVols((int)XMC->RVol,(int)XMC->OldRVol);
-              XMC->OldRVol = (short)Vol1;
-            }
-            DoDolbySS();
-            SetVol((uint)bVar3,DVL,DVR);
-          }
-          pXVar7 = XMC;
-          pXVar5 = ms;
-          if (XMC->period != XMC->OldPeriod) {
-            XMC->OldPeriod = XMC->period;
-            uVar4 = pXVar7->period;
-            if (pXVar5->NotAmiga == 0) {
-              if (uVar4 == 0) {
-                trap(7);
-              }
-              Pitch = 0xa3ba68 / (int)(uint)uVar4 >> 3;
-            }
-            else {
-              Pitch = GetFreq2((uint)uVar4);
-            }
-            XMC->SPUPitch = (ushort)Pitch;
-            SetFrq((uint)bVar3,Pitch);
-          }
-        }
-        else {
-          pXVar7->kick = '\0';
-        }
-      }
-      uVar8 = uVar8 + 1;
-      iVar10 = iVar10 + 0x78;
-    } while ((int)uVar8 < (int)(uint)mh->XMPSXChannels);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	short *psVar1;
+	ushort *puVar2;
+	byte bVar3;
+	ushort uVar4;
+	XMSONG *pXVar5;
+	uint uVar6;
+	XMCHANNEL *pXVar7;
+	int Vol1;
+	int Vol2;
+	long Pitch;
+	uint old;
+	uint uVar8;
+	uchar uVar9;
+	int iVar10;
+	uint uVar11;
+
+	uVar11 = 0;
+	uVar9 = ms->MaxChans;
+	uVar8 = 0;
+	if ((mh->XMPSXChannels != 0) && (uVar9 != '\0')) {
+		iVar10 = 0x58;
+		do {
+			pXVar7 = (XMCHANNEL *)(&ms->Status + iVar10);
+			if (((ms->PlayMask & 1 << (uVar8 & 0x1f)) != 0) &&
+				(uVar9 = uVar9 + -1, XMC = pXVar7, pXVar7->kick != '\0')) {
+				old = (uint)pXVar7->SPUChannel;
+				SpuSetKey(0, 1 << (old & 0x1f));
+				uVar6 = GetEmpty(old);
+				if (uVar6 != 0xffffffff) {
+					old = uVar6;
+				}
+				XMC->SPUChannel = (uchar)old;
+				uVar4 = XMC->period;
+				if (ms->NotAmiga == 0) {
+					if (uVar4 == 0) {
+						trap(7);
+					}
+					Pitch = 0xa3ba68 / (int)(uint)uVar4 >> 3;
+				}
+				else {
+					Pitch = GetFreq2((uint)uVar4);
+				}
+				pXVar7 = XMC;
+				psVar1 = &XMC->RVol;
+				XMC->OldLVol = XMC->LVol;
+				pXVar7->OldRVol = *psVar1;
+				DoDolbySS();
+				pXVar7 = XMC;
+				pXVar5 = ms;
+				uVar11 = uVar11 | 1 << (old & 0x1f);
+				puVar2 = &XMC->period;
+				bVar3 = XMC->sample;
+				XMC->SPUPitch = (ushort)Pitch;
+				pXVar7->OldPeriod = *puVar2;
+				PlaySFX((uint)pXVar5->VabID, old, (uint)bVar3, Pitch, DVL, DVR);
+			}
+			uVar8 = uVar8 + 1;
+			iVar10 = iVar10 + 0x78;
+		} while (((int)uVar8 < (int)(uint)mh->XMPSXChannels) && (uVar9 != '\0'));
+	}
+	if (uVar11 != 0) {
+		XMTime1 = 1;
+		SpuSetKey(1, uVar11);
+		SpuFlush(0);
+		aa = 0;
+	}
+	uVar9 = ms->MaxChans;
+	uVar8 = 0;
+	if (mh->XMPSXChannels != 0) {
+		iVar10 = 0x58;
+		do {
+			if (uVar9 == '\0') {
+				return;
+			}
+			pXVar7 = (XMCHANNEL *)(&ms->Status + iVar10);
+			if (((ms->PlayMask & 1 << (uVar8 & 0x1f)) != 0) &&
+				(uVar9 = uVar9 + -1, XMC = pXVar7, pXVar7->ChDead == '\0')) {
+				bVar3 = pXVar7->SPUChannel;
+				if (pXVar7->kick == '\0') {
+					Vol1 = (int)pXVar7->LVol;
+					Vol2 = (int)pXVar7->OldLVol;
+					if ((Vol1 != Vol2) || (pXVar7->RVol != pXVar7->OldRVol)) {
+						if (Vol2 != Vol1) {
+							Vol1 = IntVols(Vol1, Vol2);
+							XMC->OldLVol = (short)Vol1;
+						}
+						if ((int)XMC->OldRVol != (int)XMC->RVol) {
+							Vol1 = IntVols((int)XMC->RVol, (int)XMC->OldRVol);
+							XMC->OldRVol = (short)Vol1;
+						}
+						DoDolbySS();
+						SetVol((uint)bVar3, DVL, DVR);
+					}
+					pXVar7 = XMC;
+					pXVar5 = ms;
+					if (XMC->period != XMC->OldPeriod) {
+						XMC->OldPeriod = XMC->period;
+						uVar4 = pXVar7->period;
+						if (pXVar5->NotAmiga == 0) {
+							if (uVar4 == 0) {
+								trap(7);
+							}
+							Pitch = 0xa3ba68 / (int)(uint)uVar4 >> 3;
+						}
+						else {
+							Pitch = GetFreq2((uint)uVar4);
+						}
+						XMC->SPUPitch = (ushort)Pitch;
+						SetFrq((uint)bVar3, Pitch);
+					}
+				}
+				else {
+					pXVar7->kick = '\0';
+				}
+			}
+			uVar8 = uVar8 + 1;
+			iVar10 = iVar10 + 0x78;
+		} while ((int)uVar8 < (int)(uint)mh->XMPSXChannels);
+	}
+	return;*/
 }
 
 
@@ -3060,20 +3120,22 @@ void UpdateHardware(void)
 	/* end block 3 */
 	// End Line: 22882
 
-int IntVols(int Vol1,int Vol2)
-
+int IntVols(int Vol1, int Vol2)
 {
-  int iVar1;
-  
-  iVar1 = Vol2 - Vol1;
-  if (iVar1 < 0) {
-    iVar1 = -iVar1;
-  }
-  iVar1 = (iVar1 >> 2) + 1;
-  if (Vol2 <= Vol1) {
-    return Vol2 + iVar1;
-  }
-  return Vol1 + iVar1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+
+	iVar1 = Vol2 - Vol1;
+	if (iVar1 < 0) {
+		iVar1 = -iVar1;
+	}
+	iVar1 = (iVar1 >> 2) + 1;
+	if (Vol2 <= Vol1) {
+		return Vol2 + iVar1;
+	}
+	return Vol1 + iVar1;*/
 }
 
 
@@ -3113,14 +3175,16 @@ int IntVols(int Vol1,int Vol2)
 	// End Line: 21566
 
 long GetFreq2(long period)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  iVar1 = JPPer - period;
-  iVar2 = (iVar1 / 6 + (iVar1 >> 0x1f) >> 7) - (iVar1 >> 0x1f);
-  return (int)(uint)lintab[iVar1 + iVar2 * -0x300] >> (8U - iVar2 & 0x1f);
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	int iVar2;
+
+	iVar1 = JPPer - period;
+	iVar2 = (iVar1 / 6 + (iVar1 >> 0x1f) >> 7) - (iVar1 >> 0x1f);
+	return (int)(uint)lintab[iVar1 + iVar2 * -0x300] >> (8U - iVar2 & 0x1f);*/
 }
 
 
@@ -3152,69 +3216,71 @@ long GetFreq2(long period)
 	/* end block 3 */
 	// End Line: 5642
 
-short ProcessEnvelope(short v,uchar keyon,int JSmp)
-
+short ProcessEnvelope(short v, unsigned char keyon, int JSmp)
 {
-  byte bVar1;
-  byte bVar2;
-  XMCHANNEL *pXVar3;
-  short sVar4;
-  int iVar5;
-  _func_14 *p_Var6;
-  _func_14 *p_Var7;
-  int iVar8;
-  ushort uVar9;
-  ushort uVar10;
-  ushort uVar11;
-  ushort uVar12;
-  _func_14 *p_Var13;
-  
-  bVar1 = *(byte *)&XMC->enva;
-  bVar2 = *(byte *)&XMC->envb;
-  uVar9 = (ushort)bVar2;
-  uVar11 = XMC->envp;
-  p_Var13 = mh->JAP_InstrumentOffset[JSmp];
-  p_Var6 = p_Var13 + (uint)bVar1 * 4;
-  p_Var7 = p_Var13 + (uint)bVar2 * 4;
-  iVar8 = ((uint)(byte)p_Var7[0x81] + (uint)(byte)p_Var7[0x82] * 0x100) * 0x10000;
-  iVar5 = ((uint)(byte)p_Var6[0x81] + (uint)(byte)p_Var6[0x82] * 0x100) * 0x10000;
-  sVar4 = Interpolate(XMC->envp,(short)((uint)iVar5 >> 0x10),(short)((uint)iVar8 >> 0x10),
-                      (short)(((uint)(byte)p_Var6[0x83] + (uint)(byte)p_Var6[0x84] * 0x100) *
-                              0x40000 >> 0x10),
-                      (int)(((uint)(byte)p_Var7[0x83] + (uint)(byte)p_Var7[0x84] * 0x100) * 0x40000)
-                      >> 0x10);
-  pXVar3 = XMC;
-  uVar12 = (ushort)bVar1;
-  uVar10 = uVar9;
-  if (((((XMC->envflg & 2) == 0) || (keyon == '\0')) || ((uint)bVar1 != (uint)XMC->envsus)) ||
-     ((uint)uVar11 != iVar5 >> 0x10)) {
-    _uVar11 = (uint)uVar11 + 1 & 0xffff;
-    uVar11 = (ushort)_uVar11;
-    if (iVar8 >> 0x10 <= (int)_uVar11) {
-      uVar12 = (ushort)bVar2;
-      _uVar11 = (uint)bVar2 + 1 & 0xff;
-      uVar10 = (ushort)_uVar11;
-      if ((XMC->envflg & 4) == 0) {
-        if (XMC->envpts <= _uVar11) {
-          uVar10 = uVar10 - 1 & 0xff;
-          uVar11 = uVar11 - 1;
-        }
-      }
-      else {
-        uVar12 = uVar9;
-        if (XMC->envend < _uVar11) {
-          bVar1 = XMC->envbeg;
-          uVar12 = (ushort)bVar1;
-          uVar10 = (ushort)bVar1 + 1 & 0xff;
-          uVar11 = *(ushort *)(p_Var13 + (uint)bVar1 * 4 + 0x81);
-        }
-      }
-    }
-  }
-  XMC->enva = uVar12;
-  pXVar3->envp = uVar11;
-  pXVar3->envb = uVar10;
-  return sVar4;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	byte bVar2;
+	XMCHANNEL *pXVar3;
+	short sVar4;
+	int iVar5;
+	_func_14 *p_Var6;
+	_func_14 *p_Var7;
+	int iVar8;
+	ushort uVar9;
+	ushort uVar10;
+	ushort uVar11;
+	ushort uVar12;
+	_func_14 *p_Var13;
+
+	bVar1 = *(byte *)&XMC->enva;
+	bVar2 = *(byte *)&XMC->envb;
+	uVar9 = (ushort)bVar2;
+	uVar11 = XMC->envp;
+	p_Var13 = mh->JAP_InstrumentOffset[JSmp];
+	p_Var6 = p_Var13 + (uint)bVar1 * 4;
+	p_Var7 = p_Var13 + (uint)bVar2 * 4;
+	iVar8 = ((uint)(byte)p_Var7[0x81] + (uint)(byte)p_Var7[0x82] * 0x100) * 0x10000;
+	iVar5 = ((uint)(byte)p_Var6[0x81] + (uint)(byte)p_Var6[0x82] * 0x100) * 0x10000;
+	sVar4 = Interpolate(XMC->envp, (short)((uint)iVar5 >> 0x10), (short)((uint)iVar8 >> 0x10),
+		(short)(((uint)(byte)p_Var6[0x83] + (uint)(byte)p_Var6[0x84] * 0x100) *
+			0x40000 >> 0x10),
+			(int)(((uint)(byte)p_Var7[0x83] + (uint)(byte)p_Var7[0x84] * 0x100) * 0x40000)
+		>> 0x10);
+	pXVar3 = XMC;
+	uVar12 = (ushort)bVar1;
+	uVar10 = uVar9;
+	if (((((XMC->envflg & 2) == 0) || (keyon == '\0')) || ((uint)bVar1 != (uint)XMC->envsus)) ||
+		((uint)uVar11 != iVar5 >> 0x10)) {
+		_uVar11 = (uint)uVar11 + 1 & 0xffff;
+		uVar11 = (ushort)_uVar11;
+		if (iVar8 >> 0x10 <= (int)_uVar11) {
+			uVar12 = (ushort)bVar2;
+			_uVar11 = (uint)bVar2 + 1 & 0xff;
+			uVar10 = (ushort)_uVar11;
+			if ((XMC->envflg & 4) == 0) {
+				if (XMC->envpts <= _uVar11) {
+					uVar10 = uVar10 - 1 & 0xff;
+					uVar11 = uVar11 - 1;
+				}
+			}
+			else {
+				uVar12 = uVar9;
+				if (XMC->envend < _uVar11) {
+					bVar1 = XMC->envbeg;
+					uVar12 = (ushort)bVar1;
+					uVar10 = (ushort)bVar1 + 1 & 0xff;
+					uVar11 = *(ushort *)(p_Var13 + (uint)bVar1 * 4 + 0x81);
+				}
+			}
+		}
+	}
+	XMC->enva = uVar12;
+	pXVar3->envp = uVar11;
+	pXVar3->envb = uVar10;
+	return sVar4;*/
 }
 
 
@@ -3251,69 +3317,71 @@ short ProcessEnvelope(short v,uchar keyon,int JSmp)
 	/* end block 4 */
 	// End Line: 5829
 
-short ProcessPanEnvelope(short v,uchar keyon,int JSmp)
-
+short ProcessPanEnvelope(short v, unsigned char keyon, int JSmp)
 {
-  byte bVar1;
-  byte bVar2;
-  XMCHANNEL *pXVar3;
-  short sVar4;
-  int iVar5;
-  _func_14 *p_Var6;
-  _func_14 *p_Var7;
-  int iVar8;
-  ushort uVar9;
-  ushort uVar10;
-  ushort uVar11;
-  ushort uVar12;
-  _func_14 *p_Var13;
-  
-  bVar1 = *(byte *)&XMC->panenva;
-  bVar2 = *(byte *)&XMC->panenvb;
-  uVar9 = (ushort)bVar2;
-  uVar11 = XMC->panenvp;
-  p_Var13 = mh->JAP_InstrumentOffset[JSmp];
-  p_Var6 = p_Var13 + (uint)bVar1 * 4;
-  p_Var7 = p_Var13 + (uint)bVar2 * 4;
-  iVar8 = ((uint)(byte)p_Var7[0xb1] + (uint)(byte)p_Var7[0xb2] * 0x100) * 0x10000;
-  iVar5 = ((uint)(byte)p_Var6[0xb1] + (uint)(byte)p_Var6[0xb2] * 0x100) * 0x10000;
-  sVar4 = Interpolate(XMC->panenvp,(short)((uint)iVar5 >> 0x10),(short)((uint)iVar8 >> 0x10),
-                      (short)(((uint)(byte)p_Var6[0xb3] + (uint)(byte)p_Var6[0xb4] * 0x100) *
-                              0x40000 >> 0x10),
-                      (int)(((uint)(byte)p_Var7[0xb3] + (uint)(byte)p_Var7[0xb4] * 0x100) * 0x40000)
-                      >> 0x10);
-  pXVar3 = XMC;
-  uVar12 = (ushort)bVar1;
-  uVar10 = uVar9;
-  if (((((XMC->panenvflg & 2) == 0) || (keyon == '\0')) || ((uint)bVar1 != (uint)XMC->panenvsus)) ||
-     ((uint)uVar11 != iVar5 >> 0x10)) {
-    _uVar11 = (uint)uVar11 + 1 & 0xffff;
-    uVar11 = (ushort)_uVar11;
-    if (iVar8 >> 0x10 <= (int)_uVar11) {
-      uVar12 = (ushort)bVar2;
-      _uVar11 = (uint)bVar2 + 1 & 0xff;
-      uVar10 = (ushort)_uVar11;
-      if ((XMC->panenvflg & 4) == 0) {
-        if (XMC->panenvpts <= _uVar11) {
-          uVar10 = uVar10 - 1 & 0xff;
-          uVar11 = uVar11 - 1;
-        }
-      }
-      else {
-        uVar12 = uVar9;
-        if (XMC->panenvend < _uVar11) {
-          bVar1 = XMC->panenvbeg;
-          uVar12 = (ushort)bVar1;
-          uVar10 = (ushort)bVar1 + 1 & 0xff;
-          uVar11 = *(ushort *)(p_Var13 + (uint)bVar1 * 4 + 0xb1);
-        }
-      }
-    }
-  }
-  XMC->panenva = uVar12;
-  pXVar3->panenvp = uVar11;
-  pXVar3->panenvb = uVar10;
-  return sVar4;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	byte bVar2;
+	XMCHANNEL *pXVar3;
+	short sVar4;
+	int iVar5;
+	_func_14 *p_Var6;
+	_func_14 *p_Var7;
+	int iVar8;
+	ushort uVar9;
+	ushort uVar10;
+	ushort uVar11;
+	ushort uVar12;
+	_func_14 *p_Var13;
+
+	bVar1 = *(byte *)&XMC->panenva;
+	bVar2 = *(byte *)&XMC->panenvb;
+	uVar9 = (ushort)bVar2;
+	uVar11 = XMC->panenvp;
+	p_Var13 = mh->JAP_InstrumentOffset[JSmp];
+	p_Var6 = p_Var13 + (uint)bVar1 * 4;
+	p_Var7 = p_Var13 + (uint)bVar2 * 4;
+	iVar8 = ((uint)(byte)p_Var7[0xb1] + (uint)(byte)p_Var7[0xb2] * 0x100) * 0x10000;
+	iVar5 = ((uint)(byte)p_Var6[0xb1] + (uint)(byte)p_Var6[0xb2] * 0x100) * 0x10000;
+	sVar4 = Interpolate(XMC->panenvp, (short)((uint)iVar5 >> 0x10), (short)((uint)iVar8 >> 0x10),
+		(short)(((uint)(byte)p_Var6[0xb3] + (uint)(byte)p_Var6[0xb4] * 0x100) *
+			0x40000 >> 0x10),
+			(int)(((uint)(byte)p_Var7[0xb3] + (uint)(byte)p_Var7[0xb4] * 0x100) * 0x40000)
+		>> 0x10);
+	pXVar3 = XMC;
+	uVar12 = (ushort)bVar1;
+	uVar10 = uVar9;
+	if (((((XMC->panenvflg & 2) == 0) || (keyon == '\0')) || ((uint)bVar1 != (uint)XMC->panenvsus)) ||
+		((uint)uVar11 != iVar5 >> 0x10)) {
+		_uVar11 = (uint)uVar11 + 1 & 0xffff;
+		uVar11 = (ushort)_uVar11;
+		if (iVar8 >> 0x10 <= (int)_uVar11) {
+			uVar12 = (ushort)bVar2;
+			_uVar11 = (uint)bVar2 + 1 & 0xff;
+			uVar10 = (ushort)_uVar11;
+			if ((XMC->panenvflg & 4) == 0) {
+				if (XMC->panenvpts <= _uVar11) {
+					uVar10 = uVar10 - 1 & 0xff;
+					uVar11 = uVar11 - 1;
+				}
+			}
+			else {
+				uVar12 = uVar9;
+				if (XMC->panenvend < _uVar11) {
+					bVar1 = XMC->panenvbeg;
+					uVar12 = (ushort)bVar1;
+					uVar10 = (ushort)bVar1 + 1 & 0xff;
+					uVar11 = *(ushort *)(p_Var13 + (uint)bVar1 * 4 + 0xb1);
+				}
+			}
+		}
+	}
+	XMC->panenva = uVar12;
+	pXVar3->panenvp = uVar11;
+	pXVar3->panenvb = uVar10;
+	return sVar4;*/
 }
 
 
@@ -3336,39 +3404,40 @@ short ProcessPanEnvelope(short v,uchar keyon,int JSmp)
 	/* end block 2 */
 	// End Line: 8974
 
-void XM_SetSongPos(int Song_ID,ushort pos)
-
+void XM_SetSongPos(int Song_ID, ushort pos)
 {
-  ushort uVar1;
-  XMSONG *pXVar2;
-  int iVar3;
-  int iVar4;
-  
-  if ((&XMSongIDs)[Song_ID] != -1) {
-    mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-    mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
-    if (pos < mhu->songlength) {
-      iVar3 = 0;
-      if (mhu->XMChannels != 0) {
-        iVar4 = 0x58;
-        do {
-          XMCU = (XMCHANNEL *)(&mu->Status + iVar4);
-          XMCU->keyon = '\0';
-          XMCU->tmpvolume = '@';
-          iVar3 = iVar3 + 1;
-          iVar4 = iVar4 + 0x78;
-        } while (iVar3 < (int)(uint)mhu->XMChannels);
-      }
-      pXVar2 = mu;
-      uVar1 = mu->SongSpeed;
-      mu->posjmp = 1;
-      pXVar2->patbrk = 0;
-      pXVar2->SongPos = pos;
-      pXVar2->vbtick = uVar1;
-      JP_Do_Nothing = 0;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	XMSONG *pXVar2;
+	int iVar3;
+	int iVar4;
+
+	if ((&XMSongIDs)[Song_ID] != -1) {
+		mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+		mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
+		if (pos < mhu->songlength) {
+			iVar3 = 0;
+			if (mhu->XMChannels != 0) {
+				iVar4 = 0x58;
+				do {
+					XMCU = (XMCHANNEL *)(&mu->Status + iVar4);
+					XMCU->keyon = '\0';
+					XMCU->tmpvolume = '@';
+					iVar3 = iVar3 + 1;
+					iVar4 = iVar4 + 0x78;
+				} while (iVar3 < (int)(uint)mhu->XMChannels);
+			}
+			pXVar2 = mu;
+			uVar1 = mu->SongSpeed;
+			mu->posjmp = 1;
+			pXVar2->patbrk = 0;
+			pXVar2->SongPos = pos;
+			pXVar2->vbtick = uVar1;
+			JP_Do_Nothing = 0;
+		}
+	}
+	return;*/
 }
 
 
@@ -3394,18 +3463,20 @@ void XM_SetSongPos(int Song_ID,ushort pos)
 	/* end block 3 */
 	// End Line: 22620
 
-void PlaySFX(int VBID,int Channel,int Inst,int Pitch,int LV,int RV)
-
+void PlaySFX(int VBID, int Channel, int Inst, int Pitch, int LV, int RV)
 {
-  xm_g_s_attr.voice = 1 << (Channel & 0x1fU);
-  xm_g_s_attr.mask = 0x10093;
-  xm_g_s_attr.pitch = (ushort)Pitch;
-  xm_g_s_attr.volume.left = (short)LV;
-  xm_g_s_attr.volume.right = (short)RV;
-  xm_g_s_attr.addr = (&xm_l_vag_spu_addr)[VBID * 0x80 + Inst] + XMC->SOffset;
-  xm_g_s_attr.loop_addr = (&xm_l_vag_spu_addr)[VBID * 0x80 + Inst] + XMC->SOffset;
-  SpuSetVoiceAttr(&xm_g_s_attr);
-  return;
+	UNIMPLEMENTED();
+	/*
+	xm_g_s_attr.voice = 1 << (Channel & 0x1fU);
+	xm_g_s_attr.mask = 0x10093;
+	xm_g_s_attr.pitch = (ushort)Pitch;
+	xm_g_s_attr.volume.left = (short)LV;
+	xm_g_s_attr.volume.right = (short)RV;
+	xm_g_s_attr.addr = (&xm_l_vag_spu_addr)[VBID * 0x80 + Inst] + XMC->SOffset;
+	xm_g_s_attr.loop_addr = (&xm_l_vag_spu_addr)[VBID * 0x80 + Inst] + XMC->SOffset;
+	SpuSetVoiceAttr(&xm_g_s_attr);
+	return;
+	*/
 }
 
 
@@ -3425,20 +3496,21 @@ void PlaySFX(int VBID,int Channel,int Inst,int Pitch,int LV,int RV)
 	// End Line: 22999
 
 void InitSPUChannel(int Channel)
-
 {
-  xm_g_s_attr.voice = 1 << (Channel & 0x1fU);
-  xm_g_s_attr.mask = 0xff80;
-  xm_g_s_attr.r_mode = 3;
-  xm_g_s_attr.a_mode = 1;
-  xm_g_s_attr.s_mode = 1;
-  xm_g_s_attr.ar = 4;
-  xm_g_s_attr.dr = 0;
-  xm_g_s_attr.sr = 0;
-  xm_g_s_attr.rr = 1;
-  xm_g_s_attr.sl = 0xf;
-  SpuSetVoiceAttr(&xm_g_s_attr);
-  return;
+	UNIMPLEMENTED();
+	/*
+	xm_g_s_attr.voice = 1 << (Channel & 0x1fU);
+	xm_g_s_attr.mask = 0xff80;
+	xm_g_s_attr.r_mode = 3;
+	xm_g_s_attr.a_mode = 1;
+	xm_g_s_attr.s_mode = 1;
+	xm_g_s_attr.ar = 4;
+	xm_g_s_attr.dr = 0;
+	xm_g_s_attr.sr = 0;
+	xm_g_s_attr.rr = 1;
+	xm_g_s_attr.sl = 0xf;
+	SpuSetVoiceAttr(&xm_g_s_attr);
+	return;*/
 }
 
 
@@ -3480,27 +3552,28 @@ void InitSPUChannel(int Channel)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void CurrentKeyStat(void)
-
 {
-  int iVar1;
-  int iVar2;
-  char acStack32 [24];
-  
-  SpuGetAllKeysStatus(acStack32);
-  iVar1 = 0;
-  if (mh->XMPSXChannels != 0) {
-    iVar2 = 0x58;
-    do {
-      XMC = (XMCHANNEL *)(&ms->Status + iVar2);
-      if ((acStack32[XMC->SPUChannel] != '\x01') && (XMC->ChDead == '\0')) {
-        XMC->ChDead = '\x01';
-        XMC->nothing = '\x01';
-      }
-      iVar1 = iVar1 + 1;
-      iVar2 = iVar2 + 0x78;
-    } while (iVar1 < (int)(uint)mh->XMPSXChannels);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	char acStack32[24];
+
+	SpuGetAllKeysStatus(acStack32);
+	iVar1 = 0;
+	if (mh->XMPSXChannels != 0) {
+		iVar2 = 0x58;
+		do {
+			XMC = (XMCHANNEL *)(&ms->Status + iVar2);
+			if ((acStack32[XMC->SPUChannel] != '\x01') && (XMC->ChDead == '\0')) {
+				XMC->ChDead = '\x01';
+				XMC->nothing = '\x01';
+			}
+			iVar1 = iVar1 + 1;
+			iVar2 = iVar2 + 0x78;
+		} while (iVar1 < (int)(uint)mh->XMPSXChannels);
+	}
+	return;*/
 }
 
 
@@ -3525,10 +3598,9 @@ void CurrentKeyStat(void)
 	// End Line: 22681
 
 void StpCh(int Channel)
-
 {
-  SpuSetVoiceVolume(Channel,0,0);
-  return;
+	SpuSetVoiceVolume(Channel, 0, 0);
+	return;
 }
 
 
@@ -3547,11 +3619,10 @@ void StpCh(int Channel)
 	/* end block 2 */
 	// End Line: 22717
 
-void SetVol(int Channel,int LVol,int RVol)
-
+void SetVol(int Channel, int LVol, int RVol)
 {
-  SpuSetVoiceVolume(Channel,(int)(short)LVol,(int)(short)RVol);
-  return;
+	SpuSetVoiceVolume(Channel, (int)(short)LVol, (int)(short)RVol);
+	return;
 }
 
 
@@ -3570,11 +3641,10 @@ void SetVol(int Channel,int LVol,int RVol)
 	/* end block 2 */
 	// End Line: 22727
 
-void SetFrq(int Channel,int Pitch)
-
+void SetFrq(int Channel, int Pitch)
 {
-  SpuSetVoicePitch(Channel,Pitch & 0xffff);
-  return;
+	SpuSetVoicePitch(Channel, Pitch & 0xffff);
+	return;
 }
 
 
@@ -3611,32 +3681,33 @@ void SetFrq(int Channel,int Pitch)
 	// End Line: 23210
 
 void SilenceXM(int Song_ID)
-
 {
-  uint Channel;
-  uint uVar1;
-  uint uVar2;
-  int iVar3;
-  
-  mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-  mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
-  uVar1 = 0;
-  uVar2 = 0;
-  if (mhu->XMPSXChannels != 0) {
-    iVar3 = 0x58;
-    do {
-      if ((mu->PlayMask & 1 << (uVar1 & 0x1f)) != 0) {
-        Channel = (uint)((XMCHANNEL *)(&mu->Status + iVar3))->SPUChannel;
-        uVar2 = uVar2 | 1 << (Channel & 0x1f);
-        XMC = (XMCHANNEL *)(&mu->Status + iVar3);
-        SetVol(Channel,0,0);
-      }
-      uVar1 = uVar1 + 1;
-      iVar3 = iVar3 + 0x78;
-    } while ((int)uVar1 < (int)(uint)mhu->XMPSXChannels);
-  }
-  SpuSetKey(0,uVar2);
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint Channel;
+	uint uVar1;
+	uint uVar2;
+	int iVar3;
+
+	mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+	mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
+	uVar1 = 0;
+	uVar2 = 0;
+	if (mhu->XMPSXChannels != 0) {
+		iVar3 = 0x58;
+		do {
+			if ((mu->PlayMask & 1 << (uVar1 & 0x1f)) != 0) {
+				Channel = (uint)((XMCHANNEL *)(&mu->Status + iVar3))->SPUChannel;
+				uVar2 = uVar2 | 1 << (Channel & 0x1f);
+				XMC = (XMCHANNEL *)(&mu->Status + iVar3);
+				SetVol(Channel, 0, 0);
+			}
+			uVar1 = uVar1 + 1;
+			iVar3 = iVar3 + 0x78;
+		} while ((int)uVar1 < (int)(uint)mhu->XMPSXChannels);
+	}
+	SpuSetKey(0, uVar2);
+	return;*/
 }
 
 
@@ -3660,29 +3731,30 @@ void SilenceXM(int Song_ID)
 	// End Line: 6321
 
 void XM_Pause(int Song_ID)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if ((&XMSongIDs)[Song_ID] != -1) {
-    mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-    mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
-    if (mu->XMPlay == '\x01') {
-      mu->XMPlay = '\x02';
-      iVar1 = 0;
-      if (mhu->XMPSXChannels != 0) {
-        iVar2 = 0x58;
-        do {
-          XMCU = (XMCHANNEL *)(&mu->Status + iVar2);
-          SetFrq((uint)XMCU->SPUChannel,0);
-          iVar1 = iVar1 + 1;
-          iVar2 = iVar2 + 0x78;
-        } while (iVar1 < (int)(uint)mhu->XMPSXChannels);
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+
+	if ((&XMSongIDs)[Song_ID] != -1) {
+		mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+		mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
+		if (mu->XMPlay == '\x01') {
+			mu->XMPlay = '\x02';
+			iVar1 = 0;
+			if (mhu->XMPSXChannels != 0) {
+				iVar2 = 0x58;
+				do {
+					XMCU = (XMCHANNEL *)(&mu->Status + iVar2);
+					SetFrq((uint)XMCU->SPUChannel, 0);
+					iVar1 = iVar1 + 1;
+					iVar2 = iVar2 + 0x78;
+				} while (iVar1 < (int)(uint)mhu->XMPSXChannels);
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -3706,31 +3778,32 @@ void XM_Pause(int Song_ID)
 	// End Line: 7003
 
 void XM_Restart(int Song_ID)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if ((&XMSongIDs)[Song_ID] != -1) {
-    mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-    mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
-    if (mu->XMPlay == '\x02') {
-      mu->XMPlay = '\x01';
-      iVar1 = 0;
-      if (mhu->XMPSXChannels != 0) {
-        iVar2 = 0x58;
-        do {
-          XMCU = (XMCHANNEL *)(&mu->Status + iVar2);
-          if (XMCU->ChDead == '\0') {
-            SetFrq((uint)XMCU->SPUChannel,(uint)XMCU->SPUPitch);
-          }
-          iVar1 = iVar1 + 1;
-          iVar2 = iVar2 + 0x78;
-        } while (iVar1 < (int)(uint)mhu->XMPSXChannels);
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+
+	if ((&XMSongIDs)[Song_ID] != -1) {
+		mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+		mhu = (XMHEADER *)XM_HeaderAddress8[mu->HeaderNum];
+		if (mu->XMPlay == '\x02') {
+			mu->XMPlay = '\x01';
+			iVar1 = 0;
+			if (mhu->XMPSXChannels != 0) {
+				iVar2 = 0x58;
+				do {
+					XMCU = (XMCHANNEL *)(&mu->Status + iVar2);
+					if (XMCU->ChDead == '\0') {
+						SetFrq((uint)XMCU->SPUChannel, (uint)XMCU->SPUPitch);
+					}
+					iVar1 = iVar1 + 1;
+					iVar2 = iVar2 + 0x78;
+				} while (iVar1 < (int)(uint)mhu->XMPSXChannels);
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -3744,14 +3817,15 @@ void XM_Restart(int Song_ID)
 	/* end block 1 */
 	// End Line: 12806
 
-void XM_SetMasterVol(int Song_ID,uchar Vol)
-
+void XM_SetMasterVol(int Song_ID, unsigned char Vol)
 {
-  if (((&XMSongIDs)[Song_ID] != -1) && (Vol < 0x81)) {
-    mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
-    mu->MasterVolume = Vol;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if (((&XMSongIDs)[Song_ID] != -1) && (Vol < 0x81)) {
+		mu = (XMSONG *)(&XM_SngAddress24)[Song_ID];
+		mu->MasterVolume = Vol;
+	}
+	return;*/
 }
 
 
@@ -3786,24 +3860,25 @@ void XM_SetMasterVol(int Song_ID,uchar Vol)
 	// End Line: 23264
 
 void ClearSPU(int VBID)
-
 {
-  int iVar1;
-  ulong *puVar2;
-  
-  iVar1 = (int)(&iVABID)[VBID];
-  if (0 < iVar1) {
-    puVar2 = &xm_l_vag_spu_addr + VBID * 0x80;
-    do {
-      if (*puVar2 != 0) {
-        XM_FreeVAG(*puVar2);
-        *puVar2 = 0;
-      }
-      iVar1 = iVar1 + -1;
-      puVar2 = puVar2 + 1;
-    } while (iVar1 != 0);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	ulong *puVar2;
+
+	iVar1 = (int)(&iVABID)[VBID];
+	if (0 < iVar1) {
+		puVar2 = &xm_l_vag_spu_addr + VBID * 0x80;
+		do {
+			if (*puVar2 != 0) {
+				XM_FreeVAG(*puVar2);
+				*puVar2 = 0;
+			}
+			iVar1 = iVar1 + -1;
+			puVar2 = puVar2 + 1;
+		} while (iVar1 != 0);
+	}
+	return;*/
 }
 
 
@@ -3828,10 +3903,9 @@ void ClearSPU(int VBID)
 	// End Line: 13220
 
 void XM_FreeVAG(int addr)
-
 {
-  SpuFree();
-  return;
+	SpuFree(addr);
+	return;
 }
 
 
@@ -3872,24 +3946,26 @@ void XM_FreeVAG(int addr)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int GetFreeSongID(void)
-
 {
-  int iVar1;
-  short *psVar2;
-  
-  iVar1 = 0;
-  if (0 < XM_NSA) {
-    psVar2 = &XMSongIDs;
-    do {
-      if (*psVar2 == -1) {
-        *psVar2 = 0;
-        return iVar1;
-      }
-      iVar1 = iVar1 + 1;
-      psVar2 = psVar2 + 1;
-    } while (iVar1 < XM_NSA);
-  }
-  return -1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	short *psVar2;
+
+	iVar1 = 0;
+	if (0 < XM_NSA) {
+		psVar2 = &XMSongIDs;
+		do {
+			if (*psVar2 == -1) {
+				*psVar2 = 0;
+				return iVar1;
+			}
+			iVar1 = iVar1 + 1;
+			psVar2 = psVar2 + 1;
+		} while (iVar1 < XM_NSA);
+	}
+	return -1;*/
 }
 
 
@@ -3904,12 +3980,13 @@ int GetFreeSongID(void)
 	// End Line: 14751
 
 void XM_Quit(int SongID)
-
 {
-  XM_PlayStop(SongID);
-  (&XMSongIDs)[SongID] = -1;
-  JPClearSPUFlags(SongID + 1);
-  return;
+	UNIMPLEMENTED();
+	/*
+	XM_PlayStop(SongID);
+	(&XMSongIDs)[SongID] = -1;
+	JPClearSPUFlags(SongID + 1);
+	return;*/
 }
 
 
@@ -3943,21 +4020,22 @@ void XM_Quit(int SongID)
 	// End Line: 24576
 
 void JPClearSPUFlags(int SongID)
-
 {
-  short *psVar1;
-  int iVar2;
-  
-  psVar1 = &XMSPU_SFX;
-  iVar2 = 0x17;
-  do {
-    if ((int)*psVar1 == SongID) {
-      *psVar1 = 0;
-    }
-    iVar2 = iVar2 + -1;
-    psVar1 = psVar1 + 1;
-  } while (-1 < iVar2);
-  return;
+	UNIMPLEMENTED();
+	/*
+	short *psVar1;
+	int iVar2;
+
+	psVar1 = &XMSPU_SFX;
+	iVar2 = 0x17;
+	do {
+		if ((int)*psVar1 == SongID) {
+			*psVar1 = 0;
+		}
+		iVar2 = iVar2 + -1;
+		psVar1 = psVar1 + 1;
+	} while (-1 < iVar2);
+	return;*/
 }
 
 
@@ -3998,21 +4076,23 @@ void JPClearSPUFlags(int SongID)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int XM_GetFreeVAB(void)
-
 {
-  int iVar1;
-  short *psVar2;
-  
-  iVar1 = 0;
-  psVar2 = &iVABID;
-  do {
-    if (*psVar2 == -1) {
-      return iVar1;
-    }
-    iVar1 = iVar1 + 1;
-    psVar2 = psVar2 + 1;
-  } while (iVar1 < 8);
-  return -1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	short *psVar2;
+
+	iVar1 = 0;
+	psVar2 = &iVABID;
+	do {
+		if (*psVar2 == -1) {
+			return iVar1;
+		}
+		iVar1 = iVar1 + 1;
+		psVar2 = psVar2 + 1;
+	} while (iVar1 < 8);
+	return -1;*/
 }
 
 
@@ -4031,12 +4111,13 @@ int XM_GetFreeVAB(void)
 	/* end block 2 */
 	// End Line: 14974
 
-void XM_SetVAGAddress(int VabID,int slot,int addr)
-
+void XM_SetVAGAddress(int VabID, int slot, int addr)
 {
-  (&xm_l_vag_spu_addr)[VabID * 0x80 + slot] = addr;
-  (&iVABID)[VabID] = (short)slot + 1;
-  return;
+	UNIMPLEMENTED();
+	/*
+	(&xm_l_vag_spu_addr)[VabID * 0x80 + slot] = addr;
+	(&iVABID)[VabID] = (short)slot + 1;
+	return;*/
 }
 
 
@@ -4058,9 +4139,8 @@ void XM_SetVAGAddress(int VabID,int slot,int addr)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int XM_GetSongSize(void)
-
 {
-  return 0xbb0;
+	return 0xbb0;
 }
 
 
@@ -4084,15 +4164,16 @@ int XM_GetSongSize(void)
 	/* end block 3 */
 	// End Line: 18224
 
-void XM_SetSongAddress(uchar *Address)
-
+void XM_SetSongAddress(unsigned char *Address)
 {
-  mu = (XMSONG *)Address;
-  (&XM_SngAddress24)[XM_NSA] = Address;
-  *Address = '\0';
-  mu->XMPlay = '\0';
-  XM_NSA = XM_NSA + 1;
-  return;
+	UNIMPLEMENTED();
+	/*
+	mu = (XMSONG *)Address;
+	(&XM_SngAddress24)[XM_NSA] = Address;
+	*Address = '\0';
+	mu->XMPlay = '\0';
+	XM_NSA = XM_NSA + 1;
+	return;*/
 }
 
 
@@ -4114,10 +4195,10 @@ void XM_SetSongAddress(uchar *Address)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void XM_FreeAllSongIDs(void)
-
 {
-  XM_NSA = 0;
-  return;
+	UNIMPLEMENTED();
+	//XM_NSA = 0;
+	//return;
 }
 
 
@@ -4139,9 +4220,8 @@ void XM_FreeAllSongIDs(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int XM_GetFileHeaderSize(void)
-
 {
-  return 0xf1c;
+	return 0xf1c;
 }
 
 
@@ -4160,17 +4240,18 @@ int XM_GetFileHeaderSize(void)
 	/* end block 2 */
 	// End Line: 18287
 
-void XM_SetFileHeaderAddress(uchar *Address)
-
+void XM_SetFileHeaderAddress(unsigned char *Address)
 {
-  uchar **ppuVar1;
-  
-  if (XM_HA < 8) {
-    ppuVar1 = XM_HeaderAddress8 + XM_HA;
-    XM_HA = XM_HA + 1;
-    *ppuVar1 = Address;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uchar **ppuVar1;
+
+	if (XM_HA < 8) {
+		ppuVar1 = XM_HeaderAddress8 + XM_HA;
+		XM_HA = XM_HA + 1;
+		*ppuVar1 = Address;
+	}
+	return;*/
 }
 
 

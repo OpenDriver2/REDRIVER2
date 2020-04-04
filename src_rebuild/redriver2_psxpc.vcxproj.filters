@@ -195,6 +195,9 @@
     <ClCompile Include="GAME\C\CIV_AI.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\XMPLAY.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

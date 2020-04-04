@@ -4,13 +4,17 @@
 #include "LIBSPU.H"
 #include "LIBETC.H"
 
+#include "XMPLAY.H"
+
 #include <string.h>
+#include <stdlib.h>
 
 long dummylong[3] = { 0, 0, 0 };
 
-void* bankaddr = NULL;
-char banks[24] = { 0 };
+long bankaddr[2] = { 0 };
 long banksize[2] = { 88064, 412672 };
+
+char banks[24] = { 0 };
 
 SAMPLE_DATA samples[35][7];
 int VABID = -1;
@@ -51,15 +55,9 @@ int gMusicVolume = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-
-
-
-
+// [D]
 void InitSound(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	int iVar1;
 	ulong *puVar2;
 	int iVar3;
@@ -71,13 +69,15 @@ void InitSound(void)
 	SpuInitMalloc(7, banks);
 	SpuSetMute(1);
 	AllocateReverb(3, 0x4000);
-	plVar6 = &bankaddr;
-	plVar5 = &banksize;
+	plVar6 = bankaddr;
+	plVar5 = banksize;
 	iVar3 = 1;
 	do {
 		iVar1 = SpuMalloc(*plVar5);
 		*plVar6 = iVar1;
 		if (iVar1 == -1) {
+			/* WARNING: Subroutine does not return */
+			eprintf("Failed to SpuMalloc! Exiting...\n");
 			exit(-1);
 		}
 		plVar6 = plVar6 + 1;
@@ -85,19 +85,19 @@ void InitSound(void)
 		plVar5 = plVar5 + 1;
 	} while (-1 < iVar3);
 	uVar4 = 0;
-	puVar2 = &channel_lookup;
+	puVar2 = channel_lookup;
+
 	do {
 		*puVar2 = 1 << (uVar4 & 0x1f);
 		uVar4 = uVar4 + 1;
 		puVar2 = puVar2 + 1;
-	} while ((int)uVar4 < 0x10);
+	} while ((int)uVar4 < 16);
+
 	ResetSound();
 	XM_OnceOffInit(1);
 	SetMasterVolume(gMasterVolume);
 	VSyncCallback(VsyncProc);
 	SpuSetMute(0);
-	return;
-	*/
 }
 
 
@@ -1545,85 +1545,85 @@ void UpdateXMSamples(int num_samps)
 	/* end block 2 */
 	// End Line: 1927
 
+// [D]
 int LoadSoundBankDynamic(char *address, int length, int dbank)
 {
-	UNIMPLEMENTED();
-	return 0;
+	static __LSBDinfo lsbTabs;
 
-	/*
 	int iVar1;
-	undefined4 *puVar2;
+	int *piVar2;
 	ulong uVar3;
 	int iVar4;
 	int iVar5;
-	long lVar6;
-	int *piVar7;
+	int iVar6;
 
-	if (address == (char *)0x0) {
+	if (address == NULL) {
 		switch (length) {
-		case 0:
-			if (dbank == 0) {
-				tabs_93[16] = 0;
-			}
-			lVar6 = 0;
-			break;
-		case 1:
-			tabs_93[1] = tabs_93[0];
-			lVar6 = tabs_93[0];
-			break;
-		case 2:
-			tabs_93[0] = tabs_93[1];
-			lVar6 = tabs_93[1];
-			break;
-		case 3:
-			tabs_93[dbank + 9] = tabs_93[dbank + 2];
-			lVar6 = tabs_93[dbank + 2];
-			break;
-		case 4:
-			tabs_93[dbank + 2] = tabs_93[dbank + 9];
-			lVar6 = tabs_93[dbank + 9];
-			break;
-		default:
-			goto switchD_00079c20_caseD_5;
+			case 0:
+				if (dbank == 0) {
+					lsbTabs.append = 0;
+				}
+				iVar5 = 0;
+				break;
+			case 1:
+				lsbTabs.memtop = lsbTabs.addr;
+				iVar5 = lsbTabs.addr;
+				break;
+			case 2:
+				lsbTabs.addr = lsbTabs.memtop;
+				iVar5 = lsbTabs.memtop;
+				break;
+			case 3:
+				lsbTabs.bnktop[dbank] = lsbTabs.count[dbank];
+				iVar5 = lsbTabs.count[dbank];
+				break;
+			case 4:
+				lsbTabs.count[dbank] = lsbTabs.bnktop[dbank];
+				iVar5 = lsbTabs.bnktop[dbank];
+				break;
+			default:
+				goto switchD_00079c20_caseD_5;
 		}
 	}
 	else {
 	switchD_00079c20_caseD_5:
-		if (tabs_93[16] == 0) {
+		if (lsbTabs.append == 0) {
 			iVar5 = 6;
-			puVar2 = tabs_93 + 8;
-			tabs_93[0] = LONG_000ab14c;
+			piVar2 = lsbTabs.count + 6;
+			lsbTabs.addr = bankaddr[1];
 			do {
-				*puVar2 = 0;
+				*piVar2 = 0;
 				iVar5 = iVar5 + -1;
-				puVar2 = puVar2 + -1;
+				piVar2 = piVar2 + -1;
 			} while (-1 < iVar5);
-			tabs_93[16] = 1;
+			lsbTabs.append = 1;
 		}
-		piVar7 = tabs_93 + dbank + 2;
-		lVar6 = *(long *)address;
-		memcpy(samples + *piVar7 + dbank * 0x23, address + 4, lVar6 * 0x10);
-		iVar5 = lVar6 * 0x10 + 4;
-		length = length - iVar5;
+		piVar2 = lsbTabs.count + dbank;
+		iVar5 = *(int *)address;
+		memcpy(&samples[*piVar2][dbank], address + 4, iVar5 * sizeof(SAMPLE_DATA));
+		iVar6 = iVar5 * sizeof(SAMPLE_DATA) + 4;
+		length = length - iVar6;
+
 		SpuSetTransferMode(0);
-		SpuSetTransferStartAddr(tabs_93[0]);
-		SpuWrite(address + iVar5, length);
+		SpuSetTransferStartAddr(lsbTabs.addr);
+		SpuWrite((unsigned char*)address + iVar6, length);
 		SpuIsTransferCompleted(1);
-		iVar5 = lVar6;
-		if (0 < lVar6) {
+
+		iVar6 = iVar5;
+
+		if (0 < iVar5) {
 			do {
-				iVar1 = tabs_93[0];
-				iVar5 = iVar5 + -1;
-				iVar4 = *piVar7;
-				uVar3 = samples[dbank * 0x23 + iVar4].address;
-				*piVar7 = iVar4 + 1;
-				samples[dbank * 0x23 + iVar4].address = uVar3 + iVar1;
-			} while (iVar5 != 0);
+				iVar1 = lsbTabs.addr;
+				iVar6 = iVar6 + -1;
+				iVar4 = *piVar2;
+				uVar3 = samples[iVar4][dbank].address;
+				*piVar2 = iVar4 + 1;
+				samples[iVar4][dbank].address = uVar3 + iVar1;
+			} while (iVar6 != 0);
 		}
-		tabs_93[0] = tabs_93[0] + length;
+		lsbTabs.addr = lsbTabs.addr + length;
 	}
-	return lVar6;
-	*/
+	return iVar5;
 }
 
 
@@ -2373,7 +2373,7 @@ int FESound(int sample)
 
 void VsyncProc(void)
 {
-	UNIMPLEMENTED();
+	UNIMPLEMENTED_PRINTONCE();
 
 	/*
 	vblcounter = vblcounter + 1;

@@ -211,6 +211,7 @@
     <ClCompile Include="GAME\C\TEXTURE.C" />
     <ClCompile Include="GAME\C\TIME.C" />
     <ClCompile Include="GAME\C\XAPLAY.C" />
+    <ClCompile Include="GAME\C\XMPLAY.C" />
     <ClCompile Include="GAME\FRONTEND\FEMAIN.C" />
     <ClCompile Include="GAME\MEMCARD\MCMAIN.C" />
     <ClCompile Include="redriver2_psxpc.c" />

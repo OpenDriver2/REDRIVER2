@@ -6,6 +6,7 @@
 #include "LIBSPU.H"
 
 #include "SOUND.H"
+#include "SYSTEM.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -68,21 +69,27 @@ int coptrackpos[8] = {
 	/* end block 3 */
 	// End Line: 197
 
+char _sbank_buffer[0x50000];		// 0x180000
+
+// [D]
 void LoadBankFromLump(int bank, int lump)
 {
-	UNIMPLEMENTED();
-	/*
-	int loadsize;
+	static unsigned int blockLimit[73] = {0};
 
-	if (DAT_0009ee0c == 0) {
-		LoadfileSeg(s_SOUND_VOICES2_BLK_00010ab8, &DAT_0009ee08, 0, 0x124);
+	int size;
+	char* name;
+
+	name = "SOUND\\VOICES2.BLK";
+
+	if (blockLimit[1] == 0)
+	{
+		LoadfileSeg(name, (char *)blockLimit, 0, sizeof(blockLimit));
 	}
-	loadsize = *(int *)(&DAT_0009ee08 + (lump + 1) * 4) - *(int *)(&DAT_0009ee08 + lump * 4);
-	LoadfileSeg(s_SOUND_VOICES2_BLK_00010ab8, &DAT_80180000, *(int *)(&DAT_0009ee08 + lump * 4), loadsize
-	);
-	LoadSoundBankDynamic(&DAT_80180000, loadsize, bank);
-	return;
-	*/
+
+	size = blockLimit[lump + 1] - blockLimit[lump];
+	LoadfileSeg(name, _sbank_buffer, blockLimit[lump], size);
+
+	LoadSoundBankDynamic(_sbank_buffer, size, bank);
 }
 
 

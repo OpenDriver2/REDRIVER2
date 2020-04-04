@@ -290,3 +290,13 @@ void SpuSetReverbModeDepth(short depth_left, short depth_right)
 {
 	UNIMPLEMENTED();
 }
+
+void SpuSetVoiceVolume(int vNum, short volL, short volR)
+{
+	UNIMPLEMENTED();
+}
+
+void SpuSetVoicePitch(int vNum, unsigned short pitch)
+{
+	UNIMPLEMENTED();
+}
