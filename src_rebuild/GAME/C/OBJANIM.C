@@ -167,8 +167,9 @@ char* texture_cluts = 0;	// some big empty array
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitCyclingPals(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	int iVar1;
 	char **ppcVar2;
 	TEXTURE_DETAILS *info;
@@ -187,6 +188,7 @@ void InitCyclingPals(void)
 	cycle_phase = 0;
 	cycle_timer = 0;
 	return;
+	*/
 }
 
 
@@ -250,8 +252,9 @@ void InitCyclingPals(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void ColourCycle(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	byte bVar1;
 	byte bVar2;
 	undefined2 uVar3;
@@ -351,7 +354,7 @@ void ColourCycle(void)
 	else {
 		cycle_phase = 0;
 	}
-	return;
+	return;*/
 }
 
 
@@ -392,8 +395,9 @@ void ColourCycle(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void FindSmashableObjects(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	SMASHABLE_OBJECT *pSVar1;
 	int iVar2;
 	SMASHABLE_OBJECT *pSVar3;
@@ -408,6 +412,7 @@ void FindSmashableObjects(void)
 		} while (pSVar1->name != (char *)0x0);
 	}
 	return;
+	*/
 }
 
 
@@ -447,8 +452,9 @@ void FindSmashableObjects(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitAnimatingObjects(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	bool bVar1;
 	MODEL *pMVar2;
 	MODEL **ppMVar3;
@@ -500,6 +506,7 @@ void InitAnimatingObjects(void)
 	FindSmashableObjects();
 	InitCyclingPals();
 	return;
+	*/
 }
 
 
@@ -529,8 +536,9 @@ void InitAnimatingObjects(void)
 	// End Line: 1640
 
 void InitSpooledAnimObj(int model_number)
-
 {
+	UNIMPLEMENTED();
+	/*
 	undefined *puVar1;
 	int iVar2;
 
@@ -547,6 +555,7 @@ void InitSpooledAnimObj(int model_number)
 		} while (iVar2 < num_anim_objects);
 	}
 	return;
+	*/
 }
 
 
@@ -573,10 +582,11 @@ void InitSpooledAnimObj(int model_number)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void int_garage_door(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	CurrentGarage.cop = (CELL_OBJECT *)0x0;
-	return;
+	return;*/
 }
 
 
@@ -607,8 +617,10 @@ void int_garage_door(void)
 	// End Line: 1735
 
 int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
-
 {
+	UNIMPLEMENTED();
+	return 0;
+	/*
 	uint type;
 	uint *puVar1;
 	int iVar2;
@@ -630,6 +642,7 @@ int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
 		} while (iVar2 < num_anim_objects);
 	}
 	return 0;
+	*/
 }
 
 
@@ -659,8 +672,9 @@ int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
 	// End Line: 1355
 
 void animate_object(CELL_OBJECT *cop, int type)
-
 {
+	UNIMPLEMENTED();
+	/*
 	byte bVar1;
 	int colour;
 	int y;
@@ -1019,7 +1033,7 @@ void animate_object(CELL_OBJECT *cop, int type)
 LAB_000145f8:
 	AddTrafficLight(cop, z, colour, local_18, y, x);
 switchD_0001409c_caseD_1:
-	return;
+	return;*/
 }
 
 
@@ -1057,8 +1071,9 @@ switchD_0001409c_caseD_1:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void animate_garage_door(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	short *psVar1;
 	int iVar2;
 	int iVar3;
@@ -1102,6 +1117,7 @@ void animate_garage_door(void)
 		}
 	}
 	return;
+	*/
 }
 
 

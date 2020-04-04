@@ -2,19 +2,19 @@
 #define CONVERT_H
 
 
-extern void Calc_Object_MatrixYZX(struct MATRIX *mat, struct SVECTOR *angles); // 0x0002D3F8
+extern void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles); // 0x0002D3F8
 
-extern void _RotMatrixX(struct MATRIX *m, short ang); // 0x0002D470
+extern void _RotMatrixX(MATRIX *m, short ang); // 0x0002D470
 
-extern void _RotMatrixY(struct MATRIX *m, short ang); // 0x0002D49C
+extern void _RotMatrixY(MATRIX *m, short ang); // 0x0002D49C
 
-extern void _RotMatrixZ(struct MATRIX *m, short ang); // 0x0002D4C8
+extern void _RotMatrixZ(MATRIX *m, short ang); // 0x0002D4C8
 
-extern void RotMatrixXYZ(struct MATRIX *m, struct SVECTOR *r); // 0x0002D4F4
+extern void RotMatrixXYZ(MATRIX *m, SVECTOR *r); // 0x0002D4F4
 
-extern void _MatrixRotate(struct VECTOR *pos); // 0x0002D51C
+extern void _MatrixRotate(VECTOR *pos); // 0x0002D51C
 
-extern void InvertMatrix(struct MATRIX *a, struct MATRIX *b); // 0x0002D55C
+extern void InvertMatrix(MATRIX *a, MATRIX *b); // 0x0002D55C
 
 extern void BuildWorldMatrix(); // 0x0002D304
 

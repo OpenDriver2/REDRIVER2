@@ -46,7 +46,7 @@ extern int NoMoreCamerasErrorMessage(); // 0x0003EAF0
 
 extern int FirstCamera(); // 0x0003EB6C
 
-extern int dist(struct VECTOR *pos1, struct VECTOR *pos2); // 0x0003EB9C
+extern int dist(VECTOR *pos1, VECTOR *pos2); // 0x0003EB9C
 
 extern void SetCameraReturnedFromCutscene(int CameraCnt); // 0x0003ECC4
 

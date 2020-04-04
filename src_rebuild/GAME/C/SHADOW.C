@@ -38,23 +38,24 @@
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitTyreTracks(void)
-
 {
-  int *piVar1;
-  int *piVar2;
-  int iVar3;
-  
-  piVar1 = &num_tyre_tracks;
-  piVar2 = &tyre_track_offset;
-  iVar3 = 3;
-  do {
-    *piVar1 = 0;
-    piVar1 = piVar1 + 1;
-    *piVar2 = 0;
-    iVar3 = iVar3 + -1;
-    piVar2 = piVar2 + 1;
-  } while (-1 < iVar3);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int *piVar1;
+	int *piVar2;
+	int iVar3;
+
+	piVar1 = &num_tyre_tracks;
+	piVar2 = &tyre_track_offset;
+	iVar3 = 3;
+	do {
+		*piVar1 = 0;
+		piVar1 = piVar1 + 1;
+		*piVar2 = 0;
+		iVar3 = iVar3 + -1;
+		piVar2 = piVar2 + 1;
+	} while (-1 < iVar3);
+	return;*/
 }
 
 
@@ -88,43 +89,45 @@ void InitTyreTracks(void)
 	/* end block 2 */
 	// End Line: 545
 
-void GetTyreTrackPositions(_CAR_DATA *cp,int player_id)
-
+void GetTyreTrackPositions(_CAR_DATA *cp, int player_id)
 {
-  int iVar1;
-  int iVar2;
-  SVECTOR *pSVar3;
-  uint uVar4;
-  CAR_COSMETICS *pCVar5;
-  VECTOR local_58 [3];
-  
-  pCVar5 = (cp->ap).carCos;
-  SetRotMatrix(&(cp->hd).drawCarMat);
-  uVar4 = 0;
-  pSVar3 = pCVar5->wheelDisp;
-  do {
-    if ((uVar4 & 2) == 0) {
-      local_58[0].vx = (int)pSVar3->vx + -0x11;
-    }
-    else {
-      local_58[0].vx = (int)pSVar3->vx + 0x11;
-    }
-    local_58[0].vy = 0;
-    pSVar3 = pSVar3 + 2;
-    local_58[0].vz = -(int)pCVar5->wheelDisp[uVar4 + 1 & 3].vz;
-    _MatrixRotate(local_58);
-    iVar2 = (int)uVar4 >> 1;
-    uVar4 = uVar4 + 2;
-    local_58[0].vy = (cp->hd).where.t[1];
-    local_58[0].vx = local_58[0].vx + (cp->hd).where.t[0];
-    local_58[0].vz = local_58[0].vz + (cp->hd).where.t[2];
-    iVar2 = iVar2 + player_id * 2;
-    tyre_new_positions[iVar2].vx = local_58[0].vx;
-    tyre_new_positions[iVar2].vz = local_58[0].vz;
-    iVar1 = MapHeight(local_58);
-    tyre_new_positions[iVar2].vy = iVar1;
-  } while ((int)uVar4 < 4);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	SVECTOR *pSVar3;
+	uint uVar4;
+	CAR_COSMETICS *pCVar5;
+	VECTOR local_58[3];
+
+	pCVar5 = (cp->ap).carCos;
+	SetRotMatrix(&(cp->hd).drawCarMat);
+	uVar4 = 0;
+	pSVar3 = pCVar5->wheelDisp;
+	do {
+		if ((uVar4 & 2) == 0) {
+			local_58[0].vx = (int)pSVar3->vx + -0x11;
+		}
+		else {
+			local_58[0].vx = (int)pSVar3->vx + 0x11;
+		}
+		local_58[0].vy = 0;
+		pSVar3 = pSVar3 + 2;
+		local_58[0].vz = -(int)pCVar5->wheelDisp[uVar4 + 1 & 3].vz;
+		_MatrixRotate(local_58);
+		iVar2 = (int)uVar4 >> 1;
+		uVar4 = uVar4 + 2;
+		local_58[0].vy = (cp->hd).where.t[1];
+		local_58[0].vx = local_58[0].vx + (cp->hd).where.t[0];
+		local_58[0].vz = local_58[0].vz + (cp->hd).where.t[2];
+		iVar2 = iVar2 + player_id * 2;
+		tyre_new_positions[iVar2].vx = local_58[0].vx;
+		tyre_new_positions[iVar2].vz = local_58[0].vz;
+		iVar1 = MapHeight(local_58);
+		tyre_new_positions[iVar2].vy = iVar1;
+	} while ((int)uVar4 < 4);
+	return;
+	*/
 }
 
 
@@ -149,33 +152,34 @@ void GetTyreTrackPositions(_CAR_DATA *cp,int player_id)
 	// End Line: 2918
 
 void SetTyreTrackOldPositions(int player_id)
-
 {
-  undefined4 uVar1;
-  uint uVar2;
-  undefined4 uVar3;
-  long lVar4;
-  undefined4 uVar5;
-  long lVar6;
-  long lVar7;
-  
-  uVar2 = player_id << 5 | 0x10;
-  lVar4 = tyre_new_positions[player_id * 2].vy;
-  lVar6 = tyre_new_positions[player_id * 2].vz;
-  lVar7 = tyre_new_positions[player_id * 2].pad;
-  tyre_save_positions[player_id * 2].vx = tyre_new_positions[player_id * 2].vx;
-  tyre_save_positions[player_id * 2].vy = lVar4;
-  tyre_save_positions[player_id * 2].vz = lVar6;
-  tyre_save_positions[player_id * 2].pad = lVar7;
-  uVar1 = *(undefined4 *)((int)&tyre_new_positions[0].vy + uVar2);
-  uVar3 = *(undefined4 *)((int)&tyre_new_positions[0].vz + uVar2);
-  uVar5 = *(undefined4 *)((int)&tyre_new_positions[0].pad + uVar2);
-  *(undefined4 *)((int)&tyre_save_positions[0].vx + uVar2) =
-       *(undefined4 *)((int)&tyre_new_positions[0].vx + uVar2);
-  *(undefined4 *)((int)&tyre_save_positions[0].vy + uVar2) = uVar1;
-  *(undefined4 *)((int)&tyre_save_positions[0].vz + uVar2) = uVar3;
-  *(undefined4 *)((int)&tyre_save_positions[0].pad + uVar2) = uVar5;
-  return;
+	UNIMPLEMENTED();
+	/*
+	undefined4 uVar1;
+	uint uVar2;
+	undefined4 uVar3;
+	long lVar4;
+	undefined4 uVar5;
+	long lVar6;
+	long lVar7;
+
+	uVar2 = player_id << 5 | 0x10;
+	lVar4 = tyre_new_positions[player_id * 2].vy;
+	lVar6 = tyre_new_positions[player_id * 2].vz;
+	lVar7 = tyre_new_positions[player_id * 2].pad;
+	tyre_save_positions[player_id * 2].vx = tyre_new_positions[player_id * 2].vx;
+	tyre_save_positions[player_id * 2].vy = lVar4;
+	tyre_save_positions[player_id * 2].vz = lVar6;
+	tyre_save_positions[player_id * 2].pad = lVar7;
+	uVar1 = *(undefined4 *)((int)&tyre_new_positions[0].vy + uVar2);
+	uVar3 = *(undefined4 *)((int)&tyre_new_positions[0].vz + uVar2);
+	uVar5 = *(undefined4 *)((int)&tyre_new_positions[0].pad + uVar2);
+	*(undefined4 *)((int)&tyre_save_positions[0].vx + uVar2) =
+		*(undefined4 *)((int)&tyre_new_positions[0].vx + uVar2);
+	*(undefined4 *)((int)&tyre_save_positions[0].vy + uVar2) = uVar1;
+	*(undefined4 *)((int)&tyre_save_positions[0].vz + uVar2) = uVar3;
+	*(undefined4 *)((int)&tyre_save_positions[0].pad + uVar2) = uVar5;
+	return;*/
 }
 
 
@@ -245,161 +249,162 @@ void SetTyreTrackOldPositions(int player_id)
 	/* end block 3 */
 	// End Line: 713
 
-void AddTyreTrack(int wheel,int tracksAndSmoke,int padid)
-
+void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 {
-  short sVar1;
-  short sVar2;
-  _sdPlane *p_Var3;
-  int iVar4;
-  int *piVar5;
-  int iVar6;
-  int iVar7;
-  uint uVar8;
-  char cVar9;
-  TYRE_TRACK *unaff_s1;
-  VECTOR *pos;
-  VECTOR *unaff_s5;
-  short local_a8;
-  short local_a4;
-  short local_a0;
-  short local_98;
-  short local_90;
-  short local_88;
-  short local_84;
-  short local_80;
-  short local_78;
-  short local_70;
-  VECTOR local_68;
-  VECTOR aVStack88 [2];
-  VECTOR local_30;
-  
-  pos = tyre_new_positions + wheel;
-  iVar6 = tyre_new_positions[wheel].vz - camera_position.vz;
-  if (&DAT_0000a000 < &DAT_00005000 + (pos->vx - camera_position.vx)) {
-    return;
-  }
-  if (0x5000 < iVar6) {
-    return;
-  }
-  if (iVar6 < -0x5000) {
-    return;
-  }
-  if (tracksAndSmoke == 0) {
-    p_Var3 = sdGetCell(pos);
-    cVar9 = '\x01';
-    if (p_Var3->surface == 6) {
-      return;
-    }
-    iVar6 = wheel << 2;
-    if (p_Var3->surface == 4) {
-      cVar9 = '\x02';
-    }
-    goto LAB_000756d4;
-  }
-  iVar6 = wheel * 4;
-  uVar8 = (&tyre_track_offset)[wheel] + (&num_tyre_tracks)[wheel];
-  unaff_s5 = tyre_save_positions + wheel;
-  if (0x3f < uVar8) {
-    uVar8 = uVar8 & 0x3f;
-  }
-  unaff_s1 = track_buffer + uVar8 + wheel * 0x40;
-  p_Var3 = sdGetCell(pos);
-  if (p_Var3 == (_sdPlane *)0x0) {
-LAB_00075698:
-    unaff_s1->surface = '\x01';
-  }
-  else {
-    if (p_Var3->surface == 6) {
-      return;
-    }
-    if (p_Var3->surface != 4) goto LAB_00075698;
-    unaff_s1->surface = '\x02';
-    (&player)[padid].onGrass = '\x01';
-  }
-  cVar9 = unaff_s1->surface;
+	UNIMPLEMENTED();
+	/*
+	short sVar1;
+	short sVar2;
+	_sdPlane *p_Var3;
+	int iVar4;
+	int *piVar5;
+	int iVar6;
+	int iVar7;
+	uint uVar8;
+	char cVar9;
+	TYRE_TRACK *unaff_s1;
+	VECTOR *pos;
+	VECTOR *unaff_s5;
+	short local_a8;
+	short local_a4;
+	short local_a0;
+	short local_98;
+	short local_90;
+	short local_88;
+	short local_84;
+	short local_80;
+	short local_78;
+	short local_70;
+	VECTOR local_68;
+	VECTOR aVStack88[2];
+	VECTOR local_30;
+
+	pos = tyre_new_positions + wheel;
+	iVar6 = tyre_new_positions[wheel].vz - camera_position.vz;
+	if (&DAT_0000a000 < &DAT_00005000 + (pos->vx - camera_position.vx)) {
+		return;
+	}
+	if (0x5000 < iVar6) {
+		return;
+	}
+	if (iVar6 < -0x5000) {
+		return;
+	}
+	if (tracksAndSmoke == 0) {
+		p_Var3 = sdGetCell(pos);
+		cVar9 = '\x01';
+		if (p_Var3->surface == 6) {
+			return;
+		}
+		iVar6 = wheel << 2;
+		if (p_Var3->surface == 4) {
+			cVar9 = '\x02';
+		}
+		goto LAB_000756d4;
+	}
+	iVar6 = wheel * 4;
+	uVar8 = (&tyre_track_offset)[wheel] + (&num_tyre_tracks)[wheel];
+	unaff_s5 = tyre_save_positions + wheel;
+	if (0x3f < uVar8) {
+		uVar8 = uVar8 & 0x3f;
+	}
+	unaff_s1 = track_buffer + uVar8 + wheel * 0x40;
+	p_Var3 = sdGetCell(pos);
+	if (p_Var3 == (_sdPlane *)0x0) {
+	LAB_00075698:
+		unaff_s1->surface = '\x01';
+	}
+	else {
+		if (p_Var3->surface == 6) {
+			return;
+		}
+		if (p_Var3->surface != 4) goto LAB_00075698;
+		unaff_s1->surface = '\x02';
+		(&player)[padid].onGrass = '\x01';
+	}
+	cVar9 = unaff_s1->surface;
 LAB_000756d4:
-  uVar8 = *(uint *)((int)smoke_count + iVar6);
-  local_68.vx = pos->vx;
-  local_68.vz = tyre_new_positions[wheel].vz;
-  local_68.vy = -0x32 - tyre_new_positions[wheel].vy;
-  *(uint *)((int)smoke_count + iVar6) = uVar8 + 1;
-  if ((uVar8 & 3) == 1) {
-    GetSmokeDrift(aVStack88);
-    if (cVar9 == '\x02') {
-      local_30.vx = DAT_00011ce4;
-      local_30.vy = DAT_00011ce8;
-      local_30.vz = DAT_00011cec;
-      local_30.pad = DAT_00011cf0;
-      Setup_Smoke(&local_68,100,500,3,0,aVStack88,0);
-      Setup_Sparks(&local_68,&local_30,5,'\x02');
-    }
-    else {
-      if (wetness == 0) {
-        Setup_Smoke(&local_68,100,500,2,0,aVStack88,0);
-      }
-    }
-  }
-  if (tracksAndSmoke != 0) {
-    iVar4 = ratan2(unaff_s5->vz - tyre_new_positions[wheel].vz,unaff_s5->vx - pos->vx);
-    iVar7 = (int)rcossin_tbl[(-iVar4 & 0xfffU) * 2 + 1] * 0x23;
-    if (iVar7 < 0) {
-      iVar7 = iVar7 + 0x1fff;
-    }
-    iVar4 = (int)rcossin_tbl[(-iVar4 & 0xfffU) * 2] * 0x23;
-    if (iVar4 < 0) {
-      iVar4 = iVar4 + 0x1fff;
-    }
-    local_a4 = (short)unaff_s5->vy + -10;
-    local_84 = (short)tyre_new_positions[wheel].vy + -10;
-    local_98 = (short)unaff_s5->vx;
-    sVar1 = (short)(iVar4 >> 0xd);
-    local_a8 = local_98 + sVar1;
-    local_90 = (short)unaff_s5->vz;
-    sVar2 = (short)(iVar7 >> 0xd);
-    local_a0 = local_90 + sVar2;
-    local_98 = local_98 - sVar1;
-    local_90 = local_90 - sVar2;
-    local_78 = (short)pos->vx;
-    local_88 = local_78 + sVar1;
-    local_70 = (short)tyre_new_positions[wheel].vz;
-    local_80 = local_70 + sVar2;
-    local_78 = local_78 - sVar1;
-    local_70 = local_70 - sVar2;
-    iVar7 = *(int *)((int)&num_tyre_tracks + iVar6);
-    if (iVar7 == 0x40) {
-      piVar5 = (int *)((int)&tyre_track_offset + iVar6);
-      iVar4 = *piVar5;
-      iVar7 = iVar4 + 1;
-      *piVar5 = iVar7;
-      if (0x3f < iVar7) {
-        *piVar5 = iVar4 + -0x3f;
-      }
-    }
-    else {
-      *(int *)((int)&num_tyre_tracks + iVar6) = iVar7 + 1;
-    }
-    if ((*(int *)(&Cont_12 + iVar6) == 1) && (continuous_track == '\x01')) {
-      unaff_s1->type = '\x01';
-    }
-    else {
-      unaff_s1->type = '\0';
-    }
-    *(undefined4 *)(&Cont_12 + iVar6) = 1;
-    (unaff_s1->p1).vx = local_a8;
-    (unaff_s1->p1).vy = local_a4;
-    (unaff_s1->p1).vz = local_a0;
-    (unaff_s1->p2).vx = local_98;
-    (unaff_s1->p2).vy = local_a4;
-    (unaff_s1->p2).vz = local_90;
-    (unaff_s1->p3).vx = local_88;
-    (unaff_s1->p3).vy = local_84;
-    (unaff_s1->p3).vz = local_80;
-    (unaff_s1->p4).vx = local_78;
-    (unaff_s1->p4).vy = local_84;
-    (unaff_s1->p4).vz = local_70;
-  }
-  return;
+	uVar8 = *(uint *)((int)smoke_count + iVar6);
+	local_68.vx = pos->vx;
+	local_68.vz = tyre_new_positions[wheel].vz;
+	local_68.vy = -0x32 - tyre_new_positions[wheel].vy;
+	*(uint *)((int)smoke_count + iVar6) = uVar8 + 1;
+	if ((uVar8 & 3) == 1) {
+		GetSmokeDrift(aVStack88);
+		if (cVar9 == '\x02') {
+			local_30.vx = DAT_00011ce4;
+			local_30.vy = DAT_00011ce8;
+			local_30.vz = DAT_00011cec;
+			local_30.pad = DAT_00011cf0;
+			Setup_Smoke(&local_68, 100, 500, 3, 0, aVStack88, 0);
+			Setup_Sparks(&local_68, &local_30, 5, '\x02');
+		}
+		else {
+			if (wetness == 0) {
+				Setup_Smoke(&local_68, 100, 500, 2, 0, aVStack88, 0);
+			}
+		}
+	}
+	if (tracksAndSmoke != 0) {
+		iVar4 = ratan2(unaff_s5->vz - tyre_new_positions[wheel].vz, unaff_s5->vx - pos->vx);
+		iVar7 = (int)rcossin_tbl[(-iVar4 & 0xfffU) * 2 + 1] * 0x23;
+		if (iVar7 < 0) {
+			iVar7 = iVar7 + 0x1fff;
+		}
+		iVar4 = (int)rcossin_tbl[(-iVar4 & 0xfffU) * 2] * 0x23;
+		if (iVar4 < 0) {
+			iVar4 = iVar4 + 0x1fff;
+		}
+		local_a4 = (short)unaff_s5->vy + -10;
+		local_84 = (short)tyre_new_positions[wheel].vy + -10;
+		local_98 = (short)unaff_s5->vx;
+		sVar1 = (short)(iVar4 >> 0xd);
+		local_a8 = local_98 + sVar1;
+		local_90 = (short)unaff_s5->vz;
+		sVar2 = (short)(iVar7 >> 0xd);
+		local_a0 = local_90 + sVar2;
+		local_98 = local_98 - sVar1;
+		local_90 = local_90 - sVar2;
+		local_78 = (short)pos->vx;
+		local_88 = local_78 + sVar1;
+		local_70 = (short)tyre_new_positions[wheel].vz;
+		local_80 = local_70 + sVar2;
+		local_78 = local_78 - sVar1;
+		local_70 = local_70 - sVar2;
+		iVar7 = *(int *)((int)&num_tyre_tracks + iVar6);
+		if (iVar7 == 0x40) {
+			piVar5 = (int *)((int)&tyre_track_offset + iVar6);
+			iVar4 = *piVar5;
+			iVar7 = iVar4 + 1;
+			*piVar5 = iVar7;
+			if (0x3f < iVar7) {
+				*piVar5 = iVar4 + -0x3f;
+			}
+		}
+		else {
+			*(int *)((int)&num_tyre_tracks + iVar6) = iVar7 + 1;
+		}
+		if ((*(int *)(&Cont_12 + iVar6) == 1) && (continuous_track == '\x01')) {
+			unaff_s1->type = '\x01';
+		}
+		else {
+			unaff_s1->type = '\0';
+		}
+		*(undefined4 *)(&Cont_12 + iVar6) = 1;
+		(unaff_s1->p1).vx = local_a8;
+		(unaff_s1->p1).vy = local_a4;
+		(unaff_s1->p1).vz = local_a0;
+		(unaff_s1->p2).vx = local_98;
+		(unaff_s1->p2).vy = local_a4;
+		(unaff_s1->p2).vz = local_90;
+		(unaff_s1->p3).vx = local_88;
+		(unaff_s1->p3).vy = local_84;
+		(unaff_s1->p3).vz = local_80;
+		(unaff_s1->p4).vx = local_78;
+		(unaff_s1->p4).vy = local_84;
+		(unaff_s1->p4).vz = local_70;
+	}
+	return;*/
 }
 
 
@@ -445,195 +450,196 @@ LAB_000756d4:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DrawTyreTracks(void)
-
 {
-  bool bVar1;
-  bool bVar2;
-  DB *pDVar3;
-  ushort uVar4;
-  undefined4 in_zero;
-  undefined4 in_at;
-  char cVar5;
-  int iVar6;
-  int iVar7;
-  uint uVar8;
-  uint *puVar9;
-  char *pcVar10;
-  int iVar11;
-  int iVar12;
-  int iVar13;
-  int iVar14;
-  int iVar15;
-  uint *puVar16;
-  undefined4 local_48;
-  uint local_44;
-  undefined4 local_40;
-  uint local_3c;
-  undefined4 local_38;
-  uint local_34;
-  undefined4 local_30;
-  uint local_2c;
-  int local_28;
-  
-  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-  setCopControlWord(2,0x2800,dummy.vx);
-  setCopControlWord(2,0x3000,dummy.vy);
-  setCopControlWord(2,0x3800,dummy.vz);
-  iVar7 = 0;
-  iVar14 = 0;
-  do {
-    iVar15 = iVar14 + 1;
-    if (*(int *)((int)&num_tyre_tracks + iVar7) != 0) {
-      puVar16 = (uint *)0x0;
-      bVar1 = true;
-      iVar11 = *(int *)((int)&tyre_track_offset + iVar7);
-      iVar13 = 0;
-      if (0 < *(int *)((int)&num_tyre_tracks + iVar7)) {
-        iVar6 = iVar11 * 0x1c;
-        do {
-          iVar12 = iVar6 + 0x1c;
-          iVar11 = iVar11 + 1;
-          pcVar10 = &track_buffer[iVar14 * 0x40].type + iVar6;
-          if (iVar11 == 0x40) {
-            iVar12 = 0;
-            iVar11 = 0;
-          }
-          if (*pcVar10 != '\x02') {
-            if (((puVar16 == (uint *)0x0) || (*pcVar10 == '\0')) || (bVar2 = true, bVar1)) {
-              iVar6 = ((uint)*(ushort *)(pcVar10 + 4) - (uint)(ushort)camera_position.vx) * 0x10000;
-              bVar1 = true;
-              if (&DAT_00005000 + (iVar6 >> 0x10) < (undefined *)0xa001) {
-                uVar8 = (uint)*(ushort *)(pcVar10 + 8) - (uint)(ushort)camera_position.vz;
-                if (&DAT_00005000 + ((int)(uVar8 * 0x10000) >> 0x10) < (undefined *)0xa001) {
-                  local_44 = local_44 & 0xffff0000 | uVar8 & 0xffff;
-                  local_48 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 6),
-                                      (short)((uint)iVar6 >> 0x10));
-                  local_34 = local_34 & 0xffff0000 |
-                             (uint)(ushort)(*(short *)(pcVar10 + 0x14) - (ushort)camera_position.vz)
-                  ;
-                  local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x12),
-                                      *(short *)(pcVar10 + 0x10) - (ushort)camera_position.vx);
-                  local_40 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0xc),
-                                      *(short *)(pcVar10 + 10) - (ushort)camera_position.vx);
-                  uVar8 = (uint)*(ushort *)(pcVar10 + 0xe) - (uint)(ushort)camera_position.vz;
-                  local_3c = local_3c & 0xffff0000 | uVar8 & 0xffff;
-                  puVar9 = (uint *)current->primptr;
-                  setCopReg(2,in_zero,local_48);
-                  setCopReg(2,in_at,local_44);
-                  setCopReg(2,&local_48,local_40);
-                  setCopReg(2,uVar8,local_3c);
-                  setCopReg(2,current,local_38);
-                  setCopReg(2,(uint)(ushort)camera_position.vy,local_34);
-                  copFunction(2,0x280030);
-                  local_2c = local_2c & 0xffff0000 |
-                             (uint)(ushort)(*(short *)(pcVar10 + 0x1a) - (ushort)camera_position.vz)
-                  ;
-                  local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x18),
-                                      *(short *)(pcVar10 + 0x16) - (ushort)camera_position.vx);
-                  uVar8 = getCopReg(2,0xc);
-                  puVar9[2] = uVar8;
-                  uVar8 = getCopReg(2,0xd);
-                  puVar9[4] = uVar8;
-                  uVar8 = getCopReg(2,0xe);
-                  puVar9[6] = uVar8;
-                  local_28 = getCopReg(2,0x13);
-                  setCopReg(2,in_zero,local_30);
-                  setCopReg(2,in_at,local_2c);
-                  copFunction(2,0x180001);
-                  uVar8 = getCopReg(2,0xe);
-                  puVar9[8] = uVar8;
-                  if (0x32 < local_28) goto LAB_00075dbc;
-                  goto LAB_00075eec;
-                }
-              }
-              *pcVar10 = '\x02';
-            }
-            else {
-              iVar6 = ((uint)*(ushort *)(pcVar10 + 0x10) - (uint)(ushort)camera_position.vx) *
-                      0x10000;
-              puVar9 = (uint *)current->primptr;
-              bVar1 = bVar2;
-              if (&DAT_00002328 + (iVar6 >> 0x10) <= &DAT_00004650) {
-                if (&DAT_00002328 +
-                    ((int)(((uint)*(ushort *)(pcVar10 + 0x14) - (uint)(ushort)camera_position.vz) *
-                          0x10000) >> 0x10) < (undefined *)0x4651) {
-                  local_34 = local_34 & 0xffff0000 |
-                             (uint)*(ushort *)(pcVar10 + 0x14) - (uint)(ushort)camera_position.vz &
-                             0xffff;
-                  local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x12),
-                                      (short)((uint)iVar6 >> 0x10));
-                  setCopReg(2,in_zero,local_38);
-                  setCopReg(2,in_at,local_34);
-                  copFunction(2,0x180001);
-                  local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x18),
-                                      *(short *)(pcVar10 + 0x16) - (ushort)camera_position.vx);
-                  local_2c = local_2c & 0xffff0000 |
-                             (uint)(ushort)(*(short *)(pcVar10 + 0x1a) - (ushort)camera_position.vz)
-                  ;
-                  uVar8 = getCopReg(2,0xe);
-                  puVar9[6] = uVar8;
-                  local_28 = getCopReg(2,0x13);
-                  setCopReg(2,in_zero,local_30);
-                  setCopReg(2,in_at,local_2c);
-                  copFunction(2,0x180001);
-                  if (0x32 < local_28) {
-                    puVar9[2] = puVar16[6];
-                    puVar9[4] = puVar16[8];
-                    uVar8 = getCopReg(2,0xe);
-                    puVar9[8] = uVar8;
-LAB_00075dbc:
-                    *(char *)((int)puVar9 + 3) = '\t';
-                    *(char *)((int)puVar9 + 7) = ',';
-                    if (pcVar10[3] == '\x01') {
-                      cVar5 = '\x1a';
-                      *(char *)(puVar9 + 1) = '\x1a';
-                    }
-                    else {
-                      cVar5 = '#';
-                      *(char *)(puVar9 + 1) = '\x11';
-                    }
-                    *(char *)((int)puVar9 + 5) = cVar5;
-                    *(char *)((int)puVar9 + 6) = cVar5;
-                    *(uchar *)(puVar9 + 3) = gTyreTexture.coords.u0;
-                    *(uchar *)((int)puVar9 + 0xd) = gTyreTexture.coords.v0;
-                    *(uchar *)(puVar9 + 5) = gTyreTexture.coords.u1;
-                    *(uchar *)((int)puVar9 + 0x15) = gTyreTexture.coords.v1;
-                    *(uchar *)(puVar9 + 7) = gTyreTexture.coords.u2;
-                    *(uchar *)((int)puVar9 + 0x1d) = gTyreTexture.coords.v2;
-                    *(uchar *)(puVar9 + 9) = gTyreTexture.coords.u3;
-                    *(uchar *)((int)puVar9 + 0x25) = gTyreTexture.coords.v3;
-                    *(ushort *)((int)puVar9 + 0x16) = gTyreTexture.tpageid | 0x40;
-                    uVar4 = gTyreTexture.clutid;
-                    *(byte *)((int)puVar9 + 7) = *(byte *)((int)puVar9 + 7) | 2;
-                    pDVar3 = current;
-                    *(ushort *)((int)puVar9 + 0xe) = uVar4;
-                    *puVar9 = *puVar9 & 0xff000000 | pDVar3->ot[local_28 >> 3] & 0xffffff;
-                    pDVar3->ot[local_28 >> 3] =
-                         pDVar3->ot[local_28 >> 3] & 0xff000000 | (uint)puVar9 & 0xffffff;
-                    pDVar3->primptr = pDVar3->primptr + 0x28;
-                    puVar16 = puVar9;
-                    bVar1 = false;
-                  }
-                }
-              }
-            }
-          }
-LAB_00075eec:
-          iVar13 = iVar13 + 1;
-          iVar6 = iVar12;
-        } while (iVar13 < *(int *)((int)&num_tyre_tracks + iVar7));
-      }
-    }
-    iVar7 = iVar15 * 4;
-    iVar14 = iVar15;
-    if (3 < iVar15) {
-      return;
-    }
-  } while( true );
+	UNIMPLEMENTED();
+	/*
+	bool bVar1;
+	bool bVar2;
+	DB *pDVar3;
+	ushort uVar4;
+	undefined4 in_zero;
+	undefined4 in_at;
+	char cVar5;
+	int iVar6;
+	int iVar7;
+	uint uVar8;
+	uint *puVar9;
+	char *pcVar10;
+	int iVar11;
+	int iVar12;
+	int iVar13;
+	int iVar14;
+	int iVar15;
+	uint *puVar16;
+	undefined4 local_48;
+	uint local_44;
+	undefined4 local_40;
+	uint local_3c;
+	undefined4 local_38;
+	uint local_34;
+	undefined4 local_30;
+	uint local_2c;
+	int local_28;
+
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	setCopControlWord(2, 0x2800, dummy.vx);
+	setCopControlWord(2, 0x3000, dummy.vy);
+	setCopControlWord(2, 0x3800, dummy.vz);
+	iVar7 = 0;
+	iVar14 = 0;
+	do {
+		iVar15 = iVar14 + 1;
+		if (*(int *)((int)&num_tyre_tracks + iVar7) != 0) {
+			puVar16 = (uint *)0x0;
+			bVar1 = true;
+			iVar11 = *(int *)((int)&tyre_track_offset + iVar7);
+			iVar13 = 0;
+			if (0 < *(int *)((int)&num_tyre_tracks + iVar7)) {
+				iVar6 = iVar11 * 0x1c;
+				do {
+					iVar12 = iVar6 + 0x1c;
+					iVar11 = iVar11 + 1;
+					pcVar10 = &track_buffer[iVar14 * 0x40].type + iVar6;
+					if (iVar11 == 0x40) {
+						iVar12 = 0;
+						iVar11 = 0;
+					}
+					if (*pcVar10 != '\x02') {
+						if (((puVar16 == (uint *)0x0) || (*pcVar10 == '\0')) || (bVar2 = true, bVar1)) {
+							iVar6 = ((uint)*(ushort *)(pcVar10 + 4) - (uint)(ushort)camera_position.vx) * 0x10000;
+							bVar1 = true;
+							if (&DAT_00005000 + (iVar6 >> 0x10) < (undefined *)0xa001) {
+								uVar8 = (uint)*(ushort *)(pcVar10 + 8) - (uint)(ushort)camera_position.vz;
+								if (&DAT_00005000 + ((int)(uVar8 * 0x10000) >> 0x10) < (undefined *)0xa001) {
+									local_44 = local_44 & 0xffff0000 | uVar8 & 0xffff;
+									local_48 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 6),
+										(short)((uint)iVar6 >> 0x10));
+									local_34 = local_34 & 0xffff0000 |
+										(uint)(ushort)(*(short *)(pcVar10 + 0x14) - (ushort)camera_position.vz)
+										;
+									local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x12),
+										*(short *)(pcVar10 + 0x10) - (ushort)camera_position.vx);
+									local_40 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0xc),
+										*(short *)(pcVar10 + 10) - (ushort)camera_position.vx);
+									uVar8 = (uint)*(ushort *)(pcVar10 + 0xe) - (uint)(ushort)camera_position.vz;
+									local_3c = local_3c & 0xffff0000 | uVar8 & 0xffff;
+									puVar9 = (uint *)current->primptr;
+									setCopReg(2, in_zero, local_48);
+									setCopReg(2, in_at, local_44);
+									setCopReg(2, &local_48, local_40);
+									setCopReg(2, uVar8, local_3c);
+									setCopReg(2, current, local_38);
+									setCopReg(2, (uint)(ushort)camera_position.vy, local_34);
+									copFunction(2, 0x280030);
+									local_2c = local_2c & 0xffff0000 |
+										(uint)(ushort)(*(short *)(pcVar10 + 0x1a) - (ushort)camera_position.vz)
+										;
+									local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x18),
+										*(short *)(pcVar10 + 0x16) - (ushort)camera_position.vx);
+									uVar8 = getCopReg(2, 0xc);
+									puVar9[2] = uVar8;
+									uVar8 = getCopReg(2, 0xd);
+									puVar9[4] = uVar8;
+									uVar8 = getCopReg(2, 0xe);
+									puVar9[6] = uVar8;
+									local_28 = getCopReg(2, 0x13);
+									setCopReg(2, in_zero, local_30);
+									setCopReg(2, in_at, local_2c);
+									copFunction(2, 0x180001);
+									uVar8 = getCopReg(2, 0xe);
+									puVar9[8] = uVar8;
+									if (0x32 < local_28) goto LAB_00075dbc;
+									goto LAB_00075eec;
+								}
+							}
+							*pcVar10 = '\x02';
+						}
+						else {
+							iVar6 = ((uint)*(ushort *)(pcVar10 + 0x10) - (uint)(ushort)camera_position.vx) *
+								0x10000;
+							puVar9 = (uint *)current->primptr;
+							bVar1 = bVar2;
+							if (&DAT_00002328 + (iVar6 >> 0x10) <= &DAT_00004650) {
+								if (&DAT_00002328 +
+									((int)(((uint)*(ushort *)(pcVar10 + 0x14) - (uint)(ushort)camera_position.vz) *
+										0x10000) >> 0x10) < (undefined *)0x4651) {
+									local_34 = local_34 & 0xffff0000 |
+										(uint)*(ushort *)(pcVar10 + 0x14) - (uint)(ushort)camera_position.vz &
+										0xffff;
+									local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x12),
+										(short)((uint)iVar6 >> 0x10));
+									setCopReg(2, in_zero, local_38);
+									setCopReg(2, in_at, local_34);
+									copFunction(2, 0x180001);
+									local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x18),
+										*(short *)(pcVar10 + 0x16) - (ushort)camera_position.vx);
+									local_2c = local_2c & 0xffff0000 |
+										(uint)(ushort)(*(short *)(pcVar10 + 0x1a) - (ushort)camera_position.vz)
+										;
+									uVar8 = getCopReg(2, 0xe);
+									puVar9[6] = uVar8;
+									local_28 = getCopReg(2, 0x13);
+									setCopReg(2, in_zero, local_30);
+									setCopReg(2, in_at, local_2c);
+									copFunction(2, 0x180001);
+									if (0x32 < local_28) {
+										puVar9[2] = puVar16[6];
+										puVar9[4] = puVar16[8];
+										uVar8 = getCopReg(2, 0xe);
+										puVar9[8] = uVar8;
+									LAB_00075dbc:
+										*(char *)((int)puVar9 + 3) = '\t';
+										*(char *)((int)puVar9 + 7) = ',';
+										if (pcVar10[3] == '\x01') {
+											cVar5 = '\x1a';
+											*(char *)(puVar9 + 1) = '\x1a';
+										}
+										else {
+											cVar5 = '#';
+											*(char *)(puVar9 + 1) = '\x11';
+										}
+										*(char *)((int)puVar9 + 5) = cVar5;
+										*(char *)((int)puVar9 + 6) = cVar5;
+										*(uchar *)(puVar9 + 3) = gTyreTexture.coords.u0;
+										*(uchar *)((int)puVar9 + 0xd) = gTyreTexture.coords.v0;
+										*(uchar *)(puVar9 + 5) = gTyreTexture.coords.u1;
+										*(uchar *)((int)puVar9 + 0x15) = gTyreTexture.coords.v1;
+										*(uchar *)(puVar9 + 7) = gTyreTexture.coords.u2;
+										*(uchar *)((int)puVar9 + 0x1d) = gTyreTexture.coords.v2;
+										*(uchar *)(puVar9 + 9) = gTyreTexture.coords.u3;
+										*(uchar *)((int)puVar9 + 0x25) = gTyreTexture.coords.v3;
+										*(ushort *)((int)puVar9 + 0x16) = gTyreTexture.tpageid | 0x40;
+										uVar4 = gTyreTexture.clutid;
+										*(byte *)((int)puVar9 + 7) = *(byte *)((int)puVar9 + 7) | 2;
+										pDVar3 = current;
+										*(ushort *)((int)puVar9 + 0xe) = uVar4;
+										*puVar9 = *puVar9 & 0xff000000 | pDVar3->ot[local_28 >> 3] & 0xffffff;
+										pDVar3->ot[local_28 >> 3] =
+											pDVar3->ot[local_28 >> 3] & 0xff000000 | (uint)puVar9 & 0xffffff;
+										pDVar3->primptr = pDVar3->primptr + 0x28;
+										puVar16 = puVar9;
+										bVar1 = false;
+									}
+								}
+							}
+						}
+					}
+				LAB_00075eec:
+					iVar13 = iVar13 + 1;
+					iVar6 = iVar12;
+				} while (iVar13 < *(int *)((int)&num_tyre_tracks + iVar7));
+			}
+		}
+		iVar7 = iVar15 * 4;
+		iVar14 = iVar15;
+		if (3 < iVar15) {
+			return;
+		}
+	} while (true);*/
 }
 
 
@@ -684,76 +690,77 @@ LAB_00075eec:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitShadow(void)
-
 {
-  uchar uVar1;
-  ushort uVar2;
-  ushort uVar3;
-  uchar uVar4;
-  uchar uVar5;
-  uchar uVar6;
-  uchar uVar7;
-  uchar uVar8;
-  uchar uVar9;
-  TEXINF *pTVar10;
-  uchar uVar11;
-  POLY_FT4 *pPVar12;
-  int iVar13;
-  int iVar14;
-  TPAN local_10 [4];
-  
-  pTVar10 = GetTextureInfoName(s_CARSHAD_000aa8f8,local_10);
-  gShadowTexturePage = ZEXT14(local_10[0].texture_page);
-  gShadowTextureNum = ZEXT14(local_10[0].texture_number);
-  uVar1 = pTVar10->x;
-  uVar11 = pTVar10->x + pTVar10->width + -1;
-  shadowuv.v1 = pTVar10->y;
-  shadowuv.u2 = pTVar10->x;
-  shadowuv.v2 = pTVar10->y + pTVar10->height + -1;
-  shadowuv.u3 = pTVar10->x + pTVar10->width + -1;
-  shadowuv.v3 = pTVar10->y + pTVar10->height + -1;
-  shadowuv.v0 = pTVar10->y;
-  if (GameLevel == 3) {
-    shadowuv.v1 = shadowuv.v1 + '\x01';
-    shadowuv.v0 = pTVar10->y + '\x01';
-  }
-  uVar5 = shadowuv.v1;
-  uVar4 = shadowuv.v0;
-  uVar2 = (&texture_pages)[gShadowTexturePage];
-  uVar3 = (&texture_cluts)[gShadowTexturePage * 0x20 + gShadowTextureNum];
-  iVar13 = 0;
-  shadowuv.u0 = uVar1;
-  shadowuv.u1 = uVar11;
-  do {
-    iVar14 = iVar13 + 1;
-    pPVar12 = shadowPolys + iVar13 * 0x14;
-    iVar13 = 0x13;
-    do {
-      uVar9 = shadowuv.v3;
-      uVar8 = shadowuv.u3;
-      uVar7 = shadowuv.v2;
-      uVar6 = shadowuv.u2;
-      iVar13 = iVar13 + -1;
-      *(undefined *)((int)&pPVar12->tag + 3) = 9;
-      pPVar12->r0 = 'P';
-      pPVar12->g0 = 'P';
-      pPVar12->b0 = 'P';
-      pPVar12->tpage = uVar2 | 0x40;
-      pPVar12->clut = uVar3;
-      pPVar12->code = '.';
-      pPVar12->u0 = uVar1;
-      pPVar12->v0 = uVar4;
-      pPVar12->u1 = uVar11;
-      pPVar12->v1 = uVar5;
-      pPVar12->u2 = uVar6;
-      pPVar12->v2 = uVar7;
-      pPVar12->u3 = uVar8;
-      pPVar12->v3 = uVar9;
-      pPVar12 = pPVar12 + 1;
-    } while (-1 < iVar13);
-    iVar13 = iVar14;
-  } while (iVar14 < 2);
-  return;
+	UNIMPLEMENTED();
+	/*
+	uchar uVar1;
+	ushort uVar2;
+	ushort uVar3;
+	uchar uVar4;
+	uchar uVar5;
+	uchar uVar6;
+	uchar uVar7;
+	uchar uVar8;
+	uchar uVar9;
+	TEXINF *pTVar10;
+	uchar uVar11;
+	POLY_FT4 *pPVar12;
+	int iVar13;
+	int iVar14;
+	TPAN local_10[4];
+
+	pTVar10 = GetTextureInfoName(s_CARSHAD_000aa8f8, local_10);
+	gShadowTexturePage = ZEXT14(local_10[0].texture_page);
+	gShadowTextureNum = ZEXT14(local_10[0].texture_number);
+	uVar1 = pTVar10->x;
+	uVar11 = pTVar10->x + pTVar10->width + -1;
+	shadowuv.v1 = pTVar10->y;
+	shadowuv.u2 = pTVar10->x;
+	shadowuv.v2 = pTVar10->y + pTVar10->height + -1;
+	shadowuv.u3 = pTVar10->x + pTVar10->width + -1;
+	shadowuv.v3 = pTVar10->y + pTVar10->height + -1;
+	shadowuv.v0 = pTVar10->y;
+	if (GameLevel == 3) {
+		shadowuv.v1 = shadowuv.v1 + '\x01';
+		shadowuv.v0 = pTVar10->y + '\x01';
+	}
+	uVar5 = shadowuv.v1;
+	uVar4 = shadowuv.v0;
+	uVar2 = (&texture_pages)[gShadowTexturePage];
+	uVar3 = (&texture_cluts)[gShadowTexturePage * 0x20 + gShadowTextureNum];
+	iVar13 = 0;
+	shadowuv.u0 = uVar1;
+	shadowuv.u1 = uVar11;
+	do {
+		iVar14 = iVar13 + 1;
+		pPVar12 = shadowPolys + iVar13 * 0x14;
+		iVar13 = 0x13;
+		do {
+			uVar9 = shadowuv.v3;
+			uVar8 = shadowuv.u3;
+			uVar7 = shadowuv.v2;
+			uVar6 = shadowuv.u2;
+			iVar13 = iVar13 + -1;
+			*(undefined *)((int)&pPVar12->tag + 3) = 9;
+			pPVar12->r0 = 'P';
+			pPVar12->g0 = 'P';
+			pPVar12->b0 = 'P';
+			pPVar12->tpage = uVar2 | 0x40;
+			pPVar12->clut = uVar3;
+			pPVar12->code = '.';
+			pPVar12->u0 = uVar1;
+			pPVar12->v0 = uVar4;
+			pPVar12->u1 = uVar11;
+			pPVar12->v1 = uVar5;
+			pPVar12->u2 = uVar6;
+			pPVar12->v2 = uVar7;
+			pPVar12->u3 = uVar8;
+			pPVar12->v3 = uVar9;
+			pPVar12 = pPVar12 + 1;
+		} while (-1 < iVar13);
+		iVar13 = iVar14;
+	} while (iVar14 < 2);
+	return;*/
 }
 
 
@@ -818,190 +825,191 @@ void InitShadow(void)
 	/* end block 3 */
 	// End Line: 1810
 
-void SubdivShadow(long z0,long z1,long z2,long z3,POLY_FT4 *sps)
-
+void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 {
-  ushort uVar1;
-  DB *pDVar2;
-  undefined2 uVar3;
-  uint uVar4;
-  undefined2 uVar5;
-  undefined2 uVar6;
-  uint *puVar7;
-  uint uVar8;
-  uint uVar9;
-  int iVar10;
-  uint uVar11;
-  uint uVar12;
-  uint uVar13;
-  uint uVar14;
-  int iVar15;
-  uint uVar16;
-  uint *puVar17;
-  int iVar18;
-  
-  puVar17 = (uint *)current->primptr;
-  *(uint **)&current->primptr = puVar17 + 0x50;
-  uVar4 = sps->tag;
-  iVar18 = 7;
-  puVar17[0x46] = uVar4;
-  puVar17[0x3c] = uVar4;
-  puVar17[0x32] = uVar4;
-  puVar17[0x28] = uVar4;
-  puVar17[0x1e] = uVar4;
-  puVar17[0x14] = uVar4;
-  puVar17[10] = uVar4;
-  *puVar17 = uVar4;
-  uVar4 = *(uint *)&sps->r0;
-  puVar17[0x47] = uVar4;
-  puVar17[0x3d] = uVar4;
-  puVar17[0x33] = uVar4;
-  puVar17[0x29] = uVar4;
-  puVar17[0x1f] = uVar4;
-  puVar17[0x15] = uVar4;
-  puVar17[0xb] = uVar4;
-  puVar17[1] = uVar4;
-  puVar7 = puVar17;
-  do {
-    puVar7[3] = *(uint *)&sps->u0;
-    puVar7[5] = *(uint *)&sps->u1;
-    puVar7[7] = *(uint *)&sps->u2;
-    iVar18 = iVar18 + -1;
-    puVar7[9] = *(uint *)&sps->u3;
-    puVar7 = puVar7 + 10;
-  } while (-1 < iVar18);
-  uVar9 = *(uint *)&sps->x1;
-  uVar14 = *(uint *)&sps->x2;
-  uVar16 = *(uint *)&sps->x3;
-  iVar18 = *(uint *)&sps->x0 + 0x8000800;
-  iVar10 = uVar9 + 0x8000800;
-  puVar17[2] = *(uint *)&sps->x0;
-  uVar4 = ((uint)(iVar18 + iVar10) >> 1) + 0xf7fff800;
-  iVar15 = uVar14 + 0x8000800;
-  puVar17[0x2c] = uVar9;
-  uVar8 = (uint)(iVar18 + iVar15) >> 1;
-  uVar9 = iVar18 + uVar8 >> 1;
-  puVar17[4] = uVar4;
-  puVar17[0x2a] = uVar4;
-  uVar4 = uVar9 + 0xf7fff800;
-  iVar18 = uVar16 + 0x8000800;
-  uVar12 = (uint)(iVar10 + iVar18) >> 1;
-  uVar11 = iVar10 + uVar12 >> 1;
-  uVar9 = (uVar9 + uVar11 >> 1) + 0xf7fff800;
-  uVar11 = uVar11 + 0xf7fff800;
-  puVar17[6] = uVar4;
-  puVar17[0xc] = uVar4;
-  uVar4 = (uVar8 + uVar12 >> 1) + 0xf7fff800;
-  puVar17[8] = uVar9;
-  puVar17[0x2e] = uVar9;
-  puVar17[0xe] = uVar9;
-  puVar17[0x34] = uVar9;
-  uVar9 = iVar15 + uVar8 >> 1;
-  puVar17[0x12] = uVar4;
-  puVar17[0x38] = uVar4;
-  puVar17[0x18] = uVar4;
-  puVar17[0x3e] = uVar4;
-  uVar4 = uVar9 + 0xf7fff800;
-  uVar13 = iVar18 + uVar12 >> 1;
-  uVar9 = (uVar9 + uVar13 >> 1) + 0xf7fff800;
-  uVar13 = uVar13 + 0xf7fff800;
-  puVar17[0x1a] = uVar4;
-  puVar17[0x20] = uVar4;
-  uVar4 = ((uint)(iVar15 + iVar18) >> 1) + 0xf7fff800;
-  puVar17[0x30] = uVar11;
-  puVar17[0x36] = uVar11;
-  puVar17[0x10] = uVar8 + 0xf7fff800;
-  puVar17[0x3a] = uVar12 + 0xf7fff800;
-  puVar17[0x16] = uVar8 + 0xf7fff800;
-  puVar17[0x40] = uVar12 + 0xf7fff800;
-  puVar17[0x1c] = uVar9;
-  puVar17[0x42] = uVar9;
-  puVar17[0x44] = uVar13;
-  puVar17[0x22] = uVar9;
-  puVar17[0x48] = uVar9;
-  puVar17[0x4a] = uVar13;
-  puVar17[0x24] = uVar14;
-  puVar17[0x26] = uVar4;
-  puVar17[0x4c] = uVar4;
-  puVar17[0x4e] = uVar16;
-  uVar1 = *(ushort *)&sps->u3;
-  uVar9 = (uint)*(ushort *)&sps->u0 & 0xfeff;
-  uVar11 = (uint)*(ushort *)&sps->u1 & 0xfeff;
-  uVar14 = (uint)*(ushort *)&sps->u2 & 0xfeff;
-  uVar8 = uVar9 + uVar14 >> 1 & 0xfeff;
-  *(short *)(puVar17 + 3) = (short)uVar9;
-  uVar12 = uVar9 + uVar8 >> 1;
-  uVar16 = (uint)uVar1 & 0xfeff;
-  uVar4 = uVar11 + uVar16 >> 1 & 0xfeff;
-  *(short *)(puVar17 + 0x2d) = (short)uVar11;
-  uVar13 = uVar11 + uVar4 >> 1;
-  uVar3 = (undefined2)(uVar9 + uVar11 >> 1);
-  *(undefined2 *)(puVar17 + 5) = uVar3;
-  *(undefined2 *)(puVar17 + 0x2b) = uVar3;
-  uVar3 = (undefined2)(uVar12 + uVar13 >> 1);
-  *(undefined2 *)(puVar17 + 9) = uVar3;
-  *(undefined2 *)(puVar17 + 0x2f) = uVar3;
-  *(undefined2 *)(puVar17 + 0xf) = uVar3;
-  *(undefined2 *)(puVar17 + 0x35) = uVar3;
-  *(short *)(puVar17 + 0x11) = (short)uVar8;
-  *(short *)(puVar17 + 0x17) = (short)uVar8;
-  uVar11 = uVar14 + uVar8 >> 1;
-  *(short *)(puVar17 + 0x3b) = (short)uVar4;
-  *(short *)(puVar17 + 0x41) = (short)uVar4;
-  uVar9 = uVar16 + uVar4 >> 1;
-  uVar3 = (undefined2)(uVar8 + uVar4 >> 1);
-  *(undefined2 *)(puVar17 + 0x13) = uVar3;
-  *(undefined2 *)(puVar17 + 0x39) = uVar3;
-  *(undefined2 *)(puVar17 + 0x19) = uVar3;
-  *(undefined2 *)(puVar17 + 0x3f) = uVar3;
-  uVar3 = (undefined2)uVar12;
-  *(undefined2 *)(puVar17 + 7) = uVar3;
-  uVar5 = (undefined2)uVar13;
-  *(undefined2 *)(puVar17 + 0x31) = uVar5;
-  *(undefined2 *)(puVar17 + 0xd) = uVar3;
-  *(undefined2 *)(puVar17 + 0x37) = uVar5;
-  uVar6 = (undefined2)uVar11;
-  *(undefined2 *)(puVar17 + 0x1b) = uVar6;
-  uVar3 = (undefined2)(uVar11 + uVar9 >> 1);
-  *(undefined2 *)(puVar17 + 0x1d) = uVar3;
-  *(undefined2 *)(puVar17 + 0x43) = uVar3;
-  uVar5 = (undefined2)uVar9;
-  *(undefined2 *)(puVar17 + 0x45) = uVar5;
-  *(undefined2 *)(puVar17 + 0x21) = uVar6;
-  *(undefined2 *)(puVar17 + 0x23) = uVar3;
-  *(undefined2 *)(puVar17 + 0x49) = uVar3;
-  *(undefined2 *)(puVar17 + 0x4b) = uVar5;
-  *(short *)(puVar17 + 0x25) = (short)uVar14;
-  iVar18 = z0 * 7 + z3 >> 6;
-  uVar3 = (undefined2)(uVar14 + uVar16 >> 1);
-  *(undefined2 *)(puVar17 + 0x27) = uVar3;
-  *(undefined2 *)(puVar17 + 0x4d) = uVar3;
-  *(short *)(puVar17 + 0x4f) = (short)uVar16;
-  pDVar2 = current;
-  *puVar17 = *puVar17 & 0xff000000 | current->ot[iVar18] & 0xffffff;
-  pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)puVar17 & 0xffffff;
-  iVar18 = z0 * 5 + z3 * 3 >> 6;
-  puVar17[10] = puVar17[10] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-  iVar10 = z0 * 3 + z3 * 5 >> 6;
-  pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 10) & 0xffffff;
-  iVar18 = z0 + z3 * 7 >> 6;
-  puVar17[0x14] = puVar17[0x14] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
-  pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x14) & 0xffffff;
-  iVar10 = z1 * 7 + z2 >> 6;
-  puVar17[0x1e] = puVar17[0x1e] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-  pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x1e) & 0xffffff;
-  puVar17[0x28] = puVar17[0x28] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
-  iVar18 = z1 * 5 + z2 * 3 >> 6;
-  pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x28) & 0xffffff;
-  puVar17[0x32] = puVar17[0x32] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-  iVar10 = z1 * 3 + z2 * 5 >> 6;
-  pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x32) & 0xffffff;
-  iVar18 = z1 + z2 * 7 >> 6;
-  puVar17[0x3c] = puVar17[0x3c] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
-  pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x3c) & 0xffffff;
-  puVar17[0x46] = puVar17[0x46] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-  pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x46) & 0xffffff;
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	DB *pDVar2;
+	undefined2 uVar3;
+	uint uVar4;
+	undefined2 uVar5;
+	undefined2 uVar6;
+	uint *puVar7;
+	uint uVar8;
+	uint uVar9;
+	int iVar10;
+	uint uVar11;
+	uint uVar12;
+	uint uVar13;
+	uint uVar14;
+	int iVar15;
+	uint uVar16;
+	uint *puVar17;
+	int iVar18;
+
+	puVar17 = (uint *)current->primptr;
+	*(uint **)&current->primptr = puVar17 + 0x50;
+	uVar4 = sps->tag;
+	iVar18 = 7;
+	puVar17[0x46] = uVar4;
+	puVar17[0x3c] = uVar4;
+	puVar17[0x32] = uVar4;
+	puVar17[0x28] = uVar4;
+	puVar17[0x1e] = uVar4;
+	puVar17[0x14] = uVar4;
+	puVar17[10] = uVar4;
+	*puVar17 = uVar4;
+	uVar4 = *(uint *)&sps->r0;
+	puVar17[0x47] = uVar4;
+	puVar17[0x3d] = uVar4;
+	puVar17[0x33] = uVar4;
+	puVar17[0x29] = uVar4;
+	puVar17[0x1f] = uVar4;
+	puVar17[0x15] = uVar4;
+	puVar17[0xb] = uVar4;
+	puVar17[1] = uVar4;
+	puVar7 = puVar17;
+	do {
+		puVar7[3] = *(uint *)&sps->u0;
+		puVar7[5] = *(uint *)&sps->u1;
+		puVar7[7] = *(uint *)&sps->u2;
+		iVar18 = iVar18 + -1;
+		puVar7[9] = *(uint *)&sps->u3;
+		puVar7 = puVar7 + 10;
+	} while (-1 < iVar18);
+	uVar9 = *(uint *)&sps->x1;
+	uVar14 = *(uint *)&sps->x2;
+	uVar16 = *(uint *)&sps->x3;
+	iVar18 = *(uint *)&sps->x0 + 0x8000800;
+	iVar10 = uVar9 + 0x8000800;
+	puVar17[2] = *(uint *)&sps->x0;
+	uVar4 = ((uint)(iVar18 + iVar10) >> 1) + 0xf7fff800;
+	iVar15 = uVar14 + 0x8000800;
+	puVar17[0x2c] = uVar9;
+	uVar8 = (uint)(iVar18 + iVar15) >> 1;
+	uVar9 = iVar18 + uVar8 >> 1;
+	puVar17[4] = uVar4;
+	puVar17[0x2a] = uVar4;
+	uVar4 = uVar9 + 0xf7fff800;
+	iVar18 = uVar16 + 0x8000800;
+	uVar12 = (uint)(iVar10 + iVar18) >> 1;
+	uVar11 = iVar10 + uVar12 >> 1;
+	uVar9 = (uVar9 + uVar11 >> 1) + 0xf7fff800;
+	uVar11 = uVar11 + 0xf7fff800;
+	puVar17[6] = uVar4;
+	puVar17[0xc] = uVar4;
+	uVar4 = (uVar8 + uVar12 >> 1) + 0xf7fff800;
+	puVar17[8] = uVar9;
+	puVar17[0x2e] = uVar9;
+	puVar17[0xe] = uVar9;
+	puVar17[0x34] = uVar9;
+	uVar9 = iVar15 + uVar8 >> 1;
+	puVar17[0x12] = uVar4;
+	puVar17[0x38] = uVar4;
+	puVar17[0x18] = uVar4;
+	puVar17[0x3e] = uVar4;
+	uVar4 = uVar9 + 0xf7fff800;
+	uVar13 = iVar18 + uVar12 >> 1;
+	uVar9 = (uVar9 + uVar13 >> 1) + 0xf7fff800;
+	uVar13 = uVar13 + 0xf7fff800;
+	puVar17[0x1a] = uVar4;
+	puVar17[0x20] = uVar4;
+	uVar4 = ((uint)(iVar15 + iVar18) >> 1) + 0xf7fff800;
+	puVar17[0x30] = uVar11;
+	puVar17[0x36] = uVar11;
+	puVar17[0x10] = uVar8 + 0xf7fff800;
+	puVar17[0x3a] = uVar12 + 0xf7fff800;
+	puVar17[0x16] = uVar8 + 0xf7fff800;
+	puVar17[0x40] = uVar12 + 0xf7fff800;
+	puVar17[0x1c] = uVar9;
+	puVar17[0x42] = uVar9;
+	puVar17[0x44] = uVar13;
+	puVar17[0x22] = uVar9;
+	puVar17[0x48] = uVar9;
+	puVar17[0x4a] = uVar13;
+	puVar17[0x24] = uVar14;
+	puVar17[0x26] = uVar4;
+	puVar17[0x4c] = uVar4;
+	puVar17[0x4e] = uVar16;
+	uVar1 = *(ushort *)&sps->u3;
+	uVar9 = (uint)*(ushort *)&sps->u0 & 0xfeff;
+	uVar11 = (uint)*(ushort *)&sps->u1 & 0xfeff;
+	uVar14 = (uint)*(ushort *)&sps->u2 & 0xfeff;
+	uVar8 = uVar9 + uVar14 >> 1 & 0xfeff;
+	*(short *)(puVar17 + 3) = (short)uVar9;
+	uVar12 = uVar9 + uVar8 >> 1;
+	uVar16 = (uint)uVar1 & 0xfeff;
+	uVar4 = uVar11 + uVar16 >> 1 & 0xfeff;
+	*(short *)(puVar17 + 0x2d) = (short)uVar11;
+	uVar13 = uVar11 + uVar4 >> 1;
+	uVar3 = (undefined2)(uVar9 + uVar11 >> 1);
+	*(undefined2 *)(puVar17 + 5) = uVar3;
+	*(undefined2 *)(puVar17 + 0x2b) = uVar3;
+	uVar3 = (undefined2)(uVar12 + uVar13 >> 1);
+	*(undefined2 *)(puVar17 + 9) = uVar3;
+	*(undefined2 *)(puVar17 + 0x2f) = uVar3;
+	*(undefined2 *)(puVar17 + 0xf) = uVar3;
+	*(undefined2 *)(puVar17 + 0x35) = uVar3;
+	*(short *)(puVar17 + 0x11) = (short)uVar8;
+	*(short *)(puVar17 + 0x17) = (short)uVar8;
+	uVar11 = uVar14 + uVar8 >> 1;
+	*(short *)(puVar17 + 0x3b) = (short)uVar4;
+	*(short *)(puVar17 + 0x41) = (short)uVar4;
+	uVar9 = uVar16 + uVar4 >> 1;
+	uVar3 = (undefined2)(uVar8 + uVar4 >> 1);
+	*(undefined2 *)(puVar17 + 0x13) = uVar3;
+	*(undefined2 *)(puVar17 + 0x39) = uVar3;
+	*(undefined2 *)(puVar17 + 0x19) = uVar3;
+	*(undefined2 *)(puVar17 + 0x3f) = uVar3;
+	uVar3 = (undefined2)uVar12;
+	*(undefined2 *)(puVar17 + 7) = uVar3;
+	uVar5 = (undefined2)uVar13;
+	*(undefined2 *)(puVar17 + 0x31) = uVar5;
+	*(undefined2 *)(puVar17 + 0xd) = uVar3;
+	*(undefined2 *)(puVar17 + 0x37) = uVar5;
+	uVar6 = (undefined2)uVar11;
+	*(undefined2 *)(puVar17 + 0x1b) = uVar6;
+	uVar3 = (undefined2)(uVar11 + uVar9 >> 1);
+	*(undefined2 *)(puVar17 + 0x1d) = uVar3;
+	*(undefined2 *)(puVar17 + 0x43) = uVar3;
+	uVar5 = (undefined2)uVar9;
+	*(undefined2 *)(puVar17 + 0x45) = uVar5;
+	*(undefined2 *)(puVar17 + 0x21) = uVar6;
+	*(undefined2 *)(puVar17 + 0x23) = uVar3;
+	*(undefined2 *)(puVar17 + 0x49) = uVar3;
+	*(undefined2 *)(puVar17 + 0x4b) = uVar5;
+	*(short *)(puVar17 + 0x25) = (short)uVar14;
+	iVar18 = z0 * 7 + z3 >> 6;
+	uVar3 = (undefined2)(uVar14 + uVar16 >> 1);
+	*(undefined2 *)(puVar17 + 0x27) = uVar3;
+	*(undefined2 *)(puVar17 + 0x4d) = uVar3;
+	*(short *)(puVar17 + 0x4f) = (short)uVar16;
+	pDVar2 = current;
+	*puVar17 = *puVar17 & 0xff000000 | current->ot[iVar18] & 0xffffff;
+	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)puVar17 & 0xffffff;
+	iVar18 = z0 * 5 + z3 * 3 >> 6;
+	puVar17[10] = puVar17[10] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
+	iVar10 = z0 * 3 + z3 * 5 >> 6;
+	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 10) & 0xffffff;
+	iVar18 = z0 + z3 * 7 >> 6;
+	puVar17[0x14] = puVar17[0x14] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
+	pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x14) & 0xffffff;
+	iVar10 = z1 * 7 + z2 >> 6;
+	puVar17[0x1e] = puVar17[0x1e] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
+	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x1e) & 0xffffff;
+	puVar17[0x28] = puVar17[0x28] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
+	iVar18 = z1 * 5 + z2 * 3 >> 6;
+	pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x28) & 0xffffff;
+	puVar17[0x32] = puVar17[0x32] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
+	iVar10 = z1 * 3 + z2 * 5 >> 6;
+	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x32) & 0xffffff;
+	iVar18 = z1 + z2 * 7 >> 6;
+	puVar17[0x3c] = puVar17[0x3c] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
+	pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x3c) & 0xffffff;
+	puVar17[0x46] = puVar17[0x46] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
+	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x46) & 0xffffff;
+	return;*/
 }
 
 
@@ -1040,112 +1048,113 @@ void SubdivShadow(long z0,long z1,long z2,long z3,POLY_FT4 *sps)
 	/* end block 4 */
 	// End Line: 2536
 
-void PlaceShadowForCar(VECTOR *shadowPoints,int slot,VECTOR *CarPos,int zclip)
-
+void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip)
 {
-  undefined4 uVar1;
-  undefined4 in_zero;
-  undefined4 in_at;
-  long z0;
-  long z1;
-  long z2;
-  long z3;
-  POLY_FT4 *sps;
-  undefined4 local_40;
-  uint local_3c;
-  undefined4 local_38;
-  uint local_34;
-  undefined4 local_30;
-  uint local_2c;
-  undefined4 local_28;
-  uint local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  
-  if (slot < 0) {
-    while (FrameCnt != 0x78654321) {
-      trap(0x400);
-    }
-  }
-  local_40 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints->vy,
-                      *(short *)&shadowPoints->vx - (short)camera_position.vx);
-  local_3c = local_3c & 0xffff0000 |
-             (uint)(ushort)(*(short *)&shadowPoints->vz - (short)camera_position.vz);
-  local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[1].vy,
-                      *(short *)&shadowPoints[1].vx - (short)camera_position.vx);
-  local_34 = local_34 & 0xffff0000 |
-             (uint)(ushort)(*(short *)&shadowPoints[1].vz - (short)camera_position.vz);
-  local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[3].vy,
-                      *(short *)&shadowPoints[3].vx - (short)camera_position.vx);
-  local_2c = local_2c & 0xffff0000 |
-             (uint)(ushort)(*(short *)&shadowPoints[3].vz - (short)camera_position.vz);
-  setCopControlWord(2,0x2800,dummy.vx);
-  setCopControlWord(2,0x3000,dummy.vy);
-  setCopControlWord(2,0x3800,dummy.vz);
-  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-  sps = shadowPolys + slot + current->id * 0x14;
-  setCopReg(2,in_zero,local_40);
-  setCopReg(2,in_at,local_3c);
-  setCopReg(2,shadowPolys + slot,local_38);
-  setCopReg(2,current->id * 800,local_34);
-  setCopReg(2,0xda9e0,local_30);
-  setCopReg(2,(uint)(ushort)camera_position.vy,local_2c);
-  copFunction(2,0x280030);
-  local_28 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[2].vy,
-                      *(short *)&shadowPoints[2].vx - (short)camera_position.vx);
-  local_24 = local_24 & 0xffff0000 |
-             (uint)(ushort)(*(short *)&shadowPoints[2].vz - (short)camera_position.vz);
-  uVar1 = getCopReg(2,0xc);
-  *(undefined4 *)&sps->x0 = uVar1;
-  uVar1 = getCopReg(2,0xd);
-  *(undefined4 *)&sps->x1 = uVar1;
-  uVar1 = getCopReg(2,0xe);
-  *(undefined4 *)&sps->x3 = uVar1;
-  local_20 = getCopReg(2,0x11);
-  local_1c = getCopReg(2,0x12);
-  local_18 = getCopReg(2,0x13);
-  setCopReg(2,in_zero,local_28);
-  setCopReg(2,in_at,local_24);
-  copFunction(2,0x180001);
-  local_14 = getCopReg(2,0x13);
-  uVar1 = getCopReg(2,0xe);
-  *(undefined4 *)&sps->x2 = uVar1;
-  if (local_20 < local_1c) {
-    local_20 = (local_20 + local_1c) / 2;
-  }
-  else {
-    local_1c = (local_20 + local_1c) / 2;
-  }
-  if (local_18 < local_14) {
-    local_18 = (local_18 + local_14) / 2;
-  }
-  else {
-    local_14 = (local_18 + local_14) / 2;
-  }
-  z0 = 8;
-  if (0x1c < local_20) {
-    z0 = local_20 + -0x14;
-  }
-  z1 = 8;
-  if (0x1c < local_1c) {
-    z1 = local_1c + -0x14;
-  }
-  z2 = 8;
-  if (0x1c < local_18) {
-    z2 = local_18 + -0x14;
-  }
-  z3 = 8;
-  if (0x1c < local_14) {
-    z3 = local_14 + -0x14;
-  }
-  SubdivShadow(z0,z1,z2,z3,sps);
-  return;
+	UNIMPLEMENTED();
+	/*
+	undefined4 uVar1;
+	undefined4 in_zero;
+	undefined4 in_at;
+	long z0;
+	long z1;
+	long z2;
+	long z3;
+	POLY_FT4 *sps;
+	undefined4 local_40;
+	uint local_3c;
+	undefined4 local_38;
+	uint local_34;
+	undefined4 local_30;
+	uint local_2c;
+	undefined4 local_28;
+	uint local_24;
+	int local_20;
+	int local_1c;
+	int local_18;
+	int local_14;
+
+	if (slot < 0) {
+		while (FrameCnt != 0x78654321) {
+			trap(0x400);
+		}
+	}
+	local_40 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints->vy,
+		*(short *)&shadowPoints->vx - (short)camera_position.vx);
+	local_3c = local_3c & 0xffff0000 |
+		(uint)(ushort)(*(short *)&shadowPoints->vz - (short)camera_position.vz);
+	local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[1].vy,
+		*(short *)&shadowPoints[1].vx - (short)camera_position.vx);
+	local_34 = local_34 & 0xffff0000 |
+		(uint)(ushort)(*(short *)&shadowPoints[1].vz - (short)camera_position.vz);
+	local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[3].vy,
+		*(short *)&shadowPoints[3].vx - (short)camera_position.vx);
+	local_2c = local_2c & 0xffff0000 |
+		(uint)(ushort)(*(short *)&shadowPoints[3].vz - (short)camera_position.vz);
+	setCopControlWord(2, 0x2800, dummy.vx);
+	setCopControlWord(2, 0x3000, dummy.vy);
+	setCopControlWord(2, 0x3800, dummy.vz);
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	sps = shadowPolys + slot + current->id * 0x14;
+	setCopReg(2, in_zero, local_40);
+	setCopReg(2, in_at, local_3c);
+	setCopReg(2, shadowPolys + slot, local_38);
+	setCopReg(2, current->id * 800, local_34);
+	setCopReg(2, 0xda9e0, local_30);
+	setCopReg(2, (uint)(ushort)camera_position.vy, local_2c);
+	copFunction(2, 0x280030);
+	local_28 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[2].vy,
+		*(short *)&shadowPoints[2].vx - (short)camera_position.vx);
+	local_24 = local_24 & 0xffff0000 |
+		(uint)(ushort)(*(short *)&shadowPoints[2].vz - (short)camera_position.vz);
+	uVar1 = getCopReg(2, 0xc);
+	*(undefined4 *)&sps->x0 = uVar1;
+	uVar1 = getCopReg(2, 0xd);
+	*(undefined4 *)&sps->x1 = uVar1;
+	uVar1 = getCopReg(2, 0xe);
+	*(undefined4 *)&sps->x3 = uVar1;
+	local_20 = getCopReg(2, 0x11);
+	local_1c = getCopReg(2, 0x12);
+	local_18 = getCopReg(2, 0x13);
+	setCopReg(2, in_zero, local_28);
+	setCopReg(2, in_at, local_24);
+	copFunction(2, 0x180001);
+	local_14 = getCopReg(2, 0x13);
+	uVar1 = getCopReg(2, 0xe);
+	*(undefined4 *)&sps->x2 = uVar1;
+	if (local_20 < local_1c) {
+		local_20 = (local_20 + local_1c) / 2;
+	}
+	else {
+		local_1c = (local_20 + local_1c) / 2;
+	}
+	if (local_18 < local_14) {
+		local_18 = (local_18 + local_14) / 2;
+	}
+	else {
+		local_14 = (local_18 + local_14) / 2;
+	}
+	z0 = 8;
+	if (0x1c < local_20) {
+		z0 = local_20 + -0x14;
+	}
+	z1 = 8;
+	if (0x1c < local_1c) {
+		z1 = local_1c + -0x14;
+	}
+	z2 = 8;
+	if (0x1c < local_18) {
+		z2 = local_18 + -0x14;
+	}
+	z3 = 8;
+	if (0x1c < local_14) {
+		z3 = local_14 + -0x14;
+	}
+	SubdivShadow(z0, z1, z2, z3, sps);
+	return;*/
 }
 
 
@@ -1209,96 +1218,98 @@ void PlaceShadowForCar(VECTOR *shadowPoints,int slot,VECTOR *CarPos,int zclip)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int clipAgainstZ(void)
-
 {
-  SVECTOR *pSVar1;
-  SVECTOR *pSVar2;
-  undefined4 uVar3;
-  int iVar4;
-  int iVar5;
-  SVECTOR *pSVar6;
-  int iVar7;
-  SVECTOR *pSVar8;
-  uint uVar9;
-  int iVar10;
-  int iVar11;
-  
-  iVar11 = 0;
-  pSVar8 = &cv + lastcv;
-  pSVar6 = SVECTOR_ARRAY_000da940 + lastcv;
-  iVar10 = numcv + -1;
-  uVar9 = (uint)(0 < (pSVar8 + numcv * 0x1fffffff)[1].vz) << 1;
-  pSVar2 = pSVar8 + numcv * 0x1fffffff + 1;
-  do {
-    pSVar1 = pSVar8;
-    if (iVar10 < 0) {
-      numcv = iVar11;
-      lastcv = lastcv + 2;
-      return 0;
-    }
-    iVar7 = (int)pSVar1->vz;
-    uVar9 = (int)uVar9 >> 1;
-    if (0 < iVar7) {
-      uVar9 = uVar9 | 2;
-    }
-    if (uVar9 == 1) {
-      iVar5 = (int)pSVar2->vz;
-      iVar4 = iVar5 - iVar7;
-      if (iVar4 == 0) {
-        trap(7);
-      }
-      pSVar6->vx = (short)((pSVar1->vx * iVar5 - pSVar2->vx * iVar7) / iVar4);
-      if (iVar4 == 0) {
-        trap(7);
-      }
-      pSVar6->vy = (short)((pSVar1->vy * iVar5 - pSVar2->vy * iVar7) / iVar4);
-      if (iVar4 == 0) {
-        trap(7);
-      }
-      pSVar6->pad = (short)((pSVar1->pad * iVar5 - pSVar2->pad * iVar7) / iVar4);
-      pSVar6->vz = 0;
-LAB_00076ca4:
-      pSVar6 = pSVar6 + -1;
-      iVar11 = iVar11 + 1;
-    }
-    else {
-      if (uVar9 < 2) {
-        if (uVar9 != 0) {
-LAB_00076c84:
-          uVar3 = *(undefined4 *)&pSVar1->vz;
-          *(undefined4 *)pSVar6 = *(undefined4 *)pSVar1;
-          *(undefined4 *)&pSVar6->vz = uVar3;
-          goto LAB_00076ca4;
-        }
-      }
-      else {
-        if (uVar9 != 2) goto LAB_00076c84;
-        iVar5 = (int)pSVar2->vz;
-        iVar4 = iVar5 - iVar7;
-        if (iVar4 == 0) {
-          trap(7);
-        }
-        pSVar6->vx = (short)((pSVar1->vx * iVar5 - pSVar2->vx * iVar7) / iVar4);
-        if (iVar4 == 0) {
-          trap(7);
-        }
-        pSVar6->vy = (short)((pSVar1->vy * iVar5 - pSVar2->vy * iVar7) / iVar4);
-        if (iVar4 == 0) {
-          trap(7);
-        }
-        pSVar6->pad = (short)((pSVar1->pad * iVar5 - pSVar2->pad * iVar7) / iVar4);
-        pSVar6->vz = 0;
-        uVar3 = *(undefined4 *)&pSVar1->vz;
-        *(undefined4 *)(pSVar6 + -1) = *(undefined4 *)pSVar1;
-        *(undefined4 *)&pSVar6[-1].vz = uVar3;
-        pSVar6 = pSVar6 + -2;
-        iVar11 = iVar11 + 2;
-      }
-    }
-    iVar10 = iVar10 + -1;
-    pSVar8 = pSVar1 + -1;
-    pSVar2 = pSVar1;
-  } while( true );
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	SVECTOR *pSVar1;
+	SVECTOR *pSVar2;
+	undefined4 uVar3;
+	int iVar4;
+	int iVar5;
+	SVECTOR *pSVar6;
+	int iVar7;
+	SVECTOR *pSVar8;
+	uint uVar9;
+	int iVar10;
+	int iVar11;
+
+	iVar11 = 0;
+	pSVar8 = &cv + lastcv;
+	pSVar6 = SVECTOR_ARRAY_000da940 + lastcv;
+	iVar10 = numcv + -1;
+	uVar9 = (uint)(0 < (pSVar8 + numcv * 0x1fffffff)[1].vz) << 1;
+	pSVar2 = pSVar8 + numcv * 0x1fffffff + 1;
+	do {
+		pSVar1 = pSVar8;
+		if (iVar10 < 0) {
+			numcv = iVar11;
+			lastcv = lastcv + 2;
+			return 0;
+		}
+		iVar7 = (int)pSVar1->vz;
+		uVar9 = (int)uVar9 >> 1;
+		if (0 < iVar7) {
+			uVar9 = uVar9 | 2;
+		}
+		if (uVar9 == 1) {
+			iVar5 = (int)pSVar2->vz;
+			iVar4 = iVar5 - iVar7;
+			if (iVar4 == 0) {
+				trap(7);
+			}
+			pSVar6->vx = (short)((pSVar1->vx * iVar5 - pSVar2->vx * iVar7) / iVar4);
+			if (iVar4 == 0) {
+				trap(7);
+			}
+			pSVar6->vy = (short)((pSVar1->vy * iVar5 - pSVar2->vy * iVar7) / iVar4);
+			if (iVar4 == 0) {
+				trap(7);
+			}
+			pSVar6->pad = (short)((pSVar1->pad * iVar5 - pSVar2->pad * iVar7) / iVar4);
+			pSVar6->vz = 0;
+		LAB_00076ca4:
+			pSVar6 = pSVar6 + -1;
+			iVar11 = iVar11 + 1;
+		}
+		else {
+			if (uVar9 < 2) {
+				if (uVar9 != 0) {
+				LAB_00076c84:
+					uVar3 = *(undefined4 *)&pSVar1->vz;
+					*(undefined4 *)pSVar6 = *(undefined4 *)pSVar1;
+					*(undefined4 *)&pSVar6->vz = uVar3;
+					goto LAB_00076ca4;
+				}
+			}
+			else {
+				if (uVar9 != 2) goto LAB_00076c84;
+				iVar5 = (int)pSVar2->vz;
+				iVar4 = iVar5 - iVar7;
+				if (iVar4 == 0) {
+					trap(7);
+				}
+				pSVar6->vx = (short)((pSVar1->vx * iVar5 - pSVar2->vx * iVar7) / iVar4);
+				if (iVar4 == 0) {
+					trap(7);
+				}
+				pSVar6->vy = (short)((pSVar1->vy * iVar5 - pSVar2->vy * iVar7) / iVar4);
+				if (iVar4 == 0) {
+					trap(7);
+				}
+				pSVar6->pad = (short)((pSVar1->pad * iVar5 - pSVar2->pad * iVar7) / iVar4);
+				pSVar6->vz = 0;
+				uVar3 = *(undefined4 *)&pSVar1->vz;
+				*(undefined4 *)(pSVar6 + -1) = *(undefined4 *)pSVar1;
+				*(undefined4 *)&pSVar6[-1].vz = uVar3;
+				pSVar6 = pSVar6 + -2;
+				iVar11 = iVar11 + 2;
+			}
+		}
+		iVar10 = iVar10 + -1;
+		pSVar8 = pSVar1 + -1;
+		pSVar2 = pSVar1;
+	} while (true);*/
 }
 
 
@@ -1343,150 +1354,151 @@ LAB_00076c84:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void clippedPoly(void)
-
 {
-  undefined4 uVar1;
-  int iVar2;
-  int iVar3;
-  POLY_F3 *pPVar4;
-  DB *pDVar5;
-  undefined4 in_zero;
-  undefined4 in_at;
-  int iVar6;
-  SVECTOR *pSVar7;
-  short *psVar8;
-  ulong *in_a1;
-  short *psVar9;
-  int iVar10;
-  int iVar11;
-  uint *puVar12;
-  
-  pPVar4 = spolys;
-  iVar11 = numcv + -1;
-  if (iVar11 != -1) {
-    in_a1 = (ulong *)0xffffffff;
-    psVar8 = &(&cv)[lastcv].vz;
-    do {
-      iVar11 = iVar11 + -1;
-      *psVar8 = *psVar8 * 2 - psVar8[-2];
-      psVar8 = psVar8 + -4;
-    } while (iVar11 != -1);
-  }
-  clipAgainstZ();
-  if (2 < numcv) {
-    iVar11 = numcv + -1;
-    if (numcv != 0) {
-      in_a1 = (ulong *)0xffffffff;
-      pSVar7 = &cv + lastcv;
-      do {
-        iVar11 = iVar11 + -1;
-        pSVar7->vz = pSVar7->vz + pSVar7->vx * 2;
-        pSVar7 = pSVar7 + -1;
-      } while (iVar11 != -1);
-    }
-    clipAgainstZ();
-    if (2 < numcv) {
-      iVar11 = numcv + -1;
-      if (numcv != 0) {
-        in_a1 = (ulong *)&(&cv)[lastcv].vy;
-        do {
-          iVar11 = iVar11 + -1;
-          *(short *)((int)in_a1 + 2) =
-               *(short *)((int)in_a1 + 2) - (*(short *)((int)in_a1 + -2) + *(short *)in_a1 * 2);
-          in_a1 = in_a1 + -2;
-        } while (iVar11 != -1);
-      }
-      clipAgainstZ();
-      if (2 < numcv) {
-        iVar11 = numcv + -1;
-        if (numcv != 0) {
-          in_a1 = (ulong *)0xffffffff;
-          psVar8 = &(&cv)[lastcv].vy;
-          do {
-            iVar11 = iVar11 + -1;
-            psVar8[1] = psVar8[1] + *psVar8 * 4;
-            psVar8 = psVar8 + -4;
-          } while (iVar11 != -1);
-        }
-        clipAgainstZ();
-        if (2 < numcv) {
-          iVar11 = numcv + -1;
-          if (numcv != 0) {
-            in_a1 = (ulong *)0xffffffff;
-            psVar8 = &(&cv)[lastcv].vy;
-            do {
-              iVar11 = iVar11 + -1;
-              psVar8[1] = (short)((int)(((uint)(ushort)psVar8[1] + (int)*psVar8 * -2) * 0x10000) >>
-                                 0x11);
-              psVar8 = psVar8 + -4;
-            } while (iVar11 != -1);
-          }
-          iVar11 = numcv + -3;
-          iVar3 = lastcv;
-          spolys = pPVar4;
-          while (-1 < iVar11) {
-            iVar6 = iVar3 * 8;
-            setCopReg(2,in_zero,*(undefined4 *)(&cv + lastcv));
-            setCopReg(2,in_at,*(undefined4 *)&(&cv)[lastcv].vz);
-            setCopReg(2,&DAT_000da928 + iVar6,*(undefined4 *)(&DAT_000da928 + iVar6));
-            setCopReg(2,&Cont_12 + iVar6,*(undefined4 *)(&DAT_000da92c + iVar6));
-            setCopReg(2,&cv + lastcv,*(undefined4 *)(&Cont_12 + iVar6));
-            setCopReg(2,in_a1,*(undefined4 *)(&DAT_000da924 + iVar6));
-            copFunction(2,0x280030);
-            *(undefined *)((int)&spolys->tag + 3) = 6;
-            spolys->code = '2';
-            spolys->r0 = *(uchar *)&(&cv)[lastcv].pad;
-            spolys->g0 = *(uchar *)&(&cv)[lastcv].pad;
-            psVar9 = &(&cv)[iVar3 + -1].pad;
-            spolys->b0 = *(uchar *)&(&cv)[lastcv].pad;
-            *(undefined *)&spolys->x1 = *(undefined *)psVar9;
-            *(undefined *)((int)&spolys->x1 + 1) = *(undefined *)psVar9;
-            psVar8 = &(&cv)[iVar3 + -2].pad;
-            *(undefined *)&spolys->y1 = *(undefined *)psVar9;
-            *(undefined *)&spolys[1].tag = *(undefined *)psVar8;
-            *(undefined *)((int)&spolys[1].tag + 1) = *(undefined *)psVar8;
-            *(undefined *)((int)&spolys[1].tag + 2) = *(undefined *)psVar8;
-            uVar1 = getCopReg(2,0xc);
-            *(undefined4 *)&spolys->x0 = uVar1;
-            uVar1 = getCopReg(2,0xd);
-            *(undefined4 *)&spolys->x2 = uVar1;
-            uVar1 = getCopReg(2,0xe);
-            *(undefined4 *)&spolys[1].r0 = uVar1;
-            pDVar5 = current;
-            iVar6 = getCopReg(2,0x11);
-            iVar10 = getCopReg(2,0x12);
-            iVar2 = getCopReg(2,0x13);
-            iVar6 = (iVar6 + iVar10 + iVar2) / 3 + LightSortCorrect;
-            iVar10 = iVar6 >> 3;
-            if (iVar6 < 0x40) {
-              iVar10 = 8;
-            }
-            spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar10] & 0xffffff;
-            puVar12 = (uint *)&spolys[1].x0;
-            pDVar5->ot[iVar10] = pDVar5->ot[iVar10] & 0xff000000 | (uint)spolys & 0xffffff;
-            *(undefined *)((int)&spolys[1].y0 + 1) = 7;
-            *(undefined *)((int)&spolys[1].y1 + 1) = 0x24;
-            pDVar5 = current;
-            spolys[1].x2 = -1;
-            spolys[1].y2 = -1;
-            *(undefined2 *)&spolys[2].r0 = 0xffff;
-            *(undefined2 *)&spolys[2].b0 = 0xffff;
-            spolys[2].x1 = -1;
-            spolys[2].y1 = -1;
-            spolys[2].y0 = 0x20;
-            *puVar12 = *puVar12 & 0xff000000 | pDVar5->ot[iVar10] & 0xffffff;
-            iVar11 = iVar11 + -1;
-            in_a1 = pDVar5->ot + iVar10;
-            *in_a1 = *in_a1 & 0xff000000 | (uint)puVar12 & 0xffffff;
-            spolys = (POLY_F3 *)&spolys[2].x2;
-            pDVar5->primptr = pDVar5->primptr + 0x20;
-            iVar3 = iVar3 + -1;
-          }
-        }
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	undefined4 uVar1;
+	int iVar2;
+	int iVar3;
+	POLY_F3 *pPVar4;
+	DB *pDVar5;
+	undefined4 in_zero;
+	undefined4 in_at;
+	int iVar6;
+	SVECTOR *pSVar7;
+	short *psVar8;
+	ulong *in_a1;
+	short *psVar9;
+	int iVar10;
+	int iVar11;
+	uint *puVar12;
+
+	pPVar4 = spolys;
+	iVar11 = numcv + -1;
+	if (iVar11 != -1) {
+		in_a1 = (ulong *)0xffffffff;
+		psVar8 = &(&cv)[lastcv].vz;
+		do {
+			iVar11 = iVar11 + -1;
+			*psVar8 = *psVar8 * 2 - psVar8[-2];
+			psVar8 = psVar8 + -4;
+		} while (iVar11 != -1);
+	}
+	clipAgainstZ();
+	if (2 < numcv) {
+		iVar11 = numcv + -1;
+		if (numcv != 0) {
+			in_a1 = (ulong *)0xffffffff;
+			pSVar7 = &cv + lastcv;
+			do {
+				iVar11 = iVar11 + -1;
+				pSVar7->vz = pSVar7->vz + pSVar7->vx * 2;
+				pSVar7 = pSVar7 + -1;
+			} while (iVar11 != -1);
+		}
+		clipAgainstZ();
+		if (2 < numcv) {
+			iVar11 = numcv + -1;
+			if (numcv != 0) {
+				in_a1 = (ulong *)&(&cv)[lastcv].vy;
+				do {
+					iVar11 = iVar11 + -1;
+					*(short *)((int)in_a1 + 2) =
+						*(short *)((int)in_a1 + 2) - (*(short *)((int)in_a1 + -2) + *(short *)in_a1 * 2);
+					in_a1 = in_a1 + -2;
+				} while (iVar11 != -1);
+			}
+			clipAgainstZ();
+			if (2 < numcv) {
+				iVar11 = numcv + -1;
+				if (numcv != 0) {
+					in_a1 = (ulong *)0xffffffff;
+					psVar8 = &(&cv)[lastcv].vy;
+					do {
+						iVar11 = iVar11 + -1;
+						psVar8[1] = psVar8[1] + *psVar8 * 4;
+						psVar8 = psVar8 + -4;
+					} while (iVar11 != -1);
+				}
+				clipAgainstZ();
+				if (2 < numcv) {
+					iVar11 = numcv + -1;
+					if (numcv != 0) {
+						in_a1 = (ulong *)0xffffffff;
+						psVar8 = &(&cv)[lastcv].vy;
+						do {
+							iVar11 = iVar11 + -1;
+							psVar8[1] = (short)((int)(((uint)(ushort)psVar8[1] + (int)*psVar8 * -2) * 0x10000) >>
+								0x11);
+							psVar8 = psVar8 + -4;
+						} while (iVar11 != -1);
+					}
+					iVar11 = numcv + -3;
+					iVar3 = lastcv;
+					spolys = pPVar4;
+					while (-1 < iVar11) {
+						iVar6 = iVar3 * 8;
+						setCopReg(2, in_zero, *(undefined4 *)(&cv + lastcv));
+						setCopReg(2, in_at, *(undefined4 *)&(&cv)[lastcv].vz);
+						setCopReg(2, &DAT_000da928 + iVar6, *(undefined4 *)(&DAT_000da928 + iVar6));
+						setCopReg(2, &Cont_12 + iVar6, *(undefined4 *)(&DAT_000da92c + iVar6));
+						setCopReg(2, &cv + lastcv, *(undefined4 *)(&Cont_12 + iVar6));
+						setCopReg(2, in_a1, *(undefined4 *)(&DAT_000da924 + iVar6));
+						copFunction(2, 0x280030);
+						*(undefined *)((int)&spolys->tag + 3) = 6;
+						spolys->code = '2';
+						spolys->r0 = *(uchar *)&(&cv)[lastcv].pad;
+						spolys->g0 = *(uchar *)&(&cv)[lastcv].pad;
+						psVar9 = &(&cv)[iVar3 + -1].pad;
+						spolys->b0 = *(uchar *)&(&cv)[lastcv].pad;
+						*(undefined *)&spolys->x1 = *(undefined *)psVar9;
+						*(undefined *)((int)&spolys->x1 + 1) = *(undefined *)psVar9;
+						psVar8 = &(&cv)[iVar3 + -2].pad;
+						*(undefined *)&spolys->y1 = *(undefined *)psVar9;
+						*(undefined *)&spolys[1].tag = *(undefined *)psVar8;
+						*(undefined *)((int)&spolys[1].tag + 1) = *(undefined *)psVar8;
+						*(undefined *)((int)&spolys[1].tag + 2) = *(undefined *)psVar8;
+						uVar1 = getCopReg(2, 0xc);
+						*(undefined4 *)&spolys->x0 = uVar1;
+						uVar1 = getCopReg(2, 0xd);
+						*(undefined4 *)&spolys->x2 = uVar1;
+						uVar1 = getCopReg(2, 0xe);
+						*(undefined4 *)&spolys[1].r0 = uVar1;
+						pDVar5 = current;
+						iVar6 = getCopReg(2, 0x11);
+						iVar10 = getCopReg(2, 0x12);
+						iVar2 = getCopReg(2, 0x13);
+						iVar6 = (iVar6 + iVar10 + iVar2) / 3 + LightSortCorrect;
+						iVar10 = iVar6 >> 3;
+						if (iVar6 < 0x40) {
+							iVar10 = 8;
+						}
+						spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar10] & 0xffffff;
+						puVar12 = (uint *)&spolys[1].x0;
+						pDVar5->ot[iVar10] = pDVar5->ot[iVar10] & 0xff000000 | (uint)spolys & 0xffffff;
+						*(undefined *)((int)&spolys[1].y0 + 1) = 7;
+						*(undefined *)((int)&spolys[1].y1 + 1) = 0x24;
+						pDVar5 = current;
+						spolys[1].x2 = -1;
+						spolys[1].y2 = -1;
+						*(undefined2 *)&spolys[2].r0 = 0xffff;
+						*(undefined2 *)&spolys[2].b0 = 0xffff;
+						spolys[2].x1 = -1;
+						spolys[2].y1 = -1;
+						spolys[2].y0 = 0x20;
+						*puVar12 = *puVar12 & 0xff000000 | pDVar5->ot[iVar10] & 0xffffff;
+						iVar11 = iVar11 + -1;
+						in_a1 = pDVar5->ot + iVar10;
+						*in_a1 = *in_a1 & 0xff000000 | (uint)puVar12 & 0xffffff;
+						spolys = (POLY_F3 *)&spolys[2].x2;
+						pDVar5->primptr = pDVar5->primptr + 0x20;
+						iVar3 = iVar3 + -1;
+					}
+				}
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -1519,108 +1531,109 @@ void clippedPoly(void)
 	/* end block 2 */
 	// End Line: 3252
 
-void sQuad(SVECTOR *v0,SVECTOR *v1,SVECTOR *v2,SVECTOR *v3)
-
+void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3)
 {
-  bool bVar1;
-  undefined4 uVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  POLY_F3 *pPVar6;
-  DB *pDVar7;
-  undefined4 in_zero;
-  undefined4 in_at;
-  int iVar8;
-  undefined4 in_v1;
-  uint *puVar9;
-  
-  pPVar6 = spolys;
-  if ((((v0->vz < 0x3e9) || (v1->vz < 0x3e9)) || (v2->vz < 0x3e9)) ||
-     (bVar1 = v3->vz < 0x3e9, bVar1)) {
-    if (((0 < v0->vz) || (0 < v1->vz)) || ((0 < v2->vz || (0 < v3->vz)))) {
-      cv._0_4_ = *(undefined4 *)v0;
-      SVECTOR_000da938._0_4_ = *(undefined4 *)v1;
-      SVECTOR_ARRAY_000da940[0]._0_4_ = *(undefined4 *)v3;
-      cv._4_4_ = *(uint *)&v0->vz & 0xffff;
-      SVECTOR_ARRAY_000da940[0]._4_4_ = *(uint *)&v3->vz & 0xffff;
-      numcv = 3;
-      lastcv = 2;
-      SVECTOR_000da938._4_4_ = *(uint *)&v1->vz & 0xffff | (uint)(ushort)light_col << 0x10;
-      clippedPoly();
-      cv._0_4_ = *(undefined4 *)v2;
-      SVECTOR_000da938._0_4_ = *(undefined4 *)v1;
-      SVECTOR_ARRAY_000da940[0]._0_4_ = *(undefined4 *)v3;
-      cv._4_4_ = *(uint *)&v2->vz & 0xffff;
-      SVECTOR_ARRAY_000da940[0]._4_4_ = *(uint *)&v3->vz & 0xffff;
-      numcv = 3;
-      lastcv = 2;
-      SVECTOR_000da938._4_4_ = *(uint *)&v1->vz & 0xffff | (uint)(ushort)light_col << 0x10;
-      clippedPoly();
-    }
-  }
-  else {
-    setCopReg(2,in_zero,*(undefined4 *)v0);
-    setCopReg(2,in_at,*(undefined4 *)&v0->vz);
-    setCopReg(2,(uint)bVar1,*(undefined4 *)v1);
-    setCopReg(2,in_v1,*(undefined4 *)&v1->vz);
-    setCopReg(2,v0,*(undefined4 *)v3);
-    setCopReg(2,v1,*(undefined4 *)&v3->vz);
-    copFunction(2,0x280030);
-    spolys->code = ':';
-    *(undefined *)((int)&pPVar6->tag + 3) = 8;
-    *(undefined *)&pPVar6->x1 = (undefined)light_col;
-    *(undefined *)((int)&pPVar6->x1 + 1) = (undefined)light_col;
-    pPVar6->r0 = '\0';
-    pPVar6->g0 = '\0';
-    pPVar6->b0 = '\0';
-    *(undefined *)&pPVar6[1].tag = 0;
-    *(undefined *)((int)&pPVar6[1].tag + 1) = 0;
-    *(undefined *)((int)&pPVar6[1].tag + 2) = 0;
-    *(undefined *)&pPVar6[1].x0 = 0;
-    *(undefined *)((int)&pPVar6[1].x0 + 1) = 0;
-    *(undefined *)&pPVar6[1].y0 = 0;
-    *(undefined *)&pPVar6->y1 = (undefined)light_col;
-    uVar2 = getCopReg(2,0xc);
-    *(undefined4 *)&pPVar6->x0 = uVar2;
-    uVar2 = getCopReg(2,0xd);
-    *(undefined4 *)&pPVar6->x2 = uVar2;
-    uVar2 = getCopReg(2,0xe);
-    *(undefined4 *)&pPVar6[1].r0 = uVar2;
-    iVar8 = getCopReg(2,0x11);
-    iVar3 = getCopReg(2,0x12);
-    iVar4 = getCopReg(2,0x13);
-    setCopReg(2,in_zero,*(undefined4 *)v2);
-    setCopReg(2,in_at,*(undefined4 *)&v2->vz);
-    copFunction(2,0x180001);
-    uVar2 = getCopReg(2,0xe);
-    *(undefined4 *)&pPVar6[1].x1 = uVar2;
-    pDVar7 = current;
-    iVar5 = getCopReg(2,0x13);
-    iVar8 = (iVar8 + iVar3 + iVar4 + iVar5 >> 2) + LightSortCorrect;
-    if (iVar8 < 0) {
-      iVar8 = 0;
-    }
-    iVar8 = iVar8 >> 3;
-    puVar9 = (uint *)&pPVar6[1].x2;
-    spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar8] & 0xffffff;
-    pDVar7->ot[iVar8] = pDVar7->ot[iVar8] & 0xff000000 | (uint)spolys & 0xffffff;
-    *(undefined *)((int)&pPVar6[1].y2 + 1) = 7;
-    *(undefined *)((int)&pPVar6[2].tag + 3) = 0x24;
-    pDVar7 = current;
-    *(undefined2 *)&pPVar6[2].r0 = 0xffff;
-    *(undefined2 *)&pPVar6[2].b0 = 0xffff;
-    pPVar6[2].x1 = -1;
-    pPVar6[2].y1 = -1;
-    *(undefined2 *)&pPVar6[3].tag = 0xffff;
-    *(undefined2 *)((int)&pPVar6[3].tag + 2) = 0xffff;
-    pPVar6[2].y2 = 0x20;
-    *puVar9 = *puVar9 & 0xff000000 | pDVar7->ot[iVar8] & 0xffffff;
-    pDVar7->ot[iVar8] = pDVar7->ot[iVar8] & 0xff000000 | (uint)puVar9 & 0xffffff;
-    spolys = (POLY_F3 *)&pPVar6[3].x1;
-    pDVar7->primptr = pDVar7->primptr + 0x20;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	bool bVar1;
+	undefined4 uVar2;
+	int iVar3;
+	int iVar4;
+	int iVar5;
+	POLY_F3 *pPVar6;
+	DB *pDVar7;
+	undefined4 in_zero;
+	undefined4 in_at;
+	int iVar8;
+	undefined4 in_v1;
+	uint *puVar9;
+
+	pPVar6 = spolys;
+	if ((((v0->vz < 0x3e9) || (v1->vz < 0x3e9)) || (v2->vz < 0x3e9)) ||
+		(bVar1 = v3->vz < 0x3e9, bVar1)) {
+		if (((0 < v0->vz) || (0 < v1->vz)) || ((0 < v2->vz || (0 < v3->vz)))) {
+			cv._0_4_ = *(undefined4 *)v0;
+			SVECTOR_000da938._0_4_ = *(undefined4 *)v1;
+			SVECTOR_ARRAY_000da940[0]._0_4_ = *(undefined4 *)v3;
+			cv._4_4_ = *(uint *)&v0->vz & 0xffff;
+			SVECTOR_ARRAY_000da940[0]._4_4_ = *(uint *)&v3->vz & 0xffff;
+			numcv = 3;
+			lastcv = 2;
+			SVECTOR_000da938._4_4_ = *(uint *)&v1->vz & 0xffff | (uint)(ushort)light_col << 0x10;
+			clippedPoly();
+			cv._0_4_ = *(undefined4 *)v2;
+			SVECTOR_000da938._0_4_ = *(undefined4 *)v1;
+			SVECTOR_ARRAY_000da940[0]._0_4_ = *(undefined4 *)v3;
+			cv._4_4_ = *(uint *)&v2->vz & 0xffff;
+			SVECTOR_ARRAY_000da940[0]._4_4_ = *(uint *)&v3->vz & 0xffff;
+			numcv = 3;
+			lastcv = 2;
+			SVECTOR_000da938._4_4_ = *(uint *)&v1->vz & 0xffff | (uint)(ushort)light_col << 0x10;
+			clippedPoly();
+		}
+	}
+	else {
+		setCopReg(2, in_zero, *(undefined4 *)v0);
+		setCopReg(2, in_at, *(undefined4 *)&v0->vz);
+		setCopReg(2, (uint)bVar1, *(undefined4 *)v1);
+		setCopReg(2, in_v1, *(undefined4 *)&v1->vz);
+		setCopReg(2, v0, *(undefined4 *)v3);
+		setCopReg(2, v1, *(undefined4 *)&v3->vz);
+		copFunction(2, 0x280030);
+		spolys->code = ':';
+		*(undefined *)((int)&pPVar6->tag + 3) = 8;
+		*(undefined *)&pPVar6->x1 = (undefined)light_col;
+		*(undefined *)((int)&pPVar6->x1 + 1) = (undefined)light_col;
+		pPVar6->r0 = '\0';
+		pPVar6->g0 = '\0';
+		pPVar6->b0 = '\0';
+		*(undefined *)&pPVar6[1].tag = 0;
+		*(undefined *)((int)&pPVar6[1].tag + 1) = 0;
+		*(undefined *)((int)&pPVar6[1].tag + 2) = 0;
+		*(undefined *)&pPVar6[1].x0 = 0;
+		*(undefined *)((int)&pPVar6[1].x0 + 1) = 0;
+		*(undefined *)&pPVar6[1].y0 = 0;
+		*(undefined *)&pPVar6->y1 = (undefined)light_col;
+		uVar2 = getCopReg(2, 0xc);
+		*(undefined4 *)&pPVar6->x0 = uVar2;
+		uVar2 = getCopReg(2, 0xd);
+		*(undefined4 *)&pPVar6->x2 = uVar2;
+		uVar2 = getCopReg(2, 0xe);
+		*(undefined4 *)&pPVar6[1].r0 = uVar2;
+		iVar8 = getCopReg(2, 0x11);
+		iVar3 = getCopReg(2, 0x12);
+		iVar4 = getCopReg(2, 0x13);
+		setCopReg(2, in_zero, *(undefined4 *)v2);
+		setCopReg(2, in_at, *(undefined4 *)&v2->vz);
+		copFunction(2, 0x180001);
+		uVar2 = getCopReg(2, 0xe);
+		*(undefined4 *)&pPVar6[1].x1 = uVar2;
+		pDVar7 = current;
+		iVar5 = getCopReg(2, 0x13);
+		iVar8 = (iVar8 + iVar3 + iVar4 + iVar5 >> 2) + LightSortCorrect;
+		if (iVar8 < 0) {
+			iVar8 = 0;
+		}
+		iVar8 = iVar8 >> 3;
+		puVar9 = (uint *)&pPVar6[1].x2;
+		spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar8] & 0xffffff;
+		pDVar7->ot[iVar8] = pDVar7->ot[iVar8] & 0xff000000 | (uint)spolys & 0xffffff;
+		*(undefined *)((int)&pPVar6[1].y2 + 1) = 7;
+		*(undefined *)((int)&pPVar6[2].tag + 3) = 0x24;
+		pDVar7 = current;
+		*(undefined2 *)&pPVar6[2].r0 = 0xffff;
+		*(undefined2 *)&pPVar6[2].b0 = 0xffff;
+		pPVar6[2].x1 = -1;
+		pPVar6[2].y1 = -1;
+		*(undefined2 *)&pPVar6[3].tag = 0xffff;
+		*(undefined2 *)((int)&pPVar6[3].tag + 2) = 0xffff;
+		pPVar6[2].y2 = 0x20;
+		*puVar9 = *puVar9 & 0xff000000 | pDVar7->ot[iVar8] & 0xffffff;
+		pDVar7->ot[iVar8] = pDVar7->ot[iVar8] & 0xff000000 | (uint)puVar9 & 0xffffff;
+		spolys = (POLY_F3 *)&pPVar6[3].x1;
+		pDVar7->primptr = pDVar7->primptr + 0x20;
+	}
+	return;*/
 }
 
 

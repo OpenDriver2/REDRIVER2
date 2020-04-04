@@ -11,22 +11,24 @@
 	/* end block 1 */
 	// End Line: 299
 
-void Calc_Object_MatrixYZX(MATRIX *mat,SVECTOR *angles)
-
+void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 {
-  mat->m[0] = 0x1000;
-  mat->m[1] = 0;
-  mat->m[2] = 0;
-  mat->m[3] = 0;
-  mat->m[4] = 0x1000;
-  mat->m[5] = 0;
-  mat->m[6] = 0;
-  mat->m[7] = 0;
-  mat->m[8] = 0x1000;
-  RotMatrixX((int)angles->vx,mat);
-  RotMatrixZ((int)angles->vz,mat);
-  RotMatrixY((int)angles->vy,mat);
-  return;
+	UNIMPLEMENTED();
+	/*
+	mat->m[0] = 0x1000;
+	mat->m[1] = 0;
+	mat->m[2] = 0;
+	mat->m[3] = 0;
+	mat->m[4] = 0x1000;
+	mat->m[5] = 0;
+	mat->m[6] = 0;
+	mat->m[7] = 0;
+	mat->m[8] = 0x1000;
+	RotMatrixX((int)angles->vx, mat);
+	RotMatrixZ((int)angles->vz, mat);
+	RotMatrixY((int)angles->vy, mat);
+	return;
+	*/
 }
 
 
@@ -40,11 +42,12 @@ void Calc_Object_MatrixYZX(MATRIX *mat,SVECTOR *angles)
 	/* end block 1 */
 	// End Line: 509
 
-void _RotMatrixX(MATRIX *m,short ang)
-
+void _RotMatrixX(MATRIX *m, short ang)
 {
-  RotMatrixX((int)ang,m);
-  return;
+	UNIMPLEMENTED();
+	/*
+	RotMatrixX((int)ang, m);
+	return;*/
 }
 
 
@@ -58,11 +61,13 @@ void _RotMatrixX(MATRIX *m,short ang)
 	/* end block 1 */
 	// End Line: 520
 
-void _RotMatrixY(MATRIX *m,short ang)
-
+void _RotMatrixY(MATRIX *m, short ang)
 {
-  RotMatrixY((int)ang,m);
-  return;
+	UNIMPLEMENTED();
+	/*
+	RotMatrixY((int)ang, m);
+	return;
+	*/
 }
 
 
@@ -76,11 +81,13 @@ void _RotMatrixY(MATRIX *m,short ang)
 	/* end block 1 */
 	// End Line: 531
 
-void _RotMatrixZ(MATRIX *m,short ang)
-
+void _RotMatrixZ(MATRIX *m, short ang)
 {
-  RotMatrixZ((int)ang,m);
-  return;
+	UNIMPLEMENTED();
+	/*
+	RotMatrixZ((int)ang, m);
+	return;
+	*/
 }
 
 
@@ -94,11 +101,13 @@ void _RotMatrixZ(MATRIX *m,short ang)
 	/* end block 1 */
 	// End Line: 546
 
-void RotMatrixXYZ(MATRIX *m,SVECTOR *r)
-
+void RotMatrixXYZ(MATRIX *m, SVECTOR *r)
 {
-  RotMatrix(r,m);
-  return;
+	UNIMPLEMENTED();
+	/*
+	RotMatrix(r, m);
+	return;
+	*/
 }
 
 
@@ -122,17 +131,19 @@ void RotMatrixXYZ(MATRIX *m,SVECTOR *r)
 	// End Line: 559
 
 void _MatrixRotate(VECTOR *pos)
-
 {
-  long local_18;
-  long local_14;
-  long local_10;
-  
-  ApplyRotMatrixLV(pos,&local_18);
-  pos->vx = local_18;
-  pos->vy = local_14;
-  pos->vz = local_10;
-  return;
+	UNIMPLEMENTED();
+	/*
+	long local_18;
+	long local_14;
+	long local_10;
+
+	ApplyRotMatrixLV(pos, &local_18);
+	pos->vx = local_18;
+	pos->vy = local_14;
+	pos->vz = local_10;
+	return;
+	*/
 }
 
 
@@ -156,19 +167,21 @@ void _MatrixRotate(VECTOR *pos)
 	/* end block 3 */
 	// End Line: 633
 
-void InvertMatrix(MATRIX *a,MATRIX *b)
-
+void InvertMatrix(MATRIX *a, MATRIX *b)
 {
-  b->m[0] = a->m[0];
-  b->m[1] = a->m[3];
-  b->m[2] = a->m[6];
-  b->m[3] = a->m[1];
-  b->m[4] = a->m[4];
-  b->m[5] = a->m[7];
-  b->m[6] = a->m[2];
-  b->m[7] = a->m[5];
-  b->m[8] = a->m[8];
-  return;
+	UNIMPLEMENTED();
+	/*
+	b->m[0] = a->m[0];
+	b->m[1] = a->m[3];
+	b->m[2] = a->m[6];
+	b->m[3] = a->m[1];
+	b->m[4] = a->m[4];
+	b->m[5] = a->m[7];
+	b->m[6] = a->m[2];
+	b->m[7] = a->m[5];
+	b->m[8] = a->m[8];
+	return;
+	*/
 }
 
 
@@ -204,31 +217,33 @@ void InvertMatrix(MATRIX *a,MATRIX *b)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void BuildWorldMatrix(void)
-
 {
-  MATRIX local_30;
-  
-  local_30.m[0][0] = 0x1000;
-  local_30.m[1][0] = 0;
-  local_30.m[2][0] = 0;
-  local_30.m[0][1] = 0;
-  local_30.m[1][1] = 0x1000;
-  local_30.m[2][1] = 0;
-  local_30.m[0][2] = 0;
-  local_30.m[1][2] = 0;
-  local_30.m[2][2] = 0x1000;
-  _RotMatrixY(&local_30,camera_angle.vy);
-  _RotMatrixZ(&local_30,camera_angle.vz);
-  _RotMatrixX(&local_30,camera_angle.vx);
-  MulMatrix0(&aspect,&local_30,&inv_camera_matrix);
-  InvertMatrix(&inv_camera_matrix,&camera_matrix);
-  face_camera_work.m[0][0] = 0x1000;
-  face_camera_work.m[0][2] = 0;
-  face_camera_work.m[2][0] = 0;
-  face_camera_work.m[2][2] = 0x1000;
-  RotMatrixY(-(int)camera_angle.vy & 0xfff,&face_camera_work);
-  MulMatrix0(&inv_camera_matrix,&face_camera_work,&face_camera);
-  return;
+	UNIMPLEMENTED();
+	/*
+	MATRIX local_30;
+
+	local_30.m[0][0] = 0x1000;
+	local_30.m[1][0] = 0;
+	local_30.m[2][0] = 0;
+	local_30.m[0][1] = 0;
+	local_30.m[1][1] = 0x1000;
+	local_30.m[2][1] = 0;
+	local_30.m[0][2] = 0;
+	local_30.m[1][2] = 0;
+	local_30.m[2][2] = 0x1000;
+	_RotMatrixY(&local_30, camera_angle.vy);
+	_RotMatrixZ(&local_30, camera_angle.vz);
+	_RotMatrixX(&local_30, camera_angle.vx);
+	MulMatrix0(&aspect, &local_30, &inv_camera_matrix);
+	InvertMatrix(&inv_camera_matrix, &camera_matrix);
+	face_camera_work.m[0][0] = 0x1000;
+	face_camera_work.m[0][2] = 0;
+	face_camera_work.m[2][0] = 0;
+	face_camera_work.m[2][2] = 0x1000;
+	RotMatrixY(-(int)camera_angle.vy & 0xfff, &face_camera_work);
+	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
+	return;
+	*/
 }
 
 
@@ -269,49 +284,51 @@ void BuildWorldMatrix(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void ScaleCamera(void)
-
 {
-  MATRIX MStack160;
-  MATRIX MStack128;
-  undefined2 local_60;
-  undefined2 local_5e;
-  undefined2 local_5c;
-  undefined2 local_5a;
-  undefined2 local_58;
-  undefined2 local_56;
-  undefined2 local_54;
-  undefined2 local_52;
-  undefined2 local_50;
-  undefined auStack64 [32];
-  undefined4 local_20;
-  undefined4 local_1c;
-  undefined4 local_18;
-  undefined2 local_10;
-  short local_e;
-  undefined2 local_c;
-  
-  local_10 = 0;
-  local_c = 0;
-  local_18 = 0;
-  local_1c = 0;
-  local_20 = 0;
-  local_e = camera_angle.vy;
-  RotMatrixYXZ(&local_10,&MStack160);
-  InvertMatrix(&MStack160,&MStack128);
-  local_60 = 0x1000;
-  local_5e = 0;
-  local_5c = 0;
-  local_5a = 0;
-  local_58 = 0x1000;
-  local_56 = 0;
-  local_54 = 0;
-  local_52 = 0;
-  local_50 = 0x1000;
-  MulMatrix0(&local_60,&inv_camera_matrix,auStack64);
-  TransMatrix(auStack64,&local_20);
-  SetRotMatrix(auStack64);
-  SetTransMatrix(auStack64);
-  return;
+	UNIMPLEMENTED();
+	/*
+	MATRIX MStack160;
+	MATRIX MStack128;
+	undefined2 local_60;
+	undefined2 local_5e;
+	undefined2 local_5c;
+	undefined2 local_5a;
+	undefined2 local_58;
+	undefined2 local_56;
+	undefined2 local_54;
+	undefined2 local_52;
+	undefined2 local_50;
+	undefined auStack64[32];
+	undefined4 local_20;
+	undefined4 local_1c;
+	undefined4 local_18;
+	undefined2 local_10;
+	short local_e;
+	undefined2 local_c;
+
+	local_10 = 0;
+	local_c = 0;
+	local_18 = 0;
+	local_1c = 0;
+	local_20 = 0;
+	local_e = camera_angle.vy;
+	RotMatrixYXZ(&local_10, &MStack160);
+	InvertMatrix(&MStack160, &MStack128);
+	local_60 = 0x1000;
+	local_5e = 0;
+	local_5c = 0;
+	local_5a = 0;
+	local_58 = 0x1000;
+	local_56 = 0;
+	local_54 = 0;
+	local_52 = 0;
+	local_50 = 0x1000;
+	MulMatrix0(&local_60, &inv_camera_matrix, auStack64);
+	TransMatrix(auStack64, &local_20);
+	SetRotMatrix(auStack64);
+	SetTransMatrix(auStack64);
+	return;
+	*/
 }
 
 
@@ -335,14 +352,13 @@ void ScaleCamera(void)
 	/* end block 3 */
 	// End Line: 907
 
-void Getlong(char *dest,char *source)
-
+void Getlong(char *dest, char *source)
 {
-  *dest = *source;
-  dest[1] = source[1];
-  dest[2] = source[2];
-  dest[3] = source[3];
-  return;
+	*dest = *source;
+	dest[1] = source[1];
+	dest[2] = source[2];
+	dest[3] = source[3];
+	return;
 }
 
 
@@ -375,32 +391,34 @@ void Getlong(char *dest,char *source)
 	/* end block 4 */
 	// End Line: 953
 
-void RandomInit(long i1,long i2)
-
+void RandomInit(long i1, long i2)
 {
-  int step;
-  long *plVar1;
-  int iVar2;
-  
-  plVar1 = &LONG_000bd518;
-  step = 0x3b1cb49;
-  iVar2 = 0xe;
-  randomindex = 0;
-  randomcounter = 0;
-  rseed = i1;
-  LONG_000bd514 = i2;
-  do {
-    *plVar1 = step;
-    plVar1 = plVar1 + 1;
-    iVar2 = iVar2 + -1;
-    step = step + 0x1c05e5f;
-  } while (-1 < iVar2);
-  step = 0;
-  do {
-    Random2(step);
-    step = step + 1;
-  } while (step < 0x44);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int step;
+	long *plVar1;
+	int iVar2;
+
+	plVar1 = &LONG_000bd518;
+	step = 0x3b1cb49;
+	iVar2 = 0xe;
+	randomindex = 0;
+	randomcounter = 0;
+	rseed = i1;
+	LONG_000bd514 = i2;
+	do {
+		*plVar1 = step;
+		plVar1 = plVar1 + 1;
+		iVar2 = iVar2 + -1;
+		step = step + 0x1c05e5f;
+	} while (-1 < iVar2);
+	step = 0;
+	do {
+		Random2(step);
+		step = step + 1;
+	} while (step < 0x44);
+	return;
+	*/
 }
 
 
@@ -434,12 +452,10 @@ void RandomInit(long i1,long i2)
 	// End Line: 1014
 
 long Random2(int step)
-
 {
-  return (CameraCnt - frameStart) * (CameraCnt - frameStart) * 0x19660d + 0x3c6ef35fU >> 8 & 0xffff;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	return (CameraCnt - frameStart) * (CameraCnt - frameStart) * 0x19660d + 0x3c6ef35fU >> 8 & 0xffff;
+	*/
 }
-
-
-
-
-

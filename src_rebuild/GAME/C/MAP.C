@@ -23,14 +23,16 @@
 	/* end block 3 */
 	// End Line: 475
 
-void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData,char *pLumpFile)
-
+void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile)
 {
-  Getlong((char *)pRoadMapLumpData,pLumpFile);
-  Getlong((char *)&pRoadMapLumpData->height,pLumpFile + 4);
-  pRoadMapLumpData->unitXMid = (pRoadMapLumpData->width + 1) * 0x200;
-  pRoadMapLumpData->unitZMid = pRoadMapLumpData->height << 9;
-  return;
+	UNIMPLEMENTED();
+	/*
+	Getlong((char *)pRoadMapLumpData, pLumpFile);
+	Getlong((char *)&pRoadMapLumpData->height, pLumpFile + 4);
+	pRoadMapLumpData->unitXMid = (pRoadMapLumpData->width + 1) * 0x200;
+	pRoadMapLumpData->unitZMid = pRoadMapLumpData->height << 9;
+	return;
+	*/
 }
 
 
@@ -49,10 +51,10 @@ void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData,char *pLumpFile)
 	/* end block 2 */
 	// End Line: 1665
 
-void ProcessJunctionsLump(char *lump_file,int lump_size)
-
+// [D]
+void ProcessJunctionsLump(char *lump_file, int lump_size)
 {
-  return;
+	return;
 }
 
 
@@ -71,10 +73,10 @@ void ProcessJunctionsLump(char *lump_file,int lump_size)
 	/* end block 2 */
 	// End Line: 505
 
-void ProcessRoadsLump(char *lump_file,int lump_size)
-
+// [D]
+void ProcessRoadsLump(char *lump_file, int lump_size)
 {
-  return;
+	return;
 }
 
 
@@ -88,10 +90,10 @@ void ProcessRoadsLump(char *lump_file,int lump_size)
 	/* end block 1 */
 	// End Line: 1676
 
-void ProcessRoadBoundsLump(char *lump_file,int lump_size)
-
+// [D]
+void ProcessRoadBoundsLump(char *lump_file, int lump_size)
 {
-  return;
+	return;
 }
 
 
@@ -105,10 +107,10 @@ void ProcessRoadBoundsLump(char *lump_file,int lump_size)
 	/* end block 1 */
 	// End Line: 1678
 
-void ProcessJuncBoundsLump(char *lump_file,int lump_size)
-
+// [D]
+void ProcessJuncBoundsLump(char *lump_file, int lump_size)
 {
-  return;
+	return;
 }
 
 
@@ -157,31 +159,34 @@ void ProcessJuncBoundsLump(char *lump_file,int lump_size)
 	// End Line: 579
 
 MODEL * FindModelPtrWithName(char *name)
-
 {
-  char cVar1;
-  int iVar2;
-  int iVar3;
-  char *__s1;
-  int iVar4;
-  
-  iVar4 = 0;
-  __s1 = modelname_buffer;
-  if (0 < num_models_in_pack) {
-    do {
-      iVar2 = strcmp(__s1,name);
-      iVar3 = iVar4 + 1;
-      if (iVar2 == 0) {
-        return modelpointers1536[iVar4];
-      }
-      do {
-        cVar1 = *__s1;
-        __s1 = __s1 + 1;
-      } while (cVar1 != '\0');
-      iVar4 = iVar3;
-    } while (iVar3 < num_models_in_pack);
-  }
-  return (MODEL *)0x0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	char cVar1;
+	int iVar2;
+	int iVar3;
+	char *__s1;
+	int iVar4;
+
+	iVar4 = 0;
+	__s1 = modelname_buffer;
+	if (0 < num_models_in_pack) {
+		do {
+			iVar2 = strcmp(__s1, name);
+			iVar3 = iVar4 + 1;
+			if (iVar2 == 0) {
+				return modelpointers1536[iVar4];
+			}
+			do {
+				cVar1 = *__s1;
+				__s1 = __s1 + 1;
+			} while (cVar1 != '\0');
+			iVar4 = iVar3;
+		} while (iVar3 < num_models_in_pack);
+	}
+	return (MODEL *)0x0;
+	*/
 }
 
 
@@ -230,31 +235,34 @@ MODEL * FindModelPtrWithName(char *name)
 	// End Line: 1558
 
 int FindModelIdxWithName(char *name)
-
 {
-  char cVar1;
-  int iVar2;
-  int iVar3;
-  char *__s1;
-  int iVar4;
-  
-  iVar4 = 0;
-  __s1 = modelname_buffer;
-  if (0 < num_models_in_pack) {
-    do {
-      iVar2 = strcmp(__s1,name);
-      iVar3 = iVar4 + 1;
-      if (iVar2 == 0) {
-        return iVar4;
-      }
-      do {
-        cVar1 = *__s1;
-        __s1 = __s1 + 1;
-      } while (cVar1 != '\0');
-      iVar4 = iVar3;
-    } while (iVar3 < num_models_in_pack);
-  }
-  return -1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	char cVar1;
+	int iVar2;
+	int iVar3;
+	char *__s1;
+	int iVar4;
+
+	iVar4 = 0;
+	__s1 = modelname_buffer;
+	if (0 < num_models_in_pack) {
+		do {
+			iVar2 = strcmp(__s1, name);
+			iVar3 = iVar4 + 1;
+			if (iVar2 == 0) {
+				return iVar4;
+			}
+			do {
+				cVar1 = *__s1;
+				__s1 = __s1 + 1;
+			} while (cVar1 != '\0');
+			iVar4 = iVar3;
+		} while (iVar3 < num_models_in_pack);
+	}
+	return -1;
+	*/
 }
 
 
@@ -291,28 +299,30 @@ int FindModelIdxWithName(char *name)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitCellData(void)
-
 {
-  undefined2 *puVar1;
-  int iVar2;
-  
-  iVar2 = 0xfff;
-  puVar1 = (undefined2 *)(mallocptr + 0x1ffe);
-  cell_ptrs = (ushort *)mallocptr;
-  do {
-    *puVar1 = 0xffff;
-    iVar2 = iVar2 + -1;
-    puVar1 = puVar1 + -1;
-  } while (0 < iVar2);
-  cell_objects = (PACKED_CELL_OBJECT *)(mallocptr + 0x2000);
-  mallocptr = (char *)(&cell_objects[num_straddlers + cell_objects_add[4]].pos.vx +
-                      cell_slots_add[4]);
-  if (((uint)mallocptr & 2) != 0) {
-    mallocptr = (char *)((ushort *)mallocptr + 1);
-  }
-  sizeof_cell_object_computed_values = num_straddlers + cell_objects_add[4] + 7 >> 3;
-  cells = (CELL_DATA *)(cell_objects + num_straddlers + cell_objects_add[4]);
-  return;
+	UNIMPLEMENTED();
+	/*
+	undefined2 *puVar1;
+	int iVar2;
+
+	iVar2 = 0xfff;
+	puVar1 = (undefined2 *)(mallocptr + 0x1ffe);
+	cell_ptrs = (ushort *)mallocptr;
+	do {
+		*puVar1 = 0xffff;
+		iVar2 = iVar2 + -1;
+		puVar1 = puVar1 + -1;
+	} while (0 < iVar2);
+	cell_objects = (PACKED_CELL_OBJECT *)(mallocptr + 0x2000);
+	mallocptr = (char *)(&cell_objects[num_straddlers + cell_objects_add[4]].pos.vx +
+		cell_slots_add[4]);
+	if (((uint)mallocptr & 2) != 0) {
+		mallocptr = (char *)((ushort *)mallocptr + 1);
+	}
+	sizeof_cell_object_computed_values = num_straddlers + cell_objects_add[4] + 7 >> 3;
+	cells = (CELL_DATA *)(cell_objects + num_straddlers + cell_objects_add[4]);
+	return;
+	*/
 }
 
 
@@ -348,36 +358,38 @@ void InitCellData(void)
 	/* end block 4 */
 	// End Line: 1774
 
-int newPositionVisible(VECTOR *pos,char *pvs,int ccx,int ccz)
-
+int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 {
-  int iVar1;
-  int iVar2;
-  
-  iVar2 = pos->vx + units_across_halved;
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0x7ff;
-  }
-  iVar1 = pos->vz + units_down_halved;
-  if (iVar1 < 0) {
-    iVar1 = iVar1 + 0x7ff;
-  }
-  ccx = (iVar2 >> 0xb) - ccx;
-  ccz = (iVar1 >> 0xb) - ccz;
-  iVar2 = ccx;
-  if (ccx < 0) {
-    iVar2 = -ccx;
-  }
-  if (iVar2 <= view_dist) {
-    iVar2 = ccz;
-    if (ccz < 0) {
-      iVar2 = -ccz;
-    }
-    if (iVar2 <= view_dist) {
-      return (uint)(pvs[ccx + 10 + (ccz + 10) * pvs_square] != '\0');
-    }
-  }
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	int iVar2;
+
+	iVar2 = pos->vx + units_across_halved;
+	if (iVar2 < 0) {
+		iVar2 = iVar2 + 0x7ff;
+	}
+	iVar1 = pos->vz + units_down_halved;
+	if (iVar1 < 0) {
+		iVar1 = iVar1 + 0x7ff;
+	}
+	ccx = (iVar2 >> 0xb) - ccx;
+	ccz = (iVar1 >> 0xb) - ccz;
+	iVar2 = ccx;
+	if (ccx < 0) {
+		iVar2 = -ccx;
+	}
+	if (iVar2 <= view_dist) {
+		iVar2 = ccz;
+		if (ccz < 0) {
+			iVar2 = -ccz;
+		}
+		if (iVar2 <= view_dist) {
+			return (uint)(pvs[ccx + 10 + (ccz + 10) * pvs_square] != '\0');
+		}
+	}
+	return 0;*/
 }
 
 
@@ -414,36 +426,39 @@ int newPositionVisible(VECTOR *pos,char *pvs,int ccx,int ccz)
 	// End Line: 1771
 
 int PositionVisible(VECTOR *pos)
-
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  
-  iVar2 = pos->vx + units_across_halved;
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0x7ff;
-  }
-  iVar1 = pos->vz + units_down_halved;
-  if (iVar1 < 0) {
-    iVar1 = iVar1 + 0x7ff;
-  }
-  iVar3 = (iVar2 >> 0xb) - current_cell_x;
-  iVar1 = (iVar1 >> 0xb) - current_cell_z;
-  iVar2 = iVar3;
-  if (iVar3 < 0) {
-    iVar2 = -iVar3;
-  }
-  if (iVar2 <= view_dist) {
-    iVar2 = iVar1;
-    if (iVar1 < 0) {
-      iVar2 = -iVar1;
-    }
-    if (iVar2 <= view_dist) {
-      return (uint)(CurrentPVS[iVar3 + (iVar1 + 10) * pvs_square + 10] != '\0');
-    }
-  }
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	int iVar2;
+	int iVar3;
+
+	iVar2 = pos->vx + units_across_halved;
+	if (iVar2 < 0) {
+		iVar2 = iVar2 + 0x7ff;
+	}
+	iVar1 = pos->vz + units_down_halved;
+	if (iVar1 < 0) {
+		iVar1 = iVar1 + 0x7ff;
+	}
+	iVar3 = (iVar2 >> 0xb) - current_cell_x;
+	iVar1 = (iVar1 >> 0xb) - current_cell_z;
+	iVar2 = iVar3;
+	if (iVar3 < 0) {
+		iVar2 = -iVar3;
+	}
+	if (iVar2 <= view_dist) {
+		iVar2 = iVar1;
+		if (iVar1 < 0) {
+			iVar2 = -iVar1;
+		}
+		if (iVar2 <= view_dist) {
+			return (uint)(CurrentPVS[iVar3 + (iVar1 + 10) * pvs_square + 10] != '\0');
+		}
+	}
+	return 0;
+	*/
 }
 
 
@@ -516,161 +531,164 @@ int PositionVisible(VECTOR *pos)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int CheckUnpackNewRegions(void)
-
 {
-  byte bVar1;
-  ushort uVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  int iVar9;
-  ushort *puVar10;
-  ushort *puVar11;
-  int target_region;
-  int iVar12;
-  int local_68 [4];
-  undefined4 local_58;
-  undefined4 local_54;
-  short local_50 [16];
-  ushort local_30 [4];
-  
-  iVar7 = 0;
-  iVar9 = 0;
-  iVar12 = 0;
-  if (saved_leadcar_pos != 0) {
-    return 0;
-  }
-  iVar6 = 0xd;
-  if (lead_car == 0) {
-    iVar6 = 0x12;
-  }
-  if (current_barrel_region_xcell < iVar6) {
-    iVar4 = -1;
-    if (region_x != 0) {
-      iVar7 = 1;
-LAB_0005c8f8:
-      iVar12 = 1;
-      local_68[0] = iVar4;
-      local_68[1] = 0;
-    }
-  }
-  else {
-    if (0x20 - iVar6 < current_barrel_region_xcell) {
-      iVar8 = cells_across;
-      if (cells_across < 0) {
-        iVar8 = cells_across + 0x1f;
-      }
-      iVar4 = 1;
-      if (region_x < iVar8 >> 5) {
-        iVar7 = 2;
-        goto LAB_0005c8f8;
-      }
-    }
-  }
-  if (current_barrel_region_zcell < iVar6) {
-    if (region_z != 0) {
-      iVar9 = 1;
-      local_68[iVar12 * 2] = 0;
-      iVar6 = -1;
-LAB_0005c978:
-      local_68[iVar12 * 2 + 1] = iVar6;
-      iVar12 = iVar12 + 1;
-    }
-  }
-  else {
-    if ((0x20 - iVar6 < current_barrel_region_zcell) && (region_z != 0)) {
-      iVar9 = 2;
-      local_68[iVar12 * 2] = 0;
-      iVar6 = 1;
-      goto LAB_0005c978;
-    }
-  }
-  if (iVar12 == 2) {
-    if (iVar9 == 1) {
-      iVar12 = 3;
-      if (iVar7 == 1) {
-        local_58 = 0xffffffff;
-        local_54 = 0xffffffff;
-        goto LAB_0005c9dc;
-      }
-      local_58 = 1;
-      local_54 = 0xffffffff;
-    }
-    else {
-      if (iVar7 == 1) {
-        local_58 = 0xffffffff;
-      }
-      else {
-        local_58 = 1;
-      }
-      local_54 = 1;
-    }
-    iVar12 = 3;
-  }
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	ushort uVar2;
+	bool bVar3;
+	int iVar4;
+	uint uVar5;
+	int iVar6;
+	int iVar7;
+	int iVar8;
+	int iVar9;
+	ushort *puVar10;
+	ushort *puVar11;
+	int target_region;
+	int iVar12;
+	int local_68[4];
+	undefined4 local_58;
+	undefined4 local_54;
+	short local_50[16];
+	ushort local_30[4];
+
+	iVar7 = 0;
+	iVar9 = 0;
+	iVar12 = 0;
+	if (saved_leadcar_pos != 0) {
+		return 0;
+	}
+	iVar6 = 0xd;
+	if (lead_car == 0) {
+		iVar6 = 0x12;
+	}
+	if (current_barrel_region_xcell < iVar6) {
+		iVar4 = -1;
+		if (region_x != 0) {
+			iVar7 = 1;
+		LAB_0005c8f8:
+			iVar12 = 1;
+			local_68[0] = iVar4;
+			local_68[1] = 0;
+		}
+	}
+	else {
+		if (0x20 - iVar6 < current_barrel_region_xcell) {
+			iVar8 = cells_across;
+			if (cells_across < 0) {
+				iVar8 = cells_across + 0x1f;
+			}
+			iVar4 = 1;
+			if (region_x < iVar8 >> 5) {
+				iVar7 = 2;
+				goto LAB_0005c8f8;
+			}
+		}
+	}
+	if (current_barrel_region_zcell < iVar6) {
+		if (region_z != 0) {
+			iVar9 = 1;
+			local_68[iVar12 * 2] = 0;
+			iVar6 = -1;
+		LAB_0005c978:
+			local_68[iVar12 * 2 + 1] = iVar6;
+			iVar12 = iVar12 + 1;
+		}
+	}
+	else {
+		if ((0x20 - iVar6 < current_barrel_region_zcell) && (region_z != 0)) {
+			iVar9 = 2;
+			local_68[iVar12 * 2] = 0;
+			iVar6 = 1;
+			goto LAB_0005c978;
+		}
+	}
+	if (iVar12 == 2) {
+		if (iVar9 == 1) {
+			iVar12 = 3;
+			if (iVar7 == 1) {
+				local_58 = 0xffffffff;
+				local_54 = 0xffffffff;
+				goto LAB_0005c9dc;
+			}
+			local_58 = 1;
+			local_54 = 0xffffffff;
+		}
+		else {
+			if (iVar7 == 1) {
+				local_58 = 0xffffffff;
+			}
+			else {
+				local_58 = 1;
+			}
+			local_54 = 1;
+		}
+		iVar12 = 3;
+	}
 LAB_0005c9dc:
-  iVar9 = 0;
-  iVar7 = 0;
-  if (iVar12 != 0) {
-    iVar6 = 0;
-    do {
-      iVar4 = *(int *)((int)local_68 + iVar6 + 4);
-      iVar8 = cells_across;
-      if (cells_across < 0) {
-        iVar8 = cells_across + 0x1f;
-      }
-      target_region =
-           (region_x + *(int *)((int)local_68 + iVar6) & 1U) + (region_z + iVar4 & 1U) * 2;
-      iVar6 = current_region + *(int *)((int)local_68 + iVar6) + iVar4 * (iVar8 >> 5);
-      if ((iVar6 != regions_unpacked[target_region]) && (loading_region[target_region] == -1)) {
-        ClearRegion(target_region);
-        if (spoolinfo_offsets[iVar6] == 0xffff) {
-          regions_unpacked[target_region] = iVar6;
-        }
-        else {
-          uVar2 = spoolinfo_offsets[iVar6];
-          if ((old_region == -1) && (bVar1 = (RegionSpoolInfo + uVar2)[4], bVar1 != 0xff)) {
-            initarea = (uint)bVar1;
-          }
-          local_50[iVar7 * 4] = (short)iVar6;
-          local_50[iVar7 * 4 + 1] = (short)target_region;
-          local_50[iVar7 * 4 + 2] = *(short *)(RegionSpoolInfo + uVar2);
-          local_30[iVar7] = (ushort)iVar7;
-          iVar7 = iVar7 + 1;
-        }
-      }
-      iVar9 = iVar9 + 1;
-      iVar6 = iVar9 * 8;
-    } while (iVar9 < iVar12);
-  }
-  if (0 < iVar7) {
-    iVar12 = 0;
-    iVar9 = 1;
-    do {
-      if (iVar9 < iVar7) {
-        puVar11 = local_30 + iVar12;
-        puVar10 = local_30 + iVar9;
-        iVar6 = iVar7 - iVar9;
-        do {
-          uVar2 = *puVar11;
-          if ((local_50 + 2)[(uint)*puVar10 * 4] < (local_50 + 2)[(uint)uVar2 * 4]) {
-            *puVar11 = *puVar10;
-            *puVar10 = uVar2;
-          }
-          iVar6 = iVar6 + -1;
-          puVar10 = puVar10 + 1;
-        } while (iVar6 != 0);
-      }
-      uVar5 = (uint)local_30[iVar12];
-      UnpackRegion((int)local_50[uVar5 * 4],(int)local_50[uVar5 * 4 + 1]);
-      bVar3 = iVar9 < iVar7;
-      iVar12 = iVar9;
-      iVar9 = iVar9 + 1;
-    } while (bVar3);
-  }
-  return 1;
+	iVar9 = 0;
+	iVar7 = 0;
+	if (iVar12 != 0) {
+		iVar6 = 0;
+		do {
+			iVar4 = *(int *)((int)local_68 + iVar6 + 4);
+			iVar8 = cells_across;
+			if (cells_across < 0) {
+				iVar8 = cells_across + 0x1f;
+			}
+			target_region =
+				(region_x + *(int *)((int)local_68 + iVar6) & 1U) + (region_z + iVar4 & 1U) * 2;
+			iVar6 = current_region + *(int *)((int)local_68 + iVar6) + iVar4 * (iVar8 >> 5);
+			if ((iVar6 != regions_unpacked[target_region]) && (loading_region[target_region] == -1)) {
+				ClearRegion(target_region);
+				if (spoolinfo_offsets[iVar6] == 0xffff) {
+					regions_unpacked[target_region] = iVar6;
+				}
+				else {
+					uVar2 = spoolinfo_offsets[iVar6];
+					if ((old_region == -1) && (bVar1 = (RegionSpoolInfo + uVar2)[4], bVar1 != 0xff)) {
+						initarea = (uint)bVar1;
+					}
+					local_50[iVar7 * 4] = (short)iVar6;
+					local_50[iVar7 * 4 + 1] = (short)target_region;
+					local_50[iVar7 * 4 + 2] = *(short *)(RegionSpoolInfo + uVar2);
+					local_30[iVar7] = (ushort)iVar7;
+					iVar7 = iVar7 + 1;
+				}
+			}
+			iVar9 = iVar9 + 1;
+			iVar6 = iVar9 * 8;
+		} while (iVar9 < iVar12);
+	}
+	if (0 < iVar7) {
+		iVar12 = 0;
+		iVar9 = 1;
+		do {
+			if (iVar9 < iVar7) {
+				puVar11 = local_30 + iVar12;
+				puVar10 = local_30 + iVar9;
+				iVar6 = iVar7 - iVar9;
+				do {
+					uVar2 = *puVar11;
+					if ((local_50 + 2)[(uint)*puVar10 * 4] < (local_50 + 2)[(uint)uVar2 * 4]) {
+						*puVar11 = *puVar10;
+						*puVar10 = uVar2;
+					}
+					iVar6 = iVar6 + -1;
+					puVar10 = puVar10 + 1;
+				} while (iVar6 != 0);
+			}
+			uVar5 = (uint)local_30[iVar12];
+			UnpackRegion((int)local_50[uVar5 * 4], (int)local_50[uVar5 * 4 + 1]);
+			bVar3 = iVar9 < iVar7;
+			iVar12 = iVar9;
+			iVar9 = iVar9 + 1;
+		} while (bVar3);
+	}
+	return 1;
+	*/
 }
 
 
@@ -726,60 +744,62 @@ LAB_0005c9dc:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void ControlMap(void)
-
 {
-  bool bVar1;
-  int region_to_unpack;
-  
-  current_cell_x = (player.spoolXZ)->vx + units_across_halved;
-  if (current_cell_x < 0) {
-    current_cell_x = current_cell_x + 0x7ff;
-  }
-  current_cell_z = (player.spoolXZ)->vz + units_down_halved;
-  current_cell_x = current_cell_x >> 0xb;
-  if (current_cell_z < 0) {
-    current_cell_z = current_cell_z + 0x7ff;
-  }
-  current_cell_z = current_cell_z >> 0xb;
-  region_x = current_cell_x;
-  if (current_cell_x < 0) {
-    region_x = current_cell_x + 0x1f;
-  }
-  region_x = region_x >> 5;
-  region_z = current_cell_z;
-  if (current_cell_z < 0) {
-    region_z = current_cell_z + 0x1f;
-  }
-  region_z = region_z >> 5;
-  old_region = current_region;
-  region_to_unpack = cells_across;
-  if (cells_across < 0) {
-    region_to_unpack = cells_across + 0x1f;
-  }
-  current_barrel_region_xcell = current_cell_x + region_x * -0x20;
-  current_barrel_region_zcell = current_cell_z + region_z * -0x20;
-  region_to_unpack = region_x + region_z * (region_to_unpack >> 5);
-  bVar1 = current_region == -1;
-  current_region = region_to_unpack;
-  if (bVar1) {
-    UnpackRegion(region_to_unpack,region_x & 1U | (region_z & 1U) << 1);
-  }
-  CheckUnpackNewRegions();
-  if ((old_region == current_region) || (old_region == -1)) {
-    CheckLoadAreaData(current_barrel_region_xcell,current_barrel_region_zcell);
-  }
-  current_cell_x = camera_position.vx + units_across_halved;
-  if (current_cell_x < 0) {
-    current_cell_x = current_cell_x + 0x7ff;
-  }
-  current_cell_x = current_cell_x >> 0xb;
-  current_cell_z = camera_position.vz + units_down_halved;
-  if (current_cell_z < 0) {
-    current_cell_z = current_cell_z + 0x7ff;
-  }
-  current_cell_z = current_cell_z >> 0xb;
-  StartSpooling();
-  return;
+	UNIMPLEMENTED();
+	/*
+	bool bVar1;
+	int region_to_unpack;
+
+	current_cell_x = (player.spoolXZ)->vx + units_across_halved;
+	if (current_cell_x < 0) {
+		current_cell_x = current_cell_x + 0x7ff;
+	}
+	current_cell_z = (player.spoolXZ)->vz + units_down_halved;
+	current_cell_x = current_cell_x >> 0xb;
+	if (current_cell_z < 0) {
+		current_cell_z = current_cell_z + 0x7ff;
+	}
+	current_cell_z = current_cell_z >> 0xb;
+	region_x = current_cell_x;
+	if (current_cell_x < 0) {
+		region_x = current_cell_x + 0x1f;
+	}
+	region_x = region_x >> 5;
+	region_z = current_cell_z;
+	if (current_cell_z < 0) {
+		region_z = current_cell_z + 0x1f;
+	}
+	region_z = region_z >> 5;
+	old_region = current_region;
+	region_to_unpack = cells_across;
+	if (cells_across < 0) {
+		region_to_unpack = cells_across + 0x1f;
+	}
+	current_barrel_region_xcell = current_cell_x + region_x * -0x20;
+	current_barrel_region_zcell = current_cell_z + region_z * -0x20;
+	region_to_unpack = region_x + region_z * (region_to_unpack >> 5);
+	bVar1 = current_region == -1;
+	current_region = region_to_unpack;
+	if (bVar1) {
+		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) << 1);
+	}
+	CheckUnpackNewRegions();
+	if ((old_region == current_region) || (old_region == -1)) {
+		CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
+	}
+	current_cell_x = camera_position.vx + units_across_halved;
+	if (current_cell_x < 0) {
+		current_cell_x = current_cell_x + 0x7ff;
+	}
+	current_cell_x = current_cell_x >> 0xb;
+	current_cell_z = camera_position.vz + units_down_halved;
+	if (current_cell_z < 0) {
+		current_cell_z = current_cell_z + 0x7ff;
+	}
+	current_cell_z = current_cell_z >> 0xb;
+	StartSpooling();
+	return;
+	*/
 }
 
 
@@ -854,87 +874,88 @@ void ControlMap(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitMap(void)
-
 {
-  int iVar1;
-  byte *pbVar2;
-  int region_to_unpack;
-  int iVar3;
-  int *piVar4;
-  
-  initarea = -1;
-  LoadedArea = -1;
-  current_region = -1;
-  if (slotsused < 0x13) {
-    pbVar2 = &tpageslots + slotsused;
-    iVar3 = slotsused;
-    do {
-      if (*pbVar2 != 0xff) {
-        tpageloaded[*pbVar2] = '\0';
-      }
-      *pbVar2 = 0xff;
-      iVar3 = iVar3 + 1;
-      pbVar2 = pbVar2 + 1;
-    } while (iVar3 < 0x13);
-  }
-  if (doSpooling == 0) {
-    old_region = -1;
-    if (multiplayerregions[1] == -1) {
-      multiplayerregions[1] = multiplayerregions[0] + 1;
-      iVar3 = cells_across;
-      if (cells_across < 0) {
-        iVar3 = cells_across + 0x1f;
-      }
-      multiplayerregions[2] = multiplayerregions[0] - (iVar3 >> 5);
-      multiplayerregions[3] = multiplayerregions[2] + 1;
-    }
-    piVar4 = multiplayerregions;
-    iVar3 = 3;
-    do {
-      region_to_unpack = *piVar4;
-      iVar1 = cells_across;
-      if (cells_across < 0) {
-        iVar1 = cells_across + 0x1f;
-      }
-      iVar1 = iVar1 >> 5;
-      if (iVar1 == 0) {
-        trap(7);
-      }
-      if (iVar1 == 0) {
-        trap(7);
-      }
-      if (spoolinfo_offsets[region_to_unpack] != 0xffff) {
-        if (RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8] != 0xff) {
-          initarea = (uint)(byte)RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8];
-        }
-        UnpackRegion(region_to_unpack,
-                     (region_to_unpack % iVar1 & 1U) + (region_to_unpack / iVar1 & 1U) * 2);
-      }
-      iVar3 = iVar3 + -1;
-      piVar4 = piVar4 + 1;
-    } while (-1 < iVar3);
-    LoadInAreaTSets(initarea);
-    LoadInAreaModels(initarea);
-    current_cell_x = camera_position.vx + units_across_halved;
-    if (current_cell_x < 0) {
-      current_cell_x = current_cell_x + 0x7ff;
-    }
-    current_cell_x = current_cell_x >> 0xb;
-    current_cell_z = camera_position.vz + units_down_halved;
-    if (current_cell_z < 0) {
-      current_cell_z = current_cell_z + 0x7ff;
-    }
-    current_cell_z = current_cell_z >> 0xb;
-    StartSpooling();
-  }
-  else {
-    regions_unpacked[0] = -1;
-    regions_unpacked[1] = -1;
-    regions_unpacked[2] = -1;
-    regions_unpacked[3] = -1;
-    ControlMap();
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	byte *pbVar2;
+	int region_to_unpack;
+	int iVar3;
+	int *piVar4;
+
+	initarea = -1;
+	LoadedArea = -1;
+	current_region = -1;
+	if (slotsused < 0x13) {
+		pbVar2 = &tpageslots + slotsused;
+		iVar3 = slotsused;
+		do {
+			if (*pbVar2 != 0xff) {
+				tpageloaded[*pbVar2] = '\0';
+			}
+			*pbVar2 = 0xff;
+			iVar3 = iVar3 + 1;
+			pbVar2 = pbVar2 + 1;
+		} while (iVar3 < 0x13);
+	}
+	if (doSpooling == 0) {
+		old_region = -1;
+		if (multiplayerregions[1] == -1) {
+			multiplayerregions[1] = multiplayerregions[0] + 1;
+			iVar3 = cells_across;
+			if (cells_across < 0) {
+				iVar3 = cells_across + 0x1f;
+			}
+			multiplayerregions[2] = multiplayerregions[0] - (iVar3 >> 5);
+			multiplayerregions[3] = multiplayerregions[2] + 1;
+		}
+		piVar4 = multiplayerregions;
+		iVar3 = 3;
+		do {
+			region_to_unpack = *piVar4;
+			iVar1 = cells_across;
+			if (cells_across < 0) {
+				iVar1 = cells_across + 0x1f;
+			}
+			iVar1 = iVar1 >> 5;
+			if (iVar1 == 0) {
+				trap(7);
+			}
+			if (iVar1 == 0) {
+				trap(7);
+			}
+			if (spoolinfo_offsets[region_to_unpack] != 0xffff) {
+				if (RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8] != 0xff) {
+					initarea = (uint)(byte)RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8];
+				}
+				UnpackRegion(region_to_unpack,
+					(region_to_unpack % iVar1 & 1U) + (region_to_unpack / iVar1 & 1U) * 2);
+			}
+			iVar3 = iVar3 + -1;
+			piVar4 = piVar4 + 1;
+		} while (-1 < iVar3);
+		LoadInAreaTSets(initarea);
+		LoadInAreaModels(initarea);
+		current_cell_x = camera_position.vx + units_across_halved;
+		if (current_cell_x < 0) {
+			current_cell_x = current_cell_x + 0x7ff;
+		}
+		current_cell_x = current_cell_x >> 0xb;
+		current_cell_z = camera_position.vz + units_down_halved;
+		if (current_cell_z < 0) {
+			current_cell_z = current_cell_z + 0x7ff;
+		}
+		current_cell_z = current_cell_z >> 0xb;
+		StartSpooling();
+	}
+	else {
+		regions_unpacked[0] = -1;
+		regions_unpacked[1] = -1;
+		regions_unpacked[2] = -1;
+		regions_unpacked[3] = -1;
+		ControlMap();
+	}
+	return;*/
 }
 
 
@@ -977,44 +998,46 @@ void InitMap(void)
 	/* end block 3 */
 	// End Line: 2686
 
-void GetVisSetAtPosition(VECTOR *pos,char *tgt,int *ccx,int *ccz)
-
+void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  int iVar5;
-  
-  iVar5 = pos->vx + units_across_halved;
-  if (iVar5 < 0) {
-    iVar5 = iVar5 + 0x7ff;
-  }
-  iVar2 = pos->vz + units_down_halved;
-  iVar5 = iVar5 >> 0xb;
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0x7ff;
-  }
-  iVar2 = iVar2 >> 0xb;
-  *ccx = iVar5;
-  *ccz = iVar2;
-  iVar1 = iVar5;
-  if (iVar5 < 0) {
-    iVar1 = iVar5 + 0x1f;
-  }
-  uVar4 = iVar1 >> 5;
-  iVar1 = iVar2;
-  if (iVar2 < 0) {
-    iVar1 = iVar2 + 0x1f;
-  }
-  uVar3 = iVar1 >> 5;
-  iVar1 = cells_across;
-  if (cells_across < 0) {
-    iVar1 = cells_across + 0x1f;
-  }
-  GetPVSRegionCell2(uVar4 & 1 | (uVar3 & 1) << 1,uVar4 + uVar3 * (iVar1 >> 5),
-                    (iVar2 + uVar3 * -0x20) * 0x20 + iVar5 + uVar4 * -0x20,tgt);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	uint uVar3;
+	uint uVar4;
+	int iVar5;
+
+	iVar5 = pos->vx + units_across_halved;
+	if (iVar5 < 0) {
+		iVar5 = iVar5 + 0x7ff;
+	}
+	iVar2 = pos->vz + units_down_halved;
+	iVar5 = iVar5 >> 0xb;
+	if (iVar2 < 0) {
+		iVar2 = iVar2 + 0x7ff;
+	}
+	iVar2 = iVar2 >> 0xb;
+	*ccx = iVar5;
+	*ccz = iVar2;
+	iVar1 = iVar5;
+	if (iVar5 < 0) {
+		iVar1 = iVar5 + 0x1f;
+	}
+	uVar4 = iVar1 >> 5;
+	iVar1 = iVar2;
+	if (iVar2 < 0) {
+		iVar1 = iVar2 + 0x1f;
+	}
+	uVar3 = iVar1 >> 5;
+	iVar1 = cells_across;
+	if (cells_across < 0) {
+		iVar1 = cells_across + 0x1f;
+	}
+	GetPVSRegionCell2(uVar4 & 1 | (uVar3 & 1) << 1, uVar4 + uVar3 * (iVar1 >> 5),
+		(iVar2 + uVar3 * -0x20) * 0x20 + iVar5 + uVar4 * -0x20, tgt);
+	return;
+	*/
 }
 
 
@@ -1111,108 +1134,110 @@ void GetVisSetAtPosition(VECTOR *pos,char *tgt,int *ccx,int *ccz)
 	/* end block 3 */
 	// End Line: 1807
 
-void PVSDecode(char *output,char *celldata,ushort sz,int havanaCorruptCellBodge)
-
+void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-  byte bVar1;
-  undefined4 uVar2;
-  int iVar3;
-  char *pcVar4;
-  byte *pbVar5;
-  uint uVar6;
-  int iVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  undefined4 *puVar11;
-  
-  puVar11 = &DAT_1f800000;
-  ClearMem((char *)&DAT_1f800000,pvs_square_sq);
-  iVar3 = 0;
-  if (sz != 0) {
-    pcVar4 = nybblearray;
-    do {
-      pbVar5 = (byte *)(celldata + iVar3);
-      iVar3 = iVar3 + 1;
-      *(ushort *)pcVar4 = CONCAT11(*pbVar5,*pbVar5 >> 4) & 0xf0f;
-      pcVar4 = (char *)((ushort *)pcVar4 + 1);
-    } while (iVar3 < (int)(uint)sz);
-  }
-  iVar10 = ((uint)sz & 0x7fff) << 1;
-  iVar3 = 0;
-  if ((sz & 0x7fff) != 0) {
-    pcVar4 = nybblearray;
-    iVar9 = 0;
-    do {
-      bVar1 = *pcVar4;
-      iVar8 = iVar9 + 1;
-      if (bVar1 < 0xc) {
-        iVar9 = (uint)bVar1 * 2;
-LAB_0005d0c8:
-        uVar6 = (uint)CONCAT11(PVSEncodeTable[iVar9],(PVSEncodeTable + iVar9)[1]);
-      }
-      else {
-        if (iVar8 == iVar10) break;
-        uVar6 = ((uint)bVar1 & 3) * 0x10 + (uint)(byte)nybblearray[iVar9 + 1];
-        iVar8 = iVar9 + 2;
-        if (uVar6 < 0x3c) {
-          iVar9 = uVar6 * 2 + 0x18;
-          goto LAB_0005d0c8;
-        }
-        iVar8 = iVar9 + 4;
-        uVar6 = ((uVar6 & 3) * 0x10 + (uint)(byte)nybblearray[iVar9 + 2]) * 0x10 +
-                (uint)(byte)nybblearray[iVar9 + 3];
-      }
-      iVar9 = iVar3 + ((int)uVar6 >> 1);
-      *(undefined *)(iVar9 + 0x1f800000) = 1;
-      iVar3 = iVar9 + 1;
-      if ((uVar6 & 1) != 0) {
-        *(undefined *)((int)&DAT_1f800000 + iVar9 + 1) = 1;
-        iVar3 = iVar9 + 2;
-      }
-      pcVar4 = nybblearray + iVar8;
-      iVar9 = iVar8;
-    } while (iVar8 < iVar10);
-  }
-  iVar3 = pvs_square;
-  if (havanaCorruptCellBodge == 0) {
-    *(byte *)(pvs_square_sq + 0x1f7fffff) = *(byte *)(pvs_square_sq + 0x1f7fffff) ^ 1;
-  }
-  iVar8 = iVar3 + -2;
-  iVar9 = iVar3 + -1;
-  pbVar5 = (byte *)(iVar8 * iVar3 + iVar3 + 0x1f7fffff);
-  iVar10 = iVar8;
-  while (-1 < iVar10) {
-    iVar10 = iVar10 + -1;
-    iVar7 = iVar3;
-    if (0 < iVar3) {
-      do {
-        iVar7 = iVar7 + -1;
-        *pbVar5 = *pbVar5 ^ pbVar5[iVar3];
-        pbVar5 = pbVar5 + -1;
-      } while (iVar7 != 0);
-    }
-  }
-  pbVar5 = (byte *)(iVar9 * iVar3 + iVar3 + 0x1f7ffffe);
-  while (-1 < iVar9) {
-    iVar9 = iVar9 + -1;
-    iVar3 = iVar8;
-    while (-1 < iVar3) {
-      iVar3 = iVar3 + -1;
-      *pbVar5 = *pbVar5 ^ pbVar5[1];
-      pbVar5 = pbVar5 + -1;
-    }
-    pbVar5 = pbVar5 + -1;
-  }
-  iVar3 = 0x6e;
-  do {
-    uVar2 = *puVar11;
-    puVar11 = puVar11 + 1;
-    iVar3 = iVar3 + -1;
-    *(undefined4 *)output = uVar2;
-    output = (char *)((undefined4 *)output + 1);
-  } while (iVar3 != -1);
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	undefined4 uVar2;
+	int iVar3;
+	char *pcVar4;
+	byte *pbVar5;
+	uint uVar6;
+	int iVar7;
+	int iVar8;
+	int iVar9;
+	int iVar10;
+	undefined4 *puVar11;
+
+	puVar11 = &DAT_1f800000;
+	ClearMem((char *)&DAT_1f800000, pvs_square_sq);
+	iVar3 = 0;
+	if (sz != 0) {
+		pcVar4 = nybblearray;
+		do {
+			pbVar5 = (byte *)(celldata + iVar3);
+			iVar3 = iVar3 + 1;
+			*(ushort *)pcVar4 = CONCAT11(*pbVar5, *pbVar5 >> 4) & 0xf0f;
+			pcVar4 = (char *)((ushort *)pcVar4 + 1);
+		} while (iVar3 < (int)(uint)sz);
+	}
+	iVar10 = ((uint)sz & 0x7fff) << 1;
+	iVar3 = 0;
+	if ((sz & 0x7fff) != 0) {
+		pcVar4 = nybblearray;
+		iVar9 = 0;
+		do {
+			bVar1 = *pcVar4;
+			iVar8 = iVar9 + 1;
+			if (bVar1 < 0xc) {
+				iVar9 = (uint)bVar1 * 2;
+			LAB_0005d0c8:
+				uVar6 = (uint)CONCAT11(PVSEncodeTable[iVar9], (PVSEncodeTable + iVar9)[1]);
+			}
+			else {
+				if (iVar8 == iVar10) break;
+				uVar6 = ((uint)bVar1 & 3) * 0x10 + (uint)(byte)nybblearray[iVar9 + 1];
+				iVar8 = iVar9 + 2;
+				if (uVar6 < 0x3c) {
+					iVar9 = uVar6 * 2 + 0x18;
+					goto LAB_0005d0c8;
+				}
+				iVar8 = iVar9 + 4;
+				uVar6 = ((uVar6 & 3) * 0x10 + (uint)(byte)nybblearray[iVar9 + 2]) * 0x10 +
+					(uint)(byte)nybblearray[iVar9 + 3];
+			}
+			iVar9 = iVar3 + ((int)uVar6 >> 1);
+			*(undefined *)(iVar9 + 0x1f800000) = 1;
+			iVar3 = iVar9 + 1;
+			if ((uVar6 & 1) != 0) {
+				*(undefined *)((int)&DAT_1f800000 + iVar9 + 1) = 1;
+				iVar3 = iVar9 + 2;
+			}
+			pcVar4 = nybblearray + iVar8;
+			iVar9 = iVar8;
+		} while (iVar8 < iVar10);
+	}
+	iVar3 = pvs_square;
+	if (havanaCorruptCellBodge == 0) {
+		*(byte *)(pvs_square_sq + 0x1f7fffff) = *(byte *)(pvs_square_sq + 0x1f7fffff) ^ 1;
+	}
+	iVar8 = iVar3 + -2;
+	iVar9 = iVar3 + -1;
+	pbVar5 = (byte *)(iVar8 * iVar3 + iVar3 + 0x1f7fffff);
+	iVar10 = iVar8;
+	while (-1 < iVar10) {
+		iVar10 = iVar10 + -1;
+		iVar7 = iVar3;
+		if (0 < iVar3) {
+			do {
+				iVar7 = iVar7 + -1;
+				*pbVar5 = *pbVar5 ^ pbVar5[iVar3];
+				pbVar5 = pbVar5 + -1;
+			} while (iVar7 != 0);
+		}
+	}
+	pbVar5 = (byte *)(iVar9 * iVar3 + iVar3 + 0x1f7ffffe);
+	while (-1 < iVar9) {
+		iVar9 = iVar9 + -1;
+		iVar3 = iVar8;
+		while (-1 < iVar3) {
+			iVar3 = iVar3 + -1;
+			*pbVar5 = *pbVar5 ^ pbVar5[1];
+			pbVar5 = pbVar5 + -1;
+		}
+		pbVar5 = pbVar5 + -1;
+	}
+	iVar3 = 0x6e;
+	do {
+		uVar2 = *puVar11;
+		puVar11 = puVar11 + 1;
+		iVar3 = iVar3 + -1;
+		*(undefined4 *)output = uVar2;
+		output = (char *)((undefined4 *)output + 1);
+	} while (iVar3 != -1);
+	return;
+	*/
 }
 
 
@@ -1287,50 +1312,52 @@ LAB_0005d0c8:
 	/* end block 5 */
 	// End Line: 2055
 
-void GetPVSRegionCell2(int source_region,int region,int cell,char *output)
-
+void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
-  int iVar1;
-  uint havanaCorruptCellBodge;
-  char *pcVar2;
-  char *pcVar3;
-  uint uVar4;
-  
-  if ((regions_unpacked[source_region] == region) && (loading_region[source_region] == -1)) {
-    pcVar3 = PVS_Buffers4[source_region];
-    PVSEncodeTable = (uchar *)(pcVar3 + 0x802);
-    pcVar2 = pcVar3 + cell * 2;
-    uVar4 = (uint)CONCAT11(pcVar2[2],pcVar2[3]) - (uint)CONCAT11(*pcVar2,pcVar2[1]) & 0xffff;
-    if (uVar4 == 0) {
-      iVar1 = 0;
-      if (0 < pvs_square_sq) {
-        do {
-          *output = '\x01';
-          iVar1 = iVar1 + 1;
-          output = output + 1;
-        } while (iVar1 < pvs_square_sq);
-      }
-    }
-    else {
-      havanaCorruptCellBodge = 0;
-      if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8)) {
-        havanaCorruptCellBodge = (uint)(GameLevel == 1);
-      }
-      PVSDecode(output,pcVar3 + (uint)CONCAT11(*pcVar2,pcVar2[1]),(ushort)uVar4,
-                havanaCorruptCellBodge);
-    }
-  }
-  else {
-    iVar1 = 0;
-    if (0 < pvs_square_sq) {
-      do {
-        *output = '\0';
-        iVar1 = iVar1 + 1;
-        output = output + 1;
-      } while (iVar1 < pvs_square_sq);
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	uint havanaCorruptCellBodge;
+	char *pcVar2;
+	char *pcVar3;
+	uint uVar4;
+
+	if ((regions_unpacked[source_region] == region) && (loading_region[source_region] == -1)) {
+		pcVar3 = PVS_Buffers4[source_region];
+		PVSEncodeTable = (uchar *)(pcVar3 + 0x802);
+		pcVar2 = pcVar3 + cell * 2;
+		uVar4 = (uint)CONCAT11(pcVar2[2], pcVar2[3]) - (uint)CONCAT11(*pcVar2, pcVar2[1]) & 0xffff;
+		if (uVar4 == 0) {
+			iVar1 = 0;
+			if (0 < pvs_square_sq) {
+				do {
+					*output = '\x01';
+					iVar1 = iVar1 + 1;
+					output = output + 1;
+				} while (iVar1 < pvs_square_sq);
+			}
+		}
+		else {
+			havanaCorruptCellBodge = 0;
+			if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8)) {
+				havanaCorruptCellBodge = (uint)(GameLevel == 1);
+			}
+			PVSDecode(output, pcVar3 + (uint)CONCAT11(*pcVar2, pcVar2[1]), (ushort)uVar4,
+				havanaCorruptCellBodge);
+		}
+	}
+	else {
+		iVar1 = 0;
+		if (0 < pvs_square_sq) {
+			do {
+				*output = '\0';
+				iVar1 = iVar1 + 1;
+				output = output + 1;
+			} while (iVar1 < pvs_square_sq);
+		}
+	}
+	return;
+	*/
 }
 
 

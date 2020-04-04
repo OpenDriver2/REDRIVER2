@@ -262,318 +262,319 @@ VECTOR dummy = { 0 };
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void PlacePoolForCar(_CAR_DATA *cp,CVECTOR *col,int front)
-
+void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 {
-  byte bVar1;
-  bool bVar2;
-  DB *pDVar3;
-  uchar uVar4;
-  undefined4 in_zero;
-  undefined4 in_at;
-  int iVar5;
-  int iVar6;
-  undefined4 *puVar7;
-  SVECTOR *pSVar8;
-  short sVar9;
-  uint *puVar10;
-  undefined4 uVar11;
-  undefined4 uVar12;
-  undefined4 uVar13;
-  VECTOR *pos;
-  undefined4 *puVar14;
-  uint uVar15;
-  int iVar16;
-  int iVar17;
-  int iVar18;
-  undefined4 local_340;
-  undefined4 local_33c;
-  undefined4 local_338;
-  undefined4 local_334;
-  undefined4 local_330;
-  undefined4 local_32c;
-  undefined4 local_328;
-  undefined4 local_324;
-  SVECTOR local_268 [27];
-  VECTOR local_190;
-  undefined4 local_180;
-  int local_178;
-  undefined4 local_170;
-  int local_168;
-  undefined4 local_160;
-  int local_158;
-  undefined4 local_150;
-  int local_148;
-  undefined4 local_140;
-  int local_138;
-  undefined4 local_130;
-  int local_128;
-  undefined4 local_120;
-  int local_118;
-  undefined4 local_110;
-  int local_108;
-  undefined4 local_100;
-  int local_f8;
-  undefined4 local_f0;
-  int local_e8;
-  undefined4 local_e0;
-  int local_d8;
-  int local_b0;
-  int local_a8;
-  VECTOR local_a0;
-  uint local_90;
-  int local_8c;
-  int local_88;
-  int local_80;
-  int local_7c;
-  int local_78;
-  int local_30;
-  
-  bVar2 = false;
-  pos = &local_190;
-  puVar7 = &local_340;
-  if (cp <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
-    while (FrameCnt != 0x78654321) {
-      trap(0x400);
-    }
-  }
-  if ((cameraview == 2) && ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == CameraCar)) {
-    bVar2 = true;
-  }
-  if (front == 0) {
-    iVar17 = 0;
-    local_190.vx = -0xcc;
-    local_180 = 0xcc;
-    local_170 = 0xffffff34;
-    local_160 = 0xcc;
-    local_158 = (int)(((uint)(ushort)car_cosmetics[(byte)(cp->ap).model].colBox.vz - 10) * 0x10000)
-                >> 0x10;
-    local_178 = (local_158 + 0xcc) * 0x10000 >> 0x10;
-  }
-  else {
-    local_158 = (int)(short)-(car_cosmetics[(byte)(cp->ap).model].colBox.vz + 0x32);
-    local_108 = (local_158 + -0x488) * 0x10000 >> 0x10;
-    local_128 = local_158;
-    local_118 = local_158;
-    if (bVar2) {
-      local_178 = local_108 + 600;
-      local_190.vx = 0x88;
-      local_180 = 0xfffffea8;
-      local_170 = 0xffffffeb;
-      local_160 = 0xffffff71;
-      local_150 = 0x158;
-      local_140 = 0xffffff78;
-      local_130 = 0x8f;
-      local_120 = 0x15;
-      local_108 = local_108 + -400;
-      local_f8 = local_158 + 10;
-      local_110 = 0xffffffae;
-      local_f0 = 0x52;
-      local_100 = 0xffffffae;
-      local_e0 = 0x52;
-      LightSortCorrect = -800;
-      iVar17 = 3;
-      local_148 = local_178;
-      local_138 = local_178;
-      local_e8 = local_108;
-      local_d8 = local_f8;
-    }
-    else {
-      local_178 = local_108 + 100;
-      local_190.vx = 0x88;
-      local_180 = 0xfffffea8;
-      local_170 = 0xffffffeb;
-      local_160 = 0xffffff71;
-      local_150 = 0x158;
-      local_140 = 0xffffff78;
-      local_130 = 0x8f;
-      local_120 = 0x15;
-      local_f0 = 0x52;
-      local_e0 = 0x52;
-      local_110 = 0xffffffae;
-      local_100 = 0xffffffae;
-      iVar17 = 3;
-      local_148 = local_178;
-      local_138 = local_178;
-      local_f8 = local_158;
-      local_e8 = local_108;
-      local_d8 = local_158;
-      if ((player.cameraView == '\x02') && (cp == car_data + player.playerCarId)) {
-        LightSortCorrect = -0x140;
-      }
-      else {
-        LightSortCorrect = -200;
-      }
-    }
-  }
-  local_190.vz = local_178;
-  local_168 = local_158;
-  SetRotMatrix(&(cp->hd).drawCarMat);
-  local_b0 = 0;
-  local_a8 = 0;
-  local_a0.vx = 0;
-  local_a0.vy = 0;
-  local_a0.vz = -500;
-  _MatrixRotate(&local_a0);
-  local_a0.vx = local_a0.vx + (cp->hd).where.t[0];
-  local_a0.vy = local_a0.vy + (cp->hd).where.t[1];
-  local_a0.vz = local_a0.vz + (cp->hd).where.t[2];
-  iVar5 = MapHeight(&local_a0);
-  puVar14 = puVar7;
-  iVar16 = 0;
-  while( true ) {
-    bVar2 = iVar16 < 4;
-    if (iVar17 == 3) {
-      bVar2 = iVar16 < 0xc;
-    }
-    if (!bVar2) break;
-    pos->vy = 0;
-    _MatrixRotate(pos);
-    local_90 = pos->vx + (cp->hd).where.t[0];
-    local_8c = pos->vy + (cp->hd).where.t[1];
-    iVar18 = (local_90 & 0xffff) - (uint)(ushort)camera_position.vx;
-    local_88 = pos->vz + (cp->hd).where.t[2];
-    *(short *)puVar14 = (short)iVar18;
-    *(short *)(puVar14 + 1) = (short)local_88 - (short)camera_position.vz;
-    local_b0 = local_b0 + (iVar18 * 0x10000 >> 0x10);
-    local_a8 = local_a8 + *(short *)(puVar14 + 1);
-    iVar18 = MapHeight((VECTOR *)&local_90);
-    sVar9 = (short)-iVar18;
-    iVar6 = -iVar18 + iVar5;
-    if (iVar6 < 0) {
-      iVar6 = -iVar5 + iVar18;
-    }
-    if (500 < iVar6) {
-      sVar9 = (short)-iVar5;
-    }
-    pos = pos + 1;
-    puVar14 = puVar14 + 2;
-    *(short *)((int)&local_340 + iVar16 * 8 + 2) = sVar9 - (short)camera_position.vy;
-    iVar16 = iVar16 + 1;
-  }
-  local_80 = ((int)local_340._2_2_ * (int)(short)local_334 -
-             (int)(short)local_33c * (int)local_338._2_2_) + 0x800 >> 0xc;
-  local_7c = ((int)(short)local_33c * (int)(short)local_338 -
-             (int)(short)local_340 * (int)(short)local_334) + 0x800 >> 0xc;
-  local_78 = ((int)(short)local_340 * (int)local_338._2_2_ -
-             (int)local_340._2_2_ * (int)(short)local_338) + 0x800 >> 0xc;
-  iVar18 = local_78 * (short)local_32c;
-  iVar5 = local_80 * (short)local_330 + local_7c * local_330._2_2_ + iVar18;
-  if (-1 < iVar5) {
-    if (iVar16 == 0) {
-      trap(7);
-      trap(7);
-    }
-    setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-    setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-    setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-    setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-    setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-    setCopControlWord(2,0x2800,dummy.vx);
-    setCopControlWord(2,0x3000,dummy.vy);
-    setCopControlWord(2,0x3800,dummy.vz);
-    if (iVar17 == 0) {
-      setCopReg(2,in_zero,local_340);
-      setCopReg(2,in_at,local_33c);
-      setCopReg(2,0xacad0,local_338);
-      setCopReg(2,0xa187c,local_334);
-      setCopReg(2,iVar5,local_330);
-      setCopReg(2,iVar18,local_32c);
-      copFunction(2,0x280030);
-      puVar10 = (uint *)current->primptr;
-      *(uchar *)(puVar10 + 3) = light_pool_texture.coords.u0;
-      *(uchar *)((int)puVar10 + 0xd) = light_pool_texture.coords.v0;
-      *(uchar *)(puVar10 + 5) = light_pool_texture.coords.u1;
-      *(uchar *)((int)puVar10 + 0x15) = light_pool_texture.coords.v1;
-      *(uchar *)(puVar10 + 7) = light_pool_texture.coords.u2;
-      *(uchar *)((int)puVar10 + 0x1d) = light_pool_texture.coords.v2;
-      *(uchar *)(puVar10 + 9) = light_pool_texture.coords.u3;
-      uVar4 = light_pool_texture.coords.v3;
-      *(char *)((int)puVar10 + 3) = '\t';
-      *(char *)((int)puVar10 + 7) = '.';
-      *(uchar *)((int)puVar10 + 0x25) = uVar4;
-      *(uchar *)(puVar10 + 1) = col->r >> 1;
-      *(byte *)((int)puVar10 + 5) = col->b >> 1;
-      *(byte *)((int)puVar10 + 6) = col->g >> 1;
-      uVar15 = getCopReg(2,0xc);
-      puVar10[2] = uVar15;
-      uVar15 = getCopReg(2,0xd);
-      puVar10[4] = uVar15;
-      uVar15 = getCopReg(2,0xe);
-      puVar10[6] = uVar15;
-      pDVar3 = current;
-      local_30 = getCopReg(2,0x13);
-      if (0x28 < local_30) {
-        local_30 = local_30 + -0x28;
-      }
-      if (0x31 < local_30) {
-        setCopReg(2,in_zero,local_328);
-        setCopReg(2,in_at,local_324);
-        copFunction(2,0x180001);
-        *(ushort *)((int)puVar10 + 0x16) = light_pool_texture.tpageid | 0x20;
-        *(ushort *)((int)puVar10 + 0xe) = light_pool_texture.clutid;
-        *puVar10 = *puVar10 & 0xff000000 | pDVar3->ot[local_30 >> 3] & 0xffffff;
-        pDVar3->ot[local_30 >> 3] =
-             pDVar3->ot[local_30 >> 3] & 0xff000000 | (uint)puVar10 & 0xffffff;
-        pDVar3->primptr = pDVar3->primptr + 0x28;
-        uVar15 = getCopReg(2,0xe);
-        puVar10[8] = uVar15;
-      }
-    }
-    else {
-      if (iVar17 == 3) {
-        iVar17 = 0xb;
-        pSVar8 = local_268;
-        do {
-          setCopReg(2,in_zero,*puVar7);
-          setCopReg(2,in_at,puVar7[1]);
-          copFunction(2,0x480012);
-          uVar11 = getCopReg(2,0x4800);
-          uVar12 = getCopReg(2,0x5000);
-          uVar13 = getCopReg(2,0x5800);
-          pSVar8->vx = (short)uVar11;
-          pSVar8->vy = (short)uVar12;
-          pSVar8->vz = (short)uVar13;
-          pSVar8 = pSVar8 + 1;
-          iVar17 = iVar17 + -1;
-          puVar7 = puVar7 + 2;
-        } while (-1 < iVar17);
-        uVar15 = 0;
-        do {
-          iVar17 = uVar15 * 4;
-          spolys = (POLY_F3 *)current->primptr;
-          SetRotMatrix(&tempmatrix);
-          setCopControlWord(2,0x2800,dummy.vx);
-          setCopControlWord(2,0x3000,dummy.vy);
-          setCopControlWord(2,0x3800,dummy.vz);
-          bVar1 = RightLight;
-          if ((uVar15 & 2) != 0) {
-            bVar1 = LeftLight;
-          }
-          sVar9 = (ushort)bVar1 * 4 + (ushort)bVar1;
-          light_col = sVar9 * 0x10;
-          if (sVar9 != 0) {
-            if ((uVar15 & 1) == 0) {
-              sQuad(local_268 + (byte)(&CHAR_08h_0009c00d)[iVar17],
-                    local_268 + (byte)s__0009c00f[iVar17],
-                    local_268 + (byte)(&CHAR_02h_0009c00e)[iVar17],
-                    local_268 + (byte)(&PoolPrimData)[iVar17]);
-            }
-            else {
-              sQuad(local_268 + (byte)(&PoolPrimData)[iVar17],
-                    local_268 + (byte)(&CHAR_02h_0009c00e)[iVar17],
-                    local_268 + (byte)s__0009c00f[iVar17],
-                    local_268 + (byte)(&CHAR_08h_0009c00d)[iVar17]);
-            }
-            *(POLY_F3 **)&current->primptr = spolys;
-          }
-          uVar15 = uVar15 + 1;
-        } while ((int)uVar15 < 4);
-      }
-    }
-    LightSortCorrect = -10;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	bool bVar2;
+	DB *pDVar3;
+	uchar uVar4;
+	undefined4 in_zero;
+	undefined4 in_at;
+	int iVar5;
+	int iVar6;
+	undefined4 *puVar7;
+	SVECTOR *pSVar8;
+	short sVar9;
+	uint *puVar10;
+	undefined4 uVar11;
+	undefined4 uVar12;
+	undefined4 uVar13;
+	VECTOR *pos;
+	undefined4 *puVar14;
+	uint uVar15;
+	int iVar16;
+	int iVar17;
+	int iVar18;
+	undefined4 local_340;
+	undefined4 local_33c;
+	undefined4 local_338;
+	undefined4 local_334;
+	undefined4 local_330;
+	undefined4 local_32c;
+	undefined4 local_328;
+	undefined4 local_324;
+	SVECTOR local_268[27];
+	VECTOR local_190;
+	undefined4 local_180;
+	int local_178;
+	undefined4 local_170;
+	int local_168;
+	undefined4 local_160;
+	int local_158;
+	undefined4 local_150;
+	int local_148;
+	undefined4 local_140;
+	int local_138;
+	undefined4 local_130;
+	int local_128;
+	undefined4 local_120;
+	int local_118;
+	undefined4 local_110;
+	int local_108;
+	undefined4 local_100;
+	int local_f8;
+	undefined4 local_f0;
+	int local_e8;
+	undefined4 local_e0;
+	int local_d8;
+	int local_b0;
+	int local_a8;
+	VECTOR local_a0;
+	uint local_90;
+	int local_8c;
+	int local_88;
+	int local_80;
+	int local_7c;
+	int local_78;
+	int local_30;
+
+	bVar2 = false;
+	pos = &local_190;
+	puVar7 = &local_340;
+	if (cp <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
+		while (FrameCnt != 0x78654321) {
+			trap(0x400);
+		}
+	}
+	if ((cameraview == 2) && ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == CameraCar)) {
+		bVar2 = true;
+	}
+	if (front == 0) {
+		iVar17 = 0;
+		local_190.vx = -0xcc;
+		local_180 = 0xcc;
+		local_170 = 0xffffff34;
+		local_160 = 0xcc;
+		local_158 = (int)(((uint)(ushort)car_cosmetics[(byte)(cp->ap).model].colBox.vz - 10) * 0x10000)
+			>> 0x10;
+		local_178 = (local_158 + 0xcc) * 0x10000 >> 0x10;
+	}
+	else {
+		local_158 = (int)(short)-(car_cosmetics[(byte)(cp->ap).model].colBox.vz + 0x32);
+		local_108 = (local_158 + -0x488) * 0x10000 >> 0x10;
+		local_128 = local_158;
+		local_118 = local_158;
+		if (bVar2) {
+			local_178 = local_108 + 600;
+			local_190.vx = 0x88;
+			local_180 = 0xfffffea8;
+			local_170 = 0xffffffeb;
+			local_160 = 0xffffff71;
+			local_150 = 0x158;
+			local_140 = 0xffffff78;
+			local_130 = 0x8f;
+			local_120 = 0x15;
+			local_108 = local_108 + -400;
+			local_f8 = local_158 + 10;
+			local_110 = 0xffffffae;
+			local_f0 = 0x52;
+			local_100 = 0xffffffae;
+			local_e0 = 0x52;
+			LightSortCorrect = -800;
+			iVar17 = 3;
+			local_148 = local_178;
+			local_138 = local_178;
+			local_e8 = local_108;
+			local_d8 = local_f8;
+		}
+		else {
+			local_178 = local_108 + 100;
+			local_190.vx = 0x88;
+			local_180 = 0xfffffea8;
+			local_170 = 0xffffffeb;
+			local_160 = 0xffffff71;
+			local_150 = 0x158;
+			local_140 = 0xffffff78;
+			local_130 = 0x8f;
+			local_120 = 0x15;
+			local_f0 = 0x52;
+			local_e0 = 0x52;
+			local_110 = 0xffffffae;
+			local_100 = 0xffffffae;
+			iVar17 = 3;
+			local_148 = local_178;
+			local_138 = local_178;
+			local_f8 = local_158;
+			local_e8 = local_108;
+			local_d8 = local_158;
+			if ((player.cameraView == '\x02') && (cp == car_data + player.playerCarId)) {
+				LightSortCorrect = -0x140;
+			}
+			else {
+				LightSortCorrect = -200;
+			}
+		}
+	}
+	local_190.vz = local_178;
+	local_168 = local_158;
+	SetRotMatrix(&(cp->hd).drawCarMat);
+	local_b0 = 0;
+	local_a8 = 0;
+	local_a0.vx = 0;
+	local_a0.vy = 0;
+	local_a0.vz = -500;
+	_MatrixRotate(&local_a0);
+	local_a0.vx = local_a0.vx + (cp->hd).where.t[0];
+	local_a0.vy = local_a0.vy + (cp->hd).where.t[1];
+	local_a0.vz = local_a0.vz + (cp->hd).where.t[2];
+	iVar5 = MapHeight(&local_a0);
+	puVar14 = puVar7;
+	iVar16 = 0;
+	while (true) {
+		bVar2 = iVar16 < 4;
+		if (iVar17 == 3) {
+			bVar2 = iVar16 < 0xc;
+		}
+		if (!bVar2) break;
+		pos->vy = 0;
+		_MatrixRotate(pos);
+		local_90 = pos->vx + (cp->hd).where.t[0];
+		local_8c = pos->vy + (cp->hd).where.t[1];
+		iVar18 = (local_90 & 0xffff) - (uint)(ushort)camera_position.vx;
+		local_88 = pos->vz + (cp->hd).where.t[2];
+		*(short *)puVar14 = (short)iVar18;
+		*(short *)(puVar14 + 1) = (short)local_88 - (short)camera_position.vz;
+		local_b0 = local_b0 + (iVar18 * 0x10000 >> 0x10);
+		local_a8 = local_a8 + *(short *)(puVar14 + 1);
+		iVar18 = MapHeight((VECTOR *)&local_90);
+		sVar9 = (short)-iVar18;
+		iVar6 = -iVar18 + iVar5;
+		if (iVar6 < 0) {
+			iVar6 = -iVar5 + iVar18;
+		}
+		if (500 < iVar6) {
+			sVar9 = (short)-iVar5;
+		}
+		pos = pos + 1;
+		puVar14 = puVar14 + 2;
+		*(short *)((int)&local_340 + iVar16 * 8 + 2) = sVar9 - (short)camera_position.vy;
+		iVar16 = iVar16 + 1;
+	}
+	local_80 = ((int)local_340._2_2_ * (int)(short)local_334 -
+		(int)(short)local_33c * (int)local_338._2_2_) + 0x800 >> 0xc;
+	local_7c = ((int)(short)local_33c * (int)(short)local_338 -
+		(int)(short)local_340 * (int)(short)local_334) + 0x800 >> 0xc;
+	local_78 = ((int)(short)local_340 * (int)local_338._2_2_ -
+		(int)local_340._2_2_ * (int)(short)local_338) + 0x800 >> 0xc;
+	iVar18 = local_78 * (short)local_32c;
+	iVar5 = local_80 * (short)local_330 + local_7c * local_330._2_2_ + iVar18;
+	if (-1 < iVar5) {
+		if (iVar16 == 0) {
+			trap(7);
+			trap(7);
+		}
+		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+		setCopControlWord(2, 0x2800, dummy.vx);
+		setCopControlWord(2, 0x3000, dummy.vy);
+		setCopControlWord(2, 0x3800, dummy.vz);
+		if (iVar17 == 0) {
+			setCopReg(2, in_zero, local_340);
+			setCopReg(2, in_at, local_33c);
+			setCopReg(2, 0xacad0, local_338);
+			setCopReg(2, 0xa187c, local_334);
+			setCopReg(2, iVar5, local_330);
+			setCopReg(2, iVar18, local_32c);
+			copFunction(2, 0x280030);
+			puVar10 = (uint *)current->primptr;
+			*(uchar *)(puVar10 + 3) = light_pool_texture.coords.u0;
+			*(uchar *)((int)puVar10 + 0xd) = light_pool_texture.coords.v0;
+			*(uchar *)(puVar10 + 5) = light_pool_texture.coords.u1;
+			*(uchar *)((int)puVar10 + 0x15) = light_pool_texture.coords.v1;
+			*(uchar *)(puVar10 + 7) = light_pool_texture.coords.u2;
+			*(uchar *)((int)puVar10 + 0x1d) = light_pool_texture.coords.v2;
+			*(uchar *)(puVar10 + 9) = light_pool_texture.coords.u3;
+			uVar4 = light_pool_texture.coords.v3;
+			*(char *)((int)puVar10 + 3) = '\t';
+			*(char *)((int)puVar10 + 7) = '.';
+			*(uchar *)((int)puVar10 + 0x25) = uVar4;
+			*(uchar *)(puVar10 + 1) = col->r >> 1;
+			*(byte *)((int)puVar10 + 5) = col->b >> 1;
+			*(byte *)((int)puVar10 + 6) = col->g >> 1;
+			uVar15 = getCopReg(2, 0xc);
+			puVar10[2] = uVar15;
+			uVar15 = getCopReg(2, 0xd);
+			puVar10[4] = uVar15;
+			uVar15 = getCopReg(2, 0xe);
+			puVar10[6] = uVar15;
+			pDVar3 = current;
+			local_30 = getCopReg(2, 0x13);
+			if (0x28 < local_30) {
+				local_30 = local_30 + -0x28;
+			}
+			if (0x31 < local_30) {
+				setCopReg(2, in_zero, local_328);
+				setCopReg(2, in_at, local_324);
+				copFunction(2, 0x180001);
+				*(ushort *)((int)puVar10 + 0x16) = light_pool_texture.tpageid | 0x20;
+				*(ushort *)((int)puVar10 + 0xe) = light_pool_texture.clutid;
+				*puVar10 = *puVar10 & 0xff000000 | pDVar3->ot[local_30 >> 3] & 0xffffff;
+				pDVar3->ot[local_30 >> 3] =
+					pDVar3->ot[local_30 >> 3] & 0xff000000 | (uint)puVar10 & 0xffffff;
+				pDVar3->primptr = pDVar3->primptr + 0x28;
+				uVar15 = getCopReg(2, 0xe);
+				puVar10[8] = uVar15;
+			}
+		}
+		else {
+			if (iVar17 == 3) {
+				iVar17 = 0xb;
+				pSVar8 = local_268;
+				do {
+					setCopReg(2, in_zero, *puVar7);
+					setCopReg(2, in_at, puVar7[1]);
+					copFunction(2, 0x480012);
+					uVar11 = getCopReg(2, 0x4800);
+					uVar12 = getCopReg(2, 0x5000);
+					uVar13 = getCopReg(2, 0x5800);
+					pSVar8->vx = (short)uVar11;
+					pSVar8->vy = (short)uVar12;
+					pSVar8->vz = (short)uVar13;
+					pSVar8 = pSVar8 + 1;
+					iVar17 = iVar17 + -1;
+					puVar7 = puVar7 + 2;
+				} while (-1 < iVar17);
+				uVar15 = 0;
+				do {
+					iVar17 = uVar15 * 4;
+					spolys = (POLY_F3 *)current->primptr;
+					SetRotMatrix(&tempmatrix);
+					setCopControlWord(2, 0x2800, dummy.vx);
+					setCopControlWord(2, 0x3000, dummy.vy);
+					setCopControlWord(2, 0x3800, dummy.vz);
+					bVar1 = RightLight;
+					if ((uVar15 & 2) != 0) {
+						bVar1 = LeftLight;
+					}
+					sVar9 = (ushort)bVar1 * 4 + (ushort)bVar1;
+					light_col = sVar9 * 0x10;
+					if (sVar9 != 0) {
+						if ((uVar15 & 1) == 0) {
+							sQuad(local_268 + (byte)(&CHAR_08h_0009c00d)[iVar17],
+								local_268 + (byte)s__0009c00f[iVar17],
+								local_268 + (byte)(&CHAR_02h_0009c00e)[iVar17],
+								local_268 + (byte)(&PoolPrimData)[iVar17]);
+						}
+						else {
+							sQuad(local_268 + (byte)(&PoolPrimData)[iVar17],
+								local_268 + (byte)(&CHAR_02h_0009c00e)[iVar17],
+								local_268 + (byte)s__0009c00f[iVar17],
+								local_268 + (byte)(&CHAR_08h_0009c00d)[iVar17]);
+						}
+						*(POLY_F3 **)&current->primptr = spolys;
+					}
+					uVar15 = uVar15 + 1;
+				} while ((int)uVar15 < 4);
+			}
+		}
+		LightSortCorrect = -10;
+	}
+	return;*/
 }
 
 
@@ -600,16 +601,19 @@ void PlacePoolForCar(_CAR_DATA *cp,CVECTOR *col,int front)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int AllocateLeaf(void)
-
 {
-  short *psVar1;
-  
-  if (0x31 < next_leaf) {
-    return -1;
-  }
-  psVar1 = leaf_alloc + next_leaf;
-  next_leaf = next_leaf + 1;
-  return (int)*psVar1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	short *psVar1;
+
+	if (0x31 < next_leaf) {
+		return -1;
+	}
+	psVar1 = leaf_alloc + next_leaf;
+	next_leaf = next_leaf + 1;
+	return (int)*psVar1;
+	*/
 }
 
 
@@ -629,11 +633,13 @@ int AllocateLeaf(void)
 	// End Line: 12097
 
 void ReleaseLeaf(short num)
-
 {
-  next_leaf = next_leaf + -1;
-  leaf_alloc[next_leaf] = num;
-  return;
+	UNIMPLEMENTED();
+	/*
+	next_leaf = next_leaf + -1;
+	leaf_alloc[next_leaf] = num;
+	return;
+	*/
 }
 
 
@@ -696,97 +702,98 @@ void ReleaseLeaf(short num)
 	/* end block 3 */
 	// End Line: 2990
 
-void AddLeaf(VECTOR *Position,int num_leaves,int Type)
-
+void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 {
-  byte bVar1;
-  byte bVar2;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
-  uint uVar6;
-  uint uVar7;
-  long lVar8;
-  int iVar9;
-  
-  if (gDoLeaves != 0) {
-    iVar9 = 0;
-    Position->vy = -Position->vy;
-    iVar3 = MapHeight(Position);
-    Position->pad = iVar3;
-    if (0 < num_leaves) {
-      do {
-        uVar4 = rand();
-        iVar3 = AllocateLeaf();
-        if (iVar3 < 0) {
-          return;
-        }
-        leaf[iVar3].position.vx = Position->vx + (uVar4 & 0xfe);
-        leaf[iVar3].position.vz = Position->vz + ((int)uVar4 >> 8 & 0xfeU);
-        if (Type == 1) {
-          iVar5 = Position->vy;
-        }
-        else {
-          iVar5 = Position->pad;
-        }
-        leaf[iVar3].position.vy = -iVar5;
-        lVar8 = Position->pad;
-        leaf[iVar3].life = 600;
-        leaf[iVar3].flags = 2;
-        bVar1 = (byte)uVar4;
-        leaf[iVar3].direction.vx = 0;
-        leaf[iVar3].direction.vy = 0;
-        leaf[iVar3].direction.vz = 0;
-        leaf[iVar3].pos = (ushort)((int)uVar4 >> 7) & 0xff;
-        leaf[iVar3].step = (bVar1 & 7) + 1;
-        leaf[iVar3].position.pad = lVar8;
-        if (Type == 1) {
-          if ((uVar4 & 3) == 0) {
-            leaf[iVar3].rgb.r = 'n';
-            bVar2 = 0xf;
-            leaf[iVar3].rgb.g = 'p';
-            goto LAB_000336f4;
-          }
-          if ((uVar4 & 3) != 1) {
-            leaf[iVar3].rgb.r = '<';
-            bVar2 = 0x1e;
-            leaf[iVar3].rgb.g = '2';
-            goto LAB_000336f4;
-          }
-          leaf[iVar3].rgb.r = '\x14';
-          leaf[iVar3].rgb.g = ',';
-          leaf[iVar3].rgb.b = '\0';
-        }
-        else {
-          bVar2 = bVar1 & 0x1f;
-          leaf[iVar3].rgb.r = bVar2;
-          leaf[iVar3].rgb.g = bVar2;
-LAB_000336f4:
-          leaf[iVar3].rgb.b = bVar2;
-        }
-        if (gTimeOfDay == 3) {
-          uVar7 = 0x3f3f3f3f;
-          uVar6 = (int)leaf[iVar3].rgb >> 2;
-LAB_00033744:
-          *(uint *)&leaf[iVar3].rgb = uVar6 & uVar7;
-        }
-        else {
-          if (gWeather - 1U < 2) {
-            uVar7 = 0x7f7f7f7f;
-            uVar6 = (int)leaf[iVar3].rgb >> 1;
-            goto LAB_00033744;
-          }
-        }
-        iVar9 = iVar9 + 1;
-        leaf[iVar3].sin_index1 = (ushort)uVar4 & 0xfff;
-        leaf[iVar3].sin_index2 = (ushort)((int)uVar4 >> 4) & 0xfff;
-        leaf[iVar3].sin_addition2 = -((byte)(uVar4 >> 8) & 7);
-        leaf[iVar3].sin_addition1 = -(bVar1 & 3);
-        leaf[iVar3].type = (char)Type;
-      } while (iVar9 < num_leaves);
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	byte bVar2;
+	int iVar3;
+	uint uVar4;
+	int iVar5;
+	uint uVar6;
+	uint uVar7;
+	long lVar8;
+	int iVar9;
+
+	if (gDoLeaves != 0) {
+		iVar9 = 0;
+		Position->vy = -Position->vy;
+		iVar3 = MapHeight(Position);
+		Position->pad = iVar3;
+		if (0 < num_leaves) {
+			do {
+				uVar4 = rand();
+				iVar3 = AllocateLeaf();
+				if (iVar3 < 0) {
+					return;
+				}
+				leaf[iVar3].position.vx = Position->vx + (uVar4 & 0xfe);
+				leaf[iVar3].position.vz = Position->vz + ((int)uVar4 >> 8 & 0xfeU);
+				if (Type == 1) {
+					iVar5 = Position->vy;
+				}
+				else {
+					iVar5 = Position->pad;
+				}
+				leaf[iVar3].position.vy = -iVar5;
+				lVar8 = Position->pad;
+				leaf[iVar3].life = 600;
+				leaf[iVar3].flags = 2;
+				bVar1 = (byte)uVar4;
+				leaf[iVar3].direction.vx = 0;
+				leaf[iVar3].direction.vy = 0;
+				leaf[iVar3].direction.vz = 0;
+				leaf[iVar3].pos = (ushort)((int)uVar4 >> 7) & 0xff;
+				leaf[iVar3].step = (bVar1 & 7) + 1;
+				leaf[iVar3].position.pad = lVar8;
+				if (Type == 1) {
+					if ((uVar4 & 3) == 0) {
+						leaf[iVar3].rgb.r = 'n';
+						bVar2 = 0xf;
+						leaf[iVar3].rgb.g = 'p';
+						goto LAB_000336f4;
+					}
+					if ((uVar4 & 3) != 1) {
+						leaf[iVar3].rgb.r = '<';
+						bVar2 = 0x1e;
+						leaf[iVar3].rgb.g = '2';
+						goto LAB_000336f4;
+					}
+					leaf[iVar3].rgb.r = '\x14';
+					leaf[iVar3].rgb.g = ',';
+					leaf[iVar3].rgb.b = '\0';
+				}
+				else {
+					bVar2 = bVar1 & 0x1f;
+					leaf[iVar3].rgb.r = bVar2;
+					leaf[iVar3].rgb.g = bVar2;
+				LAB_000336f4:
+					leaf[iVar3].rgb.b = bVar2;
+				}
+				if (gTimeOfDay == 3) {
+					uVar7 = 0x3f3f3f3f;
+					uVar6 = (int)leaf[iVar3].rgb >> 2;
+				LAB_00033744:
+					*(uint *)&leaf[iVar3].rgb = uVar6 & uVar7;
+				}
+				else {
+					if (gWeather - 1U < 2) {
+						uVar7 = 0x7f7f7f7f;
+						uVar6 = (int)leaf[iVar3].rgb >> 1;
+						goto LAB_00033744;
+					}
+				}
+				iVar9 = iVar9 + 1;
+				leaf[iVar3].sin_index1 = (ushort)uVar4 & 0xfff;
+				leaf[iVar3].sin_index2 = (ushort)((int)uVar4 >> 4) & 0xfff;
+				leaf[iVar3].sin_addition2 = -((byte)(uVar4 >> 8) & 7);
+				leaf[iVar3].sin_addition1 = -(bVar1 & 3);
+				leaf[iVar3].type = (char)Type;
+			} while (iVar9 < num_leaves);
+		}
+	}
+	return;*/
 }
 
 
@@ -832,36 +839,38 @@ LAB_00033744:
 	// End Line: 17534
 
 void SwirlLeaves(_CAR_DATA *cp)
-
 {
-  int iVar1;
-  int iVar2;
-  LEAF *pLVar3;
-  int iVar4;
-  
-  if (cp < car_data) {
-    while (FrameCnt != 0x78654321) {
-      trap(0x400);
-    }
-  }
-  if (((0x1d4be < (cp->hd).wheel_speed + 39999U) && (gDoLeaves != 0)) &&
-     (pLVar3 = leaf, pauseflag == 0)) {
-    iVar4 = 0x31;
-    do {
-      if ((((pLVar3->flags & 2) != 0) && (-0xb4 < (pLVar3->position).vy + (cp->hd).where.t[1])) &&
-         ((iVar2 = (cp->hd).where.t[2] - (pLVar3->position).vz,
-          ((cp->hd).where.t[0] - (pLVar3->position).vx) + 0x167U < 0x2cf &&
-          ((iVar2 < 0x168 && (-0x168 < iVar2)))))) {
-        iVar2 = rand();
-        iVar1 = (pLVar3->position).vy;
-        (pLVar3->direction).vy = -0x19 - ((ushort)iVar2 & 0x1f);
-        (pLVar3->position).vy = iVar1 + -1;
-      }
-      iVar4 = iVar4 + -1;
-      pLVar3 = pLVar3 + 1;
-    } while (-1 < iVar4);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	LEAF *pLVar3;
+	int iVar4;
+
+	if (cp < car_data) {
+		while (FrameCnt != 0x78654321) {
+			trap(0x400);
+		}
+	}
+	if (((0x1d4be < (cp->hd).wheel_speed + 39999U) && (gDoLeaves != 0)) &&
+		(pLVar3 = leaf, pauseflag == 0)) {
+		iVar4 = 0x31;
+		do {
+			if ((((pLVar3->flags & 2) != 0) && (-0xb4 < (pLVar3->position).vy + (cp->hd).where.t[1])) &&
+				((iVar2 = (cp->hd).where.t[2] - (pLVar3->position).vz,
+				((cp->hd).where.t[0] - (pLVar3->position).vx) + 0x167U < 0x2cf &&
+					((iVar2 < 0x168 && (-0x168 < iVar2)))))) {
+				iVar2 = rand();
+				iVar1 = (pLVar3->position).vy;
+				(pLVar3->direction).vy = -0x19 - ((ushort)iVar2 & 0x1f);
+				(pLVar3->position).vy = iVar1 + -1;
+			}
+			iVar4 = iVar4 + -1;
+			pLVar3 = pLVar3 + 1;
+		} while (-1 < iVar4);
+	}
+	return;
+	*/
 }
 
 
@@ -890,60 +899,62 @@ void SwirlLeaves(_CAR_DATA *cp)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitDebrisNames(void)
-
 {
-  GetTextureDetails(s_SMOKE_000aa23c,&smoke_texture);
-  GetTextureDetails(s_DEBRIS_000aa244,&debris_texture);
-  GetTextureDetails(s_LITTER_000aa24c,&litter_texture);
-  GetTextureDetails(s_COPLIGHT_000105f8,&cop_texture);
-  GetTextureDetails(s_LIGHT_000aa254,&light_texture);
-  GetTextureDetails(&DAT_000aa25c,&gTyreTexture);
-  GetTextureDetails(s_FLARE_000aa264,&flare_texture);
-  GetTextureDetails(s_SPLASH_000aa26c,&sea_texture);
-  GetTextureDetails(s_SWBIRD1_000aa274,&bird_texture1);
-  GetTextureDetails(s_SWBIRD2_000aa27c,&bird_texture2);
-  GetTextureDetails(s_LENSFLR_000aa284,&lensflare_texture);
-  GetTextureDetails(s_SKYSUN_000aa28c,&sun_texture);
-  GetTextureDetails(s_SKYMOON_000aa294,&moon_texture);
-  GetTextureDetails(&DAT_000aa29c,&drop_texture);
-  GetTextureDetails(s_DIGIT_000aa2a4,&digit_texture);
-  SetCLUT16Flags(digit_texture.clutid,6,'\0');
-  GetTextureDetails(s_COLLON_000aa2ac,&collon_texture);
-  GetTextureDetails(s_JEANS1_000aa2b4,&jeans_texture);
-  GetTextureDetails(&DAT_000aa2bc,&arm1_texture);
-  GetTextureDetails(s_FOREARM1_00010604,&forearm1_texture);
-  GetTextureDetails(s_CHEST1_000aa2c4,&chest1_texture);
-  GetTextureDetails(s_LOWHEAD_000aa2cc,&head1_texture);
-  GetTextureDetails(s_ADDCAM_000aa2d4,&addcam);
-  GetTextureDetails(s_FRAMEADV_00010610,&frameadv);
-  GetTextureDetails(&DAT_000aa2dc,&autocam);
-  GetTextureDetails(s_CHASEC_000aa2e4,&chasecar);
-  GetTextureDetails(s_CHOOSECA_0001061c,&choosecar);
-  GetTextureDetails(s_CLOCK_000aa2ec,&clock);
-  GetTextureDetails(s_DELCAM_000aa2f4,&delcam);
-  GetTextureDetails(s_EDITCAM_000aa2fc,&editcam);
-  GetTextureDetails(s_FIXEDCA_000aa304,&fixedcam);
-  GetTextureDetails(s_INCAR_000aa30c,&incar);
-  GetTextureDetails(s_LENSCHA_000aa314,&lenschan);
-  GetTextureDetails(s_LOOKCAR_000aa31c,&lookcar);
-  GetTextureDetails(s_MOVECMP_000aa324,&movecam);
-  GetTextureDetails(s_MOVECAM_000aa32c,&movecampos);
-  GetTextureDetails((char *)&PTR_DAT_000aa334,&ok);
-  GetTextureDetails(s_PAUSE_000aa338,&pause);
-  GetTextureDetails(s_PLAYCAM_000aa340,&playcam);
-  GetTextureDetails(s_PLAYPAU_000aa348,&playpause);
-  GetTextureDetails(s_SAVE2CA_000aa350,&save2card);
-  GetTextureDetails(s_RESTREP_000aa358,&restart);
-  GetTextureDetails(s_HEAD1_000aa360,&texturePedHead);
-  GetTextureDetails(s_TSHADOW_000aa368,&tannerShadow_texture);
-  texture_is_icon = 0;
-  head1_texture.coords.u1 = head1_texture.coords.u0 + '\b';
-  head1_texture.coords.u3 = head1_texture.coords.u1;
-  GetTextureDetails(s_LIGHTREF_00010628,&lightref_texture);
-  GetTextureDetails(s_LIGHT_000aa254,&light_pool_texture);
-  InitButtonTextures();
-  InitTannerShadow();
-  return;
+	UNIMPLEMENTED();
+	/*
+	GetTextureDetails(s_SMOKE_000aa23c, &smoke_texture);
+	GetTextureDetails(s_DEBRIS_000aa244, &debris_texture);
+	GetTextureDetails(s_LITTER_000aa24c, &litter_texture);
+	GetTextureDetails(s_COPLIGHT_000105f8, &cop_texture);
+	GetTextureDetails(s_LIGHT_000aa254, &light_texture);
+	GetTextureDetails(&DAT_000aa25c, &gTyreTexture);
+	GetTextureDetails(s_FLARE_000aa264, &flare_texture);
+	GetTextureDetails(s_SPLASH_000aa26c, &sea_texture);
+	GetTextureDetails(s_SWBIRD1_000aa274, &bird_texture1);
+	GetTextureDetails(s_SWBIRD2_000aa27c, &bird_texture2);
+	GetTextureDetails(s_LENSFLR_000aa284, &lensflare_texture);
+	GetTextureDetails(s_SKYSUN_000aa28c, &sun_texture);
+	GetTextureDetails(s_SKYMOON_000aa294, &moon_texture);
+	GetTextureDetails(&DAT_000aa29c, &drop_texture);
+	GetTextureDetails(s_DIGIT_000aa2a4, &digit_texture);
+	SetCLUT16Flags(digit_texture.clutid, 6, '\0');
+	GetTextureDetails(s_COLLON_000aa2ac, &collon_texture);
+	GetTextureDetails(s_JEANS1_000aa2b4, &jeans_texture);
+	GetTextureDetails(&DAT_000aa2bc, &arm1_texture);
+	GetTextureDetails(s_FOREARM1_00010604, &forearm1_texture);
+	GetTextureDetails(s_CHEST1_000aa2c4, &chest1_texture);
+	GetTextureDetails(s_LOWHEAD_000aa2cc, &head1_texture);
+	GetTextureDetails(s_ADDCAM_000aa2d4, &addcam);
+	GetTextureDetails(s_FRAMEADV_00010610, &frameadv);
+	GetTextureDetails(&DAT_000aa2dc, &autocam);
+	GetTextureDetails(s_CHASEC_000aa2e4, &chasecar);
+	GetTextureDetails(s_CHOOSECA_0001061c, &choosecar);
+	GetTextureDetails(s_CLOCK_000aa2ec, &clock);
+	GetTextureDetails(s_DELCAM_000aa2f4, &delcam);
+	GetTextureDetails(s_EDITCAM_000aa2fc, &editcam);
+	GetTextureDetails(s_FIXEDCA_000aa304, &fixedcam);
+	GetTextureDetails(s_INCAR_000aa30c, &incar);
+	GetTextureDetails(s_LENSCHA_000aa314, &lenschan);
+	GetTextureDetails(s_LOOKCAR_000aa31c, &lookcar);
+	GetTextureDetails(s_MOVECMP_000aa324, &movecam);
+	GetTextureDetails(s_MOVECAM_000aa32c, &movecampos);
+	GetTextureDetails((char *)&PTR_DAT_000aa334, &ok);
+	GetTextureDetails(s_PAUSE_000aa338, &pause);
+	GetTextureDetails(s_PLAYCAM_000aa340, &playcam);
+	GetTextureDetails(s_PLAYPAU_000aa348, &playpause);
+	GetTextureDetails(s_SAVE2CA_000aa350, &save2card);
+	GetTextureDetails(s_RESTREP_000aa358, &restart);
+	GetTextureDetails(s_HEAD1_000aa360, &texturePedHead);
+	GetTextureDetails(s_TSHADOW_000aa368, &tannerShadow_texture);
+	texture_is_icon = 0;
+	head1_texture.coords.u1 = head1_texture.coords.u0 + '\b';
+	head1_texture.coords.u3 = head1_texture.coords.u1;
+	GetTextureDetails(s_LIGHTREF_00010628, &lightref_texture);
+	GetTextureDetails(s_LIGHT_000aa254, &light_pool_texture);
+	InitButtonTextures();
+	InitTannerShadow();
+	return;
+	*/
 }
 
 
@@ -1002,149 +1013,150 @@ void InitDebrisNames(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitDebris(void)
-
 {
-  char *pcVar1;
-  long *plVar2;
-  DAMAGED_LAMP *pDVar3;
-  long *plVar4;
-  undefined *puVar5;
-  VECTOR *pVVar6;
-  long lVar7;
-  long lVar8;
-  long lVar9;
-  int iVar10;
-  int iVar11;
-  long local_50;
-  undefined local_4c;
-  undefined local_48;
-  long local_44;
-  undefined local_40;
-  undefined local_3c;
-  undefined local_38 [4];
-  undefined local_34;
-  undefined local_30;
-  
-  iVar10 = 0x13;
-  pcVar1 = &Known_Lamps[0x13].set;
-  texture_is_icon = 0;
-  do {
-    *pcVar1 = '\0';
-    iVar10 = iVar10 + -1;
-    pcVar1 = pcVar1 + -0x18;
-  } while (-1 < iVar10);
-  StreakCount1 = 0;
-  main_cop_light_pos = rand();
-  next_debris = 0;
-  main_cop_light_pos = main_cop_light_pos % 7;
-  do {
-    iVar10 = next_debris + 1;
-    (&debris_alloc)[next_debris] = (ushort)next_debris;
-    debris[next_debris].pos = 0;
-    debris[next_debris].num = (ushort)next_debris;
-    next_debris = iVar10;
-  } while (iVar10 < 0x3c);
-  next_debris = 0;
-  do {
-    iVar10 = next_debris + 1;
-    ground_debris[next_debris].type = 0xffff;
-    next_debris = iVar10;
-  } while (iVar10 < 0x10);
-  groundDebrisIndex = 0;
-  debris_rotvec.vz = 0;
-  debris_rotvec.vy = 0;
-  debris_rotvec.vx = 0;
-  leaf_rotvec.vz = 0;
-  leaf_rotvec.vy = 0;
-  leaf_rotvec.vx = 0;
-  next_debris = 0;
-  do {
-    RotMatrixXYZ(&debris_mat,&debris_rotvec);
-    RotMatrixXYZ(&leaf_mat,&leaf_rotvec);
-    iVar10 = 0;
-    do {
-      if (iVar10 == 1) {
-        SetRotMatrix(&leaf_mat);
-      }
-      else {
-        SetRotMatrix(&debris_mat);
-      }
-      plVar2 = (long *)debris_data5[iVar10];
-      iVar11 = iVar10 + 1;
-      plVar4 = plVar2 + 8;
-      pVVar6 = (VECTOR *)&local_50;
-      do {
-        lVar7 = plVar2[1];
-        lVar8 = plVar2[2];
-        lVar9 = plVar2[3];
-        pVVar6->vx = *plVar2;
-        pVVar6->vy = lVar7;
-        pVVar6->vz = lVar8;
-        pVVar6->pad = lVar9;
-        plVar2 = plVar2 + 4;
-        pVVar6 = pVVar6 + 1;
-      } while (plVar2 != plVar4);
-      pVVar6->vx = *plVar2;
-      _MatrixRotate((VECTOR *)&local_50);
-      _MatrixRotate((VECTOR *)&local_44);
-      _MatrixRotate((VECTOR *)local_38);
-      puVar5 = debris_rot_table5[iVar10] + next_debris * 0xc;
-      *puVar5 = (undefined)local_50;
-      puVar5[1] = local_4c;
-      puVar5[2] = local_48;
-      puVar5[4] = (undefined)local_44;
-      puVar5[5] = local_40;
-      puVar5[6] = local_3c;
-      puVar5[8] = local_38[0];
-      puVar5[9] = local_34;
-      puVar5[10] = local_30;
-      iVar10 = iVar11;
-    } while (iVar11 < 5);
-    debris_rotvec.vx = debris_rotvec.vx + 0x80;
-    debris_rotvec.vy = debris_rotvec.vy + 0x100;
-    debris_rotvec.vz = debris_rotvec.vz + 0x80;
-    leaf_rotvec.vy = leaf_rotvec.vy + 0x80;
-    next_debris = next_debris + 1;
-  } while (next_debris < 0x20);
-  next_debris = 0;
-  next_smoke = 0;
-  do {
-    smoke_alloc[next_smoke] = (short)next_smoke;
-    iVar10 = next_smoke + 1;
-    smoke[next_smoke].pos = '\0';
-    smoke[next_smoke].flags = 0;
-    smoke[next_smoke].num = (uchar)next_smoke;
-    next_smoke = iVar10;
-  } while (iVar10 < 0x50);
-  next_smoke = 0;
-  smoke_table = (SMOKE *)0x0;
-  next_leaf = 0;
-  do {
-    iVar11 = next_leaf + 1;
-    leaf_alloc[next_leaf] = (ushort)next_leaf;
-    leaf[next_leaf].pos = 0;
-    leaf[next_leaf].num = (ushort)next_leaf;
-    iVar10 = 3;
-    next_leaf = iVar11;
-  } while (iVar11 < 0x32);
-  pDVar3 = DAMAGED_LAMP_ARRAY_000c1b50;
-  next_leaf = 0;
-  NextDamagedLamp = 0;
-  do {
-    pDVar3->cop = (CELL_OBJECT *)0x0;
-    iVar10 = iVar10 + -1;
-    pDVar3 = pDVar3 + -1;
-  } while (-1 < iVar10);
-  iVar10 = 7;
-  pcVar1 = &damaged_object[7].active;
-  do {
-    *pcVar1 = '\0';
-    iVar10 = iVar10 + -1;
-    pcVar1 = pcVar1 + -0x24;
-  } while (-1 < iVar10);
-  LightSortCorrect = -10;
-  SmashablesHit = 0;
-  return;
+	UNIMPLEMENTED();
+	/*
+	char *pcVar1;
+	long *plVar2;
+	DAMAGED_LAMP *pDVar3;
+	long *plVar4;
+	undefined *puVar5;
+	VECTOR *pVVar6;
+	long lVar7;
+	long lVar8;
+	long lVar9;
+	int iVar10;
+	int iVar11;
+	long local_50;
+	undefined local_4c;
+	undefined local_48;
+	long local_44;
+	undefined local_40;
+	undefined local_3c;
+	undefined local_38[4];
+	undefined local_34;
+	undefined local_30;
+
+	iVar10 = 0x13;
+	pcVar1 = &Known_Lamps[0x13].set;
+	texture_is_icon = 0;
+	do {
+		*pcVar1 = '\0';
+		iVar10 = iVar10 + -1;
+		pcVar1 = pcVar1 + -0x18;
+	} while (-1 < iVar10);
+	StreakCount1 = 0;
+	main_cop_light_pos = rand();
+	next_debris = 0;
+	main_cop_light_pos = main_cop_light_pos % 7;
+	do {
+		iVar10 = next_debris + 1;
+		(&debris_alloc)[next_debris] = (ushort)next_debris;
+		debris[next_debris].pos = 0;
+		debris[next_debris].num = (ushort)next_debris;
+		next_debris = iVar10;
+	} while (iVar10 < 0x3c);
+	next_debris = 0;
+	do {
+		iVar10 = next_debris + 1;
+		ground_debris[next_debris].type = 0xffff;
+		next_debris = iVar10;
+	} while (iVar10 < 0x10);
+	groundDebrisIndex = 0;
+	debris_rotvec.vz = 0;
+	debris_rotvec.vy = 0;
+	debris_rotvec.vx = 0;
+	leaf_rotvec.vz = 0;
+	leaf_rotvec.vy = 0;
+	leaf_rotvec.vx = 0;
+	next_debris = 0;
+	do {
+		RotMatrixXYZ(&debris_mat, &debris_rotvec);
+		RotMatrixXYZ(&leaf_mat, &leaf_rotvec);
+		iVar10 = 0;
+		do {
+			if (iVar10 == 1) {
+				SetRotMatrix(&leaf_mat);
+			}
+			else {
+				SetRotMatrix(&debris_mat);
+			}
+			plVar2 = (long *)debris_data5[iVar10];
+			iVar11 = iVar10 + 1;
+			plVar4 = plVar2 + 8;
+			pVVar6 = (VECTOR *)&local_50;
+			do {
+				lVar7 = plVar2[1];
+				lVar8 = plVar2[2];
+				lVar9 = plVar2[3];
+				pVVar6->vx = *plVar2;
+				pVVar6->vy = lVar7;
+				pVVar6->vz = lVar8;
+				pVVar6->pad = lVar9;
+				plVar2 = plVar2 + 4;
+				pVVar6 = pVVar6 + 1;
+			} while (plVar2 != plVar4);
+			pVVar6->vx = *plVar2;
+			_MatrixRotate((VECTOR *)&local_50);
+			_MatrixRotate((VECTOR *)&local_44);
+			_MatrixRotate((VECTOR *)local_38);
+			puVar5 = debris_rot_table5[iVar10] + next_debris * 0xc;
+			*puVar5 = (undefined)local_50;
+			puVar5[1] = local_4c;
+			puVar5[2] = local_48;
+			puVar5[4] = (undefined)local_44;
+			puVar5[5] = local_40;
+			puVar5[6] = local_3c;
+			puVar5[8] = local_38[0];
+			puVar5[9] = local_34;
+			puVar5[10] = local_30;
+			iVar10 = iVar11;
+		} while (iVar11 < 5);
+		debris_rotvec.vx = debris_rotvec.vx + 0x80;
+		debris_rotvec.vy = debris_rotvec.vy + 0x100;
+		debris_rotvec.vz = debris_rotvec.vz + 0x80;
+		leaf_rotvec.vy = leaf_rotvec.vy + 0x80;
+		next_debris = next_debris + 1;
+	} while (next_debris < 0x20);
+	next_debris = 0;
+	next_smoke = 0;
+	do {
+		smoke_alloc[next_smoke] = (short)next_smoke;
+		iVar10 = next_smoke + 1;
+		smoke[next_smoke].pos = '\0';
+		smoke[next_smoke].flags = 0;
+		smoke[next_smoke].num = (uchar)next_smoke;
+		next_smoke = iVar10;
+	} while (iVar10 < 0x50);
+	next_smoke = 0;
+	smoke_table = (SMOKE *)0x0;
+	next_leaf = 0;
+	do {
+		iVar11 = next_leaf + 1;
+		leaf_alloc[next_leaf] = (ushort)next_leaf;
+		leaf[next_leaf].pos = 0;
+		leaf[next_leaf].num = (ushort)next_leaf;
+		iVar10 = 3;
+		next_leaf = iVar11;
+	} while (iVar11 < 0x32);
+	pDVar3 = DAMAGED_LAMP_ARRAY_000c1b50;
+	next_leaf = 0;
+	NextDamagedLamp = 0;
+	do {
+		pDVar3->cop = (CELL_OBJECT *)0x0;
+		iVar10 = iVar10 + -1;
+		pDVar3 = pDVar3 + -1;
+	} while (-1 < iVar10);
+	iVar10 = 7;
+	pcVar1 = &damaged_object[7].active;
+	do {
+		*pcVar1 = '\0';
+		iVar10 = iVar10 + -1;
+		pcVar1 = pcVar1 + -0x24;
+	} while (-1 < iVar10);
+	LightSortCorrect = -10;
+	SmashablesHit = 0;
+	return;*/
 }
 
 
@@ -1171,16 +1183,18 @@ void InitDebris(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int AllocateDebris(void)
-
 {
-  short *psVar1;
-  
-  if (0x3b < next_debris) {
-    return -1;
-  }
-  psVar1 = &debris_alloc + next_debris;
-  next_debris = next_debris + 1;
-  return (int)*psVar1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	short *psVar1;
+
+	if (0x3b < next_debris) {
+		return -1;
+	}
+	psVar1 = &debris_alloc + next_debris;
+	next_debris = next_debris + 1;
+	return (int)*psVar1;*/
 }
 
 
@@ -1205,11 +1219,12 @@ int AllocateDebris(void)
 	// End Line: 12487
 
 void ReleaseDebris(short num)
-
 {
-  next_debris = next_debris + -1;
-  (&debris_alloc)[next_debris] = num;
-  return;
+	UNIMPLEMENTED();
+	/*
+	next_debris = next_debris + -1;
+	(&debris_alloc)[next_debris] = num;
+	return;*/
 }
 
 
@@ -1236,16 +1251,19 @@ void ReleaseDebris(short num)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int AllocateSmoke(void)
-
 {
-  short *psVar1;
-  
-  if (0x4f < next_smoke) {
-    return -1;
-  }
-  psVar1 = smoke_alloc + next_smoke;
-  next_smoke = next_smoke + 1;
-  return (int)*psVar1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	short *psVar1;
+
+	if (0x4f < next_smoke) {
+		return -1;
+	}
+	psVar1 = smoke_alloc + next_smoke;
+	next_smoke = next_smoke + 1;
+	return (int)*psVar1;
+	*/
 }
 
 
@@ -1265,11 +1283,12 @@ int AllocateSmoke(void)
 	// End Line: 15399
 
 void ReleaseSmoke(short num)
-
 {
-  next_smoke = next_smoke + -1;
-  smoke_alloc[next_smoke] = num;
-  return;
+	UNIMPLEMENTED();
+	/*
+	next_smoke = next_smoke + -1;
+	smoke_alloc[next_smoke] = num;
+	return;*/
 }
 
 
@@ -1325,56 +1344,57 @@ void ReleaseSmoke(short num)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void AddGroundDebris(void)
-
 {
-  uint uVar1;
-  uint uVar2;
-  int iVar3;
-  int Type;
-  CELL_OBJECT *pCVar4;
-  MODEL *pMVar5;
-  int iVar6;
-  VECTOR local_30;
-  
-  if (0x30d3e < car_data[0].hd.wheel_speed + 99999U) {
-    iVar6 = 0;
-    pCVar4 = ground_debris;
-    do {
-      if (pCVar4->type != 0xffff) {
-        Type = (pCVar4->pos).vx - camera_position.vx;
-        pMVar5 = modelpointers1536[pCVar4->type];
-        iVar3 = (pCVar4->pos).vz - camera_position.vz;
-        if (Type < 0) {
-          Type = -Type;
-        }
-        if (iVar3 < 0) {
-          iVar3 = -iVar3;
-        }
-        if (((Type < 0x2329) && (iVar3 < 0x2329)) && ((7000 < Type || (7000 < iVar3)))) {
-          if (0x27 < next_leaf) {
-            return;
-          }
-          uVar1 = rand();
-          local_30.vy = -10000;
-          local_30.vx = (pCVar4->pos).vx + ((uVar1 & 0x3ff) - 0x200);
-          uVar2 = rand();
-          local_30.vz = (pCVar4->pos).vz + ((uVar2 & 0x3ff) - 0x200);
-          uVar2 = uVar1 & 7;
-          if ((pMVar5->flags2 & 0x2000) == 0) {
-            uVar2 = uVar1 & 3;
-            Type = 2;
-          }
-          else {
-            Type = 1;
-          }
-          AddLeaf(&local_30,uVar2 + 1,Type);
-        }
-      }
-      iVar6 = iVar6 + 1;
-      pCVar4 = pCVar4 + 1;
-    } while (iVar6 < 0x10);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+	uint uVar2;
+	int iVar3;
+	int Type;
+	CELL_OBJECT *pCVar4;
+	MODEL *pMVar5;
+	int iVar6;
+	VECTOR local_30;
+
+	if (0x30d3e < car_data[0].hd.wheel_speed + 99999U) {
+		iVar6 = 0;
+		pCVar4 = ground_debris;
+		do {
+			if (pCVar4->type != 0xffff) {
+				Type = (pCVar4->pos).vx - camera_position.vx;
+				pMVar5 = modelpointers1536[pCVar4->type];
+				iVar3 = (pCVar4->pos).vz - camera_position.vz;
+				if (Type < 0) {
+					Type = -Type;
+				}
+				if (iVar3 < 0) {
+					iVar3 = -iVar3;
+				}
+				if (((Type < 0x2329) && (iVar3 < 0x2329)) && ((7000 < Type || (7000 < iVar3)))) {
+					if (0x27 < next_leaf) {
+						return;
+					}
+					uVar1 = rand();
+					local_30.vy = -10000;
+					local_30.vx = (pCVar4->pos).vx + ((uVar1 & 0x3ff) - 0x200);
+					uVar2 = rand();
+					local_30.vz = (pCVar4->pos).vz + ((uVar2 & 0x3ff) - 0x200);
+					uVar2 = uVar1 & 7;
+					if ((pMVar5->flags2 & 0x2000) == 0) {
+						uVar2 = uVar1 & 3;
+						Type = 2;
+					}
+					else {
+						Type = 1;
+					}
+					AddLeaf(&local_30, uVar2 + 1, Type);
+				}
+			}
+			iVar6 = iVar6 + 1;
+			pCVar4 = pCVar4 + 1;
+		} while (iVar6 < 0x10);
+	}
+	return;*/
 }
 
 
@@ -1433,97 +1453,98 @@ void AddGroundDebris(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DrawSmashable_sprites(void)
-
 {
-  int iVar1;
-  char *pcVar2;
-  DAMAGED_OBJECT *pDVar3;
-  MODEL *model;
-  int iVar4;
-  int local_80;
-  long local_7c;
-  int local_78;
-  undefined *local_70;
-  undefined4 local_6c;
-  undefined *local_68;
-  undefined4 local_64;
-  undefined *local_60;
-  undefined4 local_5c;
-  undefined4 local_58;
-  undefined4 local_54;
-  undefined4 local_50;
-  undefined4 local_4c;
-  undefined4 local_48;
-  undefined4 local_44;
-  undefined4 local_40;
-  long local_3c;
-  long local_38;
-  long local_34;
-  undefined *local_30;
-  
-  pDVar3 = damaged_object;
-  iVar4 = 7;
-  local_30 = PTR_DAT_00010634;
-  do {
-    if (pDVar3->active != '\0') {
-      model = modelpointers1536[(pDVar3->cop).type];
-      local_68 = PTR_DAT_0001063c;
-      local_64 = DAT_00010640;
-      local_60 = PTR_DAT_00010644;
-      local_5c = DAT_00010648;
-      local_58 = DAT_0001064c;
-      local_54 = DAT_00010650;
-      local_50 = face_camera.m[0]._0_4_;
-      local_4c = face_camera.m._4_4_;
-      local_48 = face_camera.m[1]._2_4_;
-      local_44 = face_camera.m[2]._0_4_;
-      local_40 = face_camera._16_4_;
-      local_3c = face_camera.t[0];
-      local_38 = face_camera.t[1];
-      local_70 = local_30;
-      local_6c = DAT_00010638;
-      local_34 = face_camera.t[2];
-      if ((model->shape_flags & 0x4000) == 0) {
-        RotMatrixY(pDVar3->rot_speed * (uint)(byte)pDVar3->damage * 3 & 0xfff,&local_70);
-      }
-      RotMatrixZ(pDVar3->rot_speed * (uint)(byte)pDVar3->damage & 0xfff,&local_70);
-      local_80 = pDVar3->vx - camera_position.vx;
-      local_7c = (pDVar3->cop).pos.vy - camera_position.vy;
-      local_78 = (pDVar3->cop).pos.vz - camera_position.vz;
-      Apply_Inv_CameraMatrix(&local_80);
-      setCopControlWord(2,0,local_70);
-      setCopControlWord(2,0x800,local_6c);
-      setCopControlWord(2,0x1000,local_68);
-      setCopControlWord(2,0x1800,local_64);
-      setCopControlWord(2,0x2000,local_60);
-      setCopControlWord(2,0x2800,local_80);
-      setCopControlWord(2,0x3000,local_7c);
-      setCopControlWord(2,0x3800,local_78);
-      local_80 = pDVar3->vx;
-      local_7c = (pDVar3->cop).pos.vy;
-      local_78 = (pDVar3->cop).pos.vz;
-      SetFrustrumMatrix();
-      iVar1 = FrustrumCheck(&local_80,(int)model->bounding_sphere);
-      if (iVar1 != -1) {
-        if ((model->shape_flags & 0x4000) == 0) {
-          PlotMDL_less_than_128(model);
-        }
-        else {
-          if ((gWeather - 1U < 2) || (gTimeOfDay == 3)) {
-            DAT_1f8000c0 = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
-          }
-          else {
-            DAT_1f8000c0 = 0x2c808080;
-          }
-          pcVar2 = (char *)Asm_PlotSprite(model,current->primptr,current->ot,0);
-          current->primptr = pcVar2;
-        }
-      }
-    }
-    iVar4 = iVar4 + -1;
-    pDVar3 = pDVar3 + 1;
-  } while (-1 < iVar4);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	char *pcVar2;
+	DAMAGED_OBJECT *pDVar3;
+	MODEL *model;
+	int iVar4;
+	int local_80;
+	long local_7c;
+	int local_78;
+	undefined *local_70;
+	undefined4 local_6c;
+	undefined *local_68;
+	undefined4 local_64;
+	undefined *local_60;
+	undefined4 local_5c;
+	undefined4 local_58;
+	undefined4 local_54;
+	undefined4 local_50;
+	undefined4 local_4c;
+	undefined4 local_48;
+	undefined4 local_44;
+	undefined4 local_40;
+	long local_3c;
+	long local_38;
+	long local_34;
+	undefined *local_30;
+
+	pDVar3 = damaged_object;
+	iVar4 = 7;
+	local_30 = PTR_DAT_00010634;
+	do {
+		if (pDVar3->active != '\0') {
+			model = modelpointers1536[(pDVar3->cop).type];
+			local_68 = PTR_DAT_0001063c;
+			local_64 = DAT_00010640;
+			local_60 = PTR_DAT_00010644;
+			local_5c = DAT_00010648;
+			local_58 = DAT_0001064c;
+			local_54 = DAT_00010650;
+			local_50 = face_camera.m[0]._0_4_;
+			local_4c = face_camera.m._4_4_;
+			local_48 = face_camera.m[1]._2_4_;
+			local_44 = face_camera.m[2]._0_4_;
+			local_40 = face_camera._16_4_;
+			local_3c = face_camera.t[0];
+			local_38 = face_camera.t[1];
+			local_70 = local_30;
+			local_6c = DAT_00010638;
+			local_34 = face_camera.t[2];
+			if ((model->shape_flags & 0x4000) == 0) {
+				RotMatrixY(pDVar3->rot_speed * (uint)(byte)pDVar3->damage * 3 & 0xfff, &local_70);
+			}
+			RotMatrixZ(pDVar3->rot_speed * (uint)(byte)pDVar3->damage & 0xfff, &local_70);
+			local_80 = pDVar3->vx - camera_position.vx;
+			local_7c = (pDVar3->cop).pos.vy - camera_position.vy;
+			local_78 = (pDVar3->cop).pos.vz - camera_position.vz;
+			Apply_Inv_CameraMatrix(&local_80);
+			setCopControlWord(2, 0, local_70);
+			setCopControlWord(2, 0x800, local_6c);
+			setCopControlWord(2, 0x1000, local_68);
+			setCopControlWord(2, 0x1800, local_64);
+			setCopControlWord(2, 0x2000, local_60);
+			setCopControlWord(2, 0x2800, local_80);
+			setCopControlWord(2, 0x3000, local_7c);
+			setCopControlWord(2, 0x3800, local_78);
+			local_80 = pDVar3->vx;
+			local_7c = (pDVar3->cop).pos.vy;
+			local_78 = (pDVar3->cop).pos.vz;
+			SetFrustrumMatrix();
+			iVar1 = FrustrumCheck(&local_80, (int)model->bounding_sphere);
+			if (iVar1 != -1) {
+				if ((model->shape_flags & 0x4000) == 0) {
+					PlotMDL_less_than_128(model);
+				}
+				else {
+					if ((gWeather - 1U < 2) || (gTimeOfDay == 3)) {
+						DAT_1f8000c0 = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
+					}
+					else {
+						DAT_1f8000c0 = 0x2c808080;
+					}
+					pcVar2 = (char *)Asm_PlotSprite(model, current->primptr, current->ot, 0);
+					current->primptr = pcVar2;
+				}
+			}
+		}
+		iVar4 = iVar4 + -1;
+		pDVar3 = pDVar3 + 1;
+	} while (-1 < iVar4);
+	return;*/
 }
 
 
@@ -1569,40 +1590,42 @@ void DrawSmashable_sprites(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int MoveSmashable_object(void)
-
 {
-  char cVar1;
-  short sVar2;
-  short sVar3;
-  int iVar4;
-  DAMAGED_OBJECT *pDVar5;
-  int iVar6;
-  int iVar7;
-  
-  pDVar5 = damaged_object;
-  iVar7 = 7;
-  do {
-    if (pDVar5->active != '\0') {
-      iVar6 = (pDVar5->cop).pos.vy;
-      if (iVar6 < 0x32 - player.pos[1]) {
-        iVar4 = (pDVar5->cop).pos.vz;
-        pDVar5->vx = pDVar5->vx + (int)(pDVar5->velocity).vx;
-        sVar2 = (pDVar5->velocity).vz;
-        cVar1 = pDVar5->damage;
-        (pDVar5->cop).pos.vy = iVar6 + (pDVar5->velocity).vy;
-        sVar3 = (pDVar5->velocity).vy;
-        (pDVar5->cop).pos.vz = iVar4 + sVar2;
-        pDVar5->damage = cVar1 + '\x01';
-        (pDVar5->velocity).vy = sVar3 + 10;
-      }
-      else {
-        pDVar5->active = '\0';
-      }
-    }
-    iVar7 = iVar7 + -1;
-    pDVar5 = pDVar5 + 1;
-  } while (-1 < iVar7);
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	char cVar1;
+	short sVar2;
+	short sVar3;
+	int iVar4;
+	DAMAGED_OBJECT *pDVar5;
+	int iVar6;
+	int iVar7;
+
+	pDVar5 = damaged_object;
+	iVar7 = 7;
+	do {
+		if (pDVar5->active != '\0') {
+			iVar6 = (pDVar5->cop).pos.vy;
+			if (iVar6 < 0x32 - player.pos[1]) {
+				iVar4 = (pDVar5->cop).pos.vz;
+				pDVar5->vx = pDVar5->vx + (int)(pDVar5->velocity).vx;
+				sVar2 = (pDVar5->velocity).vz;
+				cVar1 = pDVar5->damage;
+				(pDVar5->cop).pos.vy = iVar6 + (pDVar5->velocity).vy;
+				sVar3 = (pDVar5->velocity).vy;
+				(pDVar5->cop).pos.vz = iVar4 + sVar2;
+				pDVar5->damage = cVar1 + '\x01';
+				(pDVar5->velocity).vy = sVar3 + 10;
+			}
+			else {
+				pDVar5->active = '\0';
+			}
+		}
+		iVar7 = iVar7 + -1;
+		pDVar5 = pDVar5 + 1;
+	} while (-1 < iVar7);
+	return 0;*/
 }
 
 
@@ -1655,133 +1678,134 @@ int MoveSmashable_object(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void AddSmallStreetLight(CELL_OBJECT *cop,int x,int y,int z,int type)
-
+void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 {
-  byte bVar1;
-  undefined4 in_zero;
-  undefined4 in_at;
-  undefined uVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  DAMAGED_LAMP *pDVar6;
-  uint uVar7;
-  int iVar8;
-  short size;
-  VECTOR local_70;
-  VECTOR local_60;
-  VECTOR local_50;
-  uint local_40;
-  uint local_3c;
-  undefined4 local_38;
-  CVECTOR local_30 [2];
-  
-  pDVar6 = &damaged_lamp;
-  local_38 = DAT_000aa370;
-  local_30[0] = (CVECTOR)PTR_DAT_000aa374;
-  bVar1 = cop->yang;
-  uVar7 = (uint)bVar1;
-  if (type == 0) {
-    iVar8 = 0x19;
-    size = 0x96;
-  }
-  else {
-    iVar8 = 100;
-    if (type == 1) {
-      iVar8 = 0x32;
-      size = 0x96;
-    }
-    else {
-      size = 300;
-    }
-  }
-  iVar4 = 0;
-  do {
-    if (cop == pDVar6->cop) {
-      if (2 < (byte)pDVar6->damage) {
-        return;
-      }
-      uVar3 = rand();
-      uVar3 = (uVar3 & 0x3f) - ((uint)(byte)pDVar6->damage * 0x20 + -0x5a);
-      local_38 = uVar3 & 0xff |
-                 (uint)CONCAT21(CONCAT11(local_38._3_1_,(char)uVar3),(char)uVar3) << 8;
-      uVar3 = (uVar3 & 0xff) >> 1;
-      uVar2 = (undefined)uVar3;
-      local_30[0] = (CVECTOR)(uVar3 | (uint)CONCAT21(CONCAT11(local_30[0].cd,uVar2),uVar2) << 8);
-      break;
-    }
-    iVar4 = iVar4 + 1;
-    pDVar6 = pDVar6 + 1;
-  } while (iVar4 < 4);
-  if ((bVar1 & 0xf) == 0) {
-    bVar1 = bVar1 >> 4;
-    if (bVar1 == 1) {
-      local_70.vx = ((cop->pos).vx - camera_position.vx) + z;
-      local_70.vz = ((cop->pos).vz - camera_position.vz) - x;
-    }
-    else {
-      if (bVar1 < 2) {
-        if (bVar1 == 0) {
-          local_70.vx = ((cop->pos).vx - camera_position.vx) + x;
-          local_70.vz = ((cop->pos).vz - camera_position.vz) + z;
-        }
-      }
-      else {
-        if (bVar1 == 2) {
-          local_70.vx = ((cop->pos).vx - camera_position.vx) - x;
-          local_70.vz = ((cop->pos).vz - camera_position.vz) - z;
-        }
-        else {
-          if (bVar1 == 3) {
-            local_70.vx = ((cop->pos).vx - camera_position.vx) - z;
-            local_70.vz = ((cop->pos).vz - camera_position.vz) + x;
-          }
-        }
-      }
-    }
-    local_70.vy = ((cop->pos).vy - camera_position.vy) + y;
-  }
-  else {
-    uVar3 = local_3c & 0xffff0000;
-    local_3c = uVar3 | z & 0xffffU;
-    setCopControlWord(2,0,*(undefined4 *)(&matrixtable)[uVar7].m);
-    setCopControlWord(2,0x800,*(undefined4 *)((&matrixtable)[uVar7].m + 2));
-    setCopControlWord(2,0x1000,*(undefined4 *)((&matrixtable)[uVar7].m + 4));
-    setCopControlWord(2,0x1800,*(undefined4 *)((&matrixtable)[uVar7].m + 6));
-    setCopControlWord(2,0x2000,*(undefined4 *)((&matrixtable)[uVar7].m + 8));
-    setCopReg(2,in_zero,x & 0xffffU | y << 0x10);
-    setCopReg(2,in_at,local_3c);
-    copFunction(2,0x486012);
-    uVar7 = getCopReg(2,0x4800);
-    iVar4 = getCopReg(2,0x5000);
-    uVar5 = getCopReg(2,0x5800);
-    local_40 = uVar7 & 0xffff | iVar4 << 0x10;
-    local_3c = uVar3 | uVar5 & 0xffff;
-    local_70.vx = ((cop->pos).vx - camera_position.vx) + (int)(short)uVar7;
-    local_70.vy = ((cop->pos).vy - camera_position.vy) + (int)(short)iVar4;
-    local_3c._0_2_ = (short)(uVar5 & 0xffff);
-    local_70.vz = ((cop->pos).vz - camera_position.vz) + (int)(short)local_3c;
-  }
-  local_60.vx = local_70.vx;
-  local_60.vz = local_70.vz;
-  local_60.vy = MapHeight(&local_70);
-  LightSortCorrect = -0x1e;
-  local_38 = local_38 & 0xffffff;
-  local_60.vy = -camera_position.vy - local_60.vy;
-  local_50.vx = local_70.vx;
-  local_50.vy = local_70.vy;
-  local_50.vz = local_70.vz;
-  local_50.pad = local_70.pad;
-  LightIndex = find_lamp_streak((int)&(cop->pos).vx + x);
-  if (-1 < LightIndex) {
-    local_38 = CONCAT13(0x60,(undefined3)local_38);
-  }
-  ShowLight(&local_50,(CVECTOR *)&local_38,(short)iVar8,&light_texture);
-  ShowLight1(&local_50,local_30,size,&light_texture);
-  DisplayLightReflections(&local_60,local_30,(short)(iVar8 << 1),&lightref_texture);
-  LightSortCorrect = -10;
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	undefined4 in_zero;
+	undefined4 in_at;
+	undefined uVar2;
+	uint uVar3;
+	int iVar4;
+	uint uVar5;
+	DAMAGED_LAMP *pDVar6;
+	uint uVar7;
+	int iVar8;
+	short size;
+	VECTOR local_70;
+	VECTOR local_60;
+	VECTOR local_50;
+	uint local_40;
+	uint local_3c;
+	undefined4 local_38;
+	CVECTOR local_30[2];
+
+	pDVar6 = &damaged_lamp;
+	local_38 = DAT_000aa370;
+	local_30[0] = (CVECTOR)PTR_DAT_000aa374;
+	bVar1 = cop->yang;
+	uVar7 = (uint)bVar1;
+	if (type == 0) {
+		iVar8 = 0x19;
+		size = 0x96;
+	}
+	else {
+		iVar8 = 100;
+		if (type == 1) {
+			iVar8 = 0x32;
+			size = 0x96;
+		}
+		else {
+			size = 300;
+		}
+	}
+	iVar4 = 0;
+	do {
+		if (cop == pDVar6->cop) {
+			if (2 < (byte)pDVar6->damage) {
+				return;
+			}
+			uVar3 = rand();
+			uVar3 = (uVar3 & 0x3f) - ((uint)(byte)pDVar6->damage * 0x20 + -0x5a);
+			local_38 = uVar3 & 0xff |
+				(uint)CONCAT21(CONCAT11(local_38._3_1_, (char)uVar3), (char)uVar3) << 8;
+			uVar3 = (uVar3 & 0xff) >> 1;
+			uVar2 = (undefined)uVar3;
+			local_30[0] = (CVECTOR)(uVar3 | (uint)CONCAT21(CONCAT11(local_30[0].cd, uVar2), uVar2) << 8);
+			break;
+		}
+		iVar4 = iVar4 + 1;
+		pDVar6 = pDVar6 + 1;
+	} while (iVar4 < 4);
+	if ((bVar1 & 0xf) == 0) {
+		bVar1 = bVar1 >> 4;
+		if (bVar1 == 1) {
+			local_70.vx = ((cop->pos).vx - camera_position.vx) + z;
+			local_70.vz = ((cop->pos).vz - camera_position.vz) - x;
+		}
+		else {
+			if (bVar1 < 2) {
+				if (bVar1 == 0) {
+					local_70.vx = ((cop->pos).vx - camera_position.vx) + x;
+					local_70.vz = ((cop->pos).vz - camera_position.vz) + z;
+				}
+			}
+			else {
+				if (bVar1 == 2) {
+					local_70.vx = ((cop->pos).vx - camera_position.vx) - x;
+					local_70.vz = ((cop->pos).vz - camera_position.vz) - z;
+				}
+				else {
+					if (bVar1 == 3) {
+						local_70.vx = ((cop->pos).vx - camera_position.vx) - z;
+						local_70.vz = ((cop->pos).vz - camera_position.vz) + x;
+					}
+				}
+			}
+		}
+		local_70.vy = ((cop->pos).vy - camera_position.vy) + y;
+	}
+	else {
+		uVar3 = local_3c & 0xffff0000;
+		local_3c = uVar3 | z & 0xffffU;
+		setCopControlWord(2, 0, *(undefined4 *)(&matrixtable)[uVar7].m);
+		setCopControlWord(2, 0x800, *(undefined4 *)((&matrixtable)[uVar7].m + 2));
+		setCopControlWord(2, 0x1000, *(undefined4 *)((&matrixtable)[uVar7].m + 4));
+		setCopControlWord(2, 0x1800, *(undefined4 *)((&matrixtable)[uVar7].m + 6));
+		setCopControlWord(2, 0x2000, *(undefined4 *)((&matrixtable)[uVar7].m + 8));
+		setCopReg(2, in_zero, x & 0xffffU | y << 0x10);
+		setCopReg(2, in_at, local_3c);
+		copFunction(2, 0x486012);
+		uVar7 = getCopReg(2, 0x4800);
+		iVar4 = getCopReg(2, 0x5000);
+		uVar5 = getCopReg(2, 0x5800);
+		local_40 = uVar7 & 0xffff | iVar4 << 0x10;
+		local_3c = uVar3 | uVar5 & 0xffff;
+		local_70.vx = ((cop->pos).vx - camera_position.vx) + (int)(short)uVar7;
+		local_70.vy = ((cop->pos).vy - camera_position.vy) + (int)(short)iVar4;
+		local_3c._0_2_ = (short)(uVar5 & 0xffff);
+		local_70.vz = ((cop->pos).vz - camera_position.vz) + (int)(short)local_3c;
+	}
+	local_60.vx = local_70.vx;
+	local_60.vz = local_70.vz;
+	local_60.vy = MapHeight(&local_70);
+	LightSortCorrect = -0x1e;
+	local_38 = local_38 & 0xffffff;
+	local_60.vy = -camera_position.vy - local_60.vy;
+	local_50.vx = local_70.vx;
+	local_50.vy = local_70.vy;
+	local_50.vz = local_70.vz;
+	local_50.pad = local_70.pad;
+	LightIndex = find_lamp_streak((int)&(cop->pos).vx + x);
+	if (-1 < LightIndex) {
+		local_38 = CONCAT13(0x60, (undefined3)local_38);
+	}
+	ShowLight(&local_50, (CVECTOR *)&local_38, (short)iVar8, &light_texture);
+	ShowLight1(&local_50, local_30, size, &light_texture);
+	DisplayLightReflections(&local_60, local_30, (short)(iVar8 << 1), &lightref_texture);
+	LightSortCorrect = -10;
+	return;*/
 }
 
 
@@ -1813,149 +1837,150 @@ void AddSmallStreetLight(CELL_OBJECT *cop,int x,int y,int z,int type)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void AddLightEffect(CELL_OBJECT *cop,int x,int y,int z,int type,int colour)
-
+void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 {
-  byte bVar1;
-  uint uVar2;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  int unaff_s1;
-  VECTOR local_58;
-  VECTOR local_48;
-  int local_38;
-  int local_34;
-  int local_30;
-  long local_2c;
-  uint local_28;
-  uint local_24;
-  CVECTOR local_20 [4];
-  
-  bVar1 = cop->yang;
-  uVar3 = (uint)bVar1;
-  if ((bVar1 & 0xf) == 0) {
-    bVar1 = bVar1 >> 4;
-    if (bVar1 == 1) {
-      local_58.vx = ((cop->pos).vx - camera_position.vx) + z;
-      local_58.vz = ((cop->pos).vz - camera_position.vz) - x;
-    }
-    else {
-      if (bVar1 < 2) {
-        if (bVar1 == 0) {
-          local_58.vx = ((cop->pos).vx - camera_position.vx) + x;
-          local_58.vz = ((cop->pos).vz - camera_position.vz) + z;
-        }
-      }
-      else {
-        if (bVar1 == 2) {
-          local_58.vx = ((cop->pos).vx - camera_position.vx) - x;
-          local_58.vz = ((cop->pos).vz - camera_position.vz) - z;
-        }
-        else {
-          if (bVar1 == 3) {
-            local_58.vx = ((cop->pos).vx - camera_position.vx) - z;
-            local_58.vz = ((cop->pos).vz - camera_position.vz) + x;
-          }
-        }
-      }
-    }
-    local_58.vy = ((cop->pos).vy - camera_position.vy) + y;
-  }
-  else {
-    uVar2 = local_24 & 0xffff0000;
-    local_24 = uVar2 | z & 0xffffU;
-    setCopControlWord(2,0,*(undefined4 *)(&matrixtable)[uVar3].m);
-    setCopControlWord(2,0x800,*(undefined4 *)((&matrixtable)[uVar3].m + 2));
-    setCopControlWord(2,0x1000,*(undefined4 *)((&matrixtable)[uVar3].m + 4));
-    setCopControlWord(2,0x1800,*(undefined4 *)((&matrixtable)[uVar3].m + 6));
-    setCopControlWord(2,0x2000,*(undefined4 *)((&matrixtable)[uVar3].m + 8));
-    setCopReg(2,in_zero,x & 0xffffU | y << 0x10);
-    setCopReg(2,in_at,local_24);
-    copFunction(2,0x486012);
-    uVar3 = getCopReg(2,0x4800);
-    iVar4 = getCopReg(2,0x5000);
-    uVar5 = getCopReg(2,0x5800);
-    local_28 = uVar3 & 0xffff | iVar4 << 0x10;
-    local_24 = uVar2 | uVar5 & 0xffff;
-    local_58.vx = ((cop->pos).vx - camera_position.vx) + (int)(short)uVar3;
-    local_58.vy = ((cop->pos).vy - camera_position.vy) + (int)(short)iVar4;
-    local_24._0_2_ = (short)(uVar5 & 0xffff);
-    local_58.vz = ((cop->pos).vz - camera_position.vz) + (int)(short)local_24;
-  }
-  if ((byte)colour == 1) {
-    local_20[0].r = '\0';
-    local_20[0].g = '(';
-    local_20[0].b = '\0';
-  }
-  else {
-    if ((byte)colour < 2) {
-      if ((byte)colour == 0) {
-        local_20[0].r = '(';
-        local_20[0].g = '\n';
-        local_20[0].b = '\0';
-      }
-    }
-    else {
-      if ((byte)colour == 2) {
-        local_20[0].g = 'F';
-        local_20[0].r = 'U';
-        local_20[0].b = '\x05';
-      }
-      else {
-        if ((byte)colour == 3) {
-          local_20[0].g = '(';
-          local_20[0].b = '#';
-          local_20[0].r = '(';
-        }
-      }
-    }
-  }
-  if ((byte)type == 1) {
-    unaff_s1 = 300;
-  }
-  else {
-    if ((byte)type < 2) {
-      if ((byte)type == 0) {
-        unaff_s1 = 400;
-      }
-    }
-    else {
-      if ((byte)type == 2) {
-        unaff_s1 = 200;
-      }
-      else {
-        if ((byte)type == 3) {
-          unaff_s1 = 0x96;
-        }
-      }
-    }
-  }
-  local_48.vx = local_58.vx;
-  local_48.vz = local_58.vz;
-  local_48.vy = MapHeight(&local_58);
-  LightSortCorrect = -10;
-  local_20[0].cd = '\0';
-  local_48.vy = -camera_position.vy - local_48.vy;
-  local_38 = local_58.vx;
-  local_34 = local_58.vy;
-  local_30 = local_58.vz;
-  local_2c = local_58.pad;
-  Apply_Inv_CameraMatrix(&local_58);
-  setCopControlWord(2,0x2800,local_58.vx);
-  setCopControlWord(2,0x3000,local_58.vy);
-  setCopControlWord(2,0x3800,local_58.vz);
-  setCopControlWord(2,0,norot.m[0]._0_4_);
-  setCopControlWord(2,0x800,norot.m._4_4_);
-  setCopControlWord(2,0x1000,norot.m[1]._2_4_);
-  setCopControlWord(2,0x1800,norot.m[2]._0_4_);
-  setCopControlWord(2,0x2000,norot._16_4_);
-  ShowLight1(&local_58,local_20,(short)unaff_s1,&light_texture);
-  DisplayLightReflections
-            (&local_48,local_20,(short)((uint)(unaff_s1 << 0xd) >> 0x10),&lightref_texture);
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	uint uVar2;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar3;
+	int iVar4;
+	uint uVar5;
+	int unaff_s1;
+	VECTOR local_58;
+	VECTOR local_48;
+	int local_38;
+	int local_34;
+	int local_30;
+	long local_2c;
+	uint local_28;
+	uint local_24;
+	CVECTOR local_20[4];
+
+	bVar1 = cop->yang;
+	uVar3 = (uint)bVar1;
+	if ((bVar1 & 0xf) == 0) {
+		bVar1 = bVar1 >> 4;
+		if (bVar1 == 1) {
+			local_58.vx = ((cop->pos).vx - camera_position.vx) + z;
+			local_58.vz = ((cop->pos).vz - camera_position.vz) - x;
+		}
+		else {
+			if (bVar1 < 2) {
+				if (bVar1 == 0) {
+					local_58.vx = ((cop->pos).vx - camera_position.vx) + x;
+					local_58.vz = ((cop->pos).vz - camera_position.vz) + z;
+				}
+			}
+			else {
+				if (bVar1 == 2) {
+					local_58.vx = ((cop->pos).vx - camera_position.vx) - x;
+					local_58.vz = ((cop->pos).vz - camera_position.vz) - z;
+				}
+				else {
+					if (bVar1 == 3) {
+						local_58.vx = ((cop->pos).vx - camera_position.vx) - z;
+						local_58.vz = ((cop->pos).vz - camera_position.vz) + x;
+					}
+				}
+			}
+		}
+		local_58.vy = ((cop->pos).vy - camera_position.vy) + y;
+	}
+	else {
+		uVar2 = local_24 & 0xffff0000;
+		local_24 = uVar2 | z & 0xffffU;
+		setCopControlWord(2, 0, *(undefined4 *)(&matrixtable)[uVar3].m);
+		setCopControlWord(2, 0x800, *(undefined4 *)((&matrixtable)[uVar3].m + 2));
+		setCopControlWord(2, 0x1000, *(undefined4 *)((&matrixtable)[uVar3].m + 4));
+		setCopControlWord(2, 0x1800, *(undefined4 *)((&matrixtable)[uVar3].m + 6));
+		setCopControlWord(2, 0x2000, *(undefined4 *)((&matrixtable)[uVar3].m + 8));
+		setCopReg(2, in_zero, x & 0xffffU | y << 0x10);
+		setCopReg(2, in_at, local_24);
+		copFunction(2, 0x486012);
+		uVar3 = getCopReg(2, 0x4800);
+		iVar4 = getCopReg(2, 0x5000);
+		uVar5 = getCopReg(2, 0x5800);
+		local_28 = uVar3 & 0xffff | iVar4 << 0x10;
+		local_24 = uVar2 | uVar5 & 0xffff;
+		local_58.vx = ((cop->pos).vx - camera_position.vx) + (int)(short)uVar3;
+		local_58.vy = ((cop->pos).vy - camera_position.vy) + (int)(short)iVar4;
+		local_24._0_2_ = (short)(uVar5 & 0xffff);
+		local_58.vz = ((cop->pos).vz - camera_position.vz) + (int)(short)local_24;
+	}
+	if ((byte)colour == 1) {
+		local_20[0].r = '\0';
+		local_20[0].g = '(';
+		local_20[0].b = '\0';
+	}
+	else {
+		if ((byte)colour < 2) {
+			if ((byte)colour == 0) {
+				local_20[0].r = '(';
+				local_20[0].g = '\n';
+				local_20[0].b = '\0';
+			}
+		}
+		else {
+			if ((byte)colour == 2) {
+				local_20[0].g = 'F';
+				local_20[0].r = 'U';
+				local_20[0].b = '\x05';
+			}
+			else {
+				if ((byte)colour == 3) {
+					local_20[0].g = '(';
+					local_20[0].b = '#';
+					local_20[0].r = '(';
+				}
+			}
+		}
+	}
+	if ((byte)type == 1) {
+		unaff_s1 = 300;
+	}
+	else {
+		if ((byte)type < 2) {
+			if ((byte)type == 0) {
+				unaff_s1 = 400;
+			}
+		}
+		else {
+			if ((byte)type == 2) {
+				unaff_s1 = 200;
+			}
+			else {
+				if ((byte)type == 3) {
+					unaff_s1 = 0x96;
+				}
+			}
+		}
+	}
+	local_48.vx = local_58.vx;
+	local_48.vz = local_58.vz;
+	local_48.vy = MapHeight(&local_58);
+	LightSortCorrect = -10;
+	local_20[0].cd = '\0';
+	local_48.vy = -camera_position.vy - local_48.vy;
+	local_38 = local_58.vx;
+	local_34 = local_58.vy;
+	local_30 = local_58.vz;
+	local_2c = local_58.pad;
+	Apply_Inv_CameraMatrix(&local_58);
+	setCopControlWord(2, 0x2800, local_58.vx);
+	setCopControlWord(2, 0x3000, local_58.vy);
+	setCopControlWord(2, 0x3800, local_58.vz);
+	setCopControlWord(2, 0, norot.m[0]._0_4_);
+	setCopControlWord(2, 0x800, norot.m._4_4_);
+	setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, norot._16_4_);
+	ShowLight1(&local_58, local_20, (short)unaff_s1, &light_texture);
+	DisplayLightReflections
+	(&local_48, local_20, (short)((uint)(unaff_s1 << 0xd) >> 0x10), &lightref_texture);
+	return;*/
 }
 
 
@@ -1996,40 +2021,41 @@ void AddLightEffect(CELL_OBJECT *cop,int x,int y,int z,int type,int colour)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void PreLampStreak(void)
-
 {
-  short sVar1;
-  char *pcVar2;
-  int *piVar3;
-  LAMP_STREAK *pLVar4;
-  int iVar5;
-  
-  iVar5 = 0;
-  if (StreakCount1 != 0) {
-    pLVar4 = Known_Lamps;
-    do {
-      if (pLVar4->set == '\0') {
-        StreakCount1 = StreakCount1 + -1;
-        sVar1 = (short)FrameCnt;
-        pLVar4->id = (&NewLamp)[StreakCount1];
-        pLVar4->clock = sVar1 + -2;
-      }
-      iVar5 = iVar5 + 1;
-      pLVar4 = pLVar4 + 1;
-    } while ((iVar5 < 0x14) && (StreakCount1 != 0));
-  }
-  pcVar2 = &Known_Lamps[0].set;
-  piVar3 = &NewLamp;
-  iVar5 = 0x13;
-  do {
-    *pcVar2 = '\0';
-    pcVar2 = pcVar2 + 0x18;
-    *piVar3 = 0;
-    iVar5 = iVar5 + -1;
-    piVar3 = piVar3 + 1;
-  } while (-1 < iVar5);
-  StreakCount1 = 0;
-  return;
+	UNIMPLEMENTED();
+	/*
+	short sVar1;
+	char *pcVar2;
+	int *piVar3;
+	LAMP_STREAK *pLVar4;
+	int iVar5;
+
+	iVar5 = 0;
+	if (StreakCount1 != 0) {
+		pLVar4 = Known_Lamps;
+		do {
+			if (pLVar4->set == '\0') {
+				StreakCount1 = StreakCount1 + -1;
+				sVar1 = (short)FrameCnt;
+				pLVar4->id = (&NewLamp)[StreakCount1];
+				pLVar4->clock = sVar1 + -2;
+			}
+			iVar5 = iVar5 + 1;
+			pLVar4 = pLVar4 + 1;
+		} while ((iVar5 < 0x14) && (StreakCount1 != 0));
+	}
+	pcVar2 = &Known_Lamps[0].set;
+	piVar3 = &NewLamp;
+	iVar5 = 0x13;
+	do {
+		*pcVar2 = '\0';
+		pcVar2 = pcVar2 + 0x18;
+		*piVar3 = 0;
+		iVar5 = iVar5 + -1;
+		piVar3 = piVar3 + 1;
+	} while (-1 < iVar5);
+	StreakCount1 = 0;
+	return;*/
 }
 
 
@@ -2063,28 +2089,30 @@ void PreLampStreak(void)
 	// End Line: 10535
 
 int find_lamp_streak(int LampId)
-
 {
-  char *pcVar1;
-  int *piVar2;
-  int iVar3;
-  
-  iVar3 = 0;
-  pcVar1 = &Known_Lamps[0].set;
-  do {
-    if (*(int *)(pcVar1 + -6) == LampId) {
-      *pcVar1 = '\x01';
-      return iVar3;
-    }
-    iVar3 = iVar3 + 1;
-    pcVar1 = pcVar1 + 0x18;
-  } while (iVar3 < 0x14);
-  if (StreakCount1 < 0x14) {
-    piVar2 = &NewLamp + StreakCount1;
-    StreakCount1 = StreakCount1 + 1;
-    *piVar2 = LampId;
-  }
-  return -1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	char *pcVar1;
+	int *piVar2;
+	int iVar3;
+
+	iVar3 = 0;
+	pcVar1 = &Known_Lamps[0].set;
+	do {
+		if (*(int *)(pcVar1 + -6) == LampId) {
+			*pcVar1 = '\x01';
+			return iVar3;
+		}
+		iVar3 = iVar3 + 1;
+		pcVar1 = pcVar1 + 0x18;
+	} while (iVar3 < 0x14);
+	if (StreakCount1 < 0x14) {
+		piVar2 = &NewLamp + StreakCount1;
+		StreakCount1 = StreakCount1 + 1;
+		*piVar2 = LampId;
+	}
+	return -1;*/
 }
 
 
@@ -2114,36 +2142,38 @@ int find_lamp_streak(int LampId)
 	// End Line: 5591
 
 int damage_lamp(CELL_OBJECT *cop)
-
 {
-  byte bVar1;
-  int iVar2;
-  uint uVar3;
-  DAMAGED_LAMP *pDVar4;
-  
-  iVar2 = 0;
-  pDVar4 = &damaged_lamp;
-  do {
-    iVar2 = iVar2 + 1;
-    if (cop == pDVar4->cop) {
-      bVar1 = pDVar4->damage;
-      uVar3 = 0;
-      pDVar4->damage = bVar1 + 1;
-      if (bVar1 < 3) {
-        uVar3 = (uint)((byte)(bVar1 + 1) < 3) ^ 1;
-      }
-      return uVar3;
-    }
-    pDVar4 = pDVar4 + 1;
-  } while (iVar2 < 4);
-  iVar2 = NextDamagedLamp + 1;
-  (&damaged_lamp)[NextDamagedLamp].damage = '\0';
-  (&damaged_lamp)[NextDamagedLamp].cop = cop;
-  NextDamagedLamp = iVar2;
-  if (4 < iVar2) {
-    NextDamagedLamp = 0;
-  }
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	int iVar2;
+	uint uVar3;
+	DAMAGED_LAMP *pDVar4;
+
+	iVar2 = 0;
+	pDVar4 = &damaged_lamp;
+	do {
+		iVar2 = iVar2 + 1;
+		if (cop == pDVar4->cop) {
+			bVar1 = pDVar4->damage;
+			uVar3 = 0;
+			pDVar4->damage = bVar1 + 1;
+			if (bVar1 < 3) {
+				uVar3 = (uint)((byte)(bVar1 + 1) < 3) ^ 1;
+			}
+			return uVar3;
+		}
+		pDVar4 = pDVar4 + 1;
+	} while (iVar2 < 4);
+	iVar2 = NextDamagedLamp + 1;
+	(&damaged_lamp)[NextDamagedLamp].damage = '\0';
+	(&damaged_lamp)[NextDamagedLamp].cop = cop;
+	NextDamagedLamp = iVar2;
+	if (4 < iVar2) {
+		NextDamagedLamp = 0;
+	}
+	return 0;*/
 }
 
 
@@ -2185,60 +2215,62 @@ int damage_lamp(CELL_OBJECT *cop)
 	/* end block 4 */
 	// End Line: 5654
 
-int damage_object(CELL_OBJECT *cop,VECTOR *velocity)
-
+int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 {
-  DAMAGED_OBJECT *pDVar1;
-  int iVar2;
-  short sVar3;
-  uint uVar4;
-  PACKED_CELL_OBJECT *pPVar5;
-  
-  iVar2 = NextDamagedPmeter;
-  damaged_object[NextDamagedPmeter].active = '\x01';
-  damaged_object[NextDamagedPmeter].damage = '\0';
-  damaged_object[NextDamagedPmeter].cop.pos.vx = (cop->pos).vx;
-  damaged_object[NextDamagedPmeter].cop.pos.vy = (cop->pos).vy;
-  damaged_object[NextDamagedPmeter].cop.pos.vz = (cop->pos).vz;
-  *(undefined4 *)&damaged_object[NextDamagedPmeter].cop.pad = *(undefined4 *)&cop->pad;
-  damaged_object[NextDamagedPmeter].vx = (cop->pos).vx;
-  damaged_object[NextDamagedPmeter].velocity.vx = (short)(velocity->vx >> 10);
-  SmashablesHit = SmashablesHit + 1;
-  pDVar1 = damaged_object + NextDamagedPmeter;
-  NextDamagedPmeter = NextDamagedPmeter + 1;
-  (pDVar1->velocity).vz = (short)(velocity->vz >> 10);
-  pPVar5 = pcoplist[cop->pad];
-  pPVar5->value = 0xffff;
-  (pPVar5->pos).vy = 1;
-  if (damaged_object[iVar2].velocity.vx < 0) {
-    damaged_object[iVar2].velocity.vy = *(short *)&velocity->vx;
-  }
-  else {
-    damaged_object[iVar2].velocity.vy = -*(short *)&velocity->vx;
-  }
-  if (damaged_object[iVar2].velocity.vz < 0) {
-    sVar3 = damaged_object[iVar2].velocity.vy + *(short *)&velocity->vz;
-  }
-  else {
-    sVar3 = damaged_object[iVar2].velocity.vy - *(short *)&velocity->vz;
-  }
-  damaged_object[iVar2].velocity.vy = sVar3;
-  damaged_object[iVar2].velocity.vy = damaged_object[iVar2].velocity.vy >> 1;
-  uVar4 = rand();
-  if ((uVar4 & 1) == 0) {
-    damaged_object[iVar2].rot_speed = -(int)damaged_object[iVar2].velocity.vy;
-  }
-  else {
-    damaged_object[iVar2].rot_speed = (int)damaged_object[iVar2].velocity.vy;
-  }
-  if (damaged_object[iVar2].velocity.vy < -0x43) {
-    damaged_object[iVar2].velocity.vy = -0x43;
-  }
-  if (7 < NextDamagedPmeter) {
-    NextDamagedPmeter = 0;
-  }
-  (cop->pos).vx = -0x2b90140;
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	DAMAGED_OBJECT *pDVar1;
+	int iVar2;
+	short sVar3;
+	uint uVar4;
+	PACKED_CELL_OBJECT *pPVar5;
+
+	iVar2 = NextDamagedPmeter;
+	damaged_object[NextDamagedPmeter].active = '\x01';
+	damaged_object[NextDamagedPmeter].damage = '\0';
+	damaged_object[NextDamagedPmeter].cop.pos.vx = (cop->pos).vx;
+	damaged_object[NextDamagedPmeter].cop.pos.vy = (cop->pos).vy;
+	damaged_object[NextDamagedPmeter].cop.pos.vz = (cop->pos).vz;
+	*(undefined4 *)&damaged_object[NextDamagedPmeter].cop.pad = *(undefined4 *)&cop->pad;
+	damaged_object[NextDamagedPmeter].vx = (cop->pos).vx;
+	damaged_object[NextDamagedPmeter].velocity.vx = (short)(velocity->vx >> 10);
+	SmashablesHit = SmashablesHit + 1;
+	pDVar1 = damaged_object + NextDamagedPmeter;
+	NextDamagedPmeter = NextDamagedPmeter + 1;
+	(pDVar1->velocity).vz = (short)(velocity->vz >> 10);
+	pPVar5 = pcoplist[cop->pad];
+	pPVar5->value = 0xffff;
+	(pPVar5->pos).vy = 1;
+	if (damaged_object[iVar2].velocity.vx < 0) {
+		damaged_object[iVar2].velocity.vy = *(short *)&velocity->vx;
+	}
+	else {
+		damaged_object[iVar2].velocity.vy = -*(short *)&velocity->vx;
+	}
+	if (damaged_object[iVar2].velocity.vz < 0) {
+		sVar3 = damaged_object[iVar2].velocity.vy + *(short *)&velocity->vz;
+	}
+	else {
+		sVar3 = damaged_object[iVar2].velocity.vy - *(short *)&velocity->vz;
+	}
+	damaged_object[iVar2].velocity.vy = sVar3;
+	damaged_object[iVar2].velocity.vy = damaged_object[iVar2].velocity.vy >> 1;
+	uVar4 = rand();
+	if ((uVar4 & 1) == 0) {
+		damaged_object[iVar2].rot_speed = -(int)damaged_object[iVar2].velocity.vy;
+	}
+	else {
+		damaged_object[iVar2].rot_speed = (int)damaged_object[iVar2].velocity.vy;
+	}
+	if (damaged_object[iVar2].velocity.vy < -0x43) {
+		damaged_object[iVar2].velocity.vy = -0x43;
+	}
+	if (7 < NextDamagedPmeter) {
+		NextDamagedPmeter = 0;
+	}
+	(cop->pos).vx = -0x2b90140;
+	return 0;*/
 }
 
 
@@ -2285,101 +2317,102 @@ int damage_object(CELL_OBJECT *cop,VECTOR *velocity)
 	/* end block 3 */
 	// End Line: 5819
 
-void AddTrafficLight(CELL_OBJECT *cop,int x,int y,int z,int flag,int yang)
-
+void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  CVECTOR local_50 [2];
-  CVECTOR local_48 [2];
-  byte local_40;
-  byte local_3f;
-  byte local_3e;
-  VECTOR local_38;
-  VECTOR local_28;
-  
-  uVar3 = (int)(short)yang & 0xfff;
-  local_38.vy = ((cop->pos).vy - camera_position.vy) + y;
-  local_38.vx = ((cop->pos).vx - camera_position.vx) +
-                (rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z + 0x800 >> 0xc);
-  local_38.vz = ((cop->pos).vz - camera_position.vz) +
-                ((rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x) + 0x800 >> 0xc);
-  if ((flag & 0x200U) == 0) {
-    if ((flag & 0x400U) != 0) {
-      local_50[0].r = 0xff;
-      local_50[0].g = 100;
-      local_50[0].b = 0x23;
-      goto LAB_00035098;
-    }
-    if ((flag & 0x800U) == 0) goto LAB_00035098;
-    local_50[0].r = 0x19;
-    local_50[0].g = 0xff;
-  }
-  else {
-    local_50[0].r = 0xff;
-    local_50[0].g = 0x19;
-  }
-  local_50[0].b = 0x19;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	uint uVar3;
+	int iVar4;
+	int iVar5;
+	CVECTOR local_50[2];
+	CVECTOR local_48[2];
+	byte local_40;
+	byte local_3f;
+	byte local_3e;
+	VECTOR local_38;
+	VECTOR local_28;
+
+	uVar3 = (int)(short)yang & 0xfff;
+	local_38.vy = ((cop->pos).vy - camera_position.vy) + y;
+	local_38.vx = ((cop->pos).vx - camera_position.vx) +
+		(rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z + 0x800 >> 0xc);
+	local_38.vz = ((cop->pos).vz - camera_position.vz) +
+		((rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x) + 0x800 >> 0xc);
+	if ((flag & 0x200U) == 0) {
+		if ((flag & 0x400U) != 0) {
+			local_50[0].r = 0xff;
+			local_50[0].g = 100;
+			local_50[0].b = 0x23;
+			goto LAB_00035098;
+		}
+		if ((flag & 0x800U) == 0) goto LAB_00035098;
+		local_50[0].r = 0x19;
+		local_50[0].g = 0xff;
+	}
+	else {
+		local_50[0].r = 0xff;
+		local_50[0].g = 0x19;
+	}
+	local_50[0].b = 0x19;
 LAB_00035098:
-  local_50[0].cd = '\0';
-  iVar5 = ((int)camera_angle.vx + 0x800U & 0xfff) - 0x800;
-  iVar1 = iVar5;
-  if (iVar5 < 0) {
-    iVar1 = -iVar5;
-  }
-  iVar4 = (((-(int)camera_angle.vy & 0xfffU) - (int)(short)yang) + 0x800 & 0xfff) - 0x800;
-  iVar2 = iVar4;
-  if (iVar4 < 0) {
-    iVar2 = -iVar4;
-  }
-  if (iVar2 < 0x3e9) {
-    local_40 = local_50[0].r;
-    local_48[0].r = local_50[0].r >> 3;
-    local_3e = local_50[0].b;
-    local_48[0].b = local_50[0].b >> 3;
-    local_3f = local_50[0].g;
-    local_48[0].g = local_50[0].g >> 3;
-    local_28.vx = local_38.vx;
-    local_28.vz = local_38.vz;
-    if (iVar1 + iVar2 < 1000) {
-      iVar1 = 1000 - (iVar1 + iVar2);
-      if (iVar1 < 0) {
-        iVar1 = 0;
-      }
-      local_50[0].r = (byte)((int)((uint)local_50[0].r * iVar1) >> 10);
-      LightSortCorrect = -0x8c;
-      local_50[0].b = (byte)((int)((uint)local_50[0].b * iVar1) >> 10);
-      local_50[0].g = (byte)((int)((uint)local_50[0].g * iVar1) >> 10);
-      local_40 = local_50[0].r;
-      local_3f = local_50[0].g;
-      local_3e = local_50[0].b;
-      LightIndex = find_lamp_streak((int)&(cop->pos).vx + y + x);
-      if (LightIndex < 0) {
-        local_50[0].cd = '\0';
-      }
-      else {
-        local_50[0].cd = ' ';
-      }
-      ShowLight(&local_38,local_50,0x1e,&light_texture);
-      local_50[0].r = local_50[0].r >> 1;
-      local_50[0].b = local_50[0].b >> 1;
-      local_50[0].g = local_50[0].g >> 1;
-      if (gNight != 0) {
-        ShowFlare(&local_38,local_50,0x96,iVar5 + iVar4 + local_38.vx + local_38.vz >> 3 & 0x1ffe);
-      }
-    }
-    local_28.vy = MapHeight(&local_38);
-    local_28.vy = -camera_position.vy - local_28.vy;
-    if (gNight != 0) {
-      ShowGroundLight(&local_28,local_48,300);
-    }
-    DisplayLightReflections(&local_28,local_50,100,&lightref_texture);
-    LightSortCorrect = -10;
-  }
-  return;
+	local_50[0].cd = '\0';
+	iVar5 = ((int)camera_angle.vx + 0x800U & 0xfff) - 0x800;
+	iVar1 = iVar5;
+	if (iVar5 < 0) {
+		iVar1 = -iVar5;
+	}
+	iVar4 = (((-(int)camera_angle.vy & 0xfffU) - (int)(short)yang) + 0x800 & 0xfff) - 0x800;
+	iVar2 = iVar4;
+	if (iVar4 < 0) {
+		iVar2 = -iVar4;
+	}
+	if (iVar2 < 0x3e9) {
+		local_40 = local_50[0].r;
+		local_48[0].r = local_50[0].r >> 3;
+		local_3e = local_50[0].b;
+		local_48[0].b = local_50[0].b >> 3;
+		local_3f = local_50[0].g;
+		local_48[0].g = local_50[0].g >> 3;
+		local_28.vx = local_38.vx;
+		local_28.vz = local_38.vz;
+		if (iVar1 + iVar2 < 1000) {
+			iVar1 = 1000 - (iVar1 + iVar2);
+			if (iVar1 < 0) {
+				iVar1 = 0;
+			}
+			local_50[0].r = (byte)((int)((uint)local_50[0].r * iVar1) >> 10);
+			LightSortCorrect = -0x8c;
+			local_50[0].b = (byte)((int)((uint)local_50[0].b * iVar1) >> 10);
+			local_50[0].g = (byte)((int)((uint)local_50[0].g * iVar1) >> 10);
+			local_40 = local_50[0].r;
+			local_3f = local_50[0].g;
+			local_3e = local_50[0].b;
+			LightIndex = find_lamp_streak((int)&(cop->pos).vx + y + x);
+			if (LightIndex < 0) {
+				local_50[0].cd = '\0';
+			}
+			else {
+				local_50[0].cd = ' ';
+			}
+			ShowLight(&local_38, local_50, 0x1e, &light_texture);
+			local_50[0].r = local_50[0].r >> 1;
+			local_50[0].b = local_50[0].b >> 1;
+			local_50[0].g = local_50[0].g >> 1;
+			if (gNight != 0) {
+				ShowFlare(&local_38, local_50, 0x96, iVar5 + iVar4 + local_38.vx + local_38.vz >> 3 & 0x1ffe);
+			}
+		}
+		local_28.vy = MapHeight(&local_38);
+		local_28.vy = -camera_position.vy - local_28.vy;
+		if (gNight != 0) {
+			ShowGroundLight(&local_28, local_48, 300);
+		}
+		DisplayLightReflections(&local_28, local_50, 100, &lightref_texture);
+		LightSortCorrect = -10;
+	}
+	return;*/
 }
 
 
@@ -2412,36 +2445,37 @@ LAB_00035098:
 	/* end block 4 */
 	// End Line: 13203
 
-void InitFXPos(VECTOR *vec,SVECTOR *svec,_CAR_DATA *cp)
-
+void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 {
-  long lVar1;
-  undefined4 in_zero;
-  undefined4 in_at;
-  
-  if (cp < car_data) {
-    while (FrameCnt != 0x78654321) {
-      trap(0x400);
-    }
-  }
-  setCopControlWord(2,0,*(undefined4 *)(cp->hd).drawCarMat.m);
-  setCopControlWord(2,0x800,*(undefined4 *)((cp->hd).drawCarMat.m + 2));
-  setCopControlWord(2,0x1000,*(undefined4 *)((cp->hd).drawCarMat.m + 4));
-  setCopControlWord(2,0x1800,*(undefined4 *)((cp->hd).drawCarMat.m + 6));
-  setCopControlWord(2,0x2000,*(undefined4 *)((cp->hd).drawCarMat.m + 8));
-  setCopControlWord(2,0x2800,vec->vx);
-  setCopControlWord(2,0x3000,vec->vy);
-  setCopControlWord(2,0x3800,vec->vz);
-  setCopReg(2,in_zero,*(undefined4 *)svec);
-  setCopReg(2,in_at,*(undefined4 *)&svec->vz);
-  copFunction(2,0x480012);
-  lVar1 = getCopReg(2,0x19);
-  vec->vx = lVar1;
-  lVar1 = getCopReg(2,0x1a);
-  vec->vy = lVar1;
-  lVar1 = getCopReg(2,0x1b);
-  vec->vz = lVar1;
-  return;
+	UNIMPLEMENTED();
+	/*
+	long lVar1;
+	undefined4 in_zero;
+	undefined4 in_at;
+
+	if (cp < car_data) {
+		while (FrameCnt != 0x78654321) {
+			trap(0x400);
+		}
+	}
+	setCopControlWord(2, 0, *(undefined4 *)(cp->hd).drawCarMat.m);
+	setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).drawCarMat.m + 2));
+	setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).drawCarMat.m + 4));
+	setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).drawCarMat.m + 6));
+	setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).drawCarMat.m + 8));
+	setCopControlWord(2, 0x2800, vec->vx);
+	setCopControlWord(2, 0x3000, vec->vy);
+	setCopControlWord(2, 0x3800, vec->vz);
+	setCopReg(2, in_zero, *(undefined4 *)svec);
+	setCopReg(2, in_at, *(undefined4 *)&svec->vz);
+	copFunction(2, 0x480012);
+	lVar1 = getCopReg(2, 0x19);
+	vec->vx = lVar1;
+	lVar1 = getCopReg(2, 0x1a);
+	vec->vy = lVar1;
+	lVar1 = getCopReg(2, 0x1b);
+	vec->vz = lVar1;
+	return;*/
 }
 
 
@@ -2470,14 +2504,15 @@ void InitFXPos(VECTOR *vec,SVECTOR *svec,_CAR_DATA *cp)
 	// End Line: 13215
 
 void FindCarLightFade(MATRIX *carToCamera)
-
 {
-  int iVar1;
-  
-  iVar1 = (int)((uint)(ushort)carToCamera->m[8] << 0x10) >> 0x12;
-  CarLightFadeFront = iVar1 + -0x7c;
-  CarLightFadeBack = -0x7c - iVar1;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+
+	iVar1 = (int)((uint)(ushort)carToCamera->m[8] << 0x10) >> 0x12;
+	CarLightFadeFront = iVar1 + -0x7c;
+	CarLightFadeBack = -0x7c - iVar1;
+	return;*/
 }
 
 
@@ -2504,62 +2539,62 @@ void FindCarLightFade(MATRIX *carToCamera)
 	/* end block 2 */
 	// End Line: 6202
 
-void ShowCarlight(SVECTOR *v1,_CAR_DATA *cp,CVECTOR *col,short size,TEXTURE_DETAILS *texture,
-                 int flag)
-
+void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
 {
-  int iVar1;
-  VECTOR local_48;
-  VECTOR local_38;
-  CVECTOR local_28 [2];
-  
-  if (cp <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
-    while (FrameCnt != 0x78654321) {
-      trap(0x400);
-    }
-  }
-  iVar1 = 0xff;
-  if ((uchar)flag == -1) {
-    flag._0_1_ = '\0';
-  }
-  else {
-    iVar1 = CarLightFadeBack;
-    if ((flag & 1U) != 0) {
-      iVar1 = CarLightFadeFront;
-    }
-    if (iVar1 < 0) {
-      return;
-    }
-  }
-  col->r = (uchar)((int)((uint)col->r * iVar1) >> 10);
-  col->b = (uchar)((int)((uint)col->b * iVar1) >> 10);
-  col->g = (uchar)((int)((uint)col->g * iVar1) >> 10);
-  setCopControlWord(2,0,*(undefined4 *)(cp->hd).drawCarMat.m);
-  setCopControlWord(2,0x800,*(undefined4 *)((cp->hd).drawCarMat.m + 2));
-  setCopControlWord(2,0x1000,*(undefined4 *)((cp->hd).drawCarMat.m + 4));
-  setCopControlWord(2,0x1800,*(undefined4 *)((cp->hd).drawCarMat.m + 6));
-  setCopControlWord(2,0x2000,*(undefined4 *)((cp->hd).drawCarMat.m + 8));
-  local_38.vx = (cp->hd).where.t[0] - camera_position.vx;
-  local_38.vy = -camera_position.vy - (cp->hd).where.t[1];
-  local_38.vz = (cp->hd).where.t[2] - camera_position.vz;
-  InitFXPos(&local_38,v1,cp);
-  if (9 < wetness) {
-    local_48.vx = local_38.vx;
-    local_48.vy = local_38.vy;
-    local_48.vz = local_38.vz;
-    local_48.pad = local_38.pad;
-    local_48.vy = MapHeight((VECTOR *)(cp->hd).where.t);
-    local_48.vy = -camera_position.vy - local_48.vy;
-  }
-  col->cd = (uchar)flag;
-  ShowLight(&local_38,col,size,texture);
-  local_28[0].r = col->r >> 1;
-  local_28[0].g = col->g >> 1;
-  local_28[0].b = col->b >> 1;
-  ShowFlare(&local_38,local_28,(short)((uint)((int)size * 0x30000) >> 0x10),
-            ((int)v1->vx + (int)v1->vz >> 2) + ((cp->hd).direction - (int)camera_angle.vy) * 2);
-  DisplayLightReflections(&local_48,col,size,&lightref_texture);
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	VECTOR local_48;
+	VECTOR local_38;
+	CVECTOR local_28[2];
+
+	if (cp <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
+		while (FrameCnt != 0x78654321) {
+			trap(0x400);
+		}
+	}
+	iVar1 = 0xff;
+	if ((uchar)flag == -1) {
+		flag._0_1_ = '\0';
+	}
+	else {
+		iVar1 = CarLightFadeBack;
+		if ((flag & 1U) != 0) {
+			iVar1 = CarLightFadeFront;
+		}
+		if (iVar1 < 0) {
+			return;
+		}
+	}
+	col->r = (uchar)((int)((uint)col->r * iVar1) >> 10);
+	col->b = (uchar)((int)((uint)col->b * iVar1) >> 10);
+	col->g = (uchar)((int)((uint)col->g * iVar1) >> 10);
+	setCopControlWord(2, 0, *(undefined4 *)(cp->hd).drawCarMat.m);
+	setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).drawCarMat.m + 2));
+	setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).drawCarMat.m + 4));
+	setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).drawCarMat.m + 6));
+	setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).drawCarMat.m + 8));
+	local_38.vx = (cp->hd).where.t[0] - camera_position.vx;
+	local_38.vy = -camera_position.vy - (cp->hd).where.t[1];
+	local_38.vz = (cp->hd).where.t[2] - camera_position.vz;
+	InitFXPos(&local_38, v1, cp);
+	if (9 < wetness) {
+		local_48.vx = local_38.vx;
+		local_48.vy = local_38.vy;
+		local_48.vz = local_38.vz;
+		local_48.pad = local_38.pad;
+		local_48.vy = MapHeight((VECTOR *)(cp->hd).where.t);
+		local_48.vy = -camera_position.vy - local_48.vy;
+	}
+	col->cd = (uchar)flag;
+	ShowLight(&local_38, col, size, texture);
+	local_28[0].r = col->r >> 1;
+	local_28[0].g = col->g >> 1;
+	local_28[0].b = col->b >> 1;
+	ShowFlare(&local_38, local_28, (short)((uint)((int)size * 0x30000) >> 0x10),
+		((int)v1->vx + (int)v1->vz >> 2) + ((cp->hd).direction - (int)camera_angle.vy) * 2);
+	DisplayLightReflections(&local_48, col, size, &lightref_texture);
+	return;*/
 }
 
 
@@ -2584,78 +2619,79 @@ void ShowCarlight(SVECTOR *v1,_CAR_DATA *cp,CVECTOR *col,short size,TEXTURE_DETA
 	/* end block 2 */
 	// End Line: 6362
 
-void ShowLight1(VECTOR *v1,CVECTOR *col,short size,TEXTURE_DETAILS *texture)
-
+void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-  uchar uVar1;
-  uint uVar2;
-  int iVar3;
-  DB *pDVar4;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint *puVar5;
-  uint local_24;
-  undefined4 local_20;
-  uint local_1c;
-  uint local_14;
-  undefined4 local_10;
-  uint local_c;
-  int local_8;
-  
-  uVar2 = -(int)size;
-  puVar5 = (uint *)current->primptr;
-  local_c = local_c & 0xffff0000;
-  local_14 = local_14 & 0xffff0000;
-  local_1c = local_1c & 0xffff0000;
-  local_24 = local_24 & 0xffff0000;
-  local_20 = CONCAT22((short)uVar2,size);
-  local_10 = CONCAT22(size,size);
-  setCopReg(2,in_zero,uVar2 & 0xffff | (int)size * -0x10000);
-  setCopReg(2,in_at,local_24);
-  setCopReg(2,uVar2,local_20);
-  setCopReg(2,current,local_1c);
-  setCopReg(2,v1,uVar2 & 0xffff | (uint)(ushort)size << 0x10);
-  setCopReg(2,col,local_14);
-  copFunction(2,0x280030);
-  *(uchar *)(puVar5 + 3) = (texture->coords).u0;
-  *(uchar *)((int)puVar5 + 0xd) = (texture->coords).v0;
-  *(uchar *)(puVar5 + 5) = (texture->coords).u1;
-  *(uchar *)((int)puVar5 + 0x15) = (texture->coords).v1;
-  *(uchar *)(puVar5 + 7) = (texture->coords).u2;
-  *(uchar *)((int)puVar5 + 0x1d) = (texture->coords).v2;
-  *(uchar *)(puVar5 + 9) = (texture->coords).u3;
-  uVar1 = (texture->coords).v3;
-  *(char *)((int)puVar5 + 3) = '\t';
-  *(char *)((int)puVar5 + 7) = '.';
-  *(uchar *)((int)puVar5 + 0x25) = uVar1;
-  *(uchar *)(puVar5 + 1) = col->r;
-  *(uchar *)((int)puVar5 + 5) = col->g;
-  *(uchar *)((int)puVar5 + 6) = col->b;
-  uVar2 = getCopReg(2,0xc);
-  puVar5[2] = uVar2;
-  uVar2 = getCopReg(2,0xd);
-  puVar5[4] = uVar2;
-  uVar2 = getCopReg(2,0xe);
-  puVar5[6] = uVar2;
-  iVar3 = getCopReg(2,0x13);
-  if (0x27 < iVar3) {
-    setCopReg(2,in_zero,local_10);
-    setCopReg(2,in_at,local_c);
-    copFunction(2,0x180001);
-    *(ushort *)((int)puVar5 + 0x16) = texture->tpageid | 0x20;
-    *(ushort *)((int)puVar5 + 0xe) = texture->clutid;
-    local_8 = (iVar3 >> 3) + LightSortCorrect;
-    if (local_8 < 0) {
-      local_8 = 0;
-    }
-    uVar2 = getCopReg(2,0xe);
-    puVar5[8] = uVar2;
-    pDVar4 = current;
-    *puVar5 = *puVar5 & 0xff000000 | current->ot[local_8] & 0xffffff;
-    pDVar4->ot[local_8] = pDVar4->ot[local_8] & 0xff000000 | (uint)puVar5 & 0xffffff;
-    pDVar4->primptr = pDVar4->primptr + 0x28;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uchar uVar1;
+	uint uVar2;
+	int iVar3;
+	DB *pDVar4;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint *puVar5;
+	uint local_24;
+	undefined4 local_20;
+	uint local_1c;
+	uint local_14;
+	undefined4 local_10;
+	uint local_c;
+	int local_8;
+
+	uVar2 = -(int)size;
+	puVar5 = (uint *)current->primptr;
+	local_c = local_c & 0xffff0000;
+	local_14 = local_14 & 0xffff0000;
+	local_1c = local_1c & 0xffff0000;
+	local_24 = local_24 & 0xffff0000;
+	local_20 = CONCAT22((short)uVar2, size);
+	local_10 = CONCAT22(size, size);
+	setCopReg(2, in_zero, uVar2 & 0xffff | (int)size * -0x10000);
+	setCopReg(2, in_at, local_24);
+	setCopReg(2, uVar2, local_20);
+	setCopReg(2, current, local_1c);
+	setCopReg(2, v1, uVar2 & 0xffff | (uint)(ushort)size << 0x10);
+	setCopReg(2, col, local_14);
+	copFunction(2, 0x280030);
+	*(uchar *)(puVar5 + 3) = (texture->coords).u0;
+	*(uchar *)((int)puVar5 + 0xd) = (texture->coords).v0;
+	*(uchar *)(puVar5 + 5) = (texture->coords).u1;
+	*(uchar *)((int)puVar5 + 0x15) = (texture->coords).v1;
+	*(uchar *)(puVar5 + 7) = (texture->coords).u2;
+	*(uchar *)((int)puVar5 + 0x1d) = (texture->coords).v2;
+	*(uchar *)(puVar5 + 9) = (texture->coords).u3;
+	uVar1 = (texture->coords).v3;
+	*(char *)((int)puVar5 + 3) = '\t';
+	*(char *)((int)puVar5 + 7) = '.';
+	*(uchar *)((int)puVar5 + 0x25) = uVar1;
+	*(uchar *)(puVar5 + 1) = col->r;
+	*(uchar *)((int)puVar5 + 5) = col->g;
+	*(uchar *)((int)puVar5 + 6) = col->b;
+	uVar2 = getCopReg(2, 0xc);
+	puVar5[2] = uVar2;
+	uVar2 = getCopReg(2, 0xd);
+	puVar5[4] = uVar2;
+	uVar2 = getCopReg(2, 0xe);
+	puVar5[6] = uVar2;
+	iVar3 = getCopReg(2, 0x13);
+	if (0x27 < iVar3) {
+		setCopReg(2, in_zero, local_10);
+		setCopReg(2, in_at, local_c);
+		copFunction(2, 0x180001);
+		*(ushort *)((int)puVar5 + 0x16) = texture->tpageid | 0x20;
+		*(ushort *)((int)puVar5 + 0xe) = texture->clutid;
+		local_8 = (iVar3 >> 3) + LightSortCorrect;
+		if (local_8 < 0) {
+			local_8 = 0;
+		}
+		uVar2 = getCopReg(2, 0xe);
+		puVar5[8] = uVar2;
+		pDVar4 = current;
+		*puVar5 = *puVar5 & 0xff000000 | current->ot[local_8] & 0xffffff;
+		pDVar4->ot[local_8] = pDVar4->ot[local_8] & 0xff000000 | (uint)puVar5 & 0xffffff;
+		pDVar4->primptr = pDVar4->primptr + 0x28;
+	}
+	return;*/
 }
 
 
@@ -2738,353 +2774,354 @@ void ShowLight1(VECTOR *v1,CVECTOR *col,short size,TEXTURE_DETAILS *texture)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void ShowLight(VECTOR *v1,CVECTOR *col,short size,TEXTURE_DETAILS *texture)
-
+void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-  uchar uVar1;
-  short sVar2;
-  short sVar3;
-  bool bVar4;
-  DB *pDVar5;
-  undefined4 in_zero;
-  undefined4 in_at;
-  undefined2 uVar6;
-  byte bVar7;
-  VECTOR *pVVar8;
-  LAMP_STREAK *pLVar9;
-  undefined2 *puVar10;
-  int iVar11;
-  CVECTOR *pCVar12;
-  int iVar13;
-  int iVar14;
-  int iVar15;
-  uint uVar16;
-  short *psVar17;
-  int iVar18;
-  char *pcVar19;
-  uint *puVar20;
-  uint *puVar21;
-  int iVar22;
-  int iVar23;
-  uint local_58;
-  undefined4 local_54;
-  undefined4 local_50;
-  undefined4 local_4c;
-  uint local_48;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
-  short local_38;
-  short local_36;
-  short local_30;
-  short local_2e;
-  int local_28;
-  
-  iVar22 = (int)size;
-  pVVar8 = v1;
-  pCVar12 = col;
-  Apply_Inv_CameraMatrix();
-  setCopControlWord(2,0x2800,v1->vx);
-  setCopControlWord(2,0x3000,v1->vy);
-  setCopControlWord(2,0x3800,v1->vz);
-  setCopControlWord(2,0,norot.m[0]._0_4_);
-  setCopControlWord(2,0x800,norot.m._4_4_);
-  setCopControlWord(2,0x1000,norot.m[1]._2_4_);
-  setCopControlWord(2,0x1800,norot.m[2]._0_4_);
-  setCopControlWord(2,0x2000,norot._16_4_);
-  uVar16 = -iVar22;
-  local_3c = (uint)local_3c._2_2_ << 0x10;
-  local_44 = (uint)local_44._2_2_ << 0x10;
-  local_4c = (uint)local_4c._2_2_ << 0x10;
-  local_54 = (uint)local_54._2_2_ << 0x10;
-  local_50 = CONCAT22((short)uVar16,size);
-  local_58 = uVar16 & 0xffff | iVar22 * -0x10000;
-  local_40 = CONCAT22(size,size);
-  local_48 = uVar16 & 0xffff | (uint)(ushort)size << 0x10;
-  setCopReg(2,in_zero,local_58);
-  setCopReg(2,in_at,local_54);
-  setCopReg(2,&local_58,local_50);
-  setCopReg(2,uVar16,local_4c);
-  setCopReg(2,pVVar8,local_48);
-  setCopReg(2,pCVar12,local_44);
-  copFunction(2,0x280030);
-  puVar21 = (uint *)current->primptr;
-  *(uchar *)(puVar21 + 3) = (texture->coords).u0;
-  *(uchar *)((int)puVar21 + 0xd) = (texture->coords).v0;
-  *(uchar *)(puVar21 + 5) = (texture->coords).u1;
-  *(uchar *)((int)puVar21 + 0x15) = (texture->coords).v1;
-  *(uchar *)(puVar21 + 7) = (texture->coords).u2;
-  *(uchar *)((int)puVar21 + 0x1d) = (texture->coords).v2;
-  *(uchar *)(puVar21 + 9) = (texture->coords).u3;
-  uVar1 = (texture->coords).v3;
-  *(char *)((int)puVar21 + 3) = '\t';
-  *(char *)((int)puVar21 + 7) = '.';
-  *(uchar *)((int)puVar21 + 0x25) = uVar1;
-  *(uchar *)(puVar21 + 1) = col->r;
-  *(uchar *)((int)puVar21 + 5) = col->g;
-  *(uchar *)((int)puVar21 + 6) = col->b;
-  uVar16 = getCopReg(2,0xc);
-  puVar21[2] = uVar16;
-  uVar16 = getCopReg(2,0xd);
-  puVar21[4] = uVar16;
-  uVar16 = getCopReg(2,0xe);
-  puVar21[6] = uVar16;
-  iVar23 = getCopReg(2,0x13);
-  if (0x27 < iVar23) {
-    setCopReg(2,in_zero,local_40);
-    setCopReg(2,in_at,local_3c);
-    copFunction(2,0x180001);
-    *(ushort *)((int)puVar21 + 0x16) = texture->tpageid | 0x20;
-    *(ushort *)((int)puVar21 + 0xe) = texture->clutid;
-    local_28 = (iVar23 >> 3) + LightSortCorrect;
-    if (local_28 < 0) {
-      local_28 = 0;
-    }
-    uVar16 = getCopReg(2,0xe);
-    puVar21[8] = uVar16;
-    pDVar5 = current;
-    if (local_28 < 10000) {
-      iVar23 = (int)(&DAT_00002710 + -local_28) >> 0xd;
-    }
-    else {
-      iVar23 = 0;
-    }
-    *puVar21 = *puVar21 & 0xff000000 | current->ot[local_28] & 0xffffff;
-    pDVar5->ot[local_28] = pDVar5->ot[local_28] & 0xff000000 | (uint)puVar21 & 0xffffff;
-    bVar4 = 4 < CameraCnt;
-    pDVar5->primptr = pDVar5->primptr + 0x28;
-    iVar18 = FrameCnt;
-    iVar14 = LightIndex;
-    if (bVar4) {
-      bVar7 = col->cd;
-      iVar13 = -1;
-      if (((bVar7 & 0x20) == 0) || (gLightsOn == 0)) {
-        if ((bVar7 & 2) == 0) {
-          if ((bVar7 & 4) == 0) {
-            if ((bVar7 & 8) == 0) {
-              if ((bVar7 & 0x10) != 0) {
-                iVar13 = 3;
-              }
-            }
-            else {
-              iVar13 = 2;
-            }
-          }
-          else {
-            iVar13 = 1;
-          }
-        }
-        else {
-          iVar13 = 0;
-        }
-      }
-      else {
-        if ((CameraChanged == '\0') &&
-           ((int)Known_Lamps[LightIndex].clock == (FrameCnt & 0xffffU) - 1)) {
-          local_38 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].x;
-          local_36 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].y;
-          iVar13 = (int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1;
-          local_30 = (short)iVar13;
-          sVar2 = *(short *)((int)puVar21 + 10);
-          sVar3 = *(short *)((int)puVar21 + 0x22);
-          Known_Lamps[LightIndex].clock = (short)FrameCnt;
-          iVar15 = (int)sVar2 + (int)sVar3 >> 1;
-          Known_Lamps[iVar14].light_trails[iVar18 & 3].x = local_30;
-          iVar13 = local_38 - iVar13;
-          if (iVar13 < 0) {
-            iVar13 = -iVar13;
-          }
-          local_2e = (short)iVar15;
-          Known_Lamps[iVar14].light_trails[FrameCnt & 3].y = local_2e;
-          iVar15 = local_36 - iVar15;
-          if (iVar15 < 0) {
-            iVar15 = -iVar15;
-          }
-          iVar14 = (int)*(short *)(puVar21 + 2) - (int)*(short *)(puVar21 + 8);
-          if (iVar14 < 0) {
-            iVar14 = -iVar14;
-          }
-          if ((1 < iVar22) && (1 < iVar13 + iVar15)) {
-            puVar20 = (uint *)pDVar5->primptr;
-            uVar6 = (undefined2)((int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1);
-            *(undefined2 *)(puVar20 + 4) = uVar6;
-            *(undefined2 *)(puVar20 + 2) = uVar6;
-            iVar18 = ratan2((int)local_38 - (int)local_30,(int)local_36 - (int)local_2e);
-            if ((col->cd & 0x40) == 0) {
-              uVar16 = -iVar18 & 0xfff;
-              iVar18 = rcossin_tbl[uVar16 * 2 + 1] * iVar14 * 3 >> 0xf;
-              iVar14 = rcossin_tbl[uVar16 * 2] * iVar14 * 3 >> 0xf;
-            }
-            else {
-              uVar16 = -iVar18 & 0xfff;
-              iVar18 = rcossin_tbl[uVar16 * 2 + 1] * iVar14 * 3 >> 0x10;
-              iVar14 = rcossin_tbl[uVar16 * 2] * iVar14 * 3 >> 0x10;
-            }
-            puVar20[2] = (local_2e + iVar14) * 0x10000 + local_30 + iVar18;
-            puVar20[4] = (local_2e - iVar14) * 0x10000 + (local_30 - iVar18);
-            puVar20[6] = (local_36 - iVar23) * 0x10000 + (int)local_38;
-            *(char *)((int)puVar20 + 3) = '\b';
-            *(char *)((int)puVar20 + 7) = ':';
-            puVar20[8] = (local_36 + iVar23) * 0x10000 + (int)local_38;
-            *(uchar *)(puVar20 + 1) = col->r >> 1;
-            *(byte *)((int)puVar20 + 5) = col->g >> 1;
-            *(byte *)((int)puVar20 + 6) = col->b >> 1;
-            *(uchar *)(puVar20 + 3) = col->r >> 1;
-            *(byte *)((int)puVar20 + 0xd) = col->g >> 1;
-            bVar7 = col->b;
-            *(char *)(puVar20 + 5) = '\0';
-            *(char *)((int)puVar20 + 0x15) = '\0';
-            *(char *)((int)puVar20 + 0x16) = '\0';
-            *(char *)(puVar20 + 7) = '\0';
-            *(char *)((int)puVar20 + 0x1d) = '\0';
-            *(char *)((int)puVar20 + 0x1e) = '\0';
-            *(byte *)((int)puVar20 + 0xe) = bVar7 >> 1;
-            pDVar5 = current;
-            *puVar20 = *puVar20 & 0xff000000 | current->ot[local_28] & 0xffffff;
-            pDVar5->ot[local_28] = pDVar5->ot[local_28] & 0xff000000 | (uint)puVar20 & 0xffffff;
-            pcVar19 = pDVar5->primptr;
-            pDVar5->primptr = pcVar19 + 0x24;
-            pcVar19[0x27] = '\a';
-            pcVar19[0x2b] = '$';
-            pDVar5 = current;
-            *(undefined2 *)(pcVar19 + 0x2c) = 0xffff;
-            *(undefined2 *)(pcVar19 + 0x2e) = 0xffff;
-            *(undefined2 *)(pcVar19 + 0x34) = 0xffff;
-            *(undefined2 *)(pcVar19 + 0x36) = 0xffff;
-            *(undefined2 *)(pcVar19 + 0x3c) = 0xffff;
-            *(undefined2 *)(pcVar19 + 0x3e) = 0xffff;
-            *(undefined2 *)(pcVar19 + 0x3a) = 0x20;
-            *(uint *)(pcVar19 + 0x24) =
-                 *(uint *)(pcVar19 + 0x24) & 0xff000000 | pDVar5->ot[local_28] & 0xffffff;
-            pDVar5->ot[local_28] =
-                 pDVar5->ot[local_28] & 0xff000000 | (uint)(pcVar19 + 0x24) & 0xffffff;
-            pDVar5->primptr = pDVar5->primptr + 0x20;
-          }
-        }
-        else {
-          iVar14 = 3;
-          pLVar9 = Known_Lamps + LightIndex;
-          do {
-            pLVar9->light_trails[0].x =
-                 (short)((int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1);
-            iVar14 = iVar14 + -1;
-            pLVar9->light_trails[0].y =
-                 (short)((int)*(short *)((int)puVar21 + 10) + (int)*(short *)((int)puVar21 + 0x22)
-                        >> 1);
-            pLVar9 = (LAMP_STREAK *)(pLVar9->light_trails + 1);
-          } while (-1 < iVar14);
-          Known_Lamps[LightIndex].clock = (short)FrameCnt;
-        }
-        iVar13 = -1;
-      }
-      iVar18 = FrameCnt;
-      iVar14 = gcar_num;
-      if (-1 < iVar13) {
-        if ((CameraChanged == '\0') &&
-           (psVar17 = car_data[gcar_num].ap.old_clock + iVar13,
-           (int)*psVar17 == (FrameCnt & 0xffffU) - 1)) {
-          local_38 = car_data[gcar_num].ap.light_trails[iVar13 * 4 + (FrameCnt - 3U & 3)].x;
-          local_36 = car_data[gcar_num].ap.light_trails[iVar13 * 4 + (FrameCnt - 3U & 3)].y;
-          iVar11 = (int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1;
-          local_30 = (short)iVar11;
-          sVar2 = *(short *)((int)puVar21 + 10);
-          sVar3 = *(short *)((int)puVar21 + 0x22);
-          iVar11 = local_38 - iVar11;
-          *psVar17 = (short)FrameCnt;
-          iVar15 = (int)sVar2 + (int)sVar3 >> 1;
-          car_data[iVar14].ap.light_trails[iVar13 * 4 + (iVar18 & 3U)].x = local_30;
-          iVar18 = iVar11;
-          if (iVar11 < 0) {
-            iVar18 = -iVar11;
-          }
-          local_2e = (short)iVar15;
-          car_data[iVar14].ap.light_trails[iVar13 * 4 + (FrameCnt & 3U)].y = local_2e;
-          iVar15 = local_36 - iVar15;
-          iVar14 = (int)*(short *)(puVar21 + 2) - (int)*(short *)(puVar21 + 8);
-          if (iVar14 < 0) {
-            iVar14 = -iVar14;
-          }
-          if (iVar15 < 0) {
-            iVar15 = -iVar15;
-          }
-          if (iVar22 < 2) {
-            return;
-          }
-          if (iVar18 + iVar15 < 2) {
-            return;
-          }
-          puVar21 = (uint *)current->primptr;
-          iVar22 = ratan2(iVar11);
-          iVar18 = rcossin_tbl[(-iVar22 & 0xfffU) * 2 + 1] * iVar14 * 3 >> 0xf;
-          iVar22 = rcossin_tbl[(-iVar22 & 0xfffU) * 2] * iVar14 * 3 >> 0xf;
-          puVar21[2] = (local_2e + iVar22) * 0x10000 + local_30 + iVar18;
-          puVar21[4] = (local_2e - iVar22) * 0x10000 + (local_30 - iVar18);
-          puVar21[6] = (local_36 - iVar23) * 0x10000 + (int)local_38;
-          *(char *)((int)puVar21 + 3) = '\b';
-          *(char *)((int)puVar21 + 7) = ':';
-          puVar21[8] = (local_36 + iVar23) * 0x10000 + (int)local_38;
-          if ((col->cd & 0x18) == 0) {
-            *(uchar *)(puVar21 + 1) = col->r;
-            *(uchar *)((int)puVar21 + 5) = col->g;
-            *(uchar *)((int)puVar21 + 6) = col->b;
-            *(uchar *)(puVar21 + 3) = col->r;
-            *(uchar *)((int)puVar21 + 0xd) = col->g;
-            bVar7 = col->b;
-          }
-          else {
-            *(uchar *)(puVar21 + 1) = col->r >> 1;
-            *(byte *)((int)puVar21 + 5) = col->g >> 1;
-            *(byte *)((int)puVar21 + 6) = col->b >> 1;
-            *(uchar *)(puVar21 + 3) = col->r >> 1;
-            *(byte *)((int)puVar21 + 0xd) = col->g >> 1;
-            bVar7 = col->b >> 1;
-          }
-          *(byte *)((int)puVar21 + 0xe) = bVar7;
-          *(char *)(puVar21 + 5) = '\0';
-          *(char *)((int)puVar21 + 0x15) = '\0';
-          *(char *)((int)puVar21 + 0x16) = '\0';
-          *(char *)(puVar21 + 7) = '\0';
-          *(char *)((int)puVar21 + 0x1d) = '\0';
-          *(char *)((int)puVar21 + 0x1e) = '\0';
-          pDVar5 = current;
-          *puVar21 = *puVar21 & 0xff000000 | current->ot[local_28] & 0xffffff;
-          pDVar5->ot[local_28] = pDVar5->ot[local_28] & 0xff000000 | (uint)puVar21 & 0xffffff;
-          pcVar19 = pDVar5->primptr;
-          pDVar5->primptr = pcVar19 + 0x24;
-          pcVar19[0x27] = '\a';
-          pcVar19[0x2b] = '$';
-          pDVar5 = current;
-          *(undefined2 *)(pcVar19 + 0x2c) = 0xffff;
-          *(undefined2 *)(pcVar19 + 0x2e) = 0xffff;
-          *(undefined2 *)(pcVar19 + 0x34) = 0xffff;
-          *(undefined2 *)(pcVar19 + 0x36) = 0xffff;
-          *(undefined2 *)(pcVar19 + 0x3c) = 0xffff;
-          *(undefined2 *)(pcVar19 + 0x3e) = 0xffff;
-          *(undefined2 *)(pcVar19 + 0x3a) = 0x20;
-          *(uint *)(pcVar19 + 0x24) =
-               *(uint *)(pcVar19 + 0x24) & 0xff000000 | pDVar5->ot[local_28] & 0xffffff;
-          pDVar5->ot[local_28] =
-               pDVar5->ot[local_28] & 0xff000000 | (uint)(pcVar19 + 0x24) & 0xffffff;
-          pDVar5->primptr = pDVar5->primptr + 0x20;
-          return;
-        }
-        iVar22 = 3;
-        psVar17 = &car_data[gcar_num].ap.light_trails[iVar13 * 4].y;
-        iVar23 = iVar13 * 0x10 + gcar_num * 0x29c;
-        do {
-          puVar10 = (undefined2 *)((int)&car_data[0].ap.light_trails[0].x + iVar23);
-          iVar23 = iVar23 + 4;
-          *puVar10 = (short)((int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1);
-          iVar22 = iVar22 + -1;
-          *psVar17 = (short)((int)*(short *)((int)puVar21 + 10) +
-                             (int)*(short *)((int)puVar21 + 0x22) >> 1);
-          psVar17 = psVar17 + 2;
-        } while (-1 < iVar22);
-        car_data[gcar_num].ap.old_clock[iVar13] = (short)FrameCnt;
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uchar uVar1;
+	short sVar2;
+	short sVar3;
+	bool bVar4;
+	DB *pDVar5;
+	undefined4 in_zero;
+	undefined4 in_at;
+	undefined2 uVar6;
+	byte bVar7;
+	VECTOR *pVVar8;
+	LAMP_STREAK *pLVar9;
+	undefined2 *puVar10;
+	int iVar11;
+	CVECTOR *pCVar12;
+	int iVar13;
+	int iVar14;
+	int iVar15;
+	uint uVar16;
+	short *psVar17;
+	int iVar18;
+	char *pcVar19;
+	uint *puVar20;
+	uint *puVar21;
+	int iVar22;
+	int iVar23;
+	uint local_58;
+	undefined4 local_54;
+	undefined4 local_50;
+	undefined4 local_4c;
+	uint local_48;
+	undefined4 local_44;
+	undefined4 local_40;
+	undefined4 local_3c;
+	short local_38;
+	short local_36;
+	short local_30;
+	short local_2e;
+	int local_28;
+
+	iVar22 = (int)size;
+	pVVar8 = v1;
+	pCVar12 = col;
+	Apply_Inv_CameraMatrix();
+	setCopControlWord(2, 0x2800, v1->vx);
+	setCopControlWord(2, 0x3000, v1->vy);
+	setCopControlWord(2, 0x3800, v1->vz);
+	setCopControlWord(2, 0, norot.m[0]._0_4_);
+	setCopControlWord(2, 0x800, norot.m._4_4_);
+	setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, norot._16_4_);
+	uVar16 = -iVar22;
+	local_3c = (uint)local_3c._2_2_ << 0x10;
+	local_44 = (uint)local_44._2_2_ << 0x10;
+	local_4c = (uint)local_4c._2_2_ << 0x10;
+	local_54 = (uint)local_54._2_2_ << 0x10;
+	local_50 = CONCAT22((short)uVar16, size);
+	local_58 = uVar16 & 0xffff | iVar22 * -0x10000;
+	local_40 = CONCAT22(size, size);
+	local_48 = uVar16 & 0xffff | (uint)(ushort)size << 0x10;
+	setCopReg(2, in_zero, local_58);
+	setCopReg(2, in_at, local_54);
+	setCopReg(2, &local_58, local_50);
+	setCopReg(2, uVar16, local_4c);
+	setCopReg(2, pVVar8, local_48);
+	setCopReg(2, pCVar12, local_44);
+	copFunction(2, 0x280030);
+	puVar21 = (uint *)current->primptr;
+	*(uchar *)(puVar21 + 3) = (texture->coords).u0;
+	*(uchar *)((int)puVar21 + 0xd) = (texture->coords).v0;
+	*(uchar *)(puVar21 + 5) = (texture->coords).u1;
+	*(uchar *)((int)puVar21 + 0x15) = (texture->coords).v1;
+	*(uchar *)(puVar21 + 7) = (texture->coords).u2;
+	*(uchar *)((int)puVar21 + 0x1d) = (texture->coords).v2;
+	*(uchar *)(puVar21 + 9) = (texture->coords).u3;
+	uVar1 = (texture->coords).v3;
+	*(char *)((int)puVar21 + 3) = '\t';
+	*(char *)((int)puVar21 + 7) = '.';
+	*(uchar *)((int)puVar21 + 0x25) = uVar1;
+	*(uchar *)(puVar21 + 1) = col->r;
+	*(uchar *)((int)puVar21 + 5) = col->g;
+	*(uchar *)((int)puVar21 + 6) = col->b;
+	uVar16 = getCopReg(2, 0xc);
+	puVar21[2] = uVar16;
+	uVar16 = getCopReg(2, 0xd);
+	puVar21[4] = uVar16;
+	uVar16 = getCopReg(2, 0xe);
+	puVar21[6] = uVar16;
+	iVar23 = getCopReg(2, 0x13);
+	if (0x27 < iVar23) {
+		setCopReg(2, in_zero, local_40);
+		setCopReg(2, in_at, local_3c);
+		copFunction(2, 0x180001);
+		*(ushort *)((int)puVar21 + 0x16) = texture->tpageid | 0x20;
+		*(ushort *)((int)puVar21 + 0xe) = texture->clutid;
+		local_28 = (iVar23 >> 3) + LightSortCorrect;
+		if (local_28 < 0) {
+			local_28 = 0;
+		}
+		uVar16 = getCopReg(2, 0xe);
+		puVar21[8] = uVar16;
+		pDVar5 = current;
+		if (local_28 < 10000) {
+			iVar23 = (int)(&DAT_00002710 + -local_28) >> 0xd;
+		}
+		else {
+			iVar23 = 0;
+		}
+		*puVar21 = *puVar21 & 0xff000000 | current->ot[local_28] & 0xffffff;
+		pDVar5->ot[local_28] = pDVar5->ot[local_28] & 0xff000000 | (uint)puVar21 & 0xffffff;
+		bVar4 = 4 < CameraCnt;
+		pDVar5->primptr = pDVar5->primptr + 0x28;
+		iVar18 = FrameCnt;
+		iVar14 = LightIndex;
+		if (bVar4) {
+			bVar7 = col->cd;
+			iVar13 = -1;
+			if (((bVar7 & 0x20) == 0) || (gLightsOn == 0)) {
+				if ((bVar7 & 2) == 0) {
+					if ((bVar7 & 4) == 0) {
+						if ((bVar7 & 8) == 0) {
+							if ((bVar7 & 0x10) != 0) {
+								iVar13 = 3;
+							}
+						}
+						else {
+							iVar13 = 2;
+						}
+					}
+					else {
+						iVar13 = 1;
+					}
+				}
+				else {
+					iVar13 = 0;
+				}
+			}
+			else {
+				if ((CameraChanged == '\0') &&
+					((int)Known_Lamps[LightIndex].clock == (FrameCnt & 0xffffU) - 1)) {
+					local_38 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].x;
+					local_36 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].y;
+					iVar13 = (int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1;
+					local_30 = (short)iVar13;
+					sVar2 = *(short *)((int)puVar21 + 10);
+					sVar3 = *(short *)((int)puVar21 + 0x22);
+					Known_Lamps[LightIndex].clock = (short)FrameCnt;
+					iVar15 = (int)sVar2 + (int)sVar3 >> 1;
+					Known_Lamps[iVar14].light_trails[iVar18 & 3].x = local_30;
+					iVar13 = local_38 - iVar13;
+					if (iVar13 < 0) {
+						iVar13 = -iVar13;
+					}
+					local_2e = (short)iVar15;
+					Known_Lamps[iVar14].light_trails[FrameCnt & 3].y = local_2e;
+					iVar15 = local_36 - iVar15;
+					if (iVar15 < 0) {
+						iVar15 = -iVar15;
+					}
+					iVar14 = (int)*(short *)(puVar21 + 2) - (int)*(short *)(puVar21 + 8);
+					if (iVar14 < 0) {
+						iVar14 = -iVar14;
+					}
+					if ((1 < iVar22) && (1 < iVar13 + iVar15)) {
+						puVar20 = (uint *)pDVar5->primptr;
+						uVar6 = (undefined2)((int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1);
+						*(undefined2 *)(puVar20 + 4) = uVar6;
+						*(undefined2 *)(puVar20 + 2) = uVar6;
+						iVar18 = ratan2((int)local_38 - (int)local_30, (int)local_36 - (int)local_2e);
+						if ((col->cd & 0x40) == 0) {
+							uVar16 = -iVar18 & 0xfff;
+							iVar18 = rcossin_tbl[uVar16 * 2 + 1] * iVar14 * 3 >> 0xf;
+							iVar14 = rcossin_tbl[uVar16 * 2] * iVar14 * 3 >> 0xf;
+						}
+						else {
+							uVar16 = -iVar18 & 0xfff;
+							iVar18 = rcossin_tbl[uVar16 * 2 + 1] * iVar14 * 3 >> 0x10;
+							iVar14 = rcossin_tbl[uVar16 * 2] * iVar14 * 3 >> 0x10;
+						}
+						puVar20[2] = (local_2e + iVar14) * 0x10000 + local_30 + iVar18;
+						puVar20[4] = (local_2e - iVar14) * 0x10000 + (local_30 - iVar18);
+						puVar20[6] = (local_36 - iVar23) * 0x10000 + (int)local_38;
+						*(char *)((int)puVar20 + 3) = '\b';
+						*(char *)((int)puVar20 + 7) = ':';
+						puVar20[8] = (local_36 + iVar23) * 0x10000 + (int)local_38;
+						*(uchar *)(puVar20 + 1) = col->r >> 1;
+						*(byte *)((int)puVar20 + 5) = col->g >> 1;
+						*(byte *)((int)puVar20 + 6) = col->b >> 1;
+						*(uchar *)(puVar20 + 3) = col->r >> 1;
+						*(byte *)((int)puVar20 + 0xd) = col->g >> 1;
+						bVar7 = col->b;
+						*(char *)(puVar20 + 5) = '\0';
+						*(char *)((int)puVar20 + 0x15) = '\0';
+						*(char *)((int)puVar20 + 0x16) = '\0';
+						*(char *)(puVar20 + 7) = '\0';
+						*(char *)((int)puVar20 + 0x1d) = '\0';
+						*(char *)((int)puVar20 + 0x1e) = '\0';
+						*(byte *)((int)puVar20 + 0xe) = bVar7 >> 1;
+						pDVar5 = current;
+						*puVar20 = *puVar20 & 0xff000000 | current->ot[local_28] & 0xffffff;
+						pDVar5->ot[local_28] = pDVar5->ot[local_28] & 0xff000000 | (uint)puVar20 & 0xffffff;
+						pcVar19 = pDVar5->primptr;
+						pDVar5->primptr = pcVar19 + 0x24;
+						pcVar19[0x27] = '\a';
+						pcVar19[0x2b] = '$';
+						pDVar5 = current;
+						*(undefined2 *)(pcVar19 + 0x2c) = 0xffff;
+						*(undefined2 *)(pcVar19 + 0x2e) = 0xffff;
+						*(undefined2 *)(pcVar19 + 0x34) = 0xffff;
+						*(undefined2 *)(pcVar19 + 0x36) = 0xffff;
+						*(undefined2 *)(pcVar19 + 0x3c) = 0xffff;
+						*(undefined2 *)(pcVar19 + 0x3e) = 0xffff;
+						*(undefined2 *)(pcVar19 + 0x3a) = 0x20;
+						*(uint *)(pcVar19 + 0x24) =
+							*(uint *)(pcVar19 + 0x24) & 0xff000000 | pDVar5->ot[local_28] & 0xffffff;
+						pDVar5->ot[local_28] =
+							pDVar5->ot[local_28] & 0xff000000 | (uint)(pcVar19 + 0x24) & 0xffffff;
+						pDVar5->primptr = pDVar5->primptr + 0x20;
+					}
+				}
+				else {
+					iVar14 = 3;
+					pLVar9 = Known_Lamps + LightIndex;
+					do {
+						pLVar9->light_trails[0].x =
+							(short)((int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1);
+						iVar14 = iVar14 + -1;
+						pLVar9->light_trails[0].y =
+							(short)((int)*(short *)((int)puVar21 + 10) + (int)*(short *)((int)puVar21 + 0x22)
+								>> 1);
+						pLVar9 = (LAMP_STREAK *)(pLVar9->light_trails + 1);
+					} while (-1 < iVar14);
+					Known_Lamps[LightIndex].clock = (short)FrameCnt;
+				}
+				iVar13 = -1;
+			}
+			iVar18 = FrameCnt;
+			iVar14 = gcar_num;
+			if (-1 < iVar13) {
+				if ((CameraChanged == '\0') &&
+					(psVar17 = car_data[gcar_num].ap.old_clock + iVar13,
+					(int)*psVar17 == (FrameCnt & 0xffffU) - 1)) {
+					local_38 = car_data[gcar_num].ap.light_trails[iVar13 * 4 + (FrameCnt - 3U & 3)].x;
+					local_36 = car_data[gcar_num].ap.light_trails[iVar13 * 4 + (FrameCnt - 3U & 3)].y;
+					iVar11 = (int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1;
+					local_30 = (short)iVar11;
+					sVar2 = *(short *)((int)puVar21 + 10);
+					sVar3 = *(short *)((int)puVar21 + 0x22);
+					iVar11 = local_38 - iVar11;
+					*psVar17 = (short)FrameCnt;
+					iVar15 = (int)sVar2 + (int)sVar3 >> 1;
+					car_data[iVar14].ap.light_trails[iVar13 * 4 + (iVar18 & 3U)].x = local_30;
+					iVar18 = iVar11;
+					if (iVar11 < 0) {
+						iVar18 = -iVar11;
+					}
+					local_2e = (short)iVar15;
+					car_data[iVar14].ap.light_trails[iVar13 * 4 + (FrameCnt & 3U)].y = local_2e;
+					iVar15 = local_36 - iVar15;
+					iVar14 = (int)*(short *)(puVar21 + 2) - (int)*(short *)(puVar21 + 8);
+					if (iVar14 < 0) {
+						iVar14 = -iVar14;
+					}
+					if (iVar15 < 0) {
+						iVar15 = -iVar15;
+					}
+					if (iVar22 < 2) {
+						return;
+					}
+					if (iVar18 + iVar15 < 2) {
+						return;
+					}
+					puVar21 = (uint *)current->primptr;
+					iVar22 = ratan2(iVar11);
+					iVar18 = rcossin_tbl[(-iVar22 & 0xfffU) * 2 + 1] * iVar14 * 3 >> 0xf;
+					iVar22 = rcossin_tbl[(-iVar22 & 0xfffU) * 2] * iVar14 * 3 >> 0xf;
+					puVar21[2] = (local_2e + iVar22) * 0x10000 + local_30 + iVar18;
+					puVar21[4] = (local_2e - iVar22) * 0x10000 + (local_30 - iVar18);
+					puVar21[6] = (local_36 - iVar23) * 0x10000 + (int)local_38;
+					*(char *)((int)puVar21 + 3) = '\b';
+					*(char *)((int)puVar21 + 7) = ':';
+					puVar21[8] = (local_36 + iVar23) * 0x10000 + (int)local_38;
+					if ((col->cd & 0x18) == 0) {
+						*(uchar *)(puVar21 + 1) = col->r;
+						*(uchar *)((int)puVar21 + 5) = col->g;
+						*(uchar *)((int)puVar21 + 6) = col->b;
+						*(uchar *)(puVar21 + 3) = col->r;
+						*(uchar *)((int)puVar21 + 0xd) = col->g;
+						bVar7 = col->b;
+					}
+					else {
+						*(uchar *)(puVar21 + 1) = col->r >> 1;
+						*(byte *)((int)puVar21 + 5) = col->g >> 1;
+						*(byte *)((int)puVar21 + 6) = col->b >> 1;
+						*(uchar *)(puVar21 + 3) = col->r >> 1;
+						*(byte *)((int)puVar21 + 0xd) = col->g >> 1;
+						bVar7 = col->b >> 1;
+					}
+					*(byte *)((int)puVar21 + 0xe) = bVar7;
+					*(char *)(puVar21 + 5) = '\0';
+					*(char *)((int)puVar21 + 0x15) = '\0';
+					*(char *)((int)puVar21 + 0x16) = '\0';
+					*(char *)(puVar21 + 7) = '\0';
+					*(char *)((int)puVar21 + 0x1d) = '\0';
+					*(char *)((int)puVar21 + 0x1e) = '\0';
+					pDVar5 = current;
+					*puVar21 = *puVar21 & 0xff000000 | current->ot[local_28] & 0xffffff;
+					pDVar5->ot[local_28] = pDVar5->ot[local_28] & 0xff000000 | (uint)puVar21 & 0xffffff;
+					pcVar19 = pDVar5->primptr;
+					pDVar5->primptr = pcVar19 + 0x24;
+					pcVar19[0x27] = '\a';
+					pcVar19[0x2b] = '$';
+					pDVar5 = current;
+					*(undefined2 *)(pcVar19 + 0x2c) = 0xffff;
+					*(undefined2 *)(pcVar19 + 0x2e) = 0xffff;
+					*(undefined2 *)(pcVar19 + 0x34) = 0xffff;
+					*(undefined2 *)(pcVar19 + 0x36) = 0xffff;
+					*(undefined2 *)(pcVar19 + 0x3c) = 0xffff;
+					*(undefined2 *)(pcVar19 + 0x3e) = 0xffff;
+					*(undefined2 *)(pcVar19 + 0x3a) = 0x20;
+					*(uint *)(pcVar19 + 0x24) =
+						*(uint *)(pcVar19 + 0x24) & 0xff000000 | pDVar5->ot[local_28] & 0xffffff;
+					pDVar5->ot[local_28] =
+						pDVar5->ot[local_28] & 0xff000000 | (uint)(pcVar19 + 0x24) & 0xffffff;
+					pDVar5->primptr = pDVar5->primptr + 0x20;
+					return;
+				}
+				iVar22 = 3;
+				psVar17 = &car_data[gcar_num].ap.light_trails[iVar13 * 4].y;
+				iVar23 = iVar13 * 0x10 + gcar_num * 0x29c;
+				do {
+					puVar10 = (undefined2 *)((int)&car_data[0].ap.light_trails[0].x + iVar23);
+					iVar23 = iVar23 + 4;
+					*puVar10 = (short)((int)*(short *)(puVar21 + 2) + (int)*(short *)(puVar21 + 8) >> 1);
+					iVar22 = iVar22 + -1;
+					*psVar17 = (short)((int)*(short *)((int)puVar21 + 10) +
+						(int)*(short *)((int)puVar21 + 0x22) >> 1);
+					psVar17 = psVar17 + 2;
+				} while (-1 < iVar22);
+				car_data[gcar_num].ap.old_clock[iVar13] = (short)FrameCnt;
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -3109,90 +3146,91 @@ void ShowLight(VECTOR *v1,CVECTOR *col,short size,TEXTURE_DETAILS *texture)
 	/* end block 2 */
 	// End Line: 7137
 
-void ShowGroundLight(VECTOR *v1,CVECTOR *col,short size)
-
+void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 {
-  ushort uVar1;
-  DB *pDVar2;
-  ushort uVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  int iVar7;
-  uint *puVar8;
-  undefined4 local_28;
-  uint local_24;
-  uint local_1c;
-  undefined4 local_18;
-  uint local_14;
-  uint local_c;
-  
-  iVar7 = (int)size;
-  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-  setCopControlWord(2,0x2800,dummy.vx);
-  setCopControlWord(2,0x3000,dummy.vy);
-  setCopControlWord(2,0x3800,dummy.vz);
-  uVar1 = *(ushort *)&v1->vy;
-  size = *(ushort *)&v1->vx - size;
-  uVar6 = iVar7 + (uint)*(ushort *)&v1->vz;
-  uVar4 = iVar7 + (uint)*(ushort *)&v1->vx;
-  uVar5 = (uint)*(ushort *)&v1->vz - iVar7;
-  local_28 = CONCAT22(uVar1,size);
-  local_24 = local_24 & 0xffff0000 | uVar6 & 0xffff;
-  local_1c = local_1c & 0xffff0000 | uVar6 & 0xffff;
-  local_18 = CONCAT22(uVar1,size);
-  local_14 = local_14 & 0xffff0000 | uVar5 & 0xffff;
-  local_c = local_c & 0xffff0000 | uVar5 & 0xffff;
-  setCopReg(2,in_zero,local_28);
-  setCopReg(2,in_at,local_24);
-  setCopReg(2,uVar4,uVar4 & 0xffff | (uint)uVar1 << 0x10);
-  setCopReg(2,uVar5,local_1c);
-  setCopReg(2,uVar6,local_18);
-  setCopReg(2,col,local_14);
-  copFunction(2,0x280030);
-  puVar8 = (uint *)current->primptr;
-  *(char *)((int)puVar8 + 3) = '\t';
-  *(char *)((int)puVar8 + 7) = ',';
-  *(uchar *)(puVar8 + 3) = light_texture.coords.u0;
-  *(uchar *)((int)puVar8 + 0xd) = light_texture.coords.v0;
-  *(uchar *)(puVar8 + 5) = light_texture.coords.u1;
-  *(uchar *)((int)puVar8 + 0x15) = light_texture.coords.v1;
-  *(uchar *)(puVar8 + 7) = light_texture.coords.u2;
-  *(uchar *)((int)puVar8 + 0x1d) = light_texture.coords.v2;
-  *(uchar *)(puVar8 + 9) = light_texture.coords.u3;
-  *(uchar *)((int)puVar8 + 0x25) = light_texture.coords.v3;
-  *(ushort *)((int)puVar8 + 0x16) = light_texture.tpageid | 0x20;
-  uVar3 = light_texture.clutid;
-  *(char *)((int)puVar8 + 7) = '.';
-  *(ushort *)((int)puVar8 + 0xe) = uVar3;
-  *(uchar *)(puVar8 + 1) = col->r;
-  *(uchar *)((int)puVar8 + 5) = col->g;
-  *(uchar *)((int)puVar8 + 6) = col->b;
-  iVar7 = getCopReg(2,0x13);
-  if (iVar7 - 0x96U < 0x267b) {
-    uVar5 = getCopReg(2,0xc);
-    puVar8[2] = uVar5;
-    uVar5 = getCopReg(2,0xd);
-    puVar8[4] = uVar5;
-    uVar5 = getCopReg(2,0xe);
-    puVar8[6] = uVar5;
-    pDVar2 = current;
-    setCopReg(2,in_zero,uVar4 & 0xffff | (uint)uVar1 << 0x10);
-    setCopReg(2,in_at,local_c);
-    copFunction(2,0x180001);
-    *puVar8 = *puVar8 & 0xff000000 | current->ot[iVar7 >> 3] & 0xffffff;
-    pDVar2->ot[iVar7 >> 3] = pDVar2->ot[iVar7 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
-    pDVar2->primptr = pDVar2->primptr + 0x28;
-    uVar4 = getCopReg(2,0xe);
-    puVar8[8] = uVar4;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	DB *pDVar2;
+	ushort uVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar4;
+	uint uVar5;
+	uint uVar6;
+	int iVar7;
+	uint *puVar8;
+	undefined4 local_28;
+	uint local_24;
+	uint local_1c;
+	undefined4 local_18;
+	uint local_14;
+	uint local_c;
+
+	iVar7 = (int)size;
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	setCopControlWord(2, 0x2800, dummy.vx);
+	setCopControlWord(2, 0x3000, dummy.vy);
+	setCopControlWord(2, 0x3800, dummy.vz);
+	uVar1 = *(ushort *)&v1->vy;
+	size = *(ushort *)&v1->vx - size;
+	uVar6 = iVar7 + (uint)*(ushort *)&v1->vz;
+	uVar4 = iVar7 + (uint)*(ushort *)&v1->vx;
+	uVar5 = (uint)*(ushort *)&v1->vz - iVar7;
+	local_28 = CONCAT22(uVar1, size);
+	local_24 = local_24 & 0xffff0000 | uVar6 & 0xffff;
+	local_1c = local_1c & 0xffff0000 | uVar6 & 0xffff;
+	local_18 = CONCAT22(uVar1, size);
+	local_14 = local_14 & 0xffff0000 | uVar5 & 0xffff;
+	local_c = local_c & 0xffff0000 | uVar5 & 0xffff;
+	setCopReg(2, in_zero, local_28);
+	setCopReg(2, in_at, local_24);
+	setCopReg(2, uVar4, uVar4 & 0xffff | (uint)uVar1 << 0x10);
+	setCopReg(2, uVar5, local_1c);
+	setCopReg(2, uVar6, local_18);
+	setCopReg(2, col, local_14);
+	copFunction(2, 0x280030);
+	puVar8 = (uint *)current->primptr;
+	*(char *)((int)puVar8 + 3) = '\t';
+	*(char *)((int)puVar8 + 7) = ',';
+	*(uchar *)(puVar8 + 3) = light_texture.coords.u0;
+	*(uchar *)((int)puVar8 + 0xd) = light_texture.coords.v0;
+	*(uchar *)(puVar8 + 5) = light_texture.coords.u1;
+	*(uchar *)((int)puVar8 + 0x15) = light_texture.coords.v1;
+	*(uchar *)(puVar8 + 7) = light_texture.coords.u2;
+	*(uchar *)((int)puVar8 + 0x1d) = light_texture.coords.v2;
+	*(uchar *)(puVar8 + 9) = light_texture.coords.u3;
+	*(uchar *)((int)puVar8 + 0x25) = light_texture.coords.v3;
+	*(ushort *)((int)puVar8 + 0x16) = light_texture.tpageid | 0x20;
+	uVar3 = light_texture.clutid;
+	*(char *)((int)puVar8 + 7) = '.';
+	*(ushort *)((int)puVar8 + 0xe) = uVar3;
+	*(uchar *)(puVar8 + 1) = col->r;
+	*(uchar *)((int)puVar8 + 5) = col->g;
+	*(uchar *)((int)puVar8 + 6) = col->b;
+	iVar7 = getCopReg(2, 0x13);
+	if (iVar7 - 0x96U < 0x267b) {
+		uVar5 = getCopReg(2, 0xc);
+		puVar8[2] = uVar5;
+		uVar5 = getCopReg(2, 0xd);
+		puVar8[4] = uVar5;
+		uVar5 = getCopReg(2, 0xe);
+		puVar8[6] = uVar5;
+		pDVar2 = current;
+		setCopReg(2, in_zero, uVar4 & 0xffff | (uint)uVar1 << 0x10);
+		setCopReg(2, in_at, local_c);
+		copFunction(2, 0x180001);
+		*puVar8 = *puVar8 & 0xff000000 | current->ot[iVar7 >> 3] & 0xffffff;
+		pDVar2->ot[iVar7 >> 3] = pDVar2->ot[iVar7 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
+		pDVar2->primptr = pDVar2->primptr + 0x28;
+		uVar4 = getCopReg(2, 0xe);
+		puVar8[8] = uVar4;
+	}
+	return;*/
 }
 
 
@@ -3217,89 +3255,90 @@ void ShowGroundLight(VECTOR *v1,CVECTOR *col,short size)
 	/* end block 2 */
 	// End Line: 7287
 
-void RoundShadow(VECTOR *v1,CVECTOR *col,short size)
-
+void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 {
-  ushort uVar1;
-  DB *pDVar2;
-  ushort uVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  int iVar7;
-  uint *puVar8;
-  undefined4 local_28;
-  uint local_24;
-  uint local_1c;
-  undefined4 local_18;
-  uint local_14;
-  uint local_c;
-  
-  iVar7 = (int)size;
-  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-  setCopControlWord(2,0x2800,dummy.vx);
-  setCopControlWord(2,0x3000,dummy.vy);
-  setCopControlWord(2,0x3800,dummy.vz);
-  uVar1 = *(ushort *)&v1->vy;
-  size = *(ushort *)&v1->vx - size;
-  uVar6 = iVar7 + (uint)*(ushort *)&v1->vz;
-  uVar4 = iVar7 + (uint)*(ushort *)&v1->vx;
-  uVar5 = (uint)*(ushort *)&v1->vz - iVar7;
-  local_28 = CONCAT22(uVar1,size);
-  local_24 = local_24 & 0xffff0000 | uVar6 & 0xffff;
-  local_1c = local_1c & 0xffff0000 | uVar6 & 0xffff;
-  local_18 = CONCAT22(uVar1,size);
-  local_14 = local_14 & 0xffff0000 | uVar5 & 0xffff;
-  local_c = local_c & 0xffff0000 | uVar5 & 0xffff;
-  setCopReg(2,in_zero,local_28);
-  setCopReg(2,in_at,local_24);
-  setCopReg(2,uVar4,uVar4 & 0xffff | (uint)uVar1 << 0x10);
-  setCopReg(2,uVar5,local_1c);
-  setCopReg(2,uVar6,local_18);
-  setCopReg(2,col,local_14);
-  copFunction(2,0x280030);
-  puVar8 = (uint *)current->primptr;
-  *(uchar *)(puVar8 + 3) = light_texture.coords.u0;
-  *(uchar *)((int)puVar8 + 0xd) = light_texture.coords.v0;
-  *(uchar *)(puVar8 + 5) = light_texture.coords.u1;
-  *(uchar *)((int)puVar8 + 0x15) = light_texture.coords.v1;
-  *(uchar *)(puVar8 + 7) = light_texture.coords.u2;
-  *(uchar *)((int)puVar8 + 0x1d) = light_texture.coords.v2;
-  *(uchar *)(puVar8 + 9) = light_texture.coords.u3;
-  *(uchar *)((int)puVar8 + 0x25) = light_texture.coords.v3;
-  *(ushort *)((int)puVar8 + 0x16) = light_texture.tpageid | 0x40;
-  uVar3 = light_texture.clutid;
-  *(char *)((int)puVar8 + 3) = '\t';
-  *(char *)((int)puVar8 + 7) = '.';
-  *(ushort *)((int)puVar8 + 0xe) = uVar3;
-  *(uchar *)(puVar8 + 1) = col->r;
-  *(uchar *)((int)puVar8 + 5) = col->g;
-  *(uchar *)((int)puVar8 + 6) = col->b;
-  iVar7 = getCopReg(2,0x13);
-  if (iVar7 - 0x96U < 0x267b) {
-    uVar5 = getCopReg(2,0xc);
-    puVar8[2] = uVar5;
-    uVar5 = getCopReg(2,0xd);
-    puVar8[4] = uVar5;
-    uVar5 = getCopReg(2,0xe);
-    puVar8[6] = uVar5;
-    pDVar2 = current;
-    setCopReg(2,in_zero,uVar4 & 0xffff | (uint)uVar1 << 0x10);
-    setCopReg(2,in_at,local_c);
-    copFunction(2,0x180001);
-    *puVar8 = *puVar8 & 0xff000000 | current->ot[iVar7 >> 3] & 0xffffff;
-    pDVar2->ot[iVar7 >> 3] = pDVar2->ot[iVar7 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
-    pDVar2->primptr = pDVar2->primptr + 0x28;
-    uVar4 = getCopReg(2,0xe);
-    puVar8[8] = uVar4;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	DB *pDVar2;
+	ushort uVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar4;
+	uint uVar5;
+	uint uVar6;
+	int iVar7;
+	uint *puVar8;
+	undefined4 local_28;
+	uint local_24;
+	uint local_1c;
+	undefined4 local_18;
+	uint local_14;
+	uint local_c;
+
+	iVar7 = (int)size;
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	setCopControlWord(2, 0x2800, dummy.vx);
+	setCopControlWord(2, 0x3000, dummy.vy);
+	setCopControlWord(2, 0x3800, dummy.vz);
+	uVar1 = *(ushort *)&v1->vy;
+	size = *(ushort *)&v1->vx - size;
+	uVar6 = iVar7 + (uint)*(ushort *)&v1->vz;
+	uVar4 = iVar7 + (uint)*(ushort *)&v1->vx;
+	uVar5 = (uint)*(ushort *)&v1->vz - iVar7;
+	local_28 = CONCAT22(uVar1, size);
+	local_24 = local_24 & 0xffff0000 | uVar6 & 0xffff;
+	local_1c = local_1c & 0xffff0000 | uVar6 & 0xffff;
+	local_18 = CONCAT22(uVar1, size);
+	local_14 = local_14 & 0xffff0000 | uVar5 & 0xffff;
+	local_c = local_c & 0xffff0000 | uVar5 & 0xffff;
+	setCopReg(2, in_zero, local_28);
+	setCopReg(2, in_at, local_24);
+	setCopReg(2, uVar4, uVar4 & 0xffff | (uint)uVar1 << 0x10);
+	setCopReg(2, uVar5, local_1c);
+	setCopReg(2, uVar6, local_18);
+	setCopReg(2, col, local_14);
+	copFunction(2, 0x280030);
+	puVar8 = (uint *)current->primptr;
+	*(uchar *)(puVar8 + 3) = light_texture.coords.u0;
+	*(uchar *)((int)puVar8 + 0xd) = light_texture.coords.v0;
+	*(uchar *)(puVar8 + 5) = light_texture.coords.u1;
+	*(uchar *)((int)puVar8 + 0x15) = light_texture.coords.v1;
+	*(uchar *)(puVar8 + 7) = light_texture.coords.u2;
+	*(uchar *)((int)puVar8 + 0x1d) = light_texture.coords.v2;
+	*(uchar *)(puVar8 + 9) = light_texture.coords.u3;
+	*(uchar *)((int)puVar8 + 0x25) = light_texture.coords.v3;
+	*(ushort *)((int)puVar8 + 0x16) = light_texture.tpageid | 0x40;
+	uVar3 = light_texture.clutid;
+	*(char *)((int)puVar8 + 3) = '\t';
+	*(char *)((int)puVar8 + 7) = '.';
+	*(ushort *)((int)puVar8 + 0xe) = uVar3;
+	*(uchar *)(puVar8 + 1) = col->r;
+	*(uchar *)((int)puVar8 + 5) = col->g;
+	*(uchar *)((int)puVar8 + 6) = col->b;
+	iVar7 = getCopReg(2, 0x13);
+	if (iVar7 - 0x96U < 0x267b) {
+		uVar5 = getCopReg(2, 0xc);
+		puVar8[2] = uVar5;
+		uVar5 = getCopReg(2, 0xd);
+		puVar8[4] = uVar5;
+		uVar5 = getCopReg(2, 0xe);
+		puVar8[6] = uVar5;
+		pDVar2 = current;
+		setCopReg(2, in_zero, uVar4 & 0xffff | (uint)uVar1 << 0x10);
+		setCopReg(2, in_at, local_c);
+		copFunction(2, 0x180001);
+		*puVar8 = *puVar8 & 0xff000000 | current->ot[iVar7 >> 3] & 0xffffff;
+		pDVar2->ot[iVar7 >> 3] = pDVar2->ot[iVar7 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
+		pDVar2->primptr = pDVar2->primptr + 0x28;
+		uVar4 = getCopReg(2, 0xe);
+		puVar8[8] = uVar4;
+	}
+	return;*/
 }
 
 
@@ -3328,106 +3367,107 @@ void RoundShadow(VECTOR *v1,CVECTOR *col,short size)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void ShowFlare(VECTOR *v1,CVECTOR *col,short size,int rotation)
-
+void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 {
-  int iVar1;
-  uint uVar2;
-  DB *pDVar3;
-  uchar uVar4;
-  undefined4 in_zero;
-  undefined4 in_at;
-  short sVar5;
-  undefined4 in_v1;
-  MATRIX *m;
-  SVECTOR *r;
-  uint *puVar6;
-  undefined4 local_60;
-  undefined4 local_5c;
-  undefined4 local_58;
-  undefined4 local_54;
-  undefined4 local_50;
-  undefined4 local_4c;
-  undefined4 local_48;
-  undefined4 local_44;
-  SVECTOR local_40;
-  undefined4 local_38;
-  undefined4 local_34;
-  undefined4 local_30;
-  undefined4 local_2c;
-  undefined4 local_28;
-  int local_18;
-  
-  setCopControlWord(2,0x2800,v1->vx);
-  setCopControlWord(2,0x3000,v1->vy);
-  setCopControlWord(2,0x3800,v1->vz);
-  m = (MATRIX *)&local_38;
-  r = &local_40;
-  local_40.vy = 0;
-  local_40.vx = 0;
-  local_40.vz = (short)rotation;
-  RotMatrixXYZ(m,r);
-  setCopControlWord(2,0,local_38);
-  setCopControlWord(2,0x800,local_34);
-  setCopControlWord(2,0x1000,local_30);
-  setCopControlWord(2,0x1800,local_2c);
-  setCopControlWord(2,0x2000,local_28);
-  sVar5 = -size;
-  local_60 = CONCAT22(sVar5,sVar5);
-  local_5c = (uint)local_5c._2_2_ << 0x10;
-  local_58 = CONCAT22(sVar5,size);
-  local_54 = (uint)local_54._2_2_ << 0x10;
-  local_50 = CONCAT22(size,sVar5);
-  local_4c = (uint)local_4c._2_2_ << 0x10;
-  local_48 = CONCAT22(size,size);
-  local_44 = (uint)local_44._2_2_ << 0x10;
-  setCopReg(2,in_zero,local_60);
-  setCopReg(2,in_at,local_5c);
-  setCopReg(2,&local_60,local_58);
-  setCopReg(2,in_v1,local_54);
-  setCopReg(2,m,local_50);
-  setCopReg(2,r,local_4c);
-  copFunction(2,0x280030);
-  puVar6 = (uint *)current->primptr;
-  *(uchar *)(puVar6 + 3) = flare_texture.coords.u0;
-  *(uchar *)((int)puVar6 + 0xd) = flare_texture.coords.v0;
-  *(uchar *)(puVar6 + 5) = flare_texture.coords.u1;
-  *(uchar *)((int)puVar6 + 0x15) = flare_texture.coords.v1;
-  *(uchar *)(puVar6 + 7) = flare_texture.coords.u2;
-  *(char *)((int)puVar6 + 0x1d) = flare_texture.coords.v2 + -1;
-  *(uchar *)(puVar6 + 9) = flare_texture.coords.u3;
-  uVar4 = flare_texture.coords.v3;
-  *(char *)((int)puVar6 + 3) = '\t';
-  *(char *)((int)puVar6 + 7) = '.';
-  *(char *)((int)puVar6 + 0x25) = uVar4 + -1;
-  *(uchar *)(puVar6 + 1) = col->r >> 1;
-  *(byte *)((int)puVar6 + 5) = col->g >> 1;
-  *(byte *)((int)puVar6 + 6) = col->b >> 1;
-  iVar1 = getCopReg(2,0x13);
-  if (0x27 < iVar1 >> 3) {
-    local_18 = (iVar1 >> 3) + LightSortCorrect;
-    if (local_18 < 1) {
-      local_18 = 1;
-    }
-    uVar2 = getCopReg(2,0xc);
-    puVar6[2] = uVar2;
-    uVar2 = getCopReg(2,0xd);
-    puVar6[4] = uVar2;
-    uVar2 = getCopReg(2,0xe);
-    puVar6[6] = uVar2;
-    pDVar3 = current;
-    setCopReg(2,in_zero,local_48);
-    setCopReg(2,in_at,local_44);
-    copFunction(2,0x180001);
-    *(ushort *)((int)puVar6 + 0x16) = flare_texture.tpageid | 0x20;
-    *(ushort *)((int)puVar6 + 0xe) = flare_texture.clutid;
-    *puVar6 = *puVar6 & 0xff000000 | pDVar3->ot[local_18] & 0xffffff;
-    pDVar3->ot[local_18] = pDVar3->ot[local_18] & 0xff000000 | (uint)puVar6 & 0xffffff;
-    pDVar3->primptr = pDVar3->primptr + 0x28;
-    uVar2 = getCopReg(2,0xe);
-    puVar6[8] = uVar2;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	uint uVar2;
+	DB *pDVar3;
+	uchar uVar4;
+	undefined4 in_zero;
+	undefined4 in_at;
+	short sVar5;
+	undefined4 in_v1;
+	MATRIX *m;
+	SVECTOR *r;
+	uint *puVar6;
+	undefined4 local_60;
+	undefined4 local_5c;
+	undefined4 local_58;
+	undefined4 local_54;
+	undefined4 local_50;
+	undefined4 local_4c;
+	undefined4 local_48;
+	undefined4 local_44;
+	SVECTOR local_40;
+	undefined4 local_38;
+	undefined4 local_34;
+	undefined4 local_30;
+	undefined4 local_2c;
+	undefined4 local_28;
+	int local_18;
+
+	setCopControlWord(2, 0x2800, v1->vx);
+	setCopControlWord(2, 0x3000, v1->vy);
+	setCopControlWord(2, 0x3800, v1->vz);
+	m = (MATRIX *)&local_38;
+	r = &local_40;
+	local_40.vy = 0;
+	local_40.vx = 0;
+	local_40.vz = (short)rotation;
+	RotMatrixXYZ(m, r);
+	setCopControlWord(2, 0, local_38);
+	setCopControlWord(2, 0x800, local_34);
+	setCopControlWord(2, 0x1000, local_30);
+	setCopControlWord(2, 0x1800, local_2c);
+	setCopControlWord(2, 0x2000, local_28);
+	sVar5 = -size;
+	local_60 = CONCAT22(sVar5, sVar5);
+	local_5c = (uint)local_5c._2_2_ << 0x10;
+	local_58 = CONCAT22(sVar5, size);
+	local_54 = (uint)local_54._2_2_ << 0x10;
+	local_50 = CONCAT22(size, sVar5);
+	local_4c = (uint)local_4c._2_2_ << 0x10;
+	local_48 = CONCAT22(size, size);
+	local_44 = (uint)local_44._2_2_ << 0x10;
+	setCopReg(2, in_zero, local_60);
+	setCopReg(2, in_at, local_5c);
+	setCopReg(2, &local_60, local_58);
+	setCopReg(2, in_v1, local_54);
+	setCopReg(2, m, local_50);
+	setCopReg(2, r, local_4c);
+	copFunction(2, 0x280030);
+	puVar6 = (uint *)current->primptr;
+	*(uchar *)(puVar6 + 3) = flare_texture.coords.u0;
+	*(uchar *)((int)puVar6 + 0xd) = flare_texture.coords.v0;
+	*(uchar *)(puVar6 + 5) = flare_texture.coords.u1;
+	*(uchar *)((int)puVar6 + 0x15) = flare_texture.coords.v1;
+	*(uchar *)(puVar6 + 7) = flare_texture.coords.u2;
+	*(char *)((int)puVar6 + 0x1d) = flare_texture.coords.v2 + -1;
+	*(uchar *)(puVar6 + 9) = flare_texture.coords.u3;
+	uVar4 = flare_texture.coords.v3;
+	*(char *)((int)puVar6 + 3) = '\t';
+	*(char *)((int)puVar6 + 7) = '.';
+	*(char *)((int)puVar6 + 0x25) = uVar4 + -1;
+	*(uchar *)(puVar6 + 1) = col->r >> 1;
+	*(byte *)((int)puVar6 + 5) = col->g >> 1;
+	*(byte *)((int)puVar6 + 6) = col->b >> 1;
+	iVar1 = getCopReg(2, 0x13);
+	if (0x27 < iVar1 >> 3) {
+		local_18 = (iVar1 >> 3) + LightSortCorrect;
+		if (local_18 < 1) {
+			local_18 = 1;
+		}
+		uVar2 = getCopReg(2, 0xc);
+		puVar6[2] = uVar2;
+		uVar2 = getCopReg(2, 0xd);
+		puVar6[4] = uVar2;
+		uVar2 = getCopReg(2, 0xe);
+		puVar6[6] = uVar2;
+		pDVar3 = current;
+		setCopReg(2, in_zero, local_48);
+		setCopReg(2, in_at, local_44);
+		copFunction(2, 0x180001);
+		*(ushort *)((int)puVar6 + 0x16) = flare_texture.tpageid | 0x20;
+		*(ushort *)((int)puVar6 + 0xe) = flare_texture.clutid;
+		*puVar6 = *puVar6 & 0xff000000 | pDVar3->ot[local_18] & 0xffffff;
+		pDVar3->ot[local_18] = pDVar3->ot[local_18] & 0xff000000 | (uint)puVar6 & 0xffffff;
+		pDVar3->primptr = pDVar3->primptr + 0x28;
+		uVar2 = getCopReg(2, 0xe);
+		puVar6[8] = uVar2;
+	}
+	return;*/
 }
 
 
@@ -3464,99 +3504,100 @@ void ShowFlare(VECTOR *v1,CVECTOR *col,short size,int rotation)
 	// End Line: 7704
 
 void DisplayWater(SMOKE *smoke)
-
 {
-  short sVar1;
-  short sVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  DB *pDVar7;
-  undefined4 in_zero;
-  undefined4 in_at;
-  ushort uVar8;
-  int iVar9;
-  uint uVar10;
-  ushort uVar11;
-  short sVar12;
-  uint *puVar13;
-  undefined4 local_30;
-  uint local_2c;
-  uint local_24;
-  undefined4 local_20;
-  uint local_1c;
-  uint local_14;
-  
-  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-  setCopControlWord(2,0x2800,dummy.vx);
-  setCopControlWord(2,0x3000,dummy.vy);
-  setCopControlWord(2,0x3800,dummy.vz);
-  sVar1 = smoke->start_w;
-  uVar8 = *(ushort *)&(smoke->position).vx;
-  sVar12 = (uVar8 - sVar1) - (ushort)camera_position.vx;
-  uVar11 = 0x32 - (short)camera_position.vy;
-  local_30 = CONCAT22(uVar11,sVar12);
-  sVar2 = *(short *)&(smoke->position).vz;
-  uVar10 = ((uint)uVar8 + (int)sVar1) - (uint)(ushort)camera_position.vx;
-  local_20 = CONCAT22(uVar11,sVar12);
-  uVar8 = (sVar2 + sVar1) - (ushort)camera_position.vz;
-  local_2c = local_2c & 0xffff0000 | (uint)uVar8;
-  local_24 = local_24 & 0xffff0000 | (uint)uVar8;
-  uVar8 = (sVar2 - sVar1) - (ushort)camera_position.vz;
-  local_1c = local_1c & 0xffff0000 | (uint)uVar8;
-  local_14 = local_14 & 0xffff0000 | (uint)uVar8;
-  puVar13 = (uint *)current->primptr;
-  setCopReg(2,in_zero,local_30);
-  setCopReg(2,in_at,local_2c);
-  setCopReg(2,current,uVar10 & 0xffff | (uint)uVar11 << 0x10);
-  setCopReg(2,&local_30,local_24);
-  setCopReg(2,(uint)(ushort)camera_position.vz,local_20);
-  setCopReg(2,uVar10,local_1c);
-  copFunction(2,0x280030);
-  *(char *)((int)puVar13 + 7) = ',';
-  *(char *)((int)puVar13 + 3) = '\t';
-  *(char *)(puVar13 + 1) = (char)NightAmbient;
-  *(char *)((int)puVar13 + 5) = (char)NightAmbient;
-  *(char *)((int)puVar13 + 6) = (char)NightAmbient;
-  *(ushort *)((int)puVar13 + 0x16) = sea_texture.tpageid;
-  uVar3 = getCopReg(2,0xc);
-  puVar13[2] = uVar3;
-  uVar3 = getCopReg(2,0xd);
-  puVar13[4] = uVar3;
-  uVar3 = getCopReg(2,0xe);
-  puVar13[6] = uVar3;
-  iVar9 = getCopReg(2,0x11);
-  iVar4 = getCopReg(2,0x12);
-  iVar5 = getCopReg(2,0x13);
-  setCopReg(2,in_zero,uVar10 & 0xffff | (uint)uVar11 << 0x10);
-  setCopReg(2,in_at,local_14);
-  copFunction(2,0x180001);
-  *(uchar *)(puVar13 + 3) = sea_texture.coords.u0;
-  *(uchar *)((int)puVar13 + 0xd) = sea_texture.coords.v0;
-  *(uchar *)(puVar13 + 5) = sea_texture.coords.u1;
-  *(uchar *)((int)puVar13 + 0x15) = sea_texture.coords.v1;
-  *(uchar *)(puVar13 + 7) = sea_texture.coords.u2;
-  *(uchar *)((int)puVar13 + 0x1d) = sea_texture.coords.v2;
-  *(uchar *)(puVar13 + 9) = sea_texture.coords.u3;
-  *(uchar *)((int)puVar13 + 0x25) = sea_texture.coords.v3;
-  *(ushort *)((int)puVar13 + 0xe) = sea_texture.clutid;
-  pDVar7 = current;
-  iVar6 = getCopReg(2,0x13);
-  iVar9 = iVar9 + iVar4 + iVar5 + iVar6 >> 5;
-  if (iVar9 < 9) {
-    iVar9 = 9;
-  }
-  *puVar13 = *puVar13 & 0xff000000 | current->ot[iVar9] & 0xffffff;
-  pDVar7->ot[iVar9] = pDVar7->ot[iVar9] & 0xff000000 | (uint)puVar13 & 0xffffff;
-  uVar3 = getCopReg(2,0xe);
-  puVar13[8] = uVar3;
-  current->primptr = current->primptr + 0x28;
-  return;
+	UNIMPLEMENTED();
+	/*
+	short sVar1;
+	short sVar2;
+	uint uVar3;
+	int iVar4;
+	int iVar5;
+	int iVar6;
+	DB *pDVar7;
+	undefined4 in_zero;
+	undefined4 in_at;
+	ushort uVar8;
+	int iVar9;
+	uint uVar10;
+	ushort uVar11;
+	short sVar12;
+	uint *puVar13;
+	undefined4 local_30;
+	uint local_2c;
+	uint local_24;
+	undefined4 local_20;
+	uint local_1c;
+	uint local_14;
+
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	setCopControlWord(2, 0x2800, dummy.vx);
+	setCopControlWord(2, 0x3000, dummy.vy);
+	setCopControlWord(2, 0x3800, dummy.vz);
+	sVar1 = smoke->start_w;
+	uVar8 = *(ushort *)&(smoke->position).vx;
+	sVar12 = (uVar8 - sVar1) - (ushort)camera_position.vx;
+	uVar11 = 0x32 - (short)camera_position.vy;
+	local_30 = CONCAT22(uVar11, sVar12);
+	sVar2 = *(short *)&(smoke->position).vz;
+	uVar10 = ((uint)uVar8 + (int)sVar1) - (uint)(ushort)camera_position.vx;
+	local_20 = CONCAT22(uVar11, sVar12);
+	uVar8 = (sVar2 + sVar1) - (ushort)camera_position.vz;
+	local_2c = local_2c & 0xffff0000 | (uint)uVar8;
+	local_24 = local_24 & 0xffff0000 | (uint)uVar8;
+	uVar8 = (sVar2 - sVar1) - (ushort)camera_position.vz;
+	local_1c = local_1c & 0xffff0000 | (uint)uVar8;
+	local_14 = local_14 & 0xffff0000 | (uint)uVar8;
+	puVar13 = (uint *)current->primptr;
+	setCopReg(2, in_zero, local_30);
+	setCopReg(2, in_at, local_2c);
+	setCopReg(2, current, uVar10 & 0xffff | (uint)uVar11 << 0x10);
+	setCopReg(2, &local_30, local_24);
+	setCopReg(2, (uint)(ushort)camera_position.vz, local_20);
+	setCopReg(2, uVar10, local_1c);
+	copFunction(2, 0x280030);
+	*(char *)((int)puVar13 + 7) = ',';
+	*(char *)((int)puVar13 + 3) = '\t';
+	*(char *)(puVar13 + 1) = (char)NightAmbient;
+	*(char *)((int)puVar13 + 5) = (char)NightAmbient;
+	*(char *)((int)puVar13 + 6) = (char)NightAmbient;
+	*(ushort *)((int)puVar13 + 0x16) = sea_texture.tpageid;
+	uVar3 = getCopReg(2, 0xc);
+	puVar13[2] = uVar3;
+	uVar3 = getCopReg(2, 0xd);
+	puVar13[4] = uVar3;
+	uVar3 = getCopReg(2, 0xe);
+	puVar13[6] = uVar3;
+	iVar9 = getCopReg(2, 0x11);
+	iVar4 = getCopReg(2, 0x12);
+	iVar5 = getCopReg(2, 0x13);
+	setCopReg(2, in_zero, uVar10 & 0xffff | (uint)uVar11 << 0x10);
+	setCopReg(2, in_at, local_14);
+	copFunction(2, 0x180001);
+	*(uchar *)(puVar13 + 3) = sea_texture.coords.u0;
+	*(uchar *)((int)puVar13 + 0xd) = sea_texture.coords.v0;
+	*(uchar *)(puVar13 + 5) = sea_texture.coords.u1;
+	*(uchar *)((int)puVar13 + 0x15) = sea_texture.coords.v1;
+	*(uchar *)(puVar13 + 7) = sea_texture.coords.u2;
+	*(uchar *)((int)puVar13 + 0x1d) = sea_texture.coords.v2;
+	*(uchar *)(puVar13 + 9) = sea_texture.coords.u3;
+	*(uchar *)((int)puVar13 + 0x25) = sea_texture.coords.v3;
+	*(ushort *)((int)puVar13 + 0xe) = sea_texture.clutid;
+	pDVar7 = current;
+	iVar6 = getCopReg(2, 0x13);
+	iVar9 = iVar9 + iVar4 + iVar5 + iVar6 >> 5;
+	if (iVar9 < 9) {
+		iVar9 = 9;
+	}
+	*puVar13 = *puVar13 & 0xff000000 | current->ot[iVar9] & 0xffffff;
+	pDVar7->ot[iVar9] = pDVar7->ot[iVar9] & 0xff000000 | (uint)puVar13 & 0xffffff;
+	uVar3 = getCopReg(2, 0xe);
+	puVar13[8] = uVar3;
+	current->primptr = current->primptr + 0x28;
+	return;*/
 }
 
 
@@ -3597,114 +3638,116 @@ void DisplayWater(SMOKE *smoke)
 	// End Line: 7882
 
 void DisplaySpark(SMOKE *spark)
-
 {
-  char cVar1;
-  ushort uVar2;
-  DB *pDVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar4;
-  undefined2 uVar5;
-  int iVar6;
-  short sVar7;
-  uint *puVar8;
-  undefined4 local_28;
-  uint local_24;
-  undefined4 local_20;
-  uint local_1c;
-  undefined4 local_18;
-  uint local_14;
-  int local_8;
-  
-  setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-  setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-  setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-  setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-  setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-  setCopControlWord(2,0x2800,dummy.vx);
-  setCopControlWord(2,0x3000,dummy.vy);
-  setCopControlWord(2,0x3800,dummy.vz);
-  local_18 = CONCAT22((spark->final_tail_pos).vy - (ushort)camera_position.vy,
-                      *(short *)&(spark->final_tail_pos).vx - (short)camera_position.vx);
-  sVar7 = *(short *)&(spark->position).vx - (short)camera_position.vx;
-  local_14 = local_14 & 0xffff0000 |
-             (uint)(ushort)(*(short *)&(spark->final_tail_pos).vz - (ushort)camera_position.vz);
-  iVar6 = (uint)(ushort)(spark->position).vy - (uint)(ushort)camera_position.vy;
-  uVar4 = (uint)*(ushort *)&(spark->position).vz - (uint)(ushort)camera_position.vz;
-  local_24 = local_24 & 0xffff0000 | uVar4 & 0xffff;
-  uVar4 = uVar4 + 5;
-  uVar5 = (undefined2)iVar6;
-  local_28 = CONCAT22(uVar5,sVar7);
-  local_20 = CONCAT22(uVar5,sVar7 + 5);
-  local_1c = local_1c & 0xffff0000 | uVar4 & 0xffff;
-  puVar8 = (uint *)current->primptr;
-  setCopReg(2,in_zero,local_28);
-  setCopReg(2,in_at,local_24);
-  setCopReg(2,uVar4,local_20);
-  setCopReg(2,iVar6,local_1c);
-  setCopReg(2,current,local_18);
-  setCopReg(2,0x9bdc4,local_14);
-  copFunction(2,0x280030);
-  *(char *)((int)puVar8 + 7) = '0';
-  *(char *)((int)puVar8 + 3) = '\x06';
-  if (spark->start_w == 2) {
-    iVar6 = (int)(spark->drift).vy * 3;
-    if (gTimeOfDay == 1) {
-      *(uchar *)(puVar8 + 1) = (&grassColour)[iVar6];
-      *(uchar *)((int)puVar8 + 5) = (&UCHAR_s_0009c2e9)[iVar6];
-      *(uchar *)((int)puVar8 + 6) = s_C__0009c2ea[iVar6];
-      *(uchar *)(puVar8 + 3) = (&grassColour)[iVar6];
-      *(uchar *)((int)puVar8 + 0xd) = (&UCHAR_s_0009c2e9)[iVar6];
-      *(uchar *)((int)puVar8 + 0xe) = s_C__0009c2ea[iVar6];
-      iVar6 = ((int)(spark->drift).vy + 2U & 3) * 3;
-      *(uchar *)(puVar8 + 5) = (&grassColour)[iVar6];
-      *(uchar *)((int)puVar8 + 0x15) = (&UCHAR_s_0009c2e9)[iVar6];
-      *(uchar *)((int)puVar8 + 0x16) = s_C__0009c2ea[iVar6];
-    }
-    else {
-      *(char *)(puVar8 + 1) = '\0';
-      *(char *)((int)puVar8 + 5) = (char)((ushort)spark->transparency >> 3);
-      uVar2 = spark->transparency;
-      *(char *)(puVar8 + 3) = '\0';
-      *(char *)((int)puVar8 + 6) = (char)(uVar2 >> 4);
-      *(char *)((int)puVar8 + 0xd) = (char)((ushort)spark->transparency >> 3);
-      uVar2 = spark->transparency;
-      *(char *)(puVar8 + 5) = '\f';
-      *(char *)((int)puVar8 + 0x15) = '\x04';
-      *(char *)((int)puVar8 + 0x16) = '\x04';
-      *(char *)((int)puVar8 + 0xe) = (char)(uVar2 >> 4);
-    }
-  }
-  else {
-    *(char *)(puVar8 + 1) = *(char *)&spark->transparency;
-    *(char *)((int)puVar8 + 5) = *(char *)&spark->transparency;
-    *(char *)((int)puVar8 + 6) = (char)((ushort)spark->transparency >> 1);
-    *(char *)(puVar8 + 3) = *(char *)&spark->transparency;
-    *(char *)((int)puVar8 + 0xd) = *(char *)&spark->transparency;
-    *(char *)((int)puVar8 + 0xe) = (char)((ushort)spark->transparency >> 1);
-    cVar1 = *(char *)&spark->transparency;
-    *(char *)((int)puVar8 + 0x15) = '\0';
-    *(char *)((int)puVar8 + 0x16) = '\0';
-    *(char *)(puVar8 + 5) = cVar1;
-  }
-  local_8 = getCopReg(2,0x13);
-  if (0x32 < local_8) {
-    if (local_8 >> 3 < 9) {
-      local_8 = 0x48;
-    }
-    uVar4 = getCopReg(2,0xc);
-    puVar8[2] = uVar4;
-    uVar4 = getCopReg(2,0xd);
-    puVar8[4] = uVar4;
-    uVar4 = getCopReg(2,0xe);
-    puVar8[6] = uVar4;
-    pDVar3 = current;
-    *puVar8 = *puVar8 & 0xff000000 | current->ot[local_8 >> 3] & 0xffffff;
-    pDVar3->ot[local_8 >> 3] = pDVar3->ot[local_8 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
-    pDVar3->primptr = pDVar3->primptr + 0x1c;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	char cVar1;
+	ushort uVar2;
+	DB *pDVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar4;
+	undefined2 uVar5;
+	int iVar6;
+	short sVar7;
+	uint *puVar8;
+	undefined4 local_28;
+	uint local_24;
+	undefined4 local_20;
+	uint local_1c;
+	undefined4 local_18;
+	uint local_14;
+	int local_8;
+
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	setCopControlWord(2, 0x2800, dummy.vx);
+	setCopControlWord(2, 0x3000, dummy.vy);
+	setCopControlWord(2, 0x3800, dummy.vz);
+	local_18 = CONCAT22((spark->final_tail_pos).vy - (ushort)camera_position.vy,
+		*(short *)&(spark->final_tail_pos).vx - (short)camera_position.vx);
+	sVar7 = *(short *)&(spark->position).vx - (short)camera_position.vx;
+	local_14 = local_14 & 0xffff0000 |
+		(uint)(ushort)(*(short *)&(spark->final_tail_pos).vz - (ushort)camera_position.vz);
+	iVar6 = (uint)(ushort)(spark->position).vy - (uint)(ushort)camera_position.vy;
+	uVar4 = (uint)*(ushort *)&(spark->position).vz - (uint)(ushort)camera_position.vz;
+	local_24 = local_24 & 0xffff0000 | uVar4 & 0xffff;
+	uVar4 = uVar4 + 5;
+	uVar5 = (undefined2)iVar6;
+	local_28 = CONCAT22(uVar5, sVar7);
+	local_20 = CONCAT22(uVar5, sVar7 + 5);
+	local_1c = local_1c & 0xffff0000 | uVar4 & 0xffff;
+	puVar8 = (uint *)current->primptr;
+	setCopReg(2, in_zero, local_28);
+	setCopReg(2, in_at, local_24);
+	setCopReg(2, uVar4, local_20);
+	setCopReg(2, iVar6, local_1c);
+	setCopReg(2, current, local_18);
+	setCopReg(2, 0x9bdc4, local_14);
+	copFunction(2, 0x280030);
+	*(char *)((int)puVar8 + 7) = '0';
+	*(char *)((int)puVar8 + 3) = '\x06';
+	if (spark->start_w == 2) {
+		iVar6 = (int)(spark->drift).vy * 3;
+		if (gTimeOfDay == 1) {
+			*(uchar *)(puVar8 + 1) = (&grassColour)[iVar6];
+			*(uchar *)((int)puVar8 + 5) = (&UCHAR_s_0009c2e9)[iVar6];
+			*(uchar *)((int)puVar8 + 6) = s_C__0009c2ea[iVar6];
+			*(uchar *)(puVar8 + 3) = (&grassColour)[iVar6];
+			*(uchar *)((int)puVar8 + 0xd) = (&UCHAR_s_0009c2e9)[iVar6];
+			*(uchar *)((int)puVar8 + 0xe) = s_C__0009c2ea[iVar6];
+			iVar6 = ((int)(spark->drift).vy + 2U & 3) * 3;
+			*(uchar *)(puVar8 + 5) = (&grassColour)[iVar6];
+			*(uchar *)((int)puVar8 + 0x15) = (&UCHAR_s_0009c2e9)[iVar6];
+			*(uchar *)((int)puVar8 + 0x16) = s_C__0009c2ea[iVar6];
+		}
+		else {
+			*(char *)(puVar8 + 1) = '\0';
+			*(char *)((int)puVar8 + 5) = (char)((ushort)spark->transparency >> 3);
+			uVar2 = spark->transparency;
+			*(char *)(puVar8 + 3) = '\0';
+			*(char *)((int)puVar8 + 6) = (char)(uVar2 >> 4);
+			*(char *)((int)puVar8 + 0xd) = (char)((ushort)spark->transparency >> 3);
+			uVar2 = spark->transparency;
+			*(char *)(puVar8 + 5) = '\f';
+			*(char *)((int)puVar8 + 0x15) = '\x04';
+			*(char *)((int)puVar8 + 0x16) = '\x04';
+			*(char *)((int)puVar8 + 0xe) = (char)(uVar2 >> 4);
+		}
+	}
+	else {
+		*(char *)(puVar8 + 1) = *(char *)&spark->transparency;
+		*(char *)((int)puVar8 + 5) = *(char *)&spark->transparency;
+		*(char *)((int)puVar8 + 6) = (char)((ushort)spark->transparency >> 1);
+		*(char *)(puVar8 + 3) = *(char *)&spark->transparency;
+		*(char *)((int)puVar8 + 0xd) = *(char *)&spark->transparency;
+		*(char *)((int)puVar8 + 0xe) = (char)((ushort)spark->transparency >> 1);
+		cVar1 = *(char *)&spark->transparency;
+		*(char *)((int)puVar8 + 0x15) = '\0';
+		*(char *)((int)puVar8 + 0x16) = '\0';
+		*(char *)(puVar8 + 5) = cVar1;
+	}
+	local_8 = getCopReg(2, 0x13);
+	if (0x32 < local_8) {
+		if (local_8 >> 3 < 9) {
+			local_8 = 0x48;
+		}
+		uVar4 = getCopReg(2, 0xc);
+		puVar8[2] = uVar4;
+		uVar4 = getCopReg(2, 0xd);
+		puVar8[4] = uVar4;
+		uVar4 = getCopReg(2, 0xe);
+		puVar8[6] = uVar4;
+		pDVar3 = current;
+		*puVar8 = *puVar8 & 0xff000000 | current->ot[local_8 >> 3] & 0xffffff;
+		pDVar3->ot[local_8 >> 3] = pDVar3->ot[local_8 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
+		pDVar3->primptr = pDVar3->primptr + 0x1c;
+	}
+	return;
+	*/
 }
 
 
@@ -3738,27 +3781,28 @@ void DisplaySpark(SMOKE *spark)
 	// End Line: 8077
 
 void GetSmokeDrift(VECTOR *Wind)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if (SmokeCnt != CameraCnt) {
-    SmokeCnt = CameraCnt;
-    DAT_000aa378 = DAT_000aa378 + 3 & 0xfff;
-    DAT_000aa37c = DAT_000aa37c + 5 & 0xfff;
-    DAT_000aa380 = DAT_000aa380 + 7 & 0xfff;
-    SinX_103 = (int)rcossin_tbl[DAT_000aa378 * 2] + (int)rcossin_tbl[DAT_000aa37c * 2];
-    CosX_104 = (int)rcossin_tbl[(DAT_000aa378 + 0x400 & 0xfff) * 2] +
-               (int)rcossin_tbl[(DAT_000aa37c + 0x400 & 0xfff) * 2];
-    DAT_000aa384 = (int)((uint)(ushort)rcossin_tbl[DAT_000aa380 * 2] << 0x10) >> 0x1b;
-  }
-  iVar1 = DAT_000aa384 * CosX_104;
-  iVar2 = -DAT_000aa384 * SinX_103;
-  Wind->vy = 0;
-  Wind->vx = iVar1 >> 0xc;
-  Wind->vz = iVar2 >> 0xc;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+
+	if (SmokeCnt != CameraCnt) {
+		SmokeCnt = CameraCnt;
+		DAT_000aa378 = DAT_000aa378 + 3 & 0xfff;
+		DAT_000aa37c = DAT_000aa37c + 5 & 0xfff;
+		DAT_000aa380 = DAT_000aa380 + 7 & 0xfff;
+		SinX_103 = (int)rcossin_tbl[DAT_000aa378 * 2] + (int)rcossin_tbl[DAT_000aa37c * 2];
+		CosX_104 = (int)rcossin_tbl[(DAT_000aa378 + 0x400 & 0xfff) * 2] +
+			(int)rcossin_tbl[(DAT_000aa37c + 0x400 & 0xfff) * 2];
+		DAT_000aa384 = (int)((uint)(ushort)rcossin_tbl[DAT_000aa380 * 2] << 0x10) >> 0x1b;
+	}
+	iVar1 = DAT_000aa384 * CosX_104;
+	iVar2 = -DAT_000aa384 * SinX_103;
+	Wind->vy = 0;
+	Wind->vx = iVar1 >> 0xc;
+	Wind->vz = iVar2 >> 0xc;
+	return;*/
 }
 
 
@@ -3800,74 +3844,75 @@ void GetSmokeDrift(VECTOR *Wind)
 	/* end block 3 */
 	// End Line: 8208
 
-void Setup_Debris(VECTOR *ipos,VECTOR *ispeed,int num_debris,int type)
-
+void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 {
-  byte bVar1;
-  byte bVar2;
-  byte bVar3;
-  ushort uVar4;
-  int iVar5;
-  uint uVar6;
-  uint uVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  int iVar11;
-  int iVar12;
-  
-  iVar9 = type >> 0x10;
-  iVar12 = 0;
-  if (0 < num_debris) {
-    do {
-      iVar5 = AllocateDebris();
-      if (iVar5 == -1) {
-        return;
-      }
-      debris[iVar5].position.vx = ipos->vx;
-      debris[iVar5].position.vy = ipos->vy;
-      debris[iVar5].position.vz = ipos->vz;
-      if ((type & 0xffffU) < 8) {
-        uVar6 = rand();
-        iVar11 = (uVar6 & 0x7f00) * num_debris * 2;
-        iVar10 = (ispeed->vx + ((uVar6 & 0x7f) - 0x40) * num_debris) * 0x400;
-        uVar7 = rand();
-        iVar8 = ispeed->vz;
-        bVar1 = debris_colour[GameLevel * 0x1f + iVar9].r;
-        bVar2 = debris_colour[GameLevel * 0x1f + iVar9].g;
-        bVar3 = debris_colour[GameLevel * 0x1f + iVar9].b;
-        debris[iVar5].step = (char)uVar6;
-        debris[iVar5].rgb.r = bVar1;
-        debris[iVar5].rgb.g = bVar2;
-        debris[iVar5].rgb.b = bVar3;
-        iVar8 = iVar8 + ((uVar7 & 0x7fff) - 0x4000) * num_debris * 2;
-        if (gTimeOfDay == 3) {
-          debris[iVar5].rgb.r = bVar1 >> 1;
-          debris[iVar5].rgb.g = bVar2 >> 1;
-          debris[iVar5].rgb.b = bVar3 >> 1;
-        }
-      }
-      else {
-        iVar11 = ispeed->vy;
-        iVar10 = ispeed->vx;
-        iVar8 = ispeed->vz;
-        debris[iVar5].step = '\x02';
-        debris[iVar5].rgb.b = '<';
-        debris[iVar5].rgb.g = '<';
-        debris[iVar5].rgb.r = '<';
-      }
-      uVar4 = (ushort)iVar12;
-      iVar12 = iVar12 + 1;
-      debris[iVar5].type = (byte)type & 7;
-      debris[iVar5].direction.vy = -(short)(iVar11 >> 0xc);
-      debris[iVar5].life = 0x80;
-      debris[iVar5].direction.vx = (short)(iVar10 >> 0xc);
-      debris[iVar5].direction.vz = (short)(iVar8 >> 0xc);
-      debris[iVar5].flags = 2;
-      debris[iVar5].pos = uVar4 & 0x1f;
-    } while (iVar12 < num_debris);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	byte bVar2;
+	byte bVar3;
+	ushort uVar4;
+	int iVar5;
+	uint uVar6;
+	uint uVar7;
+	int iVar8;
+	int iVar9;
+	int iVar10;
+	int iVar11;
+	int iVar12;
+
+	iVar9 = type >> 0x10;
+	iVar12 = 0;
+	if (0 < num_debris) {
+		do {
+			iVar5 = AllocateDebris();
+			if (iVar5 == -1) {
+				return;
+			}
+			debris[iVar5].position.vx = ipos->vx;
+			debris[iVar5].position.vy = ipos->vy;
+			debris[iVar5].position.vz = ipos->vz;
+			if ((type & 0xffffU) < 8) {
+				uVar6 = rand();
+				iVar11 = (uVar6 & 0x7f00) * num_debris * 2;
+				iVar10 = (ispeed->vx + ((uVar6 & 0x7f) - 0x40) * num_debris) * 0x400;
+				uVar7 = rand();
+				iVar8 = ispeed->vz;
+				bVar1 = debris_colour[GameLevel * 0x1f + iVar9].r;
+				bVar2 = debris_colour[GameLevel * 0x1f + iVar9].g;
+				bVar3 = debris_colour[GameLevel * 0x1f + iVar9].b;
+				debris[iVar5].step = (char)uVar6;
+				debris[iVar5].rgb.r = bVar1;
+				debris[iVar5].rgb.g = bVar2;
+				debris[iVar5].rgb.b = bVar3;
+				iVar8 = iVar8 + ((uVar7 & 0x7fff) - 0x4000) * num_debris * 2;
+				if (gTimeOfDay == 3) {
+					debris[iVar5].rgb.r = bVar1 >> 1;
+					debris[iVar5].rgb.g = bVar2 >> 1;
+					debris[iVar5].rgb.b = bVar3 >> 1;
+				}
+			}
+			else {
+				iVar11 = ispeed->vy;
+				iVar10 = ispeed->vx;
+				iVar8 = ispeed->vz;
+				debris[iVar5].step = '\x02';
+				debris[iVar5].rgb.b = '<';
+				debris[iVar5].rgb.g = '<';
+				debris[iVar5].rgb.r = '<';
+			}
+			uVar4 = (ushort)iVar12;
+			iVar12 = iVar12 + 1;
+			debris[iVar5].type = (byte)type & 7;
+			debris[iVar5].direction.vy = -(short)(iVar11 >> 0xc);
+			debris[iVar5].life = 0x80;
+			debris[iVar5].direction.vx = (short)(iVar10 >> 0xc);
+			debris[iVar5].direction.vz = (short)(iVar8 >> 0xc);
+			debris[iVar5].flags = 2;
+			debris[iVar5].pos = uVar4 & 0x1f;
+		} while (iVar12 < num_debris);
+	}
+	return;*/
 }
 
 
@@ -3921,196 +3966,196 @@ void Setup_Debris(VECTOR *ipos,VECTOR *ispeed,int num_debris,int type)
 
 /* WARNING: Removing unreachable block (ram,0x0003778c) */
 
-void Setup_Smoke(VECTOR *ipos,int start_w,int end_w,int SmokeType,int WheelSpeed,VECTOR *Drift,
-                int Exhaust)
-
+void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelSpeed, VECTOR *Drift, int Exhaust)
 {
-  char cVar1;
-  byte bVar2;
-  short sVar3;
-  short sVar4;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
-  SMOKE *pSVar8;
-  short sVar9;
-  
-  iVar5 = AllocateSmoke();
-  if (iVar5 == -1) {
-    return;
-  }
-  pSVar8 = smoke + iVar5;
-  sVar3 = (short)start_w;
-  sVar9 = (short)end_w;
-  if (SmokeType == 4) {
-    (pSVar8->position).vx = ipos->vx;
-    end_w = end_w - start_w;
-    smoke[iVar5].position.vy = *(short *)&ipos->vy;
-    iVar6 = ipos->vz;
-    smoke[iVar5].start_w = sVar3;
-    smoke[iVar5].final_w = sVar9;
-    smoke[iVar5].position.vz = iVar6;
-    iVar6 = end_w;
-    if (end_w < 0) {
-      iVar6 = end_w + 0x7f;
-    }
-    smoke[iVar5].step = (uchar)((iVar6 >> 7) << 2);
-    smoke[iVar5].flags = 0x1006;
-    smoke[iVar5].life = '\x14';
-    smoke[iVar5].halflife = '\n';
-    if (WheelSpeed < 0x30d41) {
-      sVar3 = 0xff;
-    }
-    else {
-      sVar3 = (short)(800000 - WheelSpeed >> 0xb);
-    }
-    smoke[iVar5].transparency = sVar3;
-    smoke[iVar5].t_step = (uchar)(end_w >> 2);
-  }
-  else {
-    if (SmokeType == 1) {
-      if (Exhaust == 0) {
-        (pSVar8->position).vx = ipos->vx;
-        smoke[iVar5].position.vy = *(short *)&ipos->vy;
-        smoke[iVar5].position.vz = ipos->vz;
-        if (WheelSpeed < 0x30d41) {
-          sVar4 = 0xff;
-        }
-        else {
-          sVar4 = (short)(800000 - WheelSpeed >> 0xb);
-        }
-        smoke[iVar5].transparency = sVar4;
-        end_w = end_w - start_w;
-        smoke[iVar5].t_step = (uchar)(end_w >> 5);
-      }
-      else {
-        uVar7 = rand();
-        (pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
-        smoke[iVar5].position.vy = *(short *)&ipos->vy;
-        uVar7 = rand();
-        end_w = end_w - start_w;
-        iVar6 = ipos->vz;
-        smoke[iVar5].flags = 0x2006;
-        smoke[iVar5].transparency = 0x8c;
-        smoke[iVar5].t_step = '\x02';
-        smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
-      }
-      smoke[iVar5].start_w = sVar3;
-      smoke[iVar5].final_w = sVar9;
-      if (end_w < 0) {
-        end_w = end_w + 0x7f;
-      }
-      smoke[iVar5].step = (uchar)((end_w >> 7) << 2);
-      smoke[iVar5].flags = 0x2006;
-      smoke[iVar5].life = '(';
-      smoke[iVar5].halflife = '\x14';
-    }
-    else {
-      if ((SmokeType == 2) || (SmokeType == 5)) {
-        if (Exhaust == 0) {
-          uVar7 = rand();
-          (pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
-          smoke[iVar5].position.vy = *(short *)&ipos->vy;
-          uVar7 = rand();
-          iVar6 = ipos->vz;
-          smoke[iVar5].flags = 0x16;
-          smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
-        }
-        else {
-          uVar7 = rand();
-          (pSVar8->position).vx = ipos->vx + (uVar7 & 7);
-          smoke[iVar5].position.vy = *(short *)&ipos->vy;
-          uVar7 = rand();
-          iVar6 = ipos->vz;
-          smoke[iVar5].flags = 0x4006;
-          smoke[iVar5].transparency = 0x46;
-          smoke[iVar5].t_step = '\x02';
-          smoke[iVar5].position.vz = iVar6 + (uVar7 & 7);
-        }
-        smoke[iVar5].start_w = sVar3;
-        smoke[iVar5].final_w = sVar9;
-        if (SmokeType == 5) {
-          smoke[iVar5].life = ' ';
-          end_w = end_w - start_w;
-          iVar6 = end_w;
-          if (end_w < 0) {
-            iVar6 = end_w + 0x1f;
-          }
-          smoke[iVar5].step = (uchar)((iVar6 >> 5) << 2);
-          smoke[iVar5].t_step = (uchar)(end_w >> 5);
-          smoke[iVar5].transparency = (short)WheelSpeed;
-        }
-        else {
-          smoke[iVar5].life = -0x80;
-          smoke[iVar5].step = (uchar)((end_w - start_w) / 0x80 << 3);
-          smoke[iVar5].t_step = (uchar)(end_w - start_w >> 6);
-          smoke[iVar5].transparency = 0x50;
-        }
-      }
-      else {
-        if (SmokeType == 6) {
-          (pSVar8->position).vx = ipos->vx;
-          smoke[iVar5].position.vy = *(short *)&ipos->vy;
-          iVar6 = ipos->vz;
-          smoke[iVar5].flags = 0x46;
-          smoke[iVar5].transparency = 0xa0;
-          smoke[iVar5].step = '\x14';
-          smoke[iVar5].t_step = '\x05';
-          smoke[iVar5].start_w = sVar3;
-          smoke[iVar5].final_w = sVar9;
-          smoke[iVar5].life = -0x4e;
-          smoke[iVar5].halflife = ' ';
-          smoke[iVar5].position.vz = iVar6;
-          goto LAB_00037884;
-        }
-        uVar7 = rand();
-        (pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
-        smoke[iVar5].position.vy = *(short *)&ipos->vy;
-        uVar7 = rand();
-        end_w = end_w - start_w;
-        iVar6 = ipos->vz;
-        smoke[iVar5].flags = 0x26;
-        smoke[iVar5].transparency = 0x3c;
-        smoke[iVar5].t_step = '\x05';
-        smoke[iVar5].start_w = sVar3;
-        smoke[iVar5].final_w = sVar9;
-        smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
-        if (end_w < 0) {
-          end_w = end_w + 0x7f;
-        }
-        smoke[iVar5].step = (uchar)((end_w >> 7) << 3);
-        smoke[iVar5].life = -0x80;
-      }
-      smoke[iVar5].halflife = '@';
-    }
-  }
+	UNIMPLEMENTED();
+	/*
+	char cVar1;
+	byte bVar2;
+	short sVar3;
+	short sVar4;
+	int iVar5;
+	int iVar6;
+	uint uVar7;
+	SMOKE *pSVar8;
+	short sVar9;
+
+	iVar5 = AllocateSmoke();
+	if (iVar5 == -1) {
+		return;
+	}
+	pSVar8 = smoke + iVar5;
+	sVar3 = (short)start_w;
+	sVar9 = (short)end_w;
+	if (SmokeType == 4) {
+		(pSVar8->position).vx = ipos->vx;
+		end_w = end_w - start_w;
+		smoke[iVar5].position.vy = *(short *)&ipos->vy;
+		iVar6 = ipos->vz;
+		smoke[iVar5].start_w = sVar3;
+		smoke[iVar5].final_w = sVar9;
+		smoke[iVar5].position.vz = iVar6;
+		iVar6 = end_w;
+		if (end_w < 0) {
+			iVar6 = end_w + 0x7f;
+		}
+		smoke[iVar5].step = (uchar)((iVar6 >> 7) << 2);
+		smoke[iVar5].flags = 0x1006;
+		smoke[iVar5].life = '\x14';
+		smoke[iVar5].halflife = '\n';
+		if (WheelSpeed < 0x30d41) {
+			sVar3 = 0xff;
+		}
+		else {
+			sVar3 = (short)(800000 - WheelSpeed >> 0xb);
+		}
+		smoke[iVar5].transparency = sVar3;
+		smoke[iVar5].t_step = (uchar)(end_w >> 2);
+	}
+	else {
+		if (SmokeType == 1) {
+			if (Exhaust == 0) {
+				(pSVar8->position).vx = ipos->vx;
+				smoke[iVar5].position.vy = *(short *)&ipos->vy;
+				smoke[iVar5].position.vz = ipos->vz;
+				if (WheelSpeed < 0x30d41) {
+					sVar4 = 0xff;
+				}
+				else {
+					sVar4 = (short)(800000 - WheelSpeed >> 0xb);
+				}
+				smoke[iVar5].transparency = sVar4;
+				end_w = end_w - start_w;
+				smoke[iVar5].t_step = (uchar)(end_w >> 5);
+			}
+			else {
+				uVar7 = rand();
+				(pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
+				smoke[iVar5].position.vy = *(short *)&ipos->vy;
+				uVar7 = rand();
+				end_w = end_w - start_w;
+				iVar6 = ipos->vz;
+				smoke[iVar5].flags = 0x2006;
+				smoke[iVar5].transparency = 0x8c;
+				smoke[iVar5].t_step = '\x02';
+				smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
+			}
+			smoke[iVar5].start_w = sVar3;
+			smoke[iVar5].final_w = sVar9;
+			if (end_w < 0) {
+				end_w = end_w + 0x7f;
+			}
+			smoke[iVar5].step = (uchar)((end_w >> 7) << 2);
+			smoke[iVar5].flags = 0x2006;
+			smoke[iVar5].life = '(';
+			smoke[iVar5].halflife = '\x14';
+		}
+		else {
+			if ((SmokeType == 2) || (SmokeType == 5)) {
+				if (Exhaust == 0) {
+					uVar7 = rand();
+					(pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
+					smoke[iVar5].position.vy = *(short *)&ipos->vy;
+					uVar7 = rand();
+					iVar6 = ipos->vz;
+					smoke[iVar5].flags = 0x16;
+					smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
+				}
+				else {
+					uVar7 = rand();
+					(pSVar8->position).vx = ipos->vx + (uVar7 & 7);
+					smoke[iVar5].position.vy = *(short *)&ipos->vy;
+					uVar7 = rand();
+					iVar6 = ipos->vz;
+					smoke[iVar5].flags = 0x4006;
+					smoke[iVar5].transparency = 0x46;
+					smoke[iVar5].t_step = '\x02';
+					smoke[iVar5].position.vz = iVar6 + (uVar7 & 7);
+				}
+				smoke[iVar5].start_w = sVar3;
+				smoke[iVar5].final_w = sVar9;
+				if (SmokeType == 5) {
+					smoke[iVar5].life = ' ';
+					end_w = end_w - start_w;
+					iVar6 = end_w;
+					if (end_w < 0) {
+						iVar6 = end_w + 0x1f;
+					}
+					smoke[iVar5].step = (uchar)((iVar6 >> 5) << 2);
+					smoke[iVar5].t_step = (uchar)(end_w >> 5);
+					smoke[iVar5].transparency = (short)WheelSpeed;
+				}
+				else {
+					smoke[iVar5].life = -0x80;
+					smoke[iVar5].step = (uchar)((end_w - start_w) / 0x80 << 3);
+					smoke[iVar5].t_step = (uchar)(end_w - start_w >> 6);
+					smoke[iVar5].transparency = 0x50;
+				}
+			}
+			else {
+				if (SmokeType == 6) {
+					(pSVar8->position).vx = ipos->vx;
+					smoke[iVar5].position.vy = *(short *)&ipos->vy;
+					iVar6 = ipos->vz;
+					smoke[iVar5].flags = 0x46;
+					smoke[iVar5].transparency = 0xa0;
+					smoke[iVar5].step = '\x14';
+					smoke[iVar5].t_step = '\x05';
+					smoke[iVar5].start_w = sVar3;
+					smoke[iVar5].final_w = sVar9;
+					smoke[iVar5].life = -0x4e;
+					smoke[iVar5].halflife = ' ';
+					smoke[iVar5].position.vz = iVar6;
+					goto LAB_00037884;
+				}
+				uVar7 = rand();
+				(pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
+				smoke[iVar5].position.vy = *(short *)&ipos->vy;
+				uVar7 = rand();
+				end_w = end_w - start_w;
+				iVar6 = ipos->vz;
+				smoke[iVar5].flags = 0x26;
+				smoke[iVar5].transparency = 0x3c;
+				smoke[iVar5].t_step = '\x05';
+				smoke[iVar5].start_w = sVar3;
+				smoke[iVar5].final_w = sVar9;
+				smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
+				if (end_w < 0) {
+					end_w = end_w + 0x7f;
+				}
+				smoke[iVar5].step = (uchar)((end_w >> 7) << 3);
+				smoke[iVar5].life = -0x80;
+			}
+			smoke[iVar5].halflife = '@';
+		}
+	}
 LAB_00037884:
-  if (Exhaust == 0) {
-    bVar2 = smoke[iVar5].life;
-    smoke[iVar5].drift.vx = '\0';
-    smoke[iVar5].drift.vy = '\0';
-    smoke[iVar5].drift.vz = '\0';
-    if ((bVar2 < 0x28) || (SmokeType == 4)) {
-      smoke[iVar5].drift_change.vx = '\0';
-      smoke[iVar5].drift_change.vy = '\x01';
-      smoke[iVar5].drift_change.vz = '\0';
-    }
-    else {
-      smoke[iVar5].drift_change.vx = *(char *)&Drift->vx;
-      smoke[iVar5].drift_change.vy = *(char *)&Drift->vy;
-      smoke[iVar5].drift_change.vz = *(char *)&Drift->vz;
-    }
-  }
-  else {
-    smoke[iVar5].drift.vx = *(char *)&Drift->vx;
-    smoke[iVar5].drift.vy = *(char *)&Drift->vy;
-    cVar1 = *(char *)&Drift->vz;
-    smoke[iVar5].drift_change.vx = '\0';
-    smoke[iVar5].drift_change.vy = '\0';
-    smoke[iVar5].drift_change.vz = '\0';
-    smoke[iVar5].drift.vz = cVar1;
-  }
-  return;
+	if (Exhaust == 0) {
+		bVar2 = smoke[iVar5].life;
+		smoke[iVar5].drift.vx = '\0';
+		smoke[iVar5].drift.vy = '\0';
+		smoke[iVar5].drift.vz = '\0';
+		if ((bVar2 < 0x28) || (SmokeType == 4)) {
+			smoke[iVar5].drift_change.vx = '\0';
+			smoke[iVar5].drift_change.vy = '\x01';
+			smoke[iVar5].drift_change.vz = '\0';
+		}
+		else {
+			smoke[iVar5].drift_change.vx = *(char *)&Drift->vx;
+			smoke[iVar5].drift_change.vy = *(char *)&Drift->vy;
+			smoke[iVar5].drift_change.vz = *(char *)&Drift->vz;
+		}
+	}
+	else {
+		smoke[iVar5].drift.vx = *(char *)&Drift->vx;
+		smoke[iVar5].drift.vy = *(char *)&Drift->vy;
+		cVar1 = *(char *)&Drift->vz;
+		smoke[iVar5].drift_change.vx = '\0';
+		smoke[iVar5].drift_change.vy = '\0';
+		smoke[iVar5].drift_change.vz = '\0';
+		smoke[iVar5].drift.vz = cVar1;
+	}
+	return;*/
 }
 
 
@@ -4151,71 +4196,72 @@ LAB_00037884:
 	/* end block 3 */
 	// End Line: 9008
 
-void Setup_Sparks(VECTOR *ipos,VECTOR *ispeed,int num_sparks,char SparkType)
-
+void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 {
-  short sVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  
-  if ((pauseflag == 0) && (iVar8 = 0, 0 < num_sparks)) {
-    do {
-      iVar2 = AllocateSmoke();
-      if (iVar2 < 0) {
-        return;
-      }
-      uVar3 = rand();
-      iVar5 = ipos->vx;
-      smoke[iVar2].position.vx = iVar5;
-      sVar1 = *(short *)&ipos->vy;
-      smoke[iVar2].position.vy = sVar1;
-      iVar6 = ipos->vz;
-      smoke[iVar2].final_tail_pos.vy = sVar1;
-      smoke[iVar2].pos = (uchar)(iVar8 << 2);
-      smoke[iVar2].step = (byte)uVar3 & 0x3f;
-      smoke[iVar2].final_tail_pos.vx = iVar5;
-      smoke[iVar2].drift.vx = '\x02';
-      smoke[iVar2].flags = 10;
-      smoke[iVar2].position.vz = iVar6;
-      smoke[iVar2].final_tail_pos.vz = iVar6;
-      iVar7 = ispeed->vx;
-      iVar6 = ispeed->vy;
-      uVar4 = rand();
-      iVar5 = ispeed->vz;
-      smoke[iVar2].drift_change.vx = (char)((int)((iVar7 + -0x4000 + (uVar3 & 0x7f00)) * 4) >> 0xc);
-      smoke[iVar2].drift_change.vy = -(char)((int)((iVar6 + (uVar3 & 0x7f)) * 0x400) >> 0xc);
-      smoke[iVar2].drift_change.vz = (char)(iVar5 + -0x40 + (uVar4 & 0x7f) >> 2);
-      if (SparkType == '\x01') {
-        smoke[iVar2].life = '\n';
-        smoke[iVar2].transparency = 200;
-        smoke[iVar2].t_step = '\x02';
-        smoke[iVar2].start_w = 0;
-      }
-      else {
-        if (SparkType == '\x02') {
-          smoke[iVar2].life = '\n';
-          smoke[iVar2].transparency = 0xff;
-          smoke[iVar2].t_step = '\n';
-          smoke[iVar2].start_w = 2;
-          iVar5 = rand();
-          smoke[iVar2].drift.vy = (byte)iVar5 & 3;
-        }
-        else {
-          smoke[iVar2].life = '(';
-          smoke[iVar2].transparency = 0xff;
-          smoke[iVar2].t_step = '\n';
-          smoke[iVar2].start_w = 1;
-        }
-      }
-      iVar8 = iVar8 + 1;
-    } while (iVar8 < num_sparks);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	short sVar1;
+	int iVar2;
+	uint uVar3;
+	uint uVar4;
+	int iVar5;
+	int iVar6;
+	int iVar7;
+	int iVar8;
+
+	if ((pauseflag == 0) && (iVar8 = 0, 0 < num_sparks)) {
+		do {
+			iVar2 = AllocateSmoke();
+			if (iVar2 < 0) {
+				return;
+			}
+			uVar3 = rand();
+			iVar5 = ipos->vx;
+			smoke[iVar2].position.vx = iVar5;
+			sVar1 = *(short *)&ipos->vy;
+			smoke[iVar2].position.vy = sVar1;
+			iVar6 = ipos->vz;
+			smoke[iVar2].final_tail_pos.vy = sVar1;
+			smoke[iVar2].pos = (uchar)(iVar8 << 2);
+			smoke[iVar2].step = (byte)uVar3 & 0x3f;
+			smoke[iVar2].final_tail_pos.vx = iVar5;
+			smoke[iVar2].drift.vx = '\x02';
+			smoke[iVar2].flags = 10;
+			smoke[iVar2].position.vz = iVar6;
+			smoke[iVar2].final_tail_pos.vz = iVar6;
+			iVar7 = ispeed->vx;
+			iVar6 = ispeed->vy;
+			uVar4 = rand();
+			iVar5 = ispeed->vz;
+			smoke[iVar2].drift_change.vx = (char)((int)((iVar7 + -0x4000 + (uVar3 & 0x7f00)) * 4) >> 0xc);
+			smoke[iVar2].drift_change.vy = -(char)((int)((iVar6 + (uVar3 & 0x7f)) * 0x400) >> 0xc);
+			smoke[iVar2].drift_change.vz = (char)(iVar5 + -0x40 + (uVar4 & 0x7f) >> 2);
+			if (SparkType == '\x01') {
+				smoke[iVar2].life = '\n';
+				smoke[iVar2].transparency = 200;
+				smoke[iVar2].t_step = '\x02';
+				smoke[iVar2].start_w = 0;
+			}
+			else {
+				if (SparkType == '\x02') {
+					smoke[iVar2].life = '\n';
+					smoke[iVar2].transparency = 0xff;
+					smoke[iVar2].t_step = '\n';
+					smoke[iVar2].start_w = 2;
+					iVar5 = rand();
+					smoke[iVar2].drift.vy = (byte)iVar5 & 3;
+				}
+				else {
+					smoke[iVar2].life = '(';
+					smoke[iVar2].transparency = 0xff;
+					smoke[iVar2].t_step = '\n';
+					smoke[iVar2].start_w = 1;
+				}
+			}
+			iVar8 = iVar8 + 1;
+		} while (iVar8 < num_sparks);
+	}
+	return;*/
 }
 
 
@@ -4253,127 +4299,128 @@ void Setup_Sparks(VECTOR *ipos,VECTOR *ispeed,int num_sparks,char SparkType)
 	/* end block 2 */
 	// End Line: 9291
 
-void DisplayDebris(DEBRIS *debris,char type)
-
+void DisplayDebris(DEBRIS *debris, char type)
 {
-  DB *pDVar1;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  uint *puVar5;
-  char *pcVar6;
-  undefined4 local_38;
-  uint local_34;
-  undefined4 local_30;
-  uint local_2c;
-  undefined4 local_28;
-  uint local_24;
-  undefined4 local_20;
-  uint local_1c;
-  short local_18;
-  short local_14;
-  short local_10;
-  
-  iVar4 = (debris->position).vx - camera_position.vx;
-  uVar2 = (debris->position).vy - camera_position.vy;
-  uVar3 = (debris->position).vz - camera_position.vz;
-  if ((((iVar4 < -10000) || ((int)uVar3 < -10000)) || (10000 < iVar4)) || (10000 < (int)uVar3)) {
-    debris->life = 1;
-  }
-  else {
-    pcVar6 = debris_rot_table5[(byte)debris->type] + ((int)(uint)debris->pos >> 3 & 0x1fU) * 0xc;
-    local_18 = (short)iVar4;
-    local_14 = (short)uVar2;
-    local_38 = CONCAT22(pcVar6[1] + local_14,*pcVar6 + local_18);
-    local_10 = (short)uVar3;
-    uVar3 = uVar3 & 0xffff;
-    local_34 = local_34 & 0xffff0000 | (int)pcVar6[2] + uVar3 & 0xffff;
-    local_30 = CONCAT22(pcVar6[5] + local_14,pcVar6[4] + local_18);
-    local_2c = local_2c & 0xffff0000 | (uint)(ushort)(pcVar6[6] + local_10);
-    iVar4 = (int)pcVar6[9] + (uVar2 & 0xffff);
-    local_28 = CONCAT22((short)iVar4,pcVar6[8] + local_18);
-    local_24 = local_24 & 0xffff0000 | (int)pcVar6[10] + uVar3 & 0xffff;
-    setCopReg(2,in_zero,local_38);
-    setCopReg(2,in_at,local_34);
-    setCopReg(2,iVar4,local_30);
-    setCopReg(2,(int)pcVar6[10] + uVar3,local_2c);
-    setCopReg(2,(int)pcVar6[2] + uVar3,local_28);
-    setCopReg(2,uVar3,local_24);
-    copFunction(2,0x280030);
-    if ((uint)(byte)type - 1 < 2) {
-      puVar5 = (uint *)current->primptr;
-      local_20 = CONCAT22(local_14 - pcVar6[1],local_18 - *pcVar6);
-      local_1c = local_1c & 0xffff0000 | (uint)(ushort)(local_10 - pcVar6[2]);
-      puVar5[3] = CONCAT22(litter_texture.clutid,litter_texture.coords._0_2_);
-      puVar5[6] = CONCAT22(litter_texture.tpageid,litter_texture.coords._2_2_);
-      puVar5[9] = (uint)litter_texture.coords._4_2_;
-      puVar5[0xc] = (uint)litter_texture.coords._6_2_;
-      uVar2 = getCopReg(2,0xc);
-      puVar5[2] = uVar2;
-      uVar2 = getCopReg(2,0xd);
-      puVar5[5] = uVar2;
-      uVar2 = getCopReg(2,0xe);
-      puVar5[8] = uVar2;
-      iVar4 = getCopReg(2,0x13);
-      if (0xdf < iVar4) {
-        setCopReg(2,in_zero,local_20);
-        setCopReg(2,in_at,local_1c);
-        copFunction(2,0x180001);
-        uVar2 = (uint)(byte)combointensity;
-        if (type == '\x02') {
-          uVar2 = ((debris->rgb).b + uVar2) * 0x10000 |
-                  ((debris->rgb).g + uVar2) * 0x100 | 0x3c000000 | (debris->rgb).r + uVar2;
-        }
-        else {
-          uVar2 = (uint)(debris->rgb).b << 0x10 | (uint)(debris->rgb).g << 8 | 0x3c000000 |
-                  (uint)(debris->rgb).r;
-        }
-        puVar5[1] = uVar2;
-        puVar5[7] = uVar2;
-        puVar5[4] = uVar2 + 0x202020;
-        puVar5[10] = uVar2 + 0x303030;
-        *(char *)((int)puVar5 + 3) = '\f';
-        pDVar1 = current;
-        *puVar5 = *puVar5 & 0xff000000 | current->ot[iVar4 >> 3] & 0xffffff;
-        pDVar1->ot[iVar4 >> 3] = pDVar1->ot[iVar4 >> 3] & 0xff000000 | (uint)puVar5 & 0xffffff;
-        uVar2 = getCopReg(2,0xe);
-        puVar5[0xb] = uVar2;
-        *(uint **)&current->primptr = puVar5 + 0xd;
-      }
-    }
-    else {
-      puVar5 = (uint *)current->primptr;
-      *(char *)((int)puVar5 + 3) = '\a';
-      *(char *)((int)puVar5 + 7) = '$';
-      *(uchar *)(puVar5 + 3) = debris_texture.coords.u0;
-      *(uchar *)((int)puVar5 + 0xd) = debris_texture.coords.v0;
-      *(uchar *)(puVar5 + 5) = debris_texture.coords.u1;
-      *(uchar *)((int)puVar5 + 0x15) = debris_texture.coords.v1;
-      *(uchar *)(puVar5 + 7) = debris_texture.coords.u2;
-      *(uchar *)((int)puVar5 + 0x1d) = debris_texture.coords.v2;
-      uVar2 = getCopReg(2,0xc);
-      puVar5[2] = uVar2;
-      uVar2 = getCopReg(2,0xd);
-      puVar5[4] = uVar2;
-      uVar2 = getCopReg(2,0xe);
-      puVar5[6] = uVar2;
-      iVar4 = getCopReg(2,0x13);
-      *(uchar *)(puVar5 + 1) = (debris->rgb).r;
-      *(uchar *)((int)puVar5 + 5) = (debris->rgb).g;
-      *(uchar *)((int)puVar5 + 6) = (debris->rgb).b;
-      *(ushort *)((int)puVar5 + 0x16) = debris_texture.tpageid;
-      *(ushort *)((int)puVar5 + 0xe) = debris_texture.clutid;
-      pDVar1 = current;
-      if (0xdf < iVar4) {
-        *puVar5 = *puVar5 & 0xff000000 | current->ot[iVar4 >> 3] & 0xffffff;
-        pDVar1->ot[iVar4 >> 3] = pDVar1->ot[iVar4 >> 3] & 0xff000000 | (uint)puVar5 & 0xffffff;
-        pDVar1->primptr = pDVar1->primptr + 0x20;
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	DB *pDVar1;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar2;
+	uint uVar3;
+	int iVar4;
+	uint *puVar5;
+	char *pcVar6;
+	undefined4 local_38;
+	uint local_34;
+	undefined4 local_30;
+	uint local_2c;
+	undefined4 local_28;
+	uint local_24;
+	undefined4 local_20;
+	uint local_1c;
+	short local_18;
+	short local_14;
+	short local_10;
+
+	iVar4 = (debris->position).vx - camera_position.vx;
+	uVar2 = (debris->position).vy - camera_position.vy;
+	uVar3 = (debris->position).vz - camera_position.vz;
+	if ((((iVar4 < -10000) || ((int)uVar3 < -10000)) || (10000 < iVar4)) || (10000 < (int)uVar3)) {
+		debris->life = 1;
+	}
+	else {
+		pcVar6 = debris_rot_table5[(byte)debris->type] + ((int)(uint)debris->pos >> 3 & 0x1fU) * 0xc;
+		local_18 = (short)iVar4;
+		local_14 = (short)uVar2;
+		local_38 = CONCAT22(pcVar6[1] + local_14, *pcVar6 + local_18);
+		local_10 = (short)uVar3;
+		uVar3 = uVar3 & 0xffff;
+		local_34 = local_34 & 0xffff0000 | (int)pcVar6[2] + uVar3 & 0xffff;
+		local_30 = CONCAT22(pcVar6[5] + local_14, pcVar6[4] + local_18);
+		local_2c = local_2c & 0xffff0000 | (uint)(ushort)(pcVar6[6] + local_10);
+		iVar4 = (int)pcVar6[9] + (uVar2 & 0xffff);
+		local_28 = CONCAT22((short)iVar4, pcVar6[8] + local_18);
+		local_24 = local_24 & 0xffff0000 | (int)pcVar6[10] + uVar3 & 0xffff;
+		setCopReg(2, in_zero, local_38);
+		setCopReg(2, in_at, local_34);
+		setCopReg(2, iVar4, local_30);
+		setCopReg(2, (int)pcVar6[10] + uVar3, local_2c);
+		setCopReg(2, (int)pcVar6[2] + uVar3, local_28);
+		setCopReg(2, uVar3, local_24);
+		copFunction(2, 0x280030);
+		if ((uint)(byte)type - 1 < 2) {
+			puVar5 = (uint *)current->primptr;
+			local_20 = CONCAT22(local_14 - pcVar6[1], local_18 - *pcVar6);
+			local_1c = local_1c & 0xffff0000 | (uint)(ushort)(local_10 - pcVar6[2]);
+			puVar5[3] = CONCAT22(litter_texture.clutid, litter_texture.coords._0_2_);
+			puVar5[6] = CONCAT22(litter_texture.tpageid, litter_texture.coords._2_2_);
+			puVar5[9] = (uint)litter_texture.coords._4_2_;
+			puVar5[0xc] = (uint)litter_texture.coords._6_2_;
+			uVar2 = getCopReg(2, 0xc);
+			puVar5[2] = uVar2;
+			uVar2 = getCopReg(2, 0xd);
+			puVar5[5] = uVar2;
+			uVar2 = getCopReg(2, 0xe);
+			puVar5[8] = uVar2;
+			iVar4 = getCopReg(2, 0x13);
+			if (0xdf < iVar4) {
+				setCopReg(2, in_zero, local_20);
+				setCopReg(2, in_at, local_1c);
+				copFunction(2, 0x180001);
+				uVar2 = (uint)(byte)combointensity;
+				if (type == '\x02') {
+					uVar2 = ((debris->rgb).b + uVar2) * 0x10000 |
+						((debris->rgb).g + uVar2) * 0x100 | 0x3c000000 | (debris->rgb).r + uVar2;
+				}
+				else {
+					uVar2 = (uint)(debris->rgb).b << 0x10 | (uint)(debris->rgb).g << 8 | 0x3c000000 |
+						(uint)(debris->rgb).r;
+				}
+				puVar5[1] = uVar2;
+				puVar5[7] = uVar2;
+				puVar5[4] = uVar2 + 0x202020;
+				puVar5[10] = uVar2 + 0x303030;
+				*(char *)((int)puVar5 + 3) = '\f';
+				pDVar1 = current;
+				*puVar5 = *puVar5 & 0xff000000 | current->ot[iVar4 >> 3] & 0xffffff;
+				pDVar1->ot[iVar4 >> 3] = pDVar1->ot[iVar4 >> 3] & 0xff000000 | (uint)puVar5 & 0xffffff;
+				uVar2 = getCopReg(2, 0xe);
+				puVar5[0xb] = uVar2;
+				*(uint **)&current->primptr = puVar5 + 0xd;
+			}
+		}
+		else {
+			puVar5 = (uint *)current->primptr;
+			*(char *)((int)puVar5 + 3) = '\a';
+			*(char *)((int)puVar5 + 7) = '$';
+			*(uchar *)(puVar5 + 3) = debris_texture.coords.u0;
+			*(uchar *)((int)puVar5 + 0xd) = debris_texture.coords.v0;
+			*(uchar *)(puVar5 + 5) = debris_texture.coords.u1;
+			*(uchar *)((int)puVar5 + 0x15) = debris_texture.coords.v1;
+			*(uchar *)(puVar5 + 7) = debris_texture.coords.u2;
+			*(uchar *)((int)puVar5 + 0x1d) = debris_texture.coords.v2;
+			uVar2 = getCopReg(2, 0xc);
+			puVar5[2] = uVar2;
+			uVar2 = getCopReg(2, 0xd);
+			puVar5[4] = uVar2;
+			uVar2 = getCopReg(2, 0xe);
+			puVar5[6] = uVar2;
+			iVar4 = getCopReg(2, 0x13);
+			*(uchar *)(puVar5 + 1) = (debris->rgb).r;
+			*(uchar *)((int)puVar5 + 5) = (debris->rgb).g;
+			*(uchar *)((int)puVar5 + 6) = (debris->rgb).b;
+			*(ushort *)((int)puVar5 + 0x16) = debris_texture.tpageid;
+			*(ushort *)((int)puVar5 + 0xe) = debris_texture.clutid;
+			pDVar1 = current;
+			if (0xdf < iVar4) {
+				*puVar5 = *puVar5 & 0xff000000 | current->ot[iVar4 >> 3] & 0xffffff;
+				pDVar1->ot[iVar4 >> 3] = pDVar1->ot[iVar4 >> 3] & 0xff000000 | (uint)puVar5 & 0xffffff;
+				pDVar1->primptr = pDVar1->primptr + 0x20;
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -4437,266 +4484,267 @@ void DisplayDebris(DEBRIS *debris,char type)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void HandleDebris(void)
-
 {
-  byte bVar1;
-  byte bVar2;
-  char cVar3;
-  char cVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  char cVar8;
-  ushort uVar9;
-  short sVar10;
-  uint uVar11;
-  char cVar12;
-  uint uVar13;
-  int iVar14;
-  int iVar15;
-  int iVar16;
-  SMOKE *spark;
-  DEBRIS *debris;
-  LEAF *debris_00;
-  int iVar17;
-  undefined4 local_50;
-  undefined4 local_4c;
-  undefined4 local_48;
-  VECTOR local_40;
-  ROUTE_DATA local_30;
-  
-  memset(&local_50,0,0x10);
-  iVar17 = 0;
-  GetSmokeDrift(&local_40);
-  MoveHubcap();
-  SetRotMatrix(&inv_camera_matrix);
-  setCopControlWord(2,0x2800,local_50);
-  setCopControlWord(2,0x3000,local_4c);
-  setCopControlWord(2,0x3800,local_48);
-  if (next_debris != 0) {
-    debris = debris;
-    iVar16 = next_debris;
-    if (pauseflag == 0) {
-      do {
-        if ((debris->flags & 2) != 0) {
-          DisplayDebris(debris,'\0');
-          uVar9 = debris->life - 1;
-          debris->life = uVar9;
-          if ((uVar9 == 0) || (iVar15 = (debris->position).vy, 0 < iVar15)) {
-            debris->flags = 0;
-            ReleaseDebris(debris->num);
-            iVar16 = iVar16 + -1;
-          }
-          else {
-            sVar5 = (debris->direction).vy;
-            sVar10 = (debris->direction).vz;
-            (debris->position).vx = (debris->position).vx + (int)(debris->direction).vx;
-            bVar1 = debris->step;
-            (debris->position).vy = iVar15 + sVar5;
-            uVar9 = debris->pos;
-            (debris->position).vz = (debris->position).vz + (int)sVar10;
-            debris->pos = uVar9 + bVar1;
-            sVar5 = (debris->direction).vy;
-            sVar10 = sVar5 + 6;
-            if (debris->type == '\x03') {
-              sVar10 = sVar5 + 1;
-            }
-            (debris->direction).vy = sVar10;
-            iVar16 = iVar16 + -1;
-          }
-        }
-        debris = debris + 1;
-      } while (iVar16 != 0);
-    }
-    else {
-      do {
-        if ((debris->flags & 2) != 0) {
-          DisplayDebris(debris,'\0');
-          iVar16 = iVar16 + -1;
-        }
-        debris = debris + 1;
-      } while (iVar16 != 0);
-    }
-  }
-  if (next_leaf != 0) {
-    debris_00 = leaf;
-    iVar16 = next_leaf;
-    if (pauseflag == 0) {
-      do {
-        if ((debris_00->flags & 2) != 0) {
-          if (debris_00->life == 1) {
-            debris_00->flags = 0;
-            ReleaseLeaf(debris_00->num);
-          }
-          else {
-            if (pauseflag == 0) {
-              uVar13 = (uint)(ushort)debris_00->sin_index1 + (uint)(byte)debris_00->sin_addition1 &
-                       0xfff;
-              uVar11 = (uint)(ushort)debris_00->sin_index2 + (uint)(byte)debris_00->sin_addition2 &
-                       0xfff;
-              sVar5 = rcossin_tbl[uVar13 * 2];
-              sVar10 = rcossin_tbl[uVar11 * 2];
-              debris_00->sin_index1 = (short)uVar13;
-              debris_00->sin_index2 = (short)uVar11;
-              sVar6 = rcossin_tbl[uVar13 * 2 + 1];
-              sVar7 = rcossin_tbl[uVar11 * 2 + 1];
-              iVar17 = (int)sVar5 + (int)sVar10;
-              (debris_00->direction).vx = (short)(iVar17 * 5 >> 0xb);
-              (debris_00->direction).vz = (short)(((int)sVar6 + (int)sVar7) * 5 >> 0xb);
-            }
-            GetSmokeDrift(&local_40);
-            iVar14 = (debris_00->position).vy;
-            iVar15 = -((debris_00->position).pad + 0x14);
-            if (iVar14 < iVar15) {
-              sVar5 = (debris_00->direction).vy;
-              sVar10 = (debris_00->direction).vz;
-              (debris_00->position).vx =
-                   (debris_00->position).vx + (debris_00->direction).vx + local_40.vx;
-              (debris_00->position).vy = iVar14 + sVar5 + local_40.vy;
-              uVar9 = debris_00->pos;
-              bVar1 = debris_00->step;
-              (debris_00->position).vz = (debris_00->position).vz + sVar10 + local_40.vz;
-              debris_00->pos = uVar9 + bVar1 & 0xff;
-            }
-            else {
-              (debris_00->position).vy = iVar15;
-            }
-            (debris_00->direction).vy = (short)(iVar17 >> 0xb) + 4;
-          }
-          iVar16 = iVar16 + -1;
-          DisplayDebris((DEBRIS *)debris_00,debris_00->type);
-        }
-        debris_00 = debris_00 + 1;
-      } while (iVar16 != 0);
-    }
-    else {
-      do {
-        if ((debris_00->flags & 2) != 0) {
-          iVar16 = iVar16 + -1;
-          DisplayDebris((DEBRIS *)debris_00,debris_00->type);
-        }
-        debris_00 = debris_00 + 1;
-      } while (iVar16 != 0);
-    }
-  }
-  spark = smoke;
-  iVar17 = 0x4f;
-  norot.m[0][0] = 0x1000;
-  norot.m[1][0] = 0;
-  norot.m[2][0] = 0;
-  norot.m[0][1] = 0;
-  norot.m[1][1] = 0x1000;
-  norot.m[2][1] = 0;
-  norot.m[0][2] = 0;
-  norot.m[1][2] = 0;
-  norot.m[2][2] = 0x1000;
-  do {
-    uVar9 = spark->flags;
-    if ((uVar9 & 2) != 0) {
-      if ((uVar9 & 4) == 0) {
-        if (((uVar9 & 8) != 0) && (DisplaySpark(spark), pauseflag == 0)) {
-          cVar12 = (spark->drift_change).vy;
-          iVar16 = (int)(spark->drift_change).vx;
-          iVar15 = (int)(spark->drift_change).vz;
-          (spark->position).vx = (spark->position).vx + iVar16;
-          (spark->position).vy = (spark->position).vy + (short)cVar12;
-          cVar3 = (spark->drift).vx;
-          (spark->position).vz = (spark->position).vz + iVar15;
-          cVar8 = (spark->drift).vx;
-          cVar12 = cVar12 + '\x06';
-          (spark->drift_change).vy = cVar12;
-          if (cVar8 == '\0') {
-            (spark->final_tail_pos).vx = (spark->final_tail_pos).vx + iVar16;
-            (spark->final_tail_pos).vy = (short)cVar12 + (spark->final_tail_pos).vy + -0xc;
-            (spark->final_tail_pos).vz = (spark->final_tail_pos).vz + iVar15;
-          }
-          else {
-            (spark->drift).vx = cVar3 + -1;
-          }
-          if (0 < (spark->position).vy) {
-            spark->flags = 0;
-            ReleaseSmoke((ushort)spark->num);
-          }
-        }
-      }
-      else {
-        if ((uVar9 & 0x8000) == 0) {
-          DisplaySmoke(spark);
-        }
-        else {
-          DisplayWater(spark);
-        }
-        if (pauseflag == 0) {
-          if ((spark->flags & 0x8000) == 0) {
-            if (spark->start_w < 800) {
-              spark->start_w = spark->start_w + (ushort)spark->step;
-            }
-            cVar12 = (spark->drift).vy;
-            cVar8 = (spark->drift).vz;
-            (spark->position).vx = (spark->position).vx + (int)(spark->drift).vx;
-            bVar1 = spark->life;
-            (spark->position).vy = (spark->position).vy + (short)cVar12;
-            bVar2 = spark->halflife;
-            cVar3 = (spark->drift).vx;
-            cVar4 = (spark->drift).vz;
-            (spark->position).vz = (spark->position).vz + (int)cVar8;
-            if (bVar2 < bVar1) {
-              cVar8 = (spark->drift_change).vy;
-              (spark->drift).vx = cVar3 - (spark->drift_change).vx;
-              cVar3 = (spark->drift_change).vz;
-              (spark->drift).vy = cVar12 - cVar8;
-              (spark->drift).vz = cVar4 - cVar3;
-            }
-          }
-          else {
-            ROADS_GetRouteData((spark->position).vx - (int)spark->start_w,
-                               (spark->position).vz - (int)spark->start_w,&local_30);
-            uVar9 = modelpointers1536[local_30.type]->shape_flags;
-            ROADS_GetRouteData((spark->position).vx + (int)spark->start_w,
-                               (spark->position).vz + (int)spark->start_w,&local_30);
-            if ((spark->start_w < 800) &&
-               ((uVar9 & 0x80 & modelpointers1536[local_30.type]->shape_flags & 0x80) != 0)) {
-              spark->start_w = spark->start_w + (ushort)spark->step;
-            }
-            else {
-              spark->start_w = spark->start_w - (ushort)spark->step;
-            }
-          }
-        }
-      }
-      if (((spark->flags & 0x900c) != 0) && (pauseflag == 0)) {
-        iVar16 = (uint)(ushort)spark->transparency - (uint)spark->t_step;
-        spark->transparency = (short)iVar16;
-        if (iVar16 * 0x10000 < 1) {
-          spark->transparency = 0;
-          spark->life = '\x01';
-        }
-        cVar8 = spark->life + -1;
-        spark->life = cVar8;
-        if (cVar8 == '\0') {
-          spark->flags = 0;
-          ReleaseSmoke((ushort)spark->num);
-        }
-      }
-    }
-    iVar17 = iVar17 + -1;
-    spark = spark + 1;
-  } while (-1 < iVar17);
-  if (pauseflag == 0) {
-    main_cop_light_pos = main_cop_light_pos + 1U & 7;
-  }
-  if (variable_weather != 0) {
-    DAT_000aa388 = (int)rcossin_tbl[(CameraCnt & 0xfffU) * 2] +
-                   (int)*(short *)((int)rcossin_tbl + (CameraCnt & 0x3ffcU));
-    gRainCount = (char)((uint)DAT_000aa388 >> 8);
-    if (DAT_000aa388 < 1) {
-      gRainCount = (char)((uint)-DAT_000aa388 >> 8);
-    }
-    if (0xb4 < (byte)gRainCount) {
-      gRainCount = -0x4c;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	byte bVar1;
+	byte bVar2;
+	char cVar3;
+	char cVar4;
+	short sVar5;
+	short sVar6;
+	short sVar7;
+	char cVar8;
+	ushort uVar9;
+	short sVar10;
+	uint uVar11;
+	char cVar12;
+	uint uVar13;
+	int iVar14;
+	int iVar15;
+	int iVar16;
+	SMOKE *spark;
+	DEBRIS *debris;
+	LEAF *debris_00;
+	int iVar17;
+	undefined4 local_50;
+	undefined4 local_4c;
+	undefined4 local_48;
+	VECTOR local_40;
+	ROUTE_DATA local_30;
+
+	memset(&local_50, 0, 0x10);
+	iVar17 = 0;
+	GetSmokeDrift(&local_40);
+	MoveHubcap();
+	SetRotMatrix(&inv_camera_matrix);
+	setCopControlWord(2, 0x2800, local_50);
+	setCopControlWord(2, 0x3000, local_4c);
+	setCopControlWord(2, 0x3800, local_48);
+	if (next_debris != 0) {
+		debris = debris;
+		iVar16 = next_debris;
+		if (pauseflag == 0) {
+			do {
+				if ((debris->flags & 2) != 0) {
+					DisplayDebris(debris, '\0');
+					uVar9 = debris->life - 1;
+					debris->life = uVar9;
+					if ((uVar9 == 0) || (iVar15 = (debris->position).vy, 0 < iVar15)) {
+						debris->flags = 0;
+						ReleaseDebris(debris->num);
+						iVar16 = iVar16 + -1;
+					}
+					else {
+						sVar5 = (debris->direction).vy;
+						sVar10 = (debris->direction).vz;
+						(debris->position).vx = (debris->position).vx + (int)(debris->direction).vx;
+						bVar1 = debris->step;
+						(debris->position).vy = iVar15 + sVar5;
+						uVar9 = debris->pos;
+						(debris->position).vz = (debris->position).vz + (int)sVar10;
+						debris->pos = uVar9 + bVar1;
+						sVar5 = (debris->direction).vy;
+						sVar10 = sVar5 + 6;
+						if (debris->type == '\x03') {
+							sVar10 = sVar5 + 1;
+						}
+						(debris->direction).vy = sVar10;
+						iVar16 = iVar16 + -1;
+					}
+				}
+				debris = debris + 1;
+			} while (iVar16 != 0);
+		}
+		else {
+			do {
+				if ((debris->flags & 2) != 0) {
+					DisplayDebris(debris, '\0');
+					iVar16 = iVar16 + -1;
+				}
+				debris = debris + 1;
+			} while (iVar16 != 0);
+		}
+	}
+	if (next_leaf != 0) {
+		debris_00 = leaf;
+		iVar16 = next_leaf;
+		if (pauseflag == 0) {
+			do {
+				if ((debris_00->flags & 2) != 0) {
+					if (debris_00->life == 1) {
+						debris_00->flags = 0;
+						ReleaseLeaf(debris_00->num);
+					}
+					else {
+						if (pauseflag == 0) {
+							uVar13 = (uint)(ushort)debris_00->sin_index1 + (uint)(byte)debris_00->sin_addition1 &
+								0xfff;
+							uVar11 = (uint)(ushort)debris_00->sin_index2 + (uint)(byte)debris_00->sin_addition2 &
+								0xfff;
+							sVar5 = rcossin_tbl[uVar13 * 2];
+							sVar10 = rcossin_tbl[uVar11 * 2];
+							debris_00->sin_index1 = (short)uVar13;
+							debris_00->sin_index2 = (short)uVar11;
+							sVar6 = rcossin_tbl[uVar13 * 2 + 1];
+							sVar7 = rcossin_tbl[uVar11 * 2 + 1];
+							iVar17 = (int)sVar5 + (int)sVar10;
+							(debris_00->direction).vx = (short)(iVar17 * 5 >> 0xb);
+							(debris_00->direction).vz = (short)(((int)sVar6 + (int)sVar7) * 5 >> 0xb);
+						}
+						GetSmokeDrift(&local_40);
+						iVar14 = (debris_00->position).vy;
+						iVar15 = -((debris_00->position).pad + 0x14);
+						if (iVar14 < iVar15) {
+							sVar5 = (debris_00->direction).vy;
+							sVar10 = (debris_00->direction).vz;
+							(debris_00->position).vx =
+								(debris_00->position).vx + (debris_00->direction).vx + local_40.vx;
+							(debris_00->position).vy = iVar14 + sVar5 + local_40.vy;
+							uVar9 = debris_00->pos;
+							bVar1 = debris_00->step;
+							(debris_00->position).vz = (debris_00->position).vz + sVar10 + local_40.vz;
+							debris_00->pos = uVar9 + bVar1 & 0xff;
+						}
+						else {
+							(debris_00->position).vy = iVar15;
+						}
+						(debris_00->direction).vy = (short)(iVar17 >> 0xb) + 4;
+					}
+					iVar16 = iVar16 + -1;
+					DisplayDebris((DEBRIS *)debris_00, debris_00->type);
+				}
+				debris_00 = debris_00 + 1;
+			} while (iVar16 != 0);
+		}
+		else {
+			do {
+				if ((debris_00->flags & 2) != 0) {
+					iVar16 = iVar16 + -1;
+					DisplayDebris((DEBRIS *)debris_00, debris_00->type);
+				}
+				debris_00 = debris_00 + 1;
+			} while (iVar16 != 0);
+		}
+	}
+	spark = smoke;
+	iVar17 = 0x4f;
+	norot.m[0][0] = 0x1000;
+	norot.m[1][0] = 0;
+	norot.m[2][0] = 0;
+	norot.m[0][1] = 0;
+	norot.m[1][1] = 0x1000;
+	norot.m[2][1] = 0;
+	norot.m[0][2] = 0;
+	norot.m[1][2] = 0;
+	norot.m[2][2] = 0x1000;
+	do {
+		uVar9 = spark->flags;
+		if ((uVar9 & 2) != 0) {
+			if ((uVar9 & 4) == 0) {
+				if (((uVar9 & 8) != 0) && (DisplaySpark(spark), pauseflag == 0)) {
+					cVar12 = (spark->drift_change).vy;
+					iVar16 = (int)(spark->drift_change).vx;
+					iVar15 = (int)(spark->drift_change).vz;
+					(spark->position).vx = (spark->position).vx + iVar16;
+					(spark->position).vy = (spark->position).vy + (short)cVar12;
+					cVar3 = (spark->drift).vx;
+					(spark->position).vz = (spark->position).vz + iVar15;
+					cVar8 = (spark->drift).vx;
+					cVar12 = cVar12 + '\x06';
+					(spark->drift_change).vy = cVar12;
+					if (cVar8 == '\0') {
+						(spark->final_tail_pos).vx = (spark->final_tail_pos).vx + iVar16;
+						(spark->final_tail_pos).vy = (short)cVar12 + (spark->final_tail_pos).vy + -0xc;
+						(spark->final_tail_pos).vz = (spark->final_tail_pos).vz + iVar15;
+					}
+					else {
+						(spark->drift).vx = cVar3 + -1;
+					}
+					if (0 < (spark->position).vy) {
+						spark->flags = 0;
+						ReleaseSmoke((ushort)spark->num);
+					}
+				}
+			}
+			else {
+				if ((uVar9 & 0x8000) == 0) {
+					DisplaySmoke(spark);
+				}
+				else {
+					DisplayWater(spark);
+				}
+				if (pauseflag == 0) {
+					if ((spark->flags & 0x8000) == 0) {
+						if (spark->start_w < 800) {
+							spark->start_w = spark->start_w + (ushort)spark->step;
+						}
+						cVar12 = (spark->drift).vy;
+						cVar8 = (spark->drift).vz;
+						(spark->position).vx = (spark->position).vx + (int)(spark->drift).vx;
+						bVar1 = spark->life;
+						(spark->position).vy = (spark->position).vy + (short)cVar12;
+						bVar2 = spark->halflife;
+						cVar3 = (spark->drift).vx;
+						cVar4 = (spark->drift).vz;
+						(spark->position).vz = (spark->position).vz + (int)cVar8;
+						if (bVar2 < bVar1) {
+							cVar8 = (spark->drift_change).vy;
+							(spark->drift).vx = cVar3 - (spark->drift_change).vx;
+							cVar3 = (spark->drift_change).vz;
+							(spark->drift).vy = cVar12 - cVar8;
+							(spark->drift).vz = cVar4 - cVar3;
+						}
+					}
+					else {
+						ROADS_GetRouteData((spark->position).vx - (int)spark->start_w,
+							(spark->position).vz - (int)spark->start_w, &local_30);
+						uVar9 = modelpointers1536[local_30.type]->shape_flags;
+						ROADS_GetRouteData((spark->position).vx + (int)spark->start_w,
+							(spark->position).vz + (int)spark->start_w, &local_30);
+						if ((spark->start_w < 800) &&
+							((uVar9 & 0x80 & modelpointers1536[local_30.type]->shape_flags & 0x80) != 0)) {
+							spark->start_w = spark->start_w + (ushort)spark->step;
+						}
+						else {
+							spark->start_w = spark->start_w - (ushort)spark->step;
+						}
+					}
+				}
+			}
+			if (((spark->flags & 0x900c) != 0) && (pauseflag == 0)) {
+				iVar16 = (uint)(ushort)spark->transparency - (uint)spark->t_step;
+				spark->transparency = (short)iVar16;
+				if (iVar16 * 0x10000 < 1) {
+					spark->transparency = 0;
+					spark->life = '\x01';
+				}
+				cVar8 = spark->life + -1;
+				spark->life = cVar8;
+				if (cVar8 == '\0') {
+					spark->flags = 0;
+					ReleaseSmoke((ushort)spark->num);
+				}
+			}
+		}
+		iVar17 = iVar17 + -1;
+		spark = spark + 1;
+	} while (-1 < iVar17);
+	if (pauseflag == 0) {
+		main_cop_light_pos = main_cop_light_pos + 1U & 7;
+	}
+	if (variable_weather != 0) {
+		DAT_000aa388 = (int)rcossin_tbl[(CameraCnt & 0xfffU) * 2] +
+			(int)*(short *)((int)rcossin_tbl + (CameraCnt & 0x3ffcU));
+		gRainCount = (char)((uint)DAT_000aa388 >> 8);
+		if (DAT_000aa388 < 1) {
+			gRainCount = (char)((uint)-DAT_000aa388 >> 8);
+		}
+		if (0xb4 < (byte)gRainCount) {
+			gRainCount = -0x4c;
+		}
+	}
+	return;*/
 }
 
 
@@ -4753,190 +4801,191 @@ void HandleDebris(void)
 /* WARNING: Could not reconcile some variable overlaps */
 
 void DisplaySmoke(SMOKE *smoke)
-
 {
-  short sVar1;
-  ushort uVar2;
-  DB *pDVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  char cVar4;
-  int iVar5;
-  int iVar6;
-  int *piVar7;
-  long lVar8;
-  uint uVar9;
-  int iVar10;
-  uint uVar11;
-  int iVar12;
-  uint uVar13;
-  uint *puVar14;
-  short sVar15;
-  int local_50;
-  int local_4c;
-  int local_48;
-  undefined4 local_40;
-  undefined4 local_3c;
-  undefined4 local_38;
-  undefined4 local_34;
-  undefined4 local_30;
-  undefined4 local_2c;
-  undefined4 local_28;
-  undefined4 local_24;
-  int local_20;
-  
-  local_20 = 0;
-  local_50 = (smoke->position).vx - camera_position.vx;
-  local_4c = (smoke->position).vy - camera_position.vy;
-  sVar1 = smoke->start_w;
-  local_48 = (smoke->position).vz - camera_position.vz;
-  sVar15 = -sVar1;
-  if ((local_50 < 0x5001) && (local_48 < 0x5001)) {
-    piVar7 = &local_50;
-    lVar8 = camera_position.vx;
-    Apply_Inv_CameraMatrix(piVar7);
-    setCopControlWord(2,0x2800,local_50);
-    setCopControlWord(2,0x3000,local_4c);
-    setCopControlWord(2,0x3800,local_48);
-    setCopControlWord(2,0,norot.m[0]._0_4_);
-    setCopControlWord(2,0x800,norot.m._4_4_);
-    setCopControlWord(2,0x1000,norot.m[1]._2_4_);
-    setCopControlWord(2,0x1800,norot.m[2]._0_4_);
-    setCopControlWord(2,0x2000,norot._16_4_);
-    local_40 = CONCAT22(sVar15,sVar15);
-    local_3c = (uint)local_3c._2_2_ << 0x10;
-    local_38 = CONCAT22(sVar15,sVar1);
-    local_34 = (uint)local_34._2_2_ << 0x10;
-    local_30 = CONCAT22(sVar1,sVar15);
-    local_2c = (uint)local_2c._2_2_ << 0x10;
-    local_28 = CONCAT22(sVar1,sVar1);
-    local_24 = (uint)local_24._2_2_ << 0x10;
-    puVar14 = (uint *)current->primptr;
-    setCopReg(2,in_zero,local_40);
-    setCopReg(2,in_at,local_3c);
-    setCopReg(2,current,local_38);
-    setCopReg(2,&local_40,local_34);
-    setCopReg(2,piVar7,local_30);
-    setCopReg(2,lVar8,local_2c);
-    copFunction(2,0x280030);
-    uVar2 = smoke->flags;
-    uVar13 = 0x20;
-    if ((uVar2 & 0x4000) == 0) {
-      if ((uVar2 & 0x2000) == 0) {
-        if ((uVar2 & 0x1000) == 0) {
-          if ((uVar2 & 0x20) == 0) {
-            if ((uVar2 & 0x40) == 0) {
-              if (gNight == 0) {
-                *(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
-                *(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
-                cVar4 = *(char *)&smoke->transparency + '\n';
-              }
-              else {
-                *(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
-                *(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 1);
-                cVar4 = (char)((int)smoke->transparency + 10 >> 1);
-              }
-              *(char *)((int)puVar14 + 6) = cVar4;
-              local_20 = 0x19;
-            }
-            else {
-              if (gNight == 0) {
-                *(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 2);
-                *(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 2);
-                *(char *)((int)puVar14 + 6) = (char)((ushort)smoke->transparency >> 2);
-              }
-              else {
-                *(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 3);
-                *(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 3);
-                *(char *)((int)puVar14 + 6) = (char)((int)smoke->transparency + 10 >> 3);
-              }
-            }
-          }
-          else {
-            *(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
-            *(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
-            uVar13 = 0x40;
-            *(char *)((int)puVar14 + 6) = *(char *)&smoke->transparency + '\n';
-          }
-        }
-        else {
-          uVar11 = (uint)(ushort)smoke->transparency << 0x10;
-          iVar5 = (int)uVar11 >> 0x13;
-          uVar9 = iVar5 + 0x32U & 0xff;
-          cVar4 = (char)uVar9;
-          if (uVar9 < 0x3c) {
-            cVar4 = (char)(uVar11 >> 0x12);
-          }
-          local_20 = 0x12;
-          *(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
-          *(char *)((int)puVar14 + 5) = cVar4;
-          *(char *)((int)puVar14 + 6) = (char)iVar5;
-        }
-      }
-      else {
-        if (gNight == 0) {
-          *(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 2);
-          *(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 2);
-          cVar4 = (char)((ushort)smoke->transparency >> 2);
-        }
-        else {
-          *(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
-          *(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 1);
-          cVar4 = (char)((ushort)smoke->transparency >> 1);
-        }
-        *(char *)((int)puVar14 + 6) = cVar4;
-        uVar13 = 0x40;
-        local_20 = 0x11;
-      }
-    }
-    else {
-      *(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
-      *(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
-      *(char *)((int)puVar14 + 6) = *(char *)&smoke->transparency;
-    }
-    uVar9 = getCopReg(2,0xc);
-    puVar14[2] = uVar9;
-    uVar9 = getCopReg(2,0xd);
-    puVar14[4] = uVar9;
-    uVar9 = getCopReg(2,0xe);
-    puVar14[6] = uVar9;
-    iVar5 = getCopReg(2,0x13);
-    setCopReg(2,in_zero,local_28);
-    setCopReg(2,in_at,local_24);
-    copFunction(2,0x180001);
-    puVar14[3] = CONCAT22(smoke_texture.clutid,smoke_texture.coords._0_2_);
-    puVar14[5] = (uint)smoke_texture.coords._2_2_ | (smoke_texture.tpageid | uVar13) << 0x10;
-    puVar14[7] = (uint)smoke_texture.coords._4_2_ - 0x400;
-    uVar13 = (uint)smoke_texture.coords._6_2_;
-    *(char *)((int)puVar14 + 3) = '\t';
-    *(char *)((int)puVar14 + 7) = '.';
-    puVar14[9] = uVar13 - 0x400;
-    pDVar3 = current;
-    if (0 < iVar5 >> 3) {
-      local_20 = (iVar5 >> 3) - local_20;
-      if (local_20 < 9) {
-        local_20 = 9;
-      }
-      *puVar14 = *puVar14 & 0xff000000 | current->ot[local_20] & 0xffffff;
-      pDVar3->ot[local_20] = pDVar3->ot[local_20] & 0xff000000 | (uint)puVar14 & 0xffffff;
-      uVar13 = getCopReg(2,0xe);
-      puVar14[8] = uVar13;
-      if (100 < (int)*(short *)(puVar14 + 4) - (int)*(short *)(puVar14 + 2) >> 1) {
-        iVar10 = (int)*(short *)(puVar14 + 2) + (int)*(short *)(puVar14 + 8) >> 1;
-        iVar12 = iVar10 + -0x32;
-        iVar10 = iVar10 + 0x32;
-        iVar6 = (int)*(short *)((int)puVar14 + 10) + (int)*(short *)((int)puVar14 + 0x22) >> 1;
-        iVar5 = (iVar6 + -0x32) * 0x10000;
-        iVar6 = (iVar6 + 0x32) * 0x10000;
-        puVar14[2] = iVar12 + iVar5;
-        puVar14[4] = iVar10 + iVar5;
-        puVar14[6] = iVar12 + iVar6;
-        puVar14[8] = iVar10 + iVar6;
-      }
-      current->primptr = current->primptr + 0x28;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	short sVar1;
+	ushort uVar2;
+	DB *pDVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	char cVar4;
+	int iVar5;
+	int iVar6;
+	int *piVar7;
+	long lVar8;
+	uint uVar9;
+	int iVar10;
+	uint uVar11;
+	int iVar12;
+	uint uVar13;
+	uint *puVar14;
+	short sVar15;
+	int local_50;
+	int local_4c;
+	int local_48;
+	undefined4 local_40;
+	undefined4 local_3c;
+	undefined4 local_38;
+	undefined4 local_34;
+	undefined4 local_30;
+	undefined4 local_2c;
+	undefined4 local_28;
+	undefined4 local_24;
+	int local_20;
+
+	local_20 = 0;
+	local_50 = (smoke->position).vx - camera_position.vx;
+	local_4c = (smoke->position).vy - camera_position.vy;
+	sVar1 = smoke->start_w;
+	local_48 = (smoke->position).vz - camera_position.vz;
+	sVar15 = -sVar1;
+	if ((local_50 < 0x5001) && (local_48 < 0x5001)) {
+		piVar7 = &local_50;
+		lVar8 = camera_position.vx;
+		Apply_Inv_CameraMatrix(piVar7);
+		setCopControlWord(2, 0x2800, local_50);
+		setCopControlWord(2, 0x3000, local_4c);
+		setCopControlWord(2, 0x3800, local_48);
+		setCopControlWord(2, 0, norot.m[0]._0_4_);
+		setCopControlWord(2, 0x800, norot.m._4_4_);
+		setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
+		setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
+		setCopControlWord(2, 0x2000, norot._16_4_);
+		local_40 = CONCAT22(sVar15, sVar15);
+		local_3c = (uint)local_3c._2_2_ << 0x10;
+		local_38 = CONCAT22(sVar15, sVar1);
+		local_34 = (uint)local_34._2_2_ << 0x10;
+		local_30 = CONCAT22(sVar1, sVar15);
+		local_2c = (uint)local_2c._2_2_ << 0x10;
+		local_28 = CONCAT22(sVar1, sVar1);
+		local_24 = (uint)local_24._2_2_ << 0x10;
+		puVar14 = (uint *)current->primptr;
+		setCopReg(2, in_zero, local_40);
+		setCopReg(2, in_at, local_3c);
+		setCopReg(2, current, local_38);
+		setCopReg(2, &local_40, local_34);
+		setCopReg(2, piVar7, local_30);
+		setCopReg(2, lVar8, local_2c);
+		copFunction(2, 0x280030);
+		uVar2 = smoke->flags;
+		uVar13 = 0x20;
+		if ((uVar2 & 0x4000) == 0) {
+			if ((uVar2 & 0x2000) == 0) {
+				if ((uVar2 & 0x1000) == 0) {
+					if ((uVar2 & 0x20) == 0) {
+						if ((uVar2 & 0x40) == 0) {
+							if (gNight == 0) {
+								*(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
+								*(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
+								cVar4 = *(char *)&smoke->transparency + '\n';
+							}
+							else {
+								*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
+								*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 1);
+								cVar4 = (char)((int)smoke->transparency + 10 >> 1);
+							}
+							*(char *)((int)puVar14 + 6) = cVar4;
+							local_20 = 0x19;
+						}
+						else {
+							if (gNight == 0) {
+								*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 2);
+								*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 2);
+								*(char *)((int)puVar14 + 6) = (char)((ushort)smoke->transparency >> 2);
+							}
+							else {
+								*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 3);
+								*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 3);
+								*(char *)((int)puVar14 + 6) = (char)((int)smoke->transparency + 10 >> 3);
+							}
+						}
+					}
+					else {
+						*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
+						*(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
+						uVar13 = 0x40;
+						*(char *)((int)puVar14 + 6) = *(char *)&smoke->transparency + '\n';
+					}
+				}
+				else {
+					uVar11 = (uint)(ushort)smoke->transparency << 0x10;
+					iVar5 = (int)uVar11 >> 0x13;
+					uVar9 = iVar5 + 0x32U & 0xff;
+					cVar4 = (char)uVar9;
+					if (uVar9 < 0x3c) {
+						cVar4 = (char)(uVar11 >> 0x12);
+					}
+					local_20 = 0x12;
+					*(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
+					*(char *)((int)puVar14 + 5) = cVar4;
+					*(char *)((int)puVar14 + 6) = (char)iVar5;
+				}
+			}
+			else {
+				if (gNight == 0) {
+					*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 2);
+					*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 2);
+					cVar4 = (char)((ushort)smoke->transparency >> 2);
+				}
+				else {
+					*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
+					*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 1);
+					cVar4 = (char)((ushort)smoke->transparency >> 1);
+				}
+				*(char *)((int)puVar14 + 6) = cVar4;
+				uVar13 = 0x40;
+				local_20 = 0x11;
+			}
+		}
+		else {
+			*(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
+			*(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
+			*(char *)((int)puVar14 + 6) = *(char *)&smoke->transparency;
+		}
+		uVar9 = getCopReg(2, 0xc);
+		puVar14[2] = uVar9;
+		uVar9 = getCopReg(2, 0xd);
+		puVar14[4] = uVar9;
+		uVar9 = getCopReg(2, 0xe);
+		puVar14[6] = uVar9;
+		iVar5 = getCopReg(2, 0x13);
+		setCopReg(2, in_zero, local_28);
+		setCopReg(2, in_at, local_24);
+		copFunction(2, 0x180001);
+		puVar14[3] = CONCAT22(smoke_texture.clutid, smoke_texture.coords._0_2_);
+		puVar14[5] = (uint)smoke_texture.coords._2_2_ | (smoke_texture.tpageid | uVar13) << 0x10;
+		puVar14[7] = (uint)smoke_texture.coords._4_2_ - 0x400;
+		uVar13 = (uint)smoke_texture.coords._6_2_;
+		*(char *)((int)puVar14 + 3) = '\t';
+		*(char *)((int)puVar14 + 7) = '.';
+		puVar14[9] = uVar13 - 0x400;
+		pDVar3 = current;
+		if (0 < iVar5 >> 3) {
+			local_20 = (iVar5 >> 3) - local_20;
+			if (local_20 < 9) {
+				local_20 = 9;
+			}
+			*puVar14 = *puVar14 & 0xff000000 | current->ot[local_20] & 0xffffff;
+			pDVar3->ot[local_20] = pDVar3->ot[local_20] & 0xff000000 | (uint)puVar14 & 0xffffff;
+			uVar13 = getCopReg(2, 0xe);
+			puVar14[8] = uVar13;
+			if (100 < (int)*(short *)(puVar14 + 4) - (int)*(short *)(puVar14 + 2) >> 1) {
+				iVar10 = (int)*(short *)(puVar14 + 2) + (int)*(short *)(puVar14 + 8) >> 1;
+				iVar12 = iVar10 + -0x32;
+				iVar10 = iVar10 + 0x32;
+				iVar6 = (int)*(short *)((int)puVar14 + 10) + (int)*(short *)((int)puVar14 + 0x22) >> 1;
+				iVar5 = (iVar6 + -0x32) * 0x10000;
+				iVar6 = (iVar6 + 0x32) * 0x10000;
+				puVar14[2] = iVar12 + iVar5;
+				puVar14[4] = iVar10 + iVar5;
+				puVar14[6] = iVar12 + iVar6;
+				puVar14[8] = iVar10 + iVar6;
+			}
+			current->primptr = current->primptr + 0x28;
+		}
+	}
+	return;*/
 }
 
 
@@ -4959,48 +5008,49 @@ void DisplaySmoke(SMOKE *smoke)
 	/* end block 2 */
 	// End Line: 10703
 
-void add_haze(int top_col,int bot_col,short ot_pos)
-
+void add_haze(int top_col, int bot_col, short ot_pos)
 {
-  DB *pDVar1;
-  char cVar2;
-  uint *puVar3;
-  int iVar4;
-  char *pcVar5;
-  
-  iVar4 = (int)ot_pos;
-  if ((9 < top_col) && (FastForward == 0)) {
-    puVar3 = (uint *)current->primptr;
-    *(char *)((int)puVar3 + 3) = '\x03';
-    cVar2 = (char)top_col;
-    *(char *)(puVar3 + 1) = cVar2;
-    *(char *)((int)puVar3 + 5) = cVar2;
-    *(char *)((int)puVar3 + 6) = cVar2;
-    *(char *)((int)puVar3 + 7) = 'b';
-    pDVar1 = current;
-    *(undefined2 *)(puVar3 + 3) = 0x140;
-    *(undefined2 *)(puVar3 + 2) = 0;
-    *(undefined2 *)((int)puVar3 + 10) = 0;
-    *(undefined2 *)((int)puVar3 + 0xe) = 0x100;
-    *puVar3 = *puVar3 & 0xff000000 | pDVar1->ot[iVar4] & 0xffffff;
-    pDVar1->ot[iVar4] = pDVar1->ot[iVar4] & 0xff000000 | (uint)puVar3 & 0xffffff;
-    pcVar5 = pDVar1->primptr;
-    pDVar1->primptr = pcVar5 + 0x10;
-    pcVar5[0x13] = '\a';
-    pcVar5[0x17] = '$';
-    pDVar1 = current;
-    *(undefined2 *)(pcVar5 + 0x18) = 0xffff;
-    *(undefined2 *)(pcVar5 + 0x1a) = 0xffff;
-    *(undefined2 *)(pcVar5 + 0x20) = 0xffff;
-    *(undefined2 *)(pcVar5 + 0x22) = 0xffff;
-    *(undefined2 *)(pcVar5 + 0x28) = 0xffff;
-    *(undefined2 *)(pcVar5 + 0x2a) = 0xffff;
-    *(undefined2 *)(pcVar5 + 0x26) = 0x20;
-    *(uint *)(pcVar5 + 0x10) = *(uint *)(pcVar5 + 0x10) & 0xff000000 | pDVar1->ot[iVar4] & 0xffffff;
-    pDVar1->ot[iVar4] = pDVar1->ot[iVar4] & 0xff000000 | (uint)(pcVar5 + 0x10) & 0xffffff;
-    pDVar1->primptr = pDVar1->primptr + 0x20;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	DB *pDVar1;
+	char cVar2;
+	uint *puVar3;
+	int iVar4;
+	char *pcVar5;
+
+	iVar4 = (int)ot_pos;
+	if ((9 < top_col) && (FastForward == 0)) {
+		puVar3 = (uint *)current->primptr;
+		*(char *)((int)puVar3 + 3) = '\x03';
+		cVar2 = (char)top_col;
+		*(char *)(puVar3 + 1) = cVar2;
+		*(char *)((int)puVar3 + 5) = cVar2;
+		*(char *)((int)puVar3 + 6) = cVar2;
+		*(char *)((int)puVar3 + 7) = 'b';
+		pDVar1 = current;
+		*(undefined2 *)(puVar3 + 3) = 0x140;
+		*(undefined2 *)(puVar3 + 2) = 0;
+		*(undefined2 *)((int)puVar3 + 10) = 0;
+		*(undefined2 *)((int)puVar3 + 0xe) = 0x100;
+		*puVar3 = *puVar3 & 0xff000000 | pDVar1->ot[iVar4] & 0xffffff;
+		pDVar1->ot[iVar4] = pDVar1->ot[iVar4] & 0xff000000 | (uint)puVar3 & 0xffffff;
+		pcVar5 = pDVar1->primptr;
+		pDVar1->primptr = pcVar5 + 0x10;
+		pcVar5[0x13] = '\a';
+		pcVar5[0x17] = '$';
+		pDVar1 = current;
+		*(undefined2 *)(pcVar5 + 0x18) = 0xffff;
+		*(undefined2 *)(pcVar5 + 0x1a) = 0xffff;
+		*(undefined2 *)(pcVar5 + 0x20) = 0xffff;
+		*(undefined2 *)(pcVar5 + 0x22) = 0xffff;
+		*(undefined2 *)(pcVar5 + 0x28) = 0xffff;
+		*(undefined2 *)(pcVar5 + 0x2a) = 0xffff;
+		*(undefined2 *)(pcVar5 + 0x26) = 0x20;
+		*(uint *)(pcVar5 + 0x10) = *(uint *)(pcVar5 + 0x10) & 0xff000000 | pDVar1->ot[iVar4] & 0xffffff;
+		pDVar1->ot[iVar4] = pDVar1->ot[iVar4] & 0xff000000 | (uint)(pcVar5 + 0x10) & 0xffffff;
+		pDVar1->primptr = pDVar1->primptr + 0x20;
+	}
+	return;*/
 }
 
 
@@ -5034,19 +5084,20 @@ void add_haze(int top_col,int bot_col,short ot_pos)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void SetupRain(void)
-
 {
-  int iVar1;
-  
-  gNextRainDrop = 0;
-  do {
-    iVar1 = gNextRainDrop + 1;
-    gRainAlloc[gNextRainDrop] = (short)gNextRainDrop;
-    gRain[gNextRainDrop].oldposition.pad = (short)gNextRainDrop;
-    gNextRainDrop = iVar1;
-  } while (iVar1 < 0xb4);
-  gNextRainDrop = 0;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+
+	gNextRainDrop = 0;
+	do {
+		iVar1 = gNextRainDrop + 1;
+		gRainAlloc[gNextRainDrop] = (short)gNextRainDrop;
+		gRain[gNextRainDrop].oldposition.pad = (short)gNextRainDrop;
+		gNextRainDrop = iVar1;
+	} while (iVar1 < 0xb4);
+	gNextRainDrop = 0;
+	return;*/
 }
 
 
@@ -5073,16 +5124,18 @@ void SetupRain(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int AllocateRainDrop(void)
-
 {
-  short *psVar1;
-  
-  if (0xb3 < gNextRainDrop) {
-    return -1;
-  }
-  psVar1 = gRainAlloc + gNextRainDrop;
-  gNextRainDrop = gNextRainDrop + 1;
-  return (int)*psVar1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	short *psVar1;
+
+	if (0xb3 < gNextRainDrop) {
+		return -1;
+	}
+	psVar1 = gRainAlloc + gNextRainDrop;
+	gNextRainDrop = gNextRainDrop + 1;
+	return (int)*psVar1;*/
 }
 
 
@@ -5102,11 +5155,13 @@ int AllocateRainDrop(void)
 	// End Line: 17851
 
 void ReleaseRainDrop(int RainIndex)
-
 {
-  gNextRainDrop = gNextRainDrop + -1;
-  gRainAlloc[gNextRainDrop] = (short)RainIndex;
-  return;
+	UNIMPLEMENTED();
+	/*
+	gNextRainDrop = gNextRainDrop + -1;
+	gRainAlloc[gNextRainDrop] = (short)RainIndex;
+	return;
+	*/
 }
 
 
@@ -5159,103 +5214,104 @@ void ReleaseRainDrop(int RainIndex)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DrawRainDrops(void)
-
 {
-  uint uVar1;
-  DB *pDVar2;
-  ushort uVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar4;
-  int iVar5;
-  uint *puVar6;
-  RAIN_TYPE *pRVar7;
-  int iVar8;
-  uint uVar9;
-  undefined4 local_58;
-  uint local_54;
-  VECTOR local_40;
-  int local_30;
-  
-  if (gNextRainDrop != 0) {
-    GetSmokeDrift(&local_40);
-    if (cameraview == 1) {
-      iVar8 = 0x46;
-    }
-    else {
-      iVar8 = 0x46 - (int)car_data[0].hd.wheel_speed._2_2_;
-    }
-    if (iVar8 < 0x32) {
-      iVar8 = 0x32;
-    }
-    if (gNight != 0) {
-      iVar8 = iVar8 + -0xf;
-    }
-    uVar9 = iVar8 >> 1 | (iVar8 >> 1) << 8;
-    uVar9 = uVar9 | uVar9 << 0x10;
-    if (NoRainIndoors == 0) {
-      DisplaySplashes();
-    }
-    uVar3 = light_texture.clutid;
-    setCopControlWord(2,0,inv_camera_matrix.m[0]._0_4_);
-    setCopControlWord(2,0x800,inv_camera_matrix.m._4_4_);
-    setCopControlWord(2,0x1000,inv_camera_matrix.m[1]._2_4_);
-    setCopControlWord(2,0x1800,inv_camera_matrix.m[2]._0_4_);
-    setCopControlWord(2,0x2000,inv_camera_matrix._16_4_);
-    setCopControlWord(2,0x2800,dummy.vx);
-    setCopControlWord(2,0x3000,dummy.vy);
-    setCopControlWord(2,0x3800,dummy.vz);
-    pRVar7 = gRain;
-    uVar4 = (uint)light_texture.tpageid;
-    iVar8 = gNextRainDrop;
-    while (iVar8 = iVar8 + -1, iVar8 != -1) {
-      if (pauseflag == 0) {
-        (pRVar7->position).vy = (pRVar7->position).vy + 0x14;
-        (pRVar7->position).vx = (pRVar7->position).vx + local_40.vx * -2;
-        (pRVar7->position).vz = (pRVar7->position).vz + local_40.vz * -2;
-      }
-      local_58 = CONCAT22(*(short *)&(pRVar7->position).vy - (short)camera_position.vy,
-                          *(short *)&(pRVar7->position).vx - (short)camera_position.vx);
-      local_54 = local_54 & 0xffff0000 |
-                 (uint)(ushort)(*(short *)&(pRVar7->position).vz - (short)camera_position.vz);
-      iVar5 = *(int *)&pRVar7->oldposition;
-      puVar6 = (uint *)current->primptr;
-      setCopReg(2,in_zero,local_58);
-      setCopReg(2,in_at,local_54);
-      copFunction(2,0x180001);
-      *(char *)((int)puVar6 + 3) = '\t';
-      puVar6[7] = uVar9;
-      puVar6[4] = uVar9;
-      puVar6[1] = 0;
-      *(char *)((int)puVar6 + 7) = '6';
-      puVar6[2] = *(uint *)&pRVar7->oldposition;
-      local_30 = getCopReg(2,0x13);
-      uVar1 = getCopReg(2,0xe);
-      puVar6[8] = uVar1;
-      if ((((local_30 - 0x97U < 0x352) && (-0x65 < *(short *)(puVar6 + 8))) &&
-          (*(short *)(puVar6 + 8) < 0x1a5)) &&
-         ((-0x33 < *(short *)((int)puVar6 + 0x22) && (*(short *)((int)puVar6 + 0x22) < 0x101)))) {
-        *(uint *)&pRVar7->oldposition = puVar6[8];
-        if (iVar5 != 0) {
-          *(short *)(puVar6 + 5) = *(short *)(puVar6 + 8) - ((short)(local_30 >> 10) + -2);
-          *(undefined2 *)((int)puVar6 + 0x16) = *(undefined2 *)((int)puVar6 + 0x22);
-          puVar6[3] = CONCAT22(uVar3,light_texture.coords._0_2_);
-          puVar6[6] = (uint)light_texture.coords._2_2_ | uVar4 | 0x200000;
-          puVar6[9] = (uint)light_texture.coords._4_2_;
-          pDVar2 = current;
-          *puVar6 = *puVar6 & 0xff000000 | current->ot[local_30 >> 3] & 0xffffff;
-          pDVar2->ot[local_30 >> 3] =
-               pDVar2->ot[local_30 >> 3] & 0xff000000 | (uint)puVar6 & 0xffffff;
-          pDVar2->primptr = pDVar2->primptr + 0x28;
-        }
-      }
-      else {
-        ReleaseRainDrop((int)(pRVar7->oldposition).pad);
-      }
-      pRVar7 = pRVar7 + 1;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+	DB *pDVar2;
+	ushort uVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar4;
+	int iVar5;
+	uint *puVar6;
+	RAIN_TYPE *pRVar7;
+	int iVar8;
+	uint uVar9;
+	undefined4 local_58;
+	uint local_54;
+	VECTOR local_40;
+	int local_30;
+
+	if (gNextRainDrop != 0) {
+		GetSmokeDrift(&local_40);
+		if (cameraview == 1) {
+			iVar8 = 0x46;
+		}
+		else {
+			iVar8 = 0x46 - (int)car_data[0].hd.wheel_speed._2_2_;
+		}
+		if (iVar8 < 0x32) {
+			iVar8 = 0x32;
+		}
+		if (gNight != 0) {
+			iVar8 = iVar8 + -0xf;
+		}
+		uVar9 = iVar8 >> 1 | (iVar8 >> 1) << 8;
+		uVar9 = uVar9 | uVar9 << 0x10;
+		if (NoRainIndoors == 0) {
+			DisplaySplashes();
+		}
+		uVar3 = light_texture.clutid;
+		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+		setCopControlWord(2, 0x2800, dummy.vx);
+		setCopControlWord(2, 0x3000, dummy.vy);
+		setCopControlWord(2, 0x3800, dummy.vz);
+		pRVar7 = gRain;
+		uVar4 = (uint)light_texture.tpageid;
+		iVar8 = gNextRainDrop;
+		while (iVar8 = iVar8 + -1, iVar8 != -1) {
+			if (pauseflag == 0) {
+				(pRVar7->position).vy = (pRVar7->position).vy + 0x14;
+				(pRVar7->position).vx = (pRVar7->position).vx + local_40.vx * -2;
+				(pRVar7->position).vz = (pRVar7->position).vz + local_40.vz * -2;
+			}
+			local_58 = CONCAT22(*(short *)&(pRVar7->position).vy - (short)camera_position.vy,
+				*(short *)&(pRVar7->position).vx - (short)camera_position.vx);
+			local_54 = local_54 & 0xffff0000 |
+				(uint)(ushort)(*(short *)&(pRVar7->position).vz - (short)camera_position.vz);
+			iVar5 = *(int *)&pRVar7->oldposition;
+			puVar6 = (uint *)current->primptr;
+			setCopReg(2, in_zero, local_58);
+			setCopReg(2, in_at, local_54);
+			copFunction(2, 0x180001);
+			*(char *)((int)puVar6 + 3) = '\t';
+			puVar6[7] = uVar9;
+			puVar6[4] = uVar9;
+			puVar6[1] = 0;
+			*(char *)((int)puVar6 + 7) = '6';
+			puVar6[2] = *(uint *)&pRVar7->oldposition;
+			local_30 = getCopReg(2, 0x13);
+			uVar1 = getCopReg(2, 0xe);
+			puVar6[8] = uVar1;
+			if ((((local_30 - 0x97U < 0x352) && (-0x65 < *(short *)(puVar6 + 8))) &&
+				(*(short *)(puVar6 + 8) < 0x1a5)) &&
+				((-0x33 < *(short *)((int)puVar6 + 0x22) && (*(short *)((int)puVar6 + 0x22) < 0x101)))) {
+				*(uint *)&pRVar7->oldposition = puVar6[8];
+				if (iVar5 != 0) {
+					*(short *)(puVar6 + 5) = *(short *)(puVar6 + 8) - ((short)(local_30 >> 10) + -2);
+					*(undefined2 *)((int)puVar6 + 0x16) = *(undefined2 *)((int)puVar6 + 0x22);
+					puVar6[3] = CONCAT22(uVar3, light_texture.coords._0_2_);
+					puVar6[6] = (uint)light_texture.coords._2_2_ | uVar4 | 0x200000;
+					puVar6[9] = (uint)light_texture.coords._4_2_;
+					pDVar2 = current;
+					*puVar6 = *puVar6 & 0xff000000 | current->ot[local_30 >> 3] & 0xffffff;
+					pDVar2->ot[local_30 >> 3] =
+						pDVar2->ot[local_30 >> 3] & 0xff000000 | (uint)puVar6 & 0xffffff;
+					pDVar2->primptr = pDVar2->primptr + 0x28;
+				}
+			}
+			else {
+				ReleaseRainDrop((int)(pRVar7->oldposition).pad);
+			}
+			pRVar7 = pRVar7 + 1;
+		}
+	}
+	return;*/
 }
 
 
@@ -5319,80 +5375,81 @@ void DrawRainDrops(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void AddRainDrops(void)
-
 {
-  long lVar1;
-  bool bVar2;
-  short sVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  int RainIndex;
-  int iVar4;
-  short sVar5;
-  uint uVar6;
-  short sVar7;
-  uint uVar8;
-  undefined4 local_30;
-  uint local_2c;
-  ROUTE_DATA local_28;
-  
-  bVar2 = true;
-  if (pauseflag == 0) {
-    uVar8 = (uint)(byte)gRainCount;
-    NoRainIndoors = 0;
-    wetness = wetness + (int)uVar8 / 6;
-    if (7000 < wetness) {
-      wetness = (int)&DAT_00001b58;
-    }
-    setCopControlWord(2,0,camera_matrix.m[0]._0_4_);
-    setCopControlWord(2,0x800,camera_matrix.m._4_4_);
-    setCopControlWord(2,0x1000,camera_matrix.m[1]._2_4_);
-    setCopControlWord(2,0x1800,camera_matrix.m[2]._0_4_);
-    setCopControlWord(2,0x2000,camera_matrix._16_4_);
-    setCopControlWord(2,0x2800,camera_position.vx);
-    setCopControlWord(2,0x3000,camera_position.vy);
-    setCopControlWord(2,0x3800,camera_position.vz);
-    while( true ) {
-      uVar8 = uVar8 - 1;
-      if (uVar8 == 0xffffffff) {
-        return;
-      }
-      RainIndex = AllocateRainDrop();
-      if (RainIndex < 0) {
-        return;
-      }
-      iVar4 = rand_142 * 0x19660d + 0x3c6ef35f;
-      uVar6 = (iVar4 >> 0x14 & 0x1ffU) + 200;
-      iVar4 = iVar4 * 0x19660d + 0x3c6ef35f;
-      sVar7 = -((ushort)(iVar4 >> 0x14) & 0x1ff);
-      rand_142 = iVar4 * 0x19660d + 0x3c6ef35f;
-      sVar5 = ((ushort)(rand_142 >> 0x14) & 0x1ff) - 0x100;
-      local_2c = local_2c & 0xffff0000 | uVar6;
-      local_30 = CONCAT22(sVar7,sVar5);
-      if (0xff < uVar6) {
-        sVar3 = (ushort)(uVar6 * 0x10000 >> 0x18) + 1;
-        local_30 = CONCAT22(sVar7 * sVar3,sVar5 * sVar3);
-      }
-      setCopReg(2,in_zero,local_30);
-      setCopReg(2,in_at,local_2c);
-      copFunction(2,0x480012);
-      *(undefined4 *)&gRain[RainIndex].oldposition = 0;
-      gRain[RainIndex].oldposition.pad = (short)RainIndex;
-      lVar1 = getCopReg(2,0x19);
-      gRain[RainIndex].position.vx = lVar1;
-      lVar1 = getCopReg(2,0x1a);
-      gRain[RainIndex].position.vy = lVar1;
-      lVar1 = getCopReg(2,0x1b);
-      gRain[RainIndex].position.vz = lVar1;
-      if ((bVar2) &&
-         (ROADS_GetRouteData(gRain[RainIndex].position.vx,gRain[RainIndex].position.vz,&local_28),
-         (modelpointers1536[local_28.type]->flags2 & 0x100) != 0)) break;
-      bVar2 = false;
-    }
-    NoRainIndoors = 1;
-    ReleaseRainDrop(RainIndex);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	long lVar1;
+	bool bVar2;
+	short sVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	int RainIndex;
+	int iVar4;
+	short sVar5;
+	uint uVar6;
+	short sVar7;
+	uint uVar8;
+	undefined4 local_30;
+	uint local_2c;
+	ROUTE_DATA local_28;
+
+	bVar2 = true;
+	if (pauseflag == 0) {
+		uVar8 = (uint)(byte)gRainCount;
+		NoRainIndoors = 0;
+		wetness = wetness + (int)uVar8 / 6;
+		if (7000 < wetness) {
+			wetness = (int)&DAT_00001b58;
+		}
+		setCopControlWord(2, 0, camera_matrix.m[0]._0_4_);
+		setCopControlWord(2, 0x800, camera_matrix.m._4_4_);
+		setCopControlWord(2, 0x1000, camera_matrix.m[1]._2_4_);
+		setCopControlWord(2, 0x1800, camera_matrix.m[2]._0_4_);
+		setCopControlWord(2, 0x2000, camera_matrix._16_4_);
+		setCopControlWord(2, 0x2800, camera_position.vx);
+		setCopControlWord(2, 0x3000, camera_position.vy);
+		setCopControlWord(2, 0x3800, camera_position.vz);
+		while (true) {
+			uVar8 = uVar8 - 1;
+			if (uVar8 == 0xffffffff) {
+				return;
+			}
+			RainIndex = AllocateRainDrop();
+			if (RainIndex < 0) {
+				return;
+			}
+			iVar4 = rand_142 * 0x19660d + 0x3c6ef35f;
+			uVar6 = (iVar4 >> 0x14 & 0x1ffU) + 200;
+			iVar4 = iVar4 * 0x19660d + 0x3c6ef35f;
+			sVar7 = -((ushort)(iVar4 >> 0x14) & 0x1ff);
+			rand_142 = iVar4 * 0x19660d + 0x3c6ef35f;
+			sVar5 = ((ushort)(rand_142 >> 0x14) & 0x1ff) - 0x100;
+			local_2c = local_2c & 0xffff0000 | uVar6;
+			local_30 = CONCAT22(sVar7, sVar5);
+			if (0xff < uVar6) {
+				sVar3 = (ushort)(uVar6 * 0x10000 >> 0x18) + 1;
+				local_30 = CONCAT22(sVar7 * sVar3, sVar5 * sVar3);
+			}
+			setCopReg(2, in_zero, local_30);
+			setCopReg(2, in_at, local_2c);
+			copFunction(2, 0x480012);
+			*(undefined4 *)&gRain[RainIndex].oldposition = 0;
+			gRain[RainIndex].oldposition.pad = (short)RainIndex;
+			lVar1 = getCopReg(2, 0x19);
+			gRain[RainIndex].position.vx = lVar1;
+			lVar1 = getCopReg(2, 0x1a);
+			gRain[RainIndex].position.vy = lVar1;
+			lVar1 = getCopReg(2, 0x1b);
+			gRain[RainIndex].position.vz = lVar1;
+			if ((bVar2) &&
+				(ROADS_GetRouteData(gRain[RainIndex].position.vx, gRain[RainIndex].position.vz, &local_28),
+				(modelpointers1536[local_28.type]->flags2 & 0x100) != 0)) break;
+			bVar2 = false;
+		}
+		NoRainIndoors = 1;
+		ReleaseRainDrop(RainIndex);
+	}
+	return;*/
 }
 
 
@@ -5437,60 +5494,61 @@ void AddRainDrops(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DisplaySplashes(void)
-
 {
-  int iVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  VECTOR local_60;
-  VECTOR local_50;
-  VECTOR local_40;
-  VECTOR local_30;
-  CVECTOR local_20 [2];
-  
-  local_20[0] = (CVECTOR)PTR_DAT_000aa38c;
-  if (pauseflag == 0) {
-    uVar3 = (uint)((byte)gRainCount >> 2);
-    if (0x1e < (byte)gRainCount >> 2) {
-      uVar3 = 0x1e;
-    }
-    iVar4 = (int)(uVar3 * FrAng * 3) >> 0xc;
-    setCopControlWord(2,0,norot.m[0]._0_4_);
-    setCopControlWord(2,0x800,norot.m._4_4_);
-    setCopControlWord(2,0x1000,norot.m[1]._2_4_);
-    setCopControlWord(2,0x1800,norot.m[2]._0_4_);
-    setCopControlWord(2,0x2000,norot._16_4_);
-    local_60.vx = camera_position.vx;
-    local_60.vz = camera_position.vz;
-    local_60.vy = MapHeight(&local_60);
-    local_60.vy = -camera_position.vy - local_60.vy;
-    uVar3 = FrAng - camera_angle.vy & 0xfff;
-    local_50.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
-    local_50.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
-    iVar1 = MapHeight(&local_50);
-    local_50.vx = local_50.vx - local_60.vx;
-    local_50.vy = (-camera_position.vy - iVar1) - local_60.vy;
-    local_50.vz = local_50.vz - local_60.vz;
-    uVar3 = -FrAng - (int)camera_angle.vy & 0xfff;
-    local_40.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
-    local_40.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
-    iVar1 = MapHeight(&local_40);
-    local_40.vx = local_40.vx - local_60.vx;
-    local_40.vy = (-camera_position.vy - iVar1) - local_60.vy;
-    local_40.vz = local_40.vz - local_60.vz;
-    while (iVar4 = iVar4 + -1, iVar4 != -1) {
-      uVar3 = DAT_000aa390 * 0x19660d + 0x3c6ef35f;
-      uVar2 = uVar3 >> 4 & 0xfff;
-      DAT_000aa390 = uVar3 * 0x19660d + 0x3c6ef35f;
-      uVar3 = DAT_000aa390 >> 0xe & 0xfff;
-      local_30.vx = (int)(local_50.vx * uVar2 + local_40.vx * uVar3 + 0x800) >> 0xc;
-      local_30.vy = ((int)(local_50.vy * uVar2 + local_40.vy * uVar3 + 0x800) >> 0xc) + local_60.vy;
-      local_30.vz = (int)(local_50.vz * uVar2 + local_40.vz * uVar3 + 0x800) >> 0xc;
-      ShowLight(&local_30,local_20,0xc,&drop_texture);
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	uint uVar2;
+	uint uVar3;
+	int iVar4;
+	VECTOR local_60;
+	VECTOR local_50;
+	VECTOR local_40;
+	VECTOR local_30;
+	CVECTOR local_20[2];
+
+	local_20[0] = (CVECTOR)PTR_DAT_000aa38c;
+	if (pauseflag == 0) {
+		uVar3 = (uint)((byte)gRainCount >> 2);
+		if (0x1e < (byte)gRainCount >> 2) {
+			uVar3 = 0x1e;
+		}
+		iVar4 = (int)(uVar3 * FrAng * 3) >> 0xc;
+		setCopControlWord(2, 0, norot.m[0]._0_4_);
+		setCopControlWord(2, 0x800, norot.m._4_4_);
+		setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
+		setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
+		setCopControlWord(2, 0x2000, norot._16_4_);
+		local_60.vx = camera_position.vx;
+		local_60.vz = camera_position.vz;
+		local_60.vy = MapHeight(&local_60);
+		local_60.vy = -camera_position.vy - local_60.vy;
+		uVar3 = FrAng - camera_angle.vy & 0xfff;
+		local_50.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
+		local_50.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
+		iVar1 = MapHeight(&local_50);
+		local_50.vx = local_50.vx - local_60.vx;
+		local_50.vy = (-camera_position.vy - iVar1) - local_60.vy;
+		local_50.vz = local_50.vz - local_60.vz;
+		uVar3 = -FrAng - (int)camera_angle.vy & 0xfff;
+		local_40.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
+		local_40.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
+		iVar1 = MapHeight(&local_40);
+		local_40.vx = local_40.vx - local_60.vx;
+		local_40.vy = (-camera_position.vy - iVar1) - local_60.vy;
+		local_40.vz = local_40.vz - local_60.vz;
+		while (iVar4 = iVar4 + -1, iVar4 != -1) {
+			uVar3 = DAT_000aa390 * 0x19660d + 0x3c6ef35f;
+			uVar2 = uVar3 >> 4 & 0xfff;
+			DAT_000aa390 = uVar3 * 0x19660d + 0x3c6ef35f;
+			uVar3 = DAT_000aa390 >> 0xe & 0xfff;
+			local_30.vx = (int)(local_50.vx * uVar2 + local_40.vx * uVar3 + 0x800) >> 0xc;
+			local_30.vy = ((int)(local_50.vy * uVar2 + local_40.vy * uVar3 + 0x800) >> 0xc) + local_60.vy;
+			local_30.vz = (int)(local_50.vz * uVar2 + local_40.vz * uVar3 + 0x800) >> 0xc;
+			ShowLight(&local_30, local_20, 0xc, &drop_texture);
+		}
+	}
+	return;*/
 }
 
 
@@ -5520,93 +5578,94 @@ void DisplaySplashes(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void DisplayLightReflections(VECTOR *v1,CVECTOR *col,short size,TEXTURE_DETAILS *texture)
-
+void DisplayLightReflections(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-  ushort uVar1;
-  ushort uVar2;
-  int iVar3;
-  uint uVar4;
-  DB *pDVar5;
-  undefined4 in_zero;
-  undefined4 in_at;
-  undefined2 uVar6;
-  int iVar7;
-  VECTOR *pVVar8;
-  uint *puVar9;
-  uint local_50;
-  uint local_4c;
-  uint local_48;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
-  undefined4 local_38;
-  undefined4 local_34;
-  uint local_30;
-  
-  uVar1 = texture->tpageid;
-  uVar2 = texture->clutid;
-  if (9 < wetness) {
-    setCopControlWord(2,0x2800,v1->vx);
-    setCopControlWord(2,0x3000,v1->vy);
-    setCopControlWord(2,0x3800,v1->vz);
-    pVVar8 = v1;
-    Apply_Inv_CameraMatrix(v1);
-    setCopControlWord(2,0x2800,v1->vx);
-    setCopControlWord(2,0x3000,v1->vy);
-    setCopControlWord(2,0x3800,v1->vz);
-    setCopControlWord(2,0,face_camera.m[0]._0_4_);
-    setCopControlWord(2,0x800,face_camera.m._4_4_);
-    setCopControlWord(2,0x1000,face_camera.m[1]._2_4_);
-    setCopControlWord(2,0x1800,face_camera.m[2]._0_4_);
-    setCopControlWord(2,0x2000,face_camera._16_4_);
-    local_50 = (uint)(ushort)-size;
-    local_4c = local_4c & 0xffff0000;
-    setCopReg(2,in_zero,local_50);
-    setCopReg(2,in_at,local_4c);
-    copFunction(2,0x180001);
-    local_48 = (uint)(ushort)size;
-    local_44 = (uint)local_44._2_2_ << 0x10;
-    local_3c = (uint)local_3c._2_2_ << 0x10;
-    local_34 = (uint)local_34._2_2_ << 0x10;
-    iVar3 = getCopReg(2,0x13);
-    if (0x95 < iVar3) {
-      puVar9 = (uint *)current->primptr;
-      uVar4 = getCopReg(2,0xe);
-      puVar9[2] = uVar4;
-      iVar7 = (iVar3 >> 3) + 0xfa;
-      uVar6 = (undefined2)iVar7;
-      local_40 = CONCAT22(uVar6,-size);
-      local_38 = CONCAT22(uVar6,size);
-      setCopReg(2,in_zero,local_48);
-      setCopReg(2,in_at,local_44);
-      setCopReg(2,iVar7,local_40);
-      setCopReg(2,&local_48,local_3c);
-      setCopReg(2,pVVar8,local_38);
-      setCopReg(2,puVar9,local_34);
-      copFunction(2,0x280030);
-      puVar9[3] = CONCAT22(uVar2,*(undefined2 *)&texture->coords);
-      puVar9[5] = (uint)*(ushort *)&(texture->coords).u1 | ((uint)uVar1 | 0x20) << 0x10;
-      puVar9[7] = (uint)*(ushort *)&(texture->coords).u2;
-      puVar9[9] = (uint)*(ushort *)&(texture->coords).u3;
-      local_30._0_2_ = CONCAT11(col->g >> 3,col->r >> 3);
-      local_30 = local_30 & 0xff000000 | (uint)(col->b >> 3) << 0x10 | (uint)(ushort)local_30;
-      *(char *)((int)puVar9 + 3) = '\t';
-      puVar9[1] = local_30;
-      *(char *)((int)puVar9 + 7) = '.';
-      pDVar5 = current;
-      *puVar9 = *puVar9 & 0xff000000 | current->ot[iVar3 >> 4] & 0xffffff;
-      pDVar5->ot[iVar3 >> 4] = pDVar5->ot[iVar3 >> 4] & 0xff000000 | (uint)puVar9 & 0xffffff;
-      pDVar5->primptr = pDVar5->primptr + 0x28;
-      uVar4 = getCopReg(2,0xc);
-      puVar9[4] = uVar4;
-      uVar4 = getCopReg(2,0xd);
-      puVar9[6] = uVar4;
-      uVar4 = getCopReg(2,0xe);
-      puVar9[8] = uVar4;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	ushort uVar2;
+	int iVar3;
+	uint uVar4;
+	DB *pDVar5;
+	undefined4 in_zero;
+	undefined4 in_at;
+	undefined2 uVar6;
+	int iVar7;
+	VECTOR *pVVar8;
+	uint *puVar9;
+	uint local_50;
+	uint local_4c;
+	uint local_48;
+	undefined4 local_44;
+	undefined4 local_40;
+	undefined4 local_3c;
+	undefined4 local_38;
+	undefined4 local_34;
+	uint local_30;
+
+	uVar1 = texture->tpageid;
+	uVar2 = texture->clutid;
+	if (9 < wetness) {
+		setCopControlWord(2, 0x2800, v1->vx);
+		setCopControlWord(2, 0x3000, v1->vy);
+		setCopControlWord(2, 0x3800, v1->vz);
+		pVVar8 = v1;
+		Apply_Inv_CameraMatrix(v1);
+		setCopControlWord(2, 0x2800, v1->vx);
+		setCopControlWord(2, 0x3000, v1->vy);
+		setCopControlWord(2, 0x3800, v1->vz);
+		setCopControlWord(2, 0, face_camera.m[0]._0_4_);
+		setCopControlWord(2, 0x800, face_camera.m._4_4_);
+		setCopControlWord(2, 0x1000, face_camera.m[1]._2_4_);
+		setCopControlWord(2, 0x1800, face_camera.m[2]._0_4_);
+		setCopControlWord(2, 0x2000, face_camera._16_4_);
+		local_50 = (uint)(ushort)-size;
+		local_4c = local_4c & 0xffff0000;
+		setCopReg(2, in_zero, local_50);
+		setCopReg(2, in_at, local_4c);
+		copFunction(2, 0x180001);
+		local_48 = (uint)(ushort)size;
+		local_44 = (uint)local_44._2_2_ << 0x10;
+		local_3c = (uint)local_3c._2_2_ << 0x10;
+		local_34 = (uint)local_34._2_2_ << 0x10;
+		iVar3 = getCopReg(2, 0x13);
+		if (0x95 < iVar3) {
+			puVar9 = (uint *)current->primptr;
+			uVar4 = getCopReg(2, 0xe);
+			puVar9[2] = uVar4;
+			iVar7 = (iVar3 >> 3) + 0xfa;
+			uVar6 = (undefined2)iVar7;
+			local_40 = CONCAT22(uVar6, -size);
+			local_38 = CONCAT22(uVar6, size);
+			setCopReg(2, in_zero, local_48);
+			setCopReg(2, in_at, local_44);
+			setCopReg(2, iVar7, local_40);
+			setCopReg(2, &local_48, local_3c);
+			setCopReg(2, pVVar8, local_38);
+			setCopReg(2, puVar9, local_34);
+			copFunction(2, 0x280030);
+			puVar9[3] = CONCAT22(uVar2, *(undefined2 *)&texture->coords);
+			puVar9[5] = (uint)*(ushort *)&(texture->coords).u1 | ((uint)uVar1 | 0x20) << 0x10;
+			puVar9[7] = (uint)*(ushort *)&(texture->coords).u2;
+			puVar9[9] = (uint)*(ushort *)&(texture->coords).u3;
+			local_30._0_2_ = CONCAT11(col->g >> 3, col->r >> 3);
+			local_30 = local_30 & 0xff000000 | (uint)(col->b >> 3) << 0x10 | (uint)(ushort)local_30;
+			*(char *)((int)puVar9 + 3) = '\t';
+			puVar9[1] = local_30;
+			*(char *)((int)puVar9 + 7) = '.';
+			pDVar5 = current;
+			*puVar9 = *puVar9 & 0xff000000 | current->ot[iVar3 >> 4] & 0xffffff;
+			pDVar5->ot[iVar3 >> 4] = pDVar5->ot[iVar3 >> 4] & 0xff000000 | (uint)puVar9 & 0xffffff;
+			pDVar5->primptr = pDVar5->primptr + 0x28;
+			uVar4 = getCopReg(2, 0xc);
+			puVar9[4] = uVar4;
+			uVar4 = getCopReg(2, 0xd);
+			puVar9[6] = uVar4;
+			uVar4 = getCopReg(2, 0xe);
+			puVar9[8] = uVar4;
+		}
+	}
+	return;*/
 }
 
 
@@ -5640,34 +5699,35 @@ void DisplayLightReflections(VECTOR *v1,CVECTOR *col,short size,TEXTURE_DETAILS 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoLightning(void)
-
 {
-  uint uVar1;
-  
-  if (pauseflag == 0) {
-    if (LightningTimer < -10) {
-      uVar1 = rand();
-      LightningTimer = uVar1 & 0xff;
-    }
-    else {
-      LightningTimer = LightningTimer - 1;
-    }
-    if ((LightningTimer < 0) && (uVar1 = rand(), (uVar1 & 1) == 0)) {
-      RequestThunder();
-      uVar1 = rand();
-      if ((uVar1 & 1) == 0) {
-        NightAmbient = NightAmbient << 1;
-        if (0x80 < NightAmbient) {
-          NightAmbient = 0x80;
-        }
-        lightning = 2;
-        return;
-      }
-      add_haze(0x32,0,0x107e);
-    }
-    lightning = 0;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+
+	if (pauseflag == 0) {
+		if (LightningTimer < -10) {
+			uVar1 = rand();
+			LightningTimer = uVar1 & 0xff;
+		}
+		else {
+			LightningTimer = LightningTimer - 1;
+		}
+		if ((LightningTimer < 0) && (uVar1 = rand(), (uVar1 & 1) == 0)) {
+			RequestThunder();
+			uVar1 = rand();
+			if ((uVar1 & 1) == 0) {
+				NightAmbient = NightAmbient << 1;
+				if (0x80 < NightAmbient) {
+					NightAmbient = 0x80;
+				}
+				lightning = 2;
+				return;
+			}
+			add_haze(0x32, 0, 0x107e);
+		}
+		lightning = 0;
+	}
+	return;*/
 }
 
 
@@ -5691,14 +5751,15 @@ void DoLightning(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitThunder(void)
-
 {
-  int iVar1;
-  
-  ThunderTimer = -1;
-  iVar1 = rand();
-  ThunderDistance = iVar1 % 5000;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+
+	ThunderTimer = -1;
+	iVar1 = rand();
+	ThunderDistance = iVar1 % 5000;
+	return;*/
 }
 
 
@@ -5715,13 +5776,14 @@ void InitThunder(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void RequestThunder(void)
-
 {
-  ThunderTimer = ThunderDistance >> 8;
-  if (ThunderTimer < 1) {
-    ThunderTimer = 1;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ThunderTimer = ThunderDistance >> 8;
+	if (ThunderTimer < 1) {
+		ThunderTimer = 1;
+	}
+	return;*/
 }
 
 
@@ -5750,31 +5812,32 @@ void RequestThunder(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoThunder(void)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if (pauseflag == 0) {
-    iVar1 = rand();
-    ThunderDistance = (ThunderDistance + 0x28) - iVar1 % 0x50;
-    if (ThunderDistance < 0xfa) {
-      ThunderDistance = 0xfa;
-    }
-    if (5000 < ThunderDistance) {
-      ThunderDistance = (int)&DAT_00001388;
-    }
-    iVar1 = ThunderTimer + -1;
-    if ((-1 < ThunderTimer) && (ThunderTimer = iVar1, iVar1 == 0)) {
-      iVar2 = rand();
-      iVar1 = iVar2;
-      if (iVar2 < 0) {
-        iVar1 = iVar2 + 0x7ff;
-      }
-      StartSound(-1,1,0xc,-ThunderDistance,iVar2 + (iVar1 >> 0xb) * -0x800 + 0xc00);
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+
+	if (pauseflag == 0) {
+		iVar1 = rand();
+		ThunderDistance = (ThunderDistance + 0x28) - iVar1 % 0x50;
+		if (ThunderDistance < 0xfa) {
+			ThunderDistance = 0xfa;
+		}
+		if (5000 < ThunderDistance) {
+			ThunderDistance = (int)&DAT_00001388;
+		}
+		iVar1 = ThunderTimer + -1;
+		if ((-1 < ThunderTimer) && (ThunderTimer = iVar1, iVar1 == 0)) {
+			iVar2 = rand();
+			iVar1 = iVar2;
+			if (iVar2 < 0) {
+				iVar1 = iVar2 + 0x7ff;
+			}
+			StartSound(-1, 1, 0xc, -ThunderDistance, iVar2 + (iVar1 >> 0xb) * -0x800 + 0xc00);
+		}
+	}
+	return;*/
 }
 
 
@@ -5799,26 +5862,27 @@ void DoThunder(void)
 	// End Line: 24076
 
 void DoWeather(int weather)
-
 {
-  if ((weather == 1) && (pauseflag == 0)) {
-    if (gEffectsTimer < 0x29) {
-      if ((FrameCnt & 7U) == 0) {
-        gEffectsTimer = gEffectsTimer + 1;
-      }
-    }
-    else {
-      AddRainDrops();
-      DrawRainDrops();
-      if ((FrameCnt & 7U) == 0) {
-        gRainCount = gRainCount + '\x01';
-      }
-      if (0x23 < (byte)gRainCount) {
-        gRainCount = '#';
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if ((weather == 1) && (pauseflag == 0)) {
+		if (gEffectsTimer < 0x29) {
+			if ((FrameCnt & 7U) == 0) {
+				gEffectsTimer = gEffectsTimer + 1;
+			}
+		}
+		else {
+			AddRainDrops();
+			DrawRainDrops();
+			if ((FrameCnt & 7U) == 0) {
+				gRainCount = gRainCount + '\x01';
+			}
+			if (0x23 < (byte)gRainCount) {
+				gRainCount = '#';
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -5848,18 +5912,20 @@ void DoWeather(int weather)
 	// End Line: 24131
 
 int GetDebrisColour(_CAR_DATA *cp)
-
 {
-  int iVar1;
-  
-  iVar1 = MissionHeader->residentModels[(byte)(cp->ap).model];
-  if (iVar1 == 0) {
-    return 1;
-  }
-  if (iVar1 < 8) {
-    return (iVar1 + -1) * 6 + (uint)(byte)(cp->ap).palette + 7;
-  }
-  return iVar1 + -6;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+
+	iVar1 = MissionHeader->residentModels[(byte)(cp->ap).model];
+	if (iVar1 == 0) {
+		return 1;
+	}
+	if (iVar1 < 8) {
+		return (iVar1 + -1) * 6 + (uint)(byte)(cp->ap).palette + 7;
+	}
+	return iVar1 + -6;*/
 }
 
 

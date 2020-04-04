@@ -14,9 +14,9 @@ extern void InitSpooledAnimObj(int model_number); // 0x00014828
 
 extern void int_garage_door(); // 0x000149A8
 
-extern int DrawAnimatingObject(struct MODEL *model, struct CELL_OBJECT *cop, struct VECTOR *pos); // 0x000148A0
+extern int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos); // 0x000148A0
 
-extern void animate_object(struct CELL_OBJECT *cop, int type); // 0x00013DF8
+extern void animate_object(CELL_OBJECT *cop, int type); // 0x00013DF8
 
 extern void animate_garage_door(); // 0x000146A4
 

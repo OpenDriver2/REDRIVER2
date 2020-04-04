@@ -141,6 +141,60 @@
     <ClCompile Include="GAME\C\PEDEST.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\SPOOL.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\MAP.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\OBJANIM.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\HANDLING.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\DRIVINGGAMES.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\BOMBERMAN.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\PLAYERS.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\COP_AI.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\CAMERA.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\OVERLAY.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\DEBRIS.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\JOB_FX.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\DIRECTOR.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\CONVERT.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\AI.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\XAPLAY.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\SHADOW.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\CIV_AI.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

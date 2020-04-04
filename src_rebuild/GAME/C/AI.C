@@ -24,11 +24,12 @@
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void StoreGameFlags(void)
-
 {
-  ReplayParameterPtr->weather = (uchar)gWeather;
-  ReplayParameterPtr->timeofday = (uchar)gTimeOfDay;
-  return;
+	UNIMPLEMENTED();
+	/*
+	ReplayParameterPtr->weather = (uchar)gWeather;
+	ReplayParameterPtr->timeofday = (uchar)gTimeOfDay;
+	return;*/
 }
 
 
@@ -64,31 +65,33 @@ void StoreGameFlags(void)
 	/* end block 3 */
 	// End Line: 661
 
-int TannerCanEnterCar(_CAR_DATA *cp,int distToCarSq)
-
+int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 {
-  int iVar1;
-  int iVar2;
-  
-  if ((cp->controlFlags & 1) != 0) {
-    gCopCarTheftAttempted = 1;
-  }
-  if ((((cp->controlType == '\x02') || (cp->controlType == '\a')) && ((cp->controlFlags & 1) == 0))
-     && (((cp->controlFlags & 2) == 0 && (99 < (cp->hd).where.m[4])))) {
-    iVar1 = (cp->hd).wheel_speed + 0x800 >> 0xc;
-    if (iVar1 < 0) {
-      iVar1 = -iVar1;
-    }
-    if (iVar1 < 3) {
-      iVar1 = (int)car_cosmetics[(byte)(cp->ap).model].colBox.vx * 2;
-      iVar2 = iVar1 * iVar1;
-      if (5000 < iVar1) {
-        iVar2 = 25000000;
-      }
-      return (uint)(iVar2 < distToCarSq) ^ 1;
-    }
-  }
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	int iVar2;
+
+	if ((cp->controlFlags & 1) != 0) {
+		gCopCarTheftAttempted = 1;
+	}
+	if ((((cp->controlType == '\x02') || (cp->controlType == '\a')) && ((cp->controlFlags & 1) == 0))
+		&& (((cp->controlFlags & 2) == 0 && (99 < (cp->hd).where.m[4])))) {
+		iVar1 = (cp->hd).wheel_speed + 0x800 >> 0xc;
+		if (iVar1 < 0) {
+			iVar1 = -iVar1;
+		}
+		if (iVar1 < 3) {
+			iVar1 = (int)car_cosmetics[(byte)(cp->ap).model].colBox.vx * 2;
+			iVar2 = iVar1 * iVar1;
+			if (5000 < iVar1) {
+				iVar2 = 25000000;
+			}
+			return (uint)(iVar2 < distToCarSq) ^ 1;
+		}
+	}
+	return 0;*/
 }
 
 
@@ -117,38 +120,41 @@ int TannerCanEnterCar(_CAR_DATA *cp,int distToCarSq)
 	// End Line: 650
 
 int TannerStuckInCar(int doSpeedCheck)
-
 {
-  short *psVar1;
-  int iVar2;
-  int iVar3;
-  
-  iVar3 = (int)player.playerCarId;
-  if ((NumPlayers < 2) && (player.playerType == '\x01')) {
-    if (iVar3 < 0) {
-      psVar1 = &pedestrianFelony;
-    }
-    else {
-      psVar1 = &car_data[iVar3].felonyRating;
-    }
-    if ((((*psVar1 < 0x293) || (player_position_known < 1)) &&
-        ((car_data[iVar3].hd.wheel[1].surface & 7) != 1)) &&
-       ((car_data[iVar3].hd.wheel[3].surface & 7) != 1)) {
-      if (doSpeedCheck != 0) {
-        iVar2 = car_data[iVar3].hd.wheel_speed + 0x800 >> 0xc;
-        if (iVar2 < 0) {
-          iVar2 = -iVar2;
-        }
-        if (2 < iVar2) {
-          return 1;
-        }
-      }
-      if ((99 < car_data[iVar3].hd.where.m[4]) && (lockAllTheDoors == '\0')) {
-        return 0;
-      }
-    }
-  }
-  return 1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	short *psVar1;
+	int iVar2;
+	int iVar3;
+
+	iVar3 = (int)player.playerCarId;
+	if ((NumPlayers < 2) && (player.playerType == '\x01')) {
+		if (iVar3 < 0) {
+			psVar1 = &pedestrianFelony;
+		}
+		else {
+			psVar1 = &car_data[iVar3].felonyRating;
+		}
+		if ((((*psVar1 < 0x293) || (player_position_known < 1)) &&
+			((car_data[iVar3].hd.wheel[1].surface & 7) != 1)) &&
+			((car_data[iVar3].hd.wheel[3].surface & 7) != 1)) {
+			if (doSpeedCheck != 0) {
+				iVar2 = car_data[iVar3].hd.wheel_speed + 0x800 >> 0xc;
+				if (iVar2 < 0) {
+					iVar2 = -iVar2;
+				}
+				if (2 < iVar2) {
+					return 1;
+				}
+			}
+			if ((99 < car_data[iVar3].hd.where.m[4]) && (lockAllTheDoors == '\0')) {
+				return 0;
+			}
+		}
+	}
+	return 1;
+	*/
 }
 
 

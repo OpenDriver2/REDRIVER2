@@ -25,6 +25,27 @@
 #include "DRAW.H"
 #include "DENTING.H"
 #include "PEDEST.H"
+#include "SPOOL.H"
+#include "MAP.H"
+#include "OBJANIM.H"
+#include "HANDLING.H"
+#include "DRIVINGGAMES.H"
+#include "BOMBERMAN.H"
+#include "PLAYERS.H"
+#include "AI.H"
+#include "CIV_AI.H"
+#include "COP_AI.H"
+#include "CAMERA.H"
+#include "OVERLAY.H"
+#include "DEBRIS.H"
+#include "JOB_FX.H"
+#include "DIRECTOR.H"
+#include "CONVERT.H"
+
+#include "XAPLAY.H"
+#include "SHADOW.H"
+
+#include <stdlib.h>
 
 #include "../FRONTEND/FEMAIN.H"
 
@@ -713,6 +734,12 @@ _CAR_DATA* active_car_list[20];
 BOUND_BOX bbox[20];
 unsigned char lightsOnDelay[20];
 
+// OVERLAY
+int gLoadedOverlay = 0;
+
+// MOTION_C
+int gLoadedMotionCapture = 0;
+
 // DRAWGAME.C ???
 int FrAng = 0x200;
 int wetness = 0;
@@ -876,7 +903,7 @@ void GameInit(void)
 	if (pathAILoaded != 0) {
 		InitCops();
 	}
-	InitCamera(&player);
+	InitCamera(&player[0]);
 	if ((gLoadedOverlay != 0) && (NoPlayerControl == 0)) {
 		InitOverlays();
 		IconsLoaded = 0;
@@ -2694,11 +2721,33 @@ void RenderGame(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+REPLAY_STREAM ReplayStreams[8];
+
+int TargetCar = 0;
+
+char gRainCount = 0;
+int pauseflag = 0;
+
+int HitLeadCar = 0;
+int FastForward = 0;
+int game_over = 0;
+int saved_counter = 0;
+int saved_leadcar_pos = 0;
+int gStopPadReads = 0;
+int DawnCount = 0;
+int variable_weather = 0;
+int current_camera_angle = 0x800;
+int gDieWithFade = 0;
+
+// replay
+int FrameCnt = 0;
+
+unsigned char defaultPlayerModel[2] = {0}; // offset 0xAA604
+unsigned char defaultPlayerPalette = 0; // offset 0xAA606
+
+// [D]
 void InitGameVariables(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	int iVar1;
 	int iVar2;
 	uint uVar3;
@@ -2706,17 +2755,21 @@ void InitGameVariables(void)
 	InitDebris();
 	InitTyreTracks();
 	TargetCar = 0;
+
 	if (NewLevel != 0) {
 		gLoadedOverlay = 0;
 		gLoadedMotionCapture = 0;
 	}
+
 	gRainCount = '\0';
+
 	if ((NoPlayerControl == 0) || (AttractMode != 0)) {
 		pauseflag = 0;
 	}
 	else {
 		pauseflag = 1;
 	}
+
 	HitLeadCar = 0;
 	FastForward = 0;
 	game_over = 0;
@@ -2727,45 +2780,47 @@ void InitGameVariables(void)
 	variable_weather = 0;
 	current_camera_angle = 0x800;
 	gDieWithFade = 0;
-	srand((uint)&DAT_00001234);
-	RandomInit((long)&DAT_0000d431, 0x350b1);
+
+	srand(0x1234);
+	RandomInit(0xd431, 0x350b1);
 	FrameCnt = 0;
 	CameraCnt = 0;
+
 	ClearMem((char *)&lightsOnDelay, 0x14);
-	PlayerStartInfo8[0] = ReplayStreams;
+
+	PlayerStartInfo[0] = (STREAM_SOURCE*)ReplayStreams;
 	ClearMem((char *)ReplayStreams, 0x30);
-	((STREAM_SOURCE *)PlayerStartInfo8[0])->type = '\x01';
-	((STREAM_SOURCE *)PlayerStartInfo8[0])->model = defaultPlayerModel;
-	((STREAM_SOURCE *)PlayerStartInfo8[0])->palette = defaultPlayerPalette;
-	((STREAM_SOURCE *)PlayerStartInfo8[0])->controlType = '\x01';
-	iVar2 = GameLevel;
-	iVar1 = GameLevel * 4;
-	((STREAM_SOURCE *)PlayerStartInfo8[0])->flags = 0;
-	((STREAM_SOURCE *)PlayerStartInfo8[0])->rotation = *(ushort *)(levelstartpos + iVar1 + 1);
-	(((STREAM_SOURCE *)PlayerStartInfo8[0])->position).vx = levelstartpos[iVar2 * 4];
-	(((STREAM_SOURCE *)PlayerStartInfo8[0])->position).vy = 0;
-	(((STREAM_SOURCE *)PlayerStartInfo8[0])->position).vz = levelstartpos[iVar2 * 4 + 2];
+
+	((STREAM_SOURCE *)PlayerStartInfo[0])->type = '\x01';
+	((STREAM_SOURCE *)PlayerStartInfo[0])->model = defaultPlayerModel[0];
+	((STREAM_SOURCE *)PlayerStartInfo[0])->palette = defaultPlayerPalette;
+	((STREAM_SOURCE *)PlayerStartInfo[0])->controlType = '\x01';
+	((STREAM_SOURCE *)PlayerStartInfo[0])->flags = 0;
+	((STREAM_SOURCE *)PlayerStartInfo[0])->rotation = levelstartpos[GameLevel][1];
+	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vx = levelstartpos[GameLevel][0];		// [A] ??
+	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vy = 0;
+	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vz = levelstartpos[GameLevel][2];
+
 	uVar3 = (uint)NumPlayers;
 	numPlayersToCreate = 1;
+
 	if (NumPlayers == 2) {
-		PlayerStartInfo8[1] = (STREAM_SOURCE *)(ReplayStreams + 1);
+		PlayerStartInfo[1] = (STREAM_SOURCE *)(ReplayStreams + 1);
 		ClearMem((char *)(ReplayStreams + 1), 0x30);
-		PlayerStartInfo8[1]->type = '\x01';
-		PlayerStartInfo8[1]->model = UCHAR_00h_000aa605;
-		PlayerStartInfo8[1]->palette = defaultPlayerPalette;
-		PlayerStartInfo8[1]->controlType = '\x01';
-		iVar2 = GameLevel;
-		iVar1 = GameLevel * 4;
-		PlayerStartInfo8[1]->flags = 0;
-		PlayerStartInfo8[1]->rotation = *(ushort *)(levelstartpos + iVar1 + 1);
-		(PlayerStartInfo8[1]->position).vx = levelstartpos[iVar2 * 4] + 600;
-		(PlayerStartInfo8[1]->position).vy = 0;
-		(PlayerStartInfo8[1]->position).vz = levelstartpos[iVar2 * 4 + 2];
+		PlayerStartInfo[1]->type = '\x01';
+		PlayerStartInfo[1]->model = defaultPlayerModel[1];
+		PlayerStartInfo[1]->palette = defaultPlayerPalette;
+		PlayerStartInfo[1]->controlType = '\x01';
+		PlayerStartInfo[1]->flags = 0;
+		PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
+		(PlayerStartInfo[1]->position).vx = levelstartpos[GameLevel][0] + 600;
+		(PlayerStartInfo[1]->position).vy = 0;
+		(PlayerStartInfo[1]->position).vz = levelstartpos[GameLevel][2];
 		numPlayersToCreate = uVar3;
 	}
+
 	InitCivCars();
 	return;
-	*/
 }
 
 

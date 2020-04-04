@@ -2,9 +2,11 @@
 #define SPOOL_H
 
 
+typedef void(*spooledFuncPtr)();
+
 extern void test_changemode(); // 0x0007B228
 
-extern void changemode(struct SPOOLQ *current); // 0x0007E1A8
+extern void changemode(SPOOLQ *current); // 0x0007E1A8
 
 extern int check_regions_present(); // 0x0007B3C4
 
@@ -18,7 +20,7 @@ extern void CheckValidSpoolData(); // 0x0007E2CC
 
 extern void UpdateSpool(); // 0x0007B6C4
 
-extern void RequestSpool(int type, int data, int offset, int loadsize, char *address, TDRFuncPtr_RequestSpool5func func); // 0x0007E36C
+extern void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func); // 0x0007E36C
 
 extern void InitSpooling(); // 0x0007E494
 
@@ -97,9 +99,6 @@ extern void QuickSpoolSpecial(); // 0x0007E84C
 extern void PrepareSecretCar(); // 0x0007E8DC
 
 extern void InitSpecSpool(); // 0x0007D6D8
-
-
-typedef void (*TDRFuncPtr_RequestSpool5func)();
 
 
 

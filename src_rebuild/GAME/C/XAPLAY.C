@@ -28,15 +28,16 @@ char* XANames[] = {
 	// End Line: 257
 
 void GetMissionXAData(int number)
-
 {
-  int iVar1;
-  CdlFILE CStack32;
-  
-  CdSearchFile(&CStack32,XANames4[number]);
-  iVar1 = CdPosToInt((CdlLOC *)&CStack32);
-  XAMissionMessages[number].start = iVar1;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	CdlFILE CStack32;
+
+	CdSearchFile(&CStack32, XANames4[number]);
+	iVar1 = CdPosToInt((CdlLOC *)&CStack32);
+	XAMissionMessages[number].start = iVar1;
+	return;*/
 }
 
 
@@ -66,21 +67,22 @@ void GetMissionXAData(int number)
 	// End Line: 471
 
 void GetXAData(int number)
-
 {
-  int number_00;
-  
-  if (number < 0) {
-    number_00 = 0;
-    do {
-      GetMissionXAData(number_00);
-      number_00 = number_00 + 1;
-    } while (number_00 < 4);
-  }
-  else {
-    GetMissionXAData(number);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int number_00;
+
+	if (number < 0) {
+		number_00 = 0;
+		do {
+			GetMissionXAData(number_00);
+			number_00 = number_00 + 1;
+		} while (number_00 < 4);
+	}
+	else {
+		GetMissionXAData(number);
+	}
+	return;*/
 }
 
 
@@ -112,17 +114,18 @@ void GetXAData(int number)
 	// End Line: 747
 
 void SetXAVolume(int volume)
-
 {
-  short sVar1;
-  
-  _sVar1 = volume / 0x4e + 0x7f;
-  sVar1 = (short)_sVar1;
-  if (_sVar1 == -1) {
-    sVar1 = 0;
-  }
-  SsSetSerialVol(0,(int)sVar1,(int)sVar1);
-  return;
+	UNIMPLEMENTED();
+	/*
+	short sVar1;
+
+	_sVar1 = volume / 0x4e + 0x7f;
+	sVar1 = (short)_sVar1;
+	if (_sVar1 == -1) {
+		sVar1 = 0;
+	}
+	SsSetSerialVol(0, (int)sVar1, (int)sVar1);
+	return;*/
 }
 
 
@@ -163,25 +166,26 @@ void SetXAVolume(int volume)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void PrepareXA(void)
-
 {
-  undefined local_10 [8];
-  
-  finished_count = 0;
-  gPlaying = 0;
-  if (xa_prepared == 0) {
-    if ((spoolactive != 0) && (chunk_complete != 0)) {
-      spoolpos_reading = spoolpos_reading + -1;
-    }
-    CdInit();
-    local_10[0] = 0xe8;
-    CdControlB(0xe,local_10,0);
-    oldreadycallback = CdReadyCallback(cbready);
-    olddatacallback = CdDataCallback(0);
-    xa_prepared = 1;
-    AllocateReverb(3,0x4000);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	undefined local_10[8];
+
+	finished_count = 0;
+	gPlaying = 0;
+	if (xa_prepared == 0) {
+		if ((spoolactive != 0) && (chunk_complete != 0)) {
+			spoolpos_reading = spoolpos_reading + -1;
+		}
+		CdInit();
+		local_10[0] = 0xe8;
+		CdControlB(0xe, local_10, 0);
+		oldreadycallback = CdReadyCallback(cbready);
+		olddatacallback = CdDataCallback(0);
+		xa_prepared = 1;
+		AllocateReverb(3, 0x4000);
+	}
+	return;*/
 }
 
 
@@ -206,30 +210,31 @@ void PrepareXA(void)
 	/* end block 2 */
 	// End Line: 531
 
-void PlayXA(int num,int index)
-
+void PlayXA(int num, int index)
 {
-  int iVar1;
-  undefined local_28;
-  undefined local_27;
-  undefined auStack32 [8];
-  undefined auStack24 [8];
-  
-  if ((xa_prepared != 0) && (gPlaying != 1)) {
-    local_27 = (undefined)index;
-    StartPos = XAMissionMessages[num].start;
-    gChannel = (ushort)index & 0xff;
-    local_28 = 1;
-    iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
-    SsSetSerialVol(0,iVar1,iVar1);
-    CdControlB(0xd,&local_28,auStack24);
-    CdIntToPos(StartPos,auStack32);
-    CdControlB(0x1b,auStack32,auStack24);
-    AllocateReverb(3,0x4000);
-    gPlaying = 1;
-    xa_prepared = 2;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	undefined local_28;
+	undefined local_27;
+	undefined auStack32[8];
+	undefined auStack24[8];
+
+	if ((xa_prepared != 0) && (gPlaying != 1)) {
+		local_27 = (undefined)index;
+		StartPos = XAMissionMessages[num].start;
+		gChannel = (ushort)index & 0xff;
+		local_28 = 1;
+		iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
+		SsSetSerialVol(0, iVar1, iVar1);
+		CdControlB(0xd, &local_28, auStack24);
+		CdIntToPos(StartPos, auStack32);
+		CdControlB(0x1b, auStack32, auStack24);
+		AllocateReverb(3, 0x4000);
+		gPlaying = 1;
+		xa_prepared = 2;
+	}
+	return;*/
 }
 
 
@@ -246,9 +251,11 @@ void PlayXA(int num,int index)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int XAPrepared(void)
-
 {
-  return xa_prepared;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	return xa_prepared;*/
 }
 
 
@@ -284,19 +291,20 @@ int XAPrepared(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void UnprepareXA(void)
-
 {
-  undefined local_10 [8];
-  
-  if (xa_prepared != 0) {
-    CdReadyCallback(oldreadycallback);
-    CdDataCallback(olddatacallback);
-    local_10[0] = 0x80;
-    CdControlB(0xe,local_10,0);
-    gPlaying = 0;
-    xa_prepared = 0;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	undefined local_10[8];
+
+	if (xa_prepared != 0) {
+		CdReadyCallback(oldreadycallback);
+		CdDataCallback(olddatacallback);
+		local_10[0] = 0x80;
+		CdControlB(0xe, local_10, 0);
+		gPlaying = 0;
+		xa_prepared = 0;
+	}
+	return;*/
 }
 
 
@@ -323,14 +331,15 @@ void UnprepareXA(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void StopXA(void)
-
 {
-  if ((gPlaying != 0) && (xa_prepared != 0)) {
-    SsSetSerialVol(0,0,0);
-    CdControlF(9,0);
-    gPlaying = 0;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if ((gPlaying != 0) && (xa_prepared != 0)) {
+		SsSetSerialVol(0, 0, 0);
+		CdControlF(9, 0);
+		gPlaying = 0;
+	}
+	return;*/
 }
 
 
@@ -344,27 +353,28 @@ void StopXA(void)
 	/* end block 1 */
 	// End Line: 1218
 
-void cbready(int intr,uchar *result)
-
+void cbready(int intr, unsigned char *result)
 {
-  uint uVar1;
-  
-  if (intr == 1) {
-    CdGetSector(buffer,8);
-    uVar1 = ((uint)ULONG_ARRAY_000e11b4[0]._2_2_ & 0x7c00) >> 10;
-    ID = (ushort)ULONG_ARRAY_000e11b4[0];
-    CurrentChannel = (ushort)uVar1;
-    if ((ushort)ULONG_ARRAY_000e11b4[0] == 0x160) {
-      finished_count = finished_count | 1 << (uVar1 + 1 & 0x1f);
-      if ((uVar1 == (uint)gChannel) || (finished_count == 0xff)) {
-        SsSetSerialVol(0,0,0);
-        CdControlF(9,0);
-        gPlaying = 0;
-        finished_count = 0;
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+
+	if (intr == 1) {
+		CdGetSector(buffer, 8);
+		uVar1 = ((uint)ULONG_ARRAY_000e11b4[0]._2_2_ & 0x7c00) >> 10;
+		ID = (ushort)ULONG_ARRAY_000e11b4[0];
+		CurrentChannel = (ushort)uVar1;
+		if ((ushort)ULONG_ARRAY_000e11b4[0] == 0x160) {
+			finished_count = finished_count | 1 << (uVar1 + 1 & 0x1f);
+			if ((uVar1 == (uint)gChannel) || (finished_count == 0xff)) {
+				SsSetSerialVol(0, 0, 0);
+				CdControlF(9, 0);
+				gPlaying = 0;
+				finished_count = 0;
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -401,24 +411,25 @@ void cbready(int intr,uchar *result)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void ResumeXA(void)
-
 {
-  int iVar1;
-  undefined local_20;
-  undefined local_1f;
-  undefined auStack24 [8];
-  
-  if ((xa_prepared != 0) && (gPlaying != 1)) {
-    local_20 = 1;
-    local_1f = (undefined)gChannel;
-    iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
-    SsSetSerialVol(0,iVar1,iVar1);
-    CdControlB(0xd,&local_20,auStack24);
-    CdControlB(0x1b,&pause_loc,auStack24);
-    AllocateReverb(3,0x4000);
-    gPlaying = 1;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	undefined local_20;
+	undefined local_1f;
+	undefined auStack24[8];
+
+	if ((xa_prepared != 0) && (gPlaying != 1)) {
+		local_20 = 1;
+		local_1f = (undefined)gChannel;
+		iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
+		SsSetSerialVol(0, iVar1, iVar1);
+		CdControlB(0xd, &local_20, auStack24);
+		CdControlB(0x1b, &pause_loc, auStack24);
+		AllocateReverb(3, 0x4000);
+		gPlaying = 1;
+	}
+	return;*/
 }
 
 
@@ -449,22 +460,23 @@ void ResumeXA(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void PauseXA(void)
-
 {
-  uchar local_10;
-  uchar local_f;
-  uchar local_e;
-  
-  if ((xa_prepared != 0) && (gPlaying != 0)) {
-    SsSetSerialVol(0,0,0);
-    CdControlB(0x10,0,&local_10);
-    pause_loc.minute = local_10;
-    pause_loc.second = local_f;
-    pause_loc.sector = local_e;
-    CdControlB(9,0,0);
-    gPlaying = 0;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uchar local_10;
+	uchar local_f;
+	uchar local_e;
+
+	if ((xa_prepared != 0) && (gPlaying != 0)) {
+		SsSetSerialVol(0, 0, 0);
+		CdControlB(0x10, 0, &local_10);
+		pause_loc.minute = local_10;
+		pause_loc.second = local_f;
+		pause_loc.sector = local_e;
+		CdControlB(9, 0, 0);
+		gPlaying = 0;
+	}
+	return;*/
 }
 
 
