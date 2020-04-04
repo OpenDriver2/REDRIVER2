@@ -400,6 +400,7 @@ TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 TEXINF * GetTextureInfoName(char *name, TPAN *result)
 {
 	UNIMPLEMENTED();
+	return 0;
 	/*
 	TEXINF *pTVar1;
 	uchar local_10[4];

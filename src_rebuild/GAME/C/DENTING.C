@@ -876,7 +876,6 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 void SetupSpecDenting(char *loadbuffer)
 {
 	UNIMPLEMENTED();
-	return 0;
 	/*
 	char *pcVar1;
 

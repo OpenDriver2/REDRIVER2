@@ -1451,7 +1451,6 @@ int LoadCutsceneInformation(int cutscene)
 void FreeCutsceneBuffer(void)
 {
 	UNIMPLEMENTED();
-	return 0;
 	/*
 	int iVar1;
 	_func_4 **pp_Var2;

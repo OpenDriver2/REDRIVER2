@@ -2843,7 +2843,6 @@ void MRCancelCarRequest(_TARGET *target)
 void PreProcessTargets(void)
 {
 	UNIMPLEMENTED();
-	return 0;
 	/*
 	int iVar1;
 	_TARGET *p_Var2;

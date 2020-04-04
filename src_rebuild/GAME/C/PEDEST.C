@@ -3551,7 +3551,7 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 int PingOutPed(PEDESTRIAN *pPed)
 {
 	UNIMPLEMENTED();
-	return;
+	return 0;
 	/*
 	int iVar1;
 	int iVar2;
@@ -4926,6 +4926,7 @@ void ProcessChairLump(char *lump_file, int lump_size)
 	/*
 	seated_pedestrian = (SEATED_PEDESTRIANS *)lump_file;
 	return;
+	*/
 }
 
 
