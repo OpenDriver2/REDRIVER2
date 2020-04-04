@@ -10,6 +10,7 @@
 #include "PAD.H"
 #include "SOUND.H"
 #include "REPLAYS.H"
+#include "MISSION.H"
 
 #include <string.h>
 
@@ -92,17 +93,6 @@ unsigned short RecapFrameLength[19] = {
 ACTIVE_CHEATS AvailableCheats = { 0 };
 ACTIVE_CHEATS ActiveCheats = { 0 };
 
-int wantedCar[2] = { 0 };
-int GameLevel = 0;
-int gFurthestMission = 0;
-int gWantNight = 0;
-int gSubGameNumber = 0;
-int gInvincibleCar = 0;
-int gPlayerImmune = 0;
-unsigned char NumPlayers = 1;
-char NewLevel = 1;
-GAMETYPE GameType = GAME_MISSION;
-int gCurrentMissionNumber = 0;
 int gInFrontend = 0;
 int AttractMode = 0;
 
@@ -142,11 +132,8 @@ int AttractMode = 0;
 extern void SsSetSerialVol(char param_1, short param_2, short param_3);
 #endif // PSX
 
-int gCopDifficultyLevel = 0;
-int CurrentGameMode = 0;
 int gLoadedReplay = 0;
 int gHaveStoredData = 0;
-GAMETYPE StoredGameType;
 
 // [D]
 void GameStart(void)
@@ -190,7 +177,7 @@ void GameStart(void)
 			gVibration = iVar1;
 			if (iVar2 != 0) {
 				gVibration = 0;
-				CurrentGameMode = 6;
+				CurrentGameMode = GAMEMODE_DEMO;
 				gLoadedReplay = 1;
 				LaunchGame();
 				gLoadedReplay = 0;
@@ -269,7 +256,7 @@ void GameStart(void)
 			RunMissionLadder(0);
 			break;
 		case GAME_LOADEDREPLAY:
-			CurrentGameMode = 4;
+			CurrentGameMode = GAMEMODE_DIRECTOR;
 			gLoadedReplay = 1;
 			GameType = StoredGameType;
 			LaunchGame();

@@ -1,6 +1,7 @@
 #ifndef COP_AI_H
 #define COP_AI_H
 
+extern COP_DATA gCopData;
 
 extern void InitCopState(_CAR_DATA *cp, char *extraData); // 0x0002F680
 

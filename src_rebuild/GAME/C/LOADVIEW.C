@@ -5,6 +5,7 @@
 #include "SYSTEM.H"
 #include "LIBETC.H"
 #include "GLAUNCH.H"
+#include "MISSION.H"
 #include "../FRONTEND/FEMAIN.H"
 
 DRAWENV load_draw = { 0 };

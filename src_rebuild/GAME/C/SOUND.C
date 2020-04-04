@@ -20,7 +20,7 @@ SAMPLE_DATA samples[35][7];
 int VABID = -1;
 
 unsigned long channel_lookup[16]; // offset 0xDD3D8
-struct CHANNEL_DATA channels[16]; // offset 0xDE480
+CHANNEL_DATA channels[16]; // offset 0xDE480
 
 int gMasterVolume = 0;
 int gMusicVolume = 0;
@@ -1814,35 +1814,35 @@ void SetXMVolume(int volume)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int GetFreeChannel(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int channel;
 	int iVar1;
-	uchar *puVar2;
+	unsigned char *puVar2;
 	CHANNEL_DATA *pCVar3;
 	ushort uVar4;
-	char local_28[24];
+	char status[24];
+
+	//sizeof(CHANNEL_DATA); == 120 so
 
 	uVar4 = 0;
-	SpuGetAllKeysStatus(local_28);
+	SpuGetAllKeysStatus(status);
 	channel = 0;
-	puVar2 = &channels.locked;
-	while ((*puVar2 != '\0' || (local_28[channel] != '\0'))) {
+	puVar2 = &channels[0].locked;
+	while ((*puVar2 != '\0' || (status[channel] != '\0'))) {
 		channel = channel + 1;
 		puVar2 = puVar2 + 0x78;
 		if (0xf < channel) {
 			channel = 0;
-			puVar2 = &channels.locked;
-			while ((*puVar2 != '\0' || (local_28[channel] != '\x03'))) {
+			puVar2 = &channels[0].locked;
+			while ((*puVar2 != '\0' || (status[channel] != '\x03'))) {
 				channel = channel + 1;
 				puVar2 = puVar2 + 0x78;
 				if (0xf < channel) {
 					channel = -1;
 					iVar1 = 0;
-					pCVar3 = &channels;
+					pCVar3 = channels;
 					do {
 						if ((pCVar3->locked == '\0') && (pCVar3->loop == '\0')) {
 							if ((channel == -1) || (pCVar3->time < uVar4)) {
@@ -1863,7 +1863,6 @@ int GetFreeChannel(void)
 		}
 	}
 	return channel;
-	*/
 }
 
 

@@ -4,6 +4,13 @@
 extern char _overlay_buffer[0x50000];		// 0x1C0000
 extern char _frontend_buffer[0x50000];		// 0xFB400
 
+extern char* mallocptr;
+#define D_MALLOC(size)	mallocptr; mallocptr += size
+
+extern int leadAIRequired;
+extern int leadAILoaded;
+extern int pathAILoaded;
+
 extern char* LoadingScreenNames[];
 
 #ifdef USE_32_BIT_ADDR
@@ -37,8 +44,6 @@ extern OTTYPE _tempOT2[OTSIZE];
 
 extern char _tempPrimTab1[0x8000];		// 0xFB400
 extern char _tempPrimTab2[0x8000];		// 0x119400
-
-extern unsigned char NumPlayers;
 
 #ifdef PAL
 #define draw_mode draw_mode_pal

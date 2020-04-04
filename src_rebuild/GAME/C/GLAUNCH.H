@@ -4,21 +4,7 @@
 extern ACTIVE_CHEATS AvailableCheats;
 extern ACTIVE_CHEATS ActiveCheats;
 
-extern int gFurthestMission;
-extern int GameLevel;
-
 extern int wantedCar[2];
-extern int GameLevel;
-extern int gFurthestMission;
-extern int gWantNight;
-extern int gSubGameNumber;
-extern int gInvincibleCar;
-extern int gPlayerImmune;
-extern unsigned char NumPlayers;
-extern char NewLevel;
-extern GAMETYPE GameType;
-extern GAMETYPE StoredGameType;
-extern int gCurrentMissionNumber;
 extern int gInFrontend;
 extern int AttractMode;
 extern char NoPlayerControl;

@@ -5,11 +5,19 @@
 #include "SYSTEM.H"
 #include "XAPLAY.H"
 #include "LOADVIEW.H"
+#include "MISSION.H"
 
 #include <string.h>
 
 char _overlay_buffer[0x50000];		// 0x1C0000
 char _frontend_buffer[0x50000];		// 0xFB400
+
+char g_allocatedMem[0x200000];	// 0x137400 (_ramsize). TODO: use real malloc
+char* mallocptr = g_allocatedMem;
+
+int leadAIRequired = 0;
+int leadAILoaded = 0;
+int pathAILoaded = 0;
 
 char* LevelFiles[] = {
 	"LEVELS\\CHICAGO.LEV",
@@ -1363,24 +1371,40 @@ LAB_0007f244:
 	/* end block 2 */
 	// End Line: 4862
 
+// [D]
 int FileExists(char *filename)
 {
+#ifdef PSX
 	CdlFILE *pCVar1;
-	int iVar2;
-	CdlFILE CStack176;
-	char acStack152[136];
+	int retries;
+	CdlFILE cdfile;
+	char namebuffer[128];
 
-	sprintf(acStack152, "\\DRIVER2\\%s;1", filename);
-	iVar2 = 9;
+	sprintf(namebuffer, "\\DRIVER2\\%s;1", filename);
+	retries = 9;
 	do {
-		pCVar1 = CdSearchFile(&CStack176, acStack152);
+		pCVar1 = CdSearchFile(&cdfile, namebuffer);
 		if (pCVar1 != (CdlFILE *)0x0) {
 			return 1;
 		}
-		iVar2 = iVar2 + -1;
+		retries--;
 		DoCDRetry();
-	} while (iVar2 != -1);
+	} while (retries != -1);
 	return 0;
+#else
+	char namebuffer[128];
+
+	sprintf(namebuffer, "DRIVER2\\%s", filename);
+
+	FILE* fp = fopen(namebuffer, "rb");
+	if (fp)
+	{
+		fclose(fp);
+		return 1;
+	}
+
+	return 0;
+#endif // PSX
 }
 
 

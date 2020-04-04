@@ -35,27 +35,28 @@
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void StoreEndData(void)
-
 {
-  _TARGET *target;
-  int iVar1;
-  SAVED_CAR_POS *data;
-  
-  if (gCurrentMissionNumber < 0x28) {
-    StorePlayerPosition((SAVED_PLAYER_POS *)&MissionEndData);
-    data = MissionEndData.CarPos;
-    iVar1 = 0xf;
-    target = MissionTargets;
-    do {
-      if ((target->data[0] == 2) && ((target->data[1] & 0x10U) != 0)) {
-        StoreCarPosition(target,data);
-        data = data + 1;
-      }
-      iVar1 = iVar1 + -1;
-      target = target + 1;
-    } while (-1 < iVar1);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	_TARGET *target;
+	int iVar1;
+	SAVED_CAR_POS *data;
+
+	if (gCurrentMissionNumber < 0x28) {
+		StorePlayerPosition((SAVED_PLAYER_POS *)&MissionEndData);
+		data = MissionEndData.CarPos;
+		iVar1 = 0xf;
+		target = MissionTargets;
+		do {
+			if ((target->data[0] == 2) && ((target->data[1] & 0x10U) != 0)) {
+				StoreCarPosition(target, data);
+				data = data + 1;
+			}
+			iVar1 = iVar1 + -1;
+			target = target + 1;
+		} while (-1 < iVar1);
+	}
+	return;*/
 }
 
 
@@ -97,24 +98,25 @@ void StoreEndData(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void RestoreStartData(void)
-
 {
-  SAVED_CAR_POS *data;
-  int iVar1;
-  
-  if (gHaveStoredData != 0) {
-    RestorePlayerPosition((SAVED_PLAYER_POS *)&MissionStartData);
-    data = MissionStartData.CarPos;
-    iVar1 = 5;
-    do {
-      if (data->active != '\0') {
-        RestoreCarPosition(data);
-      }
-      iVar1 = iVar1 + -1;
-      data = data + 1;
-    } while (-1 < iVar1);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	SAVED_CAR_POS *data;
+	int iVar1;
+
+	if (gHaveStoredData != 0) {
+		RestorePlayerPosition((SAVED_PLAYER_POS *)&MissionStartData);
+		data = MissionStartData.CarPos;
+		iVar1 = 5;
+		do {
+			if (data->active != '\0') {
+				RestoreCarPosition(data);
+			}
+			iVar1 = iVar1 + -1;
+			data = data + 1;
+		} while (-1 < iVar1);
+	}
+	return;*/
 }
 
 
@@ -138,48 +140,50 @@ void RestoreStartData(void)
 	// End Line: 219
 
 void StorePlayerPosition(SAVED_PLAYER_POS *data)
-
 {
-  short *psVar1;
-  ushort uVar2;
-  
-  uVar2 = (ushort)(byte)player.playerType;
-  if (player.playerType == '\x01') {
-    uVar2 = (ushort)(((uint)*(ushort *)
-                             (MissionHeader->residentModels +
-                             (byte)car_data[player.playerCarId].ap.model) & 0xfff) << 4) | 1 |
-            (ushort)(byte)car_data[player.playerCarId].ap.palette << 8;
-  }
-  data->type = uVar2;
-  data->direction = (short)player.dir;
-  data->vx = player.pos[0];
-  data->vy = player.pos[1];
-  data->vz = player.pos[2];
-  if ((int)player.playerCarId < 0) {
-    psVar1 = &pedestrianFelony;
-  }
-  else {
-    psVar1 = &car_data[(int)player.playerCarId].felonyRating;
-  }
-  data->felony = (int)*psVar1;
-  if (player.playerType == '\x01') {
-    data->totaldamage = car_data[player.playerCarId].totalDamage;
-    data->damage[0] = car_data[player.playerCarId].ap.damage[0];
-    data->damage[1] = car_data[player.playerCarId].ap.damage[1];
-    data->damage[2] = car_data[player.playerCarId].ap.damage[2];
-    data->damage[3] = car_data[player.playerCarId].ap.damage[3];
-    data->damage[4] = car_data[player.playerCarId].ap.damage[4];
-    data->damage[5] = car_data[player.playerCarId].ap.damage[5];
-    return;
-  }
-  data->totaldamage = 0;
-  data->damage[0] = 0;
-  data->damage[1] = 0;
-  data->damage[2] = 0;
-  data->damage[3] = 0;
-  data->damage[4] = 0;
-  data->damage[5] = 0;
-  return;
+	UNIMPLEMENTED();
+	/*
+	short *psVar1;
+	ushort uVar2;
+
+	uVar2 = (ushort)(byte)player.playerType;
+	if (player.playerType == '\x01') {
+		uVar2 = (ushort)(((uint)*(ushort *)
+			(MissionHeader->residentModels +
+			(byte)car_data[player.playerCarId].ap.model) & 0xfff) << 4) | 1 |
+				(ushort)(byte)car_data[player.playerCarId].ap.palette << 8;
+	}
+	data->type = uVar2;
+	data->direction = (short)player.dir;
+	data->vx = player.pos[0];
+	data->vy = player.pos[1];
+	data->vz = player.pos[2];
+	if ((int)player.playerCarId < 0) {
+		psVar1 = &pedestrianFelony;
+	}
+	else {
+		psVar1 = &car_data[(int)player.playerCarId].felonyRating;
+	}
+	data->felony = (int)*psVar1;
+	if (player.playerType == '\x01') {
+		data->totaldamage = car_data[player.playerCarId].totalDamage;
+		data->damage[0] = car_data[player.playerCarId].ap.damage[0];
+		data->damage[1] = car_data[player.playerCarId].ap.damage[1];
+		data->damage[2] = car_data[player.playerCarId].ap.damage[2];
+		data->damage[3] = car_data[player.playerCarId].ap.damage[3];
+		data->damage[4] = car_data[player.playerCarId].ap.damage[4];
+		data->damage[5] = car_data[player.playerCarId].ap.damage[5];
+		return;
+	}
+	data->totaldamage = 0;
+	data->damage[0] = 0;
+	data->damage[1] = 0;
+	data->damage[2] = 0;
+	data->damage[3] = 0;
+	data->damage[4] = 0;
+	data->damage[5] = 0;
+	return;
+	*/
 }
 
 
@@ -206,38 +210,40 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	// End Line: 304
 
 void RestorePlayerPosition(SAVED_PLAYER_POS *data)
-
 {
-  short *psVar1;
-  
-  if ((data->type & 0xf) == 1) {
-    PlayerStartInfo8[0]->type = '\x01';
-    PlayerStartInfo8[0]->model = (byte)(data->type >> 4) & 0xf;
-    PlayerStartInfo8[0]->palette = (byte)(data->type >> 8) & 0xf;
-  }
-  else {
-    PlayerStartInfo8[0]->type = '\x02';
-  }
-  if (gCurrentMissionNumber != 0x10) {
-    (PlayerStartInfo8[0]->position).vx = data->vx;
-    (PlayerStartInfo8[0]->position).vz = data->vz;
-    PlayerStartInfo8[0]->rotation = data->direction;
-  }
-  PlayerStartInfo8[0]->totaldamage = (uint)data->totaldamage;
-  PlayerStartInfo8[0]->damage[0] = (int)data->damage[0];
-  PlayerStartInfo8[0]->damage[1] = (int)data->damage[1];
-  PlayerStartInfo8[0]->damage[2] = (int)data->damage[2];
-  PlayerStartInfo8[0]->damage[3] = (int)data->damage[3];
-  PlayerStartInfo8[0]->damage[4] = (int)data->damage[4];
-  PlayerStartInfo8[0]->damage[5] = (int)data->damage[5];
-  if ((int)player.playerCarId < 0) {
-    psVar1 = &pedestrianFelony;
-  }
-  else {
-    psVar1 = &car_data[(int)player.playerCarId].felonyRating;
-  }
-  *psVar1 = *(short *)&data->felony;
-  return;
+	UNIMPLEMENTED();
+	/*
+	short *psVar1;
+
+	if ((data->type & 0xf) == 1) {
+		PlayerStartInfo8[0]->type = '\x01';
+		PlayerStartInfo8[0]->model = (byte)(data->type >> 4) & 0xf;
+		PlayerStartInfo8[0]->palette = (byte)(data->type >> 8) & 0xf;
+	}
+	else {
+		PlayerStartInfo8[0]->type = '\x02';
+	}
+	if (gCurrentMissionNumber != 0x10) {
+		(PlayerStartInfo8[0]->position).vx = data->vx;
+		(PlayerStartInfo8[0]->position).vz = data->vz;
+		PlayerStartInfo8[0]->rotation = data->direction;
+	}
+	PlayerStartInfo8[0]->totaldamage = (uint)data->totaldamage;
+	PlayerStartInfo8[0]->damage[0] = (int)data->damage[0];
+	PlayerStartInfo8[0]->damage[1] = (int)data->damage[1];
+	PlayerStartInfo8[0]->damage[2] = (int)data->damage[2];
+	PlayerStartInfo8[0]->damage[3] = (int)data->damage[3];
+	PlayerStartInfo8[0]->damage[4] = (int)data->damage[4];
+	PlayerStartInfo8[0]->damage[5] = (int)data->damage[5];
+	if ((int)player.playerCarId < 0) {
+		psVar1 = &pedestrianFelony;
+	}
+	else {
+		psVar1 = &car_data[(int)player.playerCarId].felonyRating;
+	}
+	*psVar1 = *(short *)&data->felony;
+	return;
+	*/
 }
 
 
@@ -265,35 +271,36 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 	/* end block 3 */
 	// End Line: 369
 
-void StoreCarPosition(_TARGET *target,SAVED_CAR_POS *data)
-
+void StoreCarPosition(_TARGET *target, SAVED_CAR_POS *data)
 {
-  int iVar1;
-  
-  iVar1 = DAT_000d7c44;
-  if ((target->data[10] & 0x400000U) == 0) {
-    iVar1 = target->data[6];
-  }
-  if (iVar1 != -1) {
-    data->active = '\x01';
-    data->model = *(uchar *)(MissionHeader->residentModels + (byte)car_data[iVar1].ap.model);
-    data->palette = car_data[iVar1].ap.palette;
-    data->totaldamage = car_data[iVar1].totalDamage;
-    data->damage[0] = car_data[iVar1].ap.damage[0];
-    data->damage[1] = car_data[iVar1].ap.damage[1];
-    data->damage[2] = car_data[iVar1].ap.damage[2];
-    data->damage[3] = car_data[iVar1].ap.damage[3];
-    data->damage[4] = car_data[iVar1].ap.damage[4];
-    data->damage[5] = car_data[iVar1].ap.damage[5];
-    data->vx = car_data[iVar1].hd.where.t[0];
-    data->vy = car_data[iVar1].hd.where.t[1];
-    data->vz = car_data[iVar1].hd.where.t[2];
-    data->direction = *(short *)&car_data[iVar1].hd.direction;
-    if ((target->data[1] & 0x40U) != 0) {
-      data->active = -0x7f;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+
+	iVar1 = DAT_000d7c44;
+	if ((target->data[10] & 0x400000U) == 0) {
+		iVar1 = target->data[6];
+	}
+	if (iVar1 != -1) {
+		data->active = '\x01';
+		data->model = *(uchar *)(MissionHeader->residentModels + (byte)car_data[iVar1].ap.model);
+		data->palette = car_data[iVar1].ap.palette;
+		data->totaldamage = car_data[iVar1].totalDamage;
+		data->damage[0] = car_data[iVar1].ap.damage[0];
+		data->damage[1] = car_data[iVar1].ap.damage[1];
+		data->damage[2] = car_data[iVar1].ap.damage[2];
+		data->damage[3] = car_data[iVar1].ap.damage[3];
+		data->damage[4] = car_data[iVar1].ap.damage[4];
+		data->damage[5] = car_data[iVar1].ap.damage[5];
+		data->vx = car_data[iVar1].hd.where.t[0];
+		data->vy = car_data[iVar1].hd.where.t[1];
+		data->vz = car_data[iVar1].hd.where.t[2];
+		data->direction = *(short *)&car_data[iVar1].hd.direction;
+		if ((target->data[1] & 0x40U) != 0) {
+			data->active = -0x7f;
+		}
+	}
+	return;*/
 }
 
 
@@ -313,75 +320,77 @@ void StoreCarPosition(_TARGET *target,SAVED_CAR_POS *data)
 	// End Line: 442
 
 void RestoreCarPosition(SAVED_CAR_POS *data)
-
 {
-  int iVar1;
-  char *pcVar2;
-  REPLAY_STREAM *pRVar3;
-  STREAM_SOURCE *pSVar4;
-  STREAM_SOURCE *pSVar5;
-  undefined4 uVar6;
-  long lVar7;
-  long lVar8;
-  
-  pcVar2 = ReplayStart;
-  iVar1 = numPlayersToCreate;
-  *(char **)&ReplayStreams[numPlayersToCreate].InitialPadRecordBuffer = ReplayStart;
-  *(char **)&ReplayStreams[iVar1].PadRecordBuffer = pcVar2;
-  pRVar3 = ReplayStreams + iVar1;
-  *(char **)&ReplayStreams[iVar1].PadRecordBufferEnd = pcVar2;
-  ReplayStreams[iVar1].playbackrun = '\0';
-  ReplayStreams[iVar1].length = 0;
-  *(REPLAY_STREAM **)(PlayerStartInfo8 + iVar1) = pRVar3;
-  if ((data->active & 0x80U) == 0) {
-    (pRVar3->SourceType).type = '\x01';
-    ReplayStreams[iVar1].SourceType.model = data->model;
-    ReplayStreams[iVar1].SourceType.palette = data->palette;
-    lVar7 = data->vx;
-    ReplayStreams[iVar1].SourceType.position.vy = 0;
-    ReplayStreams[iVar1].SourceType.position.vx = lVar7;
-    ReplayStreams[iVar1].SourceType.position.vz = data->vz;
-    ReplayStreams[iVar1].SourceType.rotation = data->direction;
-    ReplayStreams[iVar1].SourceType.totaldamage = (uint)data->totaldamage;
-    ReplayStreams[iVar1].SourceType.damage[0] = (uint)data->damage[0];
-    ReplayStreams[iVar1].SourceType.damage[1] = (uint)data->damage[1];
-    ReplayStreams[iVar1].SourceType.damage[2] = (uint)data->damage[2];
-    ReplayStreams[iVar1].SourceType.damage[3] = (uint)data->damage[3];
-    ReplayStreams[iVar1].SourceType.damage[4] = (uint)data->damage[4];
-    ReplayStreams[iVar1].SourceType.damage[5] = (uint)data->damage[5];
-  }
-  else {
-    pSVar5 = PlayerStartInfo8[0] + 1;
-    pSVar4 = PlayerStartInfo8[0];
-    do {
-      uVar6 = *(undefined4 *)&pSVar4->flags;
-      lVar7 = (pSVar4->position).vx;
-      lVar8 = (pSVar4->position).vy;
-      *(undefined4 *)&pRVar3->SourceType = *(undefined4 *)pSVar4;
-      *(undefined4 *)&(pRVar3->SourceType).flags = uVar6;
-      (pRVar3->SourceType).position.vx = lVar7;
-      (pRVar3->SourceType).position.vy = lVar8;
-      pSVar4 = (STREAM_SOURCE *)&(pSVar4->position).vz;
-      pRVar3 = (REPLAY_STREAM *)&(pRVar3->SourceType).position.vz;
-    } while (pSVar4 != pSVar5);
-    PlayerStartInfo8[numPlayersToCreate]->type = '\x03';
-    PlayerStartInfo8[0]->type = '\x01';
-    PlayerStartInfo8[0]->model = data->model;
-    PlayerStartInfo8[0]->palette = data->palette;
-    (PlayerStartInfo8[0]->position).vx = data->vx;
-    (PlayerStartInfo8[0]->position).vy = 0;
-    (PlayerStartInfo8[0]->position).vz = data->vz;
-    PlayerStartInfo8[0]->rotation = data->direction;
-    PlayerStartInfo8[0]->totaldamage = (uint)data->totaldamage;
-    PlayerStartInfo8[0]->damage[0] = (uint)data->damage[0];
-    PlayerStartInfo8[0]->damage[1] = (uint)data->damage[1];
-    PlayerStartInfo8[0]->damage[2] = (uint)data->damage[2];
-    PlayerStartInfo8[0]->damage[3] = (uint)data->damage[3];
-    PlayerStartInfo8[0]->damage[4] = (uint)data->damage[4];
-    PlayerStartInfo8[0]->damage[5] = (uint)data->damage[5];
-  }
-  numPlayersToCreate = numPlayersToCreate + 1;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	char *pcVar2;
+	REPLAY_STREAM *pRVar3;
+	STREAM_SOURCE *pSVar4;
+	STREAM_SOURCE *pSVar5;
+	undefined4 uVar6;
+	long lVar7;
+	long lVar8;
+
+	pcVar2 = ReplayStart;
+	iVar1 = numPlayersToCreate;
+	*(char **)&ReplayStreams[numPlayersToCreate].InitialPadRecordBuffer = ReplayStart;
+	*(char **)&ReplayStreams[iVar1].PadRecordBuffer = pcVar2;
+	pRVar3 = ReplayStreams + iVar1;
+	*(char **)&ReplayStreams[iVar1].PadRecordBufferEnd = pcVar2;
+	ReplayStreams[iVar1].playbackrun = '\0';
+	ReplayStreams[iVar1].length = 0;
+	*(REPLAY_STREAM **)(PlayerStartInfo8 + iVar1) = pRVar3;
+	if ((data->active & 0x80U) == 0) {
+		(pRVar3->SourceType).type = '\x01';
+		ReplayStreams[iVar1].SourceType.model = data->model;
+		ReplayStreams[iVar1].SourceType.palette = data->palette;
+		lVar7 = data->vx;
+		ReplayStreams[iVar1].SourceType.position.vy = 0;
+		ReplayStreams[iVar1].SourceType.position.vx = lVar7;
+		ReplayStreams[iVar1].SourceType.position.vz = data->vz;
+		ReplayStreams[iVar1].SourceType.rotation = data->direction;
+		ReplayStreams[iVar1].SourceType.totaldamage = (uint)data->totaldamage;
+		ReplayStreams[iVar1].SourceType.damage[0] = (uint)data->damage[0];
+		ReplayStreams[iVar1].SourceType.damage[1] = (uint)data->damage[1];
+		ReplayStreams[iVar1].SourceType.damage[2] = (uint)data->damage[2];
+		ReplayStreams[iVar1].SourceType.damage[3] = (uint)data->damage[3];
+		ReplayStreams[iVar1].SourceType.damage[4] = (uint)data->damage[4];
+		ReplayStreams[iVar1].SourceType.damage[5] = (uint)data->damage[5];
+	}
+	else {
+		pSVar5 = PlayerStartInfo8[0] + 1;
+		pSVar4 = PlayerStartInfo8[0];
+		do {
+			uVar6 = *(undefined4 *)&pSVar4->flags;
+			lVar7 = (pSVar4->position).vx;
+			lVar8 = (pSVar4->position).vy;
+			*(undefined4 *)&pRVar3->SourceType = *(undefined4 *)pSVar4;
+			*(undefined4 *)&(pRVar3->SourceType).flags = uVar6;
+			(pRVar3->SourceType).position.vx = lVar7;
+			(pRVar3->SourceType).position.vy = lVar8;
+			pSVar4 = (STREAM_SOURCE *)&(pSVar4->position).vz;
+			pRVar3 = (REPLAY_STREAM *)&(pRVar3->SourceType).position.vz;
+		} while (pSVar4 != pSVar5);
+		PlayerStartInfo8[numPlayersToCreate]->type = '\x03';
+		PlayerStartInfo8[0]->type = '\x01';
+		PlayerStartInfo8[0]->model = data->model;
+		PlayerStartInfo8[0]->palette = data->palette;
+		(PlayerStartInfo8[0]->position).vx = data->vx;
+		(PlayerStartInfo8[0]->position).vy = 0;
+		(PlayerStartInfo8[0]->position).vz = data->vz;
+		PlayerStartInfo8[0]->rotation = data->direction;
+		PlayerStartInfo8[0]->totaldamage = (uint)data->totaldamage;
+		PlayerStartInfo8[0]->damage[0] = (uint)data->damage[0];
+		PlayerStartInfo8[0]->damage[1] = (uint)data->damage[1];
+		PlayerStartInfo8[0]->damage[2] = (uint)data->damage[2];
+		PlayerStartInfo8[0]->damage[3] = (uint)data->damage[3];
+		PlayerStartInfo8[0]->damage[4] = (uint)data->damage[4];
+		PlayerStartInfo8[0]->damage[5] = (uint)data->damage[5];
+	}
+	numPlayersToCreate = numPlayersToCreate + 1;
+	return;
+	*/
 }
 
 

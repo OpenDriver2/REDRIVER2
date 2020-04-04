@@ -676,11 +676,6 @@ void InitModelNames(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-char g_allocatedMem[0x200000];	// 0x137400 (_ramsize). TODO: use real malloc
-char* mallocptr = g_allocatedMem;
-
-#define D_MALLOC(size)	mallocptr; mallocptr += size
-
 // TODO: SPOOL?
 char *packed_cell_pointers;
 PACKED_CELL_OBJECT** pcoplist;
@@ -690,9 +685,6 @@ CELL_OBJECT** coplist;
 
 // system?
 int gameinit = 0;
-int leadAIRequired = 0;
-int leadAILoaded = 0;
-int pathAILoaded = 0;
 int gMusicType = 0;
 int allowSpecSpooling = 0;
 int xa_timeout = 0;
@@ -709,22 +701,6 @@ int CameraCnt = 0;
 
 // TODO: DIRECTOR.C
 char tracking_car = 0;
-
-// MISSION
-_MISSION *MissionHeader;
-
-// MGENERIC?
-_PLAYER player[8];
-STREAM_SOURCE* PlayerStartInfo[8];
-int numPlayersToCreate = 0;
-int gStartOnFoot = 0;
-int gSinkingTimer = 100;
-int gTimeInWater = 0x19;
-char InWater = 0;
-int gBobIndex = 0;
-int gWeather = 0;
-int gTimeOfDay = 0;
-int gShowPlayerDamage = 0;
 
 // PHYSICS
 _CAR_DATA car_data[22];	// all cars
@@ -2725,7 +2701,6 @@ REPLAY_STREAM ReplayStreams[8];
 
 int TargetCar = 0;
 
-char gRainCount = 0;
 int pauseflag = 0;
 
 int HitLeadCar = 0;
@@ -2748,10 +2723,6 @@ unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 // [D]
 void InitGameVariables(void)
 {
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-
 	InitDebris();
 	InitTyreTracks();
 	TargetCar = 0;
@@ -2801,7 +2772,6 @@ void InitGameVariables(void)
 	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vy = 0;
 	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vz = levelstartpos[GameLevel][2];
 
-	uVar3 = (uint)NumPlayers;
 	numPlayersToCreate = 1;
 
 	if (NumPlayers == 2) {
@@ -2816,7 +2786,7 @@ void InitGameVariables(void)
 		(PlayerStartInfo[1]->position).vx = levelstartpos[GameLevel][0] + 600;
 		(PlayerStartInfo[1]->position).vy = 0;
 		(PlayerStartInfo[1]->position).vz = levelstartpos[GameLevel][2];
-		numPlayersToCreate = uVar3;
+		numPlayersToCreate = NumPlayers;
 	}
 
 	InitCivCars();

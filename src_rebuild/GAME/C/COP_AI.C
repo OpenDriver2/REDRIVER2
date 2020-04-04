@@ -1,8 +1,7 @@
 #include "THISDUST.H"
 #include "COP_AI.H"
 
-COP_DATA gCopData =
-{ 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
+COP_DATA gCopData = { 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
 
 int speed1[] = { 0xCB, 0xD2, 0xD9 };
 int speed2[] = { 0xEE, 0x10A, 0x126 };

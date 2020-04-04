@@ -154,6 +154,10 @@ unsigned char grassColour[4][3] = {
 
 VECTOR dummy = { 0 };
 
+int gNight = 0;
+char gRainCount = 30;
+int gEffectsTimer = 41;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ PlacePoolForCar(struct _CAR_DATA *cp /*$s4*/, struct CVECTOR *col /*stack 4*/, int front /*$a2*/)

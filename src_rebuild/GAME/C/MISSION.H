@@ -1,6 +1,43 @@
 #ifndef MISSION_H
 #define MISSION_H
 
+extern char* MissionName[37];
+
+extern int GameLevel;
+extern int gFurthestMission;
+extern int gWantNight;
+extern int gSubGameNumber;
+extern int gInvincibleCar;
+extern int gPlayerImmune;
+extern unsigned char NumPlayers;
+extern char NewLevel;
+extern GAMETYPE GameType;
+extern GAMETYPE StoredGameType;
+extern GAMEMODE CurrentGameMode;
+extern int gCurrentMissionNumber;
+extern _MISSION *MissionHeader;
+extern _PLAYER player[8];
+extern STREAM_SOURCE* PlayerStartInfo[8];
+extern int numPlayersToCreate;
+extern int gStartOnFoot;
+extern int gSinkingTimer;
+extern int gTimeInWater;
+extern char InWater;
+extern int gBobIndex;
+extern int gWeather;
+extern int gTimeOfDay;
+extern int gShowPlayerDamage;
+extern int gDontPingInCops;
+extern int gBatterPlayer;
+
+extern int wantedCar[2];
+
+extern COP_DATA gCopData;
+
+extern _TARGET *MissionTargets;
+extern unsigned long *MissionScript;
+extern char *MissionStrings;
+
 
 extern void InitialiseMissionDefaults(); // 0x0006084C
 

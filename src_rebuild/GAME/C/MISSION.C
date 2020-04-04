@@ -1,6 +1,58 @@
 #include "THISDUST.H"
 #include "MISSION.H"
+#include "SYSTEM.H"
+#include "MGENERIC.H"
+#include "DEBRIS.H"
 
+#include <string.h>
+
+char* MissionName[37] =
+{
+	// Chicago
+	"Surveillance Tip Off",
+	"Chase the Witness",
+	"Train Pursuit",
+	"Tailing the Drop",
+	"Escape to the Safe House",
+	"Chase the Intruder",
+	"Caine's Compound",
+	"Leaving Chicago",
+
+	// Havana
+	"Follow Up the Lead",
+	"Hijack the Truck",
+	"Stop the Truck",
+	"Find the Clue",
+	"Escape to Ferry",
+	"To the Docks",
+	"Back to Jones",
+	"Tail Jericho",
+	"Pursue Jericho",
+	"Escape the Brazilians",
+
+	// Vegas
+	"Casino Getaway",
+	"Beat the Train",
+	"Car Bomb",
+	"Car Bomb Getaway",
+	"Bank Job",
+	"Steal the Ambulance",
+	"Stake Out",
+	"Steal the Keys",
+	"C4 Deal",
+	"Destroy the Yard",
+
+	// Rio
+	"Bus Crash",
+	"Steal the Cop Car",
+	"Caine's Cash",
+	"Save Jones",
+	"Boat Jump",
+	"Jones in Trouble",
+	"Chase the Gunman",
+	"Lenny Escaping",
+	"Pink Lenny Gets Caught",
+};
 
 // decompiled code
 // original method signature: 
@@ -32,15 +84,70 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int gCopDifficultyLevel = 0;
+GAMEMODE CurrentGameMode = GAMEMODE_NORMAL;
+GAMETYPE StoredGameType;
+
+int GameLevel = 0;
+int gFurthestMission = 0;
+int gWantNight = 0;
+int gSubGameNumber = 0;
+int gInvincibleCar = 0;
+int gPlayerImmune = 0;
+unsigned char NumPlayers = 1;
+char NewLevel = 1;
+GAMETYPE GameType = GAME_MISSION;
+int gCurrentMissionNumber = 0;
+char lockAllTheDoors = 0;
+
+int maxPlayerCars = 1;
+int maxCivCars = 14;
+int maxParkedCars = 7;
+int maxCopCars = 4;
+int gPlayerDamageFactor = 0;
+int requestStationaryCivCar = 0;
+int numPlayerCars = 0;
+int numCivCars = 0;
+int numParkedCars = 0;
+int numCopCars = 0;
+int gMinimumCops = 0;
+int gCopDesiredSpeedScale = 0x1000;
+int gCopMaxPowerScale = 0x1000;
+int gCurrentResidentSlot = 0;
+int CopsAllowed = 0;
+int MaxPlayerDamage[2] = { 0x1f40 };
+int prevCopsInPursuit = 0;
+int gPlayerWithTheFlag = -1;
+int last_flag = -1;
+int cop_adjust = 0;
+
+int gLapTimes[5][2];
+int lastsay = -1;
+int g321GoDelay = 0;
+
+int gCarWithABerm = -1;
+int gCantDrive = 0;
+int gGotInStolenCar = 0;
+int gCopCarTheftAttempted = 0;
+int gLockPickingAttempted = 0;
+int gDontResetCarDamage = 0;
+STOPCOPS gStopCops;
+
+MR_MISSION Mission;
+u_long MissionStack[16][16];
+MR_THREAD MissionThreads[16];
+
+ulong* Driver2TempJunctionsPtr = NULL;
+int NumTempJunctions = 0;
+
+unsigned char reservedSlots[20];	// car slots
+
+unsigned char playercollected[2] = { 0, 0 };
+
+// [D]
 void InitialiseMissionDefaults(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 *puVar1;
-	int iVar2;
-	undefined *puVar3;
-	ulong *puVar4;
-	undefined4 *puVar5;
+	int i;
 
 	if ((NumPlayers == 2) || (GAME_TAKEADRIVE < GameType)) {
 		lockAllTheDoors = '\x01';
@@ -48,9 +155,7 @@ void InitialiseMissionDefaults(void)
 	else {
 		lockAllTheDoors = '\0';
 	}
-	puVar4 = MissionStack;
-	puVar3 = &MissionThreads;
-	iVar2 = 0xf;
+
 	maxPlayerCars = 1;
 	maxCivCars = 0xe;
 	maxParkedCars = 7;
@@ -66,70 +171,62 @@ void InitialiseMissionDefaults(void)
 	gCopMaxPowerScale = 0x1000;
 	gCurrentResidentSlot = 0;
 	CopsAllowed = 0;
-	MaxPlayerDamage = (int)&DAT_000055f0;
-	INT_000aa714 = (int)&DAT_000055f0;
+	MaxPlayerDamage[0] = 22000;
+	MaxPlayerDamage[1] = 22000;
 	prevCopsInPursuit = 0;
-	do {
-		*(ulong **)(puVar3 + 4) = puVar4;
-		puVar4 = puVar4 + 0x10;
-		*puVar3 = 0;
-		*(undefined4 *)(puVar3 + 8) = 0;
-		*(undefined4 *)(puVar3 + 0xc) = 0;
-		iVar2 = iVar2 + -1;
-		puVar3 = puVar3 + 0x10;
-	} while (-1 < iVar2);
+
+	for (i = 0; i < 15; i++)
+	{
+		MissionThreads[i].initial_sp = MissionStack[i];
+		MissionThreads[i].active = 0;
+		MissionThreads[i].pc = NULL;
+		MissionThreads[i].sp = NULL;
+	}
+
 	ClearMem((char *)&Mission, 0x48);
-	puVar1 = &DAT_000d7c16;
-	puVar5 = &DAT_000d7c1c;
-	puVar3 = &DAT_000d7c28;
-	iVar2 = 1;
-	Mission = 0;
-	DAT_000d7c0c = 0xffffffff;
-	DAT_000d7c10 = 0;
-	DAT_000d7c3c = 0;
-	DAT_000d7c40 = 0;
-	DAT_000d7c48 = 0;
-	DAT_000d7c4c = 0;
-	DAT_000d7c44 = 0xffffffff;
-	do {
-		*puVar3 = 0;
-		puVar1[-2] = 0;
-		*puVar5 = 0;
-		*puVar1 = 0;
-		puVar1 = puVar1 + 1;
-		puVar5 = puVar5 + 1;
-		iVar2 = iVar2 + -1;
-		puVar3 = puVar3 + 0xc;
-	} while (-1 < iVar2);
-	Driver2TempJunctionsPtr = (ulong *)&DAT_001f9c1c;
+
+	Mission.active = 0;
+	Mission.gameover_delay = -1;
+	Mission.gameover_mode = PAUSEMODE_PAUSE;
+	Mission.CarTarget = NULL;
+	Mission.ChaseTarget = NULL;
+	Mission.ChaseHitDelay = 0;
+	Mission.StealMessage = NULL;
+	Mission.PhantomCarId = -1;
+
+	for (i = 0; i < 2; i++)
+	{
+		Mission.timer[i].flags = 0;
+		Mission.message_priority[i] = 0;
+		Mission.message_string[i] = NULL;
+	}
+
+	Driver2TempJunctionsPtr = (ulong *)&_overlay_buffer;
 	NumTempJunctions = 0;
 	gPlayerWithTheFlag = -1;
 	last_flag = -1;
+
 	ClearMem((char *)reservedSlots, 0x14);
-	puVar5 = &gLapTimes;
-	iVar2 = 4;
 	cop_adjust = 0;
-	playercollected = '\0';
-	UCHAR_00h_000aafe9 = '\0';
+	playercollected[0] = '\0';
+	playercollected[1] = '\0';
 	lastsay = -1;
 	g321GoDelay = 0;
-	do {
-		*puVar5 = 0xffffffff;
-		puVar5[5] = 0xffffffff;
-		iVar2 = iVar2 + -1;
-		puVar5 = puVar5 + 1;
-	} while (-1 < iVar2);
+
+	for (i = 0; i < 5; i++)
+	{
+		gLapTimes[i][0] = -1;
+		gLapTimes[i][1] = -1;
+	}
+
 	gCarWithABerm = -1;
 	gCantDrive = 0;
 	gGotInStolenCar = 0;
 	gCopCarTheftAttempted = 0;
 	gLockPickingAttempted = 0;
 	gDontResetCarDamage = 0;
-	DAT_000d7c84 = 0;
-	return;
-	*/
+	gStopCops.radius = 0;
 }
-
 
 
 // decompiled code
@@ -188,37 +285,75 @@ void InitialiseMissionDefaults(void)
 	/* end block 3 */
 	// End Line: 2953
 
+_MISSION* MissionLoadAddress;
+_MISSION *MissionHeader;
+_PLAYER player[8];
+STREAM_SOURCE* PlayerStartInfo[8];
+int numPlayersToCreate = 0;
+int gStartOnFoot = 0;
+int gSinkingTimer = 100;
+int gTimeInWater = 0x19;
+char InWater = 0;
+int gBobIndex = 0;
+int gWeather = 0;
+int gTimeOfDay = 0;
+int gShowPlayerDamage = 0;
+int gDontPingInCops = 0;
+int gBatterPlayer = 1;
+
+int wantedCar[2] = { 0 };
+
+_TARGET *MissionTargets;
+unsigned long *MissionScript;
+char *MissionStrings;
+char* gMissionTitle = NULL;
+
+int multiplayerregions[4];
+int gMultiplayerLevels = 0;
+
+// SPOOL
+int doSpooling = 1;
+
+// LEADAI
+LEAD_PARAMETERS LeadValues;
+
+// [D]
 void LoadMission(int missionnum)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	short sVar2;
 	_MISSION *p_Var3;
 	int iVar4;
-	ushort *puVar5;
-	byte bVar6;
-	int iVar7;
-	int *piVar8;
-	int iVar9;
-	int *piVar10;
+	LEAD_PARAMETERS *pLVar5;
+	int *piVar6;
+	char bVar7;
+	int iVar8;
+	long *plVar9;
+	int iVar10;
+	int *piVar11;
 	uint loadsize;
 	char acStack64[32];
 	uint local_20[2];
 
 	InitialiseMissionDefaults();
-	if (NewLevel != 0) {
+	if (NewLevel != 0) 
+	{
 		MissionLoadAddress = (_MISSION *)mallocptr;
 	}
-	sprintf(acStack64, s_MISSIONS_MISSIONS_BLK_000117c4);
+
+	sprintf(acStack64, "MISSIONS\\MISSIONS.BLK");
+
 	iVar4 = FileExists(acStack64);
+
 	if (iVar4 == 0) {
 		return;
 	}
 	LoadfileSeg(acStack64, (char *)local_20, missionnum << 2, 4);
+
 	if (local_20[0] == 0) {
 		return;
 	}
+
 	loadsize = local_20[0] >> 0x13;
 	LoadfileSeg(acStack64, (char *)MissionLoadAddress, local_20[0] & 0x7ffff, 0x84);
 	MissionHeader = MissionLoadAddress;
@@ -230,31 +365,33 @@ void LoadMission(int missionnum)
 	}
 	iVar4 = LoadfileSeg(acStack64, (char *)MissionLoadAddress, local_20[0] & 0x7ffff, loadsize);
 	if (MissionHeader->id != 0x44324d53) {
-		Mission = 0;
+		Mission.active = 0;
 		return;
 	}
-	piVar8 = &MissionHeader->region;
-	bVar1 = *piVar8 == 0;
+	piVar6 = &MissionHeader->region;
+	bVar1 = *piVar6 == 0;
 	MissionHeader->id = 0;
 	p_Var3 = MissionHeader;
 	if (!bVar1) {
 		multiplayerregions[1] = -1;
 		multiplayerregions[2] = -1;
 		multiplayerregions[3] = -1;
-		multiplayerregions[0] = *piVar8;
+		multiplayerregions[0] = *piVar6;
 	}
-	gMultiplayerLevels = ZEXT14(!bVar1);
-	doSpooling = ZEXT14(bVar1);
-	Mission = 1;
+	gMultiplayerLevels = (!bVar1);
+	doSpooling = (bVar1);
+	Mission.active = 1;
 	GameLevel = MissionHeader->city;
-	(PlayerStartInfo8[0]->position).vx = (MissionHeader->playerStartPosition).x;
-	PlayerStartInfo8[0]->rotation = *(ushort *)&p_Var3->playerStartRotation;
-	(PlayerStartInfo8[0]->position).vz = (p_Var3->playerStartPosition).y;
-	PlayerStartInfo8[0]->model = *(uchar *)&p_Var3->playerCarModel;
-	PlayerStartInfo8[0]->palette = *(uchar *)&MissionHeader->playerCarColour;
+
+	PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
+	PlayerStartInfo[0]->rotation = p_Var3->playerStartRotation;
+	PlayerStartInfo[0]->position.vz = p_Var3->playerStartPosition.y;
+	PlayerStartInfo[0]->model = p_Var3->playerCarModel;
+	PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+
 	if (MissionHeader->maxDamage != 0) {
-		INT_000aa714 = MissionHeader->maxDamage;
-		MaxPlayerDamage = MissionHeader->maxDamage;
+		MaxPlayerDamage[1] = MissionHeader->maxDamage;
+		MaxPlayerDamage[0] = MissionHeader->maxDamage;
 	}
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
@@ -265,41 +402,41 @@ void LoadMission(int missionnum)
 		gNight = 1;
 	}
 	if (MissionHeader->weather == 1) {
-		gRainCount = '\x1e';
-		gEffectsTimer = 0x29;
+		gRainCount = 30;
+		gEffectsTimer = 41;
 	}
 	else {
-		gRainCount = '\0';
+		gRainCount = 0;
 		gEffectsTimer = 0;
 	}
-	DAT_000d7c28 = 0;
-	DAT_000d7c24 = 0x7c;
-	DAT_000d7c30 = 0x7c;
-	DAT_000d7c26 = 0x10;
-	DAT_000d7c2c = 0;
-	DAT_000d7c32 = 0x88;
-	DAT_000d7c34 = 0;
-	DAT_000d7c38 = 0;
+	Mission.timer[0].flags = '\0';
+	Mission.timer[0].x = 0x7c;
+	Mission.timer[1].x = 0x7c;
+	Mission.timer[0].y = 0x10;
+	Mission.timer[0].count = 0;
+	Mission.timer[1].y = 0x88;
+	Mission.timer[1].flags = '\0';
+	Mission.timer[1].count = 0;
 	sVar2 = MissionHeader->timer;
 	if (((int)sVar2 != 0) || (((int)MissionHeader->timerFlags & 0x8000U) != 0)) {
-		bVar6 = 1;
+		bVar7 = 1;
 		if (((int)MissionHeader->timerFlags & 0x8000U) != 0) {
-			bVar6 = 3;
+			bVar7 = 3;
 		}
 		if ((MissionHeader->timerFlags & 0x4000U) != 0) {
-			bVar6 = bVar6 | 8;
+			bVar7 = bVar7 | 8;
 		}
 		if ((MissionHeader->timerFlags & 0x2000U) != 0) {
-			bVar6 = bVar6 | 0x10;
+			bVar7 = bVar7 | 0x10;
 		}
 		loadsize = (uint)NumPlayers;
 		if (NumPlayers != 0) {
-			piVar8 = &DAT_000d7c2c;
+			plVar9 = &Mission.timer[0].count;
 			do {
-				*(byte *)(piVar8 + -1) = bVar6;
-				*piVar8 = (int)sVar2 * 3000;
+				*(char *)(plVar9 + -1) = bVar7;
+				*plVar9 = (int)sVar2 * 3000;
 				loadsize = loadsize - 1;
-				piVar8 = piVar8 + 3;
+				plVar9 = plVar9 + 3;
 			} while (loadsize != 0);
 		}
 	}
@@ -320,7 +457,7 @@ void LoadMission(int missionnum)
 LAB_00060e70:
 	gCopDesiredSpeedScale = (MissionHeader->cops).speed;
 	gCopMaxPowerScale = (MissionHeader->cops).power;
-	CopsAllowed = ZEXT14(maxCopCars != 0);
+	CopsAllowed = (maxCopCars != 0);
 	if (GameType == GAME_SURVIVAL) {
 		gCopData.immortal = 1;
 	}
@@ -344,45 +481,49 @@ LAB_00060e70:
 			}
 		}
 	}
-	if ((MissionHeader->type & 2U) == 0) {
-		PlayerStartInfo8[0]->type = '\x01';
+	if ((MissionHeader->type & 2U) == 0) 
+	{
+		PlayerStartInfo[0]->type = '\x01';
 	}
 	else {
-		PlayerStartInfo8[0]->type = '\x02';
-		PlayerStartInfo8[0]->model = '\0';
+		PlayerStartInfo[0]->type = '\x02';
+		PlayerStartInfo[0]->model = '\0';
 	}
 	if (NewLevel != 0) {
 		if (MissionHeader->route == 0) {
 			mallocptr = mallocptr + (iVar4 + 3U & 0xfffffffc);
-			Loadfile(s_PATH_BIN_000117e8, (char *)popNode);
+#ifdef PSX
+			Loadfile("PATH.BIN", (char *)popNode);
+#endif // PSX
 			leadAILoaded = 0;
 			pathAILoaded = 1;
 		}
 		else {
-			piVar10 = (int *)(MissionStrings + MissionHeader->route);
-			NumTempJunctions = *piVar10;
-			memcpy(Driver2TempJunctionsPtr, piVar10 + 1, NumTempJunctions << 2);
+			piVar11 = (int *)(MissionStrings + MissionHeader->route);
+			NumTempJunctions = *piVar11;
+			memcpy(Driver2TempJunctionsPtr, piVar11 + 1, NumTempJunctions << 2);
 			mallocptr = MissionStrings + MissionHeader->route;
-			Loadfile(s_LEAD_BIN_000117dc, (char *)popNode);
-			puVar5 = LeadValues;
-			piVar8 = piVar10 + 0x3e9;
+#ifdef PSX
+			Loadfile("LEAD.BIN", (char *)popNode);
+#endif // PSX
+
+			// I think it's wrong...
+			pLVar5 = &LeadValues;
+			piVar6 = piVar11 + 0x3e9;
 			leadAILoaded = 1;
 			pathAILoaded = 0;
 			do {
-				iVar4 = piVar8[1];
-				iVar7 = piVar8[2];
-				iVar9 = piVar8[3];
-				*(int *)puVar5 = *piVar8;
-				((int *)puVar5)[1] = iVar4;
-				((int *)puVar5)[2] = iVar7;
-				((int *)puVar5)[3] = iVar9;
-				piVar8 = piVar8 + 4;
-				puVar5 = (ushort *)((int *)puVar5 + 4);
-			} while (piVar8 != piVar10 + 0x3f9);
+				pLVar5->tEnd = piVar6[0];
+				pLVar5->tAvelLimit = piVar6[1];
+				pLVar5->tDist = piVar6[2];
+				pLVar5->tDistMul = piVar6[3];
+				piVar6 = piVar6 + 4;
+				pLVar5 = (LEAD_PARAMETERS *)&pLVar5->tWidth;
+			} while (piVar6 != piVar11 + 0x3f9);
 			CopsAllowed = 0;
 		}
 	}
-	sprintf(acStack64, s_MISSIONS_PATH_d__d_000117f4, gCurrentMissionNumber, 0);
+	sprintf(acStack64, "MISSIONS\\PATH%d.%d", gCurrentMissionNumber, 0);
 	iVar4 = FileExists(acStack64);
 	if (iVar4 != 0) {
 		LoadfileSeg(acStack64, (char *)(MissionTargets + 4), 0, 0x280);
@@ -402,15 +543,15 @@ LAB_00060e70:
 		if (7 < (int)loadsize) {
 			loadsize = loadsize - 1;
 		}
-		gMissionTitle = MissionName37[loadsize - 1];
+		gMissionTitle = MissionName[loadsize - 1];
 	}
 	else {
-		gMissionTitle = (char *)0x0;
+		gMissionTitle = NULL;
 	}
 	if (wantedCar[0] != -1) {
-		PlayerStartInfo8[0]->model = (uchar)wantedCar[0];
+		PlayerStartInfo[0]->model = wantedCar[0];
 		if ((wantedCar[0] == 0) || (4 < wantedCar[0])) {
-			PlayerStartInfo8[0]->palette = '\0';
+			PlayerStartInfo[0]->palette = '\0';
 			if (3 < wantedCar[0]) {
 				MissionHeader->residentModels[4] = wantedCar[0];
 			}
@@ -420,9 +561,9 @@ LAB_00060e70:
 		}
 	}
 	if (wantedCar[1] != -1) {
-		PlayerStartInfo8[1]->model = (uchar)wantedCar[1];
+		PlayerStartInfo[1]->model = wantedCar[1];
 		if ((wantedCar[1] == 0) || (4 < wantedCar[1])) {
-			PlayerStartInfo8[1]->palette = '\0';
+			PlayerStartInfo[1]->palette = '\0';
 		}
 		else {
 			MissionHeader->residentModels[1] = wantedCar[1];
@@ -433,7 +574,6 @@ LAB_00060e70:
 	}
 	MRInitialiseThread((MR_THREAD *)&MissionThreads, MissionScript, '\0');
 	return;
-	*/
 }
 
 

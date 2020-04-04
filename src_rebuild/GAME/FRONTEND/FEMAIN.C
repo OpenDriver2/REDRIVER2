@@ -10,6 +10,7 @@
 
 #include "../C/SYSTEM.H"
 #include "../C/GLAUNCH.H"
+#include "../C/MISSION.H"
 #include "../C/LOADVIEW.H"
 #include "../C/PAD.H"
 #include "../C/TIME.H"
@@ -95,47 +96,6 @@ char* CutSceneNames[28] =
 	"Back to chicago",
 	"Vasquez and Caine",
 	"Credits"
-};
-
-char* MissionName[37] =
-{
-	"Informazioni sorveglianza",
-	"Insegui il testimone",
-	"Caccia al treno",
-	"Pedinamento della spia",
-	"Scappa e vai al rifugio",
-	"Dai la caccia all'intruso",
-	"Il magazzino di Caine",
-	"Partenza da Chicago",
-	"Segui l'indizio",
-	"Ruba il camion",
-	"Ferma il camion",
-	"Trova l'indizio",
-	"Fuga al traghetto",
-	"Alle banchine",
-	"Ritorna a Jones",
-	"Pedina Jericho",
-	"Insegui Jericho",
-	"Sfuggi ai brasiliani",
-	"Fuga dal casin",
-	"Sorpassa il treno",
-	"Bomba nell'auto",
-	"Fuga dalla bomba nell'auto",
-	"Rapina in banca",
-	"Ruba l'ambulanza",
-	"Sorveglianza",
-	"Ruba le chiavi",
-	"L'affare del C4",
-	"Distruggi il cantiere",
-	"Distruzione dell'autobus",
-	"Ruba l'auto del poliziotto",
-	"I soldi di Caine",
-	"Salva Jones",
-	"Salto nell'imbarcazione",
-	"Jones nei guai",
-	"Rincorri l'uomo armato",
-	"Lenny sta scappando",
-	"Lenny viene acchiappato",
 };
 
 char ScreenTitle[128];
@@ -2333,7 +2293,7 @@ int CarSelectScreen(int bSetup)
 						iVar4 = carSelection + -1;
 					}
 					while ((carSelection = iVar4,
-						CarAvailability[GameLevel * 10 + carSelection] == 0 &&
+						CarAvailability[GameLevel][carSelection] == 0 &&
 						(carSelection != iVar5))) {
 						iVar4 = carSelection + -1;
 						if (carSelection + -1 == -1) {
@@ -2346,10 +2306,10 @@ int CarSelectScreen(int bSetup)
 					if (currSelIndex != 2) {
 						if (currPlayer == 1) {
 							feVariableSave[0] = carSelection;
-							wantedCar[0] = (int)carNumLookup[carSelection + GameLevel * 10];
+							wantedCar[0] = carNumLookup[GameLevel][carSelection];
 						}
 						else {
-							wantedCar[1] = (int)carNumLookup[carSelection + GameLevel * 10];
+							wantedCar[1] = carNumLookup[GameLevel][carSelection];
 						}
 						if (NumPlayers == 2) {
 							currPlayer = currPlayer + 1;
@@ -2363,7 +2323,7 @@ int CarSelectScreen(int bSetup)
 					else {
 						carSelection = carSelection + 1;
 					}
-					while ((CarAvailability[GameLevel * 10 + carSelection] == 0 &&
+					while ((CarAvailability[GameLevel][carSelection] == 0 &&
 						(iVar4 = carSelection + 1, carSelection != iVar5))) {
 						carSelection = iVar4;
 						if (iVar4 == 10) {

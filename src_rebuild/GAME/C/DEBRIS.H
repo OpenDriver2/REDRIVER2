@@ -1,6 +1,9 @@
 #ifndef DEBRIS_H
 #define DEBRIS_H
 
+extern int gNight;
+extern char gRainCount;
+extern int gEffectsTimer;
 
 extern void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front); // 0x00032C10
 
