@@ -62,7 +62,7 @@ void ShowHiresScreens(char **names, int delay, int wait)
 			ReadControllers();
 			timedelay--;
 
-		} while ((wait != 0) || (timedelay--, (Pads[0].dirnew & 0x40) == 0));
+		} while ((wait != 0) || (Pads[0].dirnew & 0x40) == 0);
 
 		FadeOutHiresScreen();
 
