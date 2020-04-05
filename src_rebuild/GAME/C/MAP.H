@@ -1,6 +1,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+extern char *map_lump;
 
 extern void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile); // 0x0005D7BC
 

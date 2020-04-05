@@ -1,7 +1,15 @@
 #include "THISDUST.H"
 #include "DR2ROADS.H"
 
+#include "SYSTEM.H"
+
 sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
+
+ROAD_MAP_LUMP_DATA roadMapLumpData;
+
+int NumTempJunctions = 0;
+DRIVER2_JUNCTION *Driver2JunctionsPtr = NULL;
+ulong *Driver2TempJunctionsPtr = NULL;
 
 // decompiled code
 // original method signature: 
@@ -24,12 +32,14 @@ sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fa
 	/* end block 3 */
 	// End Line: 129
 
-void ProcessStraightsDriver2Lump(char *lump_file,int lump_size)
-
+void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 {
-  Getlong((char *)&NumDriver2Straights,lump_file);
-  Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
-  return;
+	UNIMPLEMENTED();
+	/*
+	Getlong((char *)&NumDriver2Straights, lump_file);
+	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
+	return;
+	*/
 }
 
 
@@ -55,12 +65,14 @@ void ProcessStraightsDriver2Lump(char *lump_file,int lump_size)
 	/* end block 3 */
 	// End Line: 694
 
-void ProcessCurvesDriver2Lump(char *lump_file,int lump_size)
-
+void ProcessCurvesDriver2Lump(char *lump_file, int lump_size)
 {
-  Getlong((char *)&NumDriver2Curves,lump_file);
-  Driver2CurvesPtr = (DRIVER2_CURVE *)(lump_file + 4);
-  return;
+	UNIMPLEMENTED();
+	/*
+	Getlong((char *)&NumDriver2Curves, lump_file);
+	Driver2CurvesPtr = (DRIVER2_CURVE *)(lump_file + 4);
+	return;
+	*/
 }
 
 
@@ -106,38 +118,39 @@ void ProcessCurvesDriver2Lump(char *lump_file,int lump_size)
 	/* end block 3 */
 	// End Line: 724
 
-void ProcessJunctionsDriver2Lump(char *lump_file,int lump_size,int fix)
-
+void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 {
-  int iVar1;
-  int iVar2;
-  short *psVar3;
-  DRIVER2_JUNCTION *pDVar4;
-  DRIVER2_JUNCTION *pDVar5;
-  int iVar6;
-  DRIVER2_JUNCTION *pDVar7;
-  
-  Getlong((char *)&NumDriver2Junctions,lump_file);
-  iVar1 = NumDriver2Junctions;
-  pDVar4 = (DRIVER2_JUNCTION *)(lump_file + 4);
-  Driver2JunctionsPtr = pDVar4;
-  if ((fix != 0) && (iVar2 = 0, pDVar5 = pDVar4, 0 < NumDriver2Junctions)) {
-    do {
-      iVar2 = iVar2 + 1;
-      pDVar7 = pDVar4 + 1;
-      psVar3 = pDVar5[1].ExitIdx;
-      iVar6 = 3;
-      do {
-        psVar3 = psVar3 + 1;
-        iVar6 = iVar6 + -1;
-        pDVar4->ExitIdx[0] = *psVar3;
-        pDVar4 = (DRIVER2_JUNCTION *)(pDVar4->ExitIdx + 1);
-      } while (-1 < iVar6);
-      pDVar4 = pDVar7;
-      pDVar5 = pDVar5 + 2;
-    } while (iVar2 < iVar1);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	short *psVar3;
+	DRIVER2_JUNCTION *pDVar4;
+	DRIVER2_JUNCTION *pDVar5;
+	int iVar6;
+	DRIVER2_JUNCTION *pDVar7;
+
+	Getlong((char *)&NumDriver2Junctions, lump_file);
+	iVar1 = NumDriver2Junctions;
+	pDVar4 = (DRIVER2_JUNCTION *)(lump_file + 4);
+	Driver2JunctionsPtr = pDVar4;
+	if ((fix != 0) && (iVar2 = 0, pDVar5 = pDVar4, 0 < NumDriver2Junctions)) {
+		do {
+			iVar2 = iVar2 + 1;
+			pDVar7 = pDVar4 + 1;
+			psVar3 = pDVar5[1].ExitIdx;
+			iVar6 = 3;
+			do {
+				psVar3 = psVar3 + 1;
+				iVar6 = iVar6 + -1;
+				pDVar4->ExitIdx[0] = *psVar3;
+				pDVar4 = (DRIVER2_JUNCTION *)(pDVar4->ExitIdx + 1);
+			} while (-1 < iVar6);
+			pDVar4 = pDVar7;
+			pDVar5 = pDVar5 + 2;
+		} while (iVar2 < iVar1);
+	}
+	return;*/
 }
 
 
@@ -169,17 +182,17 @@ void ProcessJunctionsDriver2Lump(char *lump_file,int lump_size,int fix)
 int MapHeight(VECTOR *pos)
 
 {
-  _sdPlane *plane;
-  int iVar1;
-  
-  plane = sdGetCell(pos);
-  if (plane == (_sdPlane *)0x0) {
-    iVar1 = 0;
-  }
-  else {
-    iVar1 = sdHeightOnPlane(pos,plane);
-  }
-  return iVar1;
+	_sdPlane *plane;
+	int iVar1;
+
+	plane = sdGetCell(pos);
+	if (plane == (_sdPlane *)0x0) {
+		iVar1 = 0;
+	}
+	else {
+		iVar1 = sdHeightOnPlane(pos, plane);
+	}
+	return iVar1;
 }
 
 
@@ -193,51 +206,53 @@ int MapHeight(VECTOR *pos)
 	/* end block 1 */
 	// End Line: 329
 
-int FindSurfaceD2(VECTOR *pos,VECTOR *normal,VECTOR *out,_sdPlane **plane)
-
+int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 {
-  _sdPlane *p_Var1;
-  int iVar2;
-  
-  p_Var1 = sdGetCell(pos);
-  *plane = p_Var1;
-  out->vx = pos->vx;
-  out->vz = pos->vz;
-  iVar2 = sdHeightOnPlane(pos,*plane);
-  out->vy = iVar2;
-  p_Var1 = *plane;
-  if ((p_Var1 == (_sdPlane *)0x0) || (p_Var1->b == 0)) {
-    normal->vx = 0;
-    normal->vy = 0x1000;
-    normal->vz = 0;
-  }
-  else {
-    normal->vx = (int)((uint)(ushort)p_Var1->a << 0x10) >> 0x12;
-    normal->vy = (int)((uint)(ushort)(*plane)->b << 0x10) >> 0x12;
-    normal->vz = (int)((uint)(ushort)(*plane)->c << 0x10) >> 0x12;
-  }
-  if (*plane == (_sdPlane *)0x0) {
-    iVar2 = 0x1000;
-  }
-  else {
-    iVar2 = 0x1000;
-    if ((*plane)->surface == 4) {
-      if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) ||
-         (gInGameCutsceneID != 0)) {
-        iVar2 = out->vy + ((((int)((uint)*(ushort *)
-                                          ((int)rcossin_tbl + ((pos->vx + pos->vz) * 8 & 0x3ff8U))
-                                  << 0x10) >> 0x18) / 3) * 0x10000 >> 0x10);
-      }
-      else {
-        iVar2 = out->vy + ((int)((uint)*(ushort *)
-                                        ((int)rcossin_tbl + ((pos->vx + pos->vz) * 8 & 0x3ff8U)) <<
-                                0x10) >> 0x19);
-      }
-      out->vy = iVar2;
-      iVar2 = 0x800;
-    }
-  }
-  return iVar2;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	_sdPlane *p_Var1;
+	int iVar2;
+
+	p_Var1 = sdGetCell(pos);
+	*plane = p_Var1;
+	out->vx = pos->vx;
+	out->vz = pos->vz;
+	iVar2 = sdHeightOnPlane(pos, *plane);
+	out->vy = iVar2;
+	p_Var1 = *plane;
+	if ((p_Var1 == (_sdPlane *)0x0) || (p_Var1->b == 0)) {
+		normal->vx = 0;
+		normal->vy = 0x1000;
+		normal->vz = 0;
+	}
+	else {
+		normal->vx = (int)((uint)(ushort)p_Var1->a << 0x10) >> 0x12;
+		normal->vy = (int)((uint)(ushort)(*plane)->b << 0x10) >> 0x12;
+		normal->vz = (int)((uint)(ushort)(*plane)->c << 0x10) >> 0x12;
+	}
+	if (*plane == (_sdPlane *)0x0) {
+		iVar2 = 0x1000;
+	}
+	else {
+		iVar2 = 0x1000;
+		if ((*plane)->surface == 4) {
+			if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) ||
+				(gInGameCutsceneID != 0)) {
+				iVar2 = out->vy + ((((int)((uint)*(ushort *)
+					((int)rcossin_tbl + ((pos->vx + pos->vz) * 8 & 0x3ff8U))
+					<< 0x10) >> 0x18) / 3) * 0x10000 >> 0x10);
+			}
+			else {
+				iVar2 = out->vy + ((int)((uint)*(ushort *)
+					((int)rcossin_tbl + ((pos->vx + pos->vz) * 8 & 0x3ff8U)) <<
+					0x10) >> 0x19);
+			}
+			out->vy = iVar2;
+			iVar2 = 0x800;
+		}
+	}
+	return iVar2;*/
 }
 
 
@@ -288,40 +303,42 @@ int FindSurfaceD2(VECTOR *pos,VECTOR *normal,VECTOR *out,_sdPlane **plane)
 	/* end block 2 */
 	// End Line: 411
 
-int sdHeightOnPlane(VECTOR *pos,_sdPlane *plane)
-
+int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 {
-  int iVar1;
-  uint uVar2;
-  DRIVER2_CURVE *pDVar3;
-  
-  if (plane != (_sdPlane *)0x0) {
-    uVar2 = plane->d;
-    if ((((int)uVar2 >> 1 ^ uVar2) & 0x40000000) != 0) {
-      return uVar2 ^ 0x40000000;
-    }
-    if (((plane->surface & 0xe000U) == 0x4000) && (plane->b == 0)) {
-      pDVar3 = Driver2CurvesPtr + (((uint)(ushort)plane->surface & 0x1fff) - 0x20);
-      iVar1 = ratan2(pDVar3->Midz - pos->vz,pDVar3->Midx - pos->vx);
-      iVar1 = (int)pDVar3->gradient * (iVar1 + 0x800U & 0xfff);
-      if (iVar1 < 0) {
-        iVar1 = iVar1 + 0xfff;
-      }
-      return (iVar1 >> 0xc) - (int)pDVar3->height;
-    }
-    iVar1 = (int)plane->b;
-    if (iVar1 != 0) {
-      if (iVar1 == 0x4000) {
-        return -uVar2;
-      }
-      if (iVar1 == 0) {
-        trap(7);
-      }
-      return -uVar2 - (int)((int)plane->a * ((pos->vx - 0x200U & 0xffff) + 0x200) +
-                           (int)plane->c * ((pos->vz - 0x200U & 0xffff) + 0x200)) / iVar1;
-    }
-  }
-  return 0;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	uint uVar2;
+	DRIVER2_CURVE *pDVar3;
+
+	if (plane != (_sdPlane *)0x0) {
+		uVar2 = plane->d;
+		if ((((int)uVar2 >> 1 ^ uVar2) & 0x40000000) != 0) {
+			return uVar2 ^ 0x40000000;
+		}
+		if (((plane->surface & 0xe000U) == 0x4000) && (plane->b == 0)) {
+			pDVar3 = Driver2CurvesPtr + (((uint)(ushort)plane->surface & 0x1fff) - 0x20);
+			iVar1 = ratan2(pDVar3->Midz - pos->vz, pDVar3->Midx - pos->vx);
+			iVar1 = (int)pDVar3->gradient * (iVar1 + 0x800U & 0xfff);
+			if (iVar1 < 0) {
+				iVar1 = iVar1 + 0xfff;
+			}
+			return (iVar1 >> 0xc) - (int)pDVar3->height;
+		}
+		iVar1 = (int)plane->b;
+		if (iVar1 != 0) {
+			if (iVar1 == 0x4000) {
+				return -uVar2;
+			}
+			if (iVar1 == 0) {
+				trap(7);
+			}
+			return -uVar2 - (int)((int)plane->a * ((pos->vx - 0x200U & 0xffff) + 0x200) +
+				(int)plane->c * ((pos->vz - 0x200U & 0xffff) + 0x200)) / iVar1;
+		}
+	}
+	return 0;*/
 }
 
 
@@ -359,20 +376,20 @@ int sdHeightOnPlane(VECTOR *pos,_sdPlane *plane)
 	/* end block 5 */
 	// End Line: 1052
 
+// [D]
 int GetSurfaceIndex(VECTOR *pos)
-
 {
-  _sdPlane *p_Var1;
-  int iVar2;
-  
-  p_Var1 = sdGetCell(pos);
-  if (p_Var1 == (_sdPlane *)0x0) {
-    iVar2 = -0x20;
-  }
-  else {
-    iVar2 = (int)p_Var1->surface + -0x20;
-  }
-  return iVar2;
+	_sdPlane *p_Var1;
+	int iVar2;
+
+	p_Var1 = sdGetCell(pos);
+	if (p_Var1 == (_sdPlane *)0x0) {
+		iVar2 = -0x20;
+	}
+	else {
+		iVar2 = (int)p_Var1->surface + -0x20;
+	}
+	return iVar2;
 }
 
 
@@ -400,24 +417,24 @@ int GetSurfaceIndex(VECTOR *pos)
 	/* end block 3 */
 	// End Line: 1464
 
-_sdPlane * FindRoadInBSP(_sdNode *node,_sdPlane *base)
-
+// [D]
+_sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 {
-  _sdPlane *p_Var1;
-  
-  while( true ) {
-    if (-1 < node->angle) {
-      base = base + node->angle;
-      if (base->surface < 0x20) {
-        base = (_sdPlane *)0x0;
-      }
-      return base;
-    }
-    p_Var1 = FindRoadInBSP((_sdNode *)&node->dist,base);
-    if (p_Var1 != (_sdPlane *)0x0) break;
-    node = (_sdNode *)(&node->angle + ((node->angle << 1) >> 0x18));
-  }
-  return p_Var1;
+	_sdPlane *p_Var1;
+
+	while (true) {
+		if (-1 < node->angle) {
+			base = base + node->angle;
+			if (base->surface < 0x20) {
+				base = (_sdPlane *)0x0;
+			}
+			return base;
+		}
+		p_Var1 = FindRoadInBSP((_sdNode *)&node->dist, base);
+		if (p_Var1 != (_sdPlane *)0x0) break;
+		node = (_sdNode *)(&node->angle + ((node->angle << 1) >> 0x18));
+	}
+	return p_Var1;
 }
 
 
@@ -466,75 +483,77 @@ _sdPlane * FindRoadInBSP(_sdNode *node,_sdPlane *base)
 	// End Line: 599
 
 int RoadInCell(VECTOR *pos)
-
 {
-  bool bVar1;
-  short sVar2;
-  ushort uVar3;
-  _sdPlane *plane;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  ushort *puVar7;
-  short *psVar8;
-  
-  iVar4 = pos->vx + -0x200;
-  iVar5 = pos->vz + -0x200;
-  psVar8 = RoadMapDataRegions4
-           [iVar4 >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (iVar5 >> 0xf & 2U) ^
-            cells_down >> 5 & 2U];
-  if (*psVar8 == 2) {
-    puVar7 = (ushort *)(psVar8 + (iVar4 >> 10 & 0x3fU) + (iVar5 >> 10 & 0x3fU) * 0x40 + 4);
-    uVar6 = SEXT24((short)*puVar7);
-    uVar3 = *puVar7;
-    if (uVar6 == 0xffffffff) {
-      return -1;
-    }
-    if ((uVar3 & 0xe000) == 0) {
-      plane = (_sdPlane *)((int)psVar8 + uVar6 * 0xc + (int)psVar8[1]);
-    }
-    else {
-      if ((uVar6 & 0x8000) != 0) {
-        sVar2 = psVar8[1];
-        bVar1 = ((uint)uVar3 & 0x6000) == 0x2000;
-        if (bVar1) {
-          puVar7 = (ushort *)((int)psVar8 + ((uint)uVar3 & 0x1fff) * 2 + (int)psVar8[2] + 2);
-          goto LAB_0001335c;
-        }
-LAB_00013370:
-        uVar3 = *puVar7;
-        if ((uVar3 & 0x4000) == 0) {
-          plane = (_sdPlane *)((int)psVar8 + (int)sVar2) + (short)uVar3;
-          if (0x1f < plane->surface) goto LAB_0001340c;
-        }
-        else {
-          plane = FindRoadInBSP((_sdNode *)
-                                ((int)psVar8 + ((uint)uVar3 & 0x3fff) * 4 + (int)psVar8[3]),
-                                (_sdPlane *)((int)psVar8 + (int)sVar2));
-          if (plane != (_sdPlane *)0x0) goto LAB_00013414;
-        }
-        puVar7 = puVar7 + 2;
-        if (!bVar1) goto LAB_0001340c;
-LAB_0001335c:
-        if (puVar7[-1] == 0x8000) {
-          bVar1 = false;
-        }
-        goto LAB_00013370;
-      }
-      plane = (_sdPlane *)0x0;
-    }
-LAB_0001340c:
-    if (plane == (_sdPlane *)0x0) {
-      return -1;
-    }
-LAB_00013414:
-    if (0x1f < plane->surface) {
-      iVar4 = sdHeightOnPlane(pos,plane);
-      pos->vy = iVar4 + 0x100;
-      return (int)plane->surface + -0x20;
-    }
-  }
-  return -1;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	bool bVar1;
+	short sVar2;
+	ushort uVar3;
+	_sdPlane *plane;
+	int iVar4;
+	int iVar5;
+	uint uVar6;
+	ushort *puVar7;
+	short *psVar8;
+
+	iVar4 = pos->vx + -0x200;
+	iVar5 = pos->vz + -0x200;
+	psVar8 = RoadMapDataRegions4
+		[iVar4 >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (iVar5 >> 0xf & 2U) ^
+		cells_down >> 5 & 2U];
+	if (*psVar8 == 2) {
+		puVar7 = (ushort *)(psVar8 + (iVar4 >> 10 & 0x3fU) + (iVar5 >> 10 & 0x3fU) * 0x40 + 4);
+		uVar6 = SEXT24((short)*puVar7);
+		uVar3 = *puVar7;
+		if (uVar6 == 0xffffffff) {
+			return -1;
+		}
+		if ((uVar3 & 0xe000) == 0) {
+			plane = (_sdPlane *)((int)psVar8 + uVar6 * 0xc + (int)psVar8[1]);
+		}
+		else {
+			if ((uVar6 & 0x8000) != 0) {
+				sVar2 = psVar8[1];
+				bVar1 = ((uint)uVar3 & 0x6000) == 0x2000;
+				if (bVar1) {
+					puVar7 = (ushort *)((int)psVar8 + ((uint)uVar3 & 0x1fff) * 2 + (int)psVar8[2] + 2);
+					goto LAB_0001335c;
+				}
+			LAB_00013370:
+				uVar3 = *puVar7;
+				if ((uVar3 & 0x4000) == 0) {
+					plane = (_sdPlane *)((int)psVar8 + (int)sVar2) + (short)uVar3;
+					if (0x1f < plane->surface) goto LAB_0001340c;
+				}
+				else {
+					plane = FindRoadInBSP((_sdNode *)
+						((int)psVar8 + ((uint)uVar3 & 0x3fff) * 4 + (int)psVar8[3]),
+						(_sdPlane *)((int)psVar8 + (int)sVar2));
+					if (plane != (_sdPlane *)0x0) goto LAB_00013414;
+				}
+				puVar7 = puVar7 + 2;
+				if (!bVar1) goto LAB_0001340c;
+			LAB_0001335c:
+				if (puVar7[-1] == 0x8000) {
+					bVar1 = false;
+				}
+				goto LAB_00013370;
+			}
+			plane = (_sdPlane *)0x0;
+		}
+	LAB_0001340c:
+		if (plane == (_sdPlane *)0x0) {
+			return -1;
+		}
+	LAB_00013414:
+		if (0x1f < plane->surface) {
+			iVar4 = sdHeightOnPlane(pos, plane);
+			pos->vy = iVar4 + 0x100;
+			return (int)plane->surface + -0x20;
+		}
+	}
+	return -1;*/
 }
 
 
@@ -591,69 +610,71 @@ LAB_00013414:
 	// End Line: 853
 
 _sdPlane * sdGetCell(VECTOR *pos)
-
 {
-  bool bVar1;
-  _sdPlane *plane;
-  short *psVar2;
-  ushort *puVar3;
-  ushort *puVar4;
-  short *psVar5;
-  XYPAIR local_20;
-  
-  sdLevel = 0;
-  local_20.x = pos->vx - 0x200;
-  local_20.y = pos->vz - 0x200;
-  psVar5 = RoadMapDataRegions4
-           [(int)local_20.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + ((int)local_20.y >> 0xf & 2U)
-            ^ cells_down >> 5 & 2U];
-  plane = (_sdPlane *)0x0;
-  if (*psVar5 == 2) {
-    puVar3 = (ushort *)
-             (psVar5 + ((int)local_20.x >> 10 & 0x3fU) + ((int)local_20.y >> 10 & 0x3fU) * 0x40 + 4)
-    ;
-    if (*puVar3 == 0xffff) {
-      plane = &sea;
-    }
-    else {
-      if (((uint)*puVar3 & 0x6000) == 0x2000) {
-        psVar2 = (short *)((int)psVar5 + ((uint)*puVar3 & 0x1fff) * 2 + (int)psVar5[2]);
-        do {
-          if (-0x100 - pos->vy <= (int)*psVar2) break;
-          psVar2 = psVar2 + 2;
-          sdLevel = sdLevel + 1;
-        } while (*psVar2 != -0x8000);
-        puVar3 = (ushort *)(psVar2 + 1);
-      }
-      do {
-        bVar1 = false;
-        puVar4 = puVar3;
-        if ((*puVar3 & 0x4000) != 0) {
-          local_20.x = local_20.x & 0x3ff;
-          local_20.y = local_20.y & 0x3ff;
-          puVar4 = (ushort *)
-                   sdGetBSP((_sdNode *)((int)psVar5 + ((uint)*puVar3 & 0x3fff) * 4 + (int)psVar5[3])
-                            ,&local_20);
-          if (*puVar4 == 0x7fff) {
-            sdLevel = sdLevel + 1;
-            bVar1 = true;
-            puVar4 = puVar3 + 2;
-          }
-        }
-        puVar3 = puVar4;
-      } while (bVar1);
-      plane = (_sdPlane *)((int)psVar5 + (int)(short)*puVar4 * 0xc + (int)psVar5[1]);
-      if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) {
-        if ((uint)(ushort)plane->surface - 0x10 < 0x10) {
-          plane = EventSurface(pos,plane);
-        }
-      }
-      else {
-        plane = &sea;
-      }
-    }
-  }
-  return plane;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	bool bVar1;
+	_sdPlane *plane;
+	short *psVar2;
+	ushort *puVar3;
+	ushort *puVar4;
+	short *psVar5;
+	XYPAIR local_20;
+
+	sdLevel = 0;
+	local_20.x = pos->vx - 0x200;
+	local_20.y = pos->vz - 0x200;
+	psVar5 = RoadMapDataRegions4
+		[(int)local_20.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + ((int)local_20.y >> 0xf & 2U)
+		^ cells_down >> 5 & 2U];
+	plane = (_sdPlane *)0x0;
+	if (*psVar5 == 2) {
+		puVar3 = (ushort *)
+			(psVar5 + ((int)local_20.x >> 10 & 0x3fU) + ((int)local_20.y >> 10 & 0x3fU) * 0x40 + 4)
+			;
+		if (*puVar3 == 0xffff) {
+			plane = &sea;
+		}
+		else {
+			if (((uint)*puVar3 & 0x6000) == 0x2000) {
+				psVar2 = (short *)((int)psVar5 + ((uint)*puVar3 & 0x1fff) * 2 + (int)psVar5[2]);
+				do {
+					if (-0x100 - pos->vy <= (int)*psVar2) break;
+					psVar2 = psVar2 + 2;
+					sdLevel = sdLevel + 1;
+				} while (*psVar2 != -0x8000);
+				puVar3 = (ushort *)(psVar2 + 1);
+			}
+			do {
+				bVar1 = false;
+				puVar4 = puVar3;
+				if ((*puVar3 & 0x4000) != 0) {
+					local_20.x = local_20.x & 0x3ff;
+					local_20.y = local_20.y & 0x3ff;
+					puVar4 = (ushort *)
+						sdGetBSP((_sdNode *)((int)psVar5 + ((uint)*puVar3 & 0x3fff) * 4 + (int)psVar5[3])
+							, &local_20);
+					if (*puVar4 == 0x7fff) {
+						sdLevel = sdLevel + 1;
+						bVar1 = true;
+						puVar4 = puVar3 + 2;
+					}
+				}
+				puVar3 = puVar4;
+			} while (bVar1);
+			plane = (_sdPlane *)((int)psVar5 + (int)(short)*puVar4 * 0xc + (int)psVar5[1]);
+			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) {
+				if ((uint)(ushort)plane->surface - 0x10 < 0x10) {
+					plane = EventSurface(pos, plane);
+				}
+			}
+			else {
+				plane = &sea;
+			}
+		}
+	}
+	return plane;*/
 }
 
 
@@ -683,27 +704,27 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	/* end block 2 */
 	// End Line: 1561
 
-short * sdGetBSP(_sdNode *node,XYPAIR *pos)
-
+// [D]
+short * sdGetBSP(_sdNode *node, XYPAIR *pos)
 {
-  uint uVar1;
-  uint uVar2;
-  
-  uVar2 = node->angle;
-  if ((int)uVar2 < 0) {
-    do {
-      uVar1 = (int)(uVar2 << 0x15) >> 0x13 & 0x3ffc;
-      if (pos->y * (int)*(short *)((int)rcossin_tbl + uVar1 + 2) -
-          pos->x * (int)*(short *)((int)rcossin_tbl + uVar1) < ((int)(uVar2 << 9) >> 0x14) << 0xc) {
-        node = (_sdNode *)&node->dist;
-      }
-      else {
-        node = (_sdNode *)(&node->angle + ((int)(uVar2 << 1) >> 0x18));
-      }
-      uVar2 = node->angle;
-    } while ((uVar2 & 0x80000000) != 0);
-  }
-  return (short *)node;
+	uint uVar1;
+	uint uVar2;
+
+	uVar2 = node->angle;
+	if ((int)uVar2 < 0) {
+		do {
+			uVar1 = (int)(uVar2 << 0x15) >> 0x13 & 0x3ffc;
+			if (pos->y * (int)*(short *)((int)rcossin_tbl + uVar1 + 2) -
+				pos->x * (int)*(short *)((int)rcossin_tbl + uVar1) < ((int)(uVar2 << 9) >> 0x14) << 0xc) {
+				node = (_sdNode *)&node->dist;
+			}
+			else {
+				node = (_sdNode *)(&node->angle + ((int)(uVar2 << 1) >> 0x18));
+			}
+			uVar2 = node->angle;
+		} while ((uVar2 & 0x80000000) != 0);
+	}
+	return (short *)node;
 }
 
 

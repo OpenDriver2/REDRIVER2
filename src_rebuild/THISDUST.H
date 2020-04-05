@@ -52,6 +52,13 @@ template<int x> struct compile_time_assert_test {};
 #undef eprintf
 #define eprintf(fmt, ...) printf("[GAME] " fmt, ##__VA_ARGS__)
 
+#ifdef UNIMPLEMENTED
+#undef UNIMPLEMENTED
+#define UNIMPLEMENTED() eprinterr("Unimplemented!\n");
+#endif // UNIMPLEMENTED
+
+#define UNIMPLEMENTED_PRINTONCE() static bool _stop = false; if(!_stop) eprinterr("Unimplemented!\n"); _stop = true;
+
 struct VECTOR2 // hashcode: 0x7572A047 (dec: 1970446407)
 {
 	int vx; // size=0, offset=0
@@ -15770,9 +15777,7 @@ extern struct SVECTOR camverts[128]; // offset 0xDCC78
 extern struct CAR_COSMETICS car_cosmetics[5]; // offset 0xD4BD0
 
 extern struct _CAR_DATA car_data[22]; // offset 0xD1268
-*/
-extern char *car_models_lump; // offset 0xAAEB4
-/*
+
 static struct __othercarsound car_noise[4]; // offset 0xCE660
 
 extern int CAR_PAUSE_START; // offset 0xAA178
@@ -17146,9 +17151,7 @@ extern char makeLimoPullOver; // offset 0xAAB00
 extern int makeNextNodeCtrlNode; // offset 0xAA180
 
 extern char *mallocptr; // offset 0xAAF48
-*/
-extern char *map_lump; // offset 0xAAF14
-/*
+
 static struct MATRIX map_matrix; // offset 0xABA68
 
 static int map_x_offset; // offset 0xAA058

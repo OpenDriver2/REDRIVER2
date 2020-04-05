@@ -201,6 +201,24 @@
     <ClCompile Include="GAME\C\MGENERIC.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\COSMETIC.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\TILE.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\OVERMAP.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\MOTION_C.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\DR2ROADS.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\MODELS.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

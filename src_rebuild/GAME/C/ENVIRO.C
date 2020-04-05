@@ -22,29 +22,29 @@ short gPlayerCar0ShinyFaces[38];
 	/* end block 2 */
 	// End Line: 93
 
-void Env_MakeColourAddTable(short *shinysrc,char *polytable,int length)
+void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 
 {
-  short sVar1;
-  int iVar2;
-  short sVar3;
-  
-  memset(polytable,0xe,length);
-  sVar3 = *shinysrc;
-  sVar1 = shinysrc[1];
-  shinysrc = shinysrc + 2;
-  while (iVar2 = (int)sVar1, iVar2 != -1) {
-    if (iVar2 == -2) {
-      sVar3 = *shinysrc;
-      shinysrc = shinysrc + 1;
-    }
-    else {
-      polytable[iVar2] = (char)sVar3;
-    }
-    sVar1 = *shinysrc;
-    shinysrc = shinysrc + 1;
-  }
-  return;
+	short sVar1;
+	int iVar2;
+	short sVar3;
+
+	memset(polytable, 0xe, length);
+	sVar3 = *shinysrc;
+	sVar1 = shinysrc[1];
+	shinysrc = shinysrc + 2;
+	while (iVar2 = (int)sVar1, iVar2 != -1) {
+		if (iVar2 == -2) {
+			sVar3 = *shinysrc;
+			shinysrc = shinysrc + 1;
+		}
+		else {
+			polytable[iVar2] = (char)sVar3;
+		}
+		sVar1 = *shinysrc;
+		shinysrc = shinysrc + 1;
+	}
+	return;
 }
 
 
@@ -88,19 +88,19 @@ void Env_MakeColourAddTable(short *shinysrc,char *polytable,int length)
 void Init_Reflection_Mapping(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  
-  iVar2 = 0xff;
-  pcVar1 = &CHAR____000cdb4f;
-  do {
-    *pcVar1 = '0';
-    iVar2 = iVar2 + -1;
-    pcVar1 = pcVar1 + -1;
-  } while (-1 < iVar2);
-  ShinyTextureNum = 0;
-  Env_MakeColourAddTable(gPlayerCar0ShinyFaces,Car0_ShinyTable,0x100);
-  return;
+	char *pcVar1;
+	int iVar2;
+
+	iVar2 = 0xff;
+	pcVar1 = &CHAR____000cdb4f;
+	do {
+		*pcVar1 = '0';
+		iVar2 = iVar2 + -1;
+		pcVar1 = pcVar1 + -1;
+	} while (-1 < iVar2);
+	ShinyTextureNum = 0;
+	Env_MakeColourAddTable(gPlayerCar0ShinyFaces, Car0_ShinyTable, 0x100);
+	return;
 }
 
 

@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "MAP.H"
 
+char *map_lump = NULL;
 
 // decompiled code
 // original method signature: 

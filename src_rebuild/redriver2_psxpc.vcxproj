@@ -75,12 +75,17 @@
     <IncludePath>dependencies\sdl2\include;dependencies\glew\include;$(IncludePath)</IncludePath>
     <LibraryPath>dependencies\SDL2\lib\x86;dependencies\glew\lib\Release\Win32;$(LibraryPath)</LibraryPath>
     <OutDir>..\game_rebuild</OutDir>
+    <TargetName>redriver2_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\game_rebuild</OutDir>
+    <IncludePath>dependencies\sdl2\include;dependencies\glew\include;$(IncludePath)</IncludePath>
+    <LibraryPath>dependencies\SDL2\lib\x86;dependencies\glew\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <TargetName>redriver2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -127,15 +132,18 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>./;EMULATOR;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;opengl32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,10 +186,12 @@
     <ClCompile Include="GAME\C\CIV_AI.C" />
     <ClCompile Include="GAME\C\CONVERT.C" />
     <ClCompile Include="GAME\C\COP_AI.C" />
+    <ClCompile Include="GAME\C\COSMETIC.C" />
     <ClCompile Include="GAME\C\CUTSCENE.C" />
     <ClCompile Include="GAME\C\DEBRIS.C" />
     <ClCompile Include="GAME\C\DENTING.C" />
     <ClCompile Include="GAME\C\DIRECTOR.C" />
+    <ClCompile Include="GAME\C\DR2ROADS.C" />
     <ClCompile Include="GAME\C\DRAW.C" />
     <ClCompile Include="GAME\C\DRIVINGGAMES.C" />
     <ClCompile Include="GAME\C\E3STUFF.C" />
@@ -196,8 +206,11 @@
     <ClCompile Include="GAME\C\MAP.C" />
     <ClCompile Include="GAME\C\MGENERIC.C" />
     <ClCompile Include="GAME\C\MISSION.C" />
+    <ClCompile Include="GAME\C\MODELS.C" />
+    <ClCompile Include="GAME\C\MOTION_C.C" />
     <ClCompile Include="GAME\C\OBJANIM.C" />
     <ClCompile Include="GAME\C\OVERLAY.C" />
+    <ClCompile Include="GAME\C\OVERMAP.C" />
     <ClCompile Include="GAME\C\PAD.C" />
     <ClCompile Include="GAME\C\PEDEST.C" />
     <ClCompile Include="GAME\C\PLAYERS.C" />
@@ -210,6 +223,7 @@
     <ClCompile Include="GAME\C\SPOOL.C" />
     <ClCompile Include="GAME\C\SYSTEM.C" />
     <ClCompile Include="GAME\C\TEXTURE.C" />
+    <ClCompile Include="GAME\C\TILE.C" />
     <ClCompile Include="GAME\C\TIME.C" />
     <ClCompile Include="GAME\C\XAPLAY.C" />
     <ClCompile Include="GAME\C\XMPLAY.C" />
@@ -218,6 +232,7 @@
     <ClCompile Include="redriver2_psxpc.c" />
     <ClCompile Include="THISDUST.C">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

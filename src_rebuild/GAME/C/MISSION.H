@@ -38,6 +38,7 @@ extern _TARGET *MissionTargets;
 extern unsigned long *MissionScript;
 extern char *MissionStrings;
 
+extern int gMultiplayerLevels;
 
 extern void InitialiseMissionDefaults(); // 0x0006084C
 

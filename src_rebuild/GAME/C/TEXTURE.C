@@ -29,6 +29,7 @@ SXYPAIR tpagepos[20] =
 };
 
 int texture_is_icon = 0;
+char* texturename_buffer = NULL;
 
 // decompiled code
 // original method signature: 

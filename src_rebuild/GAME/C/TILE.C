@@ -72,101 +72,103 @@
 	// End Line: 164
 
 void Tile1x1(MODEL *model)
-
 {
-  ushort uVar1;
-  int iVar2;
-  uint uVar3;
-  undefined4 in_zero;
-  undefined4 in_at;
-  undefined4 *puVar4;
-  uint *puVar5;
-  undefined4 *puVar6;
-  uint uVar7;
-  undefined4 *puVar8;
-  uint in_a1;
-  uint uVar9;
-  uint *puVar10;
-  int iVar11;
-  uint uVar12;
-  uint uVar13;
-  uint uVar14;
-  int iVar15;
-  int local_10;
-  
-  uVar13 = (uint)model->num_polys;
-  puVar10 = (uint *)model->poly_block;
-  iVar11 = model->vertices;
-  do {
-    uVar13 = uVar13 - 1;
-    if (uVar13 == 0xffffffff) {
-      return;
-    }
-    uVar9 = puVar10[1];
-    uVar12 = *puVar10;
-    iVar15 = DAT_1f8000b4 + 0x214;
-    puVar8 = (undefined4 *)(iVar11 + (uVar9 & 0xff) * 8);
-    puVar6 = (undefined4 *)(iVar11 + (uVar9 >> 5 & 0x7f8));
-    puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0x18) * 8);
-    setCopReg(2,in_zero,*puVar8);
-    setCopReg(2,in_at,puVar8[1]);
-    setCopReg(2,puVar4,*puVar6);
-    setCopReg(2,puVar6,puVar6[1]);
-    setCopReg(2,puVar8,*puVar4);
-    setCopReg(2,in_a1,puVar4[1]);
-    copFunction(2,0x280030);
-    uVar7 = uVar12 >> 8 & 0xff;
-    uVar1 = *(ushort *)((uVar12 >> 0xf & 0x1fe) + uVar7 * 0x40 + DAT_1f800028);
-    in_a1 = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
-    copFunction(2,0x1400006);
-    uVar7 = puVar10[2];
-    uVar14 = puVar10[3];
-    iVar2 = getCopReg(2,0x18);
-    copFunction(2,0x158002d);
-    if (iVar2 < 0) {
-      uVar3 = getCopReg(2,0xc);
-      DAT_1f8000b0[2] = uVar3;
-      puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0xd & 0x7f8));
-      setCopReg(2,in_zero,*puVar4);
-      setCopReg(2,in_at,puVar4[1]);
-      copFunction(2,0x180001);
-      copFunction(2,0x1400006);
-      iVar2 = getCopReg(2,0x18);
-      if ((iVar2 < 0) && (local_10 = getCopReg(2,7), 1 < local_10)) {
-LAB_00041cc4:
-        puVar5 = (uint *)(iVar15 + (local_10 >> 1) * 4);
-        uVar9 = *puVar5;
-        *puVar5 = (uint)DAT_1f8000b0 & 0xffffff;
-        *DAT_1f8000b0 = uVar9 & 0xffffff | 0x9000000;
-        uVar9 = getCopReg(2,0xc);
-        DAT_1f8000b0[4] = uVar9;
-        uVar9 = getCopReg(2,0xd);
-        DAT_1f8000b0[6] = uVar9;
-        uVar9 = getCopReg(2,0xe);
-        DAT_1f8000b0[8] = uVar9;
-        uVar9 = DAT_1f8000c0;
-        DAT_1f8000b0[3] = uVar7 & 0xffff | (uint)uVar1 << 0x10;
-        DAT_1f8000b0[5] = uVar7 >> 0x10 | in_a1;
-        DAT_1f8000b0[7] = uVar14 >> 0x10;
-        DAT_1f8000b0[9] = uVar14 & 0xffff;
-        DAT_1f8000b0[1] = uVar9;
-        DAT_1f8000b0 = DAT_1f8000b0 + 10;
-      }
-    }
-    else {
-      local_10 = getCopReg(2,7);
-      if (1 < local_10) {
-        uVar3 = getCopReg(2,0xc);
-        DAT_1f8000b0[2] = uVar3;
-        puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0xd & 0x7f8));
-        setCopReg(2,in_zero,*puVar4);
-        setCopReg(2,in_at,puVar4[1]);
-        copFunction(2,0x180001);
-        goto LAB_00041cc4;
-      }
-    }
-    puVar10 = (uint *)((int)puVar10 + PolySizes[uVar12 & 0xff]);
-  } while( true );
+	UNIMPLEMENTED();
+	/*
+	ushort uVar1;
+	int iVar2;
+	uint uVar3;
+	undefined4 in_zero;
+	undefined4 in_at;
+	undefined4 *puVar4;
+	uint *puVar5;
+	undefined4 *puVar6;
+	uint uVar7;
+	undefined4 *puVar8;
+	uint in_a1;
+	uint uVar9;
+	uint *puVar10;
+	int iVar11;
+	uint uVar12;
+	uint uVar13;
+	uint uVar14;
+	int iVar15;
+	int local_10;
+
+	uVar13 = (uint)model->num_polys;
+	puVar10 = (uint *)model->poly_block;
+	iVar11 = model->vertices;
+	do {
+		uVar13 = uVar13 - 1;
+		if (uVar13 == 0xffffffff) {
+			return;
+		}
+		uVar9 = puVar10[1];
+		uVar12 = *puVar10;
+		iVar15 = DAT_1f8000b4 + 0x214;
+		puVar8 = (undefined4 *)(iVar11 + (uVar9 & 0xff) * 8);
+		puVar6 = (undefined4 *)(iVar11 + (uVar9 >> 5 & 0x7f8));
+		puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0x18) * 8);
+		setCopReg(2, in_zero, *puVar8);
+		setCopReg(2, in_at, puVar8[1]);
+		setCopReg(2, puVar4, *puVar6);
+		setCopReg(2, puVar6, puVar6[1]);
+		setCopReg(2, puVar8, *puVar4);
+		setCopReg(2, in_a1, puVar4[1]);
+		copFunction(2, 0x280030);
+		uVar7 = uVar12 >> 8 & 0xff;
+		uVar1 = *(ushort *)((uVar12 >> 0xf & 0x1fe) + uVar7 * 0x40 + DAT_1f800028);
+		in_a1 = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
+		copFunction(2, 0x1400006);
+		uVar7 = puVar10[2];
+		uVar14 = puVar10[3];
+		iVar2 = getCopReg(2, 0x18);
+		copFunction(2, 0x158002d);
+		if (iVar2 < 0) {
+			uVar3 = getCopReg(2, 0xc);
+			DAT_1f8000b0[2] = uVar3;
+			puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0xd & 0x7f8));
+			setCopReg(2, in_zero, *puVar4);
+			setCopReg(2, in_at, puVar4[1]);
+			copFunction(2, 0x180001);
+			copFunction(2, 0x1400006);
+			iVar2 = getCopReg(2, 0x18);
+			if ((iVar2 < 0) && (local_10 = getCopReg(2, 7), 1 < local_10)) {
+			LAB_00041cc4:
+				puVar5 = (uint *)(iVar15 + (local_10 >> 1) * 4);
+				uVar9 = *puVar5;
+				*puVar5 = (uint)DAT_1f8000b0 & 0xffffff;
+				*DAT_1f8000b0 = uVar9 & 0xffffff | 0x9000000;
+				uVar9 = getCopReg(2, 0xc);
+				DAT_1f8000b0[4] = uVar9;
+				uVar9 = getCopReg(2, 0xd);
+				DAT_1f8000b0[6] = uVar9;
+				uVar9 = getCopReg(2, 0xe);
+				DAT_1f8000b0[8] = uVar9;
+				uVar9 = DAT_1f8000c0;
+				DAT_1f8000b0[3] = uVar7 & 0xffff | (uint)uVar1 << 0x10;
+				DAT_1f8000b0[5] = uVar7 >> 0x10 | in_a1;
+				DAT_1f8000b0[7] = uVar14 >> 0x10;
+				DAT_1f8000b0[9] = uVar14 & 0xffff;
+				DAT_1f8000b0[1] = uVar9;
+				DAT_1f8000b0 = DAT_1f8000b0 + 10;
+			}
+		}
+		else {
+			local_10 = getCopReg(2, 7);
+			if (1 < local_10) {
+				uVar3 = getCopReg(2, 0xc);
+				DAT_1f8000b0[2] = uVar3;
+				puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0xd & 0x7f8));
+				setCopReg(2, in_zero, *puVar4);
+				setCopReg(2, in_at, puVar4[1]);
+				copFunction(2, 0x180001);
+				goto LAB_00041cc4;
+			}
+		}
+		puVar10 = (uint *)((int)puVar10 + PolySizes[uVar12 & 0xff]);
+	} while (true);
+	*/
 }
 
 
@@ -244,80 +246,81 @@ LAB_00041cc4:
 	// End Line: 464
 
 void DrawTILES(int tile_amount)
-
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  ushort *puVar4;
-  uint uVar5;
-  ushort **ppuVar6;
-  uint uVar7;
-  
-  if (-1 < gTimeOfDay) {
-    if (gTimeOfDay < 3) {
-      DAT_1f8000c0 = combointensity & 0xffffffU | 0x2c000000;
-    }
-    else {
-      if (gTimeOfDay == 3) {
-        DAT_1f8000c0 = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
-                       ((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
-                       (int)(combointensity & 0xffU) / 3 | 0x2c000000U;
-      }
-    }
-  }
-  uVar7 = 0xffffffff;
-  if (gWeather - 1U < 2) {
-    uVar3 = DAT_1f8000c0 >> 2 & 0x3f;
-    DAT_1f8000c0 = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
-  }
-  tile_amount = tile_amount + -1;
-  DAT_1f8000b4 = current->ot;
-  DAT_1f8000b0 = current->primptr;
-  DAT_1f800024 = &texture_pages;
-  DAT_1f800028 = &texture_cluts;
-  DAT_1f8000cc = 0x18273472;
-  ppuVar6 = (ushort **)tile_overflow_buffer;
-  while (tile_amount != -1) {
-    puVar4 = *ppuVar6;
-    DAT_1f800044 = (uint)*puVar4;
-    DAT_1f800048 = (int)((uint)puVar4[1] << 0x10) >> 0x11;
-    DAT_1f80004c = (uint)puVar4[2];
-    ppuVar6 = ppuVar6 + 1;
-    uVar5 = (uint)puVar4[3] & 0x3f;
-    uVar3 = (uint)(puVar4[3] >> 6) | ((uint)puVar4[1] & 1) << 10;
-    if (uVar7 == uVar5) {
-      iVar1 = Apply_InvCameraMatrixSetTrans(&DAT_1f800044);
-    }
-    else {
-      iVar1 = Apply_InvCameraMatrixAndSetMatrix(&DAT_1f800044,CompoundMatrix + uVar5);
-      uVar7 = uVar5;
-    }
-    if (iVar1 < 0x1b59) {
-      if (Low2HighDetailTable[uVar3] != 0xffff) {
-        uVar3 = (uint)Low2HighDetailTable[uVar3];
-      }
-      if (iVar1 < 2000) {
-        TileNxN(modelpointers1536[uVar3],4,0x4b);
-      }
-      else {
-        TileNxN(modelpointers1536[uVar3],2,0x23);
-      }
-    }
-    else {
-      iVar2 = uVar3 << 2;
-      if (9000 < iVar1) {
-        iVar2 = uVar3 << 2;
-        if (Low2LowerDetailTable[uVar3] != 0xffff) {
-          iVar2 = (uint)Low2LowerDetailTable[uVar3] << 2;
-        }
-      }
-      Tile1x1(*(MODEL **)((int)modelpointers1536 + iVar2));
-    }
-    tile_amount = tile_amount + -1;
-  }
-  current->primptr = DAT_1f8000b0;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	int iVar2;
+	uint uVar3;
+	ushort *puVar4;
+	uint uVar5;
+	ushort **ppuVar6;
+	uint uVar7;
+
+	if (-1 < gTimeOfDay) {
+		if (gTimeOfDay < 3) {
+			DAT_1f8000c0 = combointensity & 0xffffffU | 0x2c000000;
+		}
+		else {
+			if (gTimeOfDay == 3) {
+				DAT_1f8000c0 = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
+					((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
+					(int)(combointensity & 0xffU) / 3 | 0x2c000000U;
+			}
+		}
+	}
+	uVar7 = 0xffffffff;
+	if (gWeather - 1U < 2) {
+		uVar3 = DAT_1f8000c0 >> 2 & 0x3f;
+		DAT_1f8000c0 = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
+	}
+	tile_amount = tile_amount + -1;
+	DAT_1f8000b4 = current->ot;
+	DAT_1f8000b0 = current->primptr;
+	DAT_1f800024 = &texture_pages;
+	DAT_1f800028 = &texture_cluts;
+	DAT_1f8000cc = 0x18273472;
+	ppuVar6 = (ushort **)tile_overflow_buffer;
+	while (tile_amount != -1) {
+		puVar4 = *ppuVar6;
+		DAT_1f800044 = (uint)*puVar4;
+		DAT_1f800048 = (int)((uint)puVar4[1] << 0x10) >> 0x11;
+		DAT_1f80004c = (uint)puVar4[2];
+		ppuVar6 = ppuVar6 + 1;
+		uVar5 = (uint)puVar4[3] & 0x3f;
+		uVar3 = (uint)(puVar4[3] >> 6) | ((uint)puVar4[1] & 1) << 10;
+		if (uVar7 == uVar5) {
+			iVar1 = Apply_InvCameraMatrixSetTrans(&DAT_1f800044);
+		}
+		else {
+			iVar1 = Apply_InvCameraMatrixAndSetMatrix(&DAT_1f800044, CompoundMatrix + uVar5);
+			uVar7 = uVar5;
+		}
+		if (iVar1 < 0x1b59) {
+			if (Low2HighDetailTable[uVar3] != 0xffff) {
+				uVar3 = (uint)Low2HighDetailTable[uVar3];
+			}
+			if (iVar1 < 2000) {
+				TileNxN(modelpointers1536[uVar3], 4, 0x4b);
+			}
+			else {
+				TileNxN(modelpointers1536[uVar3], 2, 0x23);
+			}
+		}
+		else {
+			iVar2 = uVar3 << 2;
+			if (9000 < iVar1) {
+				iVar2 = uVar3 << 2;
+				if (Low2LowerDetailTable[uVar3] != 0xffff) {
+					iVar2 = (uint)Low2LowerDetailTable[uVar3] << 2;
+				}
+			}
+			Tile1x1(*(MODEL **)((int)modelpointers1536 + iVar2));
+		}
+		tile_amount = tile_amount + -1;
+	}
+	current->primptr = DAT_1f8000b0;
+	return;*/
 }
 
 
@@ -532,154 +535,155 @@ void DrawTILES(int tile_amount)
 	/* end block 4 */
 	// End Line: 709
 
-void makeMesh(MVERTEX (*VSP) [5] [5],int m,int n)
-
+void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 {
-  uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  uint uVar7;
-  uint uVar8;
-  uint uVar9;
-  uint uVar10;
-  uint uVar11;
-  uint uVar12;
-  int iVar13;
-  
-  if (n == 4) {
-    uVar3 = *(uint *)*VSP;
-    uVar2 = *(uint *)&(*VSP)[0].vz;
-    uVar5 = uVar3 ^ 0x8000;
-    uVar9 = *(uint *)(*VSP + 4) ^ 0x8000;
-    uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-    *(uint *)(*VSP + 2) = uVar5 ^ 0x8000;
-    uVar6 = uVar2 ^ 0x8000;
-    uVar3 = uVar3 ^ 0x8000;
-    uVar9 = *(uint *)(*VSP + 4) ^ 0x8000;
-    uVar10 = *(uint *)&(*VSP)[4].vz ^ 0x8000;
-    uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-    *(uint *)(*VSP + 1) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-    uVar2 = uVar2 ^ 0x8000;
-    *(uint *)(*VSP + 3) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-    *(uint *)&(*VSP)[2].vz = uVar6 ^ 0x8000;
-    *(uint *)&(*VSP)[1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-    *(uint *)&(*VSP)[3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-    if (m == 1) {
-      uVar2 = *(uint *)&(*VSP)[5].vz;
-      uVar5 = *(uint *)(*VSP + 5) ^ 0x8000;
-      uVar9 = *(uint *)(*VSP + 9) ^ 0x8000;
-      uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-      *(uint *)(*VSP + 7) = uVar5 ^ 0x8000;
-      uVar6 = uVar2 ^ 0x8000;
-      uVar3 = *(uint *)(*VSP + 5) ^ 0x8000;
-      uVar9 = *(uint *)(*VSP + 9) ^ 0x8000;
-      uVar10 = *(uint *)&(*VSP)[9].vz ^ 0x8000;
-      uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-      *(uint *)(*VSP + 6) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-      uVar2 = uVar2 ^ 0x8000;
-      *(uint *)(*VSP + 8) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[7].vz = uVar6 ^ 0x8000;
-      *(uint *)&(*VSP)[6].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[8].vz =
-           (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-    }
-    else {
-      iVar13 = 4;
-      uVar2 = *(uint *)&(*VSP)[0x14].vz;
-      uVar5 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-      uVar9 = *(uint *)(*VSP + 0x18) ^ 0x8000;
-      uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-      *(uint *)(*VSP + 0x16) = uVar5 ^ 0x8000;
-      uVar6 = uVar2 ^ 0x8000;
-      uVar3 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-      uVar9 = *(uint *)(*VSP + 0x18) ^ 0x8000;
-      uVar10 = *(uint *)&(*VSP)[0x18].vz ^ 0x8000;
-      uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-      *(uint *)(*VSP + 0x15) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-      uVar2 = uVar2 ^ 0x8000;
-      *(uint *)(*VSP + 0x17) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[0x16].vz = uVar6 ^ 0x8000;
-      *(uint *)&(*VSP)[0x15].vz =
-           (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[0x17].vz =
-           (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-      do {
-        iVar13 = iVar13 + -1;
-        uVar3 = *(uint *)*VSP;
-        uVar2 = *(uint *)&(*VSP)[0].vz;
-        uVar5 = uVar3 ^ 0x8000;
-        uVar9 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-        uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-        *(uint *)(*VSP + 10) = uVar5 ^ 0x8000;
-        uVar6 = uVar2 ^ 0x8000;
-        uVar3 = uVar3 ^ 0x8000;
-        uVar9 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-        uVar10 = *(uint *)&(*VSP)[0x14].vz ^ 0x8000;
-        uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-        *(uint *)(*VSP + 5) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-        uVar2 = uVar2 ^ 0x8000;
-        *(uint *)(*VSP + 0xf) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000
-        ;
-        *(uint *)&(*VSP)[10].vz = uVar6 ^ 0x8000;
-        *(uint *)&(*VSP)[5].vz =
-             (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-        *(uint *)&(*VSP)[0xf].vz =
-             (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-        VSP = (MVERTEX (*) [5] [5])(*VSP + 1);
-      } while (-1 < iVar13);
-    }
-  }
-  else {
-    uVar2 = *(uint *)*VSP;
-    uVar9 = *(uint *)(*VSP + 2);
-    uVar6 = *(uint *)&(*VSP)[0].vz;
-    uVar5 = uVar2 ^ 0x8000;
-    uVar3 = uVar9 ^ 0x8000;
-    uVar10 = (uVar5 | uVar3) - ((int)(uVar5 ^ uVar3) >> 1 & 0xffff7fffU);
-    uVar5 = *(uint *)&(*VSP)[2].vz;
-    *(uint *)(*VSP + 1) = uVar10 ^ 0x8000;
-    uVar3 = uVar6 ^ 0x8000;
-    uVar5 = uVar5 ^ 0x8000;
-    uVar3 = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0x7f7f7fffU);
-    *(uint *)&(*VSP)[1].vz = uVar3 ^ 0x8000;
-    if (m == 1) {
-      uVar5 = *(uint *)(*VSP + 5) ^ 0x8000;
-      uVar9 = *(uint *)(*VSP + 7) ^ 0x8000;
-      *(uint *)(*VSP + 6) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-      uVar5 = *(uint *)&(*VSP)[5].vz ^ 0x8000;
-      uVar9 = *(uint *)&(*VSP)[7].vz ^ 0x8000;
-      *(uint *)&(*VSP)[6].vz = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-    }
-    else {
-      uVar2 = uVar2 ^ 0x8000;
-      uVar9 = uVar9 ^ 0x8000;
-      uVar4 = *(uint *)&(*VSP)[10].vz;
-      uVar7 = *(uint *)(*VSP + 10) ^ 0x8000;
-      uVar11 = *(uint *)(*VSP + 0xc) ^ 0x8000;
-      uVar11 = (uVar7 | uVar11) - ((int)(uVar7 ^ uVar11) >> 1 & 0xffff7fffU);
-      *(uint *)(*VSP + 0xb) = uVar11 ^ 0x8000;
-      uVar7 = uVar4 ^ 0x8000;
-      uVar1 = *(uint *)(*VSP + 0xc) ^ 0x8000;
-      uVar12 = *(uint *)&(*VSP)[0xc].vz ^ 0x8000;
-      uVar8 = (uVar7 | uVar12) - ((int)(uVar7 ^ uVar12) >> 1 & 0x7f7f7fffU);
-      uVar7 = *(uint *)(*VSP + 10) ^ 0x8000;
-      *(uint *)(*VSP + 5) = (uVar2 | uVar7) - ((int)(uVar2 ^ uVar7) >> 1 & 0xffff7fffU) ^ 0x8000;
-      uVar6 = uVar6 ^ 0x8000;
-      uVar4 = uVar4 ^ 0x8000;
-      *(uint *)(*VSP + 6) = (uVar10 | uVar11) - ((int)(uVar10 ^ uVar11) >> 1 & 0xffff7fffU) ^ 0x8000
-      ;
-      *(uint *)(*VSP + 7) = (uVar9 | uVar1) - ((int)(uVar9 ^ uVar1) >> 1 & 0xffff7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[0xb].vz = uVar8 ^ 0x8000;
-      *(uint *)&(*VSP)[5].vz = (uVar6 | uVar4) - ((int)(uVar6 ^ uVar4) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[6].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-      *(uint *)&(*VSP)[7].vz =
-           (uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+	uint uVar2;
+	uint uVar3;
+	uint uVar4;
+	uint uVar5;
+	uint uVar6;
+	uint uVar7;
+	uint uVar8;
+	uint uVar9;
+	uint uVar10;
+	uint uVar11;
+	uint uVar12;
+	int iVar13;
+
+	if (n == 4) {
+		uVar3 = *(uint *)*VSP;
+		uVar2 = *(uint *)&(*VSP)[0].vz;
+		uVar5 = uVar3 ^ 0x8000;
+		uVar9 = *(uint *)(*VSP + 4) ^ 0x8000;
+		uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
+		*(uint *)(*VSP + 2) = uVar5 ^ 0x8000;
+		uVar6 = uVar2 ^ 0x8000;
+		uVar3 = uVar3 ^ 0x8000;
+		uVar9 = *(uint *)(*VSP + 4) ^ 0x8000;
+		uVar10 = *(uint *)&(*VSP)[4].vz ^ 0x8000;
+		uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+		*(uint *)(*VSP + 1) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+		uVar2 = uVar2 ^ 0x8000;
+		*(uint *)(*VSP + 3) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+		*(uint *)&(*VSP)[2].vz = uVar6 ^ 0x8000;
+		*(uint *)&(*VSP)[1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+		*(uint *)&(*VSP)[3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+		if (m == 1) {
+			uVar2 = *(uint *)&(*VSP)[5].vz;
+			uVar5 = *(uint *)(*VSP + 5) ^ 0x8000;
+			uVar9 = *(uint *)(*VSP + 9) ^ 0x8000;
+			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
+			*(uint *)(*VSP + 7) = uVar5 ^ 0x8000;
+			uVar6 = uVar2 ^ 0x8000;
+			uVar3 = *(uint *)(*VSP + 5) ^ 0x8000;
+			uVar9 = *(uint *)(*VSP + 9) ^ 0x8000;
+			uVar10 = *(uint *)&(*VSP)[9].vz ^ 0x8000;
+			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+			*(uint *)(*VSP + 6) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+			uVar2 = uVar2 ^ 0x8000;
+			*(uint *)(*VSP + 8) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[7].vz = uVar6 ^ 0x8000;
+			*(uint *)&(*VSP)[6].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[8].vz =
+				(uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+		}
+		else {
+			iVar13 = 4;
+			uVar2 = *(uint *)&(*VSP)[0x14].vz;
+			uVar5 = *(uint *)(*VSP + 0x14) ^ 0x8000;
+			uVar9 = *(uint *)(*VSP + 0x18) ^ 0x8000;
+			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
+			*(uint *)(*VSP + 0x16) = uVar5 ^ 0x8000;
+			uVar6 = uVar2 ^ 0x8000;
+			uVar3 = *(uint *)(*VSP + 0x14) ^ 0x8000;
+			uVar9 = *(uint *)(*VSP + 0x18) ^ 0x8000;
+			uVar10 = *(uint *)&(*VSP)[0x18].vz ^ 0x8000;
+			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+			*(uint *)(*VSP + 0x15) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+			uVar2 = uVar2 ^ 0x8000;
+			*(uint *)(*VSP + 0x17) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[0x16].vz = uVar6 ^ 0x8000;
+			*(uint *)&(*VSP)[0x15].vz =
+				(uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[0x17].vz =
+				(uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			do {
+				iVar13 = iVar13 + -1;
+				uVar3 = *(uint *)*VSP;
+				uVar2 = *(uint *)&(*VSP)[0].vz;
+				uVar5 = uVar3 ^ 0x8000;
+				uVar9 = *(uint *)(*VSP + 0x14) ^ 0x8000;
+				uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
+				*(uint *)(*VSP + 10) = uVar5 ^ 0x8000;
+				uVar6 = uVar2 ^ 0x8000;
+				uVar3 = uVar3 ^ 0x8000;
+				uVar9 = *(uint *)(*VSP + 0x14) ^ 0x8000;
+				uVar10 = *(uint *)&(*VSP)[0x14].vz ^ 0x8000;
+				uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+				*(uint *)(*VSP + 5) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+				uVar2 = uVar2 ^ 0x8000;
+				*(uint *)(*VSP + 0xf) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000
+					;
+				*(uint *)&(*VSP)[10].vz = uVar6 ^ 0x8000;
+				*(uint *)&(*VSP)[5].vz =
+					(uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+				*(uint *)&(*VSP)[0xf].vz =
+					(uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+				VSP = (MVERTEX(*)[5][5])(*VSP + 1);
+			} while (-1 < iVar13);
+		}
+	}
+	else {
+		uVar2 = *(uint *)*VSP;
+		uVar9 = *(uint *)(*VSP + 2);
+		uVar6 = *(uint *)&(*VSP)[0].vz;
+		uVar5 = uVar2 ^ 0x8000;
+		uVar3 = uVar9 ^ 0x8000;
+		uVar10 = (uVar5 | uVar3) - ((int)(uVar5 ^ uVar3) >> 1 & 0xffff7fffU);
+		uVar5 = *(uint *)&(*VSP)[2].vz;
+		*(uint *)(*VSP + 1) = uVar10 ^ 0x8000;
+		uVar3 = uVar6 ^ 0x8000;
+		uVar5 = uVar5 ^ 0x8000;
+		uVar3 = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0x7f7f7fffU);
+		*(uint *)&(*VSP)[1].vz = uVar3 ^ 0x8000;
+		if (m == 1) {
+			uVar5 = *(uint *)(*VSP + 5) ^ 0x8000;
+			uVar9 = *(uint *)(*VSP + 7) ^ 0x8000;
+			*(uint *)(*VSP + 6) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+			uVar5 = *(uint *)&(*VSP)[5].vz ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[7].vz ^ 0x8000;
+			*(uint *)&(*VSP)[6].vz = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+		}
+		else {
+			uVar2 = uVar2 ^ 0x8000;
+			uVar9 = uVar9 ^ 0x8000;
+			uVar4 = *(uint *)&(*VSP)[10].vz;
+			uVar7 = *(uint *)(*VSP + 10) ^ 0x8000;
+			uVar11 = *(uint *)(*VSP + 0xc) ^ 0x8000;
+			uVar11 = (uVar7 | uVar11) - ((int)(uVar7 ^ uVar11) >> 1 & 0xffff7fffU);
+			*(uint *)(*VSP + 0xb) = uVar11 ^ 0x8000;
+			uVar7 = uVar4 ^ 0x8000;
+			uVar1 = *(uint *)(*VSP + 0xc) ^ 0x8000;
+			uVar12 = *(uint *)&(*VSP)[0xc].vz ^ 0x8000;
+			uVar8 = (uVar7 | uVar12) - ((int)(uVar7 ^ uVar12) >> 1 & 0x7f7f7fffU);
+			uVar7 = *(uint *)(*VSP + 10) ^ 0x8000;
+			*(uint *)(*VSP + 5) = (uVar2 | uVar7) - ((int)(uVar2 ^ uVar7) >> 1 & 0xffff7fffU) ^ 0x8000;
+			uVar6 = uVar6 ^ 0x8000;
+			uVar4 = uVar4 ^ 0x8000;
+			*(uint *)(*VSP + 6) = (uVar10 | uVar11) - ((int)(uVar10 ^ uVar11) >> 1 & 0xffff7fffU) ^ 0x8000
+				;
+			*(uint *)(*VSP + 7) = (uVar9 | uVar1) - ((int)(uVar9 ^ uVar1) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[0xb].vz = uVar8 ^ 0x8000;
+			*(uint *)&(*VSP)[5].vz = (uVar6 | uVar4) - ((int)(uVar6 ^ uVar4) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[6].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[7].vz =
+				(uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+		}
+	}
+	return;*/
 }
 
 
@@ -746,143 +750,144 @@ void makeMesh(MVERTEX (*VSP) [5] [5],int m,int n)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void drawMesh(MVERTEX (*VSP) [5] [5],int m,int n,_pct *pc)
-
+void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 {
-  int iVar1;
-  undefined4 in_zero;
-  undefined4 in_at;
-  uint uVar2;
-  MVERTEX (*paaMVar3) [5] [5];
-  MVERTEX (*paaMVar4) [5] [5];
-  int iVar5;
-  uint *puVar6;
-  undefined4 *puVar7;
-  int iVar8;
-  int iVar9;
-  MVERTEX *pMVar10;
-  int iVar11;
-  
-  iVar11 = 0;
-  puVar6 = *(uint **)(pc->ptexture_pages + 0x46);
-  paaMVar4 = VSP;
-  if (0 < n) {
-    do {
-      iVar8 = m + -1;
-      iVar5 = iVar11 + 2;
-      if (iVar8 != -1) {
-        pMVar10 = *VSP + iVar8 * 5;
-        do {
-          puVar7 = (undefined4 *)(&pMVar10->vx + iVar11 * 4);
-          iVar9 = *(int *)(pc->ptexture_pages + 0x48);
-          setCopReg(2,in_zero,*puVar7);
-          setCopReg(2,in_at,puVar7[1]);
-          setCopReg(2,puVar7 + 10,puVar7[2]);
-          setCopReg(2,puVar7 + 2,puVar7[3]);
-          setCopReg(2,paaMVar4,puVar7[10]);
-          setCopReg(2,0x9000000,puVar7[0xb]);
-          copFunction(2,0x280030);
-          copFunction(2,0x158002d);
-          iVar1 = getCopReg(2,7);
-          if (1 < iVar1) {
-            _DAT_1f800208 = getCopReg(2,0xc);
-            _DAT_1f80020c = getCopReg(2,0xd);
-            DAT_1f800210 = getCopReg(2,0xe);
-            paaMVar4 = (MVERTEX (*) [5] [5])(iVar9 + (iVar1 >> 1) * 4);
-            *puVar6 = *(uint *)*paaMVar4 & 0xffffff | 0x9000000;
-            uVar2 = getCopReg(2,0xc);
-            puVar6[2] = uVar2;
-            uVar2 = getCopReg(2,0xd);
-            puVar6[4] = uVar2;
-            uVar2 = getCopReg(2,0xe);
-            puVar6[6] = uVar2;
-            uVar2 = getCopReg(2,0xd);
-            puVar6[0x10] = uVar2;
-            setCopReg(2,in_zero,puVar7[4]);
-            setCopReg(2,in_at,puVar7[5]);
-            setCopReg(2,puVar7 + 0xc,puVar7[0xe]);
-            setCopReg(2,puVar7 + 0xe,puVar7[0xf]);
-            setCopReg(2,puVar7 + 4,puVar7[0xc]);
-            setCopReg(2,0x9000000,puVar7[0xd]);
-            copFunction(2,0x280030);
-            copFunction(2,0x158002d);
-            DAT_1f80021c = getCopReg(2,0xc);
-            DAT_1f800220 = getCopReg(2,0xd);
-            DAT_1f800224 = getCopReg(2,0xe);
-            if (((DAT_1f80020c < 0x140) || (DAT_1f800208 < 0x140)) || ((ushort)DAT_1f800210 < 0x140)
-               ) {
-LAB_00042824:
-              if (((0x109 < DAT_1f80020a) && (0x109 < DAT_1f80020e)) &&
-                 ((0x109 < DAT_1f800210._2_2_ &&
-                  (((DAT_1f800224._2_2_ = (ushort)(DAT_1f800224 >> 0x10), 0x109 < DAT_1f800224._2_2_
-                    && (-1 < (int)((uint)(DAT_1f80020e ^ DAT_1f80020a) << 0x10))) &&
-                   (DAT_1f800210._0_2_ = DAT_1f800210._2_2_,
-                   -1 < (int)((uint)(DAT_1f80020e ^ DAT_1f800210._2_2_) << 0x10)))))))
-              goto LAB_00042900;
-              *(uint *)*paaMVar4 = (uint)puVar6 & 0xffffff;
-              uVar2 = getCopReg(2,0xe);
-              puVar6[8] = uVar2;
-              puVar6[1] = *(uint *)(pc->ptexture_pages + 0x4e);
-              puVar6[3] = (uint)*(ushort *)((int)puVar7 + 6) | *(uint *)(pc->ptexture_pages + 0x4a);
-              puVar6[5] = (uint)*(ushort *)((int)puVar7 + 0xe) |
-                          *(uint *)(pc->ptexture_pages + 0x4c);
-              puVar6[7] = (uint)*(ushort *)((int)puVar7 + 0x2e);
-              puVar6[9] = (uint)*(ushort *)((int)puVar7 + 0x36);
-              puVar6 = puVar6 + 10;
-            }
-            else {
-              if ((((ushort)DAT_1f800224 < 0x140) ||
-                  ((int)((uint)(DAT_1f80020c ^ DAT_1f800208) << 0x10) < 0)) ||
-                 ((int)((uint)(DAT_1f80020c ^ (ushort)DAT_1f800210) << 0x10) < 0))
-              goto LAB_00042824;
-LAB_00042900:
-              paaMVar4 = (MVERTEX (*) [5] [5])(uint)(ushort)DAT_1f800210;
-              puVar6[6] = _DAT_1f80020c;
-            }
-            iVar1 = getCopReg(2,7);
-            paaMVar3 = (MVERTEX (*) [5] [5])(iVar9 + (iVar1 >> 1) * 4);
-            if (((DAT_1f80021c._2_2_ < 0x10a) || (DAT_1f800220._2_2_ < 0x10a)) ||
-               (((DAT_1f800224._2_2_ < 0x10a ||
-                 ((DAT_1f80020e < 0x10a || ((int)((uint)(DAT_1f80020e ^ DAT_1f80020a) << 0x10) < 0))
-                 )) || ((int)((uint)(DAT_1f80020e ^ DAT_1f800210._2_2_) << 0x10) < 0)))) {
-              if (((0x13f < DAT_1f80020c) && (0x13f < (ushort)DAT_1f800220)) &&
-                 (0x13f < (ushort)DAT_1f80021c)) {
-                if (((0x13f < (ushort)DAT_1f800224) &&
-                    (-1 < (int)((uint)((ushort)DAT_1f800220 ^ (ushort)DAT_1f80021c) << 0x10))) &&
-                   (paaMVar4 = (MVERTEX (*) [5] [5])(DAT_1f800224 & 0xffff),
-                   -1 < (int)((uint)((ushort)DAT_1f800220 ^ (ushort)DAT_1f800224) << 0x10)))
-                goto LAB_00042ab4;
-              }
-              uVar2 = *(uint *)*paaMVar3;
-              *(uint *)*paaMVar3 = (uint)puVar6 & 0xffffff;
-              *puVar6 = uVar2 & 0xffffff | 0x9000000;
-              puVar6[1] = *(uint *)(pc->ptexture_pages + 0x4e);
-              uVar2 = getCopReg(2,0xc);
-              puVar6[2] = uVar2;
-              uVar2 = getCopReg(2,0xd);
-              puVar6[4] = uVar2;
-              uVar2 = getCopReg(2,0xe);
-              puVar6[8] = uVar2;
-              puVar6[3] = (uint)*(ushort *)((int)puVar7 + 0x16) |
-                          *(uint *)(pc->ptexture_pages + 0x4a);
-              puVar6[5] = (uint)*(ushort *)((int)puVar7 + 0x3e) |
-                          *(uint *)(pc->ptexture_pages + 0x4c);
-              puVar6[7] = (uint)*(ushort *)((int)puVar7 + 0xe);
-              puVar6[9] = (uint)*(ushort *)((int)puVar7 + 0x36);
-              puVar6 = puVar6 + 10;
-              paaMVar4 = paaMVar3;
-            }
-          }
-LAB_00042ab4:
-          iVar8 = iVar8 + -1;
-          pMVar10 = (MVERTEX *)(&pMVar10[-0x19].vx + 0x50);
-        } while (iVar8 != -1);
-      }
-      iVar11 = iVar5;
-    } while (iVar5 < n);
-  }
-  *(uint **)(pc->ptexture_pages + 0x46) = puVar6;
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	undefined4 in_zero;
+	undefined4 in_at;
+	uint uVar2;
+	MVERTEX(*paaMVar3)[5][5];
+	MVERTEX(*paaMVar4)[5][5];
+	int iVar5;
+	uint *puVar6;
+	undefined4 *puVar7;
+	int iVar8;
+	int iVar9;
+	MVERTEX *pMVar10;
+	int iVar11;
+
+	iVar11 = 0;
+	puVar6 = *(uint **)(pc->ptexture_pages + 0x46);
+	paaMVar4 = VSP;
+	if (0 < n) {
+		do {
+			iVar8 = m + -1;
+			iVar5 = iVar11 + 2;
+			if (iVar8 != -1) {
+				pMVar10 = *VSP + iVar8 * 5;
+				do {
+					puVar7 = (undefined4 *)(&pMVar10->vx + iVar11 * 4);
+					iVar9 = *(int *)(pc->ptexture_pages + 0x48);
+					setCopReg(2, in_zero, *puVar7);
+					setCopReg(2, in_at, puVar7[1]);
+					setCopReg(2, puVar7 + 10, puVar7[2]);
+					setCopReg(2, puVar7 + 2, puVar7[3]);
+					setCopReg(2, paaMVar4, puVar7[10]);
+					setCopReg(2, 0x9000000, puVar7[0xb]);
+					copFunction(2, 0x280030);
+					copFunction(2, 0x158002d);
+					iVar1 = getCopReg(2, 7);
+					if (1 < iVar1) {
+						_DAT_1f800208 = getCopReg(2, 0xc);
+						_DAT_1f80020c = getCopReg(2, 0xd);
+						DAT_1f800210 = getCopReg(2, 0xe);
+						paaMVar4 = (MVERTEX(*)[5][5])(iVar9 + (iVar1 >> 1) * 4);
+						*puVar6 = *(uint *)*paaMVar4 & 0xffffff | 0x9000000;
+						uVar2 = getCopReg(2, 0xc);
+						puVar6[2] = uVar2;
+						uVar2 = getCopReg(2, 0xd);
+						puVar6[4] = uVar2;
+						uVar2 = getCopReg(2, 0xe);
+						puVar6[6] = uVar2;
+						uVar2 = getCopReg(2, 0xd);
+						puVar6[0x10] = uVar2;
+						setCopReg(2, in_zero, puVar7[4]);
+						setCopReg(2, in_at, puVar7[5]);
+						setCopReg(2, puVar7 + 0xc, puVar7[0xe]);
+						setCopReg(2, puVar7 + 0xe, puVar7[0xf]);
+						setCopReg(2, puVar7 + 4, puVar7[0xc]);
+						setCopReg(2, 0x9000000, puVar7[0xd]);
+						copFunction(2, 0x280030);
+						copFunction(2, 0x158002d);
+						DAT_1f80021c = getCopReg(2, 0xc);
+						DAT_1f800220 = getCopReg(2, 0xd);
+						DAT_1f800224 = getCopReg(2, 0xe);
+						if (((DAT_1f80020c < 0x140) || (DAT_1f800208 < 0x140)) || ((ushort)DAT_1f800210 < 0x140)
+							) {
+						LAB_00042824:
+							if (((0x109 < DAT_1f80020a) && (0x109 < DAT_1f80020e)) &&
+								((0x109 < DAT_1f800210._2_2_ &&
+								(((DAT_1f800224._2_2_ = (ushort)(DAT_1f800224 >> 0x10), 0x109 < DAT_1f800224._2_2_
+									&& (-1 < (int)((uint)(DAT_1f80020e ^ DAT_1f80020a) << 0x10))) &&
+									(DAT_1f800210._0_2_ = DAT_1f800210._2_2_,
+										-1 < (int)((uint)(DAT_1f80020e ^ DAT_1f800210._2_2_) << 0x10)))))))
+								goto LAB_00042900;
+							*(uint *)*paaMVar4 = (uint)puVar6 & 0xffffff;
+							uVar2 = getCopReg(2, 0xe);
+							puVar6[8] = uVar2;
+							puVar6[1] = *(uint *)(pc->ptexture_pages + 0x4e);
+							puVar6[3] = (uint)*(ushort *)((int)puVar7 + 6) | *(uint *)(pc->ptexture_pages + 0x4a);
+							puVar6[5] = (uint)*(ushort *)((int)puVar7 + 0xe) |
+								*(uint *)(pc->ptexture_pages + 0x4c);
+							puVar6[7] = (uint)*(ushort *)((int)puVar7 + 0x2e);
+							puVar6[9] = (uint)*(ushort *)((int)puVar7 + 0x36);
+							puVar6 = puVar6 + 10;
+						}
+						else {
+							if ((((ushort)DAT_1f800224 < 0x140) ||
+								((int)((uint)(DAT_1f80020c ^ DAT_1f800208) << 0x10) < 0)) ||
+								((int)((uint)(DAT_1f80020c ^ (ushort)DAT_1f800210) << 0x10) < 0))
+								goto LAB_00042824;
+						LAB_00042900:
+							paaMVar4 = (MVERTEX(*)[5][5])(uint)(ushort)DAT_1f800210;
+							puVar6[6] = _DAT_1f80020c;
+						}
+						iVar1 = getCopReg(2, 7);
+						paaMVar3 = (MVERTEX(*)[5][5])(iVar9 + (iVar1 >> 1) * 4);
+						if (((DAT_1f80021c._2_2_ < 0x10a) || (DAT_1f800220._2_2_ < 0x10a)) ||
+							(((DAT_1f800224._2_2_ < 0x10a ||
+							((DAT_1f80020e < 0x10a || ((int)((uint)(DAT_1f80020e ^ DAT_1f80020a) << 0x10) < 0))
+								)) || ((int)((uint)(DAT_1f80020e ^ DAT_1f800210._2_2_) << 0x10) < 0)))) {
+							if (((0x13f < DAT_1f80020c) && (0x13f < (ushort)DAT_1f800220)) &&
+								(0x13f < (ushort)DAT_1f80021c)) {
+								if (((0x13f < (ushort)DAT_1f800224) &&
+									(-1 < (int)((uint)((ushort)DAT_1f800220 ^ (ushort)DAT_1f80021c) << 0x10))) &&
+									(paaMVar4 = (MVERTEX(*)[5][5])(DAT_1f800224 & 0xffff),
+										-1 < (int)((uint)((ushort)DAT_1f800220 ^ (ushort)DAT_1f800224) << 0x10)))
+									goto LAB_00042ab4;
+							}
+							uVar2 = *(uint *)*paaMVar3;
+							*(uint *)*paaMVar3 = (uint)puVar6 & 0xffffff;
+							*puVar6 = uVar2 & 0xffffff | 0x9000000;
+							puVar6[1] = *(uint *)(pc->ptexture_pages + 0x4e);
+							uVar2 = getCopReg(2, 0xc);
+							puVar6[2] = uVar2;
+							uVar2 = getCopReg(2, 0xd);
+							puVar6[4] = uVar2;
+							uVar2 = getCopReg(2, 0xe);
+							puVar6[8] = uVar2;
+							puVar6[3] = (uint)*(ushort *)((int)puVar7 + 0x16) |
+								*(uint *)(pc->ptexture_pages + 0x4a);
+							puVar6[5] = (uint)*(ushort *)((int)puVar7 + 0x3e) |
+								*(uint *)(pc->ptexture_pages + 0x4c);
+							puVar6[7] = (uint)*(ushort *)((int)puVar7 + 0xe);
+							puVar6[9] = (uint)*(ushort *)((int)puVar7 + 0x36);
+							puVar6 = puVar6 + 10;
+							paaMVar4 = paaMVar3;
+						}
+					}
+				LAB_00042ab4:
+					iVar8 = iVar8 + -1;
+					pMVar10 = (MVERTEX *)(&pMVar10[-0x19].vx + 0x50);
+				} while (iVar8 != -1);
+			}
+			iVar11 = iVar5;
+		} while (iVar5 < n);
+	}
+	*(uint **)(pc->ptexture_pages + 0x46) = puVar6;
+	return;*/
 }
 
 
@@ -958,119 +963,120 @@ LAB_00042ab4:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void SubdivNxM(char *polys,ulong n,ulong m,int ofse)
-
+void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 {
-  undefined4 in_zero;
-  undefined4 in_at;
-  undefined4 *puVar1;
-  int iVar2;
-  uint uVar3;
-  undefined4 *puVar4;
-  int iVar5;
-  undefined4 *puVar6;
-  uint uVar7;
-  undefined4 *puVar8;
-  undefined4 *puVar9;
-  undefined4 uVar10;
-  int local_18;
-  
-  iVar5 = DAT_1f8000c8;
-  DAT_1f8000b4 = DAT_1f8000b4 + ofse * 4;
-  uVar3 = *(uint *)(polys + 4);
-  puVar9 = (undefined4 *)(DAT_1f8000c8 + (uVar3 & 0xff) * 8);
-  puVar6 = (undefined4 *)(DAT_1f8000c8 + (uVar3 >> 5 & 0x7f8));
-  DAT_1f800228 = *puVar9;
-  DAT_1f80022c._0_2_ = (undefined2)puVar9[1];
-  uVar10 = puVar6[1];
-  (&DAT_1f800228)[n * 2] = *puVar6;
-  (&DAT_1f80022c)[n * 2] = uVar10;
-  iVar2 = (uVar3 >> 0x18) * 8;
-  puVar8 = (undefined4 *)(iVar5 + iVar2);
-  puVar1 = &DAT_1f800228 + m * 10;
-  uVar10 = puVar8[1];
-  *puVar1 = *puVar8;
-  (&DAT_1f80022c)[m * 10] = uVar10;
-  iVar5 = DAT_1f8000c8;
-  puVar4 = (undefined4 *)((uVar3 >> 0xd & 0x7f8) + DAT_1f8000c8);
-  uVar10 = puVar4[1];
-  puVar1[n * 2] = *puVar4;
-  (puVar1 + n * 2)[1] = uVar10;
-  setCopReg(2,in_zero,*puVar9);
-  setCopReg(2,in_at,puVar9[1]);
-  setCopReg(2,iVar5,*puVar6);
-  setCopReg(2,iVar2,puVar6[1]);
-  setCopReg(2,puVar4,*puVar8);
-  setCopReg(2,puVar6,puVar8[1]);
-  copFunction(2,0x280030);
-  uVar10 = *(undefined4 *)(polys + 0xc);
-  DAT_1f80022c = CONCAT22((short)*(undefined4 *)(polys + 8),(undefined2)DAT_1f80022c);
-  *(undefined2 *)((int)&DAT_1f80022c + n * 8 + 2) =
-       (short)((uint)*(undefined4 *)(polys + 8) >> 0x10);
-  *(undefined2 *)((int)&DAT_1f80022c + m * 0x28 + 2) = (short)((uint)uVar10 >> 0x10);
-  *(undefined2 *)((int)&DAT_1f80022c + n * 8 + m * 0x28 + 2) = (short)uVar10;
-  copFunction(2,0x1400006);
-  _DAT_1f800208 = getCopReg(2,0xc);
-  _DAT_1f80020c = getCopReg(2,0xd);
-  DAT_1f800210 = getCopReg(2,0xe);
-  if (((0x13f < DAT_1f800208) && (0x13f < DAT_1f80020c)) && (0x13f < (ushort)DAT_1f800210)) {
-    if (_DAT_1f80020c << 0x10 < 0) {
-      DAT_1f800208 = DAT_1f800208 ^ 1;
-    }
-    if (DAT_1f800208 == 0) {
-      if (DAT_1f800210 << 0x10 < 0) {
-        if (DAT_1f80020c == 1) goto LAB_00042f08;
-      }
-      else {
-        if (DAT_1f80020c == 0) goto LAB_00042f08;
-      }
-    }
-  }
-  DAT_1f80020a = (ushort)((uint)_DAT_1f800208 >> 0x10);
-  if (((0x109 < DAT_1f80020a) &&
-      (DAT_1f80020e = (ushort)((uint)_DAT_1f80020c >> 0x10), 0x109 < DAT_1f80020e)) &&
-     (DAT_1f800210._2_2_ = (ushort)((uint)DAT_1f800210 >> 0x10), 0x109 < DAT_1f800210._2_2_)) {
-    iVar5 = (int)(short)DAT_1f80020a;
-    if (0x10f < ((int)(short)DAT_1f80020e - iVar5) + (int)(short)DAT_1f800210._2_2_ + 8U) {
-      if ((int)(short)DAT_1f80020e < 0) {
-        if (iVar5 == 1) {
-LAB_00042db8:
-          if ((int)((uint)DAT_1f800210._2_2_ << 0x10) < 0) {
-            if (DAT_1f80020e == 1) goto LAB_00042f08;
-          }
-          else {
-            if (DAT_1f80020e == 0) goto LAB_00042f08;
-          }
-        }
-      }
-      else {
-        if (iVar5 == 0) goto LAB_00042db8;
-      }
-    }
-  }
-  local_18 = getCopReg(2,0x18);
-  if (local_18 < 0) {
-    setCopReg(2,in_zero,(&DAT_1f800228)[m * 10 + n * 2]);
-    setCopReg(2,in_at,(&DAT_1f800228 + m * 10 + n * 2)[1]);
-    copFunction(2,0x180001);
-    copFunction(2,0x1400006);
-    local_18 = getCopReg(2,0x18);
-    local_18 = -local_18;
-  }
-  if (0 < local_18) {
-    uVar3 = *(uint *)polys >> 8 & 0xffff;
-    uVar7 = *(uint *)polys >> 8 & 0xff;
-    if (DAT_1f8000cc != uVar3) {
-      DAT_1f8000b8 = (uint)*(ushort *)((uVar3 >> 8) * 2 + uVar7 * 0x40 + DAT_1f800028) << 0x10;
-      DAT_1f8000bc = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
-      DAT_1f8000cc = uVar3;
-    }
-    makeMesh((MVERTEX (*) [5] [5])&DAT_1f800228,m,n);
-    drawMesh((MVERTEX (*) [5] [5])&DAT_1f800228,m,n,(_pct *)&DAT_1f800020);
-  }
+	UNIMPLEMENTED();
+	/*
+	undefined4 in_zero;
+	undefined4 in_at;
+	undefined4 *puVar1;
+	int iVar2;
+	uint uVar3;
+	undefined4 *puVar4;
+	int iVar5;
+	undefined4 *puVar6;
+	uint uVar7;
+	undefined4 *puVar8;
+	undefined4 *puVar9;
+	undefined4 uVar10;
+	int local_18;
+
+	iVar5 = DAT_1f8000c8;
+	DAT_1f8000b4 = DAT_1f8000b4 + ofse * 4;
+	uVar3 = *(uint *)(polys + 4);
+	puVar9 = (undefined4 *)(DAT_1f8000c8 + (uVar3 & 0xff) * 8);
+	puVar6 = (undefined4 *)(DAT_1f8000c8 + (uVar3 >> 5 & 0x7f8));
+	DAT_1f800228 = *puVar9;
+	DAT_1f80022c._0_2_ = (undefined2)puVar9[1];
+	uVar10 = puVar6[1];
+	(&DAT_1f800228)[n * 2] = *puVar6;
+	(&DAT_1f80022c)[n * 2] = uVar10;
+	iVar2 = (uVar3 >> 0x18) * 8;
+	puVar8 = (undefined4 *)(iVar5 + iVar2);
+	puVar1 = &DAT_1f800228 + m * 10;
+	uVar10 = puVar8[1];
+	*puVar1 = *puVar8;
+	(&DAT_1f80022c)[m * 10] = uVar10;
+	iVar5 = DAT_1f8000c8;
+	puVar4 = (undefined4 *)((uVar3 >> 0xd & 0x7f8) + DAT_1f8000c8);
+	uVar10 = puVar4[1];
+	puVar1[n * 2] = *puVar4;
+	(puVar1 + n * 2)[1] = uVar10;
+	setCopReg(2, in_zero, *puVar9);
+	setCopReg(2, in_at, puVar9[1]);
+	setCopReg(2, iVar5, *puVar6);
+	setCopReg(2, iVar2, puVar6[1]);
+	setCopReg(2, puVar4, *puVar8);
+	setCopReg(2, puVar6, puVar8[1]);
+	copFunction(2, 0x280030);
+	uVar10 = *(undefined4 *)(polys + 0xc);
+	DAT_1f80022c = CONCAT22((short)*(undefined4 *)(polys + 8), (undefined2)DAT_1f80022c);
+	*(undefined2 *)((int)&DAT_1f80022c + n * 8 + 2) =
+		(short)((uint)*(undefined4 *)(polys + 8) >> 0x10);
+	*(undefined2 *)((int)&DAT_1f80022c + m * 0x28 + 2) = (short)((uint)uVar10 >> 0x10);
+	*(undefined2 *)((int)&DAT_1f80022c + n * 8 + m * 0x28 + 2) = (short)uVar10;
+	copFunction(2, 0x1400006);
+	_DAT_1f800208 = getCopReg(2, 0xc);
+	_DAT_1f80020c = getCopReg(2, 0xd);
+	DAT_1f800210 = getCopReg(2, 0xe);
+	if (((0x13f < DAT_1f800208) && (0x13f < DAT_1f80020c)) && (0x13f < (ushort)DAT_1f800210)) {
+		if (_DAT_1f80020c << 0x10 < 0) {
+			DAT_1f800208 = DAT_1f800208 ^ 1;
+		}
+		if (DAT_1f800208 == 0) {
+			if (DAT_1f800210 << 0x10 < 0) {
+				if (DAT_1f80020c == 1) goto LAB_00042f08;
+			}
+			else {
+				if (DAT_1f80020c == 0) goto LAB_00042f08;
+			}
+		}
+	}
+	DAT_1f80020a = (ushort)((uint)_DAT_1f800208 >> 0x10);
+	if (((0x109 < DAT_1f80020a) &&
+		(DAT_1f80020e = (ushort)((uint)_DAT_1f80020c >> 0x10), 0x109 < DAT_1f80020e)) &&
+		(DAT_1f800210._2_2_ = (ushort)((uint)DAT_1f800210 >> 0x10), 0x109 < DAT_1f800210._2_2_)) {
+		iVar5 = (int)(short)DAT_1f80020a;
+		if (0x10f < ((int)(short)DAT_1f80020e - iVar5) + (int)(short)DAT_1f800210._2_2_ + 8U) {
+			if ((int)(short)DAT_1f80020e < 0) {
+				if (iVar5 == 1) {
+				LAB_00042db8:
+					if ((int)((uint)DAT_1f800210._2_2_ << 0x10) < 0) {
+						if (DAT_1f80020e == 1) goto LAB_00042f08;
+					}
+					else {
+						if (DAT_1f80020e == 0) goto LAB_00042f08;
+					}
+				}
+			}
+			else {
+				if (iVar5 == 0) goto LAB_00042db8;
+			}
+		}
+	}
+	local_18 = getCopReg(2, 0x18);
+	if (local_18 < 0) {
+		setCopReg(2, in_zero, (&DAT_1f800228)[m * 10 + n * 2]);
+		setCopReg(2, in_at, (&DAT_1f800228 + m * 10 + n * 2)[1]);
+		copFunction(2, 0x180001);
+		copFunction(2, 0x1400006);
+		local_18 = getCopReg(2, 0x18);
+		local_18 = -local_18;
+	}
+	if (0 < local_18) {
+		uVar3 = *(uint *)polys >> 8 & 0xffff;
+		uVar7 = *(uint *)polys >> 8 & 0xff;
+		if (DAT_1f8000cc != uVar3) {
+			DAT_1f8000b8 = (uint)*(ushort *)((uVar3 >> 8) * 2 + uVar7 * 0x40 + DAT_1f800028) << 0x10;
+			DAT_1f8000bc = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
+			DAT_1f8000cc = uVar3;
+		}
+		makeMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, n);
+		drawMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, n, (_pct *)&DAT_1f800020);
+	}
 LAB_00042f08:
-  DAT_1f8000b4 = DAT_1f8000b4 + ofse * -4;
-  return;
+	DAT_1f8000b4 = DAT_1f8000b4 + ofse * -4;
+	return;*/
 }
 
 
@@ -1102,44 +1108,45 @@ LAB_00042f08:
 	/* end block 3 */
 	// End Line: 1571
 
-void TileNxN(MODEL *model,int levels,int Dofse)
-
+void TileNxN(MODEL *model, int levels, int Dofse)
 {
-  uint uVar1;
-  byte *polys;
-  uint uVar2;
-  int iVar3;
-  int ofse;
-  
-  uVar1 = 0;
-  ofse = 0x85;
-  polys = (byte *)model->poly_block;
-  DAT_1f8000c8 = model->vertices;
-  uVar2 = *(uint *)(model + 1) >> 2;
-  if ((*(uint *)model & 0x40000080) != 0) {
-    ofse = 0xe5;
-  }
-  iVar3 = 0;
-  if (model->num_polys != 0) {
-    do {
-      switch(uVar1) {
-      case 0:
-      case 1:
-        SubdivNxM((char *)polys,levels,levels,ofse);
-        break;
-      case 3:
-        SubdivNxM((char *)polys,levels,1,Dofse);
-        break;
-      case 4:
-        SubdivNxM((char *)polys,levels,levels,0x85);
-      }
-      uVar1 = uVar2 & 7;
-      uVar2 = uVar2 >> 3;
-      iVar3 = iVar3 + 1;
-      polys = polys + PolySizes[*polys];
-    } while (iVar3 < (int)(uint)model->num_polys);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	uint uVar1;
+	byte *polys;
+	uint uVar2;
+	int iVar3;
+	int ofse;
+
+	uVar1 = 0;
+	ofse = 0x85;
+	polys = (byte *)model->poly_block;
+	DAT_1f8000c8 = model->vertices;
+	uVar2 = *(uint *)(model + 1) >> 2;
+	if ((*(uint *)model & 0x40000080) != 0) {
+		ofse = 0xe5;
+	}
+	iVar3 = 0;
+	if (model->num_polys != 0) {
+		do {
+			switch (uVar1) {
+			case 0:
+			case 1:
+				SubdivNxM((char *)polys, levels, levels, ofse);
+				break;
+			case 3:
+				SubdivNxM((char *)polys, levels, 1, Dofse);
+				break;
+			case 4:
+				SubdivNxM((char *)polys, levels, levels, 0x85);
+			}
+			uVar1 = uVar2 & 7;
+			uVar2 = uVar2 >> 3;
+			iVar3 = iVar3 + 1;
+			polys = polys + PolySizes[*polys];
+		} while (iVar3 < (int)(uint)model->num_polys);
+	}
+	return;*/
 }
 
 
@@ -1163,11 +1170,12 @@ void TileNxN(MODEL *model,int levels,int Dofse)
 	/* end block 3 */
 	// End Line: 1620
 
-void ProcessSubDivisionLump(char *lump_ptr,int lump_size)
-
+void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 {
-  SubDivisionArrays = lump_ptr;
-  return;
+	UNIMPLEMENTED();
+	/*
+	SubDivisionArrays = lump_ptr;
+	return;*/
 }
 
 
@@ -1200,35 +1208,37 @@ void ProcessSubDivisionLump(char *lump_ptr,int lump_size)
 	/* end block 4 */
 	// End Line: 1807
 
-void ProcessLowDetailTable(char *lump_ptr,int lump_size)
-
+void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 {
-  ushort *puVar1;
-  int iVar2;
-  MODEL **ppMVar3;
-  MODEL **ppMVar4;
-  
-  puVar1 = (ushort *)(lump_ptr + num_models_in_pack * 2);
-  Low2HighDetailTable = (ushort *)lump_ptr;
-  Low2LowerDetailTable = puVar1;
-  if (0 < num_models_in_pack) {
-    ppMVar3 = pLodModels1536;
-    ppMVar4 = modelpointers1536;
-    iVar2 = num_models_in_pack;
-    do {
-      if (*puVar1 == 0xffff) {
-        *ppMVar3 = *ppMVar4;
-      }
-      else {
-        *ppMVar3 = modelpointers1536[*puVar1];
-      }
-      ppMVar3 = ppMVar3 + 1;
-      ppMVar4 = ppMVar4 + 1;
-      iVar2 = iVar2 + -1;
-      puVar1 = puVar1 + 1;
-    } while (iVar2 != 0);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	ushort *puVar1;
+	int iVar2;
+	MODEL **ppMVar3;
+	MODEL **ppMVar4;
+
+	puVar1 = (ushort *)(lump_ptr + num_models_in_pack * 2);
+	Low2HighDetailTable = (ushort *)lump_ptr;
+	Low2LowerDetailTable = puVar1;
+	if (0 < num_models_in_pack) {
+		ppMVar3 = pLodModels1536;
+		ppMVar4 = modelpointers1536;
+		iVar2 = num_models_in_pack;
+		do {
+			if (*puVar1 == 0xffff) {
+				*ppMVar3 = *ppMVar4;
+			}
+			else {
+				*ppMVar3 = modelpointers1536[*puVar1];
+			}
+			ppMVar3 = ppMVar3 + 1;
+			ppMVar4 = ppMVar4 + 1;
+			iVar2 = iVar2 + -1;
+			puVar1 = puVar1 + 1;
+		} while (iVar2 != 0);
+	}
+	return;
+	*/
 }
 
 

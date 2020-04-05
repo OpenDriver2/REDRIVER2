@@ -708,111 +708,128 @@ void LaunchGame(void)
 	gMissionCompletionState = PAUSEMODE_GAMEOVER;
 	gInvincibleCar = 0; //(uint)((byte)ActiveCheats >> 2) & 1;			// [A]
 	gPlayerImmune = 0; // //(uint)((byte)ActiveCheats >> 3) & 1;		// [A]
-	if (gLoadedReplay == 0) {
+	quick_replay = 0;
+
+	if (gLoadedReplay == 0) 
+	{
 		GetRandomChase();
 	}
-	if (CurrentGameMode == 4) {
+	if (CurrentGameMode == 4) 
+	{
 		AttractMode = 0;
 		NoPlayerControl = 1;
 	}
-	else {
-		if (CurrentGameMode < 5) {
-			if (CurrentGameMode == 3) {
+	else 
+	{
+		AttractMode = 0;
+		NoPlayerControl = 0;
+
+		if (CurrentGameMode < GAMEMODE_NEXTMISSION)
+		{
+			if (CurrentGameMode == GAMEMODE_REPLAY)
+			{
 				AttractMode = 0;
 				NoPlayerControl = 1;
 				quick_replay = 1;
-				goto LAB_000533c8;
 			}
 		}
-		else {
-			if (CurrentGameMode == 6) {
-				AttractMode = 1;
-				NoPlayerControl = 1;
-				goto LAB_000533c0;
-			}
+		else if (CurrentGameMode == GAMEMODE_DEMO)
+		{
+			AttractMode = 1;
+			NoPlayerControl = 1;
 		}
-		AttractMode = 0;
-		NoPlayerControl = 0;
 	}
-LAB_000533c0:
-	quick_replay = 0;
-LAB_000533c8:
+
 	AutoDirect = 0;
 	NewLevel = 1;
+
 	bVar1 = false;
+
 	do {
 		GameInit();
 		GameLoop();
+
 		switch (WantedGameMode) {
-		case GAMEMODE_NORMAL:
-		case GAMEMODE_QUIT:
-		case GAMEMODE_DEMO:
-			FadeScreen(0xff);
-			bVar1 = true;
-			break;
-		case GAMEMODE_RESTART:
-			FadeScreen(0xff);
-			NoPlayerControl = 0;
-			quick_replay = 0;
-			AutoDirect = 0;
-			WantedGameMode = GAMEMODE_NORMAL;
-			NewLevel = 0;
-			GetRandomChase();
-			break;
-		case GAMEMODE_REPLAY:
-		case GAMEMODE_DIRECTOR:
-			if (1 < (uint)CurrentGameMode - 3) {
+			case GAMEMODE_NORMAL:
+			case GAMEMODE_QUIT:
+			case GAMEMODE_DEMO:
+			{
 				FadeScreen(0xff);
+				bVar1 = true;
+				break;
 			}
-			NoPlayerControl = 1;
-			AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
-			quick_replay = (WantedGameMode == GAMEMODE_REPLAY);
-			NewLevel = 0;
-			break;
-		case GAMEMODE_NEXTMISSION:
-			startData = &MissionStartData;
-			endData = &MissionEndData;
+			case GAMEMODE_RESTART:
+			{
+				FadeScreen(0xff);
+				NoPlayerControl = 0;
+				quick_replay = 0;
+				AutoDirect = 0;
+				WantedGameMode = GAMEMODE_NORMAL;
+				NewLevel = 0;
+				GetRandomChase();
+				break;
+			}
+			case GAMEMODE_REPLAY:
+			case GAMEMODE_DIRECTOR:
+			{
+				if (1 < (uint)CurrentGameMode - 3) {
+					FadeScreen(0xff);
+				}
+				NoPlayerControl = 1;
+				AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
+				quick_replay = (WantedGameMode == GAMEMODE_REPLAY);
+				NewLevel = 0;
+				break;
+			}
+			case GAMEMODE_NEXTMISSION:
+			{
+				startData = &MissionStartData;
+				endData = &MissionEndData;
 
-			// [A] VALID CODE ?
-			memcpy(&MissionStartData, &MissionEndData, sizeof(MissionEndData));
+				// [A] VALID CODE ?
+				memcpy(&MissionStartData, &MissionEndData, sizeof(MissionEndData));
 
-			/*
-			// another 16 byte aligned memcpy
+				/*
+				// another 16 byte aligned memcpy
 
-			startData = &MissionStartData;
-			endData = &MissionEndData;
-			do {
-				lVar2 = (endData->PlayerPos).vx;
-				lVar3 = (endData->PlayerPos).vy;
-				lVar4 = (endData->PlayerPos).vz;
-				*(undefined4 *)&startData->PlayerPos = *(undefined4 *)&endData->PlayerPos;
-				(startData->PlayerPos).vx = lVar2;
-				(startData->PlayerPos).vy = lVar3;
-				(startData->PlayerPos).vz = lVar4;
-				endData = (MISSION_DATA *)&(endData->PlayerPos).felony;
-				startData = (MISSION_DATA *)&(startData->PlayerPos).felony;
-			} while (endData != (MISSION_DATA *)&MissionEndData.CarPos[5].vz);
-			*(long *)&startData->PlayerPos = MissionEndData.CarPos[5].vz;
-			*/
+				startData = &MissionStartData;
+				endData = &MissionEndData;
+				do {
+					lVar2 = (endData->PlayerPos).vx;
+					lVar3 = (endData->PlayerPos).vy;
+					lVar4 = (endData->PlayerPos).vz;
+					*(undefined4 *)&startData->PlayerPos = *(undefined4 *)&endData->PlayerPos;
+					(startData->PlayerPos).vx = lVar2;
+					(startData->PlayerPos).vy = lVar3;
+					(startData->PlayerPos).vz = lVar4;
+					endData = (MISSION_DATA *)&(endData->PlayerPos).felony;
+					startData = (MISSION_DATA *)&(startData->PlayerPos).felony;
+				} while (endData != (MISSION_DATA *)&MissionEndData.CarPos[5].vz);
+				*(long *)&startData->PlayerPos = MissionEndData.CarPos[5].vz;
+				*/
 
-			gHaveStoredData = 1;
-			FadeScreen(0xff);
-			bVar1 = true;
-			NoPlayerControl = 0;
-			quick_replay = 0;
-			AutoDirect = 0;
+				gHaveStoredData = 1;
+				FadeScreen(0xff);
+				bVar1 = true;
+				NoPlayerControl = 0;
+				quick_replay = 0;
+				AutoDirect = 0;
+			}
 		}
 		CurrentGameMode = WantedGameMode;
 	} while (!bVar1);
+
 	lead_car = 0;
 	NoPlayerControl = 0;
 	SetDispMask(0);
 	EnableDisplay();
+
 	rect.x = 0;
 	rect.y = 0;
 	rect.w = 0x200;
 	rect.h = 0x200;
 	ClearImage(&rect, 0, 0, 0);
+
 	DrawSync(0);
 	SetDispMask(1);
 }

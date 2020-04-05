@@ -1,7 +1,7 @@
 #include "THISDUST.H"
 #include "SEARCH.H"
 
-
+/*
 TEXTURE_DETAILS addcam; // address 0xC0A50
 TEXTURE_DETAILS arm1_texture; // address 0xC1BF8
 TEXTURE_DETAILS autocam; // address 0xC1CA0
@@ -57,7 +57,7 @@ TEXTURE_DETAILS tannerShadow_texture; // address 0xC0EF0
 TEXTURE_DETAILS texturePedHead; // address 0xC29D0
 TEXTURE_DETAILS trail_texture; // address 0xC1FB0
 TEXTURE_DETAILS watch_texture; // address 0xC1F80
-
+*/
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitTextureNames()
@@ -75,9 +75,8 @@ TEXTURE_DETAILS watch_texture; // address 0xC1F80
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitTextureNames(void)
-
 {
-  return;
+	return;
 }
 
 

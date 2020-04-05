@@ -45,6 +45,16 @@ extern OTTYPE _tempOT2[OTSIZE];
 extern char _tempPrimTab1[0x8000];		// 0xFB400
 extern char _tempPrimTab2[0x8000];		// 0x119400
 
+#define CITYLUMP_DATA1		0
+#define CITYLUMP_TPAGE		1
+#define CITYLUMP_DATA2		2
+#define CITYLUMP_SPOOL		3
+
+extern int citystart[8];
+extern XYPAIR citylumps[8][4];
+
+extern short rcossin_tbl[8192];
+
 #ifdef PAL
 #define draw_mode draw_mode_pal
 #define video_mode MODE_PAL
@@ -52,6 +62,8 @@ extern char _tempPrimTab2[0x8000];		// 0x119400
 #define draw_mode draw_mode_ntsc
 #define video_mode MODE_NTSC
 #endif // PAL
+
+#define CDSECTOR_SIZE 2048
 
 extern void ClearMem(char *mem, int size); // 0x0007F3E8
 
@@ -69,11 +81,11 @@ extern int LoadfileSeg(char *name, char *addr, int offset, int loadsize); // 0x0
 
 extern void ReportMode(int on); // 0x0007F8B8
 
-extern void data_ready(); // 0x0007FA44
-
-extern void sector_ready(unsigned char intr, unsigned char *result); // 0x0007FA74
-
+#ifdef PSX
 extern void loadsectors(char *addr, int sector, int nsectors); // 0x0007F904
+#else
+extern void loadsectorsPC(char* filename, char *addr, int sector, int nsectors);
+#endif // PSX
 
 extern void EnableDisplay(); // 0x0007F984
 

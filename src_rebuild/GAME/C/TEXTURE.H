@@ -1,6 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+extern char* texturename_buffer;
 
 extern void IncrementClutNum(struct RECT *clut); // 0x00080DDC
 

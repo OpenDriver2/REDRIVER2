@@ -3,6 +3,7 @@
 #include "SYSTEM.H"
 #include "MGENERIC.H"
 #include "DEBRIS.H"
+#include "DR2ROADS.H"
 
 #include <string.h>
 
@@ -136,9 +137,6 @@ STOPCOPS gStopCops;
 MR_MISSION Mission;
 u_long MissionStack[16][16];
 MR_THREAD MissionThreads[16];
-
-ulong* Driver2TempJunctionsPtr = NULL;
-int NumTempJunctions = 0;
 
 unsigned char reservedSlots[20];	// car slots
 
@@ -301,7 +299,7 @@ int gShowPlayerDamage = 0;
 int gDontPingInCops = 0;
 int gBatterPlayer = 1;
 
-int wantedCar[2] = { 0 };
+int wantedCar[2] = { -1, -1 };
 
 _TARGET *MissionTargets;
 unsigned long *MissionScript;
@@ -548,11 +546,16 @@ LAB_00060e70:
 	else {
 		gMissionTitle = NULL;
 	}
-	if (wantedCar[0] != -1) {
+	if (wantedCar[0] != -1) 
+	{
 		PlayerStartInfo[0]->model = wantedCar[0];
-		if ((wantedCar[0] == 0) || (4 < wantedCar[0])) {
+
+		if ((wantedCar[0] == 0) || (4 < wantedCar[0])) 
+		{
 			PlayerStartInfo[0]->palette = '\0';
-			if (3 < wantedCar[0]) {
+
+			if (3 < wantedCar[0])
+			{
 				MissionHeader->residentModels[4] = wantedCar[0];
 			}
 		}
@@ -560,18 +563,24 @@ LAB_00060e70:
 			MissionHeader->residentModels[0] = wantedCar[0];
 		}
 	}
-	if (wantedCar[1] != -1) {
+
+	if (wantedCar[1] != -1)
+	{
 		PlayerStartInfo[1]->model = wantedCar[1];
-		if ((wantedCar[1] == 0) || (4 < wantedCar[1])) {
+
+		if ((wantedCar[1] == 0) || (4 < wantedCar[1]))
+		{
 			PlayerStartInfo[1]->palette = '\0';
 		}
-		else {
+		else
+		{
 			MissionHeader->residentModels[1] = wantedCar[1];
 		}
 	}
-	if (GameType == GAME_CAPTURETHEFLAG) {
+
+	if (GameType == GAME_CAPTURETHEFLAG)
 		ActivateNextFlag();
-	}
+
 	MRInitialiseThread((MR_THREAD *)&MissionThreads, MissionScript, '\0');
 	return;
 }

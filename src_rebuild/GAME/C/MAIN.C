@@ -24,6 +24,7 @@
 #include "PRES.H"
 #include "DRAW.H"
 #include "DENTING.H"
+#include "COSMETIC.H"
 #include "PEDEST.H"
 #include "SPOOL.H"
 #include "MAP.H"
@@ -41,6 +42,11 @@
 #include "JOB_FX.H"
 #include "DIRECTOR.H"
 #include "CONVERT.H"
+#include "TILE.H"
+#include "OVERMAP.H"
+#include "MOTION_C.H"
+#include "DR2ROADS.H"
+#include "MODELS.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -60,6 +66,46 @@ int levelstartpos[8][4] = {
 	{ 0xFFFD67F0, 0x1813, 0x58228, 0},
 	{ 0xFFFFD6FC, 0xFFFFE7ED, 0xFFFFA980, 0},
 	{ 0xFFFFDCDD, 0xFFFFE7ED, 0xF8A7, 0},
+};
+
+enum LevLumpType
+{
+	// known lumps indexes
+	LUMP_MODELS				= 1,		// level models
+	LUMP_MAP				= 2,		// map info
+
+	LUMP_TEXTURENAMES		= 5,		// texture name strings
+
+	LUMP_ROADMAP			= 7,		// unused lump in Driver 2
+	LUMP_ROADS				= 8,		// unused lump in Driver 2
+	LUMP_JUNCTIONS			= 9,		// unused lump in Driver 2
+	LUMP_ROADSURF			= 10,		// unused lump in Driver 2
+
+	LUMP_MODELNAMES			= 12,		// model name strings
+
+	LUMP_ROADBOUNDS			= 16,		// unused lump in Driver 2
+	LUMP_JUNCBOUNDS			= 17,		// unused lump in Driver 2
+
+	LUMP_SUBDIVISION		= 20,		
+	LUMP_LOWDETAILTABLE		= 21,		// LOD tables for models
+	LUMP_MOTIONCAPTURE		= 22,		// motion capture/animation data for peds and Tanner
+	LUMP_OVERLAYMAP			= 24,		// overlay map
+	LUMP_PALLET				= 25,		// car palettes
+	LUMP_SPOOLINFO			= 26,		// level region spooling
+	LUMP_CAR_MODELS			= 28,		// car models
+
+	LUMP_CHAIR				= 33,
+	LUMP_TEXTUREINFO		= 34,		// texture page info and details (atlases)
+
+	LUMP_LEVELDESC			= 35,
+	LUMP_LEVELDATA			= 36,
+	LUMP_LUMPDESC			= 37,
+
+	LUMP_STRAIGHTS2			= 40,		// road straights (AI)
+	LUMP_CURVES2			= 41,
+
+	LUMP_JUNCTIONS2			= 42,		// previously LUMP_JUNCTIONS2
+	LUMP_JUNCTIONS2_NEW		= 43,		// Only appear in release Driver2
 };
 
 // decompiled code
@@ -113,281 +159,173 @@ int levelstartpos[8][4] = {
 
 void ProcessLumps(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	int *piVar2;
-	int *piVar3;
-	int *piVar4;
-	int *piVar5;
+	int quit;
 	uint uVar6;
-	int iVar7;
+	int lump_type;
 	DRIVER2_JUNCTION *pDVar8;
 	ulong *puVar9;
-	int lump_size_00;
-	int *lump_ptr_00;
+	int size;
+	int *ptr;
 
-	bVar1 = false;
+	quit = false;
 	do {
-		iVar7 = *(int *)lump_ptr;
-		lump_size_00 = ((int *)lump_ptr)[1];
-		lump_ptr_00 = (int *)lump_ptr + 2;
-		if (iVar7 == 0x15) {
-			ProcessLowDetailTable((char *)lump_ptr_00, lump_size_00);
-			piVar2 = (int *)car_models_lump;
-			piVar3 = (int *)palette_lump;
-			piVar4 = (int *)map_lump;
-			piVar5 = (int *)texturename_buffer;
-		LAB_00059028:
-			texturename_buffer = (char *)piVar5;
-			map_lump = (char *)piVar4;
-			palette_lump = (char *)piVar3;
-			car_models_lump = (char *)piVar2;
-			uVar6 = lump_size_00 + 3U & 0xfffffffc;
+		lump_type = *(int *)lump_ptr;
+		size = ((int *)lump_ptr)[1];
+		ptr = (int *)lump_ptr + 2;
+
+		if (lump_type == LUMP_LOWDETAILTABLE) 
+		{
+			printf("LUMP_LOWDETAILTABLE: size: %d\n", size);
+			ProcessLowDetailTable((char *)ptr, size);
 		}
-		else {
-			piVar2 = (int *)car_models_lump;
-			piVar3 = (int *)palette_lump;
-			piVar4 = (int *)map_lump;
-			piVar5 = (int *)texturename_buffer;
-			if (0x15 < iVar7) {
-				if (iVar7 == 0x21) {
-					ProcessChairLump((char *)lump_ptr_00, lump_size_00);
-					piVar2 = (int *)car_models_lump;
-					piVar3 = (int *)palette_lump;
-					piVar4 = (int *)map_lump;
-					piVar5 = (int *)texturename_buffer;
-				}
-				else {
-					if (iVar7 < 0x22) {
-						piVar3 = lump_ptr_00;
-						if (iVar7 != 0x19) {
-							if (iVar7 < 0x1a) {
-								if (iVar7 == 0x16) {
-									ProcessMotionLump((char *)lump_ptr_00, lump_size_00);
-									gLoadedMotionCapture = 1;
-									piVar2 = (int *)car_models_lump;
-									piVar3 = (int *)palette_lump;
-									piVar4 = (int *)map_lump;
-									piVar5 = (int *)texturename_buffer;
-								}
-								else {
-									piVar3 = (int *)palette_lump;
-									if (iVar7 == 0x18) {
-										ProcessOverlayLump((char *)lump_ptr_00, lump_size_00);
-										gLoadedOverlay = 1;
-										piVar2 = (int *)car_models_lump;
-										piVar3 = (int *)palette_lump;
-										piVar4 = (int *)map_lump;
-										piVar5 = (int *)texturename_buffer;
-									}
-								}
-							}
-							else {
-								if (iVar7 == 0x1a) {
-									ProcessSpoolInfoLump((char *)lump_ptr_00, lump_size);
-									ProcessMapLump(map_lump, 0);
-									region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
+		else if (lump_type == LUMP_CHAIR)
+		{
+			printf("LUMP_CHAIR: size: %d\n", size);
+			ProcessChairLump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_MOTIONCAPTURE)
+		{
+			printf("LUMP_MOTIONCAPTURE: size: %d\n", size);
+			ProcessMotionLump((char *)ptr, size);
+			gLoadedMotionCapture = 1;
+		}
+		else if (lump_type == LUMP_OVERLAYMAP)
+		{
+			printf("LUMP_OVERLAYMAP: size: %d\n", size);
+			ProcessOverlayLump((char *)ptr, size);
+			gLoadedOverlay = 1;
+		}
+		else if (lump_type == LUMP_SPOOLINFO)
+		{
+			printf("LUMP_SPOOLINFO: size: %d\n", size);
+			ProcessSpoolInfoLump((char *)ptr, lump_size);
+			ProcessMapLump(map_lump, 0);
 
-									// I don't think sdSelfModifyingCode were ever used by the game, but time will tell...
-									//sdSelfModifyingCode =
-									//	sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 0xc;
+			// [A] I don't think it's used anymore
+			//region_buffer_xor =
+			//	(cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
 
-									piVar2 = (int *)car_models_lump;
-									piVar3 = (int *)palette_lump;
-									piVar4 = (int *)map_lump;
-									piVar5 = (int *)texturename_buffer;
-								}
-								else {
-									piVar2 = lump_ptr_00;
-									piVar3 = (int *)palette_lump;
-									if (iVar7 != 0x1c) {
-										piVar2 = (int *)car_models_lump;
-									}
-								}
-							}
-						}
-					}
-					else {
-						if (iVar7 == 0x29) {
-							ProcessCurvesDriver2Lump((char *)lump_ptr_00, lump_size_00);
-							piVar2 = (int *)car_models_lump;
-							piVar3 = (int *)palette_lump;
-							piVar4 = (int *)map_lump;
-							piVar5 = (int *)texturename_buffer;
-						}
-						else {
-							if (iVar7 < 0x2a) {
-								if (iVar7 == 0x22) {
-									ProcessTextureInfo((char *)lump_ptr_00);
-									piVar2 = (int *)car_models_lump;
-									piVar3 = (int *)palette_lump;
-									piVar4 = (int *)map_lump;
-									piVar5 = (int *)texturename_buffer;
-								}
-								else {
-									if (iVar7 == 0x28) {
-										ProcessStraightsDriver2Lump((char *)lump_ptr_00, lump_size_00);
-										piVar2 = (int *)car_models_lump;
-										piVar3 = (int *)palette_lump;
-										piVar4 = (int *)map_lump;
-										piVar5 = (int *)texturename_buffer;
-									}
-								}
-							}
-							else {
-								if (iVar7 == 0x2b) {
-									ProcessJunctionsDriver2Lump((char *)lump_ptr_00, lump_size_00, 0);
-									iVar7 = NumTempJunctions;
-									pDVar8 = Driver2JunctionsPtr;
-									puVar9 = Driver2TempJunctionsPtr;
-									piVar2 = (int *)car_models_lump;
-									piVar3 = (int *)palette_lump;
-									piVar4 = (int *)map_lump;
-									piVar5 = (int *)texturename_buffer;
-									if (0 < NumTempJunctions) {
-										do {
-											iVar7 = iVar7 + -1;
-											pDVar8->flags = *puVar9;
-											pDVar8 = pDVar8 + 1;
-											puVar9 = puVar9 + 1;
-											piVar2 = (int *)car_models_lump;
-											piVar3 = (int *)palette_lump;
-											piVar4 = (int *)map_lump;
-											piVar5 = (int *)texturename_buffer;
-										} while (iVar7 != 0);
-									}
-								}
-								else {
-									if (iVar7 < 0x2b) {
-										ProcessJunctionsDriver2Lump((char *)lump_ptr_00, lump_size_00, 1);
-										iVar7 = NumTempJunctions;
-										pDVar8 = Driver2JunctionsPtr;
-										puVar9 = Driver2TempJunctionsPtr;
-										piVar2 = (int *)car_models_lump;
-										piVar3 = (int *)palette_lump;
-										piVar4 = (int *)map_lump;
-										piVar5 = (int *)texturename_buffer;
-										if (0 < NumTempJunctions) {
-											do {
-												iVar7 = iVar7 + -1;
-												pDVar8->flags = *puVar9;
-												pDVar8 = pDVar8 + 1;
-												puVar9 = puVar9 + 1;
-												piVar2 = (int *)car_models_lump;
-												piVar3 = (int *)palette_lump;
-												piVar4 = (int *)map_lump;
-												piVar5 = (int *)texturename_buffer;
-											} while (iVar7 != 0);
-										}
-									}
-									else {
-										if (iVar7 == 0xff) {
-											bVar1 = true;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				goto LAB_00059028;
-			}
-			if (iVar7 == 9) {
-				ProcessJunctionsLump((char *)lump_ptr_00, lump_size_00);
-				piVar2 = (int *)car_models_lump;
-				piVar3 = (int *)palette_lump;
-				piVar4 = (int *)map_lump;
-				piVar5 = (int *)texturename_buffer;
-				goto LAB_00059028;
-			}
-			if (iVar7 < 10) {
-				piVar5 = lump_ptr_00;
-				if (iVar7 != 5) {
-					if (iVar7 < 6) {
-						if (iVar7 == 1) {
-							ProcessMDSLump((char *)lump_ptr_00, lump_size_00);
-							ProcessCarModelLump(car_models_lump, 0);
-							InitModelNames();
-							SetUpEvents(1);
-							piVar2 = (int *)car_models_lump;
-							piVar3 = (int *)palette_lump;
-							piVar4 = (int *)map_lump;
-							piVar5 = (int *)texturename_buffer;
-						}
-						else {
-							piVar4 = lump_ptr_00;
-							piVar5 = (int *)texturename_buffer;
-							if (iVar7 != 2) {
-								piVar4 = (int *)map_lump;
-							}
-						}
-					}
-					else {
-						if (iVar7 == 7) {
-							NewProcessRoadMapLump(&roadMapLumpData, (char *)lump_ptr_00);
-							piVar2 = (int *)car_models_lump;
-							piVar3 = (int *)palette_lump;
-							piVar4 = (int *)map_lump;
-							piVar5 = (int *)texturename_buffer;
-						}
-						else {
-							piVar5 = (int *)texturename_buffer;
-							if (iVar7 == 8) {
-								ProcessRoadsLump((char *)lump_ptr_00, lump_size_00);
-								piVar2 = (int *)car_models_lump;
-								piVar3 = (int *)palette_lump;
-								piVar4 = (int *)map_lump;
-								piVar5 = (int *)texturename_buffer;
-							}
-						}
-					}
-				}
-				goto LAB_00059028;
-			}
-			if (iVar7 == 0x10) {
-				ProcessRoadBoundsLump((char *)lump_ptr_00, lump_size_00);
-				piVar2 = (int *)car_models_lump;
-				piVar3 = (int *)palette_lump;
-				piVar4 = (int *)map_lump;
-				piVar5 = (int *)texturename_buffer;
-				goto LAB_00059028;
-			}
-			if (0x10 < iVar7) {
-				if (iVar7 == 0x11) {
-					ProcessJuncBoundsLump((char *)lump_ptr_00, lump_size_00);
-					piVar2 = (int *)car_models_lump;
-					piVar3 = (int *)palette_lump;
-					piVar4 = (int *)map_lump;
-					piVar5 = (int *)texturename_buffer;
-				}
-				else {
-					if (iVar7 == 0x14) {
-						ProcessSubDivisionLump((char *)lump_ptr_00, lump_size_00);
-						piVar2 = (int *)car_models_lump;
-						piVar3 = (int *)palette_lump;
-						piVar4 = (int *)map_lump;
-						piVar5 = (int *)texturename_buffer;
-					}
-				}
-				goto LAB_00059028;
-			}
-			if (iVar7 == 10) goto LAB_00059028;
-			if (iVar7 == 0xc) {
-				uVar6 = lump_size_00 + 3U & 0xfffffffc;
-				modelname_buffer = (char *)lump_ptr_00;
-			}
-			else {
-				uVar6 = lump_size_00 + 3U & 0xfffffffc;
+			//sdSelfModifyingCode =
+			//	sdSelfModifyingCode ^
+			//	(sdSelfModifyingCode ^ region_buffer_xor) & 0xc;
+		}
+		else if (lump_type == LUMP_CURVES2) 
+		{
+			printf("LUMP_CURVES2: size: %d\n", size);
+			ProcessCurvesDriver2Lump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_TEXTURENAMES)
+		{
+			printf("LUMP_TEXTURENAMES: size: %d\n", size);
+			texturename_buffer = (char*)ptr;
+		}
+		else if (lump_type == LUMP_TEXTUREINFO) 
+		{
+			printf("LUMP_TEXTUREINFO: size: %d\n", size);
+			ProcessTextureInfo((char *)ptr);
+		}
+		else if (lump_type == LUMP_STRAIGHTS2) 
+		{
+			printf("LUMP_STRAIGHTS2: size: %d\n", size);
+			ProcessStraightsDriver2Lump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_JUNCTIONS2_NEW)
+		{
+			printf("LUMP_JUNCTIONS2_NEW: size: %d\n", size);
+			ProcessJunctionsDriver2Lump((char *)ptr, size, 0);
+			lump_type = NumTempJunctions;
+			pDVar8 = Driver2JunctionsPtr;
+			puVar9 = Driver2TempJunctionsPtr;
+
+			if (0 < NumTempJunctions)
+			{
+				do {
+					lump_type = lump_type + -1;
+					pDVar8->flags = *puVar9;
+					pDVar8 = pDVar8 + 1;
+					puVar9 = puVar9 + 1;
+				} while (lump_type != 0);
 			}
 		}
-		lump_size = lump_size_00 + 3;
-		lump_ptr = (char *)((int)lump_ptr_00 + uVar6);
-		if (bVar1) {
+		else if (lump_type == LUMP_JUNCTIONS2)
+		{
+			printf("LUMP_JUNCTIONS2: size: %d\n", size);
+			ProcessJunctionsDriver2Lump
+			((char *)ptr, size, 1);
+			lump_type = NumTempJunctions;
+			pDVar8 = Driver2JunctionsPtr;
+			puVar9 = Driver2TempJunctionsPtr;
+
+			if (0 < NumTempJunctions) {
+				do {
+					lump_type = lump_type + -1;
+					pDVar8->flags = *puVar9;
+					pDVar8 = pDVar8 + 1;
+					puVar9 = puVar9 + 1;
+				} while (lump_type != 0);
+			}
+		}
+		else if (lump_type == LUMP_JUNCTIONS)
+		{
+			printf("LUMP_JUNCTIONS: size: %d\n", size);
+			ProcessJunctionsLump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_MODELS)
+		{
+			printf("LUMP_MODELS: size: %d\n", size);
+			ProcessMDSLump((char *)ptr, size);
+			ProcessCarModelLump(car_models_lump, 0);
+			InitModelNames();
+			SetUpEvents(1);
+		}
+		else if (lump_type == LUMP_ROADMAP)
+		{
+			printf("LUMP_ROADMAP: size: %d\n", size);
+			NewProcessRoadMapLump(&roadMapLumpData, (char *)ptr);
+		}
+		else if (lump_type == LUMP_ROADS)
+		{
+			printf("LUMP_ROADS: size: %d\n", size);
+			ProcessRoadsLump((char *)ptr, size);
+		}
+		if (lump_type == LUMP_ROADBOUNDS)
+		{
+			printf("LUMP_ROADBOUNDS: size: %d\n", size);
+			ProcessRoadBoundsLump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_JUNCBOUNDS)
+		{
+			printf("LUMP_JUNCBOUNDS: size: %d\n", size);
+			ProcessJuncBoundsLump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_SUBDIVISION)
+		{
+			printf("LUMP_SUBDIVISION: size: %d\n", size);
+			ProcessSubDivisionLump((char *)ptr, size);
+		}
+		else if (lump_type == LUMP_ROADSURF)
+		{
+			printf("LUMP_ROADSURF: size: %d\n", size);
+		}
+		else if (lump_type == LUMP_MODELNAMES)
+		{
+			printf("LUMP_MODELNAMES: size: %d\n", size);
+			modelname_buffer = (char *)ptr;
+		}
+		else if (lump_type == 0xff)
+		{
+			quit = true;
+		}
+
+		uVar6 = size + 3 & 0xFFFFFFFC;
+
+		lump_size = size + 3;
+		lump_ptr = (char*)ptr + uVar6;
+
+		if (quit) 
 			return;
-		}
+
 	} while (true);
-	*/
 }
 
 
@@ -430,17 +368,21 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int SpoolLumpOffset;
+SEATED_PEDESTRIANS* seated_pedestrian = NULL;
+
+// [D]
 void LoadGameLevel(void)
 {
-	UNIMPLEMENTED();
-	/*
-	char *addr;
+	char *malloc_lump;
 	int nsectors;
-	int local_20[2];
+	int sector;
 
-	seated_pedestrian = (SEATED_PEDESTRIANS *)0x0;
+	seated_pedestrian = NULL;
 	LoadCosmetics(GameLevel);
-	if (gMultiplayerLevels == 0) {
+
+	if (gMultiplayerLevels == 0)
+	{
 		if (gTimeOfDay == 3) {
 			SetCityType(CITYTYPE_NIGHT);
 		}
@@ -457,43 +399,70 @@ void LoadGameLevel(void)
 		}
 	}
 	ReportMode(0);
-	local_20[0] = citylumps[GameLevel * 4].x;
-	if (local_20[0] < 0) {
-		local_20[0] = local_20[0] + 2047;
+	sector = citylumps[GameLevel][0].x;
+
+	if (sector < 0) {
+		sector = sector + 2047;
 	}
-	nsectors = citylumps[GameLevel * 4].y;
-	local_20[0] = local_20[0] >> 0xb;
+
+	nsectors = citylumps[GameLevel][0].y;
+	sector = sector / CDSECTOR_SIZE;
+
 	if (nsectors < 0) {
-		nsectors = nsectors + 2047;
+		nsectors = nsectors + (CDSECTOR_SIZE-1);
 	}
-	nsectors = nsectors >> 0xb;
-	loadsectors(&DAT_000fb400, local_20[0], nsectors);
-	local_20[0] = local_20[0] + nsectors;
-	ProcessLumps(&DAT_000fb408, nsectors << 0xb);
-	LoadPermanentTPages(local_20);
-	addr = mallocptr;
-	local_20[0] = citylumps[GameLevel * 4 + 2].x;
-	if (local_20[0] < 0) {
-		local_20[0] = local_20[0] + 0x7ff;
+
+	nsectors = nsectors / CDSECTOR_SIZE;
+
+#ifdef PSX 
+	loadsectors(_frontend_buffer, sector, nsectors);
+#else
+	extern char g_CurrentLevelFileName[64];
+	loadsectorsPC(g_CurrentLevelFileName, _frontend_buffer, sector, nsectors);
+#endif // PSX
+
+	sector += nsectors;
+
+	// CITYLUMP_DATA1
+	ProcessLumps(_frontend_buffer+8, nsectors * CDSECTOR_SIZE);
+
+	// CITYLUMP_TPAGE is right next after DATA1
+	LoadPermanentTPages(&sector);
+
+	malloc_lump = mallocptr;
+	sector = citylumps[GameLevel][CITYLUMP_DATA2].x;
+
+	if (sector < 0) {
+		sector = sector + (CDSECTOR_SIZE-1);
 	}
-	nsectors = citylumps[GameLevel * 4 + 2].y;
-	local_20[0] = local_20[0] >> 0xb;
+
+	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y;
+	sector = sector / CDSECTOR_SIZE;
+
 	if (nsectors < 0) {
-		nsectors = nsectors + 0x7ff;
+		nsectors = nsectors + (CDSECTOR_SIZE-1);
 	}
-	nsectors = nsectors >> 0xb;
-	mallocptr = mallocptr + nsectors * 0x800;
-	loadsectors(addr, local_20[0], nsectors);
-	local_20[0] = local_20[0] + nsectors;
-	ProcessLumps(addr + 8, nsectors * 0x800);
-	SpoolLumpOffset = citylumps[GameLevel * 4 + 3].x;
-	Init_Reflection_Mapping();
+
+	nsectors = nsectors / CDSECTOR_SIZE;
+	mallocptr = mallocptr + (nsectors * CDSECTOR_SIZE);
+
+#ifdef PSX
+	loadsectors(malloc_lump, sector, nsectors);
+#else
+	extern char g_CurrentLevelFileName[64];
+	loadsectorsPC(g_CurrentLevelFileName, malloc_lump, sector, nsectors);
+#endif // PSX
+	sector += nsectors;
+
+	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));
+
+	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x;
+
+	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
 	InitDebrisNames();
 	InitShadow();
-	InitTextureNames();
+	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
 	ReportMode(1);
-	return;
-	*/
 }
 
 
@@ -726,10 +695,10 @@ void GameInit(void)
 	long lVar1;
 	_PLAYER *p_Var2;
 	STREAM_SOURCE *pSVar3;
-	int iVar4;
+	int i;
 	int iVar5;
 	int iVar6;
-	char local_30[8];
+	char padid;
 	short totaldam;
 
 	if (NewLevel == 0) {
@@ -738,16 +707,19 @@ void GameInit(void)
 	else {
 		packed_cell_pointers = D_MALLOC(0x1000);
 	}
+
 	gameinit = 1;
 	InitGameVariables();
 	InitEvents();
 	InitPadRecording();
 	InitSpeechQueue(&gSpeechQueue);
+
 	if (NewLevel != 0) {
 		leadAIRequired = 0;
 		leadAILoaded = 0;
 		pathAILoaded = 0;
 	}
+
 	LoadMission(gCurrentMissionNumber);
 	if (gCurrentMissionNumber == 0x26) {
 		MissionHeader->residentModels[4] = 9;
@@ -763,6 +735,7 @@ void GameInit(void)
 		NoPlayerControl = 1;
 	}
 	ResetSound();
+
 	LockChannel(0);
 	LockChannel(1);
 	LockChannel(2);
@@ -771,43 +744,51 @@ void GameInit(void)
 		LockChannel(4);
 		LockChannel(5);
 	}
+
 	if (NewLevel != 0) {
 		ShowLoading();
 		LoadLevelSFX(gCurrentMissionNumber);
 	}
+
 	PauseSound();
 	ThisMotion = 0;
-	if (GameLevel == 1) {
+
+	if (GameLevel == 1) 
+	{
 		gMusicType = 1;
-		if ((gCurrentMissionNumber & 1U) != 0) {
+
+		if ((gCurrentMissionNumber & 1U) != 0) 
 			gMusicType = 5;
-		}
 	}
-	else {
-		if (GameLevel < 2) {
-			if ((GameLevel == 0) && (gMusicType = 2, (gCurrentMissionNumber & 1U) != 0)) {
-				gMusicType = 6;
-			}
-		}
-		else {
-			if (GameLevel == 2) {
-				gMusicType = 0;
-				if ((gCurrentMissionNumber & 1U) == 0) {
-					gMusicType = 3;
-				}
-			}
-			else {
-				if ((GameLevel == 3) && (gMusicType = 4, (gCurrentMissionNumber & 1U) != 0)) {
-					gMusicType = 7;
-				}
-			}
-		}
+	else if (GameLevel == 0)
+	{
+		gMusicType = 6;
+
+		if ((gCurrentMissionNumber & 1U) != 0)
+			gMusicType = 6;
 	}
+	else if (GameLevel == 2)
+	{
+		gMusicType = 0;
+
+		if ((gCurrentMissionNumber & 1U) == 0) 
+			gMusicType = 3;
+	}
+	else if(GameLevel == 3)
+	{
+		gMusicType = 4;
+
+		if((gCurrentMissionNumber & 1U) != 0)
+			gMusicType = 7;
+	}
+
 	InitMusic(gMusicType);
-	if (NewLevel == 0) {
-		if (IconsLoaded == 0) {
+
+	if (NewLevel == 0) 
+	{
+		if (IconsLoaded == 0) 
 			ReloadIcons();
-		}
+
 		IconsLoaded = 1;
 		SetUpEvents(0);
 	}
@@ -817,141 +798,156 @@ void GameInit(void)
 		LoadSky();
 		LoadFont(NULL);
 	}
-	ClearMem((char *)car_data, 0x3968);
+
+	ClearMem((char *)car_data, sizeof(car_data));
+
 	player[0].spoolXZ = (VECTOR *)car_data[0].hd.where.t;
-	car_data[0].hd.where.t[0] = (PlayerStartInfo[0]->position).vx;
-	car_data[0].hd.where.t[2] = (PlayerStartInfo[0]->position).vz;
+	car_data[0].hd.where.t[0] = PlayerStartInfo[0]->position.vx;
+	car_data[0].hd.where.t[2] = PlayerStartInfo[0]->position.vz;
+
 	CalcObjectRotationMatrices();
 	InitialiseDenting();
+
 	cameraview = 0;
-	if (gLoadedMotionCapture != 0) {
+
+	if (gLoadedMotionCapture != 0)
 		InitPedestrians();
-	}
+
 	InitSpooling();
 	InitMap();
 	InitSpecSpool();
-	if ((NewLevel == 0) && (allowSpecSpooling == 1)) {
+
+	if (NewLevel == 0 && allowSpecSpooling == 1) 
+	{
 		QuickSpoolSpecial();
 	}
-	iVar4 = 0;
+
+	
 	int_garage_door();
 	SpoolSYNC();
 	InitialiseCarHandling();
 	ClearMem((char *)&player, 0x3a0);
 	InitDrivingGames();
 	InitThrownBombs();
-	if (0 < numPlayersToCreate) {
-		iVar6 = 0;
-		iVar5 = 0;
+
+	i = 0;
+	if (0 < numPlayersToCreate) 
+	{
 		do {
-			pSVar3 = PlayerStartInfo[iVar4];
-			local_30[0] = -(char)iVar4;
+			pSVar3 = PlayerStartInfo[i];
+			padid = -(char)i;
 
-			if (iVar4 < (int)(uint)NumPlayers) {
-				local_30[0] = (char)iVar4;
-			}
-			gStartOnFoot = (pSVar3->type == '\x02');
+			if (i < (int)(uint)NumPlayers) 
+				padid = (char)i;
 
-			InitPlayer((_PLAYER *)((int)player[0].pos + iVar5),
-				(_CAR_DATA *)((int)car_data[0].hd.where.m + iVar6), pSVar3->controlType,
-				(uint)pSVar3->rotation, (long(*)[4])&pSVar3->position, (uint)pSVar3->model,
-				(uint)pSVar3->palette, local_30);
+			gStartOnFoot = (pSVar3->type == 2);
 
-			if (gStartOnFoot == 0) {
-				// copy damage values
-				*(u_short *)((int)car_data[0].ap.damage + iVar6) = *(u_short *)pSVar3->damage;
-				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 2) =*(u_short *)(pSVar3->damage + 1);
-				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 4) =*(u_short *)(pSVar3->damage + 2);
-				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 6) =*(u_short *)(pSVar3->damage + 3);
-				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 8) =*(u_short *)(pSVar3->damage + 4);
-				*(u_short *)((int)car_data[0].ap.damage + iVar6 + 10) =*(u_short *)(pSVar3->damage + 5);
+			InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (long(*)[4])&pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
 
-				totaldam = *(short *)&pSVar3->totaldamage;
-				(&car_data[0].ap.needsDenting)[iVar6] = '\x01';
-				*(short *)((int)&car_data[0].totalDamage + iVar6) = totaldam;
+			if (gStartOnFoot == 0) 
+			{
+				car_data[i].ap.damage[0] = pSVar3->damage[0];
+				car_data[i].ap.damage[1] = pSVar3->damage[1];
+				car_data[i].ap.damage[2] = pSVar3->damage[2];
+				car_data[i].ap.damage[3] = pSVar3->damage[3];
+				car_data[i].ap.damage[4] = pSVar3->damage[4];
+				car_data[i].ap.damage[5] = pSVar3->damage[5];
+
+				car_data[i].totalDamage = pSVar3->totaldamage;
+
+				car_data[i].ap.needsDenting = 1;
 			}
 
-			iVar6 = iVar6 + 0x29c;	//sizeof(_CAR_DATA)
-			iVar4 = iVar4 + 1;
-			iVar5 = iVar5 + 0x74;	// sizeof(_PLAYER)
-		} while (iVar4 < numPlayersToCreate);
+			i++;
+		} while (i < numPlayersToCreate);
 	}
-	if (pathAILoaded != 0) {
+
+	if (pathAILoaded != 0)
 		InitCops();
-	}
+
 	InitCamera(&player[0]);
-	if ((gLoadedOverlay != 0) && (NoPlayerControl == 0)) {
+
+	if (gLoadedOverlay != 0 && NoPlayerControl == 0) {
 		InitOverlays();
 		IconsLoaded = 0;
 	}
+
 	gSinkingTimer = 100;
 	gTimeInWater = 0x19;
 	InWater = 0;
 	gBobIndex = 0;
 	SetupRain();
 	InitExObjects();
-	if (NewLevel != 0) {
+
+	if (NewLevel != 0) 
+	{
 		pcoplist = (PACKED_CELL_OBJECT **)(mallocptr + 1024);
 		transparent_buffer = (ulong *)(mallocptr + 2048);
 		tile_overflow_buffer = (ulong *)mallocptr;
 		coplist = (CELL_OBJECT **)mallocptr;
 		mallocptr = mallocptr + 0x900;
 	}
-	if (NoPlayerControl == 0) {
+
+	if (NoPlayerControl == 0) 
+	{
 		DeleteAllCameras();
 	}
-	else {
+	else 
+	{
 		FindNextChange(CameraCnt);
 	}
+
 	FrAng = 0x200;
-	if (gWeather == 1) {
+
+	if (gWeather == 1) 
 		wetness = 0x1b58;
-	}
-	else {
+	else 
 		wetness = 0;
-	}
-	if (gTimeOfDay == 2) {
-		iVar4 = 0;
+
+	if (gTimeOfDay == 2)
+	{
+		i = 0;
 		do {
-			lVar1 = Random2(0);
-			lightsOnDelay[iVar4] = (unsigned char)lVar1;
-			iVar4 = iVar4 + 1;
-		} while (iVar4 < 0x14);
+			lightsOnDelay[i] = Random2(0);
+			i++;
+		} while (i < 20);
 	}
-	tracking_car = '\x01';
-	if (NoPlayerControl == 0) {
+
+	tracking_car = 1;
+
+	if (NoPlayerControl == 0)
 		StoreGameFlags();
-	}
+
 	SetReverbState(0);
-	p_Var2 = (_PLAYER*)&player;
-	iVar4 = 2;
-	do {
-		(p_Var2->horn).request = '\0';
-		(p_Var2->horn).time = '\0';
-		(p_Var2->horn).on = '\0';
-		iVar4 = iVar4 + -1;
-		p_Var2 = p_Var2 + 1;
-	} while (-1 < iVar4);
+
+	for(i = 0; i < 2; i++)
+	{
+		player[i].horn.request = 0;
+		player[i].horn.time = 0;
+		player[i].horn.on = 0;
+	}
+
 	gShowPlayerDamage = 1;
 	InitThunder();
 	GetXAData(-1);
 	SetXAVolume(0);
-	if (true) {
-		switch (gCurrentMissionNumber) {
+
+	switch (gCurrentMissionNumber) 
+	{
 		case 2:
 		case 3:
 		case 6:
-		case 0xb:
-		case 0xd:
-		case 0xe:
-		case 0x13:
-		case 0x1a:
-		case 0x1c:
-		case 0x22:
-		case 0x26:
+		case 11:
+		case 13:
+		case 14:
+		case 19:
+		case 26:
+		case 28:
+		case 34:
+		case 38:
 			FunkUpDaBGMTunez(1);
-		}
 	}
+
 	xa_timeout = 0;
 }
 
@@ -2759,33 +2755,36 @@ void InitGameVariables(void)
 
 	ClearMem((char *)&lightsOnDelay, 0x14);
 
-	PlayerStartInfo[0] = (STREAM_SOURCE*)ReplayStreams;
-	ClearMem((char *)ReplayStreams, 0x30);
+	PlayerStartInfo[0] = &ReplayStreams[0].SourceType;
+	ClearMem((char *)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
-	((STREAM_SOURCE *)PlayerStartInfo[0])->type = '\x01';
-	((STREAM_SOURCE *)PlayerStartInfo[0])->model = defaultPlayerModel[0];
-	((STREAM_SOURCE *)PlayerStartInfo[0])->palette = defaultPlayerPalette;
-	((STREAM_SOURCE *)PlayerStartInfo[0])->controlType = '\x01';
-	((STREAM_SOURCE *)PlayerStartInfo[0])->flags = 0;
-	((STREAM_SOURCE *)PlayerStartInfo[0])->rotation = levelstartpos[GameLevel][1];
-	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vx = levelstartpos[GameLevel][0];		// [A] ??
-	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vy = 0;
-	(((STREAM_SOURCE *)PlayerStartInfo[0])->position).vz = levelstartpos[GameLevel][2];
+	PlayerStartInfo[0]->type = 1;
+	PlayerStartInfo[0]->model = defaultPlayerModel[0];
+	PlayerStartInfo[0]->palette = defaultPlayerPalette;
+	PlayerStartInfo[0]->controlType = 1;
+	PlayerStartInfo[0]->flags = 0;
+
+	PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
+	PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
+	PlayerStartInfo[0]->position.vy = 0;
+	PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
 
 	numPlayersToCreate = 1;
 
 	if (NumPlayers == 2) {
-		PlayerStartInfo[1] = (STREAM_SOURCE *)(ReplayStreams + 1);
-		ClearMem((char *)(ReplayStreams + 1), 0x30);
-		PlayerStartInfo[1]->type = '\x01';
+		PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
+		ClearMem((char *)PlayerStartInfo[1], sizeof(STREAM_SOURCE));
+
+		PlayerStartInfo[1]->type = 1;
 		PlayerStartInfo[1]->model = defaultPlayerModel[1];
 		PlayerStartInfo[1]->palette = defaultPlayerPalette;
-		PlayerStartInfo[1]->controlType = '\x01';
+		PlayerStartInfo[1]->controlType = 1;
 		PlayerStartInfo[1]->flags = 0;
 		PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
-		(PlayerStartInfo[1]->position).vx = levelstartpos[GameLevel][0] + 600;
-		(PlayerStartInfo[1]->position).vy = 0;
-		(PlayerStartInfo[1]->position).vz = levelstartpos[GameLevel][2];
+		PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
+		PlayerStartInfo[1]->position.vy = 0;
+		PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+
 		numPlayersToCreate = NumPlayers;
 	}
 
