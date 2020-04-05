@@ -1,6 +1,7 @@
 #ifndef FMVPLAY_H
 #define FMVPLAY_H
 
+extern int gSubtitles;
 
 extern void ReInitSystem(); // 0x0004D478
 

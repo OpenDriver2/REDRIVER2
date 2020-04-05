@@ -2,6 +2,7 @@
 #define FEMAIN_H
 
 extern int gInFrontend;
+extern int bRedrawFrontend;
 
 extern void SetVariable(int var); // 0x001C0974
 

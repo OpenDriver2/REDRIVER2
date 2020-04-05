@@ -728,7 +728,7 @@ void GameInit(void)
 		SetupFadePolys();
 	}
 	if (NewLevel != 0) {
-		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 0x24);
+		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 36);
 	}
 	if (AttractMode != 0) {
 		TriggerInGameCutscene(0);
@@ -822,7 +822,6 @@ void GameInit(void)
 		QuickSpoolSpecial();
 	}
 
-	
 	int_garage_door();
 	SpoolSYNC();
 	InitialiseCarHandling();

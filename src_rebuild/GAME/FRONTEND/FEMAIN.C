@@ -16,6 +16,8 @@
 #include "../C/TIME.H"
 #include "../C/PRES.H"
 #include "../C/SOUND.H"
+#include "../C/DEBRIS.H"
+#include "../C/FMVPLAY.H"
 
 #include "../MEMCARD/MAIN.H"
 
@@ -98,8 +100,23 @@ char* CutSceneNames[28] =
 	"Credits"
 };
 
+int CarAvailability[4][10] = {
+	{1,1,1,1,0,0,0,0,0,0},
+	{1,1,1,1,0,0,0,0,0,0},
+	{1,1,1,1,0,0,0,0,0,0},
+	{1,1,1,1,0,0,0,0,0,0},
+};
+
+char carNumLookup[4][10] = {
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
+};
+
 char ScreenTitle[128];
 char ScoreName[128];
+
 int bDoingScores = 0;
 int bInCutSelect = 0;
 int cutSelection = 0;
@@ -115,6 +132,26 @@ int ScreenDepth = 0;
 
 int gIdleReplay = 0;
 
+int padsConnected[2] = { 1, 0 };
+int feVariableSave[4] = { -1 };
+int bCdIconSetup = 0;
+int bMissionSelect = 0;
+int bDoingCarSelect = 0;
+int bDoingCutSelect = 0;
+int bDrawExtra = 0;
+int mainScreenLoaded = 1;
+int bDoneAllready = 0;
+int allowVibration = 1;
+
+int carSelection = 0;
+int currSelIndex = 0;
+int lastCutCity = -1;
+int lastCity = -1;
+
+char* ScreenNames[12] = { 0 };
+
+char loaded[3] = { -1, 255, 0 };
+
 PSXSCREEN* pCurrScreen = NULL;
 PSXSCREEN* pNewScreen = NULL;
 
@@ -122,62 +159,18 @@ PSXBUTTON* pNewButton = NULL;
 PSXBUTTON* pCurrButton = NULL;
 
 PSXSCREEN PsxScreens[42] = { 0 };
-struct PSXSCREEN* pScreenStack[10] = { 0 };
-struct PSXBUTTON* pButtonStack[10] = { 0 };
-char* ScreenNames[12] = { 0 };
+PSXSCREEN* pScreenStack[10] = { 0 };
+PSXBUTTON* pButtonStack[10] = { 0 };
 
 POLY_FT4 BackgroundPolys[6];
-
 FE_FONT feFont;
 
-int padsConnected[2] = { 1, 0 };
-
-int CarAvailability[4][10] = {
-	{1,1,1,1,0,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0,0,0},
-};
-
-char carNumLookup[4][10] = {
-	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
-	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
-	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
-	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
-};
-
 RECT16 extraRect = { 896, 256, 64, 219 };
-int feVariableSave[4] = { -1 };
 
+POLY_FT4 cd_sprite;
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetVariable(int var /*$a0*/)
- // line 1205, offset 0x001c0974
-	/* begin block 1 */
-		// Start line: 1206
-		// Start offset: 0x001C0974
-		// Variables:
-	// 		int code; // $v1
-	// 		int value; // $a2
-	/* end block 1 */
-	// End offset: 0x001C0C1C
-	// End Line: 1362
-
-	/* begin block 2 */
-		// Start line: 2410
-	/* end block 2 */
-	// End Line: 2411
-
-	/* begin block 3 */
-		// Start line: 2414
-	/* end block 3 */
-	// End Line: 2415
-
-// temporarily here
-int bDoneAllready = 0;
-int gSubtitles = 0;	// FMV
+SPRT extraSprt;
+POLY_FT3 extraDummy;
 
 // [D]
 void SetVariable(int var)
@@ -437,8 +430,6 @@ void LoadFrontendScreens(void)
 		// Start line: 2959
 	/* end block 3 */
 	// End Line: 2960
-
-int mainScreenLoaded = 1;
 
 // [D]
 void LoadBackgroundFile(char *name)
@@ -766,15 +757,7 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 	/* end block 3 */
 	// End Line: 3526
 
-int bMissionSelect = 0;
-int bDoingCarSelect = 0;
-int bDoingCutSelect = 0;
-int bDrawExtra = 0;
 
-SPRT extraSprt;
-POLY_FT3 extraDummy;
-
-char loaded[3] = { -1, 255, 0 };
 
 // [D]
 void DrawScreen(PSXSCREEN *pScr)
@@ -1148,11 +1131,42 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ReInitScreens(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if (DAT_FRNT__001c6ac8 == 0) {
+#ifndef PSX
+	bCdIconSetup = 0;
+	bDoingScores = 0;
+	bInCutSelect = 0;
+	cutSelection = 0;
+	currCity = 0;
+
+	bRedrawFrontend = 0;
+	bReturnToMain = 0;
+
+	idle_timer = 0;
+	currPlayer = 1;
+	fePad = 0;
+	ScreenDepth = 0;
+
+	gIdleReplay = 0;
+
+	padsConnected[0] = 1;
+	padsConnected[1] = 0;
+	bCdIconSetup = 0;
+	bMissionSelect = 0;
+	bDoingCarSelect = 0;
+	bDoingCutSelect = 0;
+	bDrawExtra = 0;
+	mainScreenLoaded = 1;
+	bDoneAllready = 0;
+	allowVibration = 1;
+
+	ScreenNames[0] = 0;
+	gInFrontend = 1;
+#endif // !PSX
+
+	if (bCdIconSetup == 0) {
 		FEInitCdIcon();
 	}
 	if (bReturnToMain == 0) {
@@ -1165,21 +1179,27 @@ void ReInitScreens(void)
 		gNight = 0;
 		gTimeOfDay = 1;
 		gSubGameNumber = 0;
-		feVariableSave[3] = 0xffffffff;
-		feVariableSave[2] = 0xffffffff;
-		feVariableSave[1] = 0xffffffff;
-		feVariableSave[0] = 0xffffffff;
-		if (DAT_FRNT__001c6ac4 == 0) {
-			DAT_FRNT__001c6a90 = 0;
-			LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
+
+		feVariableSave[3] = -1;
+		feVariableSave[2] = -1;
+		feVariableSave[1] = -1;
+		feVariableSave[0] = -1;
+
+		if (mainScreenLoaded == 0) 
+		{
+			bDrawExtra = 0;
+			LoadBackgroundFile("DATA\\GFX.RAW");
 		}
 	}
-	pCurrScreen = pScreenStack10[ScreenDepth];
-	DAT_FRNT__001cbcb8 = pButtonStack10[ScreenDepth];
+	pCurrScreen = pScreenStack[ScreenDepth];
+	pNewButton = pButtonStack[ScreenDepth];
+
 	SetupScreenSprts(pCurrScreen);
 	SetupBackgroundPolys();
-	DAT_FRNT__001cbdb0 = VSync(0xffffffff);
-	return;*/
+
+	idle_timer = VSync(0xffffffff);
+
+	return;
 }
 
 
@@ -1485,8 +1505,6 @@ int HandleKeyPress(void)
 	// End Line: 5049
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-int allowVibration = 1;
 
 // [D]
 void PadChecks(void)
@@ -2265,11 +2283,6 @@ int CentreScreen(int bSetup)
 		// Start line: 6957
 	/* end block 4 */
 	// End Line: 6958
-
-int carSelection = 0;
-int currSelIndex = 0; 
-int lastCutCity = -1;
-int lastCity = -1;
 
 // [D]
 int CarSelectScreen(int bSetup)
@@ -4350,9 +4363,6 @@ int GameNameScreen(int bSetup)
 	// End Line: 10634
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-POLY_FT4 cd_sprite;
-int bCdIconSetup = 0;
 
 // [D]
 void FEInitCdIcon(void)

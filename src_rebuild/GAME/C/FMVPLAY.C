@@ -14,6 +14,9 @@
 #include "GAMESND.H"
 #include "SCORES.H"
 
+// FMV
+int gSubtitles = 0;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ReInitSystem()

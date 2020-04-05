@@ -2207,11 +2207,6 @@ void SetCityType(CITYTYPE type)
 	fread(citylumps[GameLevel], 1, sizeof(citylumps[GameLevel]), levFp);
 
 	fclose(levFp);
-
-	printf("CITYLUMP_DATA1 ofs: %d\n", citylumps[GameLevel][CITYLUMP_DATA1].x);
-	printf("CITYLUMP_TPAGE ofs: %d\n", citylumps[GameLevel][CITYLUMP_TPAGE].x);
-	printf("CITYLUMP_DATA2 ofs: %d\n", citylumps[GameLevel][CITYLUMP_DATA2].x);
-	printf("CITYLUMP_SPOOL ofs: %d\n", citylumps[GameLevel][CITYLUMP_SPOOL].x);
 #else
 	switch (type)
 	{

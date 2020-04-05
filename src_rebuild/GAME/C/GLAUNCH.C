@@ -11,6 +11,9 @@
 #include "SOUND.H"
 #include "REPLAYS.H"
 #include "MISSION.H"
+#include "GAMESND.H"
+#include "SYSTEM.H"
+#include "../FRONTEND/FEMAIN.H"
 
 #include <string.h>
 
@@ -265,7 +268,9 @@ void GameStart(void)
 LAB_00052e68:
 	wantedCar[1] = -1;
 	wantedCar[0] = -1;
+
 	gHaveStoredData = 0;
+
 	ReInitFrontend();
 }
 
@@ -331,15 +336,18 @@ void StartRender(int renderNum)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char old_camera_change = 0;
+char camera_change = 0;
+
+
+// [D]
 void ReInitFrontend(void)
 {
-	UNIMPLEMENTED();
-	/*
+	RECT16 rect;
 
-	RECT rect;
+	old_camera_change = 0;
+	camera_change = 0;
 
-	old_camera_change = '\0';
-	camera_change = '\0';
 	EnableDisplay();
 	DrawSync(0);
 	VSync(0);
@@ -349,9 +357,14 @@ void ReInitFrontend(void)
 	FreeXM();
 	SpuSetReverbVoice(0, 0xffffff);
 	UnPauseSound();
+
 	LoadSoundBankDynamic((char *)0x0, 0, 0);
 	LoadBankFromLump(1, 0);
-	Loadfile(s_FRONTEND_BIN_00010b34, &DAT_001c0000);
+
+#ifdef PSX
+	Loadfile("FRONTEND.BIN", &DAT_001c0000);
+#endif // PSX
+
 	SetFEDrawMode();
 	DrawSync(0);
 	EnableDisplay();
@@ -365,12 +378,12 @@ void ReInitFrontend(void)
 	ReInitScreens();
 	DrawSync(0);
 	VSync(0);
-	ClearOTagR(MPBuff.ot, (int)&DAT_00001080);
-	ClearOTagR(DB_000e0938.ot, (int)&DAT_00001080);
+	ClearOTagR((u_long*)MPBuff[0][0].ot, 0x1080);
+	ClearOTagR((u_long*)MPBuff[0][1].ot, 0x1080);
 	SetDispMask(1);
-	LoadedLevel = 0xff;
+	//LoadedLevel = 0xff;
 	bRedrawFrontend = 1;
-	return;*/
+	return;
 }
 
 
