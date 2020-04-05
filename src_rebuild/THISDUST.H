@@ -16,6 +16,10 @@
 #include <EMULATOR_PRIVATE.H>
 #include "EMULATOR_PLATFORM_SETUP.H"
 
+#define GAME_VERSION_N		"0.2a"
+#define GAME_TITLE			"REDRIVER2"
+#define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
+
 #define LoadImage LoadImagePSX		// this is ALSO temporary shit
 //#define ClearImage2 ClearImage
 
@@ -20771,12 +20775,14 @@ struct MENU_HEADER // hashcode: 0x0BDA3805 (dec: 198850565)
 	struct MENU_ITEM *MenuItems; // size=20, offset=16
 };
 
+typedef void(*pauseFunc)();
+
 struct MENU_ITEM // hashcode: 0x9519D4FB (dec: -1793469189)
 {
 	char *Text; // size=0, offset=0
 	unsigned char Type; // size=0, offset=4
 	unsigned char Justify; // size=0, offset=5
-	void (*func)(); // size=0, offset=8
+	pauseFunc func; // size=0, offset=8
 	enum EXIT_VALUE ExitValue; // size=1, offset=12
 	struct MENU_HEADER *SubMenu; // size=0, offset=16
 };

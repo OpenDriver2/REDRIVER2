@@ -805,6 +805,7 @@ void DrawScreen(PSXSCREEN *pScr)
 	}
 	else {
 		GetTimeStamp(version_info);
+
 		if ((bDoingCutSelect == 0) || (0x27 < gFurthestMission)) {
 			uVar4 = (uint)pScr->numButtons;
 		}
@@ -879,8 +880,14 @@ void DrawScreen(PSXSCREEN *pScr)
 				local_34 = local_34 + 0x3c;
 				local_30 = local_30 + 0x3c;
 			} while (iVar7 < (int)uVar4);
+
+#ifdef _DEBUG
+			FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
+			FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
+#endif
 		}
 		SetTextColour(-0x80, '\0', '\0');
+
 		DisplayOnScreenText();
 		pDVar2 = current;
 

@@ -1,6 +1,7 @@
 #ifndef LOADVIEW_H
 #define LOADVIEW_H
 
+extern int FadingScreen;
 
 extern void ShowLoading(); // 0x0005816C
 

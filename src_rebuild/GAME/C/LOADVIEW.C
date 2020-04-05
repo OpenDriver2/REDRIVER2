@@ -117,18 +117,22 @@ void ShowLoading(void)
 	/* end block 4 */
 	// End Line: 1034
 
+int FadingScreen = 0;
+int screen_fade_value = 0;
+int screen_fade_start = 0;
+int screen_fade_end = 0;
+int screen_fade_speed = 0;
+
+// [D]
 void SetupScreenFade(int start, int end, int speed)
 {
-	/*
 	screen_fade_value = start;
 	screen_fade_start = start;
 	screen_fade_end = end;
 	screen_fade_speed = speed;
 	FadingScreen = 1;
-	return;*/
+	return;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -159,10 +163,12 @@ void SetupScreenFade(int start, int end, int speed)
 	/* end block 2 */
 	// End Line: 566
 
+// [D]
 void FadeGameScreen(int flag, int speed)
 {
-	UNIMPLEMENTED();
-	/*
+	static POLY_F4 poly; // offset 0x0
+	static POLY_FT4 p; // offset 0x20
+
 	bool bVar1;
 
 	if (flag == 0) {
@@ -171,53 +177,56 @@ void FadeGameScreen(int flag, int speed)
 	else {
 		bVar1 = screen_fade_end < screen_fade_value;
 	}
+
 	if (bVar1) {
 		if (screen_fade_value < 0) {
-			DAT_000d54dc = 0;
+			poly.r0 = 0;
 		}
 		else {
-			DAT_000d54dc = (undefined)screen_fade_value;
+			poly.r0 = screen_fade_value;
 			if (0xff < screen_fade_value) {
-				DAT_000d54dc = 0xff;
+				poly.r0 = -1;
 			}
 		}
-		DAT_000d54fb = 9;
-		DAT_000d5500 = 0xffff;
-		DAT_000d5502 = 0xffff;
-		DAT_000d550a = 0xffff;
-		DAT_000d5510 = 0xffff;
-		DAT_000d54ff = 0x2e;
-		DAT_000d5508 = 0;
-		DAT_000d5512 = 0;
-		DAT_000d5518 = 0;
-		DAT_000d551a = 0;
-		DAT_000d550e = 0x40;
-		DAT_000d54db = 5;
-		DAT_000d54ea = 0x100;
-		DAT_000d54ee = 0x100;
-		DAT_000d54e0 = 0;
-		DAT_000d54e2 = 0;
-		DAT_000d54e4 = 0x140;
-		DAT_000d54e6 = 0;
-		DAT_000d54e8 = 0;
-		DAT_000d54ec = 0x140;
-		DAT_000d54df = 0x2a;
+		setPolyFT4(&p);
+		setSemiTrans(&p, 1);
+		p.x0 = -1;
+		p.y0 = -1;
+		p.y1 = -1;
+		p.x2 = -1;
+		p.x1 = 0;
+		p.y2 = 0;
+		p.x3 = 0;
+		p.y3 = 0;
+		p.tpage = 0x40;
+
+		setPolyF4(&poly);
+		setSemiTrans(&poly, 1);
+		poly.y2 = 256;
+		poly.y3 = 256;
+		poly.x0 = 0;
+		poly.y0 = 0;
+		poly.x1 = 320;
+		poly.y1 = 0;
+		poly.x2 = 0;
+		poly.x3 = 320;
+
 		if (flag == 0) {
 			screen_fade_value = screen_fade_value + speed;
 		}
 		else {
 			screen_fade_value = screen_fade_value - speed;
 		}
-		DAT_000d54dd = DAT_000d54dc;
-		DAT_000d54de = DAT_000d54dc;
-		DrawPrim(&p_10);
-		DrawPrim(&poly_9);
+
+		poly.g0 = poly.r0;
+		poly.b0 = poly.r0;
+		DrawPrim(&p);
+		DrawPrim(&poly);
 	}
 	else {
 		FadingScreen = 0;
 	}
 	return;
-	*/
 }
 
 

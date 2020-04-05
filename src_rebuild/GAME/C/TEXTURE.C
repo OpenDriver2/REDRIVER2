@@ -467,38 +467,52 @@ void update_slotinfo(int tpage, int slot, RECT *pos)
 	/* end block 2 */
 	// End Line: 1687
 
+TP *tpage_position = NULL;
+TEXINF* tpage_ids[128] = {0};
+int texamount = 0;
+int tpage_amount = 0;
+int tpage_texamts[128];
+
+int nspecpages = 0;
+int nperms = 0;
+XYPAIR *speclist = NULL;
+XYPAIR *permlist = NULL;
+
+// [D]
 void ProcessTextureInfo(char *lump_ptr)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	TEXINF *pTVar2;
-	int *piVar3;
-	TEXINF **ppTVar4;
+	int *amts;
+	TEXINF **ids;
 
 	iVar1 = *(int *)lump_ptr;
 	texamount = *(int *)(lump_ptr + 4);
 	tpage_position = (TP *)(lump_ptr + 8);
+
 	pTVar2 = (TEXINF *)(tpage_position + iVar1 + 1);
 	tpage_amount = iVar1;
+
 	if (0 < iVar1) {
-		ppTVar4 = tpage_ids128;
-		piVar3 = &tpage_texamts;
+		ids = tpage_ids;
+		amts = tpage_texamts;
+
 		do {
 			texamount = *(int *)&pTVar2->id;
-			*ppTVar4 = (TEXINF *)&pTVar2->x;
-			ppTVar4 = ppTVar4 + 1;
-			iVar1 = iVar1 + -1;
+
+			*ids = (TEXINF *)&pTVar2->x;
+			ids = ids + 1;
+			iVar1--;
 			pTVar2 = (TEXINF *)&pTVar2->x + texamount;
-			*piVar3 = texamount;
-			piVar3 = (int *)((ulong *)piVar3 + 1);
+			*amts = texamount;
+			amts = (int *)((ulong *)amts + 1);
 		} while (iVar1 != 0);
 	}
+
 	nspecpages = *(ulong *)&pTVar2[0x10].x;
 	nperms = *(ulong *)&pTVar2->id;
 	speclist = (XYPAIR *)(pTVar2 + 0x11);
 	permlist = (XYPAIR *)&pTVar2->x;
-	return;*/
 }
 
 

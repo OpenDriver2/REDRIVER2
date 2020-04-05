@@ -51,6 +51,8 @@
 #include "XAPLAY.H"
 #include "SHADOW.H"
 
+#include "PAUSE.H"
+
 #include <stdlib.h>
 
 #include "../FRONTEND/FEMAIN.H"
@@ -107,6 +109,30 @@ enum LevLumpType
 	LUMP_JUNCTIONS2			= 42,		// previously LUMP_JUNCTIONS2
 	LUMP_JUNCTIONS2_NEW		= 43,		// Only appear in release Driver2
 };
+
+REPLAY_STREAM ReplayStreams[8];
+
+int TargetCar = 0;
+
+int pauseflag = 0;
+
+int HitLeadCar = 0;
+int FastForward = 0;
+int game_over = 0;
+int saved_counter = 0;
+int saved_leadcar_pos = 0;
+int gStopPadReads = 0;
+int DawnCount = 0;
+int variable_weather = 0;
+int current_camera_angle = 0x800;
+int gDieWithFade = 0;
+
+// replay
+int FrameCnt = 0;
+
+unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
+unsigned char defaultPlayerPalette = 0; // offset 0xAA606
+
 
 // decompiled code
 // original method signature: 
@@ -2195,7 +2221,7 @@ int redriver2_main(void)
 
 	// Init frontend
 #ifdef PSX
-	Loadfile(s_FRONTEND_BIN_00010dc4, &DAT_001c0000);
+	Loadfile("FRONTEND.BIN", &DAT_001c0000);
 #endif // PSX
 
 	SpuSetMute(0);
@@ -2234,22 +2260,21 @@ int redriver2_main(void)
 
 void FadeScreen(int end_value)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
 	iVar1 = pauseflag;
 	pauseflag = 1;
 	SetupScreenFade(-0x20, end_value, 1);
 	FadingScreen = 1;
+
 	do {
 		RenderGame();
 	} while (FadingScreen != 0);
+
 	DrawSync(0);
 	SetDispMask(0);
 	pauseflag = iVar1;
 	return;
-	*/
 }
 
 
@@ -2626,11 +2651,15 @@ void RenderGame2(int view)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// TODO: DRAW.C?
+int ObjectDrawnValue = 0;
+int ObjectDrawnCounter = 0;
+
+// [D]
 void RenderGame(void)
 {
-	UNIMPLEMENTED();
+	static unsigned long frame;
 
-	/*
 	int iVar1;
 
 	UpdatePadData();
@@ -2639,10 +2668,12 @@ void RenderGame(void)
 		DrawPauseMenus();
 		RenderGame2(0);
 		ObjectDrawnCounter = ObjectDrawnCounter + 1;
+
 		do {
 			iVar1 = VSync(0xffffffff);
-		} while ((uint)(iVar1 - DAT_000aa670) < 2);
-		DAT_000aa670 = VSync(0xffffffff);
+		} while ((uint)(iVar1 - frame) < 2);
+		frame = VSync(0xffffffff);
+
 		SwapDrawBuffers();
 	}
 	else {
@@ -2659,7 +2690,6 @@ void RenderGame(void)
 	FrameCnt = FrameCnt + 1;
 	FadeGameScreen(0, 8);
 	return;
-	*/
 }
 
 
@@ -2691,29 +2721,6 @@ void RenderGame(void)
 	// End Line: 11193
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-REPLAY_STREAM ReplayStreams[8];
-
-int TargetCar = 0;
-
-int pauseflag = 0;
-
-int HitLeadCar = 0;
-int FastForward = 0;
-int game_over = 0;
-int saved_counter = 0;
-int saved_leadcar_pos = 0;
-int gStopPadReads = 0;
-int DawnCount = 0;
-int variable_weather = 0;
-int current_camera_angle = 0x800;
-int gDieWithFade = 0;
-
-// replay
-int FrameCnt = 0;
-
-unsigned char defaultPlayerModel[2] = {0}; // offset 0xAA604
-unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
 // [D]
 void InitGameVariables(void)

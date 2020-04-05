@@ -32,70 +32,94 @@ char *car_models_lump = NULL;
 	/* end block 3 */
 	// End Line: 79
 
+MODEL* modelpointers[1536] = { 0 };
+int num_models_in_pack = 0;
+
+// [D]
 void ProcessMDSLump(char *lump_file, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	MODEL **ppMVar2;
-	int *piVar3;
-	MODEL *pMVar4;
-	MODEL *pMVar5;
-	int iVar6;
-	int iVar7;
+	char* ptr;
+	MODEL *pMVar3;
+	MODEL *parentmodel;
+	int iVar4;
+	int modelAmts;
 
-	iVar7 = *(int *)lump_file;
-	piVar3 = (int *)(lump_file + 4);
-	num_models_in_pack = iVar7;
-	if (0 < iVar7) {
-		ppMVar2 = modelpointers1536;
-		iVar6 = iVar7;
-		do {
-			iVar1 = *piVar3;
-			*ppMVar2 = (MODEL *)(piVar3 + 1);
-			ppMVar2 = ppMVar2 + 1;
-			iVar6 = iVar6 + -1;
-			piVar3 = (int *)((int)&((MODEL *)(piVar3 + 1))->shape_flags + iVar1);
-		} while (iVar6 != 0);
+	int i;
+
+	modelAmts = *(int *)lump_file;
+	ptr = (lump_file + 4);
+	num_models_in_pack = modelAmts;
+
+	// assign model pointers
+	if (0 < modelAmts) 
+	{
+		ppMVar2 = modelpointers;
+		iVar4 = modelAmts;
+
+		for (i = 0; i < modelAmts; i++)
+		{
+			int size = *(int*)ptr;
+			ptr += sizeof(int);
+
+			modelpointers[i] = (MODEL*)ptr;
+			ptr += size;
+		}
 	}
-	if (0 < iVar7) {
-		ppMVar2 = modelpointers1536;
-		iVar6 = iVar7;
+
+	if (0 < modelAmts)
+	{
+		ppMVar2 = modelpointers;
+		iVar4 = modelAmts;
+
+		// process parent instances
 		do {
-			pMVar4 = *ppMVar2;
-			if ((pMVar4[-1].collision_block != 0) && ((int)pMVar4->instance_number != -1)) {
-				pMVar5 = modelpointers1536[(int)pMVar4->instance_number];
-				if (pMVar5->collision_block != 0) {
-					pMVar4->collision_block = (int)&pMVar5->shape_flags + pMVar5->collision_block;
+			pMVar3 = *ppMVar2;
+
+			if ((pMVar3[-1].collision_block != 0) && ((int)pMVar3->instance_number != -1)) {
+
+				parentmodel = modelpointers[(int)pMVar3->instance_number];
+
+				if (parentmodel->collision_block != 0) {
+					pMVar3->collision_block =
+						(int)&parentmodel->shape_flags + parentmodel->collision_block;
 				}
-				pMVar4->vertices = (int)&pMVar5->shape_flags + pMVar5->vertices;
-				pMVar4->normals = (int)&pMVar5->shape_flags + pMVar5->normals;
-				pMVar4->point_normals = (int)&pMVar5->shape_flags + pMVar5->point_normals;
+
+				// convert to real offsets
+				pMVar3->vertices = (int)&parentmodel->shape_flags + parentmodel->vertices;
+				pMVar3->normals = (int)&parentmodel->shape_flags + parentmodel->normals;
+				pMVar3->point_normals = (int)&parentmodel->shape_flags + parentmodel->point_normals;
 			}
-			iVar6 = iVar6 + -1;
+
+			iVar4 = iVar4 + -1;
 			ppMVar2 = ppMVar2 + 1;
-		} while (iVar6 != 0);
+		} while (iVar4 != 0);
 	}
-	if (0 < iVar7) {
-		ppMVar2 = modelpointers1536;
+
+	// process models without parents
+	if (0 < modelAmts) {
+		ppMVar2 = modelpointers;
 		do {
-			pMVar4 = *ppMVar2;
-			if (pMVar4[-1].collision_block != 0) {
-				if (pMVar4->instance_number == -1) {
-					if (pMVar4->collision_block != 0) {
-						pMVar4->collision_block = (int)&pMVar4->shape_flags + pMVar4->collision_block;
+			pMVar3 = *ppMVar2;
+			if (pMVar3[-1].collision_block != 0) {
+				if (pMVar3->instance_number == -1) 
+				{
+					if (pMVar3->collision_block != 0) {
+						pMVar3->collision_block =
+							(int)&pMVar3->shape_flags + pMVar3->collision_block;
 					}
-					pMVar4->vertices = (int)&pMVar4->shape_flags + pMVar4->vertices;
-					pMVar4->normals = (int)&pMVar4->shape_flags + pMVar4->normals;
-					pMVar4->point_normals = (int)&pMVar4->shape_flags + pMVar4->point_normals;
+					pMVar3->vertices = (int)&pMVar3->shape_flags + pMVar3->vertices;
+					pMVar3->normals = (int)&pMVar3->shape_flags + pMVar3->normals;
+					pMVar3->point_normals = (int)&pMVar3->shape_flags + pMVar3->point_normals;
 				}
-				pMVar4->poly_block = (int)&pMVar4->shape_flags + pMVar4->poly_block;
+
+				pMVar3->poly_block = (int)&pMVar3->shape_flags + pMVar3->poly_block;
 			}
-			iVar7 = iVar7 + -1;
+			modelAmts = modelAmts + -1;
 			ppMVar2 = ppMVar2 + 1;
-		} while (iVar7 != 0);
+		} while (modelAmts != 0);
 	}
-	return;*/
 }
 
 

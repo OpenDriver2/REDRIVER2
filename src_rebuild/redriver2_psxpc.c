@@ -17,7 +17,7 @@ int main()
 
 	GPU_printf = printf;
 
-	Emulator_Initialise("DRIVER 2", 800, 600);
+	Emulator_Initialise("REDRIVER2", 800, 600);
 
 	redriver2_main();
 
