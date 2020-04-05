@@ -127,8 +127,7 @@ int variable_weather = 0;
 int current_camera_angle = 0x800;
 int gDieWithFade = 0;
 
-// replay
-int FrameCnt = 0;
+int FrameCnt = 0x78654321;	// wait for CD sync?
 
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
@@ -220,6 +219,11 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			printf("LUMP_OVERLAYMAP: size: %d\n", size);
 			ProcessOverlayLump((char *)ptr, size);
 			gLoadedOverlay = 1;
+		}
+		
+		else if (lump_type == LUMP_MAP)
+		{
+			map_lump = (char *)ptr;
 		}
 		else if (lump_type == LUMP_SPOOLINFO)
 		{

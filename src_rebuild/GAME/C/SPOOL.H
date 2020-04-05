@@ -1,6 +1,9 @@
 #ifndef SPOOL_H
 #define SPOOL_H
 
+extern int cell_objects_add[5];
+extern int cell_slots_add[5];
+
 
 typedef void(*spooledFuncPtr)();
 

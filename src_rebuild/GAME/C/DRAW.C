@@ -1,5 +1,9 @@
 #include "THISDUST.H"
 #include "DRAW.H"
+#include "MAIN.H"
+#include "MAP.H"
+
+#include <string.h>
 
 MATRIX aspect =
 { { { 6553, 0, 0 }, { 0, 4096, 0 }, { 0, 0, 4096 } }, { 0, 0, 0 } };
@@ -1396,19 +1400,35 @@ void PlotMDL_less_than_128(MODEL *model)
 	/* end block 3 */
 	// End Line: 3358
 
+
+int num_regions;
+int view_dist;
+int pvs_square;
+int pvs_square_sq;
+
+int units_across_halved;
+int units_down_halved;
+
+int regions_across;
+int regions_down;
+
+OUT_CELL_FILE_HEADER* cell_header;
+
+// [D]
 void ProcessMapLump(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	cells_across = *(int *)lump_ptr;
 	cells_down = *(int *)(lump_ptr + 4);
 	num_regions = *(int *)(lump_ptr + 0xc);
 	view_dist = 10;
-	pvs_square = 0x15;
-	pvs_square_sq = 0x1b9;
+
+	pvs_square = 21;
+	pvs_square_sq = 21*21;
+
 	units_across_halved = cells_across / 2 << 0xb;
 	units_down_halved = cells_down / 2 << 0xb;
 	regions_across = cells_across;
+
 	if (cells_across < 0) {
 		regions_across = cells_across + 0x1f;
 	}
@@ -1420,24 +1440,23 @@ void ProcessMapLump(char *lump_ptr, int lump_size)
 	regions_down = regions_down >> 5;
 	if (0x400 < num_regions) {
 		while (FrameCnt != 0x78654321) {
-			trap(0x400);
+			//trap(0x400);
 		}
 	}
 	num_straddlers = *(int *)(lump_ptr + 0x2c);
 	if (*(int *)(lump_ptr + 8) != 0x800) {
 		while (FrameCnt != 0x78654321) {
-			trap(0x400);
+			//trap(0x400);
 		}
 	}
 	if (*(int *)(lump_ptr + 0x10) != 0x20) {
 		while (FrameCnt != 0x78654321) {
-			trap(0x400);
+			//trap(0x400);
 		}
 	}
 	cell_header = (OUT_CELL_FILE_HEADER *)lump_ptr;
 	InitCellData();
 	memcpy(cell_objects, lump_ptr + 0x30, num_straddlers << 3);
-	return;*/
 }
 
 

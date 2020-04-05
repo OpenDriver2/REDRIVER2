@@ -1,7 +1,15 @@
 #ifndef MAP_H
 #define MAP_H
 
+extern int cells_across; // offset 0xAA67C
+extern int cells_down; // offset 0xAA680
+
 extern char *map_lump;
+extern unsigned short *cell_ptrs;
+extern PACKED_CELL_OBJECT* cell_objects;
+extern int sizeof_cell_object_computed_values;
+extern CELL_DATA* cells;
+extern int num_straddlers;
 
 extern void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile); // 0x0005D7BC
 

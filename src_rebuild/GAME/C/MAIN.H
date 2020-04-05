@@ -1,6 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+extern int FrameCnt;
+
 typedef void(*TDRFuncPtr_Havana3DOcclusion0func)();
 
 extern void ProcessLumps(char *lump_ptr, int lump_size); // 0x00058C08

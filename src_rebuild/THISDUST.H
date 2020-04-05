@@ -15849,11 +15849,7 @@ extern unsigned short *cell_ptrs; // offset 0xAAF44
 extern int cell_slots_add[5]; // offset 0xD7350
 
 extern struct CELL_DATA *cells; // offset 0xAAEA8
-*/
-extern int cells_across; // offset 0xAA67C
 
-extern int cells_down; // offset 0xAA680
-/*
 extern unsigned int cellsPerFrame; // offset 0xE9138
 
 extern unsigned int cellsThisFrame; // offset 0xF2798

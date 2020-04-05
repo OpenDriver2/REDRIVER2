@@ -1,6 +1,6 @@
 #include "THISDUST.H"
 #include "SPOOL.H"
-
+#include "SYSTEM.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -1649,10 +1649,25 @@ void UnpackRegion(int region_to_unpack, int target_barrel_region)
 	/* end block 3 */
 	// End Line: 4182
 
+char* PVS_Buffers[4];
+
+char* model_spool_buffer = NULL;
+
+int cell_objects_add[5];
+int cell_slots_add[5];
+
+SXYPAIR* Music_And_AmbientOffsets;
+
+AreaDataStr* AreaData;
+unsigned char* AreaTPages;
+int NumAreas;
+
+char* RegionSpoolInfo;
+unsigned short *spoolinfo_offsets;
+
+// [D]
 void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	int *piVar1;
 	int iVar2;
 	int *piVar3;
@@ -1667,25 +1682,34 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 	pvsSize[1] = 0;
 	pvsSize[2] = 0;
 	pvsSize[3] = 0;
+
 	iVar2 = *(int *)lump_ptr << 0xb;
+
 	model_spool_buffer = mallocptr;
+
 	if (iVar2 < 0x10000) {
 		iVar2 = 0x10000;
 	}
+
 	mallocptr = mallocptr + iVar2;
+
 	cell_slots_add[4] = 0;
 	cell_objects_add[4] = 0;
+
 	piVar8 = cell_objects_add;
 	piVar7 = cell_slots_add;
-	ppcVar6 = PVS_Buffers4;
+	ppcVar6 = PVS_Buffers;
 	iVar2 = 3;
 	Music_And_AmbientOffsets = (SXYPAIR *)(lump_ptr + 8);
 	piVar4 = (int *)((int)(lump_ptr + 4) + *(int *)(lump_ptr + 4) + 4);
+
 	NumAreas = *piVar4;
 	AreaData = (AreaDataStr *)(piVar4 + 1);
-	AreaTPages = (uchar *)(piVar4 + NumAreas * 4 + 1);
+	AreaTPages = (unsigned char *)(piVar4 + NumAreas * 4 + 1);
+
 	piVar5 = (int *)AreaTPages + NumAreas * 4;
 	piVar4 = piVar5;
+
 	do {
 		*piVar8 = cell_objects_add[4];
 		piVar8 = piVar8 + 1;
@@ -1702,9 +1726,9 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		piVar4 = piVar4 + 1;
 		mallocptr = mallocptr + (*piVar1 + 0x7ffU & 0xfffff800);
 	} while (-1 < iVar2);
+
 	RegionSpoolInfo = (char *)((int)(piVar5 + 0xc) + piVar5[0xc] * 2 + 8);
 	spoolinfo_offsets = (ushort *)(piVar5 + 0xd);
-	return;*/
 }
 
 

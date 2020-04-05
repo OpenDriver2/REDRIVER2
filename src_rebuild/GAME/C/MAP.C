@@ -1,5 +1,7 @@
 #include "THISDUST.H"
 #include "MAP.H"
+#include "SYSTEM.H"
+#include "SPOOL.H"
 
 char *map_lump = NULL;
 
@@ -299,21 +301,29 @@ int FindModelIdxWithName(char *name)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int cells_across = 1000;
+int cells_down = 1000;
+
+unsigned short *cell_ptrs;
+PACKED_CELL_OBJECT* cell_objects;
+int sizeof_cell_object_computed_values;
+CELL_DATA* cells;
+int num_straddlers;		// objects between regions
+
+// [D]
 void InitCellData(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 *puVar1;
-	int iVar2;
+	short *local_v0_28;
+	int iVar1;
 
-	iVar2 = 0xfff;
-	puVar1 = (undefined2 *)(mallocptr + 0x1ffe);
+	iVar1 = 0xfff;
+	local_v0_28 = (short *)(mallocptr + 0x1ffe);
 	cell_ptrs = (ushort *)mallocptr;
 	do {
-		*puVar1 = 0xffff;
-		iVar2 = iVar2 + -1;
-		puVar1 = puVar1 + -1;
-	} while (0 < iVar2);
+		*local_v0_28 = -1;
+		iVar1 = iVar1 + -1;
+		local_v0_28 = local_v0_28 + -1;
+	} while (0 < iVar1);
 	cell_objects = (PACKED_CELL_OBJECT *)(mallocptr + 0x2000);
 	mallocptr = (char *)(&cell_objects[num_straddlers + cell_objects_add[4]].pos.vx +
 		cell_slots_add[4]);
@@ -323,7 +333,6 @@ void InitCellData(void)
 	sizeof_cell_object_computed_values = num_straddlers + cell_objects_add[4] + 7 >> 3;
 	cells = (CELL_DATA *)(cell_objects + num_straddlers + cell_objects_add[4]);
 	return;
-	*/
 }
 
 
