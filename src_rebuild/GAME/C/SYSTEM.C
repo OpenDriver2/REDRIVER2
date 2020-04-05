@@ -11,6 +11,7 @@
 
 char _overlay_buffer[0x50000];		// 0x1C0000
 char _frontend_buffer[0x50000];		// 0xFB400
+char _other_buffer[0x50000];		// 0xF3000
 
 char g_allocatedMem[0x200000];	// 0x137400 (_ramsize). TODO: use real malloc
 char* mallocptr = g_allocatedMem;

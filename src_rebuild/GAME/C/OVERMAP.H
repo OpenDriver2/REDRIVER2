@@ -28,7 +28,7 @@ extern void WorldToMultiplayerMap(VECTOR *in, VECTOR *out); // 0x00019994
 
 extern void ProcessPalletLump(char *lump_ptr, int lump_size); // 0x00019F44
 
-extern void load_civ_palettes(RECT *cluts); // 0x0001A094
+extern void load_civ_palettes(RECT16 *cluts); // 0x0001A094
 
 extern void FlashOverheadMap(int r, int g, int b); // 0x00018980
 

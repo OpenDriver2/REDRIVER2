@@ -2137,7 +2137,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 	/* end block 3 */
 	// End Line: 8511
 
-void load_civ_palettes(RECT *cluts)
+void load_civ_palettes(RECT16 *cluts)
 {
 	return;
 }

@@ -249,6 +249,11 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			printf("LUMP_TEXTURENAMES: size: %d\n", size);
 			texturename_buffer = (char*)ptr;
 		}
+		else if (lump_type == LUMP_PALLET)
+		{
+			printf("LUMP_PALLET: size: %d\n", size);
+			palette_lump = (char*)ptr;
+		}
 		else if (lump_type == LUMP_TEXTUREINFO) 
 		{
 			printf("LUMP_TEXTUREINFO: size: %d\n", size);

@@ -17589,8 +17589,6 @@ extern short paddp; // offset 0xAB28C
 extern struct PAD Pads[2]; // offset 0xD92B8
 
 extern int padsConnected[2]; // offset 0x1C6ABC
-
-extern char *palette_lump; // offset 0xAAEFC
 /*
 static char (*palletedir[8]); // offset 0x9BA8C
 

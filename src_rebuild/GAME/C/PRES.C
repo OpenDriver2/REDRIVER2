@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "PRES.H"
 #include "SYSTEM.H"
+#include "TEXTURE.H"
 
 #include <STRING.H>
 
@@ -36,9 +37,10 @@ char* button_names[11] = {
 };
 
 CVECTOR gFontColour;
-RECT16 fontclutpos;
+
 short fonttpage = 0;
 short fontclutid = 0;
+
 char AsciiTable[256] = { 0 };
 OUT_FONTINFO fontinfo[128];
 
