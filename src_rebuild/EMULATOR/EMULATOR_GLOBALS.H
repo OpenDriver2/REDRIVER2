@@ -48,6 +48,5 @@ extern unsigned short UpdateKeyboardInput();
 
 extern SDL_GameController* padHandle[];
 extern unsigned char* padData[];
-extern const unsigned char* keyboardState;
 
 #endif

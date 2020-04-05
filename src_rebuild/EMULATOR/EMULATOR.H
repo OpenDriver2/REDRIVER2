@@ -45,6 +45,14 @@
 #define UNIMPLEMENTED() eprinterr("Unimplemented!\n");
 #endif
 
+#if defined(OGL)
+	#define VRAM_FORMAT            GL_RG
+	#define VRAM_INTERNAL_FORMAT   GL_RG8
+#elif defined(OGLES)
+	#define VRAM_FORMAT            GL_LUMINANCE_ALPHA
+	#define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
+#endif
+
 #define VRAM_WIDTH (1024)
 #define VRAM_HEIGHT (512)
 
@@ -115,7 +123,11 @@ extern SysCounter counters[3];
 #pragma pack(push,1)
 struct Vertex
 {
+#if defined(PGXP)
+	float  x, y, page, clut;
+#else
 	short  x, y, page, clut;
+#endif
 	u_char u, v, bright, dither;
 	u_char r, g, b, a;
 };
@@ -165,20 +177,33 @@ enum TexFormat
 #endif
 
 extern int  Emulator_Initialise();
+extern void Emulator_StoreFrameBuffer(int x, int y, int w, int h);
 extern void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
 extern void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_x, int dst_y);
+extern void Emulator_ReadVRAM(unsigned short *dst, int x, int y, int dst_w, int dst_h);
 extern void Emulator_UpdateVRAM();
 extern void Emulator_BlitVRAM();
 extern void Emulator_ShutDown();
 extern void Emulator_SwapWindow();
 extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_CounterLoop();
-extern void Emulator_GenerateLineArray(struct Vertex* vertex, short* p0, short* p1, short* p2, short* p3);
-extern void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, short* p0, short* p1, short* p2, short* p3, short w, short h);
+
+extern void Emulator_GenerateLineArray(struct Vertex* vertex, short* p0, short* p1);
+extern void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, short* p0, short* p1, short* p2);
+extern void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, short* p0, short* p1, short* p2, short* p3);
+extern void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, short* p0, short w, short h);
+
+extern void Emulator_GenerateTexcoordArrayTriangle(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither);
 extern void Emulator_GenerateTexcoordArrayQuad(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, unsigned char* uv3, short page, short clut, unsigned char dither);
 extern void Emulator_GenerateTexcoordArrayRect(struct Vertex* vertex, unsigned char* uv, short page, short clut, short w, short h);
-extern void Emulator_GenerateTexcoordArrayZero(struct Vertex* vertex, unsigned char dither);
+extern void Emulator_GenerateTexcoordArrayLineZero(struct Vertex* vertex, unsigned char dither);
+extern void Emulator_GenerateTexcoordArrayTriangleZero(struct Vertex* vertex, unsigned char dither);
+extern void Emulator_GenerateTexcoordArrayQuadZero(struct Vertex* vertex, unsigned char dither);
+
+extern void Emulator_GenerateColourArrayLine(struct Vertex* vertex, unsigned char* col0, unsigned char* col1);
+extern void Emulator_GenerateColourArrayTriangle(struct Vertex* vertex, unsigned char* col0, unsigned char* col1, unsigned char* col2);
 extern void Emulator_GenerateColourArrayQuad(struct Vertex* vertex, unsigned char* col0, unsigned char* col1, unsigned char* col2, unsigned char* col3);
+
 extern void Emulator_DestroyTexture(TextureID texture);
 extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
 extern void Emulator_SetViewPort(int x, int y, int width, int height);
@@ -187,7 +212,6 @@ extern void Emulator_SetRenderTarget(const RenderTargetID &render_target);
 extern void Emulator_SetWireframe(bool enable);
 extern void Emulator_UpdateVertexBuffer(const Vertex *vertices, int count);
 extern void Emulator_DrawTriangles(int start_vertex, int triangles);
-extern void Emulator_DrawLines(int start_vertex, int lines);
 
 #if defined(D3D9)
 extern IDirect3DDevice9* d3ddev;

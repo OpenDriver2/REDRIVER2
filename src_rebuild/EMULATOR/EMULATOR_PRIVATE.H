@@ -4,6 +4,9 @@
 /* Usually called at the beginning of main function */
 extern void Emulator_Initialise(char* windowName, int screenWidth, int screenHeight);
 
+/* Called inside VSync / DrawSync */
+extern void Emulator_SwapDelay(int intervals);
+
 /* Usually called after ClearOTag/ClearOTagR */
 extern bool Emulator_BeginScene();
 

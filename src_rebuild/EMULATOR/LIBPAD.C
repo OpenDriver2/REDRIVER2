@@ -6,6 +6,7 @@
 
 SDL_GameController* padHandle[MAX_CONTROLLERS];
 unsigned char* padData[MAX_CONTROLLERS];
+
 const unsigned char* keyboardState;
 
 void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
