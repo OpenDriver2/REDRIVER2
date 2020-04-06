@@ -788,14 +788,7 @@ void DrawScreen(PSXSCREEN *pScr)
 	iVar7 = 5;
 	do {
 		addPrim(&pDVar2->ot[0xb], pPVar5);
-		
-		//pPVar5->tag = (pPVar5->tag & 0xff000000) | ((u_long*)&pDVar2->ot[0xb] & 0xffffff);
-		
-		//puVar3 = &pDVar2->ot[0xb];
-		//uVar4 = (uint)pPVar5 & 0xffffff;
-		
-		//*puVar3 = *puVar3 & 0xff000000 | uVar4;
-
+	
 		iVar7 = iVar7 + -1;
 		pPVar5 = pPVar5 + 1;
 	} while (-1 < iVar7);
