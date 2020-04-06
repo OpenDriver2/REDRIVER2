@@ -131,34 +131,29 @@ void IncrementClutNum(RECT16 *clut)
 // [D]
 void IncrementTPageNum(RECT16 *tpage)
 {
-	short sVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
+	int i;
+	i = 1;
 
-	iVar4 = 1;
-
-	while (true) {
-		iVar2 = iVar4 + -1;
-
-		if (((tpage->x == tpagepos[iVar2].x) && (iVar3 = iVar4 << 2, tpage->y == tpagepos[iVar2].y))
-			|| (iVar3 = iVar4 * 4, tpagepos[iVar4].x == -1)) break;
-
-		iVar4 = iVar4 + 1;
+	while (true) 
+	{
+		if (tpage->x == tpagepos[i-1].x &&	// proper tpage position
+			tpage->y == tpagepos[i-1].y || 
+			tpagepos[i].x == -1)			// or out of tpages?
+			break;
+		i++;
 	}
 
-	sVar1 = *(short *)((int)&tpagepos[0].x + iVar3);
-	tpage->x = sVar1;
-	tpage->y = *(short *)((int)&tpagepos[0].y + iVar3);
+	tpage->x = tpagepos[i].x;
+	tpage->y = tpagepos[i].y;
 
-	if (sVar1 == -1)
+	if (tpagepos[i].x == -1)
 	{
 		NoTextureMemory = 100;
-		tpage->x = tpagepos[iVar2].x;
-		tpage->y = tpagepos[iVar2].y;
+
+		tpage->x = tpagepos[i-1].x;
+		tpage->y = tpagepos[i-1].y;
 	}
 }
-
 
 
 // decompiled code
@@ -256,7 +251,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	local_28.h = 0x100;
 
 	unpackTexture(_other_buffer, (char*)puVar2);
-	//LoadImage(&local_28, (u_long *)&_other_buffer);
+	LoadImage(&local_28, (u_long *)&_other_buffer);
 
 	uVar1 = GetTPage(0, 0, (int)tpage->x, (int)tpage->y);
 	texture_pages[tpage2send] = uVar1;
@@ -871,7 +866,7 @@ void LoadPermanentTPages(int *sector)
 		} while (nsectors_00 < 19);
 	}
 
-	Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	//Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
