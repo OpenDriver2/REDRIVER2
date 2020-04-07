@@ -183,6 +183,7 @@
     <ClCompile Include="GAME\C\AI.C" />
     <ClCompile Include="GAME\C\BOMBERMAN.C" />
     <ClCompile Include="GAME\C\CAMERA.C" />
+    <ClCompile Include="GAME\C\CARS.C" />
     <ClCompile Include="GAME\C\CIV_AI.C" />
     <ClCompile Include="GAME\C\CONVERT.C" />
     <ClCompile Include="GAME\C\COP_AI.C" />

@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "OVERMAP.H"
-
+#include "TEXTURE.H"
+#include "CARS.H"
 
 OVERMAP overlaidmaps[4] =
 {
@@ -2076,44 +2077,56 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 	/* end block 3 */
 	// End Line: 3941
 
+unsigned short civ_clut[8][32][6];
+
+// [D]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	ushort uVar2;
-	undefined3 extraout_var;
-	int *piVar3;
-	int *piVar4;
-	int iVar5;
-	int iVar6;
-	u_short *puVar7;
-	u_short local_2a8[320];
+	int *local_s0_96;
+	int *local_s0_228;
+	int iVar3;
+	int iVar4;
+	u_short *puVar5;
+	unsigned short clutTable[320];
 
-	if ((*(int *)lump_ptr != 0) && (*(int *)(lump_ptr + 4) != -1)) {
-		piVar3 = (int *)(lump_ptr + 4);
-		puVar7 = local_2a8;
+	if ((*(int *)lump_ptr != 0) && (*(int *)(lump_ptr + 4) != -1)) 
+	{
+		local_s0_96 = (int *)(lump_ptr + 4);
+
+		puVar5 = (u_short *)clutTable;
 		do {
-			iVar6 = *piVar3;
-			iVar5 = piVar3[1];
-			cVar1 = GetCarPalIndex(piVar3[2]);
-			piVar4 = piVar3 + 4;
-			if (piVar3[3] == -1) {
-				LoadImage(&clutpos, piVar4);
-				piVar4 = piVar3 + 0xc;
+			iVar4 = *local_s0_96;
+			iVar3 = local_s0_96[1];
+
+			cVar1 = GetCarPalIndex(local_s0_96[2]);
+
+			local_s0_228 = local_s0_96 + 4;
+
+			if (local_s0_96[3] == -1) {
+				LoadImage(&clutpos, (u_long *)local_s0_228);
+
+				local_s0_228 = local_s0_96 + 12;
+
 				uVar2 = GetClut((int)clutpos.x, (int)clutpos.y);
-				*puVar7 = uVar2;
-				puVar7 = puVar7 + 1;
+
+				*puVar5 = uVar2;
+				puVar5 = puVar5 + 1;
 				IncrementClutNum(&clutpos);
 			}
 			else {
-				uVar2 = local_2a8[piVar3[3]];
+				uVar2 = clutTable[local_s0_96[3]];
 			}
-			civ_clut[CONCAT31(extraout_var, cVar1) * 0xc0 + iVar5 * 6 + iVar6 + 1] = uVar2;
-			piVar3 = piVar4;
-		} while (*piVar4 != -1);
+
+			civ_clut[cVar1][iVar3][iVar4 + 1] = uVar2;
+
+			local_s0_96 = local_s0_228;
+
+		} while (*local_s0_228 != -1);
 	}
-	return;*/
+
+	Emulator_SaveVRAM("VRAM_CLUTS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 

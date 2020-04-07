@@ -1,8 +1,11 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+extern char carTpages[4][8];
 extern char* texturename_buffer;
 extern char* palette_lump;
+
+extern RECT16 clutpos;
 extern RECT16 fontclutpos;
 
 extern void IncrementClutNum(RECT16 *clut); // 0x00080DDC

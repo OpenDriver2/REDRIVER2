@@ -648,10 +648,10 @@ extern char g_CurrentLevelFileName[64];
 // [D]
 void LoadPermanentTPages(int *sector)
 {
-	char bVar1;
-	char bVar2;
+	int page1;
+	int page2;
+
 	bool bVar3;
-	_MISSION *p_Var4;
 	short sVar5;
 	short sVar6;
 	short sVar7;
@@ -665,7 +665,7 @@ void LoadPermanentTPages(int *sector)
 	int iVar13;
 	short *psVar14;
 	u_short *puVar15;
-	uint tpageId;
+	int tpageId;
 	DVECTOR *pDVar16;
 	int nsectors_00;
 	int iVar17;
@@ -689,14 +689,14 @@ void LoadPermanentTPages(int *sector)
 
 	do {
 		puVar15 = (u_short *)(texture_cluts[nsectors_00]);
-		nsectors_00 = 0x1f;
+		nsectors_00 = 31;
 		do {
-			uVar9 = GetClut(0x3c0, 0x10);
+			uVar9 = GetClut(960, 16);
 			*puVar15 = uVar9;
 			nsectors_00 = nsectors_00 + -1;
 			puVar15 = puVar15 + 1;
 		} while (-1 < nsectors_00);
-		bVar3 = iVar17 < 0x80;
+		bVar3 = iVar17 < 128;
 		nsectors_00 = iVar17;
 		iVar17 = iVar17 + 1;
 	} while (bVar3);
@@ -706,15 +706,17 @@ void LoadPermanentTPages(int *sector)
 
 	clutpos.x = 960;
 	clutpos.y = 256;
-	clutpos.w = 256;
-	clutpos.h = 16;
+	clutpos.w = 16;
+	clutpos.h = 1;
 
-	tpage.w = 0x40;
-	tpage.h = 0x100;
-	mapclutpos.x = 0x3c0;
-	mapclutpos.y = 0x100;
-	mapclutpos.w = 0x10;
+	tpage.w = 64;
+	tpage.h = 256;
+
+	mapclutpos.x = 960;
+	mapclutpos.y = 256;
+	mapclutpos.w = 16;
 	mapclutpos.h = 1;
+
 	tpage.x = tpagepos[0].x;
 	tpage.y = tpagepos[0].y;
 	nsectors_00 = 0;
@@ -766,22 +768,22 @@ void LoadPermanentTPages(int *sector)
 		} while (nsectors < nperms);
 	}
 
-	iVar17 = slotsused;
 	addr = (int *)mallocptr;
-	nsectors_00 = GameLevel;
+
 	slot_clutpos[slotsused].vx = clutpos.x;
-	p_Var4 = MissionHeader;
-	slot_clutpos[iVar17].vy = clutpos.y;
-	nsectors = nsectors_00 * 0xc;
-	nsectors_00 = nsectors_00 * 8;
-	iVar13 = (p_Var4->residentModels[4] + -8) * 2;
+	slot_clutpos[slotsused].vy = clutpos.y;
+
+	iVar13 = (MissionHeader->residentModels[4] - 8) * 2;		// int specmodel
 	specialSlot = (short)slotsused;
-	bVar1 = ((char*)specTpages)[iVar13 + nsectors];
-	((char*)carTpages)[nsectors_00 + 6] = bVar1;
+
+	page1 = specTpages[GameLevel][iVar13];
+	page2 = specTpages[GameLevel][iVar13 + 1];
+
+	carTpages[GameLevel][6] = page1;
+	carTpages[GameLevel][7] = page2;
+
 	iVar17 = nspecpages;
-	bVar2 = ((char*)specTpages)[iVar13 + nsectors + 1];
 	bVar3 = nspecpages != 0;
-	((char*)carTpages)[nsectors_00 + 7] = bVar2;
 
 	if (bVar3) {
 		iVar13 = 0;
@@ -820,7 +822,7 @@ void LoadPermanentTPages(int *sector)
 					}
 					iVar13 = 0;
 				}
-				if ((tpageId == (uint)bVar1) || (tpageId == (uint)bVar2)) {
+				if ((tpageId == page1) || (tpageId == page2)) {
 					update_slotinfo(tpageId, slotsused, &tpage);
 					LoadTPageAndCluts(&tpage, &clutpos, tpageId, (char *)addr);
 					nsectors_00 = nsectors_00 + *addr;
@@ -866,7 +868,7 @@ void LoadPermanentTPages(int *sector)
 		} while (nsectors_00 < 19);
 	}
 
-	//Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	Emulator_SaveVRAM("VRAM_CLUTS_TPAGES.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 

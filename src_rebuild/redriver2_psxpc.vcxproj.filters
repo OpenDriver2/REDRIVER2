@@ -222,6 +222,9 @@
     <ClCompile Include="GAME\C\PAUSE.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\CARS.C">
+      <Filter>EMULATOR</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">
