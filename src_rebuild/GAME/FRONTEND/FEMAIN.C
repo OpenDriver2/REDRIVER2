@@ -1299,9 +1299,7 @@ LAB_FRNT__001c1ff4:
 	pCurrButton = pPVar3;
 
 	addPrim(pDVar1->ot + 7, &HighlightDummy);
-	//*(uint *)pDVar1->ot[6] = *(uint *)pDVar1->ot[6] & 0xff000000 | 0x1cc590;
-	//HighlightDummy.tag = HighlightDummy.tag & 0xff000000 | *(uint *)pDVar1->ot[7] & 0xffffff;
-	//*(uint *)pDVar1->ot[7] = *(uint *)pDVar1->ot[7] & 0xff000000 | 0x1cc5a8;
+
 	if (pPVar3->action >> 8 == 3) {
 		FEPrintString(pPVar3->Name, (int)pPVar3->x * 2 + (int)pPVar3->w, (int)pPVar3->y, 4, 0x20, 0x20,
 			0x20);
@@ -1312,7 +1310,8 @@ LAB_FRNT__001c1ff4:
 			((bMissionSelect == 0 ||
 			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 5)))))) &&
 			((bInCutSelect == 0 ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))))) {
+			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))))) 
+		{
 			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
 				(int)pCurrButton->y, 4, 0x80, 0x80, 0x80);
 		}
@@ -1674,6 +1673,7 @@ void DoFrontEnd(void)
 			NewSelection(0);
 			bRedrawFrontend = 0;
 		}
+
 		iVar1 = VSync(0xffffffff);
 		if (0x708 < iVar1 - idle_timer) {
 			if (ScreenDepth == 0) {
@@ -1693,6 +1693,12 @@ void DoFrontEnd(void)
 			}
 			idle_timer = VSync(0xffffffff);
 		}
+
+#ifndef PSX
+		// [A] Always redraw frontend
+		DrawScreen(pCurrScreen);
+		NewSelection(0);
+#endif
 	} while (true);
 }
 
