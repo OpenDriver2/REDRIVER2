@@ -1,6 +1,7 @@
 #include "LIBSPU.H"
 #include "LIBETC.H"
 #include <stdio.h>
+
 #include "EMULATOR.H"
 #include "LIBAPI.H"
 
@@ -38,16 +39,6 @@ int _spu_mem_mode_plus = 3;
 void* _spu_transferCallback = NULL;///@TODO initial value check
 int _spu_inTransfer = 0;///@TODO initial value check
 unsigned short _spu_tsa = 0;
-
-void SpuGetAllKeysStatus(char* status)
-{
-	UNIMPLEMENTED();
-}
-
-void SpuSetKeyOnWithAttr(SpuVoiceAttr* attr)
-{
-	UNIMPLEMENTED();
-}
 
 void _spu_t(int mode, int flag)
 {
@@ -99,6 +90,229 @@ addiu   $sp, 0x20
 #endif
 }
 
+//--------------------------------------------------------------------------------
+
+#include <AL/al.h>
+#include <AL/alc.h>
+
+const char* getALCErrorString(int err)
+{
+	switch (err)
+	{
+	case ALC_NO_ERROR:
+		return "AL_NO_ERROR";
+	case ALC_INVALID_DEVICE:
+		return "ALC_INVALID_DEVICE";
+	case ALC_INVALID_CONTEXT:
+		return "ALC_INVALID_CONTEXT";
+	case ALC_INVALID_ENUM:
+		return "ALC_INVALID_ENUM";
+	case ALC_INVALID_VALUE:
+		return "ALC_INVALID_VALUE";
+	case ALC_OUT_OF_MEMORY:
+		return "ALC_OUT_OF_MEMORY";
+	default:
+		return "AL_UNKNOWN";
+	}
+}
+
+const char* getALErrorString(int err)
+{
+	switch (err)
+	{
+	case AL_NO_ERROR:
+		return "AL_NO_ERROR";
+	case AL_INVALID_NAME:
+		return "AL_INVALID_NAME";
+	case AL_INVALID_ENUM:
+		return "AL_INVALID_ENUM";
+	case AL_INVALID_VALUE:
+		return "AL_INVALID_VALUE";
+	case AL_INVALID_OPERATION:
+		return "AL_INVALID_OPERATION";
+	case AL_OUT_OF_MEMORY:
+		return "AL_OUT_OF_MEMORY";
+	default:
+		return "AL_UNKNOWN";
+	}
+}
+
+#define SPU_MEMSIZE (512 * 1024)	// FIXME: isn't it very little?
+#define SPU_VOICES 24
+
+struct SPUMemory
+{
+	unsigned char	samplemem[SPU_MEMSIZE];
+	unsigned char*	writeptr;
+};
+
+static SPUMemory s_SpuMemory;
+
+struct SPUVoice
+{
+	SpuVoiceAttr attr;	// .voice is Id of this channel
+
+	ALuint alBuffer;
+	ALuint alSource;
+};
+
+static SPUVoice s_SpuVoices[SPU_VOICES];
+
+static ALCdevice* s_ALCdevice = NULL;
+static ALCcontext* s_ALCcontext = NULL;
+
+bool Emulator_InitSound()
+{
+	if (s_ALCdevice)
+		return true;
+
+	printf(" \n--------- InitOpenAL --------- \n");
+
+	// Init openAL
+	// check devices list
+	char* devices = (char*)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+
+	// go through device list (each device terminated with a single NULL, list terminated with double NULL)
+	while ((*devices) != '\0')
+	{
+		printf("found sound device: %s\n", devices);
+		devices += strlen(devices) + 1;
+	}
+
+	s_ALCdevice = alcOpenDevice(NULL);
+
+	int alErr = AL_NO_ERROR;
+
+	if (!s_ALCdevice)
+	{
+		alErr = alcGetError(nullptr);
+		printf("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
+		return false;
+	}
+
+	// out_channel_formats snd_outputchannels
+	int al_context_params[] =
+	{
+		ALC_FREQUENCY, 44100,
+		0
+	};
+
+	s_ALCcontext = alcCreateContext(s_ALCdevice, al_context_params);
+
+	alErr = alcGetError(s_ALCdevice);
+	if (alErr != AL_NO_ERROR)
+	{
+		printf("alcCreateContext error: %s\n", getALCErrorString(alErr));
+		return false;
+	}
+
+	alcMakeContextCurrent(s_ALCcontext);
+
+	alErr = alcGetError(s_ALCdevice);
+	if (alErr != AL_NO_ERROR)
+	{
+		printf("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
+		return false;
+	}
+
+	// Setup defaults
+	alListenerf(AL_GAIN, 1.0f);
+
+	// create channels
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		SPUVoice& voice = s_SpuVoices[i];
+
+		alGenSources(1, &voice.alSource);
+		alGenBuffers(1, &voice.alBuffer);
+
+		alSourcei(voice.alSource, AL_LOOPING, AL_FALSE);
+		alSourcei(voice.alSource, AL_SOURCE_RELATIVE, AL_TRUE);
+		alSourcef(voice.alSource, AL_MAX_GAIN, 1.0f);
+		alSourcef(voice.alSource, AL_DOPPLER_FACTOR, 1.0f);
+	}
+
+	return true;
+}
+
+//--------------------------------------------------------------------------------
+
+#include <math.h>
+
+// PSX ADPCM coefficients
+const double K0[5] = { 0, 0.9375, 1.796875, 1.53125, 1.90625 };
+const double K1[5] = { 0, 0, -0.8125, -0.859375, -0.9375 };
+
+// PSX ADPCM decoding routine - decodes a single sample
+short vagToPcm(unsigned char soundParameter, int soundData, double* vagPrev1, double* vagPrev2)
+{
+	int resultInt = 0;
+
+	double dTmp1 = 0.0;
+	double dTmp2 = 0.0;
+	double dTmp3 = 0.0;
+
+	if (soundData > 7)
+		soundData -= 16;
+
+	dTmp1 = (double)soundData * pow(2, (double)(12 - (soundParameter & 0x0F)));
+
+	dTmp2 = (*vagPrev1) * K0[(soundParameter >> 4) & 0x0F];
+	dTmp3 = (*vagPrev2) * K1[(soundParameter >> 4) & 0x0F];
+
+	(*vagPrev2) = (*vagPrev1);
+	(*vagPrev1) = dTmp1 + dTmp2 + dTmp3;
+
+	resultInt = (int)round((*vagPrev1));
+
+	if (resultInt > 32767)
+		resultInt = 32767;
+
+	if (resultInt < -32768)
+		resultInt = -32768;
+
+	return (short)resultInt;
+}
+
+// Main decoding routine - Takes PSX ADPCM formatted audio data and converts it to PCM. It also extracts the looping information if used.
+int decodeSound(unsigned char* iData, short* oData, int soundSize, int* loopStart, int* loopLength, bool breakOnEnd = false)
+{
+	unsigned char sp = 0;
+	int sd = 0;
+	double vagPrev1 = 0.0;
+	double vagPrev2 = 0.0;
+	int k = 0;
+
+	for (int i = 0; i < soundSize; i++)
+	{
+		if (i % 16 == 0)
+		{
+			sp = iData[i];
+
+			if (breakOnEnd && (iData[i + 1] & 0x0F) == 1)
+				return k;
+
+			if ((iData[i + 1] & 0x0E) == 6)
+				(*loopStart) = k;
+
+			if ((iData[i + 1] & 0x0F) == 3)
+				(*loopLength) = (k + 28) - (*loopStart);
+
+			if ((iData[i + 1] & 0x0F) == 7)
+				(*loopLength) = (k + 28) - (*loopStart);
+
+			i += 2;
+		}
+
+		sd = (int)iData[i] & 0x0F;
+		oData[k++] = vagToPcm(sp, sd, &vagPrev1, &vagPrev2);
+		sd = ((int)iData[i] >> 4) & 0x0F;
+		oData[k++] = vagToPcm(sp, sd, &vagPrev1, &vagPrev2);
+	}
+
+	return soundSize;
+}
+
 unsigned long SpuWrite(unsigned char* addr, unsigned long size)
 {
 	if (0x7EFF0 < size)
@@ -106,8 +320,12 @@ unsigned long SpuWrite(unsigned char* addr, unsigned long size)
 		size = 0x7EFF0;
 	}
 
+	// simply copy to the writeptr
+	memcpy(s_SpuMemory.writeptr, addr, size);
+
 	//loc_228
 	_spu_Fw(addr, size);
+
 
 	if (_spu_transferCallback == NULL)
 	{
@@ -119,6 +337,8 @@ unsigned long SpuWrite(unsigned char* addr, unsigned long size)
 
 long SpuSetTransferMode(long mode)
 {
+	// TODO: handle different transfer modes
+
 	long mode_fix = mode == 0 ? 0 : 1;
 
 	//trans_mode = mode;
@@ -129,7 +349,7 @@ long SpuSetTransferMode(long mode)
 
 unsigned long SpuSetTransferStartAddr(unsigned long addr)
 {
-	UNIMPLEMENTED();
+	s_SpuMemory.writeptr = s_SpuMemory.samplemem + addr;
 	return 0;
 }
 
@@ -217,23 +437,97 @@ void _SpuInit(int a0)
 
 void SpuInit(void)
 {
+	Emulator_InitSound();
+
 	_SpuInit(0);
 }
 
 void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
-	UNIMPLEMENTED();
+	int voiceId = SPU_VOICECH(arg->voice);
+	SPUVoice& voice = s_SpuVoices[voiceId];
+
+	bool needsSampleUpdate = (voice.attr.addr != arg->addr);
+
+	// update attributes
+	voice.attr = *arg;
+
+	// update sample in
+	// voice.alBuffer
+
+	// update parameters
+	// voice.alSource
 }
 
 void SpuSetKey(long on_off, unsigned long voice_bit)
 {
-	UNIMPLEMENTED();
+	static short waveBuffer[SPU_MEMSIZE];
+
+	int voiceId = SPU_VOICECH(voice_bit);
+	SPUVoice& voice = s_SpuVoices[voiceId];
+
+	int state;
+	alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+
+	if (on_off)
+	{
+		// stop, rewind, reset buffer
+		alSourceStop(voice.alSource);
+		alSourceRewind(voice.alSource);
+		alSourcei(voice.alSource, AL_BUFFER, 0);
+
+		char flag = s_SpuMemory.samplemem[voice.attr.addr * 8 + 1];
+
+		int loopStart = 0, loopLen = 0;
+		int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE- voice.attr.addr, &loopStart, &loopLen, true);
+
+		// update AL buffer
+		alBufferData(voice.alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 350000);
+
+		// set the buffer
+		alSourcei(voice.alSource, AL_BUFFER, voice.alBuffer);
+		alSourcei(voice.alSource, AL_SAMPLE_OFFSET, 0);
+
+		alSourcef(voice.alSource, AL_GAIN, 1.0f /*voice.attr.volume.left*/);// TODO: panning
+
+		alSourcef(voice.alSource, AL_PITCH, float(voice.attr.pitch) / 32767.0f);
+
+		alSourcePlay(voice.alSource);
+	}
+	else
+	{
+		alSourceStop(voice.alSource);
+	}
 }
 
 long SpuGetKeyStatus(unsigned long voice_bit)
 {
-	UNIMPLEMENTED();
-	return 0;
+	int voiceId = SPU_VOICECH(voice_bit);
+	SPUVoice& voice = s_SpuVoices[voiceId];
+
+	int state;
+	alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+
+	return (state == AL_PLAYING);	// simple as this?
+}
+
+void SpuGetAllKeysStatus(char* status)
+{
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		SPUVoice& voice = s_SpuVoices[i];
+
+		int state;
+		alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+
+		status[i] = (state == AL_PLAYING);
+	}
+}
+
+void SpuSetKeyOnWithAttr(SpuVoiceAttr* attr)
+{
+	SpuSetVoiceAttr(attr);
+	SpuSetKey(1, attr->voice);
 }
 
 long SpuSetMute(long on_off)
@@ -259,8 +553,12 @@ void SpuSetCommonAttr(SpuCommonAttr* attr)
 	UNIMPLEMENTED();
 }
 
+static long s_spuMallocVal = 0;
+
 long SpuInitMalloc(long num, char* top)//(F)
 {
+	s_spuMallocVal = 0;
+
 	if (num > 0)
 	{
 		//loc_214
@@ -276,7 +574,10 @@ long SpuInitMalloc(long num, char* top)//(F)
 
 long SpuMalloc(long size)
 {
-	return 0/*(long)(uintptr_t)malloc(size)*/;
+	int addr = s_spuMallocVal;
+	s_spuMallocVal += size;
+
+	return s_spuMallocVal; /*(long)(uintptr_t)malloc(size)*/;
 }
 
 long SpuMallocWithStartAddr(unsigned long addr, long size)

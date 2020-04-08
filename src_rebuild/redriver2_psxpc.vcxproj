@@ -72,8 +72,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>dependencies\sdl2\include;dependencies\glew\include;$(IncludePath)</IncludePath>
-    <LibraryPath>dependencies\SDL2\lib\x86;dependencies\glew\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>dependencies\sdl2\include;dependencies\glew\include;dependencies\openal-soft\include;$(IncludePath)</IncludePath>
+    <LibraryPath>dependencies\SDL2\lib\x86;dependencies\glew\lib\Release\Win32;dependencies\openal-soft\build\Release;$(LibraryPath)</LibraryPath>
     <OutDir>..\game_rebuild</OutDir>
     <TargetName>redriver2_d</TargetName>
   </PropertyGroup>
@@ -83,8 +83,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\game_rebuild</OutDir>
-    <IncludePath>dependencies\sdl2\include;dependencies\glew\include;$(IncludePath)</IncludePath>
-    <LibraryPath>dependencies\SDL2\lib\x86;dependencies\glew\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>dependencies\sdl2\include;dependencies\glew\include;dependencies\openal-soft\include;$(IncludePath)</IncludePath>
+    <LibraryPath>dependencies\SDL2\lib\x86;dependencies\glew\lib\Release\Win32;dependencies\openal-soft\build\Release;$(LibraryPath)</LibraryPath>
     <TargetName>redriver2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -106,7 +106,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;opengl32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;opengl32.lib;glew32.lib;openal32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -143,7 +143,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;opengl32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;opengl32.lib;glew32.lib;openal32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -16,7 +16,7 @@ long banksize[2] = { 88064, 412672 };
 
 char banks[24] = { 0 };
 
-SAMPLE_DATA samples[35][7];
+SAMPLE_DATA samples[7][35];
 int VABID = -1;
 
 unsigned long channel_lookup[16]; // offset 0xDD3D8
@@ -58,45 +58,39 @@ int gMusicVolume = 0;
 // [D]
 void InitSound(void)
 {
-	int iVar1;
-	ulong *puVar2;
-	int iVar3;
-	uint uVar4;
-	long *plVar5;
-	long *plVar6;
+	int i;
 
 	SpuInit();
 	SpuInitMalloc(7, banks);
 	SpuSetMute(1);
-	AllocateReverb(3, 0x4000);
-	plVar6 = bankaddr;
-	plVar5 = banksize;
-	iVar3 = 1;
+
+	AllocateReverb(3, 16384);
+
+	i = 1;
 	do {
-		iVar1 = SpuMalloc(*plVar5);
-		*plVar6 = iVar1;
-		if (iVar1 == -1) {
-			/* WARNING: Subroutine does not return */
+		bankaddr[i] = SpuMalloc(banksize[i]);
+
+		if (bankaddr[i] == -1)
+		{
 			eprintf("Failed to SpuMalloc! Exiting...\n");
 			exit(-1);
 		}
-		plVar6 = plVar6 + 1;
-		iVar3 = iVar3 + -1;
-		plVar5 = plVar5 + 1;
-	} while (-1 < iVar3);
-	uVar4 = 0;
-	puVar2 = channel_lookup;
 
+		i--;
+	} while (-1 < i);
+
+	i = 0;
 	do {
-		*puVar2 = 1 << (uVar4 & 0x1f);
-		uVar4 = uVar4 + 1;
-		puVar2 = puVar2 + 1;
-	} while ((int)uVar4 < 16);
+		channel_lookup[i++] = 1 << (i & 0x1f);
+	} while (i < 16);
 
 	ResetSound();
+
 	XM_OnceOffInit(1);
+
 	SetMasterVolume(gMasterVolume);
 	VSyncCallback(VsyncProc);
+
 	SpuSetMute(0);
 }
 
@@ -566,7 +560,7 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	uint uVar6;
 	ushort uVar7;
 
-	rate = samples[sample][bank].samplerate * pitch;
+	rate = samples[bank][sample].samplerate * pitch;
 
 	iVar3 = rate / 44100;
 	uVar7 = (ushort)iVar3;
@@ -582,7 +576,7 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	}
 	else
 	{
-		uVar6 = samples[sample][bank].length;
+		uVar6 = samples[bank][sample].length;
 
 		//if (uVar4 == 0) 
 			//trap(7);
@@ -599,12 +593,12 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 
 		channels[channel].attr.mask = 0x9f;
 
-		channels[channel].attr.addr = samples[sample][bank].address;
+		channels[channel].attr.addr = samples[bank][sample].address;
 		channels[channel].attr.pitch = uVar7;
 		channels[channel].time = (short)(uVar6 / uVar4) * 2 + 2;
-		channels[channel].loop = samples[sample][bank].loop;
+		channels[channel].loop = samples[bank][sample].loop;
 
-		channels[channel].samplerate = samples[sample][bank].samplerate;
+		channels[channel].samplerate = samples[bank][sample].samplerate;
 
 		if (sound_paused != 0)
 		{
@@ -1419,9 +1413,12 @@ void SoundHandler(void)
 		pCVar2 = channels;
 
 		do {
-			if ((pCVar2->loop == '\0') && (uVar1 = pCVar2->time, uVar1 != 0)) 
+			uVar1 = pCVar2->time;
+
+			if (pCVar2->loop == '\0' && (uVar1 != 0)) 
 			{
 				pCVar2->time = uVar1 - 1;
+
 				if (uVar1 == 1) {
 					voice_bit = voice_bit | 1 << (uVar3 & 0x1f);
 				}
@@ -1624,14 +1621,18 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 
 		piVar2 = lsbTabs.count + dbank;
 		iVar5 = *(int *)address;
-		memcpy(&samples[*piVar2][dbank], address + 4, iVar5 * sizeof(SAMPLE_DATA));
+
+		memcpy(&samples[dbank][*piVar2], address + 4, iVar5 * sizeof(SAMPLE_DATA));
+
 		iVar6 = iVar5 * sizeof(SAMPLE_DATA) + 4;
 		length = length - iVar6;
 
-		SpuSetTransferMode(0);
+		SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
+
 		SpuSetTransferStartAddr(lsbTabs.addr);
 		SpuWrite((unsigned char*)address + iVar6, length);
-		SpuIsTransferCompleted(1);
+
+		SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
 
 		iVar6 = iVar5;
 
@@ -1640,9 +1641,9 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 				iVar1 = lsbTabs.addr;
 				iVar6 = iVar6 + -1;
 				iVar4 = *piVar2;
-				uVar3 = samples[iVar4][dbank].address;
+				uVar3 = samples[dbank][iVar4].address;
 				*piVar2 = iVar4 + 1;
-				samples[iVar4][dbank].address = uVar3 + iVar1;
+				samples[dbank][iVar4].address = uVar3 + iVar1;
 			} while (iVar6 != 0);
 		}
 		lsbTabs.addr = lsbTabs.addr + length;
@@ -2347,7 +2348,7 @@ int FESound(int sample)
 
 	channel = GetFreeChannel();
 
-	iVar4 = samples[sample][1].samplerate << 0xb;
+	iVar4 = samples[1][sample].samplerate << 0xb;
 
 	iVar2 = iVar4 / 44100;
 	uVar6 = (ushort)iVar2;
@@ -2364,7 +2365,7 @@ int FESound(int sample)
 		channel = -1;
 	}
 	else {
-		uVar5 = samples[sample][1].length;
+		uVar5 = samples[1][sample].length;
 
 		//if (uVar3 == 0)
 		//	trap(7);
@@ -2375,11 +2376,11 @@ int FESound(int sample)
 
 		stop_sound_handler = 1;
 		channels[channel].attr.mask = 0x9f;
-		channels[channel].attr.addr = samples[sample][1].address;
+		channels[channel].attr.addr = samples[1][sample].address;
 		channels[channel].attr.pitch = uVar6;
-		channels[channel].loop = samples[sample][1].loop;
+		channels[channel].loop = samples[1][sample].loop;
 		channels[channel].time = (short)(uVar5 / uVar3) * 2 + 2;
-		channels[channel].samplerate = samples[sample][1].samplerate;
+		channels[channel].samplerate = samples[1][sample].samplerate;
 
 		SpuSetVoiceAttr(&channels[channel].attr);
 		SpuSetKey(1, channels[channel].attr.voice);
