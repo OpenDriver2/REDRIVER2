@@ -315,6 +315,8 @@ int doSpooling = 1;
 // LEADAI
 LEAD_PARAMETERS LeadValues;
 
+#define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
+
 // [D]
 void LoadMission(int missionnum)
 {
@@ -331,7 +333,7 @@ void LoadMission(int missionnum)
 	int *piVar11;
 	uint loadsize;
 	char acStack64[32];
-	uint local_20[2];
+	unsigned long header;
 
 	InitialiseMissionDefaults();
 	if (NewLevel != 0) 
@@ -346,26 +348,31 @@ void LoadMission(int missionnum)
 	if (iVar4 == 0) {
 		return;
 	}
-	LoadfileSeg(acStack64, (char *)local_20, missionnum << 2, 4);
+	LoadfileSeg(acStack64, (char*)&header, missionnum << 2, 4);
 
-	if (local_20[0] == 0) {
+	if (header == 0) {
 		return;
 	}
 
-	loadsize = local_20[0] >> 0x13;
-	LoadfileSeg(acStack64, (char *)MissionLoadAddress, local_20[0] & 0x7ffff, 0x84);
+	loadsize = header >> 0x13;
+	LoadfileSeg(acStack64, (char *)MissionLoadAddress, header & 0x7ffff, sizeof(_MISSION));
+
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (_TARGET *)((int)&MissionLoadAddress->id + MissionLoadAddress->size);
 	MissionScript = (ulong *)(MissionTargets + 0x10);
 	MissionStrings = (char *)(((_TARGET *)MissionScript)->data + MissionLoadAddress->strings);
+
 	if ((MissionLoadAddress->route != 0) && (NewLevel == 0)) {
 		loadsize = (int)MissionStrings + (MissionLoadAddress->route - (int)MissionLoadAddress);
 	}
-	iVar4 = LoadfileSeg(acStack64, (char *)MissionLoadAddress, local_20[0] & 0x7ffff, loadsize);
-	if (MissionHeader->id != 0x44324d53) {
+
+	iVar4 = LoadfileSeg(acStack64, (char *)MissionLoadAddress, header & 0x7ffff, loadsize);
+
+	if (MissionHeader->id != MISSIOH_IDENT) {
 		Mission.active = 0;
 		return;
 	}
+
 	piVar6 = &MissionHeader->region;
 	bVar1 = *piVar6 == 0;
 	MissionHeader->id = 0;

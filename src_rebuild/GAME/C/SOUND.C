@@ -499,15 +499,15 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, lo
 	/* end block 1 */
 	// End Line: 2035
 
+// [D]
 int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z, int volume, int pitch)
 {
-	UNIMPLEMENTED();
-
 	int channel_00;
 
 	if (channel < 0) {
 		channel = GetFreeChannel();
 	}
+
 	if ((uint)channel < 0x10) {
 		channels[channel].srcposition = &channels[channel].position;
 		channels[channel].position.vx = x;
@@ -522,6 +522,7 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	else {
 		channel_00 = -1;
 	}
+
 	return channel_00;
 	
 }
@@ -552,61 +553,72 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	/* end block 3 */
 	// End Line: 848
 
+int gSoundMode = 0;
+int stop_sound_handler = 0;
+int sound_paused = 0;
+
+// [D]
 int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximity)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	bool bVar1;
-	uchar uVar2;
 	int iVar3;
 	uint uVar4;
-	int iVar5;
+	int rate;
 	uint uVar6;
 	ushort uVar7;
 
-	iVar5 = bank * 0x23 + sample;
-	pitch = samples[iVar5].samplerate * pitch;
-	iVar3 = pitch / 0xac44;
+	rate = samples[sample][bank].samplerate * pitch;
+
+	iVar3 = rate / 44100;
 	uVar7 = (ushort)iVar3;
-	if (0x3fff < iVar3) {
-		uVar7 = 0x3fff;
-	}
-	uVar4 = (pitch >> 0xc) / 0x32;
-	if (uVar4 == 0) {
+
+	if (16383 < iVar3)
+		uVar7 = 16383;
+
+	uVar4 = (rate >> 0xc) / 50;
+
+	if (uVar4 == 0) 
+	{
 		channel = -1;
 	}
-	else {
-		uVar6 = samples[iVar5].length;
-		if (uVar4 == 0) {
-			trap(7);
-		}
-		if (gSoundMode == 1) {
+	else
+	{
+		uVar6 = samples[sample][bank].length;
+
+		//if (uVar4 == 0) 
+			//trap(7);
+
+		if (gSoundMode == 1) 
+		{
 			UpdateVolumeAttributesS(channel, proximity);
 		}
 		else {
 			UpdateVolumeAttributesM(channel);
 		}
+
 		stop_sound_handler = 1;
-		(&channels)[channel].attr.mask = 0x9f;
-		sample = bank * 0x23 + sample;
-		(&channels)[channel].attr.addr = samples[sample].address;
-		uVar2 = *(uchar *)&samples[sample].loop;
-		(&channels)[channel].attr.pitch = uVar7;
-		(&channels)[channel].time = (short)(uVar6 / uVar4) * 2 + 2;
-		(&channels)[channel].loop = uVar2;
-		bVar1 = sound_paused != 0;
-		(&channels)[channel].samplerate = samples[sample].samplerate;
-		if (bVar1) {
-			(&channels)[channel].attr.volume.left = 0;
-			(&channels)[channel].attr.volume.right = 0;
+
+		channels[channel].attr.mask = 0x9f;
+
+		channels[channel].attr.addr = samples[sample][bank].address;
+		channels[channel].attr.pitch = uVar7;
+		channels[channel].time = (short)(uVar6 / uVar4) * 2 + 2;
+		channels[channel].loop = samples[sample][bank].loop;
+
+		channels[channel].samplerate = samples[sample][bank].samplerate;
+
+		if (sound_paused != 0)
+		{
+			channels[channel].attr.volume.left = 0;
+			channels[channel].attr.volume.right = 0;
 		}
-		SpuSetVoiceAttr(&channels + channel);
-		SpuSetKey(1, (&channels)[channel].attr.voice);
+
+		SpuSetVoiceAttr(&channels[channel].attr);
+		SpuSetKey(1, channels[channel].attr.voice);
+
 		stop_sound_handler = 0;
 	}
+
 	return channel;
-	*/
 }
 
 
@@ -1224,30 +1236,33 @@ void UnPauseSound(void)
 	/* end block 3 */
 	// End Line: 3929
 
+//  [D]
 void StopChannel(int channel)
 {
-	UNIMPLEMENTED();
-
-	/*
-	uchar uVar1;
+	unsigned char uVar1;
 	int iVar2;
 	uint uVar3;
 	int iVar4;
 
-	if ((uint)channel < 0x10) {
-		uVar1 = (&channels)[channel].locked;
+	if ((uint)channel < 0x10)
+	{
+		uVar1 = channels[channel].locked;
 		iVar2 = VSync(0xffffffff);
-		SpuSetKey(0, (&channels)[channel].attr.voice);
+		SpuSetKey(0, channels[channel].attr.voice);
+
 		do {
-			uVar3 = SpuGetKeyStatus((&channels)[channel].attr.voice);
-			if ((uVar3 & 0xff) == 0) break;
+			uVar3 = SpuGetKeyStatus(channels[channel].attr.voice);
+
+			if ((uVar3 & 0xff) == 0)
+				break;
+
 			iVar4 = VSync(0xffffffff);
 		} while (iVar4 - iVar2 < 8);
+
 		ClearChannelFields(channel);
-		(&channels)[channel].locked = uVar1;
+		channels[channel].locked = uVar1;
 	}
 	return;
-	*/
 }
 
 
@@ -1287,6 +1302,7 @@ void StopChannel(int channel)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void StopAllChannels(void)
 {
 	int channel;
@@ -1321,6 +1337,7 @@ void StopAllChannels(void)
 	/* end block 3 */
 	// End Line: 4009
 
+// [D]
 void LockChannel(int channel)
 {
 	if ((uint)channel < 0x10) {
@@ -1340,6 +1357,7 @@ void LockChannel(int channel)
 	/* end block 1 */
 	// End Line: 4036
 
+// [D]
 void UnlockChannel(int c)
 {
 	if ((uint)c < 0x10) {
@@ -1386,36 +1404,37 @@ void UnlockChannel(int c)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SoundHandler(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	ushort uVar1;
 	CHANNEL_DATA *pCVar2;
 	uint uVar3;
-	uint uVar4;
+	ulong voice_bit;
 
-	uVar4 = 0;
-	if ((stop_sound_handler == 0) && (sound_paused == 0)) {
+	voice_bit = 0;
+	if ((stop_sound_handler == 0) && (sound_paused == 0)) 
+	{
 		uVar3 = 0;
-		pCVar2 = &channels;
+		pCVar2 = channels;
+
 		do {
-			if ((pCVar2->loop == '\0') && (uVar1 = pCVar2->time, uVar1 != 0)) {
+			if ((pCVar2->loop == '\0') && (uVar1 = pCVar2->time, uVar1 != 0)) 
+			{
 				pCVar2->time = uVar1 - 1;
 				if (uVar1 == 1) {
-					uVar4 = uVar4 | 1 << (uVar3 & 0x1f);
+					voice_bit = voice_bit | 1 << (uVar3 & 0x1f);
 				}
 			}
 			uVar3 = uVar3 + 1;
 			pCVar2 = pCVar2 + 1;
 		} while ((int)uVar3 < 0x10);
-		if (uVar4 != 0) {
-			SpuSetKey(0);
+
+		if (voice_bit != 0) 
+		{
+			SpuSetKey(0, voice_bit);
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -1557,7 +1576,8 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	int iVar5;
 	int iVar6;
 
-	if (address == NULL) {
+	if (address == NULL) 
+	{
 		switch (length) {
 			case 0:
 				if (dbank == 0) {
@@ -1585,9 +1605,12 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 				goto switchD_00079c20_caseD_5;
 		}
 	}
-	else {
+	else 
+	{
 	switchD_00079c20_caseD_5:
-		if (lsbTabs.append == 0) {
+
+		if (lsbTabs.append == 0) 
+		{
 			iVar5 = 6;
 			piVar2 = lsbTabs.count + 6;
 			lsbTabs.addr = bankaddr[1];
@@ -1598,6 +1621,7 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 			} while (-1 < iVar5);
 			lsbTabs.append = 1;
 		}
+
 		piVar2 = lsbTabs.count + dbank;
 		iVar5 = *(int *)address;
 		memcpy(&samples[*piVar2][dbank], address + 4, iVar5 * sizeof(SAMPLE_DATA));
@@ -1822,29 +1846,40 @@ int GetFreeChannel(void)
 	unsigned char *puVar2;
 	CHANNEL_DATA *pCVar3;
 	ushort uVar4;
+
 	char status[24];
 
 	//sizeof(CHANNEL_DATA); == 120 so
 
 	uVar4 = 0;
 	SpuGetAllKeysStatus(status);
+
 	channel = 0;
 	puVar2 = &channels[0].locked;
-	while ((*puVar2 != '\0' || (status[channel] != '\0'))) {
+	while ((*puVar2 != '\0' || (status[channel] != '\0'))) 
+	{
 		channel = channel + 1;
 		puVar2 = puVar2 + 0x78;
-		if (0xf < channel) {
+
+		if (0xf < channel)
+		{
 			channel = 0;
 			puVar2 = &channels[0].locked;
-			while ((*puVar2 != '\0' || (status[channel] != '\x03'))) {
+
+			while ((*puVar2 != '\0' || (status[channel] != '\x03'))) 
+			{
 				channel = channel + 1;
 				puVar2 = puVar2 + 0x78;
-				if (0xf < channel) {
+
+				if (0xf < channel) 
+				{
 					channel = -1;
 					iVar1 = 0;
 					pCVar3 = channels;
+
 					do {
-						if ((pCVar3->locked == '\0') && (pCVar3->loop == '\0')) {
+						if ((pCVar3->locked == '\0') && (pCVar3->loop == '\0')) 
+						{
 							if ((channel == -1) || (pCVar3->time < uVar4)) {
 								channel = iVar1;
 								uVar4 = pCVar3->time;
@@ -1853,15 +1888,17 @@ int GetFreeChannel(void)
 						iVar1 = iVar1 + 1;
 						pCVar3 = pCVar3 + 1;
 					} while (iVar1 < 0x10);
-					if (channel != -1) {
+
+					if (channel != -1) 
 						StopChannel(channel);
-					}
+
 					return channel;
 				}
 			}
 			return channel;
 		}
 	}
+
 	return channel;
 }
 
@@ -2298,13 +2335,9 @@ void AllocateReverb(long mode, long depth)
 	/* end block 3 */
 	// End Line: 2816
 
+// [D]
 int FESound(int sample)
 {
-	UNIMPLEMENTED();
-	return 0;
-
-	/*
-	uchar uVar1;
 	int iVar2;
 	uint uVar3;
 	int channel;
@@ -2313,38 +2346,48 @@ int FESound(int sample)
 	ushort uVar6;
 
 	channel = GetFreeChannel();
-	iVar4 = samples[sample + 0x23].samplerate << 0xb;
-	iVar2 = iVar4 / 0xac44;
+
+	iVar4 = samples[sample][1].samplerate << 0xb;
+
+	iVar2 = iVar4 / 44100;
 	uVar6 = (ushort)iVar2;
-	if (0x3fff < iVar2) {
+
+	if (0x3fff < iVar2)
+	{
 		uVar6 = 0x3fff;
 	}
+
 	uVar3 = (iVar4 >> 0xc) / 0x32;
-	if (uVar3 == 0) {
+
+	if (uVar3 == 0)
+	{
 		channel = -1;
 	}
 	else {
-		uVar5 = samples[sample + 0x23].length;
-		if (uVar3 == 0) {
-			trap(7);
-		}
-		(&channels)[channel].srcvolume = 0;
-		(&channels)[channel].srcposition = (VECTOR *)0x0;
+		uVar5 = samples[sample][1].length;
+
+		//if (uVar3 == 0)
+		//	trap(7);
+
+		channels[channel].srcvolume = 0;
+		channels[channel].srcposition = (VECTOR *)0x0;
 		UpdateVolumeAttributesM(channel);
+
 		stop_sound_handler = 1;
-		(&channels)[channel].attr.mask = 0x9f;
-		uVar1 = *(uchar *)&samples[sample + 0x23].loop;
-		(&channels)[channel].attr.addr = samples[sample + 0x23].address;
-		(&channels)[channel].attr.pitch = uVar6;
-		(&channels)[channel].loop = uVar1;
-		(&channels)[channel].time = (short)(uVar5 / uVar3) * 2 + 2;
-		(&channels)[channel].samplerate = samples[sample + 0x23].samplerate;
-		SpuSetVoiceAttr(&channels + channel);
-		SpuSetKey(1, (&channels)[channel].attr.voice);
+		channels[channel].attr.mask = 0x9f;
+		channels[channel].attr.addr = samples[sample][1].address;
+		channels[channel].attr.pitch = uVar6;
+		channels[channel].loop = samples[sample][1].loop;
+		channels[channel].time = (short)(uVar5 / uVar3) * 2 + 2;
+		channels[channel].samplerate = samples[sample][1].samplerate;
+
+		SpuSetVoiceAttr(&channels[channel].attr);
+		SpuSetKey(1, channels[channel].attr.voice);
+
 		stop_sound_handler = 0;
 	}
+
 	return channel;
-	*/
 }
 
 
@@ -2370,18 +2413,18 @@ int FESound(int sample)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int vblcounter = 0; // vblank counter
+
+// [D]
 void VsyncProc(void)
 {
-	UNIMPLEMENTED_PRINTONCE();
-
-	/*
 	vblcounter = vblcounter + 1;
+
 	if (Song_ID != -1) {
 		XM_Update();
 	}
+
 	SoundHandler();
-	return;
-	*/
 }
 
 

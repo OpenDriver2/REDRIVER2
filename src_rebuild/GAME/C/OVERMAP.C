@@ -2126,7 +2126,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 		} while (*local_s0_228 != -1);
 	}
 
-	Emulator_SaveVRAM("VRAM_CLUTS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	//Emulator_SaveVRAM("VRAM_CLUTS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 

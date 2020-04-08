@@ -1,6 +1,7 @@
 #ifndef XMPLAY_H
 #define XMPLAY_H
 
+extern int Song_ID;
 
 extern short Interpolate(short p, short p1, short p2, short v1, int v2); // 0x000869EC
 

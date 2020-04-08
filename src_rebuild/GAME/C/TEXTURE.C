@@ -868,7 +868,7 @@ void LoadPermanentTPages(int *sector)
 		} while (nsectors_00 < 19);
 	}
 
-	Emulator_SaveVRAM("VRAM_CLUTS_TPAGES.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	//Emulator_SaveVRAM("VRAM_CLUTS_TPAGES.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 

@@ -5,6 +5,8 @@
 // TODO: replace this file with actual XMPLAY PS2
 // or don't even decompile it?
 
+int Song_ID = -0x1;
+
 
 // decompiled code
 // original method signature: 
@@ -296,7 +298,7 @@ void XM_CloseVAB2(int VabID)
 
 void XM_Update(void)
 {
-	UNIMPLEMENTED();
+	UNIMPLEMENTED_PRINTONCE();
 	/*
 	int iVar1;
 

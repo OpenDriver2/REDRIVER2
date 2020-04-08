@@ -2235,10 +2235,15 @@ int redriver2_main(void)
 
 	SpuSetMute(0);
 
+	// initializes sound system
 	LoadSoundBankDynamic(NULL, 0, 0);
+
+	// load frontend bank
 	LoadBankFromLump(1, 0);
 
 	InitialiseScoreTables();
+
+	// now run the frontend
 	DoFrontEnd();
 
 	return 1;

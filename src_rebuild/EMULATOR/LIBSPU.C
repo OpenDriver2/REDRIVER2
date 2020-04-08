@@ -220,6 +220,22 @@ void SpuInit(void)
 	_SpuInit(0);
 }
 
+void SpuSetVoiceAttr(SpuVoiceAttr *arg)
+{
+	UNIMPLEMENTED();
+}
+
+void SpuSetKey(long on_off, unsigned long voice_bit)
+{
+	UNIMPLEMENTED();
+}
+
+long SpuGetKeyStatus(unsigned long voice_bit)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
 long SpuSetMute(long on_off)
 {
 	UNIMPLEMENTED();
