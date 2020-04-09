@@ -63,6 +63,8 @@ char menu5[] = { 0x13, 0x14, 0x15, 0x16, 0xFF };
 
 char menu6[] = { 0xA, 0xB, 0xC, 0xE, 0xF, 0x10, 0xFF };
 
+int FastForward = 0;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitDirectorVariables()

@@ -3,6 +3,8 @@
 #include "MAP.H"
 #include "SYSTEM.H"
 #include "MAIN.H"
+#include "XAPLAY.H"
+#include "DIRECTOR.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -604,72 +606,94 @@ void CheckValidSpoolData(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+static int sectors_this_chunk;
+static int sectors_to_read;
+static char *target_address;
+
+static int nTPchunks_reading;
+static int nTPchunks_writing;
+static int ntpages;
+static int current_sector;
+static int switch_spooltype;
+
+static int endchunk;
+int send_bank;
+int sample_chunk;
+
+struct SPOOLQ spooldata[48];
+
+// [D]
 void UpdateSpool(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	char bVar1;
 	int iVar2;
 	int iVar3;
-	undefined auStack16[8];
+	CdlLOC pos;
 
 	iVar3 = XAPrepared();
 	iVar2 = spoolpos_reading;
-	if (iVar3 != 1) {
+
+	if (iVar3 != 1) 
+	{
 		target_address = spooldata[spoolpos_reading].addr;
 		bVar1 = spooldata[spoolpos_reading].type;
-		if (bVar1 == 1) {
+
+		if (bVar1 == 0) // SPOOLTYPE_REGIONS
+		{
+			sectors_this_chunk = (spooldata[spoolpos_reading].nsectors);
+			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
+
 			spoolseek = 5;
+			CdDataCallback(data_cb_regions);
+			CdReadyCallback(ready_cb_regions);
+		}
+		else if (bVar1 == 1) // SPOOLTYPE_TEXTURES
+		{
+			spoolseek = 5;
+
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
 			sectors_to_read = 0x11;
 			ntpages = tsetcounter;
 			sectors_this_chunk = (uint)bVar1;
+
 			CdDataCallback(data_cb_textures);
 			CdReadyCallback(ready_cb_textures);
+
 			target_address = target_address + 0x4000;
 		}
-		else {
-			if (bVar1 < 2) {
-				if (bVar1 == 0) {
-					sectors_this_chunk = ZEXT24(spooldata[spoolpos_reading].nsectors);
-					sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
-					spoolseek = 5;
-					CdDataCallback(data_cb_regions);
-					CdReadyCallback(ready_cb_regions);
-				}
-			}
-			else {
-				if (bVar1 == 2) {
-					sectors_to_read = ZEXT24(spooldata[spoolpos_reading].nsectors);
-					send_bank = ZEXT14(spooldata[spoolpos_reading].data);
-					spoolseek = 5;
-					sample_chunk = 0;
-					nTPchunks_reading = 0;
-					nTPchunks_writing = 0;
-					sectors_this_chunk = (uint)bVar1;
-					CdDataCallback(data_cb_soundbank);
-					CdReadyCallback(ready_cb_soundbank);
-					target_address = target_address + (loadbank_read & 1U) * 0x1000;
-				}
-				else {
-					if (bVar1 == 3) {
-						sectors_to_read = ZEXT24(spooldata[spoolpos_reading].nsectors);
-						spoolseek = 5;
-						CdDataCallback(data_cb_misc);
-						CdReadyCallback(ready_cb_misc);
-					}
-				}
-			}
+		else if (bVar1 == 2) // SPOOLTYPE_SOUNDBANK
+		{
+			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
+
+			send_bank = (spooldata[spoolpos_reading].data);
+			spoolseek = 5;
+			sample_chunk = 0;
+			nTPchunks_reading = 0;
+			nTPchunks_writing = 0;
+			sectors_this_chunk = (uint)bVar1;
+
+			CdDataCallback(data_cb_soundbank);
+			CdReadyCallback(ready_cb_soundbank);
+
+			target_address = target_address + (loadbank_read & 1U) * 0x1000;
 		}
+		else if (bVar1 == 3)  // SPOOLTYPE_REGIONS
+		{
+			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
+
+			spoolseek = 5;
+			CdDataCallback(data_cb_misc);
+			CdReadyCallback(ready_cb_misc);
+		}
+
 		current_sector = spooldata[iVar2].sector;
 		endchunk = 0;
 		switch_spooltype = 0;
-		CdIntToPos(current_sector, auStack16);
-		CdControlF(0x1b, auStack16);
+
+		CdIntToPos(current_sector, &pos);
+		CdControlF(0x1b, (u_char*)&pos);
 	}
-	return;
-	*/
 }
 
 
@@ -698,27 +722,28 @@ void UpdateSpool(void)
 	/* end block 3 */
 	// End Line: 6448
 
+// [D]
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
 	int iVar2;
+	SPOOLQ *next;
 
-	iVar1 = spoolcounter;
-	iVar2 = citylumps[GameLevel * 4 + 3].x;
+	iVar2 = citylumps[GameLevel][3].x;
+
 	if (iVar2 < 0) {
 		iVar2 = iVar2 + 0x7ff;
 	}
-	spooldata[spoolcounter].type = (uchar)type;
-	spooldata[iVar1].data = (uchar)data;
-	spooldata[iVar1].sector = (iVar2 >> 0xb) + offset;
-	spooldata[iVar1].nsectors = (ushort)loadsize;
-	spooldata[iVar1].addr = address;
-	spooldata[iVar1].func = _func;
-	spoolcounter = spoolcounter + 1;
-	return;
-	*/
+
+	next = &spooldata[spoolcounter];
+
+	next->type = (unsigned char)type;
+	next->data = (unsigned char)data;
+	next->sector = (iVar2 >> 0xb) + offset;
+	next->nsectors = (ushort)loadsize;
+	next->addr = address;
+	next->func = func;
+
+	spoolcounter++;
 }
 
 
@@ -2478,26 +2503,38 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void StartSpooling(void)
 {
-	UNIMPLEMENTED();
-	/*
+	static unsigned char param[8];
+	static unsigned char result[8];
+
 	int iVar1;
 
-	if (((spoolcounter != 0) && (spoolactive == 0)) && (iVar1 = XAPrepared(), iVar1 == 0)) {
-		param[0] = -0x80;
-		CdControlB(0xe, param, result);
-		if ((result[0] & 0x15) != 0) {
-			WaitCloseLid();
-		}
-		spoolactive = 1;
-		UpdateSpool();
-		if (FastForward != 0) {
-			SpoolSYNC();
+	if ((spoolcounter != 0) && (spoolactive == 0))
+	{
+		iVar1 = XAPrepared();
+
+		if (iVar1 == 0)
+		{
+#ifdef PSX
+			param[0] = -0x80;
+			CdControlB(0xe, param, result);
+
+			if ((result[0] & 0x15) != 0)
+			{
+				WaitCloseLid();
+			}
+#endif // PSX
+			spoolactive = 1;
+			UpdateSpool();
+
+			if (FastForward != 0)
+			{
+				SpoolSYNC();
+			}
 		}
 	}
-	return;
-	*/
 }
 
 

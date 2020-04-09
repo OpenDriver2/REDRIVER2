@@ -1,6 +1,7 @@
 #ifndef DIRECTOR_H
 #define DIRECTOR_H
 
+extern int FastForward;
 
 extern void InitDirectorVariables(); // 0x0003E79C
 
