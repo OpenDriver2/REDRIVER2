@@ -4,6 +4,7 @@
 #include "MGENERIC.H"
 #include "DEBRIS.H"
 #include "DR2ROADS.H"
+#include "SPOOL.H"
 
 #include <string.h>
 
@@ -308,9 +309,6 @@ char* gMissionTitle = NULL;
 
 int multiplayerregions[4];
 int gMultiplayerLevels = 0;
-
-// SPOOL
-int doSpooling = 1;
 
 // LEADAI
 LEAD_PARAMETERS LeadValues;

@@ -14,8 +14,51 @@ int SpecialByRegion[4][20] = {
 	{2, 5, 4, 1, 2, 1, 4, 3, 2, 2, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0},
 };
 
+char* PVS_Buffers[4];
+
+char* model_spool_buffer = NULL;
+
+int cell_objects_add[5];
+int cell_slots_add[5];
+
+SXYPAIR* Music_And_AmbientOffsets;
+
+AreaDataStr* AreaData;
+unsigned char* AreaTPages;
+int NumAreas;
+
+char* RegionSpoolInfo;
+unsigned short *spoolinfo_offsets;
+
 char* specmallocptr;
 char *specLoadBuffer;
+
+int doSpooling = 1;
+
+short loading_region[4];
+int regions_unpacked[4];
+
+int spool_regioncounter;
+int spoolerror;	// UNUSED
+int spool_regionpos;
+int spoolactive;
+int models_ready;
+
+int tsetcounter;
+int tsetpos;
+
+int spoolcounter;
+int spoolseek;		// Probably UNUSED
+
+int loadbank_read;
+int loadbank_write;
+
+int spoolpos;
+int spoolpos_reading;
+int spoolpos_writing;
+
+int unpack_roadmap_flag;
+int unpack_cellptr_flag;
 
 // decompiled code
 // original method signature: 
@@ -711,21 +754,22 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitSpooling(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int target_region;
 	short *psVar1;
 
 	target_region = 0;
 	psVar1 = loading_region;
+
 	do {
 		*psVar1 = -1;
 		ClearRegion(target_region);
 		target_region = target_region + 1;
 		psVar1 = psVar1 + 1;
 	} while (target_region < 4);
+
 	spool_regioncounter = 0;
 	spoolerror = 0;
 	spool_regionpos = 0;
@@ -740,8 +784,8 @@ void InitSpooling(void)
 	loadbank_write = 0;
 	spoolseek = 0;
 	unpack_cellptr_flag = 0;
+
 	return;
-	*/
 }
 
 
@@ -1637,22 +1681,6 @@ void UnpackRegion(int region_to_unpack, int target_barrel_region)
 		// Start line: 4181
 	/* end block 3 */
 	// End Line: 4182
-
-char* PVS_Buffers[4];
-
-char* model_spool_buffer = NULL;
-
-int cell_objects_add[5];
-int cell_slots_add[5];
-
-SXYPAIR* Music_And_AmbientOffsets;
-
-AreaDataStr* AreaData;
-unsigned char* AreaTPages;
-int NumAreas;
-
-char* RegionSpoolInfo;
-unsigned short *spoolinfo_offsets;
 
 // [D]
 void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)

@@ -31,6 +31,7 @@ extern int gDontPingInCops;
 extern int gBatterPlayer;
 
 extern int wantedCar[2];
+extern int multiplayerregions[4];
 
 extern COP_DATA gCopData;
 

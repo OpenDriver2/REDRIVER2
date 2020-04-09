@@ -7,6 +7,13 @@ extern int cell_slots_add[5];
 extern char* specmallocptr;
 extern char *specLoadBuffer;
 
+extern int doSpooling;
+
+extern int regions_unpacked[4];
+
+extern unsigned short *spoolinfo_offsets;
+extern char* RegionSpoolInfo;
+
 typedef void(*spooledFuncPtr)();
 
 extern void test_changemode(); // 0x0007B228

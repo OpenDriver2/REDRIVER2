@@ -3,6 +3,10 @@
 #include "SYSTEM.H"
 #include "SPOOL.H"
 #include "CONVERT.H"
+#include "TEXTURE.H"
+#include "MISSION.H"
+#include "DRAW.H"
+#include "CAMERA.H"
 
 char *map_lump = NULL;
 
@@ -881,12 +885,19 @@ void ControlMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int initarea = 0;
+int LoadedArea;
+int current_region = 0;
+int old_region = 0;
+
+int current_cell_x = 0;
+int current_cell_z = 0;
+
+// [D]
 void InitMap(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	byte *pbVar2;
+	unsigned char *pbVar2;
 	int region_to_unpack;
 	int iVar3;
 	int *piVar4;
@@ -894,8 +905,10 @@ void InitMap(void)
 	initarea = -1;
 	LoadedArea = -1;
 	current_region = -1;
-	if (slotsused < 0x13) {
-		pbVar2 = &tpageslots + slotsused;
+
+	if (slotsused < 0x13) 
+	{
+		pbVar2 = &tpageslots[slotsused];
 		iVar3 = slotsused;
 		do {
 			if (*pbVar2 != 0xff) {
@@ -906,7 +919,10 @@ void InitMap(void)
 			pbVar2 = pbVar2 + 1;
 		} while (iVar3 < 0x13);
 	}
-	if (doSpooling == 0) {
+
+	// load regions synchronously
+	if (doSpooling == 0) 
+	{
 		old_region = -1;
 		if (multiplayerregions[1] == -1) {
 			multiplayerregions[1] = multiplayerregions[0] + 1;
@@ -922,37 +938,50 @@ void InitMap(void)
 		do {
 			region_to_unpack = *piVar4;
 			iVar1 = cells_across;
+
 			if (cells_across < 0) {
 				iVar1 = cells_across + 0x1f;
 			}
+
 			iVar1 = iVar1 >> 5;
+
 			if (iVar1 == 0) {
-				trap(7);
+				printf("WTF");
+				//trap(7);
 			}
 			if (iVar1 == 0) {
-				trap(7);
+				printf("WTF");
+				//trap(7);
 			}
-			if (spoolinfo_offsets[region_to_unpack] != 0xffff) {
-				if (RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8] != 0xff) {
-					initarea = (uint)(byte)RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8];
+
+			if (spoolinfo_offsets[region_to_unpack] != 0xffff) 
+			{
+				if (RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8] != 0xff) 
+				{
+					initarea = (uint)(char)RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8];
 				}
-				UnpackRegion(region_to_unpack,
-					(region_to_unpack % iVar1 & 1U) + (region_to_unpack / iVar1 & 1U) * 2);
+
+				UnpackRegion(region_to_unpack, (region_to_unpack % iVar1 & 1U) + (region_to_unpack / iVar1 & 1U) * 2);
 			}
+
 			iVar3 = iVar3 + -1;
 			piVar4 = piVar4 + 1;
 		} while (-1 < iVar3);
+
 		LoadInAreaTSets(initarea);
 		LoadInAreaModels(initarea);
+
 		current_cell_x = camera_position.vx + units_across_halved;
 		if (current_cell_x < 0) {
 			current_cell_x = current_cell_x + 0x7ff;
 		}
+
 		current_cell_x = current_cell_x >> 0xb;
 		current_cell_z = camera_position.vz + units_down_halved;
 		if (current_cell_z < 0) {
 			current_cell_z = current_cell_z + 0x7ff;
 		}
+
 		current_cell_z = current_cell_z >> 0xb;
 		StartSpooling();
 	}
@@ -963,7 +992,6 @@ void InitMap(void)
 		regions_unpacked[3] = -1;
 		ControlMap();
 	}
-	return;*/
 }
 
 

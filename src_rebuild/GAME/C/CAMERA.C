@@ -5,13 +5,15 @@ VECTOR CameraPos =
 { 4294967251, 4294967125, 4294967171, 0 };
 
 VECTOR camera_position =
-{ 0, 4294966916, 0, 0 };
+{ 0, 0x17c, 0, 0 };
 
 MATRIX face_camera_work =
 { { { 4096, 0, 0 }, { 0, 4096, 0 }, { 0, 0, 4096 } }, { 0, 0, 0 } };
 
 char old_camera_change = 0;
 char camera_change = 0;
+
+MATRIX camera_matrix;
 
 // decompiled code
 // original method signature: 

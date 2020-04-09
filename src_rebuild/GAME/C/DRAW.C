@@ -8,6 +8,8 @@
 MATRIX aspect =
 { { { 6553, 0, 0 }, { 0, 4096, 0 }, { 0, 0, 4096 } }, { 0, 0, 0 } };
 
+
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ addSubdivSpriteShadow(struct POLYFT4LIT *src /*$t3*/, struct SVECTOR *verts /*$t2*/, int z /*$a2*/)

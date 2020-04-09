@@ -1,8 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+extern VECTOR camera_position;
 extern char old_camera_change;
 extern char camera_change;
+
+
 
 extern void InitCamera(_PLAYER *lp); // 0x0001F5F4
 

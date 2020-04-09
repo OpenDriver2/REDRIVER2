@@ -11,6 +11,11 @@ extern short texture_cluts[128][32];
 extern RECT16 clutpos;
 extern RECT16 fontclutpos;
 
+extern unsigned char tpageloaded[128];
+extern unsigned char tpageslots[19];
+
+extern int slotsused;
+
 extern void IncrementClutNum(RECT16 *clut); // 0x00080DDC
 
 extern void IncrementTPageNum(RECT16 *tpage); // 0x00080528
