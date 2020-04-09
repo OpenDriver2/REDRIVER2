@@ -1,5 +1,6 @@
 #include "THISDUST.H"
 #include "SPOOL.H"
+#include "MAP.H"
 #include "SYSTEM.H"
 
 int date_date = 0xA11;
@@ -765,7 +766,9 @@ void InitSpooling(void)
 
 	do {
 		*psVar1 = -1;
+
 		ClearRegion(target_region);
+
 		target_region = target_region + 1;
 		psVar1 = psVar1 + 1;
 	} while (target_region < 4);
@@ -1516,32 +1519,35 @@ void CheckLoadAreaData(int cellx, int cellz)
 	/* end block 4 */
 	// End Line: 7605
 
+short* RoadMapDataRegions[4];
+
+// [D]
 void ClearRegion(int target_region)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 *puVar1;
-	ushort *puVar2;
-	int iVar3;
+	long *pvsptr;
+	ushort *cell_ptrs_s;
+	int iVar1;
 
-	iVar3 = 0x400;
-	puVar2 = cell_ptrs + target_region * 0x400;
+	iVar1 = 0x400;
+	cell_ptrs_s = cell_ptrs + target_region * 0x400;
+
 	do {
-		*puVar2 = 0xffff;
-		iVar3 = iVar3 + -1;
-		puVar2 = puVar2 + 1;
-	} while (iVar3 != 0);
-	puVar1 = (undefined4 *)PVS_Buffers4[target_region];
-	iVar3 = 0x400;
+		*cell_ptrs_s = 0xffff;
+		iVar1 = iVar1 + -1;
+		cell_ptrs_s = cell_ptrs_s + 1;
+	} while (iVar1 != 0);
+
+	pvsptr = (long *)PVS_Buffers[target_region];
+	iVar1 = 0x400;
+
 	do {
-		*puVar1 = 0;
-		iVar3 = iVar3 + -1;
-		puVar1 = puVar1 + 1;
-	} while (iVar3 != 0);
-	ClearMem(PVS_Buffers4[target_region] + -4, pvsSize[target_region]);
-	*(char **)(RoadMapDataRegions4 + target_region) = PVS_Buffers4[0];
-	return;
-	*/
+		*pvsptr = 0;
+		iVar1 = iVar1 + -1;
+		pvsptr = pvsptr + 1;
+	} while (iVar1 != 0);
+
+	ClearMem(PVS_Buffers[target_region] + -4, pvsSize[target_region]);
+	*(char **)(RoadMapDataRegions + target_region) = PVS_Buffers[0];
 }
 
 
