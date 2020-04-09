@@ -1847,8 +1847,8 @@ void buildNewCars(void)
 
 	// build special car
 	baseSpecCP = whichCP;
-	buildNewCarFromModel(NewCarModel + 4, gCarCleanModelPtr[4], 0);
-	buildNewCarFromModel(NewLowCarModel + 4, gCarLowModelPtr[4], 0);
+	buildNewCarFromModel(&NewCarModel[4], gCarCleanModelPtr[4], 0);
+	buildNewCarFromModel(&NewLowCarModel[4], gCarLowModelPtr[4], 0);
 }
 
 

@@ -5,6 +5,8 @@
 #include "MISSION.H"
 #include "CARS.H"
 
+#include <string.h>
+
 char* modelname_buffer = NULL;
 char *car_models_lump = NULL;
 
@@ -337,41 +339,46 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	/* end block 3 */
 	// End Line: 1175
 
-MODEL * GetCarModel(char *src, char **dest, int KeepNormals)
+// [D]
+MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
-	size_t __n;
-	MODEL *pMVar2;
+	int size;
 
-	pMVar2 = (MODEL *)*dest;
+	MODEL *model;
+
+	model = (MODEL *)*dest;
+
 	if (KeepNormals == 0) {
-		__n = *(size_t *)(src + 0x18);
+		size = *(int *)(src + 0x18);
 	}
 	else {
-		__n = *(size_t *)(src + 0x14);
+		size = *(int *)(src + 0x14);
 	}
-	memcpy(*dest, src, __n);
+
+	memcpy(*dest, src, size);
 	if (KeepNormals == 0) {
-		iVar1 = pMVar2->normals;
+		iVar1 = model->normals;
+	}
+	else 
+	{
+		iVar1 = model->poly_block;
+	}
+
+	*dest = (char *)((int)&model->flags2 + iVar1 + 1 & 0xfffffffc);
+
+	model->vertices = (int)&model->shape_flags + model->vertices;
+	model->normals = (int)&model->shape_flags + model->normals;
+	*(char **)&model->poly_block = src + model->poly_block;
+
+	if (KeepNormals == 0) {
+		model->point_normals = 0;
 	}
 	else {
-		iVar1 = pMVar2->poly_block;
+		model->point_normals = (int)&model->shape_flags + model->point_normals;
 	}
-	*dest = (char *)((int)&pMVar2->flags2 + iVar1 + 1 & 0xfffffffc);
-	pMVar2->vertices = (int)&pMVar2->shape_flags + pMVar2->vertices;
-	pMVar2->normals = (int)&pMVar2->shape_flags + pMVar2->normals;
-	*(char **)&pMVar2->poly_block = src + pMVar2->poly_block;
-	if (KeepNormals == 0) {
-		pMVar2->point_normals = 0;
-	}
-	else {
-		pMVar2->point_normals = (int)&pMVar2->shape_flags + pMVar2->point_normals;
-	}
-	return pMVar2;
-	*/
+
+	return model;
 }
 
 
