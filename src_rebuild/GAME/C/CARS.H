@@ -1,6 +1,9 @@
 #ifndef CARS_H
 #define CARS_H
 
+extern MODEL* gCarLowModelPtr[5];
+extern MODEL* gCarDamModelPtr[5];
+extern MODEL* gCarCleanModelPtr[5];
 
 extern void plotNewCarModel(CAR_MODEL *car, int palette); // 0x00020C94
 

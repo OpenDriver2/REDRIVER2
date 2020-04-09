@@ -5,6 +5,9 @@ extern char carTpages[4][8];
 extern char* texturename_buffer;
 extern char* palette_lump;
 
+extern short texture_pages[128];
+extern short texture_cluts[128][32];
+
 extern RECT16 clutpos;
 extern RECT16 fontclutpos;
 

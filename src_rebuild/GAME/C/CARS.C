@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "CARS.H"
 #include "TEXTURE.H"
+#include "OVERMAP.H"
 
 SVECTOR day_vectors[4] =
 {
@@ -1817,23 +1818,37 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+CAR_MODEL NewCarModel[5];
+CAR_MODEL NewLowCarModel[5];
+
+MODEL* gCarLowModelPtr[5];
+MODEL* gCarDamModelPtr[5];
+MODEL* gCarCleanModelPtr[5];
+
+int whichCP = 0;
+int baseSpecCP = 0;
+
+CAR_POLY carPolyBuffer[2001];
+
+// [D]
 void buildNewCars(void)
 {
-	UNIMPLEMENTED();
-	/*
-	buildNewCarFromModel(&NewCarModel, gCarCleanModelPtr5[0], 1);
-	buildNewCarFromModel(&NewLowCarModel, gCarLowModelPtr5[0], 0);
-	buildNewCarFromModel(&CAR_MODEL_000acb88, gCarCleanModelPtr5[1], 0);
-	buildNewCarFromModel(&CAR_MODEL_000b87e0, gCarLowModelPtr5[1], 0);
-	buildNewCarFromModel(&CAR_MODEL_000acba8, gCarCleanModelPtr5[2], 0);
-	buildNewCarFromModel(&CAR_MODEL_000b8800, gCarLowModelPtr5[2], 0);
-	buildNewCarFromModel(&CAR_MODEL_000acbc8, gCarCleanModelPtr5[3], 0);
-	buildNewCarFromModel(&CAR_MODEL_000b8820, gCarLowModelPtr5[3], 0);
+	buildNewCarFromModel(&NewCarModel[0], gCarCleanModelPtr[0], 1);
+	buildNewCarFromModel(&NewLowCarModel[0], gCarLowModelPtr[0], 0);
+
+	buildNewCarFromModel(&NewCarModel[1], gCarCleanModelPtr[1], 0);
+	buildNewCarFromModel(&NewLowCarModel[1], gCarLowModelPtr[1], 0);
+
+	buildNewCarFromModel(&NewCarModel[2], gCarCleanModelPtr[2], 0);
+	buildNewCarFromModel(&NewLowCarModel[2], gCarLowModelPtr[2], 0);
+
+	buildNewCarFromModel(&NewCarModel[3], gCarCleanModelPtr[3], 0);
+	buildNewCarFromModel(&NewLowCarModel[3], gCarLowModelPtr[3], 0);
+
+	// build special car
 	baseSpecCP = whichCP;
-	buildNewCarFromModel(&CAR_MODEL_000acbe8, gCarCleanModelPtr5[4], 0);
-	buildNewCarFromModel(&CAR_MODEL_000b8840, gCarLowModelPtr5[4], 0);
-	return;
-	*/
+	buildNewCarFromModel(NewCarModel + 4, gCarCleanModelPtr[4], 0);
+	buildNewCarFromModel(NewLowCarModel + 4, gCarLowModelPtr[4], 0);
 }
 
 
@@ -1971,17 +1986,17 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
 	UNIMPLEMENTED();
 	/*
-	byte bVar1;
-	byte bVar2;
-	byte bVar3;
-	byte bVar4;
+	char bVar1;
+	char bVar2;
+	char bVar3;
+	char bVar4;
 	ushort uVar5;
 	char cVar6;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
+	//undefined3 extraout_var;
+	//undefined3 extraout_var_00;
 	uint uVar7;
 	int iVar8;
-	byte *pbVar9;
+	char *pbVar9;
 	CAR_POLY *pCVar10;
 	int iVar11;
 	int iVar12;
@@ -1993,190 +2008,189 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 	if (first != 0) {
 		whichCP = 0;
 	}
-	if ((model == (MODEL *)0x0) || (0x800000 < ((uint)model & 0xfffffff))) {
+	if ((model == NULL) || (0x800000 < ((uint)model & 0xfffffff))) 
+	{
 		car->numGT3 = 0;
 		car->numFT3 = 0;
 		car->numB3 = 0;
 	}
-	else {
+	else 
+	{
 		car->vlist = (SVECTOR *)model->vertices;
 		car->nlist = (SVECTOR *)model->point_normals;
+
 		iVar15 = 0;
+
 		do {
 			iVar11 = whichCP;
-			pbVar9 = (byte *)model->poly_block;
+			pbVar9 = (char *)model->poly_block;
+
 			if (iVar15 == 1) {
-				car->pFT3 = &pbf + whichCP;
+				car->pFT3 = carPolyBuffer + whichCP;
 			}
-			else {
-				if (iVar15 < 2) {
-					if (iVar15 == 0) {
-						car->pGT3 = &pbf + whichCP;
-					}
-				}
-				else {
-					if (iVar15 == 2) {
-						car->pB3 = &pbf + whichCP;
-					}
-				}
+			else if (iVar15 == 0) {
+				car->pGT3 = carPolyBuffer + whichCP;
 			}
+			else if (iVar15 == 2) {
+				car->pB3 = carPolyBuffer + whichCP;
+			}
+
 			iVar14 = 0;
 			iVar16 = iVar15 + 1;
 			iVar12 = iVar11;
-			if ((iVar11 < 2000) && (model->num_polys != 0)) {
+
+			if ((iVar11 < 2000) && (model->num_polys != 0)) 
+			{
 				do {
 					bVar1 = *pbVar9;
-					pCVar10 = &pbf + iVar11;
-					sVar13 = (short)iVar14;
+					pCVar10 = carPolyBuffer + iVar11;
 					iVar12 = iVar11;
-					switch ((uint)bVar1 & 0x1f) {
-					case 0:
-					case 0x12:
-						if (iVar15 == 2) {
-							bVar2 = pbVar9[1];
-							bVar3 = pbVar9[2];
-							bVar4 = pbVar9[3];
-							iVar12 = iVar11 + 1;
-							(&pbf)[iVar11].originalindex = sVar13;
-							pCVar10->vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
-						}
-						break;
-					case 1:
-					case 0x13:
-						if (iVar15 == 2) {
-							bVar2 = pbVar9[4];
-							bVar3 = pbVar9[5];
-							bVar4 = pbVar9[6];
-							iVar12 = iVar11 + 2;
-							(&pbf)[iVar11].originalindex = sVar13;
-							pCVar10->vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
-							bVar2 = pbVar9[4];
-							bVar3 = pbVar9[6];
-							bVar4 = pbVar9[7];
-							CAR_POLY_ARRAY_000acc40[iVar11].originalindex = sVar13;
-							CAR_POLY_ARRAY_000acc40[iVar11].vindices =
-								(uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
-						}
-						break;
-					case 0x14:
-						if (iVar15 == 1) {
-							pCVar10->vindices =
-								(uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
-							(&pbf)[iVar11].clut_uv0 =
-								CONCAT22((&texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]],
-									*(undefined2 *)(pbVar9 + 8));
-							(&pbf)[iVar11].tpage_uv1 =
-								CONCAT22((&texture_pages)[pbVar9[1]], *(undefined2 *)(pbVar9 + 10));
-							uVar7 = (uint)*(ushort *)(pbVar9 + 0xc);
-							iVar12 = iVar11 + 1;
-						LAB_00022fd4:
-							pCVar10->originalindex = sVar13;
-						LAB_00022fd8:
-							pCVar10->uv3_uv2 = uVar7;
-						}
-						break;
-					case 0x15:
-						if (iVar15 == 1) {
-							pCVar10->vindices =
-								(uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
-							(&pbf)[iVar11].clut_uv0 =
-								CONCAT22((&texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]],
-									*(undefined2 *)(pbVar9 + 8));
-							(&pbf)[iVar11].tpage_uv1 =
-								CONCAT22((&texture_pages)[pbVar9[1]], *(undefined2 *)(pbVar9 + 10));
-							uVar5 = *(ushort *)(pbVar9 + 0xc);
-							(&pbf)[iVar11].originalindex = sVar13;
-							(&pbf)[iVar11].uv3_uv2 = (uint)uVar5;
-							pCVar10 = CAR_POLY_ARRAY_000acc40 + iVar11;
-							pCVar10->vindices =
-								(uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
-							CAR_POLY_ARRAY_000acc40[iVar11].clut_uv0 =
-								CONCAT22((&texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]],
-									*(undefined2 *)(pbVar9 + 8));
-							CAR_POLY_ARRAY_000acc40[iVar11].tpage_uv1 =
-								CONCAT22((&texture_pages)[pbVar9[1]], *(undefined2 *)(pbVar9 + 0xc));
-							uVar7 = (uint)*(ushort *)(pbVar9 + 0xe);
-							iVar12 = iVar11 + 2;
-							goto LAB_00022fd4;
-						}
-						break;
-					case 0x16:
-						if (iVar15 == 0) {
-							iVar12 = iVar11 + 1;
-							cVar6 = GetCarPalIndex((uint)pbVar9[1]);
-							civ_clut[CONCAT31(extraout_var, cVar6) * 0xc0 + (uint)pbVar9[2] * 6] =
-								(&texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
-							pCVar10->vindices =
-								(uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
-							(&pbf)[iVar11].nindices =
-								(uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
-							(&pbf)[iVar11].clut_uv0 =
-								((int)(CONCAT31(extraout_var, cVar6) * 0x180 + (uint)pbVar9[2] * 0xc + -0x180) >>
-									1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-							(&pbf)[iVar11].tpage_uv1 =
-								CONCAT22((&texture_pages)[pbVar9[1]], *(undefined2 *)(pbVar9 + 0xe));
-							uVar7 = (uint)*(ushort *)(pbVar9 + 0x10);
-							(&pbf)[iVar11].originalindex = sVar13;
-							goto LAB_00022fd8;
-						}
-						break;
-					case 0x17:
-						if (iVar15 == 0) {
-							iVar12 = iVar11 + 2;
-							cVar6 = GetCarPalIndex((uint)pbVar9[1]);
-							iVar8 = CONCAT31(extraout_var_00, cVar6) * 0x180;
-							civ_clut[CONCAT31(extraout_var_00, cVar6) * 0xc0 + (uint)pbVar9[2] * 6] =
-								(&texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
-							pCVar10->vindices =
-								(uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
-							(&pbf)[iVar11].nindices =
-								(uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
-							(&pbf)[iVar11].clut_uv0 =
-								((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 |
-								(uint)*(ushort *)(pbVar9 + 0xc);
-							(&pbf)[iVar11].tpage_uv1 =
-								CONCAT22((&texture_pages)[pbVar9[1]], *(undefined2 *)(pbVar9 + 0xe));
-							uVar5 = *(ushort *)(pbVar9 + 0x10);
-							(&pbf)[iVar11].originalindex = sVar13;
-							(&pbf)[iVar11].uv3_uv2 = (uint)uVar5;
-							pCVar10 = CAR_POLY_ARRAY_000acc40 + iVar11;
-							pCVar10->vindices =
-								(uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
-							CAR_POLY_ARRAY_000acc40[iVar11].nindices =
-								(uint)pbVar9[8] + ((uint)pbVar9[10] + (uint)pbVar9[0xb] * 0x100) * 0x100;
-							CAR_POLY_ARRAY_000acc40[iVar11].clut_uv0 =
-								((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 |
-								(uint)*(ushort *)(pbVar9 + 0xc);
-							CAR_POLY_ARRAY_000acc40[iVar11].tpage_uv1 =
-								CONCAT22((&texture_pages)[pbVar9[1]], *(undefined2 *)(pbVar9 + 0x10));
-							uVar7 = (uint)*(ushort *)(pbVar9 + 0x12);
-							goto LAB_00022fd4;
+
+					if (true) 
+					{
+						sVar13 = (short)iVar14;
+						switch ((uint)bVar1 & 0x1f) 
+						{
+							case 0:
+							case 0x12:
+								if (iVar15 == 2) 
+								{
+									bVar2 = pbVar9[1];
+									bVar3 = pbVar9[2];
+									bVar4 = pbVar9[3];
+									iVar12 = iVar11 + 1;
+									carPolyBuffer[iVar11].originalindex = sVar13;
+									pCVar10->vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
+								}
+								break;
+							case 1:
+							case 0x13:
+								if (iVar15 == 2) 
+								{
+									bVar2 = pbVar9[4];
+									bVar3 = pbVar9[5];
+									bVar4 = pbVar9[6];
+									iVar12 = iVar11 + 2;
+									carPolyBuffer[iVar11].originalindex = sVar13;
+									pCVar10->vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
+									bVar2 = pbVar9[4];
+									bVar3 = pbVar9[6];
+									bVar4 = pbVar9[7];
+									carPolyBuffer[iVar11 + 1].originalindex = sVar13;
+									carPolyBuffer[iVar11 + 1].vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
+								}
+								break;
+							case 0x14:
+								if (iVar15 == 1) 
+								{
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+
+									carPolyBuffer[iVar11].clut_uv0 = CONCAT22(texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
+									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
+
+									uVar7 = (uint)*(ushort *)(pbVar9 + 0xc);
+									iVar12 = iVar11 + 1;
+								LAB_00022fd4:
+									pCVar10->originalindex = sVar13;
+								LAB_00022fd8:
+									pCVar10->uv3_uv2 = uVar7;
+								}
+								break;
+							case 0x15:
+								if (iVar15 == 1) 
+								{
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+
+									carPolyBuffer[iVar11].clut_uv0 = CONCAT22(texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
+									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
+
+									uVar5 = *(ushort *)(pbVar9 + 0xc);
+									carPolyBuffer[iVar11].originalindex = sVar13;
+									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
+									pCVar10 = carPolyBuffer + iVar11 + 1;
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
+
+									carPolyBuffer[iVar11 + 1].clut_uv0 = CONCAT22(texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
+									carPolyBuffer[iVar11 + 1].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xc));
+
+									uVar7 = (uint)*(ushort *)(pbVar9 + 0xe);
+									iVar12 = iVar11 + 2;
+									goto LAB_00022fd4;
+								}
+								break;
+							case 0x16:
+								if (iVar15 == 0) 
+								{
+									iVar12 = iVar11 + 1;
+									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
+
+									civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+									
+									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
+									carPolyBuffer[iVar11].clut_uv0 = ((int)(cVar6 * 0x180 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
+									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
+									
+									uVar7 = (uint)*(ushort *)(pbVar9 + 0x10);
+									carPolyBuffer[iVar11].originalindex = sVar13;
+									goto LAB_00022fd8;
+								}
+								break;
+							case 0x17:
+								if (iVar15 == 0) 
+								{
+									iVar12 = iVar11 + 2;
+									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
+									iVar8 = cVar6 * 0x180;
+
+									civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+
+									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
+									carPolyBuffer[iVar11].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
+									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
+
+									uVar5 = *(ushort *)(pbVar9 + 0x10);
+									carPolyBuffer[iVar11].originalindex = sVar13;
+									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
+									pCVar10 = carPolyBuffer + iVar11 + 1;
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
+
+									carPolyBuffer[iVar11 + 1].nindices = (uint)pbVar9[8] + ((uint)pbVar9[10] + (uint)pbVar9[0xb] * 0x100) * 0x100;
+									carPolyBuffer[iVar11 + 1].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
+									carPolyBuffer[iVar11 + 1].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0x10));
+
+									uVar7 = (uint)*(ushort *)(pbVar9 + 0x12);
+									goto LAB_00022fd4;
+								}
 						}
 					}
+
 					iVar14 = iVar14 + 1;
 					pbVar9 = pbVar9 + PolySizes[(uint)bVar1 & 0x1f];
+
 				} while ((iVar12 < 2000) && (iVar11 = iVar12, iVar14 < (int)(uint)model->num_polys));
 			}
-			if (iVar15 == 1) {
+
+			if (iVar15 == 1) 
+			{
 				car->numFT3 = iVar12 - whichCP;
 			}
-			else {
-				if (iVar15 < 2) {
-					if (iVar15 == 0) {
-						car->numGT3 = iVar12 - whichCP;
-					}
-				}
-				else {
-					if (iVar15 == 2) {
-						car->numB3 = iVar12 - whichCP;
-					}
-				}
+			if (iVar15 == 0)
+			{
+				car->numGT3 = iVar12 - whichCP;
 			}
+			else if (iVar15 == 2) 
+			{
+				car->numB3 = iVar12 - whichCP;
+			}
+
 			iVar15 = iVar16;
 			whichCP = iVar12;
 		} while (iVar16 < 3);
 	}
-	return;*/
+	*/
 }
 
 

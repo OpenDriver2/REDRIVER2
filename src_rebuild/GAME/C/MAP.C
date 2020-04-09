@@ -2,6 +2,7 @@
 #include "MAP.H"
 #include "SYSTEM.H"
 #include "SPOOL.H"
+#include "CONVERT.H"
 
 char *map_lump = NULL;
 
@@ -26,18 +27,15 @@ char *map_lump = NULL;
 	/* end block 3 */
 	// End Line: 475
 
+// [D]
 void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile)
 {
-	UNIMPLEMENTED();
-	/*
-	Getlong((char *)pRoadMapLumpData, pLumpFile);
-	Getlong((char *)&pRoadMapLumpData->height, pLumpFile + 4);
-	pRoadMapLumpData->unitXMid = (pRoadMapLumpData->width + 1) * 0x200;
-	pRoadMapLumpData->unitZMid = pRoadMapLumpData->height << 9;
-	return;
-	*/
-}
+	Getlong((char*)&pRoadMapLumpData->width, pLumpFile);
+	Getlong((char*)&pRoadMapLumpData->height, pLumpFile + 4);
 
+	pRoadMapLumpData->unitXMid = (pRoadMapLumpData->width + 1) * 512;
+	pRoadMapLumpData->unitZMid = pRoadMapLumpData->height * 512;
+}
 
 
 // decompiled code
