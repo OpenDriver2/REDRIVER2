@@ -1,6 +1,7 @@
 #ifndef COSMETIC_H
 #define COSMETIC_H
 
+extern CAR_COSMETICS car_cosmetics[5];
 
 extern void LoadCosmetics(int level); // 0x00031160
 

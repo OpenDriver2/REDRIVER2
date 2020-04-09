@@ -4,6 +4,9 @@
 extern CAR_MODEL NewCarModel[5];
 extern CAR_MODEL NewLowCarModel[5];
 
+extern int whichCP = 0;		// car poly counter
+extern int baseSpecCP = 0;	// special car poly counter
+
 extern MODEL* gCarLowModelPtr[5];
 extern MODEL* gCarDamModelPtr[5];
 extern MODEL* gCarCleanModelPtr[5];

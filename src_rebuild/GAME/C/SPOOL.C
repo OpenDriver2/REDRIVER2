@@ -14,6 +14,10 @@
 #include "OBJANIM.H"
 #include "GLAUNCH.H"
 #include "CARS.H"
+#include "COSMETIC.H"
+#include "DENTING.H"
+#include "HANDLING.H"
+#include "MISSION.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -3514,61 +3518,69 @@ void LowSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void Tada(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char *pcVar1;
 	int slot;
-	RECT local_20;
-	RECT local_18;
+	RECT16 local_20;
+	RECT16 local_18;
 
 	pcVar1 = specLoadBuffer;
-	if (specialState == 2) {
+	if (specialState == 2)
+	{
 		local_18.w = 0x40;
 		slot = (int)specialSlot + 1;
-		local_18.x = (&tpagepos)[slot].x;
+		local_18.x = tpagepos[slot].x;
 		local_18.h = 0x10;
-		local_18.y = (&tpagepos)[slot].y + (0xf - (short)specBlocksToLoad) * 0x10;
+		local_18.y = tpagepos[slot].y + (0xf - (short)specBlocksToLoad) * 0x10;
 		if (specBlocksToLoad == 0xf) {
-			update_slotinfo((uint)(byte)specTpages[((int)SHORT_000aa9bc + -1) * 2 + GameLevel * 0xc + 1],
-				(int)specialSlot, &local_18);
+			update_slotinfo((uint)specTpages[((int)specspooldata[2] + -1) * 2 + GameLevel * 0xc + 1]
+				, (int)specialSlot, &local_18);
 		}
-		LoadImage(&local_18, pcVar1);
+		LoadImage(&local_18, (u_long *)pcVar1);
 	}
-	else {
-		if (2 < specialState) {
-			if (specialState != 4) {
+	else
+	{
+		if (2 < specialState) 
+		{
+			if (specialState != 4)
 				return;
-			}
+
 			SetupSpecCosmetics(specLoadBuffer);
 			FixCarCos(car_cosmetics + 4, MissionHeader->residentModels[4]);
 			SetupSpecDenting(pcVar1 + 0xec);
-			if (quickSpool == 1) {
+
+			if (quickSpool == 1)
+			{
 				return;
 			}
+
 			DrawSyncCallback(SpecialStartNextBlock);
 			return;
 		}
-		if (specialState != 1) {
+		if (specialState != 1)
+		{
 			return;
 		}
+
 		slot = (int)specialSlot;
 		local_20.w = 0x40;
-		local_20.x = (&tpagepos)[slot].x;
+		local_20.x = tpagepos[slot].x;
 		local_20.h = 0x10;
-		local_20.y = (&tpagepos)[slot].y + (0xf - (short)specBlocksToLoad) * 0x10;
+		local_20.y = tpagepos[slot].y + (0xf - (short)specBlocksToLoad) * 0x10;
+
 		if (specBlocksToLoad == 0xf) {
-			update_slotinfo((uint)(byte)specTpages[((int)SHORT_000aa9bc + -1) * 2 + GameLevel * 0xc], slot,
-				&local_20);
+			update_slotinfo((uint)specTpages[((int)specspooldata[2] + -1) * 2 + GameLevel * 0xc], slot, &local_20);
 		}
-		LoadImage(&local_20, pcVar1);
+
+		LoadImage(&local_20, (u_long *)pcVar1);
 	}
-	if (quickSpool != 1) {
+
+	if (quickSpool != 1)
+	{
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
-	return;
-	*/
 }
 
 
