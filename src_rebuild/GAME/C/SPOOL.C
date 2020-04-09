@@ -2,6 +2,7 @@
 #include "SPOOL.H"
 #include "MAP.H"
 #include "SYSTEM.H"
+#include "MAIN.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -1904,27 +1905,27 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void GotRegion(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
 	char *pcVar2;
 	uint target_barrel_reg;
 
 	Unpack_CellPtrs();
+
 	target_barrel_reg = (uint)spool_regioninfo[spool_regionpos].target_barrel_region;
-	spool_regionpos = spool_regionpos + 1;
-	pcVar2 = PVS_Buffers4[target_barrel_reg];
+	spool_regionpos++;
+
+	pcVar2 = PVS_Buffers[target_barrel_reg];
 	loading_region[target_barrel_reg] = -1;
-	bVar1 = spool_regionpos == spool_regioncounter;
-	*(char **)(RoadMapDataRegions4 + target_barrel_reg) = pcVar2 + *(int *)(pcVar2 + -4);
-	if (bVar1) {
+
+	*(char **)(RoadMapDataRegions + target_barrel_reg) = pcVar2 + *(int *)(pcVar2 + -4);
+
+	if (spool_regionpos == spool_regioncounter)
+	{
 		spool_regioncounter = 0;
 		spool_regionpos = 0;
 	}
-	return;
-	*/
 }
 
 
@@ -2543,10 +2544,9 @@ void StartSpooling(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void unpack_cellpointers(void)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort *puVar1;
 	ushort *puVar2;
 	ushort uVar3;
@@ -2558,7 +2558,9 @@ void unpack_cellpointers(void)
 	unpack_cellptr_flag = 0;
 	iVar4 = *(int *)(unpack_cellptr_tbl[2] + 4);
 	puVar1 = (ushort *)(unpack_cellptr_tbl[2] + 8);
-	if (iVar4 == 0) {
+
+	if (iVar4 == 0) 
+	{
 		iVar4 = 0x3ff;
 		puVar1 = cell_ptrs + unpack_cellptr_tbl[1] * 0x400 + 0x3ff;
 		do {
@@ -2568,7 +2570,8 @@ void unpack_cellpointers(void)
 		} while (-1 < iVar4);
 	}
 	else {
-		if (iVar4 == 1) {
+		if (iVar4 == 1)
+		{
 			piVar5 = cell_slots_add + unpack_cellptr_tbl[1];
 			iVar4 = 0x3ff;
 			puVar2 = cell_ptrs + unpack_cellptr_tbl[1] * 0x400;
@@ -2584,7 +2587,9 @@ void unpack_cellpointers(void)
 			} while (-1 < iVar4);
 			return;
 		}
-		if (iVar4 == 2) {
+
+		if (iVar4 == 2)
+		{
 			uVar6 = 0x8000;
 			uVar7 = (uint)*puVar1;
 			puVar2 = (ushort *)(unpack_cellptr_tbl[2] + 10);
@@ -2610,18 +2615,20 @@ void unpack_cellpointers(void)
 				iVar4 = iVar4 + -1;
 				puVar1 = puVar1 + 1;
 			} while (-1 < iVar4);
+
 			return;
 		}
-		if (FrameCnt != 0x78654321) {
+
+		if (FrameCnt != 0x78654321)
+		{
 			do {
-				trap(0x400);
+				//trap(0x400);
 			} while (FrameCnt != 0x78654321);
+
 			unpack_cellptr_flag = 0;
 			return;
 		}
 	}
-	return;
-	*/
 }
 
 
