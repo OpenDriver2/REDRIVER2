@@ -3225,10 +3225,11 @@ void DamagedModelSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int lowOffset;
+
+// [D]
 void LowModelSpooled(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int *piVar1;
 	ushort *puVar2;
 	MODEL *pMVar3;
@@ -3239,38 +3240,42 @@ void LowModelSpooled(void)
 	piVar5 = (int *)specLoadBuffer;
 	if (specBlocksToLoad == lengthLowBlock + -1) {
 		piVar5 = (int *)(specLoadBuffer + lowOffset);
-		gCarLowModelPtr5[4] = (MODEL *)modelMemory;
+		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
-	if (piVar5 < specLoadBuffer + 0x800) {
+
+	// This is a while() {}, not do{}while() xDD
+	if (piVar5 < (int*)(specLoadBuffer + 0x800))
+	{
 		do {
 			iVar4 = *piVar5;
 			piVar5 = piVar5 + 1;
 			*modelMemory = iVar4;
 			modelMemory = modelMemory + 1;
-		} while (piVar5 < specLoadBuffer + 0x800);
+		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
-	pMVar3 = gCarLowModelPtr5[4];
-	if (&gCarLowModelPtr5[4][1].poly_block < modelMemory) {
-		in_a3 = (int *)((int)&gCarLowModelPtr5[4]->shape_flags + gCarLowModelPtr5[4]->poly_block);
+	pMVar3 = gCarLowModelPtr[4];
+
+	if (&gCarLowModelPtr[4][1].poly_block < modelMemory) {
+		in_a3 = (int *)((int)&gCarLowModelPtr[4]->shape_flags + gCarLowModelPtr[4]->poly_block);
 	}
+
 	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory)) {
-		piVar5 = &gCarLowModelPtr5[4]->normals;
-		piVar1 = &gCarLowModelPtr5[4]->point_normals;
+		piVar5 = &gCarLowModelPtr[4]->normals;
+		piVar1 = &gCarLowModelPtr[4]->point_normals;
 		specBlocksToLoad = 0;
-		puVar2 = &gCarLowModelPtr5[4]->shape_flags;
+		puVar2 = &gCarLowModelPtr[4]->shape_flags;
 		modelMemory = in_a3;
-		gCarLowModelPtr5[4]->vertices =
-			(int)&gCarLowModelPtr5[4]->shape_flags + gCarLowModelPtr5[4]->vertices;
-		CAR_MODEL_000b8840.nlist = (SVECTOR *)((int)&pMVar3->shape_flags + *piVar1);
+		gCarLowModelPtr[4]->vertices = (int)&gCarLowModelPtr[4]->shape_flags + gCarLowModelPtr[4]->vertices;
+		NewLowCarModel[4].nlist = (SVECTOR *)((int)&pMVar3->shape_flags + *piVar1);
 		pMVar3->normals = (int)puVar2 + *piVar5;
-		*(SVECTOR **)&pMVar3->point_normals = CAR_MODEL_000b8840.nlist;
+		*(SVECTOR **)&pMVar3->point_normals = NewLowCarModel[4].nlist;
 		pMVar3->poly_block = (int)&pMVar3->shape_flags + pMVar3->poly_block;
-		CAR_MODEL_000b8840.vlist = (SVECTOR *)pMVar3->vertices;
+		NewLowCarModel[4].vlist = (SVECTOR *)pMVar3->vertices;
 	}
+
 	if (quickSpool != 1) {
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
-	return;*/
 }
 
 
