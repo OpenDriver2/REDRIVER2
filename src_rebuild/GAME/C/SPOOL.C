@@ -3324,10 +3324,9 @@ void LowModelSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void CleanSpooled(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int *piVar1;
 	char *pcVar2;
 	int iVar3;
@@ -3335,7 +3334,9 @@ void CleanSpooled(void)
 	MODEL *model;
 
 	pcVar2 = specmallocptr;
-	if (specBlocksToLoad == 6) {
+
+	if (specBlocksToLoad == 6)
+	{
 		lastCleanBlock = *(int *)specmallocptr + 0x80b;
 		if (lastCleanBlock < 0) {
 			lastCleanBlock = *(int *)specmallocptr + 0x100a;
@@ -3366,7 +3367,9 @@ void CleanSpooled(void)
 		lengthDamBlock = (iVar3 >> 0xb) - firstDamBlock;
 		damOffset = *(int *)specmallocptr - (firstDamBlock * 0x800 + -0xc);
 	}
+
 	model = (MODEL *)(specmallocptr + 0xc);
+
 	if (specBlocksToLoad == 7 - lastCleanBlock) {
 		iVar3 = *(int *)(specmallocptr + 0x24);
 		piVar1 = (int *)(specmallocptr + 0x20);
@@ -3375,13 +3378,12 @@ void CleanSpooled(void)
 		*(int *)(pcVar2 + 0x24) = (int)&model->shape_flags + iVar3;
 		whichCP = baseSpecCP;
 		*(int *)(pcVar2 + 0x28) = (int)&model->shape_flags + *(int *)(pcVar2 + 0x28);
-		buildNewCarFromModel(&CAR_MODEL_000acbe8, model, 0);
+		buildNewCarFromModel(NewCarModel + 4, model, 0);
 		specBlocksToLoad = 0;
 	}
 	if (quickSpool != 1) {
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
-	return;*/
 }
 
 
@@ -3425,25 +3427,27 @@ void CleanSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void LowSpooled(void)
 {
-	UNIMPLEMENTED();
-	/*
 	MODEL *model;
 
-	if (specBlocksToLoad == 0) {
+	if (specBlocksToLoad == 0) 
+	{
 		model = (MODEL *)(specmallocptr + lowOffset);
+
 		model->vertices = (int)&model->shape_flags + model->vertices;
 		model->normals = (int)&model->shape_flags + model->normals;
 		model->poly_block = (int)&model->shape_flags + model->poly_block;
 		model->point_normals = (int)&model->shape_flags + model->point_normals;
-		buildNewCarFromModel(&CAR_MODEL_000b8840, model, 0);
+
+		buildNewCarFromModel(NewLowCarModel + 4, model, 0);
 	}
-	if (quickSpool != 1) {
+
+	if (quickSpool != 1) 
+	{
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
-	return;
-	*/
 }
 
 
