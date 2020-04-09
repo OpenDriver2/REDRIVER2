@@ -1,6 +1,7 @@
 #ifndef TILE_H
 #define TILE_H
 
+extern int num_models_in_pack;
 
 extern void Tile1x1(struct MODEL *model); // 0x00041B10
 

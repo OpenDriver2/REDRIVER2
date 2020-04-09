@@ -1,5 +1,6 @@
 #include "THISDUST.H"
 #include "TILE.H"
+#include "MODELS.H"
 
 
 // decompiled code
@@ -1208,37 +1209,44 @@ void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 	/* end block 4 */
 	// End Line: 1807
 
+unsigned short *Low2HighDetailTable = NULL;
+unsigned short *Low2LowerDetailTable = NULL;
+MODEL* pLodModels[1536];
+
+// [D]
 void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort *puVar1;
 	int iVar2;
+
 	MODEL **ppMVar3;
 	MODEL **ppMVar4;
 
 	puVar1 = (ushort *)(lump_ptr + num_models_in_pack * 2);
 	Low2HighDetailTable = (ushort *)lump_ptr;
 	Low2LowerDetailTable = puVar1;
-	if (0 < num_models_in_pack) {
-		ppMVar3 = pLodModels1536;
-		ppMVar4 = modelpointers1536;
+
+	if (0 < num_models_in_pack) 
+	{
+		ppMVar3 = pLodModels;
+		ppMVar4 = modelpointers;
 		iVar2 = num_models_in_pack;
 		do {
-			if (*puVar1 == 0xffff) {
+			if (*puVar1 == 0xffff) 
+			{
 				*ppMVar3 = *ppMVar4;
 			}
-			else {
-				*ppMVar3 = modelpointers1536[*puVar1];
+			else 
+			{
+				*ppMVar3 = modelpointers[*puVar1];
 			}
+
 			ppMVar3 = ppMVar3 + 1;
 			ppMVar4 = ppMVar4 + 1;
 			iVar2 = iVar2 + -1;
 			puVar1 = puVar1 + 1;
 		} while (iVar2 != 0);
 	}
-	return;
-	*/
 }
 
 
