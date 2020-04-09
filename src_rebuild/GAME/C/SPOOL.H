@@ -14,6 +14,8 @@ extern int regions_unpacked[4];
 extern unsigned short *spoolinfo_offsets;
 extern char* RegionSpoolInfo;
 
+extern char* packed_cell_pointers;
+
 typedef void(*spooledFuncPtr)();
 
 extern void test_changemode(); // 0x0007B228

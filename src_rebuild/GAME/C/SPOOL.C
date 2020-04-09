@@ -61,6 +61,10 @@ int spoolpos_writing;
 int unpack_roadmap_flag;
 int unpack_cellptr_flag;
 
+char *packed_cell_pointers;
+SPL_REGIONINFO spool_regioninfo[8];
+unsigned long unpack_cellptr_tbl[3];
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ test_changemode()
@@ -1574,47 +1578,53 @@ void ClearRegion(int target_region)
 	/* end block 2 */
 	// End Line: 3837
 
+// [D]
 int LoadRegionData(int region, int target_region)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	bool bVar1;
+	short sVar1;
 	ushort uVar2;
 	int iVar3;
-	char *pcVar4;
-	ushort *puVar5;
-	SPL_REGIONINFO *pSVar6;
+	char *cell_buffer;
+	short *spofs;
+	SPL_REGIONINFO *pSVar4;
 	int offset;
-	char *unaff_s6;
+	Spool *spoolptr;
+	char *roadmap_buffer;
 
-	puVar5 = spoolinfo_offsets + region;
-	bVar1 = *puVar5 != 0xffff;
-	if (bVar1) {
+	spofs = (short *)(spoolinfo_offsets + region);
+	sVar1 = *spofs;
+
+	if (sVar1 != -1) 
+	{
 		loading_region[target_region] = (ushort)region;
-		pcVar4 = packed_cell_pointers;
-		puVar5 = (ushort *)(RegionSpoolInfo + *puVar5);
-		uVar2 = *puVar5;
-		RequestSpool(0, 0, (uint)uVar2, (uint)*(byte *)(puVar5 + 3), packed_cell_pointers, 0);
-		offset = (uint)uVar2 + (uint)*(byte *)(puVar5 + 3);
-		RequestSpool(0, 0, offset, (uint)*(byte *)((int)puVar5 + 5),
-			(char *)(cells + cell_slots_add[target_region]), 0);
-		offset = offset + (uint)*(byte *)((int)puVar5 + 5);
-		RequestSpool(0, 0, offset, (uint)*(byte *)((int)puVar5 + 7),
-			(char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), 0);
-		offset = offset + (uint)*(byte *)((int)puVar5 + 7);
-		RequestSpool(0, 0, offset, (uint)*(byte *)(puVar5 + 5), PVS_Buffers4[target_region] + -4, 0xcc);
+		cell_buffer = packed_cell_pointers;
+		spoolptr = (Spool *)(RegionSpoolInfo + (ushort)*spofs);
+
+		uVar2 = spoolptr->offset;
+		RequestSpool(0, 0, (uint)uVar2, (uint)spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+
+		offset = (uint)uVar2 + (uint)spoolptr->cell_data_size[1];
+		RequestSpool(0, 0, offset, (uint)spoolptr->cell_data_size[0],(char *)(cells + cell_slots_add[target_region]), NULL);
+
+		offset = offset + (uint)spoolptr->cell_data_size[0];
+		RequestSpool(0, 0, offset, (uint)spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+
+		offset = offset + (uint)spoolptr->cell_data_size[2];
+		RequestSpool(0, 0, offset, (uint)spoolptr->roadm_size, PVS_Buffers[target_region] + -4, GotRegion);
+
 		iVar3 = spool_regioncounter;
-		pSVar6 = spool_regioninfo + spool_regioncounter;
-		spool_regioninfo[spool_regioncounter].nsectors =
-			(offset + (uint)*(byte *)(puVar5 + 5)) - (uint)*puVar5;
-		pSVar6->region_to_unpack = (ushort)region;
+		pSVar4 = spool_regioninfo + spool_regioncounter;
+
+		spool_regioninfo[spool_regioncounter].nsectors = (offset + (uint)spoolptr->roadm_size) - (uint)spoolptr->offset;
+
+		pSVar4->region_to_unpack = (ushort)region;
+
 		spool_regioninfo[iVar3].target_barrel_region = (ushort)target_region;
-		spool_regioninfo[iVar3].cell_addr = pcVar4;
-		spool_regioninfo[iVar3].roadm_addr = unaff_s6;
+		spool_regioninfo[iVar3].cell_addr = cell_buffer;
+		spool_regioninfo[iVar3].roadm_addr = roadmap_buffer;
 	}
-	return (uint)bVar1;
-	*/
+
+	return (sVar1 != -1);
 }
 
 
@@ -1642,11 +1652,13 @@ int LoadRegionData(int region, int target_region)
 
 int RoadMapRegions[4];
 
+// [D]
 void UnpackRegion(int region_to_unpack, int target_barrel_region)
 {
 	int iVar1;
 
-	if (loading_region[target_barrel_region] == -1) {
+	if (loading_region[target_barrel_region] == -1) 
+	{
 		iVar1 = LoadRegionData(region_to_unpack, target_barrel_region);
 
 		if (iVar1 != 0)
@@ -2638,9 +2650,6 @@ void unpack_cellpointers(void)
 	// End Line: 6540
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-SPL_REGIONINFO spool_regioninfo[8];
-unsigned long unpack_cellptr_tbl[3];
 
 // [D]
 void Unpack_CellPtrs(void)

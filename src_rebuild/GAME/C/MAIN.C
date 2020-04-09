@@ -687,11 +687,11 @@ void InitModelNames(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // TODO: SPOOL?
-char *packed_cell_pointers;
 PACKED_CELL_OBJECT** pcoplist;
+CELL_OBJECT** coplist;
+
 ulong* transparent_buffer;
 ulong* tile_overflow_buffer;
-CELL_OBJECT** coplist;
 
 // system?
 int gameinit = 0;
