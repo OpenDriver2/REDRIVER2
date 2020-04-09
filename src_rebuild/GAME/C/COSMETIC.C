@@ -262,25 +262,26 @@ void AddReverseLight(_CAR_DATA *cp)
 	/* end block 4 */
 	// End Line: 2620
 
+// [D]
 void SetupSpecCosmetics(char *loadbuffer)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	undefined4 *puVar2;
-	CAR_COSMETICS *pCVar3;
+	int iVar1;
+	int *from;
+	int *to;
 
-	pCVar3 = car_cosmetics + 4;
-	puVar2 = (undefined4 *)(loadbuffer + 0xec);
-	if (loadbuffer < puVar2) {
+	to = (int *)(car_cosmetics + 4);
+	from = (int *)(loadbuffer + sizeof(CAR_COSMETICS));
+
+	// Again, while() {} instead of do {} while()
+	if (loadbuffer < (char*)from) 
+	{
 		do {
-			uVar1 = *(undefined4 *)loadbuffer;
-			loadbuffer = (char *)((undefined4 *)loadbuffer + 1);
-			*(undefined4 *)&pCVar3->headLight = uVar1;
-			pCVar3 = (CAR_COSMETICS *)&(pCVar3->headLight).vz;
-		} while (loadbuffer < puVar2);
+			iVar1 = *(int *)loadbuffer;
+			loadbuffer = (char *)((int *)loadbuffer + 1);
+			*to = iVar1;
+			to = to + 1;
+		} while (loadbuffer < (char*)from);
 	}
-	return;*/
 }
 
 
