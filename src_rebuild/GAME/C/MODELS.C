@@ -299,6 +299,8 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	specLoadBuffer = mallocptr - 2048; // [A]
 
 	buildNewCars();
+
+	return 0;
 }
 
 

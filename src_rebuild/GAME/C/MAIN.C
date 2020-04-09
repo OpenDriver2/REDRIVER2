@@ -305,6 +305,12 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			printf("LUMP_JUNCTIONS: size: %d\n", size);
 			ProcessJunctionsLump((char *)ptr, size);
 		}
+		
+		else if (lump_type == LUMP_CAR_MODELS)
+		{
+			printf("LUMP_CAR_MODELS: size: %d\n", size);
+			car_models_lump = (char*)ptr;
+		}
 		else if (lump_type == LUMP_MODELS)
 		{
 			printf("LUMP_MODELS: size: %d\n", size);

@@ -1,7 +1,7 @@
 #ifndef OVERMAP_H
 #define OVERMAP_H
 
-unsigned short civ_clut[8][32][6];
+extern unsigned short civ_clut[8][32][6];
 
 extern void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char b, unsigned long flags); // 0x00016280
 
