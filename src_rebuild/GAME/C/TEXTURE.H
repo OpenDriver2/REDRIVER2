@@ -5,8 +5,11 @@ extern char carTpages[4][8];
 extern char* texturename_buffer;
 extern char* palette_lump;
 
+extern SXYPAIR tpagepos[20];
+
 extern short texture_pages[128];
 extern short texture_cluts[128][32];
+extern int tpage_texamts[128];
 
 extern RECT16 clutpos;
 extern RECT16 fontclutpos;
@@ -14,7 +17,15 @@ extern RECT16 fontclutpos;
 extern unsigned char tpageloaded[128];
 extern unsigned char tpageslots[19];
 
+extern DVECTOR slot_clutpos[19];
+extern DVECTOR slot_tpagepos[19];
+
+extern RECT16 tpage;
+
+extern short specialSlot;
 extern int slotsused;
+
+extern char specTpages[4][12];
 
 extern void IncrementClutNum(RECT16 *clut); // 0x00080DDC
 

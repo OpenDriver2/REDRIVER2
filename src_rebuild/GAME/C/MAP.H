@@ -4,6 +4,10 @@
 extern int cells_across; // offset 0xAA67C
 extern int cells_down; // offset 0xAA680
 
+extern int current_region;
+extern int old_region;
+
+
 extern char *map_lump;
 extern unsigned short *cell_ptrs;
 extern PACKED_CELL_OBJECT* cell_objects;

@@ -1209,10 +1209,6 @@ void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 	/* end block 4 */
 	// End Line: 1807
 
-unsigned short *Low2HighDetailTable = NULL;
-unsigned short *Low2LowerDetailTable = NULL;
-MODEL* pLodModels[1536];
-
 // [D]
 void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 {

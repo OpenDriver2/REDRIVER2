@@ -4,6 +4,8 @@
 extern ACTIVE_CHEATS AvailableCheats;
 extern ACTIVE_CHEATS ActiveCheats;
 
+extern int lead_car;
+
 extern int wantedCar[2];
 extern int gInFrontend;
 extern int AttractMode;

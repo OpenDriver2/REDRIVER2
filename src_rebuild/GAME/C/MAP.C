@@ -7,10 +7,12 @@
 #include "MISSION.H"
 #include "DRAW.H"
 #include "CAMERA.H"
+#include "GLAUNCH.H"
 
 char *map_lump = NULL;
 int initarea = 0;
 int LoadedArea;
+
 int current_region = 0;
 int old_region = 0;
 
@@ -551,7 +553,6 @@ int PositionVisible(VECTOR *pos)
 
 // FIXME: move it somewhere else
 extern int saved_leadcar_pos;
-extern int lead_car;
 
 int region_x = 0;
 int region_z = 0;

@@ -7,8 +7,17 @@
 
 #include <string.h>
 
+MODEL dummyModel;
+
 char* modelname_buffer = NULL;
 char *car_models_lump = NULL;
+
+MODEL* modelpointers[1536] = { 0 };
+int num_models_in_pack = 0;
+
+unsigned short *Low2HighDetailTable = NULL;
+unsigned short *Low2LowerDetailTable = NULL;
+MODEL* pLodModels[1536];
 
 // decompiled code
 // original method signature: 
@@ -37,9 +46,6 @@ char *car_models_lump = NULL;
 		// Start line: 78
 	/* end block 3 */
 	// End Line: 79
-
-MODEL* modelpointers[1536] = { 0 };
-int num_models_in_pack = 0;
 
 // [D]
 void ProcessMDSLump(char *lump_file, int lump_size)
