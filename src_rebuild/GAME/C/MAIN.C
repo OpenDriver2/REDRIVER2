@@ -1942,21 +1942,28 @@ LAB_0005b1e0:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// TODO: DRAW.C?
+int ObjectDrawnValue = 0;
+int ObjectDrawnCounter = 0;
+
+// [D]
 void DrawGame(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
+
+	static unsigned long frame = 0;
 
 	if ((NumPlayers == 1) || (NoPlayerControl != 0)) {
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
 		RenderGame2(0);
 		ObjectDrawnCounter = ObjectDrawnCounter + 1;
+
 		do {
 			iVar1 = VSync(0xffffffff);
-		} while ((uint)(iVar1 - DAT_000aa670) < 2);
-		DAT_000aa670 = VSync(0xffffffff);
+		} while ((uint)(iVar1 - frame) < 2);
+
+		frame = VSync(0xffffffff);
 		SwapDrawBuffers();
 	}
 	else {
@@ -1971,8 +1978,6 @@ void DrawGame(void)
 		SwapDrawBuffers2(1);
 	}
 	FrameCnt = FrameCnt + 1;
-	return;
-	*/
 }
 
 
@@ -2670,14 +2675,10 @@ void RenderGame2(int view)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// TODO: DRAW.C?
-int ObjectDrawnValue = 0;
-int ObjectDrawnCounter = 0;
-
 // [D]
 void RenderGame(void)
 {
-	static unsigned long frame;
+	static unsigned long frame = 0;
 
 	int iVar1;
 
