@@ -1,6 +1,9 @@
 #ifndef CARS_H
 #define CARS_H
 
+extern CAR_MODEL NewCarModel[5];
+extern CAR_MODEL NewLowCarModel[5];
+
 extern MODEL* gCarLowModelPtr[5];
 extern MODEL* gCarDamModelPtr[5];
 extern MODEL* gCarCleanModelPtr[5];

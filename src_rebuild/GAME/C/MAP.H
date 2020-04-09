@@ -7,6 +7,8 @@ extern int cells_down; // offset 0xAA680
 extern int current_region;
 extern int old_region;
 
+extern int LoadedArea;
+extern int initarea;
 
 extern char *map_lump;
 extern unsigned short *cell_ptrs;

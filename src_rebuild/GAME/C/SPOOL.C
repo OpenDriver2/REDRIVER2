@@ -13,6 +13,7 @@
 #include "MODELS.H"
 #include "OBJANIM.H"
 #include "GLAUNCH.H"
+#include "CARS.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -1492,9 +1493,7 @@ void LoadInAreaModels(int area)
 	/* end block 4 */
 	// End Line: 3523
 
-int LoadedArea;
 int new_area_location;
-int initarea = 0;
 
 // [D]
 void CheckLoadAreaData(int cellx, int cellz)
@@ -3017,10 +3016,23 @@ void SpecClutsSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int *modelMemory;
+
+int lengthLowBlock;
+int lastCleanBlock;
+int lengthDamBlock;
+
+int firstLowBlock;
+int firstDamBlock;
+
+int specBlocksToLoad = 0;
+int specialState = 0;
+char specModelValid = 1;
+int specSpoolComplete;
+
+// [D]
 void CleanModelSpooled(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int *piVar1;
 	ushort *puVar2;
 	MODEL *pMVar3;
@@ -3032,38 +3044,44 @@ void CleanModelSpooled(void)
 	if (specBlocksToLoad == lastCleanBlock + -1) {
 		piVar5 = (int *)(specLoadBuffer + 0xc);
 		modelMemory = (int *)specmallocptr;
-		gCarCleanModelPtr5[4] = (MODEL *)specmallocptr;
+		gCarCleanModelPtr[4] = (MODEL *)specmallocptr;
 	}
-	if (piVar5 < specLoadBuffer + 0x800) {
+
+	if (piVar5 < (int*)(specLoadBuffer + 0x800)) 
+	{
 		do {
 			iVar4 = *piVar5;
 			piVar5 = piVar5 + 1;
 			*modelMemory = iVar4;
 			modelMemory = modelMemory + 1;
-		} while (piVar5 < specLoadBuffer + 0x800);
+		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
-	pMVar3 = gCarCleanModelPtr5[4];
-	if (&gCarCleanModelPtr5[4][1].poly_block < modelMemory) {
-		in_a3 = (int *)((int)&gCarCleanModelPtr5[4]->shape_flags + gCarCleanModelPtr5[4]->poly_block);
+
+	pMVar3 = gCarCleanModelPtr[4];
+
+	if (&gCarCleanModelPtr[4][1].poly_block < modelMemory)
+	{
+		in_a3 = (int *)((int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->poly_block);
 	}
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory)) {
-		piVar5 = &gCarCleanModelPtr5[4]->normals;
-		piVar1 = &gCarCleanModelPtr5[4]->point_normals;
+
+	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
+	{
+		piVar5 = &gCarCleanModelPtr[4]->normals;
+		piVar1 = &gCarCleanModelPtr[4]->point_normals;
 		specBlocksToLoad = 0;
-		puVar2 = &gCarCleanModelPtr5[4]->shape_flags;
+		puVar2 = &gCarCleanModelPtr[4]->shape_flags;
 		modelMemory = in_a3;
-		gCarCleanModelPtr5[4]->vertices =
-			(int)&gCarCleanModelPtr5[4]->shape_flags + gCarCleanModelPtr5[4]->vertices;
-		CAR_MODEL_000acbe8.nlist = (SVECTOR *)((int)&pMVar3->shape_flags + *piVar1);
+		gCarCleanModelPtr[4]->vertices = (int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->vertices;
+		NewCarModel[4].nlist = (SVECTOR *)((int)&pMVar3->shape_flags + *piVar1);
 		pMVar3->normals = (int)puVar2 + *piVar5;
-		*(SVECTOR **)&pMVar3->point_normals = CAR_MODEL_000acbe8.nlist;
+		*(SVECTOR **)&pMVar3->point_normals = NewCarModel[4].nlist;
 		pMVar3->poly_block = (int)&pMVar3->shape_flags + pMVar3->poly_block;
-		CAR_MODEL_000acbe8.vlist = (SVECTOR *)pMVar3->vertices;
+		NewCarModel[4].vlist = (SVECTOR *)pMVar3->vertices;
 	}
-	if (quickSpool != 1) {
+	if (quickSpool != 1)
+	{
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
-	return;*/
 }
 
 
@@ -3572,18 +3590,6 @@ void Tada(void)
 	// End Line: 6494
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-int lengthLowBlock;
-int lastCleanBlock;
-int lengthDamBlock;
-
-int firstLowBlock;
-int firstDamBlock;
-
-int specBlocksToLoad = 0;
-int specialState = 0;
-char specModelValid = 1;
-int specSpoolComplete;
 
 // [D]
 void SpecialStartNextBlock(void)
