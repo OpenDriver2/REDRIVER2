@@ -117,7 +117,6 @@ int TargetCar = 0;
 int pauseflag = 0;
 
 int HitLeadCar = 0;
-int FastForward = 0;
 int game_over = 0;
 int saved_counter = 0;
 int saved_leadcar_pos = 0;

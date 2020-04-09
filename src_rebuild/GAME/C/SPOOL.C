@@ -644,8 +644,12 @@ void UpdateSpool(void)
 			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
 
 			spoolseek = 5;
+#ifdef PSX
 			CdDataCallback(data_cb_regions);
 			CdReadyCallback(ready_cb_regions);
+#else
+			UNIMPLEMENTED();
+#endif // PSX
 		}
 		else if (bVar1 == 1) // SPOOLTYPE_TEXTURES
 		{
@@ -657,8 +661,10 @@ void UpdateSpool(void)
 			ntpages = tsetcounter;
 			sectors_this_chunk = (uint)bVar1;
 
+#ifdef PSX
 			CdDataCallback(data_cb_textures);
 			CdReadyCallback(ready_cb_textures);
+#endif // PSX
 
 			target_address = target_address + 0x4000;
 		}
@@ -673,8 +679,12 @@ void UpdateSpool(void)
 			nTPchunks_writing = 0;
 			sectors_this_chunk = (uint)bVar1;
 
+#ifdef PSX
 			CdDataCallback(data_cb_soundbank);
 			CdReadyCallback(ready_cb_soundbank);
+#else
+			UNIMPLEMENTED();
+#endif // PSX
 
 			target_address = target_address + (loadbank_read & 1U) * 0x1000;
 		}
@@ -683,16 +693,22 @@ void UpdateSpool(void)
 			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
 
 			spoolseek = 5;
+#ifdef PSX
 			CdDataCallback(data_cb_misc);
 			CdReadyCallback(ready_cb_misc);
+#else
+			UNIMPLEMENTED();
+#endif // PSX
 		}
 
 		current_sector = spooldata[iVar2].sector;
 		endchunk = 0;
 		switch_spooltype = 0;
 
+#ifdef PSX
 		CdIntToPos(current_sector, &pos);
 		CdControlF(0x1b, (u_char*)&pos);
+#endif // PSX
 	}
 }
 
