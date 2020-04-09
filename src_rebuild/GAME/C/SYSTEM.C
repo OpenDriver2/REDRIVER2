@@ -923,34 +923,39 @@ short rcossin_tbl[8192] =
 	/* end block 4 */
 	// End Line: 2274
 
+// [D]
 void ClearMem(char *mem, int size)
 {
-	UNIMPLEMENTED();
-	/*
-	int *puVar1;
+	// 16 bit aligned clear
+#ifndef PSX
+	memset(mem, 0, size);
+#else
+	char *end;
+	end = mem + size;
 
-	puVar1 = (int *)(mem + size);
-	while ((((uint)mem & 3) != 0 && (mem < puVar1))) {
+	while ((((uint)mem & 3) != 0 && (mem < end))) {
 		*mem = 0;
 		mem = (char *)((int)mem + 1);
 	}
-	while (mem <= puVar1 + -4) {
-		*(int *)mem = 0;
-		((int *)mem)[1] = 0;
-		((int *)mem)[2] = 0;
-		((int *)mem)[3] = 0;
-		mem = (char *)((int *)mem + 4);
+
+	while (mem <= end + -0x10) {
+		*(uint *)mem = 0;
+		((uint *)mem)[1] = 0;
+		((uint *)mem)[2] = 0;
+		((uint *)mem)[3] = 0;
+		mem = (char *)((uint *)mem + 4);
 	}
-	while (mem <= puVar1 + -1) {
-		*(int *)mem = 0;
-		mem = (char *)((int *)mem + 1);
+
+	while (mem <= end + -4) {
+		*(uint *)mem = 0;
+		mem = (char *)((uint *)mem + 1);
 	}
-	while (mem < puVar1) {
+
+	while (mem < end) {
 		*mem = 0;
 		mem = (char *)((int)mem + 1);
-	}
-	return;
-	*/
+	}	
+#endif // !PSX
 }
 
 
@@ -979,6 +984,7 @@ void ClearMem(char *mem, int size)
 	/* end block 3 */
 	// End Line: 2347
 
+// [D]
 void setMem8(unsigned char *mem, unsigned char val, int size)
 {
 	UNIMPLEMENTED();

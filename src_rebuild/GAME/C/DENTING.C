@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "DENTING.H"
-
+#include "SYSTEM.H"
+#include "MISSION.H"
 
 char* DentingFiles[] =
 {
@@ -670,13 +671,11 @@ void MoveHubcap(void)
 	/* end block 4 */
 	// End Line: 2611
 
+// [D]
 void LoadDenting(int level)
 {
-	UNIMPLEMENTED();
-	/*
-	LoadfileSeg(DentingFiles[level], &DAT_000f3000, 0, (int)&DAT_000031b7);
-	ProcessDentLump(&DAT_000f3000, 0);
-	return;*/
+	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 0x31b7);
+	ProcessDentLump(_other_buffer, 0);
 }
 
 
@@ -701,144 +700,158 @@ void LoadDenting(int level)
 	/* end block 2 */
 	// End Line: 2048
 
+unsigned char gCarDamageZoneVerts[5][6][50];
+unsigned char gHDCarDamageZonePolys[5][6][70];
+unsigned char gHDCarDamageLevels[5][255];
+
+// [D]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
-	undefined4 *puVar2;
-	undefined4 *puVar3;
-	int iVar4;
-	undefined4 *puVar5;
+	unsigned char uVar1;
+	int *local_v1_316;
+	int *piVar2;
+	int iVar3;
+	int *piVar4;
+	int *piVar5;
 	int iVar6;
 	int iVar7;
-	undefined4 uVar8;
-	undefined4 uVar9;
-	undefined4 uVar10;
+	int iVar8;
+	int iVar9;
 
 	iVar6 = 0;
 	do {
-		iVar4 = MissionHeader->residentModels[iVar6];
-		if (iVar4 == 0xd) {
-			iVar4 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] +
-				MissionHeader->residentModels[2]);
-			if (iVar4 < 1) {
-				iVar4 = 1;
+		iVar3 = MissionHeader->residentModels[iVar6];
+
+		if (iVar3 == 0xd)
+		{
+			iVar3 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
+			if (iVar3 < 1) {
+				iVar3 = 1;
 			}
 			else {
-				if (4 < iVar4) {
-					iVar4 = 4;
+				if (4 < iVar3) {
+					iVar3 = 4;
 				}
 			}
 		}
+
 		iVar7 = iVar6 + 1;
-		if (iVar4 != -1) {
-			puVar2 = (undefined4 *)(gCarDamageZoneVerts + iVar6 * 300);
-			puVar5 = (undefined4 *)(lump_ptr + *(int *)(lump_ptr + iVar4 * 4));
-			puVar3 = puVar5;
-			if (((uint)puVar5 & 3) == 0) {
+
+		if (iVar3 != -1) 
+		{
+			local_v1_316 = (int *)(gCarDamageZoneVerts + iVar6 * 300);
+			piVar4 = (int *)(lump_ptr + *(int *)(lump_ptr + iVar3 * 4));
+			piVar2 = piVar4;
+
+			// memcpy
+			if (((uint)piVar4 & 3) == 0) {
 				do {
-					uVar8 = puVar3[1];
-					uVar9 = puVar3[2];
-					uVar10 = puVar3[3];
-					*puVar2 = *puVar3;
-					puVar2[1] = uVar8;
-					puVar2[2] = uVar9;
-					puVar2[3] = uVar10;
-					puVar3 = puVar3 + 4;
-					puVar2 = puVar2 + 4;
-				} while (puVar3 != puVar5 + 0x48);
+					iVar3 = piVar2[1];
+					iVar8 = piVar2[2];
+					iVar9 = piVar2[3];
+					*local_v1_316 = *piVar2;
+					local_v1_316[1] = iVar3;
+					local_v1_316[2] = iVar8;
+					local_v1_316[3] = iVar9;
+					piVar2 = piVar2 + 4;
+					local_v1_316 = local_v1_316 + 4;
+				} while (piVar2 != piVar4 + 0x48);
 			}
 			else {
 				do {
-					uVar8 = puVar3[1];
-					uVar9 = puVar3[2];
-					uVar10 = puVar3[3];
-					*puVar2 = *puVar3;
-					puVar2[1] = uVar8;
-					puVar2[2] = uVar9;
-					puVar2[3] = uVar10;
-					puVar3 = puVar3 + 4;
-					puVar2 = puVar2 + 4;
-				} while (puVar3 != puVar5 + 0x48);
+					iVar3 = piVar2[1];
+					iVar8 = piVar2[2];
+					iVar9 = piVar2[3];
+					*local_v1_316 = *piVar2;
+					local_v1_316[1] = iVar3;
+					local_v1_316[2] = iVar8;
+					local_v1_316[3] = iVar9;
+					piVar2 = piVar2 + 4;
+					local_v1_316 = local_v1_316 + 4;
+				} while (piVar2 != piVar4 + 0x48);
 			}
-			uVar8 = puVar3[1];
-			uVar9 = puVar3[2];
-			*puVar2 = *puVar3;
-			puVar2[1] = uVar8;
-			puVar2[2] = uVar9;
-			puVar3 = (undefined4 *)(gHDCarDamageZonePolys + iVar6 * 0x1a4);
-			puVar2 = puVar5 + 0x4b;
-			if (((uint)puVar2 & 3) == 0) {
+
+			iVar3 = piVar2[1];
+			iVar8 = piVar2[2];
+			*local_v1_316 = *piVar2;
+			local_v1_316[1] = iVar3;
+			local_v1_316[2] = iVar8;
+			piVar2 = (int *)(gHDCarDamageZonePolys + iVar6 * 0x1a4);
+			piVar5 = piVar4 + 0x4b;
+
+			// memcpy
+			if (((uint)piVar5 & 3) == 0) {
 				do {
-					uVar10 = puVar2[1];
-					uVar8 = puVar2[2];
-					uVar9 = puVar2[3];
-					*puVar3 = *puVar2;
-					puVar3[1] = uVar10;
-					puVar3[2] = uVar8;
-					puVar3[3] = uVar9;
-					puVar2 = puVar2 + 4;
-					puVar3 = puVar3 + 4;
-				} while (puVar2 != puVar5 + 0xb3);
+					iVar9 = piVar5[1];
+					iVar3 = piVar5[2];
+					iVar8 = piVar5[3];
+					*piVar2 = *piVar5;
+					piVar2[1] = iVar9;
+					piVar2[2] = iVar3;
+					piVar2[3] = iVar8;
+					piVar5 = piVar5 + 4;
+					piVar2 = piVar2 + 4;
+				} while (piVar5 != piVar4 + 0xb3);
 			}
 			else {
 				do {
-					uVar8 = puVar2[1];
-					uVar9 = puVar2[2];
-					uVar10 = puVar2[3];
-					*puVar3 = *puVar2;
-					puVar3[1] = uVar8;
-					puVar3[2] = uVar9;
-					puVar3[3] = uVar10;
-					puVar2 = puVar2 + 4;
-					puVar3 = puVar3 + 4;
-				} while (puVar2 != puVar5 + 0xb3);
+					iVar3 = piVar5[1];
+					iVar8 = piVar5[2];
+					iVar9 = piVar5[3];
+					*piVar2 = *piVar5;
+					piVar2[1] = iVar3;
+					piVar2[2] = iVar8;
+					piVar2[3] = iVar9;
+					piVar5 = piVar5 + 4;
+					piVar2 = piVar2 + 4;
+				} while (piVar5 != piVar4 + 0xb3);
 			}
-			*puVar3 = *puVar2;
-			puVar3 = (undefined4 *)(&gHDCarDamageLevels + iVar6 * 0xff);
-			puVar2 = puVar5 + 0xb4;
-			if ((((uint)puVar2 | (uint)puVar3) & 3) == 0) {
+
+			*piVar2 = *piVar5;
+			piVar2 = (int *)(&gHDCarDamageLevels + iVar6 * 0xff);
+			piVar5 = piVar4 + 0xb4;
+
+			// memcpy
+			if ((((uint)piVar5 | (uint)piVar2) & 3) == 0) {
 				do {
-					uVar8 = puVar2[1];
-					uVar9 = puVar2[2];
-					uVar10 = puVar2[3];
-					*puVar3 = *puVar2;
-					puVar3[1] = uVar8;
-					puVar3[2] = uVar9;
-					puVar3[3] = uVar10;
-					puVar2 = puVar2 + 4;
-					puVar3 = puVar3 + 4;
-				} while (puVar2 != puVar5 + 0xf0);
+					iVar6 = piVar5[1];
+					iVar3 = piVar5[2];
+					iVar8 = piVar5[3];
+					*piVar2 = *piVar5;
+					piVar2[1] = iVar6;
+					piVar2[2] = iVar3;
+					piVar2[3] = iVar8;
+					piVar5 = piVar5 + 4;
+					piVar2 = piVar2 + 4;
+				} while (piVar5 != piVar4 + 0xf0);
 			}
 			else {
 				do {
-					uVar8 = puVar2[1];
-					uVar9 = puVar2[2];
-					uVar10 = puVar2[3];
-					*puVar3 = *puVar2;
-					puVar3[1] = uVar8;
-					puVar3[2] = uVar9;
-					puVar3[3] = uVar10;
-					puVar2 = puVar2 + 4;
-					puVar3 = puVar3 + 4;
-				} while (puVar2 != puVar5 + 0xf0);
+					iVar6 = piVar5[1];
+					iVar3 = piVar5[2];
+					iVar8 = piVar5[3];
+					*piVar2 = *piVar5;
+					piVar2[1] = iVar6;
+					piVar2[2] = iVar3;
+					piVar2[3] = iVar8;
+					piVar5 = piVar5 + 4;
+					piVar2 = piVar2 + 4;
+				} while (piVar5 != piVar4 + 0xf0);
 			}
-			uVar8 = puVar2[1];
-			uVar9 = puVar2[2];
-			uVar1 = *(uchar *)(puVar2 + 3);
-			*puVar3 = *puVar2;
-			puVar3[1] = uVar8;
-			puVar3[2] = uVar9;
-			*(uchar *)(puVar3 + 3) = uVar1;
-			uVar1 = *(uchar *)((int)puVar2 + 0xe);
-			*(uchar *)((int)puVar3 + 0xd) = *(uchar *)((int)puVar2 + 0xd);
-			*(uchar *)((int)puVar3 + 0xe) = uVar1;
+
+			iVar6 = piVar5[1];
+			iVar3 = piVar5[2];
+			uVar1 = *(unsigned char *)(piVar5 + 3);
+			*piVar2 = *piVar5;
+			piVar2[1] = iVar6;
+			piVar2[2] = iVar3;
+			*(unsigned char *)(piVar2 + 3) = uVar1;
+			uVar1 = *(unsigned char *)((int)piVar5 + 0xe);
+			*(unsigned char *)((int)piVar2 + 0xd) = *(unsigned char *)((int)piVar5 + 0xd);
+			*(unsigned char *)((int)piVar2 + 0xe) = uVar1;
 		}
 		iVar6 = iVar7;
 	} while (iVar7 < 5);
-	return;
-	*/
 }
 
 
