@@ -1589,7 +1589,9 @@ int LoadRegionData(int region, int target_region)
 	SPL_REGIONINFO *pSVar4;
 	int offset;
 	Spool *spoolptr;
-	char *roadmap_buffer;
+	char *roadmap_buffer;	// D1 leftover?
+
+	roadmap_buffer = NULL; // [A]
 
 	spofs = (short *)(spoolinfo_offsets + region);
 	sVar1 = *spofs;

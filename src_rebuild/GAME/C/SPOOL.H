@@ -9,6 +9,7 @@ extern char *specLoadBuffer;
 
 extern int doSpooling;
 
+extern short loading_region[4];;
 extern int regions_unpacked[4];
 
 extern unsigned short *spoolinfo_offsets;

@@ -9,6 +9,13 @@
 #include "CAMERA.H"
 
 char *map_lump = NULL;
+int initarea = 0;
+int LoadedArea;
+int current_region = 0;
+int old_region = 0;
+
+int current_cell_x = 0;
+int current_cell_z = 0;
 
 // decompiled code
 // original method signature: 
@@ -332,7 +339,7 @@ void InitCellData(void)
 	if (((uint)mallocptr & 2) != 0) {
 		mallocptr = (char *)((ushort *)mallocptr + 1);
 	}
-	sizeof_cell_object_computed_values = num_straddlers + cell_objects_add[4] + 7 >> 3;
+	sizeof_cell_object_computed_values = num_straddlers + cell_objects_add[4] + 7 >> 3;	// might be error
 	cells = (CELL_DATA *)(cell_objects + num_straddlers + cell_objects_add[4]);
 	return;
 }
@@ -542,12 +549,20 @@ int PositionVisible(VECTOR *pos)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// FIXME: move it somewhere else
+extern int saved_leadcar_pos;
+extern int lead_car;
+
+int region_x = 0;
+int region_z = 0;
+
+int current_barrel_region_xcell = 0;
+int current_barrel_region_zcell = 0;
+
+// [D]
 int CheckUnpackNewRegions(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	char bVar1;
 	ushort uVar2;
 	bool bVar3;
 	int iVar4;
@@ -560,147 +575,173 @@ int CheckUnpackNewRegions(void)
 	ushort *puVar11;
 	int target_region;
 	int iVar12;
-	int local_68[4];
-	undefined4 local_58;
-	undefined4 local_54;
-	short local_50[16];
-	ushort local_30[4];
+	AREA_LOAD_INFO regions_to_unpack[3];
+	SVECTOR sortregions[4];
+	ushort sortorder[4];
 
-	iVar7 = 0;
+	iVar8 = 0;
 	iVar9 = 0;
 	iVar12 = 0;
-	if (saved_leadcar_pos != 0) {
+
+	if (saved_leadcar_pos != 0) 
+	{
 		return 0;
 	}
-	iVar6 = 0xd;
-	if (lead_car == 0) {
-		iVar6 = 0x12;
+
+	iVar7 = 0xd;
+
+	if (lead_car == 0)
+	{
+		iVar7 = 0x12;
 	}
-	if (current_barrel_region_xcell < iVar6) {
+
+	if (current_barrel_region_xcell < iVar7) 
+	{
 		iVar4 = -1;
-		if (region_x != 0) {
-			iVar7 = 1;
+
+		if (region_x != 0) 
+		{
+			iVar8 = 1;
 		LAB_0005c8f8:
 			iVar12 = 1;
-			local_68[0] = iVar4;
-			local_68[1] = 0;
+			regions_to_unpack[0].xoffset = iVar4;
+			regions_to_unpack[0].zoffset = 0;
 		}
 	}
-	else {
-		if (0x20 - iVar6 < current_barrel_region_xcell) {
-			iVar8 = cells_across;
-			if (cells_across < 0) {
-				iVar8 = cells_across + 0x1f;
-			}
-			iVar4 = 1;
-			if (region_x < iVar8 >> 5) {
-				iVar7 = 2;
-				goto LAB_0005c8f8;
-			}
+	else if (0x20 - iVar7 < current_barrel_region_xcell) {
+		iVar6 = cells_across;
+
+		if (cells_across < 0) 
+		{
+			iVar6 = cells_across + 0x1f;
+		}
+
+		iVar4 = 1;
+
+		if (region_x < iVar6 >> 5) 
+		{
+			iVar8 = 2;
+			goto LAB_0005c8f8;	//  I really don't like this GOTO
 		}
 	}
-	if (current_barrel_region_zcell < iVar6) {
-		if (region_z != 0) {
+
+	if (current_barrel_region_zcell < iVar7)
+	{
+		if (region_z != 0) 
+		{
 			iVar9 = 1;
-			local_68[iVar12 * 2] = 0;
-			iVar6 = -1;
+			regions_to_unpack[iVar12].xoffset = 0;
+			iVar7 = -1;
 		LAB_0005c978:
-			local_68[iVar12 * 2 + 1] = iVar6;
+			regions_to_unpack[iVar12].zoffset = iVar7;
 			iVar12 = iVar12 + 1;
 		}
 	}
-	else {
-		if ((0x20 - iVar6 < current_barrel_region_zcell) && (region_z != 0)) {
-			iVar9 = 2;
-			local_68[iVar12 * 2] = 0;
-			iVar6 = 1;
-			goto LAB_0005c978;
-		}
+	else if ((0x20 - iVar7 < current_barrel_region_zcell) && (region_z != 0)) {
+		iVar9 = 2;
+		regions_to_unpack[iVar12].xoffset = 0;
+		iVar7 = 1;
+		goto LAB_0005c978;
 	}
+
 	if (iVar12 == 2) {
-		if (iVar9 == 1) {
+		if (iVar9 == 1) 
+		{
 			iVar12 = 3;
-			if (iVar7 == 1) {
-				local_58 = 0xffffffff;
-				local_54 = 0xffffffff;
+			if (iVar8 == 1) 
+			{
+				regions_to_unpack[2].xoffset = -1;
+				regions_to_unpack[2].zoffset = -1;
 				goto LAB_0005c9dc;
 			}
-			local_58 = 1;
-			local_54 = 0xffffffff;
+			regions_to_unpack[2].xoffset = 1;
+			regions_to_unpack[2].zoffset = -1;
 		}
 		else {
-			if (iVar7 == 1) {
-				local_58 = 0xffffffff;
+			if (iVar8 == 1) 
+			{
+				regions_to_unpack[2].xoffset = -1;
 			}
 			else {
-				local_58 = 1;
+				regions_to_unpack[2].xoffset = 1;
 			}
-			local_54 = 1;
+
+			regions_to_unpack[2].zoffset = 1;
 		}
 		iVar12 = 3;
 	}
+
 LAB_0005c9dc:
 	iVar9 = 0;
-	iVar7 = 0;
-	if (iVar12 != 0) {
-		iVar6 = 0;
+	iVar8 = 0;
+
+	if (iVar12 != 0) 
+	{
+		iVar7 = 0;
 		do {
-			iVar4 = *(int *)((int)local_68 + iVar6 + 4);
-			iVar8 = cells_across;
+			iVar4 = *(int *)((int)&regions_to_unpack[0].xoffset + iVar7);
+			iVar6 = *(int *)((int)&regions_to_unpack[0].zoffset + iVar7);
+			iVar7 = cells_across;
 			if (cells_across < 0) {
-				iVar8 = cells_across + 0x1f;
+				iVar7 = cells_across + 0x1f;
 			}
-			target_region =
-				(region_x + *(int *)((int)local_68 + iVar6) & 1U) + (region_z + iVar4 & 1U) * 2;
-			iVar6 = current_region + *(int *)((int)local_68 + iVar6) + iVar4 * (iVar8 >> 5);
-			if ((iVar6 != regions_unpacked[target_region]) && (loading_region[target_region] == -1)) {
+			target_region = (region_x + iVar4 & 1U) + (region_z + iVar6 & 1U) * 2;
+			iVar7 = current_region + iVar4 + iVar6 * (iVar7 >> 5);
+			if ((iVar7 != regions_unpacked[target_region]) && (loading_region[target_region] == -1))
+			{
 				ClearRegion(target_region);
-				if (spoolinfo_offsets[iVar6] == 0xffff) {
-					regions_unpacked[target_region] = iVar6;
+				if (spoolinfo_offsets[iVar7] == 0xffff) {
+					regions_unpacked[target_region] = iVar7;
 				}
 				else {
-					uVar2 = spoolinfo_offsets[iVar6];
-					if ((old_region == -1) && (bVar1 = (RegionSpoolInfo + uVar2)[4], bVar1 != 0xff)) {
+					uVar2 = spoolinfo_offsets[iVar7];
+					if ((old_region == -1) && (bVar1 = (RegionSpoolInfo + uVar2)[4], bVar1 != 0xff))
+					{
 						initarea = (uint)bVar1;
 					}
-					local_50[iVar7 * 4] = (short)iVar6;
-					local_50[iVar7 * 4 + 1] = (short)target_region;
-					local_50[iVar7 * 4 + 2] = *(short *)(RegionSpoolInfo + uVar2);
-					local_30[iVar7] = (ushort)iVar7;
-					iVar7 = iVar7 + 1;
+					sortregions[iVar8].vx = (short)iVar7;
+					sortregions[iVar8].vy = (short)target_region;
+					sortregions[iVar8].vz = *(short *)(RegionSpoolInfo + uVar2);
+					sortorder[iVar8] = (ushort)iVar8;
+					iVar8 = iVar8 + 1;
 				}
 			}
 			iVar9 = iVar9 + 1;
-			iVar6 = iVar9 * 8;
+			iVar7 = iVar9 * 8;
 		} while (iVar9 < iVar12);
 	}
-	if (0 < iVar7) {
+
+	if (0 < iVar8) 
+	{
 		iVar12 = 0;
 		iVar9 = 1;
 		do {
-			if (iVar9 < iVar7) {
-				puVar11 = local_30 + iVar12;
-				puVar10 = local_30 + iVar9;
-				iVar6 = iVar7 - iVar9;
+			if (iVar9 < iVar8) {
+				puVar11 = sortorder + iVar12;
+				puVar10 = sortorder + iVar9;
+				iVar7 = iVar8 - iVar9;
 				do {
 					uVar2 = *puVar11;
-					if ((local_50 + 2)[(uint)*puVar10 * 4] < (local_50 + 2)[(uint)uVar2 * 4]) {
+
+					if ((&sortregions[0].vz)[(uint)*puVar10 * 4] < (&sortregions[0].vz)[(uint)uVar2 * 4]) 
+					{
 						*puVar11 = *puVar10;
 						*puVar10 = uVar2;
 					}
-					iVar6 = iVar6 + -1;
+
+					iVar7 = iVar7 + -1;
 					puVar10 = puVar10 + 1;
-				} while (iVar6 != 0);
+				} while (iVar7 != 0);
 			}
-			uVar5 = (uint)local_30[iVar12];
-			UnpackRegion((int)local_50[uVar5 * 4], (int)local_50[uVar5 * 4 + 1]);
-			bVar3 = iVar9 < iVar7;
+			uVar5 = (uint)sortorder[iVar12];
+			UnpackRegion((int)sortregions[uVar5].vx, (int)sortregions[uVar5].vy);
+			bVar3 = iVar9 < iVar8;
 			iVar12 = iVar9;
 			iVar9 = iVar9 + 1;
 		} while (bVar3);
 	}
+
 	return 1;
-	*/
 }
 
 
@@ -755,13 +796,6 @@ LAB_0005c9dc:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int region_x = 0;
-int region_z = 0;
-
-int current_barrel_region_xcell = 0;
-int current_barrel_region_zcell = 0;
-
-int old_region = 0;
 
 // [D]
 void ControlMap(void)
@@ -898,14 +932,6 @@ void ControlMap(void)
 	// End Line: 1485
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-int initarea = 0;
-int LoadedArea;
-int current_region = 0;
-int old_region = 0;
-
-int current_cell_x = 0;
-int current_cell_z = 0;
 
 // [D]
 void InitMap(void)

@@ -11,6 +11,9 @@ extern int sizeof_cell_object_computed_values;
 extern CELL_DATA* cells;
 extern int num_straddlers;
 
+extern int current_cell_x;
+extern int current_cell_z;
+
 extern void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile); // 0x0005D7BC
 
 extern void ProcessJunctionsLump(char *lump_file, int lump_size); // 0x0005D6CC
