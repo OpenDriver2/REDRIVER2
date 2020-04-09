@@ -3129,38 +3129,48 @@ void CleanModelSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int damOffset;
+
+// [D]
 void DamagedModelSpooled(void)
 {
-	UNIMPLEMENTED();
-	/*
 	MODEL *pMVar1;
 	int iVar2;
 	int *piVar3;
 	int *in_a3;
 
 	piVar3 = (int *)specLoadBuffer;
-	if (specBlocksToLoad == lengthDamBlock + -1) {
+
+	if (specBlocksToLoad == lengthDamBlock + -1) 
+	{
 		piVar3 = (int *)(specLoadBuffer + damOffset);
-		gCarDamModelPtr5[4] = (MODEL *)modelMemory;
+		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
-	if (piVar3 < specLoadBuffer + 0x800) {
+
+	if (piVar3 < (int*)(specLoadBuffer + 0x800))
+	{
 		do {
 			iVar2 = *piVar3;
 			piVar3 = piVar3 + 1;
 			*modelMemory = iVar2;
 			modelMemory = modelMemory + 1;
-		} while (piVar3 < specLoadBuffer + 0x800);
+		} while (piVar3 < (int*)(specLoadBuffer + 0x800));
 	}
-	pMVar1 = gCarDamModelPtr5[4];
-	if (&gCarDamModelPtr5[4][1].poly_block < modelMemory) {
-		in_a3 = (int *)((int)&gCarDamModelPtr5[4]->shape_flags + gCarDamModelPtr5[4]->normals);
+
+	pMVar1 = gCarDamModelPtr[4];
+
+	if (&gCarDamModelPtr[4][1].poly_block < modelMemory)
+	{
+		in_a3 = (int *)((int)&gCarDamModelPtr[4]->shape_flags + gCarDamModelPtr[4]->normals);
 	}
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory)) {
-		piVar3 = &gCarDamModelPtr5[4]->normals;
+
+	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory)) 
+	{
+		piVar3 = &gCarDamModelPtr[4]->normals;
+
 		specBlocksToLoad = 0;
 		modelMemory = in_a3;
-		gCarDamModelPtr5[4]->vertices =
-			(int)&gCarDamModelPtr5[4]->shape_flags + gCarDamModelPtr5[4]->vertices;
+		gCarDamModelPtr[4]->vertices = (int)&gCarDamModelPtr[4]->shape_flags + gCarDamModelPtr[4]->vertices;
 		pMVar1->normals = (int)&pMVar1->shape_flags + *piVar3;
 		pMVar1->poly_block = (int)&pMVar1->shape_flags + pMVar1->poly_block;
 		pMVar1->point_normals = (int)&pMVar1->shape_flags + pMVar1->point_normals;
@@ -3168,7 +3178,6 @@ void DamagedModelSpooled(void)
 	if (quickSpool != 1) {
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
-	return;*/
 }
 
 
