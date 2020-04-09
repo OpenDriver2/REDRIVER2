@@ -23,30 +23,30 @@ int ResetCallback(void)
 	return 0;
 }
 
+extern unsigned int g_swapTime;
+
 int VSync(int mode)
 {
+	if (mode < 0)
+		return SDL_GetTicks() - g_swapTime;
+
+	Emulator_WaitForTimestep(1);
+
 	if (mode == 0)
 	{
 		if (vsync_callback != NULL)
-		{
 			vsync_callback();
-		}
+
 		Emulator_EndScene();
 	}
 	else if (mode > 0)
 	{
-		while (mode--)
-		{
-			//vblank
-		}
+		Emulator_WaitForTimestep(mode);
+		
 		Emulator_EndScene();
 	}
-	else if (mode < 0)
-	{
-		//Unimplemented
-	}
 
-	return SDL_GetTicks();
+	return g_swapTime;
 }
 
 int VSyncCallback(void(*f)(void))

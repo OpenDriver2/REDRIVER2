@@ -22,4 +22,7 @@ extern void Emulator_ShutDown();
 /* Sets the maximum vertex count value for PGXP vertex caching */
 extern void Emulator_SetPGXPVertexCount(int vertexCount);
 
+/* Waits for timer */
+extern void Emulator_WaitForTimestep(int count);
+
 #endif
