@@ -10,6 +10,9 @@ VECTOR camera_position =
 MATRIX face_camera_work =
 { { { 4096, 0, 0 }, { 0, 4096, 0 }, { 0, 0, 4096 } }, { 0, 0, 0 } };
 
+char old_camera_change = 0;
+char camera_change = 0;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitCamera(struct _PLAYER *lp /*$s0*/)

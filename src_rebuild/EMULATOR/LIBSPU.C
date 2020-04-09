@@ -94,6 +94,7 @@ addiu   $sp, 0x20
 
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <AL/alext.h>
 
 const char* getALCErrorString(int err)
 {
@@ -222,6 +223,7 @@ bool Emulator_InitSound()
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		SPUVoice& voice = s_SpuVoices[i];
+		memset(&voice, 0, sizeof(SPUVoice));
 
 		alGenSources(1, &voice.alSource);
 		alGenBuffers(1, &voice.alBuffer);
@@ -444,25 +446,66 @@ void SpuInit(void)
 
 void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
+	static short waveBuffer[SPU_MEMSIZE];
+
 	int voiceId = SPU_VOICECH(arg->voice);
 	SPUVoice& voice = s_SpuVoices[voiceId];
 
-	bool needsSampleUpdate = (voice.attr.addr != arg->addr);
+	// update sample
+	if((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
+	{
+		// welp
+		alSourceStop(voice.alSource);
+		alSourcei(voice.alSource, AL_BUFFER, 0);
 
-	// update attributes
-	voice.attr = *arg;
+		if(arg->mask & SPU_VOICE_WDSA)
+			voice.attr.addr = arg->addr;
 
-	// update sample in
-	// voice.alBuffer
+		if(arg->mask & SPU_VOICE_LSAX)
+			voice.attr.loop_addr = arg->loop_addr;
 
-	// update parameters
-	// voice.alSource
+		char flag = s_SpuMemory.samplemem[voice.attr.addr * 8 + 1];
+
+		int loopStart = 0, loopLen = 0;
+		int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE - voice.attr.addr, &loopStart, &loopLen, true);
+
+		if (loopLen > 0)
+		{
+			loopStart += voice.attr.loop_addr;
+
+			int sampleOffs[] = { loopStart, loopStart + loopLen };
+			alBufferiv(voice.alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		}
+
+		alBufferData(voice.alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 350000);
+
+		// set the buffer
+		alSourcei(voice.alSource, AL_BUFFER, voice.alBuffer);
+		alSourcei(voice.alSource, AL_SAMPLE_OFFSET, 0);
+	}
+
+	// update volume
+	if ((arg->mask & SPU_VOICE_VOLL) || (arg->mask & SPU_VOICE_VOLR))
+	{
+		if(arg->mask & SPU_VOICE_VOLL)
+			voice.attr.volume.left = arg->volume.left;
+
+		if(arg->mask & SPU_VOICE_VOLR)
+			voice.attr.volume.left = arg->volume.left;
+
+		alSourcef(voice.alSource, AL_GAIN, 1.0f /*voice.attr.volume.left*/);	// TODO: calc panning
+	}
+
+	// update pitch
+	if (arg->mask & SPU_VOICE_PITCH)
+	{
+		voice.attr.pitch = arg->pitch;
+		alSourcef(voice.alSource, AL_PITCH, float(voice.attr.pitch) / 32767.0f);
+	}
 }
 
 void SpuSetKey(long on_off, unsigned long voice_bit)
 {
-	static short waveBuffer[SPU_MEMSIZE];
-
 	int voiceId = SPU_VOICECH(voice_bit);
 	SPUVoice& voice = s_SpuVoices[voiceId];
 
@@ -471,26 +514,9 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 
 	if (on_off)
 	{
-		// stop, rewind, reset buffer
+		// stop, rewind, start
 		alSourceStop(voice.alSource);
 		alSourceRewind(voice.alSource);
-		alSourcei(voice.alSource, AL_BUFFER, 0);
-
-		char flag = s_SpuMemory.samplemem[voice.attr.addr * 8 + 1];
-
-		int loopStart = 0, loopLen = 0;
-		int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE- voice.attr.addr, &loopStart, &loopLen, true);
-
-		// update AL buffer
-		alBufferData(voice.alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 350000);
-
-		// set the buffer
-		alSourcei(voice.alSource, AL_BUFFER, voice.alBuffer);
-		alSourcei(voice.alSource, AL_SAMPLE_OFFSET, 0);
-
-		alSourcef(voice.alSource, AL_GAIN, 1.0f /*voice.attr.volume.left*/);// TODO: panning
-
-		alSourcef(voice.alSource, AL_PITCH, float(voice.attr.pitch) / 32767.0f);
 
 		alSourcePlay(voice.alSource);
 	}
@@ -614,6 +640,16 @@ void SpuSetVoiceVolume(int vNum, short volL, short volR)
 }
 
 void SpuSetVoicePitch(int vNum, unsigned short pitch)
+{
+	UNIMPLEMENTED();
+}
+
+void SpuSetVoiceAR(int vNum, unsigned short AR)
+{
+	UNIMPLEMENTED();
+}
+
+void SpuSetVoiceRR(int vNum, unsigned short RR)
 {
 	UNIMPLEMENTED();
 }

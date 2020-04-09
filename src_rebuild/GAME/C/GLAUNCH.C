@@ -13,6 +13,7 @@
 #include "MISSION.H"
 #include "GAMESND.H"
 #include "SYSTEM.H"
+#include "CAMERA.H"
 #include "../FRONTEND/FEMAIN.H"
 
 #include <string.h>
@@ -335,10 +336,6 @@ void StartRender(int renderNum)
 	// End Line: 2092
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-char old_camera_change = 0;
-char camera_change = 0;
-
 
 // [D]
 void ReInitFrontend(void)

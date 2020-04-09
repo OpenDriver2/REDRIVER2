@@ -3,8 +3,16 @@
 
 #include "LIBSPU.H"
 #include "LIBETC.H"
+#include "LIBGTE.H"
 
+#ifndef PSX
+#include "GTEREG.H"
+#endif
+
+#include "CAMERA.H"
 #include "XMPLAY.H"
+#include "MISSION.H"
+#include "GLAUNCH.H"
 
 #include <string.h>
 #include <stdlib.h>
@@ -21,6 +29,8 @@ int VABID = -1;
 
 unsigned long channel_lookup[16]; // offset 0xDD3D8
 CHANNEL_DATA channels[16]; // offset 0xDE480
+
+int master_volume = 0;	// why need two?
 
 int gMasterVolume = 0;
 int gMusicVolume = 0;
@@ -115,10 +125,9 @@ void InitSound(void)
 	/* end block 3 */
 	// End Line: 336
 
+// [D]
 void ClearChannelFields(int channel)
 {
-	UNIMPLEMENTED();
-
 	channels[channel].loop = '\0';
 	channels[channel].locked = '\0';
 	channels[channel].time = 0;
@@ -168,47 +177,54 @@ void ClearChannelFields(int channel)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int gSoundMode = 0;		// mono or stereo
+
+int stop_sound_handler = 0;
+int sound_paused = 0;
+int music_paused = 0;
+
+SpuCommonAttr sound_attr;
+
+// [D]
 void ResetSound(void)
 {
-	UNIMPLEMENTED();
-	/*
-	ulong uVar1;
-	int iVar2;
 	int channel;
-	CHANNEL_DATA *__s;
+	CHANNEL_DATA *chan;
 	ulong *puVar3;
 
 	stop_sound_handler = 1;
 	sound_paused = 0;
 	music_paused = 0;
+
 	sound_attr.mvol.left = 0x3fff;
 	sound_attr.mvol.right = 0x3fff;
 	sound_attr.mask = 3;
+
 	SpuSetCommonAttr(&sound_attr);
-	puVar3 = &channel_lookup;
-	__s = &channels;
+	chan = channels;
+
 	channel = 0;
 	do {
-		memset(__s, 0, 0x78);
-		uVar1 = *puVar3;
-		puVar3 = puVar3 + 1;
-		iVar2 = channel + 1;
-		(__s->attr).volmode.left = 0;
-		(__s->attr).volmode.right = 0;
-		(__s->attr).voice = uVar1;
+		memset(chan, 0, sizeof(CHANNEL_DATA));
+
+		chan->attr.volmode.left = 0;
+		chan->attr.volmode.right = 0;
+		chan->attr.voice = channel_lookup[channel];
+
 		ClearChannelFields(channel);
-		__s = __s + 1;
-		channel = iVar2;
-	} while (iVar2 < 0x10);
+
+		chan++;
+		channel++;
+	} while (channel < 16);
+
 	channel = 0;
 	do {
 		SpuSetVoiceRR(channel, 6);
-		SpuSetVoiceAR(channel, 0x23);
+		SpuSetVoiceAR(channel, 35);
 		channel = channel + 1;
-	} while (channel < 0x10);
+	} while (channel < 16);
+
 	stop_sound_handler = 0;
-	return;
-	*/
 }
 
 
@@ -346,28 +362,29 @@ int SetReverbChannelState(int ch, int on)
 	/* end block 3 */
 	// End Line: 1892
 
+// [D]
 void SetMasterVolume(int vol)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined *puVar1;
-	undefined *puVar2;
-	undefined *puVar3;
+	int puVar1;
+	int puVar2;
+	int puVar3;
 
-	puVar2 = &DAT_00002710 + vol;
+	puVar2 = 10000 + vol;
 	puVar3 = puVar2;
-	if ((int)puVar2 < 0) {
-		puVar3 = (undefined *)0x0;
+
+	if ((int)puVar2 < 0)
+		puVar3 = 0;
+
+	puVar1 = ((int)puVar3 >> 1);
+
+	if (10000 < (int)puVar2) 
+	{
+		puVar3 = 10000;
+		puVar1 = 5000;
 	}
-	puVar1 = (undefined *)((int)puVar3 >> 1);
-	if (10000 < (int)puVar2) {
-		puVar3 = &DAT_00002710;
-		puVar1 = &DAT_00001388;
-	}
+
 	master_volume = (int)puVar3 + (int)puVar1 + ((int)puVar3 >> 3) + ((int)puVar3 >> 7);
 	gMasterVolume = vol;
-	return;
-	*/
 }
 
 
@@ -546,10 +563,6 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 		// Start line: 847
 	/* end block 3 */
 	// End Line: 848
-
-int gSoundMode = 0;
-int stop_sound_handler = 0;
-int sound_paused = 0;
 
 // [D]
 int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximity)
@@ -2119,36 +2132,38 @@ LAB_0007a128:
 	/* end block 3 */
 	// End Line: 4917
 
+// [D]
 void UpdateVolumeAttributesM(int channel)
 {
-	UNIMPLEMENTED();
-
-	/*
 	int iVar1;
-	undefined *puVar2;
-	undefined *puVar3;
-	undefined *puVar4;
+	int puVar2;
+	int puVar3;
+	int puVar4;
 	short sVar5;
 
 	iVar1 = CalculateVolume(channel);
-	if ((camera_change == '\x01') || (puVar3 = &DAT_00002710 + iVar1, old_camera_change == '\x01')) {
-		puVar3 = (undefined *)0x0;
-	}
+
+	if ((camera_change == '\x01') || (puVar3 = 10000 + iVar1, old_camera_change == '\x01'))
+		puVar3 = 0;
+
 	puVar4 = puVar3;
-	if ((int)puVar3 < 0) {
-		puVar4 = (undefined *)0x0;
+
+	if ((int)puVar3 < 0)
+		puVar4 = 0;
+
+	puVar2 = ((int)puVar4 >> 1);
+
+	if (10000 < (int)puVar3) 
+	{
+		puVar4 = 10000;
+		puVar2 = 5000;
 	}
-	puVar2 = (undefined *)((int)puVar4 >> 1);
-	if (10000 < (int)puVar3) {
-		puVar4 = &DAT_00002710;
-		puVar2 = &DAT_00001388;
-	}
+
 	sVar5 = (short)(((int)puVar4 + (int)puVar2 + ((int)puVar4 >> 3) + ((int)puVar4 >> 7)) *
 		master_volume >> 0xe);
-	(&channels)[channel].attr.volume.left = sVar5;
-	(&channels)[channel].attr.volume.right = sVar5;
-	return;
-	*/
+
+	channels[channel].attr.volume.left = sVar5;
+	channels[channel].attr.volume.right = sVar5;
 }
 
 
@@ -2199,68 +2214,95 @@ void UpdateVolumeAttributesM(int channel)
 	/* end block 2 */
 	// End Line: 2674
 
+// [D]
 int CalculateVolume(int channel)
 {
-	UNIMPLEMENTED();
-	return 0;
-
-	/*
 	int iVar1;
 	int iVar2;
 	VECTOR *pVVar3;
-	undefined4 in_t1;
-	undefined4 in_t2;
-	undefined4 in_t3;
-	undefined *puVar4;
+
+	int puVar4;
 	int iVar5;
 
-	puVar4 = &DAT_00002710 + (&channels)[channel].srcvolume;
-	if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
+	puVar4 = 10000 + channels[channel].srcvolume;
+
+	if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
+	{
 		iVar1 = (int)puVar4 * 3;
-		puVar4 = (undefined *)(iVar1 >> 2);
+		puVar4 = (iVar1 >> 2);
 		if (iVar1 < 0) {
-			puVar4 = (undefined *)(iVar1 + 3 >> 2);
+			puVar4 = (iVar1 + 3 >> 2);
 		}
 	}
-	pVVar3 = (&channels)[channel].srcposition;
-	if (pVVar3 != (VECTOR *)0x0) {
-		iVar1 = (int)(&channels)[channel].player;
-		setCopReg(2, in_t1, pVVar3->vx - (&player)[iVar1].cameraPos.vx);
-		setCopReg(2, in_t2, pVVar3->vy + (&player)[iVar1].cameraPos.vy);
-		setCopReg(2, in_t3, pVVar3->vz - (&player)[iVar1].cameraPos.vz);
+
+	pVVar3 = channels[channel].srcposition;
+
+	if (pVVar3 != NULL) // [A]
+	{
+		UNIMPLEMENTED();
+		/*
+		iVar1 = (int)channels[channel].player;
+
+#ifdef PSX
+		setCopReg(2, in_t1, pVVar3->vx - player[iVar1].cameraPos.vx);
+		setCopReg(2, in_t2, pVVar3->vy + player[iVar1].cameraPos.vy);
+		setCopReg(2, in_t3, pVVar3->vz - player[iVar1].cameraPos.vz);
+
 		copFunction(2, 0xa00428);
+
 		iVar1 = getCopReg(2, 0x19);
 		iVar2 = getCopReg(2, 0x1a);
 		iVar5 = getCopReg(2, 0x1b);
+
 		iVar1 = SquareRoot0(iVar1 + iVar2 + iVar5);
+#else
+		IR1 = (pVVar3->vx - player[iVar1].cameraPos.vx);
+		IR2 = (pVVar3->vy + player[iVar1].cameraPos.vy);
+		IR3 = (pVVar3->vz - player[iVar1].cameraPos.vz);
+
+		docop2(0xa00428);
+
+		iVar1 = MAC1;
+		iVar2 = MAC2;
+		iVar5 = MAC3;
+
+		iVar1 = SquareRoot0(iVar1 + iVar2 + iVar5);
+#endif //PSX
+
 		iVar2 = iVar1 + -16000;
-		if (iVar1 < 0x400) {
-			iVar1 = 0x400;
+
+		if (iVar1 < 1024) {
+			iVar1 = 1024;
 			iVar2 = -0x3a80;
 		}
+
 		if (iVar2 < 0) {
 			iVar2 = 0;
 		}
-		else {
-			if (0x1000 < iVar2) {
-				iVar2 = 0x1000;
-			}
+		else if (0x1000 < iVar2) {
+			iVar2 = 4069;
 		}
+
 		iVar5 = 0xbd0000 / (iVar1 + 2000);
+
 		if (iVar1 + 2000 == 0) {
-			trap(7);
+			printf("wtf");
+			//trap(7); // [A]
 		}
+
 		if (iVar2 != 0) {
 			iVar5 = iVar5 * (0x1000 - iVar2) >> 0xc;
 		}
 		iVar5 = iVar5 * (int)puVar4;
-		puVar4 = (undefined *)(iVar5 >> 0xc);
+		puVar4 = (iVar5 >> 0xc);
+
 		if (iVar5 < 0) {
-			puVar4 = (undefined *)(iVar5 + 0xfff >> 0xc);
+			puVar4 = (iVar5 + 0xfff >> 0xc);
 		}
+		*/
 	}
+
 	return (int)(puVar4 + -10000);
-	*/
 }
 
 
