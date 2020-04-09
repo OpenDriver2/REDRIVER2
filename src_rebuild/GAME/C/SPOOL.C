@@ -1640,22 +1640,21 @@ int LoadRegionData(int region, int target_region)
 	/* end block 3 */
 	// End Line: 8418
 
+int RoadMapRegions[4];
+
 void UnpackRegion(int region_to_unpack, int target_barrel_region)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
 	if (loading_region[target_barrel_region] == -1) {
 		iVar1 = LoadRegionData(region_to_unpack, target_barrel_region);
-		if (iVar1 != 0) {
+
+		if (iVar1 != 0)
 			spool_regioncounter = spool_regioncounter + 1;
-		}
+
 		regions_unpacked[target_barrel_region] = region_to_unpack;
 		RoadMapRegions[target_barrel_region] = region_to_unpack;
 	}
-	return;
-	*/
 }
 
 
@@ -2640,16 +2639,17 @@ void unpack_cellpointers(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+SPL_REGIONINFO spool_regioninfo[8];
+unsigned long unpack_cellptr_tbl[3];
+
+// [D]
 void Unpack_CellPtrs(void)
 {
-	UNIMPLEMENTED();
-	/*
 	unpack_cellptr_tbl[0] = (ulong)spool_regioninfo[spool_regionpos].region_to_unpack;
 	unpack_cellptr_tbl[1] = (ulong)spool_regioninfo[spool_regionpos].target_barrel_region;
 	unpack_cellptr_tbl[2] = (ulong)spool_regioninfo[spool_regionpos].cell_addr;
+
 	unpack_cellpointers();
-	return;
-	*/
 }
 
 

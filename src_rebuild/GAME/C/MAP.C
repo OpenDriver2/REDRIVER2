@@ -755,63 +755,77 @@ LAB_0005c9dc:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int region_x = 0;
+int region_z = 0;
+
+int current_barrel_region_xcell = 0;
+int current_barrel_region_zcell = 0;
+
+int old_region = 0;
+
+// [D]
 void ControlMap(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
 	int region_to_unpack;
 
-	current_cell_x = (player.spoolXZ)->vx + units_across_halved;
-	if (current_cell_x < 0) {
+	current_cell_x = (player[0].spoolXZ)->vx + units_across_halved;
+
+	if (current_cell_x < 0)
 		current_cell_x = current_cell_x + 0x7ff;
-	}
-	current_cell_z = (player.spoolXZ)->vz + units_down_halved;
+
+	current_cell_z = (player[0].spoolXZ)->vz + units_down_halved;
 	current_cell_x = current_cell_x >> 0xb;
-	if (current_cell_z < 0) {
+
+	if (current_cell_z < 0)
 		current_cell_z = current_cell_z + 0x7ff;
-	}
+
 	current_cell_z = current_cell_z >> 0xb;
 	region_x = current_cell_x;
-	if (current_cell_x < 0) {
+
+	if (current_cell_x < 0)
 		region_x = current_cell_x + 0x1f;
-	}
+
 	region_x = region_x >> 5;
 	region_z = current_cell_z;
-	if (current_cell_z < 0) {
+
+	if (current_cell_z < 0)
 		region_z = current_cell_z + 0x1f;
-	}
+
 	region_z = region_z >> 5;
 	old_region = current_region;
 	region_to_unpack = cells_across;
-	if (cells_across < 0) {
+
+	if (cells_across < 0)
 		region_to_unpack = cells_across + 0x1f;
-	}
+
 	current_barrel_region_xcell = current_cell_x + region_x * -0x20;
 	current_barrel_region_zcell = current_cell_z + region_z * -0x20;
+
 	region_to_unpack = region_x + region_z * (region_to_unpack >> 5);
-	bVar1 = current_region == -1;
 	current_region = region_to_unpack;
-	if (bVar1) {
-		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) << 1);
-	}
+
+	if (current_region == -1)
+		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) << 1);		// is that ever valid for 'target_barrel_region'?
+
 	CheckUnpackNewRegions();
-	if ((old_region == current_region) || (old_region == -1)) {
+
+	if ((old_region == current_region) || (old_region == -1)) 
 		CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
-	}
+
 	current_cell_x = camera_position.vx + units_across_halved;
-	if (current_cell_x < 0) {
+
+	if (current_cell_x < 0)
 		current_cell_x = current_cell_x + 0x7ff;
-	}
+
 	current_cell_x = current_cell_x >> 0xb;
 	current_cell_z = camera_position.vz + units_down_halved;
-	if (current_cell_z < 0) {
+
+	if (current_cell_z < 0) 
 		current_cell_z = current_cell_z + 0x7ff;
-	}
+
 	current_cell_z = current_cell_z >> 0xb;
+
 	StartSpooling();
-	return;
-	*/
 }
 
 
@@ -983,6 +997,7 @@ void InitMap(void)
 		}
 
 		current_cell_z = current_cell_z >> 0xb;
+
 		StartSpooling();
 	}
 	else {
@@ -990,6 +1005,7 @@ void InitMap(void)
 		regions_unpacked[1] = -1;
 		regions_unpacked[2] = -1;
 		regions_unpacked[3] = -1;
+
 		ControlMap();
 	}
 }
