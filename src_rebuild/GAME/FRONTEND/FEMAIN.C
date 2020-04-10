@@ -1,7 +1,7 @@
 #include "THISDUST.H"
 #include "FEMAIN.H"
 
-#include "CD_ICON.H"
+#include "../C/CD_ICON.H"
 
 #include <string.h>
 

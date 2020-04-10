@@ -1,7 +1,7 @@
 #include "THISDUST.H"
 
 #include "LIBETC.H"
-
+#include "PAD.H"
 #include "SPOOL.H"
 #include "MAP.H"
 #include "SYSTEM.H"
@@ -18,6 +18,8 @@
 #include "DENTING.H"
 #include "HANDLING.H"
 #include "MISSION.H"
+#include "CIV_AI.H"
+
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -74,6 +76,9 @@ int spoolpos;
 int spoolpos_reading;
 int spoolpos_writing;
 
+int allowSpecSpooling;
+int startSpecSpool;
+
 int unpack_roadmap_flag;
 int unpack_cellptr_flag;
 
@@ -97,6 +102,10 @@ static int endchunk;
 int send_bank;
 int sample_chunk;
 int chunk_complete;
+
+int new_area_location;
+int LoadingArea = 0;
+unsigned short *newmodels;
 
 struct SPOOLQ spooldata[48];
 
@@ -272,31 +281,29 @@ void changemode(SPOOLQ *current)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int check_regions_present(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int *piVar1;
+	AREA_LOAD_INFO *pAVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
-	int *piVar6;
-	int local_a0[5];
-	undefined4 local_8c;
+	AREA_LOAD_INFO *pAVar6;
+	AREA_LOAD_INFO region_to_unpack[3];
+	char textbuf[128];
 
-	piVar6 = local_a0;
+	pAVar6 = region_to_unpack;
 	iVar4 = 0;
 	iVar5 = 0;
 	iVar3 = 0;
 	if (current_barrel_region_xcell < 9) {
-		local_a0[0] = -1;
+		region_to_unpack[0].xoffset = -1;
 		if (region_x != 0) {
 			iVar4 = 1;
 		LAB_0007b44c:
 			iVar3 = 1;
-			local_a0[1] = 0;
+			region_to_unpack[0].zoffset = 0;
 		}
 	}
 	else {
@@ -305,7 +312,7 @@ int check_regions_present(void)
 			if (cells_across < 0) {
 				iVar2 = cells_across + 0x1f;
 			}
-			local_a0[0] = 1;
+			region_to_unpack[0].xoffset = 1;
 			if (region_x < iVar2 >> 5) {
 				iVar4 = 2;
 				goto LAB_0007b44c;
@@ -315,41 +322,40 @@ int check_regions_present(void)
 	if (current_barrel_region_zcell < 9) {
 		if (region_z == 0) goto LAB_0007b4e0;
 		iVar5 = 1;
-		piVar1 = local_a0 + iVar3 * 2 + 1;
-		local_a0[iVar3 * 2] = 0;
+		region_to_unpack[iVar3].xoffset = 0;
 		iVar2 = -1;
 	}
 	else {
 		if ((current_barrel_region_zcell < 0x18) || (region_z == 0)) goto LAB_0007b4e0;
 		iVar5 = 2;
-		piVar1 = local_a0 + iVar3 * 2 + 1;
-		local_a0[iVar3 * 2] = 0;
+		region_to_unpack[iVar3].xoffset = 0;
 		iVar2 = 1;
 	}
+	pAVar1 = region_to_unpack + iVar3;
 	iVar3 = iVar3 + 1;
-	*piVar1 = iVar2;
+	pAVar1->zoffset = iVar2;
 LAB_0007b4e0:
 	if (iVar3 == 2) {
 		if (iVar5 == 1) {
 			iVar3 = 3;
 			if (iVar4 == 1) {
-				local_a0[4] = 0xffffffff;
-				local_8c = 0xffffffff;
+				region_to_unpack[2].xoffset = -1;
+				region_to_unpack[2].zoffset = -1;
 			}
 			else {
-				local_a0[4] = 1;
-				local_8c = 0xffffffff;
+				region_to_unpack[2].xoffset = 1;
+				region_to_unpack[2].zoffset = -1;
 			}
 		}
 		else {
 			iVar3 = 3;
 			if (iVar4 == 1) {
-				local_a0[4] = 0xffffffff;
+				region_to_unpack[2].xoffset = -1;
 			}
 			else {
-				local_a0[4] = 1;
+				region_to_unpack[2].xoffset = 1;
 			}
-			local_8c = 1;
+			region_to_unpack[2].zoffset = 1;
 		}
 	}
 	iVar4 = 0;
@@ -358,15 +364,16 @@ LAB_0007b4e0:
 		if (cells_across < 0) {
 			iVar5 = cells_across + 0x1f;
 		}
-		iVar5 = current_region + *piVar6 + piVar6[1] * (iVar5 >> 5);
-		if ((((int)loading_region[(region_x + *piVar6 & 1U) + (region_z + piVar6[1] & 1U) * 2] != -1) &&
-			(spoolinfo_offsets[iVar5] != 0xffff)) &&
-			((int)loading_region[(region_x + *piVar6 & 1U) + (region_z + piVar6[1] & 1U) * 2] == iVar5))
-		{
+		iVar5 = current_region + *(int *)pAVar6 + ((int *)pAVar6)[1] * (iVar5 >> 5);
+		if ((((int)loading_region[(region_x + *(int *)pAVar6 & 1U) + (region_z + ((int *)pAVar6)[1] & 1U) * 2] !=
+			-1) && (spoolinfo_offsets[iVar5] != 0xffff)) &&
+			((int)loading_region
+				[(region_x + *(int *)pAVar6 & 1U) + (region_z + ((int *)pAVar6)[1] & 1U) * 2] ==
+				iVar5)) {
 			iVar4 = iVar4 + 1;
 		}
 		iVar3 = iVar3 + -1;
-		piVar6 = piVar6 + 2;
+		pAVar6 = (AREA_LOAD_INFO *)((int *)pAVar6 + 2);
 	}
 	if (LoadingArea != 0) {
 		if (new_area_location == 1) {
@@ -389,7 +396,7 @@ LAB_0007b4e0:
 			}
 		}
 	}
-	return iVar4;*/
+	return iVar4;
 }
 
 
@@ -417,17 +424,14 @@ LAB_0007b4e0:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void stopgame(void)
 {
-	UNIMPLEMENTED();
-	/*
 	StopPadVibration(0);
 	StopPadVibration(1);
 	PauseSFX();
 	DrawSync(0);
 	PutDrawEnv(&last->draw);
-	return;
-	*/
 }
 
 
@@ -460,14 +464,11 @@ void stopgame(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void startgame(void)
 {
-	UNIMPLEMENTED();
-	/*
 	PutDrawEnv(&current->draw);
 	UnPauseSFX();
-	return;
-	*/
 }
 
 
@@ -500,34 +501,33 @@ void startgame(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern POLY_FT4 cd_sprite;
+extern unsigned short cd_icon[288];
+
+// [D]
 void DrawCDicon(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 *puVar1;
+	ushort *puVar1;
 	int iVar2;
-	undefined2 local_10;
-	undefined2 local_e;
-	undefined2 local_c;
-	undefined2 local_a;
+	RECT16 local_10;
 
-	DAT_0009bba2 = DAT_0009bb8a;
+	cd_icon[23] = cd_icon[11];
 	iVar2 = 0xb;
-	puVar1 = &DAT_0009bb88;
+	puVar1 = cd_icon + 10;
 	do {
 		iVar2 = iVar2 + -1;
 		puVar1[1] = puVar1[2];
 		puVar1 = puVar1 + 1;
 	} while (-1 < iVar2);
-	local_10 = 0x3c0;
-	local_e = 0x1b1;
-	local_c = 0x10;
-	local_a = 1;
-	LoadImage(&local_10);
+
+	local_10.x = 960;
+	local_10.y = 433;
+	local_10.w = 16;
+	local_10.h = 1;
+
+	LoadImage(&local_10, (u_long *)(cd_icon + 10));
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
-	return;
-	*/
 }
 
 
@@ -1302,9 +1302,6 @@ void SendSBK(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int LoadingArea = 0;
-unsigned short *newmodels;
-
 // [D]
 void init_spooled_models(void)
 {
@@ -1496,8 +1493,6 @@ void LoadInAreaModels(int area)
 		// Start line: 3522
 	/* end block 4 */
 	// End Line: 3523
-
-int new_area_location;
 
 // [D]
 void CheckLoadAreaData(int cellx, int cellz)
@@ -3791,23 +3786,29 @@ LAB_0007d240:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void CheckSpecialSpool(void)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	int iVar2;
-	uint uVar3;
+	_CAR_DATA *lcp;
 
-	if ((startSpecSpool != -1) && (startSpecSpool + 400 < CameraCnt)) {
-		if (specSpoolComplete == 0) {
-			do {
+	if ((startSpecSpool != -1) && (startSpecSpool + 400 < CameraCnt)) 
+	{
+		if (specSpoolComplete == 0)
+		{
+			do 
+			{
 				SpoolSYNC();
 				iVar2 = DrawSync(1);
-				if (iVar2 == 0) {
+
+				if (iVar2 == 0)
+				{
 					SpecialStartNextBlock();
 				}
+
 				StartSpooling();
+
 			} while (specSpoolComplete == 0);
 		}
 		specModelValid = '\x01';
@@ -3816,32 +3817,40 @@ void CheckSpecialSpool(void)
 		specSpoolComplete = 0;
 		startSpecSpool = -1;
 	}
+
 	if ((((allowSpecSpooling != 0) && (specSpoolComplete != 1)) && (GameType != GAME_PURSUIT)) &&
-		(SpecialByRegion[GameLevel * 0x14 + LoadedArea] != MissionHeader->residentModels[4] + -7)) {
+		(SpecialByRegion[GameLevel][LoadedArea] != MissionHeader->residentModels[4] + -7)) 
+	{
 		specModelValid = '\0';
-		uVar3 = 0xd43fc;
+
+		lcp = car_data;
 		bVar1 = false;
-		do {
-			if (4 < MissionHeader->residentModels[*(byte *)(uVar3 + 0x177)]) {
+
+		do	// [A]
+		{
+			if (4 < MissionHeader->residentModels[lcp->ap.model]) 
 				bVar1 = true;
-			}
-			uVar3 = uVar3 - 0x29c;
-		} while (0xd1267 < uVar3);
-		if (!bVar1) {
+
+			lcp++;
+		} while (lcp < &car_data[19]);
+
+		if (!bVar1) 
+		{
 			startSpecSpool = CameraCnt;
-			gCarDamModelPtr5[4] = (MODEL *)0x0;
-			gCarCleanModelPtr5[4] = (MODEL *)0x0;
-			SHORT_000aa9bc = *(short *)(SpecialByRegion + GameLevel * 0x14 + LoadedArea);
-			gCarLowModelPtr5[4] = (MODEL *)0x0;
-			bVar1 = specialState == 0;
-			MissionHeader->residentModels[4] = SpecialByRegion[GameLevel * 0x14 + LoadedArea] + 7;
-			if (bVar1) {
+
+			gCarDamModelPtr[4] = NULL;
+			gCarCleanModelPtr[4] = NULL;
+			gCarLowModelPtr[4] = NULL;
+
+			specspooldata[2] = *(short *)(SpecialByRegion[GameLevel][LoadedArea]);
+			MissionHeader->residentModels[4] = SpecialByRegion[GameLevel][LoadedArea] + 7;
+
+			if (specialState == 0)
+			{
 				SpecialStartNextBlock();
 			}
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -3862,24 +3871,25 @@ void CheckSpecialSpool(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void QuickSpoolSpecial(void)
 {
-	UNIMPLEMENTED();
-	/*
 	quickSpool = 1;
-	gCarCleanModelPtr5[4] = (MODEL *)0x0;
 	specialState = 0;
 	specBlocksToLoad = 0;
-	gCarDamModelPtr5[4] = (MODEL *)0x0;
-	gCarLowModelPtr5[4] = (MODEL *)0x0;
-	SHORT_000aa9bc = *(short *)(MissionHeader->residentModels + 4) + -7;
+
+	gCarCleanModelPtr[4] = NULL;
+	gCarDamModelPtr[4] = NULL;
+	gCarLowModelPtr[4] = NULL;
+
+	specspooldata[2] = *(short *)(MissionHeader->residentModels + 4) + -7;
+
 	do {
 		SpoolSYNC();
 		DrawSync(0);
 		SpecialStartNextBlock();
 		StartSpooling();
 	} while (quickSpool == 1);
-	return;*/
 }
 
 
@@ -3900,24 +3910,23 @@ void QuickSpoolSpecial(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void PrepareSecretCar(void)
 {
-	UNIMPLEMENTED();
-	/*
 	allowSpecSpooling = 0;
 	PingOutAllSpecialCivCars();
-	gCarDamModelPtr5[4] = (MODEL *)0x0;
-	gCarCleanModelPtr5[4] = (MODEL *)0x0;
-	gCarLowModelPtr5[4] = (MODEL *)0x0;
-	SHORT_000aa9bc = 5;
+
+	gCarDamModelPtr[4] = NULL;
+	gCarCleanModelPtr[4] = NULL;
+	gCarLowModelPtr[4] = NULL;
+
+	specspooldata[2] = 5;
 	specModelValid = '\0';
 	startSpecSpool = CameraCnt;
 	MissionHeader->residentModels[4] = 0xc;
 	specialState = 0;
 	specBlocksToLoad = 0;
 	SpecialStartNextBlock();
-	return;
-	*/
 }
 
 
@@ -3943,73 +3952,72 @@ void PrepareSecretCar(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitSpecSpool(void)
 {
-	UNIMPLEMENTED();
-	/*
 	if (((((((gCurrentMissionNumber == 2) || (gCurrentMissionNumber == 4)) ||
 		(gCurrentMissionNumber == 6)) ||
 		((((gCurrentMissionNumber == 7 || (gCurrentMissionNumber == 10)) ||
 		((gCurrentMissionNumber == 0xb ||
-			((gCurrentMissionNumber == 0xc || (gCurrentMissionNumber == 0xd)))))) ||
-			(gCurrentMissionNumber == 0x10)))) ||
-			(((((gCurrentMissionNumber == 0x12 || (gCurrentMissionNumber == 0x13)) ||
+		((gCurrentMissionNumber == 0xc || (gCurrentMissionNumber == 0xd)))))) ||
+		(gCurrentMissionNumber == 0x10)))) ||
+		(((((gCurrentMissionNumber == 0x12 || (gCurrentMissionNumber == 0x13)) ||
 		(gCurrentMissionNumber == 0x14)) ||
-				((gCurrentMissionNumber == 0x18 || (gCurrentMissionNumber == 0x1a)))) ||
-				((gCurrentMissionNumber == 0x1b ||
-				((gCurrentMissionNumber == 0x1d || (gCurrentMissionNumber == 0x1e)))))))) ||
-					(((((gCurrentMissionNumber == 0x1f ||
+		((gCurrentMissionNumber == 0x18 || (gCurrentMissionNumber == 0x1a)))) ||
+		((gCurrentMissionNumber == 0x1b ||
+		((gCurrentMissionNumber == 0x1d || (gCurrentMissionNumber == 0x1e)))))))) ||
+		(((((gCurrentMissionNumber == 0x1f ||
 		(((((gCurrentMissionNumber == 0x21 || (gCurrentMissionNumber == 0x23)) ||
-						(gCurrentMissionNumber == 0x26)) ||
-			((gCurrentMissionNumber == 0x27 || (gCurrentMissionNumber == 0x28)))) ||
-			(gCurrentMissionNumber == 0x3a)))) ||
-			((((gCurrentMissionNumber == 0x3b || (gCurrentMissionNumber == 0x3c)) ||
-						((gCurrentMissionNumber == 0x3d ||
-				(((gCurrentMissionNumber == 0x3e || (gCurrentMissionNumber == 0x3f)) ||
-							(gCurrentMissionNumber == 0x40)))))) ||
-					(((gCurrentMissionNumber == 0x41 || (gCurrentMissionNumber == 0x46)) ||
-				(gCurrentMissionNumber == 0x4e)))))) ||
-						(((gCurrentMissionNumber == 0x56 || (gCurrentMissionNumber == 0x5e)) ||
-						((gCurrentMissionNumber == 0x1f2 ||
-							(((gCurrentMissionNumber == 499 || (gCurrentMissionNumber == 500)) ||
-							(gCurrentMissionNumber == 0x1f5)))))))) ||
-								(((gCurrentMissionNumber == 0x1f6 || (gCurrentMissionNumber == 0x1f7)) ||
-						((gCurrentMissionNumber == 0x1f8 ||
-									((((gCurrentMissionNumber == 0x1f9 || (gCurrentMissionNumber == 0xe4)) ||
-							((gCurrentMissionNumber == 0xe5 ||
-										((((gCurrentMissionNumber == 0xec || (gCurrentMissionNumber == 0xed)) ||
-								(gCurrentMissionNumber == 0xf4)) ||
-											((gCurrentMissionNumber == 0xf5 || (gCurrentMissionNumber == 0xfc)))))))) ||
-											(gCurrentMissionNumber == 0xfd)))))))))) ||
-										(((gCurrentMissionNumber == 0x1a4 || (gCurrentMissionNumber == 0x1a5)) ||
+		(gCurrentMissionNumber == 0x26)) ||
+		((gCurrentMissionNumber == 0x27 || (gCurrentMissionNumber == 0x28)))) ||
+		(gCurrentMissionNumber == 0x3a)))) ||
+		((((gCurrentMissionNumber == 0x3b || (gCurrentMissionNumber == 0x3c)) ||
+		((gCurrentMissionNumber == 0x3d ||
+		(((gCurrentMissionNumber == 0x3e || (gCurrentMissionNumber == 0x3f)) ||
+		(gCurrentMissionNumber == 0x40)))))) ||
+		(((gCurrentMissionNumber == 0x41 || (gCurrentMissionNumber == 0x46)) ||
+		(gCurrentMissionNumber == 0x4e)))))) ||
+		(((gCurrentMissionNumber == 0x56 || (gCurrentMissionNumber == 0x5e)) ||
+		((gCurrentMissionNumber == 0x1f2 ||
+		(((gCurrentMissionNumber == 499 || (gCurrentMissionNumber == 500)) ||
+		(gCurrentMissionNumber == 0x1f5)))))))) ||
+		(((gCurrentMissionNumber == 0x1f6 || (gCurrentMissionNumber == 0x1f7)) ||
+		((gCurrentMissionNumber == 0x1f8 ||
+		((((gCurrentMissionNumber == 0x1f9 || (gCurrentMissionNumber == 0xe4)) ||
+		((gCurrentMissionNumber == 0xe5 ||
+		((((gCurrentMissionNumber == 0xec || (gCurrentMissionNumber == 0xed)) ||
+		(gCurrentMissionNumber == 0xf4)) ||
+		((gCurrentMissionNumber == 0xf5 || (gCurrentMissionNumber == 0xfc)))))))) ||
+		(gCurrentMissionNumber == 0xfd)))))))))) ||
+		(((gCurrentMissionNumber == 0x1a4 || (gCurrentMissionNumber == 0x1a5)) ||
 		((((((gCurrentMissionNumber == 0x1ac ||
-											(((gCurrentMissionNumber == 0x1ad || (gCurrentMissionNumber == 0x1b4)) ||
-			(gCurrentMissionNumber == 0x1b5)))) ||
-												(((gCurrentMissionNumber == 0x1bc || (gCurrentMissionNumber == 0x1bd)) ||
-			(gCurrentMissionNumber == 0x160)))) ||
-													((gCurrentMissionNumber == 0x161 || (gCurrentMissionNumber == 0x168)))) ||
-			((gCurrentMissionNumber == 0x169 ||
-			(((gCurrentMissionNumber == 0x170 || (gCurrentMissionNumber == 0x171)) ||
-				(gCurrentMissionNumber == 0x178)))))) ||
-				((((gCurrentMissionNumber == 0x179 || (gCurrentMissionNumber == 0x1e0)) ||
-			(gCurrentMissionNumber == 0x1e1)) ||
-					(((gCurrentMissionNumber == 0x1e2 || (gCurrentMissionNumber == 0x1e3)) ||
-					((gCurrentMissionNumber == 0x1e4 ||
-						(((gCurrentMissionNumber == 0x1e5 || (gCurrentMissionNumber == 0x1e6)) ||
-						(gCurrentMissionNumber == 0x1e7)))))))))))))) {
+		(((gCurrentMissionNumber == 0x1ad || (gCurrentMissionNumber == 0x1b4)) ||
+		(gCurrentMissionNumber == 0x1b5)))) ||
+		(((gCurrentMissionNumber == 0x1bc || (gCurrentMissionNumber == 0x1bd)) ||
+		(gCurrentMissionNumber == 0x160)))) ||
+		((gCurrentMissionNumber == 0x161 || (gCurrentMissionNumber == 0x168)))) ||
+		((gCurrentMissionNumber == 0x169 ||
+		(((gCurrentMissionNumber == 0x170 || (gCurrentMissionNumber == 0x171)) ||
+		(gCurrentMissionNumber == 0x178)))))) ||
+		((((gCurrentMissionNumber == 0x179 || (gCurrentMissionNumber == 0x1e0)) ||
+		(gCurrentMissionNumber == 0x1e1)) ||
+		(((gCurrentMissionNumber == 0x1e2 || (gCurrentMissionNumber == 0x1e3)) ||
+		((gCurrentMissionNumber == 0x1e4 ||
+		(((gCurrentMissionNumber == 0x1e5 || (gCurrentMissionNumber == 0x1e6)) ||
+		(gCurrentMissionNumber == 0x1e7)))))))))))))) // xD
+	{
 		allowSpecSpooling = 0;
 	}
 	else {
 		allowSpecSpooling = 1;
 	}
-	specModelValid = '\x01';
+
+	specModelValid = 1;
 	specialState = 0;
 	specBlocksToLoad = 0;
 	quickSpool = 0;
 	specSpoolComplete = 0;
 	startSpecSpool = -1;
-	return;
-	*/
 }
 
 

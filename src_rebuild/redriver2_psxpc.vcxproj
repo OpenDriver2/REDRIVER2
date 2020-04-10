@@ -264,7 +264,7 @@
     <ClInclude Include="EMULATOR\R3000.H" />
     <ClInclude Include="EMULATOR\STRINGS.H" />
     <ClInclude Include="EMULATOR\TYPES.H" />
-    <ClInclude Include="GAME\FRONTEND\CD_ICON.H" />
+    <ClInclude Include="GAME\C\CD_ICON.H" />
     <ClInclude Include="THISDUST.H" />
   </ItemGroup>
   <ItemGroup>

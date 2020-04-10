@@ -7,6 +7,9 @@ extern int cell_slots_add[5];
 extern char* specmallocptr;
 extern char *specLoadBuffer;
 
+extern int allowSpecSpooling;
+extern int startSpecSpool;
+
 extern int doSpooling;
 
 extern short loading_region[4];;

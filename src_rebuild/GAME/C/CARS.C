@@ -50,6 +50,14 @@ int PolySizes[56] = {
 };
 
 
+// PHYSICS
+_CAR_DATA car_data[22];	// all cars
+
+// active cars
+_CAR_DATA* active_car_list[20];
+BOUND_BOX bbox[20];
+unsigned char lightsOnDelay[20];
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ plotNewCarModel(struct CAR_MODEL *car /*$s0*/, int palette /*$s2*/)

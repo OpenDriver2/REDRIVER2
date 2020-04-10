@@ -1,6 +1,14 @@
 #ifndef CARS_H
 #define CARS_H
 
+// PHYSICS
+extern _CAR_DATA car_data[22];	// all cars
+
+// active cars
+extern _CAR_DATA* active_car_list[20];
+extern BOUND_BOX bbox[20];
+extern unsigned char lightsOnDelay[20];
+
 extern CAR_MODEL NewCarModel[5];
 extern CAR_MODEL NewLowCarModel[5];
 

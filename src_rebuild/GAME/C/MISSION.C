@@ -461,37 +461,36 @@ LAB_00060e70:
 	gCopDesiredSpeedScale = (MissionHeader->cops).speed;
 	gCopMaxPowerScale = (MissionHeader->cops).power;
 	CopsAllowed = (maxCopCars != 0);
-	if (GameType == GAME_SURVIVAL) {
+
+	if (GameType == GAME_SURVIVAL)
+	{
 		gCopData.immortal = 1;
 	}
-	else {
-		if (GameType < GAME_INVALIDGAME1) {
-			if (GameType == GAME_GETAWAY) {
-				gDontPingInCops = 1;
-				gCopData.immortal = 1;
-			}
-			else {
-				gCopData.immortal = 0;
-			}
-		}
-		else {
-			if (GameType == GAME_SECRET) {
-				maxCivCars = 10;
-				maxParkedCars = 5;
-			}
-			else {
-				gCopData.immortal = 0;
-			}
-		}
+	else if (GameType == GAME_GETAWAY)
+	{
+		gDontPingInCops = 1;
+		gCopData.immortal = 1;
 	}
+	else if (GameType == GAME_SECRET)
+	{
+		maxCivCars = 10;
+		maxParkedCars = 5;
+	}
+	else
+	{
+		gCopData.immortal = 0;
+	}
+
 	if ((MissionHeader->type & 2U) == 0) 
 	{
 		PlayerStartInfo[0]->type = '\x01';
 	}
-	else {
+	else
+	{
 		PlayerStartInfo[0]->type = '\x02';
 		PlayerStartInfo[0]->model = '\0';
 	}
+
 	if (NewLevel != 0) {
 		if (MissionHeader->route == 0) {
 			mallocptr = mallocptr + (iVar4 + 3U & 0xfffffffc);

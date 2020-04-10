@@ -20,6 +20,12 @@ extern int num_straddlers;
 extern int current_cell_x;
 extern int current_cell_z;
 
+extern int region_x;
+extern int region_z;
+
+extern int current_barrel_region_xcell;
+extern int current_barrel_region_zcell;
+
 extern void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile); // 0x0005D7BC
 
 extern void ProcessJunctionsLump(char *lump_file, int lump_size); // 0x0005D6CC

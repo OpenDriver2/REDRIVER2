@@ -47,6 +47,7 @@
 #include "MOTION_C.H"
 #include "DR2ROADS.H"
 #include "MODELS.H"
+#include "CARS.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -60,11 +61,11 @@
 int scr_z = 0;
 
 int levelstartpos[8][4] = {
-	{0x12B1, 0xFFFFFC00, 0xFFFC9794, 0},
-	{0xFFFC74AC, 0x800, 0xFFFC6961, 0},
-	{0x383CB, 0xFFFFFC00, 0xABE1E, 0},
-	{0x165EF, 0xFFFFFC00, 0xFFFAB3D9, 0},
-	{0x24548, 0x1813, 0xFFFE4A80, 0},
+	{ 0x12B1, 0xFFFFFC00, 0xFFFC9794, 0},
+	{ 0xFFFC74AC, 0x800, 0xFFFC6961, 0},
+	{ 0x383CB, 0xFFFFFC00, 0xABE1E, 0},
+	{ 0x165EF, 0xFFFFFC00, 0xFFFAB3D9, 0},
+	{ 0x24548, 0x1813, 0xFFFE4A80, 0},
 	{ 0xFFFD67F0, 0x1813, 0x58228, 0},
 	{ 0xFFFFD6FC, 0xFFFFE7ED, 0xFFFFA980, 0},
 	{ 0xFFFFDCDD, 0xFFFFE7ED, 0xF8A7, 0},
@@ -695,7 +696,6 @@ ulong* tile_overflow_buffer;
 // system?
 int gameinit = 0;
 int gMusicType = 0;
-int allowSpecSpooling = 0;
 int xa_timeout = 0;
 
 int ThisMotion = 0;
@@ -710,14 +710,6 @@ int CameraCnt = 0;
 
 // TODO: DIRECTOR.C
 char tracking_car = 0;
-
-// PHYSICS
-_CAR_DATA car_data[22];	// all cars
-
-// active cars
-_CAR_DATA* active_car_list[20];
-BOUND_BOX bbox[20];
-unsigned char lightsOnDelay[20];
 
 // OVERLAY
 int gLoadedOverlay = 0;

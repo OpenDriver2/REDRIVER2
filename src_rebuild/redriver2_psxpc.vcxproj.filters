@@ -223,7 +223,7 @@
       <Filter>main\C</Filter>
     </ClCompile>
     <ClCompile Include="GAME\C\CARS.C">
-      <Filter>EMULATOR</Filter>
+      <Filter>main\C</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -308,8 +308,8 @@
     <ClInclude Include="THISDUST.H">
       <Filter>main</Filter>
     </ClInclude>
-    <ClInclude Include="GAME\FRONTEND\CD_ICON.H">
-      <Filter>main\FRONTEND</Filter>
+    <ClInclude Include="GAME\C\CD_ICON.H">
+      <Filter>main\C</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

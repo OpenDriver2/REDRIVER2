@@ -2,6 +2,7 @@
 #define MAIN_H
 
 extern int FrameCnt;
+extern int CameraCnt;
 
 typedef void(*TDRFuncPtr_Havana3DOcclusion0func)();
 
