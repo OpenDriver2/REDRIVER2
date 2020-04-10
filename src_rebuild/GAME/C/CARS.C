@@ -111,9 +111,9 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 		}
 		iVar1 = combointensity;
 		setupLightingMatrices();
-		setCopReg(2, in_zero, local_20);
-		setCopReg(2, in_at, local_1c);
-		setCopReg(2, iVar1, local_18);
+		setCopReg(2, 0, local_20);
+		setCopReg(2, 1, local_1c);
+		setCopReg(2, 2, local_18);
 		copFunction(2, 0x108041b);
 		local_48.primptr = (uchar *)current->primptr;
 		local_48.intensity = 0;
@@ -201,23 +201,23 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 			pSVar6 = vlist + (uVar2 & 0xff);
 			puVar5 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 5 & 0x7f8U));
 			puVar3 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 0xd & 0x7f8U));
-			setCopReg(2, in_zero, *(undefined4 *)pSVar6);
-			setCopReg(2, in_at, *(undefined4 *)&pSVar6->vz);
-			setCopReg(2, puVar3, *puVar5);
-			setCopReg(2, puVar5, puVar5[1]);
-			setCopReg(2, pSVar6, *puVar3);
-			setCopReg(2, src, puVar3[1]);
+			setCopReg(2, 0, *(undefined4 *)pSVar6);
+			setCopReg(2, 1, *(undefined4 *)&pSVar6->vz);
+			setCopReg(2, 2, *puVar5);
+			setCopReg(2, 3, puVar5[1]);
+			setCopReg(2, 4, *puVar3);
+			setCopReg(2, 5, puVar3[1]);
 			copFunction(2, 0x280030);
 			puVar7[1] = uVar4 | 0x20000000;
 			copFunction(2, 0x1400006);
 			iVar1 = getCopReg(2, 0x18);
 			copFunction(2, 0x158002d);
 			if (-1 < iVar1) {
-				uVar2 = getCopReg(2, 0xc);
+				uVar2 = getCopReg(2, 12);
 				puVar7[2] = uVar2;
-				uVar2 = getCopReg(2, 0xd);
+				uVar2 = getCopReg(2, 13);
 				puVar7[3] = uVar2;
-				uVar2 = getCopReg(2, 0xe);
+				uVar2 = getCopReg(2, 14);
 				puVar7[4] = uVar2;
 				iVar1 = getCopReg(2, 7);
 				*puVar7 = (uint)plVar8[iVar1 >> 1] | 0x4000000;
@@ -310,12 +310,12 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 			pSVar5 = vlist + (uVar2 & 0xff);
 			puVar4 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 5 & 0x7f8U));
 			puVar3 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 0xd & 0x7f8U));
-			setCopReg(2, in_zero, *(undefined4 *)pSVar5);
-			setCopReg(2, in_at, *(undefined4 *)&pSVar5->vz);
-			setCopReg(2, puVar3, *puVar4);
-			setCopReg(2, puVar4, puVar4[1]);
-			setCopReg(2, pSVar5, *puVar3);
-			setCopReg(2, src, puVar3[1]);
+			setCopReg(2, 0, *(undefined4 *)pSVar5);
+			setCopReg(2, 1, *(undefined4 *)&pSVar5->vz);
+			setCopReg(2, 2, *puVar4);
+			setCopReg(2, 3, puVar4[1]);
+			setCopReg(2, 4, *puVar3);
+			setCopReg(2, 5, puVar3[1]);
 			copFunction(2, 0x280030);
 			iVar7 = pCVar10->clut_uv0;
 			iVar8 = pCVar10->tpage_uv1;
@@ -330,11 +330,11 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 			iVar6 = getCopReg(2, 0x18);
 			copFunction(2, 0x158002d);
 			if (-1 < iVar6) {
-				uVar2 = getCopReg(2, 0xc);
+				uVar2 = getCopReg(2, 12);
 				puVar9[2] = uVar2;
-				uVar2 = getCopReg(2, 0xd);
+				uVar2 = getCopReg(2, 13);
 				puVar9[4] = uVar2;
-				uVar2 = getCopReg(2, 0xe);
+				uVar2 = getCopReg(2, 14);
 				puVar9[6] = uVar2;
 				iVar6 = getCopReg(2, 7);
 				*puVar9 = (uint)plVar11[iVar6 >> 1] | 0x7000000;
@@ -441,18 +441,18 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		pSVar7 = vlist + (uVar8 & 0xff);
 		pSVar5 = vlist + ((int)uVar8 >> 8 & 0xff);
 		pSVar3 = vlist + ((int)uVar8 >> 0x10 & 0xff);
-		setCopReg(2, in_zero, *(undefined4 *)pSVar7);
-		setCopReg(2, in_at, *(undefined4 *)&pSVar7->vz);
-		setCopReg(2, pSVar3, *(undefined4 *)pSVar5);
-		setCopReg(2, pSVar5, *(undefined4 *)&pSVar5->vz);
-		setCopReg(2, pSVar7, *(undefined4 *)pSVar3);
-		setCopReg(2, uVar9, *(undefined4 *)&pSVar3->vz);
+		setCopReg(2, 0, *(undefined4 *)pSVar7);
+		setCopReg(2, 1, *(undefined4 *)&pSVar7->vz);
+		setCopReg(2, 2, *(undefined4 *)pSVar5);
+		setCopReg(2, 3, *(undefined4 *)&pSVar5->vz);
+		setCopReg(2, 4, *(undefined4 *)pSVar3);
+		setCopReg(2, 5, *(undefined4 *)&pSVar3->vz);
 		copFunction(2, 0x280030);
 		uVar8 = src->nindices;
 		uVar12 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar8 >> 5 & 0x7f8U));
 		copFunction(2, 0x1400006);
 		uVar11 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar8 >> 0xd & 0x7f8U));
-		iVar1 = getCopReg(2, 0x18);
+		iVar1 = getCopReg(2, 24);
 		copFunction(2, 0x158002d);
 		src = src + 1;
 		iVar2 = getCopReg(2, 7);
@@ -464,11 +464,11 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 			puVar10[3] = uVar9;
 			puVar10[6] = iVar14 + uVar6;
 			puVar10[9] = iVar13 + uVar6;
-			uVar6 = getCopReg(2, 0xc);
+			uVar6 = getCopReg(2, 12);
 			puVar10[2] = uVar6;
-			uVar6 = getCopReg(2, 0xd);
+			uVar6 = getCopReg(2, 13);
 			puVar10[5] = uVar6;
-			uVar6 = getCopReg(2, 0xe);
+			uVar6 = getCopReg(2, 14);
 			puVar10[8] = uVar6;
 			*puVar10 = (uint)plVar15[iVar2 >> 1] | 0x9000000;
 			*(uint **)(plVar15 + (iVar2 >> 1)) = puVar10;
@@ -565,12 +565,12 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 			pSVar9 = vlist + (uVar5 & 0xff);
 			puVar8 = (undefined4 *)((int)&vlist->vx + ((int)uVar5 >> 5 & 0x7f8U));
 			puVar6 = (undefined4 *)((int)&vlist->vx + ((int)uVar5 >> 0xd & 0x7f8U));
-			setCopReg(2, in_zero, *(undefined4 *)pSVar9);
-			setCopReg(2, in_at, *(undefined4 *)&pSVar9->vz);
-			setCopReg(2, puVar6, *puVar8);
-			setCopReg(2, puVar8, puVar8[1]);
-			setCopReg(2, pSVar9, *puVar6);
-			setCopReg(2, src, puVar6[1]);
+			setCopReg(2, 0, *(undefined4 *)pSVar9);
+			setCopReg(2, 1, *(undefined4 *)&pSVar9->vz);
+			setCopReg(2, 2, *puVar8);
+			setCopReg(2, 3, puVar8[1]);
+			setCopReg(2, 4, *puVar6);
+			setCopReg(2, 5, puVar6[1]);
 			copFunction(2, 0x280030);
 			uVar10 = pCVar14->clut_uv0;
 			iVar12 = pCVar14->tpage_uv1;
@@ -579,17 +579,17 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 			uVar1 = puVar7[palette + ((int)uVar10 >> 0x10)];
 			uVar5 = (uint)pg->damageLevel[(int)src];
 			copFunction(2, 0x1400006);
-			iVar2 = getCopReg(2, 0x18);
+			iVar2 = getCopReg(2, 24);
 			copFunction(2, 0x158002d);
 			if (-1 < iVar2) {
 				local_4 = (uint **)getCopReg(2, 7);
 				if (0 < (int)local_4) {
 					local_4 = (uint **)(plVar15 + ((int)local_4 >> 1));
-					uVar3 = getCopReg(2, 0xc);
+					uVar3 = getCopReg(2, 12);
 					puVar11[2] = uVar3;
-		7			uVar3 = getCopReg(2, 0xd);
+		7			uVar3 = getCopReg(2, 13);
 					puVar11[4] = uVar3;
-					uVar3 = getCopReg(2, 0xe);
+					uVar3 = getCopReg(2, 14);
 					puVar11[6] = uVar3;
 					puVar11[3] = (uVar10 & 0xffff | (uint)uVar1 << 0x10) + uVar5;
 					puVar11[5] = iVar12 + uVar5;
@@ -1057,24 +1057,24 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, in
 	uint local_24;
 
 	setCopControlWord(2, 0, *(undefined4 *)matrix->m);
-	setCopControlWord(2, 0x800, *(undefined4 *)(matrix->m + 2));
-	setCopControlWord(2, 0x1000, *(undefined4 *)(matrix->m + 4));
-	setCopControlWord(2, 0x1800, *(undefined4 *)(matrix->m + 6));
-	setCopControlWord(2, 0x2000, *(undefined4 *)(matrix->m + 8));
-	setCopControlWord(2, 0x2800, pos->vx);
-	setCopControlWord(2, 0x3000, pos->vy);
-	setCopControlWord(2, 0x3800, pos->vz);
+	setCopControlWord(2, 1, *(undefined4 *)(matrix->m + 2));
+	setCopControlWord(2, 2, *(undefined4 *)(matrix->m + 4));
+	setCopControlWord(2, 3, *(undefined4 *)(matrix->m + 6));
+	setCopControlWord(2, 4, *(undefined4 *)(matrix->m + 8));
+	setCopControlWord(2, 5, pos->vx);
+	setCopControlWord(2, 6, pos->vy);
+	setCopControlWord(2, 7, pos->vz);
 	pCVar4 = (cp->ap).carCos;
 	local_24 = local_24 & 0xffff0000 | (uint)(ushort)(pCVar4->cog).vz;
 	setCopReg(2, in_zero, *(undefined4 *)&pCVar4->cog);
 	setCopReg(2, in_at, local_24);
 	copFunction(2, 0x480012);
-	uVar1 = getCopReg(2, 0x19);
-	uVar2 = getCopReg(2, 0x1a);
-	uVar3 = getCopReg(2, 0x1b);
-	setCopControlWord(2, 0x2800, uVar1);
-	setCopControlWord(2, 0x3000, uVar2);
-	setCopControlWord(2, 0x3800, uVar3);
+	uVar1 = getCopReg(2, 25);
+	uVar2 = getCopReg(2, 26);
+	uVar3 = getCopReg(2, 27);
+	setCopControlWord(2, 5, uVar1);
+	setCopControlWord(2, 6, uVar2);
+	setCopControlWord(2, 7, uVar3);
 	savedSP_21 = SetSp(&DAT_1f800308);
 	plotNewCarModel(car, palette);
 	SetSp(savedSP_21);
@@ -1357,25 +1357,25 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 			model = gDamWheelModelPtr;
 		}
 		setCopControlWord(2, 0, *(undefined4 *)RearMatrix->m);
-		setCopControlWord(2, 0x800, *(undefined4 *)(RearMatrix->m + 2));
-		setCopControlWord(2, 0x1000, *(undefined4 *)(RearMatrix->m + 4));
-		setCopControlWord(2, 0x1800, *(undefined4 *)(RearMatrix->m + 6));
-		setCopControlWord(2, 0x2000, *(undefined4 *)(RearMatrix->m + 8));
-		setCopReg(2, in_zero, *local_2c);
-		setCopReg(2, in_at, local_2c[1]);
+		setCopControlWord(2, 1, *(undefined4 *)(RearMatrix->m + 2));
+		setCopControlWord(2, 2, *(undefined4 *)(RearMatrix->m + 4));
+		setCopControlWord(2, 3, *(undefined4 *)(RearMatrix->m + 6));
+		setCopControlWord(2, 4, *(undefined4 *)(RearMatrix->m + 8));
+		setCopReg(2, 0, *local_2c);
+		setCopReg(2, 1, local_2c[1]);
 		copFunction(2, 0x486012);
-		uVar10 = getCopReg(2, 0x4800);
-		uVar11 = getCopReg(2, 0x5000);
-		uVar12 = getCopReg(2, 0x5800);
+		uVar10 = getCopReg(2, 9);
+		uVar11 = getCopReg(2, 10);
+		uVar12 = getCopReg(2, 11);
 		local_40 = (short)uVar10;
 		local_3e = (short)uVar11;
 		local_3c = (short)uVar12;
 		local_50 = (int)local_40 + pos->vx;
 		local_4c = (int)local_3e + pos->vy;
 		local_48 = (int)local_3c + pos->vz;
-		setCopControlWord(2, 0x2800, *local_30);
-		setCopControlWord(2, 0x3000, local_30[1]);
-		setCopControlWord(2, 0x3800, local_30[2]);
+		setCopControlWord(2, 5, *local_30);
+		setCopControlWord(2, 6, local_30[1]);
+		setCopControlWord(2, 7, local_30[2]);
 		if ((wheelnum & 1) == 0) {
 			SetRotMatrix(auStack144);
 		}
@@ -1483,19 +1483,19 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 		pSVar11 = verts + (uVar10 & 0xff);
 		puVar8 = (undefined4 *)((int)&verts->vx + ((int)uVar10 >> 5 & 0x7f8U));
 		puVar6 = (undefined4 *)((int)&verts->vx + ((int)uVar10 >> 0xd & 0x7f8U));
-		setCopReg(2, in_zero, *(undefined4 *)pSVar11);
-		setCopReg(2, in_at, *(undefined4 *)&pSVar11->vz);
-		setCopReg(2, puVar6, *puVar8);
-		setCopReg(2, puVar8, puVar8[1]);
-		setCopReg(2, uVar10, *puVar6);
-		setCopReg(2, pSVar11, puVar6[1]);
+		setCopReg(2, 0, *(undefined4 *)pSVar11);
+		setCopReg(2, 1, *(undefined4 *)&pSVar11->vz);
+		setCopReg(2, 2, *puVar8);
+		setCopReg(2, 3, puVar8[1]);
+		setCopReg(2, 4, *puVar6);
+		setCopReg(2, 5, puVar6[1]);
 		copFunction(2, 0x280030);
 		copFunction(2, 0x1400006);
-		iVar3 = getCopReg(2, 0x18);
-		uVar9 = getCopReg(2, 0xc);
+		iVar3 = getCopReg(2, 24);
+		uVar9 = getCopReg(2, 12);
 		puVar12[2] = uVar9;
-		setCopReg(2, in_zero, *(undefined4 *)(verts + (uVar10 >> 0x18)));
-		setCopReg(2, in_at, *(undefined4 *)&verts[uVar10 >> 0x18].vz);
+		setCopReg(2, 0, *(undefined4 *)(verts + (uVar10 >> 0x18)));
+		setCopReg(2, 1, *(undefined4 *)&verts[uVar10 >> 0x18].vz);
 		copFunction(2, 0x180001);
 		copFunction(2, 0x168002e);
 		iVar4 = getCopReg(2, 7);
@@ -1522,13 +1522,13 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 			}
 			*(byte *)((int)puVar12 + 7) = bVar5;
 			puVar12[3] = CONCAT22(uVar1, *(undefined2 *)(iVar13 + 8));
-			uVar9 = getCopReg(2, 0xc);
+			uVar9 = getCopReg(2, 12);
 			puVar12[4] = uVar9;
 			puVar12[5] = (uint)*(ushort *)(iVar13 + 10) | ((uint)uVar2 | 0x20) << 0x10;
-			uVar9 = getCopReg(2, 0xe);
+			uVar9 = getCopReg(2, 14);
 			puVar12[6] = uVar9;
 			puVar12[7] = (uint)*(ushort *)(iVar13 + 0xe);
-			uVar9 = getCopReg(2, 0xd);
+			uVar9 = getCopReg(2, 13);
 			puVar12[8] = uVar9;
 			puVar12[9] = (uint)*(ushort *)(iVar13 + 0xc);
 			puVar12 = puVar12 + 10;
@@ -1720,12 +1720,12 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 	}
 	InvertMatrix((MATRIX *)cp, (MATRIX *)&DAT_1f800344);
 	SetRotMatrix(&DAT_1f800344);
-	setCopReg(2, in_zero, local_60);
-	setCopReg(2, in_at, local_5c);
+	setCopReg(2, 0, local_60);
+	setCopReg(2, 1, local_5c);
 	copFunction(2, 0x486012);
-	uVar13 = getCopReg(2, 0x4800);
-	uVar14 = getCopReg(2, 0x5000);
-	uVar15 = getCopReg(2, 0x5800);
+	uVar13 = getCopReg(2, 9);
+	uVar14 = getCopReg(2, 10);
+	uVar15 = getCopReg(2, 11);
 	light_matrix.m[0][0] = (short)uVar13;
 	light_matrix.m[0][1] = (short)uVar14;
 	light_matrix.m[0][2] = (short)uVar15;
@@ -1753,7 +1753,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 		}
 		setupLightingMatrices();
 		if (bVar2) {
-			setCopReg(2, in_a2, combointensity & 0xffffffU | 0x34000000);
+			setCopReg(2, 6, combointensity & 0xffffffU | 0x34000000);
 			(cp->ap).qy = *(short *)(cp->st + 0x10);
 			(cp->ap).qw = *(short *)(cp->st + 0x18);
 			cp->lowDetail = detail | (byte)lightning;
@@ -1773,16 +1773,16 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 			uVar10 = uVar3;
 			if (0 < (int)uVar3) {
 				do {
-					setCopReg(2, in_zero, *puVar12);
-					setCopReg(2, in_at, puVar12[1]);
-					setCopReg(2, uVar3, puVar12[2]);
-					setCopReg(2, uVar6, puVar12[3]);
-					setCopReg(2, uVar8, puVar12[4]);
-					setCopReg(2, uVar10, puVar12[5]);
+					setCopReg(2, 0, *puVar12);
+					setCopReg(2, 1, puVar12[1]);
+					setCopReg(2, 2, puVar12[2]);
+					setCopReg(2, 3, puVar12[3]);
+					setCopReg(2, 4, puVar12[4]);
+					setCopReg(2, 5, puVar12[5]);
 					copFunction(2, 0x118043f);
-					uVar3 = getCopReg(2, 0x14);
-					uVar6 = getCopReg(2, 0x15);
-					uVar8 = getCopReg(2, 0x16);
+					uVar3 = getCopReg(2, 20);
+					uVar6 = getCopReg(2, 21);
+					uVar8 = getCopReg(2, 22);
 					uVar10 = uVar10 - 1;
 					local_40 = (short)uVar3;
 					uVar3 = uVar3 & 0xffff;
@@ -2356,42 +2356,49 @@ void setupLightingMatrices(void)
 {
 	UNIMPLEMENTED();
 	/*
-	save_colour_matrix.m[0]._0_4_ = getCopControlWord(2, 0x8000);
-	save_colour_matrix.m._4_4_ = getCopControlWord(2, 0x8800);
-	save_colour_matrix.m[1]._2_4_ = getCopControlWord(2, 0x9000);
-	save_colour_matrix.m[2]._0_4_ = getCopControlWord(2, 0x9800);
-	save_colour_matrix._16_4_ = getCopControlWord(2, 0xa000);
-	save_colour_matrix.t[0] = getCopControlWord(2, 0xa800);
-	save_colour_matrix.t[1] = getCopControlWord(2, 0xb000);
-	save_colour_matrix.t[2] = getCopControlWord(2, 0xb800);
-	save_light_matrix.m[0]._0_4_ = getCopControlWord(2, 0x4000);
-	save_light_matrix.m._4_4_ = getCopControlWord(2, 0x4800);
-	save_light_matrix.m[1]._2_4_ = getCopControlWord(2, 0x5000);
-	save_light_matrix.m[2]._0_4_ = getCopControlWord(2, 0x5800);
-	save_light_matrix._16_4_ = getCopControlWord(2, 0x6000);
-	save_light_matrix.t[0] = getCopControlWord(2, 0x6800);
-	save_light_matrix.t[1] = getCopControlWord(2, 0x7000);
-	save_light_matrix.t[2] = getCopControlWord(2, 0x7800);
-	setCopControlWord(2, 0x8000, colour_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x8800, colour_matrix.m._4_4_);
-	setCopControlWord(2, 0x9000, colour_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x9800, colour_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0xa000, colour_matrix._16_4_);
-	setCopControlWord(2, 0x4000, light_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x4800, light_matrix.m._4_4_);
-	setCopControlWord(2, 0x5000, light_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x5800, light_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x6000, light_matrix._16_4_);
+	save_colour_matrix.m[0]._0_4_ = getCopControlWord(2, 16);
+	save_colour_matrix.m._4_4_ = getCopControlWord(2, 17);
+	save_colour_matrix.m[1]._2_4_ = getCopControlWord(2, 18);
+	save_colour_matrix.m[2]._0_4_ = getCopControlWord(2, 19);
+	save_colour_matrix._16_4_ = getCopControlWord(2, 20);
+
+	save_colour_matrix.t[0] = getCopControlWord(2, 21);
+	save_colour_matrix.t[1] = getCopControlWord(2, 22);
+	save_colour_matrix.t[2] = getCopControlWord(2, 23);
+
+	save_light_matrix.m[0]._0_4_ = getCopControlWord(2, 8);
+	save_light_matrix.m._4_4_ = getCopControlWord(2, 9);
+	save_light_matrix.m[1]._2_4_ = getCopControlWord(2, 10);
+	save_light_matrix.m[2]._0_4_ = getCopControlWord(2, 11);
+	save_light_matrix._16_4_ = getCopControlWord(2, 12);
+
+	save_light_matrix.t[0] = getCopControlWord(2, 13);
+	save_light_matrix.t[1] = getCopControlWord(2, 14);
+	save_light_matrix.t[2] = getCopControlWord(2, 15);
+
+	setCopControlWord(2, 16, colour_matrix.m[0]._0_4_);
+	setCopControlWord(2, 17, colour_matrix.m._4_4_);
+	setCopControlWord(2, 18, colour_matrix.m[1]._2_4_);
+	setCopControlWord(2, 19, colour_matrix.m[2]._0_4_);
+	setCopControlWord(2, 20, colour_matrix._16_4_);
+
+	setCopControlWord(2, 8, light_matrix.m[0]._0_4_);
+	setCopControlWord(2, 9, light_matrix.m._4_4_);
+	setCopControlWord(2, 10, light_matrix.m[1]._2_4_);
+	setCopControlWord(2, 11, light_matrix.m[2]._0_4_);
+	setCopControlWord(2, 12, light_matrix._16_4_);
+
 	if (gTimeOfDay == 3) {
-		setCopControlWord(2, 0x6800, 0x400);
-		setCopControlWord(2, 0x7000, 0x400);
-		setCopControlWord(2, 0x7800, 0x400);
-		return;
+		setCopControlWord(2, 13, 0x400);
+		setCopControlWord(2, 14, 0x400);
+		setCopControlWord(2, 15, 0x400);
 	}
-	setCopControlWord(2, 0x6800, 0x8c0);
-	setCopControlWord(2, 0x7000, 0x8c0);
-	setCopControlWord(2, 0x7800, 0x8c0);
-	return;*/
+	else {
+		setCopControlWord(2, 13, 0x8c0);
+		setCopControlWord(2, 14, 0x8c0);
+		setCopControlWord(2, 15, 0x8c0);
+	}
+	*/
 }
 
 
@@ -2416,17 +2423,17 @@ void restoreLightingMatrices(void)
 {
 	UNIMPLEMENTED();
 	/*
-	setCopControlWord(2, 0x8000, save_colour_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x8800, save_colour_matrix.m._4_4_);
-	setCopControlWord(2, 0x9000, save_colour_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x9800, save_colour_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0xa000, save_colour_matrix._16_4_);
-	setCopControlWord(2, 0x4000, save_light_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x4800, save_light_matrix.m._4_4_);
-	setCopControlWord(2, 0x5000, save_light_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x5800, save_light_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x6000, save_light_matrix._16_4_);
-	return;
+	setCopControlWord(2, 16, save_colour_matrix.m[0]._0_4_);
+	setCopControlWord(2, 17, save_colour_matrix.m._4_4_);
+	setCopControlWord(2, 18, save_colour_matrix.m[1]._2_4_);
+	setCopControlWord(2, 19, save_colour_matrix.m[2]._0_4_);
+	setCopControlWord(2, 20, save_colour_matrix._16_4_);
+
+	setCopControlWord(2, 8, save_light_matrix.m[0]._0_4_);
+	setCopControlWord(2, 9, save_light_matrix.m._4_4_);
+	setCopControlWord(2, 10, save_light_matrix.m[1]._2_4_);
+	setCopControlWord(2, 11, save_light_matrix.m[2]._0_4_);
+	setCopControlWord(2, 12, save_light_matrix._16_4_);
 	*/
 }
 
