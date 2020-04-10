@@ -18981,18 +18981,18 @@ struct SCORE_TABLES // hashcode: 0xDB95702F (dec: -610963409)
 
 struct ACTIVE_CHEATS // hashcode: 0x2127EFE8 (dec: 556265448)
 {
-	unsigned char cheat1; // size=1, offset=0
-	unsigned char cheat2; // size=1, offset=1
-	unsigned char cheat3; // size=1, offset=2
-	unsigned char cheat4; // size=1, offset=3
-	unsigned char cheat5; // size=1, offset=4
-	unsigned char cheat6; // size=1, offset=5
-	unsigned char cheat7; // size=1, offset=6
-	unsigned char cheat8; // size=1, offset=7
-	unsigned char cheat9; // size=1, offset=8
-	unsigned char cheat10; // size=1, offset=9
-	unsigned char cheat11; // size=1, offset=10
-	unsigned char reserved1; // size=5, offset=11
+	unsigned char cheat1 : 1; // size=1, offset=0
+	unsigned char cheat2 : 1; // size=1, offset=1
+	unsigned char cheat3 : 1; // size=1, offset=2
+	unsigned char cheat4 : 1; // size=1, offset=3
+	unsigned char cheat5 : 1; // size=1, offset=4
+	unsigned char cheat6 : 1; // size=1, offset=5
+	unsigned char cheat7 : 1; // size=1, offset=6
+	unsigned char cheat8 : 1; // size=1, offset=7
+	unsigned char cheat9 : 1; // size=1, offset=8
+	unsigned char cheat10 : 1; // size=1, offset=9
+	unsigned char cheat11 : 1; // size=1, offset=10
+	unsigned char reserved1 : 5; // size=5, offset=11
 	unsigned char reserved2; // size=0, offset=2
 	unsigned char reserved3; // size=0, offset=3
 };
