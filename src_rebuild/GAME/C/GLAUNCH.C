@@ -139,121 +139,111 @@ extern void SsSetSerialVol(char param_1, short param_2, short param_3);
 int gLoadedReplay = 0;
 int gHaveStoredData = 0;
 
+int gLastChase = 0;
+int gChaseNumber = 0;
+int gRandomChase = 0;
+int gSubGameNumber = 0;
+
+int gMissionLadderPos = 0;
+int gFurthestMission = 0;
+
+int gWantNight = 0;
+
+inline void SetupMission(int mission, int numLevels = 1, int numTimes = 1, int numSubGames = 1)
+{
+	gCurrentMissionNumber = mission;
+	gCurrentMissionNumber += ((GameLevel * numLevels) + (gWantNight * numTimes) + (gSubGameNumber * numSubGames));
+}
+
+inline void LaunchMinigame(int mission, int numTimes = 0)
+{
+	SetupMission(mission, 8, numTimes, 1);
+	LaunchGame();
+}
+
 // [D]
 void GameStart(void)
 {
-	int iVar1;
-	int iVar2;
-
-	if (((GameType != GAME_CONTINUEMISSION) && (GameType != GAME_MISSION)) &&
-		(GameType != GAME_REPLAYMISSION)) {
+	if ((GameType != GAME_CONTINUEMISSION)
+		&& (GameType != GAME_MISSION)
+		&& (GameType != GAME_REPLAYMISSION)) {
 		SetPleaseWait(NULL);
 	}
+
 	DrawSync(0);
 	VSync(0);
+
 	gInFrontend = 0;
 	AttractMode = 0;
+
 	FreeXM();
 	SsSetSerialVol(0, 0, 0);
-	iVar1 = gCopDifficultyLevel;
-	NewLevel = 1;
-	gCopDifficultyLevel = iVar1;
 
-	// Reflections debug checks?
-	if (false)
-		goto LAB_00052e68;
+	int SurvivalCopSettingsBackup = gCopDifficultyLevel;
+
+	NewLevel = 1;
+	gCopDifficultyLevel = SurvivalCopSettingsBackup;
 
 	switch (GameType) {
 		case GAME_MISSION:
 			RunMissionLadder(1);
 			break;
 		case GAME_TAKEADRIVE:
-			iVar1 = 0x3a;
-			if (NumPlayers == 1) {
-				iVar1 = 0x32;
-			}
-			gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 0x1b8;
+			SetupMission((NumPlayers == 1) ? 50 : 58, 2, 1, 440);
 			LaunchGame();
 			break;
 		case GAME_IDLEDEMO:
-			iVar2 = LoadAttractReplay(gCurrentMissionNumber);
-			iVar1 = gVibration;
-			gVibration = iVar1;
-			if (iVar2 != 0) {
+			if (LoadAttractReplay(gCurrentMissionNumber) != 0) {
+				int oldVMode = gVibration;
+
 				gVibration = 0;
 				CurrentGameMode = GAMEMODE_DEMO;
 				gLoadedReplay = 1;
+				
 				LaunchGame();
+
 				gLoadedReplay = 0;
-				gVibration = iVar1;
+				gVibration = oldVMode;
 			}
 			break;
 		case GAME_PURSUIT:
-			iVar2 = GameLevel * 8 + 0x46;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			LaunchMinigame(70, 4);
+			break;
 		case GAME_GETAWAY:
-			iVar2 = GameLevel * 8 + 0x66;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			LaunchMinigame(102, 4);
+			break;
 		case GAME_GATERACE:
-			if (NumPlayers == 1) {
-				iVar1 = 0x86;
-			}
-			else {
-				iVar1 = 0xa4;
-			}
-			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			goto LAB_00052e24;
+			LaunchMinigame((NumPlayers == 1) ? 134 : 164, 4);
+			break;
 		case GAME_CHECKPOINT:
-			if (NumPlayers == 1) {
-				iVar1 = 0xc4;
-			}
-			else {
-				iVar1 = 0xe4;
-			}
-			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			goto LAB_00052e24;
+			LaunchMinigame((NumPlayers == 1) ? 196 : 228, 4);
+			break;
 		case GAME_TRAILBLAZER:
-			iVar2 = GameLevel * 8 + 0x104;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			LaunchMinigame(260, 4);
+			break;
 		case GAME_SURVIVAL:
 			gCopDifficultyLevel = 2;
-			iVar2 = 0x144;
-			if (NumPlayers == 1) {
-				iVar2 = 0x124;
-			}
-			gCurrentMissionNumber = iVar2 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
-			gCopDifficultyLevel = iVar1;
+			
+			LaunchMinigame((NumPlayers == 1) ? 292 : 324, 4);
+
+			gCopDifficultyLevel = SurvivalCopSettingsBackup;
 			break;
 		case GAME_REPLAYMISSION:
 			GameType = GAME_MISSION;
-			iVar1 = FindMissionLadderPos(gCurrentMissionNumber);
-			if (iVar1 != 0) {
+			
+			if (FindMissionLadderPos(gCurrentMissionNumber) != 0)
 				RunMissionLadder(0);
-			}
+
 			GameType = GAME_REPLAYMISSION;
 			break;
 		case GAME_COPSANDROBBERS:
-			iVar2 = GameLevel * 8 + 0x1a4;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			LaunchMinigame(420, 4);
+			break;
 		case GAME_CAPTURETHEFLAG:
-			gCurrentMissionNumber = GameLevel * 8 + 0x160 + gSubGameNumber;
-			LaunchGame();
+			LaunchMinigame(352);
 			break;
 		case GAME_SECRET:
-			iVar2 = 0x1e4;
-			iVar1 = gWantNight;
-			if (NumPlayers == 1) {
-				iVar2 = 0x1e0;
-			}
-		LAB_00052e1c:
-			gCurrentMissionNumber = iVar2 + iVar1 + gSubGameNumber;
-		LAB_00052e24:
-			LaunchGame();
+			LaunchMinigame((NumPlayers == 1) ? 480 : 484, 1);
 			break;
 		case GAME_CONTINUEMISSION:
 			GameType = GAME_MISSION;
@@ -263,10 +253,12 @@ void GameStart(void)
 			CurrentGameMode = GAMEMODE_DIRECTOR;
 			gLoadedReplay = 1;
 			GameType = StoredGameType;
+
 			LaunchGame();
+
 			gLoadedReplay = 0;
 	}
-LAB_00052e68:
+
 	wantedCar[1] = -1;
 	wantedCar[0] = -1;
 
@@ -575,26 +567,18 @@ void RunMissionLadder(int newgame)
 
 void GetRandomChase(void)
 {
-	UNIMPLEMENTED();
-	/*
+	int bump = 0;
 
-	int iVar1;
-	int iVar2;
-
-	iVar2 = 0;
 	if (gLoadedReplay == 0) {
-		iVar1 = VSync(0xffffffff);
-		gRandomChase = iVar1 % 0xd + 2;
+		gRandomChase = VSync(-1) % 0xd + 2;
 		if (gRandomChase == gLastChase) {
 			do {
-				iVar1 = VSync(0xffffffff);
-				gRandomChase = (iVar1 + iVar2) % 0xd + 2;
-				iVar2 = iVar2 + 1;
+				gRandomChase = (VSync(-1) + bump) % 0xd + 2;
+				bump++;
 			} while (gRandomChase == gLastChase);
 		}
 		gLastChase = gRandomChase;
 	}
-	return;*/
 }
 
 
@@ -627,28 +611,24 @@ void GetRandomChase(void)
 
 int FindPrevMissionFromLadderPos(int pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-
-	byte *pbVar1;
-
-	pos = pos + -1;
-	if (-1 < pos) {
-		pbVar1 = &MissionLadder[0].flags + pos * 2;
+	if (pos-- > 0)
+	{
+		MISSION_STEP *step = &MissionLadder[pos];
 		do {
-			if ((*pbVar1 & 7) == 2) {
-				if (gFurthestMission < (int)((uint)pbVar1[1] & 0x7f)) {
-					gFurthestMission = (uint)pbVar1[1] & 0x7f;
-				}
+			if (step->flags == 2) {
+				int mission = step->data;
+
+				if (gFurthestMission < mission)
+					gFurthestMission = mission;
+
 				return 1;
 			}
-			pos = pos + -1;
-			pbVar1 = pbVar1 + -2;
-		} while (-1 < pos);
+			
+			step--;
+		} while (pos-- > 0);
 	}
+
 	return 0;
-	*/
 }
 
 
@@ -698,33 +678,28 @@ int quick_replay = 0;
 int AutoDirect = 0;
 int lead_car = 0;
 
-GAMEMODE WantedGameMode = GAMEMODE_NORMAL;
-
 MISSION_DATA MissionStartData;
 MISSION_DATA MissionEndData;
 
 // [D]
 void LaunchGame(void)
 {
-	bool bVar1;
-	MISSION_DATA *startData;
-	MISSION_DATA *endData;
-	long position[3];
-	RECT16 rect;
-
 	fakeOtherPlayer = 0;
+
 	ResetGraph(1);
 	SetVideoMode(1);
+
 	gMissionCompletionState = PAUSEMODE_GAMEOVER;
-	gInvincibleCar = 0; //(uint)((byte)ActiveCheats >> 2) & 1;			// [A]
-	gPlayerImmune = 0; // //(uint)((byte)ActiveCheats >> 3) & 1;		// [A]
+
+	gInvincibleCar = ActiveCheats.cheat3;
+	gPlayerImmune = ActiveCheats.cheat4;
+
 	quick_replay = 0;
 
-	if (gLoadedReplay == 0) 
-	{
+	if (gLoadedReplay == 0)
 		GetRandomChase();
-	}
-	if (CurrentGameMode == 4) 
+
+	if (CurrentGameMode == GAMEMODE_DIRECTOR) 
 	{
 		AttractMode = 0;
 		NoPlayerControl = 1;
@@ -753,7 +728,7 @@ void LaunchGame(void)
 	AutoDirect = 0;
 	NewLevel = 1;
 
-	bVar1 = false;
+	bool quit = false;
 
 	do {
 		GameInit();
@@ -765,7 +740,7 @@ void LaunchGame(void)
 			case GAMEMODE_DEMO:
 			{
 				FadeScreen(0xff);
-				bVar1 = true;
+				quit = true;
 				break;
 			}
 			case GAMEMODE_RESTART:
@@ -782,9 +757,9 @@ void LaunchGame(void)
 			case GAMEMODE_REPLAY:
 			case GAMEMODE_DIRECTOR:
 			{
-				if (1 < (uint)CurrentGameMode - 3) {
+				if (CurrentGameMode < GAMEMODE_NEXTMISSION)
 					FadeScreen(0xff);
-				}
+
 				NoPlayerControl = 1;
 				AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
 				quick_replay = (WantedGameMode == GAMEMODE_REPLAY);
@@ -793,58 +768,29 @@ void LaunchGame(void)
 			}
 			case GAMEMODE_NEXTMISSION:
 			{
-				startData = &MissionStartData;
-				endData = &MissionEndData;
-
-				// [A] VALID CODE ?
-				memcpy(&MissionStartData, &MissionEndData, sizeof(MissionEndData));
-
-				/*
-				// another 16 byte aligned memcpy
-
-				startData = &MissionStartData;
-				endData = &MissionEndData;
-				do {
-					lVar2 = (endData->PlayerPos).vx;
-					lVar3 = (endData->PlayerPos).vy;
-					lVar4 = (endData->PlayerPos).vz;
-					*(undefined4 *)&startData->PlayerPos = *(undefined4 *)&endData->PlayerPos;
-					(startData->PlayerPos).vx = lVar2;
-					(startData->PlayerPos).vy = lVar3;
-					(startData->PlayerPos).vz = lVar4;
-					endData = (MISSION_DATA *)&(endData->PlayerPos).felony;
-					startData = (MISSION_DATA *)&(startData->PlayerPos).felony;
-				} while (endData != (MISSION_DATA *)&MissionEndData.CarPos[5].vz);
-				*(long *)&startData->PlayerPos = MissionEndData.CarPos[5].vz;
-				*/
-
+				MissionStartData = MissionEndData;
 				gHaveStoredData = 1;
 				FadeScreen(0xff);
-				bVar1 = true;
+				quit = true;
 				NoPlayerControl = 0;
 				quick_replay = 0;
 				AutoDirect = 0;
 			}
 		}
 		CurrentGameMode = WantedGameMode;
-	} while (!bVar1);
+	} while (!quit);
 
 	lead_car = 0;
 	NoPlayerControl = 0;
 	SetDispMask(0);
 	EnableDisplay();
 
-	rect.x = 0;
-	rect.y = 0;
-	rect.w = 0x200;
-	rect.h = 0x200;
+	RECT16 rect { 0, 0, 512, 512 };
 	ClearImage(&rect, 0, 0, 0);
 
 	DrawSync(0);
 	SetDispMask(1);
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -877,58 +823,51 @@ void LaunchGame(void)
 
 int FindMissionLadderPos(int mission)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	MISSION_STEP *step = &MissionLadder[mission];
+	int pos = 0;
+	bool end = false;
 
-	byte bVar1;
-	MISSION_STEP *pMVar2;
-	byte *pbVar3;
-	int iVar4;
-
-	iVar4 = 0;
-	pMVar2 = MissionLadder;
 	do {
-		while (true) {
-			bVar1 = pMVar2->flags & 7;
-			if (bVar1 != 2) break;
-			if (((uint)pMVar2->recap & 0x7f) == mission) {
-				pbVar3 = &pMVar2[-1].data;
-				if (iVar4 < 1) {
-					gMissionLadderPos = iVar4;
-					return 1;
-				}
-				if ((*pbVar3 & 7) != 2) {
-					do {
-						iVar4 = iVar4 + -1;
-						pbVar3 = pbVar3 + -2;
-						if (iVar4 < 1) {
-							gMissionLadderPos = iVar4;
-							return 1;
+		switch (step->flags) {
+		case 1:
+		case 6:
+			{
+				step++;
+				pos++;
+			} break;
+		case 2:
+			{
+				if (step->data == mission) {
+					if (pos > 0) {
+						step--;
+						if (step->flags != 2) {
+							do {
+								if (--pos <= 0)
+									break;
+
+								step--;
+							} while (step->flags != 2);
 						}
-					} while ((*pbVar3 & 7) != 2);
-					gMissionLadderPos = iVar4;
+					}
+
+					gMissionLadderPos = pos;
 					return 1;
 				}
-				gMissionLadderPos = iVar4;
-				return 1;
-			}
-		LAB_00053808:
-			pMVar2 = (MISSION_STEP *)&pMVar2->data;
-			iVar4 = iVar4 + 1;
-		}
-		if (bVar1 < 3) {
-			if (bVar1 != 1) {
-				return 0;
-			}
-			goto LAB_00053808;
-		}
-		if ((bVar1 == 4) || (pMVar2 = (MISSION_STEP *)&pMVar2->data, bVar1 != 6)) {
+
+				step++;
+				pos++;
+			} break;
+		case 4:
+			// end of ladder
+			end = true;
+			break;
+		default:
+			// unhandled
 			return 0;
 		}
-		iVar4 = iVar4 + 1;
-	} while (true);
-	*/
+	} while (!end);
+
+	return 0;
 }
 
 

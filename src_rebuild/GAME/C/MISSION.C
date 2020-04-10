@@ -87,13 +87,13 @@ char* MissionName[37] =
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int gCopDifficultyLevel = 0;
+
 GAMEMODE CurrentGameMode = GAMEMODE_NORMAL;
+GAMEMODE WantedGameMode = GAMEMODE_NORMAL;
+
 GAMETYPE StoredGameType;
 
 int GameLevel = 0;
-int gFurthestMission = 0;
-int gWantNight = 0;
-int gSubGameNumber = 0;
 int gInvincibleCar = 0;
 int gPlayerImmune = 0;
 unsigned char NumPlayers = 1;

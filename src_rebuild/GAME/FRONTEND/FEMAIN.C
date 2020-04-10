@@ -175,37 +175,26 @@ POLY_FT3 extraDummy;
 // [D]
 void SetVariable(int var)
 {
-	int iVar1;
-	char bVar2;
-	GAMETYPE GVar3;
-	uint uVar4;
+	int code = (var >> 8);
+	int value = (var & 0xff);
 
-	iVar1 = ScreenDepth;
-	uVar4 = var & 0xff;
-	if (0xc < (var >> 8) - 1U) {
-		return;
-	}
-	GVar3 = (GAMETYPE)uVar4;
 	switch (var >> 8) {
 	case 1:
-		GameLevel = uVar4;
+		GameLevel = value;
 		break;
 	case 2:
-		GameType = GVar3;
-		if (uVar4 != 0xb) {
-			return;
-		}
-		goto LAB_FRNT__001c0a08;
+		GameType = (GAMETYPE)value;
+
+		if (value != GAME_COPSANDROBBERS)
+			gWantNight = 0;
+
+		break;
 	case 3:
-		NumPlayers = GVar3 + GAME_TAKEADRIVE;
+		NumPlayers = (value + 1);
 		break;
 	case 4:
-		if (uVar4 != 0) {
+		if (value != 0)
 			gWantNight = 1;
-			return;
-		}
-	LAB_FRNT__001c0a08:
-		gWantNight = 0;
 		break;
 	case 5:
 		gCurrentMissionNumber = 1;
@@ -213,75 +202,66 @@ void SetVariable(int var)
 		break;
 	case 6:
 		pScreenStack[ScreenDepth] = pCurrScreen;
-		pButtonStack[iVar1] = pCurrButton;
-		if (uVar4 != 1) {
+		pButtonStack[ScreenDepth] = pCurrButton;
+
+		if (value == 1) {
+			if (CallMemoryCard(0x11, 0) == 0) {
+				ReInitFrontend();
+			}
+			else {
+				StoredGameType = GameType;
+				GameType = GAME_LOADEDREPLAY;
+				GameStart();
+			}
+		}
+		else {
 			CallMemoryCard(0x81, 0);
 			ReInitFrontend();
 			SetMasterVolume(gMasterVolume);
 			SetXMVolume(gMusicVolume);
-			return;
 		}
-		iVar1 = CallMemoryCard(0x11, 0);
-		GVar3 = GameType;
-		if (iVar1 != 0) {
-			GameType = GAME_LOADEDREPLAY;
-			StoredGameType = (GAMETYPE)GVar3;
-			GameStart();
-			return;
-		}
-		goto LAB_FRNT__001c0a68;
+
+		break;
 	case 7:
 		pScreenStack[ScreenDepth] = pCurrScreen;
-		pButtonStack[iVar1] = pCurrButton;
-		if (uVar4 == 0) {
+		pButtonStack[ScreenDepth] = pCurrButton;
+
+		if (value == 0) {
 			CallMemoryCard(0x80, 0);
+			ReInitFrontend();
 		}
 		else {
-			iVar1 = CallMemoryCard(0x21, 0);
-			if (iVar1 != 0) {
+			if (CallMemoryCard(0x21, 0) == 0) {
+				ReInitFrontend();
+			} else {
 				GameType = GAME_CONTINUEMISSION;
 				GameStart();
-				return;
 			}
 		}
-	LAB_FRNT__001c0a68:
-		ReInitFrontend();
+
 		break;
 	case 8:
-		gSubGameNumber = uVar4;
+		gSubGameNumber = value;
 		break;
 	case 9:
-		if (uVar4 == 0) {
-			gSubtitles = 0;
-		}
-		else {
-			gSubtitles = 1;
-		}
+		gSubtitles = (value == 0) ? 0 : 1;
 		break;
 	case 10:
-		bVar2 = ((var & 1) << 2);
-		//ActiveCheats._0_1_ = (byte)ActiveCheats & 0xfb;		// [A]
-		gInvincibleCar = uVar4;
-		goto LAB_FRNT__001c0bbc;
-	case 0xb:
-		bVar2 = ((var & 1U) << 3);
-		//ActiveCheats._0_1_ = (byte)ActiveCheats & 0xf7;		// [A]
-		gPlayerImmune = uVar4;
-	LAB_FRNT__001c0bbc:
-		//ActiveCheats._0_1_ = (byte)ActiveCheats | bVar2;		// [A]
+		gInvincibleCar = value;
+		ActiveCheats.cheat3 = value;
 		break;
-	case 0xc:
+	case 11:
+		gPlayerImmune = value;
+		ActiveCheats.cheat4 = value;
+		break;
+	case 12:
 		GameLevel = 3;
-		if (uVar4 == 0) {
-			gSubGameNumber = 2;
-		}
-		else {
-			gSubGameNumber = 0;
-		}
+		gSubGameNumber = (value == 0) ? 2 : 0;
 		break;
-	case 0xd:
+	case 13:
 		GameType = GAME_IDLEDEMO;
-		gCurrentMissionNumber = uVar4 + 400;
+		gCurrentMissionNumber = (value + 400);
+		break;
 	}
 }
 
@@ -1372,99 +1352,95 @@ LAB_FRNT__001c1ff4:
 // [D]
 int HandleKeyPress(void)
 {
-	int iVar1;
-	PSXBUTTON *pPVar2;
-	int iVar3;
-	PSXBUTTON **ppPVar4;
+	if ((pCurrScreen == NULL) || (pCurrButton == NULL))
+		return 0;
 
-	if ((pCurrScreen == NULL) || (pCurrButton == NULL)) {
-		iVar3 = 0;
-	}
-	else {
-		if ((pCurrScreen->userFunctionNum != '\0') && (iVar3 = (fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0), iVar3 != 0)) {
+	if (pCurrScreen->userFunctionNum != 0) {
+		if ((fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0) != 0)
 			fePad = 0;
-		}
-		if ((fePad & 0x40U) == 0) {
-			if ((fePad & 0x10U) == 0) {
-				if ((((fePad & 0x5000U) == 0) && ((fePad & 0x8000U) == 0)) &&
-					((fePad & 0x2000U) == 0)) {
-					return 1;
-				}
-				NewSelection(fePad);
+	}
+
+	if ((fePad & 0x40U) == 0) {
+		if ((fePad & 0x10U) == 0) {
+			if ((((fePad & 0x5000U) == 0) && ((fePad & 0x8000U) == 0)) &&
+				((fePad & 0x2000U) == 0)) {
+				return 1;
 			}
-			else {
-				if (0 < ScreenDepth) {
-					if (bDoneAllready == 0) {
-						FESound(0);
-					}
-					else {
-						bDoneAllready = 0;
-					}
-					ScreenDepth = ScreenDepth + -1;
-					if (ScreenDepth == 0) {
-						gWantNight = 0;
-						gSubGameNumber = 0;
-						NumPlayers = 1;
-					}
-					pNewScreen = pScreenStack[ScreenDepth];
-					pNewButton = pButtonStack[ScreenDepth];
-				}
-			}
+			NewSelection(fePad);
 		}
 		else {
-			iVar3 = pCurrButton->action >> 8;
-			if (iVar3 != 3) {
-				FESound(2);
-				if (pCurrButton->var != -1) {
-					SetVariable(pCurrButton->var);
-				}
-				iVar1 = ScreenDepth;
-				if (iVar3 == 2) {
-					if (((NumPlayers == 2) && (bDoingCarSelect != 0)) && (currPlayer == 2)) {
-						(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
-						bRedrawFrontend = 1;
-					}
-					else {
-						ppPVar4 = pButtonStack + ScreenDepth;
-						pScreenStack[ScreenDepth] = pCurrScreen;
-						pPVar2 = pCurrButton;
-						*ppPVar4 = pCurrButton;
-						ScreenNames[iVar1] = pPVar2->Name;
-						GameStart();
-					}
+			if (0 < ScreenDepth) {
+				if (bDoneAllready == 0) {
+					FESound(0);
 				}
 				else {
-					if (iVar3 < 3) {
-						if (iVar3 == 1) {
-							pScreenStack[ScreenDepth] = pCurrScreen;
-							pPVar2 = pCurrButton;
-							pButtonStack[ScreenDepth] = pCurrButton;
-							ScreenNames[ScreenDepth] = pPVar2->Name;
-							iVar3 = 10;
-							if (ScreenDepth < 0xb) {
-								iVar3 = ScreenDepth + 1;
-							}
-							pNewScreen = &PsxScreens[pPVar2->action & ~0x100];	// [A] HACK: not decompiled properly
-							ScreenDepth = iVar3;
-						}
-					}
-					else {
-						if ((iVar3 == 4) && (iVar3 = ScreenDepth + -1, 0 < ScreenDepth)) {
-							if (iVar3 == 0) {
-								NumPlayers = 1;
-							}
-							pNewScreen = pScreenStack[iVar3];
-							pNewButton = pButtonStack[iVar3];
-							ScreenDepth = iVar3;
-						}
-					}
+					bDoneAllready = 0;
 				}
+				ScreenDepth = ScreenDepth + -1;
+				if (ScreenDepth == 0) {
+					gWantNight = 0;
+					gSubGameNumber = 0;
+					NumPlayers = 1;
+				}
+				pNewScreen = pScreenStack[ScreenDepth];
+				pNewButton = pButtonStack[ScreenDepth];
 			}
 		}
-		idle_timer = VSync(0xffffffff);
-		iVar3 = 1;
 	}
-	return iVar3;
+	else {
+		int action = pCurrButton->action >> 8;
+
+		if (action != 3) {
+			FESound(2);
+			
+			if (pCurrButton->var != -1)
+				SetVariable(pCurrButton->var);
+
+			switch (action)
+			{
+			case 1:
+				pScreenStack[ScreenDepth] = pCurrScreen;
+				pButtonStack[ScreenDepth] = pCurrButton;
+
+				ScreenNames[ScreenDepth] = pCurrButton->Name;
+
+				action = (ScreenDepth < 11) ? ScreenDepth + 1 : 10;
+
+				pNewScreen = &PsxScreens[pCurrButton->action & 0xFF];
+				ScreenDepth = action;
+				break;
+			case 2:
+				if (((NumPlayers == 2) && (bDoingCarSelect != 0)) && (currPlayer == 2)) {
+					(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
+					bRedrawFrontend = 1;
+				}
+				else {
+					pScreenStack[ScreenDepth] = pCurrScreen;
+					pButtonStack[ScreenDepth] = pCurrButton;
+
+					ScreenNames[ScreenDepth] = pCurrButton->Name;
+
+					GameStart();
+				}
+				break;
+			case 4:
+				if (ScreenDepth > 0)
+				{
+					action = ScreenDepth - 1;
+
+					if (action == 0)
+						NumPlayers = 1;
+
+					pNewScreen = pScreenStack[action];
+					pNewButton = pButtonStack[action];
+					ScreenDepth = action;
+				}
+				break;
+			}
+		}
+	}
+	idle_timer = VSync(-1);
+	return 1;
 }
 
 
@@ -1508,42 +1484,38 @@ int HandleKeyPress(void)
 // [D]
 void PadChecks(void)
 {
-	int iVar1;
-	int *local_a1_92;
 	int iVar2;
-	unsigned char *pbVar3;
 
 	// TODO: null check for pCurrScreen
 
-	iVar1 = numPadsConnected;
+	int oldnum = numPadsConnected;
+
 	ReadControllers();
-	local_a1_92 = padsConnected;
-	pbVar3 = &Pads[0].type;
+	
 	iVar2 = 1;
 	numPadsConnected = 0;
 	fePad = Pads[0].mapnew;
-	do {
-		if (*pbVar3 < 2) {
-			*local_a1_92 = 0;
+
+	for (int i = 0; i < 2; i++) {
+		if (Pads[i].type < 2) {
+			padsConnected[i] = 0;
 		}
 		else {
-			*local_a1_92 = 1;
-			numPadsConnected = numPadsConnected + 1;
+			padsConnected[i] = 1;
+			numPadsConnected++;
 		}
-		local_a1_92 = local_a1_92 + 1;
-		iVar2 = iVar2 + -1;
-		pbVar3 = pbVar3 + 0x48;
-	} while (-1 < iVar2);
-	if ((iVar1 != numPadsConnected) &&
-		(((iVar1 == 2 || (numPadsConnected == 2)) && (ScreenDepth == 0)))) {
+	}
+
+	if ((oldnum != numPadsConnected) &&
+		(((oldnum == 2 || (numPadsConnected == 2)) && (ScreenDepth == 0)))) {
 		bRedrawFrontend = 1;
 		MainScreen(1);
 	}
-	iVar2 = allowVibration;
-	if (((Pads[0].dualshock == '\0') || (padsConnected[0] == 0)) &&
-		((Pads[1].dualshock == '\0' || (padsConnected[1] == 0)))) {
+
+	if (((Pads[0].dualshock == 0) || (padsConnected[0] == 0)) &&
+		((Pads[1].dualshock == 0 || (padsConnected[1] == 0)))) {
 		if ((allowVibration == 1) && (allowVibration = 0, pCurrScreen->userFunctionNum == 18)) {
-			bRedrawFrontend = iVar2;
+			bRedrawFrontend = 1;
 			GamePlayScreen(1);
 		}
 	}
@@ -1553,13 +1525,14 @@ void PadChecks(void)
 			GamePlayScreen(1);
 		}
 	}
-	if ((iVar1 != numPadsConnected) &&
-		((((NumPlayers == 2 && (numPadsConnected != (uint)NumPlayers)) || (numPadsConnected == 0)) ||
+
+	if ((oldnum != numPadsConnected) &&
+		((((NumPlayers == 2 && (numPadsConnected != NumPlayers)) || (numPadsConnected == 0)) ||
 		(padsConnected[0] == 0)))) {
 		bReturnToMain = 1;
 		bRedrawFrontend = 1;
 		fePad = 0x10;
-		if (pCurrScreen->userFunctionNum != '\0') {
+		if (pCurrScreen->userFunctionNum != 0) {
 			(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0);
 		}
 		fePad = 0;
@@ -1567,12 +1540,11 @@ void PadChecks(void)
 			ReInitScreens();
 		}
 	}
-	if (((bRedrawFrontend == 0) && (numPadsConnected != iVar1)) &&
-		((gInFrontend != 0 && ((pCurrScreen != NULL && (pCurrScreen->userFunctionNum != '\0')))))) {
+	if (((bRedrawFrontend == 0) && (numPadsConnected != oldnum)) &&
+		((gInFrontend != 0 && ((pCurrScreen != NULL && (pCurrScreen->userFunctionNum != 0)))))) {
 		(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
 		bRedrawFrontend = 1;
 	}
-	return;
 }
 
 

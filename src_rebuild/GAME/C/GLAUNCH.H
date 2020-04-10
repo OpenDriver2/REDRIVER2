@@ -4,12 +4,23 @@
 extern ACTIVE_CHEATS AvailableCheats;
 extern ACTIVE_CHEATS ActiveCheats;
 
-extern int lead_car;
+extern int gLastChase;
+extern int gChaseNumber;
+extern int gRandomChase;
+extern int gSubGameNumber;
 
+extern int gMissionLadderPos;
+extern int gFurthestMission;
+extern int gWantNight;
+
+extern int lead_car;
 extern int wantedCar[2];
 extern int gInFrontend;
 extern int AttractMode;
 extern char NoPlayerControl;
+
+extern int quick_replay;
+extern int AutoDirect;
 
 extern int gCopDifficultyLevel;
 

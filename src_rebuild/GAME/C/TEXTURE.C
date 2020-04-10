@@ -3,6 +3,7 @@
 #include "SYSTEM.H"
 #include "OVERMAP.H"
 #include "MISSION.H"
+#include "DRAW.H"
 
 #include <string.h>
 
@@ -343,35 +344,27 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 
 int Find_TexID(MODEL *model, int t_id)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte *pbVar1;
-	int iVar2;
+	char *polylist = (char *)model->poly_block;
 
-	pbVar1 = (byte *)model->poly_block;
-	iVar2 = 0;
-	if (model->num_polys != 0) {
-		do {
-			switch ((uint)*pbVar1 & 0x1f) {
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-			case 0x14:
-			case 0x15:
-			case 0x16:
-			case 0x17:
-				if ((uint)pbVar1[2] == t_id) {
-					return 1;
-				}
-			}
-			iVar2 = iVar2 + 1;
-			pbVar1 = pbVar1 + PolySizes[*pbVar1];
-		} while (iVar2 < (int)(uint)model->num_polys);
+	for (int i = 0; i < model->num_polys; i++)
+	{
+		switch (*polylist & 0x1F) {
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 20:
+		case 21:
+		case 22:
+		case 23:
+			if (polylist[2] == t_id)
+				return 1;
+		}
+
+		polylist += PolySizes[*polylist];
 	}
+	
 	return 0;
-	*/
 }
 
 
@@ -556,38 +549,32 @@ XYPAIR *permlist = NULL;
 // [D]
 void ProcessTextureInfo(char *lump_ptr)
 {
-	int iVar1;
-	TEXINF *pTVar2;
-	int *amts;
-	TEXINF **ids;
-
-	iVar1 = *(int *)lump_ptr;
+	tpage_amount =  *(int *)lump_ptr;
 	texamount = *(int *)(lump_ptr + 4);
 	tpage_position = (TP *)(lump_ptr + 8);
 
-	pTVar2 = (TEXINF *)(tpage_position + iVar1 + 1);
-	tpage_amount = iVar1;
+	char *tp = (char *)&tpage_position[tpage_amount + 1];
 
-	if (0 < iVar1) {
-		ids = tpage_ids;
-		amts = tpage_texamts;
+	if (tpage_amount > 0) {
+		for (int i = 0; i < tpage_amount; i++)
+		{
+			texamount = *(int *)tp;
+			tp += 4;
 
-		do {
-			texamount = *(int *)&pTVar2->id;
+			tpage_ids[i] = (TEXINF *)tp;
+			tp += (texamount * sizeof(TEXINF));
 
-			*ids = (TEXINF *)&pTVar2->x;
-			ids = ids + 1;
-			iVar1--;
-			pTVar2 = (TEXINF *)&pTVar2->x + texamount;
-			*amts = texamount;
-			amts = (int *)((ulong *)amts + 1);
-		} while (iVar1 != 0);
+			tpage_texamts[i] = texamount;
+		}
 	}
 
-	nspecpages = *(ulong *)&pTVar2[0x10].x;
-	nperms = *(ulong *)&pTVar2->id;
-	speclist = (XYPAIR *)(pTVar2 + 0x11);
-	permlist = (XYPAIR *)&pTVar2->x;
+	nperms = *(int *)tp;
+	permlist = (XYPAIR *)(tp + 4);
+
+	tp += (16 * sizeof(XYPAIR));
+
+	nspecpages = *(int *)tp;
+	speclist = (XYPAIR *)(tp + 4);
 }
 
 

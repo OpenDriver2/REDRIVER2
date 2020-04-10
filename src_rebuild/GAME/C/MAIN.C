@@ -185,7 +185,7 @@ unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 void ProcessLumps(char *lump_ptr, int lump_size)
 {
 	int quit;
-	uint uVar6;
+
 	int lump_type;
 	DRIVER2_JUNCTION *pDVar8;
 	ulong *puVar9;
@@ -195,8 +195,8 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 	quit = false;
 	do {
 		lump_type = *(int *)lump_ptr;
-		size = ((int *)lump_ptr)[1];
-		ptr = (int *)lump_ptr + 2;
+		size = *(int *)(lump_ptr + 4);
+		ptr = (int *)(lump_ptr + 8);
 
 		if (lump_type == LUMP_LOWDETAILTABLE) 
 		{
@@ -358,10 +358,8 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			quit = true;
 		}
 
-		uVar6 = size + 3 & 0xFFFFFFFC;
-
 		lump_size = size + 3;
-		lump_ptr = (char*)ptr + uVar6;
+		lump_ptr = (char*)ptr + (lump_size & ~0x3); // aligned to 4-byte boundary
 
 		if (quit) 
 			return;
@@ -1938,38 +1936,38 @@ LAB_0005b1e0:
 int ObjectDrawnValue = 0;
 int ObjectDrawnCounter = 0;
 
-// [D]
 void DrawGame(void)
 {
-	int iVar1;
-
 	static unsigned long frame = 0;
 
 	if ((NumPlayers == 1) || (NoPlayerControl != 0)) {
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
 		RenderGame2(0);
-		ObjectDrawnCounter = ObjectDrawnCounter + 1;
 
-		do {
-			iVar1 = VSync(0xffffffff);
-		} while ((uint)(iVar1 - frame) < 2);
+		ObjectDrawnCounter++;
 
-		frame = VSync(0xffffffff);
+		while ((VSync(-1) - frame) < 2);
+
+		frame = VSync(-1);
 		SwapDrawBuffers();
 	}
 	else {
 		ObjectDrawnValue = FrameCnt;
 		RenderGame2(0);
-		ObjectDrawnCounter = ObjectDrawnCounter + 1;
+		ObjectDrawnCounter++;
+
 		SwapDrawBuffers2(0);
-		ObjectDrawnValue = ObjectDrawnValue + 0x10;
+
+		ObjectDrawnValue += 16;
 		DrawPauseMenus();
 		RenderGame2(1);
-		ObjectDrawnCounter = ObjectDrawnCounter + 1;
+		ObjectDrawnCounter++;
+
 		SwapDrawBuffers2(1);
 	}
-	FrameCnt = FrameCnt + 1;
+
+	FrameCnt++;
 }
 
 
@@ -1995,13 +1993,9 @@ void DrawGame(void)
 
 void EndGame(GAMEMODE mode)
 {
-	UNIMPLEMENTED();
-	/*
 	WantedGameMode = mode;
 	pauseflag = 0;
 	game_over = 1;
-	return;
-	*/
 }
 
 
@@ -2028,7 +2022,6 @@ void EnablePause(PAUSEMODE mode)
 		WantPause = 1;
 		PauseMode = mode;
 	}
-	return;
 	*/
 }
 
@@ -2276,9 +2269,8 @@ int redriver2_main(void)
 
 void FadeScreen(int end_value)
 {
-	int iVar1;
+	int tmp2 = pauseflag;
 
-	iVar1 = pauseflag;
 	pauseflag = 1;
 	SetupScreenFade(-0x20, end_value, 1);
 	FadingScreen = 1;
@@ -2289,7 +2281,7 @@ void FadeScreen(int end_value)
 
 	DrawSync(0);
 	SetDispMask(0);
-	pauseflag = iVar1;
+	pauseflag = tmp2;
 	return;
 }
 
@@ -2667,41 +2659,14 @@ void RenderGame2(int view)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [A]
 void RenderGame(void)
 {
-	static unsigned long frame = 0;
-
-	int iVar1;
-
 	UpdatePadData();
-	if ((NumPlayers == 1) || (NoPlayerControl != 0)) {
-		ObjectDrawnValue = FrameCnt;
-		DrawPauseMenus();
-		RenderGame2(0);
-		ObjectDrawnCounter = ObjectDrawnCounter + 1;
 
-		do {
-			iVar1 = VSync(0xffffffff);
-		} while ((uint)(iVar1 - frame) < 2);
-		frame = VSync(0xffffffff);
+	DrawGame();
 
-		SwapDrawBuffers();
-	}
-	else {
-		ObjectDrawnValue = FrameCnt;
-		RenderGame2(0);
-		ObjectDrawnCounter = ObjectDrawnCounter + 1;
-		SwapDrawBuffers2(0);
-		ObjectDrawnValue = ObjectDrawnValue + 0x10;
-		DrawPauseMenus();
-		RenderGame2(1);
-		ObjectDrawnCounter = ObjectDrawnCounter + 1;
-		SwapDrawBuffers2(1);
-	}
-	FrameCnt = FrameCnt + 1;
 	FadeGameScreen(0, 8);
-	return;
 }
 
 

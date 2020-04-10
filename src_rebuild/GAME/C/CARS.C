@@ -2461,22 +2461,12 @@ void restoreLightingMatrices(void)
 // [D]
 char GetCarPalIndex(int tpage)
 {
-	char *pbVar1;
-	int iVar2;
+	for (int i = 0; i < 8; i++) {
+		if (tpage == carTpages[GameLevel][i])
+			return (char)i;
+	}
 
-	iVar2 = 0;
-
-	pbVar1 = carTpages[GameLevel];
-	do {
-
-		if (tpage == (uint)*pbVar1) 
-			return (char)iVar2;
-
-		iVar2++;
-		pbVar1++;
-	} while (iVar2 < 8);
-
-	return '\0';
+	return 0;
 }
 
 
