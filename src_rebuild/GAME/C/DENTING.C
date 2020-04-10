@@ -886,32 +886,41 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 	/* end block 4 */
 	// End Line: 2740
 
+// [D]
 void SetupSpecDenting(char *loadbuffer)
 {
-	UNIMPLEMENTED();
-	/*
-	char *pcVar1;
+	unsigned char *from;
+	unsigned char *to;
 
-	pcVar1 = &DAT_000c9e68;
-	do {
-		*pcVar1 = *loadbuffer;
-		pcVar1 = pcVar1 + 1;
-		loadbuffer = loadbuffer + 1;
-	} while (pcVar1 < (char *)0xc9f94);
-	pcVar1 = &DAT_000c3fd8;
-	do {
-		*pcVar1 = *loadbuffer;
-		pcVar1 = pcVar1 + 1;
-		loadbuffer = loadbuffer + 1;
-	} while (pcVar1 < (char *)0xc417c);
-	pcVar1 = &DAT_000c98b4;
-	do {
-		*pcVar1 = *loadbuffer;
-		pcVar1 = pcVar1 + 1;
-		loadbuffer = loadbuffer + 1;
-	} while (pcVar1 < (char *)0xc99b3);
-	return;
-	*/
+	from = (unsigned char*)gCarDamageZoneVerts[4];
+	to = (unsigned char*)&gCarDamageZoneVerts[4][5][50]; // [A]
+	if (true) {
+		do {
+			*from = *loadbuffer;
+			from = from + 1;
+			loadbuffer = (char *)((unsigned char *)loadbuffer + 1);
+		} while (from < to);
+	}
+
+	from = (unsigned char*)gHDCarDamageZonePolys[4];
+	to = (unsigned char*)&gHDCarDamageZonePolys[4][5][70]; // [A]
+	if (true) {
+		do {
+			*from = *loadbuffer;
+			from = from + 1;
+			loadbuffer = (char *)((unsigned char *)loadbuffer + 1);
+		} while (from < to);
+	}
+
+	from = (unsigned char*)gHDCarDamageLevels[4];
+	to = (unsigned char*)&gHDCarDamageLevels[4][255]; // [A]
+	if (true) {
+		do {
+			*from = *loadbuffer;
+			from = from + 1;
+			loadbuffer = (char *)((unsigned char *)loadbuffer + 1);
+		} while (from < to);
+	}
 }
 
 
