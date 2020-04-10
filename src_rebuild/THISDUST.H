@@ -26,7 +26,7 @@ extern int docop2(int op);
 #define copControlWord(n, reg) _CopControlWord##n.p[reg]
 
 #define getCopControlWord(n, reg) copControlWord(n, reg).d
-#define setCopControlWord(n, reg) (copControlWord(n, reg).d = value)
+#define setCopControlWord(n, reg, value) (copControlWord(n, reg).d = value)
 
 #define _CopFunc2 docop2
 
