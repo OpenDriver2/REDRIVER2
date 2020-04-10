@@ -2014,15 +2014,15 @@ void EndGame(GAMEMODE mode)
 	/* end block 2 */
 	// End Line: 10844
 
+static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
+static int WantPause = 0;
+
 void EnablePause(PAUSEMODE mode)
 {
-	UNIMPLEMENTED();
-	/*
 	if (((quick_replay != 0) || (NoPlayerControl == 0)) || (mode != PAUSEMODE_GAMEOVER)) {
 		WantPause = 1;
 		PauseMode = mode;
 	}
-	*/
 }
 
 
@@ -2059,23 +2059,21 @@ void EnablePause(PAUSEMODE mode)
 
 void CheckForPause(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((0xf < gDieWithFade) && ((quick_replay != 0 || (NoPlayerControl == 0)))) {
+	if ((gDieWithFade > 15) && ((quick_replay != 0 || (NoPlayerControl == 0)))) {
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;
 	}
+
 	if (WantPause != 0) {
 		WantPause = 0;
 		pauseflag = 1;
+
 		PauseSound();
 		ShowPauseMenu(PauseMode);
-		if (game_over == 0) {
+
+		if (game_over == 0)
 			UnPauseSound();
-		}
 	}
-	return;
-	*/
 }
 
 
