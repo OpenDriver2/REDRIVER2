@@ -307,20 +307,20 @@ LAB_0003f0c4:
 		if ((((wetness == 0) && (gTimeOfDay != 3)) && ((pPVar13->value & 0x20) == 0)) &&
 			((z < 7000 && (local_38 = local_38 + 1, local_38 < 0x28)))) {
 			setCopControlWord(2, 0, shadowMatrix.m[0]._0_4_);
-			setCopControlWord(2, 0x800, shadowMatrix.m._4_4_);
-			setCopControlWord(2, 0x1000, shadowMatrix.m[1]._2_4_);
-			setCopControlWord(2, 0x1800, shadowMatrix.m[2]._0_4_);
-			setCopControlWord(2, 0x2000, shadowMatrix._16_4_);
+			setCopControlWord(2, 1, shadowMatrix.m._4_4_);
+			setCopControlWord(2, 2, shadowMatrix.m[1]._2_4_);
+			setCopControlWord(2, 3, shadowMatrix.m[2]._0_4_);
+			setCopControlWord(2, 4, shadowMatrix._16_4_);
 			addSubdivSpriteShadow((POLYFT4LIT *)model->poly_block, (SVECTOR *)model->vertices, z);
 			if (model->num_polys == 2) {
 				addSubdivSpriteShadow((POLYFT4LIT *)(model->poly_block + 0x14), (SVECTOR *)model->vertices, z)
 					;
 			}
 			setCopControlWord(2, 0, face_camera.m[0]._0_4_);
-			setCopControlWord(2, 0x800, face_camera.m._4_4_);
-			setCopControlWord(2, 0x1000, face_camera.m[1]._2_4_);
-			setCopControlWord(2, 0x1800, face_camera.m[2]._0_4_);
-			setCopControlWord(2, 0x2000, face_camera._16_4_);
+			setCopControlWord(2, 1, face_camera.m._4_4_);
+			setCopControlWord(2, 2, face_camera.m[1]._2_4_);
+			setCopControlWord(2, 3, face_camera.m[2]._0_4_);
+			setCopControlWord(2, 4, face_camera._16_4_);
 		}
 	}
 	current->primptr = DAT_1f8000b0;
@@ -773,10 +773,10 @@ void DrawMapPSX(int *comp_val)
 							Apply_Inv_CameraMatrix(&local_80);
 							uVar18 = (uint)cop->yang;
 							setCopControlWord(2, 0, *(undefined4 *)(&matrixtable)[uVar18].m);
-							setCopControlWord(2, 0x800, *(undefined4 *)((&matrixtable)[uVar18].m + 2));
-							setCopControlWord(2, 0x1000, *(undefined4 *)((&matrixtable)[uVar18].m + 4));
-							setCopControlWord(2, 0x1800, *(undefined4 *)((&matrixtable)[uVar18].m + 6));
-							setCopControlWord(2, 0x2000, *(undefined4 *)((&matrixtable)[uVar18].m + 8));
+							setCopControlWord(2, 1, *(undefined4 *)((&matrixtable)[uVar18].m + 2));
+							setCopControlWord(2, 2, *(undefined4 *)((&matrixtable)[uVar18].m + 4));
+							setCopControlWord(2, 3, *(undefined4 *)((&matrixtable)[uVar18].m + 6));
+							setCopControlWord(2, 4, *(undefined4 *)((&matrixtable)[uVar18].m + 8));
 							puVar15 = (ulong *)((CELL_OBJECT **)puVar15 + 1);
 							iVar7 = iVar7 + -1;
 							DrawAnimatingObject(modelpointers1536[cop->type], cop, &local_80);
@@ -819,27 +819,27 @@ void DrawMapPSX(int *comp_val)
 										if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value) {
 											CompoundMatrix[uVar9].computed = (short)current_object_computed_value;
 											uVar10 = getCopControlWord(2, 0);
-											uVar11 = getCopControlWord(2, 0x800);
+											uVar11 = getCopControlWord(2, 1);
 											*local_38 = uVar10;
 											puVar2[1] = uVar11;
-											uVar10 = getCopControlWord(2, 0x1000);
-											uVar11 = getCopControlWord(2, 0x1800);
-											uVar12 = getCopControlWord(2, 0x2000);
+											uVar10 = getCopControlWord(2, 2);
+											uVar11 = getCopControlWord(2, 3);
+											uVar12 = getCopControlWord(2, 4);
 											puVar2[2] = uVar10;
 											puVar2[3] = uVar11;
 											puVar2[4] = uVar12;
-											uVar10 = getCopControlWord(2, 0x2800);
-											uVar11 = getCopControlWord(2, 0x3000);
-											uVar12 = getCopControlWord(2, 0x3800);
+											uVar10 = getCopControlWord(2, 5);
+											uVar11 = getCopControlWord(2, 6);
+											uVar12 = getCopControlWord(2, 7);
 											puVar2[5] = uVar10;
 											puVar2[6] = uVar11;
 											puVar2[7] = uVar12;
 											MulMatrix0(&inv_camera_matrix, &matrixtable + uVar9, CompoundMatrix + uVar9);
 											setCopControlWord(2, 0, *local_38);
-											setCopControlWord(2, 0x800, local_38[1]);
-											setCopControlWord(2, 0x1000, local_38[2]);
-											setCopControlWord(2, 0x1800, local_38[3]);
-											setCopControlWord(2, 0x2000, local_38[4]);
+											setCopControlWord(2, 1, local_38[1]);
+											setCopControlWord(2, 2, local_38[2]);
+											setCopControlWord(2, 3, local_38[3]);
+											setCopControlWord(2, 4, local_38[4]);
 										}
 									}
 									if (((uVar1 & 0x480) == 0) && ((pMVar13->flags2 & 0xc000) == 0)) {
@@ -1251,11 +1251,11 @@ void SetFrustrumMatrix(void)
 {
 	UNIMPLEMENTED();
 	/*
-	setCopControlWord(2, 0x4000, frustrum_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x4800, frustrum_matrix.m._4_4_);
-	setCopControlWord(2, 0x5000, frustrum_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x5800, frustrum_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x6000, frustrum_matrix._16_4_);
+	setCopControlWord(2, 8, frustrum_matrix.m[0]._0_4_);
+	setCopControlWord(2, 9, frustrum_matrix.m._4_4_);
+	setCopControlWord(2, 10, frustrum_matrix.m[1]._2_4_);
+	setCopControlWord(2, 11, frustrum_matrix.m[2]._0_4_);
+	setCopControlWord(2, 12, frustrum_matrix._16_4_);
 	return;*/
 }
 
@@ -1281,11 +1281,11 @@ void Set_Inv_CameraMatrix(void)
 {
 	UNIMPLEMENTED();
 	/*
-	setCopControlWord(2, 0x8000, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x8800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x9000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x9800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0xa000, inv_camera_matrix._16_4_);
+	setCopControlWord(2, 16, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 17, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 18, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 19, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 20, inv_camera_matrix._16_4_);
 	return;
 	*/
 }
@@ -1863,12 +1863,12 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		pSVar10 = verts + ((uint)vidx & 0xff);
 		puVar7 = (undefined4 *)((int)&verts->vx + ((uint)vidx >> 5 & 0x7f8));
 		pSVar4 = verts + ((uint)vidx >> 0x18);
-		setCopReg(2, in_zero, *(undefined4 *)pSVar10);
-		setCopReg(2, in_at, *(undefined4 *)&pSVar10->vz);
-		setCopReg(2, pSVar4, *puVar7);
-		setCopReg(2, puVar7, puVar7[1]);
-		setCopReg(2, pSVar10, *(undefined4 *)pSVar4);
-		setCopReg(2, rot, *(undefined4 *)&pSVar4->vz);
+		setCopReg(2, 0, *(undefined4 *)pSVar10);
+		setCopReg(2, 1, *(undefined4 *)&pSVar10->vz);
+		setCopReg(2, 2, *puVar7);
+		setCopReg(2, 3, puVar7[1]);
+		setCopReg(2, 4, *(undefined4 *)pSVar4);
+		setCopReg(2, 5, *(undefined4 *)&pSVar4->vz);
 		copFunction(2, 0x280030);
 		if (((uVar23 ^ uVar20) & 0xffff00) != 0) {
 			uVar23 = uVar20 >> 8 & 0xff;
@@ -1881,9 +1881,9 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			uVar23 = uVar20;
 		}
 		copFunction(2, 0x1400006);
-		_DAT_1f800208 = getCopReg(2, 0xc);
-		_DAT_1f80020c = getCopReg(2, 0xd);
-		DAT_1f800210 = getCopReg(2, 0xe);
+		_DAT_1f800208 = getCopReg(2, 12);
+		_DAT_1f80020c = getCopReg(2, 13);
+		DAT_1f800210 = getCopReg(2, 14);
 		if (((0x13f < DAT_1f800208) && (0x13f < DAT_1f80020c)) && (0x13f < (ushort)DAT_1f800210)) {
 			if (_DAT_1f80020c << 0x10 < 0) {
 				DAT_1f800208 = DAT_1f800208 ^ 1;
@@ -1902,11 +1902,11 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		if ((DAT_1f80020a < 0x100) ||
 			(DAT_1f80020e = (ushort)((uint)_DAT_1f80020c >> 0x10), DAT_1f80020e < 0x100)) {
 		LAB_00040e34:
-			uVar18 = getCopReg(2, 0x11);
+			uVar18 = getCopReg(2, 17);
 			*(undefined4 *)(pc->ptexture_pages + 0x56) = uVar18;
-			uVar18 = getCopReg(2, 0x12);
+			uVar18 = getCopReg(2, 18);
 			*(undefined4 *)(pc->ptexture_pages + 0x58) = uVar18;
-			uVar18 = getCopReg(2, 0x13);
+			uVar18 = getCopReg(2, 19);
 			*(undefined4 *)(pc->ptexture_pages + 0x5a) = uVar18;
 			iVar14 = *(int *)(pc->ptexture_pages + 0x58);
 			iVar11 = *(int *)(pc->ptexture_pages + 0x5a);
@@ -1925,7 +1925,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			if (iVar8 < iVar12) {
 				rot = iVar12 - iVar11;
 			}
-			iVar14 = getCopReg(2, 0x18);
+			iVar14 = getCopReg(2, 24);
 			local_30 = iVar14;
 			if (((*(uint *)(pc->ptexture_pages + 0x50) & 6) != 0) &&
 				(local_30 = 1, (*(uint *)(pc->ptexture_pages + 0x50) & 4) == 0)) {
@@ -1935,8 +1935,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 				if ((n == 0) || (rot << 2 <= iVar11 + -0xfa)) {
 					puVar7 = (undefined4 *)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
 					puVar19 = *(uint **)(pc->ptexture_pages + 0x46);
-					setCopReg(2, in_zero, *puVar7);
-					setCopReg(2, in_at, puVar7[1]);
+					setCopReg(2, 0, *puVar7);
+					setCopReg(2, 1, puVar7[1]);
 					copFunction(2, 0x180001);
 					copFunction(2, 0x168002e);
 					uVar1 = *(ushort *)((int)puVar21 + 0xe);
@@ -1956,13 +1956,13 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 						uVar20 = _DAT_1f800208;
 						puVar19[3] = uVar15 & 0xffff | uVar16;
 						puVar19[2] = uVar20;
-						uVar20 = getCopReg(2, 0xc);
+						uVar20 = getCopReg(2, 12);
 						puVar19[4] = uVar20;
 						puVar19[5] = uVar15 >> 0x10 | uVar17;
-						uVar20 = getCopReg(2, 0xd);
+						uVar20 = getCopReg(2, 13);
 						puVar19[6] = uVar20;
 						puVar19[7] = (uint)uVar1;
-						uVar20 = getCopReg(2, 0xe);
+						uVar20 = getCopReg(2, 14);
 						puVar19[8] = uVar20;
 						puVar19[9] = (uint)uVar2;
 						*(uint **)(pc->ptexture_pages + 0x46) = puVar19 + 10;
@@ -2216,9 +2216,9 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 
 	puVar6 = current->ot;
 	if (matrix != (MATRIX *)0x0) {
-		setCopControlWord(2, 0x2800, pos->vx);
-		setCopControlWord(2, 0x3000, pos->vy);
-		setCopControlWord(2, 0x3800, pos->vz);
+		setCopControlWord(2, 5, pos->vx);
+		setCopControlWord(2, 6, pos->vy);
+		setCopControlWord(2, 7, pos->vz);
 		MulMatrix0(&inv_camera_matrix, matrix, auStack48);
 		SetRotMatrix(auStack48);
 	}
