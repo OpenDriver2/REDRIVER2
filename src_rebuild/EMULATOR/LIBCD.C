@@ -451,3 +451,21 @@ int CdLastCom(void)
 {
 	return CD_com;
 }
+
+int CdGetSector(void *madr, int size)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
+CdlCB CdReadyCallback(CdlCB func)
+{
+	UNIMPLEMENTED();
+	return func;
+}
+
+void* CdDataCallback(void(*func)())
+{
+	UNIMPLEMENTED();
+	return NULL;
+}

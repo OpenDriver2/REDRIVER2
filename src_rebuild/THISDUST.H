@@ -21,6 +21,7 @@
 #define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
 
 #define LoadImage LoadImagePSX		// this is ALSO temporary shit
+#define LoadImage2 LoadImagePSX
 //#define ClearImage2 ClearImage
 
 #endif // PSX
