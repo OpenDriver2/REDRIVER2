@@ -760,9 +760,12 @@ void LoadPermanentTPages(int *sector)
 			nsectors = nsectors_00 + 1;
 			iVar17 = permlist[nsectors_00].y;
 			nsectors_00 = permlist[nsectors_00].x;
+
 			update_slotinfo(nsectors_00, slotsused, &tpage);
+
 			LoadTPageAndCluts(&tpage, &clutpos, nsectors_00, tpageaddress);
-			slotsused = slotsused + 1;
+			slotsused++;
+
 			tpageaddress = tpageaddress + (iVar17 + 0x7ffU & 0xfffff800);
 			nsectors_00 = nsectors;
 		} while (nsectors < nperms);
@@ -844,7 +847,8 @@ void LoadPermanentTPages(int *sector)
 		clutpos.y = clutpos.y + 1;
 		clutpos.x = 0x3c0;
 	}
-	if (slotsused < 0x13) {
+	if (slotsused < 19) 
+	{
 		pDVar19 = &slot_tpagepos[slotsused];
 		pDVar16 = &slot_clutpos[slotsused];
 

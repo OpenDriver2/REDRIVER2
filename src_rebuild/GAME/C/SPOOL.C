@@ -387,7 +387,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_regions);
 #else
-		UNIMPLEMENTED();
+		g_dataCallbackPC = data_cb_regions;
 #endif // PSX
 	}
 	else if (bVar1 == 1)
@@ -395,7 +395,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_textures);
 #else
-		UNIMPLEMENTED();
+		g_dataCallbackPC = data_cb_textures;
 #endif // PSX
 	}
 	else if (bVar1 == 2)
@@ -403,7 +403,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_soundbank);
 #else
-		UNIMPLEMENTED();
+		g_dataCallbackPC = data_cb_soundbank;
 #endif // PSX
 	}
 	else if (bVar1 == 3)
@@ -411,7 +411,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_misc);
 #else
-		UNIMPLEMENTED();
+		g_dataCallbackPC = data_cb_misc;
 #endif // PSX
 	}
 }
@@ -1160,16 +1160,19 @@ void SendTPage(void)
 			tpage.y = tpage.y + tpage.h;
 		}
 
-		if (nTPchunks == 4) 
+		if (nTPchunks == 4)
 		{
-			bVar1 = tpageslots[iVar5]; // [A]
+			bVar1 = tpageslots[iVar5];
 			tpageslots[iVar5] = (unsigned char)iVar7;
-			tpageloaded[bVar1] = '\0';
-			tpageloaded[iVar7] = (unsigned char)iVar5 + 1;
-			tsetpos = tsetpos + 1;
 
-			if (tsetpos == tsetcounter) 
-			{
+			if(bVar1 != 0xFF)
+				tpageloaded[bVar1] = '\0';
+
+			tpageloaded[iVar7] = (char)iVar5 + 1;
+
+			tsetpos++;
+
+			if (tsetpos == tsetcounter) {
 				tsetcounter = 0;
 				tsetpos = 0;
 			}
