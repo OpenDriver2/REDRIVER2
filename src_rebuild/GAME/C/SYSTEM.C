@@ -13,6 +13,8 @@
 #include "GLAUNCH.H"
 #include "MAIN.H"
 #include "PAD.H"
+#include "DRAW.H"
+
 
 #include <string.h>
 
@@ -1749,31 +1751,34 @@ void DisableDisplay(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int DoNotSwap = 0;
+
+// [D]
 void SwapDrawBuffers(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	DrawSync(0);
+
 	if (DoNotSwap == 0) {
 		PutDispEnv(&current->disp);
 		PutDrawEnv(&current->draw);
 	}
+
 	DoNotSwap = 0;
 	PutDrawEnv(&current->draw);
-	DrawOTag(current->ot + 0x107f);
-	if ((FrameCnt & 1U) == 0) {
-		current = &DB_000e0938;
-		last = &MPBuff;
+	DrawOTag((u_long*)current->ot + 0x107f);
+
+	if ((FrameCnt & 1U) == 0) 
+	{
+		current = &MPBuff[0][1];
+		last = &MPBuff[0][0];
 	}
-	else {
-		current = &MPBuff;
-		last = &DB_000e0938;
+	else
+	{
+		current = &MPBuff[0][0];
+		last = &MPBuff[0][1];
 	}
-	ClearOTagR(current->ot, (int)&DAT_00001080);
+	ClearOTagR((u_long*)current->ot, 0x1080);
 	current->primptr = current->primtab;
-	return;
-	*/
 }
 
 
@@ -1988,8 +1993,6 @@ void SetupDrawBuffers(void)
 		// Start line: 2934
 	/* end block 3 */
 	// End Line: 2935
-
-MATRIX aspect;
 
 // [D]
 void SetupDrawBufferData(int num_players)

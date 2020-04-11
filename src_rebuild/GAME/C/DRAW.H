@@ -1,6 +1,8 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+extern MATRIX aspect;
+
 extern int units_across_halved;
 extern int units_down_halved;
 
