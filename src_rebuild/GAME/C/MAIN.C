@@ -48,6 +48,7 @@
 #include "DR2ROADS.H"
 #include "MODELS.H"
 #include "CARS.H"
+#include "GLAUNCH.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -114,8 +115,6 @@ enum LevLumpType
 REPLAY_STREAM ReplayStreams[8];
 
 int TargetCar = 0;
-
-int pauseflag = 0;
 
 int HitLeadCar = 0;
 int game_over = 0;
@@ -983,6 +982,9 @@ void GameInit(void)
 	}
 
 	xa_timeout = 0;
+
+	// [A]
+	EnablePause(PAUSEMODE_PAUSE);
 }
 
 // decompiled code
@@ -1511,75 +1513,93 @@ LAB_00059c1c:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+REPLAY_PARAMETER_BLOCK *ReplayParameterPtr = NULL;
+
+// [D]
 void GameLoop(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	uint uVar1;
+	int iVar2;
+	static POLY_FT3 buffer[2];
+	static POLY_FT3 *null;
 
 	if (NewLevel != 0) {
 		CloseShutters(2, 0x140, 0x200);
 	}
+
 	DisableDisplay();
 	SetupDrawBuffers();
 	EnableDisplay();
-	srand((uint)&DAT_00001234);
+
+	srand(0x1234);
+
 	cameraview = 0;
 	FrameCnt = 0;
 	NoTextureMemory = 0;
+
 	SpoolSYNC();
-	if (CurrentGameMode != '\x04') {
+	if (CurrentGameMode != GAMEMODE_DIRECTOR) {
 		UnPauseSound();
 	}
-	iVar1 = 4;
+
+	iVar2 = 4;
 	StartGameSounds();
 	SetMasterVolume(gMasterVolume);
 	SetXMVolume(gMusicVolume);
 	CloseControllers();
 	InitControllers();
 	VSync(0);
+
 	do {
-		iVar1 = iVar1 + -1;
+		iVar2 = iVar2 + -1;
 		ReadControllers();
 		VSync(0);
-	} while (-1 < iVar1);
+	} while (-1 < iVar2);
+
 	while (game_over == 0) {
 		StepGame();
-		if ((FastForward == 0) || (FrameCnt == (FrameCnt / 7) * 7)) {
+
+		if ((FastForward == 0) || (FrameCnt == (FrameCnt / 7) * 7)) 
+		{
 			DrawGame();
 		}
-		else {
+		else
+		{
 			FrameCnt = FrameCnt + 1;
-			iVar1 = (FrameCnt & 1U) * 0x20;
-			null_27 = &buffer_26 + iVar1;
-			*(undefined *)(iVar1 + 0xd566b) = 7;
-			*(undefined *)(iVar1 + 0xd566f) = 0x24;
-			*(undefined2 *)(iVar1 + 0xd5670) = 0xffff;
-			*(undefined2 *)(iVar1 + 0xd5672) = 0xffff;
-			*(undefined2 *)(iVar1 + 0xd5678) = 0xffff;
-			*(undefined2 *)(iVar1 + 0xd567a) = 0xffff;
-			*(undefined2 *)(iVar1 + 0xd5680) = 0xffff;
-			*(undefined2 *)(iVar1 + 0xd5682) = 0xffff;
-			*(undefined2 *)(iVar1 + 0xd567e) = 0x20;
-			DrawPrim(&buffer_26 + iVar1);
+			uVar1 = FrameCnt & 1;
+			null = buffer + uVar1;
+
+			setPolyFT3(null);
+
+			null->code = '$';
+			null->x0 = -1;
+			null->y0 = -1;
+			null->x1 = -1;
+			null->y1 = -1;
+			null->x2 = -1;
+			null->y2 = -1;
+			null->tpage = 0x20;
+
+			DrawPrim(null);
 			DrawSync(0);
 		}
 		CheckForPause();
 	}
-	if (NoPlayerControl == 0) {
+	if (NoPlayerControl == 0) 
+	{
 		ReplayParameterPtr->RecordingEnd = CameraCnt;
 	}
+
 	StopPadVibration(0);
 	StopPadVibration(1);
 	StopAllChannels();
 	FreeXM();
-	iVar1 = XAPrepared();
-	if (iVar1 != 0) {
+
+	iVar2 = XAPrepared();
+	if (iVar2 != 0) {
 		StopXA();
 		UnprepareXA();
 	}
-	return;
-	*/
 }
 
 
@@ -1996,15 +2016,16 @@ void DrawGame(void)
 	/* end block 3 */
 	// End Line: 10830
 
+
+static int WantPause = 0;
+static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
+
+// [D]
 void EndGame(GAMEMODE mode)
 {
-	UNIMPLEMENTED();
-	/*
 	WantedGameMode = mode;
 	pauseflag = 0;
 	game_over = 1;
-	return;
-	*/
 }
 
 
@@ -2023,16 +2044,16 @@ void EndGame(GAMEMODE mode)
 	/* end block 2 */
 	// End Line: 10844
 
+
+
+// [D]
 void EnablePause(PAUSEMODE mode)
 {
-	UNIMPLEMENTED();
-	/*
-	if (((quick_replay != 0) || (NoPlayerControl == 0)) || (mode != PAUSEMODE_GAMEOVER)) {
+	if (((quick_replay != 0) || (NoPlayerControl == 0)) || (mode != PAUSEMODE_GAMEOVER))
+	{
 		WantPause = 1;
 		PauseMode = mode;
 	}
-	return;
-	*/
 }
 
 
@@ -2067,25 +2088,27 @@ void EnablePause(PAUSEMODE mode)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void CheckForPause(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((0xf < gDieWithFade) && ((quick_replay != 0 || (NoPlayerControl == 0)))) {
+	if ((0xf < gDieWithFade) && ((quick_replay != 0 || (NoPlayerControl == 0)))) 
+	{
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;
 	}
-	if (WantPause != 0) {
+
+	if (WantPause != 0)
+	{
 		WantPause = 0;
 		pauseflag = 1;
 		PauseSound();
 		ShowPauseMenu(PauseMode);
-		if (game_over == 0) {
+
+		if (game_over == 0)
+		{
 			UnPauseSound();
 		}
 	}
-	return;
-	*/
 }
 
 

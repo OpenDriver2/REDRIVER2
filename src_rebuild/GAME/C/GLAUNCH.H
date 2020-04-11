@@ -5,6 +5,7 @@ extern ACTIVE_CHEATS AvailableCheats;
 extern ACTIVE_CHEATS ActiveCheats;
 
 extern int lead_car;
+extern GAMEMODE WantedGameMode;
 
 extern int wantedCar[2];
 extern int gInFrontend;
@@ -12,6 +13,8 @@ extern int AttractMode;
 extern char NoPlayerControl;
 
 extern int gCopDifficultyLevel;
+
+extern int quick_replay;
 
 extern void GameStart(); // 0x00052A28
 

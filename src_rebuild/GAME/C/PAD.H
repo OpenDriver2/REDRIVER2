@@ -3,6 +3,7 @@
 
 #include "LIBPAD.H"
 
+extern int pad_connected;
 extern int numPadsConnected;
 extern int gVibration;
 

@@ -1,6 +1,6 @@
 #include "THISDUST.H"
 #include "OVERLAY.H"
-
+#include "SYSTEM.H"
 
 COLOUR_BAND felonyColour[3] =
 {
@@ -175,20 +175,18 @@ void DisplayOverlays(void)
 
 void SetFullscreenDrawing(void)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	uint *puVar2;
-	undefined auStack104[96];
+	DR_ENV *drenv;
+	DRAWENV drawenv;
 
-	puVar2 = (uint *)current->primptr;
-	SetDefDrawEnv(auStack104, 0, (uint)(ushort)(current->draw).clip.y & 0x100, 0x140, 0x100);
-	SetDrawEnv(puVar2, auStack104);
-	pDVar1 = current;
-	*puVar2 = *puVar2 & 0xff000000 | current->ot[8] & 0xffffff;
-	pDVar1->ot[8] = pDVar1->ot[8] & 0xff000000 | (uint)puVar2 & 0xffffff;
-	pDVar1->primptr = pDVar1->primptr + 0x40;
-	return;*/
+	drenv = (DR_ENV *)current->primptr;
+
+	drawenv.clip.x = 0x100;
+	SetDefDrawEnv((DRAWENV *)drawenv.ofs, 0, (uint)(ushort)(current->draw).clip.y & 0x100, 0x140, 0x100);
+
+	SetDrawEnv(drenv, &drawenv);
+
+	addPrim(current->ot, drenv);
+	current->primptr += sizeof(DR_ENV);
 }
 
 

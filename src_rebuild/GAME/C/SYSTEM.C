@@ -1752,6 +1752,8 @@ void DisableDisplay(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int DoNotSwap = 0;
+DB* MPlast[2];
+DB* MPcurrent[2];
 
 // [D]
 void SwapDrawBuffers(void)
@@ -1904,9 +1906,6 @@ void UpdatePadData(void)
 	// End Line: 2776
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-DB* MPlast[2];
-DB* MPcurrent[2];
 
 // [D]
 void SetupDrawBuffers(void)

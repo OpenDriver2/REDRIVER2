@@ -174,14 +174,13 @@ int StringWidth(char *pString)
 	/* end block 4 */
 	// End Line: 1424
 
+// [D]
 int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int g, int b)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 
-	SetTextColour((uchar)r, (uchar)g, (uchar)b);
+	SetTextColour((unsigned char)r, (unsigned char)g, (unsigned char)b);
+
 	if ((formatting & 1U) == 0) {
 		if ((formatting & 2U) == 0) {
 			if ((formatting & 4U) != 0) {
@@ -198,8 +197,8 @@ int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int
 	else {
 		PrintString(pString, x, y);
 	}
+
 	return x;
-	*/
 }
 
 

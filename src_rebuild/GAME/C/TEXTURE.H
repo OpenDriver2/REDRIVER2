@@ -25,6 +25,8 @@ extern RECT16 tpage;
 extern short specialSlot;
 extern int slotsused;
 
+extern int NoTextureMemory;
+
 extern char specTpages[4][12];
 
 extern void IncrementClutNum(RECT16 *clut); // 0x00080DDC
