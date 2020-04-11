@@ -127,6 +127,7 @@ UV skytexuv[28] = { 0 };
 short skyclut[28];
 short skytpage[28];
 
+// [D]
 void LoadSky(void)
 {
 	bool bVar1;
