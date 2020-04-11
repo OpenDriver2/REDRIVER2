@@ -2,6 +2,8 @@
 #include "DRAW.H"
 #include "MAIN.H"
 #include "MAP.H"
+#include "MODELS.H"
+#include "SYSTEM.H"
 
 #include <string.h>
 
@@ -24,6 +26,32 @@ int PolySizes[56] = {
 	12, 12, 12, 16,
 	20, 20, 24, 24,
 };
+
+unsigned long planeColours[8];
+
+inline int GetModelNumber()
+{
+	return current->primtab - (current->primptr - 0x1E000);
+}
+
+MATRIX inv_camera_matrix;
+MATRIX2 CompoundMatrix[64];
+
+uint16_t texture_pages[128];
+uint16_t texture_cluts[128][32];
+
+// offset: 0x1f800020
+static plotContext context;
+
+void Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
+{
+	UNIMPLEMENTED();
+}
+
+void Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
+{
+	UNIMPLEMENTED();
+}
 
 // decompiled code
 // original method signature: 
@@ -1009,8 +1037,6 @@ void DrawMapPSX(int *comp_val)
 	} while (true);*/
 }
 
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ SetupPlaneColours(unsigned long ambient /*$a3*/)
@@ -1387,7 +1413,6 @@ void CalcObjectRotationMatrices(void)
 void PlotMDL_less_than_128(MODEL *model)
 {
 	RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0);
-	return;
 }
 
 
@@ -2084,73 +2109,61 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 int DrawAllBuildings(ulong *objects, int num_buildings, DB *disp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	DB *pDVar1;
-	uint uVar2;
-	int iVar3;
-	char *pcVar4;
-	MODEL *model;
-	uint *puVar5;
-	ulong *puVar6;
-	ulong uVar7;
-	int iVar8;
-	uint uVar9;
+	int prev_mat = -1;
 
-	uVar9 = 0xffffffff;
-	puVar5 = &DAT_1f800038;
-	puVar6 = &planeColours;
-	iVar8 = 7;
-	do {
-		puVar5[-3] = *puVar6 | 0x2c000000;
-		puVar5[-1] = ULONG_000cc828 | 0x2c000000;
-		uVar7 = planeColours;
-		puVar6 = puVar6 + 1;
-		*puVar5 = 0x2c00f0f0;
-		puVar5[-2] = uVar7 | 0x2c000000;
-		iVar8 = iVar8 + -1;
-		*puVar5 = planeColours | 0x2c000000;
-		DAT_1f800020 = current;
-		puVar5 = puVar5 + 4;
-	} while (-1 < iVar8);
-	current->ot = current->ot + 8;
-	DAT_1f800024 = &texture_pages;
-	DAT_1f800028 = &texture_cluts;
-	DAT_1f8000ac = PolySizes;
-	DAT_1f8000c4 = 0;
-	iVar8 = 0;
-	if (0 < num_buildings) {
-		pcVar4 = DAT_1f800020->primtab + -(int)(DAT_1f800020->primptr + -0x1e000);
-		while (55999 < (int)pcVar4) {
-			uVar7 = *objects;
-			uVar2 = (uint)*(byte *)(uVar7 + 0xd);
-			if (uVar9 == uVar2) {
-				Apply_InvCameraMatrixSetTrans(uVar7);
+	for (int i = 0; i < 8; i++) {
+		context.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
+		context.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
+		context.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
+		context.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	}
+
+	current->ot += 8;
+
+	context.ptexture_pages = &texture_pages;
+	context.ptexture_cluts = &texture_cluts;
+	context.polySizes = PolySizes;
+	context.flags = 0;
+	context.current = current;
+
+	if (num_buildings > 0) {
+		int model_number = GetModelNumber();
+
+		if (model_number < 55999) {
+			for (int i = 0; i < num_buildings, model_number < 55999; i++, model_number = GetModelNumber()) {
+				CELL_OBJECT *building = (CELL_OBJECT *)objects[i];
+				
+				int mat = building->yang;
+
+				if (mat == prev_mat) {
+					Apply_InvCameraMatrixSetTrans(&building->pos);
+				}
+				else {
+					Apply_InvCameraMatrixAndSetMatrix(&building->pos, &CompoundMatrix[mat]);
+					prev_mat = mat;
+				}
+
+				MODEL *model = modelpointers[building->type];
+
+				unsigned long* savedOT = current->ot;
+
+				int zBias = (model->zBias - 64);
+
+				if (zBias < 0)
+					zBias = 0;
+
+				current->ot += (zBias * 4);
+
+				PlotBuildingModelSubdivNxN(model, building->yang, &context, 1);
+
+				current->ot = savedOT;
 			}
-			else {
-				Apply_InvCameraMatrixAndSetMatrix(uVar7, CompoundMatrix + uVar2);
-				uVar9 = uVar2;
-			}
-			model = modelpointers1536[*(ushort *)(uVar7 + 0xe)];
-			puVar6 = current->ot;
-			iVar3 = (uint)model->zBias - 0x40;
-			if (iVar3 < 0) {
-				iVar3 = 0;
-			}
-			objects = objects + 1;
-			current->ot = puVar6 + iVar3 * 4;
-			PlotBuildingModelSubdivNxN(model, (uint)*(byte *)(uVar7 + 0xd), (_pct *)&DAT_1f800020, 1);
-			pDVar1 = current;
-			iVar8 = iVar8 + 1;
-			current->ot = puVar6;
-			if (num_buildings <= iVar8) break;
-			pcVar4 = pDVar1->primtab + -(int)(pDVar1->primptr + -0x1e000);
 		}
 	}
-	current->ot = current->ot + -8;
+	
+	current->ot -= 8;
+
 	return 0;
-	*/
 }
 
 
@@ -2204,54 +2217,43 @@ int DrawAllBuildings(ulong *objects, int num_buildings, DB *disp)
 
 void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags)
 {
-	UNIMPLEMENTED();
-	/*
-	ulong uVar1;
-	uint *puVar2;
-	int iVar3;
-	ulong *puVar4;
-	int iVar5;
-	ulong *puVar6;
-	undefined auStack48[32];
+	ulong *savedOT = current->ot;
 
-	puVar6 = current->ot;
-	if (matrix != (MATRIX *)0x0) {
+	if (matrix != NULL) {
+		MATRIX comb;
+
 		setCopControlWord(2, 5, pos->vx);
 		setCopControlWord(2, 6, pos->vy);
 		setCopControlWord(2, 7, pos->vz);
-		MulMatrix0(&inv_camera_matrix, matrix, auStack48);
-		SetRotMatrix(auStack48);
+
+		MulMatrix0(&inv_camera_matrix, matrix, &comb);
+		SetRotMatrix(&comb);
 	}
-	iVar5 = (zBias >> 3) + (uint)model->zBias + -0x40;
-	if (iVar5 < 0) {
-		iVar5 = 0;
+
+	int spacefree = (zBias >> 3) + (model->zBias - 64);
+
+	if (spacefree < 0)
+		spacefree = 0;
+	
+	current->ot += (spacefree * 4);
+
+	for (int i = 0; i < 8; i++) {
+		context.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
+		context.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
+		context.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
+		context.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
-	puVar2 = &DAT_1f800038;
-	puVar4 = &planeColours;
-	iVar3 = 7;
-	current->ot = current->ot + iVar5 * 4;
-	do {
-		puVar2[-3] = *puVar4 | 0x2c000000;
-		puVar2[-1] = ULONG_000cc828 | 0x2c000000;
-		uVar1 = planeColours;
-		puVar4 = puVar4 + 1;
-		*puVar2 = 0x2c00f0f0;
-		puVar2[-2] = uVar1 | 0x2c000000;
-		iVar3 = iVar3 + -1;
-		*puVar2 = planeColours | 0x2c000000;
-		puVar2 = puVar2 + 4;
-	} while (-1 < iVar3);
-	DAT_1f800024 = &texture_pages;
-	DAT_1f800028 = &texture_cluts;
-	DAT_1f8000ac = PolySizes;
-	DAT_1f8000c4 = flags;
-	DAT_1f800020 = current;
-	if (56000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000))) {
-		PlotBuildingModelSubdivNxN(model, 0, (_pct *)&DAT_1f800020, 1);
-	}
-	current->ot = puVar6;
-	return;
-	*/
+
+	context.ptexture_pages = &texture_pages;
+	context.ptexture_cluts = &texture_cluts;
+	context.polySizes = PolySizes;
+	context.flags = flags;
+	context.current = current;
+
+	if (GetModelNumber() < 56000)
+		PlotBuildingModelSubdivNxN(model, 0, &context, 1);
+
+	current->ot = savedOT;
 }
 
 
