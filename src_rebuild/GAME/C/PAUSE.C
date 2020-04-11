@@ -527,12 +527,10 @@ void EnterName(void)
 	/* end block 2 */
 	// End Line: 3818
 
+// [D]
 int MaxMenuStringLength(MENU_HEADER *pMenu)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	char bVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
@@ -541,19 +539,26 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	pMVar5 = pMenu->MenuItems;
 	iVar2 = StringWidth(pMenu->Title);
 	bVar1 = pMVar5->Type;
-	while ((bVar1 & 0x80) == 0) {
+
+	while ((bVar1 & 0x80) == 0)
+	{
 		iVar3 = StringWidth(pMVar5->Text);
-		if ((pMVar5->Type & 0x18) != 0) {
-			iVar4 = StringWidth(&DAT_000aa800);
+
+		if ((pMVar5->Type & 0x18) != 0) 
+		{
+			iVar4 = StringWidth(" 100");
 			iVar3 = iVar3 + iVar4;
 		}
-		if (iVar2 < iVar3) {
+
+		if (iVar2 < iVar3)
+		{
 			iVar2 = iVar3;
 		}
+
 		bVar1 = pMVar5[1].Type;
 		pMVar5 = pMVar5 + 1;
 	}
-	return iVar2;*/
+	return iVar2;
 }
 
 
@@ -727,7 +732,7 @@ LAB_0006c5d0:
 
 	while (uVar1 != 0x80)
 	{
-		uVar1 = pMVar4->Type;
+		uVar1 = (pMVar4+1)->Type;
 		uVar9++;
 		pMVar4++;
 	}
@@ -985,16 +990,19 @@ void DrawVisibleMenus(void)
 	poly = (POLY_F4*)current->primptr;
 	
 	setPolyF4(poly);
-	sVar8 = sVar1 + sVar2 + 5;
+	sVar8 = sVar1 + sVar2 + 5;	// x + w
 	sVar3 = (pMVar10->Bound).y;
+
 	poly->x0 = sVar1 + -5;
 	poly->x1 = sVar8;
 	poly->y0 = sVar3 + -5;
 	poly->x2 = sVar1 + -5;
-	poly->y1 = sVar2 + -5;
-	poly->y2 = (pMVar10->Bound).y + (pMVar10->Bound).h;
+
+	poly->y1 = sVar3 + -5;
+	poly->y2 = sVar3 + (pMVar10->Bound).h;
+
 	poly->x3 = sVar8;
-	poly->y3 = (pMVar10->Bound).y + (pMVar10->Bound).h;
+	poly->y3 = sVar3 + (pMVar10->Bound).h;
 
 	poly->r0 = '\x10';
 	poly->g0 = '\x10';
