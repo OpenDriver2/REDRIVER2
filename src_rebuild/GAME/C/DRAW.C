@@ -2145,7 +2145,7 @@ int DrawAllBuildings(ulong *objects, int num_buildings, DB *disp)
 
 				MODEL *model = modelpointers[building->type];
 
-				unsigned long* savedOT = current->ot;
+				OTTYPE *savedOT = current->ot;
 
 				int zBias = (model->zBias - 64);
 
@@ -2217,7 +2217,7 @@ int DrawAllBuildings(ulong *objects, int num_buildings, DB *disp)
 
 void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags)
 {
-	ulong *savedOT = current->ot;
+	OTTYPE *savedOT = current->ot;
 
 	if (matrix != NULL) {
 		MATRIX comb;
