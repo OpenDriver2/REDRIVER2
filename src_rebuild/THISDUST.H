@@ -20194,6 +20194,8 @@ struct _pct // hashcode: 0x3CC33EEE (dec: 1019428590)
 	int model; // size=0, offset=208
 };
 
+typedef struct _pct plotContext;
+
 struct MATRIX2 // hashcode: 0x7326ABFE (dec: 1931914238)
 {
 	short m[3][3]; // size=18, offset=0
