@@ -856,6 +856,9 @@ void GameInit(void)
 
 	int_garage_door();
 	SpoolSYNC();
+
+	Emulator_SaveVRAM("VRAM_AFTER_LOAD.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+
 	InitialiseCarHandling();
 	ClearMem((char *)&player, 0x3a0);
 	InitDrivingGames();

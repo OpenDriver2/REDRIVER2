@@ -1177,7 +1177,7 @@ void SendTPage(void)
 		}
 	}
 
-	Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	//Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
