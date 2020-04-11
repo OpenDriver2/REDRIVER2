@@ -1,5 +1,10 @@
 #include "THISDUST.H"
 
+#ifndef PSX
+#include <SDL.h>
+#endif // !PSX
+#include <STRINGS.H>
+
 #include "LIBETC.H"
 #include "PAD.H"
 #include "SPOOL.H"
@@ -109,6 +114,133 @@ unsigned short *newmodels;
 
 struct SPOOLQ spooldata[48];
 
+#ifndef PSX
+#include <assert.h>
+
+typedef void(*data_callbackFn)(void);
+typedef void(*ready_callbackFn)(unsigned char intr, unsigned char *result);
+
+data_callbackFn g_dataCallbackPC = NULL;
+ready_callbackFn g_readyCallbackPC = NULL;
+char g_sectorData[2048] = { 0 };
+bool g_isSectorDataRead = false;
+
+extern char g_CurrentLevelFileName[64];
+
+//-----------------------------------------------------
+// copies read sector data to addr
+//-----------------------------------------------------
+void getLevSectorPC(char* dest, int count)
+{
+	count *= 4;
+	assert(count <= 2048);
+
+	memcpy(dest, g_sectorData, count);
+
+	g_isSectorDataRead = true;
+}
+
+SDL_Thread* levelSpoolerPCThread = NULL;
+int levelSpoolerSeekCmd = 0;
+int levelSpoolerPCFunc(void* data)
+{
+	//Print incoming data
+	printf("----- Running SPOOLER thread -----\n");
+
+	ready_callbackFn readyCb = g_readyCallbackPC;
+
+	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
+	if (!fp)
+	{
+		char errPrint[1024];
+		sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+
+		if (readyCb)
+			readyCb(0, { 0x0 });
+
+		return -1;
+	}
+
+	do
+	{
+		if (levelSpoolerSeekCmd != 0)
+		{
+			int sector = levelSpoolerSeekCmd;
+
+			if (sector == -1)
+			{
+				printf("CdlPause\n", sector);
+				levelSpoolerSeekCmd = 0;
+				break;
+			}
+
+			printf("CdlReadS: at %d\n", sector);
+
+			// seek
+			fseek(fp, sector * 2048, SEEK_SET);
+			readyCb = g_readyCallbackPC;
+
+			levelSpoolerSeekCmd = 0;
+		}
+
+		// clear sector before proceed
+		ClearMem(g_sectorData, sizeof(g_sectorData));
+		fread(g_sectorData, 1, 2048, fp);
+
+		g_isSectorDataRead = false;
+
+		if (readyCb)
+		{
+			readyCb(1, { 0x0 });
+		}
+		else
+		{
+			printf("readyCb = NULL\n");
+			break;
+		}
+
+		if (g_isSectorDataRead && g_dataCallbackPC)
+			g_dataCallbackPC();
+
+	} while (true);
+
+	printf("----- SPOOLER thread DON. -----\n");
+
+	fclose(fp);
+
+	return 0;
+}
+
+//-----------------------------------------------------
+// reads sector from LEV file
+//-----------------------------------------------------
+void startReadLevSectorsPC(int sector)
+{
+	levelSpoolerSeekCmd = sector;
+
+	/*
+	if (levelSpoolerPCThread)
+	{
+		int returnValue;
+		SDL_WaitThread(levelSpoolerPCThread, &returnValue);
+
+		levelSpoolerPCThread = NULL;
+	}
+	*/
+
+	if (!levelSpoolerPCThread)
+	{
+		levelSpoolerPCThread = SDL_CreateThread(levelSpoolerPCFunc, "Spooler", NULL);
+
+		if (NULL == levelSpoolerPCThread)
+		{
+			printf("SDL_CreateThread failed: %s\n", SDL_GetError());
+		}
+	}
+}
+#endif // !PSX
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ test_changemode()
@@ -147,8 +279,14 @@ void test_changemode(void)
 	if (spoolpos_reading == spoolcounter)
 	{
 		switch_spooltype = 0;
+
+#ifdef PSX
 		CdReadyCallback(0);
-		CdControlF(9, 0);
+		CdControlF(CdlPause, 0);
+#else
+		g_readyCallbackPC = NULL;
+		levelSpoolerSeekCmd = -1;
+#endif // PSX
 	}
 	else if (current_sector == spooldata[spoolpos_reading].sector)
 	{
@@ -160,7 +298,11 @@ void test_changemode(void)
 		{
 			sectors_to_read = spool_regioninfo[spool_regionpos + 1].nsectors;
 			sectors_this_chunk = (spooldata[spoolpos_reading].nsectors);
+#ifdef PSX
 			CdReadyCallback(ready_cb_regions);
+#else
+			g_readyCallbackPC = ready_cb_regions;
+#endif // PSX
 		}
 		else if (bVar1 == 1)
 		{
@@ -170,7 +312,11 @@ void test_changemode(void)
 			nTPchunks_writing = 0;
 			ntpages = tsetcounter;
 			sectors_this_chunk = (uint)bVar1;
+#ifdef PSX
 			CdReadyCallback(ready_cb_textures);
+#else
+			g_readyCallbackPC = ready_cb_textures;
+#endif // PSX
 		}
 		else if (bVar1 == 2)
 		{
@@ -181,18 +327,32 @@ void test_changemode(void)
 			nTPchunks_writing = 0;
 			target_address = target_address + (loadbank_read & 1U) * 0x1000;
 			sectors_this_chunk = (uint)bVar1;
+
+#ifdef PSX
 			CdReadyCallback(ready_cb_soundbank);
+#else
+			g_readyCallbackPC = ready_cb_soundbank;
+#endif // PSX
 		}
 		else if (bVar1 == 3)
 		{
 			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
+#ifdef PSX
 			CdReadyCallback(ready_cb_misc);
+#else
+			g_readyCallbackPC = ready_cb_misc;
+#endif // PSX
 		}
 	}
 	else
 	{
 		switch_spooltype = 0;
+
+#ifdef PSX
 		CdReadyCallback(0);
+#else
+		g_readyCallbackPC = NULL;
+#endif // PSX
 	}
 }
 
@@ -224,18 +384,35 @@ void changemode(SPOOLQ *current)
 
 	if(bVar1 == 0)
 	{
+#ifdef PSX
 		CdDataCallback(data_cb_regions);
+#else
+		g_dataCallbackPC = data_cb_regions;
+#endif // PSX
 	}
-	else if (bVar1 == 1) {
+	else if (bVar1 == 1)
+	{
+#ifdef PSX
 		CdDataCallback(data_cb_textures);
+#else
+		g_dataCallbackPC = data_cb_textures;
+#endif // PSX
 	}
 	else if (bVar1 == 2)
 	{
+#ifdef PSX
 		CdDataCallback(data_cb_soundbank);
+#else
+		g_dataCallbackPC = data_cb_soundbank;
+#endif // PSX
 	}
 	else if (bVar1 == 3)
 	{
+#ifdef PSX
 		CdDataCallback(data_cb_misc);
+#else
+		g_dataCallbackPC = data_cb_misc;
+#endif // PSX
 	}
 }
 
@@ -640,12 +817,10 @@ void CheckValidSpoolData(void)
 void UpdateSpool(void)
 {
 	char bVar1;
-	int iVar2;
 	int iVar3;
 	CdlLOC pos;
 
 	iVar3 = XAPrepared();
-	iVar2 = spoolpos_reading;
 
 	if (iVar3 != 1) 
 	{
@@ -662,7 +837,8 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_regions);
 			CdReadyCallback(ready_cb_regions);
 #else
-			UNIMPLEMENTED();
+			g_dataCallbackPC = data_cb_regions;
+			g_readyCallbackPC = ready_cb_regions;
 #endif // PSX
 		}
 		else if (bVar1 == 1) // SPOOLTYPE_TEXTURES
@@ -671,13 +847,16 @@ void UpdateSpool(void)
 
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
-			sectors_to_read = 0x11;
+			sectors_to_read = 17;
 			ntpages = tsetcounter;
 			sectors_this_chunk = (uint)bVar1;
 
 #ifdef PSX
 			CdDataCallback(data_cb_textures);
 			CdReadyCallback(ready_cb_textures);
+#else
+			g_dataCallbackPC = data_cb_textures;
+			g_readyCallbackPC = ready_cb_textures;
 #endif // PSX
 
 			target_address = target_address + 0x4000;
@@ -697,7 +876,8 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_soundbank);
 			CdReadyCallback(ready_cb_soundbank);
 #else
-			UNIMPLEMENTED();
+			g_dataCallbackPC = data_cb_soundbank;
+			g_readyCallbackPC = ready_cb_soundbank;
 #endif // PSX
 
 			target_address = target_address + (loadbank_read & 1U) * 0x1000;
@@ -711,17 +891,21 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_misc);
 			CdReadyCallback(ready_cb_misc);
 #else
-			UNIMPLEMENTED();
+			g_dataCallbackPC = data_cb_misc;
+			g_readyCallbackPC = ready_cb_misc;
 #endif // PSX
 		}
 
-		current_sector = spooldata[iVar2].sector;
+		current_sector = spooldata[spoolpos_reading].sector;
 		endchunk = 0;
 		switch_spooltype = 0;
 
+		// run sector reading
 #ifdef PSX
 		CdIntToPos(current_sector, &pos);
-		CdControlF(0x1b, (u_char*)&pos);
+		CdControlF(CdlReadS, (u_char*)&pos);
+#else
+		startReadLevSectorsPC(current_sector);
 #endif // PSX
 	}
 }
@@ -938,8 +1122,10 @@ void SendTPage(void)
 
 			cluts.h = (short)(iVar5 >> 2) + 1;
 			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xe004));
-			puVar4 = (uint *)(texture_cluts + iVar7 * 0x20);
+			puVar4 = (uint *)(texture_cluts[iVar7]);
 			iVar5 = 0;
+
+			printf("Send CLUT\n");
 
 			if (0 < iVar6)
 			{
@@ -968,25 +1154,32 @@ void SendTPage(void)
 	{
 		if (iVar5 != (uint)tpageloaded[iVar7] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + (int)(0xa000 + (loadbank_write & 1U) * 0x2000)));
+			printf("Send TPAGE\n");
+
+			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xa000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
-		if (nTPchunks == 4) 
+		if (nTPchunks == 4)
 		{
-			bVar1 = tpageslots[iVar5]; // [A]
+			bVar1 = tpageslots[iVar5];
 			tpageslots[iVar5] = (unsigned char)iVar7;
-			tpageloaded[bVar1] = '\0';
-			tpageloaded[iVar7] = (unsigned char)iVar5 + 1;
-			tsetpos = tsetpos + 1;
 
-			if (tsetpos == tsetcounter) 
-			{
+			if(bVar1 != 0xFF)
+				tpageloaded[bVar1] = '\0';
+
+			tpageloaded[iVar7] = (char)iVar5 + 1;
+
+			tsetpos++;
+
+			if (tsetpos == tsetcounter) {
 				tsetcounter = 0;
 				tsetpos = 0;
 			}
 		}
 	}
+
+	Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
@@ -1076,10 +1269,13 @@ void LoadInAreaTSets(int area)
 
 	pbVar7 = AreaTPages + area * 0x10;
 	bVar2 = AreaData[area].num_tpages;
+
 	uVar9 = (uint)bVar2;
 	address = model_spool_buffer + 0xa000;
 	iVar8 = 0;
-	if (slotsused < 0x13) {
+
+	if (slotsused < 0x13)
+	{
 		piVar5 = availableslots;
 		iVar6 = slotsused;
 		do {
@@ -1138,17 +1334,23 @@ void LoadInAreaTSets(int area)
 				while (true)
 				{
 					RequestSpool(1, 0, offset, 0x11, address, SendTPage);
+
 					offset = offset + 0x11;
 					iVar6 = iVar6 + 1;
 					iVar4 = tsetcounter * 2;
 					tsetcounter = tsetcounter + 1;
 					tsetinfo[iVar4] = (uint)*pbVar7;
 					pbVar7 = pbVar7 + 1;
-					if ((int)uVar9 <= iVar6) {
+
+					if ((int)uVar9 <= iVar6)
+					{
 						return;
 					}
+
 					uVar3 = (uint)*pbVar7;
-					if (tpageloaded[uVar3] == '\0') break;
+
+					if (tpageloaded[uVar3] == '\0')
+						break;
 				LAB_0007bc94:
 					*(int *)((int)tsetinfo + (tsetcounter << 3 | 4U)) = (uint)tpageloaded[uVar3] - 1;
 				}
@@ -1980,8 +2182,12 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 #endif // _DEBUG
 
 	spoolerror = 0x3c;
+#ifdef PSX
 	CdIntToPos(current_sector, &p);
-	CdControlF(0x1b, (u_char*)&p);
+	CdControlF(CdlReadS, (u_char*)&p);
+#else
+	UNIMPLEMENTED();
+#endif
 }
 
 
@@ -2107,7 +2313,11 @@ void data_cb_textures(void)
 			{
 				if (switch_spooltype == 0)
 				{
+#ifdef PSX
 					CdDataCallback(0);
+#else
+					UNIMPLEMENTED();
+#endif // PSX
 
 					if (spoolpos_writing == spoolcounter)
 					{
@@ -2171,7 +2381,11 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 
 	if (intr == '\x01')
 	{
+#ifdef PSX
 		CdGetSector(target_address, 0x200);
+#else
+		getLevSectorPC(target_address, 0x200);
+#endif // PSX
 
 		target_address = target_address + 0x800;
 		sectors_this_chunk = sectors_this_chunk + -1;
@@ -2200,7 +2414,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 				else
 				{
 					nTPchunks_reading = 0;
-					sectors_to_read = 0x11;
+					sectors_to_read = 17;
 					target_address = spooldata[spoolpos_reading].addr + 0x4000;
 					spoolpos_reading = spoolpos_reading + 1;
 					sectors_this_chunk = uVar1;
@@ -2258,7 +2472,11 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 	uVar1 = (uint)intr;
 	if (intr == '\x01') 
 	{
+#ifdef PSX
 		CdGetSector(target_address, 0x200);
+#else
+		getLevSectorPC(target_address, 0x200);
+#endif // PSX
 
 		target_address = target_address + 0x800;
 		sectors_this_chunk = sectors_this_chunk + -1;
@@ -2339,7 +2557,11 @@ void data_cb_regions(void)
 		{
 			if (switch_spooltype == 0) 
 			{
+#ifdef PSX
 				CdDataCallback(0);
+#else
+				g_dataCallbackPC = NULL;
+#endif // PSX
 
 				if (spoolpos_writing == spoolcounter) 
 				{
@@ -2404,7 +2626,11 @@ void data_cb_soundbank(void)
 		if (endchunk != 0) {
 			spoolpos_writing = spoolpos_writing + 1;
 			if (switch_spooltype == 0) {
+#ifdef PSX
 				CdDataCallback(0);
+#else
+				UNIMPLEMENTED();
+#endif // PSX
 				if (spoolpos_writing == spoolcounter) {
 					spoolcounter = 0;
 					spoolpos_writing = 0;
@@ -2463,7 +2689,12 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 
 	uVar1 = (uint)intr;
 	if (intr == '\x01') {
+#ifdef PSX
 		CdGetSector(target_address, 0x200);
+#else
+		getLevSectorPC(target_address, 0x200);
+#endif // PSX
+
 		target_address = target_address + 0x800;
 		sectors_this_chunk = sectors_this_chunk + -1;
 		current_sector = current_sector + 1;
@@ -2547,7 +2778,11 @@ void data_cb_misc(void)
 
 		if (switch_spooltype == 0)
 		{
+#ifdef PSX
 			CdDataCallback(0);
+#else
+			UNIMPLEMENTED();
+#endif // PSX
 			if (spoolpos_writing == spoolcounter)
 			{
 				spoolcounter = 0;
@@ -2588,7 +2823,11 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 {
 	if (intr == '\x01') 
 	{
+#ifdef PSX
 		CdGetSector(target_address, 0x200);
+#else
+		getLevSectorPC(target_address, 0x200);
+#endif // PSX
 
 		target_address = target_address + 0x800;
 		sectors_to_read = sectors_to_read + -1;

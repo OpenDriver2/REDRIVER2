@@ -947,7 +947,7 @@ void InitMap(void)
 	LoadedArea = -1;
 	current_region = -1;
 
-	if (slotsused < 0x13) 
+	if (slotsused < 19) 
 	{
 		pbVar2 = &tpageslots[slotsused];
 		iVar3 = slotsused;
