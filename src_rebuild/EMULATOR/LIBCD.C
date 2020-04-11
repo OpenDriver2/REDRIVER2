@@ -469,3 +469,9 @@ void* CdDataCallback(void(*func)())
 	UNIMPLEMENTED();
 	return NULL;
 }
+
+int CdDiskReady(int mode)
+{
+	UNIMPLEMENTED();
+	return NULL;
+}

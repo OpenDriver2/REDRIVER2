@@ -148,7 +148,7 @@ void test_changemode(void)
 	{
 		switch_spooltype = 0;
 		CdReadyCallback(0);
-		CdControlF(9, 0);
+		CdControlF(CdlPause, 0);
 	}
 	else if (current_sector == spooldata[spoolpos_reading].sector)
 	{
@@ -721,7 +721,9 @@ void UpdateSpool(void)
 
 #ifdef PSX
 		CdIntToPos(current_sector, &pos);
-		CdControlF(0x1b, (u_char*)&pos);
+		CdControlF(CdlReadS, (u_char*)&pos);
+#else
+
 #endif // PSX
 	}
 }
@@ -1981,7 +1983,7 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 
 	spoolerror = 0x3c;
 	CdIntToPos(current_sector, &p);
-	CdControlF(0x1b, (u_char*)&p);
+	CdControlF(CdlReadS, (u_char*)&p);
 }
 
 

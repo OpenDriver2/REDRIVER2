@@ -1474,15 +1474,15 @@ void ReportMode(int on)
 static unsigned char endread = 0;
 static unsigned char load_complete = 0;
 
+// [D]
 void data_ready(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if (endread != '\0') {
+	if (endread != 0) 
+	{
 		CdDataCallback(0);
-		load_complete = '\x01';
+		load_complete = 1;
 	}
-	return;*/
+	return;
 }
 
 
@@ -1519,37 +1519,43 @@ static int sectors_read = 0; // offset 0xAB284
 static int sectors_this_chunk = 0; // offset 0xAB174
 static int sectors_to_read = 0; // offset 0xAB170
 
+// [D]
 void sector_ready(unsigned char intr, unsigned char *result)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	CdlLOC auStack16;
+	CdlLOC p;
 
-	if (intr == '\x01') {
+	if (intr == '\x01')
+	{
 		CdGetSector(current_address, 0x200);
+
 		current_address = current_address + 0x800;
 		current_sector = current_sector + 1;
 		sectors_left = sectors_left + -1;
-		if (sectors_left == 0) {
+
+		if (sectors_left == 0)
+		{
 			endread = '\x01';
 			CdReadyCallback(0);
-			CdControlF(9, 0);
+			CdControlF(CdlPause, 0);
 		}
 	}
-	else {
-		if ((*result & 0x10) != 0) {
+	else 
+	{
+		if ((*result & 0x10) != 0)
+		{
 			CdReadyCallback(0);
+
 			do {
 				iVar1 = CdDiskReady(1);
 			} while (iVar1 != 2);
+
 			CdReadyCallback(sector_ready);
 		}
-		CdIntToPos(current_sector, &auStack16);
-		CdControlF(0x1b, &auStack16);
+
+		CdIntToPos(current_sector, &p);
+		CdControlF(CdlReadS, (unsigned char*)&p);
 	}
-	return;
-	*/
 }
 
 
@@ -1576,28 +1582,27 @@ void sector_ready(unsigned char intr, unsigned char *result)
 		// Start line: 5026
 	/* end block 3 */
 	// End Line: 5027
-
 #ifdef PSX
 void loadsectors(char *addr, int sector, int nsectors)
 {
-	UNIMPLEMENTED();
-	/*
+	CdlLOC pos;
 
-	CdlLOC auStack16;
+	load_complete = 0;
+	endread = 0;
 
-	load_complete = '\0';
-	endread = '\0';
 	current_sector = sector;
 	sectors_left = nsectors;
 	current_address = addr;
-	CdIntToPos(sector, &auStack16);
-	CdControlF(0x1b, &auStack16);
+
+	CdIntToPos(sector, &pos);
+	CdControlF(CdlReadS, (unsigned char*)&pos);
 	CdDataCallback(data_ready);
 	CdReadyCallback(sector_ready);
+
 	do {
 	} while (load_complete == '\0');
 	ShowLoading();
-	return;*/
+	return;
 }
 #else
 // It has to be this way
@@ -2252,14 +2257,14 @@ LAB_0007f244:
 				DoCDRetry();
 			}
 			iVar3 = CdControlB(2, (u_char*)&fp, 0);
-		} while ((iVar3 == 0) || (iVar3 = CdRead(1, &DAT_000f3000, 0x80), iVar3 == 0));
+		} while ((iVar3 == 0) || (iVar3 = CdRead(1, (u_long*)_other_buffer, 0x80), iVar3 == 0));
 		iVar3 = CdReadSync(0, result);
 	} while (iVar3 != 0);
 
 	iVar3 = 3;
 	cdp = citylumps[GameLevel];
 
-	piVar4 = &DAT_000f3008;
+	piVar4 = (int*)(_other_buffer + 8);
 	do {
 		iVar3 = iVar3 + -1;
 		cdp->x = *piVar4 + levOfs * 0x800;
