@@ -2173,6 +2173,9 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 #define NOFILE 0
 
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+
+unsigned short flipYvram[VRAM_WIDTH * VRAM_HEIGHT];
+
 void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer)
 {
 #if NOFILE
@@ -2184,6 +2187,15 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 	if (f == NULL)
 	{
 		return;
+	}
+
+	for (int x = 0; x < VRAM_WIDTH; x++)
+	{
+		for (int y = 0; y < VRAM_HEIGHT; y++)
+		{
+			short srcPixel = vram[y * VRAM_WIDTH + x];
+			flipYvram[(VRAM_HEIGHT-y-1) * VRAM_WIDTH + x] = srcPixel;
+		}
 	}
 
 	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
@@ -2204,12 +2216,12 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 
 	for (int i = 0; i < numSectorsToWrite; i++)
 	{
-		fwrite(&vram[i * 512 / sizeof(unsigned short)], 512, 1, f);
+		fwrite(&flipYvram[i * 512 / sizeof(unsigned short)], 512, 1, f);
 	}
 
 	for (int i = 0; i < numRemainingSectorsToWrite; i++)
 	{
-		fwrite(&vram[numSectorsToWrite * 512 / sizeof(unsigned short)], numRemainingSectorsToWrite, 1, f);
+		fwrite(&flipYvram[numSectorsToWrite * 512 / sizeof(unsigned short)], numRemainingSectorsToWrite, 1, f);
 	}
 
 	fclose(f);
