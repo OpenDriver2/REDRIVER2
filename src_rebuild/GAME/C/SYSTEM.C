@@ -1806,32 +1806,35 @@ void SwapDrawBuffers(void)
 	/* end block 3 */
 	// End Line: 2654
 
+// [D]
 void SwapDrawBuffers2(int player)
 {
-	UNIMPLEMENTED();
-
-	/*
 	uint uVar1;
 
 	DrawSync(0);
 	if (player == 0) {
 		PutDispEnv(&current->disp);
 	}
+
 	PutDrawEnv(&current->draw);
-	DrawOTag(current->ot + 0x107f);
+	DrawOTag((u_long*)current->ot + 0x107f);
+
 	if (player == 1) {
 		uVar1 = FrameCnt & 1;
-		MPcurrent2 = &MPBuff + (1 - uVar1);
-		MPlast2 = &MPBuff + uVar1;
-		PTR_000ab2b4 = (DB *)(&DAT_000e09b8 + (1 - uVar1) * 0x80);
-		PTR_000ab29c = (DB *)(&DAT_000e09b8 + uVar1 * 0x80);
+
+		// [A] i guess it should work as intended
+		MPcurrent[0] = &MPBuff[0][-uVar1+1];
+		MPlast[0] = &MPBuff[0][uVar1];
+
+		MPcurrent[1] = &MPBuff[1][-uVar1 + 1];
+		MPlast[1] = &MPBuff[1][0];
 	}
-	current = (&MPcurrent2)[1 - player];
-	last = (&MPlast2)[1 - player];
-	ClearOTagR(current->ot, (int)&DAT_00001080);
+
+	current = MPcurrent[1 - player];
+	last = MPlast[1 - player];
+
+	ClearOTagR((u_long*)current->ot, 0x1080);
 	current->primptr = current->primtab;
-	return;
-	*/
 }
 
 
