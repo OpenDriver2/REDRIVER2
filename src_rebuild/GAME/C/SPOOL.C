@@ -132,14 +132,12 @@ extern char g_CurrentLevelFileName[64];
 //-----------------------------------------------------
 void getLevSectorPC(char* dest, int count)
 {
+	count *= 4;
 	assert(count <= 2048);
 
 	memcpy(dest, g_sectorData, count);
 
 	g_isSectorDataRead = true;
-
-	if (g_dataCallbackPC)
-		g_dataCallbackPC();
 }
 
 SDL_Thread* levelSpoolerPCThread = NULL;
@@ -201,6 +199,10 @@ int levelSpoolerPCFunc(void* data)
 			printf("readyCb = NULL\n");
 			break;
 		}
+
+		if (g_isSectorDataRead && g_dataCallbackPC)
+			g_dataCallbackPC();
+
 	} while (true);
 
 	printf("----- SPOOLER thread DON. -----\n");
@@ -1120,8 +1122,10 @@ void SendTPage(void)
 
 			cluts.h = (short)(iVar5 >> 2) + 1;
 			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xe004));
-			puVar4 = (uint *)(texture_cluts + iVar7 * 0x20);
+			puVar4 = (uint *)(texture_cluts[iVar7]);
 			iVar5 = 0;
+
+			printf("Send CLUT\n");
 
 			if (0 < iVar6)
 			{
@@ -1150,7 +1154,9 @@ void SendTPage(void)
 	{
 		if (iVar5 != (uint)tpageloaded[iVar7] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + (int)(0xa000 + (loadbank_write & 1U) * 0x2000)));
+			printf("Send TPAGE\n");
+
+			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xa000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
@@ -1169,6 +1175,8 @@ void SendTPage(void)
 			}
 		}
 	}
+
+	Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
@@ -1243,8 +1251,6 @@ void SpoolSYNC(void)
 // [D]
 void LoadInAreaTSets(int area)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	unsigned char bVar2;
 	uint uVar3;
@@ -1260,10 +1266,13 @@ void LoadInAreaTSets(int area)
 
 	pbVar7 = AreaTPages + area * 0x10;
 	bVar2 = AreaData[area].num_tpages;
+
 	uVar9 = (uint)bVar2;
 	address = model_spool_buffer + 0xa000;
 	iVar8 = 0;
-	if (slotsused < 0x13) {
+
+	if (slotsused < 0x13)
+	{
 		piVar5 = availableslots;
 		iVar6 = slotsused;
 		do {
@@ -1349,7 +1358,7 @@ void LoadInAreaTSets(int area)
 				iVar4 = availableslots[iVar8];
 			}
 		}
-	}*/
+	}
 }
 
 
@@ -2466,13 +2475,10 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 		getLevSectorPC(target_address, 0x200);
 #endif // PSX
 
-
 		target_address = target_address + 0x800;
 		sectors_this_chunk = sectors_this_chunk + -1;
 		current_sector = current_sector + 1;
 		sectors_to_read = sectors_to_read + -1;
-
-		printf("ready_cb_regions: remaining %d\n", sectors_to_read);
 
 		if (sectors_this_chunk == 0) 
 		{
@@ -2537,11 +2543,8 @@ void data_cb_regions(void)
 	{
 		chunk_complete = 0;
 
-		printf("data_cb_regions: %d\n", spoolpos_writing);
-
 		if (spooldata[spoolpos_writing].func != NULL)
 		{
-			printf("data_cb_regions: FUNCTION\n", spoolpos_writing);
 			(spooldata[spoolpos_writing].func)();
 		}
 
