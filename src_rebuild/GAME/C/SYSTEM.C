@@ -1,5 +1,9 @@
 #include "THISDUST.H"
 
+#ifndef PSX
+#include <SDL.h>
+#endif // !PSX
+
 #include "LIBETC.H"
 
 #include "SYSTEM.H"
@@ -1172,8 +1176,6 @@ void DoCDRetry(void)
 		// Start line: 1292
 	/* end block 2 */
 	// End Line: 1293
-
-#include <SDL.h>
 
 // loads whole file into buffer
 int Loadfile(char *name, char *addr)
