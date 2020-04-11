@@ -37,7 +37,7 @@ extern DB MPBuff[2][2];
 extern DB* last;
 extern DB* current;
 
-#define OTLEN	10
+#define OTLEN	13
 #define	OTSIZE	(1<<OTLEN)		/* ordering table size */
 
 extern OTTYPE _tempOT1[OTSIZE];

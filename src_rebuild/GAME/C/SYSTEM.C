@@ -1767,7 +1767,11 @@ void SwapDrawBuffers(void)
 
 	DoNotSwap = 0;
 	PutDrawEnv(&current->draw);
-	DrawOTag((u_long*)current->ot + 0x107f);
+	DrawOTag((u_long*)(current->ot + 0x107f));
+
+#ifndef PSX
+	Emulator_EndScene();
+#endif // PSX
 
 	if ((FrameCnt & 1U) == 0) 
 	{
@@ -1917,11 +1921,11 @@ void SetupDrawBuffers(void)
 	DB **ppDVar5;
 	RECT16 rect;
 
-	SetDefDispEnv(&MPBuff[0][0].disp, 0, 0x100, 0x140, 0x100);
-	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 0x140, 0x100);
+	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, 256);
+	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, 256);
 
-	MPBuff[0][0].disp.screen.h = 0x100;
-	MPBuff[0][1].disp.screen.h = 0x100;
+	MPBuff[0][0].disp.screen.h = 256;
+	MPBuff[0][1].disp.screen.h = 256;
 
 	MPBuff[0][0].disp.screen.x = draw_mode_pal.framex;
 	MPBuff[0][1].disp.screen.x = draw_mode_pal.framex;
@@ -1938,7 +1942,7 @@ void SetupDrawBuffers(void)
 
 	ppDVar5 = MPlast;
 	pDVar1 = MPBuff[0];
-	pDVar4 = (DB *)0xe0938;
+	pDVar4 = MPBuff[1];
 	ppDVar3 = MPcurrent;
 	iVar2 = 1;
 	do {
@@ -1951,10 +1955,10 @@ void SetupDrawBuffers(void)
 		pDVar1 = pDVar1 + 2;
 	} while (-1 < iVar2);
 
-	rect.w = 0x140;
+	rect.w = 320;
 	rect.x = 0;
 	rect.y = 0;
-	rect.h = 0x200;
+	rect.h = 512;
 
 	current = MPcurrent[0];
 	last = MPlast[0];
@@ -2012,7 +2016,7 @@ void SetupDrawBufferData(int num_players)
 
 	if (num_players == 1) 
 	{
-		height = 0x100;
+		height = 256;
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
