@@ -148,6 +148,7 @@ int levelSpoolerPCFunc(void* data)
 	printf("----- Running SPOOLER thread -----\n");
 
 	ready_callbackFn readyCb = g_readyCallbackPC;
+	data_callbackFn dataCb = g_dataCallbackPC;
 
 	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
 	if (!fp)
@@ -164,6 +165,9 @@ int levelSpoolerPCFunc(void* data)
 
 	do
 	{
+		dataCb = g_dataCallbackPC;
+		readyCb = g_readyCallbackPC;
+
 		if (levelSpoolerSeekCmd != 0)
 		{
 			int sector = levelSpoolerSeekCmd;
@@ -179,7 +183,7 @@ int levelSpoolerPCFunc(void* data)
 
 			// seek
 			fseek(fp, sector * 2048, SEEK_SET);
-			readyCb = g_readyCallbackPC;
+
 
 			levelSpoolerSeekCmd = 0;
 		}
@@ -193,16 +197,15 @@ int levelSpoolerPCFunc(void* data)
 		if (readyCb)
 		{
 			readyCb(1, { 0x0 });
+
+			if (g_isSectorDataRead && dataCb)
+				dataCb();
 		}
 		else
 		{
 			printf("readyCb = NULL\n");
 			break;
 		}
-
-		if (g_isSectorDataRead && g_dataCallbackPC)
-			g_dataCallbackPC();
-
 	} while (true);
 
 	printf("----- SPOOLER thread DON. -----\n");
@@ -939,6 +942,8 @@ void UpdateSpool(void)
 // [D]
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 {
+	printf("RequestSpool: %d %d\n", type, data);
+
 	int iVar2;
 	SPOOLQ *next;
 
@@ -2290,6 +2295,8 @@ void GotRegion(void)
 // [D]
 void data_cb_textures(void)
 {
+	printf("data_cb_textures remaining: %d\n", sectors_to_read);
+
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
@@ -2542,6 +2549,8 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 // [D]
 void data_cb_regions(void)
 {
+	printf("data_cb_regions remaining: %d\n", sectors_to_read);
+
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
@@ -2765,6 +2774,8 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 // [D]
 void data_cb_misc(void)
 {
+	printf("data_cb_misc remaining: %d\n", sectors_to_read);
+
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
