@@ -41,12 +41,12 @@ MENU_HEADER YesNoQuitHeader =
 MENU_ITEM MainPauseItems[9] =
 {
 	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "View map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+	{ "View Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Film director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -55,9 +55,9 @@ MENU_ITEM MultiplayerPauseItems[7] =
 {
 	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -67,19 +67,19 @@ MENU_ITEM CutscenePauseItems[6] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionCompleteItems[8] =
 {
-	{ "Save game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
-	{ "Next mission", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
+	{ "Next Mission", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
@@ -87,10 +87,10 @@ MENU_ITEM MissionCompleteItems[8] =
 
 MENU_ITEM MissionFailedItems[6] =
 {
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Retry mission",65u,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
+	{ "Retry Mission",65u,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -98,39 +98,39 @@ MENU_ITEM MissionFailedItems[6] =
 MENU_ITEM TakeARideFinishedItems[6] =
 {
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM DrivingGameFinishedItems[7] =
 {
-	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, &EnterName, MENU_QUIT_NONE, NULL },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MultiplayerFinishedItems[5] =
 {
-	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM ChaseGameFinishedItems[6] =
 {
-	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -158,31 +158,31 @@ MENU_ITEM InvalidMultiPadItems[2] =
 };
 
 MENU_HEADER PauseMenuHeader =
-{ "Game paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
+{ "Game Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
 
 MENU_HEADER MultiplayerPauseHeader =
-{ "Game paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
+{ "Game Paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
 
 MENU_HEADER CutscenePauseMenuHeader =
-{ "Game paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
+{ "Game Paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
 
 MENU_HEADER MissionCompleteHeader =
-{ "Mission successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
+{ "Mission Successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
 
 MENU_HEADER MissionFailedHeader =
-{ "Mission failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
+{ "Mission Failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
 
 MENU_HEADER TakeARideFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
 
 MENU_HEADER DrivingGameFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
 
 MENU_HEADER MultiplayerFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
 
 MENU_HEADER ChaseGameFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
 
 MENU_HEADER NoPadHeader =
 {
@@ -968,7 +968,7 @@ void DrawVisibleMenus(void)
 			i = i + 1;
 		} while (i < (int)uVar5);
 	}
-
+	
 	null = (POLY_FT3 *)current->primptr;
 	setPolyFT3(null);
 	null->x0 = -1;
@@ -983,7 +983,7 @@ void DrawVisibleMenus(void)
 
 	current->primptr += sizeof(POLY_FT3);
 	poly = (POLY_F4*)current->primptr;
-
+	
 	setPolyF4(poly);
 	sVar8 = sVar1 + sVar2 + 5;
 	sVar3 = (pMVar10->Bound).y;
@@ -1002,10 +1002,10 @@ void DrawVisibleMenus(void)
 
 	setSemiTrans(poly, 1);
 
-	addPrim(current->ot, null);
+	addPrim(current->ot, poly);
 
 	current->primptr += sizeof(POLY_F4);
-
+	
 	/*
 	
 
