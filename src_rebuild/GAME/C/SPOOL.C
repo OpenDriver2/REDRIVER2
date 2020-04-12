@@ -65,7 +65,7 @@ int regions_unpacked[4];
 int spool_regioncounter;
 int spoolerror;	// UNUSED
 int spool_regionpos;
-int spoolactive;
+volatile int spoolactive;	// volatile is required at least for PC
 int models_ready;
 
 int tsetcounter;
