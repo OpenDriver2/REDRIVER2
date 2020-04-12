@@ -66,7 +66,7 @@ int spool_regioncounter;
 int spoolerror;	// UNUSED
 int spool_regionpos;
 volatile int spoolactive;	// volatile is required at least for PC
-int quickSpool;
+volatile int quickSpool;
 int models_ready;
 
 short specspooldata[3] = { 20, 10 };
@@ -152,7 +152,7 @@ int levelSpoolerPCFunc(void* data)
 	printf("Running SPOOL thread...\n");
 
 	// HACK: delay a little bit
-	SDL_Delay(10);
+	SDL_Delay(20);
 
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
