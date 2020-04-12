@@ -1,10 +1,12 @@
 # REDRIVER2
 
+PC:
+<p align="center">
+<a href="https://streamable.com/s5f9kt"><img src="https://i.ibb.co/cQZtX2Q/aaa.png"/><a>
+ </p>
+ 
 This project attempting to reverse-engineer PS1 game Driver 2;
-
-This is probably NOT going to be a 1:1 recreation of the original source code as a lot of it missing and no one gives DEBUG version of the game
-
-*If you have one, please contact me.*
+This is probably NOT going to be a 1:1 recreation.
 
 ### Goals
 - Understand what's going on with all of this and how it works

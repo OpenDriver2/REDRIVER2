@@ -1438,7 +1438,7 @@ void SoundHandler(void)
 			}
 			uVar3 = uVar3 + 1;
 			pCVar2 = pCVar2 + 1;
-		} while ((int)uVar3 < 0x10);
+		} while ((int)uVar3 < 16);
 
 		if (voice_bit != 0) 
 		{
