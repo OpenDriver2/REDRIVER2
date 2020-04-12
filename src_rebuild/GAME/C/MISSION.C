@@ -8,6 +8,10 @@
 
 #include <string.h>
 
+#ifndef PSX
+#include <SDL.h>
+#endif // PSX
+
 char* MissionName[37] =
 {
 	// Chicago
@@ -343,12 +347,19 @@ void LoadMission(int missionnum)
 
 	iVar4 = FileExists(acStack64);
 
-	if (iVar4 == 0) {
+	if (iVar4 == 0)
+	{
 		return;
 	}
 	LoadfileSeg(acStack64, (char*)&header, missionnum << 2, 4);
 
-	if (header == 0) {
+	if (header == 0) 
+	{
+#ifndef PSX
+		char errPrint[1024];
+		sprintf(errPrint, "%d is not valid mission\n", missionnum);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+#endif // PSX
 		return;
 	}
 
@@ -360,13 +371,21 @@ void LoadMission(int missionnum)
 	MissionScript = (ulong *)(MissionTargets + 0x10);
 	MissionStrings = (char *)(((_TARGET *)MissionScript)->data + MissionLoadAddress->strings);
 
-	if ((MissionLoadAddress->route != 0) && (NewLevel == 0)) {
+	if ((MissionLoadAddress->route != 0) && (NewLevel == 0))
+	{
 		loadsize = (int)MissionStrings + (MissionLoadAddress->route - (int)MissionLoadAddress);
 	}
 
 	iVar4 = LoadfileSeg(acStack64, (char *)MissionLoadAddress, header & 0x7ffff, loadsize);
 
-	if (MissionHeader->id != MISSIOH_IDENT) {
+	if (MissionHeader->id != MISSIOH_IDENT) 
+	{
+#ifndef PSX
+		char errPrint[1024];
+		sprintf(errPrint, "Invalid mission %d identifier\n", missionnum);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+#endif // PSX
+
 		Mission.active = 0;
 		return;
 	}
