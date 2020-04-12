@@ -1583,9 +1583,11 @@ void GameLoop(void)
 		}
 		CheckForPause();
 	}
+
 	if (NoPlayerControl == 0) 
 	{
-		ReplayParameterPtr->RecordingEnd = CameraCnt;
+		UNIMPLEMENTED(); // [A]
+		//ReplayParameterPtr->RecordingEnd = CameraCnt;
 	}
 
 	StopPadVibration(0);
