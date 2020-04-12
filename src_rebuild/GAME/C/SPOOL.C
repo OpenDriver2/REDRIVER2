@@ -66,7 +66,7 @@ int spool_regioncounter;
 int spoolerror;	// UNUSED
 int spool_regionpos;
 volatile int spoolactive;	// volatile is required at least for PC
-volatile int quickSpool;
+int quickSpool;
 int models_ready;
 
 short specspooldata[3] = { 20, 10 };
@@ -127,9 +127,13 @@ data_callbackFn g_dataCallbackPC = NULL;
 ready_callbackFn g_readyCallbackPC = NULL;
 char g_sectorData[2048] = { 0 };
 bool g_isSectorDataRead = false;
-volatile bool g_spoolDoneFlag = false;
+bool g_spoolDoneFlag = false;
 
 extern char g_CurrentLevelFileName[64];
+
+SDL_Thread* levelSpoolerPCThread = NULL;
+SDL_mutex* levelSpoolerPCMutex = NULL;
+int levelSpoolerSeekCmd = 0;
 
 //-----------------------------------------------------
 // copies read sector data to addr
@@ -139,20 +143,19 @@ void getLevSectorPC(char* dest, int count)
 	count *= 4;
 	assert(count <= 2048);
 
-	memcpy(dest, g_sectorData, count);
+	SDL_LockMutex(levelSpoolerPCMutex);
 
+	memcpy(dest, g_sectorData, count);
 	g_isSectorDataRead = true;
+
+	SDL_UnlockMutex(levelSpoolerPCMutex);
 }
 
-SDL_Thread* levelSpoolerPCThread = NULL;
-int levelSpoolerSeekCmd = 0;
+// Main spooler thread function
 int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
 	printf("Running SPOOL thread...\n");
-
-	// HACK: delay a little bit
-	SDL_Delay(20);
 
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
@@ -178,7 +181,7 @@ int levelSpoolerPCFunc(void* data)
 		dataCb = g_dataCallbackPC;
 		readyCb = g_readyCallbackPC;
 		
-
+		SDL_LockMutex(levelSpoolerPCMutex);
 		if (levelSpoolerSeekCmd != 0)
 		{
 			int sector = levelSpoolerSeekCmd;
@@ -186,6 +189,7 @@ int levelSpoolerPCFunc(void* data)
 			if (sector == -1)
 			{
 				printf("SPOOL thread recieved 'CdlPause'\n", sector);
+
 				levelSpoolerSeekCmd = 0;
 				g_spoolDoneFlag = true;
 			}
@@ -198,6 +202,7 @@ int levelSpoolerPCFunc(void* data)
 				levelSpoolerSeekCmd = 0;
 			}
 		}
+		SDL_UnlockMutex(levelSpoolerPCMutex);
 
 		// clear sector before proceed
 		ClearMem(g_sectorData, sizeof(g_sectorData));
@@ -209,8 +214,12 @@ int levelSpoolerPCFunc(void* data)
 		{
 			readyCb(1, { 0x0 });
 
+			SDL_LockMutex(levelSpoolerPCMutex);
+
 			if (g_isSectorDataRead && dataCb)
 				dataCb();
+
+			SDL_UnlockMutex(levelSpoolerPCMutex);
 		}
 		else
 			break;
@@ -228,7 +237,12 @@ int levelSpoolerPCFunc(void* data)
 //-----------------------------------------------------
 void startReadLevSectorsPC(int sector)
 {
+	if (!levelSpoolerPCMutex)
+		levelSpoolerPCMutex = SDL_CreateMutex();
+
+	SDL_LockMutex(levelSpoolerPCMutex);
 	levelSpoolerSeekCmd = sector;
+	SDL_UnlockMutex(levelSpoolerPCMutex);
 
 	if (levelSpoolerPCThread && g_spoolDoneFlag)
 	{
