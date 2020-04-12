@@ -66,7 +66,10 @@ int spool_regioncounter;
 int spoolerror;	// UNUSED
 int spool_regionpos;
 volatile int spoolactive;	// volatile is required at least for PC
+int quickSpool;
 int models_ready;
+
+short specspooldata[3] = { 20, 10 };
 
 int tsetcounter;
 int tsetpos;
@@ -148,6 +151,9 @@ int levelSpoolerPCFunc(void* data)
 	//Print incoming data
 	printf("Running SPOOL thread...\n");
 
+	// HACK: delay a little bit
+	SDL_Delay(10);
+
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
 
@@ -171,6 +177,7 @@ int levelSpoolerPCFunc(void* data)
 	{
 		dataCb = g_dataCallbackPC;
 		readyCb = g_readyCallbackPC;
+		
 
 		if (levelSpoolerSeekCmd != 0)
 		{
@@ -180,15 +187,16 @@ int levelSpoolerPCFunc(void* data)
 			{
 				printf("SPOOL thread recieved 'CdlPause'\n", sector);
 				levelSpoolerSeekCmd = 0;
-				break;
+				g_spoolDoneFlag = true;
 			}
+			else
+			{
+				printf("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
 
-			printf("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
-
-			// seek
-			fseek(fp, sector * 2048, SEEK_SET);
-
-			levelSpoolerSeekCmd = 0;
+				// seek
+				fseek(fp, sector * 2048, SEEK_SET);
+				levelSpoolerSeekCmd = 0;
+			}
 		}
 
 		// clear sector before proceed
@@ -206,11 +214,9 @@ int levelSpoolerPCFunc(void* data)
 		}
 		else
 			break;
-
-	} while (true);
+	} while (!g_spoolDoneFlag);
 
 	printf("SPOOLER thread work done.\n");
-	g_spoolDoneFlag = true;
 
 	fclose(fp);
 
@@ -942,7 +948,7 @@ void UpdateSpool(void)
 // [D]
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 {
-	//printf("RequestSpool: %d %d\n", type, data);
+	printf("RequestSpool: %d %d\n", type, data);
 
 	int iVar2;
 	SPOOLQ *next;
@@ -1209,10 +1215,12 @@ void SendTPage(void)
 // [D]
 void SpoolSYNC(void)
 {
+	printf("SpoolSYNC...\n"); // [A]
+
 	do {
 	} while (spoolactive != 0);
 
-	printf("SpoolSYNC...\n"); // [A]
+	printf("SpoolSYNC END\n"); // [A]
 }
 
 
@@ -3145,9 +3153,6 @@ void Unpack_CellPtrs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-short specspooldata[3] = { 20, 10 };
-int quickSpool;
-
 // [D]
 void SpecClutsSpooled(void)
 {
@@ -3158,7 +3163,7 @@ void SpecClutsSpooled(void)
 	int iVar5;
 	int iVar6;
 	uint uVar7;
-	u_short *puVar8;
+	short *puVar8;
 	int iVar9;
 	int iVar10;
 	char *pcVar11;
@@ -3178,7 +3183,7 @@ void SpecClutsSpooled(void)
 			iVar5 = 6;
 		}
 		iVar10 = 0;
-		bVar1 = specTpages[GameLevel][((int)specspooldata[2] + -1) * 2 + iVar9];	// [A]
+		bVar1 = specTpages[GameLevel][specspooldata[2]-1];
 		uVar7 = (uint)bVar1;
 		iVar6 = specialSlot + iVar9;
 		carTpages[GameLevel][iVar5] = bVar1;	// [A]
@@ -3196,7 +3201,8 @@ void SpecClutsSpooled(void)
 
 		if (0 < tpage_texamts[uVar7])
 		{
-			puVar8 = (u_short *)(texture_cluts + uVar7 * 0x20);
+			puVar8 = texture_cluts[uVar7];
+
 			do {
 				LoadImage2(&specCluts, (u_long*)pcVar11);
 				pcVar11 = pcVar11 + 0x20;
@@ -3776,10 +3782,12 @@ void Tada(void)
 		local_18.x = tpagepos[slot].x;
 		local_18.h = 0x10;
 		local_18.y = tpagepos[slot].y + (0xf - (short)specBlocksToLoad) * 0x10;
-		if (specBlocksToLoad == 0xf) {
-			update_slotinfo((uint)specTpages[((int)specspooldata[2] + -1) * 2 + GameLevel * 0xc + 1]
-				, (int)specialSlot, &local_18);
+
+		if (specBlocksToLoad == 0xf) 
+		{
+			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], (int)specialSlot, &local_18);
 		}
+
 		LoadImage(&local_18, (u_long *)pcVar1);
 	}
 	else
@@ -3812,8 +3820,9 @@ void Tada(void)
 		local_20.h = 0x10;
 		local_20.y = tpagepos[slot].y + (0xf - (short)specBlocksToLoad) * 0x10;
 
-		if (specBlocksToLoad == 0xf) {
-			update_slotinfo((uint)specTpages[((int)specspooldata[2] + -1) * 2 + GameLevel * 0xc], slot, &local_20);
+		if (specBlocksToLoad == 15) 
+		{
+			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], slot, &local_20);
 		}
 
 		LoadImage(&local_20, (u_long *)pcVar1);
@@ -3933,7 +3942,7 @@ LAB_0007d240:
 	switchD_0007d2ac_caseD_a:
 		if (quickSpool == 1) 
 		{
-			specModelValid = '\x01';
+			specModelValid = 1;
 			specialState = 0;
 			quickSpool = 0;
 			specSpoolComplete = 0;
