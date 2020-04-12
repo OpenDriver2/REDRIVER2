@@ -5,6 +5,7 @@
 #include "LIBETC.H"
 #include "SYSTEM.H"
 #include "PRES.H"
+#include "PAUSE.H"
 
 #undef v0
 
@@ -441,9 +442,6 @@ void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 	// End Line: 1058
 
 int lastrequesteddisc = 0;
-
-// MAP.C
-int gShowMap = 0;
 
 // [D]
 void SetPleaseWait(char *buffer)

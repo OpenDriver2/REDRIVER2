@@ -65,7 +65,7 @@ int regions_unpacked[4];
 int spool_regioncounter;
 int spoolerror;	// UNUSED
 int spool_regionpos;
-int spoolactive;
+volatile int spoolactive;	// volatile is required at least for PC
 int models_ready;
 
 int tsetcounter;
@@ -145,9 +145,10 @@ int levelSpoolerSeekCmd = 0;
 int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
-	printf("----- Running SPOOLER thread -----\n");
+	printf("Running SPOOL thread...\n");
 
 	ready_callbackFn readyCb = g_readyCallbackPC;
+	data_callbackFn dataCb = g_dataCallbackPC;
 
 	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
 	if (!fp)
@@ -164,22 +165,24 @@ int levelSpoolerPCFunc(void* data)
 
 	do
 	{
+		dataCb = g_dataCallbackPC;
+		readyCb = g_readyCallbackPC;
+
 		if (levelSpoolerSeekCmd != 0)
 		{
 			int sector = levelSpoolerSeekCmd;
 
 			if (sector == -1)
 			{
-				printf("CdlPause\n", sector);
+				printf("SPOOL thread recieved 'CdlPause'\n", sector);
 				levelSpoolerSeekCmd = 0;
 				break;
 			}
 
-			printf("CdlReadS: at %d\n", sector);
+			printf("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
 
 			// seek
 			fseek(fp, sector * 2048, SEEK_SET);
-			readyCb = g_readyCallbackPC;
 
 			levelSpoolerSeekCmd = 0;
 		}
@@ -193,19 +196,16 @@ int levelSpoolerPCFunc(void* data)
 		if (readyCb)
 		{
 			readyCb(1, { 0x0 });
+
+			if (g_isSectorDataRead && dataCb)
+				dataCb();
 		}
 		else
-		{
-			printf("readyCb = NULL\n");
 			break;
-		}
-
-		if (g_isSectorDataRead && g_dataCallbackPC)
-			g_dataCallbackPC();
 
 	} while (true);
 
-	printf("----- SPOOLER thread DON. -----\n");
+	printf("SPOOLER thread work done.\n");
 
 	fclose(fp);
 
@@ -939,6 +939,8 @@ void UpdateSpool(void)
 // [D]
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 {
+	//printf("RequestSpool: %d %d\n", type, data);
+
 	int iVar2;
 	SPOOLQ *next;
 
@@ -1125,8 +1127,6 @@ void SendTPage(void)
 			puVar4 = (uint *)(texture_cluts[iVar7]);
 			iVar5 = 0;
 
-			printf("Send CLUT\n");
-
 			if (0 < iVar6)
 			{
 				iVar2 = (int)((uint)cluts.x << 0x10) >> 0x10;
@@ -1154,8 +1154,6 @@ void SendTPage(void)
 	{
 		if (iVar5 != (uint)tpageloaded[iVar7] - 1) 
 		{
-			printf("Send TPAGE\n");
-
 			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xa000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
@@ -1179,7 +1177,7 @@ void SendTPage(void)
 		}
 	}
 
-	Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	//Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
@@ -1210,7 +1208,8 @@ void SpoolSYNC(void)
 {
 	do {
 	} while (spoolactive != 0);
-	return;
+
+	printf("SpoolSYNC...\n"); // [A]
 }
 
 
@@ -2290,6 +2289,8 @@ void GotRegion(void)
 // [D]
 void data_cb_textures(void)
 {
+	//printf("data_cb_textures remaining: %d\n", sectors_to_read);
+
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
@@ -2542,6 +2543,8 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 // [D]
 void data_cb_regions(void)
 {
+	//printf("data_cb_regions remaining: %d\n", sectors_to_read);
+
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
@@ -2765,6 +2768,8 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 // [D]
 void data_cb_misc(void)
 {
+	//printf("data_cb_misc remaining: %d\n", sectors_to_read);
+
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;

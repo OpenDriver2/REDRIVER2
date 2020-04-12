@@ -100,6 +100,9 @@ ACTIVE_CHEATS ActiveCheats = { 0 };
 int gInFrontend = 0;
 int AttractMode = 0;
 
+static int WantPause = 0;
+static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ GameStart()

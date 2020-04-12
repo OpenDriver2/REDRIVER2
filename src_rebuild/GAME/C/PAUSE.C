@@ -1,6 +1,13 @@
 #include "THISDUST.H"
 #include "PAUSE.H"
-
+#include "SYSTEM.H"
+#include "MISSION.H"
+#include "OVERLAY.H"
+#include "PRES.H"
+#include "PAD.H"
+#include "MAIN.H"
+#include "GLAUNCH.H"
+#include "SCORES.H"
 
 void PauseMap(int direction);
 void SfxVolume(int direction);
@@ -34,12 +41,12 @@ MENU_HEADER YesNoQuitHeader =
 MENU_ITEM MainPauseItems[9] =
 {
 	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "View map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+	{ "View Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Film director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -48,9 +55,9 @@ MENU_ITEM MultiplayerPauseItems[7] =
 {
 	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -60,19 +67,19 @@ MENU_ITEM CutscenePauseItems[6] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionCompleteItems[8] =
 {
-	{ "Save game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
-	{ "Next mission", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
+	{ "Next Mission", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
@@ -80,10 +87,10 @@ MENU_ITEM MissionCompleteItems[8] =
 
 MENU_ITEM MissionFailedItems[6] =
 {
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Retry mission",65u,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
+	{ "Retry Mission",65u,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -91,39 +98,39 @@ MENU_ITEM MissionFailedItems[6] =
 MENU_ITEM TakeARideFinishedItems[6] =
 {
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM DrivingGameFinishedItems[7] =
 {
-	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, &EnterName, MENU_QUIT_NONE, NULL },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MultiplayerFinishedItems[5] =
 {
-	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM ChaseGameFinishedItems[6] =
 {
-	{ "Try again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -151,31 +158,31 @@ MENU_ITEM InvalidMultiPadItems[2] =
 };
 
 MENU_HEADER PauseMenuHeader =
-{ "Game paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
+{ "Game Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
 
 MENU_HEADER MultiplayerPauseHeader =
-{ "Game paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
+{ "Game Paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
 
 MENU_HEADER CutscenePauseMenuHeader =
-{ "Game paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
+{ "Game Paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
 
 MENU_HEADER MissionCompleteHeader =
-{ "Mission successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
+{ "Mission Successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
 
 MENU_HEADER MissionFailedHeader =
-{ "Mission failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
+{ "Mission Failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
 
 MENU_HEADER TakeARideFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
 
 MENU_HEADER DrivingGameFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
 
 MENU_HEADER MultiplayerFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
 
 MENU_HEADER ChaseGameFinishedHeader =
-{ "Game over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
+{ "Game Over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
 
 MENU_HEADER NoPadHeader =
 {
@@ -247,33 +254,53 @@ int playerwithcontrol[3] = { 0 };
 	/* end block 2 */
 	// End Line: 2009
 
+static int gScoreEntered = 0;
+static char EnterNameText[32] = { 0 };
+static int PauseReturnValue;
+int pauseflag = 0;
+int gShowMap = 0;
+int gDrawPauseMenus = 0;
+int gEnteringScore = 0;
+static int gScorePosition = 0;
+static int allownameentry = 0;
+
+static MENU_ITEM* ActiveItem[3];
+static struct MENU_HEADER* ActiveMenu;
+static int ActiveMenuItem;
+static int VisibleMenu;
+static MENU_HEADER* VisibleMenus[3];
+static char SfxVolumeText[8];
+static char MusicVolumeText[8];
+
+// MISSION.C
+int gInGameCutsceneActive = 0;
+PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
+
+// [D]
 int ShowPauseMenu(PAUSEMODE mode)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	uint uVar3;
-	RECT local_20;
+	RECT16 rect;
 
 	uVar2 = (uint)mode;
 	ReadControllers();
 	if (mode == PAUSEMODE_PAUSEP1) {
-		INT_000a15fc = 0;
-		INT_000a1600 = 0;
-		playerwithcontrol = uVar2;
+		playerwithcontrol[1] = 0;
+		playerwithcontrol[2] = 0;
+		playerwithcontrol[0] = uVar2;
 	}
 	else {
 		if (mode == PAUSEMODE_PAUSEP2) {
-			playerwithcontrol = 0;
-			INT_000a15fc = 1;
-			INT_000a1600 = 0;
+			playerwithcontrol[0] = 0;
+			playerwithcontrol[1] = 1;
+			playerwithcontrol[2] = 0;
 		}
 		else {
-			playerwithcontrol = 0;
-			INT_000a15fc = 0;
-			INT_000a1600 = 1;
+			playerwithcontrol[0] = 0;
+			playerwithcontrol[1] = 0;
+			playerwithcontrol[2] = 1;
 		}
 	}
 	SetDispMask(1);
@@ -283,16 +310,16 @@ int ShowPauseMenu(PAUSEMODE mode)
 	StopPadVibration(1);
 	InitaliseMenu(mode);
 	gDrawPauseMenus = 1;
-	if (((NoPlayerControl == 0) && (iVar1 = OnScoreTable((SCORE_ENTRY **)0x0), iVar1 != -1)) &&
+	if (((NoPlayerControl == 0) && (iVar1 = OnScoreTable(NULL), iVar1 != -1)) &&
 		(allownameentry != 0)) {
 		gScoreEntered = 0;
-		sprintf(EnterScoreText, s_Immetti_il_punteggio_00011a20);
-		sprintf(EnterNameText, s_Immetti_il_nome__00011a38);
+		sprintf(EnterScoreText, "Please enter your score");
+		sprintf(EnterNameText, "Please enter your name:");
 	}
 	else {
 		gScoreEntered = 1;
-		sprintf(EnterScoreText, s_Vedi_tabella_00011a4c);
-		sprintf(EnterNameText, s_Alti_punteggi_00011a5c);
+		sprintf(EnterScoreText, "View score table");
+		sprintf(EnterNameText, "High scores");
 	}
 	uVar3 = uVar2;
 	if (mode == PAUSEMODE_PADERROR) {
@@ -317,46 +344,48 @@ int ShowPauseMenu(PAUSEMODE mode)
 			}
 		}
 		if (pad_connected < 1) {
-			INT_000a1600 = 1;
+			playerwithcontrol[2] = 1;
 		}
 		ControlMenu();
 		DrawGame();
 	} while (PauseReturnValue == 0);
 	gDrawPauseMenus = 0;
 	if (1 < NumPlayers) {
-		local_20.x = 0;
-		local_20.w = 0x140;
-		local_20.h = 1;
-		local_20.y = (current->draw).clip.y + (current->draw).clip.h;
-		ClearImage2(&local_20, '\0', '\0', '\0');
+		rect.x = 0;
+		rect.w = 0x140;
+		rect.h = 1;
+		rect.y = (current->draw).clip.y + (current->draw).clip.h;
+		ClearImage2(&rect, '\0', '\0', '\0');
 		DrawGame();
-		local_20.x = 0;
-		local_20.w = 0x140;
-		local_20.h = 1;
-		local_20.y = (current->draw).clip.y + (current->draw).clip.h;
-		ClearImage2(&local_20, '\0', '\0', '\0');
+		rect.x = 0;
+		rect.w = 0x140;
+		rect.h = 1;
+		rect.y = (current->draw).clip.y + (current->draw).clip.h;
+		ClearImage2(&rect, '\0', '\0', '\0');
 		DrawGame();
 	}
-	switch (PauseReturnValue) {
-	case 1:
-		pauseflag = 0;
-		break;
-	case 2:
-		EndGame(GAMEMODE_QUIT);
-		break;
-	case 3:
-		EndGame(GAMEMODE_RESTART);
-		break;
-	case 4:
-		EndGame(GAMEMODE_DIRECTOR);
-		break;
-	case 5:
-		EndGame(GAMEMODE_REPLAY);
-		break;
-	case 7:
-		EndGame(GAMEMODE_NEXTMISSION);
+	if (true) {
+		switch (PauseReturnValue) {
+		case 1:
+			pauseflag = 0;
+			break;
+		case 2:
+			EndGame(GAMEMODE_QUIT);
+			break;
+		case 3:
+			EndGame(GAMEMODE_RESTART);
+			break;
+		case 4:
+			EndGame(GAMEMODE_DIRECTOR);
+			break;
+		case 5:
+			EndGame(GAMEMODE_REPLAY);
+			break;
+		case 7:
+			EndGame(GAMEMODE_NEXTMISSION);
+		}
 	}
-	return PauseReturnValue;*/
+	return PauseReturnValue;
 }
 
 
@@ -382,10 +411,11 @@ int ShowPauseMenu(PAUSEMODE mode)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+
+
+// [D]
 void DrawPauseMenus(void)
 {
-	UNIMPLEMENTED();
-	/*
 	if ((gDrawPauseMenus != 0) && (gShowMap == 0)) {
 		if (gEnteringScore == 0) {
 			DrawVisibleMenus();
@@ -394,7 +424,6 @@ void DrawPauseMenus(void)
 			DrawHighScoreMenu(gScorePosition);
 		}
 	}
-	return;*/
 }
 
 
@@ -498,12 +527,10 @@ void EnterName(void)
 	/* end block 2 */
 	// End Line: 3818
 
+// [D]
 int MaxMenuStringLength(MENU_HEADER *pMenu)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	char bVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
@@ -512,19 +539,26 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	pMVar5 = pMenu->MenuItems;
 	iVar2 = StringWidth(pMenu->Title);
 	bVar1 = pMVar5->Type;
-	while ((bVar1 & 0x80) == 0) {
+
+	while ((bVar1 & 0x80) == 0)
+	{
 		iVar3 = StringWidth(pMVar5->Text);
-		if ((pMVar5->Type & 0x18) != 0) {
-			iVar4 = StringWidth(&DAT_000aa800);
+
+		if ((pMVar5->Type & 0x18) != 0) 
+		{
+			iVar4 = StringWidth(" 100");
 			iVar3 = iVar3 + iVar4;
 		}
-		if (iVar2 < iVar3) {
+
+		if (iVar2 < iVar3)
+		{
 			iVar2 = iVar3;
 		}
+
 		bVar1 = pMVar5[1].Type;
 		pMVar5 = pMVar5 + 1;
 	}
-	return iVar2;*/
+	return iVar2;
 }
 
 
@@ -553,28 +587,27 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	/* end block 3 */
 	// End Line: 2442
 
+// [D]
 void InitaliseMenu(PAUSEMODE mode)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
-	byte bVar2;
-	byte bVar3;
+	unsigned char uVar1;
+	unsigned char bVar2;
+	unsigned char bVar3;
 	MENU_ITEM *pMVar4;
 	MENU_HEADER *pMVar5;
 	MENU_HEADER **ppMVar6;
 	char *pcVar7;
 	MENU_ITEM **ppMVar8;
-	uchar uVar9;
+	unsigned char uVar9;
 	int iVar10;
 
-	ppMVar8 = &ActiveItem3;
-	ppMVar6 = &VisibleMenus3;
+	ppMVar8 = ActiveItem;
+	ppMVar6 = VisibleMenus;
 	iVar10 = 2;
 	do {
-		*ppMVar8 = (MENU_ITEM *)0x0;
+		*ppMVar8 = NULL;
 		ppMVar8 = ppMVar8 + 1;
-		*ppMVar6 = (MENU_HEADER *)0x0;
+		*ppMVar6 = NULL;
 		iVar10 = iVar10 + -1;
 		ppMVar6 = ppMVar6 + 1;
 	} while (-1 < iVar10);
@@ -597,6 +630,11 @@ void InitaliseMenu(PAUSEMODE mode)
 		break;
 	case PAUSEMODE_GAMEOVER:
 		switch (GameType) {
+		case GAME_PURSUIT:
+		switchD_0006c3b4_caseD_3:
+			ActiveMenu = &ChaseGameFinishedHeader;
+			gMissionCompletionState = mode;
+			goto LAB_0006c5d0;
 		case GAME_GETAWAY:
 		case GAME_CHECKPOINT:
 			if (NumPlayers == 1) {
@@ -618,41 +656,39 @@ void InitaliseMenu(PAUSEMODE mode)
 			break;
 		default:
 			if (NumPlayers == 1) goto switchD_0006c460_caseD_1;
-			break;
-		case GAME_PURSUIT:
-			goto switchD_0006c3b4_caseD_3;
 		}
 	LAB_0006c4c0:
 		ActiveMenu = &MultiplayerFinishedHeader;
 		gMissionCompletionState = mode;
 		break;
 	case PAUSEMODE_COMPLETE:
-		switch (GameType) {
-		case GAME_MISSION:
-			ActiveMenu = &MissionCompleteHeader;
-			gMissionCompletionState = mode;
-			break;
-		default:
-		switchD_0006c460_caseD_1:
-			ActiveMenu = &TakeARideFinishedHeader;
-			gMissionCompletionState = mode;
-			break;
-		case GAME_GETAWAY:
-		case GAME_GATERACE:
-		case GAME_CHECKPOINT:
-		case GAME_TRAILBLAZER:
-		case GAME_SURVIVAL:
-		case GAME_COPSANDROBBERS:
-			if (NumPlayers == 1) {
-				ActiveMenu = &DrivingGameFinishedHeader;
+		if (true) {
+			switch (GameType) {
+			case GAME_MISSION:
+				ActiveMenu = &MissionCompleteHeader;
 				gMissionCompletionState = mode;
-				allownameentry = (uint)NumPlayers;
-				break;
+				goto LAB_0006c5d0;
+			case GAME_GETAWAY:
+			case GAME_GATERACE:
+			case GAME_CHECKPOINT:
+			case GAME_TRAILBLAZER:
+			case GAME_SURVIVAL:
+			case GAME_COPSANDROBBERS:
+				if (NumPlayers == 1) {
+					ActiveMenu = &DrivingGameFinishedHeader;
+					gMissionCompletionState = mode;
+					allownameentry = (uint)NumPlayers;
+					goto LAB_0006c5d0;
+				}
+				goto LAB_0006c4c0;
+			case GAME_PURSUIT:
+				goto switchD_0006c3b4_caseD_3;
 			}
-			goto LAB_0006c4c0;
-		case GAME_PURSUIT:
-			goto switchD_0006c3b4_caseD_3;
 		}
+	switchD_0006c460_caseD_1:
+		ActiveMenu = &TakeARideFinishedHeader;
+		gMissionCompletionState = mode;
+		break;
 	case PAUSEMODE_PADERROR:
 		if (pad_connected < 0) {
 			if (NumPlayers == 1) {
@@ -661,11 +697,11 @@ void InitaliseMenu(PAUSEMODE mode)
 			else {
 				ActiveMenu = &InvalidMultiPadHeader;
 				if (Pads[0].type != '\x01') {
-					pcVar7 = s_Errore_nell_ingresso_controller_2_00011a6c;
-					goto LAB_0006c5cc;
+					pcVar7 = "Incorrect controller in Port 2";
+						goto LAB_0006c5cc;
 				}
 			}
-			pcVar7 = s_Errore_nell_ingresso_controller_1_000119f0;
+			pcVar7 = "Incorrect controller in Port 1";
 		}
 		else {
 			if (NumPlayers == 1) {
@@ -674,32 +710,33 @@ void InitaliseMenu(PAUSEMODE mode)
 			else {
 				ActiveMenu = &NoMultiPadHeader;
 				if (Pads[0].type != '\0') {
-					pcVar7 = s_Inserisci_un_controller_nell_ing_00011a90;
-					goto LAB_0006c5cc;
+					pcVar7 = "Please insert controller into port";
+						goto LAB_0006c5cc;
 				}
 			}
-			pcVar7 = s_Inserisci_un_controller_nell_ing_000119c8;
+			pcVar7 = "Please insert controller into port";
 		}
 	LAB_0006c5cc:
 		ActiveMenu->Title = pcVar7;
 	}
-	goto LAB_0006c5d0;
-switchD_0006c3b4_caseD_3:
-	ActiveMenu = &ChaseGameFinishedHeader;
-	gMissionCompletionState = mode;
 LAB_0006c5d0:
-	ActiveItem3 = ActiveMenu->MenuItems;
-	VisibleMenus3 = ActiveMenu;
+	ActiveItem[0] = ActiveMenu->MenuItems;
+	VisibleMenus[0] = ActiveMenu;
+
 	ActiveMenuItem = 0;
 	VisibleMenu = 0;
+
 	uVar1 = ActiveMenu->MenuItems->Type;
-	uVar9 = '\0';
+	uVar9 = 0;
 	pMVar4 = ActiveMenu->MenuItems;
-	while (uVar1 != -0x80) {
-		uVar1 = pMVar4[1].Type;
-		uVar9 = uVar9 + '\x01';
-		pMVar4 = pMVar4 + 1;
+
+	while (uVar1 != 0x80)
+	{
+		uVar1 = (pMVar4+1)->Type;
+		uVar9++;
+		pMVar4++;
 	}
+
 	ActiveMenu->NumItems = uVar9;
 	iVar10 = MaxMenuStringLength(ActiveMenu);
 	pMVar5 = ActiveMenu;
@@ -713,7 +750,6 @@ LAB_0006c5d0:
 	if (iVar10 < 0x30) {
 		(pMVar5->Bound).y = 0x30;
 	}
-	return;*/
 }
 
 
@@ -846,10 +882,9 @@ void SetupMenu(MENU_HEADER *menu, int back)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawVisibleMenus(void)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -858,7 +893,8 @@ void DrawVisibleMenus(void)
 	int iVar6;
 	int x;
 	char *pString;
-	uint *puVar7;
+	POLY_FT3 *null;
+	POLY_F4 *poly;
 	short sVar8;
 	MENU_ITEM *pMVar9;
 	int y;
@@ -867,19 +903,21 @@ void DrawVisibleMenus(void)
 	int r;
 	int b;
 	int x_00;
-	int local_30;
+	int i;
 
 	if (1 < NumPlayers) {
 		SetFullscreenDrawing();
 	}
-	pMVar10 = (&VisibleMenus3)[VisibleMenu];
+	pMVar10 = VisibleMenus[VisibleMenu];
 	y = (int)(pMVar10->Bound).y;
 	y_00 = y;
-	if (pMVar10->Title != (char *)0x0) {
+	if (pMVar10->Title != NULL) 
+{
 		y_00 = y + 0xf;
-		OutputString(pMVar10->Title, 2, (int)(pMVar10->Bound).x, y, (int)(pMVar10->Bound).w, 0x80, 0x20, 0x20);
+		OutputString(pMVar10->Title, 2, (int)(pMVar10->Bound).x, y, (int)(pMVar10->Bound).w, 0x80, 0x20,
+			0x20);
 	}
-	local_30 = 0;
+	i = 0;
 	uVar5 = (uint)pMVar10->NumItems;
 	pMVar9 = pMVar10->MenuItems;
 	sVar1 = (pMVar10->Bound).x;
@@ -888,19 +926,23 @@ void DrawVisibleMenus(void)
 	y = (int)sVar2;
 	if (pMVar10->NumItems != 0) {
 		do {
-			if (pMVar9->Text != (char *)0x0) {
+			if (pMVar9->Text != NULL) {
 				r = 0x80;
-				if (pMVar9 == (&ActiveItem3)[VisibleMenu]) {
+				if (pMVar9 == ActiveItem[VisibleMenu])
+				{
 					r = 0;
 					b = 0;
 				}
-				else {
+				else
+				{
 					b = 0x80;
 				}
-				if ((pMVar9->Type & 8) == 0) {
-					if ((pMVar9->Type & 0x10) != 0) {
+				if ((pMVar9->Type & 8) == 0) 
+				{
+					if ((pMVar9->Type & 0x10) != 0) 
+					{
 						iVar6 = StringWidth(pMVar9->Text);
-						x = StringWidth(&DAT_000aa800);
+						x = StringWidth(" 100");
 						x = x_00 + ((y - iVar6) - x >> 1);
 						iVar6 = StringWidth(pMVar9->Text);
 						iVar6 = x + iVar6;
@@ -908,11 +950,13 @@ void DrawVisibleMenus(void)
 						pString = MusicVolumeText;
 						goto LAB_0006c9ec;
 					}
+
 					OutputString(pMVar9->Text, (uint)pMVar9->Justify, x_00, y_00, y, r, 0x80, b);
 				}
-				else {
+				else 
+				{
 					iVar6 = StringWidth(pMVar9->Text);
-					x = StringWidth(&DAT_000aa800);
+					x = StringWidth(" 100");
 					x = x_00 + ((y - iVar6) - x >> 1);
 					iVar6 = StringWidth(pMVar9->Text);
 					iVar6 = x + iVar6;
@@ -921,42 +965,166 @@ void DrawVisibleMenus(void)
 				LAB_0006c9ec:
 					OutputString(pString, 1, iVar6 + 10, y_00, y, r, 0x80, b);
 				}
+
 				y_00 = y_00 + 0xf;
 				uVar5 = (uint)pMVar10->NumItems;
 			}
 			pMVar9 = pMVar9 + 1;
-			local_30 = local_30 + 1;
-		} while (local_30 < (int)uVar5);
+			i = i + 1;
+		} while (i < (int)uVar5);
 	}
-	puVar7 = (uint *)current->primptr;
-	*(char *)((int)puVar7 + 3) = '\a';
-	*(char *)((int)puVar7 + 7) = '$';
+	
+	null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0;
+
+	addPrim(current->ot, null);
+
+	current->primptr += sizeof(POLY_FT3);
+	poly = (POLY_F4*)current->primptr;
+	
+	setPolyF4(poly);
+	sVar8 = sVar1 + sVar2 + 5;	// x + w
+	sVar3 = (pMVar10->Bound).y;
+
+	poly->x0 = sVar1 + -5;
+	poly->x1 = sVar8;
+	poly->y0 = sVar3 + -5;
+	poly->x2 = sVar1 + -5;
+
+	poly->y1 = sVar3 + -5;
+	poly->y2 = sVar3 + (pMVar10->Bound).h;
+
+	poly->x3 = sVar8;
+	poly->y3 = sVar3 + (pMVar10->Bound).h;
+
+	poly->r0 = '\x10';
+	poly->g0 = '\x10';
+	poly->b0 = '\x10';
+
+	setSemiTrans(poly, 1);
+
+	addPrim(current->ot, poly);
+
+	current->primptr += sizeof(POLY_F4);
+	
+	/*
+	
+
+	short sVar1;
+	short sVar2;
+	short sVar3;
+	DB *pDVar4;
+	uint uVar5;
+	int iVar6;
+	int x;
+	char *pString;
+	POLY_FT3 *null;
+	short sVar7;
+	MENU_ITEM *pMVar8;
+	int y;
+	int y_00;
+	MENU_HEADER *pMVar9;
+	int r;
+	int b;
+	int x_00;
+	int i;
+
+	if (1 < NumPlayers) {
+		SetFullscreenDrawing();
+	}
+	pMVar9 = VisibleMenus3[VisibleMenu];
+	y = (int)(pMVar9->Bound).y;
+	y_00 = y;
+	if (pMVar9->Title != NULL) {
+		y_00 = y + 0xf;
+		OutputString(pMVar9->Title, 2, (int)(pMVar9->Bound).x, y, (int)(pMVar9->Bound).w, 0x80, 0x20, 0x20)
+			;
+	}
+	i = 0;
+	uVar5 = (uint)pMVar9->NumItems;
+	pMVar8 = pMVar9->MenuItems;
+	sVar1 = (pMVar9->Bound).x;
+	x_00 = (int)sVar1;
+	sVar2 = (pMVar9->Bound).w;
+	y = (int)sVar2;
+	if (pMVar9->NumItems != 0) {
+		do {
+			if (pMVar8->Text != NULL) {
+				r = 0x80;
+				if (pMVar8 == ActiveItem3[VisibleMenu]) {
+					r = 0;
+					b = 0;
+				}
+				else {
+					b = 0x80;
+				}
+				if ((pMVar8->Type & 8) == 0) {
+					if ((pMVar8->Type & 0x10) != 0) {
+						iVar6 = StringWidth(pMVar8->Text);
+						x = StringWidth(s__100_000aa800);
+						x = x_00 + ((y - iVar6) - x >> 1);
+						iVar6 = StringWidth(pMVar8->Text);
+						iVar6 = x + iVar6;
+						OutputString(pMVar8->Text, 1, x, y_00, y, r, 0x80, b);
+						pString = MusicVolumeText;
+						goto LAB_0006c9ec;
+					}
+					OutputString(pMVar8->Text, (uint)pMVar8->Justify, x_00, y_00, y, r, 0x80, b);
+				}
+				else {
+					iVar6 = StringWidth(pMVar8->Text);
+					x = StringWidth(s__100_000aa800);
+					x = x_00 + ((y - iVar6) - x >> 1);
+					iVar6 = StringWidth(pMVar8->Text);
+					iVar6 = x + iVar6;
+					OutputString(pMVar8->Text, 1, x, y_00, y, r, 0x80, b);
+					pString = SfxVolumeText;
+				LAB_0006c9ec:
+					OutputString(pString, 1, iVar6 + 10, y_00, y, r, 0x80, b);
+				}
+				y_00 = y_00 + 0xf;
+				uVar5 = (uint)pMVar9->NumItems;
+			}
+			pMVar8 = pMVar8 + 1;
+			i = i + 1;
+		} while (i < (int)uVar5);
+	}
+	null = (POLY_FT3 *)current->primptr;
+	*(undefined *)((int)&null->tag + 3) = 7;
+	null->code = '$';
 	pDVar4 = current;
-	*(undefined2 *)(puVar7 + 2) = 0xffff;
-	*(undefined2 *)((int)puVar7 + 10) = 0xffff;
-	*(undefined2 *)(puVar7 + 4) = 0xffff;
-	*(undefined2 *)((int)puVar7 + 0x12) = 0xffff;
-	*(undefined2 *)(puVar7 + 6) = 0xffff;
-	*(undefined2 *)((int)puVar7 + 0x1a) = 0xffff;
-	*(undefined2 *)((int)puVar7 + 0x16) = 0;
-	*puVar7 = *puVar7 & 0xff000000 | *pDVar4->ot & 0xffffff;
-	*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar7 & 0xffffff;
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0;
+	null->tag = null->tag & 0xff000000 | *pDVar4->ot & 0xffffff;
+	*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)null & 0xffffff;
 	pString = pDVar4->primptr;
 	pDVar4->primptr = pString + 0x20;
 	pString[0x23] = '\x05';
 	pString[0x27] = '(';
 	*(short *)(pString + 0x28) = sVar1 + -5;
-	sVar3 = (pMVar10->Bound).y;
-	sVar8 = sVar1 + sVar2 + 5;
-	*(short *)(pString + 0x2c) = sVar8;
+	sVar3 = (pMVar9->Bound).y;
+	sVar7 = sVar1 + sVar2 + 5;
+	*(short *)(pString + 0x2c) = sVar7;
 	*(short *)(pString + 0x2a) = sVar3 + -5;
-	sVar2 = (pMVar10->Bound).y;
+	sVar2 = (pMVar9->Bound).y;
 	*(short *)(pString + 0x30) = sVar1 + -5;
 	*(short *)(pString + 0x2e) = sVar2 + -5;
-	*(short *)(pString + 0x32) = (pMVar10->Bound).y + (pMVar10->Bound).h;
-	*(short *)(pString + 0x34) = sVar8;
-	sVar1 = (pMVar10->Bound).y;
-	sVar2 = (pMVar10->Bound).h;
+	*(short *)(pString + 0x32) = (pMVar9->Bound).y + (pMVar9->Bound).h;
+	*(short *)(pString + 0x34) = sVar7;
+	sVar1 = (pMVar9->Bound).y;
+	sVar2 = (pMVar9->Bound).h;
 	pString[0x24] = '\x10';
 	pString[0x25] = '\x10';
 	pString[0x26] = '\x10';
@@ -967,10 +1135,8 @@ void DrawVisibleMenus(void)
 		*(uint *)(pString + 0x20) & 0xff000000 | *(uint *)*pDVar4->ot & 0xffffff;
 	*(uint *)*pDVar4->ot = *(uint *)*pDVar4->ot & 0xff000000 | (uint)(pString + 0x20) & 0xffffff;
 	pDVar4->primptr = pDVar4->primptr + 0x18;
-	return;*/
+	*/
 }
-
-
 
 // decompiled code
 // original method signature: 

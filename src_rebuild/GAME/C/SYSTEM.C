@@ -10,6 +10,11 @@
 #include "XAPLAY.H"
 #include "LOADVIEW.H"
 #include "MISSION.H"
+#include "GLAUNCH.H"
+#include "MAIN.H"
+#include "PAD.H"
+#include "DRAW.H"
+
 
 #include <string.h>
 
@@ -51,8 +56,8 @@ DB MPBuff[2][2];
 DB* last;
 DB* current;
 
-OTTYPE _tempOT1[OTSIZE];
-OTTYPE _tempOT2[OTSIZE];
+OTTYPE _tempOT1[OTSIZE];		// 0xF3000
+OTTYPE _tempOT2[OTSIZE];		// 0xF7200
 
 char _tempPrimTab1[0x8000];		// 0xFB400
 char _tempPrimTab2[0x8000];		// 0x119400
@@ -1746,31 +1751,40 @@ void DisableDisplay(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int DoNotSwap = 0;
+DB* MPlast[2];
+DB* MPcurrent[2];
+
+// [D]
 void SwapDrawBuffers(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	DrawSync(0);
+
 	if (DoNotSwap == 0) {
 		PutDispEnv(&current->disp);
 		PutDrawEnv(&current->draw);
 	}
+
 	DoNotSwap = 0;
 	PutDrawEnv(&current->draw);
-	DrawOTag(current->ot + 0x107f);
-	if ((FrameCnt & 1U) == 0) {
-		current = &DB_000e0938;
-		last = &MPBuff;
+	DrawOTag((u_long*)(current->ot + 0x107f));
+
+#ifndef PSX
+	Emulator_EndScene();
+#endif // PSX
+
+	if ((FrameCnt & 1U) == 0) 
+	{
+		current = &MPBuff[0][1];
+		last = &MPBuff[0][0];
 	}
-	else {
-		current = &MPBuff;
-		last = &DB_000e0938;
+	else
+	{
+		current = &MPBuff[0][0];
+		last = &MPBuff[0][1];
 	}
-	ClearOTagR(current->ot, (int)&DAT_00001080);
+	ClearOTagR((u_long*)current->ot, 0x1080);
 	current->primptr = current->primtab;
-	return;
-	*/
 }
 
 
@@ -1798,32 +1812,35 @@ void SwapDrawBuffers(void)
 	/* end block 3 */
 	// End Line: 2654
 
+// [D]
 void SwapDrawBuffers2(int player)
 {
-	UNIMPLEMENTED();
-
-	/*
 	uint uVar1;
 
 	DrawSync(0);
 	if (player == 0) {
 		PutDispEnv(&current->disp);
 	}
+
 	PutDrawEnv(&current->draw);
-	DrawOTag(current->ot + 0x107f);
+	DrawOTag((u_long*)current->ot + 0x107f);
+
 	if (player == 1) {
 		uVar1 = FrameCnt & 1;
-		MPcurrent2 = &MPBuff + (1 - uVar1);
-		MPlast2 = &MPBuff + uVar1;
-		PTR_000ab2b4 = (DB *)(&DAT_000e09b8 + (1 - uVar1) * 0x80);
-		PTR_000ab29c = (DB *)(&DAT_000e09b8 + uVar1 * 0x80);
+
+		// [A] i guess it should work as intended
+		MPcurrent[0] = &MPBuff[0][-uVar1+1];
+		MPlast[0] = &MPBuff[0][uVar1];
+
+		MPcurrent[1] = &MPBuff[1][-uVar1 + 1];
+		MPlast[1] = &MPBuff[1][0];
 	}
-	current = (&MPcurrent2)[1 - player];
-	last = (&MPlast2)[1 - player];
-	ClearOTagR(current->ot, (int)&DAT_00001080);
+
+	current = MPcurrent[1 - player];
+	last = MPlast[1 - player];
+
+	ClearOTagR((u_long*)current->ot, 0x1080);
 	current->primptr = current->primtab;
-	return;
-	*/
 }
 
 
@@ -1844,15 +1861,16 @@ void SwapDrawBuffers2(int player)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+short paddp;
+short padd;
+
+// [D]
 void UpdatePadData(void)
 {
-	UNIMPLEMENTED();
-	/*
 	ReadControllers();
+
 	paddp = Pads[0].mapnew;
 	padd = Pads[0].mapped;
-	return;
-	*/
 }
 
 
@@ -1893,39 +1911,39 @@ void UpdatePadData(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetupDrawBuffers(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	DB *pDVar1;
 	int iVar2;
 	DB **ppDVar3;
 	DB *pDVar4;
 	DB **ppDVar5;
-	undefined2 local_18;
-	undefined2 local_16;
-	undefined2 local_14;
-	undefined2 local_12;
+	RECT16 rect;
 
-	SetDefDispEnv(0xe0924, 0, 0x100, 0x140, 0x100);
-	SetDefDispEnv(0xe09a4, 0, 0, 0x140, 0x100);
-	MPBuff.disp.screen.h = 0x100;
-	DB_000e0938.disp.screen.h = 0x100;
-	MPBuff.disp.screen.x = draw_mode_pal.framex;
-	DB_000e0938.disp.screen.x = draw_mode_pal.framex;
-	MPBuff.disp.screen.y = draw_mode_pal.framey;
-	DB_000e0938.disp.screen.y = draw_mode_pal.framey;
+	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, 256);
+	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, 256);
+
+	MPBuff[0][0].disp.screen.h = 256;
+	MPBuff[0][1].disp.screen.h = 256;
+
+	MPBuff[0][0].disp.screen.x = draw_mode_pal.framex;
+	MPBuff[0][1].disp.screen.x = draw_mode_pal.framex;
+
+	MPBuff[0][0].disp.screen.y = draw_mode_pal.framey;
+	MPBuff[0][1].disp.screen.y = draw_mode_pal.framey;
+
 	if (NoPlayerControl == 0) {
 		SetupDrawBufferData((uint)NumPlayers);
 	}
 	else {
 		SetupDrawBufferData(1);
 	}
-	ppDVar5 = &MPlast2;
-	pDVar1 = &MPBuff;
-	pDVar4 = &DB_000e0938;
-	ppDVar3 = &MPcurrent2;
+
+	ppDVar5 = MPlast;
+	pDVar1 = MPBuff[0];
+	pDVar4 = MPBuff[1];
+	ppDVar3 = MPcurrent;
 	iVar2 = 1;
 	do {
 		*ppDVar5 = pDVar4;
@@ -1936,16 +1954,17 @@ void SetupDrawBuffers(void)
 		iVar2 = iVar2 + -1;
 		pDVar1 = pDVar1 + 2;
 	} while (-1 < iVar2);
-	local_14 = 0x140;
-	local_18 = 0;
-	local_16 = 0;
-	local_12 = 0x200;
-	current = MPcurrent2;
-	last = MPlast2;
-	ClearImage(&local_18, 0, 0, 0);
+
+	rect.w = 320;
+	rect.x = 0;
+	rect.y = 0;
+	rect.h = 512;
+
+	current = MPcurrent[0];
+	last = MPlast[0];
+
+	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
-	return;
-	*/
 }
 
 
@@ -1981,70 +2000,80 @@ void SetupDrawBuffers(void)
 	/* end block 3 */
 	// End Line: 2935
 
+// [D]
 void SetupDrawBufferData(int num_players)
 {
-	UNIMPLEMENTED();
-
-	/*
 	bool bVar1;
-	char *pcVar2;
-	undefined *puVar3;
-	int iVar4;
-	DB *pBuff;
+	int iVar2;
+	char *pcVar3;
+	OTTYPE *puVar4;
 	int iVar5;
-	int local_48[6];
-	int local_30;
+	DB *pBuff;
+	int iVar6;
+	int x[2];
+	int y[2];
+	int height;
 
-	if (num_players == 1) {
-		local_48[4] = 0x100;
-		local_48[0] = 0;
-		local_48[2] = 0;
-		local_48[1] = 0;
-		local_48[3] = 0;
+	if (num_players == 1) 
+	{
+		height = 256;
+		x[0] = 0;
+		y[0] = 0;
+		x[1] = 0;
+		y[1] = 0;
 	}
-	else {
-		if (num_players == 2) {
-			local_48[3] = 0x80;
-			local_48[4] = 0x7f;
-			local_48[0] = 0;
-			local_48[2] = 0;
-			local_48[1] = 0;
-		}
-		else {
-			while (FrameCnt != 0x78654321) {
-				trap(0x400);
-			}
+	else if (num_players == 2)
+	{
+		y[1] = 0x80;
+		height = 0x7f;
+		x[0] = 0;
+		y[0] = 0;
+		x[1] = 0;
+	}
+	else
+	{
+		while (FrameCnt != 0x78654321) {
+			//trap(0x400); // [A]
 		}
 	}
-	SetGeomOffset(0xa0, local_48[4] >> 1);
+
+	SetGeomOffset(0xa0, height >> 1);
 	bVar1 = false;
-	iVar5 = 0;
+	iVar6 = 0;
 	do {
-		iVar4 = 0;
-		local_48[5] = iVar5 + 1;
-		if (0 < num_players) {
-			pBuff = &MPBuff;
-			local_30 = 0xe08bc;
+		iVar5 = 0;
+		iVar2 = iVar6 + 1;
+		if (0 < num_players)
+		{
+			pBuff = MPBuff[0];
 			do {
-				if (bVar1) {
-					puVar3 = &DAT_000f7200;
-					pcVar2 = &DAT_00119400;
+				if (bVar1) 
+				{
+					puVar4 = _tempOT2;
+					pcVar3 = _tempPrimTab2;
 				}
-				else {
-					puVar3 = &DAT_000f3000;
-					pcVar2 = &DAT_000fb400;
+				else 
+				{
+					puVar4 = _tempOT1;
+					pcVar3 = _tempPrimTab1;
 				}
+
 				bVar1 = (bool)(bVar1 ^ 1);
-				InitaliseDrawEnv(pBuff, local_48[iVar4], local_48[iVar4 + 2], 0x140, local_48[4]);
-				(&MPBuff)[iVar4 * 2 + iVar5].primtab = pcVar2;
-				(&MPBuff)[iVar4 * 2 + iVar5].primptr = pcVar2;
-				*(undefined **)(iVar5 * 0x80 + iVar4 * 0x100 + local_30) = puVar3;
-				iVar4 = iVar4 + 1;
+
+				InitaliseDrawEnv(pBuff, x[iVar5], y[iVar5], 0x140, height);
+
+				// [A] should be tested
+				MPBuff[iVar5][iVar6].primtab = pcVar3;
+				MPBuff[iVar5][iVar6].primptr = pcVar3;
+				MPBuff[iVar5][iVar6].ot = puVar4;
+
+				iVar5 = iVar5 + 1;
 				pBuff = pBuff + 2;
-			} while (iVar4 < num_players);
+			} while (iVar5 < num_players);
 		}
-		iVar5 = local_48[5];
-	} while (local_48[5] < 2);
+		iVar6 = iVar2;
+	} while (iVar2 < 2);
+
 	aspect.m[0][0] = 0x1000;
 	aspect.m[0][1] = 0;
 	aspect.m[0][2] = 0;
@@ -2054,8 +2083,6 @@ void SetupDrawBufferData(int num_players)
 	aspect.m[2][0] = 0;
 	aspect.m[2][1] = 0;
 	aspect.m[2][2] = 0x1000;
-	return;
-	*/
 }
 
 
@@ -2074,18 +2101,16 @@ void SetupDrawBufferData(int num_players)
 	/* end block 2 */
 	// End Line: 5091
 
+// [D]
 void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h)
 {
-	UNIMPLEMENTED();
-	/*
-	SetDefDrawEnv(&pBuff->draw);
+	SetDefDrawEnv(&pBuff[0].draw, x, y, w, h);
 	SetDefDrawEnv(&pBuff[1].draw, x, y + 0x100, w, h);
-	pBuff->id = 0;
+
+	pBuff[0].id = 0;
+	pBuff[0].draw.dfe = '\x01';
 	pBuff[1].id = 1;
-	(pBuff->draw).dfe = 1;
-	pBuff[1].draw.dfe = 1;
-	return;
-	*/
+	pBuff[1].draw.dfe = '\x01';
 }
 
 

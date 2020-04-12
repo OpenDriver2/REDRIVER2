@@ -1,5 +1,8 @@
 #include "THISDUST.H"
 #include "SKY.H"
+#include "SYSTEM.H"
+#include "MISSION.H"
+
 
 int sky_y_offset[4] = { 14, 14, 14, 14 };
 
@@ -120,194 +123,187 @@ VECTOR tunnelPos[3][2] =
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+UV skytexuv[28] = { 0 };
+short skyclut[28];
+short skytpage[28];
+
+// [D]
 void LoadSky(void)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
-	uchar uVar2;
-	uchar uVar3;
-	u_short uVar4;
-	uchar uVar5;
-	int iVar6;
-	undefined4 uVar7;
+	bool bVar2;
+	unsigned char uVar3;
+	unsigned char uVar4;
+	u_short uVar5;
+	unsigned char uVar6;
+	uint uVar7;
 	int iVar8;
-	UV *pUVar9;
-	uchar *puVar10;
-	uchar uVar11;
-	int iVar12;
-	uint uVar13;
+	int uVar9;
+	int iVar10;
+	UV *pUVar11;
+	unsigned char *puVar12;
+	unsigned char uVar13;
+	int iVar14;
+	uint uVar15;
 	int x;
-	undefined2 local_60;
-	undefined2 local_5e;
-	undefined2 local_5c;
-	undefined2 local_5a;
-	char acStack88[16];
-	int local_48;
-	uint local_44;
-	uint local_40;
-	int local_3c;
-	char *local_38;
-	int local_30;
-	int local_2c;
+	RECT16 rect;
+	char name[16];
+	int offset;
 
-	iVar8 = 0;
-	local_40 = 0;
-	local_38 = acStack88;
-	local_48 = 0;
+	iVar10 = 0;
+	uVar7 = 0;
+	offset = 0;
 	bVar1 = true;
 	do {
 		if (!bVar1) {
 		switchD_00077628_caseD_0:
-			iVar6 = 0;
-			local_30 = 0;
-			bVar1 = true;
+			iVar8 = 0;
+			bVar1 = false;
+			bVar2 = true;
 			goto LAB_00077680;
 		}
-		switch (local_40) {
+		switch (uVar7) {
 		default:
 			goto switchD_00077628_caseD_0;
 		case 1:
-			iVar6 = 0;
-			local_30 = 0;
+			iVar8 = 0;
+			bVar1 = false;
 			break;
 		case 2:
-			iVar6 = 1;
-			local_30 = 0;
+			iVar8 = 1;
+			bVar1 = false;
 			break;
 		case 3:
-			iVar6 = 1;
+			iVar8 = 1;
 			goto LAB_00077678;
 		case 4:
-			iVar6 = 0;
+			iVar8 = 0;
 			goto LAB_00077678;
 		case 5:
-			iVar6 = 2;
-			local_30 = 0;
+			iVar8 = 2;
+			bVar1 = false;
 			break;
 		case 6:
-			iVar6 = 2;
+			iVar8 = 2;
 		LAB_00077678:
-			local_30 = 1;
+			bVar1 = true;
 		}
-		bVar1 = false;
+		bVar2 = false;
 	LAB_00077680:
-		iVar12 = 0;
-		local_3c = iVar6 + 0xfc;
-		local_40 = local_40 + 1;
+		iVar14 = 0;
+		uVar7 = uVar7 + 1;
 		x = 0x140;
-		uVar13 = 0x140;
-		pUVar9 = skytexuv + iVar8;
-		local_44 = iVar6 * 0x54;
-		uVar2 = (uchar)local_44;
-		uVar11 = uVar2 + 'S';
-		puVar10 = &skytexuv[0].u0 + (iVar8 * 8 | 6);
+		uVar15 = 0x140;
+		pUVar11 = skytexuv + iVar10;
+		uVar3 = (unsigned char)(iVar8 * 0x54);
+		uVar13 = uVar3 + 'S';
+		puVar12 = &skytexuv[0].u0 + (iVar10 * 8 | 6);
 		do {
-			uVar5 = (char)iVar12 * -0x80;
-			if (bVar1) {
-				pUVar9->u0 = uVar5;
-				pUVar9->v0 = uVar2;
-				pUVar9->u1 = uVar5;
-				pUVar9->v1 = uVar2;
-				pUVar9->u2 = uVar5;
-				puVar10[-1] = uVar2;
-				*puVar10 = uVar5;
+			uVar6 = (char)iVar14 * -0x80;
+			if (bVar2) {
+				pUVar11->u0 = uVar6;
+				pUVar11->v0 = uVar3;
+				pUVar11->u1 = uVar6;
+				pUVar11->v1 = uVar3;
+				pUVar11->u2 = uVar6;
+				puVar12[-1] = uVar3;
+				*puVar12 = uVar6;
 			LAB_00077748:
-				pUVar9->v3 = uVar2;
+				pUVar11->v3 = uVar3;
 			}
 			else {
-				uVar3 = uVar5 + '\x7f';
-				if (local_30 != 0) {
-					pUVar9->u0 = uVar5;
-					pUVar9->v0 = uVar11;
-					pUVar9->u1 = uVar3;
-					pUVar9->v1 = uVar11;
-					pUVar9->u2 = uVar5;
-					puVar10[-1] = uVar2;
-					*puVar10 = uVar3;
+				uVar4 = uVar6 + '\x7f';
+				if (bVar1) 
+				{
+					pUVar11->u0 = uVar6;
+					pUVar11->v0 = uVar13;
+					pUVar11->u1 = uVar4;
+					pUVar11->v1 = uVar13;
+					pUVar11->u2 = uVar6;
+					puVar12[-1] = uVar3;
+					*puVar12 = uVar4;
 					goto LAB_00077748;
 				}
-				pUVar9->u0 = uVar5;
-				pUVar9->v0 = uVar2;
-				pUVar9->u1 = uVar3;
-				pUVar9->v1 = uVar2;
-				pUVar9->u2 = uVar5;
-				puVar10[-1] = uVar11;
-				*puVar10 = uVar3;
-				pUVar9->v3 = uVar11;
+				pUVar11->u0 = uVar6;
+				pUVar11->v0 = uVar3;
+				pUVar11->u1 = uVar4;
+				pUVar11->v1 = uVar3;
+				pUVar11->u2 = uVar6;
+				puVar12[-1] = uVar13;
+				*puVar12 = uVar4;
+				pUVar11->v3 = uVar13;
 			}
-			local_2c = iVar8;
-			uVar4 = GetTPage(0, 0, uVar13 & 0xffffffc0, local_44 & 0x300);
-			iVar8 = local_2c;
-			skytpage[local_2c] = uVar4;
-			uVar4 = GetClut(x, local_3c);
-			pUVar9 = pUVar9 + 1;
-			puVar10 = puVar10 + 8;
+			uVar5 = GetTPage(0, 0, uVar15 & 0xffffffc0, iVar8 * 0x54 & 0x300);
+			skytpage[iVar10] = uVar5;
+			uVar5 = GetClut(x, iVar8 + 0xfc);
+			pUVar11 = pUVar11 + 1;
+			puVar12 = puVar12 + 8;
 			x = x + 0x10;
-			uVar13 = uVar13 + 0x20;
-			iVar12 = iVar12 + 1;
-			skyclut[iVar8] = uVar4;
-			iVar8 = local_2c + 1;
-		} while (iVar12 < 4);
-		bVar1 = local_40 < 7;
-	} while ((int)local_40 < 7);
+			uVar15 = uVar15 + 0x20;
+			iVar14 = iVar14 + 1;
+			skyclut[iVar10] = uVar5;
+			iVar10 = iVar10 + 1;
+		} while (iVar14 < 4);
+		bVar1 = uVar7 < 7;
+	} while ((int)uVar7 < 7);
 	if (GameLevel == 1) {
-		uVar7 = 1;
+		uVar9 = 1;
 	}
 	else {
-		uVar7 = 0;
+		uVar9 = 0;
 		if (1 < GameLevel) {
 			if (GameLevel == 2) {
-				uVar7 = 2;
+				uVar9 = 2;
 			}
 			else {
 				if (GameLevel == 3) {
-					uVar7 = 3;
+					uVar9 = 3;
 				}
 			}
 		}
 	}
 	if (gWeather - 1U < 2) {
-		local_48 = 0x20000;
-		iVar8 = local_48;
+		offset = 0x20000;
+		iVar10 = offset;
 		if (gTimeOfDay == 3) {
-			local_48 = 0x10000;
-			iVar8 = local_48;
+			offset = 0x10000;
+			iVar10 = offset;
 		}
 	}
 	else {
 		if (gTimeOfDay == 1) {
-			local_48 = 0;
-			iVar8 = local_48;
+			offset = 0;
+			iVar10 = offset;
 		}
 		else {
 			if (gTimeOfDay < 2) {
 				if (gTimeOfDay != 0) goto LAB_000778d4;
-				local_48 = 0x30000;
-				iVar8 = local_48;
+				offset = 0x30000;
+				iVar10 = offset;
 			}
 			else {
 				if (gTimeOfDay == 2) {
-					iVar8 = 0x40000;
+					iVar10 = 0x40000;
 				}
 				else {
-					iVar8 = 0x10000;
+					iVar10 = 0x10000;
 					if (gTimeOfDay != 3) goto LAB_000778d4;
 				}
 			}
 		}
 	}
-	local_48 = iVar8;
+	offset = iVar10;
 LAB_000778d4:
-	sprintf(local_38, s_DATA_SKY_d_RAW_00011cf4, uVar7);
-	LoadfileSeg(local_38, &DAT_000fb400, local_48, 0x10000);
-	local_60 = 0x140;
-	local_5e = 0;
-	local_5c = 0x80;
-	local_5a = 0x100;
-	LoadImage(&local_60, &DAT_000fb400);
+
+	sprintf(name, "DATA\\SKY%d.RAW", uVar9);
+	LoadfileSeg(name, _frontend_buffer, offset, 0x10000);
+
+	rect.x = 0x140;
+	rect.y = 0;
+	rect.w = 0x80;
+	rect.h = 0x100;
+	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
-	return;*/
 }
 
 

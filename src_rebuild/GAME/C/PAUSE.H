@@ -1,6 +1,8 @@
 #ifndef PAUSE_H
 #define PAUSE_H
 
+extern int gShowMap;
+extern int pauseflag;
 
 extern int ShowPauseMenu(enum PAUSEMODE mode); // 0x0006BF50
 
