@@ -8,6 +8,7 @@
 #include "MAIN.H"
 #include "GLAUNCH.H"
 #include "SCORES.H"
+#include "SOUND.H"
 
 void PauseMap(int direction);
 void SfxVolume(int direction);
@@ -40,7 +41,7 @@ MENU_HEADER YesNoQuitHeader =
 
 MENU_ITEM MainPauseItems[9] =
 {
-	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "View Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
@@ -158,13 +159,13 @@ MENU_ITEM InvalidMultiPadItems[2] =
 };
 
 MENU_HEADER PauseMenuHeader =
-{ "Game Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
+{ "Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
 
 MENU_HEADER MultiplayerPauseHeader =
-{ "Game Paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
+{ "Paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
 
 MENU_HEADER CutscenePauseMenuHeader =
-{ "Game Paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
+{ "Paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
 
 MENU_HEADER MissionCompleteHeader =
 { "Mission Successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
@@ -1453,28 +1454,23 @@ void PauseMap(int direction)
 	/* end block 3 */
 	// End Line: 4906
 
+// [D]
 void SfxVolume(int direction)
 {
-	UNIMPLEMENTED();
-	/*
-	if (direction < 0) {
+	if (direction < 0) 
 		gMasterVolume = gMasterVolume + -100;
-	}
-	else {
-		if (0 < direction) {
-			gMasterVolume = gMasterVolume + 100;
-		}
-	}
-	if (gMasterVolume < -10000) {
+	else if (0 < direction)
+		gMasterVolume = gMasterVolume + 100;
+
+	if (gMasterVolume < -10000) 
 		gMasterVolume = -10000;
-	}
-	if (0 < gMasterVolume) {
+
+	if (0 < gMasterVolume) 
 		gMasterVolume = 0;
-	}
-	sprintf(SfxVolumeText, (char *)&PTR_DAT_000aa80c, (int)(&DAT_00002710 + gMasterVolume) / 100);
+
+	sprintf(SfxVolumeText, "%d", (int)(10000 + gMasterVolume) / 100);
+
 	SetMasterVolume(gMasterVolume);
-	return;
-	*/
 }
 
 
@@ -1505,28 +1501,23 @@ void SfxVolume(int direction)
 	/* end block 4 */
 	// End Line: 4949
 
+// [D]
 void MusicVolume(int direction)
 {
-	UNIMPLEMENTED();
-	/*
-	if (direction < 0) {
+	if (direction < 0)
 		gMusicVolume = gMusicVolume + -100;
-	}
-	else {
-		if (0 < direction) {
-			gMusicVolume = gMusicVolume + 100;
-		}
-	}
-	if (gMusicVolume < -10000) {
+	else if (0 < direction) 
+		gMusicVolume = gMusicVolume + 100;
+
+	if (gMusicVolume < -10000)
 		gMusicVolume = -10000;
-	}
-	if (0 < gMusicVolume) {
+
+	if (0 < gMusicVolume) 
 		gMusicVolume = 0;
-	}
-	sprintf(MusicVolumeText, (char *)&PTR_DAT_000aa80c, (int)(&DAT_00002710 + gMusicVolume) / 100);
+
+	sprintf(MusicVolumeText, "%d", (int)(10000 + gMusicVolume) / 100);
+
 	SetXMVolume(gMusicVolume);
-	return;
-	*/
 }
 
 
