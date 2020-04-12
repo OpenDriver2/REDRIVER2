@@ -2014,7 +2014,6 @@ void DrawGame(void)
 	/* end block 3 */
 	// End Line: 10830
 
-
 static int WantPause = 0;
 static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 
@@ -2104,6 +2103,7 @@ void CheckForPause(void)
 		if (game_over == 0)
 		{
 			UnPauseSound();
+		}
 	}
 }
 

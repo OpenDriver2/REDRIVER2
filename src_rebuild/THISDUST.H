@@ -9,10 +9,16 @@
 #include "LIBSPU.H"
 #include "LIBGTE.H"
 
-extern GTERegisters gteRegs;
+// TODO: VERSION.H
+#define GAME_VERSION_N		"0.2a"
+#define GAME_TITLE			"REDRIVER2"
+#define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
 
-extern int docop2(int op);
+#ifdef PSX
+// TODO: Include PSX STUFF
+#else
 
+// PC STUFF
 #define _CopReg0 gteRegs.CP0
 #define _CopReg2 gteRegs.CP2D
 
@@ -32,16 +38,10 @@ extern int docop2(int op);
 
 #define copFunction(n, op) _CopFunc##n(op)
 
-#ifdef PSX
-
-#else
+// Emulator
 #include <EMULATOR.H>
 #include <EMULATOR_PRIVATE.H>
 #include "EMULATOR_PLATFORM_SETUP.H"
-
-#define GAME_VERSION_N		"0.2a"
-#define GAME_TITLE			"REDRIVER2"
-#define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
 
 #define LoadImage LoadImagePSX		// this is ALSO temporary shit
 #define LoadImage2 LoadImagePSX
