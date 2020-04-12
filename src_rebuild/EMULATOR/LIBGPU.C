@@ -612,7 +612,7 @@ void DrawOTag(u_long* p)
 	AggregatePTAGsToSplits(p, false);
 
 	DrawAggregatedSplits();
-	//Emulator_EndScene();
+	Emulator_EndScene();
 }
 
 void DrawPrim(void* p)

@@ -36,14 +36,10 @@ int VSync(int mode)
 	{
 		if (vsync_callback != NULL)
 			vsync_callback();
-
-		Emulator_EndScene();
 	}
 	else if (mode > 0)
 	{
 		Emulator_WaitForTimestep(mode);
-		
-		Emulator_EndScene();
 	}
 
 	return g_swapTime;

@@ -1769,10 +1769,6 @@ void SwapDrawBuffers(void)
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)(current->ot + 0x107f));
 
-#ifndef PSX
-	Emulator_EndScene();
-#endif // PSX
-
 	if ((FrameCnt & 1U) == 0) 
 	{
 		current = &MPBuff[0][1];
