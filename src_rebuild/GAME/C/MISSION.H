@@ -30,6 +30,7 @@ extern int gBatterPlayer;
 
 extern int wantedCar[2];
 extern int multiplayerregions[4];
+extern int MaxPlayerDamage[2];
 
 extern COP_DATA gCopData;
 
@@ -38,6 +39,11 @@ extern unsigned long *MissionScript;
 extern char *MissionStrings;
 
 extern int gMultiplayerLevels;
+
+extern int TAIL_GETTINGCLOSE;
+extern int TAIL_GETTINGFAR;
+extern int TAIL_TOOCLOSE;
+extern int TAIL_TOOFAR;
 
 extern void InitialiseMissionDefaults(); // 0x0006084C
 

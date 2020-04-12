@@ -1,6 +1,8 @@
 #ifndef CUTSCENE_H
 #define CUTSCENE_H
 
+extern int gInGameCutsceneActive;
+extern int gInGameCutsceneDelay;
 
 extern void InitInGameCutsceneVariables(); // 0x000325C0
 

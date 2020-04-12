@@ -147,6 +147,11 @@ unsigned char reservedSlots[20];	// car slots
 
 unsigned char playercollected[2] = { 0, 0 };
 
+int TAIL_GETTINGCLOSE = 7000;
+int TAIL_GETTINGFAR = 12900;
+int TAIL_TOOCLOSE = 4000;
+int TAIL_TOOFAR = 15900;
+
 // [D]
 void InitialiseMissionDefaults(void)
 {

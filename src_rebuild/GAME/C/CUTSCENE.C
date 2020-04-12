@@ -1,6 +1,8 @@
 #include "THISDUST.H"
 #include "CUTSCENE.H"
 
+int gInGameCutsceneActive = 0;
+int gInGameCutsceneDelay = 0;
 
 // decompiled code
 // original method signature: 

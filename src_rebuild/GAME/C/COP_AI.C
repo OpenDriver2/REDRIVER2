@@ -16,6 +16,9 @@ char sqtbl[] = {
 	0xA7, 0xA8, 0xAA, 0xAB, 0xAC, 0xAE, 0xAF, 0xB0, 0xB2,
 	0xB3, 0xB5 };
 
+int CopsCanSeePlayer = 0;
+short pedestrianFelony = 0;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitCopState(struct _CAR_DATA *cp /*$s0*/, char *extraData /*$a1*/)

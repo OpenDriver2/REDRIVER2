@@ -2520,6 +2520,7 @@ void UpdatePlayerInformation(void)
 
 int CurrentPlayerView = 0;
 
+// [D]
 void RenderGame2(int view)
 {
 	DB *pDVar1;

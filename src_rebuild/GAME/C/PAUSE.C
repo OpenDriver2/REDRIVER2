@@ -9,6 +9,7 @@
 #include "GLAUNCH.H"
 #include "SCORES.H"
 #include "SOUND.H"
+#include "CUTSCENE.H"
 
 void PauseMap(int direction);
 void SfxVolume(int direction);
@@ -274,7 +275,6 @@ static char SfxVolumeText[8];
 static char MusicVolumeText[8];
 
 // MISSION.C
-int gInGameCutsceneActive = 0;
 PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
 
 // [D]
