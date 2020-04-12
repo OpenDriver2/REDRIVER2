@@ -2612,6 +2612,8 @@ unsigned int Emulator_GetFPS()
 
 void Emulator_SwapWindow()
 {
+	Emulator_WaitForTimestep(1);
+
 #if defined(RO_DOUBLE_BUFFERED)
 #if defined(OGL)
 	SDL_GL_SwapWindow(g_window);

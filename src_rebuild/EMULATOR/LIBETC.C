@@ -30,8 +30,6 @@ int VSync(int mode)
 	if (mode < 0)
 		return SDL_GetTicks() - g_swapTime;
 
-	Emulator_WaitForTimestep(1);
-
 	if (mode == 0)
 	{
 		if (vsync_callback != NULL)
@@ -39,10 +37,9 @@ int VSync(int mode)
 	}
 	else if (mode > 0)
 	{
-		Emulator_WaitForTimestep(mode);
 	}
 
-	return g_swapTime;
+	return SDL_GetTicks();
 }
 
 int VSyncCallback(void(*f)(void))
