@@ -506,33 +506,45 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 void SpuSetKey(long on_off, unsigned long voice_bit)
 {
-	int voiceId = SPU_VOICECH(voice_bit);
-	SPUVoice& voice = s_SpuVoices[voiceId];
-
-	int state;
-	alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
-
-	if (on_off)
+	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		// stop, rewind, start
-		alSourceStop(voice.alSource);
-		alSourceRewind(voice.alSource);
+		if (voice_bit != SPU_VOICECH(i))
+			continue;
 
-		alSourcePlay(voice.alSource);
-	}
-	else
-	{
-		alSourceStop(voice.alSource);
+		SPUVoice& voice = s_SpuVoices[i];
+
+		//int state;
+		//alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+
+		if (on_off)
+		{
+			// stop, rewind, start
+			alSourceStop(voice.alSource);
+			alSourceRewind(voice.alSource);
+
+			alSourcePlay(voice.alSource);
+		}
+		else
+		{
+			alSourceStop(voice.alSource);
+		}
 	}
 }
 
 long SpuGetKeyStatus(unsigned long voice_bit)
 {
-	int voiceId = SPU_VOICECH(voice_bit);
-	SPUVoice& voice = s_SpuVoices[voiceId];
+	int state = AL_STOPPED;
 
-	int state;
-	alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		if (voice_bit != SPU_VOICECH(i))
+			continue;
+
+		SPUVoice& voice = s_SpuVoices[i];
+
+		alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+		break;
+	}
 
 	return (state == AL_PLAYING);	// simple as this?
 }
