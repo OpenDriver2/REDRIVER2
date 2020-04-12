@@ -707,6 +707,9 @@ unsigned char gHDCarDamageLevels[5][255];
 // [D]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
+	// [A] This function causes buffer overrun and corrupts HEAP
+	UNIMPLEMENTED();
+	/*
 	unsigned char uVar1;
 	int *local_v1_316;
 	int *piVar2;
@@ -717,6 +720,8 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 	int iVar7;
 	int iVar8;
 	int iVar9;
+
+	
 
 	iVar6 = 0;
 	do {
@@ -851,7 +856,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 			*(unsigned char *)((int)piVar2 + 0xe) = uVar1;
 		}
 		iVar6 = iVar7;
-	} while (iVar7 < 5);
+	} while (iVar7 < 5);*/
 }
 
 
