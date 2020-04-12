@@ -108,7 +108,7 @@ MENU_ITEM TakeARideFinishedItems[6] =
 MENU_ITEM DrivingGameFinishedItems[7] =
 {
 	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ EnterScoreText, 3u, 2u, &EnterName, MENU_QUIT_NONE, NULL },
+	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
@@ -783,48 +783,52 @@ LAB_0006c5d0:
 	/* end block 4 */
 	// End Line: 2841
 
+// [D]
 void SetupMenu(MENU_HEADER *menu, int back)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
+	unsigned char bVar1;
+	unsigned char bVar2;
 	MENU_ITEM *pMVar3;
 	MENU_HEADER *pMVar4;
-	MENU_ITEM *pMVar5;
-	uchar uVar6;
+	int iVar5;
+	MENU_ITEM *pMVar6;
+	int count;
 
-	_uVar6 = 0;
-	uVar6 = '\0';
+	count = 0;
+
 	ActiveMenuItem = 0;
-	if (menu->MenuItems->Type != -0x80) {
-		pMVar5 = menu->MenuItems;
+	if (menu->MenuItems->Type != 0x80) 
+	{
+		pMVar6 = menu->MenuItems;
 		do {
-			if ((back != 0) && (pMVar5 == (&ActiveItem3)[VisibleMenu])) {
-				ActiveMenuItem = _uVar6;
+			if ((back != 0) && (pMVar6 == ActiveItem[VisibleMenu]))
+			{
+				ActiveMenuItem = count;
 			}
-			pMVar3 = pMVar5 + 1;
-			_uVar6 = _uVar6 + 1;
-			uVar6 = (uchar)_uVar6;
-			pMVar5 = pMVar5 + 1;
-		} while (pMVar3->Type != -0x80);
+			pMVar3 = pMVar6 + 1;
+			count = count + 1;
+
+			pMVar6 = pMVar6 + 1;
+		} while (pMVar3->Type != 0x80);
 	}
 	ActiveMenu = menu;
-	menu->NumItems = uVar6;
-	_uVar6 = MaxMenuStringLength(ActiveMenu);
+	menu->NumItems = count;
+	iVar5 = MaxMenuStringLength(ActiveMenu);
 	pMVar4 = ActiveMenu;
 	bVar1 = ActiveMenu->NumItems;
 	bVar2 = ActiveMenu->NumItems;
-	(ActiveMenu->Bound).x = (short)((0x130 - _uVar6) / 2) + -4;
-	(pMVar4->Bound).w = (short)_uVar6 + 0x18;
-	_uVar6 = (int)(((uint)bVar1 + 1) * -0xf + 0x100) / 2;
-	(pMVar4->Bound).y = (short)_uVar6;
+	(ActiveMenu->Bound).x = (short)((0x130 - iVar5) / 2) + -4;
+	(pMVar4->Bound).w = (short)iVar5 + 0x18;
+	iVar5 = (int)(((uint)bVar1 + 1) * -0xf + 0x100) / 2;
+	(pMVar4->Bound).y = (short)iVar5;
 	(pMVar4->Bound).h = ((ushort)bVar2 + 1) * 0xf + 10;
-	if (_uVar6 < 0x30) {
+
+	if (iVar5 < 0x30)
+	{
 		(pMVar4->Bound).y = 0x30;
 	}
-	(&ActiveItem3)[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
-	return;*/
+
+	ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
 }
 
 
@@ -1202,10 +1206,9 @@ void DrawVisibleMenus(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ControlMenu(void)
 {
-	UNIMPLEMENTED();
-	/*
 	EXIT_VALUE EVar1;
 	bool bVar2;
 	int iVar3;
@@ -1214,10 +1217,10 @@ void ControlMenu(void)
 	MENU_HEADER *menu;
 	ushort uVar6;
 
-	if (INT_000a1600 == 0) {
+	if (playerwithcontrol[2] == 0) {
 		uVar5 = Pads[1].dirnew;
 		uVar6 = Pads[1].direct;
-		if (playerwithcontrol != 0) {
+		if (playerwithcontrol[0] != 0) {
 			uVar5 = Pads[0].dirnew;
 			uVar6 = Pads[0].direct;
 		}
@@ -1237,63 +1240,87 @@ void ControlMenu(void)
 		PauseMap(0);
 		return;
 	}
-	if (((uVar6 & 0xa000) == 0) || (((&ActiveItem3)[VisibleMenu]->Type & 4) == 0)) {
-		DAT_000aa808 = 0;
+
+	static int controlmenu_debounce = 0;
+
+	if (((uVar6 & 0xa000) == 0) || ((ActiveItem[VisibleMenu]->Type & 4) == 0)) 
+	{
+		controlmenu_debounce = 0;
 		if ((uVar5 & 0x1000) != 0) {
 			ActiveMenuItem = ActiveMenuItem + -1;
 			if (ActiveMenuItem < 0) {
 				ActiveMenuItem = (uint)ActiveMenu->NumItems - 1;
 			}
-			(&ActiveItem3)[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
+			ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
 			return;
 		}
-		if ((uVar5 & 0x4000) != 0) {
+
+		if ((uVar5 & 0x4000) != 0) 
+		{
 			ActiveMenuItem = ActiveMenuItem + 1;
-			if ((int)((uint)ActiveMenu->NumItems - 1) < ActiveMenuItem) {
+			if ((int)((uint)ActiveMenu->NumItems - 1) < ActiveMenuItem)
+			{
 				ActiveMenuItem = 0;
 			}
-			(&ActiveItem3)[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
+			ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
 			return;
 		}
+
 		if ((uVar5 & 0x40) == 0) {
-			if ((uVar5 & 0x10) == 0) {
-				if ((uVar5 & 0x800) == 0) {
-					DAT_000aa808 = 0;
+			if ((uVar5 & 0x10) == 0) 
+			{
+				if ((uVar5 & 0x800) == 0) 
+				{
+					controlmenu_debounce = 0;
 					return;
 				}
-				if (VisibleMenu != 0) {
-					DAT_000aa808 = 0;
+
+				if (VisibleMenu != 0) 
+				{
+					controlmenu_debounce = 0;
 					return;
 				}
+
 				iVar3 = 0;
-				if (ActiveMenu->NumItems == '\0') {
-					DAT_000aa808 = 0;
+				if (ActiveMenu->NumItems == '\0') 
+				{
+					controlmenu_debounce = 0;
 					return;
 				}
+
 				pMVar4 = ActiveMenu->MenuItems;
-				while (true) {
-					if (pMVar4->ExitValue == MENU_QUIT_CONTINUE) {
-						DAT_000aa808 = 0;
+				while (true)
+				{
+					if (pMVar4->ExitValue == MENU_QUIT_CONTINUE)
+					{
+						controlmenu_debounce = 0;
 						PauseReturnValue = (uint)pMVar4->ExitValue;
 						return;
 					}
 					iVar3 = iVar3 + 1;
-					if ((int)(uint)ActiveMenu->NumItems <= iVar3) break;
+					if ((int)(uint)ActiveMenu->NumItems <= iVar3)
+						break;
+
 					pMVar4 = ActiveMenu->MenuItems + iVar3;
 				}
-				DAT_000aa808 = 0;
+				controlmenu_debounce = 0;
 				return;
 			}
-			if (VisibleMenu < 1) {
+
+			if (VisibleMenu < 1)
+			{
 				iVar3 = 0;
-				if (ActiveMenu->NumItems == '\0') {
-					DAT_000aa808 = 0;
+				if (ActiveMenu->NumItems == '\0')
+				{
+					controlmenu_debounce = 0;
 					return;
 				}
 				EVar1 = ActiveMenu->MenuItems->ExitValue;
-				while (true) {
-					if (EVar1 == MENU_QUIT_CONTINUE) {
-						DAT_000aa808 = 0;
+				while (true)
+				{
+					if (EVar1 == MENU_QUIT_CONTINUE)
+					{
+						controlmenu_debounce = 0;
 						PauseReturnValue = (uint)EVar1;
 						return;
 					}
@@ -1301,56 +1328,69 @@ void ControlMenu(void)
 					if ((int)(uint)ActiveMenu->NumItems <= iVar3) break;
 					EVar1 = ActiveMenu->MenuItems[iVar3].ExitValue;
 				}
-				DAT_000aa808 = 0;
+				controlmenu_debounce = 0;
 				return;
 			}
 		}
 		else {
-			pMVar4 = (&ActiveItem3)[VisibleMenu];
-			if ((pMVar4->Type & 0x40) != 0) {
+			pMVar4 = ActiveItem[VisibleMenu];
+			if ((pMVar4->Type & 0x40) != 0) 
+			{
 				menu = pMVar4->SubMenu;
 				VisibleMenu = VisibleMenu + 1;
-				(&VisibleMenus3)[VisibleMenu] = menu;
+				VisibleMenus[VisibleMenu] = menu;
 				SetupMenu(menu, 0);
 				return;
 			}
-			if ((pMVar4->Type & 2) != 0) {
+			if ((pMVar4->Type & 2) != 0) 
+			{
 				(*pMVar4->func)(0);
 			}
-			EVar1 = (&ActiveItem3)[VisibleMenu]->ExitValue;
-			if (EVar1 == MENU_QUIT_NONE) {
+			EVar1 = ActiveItem[VisibleMenu]->ExitValue;
+
+			if (EVar1 == MENU_QUIT_NONE) 
+			{
 				return;
 			}
-			if (EVar1 != MENU_QUIT_BACKMENU) {
-				PauseReturnValue = (uint)(&ActiveItem3)[VisibleMenu]->ExitValue;
+
+			if (EVar1 != MENU_QUIT_BACKMENU)
+			{
+				PauseReturnValue = (uint)ActiveItem[VisibleMenu]->ExitValue;
 				return;
 			}
 		}
 		VisibleMenu = VisibleMenu + -1;
-		SetupMenu((&VisibleMenus3)[VisibleMenu], 1);
+		SetupMenu(VisibleMenus[VisibleMenu], 1);
 		return;
 	}
 	bVar2 = false;
-	if (DAT_000aa808 < 1) {
+
+	if (controlmenu_debounce < 1)
+	{
 		iVar3 = 10;
 	}
-	else {
-		DAT_000aa808 = DAT_000aa808 + -1;
+	else
+	{
+		controlmenu_debounce = controlmenu_debounce + -1;
 		iVar3 = 2;
-		if (DAT_000aa808 != 0) goto LAB_0006cd08;
+		if (controlmenu_debounce != 0) goto LAB_0006cd08;
 	}
+
 	bVar2 = true;
-	DAT_000aa808 = iVar3;
+	controlmenu_debounce = iVar3;
 LAB_0006cd08:
-	if (bVar2) {
-		if ((uVar6 & 0x8000) == 0) {
-			(*(&ActiveItem3)[VisibleMenu]->func)(1);
+
+	if (bVar2)
+	{
+		if ((uVar6 & 0x8000) == 0)
+		{
+			(*ActiveItem[VisibleMenu]->func)(1);
 		}
-		else {
-			(*(&ActiveItem3)[VisibleMenu]->func)(0xffffffff);
+		else 
+		{
+			(*ActiveItem[VisibleMenu]->func)(-1);
 		}
 	}
-	return;*/
 }
 
 

@@ -20795,7 +20795,7 @@ struct MENU_HEADER // hashcode: 0x0BDA3805 (dec: 198850565)
 	struct MENU_ITEM *MenuItems; // size=20, offset=16
 };
 
-typedef void(*pauseFunc)();
+typedef void(*pauseFunc)(int dir);
 
 struct MENU_ITEM // hashcode: 0x9519D4FB (dec: -1793469189)
 {
