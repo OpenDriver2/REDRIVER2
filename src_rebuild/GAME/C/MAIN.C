@@ -6,6 +6,7 @@
 #include "LIBGPU.H"
 #include "LIBMCRD.H"
 
+#include "../ASM/ASMTEST.H"
 #include "SYSTEM.H"
 #include "PAD.H"
 #include "SOUND.H"
@@ -37,6 +38,7 @@
 #include "CIV_AI.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
+#include "EVENT.H"
 #include "OVERLAY.H"
 #include "DEBRIS.H"
 #include "JOB_FX.H"
@@ -2516,28 +2518,28 @@ void UpdatePlayerInformation(void)
 	/* end block 3 */
 	// End Line: 10655
 
+int CurrentPlayerView = 0;
+
 void RenderGame2(int view)
 {
-	UNIMPLEMENTED();
-
-	/*
 	DB *pDVar1;
 	int iVar2;
-	uint *puVar3;
-	uint uVar4;
-	char cVar5;
-	char *pcVar6;
-	_PLAYER *p_Var7;
-	int iVar8;
+	POLY_F4 *poly;
+	uint uVar3;
+	unsigned char uVar4;
+	char *pcVar5;
+	_PLAYER *pPVar6;
+	int iVar7;
 
 	CurrentPlayerView = view;
-	InitCamera(&player + view);
+	InitCamera((_PLAYER *)(player + view));
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
 	SetupDrawMapPSX();
-	if (gLoadedMotionCapture != 0) {
+
+	if (gLoadedMotionCapture != 0) 
 		DrawAllPedestrians();
-	}
+
 	DisplayMissionTitle();
 	DrawInGameCutscene();
 	DrawEvents(1);
@@ -2553,81 +2555,101 @@ void RenderGame2(int view)
 	HandleDebris();
 	current->ot = current->ot + -10;
 	DrawAllExplosions();
-	if (AttractMode != 0) {
-		uVar4 = CameraCnt & 0x1f;
-		if (0xf < uVar4) {
-			uVar4 = 0x20 - uVar4;
+
+	if (AttractMode != 0) 
+	{
+		uVar3 = CameraCnt & 0x1f;
+
+		if (0xf < uVar3) {
+			uVar3 = 0x20 - uVar3;
 		}
-		SetTextColour((uchar)((uVar4 & 0x1f) << 3), '\0', '\0');
-		PrintString(&DAT_000aa674, 0x23, 0xf);
+
+		SetTextColour(((uVar3 & 0x1f) << 3), '\0', '\0');
+		PrintString("DEMO", 0x23, 0xf);
 	}
-	p_Var7 = &player;
-	iVar8 = 2;
+
+	pPVar6 = player;
+	iVar7 = 2;
+
 	do {
-		iVar2 = CarHasSiren((uint)(byte)car_data[p_Var7->playerCarId].ap.model);
-		if ((iVar2 != 0) && ((p_Var7->horn).on != '\0')) {
-			AddCopCarLight(car_data + p_Var7->playerCarId);
-		}
-		iVar8 = iVar8 + -1;
-		p_Var7 = p_Var7 + 1;
-	} while (-1 < iVar8);
-	if (gLoadedOverlay != 0) {
+		iVar2 = CarHasSiren((uint)(char)car_data[pPVar6->playerCarId].ap.model);
+
+		if ((iVar2 != 0) && ((pPVar6->horn).on != '\0'))
+			AddCopCarLight(car_data + pPVar6->playerCarId);
+	
+		iVar7 = iVar7 + -1;
+		pPVar6 = pPVar6 + 1;
+	} while (-1 < iVar7);
+
+	if (gLoadedOverlay != 0)
+	{
 		DisplayOverlays();
 	}
+
 	DrawMission();
-	if ((FastForward == 0) && (NumPlayers == 1)) {
+
+	if ((FastForward == 0) && (NumPlayers == 1))
+	{
 		DrawLensFlare();
 	}
-	cVar5 = (char)(gDieWithFade << 4);
-	if (gDieWithFade != 0) {
+
+	uVar4 = (unsigned char)(gDieWithFade << 4);
+
+	if (gDieWithFade != 0) 
+	{
 		if (0xff < gDieWithFade << 4) {
-			cVar5 = -1;
+			uVar4 = -1;
 		}
-		puVar3 = (uint *)current->primptr;
-		*(char *)((int)puVar3 + 7) = '*';
-		*(char *)((int)puVar3 + 3) = '\x05';
-		*(char *)(puVar3 + 1) = cVar5;
-		*(char *)((int)puVar3 + 5) = cVar5;
-		*(char *)((int)puVar3 + 6) = cVar5;
+		poly = (POLY_F4 *)current->primptr;
+
+		setPolyF4(poly);
+		setSemiTrans(poly, 1);
+
+		poly->r0 = uVar4;
+		poly->g0 = uVar4;
+		poly->b0 = uVar4;
 		pDVar1 = current;
-		*(undefined2 *)(puVar3 + 2) = 0;
-		*(undefined2 *)((int)puVar3 + 10) = 0;
-		*(undefined2 *)(puVar3 + 3) = 0x140;
-		*(undefined2 *)((int)puVar3 + 0xe) = 0;
-		*(undefined2 *)(puVar3 + 4) = 0;
-		*(undefined2 *)((int)puVar3 + 0x12) = 0x100;
-		*(undefined2 *)(puVar3 + 5) = 0x140;
-		*(undefined2 *)((int)puVar3 + 0x16) = 0x100;
-		*puVar3 = *puVar3 & 0xff000000 | pDVar1->ot[8] & 0xffffff;
-		pDVar1->ot[8] = pDVar1->ot[8] & 0xff000000 | (uint)puVar3 & 0xffffff;
-		pcVar6 = pDVar1->primptr;
-		pDVar1->primptr = pcVar6 + 0x18;
-		pcVar6[0x1b] = '\a';
-		pcVar6[0x1f] = '$';
-		*(undefined2 *)(pcVar6 + 0x20) = 0xffff;
-		*(undefined2 *)(pcVar6 + 0x22) = 0xffff;
-		*(undefined2 *)(pcVar6 + 0x28) = 0xffff;
-		*(undefined2 *)(pcVar6 + 0x2a) = 0xffff;
-		*(undefined2 *)(pcVar6 + 0x30) = 0xffff;
-		*(undefined2 *)(pcVar6 + 0x32) = 0xffff;
-		*(undefined2 *)(pcVar6 + 0x2e) = 0x40;
-		pDVar1 = current;
-		*(uint *)(pcVar6 + 0x18) = *(uint *)(pcVar6 + 0x18) & 0xff000000 | current->ot[8] & 0xffffff;
-		pDVar1->ot[8] = pDVar1->ot[8] & 0xff000000 | (uint)(pcVar6 + 0x18) & 0xffffff;
-		pDVar1->primptr = pDVar1->primptr + 0x20;
+		poly->x0 = 0;
+		poly->y0 = 0;
+		poly->x1 = 0x140;
+		poly->y1 = 0;
+		poly->x2 = 0;
+		poly->y2 = 0x100;
+		poly->x3 = 0x140;
+		poly->y3 = 0x100;
+		addPrim((u_long*)(pDVar1->ot + 8), poly);
+
+		pDVar1->primptr += sizeof(POLY_F4);
+		POLY_FT3* null = (POLY_FT3*)pDVar1->primptr;
+
+		setPolyFT3(null);
+		null->x0 = -1;
+		null->y0 = -1;
+		null->x1 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->y2 = -1;
+		null->tpage = 0x40;
+
+		addPrim((u_long*)(pDVar1->ot + 8), poly);
+		pDVar1->primptr += sizeof(POLY_FT3);
 	}
-	iVar8 = Havana3DOcclusion(0xb0, (int *)&ObjectDrawnValue);
+
+	iVar7 = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);
+
 	ScaleCamera();
-	if ((iVar8 != 0) &&
-		(DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))) {
+
+	if ((iVar7 != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))) 
+	{
 		DoWeather(gWeather);
 	}
-	if (37000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000))) {
+
+	if (37000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))
+	{
 		DrawTyreTracks();
 	}
+
 	DrawAllTheCars(view);
-	return;
-	*/
 }
 
 
@@ -2690,7 +2712,7 @@ void RenderGame2(int view)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [A]
+// [D]
 void RenderGame(void)
 {
 	UpdatePadData();
@@ -2699,8 +2721,6 @@ void RenderGame(void)
 
 	FadeGameScreen(0, 8);
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -2942,7 +2962,7 @@ void DealWithHorn(char *hr, int i)
 	/* end block 3 */
 	// End Line: 11431
 
-int Havana3DOcclusion(TDRFuncPtr_Havana3DOcclusion0func func, int *param)
+int Havana3DOcclusion(occlFunc func, int *param)
 {
 	UNIMPLEMENTED();
 	return 0;

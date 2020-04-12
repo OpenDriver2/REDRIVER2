@@ -22,6 +22,9 @@
     <Filter Include="main\MEMCARD">
       <UniqueIdentifier>{441a7d78-ac27-4b7b-a62f-bc86223dad10}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main\ASM">
+      <UniqueIdentifier>{bcdfce60-4640-49e6-ad0e-98690203bef6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EMULATOR\ABS.C">
@@ -224,6 +227,9 @@
     </ClCompile>
     <ClCompile Include="GAME\C\CARS.C">
       <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\ASM\ASMTEST.C">
+      <Filter>main\ASM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

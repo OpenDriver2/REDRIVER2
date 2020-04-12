@@ -123,5 +123,6 @@ extern void SetCarToBeStolen(struct _TARGET *target, int player); // 0x00064C60
 
 extern void MakePhantomCarEqualPlayerCar(); // 0x00064CD0
 
+extern void DrawMission(void);
 
 #endif

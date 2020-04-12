@@ -4,7 +4,7 @@
 extern int FrameCnt;
 extern int CameraCnt;
 
-typedef void(*TDRFuncPtr_Havana3DOcclusion0func)();
+typedef void(*occlFunc)(int *comp_val);
 
 extern void ProcessLumps(char *lump_ptr, int lump_size); // 0x00058C08
 
@@ -44,7 +44,7 @@ extern void InitGameVariables(); // 0x0005BCE4
 
 extern void DealWithHorn(char *hr, int i); // 0x0005BF74
 
-extern int Havana3DOcclusion(TDRFuncPtr_Havana3DOcclusion0func func, int *param); // 0x0005C16C
+extern int Havana3DOcclusion(occlFunc func, int *param); // 0x0005C16C
 
 
 

@@ -180,6 +180,7 @@
     <ClCompile Include="EMULATOR\LIBPAD.C" />
     <ClCompile Include="EMULATOR\LIBSN.C" />
     <ClCompile Include="EMULATOR\LIBSPU.C" />
+    <ClCompile Include="GAME\ASM\ASMTEST.C" />
     <ClCompile Include="GAME\C\AI.C" />
     <ClCompile Include="GAME\C\BOMBERMAN.C" />
     <ClCompile Include="GAME\C\CAMERA.C" />
