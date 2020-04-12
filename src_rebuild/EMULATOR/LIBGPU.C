@@ -854,32 +854,91 @@ int ParsePrimitive(uintptr_t primPtr)
 		case 0x48: // TODO (unused)
 		{
 			LINE_F3* poly = (LINE_F3*)pTag;
-			/*
-						for (int i = 0; i < 2; i++)
-						{
-							AddSplit(POLY_TYPE_LINES, semi_transparent, activeDrawEnv.tpage, whiteTexture);
 
-							if (i == 0)
-							{
-								//First line
-								Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, NULL, NULL);
-								Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, NULL, NULL, NULL);
-								g_vertexIndex += 2;
-							}
-							else
-							{
-								//Second line
-								Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x1, &poly->x2, NULL, NULL);
-								Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, NULL, NULL, NULL);
-								g_vertexIndex += 2;
-							}
-			#if defined(DEBUG_POLY_COUNT)
-							polygon_count++;
-			#endif
-						}
-			*/
+			AddSplit(semi_transparent, activeDrawEnv.tpage, whiteTexture);
+
+			{
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1);
+				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+
+				MakeTriangle();
+
+				g_vertexIndex += 6;
+#if defined(DEBUG_POLY_COUNT)
+				polygon_count++;
+#endif
+			}
+
+			{
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x1, &poly->x2);
+				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+
+				MakeTriangle();
+
+				g_vertexIndex += 6;
+#if defined(DEBUG_POLY_COUNT)
+				polygon_count++;
+#endif
+			}
 
 			primitive_size = sizeof(LINE_F3);
+			break;
+		}
+		case 0x4c:
+		{
+			LINE_F4* poly = (LINE_F4*)pTag;
+
+			AddSplit(semi_transparent, activeDrawEnv.tpage, whiteTexture);
+
+			{
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1);
+				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+
+				MakeTriangle();
+
+				g_vertexIndex += 6;
+#if defined(DEBUG_POLY_COUNT)
+				polygon_count++;
+#endif
+			}
+
+			{
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x1, &poly->x2);
+				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+
+				MakeTriangle();
+
+				g_vertexIndex += 6;
+#if defined(DEBUG_POLY_COUNT)
+				polygon_count++;
+#endif
+			}
+
+			{
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x2, &poly->x3);
+				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+
+				MakeTriangle();
+
+				g_vertexIndex += 6;
+#if defined(DEBUG_POLY_COUNT)
+				polygon_count++;
+#endif
+			}
+
+			primitive_size = sizeof(LINE_F2);
+#if defined(DEBUG_POLY_COUNT)
+			polygon_count++;
+#endif
+
+			// TODO: unsupported
+
+			primitive_size = sizeof(LINE_F4);
 			break;
 		}
 		case 0x50:
