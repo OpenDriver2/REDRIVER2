@@ -448,7 +448,20 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
 	static short waveBuffer[SPU_MEMSIZE];
 
-	int voiceId = SPU_VOICECH(arg->voice);
+	int voiceId = -1;
+
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		if (arg->voice != SPU_VOICECH(i))
+			continue;
+
+		voiceId = i;
+		break;
+	}
+
+	if (voiceId == -1)
+		return;
+
 	SPUVoice& voice = s_SpuVoices[voiceId];
 
 	// update sample
