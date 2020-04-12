@@ -2137,10 +2137,6 @@ void ResetCityType(void)
 {
 	lasttype = (CITYTYPE)-1;
 	lastcity = -1;
-
-#ifndef PSX
-	g_CurrentLevelFileName[0] = '\0';
-#endif // !PSX
 }
 
 

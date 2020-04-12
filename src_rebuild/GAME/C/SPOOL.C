@@ -124,6 +124,7 @@ data_callbackFn g_dataCallbackPC = NULL;
 ready_callbackFn g_readyCallbackPC = NULL;
 char g_sectorData[2048] = { 0 };
 bool g_isSectorDataRead = false;
+volatile bool g_spoolDoneFlag = false;
 
 extern char g_CurrentLevelFileName[64];
 
@@ -146,6 +147,9 @@ int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
 	printf("Running SPOOL thread...\n");
+
+	g_spoolDoneFlag = false;
+	g_isSectorDataRead = false;
 
 	ready_callbackFn readyCb = g_readyCallbackPC;
 	data_callbackFn dataCb = g_dataCallbackPC;
@@ -206,6 +210,7 @@ int levelSpoolerPCFunc(void* data)
 	} while (true);
 
 	printf("SPOOLER thread work done.\n");
+	g_spoolDoneFlag = true;
 
 	fclose(fp);
 
@@ -219,15 +224,13 @@ void startReadLevSectorsPC(int sector)
 {
 	levelSpoolerSeekCmd = sector;
 
-	/*
-	if (levelSpoolerPCThread)
+	if (levelSpoolerPCThread && g_spoolDoneFlag)
 	{
 		int returnValue;
 		SDL_WaitThread(levelSpoolerPCThread, &returnValue);
 
 		levelSpoolerPCThread = NULL;
 	}
-	*/
 
 	if (!levelSpoolerPCThread)
 	{
