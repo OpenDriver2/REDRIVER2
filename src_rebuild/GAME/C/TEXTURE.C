@@ -553,28 +553,28 @@ void ProcessTextureInfo(char *lump_ptr)
 	texamount = *(int *)(lump_ptr + 4);
 	tpage_position = (TP *)(lump_ptr + 8);
 
-	char *tp = (char *)&tpage_position[tpage_amount + 1];
+	char *ptr = (char *)&tpage_position[tpage_amount + 1];
 
 	if (tpage_amount > 0) {
 		for (int i = 0; i < tpage_amount; i++)
 		{
-			texamount = *(int *)tp;
-			tp += 4;
+			texamount = *(int *)ptr;
+			ptr += 4;
 
-			tpage_ids[i] = (TEXINF *)tp;
-			tp += (texamount * sizeof(TEXINF));
+			tpage_ids[i] = (TEXINF *)ptr;
+			ptr += (texamount * sizeof(TEXINF));
 
 			tpage_texamts[i] = texamount;
 		}
 	}
 
-	nperms = *(int *)tp;
-	permlist = (XYPAIR *)(tp + 4);
+	nperms = *(int *)ptr;
+	permlist = (XYPAIR *)(ptr + 4);
 
-	tp += (16 * sizeof(XYPAIR));
+	ptr = (char *)&permlist[16];
 
-	nspecpages = *(int *)tp;
-	speclist = (XYPAIR *)(tp + 4);
+	nspecpages = *(int *)ptr;
+	speclist = (XYPAIR *)(ptr + 4);
 }
 
 
