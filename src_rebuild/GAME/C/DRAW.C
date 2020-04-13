@@ -4,6 +4,7 @@
 #include "MAP.H"
 #include "MODELS.H"
 #include "SYSTEM.H"
+#include "CAMERA.H"
 
 #include <string.h>
 
@@ -1169,45 +1170,54 @@ void SetupPlaneColours(ulong ambient)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char CurrentPVS[444]; // 21*21+4
+MATRIX2 matrixtable[64];
+int setupYet = 0;
+
+// [D]
 void SetupDrawMapPSX(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	MATRIX2 *pMVar2;
 	MATRIX2 *pMVar3;
 	int iVar4;
 
 	current_cell_x = camera_position.vx + units_across_halved;
-	if (current_cell_x < 0) {
+	if (current_cell_x < 0)
 		current_cell_x = current_cell_x + 0x7ff;
-	}
+
 	current_cell_x = current_cell_x >> 0xb;
 	current_cell_z = camera_position.vz + units_down_halved;
-	if (current_cell_z < 0) {
+
+	if (current_cell_z < 0)
 		current_cell_z = current_cell_z + 0x7ff;
-	}
+
 	current_cell_z = current_cell_z >> 0xb;
 	iVar1 = cells_across;
-	if (cells_across < 0) {
+	if (cells_across < 0)
 		iVar1 = cells_across + 0x1f;
-	}
+
 	iVar4 = 0x30;
+
 	GetPVSRegionCell2((uint)current_cell_x >> 5 & 1 | ((uint)current_cell_z >> 5 & 1) << 1,
 		((uint)current_cell_x >> 5) + ((uint)current_cell_z >> 5) * (iVar1 >> 5),
 		(current_cell_z & 0x1fU) << 5 | current_cell_x & 0x1fU, CurrentPVS);
+
 	pMVar3 = CompoundMatrix;
-	pMVar2 = &matrixtable;
+	pMVar2 = matrixtable;
+
 	do {
-		MulMatrix0(&inv_camera_matrix, pMVar2, pMVar3);
+		MulMatrix0(&inv_camera_matrix, (MATRIX*)pMVar2, (MATRIX*)pMVar3);
+
 		pMVar3 = pMVar3 + 0x10;
 		iVar4 = iVar4 + -0x10;
 		pMVar2 = pMVar2 + 0x10;
 	} while (-1 < iVar4);
+
 	InitFrustrumMatrix();
 	SetFrustrumMatrix();
+
 	setupYet = 1;
-	return;*/
 }
 
 
