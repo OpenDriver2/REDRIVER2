@@ -217,15 +217,13 @@ int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int
 	/* end block 2 */
 	// End Line: 1526
 
+// [D]
 void PrintStringRightAligned(char *pString, int x, int y)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
 	iVar1 = StringWidth(pString);
 	PrintString(pString, x - iVar1, y);
-	return;*/
 }
 
 
