@@ -837,10 +837,11 @@ void ControlMap(void)
 	current_barrel_region_zcell = current_cell_z + region_z * -0x20;
 
 	region_to_unpack = region_x + region_z * (region_to_unpack >> 5);
-	current_region = region_to_unpack;
-
+	
 	if (current_region == -1)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) << 1);		// is that ever valid for 'target_barrel_region'?
+
+	current_region = region_to_unpack;
 
 	CheckUnpackNewRegions();
 
