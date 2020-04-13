@@ -4,6 +4,7 @@
 extern int FrameCnt;
 extern int CameraCnt;
 extern int CurrentPlayerView;
+extern int FrAng;
 
 typedef void(*occlFunc)(int *comp_val);
 

@@ -8,6 +8,8 @@ extern int units_down_halved;
 
 extern int PolySizes[56];
 
+extern ulong* tile_overflow_buffer;
+
 extern void addSubdivSpriteShadow(struct POLYFT4LIT *src, struct SVECTOR *verts, int z); // 0x0003ED7C
 
 extern void DrawSprites(int numFound); // 0x0003EF64

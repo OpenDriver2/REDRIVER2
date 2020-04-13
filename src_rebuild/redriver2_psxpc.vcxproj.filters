@@ -231,6 +231,9 @@
     <ClCompile Include="GAME\ASM\ASMTEST.C">
       <Filter>main\ASM</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\CELL.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

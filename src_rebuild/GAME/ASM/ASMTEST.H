@@ -10,9 +10,9 @@ extern void date_time() ; // 0x0009BB70
 
 extern void cd_icon() ; // 0x0009BB74
 
-extern void Apply_Inv_CameraMatrix() ; // 0x0001BCFC
+extern void Apply_Inv_CameraMatrix(VECTOR* v) ; // 0x0001BCFC
 
-extern void FrustrumCheck16() ; // 0x0001BD30
+extern int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere) ; // 0x0001BD30
 
 extern void FrustrumCheck() ; // 0x0001BDEC
 

@@ -5,6 +5,11 @@
 #include "MODELS.H"
 #include "SYSTEM.H"
 #include "CAMERA.H"
+#include "MISSION.H"
+#include "CELL.H"
+#include "TILE.H"
+#include "OBJANIM.H"
+#include "../ASM/ASMTEST.H"
 
 #include <string.h>
 
@@ -690,14 +695,57 @@ CELL_OBJECT * UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
 	/* end block 4 */
 	// End Line: 1981
 
+SVECTOR camera_angle = { 0,0,0 };
+uint farClip2Player = 0x8ca0;
+
+static int treecount = 0;
+int numSpritesFound = 0;
+static int alleycount = 0;
+
+int groundDebrisIndex = 0;
+
+int goFaster = 1;
+int fasterToggle = 0;
+
+int current_object_computed_value = 0;
+
+int combointensity;
+
+unsigned long model_object_ptrs[512];
+unsigned long anim_obj_buffer[20];
+
+int buildingsFound = 0;
+int cell_object_index = 0;
+CELL_OBJECT cell_object_buffer[1024];
+
+unsigned long *tile_overflow_buffer;
+
+CELL_OBJECT ground_debris[16];
+PACKED_CELL_OBJECT *spriteList[75];
+
+char CurrentPVS[444]; // 21*21+4
+MATRIX2 matrixtable[64];
+int setupYet = 0;
+
+int num_regions;
+int view_dist;
+int pvs_square;
+int pvs_square_sq;
+
+int units_across_halved;
+int units_down_halved;
+
+int regions_across;
+int regions_down;
+
+OUT_CELL_FILE_HEADER* cell_header;
+
 void DrawMapPSX(int *comp_val)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
-	undefined4 *puVar2;
-	uint uVar3;
-	int iVar4;
+	CELL_OBJECT *pCVar2;
+	MATRIX *pMVar3;
+	uint uVar4;
 	PACKED_CELL_OBJECT *pPVar5;
 	CELL_OBJECT **ppCVar6;
 	int iVar7;
@@ -706,336 +754,443 @@ void DrawMapPSX(int *comp_val)
 	int cellx;
 	int cellz;
 	CELL_OBJECT *cop;
-	undefined4 uVar10;
-	undefined4 uVar11;
-	undefined4 uVar12;
-	MODEL *pMVar13;
-	CELL_OBJECT **ppCVar14;
-	ulong *puVar15;
-	int iVar16;
-	int iVar17;
-	uint uVar18;
-	CELL_ITERATOR CStack184;
-	undefined4 auStack160[8];
-	VECTOR local_80;
-	int local_70;
-	int local_6c;
-	int local_68;
-	int local_64;
-	int local_60;
-	int local_5c;
-	int local_58;
-	int local_54;
-	int local_50;
-	int local_4c;
-	int local_48;
-	int local_44;
-	int local_40;
-	uint local_3c;
-	undefined4 *local_38;
+	//undefined4 uVar10;
+	long lVar11;
+	//undefined4 uVar12;
+	long lVar13;
+	//undefined4 uVar14;
+	long lVar15;
+	MODEL *pMVar16;
+	CELL_OBJECT **ppCVar17;
+	ulong *puVar18;
+	int iVar19;
+	int iVar20;
+	uint uVar21;
+	CELL_ITERATOR ci;
+	MATRIX mRotStore;
+	VECTOR newpos;
+	int camx;
+	int camz;
+	char *PVS_ptr;
+	int tiles_found;
+	int other_models_found;
+	int rightcos;
+	int rightsin;
+	int leftcos;
+	int leftsin;
+	int backcos;
+	int backsin;
+	int rightPlane;
+	int leftPlane;
+	uint farClipLimit;
+	MATRIX *local_38;
 	int local_34;
-	CELL_OBJECT *local_30;
 
-	uVar18 = 0x1800;
-	local_44 = -0x1800;
-	local_40 = 0x1800;
+	uVar21 = 0x1800;	// backPlane
+	rightPlane = -0x1800;
+	leftPlane = 0x1800;
+
 	iVar7 = (int)camera_angle.vy;
-	local_3c = 80000;
+	farClipLimit = 80000;
+
 	uVar9 = iVar7 - FrAng & 0xfff;
-	uVar3 = iVar7 + FrAng & 0xfff;
-	local_5c = (int)rcossin_tbl[uVar9 * 2 + 1];
-	local_58 = (int)rcossin_tbl[uVar9 * 2];
+	uVar4 = iVar7 + FrAng & 0xfff;
+	rightcos = (int)rcossin_tbl[uVar9 * 2 + 1];
+	rightsin = (int)rcossin_tbl[uVar9 * 2];
+
 	uVar9 = iVar7 + 0x400U & 0xfff;
-	local_54 = (int)rcossin_tbl[uVar3 * 2 + 1];
-	local_50 = (int)rcossin_tbl[uVar3 * 2];
-	local_4c = (int)rcossin_tbl[uVar9 * 2 + 1];
-	local_48 = (int)rcossin_tbl[uVar9 * 2];
-	if (NumPlayers == 2) {
-		local_3c = farClip2Player;
+	leftcos = (int)rcossin_tbl[uVar4 * 2 + 1];
+	leftsin = (int)rcossin_tbl[uVar4 * 2];
+	backcos = (int)rcossin_tbl[uVar9 * 2 + 1];
+	backsin = (int)rcossin_tbl[uVar9 * 2];
+
+	if (NumPlayers == 2) 
+	{
+		farClipLimit = farClip2Player;
 	}
-	local_64 = 0;
+
+	tiles_found = 0;
 	treecount = 0;
 	numSpritesFound = 0;
 	goFaster = goFaster ^ fasterToggle;
 	current_object_computed_value = *comp_val;
-	local_60 = 0;
+	other_models_found = 0;
 	iVar7 = 0;
-	if (setupYet == 0) {
+
+	if (setupYet == 0)
+	{
 		SetupDrawMapPSX();
 		setupYet = 0;
 	}
-	local_70 = current_cell_x;
-	local_6c = current_cell_z;
+
+	camz = current_cell_z;
+	camx = current_cell_x;
+
 	ClearCopUsage();
-	iVar17 = 0;
-	iVar16 = 0;
-	local_68 = 0xd7444;
-	uVar3 = 0;
-	if (NumPlayers == 2) {
-		uVar9 = goFaster & 0x1fU | 1;
-	}
-	else {
-		uVar9 = goFaster & 0x1f;
-	}
-	cellx = (0x1b9 >> uVar9) + -1;
-	do {
-		while (true) {
-			while (true) {
-				if (cellx == -1) {
-					if (numSpritesFound != 0) {
+
+	iVar20 = 0;
+	iVar19 = 0;
+	PVS_ptr = CurrentPVS + 220;
+	uVar4 = 0;
+
+	if (NumPlayers == 2) 
+		uVar9 = goFaster & 31 | 1;
+	else
+		uVar9 = goFaster & 31;
+
+	local_34 = (441 >> uVar9) + -1;
+
+	do 
+	{
+		while (true)
+		{
+			while (true)
+			{
+				if (local_34 == -1) 
+				{
+					if (numSpritesFound != 0)
+					{
 						DrawSprites(numSpritesFound);
 					}
-					if (local_64 != 0) {
-						DrawTILES(local_64);
+
+					if (tiles_found != 0) 
+					{
+						DrawTILES(tiles_found);
 					}
-					if (local_60 != 0) {
+
+					if (other_models_found != 0)
+					{
 						SetupPlaneColours(combointensity);
-						DrawAllBuildings(model_object_ptrs, local_60, current);
+						DrawAllBuildings(model_object_ptrs, other_models_found, current);
 					}
-					if (0 < iVar7) {
-						puVar15 = &anim_obj_buffer;
+
+					if (0 < iVar7) 
+					{
+						puVar18 = anim_obj_buffer;
 						do {
-							cop = (CELL_OBJECT *)*puVar15;
-							local_80.vx = (cop->pos).vx - camera_position.vx;
-							local_80.vy = (cop->pos).vy - camera_position.vy;
-							local_80.vz = (cop->pos).vz - camera_position.vz;
-							Apply_Inv_CameraMatrix(&local_80);
-							uVar18 = (uint)cop->yang;
-							setCopControlWord(2, 0, *(undefined4 *)(&matrixtable)[uVar18].m);
-							setCopControlWord(2, 1, *(undefined4 *)((&matrixtable)[uVar18].m + 2));
-							setCopControlWord(2, 2, *(undefined4 *)((&matrixtable)[uVar18].m + 4));
-							setCopControlWord(2, 3, *(undefined4 *)((&matrixtable)[uVar18].m + 6));
-							setCopControlWord(2, 4, *(undefined4 *)((&matrixtable)[uVar18].m + 8));
-							puVar15 = (ulong *)((CELL_OBJECT **)puVar15 + 1);
+							UNIMPLEMENTED();
+							/*
+							cop = (CELL_OBJECT *)*puVar18;
+							newpos.vx = (cop->pos).vx - camera_position.vx;
+							newpos.vy = (cop->pos).vy - camera_position.vy;
+							newpos.vz = (cop->pos).vz - camera_position.vz;
+							Apply_Inv_CameraMatrix(&newpos);
+							uVar21 = (uint)cop->yang;
+							setCopControlWord(2, 0, *(undefined4 *)matrixtable[uVar21].m);
+							setCopControlWord(2, 0x800, *(undefined4 *)(matrixtable[uVar21].m + 2));
+							setCopControlWord(2, 0x1000, *(undefined4 *)(matrixtable[uVar21].m + 4));
+							setCopControlWord(2, 0x1800, *(undefined4 *)(matrixtable[uVar21].m + 6));
+							setCopControlWord(2, 0x2000, *(undefined4 *)(matrixtable[uVar21].m + 8));
+							*/
+							puVar18 = (ulong *)((CELL_OBJECT **)puVar18 + 1);
 							iVar7 = iVar7 + -1;
-							DrawAnimatingObject(modelpointers1536[cop->type], cop, &local_80);
+							DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
+							
 						} while (iVar7 != 0);
 					}
-					buildingsFound = local_60;
+
+					buildingsFound = other_models_found;
+
+					// [A] show stats
+					printf("------ DrawMapPSX stats ------\n");
+					printf("\tbuildingsFound: %d\n", buildingsFound);
+					printf("\ttreecount: %d\n", treecount);
+					printf("\tnumSpritesFound: %d\n", numSpritesFound);
+					printf("\talleycount: %d\n", alleycount);
+					printf("\ttiles_found: %d\n", tiles_found);
+					printf("\tother_models_found: %d\n", other_models_found);
+
 					return;
 				}
-				cellz = iVar16;
-				if (iVar16 < 0) {
-					cellz = -iVar16;
-				}
-				iVar4 = iVar17;
-				if (iVar17 < 0) {
-					iVar4 = -iVar17;
-				}
-				local_34 = cellx + -1;
-				if (cellz + iVar4 < 0x10) {
-					cellx = local_70 + iVar16;
-					cellz = local_6c + iVar17;
-					if ((((((local_44 < 0) && (0 < local_40)) && (uVar18 < local_3c)) &&
+
+				cellx = iVar19;
+				if (iVar19 < 0)
+					cellx = -iVar19;
+
+				cellz = iVar20;
+
+				if (iVar20 < 0) 
+					cellz = -iVar20;
+
+				local_34 = local_34 + -1;
+
+				if (cellx + cellz < 0x10)
+				{
+					cellx = camx + iVar19;
+					cellz = camz + iVar20;
+
+					if ((((((rightPlane < 0) && (0 < leftPlane)) && (uVar21 < farClipLimit)) &&
 						((-1 < cellx && (-1 < cellz)))) &&
 						((cellx < cells_across &&
-						((cellz < cells_down && (*(char *)(local_68 + iVar16) != '\0')))))) &&
-							(pPVar5 = GetFirstPackedCop(cellx, cellz, &CStack184, 1),
-								pPVar5 != (PACKED_CELL_OBJECT *)0x0)) {
-						local_30 = cell_object_buffer;
-						ppCVar14 = (CELL_OBJECT **)(&anim_obj_buffer + iVar7);
-						local_38 = auStack160;
+						((cellz < cells_down && (PVS_ptr[iVar19] != '\0')))))) &&
+						(pPVar5 = GetFirstPackedCop(cellx, cellz, &ci, 1), pPVar5 != NULL)) 
+					{
+						ppCVar17 = (CELL_OBJECT **)(&anim_obj_buffer + iVar7);
+						local_38 = &mRotStore;
+
 						do {
-							pMVar13 = modelpointers1536
-								[(uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
-							cellx = FrustrumCheck16(pPVar5, (int)pMVar13->bounding_sphere);
-							puVar2 = local_38;
-							if (cellx != -1) {
-								uVar1 = pMVar13->shape_flags;
-								if ((uVar1 & 0x4000) == 0) {
+							pMVar3 = local_38;
+							pMVar16 = modelpointers[(uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
+
+							cellx = FrustrumCheck16(pPVar5, (int)pMVar16->bounding_sphere);
+
+							if (cellx != -1) 
+							{
+								uVar1 = pMVar16->shape_flags;
+								if ((uVar1 & 0x4000) == 0)
+								{
+
 									uVar9 = (uint)pPVar5->value & 0x3f;
-									if ((pPVar5->value & 0xf) != 0) {
-										if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value) {
+
+									if ((pPVar5->value & 0xf) != 0) 
+									{
+										if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value) 
+										{
+											UNIMPLEMENTED();
+											
 											CompoundMatrix[uVar9].computed = (short)current_object_computed_value;
+											/*
 											uVar10 = getCopControlWord(2, 0);
-											uVar11 = getCopControlWord(2, 1);
-											*local_38 = uVar10;
-											puVar2[1] = uVar11;
-											uVar10 = getCopControlWord(2, 2);
-											uVar11 = getCopControlWord(2, 3);
-											uVar12 = getCopControlWord(2, 4);
-											puVar2[2] = uVar10;
-											puVar2[3] = uVar11;
-											puVar2[4] = uVar12;
-											uVar10 = getCopControlWord(2, 5);
-											uVar11 = getCopControlWord(2, 6);
-											uVar12 = getCopControlWord(2, 7);
-											puVar2[5] = uVar10;
-											puVar2[6] = uVar11;
-											puVar2[7] = uVar12;
-											MulMatrix0(&inv_camera_matrix, &matrixtable + uVar9, CompoundMatrix + uVar9);
-											setCopControlWord(2, 0, *local_38);
-											setCopControlWord(2, 1, local_38[1]);
-											setCopControlWord(2, 2, local_38[2]);
-											setCopControlWord(2, 3, local_38[3]);
-											setCopControlWord(2, 4, local_38[4]);
+											uVar12 = getCopControlWord(2, 0x800);
+											*(undefined4 *)local_38->m = uVar10;
+											*(undefined4 *)(pMVar3->m + 2) = uVar12;
+											uVar10 = getCopControlWord(2, 0x1000);
+											uVar12 = getCopControlWord(2, 0x1800);
+											uVar14 = getCopControlWord(2, 0x2000);
+											*(undefined4 *)(pMVar3->m + 4) = uVar10;
+											*(undefined4 *)(pMVar3->m + 6) = uVar12;
+											*(undefined4 *)(pMVar3->m + 8) = uVar14;
+											lVar11 = getCopControlWord(2, 0x2800);
+											lVar13 = getCopControlWord(2, 0x3000);
+											lVar15 = getCopControlWord(2, 0x3800);
+											pMVar3->t[0] = lVar11;
+											pMVar3->t[1] = lVar13;
+											pMVar3->t[2] = lVar15;
+
+											MulMatrix0(&inv_camera_matrix,
+												(MATRIX *)(matrixtable + uVar9),
+												(MATRIX *)(CompoundMatrix + uVar9));
+
+											setCopControlWord(2, 0, *(undefined4 *)local_38->m);
+											setCopControlWord(2, 0x800, *(undefined4 *)(local_38->m + 2));
+											setCopControlWord(2, 0x1000, *(undefined4 *)(local_38->m + 4));
+											setCopControlWord(2, 0x1800, *(undefined4 *)(local_38->m + 6));
+											setCopControlWord(2, 0x2000, *(undefined4 *)(local_38->m + 8));
+											*/
 										}
 									}
-									if (((uVar1 & 0x480) == 0) && ((pMVar13->flags2 & 0xc000) == 0)) {
-										cop = (CELL_OBJECT *)0x0;
-										if (pPVar5 != (PACKED_CELL_OBJECT *)0x0) {
-											cop = local_30 + cell_object_index;
-											(cop->pos).vx =
-												CStack184.nearCell.x +
-												((int)(((uint)(pPVar5->pos).vx - (CStack184.nearCell.x & 0xffff)) *
-													0x10000) >> 0x10);
-											(cop->pos).vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+									cellx = cell_object_index;
+									if (((uVar1 & 0x480) == 0) && ((pMVar16->flags2 & 0xc000) == 0))
+									{
+										cop = NULL;
+
+										if (pPVar5 != NULL) 
+										{
+											cop = cell_object_buffer + cell_object_index;
+											(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
+
+											cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+											pCVar2 = cell_object_buffer + cell_object_index;
 											cell_object_index = cell_object_index + 1U & 0x3ff;
-											(cop->pos).vz =
-												CStack184.nearCell.z +
-												((int)(((uint)(pPVar5->pos).vz - (CStack184.nearCell.z & 0xffff)) *
-													0x10000) >> 0x10);
-											*(uint *)&cop->pad =
-												((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10
-												| ((uint)pPVar5->value & 0x3f) << 8;
+
+											(pCVar2->pos).vz =
+												ci.near.z +
+												((int)(((uint)(pPVar5->pos).vz -
+												(ci.near.z & 0xffffU)) * 0x10000) >>
+													0x10);
+											*(uint *)&cell_object_buffer[cellx].pad =
+												((uint)(pPVar5->value >> 6) |
+												((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
+													((uint)pPVar5->value & 0x3f) << 8;
 										}
-										if (((pMVar13->flags2 & 1) != 0) && (iVar7 < 0x14)) {
-											*ppCVar14 = cop;
-											ppCVar14 = ppCVar14 + 1;
+
+										if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14))
+										{
+											*ppCVar17 = cop;
+											ppCVar17 = ppCVar17 + 1;
 											iVar7 = iVar7 + 1;
 										}
-										if (local_60 < 0xc0) {
-											ppCVar6 = (CELL_OBJECT **)(model_object_ptrs + local_60);
-											local_60 = local_60 + 1;
+
+										if (other_models_found < 0xc0)
+										{
+											ppCVar6 = (CELL_OBJECT **)(model_object_ptrs + other_models_found);
+											other_models_found = other_models_found + 1;
 											*ppCVar6 = cop;
 										}
 									}
-									else {
-										if (((pMVar13->flags2 & 0x80) != 0) &&
-											(alleycount = alleycount + 1, alleycount == 0xd)) {
-											cop = (CELL_OBJECT *)0x0;
-											if (pPVar5 != (PACKED_CELL_OBJECT *)0x0) {
-												cop = local_30 + cell_object_index;
+									else 
+									{
+										if (((pMVar16->flags2 & 0x80) != 0) && (alleycount = alleycount + 1, alleycount == 0xd)) 
+										{
+											cop = NULL;
+
+											if (pPVar5 != NULL)
+											{
+												cop = cell_object_buffer + cell_object_index;
 												(cop->pos).vx =
-													CStack184.nearCell.x +
-													((int)(((uint)(pPVar5->pos).vx - (CStack184.nearCell.x & 0xffff)) *
-														0x10000) >> 0x10);
-												(cop->pos).vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+													ci.near.x +
+													((int)(((uint)(pPVar5->pos).vx -
+													(ci.near.x & 0xffffU)) * 0x10000) >>
+														0x10);
+												cell_object_buffer[cell_object_index].pos.vy =
+													(int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+												pCVar2 = cell_object_buffer + cell_object_index;
 												cell_object_index = cell_object_index + 1U & 0x3ff;
-												(cop->pos).vz =
-													CStack184.nearCell.z +
-													((int)(((uint)(pPVar5->pos).vz - (CStack184.nearCell.z & 0xffff)) *
-														0x10000) >> 0x10);
-												*(uint *)&cop->pad =
-													((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) <<
-													0x10 | ((uint)pPVar5->value & 0x3f) << 8;
+												(pCVar2->pos).vz =
+													ci.near.z +
+													((int)(((uint)(pPVar5->pos).vz -
+													(ci.near.z & 0xffffU)) * 0x10000) >>
+														0x10);
+												*(uint *)&cell_object_buffer[cellx].pad =
+													((uint)(pPVar5->value >> 6) |
+													((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
+														((uint)pPVar5->value & 0x3f) << 8;
 											}
+
 											uVar9 = groundDebrisIndex & 0xf;
 											ground_debris[uVar9].pos.vx = (cop->pos).vx;
 											ground_debris[uVar9].pos.vy = (cop->pos).vy;
 											ground_debris[uVar9].pos.vz = (cop->pos).vz;
 											groundDebrisIndex = groundDebrisIndex + 1;
 											alleycount = 0;
-											*(undefined4 *)&ground_debris[uVar9].pad = *(undefined4 *)&cop->pad;
+											ground_debris[uVar9].pad = cop->pad;
 										}
-										if (local_64 < 0x100) {
-											*(PACKED_CELL_OBJECT **)(tile_overflow_buffer + local_64) = pPVar5;
-											local_64 = local_64 + 1;
+
+										if (tiles_found < 0x100) 
+										{
+											*(PACKED_CELL_OBJECT **)(tile_overflow_buffer + tiles_found) = pPVar5;
+											tiles_found = tiles_found + 1;
 										}
 									}
 								}
-								else {
-									if (numSpritesFound < 0x4b) {
-										ppPVar8 = &spriteList75 + numSpritesFound;
+								else 
+{
+									if (numSpritesFound < 0x4b) 
+									{
+										ppPVar8 = spriteList + numSpritesFound;
 										numSpritesFound = numSpritesFound + 1;
 										*ppPVar8 = pPVar5;
 									}
-									if (((pMVar13->flags2 & 1) != 0) && (iVar7 < 0x14)) {
-										cop = (CELL_OBJECT *)0x0;
-										if (pPVar5 != (PACKED_CELL_OBJECT *)0x0) {
-											cop = local_30 + cell_object_index;
-											(cop->pos).vx =
-												CStack184.nearCell.x +
-												((int)(((uint)(pPVar5->pos).vx - (CStack184.nearCell.x & 0xffff)) *
-													0x10000) >> 0x10);
-											(cop->pos).vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+
+									cellx = cell_object_index;
+
+									if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14)) 
+									{
+										cop = NULL;
+
+										if (pPVar5 != NULL) 
+										{
+											cop = cell_object_buffer + cell_object_index;
+
+											(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
+											cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+
+											pCVar2 = cell_object_buffer + cell_object_index;
 											cell_object_index = cell_object_index + 1U & 0x3ff;
-											(cop->pos).vz =
-												CStack184.nearCell.z +
-												((int)(((uint)(pPVar5->pos).vz - (CStack184.nearCell.z & 0xffff)) *
-													0x10000) >> 0x10);
-											*(uint *)&cop->pad =
-												((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10
-												| ((uint)pPVar5->value & 0x3f) << 8;
+
+											(pCVar2->pos).vz = ci.near.z + ((int)(((uint)(pPVar5->pos).vz - (ci.near.z & 0xffffU)) * 0x10000) >> 0x10);
+											*(uint *)&cell_object_buffer[cellx].pad = ((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 | ((uint)pPVar5->value & 0x3f) << 8;
 										}
-										*ppCVar14 = cop;
-										ppCVar14 = ppCVar14 + 1;
+
+										*ppCVar17 = cop;
+										ppCVar17 = ppCVar17 + 1;
 										iVar7 = iVar7 + 1;
 									}
-									if (((pMVar13->flags2 & 0x2000) != 0) &&
-										(uVar9 = treecount & 0xf, treecount = treecount + 1, uVar9 == 0)) {
-										cop = (CELL_OBJECT *)0x0;
-										if (pPVar5 != (PACKED_CELL_OBJECT *)0x0) {
-											cop = local_30 + cell_object_index;
+									cellx = cell_object_index;
+
+									if (((pMVar16->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount = treecount + 1, uVar9 == 0))
+									{
+										cop = NULL;
+										if (pPVar5 != NULL) {
+											cop = cell_object_buffer + cell_object_index;
 											(cop->pos).vx =
-												CStack184.nearCell.x +
-												((int)(((uint)(pPVar5->pos).vx - (CStack184.nearCell.x & 0xffff)) *
-													0x10000) >> 0x10);
-											(cop->pos).vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+												ci.near.x +
+												((int)(((uint)(pPVar5->pos).vx -
+												(ci.near.x & 0xffffU)) * 0x10000) >>
+													0x10);
+											cell_object_buffer[cell_object_index].pos.vy =
+												(int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+											pCVar2 = cell_object_buffer + cell_object_index;
 											cell_object_index = cell_object_index + 1U & 0x3ff;
-											(cop->pos).vz =
-												CStack184.nearCell.z +
-												((int)(((uint)(pPVar5->pos).vz - (CStack184.nearCell.z & 0xffff)) *
-													0x10000) >> 0x10);
-											*(uint *)&cop->pad =
-												((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10
-												| ((uint)pPVar5->value & 0x3f) << 8;
+											(pCVar2->pos).vz =
+												ci.near.z +
+												((int)(((uint)(pPVar5->pos).vz -
+												(ci.near.z & 0xffffU)) * 0x10000) >>
+													0x10);
+											*(uint *)&cell_object_buffer[cellx].pad =
+												((uint)(pPVar5->value >> 6) |
+												((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
+													((uint)pPVar5->value & 0x3f) << 8;
 										}
 										uVar9 = groundDebrisIndex & 0xf;
 										ground_debris[uVar9].pos.vx = (cop->pos).vx;
 										ground_debris[uVar9].pos.vy = (cop->pos).vy;
 										ground_debris[uVar9].pos.vz = (cop->pos).vz;
 										groundDebrisIndex = groundDebrisIndex + 1;
-										*(undefined4 *)&ground_debris[uVar9].pad = *(undefined4 *)&cop->pad;
+										ground_debris[uVar9].pad = cop->pad;
 									}
 								}
 							}
-							pPVar5 = GetNextPackedCop(&CStack184);
-						} while (pPVar5 != (PACKED_CELL_OBJECT *)0x0);
+							pPVar5 = GetNextPackedCop(&ci);
+						} while (pPVar5 != NULL);
 					}
 				}
-				cellx = local_34;
-				if (uVar3 != 1) break;
-				local_40 = local_40 + local_50;
-				uVar18 = uVar18 + local_48;
-				local_44 = local_44 + local_58;
-				iVar17 = iVar17 + 1;
-				local_68 = local_68 + pvs_square;
-				if (iVar16 == iVar17) {
-					uVar3 = 2;
+
+				if (uVar4 != 1) 
+					break;
+
+				leftPlane = leftPlane + leftsin;
+				uVar21 = uVar21 + backsin;
+				rightPlane = rightPlane + rightsin;
+				iVar20 = iVar20 + 1;
+
+				PVS_ptr = PVS_ptr + pvs_square;
+
+				if (iVar19 == iVar20)
+					uVar4 = 2;
+			}
+
+			if (1 < uVar4)
+				break;
+
+			if (uVar4 == 0)
+			{
+				leftPlane = leftPlane + leftcos;
+				uVar21 = uVar21 + backcos;
+				iVar19 = iVar19 + 1;
+				rightPlane = rightPlane + rightcos;
+				if (iVar19 + iVar20 == 1) 
+				{
+					uVar4 = 1;
 				}
 			}
-			if (1 < uVar3) break;
-			if (uVar3 == 0) {
-				local_40 = local_40 + local_54;
-				uVar18 = uVar18 + local_4c;
-				iVar16 = iVar16 + 1;
-				local_44 = local_44 + local_5c;
-				if (iVar16 + iVar17 == 1) {
-					uVar3 = 1;
-				}
-			}
-			else {
+			else
+			{
 			LAB_0004004c:
-				local_40 = local_40 - local_50;
-				uVar18 = uVar18 - local_48;
-				local_44 = local_44 - local_58;
-				iVar17 = iVar17 + -1;
-				local_68 = local_68 - pvs_square;
-				if (iVar16 == iVar17) {
-					uVar3 = 0;
+				leftPlane = leftPlane - leftsin;
+				uVar21 = uVar21 - backsin;
+				rightPlane = rightPlane - rightsin;
+				iVar20 = iVar20 + -1;
+				PVS_ptr = PVS_ptr + -pvs_square;
+				if (iVar19 == iVar20)
+				{
+					uVar4 = 0;
 				}
 			}
 		}
-		if (uVar3 != 2) goto LAB_0004004c;
-		iVar16 = iVar16 + -1;
-		local_40 = local_40 - local_54;
-		uVar18 = uVar18 - local_4c;
-		local_44 = local_44 - local_5c;
-		if (iVar16 + iVar17 == 0) {
-			uVar3 = 3;
-		}
-	} while (true);*/
+		if (uVar4 != 2)
+			goto LAB_0004004c;
+
+		iVar19 = iVar19 + -1;
+		leftPlane = leftPlane - leftcos;
+		uVar21 = uVar21 - backcos;
+		rightPlane = rightPlane - rightcos;
+
+		if (iVar19 + iVar20 == 0) 
+			uVar4 = 3;
+
+
+	} while (true);
 }
 
 // decompiled code
@@ -1169,10 +1324,6 @@ void SetupPlaneColours(ulong ambient)
 	// End Line: 2795
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-char CurrentPVS[444]; // 21*21+4
-MATRIX2 matrixtable[64];
-int setupYet = 0;
 
 // [D]
 void SetupDrawMapPSX(void)
@@ -1452,19 +1603,6 @@ void PlotMDL_less_than_128(MODEL *model)
 	/* end block 3 */
 	// End Line: 3358
 
-
-int num_regions;
-int view_dist;
-int pvs_square;
-int pvs_square_sq;
-
-int units_across_halved;
-int units_down_halved;
-
-int regions_across;
-int regions_down;
-
-OUT_CELL_FILE_HEADER* cell_header;
 
 // [D]
 void ProcessMapLump(char *lump_ptr, int lump_size)
@@ -2117,7 +2255,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 	/* end block 3 */
 	// End Line: 5026
 
-int DrawAllBuildings(ulong *objects, int num_buildings, DB *disp)
+// [D]
+int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp)
 {
 	int prev_mat = -1;
 

@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "CELL.H"
-
+#include "SYSTEM.H"
+#include "MAP.H"
 
 // decompiled code
 // original method signature: 
@@ -23,14 +24,14 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+unsigned char cell_object_computed_values[2048];
+
+// [D]
 void ClearCopUsage(void)
-
 {
-  ClearMem((char *)cell_object_computed_values,sizeof_cell_object_computed_values);
-  return;
+	ClearMem((char *)cell_object_computed_values, sizeof_cell_object_computed_values);
+	return;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -66,76 +67,78 @@ void ClearCopUsage(void)
 	/* end block 2 */
 	// End Line: 135
 
-PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx,int cellz,CELL_ITERATOR *pci,int use_computed)
-
+PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
 {
-  byte bVar1;
-  ushort uVar2;
-  PACKED_CELL_OBJECT *pPVar3;
-  int iVar4;
-  CELL_DATA *pCVar5;
-  uint uVar6;
-  uint uVar7;
-  int iVar8;
-  
-  iVar8 = ((uint)cellx >> 5 & 1) + ((uint)cellz >> 5 & 1) * 2;
-  if (NumPlayers == 2) {
-    iVar4 = cells_across;
-    if (cells_across < 0) {
-      iVar4 = cells_across + 0x1f;
-    }
-    if (RoadMapRegions[iVar8] != ((uint)cellx >> 5) + ((uint)cellz >> 5) * (iVar4 >> 5)) {
-      return (PACKED_CELL_OBJECT *)0x0;
-    }
-  }
-  if (cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 +
-                iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))] == 0xffff) {
-    return (PACKED_CELL_OBJECT *)0x0;
-  }
-  pCVar5 = cells + cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 +
-                             iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))];
-  pci->pcd = pCVar5;
-  if (events.camera == 0) {
-    if ((pCVar5->num & 0x4000) != 0) {
-      return (PACKED_CELL_OBJECT *)0x0;
-    }
-  }
-  else {
-    uVar2 = pCVar5->num;
-    uVar6 = events.draw | 0x4000;
-    pci->pcd = pCVar5 + 1;
-    while ((uint)uVar2 != uVar6) {
-      pCVar5 = pci->pcd;
-      if ((pCVar5->num & 0x8000) != 0) {
-        return (PACKED_CELL_OBJECT *)0x0;
-      }
-      uVar2 = pCVar5->num;
-      pci->pcd = pCVar5 + 1;
-    }
-  }
-  iVar8 = cells_down >> 1;
-  (pci->nearCell).x = (cellx - (cells_across >> 1)) * 0x800;
-  pPVar3 = cell_objects;
-  pCVar5 = pci->pcd;
-  (pci->nearCell).z = (cellz - iVar8) * 0x800;
-  uVar6 = (uint)pCVar5->num;
-  pci->use_computed = use_computed;
-  uVar7 = uVar6 & 0x3fff;
-  pPVar3 = pPVar3 + uVar7;
-  if ((pPVar3->value == 0xffff) && (((pPVar3->pos).vy & 1) != 0)) {
-LAB_00023d8c:
-    pPVar3 = GetNextPackedCop(pci);
-  }
-  else {
-    if (use_computed != 0) {
-      bVar1 = cell_object_computed_values[uVar7 >> 3];
-      uVar6 = 1 << (uVar6 & 7) & 0xffff;
-      if ((bVar1 & uVar6) != 0) goto LAB_00023d8c;
-      cell_object_computed_values[uVar7 >> 3] = bVar1 | (byte)uVar6;
-    }
-    pci->ppco = pPVar3;
-  }
-  return pPVar3;
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	byte bVar1;
+	ushort uVar2;
+	PACKED_CELL_OBJECT *pPVar3;
+	int iVar4;
+	CELL_DATA *pCVar5;
+	uint uVar6;
+	uint uVar7;
+	int iVar8;
+
+	iVar8 = ((uint)cellx >> 5 & 1) + ((uint)cellz >> 5 & 1) * 2;
+	if (NumPlayers == 2) {
+		iVar4 = cells_across;
+		if (cells_across < 0) {
+			iVar4 = cells_across + 0x1f;
+		}
+		if (RoadMapRegions[iVar8] != ((uint)cellx >> 5) + ((uint)cellz >> 5) * (iVar4 >> 5)) {
+			return (PACKED_CELL_OBJECT *)0x0;
+		}
+	}
+	if (cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 +
+		iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))] == 0xffff) {
+		return (PACKED_CELL_OBJECT *)0x0;
+	}
+	pCVar5 = cells + cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 +
+		iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))];
+	pci->pcd = pCVar5;
+	if (events.camera == 0) {
+		if ((pCVar5->num & 0x4000) != 0) {
+			return (PACKED_CELL_OBJECT *)0x0;
+		}
+	}
+	else {
+		uVar2 = pCVar5->num;
+		uVar6 = events.draw | 0x4000;
+		pci->pcd = pCVar5 + 1;
+		while ((uint)uVar2 != uVar6) {
+			pCVar5 = pci->pcd;
+			if ((pCVar5->num & 0x8000) != 0) {
+				return (PACKED_CELL_OBJECT *)0x0;
+			}
+			uVar2 = pCVar5->num;
+			pci->pcd = pCVar5 + 1;
+		}
+	}
+	iVar8 = cells_down >> 1;
+	(pci->nearCell).x = (cellx - (cells_across >> 1)) * 0x800;
+	pPVar3 = cell_objects;
+	pCVar5 = pci->pcd;
+	(pci->nearCell).z = (cellz - iVar8) * 0x800;
+	uVar6 = (uint)pCVar5->num;
+	pci->use_computed = use_computed;
+	uVar7 = uVar6 & 0x3fff;
+	pPVar3 = pPVar3 + uVar7;
+	if ((pPVar3->value == 0xffff) && (((pPVar3->pos).vy & 1) != 0)) {
+	LAB_00023d8c:
+		pPVar3 = GetNextPackedCop(pci);
+	}
+	else {
+		if (use_computed != 0) {
+			bVar1 = cell_object_computed_values[uVar7 >> 3];
+			uVar6 = 1 << (uVar6 & 7) & 0xffff;
+			if ((bVar1 & uVar6) != 0) goto LAB_00023d8c;
+			cell_object_computed_values[uVar7 >> 3] = bVar1 | (byte)uVar6;
+		}
+		pci->ppco = pPVar3;
+	}
+	return pPVar3;*/
 }
 
 

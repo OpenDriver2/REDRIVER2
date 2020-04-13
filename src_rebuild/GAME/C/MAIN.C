@@ -690,7 +690,6 @@ PACKED_CELL_OBJECT** pcoplist;
 CELL_OBJECT** coplist;
 
 ulong* transparent_buffer;
-ulong* tile_overflow_buffer;
 
 // system?
 int gameinit = 0;
@@ -717,7 +716,7 @@ int gLoadedOverlay = 0;
 int gLoadedMotionCapture = 0;
 
 // DRAWGAME.C ???
-int FrAng = 0x200;
+int FrAng = 0;
 int wetness = 0;
 
 // [D]
