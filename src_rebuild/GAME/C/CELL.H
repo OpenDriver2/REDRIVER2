@@ -1,6 +1,7 @@
 #ifndef CELL_H
 #define CELL_H
 
+extern unsigned char cell_object_computed_values[2048];
 
 extern void ClearCopUsage(); // 0x00023DC0
 

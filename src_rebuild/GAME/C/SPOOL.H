@@ -20,6 +20,8 @@ extern char* RegionSpoolInfo;
 
 extern char* packed_cell_pointers;
 
+extern int RoadMapRegions[4];
+
 typedef void(*spooledFuncPtr)();
 
 extern void test_changemode(); // 0x0007B228

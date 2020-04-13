@@ -392,12 +392,10 @@ LAB_0003f0c4:
 	/* end block 4 */
 	// End Line: 1822
 
+// [D]
 PACKED_CELL_OBJECT * GetNextPackedCop(CELL_ITERATOR *pci)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	char bVar1;
+	unsigned char bVar1;
 	ushort uVar2;
 	PACKED_CELL_OBJECT *pPVar3;
 	CELL_DATA *pCVar4;
@@ -409,25 +407,32 @@ PACKED_CELL_OBJECT * GetNextPackedCop(CELL_ITERATOR *pci)
 	do {
 		do {
 			pCVar4 = pci->pcd;
-			if ((pCVar4->num & 0x8000) != 0) {
-				return (PACKED_CELL_OBJECT *)0x0;
-			}
+			if ((pCVar4->num & 0x8000) != 0) 
+				return NULL;
+
 			pci->pcd = pCVar4 + 1;
 			uVar2 = pCVar4[1].num;
 			uVar6 = (uint)uVar2 & 0x3fff;
-			if ((uVar2 & 0x4000) != 0) {
-				return (PACKED_CELL_OBJECT *)0x0;
-			}
+
+			if ((uVar2 & 0x4000) != 0)
+				return NULL;
+
 			pPVar7 = pPVar3 + uVar6;
 		} while ((pPVar7->value == 0xffff) && (((pPVar7->pos).vy & 1) != 0));
-		if (pci->use_computed == 0) goto LAB_0003f6a4;
+
+		if (pci->use_computed == 0)
+			goto LAB_0003f6a4;
+
 		bVar1 = cell_object_computed_values[uVar6 >> 3];
 		uVar5 = 1 << ((uint)uVar2 & 7) & 0xffff;
+
 	} while ((bVar1 & uVar5) != 0);
-	cell_object_computed_values[uVar6 >> 3] = bVar1 | (byte)uVar5;
+
+	cell_object_computed_values[uVar6 >> 3] = bVar1 | (unsigned char)uVar5;
+
 LAB_0003f6a4:
 	pci->ppco = pPVar7;
-	return pPVar7;*/
+	return pPVar7;
 }
 
 
@@ -740,6 +745,7 @@ int regions_down;
 
 OUT_CELL_FILE_HEADER* cell_header;
 
+// [D] [A]
 void DrawMapPSX(int *comp_val)
 {
 	ushort uVar1;
