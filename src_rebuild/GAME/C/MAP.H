@@ -26,6 +26,8 @@ extern int region_z;
 extern int current_barrel_region_xcell;
 extern int current_barrel_region_zcell;
 
+extern char* PVS_Buffers[4];
+
 extern void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile); // 0x0005D7BC
 
 extern void ProcessJunctionsLump(char *lump_file, int lump_size); // 0x0005D6CC

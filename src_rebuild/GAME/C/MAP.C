@@ -1391,24 +1391,32 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	/* end block 5 */
 	// End Line: 2055
 
+char* PVS_Buffers[4];
+unsigned char *PVSEncodeTable = NULL;
+
+// [D]
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	uint havanaCorruptCellBodge;
-	char *pcVar2;
+	short *pcVar2;
 	char *pcVar3;
 	uint uVar4;
 
-	if ((regions_unpacked[source_region] == region) && (loading_region[source_region] == -1)) {
-		pcVar3 = PVS_Buffers4[source_region];
-		PVSEncodeTable = (uchar *)(pcVar3 + 0x802);
-		pcVar2 = pcVar3 + cell * 2;
-		uVar4 = (uint)CONCAT11(pcVar2[2], pcVar2[3]) - (uint)CONCAT11(*pcVar2, pcVar2[1]) & 0xffff;
+	if ((regions_unpacked[source_region] == region) && (loading_region[source_region] == -1)) 
+	{
+		pcVar3 = PVS_Buffers[source_region];
+		PVSEncodeTable = (unsigned char *)(pcVar3 + 0x802);
+		pcVar2 = (short*)(pcVar3 + cell * 2);
+
+		short
+		uVar4 = (uint)pcVar2[1] - (uint)pcVar2[0] & 0xffff;
+
 		if (uVar4 == 0) {
 			iVar1 = 0;
-			if (0 < pvs_square_sq) {
+
+			if (0 < pvs_square_sq)
+			{
 				do {
 					*output = '\x01';
 					iVar1 = iVar1 + 1;
@@ -1416,18 +1424,23 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 				} while (iVar1 < pvs_square_sq);
 			}
 		}
-		else {
+		else 
+		{
 			havanaCorruptCellBodge = 0;
-			if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8)) {
+
+			if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8))
+			{
 				havanaCorruptCellBodge = (uint)(GameLevel == 1);
 			}
-			PVSDecode(output, pcVar3 + (uint)CONCAT11(*pcVar2, pcVar2[1]), (ushort)uVar4,
-				havanaCorruptCellBodge);
+
+			PVSDecode(output, pcVar3 + (uint)pcVar2[0], (ushort)uVar4, havanaCorruptCellBodge);
 		}
 	}
-	else {
+	else 
+	{
 		iVar1 = 0;
-		if (0 < pvs_square_sq) {
+		if (0 < pvs_square_sq) 
+		{
 			do {
 				*output = '\0';
 				iVar1 = iVar1 + 1;
@@ -1435,8 +1448,6 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 			} while (iVar1 < pvs_square_sq);
 		}
 	}
-	return;
-	*/
 }
 
 

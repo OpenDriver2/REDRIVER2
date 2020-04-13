@@ -5,6 +5,8 @@ extern MATRIX aspect;
 
 extern int units_across_halved;
 extern int units_down_halved;
+extern int pvs_square;
+extern int pvs_square_sq;
 
 extern int PolySizes[56];
 

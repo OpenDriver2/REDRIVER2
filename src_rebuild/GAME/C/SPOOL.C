@@ -38,8 +38,6 @@ int SpecialByRegion[4][20] = {
 	{2, 5, 4, 1, 2, 1, 4, 3, 2, 2, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0},
 };
 
-char* PVS_Buffers[4];
-
 char* model_spool_buffer = NULL;
 
 int cell_objects_add[5];
