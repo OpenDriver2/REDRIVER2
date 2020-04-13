@@ -343,6 +343,7 @@ Helicopter HelicopterData =
   0
 };
 
+EventGlobal events;
 
 // decompiled code
 // original method signature: 

@@ -2963,14 +2963,10 @@ void DealWithHorn(char *hr, int i)
 	/* end block 3 */
 	// End Line: 11431
 
+// [D]
 int Havana3DOcclusion(occlFunc func, int *param)
 {
-	UNIMPLEMENTED();
-	return 0;
-
-	/*
 	bool bVar1;
-	undefined3 in_register_00000011;
 	int iVar2;
 	int unaff_s2;
 	int iVar3;
@@ -2978,43 +2974,63 @@ int Havana3DOcclusion(occlFunc func, int *param)
 	int iVar5;
 
 	iVar5 = 1;
-	if ((((GameLevel != 1) || (-0x68fdc < camera_position.vx)) || (camera_position.vx < -0x75416)) ||
-		((-0x1b8ae < camera_position.vz || (camera_position.vz < -0x20cb3)))) goto LAB_0005c41c;
-	if (camera_position.vy < 0x1bf) {
-		unaff_s2 = 0x10;
-		if (-0x729fc < camera_position.vx) {
-			unaff_s2 = 0x11;
-		}
+
+	if ((((GameLevel != 1) || (-0x68fdc < camera_position.vx)) || (camera_position.vx < -0x75416))
+		|| ((-0x1b8ae < camera_position.vz || (camera_position.vz < -0x20cb3))))
+	{
+		(*func)(param);
+		return 1;
 	}
-	else {
+
+	if (camera_position.vy < 0x1bf) 
+	{
+		unaff_s2 = 0x10;
+
+		if (-0x729fc < camera_position.vx) 
+			unaff_s2 = 0x11;
+	}
+	else 
+	{
 		iVar5 = 0;
 		if (((camera_position.vx < -0x6e9e5) && (-0x6fa01 < camera_position.vx)) &&
 			((camera_position.vz < -0x1e201 &&
-			((-0x1f205 < camera_position.vz && (camera_position.vy < 0xf73)))))) {
-			if (camera_position.vy < 0x4dd) {
+			((-0x1f205 < camera_position.vz && (camera_position.vy < 0xf73))))))
+		{
+			if (camera_position.vy < 0x4dd) 
+			{
 			LAB_0005c2b4:
 				unaff_s2 = 0xf;
 			}
-			else {
+			else 
+			{
 				bVar1 = camera_position.vy < 0xc00;
-				if (camera_position.vy < 0x7d1) {
+				if (camera_position.vy < 0x7d1) 
+				{
 					unaff_s2 = 0xe;
 				}
-				else {
+				else 
+				{
 				LAB_0005c2d8:
-					if (bVar1) {
+					if (bVar1) 
+					{
 						unaff_s2 = 0xd;
 					}
 				}
 			}
 		}
-		else {
-			if (camera_position.vy < 0x6c2) goto LAB_0005c2b4;
+		else 
+		{
+			if (camera_position.vy < 0x6c2)
+				goto LAB_0005c2b4;
+
 			unaff_s2 = 0xe;
-			if (camera_position.vy < 0x834) {
+
+			if (camera_position.vy < 0x834) 
+			{
 				bVar1 = camera_position.vx < -0x73609;
 				goto LAB_0005c2d8;
 			}
+
 			if ((((0xbff < camera_position.vy) && (-0x6fa01 < camera_position.vx)) ||
 				(unaff_s2 = 0xc, camera_position.vz < -0x1f9db)) &&
 				(unaff_s2 = 10, camera_position.vz < -0x1f9dc)) {
@@ -3022,41 +3038,55 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			}
 		}
 	}
+
 	events.camera = 1;
+
 	iVar2 = unaff_s2 + -1;
 	if (iVar2 < 10) {
 		iVar2 = 10;
 	}
+
 	iVar3 = 0;
-	while (true) {
-		if (unaff_s2 + 1 < iVar2) {
+
+	while (true)
+	{
+		if (unaff_s2 + 1 < iVar2) 
+		{
 			events.camera = 0;
 			return iVar5;
 		}
-		if (iVar2 == 0x10) break;
-		if (unaff_s2 != iVar2) {
+
+		if (iVar2 == 0x10)
+			break;
+
+		if (unaff_s2 != iVar2)
+		{
 			iVar3 = 200;
 		}
+
 		events.draw = iVar2;
 		current->ot = current->ot + iVar3;
-		(*(code *)CONCAT31(in_register_00000011, func))(param);
+		(*func)(param);
+
 		iVar4 = iVar3;
-		if (iVar3 != 0) {
+		if (iVar3 != 0) 
+		{
 			iVar4 = 0;
 			current->ot = current->ot + iVar3 * 0x3fffffff;
 		}
+
 		iVar2 = iVar2 + 1;
 		iVar3 = iVar4;
 	}
+
 	events.camera = 0;
-	if ((unaff_s2 == 0xf) && (-0x6fd11 < camera_position.vx)) {
+	if ((unaff_s2 == 0xf) && (-0x6fd11 < camera_position.vx)) 
+	{
 		events.camera = 0;
 		return iVar5;
 	}
-LAB_0005c41c:
-	(*(code *)CONCAT31(in_register_00000011, func))(param);
+
 	return 1;
-	*/
 }
 
 
