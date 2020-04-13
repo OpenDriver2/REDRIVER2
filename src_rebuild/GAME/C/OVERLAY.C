@@ -489,7 +489,7 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 		addPrim((u_long*)(current->ot + 1), lineF2);
 		current->primptr += sizeof(LINE_F2);
 
-		//TransparencyOn((u_long*)(current->ot + 1), 0x20);	// [A] temporarily disabled
+		TransparencyOn((u_long*)(current->ot + 1), 0x20);
 		
 		string = bar->tag;
 		if (string != NULL)
@@ -821,30 +821,19 @@ void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 	/* end block 4 */
 	// End Line: 2049
 
+// [D]
 void TransparencyOn(void *potz, ushort tpage)
 {
-	UNIMPLEMENTED();
-
-	/*
 	DR_TPAGE *null;
 	null = (DR_TPAGE*)current->primptr;
-	setDrawTPage(null, 0, 0, 0x9ff, 0);	// [A] might be wrong
+	setDrawTPage(null, 1, 1, tpage);	// [A] might be incorrect
+
+	// original mode:
+	//*(char *)((int)puVar2 + 3) = '\x01';
+	//puVar2[1] = (uint)tpage & 0x9ff | 0xe1000600;
 
 	addPrim(potz, null);
 	current->primptr += sizeof(DR_TPAGE);
-	*/
-
-	/*
-	DB *pDVar1;
-	uint *puVar2;
-
-	puVar2 = (uint *)current->primptr;
-	*(char *)((int)puVar2 + 3) = '\x01';
-	puVar2[1] = (uint)tpage & 0x9ff | 0xe1000600;
-	*puVar2 = *puVar2 & 0xff000000 | *(uint *)potz & 0xffffff;
-	pDVar1 = current;
-	*(uint *)potz = *(uint *)potz & 0xff000000 | (uint)puVar2 & 0xffffff;
-	pDVar1->primptr = pDVar1->primptr + 8;*/
 }
 
 
