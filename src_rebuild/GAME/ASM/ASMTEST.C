@@ -19,7 +19,83 @@ void Apply_Inv_CameraMatrix(VECTOR *v)
 	gte_ldlvl(v);
 	docop2(0x4de012);
 	gte_stlvl(v);
-#endif // PSX
+#endif // !PSX
+}
+
+int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
+{
+#ifndef PSX
+	int local_t1_96;
+	int iVar1;
+	int iVar2;
+	int iVar3;
+
+	iVar1 = CFC2(21);
+	iVar2 = CFC2(22);
+	iVar3 = CFC2(23);
+
+	MTC2((pos->vx - iVar1) * 0x10000 >> 0x10, 9);
+	MTC2((pos->vy - iVar2) * 0x10000 >> 0x10, 10);
+	MTC2((pos->vz - iVar3) * 0x10000 >> 0x10, 11);
+
+	docop2(0x4de012);
+
+	iVar2 = MFC2(9);
+	local_t1_96 = MFC2(10);
+	iVar1 = MFC2(11);
+
+	CTC2(iVar2, 5);
+	CTC2(local_t1_96, 6);
+	CTC2(iVar1, 7);
+
+	iVar2 = iVar2 >> 1;
+
+	if (iVar2 < 0) 
+		return iVar1 - iVar2;
+
+	return iVar1 + iVar2;
+#endif // !PSX
+}
+
+int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
+{
+#ifndef PSX
+	int local_t1_120;
+	int iVar1;
+	int iVar2;
+	int iVar3;
+
+	iVar1 = CFC2(21);
+	iVar2 = CFC2(22);
+	iVar3 = CFC2(23);
+
+	MTC2((pos->vx - iVar1) * 0x10000 >> 0x10, 9);
+	MTC2((pos->vy - iVar2) * 0x10000 >> 0x10, 10);
+	MTC2((pos->vz - iVar3) * 0x10000 >> 0x10, 11);
+
+	copFunction(2, 0x4de012);
+
+	CTC2(*(uint*)((char *)mtx->m), 0);
+	CTC2(*(uint*)((char *)mtx->m + 2), 1);
+	CTC2(*(uint*)((char *)mtx->m + 4), 2);
+	CTC2(*(uint*)((char *)mtx->m + 6), 3);
+	CTC2(*(uint*)((char *)mtx->m + 8), 4);
+
+	iVar2 = MFC2(9);
+	local_t1_120 = MFC2(10);
+	iVar1 = MFC2(11);
+
+	CTC2(iVar2, 5);
+	CTC2(local_t1_120, 6);
+	CTC2(iVar1, 7);
+
+	iVar2 = iVar2 >> 1;
+
+	if (iVar2 < 0) 
+		return iVar1 - iVar2;
+
+	return iVar1 + iVar2;
+#endif // !PSX
 }
 
 extern MATRIX frustrum_matrix;
@@ -54,5 +130,5 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 	}
 
 	return -1;
-#endif // PSX
+#endif // !PSX
 }
