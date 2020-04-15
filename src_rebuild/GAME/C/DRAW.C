@@ -52,16 +52,6 @@ uint16_t texture_cluts[128][32];
 // offset: 0x1f800020
 static plotContext context;
 
-void Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
-{
-	UNIMPLEMENTED();
-}
-
-void Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
-{
-	UNIMPLEMENTED();
-}
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ addSubdivSpriteShadow(struct POLYFT4LIT *src /*$t3*/, struct SVECTOR *verts /*$t2*/, int z /*$a2*/)
@@ -954,9 +944,9 @@ void DrawMapPSX(int *comp_val)
 
 											gte_ReadRotMatrix(local_38);
 
-											pMVar3->t[0] = lVar11;
-											pMVar3->t[1] = lVar13;
-											pMVar3->t[2] = lVar15;
+											pMVar3->t[0] = CFC2(5);
+											pMVar3->t[1] = CFC2(6);
+											pMVar3->t[2] = CFC2(7);
 
 											MulMatrix0(&inv_camera_matrix,
 												(MATRIX *)(matrixtable + uVar9),
