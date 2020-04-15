@@ -748,7 +748,7 @@ int regions_down;
 
 OUT_CELL_FILE_HEADER* cell_header;
 
-// [D] [A]
+// [D]
 void DrawMapPSX(int *comp_val)
 {
 	ushort uVar1;

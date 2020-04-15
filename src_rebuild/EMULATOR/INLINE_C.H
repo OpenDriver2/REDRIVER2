@@ -57,5 +57,21 @@ extern int gte_ldlzc(int input);
 	*(uint*)((char*)r0 + 24) = CFC2(6);	\
 	*(uint*)((char*)r0 + 28) = CFC2(7);
 
+// lwc2 9-11
+#define gte_ldlvl( r0 ) \
+	IR1 = *(ushort*)((char*)r0); \
+	IR2 = *(ushort*)((char*)r0 + 4);\
+	IR3 = *(ushort*)((char*)r0 + 8);
+
+// swc2 9-11
+#define gte_stlvl( r0 ) \
+	*(ushort*)((char*)r0) = IR1; \
+	*(ushort*)((char*)r0 + 4) = IR2;\
+	*(ushort*)((char*)r0 + 8) = IR3;
+
+#define gte_ldfc( r0 ) \
+	CTC2(*(uint*)((char*)r0+0), 21);\
+	CTC2(*(uint*)((char*)r0+4), 22);\
+	CTC2(*(uint*)((char*)r0+8), 23);
 
 #endif
