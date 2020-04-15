@@ -34,6 +34,8 @@ int VSync(int mode)
 	{
 		if (vsync_callback != NULL)
 			vsync_callback();
+
+		Emulator_WaitForTimestep(1);
 	}
 	else if (mode > 0)
 	{
