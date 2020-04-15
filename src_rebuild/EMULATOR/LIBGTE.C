@@ -2881,6 +2881,13 @@ void CTC2(unsigned int value, int reg) {
 	gteRegs.CP2C.p[reg].d = value;
 }
 
+unsigned int CFC2(int reg)
+{
+	// TODO: correct functionality
+
+	return gteRegs.CP2C.p[reg].d;
+}
+
 #define _oB_ (gteRegs.GPR.r[_Rs_] + _Imm_)
 
 inline long long gte_shift(long long a, int sf) {

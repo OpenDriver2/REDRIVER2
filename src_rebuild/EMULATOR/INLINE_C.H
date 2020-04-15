@@ -46,5 +46,16 @@ extern int gte_ldlzc(int input);
 	CTC2(*(uint*)((char*)r0+24), 6);\
 	CTC2(*(uint*)((char*)r0+28), 7);
 
+// store cfc2 0-7
+#define gte_ReadRotMatrix( r0 ) \
+	*(uint*)((char*)r0) = CFC2(0);		\
+	*(uint*)((char*)r0 + 4) = CFC2(1);	\
+	*(uint*)((char*)r0 + 8) = CFC2(2);	\
+	*(uint*)((char*)r0 + 12) = CFC2(3);	\
+	*(uint*)((char*)r0 + 16) = CFC2(4);	\
+	*(uint*)((char*)r0 + 20) = CFC2(5);	\
+	*(uint*)((char*)r0 + 24) = CFC2(6);	\
+	*(uint*)((char*)r0 + 28) = CFC2(7);
+
 
 #endif

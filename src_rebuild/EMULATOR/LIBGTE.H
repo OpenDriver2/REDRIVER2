@@ -135,6 +135,9 @@ void CTC2(unsigned int value, int reg);
 // returns Cop2 register value TODO: do low word and high word variants
 unsigned int MFC2(int reg);
 
+// returns Cop2 control register value
+unsigned int CFC2(int reg);
+
 extern void SetRotMatrix(MATRIX* m);
 extern void SetLightMatrix(MATRIX* m);
 extern void SetColorMatrix(MATRIX* m);
