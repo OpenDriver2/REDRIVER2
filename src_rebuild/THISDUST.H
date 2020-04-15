@@ -49,6 +49,12 @@
 
 #endif // PSX
 
+#ifdef USE_32_BIT_ADDR
+typedef uint64_t OTTYPE;
+#else
+typedef unsigned long OTTYPE;
+#endif // USE_32_BIT_ADDR
+
 #if !defined( __TYPEINFOGEN__ ) && !defined( _lint ) && defined(_WIN32)	// pcLint has problems with assert_offsetof()
 
 template<bool> struct compile_time_assert_failed;
@@ -20183,7 +20189,7 @@ struct _pct // hashcode: 0x3CC33EEE (dec: 1019428590)
 	long f4colourTable[32]; // size=128, offset=12
 	int *polySizes; // size=0, offset=140
 	char *primptr; // size=0, offset=144
-	unsigned long *ot; // size=0, offset=148
+	OTTYPE *ot; // size=0, offset=148
 	unsigned long clut; // size=0, offset=152
 	unsigned long tpage; // size=0, offset=156
 	unsigned long colour; // size=0, offset=160

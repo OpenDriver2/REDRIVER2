@@ -3175,7 +3175,7 @@ void SpecClutsSpooled(void)
 	int iVar5;
 	int iVar6;
 	uint uVar7;
-	short *puVar8;
+	ushort *puVar8;
 	int iVar9;
 	int iVar10;
 	char *pcVar11;

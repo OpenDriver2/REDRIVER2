@@ -14,12 +14,6 @@ extern int pathAILoaded;
 
 extern char* LoadingScreenNames[];
 
-#ifdef USE_32_BIT_ADDR
-typedef uint64_t OTTYPE;
-#else
-typedef unsigned long OTTYPE;
-#endif // USE_32_BIT_ADDR
-
 typedef struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
 {
 	char *primptr; // size=0, offset=0

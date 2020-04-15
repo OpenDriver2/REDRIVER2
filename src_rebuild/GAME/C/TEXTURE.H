@@ -7,8 +7,8 @@ extern char* palette_lump;
 
 extern SXYPAIR tpagepos[20];
 
-extern short texture_pages[128];
-extern short texture_cluts[128][32];
+extern unsigned short texture_pages[128];
+extern unsigned short texture_cluts[128][32];
 extern int tpage_texamts[128];
 
 extern RECT16 clutpos;

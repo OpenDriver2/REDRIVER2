@@ -1,7 +1,12 @@
 #include "THISDUST.H"
 #include "TILE.H"
 #include "MODELS.H"
-
+#include "SYSTEM.H"
+#include "MISSION.H"
+#include "MODELS.H"
+#include "DRAW.H"
+#include "TEXTURE.H"
+#include "../ASM/ASMTEST.H"
 
 // decompiled code
 // original method signature: 
@@ -246,10 +251,11 @@ void Tile1x1(MODEL *model)
 	/* end block 4 */
 	// End Line: 464
 
+plotContext plot; // scratchpad addr: 0x1F8000C0
+
+// [D]
 void DrawTILES(int tile_amount)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	uint uVar3;
@@ -258,70 +264,90 @@ void DrawTILES(int tile_amount)
 	ushort **ppuVar6;
 	uint uVar7;
 
-	if (-1 < gTimeOfDay) {
-		if (gTimeOfDay < 3) {
-			DAT_1f8000c0 = combointensity & 0xffffffU | 0x2c000000;
+	if (-1 < gTimeOfDay) 
+	{
+		if (gTimeOfDay < 3)
+		{
+			plot.colour = combointensity & 0xffffffU | 0x2c000000;
 		}
-		else {
-			if (gTimeOfDay == 3) {
-				DAT_1f8000c0 = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
+		else 
+		{
+			if (gTimeOfDay == 3) 
+			{
+				plot.colour = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
 					((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
 					(int)(combointensity & 0xffU) / 3 | 0x2c000000U;
 			}
 		}
 	}
 	uVar7 = 0xffffffff;
-	if (gWeather - 1U < 2) {
-		uVar3 = DAT_1f8000c0 >> 2 & 0x3f;
-		DAT_1f8000c0 = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
+
+	if (gWeather - 1U < 2)
+	{
+		uVar3 = plot.colour >> 2 & 0x3f;
+		plot.colour = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
 	}
+
 	tile_amount = tile_amount + -1;
-	DAT_1f8000b4 = current->ot;
-	DAT_1f8000b0 = current->primptr;
-	DAT_1f800024 = &texture_pages;
-	DAT_1f800028 = &texture_cluts;
-	DAT_1f8000cc = 0x18273472;
+	plot.ot = current->ot;
+	plot.primptr = current->primptr;
+	plot.ptexture_pages = (ushort(*)[128])texture_pages;
+	plot.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+	plot.lastTexInfo = 0x18273472;
 	ppuVar6 = (ushort **)tile_overflow_buffer;
-	while (tile_amount != -1) {
+
+	while (tile_amount != -1) 
+	{
 		puVar4 = *ppuVar6;
-		DAT_1f800044 = (uint)*puVar4;
-		DAT_1f800048 = (int)((uint)puVar4[1] << 0x10) >> 0x11;
-		DAT_1f80004c = (uint)puVar4[2];
+		plot.f4colourTable[6] = (*puVar4);
+		plot.f4colourTable[7] = (int)((uint)puVar4[1] << 0x10) >> 0x11;
+		plot.f4colourTable[8] = (puVar4[2]);
 		ppuVar6 = ppuVar6 + 1;
 		uVar5 = (uint)puVar4[3] & 0x3f;
 		uVar3 = (uint)(puVar4[3] >> 6) | ((uint)puVar4[1] & 1) << 10;
-		if (uVar7 == uVar5) {
-			iVar1 = Apply_InvCameraMatrixSetTrans(&DAT_1f800044);
+
+		if (uVar7 == uVar5)
+		{
+			iVar1 = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)(plot.f4colourTable + 6));
 		}
-		else {
-			iVar1 = Apply_InvCameraMatrixAndSetMatrix(&DAT_1f800044, CompoundMatrix + uVar5);
+		else
+		{
+			iVar1 = Apply_InvCameraMatrixAndSetMatrix
+			((VECTOR_NOPAD *)(plot.f4colourTable + 6), &CompoundMatrix[uVar5]);
 			uVar7 = uVar5;
 		}
-		if (iVar1 < 0x1b59) {
+
+		if (iVar1 < 0x1b59)
+		{
 			if (Low2HighDetailTable[uVar3] != 0xffff) {
 				uVar3 = (uint)Low2HighDetailTable[uVar3];
 			}
 			if (iVar1 < 2000) {
-				TileNxN(modelpointers1536[uVar3], 4, 0x4b);
+				TileNxN(modelpointers[uVar3], 4, 0x4b);
 			}
 			else {
-				TileNxN(modelpointers1536[uVar3], 2, 0x23);
+				TileNxN(modelpointers[uVar3], 2, 0x23);
 			}
 		}
-		else {
+		else
+		{
 			iVar2 = uVar3 << 2;
-			if (9000 < iVar1) {
+
+			if (9000 < iVar1) 
+			{
 				iVar2 = uVar3 << 2;
-				if (Low2LowerDetailTable[uVar3] != 0xffff) {
+				if (Low2LowerDetailTable[uVar3] != 0xffff) 
+				{
 					iVar2 = (uint)Low2LowerDetailTable[uVar3] << 2;
 				}
 			}
-			Tile1x1(*(MODEL **)((int)modelpointers1536 + iVar2));
+
+			Tile1x1(modelpointers[iVar2]);
 		}
-		tile_amount = tile_amount + -1;
+
+		tile_amount--;
 	}
-	current->primptr = DAT_1f8000b0;
-	return;*/
+	current->primptr = plot.primptr;
 }
 
 
@@ -1109,20 +1135,19 @@ LAB_00042f08:
 	/* end block 3 */
 	// End Line: 1571
 
+// [D]
 void TileNxN(MODEL *model, int levels, int Dofse)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
-	byte *polys;
+	unsigned char *polys;
 	uint uVar2;
 	int iVar3;
 	int ofse;
 
 	uVar1 = 0;
 	ofse = 0x85;
-	polys = (byte *)model->poly_block;
-	DAT_1f8000c8 = model->vertices;
+	polys = (unsigned char *)model->poly_block;
+	plot.verts = (SVECTOR *)model->vertices;
 	uVar2 = *(uint *)(model + 1) >> 2;
 	if ((*(uint *)model & 0x40000080) != 0) {
 		ofse = 0xe5;
@@ -1130,16 +1155,18 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	iVar3 = 0;
 	if (model->num_polys != 0) {
 		do {
-			switch (uVar1) {
-			case 0:
-			case 1:
-				SubdivNxM((char *)polys, levels, levels, ofse);
-				break;
-			case 3:
-				SubdivNxM((char *)polys, levels, 1, Dofse);
-				break;
-			case 4:
-				SubdivNxM((char *)polys, levels, levels, 0x85);
+			if (true) {
+				switch (uVar1) {
+				case 0:
+				case 1:
+					SubdivNxM((char *)polys, levels, levels, ofse);
+					break;
+				case 3:
+					SubdivNxM((char *)polys, levels, 1, Dofse);
+					break;
+				case 4:
+					SubdivNxM((char *)polys, levels, levels, 0x85);
+				}
 			}
 			uVar1 = uVar2 & 7;
 			uVar2 = uVar2 >> 3;
@@ -1147,7 +1174,6 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 			polys = polys + PolySizes[*polys];
 		} while (iVar3 < (int)(uint)model->num_polys);
 	}
-	return;*/
 }
 
 

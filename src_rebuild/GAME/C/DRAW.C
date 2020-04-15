@@ -12,6 +12,7 @@
 #include "CELL.H"
 #include "TILE.H"
 #include "OBJANIM.H"
+#include "TEXTURE.H"
 #include "../ASM/ASMTEST.H"
 
 #include <string.h>
@@ -45,9 +46,6 @@ inline int GetModelNumber()
 
 MATRIX inv_camera_matrix;
 MATRIX2 CompoundMatrix[64];
-
-uint16_t texture_pages[128];
-uint16_t texture_cluts[128][32];
 
 // offset: 0x1f800020
 static plotContext context;

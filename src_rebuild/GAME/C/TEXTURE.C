@@ -52,8 +52,8 @@ int texture_is_icon = 0;
 char* texturename_buffer = NULL;
 int NoTextureMemory = 0;
 
-short texture_pages[128];
-short texture_cluts[128][32];
+unsigned short texture_pages[128];
+unsigned short texture_cluts[128][32];
 unsigned char tpageloaded[128];
 
 int MaxSpecCluts;
@@ -650,7 +650,7 @@ void LoadPermanentTPages(int *sector)
 	int *addr;
 	int *piVar12;
 	int iVar13;
-	short *psVar14;
+	ushort *psVar14;
 	u_short *puVar15;
 	int tpageId;
 	DVECTOR *pDVar16;
@@ -668,7 +668,7 @@ void LoadPermanentTPages(int *sector)
 		uVar9 = GetTPage(0, 0, 960, 0);
 		*psVar14 = uVar9;
 		nsectors_00 = nsectors_00 + -1;
-		psVar14 = (short *)((u_short *)psVar14 + 1);
+		psVar14 = ((u_short *)psVar14 + 1);
 	} while (-1 < nsectors_00);
 
 	nsectors_00 = 0;
