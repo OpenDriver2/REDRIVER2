@@ -1,4 +1,7 @@
 #include "THISDUST.H"
+
+#include "INLINE_C.H"
+
 #include "DRAW.H"
 #include "MAIN.H"
 #include "MAP.H"
@@ -1401,21 +1404,29 @@ void SetupDrawMapPSX(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+MATRIX frustrum_matrix;
+
+// [D]
 void InitFrustrumMatrix(void)
 {
-	UNIMPLEMENTED();
-	/*
-	frustrum_matrix.m[0][1] = 0;
-	frustrum_matrix.m[0][0] = rcossin_tbl[(-(int)camera_angle.vy & 0xfffU) * 2];
-	frustrum_matrix.m[0][2] = rcos();
-	frustrum_matrix.m[1][1] = 0;
-	frustrum_matrix.m[1][0] = rcossin_tbl[((FrAng + -0x400) - (int)camera_angle.vy & 0xfffU) * 2];
-	frustrum_matrix.m[1][2] = rcos();
-	frustrum_matrix.m[2][1] = 0;
-	frustrum_matrix.m[2][0] = rcossin_tbl[(-(FrAng + -0x400) - (int)camera_angle.vy & 0xfffU) * 2];
-	frustrum_matrix.m[2][2] = rcos();
-	frustrum_matrix.t[0] = -0x50;
-	return;*/
+    int iVar1;
+    uint a;
+    
+    frustrum_matrix.m[0][1] = 0;
+    frustrum_matrix.m[0][0] = rcossin_tbl[(-(int)camera_angle.vy & 0xfffU) * 2];
+    iVar1 = rcos(-(int)camera_angle.vy);
+    frustrum_matrix.m[0][2] = (short)iVar1;
+    frustrum_matrix.m[1][1] = 0;
+    a = (FrAng + -0x400) - (int)camera_angle.vy;
+    frustrum_matrix.m[1][0] = rcossin_tbl[(a & 0xfff) * 2];
+    iVar1 = rcos(a);
+    frustrum_matrix.m[1][2] = (short)iVar1;
+    frustrum_matrix.m[2][1] = 0;
+    a = -(FrAng + -0x400) - (int)camera_angle.vy;
+    frustrum_matrix.m[2][0] = rcossin_tbl[(a & 0xfff) * 2];
+    iVar1 = rcos(a);
+    frustrum_matrix.m[2][2] = (short)iVar1;
+    frustrum_matrix.t[0] = -0x50;
 }
 
 
@@ -1441,19 +1452,13 @@ void InitFrustrumMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// TODO: INLINE_C or GTEMAC
+
+// [D]
 void SetFrustrumMatrix(void)
 {
-	UNIMPLEMENTED();
-	/*
-	setCopControlWord(2, 8, frustrum_matrix.m[0]._0_4_);
-	setCopControlWord(2, 9, frustrum_matrix.m._4_4_);
-	setCopControlWord(2, 10, frustrum_matrix.m[1]._2_4_);
-	setCopControlWord(2, 11, frustrum_matrix.m[2]._0_4_);
-	setCopControlWord(2, 12, frustrum_matrix._16_4_);
-	return;*/
+	gte_SetLightMatrix(&frustrum_matrix);
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -1471,17 +1476,10 @@ void SetFrustrumMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void Set_Inv_CameraMatrix(void)
 {
-	UNIMPLEMENTED();
-	/*
-	setCopControlWord(2, 16, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 17, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 18, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 19, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 20, inv_camera_matrix._16_4_);
-	return;
-	*/
+	gte_SetColorMatrix(&inv_camera_matrix);
 }
 
 
