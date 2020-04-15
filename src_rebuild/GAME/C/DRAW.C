@@ -877,20 +877,15 @@ void DrawMapPSX(int *comp_val)
 					{
 						puVar18 = anim_obj_buffer;
 						do {
-							UNIMPLEMENTED();
-							/*
 							cop = (CELL_OBJECT *)*puVar18;
 							newpos.vx = (cop->pos).vx - camera_position.vx;
 							newpos.vy = (cop->pos).vy - camera_position.vy;
 							newpos.vz = (cop->pos).vz - camera_position.vz;
 							Apply_Inv_CameraMatrix(&newpos);
 							uVar21 = (uint)cop->yang;
-							setCopControlWord(2, 0, *(undefined4 *)matrixtable[uVar21].m);
-							setCopControlWord(2, 0x800, *(undefined4 *)(matrixtable[uVar21].m + 2));
-							setCopControlWord(2, 0x1000, *(undefined4 *)(matrixtable[uVar21].m + 4));
-							setCopControlWord(2, 0x1800, *(undefined4 *)(matrixtable[uVar21].m + 6));
-							setCopControlWord(2, 0x2000, *(undefined4 *)(matrixtable[uVar21].m + 8));
-							*/
+
+							gte_SetRotMatrix(&matrixtable[uVar21]);
+
 							puVar18 = (ulong *)((CELL_OBJECT **)puVar18 + 1);
 							iVar7 = iVar7 + -1;
 							DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
@@ -955,23 +950,10 @@ void DrawMapPSX(int *comp_val)
 									{
 										if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value) 
 										{
-											UNIMPLEMENTED();
-											
 											CompoundMatrix[uVar9].computed = (short)current_object_computed_value;
-											/*
-											uVar10 = getCopControlWord(2, 0);
-											uVar12 = getCopControlWord(2, 0x800);
-											*(undefined4 *)local_38->m = uVar10;
-											*(undefined4 *)(pMVar3->m + 2) = uVar12;
-											uVar10 = getCopControlWord(2, 0x1000);
-											uVar12 = getCopControlWord(2, 0x1800);
-											uVar14 = getCopControlWord(2, 0x2000);
-											*(undefined4 *)(pMVar3->m + 4) = uVar10;
-											*(undefined4 *)(pMVar3->m + 6) = uVar12;
-											*(undefined4 *)(pMVar3->m + 8) = uVar14;
-											lVar11 = getCopControlWord(2, 0x2800);
-											lVar13 = getCopControlWord(2, 0x3000);
-											lVar15 = getCopControlWord(2, 0x3800);
+
+											gte_ReadRotMatrix(local_38);
+
 											pMVar3->t[0] = lVar11;
 											pMVar3->t[1] = lVar13;
 											pMVar3->t[2] = lVar15;
@@ -980,12 +962,7 @@ void DrawMapPSX(int *comp_val)
 												(MATRIX *)(matrixtable + uVar9),
 												(MATRIX *)(CompoundMatrix + uVar9));
 
-											setCopControlWord(2, 0, *(undefined4 *)local_38->m);
-											setCopControlWord(2, 0x800, *(undefined4 *)(local_38->m + 2));
-											setCopControlWord(2, 0x1000, *(undefined4 *)(local_38->m + 4));
-											setCopControlWord(2, 0x1800, *(undefined4 *)(local_38->m + 6));
-											setCopControlWord(2, 0x2000, *(undefined4 *)(local_38->m + 8));
-											*/
+											gte_SetRotMatrix(local_38);
 										}
 									}
 									cellx = cell_object_index;
