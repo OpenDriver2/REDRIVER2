@@ -128,15 +128,19 @@ extern unsigned int gte_leadingzerocount(unsigned int lzcs);
 
 // sets Cop2 data register value
 void MTC2(unsigned int value, int reg);
+void MTC2_S(int value, int reg);
 
 // sets Cop2 control register value
 void CTC2(unsigned int value, int reg);
+void CTC2_S(int value, int reg);
 
 // returns Cop2 register value TODO: do low word and high word variants
 unsigned int MFC2(int reg);
+int MFC2_S(int reg);
 
 // returns Cop2 control register value
 unsigned int CFC2(int reg);
+int CFC2_S(int reg);
 
 extern void SetRotMatrix(MATRIX* m);
 extern void SetLightMatrix(MATRIX* m);

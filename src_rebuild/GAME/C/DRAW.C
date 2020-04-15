@@ -944,9 +944,9 @@ void DrawMapPSX(int *comp_val)
 
 											gte_ReadRotMatrix(local_38);
 
-											pMVar3->t[0] = CFC2(5);
-											pMVar3->t[1] = CFC2(6);
-											pMVar3->t[2] = CFC2(7);
+											pMVar3->t[0] = CFC2_S(5);
+											pMVar3->t[1] = CFC2_S(6);
+											pMVar3->t[2] = CFC2_S(7);
 
 											MulMatrix0(&inv_camera_matrix,
 												(MATRIX *)(matrixtable + uVar9),
