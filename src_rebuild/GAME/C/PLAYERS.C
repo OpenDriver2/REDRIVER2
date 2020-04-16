@@ -1,6 +1,10 @@
 #include "THISDUST.H"
 #include "PLAYERS.H"
 
+#include "SYSTEM.H"
+#include "MISSION.H"
+#include "CIV_AI.H"
+#include "PEDEST.H"
 
 // decompiled code
 // original method signature: 
@@ -23,10 +27,11 @@
 	/* end block 3 */
 	// End Line: 151
 
+PEDESTRIAN *pPlayerPed = NULL;
+
+// [D]
 void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int direction, long(*startPos)[4], int externModel, int palette, char *padid)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	PEDESTRIAN *pPVar2;
 	int model;
@@ -74,7 +79,7 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 		locPlayer->pos[1] = lVar3;
 	}
 	else {
-		ActivatePlayerPedestrian((_CAR_DATA *)0x0, padid, direction, startPos, playerType);
+		ActivatePlayerPedestrian(NULL, padid, direction, startPos, playerType);
 		locPlayer->playerType = '\x02';
 		pPVar2 = pPlayerPed;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
@@ -99,7 +104,6 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 	(locPlayer->skidding).chan = -1;
 	(locPlayer->skidding).sound = -1;
 	locPlayer->padid = cVar1;
-	return;*/
 }
 
 
