@@ -3,6 +3,8 @@
 
 #include "TYPES.H"
 
+extern short rcossin_tbl[8192];
+
 typedef struct {
 	short	m[3][3];	/* 3x3 rotation matrix */
 	long    t[3];		/* transfer vector */
