@@ -43,12 +43,10 @@ void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 	/* end block 1 */
 	// End Line: 509
 
+// [D]
 void _RotMatrixX(MATRIX *m, short ang)
 {
-	UNIMPLEMENTED();
-	/*
 	RotMatrixX((int)ang, m);
-	return;*/
 }
 
 
@@ -62,13 +60,10 @@ void _RotMatrixX(MATRIX *m, short ang)
 	/* end block 1 */
 	// End Line: 520
 
+// [D]
 void _RotMatrixY(MATRIX *m, short ang)
 {
-	UNIMPLEMENTED();
-	/*
 	RotMatrixY((int)ang, m);
-	return;
-	*/
 }
 
 
@@ -82,13 +77,10 @@ void _RotMatrixY(MATRIX *m, short ang)
 	/* end block 1 */
 	// End Line: 531
 
+// [D]
 void _RotMatrixZ(MATRIX *m, short ang)
 {
-	UNIMPLEMENTED();
-	/*
 	RotMatrixZ((int)ang, m);
-	return;
-	*/
 }
 
 
@@ -104,11 +96,7 @@ void _RotMatrixZ(MATRIX *m, short ang)
 
 void RotMatrixXYZ(MATRIX *m, SVECTOR *r)
 {
-	UNIMPLEMENTED();
-	/*
 	RotMatrix(r, m);
-	return;
-	*/
 }
 
 
