@@ -691,7 +691,6 @@ CELL_OBJECT * UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
 	/* end block 4 */
 	// End Line: 1981
 
-SVECTOR camera_angle = { 0,0,0 };
 uint farClip2Player = 0x8ca0;
 
 static int treecount = 0;

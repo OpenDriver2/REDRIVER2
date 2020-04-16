@@ -41,6 +41,12 @@ extern int gte_ldlzc(int input);
 	CTC2(*(uint*)((char*)r0+16), 4);\
 
 // load ctc2 5-7
+#define gte_SetTransVector( r0 )\
+	CTC2_S(*(int*)((char*)r0+0), 5);\
+	CTC2_S(*(int*)((char*)r0+4), 6);\
+	CTC2_S(*(int*)((char*)r0+8), 7);
+
+// load ctc2 5-7
 #define gte_SetTransMatrix( r0 ) \
 	CTC2(*(uint*)((char*)r0+20), 5);\
 	CTC2(*(uint*)((char*)r0+24), 6);\

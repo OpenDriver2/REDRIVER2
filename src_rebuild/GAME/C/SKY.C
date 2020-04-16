@@ -4,6 +4,7 @@
 #include "MISSION.H"
 #include "MODELS.H"
 #include "DRAW.H"
+#include "CAMERA.H"
 
 #include "LIBGTE.H"
 #include "GTEREG.H"
@@ -1071,6 +1072,7 @@ extern _pct plotContext;
 POLYFT4* PTR_1f80003c;			// 1f80003c
 DVECTOR DVECTOR_ARRAY_1f800044[256];	// 1f800044
 
+// [D]
 void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
 	short sVar1;

@@ -8,6 +8,14 @@ extern char camera_change;
 extern MATRIX face_camera_work;
 extern MATRIX camera_matrix;
 
+extern char cameraview;
+extern char tracking_car;
+extern int CameraCnt;
+
+extern int TargetCar;
+
+extern SVECTOR camera_angle;
+
 extern void InitCamera(_PLAYER *lp); // 0x0001F5F4
 
 extern void ModifyCamera(); // 0x0001FA20

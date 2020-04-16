@@ -24,7 +24,7 @@
 #include "HANDLING.H"
 #include "MISSION.H"
 #include "CIV_AI.H"
-
+#include "CAMERA.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;

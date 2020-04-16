@@ -2,7 +2,6 @@
 #define MAIN_H
 
 extern int FrameCnt;
-extern int CameraCnt;
 extern int CurrentPlayerView;
 extern int FrAng;
 

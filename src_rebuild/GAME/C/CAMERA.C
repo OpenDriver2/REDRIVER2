@@ -1,5 +1,16 @@
 #include "THISDUST.H"
 #include "CAMERA.H"
+#include "CONVERT.H"
+#include "EVENT.H"
+#include "MISSION.H"
+#include "GLAUNCH.H"
+#include "CUTSCENE.H"
+#include "MAIN.H"
+#include "CARS.H"
+
+#include "INLINE_C.H"
+#include "LIBGTE.H"
+#include "GTEREG.H"
 
 VECTOR CameraPos =
 { 4294967251, 4294967125, 4294967171, 0 };
@@ -58,67 +69,130 @@ MATRIX camera_matrix;
 	/* end block 2 */
 	// End Line: 845
 
+extern STREAM_SOURCE* PlayerStartInfo[8];
+
+unsigned short paddCamera;
+char cameraview = 0;
+int CameraCnt = 0;
+
+static long basePos[4]; // [A]
+static long baseDir = 0;
+
+char tracking_car = 0;
+
+int gCameraAngle = 0x800; // offset 0xAA104
+
+int bTannerSitting = 0;
+
+int TargetCar = 0;
+int CameraCar = 0;
+
+SVECTOR camera_angle = { 0,0,0 };
+
+#define gte_ApplyRotMatrix(r1,r2)				\
+				{	gte_ldv0(r1);		\
+					gte_rtv0();		\
+					gte_stlvnl(r2);		}
+
+#define gte_ldv0( r0 )\
+	CTC2(*(uint*)((char*)r0), 0);\
+	CTC2(*(uint*)((char*)r0+4), 1);
+
+#define gte_rtv0() docop2(0x480012);
+
+#define gte_stlvnl( r0 )\
+	*(uint*)((char*)r0) = CFC2(25);\
+	*(uint*)((char*)r0+4) = CFC2(26);\
+	*(uint*)((char*)r0+8) = CFC2(27);
+
+// [A]
 void InitCamera(_PLAYER *lp)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
+	unsigned char bVar1;
+	//undefined4 in_zero;
+	//undefined4 in_at;
 	int iVar2;
 	CAR_COSMETICS *pCVar3;
 	_EVENT *p_Var4;
-	undefined4 local_10;
-	uint local_c;
+	SVECTOR boxDisp;
 
-	if (events.cameraEvent == (_EVENT *)0x0) {
-		if (NumPlayers == 2) {
-			lp->cameraView = '\x02';
+	if (events.cameraEvent == NULL) 
+	{
+		if (NumPlayers == 2)
+		{
+			lp->cameraView = 0x2;
 		}
+
 		paddCamera = Pads[lp->padid].mapped;
-		if ((NoPlayerControl != 0) || (gInGameCutsceneActive != 0)) {
+
+		if ((NoPlayerControl != 0) || (gInGameCutsceneActive != 0))
+		{
 			lp->cameraView = cameraview;
 		}
+
 		iVar2 = (int)lp->cameraCarId;
-		if (iVar2 < 0) {
-			if (iVar2 < -1) {
+
+		if (iVar2 < 0)
+		{
+			if (iVar2 < -1)
+			{
 				p_Var4 = events.track[-2 - iVar2];
 				basePos[0] = (p_Var4->position).vx;
 				basePos[1] = -(p_Var4->position).vy;
 				basePos[2] = (p_Var4->position).vz;
 				baseDir = (int)p_Var4->rotation + 0x400U & 0xfff;
 			}
-			else {
+			else 
+			{
 				basePos[0] = lp->pos[0];
 				basePos[1] = lp->pos[1];
 				basePos[2] = lp->pos[2];
-				DAT_000aca9c = lp->pos[3];
+				//DAT_000aca9c = lp->pos[3]; // memcpy used?
 				baseDir = lp->dir;
 			}
 		}
-		else {
-			setCopControlWord(2, 0, *(undefined4 *)car_data[iVar2].hd.where.m);
-			setCopControlWord(2, 0x800, *(undefined4 *)(car_data[iVar2].hd.where.m + 2));
-			setCopControlWord(2, 0x1000, *(undefined4 *)(car_data[iVar2].hd.where.m + 4));
-			setCopControlWord(2, 0x1800, *(undefined4 *)(car_data[iVar2].hd.where.m + 6));
-			setCopControlWord(2, 0x2000, *(undefined4 *)(car_data[iVar2].hd.where.m + 8));
-			setCopControlWord(2, 0x2800, car_data[iVar2].hd.where.t[0]);
-			setCopControlWord(2, 0x3000, car_data[iVar2].hd.where.t[1]);
-			setCopControlWord(2, 0x3800, car_data[iVar2].hd.where.t[2]);
-			pCVar3 = car_data[iVar2].ap.carCos;
-			local_10 = CONCAT22(-(pCVar3->cog).vy, -(pCVar3->cog).vx);
-			local_c = local_c & 0xffff0000 | (uint)(ushort)-(pCVar3->cog).vz;
-			setCopReg(2, in_zero, local_10);
-			setCopReg(2, in_at, local_c);
-			copFunction(2, 0x480012);
-			basePos[0] = getCopReg(2, 0x19);
-			basePos[1] = getCopReg(2, 0x1a);
-			basePos[2] = getCopReg(2, 0x1b);
-			baseDir = car_data[iVar2].hd.direction;
+		else 
+		{
+			gte_SetRotMatrix(car_data[iVar2].hd.where.m);
+
+			//setCopControlWord(2, 0, *(undefined4 *)car_data[iVar2].hd.where.m);
+			//setCopControlWord(2, 0x800, *(undefined4 *)(car_data[iVar2].hd.where.m + 2));
+			//setCopControlWord(2, 0x1000, *(undefined4 *)(car_data[iVar2].hd.where.m + 4));
+			//setCopControlWord(2, 0x1800, *(undefined4 *)(car_data[iVar2].hd.where.m + 6));
+			//setCopControlWord(2, 0x2000, *(undefined4 *)(car_data[iVar2].hd.where.m + 8));
+
+			gte_SetTransVector(car_data[iVar2].hd.where.t);
+
+			//setCopControlWord(2, 0x2800, car_data[iVar2].hd.where.t[0]);
+			//setCopControlWord(2, 0x3000, car_data[iVar2].hd.where.t[1]);
+			//setCopControlWord(2, 0x3800, car_data[iVar2].hd.where.t[2]);
+
+
+			// [A]
+			//pCVar3 = car_data[iVar2].ap.carCos;
+			boxDisp.vx = 0; //-(pCVar3->cog).vx;
+			boxDisp.vy = -250; //-(pCVar3->cog).vy;
+			boxDisp.vz = 0; //-(pCVar3->cog).vz;
+
+			gte_ApplyRotMatrix(&boxDisp, &basePos);
+
+			// gte_ldv0?
+			//setCopReg(2, in_zero, boxDisp._0_4_);
+			//setCopReg(2, in_at, boxDisp._4_4_);
+
+			//docop2(0x480012);
+
+			// gte_stlvnl
+			//basePos[0] = getCopReg(2, 0x19);
+			//basePos[1] = getCopReg(2, 0x1a);
+			//basePos[2] = getCopReg(2, 0x1b);
+			//baseDir = car_data[iVar2].hd.direction;
 		}
+
 		bVar1 = lp->cameraView;
 		if (bVar1 == 1) {
-			if ((NoPlayerControl == 0) && (gInGameCutsceneActive == 0)) {
+			if ((NoPlayerControl == 0) && (gInGameCutsceneActive == 0))
+			{
 				tracking_car = '\x01';
 			}
 			PlaceCameraAtLocation(lp, 1);
@@ -173,8 +247,6 @@ void InitCamera(_PLAYER *lp)
 	else {
 		BuildWorldMatrix();
 	}
-	return;
-	*/
 }
 
 

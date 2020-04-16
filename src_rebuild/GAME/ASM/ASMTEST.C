@@ -75,11 +75,11 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 
 	copFunction(2, 0x4de012);
 
-	CTC2_S(*(uint*)((char *)mtx->m), 0);
-	CTC2_S(*(uint*)((char *)mtx->m + 2), 1);
-	CTC2_S(*(uint*)((char *)mtx->m + 4), 2);
-	CTC2_S(*(uint*)((char *)mtx->m + 6), 3);
-	CTC2_S(*(uint*)((char *)mtx->m + 8), 4);
+	CTC2_S(*(int*)((char *)mtx->m), 0);
+	CTC2_S(*(int*)((char *)mtx->m + 2), 1);
+	CTC2_S(*(int*)((char *)mtx->m + 4), 2);
+	CTC2_S(*(int*)((char *)mtx->m + 6), 3);
+	CTC2_S(*(int*)((char *)mtx->m + 8), 4);
 
 	iVar2 = MFC2_S(9);
 	local_t1_120 = MFC2_S(10);
