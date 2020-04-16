@@ -48,8 +48,6 @@ extern char _tempPrimTab2[0x8000];		// 0x119400
 extern int citystart[8];
 extern XYPAIR citylumps[8][4];
 
-extern short rcossin_tbl[8192];
-
 #ifdef PAL
 #define draw_mode draw_mode_pal
 #define video_mode MODE_PAL

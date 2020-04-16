@@ -7,10 +7,16 @@
 #include "CUTSCENE.H"
 #include "MAIN.H"
 #include "CARS.H"
+#include "PAUSE.H"
+#include "DIRECTOR.H"
+#include "DR2ROADS.H"
+#include "SYSTEM.H"
+#include "OBJCOLL.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
 #include "GTEREG.H"
+
 
 VECTOR CameraPos =
 { 4294967251, 4294967125, 4294967171, 0 };
@@ -648,10 +654,14 @@ LAB_00020ae8:
 	/* end block 3 */
 	// End Line: 1744
 
+int maxCameraDist;
+short gCameraDistance = 0x3e8;
+_CAR_DATA *jcam = NULL;
+int switch_detail_distance = 0x2710;
+
+// [D]
 void PlaceCameraFollowCar(_PLAYER *lp)
 {
-	UNIMPLEMENTED();
-	/*
 	_CAR_DATA *p_Var1;
 	short sVar2;
 	int iVar3;
@@ -737,7 +747,7 @@ LAB_000201cc:
 	p_Var1 = jcam;
 	iVar3 = maxCameraDist;
 	if ((int)lp->cameraCarId < 0) {
-		pCVar5 = (CAR_COSMETICS *)0x0;
+		pCVar5 = NULL;
 	}
 	else {
 		pCVar5 = car_data[(int)lp->cameraCarId].ap.carCos;
@@ -780,9 +790,8 @@ LAB_000201cc:
 	camera_angle.vz = 0;
 	SetGeomScreen(0x100);
 	scr_z = 0x100;
-	switch_detail_distance = (int)&DAT_00002710;
+	switch_detail_distance = (int)0x2710;
 	BuildWorldMatrix();
-	return;*/
 }
 
 

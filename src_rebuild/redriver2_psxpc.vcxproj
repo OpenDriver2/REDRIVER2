@@ -212,6 +212,7 @@
     <ClCompile Include="GAME\C\MODELS.C" />
     <ClCompile Include="GAME\C\MOTION_C.C" />
     <ClCompile Include="GAME\C\OBJANIM.C" />
+    <ClCompile Include="GAME\C\OBJCOLL.C" />
     <ClCompile Include="GAME\C\OVERLAY.C" />
     <ClCompile Include="GAME\C\OVERMAP.C" />
     <ClCompile Include="GAME\C\PAD.C" />

@@ -171,6 +171,7 @@ extern void SetFogNear(long a, long h);
 
 extern int rsin(int a);
 extern int rcos(int a);
+extern long ratan2(long y, long x);
 
 #if defined(PGXP)
 #define MAX_NUM_VERTICES 32768
