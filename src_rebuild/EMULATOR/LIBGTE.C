@@ -4026,6 +4026,120 @@ MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
 	return m;
 }
 
+MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
+{
+	int iVar1;
+	int iVar2;
+	short sVar3;
+	uint uVar4;
+	int iVar5;
+	int iVar6;
+	int iVar7;
+	int iVar8;
+
+	uVar4 = (r->vx);
+
+	if ((int)uVar4 < 0) 
+	{
+		iVar6 = *(int *)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
+		sVar3 = (short)iVar6;
+		iVar5 = -(int)sVar3;
+	}
+	else 
+	{
+		iVar6 = *(int *)(rcossin_tbl + (uVar4 & 0xfff) * 2);
+		iVar5 = (int)(short)iVar6;
+		sVar3 = -(short)iVar6;
+	}
+
+	iVar6 = iVar6 >> 0x10;
+	uVar4 = (r->vy);
+
+	if ((int)uVar4 < 0) 
+	{
+		iVar7 = *(int *)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
+		iVar1 = -(int)(short)iVar7;
+	}
+	else
+	{
+		iVar7 = *(int *)(rcossin_tbl + (uVar4 & 0xfff) * 2);
+		iVar1 = (int)(short)iVar7;
+	}
+
+	iVar7 = iVar7 >> 0x10;
+	uVar4 = (r->vz);
+	m->m[1][2] = sVar3;
+	m->m[0][2] = (short)(iVar1 * iVar6 >> 0xc);
+	sVar3 = (short)(iVar7 * iVar6 >> 0xc);
+
+	if ((int)uVar4 < 0)
+	{
+		m->m[2][2] = sVar3;
+		iVar8 = *(int *)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
+		iVar2 = -(int)(short)iVar8;
+	}
+	else
+	{
+		m->m[2][2] = sVar3;
+		iVar8 = *(int *)(rcossin_tbl + (uVar4 & 0xfff) * 2);
+		iVar2 = (int)(short)iVar8;
+	}
+
+	iVar8 = iVar8 >> 0x10;
+	m->m[1][0] = (short)(iVar2 * iVar6 >> 0xc);
+	m->m[1][1] = (short)(iVar8 * iVar6 >> 0xc);
+	iVar6 = iVar1 * iVar5 >> 0xc;
+	m->m[0][0] = (short)(iVar7 * iVar8 >> 0xc) + (short)(iVar6 * iVar2 >> 0xc);
+	m->m[0][1] = (short)(iVar6 * iVar8 >> 0xc) - (short)(iVar7 * iVar2 >> 0xc);
+	iVar5 = iVar7 * iVar5 >> 0xc;
+	m->m[2][1] = (short)(iVar1 * iVar2 >> 0xc) + (short)(iVar5 * iVar8 >> 0xc);
+	m->m[2][0] = (short)(iVar5 * iVar2 >> 0xc) - (short)(iVar1 * iVar8 >> 0xc);
+
+	return m;
+}
+
+MATRIX* RotMatrixY(long r, MATRIX *m)
+{
+	short sVar1;
+	short sVar2;
+	short sVar3;
+	short sVar4;
+	short sVar5;
+	short sVar6;
+	int iVar7;
+	int iVar8;
+
+	if (r < 0) {
+		iVar8 = *(int *)(rcossin_tbl + (-r & 0xfffU) * 2);
+		iVar7 = (int)(short)iVar8;
+	}
+	else {
+		iVar8 = *(int *)(rcossin_tbl + (r & 0xfffU) * 2);
+		iVar7 = -(int)(short)iVar8;
+	}
+
+	iVar8 = iVar8 >> 0x10;
+
+	sVar1 = m->m[0][0];
+	sVar2 = m->m[2][0];
+
+	sVar3 = m->m[0][1];
+	sVar4 = m->m[2][1];
+
+	sVar5 = m->m[0][2];
+	sVar6 = m->m[2][2];
+
+	m->m[0][0] = (short)(iVar8 * sVar1 - iVar7 * sVar2 >> 0xc);
+	m->m[0][1] = (short)(iVar8 * sVar3 - iVar7 * sVar4 >> 0xc);
+	m->m[0][2] = (short)(iVar8 * sVar5 - iVar7 * sVar6 >> 0xc);
+
+	m->m[2][0] = (short)(iVar7 * sVar1 + iVar8 * sVar2 >> 0xc);
+	m->m[2][1] = (short)(iVar7 * sVar3 + iVar8 * sVar4 >> 0xc);
+	m->m[2][2] = (short)(iVar7 * sVar5 + iVar8 * sVar6 >> 0xc);
+
+	return m;
+}
+
 MATRIX* TransMatrix(MATRIX* m, VECTOR* v)
 {
 	((int*)m)[5] = v->vx;

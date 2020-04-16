@@ -126,7 +126,7 @@ typedef struct
 extern GTERegisters gteRegs;
 extern unsigned int gte_leadingzerocount(unsigned int lzcs);
 
-// sets Cop2 data register value
+// sets Cop2 data register value. LWC2 is the same kind
 void MTC2(unsigned int value, int reg);
 void MTC2_S(int value, int reg);
 
@@ -134,7 +134,7 @@ void MTC2_S(int value, int reg);
 void CTC2(unsigned int value, int reg);
 void CTC2_S(int value, int reg);
 
-// returns Cop2 register value TODO: do low word and high word variants
+// returns Cop2 register value. SWC2 is the same kind
 unsigned int MFC2(int reg);
 int MFC2_S(int reg);
 
@@ -159,6 +159,8 @@ extern MATRIX* MulMatrix2(MATRIX* m0, MATRIX* m1);
 extern void SetBackColor(long rbk, long gbk, long bbk);
 extern void SetFarColor(long rfc, long gfc, long bfc);
 extern MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m);
+extern MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m);
+extern MATRIX* RotMatrixY(long r, MATRIX *m);
 extern MATRIX* TransMatrix(MATRIX* m, VECTOR* v);
 extern MATRIX* ScaleMatrix(MATRIX* m, VECTOR* v);
 extern void SetDQA(int iDQA);

@@ -69,9 +69,12 @@ extern int gte_ldlzc(int input);
 	*(ushort*)((char*)r0 + 4) = IR2;\
 	*(ushort*)((char*)r0 + 8) = IR3;
 
+// ctc2 21-23
 #define gte_ldfc( r0 ) \
 	CTC2(*(uint*)((char*)r0+0), 21);\
 	CTC2(*(uint*)((char*)r0+4), 22);\
 	CTC2(*(uint*)((char*)r0+8), 23);
+
+
 
 #endif
