@@ -4,17 +4,17 @@
 extern void gte_SetGeomScreen(int h);
 extern int gte_ldlzc(int input);
 
-// load IR1-IR3 (mtc2 regs 9,10,11)
+// load mtc2 9,10,11
 #define gte_ldclmv( r0 ) \
-	MTC2(*(ushort*)((char*)r0), 9);\
-	MTC2(*(ushort*)((char*)r0+6), 10);\
-	MTC2(*(ushort*)((char*)r0+12), 11);\
+	MTC2(*(uint*)((char*)r0), 9);\
+	MTC2(*(uint*)((char*)r0+6), 10);\
+	MTC2(*(uint*)((char*)r0+12), 11);\
 
-// store IR1-IR3 (mfc2 regs 9,10,11)
+// store mfc2 9,10,11
 #define gte_stclmv( r0 ) \
-	*(ushort*)((char*)r0) = IR1; \
-	*(ushort*)((char*)r0 + 6) = IR2; \
-	*(ushort*)((char*)r0 + 12) = IR3;
+	*(uint*)((char*)r0) = MFC2(9); \
+	*(uint*)((char*)r0 + 6) = MFC2(10); \
+	*(uint*)((char*)r0 + 12) = MFC2(11);
 
 // load ctc2 8-11
 #define gte_SetLightMatrix( r0 ) \
@@ -65,15 +65,15 @@ extern int gte_ldlzc(int input);
 
 // lwc2 9-11
 #define gte_ldlvl( r0 ) \
-	IR1 = *(ushort*)((char*)r0); \
-	IR2 = *(ushort*)((char*)r0 + 4);\
-	IR3 = *(ushort*)((char*)r0 + 8);
+	MTC2(*(uint*)((char*)r0), 9); \
+	MTC2(*(uint*)((char*)r0 + 4), 10);\
+	MTC2(*(uint*)((char*)r0 + 8), 11);
 
 // swc2 9-11
 #define gte_stlvl( r0 ) \
-	*(ushort*)((char*)r0) = IR1; \
-	*(ushort*)((char*)r0 + 4) = IR2;\
-	*(ushort*)((char*)r0 + 8) = IR3;
+	*(uint*)((char*)r0) = MFC2(9); \
+	*(uint*)((char*)r0 + 4) = MFC2(10);\
+	*(uint*)((char*)r0 + 8) = MFC2(11);
 
 // ctc2 21-23
 #define gte_ldfc( r0 ) \

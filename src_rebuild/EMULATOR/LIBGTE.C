@@ -4113,23 +4113,39 @@ long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2
 
 // TODO: to INLINE_C EMULATOR macros
 
-
-
 MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 {
 	gte_SetRotMatrix(m0);
-	gte_ldclmv(m1);	
-	docop2(0x486012);	//gte_rtir();
-	
-	gte_stclmv(m2);
-	gte_ldclmv((char*)m1 + 2);
-	docop2(0x486012);	//gte_rtir();
 
-	gte_stclmv((char*)m2 + 2);
-	gte_ldclmv((char*)m1 + 4);
-	docop2(0x486012);	//gte_rtir();
-	
-	gte_stclmv((char*)m2 + 4);
+	VX0 = m1->m[0][0];
+	VY0 = m1->m[0][1];
+	VZ0 = m1->m[0][2];
+
+	docop2(0x486012);
+
+	VX0 = m1->m[1][0];
+	VY0 = m1->m[1][1];
+	VZ0 = m1->m[1][2];
+
+	m2->m[0][0] = IR1;
+	m2->m[0][1] = IR2;
+	m2->m[0][2] = IR3;
+
+	docop2(0x486012);
+
+	VX0 = m1->m[2][0];
+	VY0 = m1->m[2][1];
+	VZ0 = m1->m[2][2];
+
+	m2->m[1][0] = IR1;
+	m2->m[1][1] = IR2;
+	m2->m[1][2] = IR3;
+
+	docop2(0x486012);
+
+	m2->m[2][0] = IR1;
+	m2->m[2][1] = IR2;
+	m2->m[2][2] = IR3;
 
 	return m2;
 }
