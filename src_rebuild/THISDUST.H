@@ -20025,6 +20025,24 @@ struct TPAN // hashcode: 0x984DCD6C (dec: -1739731604)
 	unsigned char texture_number; // size=0, offset=1
 };
 
+struct POLYFT4 // hashcode: 0x0B933067 (dec: 194195559)
+{
+	unsigned char id; // size=0, offset=0
+	unsigned char texture_set; // size=0, offset=1
+	unsigned char texture_id; // size=0, offset=2
+	unsigned char spare; // size=0, offset=3
+	unsigned char v0; // size=0, offset=4
+	unsigned char v1; // size=0, offset=5
+	unsigned char v2; // size=0, offset=6
+	unsigned char v3; // size=0, offset=7
+	struct UV_INFO uv0; // size=2, offset=8
+	struct UV_INFO uv1; // size=2, offset=10
+	struct UV_INFO uv2; // size=2, offset=12
+	struct UV_INFO uv3; // size=2, offset=14
+	struct RGB color; // size=4, offset=16
+};
+
+
 struct SMOKE // hashcode: 0x9F745C35 (dec: -1619764171)
 {
 	UnpaddedHackVector position; // size=12, offset=0
@@ -20124,7 +20142,7 @@ struct ROUTE_DATA // hashcode: 0xBBEEB7AD (dec: -1141983315)
 	short objectAngle; // size=0, offset=4
 };
 
-typedef struct POLYFT4 POLYFT4;
+//typedef struct POLYFT4 POLYFT4;
 
 typedef struct TPAN TPAN;
 
@@ -20200,7 +20218,7 @@ struct _pct // hashcode: 0x3CC33EEE (dec: 1019428590)
 	int model; // size=0, offset=208
 };
 
-typedef struct _pct plotContext;
+//typedef struct _pct plotContext;
 
 struct MATRIX2 // hashcode: 0x7326ABFE (dec: 1931914238)
 {
@@ -20237,7 +20255,7 @@ struct PL_POLYFT4 // hashcode: 0x851A459F (dec: -2061875809)
 	struct UV_INFO uv3; // size=2, offset=14
 };
 
-typedef struct _pct plotContext;
+//typedef struct _pct plotContext;
 
 typedef struct MATRIX2 MATRIX2;
 

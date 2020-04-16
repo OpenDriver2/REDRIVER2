@@ -2,7 +2,11 @@
 #include "SKY.H"
 #include "SYSTEM.H"
 #include "MISSION.H"
+#include "MODELS.H"
+#include "DRAW.H"
 
+#include "LIBGTE.H"
+#include "GTEREG.H"
 
 int sky_y_offset[4] = { 14, 14, 14, 14 };
 
@@ -329,25 +333,22 @@ LAB_000778d4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawSkyDome(void)
 {
-	UNIMPLEMENTED();
-	/*
 	calc_sky_brightness();
-	if (0x8ca < (uint)(ushort)camera_angle.vy - 0x5aa) {
-		PlotHorizonMDL(modelpointers1536[0], (uint)(&HorizonLookup)[GameLevel * 4]);
-	}
-	if ((uint)(ushort)camera_angle.vy - 0x28b < 0x707) {
-		PlotHorizonMDL(modelpointers1536[2], (uint)(&UCHAR_00h_000a18ed)[GameLevel * 4]);
-	}
-	if ((uint)(ushort)camera_angle.vy - 0x6a5 < 0x6d5) {
-		PlotHorizonMDL(modelpointers1536[3], (uint)(&UCHAR_14h_000a18ee)[GameLevel * 4]);
-	}
-	if (0x8fc < (uint)(ushort)camera_angle.vy - 400) {
-		PlotHorizonMDL(modelpointers1536[1], (uint)(&UCHAR_14h_000a18ef)[GameLevel * 4]);
-	}
-	return;
-	*/
+
+	if (0x8ca < camera_angle.vy - 0x5aa) 
+		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
+
+	if (camera_angle.vy - 0x28b < 0x707)
+		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
+
+	if (camera_angle.vy - 0x6a5 < 0x6d5)
+		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
+
+	if (0x8fc < camera_angle.vy - 400)
+		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
 }
 
 
@@ -1064,71 +1065,65 @@ LAB_00078a68:
 	/* end block 3 */
 	// End Line: 2370
 
+// offset: 0x1f800020
+extern _pct plotContext;
+
+POLYFT4* PTR_1f80003c;			// 1f80003c
+DVECTOR DVECTOR_ARRAY_1f800044[256];	// 1f800044
+
 void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	DB *pDVar2;
-	int iVar3;
-	uint *puVar4;
+	POLYFT4 *pPVar3;
+	POLY_FT4 *local_t2_64;
 
-	iVar3 = DAT_1f80003c;
-	puVar4 = (uint *)current->primptr;
-	if ((((((-1 < (int)((uint)*(ushort *)
-		((int)&DAT_1f800044 + (uint)*(byte *)(DAT_1f80003c + 4) * 4 + 2) <<
-		0x10)) ||
-		(-1 < (int)((uint)*(ushort *)
-		((int)&DAT_1f800044 + (uint)*(byte *)(DAT_1f80003c + 5) * 4 + 2) << 0x10
-			))) ||
-			(-1 < (int)((uint)*(ushort *)
-		((int)&DAT_1f800044 + (uint)*(byte *)(DAT_1f80003c + 6) * 4 + 2) << 0x10)
-				)) || (-1 < (int)((uint)*(ushort *)
-				((int)&DAT_1f800044 + (uint)*(byte *)(DAT_1f80003c + 7) * 4 + 2) <<
-					0x10))) &&
-					(((-1 < *(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 4)) ||
-		(-1 < *(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 5)))) ||
-						((-1 < *(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 6)) ||
-						(-1 < *(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 7)))))))) &&
-							(((*(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 4)) < 0x141 ||
-		(*(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 5)) < 0x141)) ||
-								((*(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 6)) < 0x141 ||
-								(*(short *)(&DAT_1f800044 + *(byte *)(DAT_1f80003c + 7)) < 0x141)))))) {
-		*(char *)((int)puVar4 + 3) = '\t';
-		*(char *)((int)puVar4 + 7) = ',';
-		*(uchar *)(puVar4 + 1) = r;
-		*(uchar *)((int)puVar4 + 5) = g;
-		*(uchar *)((int)puVar4 + 6) = b;
-		*(undefined2 *)(puVar4 + 2) = *(undefined2 *)(&DAT_1f800044 + *(byte *)(iVar3 + 4));
-		sVar1 = (short)offset;
-		*(short *)((int)puVar4 + 10) =
-			*(short *)((int)&DAT_1f800044 + (uint)*(byte *)(iVar3 + 4) * 4 + 2) - sVar1;
-		*(undefined2 *)(puVar4 + 4) = *(undefined2 *)(&DAT_1f800044 + *(byte *)(iVar3 + 5));
-		*(short *)((int)puVar4 + 0x12) =
-			*(short *)((int)&DAT_1f800044 + (uint)*(byte *)(iVar3 + 5) * 4 + 2) - sVar1;
-		*(undefined2 *)(puVar4 + 6) = *(undefined2 *)(&DAT_1f800044 + *(byte *)(iVar3 + 7));
-		*(short *)((int)puVar4 + 0x1a) =
-			*(short *)((int)&DAT_1f800044 + (uint)*(byte *)(iVar3 + 7) * 4 + 2) - sVar1;
-		*(undefined2 *)(puVar4 + 8) = *(undefined2 *)(&DAT_1f800044 + *(byte *)(iVar3 + 6));
-		*(short *)((int)puVar4 + 0x22) =
-			*(short *)((int)&DAT_1f800044 + (uint)*(byte *)(iVar3 + 6) * 4 + 2) - sVar1;
-		*(uchar *)(puVar4 + 3) = skytexuv[skytexnum].u2;
-		*(uchar *)((int)puVar4 + 0xd) = skytexuv[skytexnum].v2;
-		*(uchar *)(puVar4 + 5) = skytexuv[skytexnum].u3;
-		*(uchar *)((int)puVar4 + 0x15) = skytexuv[skytexnum].v3;
-		*(uchar *)(puVar4 + 7) = skytexuv[skytexnum].u0;
-		*(uchar *)((int)puVar4 + 0x1d) = skytexuv[skytexnum].v0;
-		*(uchar *)(puVar4 + 9) = skytexuv[skytexnum].u1;
-		*(uchar *)((int)puVar4 + 0x25) = skytexuv[skytexnum].v1;
-		pDVar2 = current;
-		*(short *)((int)puVar4 + 0xe) = skyclut[skytexnum];
-		*(short *)((int)puVar4 + 0x16) = skytpage[skytexnum];
-		*puVar4 = *puVar4 & 0xff000000 | pDVar2->ot[0x107f] & 0xffffff;
-		pDVar2->ot[0x107f] = pDVar2->ot[0x107f] & 0xff000000 | (uint)puVar4 & 0xffffff;
-		pDVar2->primptr = pDVar2->primptr + 0x28;
+	pPVar3 = PTR_1f80003c;
+	local_t2_64 = (POLY_FT4 *)current->primptr;
+	if ((((((-1 < (int)((uint)(ushort)DVECTOR_ARRAY_1f800044[pPVar3->v0].vy << 0x10)) ||
+		(-1 < (int)((uint)(ushort)DVECTOR_ARRAY_1f800044[pPVar3->v1].vy << 0x10))) ||
+		(-1 < (int)((uint)(ushort)DVECTOR_ARRAY_1f800044[pPVar3->v2].vy << 0x10))) ||
+		(-1 < (int)((uint)(ushort)DVECTOR_ARRAY_1f800044[pPVar3->v3].vy << 0x10))) &&
+		(((-1 < DVECTOR_ARRAY_1f800044[pPVar3->v0].vx ||
+		(-1 < DVECTOR_ARRAY_1f800044[pPVar3->v1].vx)) ||
+			((-1 < DVECTOR_ARRAY_1f800044[pPVar3->v2].vx ||
+			(-1 < DVECTOR_ARRAY_1f800044[pPVar3->v3].vx)))))) &&
+				(((DVECTOR_ARRAY_1f800044[pPVar3->v0].vx < 0x141 ||
+		(DVECTOR_ARRAY_1f800044[pPVar3->v1].vx < 0x141)) ||
+					((DVECTOR_ARRAY_1f800044[pPVar3->v2].vx < 0x141 ||
+					(DVECTOR_ARRAY_1f800044[pPVar3->v3].vx < 0x141)))))) 
+	{
+		//*(undefined *)((int)&local_t2_64->tag + 3) = 9;
+		//const int code = ',';
+
+		setPolyFT4(local_t2_64);
+
+		local_t2_64->r0 = r;
+		local_t2_64->g0 = g;
+		local_t2_64->b0 = b;
+		local_t2_64->x0 = DVECTOR_ARRAY_1f800044[pPVar3->v0].vx;
+		local_t2_64->y0 = DVECTOR_ARRAY_1f800044[pPVar3->v0].vy - offset;
+		local_t2_64->x1 = DVECTOR_ARRAY_1f800044[pPVar3->v1].vx;
+		local_t2_64->y1 = DVECTOR_ARRAY_1f800044[pPVar3->v1].vy - offset;
+		local_t2_64->x2 = DVECTOR_ARRAY_1f800044[pPVar3->v3].vx;
+		local_t2_64->y2 = DVECTOR_ARRAY_1f800044[pPVar3->v3].vy - offset;
+		local_t2_64->x3 = DVECTOR_ARRAY_1f800044[pPVar3->v2].vx;
+		local_t2_64->y3 = DVECTOR_ARRAY_1f800044[pPVar3->v2].vy - offset;
+		local_t2_64->u0 = skytexuv[skytexnum].u2;
+		local_t2_64->v0 = skytexuv[skytexnum].v2;
+		local_t2_64->u1 = skytexuv[skytexnum].u3;
+		local_t2_64->v1 = skytexuv[skytexnum].v3;
+		local_t2_64->u2 = skytexuv[skytexnum].u0;
+		local_t2_64->v2 = skytexuv[skytexnum].v0;
+		local_t2_64->u3 = skytexuv[skytexnum].u1;
+		local_t2_64->v3 = skytexuv[skytexnum].v1;
+		local_t2_64->clut = skyclut[skytexnum];
+		local_t2_64->tpage = skytpage[skytexnum];
+
+		addPrim(current->ot + 0x107f, local_t2_64);
+
+		current->primptr = current->primptr + sizeof(POLY_FT4);
 	}
-	return;
-	*/
 }
 
 
@@ -1165,103 +1160,158 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 	/* end block 3 */
 	// End Line: 2521
 
+static long skyred = 0x80;
+static long skygreen = 0x80;
+static long skyblue = 0x80;
+
+#define gte_ldv3( r0, r1, r2 ) \
+	MTC2(*(uint*)((char*)r0+0), 0);\
+	MTC2(*(uint*)((char*)r0+4), 1);\
+	MTC2(*(uint*)((char*)r1+0), 2);\
+	MTC2(*(uint*)((char*)r1+4), 3);\
+	MTC2(*(uint*)((char*)r2+0), 4);\
+	MTC2(*(uint*)((char*)r2+4), 5);
+
+#define gte_stsxy3( r0, r1, r2 )	\
+	*(uint*)((char*)r0+0) = MFC2(12);\
+	*(uint*)((char*)r1+0) = MFC2(13);\
+	*(uint*)((char*)r2+0) = MFC2(14);
+
+#define gte_rtpt() docop2(0x280030);
+
+#define gte_stdp( r0 ) \
+	*(uint*)((char*)r0 + 0) = MFC2(8); \
+
+#define gte_stflg( r0 ) \
+	*(uint*)((char*)r0+0) = CFC2(31);
+
+#define gte_stszotz( r0 ) \
+	*(uint*)((char*)r0+0) = MFC2(19) >> 2;
+
+// TODO: GTEMAC
+#define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
+				{	gte_ldv3(r1,r2,r3);	\
+					gte_rtpt();		\
+					gte_stsxy3(r4,r5,r6);	\
+					gte_stdp(r7);		\
+					gte_stflg(r8);		\
+					gte_stszotz(r9);	}
+
+// [D] [A] WTF
 void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	bool bVar2;
-	undefined4 uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
+	DVECTOR DVar3;
+	//undefined4 in_zero;
+	//undefined4 in_at;
 	uint uVar4;
-	undefined2 uVar5;
-	undefined4 *puVar6;
-	undefined2 *puVar7;
-	undefined4 *puVar8;
-	undefined4 *puVar9;
-	undefined4 *puVar10;
-	undefined4 *puVar11;
-	undefined4 *puVar12;
-	undefined4 *puVar13;
+	short sVar5;
+	SVECTOR *pSVar6;
+	DVECTOR *pDVar7;
+	DVECTOR *pDVar8;
+	DVECTOR *pDVar9;
+	DVECTOR *pDVar10;
+	SVECTOR *local_t1_136;
+	SVECTOR *pSVar11;
+	SVECTOR *pSVar12;
+	int iVar13;
 	int iVar14;
-	int iVar15;
-	byte *pbVar16;
-	byte *pbVar17;
+	POLYFT4 *pPVar15;
+	unsigned char *pbVar16;
+	uint uVar17;
 	uint uVar18;
-	uint uVar19;
+	int p;
+	int flag;
+	int z;
 
-	puVar6 = (undefined4 *)model->vertices;
+	pSVar6 = (SVECTOR *)model->vertices;
 	uVar4 = (uint)model->num_vertices + 3;
-	iVar15 = 0;
+	iVar14 = 0;
 	if (uVar4 != 0) {
-		puVar7 = &DAT_1f800240;
-		puVar10 = &DAT_1f80004c;
-		puVar9 = &DAT_1f800048;
-		puVar8 = &DAT_1f800044;
-		puVar13 = puVar6 + 4;
-		puVar12 = puVar6 + 2;
-		puVar11 = puVar6;
+		pDVar7 = DVECTOR_ARRAY_1f800044 + 0x7f;
+		pDVar10 = DVECTOR_ARRAY_1f800044 + 2;
+		pDVar9 = DVECTOR_ARRAY_1f800044 + 1;
+		pDVar8 = DVECTOR_ARRAY_1f800044;
+		pSVar12 = pSVar6 + 2;
+		pSVar11 = pSVar6 + 1;
+		local_t1_136 = pSVar6;
 		do {
-			setCopReg(2, in_zero, *puVar11);
-			setCopReg(2, in_at, puVar11[1]);
-			setCopReg(2, uVar4, *puVar12);
-			setCopReg(2, puVar6, puVar12[1]);
-			setCopReg(2, puVar7, *puVar13);
-			setCopReg(2, horizontaboffset, puVar13[1]);
-			copFunction(2, 0x280030);
-			uVar3 = getCopReg(2, 0xc);
-			*puVar8 = uVar3;
-			uVar3 = getCopReg(2, 0xd);
-			*puVar9 = uVar3;
-			uVar3 = getCopReg(2, 0xe);
-			*puVar10 = uVar3;
+			gte_RotTransPers3(local_t1_136, pSVar11, pSVar12, pDVar8, pDVar9, pDVar10, &p, &flag, &iVar13);
+
+			/*
+			//gte_ldv3
+			setCopReg(2, in_zero, *(undefined4 *)local_t1_136);
+			setCopReg(2, in_at, *(undefined4 *)&local_t1_136->vz);
+			setCopReg(2, uVar4, *(undefined4 *)pSVar11);
+			setCopReg(2, pSVar6, *(undefined4 *)&pSVar11->vz);
+			setCopReg(2, pDVar7, *(undefined4 *)pSVar12);
+			setCopReg(2, horizontaboffset, *(undefined4 *)&pSVar12->vz);
+
+			// gte_rtpt
+			copFunction(2, 0x280030); 
+
+			// gte_stsxy3 r4,r5,r6
+			DVar3 = (DVECTOR)getCopReg(2, 0xc);
+			*pDVar8 = DVar3;
+			DVar3 = (DVECTOR)getCopReg(2, 0xd);
+			*pDVar9 = DVar3;
+			DVar3 = (DVECTOR)getCopReg(2, 0xe);
+			*pDVar10 = DVar3;
+
+			// gte_stdp r7
 			getCopReg(2, 8);
+
+			// gte_stflg r8
 			getCopControlWord(2, 0xf800);
-			iVar14 = getCopReg(2, 0x9800);
-			puVar10 = puVar10 + 3;
-			puVar9 = puVar9 + 3;
-			puVar8 = puVar8 + 3;
-			puVar13 = puVar13 + 6;
-			puVar12 = puVar12 + 6;
-			puVar11 = puVar11 + 6;
-			iVar15 = iVar15 + 3;
-			puVar6 = (undefined4 *)(&DAT_00001080 + -(iVar14 >> 2 & 0xffffU));
-			uVar5 = SUB42(puVar6, 0);
-			puVar7[2] = uVar5;
-			puVar7[1] = uVar5;
-			*puVar7 = uVar5;
-			bVar2 = iVar15 < (int)((uint)model->num_vertices + 3);
+
+			// gte_stszotz r9
+			iVar13 = getCopReg(2, 0x9800);
+			*/
+			pDVar10 = pDVar10 + 3;
+			pDVar9 = pDVar9 + 3;
+			pDVar8 = pDVar8 + 3;
+			pSVar12 = pSVar12 + 3;
+			pSVar11 = pSVar11 + 3;
+			local_t1_136 = local_t1_136 + 3;
+			iVar14 = iVar14 + 3;
+			//pSVar6 = (SVECTOR *)(0x1080 + -(iVar13 >> 2 & 0xffffU));
+			sVar5 = (short)(0x1080 + -(iVar13 >> 2 & 0xffffU));;
+			pDVar7[1].vx = sVar5;
+			pDVar7->vy = sVar5;
+			pDVar7->vx = sVar5;
+			bVar2 = iVar14 < (int)((uint)model->num_vertices + 3);
 			uVar4 = (uint)bVar2;
-			puVar7 = puVar7 + 3;
+			pDVar7 = (DVECTOR *)&pDVar7[1].vy;
 		} while (bVar2);
 	}
-	if (-1 < DAT_1f800254) {
-		pbVar16 = (byte *)model->poly_block;
-		uVar19 = (uint)(byte)skyred;
-		uVar18 = (uint)(byte)skygreen;
-		DAT_1f80001c = &DAT_1f800240;
-		uVar4 = (uint)(byte)skyblue;
-		iVar15 = 0;
-		DAT_1f800018 = model;
+	if (-1 < DVECTOR_ARRAY_1f800044[132].vx) 
+	{
+		pPVar15 = (POLYFT4 *)model->poly_block;
+		uVar18 = skyred;
+		uVar17 = skygreen;
+		//DAT_1f80001c = 0x1f800240;
+		uVar4 = skyblue;
+		iVar14 = 0;
+		//DAT_1f800018 = model;
 		if (model->num_polys != 0) {
-			pbVar17 = HorizonTextures + horizontaboffset;
+			pbVar16 = HorizonTextures + horizontaboffset;
 			do {
-				if (iVar15 == 0xc) {
-					uVar19 = uVar19 >> 1;
+				if (iVar14 == 0xc) {
 					uVar18 = uVar18 >> 1;
+					uVar17 = uVar17 >> 1;
 					uVar4 = uVar4 >> 1;
 				}
-				bVar1 = *pbVar17;
-				pbVar17 = pbVar17 + 1;
-				DAT_1f80003c = pbVar16;
-				PlotSkyPoly((uint)bVar1, (uchar)uVar19, (uchar)uVar18, (uchar)uVar4, sky_y_offset[GameLevel]);
-				iVar15 = iVar15 + 1;
-				pbVar16 = pbVar16 + PolySizes[*pbVar16];
-			} while (iVar15 < (int)(uint)model->num_polys);
+				bVar1 = *pbVar16;
+				pbVar16 = pbVar16 + 1;
+				PTR_1f80003c = pPVar15;
+				PlotSkyPoly((uint)bVar1, uVar18, uVar17, uVar4,
+					sky_y_offset[GameLevel]);
+				iVar14 = iVar14 + 1;
+				pPVar15 = (POLYFT4 *)(&pPVar15->id + PolySizes[pPVar15->id]);
+			} while (iVar14 < (int)(uint)model->num_polys);
 		}
 	}
-	return;*/
 }
 
 

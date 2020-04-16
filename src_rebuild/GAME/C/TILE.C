@@ -251,7 +251,7 @@ void Tile1x1(MODEL *model)
 	/* end block 4 */
 	// End Line: 464
 
-plotContext plot; // scratchpad addr: 0x1F8000C0
+extern _pct plotContext; // scratchpad addr: 0x1F8000C0
 
 // [D]
 void DrawTILES(int tile_amount)
@@ -268,13 +268,13 @@ void DrawTILES(int tile_amount)
 	{
 		if (gTimeOfDay < 3)
 		{
-			plot.colour = combointensity & 0xffffffU | 0x2c000000;
+			plotContext.colour = combointensity & 0xffffffU | 0x2c000000;
 		}
 		else 
 		{
 			if (gTimeOfDay == 3) 
 			{
-				plot.colour = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
+				plotContext.colour = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
 					((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
 					(int)(combointensity & 0xffU) / 3 | 0x2c000000U;
 			}
@@ -284,36 +284,36 @@ void DrawTILES(int tile_amount)
 
 	if (gWeather - 1U < 2)
 	{
-		uVar3 = plot.colour >> 2 & 0x3f;
-		plot.colour = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
+		uVar3 = plotContext.colour >> 2 & 0x3f;
+		plotContext.colour = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
 	}
 
 	tile_amount = tile_amount + -1;
-	plot.ot = current->ot;
-	plot.primptr = current->primptr;
-	plot.ptexture_pages = (ushort(*)[128])texture_pages;
-	plot.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
-	plot.lastTexInfo = 0x18273472;
+	plotContext.ot = current->ot;
+	plotContext.primptr = current->primptr;
+	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
+	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+	plotContext.lastTexInfo = 0x18273472;
 	ppuVar6 = (ushort **)tile_overflow_buffer;
 
 	while (tile_amount != -1) 
 	{
 		puVar4 = *ppuVar6;
-		plot.f4colourTable[6] = (*puVar4);
-		plot.f4colourTable[7] = (int)((uint)puVar4[1] << 0x10) >> 0x11;
-		plot.f4colourTable[8] = (puVar4[2]);
+		plotContext.f4colourTable[6] = (*puVar4);
+		plotContext.f4colourTable[7] = (int)((uint)puVar4[1] << 0x10) >> 0x11;
+		plotContext.f4colourTable[8] = (puVar4[2]);
 		ppuVar6 = ppuVar6 + 1;
 		uVar5 = (uint)puVar4[3] & 0x3f;
 		uVar3 = (uint)(puVar4[3] >> 6) | ((uint)puVar4[1] & 1) << 10;
 
 		if (uVar7 == uVar5)
 		{
-			iVar1 = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)(plot.f4colourTable + 6));
+			iVar1 = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)(plotContext.f4colourTable + 6));
 		}
 		else
 		{
 			iVar1 = Apply_InvCameraMatrixAndSetMatrix
-			((VECTOR_NOPAD *)(plot.f4colourTable + 6), &CompoundMatrix[uVar5]);
+			((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[uVar5]);
 			uVar7 = uVar5;
 		}
 
@@ -347,7 +347,7 @@ void DrawTILES(int tile_amount)
 
 		tile_amount--;
 	}
-	current->primptr = plot.primptr;
+	current->primptr = plotContext.primptr;
 }
 
 
@@ -1147,7 +1147,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	uVar1 = 0;
 	ofse = 0x85;
 	polys = (unsigned char *)model->poly_block;
-	plot.verts = (SVECTOR *)model->vertices;
+	plotContext.verts = (SVECTOR *)model->vertices;
 	uVar2 = *(uint *)(model + 1) >> 2;
 	if ((*(uint *)model & 0x40000080) != 0) {
 		ofse = 0xe5;
