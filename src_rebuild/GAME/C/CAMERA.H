@@ -5,7 +5,8 @@ extern VECTOR camera_position;
 extern char old_camera_change;
 extern char camera_change;
 
-
+extern MATRIX face_camera_work;
+extern MATRIX camera_matrix;
 
 extern void InitCamera(_PLAYER *lp); // 0x0001F5F4
 

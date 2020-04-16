@@ -48,7 +48,7 @@ MATRIX inv_camera_matrix;
 MATRIX2 CompoundMatrix[64];
 
 // offset: 0x1f800020
-static plotContext context;
+_pct plotContext;
 
 // decompiled code
 // original method signature: 
@@ -2231,19 +2231,19 @@ int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp)
 	int prev_mat = -1;
 
 	for (int i = 0; i < 8; i++) {
-		context.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
-		context.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
-		context.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
-		context.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+		plotContext.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	current->ot += 8;
 
-	context.ptexture_pages = &texture_pages;
-	context.ptexture_cluts = &texture_cluts;
-	context.polySizes = PolySizes;
-	context.flags = 0;
-	context.current = current;
+	plotContext.ptexture_pages = &texture_pages;
+	plotContext.ptexture_cluts = &texture_cluts;
+	plotContext.polySizes = PolySizes;
+	plotContext.flags = 0;
+	plotContext.current = current;
 
 	if (num_buildings > 0) {
 		int model_number = GetModelNumber();
@@ -2273,7 +2273,7 @@ int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp)
 
 				current->ot += (zBias * 4);
 
-				PlotBuildingModelSubdivNxN(model, building->yang, &context, 1);
+				PlotBuildingModelSubdivNxN(model, building->yang, &plotContext, 1);
 
 				current->ot = savedOT;
 			}
@@ -2357,20 +2357,20 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	current->ot += (spacefree * 4);
 
 	for (int i = 0; i < 8; i++) {
-		context.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
-		context.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
-		context.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
-		context.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+		plotContext.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
-	context.ptexture_pages = &texture_pages;
-	context.ptexture_cluts = &texture_cluts;
-	context.polySizes = PolySizes;
-	context.flags = flags;
-	context.current = current;
+	plotContext.ptexture_pages = &texture_pages;
+	plotContext.ptexture_cluts = &texture_cluts;
+	plotContext.polySizes = PolySizes;
+	plotContext.flags = flags;
+	plotContext.current = current;
 
 	if (GetModelNumber() < 56000)
-		PlotBuildingModelSubdivNxN(model, 0, &context, 1);
+		PlotBuildingModelSubdivNxN(model, 0, &plotContext, 1);
 
 	current->ot = savedOT;
 }

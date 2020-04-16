@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "CONVERT.H"
-
+#include "DRAW.H"
+#include "CAMERA.H"
 
 // decompiled code
 // original method signature: 
@@ -167,21 +168,18 @@ void _MatrixRotate(VECTOR *pos)
 	/* end block 3 */
 	// End Line: 633
 
+// [D]
 void InvertMatrix(MATRIX *a, MATRIX *b)
 {
-	UNIMPLEMENTED();
-	/*
-	b->m[0] = a->m[0];
-	b->m[1] = a->m[3];
-	b->m[2] = a->m[6];
-	b->m[3] = a->m[1];
-	b->m[4] = a->m[4];
-	b->m[5] = a->m[7];
-	b->m[6] = a->m[2];
-	b->m[7] = a->m[5];
-	b->m[8] = a->m[8];
-	return;
-	*/
+	b->m[0][0] = a->m[0][0];
+	b->m[0][1] = a->m[1][0];
+	b->m[0][2] = a->m[2][0];
+	b->m[1][0] = a->m[0][1];
+	b->m[1][1] = a->m[1][1];
+	b->m[1][2] = a->m[2][1];
+	b->m[2][0] = a->m[0][2];
+	b->m[2][1] = a->m[1][2];
+	b->m[2][2] = a->m[2][2];
 }
 
 
@@ -216,34 +214,37 @@ void InvertMatrix(MATRIX *a, MATRIX *b)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+MATRIX face_camera;
+
+// [D]
 void BuildWorldMatrix(void)
 {
-	UNIMPLEMENTED();
-	/*
-	MATRIX local_30;
+	MATRIX newmatrix;
 
-	local_30.m[0][0] = 0x1000;
-	local_30.m[1][0] = 0;
-	local_30.m[2][0] = 0;
-	local_30.m[0][1] = 0;
-	local_30.m[1][1] = 0x1000;
-	local_30.m[2][1] = 0;
-	local_30.m[0][2] = 0;
-	local_30.m[1][2] = 0;
-	local_30.m[2][2] = 0x1000;
-	_RotMatrixY(&local_30, camera_angle.vy);
-	_RotMatrixZ(&local_30, camera_angle.vz);
-	_RotMatrixX(&local_30, camera_angle.vx);
-	MulMatrix0(&aspect, &local_30, &inv_camera_matrix);
+	newmatrix.m[0][0] = 0x1000;
+	newmatrix.m[1][0] = 0;
+	newmatrix.m[2][0] = 0;
+	newmatrix.m[0][1] = 0;
+	newmatrix.m[1][1] = 0x1000;
+	newmatrix.m[2][1] = 0;
+	newmatrix.m[0][2] = 0;
+	newmatrix.m[1][2] = 0;
+	newmatrix.m[2][2] = 0x1000;
+
+	_RotMatrixY(&newmatrix, camera_angle.vy);
+	_RotMatrixZ(&newmatrix, camera_angle.vz);
+	_RotMatrixX(&newmatrix, camera_angle.vx);
+
+	MulMatrix0(&aspect, &newmatrix, &inv_camera_matrix);
 	InvertMatrix(&inv_camera_matrix, &camera_matrix);
+
 	face_camera_work.m[0][0] = 0x1000;
 	face_camera_work.m[0][2] = 0;
 	face_camera_work.m[2][0] = 0;
 	face_camera_work.m[2][2] = 0x1000;
+
 	RotMatrixY(-(int)camera_angle.vy & 0xfff, &face_camera_work);
 	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
-	return;
-	*/
 }
 
 
@@ -283,52 +284,37 @@ void BuildWorldMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ScaleCamera(void)
 {
-	UNIMPLEMENTED();
-	/*
-	MATRIX MStack160;
-	MATRIX MStack128;
-	undefined2 local_60;
-	undefined2 local_5e;
-	undefined2 local_5c;
-	undefined2 local_5a;
-	undefined2 local_58;
-	undefined2 local_56;
-	undefined2 local_54;
-	undefined2 local_52;
-	undefined2 local_50;
-	undefined auStack64[32];
-	undefined4 local_20;
-	undefined4 local_1c;
-	undefined4 local_18;
-	undefined2 local_10;
-	short local_e;
-	undefined2 local_c;
+	MATRIX temp;
+	MATRIX temp2;
+	MATRIX scale;
+	MATRIX scaledcammat;
+	VECTOR pos;
+	SVECTOR tempang;
 
-	local_10 = 0;
-	local_c = 0;
-	local_18 = 0;
-	local_1c = 0;
-	local_20 = 0;
-	local_e = camera_angle.vy;
-	RotMatrixYXZ(&local_10, &MStack160);
-	InvertMatrix(&MStack160, &MStack128);
-	local_60 = 0x1000;
-	local_5e = 0;
-	local_5c = 0;
-	local_5a = 0;
-	local_58 = 0x1000;
-	local_56 = 0;
-	local_54 = 0;
-	local_52 = 0;
-	local_50 = 0x1000;
-	MulMatrix0(&local_60, &inv_camera_matrix, auStack64);
-	TransMatrix(auStack64, &local_20);
-	SetRotMatrix(auStack64);
-	SetTransMatrix(auStack64);
-	return;
-	*/
+	tempang.vx = 0;
+	tempang.vz = 0;
+	pos.vz = 0;
+	pos.vy = 0;
+	pos.vx = 0;
+	tempang.vy = camera_angle.vy;
+	RotMatrixYXZ(&tempang, &temp);
+	InvertMatrix(&temp, &temp2);
+	scale.m[0][0] = 0x1000;
+	scale.m[0][1] = 0;
+	scale.m[0][2] = 0;
+	scale.m[1][0] = 0;
+	scale.m[1][1] = 0x1000;
+	scale.m[1][2] = 0;
+	scale.m[2][0] = 0;
+	scale.m[2][1] = 0;
+	scale.m[2][2] = 0x1000;
+	MulMatrix0(&scale, &inv_camera_matrix, &scaledcammat);
+	TransMatrix(&scaledcammat, &pos);
+	SetRotMatrix(&scaledcammat);
+	SetTransMatrix(&scaledcammat);
 }
 
 

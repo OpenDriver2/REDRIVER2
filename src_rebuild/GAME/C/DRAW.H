@@ -10,9 +10,11 @@ extern int pvs_square_sq;
 extern int PolySizes[56];
 extern ulong* tile_overflow_buffer;
 
+extern MATRIX inv_camera_matrix;
 extern MATRIX2 CompoundMatrix[64];
 
 extern int combointensity;
+extern SVECTOR camera_angle;
 
 extern void addSubdivSpriteShadow(struct POLYFT4LIT *src, struct SVECTOR *verts, int z); // 0x0003ED7C
 
