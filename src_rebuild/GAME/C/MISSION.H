@@ -45,6 +45,8 @@ extern int TAIL_GETTINGFAR;
 extern int TAIL_TOOCLOSE;
 extern int TAIL_TOOFAR;
 
+extern int numCopCars;
+
 extern void InitialiseMissionDefaults(); // 0x0006084C
 
 extern void LoadMission(int missionnum); // 0x00060A74

@@ -105,7 +105,7 @@ SVECTOR camera_angle = { 0,0,0 };
 	*(uint*)((char*)r0+4) = CFC2(26);\
 	*(uint*)((char*)r0+8) = CFC2(27);
 
-// [A]
+// [D]
 void InitCamera(_PLAYER *lp)
 {
 	unsigned char bVar1;
@@ -153,6 +153,7 @@ void InitCamera(_PLAYER *lp)
 		}
 		else 
 		{
+			// [A]
 			gte_SetRotMatrix(car_data[iVar2].hd.where.m);
 
 			//setCopControlWord(2, 0, *(undefined4 *)car_data[iVar2].hd.where.m);
