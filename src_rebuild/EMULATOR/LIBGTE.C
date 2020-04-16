@@ -4373,6 +4373,39 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 	return m;
 }
 
+MATRIX* RotMatrixX(long r, MATRIX *m)
+{
+	short sVar1;
+	short sVar2;
+	short sVar3;
+	int iVar4;
+	int iVar5;
+
+	if (r < 0) {
+		iVar5 = *(int *)(rcossin_tbl + (-r & 0xfffU) * 2);
+		iVar4 = -(int)(short)iVar5;
+	}
+	else {
+		iVar5 = *(int *)(rcossin_tbl + (r & 0xfffU) * 2);
+		iVar4 = (int)(short)iVar5;
+	}
+	iVar5 = iVar5 >> 0x10;
+
+	sVar1 = m->m[1][0];
+	sVar2 = m->m[1][1];
+	sVar3 = m->m[1][2];
+
+	m->m[1][0] = (short)(iVar5 * sVar1 - iVar4 * m->m[2][0] >> 0xc);
+	m->m[1][1] = (short)(iVar5 * sVar2 - iVar4 * m->m[2][1] >> 0xc);
+	m->m[1][2] = (short)(iVar5 * sVar3 - iVar4 * m->m[2][2] >> 0xc);
+
+	m->m[2][0] = (short)(iVar4 * sVar1 + iVar5 * m->m[2][0] >> 0xc);
+	m->m[2][1] = (short)(iVar4 * sVar2 + iVar5 * m->m[2][1] >> 0xc);
+	m->m[2][2] = (short)(iVar4 * sVar3 + iVar5 * m->m[2][2] >> 0xc);
+
+	return m;
+}
+
 MATRIX* RotMatrixY(long r, MATRIX *m)
 {
 	short sVar1;
@@ -4404,13 +4437,53 @@ MATRIX* RotMatrixY(long r, MATRIX *m)
 	sVar5 = m->m[0][2];
 	sVar6 = m->m[2][2];
 
-	m->m[0][0] = (short)(iVar8 * sVar1 - iVar7 * sVar2 >> 0xc);
-	m->m[0][1] = (short)(iVar8 * sVar3 - iVar7 * sVar4 >> 0xc);
-	m->m[0][2] = (short)(iVar8 * sVar5 - iVar7 * sVar6 >> 0xc);
+	m->m[0][0] = (iVar8 * sVar1 - iVar7 * sVar2 >> 0xc);
+	m->m[0][1] = (iVar8 * sVar3 - iVar7 * sVar4 >> 0xc);
+	m->m[0][2] = (iVar8 * sVar5 - iVar7 * sVar6 >> 0xc);
 
-	m->m[2][0] = (short)(iVar7 * sVar1 + iVar8 * sVar2 >> 0xc);
-	m->m[2][1] = (short)(iVar7 * sVar3 + iVar8 * sVar4 >> 0xc);
-	m->m[2][2] = (short)(iVar7 * sVar5 + iVar8 * sVar6 >> 0xc);
+	m->m[2][0] = (iVar7 * sVar1 + iVar8 * sVar2 >> 0xc);
+	m->m[2][1] = (iVar7 * sVar3 + iVar8 * sVar4 >> 0xc);
+	m->m[2][2] = (iVar7 * sVar5 + iVar8 * sVar6 >> 0xc);
+
+	return m;
+}
+
+MATRIX* RotMatrixZ(long r, MATRIX *m)
+{
+	short sVar1;
+	short sVar2;
+	short sVar3;
+	short sVar4;
+	short sVar5;
+	short sVar6;
+	int iVar7;
+	int iVar8;
+
+	if (r < 0) {
+		iVar8 = *(int *)(rcossin_tbl + (-r & 0xfffU) * 2);
+		iVar7 = -(int)(short)iVar8;
+	}
+	else {
+		iVar8 = *(int *)(rcossin_tbl + (r & 0xfffU) * 2);
+		iVar7 = (int)(short)iVar8;
+	}
+	iVar8 = iVar8 >> 0x10;
+
+	sVar1 = m->m[0][0];
+	sVar2 = m->m[1][0];
+
+	sVar3 = m->m[0][1];
+	sVar4 = m->m[1][1];
+
+	sVar5 = m->m[0][2];
+	sVar6 = m->m[1][2];
+
+	m->m[0][0] = (iVar8 * sVar1 - iVar7 * sVar2 >> 0xc);
+	m->m[0][1] = (iVar8 * sVar3 - iVar7 * sVar4 >> 0xc);
+	m->m[0][2] = (iVar8 * sVar5 - iVar7 * sVar6 >> 0xc);
+	m->m[1][0] = (iVar7 * sVar1 + iVar8 * sVar2 >> 0xc);
+	m->m[1][1] = (iVar7 * sVar3 + iVar8 * sVar4 >> 0xc);
+	m->m[1][2] = (iVar7 * sVar5 + iVar8 * sVar6 >> 0xc);
 
 	return m;
 }
