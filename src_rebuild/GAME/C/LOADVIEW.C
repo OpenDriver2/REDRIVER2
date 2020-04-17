@@ -6,6 +6,12 @@
 #include "LIBETC.H"
 #include "GLAUNCH.H"
 #include "MISSION.H"
+#include "CAMERA.H"
+#include "PAUSE.H"
+#include "PRES.H"
+#include "MAIN.H"
+#include "CUTSCENE.H"
+
 #include "../FRONTEND/FEMAIN.H"
 
 DRAWENV load_draw = { 0 };
@@ -454,82 +460,58 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	/* end block 2 */
 	// End Line: 1501
 
+// [D]
 void CloseShutters(int speed, int width, int height)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	int iVar2;
-	undefined auStack80[3];
-	undefined local_4d;
-	undefined local_4c;
-	undefined local_4b;
-	undefined local_4a;
-	undefined local_49;
-	undefined2 local_48;
-	undefined2 local_46;
-	undefined2 local_44;
-	undefined2 local_42;
-	undefined2 local_40;
-	short local_3e;
-	undefined2 local_3c;
-	short local_3a;
-	undefined auStack56[3];
-	undefined local_35;
-	undefined local_34;
-	undefined local_33;
-	undefined local_32;
-	undefined local_31;
-	undefined2 local_30;
-	short local_2e;
-	undefined2 local_2c;
-	short local_2a;
-	undefined2 local_28;
-	short local_26;
-	undefined2 local_24;
-	short local_22;
+	POLY_F4 poly[2];
 
 	iVar2 = 0;
 	bVar1 = false;
-	local_4d = 5;
-	local_49 = 0x28;
-	local_35 = 5;
-	local_31 = 0x28;
-	local_4c = 0;
-	local_4b = 0;
-	local_4a = 0;
-	local_34 = 0;
-	local_33 = 0;
-	local_32 = 0;
+
+	setPolyF4(&poly[0]);
+	setPolyF4(&poly[1]);
+
+	poly[0].r0 = '\0';
+	poly[0].g0 = '\0';
+	poly[0].b0 = '\0';
+	poly[1].r0 = '\0';
+	poly[1].g0 = '\0';
+	poly[1].b0 = '\0';
+
 	do {
-		local_3e = (short)iVar2;
-		local_2e = (short)height - local_3e;
-		local_26 = local_2e + local_3e;
-		local_48 = 0;
-		local_46 = 0;
-		local_44 = (undefined2)width;
-		local_42 = 0;
-		local_40 = 0;
-		local_30 = 0;
-		local_28 = 0;
-		local_3c = local_44;
-		local_3a = local_3e;
-		local_2c = local_44;
-		local_2a = local_2e;
-		local_24 = local_44;
-		local_22 = local_26;
-		DrawPrim(auStack80);
-		DrawPrim(auStack56);
+		poly[0].y2 = (short)iVar2;
+		poly[1].y0 = (short)height - poly[0].y2;
+		poly[1].y2 = poly[1].y0 + poly[0].y2;
+		poly[0].x0 = 0;
+		poly[0].y0 = 0;
+		poly[0].x1 = (short)width;
+		poly[0].y1 = 0;
+		poly[0].x2 = 0;
+		poly[1].x0 = 0;
+		poly[1].x2 = 0;
+		poly[0].x3 = poly[0].x1;
+		poly[0].y3 = poly[0].y2;
+		poly[1].x1 = poly[0].x1;
+		poly[1].y1 = poly[1].y0;
+		poly[1].x3 = poly[0].x1;
+		poly[1].y3 = poly[1].y2;
+
+		DrawPrim(poly);
+		DrawPrim(poly + 1);
+
 		iVar2 = iVar2 + speed;
 		if (0xff < iVar2) {
 			bVar1 = true;
 		}
 	} while (!bVar1);
-	ClearOTagR(current->ot, (int)&DAT_00001080);
-	ClearOTagR(last->ot, (int)&DAT_00001080);
+
+	// [A] causes crash
+	//ClearOTagR((u_long*)current->ot, 0x1080);
+	//ClearOTagR((u_long*)last->ot, 0x1080);
+
 	SetDispMask(0);
-	return;
-	*/
 }
 
 
@@ -569,10 +551,15 @@ void CloseShutters(int speed, int width, int height)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+POLY_G4 fade_g4[2];
+POLY_GT4 fade_gt4[2];
+
+static int fadeVal = 0xFF;
+static int bWantFade = 0;
+
+// [D]
 void SetupFadePolys(void)
 {
-	UNIMPLEMENTED();
-	/*
 	POLY_G4 *pPVar1;
 	POLY_GT4 *pPVar2;
 	int iVar3;
@@ -580,12 +567,16 @@ void SetupFadePolys(void)
 	pPVar1 = fade_g4;
 	pPVar2 = fade_gt4;
 	iVar3 = 1;
+
 	do {
-		*(undefined *)((int)&pPVar1->tag + 3) = 8;
-		pPVar1->code = ':';
+		setPolyG4(pPVar1);
+		setSemiTrans(pPVar1, 1);
+
 		pPVar1 = pPVar1 + 1;
-		*(undefined *)((int)&pPVar2->tag + 3) = 0xc;
-		pPVar2->code = '>';
+
+		setPolyGT4(pPVar2);
+		setSemiTrans(pPVar2, 1);
+
 		pPVar2->x0 = -1;
 		pPVar2->y0 = -1;
 		pPVar2->x1 = 0;
@@ -595,13 +586,15 @@ void SetupFadePolys(void)
 		pPVar2->x3 = 0;
 		pPVar2->y3 = 0;
 		pPVar2->tpage = 0x40;
+
 		iVar3 = iVar3 + -1;
+
 		pPVar2 = pPVar2 + 1;
 	} while (-1 < iVar3);
+
 	bWantFade = 1;
 	fadeVal = 0xff;
 	gStopPadReads = 1;
-	return;*/
 }
 
 
@@ -636,51 +629,54 @@ void SetupFadePolys(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawFadePoly(void)
 {
-	UNIMPLEMENTED();
-	/*
 	DB *pDVar1;
 	int iVar2;
 	POLY_G4 *pPVar3;
 
 	iVar2 = current->id;
 	pPVar3 = fade_g4 + iVar2;
-	if (fadeVal < 0) {
+
+	if (fadeVal < 0) 
+	{
 		bMissionTitleFade = 0;
 		if (gInGameCutsceneActive == 0) {
 			gStopPadReads = 0;
 		}
 		fadeVal = 0;
 	}
+
 	fade_g4[iVar2].x0 = 0;
 	fade_g4[iVar2].y0 = 0;
 	fade_g4[iVar2].x1 = 0x140;
 	fade_g4[iVar2].y1 = 0;
 	fade_g4[iVar2].x2 = 0;
+
 	pDVar1 = current;
+
 	fade_g4[iVar2].y2 = 0x100;
 	fade_g4[iVar2].x3 = 0x140;
 	fade_g4[iVar2].y3 = 0x100;
-	fade_g4[iVar2].r0 = (uchar)fadeVal;
-	fade_g4[iVar2].g0 = (uchar)fadeVal;
-	fade_g4[iVar2].b0 = (uchar)fadeVal;
-	fade_g4[iVar2].r1 = (uchar)fadeVal;
-	fade_g4[iVar2].g1 = (uchar)fadeVal;
-	fade_g4[iVar2].b1 = (uchar)fadeVal;
-	fade_g4[iVar2].r2 = (uchar)fadeVal;
-	fade_g4[iVar2].g2 = (uchar)fadeVal;
-	fade_g4[iVar2].b2 = (uchar)fadeVal;
-	fade_g4[iVar2].r3 = (uchar)fadeVal;
-	fade_g4[iVar2].g3 = (uchar)fadeVal;
-	fade_g4[iVar2].b3 = (uchar)fadeVal;
-	pPVar3->tag = pPVar3->tag & 0xff000000 | *(uint *)pDVar1->ot[1] & 0xffffff;
-	*(uint *)pDVar1->ot[1] = *(uint *)pDVar1->ot[1] & 0xff000000 | (uint)pPVar3 & 0xffffff;
-	fade_gt4[pDVar1->id].tag =
-		fade_gt4[pDVar1->id].tag & 0xff000000 | *(uint *)pDVar1->ot[1] & 0xffffff;
-	*(uint *)pDVar1->ot[1] =
-		*(uint *)pDVar1->ot[1] & 0xff000000 | (uint)(fade_gt4 + pDVar1->id) & 0xffffff;
-	return;*/
+
+	fade_g4[iVar2].r0 = fadeVal;
+	fade_g4[iVar2].g0 = fadeVal;
+	fade_g4[iVar2].b0 = fadeVal;
+	fade_g4[iVar2].r1 = fadeVal;
+	fade_g4[iVar2].g1 = fadeVal;
+	fade_g4[iVar2].b1 = fadeVal;
+	fade_g4[iVar2].r2 = fadeVal;
+	fade_g4[iVar2].g2 = fadeVal;
+	fade_g4[iVar2].b2 = fadeVal;
+	fade_g4[iVar2].r3 = fadeVal;
+	fade_g4[iVar2].g3 = fadeVal;
+	fade_g4[iVar2].b3 = fadeVal;
+
+	// [A] might be incorrect still
+	addPrim(pDVar1->ot + 1, pPVar3);
+	addPrim(pDVar1->ot + 1, &fade_gt4[pDVar1->id]);
+
 }
 
 
@@ -720,29 +716,37 @@ void DrawFadePoly(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DisplayMissionTitle(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((bWantFade != 0) && (CameraCnt == 1)) {
+	static int fadeVal = 0;
+
+	if ((bWantFade != 0) && (CameraCnt == 1)) 
+	{
 		bWantFade = 0;
 		bMissionTitleFade = CameraCnt;
 	}
-	if ((bMissionTitleFade != 0) && (pauseflag == 0)) {
+
+	if ((bMissionTitleFade != 0) && (pauseflag == 0)) 
+	{
 		fadeVal = fadeVal + -6;
-		if (NoPlayerControl == 0) {
-			if (gMissionTitle != (char *)0x0) {
+		if (NoPlayerControl == 0)
+		{
+			if (gMissionTitle != (char *)0x0) 
+			{
 				gShowMap = 1;
 				SetTextColour('|', 'l', '(');
 				PrintStringCentred(gMissionTitle, 0x78);
 				gShowMap = 0;
 			}
+
 			DrawFadePoly();
 		}
 		else {
 			if (fadeVal < 0) {
 				bMissionTitleFade = 0;
-				if (gInGameCutsceneActive == 0) {
+				if (gInGameCutsceneActive == 0) 
+				{
 					gStopPadReads = 0;
 				}
 				gShowMap = 0;
@@ -750,8 +754,6 @@ void DisplayMissionTitle(void)
 			}
 		}
 	}
-	return;
-	*/
 }
 
 

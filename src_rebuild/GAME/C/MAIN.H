@@ -4,6 +4,7 @@
 extern int FrameCnt;
 extern int CurrentPlayerView;
 extern int FrAng;
+extern int gStopPadReads;
 
 typedef void(*occlFunc)(int *comp_val);
 

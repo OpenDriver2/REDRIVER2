@@ -30,7 +30,6 @@ extern int gBatterPlayer;
 extern int bMissionTitleFade;
 extern int g321GoDelay;
 
-
 extern MR_MISSION Mission;
 
 extern int wantedCar[2];
@@ -42,6 +41,8 @@ extern COP_DATA gCopData;
 extern _TARGET *MissionTargets;
 extern unsigned long *MissionScript;
 extern char *MissionStrings;
+
+extern char *gMissionTitle;
 
 extern int gMultiplayerLevels;
 
