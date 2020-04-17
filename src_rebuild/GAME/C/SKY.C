@@ -145,7 +145,7 @@ void LoadSky(void)
 	int iVar8;
 	int uVar9;
 	int iVar10;
-	UV *pUVar11;
+	UV *uv;
 	unsigned char *puVar12;
 	unsigned char uVar13;
 	int iVar14;
@@ -199,49 +199,49 @@ void LoadSky(void)
 		uVar7 = uVar7 + 1;
 		x = 0x140;
 		uVar15 = 0x140;
-		pUVar11 = skytexuv + iVar10;
+		uv = skytexuv + iVar10;
 		uVar3 = (unsigned char)(iVar8 * 0x54);
 		uVar13 = uVar3 + 'S';
 		puVar12 = &skytexuv[0].u0 + (iVar10 * 8 | 6);
 		do {
 			uVar6 = (char)iVar14 * -0x80;
 			if (bVar2) {
-				pUVar11->u0 = uVar6;
-				pUVar11->v0 = uVar3;
-				pUVar11->u1 = uVar6;
-				pUVar11->v1 = uVar3;
-				pUVar11->u2 = uVar6;
+				uv->u0 = uVar6;
+				uv->v0 = uVar3;
+				uv->u1 = uVar6;
+				uv->v1 = uVar3;
+				uv->u2 = uVar6;
 				puVar12[-1] = uVar3;
 				*puVar12 = uVar6;
 			LAB_00077748:
-				pUVar11->v3 = uVar3;
+				uv->v3 = uVar3;
 			}
 			else {
 				uVar4 = uVar6 + '\x7f';
 				if (bVar1) 
 				{
-					pUVar11->u0 = uVar6;
-					pUVar11->v0 = uVar13;
-					pUVar11->u1 = uVar4;
-					pUVar11->v1 = uVar13;
-					pUVar11->u2 = uVar6;
+					uv->u0 = uVar6;
+					uv->v0 = uVar13;
+					uv->u1 = uVar4;
+					uv->v1 = uVar13;
+					uv->u2 = uVar6;
 					puVar12[-1] = uVar3;
 					*puVar12 = uVar4;
 					goto LAB_00077748;
 				}
-				pUVar11->u0 = uVar6;
-				pUVar11->v0 = uVar3;
-				pUVar11->u1 = uVar4;
-				pUVar11->v1 = uVar3;
-				pUVar11->u2 = uVar6;
+				uv->u0 = uVar6;
+				uv->v0 = uVar3;
+				uv->u1 = uVar4;
+				uv->v1 = uVar3;
+				uv->u2 = uVar6;
 				puVar12[-1] = uVar13;
 				*puVar12 = uVar4;
-				pUVar11->v3 = uVar13;
+				uv->v3 = uVar13;
 			}
 			uVar5 = GetTPage(0, 0, uVar15 & 0xffffffc0, iVar8 * 0x54 & 0x300);
 			skytpage[iVar10] = uVar5;
 			uVar5 = GetClut(x, iVar8 + 0xfc);
-			pUVar11 = pUVar11 + 1;
+			uv = uv + 1;
 			puVar12 = puVar12 + 8;
 			x = x + 0x10;
 			uVar15 = uVar15 + 0x20;
@@ -251,48 +251,55 @@ void LoadSky(void)
 		} while (iVar14 < 4);
 		bVar1 = uVar7 < 7;
 	} while ((int)uVar7 < 7);
-	if (GameLevel == 1) {
+
+	if (GameLevel == 1) 
 		uVar9 = 1;
-	}
-	else {
+	else if (GameLevel == 2)
+		uVar9 = 2;
+	else if (GameLevel == 3)
+		uVar9 = 3;
+	else
 		uVar9 = 0;
-		if (1 < GameLevel) {
-			if (GameLevel == 2) {
-				uVar9 = 2;
-			}
-			else {
-				if (GameLevel == 3) {
-					uVar9 = 3;
-				}
-			}
-		}
-	}
-	if (gWeather - 1U < 2) {
+
+	if (gWeather - 1U < 2) 
+	{
 		offset = 0x20000;
 		iVar10 = offset;
-		if (gTimeOfDay == 3) {
+		if (gTimeOfDay == 3)
+		{
 			offset = 0x10000;
 			iVar10 = offset;
 		}
 	}
-	else {
-		if (gTimeOfDay == 1) {
+	else 
+	{
+		if (gTimeOfDay == 1) 
+		{
 			offset = 0;
 			iVar10 = offset;
 		}
-		else {
-			if (gTimeOfDay < 2) {
-				if (gTimeOfDay != 0) goto LAB_000778d4;
+		else 
+		{
+			if (gTimeOfDay < 2) 
+			{
+				if (gTimeOfDay != 0)
+					goto LAB_000778d4;
+
 				offset = 0x30000;
 				iVar10 = offset;
 			}
-			else {
-				if (gTimeOfDay == 2) {
+			else 
+			{
+				if (gTimeOfDay == 2)
+				{
 					iVar10 = 0x40000;
 				}
-				else {
+				else 
+				{
 					iVar10 = 0x10000;
-					if (gTimeOfDay != 3) goto LAB_000778d4;
+
+					if (gTimeOfDay != 3)
+						goto LAB_000778d4;
 				}
 			}
 		}
@@ -307,7 +314,9 @@ LAB_000778d4:
 	rect.y = 0;
 	rect.w = 0x80;
 	rect.h = 0x100;
+
 	LoadImage(&rect, (u_long *)_frontend_buffer);
+
 	DrawSync(0);
 }
 
@@ -339,16 +348,18 @@ void DrawSkyDome(void)
 {
 	calc_sky_brightness();
 
-	if (2250 < camera_angle.vy - 1450) 
+	// [A] temporarily disabled angle checks
+
+	//if ((camera_angle.vy - 1450 < 2251))
 		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
 
-	if (camera_angle.vy - 651 < 1799)
+	//if (!(camera_angle.vy - 651 < 1799))
 		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
 
-	if (camera_angle.vy - 1701 < 1749)
+	//if (!(camera_angle.vy - 1701 < 1749))
 		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
 
-	if (2300 < camera_angle.vy - 400)
+	//if ((camera_angle.vy - 400 < 0x8fd))
 		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
 }
 
@@ -1071,12 +1082,11 @@ extern _pct plotContext;
 
 POLYFT4* scratchPad_skyPolygonsPtr;		// 1f80003c
 DVECTOR scratchPad_skyVertices[256];	// 1f800044
+short scratchPad_zbuff[256];
 
 // [D]
 void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
-	short sVar1;
-	DB *pDVar2;
 	POLYFT4 *pPVar3;
 	POLY_FT4 *local_t2_64;
 
@@ -1173,20 +1183,20 @@ static long skyblue = 0x80;
 	MTC2(*(uint*)((char*)r2+4), 5);
 
 #define gte_stsxy3( r0, r1, r2 )	\
-	*(uint*)((char*)r0+0) = MFC2(12);\
-	*(uint*)((char*)r1+0) = MFC2(13);\
-	*(uint*)((char*)r2+0) = MFC2(14);
+	*(uint*)((char*)r0+0) = SXY0;\
+	*(uint*)((char*)r1+0) = SXY1;\
+	*(uint*)((char*)r2+0) = SXY2;
 
 #define gte_rtpt() docop2(0x280030);
 
 #define gte_stdp( r0 ) \
-	*(uint*)((char*)r0 + 0) = MFC2(8); \
+	*(uint*)((char*)r0 + 0) = IR0; \
 
 #define gte_stflg( r0 ) \
-	*(uint*)((char*)r0+0) = CFC2(31);
+	*(uint*)((char*)r0+0) = FLAG;
 
 #define gte_stszotz( r0 ) \
-	*(uint*)((char*)r0+0) = MFC2(19) >> 2;
+	*(uint*)((char*)r0+0) = SZ3 >> 2;
 
 // TODO: GTEMAC
 #define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
@@ -1201,123 +1211,100 @@ static long skyblue = 0x80;
 void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 {
 	unsigned char bVar1;
-	bool bVar2;
-	DVECTOR DVar3;
-	//undefined4 in_zero;
-	//undefined4 in_at;
+
 	uint uVar4;
-	short sVar5;
+
 	SVECTOR *pSVar6;
-	DVECTOR *pDVar7;
-	DVECTOR *pDVar8;
-	DVECTOR *pDVar9;
-	DVECTOR *pDVar10;
-	SVECTOR *local_t1_136;
-	SVECTOR *pSVar11;
-	SVECTOR *pSVar12;
+	
+	DVECTOR *dv0;
+	DVECTOR *dv1;
+	DVECTOR *dv2;
+
+	SVECTOR *v0;
+	SVECTOR *v1;
+	SVECTOR *v2;
+
 	int iVar13;
-	int iVar14;
-	POLYFT4 *pPVar15;
-	unsigned char *pbVar16;
+	unsigned char *pbVar14;
+	unsigned char *pbVar15;
+	uint uVar16;
 	uint uVar17;
-	uint uVar18;
+
+	short *zbuff;
 	int p;
 	int flag;
 	int z;
 
 	pSVar6 = (SVECTOR *)model->vertices;
 	uVar4 = (uint)model->num_vertices + 3;
-	iVar14 = 0;
-	if (uVar4 != 0) {
-		pDVar7 = scratchPad_skyVertices + 0x7f;
-		pDVar10 = scratchPad_skyVertices + 2;
-		pDVar9 = scratchPad_skyVertices + 1;
-		pDVar8 = scratchPad_skyVertices;
-		pSVar12 = pSVar6 + 2;
-		pSVar11 = pSVar6 + 1;
-		local_t1_136 = pSVar6;
-		do {
-			gte_RotTransPers3(local_t1_136, pSVar11, pSVar12, pDVar8, pDVar9, pDVar10, &p, &flag, &iVar13);
 
-			/*
-			//gte_ldv3
-			setCopReg(2, in_zero, *(undefined4 *)local_t1_136);
-			setCopReg(2, in_at, *(undefined4 *)&local_t1_136->vz);
-			setCopReg(2, uVar4, *(undefined4 *)pSVar11);
-			setCopReg(2, pSVar6, *(undefined4 *)&pSVar11->vz);
-			setCopReg(2, pDVar7, *(undefined4 *)pSVar12);
-			setCopReg(2, horizontaboffset, *(undefined4 *)&pSVar12->vz);
+	iVar13 = 0;
 
-			// gte_rtpt
-			copFunction(2, 0x280030); 
-
-			// gte_stsxy3 r4,r5,r6
-			DVar3 = (DVECTOR)getCopReg(2, 0xc);
-			*pDVar8 = DVar3;
-			DVar3 = (DVECTOR)getCopReg(2, 0xd);
-			*pDVar9 = DVar3;
-			DVar3 = (DVECTOR)getCopReg(2, 0xe);
-			*pDVar10 = DVar3;
-
-			// gte_stdp r7
-			getCopReg(2, 8);
-
-			// gte_stflg r8
-			getCopControlWord(2, 0xf800);
-
-			// gte_stszotz r9
-			iVar13 = getCopReg(2, 0x9800);
-			*/
-			pDVar10 = pDVar10 + 3;
-			pDVar9 = pDVar9 + 3;
-			pDVar8 = pDVar8 + 3;
-			pSVar12 = pSVar12 + 3;
-			pSVar11 = pSVar11 + 3;
-			local_t1_136 = local_t1_136 + 3;
-			iVar14 = iVar14 + 3;
-			//pSVar6 = (SVECTOR *)(0x1080 + -(iVar13 >> 2 & 0xffffU));
-			sVar5 = (short)(0x1080 + -(iVar13 >> 2 & 0xffffU));;
-			pDVar7[1].vx = sVar5;
-			pDVar7->vy = sVar5;
-			pDVar7->vx = sVar5;
-			bVar2 = iVar14 < (int)((uint)model->num_vertices + 3);
-			uVar4 = (uint)bVar2;
-			pDVar7 = (DVECTOR *)&pDVar7[1].vy;
-		} while (bVar2);
-	}
-	if (-1 < scratchPad_skyVertices[132].vx) 
+	if (uVar4 != 0) 
 	{
-		pPVar15 = (POLYFT4 *)model->poly_block;
-		uVar18 = skyred;
-		uVar17 = skygreen;
-		//DAT_1f80001c = 0x1f800240;
+		zbuff = scratchPad_zbuff;
+
+		dv2 = scratchPad_skyVertices + 2;
+		dv1 = scratchPad_skyVertices + 1;
+		dv0 = scratchPad_skyVertices;
+
+		v2 = pSVar6 + 2;
+		v1 = pSVar6 + 1;
+		v0 = pSVar6;
+
+		do {
+			
+			gte_RotTransPers3(v0, v1, v2, dv0, dv1, dv2, &p, &flag, &z);
+
+			dv2 += 3;
+			dv1 += 3;
+			dv0 += 3;
+
+			v2 += 3;
+			v1 += 3;
+			v0 += 3;
+
+			iVar13 += 3;
+
+			zbuff[2] = z;
+			zbuff[1] = z;
+			zbuff[0] = z;
+
+			zbuff += 3;
+		} while (iVar13 < (int)((uint)model->num_vertices + 3));
+	}
+
+	if (0 < scratchPad_zbuff[10])
+	{
+		pbVar14 = (unsigned char *)model->poly_block;
+		uVar17 = skyred;
+		uVar16 = skygreen;
+
+		//DAT_1f80001c = SHORT_ARRAY_1f800240;
 		uVar4 = skyblue;
-		iVar14 = 0;
+		iVar13 = 0;
 		//DAT_1f800018 = model;
 
 		if (model->num_polys != 0) 
 		{
-			pbVar16 = HorizonTextures + horizontaboffset;
+			pbVar15 = HorizonTextures + horizontaboffset;
 			do {
-				if (iVar14 == 0xc) 
-				{
-					uVar18 = uVar18 >> 1;
+				if (iVar13 == 0xc) {
 					uVar17 = uVar17 >> 1;
+					uVar16 = uVar16 >> 1;
 					uVar4 = uVar4 >> 1;
 				}
+				bVar1 = *pbVar15;
+				pbVar15 = pbVar15 + 1;
 
-				bVar1 = *pbVar16;
-				pbVar16 = pbVar16 + 1;
 
-				scratchPad_skyPolygonsPtr = pPVar15;
+				scratchPad_skyPolygonsPtr = (POLYFT4*)pbVar14; //_DAT_1f80003c = pbVar14;
 
-				PlotSkyPoly((uint)bVar1, uVar18, uVar17, uVar4, sky_y_offset[GameLevel]);
+				PlotSkyPoly((uint)bVar1, uVar17, uVar16, uVar4, sky_y_offset[GameLevel]);
 
-				iVar14 = iVar14 + 1;
-
-				pPVar15 = (POLYFT4 *)(&pPVar15->id + PolySizes[pPVar15->id]);
-
-			} while (iVar14 < (int)(uint)model->num_polys);
+				iVar13 = iVar13 + 1;
+				pbVar14 = pbVar14 + PolySizes[*pbVar14];
+			} while (iVar13 < (int)(uint)model->num_polys);
 		}
 	}
 }
