@@ -108,6 +108,7 @@ SVECTOR camera_angle = { 0,0,0 };
 
 #define gte_rtv0() docop2(0x480012);
 
+// Not correct yet
 #define gte_stlvnl( r0 )\
 	*(uint*)((char*)r0) = CFC2(25);\
 	*(uint*)((char*)r0+4) = CFC2(26);\
@@ -164,18 +165,7 @@ void InitCamera(_PLAYER *lp)
 			// [A]
 			gte_SetRotMatrix(&car_data[iVar2].hd.where);
 
-			//setCopControlWord(2, 0, *(undefined4 *)car_data[iVar2].hd.where.m);
-			//setCopControlWord(2, 0x800, *(undefined4 *)(car_data[iVar2].hd.where.m + 2));
-			//setCopControlWord(2, 0x1000, *(undefined4 *)(car_data[iVar2].hd.where.m + 4));
-			//setCopControlWord(2, 0x1800, *(undefined4 *)(car_data[iVar2].hd.where.m + 6));
-			//setCopControlWord(2, 0x2000, *(undefined4 *)(car_data[iVar2].hd.where.m + 8));
-
 			gte_SetTransMatrix(&car_data[iVar2].hd.where);
-
-			//setCopControlWord(2, 0x2800, car_data[iVar2].hd.where.t[0]);
-			//setCopControlWord(2, 0x3000, car_data[iVar2].hd.where.t[1]);
-			//setCopControlWord(2, 0x3800, car_data[iVar2].hd.where.t[2]);
-
 
 			// [A]
 			pCVar3 = car_data[iVar2].ap.carCos;
@@ -193,21 +183,7 @@ void InitCamera(_PLAYER *lp)
 			basePos[1] = MAC2;
 			basePos[2] = MAC3;
 
-			//gte_ApplyRotMatrix(&boxDisp, &basePos);
-
-			baseDir = car_data[iVar2].hd.direction;
-
-			// gte_ldv0?
-			//setCopReg(2, in_zero, boxDisp._0_4_);
-			//setCopReg(2, in_at, boxDisp._4_4_);
-
-			//docop2(0x480012);
-
-			// gte_stlvnl
-			//basePos[0] = getCopReg(2, 0x19);
-			//basePos[1] = getCopReg(2, 0x1a);
-			//basePos[2] = getCopReg(2, 0x1b);
-			
+			baseDir = car_data[iVar2].hd.direction;			
 		}
 
 		bVar1 = lp->cameraView;

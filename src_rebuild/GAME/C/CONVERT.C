@@ -212,9 +212,11 @@ void BuildWorldMatrix(void)
 	newmatrix.m[0][0] = 0x1000;
 	newmatrix.m[1][0] = 0;
 	newmatrix.m[2][0] = 0;
+
 	newmatrix.m[0][1] = 0;
 	newmatrix.m[1][1] = 0x1000;
 	newmatrix.m[2][1] = 0;
+
 	newmatrix.m[0][2] = 0;
 	newmatrix.m[1][2] = 0;
 	newmatrix.m[2][2] = 0x1000;
@@ -290,15 +292,19 @@ void ScaleCamera(void)
 	tempang.vy = camera_angle.vy;
 	RotMatrixYXZ(&tempang, &temp);
 	InvertMatrix(&temp, &temp2);
+
 	scale.m[0][0] = 0x1000;
 	scale.m[0][1] = 0;
 	scale.m[0][2] = 0;
+
 	scale.m[1][0] = 0;
 	scale.m[1][1] = 0x1000;
 	scale.m[1][2] = 0;
+
 	scale.m[2][0] = 0;
 	scale.m[2][1] = 0;
 	scale.m[2][2] = 0x1000;
+
 	MulMatrix0(&scale, &inv_camera_matrix, &scaledcammat);
 	TransMatrix(&scaledcammat, &pos);
 	SetRotMatrix(&scaledcammat);
