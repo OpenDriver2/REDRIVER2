@@ -12,6 +12,8 @@
 #include "DR2ROADS.H"
 #include "SYSTEM.H"
 #include "OBJCOLL.H"
+#include "PAD.H"
+#include "PLAYERS.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
@@ -315,57 +317,66 @@ void InitCamera(_PLAYER *lp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char inGameCamera[4] = {
+	1,0,2,1
+};
+
+// [D] [A] - wierd addresses but must be decompiled OK
 void ModifyCamera(void)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort *puVar1;
-	char cVar2;
-	int iVar3;
-	char *pcVar4;
+	unsigned char bVar2;
+	_PLAYER *pPVar3;
+	char *pbVar4;
 	uint uVar5;
 	int iVar6;
-	char *pcVar7;
-	int iVar8;
 
-	if ((((NoPlayerControl == 0) && (cameraview != 6)) && (events.cameraEvent == (_EVENT *)0x0)) &&
-		(NumPlayers == 1)) {
-		pcVar7 = &padbuffer + (uint)NumPlayers * 0x48;
-		iVar8 = (uint)NumPlayers * 0x74 + 0xd96b4;
-		while (iVar3 = iVar8, (char *)0xd92b7 < pcVar7) {
-			puVar1 = (ushort *)(pcVar7 + 0xc);
-			pcVar7 = pcVar7 + -0x48;
-			iVar8 = iVar3 + -0x74;
-			if ((*puVar1 & 0x100) != 0) {
-				if (*(int *)(iVar3 + 0x3c) != FrameCnt + -1) {
-					pcVar4 = &inGameCamera;
-					cVar2 = inGameCamera;
-					while (pcVar4 = pcVar4 + 1, cVar2 != *(char *)(iVar3 + 0x44)) {
-						if (s__000aa109 + 1 < pcVar4) goto LAB_0001fb48;
-						cVar2 = *pcVar4;
-						pcVar4 = pcVar4;
+	int i;
+
+	if ((((NoPlayerControl == 0) && (cameraview != 6)) && (events.cameraEvent == NULL)) && (NumPlayers == 1)) 
+	{
+		for(i = 0; i < NumPlayers; i++)
+		{
+			pPVar3 = &player[i];
+
+			if ((Pads[i].mapped & 0x100) != 0)
+			{
+				if ((pPVar3->viewChange != FrameCnt + -1) && (true)) 
+				{
+					pbVar4 = inGameCamera;
+					bVar2 = inGameCamera[0];
+
+					while (pbVar4 = pbVar4 + 1, bVar2 != pPVar3->cameraView)
+					{
+						if (inGameCamera + 2 < pbVar4)
+							goto LAB_0001fb48;
+
+						bVar2 = *pbVar4;
+						pbVar4 = pbVar4;
 					}
-					*(char *)(iVar3 + 0x44) = pcVar4[1];
+
+					pPVar3->cameraView = pbVar4[1];
 				}
+
 			LAB_0001fb48:
-				*(int *)(iVar3 + 0x3c) = FrameCnt;
-				if (*(char *)(iVar3 + 0x44) == '\x01') {
+				pPVar3->viewChange = FrameCnt;
+
+				if (pPVar3->cameraView == '\x01')
+				{
 					uVar5 = baseDir + 0x800U & 0xfff;
-					if ((int)*(char *)(iVar3 + 0x49) < 1) {
+
+					if ((int)pPVar3->cameraCarId < 1)
 						iVar6 = 0x168;
-					}
-					else {
-						iVar6 = (int)((car_data[(int)*(char *)(iVar3 + 0x49)].ap.carCos)->colBox).vz;
-					}
-					*(int *)(iVar3 + 0x18) =
-						basePos[0] + ((int)rcossin_tbl[uVar5 * 2] * (iVar6 + -0x3c) + 0x800 >> 0xc);
-					*(int *)(iVar3 + 0x20) =
-						basePos[2] + ((int)rcossin_tbl[uVar5 * 2 + 1] * (iVar6 + -0x3c) + 0x800 >> 0xc);
+					else
+						iVar6 = (int)((car_data[(int)pPVar3->cameraCarId].ap.carCos)->colBox).vz;
+
+
+					(pPVar3->cameraPos).vx = basePos[0] + ((int)rcossin_tbl[uVar5 * 2] * (iVar6 + -0x3c) + 0x800 >> 0xc);
+					(pPVar3->cameraPos).vz = basePos[2] + ((int)rcossin_tbl[uVar5 * 2 + 1] * (iVar6 + -0x3c) + 0x800 >> 0xc);
 				}
 			}
 		}
 	}
-	return;*/
 }
 
 
@@ -568,50 +579,57 @@ int CameraCollisionCheck(void)
 	/* end block 3 */
 	// End Line: 2115
 
+// [D]
 void TurnHead(_PLAYER *lp)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 
-	if ((paddCamera & 3) == 3) {
-		if (pPlayerPed != (PEDESTRIAN *)0x0) {
+	if ((paddCamera & 3) == 3) 
+	{
+		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = 0;
-		}
+
 		goto LAB_00020ae8;
 	}
-	if ((paddCamera & 1) == 0) {
-		if ((paddCamera & 2) == 0) {
-			if (pPlayerPed != (PEDESTRIAN *)0x0) {
+
+	if ((paddCamera & 1) == 0) 
+	{
+		if ((paddCamera & 2) == 0)
+		{
+			if (pPlayerPed != NULL)
 				pPlayerPed->head_rot = 0;
-			}
+
 			lp->headTimer = '\0';
 			lp->headTarget = 0;
 			goto LAB_00020ae8;
 		}
-		if (pPlayerPed != (PEDESTRIAN *)0x0) {
+
+		if (pPlayerPed != NULL) 
 			pPlayerPed->head_rot = -0x200;
-		}
+
 		bVar1 = lp->headTimer;
-		if (1 < bVar1) {
+		if (1 < bVar1) 
+		{
 			lp->headTarget = -0x4000000;
 			goto LAB_00020ae8;
 		}
 	}
-	else {
-		if (pPlayerPed != (PEDESTRIAN *)0x0) {
+	else
+	{
+		if (pPlayerPed != NULL) 
 			pPlayerPed->head_rot = 0x200;
-		}
+
 		bVar1 = lp->headTimer;
-		if (1 < bVar1) {
+		if (1 < bVar1) 
+		{
 			lp->headTarget = 0x4000000;
 			goto LAB_00020ae8;
 		}
 	}
+
 	lp->headTimer = bVar1 + 1;
 LAB_00020ae8:
 	lp->headPos = lp->headPos + (lp->headTarget - lp->headPos >> 1);
-	return;*/
 }
 
 

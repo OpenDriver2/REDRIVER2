@@ -1695,84 +1695,107 @@ void StepGame(void)
 	unsigned char *puVar4;
 	_PLAYER *pPVar5;
 
-	if (CameraCnt == 3) {
+	if (CameraCnt == 3) 
+	{
 		StartXM(0);
 	}
-	if (doSpooling != 0) {
+
+	if (doSpooling != 0) 
+	{
 		CheckValidSpoolData();
 		ControlMap();
 	}
-	if (gTimeOfDay == 3) {
+
+	if (gTimeOfDay == 3) 
 		PreLampStreak();
-	}
+
 	UpdatePadData();
-	if (FrameCnt == 5) {
+	if (FrameCnt == 5) 
 		SetDispMask(1);
-	}
-	if (((padd & 0x2000U) != 0) && ((padd & 0x8000U) != 0)) {
+
+	if (((padd & 0x2000U) != 0) && ((padd & 0x8000U) != 0)) 
 		padd = padd & 0x5fff;
-	}
+
 	uVar3 = (uint)NumPlayers;
 	controller_bits = padd;
-	if (NumPlayers != 0) {
+	if (NumPlayers != 0)
+	{
 		pPVar5 = player;
 		do {
 			cVar1 = (pPVar5->horn).time;
-			if ((cVar1 == '\0') || ((pPVar5->horn).on == '\0')) {
+			if ((cVar1 == '\0') || ((pPVar5->horn).on == '\0')) 
 				(pPVar5->horn).time = '\0';
-			}
-			else {
+			else 
 				(pPVar5->horn).time = cVar1 + -1;
-			}
+
 			uVar3 = uVar3 - 1;
 			pPVar5 = pPVar5 + 1;
 		} while (uVar3 != 0);
 	}
+
 	ModifyCamera();
+
 	lis_pos.vx = camera_position.vx;
 	lis_pos.vy = camera_position.vy;
 	lis_pos.vz = camera_position.vz;
 	lis_pos.pad = camera_position.pad;
+
 	FrAng = ratan2(0xa0, scr_z);
-	if ((gTimeInWater == 0) || (gSinkingTimer < 100)) {
+
+	if ((gTimeInWater == 0) || (gSinkingTimer < 100)) 
+	{
 		gStopPadReads = 1;
 		TargetCar = 0;
 		cameraview = 0;
 		gSinkingTimer = gSinkingTimer + -1;
 		gCameraAngle = gCameraAngle - 0x16U & 0xfff;
-		if (gCameraDistance < 1000) {
+
+		if (gCameraDistance < 1000) 
+		{
 			gCameraMaxDistance = gCameraMaxDistance + 8;
 			gCameraDistance = gCameraDistance + 8;
 		}
+
 		if (-1000 < CameraPos.vy) {
 			CameraPos.vy = CameraPos.vy + -8;
 		}
+
 		if (gSinkingTimer < 0) {
 			EnablePause(PAUSEMODE_GAMEOVER);
 		}
 	}
-	if (gTimeOfDay == 1) {
+
+	if (gTimeOfDay == 1)
+	{
 		gLightsOn = 0;
 		iVar2 = 0x4e;
-		if (1 < gWeather - 1U) {
+
+		if (1 < gWeather - 1U) 
 			iVar2 = 0x80;
-		}
+
 		goto LAB_0005aea0;
 	}
-	if (gTimeOfDay < 2) {
-		if (gTimeOfDay == 0) {
+
+	if (gTimeOfDay < 2)
+	{
+		if (gTimeOfDay == 0)
+		{
 			NightAmbient = (DawnCount >> 7) + 0x1a;
 			gLightsOn = (DawnCount < 4000);
 			iVar2 = 0x60;
 			if (0x60 < NightAmbient) goto LAB_0005aea0;
 		}
 	}
-	else {
-		if (gTimeOfDay == 2) {
-			if (DawnCount < 3000) {
+	else 
+	{
+		if (gTimeOfDay == 2) 
+		{
+			if (DawnCount < 3000) 
+			{
 				gLightsOn = 0;
 			}
-			else {
+			else
+			{
 				gLightsOn = 1;
 				puVar4 = lightsOnDelay;
 				do {
@@ -1782,20 +1805,29 @@ void StepGame(void)
 					puVar4 = puVar4 + 1;
 				} while ((int)puVar4 < 0xd56e4);
 			}
+
 			NightAmbient = 0x4e;
-			if (gWeather - 1U < 2) {
+
+			if (gWeather - 1U < 2)
+			{
 				iVar2 = DawnCount >> 7;
 			}
-			else {
+			else
+			{
 				NightAmbient = 0x60;
 				iVar2 = DawnCount >> 5;
 			}
+
 			NightAmbient = NightAmbient - iVar2;
 			iVar2 = 0x2d;
-			if (NightAmbient < 0x2d) goto LAB_0005aea0;
+
+			if (NightAmbient < 0x2d)
+				goto LAB_0005aea0;
 		}
-		else {
-			if (gTimeOfDay == 3) {
+		else 
+		{
+			if (gTimeOfDay == 3) 
+			{
 				gLightsOn = 1;
 				iVar2 = 0x80;
 			LAB_0005aea0:
@@ -1803,80 +1835,94 @@ void StepGame(void)
 			}
 		}
 	}
-	if ((gWeather != 0) && (gWeather == 1)) {
+	if ((gWeather != 0) && (gWeather == 1)) 
+	{
 		DoLightning();
 		DoThunder();
 	}
-	HandleExplosion();
-	if (FastForward == 0) {
-		ColourCycle();
-	}
-	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
-	if ((NoPlayerControl != 0) && (AttractMode == 0)) {
-		ShowReplayOptions();
-	}
 
-	if ((FastForward != 0) &&
-		(uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd + -1))
+	HandleExplosion();
+
+	if (FastForward == 0)
+		ColourCycle();
+
+	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
+
+	if ((NoPlayerControl != 0) && (AttractMode == 0))
+		ShowReplayOptions();
+	
+	if ((FastForward != 0) && (uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd + -1))
 	{
-		if (0xf < uVar3) {
+		if (0xf < uVar3)
 			uVar3 = 0x20 - uVar3;
-		}
+
 		SetTextColour((uVar3 & 0x1f) << 3, '\0', '\0');
 		PrintStringFeature("Fast forward", 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
-	if ((AttractMode == 0) && (pauseflag == 0)) {
-		if (NoPlayerControl == 0) {
-			if (2 < FrameCnt) {
-				if (NumPlayers == 1) {
-					if (((paddp == 0x800) && (bMissionTitleFade == 0)) &&
-						(gInGameCutsceneActive == 0)) {
+	if ((AttractMode == 0) && (pauseflag == 0)) 
+	{
+		if (NoPlayerControl == 0) 
+		{
+			if (2 < FrameCnt)
+			{
+				if (NumPlayers == 1) 
+				{
+					if (((paddp == 0x800) && (bMissionTitleFade == 0)) && (gInGameCutsceneActive == 0))
+					{
 						EnablePause(PAUSEMODE_PAUSE);
 					}
 				}
-				else {
-					if (paddp == 0x800) {
-						EnablePause(PAUSEMODE_PAUSEP1);
-					}
-					else {
-						if ((NumPlayers == 2) && ((Pads[1].dirnew & 0x800) != 0)) {
-							EnablePause(PAUSEMODE_PAUSEP2);
-						}
-					}
+				else if (paddp == 0x800)
+				{
+					EnablePause(PAUSEMODE_PAUSEP1);
+				}
+				else if ((NumPlayers == 2) && ((Pads[1].dirnew & 0x800) != 0))
+				{
+					EnablePause(PAUSEMODE_PAUSEP2);
 				}
 			}
 			goto LAB_0005b0a8;
 		}
 	}
-	else {
+	else 
+	{
 	LAB_0005b0a8:
-		if (NoPlayerControl == 0) {
-			if (((pad_connected < 1) && (2 < FrameCnt)) &&
-				((bMissionTitleFade == 0 && (gInGameCutsceneActive == 0)))) {
+		if (NoPlayerControl == 0) 
+		{
+			if (((pad_connected < 1) && (2 < FrameCnt)) && ((bMissionTitleFade == 0 && (gInGameCutsceneActive == 0))))
+			{
 				pauseflag = 1;
 				PauseSound();
 			}
-			if ((NoPlayerControl == 0) && (NoTextureMemory != 0)) {
+
+			if ((NoPlayerControl == 0) && (NoTextureMemory != 0))
+			{
 				NoTextureMemory = NoTextureMemory + -1;
 			}
 		}
 	}
+
 	CameraChanged = '\0';
 	old_camera_change = camera_change;
-	if ((pauseflag == 0) && (NoPlayerControl != 0)) {
-		if (gInGameCutsceneActive == 0) {
+
+	if ((pauseflag == 0) && (NoPlayerControl != 0)) 
+	{
+		if (gInGameCutsceneActive == 0) 
+		{
 			iVar2 = CheckCameraChange(CameraCnt);
 			camera_change = (char)iVar2;
 			goto LAB_0005b1e0;
 		}
 	}
 	else {
-		if (gInGameCutsceneActive == 0) {
+		if (gInGameCutsceneActive == 0) 
+		{
 			camera_change = '\0';
 			goto LAB_0005b1e0;
 		}
 	}
+
 	iVar2 = CutsceneCameraChange(CameraCnt);
 	camera_change = (char)iVar2;
 LAB_0005b1e0:
@@ -1890,27 +1936,31 @@ LAB_0005b1e0:
 			paused = 0;
 		}
 	}
-	else {
-		if (((NoPlayerControl == 0) && (AttractMode == 0)) && (game_over == 0)) {
-			if (pad_connected < 1) {
+	else 
+	{
+		if (((NoPlayerControl == 0) && (AttractMode == 0)) && (game_over == 0)) 
+		{
+			if (pad_connected < 1)
 				EnablePause(PAUSEMODE_PADERROR);
-			}
-			else {
+			else 
 				EnablePause(PAUSEMODE_PAUSE);
-			}
 		}
+
 		paused = 1;
 	}
-	if ((NoPlayerControl != 0) && (AttractMode == 0)) {
+
+	if ((NoPlayerControl != 0) && (AttractMode == 0)) 
 		ControlReplay();
-	}
-	if (gRightWayUp != 0) {
+
+	if (gRightWayUp != 0) 
+	{
 		TempBuildHandlingMatrix(car_data + player[0].playerCarId, 0);
 		gRightWayUp = 0;
 	}
-	if ((AttractMode != 0) && ((paddp != 0 || (ReplayParameterPtr->RecordingEnd <= CameraCnt)))) {
+
+	if ((AttractMode != 0) && ((paddp != 0 || (ReplayParameterPtr->RecordingEnd <= CameraCnt)))) 
 		EndGame(GAMEMODE_QUIT);
-	}
+
 	UpdatePlayerInformation();
 }
 

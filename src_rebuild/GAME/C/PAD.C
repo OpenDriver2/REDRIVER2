@@ -50,10 +50,8 @@ int gVibration = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-const int PADBUFFER_SIZE = 34;
-
-static char padbuffer[2][PADBUFFER_SIZE];
-static DUPLICATION DuplicatePadData;
+char padbuffer[2][PADBUFFER_SIZE];	// [A] was static
+DUPLICATION DuplicatePadData;		// [A]
 
 // [D]
 void InitControllers(void)

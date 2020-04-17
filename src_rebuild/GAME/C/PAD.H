@@ -3,9 +3,14 @@
 
 #include "LIBPAD.H"
 
+#define PADBUFFER_SIZE 34
+
 extern int pad_connected;
 extern int numPadsConnected;
 extern int gVibration;
+
+extern char padbuffer[2][PADBUFFER_SIZE];
+extern DUPLICATION DuplicatePadData;
 
 extern void InitControllers(); // 0x0006B480
 

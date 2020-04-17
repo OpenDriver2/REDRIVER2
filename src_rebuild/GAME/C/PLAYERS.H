@@ -2,6 +2,8 @@
 #define PLAYERS_H
 
 
+extern PEDESTRIAN *pPlayerPed;
+
 extern void InitPlayer(struct _PLAYER *locPlayer, struct _CAR_DATA *cp, char carCtrlType, int direction, long (*startPos)[4], int externModel, int palette, char *padid); // 0x000739D8
 
 extern void ChangeCarPlayerToPed(int playerID); // 0x00073334
