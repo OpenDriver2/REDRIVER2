@@ -15,6 +15,10 @@ extern int CameraCnt;
 extern int TargetCar;
 
 extern SVECTOR camera_angle;
+extern int gCameraAngle;
+extern short gCameraDistance;
+extern short gCameraMaxDistance;
+extern VECTOR CameraPos;
 
 extern void InitCamera(_PLAYER *lp); // 0x0001F5F4
 

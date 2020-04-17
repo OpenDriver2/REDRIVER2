@@ -137,6 +137,7 @@ int gGotInStolenCar = 0;
 int gCopCarTheftAttempted = 0;
 int gLockPickingAttempted = 0;
 int gDontResetCarDamage = 0;
+int bMissionTitleFade = 0;
 STOPCOPS gStopCops;
 
 MR_MISSION Mission;

@@ -27,6 +27,7 @@ extern int gTimeOfDay;
 extern int gShowPlayerDamage;
 extern int gDontPingInCops;
 extern int gBatterPlayer;
+extern int bMissionTitleFade;
 
 extern int wantedCar[2];
 extern int multiplayerregions[4];

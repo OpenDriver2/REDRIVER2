@@ -19,10 +19,10 @@
 
 
 VECTOR CameraPos =
-{ 4294967251, 4294967125, 4294967171, 0 };
+{ -45, -171, -125, 0 };
 
 VECTOR camera_position =
-{ 0, 0x17c, 0, 0 };
+{ 0, 380, 0, 0 };
 
 MATRIX face_camera_work =
 { { { 4096, 0, 0 }, { 0, 4096, 0 }, { 0, 0, 4096 } }, { 0, 0, 0 } };
@@ -176,12 +176,14 @@ void InitCamera(_PLAYER *lp)
 
 
 			// [A]
-			//pCVar3 = car_data[iVar2].ap.carCos;
-			boxDisp.vx = 0; //-(pCVar3->cog).vx;
-			boxDisp.vy = -250; //-(pCVar3->cog).vy;
-			boxDisp.vz = 0; //-(pCVar3->cog).vz;
+			pCVar3 = car_data[iVar2].ap.carCos;
+			boxDisp.vx = -(pCVar3->cog).vx;
+			boxDisp.vy = -(pCVar3->cog).vy;
+			boxDisp.vz = -(pCVar3->cog).vz;
 
 			gte_ApplyRotMatrix(&boxDisp, &basePos);
+
+			baseDir = car_data[iVar2].hd.direction;
 
 			// gte_ldv0?
 			//setCopReg(2, in_zero, boxDisp._0_4_);
@@ -193,7 +195,7 @@ void InitCamera(_PLAYER *lp)
 			//basePos[0] = getCopReg(2, 0x19);
 			//basePos[1] = getCopReg(2, 0x1a);
 			//basePos[2] = getCopReg(2, 0x1b);
-			//baseDir = car_data[iVar2].hd.direction;
+			
 		}
 
 		bVar1 = lp->cameraView;
@@ -656,6 +658,8 @@ LAB_00020ae8:
 
 int maxCameraDist;
 short gCameraDistance = 0x3e8;
+short gCameraMaxDistance = 0x3e8;
+
 _CAR_DATA *jcam = NULL;
 int switch_detail_distance = 0x2710;
 

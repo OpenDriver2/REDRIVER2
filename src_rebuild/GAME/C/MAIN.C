@@ -116,8 +116,6 @@ enum LevLumpType
 
 REPLAY_STREAM ReplayStreams[8];
 
-int TargetCar = 0;
-
 int HitLeadCar = 0;
 int game_over = 0;
 int saved_counter = 0;
@@ -702,13 +700,6 @@ int IconsLoaded = 0;
 // TODO: AI.C?
 SPEECH_QUEUE gSpeechQueue;
 
-// TODO: CAMERA.C
-char cameraview = 0;
-int CameraCnt = 0;
-
-// TODO: DIRECTOR.C
-char tracking_car = 0;
-
 // OVERLAY
 int gLoadedOverlay = 0;
 
@@ -859,6 +850,7 @@ void GameInit(void)
 
 	InitialiseCarHandling();
 	ClearMem((char *)&player, 0x3a0);
+
 	InitDrivingGames();
 	InitThrownBombs();
 
@@ -1679,16 +1671,29 @@ void GameLoop(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern short paddp;
+extern short padd;
+unsigned short controller_bits = 0;
+
+VECTOR lis_pos;
+
+int gLightsOn = 0;
+int NightAmbient = 0;
+
+char CameraChanged = 0;
+char CamerasSaved = 0;
+char paused = 0;
+
+char gRightWayUp = 0;	// cheat
+
+// [D]
 void StepGame(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	char cVar1;
 	int iVar2;
 	uint uVar3;
-	uchar *puVar4;
-	_PLAYER *p_Var5;
+	unsigned char *puVar4;
+	_PLAYER *pPVar5;
 
 	if (CameraCnt == 3) {
 		StartXM(0);
@@ -1710,17 +1715,17 @@ void StepGame(void)
 	uVar3 = (uint)NumPlayers;
 	controller_bits = padd;
 	if (NumPlayers != 0) {
-		p_Var5 = &player;
+		pPVar5 = player;
 		do {
-			cVar1 = (p_Var5->horn).time;
-			if ((cVar1 == '\0') || ((p_Var5->horn).on == '\0')) {
-				(p_Var5->horn).time = '\0';
+			cVar1 = (pPVar5->horn).time;
+			if ((cVar1 == '\0') || ((pPVar5->horn).on == '\0')) {
+				(pPVar5->horn).time = '\0';
 			}
 			else {
-				(p_Var5->horn).time = cVar1 + -1;
+				(pPVar5->horn).time = cVar1 + -1;
 			}
 			uVar3 = uVar3 - 1;
-			p_Var5 = p_Var5 + 1;
+			pPVar5 = pPVar5 + 1;
 		} while (uVar3 != 0);
 	}
 	ModifyCamera();
@@ -1757,7 +1762,7 @@ void StepGame(void)
 	if (gTimeOfDay < 2) {
 		if (gTimeOfDay == 0) {
 			NightAmbient = (DawnCount >> 7) + 0x1a;
-			gLightsOn = ZEXT14(DawnCount < 4000);
+			gLightsOn = (DawnCount < 4000);
 			iVar2 = 0x60;
 			if (0x60 < NightAmbient) goto LAB_0005aea0;
 		}
@@ -1769,7 +1774,7 @@ void StepGame(void)
 			}
 			else {
 				gLightsOn = 1;
-				puVar4 = &lightsOnDelay;
+				puVar4 = lightsOnDelay;
 				do {
 					if (*puVar4 != '\0') {
 						*puVar4 = *puVar4 + -1;
@@ -1810,19 +1815,23 @@ void StepGame(void)
 	if ((NoPlayerControl != 0) && (AttractMode == 0)) {
 		ShowReplayOptions();
 	}
+
 	if ((FastForward != 0) &&
-		(uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd + -1)) {
+		(uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd + -1))
+	{
 		if (0xf < uVar3) {
 			uVar3 = 0x20 - uVar3;
 		}
-		SetTextColour((uchar)((uVar3 & 0x1f) << 3), '\0', '\0');
-		PrintStringFeature(s_Avanti_rapido_00010d0c, 100, 0x1e, 0x1000, 0x1000, 0);
+		SetTextColour((uVar3 & 0x1f) << 3, '\0', '\0');
+		PrintStringFeature("Fast forward", 100, 0x1e, 0x1000, 0x1000, 0);
 	}
+
 	if ((AttractMode == 0) && (pauseflag == 0)) {
 		if (NoPlayerControl == 0) {
 			if (2 < FrameCnt) {
 				if (NumPlayers == 1) {
-					if (((paddp == 0x800) && (bMissionTitleFade == 0)) && (gInGameCutsceneActive == 0)) {
+					if (((paddp == 0x800) && (bMissionTitleFade == 0)) &&
+						(gInGameCutsceneActive == 0)) {
 						EnablePause(PAUSEMODE_PAUSE);
 					}
 				}
@@ -1896,15 +1905,13 @@ LAB_0005b1e0:
 		ControlReplay();
 	}
 	if (gRightWayUp != 0) {
-		TempBuildHandlingMatrix(car_data + player.playerCarId, 0);
+		TempBuildHandlingMatrix(car_data + player[0].playerCarId, 0);
 		gRightWayUp = 0;
 	}
 	if ((AttractMode != 0) && ((paddp != 0 || (ReplayParameterPtr->RecordingEnd <= CameraCnt)))) {
 		EndGame(GAMEMODE_QUIT);
 	}
 	UpdatePlayerInformation();
-	return;
-	*/
 }
 
 
