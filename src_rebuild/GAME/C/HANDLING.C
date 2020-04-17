@@ -1,6 +1,6 @@
 #include "THISDUST.H"
 #include "HANDLING.H"
-
+#include "COSMETIC.H"
 
 // decompiled code
 // original method signature: 
@@ -36,63 +36,70 @@
 	/* end block 3 */
 	// End Line: 2001
 
+// [D]
 void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	int iVar2;
 	char cVar3;
 	uint uVar4;
 	int iVar5;
 
-	uVar4 = (uint)(byte)(cp->ap).model;
+	uVar4 = cp->ap.model;
 	iVar5 = (int)car_cosmetics[uVar4].wheelDisp[0].vz + (int)car_cosmetics[uVar4].wheelDisp[1].vz;
 	iVar2 = iVar5 / 5;
 	if (iVar5 < 0) {
 		iVar5 = iVar5 + 0x1f;
 	}
-	(cp->hd).direction = direction;
-	(cp->hd).autoBrake = '\0';
-	*(int *)(cp->st + 0xc) = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * iVar2 + 0x800 >> 0xc;
-	*(int *)(cp->st + 0x10) = (int)rcossin_tbl[direction & 0xffeU];
-	*(int *)(cp->st + 0x14) = rcossin_tbl[direction & 0xffeU] * iVar2 + 0x800 >> 0xc;
-	*(int *)(cp->st + 0x18) = (int)rcossin_tbl[(direction & 0xffeU) + 1];
-	*(long *)cp->st = (*startpos)[0] << 4;
-	*(long *)(cp->st + 4) = (*startpos)[1] << 4;
+	cp->hd.direction = direction;
+
+	cp->hd.autoBrake = '\0';
+
+	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * iVar2 + 0x800 >> 0xc;
+	cp->st.n.orientation[1] = (int)rcossin_tbl[direction & 0xffeU];
+	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * iVar2 + 0x800 >> 0xc;
+	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
+	cp->st.n.fposition[0] = (*startpos)[0] << 4;
+	cp->st.n.fposition[1] = (*startpos)[1] << 4;
+
 	iVar2 = (*startpos)[2];
-	*(undefined4 *)(cp->st + 0x1c) = 0;
-	*(undefined4 *)(cp->st + 0x20) = 0;
-	*(undefined4 *)(cp->st + 0x24) = 0;
-	*(undefined4 *)(cp->st + 0x28) = 0;
-	*(undefined4 *)(cp->st + 0x2c) = 0;
-	*(undefined4 *)(cp->st + 0x30) = 0;
-	(cp->hd).aacc[0] = 0;
-	(cp->hd).aacc[1] = 0;
-	(cp->hd).aacc[2] = 0;
-	(cp->hd).acc[0] = 0;
-	(cp->hd).acc[1] = 0;
-	(cp->hd).acc[2] = 0;
-	*(int *)(cp->st + 8) = iVar2 << 4;
-	RebuildCarMatrix((RigidBodyState *)cp->st, cp);
+
+	cp->st.n.linearVelocity[0] = 0;
+	cp->st.n.linearVelocity[1] = 0;
+	cp->st.n.linearVelocity[2] = 0;
+	cp->st.n.angularVelocity[0] = 0;
+	cp->st.n.angularVelocity[1] = 0;
+	cp->st.n.angularVelocity[2] = 0;
+
+	cp->hd.aacc[0] = 0;
+	cp->hd.aacc[1] = 0;
+	cp->hd.aacc[2] = 0;
+	cp->hd.acc[0] = 0;
+	cp->hd.acc[1] = 0;
+	cp->hd.acc[2] = 0;
+
+	cp->st.n.fposition[2] = iVar2 << 4;
+
+	RebuildCarMatrix((RigidBodyState *)&cp->st, cp);
+
 	uVar4 = *(uint *)((cp->hd).where.m + 2);
 	*(uint *)(cp->hd).drawCarMat.m = ~*(uint *)(cp->hd).where.m;
 	*(uint *)((cp->hd).drawCarMat.m + 2) = uVar4 ^ 0xffff;
-	*(undefined4 *)((cp->hd).drawCarMat.m + 4) = *(undefined4 *)((cp->hd).where.m + 4);
+	*(uint *)((cp->hd).drawCarMat.m + 4) = *(uint *)((cp->hd).where.m + 4);
 	*(uint *)((cp->hd).drawCarMat.m + 6) = ~*(uint *)((cp->hd).where.m + 6);
 	cVar3 = (char)(iVar5 >> 5);
 	cVar1 = '\x0e' - cVar3;
 	*(uint *)((cp->hd).drawCarMat.m + 8) = *(uint *)((cp->hd).where.m + 8) ^ 0xffff;
 	cVar3 = cVar3 + '\x0e';
-	(cp->hd).wheel[0].susCompression = cVar1;
-	(cp->hd).wheel[1].susCompression = cVar3;
-	(cp->hd).wheel[2].susCompression = cVar1;
-	(cp->hd).wheel[3].susCompression = cVar3;
+
+	cp->hd.wheel[0].susCompression = cVar1;
+	cp->hd.wheel[1].susCompression = cVar3;
+	cp->hd.wheel[2].susCompression = cVar1;
+	cp->hd.wheel[3].susCompression = cVar3;
+
 	cp->thrust = 0;
 	cp->wheel_angle = 0;
-	(cp->hd).wheel_speed = 0;
-	return;
-	*/
+	cp->hd.wheel_speed = 0;
 }
 
 
@@ -1467,10 +1474,9 @@ void initOBox(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 3709
 
+// [D]
 void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
@@ -1478,31 +1484,38 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	int iVar5;
 	int iVar6;
 
-	(cp->hd).where.t[0] = *(int *)*st >> 4;
-	(cp->hd).where.t[1] = *(int *)(*st + 4) >> 4;
-	(cp->hd).where.t[2] = *(int *)(*st + 8) >> 4;
-	iVar6 = *(int *)(*st + 0xc);
-	iVar5 = *(int *)(*st + 0x10);
-	iVar4 = *(int *)(*st + 0x14);
-	iVar3 = *(int *)(*st + 0x18);
+	cp->hd.where.t[0] = st->n.fposition[0] >> 4;
+	cp->hd.where.t[1] = st->n.fposition[1] >> 4;
+	cp->hd.where.t[2] = st->n.fposition[2] >> 4;
+
+	iVar6 = st->n.orientation[0];
+	iVar5 = st->n.orientation[1];
+	iVar4 = st->n.orientation[2];
+	iVar3 = st->n.orientation[3];
+
 	iVar2 = iVar6 * iVar6 + iVar5 * iVar5 + iVar4 * iVar4 + iVar3 * iVar3;
 	iVar1 = 0x1000;
-	if (iVar2 < 0x400) {
-		*(undefined4 *)(*st + 0x14) = 0;
-		*(undefined4 *)(*st + 0x10) = 0;
-		*(undefined4 *)(*st + 0xc) = 0;
+
+	if (iVar2 < 0x400)
+	{
+		st->n.orientation[2] = 0;
+		st->n.orientation[1] = 0;
+		st->n.orientation[0] = 0;
 	}
-	else {
+	else 
+	{
 		iVar1 = 0x1800 - (iVar2 >> 0xd);
-		*(int *)(*st + 0xc) = iVar1 * iVar6 + 0x800 >> 0xc;
-		*(int *)(*st + 0x10) = iVar1 * iVar5 + 0x800 >> 0xc;
-		*(int *)(*st + 0x14) = iVar1 * iVar4 + 0x800 >> 0xc;
+		st->n.orientation[0] = iVar1 * iVar6 + 0x800 >> 0xc;
+		st->n.orientation[1] = iVar1 * iVar5 + 0x800 >> 0xc;
+		st->n.orientation[2] = iVar1 * iVar4 + 0x800 >> 0xc;
 		iVar1 = iVar1 * iVar3 + 0x800 >> 0xc;
 	}
-	*(int *)(*st + 0x18) = iVar1;
-	LongQuaternion2Matrix((long(*)[4])(*st + 0xc), (MATRIX *)cp);
+
+	st->n.orientation[3] = iVar1;
+
+	LongQuaternion2Matrix((long(*)[4])st->n.orientation, (MATRIX *)cp);
+
 	initOBox(cp);
-	return;*/
 }
 
 
