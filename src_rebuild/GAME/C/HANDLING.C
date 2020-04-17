@@ -2,6 +2,9 @@
 #include "HANDLING.H"
 #include "COSMETIC.H"
 
+#include "GTEREG.H"
+#include "INLINE_C.H"
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitCarPhysics(struct _CAR_DATA *cp /*$s0*/, long (*startpos)[4] /*$t0*/, int direction /*$a2*/)
@@ -1285,10 +1288,9 @@ void SetShadowPoints(_CAR_DATA *c0)
 	/* end block 4 */
 	// End Line: 4834
 
+// [D]
 void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -1302,25 +1304,32 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	iVar5 = (*qua)[1];
 	iVar8 = (*qua)[2];
 	iVar7 = (*qua)[3];
+
 	sVar1 = (short)(iVar5 * iVar5 + 0x400 >> 0xb);
 	sVar2 = (short)(iVar8 * iVar8 + 0x400 >> 0xb);
 	sVar3 = (short)(iVar6 * iVar6 + 0x400 >> 0xb);
-	m->m[0] = 0x1000 - (sVar1 + sVar2);
-	m->m[4] = 0x1000 - (sVar3 + sVar2);
-	m->m[8] = 0x1000 - (sVar3 + sVar1);
+
+	m->m[0][0] = 0x1000 - (sVar1 + sVar2);
+	m->m[1][1] = 0x1000 - (sVar3 + sVar2);
+	m->m[2][2] = 0x1000 - (sVar3 + sVar1);
+
 	sVar2 = (short)(iVar8 * iVar7 + 0x400 >> 0xb);
 	sVar1 = (short)(iVar6 * iVar5 + 0x400 >> 0xb);
-	m->m[1] = sVar1 - sVar2;
+
+	m->m[0][1] = sVar1 - sVar2;
+
 	sVar3 = (short)(iVar6 * iVar8 + 0x400 >> 0xb);
 	sVar4 = (short)(iVar5 * iVar7 + 0x400 >> 0xb);
-	m->m[2] = sVar3 + sVar4;
-	m->m[3] = sVar1 + sVar2;
-	m->m[6] = sVar3 - sVar4;
+
+	m->m[0][2] = sVar3 + sVar4;
+	m->m[1][0] = sVar1 + sVar2;
+	m->m[2][0] = sVar3 - sVar4;
+
 	sVar2 = (short)(iVar6 * iVar7 + 0x400 >> 0xb);
 	sVar1 = (short)(iVar5 * iVar8 + 0x400 >> 0xb);
-	m->m[5] = sVar1 - sVar2;
-	m->m[7] = sVar1 + sVar2;
-	return;*/
+
+	m->m[1][2] = sVar1 - sVar2;
+	m->m[2][1] = sVar1 + sVar2;
 }
 
 
@@ -1357,85 +1366,83 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	/* end block 3 */
 	// End Line: 5020
 
+// [D]
 void initOBox(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	long lVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
 	short sVar2;
 	int iVar3;
-	undefined4 uVar4;
-	undefined4 uVar5;
-	undefined4 uVar6;
+	long uVar4;
+	long uVar5;
+	long uVar6;
 
-	setCopControlWord(2, 0, *(undefined4 *)(cp->hd).where.m);
-	setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).where.m + 2));
-	setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).where.m + 4));
-	setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).where.m + 6));
-	setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).where.m + 8));
-	setCopControlWord(2, 0x2800, (cp->hd).where.t[0]);
-	setCopControlWord(2, 0x3000, (cp->hd).where.t[1]);
-	setCopControlWord(2, 0x3800, (cp->hd).where.t[2]);
-	DAT_1f800000 = CONCAT22(-(((cp->ap).carCos)->cog).vy, -(((cp->ap).carCos)->cog).vx);
-	DAT_1f800004 = DAT_1f800004 & 0xffff0000 | (uint)(ushort)-(((cp->ap).carCos)->cog).vz;
-	setCopReg(2, in_zero, DAT_1f800000);
-	setCopReg(2, in_at, DAT_1f800004);
-	copFunction(2, 0x480012);
-	if (cp->controlType == '\x03') {
+	gte_SetRotMatrix(&cp->hd.where.m);
+	gte_SetTransMatrix(&cp->hd.where.t);
+
+	VX0 = -(((cp->ap).carCos)->cog).vx;
+	VY0 = -(((cp->ap).carCos)->cog).vy;
+	VZ0 = -(((cp->ap).carCos)->cog).vz;
+
+	docop2(0x480012);
+
+	if (cp->controlType == '\x03') 
+	{
 		iVar3 = (int)(((cp->ap).carCos)->colBox).vx * 0xe;
-		if (iVar3 < 0) {
+		if (iVar3 < 0)
+		{
 			iVar3 = iVar3 + 0xf;
 		}
 		sVar2 = (short)(iVar3 >> 4);
 		(cp->hd).oBox.length[0] = sVar2;
 	}
-	else {
+	else 
+	{
 		sVar2 = (((cp->ap).carCos)->colBox).vx;
 		(cp->hd).oBox.length[0] = sVar2;
 	}
-	lVar1 = getCopReg(2, 0x19);
-	(cp->hd).oBox.location.vx = lVar1;
-	lVar1 = getCopReg(2, 0x1a);
-	(cp->hd).oBox.location.vy = lVar1;
-	lVar1 = getCopReg(2, 0x1b);
-	(cp->hd).oBox.location.vz = lVar1;
-	setCopReg(2, 0x4800, (int)sVar2);
-	setCopReg(2, 0x5000, 0);
-	setCopReg(2, 0x5800, 0);
-	copFunction(2, 0x49e012);
+
+	(cp->hd).oBox.location.vx = MAC1;
+	(cp->hd).oBox.location.vy = MAC2;
+	(cp->hd).oBox.location.vz = MAC3;
+
+	IR1 = sVar2;
+	IR2 = 0;
+	IR3 = 0;
+
+	docop2(0x49e012);
+
 	sVar2 = (((cp->ap).carCos)->colBox).vy;
 	(cp->hd).oBox.length[1] = sVar2;
-	uVar4 = getCopReg(2, 0x4800);
-	uVar5 = getCopReg(2, 0x5000);
-	uVar6 = getCopReg(2, 0x5800);
-	(cp->hd).oBox.radii[0].vx = (short)uVar4;
-	(cp->hd).oBox.radii[0].vy = (short)uVar5;
-	(cp->hd).oBox.radii[0].vz = (short)uVar6;
-	setCopReg(2, 0x4800, 0);
-	setCopReg(2, 0x5000, (int)sVar2);
-	setCopReg(2, 0x5800, 0);
-	copFunction(2, 0x49e012);
+
+	(cp->hd).oBox.radii[0].vx = IR1;
+	(cp->hd).oBox.radii[0].vy = IR2;
+	(cp->hd).oBox.radii[0].vz = IR3;
+
+	IR1 = 0;
+	IR2 = sVar2;
+	IR3 = 0;
+
+	docop2(0x49e012);
+
 	sVar2 = (((cp->ap).carCos)->colBox).vz;
 	(cp->hd).oBox.length[2] = sVar2;
+
+	(cp->hd).oBox.radii[1].vx = IR1;
+	(cp->hd).oBox.radii[1].vy = IR2;
+	(cp->hd).oBox.radii[1].vz = IR3;
+
+	IR1 = 0;
+	IR2 = 0;
+	IR3 = sVar2;
+
+	docop2(0x49e012);
+
 	uVar4 = getCopReg(2, 0x4800);
 	uVar5 = getCopReg(2, 0x5000);
 	uVar6 = getCopReg(2, 0x5800);
-	(cp->hd).oBox.radii[1].vx = (short)uVar4;
-	(cp->hd).oBox.radii[1].vy = (short)uVar5;
-	(cp->hd).oBox.radii[1].vz = (short)uVar6;
-	setCopReg(2, 0x4800, 0);
-	setCopReg(2, 0x5000, 0);
-	setCopReg(2, 0x5800, (int)sVar2);
-	copFunction(2, 0x49e012);
-	uVar4 = getCopReg(2, 0x4800);
-	uVar5 = getCopReg(2, 0x5000);
-	uVar6 = getCopReg(2, 0x5800);
-	(cp->hd).oBox.radii[2].vx = (short)uVar4;
-	(cp->hd).oBox.radii[2].vy = (short)uVar5;
-	(cp->hd).oBox.radii[2].vz = (short)uVar6;
-	return;*/
+
+	(cp->hd).oBox.radii[2].vx = IR1;
+	(cp->hd).oBox.radii[2].vy = IR2;
+	(cp->hd).oBox.radii[2].vz = IR3;
 }
 
 
