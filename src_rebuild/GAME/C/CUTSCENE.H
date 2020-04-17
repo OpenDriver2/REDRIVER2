@@ -3,6 +3,9 @@
 
 extern int gInGameCutsceneActive;
 extern int gInGameCutsceneDelay;
+extern int gInGameChaseActive;
+extern int gInGameCutsceneID;
+extern int gThePlayerCar;
 
 extern void InitInGameCutsceneVariables(); // 0x000325C0
 

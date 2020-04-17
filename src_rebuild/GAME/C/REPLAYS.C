@@ -5,6 +5,8 @@ char AnalogueUnpack[] = { 0, 0xCD, 0xC1, 0xB5, 0xA9, 0x9D, 0x91, 0x85, 0, 0x33, 
 
 int gOutOfTape = 0;
 
+REPLAY_PARAMETER_BLOCK *ReplayParameterPtr = NULL;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitPadRecording()

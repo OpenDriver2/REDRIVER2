@@ -30,6 +30,11 @@ extern int gBatterPlayer;
 extern int bMissionTitleFade;
 extern int g321GoDelay;
 
+extern int requestStationaryCivCar;
+extern int numCivCars;
+extern int maxCivCars;
+extern int numParkedCars;
+
 extern MR_MISSION Mission;
 
 extern int wantedCar[2];

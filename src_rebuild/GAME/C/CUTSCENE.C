@@ -3,6 +3,9 @@
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
+int gInGameChaseActive = 0;
+int gInGameCutsceneID = -1;
+int gThePlayerCar = -1;
 
 // decompiled code
 // original method signature: 

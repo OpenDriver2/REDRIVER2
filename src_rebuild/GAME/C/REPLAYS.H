@@ -2,6 +2,7 @@
 #define REPLAYS_H
 
 extern int gOutOfTape;
+extern REPLAY_PARAMETER_BLOCK *ReplayParameterPtr;
 
 extern void InitPadRecording(); // 0x0001A09C
 

@@ -115,36 +115,38 @@ xa_request xa_data[26] = {
 	// End Line: 177
 
 char GetMissionSound(char id)
-
 {
-  byte bVar1;
-  long lVar2;
-  uint uVar3;
-  char *pcVar4;
-  uint uVar5;
-  
-  bVar1 = (&missionstarts)[gCurrentMissionNumber];
-  uVar5 = (uint)bVar1;
-  lVar2 = Random2(5);
-  if (bVar1 != 0xff) {
-    uVar3 = 1;
-    do {
-      bVar1 = (&missionstarts)[gCurrentMissionNumber + (uVar3 & 0xff)];
-      uVar3 = (uVar3 & 0xff) + 1;
-    } while (bVar1 == 0xff);
-    while (uVar5 < (uint)bVar1) {
-      uVar3 = uVar5 + 1;
-      if (id_map[uVar5].in == id) {
-        pcVar4 = &id_map[uVar5].out;
-        if ((uVar3 != (uint)bVar1) && (pcVar4 = &id_map[uVar5].out, id_map[uVar3].in == id)) {
-          pcVar4 = &id_map[uVar5 + (lVar2 % 2 & 0xffU)].out;
-        }
-        return *pcVar4 + phrase_top;
-      }
-      uVar5 = uVar3 & 0xff;
-    }
-  }
-  return -1;
+	UNIMPLEMENTED();
+	return -1;
+	/*
+	byte bVar1;
+	long lVar2;
+	uint uVar3;
+	char *pcVar4;
+	uint uVar5;
+
+	bVar1 = (&missionstarts)[gCurrentMissionNumber];
+	uVar5 = (uint)bVar1;
+	lVar2 = Random2(5);
+	if (bVar1 != 0xff) {
+		uVar3 = 1;
+		do {
+			bVar1 = (&missionstarts)[gCurrentMissionNumber + (uVar3 & 0xff)];
+			uVar3 = (uVar3 & 0xff) + 1;
+		} while (bVar1 == 0xff);
+		while (uVar5 < (uint)bVar1) {
+			uVar3 = uVar5 + 1;
+			if (id_map[uVar5].in == id) {
+				pcVar4 = &id_map[uVar5].out;
+				if ((uVar3 != (uint)bVar1) && (pcVar4 = &id_map[uVar5].out, id_map[uVar3].in == id)) {
+					pcVar4 = &id_map[uVar5 + (lVar2 % 2 & 0xffU)].out;
+				}
+				return *pcVar4 + phrase_top;
+			}
+			uVar5 = uVar3 & 0xff;
+		}
+	}
+	return -1;*/
 }
 
 
@@ -173,26 +175,27 @@ char GetMissionSound(char id)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void RequestXA(void)
-
 {
-  __xa_request *p_Var1;
-  __xa_request *p_Var2;
-  
-  xa._0_4_ = CONCAT22(xa._2_2_,0xffff);
-  xa._4_2_ = xa._4_2_ & 0xff00;
-  p_Var2 = xa_data;
-  if (-1 < xa_data[0].mission) {
-    do {
-      if (((int)p_Var2->mission == gCurrentMissionNumber) &&
-         ((int)p_Var2->cutscene == gInGameCutsceneID)) {
-        xa._0_4_ = *(undefined4 *)p_Var2;
-        xa._4_2_ = *(ushort *)&p_Var2->mission;
-      }
-      p_Var1 = p_Var2 + 1;
-      p_Var2 = p_Var2 + 1;
-    } while (-1 < p_Var1->mission);
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	__xa_request *p_Var1;
+	__xa_request *p_Var2;
+
+	xa._0_4_ = CONCAT22(xa._2_2_, 0xffff);
+	xa._4_2_ = xa._4_2_ & 0xff00;
+	p_Var2 = xa_data;
+	if (-1 < xa_data[0].mission) {
+		do {
+			if (((int)p_Var2->mission == gCurrentMissionNumber) &&
+				((int)p_Var2->cutscene == gInGameCutsceneID)) {
+				xa._0_4_ = *(undefined4 *)p_Var2;
+				xa._4_2_ = *(ushort *)&p_Var2->mission;
+			}
+			p_Var1 = p_Var2 + 1;
+			p_Var2 = p_Var2 + 1;
+		} while (-1 < p_Var1->mission);
+	}
+	return;*/
 }
 
 
@@ -226,19 +229,20 @@ void RequestXA(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void HandleRequestedXA(void)
-
 {
-  if ((xa.cutscene == '\0') && (xa.mission != '\0')) {
-    PrepareXA();
-    xa.mission = '\0';
-  }
-  if (xa.delay == 0) {
-    PlayXA((int)xa.bank,(int)xa.track);
-  }
-  if (-1 < xa.delay) {
-    xa.delay = xa.delay + -1;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if ((xa.cutscene == '\0') && (xa.mission != '\0')) {
+		PrepareXA();
+		xa.mission = '\0';
+	}
+	if (xa.delay == 0) {
+		PlayXA((int)xa.bank, (int)xa.track);
+	}
+	if (-1 < xa.delay) {
+		xa.delay = xa.delay + -1;
+	}
+	return;*/
 }
 
 
@@ -272,22 +276,24 @@ void HandleRequestedXA(void)
 	// End Line: 992
 
 void InitializeCutsceneSound(int cutscene)
-
 {
-  char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  
-  cutscene_timer = 0;
-  iVar3 = 0;
-  do {
-    pcVar1 = &force_idle + iVar3;
-    pcVar2 = &force_siren + iVar3;
-    iVar3 = iVar3 + 1;
-    *pcVar1 = -1;
-    *pcVar2 = '\0';
-  } while (iVar3 < 8);
-  return;
+	UNIMPLEMENTED();
+	/*
+	char *pcVar1;
+	char *pcVar2;
+	int iVar3;
+
+	cutscene_timer = 0;
+	iVar3 = 0;
+	do {
+		pcVar1 = &force_idle + iVar3;
+		pcVar2 = &force_siren + iVar3;
+		iVar3 = iVar3 + 1;
+		*pcVar1 = -1;
+		*pcVar2 = '\0';
+	} while (iVar3 < 8);
+	return;
+	*/
 }
 
 
@@ -355,139 +361,141 @@ void InitializeCutsceneSound(int cutscene)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoCutsceneSound(void)
-
 {
-  char cVar1;
-  undefined3 extraout_var;
-  undefined3 extraout_var_00;
-  
-  cutscene_timer = cutscene_timer + 1;
-  switch(gCurrentMissionNumber) {
-  case 2:
-    if (gInGameCutsceneID != 1) {
-      return;
-    }
-    if (0x4a < cutscene_timer) {
-      s__000aafd1[0] = -1;
-      return;
-    }
-    goto LAB_0005dcfc;
-  case 5:
-    if (gInGameCutsceneID != 0) {
-      return;
-    }
-    if (cutscene_timer < 0x97) {
-      if (0x8c < cutscene_timer) {
-        CHAR_00h_000aafe1 = '\x01';
-        CHAR_00h_000aafe2 = '\0';
-        return;
-      }
-      CHAR_00h_000aafe1 = '\0';
-      CHAR_00h_000aafe2 = '\0';
-      return;
-    }
-    goto LAB_0005db74;
-  case 7:
-    if (gInGameCutsceneID == 0) {
-      if (cutscene_timer < 100) {
-        s__000aafd1[0] = '\0';
-      }
-      else {
-        s__000aafd1[0] = -1;
-      }
-    }
-    if (gInGameCutsceneID != 1) {
-      return;
-    }
-    goto LAB_0005dcfc;
-  case 0x12:
-    if (gInGameCutsceneID == 0) {
-      if (cutscene_timer == 1) {
-        MissionSay(0xf);
-      }
-      if (cutscene_timer == 0xce) {
-        Start3DSoundVolPitch
-                  (-1,6,4,car_data[2].hd.where.t[0],-car_data[2].hd.where.t[1],
-                   car_data[2].hd.where.t[2],-0x9c4,0xc00);
-      }
-    }
-    if ((gInGameCutsceneID == 1) && (cutscene_timer == 6)) {
-      PrepareXA();
-    }
-    break;
-  case 0x15:
-    if (gInGameCutsceneID == 0) {
-      jericho_in_back = 1;
-    }
-    break;
-  case 0x19:
-    if (gInGameCutsceneID == 1) {
-      jericho_in_back = gInGameCutsceneID;
-    }
-    break;
-  case 0x1a:
-    if (gInGameCutsceneID != 0) {
-      return;
-    }
-LAB_0005db74:
-    CHAR_00h_000aafe2 = '\x01';
-    CHAR_00h_000aafe1 = '\x01';
-    break;
-  case 0x1b:
-    if (gInGameCutsceneID != 0) {
-      return;
-    }
-    if (cutscene_timer == 0x1cc) {
-      cVar1 = GetMissionSound('\x18');
-      Start3DTrackingSound
-                (-1,5,CONCAT31(extraout_var,cVar1),(VECTOR *)car_data[2].hd.where.t,(long *)0x0);
-      CHAR_00h_000aafe7 = '\x01';
-      CHAR_00h_000aafe6 = '\x01';
-      CHAR_00h_000aafe5 = '\x01';
-      CHAR_00h_000aafe4 = '\x01';
-      CHAR_00h_000aafe3 = '\x01';
-      CHAR_00h_000aafe2 = '\x01';
-    }
-    if (cutscene_timer == 0x1fe) {
-      MissionSay(0x17);
-    }
-    if (cutscene_timer < 0x33) {
-      return;
-    }
-    goto LAB_0005dcfc;
-  case 0x1d:
-    if (gInGameCutsceneID == 1) {
-      if (cutscene_timer == 6) {
-        PrepareXA();
-      }
-      if (cutscene_timer == 0xb4) {
-        cVar1 = GetMissionSound('\x1a');
-        Start3DTrackingSound
-                  (-1,5,CONCAT31(extraout_var_00,cVar1),(VECTOR *)car_data[2].hd.where.t,
-                   (long *)(car_data[2].st + 0x1c));
-      }
-      if (cutscene_timer < 0x281) {
-        CHAR_00h_000aafe3 = '\0';
-      }
-      else {
-        CHAR_00h_000aafe3 = '\x01';
-      }
-    }
-    break;
-  case 0x21:
-    if (gInGameCutsceneID != 1) {
-      return;
-    }
-    if (cutscene_timer == 6) {
-      PrepareXA();
-    }
-    if (cutscene_timer == 0x3c0) {
-      SetEnvSndVol(rio_alarm,3000);
-    }
-LAB_0005dcfc:
-    s__000aafd1[0] = '\0';
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	char cVar1;
+	undefined3 extraout_var;
+	undefined3 extraout_var_00;
+
+	cutscene_timer = cutscene_timer + 1;
+	switch (gCurrentMissionNumber) {
+	case 2:
+		if (gInGameCutsceneID != 1) {
+			return;
+		}
+		if (0x4a < cutscene_timer) {
+			s__000aafd1[0] = -1;
+			return;
+		}
+		goto LAB_0005dcfc;
+	case 5:
+		if (gInGameCutsceneID != 0) {
+			return;
+		}
+		if (cutscene_timer < 0x97) {
+			if (0x8c < cutscene_timer) {
+				CHAR_00h_000aafe1 = '\x01';
+				CHAR_00h_000aafe2 = '\0';
+				return;
+			}
+			CHAR_00h_000aafe1 = '\0';
+			CHAR_00h_000aafe2 = '\0';
+			return;
+		}
+		goto LAB_0005db74;
+	case 7:
+		if (gInGameCutsceneID == 0) {
+			if (cutscene_timer < 100) {
+				s__000aafd1[0] = '\0';
+			}
+			else {
+				s__000aafd1[0] = -1;
+			}
+		}
+		if (gInGameCutsceneID != 1) {
+			return;
+		}
+		goto LAB_0005dcfc;
+	case 0x12:
+		if (gInGameCutsceneID == 0) {
+			if (cutscene_timer == 1) {
+				MissionSay(0xf);
+			}
+			if (cutscene_timer == 0xce) {
+				Start3DSoundVolPitch
+				(-1, 6, 4, car_data[2].hd.where.t[0], -car_data[2].hd.where.t[1],
+					car_data[2].hd.where.t[2], -0x9c4, 0xc00);
+			}
+		}
+		if ((gInGameCutsceneID == 1) && (cutscene_timer == 6)) {
+			PrepareXA();
+		}
+		break;
+	case 0x15:
+		if (gInGameCutsceneID == 0) {
+			jericho_in_back = 1;
+		}
+		break;
+	case 0x19:
+		if (gInGameCutsceneID == 1) {
+			jericho_in_back = gInGameCutsceneID;
+		}
+		break;
+	case 0x1a:
+		if (gInGameCutsceneID != 0) {
+			return;
+		}
+	LAB_0005db74:
+		CHAR_00h_000aafe2 = '\x01';
+		CHAR_00h_000aafe1 = '\x01';
+		break;
+	case 0x1b:
+		if (gInGameCutsceneID != 0) {
+			return;
+		}
+		if (cutscene_timer == 0x1cc) {
+			cVar1 = GetMissionSound('\x18');
+			Start3DTrackingSound
+			(-1, 5, CONCAT31(extraout_var, cVar1), (VECTOR *)car_data[2].hd.where.t, (long *)0x0);
+			CHAR_00h_000aafe7 = '\x01';
+			CHAR_00h_000aafe6 = '\x01';
+			CHAR_00h_000aafe5 = '\x01';
+			CHAR_00h_000aafe4 = '\x01';
+			CHAR_00h_000aafe3 = '\x01';
+			CHAR_00h_000aafe2 = '\x01';
+		}
+		if (cutscene_timer == 0x1fe) {
+			MissionSay(0x17);
+		}
+		if (cutscene_timer < 0x33) {
+			return;
+		}
+		goto LAB_0005dcfc;
+	case 0x1d:
+		if (gInGameCutsceneID == 1) {
+			if (cutscene_timer == 6) {
+				PrepareXA();
+			}
+			if (cutscene_timer == 0xb4) {
+				cVar1 = GetMissionSound('\x1a');
+				Start3DTrackingSound
+				(-1, 5, CONCAT31(extraout_var_00, cVar1), (VECTOR *)car_data[2].hd.where.t,
+					(long *)(car_data[2].st + 0x1c));
+			}
+			if (cutscene_timer < 0x281) {
+				CHAR_00h_000aafe3 = '\0';
+			}
+			else {
+				CHAR_00h_000aafe3 = '\x01';
+			}
+		}
+		break;
+	case 0x21:
+		if (gInGameCutsceneID != 1) {
+			return;
+		}
+		if (cutscene_timer == 6) {
+			PrepareXA();
+		}
+		if (cutscene_timer == 0x3c0) {
+			SetEnvSndVol(rio_alarm, 3000);
+		}
+	LAB_0005dcfc:
+		s__000aafd1[0] = '\0';
+	}
+	return;
+	*/
 }
 
 
@@ -523,85 +531,86 @@ LAB_0005dcfc:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void InitializeMissionSound(void)
-
 {
-  int iVar1;
-  char cVar2;
-  undefined3 extraout_var;
-  undefined3 extraout_var_00;
-  undefined3 extraout_var_01;
-  undefined3 extraout_var_02;
-  undefined3 extraout_var_03;
-  undefined3 extraout_var_04;
-  char *pcVar3;
-  int iVar4;
-  
-  iVar4 = 0;
-  pcVar3 = &es_mobile;
-  bodgevar = 0;
-  holdall = -1;
-  MissionStartData.PlayerPos._0_4_ = 0xffffffff;
-  do {
-    *pcVar3 = -1;
-    iVar1 = GameLevel;
-    iVar4 = iVar4 + -1;
-    pcVar3 = pcVar3 + -1;
-  } while (-1 < iVar4);
-  jericho_in_back = 0;
-  if (GameLevel == 1) {
-    if (gCurrentMissionNumber - 0xfU < 2) {
-      cVar2 = GetMissionSound('\x0e');
-      iVar4 = AddEnvSnd(3,' ',5,CONCAT31(extraout_var,cVar2),0,-10000,0);
-      es_mobile = (char)iVar4;
-    }
-    if (gCurrentMissionNumber == 0x14) {
-      jericho_in_back = iVar1;
-    }
-  }
-  else {
-    if (GameLevel < 2) {
-      if (GameLevel == 0) {
-        iVar4 = AddEnvSnd(3,'\0',4,4,-10000,0,0);
-        es_mobile = (char)iVar4;
-      }
-    }
-    else {
-      if (GameLevel == 2) {
-        if (gCurrentMissionNumber == 0x16) {
-          iVar4 = AddEnvSnd(3,'\0',5,0,-10000,0,0);
-          es_mobile = (char)iVar4;
-        }
-        if (gCurrentMissionNumber == 0x18) {
-          cVar2 = GetMissionSound('\x1f');
-          AddEnvSnd(3,' ',5,CONCAT31(extraout_var_00,cVar2),3000,-37000,0x420a4);
-        }
-      }
-      else {
-        if (GameLevel == 3) {
-          if (gCurrentMissionNumber == 0x20) {
-            cVar2 = GetMissionSound('\x1f');
-            rio_alarm = AddEnvSnd(3,' ',5,CONCAT31(extraout_var_01,cVar2),-10000,-0x1e1c0,-0x3e300);
-          }
-          if (gCurrentMissionNumber == 0x21) {
-            cVar2 = GetMissionSound('\x1f');
-            rio_alarm = AddEnvSnd(3,' ',5,CONCAT31(extraout_var_02,cVar2),-10000,-0x319f2,0x52e2c);
-          }
-          if (gCurrentMissionNumber == 0x23) {
-            cVar2 = GetMissionSound('$');
-            iVar4 = AddEnvSnd(3,' ',5,CONCAT31(extraout_var_03,cVar2),-10000,0,0);
-            es_mobile = (char)iVar4;
-          }
-          if (gCurrentMissionNumber == 0x28) {
-            cVar2 = GetMissionSound('\'');
-            holdall = Start3DSoundVolPitch(-1,5,CONCAT31(extraout_var_04,cVar2),0,0,0,-10000,0x1000)
-            ;
-            LockChannel(holdall);
-          }
-        }
-      }
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	int iVar1;
+	char cVar2;
+	undefined3 extraout_var;
+	undefined3 extraout_var_00;
+	undefined3 extraout_var_01;
+	undefined3 extraout_var_02;
+	undefined3 extraout_var_03;
+	undefined3 extraout_var_04;
+	char *pcVar3;
+	int iVar4;
+
+	iVar4 = 0;
+	pcVar3 = &es_mobile;
+	bodgevar = 0;
+	holdall = -1;
+	MissionStartData.PlayerPos._0_4_ = 0xffffffff;
+	do {
+		*pcVar3 = -1;
+		iVar1 = GameLevel;
+		iVar4 = iVar4 + -1;
+		pcVar3 = pcVar3 + -1;
+	} while (-1 < iVar4);
+	jericho_in_back = 0;
+	if (GameLevel == 1) {
+		if (gCurrentMissionNumber - 0xfU < 2) {
+			cVar2 = GetMissionSound('\x0e');
+			iVar4 = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var, cVar2), 0, -10000, 0);
+			es_mobile = (char)iVar4;
+		}
+		if (gCurrentMissionNumber == 0x14) {
+			jericho_in_back = iVar1;
+		}
+	}
+	else {
+		if (GameLevel < 2) {
+			if (GameLevel == 0) {
+				iVar4 = AddEnvSnd(3, '\0', 4, 4, -10000, 0, 0);
+				es_mobile = (char)iVar4;
+			}
+		}
+		else {
+			if (GameLevel == 2) {
+				if (gCurrentMissionNumber == 0x16) {
+					iVar4 = AddEnvSnd(3, '\0', 5, 0, -10000, 0, 0);
+					es_mobile = (char)iVar4;
+				}
+				if (gCurrentMissionNumber == 0x18) {
+					cVar2 = GetMissionSound('\x1f');
+					AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_00, cVar2), 3000, -37000, 0x420a4);
+				}
+			}
+			else {
+				if (GameLevel == 3) {
+					if (gCurrentMissionNumber == 0x20) {
+						cVar2 = GetMissionSound('\x1f');
+						rio_alarm = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_01, cVar2), -10000, -0x1e1c0, -0x3e300);
+					}
+					if (gCurrentMissionNumber == 0x21) {
+						cVar2 = GetMissionSound('\x1f');
+						rio_alarm = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_02, cVar2), -10000, -0x319f2, 0x52e2c);
+					}
+					if (gCurrentMissionNumber == 0x23) {
+						cVar2 = GetMissionSound('$');
+						iVar4 = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_03, cVar2), -10000, 0, 0);
+						es_mobile = (char)iVar4;
+					}
+					if (gCurrentMissionNumber == 0x28) {
+						cVar2 = GetMissionSound('\'');
+						holdall = Start3DSoundVolPitch(-1, 5, CONCAT31(extraout_var_04, cVar2), 0, 0, 0, -10000, 0x1000)
+							;
+						LockChannel(holdall);
+					}
+				}
+			}
+		}
+	}
+	return;*/
 }
 
 
@@ -705,398 +714,399 @@ void InitializeMissionSound(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void DoMissionSound(void)
-
 {
-  char cVar1;
-  undefined3 extraout_var;
-  undefined3 extraout_var_00;
-  undefined3 extraout_var_01;
-  undefined3 extraout_var_02;
-  int *piVar2;
-  undefined3 extraout_var_03;
-  undefined3 extraout_var_04;
-  undefined3 extraout_var_05;
-  undefined3 extraout_var_06;
-  undefined3 extraout_var_07;
-  undefined **ppuVar3;
-  undefined3 extraout_var_08;
-  undefined3 extraout_var_09;
-  undefined3 extraout_var_10;
-  undefined3 extraout_var_11;
-  int y;
-  int *piVar4;
-  int z;
-  _TARGET *p_Var5;
-  int iVar6;
-  int sample;
-  int sample_00;
-  undefined *puVar7;
-  int x;
-  undefined *puVar8;
-  undefined *puVar9;
-  undefined *local_60;
-  int local_5c;
-  undefined *local_58;
-  int local_54 [12];
-  int local_24;
-  
-  iVar6 = DAT_000d7c2c;
-  sample_00 = bodgevar;
-  switch(gCurrentMissionNumber) {
-  case 0xb:
-  case 0xd:
-  case 0x14:
-    if (bodgevar == 1) {
-      MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-      cVar1 = GetMissionSound('\v');
-      sample_00 = CONCAT31(extraout_var,cVar1);
-      goto LAB_0005ed9c;
-    }
-    goto LAB_0005e0d0;
-  case 0x15:
-    if (bodgevar == 1) {
-      MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-      cVar1 = GetMissionSound('\v');
-      Start3DSoundVolPitch
-                (MissionStartData.PlayerPos._0_4_,5,CONCAT31(extraout_var_00,cVar1),pos[0],pos[1],
-                 pos[2],-1000,0x1000);
-      GetMissionSound('\v');
-      bodgevar = 2;
-      return;
-    }
-    goto LAB_0005e0d0;
-  case 0x17:
-    if (holdall == -1) {
-      if (MissionTargets->data[0] == 2) {
-        holdall = MissionTargets->data[6];
-      }
-      else {
-        sample_00 = 1;
-        do {
-          if (0xf < sample_00) {
-            return;
-          }
-          p_Var5 = MissionTargets + sample_00;
-          sample_00 = sample_00 + 1;
-        } while (p_Var5->data[0] != 2);
-        holdall = p_Var5->data[6];
-      }
-    }
-    else {
-      sample_00 = (int)player.playerCarId;
-      if (sample_00 == holdall) {
-        if ((DAT_000d7c2c != 0) && (DAT_000d7c2c == (DAT_000d7c2c / 3000) * 3000)) {
-          sample = GetFreeChannel();
-          cVar1 = GetMissionSound('\x14');
-          StartSound(sample,5,CONCAT31(extraout_var_01,cVar1),-0x5dc,0x1000);
-          SetChannelPosition3(sample,(VECTOR *)car_data[sample_00].hd.where.t,
-                              (long *)(car_data[sample_00].st + 0x1c),-0x5dc,0x1000 - iVar6 / 0x2ee,
-                              0);
-        }
-      }
-    }
-    break;
-  case 0x19:
-    if (bodgevar == 1) {
-      MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-      cVar1 = GetMissionSound('\v');
-      Start3DSoundVolPitch
-                (MissionStartData.PlayerPos._0_4_,5,CONCAT31(extraout_var_02,cVar1),pos[0],pos[1],
-                 pos[2],-1000,0x1000);
-      holdall = holdall + 1;
-      bodgevar = 2;
-      return;
-    }
-LAB_0005e0d0:
-    if (bodgevar != 3) {
-      return;
-    }
-    StopChannel(MissionStartData.PlayerPos._0_4_);
-LAB_0005edd8:
-    bodgevar = 4;
-    break;
-  case 0x1e:
-    if (bodgevar - 1U < 3) {
-      piVar2 = &DAT_00010e8c;
-      piVar4 = &local_60;
-      do {
-        sample_00 = piVar2[1];
-        iVar6 = piVar2[2];
-        sample = piVar2[3];
-        *piVar4 = *piVar2;
-        piVar4[1] = sample_00;
-        piVar4[2] = iVar6;
-        piVar4[3] = sample;
-        piVar2 = piVar2 + 4;
-        piVar4 = piVar4 + 4;
-      } while (piVar2 != &DAT_00010ebc);
-      sample_00 = bodgevar + -1;
-      local_54[9] = (&local_60)[sample_00 * 4];
-      local_54[10] = (&local_60)[sample_00 * 4 + 1];
-      local_54[11] = (&local_60)[sample_00 * 4 + 2];
-      local_24 = (&local_60)[sample_00 * 4 + 3];
-      cVar1 = GetMissionSound('\"');
-      Start3DSoundVolPitch
-                (-1,5,CONCAT31(extraout_var_03,cVar1),local_54[9],local_54[10],local_54[11],-1000,
-                 0x1000);
-      bodgevar = bodgevar + 4;
-    }
-    sample_00 = DAT_000d7c2c;
-    if (bodgevar < 4) {
-      return;
-    }
-    if (bodgevar == 6) {
-LAB_0005e4e8:
-      if ((sample_00 / 3000) * 3000 == sample_00 + -800) {
-        cVar1 = GetMissionSound('\x14');
-        Start3DSoundVolPitch
-                  (-1,5,CONCAT31(extraout_var_05,cVar1),-0x34aa,-0xfa,0xcd5e0,-0x5dc,
-                   0x1000 - sample_00 / 0x2ee);
-      }
-    }
-    else {
-      if (6 < bodgevar) {
-        if (bodgevar != 7) {
-          return;
-        }
-        if ((DAT_000d7c2c / 3000) * 3000 == DAT_000d7c2c + -0x514) {
-          cVar1 = GetMissionSound('\x14');
-          Start3DSoundVolPitch
-                    (-1,5,CONCAT31(extraout_var_04,cVar1),-0x2ffb,-0x113,0xcd61b,-0x5dc,
-                     0x1000 - sample_00 / 0x2ee);
-        }
-        goto LAB_0005e4e8;
-      }
-      if (bodgevar != 5) {
-        return;
-      }
-    }
-    iVar6 = (int)((ulonglong)((longlong)sample_00 * 0x57619f1) >> 0x20);
-    if ((sample_00 / 3000) * 3000 != sample_00 + -100) {
-      return;
-    }
-    cVar1 = GetMissionSound('\x14');
-    sample = CONCAT31(extraout_var_06,cVar1);
-    z = 0xcd383;
-    x = -0x382c;
-    y = -0x114;
-    goto LAB_0005e990;
-  case 0x20:
-    if (holdall == -1) {
-      holdall = 0;
-      return;
-    }
-    if (bodgevar == 1) {
-      MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-      cVar1 = GetMissionSound('\v');
-      sample_00 = CONCAT31(extraout_var_07,cVar1);
-      goto LAB_0005ed9c;
-    }
-    if (bodgevar != 3) {
-      return;
-    }
-    if (-1 < MissionStartData.PlayerPos._0_4_) {
-      StopChannel(MissionStartData.PlayerPos._0_4_);
-    }
-    holdall = holdall + 1;
-    if (holdall == 2) {
-      SetEnvSndVol(rio_alarm,3000);
-    }
-    goto LAB_0005edd8;
-  case 0x21:
-    if (holdall == -1) {
-      StartSound(2,2,0,-10000,0x81);
-      holdall = 0;
-    }
-    break;
-  case 0x23:
-    if (bodgevar - 1U < 3) {
-      ppuVar3 = (undefined **)&DAT_00010ebc;
-      piVar4 = &local_60;
-      do {
-        puVar7 = ppuVar3[1];
-        puVar8 = ppuVar3[2];
-        puVar9 = ppuVar3[3];
-        *(undefined **)piVar4 = *ppuVar3;
-        *(undefined **)(piVar4 + 1) = puVar7;
-        *(undefined **)(piVar4 + 2) = puVar8;
-        *(undefined **)(piVar4 + 3) = puVar9;
-        ppuVar3 = ppuVar3 + 4;
-        piVar4 = piVar4 + 4;
-      } while (ppuVar3 != switchdataD_00010eec);
-      sample_00 = bodgevar + -1;
-      local_54[9] = (&local_60)[sample_00 * 4];
-      local_54[10] = (&local_60)[sample_00 * 4 + 1];
-      local_54[11] = (&local_60)[sample_00 * 4 + 2];
-      local_24 = (&local_60)[sample_00 * 4 + 3];
-      cVar1 = GetMissionSound('\"');
-      Start3DSoundVolPitch
-                (-1,5,CONCAT31(extraout_var_08,cVar1),local_54[9],local_54[10],local_54[11],-1000,
-                 0x1000);
-      bodgevar = bodgevar + 4;
-    }
-    sample_00 = DAT_000d7c2c;
-    if (bodgevar < 4) {
-      return;
-    }
-    if (bodgevar == 6) {
-LAB_0005e894:
-      if ((sample_00 / 3000) * 3000 == sample_00 + -800) {
-        cVar1 = GetMissionSound('\x14');
-        Start3DSoundVolPitch
-                  (-1,5,CONCAT31(extraout_var_10,cVar1),0x312b0,-0xb1,0x5f050,-0x5dc,
-                   0x1000 - sample_00 / 0x2ee);
-      }
-    }
-    else {
-      if (6 < bodgevar) {
-        if (bodgevar != 7) {
-          return;
-        }
-        if ((DAT_000d7c2c / 3000) * 3000 == DAT_000d7c2c + -0x514) {
-          cVar1 = GetMissionSound('\x14');
-          Start3DSoundVolPitch
-                    (-1,5,CONCAT31(extraout_var_09,cVar1),0x30ad0,-0xb1,0x5f050,-0x5dc,
-                     0x1000 - sample_00 / 0x2ee);
-        }
-        goto LAB_0005e894;
-      }
-      if (bodgevar != 5) {
-        return;
-      }
-    }
-    iVar6 = (int)((ulonglong)((longlong)sample_00 * 0x57619f1) >> 0x20);
-    if ((sample_00 / 3000) * 3000 != sample_00 + -300) {
-      return;
-    }
-    cVar1 = GetMissionSound('\x14');
-    sample = CONCAT31(extraout_var_11,cVar1);
-    z = 0x5e0e0;
-    x = 0x31330;
-    y = -0xb1;
-LAB_0005e990:
-    Start3DSoundVolPitch(-1,5,sample,x,y,z,-0x5dc,0x1000 - ((iVar6 >> 4) - (sample_00 >> 0x1f)));
-    break;
-  case 0x27:
-    if (holdall == -1) {
-      sample_00 = 0;
-      p_Var5 = MissionTargets;
-      while (sample_00 < 0x10) {
-        if (p_Var5->data[0] == 2) {
-          if (holdall == -1) {
-            holdall = 0x14;
-          }
-          else {
-            if (holdall == 0x14) {
-              holdall = p_Var5->data[6];
-              return;
-            }
-          }
-        }
-        p_Var5 = p_Var5 + 1;
-        sample_00 = sample_00 + 1;
-      }
-    }
-    else {
-      if ((int)player.playerCarId == holdall) {
-        jericho_in_back = 1;
-      }
-    }
-    break;
-  case 0x28:
-    if (bodgevar == 0) {
-      if (holdall != -1) {
-        StopChannel(holdall);
-        UnlockChannel(holdall);
-        holdall = -1;
-      }
-    }
-    else {
-      iVar6 = car_data[player.playerCarId].hd.where.t[0];
-      sample = *(int *)bodgevar - iVar6;
-      iVar6 = iVar6 - *(int *)bodgevar;
-      if (-1 < sample) {
-        iVar6 = sample;
-      }
-      if (iVar6 < 0x8000) {
-        iVar6 = car_data[player.playerCarId].hd.where.t[2];
-        sample = *(int *)(bodgevar + 8) - iVar6;
-        iVar6 = iVar6 - *(int *)(bodgevar + 8);
-        if (-1 < sample) {
-          iVar6 = sample;
-        }
-        if (iVar6 < 0x8000) {
-          local_60 = pos[0] - *(int *)bodgevar;
-          local_5c = pos[1] - *(int *)(bodgevar + 4);
-          local_58 = pos[2] - *(int *)(bodgevar + 8);
-          SetChannelPosition3(holdall,(VECTOR *)bodgevar,&local_60,0,0x1000,0);
-          pos[0] = *(long *)sample_00;
-          pos[1] = *(long *)(sample_00 + 4);
-          pos[2] = *(long *)(sample_00 + 8);
-          return;
-        }
-      }
-      SpuSetVoicePitch(holdall,0);
-    }
-    break;
-  case 0x34:
-  case 0x35:
-    if (bodgevar == 1) {
-      MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-      Start3DSoundVolPitch(MissionStartData.PlayerPos._0_4_,5,0,pos[0],pos[1],pos[2],-1000,0x1000);
-      bodgevar = 2;
-    }
-    else {
-      if (bodgevar == 3) {
-        if (-1 < MissionStartData.PlayerPos._0_4_) {
-          StopChannel(MissionStartData.PlayerPos._0_4_);
-        }
-        bodgevar = 4;
-      }
-    }
-  case 0x36:
-  case 0x37:
-    if (bodgevar == 1) {
-      MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-      Start3DSoundVolPitch(MissionStartData.PlayerPos._0_4_,5,1,pos[0],pos[1],pos[2],-1000,0x1000);
-      bodgevar = 2;
-    }
-    else {
-      if (bodgevar == 3) {
-        if (-1 < MissionStartData.PlayerPos._0_4_) {
-          StopChannel(MissionStartData.PlayerPos._0_4_);
-        }
-        bodgevar = 4;
-      }
-      else {
-        if (bodgevar == 5) {
-          Start3DSoundVolPitch(-1,5,0,-0x26868,-0xfa,(int)&DAT_0009d274,-1000,0x1000);
-          bodgevar = 6;
-        }
-      }
-    }
-  case 0x38:
-  case 0x39:
-    goto switchD_0005e06c_caseD_38;
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	char cVar1;
+	undefined3 extraout_var;
+	undefined3 extraout_var_00;
+	undefined3 extraout_var_01;
+	undefined3 extraout_var_02;
+	int *piVar2;
+	undefined3 extraout_var_03;
+	undefined3 extraout_var_04;
+	undefined3 extraout_var_05;
+	undefined3 extraout_var_06;
+	undefined3 extraout_var_07;
+	undefined **ppuVar3;
+	undefined3 extraout_var_08;
+	undefined3 extraout_var_09;
+	undefined3 extraout_var_10;
+	undefined3 extraout_var_11;
+	int y;
+	int *piVar4;
+	int z;
+	_TARGET *p_Var5;
+	int iVar6;
+	int sample;
+	int sample_00;
+	undefined *puVar7;
+	int x;
+	undefined *puVar8;
+	undefined *puVar9;
+	undefined *local_60;
+	int local_5c;
+	undefined *local_58;
+	int local_54[12];
+	int local_24;
+
+	iVar6 = DAT_000d7c2c;
+	sample_00 = bodgevar;
+	switch (gCurrentMissionNumber) {
+	case 0xb:
+	case 0xd:
+	case 0x14:
+		if (bodgevar == 1) {
+			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+			cVar1 = GetMissionSound('\v');
+			sample_00 = CONCAT31(extraout_var, cVar1);
+			goto LAB_0005ed9c;
+		}
+		goto LAB_0005e0d0;
+	case 0x15:
+		if (bodgevar == 1) {
+			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+			cVar1 = GetMissionSound('\v');
+			Start3DSoundVolPitch
+			(MissionStartData.PlayerPos._0_4_, 5, CONCAT31(extraout_var_00, cVar1), pos[0], pos[1],
+				pos[2], -1000, 0x1000);
+			GetMissionSound('\v');
+			bodgevar = 2;
+			return;
+		}
+		goto LAB_0005e0d0;
+	case 0x17:
+		if (holdall == -1) {
+			if (MissionTargets->data[0] == 2) {
+				holdall = MissionTargets->data[6];
+			}
+			else {
+				sample_00 = 1;
+				do {
+					if (0xf < sample_00) {
+						return;
+					}
+					p_Var5 = MissionTargets + sample_00;
+					sample_00 = sample_00 + 1;
+				} while (p_Var5->data[0] != 2);
+				holdall = p_Var5->data[6];
+			}
+		}
+		else {
+			sample_00 = (int)player.playerCarId;
+			if (sample_00 == holdall) {
+				if ((DAT_000d7c2c != 0) && (DAT_000d7c2c == (DAT_000d7c2c / 3000) * 3000)) {
+					sample = GetFreeChannel();
+					cVar1 = GetMissionSound('\x14');
+					StartSound(sample, 5, CONCAT31(extraout_var_01, cVar1), -0x5dc, 0x1000);
+					SetChannelPosition3(sample, (VECTOR *)car_data[sample_00].hd.where.t,
+						(long *)(car_data[sample_00].st + 0x1c), -0x5dc, 0x1000 - iVar6 / 0x2ee,
+						0);
+				}
+			}
+		}
+		break;
+	case 0x19:
+		if (bodgevar == 1) {
+			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+			cVar1 = GetMissionSound('\v');
+			Start3DSoundVolPitch
+			(MissionStartData.PlayerPos._0_4_, 5, CONCAT31(extraout_var_02, cVar1), pos[0], pos[1],
+				pos[2], -1000, 0x1000);
+			holdall = holdall + 1;
+			bodgevar = 2;
+			return;
+		}
+	LAB_0005e0d0:
+		if (bodgevar != 3) {
+			return;
+		}
+		StopChannel(MissionStartData.PlayerPos._0_4_);
+	LAB_0005edd8:
+		bodgevar = 4;
+		break;
+	case 0x1e:
+		if (bodgevar - 1U < 3) {
+			piVar2 = &DAT_00010e8c;
+			piVar4 = &local_60;
+			do {
+				sample_00 = piVar2[1];
+				iVar6 = piVar2[2];
+				sample = piVar2[3];
+				*piVar4 = *piVar2;
+				piVar4[1] = sample_00;
+				piVar4[2] = iVar6;
+				piVar4[3] = sample;
+				piVar2 = piVar2 + 4;
+				piVar4 = piVar4 + 4;
+			} while (piVar2 != &DAT_00010ebc);
+			sample_00 = bodgevar + -1;
+			local_54[9] = (&local_60)[sample_00 * 4];
+			local_54[10] = (&local_60)[sample_00 * 4 + 1];
+			local_54[11] = (&local_60)[sample_00 * 4 + 2];
+			local_24 = (&local_60)[sample_00 * 4 + 3];
+			cVar1 = GetMissionSound('\"');
+			Start3DSoundVolPitch
+			(-1, 5, CONCAT31(extraout_var_03, cVar1), local_54[9], local_54[10], local_54[11], -1000,
+				0x1000);
+			bodgevar = bodgevar + 4;
+		}
+		sample_00 = DAT_000d7c2c;
+		if (bodgevar < 4) {
+			return;
+		}
+		if (bodgevar == 6) {
+		LAB_0005e4e8:
+			if ((sample_00 / 3000) * 3000 == sample_00 + -800) {
+				cVar1 = GetMissionSound('\x14');
+				Start3DSoundVolPitch
+				(-1, 5, CONCAT31(extraout_var_05, cVar1), -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
+					0x1000 - sample_00 / 0x2ee);
+			}
+		}
+		else {
+			if (6 < bodgevar) {
+				if (bodgevar != 7) {
+					return;
+				}
+				if ((DAT_000d7c2c / 3000) * 3000 == DAT_000d7c2c + -0x514) {
+					cVar1 = GetMissionSound('\x14');
+					Start3DSoundVolPitch
+					(-1, 5, CONCAT31(extraout_var_04, cVar1), -0x2ffb, -0x113, 0xcd61b, -0x5dc,
+						0x1000 - sample_00 / 0x2ee);
+				}
+				goto LAB_0005e4e8;
+			}
+			if (bodgevar != 5) {
+				return;
+			}
+		}
+		iVar6 = (int)((ulonglong)((longlong)sample_00 * 0x57619f1) >> 0x20);
+		if ((sample_00 / 3000) * 3000 != sample_00 + -100) {
+			return;
+		}
+		cVar1 = GetMissionSound('\x14');
+		sample = CONCAT31(extraout_var_06, cVar1);
+		z = 0xcd383;
+		x = -0x382c;
+		y = -0x114;
+		goto LAB_0005e990;
+	case 0x20:
+		if (holdall == -1) {
+			holdall = 0;
+			return;
+		}
+		if (bodgevar == 1) {
+			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+			cVar1 = GetMissionSound('\v');
+			sample_00 = CONCAT31(extraout_var_07, cVar1);
+			goto LAB_0005ed9c;
+		}
+		if (bodgevar != 3) {
+			return;
+		}
+		if (-1 < MissionStartData.PlayerPos._0_4_) {
+			StopChannel(MissionStartData.PlayerPos._0_4_);
+		}
+		holdall = holdall + 1;
+		if (holdall == 2) {
+			SetEnvSndVol(rio_alarm, 3000);
+		}
+		goto LAB_0005edd8;
+	case 0x21:
+		if (holdall == -1) {
+			StartSound(2, 2, 0, -10000, 0x81);
+			holdall = 0;
+		}
+		break;
+	case 0x23:
+		if (bodgevar - 1U < 3) {
+			ppuVar3 = (undefined **)&DAT_00010ebc;
+			piVar4 = &local_60;
+			do {
+				puVar7 = ppuVar3[1];
+				puVar8 = ppuVar3[2];
+				puVar9 = ppuVar3[3];
+				*(undefined **)piVar4 = *ppuVar3;
+				*(undefined **)(piVar4 + 1) = puVar7;
+				*(undefined **)(piVar4 + 2) = puVar8;
+				*(undefined **)(piVar4 + 3) = puVar9;
+				ppuVar3 = ppuVar3 + 4;
+				piVar4 = piVar4 + 4;
+			} while (ppuVar3 != switchdataD_00010eec);
+			sample_00 = bodgevar + -1;
+			local_54[9] = (&local_60)[sample_00 * 4];
+			local_54[10] = (&local_60)[sample_00 * 4 + 1];
+			local_54[11] = (&local_60)[sample_00 * 4 + 2];
+			local_24 = (&local_60)[sample_00 * 4 + 3];
+			cVar1 = GetMissionSound('\"');
+			Start3DSoundVolPitch
+			(-1, 5, CONCAT31(extraout_var_08, cVar1), local_54[9], local_54[10], local_54[11], -1000,
+				0x1000);
+			bodgevar = bodgevar + 4;
+		}
+		sample_00 = DAT_000d7c2c;
+		if (bodgevar < 4) {
+			return;
+		}
+		if (bodgevar == 6) {
+		LAB_0005e894:
+			if ((sample_00 / 3000) * 3000 == sample_00 + -800) {
+				cVar1 = GetMissionSound('\x14');
+				Start3DSoundVolPitch
+				(-1, 5, CONCAT31(extraout_var_10, cVar1), 0x312b0, -0xb1, 0x5f050, -0x5dc,
+					0x1000 - sample_00 / 0x2ee);
+			}
+		}
+		else {
+			if (6 < bodgevar) {
+				if (bodgevar != 7) {
+					return;
+				}
+				if ((DAT_000d7c2c / 3000) * 3000 == DAT_000d7c2c + -0x514) {
+					cVar1 = GetMissionSound('\x14');
+					Start3DSoundVolPitch
+					(-1, 5, CONCAT31(extraout_var_09, cVar1), 0x30ad0, -0xb1, 0x5f050, -0x5dc,
+						0x1000 - sample_00 / 0x2ee);
+				}
+				goto LAB_0005e894;
+			}
+			if (bodgevar != 5) {
+				return;
+			}
+		}
+		iVar6 = (int)((ulonglong)((longlong)sample_00 * 0x57619f1) >> 0x20);
+		if ((sample_00 / 3000) * 3000 != sample_00 + -300) {
+			return;
+		}
+		cVar1 = GetMissionSound('\x14');
+		sample = CONCAT31(extraout_var_11, cVar1);
+		z = 0x5e0e0;
+		x = 0x31330;
+		y = -0xb1;
+	LAB_0005e990:
+		Start3DSoundVolPitch(-1, 5, sample, x, y, z, -0x5dc, 0x1000 - ((iVar6 >> 4) - (sample_00 >> 0x1f)));
+		break;
+	case 0x27:
+		if (holdall == -1) {
+			sample_00 = 0;
+			p_Var5 = MissionTargets;
+			while (sample_00 < 0x10) {
+				if (p_Var5->data[0] == 2) {
+					if (holdall == -1) {
+						holdall = 0x14;
+					}
+					else {
+						if (holdall == 0x14) {
+							holdall = p_Var5->data[6];
+							return;
+						}
+					}
+				}
+				p_Var5 = p_Var5 + 1;
+				sample_00 = sample_00 + 1;
+			}
+		}
+		else {
+			if ((int)player.playerCarId == holdall) {
+				jericho_in_back = 1;
+			}
+		}
+		break;
+	case 0x28:
+		if (bodgevar == 0) {
+			if (holdall != -1) {
+				StopChannel(holdall);
+				UnlockChannel(holdall);
+				holdall = -1;
+			}
+		}
+		else {
+			iVar6 = car_data[player.playerCarId].hd.where.t[0];
+			sample = *(int *)bodgevar - iVar6;
+			iVar6 = iVar6 - *(int *)bodgevar;
+			if (-1 < sample) {
+				iVar6 = sample;
+			}
+			if (iVar6 < 0x8000) {
+				iVar6 = car_data[player.playerCarId].hd.where.t[2];
+				sample = *(int *)(bodgevar + 8) - iVar6;
+				iVar6 = iVar6 - *(int *)(bodgevar + 8);
+				if (-1 < sample) {
+					iVar6 = sample;
+				}
+				if (iVar6 < 0x8000) {
+					local_60 = pos[0] - *(int *)bodgevar;
+					local_5c = pos[1] - *(int *)(bodgevar + 4);
+					local_58 = pos[2] - *(int *)(bodgevar + 8);
+					SetChannelPosition3(holdall, (VECTOR *)bodgevar, &local_60, 0, 0x1000, 0);
+					pos[0] = *(long *)sample_00;
+					pos[1] = *(long *)(sample_00 + 4);
+					pos[2] = *(long *)(sample_00 + 8);
+					return;
+				}
+			}
+			SpuSetVoicePitch(holdall, 0);
+		}
+		break;
+	case 0x34:
+	case 0x35:
+		if (bodgevar == 1) {
+			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+			Start3DSoundVolPitch(MissionStartData.PlayerPos._0_4_, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
+			bodgevar = 2;
+		}
+		else {
+			if (bodgevar == 3) {
+				if (-1 < MissionStartData.PlayerPos._0_4_) {
+					StopChannel(MissionStartData.PlayerPos._0_4_);
+				}
+				bodgevar = 4;
+			}
+		}
+	case 0x36:
+	case 0x37:
+		if (bodgevar == 1) {
+			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+			Start3DSoundVolPitch(MissionStartData.PlayerPos._0_4_, 5, 1, pos[0], pos[1], pos[2], -1000, 0x1000);
+			bodgevar = 2;
+		}
+		else {
+			if (bodgevar == 3) {
+				if (-1 < MissionStartData.PlayerPos._0_4_) {
+					StopChannel(MissionStartData.PlayerPos._0_4_);
+				}
+				bodgevar = 4;
+			}
+			else {
+				if (bodgevar == 5) {
+					Start3DSoundVolPitch(-1, 5, 0, -0x26868, -0xfa, (int)&DAT_0009d274, -1000, 0x1000);
+					bodgevar = 6;
+				}
+			}
+		}
+	case 0x38:
+	case 0x39:
+		goto switchD_0005e06c_caseD_38;
+	}
+	return;
 switchD_0005e06c_caseD_38:
-  if (bodgevar == 1) {
-    MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-    sample_00 = 0;
-LAB_0005ed9c:
-    Start3DSoundVolPitch
-              (MissionStartData.PlayerPos._0_4_,5,sample_00,pos[0],pos[1],pos[2],-1000,0x1000);
-    bodgevar = 2;
-    return;
-  }
-  if (bodgevar != 3) {
-    return;
-  }
-  if (-1 < MissionStartData.PlayerPos._0_4_) {
-    StopChannel(MissionStartData.PlayerPos._0_4_);
-  }
-  goto LAB_0005edd8;
+	if (bodgevar == 1) {
+		MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
+		sample_00 = 0;
+	LAB_0005ed9c:
+		Start3DSoundVolPitch
+		(MissionStartData.PlayerPos._0_4_, 5, sample_00, pos[0], pos[1], pos[2], -1000, 0x1000);
+		bodgevar = 2;
+		return;
+	}
+	if (bodgevar != 3) {
+		return;
+	}
+	if (-1 < MissionStartData.PlayerPos._0_4_) {
+		StopChannel(MissionStartData.PlayerPos._0_4_);
+	}
+	goto LAB_0005edd8;*/
 }
 
 
@@ -1115,16 +1125,18 @@ LAB_0005ed9c:
 	/* end block 2 */
 	// End Line: 1910
 
-void SetMSoundVar(int var,VECTOR *V)
-
+void SetMSoundVar(int var, VECTOR *V)
 {
-  if (V != (VECTOR *)0x0) {
-    pos[0] = V->vx;
-    pos[1] = V->vy;
-    pos[2] = V->vz;
-  }
-  bodgevar = var;
-  return;
+	UNIMPLEMENTED();
+	/*
+	if (V != (VECTOR *)0x0) {
+		pos[0] = V->vx;
+		pos[1] = V->vy;
+		pos[2] = V->vz;
+	}
+	bodgevar = var;
+	return;
+	*/
 }
 
 
@@ -1146,157 +1158,159 @@ void SetMSoundVar(int var,VECTOR *V)
 /* WARNING: Type propagation algorithm not settling */
 
 char SilenceThisCar(int car)
-
 {
-  int iVar1;
-  bool bVar2;
-  
-  if (gInGameCutsceneActive == 0) {
-    bVar2 = false;
-    if (car_data[car].controlType == '\a') {
-      bVar2 = car_data[car].ai[0xc] == 7;
-    }
-    return (char)bVar2;
-  }
-  switch(gCurrentMissionNumber) {
-  case 1:
-  case 0xe:
-  case 0x11:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    if (car == 1) {
-      return '\x01';
-    }
-    break;
-  case 2:
-    if (gInGameCutsceneID != 1) {
-      return '\0';
-    }
-    if ((car == 2) && (cutscene_timer < 200)) {
-      return '\x01';
-    }
-    if (car != 1) {
-      return '\0';
-    }
-    bVar2 = cutscene_timer < 0x23;
-    goto LAB_0005ef14;
-  case 3:
-  case 0x19:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    iVar1 = 2;
-    goto LAB_0005ef3c;
-  case 6:
-    if (gInGameCutsceneID == 0) {
-      bVar2 = car - 2U < 2;
-    }
-    else {
-      if (gInGameCutsceneID != 1) {
-        return '\0';
-      }
-      bVar2 = cutscene_timer < 0xfd;
-    }
-LAB_0005ef14:
-    if (bVar2) {
-      return '\x01';
-    }
-    return '\0';
-  case 7:
-  case 0x13:
-  case 0x15:
-  case 0x1c:
-  case 0x1e:
-  case 0x1f:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    return '\x01';
-  case 10:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    iVar1 = 3;
-LAB_0005ef3c:
-    if (car == iVar1) {
-      return '\x01';
-    }
-    return '\0';
-  case 0x10:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    if (car != 1) {
-      return '\x01';
-    }
-    break;
-  case 0x12:
-    if ((gInGameCutsceneID == 0) && (car != 1)) {
-      return '\x01';
-    }
-    if ((gInGameCutsceneID == 1) && (2 < car)) {
-      return '\x01';
-    }
-    if (car == 1) {
-      bVar2 = cutscene_timer < 0x1d7;
-      goto LAB_0005f098;
-    }
-    break;
-  case 0x17:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    if (cutscene_timer < 0xa0) {
-      return '\x01';
-    }
-    if (car != 1) {
-      return '\0';
-    }
-    bVar2 = cutscene_timer < 0x1a0;
-    goto LAB_0005f098;
-  case 0x1b:
-    if (gInGameCutsceneID != 0) {
-      return '\0';
-    }
-    if (car - 6U < 2) {
-      return '\x01';
-    }
-    if (1 < car - 2U) {
-      return '\0';
-    }
-    bVar2 = cutscene_timer < 0x2a9;
-LAB_0005f098:
-    if (!bVar2) {
-      return '\x01';
-    }
-    return '\0';
-  case 0x1d:
-    if (gInGameCutsceneID == 0) {
-      return '\x01';
-    }
-    if (gInGameCutsceneID == 1) {
-      bVar2 = car - 4U < 2;
-      goto LAB_0005ef14;
-    }
-    break;
-  case 0x21:
-    if ((gInGameCutsceneID == 1) && (car != 1)) {
-      return '\x01';
-    }
-    break;
-  case 0x26:
-    if (gInGameCutsceneID == 0) {
-      bVar2 = car - 2U < 2;
-      goto LAB_0005ef14;
-    }
-    break;
-  case 0x27:
-    if (gInGameCutsceneID == 0) {
-      return '\x01';
-    }
-  }
-  return '\0';
+	UNIMPLEMENTED();
+	return 0;
+	/*
+	int iVar1;
+	bool bVar2;
+
+	if (gInGameCutsceneActive == 0) {
+		bVar2 = false;
+		if (car_data[car].controlType == '\a') {
+			bVar2 = car_data[car].ai[0xc] == 7;
+		}
+		return (char)bVar2;
+	}
+	switch (gCurrentMissionNumber) {
+	case 1:
+	case 0xe:
+	case 0x11:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		if (car == 1) {
+			return '\x01';
+		}
+		break;
+	case 2:
+		if (gInGameCutsceneID != 1) {
+			return '\0';
+		}
+		if ((car == 2) && (cutscene_timer < 200)) {
+			return '\x01';
+		}
+		if (car != 1) {
+			return '\0';
+		}
+		bVar2 = cutscene_timer < 0x23;
+		goto LAB_0005ef14;
+	case 3:
+	case 0x19:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		iVar1 = 2;
+		goto LAB_0005ef3c;
+	case 6:
+		if (gInGameCutsceneID == 0) {
+			bVar2 = car - 2U < 2;
+		}
+		else {
+			if (gInGameCutsceneID != 1) {
+				return '\0';
+			}
+			bVar2 = cutscene_timer < 0xfd;
+		}
+	LAB_0005ef14:
+		if (bVar2) {
+			return '\x01';
+		}
+		return '\0';
+	case 7:
+	case 0x13:
+	case 0x15:
+	case 0x1c:
+	case 0x1e:
+	case 0x1f:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		return '\x01';
+	case 10:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		iVar1 = 3;
+	LAB_0005ef3c:
+		if (car == iVar1) {
+			return '\x01';
+		}
+		return '\0';
+	case 0x10:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		if (car != 1) {
+			return '\x01';
+		}
+		break;
+	case 0x12:
+		if ((gInGameCutsceneID == 0) && (car != 1)) {
+			return '\x01';
+		}
+		if ((gInGameCutsceneID == 1) && (2 < car)) {
+			return '\x01';
+		}
+		if (car == 1) {
+			bVar2 = cutscene_timer < 0x1d7;
+			goto LAB_0005f098;
+		}
+		break;
+	case 0x17:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		if (cutscene_timer < 0xa0) {
+			return '\x01';
+		}
+		if (car != 1) {
+			return '\0';
+		}
+		bVar2 = cutscene_timer < 0x1a0;
+		goto LAB_0005f098;
+	case 0x1b:
+		if (gInGameCutsceneID != 0) {
+			return '\0';
+		}
+		if (car - 6U < 2) {
+			return '\x01';
+		}
+		if (1 < car - 2U) {
+			return '\0';
+		}
+		bVar2 = cutscene_timer < 0x2a9;
+	LAB_0005f098:
+		if (!bVar2) {
+			return '\x01';
+		}
+		return '\0';
+	case 0x1d:
+		if (gInGameCutsceneID == 0) {
+			return '\x01';
+		}
+		if (gInGameCutsceneID == 1) {
+			bVar2 = car - 4U < 2;
+			goto LAB_0005ef14;
+		}
+		break;
+	case 0x21:
+		if ((gInGameCutsceneID == 1) && (car != 1)) {
+			return '\x01';
+		}
+		break;
+	case 0x26:
+		if (gInGameCutsceneID == 0) {
+			bVar2 = car - 2U < 2;
+			goto LAB_0005ef14;
+		}
+		break;
+	case 0x27:
+		if (gInGameCutsceneID == 0) {
+			return '\x01';
+		}
+	}
+	return '\0';*/
 }
 
 
@@ -1313,20 +1327,22 @@ LAB_0005f098:
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 void AdjustPlayerCarVolume(void)
-
 {
-  if (gInGameCutsceneID == 0) {
-    if (((gCurrentMissionNumber == 3) || (gCurrentMissionNumber == 5)) ||
-       (gCurrentMissionNumber == 0x1b)) {
-      player.revsvol = -0x1a5e;
-      player.idlevol = -10000;
-    }
-    else {
-      player.revsvol = -10000;
-      player.idlevol = -8000;
-    }
-  }
-  return;
+	UNIMPLEMENTED();
+	/*
+	if (gInGameCutsceneID == 0) {
+		if (((gCurrentMissionNumber == 3) || (gCurrentMissionNumber == 5)) ||
+			(gCurrentMissionNumber == 0x1b)) {
+			player.revsvol = -0x1a5e;
+			player.idlevol = -10000;
+		}
+		else {
+			player.revsvol = -10000;
+			player.idlevol = -8000;
+		}
+	}
+	return;
+	*/
 }
 
 

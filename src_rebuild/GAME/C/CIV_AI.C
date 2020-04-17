@@ -10,8 +10,6 @@
 #include "COP_AI.H"
 #include "DENTING.H"
 
-int roadblockDelayDiff[] = { 1500, 1000, 800 };
-
 char speedLimits[3] = { 56, 97, 138 };
 
 CIV_AI_234fake civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

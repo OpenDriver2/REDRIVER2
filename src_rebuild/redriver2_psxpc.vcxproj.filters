@@ -240,6 +240,12 @@
     <ClCompile Include="GAME\C\MDRAW.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\MC_SND.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
+    <ClCompile Include="GAME\C\FELONY.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

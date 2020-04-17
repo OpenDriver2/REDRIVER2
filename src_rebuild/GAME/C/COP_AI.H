@@ -2,8 +2,16 @@
 #define COP_AI_H
 
 extern COP_DATA gCopData;
+
 extern int CopsCanSeePlayer;
 extern short pedestrianFelony;
+
+extern int numRoadblockCars;
+extern int roadblockCount;
+extern int copsAreInPursuit;
+extern int requestRoadblock;
+extern int roadblockDelay;
+extern int roadblockDelayDiff;
 
 extern void InitCopState(_CAR_DATA *cp, char *extraData); // 0x0002F680
 
