@@ -4,6 +4,7 @@
 #include "LIBETC.H"
 #include "LIBSPU.H"
 #include "LIBGPU.H"
+#include "LIBAPI.H"
 #include "LIBMCRD.H"
 
 #include "../ASM/ASMTEST.H"
@@ -50,7 +51,11 @@
 #include "DR2ROADS.H"
 #include "MODELS.H"
 #include "CARS.H"
+#include "COP_AI.H"
 #include "GLAUNCH.H"
+#include "OBJCOLL.H"
+#include "MC_SND.H"
+#include "FELONY.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -1103,21 +1108,56 @@ void GameInit(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern short paddp;
+extern short padd;
+unsigned short controller_bits = 0;
+
+VECTOR lis_pos;
+
+int gLightsOn = 0;
+int NightAmbient = 0;
+
+char CameraChanged = 0;
+char CamerasSaved = 0;
+char paused = 0;
+
+char gRightWayUp = 0;	// cheat
+
+int num_active_cars = 0;
+unsigned long lead_pad = 0;
+
+int distFurthestCivCarSq = 0;
+
+int numInactiveCars = 0;
+int numActiveCops = 0;
+char furthestCivID = 0;
+int leadCarId = 0;
+
+VECTOR leadcar_pos;
+
+unsigned long PingBufferPos = 0;
+_PING_PACKET *PingBuffer = NULL;
+
+int frameStart = 0;
+
 void StepSim(void)
 {
-	UNIMPLEMENTED();
-	/*
+	static unsigned long t0; // offset 0x0
+	static char t1; // offset 0x4
+	static char t2; // offset 0x5
+	static int oldsp; // offset 0x8
+
 	char cVar1;
 	ushort uVar2;
 	short *psVar3;
 	int *piVar4;
-	undefined3 extraout_var;
+	//undefined3 extraout_var;
 	int stream;
-	undefined4 uVar5;
+	uint uVar5;
 	int *piVar6;
 	uint uVar7;
 	_CAR_DATA *cp;
-	_PLAYER *p_Var8;
+	_PLAYER *pPVar8;
 	int i;
 	int car;
 
@@ -1131,61 +1171,86 @@ void StepSim(void)
 	HandleMission();
 	HandleInGameCutscene();
 	HandleDrivingGames();
+
 	num_active_cars = 0;
-	if ((NoPlayerControl != 0) && (ReplayParameterPtr->RecordingEnd + -2 < CameraCnt)) {
+
+	if ((NoPlayerControl != 0) && (ReplayParameterPtr->RecordingEnd + -2 < CameraCnt)) 
+	{
 		ReleaseInGameCutscene();
 		pauseflag = 1;
 	}
-	oldsp_21 = SetSp(&DAT_1f8003e8);
+
+	oldsp = SetSp(0x1f8003e8); // i don't know what this does
+
 	lead_pad = (ulong)controller_bits;
-	if ((int)player.playerCarId < 0) {
+
+	if ((int)player[0].playerCarId < 0)
+	{
 		psVar3 = &pedestrianFelony;
 	}
-	else {
-		psVar3 = &car_data[(int)player.playerCarId].felonyRating;
+	else 
+	{
+		psVar3 = &car_data[(int)player[0].playerCarId].felonyRating;
 	}
-	if ((*psVar3 < 0x527) || (numRoadblockCars != 0)) {
+
+	// control cop roadblocks
+	if ((*psVar3 < 0x527) || (numRoadblockCars != 0)) 
+	{
 	LAB_00059c00:
-		if (roadblockCount == 0) goto LAB_00059c1c;
+		if (roadblockCount == 0) 
+			goto LAB_00059c1c;
 	}
-	else {
-		if (roadblockCount == 0) {
-			if (((copsAreInPursuit != 0) && (MissionHeader->residentModels[3] == 0)) &&
-				(gCurrentMissionNumber != 0x1a)) {
+	else 
+	{
+		if (roadblockCount == 0)
+		{
+			if (((copsAreInPursuit != 0) && (MissionHeader->residentModels[3] == 0)) && (gCurrentMissionNumber != 0x1a)) 
 				requestRoadblock = 1;
-			}
+
 			goto LAB_00059c00;
 		}
 	}
+
 	roadblockCount = roadblockCount + -1;
+
 LAB_00059c1c:
-	if ((requestStationaryCivCar == 1) || (requestRoadblock != 0)) {
+	// control civcars pingin/pingout
+	if ((requestStationaryCivCar == 1) || (requestRoadblock != 0)) 
+	{
 		distFurthestCivCarSq = 0;
 	}
-	else {
+	else 
+	{
 		i = 0;
-		if (gInGameChaseActive == 0) {
+		if (gInGameChaseActive == 0) 
+		{
 			if ((numCivCars < maxCivCars) && (NumPlayers == 1)) {
 				i = 0;
-				while ((i < 5 && (car = PingInCivCar((int)&DAT_00003e1c), car == 0))) {
+				while ((i < 5 && (car = PingInCivCar(15900), car == 0))) 
+				{
 					i = i + 1;
 				}
 			}
 		}
-		else {
-			if ((PingBufferPos < 400) &&
-				((uint)PingBuffer[PingBufferPos].frame <= (CameraCnt - frameStart & 0xffffU))) {
-				while (true) {
-					PingInCivCar((int)&DAT_00003e1c);
+		else 
+		{
+			if ((PingBufferPos < 400) && ((uint)PingBuffer[PingBufferPos].frame <= (CameraCnt - frameStart & 0xffffU))) 
+			{
+				while (true)
+				{
+					PingInCivCar(15900);
 					i = i + 1;
-					if (399 < PingBufferPos) break;
-					if (((CameraCnt - frameStart & 0xffffU) < (uint)PingBuffer[PingBufferPos].frame) ||
-						(10 < i)) break;
+					if (399 < PingBufferPos)
+						break;
+					if (((CameraCnt - frameStart & 0xffffU) < (uint)PingBuffer[PingBufferPos].frame)
+						|| (10 < i)) break;
 				}
 			}
 		}
+
 		SetUpCivCollFlags();
 	}
+
 	uVar7 = 0xd43fc;
 	numRoadblockCars = 0;
 	numInactiveCars = 0;
@@ -1193,226 +1258,302 @@ LAB_00059c1c:
 	numActiveCops = 0;
 	numCopCars = 0;
 	numCivCars = 0;
-	do {
-		cVar1 = *(char *)(uVar7 + 0x189);
-		if (cVar1 == '\x02') {
-			numCivCars = numCivCars + 1;
-			if ((*(byte *)(uVar7 + 0x18a) & 1) != 0) {
-				numCopCars = numCopCars + 1;
-			}
-			if (((*(byte *)(uVar7 + 0x18a) & 2) != 0) && (*(char *)(uVar7 + 0x285) == '\x03')) {
-				if (*(char *)(uVar7 + 0x198) == '\x05') {
-					numParkedCars = numParkedCars + 1;
+
+	if (true) 
+	{
+		cp = car_data;
+
+		do {
+			cVar1 = cp->controlType;
+
+			if (cVar1 == '\x02') 
+			{
+				numCivCars = numCivCars + 1;
+
+				if ((cp->controlFlags & 1) != 0) 
+				{
+					numCopCars = numCopCars + 1;
 				}
-				if ((*(byte *)(uVar7 + 0x18a) & 2) != 0) {
-					numRoadblockCars = numRoadblockCars + 1;
+
+				if (((cp->controlFlags & 2) != 0) && (cp->ai.c.thrustState == 3))
+				{
+					if (cp->ai.c.ctrlState == 5)
+					{
+						numParkedCars = numParkedCars + 1;
+					}
+
+					if ((cp->controlFlags & 2) != 0) 
+					{
+						numRoadblockCars = numRoadblockCars + 1;
+					}
 				}
 			}
-		}
-		else {
-			if (cVar1 == '\x03') {
-				numCopCars = numCopCars + 1;
-				if (*(char *)(uVar7 + 0x19f) == '\0') {
-					numActiveCops = numActiveCops + 1;
+			else 
+			{
+				if (cVar1 == '\x03')
+				{
+					numCopCars = numCopCars + 1;
+
+					if (cp->ai.p.dying == 0) 
+					{
+						numActiveCops = numActiveCops + 1;
+					}
+				}
+				else {
+					if (cVar1 == '\0')
+					{
+						numInactiveCars = numInactiveCars + 1;
+					}
 				}
 			}
-			else {
-				if (cVar1 == '\0') {
-					numInactiveCars = numInactiveCars + 1;
-				}
-			}
-		}
-		uVar7 = uVar7 - 0x29c;
-	} while (0xd1267 < uVar7);
-	if (numRoadblockCars != 0) {
-		roadblockCount = roadblockDelay;
+
+			cp++;
+		} while (cp <= &car_data[21]);
 	}
-	if ((((requestStationaryCivCar == 0) && (requestRoadblock != 0)) && (numRoadblockCars == 0)) &&
-		(4 < maxCivCars - numCivCars)) {
+
+	if (numRoadblockCars != 0)
+		roadblockCount = roadblockDelay;
+
+	if ((((requestStationaryCivCar == 0) && (requestRoadblock != 0)) && (numRoadblockCars == 0)) && (4 < maxCivCars - numCivCars)) 
+	{
 		CreateRoadblock();
 	}
+
 	cp = car_data + 0x13;
-	if (gInGameCutsceneActive == 0) {
+
+	if (gInGameCutsceneActive == 0) 
+	{
 		CheckSpecialSpool();
 	}
-	while ((_CAR_DATA *)((int)&cheats.MagicMirror + 3U) < cp) {
-		switch (cp->controlType) {
-		case '\x01':
-			t0_18 = (ulong)Pads[**(char **)cp->ai].mapped;
-			t1_19 = Pads[**(char **)cp->ai].mapanalog[2];
-			t2_20 = Pads[**(char **)cp->ai].type & 4;
-			if (NoPlayerControl == 0) {
-				if (gStopPadReads != 0) {
-					t0_18 = 0x80;
-					if ((cp->hd).wheel_speed < 0x9001) {
-						t0_18 = 0x10;
+
+	while (cp <= &car_data[21])
+	{
+		if (true) {
+			switch (cp->controlType) 
+			{
+			case '\x01':
+				t0 = (ulong)Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
+				t1 = Pads[*cp->ai.padid].mapanalog[2];
+				t2 = Pads[*cp->ai.padid].type & 4;
+
+				if (NoPlayerControl == 0) 
+				{
+					if (gStopPadReads != 0) 
+					{
+						t0 = 0x80;
+
+						if ((cp->hd).wheel_speed < 0x9001)
+							t0 = 0x10;
+
+						t1 = '\0';
+						t2 = 1;
 					}
-					t1_19 = '\0';
-					t2_20 = 1;
+					cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
 				}
-				cjpRecord((int)**(char **)cp->ai, &t0_18, &t1_19, &t2_20);
+				else 
+				{
+					cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+				}
+
+				ProcessCarPad(cp, t0, t1, t2);
+				break;
+			case '\x02':
+				CivControl(cp);
+				break;
+			case '\x03':
+				CopControl(cp);
+				break;
+			case '\x04':
+				UNIMPLEMENTED();
+				/*
+				t2 = 0;
+				t1 = '\0';
+				t0 = 0;
+				t0 = FreeRoamer(cp);	// [A]
+				if (t0_18 == 0) {
+					cp->handbrake = '\x01';
+					cp->wheel_angle = 0;
+				}
+				else {
+					ProcessCarPad(cp, t0_18, t1_19, t2_20);
+				}*/
+				break;
+			case '\a':
+				cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+				ProcessCarPad(cp, t0, t1, t2);
 			}
-			else {
-				cjpPlay((int)**(char **)cp->ai, &t0_18, &t1_19, &t2_20);
-			}
-			ProcessCarPad(cp, t0_18, t1_19, t2_20);
-			break;
-		case '\x02':
-			CivControl(cp);
-			break;
-		case '\x03':
-			CopControl(cp);
-			break;
-		case '\x04':
-			t2_20 = 0;
-			t1_19 = '\0';
-			t0_18 = 0;
-			t0_18 = func_0x000ec99c(cp);
-			if (t0_18 == 0) {
-				cp->handbrake = '\x01';
-				cp->wheel_angle = 0;
-			}
-			else {
-				ProcessCarPad(cp, t0_18, t1_19, t2_20);
-			}
-			break;
-		case '\a':
-			cjpPlay(-(int)**(char **)cp->ai, &t0_18, &t1_19, &t2_20);
-			ProcessCarPad(cp, t0_18, t1_19, t2_20);
 		}
 		StepCarPhysics(cp);
-		cp = cp + -1;
+		cp++;
 	}
+
 	i = 0;
-	p_Var8 = &player;
+	pPVar8 = player;
 	car = 7;
+
 	do {
-		if (p_Var8->playerType == '\x02') {
-			stream = (int)p_Var8->padid;
-			if (stream < 0) {
-				stream = cjpPlay(-stream, &t0_18, &t1_19, &t2_20);
+		if (pPVar8->playerType == '\x02') 
+		{
+			stream = pPVar8->padid;
+
+			if (stream < 0)
+			{
+				stream = cjpPlay(stream, &t0, &t1, &t2);
 				if (stream != 0) {
-					ProcessTannerPad(*(PEDESTRIAN **)((int)&player.pPed + i), t0_18, t1_19, t2_20);
+					ProcessTannerPad(player[i].pPed, t0, t1, t2);
 				}
 			}
-			else {
-				if (Pads[stream].type == '\x04') {
+			else
+			{
+				if (Pads[stream].type == '\x04') 
+				{
 					cVar1 = Pads[stream].mapanalog[3];
-					if ((cVar1 < -0x40) && (-100 < cVar1)) {
+
+					if ((cVar1 < -0x40) && (-100 < cVar1)) 
+					{
 						Pads[stream].mapped = Pads[stream].mapped | 0x1008;
 					}
-					else {
-						if ((cVar1 < -100) && ('\x7f' < cVar1)) {
-							stream = (int)p_Var8->padid;
+					else 
+					{
+						if ((cVar1 < -100) && ('\x7f' < cVar1)) 
+						{
+							stream = (int)pPVar8->padid;
 							uVar2 = Pads[stream].mapped | 0x1000;
 						}
-						else {
+						else 
+						{
 							if (cVar1 < '!') goto LAB_0005a2dc;
-							stream = (int)p_Var8->padid;
+							stream = (int)pPVar8->padid;
 							uVar2 = Pads[stream].mapped | 0x4000;
 						}
-						(&Pads[0].mapped)[stream * 0x24] = uVar2;
+						Pads[stream].mapped = uVar2;
 					}
 				}
 			LAB_0005a2dc:
-				stream = (int)(&player.padid)[i];
-				t0_18 = (ulong)Pads[stream].mapped;
-				t1_19 = Pads[stream].mapanalog[2];
-				t2_20 = Pads[stream].type & 4;
-				if (NoPlayerControl == 0) {
-					if (gStopPadReads != 0) {
-						t2_20 = 0;
-						t1_19 = '\0';
-						t0_18 = 0;
+				stream = player[i].padid;
+
+				t0 = (ulong)Pads[stream].mapped;
+				t1 = Pads[stream].mapanalog[2];
+				t2 = Pads[stream].type & 4;
+
+				if (NoPlayerControl == 0)
+				{
+					if (gStopPadReads != 0)
+					{
+						t2 = 0;
+						t1 = '\0';
+						t0 = 0;
 					}
-					cjpRecord(stream, &t0_18, &t1_19, &t2_20);
+					cjpRecord(stream, &t0, &t1, &t2);
 				}
-				else {
-					stream = cjpPlay(stream, &t0_18, &t1_19, &t2_20);
+				else 
+				{
+					stream = cjpPlay(stream, &t0, &t1, &t2);
 					if (stream == 0) goto LAB_0005a3d0;
 				}
-				ProcessTannerPad(*(PEDESTRIAN **)((int)&player.pPed + i), t0_18, t1_19, t2_20);
+
+				ProcessTannerPad(player[i].pPed, t0, t1, t2);
 			}
 		}
 	LAB_0005a3d0:
 		i = i + 0x74;
-		p_Var8 = p_Var8 + 1;
+		pPVar8 = pPVar8 + 1;
 		car = car + -1;
 	} while (-1 < car);
+
 	if ((requestStationaryCivCar == 1) &&
 		((numCivCars < maxCivCars ||
-		(PingOutCar(car_data + (byte)furthestCivID), numCivCars < maxCivCars)))) {
+		(PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))) {
 		requestStationaryCivCar = 0;
 	}
 	if ((game_over == 0) && (ControlCops(), gLoadedMotionCapture != 0)) {
 		HandlePedestrians();
 	}
+
 	i = 0;
+
 	GlobalTimeStep();
 	UpdatePlayers();
 	DoScenaryCollisions();
 	CheckPlayerMiscFelonies();
-	SetSp(oldsp_21);
+
+	SetSp(oldsp);
+
 	CameraCnt = CameraCnt + 1;
 	gBobIndex = gBobIndex + 0x3cU & 0xfff;
-	if (NumPlayers != 0) {
+	if (NumPlayers != 0)
+	{
 		car = 0;
-		p_Var8 = &player;
+		pPVar8 = player;
 		do {
-			if ((p_Var8->horn).on == '\0') {
+			if ((pPVar8->horn).on == '\0') 
+			{
 			LAB_0005a5b8:
-				stream = CarHasSiren((uint)(byte)car_data[(&player.playerCarId)[car]].ap.model);
-				if ((stream == 0) && (p_Var8->pPed == (PEDESTRIAN *)0x0)) {
+				stream = CarHasSiren(car_data[player[car].playerCarId].ap.model);
+
+				if ((stream == 0) && (pPVar8->pPed == NULL)) 
+				{
 					stream = 2;
-					if (i != 0) {
+					if (i != 0) 
 						stream = 5;
-					}
+
 					StopChannel(stream);
-					(&player.horn.request)[car] = '\0';
-					(&player.horn.time)[car] = '\0';
+					player[car].horn.request = '\0';
+					player[car].horn.time = '\0';
 				}
 			}
 			else {
 				uVar5 = 4;
-				if (i != 0) {
+
+				if (i != 0) 
 					uVar5 = 0x20;
-				}
+
 				stream = SpuGetKeyStatus(uVar5);
-				if (stream == 0) {
-					stream = CarHasSiren((uint)(byte)car_data[p_Var8->playerCarId].ap.model);
-					if (((stream == 0) && (p_Var8->pPed == (PEDESTRIAN *)0x0)) &&
-						((p_Var8->horn).request == '\0')) {
-						(p_Var8->horn).request = '\x01';
-					}
-					(p_Var8->horn).time = '\v';
+
+				if (stream == 0) 
+				{
+					stream = CarHasSiren(car_data[pPVar8->playerCarId].ap.model);
+
+					if (((stream == 0) && (pPVar8->pPed == NULL)) && (pPVar8->horn.request == '\0')) 
+						pPVar8->horn.request = '\x01';
+
+
+					pPVar8->horn.time = '\v';
 				}
-				else {
-					if ((p_Var8->horn).on == '\0') goto LAB_0005a5b8;
+				else 
+				{
+					if ((pPVar8->horn).on == '\0')
+						goto LAB_0005a5b8;
 				}
 			}
-			DealWithHorn(&player.horn.request + car, i);
-			car = car + 0x74;
+			DealWithHorn(&player[car].horn.request, i);
+			car++;
 			i = i + 1;
-			p_Var8 = p_Var8 + 1;
+			pPVar8 = pPVar8 + 1;
 		} while (i < (int)(uint)NumPlayers);
 	}
+
 	SoundTasks();
-	if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) || (gInGameCutsceneID != 0))
-	{
-		stupid_logic_22 = (int)player.playerCarId;
-	}
-	else {
-		stupid_logic_22 = 2;
-	}
+
+	static int stupid_logic[4];
+
+	if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) || (gInGameCutsceneID != 0)) 
+		stupid_logic[0] = player[0].playerCarId;
+	else
+		stupid_logic[0] = 2;
+
+
 	i = 0;
-	piVar4 = &stupid_logic_22;
-	DAT_000d565c = (int)_PLAYER_ARRAY_000d979c[0].playerCarId;
-	DAT_000d5660 = gThePlayerCar;
-	DAT_000d5664 = leadCarId;
+	piVar4 = stupid_logic;
+
+	stupid_logic[1] = player[1].playerCarId;
+	stupid_logic[2] = gThePlayerCar;
+	stupid_logic[3] = leadCarId;
+
 	do {
 		car = i + 1;
 		if (car < 4) {
-			piVar6 = &stupid_logic_22 + car;
+			piVar6 = stupid_logic + car;
 			do {
 				if (*piVar4 == *piVar6) {
 					*piVar6 = -1;
@@ -1424,36 +1565,41 @@ LAB_00059c1c:
 		i = i + 1;
 		piVar4 = piVar4 + 1;
 	} while (i < 3);
+
 	car = 0;
-	piVar4 = &stupid_logic_22;
+	piVar4 = stupid_logic;
 	i = 0;
+
 	do {
 		stream = i;
-		if ((*piVar4 != -1) && (cVar1 = SilenceThisCar(car), CONCAT31(extraout_var, cVar1) == 0)) {
+
+		if ((*piVar4 != -1) && (cVar1 = SilenceThisCar(car), cVar1 == 0))
+		{
 			stream = i + 1;
 			CheckCarEffects(car_data + *piVar4, i);
 		}
+
 		car = car + 1;
 		piVar4 = piVar4 + 1;
 	} while ((car < 4) && (i = stream, stream < 2));
+
 	SwirlLeaves(car_data);
-	if ((gStopPadReads == 1) &&
-		(((lead_car != 0 && (saved_counter = saved_counter + 1, 0x14 < saved_counter)) &&
-		(saved_leadcar_pos == 0)))) {
+	if ((gStopPadReads == 1) && (((lead_car != 0 && (saved_counter = saved_counter + 1, 0x14 < saved_counter)) && (saved_leadcar_pos == 0)))) 
+	{
 		saved_leadcar_pos = gStopPadReads;
 		leadcar_pos.vx = car_data[lead_car].hd.where.t[0];
 		leadcar_pos.vy = car_data[lead_car].hd.where.t[1];
 		leadcar_pos.vz = car_data[lead_car].hd.where.t[2];
 	}
+
 	if ((gInGameCutsceneActive == 0) &&
 		(((car = XAPrepared(), i = xa_timeout, car != 0 && (i = xa_timeout + -1, xa_timeout == 0)) ||
-		(xa_timeout = i, xa_timeout == 0)))) {
+		(xa_timeout = i, xa_timeout == 0))))
+	{
 		StopXA();
 		UnprepareXA();
 		StartSpooling();
 	}
-	return;
-	*/
 }
 
 
@@ -1503,8 +1649,6 @@ LAB_00059c1c:
 	// End Line: 8576
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-REPLAY_PARAMETER_BLOCK *ReplayParameterPtr = NULL;
 
 // [D]
 void GameLoop(void)
@@ -1670,21 +1814,6 @@ void GameLoop(void)
 	// End Line: 8876
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-extern short paddp;
-extern short padd;
-unsigned short controller_bits = 0;
-
-VECTOR lis_pos;
-
-int gLightsOn = 0;
-int NightAmbient = 0;
-
-char CameraChanged = 0;
-char CamerasSaved = 0;
-char paused = 0;
-
-char gRightWayUp = 0;	// cheat
 
 // [D]
 void StepGame(void)
@@ -2356,6 +2485,7 @@ int redriver2_main(void)
 	/* end block 3 */
 	// End Line: 11398
 
+// [D]
 void FadeScreen(int end_value)
 {
 	int tmp2 = pauseflag;
