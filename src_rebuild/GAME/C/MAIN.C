@@ -978,9 +978,6 @@ void GameInit(void)
 	}
 
 	xa_timeout = 0;
-
-	// [A]
-	EnablePause(PAUSEMODE_PAUSE);
 }
 
 // decompiled code

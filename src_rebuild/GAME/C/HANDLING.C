@@ -1375,8 +1375,8 @@ void initOBox(_CAR_DATA *cp)
 	long uVar5;
 	long uVar6;
 
-	gte_SetRotMatrix(&cp->hd.where.m);
-	gte_SetTransMatrix(&cp->hd.where.t);
+	gte_SetRotMatrix(&cp->hd.where);
+	gte_SetTransMatrix(&cp->hd.where);
 
 	VX0 = -(((cp->ap).carCos)->cog).vx;
 	VY0 = -(((cp->ap).carCos)->cog).vy;

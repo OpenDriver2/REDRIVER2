@@ -162,7 +162,7 @@ void InitCamera(_PLAYER *lp)
 		else 
 		{
 			// [A]
-			gte_SetRotMatrix(car_data[iVar2].hd.where.m);
+			gte_SetRotMatrix(&car_data[iVar2].hd.where);
 
 			//setCopControlWord(2, 0, *(undefined4 *)car_data[iVar2].hd.where.m);
 			//setCopControlWord(2, 0x800, *(undefined4 *)(car_data[iVar2].hd.where.m + 2));
@@ -170,7 +170,7 @@ void InitCamera(_PLAYER *lp)
 			//setCopControlWord(2, 0x1800, *(undefined4 *)(car_data[iVar2].hd.where.m + 6));
 			//setCopControlWord(2, 0x2000, *(undefined4 *)(car_data[iVar2].hd.where.m + 8));
 
-			gte_SetTransVector(car_data[iVar2].hd.where.t);
+			gte_SetTransMatrix(&car_data[iVar2].hd.where);
 
 			//setCopControlWord(2, 0x2800, car_data[iVar2].hd.where.t[0]);
 			//setCopControlWord(2, 0x3000, car_data[iVar2].hd.where.t[1]);
@@ -183,7 +183,17 @@ void InitCamera(_PLAYER *lp)
 			boxDisp.vy = -(pCVar3->cog).vy;
 			boxDisp.vz = -(pCVar3->cog).vz;
 
-			gte_ApplyRotMatrix(&boxDisp, &basePos);
+			VX0 = boxDisp.vx;
+			VY0 = boxDisp.vx;
+			VZ0 = boxDisp.vx;
+
+			docop2(0x480012);
+
+			basePos[0] = MAC1;
+			basePos[1] = MAC2;
+			basePos[2] = MAC3;
+
+			//gte_ApplyRotMatrix(&boxDisp, &basePos);
 
 			baseDir = car_data[iVar2].hd.direction;
 
