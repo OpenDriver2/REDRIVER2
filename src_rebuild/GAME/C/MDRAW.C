@@ -1,6 +1,15 @@
 #include "THISDUST.H"
 #include "MDRAW.H"
-
+#include "PRES.H"
+#include "MISSION.H"
+#include "OVERMAP.H"
+#include "PRES.H"
+#include "CUTSCENE.H"
+#include "GLAUNCH.H"
+#include "MDRAW.H"
+#include "OVERLAY.H"
+#include "REPLAYS.H"
+#include "PAUSE.H"
 
 // decompiled code
 // original method signature: 
@@ -34,64 +43,73 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-void DrawMission(void)
+int gDisplayPosition = 1; // [A] was 0
 
+// [D]
+void DrawMission(void)
 {
-  char *string;
-  
-  if ((((gShowMap == 0) && (NoPlayerControl == 0)) && (gInGameCutsceneActive == 0)) &&
-     (bMissionTitleFade == 0)) {
-    if (gDisplayPosition != 0) {
-      DisplayPlayerPosition();
-    }
-    if ((MissionHeader->type & 4U) == 0) {
-      if (pauseflag == 0) {
-        if (DAT_000d7c12 != 0) {
-          if (NumPlayers == 1) {
-            DrawMessage(0x60,DAT_000d7c1c);
-          }
-          else {
-            DrawMessage(0x40,DAT_000d7c1c);
-          }
-        }
-        if (DAT_000d7c14 != 0) {
-          DrawMessage(0xc0,DAT_000d7c20);
-        }
-      }
-    }
-    else {
-      SetTextColour(-0x80,-0x80,'@');
-      if (g321GoDelay < 0x20) {
-        string = &DAT_000aa68c;
-      }
-      else {
-        if (g321GoDelay < 0x40) {
-          string = (char *)0xaa690;
-        }
-        else {
-          string = (char *)0xaa694;
-        }
-      }
-      if (NumPlayers == 1) {
-        PrintScaledString(0x60,string,0x20 - (g321GoDelay & 0x1fU));
-      }
-      else {
-        PrintScaledString(0x40,string,0x20 - (g321GoDelay & 0x1fU));
-        PrintScaledString(0xc0,string,0x20 - (g321GoDelay & 0x1fU));
-      }
-    }
-    if ((Mission != 0) && (NoPlayerControl == 0)) {
-      DrawWorldTargets();
-      DrawTimer((MR_TIMER *)&DAT_000d7c24);
-      DrawTimer((MR_TIMER *)&DAT_000d7c30);
-      DrawProximityBar(&ProxyBar);
-      if (gOutOfTape != 0) {
-        SetTextColour(-0x80,-0x80,'@');
-        PrintString(s_Nastro_esaurito_000110c8,0x14,0xec);
-      }
-    }
-  }
-  return;
+	char *string;
+
+	if ((((gShowMap == 0) && (NoPlayerControl == 0)) && (gInGameCutsceneActive == 0)) &&
+		(bMissionTitleFade == 0)) {
+		if (gDisplayPosition != 0) {
+			DisplayPlayerPosition();
+		}
+		if ((MissionHeader->type & 4U) == 0) {
+			if (pauseflag == 0) {
+				if (Mission.message_timer[0] != 0) {
+					if (NumPlayers == 1) {
+						DrawMessage(0x60, Mission.message_string[0]);
+					}
+					else {
+						DrawMessage(0x40, Mission.message_string[0]);
+					}
+				}
+				if (Mission.message_timer[1] != 0) {
+					DrawMessage(0xc0, Mission.message_string[1]);
+				}
+			}
+		}
+		else {
+			SetTextColour(0x80, 0x80, 0x40);
+
+			if (g321GoDelay < 0x20)
+			{
+				string = "3";
+			}
+			else
+			{
+				if (g321GoDelay < 0x40)
+				{
+					string = "2";
+				}
+				else
+				{
+					string = "1";
+				}
+			}
+			if (NumPlayers == 1) {
+				PrintScaledString(0x60, string, 0x20 - (g321GoDelay & 0x1fU));
+			}
+			else {
+				PrintScaledString(0x40, string, 0x20 - (g321GoDelay & 0x1fU));
+				PrintScaledString(0xc0, string, 0x20 - (g321GoDelay & 0x1fU));
+			}
+		}
+		if ((Mission.active != 0) && (NoPlayerControl == 0))
+		{
+			DrawWorldTargets();
+			DrawTimer(Mission.timer);
+			DrawTimer(Mission.timer + 1);
+
+			DrawProximityBar(&ProxyBar);
+
+			if (gOutOfTape != 0) {
+				SetTextColour(-0x80, -0x80, '@');
+				PrintString("Out of tape", 0x14, 0xec);
+			}
+		}
+	}
 }
 
 
@@ -115,30 +133,33 @@ void DrawMission(void)
 	// End Line: 253
 
 void DrawTimer(MR_TIMER *timer)
-
 {
-  short sVar1;
-  undefined2 extraout_var;
-  char acStack32 [16];
-  
-  if (((timer->flags & 1) != 0) && ((timer->flags & 0x20) == 0)) {
-    if (NumPlayers == 1) {
-      SetTextColour(-0x80,-0x80,-0x80);
-    }
-    else {
-      if (timer == (MR_TIMER *)&DAT_000d7c24) {
-        SetTextColour(-0x80,' ',' ');
-      }
-      else {
-        SetTextColour(' ',-0x80,' ');
-      }
-    }
-    sprintf(acStack32,s__02d__02d_000110d8,(uint)timer->min,(uint)timer->sec);
-    sVar1 = PrintDigit((int)timer->x,(int)timer->y,acStack32);
-    sprintf(acStack32,s___02d_000aa698,(uint)timer->frac);
-    PrintString(acStack32,CONCAT22(extraout_var,sVar1),(int)timer->y + 0xd);
-  }
-  return;
+	UNIMPLEMENTED();
+
+	/*
+	short sVar1;
+	undefined2 extraout_var;
+	char acStack32[16];
+
+	if (((timer->flags & 1) != 0) && ((timer->flags & 0x20) == 0)) {
+		if (NumPlayers == 1) {
+			SetTextColour(-0x80, -0x80, -0x80);
+		}
+		else {
+			if (timer == (MR_TIMER *)&DAT_000d7c24) {
+				SetTextColour(-0x80, ' ', ' ');
+			}
+			else {
+				SetTextColour(' ', -0x80, ' ');
+			}
+		}
+		sprintf(acStack32, s__02d__02d_000110d8, (uint)timer->min, (uint)timer->sec);
+		sVar1 = PrintDigit((int)timer->x, (int)timer->y, acStack32);
+		sprintf(acStack32, s___02d_000aa698, (uint)timer->frac);
+		PrintString(acStack32, CONCAT22(extraout_var, sVar1), (int)timer->y + 0xd);
+	}
+	return;
+	*/
 }
 
 
@@ -173,14 +194,13 @@ void DrawTimer(MR_TIMER *timer)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DisplayPlayerPosition(void)
-
 {
-  char acStack40 [32];
-  
-  sprintf(acStack40,s_X___d__Z___d_000110e4,player.pos[0],player.pos[2]);
-  PrintString(acStack40,0x14,0xd2);
-  return;
+	char string[32];
+
+	sprintf(string, "X: %d, Z: %d", player[0].pos[0], player[0].pos[2]);
+	PrintString(string, 20, 210);
 }
 
 
@@ -213,22 +233,22 @@ void DisplayPlayerPosition(void)
 	/* end block 3 */
 	// End Line: 752
 
-void DrawMessage(int y,char *string)
-
+// [D]
+void DrawMessage(int y, char *string)
 {
-  int iVar1;
-  
-  if (string != (char *)0x0) {
-    SetTextColour(-0x80,-0x80,'@');
-    iVar1 = StringWidth(string);
-    if (iVar1 < 0x111) {
-      PrintStringCentred(string,(short)((uint)((y + -10) * 0x10000) >> 0x10));
-    }
-    else {
-      PrintStringBoxed(string,0x18,y + -10);
-    }
-  }
-  return;
+	int iVar1;
+
+	if (string != (char *)0x0) {
+		SetTextColour(-0x80, -0x80, '@');
+		iVar1 = StringWidth(string);
+		if (iVar1 < 0x111) {
+			PrintStringCentred(string, (short)((uint)((y + -10) * 0x10000) >> 0x10));
+		}
+		else {
+			PrintStringBoxed(string, 0x18, y + -10);
+		}
+	}
+	return;
 }
 
 
@@ -268,22 +288,22 @@ void DrawMessage(int y,char *string)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawWorldTargets(void)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if (Mission != 0) {
-    iVar2 = 0;
-    iVar1 = 0;
-    do {
-      iVar2 = iVar2 + 1;
-      DrawWorldTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-      iVar1 = iVar2 * 0x40;
-    } while (iVar2 < 0x10);
-  }
-  return;
+	int iVar1;
+	int iVar2;
+
+	if (Mission.active != 0) {
+		iVar2 = 0;
+		iVar1 = 0;
+		do {
+			iVar2 = iVar2 + 1;
+			DrawWorldTarget((_TARGET *)((int)MissionTargets->data + iVar1));
+			iVar1 = iVar2 * 0x40;
+		} while (iVar2 < 0x10);
+	}
+	return;
 }
 
 
@@ -318,22 +338,22 @@ void DrawWorldTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawOverheadTargets(void)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if (Mission != 0) {
-    iVar2 = 0;
-    iVar1 = 0;
-    do {
-      iVar2 = iVar2 + 1;
-      DrawOverheadTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-      iVar1 = iVar2 * 0x40;
-    } while (iVar2 < 0x10);
-  }
-  return;
+	int iVar1;
+	int iVar2;
+
+	if (Mission.active != 0) {
+		iVar2 = 0;
+		iVar1 = 0;
+		do {
+			iVar2 = iVar2 + 1;
+			DrawOverheadTarget((_TARGET *)((int)MissionTargets->data + iVar1));
+			iVar1 = iVar2 * 0x40;
+		} while (iVar2 < 0x10);
+	}
+	return;
 }
 
 
@@ -368,22 +388,22 @@ void DrawOverheadTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawFullscreenTargets(void)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if (Mission != 0) {
-    iVar2 = 0;
-    iVar1 = 0;
-    do {
-      iVar2 = iVar2 + 1;
-      DrawFullscreenTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-      iVar1 = iVar2 * 0x40;
-    } while (iVar2 < 0x10);
-  }
-  return;
+	int iVar1;
+	int iVar2;
+
+	if (Mission.active != 0) {
+		iVar2 = 0;
+		iVar1 = 0;
+		do {
+			iVar2 = iVar2 + 1;
+			DrawFullscreenTarget((_TARGET *)((int)MissionTargets->data + iVar1));
+			iVar1 = iVar2 * 0x40;
+		} while (iVar2 < 0x10);
+	}
+	return;
 }
 
 
@@ -418,22 +438,22 @@ void DrawFullscreenTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawMultiplayerTargets(void)
-
 {
-  int iVar1;
-  int iVar2;
-  
-  if (Mission != 0) {
-    iVar2 = 0;
-    iVar1 = 0;
-    do {
-      iVar2 = iVar2 + 1;
-      DrawMultiplayerTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-      iVar1 = iVar2 * 0x40;
-    } while (iVar2 < 0x10);
-  }
-  return;
+	int iVar1;
+	int iVar2;
+
+	if (Mission.active != 0) {
+		iVar2 = 0;
+		iVar1 = 0;
+		do {
+			iVar2 = iVar2 + 1;
+			DrawMultiplayerTarget((_TARGET *)((int)MissionTargets->data + iVar1));
+			iVar1 = iVar2 * 0x40;
+		} while (iVar2 < 0x10);
+	}
+	return;
 }
 
 
@@ -456,48 +476,48 @@ void DrawMultiplayerTargets(void)
 	/* end block 2 */
 	// End Line: 894
 
+// [D]
 void DrawOverheadTarget(_TARGET *target)
-
 {
-  int iVar1;
-  int *piVar2;
-  VECTOR local_18;
-  
-  iVar1 = TargetComplete(target,-1);
-  if (iVar1 != 0) {
-    return;
-  }
-  if ((target->data[1] & 0x600U) == 0) {
-    return;
-  }
-  iVar1 = target->data[0];
-  if (iVar1 != 2) {
-    if (2 < iVar1) {
-      if (iVar1 != 3) {
-        return;
-      }
-      piVar2 = (int *)target->data[4];
-      local_18.vx = *piVar2;
-      local_18.vy = piVar2[1];
-      local_18.vz = piVar2[2];
-      local_18.pad = piVar2[3];
-      goto LAB_0005fe3c;
-    }
-    if (iVar1 != 1) {
-      return;
-    }
-  }
-  local_18.vx = target->data[3];
-  local_18.vz = target->data[4];
-  local_18.vy = 0;
+	int iVar1;
+	int *piVar2;
+	VECTOR local_18;
+
+	iVar1 = TargetComplete(target, -1);
+	if (iVar1 != 0) {
+		return;
+	}
+	if ((target->data[1] & 0x600U) == 0) {
+		return;
+	}
+	iVar1 = target->data[0];
+	if (iVar1 != 2) {
+		if (2 < iVar1) {
+			if (iVar1 != 3) {
+				return;
+			}
+			piVar2 = (int *)target->data[4];
+			local_18.vx = *piVar2;
+			local_18.vy = piVar2[1];
+			local_18.vz = piVar2[2];
+			local_18.pad = piVar2[3];
+			goto LAB_0005fe3c;
+		}
+		if (iVar1 != 1) {
+			return;
+		}
+	}
+	local_18.vx = target->data[3];
+	local_18.vz = target->data[4];
+	local_18.vy = 0;
 LAB_0005fe3c:
-  if ((target->data[2] & 0x10U) != 0) {
-    DrawTargetBlip(&local_18,'@','@','@',0x11);
-  }
-  if ((target->data[2] & 0x40U) != 0) {
-    DrawTargetArrow(&local_18,1);
-  }
-  return;
+	if ((target->data[2] & 0x10U) != 0) {
+		DrawTargetBlip(&local_18, '@', '@', '@', 0x11);
+	}
+	if ((target->data[2] & 0x40U) != 0) {
+		DrawTargetArrow(&local_18, 1);
+	}
+	return;
 }
 
 
@@ -520,51 +540,49 @@ LAB_0005fe3c:
 	/* end block 2 */
 	// End Line: 978
 
+// [D]
 void DrawFullscreenTarget(_TARGET *target)
-
 {
-  int iVar1;
-  int *piVar2;
-  VECTOR local_18;
-  
-  iVar1 = TargetComplete(target,-1);
-  if (iVar1 != 0) {
-    return;
-  }
-  if ((target->data[1] & 0x600U) == 0) {
-    return;
-  }
-  iVar1 = target->data[0];
-  if (iVar1 != 2) {
-    if (2 < iVar1) {
-      if (iVar1 != 3) {
-        return;
-      }
-      piVar2 = (int *)target->data[4];
-      local_18.vx = *piVar2;
-      local_18.vy = piVar2[1];
-      local_18.vz = piVar2[2];
-      local_18.pad = piVar2[3];
-      goto LAB_0005ff54;
-    }
-    if (iVar1 != 1) {
-      return;
-    }
-  }
-  local_18.vx = target->data[3];
-  local_18.vz = target->data[4];
-  local_18.vy = 0;
+	int iVar1;
+	int *piVar2;
+	VECTOR local_18;
+
+	iVar1 = TargetComplete(target, -1);
+	if (iVar1 != 0) {
+		return;
+	}
+	if ((target->data[1] & 0x600U) == 0) {
+		return;
+	}
+	iVar1 = target->data[0];
+	if (iVar1 != 2) {
+		if (2 < iVar1) {
+			if (iVar1 != 3) {
+				return;
+			}
+			piVar2 = (int *)target->data[4];
+			local_18.vx = *piVar2;
+			local_18.vy = piVar2[1];
+			local_18.vz = piVar2[2];
+			local_18.pad = piVar2[3];
+			goto LAB_0005ff54;
+		}
+		if (iVar1 != 1) {
+			return;
+		}
+	}
+	local_18.vx = target->data[3];
+	local_18.vz = target->data[4];
+	local_18.vy = 0;
 LAB_0005ff54:
-  if ((target->data[2] & 0x10U) != 0) {
-    DrawTargetBlip(&local_18,'@','@','@',0x14);
-  }
-  if ((target->data[2] & 0x40U) != 0) {
-    DrawTargetArrow(&local_18,4);
-  }
-  return;
+	if ((target->data[2] & 0x10U) != 0) {
+		DrawTargetBlip(&local_18, '@', '@', '@', 0x14);
+	}
+	if ((target->data[2] & 0x40U) != 0) {
+		DrawTargetArrow(&local_18, 4);
+	}
+	return;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -592,110 +610,112 @@ LAB_0005ff54:
 	// End Line: 634
 
 void DrawWorldTarget(_TARGET *target)
-
 {
-  int iVar1;
-  int iVar2;
-  ulong uVar3;
-  uint uVar4;
-  long *plVar5;
-  uint flags;
-  VECTOR local_20;
-  
-  iVar2 = TargetComplete(target,CurrentPlayerView);
-  if (iVar2 != 0) {
-    return;
-  }
-  iVar2 = TargetActive(target,CurrentPlayerView);
-  if (iVar2 == 0) {
-    return;
-  }
-  iVar2 = target->data[0];
-  gDraw3DArrowBlue = 0;
-  flags = 0;
-  if (iVar2 == 2) {
-    iVar2 = target->data[6];
-    if (iVar2 == -1) {
-      gDraw3DArrowBlue = 0;
-      return;
-    }
-    local_20.vx = car_data[iVar2].hd.where.t[0];
-    local_20.vz = car_data[iVar2].hd.where.t[2];
-    local_20.vy = (int)-car_data[iVar2].hd.where.t[1];
-    goto LAB_0005f7dc;
-  }
-  if (2 < iVar2) {
-    if (iVar2 != 3) {
-      gDraw3DArrowBlue = 0;
-      return;
-    }
-    plVar5 = (long *)target->data[4];
-    local_20.vx = *plVar5;
-    local_20.vy = (int)plVar5[1];
-    local_20.vz = plVar5[2];
-    local_20.pad = plVar5[3];
-    goto LAB_0005f7dc;
-  }
-  if (iVar2 != 1) {
-    gDraw3DArrowBlue = 0;
-    return;
-  }
-  local_20.vx = target->data[3];
-  local_20.vz = target->data[4];
-  local_20.vy = &DAT_00002710;
-  uVar4 = target->data[1] & 0x30000;
-  flags = 2;
-  if (uVar4 == 0x20000) {
-LAB_0005f69c:
-    gDraw3DArrowBlue = iVar2;
-  }
-  else {
-    if (uVar4 < 0x20001) {
-      if (uVar4 != 0x10000) {
-LAB_0005f6c8:
-        gDraw3DArrowBlue = CurrentPlayerView;
-      }
-    }
-    else {
-      if (uVar4 != 0x30000) goto LAB_0005f6c8;
-      iVar1 = CurrentPlayerView;
-      if (gPlayerWithTheFlag != -1) {
-        if (CurrentPlayerView == gPlayerWithTheFlag) {
-          gDraw3DArrowBlue = 0;
-          return;
-        }
-        local_20.vx = (&player)[gPlayerWithTheFlag].pos[0];
-        local_20.vz = (&player)[gPlayerWithTheFlag].pos[2];
-        iVar1 = gPlayerWithTheFlag;
-      }
-      if (iVar1 == 1) goto LAB_0005f69c;
-    }
-  }
-  if (((gMultiplayerLevels == 0) || (doSpooling != 0)) &&
-     (uVar3 = Long2DDistance(player.spoolXZ,&local_20), 0x3e1c < (int)uVar3)) {
-    return;
-  }
-  if (target->data[7] == 0) {
-    iVar2 = MapHeight(&local_20);
-    local_20.vy = (int)-iVar2;
-  }
-  else {
-    local_20.vy = (int)target->data[6];
-  }
+	UNIMPLEMENTED();
+
+	/*
+	int iVar1;
+	int iVar2;
+	ulong uVar3;
+	uint uVar4;
+	long *plVar5;
+	uint flags;
+	VECTOR local_20;
+
+	iVar2 = TargetComplete(target, CurrentPlayerView);
+	if (iVar2 != 0) {
+		return;
+	}
+	iVar2 = TargetActive(target, CurrentPlayerView);
+	if (iVar2 == 0) {
+		return;
+	}
+	iVar2 = target->data[0];
+	gDraw3DArrowBlue = 0;
+	flags = 0;
+	if (iVar2 == 2) {
+		iVar2 = target->data[6];
+		if (iVar2 == -1) {
+			gDraw3DArrowBlue = 0;
+			return;
+		}
+		local_20.vx = car_data[iVar2].hd.where.t[0];
+		local_20.vz = car_data[iVar2].hd.where.t[2];
+		local_20.vy = (int)-car_data[iVar2].hd.where.t[1];
+		goto LAB_0005f7dc;
+	}
+	if (2 < iVar2) {
+		if (iVar2 != 3) {
+			gDraw3DArrowBlue = 0;
+			return;
+		}
+		plVar5 = (long *)target->data[4];
+		local_20.vx = *plVar5;
+		local_20.vy = (int)plVar5[1];
+		local_20.vz = plVar5[2];
+		local_20.pad = plVar5[3];
+		goto LAB_0005f7dc;
+	}
+	if (iVar2 != 1) {
+		gDraw3DArrowBlue = 0;
+		return;
+	}
+	local_20.vx = target->data[3];
+	local_20.vz = target->data[4];
+	local_20.vy = &DAT_00002710;
+	uVar4 = target->data[1] & 0x30000;
+	flags = 2;
+	if (uVar4 == 0x20000) {
+	LAB_0005f69c:
+		gDraw3DArrowBlue = iVar2;
+	}
+	else {
+		if (uVar4 < 0x20001) {
+			if (uVar4 != 0x10000) {
+			LAB_0005f6c8:
+				gDraw3DArrowBlue = CurrentPlayerView;
+			}
+		}
+		else {
+			if (uVar4 != 0x30000) goto LAB_0005f6c8;
+			iVar1 = CurrentPlayerView;
+			if (gPlayerWithTheFlag != -1) {
+				if (CurrentPlayerView == gPlayerWithTheFlag) {
+					gDraw3DArrowBlue = 0;
+					return;
+				}
+				local_20.vx = (&player)[gPlayerWithTheFlag].pos[0];
+				local_20.vz = (&player)[gPlayerWithTheFlag].pos[2];
+				iVar1 = gPlayerWithTheFlag;
+			}
+			if (iVar1 == 1) goto LAB_0005f69c;
+		}
+	}
+	if (((gMultiplayerLevels == 0) || (doSpooling != 0)) &&
+		(uVar3 = Long2DDistance(player.spoolXZ, &local_20), 0x3e1c < (int)uVar3)) {
+		return;
+	}
+	if (target->data[7] == 0) {
+		iVar2 = MapHeight(&local_20);
+		local_20.vy = (int)-iVar2;
+	}
+	else {
+		local_20.vy = (int)target->data[6];
+	}
 LAB_0005f7dc:
-  if (((gMultiplayerLevels != 0) && (doSpooling == 0)) ||
-     (uVar3 = Long2DDistance(player.spoolXZ,&local_20), (int)uVar3 < 0x3e1d)) {
-    if ((target->data[2] & 0x20U) != 0) {
-      flags = flags | 1;
-    }
-    if ((target->data[2] & 0x80U) != 0) {
-      flags = flags | 0x20;
-    }
-    if (flags != 0) {
-      Draw3DTarget(&local_20,flags);
-    }
-  }
-  return;
+	if (((gMultiplayerLevels != 0) && (doSpooling == 0)) ||
+		(uVar3 = Long2DDistance(player.spoolXZ, &local_20), (int)uVar3 < 0x3e1d)) {
+		if ((target->data[2] & 0x20U) != 0) {
+			flags = flags | 1;
+		}
+		if ((target->data[2] & 0x80U) != 0) {
+			flags = flags | 0x20;
+		}
+		if (flags != 0) {
+			Draw3DTarget(&local_20, flags);
+		}
+	}
+	return;*/
 }
 
 
@@ -722,84 +742,86 @@ LAB_0005f7dc:
 	// End Line: 860
 
 void DrawMultiplayerTarget(_TARGET *target)
-
 {
-  int iVar1;
-  uint uVar2;
-  long *plVar3;
-  uchar b;
-  uchar g;
-  uchar r;
-  VECTOR local_28;
-  
-  iVar1 = TargetComplete(target,-1);
-  if (iVar1 != 0) {
-    return;
-  }
-  iVar1 = TargetActive(target,0);
-  if ((iVar1 == 0) && (iVar1 = TargetActive(target,1), iVar1 == 0)) {
-    return;
-  }
-  r = '@';
-  g = '@';
-  iVar1 = target->data[0];
-  b = '@';
-  if (iVar1 == 2) {
-    local_28.vx = target->data[3];
-    local_28.vz = target->data[4];
-    local_28.vy = 0;
-    goto LAB_0005fa40;
-  }
-  if (2 < iVar1) {
-    if (iVar1 != 3) {
-      return;
-    }
-    plVar3 = (long *)target->data[4];
-    local_28.vx = *plVar3;
-    local_28.vy = plVar3[1];
-    local_28.vz = plVar3[2];
-    local_28.pad = plVar3[3];
-    goto LAB_0005fa40;
-  }
-  if (iVar1 != 1) {
-    return;
-  }
-  local_28.vx = target->data[3];
-  local_28.vz = target->data[4];
-  local_28.vy = 0;
-  uVar2 = target->data[1] & 0x30000;
-  if (uVar2 == 0x20000) {
-LAB_0005f9e4:
-    r = '\0';
-    g = -0x80;
-    b = '\0';
-  }
-  else {
-    if (uVar2 < 0x20001) {
-      if (uVar2 != 0x10000) {
-LAB_0005f998:
-        if ((NumPlayers < 2) || (iVar1 = TargetActive(target,-1), iVar1 != 0)) goto LAB_0005fa40;
-        iVar1 = TargetActive(target,0);
-        if (iVar1 == 0) goto LAB_0005f9e4;
-      }
-    }
-    else {
-      if (uVar2 != 0x30000) goto LAB_0005f998;
-      if (gPlayerWithTheFlag == -1) goto LAB_0005fa40;
-      local_28.vx = (&player)[gPlayerWithTheFlag].pos[0];
-      local_28.vz = (&player)[gPlayerWithTheFlag].pos[2];
-      local_28.vy = 0;
-      if (gPlayerWithTheFlag != 0) goto LAB_0005f9e4;
-    }
-    r = -0x80;
-    g = '\0';
-    b = '\0';
-  }
+	UNIMPLEMENTED();
+
+	/*
+	int iVar1;
+	uint uVar2;
+	long *plVar3;
+	uchar b;
+	uchar g;
+	uchar r;
+	VECTOR local_28;
+
+	iVar1 = TargetComplete(target, -1);
+	if (iVar1 != 0) {
+		return;
+	}
+	iVar1 = TargetActive(target, 0);
+	if ((iVar1 == 0) && (iVar1 = TargetActive(target, 1), iVar1 == 0)) {
+		return;
+	}
+	r = '@';
+	g = '@';
+	iVar1 = target->data[0];
+	b = '@';
+	if (iVar1 == 2) {
+		local_28.vx = target->data[3];
+		local_28.vz = target->data[4];
+		local_28.vy = 0;
+		goto LAB_0005fa40;
+	}
+	if (2 < iVar1) {
+		if (iVar1 != 3) {
+			return;
+		}
+		plVar3 = (long *)target->data[4];
+		local_28.vx = *plVar3;
+		local_28.vy = plVar3[1];
+		local_28.vz = plVar3[2];
+		local_28.pad = plVar3[3];
+		goto LAB_0005fa40;
+	}
+	if (iVar1 != 1) {
+		return;
+	}
+	local_28.vx = target->data[3];
+	local_28.vz = target->data[4];
+	local_28.vy = 0;
+	uVar2 = target->data[1] & 0x30000;
+	if (uVar2 == 0x20000) {
+	LAB_0005f9e4:
+		r = '\0';
+		g = -0x80;
+		b = '\0';
+	}
+	else {
+		if (uVar2 < 0x20001) {
+			if (uVar2 != 0x10000) {
+			LAB_0005f998:
+				if ((NumPlayers < 2) || (iVar1 = TargetActive(target, -1), iVar1 != 0)) goto LAB_0005fa40;
+				iVar1 = TargetActive(target, 0);
+				if (iVar1 == 0) goto LAB_0005f9e4;
+			}
+		}
+		else {
+			if (uVar2 != 0x30000) goto LAB_0005f998;
+			if (gPlayerWithTheFlag == -1) goto LAB_0005fa40;
+			local_28.vx = (&player)[gPlayerWithTheFlag].pos[0];
+			local_28.vz = (&player)[gPlayerWithTheFlag].pos[2];
+			local_28.vy = 0;
+			if (gPlayerWithTheFlag != 0) goto LAB_0005f9e4;
+		}
+		r = -0x80;
+		g = '\0';
+		b = '\0';
+	}
 LAB_0005fa40:
-  if ((target->data[2] & 0x10U) != 0) {
-    DrawTargetBlip(&local_28,r,g,b,0x30);
-  }
-  return;
+	if ((target->data[2] & 0x10U) != 0) {
+		DrawTargetBlip(&local_28, r, g, b, 0x30);
+	}
+	return;*/
 }
 
 

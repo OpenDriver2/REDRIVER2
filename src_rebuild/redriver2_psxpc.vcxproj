@@ -207,6 +207,7 @@
     <ClCompile Include="GAME\C\LOADVIEW.C" />
     <ClCompile Include="GAME\C\MAIN.C" />
     <ClCompile Include="GAME\C\MAP.C" />
+    <ClCompile Include="GAME\C\MDRAW.C" />
     <ClCompile Include="GAME\C\MGENERIC.C" />
     <ClCompile Include="GAME\C\MISSION.C" />
     <ClCompile Include="GAME\C\MODELS.C" />

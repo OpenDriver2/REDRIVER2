@@ -28,6 +28,10 @@ extern int gShowPlayerDamage;
 extern int gDontPingInCops;
 extern int gBatterPlayer;
 extern int bMissionTitleFade;
+extern int g321GoDelay;
+
+
+extern MR_MISSION Mission;
 
 extern int wantedCar[2];
 extern int multiplayerregions[4];

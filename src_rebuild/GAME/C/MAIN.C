@@ -2590,8 +2590,10 @@ void RenderGame2(int view)
 
 	CurrentPlayerView = view;
 	InitCamera((_PLAYER *)(player + view));
+
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
+
 	SetupDrawMapPSX();
 
 	if (gLoadedMotionCapture != 0) 

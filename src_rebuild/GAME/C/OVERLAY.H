@@ -1,6 +1,7 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
+extern _PERCENTAGE_BAR ProxyBar;
 
 extern void InitOverlays(); // 0x00014A58
 

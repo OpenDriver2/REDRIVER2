@@ -341,7 +341,7 @@ void ModifyCamera(void)
 
 			if ((Pads[i].mapped & 0x100) != 0)
 			{
-				if ((pPVar3->viewChange != FrameCnt + -1) && (true)) 
+				if ((pPVar3->viewChange != FrameCnt + -1)) 
 				{
 					pbVar4 = inGameCamera;
 					bVar2 = inGameCamera[0];

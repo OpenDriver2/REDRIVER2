@@ -5,6 +5,8 @@
 #include "DEBRIS.H"
 #include "DR2ROADS.H"
 #include "SPOOL.H"
+#include "PAUSE.H"
+
 
 #include <string.h>
 
@@ -124,12 +126,13 @@ int CopsAllowed = 0;
 int MaxPlayerDamage[2] = { 0x1f40 };
 int prevCopsInPursuit = 0;
 int gPlayerWithTheFlag = -1;
+int g321GoDelay = 0;
+
 int last_flag = -1;
 int cop_adjust = 0;
 
 int gLapTimes[5][2];
 int lastsay = -1;
-int g321GoDelay = 0;
 
 int gCarWithABerm = -1;
 int gCantDrive = 0;
@@ -3701,66 +3704,4 @@ void MakePhantomCarEqualPlayerCar(void)
 	}
 	return;
 	*/
-}
-
-
-void DrawMission(void)
-{
-	UNIMPLEMENTED();
-	/*
-	char *string;
-
-	if ((((gShowMap == 0) && (NoPlayerControl == 0)) && (gInGameCutsceneActive == 0)) &&
-		(bMissionTitleFade == 0)) {
-		if (gDisplayPosition != 0) {
-			DisplayPlayerPosition();
-		}
-		if ((MissionHeader->type & 4U) == 0) {
-			if (pauseflag == 0) {
-				if (Mission.message_timer[0] != 0) {
-					if (NumPlayers == 1) {
-						DrawMessage(0x60, Mission.message_string[0]);
-					}
-					else {
-						DrawMessage(0x40, Mission.message_string[0]);
-					}
-				}
-				if (Mission.message_timer[1] != 0) {
-					DrawMessage(0xc0, Mission.message_string[1]);
-				}
-			}
-		}
-		else {
-			SetTextColour(-0x80, -0x80, '@');
-			if (g321GoDelay < 0x20) {
-				string = &DAT_000aa68c;
-			}
-			else {
-				if (g321GoDelay < 0x40) {
-					string = (char *)0xaa690;
-				}
-				else {
-					string = (char *)0xaa694;
-				}
-			}
-			if (NumPlayers == 1) {
-				PrintScaledString(0x60, string, 0x20 - (g321GoDelay & 0x1fU));
-			}
-			else {
-				PrintScaledString(0x40, string, 0x20 - (g321GoDelay & 0x1fU));
-				PrintScaledString(0xc0, string, 0x20 - (g321GoDelay & 0x1fU));
-			}
-		}
-		if ((Mission.active != 0) && (NoPlayerControl == 0)) {
-			DrawWorldTargets();
-			DrawTimer(Mission.timer);
-			DrawTimer(Mission.timer + 1);
-			DrawProximityBar(&ProxyBar);
-			if (gOutOfTape != 0) {
-				SetTextColour(-0x80, -0x80, '@');
-				PrintString(s_Nastro_esaurito_000110c8, 0x14, 0xec);
-			}
-		}
-	}
-	return;*/
 }
