@@ -1,6 +1,10 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
+extern _PERCENTAGE_BAR PlayerDamageBar;
+extern _PERCENTAGE_BAR Player2DamageBar;
+extern _PERCENTAGE_BAR DamageBar;
+extern _PERCENTAGE_BAR FelonyBar;
 extern _PERCENTAGE_BAR ProxyBar;
 
 extern void InitOverlays(); // 0x00014A58

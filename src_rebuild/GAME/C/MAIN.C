@@ -1740,7 +1740,7 @@ void StepGame(void)
 	lis_pos.vz = camera_position.vz;
 	lis_pos.pad = camera_position.pad;
 
-	FrAng = ratan2(0xa0, scr_z);
+	FrAng = ratan2(160, scr_z);
 
 	if ((gTimeInWater == 0) || (gSinkingTimer < 100)) 
 	{
@@ -2410,13 +2410,12 @@ void FadeScreen(int end_value)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void UpdatePlayerInformation(void)
 {
-	UNIMPLEMENTED();
-	/*
 	short *psVar1;
 	int iVar2;
-	byte *pbVar3;
+	unsigned char *pbVar3;
 	WHEEL *pWVar4;
 	int iVar5;
 	int iVar6;
@@ -2424,34 +2423,40 @@ void UpdatePlayerInformation(void)
 	int iVar8;
 	_CAR_DATA *p_Var9;
 
-	p_Var9 = (_CAR_DATA *)0x0;
-	PlayerDamageBar.max = (ushort)MaxPlayerDamage;
-	Player2DamageBar.max = (ushort)INT_000aa714;
+	p_Var9 = NULL;
+	PlayerDamageBar.max = (ushort)MaxPlayerDamage[0];
+	Player2DamageBar.max = (ushort)MaxPlayerDamage[1];
+
 	if (gPlayerImmune != 0) {
-		if ((int)player.playerCarId < 0) {
+		if ((int)player[0].playerCarId < 0) {
 			psVar1 = &pedestrianFelony;
 		}
 		else {
-			psVar1 = &car_data[(int)player.playerCarId].felonyRating;
+			psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
 		}
 		*psVar1 = 0;
 	}
-	if ((int)player.playerCarId < 0) {
+
+	if ((int)player[0].playerCarId < 0) {
 		psVar1 = &pedestrianFelony;
 	}
 	else {
-		psVar1 = &car_data[(int)player.playerCarId].felonyRating;
+		psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
 	}
+
 	FelonyBar.position = *psVar1;
 	if (NumPlayers != 0) {
 		iVar2 = 0;
 		iVar8 = 0;
 		do {
 			iVar2 = (iVar2 * 4 + iVar8 * -3) * 4;
-			if ((&player.playerType)[iVar2] == '\x01') {
-				iVar2 = (int)(&player.playerCarId)[iVar2];
+			if ((&player[0].playerType)[iVar2] == '\x01') 
+			{
+				iVar2 = (int)(&player[0].playerCarId)[iVar2];
 				p_Var9 = car_data + iVar2;
-				if (gInvincibleCar != 0) {
+
+				if (gInvincibleCar != 0)
+				{
 					car_data[iVar2].totalDamage = 0;
 					ClearMem((char *)car_data[iVar2].ap.damage, 0xc);
 				}
@@ -2475,42 +2480,48 @@ void UpdatePlayerInformation(void)
 					iVar5 = iVar5 + -1;
 					pbVar3 = pbVar3 + 4;
 				} while (-1 < iVar5);
-				if (iVar6 == 4) {
+
+				if (iVar6 == 4) 
+				{
 					car_data[iVar2].totalDamage =
-						car_data[iVar2].totalDamage + (short)((&MaxPlayerDamage)[iVar8] / 0x50);
+						car_data[iVar2].totalDamage + (short)(MaxPlayerDamage[iVar8] / 0x50);
 				}
-				if ((&MaxPlayerDamage)[iVar8] < (int)(uint)car_data[iVar2].totalDamage) {
-					car_data[iVar2].totalDamage = *(ushort *)(&MaxPlayerDamage + iVar8);
+
+				if (MaxPlayerDamage[iVar8] < (int)(uint)car_data[iVar2].totalDamage) {
+					car_data[iVar2].totalDamage = *(ushort *)(MaxPlayerDamage + iVar8);
 				}
+
 				if (iVar8 == 0) {
 					PlayerDamageBar.position = car_data[iVar2].totalDamage;
 				}
-				else {
+				else
+				{
 					Player2DamageBar.position = car_data[iVar2].totalDamage;
 				}
 			}
 			else {
 				iVar7 = iVar8 + 1;
-				if (iVar8 == 0) {
+				if (iVar8 == 0)
+				{
 					PlayerDamageBar.position = 0;
 					iVar7 = 1;
 				}
-				else {
+				else
+				{
 					Player2DamageBar.position = 0;
 				}
 			}
 			if (((0x1df < gCurrentMissionNumber) &&
 				(((gCurrentMissionNumber < 0x1e2 ||
 				((gCurrentMissionNumber < 0x1e6 && (0x1e3 < gCurrentMissionNumber)))) &&
-					((p_Var9->hd).where.t[1] < -0x2ee)))) && (gDieWithFade == 0)) {
+				((p_Var9->hd).where.t[1] < -0x2ee)))) && (gDieWithFade == 0))
+			{
 				gDieWithFade = 1;
 			}
 			iVar2 = iVar7 << 3;
 			iVar8 = iVar7;
 		} while (iVar7 < (int)(uint)NumPlayers);
 	}
-	return;
-	*/
 }
 
 
