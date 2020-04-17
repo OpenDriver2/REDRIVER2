@@ -4,7 +4,10 @@
 #include "SYSTEM.H"
 #include "MISSION.H"
 #include "CIV_AI.H"
+#include "COP_AI.H"
 #include "PEDEST.H"
+#include "CUTSCENE.H"
+#include "CARS.H"
 
 // decompiled code
 // original method signature: 
@@ -371,49 +374,54 @@ LAB_000737d4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void UpdatePlayers(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
-	int iVar2;
-	long lVar3;
+	int iVar1;
+	long lVar2;
+	PEDESTRIAN *pPVar3;
 	long lVar4;
 	long lVar5;
-	TEXTURE_DETAILS *pTVar6;
+	_PLAYER *locPlayer;
 
 	pedestrianFelony = 0;
-	if ((gInGameCutsceneActive == 0) && (player.playerType = '\x01', player.pPed != (PEDESTRIAN *)0x0)
-		) {
-		player.playerType = '\x02';
+
+	if ((gInGameCutsceneActive == 0) && (player[0].playerType = '\x01', player[0].pPed != NULL)) 
+	{
+		player[0].playerType = '\x02';
 	}
-	pTVar6 = &button_textures;
-	do {
-		uVar1 = pTVar6[5].coords.u0;
-		if (uVar1 == '\x01') {
-			iVar2 = (int)(char)pTVar6[5].coords.u1;
-			lVar3 = car_data[iVar2].hd.where.t[0];
-			lVar4 = car_data[iVar2].hd.where.t[1];
-			lVar5 = car_data[iVar2].hd.where.t[2];
-			iVar2 = car_data[iVar2].hd.direction;
-			*(int *)&pTVar6[1].coords.u3 = (int)(char)pTVar6[5].coords.v0 * 0x29c + 0xd127c;
-			*(long *)&pTVar6->coords = lVar3;
-			*(long *)&(pTVar6->coords).u2 = lVar4;
-			*(long *)&pTVar6->tpageid = lVar5;
-			*(int *)&pTVar6[1].coords.u1 = iVar2;
-		}
-		else {
-			if (uVar1 == '\x02') {
-				iVar2 = *(int *)&pTVar6[7].clutid;
-				*(undefined4 *)&pTVar6->coords = *(undefined4 *)(iVar2 + 0x14);
-				*(int *)&(pTVar6->coords).u2 = -*(int *)(iVar2 + 0x18);
-				*(undefined4 *)&pTVar6->tpageid = *(undefined4 *)(iVar2 + 0x1c);
-				*(int *)&pTVar6[1].coords.u1 = (int)*(short *)(iVar2 + 0x22) + -0x800;
+
+	locPlayer = player;
+
+	// [A] cycle might be wrong
+	if (true) 
+	{
+		do {
+			if (locPlayer->playerType == '\x01')
+			{
+				iVar1 = (int)locPlayer->playerCarId;
+				lVar2 = car_data[iVar1].hd.where.t[0];
+				lVar4 = car_data[iVar1].hd.where.t[1];
+				lVar5 = car_data[iVar1].hd.where.t[2];
+				iVar1 = car_data[iVar1].hd.direction;
+				locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
+				locPlayer->pos[0] = lVar2;
+				locPlayer->pos[1] = lVar4;
+				locPlayer->pos[2] = lVar5;
+				locPlayer->dir = iVar1;
 			}
-		}
-		pTVar6 = (TEXTURE_DETAILS *)&pTVar6[-9].clutid;
-	} while ((TEXTURE_DETAILS *)0xd9727 < pTVar6);
-	return;*/
+			else if (locPlayer->playerType == '\x02') 
+			{
+				pPVar3 = locPlayer->pPed;
+				locPlayer->pos[0] = (pPVar3->position).vx;
+				locPlayer->pos[1] = -(pPVar3->position).vy;
+				locPlayer->pos[2] = (pPVar3->position).vz;
+				locPlayer->dir = (int)(pPVar3->dir).vy + -0x800;
+			}
+
+			locPlayer++;
+		} while (locPlayer <= &player[7]);
+	}
 }
 
 
