@@ -1481,41 +1481,47 @@ void Set_Inv_CameraMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void CalcObjectRotationMatrices(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	short sVar2;
 	int iVar3;
 	MATRIX2 *pMVar4;
 	int iVar5;
-	undefined2 local_38;
-	short local_36;
-	undefined2 local_34;
+	SVECTOR ang;
+	MATRIX mat;
 
 	iVar5 = 0;
-	local_34 = 0;
-	local_36 = 0;
-	local_38 = 0;
+	ang.vz = 0;
+	ang.vy = 0;
+	ang.vx = 0;
+
 	do {
-		pMVar4 = &matrixtable + iVar5;
-		RotMatrix(&local_38, pMVar4);
+		pMVar4 = matrixtable + iVar5;
+		RotMatrix(&ang, (MATRIX*)pMVar4);
+
 		iVar5 = iVar5 + 1;
 		iVar3 = 8;
+
 		do {
 			iVar1 = (int)pMVar4->m[0] * 0x101;
 			sVar2 = (short)((uint)iVar1 >> 8);
-			if (iVar1 < 0) {
+
+			if (iVar1 < 0) 
+			{
 				sVar2 = (short)((uint)(iVar1 + 0xff) >> 8);
 			}
-			pMVar4->m[0] = sVar2;
+
+			pMVar4->m[0][0] = sVar2;
 			iVar3 = iVar3 + -2;
-			pMVar4 = (MATRIX2 *)(pMVar4->m + 2);
+			pMVar4 = (MATRIX2 *)(pMVar4->m + 2); // [A] is that right?
+
 		} while (-1 < iVar3);
-		local_36 = local_36 + 0x40;
+
+		ang.vy = ang.vy + 0x40;
+
 	} while (iVar5 < 0x40);
-	return;*/
 }
 
 
