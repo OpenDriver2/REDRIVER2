@@ -225,14 +225,10 @@ int levelSpoolerPCFunc(void* data)
 
 		if (readyCb)
 		{
-			SDL_LockMutex(levelSpoolerPCMutex);
-
 			readyCb(1, { 0x0 });			
 
 			if (g_isSectorDataRead && dataCb)
 				dataCb();
-
-			SDL_UnlockMutex(levelSpoolerPCMutex);
 		}
 		else
 			break;
@@ -4128,7 +4124,7 @@ void CheckSpecialSpool(void)
 			gCarCleanModelPtr[4] = NULL;
 			gCarLowModelPtr[4] = NULL;
 
-			specspooldata[2] = *(short *)(SpecialByRegion[GameLevel][LoadedArea]);
+			specspooldata[2] = SpecialByRegion[GameLevel][LoadedArea];
 			MissionHeader->residentModels[4] = SpecialByRegion[GameLevel][LoadedArea] + 7;
 
 			if (specialState == 0)
