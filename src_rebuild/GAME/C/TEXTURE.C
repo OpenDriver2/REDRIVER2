@@ -943,10 +943,11 @@ void ReloadIcons(void)
 	/* end block 4 */
 	// End Line: 1553
 
+int environmenttpage = 0;
+
+// [D]
 void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	char *pcVar2;
 	int iVar3;
@@ -955,25 +956,32 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 	int iVar6;
 	int iVar7;
 	int iVar8;
-	ushort *puVar9;
+	unsigned short *psVar9;
 	int *piVar10;
 
 	pcVar2 = texturename_buffer;
 	iVar7 = 0;
-	if (0 < tpage_amount) {
-		ppTVar5 = tpage_ids128;
-		piVar10 = &tpage_texamts;
-		puVar9 = &texture_pages;
+
+	if (0 < tpage_amount) 
+	{
+		ppTVar5 = tpage_ids;
+		piVar10 = tpage_texamts;
+		psVar9 = texture_pages;
+
 		do {
 			iVar8 = *piVar10;
 			pTVar4 = *ppTVar5;
 			iVar6 = 0;
-			if (0 < iVar8) {
+
+			if (0 < iVar8) 
+			{
 				do {
 					iVar3 = strcmp(pcVar2 + pTVar4->nameoffset, name);
-					if ((iVar3 == 0) && ((texture_is_icon == 0 || (iVar7 == environmenttpage)))) {
-						info->tpageid = *puVar9;
-						uVar1 = (&texture_cluts)[iVar7 * 0x20 + iVar6];
+
+					if ((iVar3 == 0) && ((texture_is_icon == 0 || (iVar7 == environmenttpage)))) 
+					{
+						info->tpageid = *psVar9;
+						uVar1 = texture_cluts[iVar7][iVar6];
 						info->texture_number = (char)iVar6;
 						info->texture_page = (char)iVar7;
 						info->clutid = uVar1;
@@ -987,20 +995,22 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 						(info->coords).v3 = pTVar4->y + pTVar4->height + -1;
 						return;
 					}
+
 					iVar6 = iVar6 + 1;
 					pTVar4 = pTVar4 + 1;
 				} while (iVar6 < iVar8);
 			}
+
 			ppTVar5 = ppTVar5 + 1;
 			piVar10 = piVar10 + 1;
 			iVar7 = iVar7 + 1;
-			puVar9 = puVar9 + 1;
+			psVar9++;
+
 		} while (iVar7 < tpage_amount);
 	}
+
 	texture_is_icon = 0;
-	GetTextureDetails((char *)&PTR_DAT_000aa9c0, info);
-	return;
-	*/
+	GetTextureDetails("SEA", info);	// weird but ok, ok...
 }
 
 
