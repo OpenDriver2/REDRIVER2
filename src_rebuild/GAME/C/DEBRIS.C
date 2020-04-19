@@ -1,6 +1,10 @@
 #include "THISDUST.H"
 #include "DEBRIS.H"
+#include "MOTION_C.H"
+#include "TEXTURE.H"
+#include "PRES.H"
 
+TEXTURE_DETAILS digit_texture;
 
 TRI_POINT debris_rot1[32]; // offset 0xC0A60
 TRI_POINT debris_rot2[32]; // offset 0xC0BE0
@@ -902,63 +906,110 @@ void SwirlLeaves(_CAR_DATA *cp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+TEXTURE_DETAILS smoke_texture;
+TEXTURE_DETAILS debris_texture;
+TEXTURE_DETAILS litter_texture;
+TEXTURE_DETAILS cop_texture;
+TEXTURE_DETAILS light_texture;
+TEXTURE_DETAILS gTyreTexture;
+TEXTURE_DETAILS flare_texture;
+TEXTURE_DETAILS sea_texture;
+TEXTURE_DETAILS bird_texture1;
+TEXTURE_DETAILS bird_texture2;
+TEXTURE_DETAILS lensflare_texture;
+TEXTURE_DETAILS sun_texture;
+TEXTURE_DETAILS moon_texture;
+TEXTURE_DETAILS drop_texture;
+TEXTURE_DETAILS collon_texture;
+TEXTURE_DETAILS jeans_texture;
+TEXTURE_DETAILS arm1_texture;
+TEXTURE_DETAILS forearm1_texture;
+TEXTURE_DETAILS chest1_texture;
+TEXTURE_DETAILS head1_texture;
+TEXTURE_DETAILS addcam;
+TEXTURE_DETAILS frameadv;
+TEXTURE_DETAILS autocam;
+TEXTURE_DETAILS chasecar;
+TEXTURE_DETAILS choosecar;
+TEXTURE_DETAILS clock;
+TEXTURE_DETAILS delcam;
+TEXTURE_DETAILS editcam;
+TEXTURE_DETAILS fixedcam;
+TEXTURE_DETAILS incar;
+TEXTURE_DETAILS lenschan;
+TEXTURE_DETAILS lookcar;
+TEXTURE_DETAILS movecam;
+TEXTURE_DETAILS movecampos;
+TEXTURE_DETAILS ok;
+TEXTURE_DETAILS pause;
+TEXTURE_DETAILS playcam;
+TEXTURE_DETAILS playpause;
+TEXTURE_DETAILS save2card;
+TEXTURE_DETAILS restart;
+TEXTURE_DETAILS texturePedHead;
+TEXTURE_DETAILS tannerShadow_texture;
+TEXTURE_DETAILS lightref_texture;
+TEXTURE_DETAILS light_pool_texture;
+
+// [D]
 void InitDebrisNames(void)
 {
-	UNIMPLEMENTED();
-	/*
-	GetTextureDetails(s_SMOKE_000aa23c, &smoke_texture);
-	GetTextureDetails(s_DEBRIS_000aa244, &debris_texture);
-	GetTextureDetails(s_LITTER_000aa24c, &litter_texture);
-	GetTextureDetails(s_COPLIGHT_000105f8, &cop_texture);
-	GetTextureDetails(s_LIGHT_000aa254, &light_texture);
-	GetTextureDetails(&DAT_000aa25c, &gTyreTexture);
-	GetTextureDetails(s_FLARE_000aa264, &flare_texture);
-	GetTextureDetails(s_SPLASH_000aa26c, &sea_texture);
-	GetTextureDetails(s_SWBIRD1_000aa274, &bird_texture1);
-	GetTextureDetails(s_SWBIRD2_000aa27c, &bird_texture2);
-	GetTextureDetails(s_LENSFLR_000aa284, &lensflare_texture);
-	GetTextureDetails(s_SKYSUN_000aa28c, &sun_texture);
-	GetTextureDetails(s_SKYMOON_000aa294, &moon_texture);
-	GetTextureDetails(&DAT_000aa29c, &drop_texture);
-	GetTextureDetails(s_DIGIT_000aa2a4, &digit_texture);
-	SetCLUT16Flags(digit_texture.clutid, 6, '\0');
-	GetTextureDetails(s_COLLON_000aa2ac, &collon_texture);
-	GetTextureDetails(s_JEANS1_000aa2b4, &jeans_texture);
-	GetTextureDetails(&DAT_000aa2bc, &arm1_texture);
-	GetTextureDetails(s_FOREARM1_00010604, &forearm1_texture);
-	GetTextureDetails(s_CHEST1_000aa2c4, &chest1_texture);
-	GetTextureDetails(s_LOWHEAD_000aa2cc, &head1_texture);
-	GetTextureDetails(s_ADDCAM_000aa2d4, &addcam);
-	GetTextureDetails(s_FRAMEADV_00010610, &frameadv);
-	GetTextureDetails(&DAT_000aa2dc, &autocam);
-	GetTextureDetails(s_CHASEC_000aa2e4, &chasecar);
-	GetTextureDetails(s_CHOOSECA_0001061c, &choosecar);
-	GetTextureDetails(s_CLOCK_000aa2ec, &clock);
-	GetTextureDetails(s_DELCAM_000aa2f4, &delcam);
-	GetTextureDetails(s_EDITCAM_000aa2fc, &editcam);
-	GetTextureDetails(s_FIXEDCA_000aa304, &fixedcam);
-	GetTextureDetails(s_INCAR_000aa30c, &incar);
-	GetTextureDetails(s_LENSCHA_000aa314, &lenschan);
-	GetTextureDetails(s_LOOKCAR_000aa31c, &lookcar);
-	GetTextureDetails(s_MOVECMP_000aa324, &movecam);
-	GetTextureDetails(s_MOVECAM_000aa32c, &movecampos);
-	GetTextureDetails((char *)&PTR_DAT_000aa334, &ok);
-	GetTextureDetails(s_PAUSE_000aa338, &pause);
-	GetTextureDetails(s_PLAYCAM_000aa340, &playcam);
-	GetTextureDetails(s_PLAYPAU_000aa348, &playpause);
-	GetTextureDetails(s_SAVE2CA_000aa350, &save2card);
-	GetTextureDetails(s_RESTREP_000aa358, &restart);
-	GetTextureDetails(s_HEAD1_000aa360, &texturePedHead);
-	GetTextureDetails(s_TSHADOW_000aa368, &tannerShadow_texture);
+	GetTextureDetails("SMOKE", &smoke_texture);
+	GetTextureDetails("DEBRIS", &debris_texture);
+	GetTextureDetails("LITTER", &litter_texture);
+	GetTextureDetails("COPLIGHT", &cop_texture);
+	GetTextureDetails("LIGHT", &light_texture);
+	GetTextureDetails("SKID", &gTyreTexture);
+	GetTextureDetails("FLARE", &flare_texture);
+	GetTextureDetails("SPLASH", &sea_texture);
+	GetTextureDetails("SWBIRD1", &bird_texture1);
+	GetTextureDetails("SWBIRD2", &bird_texture2);
+	GetTextureDetails("LENSFLR", &lensflare_texture);
+	GetTextureDetails("SKYSUN", &sun_texture);
+	GetTextureDetails("SKYMOON", &moon_texture);
+	GetTextureDetails("DROP", &drop_texture);
+
+	GetTextureDetails("DIGIT", &digit_texture);
+	SetCLUT16Flags(digit_texture.clutid, 6, 0);
+
+	GetTextureDetails("COLLON", &collon_texture);
+	GetTextureDetails("JEANS1", &jeans_texture);
+	GetTextureDetails("ARM1", &arm1_texture);
+	GetTextureDetails("FOREARM1", &forearm1_texture);
+	GetTextureDetails("CHEST1", &chest1_texture);
+	GetTextureDetails("LOWHEAD", &head1_texture);
+	GetTextureDetails("ADDCAM", &addcam);
+	GetTextureDetails("FRAMEADV", &frameadv);
+	GetTextureDetails("AUTO", &autocam);
+	GetTextureDetails("CHASEC", &chasecar);
+	GetTextureDetails("CHOOSECA", &choosecar);
+	GetTextureDetails("CLOCK", &clock);
+	GetTextureDetails("DELCAM", &delcam);
+	GetTextureDetails("EDITCAM", &editcam);
+	GetTextureDetails("FIXEDCA", &fixedcam);
+	GetTextureDetails("INCAR", &incar);
+	GetTextureDetails("LENSCHA", &lenschan);
+	GetTextureDetails("LOOKCAR", &lookcar);
+	GetTextureDetails("MOVECMP", &movecam);
+	GetTextureDetails("MOVECAM", &movecampos);
+	GetTextureDetails("OK", &ok);
+	GetTextureDetails("PAUSE", &pause);
+	GetTextureDetails("PLAYCAM", &playcam);
+	GetTextureDetails("PLAYPAU", &playpause);
+	GetTextureDetails("SAVE2CA", &save2card);
+	GetTextureDetails("RESTREP", &restart);
+	GetTextureDetails("HEAD1", &texturePedHead);
+	GetTextureDetails("TSHADOW", &tannerShadow_texture);
+
 	texture_is_icon = 0;
 	head1_texture.coords.u1 = head1_texture.coords.u0 + '\b';
 	head1_texture.coords.u3 = head1_texture.coords.u1;
-	GetTextureDetails(s_LIGHTREF_00010628, &lightref_texture);
-	GetTextureDetails(s_LIGHT_000aa254, &light_pool_texture);
+
+	GetTextureDetails("LIGHTREF", &lightref_texture);
+	GetTextureDetails("LIGHT", &light_pool_texture);
+
 	InitButtonTextures();
 	InitTannerShadow();
-	return;
-	*/
 }
 
 
