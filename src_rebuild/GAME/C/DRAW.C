@@ -1331,7 +1331,8 @@ void SetupDrawMapPSX(void)
 	GetPVSRegionCell2(
 		(uint)current_cell_x >> 5 & 1 | ((uint)current_cell_z >> 5 & 1) << 1,
 		((uint)current_cell_x >> 5) + ((uint)current_cell_z >> 5) * (iVar1 >> 5),
-		(current_cell_z & 0x1fU) << 5 | current_cell_x & 0x1fU, CurrentPVS);
+		((current_cell_z & 0x1F) << 5) | (current_cell_x & 0x1F), 
+		CurrentPVS);
 
 	// [A]
 	for (int i = 0; i < 64; i++)

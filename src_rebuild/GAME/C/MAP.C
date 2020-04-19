@@ -1219,10 +1219,13 @@ char nybblearray[512] = { 0 };
 char* PVS_Buffers[4];
 unsigned char *PVSEncodeTable = NULL;
 
+// byte swapped short
+#define SW_SHORT(a,b) (((a) << 8) | (b))
+
 // [D] [A] - might contain bugs
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	char scratchPad[512*1024];
+	char scratchPad[512];
 
 	unsigned char bVar1;
 	int local_v0_580;
@@ -1247,7 +1250,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		do {
 			pbVar4 = (unsigned char *)(celldata + iVar2);
 			iVar2++;
-			*(ushort *)pcVar3 = ((*pbVar4 >> 8) | (*pbVar4 >> 4)) & 0xf0f; // [A]
+			*(ushort *)pcVar3 = SW_SHORT(*pbVar4, *pbVar4 >> 4) & 0xf0f;
 			pcVar3 = (char *)((ushort *)pcVar3 + 1);
 		} while (iVar2 < (int)(uint)sz);
 	}
@@ -1263,9 +1266,9 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 
 			if (bVar1 < 0xc)
 			{
-				//iVar8 = (uint)bVar1 * 2;
+				iVar8 = (uint)bVar1 * 2;
 			LAB_0005d0c8:
-				uVar5 = ((PVSEncodeTable[iVar8] >> 8) | (PVSEncodeTable + iVar8)[1]); // [A]
+				uVar5 = SW_SHORT(PVSEncodeTable[iVar8], (PVSEncodeTable + iVar8)[1]);
 			}
 			else 
 			{
@@ -1419,54 +1422,49 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 // [D]
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
-	int iVar1;
+	int k;
 	uint havanaCorruptCellBodge;
-	char *pcVar2;
-	char *pcVar3;
-	ushort uVar4;
+	char *tbp;
+	char *bp;
+	uint length;
 
-	if ((regions_unpacked[source_region] == region) && (loading_region[source_region] == -1)) 
+	if (regions_unpacked[source_region] == region && (loading_region[source_region] == -1)) 
 	{
-		pcVar3 = PVS_Buffers[source_region];
-		PVSEncodeTable = (unsigned char *)(pcVar3 + 0x802);
-		pcVar2 = (pcVar3 + cell * 2);
+		bp = PVS_Buffers[source_region];
+		PVSEncodeTable = (unsigned char *)(bp + 0x802);
+		tbp = bp + (cell << 1);
 
-		uVar4 = ((pcVar2[2] >> 8) | pcVar2[3]) - ((*pcVar2 >> 8) | pcVar2[1]) & 0xffff;
+		length = SW_SHORT(tbp[2], tbp[3]) - SW_SHORT(*tbp, tbp[1]) & 0xffff;
 
-		if (uVar4 == 0) {
-			iVar1 = 0;
-
-			if (0 < pvs_square_sq)
-			{
+		if (length == 0) 
+		{
+			k = 0;
+			if (0 < pvs_square_sq) {
 				do {
-					*output = '\x01';
-					iVar1 = iVar1 + 1;
-					output = output + 1;
-				} while (iVar1 < pvs_square_sq);
+					*output++ = 1;
+					k++;
+				} while (k < pvs_square_sq);
 			}
 		}
-		else 
-		{
+		else {
 			havanaCorruptCellBodge = 0;
-
-			if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8))
-			{
+			if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8)) {
 				havanaCorruptCellBodge = (uint)(GameLevel == 1);
 			}
 
-			PVSDecode(output, pcVar3 + (uint)pcVar2[0], (ushort)uVar4, havanaCorruptCellBodge);
+			PVSDecode(output, bp + SW_SHORT(*tbp, tbp[1]), (ushort)length, havanaCorruptCellBodge);
 		}
 	}
 	else 
 	{
-		iVar1 = 0;
+		k = 0;
 		if (0 < pvs_square_sq) 
 		{
-			do {
-				*output = '\0';
-				iVar1 = iVar1 + 1;
-				output = output + 1;
-			} while (iVar1 < pvs_square_sq);
+			do 
+			{
+				*output++ = 0;
+				k++;
+			} while (k < pvs_square_sq);
 		}
 	}
 }
