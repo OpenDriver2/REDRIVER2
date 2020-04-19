@@ -59,56 +59,54 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	local_30.vy = MapHeight(&local_30);
 	local_30.vy = local_30.vy - ((cp->ap).carCos)->wheelDisp[0].vy;
 
-	if (control = 0) 
+	if (control == 0) 
 		return 1;
 
 	InitCarPhysics(cp, (long(*)[4])&local_30, direction);
 	(cp->ap).palette = (char)palette;
 
-
-	if (true) 
+	switch (control) 
 	{
-		switch (control) 
-		{
-		case 1:
-		case 7:
-			if (extraData == NULL) {
-				cp->ai.c.currentRoad = 0;
-			}
-			else {
-				cp->ai.c.currentRoad = *extraData;
-			}
-
-			player[cp->id].worldCentreCarId = cp->id;
-			cp->hndType = 0;
-			break;
-		case 2:
-			cp->hndType = 1;
-			cp->controlFlags = extraData[0x11];
-			InitCivState(cp, extraData);
-			if (extraData == NULL) {
-				(cp->ap).palette = '\0';
-			}
-			else {
-				(cp->ap).palette = extraData[0x10];
-			}
-			break;
-		case 3:
-			InitCopState(cp, extraData);
-			(cp->ap).palette = '\0';
-			numCopCars = numCopCars + 1;
-			break;
-		case 4:
-			UNIMPLEMENTED();
-			// [A]
-			//InitLead(cp);
-			//leadCarId = cp->id;
-			cp->hndType = 5;
-			cp->controlType = control;
-			goto LAB_00023fe4;
+	case 1:
+	case 7:
+		if (extraData == NULL) {
+			cp->ai.c.currentRoad = 0;
 		}
+		else {
+			cp->ai.c.currentRoad = *extraData;
+		}
+
+		player[cp->id].worldCentreCarId = cp->id;
+		cp->hndType = 0;
+		break;
+	case 2:
+		cp->hndType = 1;
+		cp->controlFlags = extraData[0x11];
+		InitCivState(cp, extraData);
+		if (extraData == NULL) {
+			(cp->ap).palette = '\0';
+		}
+		else {
+			(cp->ap).palette = extraData[0x10];
+		}
+		break;
+	case 3:
+		InitCopState(cp, extraData);
+		(cp->ap).palette = '\0';
+		numCopCars = numCopCars + 1;
+		break;
+	case 4:
+		UNIMPLEMENTED();
+		// [A]
+		//InitLead(cp);
+		//leadCarId = cp->id;
+		cp->hndType = 5;
+		cp->controlType = control;
+		goto LAB_00023fe4;
 	}
+
 	cp->controlType = control;
+
 LAB_00023fe4:
 	CreateDentableCar(cp);
 	DentCar(cp);
