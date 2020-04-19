@@ -392,21 +392,16 @@ void LoadFont(char *buffer)
 	/* end block 4 */
 	// End Line: 1697
 
+// [D]
 void StoreClut2(ulong *pDest, int x, int y)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 local_10;
-	undefined2 local_e;
-	undefined2 local_c;
-	undefined2 local_a;
+	RECT16 local_10;
 
-	local_10 = (undefined2)x;
-	local_e = (undefined2)y;
-	local_c = 0x10;
-	local_a = 1;
+	local_10.x = (short)x;
+	local_10.y = (short)y;
+	local_10.w = 0x10;
+	local_10.h = 1;
 	StoreImage2(&local_10, pDest);
-	return;*/
 }
 
 
@@ -438,38 +433,40 @@ void StoreClut2(ulong *pDest, int x, int y)
 	/* end block 3 */
 	// End Line: 1741
 
+// [D]
 void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
-	ulong *puVar2;
+	ushort *puVar2;
 	uint uVar3;
-	ulong *puVar4;
+	ushort *pCurrent;
 	int x;
-	ulong local_38[8];
+	ushort buffer[16];
 
 	x = ((uint)clutID & 0x3f) << 4;
-	StoreClut2(local_38, x, (uint)(clutID >> 6));
-	puVar2 = local_38;
+
+	StoreClut2((ulong *)buffer, x, (uint)(clutID >> 6));
+
+	pCurrent = buffer + transparent;
 	uVar3 = 1;
-	if (puVar2 < &stack0xffffffe8) {
-		puVar4 = (ulong *)((int)puVar2 + (uint)(byte)transparent * 2);
-		do {
-			if (((int)(uint)mask >> (uVar3 & 0x1f) & 1U) == 0) {
-				uVar1 = *(ushort *)puVar2 & 0x7fff;
-			}
-			else {
-				uVar1 = *(ushort *)puVar2 | 0x8000;
-			}
-			*(ushort *)puVar2 = uVar1;
-			*(ushort *)puVar4 = 0;
-			puVar2 = (ulong *)((int)puVar2 + 2);
-			uVar3 = uVar3 + 1 & 0xff;
-		} while (puVar2 < &stack0xffffffe8);
+
+	// [A]
+	while ((pCurrent - buffer) < 16)
+	{
+		if (((int)(uint)mask >> (uVar3 & 0x1f) & 1U) == 0) 
+		{
+			uVar1 = *puVar2 & 0x7fff;
+		}
+		else 
+		{
+			uVar1 = *puVar2 | 0x8000;
+		}
+
+		*pCurrent++ = uVar1;
+		uVar3 = uVar3 + 1 & 0xff;
 	}
-	LoadClut2(local_38, x, (uint)(clutID >> 6));
-	return;*/
+
+	LoadClut2((u_long*)buffer, x, (uint)(clutID >> 6));
 }
 
 
@@ -976,44 +973,52 @@ void InitButtonTextures(void)
 	/* end block 3 */
 	// End Line: 1597
 
+extern TEXTURE_DETAILS digit_texture;
+
+// [D]
 int PrintScaledString(int y, char *string, int scale)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	char cVar2;
-	uchar uVar3;
-	uchar uVar4;
+	unsigned char uVar3;
+	unsigned char uVar4;
 	DB *pDVar5;
 	short sVar6;
 	int iVar7;
 	int iVar8;
 	uint uVar9;
-	char cVar10;
+	unsigned char uVar10;
 	ulong *puVar11;
-	char cVar12;
-	uint *prim;
+	unsigned char uVar12;
+	POLY_FT4 *font;
 	short sVar13;
 	int iVar14;
-	byte *pbVar15;
-	int iVar16;
+	char *pbVar15;
+	char cVar16;
+	int iVar17;
 
 	iVar7 = StringWidth(string);
 	iVar7 = iVar7 * scale;
 	if (iVar7 < 0) {
 		iVar7 = iVar7 + 0xf;
 	}
-	prim = (uint *)current->primptr;
+	font = (POLY_FT4 *)current->primptr;
 	if (gShowMap != 0) {
-		prim = (uint *)SetFontTPage(prim);
+		font = (POLY_FT4 *)SetFontTPage(font);
 	}
 	bVar1 = *string;
-	pbVar15 = (byte *)(string + 1);
+	pbVar15 = (char *)(string + 1);
 	iVar7 = 0x140 - (iVar7 >> 4) >> 1;
-	uVar3 = digit_texture.coords.u0;
-	uVar4 = digit_texture.coords.v0;
-	while (digit_texture.coords.u0 = uVar3, digit_texture.coords.v0 = uVar4, bVar1 != 0) {
+
+	uVar12 = digit_texture.coords.u0;
+	uVar10 = digit_texture.coords.v0;
+
+	while (bVar1 != 0) 
+	{
+		// WTF is this?
+		//digit_texture.coords.u0 = uVar12
+		//digit_texture.coords.v0 = uVar10,
+
 		uVar9 = (uint)bVar1 - 0x30;
 		if (bVar1 == 0x20) {
 			iVar8 = scale;
@@ -1026,72 +1031,70 @@ int PrintScaledString(int y, char *string, int scale)
 			iVar8 = iVar7;
 			if ((uVar9 & 0xff) < 10) {
 				bVar1 = fontDigit[uVar9].width;
-				cVar10 = '\0';
+				cVar16 = '\0';
 				if ((int)uVar9 < 6) {
 					iVar14 = 0x1c;
 				}
 				else {
-					cVar10 = '\x1c';
+					cVar16 = '\x1c';
 					iVar14 = 0x1f;
 				}
 				iVar8 = (iVar14 >> 1) * scale;
 				if (iVar8 < 0) {
 					iVar8 = iVar8 + 0xf;
 				}
-				iVar16 = (uint)bVar1 * scale;
+				iVar17 = (uint)bVar1 * scale;
 				sVar6 = (short)(iVar8 >> 4);
 				sVar13 = (short)y - sVar6;
-				if (iVar16 < 0) {
-					iVar16 = iVar16 + 0xf;
+				if (iVar17 < 0) {
+					iVar17 = iVar17 + 0xf;
 				}
-				iVar8 = iVar7 + (iVar16 >> 4);
-				cVar12 = fontDigit[uVar9].xOffset;
-				*(char *)((int)prim + 3) = '\t';
-				*(char *)((int)prim + 7) = ',';
-				*(uchar *)(prim + 1) = gFontColour.r;
+				iVar8 = iVar7 + (iVar17 >> 4);
+				cVar2 = fontDigit[uVar9].xOffset;
+
+				setPolyFT4(font);
+
+				font->r0 = gFontColour.r;
 				sVar6 = (short)y + sVar6;
-				cVar12 = uVar3 + cVar12;
-				cVar10 = cVar10 + uVar4;
-				*(uchar *)((int)prim + 5) = gFontColour.g;
-				uVar3 = gFontColour.b;
-				*(short *)((int)prim + 0x1a) = sVar6;
-				*(short *)((int)prim + 0x22) = sVar6;
-				cVar2 = cVar12 + bVar1;
-				*(char *)((int)prim + 0xd) = cVar10;
-				*(char *)((int)prim + 0x15) = cVar10;
-				cVar10 = cVar10 + (char)iVar14;
-				*(short *)(prim + 2) = (short)iVar7;
-				*(short *)((int)prim + 10) = sVar13;
-				*(short *)(prim + 4) = (short)iVar8;
-				*(short *)((int)prim + 0x12) = sVar13;
-				*(short *)(prim + 6) = (short)iVar7;
-				*(short *)(prim + 8) = (short)iVar8;
-				*(char *)(prim + 3) = cVar12;
-				*(char *)(prim + 5) = cVar2;
-				*(char *)(prim + 7) = cVar12;
-				*(char *)((int)prim + 0x1d) = cVar10;
-				*(char *)(prim + 9) = cVar2;
-				*(char *)((int)prim + 0x25) = cVar10;
-				*(uchar *)((int)prim + 6) = uVar3;
+				uVar12 = uVar12 + cVar2;
+				uVar10 = cVar16 + uVar10;
+				font->g0 = gFontColour.g;
+				uVar4 = gFontColour.b;
+				font->y2 = sVar6;
+				font->y3 = sVar6;
+				uVar3 = uVar12 + bVar1;
+				font->v0 = uVar10;
+				font->v1 = uVar10;
+				uVar10 = uVar10 + (char)iVar14;
+				font->x0 = (short)iVar7;
+				font->y0 = sVar13;
+				font->x1 = (short)iVar8;
+				font->y1 = sVar13;
+				font->x2 = (short)iVar7;
+				font->x3 = (short)iVar8;
+				font->u0 = uVar12;
+				font->u1 = uVar3;
+				font->u2 = uVar12;
+				font->v2 = uVar10;
+				font->u3 = uVar3;
+				font->v3 = uVar10;
+				font->b0 = uVar4;
 				pDVar5 = current;
-				*(ushort *)((int)prim + 0xe) = digit_texture.clutid;
-				*(ushort *)((int)prim + 0x16) = digit_texture.tpageid;
-				*prim = *prim & 0xff000000 | *pDVar5->ot & 0xffffff;
-				puVar11 = pDVar5->ot;
-				uVar9 = (uint)prim & 0xffffff;
-				prim = prim + 10;
-				*puVar11 = *puVar11 & 0xff000000 | uVar9;
+				font->clut = digit_texture.clutid;
+				font->tpage = digit_texture.tpageid;
+
+				addPrim(current->ot, font);
+				font++;
 			}
 		}
 		bVar1 = *pbVar15;
 		pbVar15 = pbVar15 + 1;
 		iVar7 = iVar8;
-		uVar3 = digit_texture.coords.u0;
-		uVar4 = digit_texture.coords.v0;
+		uVar12 = digit_texture.coords.u0;
+		uVar10 = digit_texture.coords.v0;
 	}
-	*(uint **)&current->primptr = prim;
+	*(POLY_FT4 **)&current->primptr = font;
 	return iVar7;
-	*/
 }
 
 

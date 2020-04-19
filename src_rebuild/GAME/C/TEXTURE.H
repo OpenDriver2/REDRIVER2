@@ -29,6 +29,8 @@ extern int NoTextureMemory;
 
 extern char specTpages[4][12];
 
+extern int texture_is_icon;
+
 extern void IncrementClutNum(RECT16 *clut); // 0x00080DDC
 
 extern void IncrementTPageNum(RECT16 *tpage); // 0x00080528

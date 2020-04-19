@@ -889,15 +889,6 @@ void DrawMapPSX(int *comp_val)
 
 					buildingsFound = other_models_found;
 
-					// [A] show stats
-					printf("------ DrawMapPSX stats ------\n");
-					printf("\tbuildingsFound: %d\n", buildingsFound);
-					printf("\ttreecount: %d\n", treecount);
-					printf("\tnumSpritesFound: %d\n", numSpritesFound);
-					printf("\talleycount: %d\n", alleycount);
-					printf("\ttiles_found: %d\n", tiles_found);
-					printf("\tother_models_found: %d\n", other_models_found);
-
 					return;
 				}
 

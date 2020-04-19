@@ -86,12 +86,14 @@ template<int x> struct compile_time_assert_test {};
 #undef eprintf
 #define eprintf(fmt, ...) printf("[GAME] " fmt, ##__VA_ARGS__)
 
+#define UNIMPLEMENTED_PRINTONCE() { static bool _stop = false; if(!_stop) eprinterr("Unimplemented!\n"); _stop = true; }
+
 #ifdef UNIMPLEMENTED
 #undef UNIMPLEMENTED
-#define UNIMPLEMENTED() eprinterr("Unimplemented!\n");
+#define UNIMPLEMENTED() UNIMPLEMENTED_PRINTONCE() //eprinterr("Unimplemented!\n");
 #endif // UNIMPLEMENTED
 
-#define UNIMPLEMENTED_PRINTONCE() static bool _stop = false; if(!_stop) eprinterr("Unimplemented!\n"); _stop = true;
+
 
 struct VECTOR2 // hashcode: 0x7572A047 (dec: 1970446407)
 {
