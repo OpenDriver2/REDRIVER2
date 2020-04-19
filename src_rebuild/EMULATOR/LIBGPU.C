@@ -304,6 +304,14 @@ int StoreImage(RECT16* rect, u_long* p)
 	return 0;
 }
 
+int StoreImage2(RECT16 *RECT16, u_long *p)
+{
+	int result = StoreImage(RECT16, p);
+	// GPU reset?
+
+	return result;
+}
+
 u_long* ClearOTag(u_long* ot, int n)
 {
 	//Nothing to do here.
