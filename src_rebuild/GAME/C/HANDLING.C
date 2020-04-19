@@ -83,6 +83,8 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	cp->st.n.fposition[2] = iVar2 << 4;
 
+	// [A] disabled for now...
+
 	RebuildCarMatrix((RigidBodyState *)&cp->st, cp);
 
 	uVar4 = *(uint *)((cp->hd).where.m + 2);
@@ -94,12 +96,12 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cVar1 = '\x0e' - cVar3;
 	*(uint *)((cp->hd).drawCarMat.m + 8) = *(uint *)((cp->hd).where.m + 8) ^ 0xffff;
 	cVar3 = cVar3 + '\x0e';
-
+	
 	cp->hd.wheel[0].susCompression = cVar1;
 	cp->hd.wheel[1].susCompression = cVar3;
 	cp->hd.wheel[2].susCompression = cVar1;
 	cp->hd.wheel[3].susCompression = cVar3;
-
+	
 	cp->thrust = 0;
 	cp->wheel_angle = 0;
 	cp->hd.wheel_speed = 0;
@@ -1520,7 +1522,7 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 
 	st->n.orientation[3] = iVar1;
 
-	LongQuaternion2Matrix((long(*)[4])st->n.orientation, (MATRIX *)cp);
+	LongQuaternion2Matrix((long(*)[4])st->n.orientation, (MATRIX *)&cp->hd.where);
 
 	initOBox(cp);
 }
@@ -1884,6 +1886,48 @@ void CheckCarToCarCollisions(void)
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
 	UNIMPLEMENTED();
+
+	extern MATRIX camera_matrix;
+
+	// [A]
+	if ((pad & 4) == 0) {
+		if ((pad & 0x2000) != 0) 
+		{
+			//RotMatrixY(3200, &cp->hd.where);
+			cp->hd.direction += 30;
+		}
+
+		if ((pad & 0x8000) != 0) 
+		{
+			cp->hd.direction -= 30;
+			//RotMatrixY(-3200, &cp->hd.where);
+		}
+
+		if ((pad & 0x10) != 0)
+		{
+			cp->hd.where.t[1] += 100;
+		}
+
+		if ((pad & 0x80) != 0)
+		{
+			cp->hd.where.t[1] -= 100;
+		}
+
+		if ((pad & 0x1000) != 0) 
+		{
+			cp->hd.where.t[0] += camera_matrix.m[0][2] / 32;
+			cp->hd.where.t[1] += camera_matrix.m[1][2] / 32;
+			cp->hd.where.t[2] += camera_matrix.m[2][2] / 32;
+		}
+
+		if ((pad & 0x4000) != 0)
+		{
+			cp->hd.where.t[0] -= camera_matrix.m[0][2] / 32;
+			cp->hd.where.t[1] -= camera_matrix.m[1][2] / 32;
+			cp->hd.where.t[2] -= camera_matrix.m[2][2] / 32;
+		}
+	}
+
 	/*
 	char cVar1;
 	short sVar2;
