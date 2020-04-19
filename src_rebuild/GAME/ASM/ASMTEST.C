@@ -34,9 +34,9 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 	iVar2 = GFC;
 	iVar3 = BFC;
 
-	IR1 = (pos->vx - iVar1);
-	IR2 = (pos->vy - iVar2);
-	IR3 = (pos->vz - iVar3);
+	IR1 = (pos->vx - iVar1) * 0x10000 >> 0x10;
+	IR2 = (pos->vy - iVar2) * 0x10000 >> 0x10;
+	IR3 = (pos->vz - iVar3) * 0x10000 >> 0x10;
 
 	docop2(0x4de012);
 
@@ -65,9 +65,9 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 	int iVar2;
 	int iVar3;
 
-	IR1 = (pos->vx - RFC);
-	IR2 = (pos->vy - GFC);
-	IR3 = (pos->vz - BFC);
+	IR1 = (pos->vx - RFC) * 0x10000 >> 0x10;
+	IR2 = (pos->vy - GFC) * 0x10000 >> 0x10;
+	IR3 = (pos->vz - BFC) * 0x10000 >> 0x10;
 
 	docop2(0x4de012);
 
@@ -100,9 +100,9 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 	int iVar2;
 	int iVar3;
 
-	IR1 = ((pcop->pos).vx - camera_position.vx);
-	IR2 = ((pcop->pos).vy - camera_position.vy);
-	IR3 = ((pcop->pos).vz - camera_position.vz);
+	IR1 = ((pcop->pos).vx - camera_position.vx) * 0x10000 >> 0x11;
+	IR2 = ((pcop->pos).vy - camera_position.vy) * 0x10000 >> 0x11;
+	IR3 = ((pcop->pos).vz - camera_position.vz) * 0x10000 >> 0x11;
 
 	docop2(0x4be012);
 
@@ -111,12 +111,8 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 
 	iVar2 = frustrum_matrix.t[0] - (bounding_sphere >> 1);
 
-	if (iVar2 <= iVar1)
-	{
-		iVar1 = MAC3;
-
-		if (iVar2 <= iVar3 && (iVar2 <= iVar1))
-			return 0;
+	if (((iVar2 <= iVar1) && (iVar1 = MAC3, iVar2 <= iVar3)) && (iVar2 <= iVar1)) {
+		return 0;
 	}
 
 	return -1;
