@@ -16,7 +16,16 @@
 
 #ifdef PSX
 // TODO: Include PSX STUFF
+#define trap(code) printf("ERROR OCCURED!\n")
 #else
+
+#if _MSC_VER >= 1400
+#define trap(ode) {printf("EXCEPTION code: %x\n", ode); __debugbreak();}
+#else
+#define trap(ode) {_asm int 0x03}
+#endif
+
+
 
 // PC STUFF
 #define _CopReg0 gteRegs.CP0

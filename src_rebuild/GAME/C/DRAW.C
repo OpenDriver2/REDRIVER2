@@ -1581,18 +1581,18 @@ void ProcessMapLump(char *lump_ptr, int lump_size)
 	regions_down = regions_down >> 5;
 	if (0x400 < num_regions) {
 		while (FrameCnt != 0x78654321) {
-			//trap(0x400);
+			trap(0x400);
 		}
 	}
 	num_straddlers = *(int *)(lump_ptr + 0x2c);
 	if (*(int *)(lump_ptr + 8) != 0x800) {
 		while (FrameCnt != 0x78654321) {
-			//trap(0x400);
+			trap(0x400);
 		}
 	}
 	if (*(int *)(lump_ptr + 0x10) != 0x20) {
 		while (FrameCnt != 0x78654321) {
-			//trap(0x400);
+			trap(0x400);
 		}
 	}
 	cell_header = (OUT_CELL_FILE_HEADER *)lump_ptr;

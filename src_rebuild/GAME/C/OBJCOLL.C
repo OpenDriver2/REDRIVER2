@@ -337,11 +337,11 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 				if (uVar4 == 0xffffffff) {
 					local_4 = (iVar3 * 0x1000) / iVar2;
 					if (iVar2 == 0) {
-						//trap(7); // [A]
+						trap(7);
 					}
 					local_8 = (iVar1 * 0x1000) / iVar2;
 					if (iVar2 == 0) {
-						//trap(7); // [A]
+						trap(7);
 					}
 				}
 			}
@@ -349,11 +349,11 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 				if (uVar4 == 1) {
 					local_8 = (iVar3 * 0x1000) / iVar2;
 					if (iVar2 == 0) {
-						//trap(7); // [A]
+						trap(7);
 					}
 					local_4 = (iVar1 * 0x1000) / iVar2;
 					if (iVar2 == 0) {
-						//trap(7); // [A]
+						trap(7);
 					}
 				}
 			}

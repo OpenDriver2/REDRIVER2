@@ -1199,9 +1199,9 @@ void SetupDrawBufferData(int num_players)
 	}
 	else
 	{
-		while (FrameCnt != 0x78654321) {
-			//trap(0x400); // [A]
-		}
+		do {
+			trap(0x400);
+		} while (FrameCnt != 0x78654321);
 	}
 
 	SetGeomOffset(0xa0, height >> 1);

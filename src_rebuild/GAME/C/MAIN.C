@@ -131,7 +131,7 @@ int variable_weather = 0;
 int current_camera_angle = 0x800;
 int gDieWithFade = 0;
 
-int FrameCnt = 0x78654321;	// wait for CD sync?
+int FrameCnt = 0;
 
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606

@@ -192,16 +192,13 @@ int levelSpoolerPCFunc(void* data)
 	{
 		SDL_LockMutex(levelSpoolerPCMutex);
 
-		dataCb = g_dataCallbackPC;
-		readyCb = g_readyCallbackPC;
-		
 		if (levelSpoolerSeekCmd != 0)
 		{
 			int sector = levelSpoolerSeekCmd;
 
 			if (sector == -1)
 			{
-				printf("SPOOL thread recieved 'CdlPause'\n", sector);
+				//printf("SPOOL thread recieved 'CdlPause'\n", sector);
 
 				levelSpoolerSeekCmd = 0;
 				g_spoolDoneFlag = true;
@@ -215,6 +212,10 @@ int levelSpoolerPCFunc(void* data)
 				levelSpoolerSeekCmd = 0;
 			}
 		}
+
+		dataCb = g_dataCallbackPC;
+		readyCb = g_readyCallbackPC;
+
 		SDL_UnlockMutex(levelSpoolerPCMutex);
 
 		// clear sector before proceed
@@ -225,13 +226,18 @@ int levelSpoolerPCFunc(void* data)
 
 		if (readyCb)
 		{
+			SDL_LockMutex(levelSpoolerPCMutex);
+
 			readyCb(1, { 0x0 });			
 
 			if (g_isSectorDataRead && dataCb)
 				dataCb();
+
+			SDL_UnlockMutex(levelSpoolerPCMutex);
 		}
 		else
 			break;
+
 	} while (!g_spoolDoneFlag);
 
 	printf("SPOOLER thread work done.\n");
@@ -1369,6 +1375,7 @@ void LoadInAreaTSets(int area)
 
 				while (true)
 				{
+					printf("Request Area TPAGE\n");
 					RequestSpool(1, 0, offset, 0x11, address, SendTPage);
 
 					offset = offset + 0x11;
@@ -1695,6 +1702,7 @@ void LoadInAreaModels(int area)
 	loadsize = (uint)AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (loadsize - 1) * 0x800);
 
+	printf("Request Area MODELS\n");
 	RequestSpool(3, 0, (uint)AreaData[area].model_offset, loadsize, model_spool_buffer, SetupModels);
 }
 
@@ -1948,6 +1956,8 @@ int LoadRegionData(int region, int target_region)
 		loading_region[target_region] = (ushort)region;
 		cell_buffer = packed_cell_pointers;
 		spoolptr = (Spool *)(RegionSpoolInfo + (ushort)*spofs);
+
+		printf("Request REGION\n");
 
 		uVar2 = spoolptr->offset;
 		RequestSpool(0, 0, (uint)uVar2, (uint)spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
@@ -2266,7 +2276,9 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 // [D]
 void GotRegion(void)
 {
-	char *pcVar2;
+	printf("GotRegion\n");
+
+
 	uint target_barrel_reg;
 
 	Unpack_CellPtrs();
@@ -2274,10 +2286,12 @@ void GotRegion(void)
 	target_barrel_reg = (uint)spool_regioninfo[spool_regionpos].target_barrel_region;
 	spool_regionpos++;
 
-	pcVar2 = PVS_Buffers[target_barrel_reg];
+	char* pvs = PVS_Buffers[target_barrel_reg];
+
 	loading_region[target_barrel_reg] = -1;
 
-	*(char **)(RoadMapDataRegions + target_barrel_reg) = pcVar2 + *(int *)(pcVar2 + -4);
+	int cbr = *(int *)(pvs - 4);
+	RoadMapDataRegions[target_barrel_reg] = (short*)(pvs + cbr);
 
 	if (spool_regionpos == spool_regioncounter)
 	{
@@ -2359,6 +2373,8 @@ void data_cb_textures(void)
 
 					if (spoolpos_writing == spoolcounter)
 					{
+						printf("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
+
 						spoolcounter = 0;
 						spoolpos_writing = 0;
 						spoolpos_reading = 0;
@@ -2605,6 +2621,8 @@ void data_cb_regions(void)
 
 				if (spoolpos_writing == spoolcounter) 
 				{
+					printf("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
+
 					spoolcounter = 0;
 					spoolpos_writing = 0;
 					spoolpos_reading = 0;
@@ -2823,10 +2841,12 @@ void data_cb_misc(void)
 #ifdef PSX
 			CdDataCallback(0);
 #else
-			UNIMPLEMENTED();
+			levelSpoolerPCDataCallback(NULL);
 #endif // PSX
 			if (spoolpos_writing == spoolcounter)
 			{
+				printf("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+
 				spoolcounter = 0;
 				spoolpos_writing = 0;
 				spoolpos_reading = 0;
@@ -3074,7 +3094,7 @@ void unpack_cellpointers(void)
 		if (FrameCnt != 0x78654321)
 		{
 			do {
-				//trap(0x400);
+				trap(0x400);
 			} while (FrameCnt != 0x78654321);
 
 			unpack_cellptr_flag = 0;

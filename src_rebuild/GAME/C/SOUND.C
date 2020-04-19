@@ -591,8 +591,8 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	{
 		uVar6 = samples[bank][sample].length;
 
-		//if (uVar4 == 0) 
-			//trap(7);
+		if (uVar4 == 0) 
+			trap(7);
 
 		if (gSoundMode == 1) 
 		{
@@ -2287,7 +2287,7 @@ int CalculateVolume(int channel)
 
 		if (iVar1 + 2000 == 0) {
 			printf("wtf");
-			//trap(7); // [A]
+			trap(7);
 		}
 
 		if (iVar2 != 0) {
@@ -2409,8 +2409,8 @@ int FESound(int sample)
 	else {
 		uVar5 = samples[1][sample].length;
 
-		//if (uVar3 == 0)
-		//	trap(7);
+		if (uVar3 == 0)
+			trap(7);
 
 		channels[channel].srcvolume = 0;
 		channels[channel].srcposition = (VECTOR *)0x0;

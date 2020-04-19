@@ -988,12 +988,10 @@ void InitMap(void)
 			iVar1 = iVar1 >> 5;
 
 			if (iVar1 == 0) {
-				printf("WTF");
-				//trap(7);
+				trap(7);
 			}
 			if (iVar1 == 0) {
-				printf("WTF");
-				//trap(7);
+				trap(7);
 			}
 
 			if (spoolinfo_offsets[region_to_unpack] != 0xffff) 

@@ -364,7 +364,7 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 			{
 				sVar5 = bar->xpos;
 				if (bar->max == 0) {
-					//trap(7); // [A]
+					trap(7);
 				}
 				sVar9 = sVar5 + (short)((int)((int)bar->width * (uint)bar->position) / (int)(uint)bar->max);
 			}
@@ -372,7 +372,7 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 			{
 				sVar9 = bar->xpos + bar->width;
 				if (bar->max == 0) {
-					//trap(7); // [A]
+					trap(7);
 				}
 				sVar5 = sVar9 - (short)((int)((int)bar->width * (uint)bar->position) / (int)(uint)bar->max);
 			}
@@ -387,7 +387,7 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 			setPolyG4(poly);
 
 			if (bar->max == 0) {
-				//trap(7);// [A]
+				trap(7);
 			}
 
 			SetColourByValue(bar->pColourBand, (int)((uint)bar->position << 0xc) / (int)(uint)bar->max, &temp);
