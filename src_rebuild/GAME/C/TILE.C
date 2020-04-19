@@ -354,6 +354,9 @@ void DrawTILES(int tile_amount)
 			uVar7 = uVar5;
 		}
 
+		Tile1x1(modelpointers[uVar3]);	// [A] temporary draw it as it is
+
+		/*
 		if (iVar1 < 0x1b59)
 		{
 			if (Low2HighDetailTable[uVar3] != 0xffff) {
@@ -380,7 +383,7 @@ void DrawTILES(int tile_amount)
 			}
 
 			Tile1x1(modelpointers[iVar2]);
-		}
+		}*/
 
 		tile_amount--;
 	}
