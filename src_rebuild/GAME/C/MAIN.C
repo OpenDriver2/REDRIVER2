@@ -1316,22 +1316,22 @@ LAB_00059c1c:
 		CreateRoadblock();
 	}
 
-	cp = car_data + 0x13;
+	cp = car_data;
 
 	if (gInGameCutsceneActive == 0) 
 	{
 		CheckSpecialSpool();
 	}
 
-	while (cp <= &car_data[21])
+	while (cp <= &car_data[0x13])
 	{
 		if (true) {
 			switch (cp->controlType) 
 			{
-			case '\x01':
-				t0 = (ulong)Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
-				t1 = Pads[*cp->ai.padid].mapanalog[2];
-				t2 = Pads[*cp->ai.padid].type & 4;
+			case 1:
+				t0 = (ulong)Pads[(int)cp->ai.padid].mapped;	// [A] padid might be wrong
+				t1 = Pads[(int)cp->ai.padid].mapanalog[2];
+				t2 = Pads[(int)cp->ai.padid].type & 4;
 
 				if (NoPlayerControl == 0) 
 				{
@@ -1345,22 +1345,22 @@ LAB_00059c1c:
 						t1 = '\0';
 						t2 = 1;
 					}
-					cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
+					cjpRecord((int)cp->ai.padid, &t0, &t1, &t2);
 				}
 				else 
 				{
-					cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+					cjpPlay((int)cp->ai.padid, &t0, &t1, &t2);
 				}
 
 				ProcessCarPad(cp, t0, t1, t2);
 				break;
-			case '\x02':
+			case 2:
 				CivControl(cp);
 				break;
-			case '\x03':
+			case 3:
 				CopControl(cp);
 				break;
-			case '\x04':
+			case 4:
 				UNIMPLEMENTED();
 				/*
 				t2 = 0;
@@ -1375,8 +1375,8 @@ LAB_00059c1c:
 					ProcessCarPad(cp, t0_18, t1_19, t2_20);
 				}*/
 				break;
-			case '\a':
-				cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+			case 7:
+				cjpPlay((int)cp->ai.padid, &t0, &t1, &t2);
 				ProcessCarPad(cp, t0, t1, t2);
 			}
 		}
