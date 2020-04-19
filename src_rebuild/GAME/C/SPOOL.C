@@ -131,7 +131,7 @@ extern char g_CurrentLevelFileName[64];
 
 SDL_Thread* levelSpoolerPCThread = NULL;
 SDL_mutex* levelSpoolerPCMutex = NULL;
-int levelSpoolerSeekCmd = 0;
+volatile int levelSpoolerSeekCmd = 0;
 
 //-----------------------------------------------------
 // copies read sector data to addr
@@ -146,6 +146,20 @@ void getLevSectorPC(char* dest, int count)
 	memcpy(dest, g_sectorData, count);
 	g_isSectorDataRead = true;
 
+	SDL_UnlockMutex(levelSpoolerPCMutex);
+}
+
+void levelSpoolerPCDataCallback(data_callbackFn cb)
+{
+	SDL_LockMutex(levelSpoolerPCMutex);
+	g_dataCallbackPC = cb;
+	SDL_UnlockMutex(levelSpoolerPCMutex);
+}
+
+void levelSpoolerPCReadyCallback(ready_callbackFn cb)
+{
+	SDL_LockMutex(levelSpoolerPCMutex);
+	g_readyCallbackPC = cb;
 	SDL_UnlockMutex(levelSpoolerPCMutex);
 }
 
@@ -176,10 +190,11 @@ int levelSpoolerPCFunc(void* data)
 
 	do
 	{
+		SDL_LockMutex(levelSpoolerPCMutex);
+
 		dataCb = g_dataCallbackPC;
 		readyCb = g_readyCallbackPC;
 		
-		SDL_LockMutex(levelSpoolerPCMutex);
 		if (levelSpoolerSeekCmd != 0)
 		{
 			int sector = levelSpoolerSeekCmd;
@@ -210,9 +225,9 @@ int levelSpoolerPCFunc(void* data)
 
 		if (readyCb)
 		{
-			readyCb(1, { 0x0 });
-
 			SDL_LockMutex(levelSpoolerPCMutex);
+
+			readyCb(1, { 0x0 });			
 
 			if (g_isSectorDataRead && dataCb)
 				dataCb();
@@ -305,7 +320,7 @@ void test_changemode(void)
 		CdReadyCallback(0);
 		CdControlF(CdlPause, 0);
 #else
-		g_readyCallbackPC = NULL;
+		levelSpoolerPCReadyCallback(NULL);
 		levelSpoolerSeekCmd = -1;
 #endif // PSX
 	}
@@ -322,7 +337,7 @@ void test_changemode(void)
 #ifdef PSX
 			CdReadyCallback(ready_cb_regions);
 #else
-			g_readyCallbackPC = ready_cb_regions;
+			levelSpoolerPCReadyCallback(ready_cb_regions);
 #endif // PSX
 		}
 		else if (bVar1 == 1)
@@ -336,7 +351,7 @@ void test_changemode(void)
 #ifdef PSX
 			CdReadyCallback(ready_cb_textures);
 #else
-			g_readyCallbackPC = ready_cb_textures;
+			levelSpoolerPCReadyCallback(ready_cb_textures);
 #endif // PSX
 		}
 		else if (bVar1 == 2)
@@ -352,7 +367,7 @@ void test_changemode(void)
 #ifdef PSX
 			CdReadyCallback(ready_cb_soundbank);
 #else
-			g_readyCallbackPC = ready_cb_soundbank;
+			levelSpoolerPCReadyCallback(ready_cb_soundbank);
 #endif // PSX
 		}
 		else if (bVar1 == 3)
@@ -361,7 +376,7 @@ void test_changemode(void)
 #ifdef PSX
 			CdReadyCallback(ready_cb_misc);
 #else
-			g_readyCallbackPC = ready_cb_misc;
+			levelSpoolerPCReadyCallback(ready_cb_misc);
 #endif // PSX
 		}
 	}
@@ -372,7 +387,7 @@ void test_changemode(void)
 #ifdef PSX
 		CdReadyCallback(0);
 #else
-		g_readyCallbackPC = NULL;
+		levelSpoolerPCReadyCallback(NULL);
 #endif // PSX
 	}
 }
@@ -408,7 +423,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_regions);
 #else
-		g_dataCallbackPC = data_cb_regions;
+		levelSpoolerPCDataCallback(data_cb_regions);
 #endif // PSX
 	}
 	else if (bVar1 == 1)
@@ -416,7 +431,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_textures);
 #else
-		g_dataCallbackPC = data_cb_textures;
+		levelSpoolerPCDataCallback(data_cb_textures);
 #endif // PSX
 	}
 	else if (bVar1 == 2)
@@ -424,7 +439,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_soundbank);
 #else
-		g_dataCallbackPC = data_cb_soundbank;
+		levelSpoolerPCDataCallback(data_cb_soundbank);
 #endif // PSX
 	}
 	else if (bVar1 == 3)
@@ -432,7 +447,7 @@ void changemode(SPOOLQ *current)
 #ifdef PSX
 		CdDataCallback(data_cb_misc);
 #else
-		g_dataCallbackPC = data_cb_misc;
+		levelSpoolerPCDataCallback(data_cb_misc);
 #endif // PSX
 	}
 }
@@ -781,6 +796,8 @@ void CheckValidSpoolData(void)
 
 		if (iVar1 != 0)
 		{
+			printf("Waiting to load regions...\n"); // [A]
+
 			stopgame();
 
 			while (spoolactive != 0)
@@ -790,6 +807,7 @@ void CheckValidSpoolData(void)
 			}
 
 			startgame();
+
 			PutDrawEnv(&current->draw);
 			UnPauseSFX();
 		}
@@ -858,8 +876,8 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_regions);
 			CdReadyCallback(ready_cb_regions);
 #else
-			g_dataCallbackPC = data_cb_regions;
-			g_readyCallbackPC = ready_cb_regions;
+			levelSpoolerPCDataCallback(data_cb_regions);
+			levelSpoolerPCReadyCallback(ready_cb_regions);
 #endif // PSX
 		}
 		else if (bVar1 == 1) // SPOOLTYPE_TEXTURES
@@ -876,8 +894,8 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_textures);
 			CdReadyCallback(ready_cb_textures);
 #else
-			g_dataCallbackPC = data_cb_textures;
-			g_readyCallbackPC = ready_cb_textures;
+			levelSpoolerPCDataCallback(data_cb_textures);
+			levelSpoolerPCReadyCallback(ready_cb_textures);
 #endif // PSX
 
 			target_address = target_address + 0x4000;
@@ -897,8 +915,8 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_soundbank);
 			CdReadyCallback(ready_cb_soundbank);
 #else
-			g_dataCallbackPC = data_cb_soundbank;
-			g_readyCallbackPC = ready_cb_soundbank;
+			levelSpoolerPCDataCallback(data_cb_soundbank);
+			levelSpoolerPCReadyCallback(ready_cb_soundbank);
 #endif // PSX
 
 			target_address = target_address + (loadbank_read & 1U) * 0x1000;
@@ -912,8 +930,8 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_misc);
 			CdReadyCallback(ready_cb_misc);
 #else
-			g_dataCallbackPC = data_cb_misc;
-			g_readyCallbackPC = ready_cb_misc;
+			levelSpoolerPCDataCallback(data_cb_misc);
+			levelSpoolerPCReadyCallback(ready_cb_misc);
 #endif // PSX
 		}
 
@@ -960,7 +978,7 @@ void UpdateSpool(void)
 // [D]
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 {
-	printf("RequestSpool: %d %d\n", type, data);
+	printf("RequestSpool type=%d ofs=%d sectors=%d\n", type, offset, loadsize);	// [A]
 
 	int iVar2;
 	SPOOLQ *next;
@@ -2340,7 +2358,7 @@ void data_cb_textures(void)
 #ifdef PSX
 					CdDataCallback(0);
 #else
-					g_dataCallbackPC = NULL;
+					levelSpoolerPCDataCallback(NULL);
 #endif // PSX
 
 					if (spoolpos_writing == spoolcounter)
@@ -2586,7 +2604,7 @@ void data_cb_regions(void)
 #ifdef PSX
 				CdDataCallback(0);
 #else
-				g_dataCallbackPC = NULL;
+				levelSpoolerPCDataCallback(NULL);
 #endif // PSX
 
 				if (spoolpos_writing == spoolcounter) 
