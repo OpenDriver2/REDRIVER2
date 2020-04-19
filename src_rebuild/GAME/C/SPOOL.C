@@ -1771,7 +1771,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 			}
 			else
 			{
-				if (spoolptr->super_region != -1)
+				if (spoolptr->super_region == -1)
 					return;
 
 				if (bVar1 == 0)
@@ -1841,6 +1841,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 		LoadingArea = 1;
 		LoadedArea = area;
+
 		LoadInAreaTSets(area);
 		LoadInAreaModels(LoadedArea);
 	}
