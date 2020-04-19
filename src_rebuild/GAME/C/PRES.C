@@ -455,11 +455,11 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	{
 		if (((int)(uint)mask >> (uVar3 & 0x1f) & 1U) == 0) 
 		{
-			uVar1 = *puVar2 & 0x7fff;
+			uVar1 = *pCurrent & 0x7fff;
 		}
 		else 
 		{
-			uVar1 = *puVar2 | 0x8000;
+			uVar1 = *pCurrent | 0x8000;
 		}
 
 		*pCurrent++ = uVar1;

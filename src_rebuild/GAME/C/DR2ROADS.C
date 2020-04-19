@@ -179,20 +179,17 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 	/* end block 3 */
 	// End Line: 841
 
+// [D]
 int MapHeight(VECTOR *pos)
-
 {
 	_sdPlane *plane;
-	int iVar1;
 
 	plane = sdGetCell(pos);
-	if (plane == (_sdPlane *)0x0) {
-		iVar1 = 0;
-	}
-	else {
-		iVar1 = sdHeightOnPlane(pos, plane);
-	}
-	return iVar1;
+
+	if (plane)
+		return sdHeightOnPlane(pos, plane);
+
+	return 0;
 }
 
 

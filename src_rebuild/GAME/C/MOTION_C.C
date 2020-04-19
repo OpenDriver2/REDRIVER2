@@ -1,12 +1,11 @@
 #include "THISDUST.H"
 #include "MOTION_C.H"
 
-
-TEXTURE_DETAILS jeans_texture; // address 0xC1F70
-TEXTURE_DETAILS chest1_texture; // address 0xC2A18
-TEXTURE_DETAILS forearm1_texture; // address 0xC1AF8
-TEXTURE_DETAILS head1_texture; // address 0xC1D30
-TEXTURE_DETAILS arm1_texture; // address 0xC1BF8
+TEXTURE_DETAILS jeans_texture;
+TEXTURE_DETAILS arm1_texture;
+TEXTURE_DETAILS forearm1_texture;
+TEXTURE_DETAILS chest1_texture;
+TEXTURE_DETAILS head1_texture;
 
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},

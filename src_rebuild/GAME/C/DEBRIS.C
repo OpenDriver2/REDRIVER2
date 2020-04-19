@@ -3,8 +3,11 @@
 #include "MOTION_C.H"
 #include "TEXTURE.H"
 #include "PRES.H"
+#include "DIRECTOR.H"
+#include "MOTION_C.H"
 
 TEXTURE_DETAILS digit_texture;
+TEXTURE_DETAILS pause;
 
 TRI_POINT debris_rot1[32]; // offset 0xC0A60
 TRI_POINT debris_rot2[32]; // offset 0xC0BE0
@@ -921,33 +924,10 @@ TEXTURE_DETAILS sun_texture;
 TEXTURE_DETAILS moon_texture;
 TEXTURE_DETAILS drop_texture;
 TEXTURE_DETAILS collon_texture;
-TEXTURE_DETAILS jeans_texture;
-TEXTURE_DETAILS arm1_texture;
-TEXTURE_DETAILS forearm1_texture;
-TEXTURE_DETAILS chest1_texture;
-TEXTURE_DETAILS head1_texture;
-TEXTURE_DETAILS addcam;
-TEXTURE_DETAILS frameadv;
-TEXTURE_DETAILS autocam;
-TEXTURE_DETAILS chasecar;
-TEXTURE_DETAILS choosecar;
-TEXTURE_DETAILS clock;
-TEXTURE_DETAILS delcam;
-TEXTURE_DETAILS editcam;
-TEXTURE_DETAILS fixedcam;
-TEXTURE_DETAILS incar;
-TEXTURE_DETAILS lenschan;
-TEXTURE_DETAILS lookcar;
-TEXTURE_DETAILS movecam;
-TEXTURE_DETAILS movecampos;
-TEXTURE_DETAILS ok;
-TEXTURE_DETAILS pause;
-TEXTURE_DETAILS playcam;
-TEXTURE_DETAILS playpause;
-TEXTURE_DETAILS save2card;
-TEXTURE_DETAILS restart;
+
 TEXTURE_DETAILS texturePedHead;
 TEXTURE_DETAILS tannerShadow_texture;
+
 TEXTURE_DETAILS lightref_texture;
 TEXTURE_DETAILS light_pool_texture;
 

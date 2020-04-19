@@ -1,6 +1,11 @@
 #ifndef MOTION_C_H
 #define MOTION_C_H
 
+extern TEXTURE_DETAILS jeans_texture;
+extern TEXTURE_DETAILS arm1_texture;
+extern TEXTURE_DETAILS forearm1_texture;
+extern TEXTURE_DETAILS chest1_texture;
+extern TEXTURE_DETAILS head1_texture;
 
 extern void ProcessMotionLump(char *lump_ptr, int lump_size); // 0x00069A38
 
