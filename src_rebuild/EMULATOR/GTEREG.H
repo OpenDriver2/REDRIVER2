@@ -8,6 +8,8 @@ extern GTERegisters gteRegs;
 
 extern int docop2(int op);
 
+// TODO: rename all defines with "C2_" prefix
+
 /* Data Registers mtc2 mfc2 */
 #define VX0  (gteRegs.CP2D.p[ 0 ].sw.l)
 #define VY0  (gteRegs.CP2D.p[ 0 ].sw.h)

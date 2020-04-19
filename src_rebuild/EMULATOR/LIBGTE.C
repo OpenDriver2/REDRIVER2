@@ -4115,6 +4115,10 @@ long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2
 
 MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 {
+	/*
+	// In case of needs...
+	// this is not PSX GTE correct code, GTE macro performs better...
+
 	gte_SetRotMatrix(m0);
 
 	VX0 = m1->m[0][0];
@@ -4146,6 +4150,9 @@ MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 	m2->m[2][0] = IR1;
 	m2->m[2][1] = IR2;
 	m2->m[2][2] = IR3;
+	*/
+
+	gte_MulMatrix0(m0, m1, m2);
 
 	return m2;
 }
