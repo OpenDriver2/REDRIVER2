@@ -769,7 +769,7 @@ void DrawMapPSX(int *comp_val)
 	ulong *puVar18;
 	int iVar19;
 	int iVar20;
-	uint uVar21;
+	uint backPlane;
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
 	VECTOR newpos;
@@ -790,7 +790,7 @@ void DrawMapPSX(int *comp_val)
 	MATRIX *local_38;
 	int local_34;
 
-	uVar21 = 0x1800;	// backPlane
+	backPlane = 0x1800;	// backPlane
 	rightPlane = -0x1800;
 	leftPlane = 0x1800;
 
@@ -877,9 +877,8 @@ void DrawMapPSX(int *comp_val)
 							newpos.vy = (cop->pos).vy - camera_position.vy;
 							newpos.vz = (cop->pos).vz - camera_position.vz;
 							Apply_Inv_CameraMatrix(&newpos);
-							uVar21 = (uint)cop->yang;
 
-							gte_SetRotMatrix(&matrixtable[uVar21]);
+							gte_SetRotMatrix(&matrixtable[cop->yang]);
 
 							puVar18 = (ulong *)((CELL_OBJECT **)puVar18 + 1);
 							iVar7 = iVar7 + -1;
@@ -918,96 +917,174 @@ void DrawMapPSX(int *comp_val)
 					cellx = camx + iVar19;
 					cellz = camz + iVar20;
 
-					if ((((((rightPlane < 0) && (0 < leftPlane)) && (uVar21 < farClipLimit)) &&
-						((-1 < cellx && (-1 < cellz)))) &&
-						((cellx < cells_across &&
-						((cellz < cells_down && (PVS_ptr[iVar19] != '\0')))))) &&
-						(pPVar5 = GetFirstPackedCop(cellx, cellz, &ci, 1), pPVar5 != NULL)) 
+					if( rightPlane < 0 && leftPlane > 0 && backPlane < farClipLimit &&  // check planes
+						cellx > -1 && cellx < cells_across &&							// check cell ranges
+						cellz > -1 && cellz < cells_down &&
+						PVS_ptr[iVar19]) // check PVS table
 					{
-						ppCVar17 = (CELL_OBJECT **)(&anim_obj_buffer + iVar7);
-						local_38 = &mRotStore;
+						pPVar5 = GetFirstPackedCop(cellx, cellz, &ci, 1);
+						if (pPVar5)
+						{
+							ppCVar17 = (CELL_OBJECT **)(&anim_obj_buffer + iVar7);
+							local_38 = &mRotStore;
 
-						do {
-							pMVar3 = local_38;
-							pMVar16 = modelpointers[(uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
+							do {
+								pMVar3 = local_38;
+								pMVar16 = modelpointers[(uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
 
-							cellx = FrustrumCheck16(pPVar5, (int)pMVar16->bounding_sphere);
+								cellx = FrustrumCheck16(pPVar5, (int)pMVar16->bounding_sphere);
 
-							if (cellx != -1) 
-							{
-								uVar1 = pMVar16->shape_flags;
-								if ((uVar1 & 0x4000) == 0)
+								if (cellx != -1)
 								{
-
-									uVar9 = (uint)pPVar5->value & 0x3f;
-
-									if ((pPVar5->value & 0xf) != 0) 
+									uVar1 = pMVar16->shape_flags;
+									if ((uVar1 & 0x4000) == 0)
 									{
-										if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value) 
+
+										uVar9 = (uint)pPVar5->value & 0x3f;
+
+										if ((pPVar5->value & 0xf) != 0)
 										{
-											CompoundMatrix[uVar9].computed = (short)current_object_computed_value;
+											if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value)
+											{
+												CompoundMatrix[uVar9].computed = (short)current_object_computed_value;
 
-											gte_ReadRotMatrix(&mRotStore);
-			
-											pMVar3->t[0] = TRX;
-											pMVar3->t[1] = TRY;
-											pMVar3->t[2] = TRZ;
+												gte_ReadRotMatrix(&mRotStore);
 
-											MulMatrix0(&inv_camera_matrix, (MATRIX *)(matrixtable + uVar9), (MATRIX *)(CompoundMatrix + uVar9));
+												pMVar3->t[0] = TRX;
+												pMVar3->t[1] = TRY;
+												pMVar3->t[2] = TRZ;
 
-											gte_SetRotMatrix(&mRotStore);
-											//TRX = pMVar3->t[0];
-											//TRY = pMVar3->t[1]; ??
-											//TRZ = pMVar3->t[2];
+												MulMatrix0(&inv_camera_matrix, (MATRIX *)(matrixtable + uVar9), (MATRIX *)(CompoundMatrix + uVar9));
+
+												gte_SetRotMatrix(&mRotStore);
+												//TRX = pMVar3->t[0];
+												//TRY = pMVar3->t[1]; ??
+												//TRZ = pMVar3->t[2];
+											}
 										}
-									}
-									cellx = cell_object_index;
-									if (((uVar1 & 0x480) == 0) && ((pMVar16->flags2 & 0xc000) == 0))
-									{
-										cop = NULL;
-
-										if (pPVar5 != NULL) 
-										{
-											cop = cell_object_buffer + cell_object_index;
-											(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
-
-											cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-											pCVar2 = cell_object_buffer + cell_object_index;
-											cell_object_index = cell_object_index + 1U & 0x3ff;
-
-											(pCVar2->pos).vz =
-												ci.near.z +
-												((int)(((uint)(pPVar5->pos).vz -
-												(ci.near.z & 0xffffU)) * 0x10000) >>
-													0x10);
-											*(uint *)&cell_object_buffer[cellx].pad =
-												((uint)(pPVar5->value >> 6) |
-												((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
-													((uint)pPVar5->value & 0x3f) << 8;
-										}
-
-										if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14))
-										{
-											*ppCVar17 = cop;
-											ppCVar17 = ppCVar17 + 1;
-											iVar7 = iVar7 + 1;
-										}
-
-										if (other_models_found < 0xc0)
-										{
-											ppCVar6 = (CELL_OBJECT **)(model_object_ptrs + other_models_found);
-											other_models_found = other_models_found + 1;
-											*ppCVar6 = cop;
-										}
-									}
-									else 
-									{
-										if (((pMVar16->flags2 & 0x80) != 0) && (alleycount = alleycount + 1, alleycount == 0xd)) 
+										cellx = cell_object_index;
+										if (((uVar1 & 0x480) == 0) && ((pMVar16->flags2 & 0xc000) == 0))
 										{
 											cop = NULL;
 
 											if (pPVar5 != NULL)
 											{
+												cop = cell_object_buffer + cell_object_index;
+												(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
+
+												cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+												pCVar2 = cell_object_buffer + cell_object_index;
+												cell_object_index = cell_object_index + 1U & 0x3ff;
+
+												(pCVar2->pos).vz =
+													ci.near.z +
+													((int)(((uint)(pPVar5->pos).vz -
+													(ci.near.z & 0xffffU)) * 0x10000) >>
+														0x10);
+												*(uint *)&cell_object_buffer[cellx].pad =
+													((uint)(pPVar5->value >> 6) |
+													((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
+														((uint)pPVar5->value & 0x3f) << 8;
+											}
+
+											if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14))
+											{
+												*ppCVar17 = cop;
+												ppCVar17 = ppCVar17 + 1;
+												iVar7 = iVar7 + 1;
+											}
+
+											if (other_models_found < 0xc0)
+											{
+												ppCVar6 = (CELL_OBJECT **)(model_object_ptrs + other_models_found);
+												other_models_found = other_models_found + 1;
+												*ppCVar6 = cop;
+											}
+										}
+										else
+										{
+											if (((pMVar16->flags2 & 0x80) != 0) && (alleycount = alleycount + 1, alleycount == 0xd))
+											{
+												cop = NULL;
+
+												if (pPVar5 != NULL)
+												{
+													cop = cell_object_buffer + cell_object_index;
+													(cop->pos).vx =
+														ci.near.x +
+														((int)(((uint)(pPVar5->pos).vx -
+														(ci.near.x & 0xffffU)) * 0x10000) >>
+															0x10);
+													cell_object_buffer[cell_object_index].pos.vy =
+														(int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+													pCVar2 = cell_object_buffer + cell_object_index;
+													cell_object_index = cell_object_index + 1U & 0x3ff;
+													(pCVar2->pos).vz =
+														ci.near.z +
+														((int)(((uint)(pPVar5->pos).vz -
+														(ci.near.z & 0xffffU)) * 0x10000) >>
+															0x10);
+													*(uint *)&cell_object_buffer[cellx].pad =
+														((uint)(pPVar5->value >> 6) |
+														((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
+															((uint)pPVar5->value & 0x3f) << 8;
+												}
+
+												uVar9 = groundDebrisIndex & 0xf;
+												ground_debris[uVar9].pos.vx = (cop->pos).vx;
+												ground_debris[uVar9].pos.vy = (cop->pos).vy;
+												ground_debris[uVar9].pos.vz = (cop->pos).vz;
+												groundDebrisIndex = groundDebrisIndex + 1;
+												alleycount = 0;
+												ground_debris[uVar9].pad = cop->pad;
+											}
+
+											if (tiles_found < 0x100)
+											{
+												*(PACKED_CELL_OBJECT **)(tile_overflow_buffer + tiles_found) = pPVar5;
+												tiles_found = tiles_found + 1;
+											}
+										}
+									}
+									else
+									{
+										if (numSpritesFound < 0x4b)
+										{
+											ppPVar8 = spriteList + numSpritesFound;
+											numSpritesFound = numSpritesFound + 1;
+											*ppPVar8 = pPVar5;
+										}
+
+										cellx = cell_object_index;
+
+										if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14))
+										{
+											cop = NULL;
+
+											if (pPVar5 != NULL)
+											{
+												cop = cell_object_buffer + cell_object_index;
+
+												(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
+												cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
+
+												pCVar2 = cell_object_buffer + cell_object_index;
+												cell_object_index = cell_object_index + 1U & 0x3ff;
+
+												(pCVar2->pos).vz = ci.near.z + ((int)(((uint)(pPVar5->pos).vz - (ci.near.z & 0xffffU)) * 0x10000) >> 0x10);
+												*(uint *)&cell_object_buffer[cellx].pad = ((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 | ((uint)pPVar5->value & 0x3f) << 8;
+											}
+
+											*ppCVar17 = cop;
+											ppCVar17 = ppCVar17 + 1;
+											iVar7 = iVar7 + 1;
+										}
+										cellx = cell_object_index;
+
+										if (((pMVar16->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount = treecount + 1, uVar9 == 0))
+										{
+											cop = NULL;
+											if (pPVar5 != NULL) {
 												cop = cell_object_buffer + cell_object_index;
 												(cop->pos).vx =
 													ci.near.x +
@@ -1028,93 +1105,18 @@ void DrawMapPSX(int *comp_val)
 													((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
 														((uint)pPVar5->value & 0x3f) << 8;
 											}
-
 											uVar9 = groundDebrisIndex & 0xf;
 											ground_debris[uVar9].pos.vx = (cop->pos).vx;
 											ground_debris[uVar9].pos.vy = (cop->pos).vy;
 											ground_debris[uVar9].pos.vz = (cop->pos).vz;
 											groundDebrisIndex = groundDebrisIndex + 1;
-											alleycount = 0;
 											ground_debris[uVar9].pad = cop->pad;
 										}
-
-										if (tiles_found < 0x100) 
-										{
-											*(PACKED_CELL_OBJECT **)(tile_overflow_buffer + tiles_found) = pPVar5;
-											tiles_found = tiles_found + 1;
-										}
 									}
 								}
-								else 
-{
-									if (numSpritesFound < 0x4b) 
-									{
-										ppPVar8 = spriteList + numSpritesFound;
-										numSpritesFound = numSpritesFound + 1;
-										*ppPVar8 = pPVar5;
-									}
-
-									cellx = cell_object_index;
-
-									if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14)) 
-									{
-										cop = NULL;
-
-										if (pPVar5 != NULL) 
-										{
-											cop = cell_object_buffer + cell_object_index;
-
-											(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
-											cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-
-											pCVar2 = cell_object_buffer + cell_object_index;
-											cell_object_index = cell_object_index + 1U & 0x3ff;
-
-											(pCVar2->pos).vz = ci.near.z + ((int)(((uint)(pPVar5->pos).vz - (ci.near.z & 0xffffU)) * 0x10000) >> 0x10);
-											*(uint *)&cell_object_buffer[cellx].pad = ((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 | ((uint)pPVar5->value & 0x3f) << 8;
-										}
-
-										*ppCVar17 = cop;
-										ppCVar17 = ppCVar17 + 1;
-										iVar7 = iVar7 + 1;
-									}
-									cellx = cell_object_index;
-
-									if (((pMVar16->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount = treecount + 1, uVar9 == 0))
-									{
-										cop = NULL;
-										if (pPVar5 != NULL) {
-											cop = cell_object_buffer + cell_object_index;
-											(cop->pos).vx =
-												ci.near.x +
-												((int)(((uint)(pPVar5->pos).vx -
-												(ci.near.x & 0xffffU)) * 0x10000) >>
-													0x10);
-											cell_object_buffer[cell_object_index].pos.vy =
-												(int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-											pCVar2 = cell_object_buffer + cell_object_index;
-											cell_object_index = cell_object_index + 1U & 0x3ff;
-											(pCVar2->pos).vz =
-												ci.near.z +
-												((int)(((uint)(pPVar5->pos).vz -
-												(ci.near.z & 0xffffU)) * 0x10000) >>
-													0x10);
-											*(uint *)&cell_object_buffer[cellx].pad =
-												((uint)(pPVar5->value >> 6) |
-												((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
-													((uint)pPVar5->value & 0x3f) << 8;
-										}
-										uVar9 = groundDebrisIndex & 0xf;
-										ground_debris[uVar9].pos.vx = (cop->pos).vx;
-										ground_debris[uVar9].pos.vy = (cop->pos).vy;
-										ground_debris[uVar9].pos.vz = (cop->pos).vz;
-										groundDebrisIndex = groundDebrisIndex + 1;
-										ground_debris[uVar9].pad = cop->pad;
-									}
-								}
-							}
-							pPVar5 = GetNextPackedCop(&ci);
-						} while (pPVar5 != NULL);
+								pPVar5 = GetNextPackedCop(&ci);
+							} while (pPVar5 != NULL);
+						}
 					}
 				}
 
@@ -1122,7 +1124,7 @@ void DrawMapPSX(int *comp_val)
 					break;
 
 				leftPlane = leftPlane + leftsin;
-				uVar21 = uVar21 + backsin;
+				backPlane = backPlane + backsin;
 				rightPlane = rightPlane + rightsin;
 				iVar20 = iVar20 + 1;
 
@@ -1138,7 +1140,7 @@ void DrawMapPSX(int *comp_val)
 			if (uVar4 == 0)
 			{
 				leftPlane = leftPlane + leftcos;
-				uVar21 = uVar21 + backcos;
+				backPlane = backPlane + backcos;
 				iVar19 = iVar19 + 1;
 				rightPlane = rightPlane + rightcos;
 				if (iVar19 + iVar20 == 1) 
@@ -1150,7 +1152,7 @@ void DrawMapPSX(int *comp_val)
 			{
 			LAB_0004004c:
 				leftPlane = leftPlane - leftsin;
-				uVar21 = uVar21 - backsin;
+				backPlane = backPlane - backsin;
 				rightPlane = rightPlane - rightsin;
 				iVar20 = iVar20 + -1;
 				PVS_ptr = PVS_ptr + -pvs_square;
@@ -1165,7 +1167,7 @@ void DrawMapPSX(int *comp_val)
 
 		iVar19 = iVar19 + -1;
 		leftPlane = leftPlane - leftcos;
-		uVar21 = uVar21 - backcos;
+		backPlane = backPlane - backcos;
 		rightPlane = rightPlane - rightcos;
 
 		if (iVar19 + iVar20 == 0) 

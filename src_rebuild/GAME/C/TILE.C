@@ -8,6 +8,9 @@
 #include "TEXTURE.H"
 #include "../ASM/ASMTEST.H"
 
+#include "GTEREG.H"
+#include "INLINE_C.H"
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ Tile1x1(struct MODEL *model /*$a0*/)
@@ -77,104 +80,141 @@
 	/* end block 3 */
 	// End Line: 164
 
+extern _pct plotContext; // scratchpad addr: 0x1F8000C0
+
+// [D]
 void Tile1x1(MODEL *model)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	int iVar2;
 	uint uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	undefined4 *puVar4;
-	uint *puVar5;
-	undefined4 *puVar6;
-	uint uVar7;
-	undefined4 *puVar8;
+	OTTYPE *ot;
+	ulong uVar5;
+	//undefined4 in_zero;
+	//undefined4 in_at;
+	SVECTOR *sv2;
+	SVECTOR *sv3;
+	SVECTOR *sv1;
+	uint uVar8;
+	SVECTOR *sv0;
 	uint in_a1;
-	uint uVar9;
-	uint *puVar10;
-	int iVar11;
+	uint uVar10;
+	char *polys;
+	SVECTOR *verts;
+	uint uVar11;
+	int i;
 	uint uVar12;
-	uint uVar13;
-	uint uVar14;
-	int iVar15;
 	int local_10;
+	POLY_FT4* prims;
 
-	uVar13 = (uint)model->num_polys;
-	puVar10 = (uint *)model->poly_block;
-	iVar11 = model->vertices;
+	i = model->num_polys;
+	polys = (char *)model->poly_block;
+	verts = (SVECTOR *)model->vertices;
+
+	ot = plotContext.ot;
+
+	prims = (POLY_FT4*)plotContext.primptr;
+
 	do {
-		uVar13 = uVar13 - 1;
-		if (uVar13 == 0xffffffff) {
+		i--;
+		if (i == -1) 
+		{
+			plotContext.ot = ot;
 			return;
 		}
-		uVar9 = puVar10[1];
-		uVar12 = *puVar10;
-		iVar15 = DAT_1f8000b4 + 0x214;
-		puVar8 = (undefined4 *)(iVar11 + (uVar9 & 0xff) * 8);
-		puVar6 = (undefined4 *)(iVar11 + (uVar9 >> 5 & 0x7f8));
-		puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0x18) * 8);
-		setCopReg(2, in_zero, *puVar8);
-		setCopReg(2, in_at, puVar8[1]);
-		setCopReg(2, puVar4, *puVar6);
-		setCopReg(2, puVar6, puVar6[1]);
-		setCopReg(2, puVar8, *puVar4);
-		setCopReg(2, in_a1, puVar4[1]);
-		copFunction(2, 0x280030);
-		uVar7 = uVar12 >> 8 & 0xff;
-		uVar1 = *(ushort *)((uVar12 >> 0xf & 0x1fe) + uVar7 * 0x40 + DAT_1f800028);
-		in_a1 = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
-		copFunction(2, 0x1400006);
-		uVar7 = puVar10[2];
-		uVar14 = puVar10[3];
-		iVar2 = getCopReg(2, 0x18);
-		copFunction(2, 0x158002d);
-		if (iVar2 < 0) {
-			uVar3 = getCopReg(2, 0xc);
-			DAT_1f8000b0[2] = uVar3;
-			puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0xd & 0x7f8));
-			setCopReg(2, in_zero, *puVar4);
-			setCopReg(2, in_at, puVar4[1]);
-			copFunction(2, 0x180001);
-			copFunction(2, 0x1400006);
-			iVar2 = getCopReg(2, 0x18);
-			if ((iVar2 < 0) && (local_10 = getCopReg(2, 7), 1 < local_10)) {
+
+		POLYFT4* poly = (POLYFT4*)polys;
+
+		uVar10 = ((uint *)polys)[1]; // v0
+		uVar11 = *(uint *)polys;
+
+		//printf("v0: %d, v1: %d, v2: %d, v3: %d\n", (uVar10 & 0xff), (uVar10 >> 5 & 0x7f8), (uVar10 >> 0x18), (uVar10 >> 0xd & 0x7f8));
+
+		sv0 = verts + (uVar10 & 0xff);
+		sv1 = (SVECTOR*)((int)&verts->vx + (uVar10 >> 5 & 0x7f8));
+		sv2 = verts + (uVar10 >> 0x18);
+
+		gte_ldv3(sv0, sv1, sv2);
+		docop2(0x280030);
+
+		uVar8 = uVar11 >> 8 & 0xff;
+		uVar1 = *(ushort *)((int)*plotContext.ptexture_cluts + (uVar11 >> 0xf & 0x1fe) + uVar8 * 0x40);
+		in_a1 = (uint)(*plotContext.ptexture_pages)[uVar8] << 0x10;
+
+		docop2(0x1400006);
+
+		uVar8 = ((uint *)polys)[2]; // uv0
+		uVar12 = ((uint *)polys)[3]; // uv2
+
+		iVar2 = MAC0;  //getCopReg(2, 0x18);
+		docop2(0x158002d);
+
+		plotContext.ot = ot;
+
+		if (iVar2 < 0) 
+		{
+			uVar3 = SXY0; // getCopReg(2, 0xc);
+
+			*(uint *)&(prims->x0) = uVar3;
+			sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
+
+			gte_ldv0(sv3);
+
+			docop2(0x180001);
+			docop2(0x1400006);
+
+			iVar2 = MAC0; //getCopReg(2, 0x18);
+
+			if ((iVar2 < 0) && (local_10 = OTZ, 1 < local_10))
+			{
 			LAB_00041cc4:
-				puVar5 = (uint *)(iVar15 + (local_10 >> 1) * 4);
-				uVar9 = *puVar5;
-				*puVar5 = (uint)DAT_1f8000b0 & 0xffffff;
-				*DAT_1f8000b0 = uVar9 & 0xffffff | 0x9000000;
-				uVar9 = getCopReg(2, 0xc);
-				DAT_1f8000b0[4] = uVar9;
-				uVar9 = getCopReg(2, 0xd);
-				DAT_1f8000b0[6] = uVar9;
-				uVar9 = getCopReg(2, 0xe);
-				DAT_1f8000b0[8] = uVar9;
-				uVar9 = DAT_1f8000c0;
-				DAT_1f8000b0[3] = uVar7 & 0xffff | (uint)uVar1 << 0x10;
-				DAT_1f8000b0[5] = uVar7 >> 0x10 | in_a1;
-				DAT_1f8000b0[7] = uVar14 >> 0x10;
-				DAT_1f8000b0[9] = uVar14 & 0xffff;
-				DAT_1f8000b0[1] = uVar9;
-				DAT_1f8000b0 = DAT_1f8000b0 + 10;
+
+				setPolyFT4(prims);
+				addPrim(ot + (local_10 >> 1) + 0x85, prims);
+
+				//uVar10 = ot[(local_10 >> 1) + 0x85];
+				//ot[(local_10 >> 1) + 0x85] = (uint)plotContext.field_0x90 & 0xffffff;
+				//(plotContext.field_0x90)->tag = uVar10 & 0xffffff | 0x9000000;
+
+				uVar3 = SXY0;//getCopReg(2, 0xc);
+				*(uint *)&(prims->x1) = uVar3;
+				uVar3 = SXY1;// getCopReg(2, 0xd);
+				*(uint *)&(prims->x2) = uVar3;
+				uVar3 = SXY2;// getCopReg(2, 0xe);
+				*(uint *)&(prims->x3) = uVar3;
+				uVar5 = plotContext.colour;
+				*(uint *)&(prims->u0) = uVar8 & 0xffff | (uint)uVar1 << 0x10;
+				*(uint *)&(prims->u1) = uVar8 >> 0x10 | in_a1;
+				*(uint *)&(prims->u2) = uVar12 >> 0x10;
+				*(uint *)&(prims->u3) = uVar12 & 0xffff;
+				*(ulong *)&(prims->r0) = uVar5;
+
+				plotContext.primptr += sizeof(POLY_FT4);
+				prims = (POLY_FT4*)plotContext.primptr;
 			}
 		}
-		else {
-			local_10 = getCopReg(2, 7);
-			if (1 < local_10) {
-				uVar3 = getCopReg(2, 0xc);
-				DAT_1f8000b0[2] = uVar3;
-				puVar4 = (undefined4 *)(iVar11 + (uVar9 >> 0xd & 0x7f8));
-				setCopReg(2, in_zero, *puVar4);
-				setCopReg(2, in_at, puVar4[1]);
-				copFunction(2, 0x180001);
+		else 
+		{
+			local_10 = OTZ;// getCopReg(2, 7);
+
+			if (1 < local_10)
+			{
+				uVar3 = SXY0;// getCopReg(2, 0xc);
+
+				*(uint *)&(prims->x0) = uVar3;
+				sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
+
+				gte_ldv0(sv3);
+				docop2(0x180001);
+
 				goto LAB_00041cc4;
 			}
 		}
-		puVar10 = (uint *)((int)puVar10 + PolySizes[uVar12 & 0xff]);
+
+		polys = (char *)(polys + PolySizes[poly->id]);
+		ot = plotContext.ot;
+
 	} while (true);
-	*/
 }
 
 
@@ -250,8 +290,6 @@ void Tile1x1(MODEL *model)
 		// Start line: 463
 	/* end block 4 */
 	// End Line: 464
-
-extern _pct plotContext; // scratchpad addr: 0x1F8000C0
 
 // [D]
 void DrawTILES(int tile_amount)
@@ -991,14 +1029,14 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 
 void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 {
-	UNIMPLEMENTED();
+	UNIMPLEMENTED_PRINTONCE();
 	/*
 	undefined4 in_zero;
 	undefined4 in_at;
 	undefined4 *puVar1;
 	int iVar2;
 	uint uVar3;
-	undefined4 *puVar4;
+	undefined4 *ot;
 	int iVar5;
 	undefined4 *puVar6;
 	uint uVar7;
@@ -1024,15 +1062,15 @@ void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 	*puVar1 = *puVar8;
 	(&DAT_1f80022c)[m * 10] = uVar10;
 	iVar5 = DAT_1f8000c8;
-	puVar4 = (undefined4 *)((uVar3 >> 0xd & 0x7f8) + DAT_1f8000c8);
-	uVar10 = puVar4[1];
-	puVar1[n * 2] = *puVar4;
+	ot = (undefined4 *)((uVar3 >> 0xd & 0x7f8) + DAT_1f8000c8);
+	uVar10 = ot[1];
+	puVar1[n * 2] = *ot;
 	(puVar1 + n * 2)[1] = uVar10;
 	setCopReg(2, in_zero, *puVar9);
 	setCopReg(2, in_at, puVar9[1]);
 	setCopReg(2, iVar5, *puVar6);
 	setCopReg(2, iVar2, puVar6[1]);
-	setCopReg(2, puVar4, *puVar8);
+	setCopReg(2, ot, *puVar8);
 	setCopReg(2, puVar6, puVar8[1]);
 	copFunction(2, 0x280030);
 	uVar10 = *(undefined4 *)(polys + 0xc);

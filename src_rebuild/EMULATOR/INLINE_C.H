@@ -81,6 +81,21 @@ extern int gte_ldlzc(int input);
 	CTC2(*(uint*)((char*)r0+4), 22);\
 	CTC2(*(uint*)((char*)r0+8), 23);
 
+// mtc2 0-1
+#define gte_ldv0( r0 )\
+	MTC2(*(uint*)((char*)r0+0), 0);\
+	MTC2(*(uint*)((char*)r0+4), 1);
+
+// mtc2 2-3
+#define gte_ldv1( r0 )\
+	MTC2(*(uint*)((char*)r1+0), 2);\
+	MTC2(*(uint*)((char*)r1+4), 3);
+
+// mtc2 4-5
+#define gte_ldv2( r0 )\
+	MTC2(*(uint*)((char*)r2+0), 4);\
+	MTC2(*(uint*)((char*)r2+4), 5);
+
 // mtc2 0-5
 #define gte_ldv3( r0, r1, r2 ) \
 	MTC2(*(uint*)((char*)r0+0), 0);\

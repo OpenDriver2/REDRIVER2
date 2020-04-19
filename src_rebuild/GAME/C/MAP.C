@@ -1343,11 +1343,10 @@ LAB_0005d0c8:
 	*/
 
 	// [A] added temporarily as override
-	iVar2 = 0x6e;
+	iVar2 = 440;
 	do {
-		*(int *)output = 1;
-		output = (char *)((int *)output + 1);
-		iVar2 = iVar2 + -1;
+		*output++ = 1;
+		iVar2--;
 	} while (iVar2 != -1);
 }
 
