@@ -1241,15 +1241,17 @@ void SetupDrawBufferData(int num_players)
 		iVar6 = iVar2;
 	} while (iVar2 < 2);
 
-	aspect.m[0][0] = 0x1000;
+	aspect.m[0][0] = 4096;
 	aspect.m[0][1] = 0;
 	aspect.m[0][2] = 0;
+
 	aspect.m[1][0] = 0;
-	aspect.m[1][1] = 0x1266;
+	aspect.m[1][1] = 4710;
 	aspect.m[1][2] = 0;
+
 	aspect.m[2][0] = 0;
 	aspect.m[2][1] = 0;
-	aspect.m[2][2] = 0x1000;
+	aspect.m[2][2] = 4096;
 }
 
 

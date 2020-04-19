@@ -8,6 +8,7 @@
 
 #include "LIBGTE.H"
 #include "GTEREG.H"
+#include "INLINE_C.H"
 
 int sky_y_offset[4] = { 14, 14, 14, 14 };
 
@@ -359,7 +360,7 @@ void DrawSkyDome(void)
 	//if (!(camera_angle.vy - 1701 < 1749))
 		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
 
-	//if ((camera_angle.vy - 400 < 0x8fd))
+	//if ((camera_angle.vy - 400 < 2301))
 		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
 }
 
@@ -1173,39 +1174,6 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 static long skyred = 0x80;
 static long skygreen = 0x80;
 static long skyblue = 0x80;
-
-#define gte_ldv3( r0, r1, r2 ) \
-	MTC2(*(uint*)((char*)r0+0), 0);\
-	MTC2(*(uint*)((char*)r0+4), 1);\
-	MTC2(*(uint*)((char*)r1+0), 2);\
-	MTC2(*(uint*)((char*)r1+4), 3);\
-	MTC2(*(uint*)((char*)r2+0), 4);\
-	MTC2(*(uint*)((char*)r2+4), 5);
-
-#define gte_stsxy3( r0, r1, r2 )	\
-	*(uint*)((char*)r0+0) = SXY0;\
-	*(uint*)((char*)r1+0) = SXY1;\
-	*(uint*)((char*)r2+0) = SXY2;
-
-#define gte_rtpt() docop2(0x280030);
-
-#define gte_stdp( r0 ) \
-	*(uint*)((char*)r0 + 0) = IR0; \
-
-#define gte_stflg( r0 ) \
-	*(uint*)((char*)r0+0) = FLAG;
-
-#define gte_stszotz( r0 ) \
-	*(uint*)((char*)r0+0) = SZ3 >> 2;
-
-// TODO: GTEMAC
-#define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
-				{	gte_ldv3(r1,r2,r3);	\
-					gte_rtpt();		\
-					gte_stsxy3(r4,r5,r6);	\
-					gte_stdp(r7);		\
-					gte_stflg(r8);		\
-					gte_stszotz(r9);	}
 
 // [D] [A] WTF
 void PlotHorizonMDL(MODEL *model, int horizontaboffset)

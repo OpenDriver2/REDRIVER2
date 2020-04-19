@@ -312,8 +312,7 @@ void DrawTILES(int tile_amount)
 		}
 		else
 		{
-			iVar1 = Apply_InvCameraMatrixAndSetMatrix
-			((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[uVar5]);
+			iVar1 = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[uVar5]);
 			uVar7 = uVar5;
 		}
 

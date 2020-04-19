@@ -30,23 +30,23 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 	int iVar2;
 	int iVar3;
 
-	iVar1 = CFC2_S(21);
-	iVar2 = CFC2_S(22);
-	iVar3 = CFC2_S(23);
+	iVar1 = RFC;
+	iVar2 = GFC;
+	iVar3 = BFC;
 
-	MTC2_S((pos->vx - iVar1) * 0x10000 >> 0x10, 9);
-	MTC2_S((pos->vy - iVar2) * 0x10000 >> 0x10, 10);
-	MTC2_S((pos->vz - iVar3) * 0x10000 >> 0x10, 11);
+	IR1 = (pos->vx - iVar1);
+	IR2 = (pos->vy - iVar2);
+	IR3 = (pos->vz - iVar3);
 
 	docop2(0x4de012);
 
-	iVar2 = MFC2_S(9);
-	local_t1_96 = MFC2_S(10);
-	iVar1 = MFC2_S(11);
+	iVar2 = IR1;
+	local_t1_96 = IR2;
+	iVar1 = IR3;
 
-	CTC2_S(iVar2, 5);
-	CTC2_S(local_t1_96, 6);
-	CTC2_S(iVar1, 7);
+	TRX = iVar2;
+	TRY = local_t1_96;
+	TRZ = iVar1;
 
 	iVar2 = iVar2 >> 1;
 
@@ -65,29 +65,21 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 	int iVar2;
 	int iVar3;
 
-	iVar1 = CFC2_S(21);
-	iVar2 = CFC2_S(22);
-	iVar3 = CFC2_S(23);
+	IR1 = (pos->vx - RFC);
+	IR2 = (pos->vy - GFC);
+	IR3 = (pos->vz - BFC);
 
-	MTC2_S((pos->vx - iVar1) * 0x10000 >> 0x10, 9);
-	MTC2_S((pos->vy - iVar2) * 0x10000 >> 0x10, 10);
-	MTC2_S((pos->vz - iVar3) * 0x10000 >> 0x10, 11);
+	docop2(0x4de012);
 
-	copFunction(2, 0x4de012);
+	gte_SetRotMatrix(mtx);
 
-	CTC2_S(*(int*)((char *)mtx->m), 0);
-	CTC2_S(*(int*)((char *)mtx->m + 2), 1);
-	CTC2_S(*(int*)((char *)mtx->m + 4), 2);
-	CTC2_S(*(int*)((char *)mtx->m + 6), 3);
-	CTC2_S(*(int*)((char *)mtx->m + 8), 4);
+	iVar2 = IR1;
+	local_t1_120 = IR2;
+	iVar1 = IR3;
 
-	iVar2 = MFC2_S(9);
-	local_t1_120 = MFC2_S(10);
-	iVar1 = MFC2_S(11);
-
-	CTC2_S(iVar2, 5);
-	CTC2_S(local_t1_120, 6);
-	CTC2_S(iVar1, 7);
+	TRX = iVar2;
+	TRY = local_t1_120;
+	TRZ = iVar1;
 
 	iVar2 = iVar2 >> 1;
 
@@ -108,21 +100,20 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 	int iVar2;
 	int iVar3;
 
-	MTC2_S(((pcop->pos).vx - camera_position.vx) * 0x10000 >> 0x11, 9);
-	MTC2_S(((pcop->pos).vy - camera_position.vy) * 0x10000 >> 0x11, 10);
-	MTC2_S(((pcop->pos).vz - camera_position.vz) * 0x10000 >> 0x11, 11);
+	IR1 = ((pcop->pos).vx - camera_position.vx);
+	IR2 = ((pcop->pos).vy - camera_position.vy);
+	IR3 = ((pcop->pos).vz - camera_position.vz);
 
 	docop2(0x4be012);
 
-	iVar1 = MFC2_S(25);
-	iVar3 = MFC2_S(26);
+	iVar1 = MAC1;
+	iVar3 = MAC2;
 
 	iVar2 = frustrum_matrix.t[0] - (bounding_sphere >> 1);
 
 	if (iVar2 <= iVar1)
 	{
-		// [A]
-		iVar1 = MFC2_S(27);
+		iVar1 = MAC3;
 
 		if (iVar2 <= iVar3 && (iVar2 <= iVar1))
 			return 0;
