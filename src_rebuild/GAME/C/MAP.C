@@ -1222,128 +1222,132 @@ unsigned char *PVSEncodeTable = NULL;
 // byte swapped short
 #define SW_SHORT(a,b) (((a) << 8) | (b))
 
-// [D] [A] - might contain bugs
+// [A] - might contain bugs
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	char scratchPad[512];
+	char scratchPad[1024];
 
 	unsigned char bVar1;
-	int local_v0_580;
-	int iVar2;
-	char *pcVar3;
-	unsigned char *pbVar4;
-	uint uVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	char *decodebuf;
+    int local_v0_580;
+    int iVar2;
+    char *pcVar3;
+    unsigned char *pbVar4;
+    uint uVar5;
+    int iVar6;
+    int iVar7;
+    int iVar8;
+    int iVar9;
+    char *decodebuf;
 
-	decodebuf = scratchPad;
+    decodebuf = scratchPad;
+    ClearMem(decodebuf,pvs_square_sq);
 
-	ClearMem((char *)&scratchPad, pvs_square_sq);
+    iVar2 = 0;
 
-	iVar2 = 0;
-	if (sz != 0) 
+    if (sz != 0) {
+        pcVar3 = nybblearray;
+        do 
+		{
+            pbVar4 = (unsigned char *)(celldata + iVar2);
+            iVar2 = iVar2 + 1;
+            *(ushort *)pcVar3 = SW_SHORT(*pbVar4,*pbVar4 >> 4) & 0xf0f;
+            pcVar3 = (char *)((ushort *)pcVar3 + 1);
+        } while (iVar2 < (int)(uint)sz);
+    }
+
+    iVar9 = ((uint)sz & 0x7fff) << 1;
+    iVar2 = 0;
+
+	// next code is incorrect
+	UNIMPLEMENTED();
+
+	/*
+    if ((sz & 0x7fff) != 0)
 	{
-		pcVar3 = nybblearray;
-		do {
-			pbVar4 = (unsigned char *)(celldata + iVar2);
-			iVar2++;
-			*(ushort *)pcVar3 = SW_SHORT(*pbVar4, *pbVar4 >> 4) & 0xf0f;
-			pcVar3 = (char *)((ushort *)pcVar3 + 1);
-		} while (iVar2 < (int)(uint)sz);
-	}
-
-	iVar9 = ((uint)sz & 0x7fff) << 1;
-	iVar2 = 0;
-	if ((sz & 0x7fff) != 0) {
-		pcVar3 = nybblearray;
-		iVar8 = 0;
-		do {
-			bVar1 = *pcVar3;
-			iVar7 = iVar8 + 1;
-
-			if (bVar1 < 0xc)
+        pcVar3 = nybblearray;
+        iVar8 = 0;
+        do {
+            bVar1 = *pcVar3;
+            iVar7 = iVar8 + 1;
+            if (bVar1 < 0xc)
 			{
-				iVar8 = (uint)bVar1 * 2;
-			LAB_0005d0c8:
-				uVar5 = SW_SHORT(PVSEncodeTable[iVar8], (PVSEncodeTable + iVar8)[1]);
-			}
-			else 
-			{
-				if (iVar7 == iVar9) break;
-				uVar5 = ((uint)bVar1 & 3) * 0x10 + (uint)(unsigned char)nybblearray[iVar8 + 1];
-				iVar7 = iVar8 + 2;
-				if (uVar5 < 0x3c) {
-					iVar8 = uVar5 * 2 + 0x18;
-					goto LAB_0005d0c8;
-				}
-				iVar7 = iVar8 + 4;
-				uVar5 = ((uVar5 & 3) * 0x10 + (uint)(unsigned char)nybblearray[iVar8 + 2]) * 0x10 + (uint)(unsigned char)nybblearray[iVar8 + 3];
-			}
+                iVar8 = (uint)bVar1 * 2;
+LAB_0005d0c8:
+                uVar5 = (uint)SW_SHORT(PVSEncodeTable[iVar8],(PVSEncodeTable + iVar8)[1]);
+            }
+            else {
+                if (iVar7 == iVar9) break;
+                uVar5 = ((uint)bVar1 & 3) * 0x10 + (uint)nybblearray[iVar8 + 1];
+                iVar7 = iVar8 + 2;
+                if (uVar5 < 0x3c) {
+                    iVar8 = uVar5 * 2 + 0x18;
+                    goto LAB_0005d0c8;
+                }
+                iVar7 = iVar8 + 4;
+                uVar5 = ((uVar5 & 3) * 0x10 + (uint)nybblearray[iVar8 + 2]) * 0x10 +
+                        (uint)nybblearray[iVar8 + 3];
+            }
+            iVar8 = iVar2 + ((int)uVar5 >> 1);
+            *(unsigned char *)(iVar8 + decodebuf) = 1;
+            iVar2 = iVar8 + 1;
+            if ((uVar5 & 1) != 0) {
+                *(unsigned char *)((int)&decodebuf + iVar8 + 1) = 1;
+                iVar2 = iVar8 + 2;
+            }
+            pcVar3 = nybblearray + iVar7;
+            iVar8 = iVar7;
+        } while (iVar7 < iVar9);
+    }
 
-			iVar8 = iVar2 + ((int)uVar5 >> 1);
-			*(unsigned char *)(iVar8 + scratchPad) = 1;
-			iVar2 = iVar8 + 1;
+    iVar2 = pvs_square;
 
-			if ((uVar5 & 1) != 0) 
-			{
-				*(unsigned char *)((int)scratchPad + iVar8 + 1) = 1;
-				iVar2 = iVar8 + 2;
-			}
-			pcVar3 = nybblearray + iVar7;
-			iVar8 = iVar7;
-		} while (iVar7 < iVar9);
-	}
-
-	iVar2 = pvs_square;
-
-	if (havanaCorruptCellBodge == 0) 
+    if (havanaCorruptCellBodge == 0) 
 	{
-		*(unsigned char *)(pvs_square_sq + scratchPad - 1) = *(unsigned char *)(pvs_square_sq + scratchPad - 1) ^ 1;
-	}
+        *(unsigned char *)(pvs_square_sq + decodebuf - 1) = *(unsigned char *)(pvs_square_sq + decodebuf - 1) ^ 1;
+    }
 
-	iVar7 = iVar2 + -2;
-	iVar8 = iVar2 + -1;
-	pbVar4 = (unsigned char *)(iVar7 * iVar2 + iVar2 + scratchPad - 1);
-	iVar9 = iVar7;
+    iVar7 = iVar2 + -2;
+    iVar8 = iVar2 + -1;
+    pbVar4 = (unsigned char *)(iVar7 * iVar2 + iVar2 + decodebuf - 1);
+    iVar9 = iVar7;
+    while (-1 < iVar9) {
+        iVar9 = iVar9 + -1;
+        iVar6 = iVar2;
+        if (0 < iVar2) {
+            do {
+                iVar6 = iVar6 + -1;
+                *pbVar4 = *pbVar4 ^ pbVar4[iVar2];
+                pbVar4 = pbVar4 + -1;
+            } while (iVar6 != 0);
+        }
+    }
+    pbVar4 = (unsigned char *)(iVar8 * iVar2 + iVar2 + decodebuf - 2);
+    while (-1 < iVar8) {
+        iVar8 = iVar8 + -1;
+        iVar2 = iVar7;
+        while (-1 < iVar2) {
+            iVar2 = iVar2 + -1;
+            *pbVar4 = *pbVar4 ^ pbVar4[1];
+            pbVar4 = pbVar4 + -1;
+        }
+        pbVar4 = pbVar4 + -1;
+    }
+    iVar2 = 0x6e;
+    do {
+        local_v0_580 = *decodebuf;
+        decodebuf = decodebuf + 1;
+        iVar2 = iVar2 + -1;
+        *(int *)output = local_v0_580;
+        output = (char *)((int *)output + 1);
+    } while (iVar2 != -1);
+	*/
 
-	while (-1 < iVar9) 
-	{
-		iVar9 = iVar9 + -1;
-		iVar6 = iVar2;
-		if (0 < iVar2) {
-			do {
-				iVar6 = iVar6 + -1;
-				*pbVar4 = *pbVar4 ^ pbVar4[iVar2];
-				pbVar4 = pbVar4 + -1;
-			} while (iVar6 != 0);
-		}
-	}
-
-	pbVar4 = (unsigned char *)(iVar8 * iVar2 + iVar2 + scratchPad - 1);
-
-	while (-1 < iVar8) 
-	{
-		iVar8 = iVar8 + -1;
-		iVar2 = iVar7;
-		while (-1 < iVar2) {
-			iVar2 = iVar2 + -1;
-			*pbVar4 = *pbVar4 ^ pbVar4[1];
-			pbVar4 = pbVar4 + -1;
-		}
-		pbVar4 = pbVar4 + -1;
-	}
-
+	// [A] added temporarily as override
 	iVar2 = 0x6e;
-
 	do {
-		local_v0_580 = *decodebuf;
-		decodebuf = decodebuf + 1;
-		iVar2 = iVar2 + -1;
-		*(int *)output = local_v0_580;
+		*(int *)output = 1;
 		output = (char *)((int *)output + 1);
+		iVar2 = iVar2 + -1;
 	} while (iVar2 != -1);
 }
 
