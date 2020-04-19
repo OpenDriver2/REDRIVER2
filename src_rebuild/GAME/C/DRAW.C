@@ -1205,48 +1205,53 @@ void DrawMapPSX(int *comp_val)
 	/* end block 4 */
 	// End Line: 2710
 
+// [D]
 void SetupPlaneColours(ulong ambient)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 	uint uVar2;
 	uint uVar3;
 
-	if (((1 < gWeather - 1U) && (gTimeOfDay != 0)) && (gTimeOfDay != 2)) {
-		if (gTimeOfDay == 1) {
+	if (((1 < gWeather - 1U) && (gTimeOfDay != 0)) && (gTimeOfDay != 2)) 
+	{
+		if (gTimeOfDay == 1) 
+		{
 			uVar3 = ambient & 0xff;
 			uVar2 = ambient >> 8 & 0xff;
 			uVar1 = ambient >> 0x10 & 0xff;
-			ULONG_000cc81c = (uVar1 * 0x78 >> 7) << 0x10 | (uVar2 * 0x78 >> 7) << 8 | uVar3 * 0x78 >> 7;
-			ULONG_000cc820 = (uVar1 * 0x67 >> 7) << 0x10 | (uVar2 * 0x67 >> 7) << 8 | uVar3 * 0x67 >> 7;
-			ULONG_000cc824 = (uVar1 * 0xd >> 5) << 0x10 | (uVar2 * 0xd >> 5) << 8 | uVar3 * 0xd >> 5;
-			planeColours = uVar1 << 0x10 | uVar2 << 8 | uVar3;
-			ULONG_000cc828 = (uVar1 * 3 >> 3) << 0x10 | (uVar2 * 3 >> 3) << 8 | uVar3 * 3 >> 3;
-			ULONG_000cc82c = ULONG_000cc824;
-			ULONG_000cc830 = ULONG_000cc820;
-			ULONG_000cc834 = ULONG_000cc81c;
+			planeColours[1] =
+				(uVar1 * 0x78 >> 7) << 0x10 | (uVar2 * 0x78 >> 7) << 8 | uVar3 * 0x78 >> 7;
+			planeColours[2] =
+				(uVar1 * 0x67 >> 7) << 0x10 | (uVar2 * 0x67 >> 7) << 8 | uVar3 * 0x67 >> 7;
+			planeColours[3] =
+				(uVar1 * 0xd >> 5) << 0x10 | (uVar2 * 0xd >> 5) << 8 | uVar3 * 0xd >> 5;
+			planeColours[0] = uVar1 << 0x10 | uVar2 << 8 | uVar3;
+			planeColours[4] = (uVar1 * 3 >> 3) << 0x10 | (uVar2 * 3 >> 3) << 8 | uVar3 * 3 >> 3;
+			planeColours[5] = planeColours[3];
+			planeColours[6] = planeColours[2];
+			planeColours[7] = planeColours[1];
 			return;
 		}
-		planeColours = ambient;
-		ULONG_000cc81c = ambient;
-		ULONG_000cc820 = ambient;
-		ULONG_000cc824 = ambient;
-		ULONG_000cc828 = ambient;
-		ULONG_000cc82c = ambient;
-		ULONG_000cc830 = ambient;
-		ULONG_000cc834 = ambient;
+
+		planeColours[0] = ambient;
+		planeColours[1] = ambient;
+		planeColours[2] = ambient;
+		planeColours[3] = ambient;
+		planeColours[4] = ambient;
+		planeColours[5] = ambient;
+		planeColours[6] = ambient;
+		planeColours[7] = ambient;
 		return;
 	}
-	planeColours = ambient;
-	ULONG_000cc81c = ambient + 0x10101;
-	ULONG_000cc820 = ambient + 0x30303;
-	ULONG_000cc824 = ambient + 0x80808;
-	ULONG_000cc828 = ambient + 0xa0a0a;
-	ULONG_000cc82c = ambient + 0x80808;
-	ULONG_000cc830 = ambient + 0x30303;
-	ULONG_000cc834 = ambient + 0x10101;
-	return;*/
+
+	planeColours[0] = ambient;
+	planeColours[1] = ambient + 0x10101;
+	planeColours[2] = ambient + 0x30303;
+	planeColours[3] = ambient + 0x80808;
+	planeColours[4] = ambient + 0xa0a0a;
+	planeColours[5] = ambient + 0x80808;
+	planeColours[6] = ambient + 0x30303;
+	planeColours[7] = ambient + 0x10101;
 }
 
 
@@ -2180,13 +2185,13 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 						
 						//local_t2_1500->tpage = pc->tpage;
 						//local_t2_1500->clut = pc->clut;
-						local_t2_1500->r0 = 128;
-						local_t2_1500->g0 = 128;
-						local_t2_1500->b0 = 128;
+						//local_t2_1500->r0 = 128;
+						//local_t2_1500->g0 = 128;
+						//local_t2_1500->b0 = 128;
 
-						/*
+						
 						*(ulong *)&local_t2_1500->r0 = pc->colour;
-
+						/*
 						uVar17 = DAT_1f800208;
 
 						*(uint *)&local_t2_1500->u0 = uVar14 & 0xffff | uVar15;
