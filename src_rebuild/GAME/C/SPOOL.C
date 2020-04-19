@@ -2340,7 +2340,7 @@ void data_cb_textures(void)
 #ifdef PSX
 					CdDataCallback(0);
 #else
-					UNIMPLEMENTED();
+					g_dataCallbackPC = NULL;
 #endif // PSX
 
 					if (spoolpos_writing == spoolcounter)
