@@ -1225,6 +1225,10 @@ unsigned char *PVSEncodeTable = NULL;
 // [A] - might contain bugs
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
+	// next code is crashing game
+	UNIMPLEMENTED();
+	return;
+
 	char scratchPad[1024];
 
 	unsigned char bVar1;
@@ -1244,6 +1248,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 
     iVar2 = 0;
 
+	// this is correct I HOPE
     if (sz != 0) {
         pcVar3 = nybblearray;
         do 
@@ -1257,9 +1262,6 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 
     iVar9 = ((uint)sz & 0x7fff) << 1;
     iVar2 = 0;
-
-	// next code is incorrect
-	UNIMPLEMENTED();
 
 	/*
     if ((sz & 0x7fff) != 0)
@@ -1348,6 +1350,7 @@ LAB_0005d0c8:
 		*output++ = 1;
 		iVar2--;
 	} while (iVar2 != -1);
+
 }
 
 

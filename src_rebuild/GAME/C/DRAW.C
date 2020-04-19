@@ -919,8 +919,8 @@ void DrawMapPSX(int *comp_val)
 
 					if( rightPlane < 0 && leftPlane > 0 && backPlane < farClipLimit &&  // check planes
 						cellx > -1 && cellx < cells_across &&							// check cell ranges
-						cellz > -1 && cellz < cells_down &&
-						PVS_ptr[iVar19]) // check PVS table
+						cellz > -1 && cellz < cells_down/*
+						PVS_ptr[iVar19]*/) // check PVS table		// [A] disabled
 					{
 						pPVar5 = GetFirstPackedCop(cellx, cellz, &ci, 1);
 						if (pPVar5)
