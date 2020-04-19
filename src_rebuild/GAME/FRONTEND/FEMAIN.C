@@ -3874,6 +3874,8 @@ int SubtitlesOnOffScreen(int bSetup)
 // [D]
 int CityCutOffScreen(int bSetup)
 {
+	return 0; // [A]
+
 	PSXSCREEN *pPVar1;
 
 	pPVar1 = pCurrScreen;
