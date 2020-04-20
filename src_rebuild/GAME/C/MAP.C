@@ -449,7 +449,7 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 int PositionVisible(VECTOR *pos)
 {
 	UNIMPLEMENTED();
-	return 0;
+	return 1;
 	/*
 	int iVar1;
 	int iVar2;

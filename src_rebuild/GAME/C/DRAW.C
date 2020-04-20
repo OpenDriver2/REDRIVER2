@@ -1723,8 +1723,7 @@ void DrawAllTheCars(int view)
 	do {
 		iVar11 = iVar9;
 
-		if ((p_Var8->controlType != 0) &&
-			PositionVisible((VECTOR *)p_Var8->hd.where.t))
+		if ((p_Var8->controlType != 0) && PositionVisible((VECTOR *)p_Var8->hd.where.t))
 		{
 			// XZ distance estimation
 			iVar3 = p_Var8->hd.where.t[0];
@@ -1756,7 +1755,7 @@ void DrawAllTheCars(int view)
 		p_Var8 = p_Var8 + -1;
 		iVar9 = iVar11;
 
-	} while (car_data < p_Var8);
+	} while (p_Var8 >= car_data);
 
 	if (iVar11 != 0) 
 	{
