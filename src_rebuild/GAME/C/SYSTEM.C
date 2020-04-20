@@ -63,8 +63,8 @@ DB* current;
 OTTYPE _tempOT1[OTSIZE];		// 0xF3000
 OTTYPE _tempOT2[OTSIZE];		// 0xF7200
 
-char _tempPrimTab1[0x8000];		// 0xFB400
-char _tempPrimTab2[0x8000];		// 0x119400
+char _tempPrimTab1[0x1a180];	// 0xFB400
+char _tempPrimTab2[0x1a180];	// 0x119400
 
 static CITYTYPE lasttype = (CITYTYPE)-1;
 static int lastcity = -1;

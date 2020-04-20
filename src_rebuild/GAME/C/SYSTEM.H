@@ -37,8 +37,8 @@ extern DB* current;
 extern OTTYPE _tempOT1[OTSIZE];
 extern OTTYPE _tempOT2[OTSIZE];
 
-extern char _tempPrimTab1[0x8000];		// 0xFB400
-extern char _tempPrimTab2[0x8000];		// 0x119400
+extern char _tempPrimTab1[0x1a180];		// 0xFB400
+extern char _tempPrimTab2[0x1a180];		// 0x119400
 
 #define CITYLUMP_DATA1		0
 #define CITYLUMP_TPAGE		1
