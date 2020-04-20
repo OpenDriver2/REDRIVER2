@@ -132,34 +132,32 @@ void DrawMission(void)
 	/* end block 2 */
 	// End Line: 253
 
+// [D]
 void DrawTimer(MR_TIMER *timer)
 {
-	UNIMPLEMENTED();
-
-	/*
 	short sVar1;
-	undefined2 extraout_var;
-	char acStack32[16];
+	char string[16];
 
 	if (((timer->flags & 1) != 0) && ((timer->flags & 0x20) == 0)) {
 		if (NumPlayers == 1) {
 			SetTextColour(-0x80, -0x80, -0x80);
 		}
 		else {
-			if (timer == (MR_TIMER *)&DAT_000d7c24) {
+			if (timer == Mission.timer) {
 				SetTextColour(-0x80, ' ', ' ');
 			}
 			else {
 				SetTextColour(' ', -0x80, ' ');
 			}
 		}
-		sprintf(acStack32, s__02d__02d_000110d8, (uint)timer->min, (uint)timer->sec);
-		sVar1 = PrintDigit((int)timer->x, (int)timer->y, acStack32);
-		sprintf(acStack32, s___02d_000aa698, (uint)timer->frac);
-		PrintString(acStack32, CONCAT22(extraout_var, sVar1), (int)timer->y + 0xd);
+		sprintf(string, "%02d:%02d", (uint)timer->min, (uint)timer->sec);
+
+		sVar1 = PrintDigit((int)timer->x, (int)timer->y, string);
+
+		sprintf(string, ".%02d", (uint)timer->frac);
+
+		PrintString(string, sVar1, (int)timer->y + 0xd);
 	}
-	return;
-	*/
 }
 
 

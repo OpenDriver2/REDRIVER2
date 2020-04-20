@@ -10,6 +10,7 @@
 #include "CUTSCENE.H"
 #include "CAMERA.H"
 #include "OVERLAY.H"
+#include "EVENT.H"
 
 #include <string.h>
 
@@ -730,12 +731,11 @@ LAB_00061388:
 	/* end block 1 */
 	// End Line: 4348
 
+// [D]
 void HandleTimer(MR_TIMER *timer)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uchar uVar2;
+	unsigned char bVar1;
+	unsigned char uVar2;
 	int iVar3;
 
 	bVar1 = timer->flags;
@@ -749,9 +749,10 @@ void HandleTimer(MR_TIMER *timer)
 		iVar3 = timer->count + -100;
 		timer->count = iVar3;
 		if (iVar3 < 1) {
-			if (((MissionHeader->timerFlags & 0x1000U) == 0) || (iVar3 = DetonatorTimer(), iVar3 == 0)) {
+			if (((MissionHeader->timerFlags & 0x1000U) == 0) ||
+				(iVar3 = DetonatorTimer(), iVar3 == 0)) {
 				if ((timer->flags & 8) == 0) {
-					if (DAT_000d7c0c == -1) {
+					if (Mission.gameover_delay == -1) {
 						SetMissionFailed(FAILED_OUTOFTIME);
 					}
 					if ((timer->flags & 0x10) != 0) {
@@ -760,7 +761,7 @@ void HandleTimer(MR_TIMER *timer)
 					}
 				}
 				else {
-					if (DAT_000d7c0c == -1) {
+					if (Mission.gameover_delay == -1) {
 						SetMissionComplete();
 						timer->count = 0;
 						goto LAB_000615e0;
@@ -782,14 +783,13 @@ void HandleTimer(MR_TIMER *timer)
 			timer->count = 10799999;
 		}
 	}
+
 LAB_000615e0:
 	iVar3 = timer->count;
-	uVar2 = (uchar)(iVar3 / 180000);
+	uVar2 = (iVar3 / 180000);
 	timer->min = uVar2;
-	timer->sec = (char)(iVar3 / 3000) + uVar2 * -0x3c;
-	timer->frac = (uchar)((iVar3 % 3000) / 0x1e);
-	return;
-	*/
+	timer->sec = (iVar3 / 3000) + uVar2 * -0x3c;
+	timer->frac = ((iVar3 % 3000) / 0x1e);
 }
 
 
@@ -3129,6 +3129,7 @@ void PreProcessTargets(void)
 
 extern int gStopPadReads;
 
+// [D]
 int Handle321Go(void)
 {
 	if ((MissionHeader->type & 4U) != 0) 
