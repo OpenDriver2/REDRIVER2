@@ -748,7 +748,7 @@ void DrawMapPSX(int *comp_val)
 {
 	ushort uVar1;
 	CELL_OBJECT *pCVar2;
-	MATRIX *pMVar3;
+
 	uint uVar4;
 	PACKED_CELL_OBJECT *pPVar5;
 	CELL_OBJECT **ppCVar6;
@@ -787,7 +787,7 @@ void DrawMapPSX(int *comp_val)
 	int rightPlane;
 	int leftPlane;
 	uint farClipLimit;
-	MATRIX *local_38;
+
 	int local_34;
 
 	backPlane = 0x1800;	// backPlane
@@ -807,6 +807,8 @@ void DrawMapPSX(int *comp_val)
 	leftsin = (int)rcossin_tbl[uVar4 * 2];
 	backcos = (int)rcossin_tbl[uVar9 * 2 + 1];
 	backsin = (int)rcossin_tbl[uVar9 * 2];
+
+	printf("angles: l %d r %d b %d\n", leftcos, rightcos, backcos);
 
 	if (NumPlayers == 2) 
 	{
@@ -917,11 +919,9 @@ void DrawMapPSX(int *comp_val)
 						if (pPVar5)
 						{
 							ppCVar17 = (CELL_OBJECT **)(&anim_obj_buffer + iVar7);
-							local_38 = &mRotStore;
 
 							do {
-								pMVar3 = local_38;
-								pMVar16 = modelpointers[(uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
+								pMVar16 = modelpointers[(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
 
 								cellx = FrustrumCheck16(pPVar5, (int)pMVar16->bounding_sphere);
 
@@ -941,9 +941,9 @@ void DrawMapPSX(int *comp_val)
 
 												gte_ReadRotMatrix(&mRotStore);
 
-												pMVar3->t[0] = TRX;
-												pMVar3->t[1] = TRY;
-												pMVar3->t[2] = TRZ;
+												mRotStore.t[0] = TRX;
+												mRotStore.t[1] = TRY;
+												mRotStore.t[2] = TRZ;
 
 												MulMatrix0(&inv_camera_matrix, (MATRIX *)(matrixtable + uVar9), (MATRIX *)(CompoundMatrix + uVar9));
 
