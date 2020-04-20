@@ -8,6 +8,7 @@
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
+#include "LIBAPI.H"
 
 SVECTOR day_vectors[4] =
 {
@@ -1070,42 +1071,35 @@ LAB_00021aac:
 	/* end block 2 */
 	// End Line: 3587
 
+// [D]
 void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, int palette, _CAR_DATA *cp, int detail)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	undefined4 uVar2;
-	undefined4 uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	CAR_COSMETICS *pCVar4;
-	uint local_24;
+	static unsigned long savedSP;
+	VECTOR modelLocation;
+	SVECTOR cog;
 
-	setCopControlWord(2, 0, *(undefined4 *)matrix->m);
-	setCopControlWord(2, 1, *(undefined4 *)(matrix->m + 2));
-	setCopControlWord(2, 2, *(undefined4 *)(matrix->m + 4));
-	setCopControlWord(2, 3, *(undefined4 *)(matrix->m + 6));
-	setCopControlWord(2, 4, *(undefined4 *)(matrix->m + 8));
-	setCopControlWord(2, 5, pos->vx);
-	setCopControlWord(2, 6, pos->vy);
-	setCopControlWord(2, 7, pos->vz);
-	pCVar4 = (cp->ap).carCos;
-	local_24 = local_24 & 0xffff0000 | (uint)(ushort)(pCVar4->cog).vz;
-	setCopReg(2, in_zero, *(undefined4 *)&pCVar4->cog);
-	setCopReg(2, in_at, local_24);
-	copFunction(2, 0x480012);
-	uVar1 = getCopReg(2, 25);
-	uVar2 = getCopReg(2, 26);
-	uVar3 = getCopReg(2, 27);
-	setCopControlWord(2, 5, uVar1);
-	setCopControlWord(2, 6, uVar2);
-	setCopControlWord(2, 7, uVar3);
-	savedSP_21 = SetSp(&DAT_1f800308);
+	cog = cp->ap.carCos->cog;
+
+	gte_SetRotMatrix(matrix);
+	gte_SetTransVector(pos);
+
+	gte_ldv0(&cog);
+
+	docop2(0x480012);
+
+	modelLocation.vx = MAC1;  //getCopReg(2, 0x19);
+	modelLocation.vy = MAC2;  //getCopReg(2, 0x1a);
+	modelLocation.vz = MAC3;  //getCopReg(2, 0x1b);
+
+	TRX = modelLocation.vx;
+	TRY = modelLocation.vy;
+	TRZ = modelLocation.vz;
+
+	savedSP = SetSp(0x1f800308);
+
 	plotNewCarModel(car, palette);
-	SetSp(savedSP_21);
-	return;
-	*/
+
+	SetSp(savedSP);
 }
 
 
