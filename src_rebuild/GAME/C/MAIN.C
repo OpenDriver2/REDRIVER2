@@ -715,6 +715,8 @@ int gLoadedMotionCapture = 0;
 int FrAng = 0;
 int wetness = 0;
 
+extern char* mallocptr_start; // SYSTEM.C
+
 // [D]
 void GameInit(void)
 {
@@ -731,6 +733,12 @@ void GameInit(void)
 		SetPleaseWait(NULL);
 	}
 	else {
+#ifdef PSX
+		mallocptr = 0x137400;
+#else
+		mallocptr = mallocptr_start;
+#endif // PSX
+
 		packed_cell_pointers = D_MALLOC(0x1000);
 	}
 

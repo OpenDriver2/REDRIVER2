@@ -808,8 +808,6 @@ void DrawMapPSX(int *comp_val)
 	backcos = (int)rcossin_tbl[uVar9 * 2 + 1];
 	backsin = (int)rcossin_tbl[uVar9 * 2];
 
-	printf("angles: l %d r %d b %d\n", leftcos, rightcos, backcos);
-
 	if (NumPlayers == 2) 
 	{
 		farClipLimit = farClip2Player;

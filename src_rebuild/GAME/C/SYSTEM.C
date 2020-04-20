@@ -22,8 +22,12 @@ char _overlay_buffer[0x50000];		// 0x1C0000
 char _frontend_buffer[0x50000];		// 0xFB400
 char _other_buffer[0x50000];		// 0xF3000
 
-char g_allocatedMem[0x200000];	// 0x137400 (_ramsize). TODO: use real malloc
+#define DEBUG_MARK_SIZE (sizeof(int)*2)
+char g_allocatedMem[0x200000 + DEBUG_MARK_SIZE];	// 0x137400 (_ramsize). TODO: use real malloc
+char* mallocDebugMark = g_allocatedMem + 0x200000;
 char* mallocptr = g_allocatedMem;
+
+char* mallocptr_start = g_allocatedMem;
 
 int leadAIRequired = 0;
 int leadAILoaded = 0;

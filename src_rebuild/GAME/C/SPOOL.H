@@ -40,8 +40,6 @@ extern void CheckValidSpoolData(); // 0x0007E2CC
 
 extern void UpdateSpool(); // 0x0007B6C4
 
-extern void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func); // 0x0007E36C
-
 extern void InitSpooling(); // 0x0007E494
 
 extern void SendTPage(); // 0x0007B88C
@@ -92,7 +90,7 @@ extern void ready_cb_misc(unsigned char intr, unsigned char *result); // 0x0007D
 
 extern void StartSpooling(); // 0x0007E724
 
-extern void unpack_cellpointers(); // 0x0007C5C0
+extern void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* cell_addr); // 0x0007C5C0
 
 extern void Unpack_CellPtrs(); // 0x0007D978
 

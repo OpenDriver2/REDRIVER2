@@ -21312,6 +21312,10 @@ struct SPOOLQ // hashcode: 0xF6540C3E (dec: -162264002)
 	unsigned long sector; // size=0, offset=4
 	char *addr; // size=0, offset=8
 	void (*func)(); // size=0, offset=12
+#ifdef _DEBUG
+	const char* requestby;
+	int requestbyline;
+#endif
 };
 
 struct SPL_REGIONINFO // hashcode: 0xDA8E3C77 (dec: -628212617)

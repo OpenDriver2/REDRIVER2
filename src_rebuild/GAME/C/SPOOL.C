@@ -90,10 +90,10 @@ int unpack_cellptr_flag;
 
 char *packed_cell_pointers;
 SPL_REGIONINFO spool_regioninfo[8];
-unsigned long unpack_cellptr_tbl[3];
+//unsigned long unpack_cellptr_tbl[3];
 
 static int sectors_this_chunk;
-static int sectors_to_read;
+static volatile int sectors_to_read;
 static char *target_address;
 
 static int nTPchunks;
@@ -139,7 +139,17 @@ volatile int levelSpoolerSeekCmd = 0;
 void getLevSectorPC(char* dest, int count)
 {
 	count *= 4;
+
+#ifdef _DEBUG
+	SPOOLQ* which = &spooldata[spoolpos_reading];
+	sectors_this_chunk;
+	current_sector;
+	sectors_to_read;
+#endif // _DEBUG
+
 	assert(count <= 2048);
+	assert(dest);
+	assert(sectors_to_read > 0);
 
 	SDL_LockMutex(levelSpoolerPCMutex);
 
@@ -978,10 +988,13 @@ void UpdateSpool(void)
 	// End Line: 6448
 
 // [D]
+#ifdef _DEBUG
+void _RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func, const char* requestby, int line)
+#define RequestSpool(type, data, offset, loadsize, address, func) _RequestSpool(type, data, offset, loadsize, address, func, __FUNCTION__, __LINE__)
+#else
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
+#endif _DEBUG
 {
-	printf("RequestSpool type=%d ofs=%d sectors=%d\n", type, offset, loadsize);	// [A]
-
 	int iVar2;
 	SPOOLQ *next;
 
@@ -999,6 +1012,16 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 	next->nsectors = (ushort)loadsize;
 	next->addr = address;
 	next->func = func;
+
+#ifdef _DEBUG
+	if (loadsize == 0) 
+	{
+		printf("DENY RequesySpool, loadsize==0!\n");
+		return;
+	}
+	next->requestby = requestby;
+	next->requestbyline = line;
+#endif // _DEBUG
 
 	spoolcounter++;
 }
@@ -1375,7 +1398,6 @@ void LoadInAreaTSets(int area)
 
 				while (true)
 				{
-					printf("Request Area TPAGE\n");
 					RequestSpool(1, 0, offset, 0x11, address, SendTPage);
 
 					offset = offset + 0x11;
@@ -1702,7 +1724,6 @@ void LoadInAreaModels(int area)
 	loadsize = (uint)AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (loadsize - 1) * 0x800);
 
-	printf("Request Area MODELS\n");
 	RequestSpool(3, 0, (uint)AreaData[area].model_offset, loadsize, model_spool_buffer, SetupModels);
 }
 
@@ -1957,8 +1978,6 @@ int LoadRegionData(int region, int target_region)
 		loading_region[target_region] = (ushort)region;
 		cell_buffer = packed_cell_pointers;
 		spoolptr = (Spool *)(RegionSpoolInfo + (ushort)*spofs);
-
-		printf("Request REGION\n");
 
 		uVar2 = spoolptr->offset;
 		RequestSpool(0, 0, (uint)uVar2, (uint)spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
@@ -2443,9 +2462,9 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 #endif // PSX
 
 		target_address = target_address + 0x800;
-		sectors_this_chunk = sectors_this_chunk + -1;
-		current_sector = current_sector + 1;
-		sectors_to_read = sectors_to_read + -1;
+		sectors_this_chunk--;
+		current_sector++;
+		sectors_to_read--;
 
 		if (sectors_this_chunk == 0) 
 		{
@@ -2534,9 +2553,9 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 #endif // PSX
 
 		target_address = target_address + 0x800;
-		sectors_this_chunk = sectors_this_chunk + -1;
-		current_sector = current_sector + 1;
-		sectors_to_read = sectors_to_read + -1;
+		sectors_this_chunk--;
+		current_sector++;
+		sectors_to_read--;
 
 		if (sectors_this_chunk == 0) 
 		{
@@ -2755,9 +2774,9 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 #endif // PSX
 
 		target_address = target_address + 0x800;
-		sectors_this_chunk = sectors_this_chunk + -1;
-		current_sector = current_sector + 1;
-		sectors_to_read = sectors_to_read + -1;
+		sectors_this_chunk--;
+		current_sector++;
+		sectors_to_read--;
 		if (sectors_this_chunk == 0) {
 			loadbank_read = loadbank_read + 1;
 			nTPchunks_reading = nTPchunks_reading + 1;
@@ -2893,8 +2912,8 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 #endif // PSX
 
 		target_address = target_address + 0x800;
-		sectors_to_read = sectors_to_read + -1;
-		current_sector = current_sector + 1;
+		sectors_to_read--;
+		current_sector++;
 
 		if (sectors_to_read == 0) 
 		{
@@ -3017,8 +3036,8 @@ void StartSpooling(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
-void unpack_cellpointers(void)
+// [D] [A] - altered declaration
+void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* cell_addr)
 {
 	ushort *puVar1;
 	ushort *puVar2;
@@ -3028,14 +3047,18 @@ void unpack_cellpointers(void)
 	uint uVar6;
 	uint uVar7;
 
+	//unpack_cellptr_tbl[0] is region_to_unpack;
+	//unpack_cellptr_tbl[1] is target_barrel_region;
+	//unpack_cellptr_tbl[2] is cell_addr;
+
 	unpack_cellptr_flag = 0;
-	iVar4 = *(int *)(unpack_cellptr_tbl[2] + 4);
-	puVar1 = (ushort *)(unpack_cellptr_tbl[2] + 8);
+	iVar4 = *(int *)(cell_addr + 4);
+	puVar1 = (ushort *)(cell_addr + 8);
 
 	if (iVar4 == 0) 
 	{
 		iVar4 = 0x3ff;
-		puVar1 = cell_ptrs + unpack_cellptr_tbl[1] * 0x400 + 0x3ff;
+		puVar1 = cell_ptrs + target_barrel_region * 0x400 + 0x3ff;
 		do {
 			*puVar1 = 0xffff;
 			iVar4 = iVar4 + -1;
@@ -3045,9 +3068,9 @@ void unpack_cellpointers(void)
 	else {
 		if (iVar4 == 1)
 		{
-			piVar5 = cell_slots_add + unpack_cellptr_tbl[1];
+			piVar5 = cell_slots_add + target_barrel_region;
 			iVar4 = 0x3ff;
-			puVar2 = cell_ptrs + unpack_cellptr_tbl[1] * 0x400;
+			puVar2 = cell_ptrs + target_barrel_region * 0x400;
 			do {
 				uVar3 = *puVar1;
 				puVar1 = puVar1 + 1;
@@ -3065,10 +3088,10 @@ void unpack_cellpointers(void)
 		{
 			uVar6 = 0x8000;
 			uVar7 = (uint)*puVar1;
-			puVar2 = (ushort *)(unpack_cellptr_tbl[2] + 10);
-			piVar5 = cell_slots_add + unpack_cellptr_tbl[1];
+			puVar2 = (ushort *)(cell_addr + 10);
+			piVar5 = cell_slots_add + target_barrel_region;
 			iVar4 = 0x3ff;
-			puVar1 = cell_ptrs + unpack_cellptr_tbl[1] * 0x400;
+			puVar1 = cell_ptrs + target_barrel_region * 0x400;
 			do {
 				if ((uVar7 & uVar6) == 0) {
 					uVar3 = 0xffff;
@@ -3133,14 +3156,12 @@ void unpack_cellpointers(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A] altered unpack_cellpointers
 void Unpack_CellPtrs(void)
 {
-	unpack_cellptr_tbl[0] = (ulong)spool_regioninfo[spool_regionpos].region_to_unpack;
-	unpack_cellptr_tbl[1] = (ulong)spool_regioninfo[spool_regionpos].target_barrel_region;
-	unpack_cellptr_tbl[2] = (ulong)spool_regioninfo[spool_regionpos].cell_addr;
+	SPL_REGIONINFO* spool = &spool_regioninfo[spool_regionpos];
 
-	unpack_cellpointers();
+	unpack_cellpointers(spool->region_to_unpack, spool->target_barrel_region, spool->cell_addr);
 }
 
 
@@ -3448,6 +3469,7 @@ void DamagedModelSpooled(void)
 
 	if (piVar3 < (int*)(specLoadBuffer + 0x800))
 	{
+		// memcpy
 		do {
 			iVar2 = *piVar3;
 			piVar3 = piVar3 + 1;
@@ -3669,7 +3691,8 @@ void CleanSpooled(void)
 
 	model = (MODEL *)(specmallocptr + 0xc);
 
-	if (specBlocksToLoad == 7 - lastCleanBlock) {
+	if (specBlocksToLoad == 7 - lastCleanBlock) 
+	{
 		iVar3 = *(int *)(specmallocptr + 0x24);
 		piVar1 = (int *)(specmallocptr + 0x20);
 		*(int *)(specmallocptr + 0x1c) = (int)&model->shape_flags + *(int *)(specmallocptr + 0x1c);
@@ -3677,9 +3700,11 @@ void CleanSpooled(void)
 		*(int *)(pcVar2 + 0x24) = (int)&model->shape_flags + iVar3;
 		whichCP = baseSpecCP;
 		*(int *)(pcVar2 + 0x28) = (int)&model->shape_flags + *(int *)(pcVar2 + 0x28);
+
 		buildNewCarFromModel(NewCarModel + 4, model, 0);
 		specBlocksToLoad = 0;
 	}
+
 	if (quickSpool != 1) {
 		DrawSyncCallback(SpecialStartNextBlock);
 	}
@@ -4046,7 +4071,7 @@ LAB_0007d240:
 	}
 
 	RequestSpool(3, 0, (int)offset, 1, local_10, spoolFunc);
-	specBlocksToLoad = specBlocksToLoad + -1;
+	specBlocksToLoad--;
 }
 
 
@@ -4312,7 +4337,9 @@ void InitSpecSpool(void)
 		allowSpecSpooling = 0;
 	}
 	else {
-		allowSpecSpooling = 1;
+		UNIMPLEMENTED();
+		//allowSpecSpooling = 1;	// [A] temporarily disabled
+		allowSpecSpooling = 0;
 	}
 
 	specModelValid = 1;
