@@ -432,16 +432,14 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	SVECTOR *pSVar8;
 	uint uVar9;
 	int iVar10;
-	POLY_GT3 *local_t0_416;
+	POLY_GT3 *prim;
 	uint uVar11;
 	uint uVar12;
 	int iVar13;
 	int iVar14;
-	OTTYPE *plVar15;
 
-	local_t0_416 = (POLY_GT3 *)pg->primptr;
+	prim = (POLY_GT3 *)pg->primptr;
 	puVar5 = pg->pciv_clut;
-	plVar15 = pg->ot;
 
 	MTC2(pg->intensity | 0x34000000, 6);
 
@@ -475,31 +473,34 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 		if (-1 < iVar1 && 0 < iVar2) 
 		{
-			*(uint *)&local_t0_416->r0 =
+			setPolyGT3(prim);
+
+			*(uint *)&prim->r0 =
 				((uint)(ushort)nlist[uVar9 & 0xff].pad & 0xff) << 0x10 |
 				(uint)(ushort)nlist[uVar9 & 0xff].pad | 0x34000000;
-			*(uint *)&local_t0_416->r1 = (uVar12 & 0xff) << 0x10 | uVar12;
-			*(uint *)&local_t0_416->r2 = (uVar11 & 0xff) << 0x10 | uVar11;
-			*(int *)&local_t0_416->u0 = iVar10;
-			*(uint *)&local_t0_416->u1 = iVar14 + uVar7;
-			*(uint *)&local_t0_416->u2 = iVar13 + uVar7;
+
+			*(uint *)&prim->r1 = (uVar12 & 0xff) << 0x10 | uVar12;
+			*(uint *)&prim->r2 = (uVar11 & 0xff) << 0x10 | uVar11;
+			*(int *)&prim->u0 = iVar10;
+			*(uint *)&prim->u1 = iVar14 + uVar7;
+			*(uint *)&prim->u2 = iVar13 + uVar7;
 
 			uVar3 = SXY0;	// getCopReg(2, 0xc);
-			*(uint *)&local_t0_416->x0 = uVar3;
+			*(uint *)&prim->x0 = uVar3;
 			uVar3 = SXY1;	// getCopReg(2, 0xd);
-			*(uint *)&local_t0_416->x1 = uVar3;
+			*(uint *)&prim->x1 = uVar3;
 			uVar3 = SXY2;	// getCopReg(2, 0xe);
-			*(uint *)&local_t0_416->x2 = uVar3;
+			*(uint *)&prim->x2 = uVar3;
 
-			local_t0_416->tag = (uint)plVar15[iVar2 >> 1] | 0x9000000;
-			*(POLY_GT3 **)(plVar15 + (iVar2 >> 1)) = local_t0_416;
-			local_t0_416 = local_t0_416 + 1;
+			addPrim(pg->ot + (iVar2 >> 1), prim);
+
+			prim = prim + 1;
 		}
 
 		numTris = numTris + -1;
 	}
 
-	*(POLY_GT3 **)&pg->primptr = local_t0_416;
+	pg->primptr = (unsigned char*)prim;
 }
 
 
@@ -552,82 +553,85 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	/* end block 3 */
 	// End Line: 7230
 
+// [D]
 void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg, int palette)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	int iVar2;
 	uint uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
 	uint uVar4;
 	uint uVar5;
-	undefined4 *puVar6;
-	ushort *puVar7;
-	undefined4 *puVar8;
-	SVECTOR *pSVar9;
-	uint uVar10;
-	uint *puVar11;
-	int iVar12;
-	int iVar13;
-	CAR_POLY *pCVar14;
-	long *plVar15;
-	uint **local_4;
+	SVECTOR *local_v0_116;
+	ushort *puVar6;
+	SVECTOR *local_v1_100;
+	SVECTOR *pSVar7;
+	uint uVar8;
+	POLY_GT3 *prim;
+	int iVar9;
+	int iVar10;
+	CAR_POLY *pCVar11;
+	long *plVar12;
+	long local_4;
 
-	puVar11 = (uint *)pg->primptr;
+	prim = (POLY_GT3 *)pg->primptr;
 	uVar4 = pg->intensity | 0x24000000;
-	puVar7 = pg->pciv_clut;
-	plVar15 = pg->ot;
-	setCopReg(2, vlist, uVar4);
-	pCVar14 = src;
-	if (0 < numTris) {
+	puVar6 = pg->pciv_clut;
+
+	MTC2(pg->intensity | 0x24000000, 6); // setCopReg(2, vlist, uVar4);
+
+	pCVar11 = src;
+	if (0 < numTris) 
+	{
 		do {
-			uVar5 = pCVar14->vindices;
-			pSVar9 = vlist + (uVar5 & 0xff);
-			puVar8 = (undefined4 *)((int)&vlist->vx + ((int)uVar5 >> 5 & 0x7f8U));
-			puVar6 = (undefined4 *)((int)&vlist->vx + ((int)uVar5 >> 0xd & 0x7f8U));
-			setCopReg(2, 0, *(undefined4 *)pSVar9);
-			setCopReg(2, 1, *(undefined4 *)&pSVar9->vz);
-			setCopReg(2, 2, *puVar8);
-			setCopReg(2, 3, puVar8[1]);
-			setCopReg(2, 4, *puVar6);
-			setCopReg(2, 5, puVar6[1]);
-			copFunction(2, 0x280030);
-			uVar10 = pCVar14->clut_uv0;
-			iVar12 = pCVar14->tpage_uv1;
-			iVar13 = pCVar14->uv3_uv2;
-			src = (CAR_POLY *)(int)pCVar14->originalindex;
-			uVar1 = puVar7[palette + ((int)uVar10 >> 0x10)];
+			uVar5 = pCVar11->vindices;
+			pSVar7 = vlist + (uVar5 & 0xff);
+			local_v1_100 = (SVECTOR *)((int)&vlist->vx + ((int)uVar5 >> 5 & 0x7f8U));
+			local_v0_116 = (SVECTOR *)((int)&vlist->vx + ((int)uVar5 >> 0xd & 0x7f8U));
+
+			gte_ldv3(pSVar7, local_v1_100, local_v0_116);
+
+			docop2(0x280030);
+
+			uVar8 = pCVar11->clut_uv0;
+			iVar9 = pCVar11->tpage_uv1;
+			iVar10 = pCVar11->uv3_uv2;
+			src = (CAR_POLY *)(int)pCVar11->originalindex;
+			uVar1 = puVar6[palette + ((int)uVar8 >> 0x10)];
 			uVar5 = (uint)pg->damageLevel[(int)src];
-			copFunction(2, 0x1400006);
-			iVar2 = getCopReg(2, 24);
-			copFunction(2, 0x158002d);
-			if (-1 < iVar2) {
-				local_4 = (uint **)getCopReg(2, 7);
-				if (0 < (int)local_4) {
-					local_4 = (uint **)(plVar15 + ((int)local_4 >> 1));
-					uVar3 = getCopReg(2, 12);
-					puVar11[2] = uVar3;
-		7			uVar3 = getCopReg(2, 13);
-					puVar11[4] = uVar3;
-					uVar3 = getCopReg(2, 14);
-					puVar11[6] = uVar3;
-					puVar11[3] = (uVar10 & 0xffff | (uint)uVar1 << 0x10) + uVar5;
-					puVar11[5] = iVar12 + uVar5;
-					puVar11[7] = iVar13 + uVar5;
-					puVar11[1] = uVar4;
-				}
-				*puVar11 = (uint)*local_4 | 0x7000000;
-				*local_4 = puVar11;
-				puVar11 = puVar11 + 8;
+
+			docop2(0x1400006);
+
+			iVar2 = MAC0; // getCopReg(2, 0x18);
+			docop2(0x158002d);
+
+			local_4 = OTZ;// getCopReg(2, 7);
+
+			if (-1 < iVar2 && 0 < local_4)	// [A] Ghidra flow detection probably failed, or blame Game devs...
+			{
+				//local_4 = (long)(plVar12 + (local_4 >> 1));
+
+				uVar3 = SXY0; //getCopReg(2, 0xc);
+				*(uint *)&prim->x0 = uVar3;
+				uVar3 = SXY1; //getCopReg(2, 0xd);
+				*(uint *)&prim->r1 = uVar3;
+				uVar3 = SXY2; //getCopReg(2, 0xe);
+				*(uint *)&prim->u1 = uVar3;
+
+				*(uint *)&prim->u0 = (uVar8 & 0xffff | (uint)uVar1 << 0x10) + uVar5;
+				*(uint *)&prim->x1 = iVar9 + uVar5;
+				*(uint *)&prim->r2 = iVar10 + uVar5;
+				*(uint *)&prim->r0 = uVar4;
+
+				addPrim(pg->ot + (local_4 >> 1), prim);
+				prim++;
 			}
+
 			numTris = numTris + -1;
-			pCVar14 = pCVar14 + 1;
+			pCVar11 = pCVar11 + 1;
 		} while (0 < numTris);
 	}
-	*(uint **)&pg->primptr = puVar11;
-	return;*/
+
+	pg->primptr = (unsigned char*)prim;
 }
 
 
@@ -2015,6 +2019,7 @@ void buildNewCars(void)
 // byte swapped int
 #define SW_INT(a,b) (((a) << 16) | (b))
 
+// [D]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
 
