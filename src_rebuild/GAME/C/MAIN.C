@@ -716,6 +716,7 @@ int FrAng = 0;
 int wetness = 0;
 
 extern char* mallocptr_start; // SYSTEM.C
+extern char* mallocDebugMark;
 
 // [D]
 void GameInit(void)
@@ -737,6 +738,8 @@ void GameInit(void)
 		mallocptr = 0x137400;
 #else
 		mallocptr = mallocptr_start;
+		*((int*)mallocDebugMark) = 0x1f100ded;
+		*((int*)mallocDebugMark+1) = 0x12345678;
 #endif // PSX
 
 		packed_cell_pointers = D_MALLOC(0x1000);

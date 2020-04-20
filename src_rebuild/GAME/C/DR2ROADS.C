@@ -2,6 +2,9 @@
 #include "DR2ROADS.H"
 
 #include "SYSTEM.H"
+#include "MAP.H"
+#include "EVENT.H"
+#include "CONVERT.H"
 
 sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
 
@@ -10,6 +13,11 @@ ROAD_MAP_LUMP_DATA roadMapLumpData;
 int NumTempJunctions = 0;
 DRIVER2_JUNCTION *Driver2JunctionsPtr = NULL;
 ulong *Driver2TempJunctionsPtr = NULL;
+
+DRIVER2_CURVE *Driver2CurvesPtr = NULL;
+int NumDriver2Curves = 0;
+
+short* RoadMapDataRegions[4];
 
 // decompiled code
 // original method signature: 
@@ -65,14 +73,11 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	/* end block 3 */
 	// End Line: 694
 
+// [D]
 void ProcessCurvesDriver2Lump(char *lump_file, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	Getlong((char *)&NumDriver2Curves, lump_file);
 	Driver2CurvesPtr = (DRIVER2_CURVE *)(lump_file + 4);
-	return;
-	*/
 }
 
 
@@ -300,42 +305,53 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 	/* end block 2 */
 	// End Line: 411
 
+// [D]
 int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
+	long lVar1;
 	uint uVar2;
 	DRIVER2_CURVE *pDVar3;
+	int iVar4;
 
-	if (plane != (_sdPlane *)0x0) {
+	if (plane != NULL) 
+	{
 		uVar2 = plane->d;
+
 		if ((((int)uVar2 >> 1 ^ uVar2) & 0x40000000) != 0) {
 			return uVar2 ^ 0x40000000;
 		}
-		if (((plane->surface & 0xe000U) == 0x4000) && (plane->b == 0)) {
+
+		if (((plane->surface & 0xe000U) == 0x4000) && (plane->b == 0)) 
+		{
 			pDVar3 = Driver2CurvesPtr + (((uint)(ushort)plane->surface & 0x1fff) - 0x20);
-			iVar1 = ratan2(pDVar3->Midz - pos->vz, pDVar3->Midx - pos->vx);
-			iVar1 = (int)pDVar3->gradient * (iVar1 + 0x800U & 0xfff);
-			if (iVar1 < 0) {
-				iVar1 = iVar1 + 0xfff;
+			lVar1 = ratan2(pDVar3->Midz - pos->vz, pDVar3->Midx - pos->vx);
+			iVar4 = (int)pDVar3->gradient * (lVar1 + 0x800U & 0xfff);
+			if (iVar4 < 0) {
+				iVar4 = iVar4 + 0xfff;
 			}
-			return (iVar1 >> 0xc) - (int)pDVar3->height;
+			return (iVar4 >> 0xc) - (int)pDVar3->height;
 		}
-		iVar1 = (int)plane->b;
-		if (iVar1 != 0) {
-			if (iVar1 == 0x4000) {
+
+		iVar4 = (int)plane->b;
+
+		if (iVar4 != 0)
+		{
+			if (iVar4 == 0x4000) 
+			{
 				return -uVar2;
 			}
-			if (iVar1 == 0) {
+
+			if (iVar4 == 0) 
+			{
 				trap(7);
 			}
+
 			return -uVar2 - (int)((int)plane->a * ((pos->vx - 0x200U & 0xffff) + 0x200) +
-				(int)plane->c * ((pos->vz - 0x200U & 0xffff) + 0x200)) / iVar1;
+				(int)plane->c * ((pos->vz - 0x200U & 0xffff) + 0x200)) / iVar4;
 		}
 	}
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -606,11 +622,11 @@ int RoadInCell(VECTOR *pos)
 	/* end block 4 */
 	// End Line: 853
 
+int sdLevel = 0;
+
+// [D]
 _sdPlane * sdGetCell(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	_sdPlane *plane;
 	short *psVar2;
@@ -622,56 +638,66 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	sdLevel = 0;
 	local_20.x = pos->vx - 0x200;
 	local_20.y = pos->vz - 0x200;
-	psVar5 = RoadMapDataRegions4
-		[(int)local_20.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + ((int)local_20.y >> 0xf & 2U)
-		^ cells_down >> 5 & 2U];
-	plane = (_sdPlane *)0x0;
-	if (*psVar5 == 2) {
-		puVar3 = (ushort *)
-			(psVar5 + ((int)local_20.x >> 10 & 0x3fU) + ((int)local_20.y >> 10 & 0x3fU) * 0x40 + 4)
-			;
-		if (*puVar3 == 0xffff) {
+
+	psVar5 = RoadMapDataRegions[(int)local_20.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + ((int)local_20.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+	plane = NULL;
+
+	if (*psVar5 == 2) 
+	{
+		puVar3 = (ushort *)(psVar5 + ((int)local_20.x >> 10 & 0x3fU) + ((int)local_20.y >> 10 & 0x3fU) * 0x40 + 4);
+		if (*puVar3 == 0xffff) 
+		{
 			plane = &sea;
 		}
-		else {
-			if (((uint)*puVar3 & 0x6000) == 0x2000) {
+		else 
+		{
+			if (((uint)*puVar3 & 0x6000) == 0x2000) 
+			{
 				psVar2 = (short *)((int)psVar5 + ((uint)*puVar3 & 0x1fff) * 2 + (int)psVar5[2]);
+
 				do {
 					if (-0x100 - pos->vy <= (int)*psVar2) break;
 					psVar2 = psVar2 + 2;
 					sdLevel = sdLevel + 1;
 				} while (*psVar2 != -0x8000);
+
 				puVar3 = (ushort *)(psVar2 + 1);
 			}
 			do {
 				bVar1 = false;
 				puVar4 = puVar3;
-				if ((*puVar3 & 0x4000) != 0) {
+
+				if ((*puVar3 & 0x4000) != 0) 
+				{
 					local_20.x = local_20.x & 0x3ff;
 					local_20.y = local_20.y & 0x3ff;
-					puVar4 = (ushort *)
-						sdGetBSP((_sdNode *)((int)psVar5 + ((uint)*puVar3 & 0x3fff) * 4 + (int)psVar5[3])
-							, &local_20);
+					puVar4 = (ushort *)sdGetBSP((_sdNode *)((int)psVar5 + ((uint)*puVar3 & 0x3fff) * 4 + (int)psVar5[3]), &local_20);
 					if (*puVar4 == 0x7fff) {
 						sdLevel = sdLevel + 1;
 						bVar1 = true;
 						puVar4 = puVar3 + 2;
 					}
 				}
+
 				puVar3 = puVar4;
 			} while (bVar1);
+
 			plane = (_sdPlane *)((int)psVar5 + (int)(short)*puVar4 * 0xc + (int)psVar5[1]);
-			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) {
-				if ((uint)(ushort)plane->surface - 0x10 < 0x10) {
+
+			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) 
+			{
+				if ((uint)(ushort)plane->surface - 0x10 < 0x10)
+				{
 					plane = EventSurface(pos, plane);
 				}
 			}
-			else {
+			else 
+			{
 				plane = &sea;
 			}
 		}
 	}
-	return plane;*/
+	return plane;
 }
 
 

@@ -5,6 +5,7 @@ extern ROAD_MAP_LUMP_DATA roadMapLumpData;
 extern int NumTempJunctions;
 extern DRIVER2_JUNCTION *Driver2JunctionsPtr;
 extern ulong *Driver2TempJunctionsPtr;
+extern short* RoadMapDataRegions[4];
 
 extern void ProcessStraightsDriver2Lump(char *lump_file, int lump_size); // 0x000136C0
 

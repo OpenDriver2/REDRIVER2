@@ -25,6 +25,7 @@
 #include "MISSION.H"
 #include "CIV_AI.H"
 #include "CAMERA.H"
+#include "DR2ROADS.H"
 
 int date_date = 0xA11;
 int date_time = 0x27220B;
@@ -1899,8 +1900,6 @@ void CheckLoadAreaData(int cellx, int cellz)
 		// Start line: 7604
 	/* end block 4 */
 	// End Line: 7605
-
-short* RoadMapDataRegions[4];
 
 // [D]
 void ClearRegion(int target_region)
