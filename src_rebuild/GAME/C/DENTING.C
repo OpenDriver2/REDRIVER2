@@ -2,6 +2,7 @@
 #include "DENTING.H"
 #include "SYSTEM.H"
 #include "MISSION.H"
+#include "STRINGS.H"
 
 char* DentingFiles[] =
 {
@@ -707,9 +708,6 @@ unsigned char gHDCarDamageLevels[5][255];
 // [D]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
-	// [A] This function causes buffer overrun and corrupts HEAP
-	UNIMPLEMENTED();
-	/*
 	unsigned char uVar1;
 	int *local_v1_316;
 	int *piVar2;
@@ -721,7 +719,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 	int iVar8;
 	int iVar9;
 
-	
+	int offset;
 
 	iVar6 = 0;
 	do {
@@ -730,13 +728,14 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		if (iVar3 == 0xd)
 		{
 			iVar3 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
-			if (iVar3 < 1) {
+
+			if (iVar3 < 1) 
+			{
 				iVar3 = 1;
 			}
-			else {
-				if (4 < iVar3) {
-					iVar3 = 4;
-				}
+			else if (4 < iVar3)
+			{
+				iVar3 = 4;
 			}
 		}
 
@@ -745,9 +744,19 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		if (iVar3 != -1) 
 		{
 			local_v1_316 = (int *)(gCarDamageZoneVerts + iVar6 * 300);
-			piVar4 = (int *)(lump_ptr + *(int *)(lump_ptr + iVar3 * 4));
+			offset = *(int *)(lump_ptr + iVar3 * 4);
+
+			piVar4 = (int *)(lump_ptr + offset);
 			piVar2 = piVar4;
 
+			printf("------DENTING slot %d model=%d offset=%d\n", iVar6, iVar3, *(int *)(lump_ptr + iVar3 * 4));
+
+			// [A]
+			memcpy(*gCarDamageZoneVerts[iVar6], lump_ptr+offset, 300);
+			memcpy(*gHDCarDamageZonePolys[iVar6], lump_ptr + offset + 300, 420);
+			memcpy(gHDCarDamageLevels[iVar6], lump_ptr + offset + 300 + 420, 255);
+
+			/*
 			// memcpy
 			if (((uint)piVar4 & 3) == 0) {
 				do {
@@ -776,11 +785,16 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 				} while (piVar2 != piVar4 + 0x48);
 			}
 
+			
+
 			iVar3 = piVar2[1];
 			iVar8 = piVar2[2];
 			*local_v1_316 = *piVar2;
 			local_v1_316[1] = iVar3;
 			local_v1_316[2] = iVar8;
+
+			printf("offs: %d\n", local_v1_316 - (int *)(gCarDamageZoneVerts + iVar6 * 300));
+
 			piVar2 = (int *)(gHDCarDamageZonePolys + iVar6 * 0x1a4);
 			piVar5 = piVar4 + 0x4b;
 
@@ -850,13 +864,15 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 			*piVar2 = *piVar5;
 			piVar2[1] = iVar6;
 			piVar2[2] = iVar3;
+
 			*(unsigned char *)(piVar2 + 3) = uVar1;
 			uVar1 = *(unsigned char *)((int)piVar5 + 0xe);
 			*(unsigned char *)((int)piVar2 + 0xd) = *(unsigned char *)((int)piVar5 + 0xd);
 			*(unsigned char *)((int)piVar2 + 0xe) = uVar1;
+			*/
 		}
 		iVar6 = iVar7;
-	} while (iVar7 < 5);*/
+	} while (iVar7 < 5);
 }
 
 

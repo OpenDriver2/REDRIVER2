@@ -19887,7 +19887,7 @@ struct CAR_MODEL // hashcode: 0xE3A253F1 (dec: -475900943)
 struct plotCarGlobals // hashcode: 0xED466FF8 (dec: -314150920)
 {
 	unsigned char *primptr; // size=0, offset=0
-	long *ot; // size=0, offset=4
+	OTTYPE *ot; // size=0, offset=4
 	unsigned long intensity; // size=0, offset=8
 	unsigned short *pciv_clut; // size=0, offset=12
 	unsigned long ShineyTPageASL16; // size=0, offset=16
