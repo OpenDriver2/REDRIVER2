@@ -149,24 +149,18 @@ int gFurthestMission = 0;
 
 int gWantNight = 0;
 
-inline void SetupMission(int mission, int numLevels = 1, int numTimes = 1, int numSubGames = 1)
-{
-	gCurrentMissionNumber = mission;
-	gCurrentMissionNumber += ((GameLevel * numLevels) + (gWantNight * numTimes) + (gSubGameNumber * numSubGames));
-}
-
-inline void LaunchMinigame(int mission, int numTimes = 0)
-{
-	SetupMission(mission, 8, numTimes, 1);
-	LaunchGame();
-}
 
 // [D]
 void GameStart(void)
 {
-	if ((GameType != GAME_CONTINUEMISSION)
-		&& (GameType != GAME_MISSION)
-		&& (GameType != GAME_REPLAYMISSION)) {
+	int iVar1;
+	int iVar2;
+	int SurvivalCopSettingsBackup;
+
+	if( GameType != GAME_CONTINUEMISSION && 
+		GameType != GAME_MISSION &&
+		GameType != GAME_REPLAYMISSION)
+	{
 		SetPleaseWait(NULL);
 	}
 
@@ -177,73 +171,103 @@ void GameStart(void)
 	AttractMode = 0;
 
 	FreeXM();
+
 	SsSetSerialVol(0, 0, 0);
 
-	int SurvivalCopSettingsBackup = gCopDifficultyLevel;
-
+	SurvivalCopSettingsBackup = gCopDifficultyLevel;
 	NewLevel = 1;
-	gCopDifficultyLevel = SurvivalCopSettingsBackup;
 
 	switch (GameType) {
 		case GAME_MISSION:
 			RunMissionLadder(1);
 			break;
 		case GAME_TAKEADRIVE:
-			SetupMission((NumPlayers == 1) ? 50 : 58, 2, 1, 440);
+			iVar1 = 0x3a;
+			if (NumPlayers == 1) {
+				iVar1 = 0x32;
+			}
+			gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 0x1b8;
 			LaunchGame();
 			break;
 		case GAME_IDLEDEMO:
-			if (LoadAttractReplay(gCurrentMissionNumber) != 0) {
-				int oldVMode = gVibration;
-
+			iVar2 = LoadAttractReplay(gCurrentMissionNumber);
+			iVar1 = gVibration;
+			gVibration = iVar1;
+			if (iVar2 != 0) {
 				gVibration = 0;
 				CurrentGameMode = GAMEMODE_DEMO;
 				gLoadedReplay = 1;
-				
 				LaunchGame();
-
 				gLoadedReplay = 0;
-				gVibration = oldVMode;
+				gVibration = iVar1;
 			}
 			break;
 		case GAME_PURSUIT:
-			LaunchMinigame(70, 4);
-			break;
+			iVar2 = GameLevel * 8 + 0x46;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
 		case GAME_GETAWAY:
-			LaunchMinigame(102, 4);
-			break;
+			iVar2 = GameLevel * 8 + 0x66;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
 		case GAME_GATERACE:
-			LaunchMinigame((NumPlayers == 1) ? 134 : 164, 4);
-			break;
+			if (NumPlayers == 1) {
+				iVar1 = 0x86;
+			}
+			else {
+				iVar1 = 0xa4;
+			}
+			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			goto LAB_00052e24;
 		case GAME_CHECKPOINT:
-			LaunchMinigame((NumPlayers == 1) ? 196 : 228, 4);
-			break;
+			if (NumPlayers == 1) {
+				iVar1 = 0xc4;
+			}
+			else {
+				iVar1 = 0xe4;
+			}
+			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			goto LAB_00052e24;
 		case GAME_TRAILBLAZER:
-			LaunchMinigame(260, 4);
-			break;
+			iVar2 = GameLevel * 8 + 0x104;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
 		case GAME_SURVIVAL:
 			gCopDifficultyLevel = 2;
-			
-			LaunchMinigame((NumPlayers == 1) ? 292 : 324, 4);
-
+			iVar2 = 0x144;
+			if (NumPlayers == 1) {
+				iVar2 = 0x124;
+			}
+			gCurrentMissionNumber = iVar2 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			LaunchGame();
 			gCopDifficultyLevel = SurvivalCopSettingsBackup;
 			break;
 		case GAME_REPLAYMISSION:
 			GameType = GAME_MISSION;
-			
-			if (FindMissionLadderPos(gCurrentMissionNumber) != 0)
+			iVar1 = FindMissionLadderPos(gCurrentMissionNumber);
+			if (iVar1 != 0) {
 				RunMissionLadder(0);
-
+			}
 			GameType = GAME_REPLAYMISSION;
 			break;
 		case GAME_COPSANDROBBERS:
-			LaunchMinigame(420, 4);
-			break;
+			iVar2 = GameLevel * 8 + 0x1a4;
+			iVar1 = gWantNight << 2;
+			goto LAB_00052e1c;
 		case GAME_CAPTURETHEFLAG:
-			LaunchMinigame(352);
+			gCurrentMissionNumber = GameLevel * 8 + 0x160 + gSubGameNumber;
+			LaunchGame();
 			break;
 		case GAME_SECRET:
-			LaunchMinigame((NumPlayers == 1) ? 480 : 484, 1);
+			iVar2 = 0x1e4;
+			iVar1 = gWantNight;
+			if (NumPlayers == 1) {
+				iVar2 = 0x1e0;
+			}
+		LAB_00052e1c:
+			gCurrentMissionNumber = iVar2 + iVar1 + gSubGameNumber;
+		LAB_00052e24:
+			LaunchGame();
 			break;
 		case GAME_CONTINUEMISSION:
 			GameType = GAME_MISSION;
@@ -253,9 +277,7 @@ void GameStart(void)
 			CurrentGameMode = GAMEMODE_DIRECTOR;
 			gLoadedReplay = 1;
 			GameType = StoredGameType;
-
 			LaunchGame();
-
 			gLoadedReplay = 0;
 	}
 
@@ -266,7 +288,6 @@ void GameStart(void)
 
 	ReInitFrontend();
 }
-
 
 
 // decompiled code
