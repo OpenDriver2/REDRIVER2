@@ -2,6 +2,12 @@
 #include "CARS.H"
 #include "TEXTURE.H"
 #include "OVERMAP.H"
+#include "DRAW.H"
+#include "MISSION.H"
+#include "SYSTEM.H"
+
+#include "GTEREG.H"
+#include "INLINE_C.H"
 
 SVECTOR day_vectors[4] =
 {
@@ -74,61 +80,79 @@ unsigned char lightsOnDelay[20];
 	/* end block 3 */
 	// End Line: 1671
 
+unsigned long gUnderIntensity = 0;
+struct DENTUVS *gTempCarUVPtr;
+
+// idk if it's global or not
+SVECTOR carLightD = { 0, 0xF000, 0, 0 }; // 0xAA130 yet not defined in symbols
+
+// [D]
 void plotNewCarModel(CAR_MODEL *car, int palette)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 in_zero;
-	undefined4 in_at;
-	int iVar1;
-	plotCarGlobals local_48;
-	undefined4 local_20;
-	undefined4 local_1c;
-	uint local_18;
+	//undefined4 uVar1;
+	//undefined4 uVar2;
+	//undefined4 in_zero;
+	//undefined4 in_at;
+	int iVar3;
+	plotCarGlobals _pg;
+	ulong lightlevel;
 
-	local_20 = DAT_000aa130;
-	local_1c = DAT_000aa134;
-	local_18 = combointensity | 0x3000000;
-	if (car != (CAR_MODEL *)0x0) {
+	//uVar2 = DAT_000aa134;
+	//uVar1 = DAT_000aa130;
+	lightlevel = combointensity | 0x3000000;
+	if (car != NULL) {
 		if (-1 < gTimeOfDay) {
 			if (gTimeOfDay < 3) {
-				local_18 = combointensity | 0x30000000;
+				lightlevel = combointensity | 0x30000000;
 			}
 			else {
 				if (gTimeOfDay == 3) {
-					local_18 = 0x302a2a2a;
+					lightlevel = 0x302a2a2a;
 				}
 			}
 		}
-		iVar1 = combointensity;
+		iVar3 = combointensity;
 		setupLightingMatrices();
-		setCopReg(2, 0, local_20);
-		setCopReg(2, 1, local_1c);
-		setCopReg(2, 2, local_18);
-		copFunction(2, 0x108041b);
-		local_48.primptr = (uchar *)current->primptr;
-		local_48.intensity = 0;
-		local_48.pciv_clut = (ushort *)&DAT_000abc08;
-		local_48.damageLevel = gTempCarUVPtr;
-		local_48.ot = current->ot + 0x1c;
-		gUnderIntensity = getCopReg(2, 0x16);
-		plotCarPolyB3(car->numB3, car->pB3, car->vlist, &local_48);
-		local_48.intensity = gUnderIntensity & 0xffffff;
-		local_48.ot = current->ot + 0x10;
-		plotCarPolyFT3(car->numFT3, car->pFT3, car->vlist, &local_48);
-		local_48.ot = current->ot + 4;
-		if (gTimeOfDay == 3) {
-			local_48.intensity = (int)(combointensity & 0xfcfcf0U) >> 2;
-			plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &local_48, palette);
+
+		gte_ldv0(&carLightD);
+		MTC2(lightlevel, 6);
+
+		//setCopReg(2, in_zero, uVar1);
+		//setCopReg(2, in_at, uVar2);
+		//setCopReg(2, iVar3, lightlevel);
+
+		docop2(0x108041b);
+
+		_pg.primptr = (unsigned char*)current->primptr;
+		_pg.intensity = 0;
+		_pg.pciv_clut = (unsigned short *)civ_clut + 0xc0;
+		_pg.damageLevel = (unsigned char *)gTempCarUVPtr;
+
+		_pg.ot = (OTTYPE *)(current->ot + 0x1c);
+
+		gUnderIntensity = MFC2(22); //getCopReg(2, 0x16);
+
+		plotCarPolyB3(car->numB3, car->pB3, car->vlist, &_pg);
+		_pg.intensity = gUnderIntensity & 0xffffff;
+
+		_pg.ot = (OTTYPE *)(current->ot + 16);
+		plotCarPolyFT3(car->numFT3, car->pFT3, car->vlist, &_pg);
+		_pg.ot = (OTTYPE *)(current->ot + 4);
+
+		if (gTimeOfDay == 3)
+		{
+			_pg.intensity = (int)(combointensity & 0xfcfcf0U) >> 2;
+			plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);
 		}
-		else {
-			local_48.intensity = combointensity & 0xffffff;
-			plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &local_48, palette);
+		else
+		{
+			_pg.intensity = combointensity & 0xffffff;
+			plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
 		}
-		*(uchar **)&current->primptr = local_48.primptr;
+
+		current->primptr = (char*)_pg.primptr;
 		restoreLightingMatrices();
 	}
-	return;*/
 }
 
 
@@ -395,80 +419,87 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 	/* end block 2 */
 	// End Line: 2295
 
+// [D]
 void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, plotCarGlobals *pg, int palette)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
-	undefined4 in_zero;
-	undefined4 in_at;
-	SVECTOR *pSVar3;
-	ushort *puVar4;
-	SVECTOR *pSVar5;
-	uint uVar6;
-	SVECTOR *pSVar7;
-	uint uVar8;
+	uint uVar3;
+	SVECTOR *pSVar4;
+	ushort *puVar5;
+	SVECTOR *pSVar6;
+	uint uVar7;
+	SVECTOR *pSVar8;
 	uint uVar9;
-	uint *puVar10;
+	int iVar10;
+	POLY_GT3 *local_t0_416;
 	uint uVar11;
 	uint uVar12;
 	int iVar13;
 	int iVar14;
-	long *plVar15;
+	OTTYPE *plVar15;
 
-	puVar10 = (uint *)pg->primptr;
-	puVar4 = pg->pciv_clut;
+	local_t0_416 = (POLY_GT3 *)pg->primptr;
+	puVar5 = pg->pciv_clut;
 	plVar15 = pg->ot;
-	setCopReg(2, vlist, pg->intensity | 0x34000000);
-	while (true) {
-		uVar8 = src->vindices;
+
+	MTC2(pg->intensity | 0x34000000, 6);
+
+	while (true) 
+	{
+		uVar9 = src->vindices;
 		iVar14 = src->tpage_uv1;
 		iVar13 = src->uv3_uv2;
-		uVar6 = (uint)pg->damageLevel[src->originalindex];
-		uVar9 = (src->clut_uv0 & 0xffffU | (uint)puVar4[palette + (src->clut_uv0 >> 0x10)] << 0x10) +
-			uVar6;
+		uVar7 = (uint)pg->damageLevel[src->originalindex];
+		iVar10 = (src->clut_uv0 & 0xffffU | (uint)puVar5[palette + (src->clut_uv0 >> 0x10)] << 0x10)
+			+ uVar7;
 		if (numTris < 1) break;
-		pSVar7 = vlist + (uVar8 & 0xff);
-		pSVar5 = vlist + ((int)uVar8 >> 8 & 0xff);
-		pSVar3 = vlist + ((int)uVar8 >> 0x10 & 0xff);
-		setCopReg(2, 0, *(undefined4 *)pSVar7);
-		setCopReg(2, 1, *(undefined4 *)&pSVar7->vz);
-		setCopReg(2, 2, *(undefined4 *)pSVar5);
-		setCopReg(2, 3, *(undefined4 *)&pSVar5->vz);
-		setCopReg(2, 4, *(undefined4 *)pSVar3);
-		setCopReg(2, 5, *(undefined4 *)&pSVar3->vz);
-		copFunction(2, 0x280030);
-		uVar8 = src->nindices;
-		uVar12 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar8 >> 5 & 0x7f8U));
-		copFunction(2, 0x1400006);
-		uVar11 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar8 >> 0xd & 0x7f8U));
-		iVar1 = getCopReg(2, 24);
-		copFunction(2, 0x158002d);
+		pSVar8 = vlist + (uVar9 & 0xff);
+		pSVar6 = vlist + ((int)uVar9 >> 8 & 0xff);
+		pSVar4 = vlist + ((int)uVar9 >> 0x10 & 0xff);
+
+		gte_ldv3(pSVar8, pSVar6, pSVar4);
+
+		docop2(0x280030);
+		uVar9 = src->nindices;
+		uVar12 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 5 & 0x7f8U));
+		docop2(0x1400006);
+		uVar11 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 0xd & 0x7f8U));
+
+		iVar1 = MAC0;	//  getCopReg(2, 0x18);
+
+		docop2(0x158002d);
 		src = src + 1;
-		iVar2 = getCopReg(2, 7);
-		if (-1 < iVar1 && 0 < iVar2) {
-			puVar10[1] = ((uint)(ushort)nlist[uVar8 & 0xff].pad & 0xff) << 0x10 |
-				(uint)(ushort)nlist[uVar8 & 0xff].pad | 0x34000000;
-			puVar10[4] = (uVar12 & 0xff) << 0x10 | uVar12;
-			puVar10[7] = (uVar11 & 0xff) << 0x10 | uVar11;
-			puVar10[3] = uVar9;
-			puVar10[6] = iVar14 + uVar6;
-			puVar10[9] = iVar13 + uVar6;
-			uVar6 = getCopReg(2, 12);
-			puVar10[2] = uVar6;
-			uVar6 = getCopReg(2, 13);
-			puVar10[5] = uVar6;
-			uVar6 = getCopReg(2, 14);
-			puVar10[8] = uVar6;
-			*puVar10 = (uint)plVar15[iVar2 >> 1] | 0x9000000;
-			*(uint **)(plVar15 + (iVar2 >> 1)) = puVar10;
-			puVar10 = puVar10 + 10;
+
+		iVar2 = OTZ;	// getCopReg(2, 7);
+
+		if (-1 < iVar1 && 0 < iVar2) 
+		{
+			*(uint *)&local_t0_416->r0 =
+				((uint)(ushort)nlist[uVar9 & 0xff].pad & 0xff) << 0x10 |
+				(uint)(ushort)nlist[uVar9 & 0xff].pad | 0x34000000;
+			*(uint *)&local_t0_416->r1 = (uVar12 & 0xff) << 0x10 | uVar12;
+			*(uint *)&local_t0_416->r2 = (uVar11 & 0xff) << 0x10 | uVar11;
+			*(int *)&local_t0_416->u0 = iVar10;
+			*(uint *)&local_t0_416->u1 = iVar14 + uVar7;
+			*(uint *)&local_t0_416->u2 = iVar13 + uVar7;
+
+			uVar3 = SXY0;	// getCopReg(2, 0xc);
+			*(uint *)&local_t0_416->x0 = uVar3;
+			uVar3 = SXY1;	// getCopReg(2, 0xd);
+			*(uint *)&local_t0_416->x1 = uVar3;
+			uVar3 = SXY2;	// getCopReg(2, 0xe);
+			*(uint *)&local_t0_416->x2 = uVar3;
+
+			local_t0_416->tag = (uint)plVar15[iVar2 >> 1] | 0x9000000;
+			*(POLY_GT3 **)(plVar15 + (iVar2 >> 1)) = local_t0_416;
+			local_t0_416 = local_t0_416 + 1;
 		}
+
 		numTris = numTris + -1;
 	}
-	*(uint **)&pg->primptr = puVar10;
-	return;*/
+
+	*(POLY_GT3 **)&pg->primptr = local_t0_416;
 }
 
 
@@ -1981,10 +2012,12 @@ void buildNewCars(void)
 	/* end block 2 */
 	// End Line: 5849
 
+// byte swapped int
+#define SW_INT(a,b) (((a) << 16) | (b))
+
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
-	UNIMPLEMENTED();
-	/*
+
 	char bVar1;
 	char bVar2;
 	char bVar3;
@@ -2007,7 +2040,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 	if (first != 0) {
 		whichCP = 0;
 	}
-	if ((model == NULL) || (0x800000 < ((uint)model & 0xfffffff))) 
+	if ((model == NULL) || (0x800000 < ((uint)model->shape_flags & 0xfffffff))) 
 	{
 		car->numGT3 = 0;
 		car->numFT3 = 0;
@@ -2084,8 +2117,8 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 								{
 									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
 
-									carPolyBuffer[iVar11].clut_uv0 = CONCAT22(texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
-									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
+									carPolyBuffer[iVar11].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
+									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
 
 									uVar7 = (uint)*(ushort *)(pbVar9 + 0xc);
 									iVar12 = iVar11 + 1;
@@ -2100,8 +2133,8 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 								{
 									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
 
-									carPolyBuffer[iVar11].clut_uv0 = CONCAT22(texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
-									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
+									carPolyBuffer[iVar11].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
+									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
 
 									uVar5 = *(ushort *)(pbVar9 + 0xc);
 									carPolyBuffer[iVar11].originalindex = sVar13;
@@ -2109,8 +2142,8 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									pCVar10 = carPolyBuffer + iVar11 + 1;
 									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
 
-									carPolyBuffer[iVar11 + 1].clut_uv0 = CONCAT22(texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
-									carPolyBuffer[iVar11 + 1].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xc));
+									carPolyBuffer[iVar11 + 1].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
+									carPolyBuffer[iVar11 + 1].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xc));
 
 									uVar7 = (uint)*(ushort *)(pbVar9 + 0xe);
 									iVar12 = iVar11 + 2;
@@ -2123,12 +2156,12 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									iVar12 = iVar11 + 1;
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
 
-									civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+									((ushort*)civ_clut)[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
 									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
 									
 									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
 									carPolyBuffer[iVar11].clut_uv0 = ((int)(cVar6 * 0x180 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
+									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
 									
 									uVar7 = (uint)*(ushort *)(pbVar9 + 0x10);
 									carPolyBuffer[iVar11].originalindex = sVar13;
@@ -2142,13 +2175,13 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
 									iVar8 = cVar6 * 0x180;
 
-									civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = texture_cluts[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+									*((ushort*)civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6]) = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
 
 									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
 
 									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
 									carPolyBuffer[iVar11].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
+									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
 
 									uVar5 = *(ushort *)(pbVar9 + 0x10);
 									carPolyBuffer[iVar11].originalindex = sVar13;
@@ -2158,7 +2191,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 
 									carPolyBuffer[iVar11 + 1].nindices = (uint)pbVar9[8] + ((uint)pbVar9[10] + (uint)pbVar9[0xb] * 0x100) * 0x100;
 									carPolyBuffer[iVar11 + 1].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11 + 1].tpage_uv1 = CONCAT22(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0x10));
+									carPolyBuffer[iVar11 + 1].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0x10));
 
 									uVar7 = (uint)*(ushort *)(pbVar9 + 0x12);
 									goto LAB_00022fd4;
@@ -2189,7 +2222,6 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 			whichCP = iVar12;
 		} while (iVar16 < 3);
 	}
-	*/
 }
 
 
