@@ -6,6 +6,8 @@ extern int CurrentPlayerView;
 extern int FrAng;
 extern int gStopPadReads;
 
+extern int gLightsOn;
+
 typedef void(*occlFunc)(int *comp_val);
 
 extern void ProcessLumps(char *lump_ptr, int lump_size); // 0x00058C08

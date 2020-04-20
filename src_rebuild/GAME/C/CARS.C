@@ -5,10 +5,24 @@
 #include "DRAW.H"
 #include "MISSION.H"
 #include "SYSTEM.H"
+#include "DEBRIS.H"
+#include "MAIN.H"
+#include "CAMERA.H"
+#include "DRAW.H"
+#include "HANDLING.H"
+#include "COSMETIC.H"
+#include "DENTING.H"
+#include "SHADOW.H"
+#include "CIV_AI.H"
+#include "COP_AI.H"
+#include "MC_SND.H"
+#include "CUTSCENE.H"
+#include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
 #include "LIBAPI.H"
+
 
 SVECTOR day_vectors[4] =
 {
@@ -56,6 +70,8 @@ _CAR_DATA* active_car_list[20];
 BOUND_BOX bbox[20];
 unsigned char lightsOnDelay[20];
 
+char force_siren[8] = { 0 };
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ plotNewCarModel(struct CAR_MODEL *car /*$s0*/, int palette /*$s2*/)
@@ -83,6 +99,9 @@ unsigned char lightsOnDelay[20];
 
 unsigned long gUnderIntensity = 0;
 struct DENTUVS *gTempCarUVPtr;
+DENTUVS gTempHDCarUVDump[20][255];
+SVECTOR gTempCarVertDump[20][132];
+DENTUVS gTempLDCarUVDump[20][134];
 
 // idk if it's global or not
 SVECTOR carLightD = { 0, 0xF000, 0, 0 }; // 0xAA130 yet not defined in symbols
@@ -765,273 +784,317 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 	/* end block 3 */
 	// End Line: 3114
 
+char LeftLight = 0;
+char RightLight = 0;
+char TransparentObject = 0;
+
+// [D] [A]
 void DrawCar(_CAR_DATA *cp, int view)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uchar uVar2;
+	unsigned char bVar1;
+	unsigned char uVar2;
 	short sVar3;
 	short sVar4;
 	char cVar5;
 	int iVar6;
-	undefined3 extraout_var;
+	int vvvar;
+
 	short *psVar7;
 	MATRIX *pMVar8;
 	int iVar9;
-	int WheelSpeed;
-	MATRIX *pMVar10;
-	uint uVar11;
-	CVECTOR aCStack312[26];
-	VECTOR local_d0;
+	int iVar10;
+	int iVar11;
+	MATRIX *m1;
+	uint uVar12;
+	CVECTOR col;
+	MATRIX temp_mat1;
+	MATRIX temp_mat2;
+	VECTOR pos;
 	VECTOR local_c0;
-	int local_a8;
-	int local_a4;
-	int local_a0;
-	int local_98;
-	int local_94;
-	int local_90;
-	int local_88;
-	int local_84;
-	int local_80;
-	int local_78;
-	int local_74;
-	int local_70;
-	int local_68;
-	int local_64;
-	int local_60;
-	int local_58;
-	int local_54;
-	int local_50;
-	MATRIX MStack72;
+	SVECTOR temp_vec;
+	VECTOR corners[4];
+	VECTOR d;
+	VECTOR dist;
+	MATRIX workmatrix;
 
 	if (cp < car_data) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	uVar11 = (uint)(byte)(cp->ap).model;
-	if (((&player)[view].cameraView == '\x02') &&
-		((uint)(byte)cp->id == (int)(&player)[view].cameraCarId)) {
-		sVar3 = (cp->ap).damage[0];
-		LeftLight = (&player)[view].cameraView;
-		if (499 < sVar3) {
-			if (sVar3 < 1000) {
+	uVar12 = cp->ap.model;
+
+	if (player[view].cameraView == 2 && cp->id == player[view].cameraCarId) 
+	{
+		sVar3 = cp->ap.damage[0];
+
+		LeftLight = player[view].cameraView;
+
+		if (499 < sVar3)
+		{
+			if (sVar3 < 1000)
 				LeftLight = '\x01';
-			}
-			else {
+			else 
 				LeftLight = '\0';
-			}
 		}
+
+		// it has a bug... I know that since 2002...
+
 		sVar3 = (cp->ap).damage[1];
-		if (sVar3 < 500) {
-			RightLight = '\x02';
-		}
-		else {
-			if (sVar3 < 1000) {
-				RightLight = '\x01';
-			}
-			else {
-				RightLight = '\0';
-			}
-		}
-		if (gLightsOn == 0) {
+
+		if (sVar3 < 500) 
+			RightLight = 2;
+		else if(sVar3 < 1000)
+			RightLight = 1;
+		else
+			RightLight = '\0';
+
+		if (gLightsOn == 0) 
 			return;
-		}
-		if ((&lightsOnDelay)[(byte)cp->id] != '\0') {
+
+		if (lightsOnDelay[cp->id] != 0) 
 			return;
-		}
-		PlacePoolForCar(cp, aCStack312, 1);
+
+		PlacePoolForCar(cp, &col, 1);
 		return;
 	}
-	local_d0.vx = (cp->hd).where.t[0];
-	local_d0.vz = (cp->hd).where.t[2];
-	local_d0.vy = -(cp->hd).where.t[1];
-	local_c0.vx = local_d0.vx;
-	local_c0.vz = local_d0.vz;
+
+	pos.vx = (cp->hd).where.t[0];
+	pos.vz = (cp->hd).where.t[2];
+	pos.vy = -(cp->hd).where.t[1];
+	local_c0.vx = pos.vx;
+	local_c0.vz = pos.vz;
+
 	SetFrustrumMatrix();
-	iVar6 = FrustrumCheck(&local_d0, 800);
+	iVar6 = FrustrumCheck(&pos, 800);
 	if (iVar6 == -1) {
 		return;
 	}
-	local_78 = (int)(cp->hd).oBox.radii[0].vx;
-	WheelSpeed = (int)(cp->hd).oBox.radii[2].vx;
-	local_98 = local_d0.vx + local_78;
-	local_a8 = local_98 + WheelSpeed;
-	local_98 = local_98 - WheelSpeed;
-	local_78 = local_d0.vx - local_78;
-	local_88 = local_78 + WheelSpeed;
-	local_78 = local_78 - WheelSpeed;
-	local_70 = (int)(cp->hd).oBox.radii[0].vz;
-	WheelSpeed = (int)(cp->hd).oBox.radii[2].vz;
-	local_90 = local_d0.vz + local_70;
-	local_a0 = local_90 + WheelSpeed;
-	local_90 = local_90 - WheelSpeed;
-	local_70 = local_d0.vz - local_70;
-	local_80 = local_70 + WheelSpeed;
-	local_70 = local_70 - WheelSpeed;
-	local_74 = local_d0.vy;
-	local_84 = local_d0.vy;
-	local_94 = local_d0.vy;
-	local_a4 = local_d0.vy;
-	WheelSpeed = FrustrumCheck(&local_d0, 0);
-	if ((((WheelSpeed == -1) && (WheelSpeed = FrustrumCheck(&local_a8, 0), WheelSpeed == -1)) &&
-		(WheelSpeed = FrustrumCheck(&local_98, 0), WheelSpeed == -1)) &&
-		((WheelSpeed = FrustrumCheck(&local_88, 0), WheelSpeed == -1 &&
-		(WheelSpeed = FrustrumCheck(&local_78, 0), WheelSpeed == -1)))) {
+	iVar11 = (int)(cp->hd).oBox.radii[0].vx;
+	iVar9 = (int)(cp->hd).oBox.radii[2].vx;
+	vvvar = pos.vx + iVar11;
+	corners[0].vx = vvvar + iVar9;
+	corners[1].vx = vvvar - iVar9;
+	iVar11 = pos.vx - iVar11;
+	corners[2].vx = iVar11 + iVar9;
+	corners[3].vx = iVar11 - iVar9;
+	iVar11 = (int)(cp->hd).oBox.radii[0].vz;
+	iVar9 = (int)(cp->hd).oBox.radii[2].vz;
+	vvvar = pos.vz + iVar11;
+	corners[0].vz = vvvar + iVar9;
+	corners[1].vz = vvvar - iVar9;
+	iVar11 = pos.vz - iVar11;
+	corners[2].vz = iVar11 + iVar9;
+	corners[3].vz = iVar11 - iVar9;
+	corners[3].vy = pos.vy;
+	corners[2].vy = pos.vy;
+	corners[1].vy = pos.vy;
+	corners[0].vy = pos.vy;
+
+	vvvar = FrustrumCheck(&pos, 0);
+
+	if ((((vvvar == -1) && (vvvar = FrustrumCheck(corners, 0), vvvar == -1)) &&
+		(vvvar = FrustrumCheck(corners + 1, 0), vvvar == -1)) &&
+		((vvvar = FrustrumCheck(corners + 2, 0), vvvar == -1 &&
+		(vvvar = FrustrumCheck(corners + 3, 0), vvvar == -1)))) 
+	{
 		iVar6 = -1;
 	}
-	local_68 = (cp->hd).oBox.location.vx - camera_position.vx;
-	local_64 = -camera_position.vy - (cp->hd).oBox.location.vy;
-	local_60 = (cp->hd).oBox.location.vz - camera_position.vz;
-	iVar9 = (int)(cp->hd).oBox.length[0];
-	local_58 = local_68 * (cp->hd).oBox.radii[0].vx + local_64 * (cp->hd).oBox.radii[0].vy +
-		local_60 * (cp->hd).oBox.radii[0].vz;
-	WheelSpeed = local_58;
-	if (local_58 < 0) {
-		WheelSpeed = -local_58;
-	}
-	local_54 = local_68 * (cp->hd).oBox.radii[1].vx + local_64 * (cp->hd).oBox.radii[1].vy +
-		local_60 * (cp->hd).oBox.radii[1].vz;
-	local_50 = local_68 * (cp->hd).oBox.radii[2].vx + local_64 * (cp->hd).oBox.radii[2].vy +
-		local_60 * (cp->hd).oBox.radii[2].vz;
-	if (WheelSpeed < iVar9 * iVar9) {
-		iVar9 = (int)(cp->hd).oBox.length[1];
-		WheelSpeed = local_54;
-		if (local_54 < 0) {
-			WheelSpeed = -local_54;
-		}
-		if (WheelSpeed < iVar9 * iVar9) {
-			iVar9 = (int)(cp->hd).oBox.length[2];
-			WheelSpeed = local_50;
-			if (local_50 < 0) {
-				WheelSpeed = -local_50;
-			}
-			if (WheelSpeed < iVar9 * iVar9) {
+
+	d.vx = (cp->hd).oBox.location.vx - camera_position.vx;
+	d.vy = -camera_position.vy - (cp->hd).oBox.location.vy;
+	d.vz = (cp->hd).oBox.location.vz - camera_position.vz;
+	iVar11 = (int)(cp->hd).oBox.length[0];
+
+	vvvar = d.vx * cp->hd.oBox.radii[0].vx + d.vy * cp->hd.oBox.radii[0].vy + d.vz * cp->hd.oBox.radii[0].vz;
+
+	if (vvvar < 0) 
+		vvvar = -vvvar;
+
+	iVar9 = d.vx * cp->hd.oBox.radii[1].vx + d.vy * cp->hd.oBox.radii[1].vy + d.vz * cp->hd.oBox.radii[1].vz;
+	iVar10 = d.vx * cp->hd.oBox.radii[2].vx + d.vy * cp->hd.oBox.radii[2].vy +d.vz * cp->hd.oBox.radii[2].vz;
+
+	if (vvvar < iVar11 * iVar11) 
+	{
+		vvvar = (int)(cp->hd).oBox.length[1];
+		if (iVar9 < 0) 
+			iVar9 = -iVar9;
+
+
+		if (iVar9 < vvvar * vvvar)
+		{
+			vvvar = cp->hd.oBox.length[2];
+			if (iVar10 < 0)
+				iVar10 = -iVar10;
+
+			if (iVar10 < vvvar * vvvar) 
 				iVar6 = -1;
-			}
 		}
 	}
-	if (iVar6 == -1) {
+	if (iVar6 == -1)
 		return;
-	}
-	local_d0.vx = local_d0.vx - camera_position.vx;
-	local_d0.vy = local_d0.vy - camera_position.vy;
-	local_d0.vz = local_d0.vz - camera_position.vz;
-	Apply_Inv_CameraMatrix(&local_d0);
-	pMVar10 = &(cp->hd).drawCarMat;
+
+	pos.vx = pos.vx - camera_position.vx;
+	pos.vy = pos.vy - camera_position.vy;
+	pos.vz = pos.vz - camera_position.vz;
+
+	Apply_Inv_CameraMatrix(&pos);
+
+	m1 = &(cp->hd).drawCarMat;
 	num_cars_drawn = num_cars_drawn + 1;
-	if (cheats.MiniCars != 0) {
+
+	/*if (cheats.MiniCars != 0)	// [A] DISABLED, NO REAL SENSE TO KEEP THIS HERE...
+	{
 		iVar6 = 8;
-		pMVar8 = pMVar10;
+		pMVar8 = m1;
 		do {
 			iVar6 = iVar6 + -1;
 			pMVar8->m[0] = pMVar8->m[0] >> 2;
 			pMVar8 = (MATRIX *)(pMVar8->m + 1);
 		} while (-1 < iVar6);
-	}
-	if (((local_d0.vz < 0x157d) && (gForceLowDetailCars == 0)) || (cp->controlType == '\x01')) {
-		WheelSpeed = (cp->hd).speed * 0x2000;
-		iVar6 = MaxPlayerDamage;
-		if (cp->controlType == '\x01') {
-			iVar6 = (&MaxPlayerDamage)[**(char **)cp->ai];
+	}*/
+
+	if (((pos.vz < 0x157d) && (gForceLowDetailCars == 0)) || (cp->controlType == '\x01')) 
+	{
+		vvvar = (cp->hd).speed * 0x2000;
+		iVar6 = MaxPlayerDamage[0];
+
+		if (cp->controlType == 1)
+		{
+			iVar6 = MaxPlayerDamage[(int)cp->ai.padid];
 		}
-		if ((int)(uint)cp->totalDamage < iVar6) {
+
+		if ((int)(uint)cp->totalDamage < iVar6) 
+		{
 			sVar3 = (cp->ap).damage[0];
-			if (3000 < sVar3) goto LAB_00021724;
+
+			if (3000 < sVar3)
+				goto LAB_00021724;
+
 			sVar4 = (cp->ap).damage[1];
-			if (3000 < sVar4) goto LAB_00021724;
-			if (((2000 < sVar3) || (2000 < sVar4)) && (WheelSpeed + 399999U < 1199999)) {
-				AddSmokingEngine(cp, 0, WheelSpeed);
+
+			if (3000 < sVar4)
+				goto LAB_00021724;
+
+			if (((2000 < sVar3) || (2000 < sVar4)) && (vvvar + 399999U < 1199999))
+			{
+				AddSmokingEngine(cp, 0, vvvar);
 			}
 		}
 		else {
-			if (WheelSpeed + 59999U < 119999) {
+			if (vvvar + 59999U < 119999) 
+			{
 				AddFlamingEngine(cp);
 			}
 		LAB_00021724:
-			if (WheelSpeed + 399999U < 1199999) {
-				AddSmokingEngine(cp, 1, WheelSpeed);
+			if (vvvar + 399999U < 1199999) 
+			{
+				AddSmokingEngine(cp, 1, vvvar);
 			}
 		}
+
 		gTimeInWater = 0x19;
 		gSinkingTimer = 100;
+
 		SetShadowPoints(cp);
-		PlaceShadowForCar((cp->hd).shadowPoints, (uint)(byte)cp->id, &local_d0, 0);
-		ComputeCarLightingLevels(cp, '\x01');
-		gTempCarUVPtr = &gTempHDCarUVDump + (uint)(byte)cp->id * 0xff;
-		(&NewCarModel)[uVar11].vlist = &gTempCarVertDump + (uint)(byte)cp->id * 0x84;
-		(&NewCarModel)[uVar11].nlist = &gTempCarVertDump + (uint)(byte)cp->id * 0x84;
-		MulMatrix0(&inv_camera_matrix, pMVar10, &MStack72);
-		FindCarLightFade(&MStack72);
-		DrawCarObject(&NewCarModel + uVar11, &MStack72, &local_d0, &local_c0, (uint)(byte)(cp->ap).palette,
-			cp, 1);
-		DrawCarWheels(cp, &MStack72, &local_d0, 0);
+		PlaceShadowForCar((cp->hd).shadowPoints, cp->id, &pos, 0);
+
+		ComputeCarLightingLevels(cp, 1);
+
+		gTempCarUVPtr = gTempHDCarUVDump[cp->id];
+		NewCarModel[uVar12].vlist = gTempCarVertDump[cp->id];
+		NewCarModel[uVar12].nlist = gTempCarVertDump[cp->id];
+		MulMatrix0(&inv_camera_matrix, m1, &workmatrix);
+		FindCarLightFade(&workmatrix);
+
+		DrawCarObject(NewCarModel + uVar12, &workmatrix, &pos, &local_c0, cp->ap.palette,cp, 1);
+
+		DrawCarWheels(cp, &workmatrix, &pos, 0);
 	}
-	else {
-		(&NewLowCarModel)[uVar11].nlist = &gTempCarVertDump + (uint)(byte)cp->id * 0x84;
-		gTempCarUVPtr = &gTempLDCarUVDump + (uint)(byte)cp->id * 0x86;
-		if (local_d0.vz < 8000) {
+	else 
+	{
+		NewLowCarModel[uVar12].nlist = gTempCarVertDump[cp->id];
+		gTempCarUVPtr = gTempLDCarUVDump[cp->id];
+
+		if (pos.vz < 8000) 
+		{
 			SetShadowPoints(cp);
-			PlaceShadowForCar((cp->hd).shadowPoints, (uint)(byte)cp->id, &local_d0, 0);
+			PlaceShadowForCar((cp->hd).shadowPoints, cp->id, &pos, 0);
 		}
+
 		ComputeCarLightingLevels(cp, '\0');
-		MulMatrix0(&inv_camera_matrix, pMVar10, (MATRIX *)&local_68);
-		FindCarLightFade((MATRIX *)&local_68);
-		DrawCarObject(&NewLowCarModel + uVar11, (MATRIX *)&local_68, &local_d0, &local_c0,
-			(uint)(byte)(cp->ap).palette, cp, 0);
+		MulMatrix0(&inv_camera_matrix, m1, (MATRIX *)&d);
+		FindCarLightFade((MATRIX *)&d);
+
+		DrawCarObject(NewLowCarModel + uVar12, (MATRIX *)&d, &pos, &local_c0, cp->ap.palette, cp, 0);
 	}
-	TransparentObject = '\0';
-	if (cp->controlType == '\x01') {
+
+	TransparentObject = 0;
+	if (cp->controlType == 2)
+	{
 		PlayerCarFX(cp);
 	}
-	else {
-		if (cp->controlType == '\x02') {
+	else
+	{
+		if (cp->controlType == 2)
+		{
 			CivCarFX(cp);
 		}
 	}
-	if ((gLightsOn != 0) && ((&lightsOnDelay)[(uint)(byte)cp->id] == '\0')) {
-		if (cp->controlType == '\x02') {
-			if ((cp->ai[0xf9] != 3) ||
-				(((bVar1 = cp->ai[0xc], bVar1 != 5 && (bVar1 != 7)) && (bVar1 != 8)))) {
+	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
+	{
+		if (cp->controlType == 2) 
+		{
+			if ((cp->ai.c.thrustState != 3) || (((bVar1 = cp->ai.c.ctrlState, bVar1 != 5 && (bVar1 != 7)) && (bVar1 != 8))))
+			{
 				AddNightLights(cp);
 			}
 		}
-		else {
-			cVar5 = SilenceThisCar((uint)(byte)cp->id);
-			if (CONCAT31(extraout_var, cVar5) == 0) {
+		else
+		{
+			cVar5 = SilenceThisCar(cp->id);
+
+			if (cVar5 == 0)
 				AddNightLights(cp);
-			}
 		}
 	}
-	uVar2 = cp->controlType;
-	if (uVar2 == '\x03') {
-		if ((int)player.playerCarId < 0) {
+
+	if (cp->controlType == 3)
+	{
+		if ((int)player[0].playerCarId < 0) 
 			psVar7 = &pedestrianFelony;
+		else 
+			psVar7 = &car_data[(int)player[0].playerCarId].felonyRating;
+
+		if (*psVar7 > 0x292 && (MissionHeader->residentModels[3] == 0))
+		{
+			if (cp->ai.p.dying < 0x4b)
+				AddCopCarLight(cp);
+
+			return;
 		}
-		else {
-			psVar7 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if ((0x292 < *psVar7) && (MissionHeader->residentModels[3] == 0)) goto LAB_00021aac;
 	}
+
+	// WTF IS THIS?
+	UNIMPLEMENTED(); // [A]
+	/*
 	if (((*(uint *)&cp->hndType & 0x2ff00) != 0x20200) &&
-		(((gInGameCutsceneActive == 0 || (uVar2 != '\a')) ||
-		((&force_siren)[(int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2] == '\0')))) {
-		if (gCurrentMissionNumber != 0x1a) {
+		(((gInGameCutsceneActive == 0 || (cp->controlType != '\a')) ||
+		(force_siren[(int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2] == '\0'))))
+	{
+		if (gCurrentMissionNumber != 0x1a) 
 			return;
-		}
-		if ((cp->ap).model != '\x04') {
+
+		if ((cp->ap).model != 4) 
 			return;
-		}
-		if (uVar2 != '\a') {
+
+		if (cp->controlType != 10)
 			return;
-		}
 	}
-LAB_00021aac:
-	if (cp->ai[0x13] < 0x4b) {
+	*/
+
+	if (cp->ai.p.dying < 0x4b)
 		AddCopCarLight(cp);
-	}
-	return;*/
 }
 
 

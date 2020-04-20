@@ -16,7 +16,7 @@ extern int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx);
 
 extern int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere) ; // 0x0001BD30
 
-extern void FrustrumCheck() ; // 0x0001BDEC
+extern int FrustrumCheck(VECTOR* pos, int bounding_sphere); // 0x0001BDEC
 
 extern void Asm_PlotSprite() ; // 0x0001BEE4
 

@@ -118,3 +118,29 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 	return -1;
 #endif // !PSX
 }
+
+// [D]
+int FrustrumCheck(VECTOR *pos, int bounding_sphere)
+{
+#ifndef PSX
+	int iVar1;
+	int iVar2;
+	int iVar3;
+
+	IR1 = (pos->vx - camera_position.vx) * 0x10000 >> 0x11;
+	IR2 = (pos->vy - camera_position.vy) * 0x10000 >> 0x11;
+	IR3 = (pos->vz - camera_position.vz) * 0x10000 >> 0x11;
+
+	docop2(0x4be012);
+
+	iVar1 = MAC1;
+	iVar3 = MAC2;
+
+	iVar2 = frustrum_matrix.t[0] - (bounding_sphere >> 1);
+
+	if (((iVar2 <= iVar1) && (iVar1 = MAC3, iVar2 <= iVar3)) && (iVar2 <= iVar1))
+		return 0;
+
+	return -1;
+#endif // !PSX
+}

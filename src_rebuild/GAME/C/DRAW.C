@@ -1692,6 +1692,7 @@ void ProcessMapLump(char *lump_ptr, int lump_size)
 int gForceLowDetailCars = 0;
 int num_cars_drawn = 0;
 
+// [A]
 void DrawAllTheCars(int view)
 {
 	static int car_distance[20]; // offset 0x0
