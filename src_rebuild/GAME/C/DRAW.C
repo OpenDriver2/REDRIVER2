@@ -14,6 +14,7 @@
 #include "TILE.H"
 #include "OBJANIM.H"
 #include "TEXTURE.H"
+#include "CARS.H"
 #include "../ASM/ASMTEST.H"
 
 #include <string.h>
@@ -1688,72 +1689,95 @@ void ProcessMapLump(char *lump_ptr, int lump_size)
 	/* end block 4 */
 	// End Line: 3975
 
+int gForceLowDetailCars = 0;
+int num_cars_drawn = 0;
+
 void DrawAllTheCars(int view)
 {
-	UNIMPLEMENTED();
-	/*
+	static int car_distance[20]; // offset 0x0
+	static int temp; // offset 0x0
+
 	long lVar1;
 	long lVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
-	undefined4 *puVar6;
+	int *puVar6;
 	_CAR_DATA **pp_Var7;
 	_CAR_DATA *p_Var8;
 	int iVar9;
 	int *piVar10;
 	int iVar11;
-	_CAR_DATA *local_70[20];
+	_CAR_DATA *cars_to_draw[20];
 
 	lVar2 = camera_position.vz;
 	lVar1 = camera_position.vx;
-	p_Var8 = (_CAR_DATA *)0xd4160;
+	p_Var8 = car_data + 18;
 	num_cars_drawn = 0;
-	piVar10 = &car_distance_60;
-	iVar9 = 0;
+	iVar11 = 0;
+
+
+	piVar10 = car_distance;
+	iVar9 = iVar11;
 	do {
 		iVar11 = iVar9;
-		if ((p_Var8->controlType != '\0') &&
-			(iVar3 = PositionVisible((VECTOR *)(p_Var8->hd).where.t), iVar3 == 1)) {
-			iVar3 = (p_Var8->hd).where.t[0];
+
+		if ((p_Var8->controlType != 0) &&
+			PositionVisible((VECTOR *)p_Var8->hd.where.t))
+		{
+			// XZ distance estimation
+			iVar3 = p_Var8->hd.where.t[0];
 			iVar5 = lVar1 - iVar3;
-			if (iVar5 < 0) {
+
+			if (iVar5 < 0) 
 				iVar5 = iVar3 - lVar1;
-			}
-			iVar3 = (p_Var8->hd).where.t[2];
+
+			iVar3 = p_Var8->hd.where.t[2];
 			iVar4 = lVar2 - iVar3;
-			if (iVar4 < 0) {
+
+			if (iVar4 < 0) 
 				iVar4 = iVar3 - lVar2;
-			}
-			if (iVar5 < iVar4) {
+
+			if (iVar5 < iVar4) 
 				iVar3 = iVar4 + iVar5 / 2;
-			}
-			else {
+			else
 				iVar3 = iVar5 + iVar4 / 2;
-			}
-			if (iVar3 < 16000) {
+
+			if (iVar3 < 16000) 
+			{
 				*piVar10 = iVar5 + iVar4;
 				piVar10 = piVar10 + 1;
 				iVar11 = iVar9 + 1;
-				local_70[iVar9] = p_Var8;
+				cars_to_draw[iVar9] = p_Var8;
 			}
 		}
+
 		p_Var8 = p_Var8 + -1;
 		iVar9 = iVar11;
-	} while ((_CAR_DATA *)0xd1267 < p_Var8);
-	if (iVar11 != 0) {
+
+	} while (car_data < p_Var8);
+
+	if (iVar11 != 0) 
+	{
 		gForceLowDetailCars = 0;
-		if (1 < iVar11) {
+
+		if (1 < iVar11) 
+		{
 			iVar9 = 1;
 			do {
-				p_Var8 = local_70[iVar9];
-				iVar3 = (&car_distance_60)[iVar9];
+				p_Var8 = cars_to_draw[iVar9];
+				iVar3 = car_distance[iVar9];
+
 				iVar5 = iVar9 + 1;
-				if (iVar9 != 0) {
-					if (iVar3 < (int)(&car_distance_60)[iVar9 + -1]) {
-						pp_Var7 = local_70 + iVar9;
-						puVar6 = &car_distance_60 + iVar9;
+
+				if (iVar9 != 0) 
+				{
+					if (iVar3 < car_distance[iVar9 + -1])
+					{
+						pp_Var7 = cars_to_draw + iVar9;
+						puVar6 = &car_distance[iVar9];
 						iVar4 = iVar9 + -1;
+
 						do {
 							iVar9 = iVar4;
 							*puVar6 = puVar6[-1];
@@ -1766,32 +1790,41 @@ void DrawAllTheCars(int view)
 						} while (iVar3 < *piVar10);
 					}
 				}
-				local_70[iVar9] = p_Var8;
-				(&car_distance_60)[iVar9] = iVar3;
+
+				cars_to_draw[iVar9] = p_Var8;
+				car_distance[iVar9] = iVar3;
 				iVar9 = iVar5;
+
 			} while (iVar5 < iVar11);
 		}
+
 		iVar9 = 0;
-		if (0 < iVar11) {
+
+		if (0 < iVar11)
+		{
 			iVar3 = (iVar11 + -1) * 2000;
+
 			do {
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr + -0x1a180))) < 0x16a8) {
+				// Don't exceed draw buffers
+				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180))) < 5800)
 					return;
-				}
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr + -0x1a180)) + -iVar3) < 0x16a8
-					) {
+
+				// try reducing detail level
+				// this looks really ugly
+				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180)) + -iVar3) < 5800) 
 					gForceLowDetailCars = 1;
-				}
-				if (local_70[iVar9]->controlType == '\x01') {
+
+				if (cars_to_draw[iVar9]->controlType == '\x01')
 					gForceLowDetailCars = 0;
-				}
-				DrawCar(local_70[iVar9], view);
+
+				DrawCar(cars_to_draw[iVar9], view);
+
 				iVar9 = iVar9 + 1;
 				iVar3 = iVar3 + -2000;
+
 			} while (iVar9 < iVar11);
 		}
 	}
-	return;*/
 }
 
 
