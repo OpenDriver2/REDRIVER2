@@ -2063,8 +2063,13 @@ void StepGame(void)
 	iVar2 = CutsceneCameraChange(CameraCnt);
 	camera_change = (char)iVar2;
 LAB_0005b1e0:
-	if (pauseflag == 0) {
+
+
+
+	if (pauseflag == 0) 
+	{
 		StepSim();
+
 		if (gDieWithFade != 0) {
 			gDieWithFade = gDieWithFade + 1;
 		}
@@ -2088,7 +2093,7 @@ LAB_0005b1e0:
 
 	if ((NoPlayerControl != 0) && (AttractMode == 0)) 
 		ControlReplay();
-
+	
 	if (gRightWayUp != 0) 
 	{
 		TempBuildHandlingMatrix(car_data + player[0].playerCarId, 0);
@@ -2565,25 +2570,24 @@ void UpdatePlayerInformation(void)
 	PlayerDamageBar.max = (ushort)MaxPlayerDamage[0];
 	Player2DamageBar.max = (ushort)MaxPlayerDamage[1];
 
-	if (gPlayerImmune != 0) {
-		if ((int)player[0].playerCarId < 0) {
+	if (gPlayerImmune != 0) 
+	{
+		if ((int)player[0].playerCarId < 0) 
 			psVar1 = &pedestrianFelony;
-		}
-		else {
+		else 
 			psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
-		}
+
 		*psVar1 = 0;
 	}
 
-	if ((int)player[0].playerCarId < 0) {
+	if ((int)player[0].playerCarId < 0)
 		psVar1 = &pedestrianFelony;
-	}
-	else {
+	else
 		psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
-	}
 
 	FelonyBar.position = *psVar1;
-	if (NumPlayers != 0) {
+	if (NumPlayers != 0) 
+	{
 		iVar2 = 0;
 		iVar8 = 0;
 		do {
@@ -2603,17 +2607,23 @@ void UpdatePlayerInformation(void)
 				pWVar4 = car_data[iVar2].hd.wheel;
 				pbVar3 = &car_data[iVar2].hd.wheel[0].surface;
 				iVar5 = 3;
+
 				do {
-					if (((uint)*pbVar3 & 7) == 1) {
-						if (pWVar4->susCompression == '\0') {
-							if ((car_data[iVar2].hd.where.t[1] < -1000) && (gDieWithFade == 0)) {
+					if (((uint)*pbVar3 & 7) == 1) 
+					{
+						if (pWVar4->susCompression == 9) 
+						{
+							if ((car_data[iVar2].hd.where.t[1] < -1000) && (gDieWithFade == 0))
+							{
 								gDieWithFade = (uint)*pbVar3 & 7;
 							}
 						}
-						else {
+						else 
+						{
 							iVar6 = iVar6 + 1;
 						}
 					}
+
 					pWVar4 = pWVar4 + 1;
 					iVar5 = iVar5 + -1;
 					pbVar3 = pbVar3 + 4;
@@ -2625,7 +2635,8 @@ void UpdatePlayerInformation(void)
 						car_data[iVar2].totalDamage + (short)(MaxPlayerDamage[iVar8] / 0x50);
 				}
 
-				if (MaxPlayerDamage[iVar8] < (int)(uint)car_data[iVar2].totalDamage) {
+				if (MaxPlayerDamage[iVar8] < (int)(uint)car_data[iVar2].totalDamage) 
+				{
 					car_data[iVar2].totalDamage = *(ushort *)(MaxPlayerDamage + iVar8);
 				}
 
@@ -2649,13 +2660,15 @@ void UpdatePlayerInformation(void)
 					Player2DamageBar.position = 0;
 				}
 			}
+
 			if (((0x1df < gCurrentMissionNumber) &&
 				(((gCurrentMissionNumber < 0x1e2 ||
 				((gCurrentMissionNumber < 0x1e6 && (0x1e3 < gCurrentMissionNumber)))) &&
-				((p_Var9->hd).where.t[1] < -0x2ee)))) && (gDieWithFade == 0))
+				((p_Var9->hd).where.t[1] < -750)))) && (gDieWithFade == 0))
 			{
 				gDieWithFade = 1;
 			}
+
 			iVar2 = iVar7 << 3;
 			iVar8 = iVar7;
 		} while (iVar7 < (int)(uint)NumPlayers);
@@ -2758,10 +2771,14 @@ void RenderGame2(int view)
 	DrawThrownBombs();
 	AddGroundDebris();
 	DrawEvents(0);
+
 	current->ot = current->ot + 10;
+
 	DrawSmashable_sprites();
 	HandleDebris();
+
 	current->ot = current->ot + -10;
+
 	DrawAllExplosions();
 
 	if (AttractMode != 0) 
@@ -2805,7 +2822,8 @@ void RenderGame2(int view)
 
 	if (gDieWithFade != 0) 
 	{
-		if (0xff < gDieWithFade << 4) {
+		if (0xff < gDieWithFade << 4) 
+		{
 			uVar4 = -1;
 		}
 		poly = (POLY_F4 *)current->primptr;
@@ -2825,7 +2843,7 @@ void RenderGame2(int view)
 		poly->y2 = 0x100;
 		poly->x3 = 0x140;
 		poly->y3 = 0x100;
-		addPrim((u_long*)(pDVar1->ot + 8), poly);
+		addPrim(pDVar1->ot + 8, poly);
 
 		pDVar1->primptr += sizeof(POLY_F4);
 		POLY_FT3* null = (POLY_FT3*)pDVar1->primptr;
@@ -2839,7 +2857,7 @@ void RenderGame2(int view)
 		null->y2 = -1;
 		null->tpage = 0x40;
 
-		addPrim((u_long*)(pDVar1->ot + 8), poly);
+		addPrim(pDVar1->ot + 8, null);
 		pDVar1->primptr += sizeof(POLY_FT3);
 	}
 
