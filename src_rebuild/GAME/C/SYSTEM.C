@@ -851,14 +851,10 @@ void EnableDisplay(void)
 {
 	int i;
 
-	i = 0;
-	if (NumPlayers)
+	for (i = 0; i < NumPlayers; i++)		// [A]
 	{
-		for (i = 0; i < NumPlayers; i++)
-		{
-			ClearOTagR((u_long*)MPBuff[i][0].ot, 0x1080);
-			ClearOTagR((u_long*)MPBuff[i][1].ot, 0x1080);
-		}
+		ClearOTagR((u_long*)MPBuff[i][0].ot, 0x1080);
+		ClearOTagR((u_long*)MPBuff[i][1].ot, 0x1080);
 	}
 }
 
@@ -996,15 +992,16 @@ void SwapDrawBuffers2(int player)
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)current->ot + 0x107f);
 
+
 	if (player == 1) {
 		uVar1 = FrameCnt & 1;
 
 		// [A] i guess it should work as intended
-		MPcurrent[0] = &MPBuff[0][-uVar1+1];
+		MPcurrent[0] = &MPBuff[0][-uVar1 + 1];
 		MPlast[0] = &MPBuff[0][uVar1];
 
 		MPcurrent[1] = &MPBuff[1][-uVar1 + 1];
-		MPlast[1] = &MPBuff[1][0];
+		MPlast[1] = &MPBuff[1][uVar1];
 	}
 
 	current = MPcurrent[1 - player];
@@ -1105,16 +1102,18 @@ void SetupDrawBuffers(void)
 	MPBuff[0][1].disp.screen.y = draw_mode_pal.framey;
 
 	if (NoPlayerControl == 0) {
-		SetupDrawBufferData((uint)NumPlayers);
+		SetupDrawBufferData(NumPlayers);
 	}
 	else {
 		SetupDrawBufferData(1);
 	}
 
 	ppDVar5 = MPlast;
+	ppDVar3 = MPcurrent;
+
 	pDVar1 = MPBuff[0];
 	pDVar4 = MPBuff[1];
-	ppDVar3 = MPcurrent;
+	
 	iVar2 = 1;
 	do {
 		*ppDVar5 = pDVar4;
@@ -1179,11 +1178,11 @@ void SetupDrawBufferData(int num_players)
 	char *pcVar3;
 	OTTYPE *puVar4;
 	int iVar5;
-	DB *pBuff;
 	int iVar6;
 	int x[2];
 	int y[2];
 	int height;
+	int toggle;
 
 	if (num_players == 1) 
 	{
@@ -1195,11 +1194,11 @@ void SetupDrawBufferData(int num_players)
 	}
 	else if (num_players == 2)
 	{
-		y[1] = 0x80;
-		height = 0x7f;
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
+		y[1] = 0x80;
+		height = 0x7f;
 	}
 	else
 	{
@@ -1208,42 +1207,39 @@ void SetupDrawBufferData(int num_players)
 		} while (FrameCnt != 0x78654321);
 	}
 
-	SetGeomOffset(0xa0, height >> 1);
-	bVar1 = false;
-	iVar6 = 0;
-	do {
-		iVar5 = 0;
-		iVar2 = iVar6 + 1;
-		if (0 < num_players)
+	SetGeomOffset(160, height >> 1);
+	
+	toggle = 0;
+
+	for (int i = 0; i < num_players; i++)
+	{
+		for (int j = 0; j < 2; j++)
 		{
-			pBuff = MPBuff[0];
-			do {
-				if (bVar1) 
-				{
-					puVar4 = _tempOT2;
-					pcVar3 = _tempPrimTab2;
-				}
-				else 
-				{
-					puVar4 = _tempOT1;
-					pcVar3 = _tempPrimTab1;
-				}
+			u_long *otpt;
+			unsigned char *primpt;
+			unsigned char *PRIMpt;
 
-				bVar1 = (bool)(bVar1 ^ 1);
+			if (toggle)
+			{
+				otpt = (u_long*)_tempOT2;
+				primpt = PRIMpt = (unsigned char*)_tempPrimTab2;
+			}
+			else
+			{
+				otpt = (u_long*)_tempOT1;
+				primpt = PRIMpt = (unsigned char*)_tempPrimTab1;
+			}
 
-				InitaliseDrawEnv(pBuff, x[iVar5], y[iVar5], 0x140, height);
-
-				// [A] should be tested
-				MPBuff[iVar5][iVar6].primtab = pcVar3;
-				MPBuff[iVar5][iVar6].primptr = pcVar3;
-				MPBuff[iVar5][iVar6].ot = puVar4;
-
-				iVar5 = iVar5 + 1;
-				pBuff = pBuff + 2;
-			} while (iVar5 < num_players);
+			toggle ^= 1;
+			
+			// [A] I have no clue how it should work...
+			MPBuff[j][i].primtab = (char*)primpt;
+			MPBuff[j][i].primptr = (char*)PRIMpt;
+			MPBuff[j][i].ot = (OTTYPE*)otpt;
 		}
-		iVar6 = iVar2;
-	} while (iVar2 < 2);
+
+		InitaliseDrawEnv(MPBuff[i], x[i], y[i], 320, height);
+	}
 
 	aspect.m[0][0] = 4096;
 	aspect.m[0][1] = 0;
@@ -1282,6 +1278,7 @@ void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h)
 
 	pBuff[0].id = 0;
 	pBuff[0].draw.dfe = '\x01';
+
 	pBuff[1].id = 1;
 	pBuff[1].draw.dfe = '\x01';
 }

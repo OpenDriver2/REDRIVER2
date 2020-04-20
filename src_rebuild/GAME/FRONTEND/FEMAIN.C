@@ -1716,10 +1716,12 @@ void DoFrontEnd(void)
 void SetFEDrawMode(void)
 {
 	SetVideoMode(video_mode);
+
 	SetDefDrawEnv(&MPBuff[0][0].draw, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
 	SetDefDispEnv(&MPBuff[0][0].disp, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
 	SetDefDrawEnv(&MPBuff[0][1].draw, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
 	SetDefDispEnv(&MPBuff[0][1].disp, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
+
 	MPBuff[0][0].draw.isbg = '\0';
 	MPBuff[0][0].disp.isinter = '\x01';
 	MPBuff[0][0].draw.dfe = '\x01';
