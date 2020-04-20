@@ -29,6 +29,7 @@ extern int gDontPingInCops;
 extern int gBatterPlayer;
 extern int bMissionTitleFade;
 extern int g321GoDelay;
+extern int gTannerActionNeeded;
 
 extern int requestStationaryCivCar;
 extern int numCivCars;

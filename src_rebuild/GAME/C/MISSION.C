@@ -6,7 +6,10 @@
 #include "DR2ROADS.H"
 #include "SPOOL.H"
 #include "PAUSE.H"
-
+#include "BOMBERMAN.H"
+#include "CUTSCENE.H"
+#include "CAMERA.H"
+#include "OVERLAY.H"
 
 #include <string.h>
 
@@ -106,8 +109,9 @@ unsigned char NumPlayers = 1;
 char NewLevel = 1;
 GAMETYPE GameType = GAME_MISSION;
 int gCurrentMissionNumber = 0;
-char lockAllTheDoors = 0;
 
+char lockAllTheDoors = 0;
+int gTannerActionNeeded = 0;
 int maxPlayerCars = 1;
 int maxCivCars = 14;
 int maxParkedCars = 7;
@@ -635,14 +639,13 @@ LAB_00060e70:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleMission(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	uint uVar2;
 
-	if (Mission == 0) {
+	if (Mission.active == 0) {
 		return;
 	}
 	if (gInGameCutsceneActive != 0) {
@@ -651,14 +654,17 @@ void HandleMission(void)
 	if (gInGameCutsceneDelay != 0) {
 		return;
 	}
-	if (CameraCnt != 0) goto LAB_00061388;
+	if (CameraCnt != 0) 
+		goto LAB_00061388;
+
 	if ((MissionHeader->type & 4U) != 0) {
 		HandleMissionThreads();
-		DAT_000d7c12 = 0;
-		DAT_000d7c14 = 0;
+		Mission.message_timer[0] = 0;
+		Mission.message_timer[1] = 0;
 		MRCommitThreadGenocide();
-		MRInitialiseThread((MR_THREAD *)&MissionThreads, MissionScript, '\0');
+		MRInitialiseThread(MissionThreads, MissionScript, '\0');
 	}
+
 	uVar2 = MissionHeader->type & 0x30;
 	if (uVar2 != 0x10) {
 		if (uVar2 < 0x11) {
@@ -677,35 +683,40 @@ void HandleMission(void)
 		}
 	}
 	FelonyBar.active = 0;
+
 LAB_00061388:
+
 	MRHandleCarRequests();
-	if (((bMissionTitleFade == 0) && (iVar1 = Handle321Go(), iVar1 == 0)) &&
-		(iVar1 = HandleGameOver(), iVar1 == 0)) {
-		if (DAT_000d7c12 != 0) {
-			DAT_000d7c12 = DAT_000d7c12 + -1;
+
+	if (((bMissionTitleFade == 0) && (iVar1 = Handle321Go(), iVar1 == 0)) && (iVar1 = HandleGameOver(), iVar1 == 0))
+	{
+		if (Mission.message_timer[0] != 0) {
+			Mission.message_timer[0] = Mission.message_timer[0] + -1;
 		}
-		if (DAT_000d7c14 != 0) {
-			DAT_000d7c14 = DAT_000d7c14 + -1;
+		if (Mission.message_timer[1] != 0) {
+			Mission.message_timer[1] = Mission.message_timer[1] + -1;
 		}
-		if (DAT_000d7c48 != 0) {
-			DAT_000d7c48 = DAT_000d7c48 + -1;
+		if (Mission.ChaseHitDelay != 0) {
+			Mission.ChaseHitDelay = Mission.ChaseHitDelay + -1;
 		}
+
 		gTannerActionNeeded = 0;
-		HandleTimer((MR_TIMER *)&DAT_000d7c24);
-		HandleTimer((MR_TIMER *)&DAT_000d7c30);
+
+		HandleTimer(Mission.timer);
+		HandleTimer(Mission.timer + 1);
 		HandleThrownBombs();
 		HandleMissionThreads();
+
 		if (gCopCarTheftAttempted != 0) {
 			SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
 			gCopCarTheftAttempted = 0;
 		}
+
 		if ((gLockPickingAttempted != 0) && (NumPlayers == 1)) {
 			SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
 			gLockPickingAttempted = 0;
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -3116,22 +3127,24 @@ void PreProcessTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern int gStopPadReads;
+
 int Handle321Go(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	if ((MissionHeader->type & 4U) != 0) {
+	if ((MissionHeader->type & 4U) != 0) 
+	{
 		gStopPadReads = 1;
 		g321GoDelay = g321GoDelay + 1;
-		if (g321GoDelay == 0x60) {
+
+		if (g321GoDelay == 0x60) 
+		{
 			gStopPadReads = 0;
 			MissionHeader->type = MissionHeader->type & 0xfffffffb;
 		}
+
 		return 1;
 	}
 	return 0;
-	*/
 }
 
 

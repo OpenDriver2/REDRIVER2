@@ -1903,7 +1903,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			//RotMatrixY(-3200, &cp->hd.where);
 		}
 
-		if ((pad & 0x10) != 0)
+		if ((pad & 0x40) != 0)
 		{
 			cp->hd.where.t[1] += 100;
 		}
