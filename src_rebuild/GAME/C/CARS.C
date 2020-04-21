@@ -170,8 +170,7 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 		if (gTimeOfDay == 3)
 		{
 			_pg.intensity = (int)(combointensity & 0xfcfcf0U) >> 2;
-			plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);
-		}
+			plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);		}
 		else
 		{
 			_pg.intensity = combointensity & 0xffffff;
@@ -511,8 +510,6 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 		if (-1 < iVar1 && 0 < iVar2) 
 		{
-			setPolyGT3(prim);
-
 			*(uint *)&prim->r0 =
 				((uint)(ushort)nlist[uVar9 & 0xff].pad & 0xff) << 0x10 |
 				(uint)(ushort)nlist[uVar9 & 0xff].pad | 0x34000000;
@@ -530,6 +527,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 			uVar3 = SXY2;	// getCopReg(2, 0xe);
 			*(uint *)&prim->x2 = uVar3;
 
+			setPolyGT3(prim);
 			addPrim(pg->ot + (iVar2 >> 1), prim);
 
 			prim = prim + 1;
@@ -604,14 +602,13 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 	SVECTOR *local_v1_100;
 	SVECTOR *pSVar7;
 	uint uVar8;
-	POLY_GT3 *prim;
+	POLY_FT3 *prim;
 	int iVar9;
 	int iVar10;
 	CAR_POLY *pCVar11;
-	long *plVar12;
 	long local_4;
 
-	prim = (POLY_GT3 *)pg->primptr;
+	prim = (POLY_FT3 *)pg->primptr;
 	uVar4 = pg->intensity | 0x24000000;
 	puVar6 = pg->pciv_clut;
 
@@ -635,7 +632,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 			iVar10 = pCVar11->uv3_uv2;
 			src = (CAR_POLY *)(int)pCVar11->originalindex;
 			uVar1 = puVar6[palette + ((int)uVar8 >> 0x10)];
-			uVar5 = (uint)pg->damageLevel[(int)src];
+			uVar5 = (uint)pg->damageLevel[pCVar11->originalindex];
 
 			docop2(0x1400006);
 
@@ -646,20 +643,18 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			if (-1 < iVar2 && 0 < local_4)	// [A] Ghidra flow detection probably failed, or blame Game devs...
 			{
-				//local_4 = (long)(plVar12 + (local_4 >> 1));
-
-				uVar3 = SXY0; //getCopReg(2, 0xc);
+				uVar3 = SXY0; // getCopReg(2, 0xc);
 				*(uint *)&prim->x0 = uVar3;
-				uVar3 = SXY1; //getCopReg(2, 0xd);
-				*(uint *)&prim->r1 = uVar3;
-				uVar3 = SXY2; //getCopReg(2, 0xe);
-				*(uint *)&prim->u1 = uVar3;
-
+				uVar3 = SXY1; // getCopReg(2, 0xd);
+				*(uint *)&prim->x1 = uVar3;
+				uVar3 = SXY2; // getCopReg(2, 0xe);
+				*(uint *)&prim->x2 = uVar3;
 				*(uint *)&prim->u0 = (uVar8 & 0xffff | (uint)uVar1 << 0x10) + uVar5;
-				*(uint *)&prim->x1 = iVar9 + uVar5;
-				*(uint *)&prim->r2 = iVar10 + uVar5;
+				*(uint *)&prim->u1 = iVar9 + uVar5;
+				*(uint *)&prim->u2 = iVar10 + uVar5;
 				*(uint *)&prim->r0 = uVar4;
 
+				setPolyFT3(prim);
 				addPrim(pg->ot + (local_4 >> 1), prim);
 				prim++;
 			}
