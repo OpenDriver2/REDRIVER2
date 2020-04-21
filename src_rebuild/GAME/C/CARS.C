@@ -482,10 +482,14 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		uVar9 = src->vindices;
 		iVar14 = src->tpage_uv1;
 		iVar13 = src->uv3_uv2;
+
 		uVar7 = (uint)pg->damageLevel[src->originalindex];
-		iVar10 = (src->clut_uv0 & 0xffffU | (uint)puVar5[palette + (src->clut_uv0 >> 0x10)] << 0x10)
-			+ uVar7;
-		if (numTris < 1) break;
+
+		iVar10 = (src->clut_uv0 & 0xffffU | (uint)puVar5[palette + (src->clut_uv0 >> 0x10)] << 0x10) + uVar7;
+
+		if (numTris < 1) 
+			break;
+
 		pSVar8 = vlist + (uVar9 & 0xff);
 		pSVar6 = vlist + ((int)uVar9 >> 8 & 0xff);
 		pSVar4 = vlist + ((int)uVar9 >> 0x10 & 0xff);
@@ -2098,23 +2102,23 @@ void buildNewCars(void)
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
 
-	char bVar1;
-	char bVar2;
-	char bVar3;
-	char bVar4;
+	unsigned char bVar1;
+	unsigned char bVar2;
+	unsigned char bVar3;
+	unsigned char bVar4;
 	ushort uVar5;
-	char cVar6;
+	unsigned char cVar6;
 	//undefined3 extraout_var;
 	//undefined3 extraout_var_00;
 	uint uVar7;
 	int iVar8;
-	char *pbVar9;
+	unsigned char *pbVar9;
 	CAR_POLY *pCVar10;
 	int iVar11;
 	int iVar12;
 	short sVar13;
 	int iVar14;
-	int iVar15;
+	int pass;
 	int iVar16;
 
 	if (first != 0) {
@@ -2131,24 +2135,24 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 		car->vlist = (SVECTOR *)model->vertices;
 		car->nlist = (SVECTOR *)model->point_normals;
 
-		iVar15 = 0;
+		pass = 0;
 
 		do {
 			iVar11 = whichCP;
-			pbVar9 = (char *)model->poly_block;
+			pbVar9 = (unsigned char *)model->poly_block;
 
-			if (iVar15 == 1) {
+			if (pass == 1) {
 				car->pFT3 = carPolyBuffer + whichCP;
 			}
-			else if (iVar15 == 0) {
+			else if (pass == 0) {
 				car->pGT3 = carPolyBuffer + whichCP;
 			}
-			else if (iVar15 == 2) {
+			else if (pass == 2) {
 				car->pB3 = carPolyBuffer + whichCP;
 			}
 
 			iVar14 = 0;
-			iVar16 = iVar15 + 1;
+			iVar16 = pass + 1;
 			iVar12 = iVar11;
 
 			if ((iVar11 < 2000) && (model->num_polys != 0)) 
@@ -2165,37 +2169,37 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							case 0:
 							case 0x12:
-								if (iVar15 == 2) 
+								if (pass == 2)	// F3
 								{
 									bVar2 = pbVar9[1];
 									bVar3 = pbVar9[2];
 									bVar4 = pbVar9[3];
 									iVar12 = iVar11 + 1;
 									carPolyBuffer[iVar11].originalindex = sVar13;
-									pCVar10->vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
+									pCVar10->vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
 								}
 								break;
 							case 1:
 							case 0x13:
-								if (iVar15 == 2) 
+								if (pass == 2)	// F4
 								{
 									bVar2 = pbVar9[4];
 									bVar3 = pbVar9[5];
 									bVar4 = pbVar9[6];
 									iVar12 = iVar11 + 2;
 									carPolyBuffer[iVar11].originalindex = sVar13;
-									pCVar10->vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
+									pCVar10->vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
 									bVar2 = pbVar9[4];
 									bVar3 = pbVar9[6];
 									bVar4 = pbVar9[7];
 									carPolyBuffer[iVar11 + 1].originalindex = sVar13;
-									carPolyBuffer[iVar11 + 1].vindices = (uint)bVar2 + ((uint)bVar3 + (uint)bVar4 * 0x100) * 0x100;
+									carPolyBuffer[iVar11 + 1].vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
 								}
 								break;
 							case 0x14:
-								if (iVar15 == 1) 
+								if (pass == 1)	// FT3
 								{
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
 
 									carPolyBuffer[iVar11].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
 									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
@@ -2209,9 +2213,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 								}
 								break;
 							case 0x15:
-								if (iVar15 == 1) 
+								if (pass == 1)	// FT4
 								{
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] << 8) << 8;
 
 									carPolyBuffer[iVar11].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
 									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
@@ -2220,7 +2224,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									carPolyBuffer[iVar11].originalindex = sVar13;
 									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
 									pCVar10 = carPolyBuffer + iVar11 + 1;
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
+									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[6] | (uint)pbVar9[7] << 8) << 8;
 
 									carPolyBuffer[iVar11 + 1].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
 									carPolyBuffer[iVar11 + 1].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xc));
@@ -2231,15 +2235,15 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 								}
 								break;
 							case 0x16:
-								if (iVar15 == 0) 
+								if (pass == 0) // GT3
 								{
 									iVar12 = iVar11 + 1;
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
 
 									((ushort*)civ_clut)[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
 									
-									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
+									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] | ((uint)pbVar9[9] | (uint)pbVar9[10] << 8) << 8;
 									carPolyBuffer[iVar11].clut_uv0 = ((int)(cVar6 * 0x180 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
 									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
 									
@@ -2249,7 +2253,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 								}
 								break;
 							case 0x17:
-								if (iVar15 == 0) 
+								if (pass == 0)  // GT4
 								{
 									iVar12 = iVar11 + 2;
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
@@ -2257,9 +2261,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 
 									*((ushort*)civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6]) = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
 
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] * 0x100) * 0x100;
+									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
 
-									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] + ((uint)pbVar9[9] + (uint)pbVar9[10] * 0x100) * 0x100;
+									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] | ((uint)pbVar9[9] | (uint)pbVar9[10] << 8) << 8;
 									carPolyBuffer[iVar11].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
 									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
 
@@ -2267,9 +2271,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									carPolyBuffer[iVar11].originalindex = sVar13;
 									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
 									pCVar10 = carPolyBuffer + iVar11 + 1;
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] + (uint)pbVar9[7] * 0x100) * 0x100;
+									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] | (uint)pbVar9[7] << 8) << 8;
 
-									carPolyBuffer[iVar11 + 1].nindices = (uint)pbVar9[8] + ((uint)pbVar9[10] + (uint)pbVar9[0xb] * 0x100) * 0x100;
+									carPolyBuffer[iVar11 + 1].nindices = (uint)pbVar9[8] | ((uint)pbVar9[10] | (uint)pbVar9[0xb] << 8) << 8;
 									carPolyBuffer[iVar11 + 1].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
 									carPolyBuffer[iVar11 + 1].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0x10));
 
@@ -2285,20 +2289,20 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 				} while ((iVar12 < 2000) && (iVar11 = iVar12, iVar14 < (int)(uint)model->num_polys));
 			}
 
-			if (iVar15 == 1) 
+			if (pass == 1) 
 			{
 				car->numFT3 = iVar12 - whichCP;
 			}
-			if (iVar15 == 0)
+			if (pass == 0)
 			{
 				car->numGT3 = iVar12 - whichCP;
 			}
-			else if (iVar15 == 2) 
+			else if (pass == 2) 
 			{
 				car->numB3 = iVar12 - whichCP;
 			}
 
-			iVar15 = iVar16;
+			pass = iVar16;
 			whichCP = iVar12;
 		} while (iVar16 < 3);
 	}
