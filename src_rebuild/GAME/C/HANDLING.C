@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "HANDLING.H"
 #include "COSMETIC.H"
+#include "MISSION.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
@@ -205,42 +206,49 @@ void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 	/* end block 4 */
 	// End Line: 2240
 
+SVECTOR delta = { 0 };
+int doWheels = 1;
+
+// [D]
 void UpdateCarPoints(CAR_COSMETICS *carCos)
 {
-	UNIMPLEMENTED();
-	/*
-	SVECTOR *pSVar1;
-	SVECTOR *pSVar2;
-	int iVar3;
+	SVECTOR *groundCollPoints;
+	SVECTOR *wheelPoints;
+	int i;
 
-	pSVar1 = carCos->cPoints;
-	pSVar2 = carCos->wheelDisp;
-	iVar3 = 0xb;
+	groundCollPoints = carCos->cPoints;
+	wheelPoints = carCos->wheelDisp;
+
+	i = 11;
+
 	do {
-		pSVar1->vx = pSVar1->vx + delta.vx;
-		pSVar1->vy = pSVar1->vy - delta.vy;
-		iVar3 = iVar3 + -1;
-		pSVar1->vz = pSVar1->vz + delta.vz;
-		pSVar1 = pSVar1 + 1;
-	} while (-1 < iVar3);
-	if (doWheels != 0) {
-		iVar3 = 3;
+		groundCollPoints->vx = groundCollPoints->vx + delta.vx;
+		groundCollPoints->vy = groundCollPoints->vy - delta.vy;
+		groundCollPoints->vz = groundCollPoints->vz + delta.vz;
+		groundCollPoints++;
+		i--;
+	} while (-1 < i);
+
+	if (doWheels != 0) 
+	{
+		i = 3;
+
 		do {
-			pSVar2->vx = pSVar2->vx + delta.vx;
-			pSVar2->vy = pSVar2->vy - delta.vy;
-			iVar3 = iVar3 + -1;
-			pSVar2->vz = pSVar2->vz + delta.vz;
-			pSVar2 = pSVar2 + 1;
-		} while (-1 < iVar3);
+			wheelPoints->vx = wheelPoints->vx + delta.vx;
+			wheelPoints->vy = wheelPoints->vy - delta.vy;
+			wheelPoints->vz = wheelPoints->vz + delta.vz;
+			wheelPoints++;
+			i--;
+		} while (-1 < i);
 	}
-	(carCos->cog).vx = (carCos->cog).vx + delta.vx;
-	(carCos->cog).vy = (carCos->cog).vy + delta.vy;
-	(carCos->cog).vz = (carCos->cog).vz - delta.vz;
+
+	carCos->cog.vx = carCos->cog.vx + delta.vx;
+	carCos->cog.vy = carCos->cog.vy + delta.vy;
+	carCos->cog.vz = carCos->cog.vz - delta.vz;
+
 	delta.vx = 0;
 	delta.vy = 0;
 	delta.vz = 0;
-	return;
-	*/
 }
 
 
@@ -273,20 +281,20 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 	/* end block 4 */
 	// End Line: 5978
 
+// [D]
 void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 {
-	UNIMPLEMENTED();
-	/*
 	delta.vx = 0;
 	delta.vy = 0;
+
 	doWheels = 1;
 	delta.vz = -(short)(((int)carCos->wheelDisp[0].vz + (int)carCos->wheelDisp[1].vz + -0xe) / 2);
+
 	UpdateCarPoints(carCos);
+
 	if ((carCos == car_cosmetics + 2) && (gCurrentMissionNumber == 7)) {
 		car_cosmetics[2].mass = car_cosmetics[2].mass * 3;
 	}
-	return;
-	*/
 }
 
 
@@ -1937,17 +1945,17 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	/*
 	char cVar1;
 	short sVar2;
-	int iVar3;
+	int i;
 	int iVar4;
 	byte bVar5;
 	CAR_COSMETICS *pCVar6;
 	int iVar7;
 
 	iVar7 = (int)PadSteer;
-	iVar3 = GetPlayerId(cp);
+	i = GetPlayerId(cp);
 	bVar5 = cp->controlType;
 	if (bVar5 == 1) {
-		if (((pad & 0x1010) == 0x1010) && (-1 < iVar3)) {
+		if (((pad & 0x1010) == 0x1010) && (-1 < i)) {
 			iVar4 = TannerStuckInCar(1);
 			if (iVar4 == 0) {
 				if (player.dying == '\0') {
@@ -1970,16 +1978,16 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			iVar7 = 0;
 			use_analogue = '\x01';
 		}
-		if (-1 < iVar3) {
+		if (-1 < i) {
 			iVar4 = CarHasSiren((uint)(byte)(cp->ap).model);
 			if (iVar4 == 0) {
 				bVar5 = (byte)(pad >> 3) & 1;
 			}
 			else {
 				if (((cp->lastPad & 8U) != 0) || ((pad & 8) == 0)) goto LAB_00055c58;
-				bVar5 = (&player)[iVar3].horn.on ^ 8;
+				bVar5 = (&player)[i].horn.on ^ 8;
 			}
-			(&player)[iVar3].horn.on = bVar5;
+			(&player)[i].horn.on = bVar5;
 		}
 	}
 LAB_00055c58:
@@ -2032,15 +2040,15 @@ LAB_00055c58:
 	else {
 		if ((pad & 4) == 0) {
 			iVar7 = iVar7 * ((iVar7 * iVar7) / 0x50);
-			iVar3 = (int)((ulonglong)((longlong)iVar7 * 0x66666667) >> 0x20);
+			i = (int)((ulonglong)((longlong)iVar7 * 0x66666667) >> 0x20);
 		}
 		else {
 			iVar7 = iVar7 * ((iVar7 * iVar7) / 0x3c);
-			iVar3 = (int)((ulonglong)((longlong)iVar7 * 0x88888889) >> 0x20);
+			i = (int)((ulonglong)((longlong)iVar7 * 0x88888889) >> 0x20);
 		}
-		iVar3 = (iVar3 >> 5) - (iVar7 >> 0x1f);
-		cp->wheel_angle = (ushort)iVar3 & 0xfffc;
-		if (iVar3 + 0x10eU < 0x21d) {
+		i = (i >> 5) - (iVar7 >> 0x1f);
+		cp->wheel_angle = (ushort)i & 0xfffc;
+		if (i + 0x10eU < 0x21d) {
 			(cp->hd).autoBrake = '\0';
 		}
 		else {
@@ -2064,16 +2072,16 @@ LAB_00055c58:
 	}
 	if (gTimeInWater != 0) {
 		if ((pad & 0x80) != 0) {
-			iVar3 = (cp->hd).wheel_speed * 0x5dc;
-			if (iVar3 < 0) {
-				iVar3 = iVar3 + 0x3ff;
+			i = (cp->hd).wheel_speed * 0x5dc;
+			if (i < 0) {
+				i = i + 0x3ff;
 			}
-			iVar3 = (iVar3 >> 10) + 0x800 >> 0xc;
-			if (-iVar3 < 0x17) {
+			i = (i >> 10) + 0x800 >> 0xc;
+			if (-i < 0x17) {
 				sVar2 = -5000;
 			}
 			else {
-				sVar2 = (short)((uint)((iVar3 + 0x116) * -0x12aa) >> 8);
+				sVar2 = (short)((uint)((i + 0x116) * -0x12aa) >> 8);
 			}
 			cp->thrust = sVar2;
 			cp->thrust = (short)((int)cp->thrust * (int)((cp->ap).carCos)->powerRatio + 0x800 >> 0xc);
@@ -2085,12 +2093,12 @@ LAB_00055c58:
 			cp->thrust = (short)((int)pCVar6->powerRatio * 0x1333 + 0x800 >> 0xc);
 			if (cp->hndType == '\x05') {
 				iVar7 = car_data[player.playerCarId].hd.where.t[0] - (cp->hd).where.t[0] >> 10;
-				iVar3 = car_data[player.playerCarId].hd.where.t[2] - (cp->hd).where.t[2] >> 10;
-				iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
-				if (iVar3 < 0x29) {
-					if (iVar3 < 0x15) {
+				i = car_data[player.playerCarId].hd.where.t[2] - (cp->hd).where.t[2] >> 10;
+				i = iVar7 * iVar7 + i * i;
+				if (i < 0x29) {
+					if (i < 0x15) {
 						sVar2 = 6000;
-						if (9 < iVar3) {
+						if (9 < i) {
 							sVar2 = 0x1324;
 						}
 					}
@@ -2105,24 +2113,24 @@ LAB_00055c58:
 			}
 			if (cp->controlType == '\x01') {
 				if ((int)player.playerCarId == (uint)(byte)cp->id) {
-					iVar3 = (int)player.targetCarId;
+					i = (int)player.targetCarId;
 				}
 				else {
-					iVar3 = -1;
+					i = -1;
 					if ((int)_PLAYER_ARRAY_000d979c[0].playerCarId == (uint)(byte)cp->id) {
-						iVar3 = (int)_PLAYER_ARRAY_000d979c[0].targetCarId;
+						i = (int)_PLAYER_ARRAY_000d979c[0].targetCarId;
 					}
 				}
-				if (iVar3 != -1) {
+				if (i != -1) {
 					if (0xbea < ((cp->ap).carCos)->powerRatio) {
-						cp->thrust = (short)((int)(car_data[iVar3].ap.carCos)->powerRatio * 0x1333 + 0x800 >>
+						cp->thrust = (short)((int)(car_data[i].ap.carCos)->powerRatio * 0x1333 + 0x800 >>
 							0xc);
 					}
-					iVar7 = (cp->hd).where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
-					iVar3 = (cp->hd).where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;
-					iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
-					if (iVar3 < 0x15) {
-						if (iVar3 < 7) {
+					iVar7 = (cp->hd).where.t[0] - car_data[i].hd.where.t[0] >> 10;
+					i = (cp->hd).where.t[2] - car_data[i].hd.where.t[2] >> 10;
+					i = iVar7 * iVar7 + i * i;
+					if (i < 0x15) {
+						if (i < 7) {
 							cp->thrust = (short)(((int)cp->thrust * 0x1a2c) / 7000);
 						}
 						else {
