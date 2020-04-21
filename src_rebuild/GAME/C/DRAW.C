@@ -874,9 +874,9 @@ void DrawMapPSX(int *comp_val)
 						puVar18 = anim_obj_buffer;
 						do {
 							cop = (CELL_OBJECT *)*puVar18;
-							newpos.vx = (cop->pos).vx - camera_position.vx;
-							newpos.vy = (cop->pos).vy - camera_position.vy;
-							newpos.vz = (cop->pos).vz - camera_position.vz;
+							newpos.vx = cop->pos.vx - camera_position.vx;
+							newpos.vy = cop->pos.vy - camera_position.vy;
+							newpos.vz = cop->pos.vz - camera_position.vz;
 							Apply_Inv_CameraMatrix(&newpos);
 
 							gte_SetRotMatrix(&matrixtable[cop->yang]);

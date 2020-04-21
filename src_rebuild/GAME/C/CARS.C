@@ -17,6 +17,7 @@
 #include "COP_AI.H"
 #include "MC_SND.H"
 #include "CUTSCENE.H"
+#include "CONVERT.H"
 #include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"
@@ -102,6 +103,17 @@ struct DENTUVS *gTempCarUVPtr;
 DENTUVS gTempHDCarUVDump[20][255];
 SVECTOR gTempCarVertDump[20][132];
 DENTUVS gTempLDCarUVDump[20][134];
+CAR_MODEL NewCarModel[5];
+CAR_MODEL NewLowCarModel[5];
+
+MODEL* gCarLowModelPtr[5];
+MODEL* gCarDamModelPtr[5];
+MODEL* gCarCleanModelPtr[5];
+
+int whichCP = 0;
+int baseSpecCP = 0;
+
+CAR_POLY carPolyBuffer[2001];
 
 // idk if it's global or not
 SVECTOR carLightD = { 0, 0xF000, 0, 0 }; // 0xAA130 yet not defined in symbols
@@ -136,10 +148,6 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 
 		gte_ldv0(&carLightD);
 		MTC2(lightlevel, 6);
-
-		//setCopReg(2, in_zero, uVar1);
-		//setCopReg(2, in_at, uVar2);
-		//setCopReg(2, iVar3, lightlevel);
 
 		docop2(0x108041b);
 
@@ -940,7 +948,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	Apply_Inv_CameraMatrix(&pos);
 
-	m1 = &(cp->hd).drawCarMat;
+	m1 = &cp->hd.drawCarMat;
 	num_cars_drawn = num_cars_drawn + 1;
 
 	/*if (cheats.MiniCars != 0)	// [A] DISABLED, NO REAL SENSE TO KEEP THIS HERE...
@@ -956,7 +964,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (((pos.vz < 0x157d) && (gForceLowDetailCars == 0)) || (cp->controlType == '\x01')) 
 	{
-		vvvar = (cp->hd).speed * 0x2000;
+		vvvar = cp->hd.speed * 0x2000;
 		iVar6 = MaxPlayerDamage[0];
 
 		if (cp->controlType == 1)
@@ -966,7 +974,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		if ((int)(uint)cp->totalDamage < iVar6) 
 		{
-			sVar3 = (cp->ap).damage[0];
+			sVar3 = cp->ap.damage[0];
 
 			if (3000 < sVar3)
 				goto LAB_00021724;
@@ -1750,140 +1758,156 @@ LAB_00023598:
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+int lightning = 0;
+
+// [D]
 void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	bool bVar2;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar3;
-	int iVar4;
-	MODEL **ppMVar5;
-	uint uVar6;
-	int iVar7;
-	uint uVar8;
-	int iVar9;
-	uint uVar10;
-	undefined4 in_a2;
-	SVECTOR *pSVar11;
-	undefined4 *puVar12;
-	undefined4 uVar13;
-	undefined4 uVar14;
-	undefined4 uVar15;
-	undefined4 local_60;
-	undefined4 local_5c;
-	undefined4 local_58;
-	short local_54;
-	short local_40;
-	short local_38;
-	short local_30;
+	MATRIX scratchPadMat; // 0x1f800344
 
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
+	unsigned char bVar1;
+	bool bVar2;
+	//undefined4 in_zero;
+	//undefined4 in_at;
+	int iVar3;
+	uint uVar4;
+	int iVar5;
+	MODEL **ppMVar6;
+	uint uVar7;
+	int iVar8;
+	uint uVar9;
+	int iVar10;
+	uint uVar11;
+	//undefined4 in_a2;
+	SVECTOR *pSVar12;
+	SVECTOR *local_a3_900;
+	SVECTOR lightsourcevector;
+	SVECTOR colour;
+	VECTOR lightValues;
+	CVECTOR c0;
+	CVECTOR c1;
+	CVECTOR c2;
+	long GT3rgb;
+
+	if (cp < car_data)
+	{
+		while (FrameCnt != 0x78654321)
 			trap(0x400);
+	}
+
+	if (-1 < gTimeOfDay)
+	{
+		if (gTimeOfDay < 3)
+		{
+			lightsourcevector = day_vectors[GameLevel];
+			colour = day_colours[GameLevel];
+		}
+		else if (gTimeOfDay == 3)
+		{
+			lightsourcevector = night_vectors[GameLevel];
+			colour = night_colours[GameLevel];
 		}
 	}
-	if (-1 < gTimeOfDay) {
-		if (gTimeOfDay < 3) {
-			local_60 = *(undefined4 *)(day_vectors + GameLevel);
-			local_5c = *(undefined4 *)&day_vectors[GameLevel].vz;
-			local_58 = *(undefined4 *)(day_colours + GameLevel);
-			local_54 = (short)*(undefined4 *)&day_colours[GameLevel].vz;
-		}
-		else {
-			if (gTimeOfDay == 3) {
-				local_60 = *(undefined4 *)(night_vectors + GameLevel);
-				local_5c = *(undefined4 *)&night_vectors[GameLevel].vz;
-				local_58 = *(undefined4 *)(night_colours + GameLevel);
-				local_54 = (short)*(undefined4 *)&night_colours[GameLevel].vz;
-			}
-		}
-	}
-	InvertMatrix((MATRIX *)cp, (MATRIX *)&DAT_1f800344);
-	SetRotMatrix(&DAT_1f800344);
-	setCopReg(2, 0, local_60);
-	setCopReg(2, 1, local_5c);
-	copFunction(2, 0x486012);
-	uVar13 = getCopReg(2, 9);
-	uVar14 = getCopReg(2, 10);
-	uVar15 = getCopReg(2, 11);
-	light_matrix.m[0][0] = (short)uVar13;
-	light_matrix.m[0][1] = (short)uVar14;
-	light_matrix.m[0][2] = (short)uVar15;
+
+	InvertMatrix(&cp->hd.where, &scratchPadMat);
+	SetRotMatrix(&scratchPadMat);
+
+	gte_ldv0(&lightsourcevector);
+	docop2(0x486012);
+
+	light_matrix.m[0][0] = IR1;
+	light_matrix.m[0][1] = IR2;
+	light_matrix.m[0][2] = IR3;
+
 	bVar2 = false;
-	colour_matrix.m[0][0] = (short)local_58;
-	colour_matrix.m[1][0] = local_58._2_2_;
-	colour_matrix.m[2][0] = local_54;
-	if (gTimeOfDay != 3) {
-		iVar7 = (int)(cp->ap).qy;
-		iVar4 = *(int *)(cp->st + 0x10) - iVar7;
-		if (iVar4 < 1) {
-			iVar4 = iVar7 - *(int *)(cp->st + 0x10);
-		}
-		iVar9 = (int)(cp->ap).qw;
-		iVar7 = *(int *)(cp->st + 0x18) - iVar9;
-		if (iVar7 < 1) {
-			iVar7 = iVar9 - *(int *)(cp->st + 0x18);
-		}
-		if ((200 < iVar4 + iVar7) || ((uint)(byte)cp->lowDetail != ((uint)(byte)detail | lightning))) {
+
+	colour_matrix.m[0][0] = colour.vx;
+	colour_matrix.m[1][0] = colour.vy;
+	colour_matrix.m[2][0] = colour.vz;
+
+	if (gTimeOfDay != 3)
+	{
+		iVar8 = cp->ap.qy;
+		iVar3 = cp->st.n.orientation[1];
+		iVar5 = iVar3 - iVar8;
+		if (iVar5 < 1) 
+			iVar5 = iVar8 - iVar3;
+
+		iVar10 = cp->ap.qw;
+		iVar8 = cp->st.n.orientation[3];
+		iVar3 = iVar8 - iVar10;
+
+		if (iVar3 < 1) 
+			iVar3 = iVar10 - iVar8;
+
+		if ((200 < iVar5 + iVar3) || (cp->lowDetail != (detail | lightning)))
 			bVar2 = true;
-		}
-		if (((gTimeOfDay == 0) || (gTimeOfDay == 2)) &&
-			(((uint)(byte)cp->id & 0xf) == (CameraCnt & 0xfU))) {
+
+		if (((gTimeOfDay == 0) || (gTimeOfDay == 2)) && ((cp->id & 0xf) == (CameraCnt & 0xfU))) 
 			bVar2 = true;
-		}
+
 		setupLightingMatrices();
-		if (bVar2) {
-			setCopReg(2, 6, combointensity & 0xffffffU | 0x34000000);
-			(cp->ap).qy = *(short *)(cp->st + 0x10);
-			(cp->ap).qw = *(short *)(cp->st + 0x18);
-			cp->lowDetail = detail | (byte)lightning;
-			if (detail == '\0') {
-				bVar1 = (cp->ap).model;
-				ppMVar5 = gCarLowModelPtr5;
+
+		//if (bVar2) 
+		{
+			MTC2(combointensity & 0xffffffU | 0x34000000, 6);
+
+			cp->ap.qy = *(short *)(cp->st.n.orientation + 1);
+			cp->ap.qw = *(short *)(cp->st.n.orientation + 3);
+			cp->lowDetail = detail | lightning;
+
+			if (detail == 0) 
+			{
+				bVar1 = cp->ap.model;
+				ppMVar6 = gCarLowModelPtr;
 			}
-			else {
-				bVar1 = (cp->ap).model;
-				ppMVar5 = gCarCleanModelPtr5;
+			else 
+			{
+				bVar1 = cp->ap.model;
+				ppMVar6 = gCarCleanModelPtr;
 			}
-			uVar8 = (int)(uint)ppMVar5[bVar1]->num_point_normals / 3;
-			puVar12 = (undefined4 *)ppMVar5[bVar1]->point_normals;
-			uVar6 = (uint)(byte)cp->id * 0x420;
-			pSVar11 = &gTempCarVertDump + (uint)(byte)cp->id * 0x84;
-			uVar3 = uVar8 + 1;
-			uVar10 = uVar3;
-			if (0 < (int)uVar3) {
-				do {
-					setCopReg(2, 0, *puVar12);
-					setCopReg(2, 1, puVar12[1]);
-					setCopReg(2, 2, puVar12[2]);
-					setCopReg(2, 3, puVar12[3]);
-					setCopReg(2, 4, puVar12[4]);
-					setCopReg(2, 5, puVar12[5]);
-					copFunction(2, 0x118043f);
-					uVar3 = getCopReg(2, 20);
-					uVar6 = getCopReg(2, 21);
-					uVar8 = getCopReg(2, 22);
-					uVar10 = uVar10 - 1;
-					local_40 = (short)uVar3;
-					uVar3 = uVar3 & 0xffff;
-					local_38 = (short)uVar6;
-					uVar6 = uVar6 & 0xffff;
-					local_30 = (short)uVar8;
-					uVar8 = uVar8 & 0xffff;
-					puVar12 = puVar12 + 6;
-					pSVar11->pad = local_40;
-					pSVar11[1].pad = local_38;
-					pSVar11[2].pad = local_30;
-					pSVar11 = pSVar11 + 3;
-				} while (uVar10 != 0);
+
+			uVar9 = (int)(uint)ppMVar6[bVar1]->num_point_normals / 3;
+			local_a3_900 = (SVECTOR *)ppMVar6[bVar1]->point_normals;
+
+			uVar7 = cp->id * 0x420;
+
+			pSVar12 = gTempCarVertDump[cp->id];
+			uVar4 = uVar9 + 1;
+			uVar11 = uVar4;
+
+			if (0 < (int)uVar4)
+			{
+				do
+				{
+					gte_ldv3(&local_a3_900[0], &local_a3_900[1], &local_a3_900[2]);
+
+					docop2(0x118043f);
+
+					*(uint*)&c0 = RGB0;
+					*(uint*)&c1 = RGB1;
+					*(uint*)&c2 = RGB2;
+
+					//c0 = (short)uVar4;
+					//uVar4 = uVar4 & 0xffff;
+					//c1._0_2_ = (short)uVar7;
+					//uVar7 = uVar7 & 0xffff;
+					//c2._0_2_ = (short)uVar9;
+					//uVar9 = uVar9 & 0xffff;
+					
+					pSVar12[0].pad = *(short*)&c0;
+					pSVar12[1].pad = *(short*)&c1;
+					pSVar12[2].pad = *(short*)&c2;
+
+					uVar11--;
+					local_a3_900 += 3;
+					pSVar12 += 3;
+
+				} while (uVar11 != 0);
 			}
 		}
 		restoreLightingMatrices();
 	}
-	return;*/
 }
 
 
@@ -1908,18 +1932,6 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 	// End Line: 5786
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-CAR_MODEL NewCarModel[5];
-CAR_MODEL NewLowCarModel[5];
-
-MODEL* gCarLowModelPtr[5];
-MODEL* gCarDamModelPtr[5];
-MODEL* gCarCleanModelPtr[5];
-
-int whichCP = 0;
-int baseSpecCP = 0;
-
-CAR_POLY carPolyBuffer[2001];
 
 // [D]
 void buildNewCars(void)
@@ -2437,53 +2449,29 @@ void MangleWheelModels(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+MATRIX save_colour_matrix;
+MATRIX save_light_matrix;
+
+// [D]
 void setupLightingMatrices(void)
 {
-	UNIMPLEMENTED();
-	/*
-	save_colour_matrix.m[0]._0_4_ = getCopControlWord(2, 16);
-	save_colour_matrix.m._4_4_ = getCopControlWord(2, 17);
-	save_colour_matrix.m[1]._2_4_ = getCopControlWord(2, 18);
-	save_colour_matrix.m[2]._0_4_ = getCopControlWord(2, 19);
-	save_colour_matrix._16_4_ = getCopControlWord(2, 20);
+	gte_ReadColorMatrix(&save_colour_matrix);
+	gte_ReadLightMatrix(&save_light_matrix);
 
-	save_colour_matrix.t[0] = getCopControlWord(2, 21);
-	save_colour_matrix.t[1] = getCopControlWord(2, 22);
-	save_colour_matrix.t[2] = getCopControlWord(2, 23);
+	gte_SetColorMatrix(&colour_matrix);
+	gte_SetLightMatrix(&light_matrix);
 
-	save_light_matrix.m[0]._0_4_ = getCopControlWord(2, 8);
-	save_light_matrix.m._4_4_ = getCopControlWord(2, 9);
-	save_light_matrix.m[1]._2_4_ = getCopControlWord(2, 10);
-	save_light_matrix.m[2]._0_4_ = getCopControlWord(2, 11);
-	save_light_matrix._16_4_ = getCopControlWord(2, 12);
-
-	save_light_matrix.t[0] = getCopControlWord(2, 13);
-	save_light_matrix.t[1] = getCopControlWord(2, 14);
-	save_light_matrix.t[2] = getCopControlWord(2, 15);
-
-	setCopControlWord(2, 16, colour_matrix.m[0]._0_4_);
-	setCopControlWord(2, 17, colour_matrix.m._4_4_);
-	setCopControlWord(2, 18, colour_matrix.m[1]._2_4_);
-	setCopControlWord(2, 19, colour_matrix.m[2]._0_4_);
-	setCopControlWord(2, 20, colour_matrix._16_4_);
-
-	setCopControlWord(2, 8, light_matrix.m[0]._0_4_);
-	setCopControlWord(2, 9, light_matrix.m._4_4_);
-	setCopControlWord(2, 10, light_matrix.m[1]._2_4_);
-	setCopControlWord(2, 11, light_matrix.m[2]._0_4_);
-	setCopControlWord(2, 12, light_matrix._16_4_);
-
-	if (gTimeOfDay == 3) {
-		setCopControlWord(2, 13, 0x400);
-		setCopControlWord(2, 14, 0x400);
-		setCopControlWord(2, 15, 0x400);
+	if (gTimeOfDay == 3) 
+	{
+		RBK = 0x400;
+		GBK = 0x400;
+		BBK = 0x400;
+		return;
 	}
-	else {
-		setCopControlWord(2, 13, 0x8c0);
-		setCopControlWord(2, 14, 0x8c0);
-		setCopControlWord(2, 15, 0x8c0);
-	}
-	*/
+
+	RBK = 0x8c0;
+	GBK = 0x8c0;
+	BBK = 0x8c0;
 }
 
 
@@ -2504,22 +2492,11 @@ void setupLightingMatrices(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void restoreLightingMatrices(void)
 {
-	UNIMPLEMENTED();
-	/*
-	setCopControlWord(2, 16, save_colour_matrix.m[0]._0_4_);
-	setCopControlWord(2, 17, save_colour_matrix.m._4_4_);
-	setCopControlWord(2, 18, save_colour_matrix.m[1]._2_4_);
-	setCopControlWord(2, 19, save_colour_matrix.m[2]._0_4_);
-	setCopControlWord(2, 20, save_colour_matrix._16_4_);
-
-	setCopControlWord(2, 8, save_light_matrix.m[0]._0_4_);
-	setCopControlWord(2, 9, save_light_matrix.m._4_4_);
-	setCopControlWord(2, 10, save_light_matrix.m[1]._2_4_);
-	setCopControlWord(2, 11, save_light_matrix.m[2]._0_4_);
-	setCopControlWord(2, 12, save_light_matrix._16_4_);
-	*/
+	gte_SetColorMatrix(&save_colour_matrix);
+	gte_SetLightMatrix(&save_light_matrix);
 }
 
 

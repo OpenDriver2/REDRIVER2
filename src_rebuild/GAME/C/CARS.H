@@ -15,9 +15,9 @@ extern CAR_MODEL NewLowCarModel[5];
 extern int whichCP;		// car poly counter
 extern int baseSpecCP;	// special car poly counter
 
-extern MODEL* gCarLowModelPtr[5];
-extern MODEL* gCarDamModelPtr[5];
-extern MODEL* gCarCleanModelPtr[5];
+extern DENTUVS gTempHDCarUVDump[20][255];
+extern SVECTOR gTempCarVertDump[20][132];
+extern DENTUVS gTempLDCarUVDump[20][134];
 
 extern void plotNewCarModel(CAR_MODEL *car, int palette); // 0x00020C94
 
