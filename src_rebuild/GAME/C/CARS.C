@@ -220,59 +220,61 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 	/* end block 3 */
 	// End Line: 6231
 
+// [D]
 void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
 	uint uVar2;
-	undefined4 *puVar3;
+	uint uVar3;
+	SVECTOR *v2;
 	uint uVar4;
-	undefined4 *puVar5;
-	SVECTOR *pSVar6;
-	uint *puVar7;
-	long *plVar8;
+	SVECTOR *v1;
+	SVECTOR *v0;
+	POLY_F3 *prim;
+	OTTYPE *ot;
 
-	puVar7 = (uint *)pg->primptr;
+	prim = (POLY_F3 *)pg->primptr;
 	uVar4 = pg->intensity;
-	plVar8 = pg->ot;
-	if (0 < numTris) {
+	ot = pg->ot;
+	if (0 < numTris) 
+	{
 		do {
-			uVar2 = src->vindices;
-			pSVar6 = vlist + (uVar2 & 0xff);
-			puVar5 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 5 & 0x7f8U));
-			puVar3 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 0xd & 0x7f8U));
-			setCopReg(2, 0, *(undefined4 *)pSVar6);
-			setCopReg(2, 1, *(undefined4 *)&pSVar6->vz);
-			setCopReg(2, 2, *puVar5);
-			setCopReg(2, 3, puVar5[1]);
-			setCopReg(2, 4, *puVar3);
-			setCopReg(2, 5, puVar3[1]);
-			copFunction(2, 0x280030);
-			puVar7[1] = uVar4 | 0x20000000;
-			copFunction(2, 0x1400006);
-			iVar1 = getCopReg(2, 0x18);
-			copFunction(2, 0x158002d);
-			if (-1 < iVar1) {
-				uVar2 = getCopReg(2, 12);
-				puVar7[2] = uVar2;
-				uVar2 = getCopReg(2, 13);
-				puVar7[3] = uVar2;
-				uVar2 = getCopReg(2, 14);
-				puVar7[4] = uVar2;
-				iVar1 = getCopReg(2, 7);
-				*puVar7 = (uint)plVar8[iVar1 >> 1] | 0x4000000;
-				*(uint **)(plVar8 + (iVar1 >> 1)) = puVar7;
-				puVar7 = puVar7 + 5;
+			uVar3 = src->vindices;
+			v0 = vlist + (uVar3 & 0xff);
+			v1 = (SVECTOR *)((int)&vlist->vx + ((int)uVar3 >> 5 & 0x7f8U));
+			v2 = (SVECTOR *)((int)&vlist->vx + ((int)uVar3 >> 0xd & 0x7f8U));
+
+			gte_ldv3(v0, v1, v2);
+
+			docop2(0x280030);
+
+			*(uint *)&prim->r0 = uVar4 | 0x20000000;
+
+			docop2(0x1400006);
+			iVar1 = MAC0;  //getCopReg(2, 0x18);
+			docop2(0x158002d);
+
+			if (-1 < iVar1) 
+			{
+				uVar2 = SXY0; // getCopReg(2, 0xc);
+				*(uint *)&prim->x0 = uVar2;
+				uVar2 = SXY1; // getCopReg(2, 0xd);
+				*(uint *)&prim->x1 = uVar2;
+				uVar2 = SXY2; // getCopReg(2, 0xe);
+				*(uint *)&prim->x2 = uVar2;
+				iVar1 = OTZ; // getCopReg(2, 7);
+
+				setPolyF3(prim);
+				addPrim(ot + (iVar1 >> 1), prim);
+
+				prim++;
 			}
 			numTris = numTris + -1;
 			src = src + 1;
 		} while (0 < numTris);
 	}
-	*(uint **)&pg->primptr = puVar7;
-	return;*/
+
+	pg->primptr = (unsigned char*)prim;
 }
 
 
@@ -324,72 +326,76 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 	/* end block 3 */
 	// End Line: 6393
 
+// [D]
 void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 in_zero;
-	undefined4 in_at;
 	uint uVar1;
+	uint FT3rgbb;
 	uint uVar2;
-	undefined4 *puVar3;
-	undefined4 *puVar4;
-	SVECTOR *pSVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	uint *puVar9;
-	CAR_POLY *pCVar10;
-	long *plVar11;
+	SVECTOR *v2;
+	SVECTOR *v1;
+	SVECTOR *v0;
+	int iVar3;
+	int iVar4;
+	int iVar5;
+	POLY_FT3 *prim;
+	CAR_POLY *pCVar6;
+	OTTYPE *ot;
+	long FT3rgb;
+	int reg;
 
-	puVar9 = (uint *)pg->primptr;
-	uVar1 = pg->intensity | 0x24000000;
-	plVar11 = pg->ot;
-	setCopReg(2, vlist, uVar1);
-	pCVar10 = src;
+	prim = (POLY_FT3 *)pg->primptr;
+	FT3rgbb = pg->intensity | 0x24000000;
+	ot = pg->ot;
+
+	MTC2(FT3rgbb, 6);
+
+	pCVar6 = src;
 	if (0 < numTris) {
 		do {
-			uVar2 = pCVar10->vindices;
-			pSVar5 = vlist + (uVar2 & 0xff);
-			puVar4 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 5 & 0x7f8U));
-			puVar3 = (undefined4 *)((int)&vlist->vx + ((int)uVar2 >> 0xd & 0x7f8U));
-			setCopReg(2, 0, *(undefined4 *)pSVar5);
-			setCopReg(2, 1, *(undefined4 *)&pSVar5->vz);
-			setCopReg(2, 2, *puVar4);
-			setCopReg(2, 3, puVar4[1]);
-			setCopReg(2, 4, *puVar3);
-			setCopReg(2, 5, puVar3[1]);
-			copFunction(2, 0x280030);
-			iVar7 = pCVar10->clut_uv0;
-			iVar8 = pCVar10->tpage_uv1;
-			iVar6 = pCVar10->uv3_uv2;
-			uVar2 = (uint)pg->damageLevel[pCVar10->originalindex];
-			puVar9[1] = uVar1;
-			src = (CAR_POLY *)(iVar6 + uVar2);
-			puVar9[3] = iVar7 + uVar2;
-			puVar9[5] = iVar8 + uVar2;
-			*(CAR_POLY **)(puVar9 + 7) = src;
-			copFunction(2, 0x1400006);
-			iVar6 = getCopReg(2, 0x18);
-			copFunction(2, 0x158002d);
-			if (-1 < iVar6) {
-				uVar2 = getCopReg(2, 12);
-				puVar9[2] = uVar2;
-				uVar2 = getCopReg(2, 13);
-				puVar9[4] = uVar2;
-				uVar2 = getCopReg(2, 14);
-				puVar9[6] = uVar2;
-				iVar6 = getCopReg(2, 7);
-				*puVar9 = (uint)plVar11[iVar6 >> 1] | 0x7000000;
-				*(uint **)(plVar11 + (iVar6 >> 1)) = puVar9;
-				puVar9 = puVar9 + 8;
+			uVar2 = pCVar6->vindices;
+			v0 = vlist + (uVar2 & 0xff);
+			v1 = (SVECTOR *)((int)&vlist->vx + ((int)uVar2 >> 5 & 0x7f8U));
+			v2 = (SVECTOR *)((int)&vlist->vx + ((int)uVar2 >> 0xd & 0x7f8U));
+
+			gte_ldv3(v0, v1, v2);
+
+			docop2(0x280030);
+
+			iVar4 = pCVar6->clut_uv0;
+			iVar5 = pCVar6->tpage_uv1;
+			iVar3 = pCVar6->uv3_uv2;
+			uVar2 = (uint)pg->damageLevel[pCVar6->originalindex];
+			*(uint *)&prim->r0 = FT3rgbb;
+			src = (CAR_POLY *)(iVar3 + uVar2);
+			*(uint *)&prim->u0 = iVar4 + uVar2;
+			*(uint *)&prim->u1 = iVar5 + uVar2;
+			*(CAR_POLY **)&prim->u2 = src;
+			docop2(0x1400006);
+			iVar3 = MAC0; // getCopReg(2, 0x18);
+			docop2(0x158002d);
+
+			if (-1 < iVar3) 
+			{
+				uVar1 = SXY0; // getCopReg(2, 0xc);
+				*(uint *)&prim->x0 = uVar1;
+				uVar1 = SXY1; //getCopReg(2, 0xd);
+				*(uint *)&prim->x1 = uVar1;
+				uVar1 = SXY2; //getCopReg(2, 0xe);
+				*(uint *)&prim->x2 = uVar1;
+				iVar3 = OTZ; //getCopReg(2, 7);
+
+				setPolyFT3(prim);
+				addPrim(ot + (iVar3 >> 1), prim);
+
+				prim = prim + 1;
 			}
 			numTris = numTris + -1;
-			pCVar10 = pCVar10 + 1;
+			pCVar6 = pCVar6 + 1;
 		} while (0 < numTris);
 	}
-	*(uint **)&pg->primptr = puVar9;
-	return;*/
+
+	pg->primptr = (unsigned char*)prim;
 }
 
 
