@@ -63,6 +63,44 @@ extern int gte_ldlzc(int input);
 	*(uint*)((char*)r0 + 24) = CFC2(6);	\
 	*(uint*)((char*)r0 + 28) = CFC2(7);
 
+// cfc2 16-23
+#define gte_ReadColorMatrix( r0 ) \
+	*(uint*)((char*)r0) = CFC2(16);		\
+	*(uint*)((char*)r0 + 4) = CFC2(17);	\
+	*(uint*)((char*)r0 + 8) = CFC2(18);	\
+	*(uint*)((char*)r0 + 12) = CFC2(19);	\
+	*(uint*)((char*)r0 + 16) = CFC2(20);	\
+	*(uint*)((char*)r0 + 20) = CFC2(21);	\
+	*(uint*)((char*)r0 + 24) = CFC2(22);	\
+	*(uint*)((char*)r0 + 28) = CFC2(23);
+
+// cfc2 8-15
+#define gte_ReadLightMatrix( r0 ) \
+	*(uint*)((char*)r0) = CFC2(8);		\
+	*(uint*)((char*)r0 + 4) = CFC2(9);	\
+	*(uint*)((char*)r0 + 8) = CFC2(10);	\
+	*(uint*)((char*)r0 + 12) = CFC2(11);	\
+	*(uint*)((char*)r0 + 16) = CFC2(12);	\
+	*(uint*)((char*)r0 + 20) = CFC2(13);	\
+	*(uint*)((char*)r0 + 24) = CFC2(14);	\
+	*(uint*)((char*)r0 + 28) = CFC2(15);
+
+// ctc2 8-12
+#define gte_SetLightMatrix( r0 )\
+	CTC2(*(uint*)((char*)r0), 8);\
+	CTC2(*(uint*)((char*)r0+4), 9);\
+	CTC2(*(uint*)((char*)r0+8), 10);\
+	CTC2(*(uint*)((char*)r0+12), 11);\
+	CTC2(*(uint*)((char*)r0+16), 12);
+
+// ctc2 16-20
+#define gte_SetColorMatrix( r0 )\
+	CTC2(*(uint*)((char*)r0), 16);\
+	CTC2(*(uint*)((char*)r0+4), 17);\
+	CTC2(*(uint*)((char*)r0+8), 18);\
+	CTC2(*(uint*)((char*)r0+12), 19);\
+	CTC2(*(uint*)((char*)r0+16), 20);
+
 // lwc2 9-11
 #define gte_ldlvl( r0 ) \
 	MTC2(*(uint*)((char*)r0), 9); \
