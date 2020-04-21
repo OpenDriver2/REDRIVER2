@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "BOMBERMAN.H"
 
+MODEL* gBombModel;
 
 // decompiled code
 // original method signature: 

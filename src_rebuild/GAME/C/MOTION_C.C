@@ -7,6 +7,11 @@ TEXTURE_DETAILS forearm1_texture;
 TEXTURE_DETAILS chest1_texture;
 TEXTURE_DETAILS head1_texture;
 
+MODEL* gPed1HeadModelPtr;
+MODEL* gPed2HeadModelPtr;
+MODEL* gPed3HeadModelPtr;
+MODEL* gPed4HeadModelPtr;
+
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
 	{HIPS, RHIP, RKNEE, RFOOT, RTOE, ROOT, ROOT, ROOT},

@@ -1,6 +1,7 @@
 #ifndef BOMBERMAN_H
 #define BOMBERMAN_H
 
+extern MODEL* gBombModel;
 
 extern void InitThrownBombs(); // 0x0001F570
 

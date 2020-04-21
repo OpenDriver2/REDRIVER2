@@ -15,6 +15,8 @@ extern MODEL* gCarLowModelPtr[5];
 extern MODEL* gCarDamModelPtr[5];
 extern MODEL* gCarCleanModelPtr[5];
 
+extern int num_models_in_pack;
+
 extern void ProcessMDSLump(char *lump_file, int lump_size); // 0x00064CFC
 
 extern int ProcessCarModelLump(char *lump_ptr, int lump_size); // 0x00064E6C

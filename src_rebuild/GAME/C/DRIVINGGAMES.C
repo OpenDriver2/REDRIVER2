@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "DRIVINGGAMES.H"
 
+MODEL* gTrailblazerConeModel;
 
 // decompiled code
 // original method signature: 

@@ -1,6 +1,8 @@
 #ifndef CARS_H
 #define CARS_H
 
+#define CAR_INDEX(cp)  (int)(cp-car_data)
+
 // PHYSICS
 extern _CAR_DATA car_data[22];	// all cars
 
@@ -18,6 +20,11 @@ extern int baseSpecCP;	// special car poly counter
 extern DENTUVS gTempHDCarUVDump[20][255];
 extern SVECTOR gTempCarVertDump[20][132];
 extern DENTUVS gTempLDCarUVDump[20][134];
+
+extern MODEL *gHubcapModelPtr;
+extern MODEL *gCleanWheelModelPtr;
+extern MODEL *gFastWheelModelPtr;
+extern MODEL *gDamWheelModelPtr;
 
 extern void plotNewCarModel(CAR_MODEL *car, int palette); // 0x00020C94
 

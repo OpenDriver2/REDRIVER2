@@ -7,6 +7,11 @@ extern TEXTURE_DETAILS forearm1_texture;
 extern TEXTURE_DETAILS chest1_texture;
 extern TEXTURE_DETAILS head1_texture;
 
+extern MODEL* gPed1HeadModelPtr;
+extern MODEL* gPed2HeadModelPtr;
+extern MODEL* gPed3HeadModelPtr;
+extern MODEL* gPed4HeadModelPtr;
+
 extern void ProcessMotionLump(char *lump_ptr, int lump_size); // 0x00069A38
 
 extern void SetupPedMotionData(PEDESTRIAN *pPed); // 0x00069AB8

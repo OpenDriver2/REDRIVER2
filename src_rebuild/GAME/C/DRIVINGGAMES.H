@@ -1,6 +1,7 @@
 #ifndef DRIVINGGAMES_H
 #define DRIVINGGAMES_H
 
+extern MODEL* gTrailblazerConeModel;
 
 extern void InitDrivingGames(); // 0x0004310C
 

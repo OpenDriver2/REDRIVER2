@@ -9,6 +9,7 @@
 #include "MISSION.H"
 #include "COP_AI.H"
 #include "DENTING.H"
+#include "CARS.H"
 
 char speedLimits[3] = { 56, 97, 138 };
 
@@ -42,8 +43,7 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 
 	cp->wasOnGround = 1;
 
-	// [A] This is not valid
-	//cp->id = (char)((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2);
+	cp->id = CAR_INDEX(cp);
 
 	if (startPos == NULL)
 		return 0;

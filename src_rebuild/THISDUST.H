@@ -20053,6 +20053,23 @@ struct POLYFT4 // hashcode: 0x0B933067 (dec: 194195559)
 	struct RGB color; // size=4, offset=16
 };
 
+struct POLYFT4LIT // hashcode: 0x9BF00654 (dec: -1678768556)
+{
+	unsigned char id; // size=0, offset=0
+	unsigned char texture_set; // size=0, offset=1
+	unsigned char texture_id; // size=0, offset=2
+	unsigned char spare; // size=0, offset=3
+	unsigned char v0; // size=0, offset=4
+	unsigned char v1; // size=0, offset=5
+	unsigned char v2; // size=0, offset=6
+	unsigned char v3; // size=0, offset=7
+	struct UV_INFO uv0; // size=2, offset=8
+	struct UV_INFO uv1; // size=2, offset=10
+	struct UV_INFO uv2; // size=2, offset=12
+	struct UV_INFO uv3; // size=2, offset=14
+	struct RGB color; // size=4, offset=16
+};
+
 
 struct SMOKE // hashcode: 0x9F745C35 (dec: -1619764171)
 {

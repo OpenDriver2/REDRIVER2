@@ -18,12 +18,12 @@
 #include "MC_SND.H"
 #include "CUTSCENE.H"
 #include "CONVERT.H"
+#include "PAUSE.H"
 #include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
 #include "LIBAPI.H"
-
 
 SVECTOR day_vectors[4] =
 {
@@ -65,6 +65,8 @@ MATRIX colour_matrix =
 
 // PHYSICS
 _CAR_DATA car_data[22];	// all cars
+
+HUBCAP gHubcap;
 
 // active cars
 _CAR_DATA* active_car_list[20];
@@ -641,7 +643,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			local_4 = OTZ;// getCopReg(2, 7);
 
-			if (-1 < iVar2 && 0 < local_4)	// [A] Ghidra flow detection probably failed, or blame Game devs...
+			if (-1 < iVar2 && 0 < local_4)
 			{
 				uVar3 = SXY0; // getCopReg(2, 0xc);
 				*(uint *)&prim->x0 = uVar3;
@@ -1093,7 +1095,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	/*
 	if (((*(uint *)&cp->hndType & 0x2ff00) != 0x20200) &&
 		(((gInGameCutsceneActive == 0 || (cp->controlType != '\a')) ||
-		(force_siren[(int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2] == '\0'))))
+		(force_siren[CAR_INDEX(cp)] == '\0'))))
 	{
 		if (gCurrentMissionNumber != 0x1a) 
 			return;
@@ -1103,8 +1105,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		if (cp->controlType != 10)
 			return;
-	}
-	*/
+	}*/
 
 	if (cp->ai.p.dying < 0x4b)
 		AddCopCarLight(cp);
@@ -1265,62 +1266,61 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, in
 	/* end block 3 */
 	// End Line: 4193
 
+MODEL *gHubcapModelPtr;
+MODEL *gCleanWheelModelPtr;
+MODEL *gFastWheelModelPtr;
+MODEL *gDamWheelModelPtr;
+
+// [D]
 void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 {
-	UNIMPLEMENTED();
-	/*
+	static short FrontWheelRotation[20]; // offset 0x0
+	static short BackWheelRotation[20]; // offset 0x30
+
 	short sVar1;
 	short sVar2;
-	undefined4 in_zero;
-	undefined4 in_at;
 	short sVar3;
 	int iVar4;
-	uint wheelnum;
 	int iVar5;
 	short sVar6;
+	uint wheelnum;
 	int iVar7;
 	short sVar8;
 	short sVar9;
-	undefined4 uVar10;
-	undefined4 uVar11;
-	undefined4 uVar12;
+	uint uVar10;
+	uint uVar11;
+	SVECTOR *local_t6_636;
+	SVECTOR *local_t6_916;
+	uint uVar12;
 	MODEL *model;
-	uint uVar13;
+	SVECTOR *pSVar13;
+	WHEEL *pWVar14;
+	uint uVar15;
 	SVECTOR *verts;
-	undefined auStack144[32];
-	short local_70;
-	undefined2 local_6e;
-	short local_6c;
-	undefined2 local_6a;
-	undefined2 local_68;
-	undefined2 local_66;
-	short local_64;
-	undefined2 local_62;
-	short local_60;
-	int local_50;
-	int local_4c;
-	int local_48;
-	short local_40;
-	short local_3e;
-	short local_3c;
-	MODEL *local_38;
-	MODEL *local_34;
-	int *local_30;
-	undefined4 *local_2c;
+	short *psVar16;
+	short *psVar17;
+	MATRIX FrontMatrix;
+	MATRIX SteerMatrix;
+	VECTOR WheelPos;
+	SVECTOR sWheelPos;
+	MODEL *WheelModelBack;
+	MODEL *WheelModelFront;
 
-	local_2c = (undefined4 *)&local_40;
-	local_30 = &local_50;
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
+	wheelnum = cp->ap.model;
+	if (cp < car_data) 
+	{
+		while (FrameCnt != 0x78654321) 
+		{
 			trap(0x400);
 		}
 	}
-	iVar5 = (cp->hd).wheel_speed;
+
+	iVar5 = cp->hd.wheel_speed;
 	if (iVar5 < 0) {
 		iVar5 = iVar5 + 0xff;
 	}
 	iVar5 = iVar5 >> 8;
-	sVar1 = car_cosmetics[(byte)(cp->ap).model].wheelSize;
+	sVar1 = car_cosmetics[cp->ap.model].wheelSize;
 	iVar7 = iVar5;
 	if (cp->wheelspin != '\0') {
 		iVar7 = -700;
@@ -1331,155 +1331,177 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	if ((cp->hd).wheel[3].locked != '\0') {
 		iVar7 = 0;
 	}
-	if (pauseflag == 0) {
-		iVar4 = ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2) * 2;
-		*(ushort *)(&FrontWheelRotation_25 + iVar4) =
-			*(ushort *)(&FrontWheelRotation_25 + iVar4) + (short)iVar5 & 0xfff;
-		*(ushort *)(&BackWheelRotation_26 + iVar4) =
-			*(ushort *)(&BackWheelRotation_26 + iVar4) + (short)iVar7 & 0xfff;
+	if (pauseflag == 0)
+	{
+		iVar4 = CAR_INDEX(cp);
+
+		*(ushort *)(FrontWheelRotation + iVar4) =
+			*(ushort *)(FrontWheelRotation + iVar4) + (short)iVar5 & 0xfff;
+		*(ushort *)(BackWheelRotation + iVar4) =
+			*(ushort *)(BackWheelRotation + iVar4) + (short)iVar7 & 0xfff;
 	}
 	if (iVar5 + 400U < 0x321) {
-		local_34 = gCleanWheelModelPtr;
+		WheelModelFront = gCleanWheelModelPtr;
 	}
 	else {
-		local_34 = gFastWheelModelPtr;
+		WheelModelFront = gFastWheelModelPtr;
 	}
 	if (iVar7 + 400U < 0x321) {
-		local_38 = gCleanWheelModelPtr;
+		WheelModelBack = gCleanWheelModelPtr;
 	}
 	else {
-		local_38 = gFastWheelModelPtr;
+		WheelModelBack = gFastWheelModelPtr;
 	}
-	iVar7 = ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2) * 2;
+
+	iVar7 = CAR_INDEX(cp); //((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2) * 2;
 	iVar5 = ((int)sVar1 * 0x373e) / 10000;
-	sVar2 = rcossin_tbl[((uint)*(ushort *)(&FrontWheelRotation_25 + iVar7) & 0xfff) * 2];
-	iVar4 = local_34->vertices;
-	sVar8 = (short)(rcossin_tbl[((uint)*(ushort *)(&FrontWheelRotation_25 + iVar7) & 0xfff) * 2 + 1] *
-		iVar5 >> 0xc);
-	*(short *)(iVar4 + 0x42) = sVar8;
-	*(short *)(iVar4 + 0x7a) = sVar8;
-	sVar2 = (short)(sVar2 * iVar5 >> 0xc);
-	sVar6 = -sVar2;
-	*(short *)(iVar4 + 0x44) = sVar2;
-	*(short *)(iVar4 + 0x7c) = sVar2;
-	*(short *)(iVar4 + 0x4a) = sVar6;
-	*(short *)(iVar4 + 0x72) = sVar6;
-	*(short *)(iVar4 + 0x4c) = sVar8;
-	sVar3 = -sVar8;
-	*(short *)(iVar4 + 0x74) = sVar8;
-	*(short *)(iVar4 + 0x52) = sVar3;
-	*(short *)(iVar4 + 0x6a) = sVar3;
-	*(short *)(iVar4 + 0x54) = sVar6;
-	*(short *)(iVar4 + 0x6c) = sVar6;
-	*(short *)(iVar4 + 0x5a) = sVar2;
-	*(short *)(iVar4 + 0x62) = sVar2;
-	*(short *)(iVar4 + 0x5c) = sVar3;
-	*(short *)(iVar4 + 100) = sVar3;
-	*(undefined2 *)(iVar4 + 0xbc) = 0;
-	*(undefined2 *)(iVar4 + 0xb4) = 0;
-	*(undefined2 *)(iVar4 + 0xaa) = 0;
-	*(undefined2 *)(iVar4 + 0xa2) = 0;
-	*(undefined2 *)(iVar4 + 0x9a) = 0;
-	*(undefined2 *)(iVar4 + 0x92) = 0;
-	*(undefined2 *)(iVar4 + 0x8c) = 0;
-	*(undefined2 *)(iVar4 + 0x84) = 0;
-	*(short *)(iVar4 + 0xba) = sVar1;
+	sVar3 = rcossin_tbl[((uint)*(ushort *)(FrontWheelRotation + iVar7) & 0xfff) * 2];
+	local_t6_636 = (SVECTOR *)WheelModelFront->vertices;
+	sVar8 = (short)(rcossin_tbl[((uint)*(ushort *)(FrontWheelRotation + iVar7) & 0xfff) * 2 + 1]
+		* iVar5 >> 0xc);
+	local_t6_636[8].vy = sVar8;
+	local_t6_636[0xf].vy = sVar8;
+	sVar3 = (short)(sVar3 * iVar5 >> 0xc);
+	sVar6 = -sVar3;
+	local_t6_636[8].vz = sVar3;
+	local_t6_636[0xf].vz = sVar3;
+	local_t6_636[9].vy = sVar6;
+	local_t6_636[0xe].vy = sVar6;
+	local_t6_636[9].vz = sVar8;
+	sVar2 = -sVar8;
+	local_t6_636[0xe].vz = sVar8;
+	local_t6_636[10].vy = sVar2;
+	local_t6_636[0xd].vy = sVar2;
+	local_t6_636[10].vz = sVar6;
+	local_t6_636[0xd].vz = sVar6;
+	local_t6_636[0xb].vy = sVar3;
+	local_t6_636[0xc].vy = sVar3;
+	local_t6_636[0xb].vz = sVar2;
+	local_t6_636[0xc].vz = sVar2;
+	local_t6_636[0x17].vz = 0;
+	local_t6_636[0x16].vz = 0;
+	local_t6_636[0x15].vy = 0;
+	local_t6_636[0x14].vy = 0;
+	local_t6_636[0x13].vy = 0;
+	local_t6_636[0x12].vy = 0;
+	local_t6_636[0x11].vz = 0;
+	local_t6_636[0x10].vz = 0;
+	local_t6_636[0x17].vy = sVar1;
 	sVar8 = -sVar1;
-	*(short *)(iVar4 + 0xb2) = sVar1;
-	*(short *)(iVar4 + 0xac) = sVar1;
-	*(short *)(iVar4 + 0xa4) = sVar1;
-	*(short *)(iVar4 + 0x9c) = sVar8;
-	*(short *)(iVar4 + 0x94) = sVar8;
-	*(short *)(iVar4 + 0x8a) = sVar8;
-	*(short *)(iVar4 + 0x82) = sVar8;
-	sVar2 = rcossin_tbl[((uint)*(ushort *)(&BackWheelRotation_26 + iVar7) & 0xfff) * 2];
-	iVar4 = local_38->vertices;
-	sVar9 = (short)(rcossin_tbl[((uint)*(ushort *)(&BackWheelRotation_26 + iVar7) & 0xfff) * 2 + 1] *
-		iVar5 >> 0xc);
-	*(short *)(iVar4 + 0x42) = sVar9;
-	*(short *)(iVar4 + 0x7a) = sVar9;
-	sVar2 = (short)(sVar2 * iVar5 >> 0xc);
-	sVar6 = -sVar2;
-	*(short *)(iVar4 + 0x44) = sVar2;
-	*(short *)(iVar4 + 0x7c) = sVar2;
-	*(short *)(iVar4 + 0x4a) = sVar6;
-	*(short *)(iVar4 + 0x72) = sVar6;
-	*(short *)(iVar4 + 0x4c) = sVar9;
-	sVar3 = -sVar9;
-	*(short *)(iVar4 + 0x74) = sVar9;
-	*(short *)(iVar4 + 0x52) = sVar3;
-	*(short *)(iVar4 + 0x6a) = sVar3;
-	*(short *)(iVar4 + 0x54) = sVar6;
-	*(short *)(iVar4 + 0x6c) = sVar6;
-	*(short *)(iVar4 + 0x5a) = sVar2;
-	*(short *)(iVar4 + 0x62) = sVar2;
-	*(short *)(iVar4 + 0x5c) = sVar3;
-	*(short *)(iVar4 + 100) = sVar3;
-	*(undefined2 *)(iVar4 + 0xbc) = 0;
-	*(undefined2 *)(iVar4 + 0xb4) = 0;
-	*(undefined2 *)(iVar4 + 0xaa) = 0;
-	*(undefined2 *)(iVar4 + 0xa2) = 0;
-	*(undefined2 *)(iVar4 + 0x9a) = 0;
-	*(undefined2 *)(iVar4 + 0x92) = 0;
-	*(undefined2 *)(iVar4 + 0x8c) = 0;
-	*(undefined2 *)(iVar4 + 0x84) = 0;
-	*(short *)(iVar4 + 0xba) = sVar1;
-	*(short *)(iVar4 + 0xb2) = sVar1;
-	*(short *)(iVar4 + 0xac) = sVar1;
-	*(short *)(iVar4 + 0xa4) = sVar1;
-	*(short *)(iVar4 + 0x9c) = sVar8;
-	*(short *)(iVar4 + 0x94) = sVar8;
-	*(short *)(iVar4 + 0x8a) = sVar8;
-	*(short *)(iVar4 + 0x82) = sVar8;
+	local_t6_636[0x16].vy = sVar1;
+	local_t6_636[0x15].vz = sVar1;
+	local_t6_636[0x14].vz = sVar1;
+	local_t6_636[0x13].vz = sVar8;
+	local_t6_636[0x12].vz = sVar8;
+	local_t6_636[0x11].vy = sVar8;
+	local_t6_636[0x10].vy = sVar8;
+	sVar3 = rcossin_tbl[((uint)*(ushort *)(BackWheelRotation + iVar7) & 0xfff) * 2];
+	psVar17 = &car_cosmetics[cp->ap.model].wheelDisp[0].vz;
+	psVar16 = &car_cosmetics[cp->ap.model].wheelDisp[0].vy;
+	local_t6_916 = (SVECTOR *)WheelModelBack->vertices;
+	sVar9 = (short)(rcossin_tbl[((uint)*(ushort *)(BackWheelRotation + iVar7) & 0xfff) * 2 + 1]
+		* iVar5 >> 0xc);
+	local_t6_916[8].vy = sVar9;
+	local_t6_916[0xf].vy = sVar9;
+	sVar3 = (short)(sVar3 * iVar5 >> 0xc);
+	sVar6 = -sVar3;
+	local_t6_916[8].vz = sVar3;
+	local_t6_916[0xf].vz = sVar3;
+	local_t6_916[9].vy = sVar6;
+	local_t6_916[0xe].vy = sVar6;
+	local_t6_916[9].vz = sVar9;
+	sVar2 = -sVar9;
+	local_t6_916[0xe].vz = sVar9;
+	local_t6_916[10].vy = sVar2;
+	local_t6_916[0xd].vy = sVar2;
+	local_t6_916[10].vz = sVar6;
+	local_t6_916[0xd].vz = sVar6;
+	local_t6_916[0xb].vy = sVar3;
+	local_t6_916[0xc].vy = sVar3;
+	local_t6_916[0xb].vz = sVar2;
+	local_t6_916[0xc].vz = sVar2;
+	local_t6_916[0x17].vz = 0;
+	local_t6_916[0x16].vz = 0;
+	local_t6_916[0x15].vy = 0;
+	local_t6_916[0x14].vy = 0;
+	local_t6_916[0x13].vy = 0;
+	local_t6_916[0x12].vy = 0;
+	local_t6_916[0x11].vz = 0;
+	local_t6_916[0x10].vz = 0;
+	local_t6_916[0x17].vy = sVar1;
+	local_t6_916[0x16].vy = sVar1;
+	local_t6_916[0x15].vz = sVar1;
+	local_t6_916[0x14].vz = sVar1;
+	local_t6_916[0x13].vz = sVar8;
+	local_t6_916[0x12].vz = sVar8;
+	local_t6_916[0x11].vy = sVar8;
+	local_t6_916[0x10].vy = sVar8;
+
+	pSVar13 = car_cosmetics[cp->ap.model].wheelDisp;
+
 	wheelnum = (uint)(ushort)cp->wheel_angle & 0xfff;
-	local_70 = rcossin_tbl[wheelnum * 2 + 1];
-	local_6c = rcossin_tbl[wheelnum * 2];
-	local_68 = 0x1000;
-	local_62 = 0;
-	local_66 = 0;
-	local_6a = 0;
-	local_6e = 0;
-	local_64 = -local_6c;
-	local_60 = local_70;
-	MulMatrix0(RearMatrix, &local_70, auStack144);
+	SteerMatrix.m[0][0] = rcossin_tbl[wheelnum * 2 + 1];
+	SteerMatrix.m[0][2] = rcossin_tbl[wheelnum * 2];
+	SteerMatrix.m[1][1] = 0x1000;
+	SteerMatrix.m[2][1] = 0;
+	SteerMatrix.m[1][2] = 0;
+	SteerMatrix.m[1][0] = 0;
+	SteerMatrix.m[0][1] = 0;
+	SteerMatrix.m[2][0] = -SteerMatrix.m[0][2];
+	SteerMatrix.m[2][2] = SteerMatrix.m[0][0];
+	MulMatrix0(RearMatrix, &SteerMatrix, &FrontMatrix);
+	pWVar14 = (cp->hd).wheel;
 	wheelnum = 0;
+
 	do {
-		model = local_34;
+		model = WheelModelFront;
 		if ((wheelnum & 1) != 0) {
-			model = local_38;
+			model = WheelModelBack;
 		}
 		verts = (SVECTOR *)model->vertices;
-		if ((cp->controlType == '\x01') && (gHubcap.Present[3 - wheelnum] == 0)) {
+
+		if ((cp->controlType == '\x01') && (gHubcap.Present[3 - wheelnum] == 0)) 
 			model = gDamWheelModelPtr;
+
+		if ((wheelnum & 2) == 0) 
+			sVar3 = 0x11 - pSVar13->vx;
+
+		else
+			sVar3 = -0x11 - pSVar13->vx;
+
+		sWheelPos.vz = -*psVar17;
+		sWheelPos.vx = sVar3;
+		sWheelPos.vy = (-sVar1 - *psVar16) - pWVar14->susCompression - 0xe;
+
+		gte_SetRotMatrix(RearMatrix);
+		gte_ldv0(&sWheelPos);
+
+		docop2(0x486012);
+
+		uVar10 = IR1;  //getCopReg(2, 0x4800);
+		uVar11 = IR2;  //getCopReg(2, 0x5000);
+		uVar12 = IR3;  //getCopReg(2, 0x5800);
+
+		TRX = uVar10 + pos->vx;
+		TRY = uVar11 + pos->vy;
+		TRZ = uVar12 + pos->vz;
+
+		if ((wheelnum & 1) == 0) 
+		{
+			SetRotMatrix(&FrontMatrix);
 		}
-		setCopControlWord(2, 0, *(undefined4 *)RearMatrix->m);
-		setCopControlWord(2, 1, *(undefined4 *)(RearMatrix->m + 2));
-		setCopControlWord(2, 2, *(undefined4 *)(RearMatrix->m + 4));
-		setCopControlWord(2, 3, *(undefined4 *)(RearMatrix->m + 6));
-		setCopControlWord(2, 4, *(undefined4 *)(RearMatrix->m + 8));
-		setCopReg(2, 0, *local_2c);
-		setCopReg(2, 1, local_2c[1]);
-		copFunction(2, 0x486012);
-		uVar10 = getCopReg(2, 9);
-		uVar11 = getCopReg(2, 10);
-		uVar12 = getCopReg(2, 11);
-		local_40 = (short)uVar10;
-		local_3e = (short)uVar11;
-		local_3c = (short)uVar12;
-		local_50 = (int)local_40 + pos->vx;
-		local_4c = (int)local_3e + pos->vy;
-		local_48 = (int)local_3c + pos->vz;
-		setCopControlWord(2, 5, *local_30);
-		setCopControlWord(2, 6, local_30[1]);
-		setCopControlWord(2, 7, local_30[2]);
-		if ((wheelnum & 1) == 0) {
-			SetRotMatrix(auStack144);
-		}
-		uVar13 = wheelnum + 1;
-		DrawWheelObject(model, verts, (uint)(byte)TransparentObject, wheelnum);
-		wheelnum = uVar13;
-	} while ((int)uVar13 < 4);
-	return;*/
+
+		psVar17 = psVar17 + 4;
+		psVar16 = psVar16 + 4;
+		pSVar13 = pSVar13 + 1;
+		pWVar14 = pWVar14 + 1;
+		uVar15 = wheelnum + 1;
+
+		DrawWheelObject(model, verts, TransparentObject, wheelnum);
+
+		wheelnum = uVar15;
+	} while ((int)uVar15 < 4);
+	
 }
 
 
@@ -1533,39 +1555,42 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	/* end block 3 */
 	// End Line: 5089
 
+// [D]
 void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
+	ushort sVar1;
 	ushort uVar2;
 	int iVar3;
-	int iVar4;
-	undefined4 in_zero;
-	undefined4 in_at;
-	byte bVar5;
-	undefined4 *puVar6;
+	uint uVar4;
+	int iVar5;
+	unsigned char bVar6;
+	SVECTOR *local_v0_320;
 	uint uVar7;
-	undefined4 *puVar8;
-	uint uVar9;
-	uint uVar10;
-	SVECTOR *pSVar11;
-	uint *puVar12;
-	int iVar13;
+	SVECTOR *local_v1_308;
+	uint uVar8;
+	SVECTOR *pSVar9;
+	POLY_FT4 *local_t0_688;
+	POLYFT4LIT *local_t1_28;
 	uint in_t5;
 	uint in_t6;
 
-	iVar13 = model->poly_block;
-	puVar12 = (uint *)current->primptr;
-	uVar1 = (&texture_cluts)[(uint)*(byte *)(iVar13 + 1) * 0x20 + (uint)*(byte *)(iVar13 + 2)];
-	uVar2 = (&texture_pages)[(uint)*(byte *)(iVar13 + 1)];
-	if (-1 < gTimeOfDay) {
-		if (gTimeOfDay < 3) {
+	local_t1_28 = (POLYFT4LIT *)model->poly_block;
+	local_t0_688 = (POLY_FT4 *)current->primptr;
+
+	sVar1 = texture_cluts[local_t1_28->texture_set][local_t1_28->texture_id];
+	uVar2 = texture_pages[local_t1_28->texture_set];
+
+	if (-1 < gTimeOfDay) 
+	{
+		if (gTimeOfDay < 3) 
+		{
 			in_t6 = combointensity & 0xffffffU | 0x2c000000;
 			in_t5 = (int)(combointensity & 0xfcfcfcU) >> 2 | 0x2c000000;
 		}
-		else {
-			if (gTimeOfDay == 3) {
+		else
+		{
+			if (gTimeOfDay == 3)
+			{
 				uVar7 = (combointensity & 0xffU) / 3;
 				uVar7 = uVar7 << 0x10 | uVar7 << 8 | uVar7;
 				in_t6 = uVar7 | 0x2c000000;
@@ -1573,66 +1598,93 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 			}
 		}
 	}
+
 	uVar7 = (uint)model->num_polys;
-	while (uVar7 = uVar7 - 1, uVar7 != 0xffffffff) {
-		uVar10 = *(uint *)(iVar13 + 4);
-		pSVar11 = verts + (uVar10 & 0xff);
-		puVar8 = (undefined4 *)((int)&verts->vx + ((int)uVar10 >> 5 & 0x7f8U));
-		puVar6 = (undefined4 *)((int)&verts->vx + ((int)uVar10 >> 0xd & 0x7f8U));
-		setCopReg(2, 0, *(undefined4 *)pSVar11);
-		setCopReg(2, 1, *(undefined4 *)&pSVar11->vz);
-		setCopReg(2, 2, *puVar8);
-		setCopReg(2, 3, puVar8[1]);
-		setCopReg(2, 4, *puVar6);
-		setCopReg(2, 5, puVar6[1]);
-		copFunction(2, 0x280030);
-		copFunction(2, 0x1400006);
-		iVar3 = getCopReg(2, 24);
-		uVar9 = getCopReg(2, 12);
-		puVar12[2] = uVar9;
-		setCopReg(2, 0, *(undefined4 *)(verts + (uVar10 >> 0x18)));
-		setCopReg(2, 1, *(undefined4 *)&verts[uVar10 >> 0x18].vz);
-		copFunction(2, 0x180001);
-		copFunction(2, 0x168002e);
-		iVar4 = getCopReg(2, 7);
-		if (2 < iVar4) {
-			uVar9 = (current->ot + (iVar4 >> 1))[9];
-			(current->ot + (iVar4 >> 1))[9] = (uint)puVar12 & 0xffffff;
-			*puVar12 = uVar9 & 0xffffff | 0x9000000;
-			if (((int)uVar7 < 2) || (iVar3 < 0)) {
-				puVar12[1] = 0x2c000000;
+
+	while (uVar7 = uVar7 - 1, uVar7 != 0xffffffff) 
+	{
+		uVar8 = *(uint *)&local_t1_28->v0;
+
+		pSVar9 = verts + (uVar8 & 0xff);
+		local_v1_308 = (SVECTOR *)((int)&verts->vx + ((int)uVar8 >> 5 & 0x7f8U));
+		local_v0_320 = (SVECTOR *)((int)&verts->vx + ((int)uVar8 >> 0xd & 0x7f8U));
+
+		gte_ldv3(pSVar9, local_v1_308, local_v0_320);
+
+		docop2(0x280030);
+		docop2(0x1400006);
+
+		iVar3 = MAC0;	//getCopReg(2, 0x18);
+		uVar4 = SXY0;	//getCopReg(2, 0xc);
+
+		*(uint *)&local_t0_688->x0 = uVar4;
+
+		gte_ldv0((SVECTOR *)(verts + (uVar8 >> 0x18)));
+
+		docop2(0x180001);
+		docop2(0x168002e);
+
+		iVar5 = OTZ;
+
+		if (2 < iVar5) 
+		{
+			setPolyFT4(local_t0_688);
+			addPrim(current->ot + (iVar5 >> 1), local_t0_688);
+
+			if (((int)uVar7 < 2) || (iVar3 < 0))
+			{
+				*(uint *)&local_t0_688->r0 = 0x2c000000;
 			}
-			else {
-				if (((uVar7 ^ wheelnum >> 1) & 1) == 0) {
-					puVar12[1] = in_t5;
+			else 
+			{
+				if (((uVar7 ^ wheelnum >> 1) & 1) == 0)
+				{
+					*(uint *)&local_t0_688->r0 = in_t5;
 				}
 				else {
-					puVar12[1] = in_t6;
+					*(uint *)&local_t0_688->r0 = in_t6;
 				}
 			}
-			if (transparent == 0) {
-				bVar5 = *(byte *)((int)puVar12 + 7) & 0xfd;
+
+			if (transparent == 0) 
+			{
+				bVar6 = local_t0_688->code & 0xfd;
 			}
-			else {
-				bVar5 = *(byte *)((int)puVar12 + 7) | 2;
+			else 
+			{
+				bVar6 = local_t0_688->code | 2;
 			}
-			*(byte *)((int)puVar12 + 7) = bVar5;
-			puVar12[3] = CONCAT22(uVar1, *(undefined2 *)(iVar13 + 8));
-			uVar9 = getCopReg(2, 12);
-			puVar12[4] = uVar9;
-			puVar12[5] = (uint)*(ushort *)(iVar13 + 10) | ((uint)uVar2 | 0x20) << 0x10;
-			uVar9 = getCopReg(2, 14);
-			puVar12[6] = uVar9;
-			puVar12[7] = (uint)*(ushort *)(iVar13 + 0xe);
-			uVar9 = getCopReg(2, 13);
-			puVar12[8] = uVar9;
-			puVar12[9] = (uint)*(ushort *)(iVar13 + 0xc);
-			puVar12 = puVar12 + 10;
+
+			//local_t0_688->code = bVar6;
+			//*(uint *)&local_t0_688->u0 = *(ushort*)&local_t1_28->uv0 | (uint)sVar1 << 0x10;
+			local_t0_688->u0 = local_t1_28->uv1.u;
+			local_t0_688->v0 = local_t1_28->uv1.v;
+			local_t0_688->clut = sVar1;
+
+			uVar4 = SXY0;// getCopReg(2, 0xc);
+			*(uint *)&local_t0_688->x1 = uVar4;
+			local_t0_688->u1 = local_t1_28->uv0.u;
+			local_t0_688->v1 = local_t1_28->uv0.v;
+			local_t0_688->tpage = uVar2 | 0x20;
+			//*(uint *)&local_t0_688->u1 = *(ushort*)&local_t1_28->uv1 | ((uint)uVar2 | 0x20) << 0x10;
+
+			uVar4 = SXY2;// getCopReg(2, 0xe);
+			*(uint *)&local_t0_688->x2 = uVar4;
+			local_t0_688->u2 = local_t1_28->uv2.u;
+			local_t0_688->v2 = local_t1_28->uv2.v;
+
+			//*(uint *)&local_t0_688->u2 = *(ushort*)&local_t1_28->uv3;
+			uVar4 = SXY1;// getCopReg(2, 0xd);
+			*(uint *)&local_t0_688->x3 = uVar4;
+			local_t0_688->u3 = local_t1_28->uv3.u;
+			local_t0_688->v3 = local_t1_28->uv3.v;
+			//*(uint *)&local_t0_688->u3 = *(ushort*)&local_t1_28->uv2;
+
+			local_t0_688++;
 		}
-		iVar13 = iVar13 + 0x14;
+		local_t1_28++;
 	}
-	*(uint **)&current->primptr = puVar12;
-	return;*/
+	current->primptr = (char*)local_t0_688;
 }
 
 
@@ -2346,89 +2398,105 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void MangleWheelModels(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
-	char cVar2;
-	int iVar3;
-	undefined4 *puVar4;
-	MODEL *pMVar5;
-	int iVar6;
+	unsigned char bVar1;
+	UV_INFO UVar2;
+	unsigned char uVar3;
+	int iVar4;
+	uint uVar5;
+	uint uVar6;
+	uint uVar7;
+	POLYFT4LIT *local_a3_608;
+	MODEL *pMVar8;
+	int iVar9;
 
-	iVar3 = 0;
+	iVar4 = 0;
 	do {
-		pMVar5 = gCleanWheelModelPtr;
-		if (((iVar3 != 1) && (pMVar5 = gFastWheelModelPtr, 1 < iVar3)) && (iVar3 == 2)) {
-			pMVar5 = gDamWheelModelPtr;
+		pMVar8 = gCleanWheelModelPtr;
+		if (((iVar4 != 1) && (pMVar8 = gFastWheelModelPtr, 1 < iVar4)) && (iVar4 == 2)) {
+			pMVar8 = gDamWheelModelPtr;
 		}
-		iVar3 = iVar3 + 1;
-		puVar4 = (undefined4 *)pMVar5->poly_block;
-		iVar6 = 1;
-		*puVar4 = puVar4[10];
-		puVar4[1] = puVar4[0xb];
-		puVar4[2] = puVar4[0xc];
-		puVar4[3] = puVar4[0xd];
-		puVar4[4] = puVar4[0xe];
-		puVar4[5] = puVar4[0xf];
-		puVar4[6] = puVar4[0x10];
-		puVar4[7] = puVar4[0x11];
-		puVar4[8] = puVar4[0x12];
-		puVar4[9] = puVar4[0x13];
-		puVar4[10] = puVar4[0x14];
-		puVar4[0xb] = puVar4[0x15];
-		puVar4[0xc] = puVar4[0x16];
-		puVar4[0xd] = puVar4[0x17];
-		puVar4[0xe] = puVar4[0x18];
-		puVar4[0xf] = puVar4[0x1e];
-		puVar4[0x10] = puVar4[0x1f];
-		puVar4[0x11] = puVar4[0x20];
-		puVar4[0x12] = puVar4[0x21];
-		puVar4[0x13] = puVar4[0x22];
-		*(undefined *)(puVar4 + 0xb) = 0x10;
-		*(undefined *)((int)puVar4 + 0x2d) = 0x11;
-		*(undefined *)((int)puVar4 + 0x2e) = 0x17;
-		*(undefined *)((int)puVar4 + 0x2f) = 0x16;
-		*(undefined *)(puVar4 + 0x10) = 0x15;
-		*(undefined *)((int)puVar4 + 0x41) = 0x14;
-		*(undefined *)((int)puVar4 + 0x43) = 0x12;
-		*(undefined *)((int)puVar4 + 0x42) = 0x13;
-		cVar2 = (*(byte *)(puVar4 + 2) >> 1) + (*(byte *)(puVar4 + 3) >> 1);
-		*(char *)((int)puVar4 + 0x4a) = cVar2;
-		*(char *)(puVar4 + 0x12) = cVar2;
-		*(char *)((int)puVar4 + 0x46) = cVar2;
-		*(char *)(puVar4 + 0x11) = cVar2;
-		*(char *)((int)puVar4 + 0x36) = cVar2;
-		*(char *)(puVar4 + 0xd) = cVar2;
-		*(char *)((int)puVar4 + 0x32) = cVar2;
-		*(char *)(puVar4 + 0xc) = cVar2;
-		cVar2 = (*(byte *)((int)puVar4 + 9) >> 1) + (*(byte *)((int)puVar4 + 0xd) >> 1);
-		*(char *)((int)puVar4 + 0x4b) = cVar2;
-		*(char *)((int)puVar4 + 0x49) = cVar2;
-		*(char *)((int)puVar4 + 0x47) = cVar2;
-		*(char *)((int)puVar4 + 0x45) = cVar2;
-		*(char *)((int)puVar4 + 0x37) = cVar2;
-		*(char *)((int)puVar4 + 0x35) = cVar2;
-		*(char *)((int)puVar4 + 0x33) = cVar2;
-		*(char *)((int)puVar4 + 0x31) = cVar2;
-		pMVar5->num_polys = 4;
+		iVar4 = iVar4 + 1;
+		local_a3_608 = (POLYFT4LIT *)pMVar8->poly_block;
+		iVar9 = 1;
+		uVar5 = *(uint *)&local_a3_608[2].v0;
+		uVar6 = *(uint *)&local_a3_608[2].uv0;
+		uVar7 = *(uint *)&local_a3_608[2].uv2;
+		*(uint *)local_a3_608 = *(uint *)(local_a3_608 + 2);
+		*(uint *)&local_a3_608->v0 = uVar5;
+		*(uint *)&local_a3_608->uv0 = uVar6;
+		*(uint *)&local_a3_608->uv2 = uVar7;
+		local_a3_608->color = local_a3_608[2].color;
+		uVar5 = *(uint *)&local_a3_608[3].v0;
+		uVar6 = *(uint *)&local_a3_608[3].uv0;
+		uVar7 = *(uint *)&local_a3_608[3].uv2;
+		*(uint *)(local_a3_608 + 1) = *(uint *)(local_a3_608 + 3);
+		*(uint *)&local_a3_608[1].v0 = uVar5;
+		*(uint *)&local_a3_608[1].uv0 = uVar6;
+		*(uint *)&local_a3_608[1].uv2 = uVar7;
+		local_a3_608[1].color = local_a3_608[3].color;
+		uVar5 = *(uint *)&local_a3_608[4].v0;
+		uVar6 = *(uint *)&local_a3_608[4].uv0;
+		uVar7 = *(uint *)&local_a3_608[4].uv2;
+		*(uint *)(local_a3_608 + 2) = *(uint *)(local_a3_608 + 4);
+		*(uint *)&local_a3_608[2].v0 = uVar5;
+		*(uint *)&local_a3_608[2].uv0 = uVar6;
+		*(uint *)&local_a3_608[2].uv2 = uVar7;
+		local_a3_608[2].color = local_a3_608[4].color;
+		uVar5 = *(uint *)&local_a3_608[6].v0;
+		uVar6 = *(uint *)&local_a3_608[6].uv0;
+		uVar7 = *(uint *)&local_a3_608[6].uv2;
+		*(uint *)(local_a3_608 + 3) = *(uint *)(local_a3_608 + 6);
+		*(uint *)&local_a3_608[3].v0 = uVar5;
+		*(uint *)&local_a3_608[3].uv0 = uVar6;
+		*(uint *)&local_a3_608[3].uv2 = uVar7;
+		local_a3_608[3].color = local_a3_608[6].color;
+		local_a3_608[2].v0 = '\x10';
+		local_a3_608[2].v1 = '\x11';
+		local_a3_608[2].v2 = '\x17';
+		local_a3_608[2].v3 = '\x16';
+		local_a3_608[3].v0 = '\x15';
+		local_a3_608[3].v1 = '\x14';
+		local_a3_608[3].v3 = '\x12';
+		bVar1 = (local_a3_608->uv0).u;
+		local_a3_608[3].v2 = '\x13';
+		uVar3 = (bVar1 >> 1) + ((local_a3_608->uv2).u >> 1);
+		local_a3_608[3].uv3.u = uVar3;
+		local_a3_608[3].uv2.u = uVar3;
+		local_a3_608[3].uv1.u = uVar3;
+		local_a3_608[3].uv0.u = uVar3;
+		local_a3_608[2].uv3.u = uVar3;
+		local_a3_608[2].uv2.u = uVar3;
+		local_a3_608[2].uv1.u = uVar3;
+		bVar1 = (local_a3_608->uv0).v;
+		local_a3_608[2].uv0.u = uVar3;
+		uVar3 = (bVar1 >> 1) + ((local_a3_608->uv2).v >> 1);
+		local_a3_608[3].uv3.v = uVar3;
+		local_a3_608[3].uv2.v = uVar3;
+		local_a3_608[3].uv1.v = uVar3;
+		local_a3_608[3].uv0.v = uVar3;
+		local_a3_608[2].uv3.v = uVar3;
+		local_a3_608[2].uv2.v = uVar3;
+		local_a3_608[2].uv1.v = uVar3;
+		local_a3_608[2].uv0.v = uVar3;
+		pMVar8->num_polys = 4;
 		do {
-			uVar1 = *(undefined2 *)(puVar4 + 2);
-			iVar6 = iVar6 + -1;
-			*(undefined2 *)(puVar4 + 2) = *(undefined2 *)((int)puVar4 + 10);
-			*(undefined2 *)((int)puVar4 + 10) = *(undefined2 *)(puVar4 + 3);
-			*(undefined2 *)(puVar4 + 3) = *(undefined2 *)((int)puVar4 + 0xe);
-			*(undefined2 *)((int)puVar4 + 0xe) = uVar1;
-			puVar4 = puVar4 + 5;
-		} while (-1 < iVar6);
-	} while (iVar3 < 3);
+			UVar2 = local_a3_608->uv0;
+			iVar9 = iVar9 + -1;
+			local_a3_608->uv0 = local_a3_608->uv1;
+			local_a3_608->uv1 = local_a3_608->uv2;
+			local_a3_608->uv2 = local_a3_608->uv3;
+			local_a3_608->uv3 = UVar2;
+			local_a3_608 = local_a3_608 + 1;
+		} while (-1 < iVar9);
+	} while (iVar4 < 3);
 
 	// HACK: Show clean model only in Rio.
 	if (GameLevel == 3) {
 		gFastWheelModelPtr = gCleanWheelModelPtr;
 	}
-	return;*/
 }
 
 

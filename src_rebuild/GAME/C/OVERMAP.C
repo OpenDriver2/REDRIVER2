@@ -760,520 +760,476 @@ void DrawOverheadMap(void)
 {
 	UNIMPLEMENTED();
 	/*
-	byte bVar1;
-	undefined2 uVar2;
-	short sVar3;
-	short sVar4;
-	ushort uVar5;
-	ushort uVar6;
-	DB *pDVar7;
-	char cVar8;
-	short *psVar9;
-	byte *pbVar10;
-	short *psVar11;
-	int x;
-	short *psVar12;
-	int y;
-	short *psVar13;
-	int iVar14;
-	undefined2 *puVar15;
-	short *psVar16;
-	undefined2 *puVar17;
-	short *psVar18;
-	char cVar19;
-	short *psVar20;
-	char cVar21;
-	short *psVar22;
-	_CAR_DATA *p_Var23;
-	char *pcVar24;
-	byte *pbVar25;
-	char *pcVar26;
-	undefined *puVar27;
-	uint *puVar28;
-	int r;
-	int iVar29;
-	uint uVar30;
-	int iVar31;
-	uint uVar32;
-	short local_310[2];
-	short local_30c[4];
-	short local_304[4];
-	undefined auStack764[8];
-	short local_2f4[4];
-	short local_2ec[2];
-	short local_2e8[20];
-	short asStack704[20];
-	short local_298[20];
-	short local_270[20];
-	undefined local_248[88];
-	undefined2 local_1f0[156];
-	short local_b8;
-	short local_b6;
-	short local_b4[5];
-	ushort local_aa;
-	undefined2 local_a8;
-	ushort local_a6;
-	undefined2 local_a4;
-	ushort local_a2;
-	undefined2 local_a0;
-	short local_9e;
-	undefined2 local_9c;
-	short local_9a;
-	SVECTOR local_98;
-	undefined2 local_90;
-	short local_8e;
-	undefined2 local_8c;
-	undefined2 local_8a;
-	undefined4 local_88;
-	undefined4 local_84;
-	undefined4 local_80;
-	undefined4 local_7c;
-	int local_78;
-	int local_70;
-	undefined auStack104[4];
-	SVECTOR *local_64;
-	short *local_60;
-	undefined2 *local_5c;
-	undefined4 *local_58;
-	short *local_54;
-	short *local_50;
-	short *local_4c;
-	int local_48;
-	undefined *local_44;
-	short *local_40;
-	short *local_3c;
-	short *local_38;
-	short *local_34;
-	uint local_30;
-	short *local_2c;
-
-	local_88 = DAT_00010400;
-	local_84 = DAT_00010404;
-	local_80 = DAT_00010408;
-	local_7c = DAT_0001040c;
-	if (gMultiplayerLevels != 0) {
-		DrawMultiplayerMap();
-		return;
-	}
-	if (1 < NumPlayers) {
-		return;
-	}
-	SetMapPos();
-	uVar30 = x_map & 0x1f;
-	uVar32 = y_map & 0x1f;
-	draw_box();
-	if (0 < player_position_known) {
-		if ((int)player.playerCarId < 0) {
-			psVar9 = &pedestrianFelony;
-		}
-		else {
-			psVar9 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (0x292 < *psVar9) {
-			FlashOverheadMap(*(int *)(&DAT_0009baac + (CameraCnt & 0xfU) * 4), 0,
-				*(int *)(&DAT_0009baac + (CameraCnt + 8U & 0xf) * 4));
-			goto LAB_00016fac;
-		}
-	}
-	if (player_position_known == -1) {
-		if (flashtimer == 0) {
-			if ((int)player.playerCarId < 0) {
-				psVar9 = &pedestrianFelony;
-			}
-			else {
-				psVar9 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			if (0x292 < *psVar9) {
-				flashtimer = 0x30;
-			}
-			goto LAB_00016ee8;
-		}
-	}
-	else {
-	LAB_00016ee8:
-		if (flashtimer == 0) goto LAB_00016fac;
-	}
-	flashtimer = flashtimer + -1;
-	r = -flashtimer;
-	x = r + 0x2f;
-	if (x < 0) {
-		x = r + 0x32;
-	}
-	y = r + 0x30;
-	if (y < 0) {
-		y = r + 0x33;
-	}
-	iVar14 = r + 0x31;
-	if (iVar14 < 0) {
-		iVar14 = r + 0x34;
-	}
-	iVar29 = r + 0x32;
-	if (iVar29 < 0) {
-		iVar29 = r + 0x35;
-	}
-	r = (&DAT_0009baec)[x >> 2] + (&DAT_0009baec)[y >> 2] + (&DAT_0009baec)[iVar14 >> 2] +
-		(&DAT_0009baec)[iVar29 >> 2];
-	if (r < 0) {
-		r = r + 3;
-	}
-	r = r >> 2;
-	FlashOverheadMap(r, r, r);
+	    byte bVar1;
+    short sVar2;
+    short sVar3;
+    undefined4 uVar4;
+    undefined4 uVar5;
+    undefined4 uVar6;
+    ushort uVar7;
+    ushort uVar8;
+    DB *pDVar9;
+    uchar uVar10;
+    short *psVar11;
+    TILE_1 *local_a0_864;
+    POLY_F4 *local_a0_3412;
+    int x;
+    short *psVar12;
+    int y;
+    int y_00;
+    short *psVar13;
+    undefined2 *puVar14;
+    POLY_F4 *local_a3_2816;
+    POLY_FT4 *local_a3_3552;
+    SVECTOR *pSVar15;
+    long *plVar16;
+    SVECTOR *pSVar17;
+    long *plVar18;
+    SVECTOR *pSVar19;
+    char cVar20;
+    SVECTOR *pSVar21;
+    char cVar22;
+    SVECTOR *v0;
+    _CAR_DATA *p_Var23;
+    char *pcVar24;
+    byte *pbVar25;
+    VECTOR *v1;
+    DR_AREA *local_s2_676;
+    int r;
+    uint *puVar26;
+    int iVar27;
+    uint uVar28;
+    int iVar29;
+    uint uVar30;
+    SVECTOR MapMesh [5] [5];
+    VECTOR MapMeshO [5] [5];
+    MAPTEX MapTex [4];
+    SVECTOR direction;
+    RECT clipped_size;
+    VECTOR translate;
+    VECTOR vec;
+    long flag;
+    
+    uVar6 = DAT_00010408;
+    uVar5 = DAT_00010404;
+    uVar4 = DAT_00010400;
+    if (gMultiplayerLevels != 0) {
+        DrawMultiplayerMap();
+        return;
+    }
+    if (1 < NumPlayers) {
+        return;
+    }
+    SetMapPos();
+    uVar28 = x_map & 0x1f;
+    uVar30 = y_map & 0x1f;
+    draw_box();
+    if (0 < player_position_known) {
+        if ((int)player[0].playerCarId < 0) {
+            psVar11 = &pedestrianFelony;
+        }
+        else {
+            psVar11 = &car_data[(int)player[0].playerCarId].felonyRating;
+        }
+        if (0x292 < *psVar11) {
+            FlashOverheadMap(INT_ARRAY_0009baac[CameraCnt & 0xf],0,
+                             INT_ARRAY_0009baac[CameraCnt + 8U & 0xf]);
+            goto LAB_00016fac;
+        }
+    }
+    if (player_position_known == -1) {
+        if (flashtimer == 0) {
+            if ((int)player[0].playerCarId < 0) {
+                psVar11 = &pedestrianFelony;
+            }
+            else {
+                psVar11 = &car_data[(int)player[0].playerCarId].felonyRating;
+            }
+            if (0x292 < *psVar11) {
+                flashtimer = 0x30;
+            }
+            goto LAB_00016ee8;
+        }
+    }
+    else {
+LAB_00016ee8:
+        if (flashtimer == 0) goto LAB_00016fac;
+    }
+    flashtimer = flashtimer + -1;
+    r = -flashtimer;
+    x = r + 0x2f;
+    if (x < 0) {
+        x = r + 0x32;
+    }
+    y = r + 0x30;
+    if (y < 0) {
+        y = r + 0x33;
+    }
+    y_00 = r + 0x31;
+    if (y_00 < 0) {
+        y_00 = r + 0x34;
+    }
+    iVar27 = r + 0x32;
+    if (iVar27 < 0) {
+        iVar27 = r + 0x35;
+    }
+    r = INT_ARRAY_0009baec[x >> 2] + INT_ARRAY_0009baec[y >> 2] + INT_ARRAY_0009baec[y_00 >> 2] +
+        INT_ARRAY_0009baec[iVar27 >> 2];
+    if (r < 0) {
+        r = r + 3;
+    }
+    r = r >> 2;
+    FlashOverheadMap(r,r,r);
 LAB_00016fac:
-	puVar28 = (uint *)current->primptr;
-	SetDrawArea(puVar28, &current->draw);
-	pDVar7 = current;
-	*puVar28 = *puVar28 & 0xff000000 | *current->ot & 0xffffff;
-	*pDVar7->ot = *pDVar7->ot & 0xff000000 | (uint)puVar28 & 0xffffff;
-	pDVar7->primptr = pDVar7->primptr + 0xc;
-	WorldToOverheadMapPositions((VECTOR *)&player, (VECTOR *)&local_78, 1, '\0', 0);
-	if (((local_78 - 0xe9U < 0x5f) && (0xad < local_70)) && (local_70 < 0xfb)) {
-		puVar28 = (uint *)current->primptr;
-		*(char *)((int)puVar28 + 3) = '\x02';
-		*(char *)((int)puVar28 + 7) = 'h';
-		*(char *)(puVar28 + 1) = -1;
-		*(char *)((int)puVar28 + 5) = -1;
-		*(char *)((int)puVar28 + 6) = -1;
-		pDVar7 = current;
-		*(undefined2 *)(puVar28 + 2) = (undefined2)local_78;
-		*(undefined2 *)((int)puVar28 + 10) = (undefined2)local_70;
-		*puVar28 = *puVar28 & 0xff000000 | *pDVar7->ot & 0xffffff;
-		*pDVar7->ot = *pDVar7->ot & 0xff000000 | (uint)puVar28 & 0xffffff;
-		pDVar7->primptr = pDVar7->primptr + 0xc;
-	}
-	DrawTargetBlip((VECTOR *)&player, '@', '@', '@', 3);
-	DrawCompass();
-	DrawOverheadTargets();
-	p_Var23 = car_data;
-	local_30 = (uint)(uVar32 < 0x11);
-	local_54 = local_310;
-	local_38 = local_2e8;
-	sVar3 = -(short)uVar30;
-	local_34 = asStack704;
-	local_2c = local_298;
-	local_60 = local_270;
-	local_50 = local_30c;
-	local_4c = local_304;
-	local_48 = -uVar32;
-	local_44 = auStack764;
-	local_40 = local_2f4;
-	local_3c = local_2ec;
-	local_64 = &local_98;
-	local_58 = &local_88;
-	local_5c = &local_90;
-	do {
-		if (((p_Var23->controlType == '\x03') && (p_Var23->ai[0x13] == 0)) ||
-			((p_Var23->controlFlags & 1) != 0)) {
-			DrawSightCone(&copSightData, (VECTOR *)(p_Var23->hd).where.t, (p_Var23->hd).direction);
-		}
-		p_Var23 = p_Var23 + 1;
-	} while (p_Var23 < (_CAR_DATA *)0xd4698);
-	if ((uVar30 < 0x10) && (0x10 < old_x_mod)) {
-		r = 0;
-		pcVar24 = &maptile;
-		pbVar25 = &DAT_000aba60;
-		do {
-			bVar1 = *pcVar24;
-			x = x_map >> 5;
-			y = y_map >> 5;
-			*pcVar24 = pbVar25[-4];
-			y = y + r;
-			pbVar25[-4] = *pbVar25;
-			r = r + 1;
-			*pbVar25 = ((byte *)pcVar24)[0xc];
-			((byte *)pcVar24)[0xc] = bVar1;
-			LoadMapTile((uint)bVar1, x + 3, y);
-			pcVar24 = (char *)((byte *)pcVar24 + 1);
-			pbVar25 = pbVar25 + 1;
-		} while (r < 4);
-	}
-	if ((0x10 < uVar30) && (old_x_mod < 0x10)) {
-		r = 0;
-		pcVar24 = &maptile;
-		pbVar25 = &DAT_000aba64;
-		do {
-			pbVar10 = &DAT_000aba5c + r;
-			bVar1 = *pbVar25;
-			x = x_map >> 5;
-			y = (y_map >> 5) + r;
-			*pbVar25 = (&DAT_000aba60)[r];
-			pbVar25 = pbVar25 + 1;
-			(&DAT_000aba60)[r] = *pbVar10;
-			r = r + 1;
-			*pbVar10 = *pcVar24;
-			*pcVar24 = bVar1;
-			LoadMapTile((uint)bVar1, x, y);
-			pcVar24 = (char *)((byte *)pcVar24 + 1);
-		} while (r < 4);
-	}
-	if ((uVar32 < 0x10) && (0x10 < old_y_mod)) {
-		r = 0;
-		pcVar24 = &maptile;
-		pcVar26 = &CHAR____000aba59;
-		do {
-			iVar14 = r * 4;
-			bVar1 = *pcVar24;
-			x = (x_map >> 5) + r;
-			y = y_map >> 5;
-			*pcVar24 = *pcVar26;
-			r = r + 1;
-			*pcVar26 = (&CHAR____000aba5a)[iVar14];
-			pcVar26 = (char *)((byte *)pcVar26 + 4);
-			(&CHAR____000aba5a)[iVar14] = ((byte *)pcVar24)[3];
-			((byte *)pcVar24)[3] = bVar1;
-			LoadMapTile((uint)bVar1, x, y + 3);
-			pcVar24 = (char *)((byte *)pcVar24 + 4);
-		} while (r < 4);
-	}
-	if ((local_30 == 0) && (old_y_mod < 0x10)) {
-		r = 0;
-		pcVar24 = &maptile;
-		pcVar26 = &CHAR____000aba5b;
-		do {
-			iVar14 = r * 4;
-			bVar1 = *pcVar26;
-			x = (x_map >> 5) + r;
-			y = y_map >> 5;
-			*pcVar26 = (&CHAR____000aba5a)[iVar14];
-			pcVar26 = (char *)((byte *)pcVar26 + 4);
-			(&CHAR____000aba5a)[iVar14] = (&CHAR____000aba59)[iVar14];
-			r = r + 1;
-			(&CHAR____000aba59)[iVar14] = *pcVar24;
-			*pcVar24 = bVar1;
-			LoadMapTile((uint)bVar1, x, y);
-			pcVar24 = (char *)((byte *)pcVar24 + 4);
-		} while (r < 4);
-	}
-	r = 3;
-	if (uVar30 != 0) {
-		r = 4;
-	}
-	x = 3;
-	if (uVar32 != 0) {
-		x = 4;
-	}
-	iVar14 = 0;
-	y = 0;
-	sVar4 = (short)local_48;
-	psVar9 = local_34;
-	psVar16 = local_2c;
-	psVar18 = local_60;
-	psVar20 = local_54;
-	psVar22 = local_38;
-	old_x_mod = uVar30;
-	old_y_mod = uVar32;
-	do {
-		psVar12 = (short *)(local_44 + y);
-		psVar11 = (short *)((int)local_4c + y);
-		psVar13 = (short *)((int)local_40 + y);
-		iVar14 = iVar14 + 1;
-		*psVar20 = -0x23;
-		*psVar22 = sVar3 + -0x10;
-		psVar22 = psVar22 + 4;
-		psVar20 = psVar20 + 4;
-		*psVar9 = sVar3 + 0x10;
-		*psVar16 = sVar3 + 0x30;
-		*psVar18 = 0x23;
-		psVar18 = psVar18 + 4;
-		psVar16 = psVar16 + 4;
-		psVar9 = psVar9 + 4;
-		*(undefined2 *)((int)local_50 + y) = 0xffdd;
-		puVar15 = (undefined2 *)((int)local_3c + y);
-		y = y + 0x28;
-		*psVar11 = sVar4 + -0x10;
-		*psVar12 = sVar4 + 0x10;
-		*psVar13 = sVar4 + 0x30;
-		*puVar15 = 0x23;
-	} while (iVar14 < 5);
-	local_b8 = local_310[0] - local_2e8[0];
-	if ((int)local_310[0] - (int)local_2e8[0] < 0) {
-		local_b8 = local_2e8[0] - local_310[0];
-	}
-	local_b8 = 0x20 - local_b8;
-	local_b6 = local_310[0] - local_2e8[0];
-	if ((int)local_310[0] - (int)local_2e8[0] < 0) {
-		local_b6 = local_2e8[0] - local_310[0];
-	}
-	local_b4[3] = (ushort)(byte)tile_size;
-	local_b4[2] = 0;
-	local_a8 = 0;
-	local_a0 = 0;
-	local_a6 = (ushort)(byte)tile_size;
-	if ((int)local_298[0] - (int)local_270[0] < 0) {
-		local_9e = local_270[0] - local_298[0];
-	}
-	else {
-		local_9e = local_298[0] - local_270[0];
-	}
-	if ((int)local_30c[0] - (int)local_304[0] < 0) {
-		local_b4[0] = local_304[0] - local_30c[0];
-	}
-	else {
-		local_b4[0] = local_30c[0] - local_304[0];
-	}
-	local_b4[0] = 0x20 - local_b4[0];
-	local_b4[1] = local_30c[0] - local_304[0];
-	if ((int)local_30c[0] - (int)local_304[0] < 0) {
-		local_b4[1] = local_304[0] - local_30c[0];
-	}
-	local_aa = (ushort)(byte)tile_size;
-	local_b4[4] = 0;
-	local_a4 = 0;
-	local_9c = 0;
-	local_a2 = (ushort)(byte)tile_size;
-	if ((int)local_2f4[0] - (int)local_2ec[0] < 0) {
-		local_9a = local_2ec[0] - local_2f4[0];
-	}
-	else {
-		local_9a = local_2f4[0] - local_2ec[0];
-	}
-	local_98.vx = 0;
-	local_98.vz = 0;
-	local_98.vy = (ushort)player.dir & 0xfff;
-	RotMatrixXYZ(&map_matrix, local_64);
-	MulMatrix0(&aspect, &map_matrix, &map_matrix);
-	setCopControlWord(2, 0, map_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, map_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, map_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, map_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, map_matrix._16_4_);
-	setCopControlWord(2, 0x2800, *local_58);
-	setCopControlWord(2, 0x3000, local_58[1]);
-	setCopControlWord(2, 0x3800, local_58[2]);
-	y = 0;
-	do {
-		iVar29 = y + 1;
-		puVar27 = local_248 + y * 0x50;
-		iVar14 = x + 1;
-		psVar9 = local_54 + y * 0x14;
-		do {
-			RotTrans(psVar9, puVar27, auStack104);
-			puVar27 = puVar27 + 0x10;
-			iVar14 = iVar14 + -1;
-			psVar9 = psVar9 + 4;
-		} while (iVar14 != 0);
-		y = iVar29;
-	} while (iVar29 <= r);
-	y = 0;
-	if (x != 0) {
-		do {
-			iVar14 = 0;
-			iVar29 = y + 1;
-			if (r != 0) {
-				pbVar25 = (byte *)(&maptile + y);
-				iVar31 = 0;
-				puVar17 = local_1f0 + iVar29 * 8;
-				puVar15 = local_1f0 + y * 8;
-				psVar9 = &local_b6;
-				do {
-					if (((&MapSegmentPos)[*pbVar25].x & 0x18U) == 0x18) {
-						cVar21 = (char)*psVar9 + -1;
-					}
-					else {
-						cVar21 = (char)*psVar9;
-					}
-					if (((&MapSegmentPos)[*pbVar25].y & 0x60U) == 0x60) {
-						cVar19 = (char)local_b4[y * 4 + 1] + -1;
-					}
-					else {
-						cVar19 = (char)local_b4[y * 4 + 1];
-					}
-					puVar28 = (uint *)current->primptr;
-					*(char *)((int)puVar28 + 3) = '\t';
-					*(char *)((int)puVar28 + 7) = ',';
-					cVar8 = 'd';
-					if (gTimeOfDay == 3) {
-						cVar8 = '2';
-					}
-					*(char *)(puVar28 + 1) = cVar8;
-					*(char *)((int)puVar28 + 5) = cVar8;
-					*(char *)((int)puVar28 + 6) = cVar8;
-					*(byte *)((int)puVar28 + 7) = *(byte *)((int)puVar28 + 7) | 2;
-					uVar6 = MapClut;
-					*(undefined2 *)(puVar28 + 2) = puVar15[-0x2c];
-					*(undefined2 *)((int)puVar28 + 10) = puVar15[-0x28];
-					*(undefined2 *)(puVar28 + 4) = puVar15[-4];
-					*(undefined2 *)((int)puVar28 + 0x12) = *puVar15;
-					*(undefined2 *)(puVar28 + 6) = puVar17[-0x2c];
-					*(undefined2 *)((int)puVar28 + 0x1a) = puVar17[-0x28];
-					uVar5 = MapTPage;
-					pcVar24 = (char *)((int)&local_b8 + iVar31);
-					*(undefined2 *)(puVar28 + 8) = puVar17[-4];
-					uVar2 = *puVar17;
-					*(ushort *)((int)puVar28 + 0xe) = uVar6;
-					*(ushort *)((int)puVar28 + 0x16) = uVar5;
-					*(undefined2 *)((int)puVar28 + 0x22) = uVar2;
-					psVar16 = local_b4 + y * 4;
-					*(char *)(puVar28 + 3) = *pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04';
-					*(char *)((int)puVar28 + 0xd) = *(char *)psVar16 + *(char *)&(&MapSegmentPos)[*pbVar25].y;
-					*(char *)(puVar28 + 5) =
-						*pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04' + cVar21;
-					*(char *)((int)puVar28 + 0x15) = *(char *)psVar16 + *(char *)&(&MapSegmentPos)[*pbVar25].y
-						;
-					iVar31 = iVar31 + 8;
-					*(char *)(puVar28 + 7) = *pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04';
-					psVar9 = psVar9 + 4;
-					*(char *)((int)puVar28 + 0x1d) =
-						*(char *)psVar16 + *(char *)&(&MapSegmentPos)[*pbVar25].y + cVar19;
-					iVar14 = iVar14 + 1;
-					*(char *)(puVar28 + 9) =
-						*pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04' + cVar21;
-					puVar15 = puVar15 + 0x28;
-					*(char *)((int)puVar28 + 0x25) =
-						*(char *)psVar16 + *(char *)&(&MapSegmentPos)[*pbVar25].y + cVar19;
-					pDVar7 = current;
-					puVar17 = puVar17 + 0x28;
-					*puVar28 = *puVar28 & 0xff000000 | *current->ot & 0xffffff;
-					pbVar25 = pbVar25 + 4;
-					*pDVar7->ot = *pDVar7->ot & 0xff000000 | (uint)puVar28 & 0xffffff;
-					pDVar7->primptr = pDVar7->primptr + 0x28;
-				} while (iVar14 < r);
-			}
-			y = iVar29;
-		} while (iVar29 < x);
-	}
-	puVar28 = (uint *)current->primptr;
-	*(char *)((int)puVar28 + 3) = '\x05';
-	*(char *)(puVar28 + 1) = '<';
-	*(char *)((int)puVar28 + 5) = '<';
-	*(char *)((int)puVar28 + 6) = '<';
-	*(char *)((int)puVar28 + 7) = '*';
-	pDVar7 = current;
-	*(undefined2 *)((int)puVar28 + 10) = 0xb6;
-	*(undefined2 *)((int)puVar28 + 0xe) = 0xb6;
-	*(undefined2 *)(puVar28 + 2) = 0xf5;
-	*(undefined2 *)(puVar28 + 3) = 0x13b;
-	*(undefined2 *)(puVar28 + 4) = 0xf5;
-	*(undefined2 *)((int)puVar28 + 0x12) = 0xf2;
-	*(undefined2 *)(puVar28 + 5) = 0x13b;
-	*(undefined2 *)((int)puVar28 + 0x16) = 0xf2;
-	*puVar28 = *puVar28 & 0xff000000 | *pDVar7->ot & 0xffffff;
-	*pDVar7->ot = *pDVar7->ot & 0xff000000 | (uint)puVar28 & 0xffffff;
-	pcVar24 = pDVar7->primptr;
-	pDVar7->primptr = pcVar24 + 0x28;
-	pcVar24[0x2b] = '\a';
-	pcVar24[0x2f] = '$';
-	*(undefined2 *)(pcVar24 + 0x30) = 0xffff;
-	*(undefined2 *)(pcVar24 + 0x32) = 0xffff;
-	*(undefined2 *)(pcVar24 + 0x38) = 0xffff;
-	*(undefined2 *)(pcVar24 + 0x3a) = 0xffff;
-	*(undefined2 *)(pcVar24 + 0x40) = 0xffff;
-	*(undefined2 *)(pcVar24 + 0x42) = 0xffff;
-	*(undefined2 *)(pcVar24 + 0x3e) = 0;
-	pDVar7 = current;
-	*(uint *)(pcVar24 + 0x28) = *(uint *)(pcVar24 + 0x28) & 0xff000000 | *current->ot & 0xffffff;
-	*pDVar7->ot = *pDVar7->ot & 0xff000000 | (uint)(pcVar24 + 0x28) & 0xffffff;
-	pDVar7->primptr = pDVar7->primptr + 0x20;
-	local_90 = 0xfa;
-	local_8c = 0x3c;
-	local_8a = 0x3c;
-	local_8e = (pDVar7->draw).clip.y + 0xb6;
-	puVar28 = (uint *)pDVar7->primptr;
-	SetDrawArea(puVar28, local_5c);
-	pDVar7 = current;
-	*puVar28 = *puVar28 & 0xff000000 | *current->ot & 0xffffff;
-	*pDVar7->ot = *pDVar7->ot & 0xff000000 | (uint)puVar28 & 0xffffff;
-	pDVar7->primptr = pDVar7->primptr + 0xc;
-	return;*/
+    local_s2_676 = (DR_AREA *)current->primptr;
+    SetDrawArea(local_s2_676,&current->draw);
+    pDVar9 = current;
+    local_s2_676->tag = local_s2_676->tag & 0xff000000 | *current->ot & 0xffffff;
+    *pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)local_s2_676 & 0xffffff;
+    pDVar9->primptr = pDVar9->primptr + 0xc;
+    WorldToOverheadMapPositions((VECTOR *)player,&vec,1,'\0',0);
+    if (((vec.vx - 0xe9U < 0x5f) && (0xad < vec.vz)) && (vec.vz < 0xfb)) {
+        local_a0_864 = (TILE_1 *)current->primptr;
+        *(undefined *)((int)&local_a0_864->tag + 3) = 2;
+        local_a0_864->code = 'h';
+        local_a0_864->r0 = -1;
+        local_a0_864->g0 = -1;
+        local_a0_864->b0 = -1;
+        pDVar9 = current;
+        local_a0_864->x0 = (short)vec.vx;
+        local_a0_864->y0 = (short)vec.vz;
+        local_a0_864->tag = local_a0_864->tag & 0xff000000 | *pDVar9->ot & 0xffffff;
+        *pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)local_a0_864 & 0xffffff;
+        pDVar9->primptr = pDVar9->primptr + 0xc;
+    }
+    DrawTargetBlip((VECTOR *)player,'@','@','@',3);
+    DrawCompass();
+    DrawOverheadTargets();
+    p_Var23 = car_data;
+    v0 = MapMesh + 5;
+    sVar2 = -(short)uVar28;
+    pSVar15 = MapMesh + 10;
+    pSVar17 = MapMesh + 0xf;
+    pSVar19 = MapMesh + 0x14;
+    sVar3 = -(short)uVar30;
+    if (true) {
+        do {
+            if (((p_Var23->controlType == '\x03') && (p_Var23->ai[0x13] == 0)) ||
+               ((p_Var23->controlFlags & 1) != 0)) {
+                DrawSightCone(&copSightData,(VECTOR *)(p_Var23->hd).where.t,(p_Var23->hd).direction)
+                ;
+            }
+            p_Var23 = p_Var23 + 1;
+        } while (p_Var23 < (_CAR_DATA *)0xd4698);
+    }
+    if ((uVar28 < 0x10) && (0x10 < old_x_mod)) {
+        r = 0;
+        pcVar24 = maptile;
+        pbVar25 = (byte *)(maptile + 8);
+        do {
+            bVar1 = *pcVar24;
+            x = x_map >> 5;
+            y = y_map >> 5;
+            *pcVar24 = pbVar25[-4];
+            y = y + r;
+            pbVar25[-4] = *pbVar25;
+            r = r + 1;
+            *pbVar25 = ((byte *)pcVar24)[0xc];
+            ((byte *)pcVar24)[0xc] = bVar1;
+            LoadMapTile((uint)bVar1,x + 3,y);
+            pcVar24 = (char *)((byte *)pcVar24 + 1);
+            pbVar25 = pbVar25 + 1;
+        } while (r < 4);
+    }
+    if ((0x10 < uVar28) && (old_x_mod < 0x10)) {
+        r = 0;
+        pcVar24 = maptile;
+        pbVar25 = (byte *)(maptile + 0xc);
+        do {
+            x = r + 4;
+            bVar1 = *pbVar25;
+            y = x_map >> 5;
+            y_00 = (y_map >> 5) + r;
+            *pbVar25 = maptile[r + 8];
+            pbVar25 = pbVar25 + 1;
+            maptile[r + 8] = maptile[x];
+            r = r + 1;
+            maptile[x] = *pcVar24;
+            *pcVar24 = bVar1;
+            LoadMapTile((uint)bVar1,y,y_00);
+            pcVar24 = (char *)((byte *)pcVar24 + 1);
+        } while (r < 4);
+    }
+    if ((uVar30 < 0x10) && (0x10 < old_y_mod)) {
+        r = 0;
+        pcVar24 = maptile;
+        pbVar25 = (byte *)(maptile + 1);
+        do {
+            y_00 = r * 4;
+            bVar1 = *pcVar24;
+            x = (x_map >> 5) + r;
+            y = y_map >> 5;
+            *pcVar24 = *pbVar25;
+            r = r + 1;
+            *pbVar25 = maptile[y_00 + 2];
+            pbVar25 = pbVar25 + 4;
+            maptile[y_00 + 2] = ((byte *)pcVar24)[3];
+            ((byte *)pcVar24)[3] = bVar1;
+            LoadMapTile((uint)bVar1,x,y + 3);
+            pcVar24 = (char *)((byte *)pcVar24 + 4);
+        } while (r < 4);
+    }
+    if ((0x10 < uVar30) && (old_y_mod < 0x10)) {
+        r = 0;
+        pcVar24 = maptile;
+        pbVar25 = (byte *)(maptile + 3);
+        do {
+            y_00 = r * 4;
+            bVar1 = *pbVar25;
+            x = (x_map >> 5) + r;
+            y = y_map >> 5;
+            *pbVar25 = maptile[y_00 + 2];
+            pbVar25 = pbVar25 + 4;
+            maptile[y_00 + 2] = maptile[y_00 + 1];
+            r = r + 1;
+            maptile[y_00 + 1] = *pcVar24;
+            *pcVar24 = bVar1;
+            LoadMapTile((uint)bVar1,x,y);
+            pcVar24 = (char *)((byte *)pcVar24 + 4);
+        } while (r < 4);
+    }
+    r = 3;
+    if (uVar28 != 0) {
+        r = 4;
+    }
+    x = 3;
+    if (uVar30 != 0) {
+        x = 4;
+    }
+    y_00 = 0;
+    y = 0;
+    pSVar21 = MapMesh;
+    old_x_mod = uVar28;
+    old_y_mod = uVar30;
+    do {
+        psVar12 = (short *)((int)&MapMesh[2].vz + y);
+        psVar11 = (short *)((int)&MapMesh[1].vz + y);
+        psVar13 = (short *)((int)&MapMesh[3].vz + y);
+        y_00 = y_00 + 1;
+        pSVar21->vx = -0x23;
+        v0->vx = sVar2 + -0x10;
+        v0 = v0 + 1;
+        pSVar21 = pSVar21 + 1;
+        pSVar15->vx = sVar2 + 0x10;
+        pSVar17->vx = sVar2 + 0x30;
+        pSVar19->vx = 0x23;
+        pSVar19 = pSVar19 + 1;
+        pSVar17 = pSVar17 + 1;
+        pSVar15 = pSVar15 + 1;
+        *(undefined2 *)((int)&MapMesh[0].vz + y) = 0xffdd;
+        puVar14 = (undefined2 *)((int)&MapMesh[4].vz + y);
+        y = y + 0x28;
+        *psVar11 = sVar3 + -0x10;
+        *psVar12 = sVar3 + 0x10;
+        *psVar13 = sVar3 + 0x30;
+        *puVar14 = 0x23;
+    } while (y_00 < 5);
+    MapTex[0].u = MapMesh[0][0].vx - MapMesh[1][0].vx;
+    if ((int)MapMesh[0][0].vx - (int)MapMesh[1][0].vx < 0) {
+        MapTex[0].u = MapMesh[1][0].vx - MapMesh[0][0].vx;
+    }
+    MapTex[0].u = 0x20 - MapTex[0].u;
+    MapTex[0].w = MapMesh[0][0].vx - MapMesh[1][0].vx;
+    if ((int)MapMesh[0][0].vx - (int)MapMesh[1][0].vx < 0) {
+        MapTex[0].w = MapMesh[1][0].vx - MapMesh[0][0].vx;
+    }
+    MapTex[1].w = ZEXT12((byte)tile_size);
+    MapTex[1].u = 0;
+    MapTex[2].u = 0;
+    MapTex[3].u = 0;
+    MapTex[2].w = ZEXT12((byte)tile_size);
+    if ((int)MapMesh[3][0].vx - (int)MapMesh[4][0].vx < 0) {
+        MapTex[3].w = MapMesh[4][0].vx - MapMesh[3][0].vx;
+    }
+    else {
+        MapTex[3].w = MapMesh[3][0].vx - MapMesh[4][0].vx;
+    }
+    if ((int)MapMesh[0][0].vz - (int)MapMesh[0][1].vz < 0) {
+        MapTex[0].v = MapMesh[0][1].vz - MapMesh[0][0].vz;
+    }
+    else {
+        MapTex[0].v = MapMesh[0][0].vz - MapMesh[0][1].vz;
+    }
+    MapTex[0].v = 0x20 - MapTex[0].v;
+    MapTex[0].h = MapMesh[0][0].vz - MapMesh[0][1].vz;
+    if ((int)MapMesh[0][0].vz - (int)MapMesh[0][1].vz < 0) {
+        MapTex[0].h = MapMesh[0][1].vz - MapMesh[0][0].vz;
+    }
+    MapTex[1].h = ZEXT12((byte)tile_size);
+    MapTex[1].v = 0;
+    MapTex[2].v = 0;
+    MapTex[3].v = 0;
+    MapTex[2].h = ZEXT12((byte)tile_size);
+    if ((int)MapMesh[0][3].vz - (int)MapMesh[0][4].vz < 0) {
+        MapTex[3].h = MapMesh[0][4].vz - MapMesh[0][3].vz;
+    }
+    else {
+        MapTex[3].h = MapMesh[0][3].vz - MapMesh[0][4].vz;
+    }
+    direction.vx = 0;
+    direction.vz = 0;
+    direction.vy = (ushort)player[0].dir & 0xfff;
+    RotMatrixXYZ(&map_matrix,&direction);
+    MulMatrix0(&aspect,&map_matrix,&map_matrix);
+    setCopControlWord(2,0,map_matrix.m[0]._0_4_);
+    setCopControlWord(2,0x800,map_matrix.m._4_4_);
+    setCopControlWord(2,0x1000,map_matrix.m[1]._2_4_);
+    setCopControlWord(2,0x1800,map_matrix.m[2]._0_4_);
+    setCopControlWord(2,0x2000,map_matrix._16_4_);
+    setCopControlWord(2,0x2800,uVar4);
+    setCopControlWord(2,0x3000,uVar5);
+    setCopControlWord(2,0x3800,uVar6);
+    y = 0;
+    if (true) {
+        do {
+            y_00 = y + 1;
+            if (true) {
+                v1 = MapMeshO + y * 5;
+                iVar27 = x + 1;
+                v0 = MapMesh + y * 5;
+                do {
+                    RotTrans(v0,v1,&flag);
+                    v1 = v1 + 1;
+                    iVar27 = iVar27 + -1;
+                    v0 = v0 + 1;
+                } while (iVar27 != 0);
+            }
+            y = y_00;
+        } while (y_00 <= r);
+    }
+    y = 0;
+    if (x != 0) {
+        do {
+            y_00 = 0;
+            iVar27 = y + 1;
+            if (r != 0) {
+                pbVar25 = (byte *)(maptile + y);
+                iVar29 = 0;
+                plVar18 = &MapMeshO[5].vz + iVar27 * 4;
+                plVar16 = &MapMeshO[5].vz + y * 4;
+                psVar11 = &MapTex[0].w;
+                do {
+                    if (((&MapSegmentPos)[*pbVar25].x & 0x18U) == 0x18) {
+                        cVar22 = (char)*psVar11 + -1;
+                    }
+                    else {
+                        cVar22 = (char)*psVar11;
+                    }
+                    if (((&MapSegmentPos)[*pbVar25].y & 0x60U) == 0x60) {
+                        cVar20 = (char)MapTex[y].h + -1;
+                    }
+                    else {
+                        cVar20 = (char)MapTex[y].h;
+                    }
+                    local_a3_2816 = (POLY_F4 *)current->primptr;
+                    *(undefined *)((int)&local_a3_2816->tag + 3) = 9;
+                    local_a3_2816->code = ',';
+                    uVar10 = 'd';
+                    if (gTimeOfDay == 3) {
+                        uVar10 = '2';
+                    }
+                    local_a3_2816->r0 = uVar10;
+                    local_a3_2816->g0 = uVar10;
+                    local_a3_2816->b0 = uVar10;
+                    local_a3_2816->code = local_a3_2816->code | 2;
+                    uVar8 = MapClut;
+                    local_a3_2816->x0 = *(short *)(plVar16 + -0x16);
+                    local_a3_2816->y0 = *(short *)(plVar16 + -0x14);
+                    local_a3_2816->x2 = *(short *)(plVar16 + -2);
+                    local_a3_2816->y2 = *(short *)plVar16;
+                    *(short *)&local_a3_2816[1].tag = *(short *)(plVar18 + -0x16);
+                    *(short *)((int)&local_a3_2816[1].tag + 2) = *(short *)(plVar18 + -0x14);
+                    uVar7 = MapTPage;
+                    pcVar24 = (char *)((int)&MapTex[0].u + iVar29);
+                    local_a3_2816[1].x0 = *(short *)(plVar18 + -2);
+                    sVar2 = *(short *)plVar18;
+                    local_a3_2816->y1 = uVar8;
+                    local_a3_2816->y3 = uVar7;
+                    local_a3_2816[1].y0 = sVar2;
+                    psVar12 = &MapTex[y].v;
+                    *(char *)&local_a3_2816->x1 =
+                         *pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04';
+                    *(char *)((int)&local_a3_2816->x1 + 1) =
+                         *(char *)psVar12 + *(char *)&(&MapSegmentPos)[*pbVar25].y;
+                    *(char *)&local_a3_2816->x3 =
+                         *pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04' + cVar22;
+                    *(char *)((int)&local_a3_2816->x3 + 1) =
+                         *(char *)psVar12 + *(char *)&(&MapSegmentPos)[*pbVar25].y;
+                    iVar29 = iVar29 + 8;
+                    local_a3_2816[1].r0 = *pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04'
+                    ;
+                    psVar11 = psVar11 + 4;
+                    local_a3_2816[1].g0 =
+                         *(char *)psVar12 + *(char *)&(&MapSegmentPos)[*pbVar25].y + cVar20;
+                    y_00 = y_00 + 1;
+                    *(char *)&local_a3_2816[1].x1 =
+                         *pcVar24 + *(char *)&(&MapSegmentPos)[*pbVar25].x * '\x04' + cVar22;
+                    plVar16 = plVar16 + 0x14;
+                    *(char *)((int)&local_a3_2816[1].x1 + 1) =
+                         *(char *)psVar12 + *(char *)&(&MapSegmentPos)[*pbVar25].y + cVar20;
+                    pDVar9 = current;
+                    plVar18 = plVar18 + 0x14;
+                    local_a3_2816->tag = local_a3_2816->tag & 0xff000000 | *current->ot & 0xffffff;
+                    pbVar25 = pbVar25 + 4;
+                    *pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)local_a3_2816 & 0xffffff;
+                    pDVar9->primptr = pDVar9->primptr + 0x28;
+                } while (y_00 < r);
+            }
+            y = iVar27;
+        } while (iVar27 < x);
+    }
+    local_a0_3412 = (POLY_F4 *)current->primptr;
+    *(undefined *)((int)&local_a0_3412->tag + 3) = 5;
+    local_a0_3412->r0 = '<';
+    local_a0_3412->g0 = '<';
+    local_a0_3412->b0 = '<';
+    local_a0_3412->code = '*';
+    pDVar9 = current;
+    local_a0_3412->y0 = 0xb6;
+    local_a0_3412->y1 = 0xb6;
+    local_a0_3412->x0 = 0xf5;
+    local_a0_3412->x1 = 0x13b;
+    local_a0_3412->x2 = 0xf5;
+    local_a0_3412->y2 = 0xf2;
+    local_a0_3412->x3 = 0x13b;
+    local_a0_3412->y3 = 0xf2;
+    local_a0_3412->tag = local_a0_3412->tag & 0xff000000 | *pDVar9->ot & 0xffffff;
+    *pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)local_a0_3412 & 0xffffff;
+    local_a3_3552 = (POLY_FT4 *)pDVar9->primptr;
+    *(POLY_FT4 **)&pDVar9->primptr = local_a3_3552 + 1;
+    *(undefined *)((int)&local_a3_3552[1].tag + 3) = 7;
+    local_a3_3552[1].code = '$';
+    local_a3_3552[1].x0 = -1;
+    local_a3_3552[1].y0 = -1;
+    local_a3_3552[1].x1 = -1;
+    local_a3_3552[1].y1 = -1;
+    local_a3_3552[1].x2 = -1;
+    local_a3_3552[1].y2 = -1;
+    local_a3_3552[1].tpage = 0;
+    pDVar9 = current;
+    local_a3_3552[1].tag = local_a3_3552[1].tag & 0xff000000 | *current->ot & 0xffffff;
+    *pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)(local_a3_3552 + 1) & 0xffffff;
+    pDVar9->primptr = pDVar9->primptr + 0x20;
+    clipped_size.x = 0xfa;
+    clipped_size.w = 0x3c;
+    clipped_size.h = 0x3c;
+    clipped_size.y = (pDVar9->draw).clip.y + 0xb6;
+    puVar26 = (uint *)pDVar9->primptr;
+    SetDrawArea(puVar26,&clipped_size);
+    pDVar9 = current;
+    *puVar26 = *puVar26 & 0xff000000 | *current->ot & 0xffffff;
+    *pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)puVar26 & 0xffffff;
+    pDVar9->primptr = pDVar9->primptr + 0xc;*/
 }
 
 
