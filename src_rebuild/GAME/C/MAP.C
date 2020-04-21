@@ -8,6 +8,9 @@
 #include "DRAW.H"
 #include "CAMERA.H"
 #include "GLAUNCH.H"
+#include "MODELS.H"
+
+#include "STRINGS.H"
 
 char *map_lump = NULL;
 int initarea = 0;
@@ -174,9 +177,6 @@ void ProcessJuncBoundsLump(char *lump_file, int lump_size)
 
 MODEL * FindModelPtrWithName(char *name)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char cVar1;
 	int iVar2;
 	int iVar3;
@@ -190,7 +190,7 @@ MODEL * FindModelPtrWithName(char *name)
 			iVar2 = strcmp(__s1, name);
 			iVar3 = iVar4 + 1;
 			if (iVar2 == 0) {
-				return modelpointers1536[iVar4];
+				return modelpointers[iVar4];
 			}
 			do {
 				cVar1 = *__s1;
@@ -199,8 +199,7 @@ MODEL * FindModelPtrWithName(char *name)
 			iVar4 = iVar3;
 		} while (iVar3 < num_models_in_pack);
 	}
-	return (MODEL *)0x0;
-	*/
+	return NULL;
 }
 
 

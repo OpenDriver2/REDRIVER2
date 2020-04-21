@@ -564,27 +564,26 @@ int ReplayLog_Fnarr_He_Said_Log(int val)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitModelNames(void)
 {
-	UNIMPLEMENTED();
-	/*
-	gHubcapModelPtr = FindModelPtrWithName(s_HUBCAP1_000aa648);
-	gCleanWheelModelPtr = FindModelPtrWithName(s_CLEANWHEEL_00010cd0);
-	gFastWheelModelPtr = FindModelPtrWithName(s_FASTWHEEL_00010cdc);
-	gDamWheelModelPtr = FindModelPtrWithName(s_DAMWHEEL_00010ce8);
-	gPed1HeadModelPtr = FindModelPtrWithName(s_PEDHEAD1_00010cf4);
-	gPed2HeadModelPtr = FindModelPtrWithName(&DAT_000aa650);
-	gPed3HeadModelPtr = FindModelPtrWithName(&DAT_000aa650);
-	gPed4HeadModelPtr = FindModelPtrWithName(&DAT_000aa650);
-	gBoxModelPtr = FindModelPtrWithName(s_CRATE_000aa658);
-	gRotorPtr = FindModelPtrWithName(s_ROTOR_000aa660);
-	gTrailblazerConeModel = FindModelPtrWithName(s_GREENCONE_00010d00);
-	gBombModel = FindModelPtrWithName(&DAT_000aa668);
+	gHubcapModelPtr = FindModelPtrWithName("HUBCAP1");
+	gCleanWheelModelPtr = FindModelPtrWithName("CLEANWHEEL");
+	gFastWheelModelPtr = FindModelPtrWithName("FASTWHEEL");
+	gDamWheelModelPtr = FindModelPtrWithName("DAMWHEEL");
+	gPed1HeadModelPtr = FindModelPtrWithName("PEDHEAD1");
+	gPed2HeadModelPtr = FindModelPtrWithName("HEAD");
+	gPed3HeadModelPtr = FindModelPtrWithName("HEAD");
+	gPed4HeadModelPtr = FindModelPtrWithName("HEAD");
+
+	//gBoxModelPtr = FindModelPtrWithName("CRATE");
+	//gRotorPtr = FindModelPtrWithName("ROTOR");
+	gTrailblazerConeModel = FindModelPtrWithName("GREENCONE");
+	gBombModel = FindModelPtrWithName("BOMB");
+
 	MangleWheelModels();
 	InitTanner();
 	InitAnimatingObjects();
-	return;
-	*/
 }
 
 
