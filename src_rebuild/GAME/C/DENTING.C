@@ -5,6 +5,7 @@
 #include "STRINGS.H"
 #include "MODELS.H"
 #include "CARS.H"
+#include "CONVERT.H"
 
 char* DentingFiles[] =
 {
@@ -398,10 +399,11 @@ void CreateDentableCar(_CAR_DATA *cp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern HUBCAP gHubcap;
+long gHubcapTime = 0;
+
 void InitHubcap(void)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 
 	uVar1 = Random2(1);
@@ -422,7 +424,6 @@ void InitHubcap(void)
 	gHubcap.Offset[3].vx = -0xcd;
 	gHubcap.Offset[3].vy = -7;
 	gHubcap.Offset[3].vz = -0x113;
-	return;*/
 }
 
 
