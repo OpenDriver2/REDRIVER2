@@ -1897,6 +1897,8 @@ void CheckCarToCarCollisions(void)
 	/* end block 2 */
 	// End Line: 5532
 
+#include "DR2ROADS.H"
+
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
 	UNIMPLEMENTED();
@@ -1929,18 +1931,36 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 		if ((pad & 0x1000) != 0) 
 		{
-			cp->hd.where.t[0] += camera_matrix.m[0][2] / 32;
-			cp->hd.where.t[1] += camera_matrix.m[1][2] / 32;
-			cp->hd.where.t[2] += camera_matrix.m[2][2] / 32;
+			cp->st.n.fposition[0] += camera_matrix.m[0][2] / 2;
+			cp->st.n.fposition[2] += camera_matrix.m[2][2] / 2;
 		}
 
 		if ((pad & 0x4000) != 0)
 		{
-			cp->hd.where.t[0] -= camera_matrix.m[0][2] / 32;
-			cp->hd.where.t[1] -= camera_matrix.m[1][2] / 32;
-			cp->hd.where.t[2] -= camera_matrix.m[2][2] / 32;
+			cp->st.n.fposition[0] -= camera_matrix.m[0][2] / 2;
+			cp->st.n.fposition[2] -= camera_matrix.m[2][2] / 2;
 		}
 	}
+
+	int direction = cp->hd.direction;
+
+	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * 5 + 0x800 >> 0xc;
+	cp->st.n.orientation[1] = (int)rcossin_tbl[direction & 0xffeU];
+	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * 5 + 0x800 >> 0xc;
+	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
+
+	RebuildCarMatrix(&cp->st, cp);
+	/*
+	*(uint *)cp->hd.drawCarMat.m = ~*(uint *)cp->hd.where.m;
+	*((uint *)cp->hd.drawCarMat.m + 2) = *((uint *)cp->hd.where.m + 2) ^ 0xffff;
+	*((uint *)cp->hd.drawCarMat.m + 4) = *((uint *)cp->hd.where.m + 4);
+	*((uint *)cp->hd.drawCarMat.m + 6) = ~*((uint *)cp->hd.where.m + 6);
+	*((uint *)cp->hd.drawCarMat.m + 8) = *((uint *)cp->hd.where.m + 8) ^ 0xffff;
+	*/
+	memcpy(&cp->hd.drawCarMat.m, &cp->hd.where.m, sizeof(MATRIX));
+
+	int height = MapHeight((VECTOR*)cp->hd.where.t);
+	cp->hd.where.t[1] = height + 50;
 
 	/*
 	char cVar1;
