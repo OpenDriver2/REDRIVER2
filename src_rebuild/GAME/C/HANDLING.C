@@ -4,6 +4,7 @@
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
+#include "STRINGS.H"
 
 // decompiled code
 // original method signature: 
@@ -38,6 +39,8 @@
 		// Start line: 2000
 	/* end block 3 */
 	// End Line: 2001
+
+#include "CONVERT.H"
 
 // [D]
 void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
@@ -83,19 +86,22 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	cp->st.n.fposition[2] = iVar2 << 4;
 
-	// [A] disabled for now...
+	RebuildCarMatrix(&cp->st, cp);
+	/*
+	*(uint *)cp->hd.drawCarMat.m = ~*(uint *)cp->hd.where.m;
+	*((uint *)cp->hd.drawCarMat.m + 2) = *((uint *)cp->hd.where.m + 2) ^ 0xffff;
+	*((uint *)cp->hd.drawCarMat.m + 4) = *((uint *)cp->hd.where.m + 4);
+	*((uint *)cp->hd.drawCarMat.m + 6) = ~*((uint *)cp->hd.where.m + 6);
+	*((uint *)cp->hd.drawCarMat.m + 8) = *((uint *)cp->hd.where.m + 8) ^ 0xffff;
+	*/
+	memcpy(&cp->hd.drawCarMat.m, &cp->hd.where.m, sizeof(MATRIX));
 
-	RebuildCarMatrix((RigidBodyState *)&cp->st, cp);
-
-	uVar4 = *(uint *)((cp->hd).where.m + 2);
-	*(uint *)(cp->hd).drawCarMat.m = ~*(uint *)(cp->hd).where.m;
-	*(uint *)((cp->hd).drawCarMat.m + 2) = uVar4 ^ 0xffff;
-	*(uint *)((cp->hd).drawCarMat.m + 4) = *(uint *)((cp->hd).where.m + 4);
-	*(uint *)((cp->hd).drawCarMat.m + 6) = ~*(uint *)((cp->hd).where.m + 6);
 	cVar3 = (char)(iVar5 >> 5);
-	cVar1 = '\x0e' - cVar3;
-	*(uint *)((cp->hd).drawCarMat.m + 8) = *(uint *)((cp->hd).where.m + 8) ^ 0xffff;
-	cVar3 = cVar3 + '\x0e';
+	cVar1 = 14 - cVar3;
+	
+	cVar3 = cVar3 + 14;
+
+	
 	
 	cp->hd.wheel[0].susCompression = cVar1;
 	cp->hd.wheel[1].susCompression = cVar3;

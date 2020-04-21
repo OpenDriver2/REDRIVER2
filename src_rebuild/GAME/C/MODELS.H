@@ -11,6 +11,10 @@ extern unsigned short *Low2HighDetailTable;
 extern unsigned short *Low2LowerDetailTable;
 extern MODEL* pLodModels[1536];
 
+extern MODEL* gCarLowModelPtr[5];
+extern MODEL* gCarDamModelPtr[5];
+extern MODEL* gCarCleanModelPtr[5];
+
 extern void ProcessMDSLump(char *lump_file, int lump_size); // 0x00064CFC
 
 extern int ProcessCarModelLump(char *lump_ptr, int lump_size); // 0x00064E6C

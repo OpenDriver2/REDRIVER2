@@ -3,6 +3,8 @@
 #include "SYSTEM.H"
 #include "MISSION.H"
 #include "STRINGS.H"
+#include "MODELS.H"
+#include "CARS.H"
 
 char* DentingFiles[] =
 {
@@ -84,6 +86,7 @@ void InitialiseDenting(void)
 void DentCar(_CAR_DATA *cp)
 {
 	UNIMPLEMENTED();
+
 	/*
 	short *psVar1;
 	short *psVar2;
@@ -95,7 +98,7 @@ void DentCar(_CAR_DATA *cp)
 	int iVar8;
 	uint uVar9;
 	int iVar10;
-	undefined4 *puVar11;
+	undefined2 *puVar11;
 	DENTUVS *pDVar12;
 	short *psVar13;
 	int iVar14;
@@ -104,27 +107,28 @@ void DentCar(_CAR_DATA *cp)
 	short *psVar17;
 	int iVar18;
 	SVECTOR *pSVar19;
-	undefined4 *puVar20;
+	short *psVar20;
 	DENTUVS *pDVar21;
 	MODEL *pMVar22;
 	uint uVar23;
 	int iVar24;
 
 	iVar24 = 0;
-	puVar20 = &DAT_1f800044;
+	psVar20 = (short *)&DAT_1f800044;
 	uVar23 = (uint)(byte)(cp->ap).model;
 	cp->lowDetail = -1;
 	(cp->ap).qy = 0;
 	(cp->ap).qw = 0;
+
 	pMVar22 = gCarCleanModelPtr5[uVar23];
-	if (pMVar22 != (MODEL *)0x0) {
+	if (pMVar22 != NULL) {
 		iVar14 = 0;
 		if (pMVar22->num_vertices != 0) {
-			puVar11 = &DAT_1f800044;
+			puVar11 = (undefined2 *)&DAT_1f800044;
 			do {
-				*(undefined2 *)puVar11 = 0;
+				*puVar11 = 0;
 				iVar14 = iVar14 + 1;
-				puVar11 = (undefined4 *)((int)puVar11 + 2);
+				puVar11 = puVar11 + 1;
 			} while (iVar14 < (int)(uint)pMVar22->num_vertices);
 		}
 		iVar8 = 0;
@@ -138,39 +142,40 @@ void DentCar(_CAR_DATA *cp)
 			iVar15 = 0;
 			iVar18 = iVar14 + 1;
 			while ((iVar15 < 0x32 &&
-				(gCarDamageZoneVerts[iVar15 + iVar8 * 0x10 + iVar14 * 0x12 + uVar23 * 300] != 0xff))) {
-				puVar11 = (undefined4 *)
-					((int)&DAT_1f800044 +
-					(uint)gCarDamageZoneVerts[iVar15 + iVar8 * 0x10 + iVar14 * 0x12 + uVar23 * 300] *
-						2);
-				if ((int)*(short *)puVar11 == 0) {
-					sVar7 = *(short *)puVar11 + sVar5;
+				(gCarDamageZoneVerts[iVar15 + iVar8 * 0x10 + iVar14 * 0x12 + uVar23 * 300] !=
+					0xff))) {
+				psVar13 = (short *)(&DAT_1f800044 +
+					(uint)gCarDamageZoneVerts
+					[iVar15 + iVar8 * 0x10 + iVar14 * 0x12 + uVar23 * 300] * 2)
+					;
+				if ((int)*psVar13 == 0) {
+					sVar7 = *psVar13 + sVar5;
 				}
 				else {
-					sVar7 = (short)((int)*(short *)puVar11 + iVar10 >> 1);
+					sVar7 = (short)((int)*psVar13 + iVar10 >> 1);
 				}
-				*(short *)puVar11 = sVar7;
+				*psVar13 = sVar7;
 				iVar15 = iVar15 + 1;
 			}
 			iVar8 = iVar18 * 2;
 			iVar14 = iVar18;
 		} while (iVar18 < 6);
 	}
-	pSVar19 = &gTempCarVertDump + (uint)(byte)cp->id * 0x84;
+	pSVar19 = gTempCarVertDump + (uint)(byte)cp->id * 0x84;
 	psVar17 = (short *)gCarDamModelPtr5[uVar23]->vertices;
 	psVar13 = (short *)gCarCleanModelPtr5[uVar23]->vertices;
-	if (((gCarCleanModelPtr5[uVar23] != (MODEL *)0x0) && (gCarDamModelPtr5[uVar23] != (MODEL *)0x0))
-		&& (iVar24 = 0, pMVar22->num_vertices != 0)) {
+	if (((gCarCleanModelPtr5[uVar23] != NULL) && (gCarDamModelPtr5[uVar23] != NULL)) &&
+		(iVar24 = 0, pMVar22->num_vertices != 0)) {
 		do {
-			pSVar19->vx = *psVar13 +
-				(short)(((int)*psVar17 - (int)*psVar13) * (int)*(short *)puVar20 >> 0xc);
+			pSVar19->vx = *psVar13 + (short)(((int)*psVar17 - (int)*psVar13) * (int)*psVar20 >> 0xc)
+				;
 			pSVar19->vy = psVar13[1] +
-				(short)(((int)psVar17[1] - (int)psVar13[1]) * (int)*(short *)puVar20 >> 0xc);
+				(short)(((int)psVar17[1] - (int)psVar13[1]) * (int)*psVar20 >> 0xc);
 			psVar1 = psVar17 + 2;
 			psVar2 = psVar13 + 2;
-			sVar5 = *(short *)puVar20;
+			sVar5 = *psVar20;
 			iVar24 = iVar24 + 1;
-			puVar20 = (undefined4 *)((int)puVar20 + 2);
+			psVar20 = psVar20 + 1;
 			psVar17 = psVar17 + 4;
 			psVar3 = psVar13 + 2;
 			psVar13 = psVar13 + 4;
@@ -178,8 +183,8 @@ void DentCar(_CAR_DATA *cp)
 			pSVar19 = pSVar19 + 1;
 		} while (iVar24 < (int)(uint)pMVar22->num_vertices);
 	}
-	pDVar21 = &gTempHDCarUVDump + (uint)(byte)cp->id * 0xff;
-	if (pMVar22 != (MODEL *)0x0) {
+	pDVar21 = gTempHDCarUVDump + (uint)(byte)cp->id * 0xff;
+	if (pMVar22 != NULL) {
 		iVar24 = 0;
 		pDVar12 = pDVar21;
 		if (pMVar22->num_polys != 0) {
@@ -196,7 +201,8 @@ void DentCar(_CAR_DATA *cp)
 			iVar14 = 0;
 			iVar8 = iVar24 + 1;
 			while ((iVar14 < 0x46 &&
-				(pDVar12 = pDVar21 + gHDCarDamageZonePolys[iVar14 + iVar24 * 0x46 + uVar23 * 0x1a4],
+				(pDVar12 = pDVar21 + gHDCarDamageZonePolys
+					[iVar14 + iVar24 * 0x46 + uVar23 * 0x1a4],
 					gHDCarDamageZonePolys[iVar14 + iVar24 * 0x46 + uVar23 * 0x1a4] != 0xff))) {
 				uVar9 = (uint)(byte)pDVar12->u3 + ((int)((uint)uVar6 << 0x10) >> 0x1a);
 				pDVar12->u3 = (char)uVar9;
@@ -208,19 +214,20 @@ void DentCar(_CAR_DATA *cp)
 			iVar14 = iVar8 * 2;
 			iVar24 = iVar8;
 		} while (iVar8 < 6);
-		pbVar16 = &gHDCarDamageLevels + uVar23 * 0xff;
+		pbVar16 = gHDCarDamageLevels + uVar23 * 0xff;
 		iVar24 = 0;
 		if (pMVar22->num_polys != 0) {
 			do {
 				bVar4 = *pbVar16;
 				pbVar16 = pbVar16 + 1;
 				iVar24 = iVar24 + 1;
-				pDVar21->u3 = (char)(((uint)bVar4 ^ 1 ^ ((uint)bVar4 ^ 1 | (uint)(byte)pDVar21->u3)) << 6);
+				pDVar21->u3 = (char)(((uint)bVar4 ^ 1 ^ ((uint)bVar4 ^ 1 | (uint)(byte)pDVar21->u3))
+					<< 6);
 				pDVar21 = pDVar21 + 1;
 			} while (iVar24 < (int)(uint)pMVar22->num_polys);
 		}
 	}
-	return;*/
+	*/
 }
 
 
@@ -278,11 +285,10 @@ void DentCar(_CAR_DATA *cp)
 	/* end block 4 */
 	// End Line: 1139
 
+// [D]
 void CreateDentableCar(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	char bVar1;
 	short sVar2;
 	short sVar3;
 	short sVar4;
@@ -294,13 +300,18 @@ void CreateDentableCar(_CAR_DATA *cp)
 	uint uVar10;
 	uint uVar11;
 
-	uVar11 = (uint)(byte)(cp->ap).model;
-	pMVar7 = gCarCleanModelPtr5[uVar11];
-	if (pMVar7 != (MODEL *)0x0) {
+	uVar11 = cp->ap.model;
+
+	pMVar7 = gCarCleanModelPtr[uVar11];
+
+	if (pMVar7 != NULL)
+	{
 		psVar6 = (short *)pMVar7->vertices;
 		uVar10 = (uint)pMVar7->num_vertices;
-		pSVar8 = &gTempCarVertDump + (uint)(byte)cp->id * 0x84;
-		while (uVar10 = uVar10 - 1, uVar10 != 0xffffffff) {
+		pSVar8 = gTempCarVertDump[cp->id];
+
+		while (uVar10 = uVar10 - 1, uVar10 != 0xffffffff) 
+		{
 			sVar2 = *psVar6;
 			sVar3 = psVar6[1];
 			sVar4 = psVar6[2];
@@ -310,41 +321,51 @@ void CreateDentableCar(_CAR_DATA *cp)
 			pSVar8->vz = sVar4;
 			pSVar8 = pSVar8 + 1;
 		}
+
 		iVar9 = 0;
 		bVar1 = cp->id;
-		pDVar5 = &gTempHDCarUVDump + (uint)bVar1 * 0xff;
-		if (gCarCleanModelPtr5[uVar11]->num_polys != 0) {
+		pDVar5 = gTempHDCarUVDump[bVar1];
+
+		if (gCarCleanModelPtr[uVar11]->num_polys != 0)
+		{
 			do {
 				pDVar5->u3 = '\0';
 				iVar9 = iVar9 + 1;
-				pDVar5 = &gTempHDCarUVDump + (uint)bVar1 * 0xff + iVar9;
-			} while (iVar9 < (int)(uint)gCarCleanModelPtr5[uVar11]->num_polys);
+				pDVar5 = gTempHDCarUVDump[bVar1] + iVar9;
+			} while (iVar9 < gCarCleanModelPtr[uVar11]->num_polys);
 		}
 	}
-	pMVar7 = gCarLowModelPtr5[uVar11];
-	if (pMVar7 != (MODEL *)0x0) {
+
+	pMVar7 = gCarLowModelPtr[uVar11];
+	if (pMVar7 != NULL)
+	{
 		iVar9 = 0;
 		bVar1 = cp->id;
-		pDVar5 = &gTempLDCarUVDump + (uint)bVar1 * 0x86;
-		if (pMVar7->num_polys != 0) {
+		pDVar5 = gTempLDCarUVDump[bVar1];
+
+		if (pMVar7->num_polys != 0) 
+		{
 			do {
 				pDVar5->u3 = '\0';
 				iVar9 = iVar9 + 1;
-				pDVar5 = &gTempLDCarUVDump + (uint)bVar1 * 0x86 + iVar9;
-			} while (iVar9 < (int)(uint)gCarLowModelPtr5[uVar11]->num_polys);
+				pDVar5 = gTempLDCarUVDump[bVar1] + iVar9;
+			} while (iVar9 < gCarLowModelPtr[uVar11]->num_polys);
 		}
 	}
 	iVar9 = 5;
-	if (gDontResetCarDamage == 0) {
-		psVar6 = (cp->ap).damage + 5;
+
+	if (gDontResetCarDamage == 0)
+	{
+		psVar6 = cp->ap.damage + 5;
+
 		do {
 			*psVar6 = 0;
 			iVar9 = iVar9 + -1;
 			psVar6 = psVar6 + -1;
 		} while (-1 < iVar9);
+
 		cp->totalDamage = 0;
 	}
-	return;*/
 }
 
 

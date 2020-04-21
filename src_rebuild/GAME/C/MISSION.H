@@ -59,6 +59,8 @@ extern int TAIL_TOOFAR;
 
 extern int numCopCars;
 
+extern int gDontResetCarDamage;
+
 extern void InitialiseMissionDefaults(); // 0x0006084C
 
 extern void LoadMission(int missionnum); // 0x00060A74
