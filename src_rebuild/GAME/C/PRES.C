@@ -733,6 +733,7 @@ short PrintDigit(int x, int y, char *string)
 	POLY_FT3* null = (POLY_FT3*)current->primptr;
 	setPolyFT3(null);
 	setSemiTrans(null, 1);
+
 	null->x0 = -1;
 	null->y0 = -1;
 	null->x1 = -1;

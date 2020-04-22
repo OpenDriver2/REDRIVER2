@@ -145,7 +145,7 @@ int gRandomChase = 0;
 int gSubGameNumber = 0;
 
 int gMissionLadderPos = 0;
-int gFurthestMission = 0;
+int gFurthestMission = 0x28;	//0; // [A] temporary access to all
 
 int gWantNight = 0;
 

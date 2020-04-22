@@ -18,10 +18,14 @@
 #include "../C/SOUND.H"
 #include "../C/DEBRIS.H"
 #include "../C/FMVPLAY.H"
+#include "../C/SCORES.H"
 
 #include "../MEMCARD/MAIN.H"
 
 typedef int(*screenFunc)(int bSetup);
+
+extern ACTIVE_CHEATS AvailableCheats;
+extern ACTIVE_CHEATS ActiveCheats;
 
 screenFunc fpUserFunctions[] = {
 	CentreScreen,
@@ -98,6 +102,73 @@ char* CutSceneNames[28] =
 	"Back to chicago",
 	"Vasquez and Caine",
 	"Credits"
+};
+
+
+static char* gameNames[64] = {
+	"Downtown",
+	"Wrigleyville",
+	"Necropolis De Colon",
+	"Capitolio",
+	"Downtown",
+	"Upper Strip",
+	"Centro",
+	"Copacabana",
+	"Greektown",
+	"Grant Park",
+	"Necropolis de Colon",
+	"Old Havana",
+	"Lakeside",
+	"Mid Strip",
+	"Copacabana",
+	"Santa Tereza",
+	"Downtown",
+	"Meigs Field",
+	"The Docks",
+	"Old Havana",
+	"North Vegas",
+	"Lakeside",
+	"Lagoa Rodrigo de Freitas",
+	"Praca da Bandeira",
+	"Grant Park",
+	"Downtown",
+	"Old Havana",
+	"Vedado",
+	"Downtown",
+	"Upper Strip",
+	"Leblon",
+	"Praca da Bandeira",
+	"Ukrainian Village",
+	"Downtown",
+	"Vedado",
+	"Necropolis de Colon",
+	"Mid Strip",
+	"Downtown",
+	"Copacabana",
+	"Centro",
+	"Cabrini Green",
+	"River North",
+	"Old Havana",
+	"Plaza",
+	"Lakes",
+	"Ghost Town",
+	"Flamengo",
+	"Centro",
+	"River North",
+	"Cabrini Green",
+	"Plaza",
+	"Old Havana",
+	"Downtown",
+	"Lakes",
+	"Centro",
+	"Flamengo",
+	"River North",
+	"Cabrini Green",
+	"Old Havana",
+	"Plaza de la Revolucion",
+	"Ghost Town",
+	"North Vegas",
+	"Centro",
 };
 
 int CarAvailability[4][10] = {
@@ -2360,10 +2431,10 @@ int CarSelectScreen(int bSetup)
 	}
 	bDoingCarSelect = 1;
 	if (NumPlayers == 1) {
-		CarAvailability[0][9] = 0;//(uint)((byte)AvailableCheats >> 4) & 1;		// [A]
-		CarAvailability[1][9] = 0;//(uint)((byte)AvailableCheats >> 6) & 1;		// [A]
-		CarAvailability[2][9] = 0;///(uint)AvailableCheats._1_1_ & 1;				// [A]
-		CarAvailability[3][9] = 0;//(uint)(AvailableCheats._1_1_ >> 1) & 1;		// [A]
+		CarAvailability[0][9] = AvailableCheats.cheat5;
+		CarAvailability[1][9] = AvailableCheats.cheat6;
+		CarAvailability[2][9] = AvailableCheats.cheat7;
+		CarAvailability[3][9] = AvailableCheats.cheat8;
 	}
 	if ((gFurthestMission == 0x28) && (NumPlayers == 1)) {
 		iVar5 = 4;
@@ -3683,68 +3754,86 @@ LAB_FRNT__001c5530:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int GameNum = 0;
+CVECTOR scoreCol;
+CVECTOR otherCol;
+
+char* CityNames[4] = {
+	"Chicago",
+	"Havana",
+	"Las Vegas",
+	"Rio De Janeiro"
+};
+
+// [D]
 void DisplayScoreTable(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	int y;
 	int iVar3;
-	char acStack80[32];
-	SCORE_ENTRY *local_30[2];
+	char text[32];
+	SCORE_ENTRY *pSE;
 
-	gSubGameNumber = DAT_FRNT__001c6ce8;
-	OnScoreTable(local_30);
-	sprintf(acStack80, ScreenNames12[ScreenDepth + -1]);
-	FEPrintString(acStack80, 0x14, 200, 2, (uint)DAT_FRNT__001c6d00, (uint)DAT_FRNT__001c6d01,
-		(uint)DAT_FRNT__001c6d02);
-	sprintf(acStack80, (&PTR_s_Chicago_FRNT__001c0910_FRNT__001c6cec)[GameLevel]);
-	FEPrintString(acStack80, 0x118, 200, 2, (uint)DAT_FRNT__001c6d00, (uint)DAT_FRNT__001c6d01,
-		(uint)DAT_FRNT__001c6d02);
+	gSubGameNumber = GameNum;
+
+	OnScoreTable(&pSE);
+
+	sprintf(text, ScreenNames[ScreenDepth + -1]);
+	FEPrintString(text, 0x14, 200, 2, (uint)otherCol.r, (uint)otherCol.g, (uint)otherCol.b);
+	sprintf(text, CityNames[GameLevel]);
+	FEPrintString(text, 0x118, 200, 2, (uint)otherCol.r, (uint)otherCol.g, (uint)otherCol.b);
+
 	iVar2 = ((uint)GameType - 4) * 8;
+
 	if ((GameType == GAME_TAKEADRIVE) && (NumPlayers == 2)) {
 		iVar2 = 0x30;
 	}
+
 	if (GameType == GAME_COPSANDROBBERS) {
 		iVar2 = 0x20;
 	}
+
 	if (GameType == GAME_CAPTURETHEFLAG) {
 		iVar2 = 0x28;
 	}
+
 	if ((GameType != GAME_PURSUIT) && (GameType != GAME_SURVIVAL)) {
-		sprintf(acStack80, (char *)&PTR_DAT_FRNT__001c0918,
-			(&PTR_s_Downtown_FRNT__001c019c_FRNT__001c6774)
-			[iVar2 + GameLevel * 2 + DAT_FRNT__001c6ce8]);
-		FEPrintStringSized(acStack80, 0x1a4, 0xce, 0xc00, 2, (uint)DAT_FRNT__001c6d00,
-			(uint)DAT_FRNT__001c6d01, (uint)DAT_FRNT__001c6d02);
+		sprintf(text, "%s", gameNames[iVar2 + GameLevel * 2 + GameNum]);
+		FEPrintStringSized(text, 0x1a4, 0xce, 0xc00, 2, (uint)otherCol.r, (uint)otherCol.g,
+			(uint)otherCol.b);
 	}
+
 	y = 0xf0;
 	iVar2 = 0;
 	iVar3 = 4;
+
 	do {
-		sprintf(acStack80, local_30[0]->name + iVar2);
-		FEPrintString(acStack80, 0x14, y, 2, (uint)DAT_FRNT__001c6cfc, (uint)DAT_FRNT__001c6cfd,
-			(uint)DAT_FRNT__001c6cfe);
-		if ((GameType == GAME_GATERACE) || (GameType == GAME_TRAILBLAZER)) {
-			if (*(short *)((int)&local_30[0]->items + iVar2) != -1) {
-				sprintf(acStack80, (char *)&PTR_DAT_FRNT__001c08f8);
-				FEPrintString(acStack80, 0x8c, y, 2, (uint)DAT_FRNT__001c6cfc, (uint)DAT_FRNT__001c6cfd,
-					(uint)DAT_FRNT__001c6cfe);
+		sprintf(text, pSE->name + iVar2);
+		FEPrintString(text, 0x14, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b);
+
+		if ((GameType == GAME_GATERACE) || (GameType == GAME_TRAILBLAZER)) 
+		{
+			if (pSE->items + iVar2 != -1) {
+				sprintf(text, "%d");
+				FEPrintString(text, 0x8c, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b)
+					;
 			}
 		}
-		iVar1 = *(int *)((int)&local_30[0]->time + iVar2);
+
+		iVar1 = pSE->time + iVar2;
+
 		if (iVar1 != -1) {
-			sprintf(acStack80, s__d__02d__02d_FRNT__001c091c, iVar1 / 180000,
+			sprintf(text, "%d:%02d.%02d", iVar1 / 180000,
 				iVar1 / 3000 + (iVar1 / 180000) * -0x3c, (iVar1 % 3000) / 0x1e);
-			FEPrintString(acStack80, 0x118, y, 2, (uint)DAT_FRNT__001c6cfc, (uint)DAT_FRNT__001c6cfd,
-				(uint)DAT_FRNT__001c6cfe);
+			FEPrintString(text, 0x118, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b);
 		}
+
 		y = y + 0x24;
 		iVar3 = iVar3 + -1;
 		iVar2 = iVar2 + 0xc;
+
 	} while (-1 < iVar3);
-	return;*/
 }
 
 
@@ -3768,36 +3857,34 @@ void DisplayScoreTable(void)
 	/* end block 3 */
 	// End Line: 9667
 
+// [D]
 int ScoreScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	if (bSetup != 0) {
 		GameLevel = 0;
 		DisplayScoreTable();
-		DAT_FRNT__001c699c = 1;
-		DAT_FRNT__001c6a8c = 0;
+		bDoingScores = 1;
+		currSelIndex = 0;
 		return 0;
 	}
-	if ((uRam001cc5dc & 0x40) == 0) {
-		if ((uRam001cc5dc & 0x10) != 0) {
-			DAT_FRNT__001c699c = 0;
+	if ((fePad & 0x40U) == 0) {
+		if ((fePad & 0x10U) != 0) {
+			bDoingScores = 0;
 			return 0;
 		}
-		if (((uRam001cc5dc & 0x1000) == 0) && ((uRam001cc5dc & 0x4000) == 0)) {
+		if (((fePad & 0x1000U) == 0) && ((fePad & 0x4000U) == 0)) {
 			return 0;
 		}
-		DAT_FRNT__001c6a8c = DAT_FRNT__001c6a8c ^ 1;
+		currSelIndex = currSelIndex ^ 1;
 		return 0;
 	}
-	if (DAT_FRNT__001c6a8c == 0) {
+	if (currSelIndex == 0) {
 		if ((GameType != GAME_SURVIVAL) && (GameType != GAME_PURSUIT)) {
-			if (DAT_FRNT__001c6ce8 == 1) {
-				DAT_FRNT__001c6ce8 = 0;
+			if (GameNum == 1) {
+				GameNum = 0;
 			}
 			else {
-				DAT_FRNT__001c6ce8 = 1;
+				GameNum = 1;
 				GameLevel = GameLevel + -1;
 				if (GameLevel < 0) {
 					GameLevel = 3;
@@ -3805,7 +3892,7 @@ int ScoreScreen(int bSetup)
 			}
 		LAB_FRNT__001c5ab0:
 			DisplayScoreTable();
-			DAT_FRNT__001c6aa0 = 1;
+			bRedrawFrontend = 1;
 			return 0;
 		}
 		GameLevel = GameLevel + -1;
@@ -3814,8 +3901,8 @@ int ScoreScreen(int bSetup)
 		}
 	}
 	else {
-		if (((GameType != GAME_SURVIVAL) && (GameType != GAME_PURSUIT)) && (DAT_FRNT__001c6ce8 == 0)) {
-			DAT_FRNT__001c6ce8 = 1;
+		if (((GameType != GAME_SURVIVAL) && (GameType != GAME_PURSUIT)) && (GameNum == 0)) {
+			GameNum = 1;
 			goto LAB_FRNT__001c5ab0;
 		}
 		GameLevel = GameLevel + 1;
@@ -3823,10 +3910,9 @@ int ScoreScreen(int bSetup)
 			GameLevel = 0;
 		}
 	}
-	DAT_FRNT__001c6ce8 = 0;
+	GameNum = 0;
 	DisplayScoreTable();
-	DAT_FRNT__001c6aa0 = 1;
-	return 0;*/
+	bRedrawFrontend = 1;
 }
 
 
@@ -3849,10 +3935,16 @@ int ScoreScreen(int bSetup)
 
 int SubtitlesOnOffScreen(int bSetup)
 {
-	UNIMPLEMENTED();
+	if (bSetup != 0) {
+		if (gSubtitles == 0) {
+			pCurrButton = pCurrScreen->buttons + 1;
+		}
+		else {
+			pCurrButton = pCurrScreen->buttons;
+		}
+		return 1;
+	}
 	return 0;
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
 }
 
 
@@ -3876,8 +3968,6 @@ int SubtitlesOnOffScreen(int bSetup)
 // [D]
 int CityCutOffScreen(int bSetup)
 {
-	return 0; // [A]
-
 	PSXSCREEN *pPVar1;
 
 	pPVar1 = pCurrScreen;
@@ -3911,32 +4001,40 @@ int CityCutOffScreen(int bSetup)
 	/* end block 2 */
 	// End Line: 12934
 
+char* contNames[2] = {
+	"DATA\\CARCONT.RAW",
+	"DATA\\TANCONT.RAW"
+};
+
+// [D]
 int ControllerScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	if (bSetup == 0) {
-		if ((uRam001cc5dc & 0x40) == 0) {
-			if ((uRam001cc5dc & 0x10) != 0) {
-				DAT_FRNT__001c699c = 0;
-				LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
+	if (bSetup == 0) 
+	{
+		if ((fePad & 0x40U) == 0) 
+		{
+			if ((fePad & 0x10U) != 0)
+			{
+				bDoingScores = 0;
+				LoadBackgroundFile("DATA\\GFX.RAW");
 			}
 		}
-		else {
-			DAT_FRNT__001c6a8c = DAT_FRNT__001c6a8c ^ 1;
-			LoadBackgroundFile((&PTR_s_DATA_CARCONT_RAW_FRNT__001c0940_FRNT__001c6d04)[DAT_FRNT__001c6a8c]
-			);
-			DAT_FRNT__001c6aa0 = 1;
+		else 
+		{
+			currSelIndex = currSelIndex ^ 1;
+			LoadBackgroundFile(contNames[currSelIndex]);
+
+			bRedrawFrontend = 1;
 		}
 	}
 	else {
-		DAT_FRNT__001c699c = 1;
-		DAT_FRNT__001c6a8c = 0;
+		bDoingScores = 1;
+		currSelIndex = 0;
 		pCurrScreen->numButtons = '\0';
-		LoadBackgroundFile((&PTR_s_DATA_CARCONT_RAW_FRNT__001c0940_FRNT__001c6d04)[DAT_FRNT__001c6a8c]);
+
+		LoadBackgroundFile(contNames[currSelIndex]);
 	}
-	return 0;*/
+	return 0;
 }
 
 
@@ -3955,6 +4053,7 @@ int ControllerScreen(int bSetup)
 	/* end block 2 */
 	// End Line: 13008
 
+// [D]
 int MainScreen(int bSetup)
 {
 	if (bSetup != 0) {
@@ -4013,146 +4112,159 @@ int MainScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 10088
 
+static char* cheatText[5] =
+{
+	"Sorry, no secrets",
+	"Mountain track",
+	"Circuit",
+	"Invincibility",
+	"Immunity"
+};
+
 int CheatScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	PSXSCREEN *pPVar1;
 	PSXSCREEN *pPVar2;
 	int iVar3;
 	int iVar4;
-	uint *puVar5;
+	int *piVar5;
 	int iVar6;
-	byte bVar7;
+	unsigned char bVar7;
 	int iVar8;
 	int iVar9;
-	byte local_68[16];
-	int local_58[4];
-	int local_48[4];
-	uint local_38[4];
+	unsigned char cheatOn[12];
+	int evilRuss[4];
 
-	local_58[0] = DAT_FRNT__001c0954;
-	local_58[1] = DAT_FRNT__001c0958;
-	local_58[2] = DAT_FRNT__001c095c;
-	local_58[3] = DAT_FRNT__001c0960;
-	local_48[0] = DAT_FRNT__001c0964;
-	local_48[1] = DAT_FRNT__001c0968;
-	local_48[2] = DAT_FRNT__001c096c;
-	local_48[3] = DAT_FRNT__001c0970;
+	int hackLookup1[4] = {
+		0x121, 0x121, 0x11E, 0x11F
+	};
+
+	int hackLookup2[4] = {
+		0xC01, 0xC00, -1, -1
+	};
+
 	if (bSetup == 0) {
 		return 0;
 	}
-	if (gFurthestMission == 0x28) {
+	if (gFurthestMission == 0x28) 
+	{
 		bVar7 = 4;
 	}
-	else {
-		bVar7 = ((byte)AvailableCheats & 1) + ((byte)AvailableCheats >> 1 & 1) +
-			((byte)AvailableCheats >> 2 & 1) + ((byte)AvailableCheats >> 3 & 1);
+	else 
+	{
+		bVar7 = AvailableCheats.cheat1 + AvailableCheats.cheat2 + AvailableCheats.cheat3 + AvailableCheats.cheat4;
 	}
-	if (bVar7 == 0) {
-		pCurrScreen->buttons[0].u = '\x01';
-		pCurrScreen->buttons[0].d = '\x01';
-		pCurrScreen->numButtons = '\x01';
+
+	if (bVar7 == 0)
+	{
+		pCurrScreen->buttons[0].u = 1;
+		pCurrScreen->buttons[0].d = 1;
+		pCurrScreen->numButtons = 1;
 		pPVar1 = pCurrScreen;
 		pCurrScreen->buttons[0].action = 0x400;
-		sprintf(pPVar1->buttons[0].Name, PTR_s_Non_ci_sono_segreti_FRNT__001c01e4_FRNT__001c6874);
+
+		sprintf(pPVar1->buttons[0].Name, cheatText[0]);
+
 		return 0;
 	}
-	puVar5 = local_38;
+
+	piVar5 = evilRuss;
 	iVar4 = 0;
 	pCurrScreen->numButtons = bVar7;
-	local_38[0] = (uint)(byte)AvailableCheats & 1;
-	local_38[1] = (uint)((byte)AvailableCheats >> 1) & 1;
-	local_38[2] = (uint)((byte)AvailableCheats >> 2) & 1;
-	local_38[3] = (uint)((byte)AvailableCheats >> 3) & 1;
+
+	evilRuss[0] = AvailableCheats.cheat1;
+	evilRuss[1] = AvailableCheats.cheat2;
+	evilRuss[2] = AvailableCheats.cheat3;
+	evilRuss[3] = AvailableCheats.cheat4;
+
 	iVar3 = 4;
 	iVar8 = 0;
+
 	do {
-		if ((*puVar5 == 1) || (iVar6 = iVar3, iVar9 = iVar8, gFurthestMission == 0x28)) {
+		if ((*piVar5 == 1) || (iVar6 = iVar3, iVar9 = iVar8, gFurthestMission == 0x28)) {
 			iVar6 = iVar3 + 0x3c;
-			sprintf((char *)((int)&pCurrScreen->buttons[0].var + iVar3),
-				(&PTR_s_Non_ci_sono_segreti_FRNT__001c01e4_FRNT__001c6874)[iVar4 + 1]);
+			sprintf((char *)((int)&pCurrScreen->buttons[0].var + iVar3), cheatText[iVar4 + 1]);
 			iVar9 = iVar8 + 1;
-			local_68[iVar8] = (byte)iVar4;
+			cheatOn[iVar8] = (unsigned char)iVar4;
 		}
 		pPVar1 = pCurrScreen;
 		iVar4 = iVar4 + 1;
-		puVar5 = puVar5 + 1;
+		piVar5 = piVar5 + 1;
 		iVar3 = iVar6;
 		iVar8 = iVar9;
 	} while (iVar4 < 4);
+
 	if (bVar7 == 2) {
-		pCurrScreen->buttons[0].action = local_58[local_68[0]];
-		pPVar1->buttons[1].action = local_58[local_68[1]];
-		pPVar1->buttons[0].var = local_48[local_68[0]];
-		iVar3 = local_48[local_68[1]];
+		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
+		pPVar1->buttons[1].action = hackLookup1[cheatOn[1]];
+		pPVar1->buttons[0].var = hackLookup2[cheatOn[0]];
+		iVar3 = hackLookup2[cheatOn[1]];
 		pPVar1->buttons[0].d = '\x02';
 		pPVar2 = pCurrScreen;
 		pPVar1->buttons[1].var = iVar3;
 		pPVar2->buttons[0].u = '\x02';
 		pCurrScreen->buttons[1].d = '\x01';
 		pCurrScreen->buttons[1].u = '\x01';
-		DAT_FRNT__001c6a8c = 0;
+		currSelIndex = 0;
 		return 0;
 	}
-	if (bVar7 < 3) {
-		if (bVar7 == 1) {
-			pCurrScreen->buttons[0].action = local_58[local_68[0]];
-			iVar3 = local_48[local_68[0]];
-			pPVar1->buttons[0].d = '\x01';
-			pPVar2 = pCurrScreen;
-			pPVar1->buttons[0].var = iVar3;
-			pPVar2->buttons[0].u = '\x01';
-			DAT_FRNT__001c6a8c = 0;
-			return 0;
-		}
+
+	if (bVar7 == 1) {
+		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
+		iVar3 = hackLookup2[cheatOn[0]];
+		pPVar1->buttons[0].d = '\x01';
+		pPVar2 = pCurrScreen;
+		pPVar1->buttons[0].var = iVar3;
+		pPVar2->buttons[0].u = '\x01';
+		currSelIndex = 0;
+		return 0;
 	}
-	else {
-		if (bVar7 == 3) {
-			pCurrScreen->buttons[0].action = local_58[local_68[0]];
-			pPVar1->buttons[1].action = local_58[local_68[1]];
-			pPVar1->buttons[2].action = local_58[local_68[2]];
-			pPVar1->buttons[0].var = local_48[local_68[0]];
-			pPVar1->buttons[1].var = local_48[local_68[1]];
-			iVar3 = local_48[local_68[2]];
-			pPVar1->buttons[0].d = '\x02';
-			pPVar2 = pCurrScreen;
-			pPVar1->buttons[2].var = iVar3;
-			pPVar2->buttons[0].u = '\x03';
-			pCurrScreen->buttons[1].d = '\x03';
-			pCurrScreen->buttons[1].u = '\x01';
-			pCurrScreen->buttons[2].d = '\x01';
-			pCurrScreen->buttons[2].u = '\x02';
-			DAT_FRNT__001c6a8c = 0;
-			return 0;
-		}
-		if (bVar7 == 4) {
-			pCurrScreen->buttons[0].action = local_58[local_68[0]];
-			pPVar1->buttons[1].action = local_58[local_68[1]];
-			pPVar1->buttons[2].action = local_58[local_68[2]];
-			pPVar1->buttons[3].action = local_58[local_68[3]];
-			pPVar1->buttons[0].var = local_48[local_68[0]];
-			pPVar1->buttons[1].var = local_48[local_68[1]];
-			pPVar1->buttons[2].var = local_48[local_68[2]];
-			iVar3 = local_48[local_68[3]];
-			pPVar1->buttons[0].d = '\x02';
-			pPVar2 = pCurrScreen;
-			pPVar1->buttons[3].var = iVar3;
-			pPVar2->buttons[0].u = '\x04';
-			pCurrScreen->buttons[1].d = '\x03';
-			pCurrScreen->buttons[1].u = '\x01';
-			pCurrScreen->buttons[2].d = '\x04';
-			pCurrScreen->buttons[2].u = '\x02';
-			pCurrScreen->buttons[3].d = '\x01';
-			pCurrScreen->buttons[3].u = '\x03';
-			DAT_FRNT__001c6a8c = 0;
-			return 0;
-		}
+
+	if (bVar7 == 3) {
+		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
+		pPVar1->buttons[1].action = hackLookup1[cheatOn[1]];
+		pPVar1->buttons[2].action = hackLookup1[cheatOn[2]];
+		pPVar1->buttons[0].var = hackLookup2[cheatOn[0]];
+		pPVar1->buttons[1].var = hackLookup2[cheatOn[1]];
+		iVar3 = hackLookup2[cheatOn[2]];
+		pPVar1->buttons[0].d = '\x02';
+		pPVar2 = pCurrScreen;
+		pPVar1->buttons[2].var = iVar3;
+		pPVar2->buttons[0].u = '\x03';
+		pCurrScreen->buttons[1].d = '\x03';
+		pCurrScreen->buttons[1].u = '\x01';
+		pCurrScreen->buttons[2].d = '\x01';
+		pCurrScreen->buttons[2].u = '\x02';
+		currSelIndex = 0;
+		return 0;
 	}
+
+	if (bVar7 == 4) {
+		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
+		pPVar1->buttons[1].action = hackLookup1[cheatOn[1]];
+		pPVar1->buttons[2].action = hackLookup1[cheatOn[2]];
+		pPVar1->buttons[3].action = hackLookup1[cheatOn[3]];
+		pPVar1->buttons[0].var = hackLookup2[cheatOn[0]];
+		pPVar1->buttons[1].var = hackLookup2[cheatOn[1]];
+		pPVar1->buttons[2].var = hackLookup2[cheatOn[2]];
+		iVar3 = hackLookup2[cheatOn[3]];
+		pPVar1->buttons[0].d = '\x02';
+		pPVar2 = pCurrScreen;
+		pPVar1->buttons[3].var = iVar3;
+		pPVar2->buttons[0].u = '\x04';
+		pCurrScreen->buttons[1].d = '\x03';
+		pCurrScreen->buttons[1].u = '\x01';
+		pCurrScreen->buttons[2].d = '\x04';
+		pCurrScreen->buttons[2].u = '\x02';
+		pCurrScreen->buttons[3].d = '\x01';
+		pCurrScreen->buttons[3].u = '\x03';
+		currSelIndex = 0;
+		return 0;
+	}
+
 	pCurrScreen->numButtons = '\0';
-	DAT_FRNT__001c6a8c = 0;
-	return 0;*/
+	currSelIndex = 0;
+	return 0;
 }
 
 
@@ -4173,12 +4285,19 @@ int CheatScreen(int bSetup)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int ImmunityOnOffScreen(int bSetup)
 {
-	UNIMPLEMENTED();
+	if (bSetup != 0) {
+		if (gPlayerImmune == 0) {
+			pCurrButton = pCurrScreen->buttons + 1;
+		}
+		else {
+			pCurrButton = pCurrScreen->buttons;
+		}
+		return 1;
+	}
 	return 0;
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
 }
 
 
@@ -4199,12 +4318,19 @@ int ImmunityOnOffScreen(int bSetup)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int InvincibleOnOffScreen(int bSetup)
 {
-	UNIMPLEMENTED();
+	if (bSetup != 0) {
+		if (gInvincibleCar == 0) {
+			pCurrButton = pCurrScreen->buttons + 1;
+		}
+		else {
+			pCurrButton = pCurrScreen->buttons;
+		}
+		return 1;
+	}
 	return 0;
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
 }
 
 
@@ -4223,16 +4349,13 @@ int InvincibleOnOffScreen(int bSetup)
 	/* end block 2 */
 	// End Line: 13422
 
+// [D]
 int GamePlayScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-
 	int iVar1;
 
 	if (bSetup != 0) {
-		if (DAT_FRNT__001c6ab4 == 0) {
+		if (allowVibration == 0) {
 			iVar1 = 0x300;
 		}
 		else {
@@ -4240,7 +4363,7 @@ int GamePlayScreen(int bSetup)
 		}
 		pCurrScreen->buttons[2].action = iVar1;
 	}
-	return 0;*/
+	return 0;
 }
 
 
@@ -4278,11 +4401,9 @@ int GamePlayScreen(int bSetup)
 	/* end block 5 */
 	// End Line: 10574
 
+// [D]
 int GameNameScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 
 	if (bSetup != 0) {
@@ -4299,12 +4420,11 @@ int GameNameScreen(int bSetup)
 		if ((GameType == GAME_CHECKPOINT) && (NumPlayers == 2)) {
 			iVar1 = 0x38;
 		}
-		sprintf(pCurrScreen->buttons[0].Name,
-			(&PTR_s_Downtown_FRNT__001c019c_FRNT__001c6774)[iVar1 + GameLevel * 2]);
-		sprintf(pCurrScreen->buttons[1].Name,
-			(&PTR_s_Downtown_FRNT__001c019c_FRNT__001c6774)[iVar1 + GameLevel * 2 + 1]);
+		sprintf(pCurrScreen->buttons[0].Name, gameNames[iVar1 + GameLevel * 2]);
+		sprintf(pCurrScreen->buttons[1].Name, gameNames[iVar1 + GameLevel * 2 + 1]);
 	}
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -4471,12 +4591,19 @@ void FEDrawCDicon(void)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int CheatNumlayerSelect(int bSetup)
 {
-	UNIMPLEMENTED();
+	if (bSetup != 0) {
+		if (numPadsConnected == 2) {
+			pCurrScreen->buttons[1].action = 0x120;
+		}
+		else {
+			pCurrScreen->buttons[1].action = 0x300;
+		}
+		return 0;
+	}
 	return 0;
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
 }
 
 

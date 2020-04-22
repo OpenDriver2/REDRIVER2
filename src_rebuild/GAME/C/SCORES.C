@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "SCORES.H"
-
+#include "GLAUNCH.H"
+#include "MISSION.H"
 
 // decompiled code
 // original method signature: 
@@ -132,7 +133,7 @@ void InitialiseScoreTables(void)
 int OnScoreTable(SCORE_ENTRY **tablept)
 {
 	UNIMPLEMENTED();
-	return 0;
+	return 0; // score tables structure size seems to be not valid
 	/*
 	int iVar1;
 	SCORE_ENTRY *table;
@@ -162,10 +163,11 @@ int OnScoreTable(SCORE_ENTRY **tablept)
 	default:
 		return -1;
 	}
-	if (tablept != (SCORE_ENTRY **)0x0) {
+	if (tablept != NULL) {
 		*tablept = table;
 	}
-	return iVar1;*/
+	return iVar1;
+	*/
 }
 
 
