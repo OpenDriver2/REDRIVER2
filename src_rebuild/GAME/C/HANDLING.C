@@ -1203,67 +1203,70 @@ void GlobalTimeStep(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void SetShadowPoints(_CAR_DATA *c0)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
 	uint uVar2;
 	uint *puVar3;
-	_CAR_DATA *p_Var4;
 	SVECTOR *pSVar5;
 	int iVar6;
-	undefined4 local_68;
-	uint local_64;
-	VECTOR local_60;
-	VECTOR VStack80;
-	VECTOR local_40;
-	_sdPlane *local_30[2];
+	SVECTOR disp;
+	VECTOR pointPos;
+	VECTOR surfaceNormal;
+	VECTOR surfacePoint;
 
-	local_30[0] = (_sdPlane *)0x0;
-	setCopControlWord(2, 0, *(undefined4 *)(c0->hd).where.m);
-	setCopControlWord(2, 0x800, *(undefined4 *)((c0->hd).where.m + 2));
-	setCopControlWord(2, 0x1000, *(undefined4 *)((c0->hd).where.m + 4));
-	setCopControlWord(2, 0x1800, *(undefined4 *)((c0->hd).where.m + 6));
-	setCopControlWord(2, 0x2000, *(undefined4 *)((c0->hd).where.m + 8));
-	setCopControlWord(2, 0x2800, (c0->hd).where.t[0]);
-	setCopControlWord(2, 0x3000, (c0->hd).where.t[1]);
-	setCopControlWord(2, 0x3800, (c0->hd).where.t[2]);
+	_sdPlane *surfacePtr;
+	surfacePtr = NULL;
+
+	gte_SetRotMatrix(&c0->hd.where);
+	gte_SetTransMatrix(&c0->hd.where);
+
 	iVar6 = 0;
-	pSVar5 = car_cosmetics[(byte)(c0->ap).model].cPoints;
-	p_Var4 = c0;
+	pSVar5 = car_cosmetics[c0->ap.model].cPoints;
+
 	do {
-		local_68 = *(undefined4 *)pSVar5;
-		local_64 = *(uint *)&pSVar5->vz;
-		if (cheats.MiniCars != 0) {
-			local_68 = CONCAT22((short)((int)local_68 >> 0x12), (short)local_68 >> 2);
-			local_64 = local_64 & 0xffff0000 | (uint)(ushort)((short)local_64 >> 2);
-		}
-		setCopReg(2, in_zero, local_68);
-		setCopReg(2, in_at, local_64);
-		copFunction(2, 0x480012);
-		local_60.vx = getCopReg(2, 0x19);
-		local_60.vy = getCopReg(2, 0x1a);
-		local_60.vz = getCopReg(2, 0x1b);
+		disp = *pSVar5;
+
+		/* // [A] No point to keep this cheat
+		if (cheats.MiniCars != 0) 
+		{
+			disp._0_4_ = CONCAT22((short)((int)disp._0_4_ >> 0x12), disp.vx >> 2);
+			disp._4_4_ = disp._4_4_ & 0xffff0000 | (uint)(ushort)(disp.vz >> 2);
+		}*/
+
+		gte_ldv0(&disp);
+
+		docop2(0x480012);
+
+		pointPos.vx = MAC1; // getCopReg(2, 0x19);
+		pointPos.vy = MAC2; // getCopReg(2, 0x1a);
+		pointPos.vz = MAC3; // getCopReg(2, 0x1b);
+
+		static int hSubShad = 0;
+
 		hSubShad = 0;
-		FindSurfaceD2(&local_60, &VStack80, &local_40, local_30);
-		(p_Var4->hd).shadowPoints[0].vx = local_40.vx;
-		(p_Var4->hd).shadowPoints[0].vy = local_40.vy;
+
+		FindSurfaceD2(&pointPos, &surfaceNormal, &surfacePoint, &surfacePtr);
+
+		c0->hd.shadowPoints[iVar6].vx = surfacePoint.vx;
+		c0->hd.shadowPoints[iVar6].vy = surfacePoint.vy;
+		c0->hd.shadowPoints[iVar6].vz = surfacePoint.vz;
+
 		puVar3 = (uint *)&(c0->hd).shadowPoints[iVar6].vy;
-		(p_Var4->hd).shadowPoints[0].vz = local_40.vz;
 		uVar2 = *puVar3;
+
 		bVar1 = hSubShad != 0;
+
 		*puVar3 = uVar2 & 0xfffffffe;
-		if (bVar1) {
+
+		if (bVar1)
 			*puVar3 = uVar2 & 0xfffffffe | 1;
-		}
-		p_Var4 = (_CAR_DATA *)((p_Var4->hd).where.m + 8);
+
 		iVar6 = iVar6 + 1;
 		pSVar5 = pSVar5 + 1;
+
 	} while (iVar6 < 4);
-	return;*/
 }
 
 

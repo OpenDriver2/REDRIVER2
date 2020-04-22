@@ -1,6 +1,6 @@
 #include "THISDUST.H"
 #include "SHADOW.H"
-
+#include "TEXTURE.H"
 
 // decompiled code
 // original method signature: 
@@ -689,78 +689,100 @@ void DrawTyreTracks(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int gShadowTexturePage;
+int gShadowTextureNum;
+
+UV shadowuv;
+POLY_FT4 shadowPolys[2][20];
+
+// [D]
 void InitShadow(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
+	unsigned char uVar1;
 	ushort uVar2;
 	ushort uVar3;
-	uchar uVar4;
-	uchar uVar5;
-	uchar uVar6;
-	uchar uVar7;
-	uchar uVar8;
-	uchar uVar9;
-	TEXINF *pTVar10;
-	uchar uVar11;
-	POLY_FT4 *pPVar12;
-	int iVar13;
-	int iVar14;
-	TPAN local_10[4];
+	unsigned char uVar4;
+	unsigned char uVar5;
+	unsigned char uVar6;
+	unsigned char uVar7;
+	unsigned char uVar8;
+	unsigned char uVar9;
 
-	pTVar10 = GetTextureInfoName(s_CARSHAD_000aa8f8, local_10);
-	gShadowTexturePage = ZEXT14(local_10[0].texture_page);
-	gShadowTextureNum = ZEXT14(local_10[0].texture_number);
-	uVar1 = pTVar10->x;
-	uVar11 = pTVar10->x + pTVar10->width + -1;
-	shadowuv.v1 = pTVar10->y;
-	shadowuv.u2 = pTVar10->x;
-	shadowuv.v2 = pTVar10->y + pTVar10->height + -1;
-	shadowuv.u3 = pTVar10->x + pTVar10->width + -1;
-	shadowuv.v3 = pTVar10->y + pTVar10->height + -1;
-	shadowuv.v0 = pTVar10->y;
-	if (GameLevel == 3) {
-		shadowuv.v1 = shadowuv.v1 + '\x01';
-		shadowuv.v0 = pTVar10->y + '\x01';
+	TEXINF *texinf;
+	unsigned char uVar10;
+	POLY_FT4 *pPVar11;
+	int iVar12;
+	int iVar13;
+	TPAN pos;
+
+	texinf = GetTextureInfoName("CARSHAD", &pos);
+
+	gShadowTexturePage = pos.texture_page;
+	gShadowTextureNum = pos.texture_number;
+
+	uVar1 = texinf->x;
+	uVar10 = texinf->x + texinf->width + -1;
+	shadowuv.v1 = texinf->y;
+	shadowuv.u2 = texinf->x;
+	shadowuv.v2 = texinf->y + texinf->height + -1;
+	shadowuv.u3 = texinf->x + texinf->width + -1;
+	shadowuv.v3 = texinf->y + texinf->height + -1;
+	shadowuv.v0 = texinf->y;
+
+	if (GameLevel == 3) 
+	{
+		shadowuv.v1 = shadowuv.v1 + 1;
+		shadowuv.v0 = texinf->y + 1;
 	}
+
 	uVar5 = shadowuv.v1;
 	uVar4 = shadowuv.v0;
-	uVar2 = (&texture_pages)[gShadowTexturePage];
-	uVar3 = (&texture_cluts)[gShadowTexturePage * 0x20 + gShadowTextureNum];
-	iVar13 = 0;
+
+	uVar2 = texture_pages[gShadowTexturePage];
+	uVar3 = texture_cluts[gShadowTexturePage][gShadowTextureNum];
+
+	iVar12 = 0;
 	shadowuv.u0 = uVar1;
-	shadowuv.u1 = uVar11;
+	shadowuv.u1 = uVar10;
+
 	do {
-		iVar14 = iVar13 + 1;
-		pPVar12 = shadowPolys + iVar13 * 0x14;
-		iVar13 = 0x13;
+		iVar13 = iVar12 + 1;
+
+		pPVar11 = shadowPolys[iVar12];
+
+		iVar12 = 0x13;
+
 		do {
 			uVar9 = shadowuv.v3;
 			uVar8 = shadowuv.u3;
 			uVar7 = shadowuv.v2;
 			uVar6 = shadowuv.u2;
-			iVar13 = iVar13 + -1;
-			*(undefined *)((int)&pPVar12->tag + 3) = 9;
-			pPVar12->r0 = 'P';
-			pPVar12->g0 = 'P';
-			pPVar12->b0 = 'P';
-			pPVar12->tpage = uVar2 | 0x40;
-			pPVar12->clut = uVar3;
-			pPVar12->code = '.';
-			pPVar12->u0 = uVar1;
-			pPVar12->v0 = uVar4;
-			pPVar12->u1 = uVar11;
-			pPVar12->v1 = uVar5;
-			pPVar12->u2 = uVar6;
-			pPVar12->v2 = uVar7;
-			pPVar12->u3 = uVar8;
-			pPVar12->v3 = uVar9;
-			pPVar12 = pPVar12 + 1;
-		} while (-1 < iVar13);
-		iVar13 = iVar14;
-	} while (iVar14 < 2);
-	return;*/
+
+			iVar12 = iVar12 + -1;
+			setPolyFT4(pPVar11);
+
+			pPVar11->r0 = 'P';
+			pPVar11->g0 = 'P';
+			pPVar11->b0 = 'P';
+
+			pPVar11->tpage = uVar2 | 0x40;
+			pPVar11->clut = uVar3;
+			setSemiTrans(pPVar11, 1);
+
+			pPVar11->u0 = uVar1;
+			pPVar11->v0 = uVar4;
+			pPVar11->u1 = uVar10;
+			pPVar11->v1 = uVar5;
+			pPVar11->u2 = uVar6;
+			pPVar11->v2 = uVar7;
+			pPVar11->u3 = uVar8;
+			pPVar11->v3 = uVar9;
+
+			pPVar11 ++;
+		} while (-1 < iVar12);
+
+		iVar12 = iVar13;
+	} while (iVar13 < 2);
 }
 
 
