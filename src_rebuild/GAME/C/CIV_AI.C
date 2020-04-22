@@ -83,16 +83,18 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 		cp->hndType = 1;
 		cp->controlFlags = extraData[0x11];
 		InitCivState(cp, extraData);
-		if (extraData == NULL) {
-			(cp->ap).palette = '\0';
+		if (extraData == NULL)
+		{
+			cp->ap.palette = 0;
 		}
-		else {
-			(cp->ap).palette = extraData[0x10];
+		else 
+		{
+			cp->ap.palette = extraData[0x10];
 		}
 		break;
 	case 3:
 		InitCopState(cp, extraData);
-		(cp->ap).palette = '\0';
+		cp->ap.palette = '\0';
 		numCopCars = numCopCars + 1;
 		break;
 	case 4:

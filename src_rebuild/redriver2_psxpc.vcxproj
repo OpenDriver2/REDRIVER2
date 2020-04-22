@@ -182,6 +182,8 @@
     <ClCompile Include="EMULATOR\LIBSPU.C" />
     <ClCompile Include="GAME\ASM\ASMTEST.C" />
     <ClCompile Include="GAME\C\AI.C" />
+    <ClCompile Include="GAME\C\BCOLL3D.C" />
+    <ClCompile Include="GAME\C\BCOLLIDE.C" />
     <ClCompile Include="GAME\C\BOMBERMAN.C" />
     <ClCompile Include="GAME\C\CAMERA.C" />
     <ClCompile Include="GAME\C\CARS.C" />

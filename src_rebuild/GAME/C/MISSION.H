@@ -36,6 +36,9 @@ extern int numCivCars;
 extern int maxCivCars;
 extern int numParkedCars;
 
+extern int gCopDifficultyLevel;
+extern int maxCopCars;
+
 extern MR_MISSION Mission;
 
 extern int wantedCar[2];

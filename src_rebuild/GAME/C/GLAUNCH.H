@@ -25,8 +25,6 @@ extern char NoPlayerControl;
 extern int quick_replay;
 extern int AutoDirect;
 
-extern int gCopDifficultyLevel;
-
 extern int quick_replay;
 
 extern void GameStart(); // 0x00052A28
