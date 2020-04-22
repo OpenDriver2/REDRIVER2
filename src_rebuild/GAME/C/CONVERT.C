@@ -202,8 +202,6 @@ void InvertMatrix(MATRIX *a, MATRIX *b)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-MATRIX face_camera;
-
 // [D]
 void BuildWorldMatrix(void)
 {

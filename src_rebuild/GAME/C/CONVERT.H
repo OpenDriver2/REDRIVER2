@@ -1,7 +1,6 @@
 #ifndef CONVERT_H
 #define CONVERT_H
 
-
 extern void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles); // 0x0002D3F8
 
 extern void _RotMatrixX(MATRIX *m, short ang); // 0x0002D470

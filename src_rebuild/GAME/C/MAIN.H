@@ -7,6 +7,8 @@ extern int FrAng;
 extern int gStopPadReads;
 
 extern int gLightsOn;
+extern int NightAmbient;
+extern int wetness;
 
 typedef void(*occlFunc)(int *comp_val);
 

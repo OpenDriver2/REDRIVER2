@@ -1,7 +1,15 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+extern SVECTOR day_vectors[4];
+extern SVECTOR night_vectors[4];
+extern SVECTOR day_colours[4];
+extern SVECTOR night_colours[4];
+
 extern MATRIX aspect;
+extern MATRIX inv_camera_matrix;
+extern MATRIX face_camera;
+extern MATRIX2 CompoundMatrix[64];
 
 extern int units_across_halved;
 extern int units_down_halved;
@@ -10,8 +18,7 @@ extern int pvs_square_sq;
 extern int PolySizes[56];
 extern ulong* tile_overflow_buffer;
 
-extern MATRIX inv_camera_matrix;
-extern MATRIX2 CompoundMatrix[64];
+
 
 extern int combointensity;
 

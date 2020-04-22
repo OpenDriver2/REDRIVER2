@@ -46,6 +46,38 @@ int PolySizes[56] = {
 	20, 20, 24, 24,
 };
 
+SVECTOR day_vectors[4] =
+{
+  { 62404, 2520, 783, 0 },
+  { 62404, 2520, 783, 0 },
+  { 63172, 2364, 2364, 0 },
+  { 62404, 2520, 783, 0 }
+};
+
+SVECTOR night_vectors[4] =
+{
+  { 3132, 2520, 783, 0 },
+  { 3132, 2520, 783, 0 },
+  { 63172, 2364, 63172, 0 },
+  { 3132, 2520, 783, 0 }
+};
+
+SVECTOR day_colours[4] =
+{
+  { 3200, 3200, 3200, 0 },
+  { 3200, 3200, 3200, 0 },
+  { 3200, 3200, 3200, 0 },
+  { 3200, 3200, 3200, 0 }
+};
+
+SVECTOR night_colours[4] =
+{
+  { 880, 880, 905, 0 },
+  { 880, 880, 905, 0 },
+  { 880, 880, 905, 0 },
+  { 880, 880, 905, 0 }
+};
+
 unsigned long planeColours[8];
 
 inline int GetModelNumber()
@@ -54,7 +86,54 @@ inline int GetModelNumber()
 }
 
 MATRIX inv_camera_matrix;
+MATRIX face_camera;
 MATRIX2 CompoundMatrix[64];
+
+
+uint farClip2Player = 0x8ca0;
+
+static int treecount = 0;
+int numSpritesFound = 0;
+static int alleycount = 0;
+
+int groundDebrisIndex = 0;
+
+int goFaster = 1;
+int fasterToggle = 0;
+
+int current_object_computed_value = 0;
+
+int combointensity;
+
+unsigned long model_object_ptrs[512];
+unsigned long anim_obj_buffer[20];
+
+int buildingsFound = 0;
+int cell_object_index = 0;
+CELL_OBJECT cell_object_buffer[1024];
+
+unsigned long *tile_overflow_buffer;
+
+CELL_OBJECT ground_debris[16];
+PACKED_CELL_OBJECT *spriteList[75];
+
+OUT_CELL_FILE_HEADER* cell_header;
+
+char CurrentPVS[444]; // 21*21+4
+MATRIX2 matrixtable[64];
+int setupYet = 0;
+
+int num_regions;
+int view_dist;
+int pvs_square;
+int pvs_square_sq;
+
+int units_across_halved;
+int units_down_halved;
+
+int regions_across;
+int regions_down;
+
 
 // offset: 0x1f800020
 _pct plotContext;
@@ -222,16 +301,18 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+MATRIX shadowMatrix;
+MVERTEX MVERTEX_ARRAY_1f800228[5][5];
+
+// [A]
 void DrawSprites(int numFound)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort *puVar1;
 	short sVar2;
 	short *psVar3;
 	int z;
-	undefined4 *puVar4;
-	undefined4 *puVar5;
+	uint *puVar4;
+	uint *puVar5;
 	uint uVar6;
 	MATRIX *pMVar7;
 	MATRIX *pMVar8;
@@ -247,24 +328,37 @@ void DrawSprites(int numFound)
 
 	z = ((int)(short)((int)camera_matrix.m[2][0] * (int)day_vectors[GameLevel].vx >> 0xc) +
 		(int)(short)((int)camera_matrix.m[2][1] * (int)day_vectors[GameLevel].vy >> 0xc) +
-		(int)(short)((int)camera_matrix.m[2][2] * (int)day_vectors[GameLevel].vz >> 0xc) + 0x1000) *
-		0xc00;
-	if (z < 0) {
+		(int)(short)((int)camera_matrix.m[2][2] * (int)day_vectors[GameLevel].vz >> 0xc) + 0x1000)
+		* 0xc00;
+
+	if (z < 0) 
 		z = z + 0xfff;
-	}
+
 	uVar6 = (z >> 0x12) + 0x20U & 0xff;
-	if (gTimeOfDay == 1) goto LAB_0003f0c4;
-	if (gTimeOfDay < 2) {
-		if (gTimeOfDay != 0) goto LAB_0003f0c4;
+
+	if (gTimeOfDay == 1) 
+		goto LAB_0003f0c4;
+
+	if (gTimeOfDay < 2) 
+	{
+		if (gTimeOfDay != 0)
+			goto LAB_0003f0c4;
 	LAB_0003f0a8:
 		uVar6 = (int)(uVar6 * 2 * NightAmbient) >> 8;
 	}
-	else {
-		if (gTimeOfDay == 2) goto LAB_0003f0a8;
-		if (gTimeOfDay != 3) goto LAB_0003f0c4;
+	else 
+	{
+		if (gTimeOfDay == 2)
+			goto LAB_0003f0a8;
+
+		if (gTimeOfDay != 3)
+			goto LAB_0003f0c4;
+
 		uVar6 = uVar6 / 3;
 	}
+
 	uVar6 = uVar6 & 0xff;
+
 LAB_0003f0c4:
 	if (gWeather - 1U < 2) {
 		uVar6 = (int)(uVar6 * 2 * NightAmbient) >> 8 & 0xff;
@@ -274,91 +368,107 @@ LAB_0003f0c4:
 	pMVar8 = &inv_camera_matrix;
 	pMVar7 = &shadowMatrix;
 	z = 2;
+
 	do {
-		psVar3 = pMVar8->m;
-		sVar2 = pMVar8->m[0];
+		psVar3 = (short*)pMVar8->m;
+		sVar2 = pMVar8->m[0][0];
 		pMVar8 = (MATRIX *)(pMVar8->m + 3);
 		z = z + -1;
-		pMVar7->m[0] = psVar3[2];
-		pMVar7->m[1] = -sVar2;
-		pMVar7->m[2] = sVar2;
+		pMVar7->m[0][0] = psVar3[2];
+		pMVar7->m[0][1] = -sVar2;
+		pMVar7->m[0][2] = sVar2;
 		pMVar7 = (MATRIX *)(pMVar7->m + 3);
 	} while (-1 < z);
+
 	local_38 = 0;
-	DAT_1f8000b0 = current->primptr;
-	DAT_1f800024 = &texture_pages;
-	DAT_1f800028 = &texture_cluts;
-	DAT_1f8000b4 = current->ot;
-	local_40 = &spriteList75;
-	DAT_1f8000c0 = uVar6;
-	DAT_1f800020 = current;
-	while (local_2c != -1) {
+	plotContext.primptr = current->primptr;
+	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
+	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+	plotContext.ot = current->ot;
+
+	local_40 = spriteList;
+
+	plotContext.colour = uVar6;
+	plotContext.current = current;
+
+	while (local_2c != -1)
+	{
 		pPVar13 = *local_40;
 		local_40 = local_40 + 1;
-		model = modelpointers1536[(uint)(pPVar13->value >> 6) | ((uint)(pPVar13->pos).vy & 1) << 10];
-		DAT_1f8000c0 = uVar6;
-		if ((pPVar13->value & 0x3f) == 0x3f) {
-			DAT_1f8000c0 = 0x2c808080;
-		}
-		DAT_1f8000d0 = (uint)(pPVar13->pos).vx;
-		DAT_1f8000d4 = (int)((uint)(pPVar13->pos).vy << 0x10) >> 0x11;
-		DAT_1f8000d8 = (uint)(pPVar13->pos).vz;
-		z = Apply_InvCameraMatrixAndSetMatrix(&DAT_1f8000d0, &face_camera);
-		if (z < 0x3e9) {
+		model = modelpointers[(uint)(pPVar13->value >> 6) | ((uint)(pPVar13->pos).vy & 1) << 10];
+		plotContext.colour = uVar6;
+
+		if ((pPVar13->value & 0x3f) == 0x3f) 
+			plotContext.colour = 0x2c808080;
+
+		plotContext.scribble[0] = ((pPVar13->pos).vx);
+		plotContext.scribble[1] = (int)((uint)(pPVar13->pos).vy << 0x10) >> 0x11;
+		plotContext.scribble[2] = ((pPVar13->pos).vz);
+
+		z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)plotContext.scribble, (MATRIX2 *)&face_camera);
+		if (z < 1001)
+		{
 			uVar11 = (uint)model->num_polys;
 			iVar10 = model->poly_block;
 			iVar12 = model->vertices;
-			while (uVar11 = uVar11 - 1, uVar11 != 0xffffffff) {
+
+			while (uVar11 = uVar11 - 1, uVar11 != 0xffffffff) 
+			{
+				UNIMPLEMENTED();
+				/*
 				uVar9 = *(uint *)(iVar10 + 4);
-				DAT_1f8000b8 = (uint)(ushort)(&texture_cluts)
-					[(uint)*(byte *)(iVar10 + 1) * 0x20 +
-					(uint)*(byte *)(iVar10 + 2)] << 0x10;
-				puVar4 = (undefined4 *)((uVar9 & 0xff) * 8 + iVar12);
-				DAT_1f8000bc = (uint)(ushort)(&texture_pages)[(uint)*(byte *)(iVar10 + 1)] << 0x10;
-				DAT_1f800228 = *puVar4;
-				puVar5 = (undefined4 *)((uVar9 >> 5 & 0x7f8) + iVar12);
-				DAT_1f80022c = puVar4[1] & 0xffff | (uint)*(ushort *)(iVar10 + 8) << 0x10;
-				_DAT_1f800248 = *puVar5;
-				puVar4 = (undefined4 *)((uVar9 >> 0x18) * 8 + iVar12);
-				DAT_1f80024c = puVar5[1] & 0xffff | (uint)*(ushort *)(iVar10 + 10) << 0x10;
-				DAT_1f8002c8 = *puVar4;
-				puVar5 = (undefined4 *)((uVar9 >> 0xd & 0x7f8) + iVar12);
-				DAT_1f8002cc = puVar4[1] & 0xffff | (uint)*(ushort *)(iVar10 + 0xe) << 0x10;
-				DAT_1f8002e8 = *puVar5;
+				plotContext.clut =(uint)(ushort)texture_cluts[(uint)*(unsigned char *)(iVar10 + 1) * 0x20 + (uint)*(unsigned char *)(iVar10 + 2)] << 0x10;
+				puVar4 = (uint *)((uVar9 & 0xff) * 8 + iVar12);
+				plotContext.tpage = (uint)(ushort)texture_pages[(uint)*(unsigned char *)(iVar10 + 1)] << 0x10;
+				MVERTEX_ARRAY_1f800228[0]_0_4_ = *puVar4;
+				puVar5 = (uint *)((uVar9 >> 5 & 0x7f8) + iVar12);
+				MVERTEX_ARRAY_1f800228[0]._4_4_ =
+					puVar4[1] & 0xffff | (uint)*(ushort *)(iVar10 + 8) << 0x10;
+				MVERTEX_ARRAY_1f800228[4]._0_4_ = *puVar5;
+				puVar4 = (uint *)((uVar9 >> 0x18) * 8 + iVar12);
+				MVERTEX_ARRAY_1f800228[4]._4_4_ =
+					puVar5[1] & 0xffff | (uint)*(ushort *)(iVar10 + 10) << 0x10;
+				MVERTEX_ARRAY_1f800228[20]._0_4_ = *puVar4;
+				puVar5 = (uint *)((uVar9 >> 0xd & 0x7f8) + iVar12);
+				MVERTEX_ARRAY_1f800228[20]._4_4_ =
+					puVar4[1] & 0xffff | (uint)*(ushort *)(iVar10 + 0xe) << 0x10;
+				MVERTEX_ARRAY_1f800228[24]._0_4_ = *puVar5;
 				puVar1 = (ushort *)(iVar10 + 0xc);
 				iVar10 = iVar10 + 0x14;
-				DAT_1f8002ec = puVar5[1] & 0xffff | (uint)*puVar1 << 0x10;
-				makeMesh((MVERTEX(*)[5][5])&DAT_1f800228, 4, 4);
-				drawMesh((MVERTEX(*)[5][5])&DAT_1f800228, 4, 4, (_pct *)&DAT_1f800020);
+				MVERTEX_ARRAY_1f800228[24]._4_4_ = puVar5[1] & 0xffff | (uint)*puVar1 << 0x10;
+
+				makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4);
+				drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4, (_pct *)&plotContext);
+				*/
 			}
 		}
-		else {
-			DAT_1f8000b4 = DAT_1f8000b4 + -0x85;
+		else 
+		{
+			plotContext.ot = plotContext.ot + -0x85;
 			Tile1x1(model);
-			DAT_1f8000b4 = DAT_1f8000b4 + 0x85;
+			plotContext.ot = plotContext.ot + 0x85;
 		}
+
 		local_2c = local_2c + -1;
+
 		if ((((wetness == 0) && (gTimeOfDay != 3)) && ((pPVar13->value & 0x20) == 0)) &&
-			((z < 7000 && (local_38 = local_38 + 1, local_38 < 0x28)))) {
-			setCopControlWord(2, 0, shadowMatrix.m[0]._0_4_);
-			setCopControlWord(2, 1, shadowMatrix.m._4_4_);
-			setCopControlWord(2, 2, shadowMatrix.m[1]._2_4_);
-			setCopControlWord(2, 3, shadowMatrix.m[2]._0_4_);
-			setCopControlWord(2, 4, shadowMatrix._16_4_);
+			((z < 7000 && (local_38 = local_38 + 1, local_38 < 0x28)))) 
+		{
+			gte_SetRotMatrix(&shadowMatrix);
+
+			/*
 			addSubdivSpriteShadow((POLYFT4LIT *)model->poly_block, (SVECTOR *)model->vertices, z);
-			if (model->num_polys == 2) {
-				addSubdivSpriteShadow((POLYFT4LIT *)(model->poly_block + 0x14), (SVECTOR *)model->vertices, z)
-					;
+
+			if (model->num_polys == 2)
+			{
+				addSubdivSpriteShadow((POLYFT4LIT *)(model->poly_block + sizeof(POLYFT4LIT)), (SVECTOR *)model->vertices, z);
 			}
-			setCopControlWord(2, 0, face_camera.m[0]._0_4_);
-			setCopControlWord(2, 1, face_camera.m._4_4_);
-			setCopControlWord(2, 2, face_camera.m[1]._2_4_);
-			setCopControlWord(2, 3, face_camera.m[2]._0_4_);
-			setCopControlWord(2, 4, face_camera._16_4_);
+			*/
+
+			gte_SetRotMatrix(&face_camera);
 		}
 	}
-	current->primptr = DAT_1f8000b0;
-	return;*/
+	current->primptr = plotContext.primptr;
 }
 
 
@@ -699,50 +809,6 @@ CELL_OBJECT * UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
 		// Start line: 1980
 	/* end block 4 */
 	// End Line: 1981
-
-uint farClip2Player = 0x8ca0;
-
-static int treecount = 0;
-int numSpritesFound = 0;
-static int alleycount = 0;
-
-int groundDebrisIndex = 0;
-
-int goFaster = 1;
-int fasterToggle = 0;
-
-int current_object_computed_value = 0;
-
-int combointensity;
-
-unsigned long model_object_ptrs[512];
-unsigned long anim_obj_buffer[20];
-
-int buildingsFound = 0;
-int cell_object_index = 0;
-CELL_OBJECT cell_object_buffer[1024];
-
-unsigned long *tile_overflow_buffer;
-
-CELL_OBJECT ground_debris[16];
-PACKED_CELL_OBJECT *spriteList[75];
-
-char CurrentPVS[444]; // 21*21+4
-MATRIX2 matrixtable[64];
-int setupYet = 0;
-
-int num_regions;
-int view_dist;
-int pvs_square;
-int pvs_square_sq;
-
-int units_across_halved;
-int units_down_halved;
-
-int regions_across;
-int regions_down;
-
-OUT_CELL_FILE_HEADER* cell_header;
 
 // [D]
 void DrawMapPSX(int *comp_val)
