@@ -2,6 +2,8 @@
 #include "HANDLING.H"
 #include "COSMETIC.H"
 #include "MISSION.H"
+#include "DR2ROADS.H"
+#include "TEXTURE.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
@@ -88,14 +90,18 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->st.n.fposition[2] = iVar2 << 4;
 
 	RebuildCarMatrix(&cp->st, cp);
-	/*
-	*(uint *)cp->hd.drawCarMat.m = ~*(uint *)cp->hd.where.m;
-	*((uint *)cp->hd.drawCarMat.m + 2) = *((uint *)cp->hd.where.m + 2) ^ 0xffff;
-	*((uint *)cp->hd.drawCarMat.m + 4) = *((uint *)cp->hd.where.m + 4);
-	*((uint *)cp->hd.drawCarMat.m + 6) = ~*((uint *)cp->hd.where.m + 6);
-	*((uint *)cp->hd.drawCarMat.m + 8) = *((uint *)cp->hd.where.m + 8) ^ 0xffff;
-	*/
-	memcpy(&cp->hd.drawCarMat.m, &cp->hd.where.m, sizeof(MATRIX));
+	
+	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
+	cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
+	cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
+
+	cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
+	cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
+	cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
+
+	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
+	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
+	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
 
 	cVar3 = (char)(iVar5 >> 5);
 	cVar1 = 14 - cVar3;
@@ -1324,28 +1330,28 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	iVar8 = (*qua)[2];
 	iVar7 = (*qua)[3];
 
-	sVar1 = (short)(iVar5 * iVar5 + 0x400 >> 0xb);
-	sVar2 = (short)(iVar8 * iVar8 + 0x400 >> 0xb);
-	sVar3 = (short)(iVar6 * iVar6 + 0x400 >> 0xb);
+	sVar1 = (iVar5 * iVar5 + 0x400 >> 0xb);
+	sVar2 = (iVar8 * iVar8 + 0x400 >> 0xb);
+	sVar3 = (iVar6 * iVar6 + 0x400 >> 0xb);
 
 	m->m[0][0] = 0x1000 - (sVar1 + sVar2);
 	m->m[1][1] = 0x1000 - (sVar3 + sVar2);
 	m->m[2][2] = 0x1000 - (sVar3 + sVar1);
 
-	sVar2 = (short)(iVar8 * iVar7 + 0x400 >> 0xb);
-	sVar1 = (short)(iVar6 * iVar5 + 0x400 >> 0xb);
+	sVar2 = (iVar8 * iVar7 + 0x400 >> 0xb);
+	sVar1 = (iVar6 * iVar5 + 0x400 >> 0xb);
 
 	m->m[0][1] = sVar1 - sVar2;
 
-	sVar3 = (short)(iVar6 * iVar8 + 0x400 >> 0xb);
-	sVar4 = (short)(iVar5 * iVar7 + 0x400 >> 0xb);
+	sVar3 = (iVar6 * iVar8 + 0x400 >> 0xb);
+	sVar4 = (iVar5 * iVar7 + 0x400 >> 0xb);
 
 	m->m[0][2] = sVar3 + sVar4;
 	m->m[1][0] = sVar1 + sVar2;
 	m->m[2][0] = sVar3 - sVar4;
 
-	sVar2 = (short)(iVar6 * iVar7 + 0x400 >> 0xb);
-	sVar1 = (short)(iVar5 * iVar8 + 0x400 >> 0xb);
+	sVar2 = (iVar6 * iVar7 + 0x400 >> 0xb);
+	sVar1 = (iVar5 * iVar8 + 0x400 >> 0xb);
 
 	m->m[1][2] = sVar1 - sVar2;
 	m->m[2][1] = sVar1 + sVar2;
@@ -1924,12 +1930,12 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 		if ((pad & 0x40) != 0)
 		{
-			cp->hd.where.t[1] += 100;
+			cp->st.n.fposition[1] += 50;
 		}
 
 		if ((pad & 0x80) != 0)
 		{
-			cp->hd.where.t[1] -= 100;
+			cp->st.n.fposition[1] -= 50;
 		}
 
 		if ((pad & 0x1000) != 0) 
@@ -1944,7 +1950,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			cp->st.n.fposition[2] -= camera_matrix.m[2][2] / 2;
 		}
 	}
-
+	
 	int direction = cp->hd.direction;
 
 	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * 5 + 0x800 >> 0xc;
@@ -1953,17 +1959,28 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
 
 	RebuildCarMatrix(&cp->st, cp);
-	/*
-	*(uint *)cp->hd.drawCarMat.m = ~*(uint *)cp->hd.where.m;
-	*((uint *)cp->hd.drawCarMat.m + 2) = *((uint *)cp->hd.where.m + 2) ^ 0xffff;
-	*((uint *)cp->hd.drawCarMat.m + 4) = *((uint *)cp->hd.where.m + 4);
-	*((uint *)cp->hd.drawCarMat.m + 6) = ~*((uint *)cp->hd.where.m + 6);
-	*((uint *)cp->hd.drawCarMat.m + 8) = *((uint *)cp->hd.where.m + 8) ^ 0xffff;
-	*/
-	memcpy(&cp->hd.drawCarMat.m, &cp->hd.where.m, sizeof(MATRIX));
 
-	int height = MapHeight((VECTOR*)cp->hd.where.t);
-	cp->hd.where.t[1] = height + 50;
+	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
+	cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
+	cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
+
+	cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
+	cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
+	cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
+
+	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
+	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
+	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
+
+
+	/*
+	//int height = MapHeight((VECTOR*)cp->hd.where.t);
+	VECTOR normal, out;
+	_sdPlane *surfacePtr;
+	surfacePtr = NULL;
+
+	FindSurfaceD2((VECTOR*)cp->hd.where.t, &normal, &out, &surfacePtr);
+	cp->hd.where.t[1] = out.vy;*/
 
 	/*
 	char cVar1;
