@@ -177,7 +177,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 	uVar3 = *(uint *)&src->v0;
 
 	plotContext.colour = 0x2e000000;
-	plotContext.ot = plotContext.ot + 0x1c;
+	//plotContext.ot = plotContext.ot + 0x1c;
 
 	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
 	plotContext.tpage = texture_pages[src->texture_set] << 0x40;
@@ -190,11 +190,14 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
 
 		docop2(0x280030);
+
+		int ZZ = MAC0;
+
 		docop2(0x158002d);
 
 		int Z = OTZ;
 
-		if (0 < Z)
+		if (0 < Z && ZZ < 0)
 		{
 			POLY_FT4* poly = (POLY_FT4*)plotContext.primptr;
 
@@ -226,9 +229,9 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 			*(u_short*)&poly->u2 = *(u_short*)&src->uv2;
 			*(u_short*)&poly->u3 = *(u_short*)&src->uv3;
 
-			addPrim(plotContext.ot + (z * 5 >> 6), poly);
+			addPrim(plotContext.ot + (Z >> 1) , poly);
 
-			plotContext.primptr = plotContext.primptr + sizeof(POLY_FT4);
+			plotContext.primptr += sizeof(POLY_FT4);
 		}
 	}
 
@@ -256,7 +259,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, (_pct *)&plotContext);
 #endif //0
 
-	plotContext.ot = plotContext.ot + -0x1c;
+	//plotContext.ot = plotContext.ot + -0x1c;
 }
 
 
