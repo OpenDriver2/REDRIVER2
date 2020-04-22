@@ -164,48 +164,99 @@ _pct plotContext;
 	/* end block 3 */
 	// End Line: 1306
 
+// [D] [A]
 void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 *puVar1;
+	uint puVar1;
 	uint uVar2;
 	uint uVar3;
-	undefined4 uVar4;
+	uint uVar4;
 	int m;
 
 	m = 4;
 	uVar3 = *(uint *)&src->v0;
-	DAT_1f8000c0 = 0x2e000000;
-	DAT_1f8000b4 = DAT_1f8000b4 + 0x70;
-	uVar2 = *(uint *)src >> 8 & 0xff;
-	DAT_1f8000b8 = (uint)*(ushort *)
-		((int)&texture_cluts + (*(uint *)src >> 0xf & 0x1fe) + uVar2 * 0x40) << 0x10
-		;
-	DAT_1f8000bc = (uint)(ushort)(&texture_pages)[uVar2] << 0x10;
-	if (0xc80 < z) {
+
+	plotContext.colour = 0x2e000000;
+	plotContext.ot = plotContext.ot + 0x1c;
+
+	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
+	plotContext.tpage = texture_pages[src->texture_set] << 0x40;
+
+	if (3200 < z) 
 		m = 2;
+
+	// [A] this is temporary code to draw shadow sprites
+	{
+		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
+
+		docop2(0x280030);
+		docop2(0x158002d);
+
+		int Z = OTZ;
+
+		if (0 < Z)
+		{
+			POLY_FT4* poly = (POLY_FT4*)plotContext.primptr;
+
+			*(uint*)&poly->r0 = plotContext.colour;
+
+			setPolyFT4(poly);
+			setSemiTrans(poly, 1);
+
+			poly->clut = plotContext.clut;
+			poly->tpage = plotContext.tpage;
+
+			poly->x0 = SX0;
+			poly->y0 = SY0;
+
+			poly->x1 = SX1;
+			poly->y1 = SY1;
+
+			poly->x3 = SX2;
+			poly->y3 = SY2;
+
+			gte_ldv0(&verts[src->v3]);
+			docop2(0x180001);
+
+			poly->x2 = SX2;
+			poly->y2 = SY2;
+
+			*(u_short*)&poly->u0 = *(u_short*)&src->uv1;
+			*(u_short*)&poly->u1 = *(u_short*)&src->uv0;
+			*(u_short*)&poly->u2 = *(u_short*)&src->uv2;
+			*(u_short*)&poly->u3 = *(u_short*)&src->uv3;
+
+			addPrim(plotContext.ot + (z * 5 >> 6), poly);
+
+			plotContext.primptr = plotContext.primptr + sizeof(POLY_FT4);
+		}
 	}
-	DAT_1f800228 = *(undefined4 *)(verts + (uVar3 & 0xff));
+
+#if 0
+	MVERTEX_ARRAY_1f800228[0]._0_4_ = *(undefined4 *)(verts + (uVar3 & 0xff));
 	puVar1 = (undefined4 *)((int)&verts->vx + (uVar3 >> 5 & 0x7f8));
-	DAT_1f80022c = *(uint *)&verts[uVar3 & 0xff].vz & 0xffff | (uint)(ushort)src->uv0 << 0x10;
+	MVERTEX_ARRAY_1f800228[0]._4_4_ =
+		*(uint *)&verts[uVar3 & 0xff].vz & 0xffff | (uint)(ushort)src->uv0 << 0x10;
 	uVar4 = puVar1[1];
-	(&DAT_1f800228)[m * 2] = *puVar1;
-	(&DAT_1f80022c)[m * 2] = uVar4;
-	*(UV_INFO *)((int)&DAT_1f80022c + m * 8 + 2) = src->uv1;
+	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m) = *puVar1;
+	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m].vz = uVar4;
+	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m].uv = src->uv1;
 	uVar4 = *(undefined4 *)&verts[uVar3 >> 0x18].vz;
-	(&DAT_1f800228)[m * 10] = *(undefined4 *)(verts + (uVar3 >> 0x18));
-	(&DAT_1f80022c)[m * 10] = uVar4;
+	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m * 5) = *(undefined4 *)(verts + (uVar3 >> 0x18));
+	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m * 5].vz = uVar4;
 	puVar1 = (undefined4 *)((int)&verts->vx + (uVar3 >> 0xd & 0x7f8));
-	*(UV_INFO *)((int)&DAT_1f80022c + m * 0x28 + 2) = src->uv3;
+	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m * 5].uv = src->uv3;
 	uVar4 = puVar1[1];
-	(&DAT_1f800228)[m * 0xc] = *puVar1;
-	(&DAT_1f80022c)[m * 0xc] = uVar4;
-	*(UV_INFO *)((int)&DAT_1f80022c + m * 0x30 + 2) = src->uv2;
-	makeMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, m);
-	drawMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, m, (_pct *)&DAT_1f800020);
-	DAT_1f8000b4 = DAT_1f8000b4 + -0x70;
-	return;*/
+	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m * 6) = *puVar1;
+	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m * 6].vz = uVar4;
+	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m * 6].uv = src->uv2;
+	
+	
+	makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m);
+	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, (_pct *)&plotContext);
+#endif //0
+
+	plotContext.ot = plotContext.ot + -0x1c;
 }
 
 
@@ -304,7 +355,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 MATRIX shadowMatrix;
 MVERTEX MVERTEX_ARRAY_1f800228[5][5];
 
-// [A]
+// [D] [A]
 void DrawSprites(int numFound)
 {
 	ushort *puVar1;
@@ -370,14 +421,11 @@ LAB_0003f0c4:
 	z = 2;
 
 	do {
-		psVar3 = (short*)pMVar8->m;
-		sVar2 = pMVar8->m[0][0];
-		pMVar8 = (MATRIX *)(pMVar8->m + 3);
-		z = z + -1;
-		pMVar7->m[0][0] = psVar3[2];
-		pMVar7->m[0][1] = -sVar2;
-		pMVar7->m[0][2] = sVar2;
-		pMVar7 = (MATRIX *)(pMVar7->m + 3);
+		shadowMatrix.m[z][0] = inv_camera_matrix.m[z][2];
+		shadowMatrix.m[z][1] = -inv_camera_matrix.m[z][0];
+		shadowMatrix.m[z][2] = inv_camera_matrix.m[z][0];
+		z--;
+
 	} while (-1 < z);
 
 	local_38 = 0;
@@ -406,7 +454,7 @@ LAB_0003f0c4:
 		plotContext.scribble[2] = ((pPVar13->pos).vz);
 
 		z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)plotContext.scribble, (MATRIX2 *)&face_camera);
-		if (z < 1001)
+		if(z < 0)//[A] (z < 1001)
 		{
 			uVar11 = (uint)model->num_polys;
 			iVar10 = model->poly_block;
@@ -449,21 +497,19 @@ LAB_0003f0c4:
 			plotContext.ot = plotContext.ot + 0x85;
 		}
 
-		local_2c = local_2c + -1;
+		local_2c--;
 
 		if ((((wetness == 0) && (gTimeOfDay != 3)) && ((pPVar13->value & 0x20) == 0)) &&
 			((z < 7000 && (local_38 = local_38 + 1, local_38 < 0x28)))) 
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
-			/*
 			addSubdivSpriteShadow((POLYFT4LIT *)model->poly_block, (SVECTOR *)model->vertices, z);
 
 			if (model->num_polys == 2)
 			{
 				addSubdivSpriteShadow((POLYFT4LIT *)(model->poly_block + sizeof(POLYFT4LIT)), (SVECTOR *)model->vertices, z);
 			}
-			*/
 
 			gte_SetRotMatrix(&face_camera);
 		}
@@ -2102,16 +2148,6 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 		gte_ldv3(pSVar10, local_v1_404, pSVar5);
 		docop2(0x280030);
-
-		/*
-		setCopReg(2, in_zero, *(undefined4 *)pSVar10);
-		setCopReg(2, in_at, *(undefined4 *)&pSVar10->vz);
-		setCopReg(2, pSVar5, *(undefined4 *)local_v1_404);
-		setCopReg(2, local_v1_404, *(undefined4 *)&local_v1_404->vz);
-		setCopReg(2, pSVar10, *(undefined4 *)pSVar5);
-		setCopReg(2, rot, *(undefined4 *)&pSVar5->vz);
-		
-		copFunction(2, 0x280030);*/
 
 		if (((uVar20 ^ uVar18) & 0xffff00) != 0) 
 		{
