@@ -5,6 +5,7 @@ extern int FrameCnt;
 extern int CurrentPlayerView;
 extern int FrAng;
 extern int gStopPadReads;
+extern int num_active_cars;
 
 extern int gLightsOn;
 extern int NightAmbient;

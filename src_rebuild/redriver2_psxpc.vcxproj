@@ -233,6 +233,7 @@
     <ClCompile Include="GAME\C\TEXTURE.C" />
     <ClCompile Include="GAME\C\TILE.C" />
     <ClCompile Include="GAME\C\TIME.C" />
+    <ClCompile Include="GAME\C\WHEELFORCES.C" />
     <ClCompile Include="GAME\C\XAPLAY.C" />
     <ClCompile Include="GAME\C\XMPLAY.C" />
     <ClCompile Include="GAME\FRONTEND\FEMAIN.C" />

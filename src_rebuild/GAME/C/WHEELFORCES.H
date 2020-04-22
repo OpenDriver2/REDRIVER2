@@ -1,6 +1,7 @@
 #ifndef WHEELFORCES_H
 #define WHEELFORCES_H
 
+extern _HANDLING_TYPE handlingType[7];
 
 extern void StepCars(); // 0x00082BD0
 
