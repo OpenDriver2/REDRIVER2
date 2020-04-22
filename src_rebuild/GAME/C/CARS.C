@@ -1012,7 +1012,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		gSinkingTimer = 100;
 
 		SetShadowPoints(cp);
-		PlaceShadowForCar((cp->hd).shadowPoints, cp->id, &pos, 0);
+		PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
 
 		ComputeCarLightingLevels(cp, 1);
 
@@ -1034,7 +1034,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		if (pos.vz < 8000) 
 		{
 			SetShadowPoints(cp);
-			PlaceShadowForCar((cp->hd).shadowPoints, cp->id, &pos, 0);
+			PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
 		}
 
 		ComputeCarLightingLevels(cp, '\0');

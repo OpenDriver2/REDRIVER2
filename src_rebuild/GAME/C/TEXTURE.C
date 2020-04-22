@@ -66,6 +66,17 @@ DVECTOR slot_clutpos[19];
 DVECTOR slot_tpagepos[19];
 unsigned char tpageslots[19];
 
+TP *tpage_position = NULL;
+TEXINF* tpage_ids[128] = { 0 };
+int texamount = 0;
+int tpage_amount = 0;
+int tpage_texamts[128];
+
+int nspecpages = 0;
+int nperms = 0;
+XYPAIR *speclist = NULL;
+XYPAIR *permlist = NULL;
+
 RECT16 tpage; // stupid naming, absolute ass
 
 short specialSlot;
@@ -540,17 +551,6 @@ void update_slotinfo(int tpage, int slot, RECT16 *pos)
 		// Start line: 1686
 	/* end block 2 */
 	// End Line: 1687
-
-TP *tpage_position = NULL;
-TEXINF* tpage_ids[128] = {0};
-int texamount = 0;
-int tpage_amount = 0;
-int tpage_texamts[128];
-
-int nspecpages = 0;
-int nperms = 0;
-XYPAIR *speclist = NULL;
-XYPAIR *permlist = NULL;
 
 // [D]
 void ProcessTextureInfo(char *lump_ptr)

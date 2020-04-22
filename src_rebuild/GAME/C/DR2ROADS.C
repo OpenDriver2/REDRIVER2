@@ -5,6 +5,8 @@
 #include "MAP.H"
 #include "EVENT.H"
 #include "CONVERT.H"
+#include "CUTSCENE.H"
+#include "MISSION.H"
 
 sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
 
@@ -208,11 +210,9 @@ int MapHeight(VECTOR *pos)
 	/* end block 1 */
 	// End Line: 329
 
+// [D]
 int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	_sdPlane *p_Var1;
 	int iVar2;
 
@@ -223,38 +223,51 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 	iVar2 = sdHeightOnPlane(pos, *plane);
 	out->vy = iVar2;
 	p_Var1 = *plane;
-	if ((p_Var1 == (_sdPlane *)0x0) || (p_Var1->b == 0)) {
+
+	if ((p_Var1 == NULL) || (p_Var1->b == 0))
+	{
 		normal->vx = 0;
 		normal->vy = 0x1000;
 		normal->vz = 0;
 	}
-	else {
+	else 
+	{
 		normal->vx = (int)((uint)(ushort)p_Var1->a << 0x10) >> 0x12;
 		normal->vy = (int)((uint)(ushort)(*plane)->b << 0x10) >> 0x12;
 		normal->vz = (int)((uint)(ushort)(*plane)->c << 0x10) >> 0x12;
 	}
-	if (*plane == (_sdPlane *)0x0) {
+
+	if (*plane == NULL)
+	{
 		iVar2 = 0x1000;
 	}
-	else {
+	else 
+	{
 		iVar2 = 0x1000;
-		if ((*plane)->surface == 4) {
-			if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) ||
-				(gInGameCutsceneID != 0)) {
+
+		if ((*plane)->surface == 4) 
+		{
+			if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) || (gInGameCutsceneID != 0)) 
+			{
 				iVar2 = out->vy + ((((int)((uint)*(ushort *)
-					((int)rcossin_tbl + ((pos->vx + pos->vz) * 8 & 0x3ff8U))
-					<< 0x10) >> 0x18) / 3) * 0x10000 >> 0x10);
+					((int)rcossin_tbl +
+					((pos->vx + pos->vz) * 8 & 0x3ff8U)) << 0x10) >>
+					0x18) / 3) * 0x10000 >> 0x10);
 			}
-			else {
+			else
+			{
 				iVar2 = out->vy + ((int)((uint)*(ushort *)
-					((int)rcossin_tbl + ((pos->vx + pos->vz) * 8 & 0x3ff8U)) <<
-					0x10) >> 0x19);
+					((int)rcossin_tbl +
+					((pos->vx + pos->vz) * 8 & 0x3ff8U)) << 0x10) >>
+					0x19);
 			}
+
 			out->vy = iVar2;
 			iVar2 = 0x800;
 		}
 	}
-	return iVar2;*/
+
+	return iVar2;
 }
 
 

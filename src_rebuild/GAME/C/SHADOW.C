@@ -1,6 +1,14 @@
 #include "THISDUST.H"
 #include "SHADOW.H"
 #include "TEXTURE.H"
+#include "SYSTEM.H"
+#include "MAIN.H"
+#include "CAMERA.H"
+#include "DRAW.H"
+
+#include "INLINE_C.H"
+#include "GTEREG.H"
+#include "STRINGS.H"
 
 // decompiled code
 // original method signature: 
@@ -847,191 +855,231 @@ void InitShadow(void)
 	/* end block 3 */
 	// End Line: 1810
 
+// [D] [A] - this is a fuckery
 void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 {
-	UNIMPLEMENTED();
-	/*
+#if 0
 	ushort uVar1;
-	DB *pDVar2;
-	undefined2 uVar3;
-	uint uVar4;
-	undefined2 uVar5;
-	undefined2 uVar6;
-	uint *puVar7;
+	ushort uVar3;
+	ulong uVar4;
+	ushort uVar5;
+	ushort uVar6;
+	uint iVar7;
 	uint uVar8;
-	uint uVar9;
-	int iVar10;
+	ushort uVar9;
+	POLY_FT4 *pPVar10;
 	uint uVar11;
-	uint uVar12;
-	uint uVar13;
+	uint iVar12;
+	uint iVar13;
 	uint uVar14;
-	int iVar15;
+	uint uVar15;
 	uint uVar16;
-	uint *puVar17;
-	int iVar18;
+	uint uVar17;
+	uint iVar18;
+	uint iVar19;
+	uint uVar20;
+	uint iVar21;
+	uint iVar22;
+	uint uVar23;
+	POLY_FT4 *spd;
+	uint iVar24;
 
-	puVar17 = (uint *)current->primptr;
-	*(uint **)&current->primptr = puVar17 + 0x50;
+	spd = (POLY_FT4 *)current->primptr;
+	current->primptr += sizeof(POLY_FT4)*8;
+
 	uVar4 = sps->tag;
-	iVar18 = 7;
-	puVar17[0x46] = uVar4;
-	puVar17[0x3c] = uVar4;
-	puVar17[0x32] = uVar4;
-	puVar17[0x28] = uVar4;
-	puVar17[0x1e] = uVar4;
-	puVar17[0x14] = uVar4;
-	puVar17[10] = uVar4;
-	*puVar17 = uVar4;
-	uVar4 = *(uint *)&sps->r0;
-	puVar17[0x47] = uVar4;
-	puVar17[0x3d] = uVar4;
-	puVar17[0x33] = uVar4;
-	puVar17[0x29] = uVar4;
-	puVar17[0x1f] = uVar4;
-	puVar17[0x15] = uVar4;
-	puVar17[0xb] = uVar4;
-	puVar17[1] = uVar4;
-	puVar7 = puVar17;
+	
+	spd[7].tag = uVar4;
+	spd[6].tag = uVar4;
+	spd[5].tag = uVar4;
+	spd[4].tag = uVar4;
+	spd[3].tag = uVar4;
+	spd[2].tag = uVar4;
+	spd[1].tag = uVar4;
+	spd->tag = uVar4;
+
+
+	uVar6 = *(uint *)&sps->r0;
+	*(uint *)&spd[7].r0 = uVar6;
+	*(uint *)&spd[6].r0 = uVar6;
+	*(uint *)&spd[5].r0 = uVar6;
+	*(uint *)&spd[4].r0 = uVar6;
+	*(uint *)&spd[3].r0 = uVar6;
+	*(uint *)&spd[2].r0 = uVar6;
+	*(uint *)&spd[1].r0 = uVar6;
+	*(uint *)&spd->r0 = uVar6;
+
+	pPVar10 = spd;
+
+	iVar24 = 7;
 	do {
-		puVar7[3] = *(uint *)&sps->u0;
-		puVar7[5] = *(uint *)&sps->u1;
-		puVar7[7] = *(uint *)&sps->u2;
-		iVar18 = iVar18 + -1;
-		puVar7[9] = *(uint *)&sps->u3;
-		puVar7 = puVar7 + 10;
-	} while (-1 < iVar18);
-	uVar9 = *(uint *)&sps->x1;
-	uVar14 = *(uint *)&sps->x2;
-	uVar16 = *(uint *)&sps->x3;
-	iVar18 = *(uint *)&sps->x0 + 0x8000800;
-	iVar10 = uVar9 + 0x8000800;
-	puVar17[2] = *(uint *)&sps->x0;
-	uVar4 = ((uint)(iVar18 + iVar10) >> 1) + 0xf7fff800;
-	iVar15 = uVar14 + 0x8000800;
-	puVar17[0x2c] = uVar9;
-	uVar8 = (uint)(iVar18 + iVar15) >> 1;
-	uVar9 = iVar18 + uVar8 >> 1;
-	puVar17[4] = uVar4;
-	puVar17[0x2a] = uVar4;
-	uVar4 = uVar9 + 0xf7fff800;
-	iVar18 = uVar16 + 0x8000800;
-	uVar12 = (uint)(iVar10 + iVar18) >> 1;
-	uVar11 = iVar10 + uVar12 >> 1;
-	uVar9 = (uVar9 + uVar11 >> 1) + 0xf7fff800;
-	uVar11 = uVar11 + 0xf7fff800;
-	puVar17[6] = uVar4;
-	puVar17[0xc] = uVar4;
-	uVar4 = (uVar8 + uVar12 >> 1) + 0xf7fff800;
-	puVar17[8] = uVar9;
-	puVar17[0x2e] = uVar9;
-	puVar17[0xe] = uVar9;
-	puVar17[0x34] = uVar9;
-	uVar9 = iVar15 + uVar8 >> 1;
-	puVar17[0x12] = uVar4;
-	puVar17[0x38] = uVar4;
-	puVar17[0x18] = uVar4;
-	puVar17[0x3e] = uVar4;
-	uVar4 = uVar9 + 0xf7fff800;
-	uVar13 = iVar18 + uVar12 >> 1;
-	uVar9 = (uVar9 + uVar13 >> 1) + 0xf7fff800;
-	uVar13 = uVar13 + 0xf7fff800;
-	puVar17[0x1a] = uVar4;
-	puVar17[0x20] = uVar4;
-	uVar4 = ((uint)(iVar15 + iVar18) >> 1) + 0xf7fff800;
-	puVar17[0x30] = uVar11;
-	puVar17[0x36] = uVar11;
-	puVar17[0x10] = uVar8 + 0xf7fff800;
-	puVar17[0x3a] = uVar12 + 0xf7fff800;
-	puVar17[0x16] = uVar8 + 0xf7fff800;
-	puVar17[0x40] = uVar12 + 0xf7fff800;
-	puVar17[0x1c] = uVar9;
-	puVar17[0x42] = uVar9;
-	puVar17[0x44] = uVar13;
-	puVar17[0x22] = uVar9;
-	puVar17[0x48] = uVar9;
-	puVar17[0x4a] = uVar13;
-	puVar17[0x24] = uVar14;
-	puVar17[0x26] = uVar4;
-	puVar17[0x4c] = uVar4;
-	puVar17[0x4e] = uVar16;
+		*(uint *)&pPVar10->u0 = *(uint *)&sps->u0;
+		*(uint *)&pPVar10->u1 = *(uint *)&sps->u1;
+		*(uint *)&pPVar10->u2 = *(uint *)&sps->u2;
+		iVar24 = iVar24 + -1;
+		*(uint *)&pPVar10->u3 = *(uint *)&sps->u3;
+		pPVar10 = pPVar10 + 1;
+	} while (-1 < iVar24);
+
+	iVar12 = *(uint *)&sps->x1;
+	iVar18 = *(uint *)&sps->x2;
+	iVar21 = *(uint *)&sps->x3;
+	iVar7 = *(uint *)&sps->x0 +0x8000800;
+	iVar13 = iVar12 +0x8000800;
+	*(uint *)&spd->x0 = *(uint *)&sps->x0;
+	iVar24 = ((uint)(iVar7 + iVar13) >> 1) +0xf7fff800;
+	iVar19 = iVar18 +0x8000800;
+	*(uint *)&spd[4].x1 = iVar12;
+	uVar11 = (uint)(iVar7 + iVar19) >> 1;
+	uVar8 = iVar7 + uVar11 >> 1;
+	*(uint *)&spd->x1 = iVar24;
+	*(uint *)&spd[4].x0 = iVar24;
+	iVar24 = uVar8 +0xf7fff800;
+	iVar22 = iVar21 +0x8000800;
+	uVar16 = (uint)(iVar13 + iVar22) >> 1;
+	uVar14 = iVar13 + uVar16 >> 1;
+	iVar7 = (uVar8 + uVar14 >> 1) +0xf7fff800;
+	iVar12 = uVar14+0xf7fff800;
+	*(uint *)&spd->x2 = iVar24;
+	*(uint *)&spd[1].x0 = iVar24;
+	iVar24 = (uVar11 + uVar16 >> 1) +0xf7fff800;
+	*(uint *)&spd->x3 = iVar7;
+	*(uint *)&spd[4].x2 = iVar7;
+	*(uint *)&spd[1].x1 = iVar7;
+	*(uint *)&spd[5].x0 = iVar7;
+	uVar8 = iVar19 + uVar11 >> 1;
+	*(uint *)&spd[1].x3 = iVar24;
+	*(uint *)&spd[5].x2 = iVar24;
+	*(uint *)&spd[2].x1 = iVar24;
+	*(uint *)&spd[6].x0 = iVar24;
+	iVar24 = uVar8 +0xf7fff800;
+	uVar14 = iVar22 + uVar16 >> 1;
+	iVar7 = (uVar8 + uVar14 >> 1) +0xf7fff800;
+	iVar13 = uVar14 +0xf7fff800;
+	*(uint *)&spd[2].x2 = iVar24;
+	*(uint *)&spd[3].x0 = iVar24;
+	iVar24 = ((uint)(iVar19 + iVar22) >> 1) +0xf7fff800;
+	*(uint *)&spd[4].x3 = iVar12;
+	*(uint *)&spd[5].x1 = iVar12;
+	*(uint *)&spd[1].x2 = uVar11 +0xf7fff800;
+	*(uint *)&spd[5].x3 = uVar16 +0xf7fff800;
+	*(uint *)&spd[2].x0 = uVar11 +0xf7fff800;
+	*(uint *)&spd[6].x1 = uVar16 +0xf7fff800;
+	*(uint *)&spd[2].x3 = iVar7;
+	*(uint *)&spd[6].x2 = iVar7;
+	*(uint *)&spd[6].x3 = iVar13;
+	*(uint *)&spd[3].x1 = iVar7;
+	*(uint *)&spd[7].x0 = iVar7;
+	*(uint *)&spd[7].x1 = iVar13;
+	*(uint *)&spd[3].x2 = iVar18;
+	*(uint *)&spd[3].x3 = iVar24;
+	*(uint *)&spd[7].x2 = iVar24;
+	*(uint *)&spd[7].x3 = iVar21;
+
 	uVar1 = *(ushort *)&sps->u3;
-	uVar9 = (uint)*(ushort *)&sps->u0 & 0xfeff;
-	uVar11 = (uint)*(ushort *)&sps->u1 & 0xfeff;
-	uVar14 = (uint)*(ushort *)&sps->u2 & 0xfeff;
-	uVar8 = uVar9 + uVar14 >> 1 & 0xfeff;
-	*(short *)(puVar17 + 3) = (short)uVar9;
-	uVar12 = uVar9 + uVar8 >> 1;
-	uVar16 = (uint)uVar1 & 0xfeff;
-	uVar4 = uVar11 + uVar16 >> 1 & 0xfeff;
-	*(short *)(puVar17 + 0x2d) = (short)uVar11;
-	uVar13 = uVar11 + uVar4 >> 1;
-	uVar3 = (undefined2)(uVar9 + uVar11 >> 1);
-	*(undefined2 *)(puVar17 + 5) = uVar3;
-	*(undefined2 *)(puVar17 + 0x2b) = uVar3;
-	uVar3 = (undefined2)(uVar12 + uVar13 >> 1);
-	*(undefined2 *)(puVar17 + 9) = uVar3;
-	*(undefined2 *)(puVar17 + 0x2f) = uVar3;
-	*(undefined2 *)(puVar17 + 0xf) = uVar3;
-	*(undefined2 *)(puVar17 + 0x35) = uVar3;
-	*(short *)(puVar17 + 0x11) = (short)uVar8;
-	*(short *)(puVar17 + 0x17) = (short)uVar8;
-	uVar11 = uVar14 + uVar8 >> 1;
-	*(short *)(puVar17 + 0x3b) = (short)uVar4;
-	*(short *)(puVar17 + 0x41) = (short)uVar4;
-	uVar9 = uVar16 + uVar4 >> 1;
-	uVar3 = (undefined2)(uVar8 + uVar4 >> 1);
-	*(undefined2 *)(puVar17 + 0x13) = uVar3;
-	*(undefined2 *)(puVar17 + 0x39) = uVar3;
-	*(undefined2 *)(puVar17 + 0x19) = uVar3;
-	*(undefined2 *)(puVar17 + 0x3f) = uVar3;
-	uVar3 = (undefined2)uVar12;
-	*(undefined2 *)(puVar17 + 7) = uVar3;
-	uVar5 = (undefined2)uVar13;
-	*(undefined2 *)(puVar17 + 0x31) = uVar5;
-	*(undefined2 *)(puVar17 + 0xd) = uVar3;
-	*(undefined2 *)(puVar17 + 0x37) = uVar5;
-	uVar6 = (undefined2)uVar11;
-	*(undefined2 *)(puVar17 + 0x1b) = uVar6;
-	uVar3 = (undefined2)(uVar11 + uVar9 >> 1);
-	*(undefined2 *)(puVar17 + 0x1d) = uVar3;
-	*(undefined2 *)(puVar17 + 0x43) = uVar3;
-	uVar5 = (undefined2)uVar9;
-	*(undefined2 *)(puVar17 + 0x45) = uVar5;
-	*(undefined2 *)(puVar17 + 0x21) = uVar6;
-	*(undefined2 *)(puVar17 + 0x23) = uVar3;
-	*(undefined2 *)(puVar17 + 0x49) = uVar3;
-	*(undefined2 *)(puVar17 + 0x4b) = uVar5;
-	*(short *)(puVar17 + 0x25) = (short)uVar14;
-	iVar18 = z0 * 7 + z3 >> 6;
-	uVar3 = (undefined2)(uVar14 + uVar16 >> 1);
-	*(undefined2 *)(puVar17 + 0x27) = uVar3;
-	*(undefined2 *)(puVar17 + 0x4d) = uVar3;
-	*(short *)(puVar17 + 0x4f) = (short)uVar16;
-	pDVar2 = current;
-	*puVar17 = *puVar17 & 0xff000000 | current->ot[iVar18] & 0xffffff;
-	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)puVar17 & 0xffffff;
-	iVar18 = z0 * 5 + z3 * 3 >> 6;
-	puVar17[10] = puVar17[10] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-	iVar10 = z0 * 3 + z3 * 5 >> 6;
-	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 10) & 0xffffff;
-	iVar18 = z0 + z3 * 7 >> 6;
-	puVar17[0x14] = puVar17[0x14] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
-	pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x14) & 0xffffff;
-	iVar10 = z1 * 7 + z2 >> 6;
-	puVar17[0x1e] = puVar17[0x1e] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x1e) & 0xffffff;
-	puVar17[0x28] = puVar17[0x28] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
-	iVar18 = z1 * 5 + z2 * 3 >> 6;
-	pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x28) & 0xffffff;
-	puVar17[0x32] = puVar17[0x32] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-	iVar10 = z1 * 3 + z2 * 5 >> 6;
-	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x32) & 0xffffff;
-	iVar18 = z1 + z2 * 7 >> 6;
-	puVar17[0x3c] = puVar17[0x3c] & 0xff000000 | pDVar2->ot[iVar10] & 0xffffff;
-	pDVar2->ot[iVar10] = pDVar2->ot[iVar10] & 0xff000000 | (uint)(puVar17 + 0x3c) & 0xffffff;
-	puVar17[0x46] = puVar17[0x46] & 0xff000000 | pDVar2->ot[iVar18] & 0xffffff;
-	pDVar2->ot[iVar18] = pDVar2->ot[iVar18] & 0xff000000 | (uint)(puVar17 + 0x46) & 0xffffff;
-	return;*/
+	uVar11 = (uint)*(ushort *)&sps->u0 & 0xfeff;
+	uVar16 = (uint)*(ushort *)&sps->u1 & 0xfeff;
+	uVar20 = (uint)*(ushort *)&sps->u2 & 0xfeff;
+	uVar14 = uVar11 + uVar20 >> 1 & 0xfeff;
+	*(ushort *)&spd->u0 = (ushort)uVar11;
+	uVar15 = uVar11 + uVar14 >> 1;
+	uVar23 = (uint)uVar1 & 0xfeff;
+	uVar8 = uVar16 + uVar23 >> 1 & 0xfeff;
+	*(ushort *)&spd[4].u1 = (ushort)uVar16;
+	uVar17 = uVar16 + uVar8 >> 1;
+	uVar3 = (ushort)(uVar11 + uVar16 >> 1);
+	*(ushort *)&spd->u1 = uVar3;
+	*(ushort *)&spd[4].u0 = uVar3;
+	uVar3 = (ushort)(uVar15 + uVar17 >> 1);
+	*(ushort *)&spd->u3 = uVar3;
+	*(ushort *)&spd[4].u2 = uVar3;
+	*(ushort *)&spd[1].u1 = uVar3;
+	*(ushort *)&spd[5].u0 = uVar3;
+	*(ushort *)&spd[1].u2 = (ushort)uVar14;
+	*(ushort *)&spd[2].u0 = (ushort)uVar14;
+	uVar16 = uVar20 + uVar14 >> 1;
+	*(ushort *)&spd[5].u3 = (ushort)uVar8;
+	*(ushort *)&spd[6].u1 = (ushort)uVar8;
+	uVar11 = uVar23 + uVar8 >> 1;
+	uVar3 = (ushort)(uVar14 + uVar8 >> 1);
+	*(ushort *)&spd[1].u3 = uVar3;
+	*(ushort *)&spd[5].u2 = uVar3;
+	*(ushort *)&spd[2].u1 = uVar3;
+	*(ushort *)&spd[6].u0 = uVar3;
+	uVar3 = (ushort)uVar15;
+	*(ushort *)&spd->u2 = uVar3;
+	uVar5 = (ushort)uVar17;
+	*(ushort *)&spd[4].u3 = uVar5;
+	*(ushort *)&spd[1].u0 = uVar3;
+	*(ushort *)&spd[5].u1 = uVar5;
+	uVar9 = (ushort)uVar16;
+	*(ushort *)&spd[2].u2 = uVar9;
+	uVar3 = (ushort)(uVar16 + uVar11 >> 1);
+	*(ushort *)&spd[2].u3 = uVar3;
+	*(ushort *)&spd[6].u2 = uVar3;
+	uVar5 = (ushort)uVar11;
+	*(ushort *)&spd[6].u3 = uVar5;
+	*(ushort *)&spd[3].u0 = uVar9;
+	*(ushort *)&spd[3].u1 = uVar3;
+	*(ushort *)&spd[7].u0 = uVar3;
+	*(ushort *)&spd[7].u1 = uVar5;
+	*(short *)&spd[3].u2 = (short)uVar20;
+	
+	uVar3 = (ushort)(uVar20 + uVar23 >> 1);
+	*(ushort *)&spd[3].u3 = uVar3;
+	*(ushort *)&spd[7].u2 = uVar3;
+	*(short *)&spd[7].u3 = (short)uVar23;
+	
+#ifndef PSX
+	setPolyFT4(&spd[7]);
+	setPolyFT4(&spd[6]);
+	setPolyFT4(&spd[5]);
+	setPolyFT4(&spd[4]);
+	setPolyFT4(&spd[3]);
+	setPolyFT4(&spd[2]);
+	setPolyFT4(&spd[1]);
+	setPolyFT4(&spd[0]);
+#endif // PSX
+
+	iVar24 = z0 * 7 + z3 >> 6;
+	addPrim(current->ot + iVar24, &spd[0]);
+	
+	//spd->tag = spd->tag & 0xff000000 | current->ot[iVar24] & 0xffffff;
+	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)spd & 0xffffff;
+	iVar24 = z0 * 5 + z3 * 3 >> 6;
+	addPrim(current->ot + iVar24, &spd[1]);  // spd[1].tag = spd[1].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
+	iVar7 = z0 * 3 + z3 * 5 >> 6;
+	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 1) & 0xffffff;
+	iVar24 = z0 + z3 * 7 >> 6;
+	addPrim(current->ot + iVar7, &spd[2]);  // spd[2].tag = spd[2].tag & 0xff000000 | pDVar2->ot[iVar7] & 0xffffff;
+	//pDVar2->ot[iVar7] = pDVar2->ot[iVar7] & 0xff000000 | (uint)(spd + 2) & 0xffffff;
+	iVar7 = z1 * 7 + z2 >> 6;
+	addPrim(current->ot + iVar24, &spd[3]);  // spd[3].tag = spd[3].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
+	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 3) & 0xffffff;
+	addPrim(current->ot + iVar7, &spd[4]);  // spd[4].tag = spd[4].tag & 0xff000000 | pDVar2->ot[iVar7] & 0xffffff;
+	iVar24 = z1 * 5 + z2 * 3 >> 6;
+	//pDVar2->ot[iVar7] = pDVar2->ot[iVar7] & 0xff000000 | (uint)(spd + 4) & 0xffffff;
+	addPrim(current->ot + iVar24, &spd[5]);  // spd[5].tag = spd[5].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
+	iVar7 = z1 * 3 + z2 * 5 >> 6;
+	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 5) & 0xffffff;
+	iVar24 = z1 + z2 * 7 >> 6;
+	addPrim(current->ot + iVar7, &spd[6]);  // spd[6].tag = spd[6].tag & 0xff000000 | pDVar2->ot[iVar7] & 0xffffff;
+	//pDVar2->ot[iVar7] = pDVar2->ot[iVar7] & 0xff000000 | (uint)(spd + 6) & 0xffffff;
+	addPrim(current->ot + iVar24, &spd[7]);  // spd[7].tag = spd[7].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
+	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 7) & 0xffffff;
+#else
+	POLY_FT4 *spd;
+
+	spd = (POLY_FT4 *)current->primptr;
+	current->primptr += sizeof(POLY_FT4) * 4;
+
+	memcpy(spd, sps, sizeof(POLY_FT4)*4);
+
+	addPrim(current->ot + (z0 >> 6), &spd[0]);
+	addPrim(current->ot + (z1 >> 6), &spd[1]);
+	addPrim(current->ot + (z2 >> 6), &spd[2]);
+	addPrim(current->ot + (z3 >> 6), &spd[3]);
+#endif // PSX
 }
 
 
@@ -1070,113 +1118,106 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 	/* end block 4 */
 	// End Line: 2536
 
+extern VECTOR dummy;
+
+// [D]
 void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
+
+	uint uVar1;
+	long z0_00;
+	long z1_00;
+	long z2_00;
+	long z3_00;
+	POLY_FT4 *sps;
+	SVECTOR points[4];
 	long z0;
 	long z1;
 	long z2;
 	long z3;
-	POLY_FT4 *sps;
-	undefined4 local_40;
-	uint local_3c;
-	undefined4 local_38;
-	uint local_34;
-	undefined4 local_30;
-	uint local_2c;
-	undefined4 local_28;
-	uint local_24;
-	int local_20;
-	int local_1c;
-	int local_18;
-	int local_14;
 
 	if (slot < 0) {
-		while (FrameCnt != 0x78654321) {
+		while (FrameCnt != 0x78654321) 
+		{
 			trap(0x400);
 		}
 	}
-	local_40 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints->vy,
-		*(short *)&shadowPoints->vx - (short)camera_position.vx);
-	local_3c = local_3c & 0xffff0000 |
-		(uint)(ushort)(*(short *)&shadowPoints->vz - (short)camera_position.vz);
-	local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[1].vy,
-		*(short *)&shadowPoints[1].vx - (short)camera_position.vx);
-	local_34 = local_34 & 0xffff0000 |
-		(uint)(ushort)(*(short *)&shadowPoints[1].vz - (short)camera_position.vz);
-	local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[3].vy,
-		*(short *)&shadowPoints[3].vx - (short)camera_position.vx);
-	local_2c = local_2c & 0xffff0000 |
-		(uint)(ushort)(*(short *)&shadowPoints[3].vz - (short)camera_position.vz);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	sps = shadowPolys + slot + current->id * 0x14;
-	setCopReg(2, in_zero, local_40);
-	setCopReg(2, in_at, local_3c);
-	setCopReg(2, shadowPolys + slot, local_38);
-	setCopReg(2, current->id * 800, local_34);
-	setCopReg(2, 0xda9e0, local_30);
-	setCopReg(2, (uint)(ushort)camera_position.vy, local_2c);
-	copFunction(2, 0x280030);
-	local_28 = CONCAT22(-(ushort)camera_position.vy - *(short *)&shadowPoints[2].vy,
-		*(short *)&shadowPoints[2].vx - (short)camera_position.vx);
-	local_24 = local_24 & 0xffff0000 |
-		(uint)(ushort)(*(short *)&shadowPoints[2].vz - (short)camera_position.vz);
-	uVar1 = getCopReg(2, 0xc);
-	*(undefined4 *)&sps->x0 = uVar1;
-	uVar1 = getCopReg(2, 0xd);
-	*(undefined4 *)&sps->x1 = uVar1;
-	uVar1 = getCopReg(2, 0xe);
-	*(undefined4 *)&sps->x3 = uVar1;
-	local_20 = getCopReg(2, 0x11);
-	local_1c = getCopReg(2, 0x12);
-	local_18 = getCopReg(2, 0x13);
-	setCopReg(2, in_zero, local_28);
-	setCopReg(2, in_at, local_24);
-	copFunction(2, 0x180001);
-	local_14 = getCopReg(2, 0x13);
-	uVar1 = getCopReg(2, 0xe);
-	*(undefined4 *)&sps->x2 = uVar1;
-	if (local_20 < local_1c) {
-		local_20 = (local_20 + local_1c) / 2;
+
+	points[0].vx = shadowPoints[0].vx - camera_position.vx;
+	points[0].vy = -shadowPoints[0].vy - camera_position.vy;
+	points[0].vz = shadowPoints[0].vz - camera_position.vz;
+
+	points[1].vx = shadowPoints[1].vx - camera_position.vx;
+	points[1].vy = -shadowPoints[1].vy - camera_position.vy;
+	points[1].vz = shadowPoints[1].vz - camera_position.vz;
+
+	points[2].vx = shadowPoints[3].vx - camera_position.vx;
+	points[2].vy = -shadowPoints[3].vy - camera_position.vy;
+	points[2].vz = shadowPoints[3].vz - camera_position.vz;
+
+	gte_SetTransVector(&dummy);
+	gte_SetRotMatrix(&inv_camera_matrix);
+
+	sps = shadowPolys[slot + current->id];
+
+	gte_ldv3(&points[0], &points[1], &points[2]);
+
+	docop2(0x280030);
+
+	points[3].vx = shadowPoints[2].vx - camera_position.vx;
+	points[3].vy = -shadowPoints[2].vy - camera_position.vy;
+	points[3].vz = shadowPoints[2].vz - camera_position.vz;
+
+	uVar1 = SXY0;  //getCopReg(2, 0xc);
+	*(uint *)&sps->x0 = uVar1;
+	uVar1 = SXY1;  //getCopReg(2, 0xd);
+	*(uint *)&sps->x1 = uVar1;
+	uVar1 = SXY2;  //getCopReg(2, 0xe);
+	*(uint *)&sps->x3 = uVar1;
+
+	z0 = SZ1; //getCopReg(2, 0x11);
+	z1 = SZ2; // getCopReg(2, 0x12);
+	z2 = SZ3; //getCopReg(2, 0x13);
+
+	gte_ldv0(&points[3]);
+
+	docop2(0x180001);
+
+	z3 = SZ3;		//getCopReg(2, 0x13);
+	uVar1 = SXY2;	// getCopReg(2, 0xe);
+
+	*(uint *)&sps->x2 = uVar1;
+
+	if (z0 < z1) {
+		z0 = (z0 + z1) / 2;
 	}
 	else {
-		local_1c = (local_20 + local_1c) / 2;
+		z1 = (z0 + z1) / 2;
 	}
-	if (local_18 < local_14) {
-		local_18 = (local_18 + local_14) / 2;
+	if (z2 < z3) {
+		z2 = (z2 + z3) / 2;
 	}
 	else {
-		local_14 = (local_18 + local_14) / 2;
+		z3 = (z2 + z3) / 2;
 	}
-	z0 = 8;
-	if (0x1c < local_20) {
-		z0 = local_20 + -0x14;
+	z0_00 = 8;
+	if (0x1c < z0) {
+		z0_00 = z0 + -0x14;
 	}
-	z1 = 8;
-	if (0x1c < local_1c) {
-		z1 = local_1c + -0x14;
+	z1_00 = 8;
+	if (0x1c < z1) {
+		z1_00 = z1 + -0x14;
 	}
-	z2 = 8;
-	if (0x1c < local_18) {
-		z2 = local_18 + -0x14;
+	z2_00 = 8;
+	if (0x1c < z2) {
+		z2_00 = z2 + -0x14;
 	}
-	z3 = 8;
-	if (0x1c < local_14) {
-		z3 = local_14 + -0x14;
+	z3_00 = 8;
+	if (0x1c < z3) {
+		z3_00 = z3 + -0x14;
 	}
-	SubdivShadow(z0, z1, z2, z3, sps);
-	return;*/
+
+	SubdivShadow(z0_00, z1_00, z2_00, z3_00, sps);
 }
 
 
