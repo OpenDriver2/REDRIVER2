@@ -701,7 +701,7 @@ int gShadowTexturePage;
 int gShadowTextureNum;
 
 UV shadowuv;
-POLY_FT4 shadowPolys[2][20];
+POLY_FT4 shadowPolys[20][2];
 
 // [D]
 void InitShadow(void)
@@ -1075,10 +1075,8 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 
 	memcpy(spd, sps, sizeof(POLY_FT4)*4);
 
-	addPrim(current->ot + (z0 >> 6), &spd[0]);
-	addPrim(current->ot + (z1 >> 6), &spd[1]);
-	addPrim(current->ot + (z2 >> 6), &spd[2]);
-	addPrim(current->ot + (z3 >> 6), &spd[3]);
+	addPrim(current->ot + (z0 * 2 + z3 * 7 >> 6), &spd[0]);
+	addPrim(current->ot + (z0 * 2 + z3 * 7 >> 6), &spd[1]);
 #endif // PSX
 }
 
