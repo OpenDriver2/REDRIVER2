@@ -283,21 +283,18 @@ void StepOneCar(_CAR_DATA *cp)
 	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
 	_cl.extraangulardamping = 0;
 
-	// apply damping
-	
-	do {
-		uVar3 = puVar5[10];
-		iVar12 = iVar12 + -1;
-		*puVar7 = puVar5[7];
-		puVar7[4] = uVar3;
-		puVar7 = puVar7 + -1;
-		*puVar5 = (*puVar5 & 0xf) + puVar5[-0x37] * 0x10;
-		puVar5 = puVar5 + -1;
-	} while (-1 < iVar12);
+	_cl.vel[0] = cp->st.n.linearVelocity[0];
+	_cl.vel[1] = cp->st.n.linearVelocity[1];
+	_cl.vel[2] = cp->st.n.linearVelocity[2];
+	_cl.vel[3] = cp->st.n.linearVelocity[3];
+	_cl.avel[0] = cp->st.n.angularVelocity[0];
+	_cl.avel[1] = cp->st.n.angularVelocity[1];
+	_cl.avel[2] = cp->st.n.angularVelocity[2];
+	_cl.avel[3] = cp->st.n.angularVelocity[3];
 
-	(cp->hd).acc[0] = 0;
-	(cp->hd).acc[1] = -7456; // apply gravity
-	(cp->hd).acc[2] = 0;
+	cp->hd.acc[0] = 0;
+	cp->hd.acc[1] = -7456; // apply gravity
+	cp->hd.acc[2] = 0;
 
 	iVar12 = _cl.vel[0] + 0x800 >> 0xc;
 	iVar4 = _cl.vel[2] + 0x800 >> 0xc;
@@ -346,30 +343,40 @@ void StepOneCar(_CAR_DATA *cp)
 			pointPos[1] = MAC2; // getCopReg(2, 0x1a);
 			pointPos[2] = MAC3; // getCopReg(2, 0x1b);
 
-			lever[0] = pointPos[0] - (cp->hd).where.t[0];
-			lever[1] = pointPos[1] - (cp->hd).where.t[1];
-			lever[2] = pointPos[2] - (cp->hd).where.t[2];
+			lever[0] = pointPos[0] - cp->hd.where.t[0];
+			lever[1] = pointPos[1] - cp->hd.where.t[1];
+			lever[2] = pointPos[2] - cp->hd.where.t[2];
 
 			FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
 
-			if (((surfacePoint[1] - pointPos[1]) - 1 < 799) && (iVar4 = (surfacePoint[1] - pointPos[1]) * surfaceNormal[1] + 0x800 >> 0xc, iVar12 < iVar4))
+			if((surfacePoint[1] - pointPos[1]) - 1 < 799)
 			{
-				unaff_s6 = 0;
-				deepestNormal[1] = surfaceNormal[1];
-				deepestNormal[0] = surfaceNormal[0];
-				deepestNormal[2] = surfaceNormal[2];
-				deepestLever[0] = lever[0];
-				deepestLever[1] = lever[1];
-				deepestLever[2] = lever[2];
+				iVar4 = (surfacePoint[1] - pointPos[1]) * surfaceNormal[1] + 0x800 >> 0xc;
 
-				//deepestPoint = surfacePoint; // [A]
-
-				iVar12 = iVar4;
-				if (3 < iVar13)
+				if (iVar12 < iVar4)
 				{
-					unaff_s6 = 3;
+					unaff_s6 = 0;
+					deepestNormal[0] = surfaceNormal[0];
+					deepestNormal[1] = surfaceNormal[1];
+					deepestNormal[2] = surfaceNormal[2];
+
+					deepestLever[0] = lever[0];
+					deepestLever[1] = lever[1];
+					deepestLever[2] = lever[2];
+
+					deepestPoint[0] = surfacePoint[0];
+					deepestPoint[1] = surfacePoint[1];
+					deepestPoint[2] = surfacePoint[2];
+
+					iVar12 = iVar4;
+					if (3 < iVar13)
+					{
+						unaff_s6 = 3;
+					}
 				}
 			}
+
+
 			iVar13 = iVar13 + -1;
 			pSVar14 = pSVar14 + -1;
 		} while (iVar13 != -1);
@@ -377,20 +384,13 @@ void StepOneCar(_CAR_DATA *cp)
 
 	if (iVar12 != 0)
 	{
-		lever[0] = ((_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + 0x800 >> 0xc)
-			+ _cl.vel[0];
+		lever[0] = ((_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + 0x800 >> 0xc) + _cl.vel[0];
+		lever[1] = ((_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + 0x800 >> 0xc) + _cl.vel[1];
+		lever[2] = ((_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + 0x800 >> 0xc) + _cl.vel[2];
 
-		lever[1] = ((_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + 0x800 >> 0xc)
-			+ _cl.vel[1];
-
-		iVar4 = deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] +
-			deepestLever[2] * deepestNormal[2] + 0x800 >> 0xc;
-
-		lever[2] = ((_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + 0x800 >> 0xc)
-			+ _cl.vel[2];
-
-		iVar4 = (((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) *
-			(int)car_cosmetics[cp->ap.model].twistRateY + 0x800 >> 0xc) + 0x1000;
+		iVar4 = deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2] + 0x800 >> 0xc;
+		iVar4 = (((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) 
+			* car_cosmetics[cp->ap.model].twistRateY + 0x800 >> 0xc) + 0x1000;
 
 		if (iVar4 == 0) 
 		{
@@ -452,9 +452,9 @@ void StepOneCar(_CAR_DATA *cp)
 		cp->hd.acc[1] = cp->hd.acc[1] + direction.vy;
 		cp->hd.acc[2] = cp->hd.acc[2] + direction.vz;
 
-		//p->hd.aacc[0] = cp->hd.aacc[0] + ((deepestLever[1] * direction.vz - deepestLever[2] * direction.vy) + 0x800 >> 0xc);
-		//cp->hd.aacc[1] = cp->hd.aacc[1] + ((deepestLever[2] * direction.vx - deepestLever[0] * direction.vz) + 0x800 >> 0xc);
-		//cp->hd.aacc[2] = cp->hd.aacc[2] + ((deepestLever[0] * direction.vy - deepestLever[1] * direction.vx) + 0x800 >> 0xc);
+		cp->hd.aacc[0] = cp->hd.aacc[0] + ((deepestLever[1] * direction.vz - deepestLever[2] * direction.vy) + 0x800 >> 0xc);
+		cp->hd.aacc[1] = cp->hd.aacc[1] + ((deepestLever[2] * direction.vx - deepestLever[0] * direction.vz) + 0x800 >> 0xc);
+		cp->hd.aacc[2] = cp->hd.aacc[2] + ((deepestLever[0] * direction.vy - deepestLever[1] * direction.vx) + 0x800 >> 0xc);
 
 		if (iVar12 != 0) 
 		{
@@ -462,31 +462,20 @@ void StepOneCar(_CAR_DATA *cp)
 			lever[1] = iVar12 * deepestNormal[1] + 0x800 >> 0xc;
 			lever[2] = iVar12 * deepestNormal[2] + 0x800 >> 0xc;
 
-			iVar4 = (cp->hd).where.t[1];
-			(cp->hd).where.t[0] = (cp->hd).where.t[0] + lever[0];
+			cp->hd.where.t[0] += lever[0];
+			cp->hd.where.t[1] += lever[1];
+			cp->hd.where.t[2] += lever[2];
 
-			iVar13 = (cp->hd).where.t[2];
-			(cp->hd).where.t[1] = iVar4 + lever[1];
-
-			iVar4 = (cp->st).n.fposition[0];
-			(cp->hd).where.t[2] = iVar13 + lever[2];
-
-			iVar13 = (cp->st).n.fposition[1];
-			(cp->st).n.fposition[0] = iVar4 + lever[0] * 0x10;
-
-			iVar4 = (cp->st).n.fposition[2];
-
-			(cp->st).n.fposition[1] = iVar13 + lever[1] * 0x10;
-			(cp->st).n.fposition[2] = iVar4 + lever[2] * 0x10;
+			cp->st.n.fposition[0] += lever[0] * 16;
+			cp->st.n.fposition[1] += lever[1] * 16;
+			cp->st.n.fposition[2] += lever[2] * 16;
 
 			gte_SetTransMatrix(&cp->hd.where);
 
 			_cl.extraangulardamping = 1;
 
-			if (0x78 < iVar12) 
-			{
-				(cp->st).n.linearVelocity[1] = 0;
-			}
+			if (120 < iVar12) 
+				cp->st.n.linearVelocity[1] = 0;
 		}
 	}
 
@@ -700,10 +689,9 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 	/* end block 5 */
 	// End Line: 1066
 
+// [D]
 void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -715,44 +703,50 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 	int iVar9;
 	uint uVar10;
 	int iVar11;
-	int *piVar12;
-	int *piVar13;
+	long *piVar12;
+	long *piVar13;
 	short *psVar14;
 	int iVar15;
 
-	sVar1 = (cp->hd).where.m[2];
-	iVar6 = (cp->hd).aacc[0];
-	sVar2 = (cp->hd).where.m[5];
-	iVar7 = (cp->hd).aacc[1];
-	psVar14 = (cp->hd).where.m + 8;
-	piVar12 = (cp->hd).aacc + 2;
-	sVar3 = (cp->hd).where.m[8];
-	iVar8 = (cp->hd).aacc[2];
-	uVar10 = (uint)(byte)(cp->ap).model;
+	sVar1 = cp->hd.where.m[0][2];
+	sVar2 = cp->hd.where.m[1][2];
+	sVar3 = cp->hd.where.m[2][2];
+	iVar6 = cp->hd.aacc[0];
+	iVar7 = cp->hd.aacc[1];
+	iVar8 = cp->hd.aacc[2];
+
+	uVar10 = cp->ap.model;
+
 	sVar4 = car_cosmetics[uVar10].twistRateY;
 	sVar5 = car_cosmetics[uVar10].twistRateZ;
+
 	iVar15 = 2;
 	piVar13 = cl->avel + 2;
+
+	psVar14 = (short*)cp->hd.where.m + 8;
+	piVar12 = cp->hd.aacc + 2;
+
 	do {
 		iVar11 = *piVar12 * (int)sVar4 +
 			((int)*psVar14 *
-			((int)sVar5 - (int)sVar4) *
-				(sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8 + 0x800 >> 0xc) + *piVar13 * -0x80 +
-				0x800 >> 0xc);
+			((int)sVar5 - (int)sVar4) * (sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8 + 0x800 >> 0xc) + *piVar13 * -0x80 + 0x800 >> 0xc);
 		*piVar12 = iVar11;
-		if (cl->extraangulardamping == 1) {
+
+		if (cl->extraangulardamping == 1)
+		{
 			iVar9 = *piVar13;
 			if (iVar9 < 0) {
 				iVar9 = iVar9 + 7;
 			}
 			*piVar12 = iVar11 - (iVar9 >> 3);
 		}
+
 		piVar13 = piVar13 + -1;
 		psVar14 = psVar14 + -3;
 		iVar15 = iVar15 + -1;
 		piVar12 = piVar12 + -1;
+
 	} while (-1 < iVar15);
-	return;*/
 }
 
 
