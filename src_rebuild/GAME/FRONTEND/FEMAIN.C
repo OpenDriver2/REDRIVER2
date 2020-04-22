@@ -3933,6 +3933,7 @@ int ScoreScreen(int bSetup)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int SubtitlesOnOffScreen(int bSetup)
 {
 	if (bSetup != 0) {

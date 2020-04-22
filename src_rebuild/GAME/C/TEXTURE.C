@@ -401,11 +401,9 @@ int Find_TexID(MODEL *model, int t_id)
 	/* end block 4 */
 	// End Line: 1491
 
+//[D]
 TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char *pcVar1;
 	int iVar2;
 	TEXINF *pTVar3;
@@ -418,34 +416,43 @@ TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 
 	pcVar1 = texturename_buffer;
 	iVar7 = 0;
-	pTVar6 = (TEXINF *)0x0;
-	if (0 < tpage_amount) {
-		ppTVar9 = tpage_ids128;
-		piVar8 = &tpage_texamts;
+	pTVar6 = NULL;
+
+	if (0 < tpage_amount) 
+	{
+		ppTVar9 = tpage_ids;
+		piVar8 = tpage_texamts;
+
 		do {
 			iVar5 = *piVar8;
 			pTVar6 = *ppTVar9;
 			iVar4 = 0;
 			pTVar3 = pTVar6;
-			if (0 < iVar5) {
+
+			if (0 < iVar5) 
+			{
 				do {
 					iVar2 = strcmp(pcVar1 + pTVar3->nameoffset, name);
-					if (iVar2 == 0) {
+
+					if (iVar2 == 0) 
+					{
 						*tpagenum = iVar7;
 						*texturenum = iVar4;
 						return pTVar3;
 					}
+
 					iVar4 = iVar4 + 1;
 					pTVar3 = pTVar3 + 1;
 				} while (iVar4 < iVar5);
 			}
+
 			ppTVar9 = ppTVar9 + 1;
 			iVar7 = iVar7 + 1;
 			piVar8 = piVar8 + 1;
+
 		} while (iVar7 < tpage_amount);
 	}
 	return pTVar6;
-	*/
 }
 
 
@@ -469,20 +476,19 @@ TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 	/* end block 2 */
 	// End Line: 581
 
+// [D]
 TEXINF * GetTextureInfoName(char *name, TPAN *result)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	TEXINF *pTVar1;
-	uchar local_10[4];
-	uchar local_c[4];
+	TEXINF *tex;
+	int tpagenum;
+	int texturenum;
 
-	pTVar1 = GetTEXINFName(name, (int *)local_10, (int *)local_c);
-	result->texture_page = local_10[0];
-	result->texture_number = local_c[0];
-	return pTVar1;
-	*/
+	tex = GetTEXINFName(name, &tpagenum, &texturenum);
+
+	result->texture_page = tpagenum;
+	result->texture_number = texturenum;
+
+	return tex;
 }
 
 
