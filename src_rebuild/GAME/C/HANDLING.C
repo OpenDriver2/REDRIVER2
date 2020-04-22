@@ -698,7 +698,7 @@ void GlobalTimeStep(void)
 			cp->hd.aacc[2] = 0;
 
 			iVar15 = iVar15 + iVar9;
-			(cp->st).n.linearVelocity[0] = iVar5 + howHard;
+			cp->st.n.linearVelocity[0] = iVar5 + howHard;
 			iVar5 = cp->st.n.linearVelocity[2];
 			iVar9 = cp->hd.acc[2];
 			howHard = cp->st.n.angularVelocity[0];
@@ -806,6 +806,7 @@ void GlobalTimeStep(void)
 	}
 	subframe = 0;
 	iVar28 = num_active_cars;
+
 	do {
 
 		RKstep = 0;
@@ -817,16 +818,17 @@ void GlobalTimeStep(void)
 
 			if (0 < iVar28)
 			{
+				// Update each car
 				howHard = 0;
 				do {
 					cp = *(_CAR_DATA **)((int)active_car_list + howHard);
 
-					if (((RKstep != 0) && ((subframe & 1U) != 0)) && (cp->controlType == '\x01')) 
+					if (((RKstep != 0) && ((subframe & 1U) != 0)) && (cp->controlType == 1)) 
 					{
 						CheckScenaryCollisions(cp);
 					}
 
-					if (cp->hd.mayBeColliding != '\0')
+					if (cp->hd.mayBeColliding != 0)
 					{
 						local_34 = local_40 * 2;
 
@@ -1155,10 +1157,11 @@ void GlobalTimeStep(void)
 											}
 
 											iVar9 = p_Var27->n.angularVelocity[1];
-											p_Var27->n.angularVelocity[0] =p_Var27->n.angularVelocity[0] + torque[0];
+											p_Var27->n.angularVelocity[0] = p_Var27->n.angularVelocity[0] + torque[0];
 											p_Var27->n.angularVelocity[1] = iVar9 + ((lever1[2] * velocity.vx - lever1[0] * velocity.vz) + 0x800 >> 0xc) * iVar28;
 											p_Var27->n.angularVelocity[2] = p_Var27->n.angularVelocity[2] + torque[2];
 										}
+
 										if ((cp->id == player[0].playerCarId) ||
 											(c1->id == player[0].playerCarId)) 
 										{
@@ -1257,26 +1260,38 @@ void GlobalTimeStep(void)
 				do {
 					cp = *pp_Var26;
 
-					// [A] pls replace me
-					uVar6 = *(uint *)((cp->hd).where.m + 2);
+					/*
+					//// [A] pls replace me
 					*(uint *)(cp->hd).drawCarMat.m = ~*(uint *)(cp->hd).where.m;
-					*(uint *)((cp->hd).drawCarMat.m + 2) = uVar6 ^ 0xffff;
+					*(uint *)((cp->hd).drawCarMat.m + 2) = *(uint *)((cp->hd).where.m + 2) ^ 0xffff;
 					*(uint *)((cp->hd).drawCarMat.m + 4) =*(uint *)((cp->hd).where.m + 4);
 					*(uint *)((cp->hd).drawCarMat.m + 6) = ~*(uint *)((cp->hd).where.m + 6);
 					*(uint *)((cp->hd).drawCarMat.m + 8) = *(uint *)((cp->hd).where.m + 8) ^ 0xffff;
+		*/
+					cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
+					cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
+					cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
 
-					if (((cp->ap).needsDenting != '\0') && (((CameraCnt + iVar15 & 3U) == 0 || (iVar5 < 5)))) 
+					cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
+					cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
+					cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
+
+					cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
+					cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
+					cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
+
+					if ((cp->ap.needsDenting != 0) && (((CameraCnt + iVar15 & 3U) == 0 || (iVar5 < 5)))) 
 					{
 						DentCar(cp);
-						(cp->ap).needsDenting = '\0';
+						cp->ap.needsDenting = 0;
 						iVar5 = iVar5 + 1;
 					}
 
 					pp_Var26 = pp_Var26 + 1;
-					lVar10 = ratan2((int)(cp->hd).where.m[2], (int)(cp->hd).where.m[8]);
+					lVar10 = ratan2(cp->hd.where.m[0][2], cp->hd.where.m[2][2]);
 					iVar15 = iVar15 + 1;
 					bVar4 = iVar15 < num_active_cars;
-					(cp->hd).direction = lVar10;
+					cp->hd.direction = lVar10;
 				} while (bVar4);
 			}
 			return;
@@ -2039,38 +2054,43 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if ((pad & 0x2000) != 0) 
 		{
 			//RotMatrixY(3200, &cp->hd.where);
-			cp->hd.direction += 30;
+			//cp->hd.direction += 30;
+			cp->st.n.angularVelocity[1] += 5000;
 		}
 
 		if ((pad & 0x8000) != 0) 
 		{
-			cp->hd.direction -= 30;
+			//cp->hd.direction -= 30;
 			//RotMatrixY(-3200, &cp->hd.where);
+			cp->st.n.angularVelocity[1] -= 5000;
 		}
 
 		if ((pad & 0x40) != 0)
 		{
-			cp->st.n.fposition[1] += 50;
+			cp->st.n.linearVelocity[1] += 12150;
 		}
 
 		if ((pad & 0x80) != 0)
 		{
-			cp->st.n.fposition[1] -= 50;
+			cp->st.n.linearVelocity[1] -= 12150;
 		}
 
 		if ((pad & 0x1000) != 0) 
 		{
-			cp->st.n.fposition[0] += camera_matrix.m[0][2] / 2;
-			cp->st.n.fposition[2] += camera_matrix.m[2][2] / 2;
+			cp->st.n.linearVelocity[0] += camera_matrix.m[0][2] / 2;
+			cp->st.n.linearVelocity[2] += camera_matrix.m[2][2] / 2;
+			//cp->st.n.fposition[0] += camera_matrix.m[0][2] / 2;
+			//cp->st.n.fposition[2] += camera_matrix.m[2][2] / 2;
 		}
 
 		if ((pad & 0x4000) != 0)
 		{
-			cp->st.n.fposition[0] -= camera_matrix.m[0][2] / 2;
-			cp->st.n.fposition[2] -= camera_matrix.m[2][2] / 2;
+			cp->st.n.linearVelocity[0] -= camera_matrix.m[0][2];
+			cp->st.n.linearVelocity[2] -= camera_matrix.m[2][2];
 		}
 	}
 	
+	/*
 	int direction = cp->hd.direction;
 
 	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * 5 + 0x800 >> 0xc;
@@ -2091,6 +2111,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
 	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
 	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
+	*/
 
 
 	/*

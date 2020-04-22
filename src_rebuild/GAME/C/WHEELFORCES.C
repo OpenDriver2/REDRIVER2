@@ -3,6 +3,13 @@
 #include "CARS.H"
 #include "MAIN.H"
 #include "GAMESND.H"
+#include "DEBRIS.H"
+#include "HANDLING.H"
+#include "COSMETIC.H"
+#include "DR2ROADS.H"
+
+#include "INLINE_C.H"
+#include "GTEREG.H"
 
 _HANDLING_TYPE handlingType[7] =
 {
@@ -229,52 +236,55 @@ void StepCars(void)
 	/* end block 3 */
 	// End Line: 212
 
+int impulse;
+
+// [D]
 void StepOneCar(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
+	static int frictionLimit[6] = {
+		0x3ED000, 0x13A1000, 0x75C6000, 0x13A1000, 0x11F30, 0x11F14
+	};
+
 	int iVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
 	CAR_COSMETICS *pCVar2;
 	uint uVar3;
 	int iVar4;
-	uint *puVar5;
+	long *puVar5;
 	int iVar6;
-	uint *puVar7;
-	int *piVar8;
-	int *piVar9;
-	int *piVar10;
-	int *piVar11;
+	long *puVar7;
+	long *piVar8;
+	long *piVar9;
+	long *piVar10;
+	long *piVar11;
 	int iVar12;
 	int iVar13;
 	SVECTOR *pSVar14;
 	int unaff_s6;
 	long *plVar15;
-	CAR_LOCALS local_f8;
-	int local_d0;
-	int local_cc;
-	int local_c8[4];
-	int local_b8;
-	VECTOR local_b0;
-	VECTOR local_a0;
-	VECTOR local_90;
-	VECTOR local_80;
-	int local_70;
-	int local_6c;
-	int local_68[4];
-	int local_58[2];
-	VECTOR local_50;
-	VECTOR local_40;
-	_sdPlane *local_30[2];
+	CAR_LOCALS _cl;
+	long deepestNormal[4];
+	long deepestLever[4];
+	long deepestPoint[4];
+	long pointPos[4];
+	long surfacePoint[4];
+	int iStack140;
+	long surfaceNormal[4];
+	long lever[4];
+	VECTOR direction;
+	VECTOR partdir;
+	_sdPlane *SurfacePtr;
 
 	iVar12 = 2;
 	plVar15 = (cp->hd).where.t;
-	puVar7 = (uint *)(local_f8.vel + 2);
-	puVar5 = (uint *)(cp->st + 8);
-	local_30[0] = (_sdPlane *)0x0;
-	local_f8.aggressive = (uint)(byte)handlingType[cp->hndType].aggressiveBraking;
-	local_f8.extraangulardamping = 0;
+	puVar7 = (long *)(_cl.vel + 2);
+	puVar5 = (long *)(cp->st.v + 2);
+
+	SurfacePtr = NULL;
+	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
+	_cl.extraangulardamping = 0;
+
+	// apply damping
+	
 	do {
 		uVar3 = puVar5[10];
 		iVar12 = iVar12 + -1;
@@ -284,11 +294,14 @@ void StepOneCar(_CAR_DATA *cp)
 		*puVar5 = (*puVar5 & 0xf) + puVar5[-0x37] * 0x10;
 		puVar5 = puVar5 + -1;
 	} while (-1 < iVar12);
+
 	(cp->hd).acc[0] = 0;
-	(cp->hd).acc[1] = -0x1d20;
+	(cp->hd).acc[1] = -7456; // apply gravity
 	(cp->hd).acc[2] = 0;
-	iVar12 = local_f8.vel[0] + 0x800 >> 0xc;
-	iVar4 = local_f8.vel[2] + 0x800 >> 0xc;
+
+	iVar12 = _cl.vel[0] + 0x800 >> 0xc;
+	iVar4 = _cl.vel[2] + 0x800 >> 0xc;
+
 	if (iVar12 < 0) {
 		iVar12 = -iVar12;
 	}
@@ -301,49 +314,59 @@ void StepOneCar(_CAR_DATA *cp)
 	else {
 		iVar4 = iVar12 + iVar4 / 2;
 	}
-	pCVar2 = (cp->ap).carCos;
+
+	pCVar2 = cp->ap.carCos;
 	iVar12 = 0;
-	(cp->hd).speed = iVar4;
-	setCopControlWord(2, 0, *(undefined4 *)(cp->hd).where.m);
-	setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).where.m + 2));
-	setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).where.m + 4));
-	setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).where.m + 6));
-	setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).where.m + 8));
-	setCopControlWord(2, 0x2800, *plVar15);
-	setCopControlWord(2, 0x3000, (cp->hd).where.t[1]);
-	setCopControlWord(2, 0x3800, (cp->hd).where.t[2]);
+
+	cp->hd.speed = iVar4;
+
+	gte_SetRotMatrix(&cp->hd.where);
+	gte_SetTransMatrix(&cp->hd.where);
+
 	iVar4 = 0xc;
-	if ((0x800 < (cp->hd).where.m[4]) && (iVar4 = 4, cp->controlType == '\x02')) {
+
+	if ((0x800 < cp->hd.where.m[1][1]) && (iVar4 = 4, cp->controlType == 2)) 
+	{
 		iVar4 = (uint)(cp->totalDamage != 0) << 2;
 	}
+
 	iVar13 = iVar4 + -1;
-	if (iVar4 != 0) {
+	if (iVar4 != 0) 
+	{
 		pSVar14 = pCVar2->cPoints + iVar13;
+
 		do {
-			setCopReg(2, in_zero, *(undefined4 *)pSVar14);
-			setCopReg(2, in_at, *(undefined4 *)&pSVar14->vz);
-			copFunction(2, 0x480012);
-			local_a0.vx = getCopReg(2, 0x19);
-			local_a0.vy = getCopReg(2, 0x1a);
-			local_a0.vz = getCopReg(2, 0x1b);
-			local_70 = local_a0.vx - (cp->hd).where.t[0];
-			local_6c = local_a0.vy - (cp->hd).where.t[1];
-			local_68[0] = local_a0.vz - (cp->hd).where.t[2];
-			FindSurfaceD2(&local_a0, &local_80, &local_90, local_30);
-			if (((local_90.vy - local_a0.vy) - 1U < 799) &&
-				(iVar4 = (local_90.vy - local_a0.vy) * local_80.vy + 0x800 >> 0xc, iVar12 < iVar4)) {
+			gte_ldv0(pSVar14);
+			//setCopReg(2, in_zero, *(undefined4 *)pSVar14);
+			//setCopReg(2, in_at, *(undefined4 *)&pSVar14->vz);
+
+			docop2(0x480012);
+
+			pointPos[0] = MAC1; // getCopReg(2, 0x19);
+			pointPos[1] = MAC2; // getCopReg(2, 0x1a);
+			pointPos[2] = MAC3; // getCopReg(2, 0x1b);
+
+			lever[0] = pointPos[0] - (cp->hd).where.t[0];
+			lever[1] = pointPos[1] - (cp->hd).where.t[1];
+			lever[2] = pointPos[2] - (cp->hd).where.t[2];
+
+			FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
+
+			if (((surfacePoint[1] - pointPos[1]) - 1 < 799) && (iVar4 = (surfacePoint[1] - pointPos[1]) * surfaceNormal[1] + 0x800 >> 0xc, iVar12 < iVar4))
+			{
 				unaff_s6 = 0;
-				local_cc = local_80.vy;
-				local_b0.vy = local_90.vy;
-				local_d0 = local_80.vx;
-				local_c8[0] = local_80.vz;
-				local_c8[2] = local_70;
-				local_c8[3] = local_6c;
-				local_b8 = local_68[0];
-				local_b0.vx = local_90.vx;
-				local_b0.vz = local_90.vz;
+				deepestNormal[1] = surfaceNormal[1];
+				deepestNormal[0] = surfaceNormal[0];
+				deepestNormal[2] = surfaceNormal[2];
+				deepestLever[0] = lever[0];
+				deepestLever[1] = lever[1];
+				deepestLever[2] = lever[2];
+
+				//deepestPoint = surfacePoint; // [A]
+
 				iVar12 = iVar4;
-				if (3 < iVar13) {
+				if (3 < iVar13)
+				{
 					unaff_s6 = 3;
 				}
 			}
@@ -351,102 +374,126 @@ void StepOneCar(_CAR_DATA *cp)
 			pSVar14 = pSVar14 + -1;
 		} while (iVar13 != -1);
 	}
-	if (iVar12 != 0) {
-		local_70 = ((local_f8.avel[1] * local_b8 - local_f8.avel[2] * local_c8[3]) + 0x800 >> 0xc) +
-			local_f8.vel[0];
-		local_6c = ((local_f8.avel[2] * local_c8[2] - local_f8.avel[0] * local_b8) + 0x800 >> 0xc) +
-			local_f8.vel[1];
-		iVar4 = local_c8[2] * local_d0 + local_c8[3] * local_cc + local_b8 * local_c8[0] + 0x800 >> 0xc;
-		local_68[0] = ((local_f8.avel[0] * local_c8[3] - local_f8.avel[1] * local_c8[2]) + 0x800 >> 0xc)
-			+ local_f8.vel[2];
-		iVar4 = (((local_c8[2] * local_c8[2] + local_c8[3] * local_c8[3] + local_b8 * local_b8) -
-			iVar4 * iVar4) * (int)car_cosmetics[(byte)(cp->ap).model].twistRateY + 0x800 >> 0xc) +
-			0x1000;
-		if (iVar4 == 0) {
+
+	if (iVar12 != 0)
+	{
+		lever[0] = ((_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + 0x800 >> 0xc)
+			+ _cl.vel[0];
+
+		lever[1] = ((_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + 0x800 >> 0xc)
+			+ _cl.vel[1];
+
+		iVar4 = deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] +
+			deepestLever[2] * deepestNormal[2] + 0x800 >> 0xc;
+
+		lever[2] = ((_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + 0x800 >> 0xc)
+			+ _cl.vel[2];
+
+		iVar4 = (((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) *
+			(int)car_cosmetics[cp->ap.model].twistRateY + 0x800 >> 0xc) + 0x1000;
+
+		if (iVar4 == 0) 
+		{
 			trap(7);
 		}
+
 		iVar13 = 2;
-		impulse = (((local_70 >> 6) * (local_d0 >> 6) + (local_6c >> 6) * (local_cc >> 6) +
-			(local_68[0] >> 6) * (local_c8[0] >> 6)) / iVar4) * -0x800;
-		piVar11 = local_58;
-		piVar10 = local_c8;
-		piVar9 = local_68;
-		piVar8 = (int *)(unaff_s6 * 4 + 0xa1f10);
+		impulse = (((lever[0] >> 6) * (deepestNormal[0] >> 6) + (lever[1] >> 6) * (deepestNormal[1] >> 6) + (lever[2] >> 6) * (deepestNormal[2] >> 6)) / iVar4) * -0x800;
+
+		piVar11 = (long*)&direction.vz;
+		piVar10 = deepestNormal + 2;
+		piVar9 = lever + 2;
+		piVar8 = (long*)frictionLimit + unaff_s6;
+
+		
 		do {
 			iVar6 = *piVar8;
 			iVar4 = *piVar9 * 0x43;
 			iVar1 = -iVar6;
-			if ((iVar4 <= iVar6) && (iVar6 = iVar4, iVar4 < iVar1)) {
+			if ((iVar4 <= iVar6) && (iVar6 = iVar4, iVar4 < iVar1)) 
 				iVar6 = iVar1;
-			}
+
 			iVar4 = *piVar10;
 			piVar10 = piVar10 + -1;
 			piVar9 = piVar9 + -1;
 			piVar8 = piVar8 + -1;
 			iVar13 = iVar13 + -1;
 			*piVar11 = (impulse * iVar4 - iVar6) + 0x800 >> 0xc;
-			piVar11 = piVar11 + -1;
+			piVar11 = piVar11-1;
 		} while (-1 < iVar13);
-		if (20000 < impulse) {
-			if (gNight == 1) {
-				local_50.vx = DAT_00011ebc;
-				local_50.vy = DAT_00011ec0;
-				local_50.vz = DAT_00011ec4;
-				local_50.pad = DAT_00011ec8;
-				Setup_Sparks(&local_b0, &local_50, 0xf, '\x01');
+		
+		if (20000 < impulse) 
+		{
+			if (gNight == 1)
+			{
+				partdir.vx = 0;
+				partdir.vy = 0x32;
+				partdir.vz = 0;
+
+				Setup_Sparks((VECTOR *)&deepestPoint, &partdir, 0xf, 1);
 			}
-			else {
-				local_40.vx = DAT_00011ecc;
-				local_40.vy = DAT_00011ed0;
-				local_40.vz = DAT_00011ed4;
-				local_40.pad = DAT_00011ed8;
-				Setup_Debris(&local_b0, &local_40, 10, 0);
+			else
+			{
+				partdir.vx = 0;
+				partdir.vy = 0x28;
+				partdir.vz = 0;
+
+				Setup_Debris((VECTOR *)&deepestPoint, &partdir, 10, 0);
 			}
-			if ((local_30[0]->surface != 9) && (local_30[0]->surface != 6)) {
+
+			if ((SurfacePtr->surface != 9) && (SurfacePtr->surface != 6)) 
+			{
 				iVar4 = GetPlayerId(cp);
 				CollisionSound((char)iVar4, cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
 			}
 		}
-		iVar13 = (cp->hd).acc[1];
-		(cp->hd).acc[0] = (cp->hd).acc[0] + local_68[2];
-		iVar4 = (cp->hd).acc[2];
-		(cp->hd).acc[1] = iVar13 + local_68[3];
-		(cp->hd).acc[2] = iVar4 + local_58[0];
-		(cp->hd).aacc[0] =
-			(cp->hd).aacc[0] + ((local_c8[3] * local_58[0] - local_b8 * local_68[3]) + 0x800 >> 0xc);
-		(cp->hd).aacc[1] =
-			(cp->hd).aacc[1] + ((local_b8 * local_68[2] - local_c8[2] * local_58[0]) + 0x800 >> 0xc);
-		(cp->hd).aacc[2] =
-			(cp->hd).aacc[2] + ((local_c8[2] * local_68[3] - local_c8[3] * local_68[2]) + 0x800 >> 0xc)
-			;
-		if (iVar12 != 0) {
-			local_70 = iVar12 * local_d0 + 0x800 >> 0xc;
-			local_6c = iVar12 * local_cc + 0x800 >> 0xc;
-			local_68[0] = iVar12 * local_c8[0] + 0x800 >> 0xc;
+
+		cp->hd.acc[0] = cp->hd.acc[0] + direction.vx;
+		cp->hd.acc[1] = cp->hd.acc[1] + direction.vy;
+		cp->hd.acc[2] = cp->hd.acc[2] + direction.vz;
+
+		//p->hd.aacc[0] = cp->hd.aacc[0] + ((deepestLever[1] * direction.vz - deepestLever[2] * direction.vy) + 0x800 >> 0xc);
+		//cp->hd.aacc[1] = cp->hd.aacc[1] + ((deepestLever[2] * direction.vx - deepestLever[0] * direction.vz) + 0x800 >> 0xc);
+		//cp->hd.aacc[2] = cp->hd.aacc[2] + ((deepestLever[0] * direction.vy - deepestLever[1] * direction.vx) + 0x800 >> 0xc);
+
+		if (iVar12 != 0) 
+		{
+			lever[0] = iVar12 * deepestNormal[0] + 0x800 >> 0xc;
+			lever[1] = iVar12 * deepestNormal[1] + 0x800 >> 0xc;
+			lever[2] = iVar12 * deepestNormal[2] + 0x800 >> 0xc;
+
 			iVar4 = (cp->hd).where.t[1];
-			(cp->hd).where.t[0] = (cp->hd).where.t[0] + local_70;
+			(cp->hd).where.t[0] = (cp->hd).where.t[0] + lever[0];
+
 			iVar13 = (cp->hd).where.t[2];
-			(cp->hd).where.t[1] = iVar4 + local_6c;
-			iVar4 = *(int *)cp->st;
-			(cp->hd).where.t[2] = iVar13 + local_68[0];
-			iVar13 = *(int *)(cp->st + 4);
-			*(int *)cp->st = iVar4 + local_70 * 0x10;
-			*(int *)(cp->st + 4) = iVar13 + local_6c * 0x10;
-			*(int *)(cp->st + 8) = *(int *)(cp->st + 8) + local_68[0] * 0x10;
-			setCopControlWord(2, 0x2800, *plVar15);
-			setCopControlWord(2, 0x3000, (cp->hd).where.t[1]);
-			setCopControlWord(2, 0x3800, (cp->hd).where.t[2]);
-			local_f8.extraangulardamping = 1;
-			if (0x78 < iVar12) {
-				*(undefined4 *)(cp->st + 0x20) = 0;
+			(cp->hd).where.t[1] = iVar4 + lever[1];
+
+			iVar4 = (cp->st).n.fposition[0];
+			(cp->hd).where.t[2] = iVar13 + lever[2];
+
+			iVar13 = (cp->st).n.fposition[1];
+			(cp->st).n.fposition[0] = iVar4 + lever[0] * 0x10;
+
+			iVar4 = (cp->st).n.fposition[2];
+
+			(cp->st).n.fposition[1] = iVar13 + lever[1] * 0x10;
+			(cp->st).n.fposition[2] = iVar4 + lever[2] * 0x10;
+
+			gte_SetTransMatrix(&cp->hd.where);
+
+			_cl.extraangulardamping = 1;
+
+			if (0x78 < iVar12) 
+			{
+				(cp->st).n.linearVelocity[1] = 0;
 			}
 		}
 	}
-	AddWheelForcesDriver1(cp, &local_f8);
-	ConvertTorqueToAngularAcceleration(cp, &local_f8);
-	(cp->hd).mayBeColliding = '\0';
-	return;
-	*/
+
+	AddWheelForcesDriver1(cp, &_cl);
+	ConvertTorqueToAngularAcceleration(cp, &_cl);
+
+	cp->hd.mayBeColliding = 0;
 }
 
 

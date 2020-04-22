@@ -1220,20 +1220,22 @@ void DoScenaryCollisions(void)
 
 	cp = car_data + 0x13;
 	do {
-		if (cp->controlType != '\0') {
-			if (cp->controlType == '\x02') {
-				if ((cp->totalDamage != 0) &&
-					((10 < (cp->hd).speed || (((uint)cp->id + CameraCnt & 3) == 0)))) {
+		if (cp->controlType != 0)
+		{
+			if (cp->controlType == 2)
+			{
+				if ((cp->totalDamage != 0) && ((10 < (cp->hd).speed || (((uint)cp->id + CameraCnt & 3) == 0))))
+				{
 					CheckScenaryCollisions(cp);
 				}
 			}
-			else {
+			else
+			{
 				CheckScenaryCollisions(cp);
 			}
 		}
 		cp = cp + -1;
 	} while (car_data <= cp);
-	return;
 }
 
 

@@ -1470,10 +1470,12 @@ LAB_00059c1c:
 
 	if ((requestStationaryCivCar == 1) &&
 		((numCivCars < maxCivCars ||
-		(PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))) {
+		(PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))) 
+	{
 		requestStationaryCivCar = 0;
 	}
-	if ((game_over == 0) && (ControlCops(), gLoadedMotionCapture != 0)) {
+	if ((game_over == 0) && (ControlCops(), gLoadedMotionCapture != 0))
+	{
 		HandlePedestrians();
 	}
 
