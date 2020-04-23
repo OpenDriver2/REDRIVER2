@@ -17,6 +17,9 @@
 #include "COP_AI.H"
 #include "BCOLLIDE.H"
 #include "BCOLL3D.H"
+#include "GAMESND.H"
+#include "PEDEST.H"
+#include "AI.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
@@ -82,10 +85,10 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->st.n.orientation[1] = (int)rcossin_tbl[direction & 0xffeU];
 	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * iVar2 + 0x800 >> 0xc;
 	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
+
 	cp->st.n.fposition[0] = (*startpos)[0] << 4;
 	cp->st.n.fposition[1] = (*startpos)[1] << 4;
-
-	iVar2 = (*startpos)[2];
+	cp->st.n.fposition[2] = (*startpos)[2] << 4;
 
 	cp->st.n.linearVelocity[0] = 0;
 	cp->st.n.linearVelocity[1] = 0;
@@ -101,8 +104,6 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->hd.acc[1] = 0;
 	cp->hd.acc[2] = 0;
 
-	cp->st.n.fposition[2] = iVar2 << 4;
-
 	RebuildCarMatrix(&cp->st, cp);
 	
 	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
@@ -116,7 +117,7 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
 	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
 	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
-
+	
 	cVar3 = (char)(iVar5 >> 5);
 	cVar1 = 14 - cVar3;
 	
@@ -308,7 +309,7 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 	delta.vy = 0;
 
 	doWheels = 1;
-	delta.vz = -(short)(((int)carCos->wheelDisp[0].vz + (int)carCos->wheelDisp[1].vz + -0xe) / 2);
+	delta.vz = -(short)(((int)carCos->wheelDisp[0].vz + (int)carCos->wheelDisp[1].vz-14) / 2);
 
 	UpdateCarPoints(carCos);
 
@@ -768,37 +769,149 @@ void GlobalTimeStep(void)
 
 			if (cp->hd.mayBeColliding == 0)
 			{
-				iVar5 = cp->st.n.linearVelocity[1];
-				iVar22 = cp->st.n.angularVelocity[0] + 0x1000 >> 0xd;
+#if 0
+				lw         v1, 0x1c(t1)
+				lw         v0, 0x0(t1)
+				lw         a0, 0x20(t1)
+				lw         t0, 0x28(t1)
+				sra        v1, v1, 0x8
+				addu       v0, v0, v1
+				sra        a0, a0, 0x8
+				addiu      t0, t0, 0x1000
+				sra        t0, t0, 0xd
+				sw         v0, 0x0(t1)
+				lw         v0, 0x4(t1)
+				lw         v1, 0x24(t1)
+				addu       v0, v0, a0
+				sw         v0, 0x4(t1)
+				lw         v0, 0x8(t1)
+				sra        v1, v1, 0x8
+				addu       v0, v0, v1
+				sw         v0, 0x8(t1)
+				sw         t0, AV[0](sp)
+				lw         a3, 0x2c(t1)
+				nop
+				addiu      a3, a3, 0x1000
+				sra        a3, a3, 0xd
+				sw         a3, AV[1](sp)
+				lw         a2, 0x30(t1)
+				nop
+				addiu      a2, a2, 0x1000
+				sra        a2, a2, 0xd
+				sw         a2, AV[2](sp)
+				lw         a1, 0x10(t1)
+				nop
+				subu       a1, zero, a1
+				mult       a1, a2
+				mflo       a1
+				lw         v1, 0x14(t1)
+				nop
+				mult       v1, a3
+				mflo       v1
+				lw         v0, 0x18(t1)
+				nop
+				mult       v0, t0
+				addu       a1, a1, v1
+				mflo       v0
+				addu       a1, a1, v0
+				addiu      a1, a1, 0x800
+				sra        a1, a1, 0xc
+				sw         a1, delta_orientation[0](sp)
+				lw         v1, 0xc(t1)
+				nop
+				mult       v1, a2
+				mflo       v1
+				lw         a0, 0x14(t1)
+				nop
+				mult       a0, t0
+				mflo       a0
+				lw         v0, 0x18(t1)
+				nop
+				mult       v0, a3
+				subu       v1, v1, a0
+				mflo       v0
+				addu       v1, v1, v0
+				addiu      v1, v1, 0x800
+				sra        v1, v1, 0xc
+				sw         v1, delta_orientation[1](sp)
+				lw         v0, 0xc(t1)
+				nop
+				subu       v0, zero, v0
+				mult       v0, a3
+				mflo       v0
+				lw         a0, 0x10(t1)
+				nop
+				mult       a0, t0
+				mflo       a0
+				lw         v1, 0x18(t1)
+				nop
+				mult       v1, a2
+				addu       v0, v0, a0
+				mflo       v1
+				addu       v0, v0, v1
+				addiu      v0, v0, 0x800
+				sra        v0, v0, 0xc
+				sw         v0, delta_orientation[2](sp)
+				lw         v1, 0xc(t1)
+				nop
+				subu       v1, zero, v1
+				mult       v1, t0
+				mflo       v1
+				lw         a0, 0x10(t1)
+				nop
+				mult       a0, a3
+				mflo       a0
+				lw         v0, 0x14(t1)
+				nop
+				mult       v0, a2
+				subu       v1, v1, a0
+				mflo       v0
+				subu       v1, v1, v0
+				addiu      v1, v1, 0x800
+				sra        v1, v1, 0xc
+				sw         v1, delta_orientation[3](sp)
+				lw         v0, 0xc(t1)
+				lw         v1, 0x10(t1)
+				addu       v0, v0, a1
+				sw         v0, 0xc(t1)
+				lw         v0, delta_orientation[1](sp)
+				nop
+				addu       v1, v1, v0
+				sw         v1, 0x10(t1)
+				lw         v0, 0x14(t1)
+				lw         v1, delta_orientation[2](sp)
+				nop
+				addu       v0, v0, v1
+				lw         v1, 0x18(t1)
+				move       a0, t1
+				sw         v0, 0x14(t1)
+				lw         v0, delta_orientation[3](sp)
+				move       a1, t2
+				addu       v1, v1, v0
+				jal        RebuildCarMatrix
+#endif
+				// there might be bug, please decompile correctly
+				long* orient = cp->st.n.orientation;
+				long angvel[4];
+				
+				st->n.fposition[0] += (cp->st.n.linearVelocity[0] >> 8);
+				st->n.fposition[1] += (cp->st.n.linearVelocity[1] >> 8);
+				st->n.fposition[2] += (cp->st.n.linearVelocity[2] >> 8);
 
-				st->n.fposition[0] = st->n.fposition[0] + (cp->st.n.linearVelocity[0] >> 8);
-				iVar15 = cp->st.n.linearVelocity[2];
+				angvel[0] = (cp->st.n.angularVelocity[0] + 4096) / 8192;
+				angvel[1] = (cp->st.n.angularVelocity[1] + 4096) / 8192;
+				angvel[2] = (cp->st.n.angularVelocity[2] + 4096) / 8192;
 
-				cp->st.n.fposition[1] = (cp->st).n.fposition[1] + (iVar5 >> 8);
-				cp->st.n.fposition[2] = (cp->st).n.fposition[2] + (iVar15 >> 8);
+				delta_orientation[0] = ((-orient[1] * angvel[2] + orient[2] * angvel[1] + orient[3] * angvel[0]));
+				delta_orientation[1] = ((orient[0] * angvel[2] - orient[2] * angvel[0]) + orient[3] * angvel[1]);
+				delta_orientation[2] = (-orient[0] * angvel[1] + orient[1] * angvel[0] + orient[3] * angvel[2]);
+				delta_orientation[3] = (((-orient[0] * angvel[0] - orient[1] * angvel[1]) - orient[2] * angvel[2]));
 
-				iVar20 = cp->st.n.angularVelocity[1] + 0x1000 >> 0xd;
-				iVar16 = cp->st.n.angularVelocity[2] + 0x1000 >> 0xd;
-
-				iVar9 = cp->st.n.orientation[0];
-				iVar11 = cp->st.n.orientation[2];
-				iVar15 = cp->st.n.orientation[3];
-				iVar5 = cp->st.n.orientation[0];
-				iVar12 = cp->st.n.orientation[1];
-				iVar19 = cp->st.n.orientation[3];
-				iVar21 = cp->st.n.orientation[0];
-				iVar13 = cp->st.n.orientation[1];
-				howHard = cp->st.n.orientation[2];
-				iVar24 = cp->st.n.orientation[1];
-
-				cp->st.n.orientation[0] = cp->st.n.orientation[0] + (-cp->st.n.orientation[1] * iVar16 + cp->st.n.orientation[2] * iVar20 + cp->st.n.orientation[3] * iVar22 + 0x800 >> 0xc);
-				cp->st.n.orientation[1] = iVar24 + ((iVar9 * iVar16 - iVar11 * iVar22) + iVar15 * iVar20 + 0x800 >> 0xc);
-
-				iVar15 = cp->st.n.orientation[3];
-
-				cp->st.n.orientation[2] = cp->st.n.orientation[2] + (-iVar5 * iVar20 + iVar12 * iVar22 + iVar19 * iVar16 + 0x800 >> 0xc);
-				cp->st.n.orientation[3] = iVar15 + (((-iVar21 * iVar22 - iVar13 * iVar20) - howHard * iVar16) + 0x800 >> 0xc);
-
+				orient[0] += (delta_orientation[0] + 0x800) / 4096;
+				orient[1] += (delta_orientation[1] + 0x800) / 4096;
+				orient[2] += (delta_orientation[2] + 0x800) / 4096;
+				orient[3] += (delta_orientation[3] + 0x800) / 4096;
+				
 				RebuildCarMatrix((RigidBodyState *)st, cp);
 			}
 			iVar28 = iVar28 + 1;
@@ -1190,6 +1303,8 @@ void GlobalTimeStep(void)
 					iVar28 = num_active_cars;
 				} while (local_40 < num_active_cars);
 			}
+
+			/* // [A]
 			if (0 < iVar28) {
 				iVar9 = 0;
 				howHard = 0;
@@ -1246,6 +1361,7 @@ void GlobalTimeStep(void)
 					howHard = iVar19;
 				} while (iVar19 < num_active_cars);
 			}
+			*/
 			RKstep = iVar5;
 		} while (iVar5 < 2);
 
@@ -1260,26 +1376,31 @@ void GlobalTimeStep(void)
 				do {
 					cp = *pp_Var26;
 
+					
+					// [A] pls replace me
 					/*
-					//// [A] pls replace me
-					*(uint *)(cp->hd).drawCarMat.m = ~*(uint *)(cp->hd).where.m;
-					*(uint *)((cp->hd).drawCarMat.m + 2) = *(uint *)((cp->hd).where.m + 2) ^ 0xffff;
-					*(uint *)((cp->hd).drawCarMat.m + 4) =*(uint *)((cp->hd).where.m + 4);
-					*(uint *)((cp->hd).drawCarMat.m + 6) = ~*(uint *)((cp->hd).where.m + 6);
-					*(uint *)((cp->hd).drawCarMat.m + 8) = *(uint *)((cp->hd).where.m + 8) ^ 0xffff;
-		*/
+					*(uint *)(cp->hd.drawCarMat.m) = ~*(uint *)(cp->hd.where.m);					//m[0][1] + m[0][1] 
+					*(uint *)(cp->hd.drawCarMat.m + 2) = *(uint *)(cp->hd.where.m + 2) ^ 0xffff;	//m[0][2] + m[1][0] 
+
+					*(uint *)(cp->hd.drawCarMat.m + 4) = *(uint *)(cp->hd.where.m + 4);				//m[1][2] + m[0][1] 
+					*(uint *)(cp->hd.drawCarMat.m + 6) = ~*(uint *)(cp->hd.where.m + 6);			//m[0][1] + m[0][1] 
+
+					*(uint *)(cp->hd.drawCarMat.m + 8) = *(uint *)(cp->hd.where.m + 8) ^ 0xffff;	//m[0][1] + m[0][1] 
+					*/
 					cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
 					cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
-					cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
 
+					cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
 					cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
+
 					cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
 					cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
 
 					cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
 					cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
-					cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
 
+					cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
+					
 					if ((cp->ap.needsDenting != 0) && (((CameraCnt + iVar15 & 3U) == 0 || (iVar5 < 5)))) 
 					{
 						DentCar(cp);
@@ -1452,6 +1573,7 @@ void SetShadowPoints(_CAR_DATA *c0)
 // [D]
 void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 {
+#if 0
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -1466,31 +1588,123 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	iVar8 = (*qua)[2];
 	iVar7 = (*qua)[3];
 
-	sVar1 = (iVar5 * iVar5 + 0x400 >> 0xb);
-	sVar2 = (iVar8 * iVar8 + 0x400 >> 0xb);
-	sVar3 = (iVar6 * iVar6 + 0x400 >> 0xb);
+	sVar1 = (iVar5 * iVar5 + 1024) / 2048;
+	sVar2 = (iVar8 * iVar8 + 1024) / 2048;
+	sVar3 = (iVar6 * iVar6 + 1024) / 2048;
 
-	m->m[0][0] = 0x1000 - (sVar1 + sVar2);
-	m->m[1][1] = 0x1000 - (sVar3 + sVar2);
-	m->m[2][2] = 0x1000 - (sVar3 + sVar1);
+	m->m[0][0] = 4096 - (sVar1 + sVar2);
+	m->m[1][1] = 4096 - (sVar3 + sVar2);
+	m->m[2][2] = 4096 - (sVar3 + sVar1);
 
-	sVar2 = (iVar8 * iVar7 + 0x400 >> 0xb);
-	sVar1 = (iVar6 * iVar5 + 0x400 >> 0xb);
+	sVar2 = (iVar8 * iVar7 + 1024) / 2048;
+	sVar1 = (iVar6 * iVar5 + 1024) / 2048;
 
 	m->m[0][1] = sVar1 - sVar2;
 
-	sVar3 = (iVar6 * iVar8 + 0x400 >> 0xb);
-	sVar4 = (iVar5 * iVar7 + 0x400 >> 0xb);
+	sVar3 = (iVar6 * iVar8 + 1024) / 2048;
+	sVar4 = (iVar5 * iVar7 + 1024) / 2048;
 
 	m->m[0][2] = sVar3 + sVar4;
 	m->m[1][0] = sVar1 + sVar2;
 	m->m[2][0] = sVar3 - sVar4;
 
-	sVar2 = (iVar6 * iVar7 + 0x400 >> 0xb);
-	sVar1 = (iVar5 * iVar8 + 0x400 >> 0xb);
+	sVar2 = (iVar6 * iVar7 + 1024) / 2048;
+	sVar1 = (iVar5 * iVar8 + 1024) / 2048;
 
 	m->m[1][2] = sVar1 - sVar2;
 	m->m[2][1] = sVar1 + sVar2;
+#else
+
+	long t0, t1, t2, t3, t4, t5, t6, t7, a2, a0, a3, v0, v1, v2;
+	t0 = (*qua)[0]; //lw      $t0, 0($a0) 
+
+	//mult    $t0, $t0
+	//mflo    $t3
+	t3 = t0 * t0;
+	a2 = (*qua)[1];	//lw      $a2, 4($a0)
+
+	//mult    $t0, $a2
+	//mflo    $a3
+	a3 = t0 * a2;
+	t4 = (*qua)[2];	//lw      $t4, 8($a0)
+
+	//mult    $t0, $t4
+	//mflo    $t2
+	t2 = t0 * t4;
+
+	//mult    $a2, $a2
+	//mflo    $t7
+	t7 = a2 * a2;
+
+	t1 = (*qua)[3];//lw      $t1, 0xC($a0)
+
+	//mult    $a2, $t1
+	//mflo    $t5
+	t5 = a2 * t1;
+
+	//mult    $t4, $t4
+	//mflo    $v1
+	v1 = t4 * t4;
+
+	// m[0][0] 0
+	// m[0][1] 2
+	// m[0][2] 4
+	// m[1][0] 6
+	// m[1][1] 8
+	// m[1][2] A
+	// m[2][0] C
+	// m[2][1] E
+	// m[2][2] 10
+
+
+	//------------------------------- mult    $t4, $t1
+	t6 = 0x1000;
+	t3 += 0x400;	// addiu   $t3, 0x400
+	t3 = t3 >> 11;	// sra     $t3, 11
+	a3 += 0x400;	// addiu   $a3, 0x400
+	a3 = a3 >> 11;	// sra     $a3, 11
+	t2 += 0x400;	// addiu   $t2, 0x400
+	t2 = t2 >> 11;	// sra     $t2, 11
+	t7 += 0x400;	// addiu   $t7, 0x400
+	a0 = t4 * t1;	// mflo    $a0
+	t7 = t7 >> 11;	// sra     $t7, 11
+	t5 += 0x400;	// addiu   $t5, 0x400
+	//------------------------------- mult    $t0, $t1
+	t5 = t5 >> 11;	// sra     $t5, 11
+	v1 += 0x400;	// addiu   $v1, 0x400
+	v1 = v1 >> 11;	// sra     $v1, 11
+	v0 = t7 + v1;	// addu    $v0, $t7, $v1
+	v0 = t6 - v0;	// subu    $v0, $t6, $v0
+	v1 = t3 + v1;	// addu    $v1, $t3, $v1
+	v1 = t6 - v1;	// subu    $v1, $t6, $v1
+	t3 += t7;		// addu    $t3, $t7
+	t6 -= t3;		// subu    $t6, $t3
+	m->m[0][0] = v0;	// sh      $v0, MATRIX($a1)
+	m->m[1][1] = v1;	// sh      $v1, MATRIX.m + 8($a1)
+	t0 = t0 * t1;	//mflo    $t0
+	m->m[2][2] = t6; //sh      $t6, MATRIX.m + 0x10($a1)
+	a0 += 0x400;	// addiu   $a0, 0x400
+	//------------------------------- mult    $a2, $t4
+	a0 = a0 >> 11;	// sra     $a0, 11
+	v0 = a3 - a0;	// subu    $v0, $a3, $a0
+	m->m[0][1] = v0; // sh      $v0, MATRIX.m + 2($a1)
+	v0 = t2 + t5;	// addu    $v0, $t2, $t5
+	a3 += a0;		// addu    $a3, $a0
+	t2 -= t5;		// subu    $t2, $t5
+	m->m[0][2] = v0;// sh      $v0, MATRIX.m + 4($a1)
+	m->m[1][0] = a3;// sh      $a3, MATRIX.m + 6($a1)
+	m->m[2][0] = t2;// sh      $t2, MATRIX.m + 0xC($a1)
+	t0 += 0x400;	// addiu   $t0, 0x400
+	t0 = t0 >> 11;	// sra     $t0, 11
+	a2 = a2 * t4;	// mflo    $a2
+	a2 += 0x400;	// addiu   $a2, 0x400
+	a2 = a2 >> 11;	// sra     $a2, 11
+	v0 = a2 - t0;	// subu    $v0, $a2, $t0
+	a2 += t0;		// addu    $a2, $t0
+	m->m[1][2] = v0;// sh      $v0, MATRIX.m + 0xA($a1)
+	//jr      $ra
+	m->m[2][1] = a2;//sh      $a2, MATRIX.m + 0xE($a1)
+#endif
 }
 
 
@@ -1646,25 +1860,26 @@ void initOBox(_CAR_DATA *cp)
 void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 {
 	int iVar1;
-	int iVar2;
+	int osm;
 	int iVar3;
 	int iVar4;
 	int iVar5;
 	int iVar6;
 
-	cp->hd.where.t[0] = st->n.fposition[0] >> 4;
-	cp->hd.where.t[1] = st->n.fposition[1] >> 4;
-	cp->hd.where.t[2] = st->n.fposition[2] >> 4;
+	cp->hd.where.t[0] = st->n.fposition[0] / 16;
+	cp->hd.where.t[1] = st->n.fposition[1] / 16;
+	cp->hd.where.t[2] = st->n.fposition[2] / 16;
 
+	
 	iVar6 = st->n.orientation[0];
 	iVar5 = st->n.orientation[1];
 	iVar4 = st->n.orientation[2];
 	iVar3 = st->n.orientation[3];
 
-	iVar2 = iVar6 * iVar6 + iVar5 * iVar5 + iVar4 * iVar4 + iVar3 * iVar3;
-	iVar1 = 0x1000;
+	osm = iVar6 * iVar6 + iVar5 * iVar5 + iVar4 * iVar4 + iVar3 * iVar3;
+	iVar1 = 4096;
 
-	if (iVar2 < 0x400)
+	if (osm < 1024)
 	{
 		st->n.orientation[2] = 0;
 		st->n.orientation[1] = 0;
@@ -1672,16 +1887,17 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	}
 	else 
 	{
-		iVar1 = 0x1800 - (iVar2 >> 0xd);
-		st->n.orientation[0] = iVar1 * iVar6 + 0x800 >> 0xc;
-		st->n.orientation[1] = iVar1 * iVar5 + 0x800 >> 0xc;
-		st->n.orientation[2] = iVar1 * iVar4 + 0x800 >> 0xc;
-		iVar1 = iVar1 * iVar3 + 0x800 >> 0xc;
+		iVar1 = 6144 - (osm / 8192);
+
+		st->n.orientation[0] = (iVar1 * iVar6 + 2048) / 4096;
+		st->n.orientation[1] = (iVar1 * iVar5 + 2048) / 4096;
+		st->n.orientation[2] = (iVar1 * iVar4 + 2048) / 4096;
+
+		iVar1 = (iVar1 * iVar3 + 2048) / 4096;
 	}
-
 	st->n.orientation[3] = iVar1;
-
-	LongQuaternion2Matrix((long(*)[4])st->n.orientation, (MATRIX *)&cp->hd.where);
+	
+	LongQuaternion2Matrix((long(*)[4])st->n.orientation, (MATRIX *)cp);
 
 	initOBox(cp);
 }
@@ -2045,48 +2261,48 @@ void CheckCarToCarCollisions(void)
 
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-	UNIMPLEMENTED();
-
+#if 1
 	extern MATRIX camera_matrix;
 
 	// [A]
 	if ((pad & 4) == 0) {
+		
 		if ((pad & 0x2000) != 0) 
 		{
 			//RotMatrixY(3200, &cp->hd.where);
-			//cp->hd.direction += 30;
-			cp->st.n.angularVelocity[1] += 5000;
+			cp->hd.direction += 30;
+			//cp->st.n.angularVelocity[1] += 5000;
 		}
 
 		if ((pad & 0x8000) != 0) 
 		{
-			//cp->hd.direction -= 30;
+			cp->hd.direction -= 30;
 			//RotMatrixY(-3200, &cp->hd.where);
-			cp->st.n.angularVelocity[1] -= 5000;
+			//cp->st.n.angularVelocity[1] -= 5000;
 		}
-
+		
 		if ((pad & 0x40) != 0)
 		{
-			cp->st.n.linearVelocity[1] += 12150;
+			//cp->st.n.angularVelocity
+			//cp->st.n.linearVelocity[1] += 12150;
 		}
 
 		if ((pad & 0x80) != 0)
 		{
-			cp->st.n.linearVelocity[1] -= 12150;
+			//cp->st.n.linearVelocity[1] -= 12150;
 		}
 
 		if ((pad & 0x1000) != 0) 
 		{
-			cp->st.n.linearVelocity[0] += camera_matrix.m[0][2] / 2;
-			cp->st.n.linearVelocity[2] += camera_matrix.m[2][2] / 2;
-			//cp->st.n.fposition[0] += camera_matrix.m[0][2] / 2;
-			//cp->st.n.fposition[2] += camera_matrix.m[2][2] / 2;
+			cp->hd.aacc[0] = 0x1000;
+			//cp->hd.where.t[0] += camera_matrix.m[0][2] / 30;
+			//cp->hd.where.t[2] += camera_matrix.m[2][2] / 30;
 		}
 
 		if ((pad & 0x4000) != 0)
 		{
-			cp->st.n.linearVelocity[0] -= camera_matrix.m[0][2];
-			cp->st.n.linearVelocity[2] -= camera_matrix.m[2][2];
+			//cp->hd.where.t[0] -= camera_matrix.m[0][2] / 30;
+			//cp->hd.where.t[2] -= camera_matrix.m[2][2] / 30;
 		}
 	}
 	
@@ -2112,46 +2328,36 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
 	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
 	*/
-
-
-	/*
-	//int height = MapHeight((VECTOR*)cp->hd.where.t);
-	VECTOR normal, out;
-	_sdPlane *surfacePtr;
-	surfacePtr = NULL;
-
-	FindSurfaceD2((VECTOR*)cp->hd.where.t, &normal, &out, &surfacePtr);
-	cp->hd.where.t[1] = out.vy;*/
-
-	/*
+#endif
 	char cVar1;
 	short sVar2;
-	int i;
+	int iVar3;
 	int iVar4;
-	byte bVar5;
+	unsigned char bVar5;
 	CAR_COSMETICS *pCVar6;
 	int iVar7;
 
 	iVar7 = (int)PadSteer;
-	i = GetPlayerId(cp);
+	iVar3 = GetPlayerId(cp);
 	bVar5 = cp->controlType;
 	if (bVar5 == 1) {
-		if (((pad & 0x1010) == 0x1010) && (-1 < i)) {
+		if (((pad & 0x1010) == 0x1010) && (-1 < iVar3)) {
 			iVar4 = TannerStuckInCar(1);
 			if (iVar4 == 0) {
-				if (player.dying == '\0') {
-					ActivatePlayerPedestrian(cp, (char *)0x0, 0, (long(*)[4])0x0, 0);
+				if (player[0].dying == '\0') {
+					ActivatePlayerPedestrian(cp, NULL, 0, NULL, 0);
 				}
 			}
 			else {
-				if (lockAllTheDoors != '\0') {
+				if (lockAllTheDoors != '\0')
+				{
 					gLockPickingAttempted = (uint)bVar5;
 				}
 			}
 		}
 		if (((gStopPadReads != 0) ||
-			((&MaxPlayerDamage)[**(char **)cp->ai] <= (int)(uint)cp->totalDamage)) || (gCantDrive != 0))
-		{
+			(MaxPlayerDamage[(int)cp->ai.padid] <= (int)(uint)cp->totalDamage)) || (gCantDrive != 0)
+			) {
 			pad = 0x10;
 			if (0x9000 < (cp->hd).wheel_speed) {
 				pad = 0x80;
@@ -2159,23 +2365,25 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			iVar7 = 0;
 			use_analogue = '\x01';
 		}
-		if (-1 < i) {
-			iVar4 = CarHasSiren((uint)(byte)(cp->ap).model);
+		if (-1 < iVar3) {
+			iVar4 = CarHasSiren(cp->ap.model);
 			if (iVar4 == 0) {
-				bVar5 = (byte)(pad >> 3) & 1;
+				bVar5 = (pad >> 3) & 1;
 			}
 			else {
 				if (((cp->lastPad & 8U) != 0) || ((pad & 8) == 0)) goto LAB_00055c58;
-				bVar5 = (&player)[i].horn.on ^ 8;
+				bVar5 = player[iVar3].horn.on ^ 8;
 			}
-			(&player)[i].horn.on = bVar5;
+			player[iVar3].horn.on = bVar5;
 		}
 	}
 LAB_00055c58:
-	if ('Z' < (cp->hd).autoBrake) {
+	if ('Z' < (cp->hd).autoBrake)
+	{
 		(cp->hd).autoBrake = 'Z';
 	}
-	if ((pad & 0x10) == 0) {
+	if ((pad & 0x10) == 0)
+	{
 		cp->handbrake = '\0';
 		if ((pad & 0x20) == 0) {
 			cp->wheelspin = '\0';
@@ -2183,7 +2391,8 @@ LAB_00055c58:
 		else {
 			cp->wheelspin = '\x01';
 		}
-		if ((cp->wheelspin != '\0') && (0x6e958 < (cp->hd).wheel_speed)) {
+		if ((cp->wheelspin != '\0') && (0x6e958 < (cp->hd).wheel_speed))
+		{
 			cp->wheelspin = '\0';
 			pad = pad | 0x40;
 		}
@@ -2191,7 +2400,8 @@ LAB_00055c58:
 	else {
 		cp->handbrake = '\x01';
 	}
-	if (use_analogue == '\0') {
+	if (use_analogue == '\0')
+	{
 		if ((pad & 4) == 0) {
 			if (((pad & 0x2000) != 0) &&
 				(sVar2 = cp->wheel_angle + 0x20, cp->wheel_angle = sVar2, 0x160 < sVar2)) {
@@ -2218,18 +2428,23 @@ LAB_00055c58:
 		}
 		(cp->hd).autoBrake = '\0';
 	}
-	else {
-		if ((pad & 4) == 0) {
+	else 
+	{
+		if ((pad & 4) == 0) 
+		{
 			iVar7 = iVar7 * ((iVar7 * iVar7) / 0x50);
-			i = (int)((ulonglong)((longlong)iVar7 * 0x66666667) >> 0x20);
+			iVar3 = (int)(iVar7 * 0x66666667) >> 0x20;
 		}
 		else {
 			iVar7 = iVar7 * ((iVar7 * iVar7) / 0x3c);
-			i = (int)((ulonglong)((longlong)iVar7 * 0x88888889) >> 0x20);
+			iVar3 = (int)(iVar7 * 0x88888889) >> 0x20;
 		}
-		i = (i >> 5) - (iVar7 >> 0x1f);
-		cp->wheel_angle = (ushort)i & 0xfffc;
-		if (i + 0x10eU < 0x21d) {
+
+		iVar3 = (iVar3 >> 5) - (iVar7 >> 0x1f);
+
+		cp->wheel_angle = (ushort)iVar3 & 0xfffc;
+
+		if (iVar3 + 0x10eU < 0x21d) {
 			(cp->hd).autoBrake = '\0';
 		}
 		else {
@@ -2253,19 +2468,20 @@ LAB_00055c58:
 	}
 	if (gTimeInWater != 0) {
 		if ((pad & 0x80) != 0) {
-			i = (cp->hd).wheel_speed * 0x5dc;
-			if (i < 0) {
-				i = i + 0x3ff;
+			iVar3 = (cp->hd).wheel_speed * 0x5dc;
+			if (iVar3 < 0) {
+				iVar3 = iVar3 + 0x3ff;
 			}
-			i = (i >> 10) + 0x800 >> 0xc;
-			if (-i < 0x17) {
+			iVar3 = (iVar3 >> 10) + 0x800 >> 0xc;
+			if (-iVar3 < 0x17) {
 				sVar2 = -5000;
 			}
 			else {
-				sVar2 = (short)((uint)((i + 0x116) * -0x12aa) >> 8);
+				sVar2 = (short)((uint)((iVar3 + 0x116) * -0x12aa) >> 8);
 			}
 			cp->thrust = sVar2;
-			cp->thrust = (short)((int)cp->thrust * (int)((cp->ap).carCos)->powerRatio + 0x800 >> 0xc);
+			cp->thrust = (short)((int)cp->thrust * (int)((cp->ap).carCos)->powerRatio + 0x800 >> 0xc
+				);
 			goto LAB_00056284;
 		}
 		if ((pad & 0x40) != 0) {
@@ -2273,13 +2489,13 @@ LAB_00055c58:
 			cp->thrust = 0x1333;
 			cp->thrust = (short)((int)pCVar6->powerRatio * 0x1333 + 0x800 >> 0xc);
 			if (cp->hndType == '\x05') {
-				iVar7 = car_data[player.playerCarId].hd.where.t[0] - (cp->hd).where.t[0] >> 10;
-				i = car_data[player.playerCarId].hd.where.t[2] - (cp->hd).where.t[2] >> 10;
-				i = iVar7 * iVar7 + i * i;
-				if (i < 0x29) {
-					if (i < 0x15) {
+				iVar7 = car_data[player[0].playerCarId].hd.where.t[0] - (cp->hd).where.t[0] >> 10;
+				iVar3 = car_data[player[0].playerCarId].hd.where.t[2] - (cp->hd).where.t[2] >> 10;
+				iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
+				if (iVar3 < 0x29) {
+					if (iVar3 < 0x15) {
 						sVar2 = 6000;
-						if (9 < i) {
+						if (9 < iVar3) {
 							sVar2 = 0x1324;
 						}
 					}
@@ -2293,25 +2509,28 @@ LAB_00055c58:
 				cp->thrust = sVar2;
 			}
 			if (cp->controlType == '\x01') {
-				if ((int)player.playerCarId == (uint)(byte)cp->id) {
-					i = (int)player.targetCarId;
+				if ((int)player[0].playerCarId == cp->id) 
+				{
+					iVar3 = (int)player[0].targetCarId;
 				}
 				else {
-					i = -1;
-					if ((int)_PLAYER_ARRAY_000d979c[0].playerCarId == (uint)(byte)cp->id) {
-						i = (int)_PLAYER_ARRAY_000d979c[0].targetCarId;
+					iVar3 = -1;
+					if ((int)player[1].playerCarId == cp->id) 
+					{
+						iVar3 = (int)player[1].targetCarId;
 					}
 				}
-				if (i != -1) {
-					if (0xbea < ((cp->ap).carCos)->powerRatio) {
-						cp->thrust = (short)((int)(car_data[i].ap.carCos)->powerRatio * 0x1333 + 0x800 >>
-							0xc);
+				if (iVar3 != -1) {
+					if (0xbea < ((cp->ap).carCos)->powerRatio) 
+					{
+						cp->thrust = (short)((int)(car_data[iVar3].ap.carCos)->powerRatio * 0x1333 +
+							0x800 >> 0xc);
 					}
-					iVar7 = (cp->hd).where.t[0] - car_data[i].hd.where.t[0] >> 10;
-					i = (cp->hd).where.t[2] - car_data[i].hd.where.t[2] >> 10;
-					i = iVar7 * iVar7 + i * i;
-					if (i < 0x15) {
-						if (i < 7) {
+					iVar7 = (cp->hd).where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
+					iVar3 = (cp->hd).where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;
+					iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
+					if (iVar3 < 0x15) {
+						if (iVar3 < 7) {
 							cp->thrust = (short)(((int)cp->thrust * 0x1a2c) / 7000);
 						}
 						else {
@@ -2330,9 +2549,9 @@ LAB_00055c58:
 		}
 	}
 	cp->thrust = 0;
+
 LAB_00056284:
 	cp->lastPad = pad;
-	return;*/
 }
 
 
@@ -2790,24 +3009,24 @@ void nose_down(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 9346
 
+// [D]
 int GetPlayerId(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char *pcVar1;
 	int iVar2;
-	_PLAYER *p_Var3;
+	_PLAYER *pPVar3;
 	int iVar4;
 
 	iVar2 = 0;
-	p_Var3 = &player;
+	pPVar3 = player;
 	while ((iVar4 = -1, iVar2 < 3 &&
-		(pcVar1 = &p_Var3->playerCarId, p_Var3 = p_Var3 + 1, iVar4 = iVar2,
-			car_data + *pcVar1 != cp))) {
+		(pcVar1 = &pPVar3->playerCarId, pPVar3 = pPVar3 + 1, iVar4 = iVar2,
+			car_data + *pcVar1 != cp)))
+	{
 		iVar2 = iVar2 + 1;
 	}
-	return iVar4;*/
+
+	return iVar4;
 }
 
 

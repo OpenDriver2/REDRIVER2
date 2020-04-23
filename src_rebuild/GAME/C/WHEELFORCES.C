@@ -7,6 +7,10 @@
 #include "HANDLING.H"
 #include "COSMETIC.H"
 #include "DR2ROADS.H"
+#include "MISSION.H"
+#include "PAD.H"
+#include "SOUND.H"
+#include "GLAUNCH.H"
 
 #include "INLINE_C.H"
 #include "GTEREG.H"
@@ -87,6 +91,7 @@ void StepCars(void)
 	{
 		cp = *pp_Var1;
 		pp_Var1 = pp_Var1 + 1;
+
 		StepOneCar(cp);
 	}
 
@@ -267,9 +272,9 @@ void StepOneCar(_CAR_DATA *cp)
 	long deepestPoint[4];
 	long pointPos[4];
 	long surfacePoint[4];
-	int iStack140;
 	long surfaceNormal[4];
 	long lever[4];
+	long reaction[4];
 	VECTOR direction;
 	VECTOR partdir;
 	_sdPlane *SurfacePtr;
@@ -296,8 +301,8 @@ void StepOneCar(_CAR_DATA *cp)
 	cp->hd.acc[1] = -7456; // apply gravity
 	cp->hd.acc[2] = 0;
 
-	iVar12 = _cl.vel[0] + 0x800 >> 0xc;
-	iVar4 = _cl.vel[2] + 0x800 >> 0xc;
+	iVar12 = _cl.vel[0] + 0x800 / 4096;
+	iVar4 = _cl.vel[2] + 0x800 / 4096;
 
 	if (iVar12 < 0) {
 		iVar12 = -iVar12;
@@ -320,14 +325,14 @@ void StepOneCar(_CAR_DATA *cp)
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
 
-	iVar4 = 0xc;
+	iVar4 = 12;
 
 	if ((0x800 < cp->hd.where.m[1][1]) && (iVar4 = 4, cp->controlType == 2)) 
 	{
-		iVar4 = (uint)(cp->totalDamage != 0) << 2;
+		iVar4 = (cp->totalDamage != 0) << 2;
 	}
 
-	iVar13 = iVar4 + -1;
+	iVar13 = iVar4-1;
 	if (iVar4 != 0) 
 	{
 		pSVar14 = pCVar2->cPoints + iVar13;
@@ -351,7 +356,7 @@ void StepOneCar(_CAR_DATA *cp)
 
 			if((surfacePoint[1] - pointPos[1]) - 1 < 799)
 			{
-				iVar4 = (surfacePoint[1] - pointPos[1]) * surfaceNormal[1] + 0x800 >> 0xc;
+				iVar4 = ((surfacePoint[1] - pointPos[1]) * surfaceNormal[1] + 2048) / 4096;
 
 				if (iVar12 < iVar4)
 				{
@@ -376,7 +381,6 @@ void StepOneCar(_CAR_DATA *cp)
 				}
 			}
 
-
 			iVar13 = iVar13 + -1;
 			pSVar14 = pSVar14 + -1;
 		} while (iVar13 != -1);
@@ -384,13 +388,13 @@ void StepOneCar(_CAR_DATA *cp)
 
 	if (iVar12 != 0)
 	{
-		lever[0] = ((_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + 0x800 >> 0xc) + _cl.vel[0];
-		lever[1] = ((_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + 0x800 >> 0xc) + _cl.vel[1];
-		lever[2] = ((_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + 0x800 >> 0xc) + _cl.vel[2];
+		reaction[0] = ((_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + 2048) / 4096 + _cl.vel[0];
+		reaction[1] = ((_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + 2048) / 4096 + _cl.vel[1];
+		reaction[2] = ((_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + 2048) / 4096 + _cl.vel[2];
 
-		iVar4 = deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2] + 0x800 >> 0xc;
+		iVar4 = (deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2] + 2048) / 4096;
 		iVar4 = (((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) 
-			* car_cosmetics[cp->ap.model].twistRateY + 0x800 >> 0xc) + 0x1000;
+			* car_cosmetics[cp->ap.model].twistRateY + 2048) / 4096 + 4069;
 
 		if (iVar4 == 0) 
 		{
@@ -398,18 +402,18 @@ void StepOneCar(_CAR_DATA *cp)
 		}
 
 		iVar13 = 2;
-		impulse = (((lever[0] >> 6) * (deepestNormal[0] >> 6) + (lever[1] >> 6) * (deepestNormal[1] >> 6) + (lever[2] >> 6) * (deepestNormal[2] >> 6)) / iVar4) * -0x800;
+		impulse = (((reaction[0] / 64) * (deepestNormal[0] / 64) + (reaction[1] / 64) * (deepestNormal[1] / 64) + (reaction[2] / 64) * (deepestNormal[2] / 64)) / iVar4) * -2048;
 
 		piVar11 = (long*)&direction.vz;
 		piVar10 = deepestNormal + 2;
-		piVar9 = lever + 2;
+		piVar9 = reaction + 2;
 		piVar8 = (long*)frictionLimit + unaff_s6;
 
-		
 		do {
 			iVar6 = *piVar8;
-			iVar4 = *piVar9 * 0x43;
+			iVar4 = *piVar9 * 67;
 			iVar1 = -iVar6;
+
 			if ((iVar4 <= iVar6) && (iVar6 = iVar4, iVar4 < iVar1)) 
 				iVar6 = iVar1;
 
@@ -418,7 +422,7 @@ void StepOneCar(_CAR_DATA *cp)
 			piVar9 = piVar9 + -1;
 			piVar8 = piVar8 + -1;
 			iVar13 = iVar13 + -1;
-			*piVar11 = (impulse * iVar4 - iVar6) + 0x800 >> 0xc;
+			*piVar11 = ((impulse * iVar4 - iVar6) + 0x800) / 4096;
 			piVar11 = piVar11-1;
 		} while (-1 < iVar13);
 		
@@ -448,27 +452,27 @@ void StepOneCar(_CAR_DATA *cp)
 			}
 		}
 
-		cp->hd.acc[0] = cp->hd.acc[0] + direction.vx;
-		cp->hd.acc[1] = cp->hd.acc[1] + direction.vy;
-		cp->hd.acc[2] = cp->hd.acc[2] + direction.vz;
+		cp->hd.acc[0] += direction.vx;
+		cp->hd.acc[1] += direction.vy;
+		cp->hd.acc[2] += direction.vz;
 
-		cp->hd.aacc[0] = cp->hd.aacc[0] + ((deepestLever[1] * direction.vz - deepestLever[2] * direction.vy) + 0x800 >> 0xc);
-		cp->hd.aacc[1] = cp->hd.aacc[1] + ((deepestLever[2] * direction.vx - deepestLever[0] * direction.vz) + 0x800 >> 0xc);
-		cp->hd.aacc[2] = cp->hd.aacc[2] + ((deepestLever[0] * direction.vy - deepestLever[1] * direction.vx) + 0x800 >> 0xc);
+		cp->hd.aacc[0] += ((deepestLever[1] * direction.vz - deepestLever[2] * direction.vy) + 2048) / 4096;
+		cp->hd.aacc[1] += ((deepestLever[2] * direction.vx - deepestLever[0] * direction.vz) + 2048) / 4096;
+		cp->hd.aacc[2] += ((deepestLever[0] * direction.vy - deepestLever[1] * direction.vx) + 2048) / 4096;
 
 		if (iVar12 != 0) 
 		{
-			lever[0] = iVar12 * deepestNormal[0] + 0x800 >> 0xc;
-			lever[1] = iVar12 * deepestNormal[1] + 0x800 >> 0xc;
-			lever[2] = iVar12 * deepestNormal[2] + 0x800 >> 0xc;
+			reaction[0] = (iVar12 * deepestNormal[0] + 2048) / 4096;
+			reaction[1] = (iVar12 * deepestNormal[1] + 2048) / 4096;
+			reaction[2] = (iVar12 * deepestNormal[2] + 2048) / 4096;
 
-			cp->hd.where.t[0] += lever[0];
-			cp->hd.where.t[1] += lever[1];
-			cp->hd.where.t[2] += lever[2];
+			cp->hd.where.t[0] += reaction[0];
+			cp->hd.where.t[1] += reaction[1];
+			cp->hd.where.t[2] += reaction[2];
 
-			cp->st.n.fposition[0] += lever[0] * 16;
-			cp->st.n.fposition[1] += lever[1] * 16;
-			cp->st.n.fposition[2] += lever[2] * 16;
+			cp->st.n.fposition[0] += reaction[0] * 16;
+			cp->st.n.fposition[1] += reaction[1] * 16;
+			cp->st.n.fposition[2] += reaction[2] * 16;
 
 			gte_SetTransMatrix(&cp->hd.where);
 
@@ -528,80 +532,98 @@ void StepOneCar(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 808
 
+// [D]
 void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *rearFS)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	int iVar2;
 	int iVar3;
 
 	bVar1 = cp->hndType;
-	if (cp->thrust < 0) {
+	if (cp->thrust < 0)
+	{
 		iVar2 = 0x5ad;
 	}
-	else {
+	else 
+	{
 		iVar2 = 0x334;
-		if (cp->thrust < 1) {
+		if (cp->thrust < 1) 
+		{
 			iVar2 = 0x3a9;
 		}
 	}
 	*frontFS = iVar2;
-	if ((((cp->wheelspin == '\0') && (handlingType[cp->hndType].autoBrakeOn != '\0')) &&
-		(iVar2 = (int)(cp->hd).autoBrake, 0 < iVar2)) && (0 < (cp->hd).wheel_speed)) {
+	if ((((cp->wheelspin == 0) && (handlingType[cp->hndType].autoBrakeOn != 0)) &&
+		(iVar2 = (int)(cp->hd).autoBrake, 0 < iVar2)) && (0 < (cp->hd).wheel_speed)) 
+	{
 		iVar3 = iVar2 << 1;
-		if (0xd < iVar2) {
+		if (0xd < iVar2) 
+		{
 			iVar2 = 0xd;
 			iVar3 = 0x1a;
 		}
 		*frontFS = *frontFS + (iVar3 + iVar2) * 0xf;
-		if (handlingType[cp->hndType].autoBrakeOn == '\x02') {
-			while (FrameCnt != 0x78654321) {
+		if (handlingType[cp->hndType].autoBrakeOn == 2) 
+		{
+			while (FrameCnt != 0x78654321) 
+			{
 				trap(0x400);
 			}
 		}
 	}
-	if ((((cp->thrust < 0) && (0xa3d7 < (cp->hd).wheel_speed)) && (cp->hndType == '\0')) ||
-		(((cp->controlType == '\x02' && (cp->ai[0xf9] == 3)) && (cp->ai[0xc] != 9)))) {
-		(cp->hd).wheel[3].locked = '\x01';
-		(cp->hd).wheel[2].locked = '\x01';
-		(cp->hd).wheel[1].locked = '\x01';
-		(cp->hd).wheel[0].locked = '\x01';
+	if ((((cp->thrust < 0) && (0xa3d7 < (cp->hd).wheel_speed)) && (cp->hndType == 0)) ||
+		(((cp->controlType == 2 && (cp->ai.c.thrustState == 3)) && (cp->ai.c.ctrlState != 9))))
+	{
+		(cp->hd).wheel[3].locked = 1;
+		(cp->hd).wheel[2].locked = 1;
+		(cp->hd).wheel[1].locked = 1;
+		(cp->hd).wheel[0].locked = 1;
 	}
 	else {
-		(cp->hd).wheel[3].locked = '\0';
-		(cp->hd).wheel[2].locked = '\0';
-		(cp->hd).wheel[1].locked = '\0';
-		(cp->hd).wheel[0].locked = '\0';
+		(cp->hd).wheel[3].locked = 0;
+		(cp->hd).wheel[2].locked = 0;
+		(cp->hd).wheel[1].locked = 0;
+		(cp->hd).wheel[0].locked = 0;
 	}
-	if (cp->handbrake == '\0') {
-		if (cp->wheelspin != '\0') {
+	if (cp->handbrake == 0) 
+	{
+		if (cp->wheelspin != 0)
+		{
 			*frontFS = *frontFS + 600;
 		}
 	}
-	else {
-		if (-1 < cp->thrust) {
+	else 
+	{
+		if (-1 < cp->thrust) 
 			cp->thrust = 0;
-		}
-		if ((cp->hd).wheel_speed < 1) {
+
+		if ((cp->hd).wheel_speed < 1)
+		{
 			iVar2 = *frontFS + -0x177;
 		}
-		else {
+		else 
+		{
 			iVar2 = *frontFS + 0x290;
 		}
+
 		*frontFS = iVar2;
-		(cp->hd).wheel[1].locked = '\x01';
-		(cp->hd).wheel[3].locked = '\x01';
-		cp->wheelspin = '\0';
+		(cp->hd).wheel[1].locked = 1;
+		(cp->hd).wheel[3].locked = 1;
+		cp->wheelspin = 0;
 	}
-	if ((((cp->hd).wheel_speed < 0) && (-1 < cp->thrust)) && (cp->handbrake == '\0')) {
+	if ((((cp->hd).wheel_speed < 0) && (-1 < cp->thrust)) && (cp->handbrake == '\0'))
+	{
 		*frontFS = *frontFS + -400;
 	}
+
 	*rearFS = 0x780 - *frontFS;
-	if (cp->wheelspin != '\0') {
+	if (cp->wheelspin != '\0')
+	{
 		cp->thrust = (short)((int)((cp->ap).carCos)->powerRatio * 5000 + 0x800 >> 0xc);
 	}
-	if (((cp->thrust < 0) && (0xa3d7 < (cp->hd).wheel_speed)) && (cl->aggressive != 0)) {
+
+	if (((cp->thrust < 0) && (0xa3d7 < (cp->hd).wheel_speed)) && (cl->aggressive != 0))
+	{
 		iVar2 = *frontFS * 10;
 		if (iVar2 < 0) {
 			iVar2 = iVar2 + 7;
@@ -613,8 +635,10 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 		}
 		*rearFS = iVar2 >> 3;
 	}
-	else {
-		if ((cp->hd).wheel[0].onGrass == '\0') {
+	else 
+	{
+		if ((cp->hd).wheel[0].onGrass == 0) 
+		{
 			iVar3 = *frontFS;
 			iVar2 = iVar3 * 0x24;
 		}
@@ -628,26 +652,32 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 		}
 		*frontFS = iVar2 >> 5;
 	}
-	iVar2 = *frontFS * (uint)(byte)handlingType[bVar1].frictionScaleRatio;
-	if (iVar2 < 0) {
+
+	iVar2 = *frontFS * handlingType[bVar1].frictionScaleRatio;
+	if (iVar2 < 0)
 		iVar2 = iVar2 + 0x1f;
-	}
+
 	*frontFS = iVar2 >> 5;
-	iVar2 = *rearFS * (uint)(byte)handlingType[bVar1].frictionScaleRatio;
-	if (iVar2 < 0) {
+	iVar2 = *rearFS * handlingType[bVar1].frictionScaleRatio;
+
+	if (iVar2 < 0)
 		iVar2 = iVar2 + 0x1f;
-	}
+
 	*rearFS = iVar2 >> 5;
-	if ((cp->hndType == '\x05') && (cp->ai[0] == 5)) {
+
+	if ((cp->hndType == 5) && (cp->ai.l.dstate == 5))
+	{
 		*frontFS = (*frontFS * 3) / 2;
 		*rearFS = (*rearFS * 3) / 2;
 	}
-	iVar2 = (int)((cp->ap).carCos)->traction;
-	if (iVar2 != 0x1000) {
+
+	iVar2 = cp->ap.carCos->traction;
+
+	if (iVar2 != 0x1000) 
+	{
 		*frontFS = *frontFS * iVar2 + 0x800 >> 0xc;
 		*rearFS = *rearFS * iVar2 + 0x800 >> 0xc;
 	}
-	return;*/
 }
 
 
@@ -729,7 +759,7 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 	do {
 		iVar11 = *piVar12 * (int)sVar4 +
 			((int)*psVar14 *
-			((int)sVar5 - (int)sVar4) * (sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8 + 0x800 >> 0xc) + *piVar13 * -0x80 + 0x800 >> 0xc);
+			((int)sVar5 - (int)sVar4) * (sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8 + 0x800 >> 0xc) + *piVar13 * -0x80 + 0x800) / 4096;
 		*piVar12 = iVar11;
 
 		if (cl->extraangulardamping == 1)
@@ -859,123 +889,138 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 	/* end block 3 */
 	// End Line: 1173
 
+// [D]
 void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	short sVar2;
 	long lVar3;
 	VECTOR *pVVar4;
-	undefined4 in_zero;
-	undefined4 in_at;
 	uint uVar5;
 	int iVar6;
 	int iVar7;
 	int iVar8;
 	bool bVar9;
 	int iVar10;
-	int iVar11;
-	uint uVar12;
+	uint uVar11;
+	int iVar12;
 	int iVar13;
 	int iVar14;
 	int iVar15;
 	int chan;
 	int iVar16;
 	WHEEL *pWVar17;
-	VECTOR local_b0;
-	VECTOR VStack160;
-	VECTOR local_90;
-	int local_80;
-	int local_7c;
-	int local_78;
-	int local_70;
-	int local_6c;
-	int local_68;
-	int local_60;
-	int local_5c;
-	_sdPlane *local_58;
-	uint local_54;
-	int local_50;
-	int local_4c;
-	int local_48;
-	int local_44;
-	CAR_COSMETICS *local_40;
+	long wheelPos[4];
+	long surfacePoint[4];
+	long surfaceNormal[4];
+	VECTOR force;
+	long pointVel[4];
+	int frontFS;
+	int rearFS;
+	_sdPlane *SurfacePtr;
+	int i;
+	int cdx;
+	int cdz;
+	int sdx;
+	int sdz;
+	CAR_COSMETICS *car_cos;
 	int local_3c;
 	VECTOR *local_38;
 	VECTOR *local_34;
 	VECTOR *local_30;
 	_sdPlane **local_2c;
 
-	iVar10 = (cp->hd).speed * 3 >> 1;
-	if (iVar10 < 0x20) {
+	iVar10 = cp->hd.speed * 3 >> 1;
+
+	if (iVar10 < 0x20)
 		iVar10 = iVar10 * -0x48 + 0xe70;
-	}
-	else {
+	else 
 		iVar10 = 0x590 - iVar10;
-	}
-	uVar5 = (cp->hd).direction;
-	local_58 = (_sdPlane *)0x0;
-	uVar12 = uVar5 & 0xfff;
+
+	uVar5 = cp->hd.direction;
+
+	SurfacePtr = NULL;
+	uVar11 = uVar5 & 0xfff;
 	uVar5 = uVar5 + (int)cp->wheel_angle & 0xfff;
-	local_50 = (int)rcossin_tbl[uVar12 * 2];
-	local_4c = (int)rcossin_tbl[uVar12 * 2 + 1];
-	local_48 = (int)rcossin_tbl[uVar5 * 2];
-	local_44 = (int)rcossin_tbl[uVar5 * 2 + 1];
+
+	cdx = (int)rcossin_tbl[uVar11 * 2];
+	cdz = (int)rcossin_tbl[uVar11 * 2 + 1];
+	sdx = (int)rcossin_tbl[uVar5 * 2];
+	sdz = (int)rcossin_tbl[uVar5 * 2 + 1];
+
 	local_3c = GetPlayerId(cp);
-	local_40 = car_cosmetics + (byte)(cp->ap).model;
-	GetFrictionScalesDriver1(cp, cl, &local_60, &local_5c);
-	(cp->hd).front_vel = 0;
-	(cp->hd).rear_vel = 0;
-	if (0xce4 < iVar10) {
+	car_cos = car_cosmetics + cp->ap.model;
+
+	GetFrictionScalesDriver1(cp, cl, &frontFS, &rearFS);
+
+	cp->hd.front_vel = 0;
+	cp->hd.rear_vel = 0;
+
+	if (0xce4 < iVar10) 
 		iVar10 = 0xce4;
-	}
-	local_38 = &local_b0;
-	local_30 = &local_90;
-	local_54 = 3;
-	local_34 = &VStack160;
-	local_2c = &local_58;
+
+	local_38 = (VECTOR *)wheelPos;
+	local_30 = (VECTOR *)surfaceNormal;
+	
+	local_34 = (VECTOR *)surfacePoint;
+	local_2c = &SurfacePtr;
+
 	pWVar17 = (cp->hd).wheel + 3;
+	i = 3;
 	do {
 		pVVar4 = local_38;
-		setCopReg(2, in_zero, *(undefined4 *)(local_40->wheelDisp + local_54));
-		setCopReg(2, in_at, *(undefined4 *)&local_40->wheelDisp[local_54].vz);
-		copFunction(2, 0x480012);
-		lVar3 = getCopReg(2, 0x19);
+		gte_ldv0(&car_cos->wheelDisp[i]);
+
+		docop2(0x480012);
+
+		lVar3 = MAC1; // getCopReg(2, 0x19);
 		local_38->vx = lVar3;
-		lVar3 = getCopReg(2, 0x1a);
+		lVar3 = MAC2; //getCopReg(2, 0x1a);
 		pVVar4->vy = lVar3;
-		lVar3 = getCopReg(2, 0x1b);
+		lVar3 = MAC3; //getCopReg(2, 0x1b);
 		pVVar4->vz = lVar3;
+
 		iVar6 = FindSurfaceD2(local_38, local_30, local_34, local_2c);
 		bVar9 = false;
 		iVar6 = (iVar6 * (0x7e90 - wetness) >> 0xf) + 500;
-		if (local_58 != (_sdPlane *)0x0) {
-			bVar9 = local_58->surface == 4;
-		}
-		*(bool *)&pWVar17->onGrass = bVar9;
-		if (local_58 == (_sdPlane *)0x0) {
+
+		if (SurfacePtr != NULL)
+			bVar9 = SurfacePtr->surface == 4;
+
+		pWVar17->onGrass = bVar9;
+
+		if (SurfacePtr == NULL) 
+		{
 			pWVar17->surface = '\0';
 		}
-		else {
-			sVar2 = local_58->surface;
-			if ((((sVar2 == 4) || (sVar2 == 6)) || (sVar2 == 0xb)) || (sVar2 == 9)) {
+		else
+		{
+			sVar2 = SurfacePtr->surface;
+			if ((((sVar2 == 4) || (sVar2 == 6)) || (sVar2 == 0xb)) || (sVar2 == 9))
+			{
 				pWVar17->surface = -0x80;
 			}
-			else {
+			else 
+			{
 				pWVar17->surface = '\0';
 			}
-			if (sVar2 == 8) {
+
+			if (sVar2 == 8)
+			{
 				pWVar17->surface = pWVar17->surface | 2;
 			}
-			else {
-				if (sVar2 < 9) {
-					if (sVar2 == 6) {
+			else 
+			{
+				if (sVar2 < 9)
+				{
+					if (sVar2 == 6) 
+					{
 					LAB_000821c4:
 						pWVar17->surface = pWVar17->surface | 1;
 					}
 				}
-				else {
+				else 
+				{
 					if (sVar2 == 9) goto LAB_000821c4;
 					if (sVar2 == 0xb) {
 						pWVar17->surface = pWVar17->surface | 3;
@@ -985,247 +1030,275 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 		}
 		bVar1 = pWVar17->susCompression;
 		uVar5 = (uint)bVar1;
-		chan = ((VStack160.vy - local_b0.vy) * local_90.vy + 0x800 >> 0xc) + 0xe;
+		chan = ((surfacePoint[1] - wheelPos[1]) * surfaceNormal[1] + 0x800 >> 0xc) + 0xe;
 		iVar16 = chan;
-		if (chan < 0) {
+
+		if (chan < 0)
 			iVar16 = 0;
-		}
-		if (800 < chan) {
+
+		if (800 < chan)
 			iVar16 = 0xc;
-		}
-		if (cp->controlType == '\x01') {
+
+		if (cp->controlType == 1)
+		{
 			chan = iVar16 - uVar5;
 			if (chan < 0) {
 				chan = uVar5 - iVar16;
 			}
-			if ((0xc < chan) && ((local_54 & 1) != 0)) {
+			if ((0xc < chan) && ((i & 1U) != 0)) 
+			{
 				chan = GetFreeChannel();
-				if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
+				if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
 					SetPlayerOwnsChannel(chan, (char)local_3c);
-				}
-				Start3DSoundVolPitch
-				(chan, 1, 5, (cp->hd).where.t[0], (cp->hd).where.t[1], (cp->hd).where.t[2], -0x9c4, 400);
-				SetChannelPosition3(chan, (VECTOR *)(cp->hd).where.t, (long *)0x0, -0x9c4, 400, 0);
+
+				Start3DSoundVolPitch(chan, 1, 5, (cp->hd).where.t[0], (cp->hd).where.t[1], (cp->hd).where.t[2], -0x9c4, 400);
+				SetChannelPosition3(chan, (VECTOR *)(cp->hd).where.t, NULL, -0x9c4, 400, 0);
 			}
-			if (iVar16 < 0x55) {
-				if (0x30 < iVar16) {
-					SetPadVibration((int)**(char **)cp->ai, '\x03');
-				}
+			if (iVar16 < 0x55) 
+			{
+				if (0x30 < iVar16)
+					SetPadVibration((int)cp->ai.padid, '\x03');
 			}
-			else {
-				SetPadVibration((int)**(char **)cp->ai, '\x02');
-			}
+			else 
+				SetPadVibration((int)cp->ai.padid, '\x02');
 		}
-		if (0x2a < iVar16) {
+
+		if (0x2a < iVar16)
 			iVar16 = 0x2a;
+
+		if ((iVar16 == 0) && (bVar1 == 0)) 
+		{
+			pWVar17->susCompression = 0;
 		}
-		if ((iVar16 == 0) && (bVar1 == 0)) {
-			pWVar17->susCompression = '\0';
-		}
-		else {
-			local_b0.vz = local_b0.vz - (cp->hd).where.t[2];
-			local_b0.vy = local_b0.vy - (cp->hd).where.t[1];
-			local_b0.vx = local_b0.vx - (cp->hd).where.t[0];
-			local_78 = 0;
-			local_80 = 0;
-			local_70 = ((cl->avel[1] * local_b0.vz - cl->avel[2] * local_b0.vy) + 0x800 >> 0xc) +
-				cl->vel[0];
-			local_6c = ((cl->avel[2] * local_b0.vx - cl->avel[0] * local_b0.vz) + 0x800 >> 0xc) +
-				cl->vel[1];
-			local_68 = ((cl->avel[0] * local_b0.vy - cl->avel[1] * local_b0.vx) + 0x800 >> 0xc) +
-				cl->vel[2];
-			chan = iVar16 * 0xe6 + uVar5 * -100;
-			if (pWVar17->locked == '\0') {
-				uVar5 = local_54 & 1;
-				if (uVar5 == 0) {
-					iVar15 = -local_48;
-					iVar14 = local_44;
+		else 
+		{
+			wheelPos[2] = wheelPos[2] - cp->hd.where.t[2];
+			wheelPos[1] = wheelPos[1] - cp->hd.where.t[1];
+			wheelPos[0] = wheelPos[0] - cp->hd.where.t[0];
+
+			force.vz = 0;
+			force.vx = 0;
+
+			chan = ((cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + 0x800 >> 0xc) + cl->vel[0];
+			iVar12 = ((cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + 0x800 >> 0xc) + cl->vel[2];
+
+			iVar15 = iVar16 * 0xe6 + uVar5 * -100;
+
+			if (pWVar17->locked == 0) 
+			{
+				if ((i & 1U) == 0) 
+				{
+					iVar14 = -sdx;
+					iVar13 = sdz;
 				}
-				else {
-					iVar15 = -local_50;
-					iVar14 = local_4c;
-				}
-			}
-			else {
-				uVar12 = ratan2(local_70 >> 6, local_68 >> 6);
-				uVar5 = local_54 & 1;
-				iVar15 = (int)rcossin_tbl[(uVar12 & 0xfff) * 2 + 1];
-				iVar11 = local_70;
-				if (local_70 < 0) {
-					iVar11 = -local_70;
-				}
-				iVar7 = local_68;
-				if (local_68 < 0) {
-					iVar7 = -local_68;
-				}
-				iVar14 = (int)rcossin_tbl[(uVar12 & 0xfff) * 2];
-				if (iVar11 + iVar7 < 8000) {
-					local_90.vx = 0;
-					local_90.vy = 0x1000;
-					local_90.vz = 0;
+				else 
+				{
+					iVar14 = -cdx;
+					iVar13 = cdz;
 				}
 			}
-			iVar11 = local_70;
-			if (local_70 < 0) {
-				iVar11 = local_70 + 0x3f;
+			else 
+			{
+				uVar5 = ratan2(chan >> 6, iVar12 >> 6);
+				iVar14 = (int)rcossin_tbl[(uVar5 & 0xfff) * 2 + 1];
+				iVar7 = chan;
+				if (chan < 0)
+					iVar7 = -chan;
+
+				iVar8 = iVar12;
+				if (iVar12 < 0) {
+					iVar8 = -iVar12;
+				}
+				iVar13 = (int)rcossin_tbl[(uVar5 & 0xfff) * 2];
+
+				if (iVar7 + iVar8 < 8000)
+				{
+					surfaceNormal[0] = 0;
+					surfaceNormal[1] = 0x1000;
+					surfaceNormal[2] = 0;
+				}
 			}
-			iVar7 = iVar14;
-			if (iVar14 < 0) {
-				iVar7 = iVar14 + 0x3f;
-			}
-			iVar13 = local_68;
-			if (local_68 < 0) {
-				iVar13 = local_68 + 0x3f;
-			}
-			iVar8 = iVar15;
-			if (iVar15 < 0) {
-				iVar8 = iVar15 + 0x3f;
-			}
-			iVar7 = (iVar11 >> 6) * (iVar7 >> 6) + (iVar13 >> 6) * (iVar8 >> 6);
-			iVar11 = iVar10;
-			if (iVar10 < 0) {
-				iVar11 = iVar10 + 0x3f;
-			}
-			iVar13 = iVar7;
-			if (iVar7 < 0) {
-				iVar13 = iVar7 + 0x3f;
-			}
-			iVar11 = (iVar11 >> 6) * (iVar13 >> 6);
-			if (iVar11 < 0) {
-				iVar11 = -iVar11;
-			}
-			if (iVar7 < 0xc351) {
-				if (iVar7 < -50000) {
+			if (chan < 0)
+				chan = chan + 0x3f;
+
+			iVar7 = iVar13;
+			if (iVar13 < 0)
+				iVar7 = iVar13 + 0x3f;
+
+			if (iVar12 < 0)
+				iVar12 = iVar12 + 0x3f;
+
+			iVar8 = iVar14;
+			if (iVar14 < 0)
+				iVar8 = iVar14 + 0x3f;
+	
+			iVar12 = (chan >> 6) * (iVar7 >> 6) + (iVar12 >> 6) * (iVar8 >> 6);
+			chan = iVar10;
+			if (iVar10 < 0)
+				chan = iVar10 + 0x3f;
+
+			iVar7 = iVar12;
+			if (iVar12 < 0)
+				iVar7 = iVar12 + 0x3f;
+
+			chan = (chan >> 6) * (iVar7 >> 6);
+
+			if (chan < 0) 
+				chan = -chan;
+
+			if (iVar12 < 0xc351) 
+			{
+				if (iVar12 < -50000) 
+				{
 				LAB_00082604:
-					iVar7 = -0x30d4;
+					iVar12 = -0x30d4;
 				}
-				else {
-					iVar7 = iVar10 * iVar7 + 0x800 >> 0xc;
-					if (0x30d4 < iVar7) goto LAB_000825f4;
-					if (iVar7 < -0x30d4) goto LAB_00082604;
+				else 
+				{
+					iVar12 = iVar10 * iVar12 + 0x800 >> 0xc;
+					if (0x30d4 < iVar12) goto LAB_000825f4;
+					if (iVar12 < -0x30d4) goto LAB_00082604;
 				}
 			}
-			else {
+			else 
+			{
 			LAB_000825f4:
-				iVar7 = 0x30d4;
+				iVar12 = 0x30d4;
 			}
-			if (uVar5 == 0) {
-				iVar13 = local_60 * iVar7 + 0x800;
-				iVar7 = iVar13 >> 0xc;
-				if (pWVar17->locked == '\0') {
-					if (cp->controlType == '\x03') {
-						local_80 = local_80 + local_48 * cp->thrust;
-						local_78 = local_78 + local_44 * cp->thrust;
+
+			if ((i & 1U) == 0)
+			{
+				iVar7 = frontFS * iVar12 + 0x800;
+				iVar12 = iVar7 >> 0xc;
+				if (pWVar17->locked == 0)
+				{
+					if (cp->controlType == 3) 
+					{
+						force.vx = sdx * cp->thrust;
+						force.vz = sdz * cp->thrust;
 					}
 				}
-				else {
-					iVar7 = (iVar13 >> 0xd) + iVar7 >> 1;
-					iVar13 = ((-iVar7 * iVar14 + 0x800 >> 0xc) * local_44 -
-						(-iVar7 * iVar15 + 0x800 >> 0xc) * local_48) + 0x400 >> 0xb;
-					local_80 = local_80 + iVar13 * local_44;
-					local_78 = local_78 + -iVar13 * local_48;
+				else 
+				{
+					iVar12 = (iVar7 >> 0xd) + iVar12 >> 1;
+					iVar7 = ((-iVar12 * iVar13 + 0x800 >> 0xc) * sdz - (-iVar12 * iVar14 + 0x800 >> 0xc) * sdx) + 0x400 >> 0xb;
+					force.vx = iVar7 * sdz;
+					force.vz = -iVar7 * sdx;
 				}
-				if ((cp->hd).front_vel < iVar11) {
-					(cp->hd).front_vel = iVar11;
-				}
+
+				if (cp->hd.front_vel < chan) 
+					cp->hd.front_vel = chan;
 			}
-			else {
-				if (pWVar17->locked == '\0') {
-					iVar7 = local_5c * iVar7 + 0x800 >> 0xc;
-					if ((handlingType[cp->hndType].autoBrakeOn != '\0') && (0 < iVar7 * cp->wheel_angle)) {
-						(cp->hd).autoBrake = -1;
-					}
-					local_80 = local_80 + -iVar15 * (int)cp->thrust;
-					local_78 = local_78 + iVar14 * (int)cp->thrust;
-				}
-				else {
-					iVar7 = local_60 * iVar7 + 0x2000 >> 0xe;
-				}
-				if ((cp->hd).rear_vel < iVar11) {
-					(cp->hd).rear_vel = iVar11;
-				}
-			}
-			local_80 = local_80 + (chan * local_90.vx - iVar7 * iVar14) + cl->vel[0] * -0xc;
-			local_78 = local_78 + (chan * local_90.vz - iVar7 * iVar15) + cl->vel[2] * -0xc;
-			if ((pWVar17->surface & 7) == 1) {
-				local_80 = local_80 + cl->vel[0] * -0x4b;
-				local_78 = local_78 + cl->vel[2] * -0x4b;
-			}
-			iVar15 = (int)(cp->hd).where.m[4];
-			if (iVar15 < 0x800) {
-				iVar15 = 0x1000 - iVar15;
-				if (iVar15 < 0x1001) {
-					iVar15 = 0x1000 - (iVar15 * iVar15 + 0x800 >> 0xc);
+			else 
+			{
+				if (pWVar17->locked == 0) 
+				{
+					iVar12 = rearFS * iVar12 + 0x800 >> 0xc;
+
+					if (handlingType[cp->hndType].autoBrakeOn != 0 && (0 < iVar12 * cp->wheel_angle)) 
+						cp->hd.autoBrake = -1;
+
+					force.vx = -iVar14 * (int)cp->thrust;
+					force.vz = iVar13 * (int)cp->thrust;
 				}
 				else {
-					iVar15 = 0;
+					iVar12 = frontFS * iVar12 + 0x2000 >> 0xe;
 				}
-				iVar6 = iVar6 * iVar15 + 0x800 >> 0xc;
+
+				if (cp->hd.rear_vel < chan) 
+					cp->hd.rear_vel = chan;
 			}
-			if (local_90.vy < 0xccc) {
-				iVar6 = iVar6 * local_90.vy * 5 >> 0xe;
+			force.vx = force.vx + (iVar15 * surfaceNormal[0] - iVar12 * iVar13) + cl->vel[0] * -0xc;
+			force.vz = force.vz + (iVar15 * surfaceNormal[2] - iVar12 * iVar14) + cl->vel[2] * -0xc;
+
+			if ((pWVar17->surface & 7) == 1) 
+			{
+				force.vx = force.vx + cl->vel[0] * -0x4b;
+				force.vz = force.vz + cl->vel[2] * -0x4b;
 			}
-			local_7c = chan * local_90.vy + cl->vel[1] * -0xc + 0x800 >> 0xc;
-			local_80 = (local_80 + 0x800 >> 0xc) * iVar6 >> 0xc;
-			local_78 = (local_78 + 0x800 >> 0xc) * iVar6 >> 0xc;
-			if (cp->controlType == '\x03') {
-				if (gCopDifficultyLevel == 2) {
-					local_b0.vy = local_b0.vy * 0xc;
+
+			chan = (int)(cp->hd).where.m[4];
+
+			if (chan < 0x800) 
+			{
+				chan = 0x1000 - chan;
+				if (chan < 0x1001) 
+				{
+					chan = 0x1000 - (chan * chan + 0x800 >> 0xc);
 				}
 				else {
-					local_b0.vy = local_b0.vy * 0x13;
+					chan = 0;
 				}
-				if (local_b0.vy < 0) {
-					local_b0.vy = local_b0.vy + 0x1f;
-				}
-				local_b0.vy = local_b0.vy >> 5;
+				iVar6 = iVar6 * chan + 0x800 >> 0xc;
 			}
-			chan = (cp->hd).acc[1];
-			(cp->hd).acc[0] = (cp->hd).acc[0] + local_80;
-			iVar6 = (cp->hd).acc[2];
-			(cp->hd).acc[1] = chan + local_7c;
-			(cp->hd).acc[2] = iVar6 + local_78;
-			(cp->hd).aacc[0] =
-				(cp->hd).aacc[0] + ((local_b0.vy * local_78 - local_b0.vz * local_7c) + 0x800 >> 0xc);
-			(cp->hd).aacc[1] =
-				(cp->hd).aacc[1] + ((local_b0.vz * local_80 - local_b0.vx * local_78) + 0x800 >> 0xc);
-			(cp->hd).aacc[2] =
-				(cp->hd).aacc[2] + ((local_b0.vx * local_7c - local_b0.vy * local_80) + 0x800 >> 0xc);
+
+			if (surfaceNormal[1] < 0xccc) 
+			{
+				iVar6 = iVar6 * surfaceNormal[1] * 5 >> 0xe;
+			}
+
+			chan = iVar15 * surfaceNormal[1] + cl->vel[1] * -0xc + 0x800 >> 0xc;
+			iVar12 = (force.vx + 0x800 >> 0xc) * iVar6 >> 0xc;
+			iVar6 = (force.vz + 0x800 >> 0xc) * iVar6 >> 0xc;
+
+			if (cp->controlType == 3) 
+			{
+				if (gCopDifficultyLevel == 2)
+					iVar15 = wheelPos[1] * 0xc;
+				else 
+					iVar15 = wheelPos[1] * 0x13;
+
+				if (iVar15 < 0)
+					iVar15 = iVar15 + 0x1f;
+
+				wheelPos[1] = iVar15 >> 5;
+			}
+
+			(cp->hd).acc[0] = (cp->hd).acc[0] + iVar12;
+			(cp->hd).acc[1] = (cp->hd).acc[1] + chan;
+			(cp->hd).acc[2] = (cp->hd).acc[2] + iVar6;
+			(cp->hd).aacc[0] = (cp->hd).aacc[0] + ((wheelPos[1] * iVar6 - wheelPos[2] * chan) + 0x800 >> 0xc);
+			(cp->hd).aacc[1] = (cp->hd).aacc[1] + ((wheelPos[2] * iVar12 - wheelPos[0] * iVar6) + 0x800 >> 0xc);
+			(cp->hd).aacc[2] = (cp->hd).aacc[2] + ((wheelPos[0] * chan - wheelPos[1] * iVar12) + 0x800 >> 0xc);
 			pWVar17->susCompression = (char)iVar16;
 		}
 		pWVar17 = pWVar17 + -1;
-		local_54 = local_54 - 1;
-	} while (-1 < (int)local_54);
-	if (((cp->hd).wheel[1].susCompression == '\0') && ((cp->hd).wheel[3].susCompression == '\0')) {
+		i = i + -1;
+	} while (-1 < i);
+
+	if (((cp->hd).wheel[1].susCompression == 0) && ((cp->hd).wheel[3].susCompression == 0)) 
+	{
 		uVar5 = 0x1a0000;
-		if (cp->thrust < 1) {
+		if (cp->thrust < 1)
+		{
 			uVar5 = 0;
-			if (-1 < cp->thrust) goto LAB_00082b9c;
+			if (-1 < cp->thrust) 
+				goto LAB_00082b9c;
 			uVar5 = 0xffed0000;
 		}
 		uVar5 = uVar5 | 0x4000;
 	}
-	else {
+	else 
+	{
 		iVar10 = cl->vel[0];
 		if (iVar10 < 0) {
 			iVar10 = iVar10 + 0x3f;
 		}
-		if (local_50 < 0) {
-			local_50 = local_50 + 0x3f;
+		if (cdx < 0) {
+			cdx = cdx + 0x3f;
 		}
 		iVar6 = cl->vel[2];
 		if (iVar6 < 0) {
 			iVar6 = iVar6 + 0x3f;
 		}
-		if (local_4c < 0) {
-			local_4c = local_4c + 0x3f;
+		if (cdz < 0) {
+			cdz = cdz + 0x3f;
 		}
-		uVar5 = (iVar10 >> 6) * (local_50 >> 6) + (iVar6 >> 6) * (local_4c >> 6);
+		uVar5 = (iVar10 >> 6) * (cdx >> 6) + (iVar6 >> 6) * (cdz >> 6);
 	}
+
 LAB_00082b9c:
 	(cp->hd).wheel_speed = uVar5;
-	return;
-	*/
 }
 
 

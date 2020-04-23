@@ -30,6 +30,9 @@ extern int gBatterPlayer;
 extern int bMissionTitleFade;
 extern int g321GoDelay;
 extern int gTannerActionNeeded;
+extern int gLockPickingAttempted;
+extern char lockAllTheDoors;
+extern int gCantDrive;
 
 extern int requestStationaryCivCar;
 extern int numCivCars;
