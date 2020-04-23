@@ -19,17 +19,17 @@
 //Direct3D9
 //#define D3D9
 
-//Vulkan
-//#define VK
-
 #if defined(OGL)
 #define SDL2
 #define GLEW
 #endif
 
-#elif defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+#elif defined(__EMSCRIPTEN__)
 #define OGLES
 #define OGLES_VERSION (2)
+#elif defined(__ANDROID__)
+#define OGLES
+#define OGLES_VERSION (3)
 #if OGLES_VERSION == 2
 #define ES2_SHADERS
 #elif OGLES_VERSION == 3
@@ -79,10 +79,6 @@
 #include <GLES3/gl3.h>
 #endif
 #include <EGL/egl.h>
-#elif defined(VK)
-#include <SDL_syswm.h>
-#define VK_USE_PLATFORM_WIN32_KHR
-#include <vulkan/vulkan.h>
 #elif defined(D3D9)
 #include <Windows.h>
 #include <d3d9.h>

@@ -32,66 +32,6 @@
 #include <SDL.h>
 
 SDL_Window* g_window = NULL;
-
-#if defined(VK)
- 
-struct FrameBuffer vramFrameBuffer;
-
-#define MAX_NUM_PHYSICAL_DEVICES (4)
-
-VkWin32SurfaceCreateInfoKHR surfaceCreateInfo =
-{
-	VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR
-};
-
-VkSurfaceKHR surface = VK_NULL_HANDLE;
-VkInstance instance = VK_NULL_HANDLE;
-VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
-
-const char* enabledExtensionsDeviceCreateInfo[] =
-{
-	 VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-enum 
-{
-	MAX_DEVICE_COUNT = 8,
-	MAX_QUEUE_COUNT = 4,
-	MAX_PRESENT_MODE_COUNT = 6,
-	MAX_SWAPCHAIN_IMAGES = 3,
-	FRAME_COUNT = 2,
-	PRESENT_MODE_MAILBOX_IMAGE_COUNT = 3,
-	PRESENT_MODE_DEFAULT_IMAGE_COUNT = 2,
-};
-
-VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-uint32_t queueFamilyIndex;
-VkQueue queue;
-VkDevice device = VK_NULL_HANDLE;
-
-unsigned int vramTexture;///@TODO trim me
-unsigned int vramRenderBuffer = 0;
-unsigned int whiteTexture;
-int g_defaultFBO;
-
-const char* enabledExtensions[] =
-{
-	VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-};
-
-VkSwapchainKHR swapchain;
-unsigned int swapchainImageCount;
-VkImage swapchainImages[MAX_SWAPCHAIN_IMAGES];
-VkExtent2D swapchainExtent;
-VkSurfaceFormatKHR surfaceFormat;
-unsigned int frameIndex = 0;
-VkCommandPool commandPool;
-VkCommandBuffer commandBuffers[FRAME_COUNT];
-VkFence frameFences[FRAME_COUNT]; // Create with VK_FENCE_CREATE_SIGNALED_BIT.
-VkSemaphore imageAvailableSemaphores[FRAME_COUNT];
-VkSemaphore renderFinishedSemaphores[FRAME_COUNT];
-#endif
-
 TextureID vramTexture;
 TextureID whiteTexture;
 
@@ -182,263 +122,6 @@ static int Emulator_InitialiseD3D9Context(char* windowName)
 		eprinterr("Failed to obtain D3D9 device!\n");
 		return FALSE;
 	}
-
-	return TRUE;
-}
-#endif
-
-#if defined(VK)
-static int Emulator_InitialiseVKContext(char* windowName)
-{
-	VkApplicationInfo appInfo;
-	memset(&appInfo, 0, sizeof(VkApplicationInfo));
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = windowName;
-	appInfo.applicationVersion = VK_MAKE_VERSION(EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION, 0);
-	appInfo.pEngineName = EMULATOR_NAME;
-	appInfo.engineVersion = VK_MAKE_VERSION(EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_0;
-
-	VkInstanceCreateInfo createInfo;
-	memset(&createInfo, 0, sizeof(VkInstanceCreateInfo));
-	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	createInfo.pApplicationInfo = &appInfo;
-	createInfo.enabledExtensionCount = 2;
-	createInfo.ppEnabledExtensionNames = enabledExtensions;
-	createInfo.pNext = VK_NULL_HANDLE;
-
-	//Create Vulkan Instance
-	if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create Vulkan instance!");
-		return FALSE;
-	}
-
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_VULKAN);
-
-#if defined(OGL)
-	SDL_GL_CreateContext(g_window);
-#endif
-
-	if (g_window == NULL)
-	{
-		eprinterr("Failed to initialise Vulkan context!\n");
-		return FALSE;
-	}
-
-	SDL_SysWMinfo sysInfo;
-	SDL_VERSION(&sysInfo.version);
-	SDL_GetWindowWMInfo(g_window, &sysInfo);
-	surfaceCreateInfo.hinstance = GetModuleHandle(0);
-	surfaceCreateInfo.hwnd = sysInfo.info.win.window;
-
-	if (vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, NULL, &surface) != VK_SUCCESS)
-	{
-		eprinterr("Failed to initialise Vulkan surface!\n");
-		return FALSE;
-	}
-
-	unsigned int physicalDeviceCount;
-	VkPhysicalDevice deviceHandles[MAX_DEVICE_COUNT];
-	VkQueueFamilyProperties queueFamilyProperties[MAX_QUEUE_COUNT];
-	VkPhysicalDeviceProperties deviceProperties;
-	VkPhysicalDeviceFeatures deviceFeatures;
-	
-
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, 0);
-	physicalDeviceCount = physicalDeviceCount > MAX_DEVICE_COUNT ? MAX_DEVICE_COUNT : physicalDeviceCount;
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, deviceHandles);
-
-	for (unsigned int i = 0; i < physicalDeviceCount; ++i)//Maybe 0 needs to be 1
-	{
-		unsigned int queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(deviceHandles[i], &queueFamilyCount, NULL);
-		queueFamilyCount = queueFamilyCount > MAX_QUEUE_COUNT ? MAX_QUEUE_COUNT : queueFamilyCount;
-		vkGetPhysicalDeviceQueueFamilyProperties(deviceHandles[i], &queueFamilyCount, queueFamilyProperties);
-
-		vkGetPhysicalDeviceProperties(deviceHandles[i], &deviceProperties);
-		vkGetPhysicalDeviceFeatures(deviceHandles[i], &deviceFeatures);
-		vkGetPhysicalDeviceMemoryProperties(deviceHandles[i], &deviceMemoryProperties);
-		for (unsigned int j = 0; j < queueFamilyCount; ++j) {
-
-			VkBool32 supportsPresent = VK_FALSE;
-			vkGetPhysicalDeviceSurfaceSupportKHR(deviceHandles[i], j, surface, &supportsPresent);
-
-			if (supportsPresent && (queueFamilyProperties[j].queueFlags & VK_QUEUE_GRAPHICS_BIT))
-			{
-				queueFamilyIndex = j;
-				physicalDevice = deviceHandles[i];
-				break;
-			}
-		}
-
-		if (physicalDevice)
-		{
-			break;
-		}
-	}
-
-	VkDeviceCreateInfo deviceCreateInfo;
-	VkDeviceQueueCreateInfo deviceQueueCreateInfo;
-	memset(&deviceCreateInfo, 0, sizeof(VkDeviceCreateInfo));
-	memset(&deviceQueueCreateInfo, 0, sizeof(VkDeviceQueueCreateInfo));
-
-	const float queuePriorities = { 1.0f };
-
-	deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	deviceQueueCreateInfo.queueFamilyIndex = queueFamilyIndex;
-	deviceQueueCreateInfo.queueCount = 1;
-	deviceQueueCreateInfo.pQueuePriorities = &queuePriorities;
-
-	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceCreateInfo.queueCreateInfoCount = 1;
-	deviceCreateInfo.pQueueCreateInfos = 0;
-	deviceCreateInfo.enabledLayerCount = 0;
-	deviceCreateInfo.ppEnabledLayerNames = 0;
-	deviceCreateInfo.enabledExtensionCount = 1;
-	deviceCreateInfo.ppEnabledExtensionNames = enabledExtensionsDeviceCreateInfo;
-	deviceCreateInfo.pEnabledFeatures = 0;
-	deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
-
-	if (vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create VK device!\n");
-		return FALSE;
-	}
-
-	vkGetDeviceQueue(device, queueFamilyIndex, 0, &queue);
-
-	/* Initialise SwapChain */
-	unsigned int formatCount = 1;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, 0);
-	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, &surfaceFormat);
-	surfaceFormat.format = surfaceFormat.format == VK_FORMAT_UNDEFINED ? VK_FORMAT_B8G8R8A8_UNORM : surfaceFormat.format;
-
-	unsigned int presentModeCount = 0;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL);
-	VkPresentModeKHR presentModes[MAX_PRESENT_MODE_COUNT];
-	presentModeCount = presentModeCount > MAX_PRESENT_MODE_COUNT ? MAX_PRESENT_MODE_COUNT : presentModeCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes);
-
-	VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
-	for (unsigned int i = 0; i < presentModeCount; ++i)
-	{
-		if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
-		{
-			presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-			break;
-		}
-	}
-	swapchainImageCount = presentMode == VK_PRESENT_MODE_MAILBOX_KHR ? PRESENT_MODE_MAILBOX_IMAGE_COUNT : PRESENT_MODE_DEFAULT_IMAGE_COUNT;
-
-	VkSurfaceCapabilitiesKHR surfaceCapabilities;
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
-
-	swapchainExtent = surfaceCapabilities.currentExtent;
-	//if (swapchainExtent.width == UINT32_MAX)
-	//{
-	//	swapchainExtent.width = clamp_u32(width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-	//	swapchainExtent.height = clamp_u32(height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-	//}
-
-	VkSwapchainCreateInfoKHR swapChainCreateInfo;
-	memset(&swapChainCreateInfo, 0, sizeof(VkSwapchainCreateInfoKHR));
-	swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	swapChainCreateInfo.surface = surface;
-	swapChainCreateInfo.minImageCount = swapchainImageCount;
-	swapChainCreateInfo.imageFormat = surfaceFormat.format;
-	swapChainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-	swapChainCreateInfo.imageExtent = swapchainExtent;
-	swapChainCreateInfo.imageArrayLayers = 1; // 2 for stereo
-	swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	swapChainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
-	swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	swapChainCreateInfo.presentMode = presentMode;
-	swapChainCreateInfo.clipped = VK_TRUE;
-
-	if (vkCreateSwapchainKHR(device, &swapChainCreateInfo, 0, &swapchain) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create swap chain!\n");
-		return FALSE;
-	}
-
-	vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, NULL);
-	vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages);
-
-
-	VkCommandPoolCreateInfo commandPoolCreateInfo;
-	memset(&commandPoolCreateInfo, 0, sizeof(VkCommandPoolCreateInfo));
-	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
-
-	vkCreateCommandPool(device, &commandPoolCreateInfo, 0, &commandPool);
-
-	VkCommandBufferAllocateInfo commandBufferAllocInfo;
-	memset(&commandBufferAllocInfo, 0, sizeof(VkCommandBufferAllocateInfo));
-	
-	commandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferAllocInfo.commandPool = commandPool;
-	commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandBufferAllocInfo.commandBufferCount = FRAME_COUNT;
-
-	vkAllocateCommandBuffers(device, &commandBufferAllocInfo, commandBuffers);
-
-	VkSemaphoreCreateInfo semaphoreCreateInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
-
-	vkCreateSemaphore(device, &semaphoreCreateInfo, 0, &imageAvailableSemaphores[0]);
-	vkCreateSemaphore(device, &semaphoreCreateInfo, 0, &imageAvailableSemaphores[1]);
-	vkCreateSemaphore(device, &semaphoreCreateInfo, 0, &renderFinishedSemaphores[0]);
-	vkCreateSemaphore(device, &semaphoreCreateInfo, 0, &renderFinishedSemaphores[1]);
-
-	VkFenceCreateInfo fenceCreateInfo;
-	memset(&fenceCreateInfo, 0, sizeof(VkFenceCreateInfo));
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-	vkCreateFence(device, &fenceCreateInfo, 0, &frameFences[0]);
-	vkCreateFence(device, &fenceCreateInfo, 0, &frameFences[1]);
-
-	uint32_t index = (frameIndex++) % FRAME_COUNT;
-	vkWaitForFences(device, 1, &frameFences[index], VK_TRUE, UINT64_MAX);
-	vkResetFences(device, 1, &frameFences[index]);
-
-	uint32_t imageIndex;
-	vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, imageAvailableSemaphores[index], VK_NULL_HANDLE, &imageIndex);
-
-	VkCommandBufferBeginInfo beginInfo;
-	memset(&beginInfo, 0, sizeof(VkCommandBufferBeginInfo));
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	vkBeginCommandBuffer(commandBuffers[index], &beginInfo);
-	
-	vkEndCommandBuffer(commandBuffers[index]);
-
-	VkSubmitInfo submitInfo;
-	memset(&submitInfo, 0, sizeof(VkSubmitInfo));
-	VkPipelineStageFlags writeDestStageMask = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &imageAvailableSemaphores[index];
-	submitInfo.pWaitDstStageMask = &writeDestStageMask;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[index];
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &renderFinishedSemaphores[index];
-	vkQueueSubmit(queue, 1, &submitInfo, frameFences[index]);
-
-	VkPresentInfoKHR presentInfo;
-	memset(&presentInfo, 0, sizeof(VkPresentInfoKHR));
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &renderFinishedSemaphores[index];
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapchain;
-	presentInfo.pImageIndices = &imageIndex;
-
-	vkQueuePresentKHR(queue, &presentInfo);
 
 	return TRUE;
 }
@@ -604,12 +287,6 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height)
 	if (Emulator_InitialiseGLESContext(windowName) == FALSE)
 	{
 		eprinterr("Failed to Initialise GLES Context!\n");
-		return FALSE;
-	}
-#elif defined(VK)
-	if (Emulator_InitialiseVKContext(windowName) == FALSE)
-	{
-		eprinterr("Failed to Initialise VK Context!\n");
 		return FALSE;
 	}
 #elif defined(D3D9)
@@ -1692,7 +1369,7 @@ ShaderID Shader_Compile_Internal(const DWORD *vs_data, const DWORD *ps_data)
 	assert(!FAILED(hr));
 	return shader;
 }
-#elif
+#else
     #error
 #endif
 
@@ -1798,281 +1475,6 @@ int Emulator_Initialise()
     return TRUE;
 }
 
-#if 0
-unsigned int getMemoryType(unsigned int typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound)
-{
-	memTypeFound = NULL;
-
-	for (unsigned int i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
-	{
-		if ((typeBits & 1) == 1)
-		{
-			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			{
-				if (memTypeFound)
-				{
-					*memTypeFound = true;
-				}
-				return i;
-			}
-		}
-		typeBits >>= 1;
-	}
-
-	if (memTypeFound)
-	{
-		*memTypeFound = false;
-		return 0;
-	}
-	else
-	{
-		eprinterr("Could not find matching memory type!\n");
-		assert(FALSE);
-	}
-}
-
-int Emulator_Initialise()
-{
-	//d3ddev->GetRenderTarget(0, &g_defaultRenderTarget);
-	//d3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
-	//d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(64, 64, 64, 128));
-	//d3ddev->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
-
-	/* Initialise VRAM */
-	SDL_memset(vram, 0, VRAM_WIDTH * VRAM_HEIGHT * sizeof(unsigned short));
-
-	/* Generate NULL white texture */
-	//Emulator_GenerateAndBindNullWhite();///@TODO
-
-	vramFrameBuffer.width = VRAM_WIDTH;
-	vramFrameBuffer.height = VRAM_HEIGHT;
-
-	// Find a suitable depth format
-	VkFormat fbDepthFormat;
-	//VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &fbDepthFormat);
-	//assert(validDepthFormat);
-
-	// Color attachment
-	VkImageCreateInfo imageCreateInfo;
-	memset(&imageCreateInfo, 0, sizeof(VkImageCreateInfo));
-
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = VK_FORMAT_R5G5B5A1_UNORM_PACK16;
-	imageCreateInfo.extent.width = vramFrameBuffer.width;
-	imageCreateInfo.extent.height = vramFrameBuffer.height;
-	imageCreateInfo.extent.depth = 1;
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-
-	// We will sample directly from the color attachment
-	imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-
-	VkMemoryAllocateInfo memoryAllocateInfo;
-	memset(&memoryAllocateInfo, 0, sizeof(VkMemoryAllocateInfo));
-	VkMemoryRequirements memReqs;
-	memset(&memReqs, 0, sizeof(VkMemoryRequirements));
-	if (vkCreateImage(device, &imageCreateInfo, nullptr, &vramFrameBuffer.color.image) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create vram image!\n");
-		return FALSE;
-	}
-
-	vkGetImageMemoryRequirements(device, vramFrameBuffer.color.image, &memReqs);
-	memoryAllocateInfo.allocationSize = memReqs.size;
-	memoryAllocateInfo.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, NULL);
-	if (vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &vramFrameBuffer.color.mem) != VK_SUCCESS)
-	{
-		eprinterr("Failed to allocate vram image memory!\n");
-		return FALSE;
-	}
-
-	if (vkBindImageMemory(device, vramFrameBuffer.color.image, vramFrameBuffer.color.mem, 0) != VK_SUCCESS)
-	{
-		eprinterr("Failed to bind vram image memory!\n");
-		return FALSE;
-	}
-
-	VkImageViewCreateInfo colorImageView;
-	memset(&colorImageView, 0, sizeof(VkImageViewCreateInfo));
-
-	colorImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	colorImageView.format = VK_FORMAT_R5G5B5A1_UNORM_PACK16;
-	colorImageView.subresourceRange = {};
-	colorImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	colorImageView.subresourceRange.baseMipLevel = 0;
-	colorImageView.subresourceRange.levelCount = 1;
-	colorImageView.subresourceRange.baseArrayLayer = 0;
-	colorImageView.subresourceRange.layerCount = 1;
-	colorImageView.image = vramFrameBuffer.color.image;
-
-	if (vkCreateImageView(device, &colorImageView, nullptr, &vramFrameBuffer.color.view) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create vram view image!\n");
-		return FALSE;
-	}
-
-	// Create sampler to sample from the attachment in the fragment shader
-	VkSamplerCreateInfo samplerInfo;
-	memset(&samplerInfo, 0, sizeof(VkSamplerCreateInfo));
-
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeV = samplerInfo.addressModeU;
-	samplerInfo.addressModeW = samplerInfo.addressModeU;
-	samplerInfo.mipLodBias = 0.0f;
-	samplerInfo.maxAnisotropy = 1.0f;
-	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = 1.0f;
-	samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	if (vkCreateSampler(device, &samplerInfo, nullptr, &vramFrameBuffer.sampler) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create vram sampler!\n");
-		return FALSE;
-	}
-
-	// Depth stencil attachment
-	imageCreateInfo.format = fbDepthFormat;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	if (vkCreateImage(device, &imageCreateInfo, nullptr, &vramFrameBuffer.depth.image) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create depth image!\n");
-		return FALSE;
-	}
-	vkGetImageMemoryRequirements(device, vramFrameBuffer.depth.image, &memReqs);
-	memoryAllocateInfo.allocationSize = memReqs.size;
-	memoryAllocateInfo.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, FALSE);
-	if (vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &vramFrameBuffer.depth.mem) != VK_SUCCESS)
-	{
-		eprinterr("Failed to allocate depth image memory!\n");
-		return FALSE;
-	}
-	if (vkBindImageMemory(device, vramFrameBuffer.depth.image, vramFrameBuffer.depth.mem, 0) != VK_SUCCESS)
-	{
-		eprinterr("Failed to allocate bind depth image memory!\n");
-		return FALSE;
-	}
-
-	VkImageViewCreateInfo depthStencilView;
-	memset(&depthStencilView, 0, sizeof(VkImageViewCreateInfo));
-
-	depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	depthStencilView.format = fbDepthFormat;
-	depthStencilView.flags = 0;
-	depthStencilView.subresourceRange = {};
-	depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-	depthStencilView.subresourceRange.baseMipLevel = 0;
-	depthStencilView.subresourceRange.levelCount = 1;
-	depthStencilView.subresourceRange.baseArrayLayer = 0;
-	depthStencilView.subresourceRange.layerCount = 1;
-	depthStencilView.image = vramFrameBuffer.depth.image;
-
-	if (vkCreateImageView(device, &depthStencilView, nullptr, &vramFrameBuffer.depth.view) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create depth image view!\n");
-		return FALSE;
-	}
-	// Create a separate render pass for the offscreen rendering as it may differ from the one used for scene rendering
-	VkAttachmentDescription attchmentDescriptions[2];
-	memset(&attchmentDescriptions[0], 0, sizeof(VkAttachmentDescription) * 2);
-
-	// Color attachment
-	attchmentDescriptions[0].format = VK_FORMAT_R5G5B5A1_UNORM_PACK16;
-	attchmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
-	attchmentDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attchmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	attchmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attchmentDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attchmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	attchmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	// Depth attachment
-	attchmentDescriptions[1].format = fbDepthFormat;
-	attchmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
-	attchmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attchmentDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attchmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attchmentDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attchmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	attchmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-	VkAttachmentReference depthReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
-
-	VkSubpassDescription subpassDescription = {};
-	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpassDescription.colorAttachmentCount = 1;
-	subpassDescription.pColorAttachments = &colorReference;
-	subpassDescription.pDepthStencilAttachment = &depthReference;
-
-	// Use subpass dependencies for layout transitions
-	VkSubpassDependency subPassDependencies[2];
-	memset(&subPassDependencies[0], 0, sizeof(VkSubpassDependency) * 2);
-
-	subPassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	subPassDependencies[0].dstSubpass = 0;
-	subPassDependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	subPassDependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	subPassDependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	subPassDependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	subPassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	subPassDependencies[1].srcSubpass = 0;
-	subPassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-	subPassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	subPassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	subPassDependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	subPassDependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	subPassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	// Create the actual renderpass
-	VkRenderPassCreateInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 2;
-	renderPassInfo.pAttachments = &attchmentDescriptions[0];
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpassDescription;
-	renderPassInfo.dependencyCount = 2;
-	renderPassInfo.pDependencies = &subPassDependencies[0];
-
-	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &vramFrameBuffer.renderPass) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create render pass!\n");
-		return FALSE;
-	}
-
-	VkImageView attachments[2];
-	attachments[0] = vramFrameBuffer.color.view;
-	attachments[1] = vramFrameBuffer.depth.view;
-
-	VkFramebufferCreateInfo fbufCreateInfo;
-	memset(&fbufCreateInfo, 0, sizeof(VkFramebufferCreateInfo));
-	fbufCreateInfo.renderPass = vramFrameBuffer.renderPass;
-	fbufCreateInfo.attachmentCount = 2;
-	fbufCreateInfo.pAttachments = attachments;
-	fbufCreateInfo.width = vramFrameBuffer.width;
-	fbufCreateInfo.height = vramFrameBuffer.height;
-	fbufCreateInfo.layers = 1;
-
-	if (vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &vramFrameBuffer.frameBuffer) != VK_SUCCESS)
-	{
-		eprinterr("Failed to create frame buffer!\n");
-		return FALSE;
-	}
-
-	// Fill a descriptor for later use in a descriptor set 
-	vramFrameBuffer.descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	vramFrameBuffer.descriptor.imageView = vramFrameBuffer.color.view;
-	vramFrameBuffer.descriptor.sampler = vramFrameBuffer.sampler;
-
-	Emulator_CreateGlobalShaders();
-
-	return TRUE;
-}
-#endif
-
 void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar)
 {
 	float a = 2.0f / (right - left);
@@ -2109,7 +1511,7 @@ void Emulator_SetShader(const ShaderID &shader)
 #elif defined(D3D9)
 	d3ddev->SetVertexShader(shader.VS);
 	d3ddev->SetPixelShader(shader.PS);
-#elif
+#else
 	#error
 #endif
 
@@ -2154,7 +1556,7 @@ void Emulator_DestroyTexture(TextureID texture)
     glDeleteTextures(1, &texture);
 #elif defined(D3D9)
     texture->Release();
-#elif
+#else
     #error
 #endif
 }
@@ -2174,8 +1576,6 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 
-unsigned short flipYvram[VRAM_WIDTH * VRAM_HEIGHT];
-
 void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer)
 {
 #if NOFILE
@@ -2187,15 +1587,6 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 	if (f == NULL)
 	{
 		return;
-	}
-
-	for (int x = 0; x < VRAM_WIDTH; x++)
-	{
-		for (int y = 0; y < VRAM_HEIGHT; y++)
-		{
-			short srcPixel = vram[y * VRAM_WIDTH + x];
-			flipYvram[(VRAM_HEIGHT-y-1) * VRAM_WIDTH + x] = srcPixel;
-		}
 	}
 
 	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
@@ -2216,12 +1607,12 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 
 	for (int i = 0; i < numSectorsToWrite; i++)
 	{
-		fwrite(&flipYvram[i * 512 / sizeof(unsigned short)], 512, 1, f);
+		fwrite(&vram[i * 512 / sizeof(unsigned short)], 512, 1, f);
 	}
 
 	for (int i = 0; i < numRemainingSectorsToWrite; i++)
 	{
-		fwrite(&flipYvram[numSectorsToWrite * 512 / sizeof(unsigned short)], numRemainingSectorsToWrite, 1, f);
+		fwrite(&vram[numSectorsToWrite * 512 / sizeof(unsigned short)], numRemainingSectorsToWrite, 1, f);
 	}
 
 	fclose(f);
@@ -2612,7 +2003,7 @@ unsigned int Emulator_GetFPS()
 
 void Emulator_SwapWindow()
 {
-	Emulator_WaitForTimestep(1);
+	//Emulator_WaitForTimestep(1);
 
 #if defined(RO_DOUBLE_BUFFERED)
 #if defined(OGL)
@@ -2679,10 +2070,7 @@ void Emulator_ShutDown()
 
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
 
-#if defined(VK)
-	vkDestroySurfaceKHR(instance, surface, 0);
-	vkDestroyInstance(instance, NULL);
-#elif defined(D3D9)
+#if defined(D3D9)
 	d3ddev->Release();
 	d3d->Release();
 #endif
@@ -2788,16 +2176,6 @@ void Emulator_SetViewPort(int x, int y, int width, int height)
 	viewport.MinZ   = 0.0f;
 	viewport.MaxZ   = 1.0f;
 	d3ddev->SetViewport(&viewport);
-#elif defined(VK)
-	VkViewport viewPort;
-	viewPort.x = x;
-	viewPort.y = y;
-	viewPort.width = width;
-	viewPort.height = height;
-	viewPort.minDepth = 0.0f;
-	viewPort.maxDepth = 1.0f;
-	//assert(FALSE);//Unfinished see below.
-	//vkCmdSetViewport(draw_cmd, 0, 1, &viewport);
 #endif
 }
 
@@ -2807,7 +2185,7 @@ void Emulator_SetRenderTarget(const RenderTargetID &frameBufferObject)
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
 #elif defined(D3D9)
 	d3ddev->SetRenderTarget(0, frameBufferObject);
-#elif defined(VK)
+#else
     #error
 #endif
 }

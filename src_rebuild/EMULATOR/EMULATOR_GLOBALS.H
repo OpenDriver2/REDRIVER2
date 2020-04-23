@@ -8,31 +8,9 @@
 extern LPDIRECT3DVERTEXBUFFER9 g_vertexBufferObject;
 #endif
 
-#if defined(VK)
 
-struct FrameBufferAttachment 
-{
-	VkImage image;
-	VkDeviceMemory mem;
-	VkImageView view;
-};
-
-struct FrameBuffer
-{
-	int32_t width, height;
-	VkFramebuffer frameBuffer;
-	FrameBufferAttachment color, depth;
-	VkRenderPass renderPass;
-	VkSampler sampler;
-	VkDescriptorImageInfo descriptor;
-};
-
-extern struct FrameBuffer vramFrameBuffer;
-extern unsigned int whiteTexture;
-#else
 extern TextureID        whiteTexture;
 extern TextureID        vramTexture;
-#endif
 
 extern int screenWidth;
 extern int screenHeight;

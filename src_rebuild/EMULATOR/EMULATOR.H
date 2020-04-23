@@ -18,9 +18,9 @@
 #endif
 
 #if !((defined OGL) || (defined(OGLES) && OGLES_VERSION == 3))
-    #define glGenVertexArrays       glGenVertexArraysOES
-    #define glBindVertexArray       glBindVertexArrayOES
-    #define glDeleteVertexArrays    glDeleteVertexArraysOES
+#define glGenVertexArrays       glGenVertexArraysOES
+#define glBindVertexArray       glBindVertexArrayOES
+#define glDeleteVertexArrays    glDeleteVertexArraysOES
 #endif
 
 #ifdef _MSC_VER
@@ -46,11 +46,11 @@
 #endif
 
 #if defined(OGL)
-	#define VRAM_FORMAT            GL_RG
-	#define VRAM_INTERNAL_FORMAT   GL_RG8
+#define VRAM_FORMAT            GL_RG
+#define VRAM_INTERNAL_FORMAT   GL_RG8
 #elif defined(OGLES)
-	#define VRAM_FORMAT            GL_LUMINANCE_ALPHA
-	#define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
+#define VRAM_FORMAT            GL_LUMINANCE_ALPHA
+#define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
 #endif
 
 #define VRAM_WIDTH (1024)
@@ -160,27 +160,27 @@ enum TexFormat
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
 #if defined(OGLES) || defined(OGL)
-    typedef GLuint TextureID;
-    typedef GLuint ShaderID;
-    typedef GLuint RenderTargetID;
+typedef GLuint TextureID;
+typedef GLuint ShaderID;
+typedef GLuint RenderTargetID;
 #elif defined(D3D9)
-    typedef IDirect3DTexture9*      TextureID;
+typedef IDirect3DTexture9* TextureID;
 
-    struct ShaderID {
-        IDirect3DVertexShader9 *VS;
-        IDirect3DPixelShader9  *PS;
-    };
+struct ShaderID {
+	IDirect3DVertexShader9* VS;
+	IDirect3DPixelShader9* PS;
+};
 
-    typedef IDirect3DSurface9* RenderTargetID;
+typedef IDirect3DSurface9* RenderTargetID;
 #else
-    #error
+#error
 #endif
 
 extern int  Emulator_Initialise();
 extern void Emulator_StoreFrameBuffer(int x, int y, int w, int h);
 extern void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
-extern void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_x, int dst_y);
-extern void Emulator_ReadVRAM(unsigned short *dst, int x, int y, int dst_w, int dst_h);
+extern void Emulator_CopyVRAM(unsigned short* src, int x, int y, int w, int h, int dst_x, int dst_y);
+extern void Emulator_ReadVRAM(unsigned short* dst, int x, int y, int dst_w, int dst_h);
 extern void Emulator_UpdateVRAM();
 extern void Emulator_BlitVRAM();
 extern void Emulator_ShutDown();
@@ -208,9 +208,9 @@ extern void Emulator_DestroyTexture(TextureID texture);
 extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
 extern void Emulator_SetViewPort(int x, int y, int width, int height);
 extern void Emulator_SetTexture(TextureID texture, TexFormat texFormat);
-extern void Emulator_SetRenderTarget(const RenderTargetID &render_target);
+extern void Emulator_SetRenderTarget(const RenderTargetID& render_target);
 extern void Emulator_SetWireframe(bool enable);
-extern void Emulator_UpdateVertexBuffer(const Vertex *vertices, int count);
+extern void Emulator_UpdateVertexBuffer(const Vertex* vertices, int count);
 extern void Emulator_DrawTriangles(int start_vertex, int triangles);
 
 #if defined(D3D9)

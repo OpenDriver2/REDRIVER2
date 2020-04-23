@@ -8,6 +8,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <malloc.h>
+
+#if defined(__ANDROID__)///@FIXME Android include order is messed up, includes SPEC_PSXPC_N MALLOC.H rather than NDK version!
+#define malloc SDL_malloc
+#define free SDL_free
+#endif
 
 enum ReadMode
 {
