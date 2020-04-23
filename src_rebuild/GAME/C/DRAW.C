@@ -180,7 +180,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 	//plotContext.ot = plotContext.ot + 0x1c;
 
 	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
-	plotContext.tpage = texture_pages[src->texture_set] << 0x40;
+	plotContext.tpage = texture_pages[src->texture_set];// << 0x40;
 
 	if (3200 < z) 
 		m = 2;
