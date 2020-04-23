@@ -1290,23 +1290,21 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	iVar5 = iVar5 >> 8;
 	sVar1 = car_cosmetics[cp->ap.model].wheelSize;
 	iVar7 = iVar5;
-	if (cp->wheelspin != '\0') {
+	if (cp->wheelspin != 0)
 		iVar7 = -700;
-	}
-	if ((cp->hd).wheel[0].locked != '\0') {
+
+	if ((cp->hd).wheel[0].locked != 0)
 		iVar5 = 0;
-	}
-	if ((cp->hd).wheel[3].locked != '\0') {
+
+	if ((cp->hd).wheel[3].locked != 0)
 		iVar7 = 0;
-	}
+
 	if (pauseflag == 0)
 	{
 		iVar4 = CAR_INDEX(cp);
 
-		*(ushort *)(FrontWheelRotation + iVar4) =
-			*(ushort *)(FrontWheelRotation + iVar4) + (short)iVar5 & 0xfff;
-		*(ushort *)(BackWheelRotation + iVar4) =
-			*(ushort *)(BackWheelRotation + iVar4) + (short)iVar7 & 0xfff;
+		*(ushort *)(FrontWheelRotation + iVar4) = *(ushort *)(FrontWheelRotation + iVar4) + (short)iVar5 & 0xfff;
+		*(ushort *)(BackWheelRotation + iVar4) = *(ushort *)(BackWheelRotation + iVar4) + (short)iVar7 & 0xfff;
 	}
 	if (iVar5 + 400U < 0x321) {
 		WheelModelFront = gCleanWheelModelPtr;
@@ -1322,7 +1320,7 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	}
 
 	iVar7 = CAR_INDEX(cp); //((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2) * 2;
-	iVar5 = ((int)sVar1 * 0x373e) / 10000;
+	iVar5 = (sVar1 * 14142) / 10000;
 	sVar3 = rcossin_tbl[((uint)*(ushort *)(FrontWheelRotation + iVar7) & 0xfff) * 2];
 	local_t6_636 = (SVECTOR *)WheelModelFront->vertices;
 	sVar8 = (short)(rcossin_tbl[((uint)*(ushort *)(FrontWheelRotation + iVar7) & 0xfff) * 2 + 1]
@@ -1428,7 +1426,7 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 		}
 		verts = (SVECTOR *)model->vertices;
 
-		if ((cp->controlType == '\x01') && (gHubcap.Present[3 - wheelnum] == 0)) 
+		if ((cp->controlType == 1) && (gHubcap.Present[3 - wheelnum] == 0)) 
 			model = gDamWheelModelPtr;
 
 		if ((wheelnum & 2) == 0) 
@@ -1439,7 +1437,7 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 		sWheelPos.vz = -*psVar17;
 		sWheelPos.vx = sVar3;
-		sWheelPos.vy = (-sVar1 - *psVar16) - pWVar14->susCompression - 0xe;
+		sWheelPos.vy = (-sVar1 - *psVar16) - pWVar14->susCompression + 14;
 
 		gte_SetRotMatrix(RearMatrix);
 		gte_ldv0(&sWheelPos);

@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+﻿#include "THISDUST.H"
 #include "HANDLING.H"
 #include "COSMETIC.H"
 #include "MISSION.H"
@@ -106,25 +106,21 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	RebuildCarMatrix(&cp->st, cp);
 	
-	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
-	cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
-	cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
-
-	cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
+	cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
+	cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
+	cp->hd.drawCarMat.m[0][2] = cp->hd.where.m[0][2] ^ 0xFFFF;
+	cp->hd.drawCarMat.m[1][0] = cp->hd.where.m[1][0];
 	cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
-	cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
-
-	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
-	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
-	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
+	cp->hd.drawCarMat.m[1][2] = cp->hd.where.m[1][2];
+	cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
+	cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
+	cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
 	
 	cVar3 = (char)(iVar5 >> 5);
 	cVar1 = 14 - cVar3;
 	
 	cVar3 = cVar3 + 14;
 
-	
-	
 	cp->hd.wheel[0].susCompression = cVar1;
 	cp->hd.wheel[1].susCompression = cVar3;
 	cp->hd.wheel[2].susCompression = cVar1;
@@ -769,131 +765,10 @@ void GlobalTimeStep(void)
 
 			if (cp->hd.mayBeColliding == 0)
 			{
-#if 0
-				lw         v1, 0x1c(t1)
-				lw         v0, 0x0(t1)
-				lw         a0, 0x20(t1)
-				lw         t0, 0x28(t1)
-				sra        v1, v1, 0x8
-				addu       v0, v0, v1
-				sra        a0, a0, 0x8
-				addiu      t0, t0, 0x1000
-				sra        t0, t0, 0xd
-				sw         v0, 0x0(t1)
-				lw         v0, 0x4(t1)
-				lw         v1, 0x24(t1)
-				addu       v0, v0, a0
-				sw         v0, 0x4(t1)
-				lw         v0, 0x8(t1)
-				sra        v1, v1, 0x8
-				addu       v0, v0, v1
-				sw         v0, 0x8(t1)
-				sw         t0, AV[0](sp)
-				lw         a3, 0x2c(t1)
-				nop
-				addiu      a3, a3, 0x1000
-				sra        a3, a3, 0xd
-				sw         a3, AV[1](sp)
-				lw         a2, 0x30(t1)
-				nop
-				addiu      a2, a2, 0x1000
-				sra        a2, a2, 0xd
-				sw         a2, AV[2](sp)
-				lw         a1, 0x10(t1)
-				nop
-				subu       a1, zero, a1
-				mult       a1, a2
-				mflo       a1
-				lw         v1, 0x14(t1)
-				nop
-				mult       v1, a3
-				mflo       v1
-				lw         v0, 0x18(t1)
-				nop
-				mult       v0, t0
-				addu       a1, a1, v1
-				mflo       v0
-				addu       a1, a1, v0
-				addiu      a1, a1, 0x800
-				sra        a1, a1, 0xc
-				sw         a1, delta_orientation[0](sp)
-				lw         v1, 0xc(t1)
-				nop
-				mult       v1, a2
-				mflo       v1
-				lw         a0, 0x14(t1)
-				nop
-				mult       a0, t0
-				mflo       a0
-				lw         v0, 0x18(t1)
-				nop
-				mult       v0, a3
-				subu       v1, v1, a0
-				mflo       v0
-				addu       v1, v1, v0
-				addiu      v1, v1, 0x800
-				sra        v1, v1, 0xc
-				sw         v1, delta_orientation[1](sp)
-				lw         v0, 0xc(t1)
-				nop
-				subu       v0, zero, v0
-				mult       v0, a3
-				mflo       v0
-				lw         a0, 0x10(t1)
-				nop
-				mult       a0, t0
-				mflo       a0
-				lw         v1, 0x18(t1)
-				nop
-				mult       v1, a2
-				addu       v0, v0, a0
-				mflo       v1
-				addu       v0, v0, v1
-				addiu      v0, v0, 0x800
-				sra        v0, v0, 0xc
-				sw         v0, delta_orientation[2](sp)
-				lw         v1, 0xc(t1)
-				nop
-				subu       v1, zero, v1
-				mult       v1, t0
-				mflo       v1
-				lw         a0, 0x10(t1)
-				nop
-				mult       a0, a3
-				mflo       a0
-				lw         v0, 0x14(t1)
-				nop
-				mult       v0, a2
-				subu       v1, v1, a0
-				mflo       v0
-				subu       v1, v1, v0
-				addiu      v1, v1, 0x800
-				sra        v1, v1, 0xc
-				sw         v1, delta_orientation[3](sp)
-				lw         v0, 0xc(t1)
-				lw         v1, 0x10(t1)
-				addu       v0, v0, a1
-				sw         v0, 0xc(t1)
-				lw         v0, delta_orientation[1](sp)
-				nop
-				addu       v1, v1, v0
-				sw         v1, 0x10(t1)
-				lw         v0, 0x14(t1)
-				lw         v1, delta_orientation[2](sp)
-				nop
-				addu       v0, v0, v1
-				lw         v1, 0x18(t1)
-				move       a0, t1
-				sw         v0, 0x14(t1)
-				lw         v0, delta_orientation[3](sp)
-				move       a1, t2
-				addu       v1, v1, v0
-				jal        RebuildCarMatrix
-#endif
 				// there might be bug, please decompile correctly
 				long* orient = cp->st.n.orientation;
 				long angvel[4];
-				
+
 				st->n.fposition[0] += (cp->st.n.linearVelocity[0] >> 8);
 				st->n.fposition[1] += (cp->st.n.linearVelocity[1] >> 8);
 				st->n.fposition[2] += (cp->st.n.linearVelocity[2] >> 8);
@@ -911,7 +786,7 @@ void GlobalTimeStep(void)
 				orient[1] += (delta_orientation[1] + 0x800) / 4096;
 				orient[2] += (delta_orientation[2] + 0x800) / 4096;
 				orient[3] += (delta_orientation[3] + 0x800) / 4096;
-				
+
 				RebuildCarMatrix((RigidBodyState *)st, cp);
 			}
 			iVar28 = iVar28 + 1;
@@ -1376,30 +1251,15 @@ void GlobalTimeStep(void)
 				do {
 					cp = *pp_Var26;
 
-					
-					// [A] pls replace me
-					/*
-					*(uint *)(cp->hd.drawCarMat.m) = ~*(uint *)(cp->hd.where.m);					//m[0][1] + m[0][1] 
-					*(uint *)(cp->hd.drawCarMat.m + 2) = *(uint *)(cp->hd.where.m + 2) ^ 0xffff;	//m[0][2] + m[1][0] 
-
-					*(uint *)(cp->hd.drawCarMat.m + 4) = *(uint *)(cp->hd.where.m + 4);				//m[1][2] + m[0][1] 
-					*(uint *)(cp->hd.drawCarMat.m + 6) = ~*(uint *)(cp->hd.where.m + 6);			//m[0][1] + m[0][1] 
-
-					*(uint *)(cp->hd.drawCarMat.m + 8) = *(uint *)(cp->hd.where.m + 8) ^ 0xffff;	//m[0][1] + m[0][1] 
-					*/
-					cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
-					cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
-
-					cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
-					cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
-
+					cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
+					cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
+					cp->hd.drawCarMat.m[0][2] = cp->hd.where.m[0][2] ^ 0xFFFF;
+					cp->hd.drawCarMat.m[1][0] = cp->hd.where.m[1][0];
 					cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
-					cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
-
-					cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
-					cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
-
-					cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
+					cp->hd.drawCarMat.m[1][2] = cp->hd.where.m[1][2];
+					cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
+					cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
+					cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
 					
 					if ((cp->ap.needsDenting != 0) && (((CameraCnt + iVar15 & 3U) == 0 || (iVar5 < 5)))) 
 					{
@@ -1573,7 +1433,6 @@ void SetShadowPoints(_CAR_DATA *c0)
 // [D]
 void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 {
-#if 0
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -1613,98 +1472,6 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 
 	m->m[1][2] = sVar1 - sVar2;
 	m->m[2][1] = sVar1 + sVar2;
-#else
-
-	long t0, t1, t2, t3, t4, t5, t6, t7, a2, a0, a3, v0, v1, v2;
-	t0 = (*qua)[0]; //lw      $t0, 0($a0) 
-
-	//mult    $t0, $t0
-	//mflo    $t3
-	t3 = t0 * t0;
-	a2 = (*qua)[1];	//lw      $a2, 4($a0)
-
-	//mult    $t0, $a2
-	//mflo    $a3
-	a3 = t0 * a2;
-	t4 = (*qua)[2];	//lw      $t4, 8($a0)
-
-	//mult    $t0, $t4
-	//mflo    $t2
-	t2 = t0 * t4;
-
-	//mult    $a2, $a2
-	//mflo    $t7
-	t7 = a2 * a2;
-
-	t1 = (*qua)[3];//lw      $t1, 0xC($a0)
-
-	//mult    $a2, $t1
-	//mflo    $t5
-	t5 = a2 * t1;
-
-	//mult    $t4, $t4
-	//mflo    $v1
-	v1 = t4 * t4;
-
-	// m[0][0] 0
-	// m[0][1] 2
-	// m[0][2] 4
-	// m[1][0] 6
-	// m[1][1] 8
-	// m[1][2] A
-	// m[2][0] C
-	// m[2][1] E
-	// m[2][2] 10
-
-
-	//------------------------------- mult    $t4, $t1
-	t6 = 0x1000;
-	t3 += 0x400;	// addiu   $t3, 0x400
-	t3 = t3 >> 11;	// sra     $t3, 11
-	a3 += 0x400;	// addiu   $a3, 0x400
-	a3 = a3 >> 11;	// sra     $a3, 11
-	t2 += 0x400;	// addiu   $t2, 0x400
-	t2 = t2 >> 11;	// sra     $t2, 11
-	t7 += 0x400;	// addiu   $t7, 0x400
-	a0 = t4 * t1;	// mflo    $a0
-	t7 = t7 >> 11;	// sra     $t7, 11
-	t5 += 0x400;	// addiu   $t5, 0x400
-	//------------------------------- mult    $t0, $t1
-	t5 = t5 >> 11;	// sra     $t5, 11
-	v1 += 0x400;	// addiu   $v1, 0x400
-	v1 = v1 >> 11;	// sra     $v1, 11
-	v0 = t7 + v1;	// addu    $v0, $t7, $v1
-	v0 = t6 - v0;	// subu    $v0, $t6, $v0
-	v1 = t3 + v1;	// addu    $v1, $t3, $v1
-	v1 = t6 - v1;	// subu    $v1, $t6, $v1
-	t3 += t7;		// addu    $t3, $t7
-	t6 -= t3;		// subu    $t6, $t3
-	m->m[0][0] = v0;	// sh      $v0, MATRIX($a1)
-	m->m[1][1] = v1;	// sh      $v1, MATRIX.m + 8($a1)
-	t0 = t0 * t1;	//mflo    $t0
-	m->m[2][2] = t6; //sh      $t6, MATRIX.m + 0x10($a1)
-	a0 += 0x400;	// addiu   $a0, 0x400
-	//------------------------------- mult    $a2, $t4
-	a0 = a0 >> 11;	// sra     $a0, 11
-	v0 = a3 - a0;	// subu    $v0, $a3, $a0
-	m->m[0][1] = v0; // sh      $v0, MATRIX.m + 2($a1)
-	v0 = t2 + t5;	// addu    $v0, $t2, $t5
-	a3 += a0;		// addu    $a3, $a0
-	t2 -= t5;		// subu    $t2, $t5
-	m->m[0][2] = v0;// sh      $v0, MATRIX.m + 4($a1)
-	m->m[1][0] = a3;// sh      $a3, MATRIX.m + 6($a1)
-	m->m[2][0] = t2;// sh      $t2, MATRIX.m + 0xC($a1)
-	t0 += 0x400;	// addiu   $t0, 0x400
-	t0 = t0 >> 11;	// sra     $t0, 11
-	a2 = a2 * t4;	// mflo    $a2
-	a2 += 0x400;	// addiu   $a2, 0x400
-	a2 = a2 >> 11;	// sra     $a2, 11
-	v0 = a2 - t0;	// subu    $v0, $a2, $t0
-	a2 += t0;		// addu    $a2, $t0
-	m->m[1][2] = v0;// sh      $v0, MATRIX.m + 0xA($a1)
-	//jr      $ra
-	m->m[2][1] = a2;//sh      $a2, MATRIX.m + 0xE($a1)
-#endif
 }
 
 
