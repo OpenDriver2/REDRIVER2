@@ -18,7 +18,7 @@
 #endif
 #include <assert.h>
 
-#define FIXED_TIME_STEP    20
+#define FIXED_TIME_STEP    16
 #define SWAP_INTERVAL      1
 
 #if defined(NTSC_VERSION)
