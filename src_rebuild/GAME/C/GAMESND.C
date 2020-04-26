@@ -9,6 +9,7 @@
 #include "SYSTEM.H"
 #include "HANDLING.H"
 #include "MISSION.H"
+#include "MC_SND.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -45,6 +46,10 @@ int coptrackpos[8] = {
 	0x10, 0xB, 7, 0x12, 0xC, 9, 8, 0xA,
 };
 
+// TODO: AI.C?
+SPEECH_QUEUE gSpeechQueue;
+static char cop_bank = 0;
+char phrase_top = 0;
 
 // decompiled code
 // original method signature: 
@@ -1034,19 +1039,20 @@ void ControlCarRevs(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 5122
 
+// [D]
 void DoSpeech(int chan, int sound)
 {
-	UNIMPLEMENTED();
-
-	if (sound < 100) {
-		if (sound != 0) {
+	if (sound < 100)
+	{
+		if (sound != 0) 
+		{
 			StartSound(chan, 2, sound, -0x5dc, 0x1000);
 		}
 	}
-	else {
+	else
+	{
 		StartSound(chan, 5, sound + -100, 0, 0x1000);
 	}
-	return;
 }
 
 
@@ -1075,19 +1081,22 @@ void DoSpeech(int chan, int sound)
 	/* end block 3 */
 	// End Line: 3272
 
+// [D]
 char PlaySpeech(SPEECH_QUEUE *pSpeechQueue, int sound)
 {
-	UNIMPLEMENTED();
-
 	int iVar1;
 	int *piVar2;
 	int iVar3;
 
 	iVar1 = pSpeechQueue->count;
-	if (iVar1 < 7) {
+	if (iVar1 < 7) 
+	{
 		pSpeechQueue->count = iVar1 + 1;
+
 		iVar3 = iVar1 + -1;
-		if (iVar3 != -1) {
+
+		if (iVar3 != -1)
+		{
 			piVar2 = pSpeechQueue->slot + iVar1;
 			do {
 				iVar3 = iVar3 + -1;
@@ -1095,10 +1104,12 @@ char PlaySpeech(SPEECH_QUEUE *pSpeechQueue, int sound)
 				piVar2 = piVar2 + -1;
 			} while (iVar3 != -1);
 		}
+
 		pSpeechQueue->slot[0] = sound;
-		return '\x01';
+
+		return 1;
 	}
-	return '\0';
+	return 0;
 }
 
 
@@ -1112,15 +1123,13 @@ char PlaySpeech(SPEECH_QUEUE *pSpeechQueue, int sound)
 	/* end block 1 */
 	// End Line: 5266
 
+// [D]
 void InitSpeechQueue(SPEECH_QUEUE *pSpeechQueue)
 {
-	UNIMPLEMENTED();
-	/*
 	ClearMem((char *)pSpeechQueue, 0x28);
-	if (GameType != GAME_MISSION) {
-		pSpeechQueue->allowed = '\x02';
-	}
-	return;*/
+
+	if (GameType != GAME_MISSION) 
+		pSpeechQueue->allowed = 2;
 }
 
 
@@ -1228,17 +1237,19 @@ LAB_0004e5d0:
 	/* end block 2 */
 	// End Line: 1331
 
+// [D]
 void CopSay(int phrase, int direction)
 {
-	UNIMPLEMENTED();
-	/*
 	if (((((gCurrentMissionNumber != 7) && (gCurrentMissionNumber != 9)) &&
 		(gCurrentMissionNumber != 0xb)) &&
 		((gCurrentMissionNumber != 0x14 && (gCurrentMissionNumber != 0x1a)))) &&
 		((gCurrentMissionNumber != 0x1f &&
-		((gCurrentMissionNumber != 0x21 && (gCurrentMissionNumber != 0x28)))))) {
+		((gCurrentMissionNumber != 0x21 && (gCurrentMissionNumber != 0x28)))))) 
+	{
 		PlaySpeech(&gSpeechQueue, phrase);
-		if (phrase == 10) {
+
+		if (phrase == 10)
+		{
 			if (cop_bank == '\x01') {
 				return;
 			}
@@ -1246,26 +1257,26 @@ void CopSay(int phrase, int direction)
 				return;
 			}
 		}
-		else {
-			if (phrase != 0xf) {
+		else 
+		{
+			if (phrase != 0xf) 
 				return;
-			}
-			if (cop_bank != '\x01') {
-				if (cop_bank == '\x02') {
+
+			if (cop_bank != 1)
+			{
+				if (cop_bank == 2)
 					return;
-				}
-				if (cop_bank == '\x03') {
+
+				if (cop_bank == 3)
 					return;
-				}
-				if (cop_bank != '\x04') {
+
+				if (cop_bank != 4)
 					return;
-				}
 			}
 		}
+
 		PlaySpeech(&gSpeechQueue, direction + 1);
 	}
-	return;
-	*/
 }
 
 
@@ -1279,16 +1290,11 @@ void CopSay(int phrase, int direction)
 	/* end block 1 */
 	// End Line: 5446
 
+// [D]
 void BodSay(int phrase)
 {
-	UNIMPLEMENTED();
-
-	/*
-	if ((phrase_top != '\0') && (phrase < (int)(uint)(byte)phrase_top)) {
+	if (phrase_top != 0 && phrase < phrase_top)
 		PlaySpeech(&gSpeechQueue, phrase + 100);
-	}
-	return;
-	*/
 }
 
 
@@ -1309,18 +1315,14 @@ void BodSay(int phrase)
 	/* end block 2 */
 	// End Line: 5464
 
+// [D]
 void MissionSay(int phrase)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
-	undefined3 extraout_var;
+	cVar1 = GetMissionSound(phrase);
 
-	cVar1 = GetMissionSound((char)phrase);
-	if (CONCAT31(extraout_var, cVar1) != 0xff) {
-		PlaySpeech(&gSpeechQueue, CONCAT31(extraout_var, cVar1) + 100);
-	}
-	return;*/
+	if (cVar1 != -1)
+		PlaySpeech(&gSpeechQueue, cVar1 + 100);
 }
 
 
@@ -2674,16 +2676,16 @@ void InitMusic(int musicnum)
 	/* end block 3 */
 	// End Line: 2635
 
+__tunnelinfo tunnels;
+
+// [D]
 void InitTunnels(char n)
 {
-	UNIMPLEMENTED();
-	/*
-	if (0x1d < (byte)n) {
-		n = '\x1d';
-	}
+	if (0x1D < n) 
+		n = 0x1D;
+
 	tunnels.num_tunnels = n;
-	tunnels.tunnel_cnt = '\0';
-	return;*/
+	tunnels.tunnel_cnt = 0;
 }
 
 
@@ -2706,26 +2708,22 @@ void InitTunnels(char n)
 	/* end block 2 */
 	// End Line: 6756
 
+// [D]
 int AddTunnel(long x1, long y1, long z1, long x2, long y2, long z2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
+	if (tunnels.tunnel_cnt < tunnels.num_tunnels)
+	{
+		tunnels.coords[tunnels.tunnel_cnt].p1.vx = x1;
+		tunnels.coords[tunnels.tunnel_cnt].p1.vy = y1;
+		tunnels.coords[tunnels.tunnel_cnt].p1.vz = z1;
+		tunnels.coords[tunnels.tunnel_cnt].p2.vx = x2;
+		tunnels.coords[tunnels.tunnel_cnt].p2.vy = y2;
+		tunnels.coords[tunnels.tunnel_cnt].p2.vz = z2;
 
-	if ((byte)tunnels.tunnel_cnt < (byte)tunnels.num_tunnels) {
-		tunnels.coords[(byte)tunnels.tunnel_cnt].p1.vx = x1;
-		tunnels.coords[(byte)tunnels.tunnel_cnt].p1.vy = y1;
-		tunnels.coords[(byte)tunnels.tunnel_cnt].p1.vz = z1;
-		tunnels.coords[(byte)tunnels.tunnel_cnt].p2.vx = x2;
-		tunnels.coords[(byte)tunnels.tunnel_cnt].p2.vy = y2;
-		tunnels.coords[(byte)tunnels.tunnel_cnt].p2.vz = z2;
-		uVar1 = (uint)(byte)tunnels.tunnel_cnt;
-		tunnels.tunnel_cnt = tunnels.tunnel_cnt + '\x01';
-		return uVar1;
+		return tunnels.tunnel_cnt++;
 	}
+
 	return -1;
-	*/
 }
 
 
@@ -2846,37 +2844,40 @@ void Tunnels(__tunnelinfo *T)
 	/* end block 2 */
 	// End Line: 3156
 
+// [D]
 void AddTunnels(int level)
 {
-	UNIMPLEMENTED();
-	/*
 	long z2;
 	long x1;
 	long z1;
 	long x2;
 	long local_18;
 
-	if (level == 1) {
-		InitTunnels('\x04');
+	if (level == 1) 
+	{
+		InitTunnels(4);
 		AddTunnel(-0x6153a, 0, -0x274e8, -0x5314c, 2000, -0x19258);
-		AddTunnel(0x429a0, 0, (long)&DAT_0000a0f0, 0x3e418, 2000, 0x29298);
-		AddTunnel(-0x749a0, 0, -0x1b83c, -0x60ec8, (long)&DAT_00001f40, -0x206c0);
+		AddTunnel(0x429a0, 0, 0xa0f0, 0x3e418, 2000, 0x29298);
+		AddTunnel(-0x749a0, 0, -0x1b83c, -0x60ec8, 0x1f40, -0x206c0);
+
 		z2 = -0xae38;
 		x1 = -0x2d613;
 		z1 = -0xa1ea;
 		x2 = -0x2bdc2;
 		local_18 = -1000;
 	}
-	else {
-		if (level < 2) {
-			if (level != 0) {
+	else 
+	{
+		if (level < 2) 
+		{
+			if (level != 0)
 				return;
-			}
-			InitTunnels('\x1d');
+
+			InitTunnels(29);
 			AddTunnel(-0x13178, 0, -0x1e848, -0xab18, -500, -0x26f0c);
 			AddTunnel(-65000, 0, -0x1df4c, -68000, -500, -0x1e848);
 			AddTunnel(-0xbdd8, 0, -0x39dc8, -0xc4ae, -500, -0x3997c);
-			AddTunnel(-0x35af7, 0, 0xa4cfb, -0x32f07, -2000, (long)&DAT_000a3507);
+			AddTunnel(-0x35af7, 0, 0xa4cfb, -0x32f07, -2000, 0xa3507);
 			AddTunnel(-0x47ef4, 0, 0x4e1e5, -0x466fc, -500, 0x4d5f5);
 			AddTunnel(-0x44df9, 0, 0x4e8ee, -0x43611, -500, 0x4d0f6);
 			AddTunnel(-0x418f6, 0, 0x4e2f4, -0x4010a, -500, 0x4cb40);
@@ -2888,7 +2889,7 @@ void AddTunnels(int level)
 			AddTunnel(-0x452fe, 0, 0x47dfc, -0x42f06, -500, 0x47200);
 			AddTunnel(-0x46e8b, 0, 0x43eec, -0x44e7f, -500, 0x432f8);
 			AddTunnel(-0x44afa, 0, 0x439f0, -0x43ede, -500, 0x42e00);
-			AddTunnel(-0x466f6, 0, (long)&LAB_00041af8, -0x45afa, -500, 0x40f00);
+			AddTunnel(-0x466f6, 0, 0x41af8, -0x45afa, -500, 0x40f00);
 			AddTunnel(-0x46a83, 0, 0x3f6e6, -0x4668b, -500, 0x3eafa);
 			AddTunnel(-0x488fa, 0, 0x3dafa, -0x47112, -500, 0x3cef6);
 			AddTunnel(-0x456fe, 0, 0x3dafa, -0x43f0e, -500, 0x3cef6);
@@ -2907,12 +2908,14 @@ void AddTunnels(int level)
 			x2 = -0x30a1d;
 			local_18 = -500;
 		}
-		else {
-			if (level != 2) {
-				if (level != 3) {
+		else 
+		{
+			if (level != 2)
+			{
+				if (level != 3)
 					return;
-				}
-				InitTunnels('\x05');
+
+				InitTunnels(5);
 				AddTunnel(0x24f68, 0, -0x3d374, 0x25cb0, -400, -0x398e6);
 				AddTunnel(-0x1c19c, 0, -0x2f2b0, -0x1ba94, -400, -0x20594);
 				AddTunnel(-0x118dc, 0, -0x3f7a, -0x11fb2, -400, -0x6f54);
@@ -2920,7 +2923,7 @@ void AddTunnels(int level)
 				AddTunnel(0x2a5ee, 0, 0x3c668, 0x2b624, -500, 0x3be34);
 				return;
 			}
-			InitTunnels('\x02');
+			InitTunnels(2);
 			AddTunnel(0x2678a, 0, 0xb4b9a, 0x2918a, -2000, 0xb139b);
 			z2 = 0xb06da;
 			x1 = 0x28550;
@@ -2929,9 +2932,8 @@ void AddTunnels(int level)
 			local_18 = -2000;
 		}
 	}
+
 	AddTunnel(x1, 0, z1, x2, local_18, z2);
-	return;
-	*/
 }
 
 
