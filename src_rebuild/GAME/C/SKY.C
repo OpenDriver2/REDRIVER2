@@ -5,6 +5,7 @@
 #include "MODELS.H"
 #include "DRAW.H"
 #include "CAMERA.H"
+#include "MAIN.H"
 
 #include "LIBGTE.H"
 #include "GTEREG.H"
@@ -915,10 +916,18 @@ void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int gTunnelNum = -1;
+int skyFade;
+static long skyred = 0x80;
+static long skygreen = 0x80;
+static long skyblue = 0x80;
+
 void TunnelSkyFade(void)
 {
 	UNIMPLEMENTED();
-	/*
+	skyFade = 0;
+
+#if 0
 	int iVar1;
 	int iVar2;
 	int iVar3;
@@ -930,19 +939,19 @@ void TunnelSkyFade(void)
 	if (GameLevel != 3) {
 		iVar3 = gTunnelNum;
 	}
-	pVVar5 = (VECTOR *)0x0;
+	pVVar5 = NULL;
 	if (gTunnelNum == -1) {
 		return;
 	}
-	pVVar6 = (VECTOR *)0x0;
-	if ((((&tunnelDir)[iVar3 * 2] - (int)camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf) {
-		pVVar6 = &tunnelPos + iVar3 * 2;
+	pVVar6 = NULL;
+	if (((tunnelDir[iVar3 * 2] - (int)camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf) {
+		pVVar6 = tunnelPos + iVar3 * 2;
 	}
-	if ((((&INT_000a19e8)[iVar3 * 2] - (int)camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf) {
-		pVVar5 = VECTOR_ARRAY_000a1a0c + iVar3 * 2;
+	if (((tunnelDir[iVar3 * 2 + 1] - (int)camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf) {
+		pVVar5 = tunnelPos + iVar3 * 2 + 1;
 	}
-	if (pVVar6 == (VECTOR *)0x0) {
-		if (pVVar5 == (VECTOR *)0x0) {
+	if (pVVar6 == NULL) {
+		if (pVVar5 == NULL) {
 			skyFade = 0;
 			return;
 		}
@@ -950,11 +959,11 @@ void TunnelSkyFade(void)
 		iVar3 = pVVar5->vz;
 	}
 	else {
-		if (pVVar5 != (VECTOR *)0x0) {
-			iVar1 = pVVar6->vx - player.pos[0] >> 0xc;
-			iVar3 = pVVar6->vz - player.pos[2] >> 0xc;
-			iVar2 = pVVar5->vx - player.pos[0] >> 0xc;
-			iVar4 = pVVar5->vz - player.pos[2] >> 0xc;
+		if (pVVar5 != NULL) {
+			iVar1 = pVVar6->vx - player[0].pos[0] >> 0xc;
+			iVar3 = pVVar6->vz - player[0].pos[2] >> 0xc;
+			iVar2 = pVVar5->vx - player[0].pos[0] >> 0xc;
+			iVar4 = pVVar5->vz - player[0].pos[2] >> 0xc;
 			iVar3 = iVar1 * iVar1 + iVar3 * iVar3;
 			iVar4 = iVar2 * iVar2 + iVar4 * iVar4;
 			if (iVar4 <= iVar3) {
@@ -965,8 +974,8 @@ void TunnelSkyFade(void)
 		iVar4 = pVVar6->vx;
 		iVar3 = pVVar6->vz;
 	}
-	iVar4 = iVar4 - player.pos[0] >> 0xc;
-	iVar3 = iVar3 - player.pos[2] >> 0xc;
+	iVar4 = iVar4 - player[0].pos[0] >> 0xc;
+	iVar3 = iVar3 - player[0].pos[2] >> 0xc;
 	iVar3 = iVar4 * iVar4 + iVar3 * iVar3;
 LAB_00078940:
 	if (0x80 < iVar3 * 4) {
@@ -974,7 +983,7 @@ LAB_00078940:
 		return;
 	}
 	skyFade = iVar3 * -4 + 0x80;
-	return;*/
+#endif
 }
 
 
@@ -995,10 +1004,9 @@ LAB_00078940:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void calc_sky_brightness(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	long lVar2;
 
@@ -1047,8 +1055,7 @@ LAB_00078a68:
 			skyblue = skyFade;
 		}
 	}
-	return;
-	*/
+
 }
 
 
@@ -1170,10 +1177,6 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		// Start line: 2520
 	/* end block 3 */
 	// End Line: 2521
-
-static long skyred = 0x80;
-static long skygreen = 0x80;
-static long skyblue = 0x80;
 
 // [D] [A] WTF
 void PlotHorizonMDL(MODEL *model, int horizontaboffset)
