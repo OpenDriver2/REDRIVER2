@@ -20,6 +20,98 @@ void EnterName();
 
 char EnterScoreText[32] = { 0 };
 
+#ifdef _DEBUG
+
+void ToggleRightWayUp(int direction)
+{
+	extern char gRightWayUp;
+	gRightWayUp ^= gRightWayUp;
+}
+
+void ToggleInvincible(int direction)
+{
+	extern int gInvincibleCar;
+	gInvincibleCar ^= gInvincibleCar;
+}
+
+void ToggleImmune(int direction)
+{
+	extern int gPlayerImmune;
+	gPlayerImmune ^= gPlayerImmune;
+}
+
+void TogglePlayerGhost(int direction)
+{
+	extern int playerghost;
+	playerghost ^= playerghost;
+}
+
+extern void LoadSky(void);
+
+void DebugTimeOfDayDay(int direction)
+{
+	gTimeOfDay = 1;
+	gWeather = 0;
+	LoadSky();
+}
+
+void DebugTimeOfDayNight(int direction)
+{
+	gTimeOfDay = 3;
+	gWeather = 0;
+	LoadSky();
+}
+
+void DebugTimeOfDayDusk(int direction)
+{
+	gTimeOfDay = 0;
+	gWeather = 0;
+	LoadSky();
+}
+
+void DebugTimeOfDayDawn(int direction)
+{
+	gTimeOfDay = 2;
+	gWeather = 0;
+	LoadSky();
+}
+
+void DebugTimeOfDayRain(int direction)
+{
+	//extern int weather;
+	//weather ^= weather;
+	gWeather ^= gWeather;
+	LoadSky();
+}
+
+MENU_ITEM DebugTimeOfDayItems[] =
+{
+	{ "Day",	3, 	2,	DebugTimeOfDayDay,	MENU_QUIT_NONE,		NULL },
+	{ "Night", 	3,  2,  DebugTimeOfDayNight,MENU_QUIT_NONE,		NULL },
+	{ "Dusk", 	3, 	2,  DebugTimeOfDayDusk, MENU_QUIT_NONE,		NULL },
+	{ "Dawn", 	3, 	2,  DebugTimeOfDayDawn,	MENU_QUIT_NONE,		NULL },
+	{ "Rain", 	3, 	2,  DebugTimeOfDayRain,	MENU_QUIT_NONE,		NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER DebugTimeOfDayHeader =
+{ "Time Of Day", { 0, 0, 0, 0 }, 0u, DebugTimeOfDayItems };
+
+MENU_ITEM DebugOptionsItems[] =
+{
+	{ "Back on Wheels",	2, 	2,	 ToggleRightWayUp,	MENU_QUIT_CONTINUE,	NULL},
+	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
+	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
+	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
+	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
+	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER DebugOptionsHeader =
+{ "Debug Options", { 0, 0, 0, 0 }, 0u, DebugOptionsItems };
+#endif
+
 MENU_ITEM YesNoRestartItems[3] =
 {
 	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
@@ -40,10 +132,13 @@ MENU_HEADER YesNoRestartHeader =
 MENU_HEADER YesNoQuitHeader =
 { "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
-MENU_ITEM MainPauseItems[9] =
+MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "View Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+#ifdef _DEBUG
+	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
@@ -65,9 +160,12 @@ MENU_ITEM MultiplayerPauseItems[7] =
 };
 
 
-MENU_ITEM CutscenePauseItems[6] =
+MENU_ITEM CutscenePauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+#ifdef _DEBUG
+	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
@@ -158,6 +256,7 @@ MENU_ITEM InvalidMultiPadItems[2] =
 	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
+
 
 MENU_HEADER PauseMenuHeader =
 { "Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };

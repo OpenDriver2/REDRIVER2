@@ -13,6 +13,8 @@ extern int gLightsOn;
 extern int NightAmbient;
 extern int wetness;
 
+extern int DawnCount;
+
 typedef void(*occlFunc)(int *comp_val);
 
 extern void ProcessLumps(char *lump_ptr, int lump_size); // 0x00058C08
