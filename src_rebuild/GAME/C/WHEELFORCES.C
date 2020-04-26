@@ -1571,7 +1571,7 @@ LAB_00082b9c:
 				}
 				else {
 					iVar10 = (iVar5 / 4096) + iVar10 >> 1;
-					iVar5 = ((-iVar10 * iVar11)/4096 * sdz - (-iVar10 * iVar12) / 4096 * sdx)/4096;
+					iVar5 = ((-iVar10 * iVar11) / 4096 * sdz - (-iVar10 * iVar12) / 4096 * sdx) / 4096;
 					force.vx = iVar5 * sdz;
 					force.vz = -iVar5 * sdx;
 				}
@@ -1619,6 +1619,7 @@ LAB_00082b9c:
 			chan = (iVar13 * surfaceNormal[1] - cl->vel[1] * 12) / 4096;
 			iVar10 = ((force.vx/4096) * iVar4) / 4096;
 			iVar4 = ((force.vz/4096) * iVar4) / 4096;
+
 			if (cp->controlType == '\x03') {
 				if (gCopDifficultyLevel == 2) {
 					iVar13 = wheelPos[1] * 0xc;
@@ -1636,12 +1637,9 @@ LAB_00082b9c:
 			iVar13 = (cp->hd).acc[2];
 			(cp->hd).acc[1] = iVar12 + chan;
 			(cp->hd).acc[2] = iVar13 + iVar4;
-			(cp->hd).aacc[0] =
-				(cp->hd).aacc[0] + ((wheelPos[1] * iVar4 - wheelPos[2] * chan)/4096);
-			(cp->hd).aacc[1] =
-				(cp->hd).aacc[1] + ((wheelPos[2] * iVar10 - wheelPos[0] * iVar4)/4096);
-			(cp->hd).aacc[2] =
-				(cp->hd).aacc[2] + ((wheelPos[0] * chan - wheelPos[1] * iVar10)/4096);
+			(cp->hd).aacc[0] += (wheelPos[1] * iVar4 - wheelPos[2] * chan) / 4096;
+			(cp->hd).aacc[1] += (wheelPos[2] * iVar10 - wheelPos[0] * iVar4) / 4096;
+			(cp->hd).aacc[2] += (wheelPos[0] * chan - wheelPos[1] * iVar10) / 4096;
 			pWVar14->susCompression = (char)newCompression;
 		}
 		pWVar14 = pWVar14 + -1;

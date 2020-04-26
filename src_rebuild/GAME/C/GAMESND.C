@@ -7,6 +7,8 @@
 
 #include "SOUND.H"
 #include "SYSTEM.H"
+#include "HANDLING.H"
+#include "MISSION.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -789,72 +791,83 @@ LAB_0004e0dc:
 
 /* WARNING: Removing unreachable block (ram,0x0004e1b0) */
 
+// [D]
 ushort GetEngineRevs(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
-	byte bVar2;
-	short sVar3;
-	int iVar4;
-	GEAR_DESC *pGVar5;
+	short sVar2;
+	int iVar3;
+	GEAR_DESC *pGVar4;
+	uint uVar5;
 	uint uVar6;
-	uint uVar7;
-	short sVar8;
+	short sVar7;
+	int iVar8;
 	int iVar9;
-	int iVar10;
-	uint uVar11;
+	uint uVar10;
 
-	bVar2 = (cp->hd).gear;
-	uVar6 = (uint)bVar2;
-	iVar9 = (cp->hd).wheel_speed;
-	sVar3 = cp->thrust;
-	uVar11 = (uint)(cp->controlType == '\x02');
-	if (iVar9 < 1) {
-		iVar10 = -iVar9;
-		if (0 < iVar9) {
-			iVar10 = iVar10 + 0x7ff;
-		}
-		sVar8 = (short)(iVar10 >> 0xb);
-		uVar7 = 0;
-		iVar10 = uVar11 << 2;
-		(cp->hd).gear = '\0';
+	uVar5 = cp->hd.gear;
+	iVar8 = cp->hd.wheel_speed;
+	sVar2 = cp->thrust;
+
+	uVar10 = (cp->controlType == 2);
+
+	if (iVar8 < 1) {
+		iVar9 = -iVar8;
+
+		if (0 < iVar8) 
+			iVar9 += 0x7ff;
+
+		sVar7 = (iVar9 >> 0xb);
+		uVar6 = 0;
+		iVar9 = uVar10 << 2;
+
+		cp->hd.gear = 0;
 	}
-	else {
-		iVar9 = iVar9 >> 0xb;
-		sVar8 = (short)iVar9;
-		if (3 < bVar2) {
-			uVar6 = 3;
-		}
-		iVar10 = uVar11 * 4;
-		pGVar5 = geard + uVar11 * 4 + uVar6;
+	else 
+	{
+		iVar8 = iVar8 >> 0xb;
+		sVar7 = iVar8;
+
+		if (false) 
+			uVar5 = 0;
+
+		if (3 < uVar5) 
+			uVar5 = 3;
+
+		iVar9 = uVar10 * 4;
+		pGVar4 = &geard[uVar10][uVar5];
+
 		do {
-			if (sVar3 < 1) {
-				iVar4 = pGVar5->lowidl_ws;
+			if (sVar2 < 1) 
+				iVar3 = pGVar4->lowidl_ws;
+			else
+				iVar3 = pGVar4->low_ws;
+
+			uVar6 = uVar5;
+			if (iVar8 < iVar3)
+			{
+				pGVar4 = pGVar4 + -1;
+				uVar6 = uVar5 - 1;
 			}
-			else {
-				iVar4 = pGVar5->low_ws;
+
+			if (pGVar4->hi_ws < iVar8) 
+			{
+				pGVar4 = pGVar4 + 1;
+				uVar6 = uVar6 + 1;
 			}
-			uVar7 = uVar6;
-			if (iVar9 < iVar4) {
-				pGVar5 = pGVar5 + -1;
-				uVar7 = uVar6 - 1;
-			}
-			if (pGVar5->hi_ws < iVar9) {
-				pGVar5 = pGVar5 + 1;
-				uVar7 = uVar7 + 1;
-			}
-			bVar1 = uVar6 != uVar7;
-			uVar6 = uVar7;
+
+			bVar1 = uVar5 != uVar6;
+			uVar5 = uVar6;
 		} while (bVar1);
-		(cp->hd).gear = (char)uVar7;
+
+		cp->hd.gear = uVar6;
 	}
-	if (sVar3 == 0) {
-		return (ushort)(sVar8 * (short)(&geard[uVar7].ratio_id)[(iVar10 + uVar11) * 4]);
-	}
-	return (ushort)(sVar8 * (short)(&geard[uVar7].ratio_ac)[(iVar10 + uVar11) * 4]);
-	*/
+
+	
+	if (sVar2 != 0)
+		return sVar7 * geard[uVar10][uVar6].ratio_ac;	//(sVar7 * (short)(&geard[uVar6].ratio_ac)[(iVar9 + uVar10) * 4]);			// [A] - indexing might be incorrect
+
+	return sVar7 * geard[uVar10][uVar6].ratio_id;		//(sVar7 * (short)(&geard[uVar6].ratio_id)[(iVar9 + uVar10) * 4]);
 }
 
 
@@ -896,95 +909,113 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 975
 
+int maxrevdrop = 1440;
+int maxrevrise = 1600;
+
+// [D]
 void ControlCarRevs(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	int iVar2;
-	undefined2 extraout_var;
-	uint uVar3;
-	short sVar4;
-	undefined *puVar5;
-	short sVar6;
+	int uVar3;
+	ushort sVar4;
+	ushort puVar5;
+	ushort sVar6;
 	char cVar7;
 
 	sVar6 = cp->thrust;
 	cVar7 = cp->wheelspin;
+
 	iVar2 = GetPlayerId(cp);
-	uVar1 = (cp->hd).revs;
-	puVar5 = (undefined *)(uint)uVar1;
-	iVar2 = (int)(char)iVar2;
-	(cp->hd).changingGear = '\0';
-	if (((cVar7 == '\0') &&
-		(((cp->hd).wheel[1].susCompression != '\0' || ((cp->hd).wheel[3].susCompression != '\0')))) ||
-		(sVar6 == 0)) {
+
+	uVar1 = cp->hd.revs;
+	puVar5 = uVar1;
+	iVar2 = iVar2;
+
+	cp->hd.changingGear = 0;
+
+	char temp[64];
+
+	if ((cVar7 == 0 && (cp->hd.wheel[1].susCompression != 0 || (cp->hd.wheel[3].susCompression != 0))) || (sVar6 == 0))
+	{
 		uVar1 = GetEngineRevs(cp);
-		uVar3 = CONCAT22(extraout_var, uVar1);
+		uVar3 = uVar1;
 	}
-	else {
-		uVar3 = 0x4ec0;
-		if (((cp->hd).wheel[1].susCompression == '\0') && ((cp->hd).wheel[3].susCompression == '\0')) {
-			uVar3 = 0x77ff;
-			cVar7 = '\x01';
+	else 
+	{
+		uVar3 = 20160;
+
+		if(cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0) 
+		{
+			uVar3 = 30719;
+			cVar7 = 1;
 		}
-		if (uVar1 < 8000) {
-			puVar5 = &DAT_00001f40;
-		}
-		(cp->hd).gear = '\0';
+
+		if (uVar1 < 8000) 
+			puVar5 = 8000;
+
+		cp->hd.gear = 0;
 	}
-	if (maxrevdrop < (int)(puVar5 + -uVar3)) {
+
+	if (maxrevdrop < puVar5-uVar3) 
+	{
 		sVar6 = 0;
 		uVar3 = maxrevdrop & 0xffff;
-		(cp->hd).changingGear = '\x01';
-		uVar3 = (uint)(puVar5 + -uVar3) & 0xffff;
+
+		cp->hd.changingGear = 1;
+
+		uVar3 = (puVar5 - uVar3) & 0xffff;
 	}
-	maxrevrise._0_2_ = (short)uVar3;
-	if (maxrevrise < (int)(uVar3 - (int)puVar5)) {
-		maxrevrise._0_2_ = (short)puVar5 + (short)maxrevrise;
-	}
-	(cp->hd).revs = (short)maxrevrise;
-	if (-1 < iVar2) {
-		if ((sVar6 == 0) && ((short)maxrevrise < 0x1b59)) {
-			sVar6 = (&player)[iVar2].revsvol;
-			sVar4 = (&player)[iVar2].idlevol + 200;
-			(&player)[iVar2].idlevol = sVar4;
-			(&player)[iVar2].revsvol = sVar6 + -200;
-			if (-6000 < sVar4) {
-				(&player)[iVar2].idlevol = -6000;
-			}
-			if ((&player)[iVar2].revsvol < -10000) {
-				(&player)[iVar2].revsvol = -10000;
-			}
+
+	maxrevrise = (short)uVar3;
+
+	if (maxrevrise < uVar3 - puVar5)
+		maxrevrise = puVar5 + maxrevrise;
+
+	cp->hd.revs = maxrevrise;
+
+	if (-1 < iVar2) 
+	{
+		if (sVar6 == 0 && maxrevrise < 7001)
+		{
+			sVar6 = player[iVar2].revsvol;
+			sVar4 = player[iVar2].idlevol + 200;
+
+			player[iVar2].idlevol = sVar4;
+			player[iVar2].revsvol = sVar6 + -200;
+
+			if (-6000 < sVar4) 
+				player[iVar2].idlevol = -6000;
+
+			if (player[iVar2].revsvol < -10000)
+				player[iVar2].revsvol = -10000;
 		}
 		else {
-			sVar4 = -0x1a5e;
+			sVar4 = -6750;
 			if (sVar6 != 0) {
-				sVar4 = -0x157c;
+				sVar4 = -5500;
 			}
-			if (cVar7 == '\0') {
+			if (cVar7 == 0) 
 				sVar6 = -0x40;
-			}
-			else {
+			else 
 				sVar6 = -0x100;
-			}
-			(&player)[iVar2].idlevol = (&player)[iVar2].idlevol + sVar6;
-			if (cVar7 == '\0') {
-				sVar6 = 0xaf;
-			}
-			else {
+
+			player[iVar2].idlevol += sVar6;
+
+			if (cVar7 == 0) 
+				sVar6 = 175;
+			else
 				sVar6 = 700;
-			}
-			(&player)[iVar2].revsvol = (&player)[iVar2].revsvol + sVar6;
-			if ((&player)[iVar2].idlevol < -10000) {
-				(&player)[iVar2].idlevol = -10000;
-			}
-			if (sVar4 < (&player)[iVar2].revsvol) {
-				(&player)[iVar2].revsvol = sVar4;
-			}
+
+			player[iVar2].revsvol = player[iVar2].revsvol + sVar6;
+
+			if (player[iVar2].idlevol < -10000) 
+				player[iVar2].idlevol = -10000;
+
+			if (sVar4 < player[iVar2].revsvol) 
+				player[iVar2].revsvol = sVar4;
 		}
 	}
-	return;*/
 }
 
 

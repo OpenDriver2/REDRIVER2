@@ -25,7 +25,7 @@
 #define trap(ode) {_asm int 0x03}
 #endif
 
-
+#define WITH_TIMESTEP(n) (n/2)
 
 // PC STUFF
 #define _CopReg0 gteRegs.CP0
