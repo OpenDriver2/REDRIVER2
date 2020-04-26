@@ -8,7 +8,11 @@
 #include "CUTSCENE.H"
 #include "MISSION.H"
 
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+sdPlane sea = { 0, 0, 0, 0, 2048 }; // a default surface if FindSurfaceD2 fails
+#else
 sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
+#endif
 
 ROAD_MAP_LUMP_DATA roadMapLumpData;
 

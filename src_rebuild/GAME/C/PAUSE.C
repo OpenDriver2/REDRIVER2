@@ -41,7 +41,7 @@ void EnterName();
 
 char EnterScoreText[32] = { 0 };
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 
 void SetRightWayUp(int direction)
 {
@@ -160,7 +160,7 @@ MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
@@ -187,7 +187,7 @@ MENU_ITEM MultiplayerPauseItems[7] =
 MENU_ITEM CutscenePauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
