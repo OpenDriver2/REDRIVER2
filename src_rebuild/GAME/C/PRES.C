@@ -548,7 +548,9 @@ int PrintString(char *string, int x, int y)
 					chr = fontinfo[uVar7].width;
 
 					setSprt(font);
+#ifdef PSX
 					setSemiTrans(font, 1);
+#endif
 
 					//*(undefined *)((int)&font->tag + 3) = 4;
 					//font->code = 'f';
@@ -703,7 +705,9 @@ short PrintDigit(int x, int y, char *string)
 		current->primptr += sizeof(SPRT);
 
 		setSprt(font);
+#ifdef PSX
 		setSemiTrans(font, 1);
+#endif
 
 		font->r0 = gFontColour.r;
 		font->g0 = gFontColour.g;
@@ -732,7 +736,9 @@ short PrintDigit(int x, int y, char *string)
 
 	POLY_FT3* null = (POLY_FT3*)current->primptr;
 	setPolyFT3(null);
+#ifdef PSX
 	setSemiTrans(null, 1);
+#endif
 
 	null->x0 = -1;
 	null->y0 = -1;
@@ -1282,7 +1288,9 @@ void* SetFontTPage(void *prim)
 	POLY_FT3* null = (POLY_FT3*)prim;
 
 	setPolyFT3(null);
+#ifdef PSX
 	setSemiTrans(null, 1);
+#endif
 
 	null->x0 = -1;
 	null->y0 = -1;

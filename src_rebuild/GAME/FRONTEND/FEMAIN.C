@@ -1988,7 +1988,9 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 					bVar1 = feFont.CharInfo[uVar7].w;
 					setSprt(font);
 					//font->code = 'f';
+#ifdef PSX
 					setSemiTrans(font, 1);
+#endif
 
 					//font->tpage = 0x1a;	// [A]
 
@@ -2109,7 +2111,9 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 					setPolyFT4(font);
 					//*(undefined *)((int)&font->tag + 3) = 9;
 					//font->code = ',';
+#ifdef PSX
 					setSemiTrans(font, transparent);
+#endif
 					font->tpage = 0x1a;
 					
 					font->r0 = 128;
