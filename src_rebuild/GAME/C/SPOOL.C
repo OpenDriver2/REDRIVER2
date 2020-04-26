@@ -1982,8 +1982,7 @@ int LoadRegionData(int region, int target_region)
 //#define HAVANA_AUGUST_DEMO // uncomment to load August Demo HAVANA.LEV
 
 #ifdef HAVANA_AUGUST_DEMO
-		// temporarily disabled
-		//RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
+		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
 		offset += spoolptr->roadm_size;
 
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
@@ -1995,9 +1994,9 @@ int LoadRegionData(int region, int target_region)
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
 		offset += spoolptr->cell_data_size[2];
 
-		offset -= spoolptr->roadm_size; // [A] as PVS_Buffers loading temporarily disabled this should be here
+		//offset -= spoolptr->roadm_size; // [A] if PVS_Buffers loading temporarily disabled this should be uncommented
 
-		spool_regioninfo[spool_regioncounter].nsectors = (offset- spoolptr->roadm_size) - spoolptr->offset;
+		spool_regioninfo[spool_regioncounter].nsectors = offset - spoolptr->offset;
 #else
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
 		offset += spoolptr->cell_data_size[1];
