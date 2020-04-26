@@ -2136,9 +2136,9 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		}
 	}
 LAB_00055c58:
-	if ('Z' < (cp->hd).autoBrake)
+	if (90 < (cp->hd).autoBrake)
 	{
-		(cp->hd).autoBrake = 'Z';
+		(cp->hd).autoBrake = 90;
 	}
 	if ((pad & 0x10) == 0)
 	{
@@ -2147,7 +2147,7 @@ LAB_00055c58:
 			cp->wheelspin = '\0';
 		}
 		else {
-			cp->wheelspin = '\x01';
+			cp->wheelspin = 1;
 		}
 		if ((cp->wheelspin != '\0') && (0x6e958 < (cp->hd).wheel_speed))
 		{

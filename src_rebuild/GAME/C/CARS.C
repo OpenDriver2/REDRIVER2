@@ -1291,7 +1291,7 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	sVar1 = car_cosmetics[cp->ap.model].wheelSize;
 	iVar7 = iVar5;
 	if (cp->wheelspin != 0)
-		iVar7 = -700;
+		iVar7 = 700;
 
 	if ((cp->hd).wheel[0].locked != 0)
 		iVar5 = 0;
