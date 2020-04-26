@@ -4,6 +4,7 @@
 
 #include "EMULATOR.H"
 #include "LIBAPI.H"
+#include "LIBMATH.H"
 
 #include <string.h>
 
@@ -218,6 +219,7 @@ bool Emulator_InitSound()
 
 	// Setup defaults
 	alListenerf(AL_GAIN, 1.0f);
+	alDistanceModel(AL_NONE);
 
 	// create channels
 	for (int i = 0; i < SPU_VOICES; i++)
@@ -448,72 +450,72 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
 	static short waveBuffer[SPU_MEMSIZE];
 
-	int voiceId = -1;
-
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (arg->voice != SPU_VOICECH(i))
 			continue;
 
-		voiceId = i;
-		break;
-	}
+		SPUVoice& voice = s_SpuVoices[i];
 
-	if (voiceId == -1)
-		return;
-
-	SPUVoice& voice = s_SpuVoices[voiceId];
-
-	// update sample
-	if((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
-	{
-		// welp
-		alSourceStop(voice.alSource);
-		alSourcei(voice.alSource, AL_BUFFER, 0);
-
-		if(arg->mask & SPU_VOICE_WDSA)
-			voice.attr.addr = arg->addr;
-
-		if(arg->mask & SPU_VOICE_LSAX)
-			voice.attr.loop_addr = arg->loop_addr;
-
-		char flag = s_SpuMemory.samplemem[voice.attr.addr * 8 + 1];
-
-		int loopStart = 0, loopLen = 0;
-		int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE - voice.attr.addr, &loopStart, &loopLen, true);
-
-		if (loopLen > 0)
+		// update sample
+		if ((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
 		{
-			loopStart += voice.attr.loop_addr;
+			// welp
+			alSourceStop(voice.alSource);
+			alSourcei(voice.alSource, AL_BUFFER, 0);
 
-			int sampleOffs[] = { loopStart, loopStart + loopLen };
-			alBufferiv(voice.alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+			if (arg->mask & SPU_VOICE_WDSA)
+				voice.attr.addr = arg->addr;
+
+			if (arg->mask & SPU_VOICE_LSAX)
+				voice.attr.loop_addr = arg->loop_addr;
+
+			char flag = s_SpuMemory.samplemem[voice.attr.addr * 8 + 1];
+
+			int loopStart = 0, loopLen = 0;
+			int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE - voice.attr.addr, &loopStart, &loopLen, true);
+
+			if (loopLen > 0)
+			{
+				loopStart += voice.attr.loop_addr;
+
+				int sampleOffs[] = { loopStart, loopStart + loopLen };
+				alBufferiv(voice.alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+			}
+
+			alBufferData(voice.alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 350000);
+
+			// set the buffer
+			alSourcei(voice.alSource, AL_BUFFER, voice.alBuffer);
+			alSourcei(voice.alSource, AL_SAMPLE_OFFSET, 0);
 		}
 
-		alBufferData(voice.alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 350000);
+		// update volume
+		if ((arg->mask & SPU_VOICE_VOLL) || (arg->mask & SPU_VOICE_VOLR))
+		{
+			if (arg->mask & SPU_VOICE_VOLL)
+				voice.attr.volume.left = arg->volume.left;
 
-		// set the buffer
-		alSourcei(voice.alSource, AL_BUFFER, voice.alBuffer);
-		alSourcei(voice.alSource, AL_SAMPLE_OFFSET, 0);
-	}
+			if (arg->mask & SPU_VOICE_VOLR)
+				voice.attr.volume.right = arg->volume.right;
 
-	// update volume
-	if ((arg->mask & SPU_VOICE_VOLL) || (arg->mask & SPU_VOICE_VOLR))
-	{
-		if(arg->mask & SPU_VOICE_VOLL)
-			voice.attr.volume.left = arg->volume.left;
+			float left_gain = float(voice.attr.volume.left) / float(16384);
+			float right_gain = float(voice.attr.volume.right) / float(16384);
 
-		if(arg->mask & SPU_VOICE_VOLR)
-			voice.attr.volume.left = arg->volume.left;
+			float pan = (acosf(left_gain) + asinf(right_gain)) / ((float)M_PI); // average angle in [0,1]
+			pan = 2 * pan - 1; // convert to [-1, 1]
+			pan = pan * 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
+			alSource3f(voice.alSource, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
 
-		alSourcef(voice.alSource, AL_GAIN, 1.0f /*voice.attr.volume.left*/);	// TODO: calc panning
-	}
+			//alSourcef(voice.alSource, AL_GAIN, 1.0f);
+		}
 
-	// update pitch
-	if (arg->mask & SPU_VOICE_PITCH)
-	{
-		voice.attr.pitch = arg->pitch;
-		alSourcef(voice.alSource, AL_PITCH, float(voice.attr.pitch) / 32767.0f);
+		// update pitch
+		if (arg->mask & SPU_VOICE_PITCH)
+		{
+			voice.attr.pitch = arg->pitch;
+			alSourcef(voice.alSource, AL_PITCH, float(voice.attr.pitch) / 32767.0f);
+		}
 	}
 }
 
