@@ -170,6 +170,7 @@ extern MATRIX* ScaleMatrix(MATRIX* m, VECTOR* v);
 extern void SetDQA(int iDQA);
 extern void SetDQB(int iDQB);
 extern void SetFogNear(long a, long h);
+extern long SquareRoot0(long a);
 
 extern int rsin(int a);
 extern int rcos(int a);
