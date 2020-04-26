@@ -447,7 +447,7 @@ void StepOneCar(_CAR_DATA *cp)
 				Setup_Debris((VECTOR *)&deepestPoint, &partdir, 10, 0);
 			}
 
-			if ((SurfacePtr->surface != 9) && (SurfacePtr->surface != 6)) 
+			if (SurfacePtr && (SurfacePtr->surface != 9) && (SurfacePtr->surface != 6))
 			{
 				iVar4 = GetPlayerId(cp);
 				CollisionSound((char)iVar4, cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
