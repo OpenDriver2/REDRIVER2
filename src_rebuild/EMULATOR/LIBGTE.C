@@ -4561,22 +4561,33 @@ short SQRT[] = {
 
 long SquareRoot0(long a)
 {
-	uint uVar1;
-	int iVar2;
+	int v0, v1, t0, t1, t2, t3, t4;
 
-	LZCS = a;
-	uVar1 = LZCR;
+	v0 = gte_leadingzerocount(a);
 
-	if (uVar1 != 32)
+	if (v0 != 32)
 	{
-		uVar1 = uVar1 & -2;	// [A] MIGHT BE INCORRECT - disassemble properly. PSn00b SDK has same implementation as PSY-Q
+		t0 = v0 & 1;
+		v1 = -2;
+		t2 = v0 & v1;
 
-		if (uVar1 - 24 < 0)
-			iVar2 = a >> (24 - uVar1 & 31);
-		else 
-			iVar2 = a << (uVar1 - 24 & 31);
+		t1 = 31 - t2;
+		t1 -= t2;
+		t1 >>= 1;
 
-		return (SQRT[iVar2 - 64] << ((31 - uVar1) >> 1 & 31)) >> 0xc;
+		t3 = t2 - 24;
+
+		if (t3 < 0)
+		{
+			t3 = 24 - t2;
+			t4 = a >> t3;
+		}
+		else
+		{
+			t4 = a << t3;
+		}
+
+		return (SQRT[t4 - 64] << t1) >> 12;
 	}
 
 	return 0;

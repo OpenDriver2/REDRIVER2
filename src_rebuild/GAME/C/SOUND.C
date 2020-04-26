@@ -176,7 +176,7 @@ void ClearChannelFields(int channel)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int gSoundMode = 0;		// mono or stereo
+int gSoundMode = 1;		// mono or stereo
 
 int stop_sound_handler = 0;
 int sound_paused = 0;
@@ -594,12 +594,10 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 			trap(7);
 
 		if (gSoundMode == 1) 
-		{
 			UpdateVolumeAttributesS(channel, proximity);
-		}
-		else {
+		else
 			UpdateVolumeAttributesM(channel);
-		}
+
 
 		stop_sound_handler = 1;
 
