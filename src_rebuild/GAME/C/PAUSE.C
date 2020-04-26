@@ -11,6 +11,27 @@
 #include "SOUND.H"
 #include "CUTSCENE.H"
 
+static int gScoreEntered = 0;
+static char EnterNameText[32] = { 0 };
+static int PauseReturnValue;
+int pauseflag = 0;
+int gShowMap = 0;
+int gDrawPauseMenus = 0;
+int gEnteringScore = 0;
+static int gScorePosition = 0;
+static int allownameentry = 0;
+
+static MENU_ITEM* ActiveItem[3];
+static struct MENU_HEADER* ActiveMenu;
+static int ActiveMenuItem;
+static int VisibleMenu;
+static MENU_HEADER* VisibleMenus[3];
+static char SfxVolumeText[8];
+static char MusicVolumeText[8];
+
+// MISSION.C
+PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
+
 void PauseMap(int direction);
 void SfxVolume(int direction);
 void MusicVolume(int direction);
@@ -22,10 +43,11 @@ char EnterScoreText[32] = { 0 };
 
 #ifdef _DEBUG
 
-void ToggleRightWayUp(int direction)
+void SetRightWayUp(int direction)
 {
 	extern char gRightWayUp;
-	gRightWayUp ^= gRightWayUp;
+	gRightWayUp = 1;
+	PauseReturnValue = MENU_QUIT_CONTINUE;
 }
 
 void ToggleInvincible(int direction)
@@ -99,7 +121,7 @@ MENU_HEADER DebugTimeOfDayHeader =
 
 MENU_ITEM DebugOptionsItems[] =
 {
-	{ "Back on Wheels",	2, 	2,	 ToggleRightWayUp,	MENU_QUIT_CONTINUE,	NULL},
+	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
 	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
 	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
@@ -354,27 +376,6 @@ int playerwithcontrol[3] = { 0 };
 		// Start line: 2008
 	/* end block 2 */
 	// End Line: 2009
-
-static int gScoreEntered = 0;
-static char EnterNameText[32] = { 0 };
-static int PauseReturnValue;
-int pauseflag = 0;
-int gShowMap = 0;
-int gDrawPauseMenus = 0;
-int gEnteringScore = 0;
-static int gScorePosition = 0;
-static int allownameentry = 0;
-
-static MENU_ITEM* ActiveItem[3];
-static struct MENU_HEADER* ActiveMenu;
-static int ActiveMenuItem;
-static int VisibleMenu;
-static MENU_HEADER* VisibleMenus[3];
-static char SfxVolumeText[8];
-static char MusicVolumeText[8];
-
-// MISSION.C
-PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
 
 // [D]
 int ShowPauseMenu(PAUSEMODE mode)
