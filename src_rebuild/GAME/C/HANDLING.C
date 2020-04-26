@@ -162,33 +162,32 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	/* end block 4 */
 	// End Line: 2179
 
+// [D]
 void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	uint uVar3;
 	int iVar4;
 
-	uVar3 = (uint)(byte)(cp->ap).model;
-	iVar1 = ((int)car_cosmetics[uVar3].wheelDisp[0].vz + (int)car_cosmetics[uVar3].wheelDisp[1].vz) /
-		5;
-	if (init == 1) {
-		iVar4 = (cp->hd).where.t[1];
-		*(long *)cp->st = (cp->hd).where.t[0] << 4;
-		iVar2 = (cp->hd).where.t[2];
-		*(int *)(cp->st + 4) = iVar4 << 4;
-		*(int *)(cp->st + 8) = iVar2 << 4;
+	uVar3 = cp->ap.model;
+	iVar1 = (car_cosmetics[uVar3].wheelDisp[0].vz + car_cosmetics[uVar3].wheelDisp[1].vz) / 5;
+
+	if (init == 1) 
+	{
+		cp->st.n.fposition[0] = cp->hd.where.t[0] << 4;
+		cp->st.n.fposition[1] = cp->hd.where.t[1] << 4;
+		cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
 	}
-	uVar3 = (cp->hd).direction & 0xffe;
-	*(int *)(cp->st + 0xc) = -(int)rcossin_tbl[uVar3 + 1] * iVar1 + 0x800 >> 0xc;
-	*(int *)(cp->st + 0x10) = (int)rcossin_tbl[uVar3];
-	*(int *)(cp->st + 0x14) = rcossin_tbl[uVar3] * iVar1 + 0x800 >> 0xc;
-	*(int *)(cp->st + 0x18) = (int)rcossin_tbl[uVar3 + 1];
-	RebuildCarMatrix((RigidBodyState *)cp->st, cp);
+
+	uVar3 = cp->hd.direction & 0xffe;
+	cp->st.n.orientation[0] = (-rcossin_tbl[uVar3 + 1] * iVar1) / 4096;
+	cp->st.n.orientation[1] = rcossin_tbl[uVar3];
+	cp->st.n.orientation[2] = (rcossin_tbl[uVar3] * iVar1) / 4096;
+	cp->st.n.orientation[3] = rcossin_tbl[uVar3 + 1];
+
+	RebuildCarMatrix((RigidBodyState *)&cp->st, cp);
 	SetShadowPoints(cp);
-	return;*/
 }
 
 
