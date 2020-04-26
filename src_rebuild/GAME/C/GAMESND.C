@@ -10,6 +10,8 @@
 #include "HANDLING.H"
 #include "MISSION.H"
 #include "MC_SND.H"
+#include "GLAUNCH.H"
+#include "LOADVIEW.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -181,6 +183,7 @@ LAB_00052374:
 	/* end block 3 */
 	// End Line: 4390
 
+// [D]
 int SpecialVehicleKludge(char vehicle2)
 {
 	static char kludge_bank[4][3] = {
@@ -190,7 +193,7 @@ int SpecialVehicleKludge(char vehicle2)
 		{ 17, 11, 15 }
 	};
 
-	return (int)kludge_bank[vehicle2 + GameLevel * 3];
+	return kludge_bank[GameLevel][vehicle2];
 }
 
 
@@ -302,19 +305,25 @@ int ResidentModelsBodge(void)
 	/* end block 4 */
 	// End Line: 4473
 
+// [D]
 int MapCarIndexToBank(int index)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	static char car_banks[4][9]=
+	{
+		{ 0x4, 0xD, 0x5, 0x10, 0x9,  0x2,  0xF,  0xA,  0xA },
+		{ 0xB, 0x7, 0x6, 0x11, 0x11, 0x2,  0x5,  0x4,  0xE },
+		{ 0x3, 0x4, 0x6, 0xB,  0x9,  0x2,  0x11, 0xA,  0x8},
+		{ 0x7, 0xD, 0x9, 0x2,  0x11, 0x11, 0xB,  0x10, 0x0}
+	};
 
 	int iVar1;
 	int iVar2;
 
 	iVar1 = MissionHeader->residentModels[index];
-	if ((gCurrentMissionNumber - 0x27U < 2) && (iVar1 == 0xd)) {
-		iVar2 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] +
-			MissionHeader->residentModels[2]);
+
+	if ((gCurrentMissionNumber - 0x27U < 2) && (iVar1 == 0xd)) 
+	{
+		iVar2 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 		iVar1 = iVar2;
 		if (iVar2 < 1) {
 			iVar1 = 1;
@@ -324,14 +333,14 @@ int MapCarIndexToBank(int index)
 		}
 	}
 	iVar2 = iVar1 + -1;
-	if (iVar1 == 0) {
+
+	if (iVar1 == 0) 
 		iVar2 = 1;
-	}
-	if (6 < iVar2) {
+
+	if (6 < iVar2)
 		iVar2 = iVar2 + -3;
-	}
-	return (uint)*(byte *)(iVar2 + GameLevel * 9 + 0x9ef38);
-	*/
+
+	return car_banks[GameLevel][iVar2];
 }
 
 
@@ -369,168 +378,208 @@ int MapCarIndexToBank(int index)
 	/* end block 3 */
 	// End Line: 461
 
+static char cop_model = 0;
+
+// [D]
 void LoadLevelSFX(int missionNum)
 {
-	UNIMPLEMENTED();
-	/*
 	int lump;
 	uint uVar1;
 	int index;
 	int *piVar2;
 	uint uVar3;
 
-	uVar3 = (uint)(gTimeOfDay == 3);
+	uVar3 = (gTimeOfDay == 3);
 	index = missionNum;
-	if (missionNum < 0) {
+
+	if (missionNum < 0)
 		index = missionNum + 3;
-	}
-	cop_bank = (char)missionNum + (char)(index >> 2) * -4 + '\x01';
-	cop_model = '\x03';
-	LoadSoundBankDynamic((char *)0x0, 0, 0);
+
+	cop_bank = missionNum - (index >> 2) * 4 + 1;
+	cop_model = 3;
+	LoadSoundBankDynamic(NULL, 0, 0);
 	index = 0;
+
 	do {
 		lump = MapCarIndexToBank(index);
 		LoadBankFromLump(3, lump);
 		index = index + 1;
 	} while (index < 3);
+
 	ShowLoading();
+
 	LoadBankFromLump(1, 0);
 	LoadBankFromLump(1, 1);
 	LoadBankFromLump(6, 0x42);
-	if ((GameLevel & 2U) == 0) {
+
+	if ((GameLevel & 2U) == 0) 
 		uVar1 = GameLevel & 3;
-	}
-	else {
+	else
 		uVar1 = (GameLevel & 1U) << 1;
-	}
+
 	LoadBankFromLump(2, uVar1 + 0x45);
+
 	if (((((3 < missionNum - 1U) && (missionNum != 6)) && (missionNum != 7)) &&
 		(((missionNum != 9 && (missionNum != 10)) &&
 		((missionNum != 0xb && ((missionNum != 0xd && (missionNum != 0xe)))))))) &&
-			(((missionNum != 0x12 &&
+		(((missionNum != 0x12 &&
 		((((missionNum != 0x13 && (missionNum != 0x14)) && (missionNum != 0x16)) &&
-				((missionNum != 0x1a && (missionNum != 0x1c)))))) &&
-			((((missionNum != 0x1f && ((missionNum != 0x21 && (missionNum != 0x22)))) &&
-				(missionNum != 0x26)) && (missionNum != 0x28)))))) {
-		if ((GameLevel & 2U) == 0) {
+		((missionNum != 0x1a && (missionNum != 0x1c)))))) &&
+		((((missionNum != 0x1f && ((missionNum != 0x21 && (missionNum != 0x22)))) &&
+		(missionNum != 0x26)) && (missionNum != 0x28)))))) 
+	{
+		if ((GameLevel & 2U) == 0) 
+		{
 			uVar1 = GameLevel & 3;
 			index = uVar1 << 2;
 		}
-		else {
+		else 
+		{
 			uVar1 = (GameLevel & 1U) << 1;
 			index = (GameLevel & 1U) << 3;
 		}
+
 		LoadBankFromLump(2, index + uVar1 + 0x1d);
-		if ((GameLevel & 2U) == 0) {
-			index = (GameLevel & 3U) * 5 + (uint)(byte)cop_bank + 0x1d;
-		}
-		else {
-			index = (GameLevel & 1U) * 10 + (uint)(byte)cop_bank + 0x1d;
-		}
+
+		if ((GameLevel & 2U) == 0) 
+			index = (GameLevel & 3U) * 5 + cop_bank + 0x1d;
+		else
+			index = (GameLevel & 1U) * 10 + cop_bank + 0x1d;
+
 		LoadBankFromLump(2, index);
 	}
+
 	ShowLoading();
-	if ((NumPlayers < 2) || (NoPlayerControl != 0)) {
-		if (GameLevel == 1) {
+
+	if ((NumPlayers < 2) || (NoPlayerControl != 0)) 
+	{
+		if (GameLevel == 1)
+		{
 			LoadBankFromLump(4, uVar3 + 0x17);
 		}
-		else {
-			if (GameLevel < 2) {
-				if (GameLevel == 0) {
+		else 
+		{
+			if (GameLevel < 2) 
+			{
+				if (GameLevel == 0)
 					LoadBankFromLump(4, uVar3 + 0x15);
-				}
 			}
-			else {
-				if (GameLevel == 2) {
+			else 
+			{
+				if (GameLevel == 2) 
+				{
 					LoadBankFromLump(4, uVar3 + 0x19);
 				}
-				else {
-					if (GameLevel == 3) {
-						LoadBankFromLump(4, uVar3 + 0x1b);
-					}
+				else if (GameLevel == 3)
+				{
+					LoadBankFromLump(4, uVar3 + 0x1b);
 				}
 			}
 		}
 	}
-	phrase_top = '\0';
+
+	phrase_top = 0;
+
 	if ((((missionNum - 2U < 3) || (missionNum == 9)) || (missionNum == 10)) || (missionNum == 0x1b))
 	{
-		LoadBankFromLump(5, 0x14);
-		phrase_top = '\a';
+		LoadBankFromLump(5, 20);
+		phrase_top = 7;
 	}
-	if (((missionNum - 0x14U < 2) || (missionNum == 0x19)) || (missionNum == 0x27)) {
-		LoadBankFromLump(5, 0x13);
-		phrase_top = '\x03';
+	if (((missionNum - 0x14U < 2) || (missionNum == 0x19)) || (missionNum == 0x27))
+	{
+		LoadBankFromLump(5, 19);
+		phrase_top = 3;
 	}
-	if (missionNum == 2) {
-		index = 0x2d;
+	if (missionNum == 2)
+	{
+		index = 45;
 		goto LAB_0004dc60;
 	}
-	if (missionNum == 3) {
-		index = 0x2e;
+	if (missionNum == 3)
+	{
+		index = 46;
 		goto LAB_0004dc60;
 	}
-	if (missionNum == 4) {
-		index = 0x2f;
+	if (missionNum == 4)
+	{
+		index = 47;
 		goto LAB_0004dc60;
 	}
-	if (missionNum == 10) {
-		index = 0x30;
+	if (missionNum == 10) 
+	{
+		index = 48;
 		goto LAB_0004dc60;
 	}
-	if (missionNum != 0xb) {
-		if (missionNum == 0xd) {
-			index = 0x32;
+	if (missionNum != 11)
+	{
+		if (missionNum == 13)
+		{
+			index = 50;
 			goto LAB_0004dc60;
 		}
-		if ((missionNum == 0xf) || (missionNum == 0x10)) {
-			index = 0x33;
+		if ((missionNum == 15) || (missionNum == 16))
+		{
+			index = 51;
 			goto LAB_0004dc60;
 		}
-		if (missionNum == 0x12) {
-			index = 0x34;
+		if (missionNum == 18)
+		{
+			index = 52;
 			goto LAB_0004dc60;
 		}
-		if ((missionNum != 0x14) && (missionNum != 0x15)) {
-			if (missionNum == 0x16) {
-				index = 0x35;
+		if ((missionNum != 20) && (missionNum != 21))
+		{
+			if (missionNum == 22)
+			{
+				index = 53;
 				goto LAB_0004dc60;
 			}
-			if (missionNum == 0x17) {
+			if (missionNum == 23)
+			{
 				index = 0x36;
 				goto LAB_0004dc60;
 			}
-			if (missionNum == 0x18) {
+			if (missionNum == 0x18)
+			{
 				index = 0x37;
 				goto LAB_0004dc60;
 			}
-			if (missionNum != 0x19) {
-				if (missionNum == 0x1b) {
+			if (missionNum != 0x19)
+			{
+				if (missionNum == 0x1b)
+				{
 					index = 0x38;
 					goto LAB_0004dc60;
 				}
-				if (missionNum == 0x1d) {
+				if (missionNum == 0x1d) 
+				{
 					index = 0x39;
 					goto LAB_0004dc60;
 				}
-				if (missionNum == 0x1e) {
+				if (missionNum == 0x1e)
+				{
 					index = 0x3a;
 					goto LAB_0004dc60;
 				}
-				if (missionNum != 0x20) {
-					if (missionNum == 0x21) {
+				if (missionNum != 0x20) 
+				{
+					if (missionNum == 0x21) 
+					{
 						index = 0x3c;
 						goto LAB_0004dc60;
 					}
-					if (missionNum == 0x23) {
+					if (missionNum == 0x23)
+					{
 						index = 0x3d;
 						goto LAB_0004dc60;
 					}
-					if (missionNum == 0x27) {
+					if (missionNum == 0x27)
+					{
 						index = 0x3e;
 						goto LAB_0004dc60;
 					}
-					if (missionNum == 0x28) {
+					if (missionNum == 0x28) 
+					{
 						index = 0x3f;
 						goto LAB_0004dc60;
 					}
@@ -539,7 +588,8 @@ void LoadLevelSFX(int missionNum)
 							index = 0x41;
 							goto LAB_0004dc60;
 						}
-						if ((missionNum != 0x38) && (index = 0, missionNum != 0x39)) goto LAB_0004dc60;
+						if ((missionNum != 0x38) && (index = 0, missionNum != 0x39))
+							goto LAB_0004dc60;
 					}
 					goto LAB_0004dbc4;
 				}
@@ -550,51 +600,60 @@ void LoadLevelSFX(int missionNum)
 	}
 LAB_0004dbc4:
 	index = 0x31;
+
 LAB_0004dc60:
-	if (index != 0) {
+	if (index != 0) 
 		LoadBankFromLump(5, index);
-	}
-	if ((GameLevel == 0) || (GameLevel == 3)) {
+
+	if ((GameLevel == 0) || (GameLevel == 3)) 
 		LoadBankFromLump(1, 0x43);
-	}
-	if (GameLevel == 2) {
+
+	if (GameLevel == 2)
 		LoadBankFromLump(1, 0x44);
-	}
-	LoadSoundBankDynamic((char *)0x0, 1, 0);
-	LoadSoundBankDynamic((char *)0x0, 3, 3);
-	if (gCurrentMissionNumber - 0x27U < 2) {
+
+	LoadSoundBankDynamic(NULL, 1, 0);
+	LoadSoundBankDynamic(NULL, 3, 3);
+
+	if (gCurrentMissionNumber - 0x27U < 2) 
+	{
 		index = MapCarIndexToBank(4);
 		LoadBankFromLump(3, index);
 	}
-	else {
-		index = SpecialVehicleKludge('\0');
+	else 
+	{
+		index = SpecialVehicleKludge(0);
 		LoadBankFromLump(3, index);
 	}
-	if ((((missionNum != 0x18) && (missionNum != 0x1b)) && (missionNum != 0x1d)) &&
-		((missionNum != 0x1e && (missionNum != 0x23)))) {
-		index = SpecialVehicleKludge('\x01');
+
+	if ((((missionNum != 0x18) && (missionNum != 0x1b)) && (missionNum != 0x1d)) && ((missionNum != 0x1e && (missionNum != 0x23)))) 
+	{
+		index = SpecialVehicleKludge(1);
 		LoadBankFromLump(3, index);
 	}
-	if (missionNum - 0x32U < 0x10) {
-		index = SpecialVehicleKludge('\x02');
+
+	if (missionNum - 0x32U < 0x10) 
+	{
+		index = SpecialVehicleKludge(2);
 		LoadBankFromLump(3, index);
 	}
+
 	if (((gCurrentMissionNumber == 7) || (gCurrentMissionNumber == 9)) ||
 		((gCurrentMissionNumber == 0xb ||
 		((((gCurrentMissionNumber == 0x14 || (gCurrentMissionNumber == 0x1a)) ||
-			(gCurrentMissionNumber == 0x1f)) ||
-			((gCurrentMissionNumber == 0x21 || (gCurrentMissionNumber == 0x28)))))))) {
+		(gCurrentMissionNumber == 0x1f)) ||
+		((gCurrentMissionNumber == 0x21 || (gCurrentMissionNumber == 0x28)))))))) 
+	{
 		index = 0;
 		piVar2 = MissionHeader->residentModels;
 		do {
-			if (*piVar2 == MissionHeader->residentModels[3]) {
+			if (*piVar2 == MissionHeader->residentModels[3])
+			{
 				cop_model = (char)index;
 			}
 			index = index + 1;
 			piVar2 = piVar2 + 1;
 		} while (index < 3);
 	}
-	return;*/
 }
 
 
