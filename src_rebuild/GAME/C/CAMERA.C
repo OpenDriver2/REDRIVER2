@@ -97,23 +97,6 @@ int CameraCar = 0;
 
 SVECTOR camera_angle = { 0,0,0 };
 
-#define gte_ApplyRotMatrix(r1,r2)				\
-				{	gte_ldv0(r1);		\
-					gte_rtv0();		\
-					gte_stlvnl(r2);		}
-
-#define gte_ldv0( r0 )\
-	CTC2(*(uint*)((char*)r0), 0);\
-	CTC2(*(uint*)((char*)r0+4), 1);
-
-#define gte_rtv0() docop2(0x480012);
-
-// Not correct yet
-#define gte_stlvnl( r0 )\
-	*(uint*)((char*)r0) = CFC2(25);\
-	*(uint*)((char*)r0+4) = CFC2(26);\
-	*(uint*)((char*)r0+8) = CFC2(27);
-
 // [D]
 void InitCamera(_PLAYER *lp)
 {
@@ -164,18 +147,16 @@ void InitCamera(_PLAYER *lp)
 		{
 			// [A]
 			gte_SetRotMatrix(&car_data[iVar2].hd.where);
-
 			gte_SetTransMatrix(&car_data[iVar2].hd.where);
 
 			// [A]
 			pCVar3 = car_data[iVar2].ap.carCos;
-			boxDisp.vx = -(pCVar3->cog).vx;
-			boxDisp.vy = -(pCVar3->cog).vy;
-			boxDisp.vz = -(pCVar3->cog).vz;
+			boxDisp.vx = -pCVar3->cog.vx;
+			boxDisp.vy = -pCVar3->cog.vy;
+			boxDisp.vz = -pCVar3->cog.vz;
 
-			VX0 = boxDisp.vx;
-			VY0 = boxDisp.vx;
-			VZ0 = boxDisp.vx;
+
+			gte_ldv0(&boxDisp);
 
 			docop2(0x480012);
 
@@ -238,8 +219,8 @@ void InitCamera(_PLAYER *lp)
 		camera_position.vx = (lp->cameraPos).vx;
 		camera_position.vy = (lp->cameraPos).vy;
 		camera_position.vz = (lp->cameraPos).vz;
-		CameraCar = (int)lp->cameraCarId;
-		lp->snd_cam_ang = (int)camera_angle.vy;
+		CameraCar = lp->cameraCarId;
+		lp->snd_cam_ang = camera_angle.vy;
 	}
 	else {
 		BuildWorldMatrix();
