@@ -1351,43 +1351,48 @@ void MissionSay(int phrase)
 	/* end block 3 */
 	// End Line: 5495
 
+// [D]
 long jsqrt(ulong a)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	uint uVar3;
 
-	if (a < 2) {
+	if (a < 2)
 		return a;
-	}
+
 	uVar2 = a >> 1;
-	if (a < 0x40000000) {
-		if (uVar2 < 0x8000) goto LAB_0005277c;
+
+	if (a < 0x40000000) 
+	{
+		if (uVar2 < 0x8000) 
+			goto LAB_0005277c;
 	}
-	else {
-		if (uVar2 < 0x10000) goto LAB_0005277c;
+	else 
+	{
+		if (uVar2 < 0x10000)
+			goto LAB_0005277c;
 	}
+
 	uVar2 = 0xffff;
-	if (a < 0x40000000) {
+	if (a < 0x40000000)
 		uVar2 = 0x7fff;
-	}
+
 LAB_0005277c:
 	do {
-		if (uVar2 == 0) {
+		if (uVar2 == 0) 
 			trap(7);
-		}
+
 		uVar3 = uVar2 + a / uVar2 >> 1;
 		iVar1 = uVar2 - uVar3;
-		if (iVar1 < 0) {
+
+		if (iVar1 < 0)
 			iVar1 = uVar3 - uVar2;
-		}
+
 		uVar2 = uVar3;
 	} while (100 < iVar1);
+
 	return uVar3;
-	*/
 }
 
 
