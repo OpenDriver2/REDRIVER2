@@ -53,19 +53,19 @@ void SetRightWayUp(int direction)
 void ToggleInvincible(int direction)
 {
 	extern int gInvincibleCar;
-	gInvincibleCar ^= gInvincibleCar;
+	gInvincibleCar ^= 1;
 }
 
 void ToggleImmune(int direction)
 {
 	extern int gPlayerImmune;
-	gPlayerImmune ^= gPlayerImmune;
+	gPlayerImmune ^= 1;
 }
 
 void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
-	playerghost ^= playerghost;
+	playerghost ^= 1;
 }
 
 extern void LoadSky(void);
@@ -73,28 +73,24 @@ extern void LoadSky(void);
 void DebugTimeOfDayDay(int direction)
 {
 	gTimeOfDay = 1;
-	gWeather = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayNight(int direction)
 {
 	gTimeOfDay = 3;
-	gWeather = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayDusk(int direction)
 {
 	gTimeOfDay = 0;
-	gWeather = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayDawn(int direction)
 {
 	gTimeOfDay = 2;
-	gWeather = 0;
 	LoadSky();
 }
 
@@ -102,7 +98,13 @@ void DebugTimeOfDayRain(int direction)
 {
 	//extern int weather;
 	//weather ^= weather;
-	gWeather ^= gWeather;
+	gWeather ^= 1;
+
+	if (gWeather == 1)
+		wetness = 7000;
+	else
+		wetness = 0;
+
 	LoadSky();
 }
 
