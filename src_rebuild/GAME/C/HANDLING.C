@@ -81,9 +81,9 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	cp->hd.autoBrake = '\0';
 
-	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * iVar2 + 0x800 >> 0xc;
+	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * iVar2 / 4096;
 	cp->st.n.orientation[1] = (int)rcossin_tbl[direction & 0xffeU];
-	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * iVar2 + 0x800 >> 0xc;
+	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * iVar2 / 4096;
 	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
 
 	cp->st.n.fposition[0] = (*startpos)[0] << 4;
@@ -714,7 +714,7 @@ void GlobalTimeStep(void)
 				if (iVar15 < 0)
 					iVar15 = iVar15 + 3;
 
-				cp->st.n.linearVelocity[1] = iVar15 >> 2;
+				cp->st.n.linearVelocity[1] = iVar15 / 4;
 			}
 			if (cp->hd.speed == 0)
 			{
@@ -769,23 +769,23 @@ void GlobalTimeStep(void)
 				long* orient = cp->st.n.orientation;
 				long angvel[4];
 
-				st->n.fposition[0] += (cp->st.n.linearVelocity[0] >> 8);
-				st->n.fposition[1] += (cp->st.n.linearVelocity[1] >> 8);
-				st->n.fposition[2] += (cp->st.n.linearVelocity[2] >> 8);
+				st->n.fposition[0] += cp->st.n.linearVelocity[0] / 256;
+				st->n.fposition[1] += cp->st.n.linearVelocity[1] / 256;
+				st->n.fposition[2] += cp->st.n.linearVelocity[2] / 256;
 
-				angvel[0] = (cp->st.n.angularVelocity[0] + 4096) / 8192;
-				angvel[1] = (cp->st.n.angularVelocity[1] + 4096) / 8192;
-				angvel[2] = (cp->st.n.angularVelocity[2] + 4096) / 8192;
+				angvel[0] = cp->st.n.angularVelocity[0] / 8192;
+				angvel[1] = cp->st.n.angularVelocity[1] / 8192;
+				angvel[2] = cp->st.n.angularVelocity[2] / 8192;
 
 				delta_orientation[0] = ((-orient[1] * angvel[2] + orient[2] * angvel[1] + orient[3] * angvel[0]));
 				delta_orientation[1] = ((orient[0] * angvel[2] - orient[2] * angvel[0]) + orient[3] * angvel[1]);
 				delta_orientation[2] = (-orient[0] * angvel[1] + orient[1] * angvel[0] + orient[3] * angvel[2]);
 				delta_orientation[3] = (((-orient[0] * angvel[0] - orient[1] * angvel[1]) - orient[2] * angvel[2]));
 
-				orient[0] += (delta_orientation[0] + 0x800) / 4096;
-				orient[1] += (delta_orientation[1] + 0x800) / 4096;
-				orient[2] += (delta_orientation[2] + 0x800) / 4096;
-				orient[3] += (delta_orientation[3] + 0x800) / 4096;
+				orient[0] += delta_orientation[0] / 4096;
+				orient[1] += delta_orientation[1] / 4096;
+				orient[2] += delta_orientation[2] / 4096;
+				orient[3] += delta_orientation[3] / 4096;
 
 				RebuildCarMatrix((RigidBodyState *)st, cp);
 			}
@@ -832,18 +832,18 @@ void GlobalTimeStep(void)
 						}
 						piVar18 = local_4c->n.fposition + local_40 * 5 + local_34 * 4;
 
-						*piVar18 = st->n.linearVelocity[0] >> 8;
-						piVar18[1] = st->n.linearVelocity[1] >> 8;
-						piVar18[2] = st->n.linearVelocity[2] >> 8;
+						*piVar18 = st->n.linearVelocity[0] / 256;
+						piVar18[1] = st->n.linearVelocity[1] / 256;
+						piVar18[2] = st->n.linearVelocity[2] / 256;
 
-						iVar9 = st->n.angularVelocity[0] + 0x1000 >> 0xd;
-						howHard = st->n.angularVelocity[1] + 0x1000 >> 0xd;
-						iVar28 = st->n.angularVelocity[2] + 0x1000 >> 0xd;
+						iVar9 = st->n.angularVelocity[0] / 8192;
+						howHard = st->n.angularVelocity[1] / 8192;
+						iVar28 = st->n.angularVelocity[2] / 8192;
 
-						piVar18[3] = -st->n.orientation[1] * iVar28 + st->n.orientation[2] * howHard + st->n.orientation[3] * iVar9 + 0x800 >> 0xc;
-						piVar18[4] = (st->n.orientation[0] * iVar28 - st->n.orientation[2] * iVar9) + st->n.orientation[3] * howHard + 0x800 >> 0xc;
-						piVar18[5] = -st->n.orientation[0] * howHard + st->n.orientation[1] * iVar9 + st->n.orientation[3] * iVar28 + 0x800 >> 0xc;
-						piVar18[6] = ((-st->n.orientation[0] * iVar9 - st->n.orientation[1] * howHard) - st->n.orientation[2] * iVar28) + 0x800 >> 0xc;
+						piVar18[3] = -(st->n.orientation[1] * iVar28 + st->n.orientation[2] * howHard + st->n.orientation[3] * iVar9) / 8192;
+						piVar18[4] = ((st->n.orientation[0] * iVar28 - st->n.orientation[2] * iVar9) + st->n.orientation[3] * howHard) / 8192;
+						piVar18[5] = -(st->n.orientation[0] * howHard + st->n.orientation[1] * iVar9 + st->n.orientation[3] * iVar28) / 8192;
+						piVar18[6] = ((-st->n.orientation[0] * iVar9 - st->n.orientation[1] * howHard) - st->n.orientation[2] * iVar28) / 8192;
 
 						piVar18[7] = 0;
 						piVar18[8] = 0;
@@ -903,24 +903,12 @@ void GlobalTimeStep(void)
 										lever1[1] = iVar9 + iVar28;
 										iVar28 = local_58 * 0xc000;
 
-										howHard = (((st->n.angularVelocity[1] * lever0[2] -
-											st->n.angularVelocity[2] * lever0[1]) + 0x800 >>
-											0xc) + st->n.linearVelocity[0]) -
-											(((p_Var25->n.angularVelocity[1] * lever1[2] -
-												p_Var25->n.angularVelocity[2] * lever1[1]) + 0x800
-												>> 0xc) + p_Var25->n.linearVelocity[0]);
-										iVar19 = (((st->n.angularVelocity[2] * lever0[0] -
-											st->n.angularVelocity[0] * lever0[2]) + 0x800 >>
-											0xc) + st->n.linearVelocity[1]) -
-											(((p_Var25->n.angularVelocity[2] * lever1[0] -
-												p_Var25->n.angularVelocity[0] * lever1[2]) + 0x800
-												>> 0xc) + p_Var25->n.linearVelocity[1]);
-										iVar9 = (((st->n.angularVelocity[0] * lever0[1] -
-											st->n.angularVelocity[1] * lever0[0]) + 0x800 >> 0xc
-											) + st->n.linearVelocity[2]) -
-											(((p_Var25->n.angularVelocity[0] * lever1[1] -
-												p_Var25->n.angularVelocity[1] * lever1[0]) + 0x800
-												>> 0xc) + p_Var25->n.linearVelocity[2]);
+										howHard = (((st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) / 4096) + st->n.linearVelocity[0]) -
+											(((p_Var25->n.angularVelocity[1] * lever1[2] - p_Var25->n.angularVelocity[2] * lever1[1]) / 4096) + p_Var25->n.linearVelocity[0]);
+										iVar19 = (((st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) / 4096) + st->n.linearVelocity[1]) -
+											(((p_Var25->n.angularVelocity[2] * lever1[0] - p_Var25->n.angularVelocity[0] * lever1[2]) / 4096) + p_Var25->n.linearVelocity[1]);
+										iVar9 = (((st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) / 4096) + st->n.linearVelocity[2]) -
+											(((p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) / 4096) + p_Var25->n.linearVelocity[2]);
 
 										if (howHard < 0) 
 										{
@@ -1179,7 +1167,6 @@ void GlobalTimeStep(void)
 				} while (local_40 < num_active_cars);
 			}
 
-			/* // [A]
 			if (0 < iVar28) {
 				iVar9 = 0;
 				howHard = 0;
@@ -1236,7 +1223,7 @@ void GlobalTimeStep(void)
 					howHard = iVar19;
 				} while (iVar19 < num_active_cars);
 			}
-			*/
+
 			RKstep = iVar5;
 		} while (iVar5 < 2);
 
@@ -1250,7 +1237,7 @@ void GlobalTimeStep(void)
 				pp_Var26 = active_car_list;
 				do {
 					cp = *pp_Var26;
-
+					
 					cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
 					cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
 					cp->hd.drawCarMat.m[0][2] = cp->hd.where.m[0][2] ^ 0xFFFF;
@@ -1260,7 +1247,7 @@ void GlobalTimeStep(void)
 					cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
 					cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
 					cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
-					
+
 					if ((cp->ap.needsDenting != 0) && (((CameraCnt + iVar15 & 3U) == 0 || (iVar5 < 5)))) 
 					{
 						DentCar(cp);
@@ -1511,6 +1498,8 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 // [D]
 void initOBox(_CAR_DATA *cp)
 {
+	SVECTOR boxDisp;
+
 	short sVar2;
 	int iVar3;
 	long uVar4;
@@ -1520,10 +1509,11 @@ void initOBox(_CAR_DATA *cp)
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
 
-	VX0 = -(((cp->ap).carCos)->cog).vx;
-	VY0 = -(((cp->ap).carCos)->cog).vy;
-	VZ0 = -(((cp->ap).carCos)->cog).vz;
+	boxDisp.vx = -cp->ap.carCos->cog.vx;
+	boxDisp.vy = -cp->ap.carCos->cog.vy;
+	boxDisp.vz = -cp->ap.carCos->cog.vz;
 
+	gte_ldv0(&boxDisp);
 	docop2(0x480012);
 
 	if (cp->controlType == '\x03') 
@@ -1656,11 +1646,11 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	{
 		iVar1 = 6144 - (osm / 8192);
 
-		st->n.orientation[0] = (iVar1 * iVar6 + 2048) / 4096;
-		st->n.orientation[1] = (iVar1 * iVar5 + 2048) / 4096;
-		st->n.orientation[2] = (iVar1 * iVar4 + 2048) / 4096;
+		st->n.orientation[0] = (iVar1 * iVar6) / 4096;
+		st->n.orientation[1] = (iVar1 * iVar5) / 4096;
+		st->n.orientation[2] = (iVar1 * iVar4) / 4096;
 
-		iVar1 = (iVar1 * iVar3 + 2048) / 4096;
+		iVar1 = (iVar1 * iVar3) / 4096;
 	}
 	st->n.orientation[3] = iVar1;
 	
@@ -2037,13 +2027,13 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if ((pad & 0x2000) != 0) 
 		{
 			//RotMatrixY(3200, &cp->hd.where);
-			cp->hd.direction += 30;
+			//cp->hd.direction -= 30;
 			//cp->st.n.angularVelocity[1] += 5000;
 		}
 
 		if ((pad & 0x8000) != 0) 
 		{
-			cp->hd.direction -= 30;
+			//cp->hd.direction += 30;
 			//RotMatrixY(-3200, &cp->hd.where);
 			//cp->st.n.angularVelocity[1] -= 5000;
 		}
@@ -2061,7 +2051,8 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 		if ((pad & 0x1000) != 0) 
 		{
-			cp->hd.aacc[0] = 0x1000;
+			cp->st.n.linearVelocity[0] += camera_matrix.m[0][2];
+			cp->st.n.linearVelocity[2] += camera_matrix.m[2][2];
 			//cp->hd.where.t[0] += camera_matrix.m[0][2] / 30;
 			//cp->hd.where.t[2] += camera_matrix.m[2][2] / 30;
 		}
