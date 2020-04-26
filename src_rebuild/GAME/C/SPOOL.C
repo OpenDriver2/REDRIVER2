@@ -237,14 +237,14 @@ int levelSpoolerPCFunc(void* data)
 
 		if (readyCb)
 		{
-			SDL_LockMutex(levelSpoolerPCMutex);
+			//SDL_LockMutex(levelSpoolerPCMutex);
 
 			readyCb(1, { 0x0 });			
 
 			if (g_isSectorDataRead && dataCb)
 				dataCb();
 
-			SDL_UnlockMutex(levelSpoolerPCMutex);
+			//SDL_UnlockMutex(levelSpoolerPCMutex);
 		}
 		else
 			break;
@@ -1958,10 +1958,9 @@ void ClearRegion(int target_region)
 int LoadRegionData(int region, int target_region)
 {
 	short sVar1;
-	ushort uVar2;
 	int iVar3;
 	char *cell_buffer;
-	short *spofs;
+	ushort *spofs;
 	SPL_REGIONINFO *pSVar4;
 	int offset;
 	Spool *spoolptr;
@@ -1969,37 +1968,56 @@ int LoadRegionData(int region, int target_region)
 
 	roadmap_buffer = NULL; // [A]
 
-	spofs = (short *)(spoolinfo_offsets + region);
+	spofs = (spoolinfo_offsets + region);
 	sVar1 = *spofs;
 
 	if (sVar1 != -1) 
 	{
-		loading_region[target_region] = (ushort)region;
+		loading_region[target_region] = region;
 		cell_buffer = packed_cell_pointers;
-		spoolptr = (Spool *)(RegionSpoolInfo + (ushort)*spofs);
+		spoolptr = (Spool *)(RegionSpoolInfo + *spofs);
 
-		uVar2 = spoolptr->offset;
-		RequestSpool(0, 0, (uint)uVar2, (uint)spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		offset = spoolptr->offset;
 
-		offset = (uint)uVar2 + (uint)spoolptr->cell_data_size[1];
-		RequestSpool(0, 0, offset, (uint)spoolptr->cell_data_size[0],(char *)(cells + cell_slots_add[target_region]), NULL);
+//#define HAVANA_AUGUST_DEMO // uncomment to load August Demo HAVANA.LEV
 
-		offset = offset + (uint)spoolptr->cell_data_size[0];
-		RequestSpool(0, 0, offset, (uint)spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+#ifdef HAVANA_AUGUST_DEMO
+		// temporarily disabled
+		//RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
+		offset += spoolptr->roadm_size;
 
-		offset = offset + (uint)spoolptr->cell_data_size[2];
-		RequestSpool(0, 0, offset, (uint)spoolptr->roadm_size, PVS_Buffers[target_region] + -4, GotRegion);
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		offset += spoolptr->cell_data_size[1];
+		
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[0];
 
-		iVar3 = spool_regioncounter;
-		pSVar4 = spool_regioninfo + spool_regioncounter;
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
+		offset += spoolptr->cell_data_size[2];
 
-		spool_regioninfo[spool_regioncounter].nsectors = (offset + (uint)spoolptr->roadm_size) - (uint)spoolptr->offset;
+		offset -= spoolptr->roadm_size; // [A] as PVS_Buffers loading temporarily disabled this should be here
 
-		pSVar4->region_to_unpack = (ushort)region;
+		spool_regioninfo[spool_regioncounter].nsectors = (offset- spoolptr->roadm_size) - spoolptr->offset;
+#else
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		offset += spoolptr->cell_data_size[1];
 
-		spool_regioninfo[iVar3].target_barrel_region = (ushort)target_region;
-		spool_regioninfo[iVar3].cell_addr = cell_buffer;
-		spool_regioninfo[iVar3].roadm_addr = roadmap_buffer;
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[0];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[2];
+
+		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region] - 4, GotRegion);
+		offset += spoolptr->roadm_size;
+
+		spool_regioninfo[spool_regioncounter].nsectors = offset - spoolptr->offset;
+#endif
+
+		spool_regioninfo[spool_regioncounter].region_to_unpack = region;
+		spool_regioninfo[spool_regioncounter].target_barrel_region = target_region;
+		spool_regioninfo[spool_regioncounter].cell_addr = cell_buffer;
+		spool_regioninfo[spool_regioncounter].roadm_addr = roadmap_buffer;
 	}
 
 	return (sVar1 != -1);
@@ -2296,8 +2314,6 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 void GotRegion(void)
 {
 	printf("GotRegion\n");
-
-
 	uint target_barrel_reg;
 
 	Unpack_CellPtrs();
@@ -2308,6 +2324,7 @@ void GotRegion(void)
 	char* pvs = PVS_Buffers[target_barrel_reg];
 
 	loading_region[target_barrel_reg] = -1;
+
 
 	int cbr = *(int *)(pvs - 4);
 	RoadMapDataRegions[target_barrel_reg] = (short*)(pvs + cbr);
