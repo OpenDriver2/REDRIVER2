@@ -5,14 +5,13 @@
 #include "LIBETC.H"
 #include "LIBGTE.H"
 
-#ifndef PSX
 #include "GTEREG.H"
-#endif
 
 #include "CAMERA.H"
 #include "XMPLAY.H"
 #include "MISSION.H"
 #include "GLAUNCH.H"
+#include "GAMESND.H"
 
 #include <string.h>
 #include <stdlib.h>
@@ -1941,154 +1940,176 @@ int GetFreeChannel(void)
 	/* end block 3 */
 	// End Line: 2473
 
+int gSurround = 0;
+
 void UpdateVolumeAttributesS(int channel, int proximity)
 {
-	UNIMPLEMENTED();
-
-	/*
 	bool bVar1;
-	int iVar2;
-	undefined *puVar3;
-	int iVar4;
+	int local_v0_204;
+	long lVar2;
+	int iVar3;
+	short sVar4;
+	int local_a2_160;
+	int local_a2_184;
 	int iVar5;
-	short sVar6;
-	undefined *puVar7;
-	undefined *puVar8;
-	int iVar9;
-	int iVar10;
-	VECTOR *pVVar11;
-	VECTOR *pVVar12;
+	int iVar6;
+	int iVar7;
+	VECTOR *pVVar8;
+	VECTOR *pVVar9;
 	long unaff_s6;
-	int iVar13;
+	int iVar10;
 
-	iVar2 = CalculateVolume(channel);
-	iVar9 = gSurround;
-	iVar10 = (int)(&channels)[channel].player;
-	pVVar11 = (&channels)[channel].srcposition;
-	pVVar12 = &(&player)[iVar10].cameraPos;
-	iVar13 = (&player)[iVar10].snd_cam_ang;
-	if ((camera_change == '\x01') || (puVar7 = &DAT_00002710 + iVar2, old_camera_change == '\x01')) {
-		puVar7 = (undefined *)0x0;
+	local_a2_160 = CalculateVolume(channel);
+	iVar5 = gSurround;
+	iVar6 = channels[channel].player;
+	pVVar8 = channels[channel].srcposition;
+	pVVar9 = &player[iVar6].cameraPos;
+	iVar10 = player[iVar6].snd_cam_ang;
+
+	if (camera_change == 1 || (local_a2_160 = (0x2710 + local_a2_160), old_camera_change == 1)) 
+		local_a2_160 = 0;
+
+	local_a2_184 = local_a2_160;
+	if (local_a2_160 < 0)
+	{
+		local_a2_184 = 0;
 	}
-	puVar8 = puVar7;
-	if ((int)puVar7 < 0) {
-		puVar8 = (undefined *)0x0;
+
+	local_v0_204 = (local_a2_184 >> 1);
+
+	if (10000 < local_a2_160) 
+	{
+		local_a2_184 = 0x2710;
+		local_v0_204 = 0x1388;
 	}
-	puVar3 = (undefined *)((int)puVar8 >> 1);
-	if (10000 < (int)puVar7) {
-		puVar8 = &DAT_00002710;
-		puVar3 = &DAT_00001388;
+
+	iVar7 = (local_v0_204 + local_a2_184 + (local_a2_184 >> 3) + (local_a2_184 >> 7)) * master_volume >> 0xe;
+	sVar4 = iVar7;
+	channels[channel].attr.volume.left = sVar4;
+	if (iVar5 != 0) {
+		sVar4 = -sVar4;
 	}
-	iVar2 = ((int)puVar3 + (int)puVar8 + ((int)puVar8 >> 3) + ((int)puVar8 >> 7)) * master_volume >>
-		0xe;
-	sVar6 = (short)iVar2;
-	(&channels)[channel].attr.volume.left = sVar6;
-	if (iVar9 != 0) {
-		sVar6 = -sVar6;
-	}
-	(&channels)[channel].attr.volume.right = sVar6;
-	if (iVar2 == 0) {
+	channels[channel].attr.volume.right = sVar4;
+
+	if (iVar7 == 0)
 		return;
-	}
-	if (pVVar11 == (VECTOR *)0x0) {
+
+	if (pVVar8 == NULL)
 		return;
-	}
-	iVar9 = (&player)[iVar10].cameraPos.vz;
-	if ((pVVar11->vz == iVar9) && (pVVar12->vx == pVVar11->vx)) {
+
+	iVar5 = player[iVar6].cameraPos.vz;
+	if ((pVVar8->vz == iVar5) && (pVVar9->vx == pVVar8->vx))
 		return;
-	}
-	if ((&player)[iVar10].cameraView == 2) {
-		if (channel == (int)(&player)[iVar10].skidding.chan) {
+
+	if (player[iVar6].cameraView == 2) 
+	{
+		if (channel == player[iVar6].skidding.chan)
 			return;
-		}
-		if (channel == (int)(&player)[iVar10].wheelnoise.chan) {
+
+		if (channel == player[iVar6].wheelnoise.chan)
 			return;
+
+		if (iVar6 == 0)
+		{
+			if (channel == 0)
+				return;
+
+			iVar3 = 1;
+
+			if (channel == player[iVar6].cameraView) 
+				return;
 		}
-		if (iVar10 == 0) {
-			if (channel == 0) {
+		else 
+		{
+			if (iVar6 != 1) 
+				goto LAB_0007a128;
+			if (channel == 3) 
 				return;
-			}
-			iVar4 = 1;
-			if (channel == (uint)(byte)(&player)[iVar10].cameraView) {
+			iVar3 = 4;
+			if (channel == 5)
 				return;
-			}
+
 		}
-		else {
-			if (iVar10 != 1) goto LAB_0007a128;
-			if (channel == 3) {
-				return;
-			}
-			iVar4 = 4;
-			if (channel == 5) {
-				return;
-			}
-		}
-		if (channel == iVar4) {
+		if (channel == iVar3)
 			return;
-		}
 	}
 LAB_0007a128:
-	iVar4 = ratan2(pVVar11->vz - iVar9, pVVar12->vx - pVVar11->vx);
-	iVar5 = -iVar4 + 0x1c00;
-	iVar9 = iVar5;
-	if (iVar5 < 0) {
-		iVar9 = -iVar4 + 0x2bff;
+	lVar2 = ratan2(pVVar8->vz - iVar5, pVVar9->vx - pVVar8->vx);
+
+	iVar3 = -lVar2 + 0x1c00;
+	iVar5 = iVar3;
+
+	if (iVar3 < 0)
+		iVar5 = -lVar2 + 0x2bff;
+
+	iVar10 = (iVar3 + (iVar5 >> 0xc) * -0x1000) - (iVar10 + -0x1000);
+	iVar5 = iVar10;
+
+	if (iVar10 < 0)
+		iVar5 = iVar10 + 0xfff;
+
+	iVar10 = 0x800 - (iVar10 + (iVar5 >> 0xc) * -0x1000);
+
+	iVar5 = iVar10;
+
+	if (iVar10 < 0) 
+		iVar5 = -iVar10;
+
+	if ((0x3ff < iVar5) && (bVar1 = iVar10 < 1, iVar10 = 0x800 - iVar5, bVar1)) {
+		iVar10 = -iVar10;
 	}
-	iVar13 = (iVar5 + (iVar9 >> 0xc) * -0x1000) - (iVar13 + -0x1000);
-	iVar9 = iVar13;
-	if (iVar13 < 0) {
-		iVar9 = iVar13 + 0xfff;
-	}
-	iVar13 = 0x800 - (iVar13 + (iVar9 >> 0xc) * -0x1000);
-	iVar9 = iVar13;
-	if (iVar13 < 0) {
-		iVar9 = -iVar13;
-	}
-	if ((0x3ff < iVar9) && (bVar1 = iVar13 < 1, iVar13 = 0x800 - iVar9, bVar1)) {
-		iVar13 = -iVar13;
-	}
+
 	if ((proximity != 0) &&
-		(iVar9 = (&player)[iVar10].cameraPos.vz - pVVar11->vz, iVar10 = pVVar12->vx - pVVar11->vx,
-			unaff_s6 = jsqrt(iVar9 * iVar9 + iVar10 * iVar10), 11999 < unaff_s6)) {
+		(iVar5 = player[iVar6].cameraPos.vz - pVVar8->vz, iVar6 = pVVar9->vx - pVVar8->vx,
+		unaff_s6 = jsqrt(iVar5 * iVar5 + iVar6 * iVar6), 11999 < unaff_s6))
+	{
 		proximity = 0;
 	}
-	if (iVar13 < 1) {
-		if (iVar13 < 0) {
-			iVar9 = ((iVar2 * 9) / 10) * -iVar13;
-			if (iVar9 < 0) {
-				iVar9 = iVar9 + 0x3ff;
-			}
-			iVar9 = iVar9 >> 10;
-			if (proximity != 0) {
-				iVar9 = (iVar9 * unaff_s6) / 12000;
-			}
-			sVar6 = (short)(iVar2 - iVar9);
-			if (iVar2 - iVar9 < 0) {
-				sVar6 = 0;
-			}
-			if (gSurround != 0) {
-				sVar6 = -sVar6;
-			}
-			(&channels)[channel].attr.volume.right = sVar6;
+
+	if (iVar10 < 1) 
+	{
+		if (iVar10 < 0) 
+		{
+			iVar5 = ((iVar7 * 9) / 10) * -iVar10;
+
+			if (iVar5 < 0) 
+				iVar5 = iVar5 + 0x3ff;
+
+			iVar5 = iVar5 >> 10;
+
+			if (proximity != 0)
+				iVar5 = (iVar5 * unaff_s6) / 12000;
+
+			sVar4 = (iVar7 - iVar5);
+
+			if (iVar7 - iVar5 < 0)
+				sVar4 = 0;
+	
+			if (gSurround != 0)
+				sVar4 = -sVar4;
+
+			channels[channel].attr.volume.right = sVar4;
 		}
 	}
-	else {
-		iVar13 = ((iVar2 * 9) / 10) * iVar13;
-		if (iVar13 < 0) {
-			iVar13 = iVar13 + 0x3ff;
-		}
-		iVar13 = iVar13 >> 10;
-		if (proximity != 0) {
-			iVar13 = (iVar13 * unaff_s6) / 12000;
-		}
-		sVar6 = (short)(iVar2 - iVar13);
-		if (iVar2 - iVar13 < 0) {
-			sVar6 = 0;
-		}
-		(&channels)[channel].attr.volume.left = sVar6;
+	else
+	{
+		iVar10 = ((iVar7 * 9) / 10) * iVar10;
+
+		if (iVar10 < 0)
+			iVar10 = iVar10 + 0x3ff;
+
+		iVar10 = iVar10 >> 10;
+
+		if (proximity != 0)
+			iVar10 = (iVar10 * unaff_s6) / 12000;
+
+		sVar4 = (iVar7 - iVar10);
+
+		if (iVar7 - iVar10 < 0)
+			sVar4 = 0;
+
+		channels[channel].attr.volume.left = sVar4;
 	}
-	return;
-	*/
 }
 
 
