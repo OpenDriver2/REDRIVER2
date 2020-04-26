@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-long dummylong[3] = { 0, 0, 0 };
+long dummylong[4] = { 0, 0, 0, 0 };
 
 long bankaddr[2] = { 0 };
 long banksize[2] = { 88064, 412672 };
@@ -139,9 +139,8 @@ void ClearChannelFields(int channel)
 	channels[channel].position.vx = 0;
 	channels[channel].position.vy = 0;
 	channels[channel].position.vz = 0;
-	channels[channel].srcvelocity = (long *)0xa1a5c;
+	channels[channel].srcvelocity = dummylong;
 	channels[channel].player = 0;
-	return;
 }
 
 
@@ -409,17 +408,15 @@ void SetMasterVolume(int vol)
 	/* end block 3 */
 	// End Line: 3017
 
+// [D]
 char SetPlayerOwnsChannel(int chan, char player)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	char cVar1;
+	char oldPlayer;
 
-	cVar1 = (&channels)[chan].player;
-	(&channels)[chan].player = player;
-	return cVar1;
-	*/
+	oldPlayer = channels[chan].player;
+	channels[chan].player = player;
+
+	return oldPlayer;
 }
 
 
@@ -510,11 +507,8 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, lo
 // [D]
 int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z, int volume, int pitch)
 {
-	int channel_00;
-
-	if (channel < 0) {
+	if (channel < 0)
 		channel = GetFreeChannel();
-	}
 
 	if (channel < 0x10) 
 	{
@@ -525,15 +519,15 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 		channels[channel].srcvolume = volume;
 		channels[channel].srcpitch = pitch;
 
-		channel_00 = CompleteSoundSetup(channel, bank, sample, pitch, 0);
+		channel = CompleteSoundSetup(channel, bank, sample, pitch, 0);
 
-		ComputeDoppler(&channels[channel_00]);
-		SetChannelPitch(channel_00, pitch);
+		ComputeDoppler(&channels[channel]);
+		SetChannelPitch(channel, pitch);
 	}
 	else
-		channel_00 = -1;
+		channel = -1;
 
-	return channel_00;
+	return channel;
 	
 }
 
@@ -736,48 +730,50 @@ void SetChannelVolume(int channel, int volume, int proximity)
 	/* end block 2 */
 	// End Line: 1079
 
+// D
 void ComputeDoppler(CHANNEL_DATA *ch)
 {
-	UNIMPLEMENTED();
-
-	/*
 	int iVar1;
 	long lVar2;
 	long lVar3;
 	int iVar4;
-	VECTOR *pVVar5;
+	VECTOR *srcPos;
 	int iVar6;
 	int iVar7;
-	int *piVar8;
+	long *srcVel;
 
-	pVVar5 = ch->srcposition;
-	if (pVVar5 == (VECTOR *)0x0) {
+	srcPos = ch->srcposition;
+
+	if (srcPos == NULL) 
+	{
 		ch->dopplerScale = 0x1000;
 	}
-	else {
-		iVar1 = (int)ch->player;
-		iVar4 = pVVar5->vx - (&player)[iVar1].cameraPos.vx;
-		iVar7 = pVVar5->vy + (&player)[iVar1].cameraPos.vy;
-		iVar6 = pVVar5->vz - (&player)[iVar1].cameraPos.vz;
+	else 
+	{
+		iVar1 = ch->player;
+
+		iVar4 = srcPos->vx - player[ch->player].cameraPos.vx;
+		iVar7 = srcPos->vy + player[ch->player].cameraPos.vy;
+		iVar6 = srcPos->vz - player[ch->player].cameraPos.vz;
 		lVar2 = jsqrt(iVar4 * iVar4 + iVar7 * iVar7 + iVar6 * iVar6);
-		pVVar5 = ch->srcposition;
-		piVar8 = ch->srcvelocity;
-		iVar6 = (pVVar5->vx - (&player)[iVar1].cameraPos.vx) +
-			(*piVar8 - (&player)[iVar1].camera_vel[0] >> 0xc);
-		iVar4 = pVVar5->vy + (&player)[iVar1].cameraPos.vy +
-			(piVar8[1] - (&player)[iVar1].camera_vel[1] >> 0xc);
-		iVar1 = (pVVar5->vz - (&player)[iVar1].cameraPos.vz) +
-			(piVar8[2] - (&player)[iVar1].camera_vel[2] >> 0xc);
+
+		srcPos = ch->srcposition;
+		srcVel = ch->srcvelocity;
+
+		iVar6 = (srcPos->vx - player[ch->player].cameraPos.vx) + (srcVel[0] - player[ch->player].camera_vel[0]) / 4096;
+		iVar4 = (srcPos->vy + player[ch->player].cameraPos.vy) + (srcVel[1] - player[ch->player].camera_vel[1]) / 4096;
+		iVar1 = (srcPos->vz - player[ch->player].cameraPos.vz) + (srcVel[2] - player[ch->player].camera_vel[2]) / 4096;
+
 		lVar3 = jsqrt(iVar6 * iVar6 + iVar4 * iVar4 + iVar1 * iVar1);
+
 		iVar1 = (lVar3 - lVar2) * -3 + 0x1000;
-		ch->dopplerScale = (ushort)iVar1;
+
+		ch->dopplerScale = iVar1;
 		ch->cameradist = lVar2;
-		if (iVar1 * 0x10000 < 0) {
+
+		if (iVar1 * 0x10000 < 0) 
 			ch->dopplerScale = 0;
-		}
 	}
-	return;
-	*/
 }
 
 
@@ -1452,36 +1448,38 @@ void SoundHandler(void)
 	/* end block 2 */
 	// End Line: 4104
 
+// [D]
 int LoadSoundBank(char *address, int length, int bank)
 {
-	UNIMPLEMENTED();
-	return 0;
+	SAMPLE_DATA *dest;
+	int slength;
+	int spuaddress;
+	int num_samples;
 
-	/*
-	SAMPLE_DATA *__dest;
-	int iVar1;
-	int iVar2;
-	int iVar3;
+	dest = samples[bank];
 
-	__dest = samples[bank * 0x23];
-	iVar3 = *(int *)address;
-	memcpy(__dest, address + 4, iVar3 * 0x10);
-	iVar1 = iVar3 * 0x10 + 4;
-	iVar2 = bankaddr[bank];
+	num_samples = *(int *)address;
+	memcpy(dest, address + 4, num_samples * sizeof(SAMPLE_DATA));
+
+	slength = num_samples * sizeof(SAMPLE_DATA) + 4;
+	spuaddress = bankaddr[bank];
+
 	SpuSetTransferMode(0);
-	SpuSetTransferStartAddr(iVar2);
-	SpuWrite(address + iVar1, length - iVar1);
+	SpuSetTransferStartAddr(spuaddress);
+	SpuWrite((unsigned char*)address + slength, length - slength);
 	SpuIsTransferCompleted(1);
-	iVar1 = iVar3;
-	if (0 < iVar3) {
+
+	int ct = num_samples;
+	if (0 < num_samples) 
+	{
 		do {
-			iVar1 = iVar1 + -1;
-			__dest->address = __dest->address + iVar2;
-			__dest = __dest + 1;
-		} while (iVar1 != 0);
+			ct--;
+			dest->address += spuaddress;
+			dest++;;
+		} while (ct != 0);
 	}
-	return iVar3;
-	*/
+
+	return num_samples;
 }
 
 
