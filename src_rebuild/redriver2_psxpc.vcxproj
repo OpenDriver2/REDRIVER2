@@ -200,6 +200,7 @@
     <ClCompile Include="GAME\C\DRAW.C" />
     <ClCompile Include="GAME\C\DRIVINGGAMES.C" />
     <ClCompile Include="GAME\C\E3STUFF.C" />
+    <ClCompile Include="GAME\C\ENVSOUND.C" />
     <ClCompile Include="GAME\C\EVENT.C" />
     <ClCompile Include="GAME\C\FELONY.C" />
     <ClCompile Include="GAME\C\FMVPLAY.C" />

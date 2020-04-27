@@ -12,6 +12,13 @@
 #include "MC_SND.H"
 #include "GLAUNCH.H"
 #include "LOADVIEW.H"
+#include "CUTSCENE.H"
+#include "CAMERA.H"
+#include "COP_AI.H"
+#include "CARS.H"
+#include "WHEELFORCES.H"
+#include "ENVSOUND.H"
+#include "CONVERT.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -78,7 +85,7 @@ char phrase_top = 0;
 	/* end block 3 */
 	// End Line: 197
 
-char _sbank_buffer[0x50000];		// 0x180000
+char _sbank_buffer[0x80000];		// 0x180000
 
 // [D]
 void LoadBankFromLump(int bank, int lump)
@@ -91,11 +98,9 @@ void LoadBankFromLump(int bank, int lump)
 	name = "SOUND\\VOICES2.BLK";
 
 	if (blockLimit[1] == 0)
-	{
 		LoadfileSeg(name, (char *)blockLimit, 0, sizeof(blockLimit));
-	}
 
-	size = blockLimit[lump + 1] - blockLimit[lump];
+	size = blockLimit[lump+1] - blockLimit[lump];
 	LoadfileSeg(name, _sbank_buffer, blockLimit[lump], size);
 
 	LoadSoundBankDynamic(_sbank_buffer, size, bank);
@@ -224,11 +229,9 @@ int SpecialVehicleKludge(char vehicle2)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int ResidentModelsBodge(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 
@@ -271,7 +274,7 @@ int ResidentModelsBodge(void)
 			return 3;
 		}
 	}
-	return 4;*/
+	return 4;
 }
 
 
@@ -312,8 +315,8 @@ int MapCarIndexToBank(int index)
 	{
 		{ 0x4, 0xD, 0x5, 0x10, 0x9,  0x2,  0xF,  0xA,  0xA },
 		{ 0xB, 0x7, 0x6, 0x11, 0x11, 0x2,  0x5,  0x4,  0xE },
-		{ 0x3, 0x4, 0x6, 0xB,  0x9,  0x2,  0x11, 0xA,  0x8},
-		{ 0x7, 0xD, 0x9, 0x2,  0x11, 0x11, 0xB,  0x10, 0x0}
+		{ 0x3, 0x4, 0x6, 0xB,  0x9,  0x2,  0x11, 0xA,  0x8 },
+		{ 0x7, 0xD, 0x9, 0x2,  0x11, 0x11, 0xB,  0x10, 0x0 }
 	};
 
 	int iVar1;
@@ -332,13 +335,14 @@ int MapCarIndexToBank(int index)
 			iVar1 = 4;
 		}
 	}
-	iVar2 = iVar1 + -1;
+
+	iVar2 = iVar1-1;
 
 	if (iVar1 == 0) 
 		iVar2 = 1;
 
 	if (6 < iVar2)
-		iVar2 = iVar2 + -3;
+		iVar2 = iVar2-3;
 
 	return car_banks[GameLevel][iVar2];
 }
@@ -403,21 +407,21 @@ void LoadLevelSFX(int missionNum)
 	do {
 		lump = MapCarIndexToBank(index);
 		LoadBankFromLump(3, lump);
-		index = index + 1;
+		index++;
 	} while (index < 3);
 
 	ShowLoading();
 
 	LoadBankFromLump(1, 0);
 	LoadBankFromLump(1, 1);
-	LoadBankFromLump(6, 0x42);
+	LoadBankFromLump(6, 66);
 
 	if ((GameLevel & 2U) == 0) 
 		uVar1 = GameLevel & 3;
 	else
 		uVar1 = (GameLevel & 1U) << 1;
 
-	LoadBankFromLump(2, uVar1 + 0x45);
+	LoadBankFromLump(2, uVar1 + 69);
 
 	if (((((3 < missionNum - 1U) && (missionNum != 6)) && (missionNum != 7)) &&
 		(((missionNum != 9 && (missionNum != 10)) &&
@@ -704,28 +708,30 @@ LAB_0004dc60:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char first_offence = 0;
+int TimeSinceLastSpeech = 0;
+
+// [D]
 void StartGameSounds(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	char player;
+	unsigned char bVar1;
+	char playerId;
 	uint uVar2;
 	int channel;
 	uint index;
 	int iVar3;
-	int iVar4;
-	_PLAYER *p_Var5;
+	_PLAYER *pPVar5;
 	int local_2c;
 	int pitch;
 
 	iVar3 = 0;
 	TimeSinceLastSpeech = 0;
-	if (NumPlayers != 0) {
-		p_Var5 = &player;
-		iVar4 = 0;
+
+	if (NumPlayers != 0) 
+	{
+		pPVar5 = player;
 		do {
-			bVar1 = car_data[p_Var5->playerCarId].ap.model;
+			bVar1 = car_data[pPVar5->playerCarId].ap.model;
 			index = (uint)bVar1;
 			if (bVar1 == 4) {
 				uVar2 = ResidentModelsBodge();
@@ -747,18 +753,21 @@ void StartGameSounds(void)
 			Start3DSoundVolPitch
 			(channel, 3, uVar2 * 3 + 1, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1],
 				car_data[0].hd.where.t[2], -10000, local_2c);
-			if (bVar1 == 4) {
+
+			if (bVar1 == 4) 
+			{
 				channel = ResidentModelsBodge();
 				channel = channel * 3;
 			}
-			else {
-				if (bVar1 < 3) {
+			else 
+			{
+				if (bVar1 < 3)
 					channel = index * 3;
-				}
-				else {
+
+				else
 					channel = (index - 1) * 3;
-				}
 			}
+
 			local_2c = 0;
 			if (iVar3 == 0) {
 				pitch = 0x3fff;
@@ -776,52 +785,58 @@ void StartGameSounds(void)
 				if (iVar3 != 0) {
 					channel = 5;
 				}
-				Start3DSoundVolPitch
-				(channel, (index & 0xff00) >> 8, index & 0xff, car_data[0].hd.where.t[0],
-					car_data[0].hd.where.t[1], car_data[0].hd.where.t[2], -10000, 0x81);
+				Start3DSoundVolPitch(channel, (index & 0xff00) >> 8, index & 0xff, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1], car_data[0].hd.where.t[2], -10000, 129);
 			}
-			if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
+			if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
+			{
 				channel = 0;
-				if (iVar3 != 0) {
+				if (iVar3 != 0) 
 					channel = 3;
-				}
-				player = (char)iVar3;
-				SetPlayerOwnsChannel(channel, player);
+
+				playerId = iVar3;
+				SetPlayerOwnsChannel(channel, playerId);
 				channel = 1;
-				if (iVar3 != 0) {
+				if (iVar3 != 0)
 					channel = 4;
-				}
-				SetPlayerOwnsChannel(channel, player);
+
+				SetPlayerOwnsChannel(channel, playerId);
 				channel = 2;
-				if (iVar3 != 0) {
+				if (iVar3 != 0)
 					channel = 5;
-				}
-				SetPlayerOwnsChannel(channel, player);
+
+				SetPlayerOwnsChannel(channel, playerId);
 			}
-			*(undefined4 *)((int)&player.crash_timer + iVar4) = 0;
-			p_Var5->revsvol = -10000;
-			p_Var5->idlevol = -8000;
-			p_Var5 = p_Var5 + 1;
+			player[iVar3].crash_timer = 0;
+
+			pPVar5->revsvol = -10000;
+			pPVar5->idlevol = -8000;
+			pPVar5 = pPVar5 + 1;
 			iVar3 = iVar3 + 1;
-			iVar4 = iVar4 + 0x74;
 		} while (iVar3 < (int)(uint)NumPlayers);
 	}
-	if (NumPlayers != 0) {
-		if (NumPlayers != 1) goto LAB_0004e0dc;
+
+	if (NumPlayers != 0) 
+	{
+		if (NumPlayers != 1) 
+			goto LAB_0004e0dc;
 		SpuSetVoiceAR(5, 0x1b);
 	}
+
 	SpuSetVoiceAR(2, 0x1b);
+
 LAB_0004e0dc:
-	if ((NumPlayers < 2) || (NoPlayerControl != 0)) {
+
+	if ((NumPlayers < 2) || (NoPlayerControl != 0)) 
+	{
 		InitEnvSnd(0x20);
 		AddEnvSounds(GameLevel, gTimeOfDay);
 	}
+
 	InitDopplerSFX();
 	InitSkidding();
 	AddTunnels(GameLevel);
 	first_offence = '\x01';
 	InitializeMissionSound();
-	return;*/
 }
 
 
@@ -862,12 +877,12 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	short sVar2;
 	int iVar3;
 	GEAR_DESC *pGVar4;
-	uint uVar5;
-	uint uVar6;
+	int uVar5;
+	int uVar6;
 	short sVar7;
 	int iVar8;
 	int iVar9;
-	uint uVar10;
+	int uVar10;
 
 	uVar5 = cp->hd.gear;
 	iVar8 = cp->hd.wheel_speed;
@@ -929,9 +944,9 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 	
 	if (sVar2 != 0)
-		return sVar7 * geard[uVar10][uVar6].ratio_ac;	//(sVar7 * (short)(&geard[uVar6].ratio_ac)[(iVar9 + uVar10) * 4]);			// [A] - indexing might be incorrect
+		return sVar7 * geard[uVar10][uVar6].ratio_ac;// [A] - indexing might be incorrect
 
-	return sVar7 * geard[uVar10][uVar6].ratio_id;		//(sVar7 * (short)(&geard[uVar6].ratio_id)[(iVar9 + uVar10) * 4]);
+	return sVar7 * geard[uVar10][uVar6].ratio_id;
 }
 
 
@@ -979,16 +994,16 @@ int maxrevrise = 1600;
 // [D]
 void ControlCarRevs(_CAR_DATA *cp)
 {
-	ushort uVar1;
+	int uVar1;
 	int iVar2;
 	int uVar3;
-	ushort sVar4;
-	ushort puVar5;
-	ushort sVar6;
-	char cVar7;
+	int sVar4;
+	int puVar5;
+	int sVar6;
+	char spin;
 
 	sVar6 = cp->thrust;
-	cVar7 = cp->wheelspin;
+	spin = cp->wheelspin;
 
 	iVar2 = GetPlayerId(cp);
 
@@ -998,9 +1013,7 @@ void ControlCarRevs(_CAR_DATA *cp)
 
 	cp->hd.changingGear = 0;
 
-	char temp[64];
-
-	if ((cVar7 == 0 && (cp->hd.wheel[1].susCompression != 0 || (cp->hd.wheel[3].susCompression != 0))) || (sVar6 == 0))
+	if ((spin == 0 && (cp->hd.wheel[1].susCompression != 0 || (cp->hd.wheel[3].susCompression != 0))) || (sVar6 == 0))
 	{
 		uVar1 = GetEngineRevs(cp);
 		uVar3 = uVar1;
@@ -1012,7 +1025,7 @@ void ControlCarRevs(_CAR_DATA *cp)
 		if(cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0) 
 		{
 			uVar3 = 30719;
-			cVar7 = 1;
+			spin = 1;
 		}
 
 		if (uVar1 < 8000) 
@@ -1031,7 +1044,7 @@ void ControlCarRevs(_CAR_DATA *cp)
 		uVar3 = (puVar5 - uVar3) & 0xffff;
 	}
 
-	maxrevrise = (short)uVar3;
+	maxrevrise = uVar3;
 
 	if (maxrevrise < uVar3 - puVar5)
 		maxrevrise = puVar5 + maxrevrise;
@@ -1043,10 +1056,10 @@ void ControlCarRevs(_CAR_DATA *cp)
 		if (sVar6 == 0 && maxrevrise < 7001)
 		{
 			sVar6 = player[iVar2].revsvol;
-			sVar4 = player[iVar2].idlevol + 200;
+			sVar4 = player[iVar2].idlevol+200;
 
 			player[iVar2].idlevol = sVar4;
-			player[iVar2].revsvol = sVar6 + -200;
+			player[iVar2].revsvol = sVar6-200;
 
 			if (-6000 < sVar4) 
 				player[iVar2].idlevol = -6000;
@@ -1059,14 +1072,14 @@ void ControlCarRevs(_CAR_DATA *cp)
 			if (sVar6 != 0) {
 				sVar4 = -5500;
 			}
-			if (cVar7 == 0) 
+			if (spin == 0) 
 				sVar6 = -0x40;
 			else 
 				sVar6 = -0x100;
 
 			player[iVar2].idlevol += sVar6;
 
-			if (cVar7 == 0) 
+			if (spin == 0) 
 				sVar6 = 175;
 			else
 				sVar6 = 700;
@@ -1584,21 +1597,27 @@ void InitDopplerSFX(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char force_idle[8] = { 0 };
+char force_siren[8] = { 0 };
+
 void DoDopplerSFX(void)
 {
+	static struct __othercarsound siren_noise[2];
+	static struct __othercarsound car_noise[4];
+
 	UNIMPLEMENTED();
 
-	/*
-	byte bVar1;
+	// FIXME: THIS IS FUCKING MESS
+#if 0
+	unsigned char bVar1;
 	ushort uVar2;
 	bool bVar3;
 	uint *puVar4;
 	char cVar5;
 	int pitch;
 	long lVar6;
-	undefined3 extraout_var;
 	short *psVar7;
-	undefined *puVar8;
+	char *puVar8;
 	uint uVar9;
 	uint uVar10;
 	__othercarsound *p_Var11;
@@ -1614,74 +1633,91 @@ void DoDopplerSFX(void)
 	int sample;
 	uint uVar18;
 	int cars;
-	uint local_b0[20];
-	ushort local_60[20];
-	uint local_38;
+	ulong car_dist[20];
+	ushort indexlist[20];
+	char sirens;
 	uint local_34;
 	uint local_30;
 
-	puVar8 = &stack0xffffff38;
 	cars = 0;
 	car = 0;
-	plVar16 = car_data[0].hd.where.t + 2;
 	channel = 0;
 	sample = 0;
-	local_38 = 0;
-	do {
-		pitch = plVar16[-2] - camera_position.vx;
-		if (pitch < 0) {
-			pitch = camera_position.vx - plVar16[-2];
-		}
-		if (pitch < 0x4000) {
-			pitch = *plVar16 - camera_position.vz;
-			if (pitch < 0) {
-				pitch = camera_position.vz - *plVar16;
-			}
-			if (pitch < 0x4000) {
-				bVar1 = (&car_data[0].controlType)[channel];
-				if (bVar1 < 5) {
-					if (2 < bVar1) goto LAB_0004e930;
-					if (((bVar1 != 2) || (car_data[0].ai[channel + 0xc] == 5)) ||
-						(car_data[0].ai[channel + 0xc] == 7)) goto LAB_0004e984;
-					iVar14 = *(int *)((int)car_data[0].hd.where.t + channel) - camera_position.vx;
-					pitch = *(int *)((int)car_data[0].hd.where.t + channel + 8) - camera_position.vz;
-					local_60[cars] = (ushort)car;
+	_sirens = 0;
+
+	for(car = 0; car < 20; car++)
+	{
+		pitch = car_data[car].hd.where.t[0] - camera_position.vx;
+
+		if (pitch < 0) 
+			pitch = camera_position.vx - car_data[car].hd.where.t[0];
+
+		if (pitch < 0x4000) 
+		{
+			pitch = car_data[car].hd.where.t[2] - camera_position.vz;
+
+			if (pitch < 0)
+				pitch = camera_position.vz - car_data[car].hd.where.t[2];
+
+			if (pitch < 0x4000) 
+			{
+				bVar1 = car_data[car].controlType;
+
+				if (bVar1 < 5)
+				{
+					if (2 < bVar1)
+						goto LAB_0004e930;
+
+					if (((bVar1 != 2) || (car_data[car].ai.c.ctrlState == 5)) || (car_data[car].ai.c.ctrlState == 7))
+						continue;
+
+					iVar14 = car_data[car].hd.where.t[0] - camera_position.vx;
+					pitch = car_data[car].hd.where.t[2] - camera_position.vz;
+
+					indexlist[cars] = car;
+
 					lVar6 = jsqrt(iVar14 * iVar14 + pitch * pitch);
+
 					pitch = lVar6 + 0x6000;
 				}
-				else {
-					if ((bVar1 != 7) || (cVar5 = SilenceThisCar(car), CONCAT31(extraout_var, cVar5) != 0))
+				else 
+				{
+					if ((bVar1 != 7) || (cVar5 = SilenceThisCar(car), cVar5 != 0))
 						goto LAB_0004e984;
+
 				LAB_0004e930:
-					iVar14 = plVar16[-2];
-					pitch = *plVar16;
-					local_60[cars] = (ushort)car;
-					pitch = jsqrt((iVar14 - camera_position.vx) * (iVar14 - camera_position.vx) +
-						(pitch - camera_position.vz) * (pitch - camera_position.vz));
+
+					iVar14 = car_data[car].hd.where.t[2];
+					pitch = car_data[car].hd.where.t[0];
+
+					indexlist[cars] = car;
+					pitch = jsqrt((iVar14 - camera_position.vx) * (iVar14 - camera_position.vx) + (pitch - camera_position.vz) * (pitch - camera_position.vz));
 				}
-				cars = cars + 1;
-				*(int *)((int)local_b0 + sample) = pitch;
+
+				cars++;
+				car_dist[car] = pitch;
 			}
 		}
-	LAB_0004e984:
-		plVar16 = plVar16 + 0xa7;
-		channel = channel + 0x29c;
-		car = car + 1;
-		sample = sample + 4;
-	} while (car < 0x14);
-	local_34 = (uint)(cars < 3);
-	local_30 = (uint)(cars < 5);
-	if (0 < cars) {
+	}
+
+	local_34 = (cars < 3);
+	local_30 = (cars < 5);
+
+	if (0 < cars)
+	{
 		car = 0;
 		do {
 			channel = car + 1;
-			if (channel < cars) {
-				puVar15 = local_60 + car;
-				puVar13 = local_60 + channel;
+
+			if (channel < cars) 
+			{
+				puVar15 = indexlist + car;
+				puVar13 = indexlist + channel;
 				car = cars - channel;
 				do {
 					uVar2 = *puVar15;
-					if (local_b0[*puVar13] < local_b0[uVar2]) {
+					if (car_dist[*puVar13] < car_dist[uVar2]) 
+					{
 						*puVar15 = *puVar13;
 						*puVar13 = uVar2;
 					}
@@ -1689,47 +1725,53 @@ void DoDopplerSFX(void)
 					puVar13 = puVar13 + 1;
 				} while (car != 0);
 			}
+
 			car = channel;
 		} while (channel < cars);
 	}
 	uVar18 = 0;
 	car = 0;
-	if ((0 < cars) && (local_38 < 2)) {
-		puVar13 = local_60;
+
+	if ((0 < cars) && (_sirens < 2)) 
+	{
+		puVar13 = indexlist;
 		channel = 0;
 		do {
 			uVar10 = (uint)*(ushort *)(puVar8 + 0x68);
-			if ((((handlingType[car_data[uVar10].hndType].fourWheelDrive == '\x01') &&
-				(car_data[uVar10].controlType == '\x03')) && (car_data[uVar10].ai[0x13] < 0x4b)) &&
-				(sample = CarHasSiren((uint)(byte)car_data[uVar10].ap.model), sample != 0))
+
+			if ((((handlingType[car_data[uVar10].hndType].fourWheelDrive == 1) &&
+				(car_data[uVar10].controlType == 3)) && (car_data[uVar10].ai.p.dying < 75)) &&
+				(sample = CarHasSiren(car_data[uVar10].ap.model), sample != 0))
 				goto LAB_0004eba8;
-			if (gCurrentMissionNumber == 0x1a) {
-				if ((car_data[uVar10].ap.model == '\x04') && (car_data[uVar10].controlType == '\a')) {
+
+			if (gCurrentMissionNumber == 0x1a)
+			{
+				if ((car_data[uVar10].ap.model == 4) && (car_data[uVar10].controlType == 7))
+				{
 				LAB_0004eba8:
 					uVar2 = *puVar13;
 					goto LAB_0004ebac;
 				}
+
 			LAB_0004eb68:
-				if ((gInGameCutsceneActive != 0) &&
-					((car_data[uVar10].controlType == '\a' && ((&force_siren)[*puVar13] != '\0'))))
+				if ((gInGameCutsceneActive != 0) && ((car_data[uVar10].controlType == 7 && (force_siren[*puVar13] != 0))))
 					goto LAB_0004eba8;
 			}
 			else {
-				if (((gCurrentMissionNumber == 7) || (car_data[uVar10].controlType != '\x02')) ||
-					((2 < (byte)car_data[uVar10].ap.model || (uVar2 = *puVar13, uVar2 != 1))))
+				if (((gCurrentMissionNumber == 7) || (car_data[uVar10].controlType != 2)) || ((2 < car_data[uVar10].ap.model || (uVar2 = *puVar13, uVar2 != 1))))
 					goto LAB_0004eb68;
 			LAB_0004ebac:
 				uVar18 = uVar18 | 1 << ((uint)uVar2 & 0x1f);
 				if (gInGameCutsceneActive == 0) {
-					local_38 = local_38 + 1 & 0xff;
+					_sirens = _sirens + 1 & 0xff;
 				}
 			}
-			puVar13 = puVar13 + 1;
-			car = car + 1;
-		} while ((car < cars) &&
-			(puVar8 = &stack0xffffff3a + channel, channel = channel + 2, local_38 < 2));
+			puVar13++;
+			car++;
+		} while ((car < cars) && (puVar8 = &stack0xffffff3a + channel, channel = channel + 2, _sirens < 2));
 	}
-	p_Var11 = &siren_noise;
+
+	p_Var11 = siren_noise;
 	car = 1;
 	do {
 		puVar4 = (uint *)&p_Var11->car;
@@ -1739,61 +1781,75 @@ void DoDopplerSFX(void)
 		p_Var11 = p_Var11 + 1;
 		uVar18 = uVar18 & ~((uint)bVar3 << (*puVar4 & 0x1f));
 	} while (-1 < car);
-	p_Var11 = &siren_noise;
+
+	p_Var11 = siren_noise;
 	car = 1;
+
 	do {
-		if ((p_Var11->in_use == '\0') && (p_Var11->stopped == '\0')) {
+		if ((p_Var11->in_use == 0) && (p_Var11->stopped == 0)) 
+		{
 			StopChannel(p_Var11->chan);
 			UnlockChannel(p_Var11->chan);
 			p_Var11->chan = -1;
 			p_Var11->car = 0x14;
-			p_Var11->stopped = '\x01';
+			p_Var11->stopped = 1;
 		}
+
 		car = car + -1;
 		p_Var11 = p_Var11 + 1;
 	} while (-1 < car);
+
 	car = 0;
 	do {
 		do {
 			channel = cars;
-			if (local_34 == 0) {
+			if (local_34 == 0)
 				channel = 2;
-			}
-			if (channel <= car) {
+
+			if (channel <= car) 
+			{
 				car = 0;
-				p_Var11 = &siren_noise;
+				p_Var11 = siren_noise;
 				do {
-					if (p_Var11->in_use != '\0') {
+					if (p_Var11->in_use != '\0')
+					{
 						channel = p_Var11->car;
 						uVar18 = 0;
-						if (car_data[channel].controlType == '\x03') {
-							uVar18 = (uint)car_data[channel].ai[0x13];
-						}
-						SetChannelPosition3(p_Var11->chan, (VECTOR *)car_data[channel].hd.where.t,
-							(long *)(car_data[channel].st + 0x1c), uVar18 * -0x1e + -3000,
-							car * 4 - (uVar18 * 0x30 + -0x1000), 0);
+
+						if (car_data[channel].controlType == 3)
+							uVar18 = car_data[channel].ai.p.dying;
+
+						SetChannelPosition3(p_Var11->chan, (VECTOR *)car_data[channel].hd.where.t, car_data[channel].st.n.linearVelocity, uVar18 * -30 - 3000, car * 4 - (uVar18 * 48 - 4096), 0);
 					}
+
 					car = car + 1;
 					p_Var11 = p_Var11 + 1;
 				} while (car < 2);
+
 				uVar18 = 0;
 				car = 0;
-				puVar13 = local_60;
-				while (true) {
+				puVar13 = indexlist;
+				while (true)
+				{
 					channel = cars;
-					if ((int)(4 - local_38) < cars) {
-						channel = 4 - local_38;
-					}
-					if (channel <= car) break;
+
+					if ((4 - _sirens) < cars)
+						channel = 4 - _sirens;
+
+					if (channel <= car)
+						break;
+
 					uVar10 = (uint)*puVar13;
-					if ((car_data[uVar10].controlType != '\x03') || (car_data[uVar10].ai[0x13] == 0)) {
+
+					if ((car_data[uVar10].controlType != 3) || (car_data[uVar10].ai.p.dying == 0))
 						uVar18 = uVar18 | 1 << (uVar10 & 0x1f);
-					}
+
 					puVar13 = puVar13 + 1;
 					car = car + 1;
 				}
-				p_Var11 = &car_noise;
+				p_Var11 = car_noise;
 				car = 3;
+
 				do {
 					puVar4 = (uint *)&p_Var11->car;
 					car = car + -1;
@@ -1802,10 +1858,13 @@ void DoDopplerSFX(void)
 					p_Var11 = p_Var11 + 1;
 					uVar18 = uVar18 & ~((uint)bVar3 << (*puVar4 & 0x1f));
 				} while (-1 < car);
-				p_Var11 = &car_noise;
+
+				p_Var11 = car_noise;
 				car = 3;
+
 				do {
-					if ((p_Var11->in_use == '\0') && (p_Var11->stopped == '\0')) {
+					if ((p_Var11->in_use == 0) && (p_Var11->stopped == 0)) 
+					{
 						StopChannel(p_Var11->chan);
 						UnlockChannel(p_Var11->chan);
 						p_Var11->chan = -1;
@@ -1815,128 +1874,141 @@ void DoDopplerSFX(void)
 					car = car + -1;
 					p_Var11 = p_Var11 + 1;
 				} while (-1 < car);
+
 				car = 0;
 				do {
 					do {
 						channel = cars;
-						if (local_30 == 0) {
+						if (local_30 == 0) 
 							channel = 4;
-						}
-						if (channel <= car) {
+
+						if (channel <= car) 
+						{
 							car = 0;
-							p_Var11 = &car_noise;
-							piVar12 = &car_noise.chan;
+
 							do {
-								if (p_Var11->in_use != '\0') {
-									channel = p_Var11->car;
-									cVar5 = p_Var11->idle;
+								if (car_noise[car].in_use != 0)
+								{
+									channel = car_noise[car].car;
+									cVar5 = car_noise[car].idle;
 									bVar3 = gInGameCutsceneActive != 0;
-									*(bool *)&p_Var11->idle = car_data[channel].hd.speed < 0x11;
-									if ((bVar3) && (-1 < (&force_idle)[channel])) {
-										p_Var11->idle = (&force_idle)[channel];
-									}
-									if (cVar5 != (&car_noise.idle)[car]) {
-										StopChannel(*piVar12);
-										UnlockChannel(*piVar12);
+
+									car_noise[car].idle = car_data[channel].hd.speed < 0x11;
+
+									if ((bVar3) && (-1 < force_idle[channel])) 
+										car_noise[car].idle = force_idle[channel];
+
+									if (cVar5 != car_noise[car].idle)
+									{
+										StopChannel(car_noise[car].chan);
+										UnlockChannel(car_noise[car].chan);
 										bVar1 = car_data[channel].ap.model;
 										if (bVar1 == 3) {
 											bVar1 = cop_model;
 										}
 										uVar18 = (uint)bVar1;
-										if ((&car_noise.idle)[car] == '\0') {
-											if (bVar1 == 4) {
+										if (car_noise[car].idle == 0)
+										{
+											if (bVar1 == 4) 
+											{
 												sample = ResidentModelsBodge();
 												sample = sample * 3;
 											}
-											else {
+											else
+											{
 												sample = uVar18 << 1;
-												if (2 < bVar1) {
+												if (2 < bVar1) 
+												{
 													uVar18 = uVar18 - 1;
 													sample = uVar18 * 2;
 												}
 												sample = sample + uVar18;
 											}
 										}
-										else {
-											if (bVar1 == 4) {
+										else 
+										{
+											if (bVar1 == 4)
+											{
 												sample = ResidentModelsBodge();
 												sample = sample * 3 + 1;
 											}
-											else {
+											else 
+											{
 												sample = uVar18 << 1;
-												if (2 < bVar1) {
+												if (2 < bVar1)
+												{
 													uVar18 = uVar18 - 1;
 													sample = uVar18 * 2;
 												}
 												sample = sample + uVar18 + 1;
 											}
 										}
-										sample = Start3DTrackingSound
-										(-1, 3, sample, (VECTOR *)car_data[channel].hd.where.t,
-											(long *)(car_data[channel].st + 0x1c));
-										*piVar12 = sample;
+										sample = Start3DTrackingSound(-1, 3, sample, (VECTOR *)car_data[channel].hd.where.t, car_data[channel].st.n.linearVelocity);
+										car_noise[car].chan = sample;
 										LockChannel(sample);
 									}
-									sample = -0x186a;
-									if (car_data[channel].controlType == '\x02') {
+
+									sample = -6250;
+
+									if (car_data[channel].controlType == 2) 
 										sample = -7000;
-									}
-									iVar14 = (int)((uint)(ushort)car_data[channel].hd.revs << 0x10) >> 0x12;
-									pitch = iVar14 + 0x5dc;
-									if ((&car_noise.idle)[car] != '\0') {
+
+									iVar14 = (car_data[channel].hd.revs << 0x10) >> 0x12;
+									pitch = iVar14 + 1500;
+
+									if (car_noise[car].idle != 0)
 										pitch = iVar14 + 0x1000;
-									}
-									SetChannelPosition3(*piVar12, (VECTOR *)car_data[channel].hd.where.t,
-										(long *)(car_data[channel].st + 0x1c), sample, pitch, 0);
+
+									SetChannelPosition3(car_noise[car].chan, (VECTOR *)car_data[channel].hd.where.t, car_data[channel].st.n.linearVelocity, sample, pitch, 0);
 								}
-								car = car + 0xc;
-								piVar12 = piVar12 + 3;
-								p_Var11 = p_Var11 + 1;
+								car++;
 							} while ((int)piVar12 < 0xce694);
-							if (CopsCanSeePlayer != 0) {
-								if ((int)player.playerCarId < 0) {
+
+							if (CopsCanSeePlayer != 0) 
+							{
+								if (player[0].playerCarId < 0) 
 									psVar7 = &pedestrianFelony;
-								}
-								else {
-									psVar7 = &car_data[(int)player.playerCarId].felonyRating;
-								}
-								if (0x292 < *psVar7) {
-									DoPoliceLoudhailer(cars, local_60, local_b0);
-								}
+								else 
+									psVar7 = &car_data[(int)player[0].playerCarId].felonyRating;
+
+								if (0x292 < *psVar7)
+									DoPoliceLoudhailer(cars, indexlist, car_dist);
 							}
+
 							car = 0;
-							pCVar17 = &channels;
-							channel = 0;
 							do {
-								if (((pCVar17->loop == '\0') && (pCVar17->time != 0)) &&
-									(position = *(VECTOR **)((int)&channels.srcposition + channel),
-										position != (VECTOR *)0x0)) {
-									SetChannelPosition3(car, position, *(long **)((int)&channels.srcvelocity + channel),
-										pCVar17->srcvolume, (uint)pCVar17->srcpitch, 0);
-								}
-								pCVar17 = pCVar17 + 1;
-								car = car + 1;
-								channel = channel + 0x78;
-							} while (car < 0x10);
+
+								if ((channels[car].loop == 0 && (channels[car].time != 0)) && (position = channels[car].srcposition, position != NULL))
+									SetChannelPosition3(car, position, channels[car].srcvelocity, channels[car].srcvolume, channels[car].srcpitch, 0);
+
+								car++;
+							} while (car < 16);
+
 							return;
 						}
-						puVar13 = local_60 + car;
+						puVar13 = indexlist + car;
 						car = car + 1;
-					} while ((uVar18 & 1 << ((uint)*puVar13 & 0x1f)) == 0);
+					} while ((uVar18 & 1 << (*puVar13 & 0x1f)) == 0);
+
 					channel = 0;
-					p_Var11 = &car_noise;
+					p_Var11 = car_noise;
+
 					do {
-						if (p_Var11->in_use == '\0') {
+						if (p_Var11->in_use == '\0') 
+						{
 							uVar10 = (uint)*puVar13;
-							p_Var11->in_use = '\x01';
-							p_Var11->stopped = '\0';
+							p_Var11->in_use = 1;
+							p_Var11->stopped = 1;
 							uVar2 = *puVar13;
 							p_Var11->car = (uint)uVar2;
+
 							bVar3 = gInGameCutsceneActive != 0;
-							*(bool *)&p_Var11->idle = car_data[uVar10].hd.speed < 0x11;
-							if ((bVar3) && (-1 < (&force_idle)[(uint)uVar2])) {
-								p_Var11->idle = (&force_idle)[(uint)uVar2];
-							}
+
+							p_Var11->idle = car_data[uVar10].hd.speed < 0x11;
+
+							if ((bVar3) && (-1 < force_idle[uVar2])) 
+								p_Var11->idle = force_idle[uVar2];
+
 							bVar1 = car_data[uVar10].ap.model;
 							if (bVar1 == 3) {
 								bVar1 = cop_model;
@@ -1972,9 +2044,7 @@ void DoDopplerSFX(void)
 								}
 							}
 						LAB_0004f134:
-							channel = Start3DTrackingSound
-							(-1, 3, channel, (VECTOR *)car_data[uVar10].hd.where.t,
-								(long *)(car_data[uVar10].st + 0x1c));
+							channel = Start3DTrackingSound(-1, 3, channel, (VECTOR *)car_data[uVar10].hd.where.t, car_data[uVar10].st.n.linearVelocity);
 							p_Var11->chan = channel;
 							LockChannel(channel);
 							break;
@@ -1984,42 +2054,46 @@ void DoDopplerSFX(void)
 					} while (channel < 4);
 				} while (true);
 			}
-			puVar13 = local_60 + car;
+			puVar13 = indexlist + car;
 			car = car + 1;
 		} while ((uVar18 & 1 << ((uint)*puVar13 & 0x1f)) == 0);
+
 		channel = 0;
-		piVar12 = &siren_noise.chan;
-		p_Var11 = &siren_noise;
+		piVar12 = siren_noise.chan;
+		p_Var11 = siren_noise;
+
 		do {
 			channel = channel + 1;
-			if (p_Var11->in_use == '\0') {
+			if (p_Var11->in_use == '\0')
+			{
 				uVar10 = (uint)*puVar13;
 				p_Var11->in_use = '\x01';
 				p_Var11->stopped = '\0';
 				bVar3 = gCurrentMissionNumber == 0x1a;
 				p_Var11->car = (uint)*puVar13;
-				if ((bVar3) || (car_data[uVar10].controlType != '\x02')) {
-					uVar9 = CarHasSiren((uint)(byte)car_data[uVar10].ap.model);
-					channel = Start3DTrackingSound
-					(-1, (uVar9 & 0xff00) >> 8, uVar9 & 0xff,
-						(VECTOR *)car_data[uVar10].hd.where.t,
-						(long *)(car_data[uVar10].st + 0x1c));
+
+				if ((bVar3) || (car_data[uVar10].controlType != '\x02')) 
+				{
+					uVar9 = CarHasSiren(car_data[uVar10].ap.model);
+					channel = Start3DTrackingSound(-1, (uVar9 & 0xff00) >> 8, uVar9 & 0xff, (VECTOR *)car_data[uVar10].hd.where.t, car_data[uVar10].st.n.linearVelocity);
 					*piVar12 = channel;
 				}
-				else {
-					channel = Start3DTrackingSound
-					(-1, 4, 5, (VECTOR *)car_data[uVar10].hd.where.t,
-						(long *)(car_data[uVar10].st + 0x1c));
+				else 
+				{
+					channel = Start3DTrackingSound(-1, 4, 5, (VECTOR *)car_data[uVar10].hd.where.t, car_data[uVar10].st.n.linearVelocity);
 					*piVar12 = channel;
 				}
+
 				LockChannel(channel);
 				break;
 			}
+
 			piVar12 = piVar12 + 3;
 			p_Var11 = p_Var11 + 1;
+
 		} while (channel < 2);
 	} while (true);
-	*/
+#endif
 }
 
 
@@ -2152,10 +2226,9 @@ void DoPoliceLoudhailer(int cars, ushort *indexlist, ulong *dist)
 	/* end block 2 */
 	// End Line: 2286
 
+// [D]
 void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	uint uVar2;
 	long lVar3;
@@ -2166,86 +2239,103 @@ void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 	uint phrase;
 	int sample;
 
-	uVar7 = SEXT14(player_id);
+	uVar7 = player_id;
 	sample = 8;
 	phrase = 0;
-	if (impact < 0x19) {
+
+	if (impact < 25)
 		return;
-	}
-	if ((((int)uVar7 < 0) && (uVar7 = 0, 1 < NumPlayers)) && (NoPlayerControl == 0)) {
-		iVar4 = (cp->hd).where.t[0];
-		iVar5 = iVar4 - player.pos[0];
-		iVar1 = (cp->hd).where.t[2];
-		iVar6 = iVar1 - player.pos[2];
-		iVar4 = iVar4 - _PLAYER_ARRAY_000d979c[0].pos[0];
-		iVar1 = iVar1 - _PLAYER_ARRAY_000d979c[0].pos[2];
+
+	if ((((int)uVar7 < 0) && (uVar7 = 0, 1 < NumPlayers)) && (NoPlayerControl == 0))
+	{
+		iVar4 = cp->hd.where.t[0];
+		iVar5 = iVar4 - player[0].pos[0];
+		iVar1 = cp->hd.where.t[2];
+		iVar6 = iVar1 - player[0].pos[2];
+		iVar4 = iVar4 - player[1].pos[0];
+		iVar1 = iVar1 - player[1].pos[2];
 		uVar7 = (uint)((uint)(iVar4 * iVar4 + iVar1 * iVar1) < (uint)(iVar5 * iVar5 + iVar6 * iVar6));
 	}
-	if ((&player)[uVar7].crash_timer != 0) {
+
+	if (player[uVar7].crash_timer != 0)
 		return;
-	}
-	if (car_car == 0) {
+
+	if (car_car == 0)
+	{
 		if (0x30c < impact) goto LAB_0004f7a8;
 	LAB_0004f7b4:
-		if (car_car == 0) {
+		if (car_car == 0)
+		{
 			if (0x15e < impact) goto LAB_0004f7d8;
 		}
-		else {
-			if (0x17c < impact) {
+		else 
+		{
+			if (0x17c < impact)
+			{
 			LAB_0004f7d8:
 				sample = 9;
 				phrase = 2;
 			}
 		}
 	}
-	else {
+	else 
+	{
 		if (impact < 0x385) goto LAB_0004f7b4;
 	LAB_0004f7a8:
 		sample = 10;
 		phrase = 1;
 	}
+
 	uVar2 = GetFreeChannel();
 	SetPlayerOwnsChannel(uVar2 & 0xff, (char)uVar7);
 	iVar1 = impact;
-	if (impact < 0) {
+
+	if (impact < 0)
 		iVar1 = impact + 0x3ff;
-	}
-	Start3DSoundVolPitch
-	(uVar2 & 0xff, 1, sample, (cp->hd).where.t[0], (cp->hd).where.t[1], (cp->hd).where.t[2],
-		-0xabe, impact + (iVar1 >> 10) * -0x400 + 0xe00);
+	
+	Start3DSoundVolPitch(uVar2 & 0xff, 1, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact + (iVar1 >> 10) * -1024 + 3584);
+
 	sample = GetPlayerId(cp);
-	if ((sample != 0) ||
-		((((2 < gCurrentMissionNumber - 2U && (gCurrentMissionNumber != 9)) &&
-		((gCurrentMissionNumber != 10 && (gCurrentMissionNumber != 0x1b)))) || ((impact & 5U) == 0)))
-		) goto LAB_0004f930;
+	if ((sample != 0) || ((((2 < gCurrentMissionNumber - 2U && (gCurrentMissionNumber != 9)) && 
+		((gCurrentMissionNumber != 10 && (gCurrentMissionNumber != 0x1b)))) || ((impact & 5U) == 0)))) 
+		goto LAB_0004f930;
+
 	lVar3 = Random2(1);
-	if (lVar3 == (lVar3 / 3) * 3) {
+
+	if (lVar3 == (lVar3 / 3) * 3) 
+	{
 		phrase = phrase | 4;
 	}
-	else {
-		if (car_car != 2) {
-			if (phrase != 0) {
+	else 
+	{
+		if (car_car != 2) 
+		{
+			if (phrase != 0) 
+			{
 				phrase = Random2(1);
 				sample = 0;
-				if ((phrase & 1) == 0) {
+
+				if ((phrase & 1) == 0) 
 					sample = 3;
-				}
+
 				BodSay(sample);
 			}
+
 			goto LAB_0004f930;
 		}
-		if (phrase == 0) goto LAB_0004f930;
+
+		if (phrase == 0) 
+			goto LAB_0004f930;
+
 		uVar2 = Random2(1);
 		phrase = 2;
-		if ((uVar2 & 1) != 0) {
+
+		if ((uVar2 & 1) != 0) 
 			phrase = 1;
-		}
 	}
 	BodSay(phrase);
 LAB_0004f930:
-	(&player)[uVar7].crash_timer = 2;
-	return;
-	*/
+	player[uVar7].crash_timer = 2;
 }
 
 
@@ -2483,126 +2573,147 @@ void FunkUpDaBGMTunez(int funk)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SoundTasks(void)
 {
-	UNIMPLEMENTED();
-	/*
+	static struct __envsoundtags EStags;
+
 	int channel;
 	int channel_00;
-	undefined4 uVar1;
+	int uVar1;
 	VECTOR *position;
 	long *velocity;
 	int volume;
 	int *piVar2;
 	int iVar3;
 	int iVar4;
-	_PLAYER *p_Var5;
+	_PLAYER *pPVar5;
 
 	iVar3 = 0;
-	if (NumPlayers != 0) {
-		p_Var5 = &player;
-		iVar4 = 0;
+	if (NumPlayers != 0)
+	{
+		pPVar5 = player;
+
 		do {
-			channel_00 = (int)p_Var5->playerCarId;
-			if ((p_Var5->cameraView == '\x02') || (p_Var5->cameraView == '\0')) {
-				*(undefined4 *)((int)player.camera_vel + iVar4) =
-					*(undefined4 *)(car_data[channel_00].st + 0x1c);
-				*(undefined4 *)((int)player.camera_vel + iVar4 + 4) =
-					*(undefined4 *)(car_data[channel_00].st + 0x20);
-				*(undefined4 *)((int)player.camera_vel + iVar4 + 8) =
-					*(undefined4 *)(car_data[channel_00].st + 0x24);
+			channel_00 = pPVar5->playerCarId;
+
+			if ((pPVar5->cameraView == 2) || (pPVar5->cameraView == 0)) 
+			{
+				pPVar5->camera_vel[0] = car_data[channel_00].st.n.linearVelocity[0];
+				pPVar5->camera_vel[1] = car_data[channel_00].st.n.linearVelocity[1];
+				pPVar5->camera_vel[2] = car_data[channel_00].st.n.linearVelocity[2];
 			}
 			else {
-				*(undefined4 *)((int)player.camera_vel + iVar4 + 8) = 0;
-				*(undefined4 *)((int)player.camera_vel + iVar4 + 4) = 0;
-				*(undefined4 *)((int)player.camera_vel + iVar4) = 0;
+				pPVar5->camera_vel[0] = 0;
+				pPVar5->camera_vel[1] = 0;
+				pPVar5->camera_vel[2] = 0;
 			}
-			piVar2 = (int *)((int)&player.car_sound_timer + iVar4);
+
+			piVar2 = &pPVar5->car_sound_timer;
+
 			if (-1 < *piVar2) {
 				*piVar2 = *piVar2 + -1;
 			}
-			if (*piVar2 == 4) {
-				Start3DSoundVolPitch
-				(-1, 6, 4, car_data[channel_00].hd.where.t[0], -car_data[channel_00].hd.where.t[1],
-					car_data[channel_00].hd.where.t[2], -0x9c4, 0xc00);
+
+			if (*piVar2 == 4) 
+			{
+				Start3DSoundVolPitch(-1, 6, 4, car_data[channel_00].hd.where.t[0],-car_data[channel_00].hd.where.t[1], car_data[channel_00].hd.where.t[2],-2500, 3072);
 			}
-			if (*piVar2 == 0) {
-				(&player.car_is_sounding)[iVar4] = '\0';
-			}
-			piVar2 = (int *)((int)&player.crash_timer + iVar4);
+
+			if (*piVar2 == 0) 
+				pPVar5->car_is_sounding = 0;
+
+			piVar2 = &pPVar5->crash_timer;
 			channel = *piVar2;
-			if (0 < channel) {
+
+			if (0 < channel) 
 				*piVar2 = channel + -1;
-			}
-			if ((&player.playerCarId)[iVar4] < '\0') {
+
+			if (pPVar5->playerCarId < 0)
+			{
 				channel_00 = 1;
-				if (iVar3 != 0) {
+				if (iVar3 != 0)
 					channel_00 = 4;
-				}
+
 				SetChannelVolume(channel_00, -10000, 0);
 				channel_00 = 0;
-				if (iVar3 != 0) {
+				if (iVar3 != 0) 
 					channel_00 = 3;
-				}
+
 				SetChannelVolume(channel_00, -10000, 0);
 				channel_00 = 2;
-				if (iVar3 != 0) {
+				if (iVar3 != 0) 
 					channel_00 = 5;
-				}
+
 				SetChannelVolume(channel_00, -10000, 0);
 			}
-			else {
+			else 
+			{
 				channel = 1;
-				if (iVar3 != 0) {
+				if (iVar3 != 0)
 					channel = 4;
-				}
+
 				position = (VECTOR *)car_data[channel_00].hd.where.t;
-				velocity = (long *)(car_data[channel_00].st + 0x1c);
-				if ((&player.car_is_sounding)[iVar4] == '\0') {
-					volume = (int)*(short *)((int)&player.idlevol + iVar4);
+				velocity = car_data[channel_00].st.n.linearVelocity;
+
+				if (pPVar5->car_is_sounding == 0)
+				{
+					volume = pPVar5->idlevol;
 				}
-				else {
+				else 
+				{
 					volume = -10000;
 				}
-				SetChannelPosition3(channel, position, velocity, volume,
-					((int)((uint)(ushort)car_data[channel_00].hd.revs << 0x10) >> 0x12) +
-					0x1000, 0);
+
+				SetChannelPosition3(channel, position, velocity, volume, (car_data[channel_00].hd.revs << 0x10) >> 0x12 + 0x1000, 0);
 				channel = 0;
+
 				if (iVar3 != 0) {
 					channel = 3;
 				}
+
 				volume = -10000;
-				if ((byte)p_Var5->car_is_sounding < 2) {
-					volume = (int)p_Var5->revsvol;
-				}
-				SetChannelPosition3(channel, position, velocity, volume,
-					((int)((uint)(ushort)car_data[channel_00].hd.revs << 0x10) >> 0x12) +
-					((int)((uint)(ushort)p_Var5->revsvol << 0x10) >> 0x16) + 0x5dc, 0);
-				channel_00 = CarHasSiren((uint)(byte)car_data[channel_00].ap.model);
-				if (channel_00 != 0) {
-					if ((p_Var5->horn).on == '\0') {
+
+				if (pPVar5->car_is_sounding < 2)
+					volume = pPVar5->revsvol;
+
+
+				SetChannelPosition3(channel, position, velocity, volume, ((car_data[channel_00].hd.revs << 0x10) >> 0x12) + ((pPVar5->revsvol << 0x10) >> 0x16) + 1500, 0);
+
+				channel_00 = CarHasSiren(car_data[channel_00].ap.model);
+
+				if (channel_00 != 0)
+				{
+					if (pPVar5->horn.on == 0)
+					{
 						uVar1 = 2;
-						if (iVar3 != 0) {
+						if (iVar3 != 0)
 							uVar1 = 5;
-						}
+
 						SpuSetVoicePitch(uVar1, 0);
 					}
-					else {
+					else 
+					{
 						channel_00 = 2;
-						if (iVar3 != 0) {
+
+						if (iVar3 != 0)
 							channel_00 = 5;
-						}
+
 						SetChannelPosition3(channel_00, position, velocity, 0, 0x1000, 0);
 					}
 				}
 			}
-			p_Var5 = p_Var5 + 1;
+			pPVar5 = pPVar5 + 1;
 			iVar3 = iVar3 + 1;
-			iVar4 = iVar4 + 0x74;
 		} while (iVar3 < (int)(uint)NumPlayers);
 	}
-	if ((NumPlayers < 2) || (NoPlayerControl != 0)) {
-		(*(code *)UpdateEnvSounds[EStags.func_cnt])(&envsnd, ESdata, 0);
+
+	if ((NumPlayers < 2) || (NoPlayerControl != 0))
+	{
+		UNIMPLEMENTED();
+		/*
+		UpdateEnvSounds[EStags.func_cnt](&envsnd, ESdata, 0);
+
 		iVar4 = EStags.func_cnt + 1;
 		iVar3 = iVar4;
 		if (iVar4 < 0) {
@@ -2611,25 +2722,27 @@ void SoundTasks(void)
 		EStags.func_cnt = iVar4 + (iVar3 >> 2) * -4;
 		DoDopplerSFX();
 		Tunnels(&tunnels);
+		*/
 	}
+
 	ControlSpeech(&gSpeechQueue);
-	if (gInGameCutsceneActive == 0) {
+	if (gInGameCutsceneActive == 0) 
+	{
 		DoMissionSound();
 	}
-	else {
+	else
+	{
 		HandleRequestedXA();
 		DoCutsceneSound();
 	}
-	if (gInGameChaseActive != 0) {
+
+	if (gInGameChaseActive != 0) 
 		LeadHorn(car_data + 1);
-	}
-	if ((jericho_in_back != 0) &&
-		(((gCurrentMissionNumber - 0x14U < 2 || (gCurrentMissionNumber == 0x19)) ||
-		(gCurrentMissionNumber == 0x27)))) {
+
+	if ((force_idle[8] != 0) && (((gCurrentMissionNumber - 0x14U < 2 || (gCurrentMissionNumber == 0x19)) || (gCurrentMissionNumber == 0x27)))) 
+	{
 		JerichoSpeak();
 	}
-	return;
-	*/
 }
 
 

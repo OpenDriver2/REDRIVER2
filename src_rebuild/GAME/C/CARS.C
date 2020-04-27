@@ -41,8 +41,6 @@ _CAR_DATA* active_car_list[20];
 BOUND_BOX bbox[20];
 unsigned char lightsOnDelay[20];
 
-char force_siren[8] = { 0 };
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ plotNewCarModel(struct CAR_MODEL *car /*$s0*/, int palette /*$s2*/)
