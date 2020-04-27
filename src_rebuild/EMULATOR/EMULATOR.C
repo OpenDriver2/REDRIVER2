@@ -1882,8 +1882,13 @@ void Emulator_TakeScreenshot()
 }
 #endif
 
+GameDebugKeysHandlerFunc gameDebugKeys = NULL;
+
 void Emulator_DoDebugKeys(int nKey, bool down)
 {
+	if(gameDebugKeys)
+		gameDebugKeys(nKey, down);
+
 	if (nKey == SDL_SCANCODE_BACKSPACE)
 	{
 		if(down)

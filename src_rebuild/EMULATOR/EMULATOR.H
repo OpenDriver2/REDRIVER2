@@ -176,6 +176,9 @@ typedef IDirect3DSurface9* RenderTargetID;
 #error
 #endif
 
+typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
+extern GameDebugKeysHandlerFunc gameDebugKeys;
+
 extern int  Emulator_Initialise();
 extern void Emulator_StoreFrameBuffer(int x, int y, int w, int h);
 extern void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
