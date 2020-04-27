@@ -357,6 +357,11 @@ void Emulator_Initialise(char* windowName, int width, int height)
 	//counter_thread = std::thread(Emulator_CounterLoop);
 }
 
+void Emulator_GetScreenSize(int& screenWidth, int& screenHeight)
+{
+	SDL_GetWindowSize(g_window, &screenWidth, &screenHeight);
+}
+
 void Emulator_CounterLoop()
 {
 	static int numUpdates = 0;

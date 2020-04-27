@@ -536,7 +536,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			else
 				alSourcei(alSource, AL_LOOPING, AL_FALSE);
 
-			alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 350000);
+			alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
 
 			// set the buffer
 			alSourcei(alSource, AL_BUFFER, alBuffer);
@@ -567,7 +567,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		{
 			voice.attr.pitch = arg->pitch;
 
-			float pitch = float(voice.attr.pitch) / 32767.0f;
+			float pitch = float(voice.attr.pitch) / 4096.0f;
 
 			alSourcef(voice.alSource, AL_PITCH, pitch);
 		}
