@@ -1904,29 +1904,20 @@ void CheckLoadAreaData(int cellx, int cellz)
 // [D]
 void ClearRegion(int target_region)
 {
-	long *pvsptr;
+	//long *pvsptr;S
 	ushort *cell_ptrs_s;
-	int iVar1;
+	int loop;
 
-	iVar1 = 0x400;
-	cell_ptrs_s = cell_ptrs + target_region * 0x400;
-
-	do {
-		*cell_ptrs_s = 0xffff;
-		iVar1 = iVar1 + -1;
-		cell_ptrs_s = cell_ptrs_s + 1;
-	} while (iVar1 != 0);
-
-	pvsptr = (long *)PVS_Buffers[target_region];
-	iVar1 = 0x400;
+	loop = 1024;
+	cell_ptrs_s = cell_ptrs + target_region * 1024;
+	//pvsptr = (long *)PVS_Buffers[target_region];
 
 	do {
-		*pvsptr = 0;
-		iVar1 = iVar1 + -1;
-		pvsptr = pvsptr + 1;
-	} while (iVar1 != 0);
+		*cell_ptrs_s++ = 0xffff;
+		//*pvsptr++ = 0;
+	} while (loop-- != 0);
 
-	ClearMem(PVS_Buffers[target_region] + -4, pvsSize[target_region]);
+	ClearMem(PVS_Buffers[target_region]-4, pvsSize[target_region]);
 	*(char **)(RoadMapDataRegions + target_region) = PVS_Buffers[0];
 }
 
@@ -2090,13 +2081,11 @@ void UnpackRegion(int region_to_unpack, int target_barrel_region)
 void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 {
 	int *piVar1;
-	int iVar2;
+	int i;
 	int *piVar3;
 	int *piVar4;
 	int *piVar5;
-	char **ppcVar6;
-	int *piVar7;
-	int *piVar8;
+	int size;
 
 	piVar3 = pvsSize;
 	pvsSize[0] = 0;
@@ -2104,23 +2093,19 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 	pvsSize[2] = 0;
 	pvsSize[3] = 0;
 
-	iVar2 = *(int *)lump_ptr << 0xb;
+	size = *(int *)lump_ptr << 0xb;
 
 	model_spool_buffer = mallocptr;
 
-	if (iVar2 < 0x10000) {
-		iVar2 = 0x10000;
+	if (size < 0x10000) {
+		size = 0x10000;
 	}
 
-	mallocptr = mallocptr + iVar2;
+	mallocptr += size;
 
 	cell_slots_add[4] = 0;
 	cell_objects_add[4] = 0;
 
-	piVar8 = cell_objects_add;
-	piVar7 = cell_slots_add;
-	ppcVar6 = PVS_Buffers;
-	iVar2 = 3;
 	Music_And_AmbientOffsets = (SXYPAIR *)(lump_ptr + 8);
 	piVar4 = (int *)((int)(lump_ptr + 4) + *(int *)(lump_ptr + 4) + 4);
 
@@ -2131,22 +2116,26 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 	piVar5 = (int *)AreaTPages + NumAreas * 4;
 	piVar4 = piVar5;
 
+	i = 0;
 	do {
-		*piVar8 = cell_objects_add[4];
-		piVar8 = piVar8 + 1;
-		*piVar7 = cell_slots_add[4];
-		piVar7 = piVar7 + 1;
-		*ppcVar6 = mallocptr + 4;
-		ppcVar6 = ppcVar6 + 1;
-		iVar2 = iVar2 + -1;
-		cell_slots_add[4] = cell_slots_add[4] + *piVar4;
-		cell_objects_add[4] = cell_objects_add[4] + piVar4[4];
+		cell_objects_add[i] = cell_objects_add[4];
+		cell_slots_add[i] = cell_slots_add[4];
+		PVS_Buffers[i] = mallocptr + 4;
+
+		printf("PVS_Buffers[%d] = %x\n", i, PVS_Buffers[i]);
+
+		cell_slots_add[4] += *piVar4;
+		cell_objects_add[4] += piVar4[4];
+
 		*piVar3 = piVar4[8] + 0x7ffU & 0xfffff800;
 		piVar3 = (int *)((uint *)piVar3 + 1);
 		piVar1 = piVar4 + 8;
-		piVar4 = piVar4 + 1;
-		mallocptr = mallocptr + (*piVar1 + 0x7ffU & 0xfffff800);
-	} while (-1 < iVar2);
+		piVar4++;
+
+		mallocptr += (*piVar1 + 0x7ffU & 0xfffff800);
+
+		i++;
+	} while (i < 4);
 
 	RegionSpoolInfo = (char *)((int)(piVar5 + 0xc) + piVar5[0xc] * 2 + 8);
 	spoolinfo_offsets = (ushort *)(piVar5 + 0xd);
@@ -2189,12 +2178,12 @@ void WaitCloseLid(void)
 {
 #ifdef PSX
 	void (*old)();
-	int iVar1;
+	int loop;
 
 	old = (void(*)())CdReadyCallback(0);
 	stopgame();
 
-	while (iVar1 = CdDiskReady(1), iVar1 != 2) 
+	while (loop = CdDiskReady(1), loop != 2) 
 	{
 		DrawCDicon();
 		VSync(0);
@@ -2304,7 +2293,6 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 // [D]
 void GotRegion(void)
 {
-	printf("GotRegion\n");
 	uint target_barrel_reg;
 
 	Unpack_CellPtrs();
