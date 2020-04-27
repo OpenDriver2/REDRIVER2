@@ -515,20 +515,12 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			int loopStart = 0, loopLen = 0;
 			int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE - voice.attr.addr, &loopStart, &loopLen, true);
 
-			if (loopLen > count)
-				loopLen = count;
-
 			if (loopLen > 0)
 			{
-				if (count > loopLen)
-					count = loopLen;
+				//loopStart += voice.attr.loop_addr;
 
-				count = loopLen;
-
-				loopStart += voice.attr.loop_addr;
-
-				int sampleOffs[] = { loopStart, loopStart + loopLen };
-				alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+				//int sampleOffs[] = { loopStart, loopStart + loopLen };
+				//alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
 
 				alSourcei(alSource, AL_LOOPING, AL_TRUE);
 			}

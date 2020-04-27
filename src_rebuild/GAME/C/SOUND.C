@@ -1599,6 +1599,9 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	{
 	switchD_00079c20_caseD_5:
 
+		// [A] this next code appears to be not-so-valid
+		// FIXME: PLEASE DEBUG THIS FUNCTION
+		// OR DECOMPILE PROPERLY
 		if (lsbTabs.append == 0) 
 		{
 			iVar5 = 6;
@@ -1631,12 +1634,14 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 
 		if (0 < iVar5) {
 			do {
-				iVar1 = lsbTabs.addr;
-				iVar6 = iVar6 + -1;
+				
 				iVar4 = *piVar2;
 				uVar3 = samples[dbank][iVar4].address;
+				
+				samples[dbank][iVar4].address = lsbTabs.addr + uVar3;
+
 				*piVar2 = iVar4 + 1;
-				samples[dbank][iVar4].address = uVar3 + iVar1;
+				iVar6--;
 			} while (iVar6 != 0);
 		}
 		lsbTabs.addr = lsbTabs.addr + length;

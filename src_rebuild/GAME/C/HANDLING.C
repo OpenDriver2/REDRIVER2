@@ -20,6 +20,9 @@
 #include "GAMESND.H"
 #include "PEDEST.H"
 #include "AI.H"
+#include "SOUND.H"
+#include "GLAUNCH.H"
+#include "SHADOW.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
@@ -2050,8 +2053,10 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 		if ((pad & 0x1000) != 0) 
 		{
-			cp->st.n.linearVelocity[0] += camera_matrix.m[0][2];
-			cp->st.n.linearVelocity[2] += camera_matrix.m[2][2];
+			cp->st.n.linearVelocity[1] += 10000;
+
+			//cp->st.n.linearVelocity[0] += camera_matrix.m[0][2];
+			//cp->st.n.linearVelocity[2] += camera_matrix.m[2][2];
 			//cp->hd.where.t[0] += camera_matrix.m[0][2] / 30;
 			//cp->hd.where.t[2] += camera_matrix.m[2][2] / 30;
 		}
@@ -2343,24 +2348,18 @@ LAB_00056284:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitSkidding(void)
 {
-	UNIMPLEMENTED();
-	/*
-	_PLAYER *p_Var1;
-	int iVar2;
+	int i;
 
-	p_Var1 = &player;
-	iVar2 = 2;
+	i = 2;
 	do {
-		(p_Var1->wheelnoise).sound = -1;
-		(p_Var1->wheelnoise).chan = -1;
-		(p_Var1->skidding).sound = -1;
-		(p_Var1->skidding).chan = -1;
-		iVar2 = iVar2 + -1;
-		p_Var1 = p_Var1 + 1;
-	} while (-1 < iVar2);
-	return;*/
+		player[i].wheelnoise.sound = -1;
+		player[i].wheelnoise.chan = -1;
+		player[i].skidding.sound = -1;
+		player[i].skidding.chan = -1;
+	} while (i-- >= 0);
 }
 
 
@@ -2381,28 +2380,31 @@ void InitSkidding(void)
 
 void TerminateSkidding(int player_id)
 {
-	UNIMPLEMENTED();
-	/*
 	int channel;
 
-	if ((uint)player_id < 2) {
-		channel = (int)(&player)[player_id].skidding.chan;
-		if (-1 < channel) {
+	if (player_id < 2) 
+	{
+		channel = player[player_id].skidding.chan;
+		if (-1 < channel) 
+		{
 			StopChannel(channel);
-			UnlockChannel((int)(&player)[player_id].skidding.chan);
-			(&player)[player_id].skidding.sound = -1;
-			(&player)[player_id].skidding.chan = -1;
+			UnlockChannel(player[player_id].skidding.chan);
+
+			player[player_id].skidding.sound = -1;
+			player[player_id].skidding.chan = -1;
 		}
-		channel = (int)(&player)[player_id].wheelnoise.chan;
-		if (-1 < channel) {
+
+		channel = player[player_id].wheelnoise.chan;
+
+		if (-1 < channel) 
+		{
 			StopChannel(channel);
-			UnlockChannel((int)(&player)[player_id].wheelnoise.chan);
-			(&player)[player_id].wheelnoise.sound = -1;
-			(&player)[player_id].wheelnoise.chan = -1;
+			UnlockChannel(player[player_id].wheelnoise.chan);
+
+			player[player_id].wheelnoise.sound = -1;
+			player[player_id].wheelnoise.chan = -1;
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -2469,11 +2471,14 @@ void TerminateSkidding(int player_id)
 	/* end block 3 */
 	// End Line: 6326
 
+char rear_only = 0;
+char continuous_track = 0;
+int last_track_state = -1;
+
+// [D]
 void CheckCarEffects(_CAR_DATA *cp, int player_id)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
+	unsigned char uVar1;
 	bool bVar2;
 	bool bVar3;
 	int channel;
@@ -2487,143 +2492,183 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	bVar2 = false;
 	bVar3 = false;
 	uVar1 = cp->controlType;
-	if (((uVar1 != '\x01') && (uVar1 != '\x04')) && (uVar1 != '\a')) {
+
+	if (((uVar1 != 1) && (uVar1 != 4)) && (uVar1 != 7)) 
+	{
 		TerminateSkidding(player_id);
 		return;
 	}
+
 	jump_debris(cp);
-	pWVar5 = (cp->hd).wheel;
+	pWVar5 = cp->hd.wheel;
 	sample = 3;
 	do {
-		if (pWVar5->susCompression != '\0') {
+		if (pWVar5->susCompression != 0)
 			bVar2 = true;
-		}
+
 		sample = sample + -1;
 		pWVar5 = pWVar5 + 1;
 	} while (-1 < sample);
+
 	sample = 0;
-	if (bVar2) {
-		if (cp->wheelspin == '\0') {
+	if (bVar2) 
+	{
+		if (cp->wheelspin == 0) 
+		{
 			channel = (cp->hd).rear_vel;
 			if (channel < 0) {
 				channel = -channel;
 			}
 			if (channel < 0x2b5d) goto LAB_00056474;
 		}
-		rear_only = '\x01';
+
+		rear_only = 1;
+
 		bVar3 = true;
-		if (cp->wheelspin == '\0') {
-			sample = (cp->hd).rear_vel;
-			if (sample < 0) {
+		if (cp->wheelspin == 0) 
+		{
+			sample = cp->hd.rear_vel;
+			if (sample < 0)
 				sample = -sample;
-			}
-			sample = (sample + -0x2b5c) / 2 + 1;
-			if (sample < 0x32c9) goto LAB_00056474;
+
+			sample = (sample-11100) / 2 + 1;
+
+			if (sample < 13001) 
+				goto LAB_00056474;
 		}
+
 		sample = 13000;
 	}
 LAB_00056474:
-	channel = (cp->hd).front_vel;
-	if (channel < 0) {
+	channel = cp->hd.front_vel;
+
+	if (channel < 0)
 		channel = -channel;
-	}
-	if (0x2b5c < channel) {
-		rear_only = '\0';
+
+	if (11100 < channel)
+	{
+		rear_only = 0;
 		bVar3 = true;
 	}
+
 	cVar8 = -1;
-	if (((sample != 0) &&
-		((((cp->hd).wheel[1].surface & 0x80) == 0 || (((cp->hd).wheel[3].surface & 0x80) == 0)))) &&
-		(cVar8 = '\v', gWeather - 1U < 2)) {
+
+	if (((sample != 0) && (((cp->hd.wheel[1].surface & 0x80) == 0 || ((cp->hd.wheel[3].surface & 0x80) == 0)))) && (cVar8 = 11, gWeather - 1U < 2))
+	{
 		cVar8 = -1;
 	}
-	if (cVar8 == (&player)[player_id].skidding.sound) {
+
+	if (cVar8 == player[player_id].skidding.sound) 
+	{
 	LAB_000565b4:
-		if ((-1 < (&player)[player_id].skidding.sound) &&
-			(channel = (int)(&player)[player_id].skidding.chan, -1 < channel)) {
+		if ((-1 < player[player_id].skidding.sound) && (channel = (int)player[player_id].skidding.chan, -1 < channel)) 
+		{
 			iVar6 = (sample + -10000) * 3;
 			if (iVar6 < 0) {
 				iVar6 = iVar6 + 3;
 			}
-			SetChannelPosition3(channel, (VECTOR *)(cp->hd).where.t, (long *)(cp->st + 0x1c),
-				(iVar6 >> 2) + -5000, (sample * 0x400) / 13000 + 0xc00 + player_id * 8, 0);
+			SetChannelPosition3(channel, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, (iVar6 >> 2) + -5000, (sample * 0x400) / 13000 + 3072 + player_id * 8, 0);
 		}
 	}
-	else {
-		channel = (int)(&player)[player_id].skidding.chan;
-		(&player)[player_id].skidding.sound = cVar8;
-		if (-1 < channel) {
+	else 
+	{
+		channel = (int)player[player_id].skidding.chan;
+		player[player_id].skidding.sound = cVar8;
+
+		if (-1 < channel) 
+		{
 			StopChannel(channel);
-			UnlockChannel((int)(&player)[player_id].skidding.chan);
-			(&player)[player_id].skidding.chan = -1;
+			UnlockChannel(player[player_id].skidding.chan);
+			player[player_id].skidding.chan = -1;
 		}
-		channel = (int)(&player)[player_id].skidding.sound;
-		if (-1 < channel) {
+
+		channel = player[player_id].skidding.sound;
+		if (-1 < channel) 
+		{
 			channel = StartSound(-1, 1, channel, sample + -10000, 0x1000);
-			(&player)[player_id].skidding.chan = (char)channel;
-			LockChannel((int)(char)channel);
-			if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
-				SetPlayerOwnsChannel((int)(&player)[player_id].skidding.chan, (char)player_id);
-			}
+			player[player_id].skidding.chan = channel;
+			LockChannel(channel);
+
+			if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
+				SetPlayerOwnsChannel((int)player[player_id].skidding.chan, (char)player_id);
 			goto LAB_000565b4;
 		}
 	}
 	sample = -1;
-	if ((bVar2) && (10 < (cp->hd).speed)) {
-		uVar4 = (uint)(cp->hd).wheel[3].surface & 7;
-		uVar7 = (uint)(cp->hd).wheel[1].surface & 7;
-		if (uVar4 < uVar7) {
+	if (bVar2 && (10 < cp->hd.speed))
+	{
+		uVar4 = cp->hd.wheel[3].surface & 7;
+		uVar7 = cp->hd.wheel[1].surface & 7;
+
+		if (uVar4 < uVar7)
 			uVar4 = uVar7;
-		}
+
 		sample = 0xd;
-		if ((1 < gWeather - 1U) && (sample = -1, uVar4 != 0)) {
+
+		if ((1 < gWeather - 1U) && (sample = -1, uVar4 != 0))
 			sample = uVar4 + 0xc;
-		}
 	}
-	if (sample != (int)(&player)[player_id].wheelnoise.sound) {
-		channel = (int)(&player)[player_id].wheelnoise.chan;
-		(&player)[player_id].wheelnoise.sound = (char)sample;
-		if (-1 < channel) {
+	if (sample != player[player_id].wheelnoise.sound)
+	{
+		channel = player[player_id].wheelnoise.chan;
+		player[player_id].wheelnoise.sound = sample;
+
+		if (-1 < channel)
+		{
 			StopChannel(channel);
-			UnlockChannel((int)(&player)[player_id].wheelnoise.chan);
-			(&player)[player_id].wheelnoise.chan = -1;
+			UnlockChannel(player[player_id].wheelnoise.chan);
+
+			player[player_id].wheelnoise.chan = -1;
 		}
-		sample = (int)(&player)[player_id].wheelnoise.sound;
-		if (sample < 0) goto LAB_00056814;
+
+		sample = player[player_id].wheelnoise.sound;
+
+		if (sample < 0)
+			goto LAB_00056814;
+
 		sample = StartSound(-1, 1, sample, -200, 0x1000);
-		(&player)[player_id].wheelnoise.chan = (char)sample;
-		LockChannel((int)(char)sample);
-		if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
-			SetPlayerOwnsChannel((int)(&player)[player_id].wheelnoise.chan, (char)player_id);
-		}
+
+		player[player_id].wheelnoise.chan = sample;
+		LockChannel(sample);
+
+		if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
+			SetPlayerOwnsChannel(player[player_id].wheelnoise.chan, player_id);
 	}
-	if ((-1 < (&player)[player_id].wheelnoise.sound) &&
-		(sample = (int)(&player)[player_id].wheelnoise.chan, -1 < sample)) {
-		iVar6 = (cp->hd).speed;
-		channel = iVar6 * 0x1b;
-		if (0xe00 < channel) {
-			channel = 0xe00;
-		}
-		if (100 < iVar6) {
+	if ((-1 < player[player_id].wheelnoise.sound) && (sample = player[player_id].wheelnoise.chan, -1 < sample))
+	{
+		iVar6 = cp->hd.speed;
+
+		channel = iVar6 * 27;
+
+		if (3584 < channel)
+			channel = 3584;
+
+		if (100 < iVar6)
 			iVar6 = 100;
-		}
-		SetChannelPosition3(sample, (VECTOR *)(cp->hd).where.t, (long *)(cp->st + 0x1c),
-			iVar6 * 0x32 + -10000, channel + player_id * 8, 0);
+
+		SetChannelPosition3(sample, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, iVar6 * 50-10000, channel + player_id * 8, 0);
 	}
+
 LAB_00056814:
-	(&player)[player_id].onGrass = '\0';
+	player[player_id].onGrass = 0;
+
 	GetTyreTrackPositions(cp, player_id);
-	if (bVar3) {
-		continuous_track = last_track_state == (uint)(byte)rear_only;
+
+	if (bVar3) 
+	{
+		continuous_track = last_track_state == rear_only;
+
 		AddTyreTrack(player_id << 1, (uint)(player_id < 2), player_id);
 		AddTyreTrack(player_id << 1 | 1, (uint)(player_id < 2), player_id);
-		last_track_state = ZEXT14((byte)rear_only);
+
+		last_track_state = rear_only;
 	}
-	else {
+	else
+	{
 		last_track_state = -1;
 	}
+
 	SetTyreTrackOldPositions(player_id);
-	return;*/
 }
 
 
