@@ -1542,9 +1542,9 @@ LAB_00082b9c:
 			//	iVar5 = iVar10 + 0x3f;
 			//}
 			chan = (chan / 64) * (iVar5 / 64);
-			//if (chan < 0) {
-			//	chan = -chan;
-			//}
+			if (chan < 0) {
+				chan = -chan;
+			}
 			if (iVar10 < 0xc351) {
 				if (iVar10 < -50000) {
 				LAB_00082604:

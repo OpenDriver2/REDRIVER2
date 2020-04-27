@@ -2475,6 +2475,8 @@ char rear_only = 0;
 char continuous_track = 0;
 int last_track_state = -1;
 
+#include "PRES.H"
+
 // [D]
 void CheckCarEffects(_CAR_DATA *cp, int player_id)
 {
@@ -2482,10 +2484,10 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	bool bVar2;
 	bool bVar3;
 	int channel;
-	uint uVar4;
+	int uVar4;
 	WHEEL *pWVar5;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int sample;
 	char cVar8;
 
@@ -2493,7 +2495,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	bVar3 = false;
 	uVar1 = cp->controlType;
 
-	if (((uVar1 != 1) && (uVar1 != 4)) && (uVar1 != 7)) 
+	if (uVar1 != 1 && uVar1 != 4 && uVar1 != 7) 
 	{
 		TerminateSkidding(player_id);
 		return;
@@ -2515,11 +2517,12 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	{
 		if (cp->wheelspin == 0) 
 		{
-			channel = (cp->hd).rear_vel;
-			if (channel < 0) {
+			channel = cp->hd.rear_vel;
+			if (channel < 0)
 				channel = -channel;
-			}
-			if (channel < 0x2b5d) goto LAB_00056474;
+
+			if (channel < 11101) 
+				goto LAB_00056474;
 		}
 
 		rear_only = 1;
@@ -2539,6 +2542,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 
 		sample = 13000;
 	}
+
 LAB_00056474:
 	channel = cp->hd.front_vel;
 
@@ -2564,10 +2568,10 @@ LAB_00056474:
 		if ((-1 < player[player_id].skidding.sound) && (channel = (int)player[player_id].skidding.chan, -1 < channel)) 
 		{
 			iVar6 = (sample + -10000) * 3;
-			if (iVar6 < 0) {
-				iVar6 = iVar6 + 3;
-			}
-			SetChannelPosition3(channel, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, (iVar6 >> 2) + -5000, (sample * 0x400) / 13000 + 3072 + player_id * 8, 0);
+			//if (iVar6 < 0)
+			//	iVar6 = iVar6 + 3;
+
+			SetChannelPosition3(channel, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, (iVar6 / 4) - 5000, (sample * 1024) / 13000 + 3072 + player_id * 8, 0);
 		}
 	}
 	else 
@@ -2585,7 +2589,7 @@ LAB_00056474:
 		channel = player[player_id].skidding.sound;
 		if (-1 < channel) 
 		{
-			channel = StartSound(-1, 1, channel, sample + -10000, 0x1000);
+			channel = StartSound(-1, 1, channel, sample-10000, 0x1000);
 			player[player_id].skidding.chan = channel;
 			LockChannel(channel);
 
@@ -2606,8 +2610,9 @@ LAB_00056474:
 		sample = 0xd;
 
 		if ((1 < gWeather - 1U) && (sample = -1, uVar4 != 0))
-			sample = uVar4 + 0xc;
+			sample = uVar4 + 12;
 	}
+
 	if (sample != player[player_id].wheelnoise.sound)
 	{
 		channel = player[player_id].wheelnoise.chan;
@@ -2626,7 +2631,7 @@ LAB_00056474:
 		if (sample < 0)
 			goto LAB_00056814;
 
-		sample = StartSound(-1, 1, sample, -200, 0x1000);
+		sample = StartSound(-1, 1, sample, -200, 4096);
 
 		player[player_id].wheelnoise.chan = sample;
 		LockChannel(sample);
