@@ -134,6 +134,7 @@ int units_down_halved;
 int regions_across;
 int regions_down;
 
+int gDrawDistance = 441;
 
 // offset: 0x1f800020
 _pct plotContext;
@@ -958,7 +959,7 @@ void DrawMapPSX(int *comp_val)
 	else
 		uVar9 = goFaster & 31;
 
-	local_34 = (441 >> uVar9) + -1;
+	local_34 = (gDrawDistance >> uVar9) - 1;		// [A]
 
 	do 
 	{
@@ -1019,7 +1020,7 @@ void DrawMapPSX(int *comp_val)
 
 				local_34 = local_34 + -1;
 
-				if (cellx + cellz < 0x10)
+				if (cellx + cellz < 32) // < 16)
 				{
 					cellx = camx + iVar19;
 					cellz = camz + iVar20;

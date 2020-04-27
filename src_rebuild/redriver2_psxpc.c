@@ -5,15 +5,47 @@
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
 
+#include <SDL_scancode.h>
+
 int(*GPU_printf)(const char *fmt, ...);
 
 extern int g_texturelessMode;
 extern int g_wireframeMode;
+extern int gDrawDistance;
+
+void GameDebugKeys(int nKey, bool down)
+{
+
+	if (!down)
+		return;
+
+	if (nKey == SDL_SCANCODE_F1)
+	{
+		gDrawDistance -= 100;
+
+		if (gDrawDistance < 441)
+			gDrawDistance = 441;
+
+		printf("gDrawDistance = %d\n", gDrawDistance);
+
+	}
+	else if (nKey == SDL_SCANCODE_F2)
+	{
+		gDrawDistance += 100;
+
+		if (gDrawDistance > 6000)
+			gDrawDistance = 6000;
+
+		printf("gDrawDistance = %d\n", gDrawDistance);
+	}
+}
 
 int main()
 {
 	//g_texturelessMode = 1;
 	//g_wireframeMode = 1;
+	gameDebugKeys = GameDebugKeys;
+	gDrawDistance = 1300;		// best distance
 
 	GPU_printf = printf;
 
