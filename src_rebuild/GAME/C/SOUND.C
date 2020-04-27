@@ -370,10 +370,10 @@ void SetMasterVolume(int vol)
 	puVar2 = 10000 + vol;
 	puVar3 = puVar2;
 
-	if ((int)puVar2 < 0)
+	if (puVar2 < 0)
 		puVar3 = 0;
 
-	puVar1 = ((int)puVar3 >> 1);
+	puVar1 = puVar3 / 2;
 
 	if (10000 < (int)puVar2) 
 	{
@@ -381,7 +381,7 @@ void SetMasterVolume(int vol)
 		puVar1 = 5000;
 	}
 
-	master_volume = (int)puVar3 + (int)puVar1 + ((int)puVar3 >> 3) + ((int)puVar3 >> 7);
+	master_volume = puVar3 + puVar1 + (puVar3 / 8) + (puVar3 / 128);
 	gMasterVolume = vol;
 }
 
@@ -1971,7 +1971,7 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 		local_a2_184 = 0;
 	}
 
-	local_v0_204 = (local_a2_184 >> 1);
+	local_v0_204 = local_a2_184 / 2;
 
 	if (10000 < local_a2_160) 
 	{
@@ -1979,7 +1979,7 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 		local_v0_204 = 0x1388;
 	}
 
-	iVar7 = (local_v0_204 + local_a2_184 + (local_a2_184 >> 3) + (local_a2_184 >> 7)) * master_volume >> 0xe;
+	iVar7 = ((local_v0_204 + local_a2_184 + local_a2_184 / 8 + local_a2_184 / 128) * master_volume) / 16384;
 	sVar4 = iVar7;
 	channels[channel].attr.volume.left = sVar4;
 	if (iVar5 != 0) {
@@ -2038,20 +2038,20 @@ LAB_0007a128:
 	if (iVar3 < 0)
 		iVar5 = -lVar2 + 0x2bff;
 
-	iVar10 = (iVar3 + (iVar5 >> 0xc) * -0x1000) - (iVar10 + -0x1000);
+	iVar10 = (iVar3 + (iVar5 / 4096) * -4096) - (iVar10 + -4096);
 	iVar5 = iVar10;
 
 	if (iVar10 < 0)
 		iVar5 = iVar10 + 0xfff;
 
-	iVar10 = 0x800 - (iVar10 + (iVar5 >> 0xc) * -0x1000);
+	iVar10 = 0x800 - (iVar10 + (iVar5 / 4096) * -4096);
 
 	iVar5 = iVar10;
 
 	if (iVar10 < 0) 
 		iVar5 = -iVar10;
 
-	if ((0x3ff < iVar5) && (bVar1 = iVar10 < 1, iVar10 = 0x800 - iVar5, bVar1)) {
+	if ((0x3ff < iVar5) && (bVar1 = iVar10 < 1, iVar10 = 2048 - iVar5, bVar1)) {
 		iVar10 = -iVar10;
 	}
 
@@ -2068,10 +2068,10 @@ LAB_0007a128:
 		{
 			iVar5 = ((iVar7 * 9) / 10) * -iVar10;
 
-			if (iVar5 < 0) 
-				iVar5 = iVar5 + 0x3ff;
+			//if (iVar5 < 0) 
+			//	iVar5 = iVar5 + 0x3ff;
 
-			iVar5 = iVar5 >> 10;
+			iVar5 = iVar5 / 1024;
 
 			if (proximity != 0)
 				iVar5 = (iVar5 * unaff_s6) / 12000;
@@ -2091,10 +2091,10 @@ LAB_0007a128:
 	{
 		iVar10 = ((iVar7 * 9) / 10) * iVar10;
 
-		if (iVar10 < 0)
-			iVar10 = iVar10 + 0x3ff;
+		//if (iVar10 < 0)
+		//	iVar10 = iVar10 + 0x3ff;
 
-		iVar10 = iVar10 >> 10;
+		iVar10 = iVar10 / 1024;
 
 		if (proximity != 0)
 			iVar10 = (iVar10 * unaff_s6) / 12000;
@@ -2153,15 +2153,15 @@ void UpdateVolumeAttributesM(int channel)
 	if ((int)puVar3 < 0)
 		puVar4 = 0;
 
-	puVar2 = ((int)puVar4 >> 1);
+	puVar2 = puVar4 / 2;
 
-	if (10000 < (int)puVar3) 
+	if (10000 < puVar3) 
 	{
 		puVar4 = 10000;
 		puVar2 = 5000;
 	}
 
-	sVar5 = ((puVar4 + puVar2 + (puVar4 >> 3) + (puVar4 >> 7)) * master_volume >> 0xe);
+	sVar5 = ((puVar4 + puVar2 + (puVar4 / 8) + (puVar4 / 128)) * master_volume) / 16384;
 
 	channels[channel].attr.volume.left = sVar5;
 	channels[channel].attr.volume.right = sVar5;
@@ -2230,9 +2230,9 @@ int CalculateVolume(int channel)
 	if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
 	{
 		iVar1 = (int)puVar4 * 3;
-		puVar4 = (iVar1 >> 2);
+		puVar4 = (iVar1 / 4);
 		if (iVar1 < 0) {
-			puVar4 = (iVar1 + 3 >> 2);
+			puVar4 = (iVar1 + 3) / 4;
 		}
 	}
 
@@ -2275,13 +2275,13 @@ int CalculateVolume(int channel)
 		}
 
 		if (iVar2 != 0) {
-			iVar5 = iVar5 * (0x1000 - iVar2) >> 0xc;
+			iVar5 = iVar5 * (4096 - iVar2) / 4096;
 		}
 		iVar5 = iVar5 * puVar4;
-		puVar4 = (iVar5 >> 0xc);
+		puVar4 = iVar5 / 4096;
 
 		if (iVar5 < 0) {
-			puVar4 = (iVar5 + 0xfff >> 0xc);
+			puVar4 = (iVar5 + 0xfff) / 4096;
 		}
 	}
 
@@ -2373,17 +2373,17 @@ int FESound(int sample)
 
 	channel = GetFreeChannel();
 
-	iVar4 = samples[1][sample].samplerate << 0xb;
+	iVar4 = samples[1][sample].samplerate * 2048;
 
 	iVar2 = iVar4 / 44100;
-	uVar6 = (ushort)iVar2;
+	uVar6 = iVar2;
 
 	if (0x3fff < iVar2)
 	{
 		uVar6 = 0x3fff;
 	}
 
-	uVar3 = (iVar4 >> 0xc) / 0x32;
+	uVar3 = (iVar4 / 4096) / 50;
 
 	if (uVar3 == 0)
 	{
@@ -2404,7 +2404,7 @@ int FESound(int sample)
 		channels[channel].attr.addr = samples[1][sample].address;
 		channels[channel].attr.pitch = uVar6;
 		channels[channel].loop = samples[1][sample].loop;
-		channels[channel].time = (short)(uVar5 / uVar3) * 2 + 2;
+		channels[channel].time = (uVar5 / uVar3) * 2 + 2;
 		channels[channel].samplerate = samples[1][sample].samplerate;
 
 		SpuSetVoiceAttr(&channels[channel].attr);
