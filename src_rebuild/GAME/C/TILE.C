@@ -354,36 +354,33 @@ void DrawTILES(int tile_amount)
 			uVar7 = uVar5;
 		}
 
-		Tile1x1(modelpointers[uVar3]);	// [A] temporary draw it as it is
-
-		/*
-		if (iVar1 < 0x1b59)
+		if (iVar1 < 7001)
 		{
-			if (Low2HighDetailTable[uVar3] != 0xffff) {
-				uVar3 = (uint)Low2HighDetailTable[uVar3];
-			}
-			if (iVar1 < 2000) {
+			if (Low2HighDetailTable[uVar3] != 0xffff)
+				uVar3 = Low2HighDetailTable[uVar3];
+
+#ifdef PSX
+			if (iVar1 < 2000) 
 				TileNxN(modelpointers[uVar3], 4, 0x4b);
-			}
-			else {
+			else 
 				TileNxN(modelpointers[uVar3], 2, 0x23);
-			}
+#else
+			Tile1x1(modelpointers[uVar3]);	// [A] temporary draw it as it is
+#endif
 		}
 		else
 		{
-			iVar2 = uVar3 << 2;
-
+			iVar2 = uVar3;// << 2;
+			
 			if (9000 < iVar1) 
 			{
-				iVar2 = uVar3 << 2;
-				if (Low2LowerDetailTable[uVar3] != 0xffff) 
-				{
-					iVar2 = (uint)Low2LowerDetailTable[uVar3] << 2;
-				}
+				iVar2 = uVar3;// << 2;
+				if (Low2LowerDetailTable[uVar3] != 0xffff)
+					iVar2 = Low2LowerDetailTable[uVar3];// << 2;
 			}
-
+			
 			Tile1x1(modelpointers[iVar2]);
-		}*/
+		}
 
 		tile_amount--;
 	}
