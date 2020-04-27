@@ -839,11 +839,9 @@ LAB_0004e0dc:
 	InitDopplerSFX();
 	InitSkidding();
 	AddTunnels(GameLevel);
-	first_offence = '\x01';
+	first_offence = 1;
 	InitializeMissionSound();
 }
-
-
 
 // decompiled code
 // original method signature: 

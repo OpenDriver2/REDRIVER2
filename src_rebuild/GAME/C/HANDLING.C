@@ -2359,7 +2359,8 @@ void InitSkidding(void)
 		player[i].wheelnoise.chan = -1;
 		player[i].skidding.sound = -1;
 		player[i].skidding.chan = -1;
-	} while (i-- >= 0);
+		i--;
+	} while (i >= 0);
 }
 
 
