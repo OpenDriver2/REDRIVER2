@@ -1422,28 +1422,25 @@ void SetupPlaneColours(ulong ambient)
 // [D]
 void SetupDrawMapPSX(void)
 {
-	int iVar1;
-	int iVar4;
-
 	current_cell_x = camera_position.vx + units_across_halved;
 	if (current_cell_x < 0)
-		current_cell_x = current_cell_x + 0x7ff;
+		current_cell_x += 0x7ff;
 
-	current_cell_x = current_cell_x >> 0xb;
+	current_cell_x = current_cell_x / 2048;
 	current_cell_z = camera_position.vz + units_down_halved;
 
-	if (current_cell_z < 0)
-		current_cell_z = current_cell_z + 0x7ff;
+	//if (current_cell_z < 0)
+	//	current_cell_z += 0x7ff;
 
-	current_cell_z = current_cell_z >> 0xb;
-	iVar1 = cells_across;
-	if (cells_across < 0)
-		iVar1 = cells_across + 0x1f;
+	current_cell_z /= 2048;
+
+	//if (cells_across < 0)
+	//	iVar1 = cells_across + 31;
 
 	GetPVSRegionCell2(
-		(uint)current_cell_x >> 5 & 1 | ((uint)current_cell_z >> 5 & 1) << 1,
-		((uint)current_cell_x >> 5) + ((uint)current_cell_z >> 5) * (iVar1 >> 5),
-		((current_cell_z & 0x1F) << 5) | (current_cell_x & 0x1F), 
+		(current_cell_x / 32 & 1) | (current_cell_z / 32 & 1) / 2,
+		(current_cell_x / 32) + (current_cell_z / 32) * (cells_across / 32),
+		((current_cell_z & 31) / 32) | (current_cell_x & 31), 
 		CurrentPVS);
 
 	// [A]

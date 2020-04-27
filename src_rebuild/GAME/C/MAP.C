@@ -608,7 +608,8 @@ int CheckUnpackNewRegions(void)
 			regions_to_unpack[0].zoffset = 0;
 		}
 	}
-	else if (0x20 - iVar7 < current_barrel_region_xcell) {
+	else if (0x20 - iVar7 < current_barrel_region_xcell) 
+	{
 		iVar6 = cells_across;
 
 		if (cells_across < 0) 
@@ -637,14 +638,16 @@ int CheckUnpackNewRegions(void)
 			iVar12 = iVar12 + 1;
 		}
 	}
-	else if ((0x20 - iVar7 < current_barrel_region_zcell) && (region_z != 0)) {
+	else if ((32 - iVar7 < current_barrel_region_zcell) && (region_z != 0))
+	{
 		iVar9 = 2;
 		regions_to_unpack[iVar12].xoffset = 0;
 		iVar7 = 1;
 		goto LAB_0005c978;
 	}
 
-	if (iVar12 == 2) {
+	if (iVar12 == 2) 
+	{
 		if (iVar9 == 1) 
 		{
 			iVar12 = 3;
@@ -657,14 +660,12 @@ int CheckUnpackNewRegions(void)
 			regions_to_unpack[2].xoffset = 1;
 			regions_to_unpack[2].zoffset = -1;
 		}
-		else {
+		else 
+		{
 			if (iVar8 == 1) 
-			{
 				regions_to_unpack[2].xoffset = -1;
-			}
-			else {
+			else 
 				regions_to_unpack[2].xoffset = 1;
-			}
 
 			regions_to_unpack[2].zoffset = 1;
 		}
@@ -679,30 +680,36 @@ LAB_0005c9dc:
 	{
 		iVar7 = 0;
 		do {
-			iVar4 = *(int *)((int)&regions_to_unpack[0].xoffset + iVar7);
-			iVar6 = *(int *)((int)&regions_to_unpack[0].zoffset + iVar7);
+			iVar4 = regions_to_unpack[iVar9].xoffset;
+			iVar6 = regions_to_unpack[iVar9].zoffset;
+
 			iVar7 = cells_across;
-			if (cells_across < 0) {
-				iVar7 = cells_across + 0x1f;
-			}
+
+			//if (cells_across < 0) {
+			//	iVar7 = cells_across + 31;
+			//}
+
 			target_region = (region_x + iVar4 & 1U) + (region_z + iVar6 & 1U) * 2;
-			iVar7 = current_region + iVar4 + iVar6 * (iVar7 >> 5);
+			iVar7 = current_region + iVar4 + iVar6 * (iVar7 / 32);
 			if ((iVar7 != regions_unpacked[target_region]) && (loading_region[target_region] == -1))
 			{
 				ClearRegion(target_region);
-				if (spoolinfo_offsets[iVar7] == 0xffff) {
+				if (spoolinfo_offsets[iVar7] == 0xffff) 
+				{
 					regions_unpacked[target_region] = iVar7;
 				}
-				else {
+				else 
+				{
 					uVar2 = spoolinfo_offsets[iVar7];
+
 					if ((old_region == -1) && (bVar1 = (RegionSpoolInfo + uVar2)[4], bVar1 != 0xff))
-					{
-						initarea = (uint)bVar1;
-					}
-					sortregions[iVar8].vx = (short)iVar7;
-					sortregions[iVar8].vy = (short)target_region;
+						initarea = bVar1;
+
+					sortregions[iVar8].vx = iVar7;
+					sortregions[iVar8].vy = target_region;
 					sortregions[iVar8].vz = *(short *)(RegionSpoolInfo + uVar2);
-					sortorder[iVar8] = (ushort)iVar8;
+
+					sortorder[iVar8] = iVar8;
 					iVar8 = iVar8 + 1;
 				}
 			}
@@ -723,7 +730,7 @@ LAB_0005c9dc:
 				do {
 					uVar2 = *puVar11;
 
-					if ((&sortregions[0].vz)[(uint)*puVar10 * 4] < (&sortregions[0].vz)[(uint)uVar2 * 4]) 
+					if (sortregions[*puVar10].vz < sortregions[uVar2].vz)
 					{
 						*puVar11 = *puVar10;
 						*puVar10 = uVar2;
@@ -733,8 +740,9 @@ LAB_0005c9dc:
 					puVar10 = puVar10 + 1;
 				} while (iVar7 != 0);
 			}
-			uVar5 = (uint)sortorder[iVar12];
-			UnpackRegion((int)sortregions[uVar5].vx, (int)sortregions[uVar5].vy);
+			uVar5 = sortorder[iVar12];
+			UnpackRegion(sortregions[uVar5].vx, sortregions[uVar5].vy);
+
 			bVar3 = iVar9 < iVar8;
 			iVar12 = iVar9;
 			iVar9 = iVar9 + 1;
@@ -802,63 +810,31 @@ void ControlMap(void)
 {
 	int region_to_unpack;
 
-	current_cell_x = (player[0].spoolXZ)->vx + units_across_halved;
+	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / 2048;
+	current_cell_z = (player[0].spoolXZ->vz + units_down_halved) / 2048;
 
-	if (current_cell_x < 0)
-		current_cell_x = current_cell_x + 0x7ff;
+	region_x = current_cell_x / 32;
+	region_z = current_cell_z / 32;
 
-	current_cell_z = (player[0].spoolXZ)->vz + units_down_halved;
-	current_cell_x = current_cell_x >> 0xb;
-
-	if (current_cell_z < 0)
-		current_cell_z = current_cell_z + 0x7ff;
-
-	current_cell_z = current_cell_z >> 0xb;
-	region_x = current_cell_x;
-
-	if (current_cell_x < 0)
-		region_x = current_cell_x + 0x1f;
-
-	region_x = region_x >> 5;
-	region_z = current_cell_z;
-
-	if (current_cell_z < 0)
-		region_z = current_cell_z + 0x1f;
-
-	region_z = region_z >> 5;
 	old_region = current_region;
 	region_to_unpack = cells_across;
 
-	if (cells_across < 0)
-		region_to_unpack = cells_across + 0x1f;
+	current_barrel_region_xcell = current_cell_x - region_x * 32;
+	current_barrel_region_zcell = current_cell_z - region_z * 32;
 
-	current_barrel_region_xcell = current_cell_x + region_x * -0x20;
-	current_barrel_region_zcell = current_cell_z + region_z * -0x20;
-
-	region_to_unpack = region_x + region_z * (region_to_unpack >> 5);
+	region_to_unpack = region_x + region_z * (region_to_unpack / 32);
 	
 	if (current_region == -1)
-		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) << 1);		// is that ever valid for 'target_barrel_region'?
+		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
 
 	current_region = region_to_unpack;
-
 	CheckUnpackNewRegions();
 
-	if ((old_region == current_region) || (old_region == -1)) 
+	if (old_region == current_region || old_region == -1) 
 		CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
 
-	current_cell_x = camera_position.vx + units_across_halved;
-
-	if (current_cell_x < 0)
-		current_cell_x = current_cell_x + 0x7ff;
-
-	current_cell_x = current_cell_x >> 0xb;
-	current_cell_z = camera_position.vz + units_down_halved;
-
-	if (current_cell_z < 0) 
-		current_cell_z = current_cell_z + 0x7ff;
-
-	current_cell_z = current_cell_z >> 0xb;
+	current_cell_x = (camera_position.vx + units_across_halved) / 2048;
+	current_cell_z = (camera_position.vz + units_down_halved) / 2048;
 
 	StartSpooling();
 }
@@ -1213,7 +1189,7 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 
 char nybblearray[512] = { 0 };
 
-char* PVS_Buffers[4];
+char* PVS_Buffers[4] = { 0 };
 unsigned char *PVSEncodeTable = NULL;
 
 // byte swapped short
