@@ -1887,7 +1887,28 @@ void StepGame(void)
 	lis_pos.vz = camera_position.vz;
 	lis_pos.pad = camera_position.pad;
 
+#ifndef PSX
+	int screenW, screenH;
+	Emulator_GetScreenSize(screenW, screenH);
+
+	float aspectVar = float(screenH) / float(screenW);
+
+	FrAng = ratan2(160, float(scr_z) * aspectVar* 1.35f);
+
+	aspect.m[0][0] = 5500 * aspectVar;
+	aspect.m[0][1] = 0;
+	aspect.m[0][2] = 0;
+
+	aspect.m[1][0] = 0;
+	aspect.m[1][1] = 4710;
+	aspect.m[1][2] = 0;
+
+	aspect.m[2][0] = 0;
+	aspect.m[2][1] = 0;
+	aspect.m[2][2] = 4096;
+#else
 	FrAng = ratan2(160, scr_z);
+#endif
 
 	if ((gTimeInWater == 0) || (gSinkingTimer < 100)) 
 	{
