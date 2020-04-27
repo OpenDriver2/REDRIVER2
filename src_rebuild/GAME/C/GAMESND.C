@@ -124,9 +124,8 @@ void LoadBankFromLump(int bank, int lump)
 
 int CarHasSiren(int index)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	return 1;
+/*
 	int iVar1;
 	int iVar2;
 	int *piVar3;
@@ -160,7 +159,8 @@ int CarHasSiren(int index)
 	}
 	piVar3 = &MissionHeader->id + index;
 LAB_00052374:
-	return (uint)(piVar3[0x18] == 0) << 9;*/
+	return (uint)(piVar3[0x18] == 0) << 9;
+*/
 }
 
 
@@ -313,10 +313,10 @@ int MapCarIndexToBank(int index)
 {
 	static char car_banks[4][9]=
 	{
-		{ 0x4, 0xD, 0x5, 0x10, 0x9,  0x2,  0xF,  0xA,  0xA },
-		{ 0xB, 0x7, 0x6, 0x11, 0x11, 0x2,  0x5,  0x4,  0xE },
-		{ 0x3, 0x4, 0x6, 0xB,  0x9,  0x2,  0x11, 0xA,  0x8 },
-		{ 0x7, 0xD, 0x9, 0x2,  0x11, 0x11, 0xB,  0x10, 0x0 }
+		{12, 4, 13, 5, 16, 9, 2, 15, 10},
+		{10, 11, 7, 6, 17, 17, 2, 5, 4},
+		{14, 3, 4, 6, 11, 9, 2, 17, 10},
+		{8, 7, 13, 9, 2, 17, 17, 11, 16},
 	};
 
 	int iVar1;
@@ -324,7 +324,7 @@ int MapCarIndexToBank(int index)
 
 	iVar1 = MissionHeader->residentModels[index];
 
-	if ((gCurrentMissionNumber - 0x27U < 2) && (iVar1 == 0xd)) 
+	if ((gCurrentMissionNumber - 39 < 2) && (iVar1 == 0xd)) 
 	{
 		iVar2 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 		iVar1 = iVar2;
@@ -399,7 +399,7 @@ void LoadLevelSFX(int missionNum)
 	if (missionNum < 0)
 		index = missionNum + 3;
 
-	cop_bank = missionNum - (index >> 2) * 4 + 1;
+	cop_bank = missionNum - (index / 4) * 4 + 1;
 	cop_model = 3;
 	LoadSoundBankDynamic(NULL, 0, 0);
 	index = 0;
@@ -419,7 +419,7 @@ void LoadLevelSFX(int missionNum)
 	if ((GameLevel & 2U) == 0) 
 		uVar1 = GameLevel & 3;
 	else
-		uVar1 = (GameLevel & 1U) << 1;
+		uVar1 = (GameLevel & 1U) * 2;
 
 	LoadBankFromLump(2, uVar1 + 69);
 
@@ -435,12 +435,12 @@ void LoadLevelSFX(int missionNum)
 		if ((GameLevel & 2U) == 0) 
 		{
 			uVar1 = GameLevel & 3;
-			index = uVar1 << 2;
+			index = uVar1 * 4;
 		}
 		else 
 		{
-			uVar1 = (GameLevel & 1U) << 1;
-			index = (GameLevel & 1U) << 3;
+			uVar1 = (GameLevel & 1U) * 2;
+			index = (GameLevel & 1U) * 8;
 		}
 
 		LoadBankFromLump(2, index + uVar1 + 0x1d);
@@ -732,27 +732,30 @@ void StartGameSounds(void)
 		pPVar5 = player;
 		do {
 			bVar1 = car_data[pPVar5->playerCarId].ap.model;
-			index = (uint)bVar1;
-			if (bVar1 == 4) {
+			index = bVar1;
+
+			if (bVar1 == 4)
+			{
 				uVar2 = ResidentModelsBodge();
 			}
-			else {
+			else 
+			{
 				uVar2 = index;
-				if (2 < bVar1) {
+				if (2 < bVar1)
+				{
 					uVar2 = index - 1;
 				}
 			}
+
 			channel = 1;
 			if (iVar3 == 0) {
-				local_2c = 0x3fff;
+				local_2c = 16383;
 			}
 			else {
 				channel = 4;
-				local_2c = 0x81;
+				local_2c = 129;
 			}
-			Start3DSoundVolPitch
-			(channel, 3, uVar2 * 3 + 1, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1],
-				car_data[0].hd.where.t[2], -10000, local_2c);
+			Start3DSoundVolPitch(channel, 3, uVar2 * 3 + 1, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1], car_data[0].hd.where.t[2], -10000, local_2c);
 
 			if (bVar1 == 4) 
 			{
@@ -776,17 +779,18 @@ void StartGameSounds(void)
 				local_2c = 3;
 				pitch = 0x81;
 			}
-			Start3DSoundVolPitch
-			(local_2c, 3, channel, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1],
-				car_data[0].hd.where.t[2], -10000, pitch);
+			Start3DSoundVolPitch(local_2c, 3, channel, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1], car_data[0].hd.where.t[2], -10000, pitch);
 			index = CarHasSiren(index);
-			if (index != 0) {
+
+			if (index != 0) 
+			{
 				channel = 2;
-				if (iVar3 != 0) {
+				if (iVar3 != 0) 
 					channel = 5;
-				}
+
 				Start3DSoundVolPitch(channel, (index & 0xff00) >> 8, index & 0xff, car_data[0].hd.where.t[0], car_data[0].hd.where.t[1], car_data[0].hd.where.t[2], -10000, 129);
 			}
+
 			if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
 			{
 				channel = 0;
@@ -893,18 +897,18 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	if (iVar8 < 1) {
 		iVar9 = -iVar8;
 
-		if (0 < iVar8) 
-			iVar9 += 0x7ff;
+		//if (0 < iVar8) 
+		//	iVar9 += 0x7ff;
 
-		sVar7 = (iVar9 >> 0xb);
+		sVar7 = iVar9 / 2048;
 		uVar6 = 0;
-		iVar9 = uVar10 << 2;
+		iVar9 = uVar10 * 4;
 
 		cp->hd.gear = 0;
 	}
 	else 
 	{
-		iVar8 = iVar8 >> 0xb;
+		iVar8 = iVar8 / 2048;
 		sVar7 = iVar8;
 
 		if (false) 
@@ -1073,9 +1077,9 @@ void ControlCarRevs(_CAR_DATA *cp)
 				sVar4 = -5500;
 			}
 			if (spin == 0) 
-				sVar6 = -0x40;
+				sVar6 = -64;
 			else 
-				sVar6 = -0x100;
+				sVar6 = -256;
 
 			player[iVar2].idlevol += sVar6;
 
@@ -2665,7 +2669,7 @@ void SoundTasks(void)
 					volume = -10000;
 				}
 
-				SetChannelPosition3(channel, position, velocity, volume, (car_data[channel_00].hd.revs << 0x10) >> 0x12 + 0x1000, 0);
+				SetChannelPosition3(channel, position, velocity, volume, car_data[channel_00].hd.revs / 4 + 4096, 0);
 				channel = 0;
 
 				if (iVar3 != 0) {
@@ -2677,8 +2681,8 @@ void SoundTasks(void)
 				if (pPVar5->car_is_sounding < 2)
 					volume = pPVar5->revsvol;
 
-
-				SetChannelPosition3(channel, position, velocity, volume, ((car_data[channel_00].hd.revs << 0x10) >> 0x12) + ((pPVar5->revsvol << 0x10) >> 0x16) + 1500, 0);
+				
+				SetChannelPosition3(channel, position, velocity, volume, car_data[channel_00].hd.revs / 4 + pPVar5->revsvol / 64 + 1500, 0);
 
 				channel_00 = CarHasSiren(car_data[channel_00].ap.model);
 
@@ -2705,7 +2709,7 @@ void SoundTasks(void)
 			}
 			pPVar5 = pPVar5 + 1;
 			iVar3 = iVar3 + 1;
-		} while (iVar3 < (int)(uint)NumPlayers);
+		} while (iVar3 < NumPlayers);
 	}
 
 	if ((NumPlayers < 2) || (NoPlayerControl != 0))
