@@ -139,7 +139,8 @@ const char* getALErrorString(int err)
 	}
 }
 
-#define SPU_MEMSIZE (512 * 1024)	// FIXME: isn't it very little?
+#define SPU_REALMEMSIZE			(512 * 1024)
+#define SPU_MEMSIZE				(2048*1024)		// SPU_REALMEMSIZE
 #define SPU_VOICES 24
 
 struct SPUMemory
@@ -323,12 +324,20 @@ int decodeSound(unsigned char* iData, short* oData, int soundSize, int* loopStar
 	return soundSize;
 }
 
+#include <assert.h>
+
 unsigned long SpuWrite(unsigned char* addr, unsigned long size)
 {
-	if (0x7EFF0 < size)
+	//if (0x7EFF0 < size)
+	//	size = 0x7EFF0;
+
+	int wptr_ofs = s_SpuMemory.writeptr - s_SpuMemory.samplemem;
+
+	if (wptr_ofs+size > SPU_REALMEMSIZE)
 	{
-		size = 0x7EFF0;
+		eprintf("LIBSPU WARNING: SpuWrite exceeded SPU_REALMEMSIZE (%d > 512k)!\n", wptr_ofs+size);
 	}
+	assert(size > 0 && wptr_ofs+size < SPU_MEMSIZE);
 
 	// simply copy to the writeptr
 	memcpy(s_SpuMemory.writeptr, addr, size);
