@@ -297,10 +297,19 @@ int decodeSound(unsigned char* iData, short* oData, int soundSize, int* loopStar
 				(*loopStart) = k;
 
 			if ((iData[i + 1] & 0x0F) == 3)
+			{
 				(*loopLength) = (k + 28) - (*loopStart);
+				if (breakOnEnd)
+					return k;
+			}
 
 			if ((iData[i + 1] & 0x0F) == 7)
+			{
 				(*loopLength) = (k + 28) - (*loopStart);
+				if (breakOnEnd)
+					return k;
+			}
+
 
 			i += 2;
 		}
@@ -495,13 +504,6 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			ALuint alSource  = voice.alSource;
 			ALuint alBuffer = voice.alBuffer;
 
-			/*
-			alGenSources(1, &alSource);
-			alGenBuffers(1, &alBuffer);
-
-			alDeleteSources(1, &voice.alSource);
-			alDeleteBuffers(1, &voice.alBuffer);
-			*/
 			alSourcei(alSource, AL_BUFFER, 0);
 
 			if (arg->mask & SPU_VOICE_WDSA)
@@ -537,9 +539,6 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 			// set the buffer
 			alSourcei(alSource, AL_BUFFER, alBuffer);
-
-			//voice.alSource = alSource;
-			//voice.alBuffer = alBuffer;
 		}
 
 		// update volume
@@ -719,7 +718,11 @@ void SpuSetVoiceVolume(int vNum, short volL, short volR)
 
 void SpuSetVoicePitch(int vNum, unsigned short pitch)
 {
-	UNIMPLEMENTED();
+	SpuVoiceAttr attr;
+	attr.mask = SPU_VOICE_PITCH;
+	attr.voice = SPU_VOICECH(vNum);
+	attr.pitch = pitch;
+	SpuSetVoiceAttr(&attr);
 }
 
 void SpuSetVoiceAR(int vNum, unsigned short AR)
