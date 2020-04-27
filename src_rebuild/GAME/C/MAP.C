@@ -804,10 +804,12 @@ LAB_0005c9dc:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern OUT_CELL_FILE_HEADER cell_header;
 
 // [D]
 void ControlMap(void)
 {
+#ifdef PSX
 	int region_to_unpack;
 
 	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / 2048;
@@ -835,6 +837,35 @@ void ControlMap(void)
 
 	current_cell_x = (camera_position.vx + units_across_halved) / 2048;
 	current_cell_z = (camera_position.vz + units_down_halved) / 2048;
+#else
+	int region_to_unpack;
+
+	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / cell_header.cell_size;
+	current_cell_z = (player[0].spoolXZ->vz + units_down_halved) / cell_header.cell_size;
+
+	region_x = current_cell_x / cell_header.region_size;
+	region_z = current_cell_z / cell_header.region_size;
+
+	old_region = current_region;
+	region_to_unpack = cells_across;
+
+	current_barrel_region_xcell = current_cell_x - region_x * cell_header.region_size;
+	current_barrel_region_zcell = current_cell_z - region_z * cell_header.region_size;
+
+	region_to_unpack = region_x + region_z * (region_to_unpack / cell_header.region_size);
+
+	if (current_region == -1)
+		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
+
+	current_region = region_to_unpack;
+	CheckUnpackNewRegions();
+
+	if (old_region == current_region || old_region == -1)
+		CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
+
+	current_cell_x = (camera_position.vx + units_across_halved) / cell_header.cell_size;
+	current_cell_z = (camera_position.vz + units_down_halved) / cell_header.cell_size;
+#endif
 
 	StartSpooling();
 }

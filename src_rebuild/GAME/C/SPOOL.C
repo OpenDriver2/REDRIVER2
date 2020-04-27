@@ -1242,7 +1242,7 @@ void SendTPage(void)
 		}
 	}
 
-	//Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
@@ -1986,17 +1986,25 @@ int LoadRegionData(int region, int target_region)
 
 	spool_regioninfo[spool_regioncounter].nsectors = offset - spoolptr->offset;
 #else
-	RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
-	offset += spoolptr->cell_data_size[1];
+	extern bool gDriver1Level;
+	if (gDriver1Level)
+	{
 
-	RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
-	offset += spoolptr->cell_data_size[0];
+	}
+	else
+	{
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		offset += spoolptr->cell_data_size[1];
 
-	RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
-	offset += spoolptr->cell_data_size[2];
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[0];
 
-	RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region] - 4, GotRegion);
-	offset += spoolptr->roadm_size;
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[2];
+
+		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region] - 4, GotRegion);
+		offset += spoolptr->roadm_size;
+	}
 
 	spool_regioninfo[spool_regioncounter].nsectors = offset - spoolptr->offset;
 #endif
@@ -2121,8 +2129,6 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		cell_objects_add[i] = cell_objects_add[4];
 		cell_slots_add[i] = cell_slots_add[4];
 		PVS_Buffers[i] = mallocptr + 4;
-
-		printf("PVS_Buffers[%d] = %x\n", i, PVS_Buffers[i]);
 
 		cell_slots_add[4] += *piVar4;
 		cell_objects_add[4] += piVar4[4];

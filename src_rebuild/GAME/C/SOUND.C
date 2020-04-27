@@ -1565,6 +1565,9 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	int iVar4;
 	int iVar5;
 	int iVar6;
+	int num_samples;
+
+	num_samples = 0;
 
 	if (address == NULL) 
 	{
@@ -1616,11 +1619,11 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 		}
 
 		piVar2 = lsbTabs.count + dbank;
-		iVar5 = *(int *)address;
+		num_samples = *(int *)address;
 
-		memcpy(&samples[dbank][*piVar2], address + 4, iVar5 * sizeof(SAMPLE_DATA));
+		memcpy(&samples[dbank][*piVar2], address + 4, num_samples * sizeof(SAMPLE_DATA));
 
-		iVar6 = iVar5 * sizeof(SAMPLE_DATA) + 4;
+		iVar6 = num_samples * sizeof(SAMPLE_DATA) + 4;
 		length = length - iVar6;
 
 		SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
@@ -1630,9 +1633,9 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 
 		SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
 
-		iVar6 = iVar5;
+		iVar6 = num_samples;
 
-		if (0 < iVar5) {
+		if (0 < num_samples) {
 			do {
 				
 				iVar4 = *piVar2;
@@ -1644,9 +1647,10 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 				iVar6--;
 			} while (iVar6 != 0);
 		}
-		lsbTabs.addr = lsbTabs.addr + length;
+		lsbTabs.addr += length;
 	}
-	return iVar5;
+
+	return num_samples;
 }
 
 
