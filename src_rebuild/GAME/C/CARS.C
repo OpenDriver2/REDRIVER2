@@ -2179,7 +2179,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						switch ((uint)bVar1 & 0x1f) 
 						{
 							case 0:
-							case 0x12:
+							case 18:
 								if (pass == 2)	// F3
 								{
 									bVar2 = pbVar9[1];
@@ -2191,7 +2191,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 								}
 								break;
 							case 1:
-							case 0x13:
+							case 19:
 								if (pass == 2)	// F4
 								{
 									bVar2 = pbVar9[4];
@@ -2207,7 +2207,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									carPolyBuffer[iVar11 + 1].vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
 								}
 								break;
-							case 0x14:
+							case 20:
 								if (pass == 1)	// FT3
 								{
 									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
@@ -2223,7 +2223,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									pCVar10->uv3_uv2 = uVar7;
 								}
 								break;
-							case 0x15:
+							case 21:
 								if (pass == 1)	// FT4
 								{
 									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] << 8) << 8;
@@ -2245,7 +2245,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									goto LAB_00022fd4;
 								}
 								break;
-							case 0x16:
+							case 22:
 								if (pass == 0) // GT3
 								{
 									iVar12 = iVar11 + 1;
@@ -2263,7 +2263,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									goto LAB_00022fd8;
 								}
 								break;
-							case 0x17:
+							case 23:
 								if (pass == 0)  // GT4
 								{
 									iVar12 = iVar11 + 2;

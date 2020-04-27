@@ -186,6 +186,8 @@ unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 	/* end block 2 */
 	// End Line: 5345
 
+bool gDriver1Level = false;
+
 void ProcessLumps(char *lump_ptr, int lump_size)
 {
 	int quit;
@@ -195,6 +197,9 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 	ulong *puVar9;
 	int size;
 	int *ptr;
+
+	int numLumps = -1;
+	gDriver1Level = false;
 
 	quit = false;
 	do {
@@ -224,7 +229,6 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			ProcessOverlayLump((char *)ptr, size);
 			gLoadedOverlay = 1;
 		}
-		
 		else if (lump_type == LUMP_MAP)
 		{
 			map_lump = (char *)ptr;
@@ -309,7 +313,6 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			printf("LUMP_JUNCTIONS: size: %d\n", size);
 			ProcessJunctionsLump((char *)ptr, size);
 		}
-		
 		else if (lump_type == LUMP_CAR_MODELS)
 		{
 			printf("LUMP_CAR_MODELS: size: %d\n", size);
@@ -333,7 +336,7 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			printf("LUMP_ROADS: size: %d\n", size);
 			ProcessRoadsLump((char *)ptr, size);
 		}
-		if (lump_type == LUMP_ROADBOUNDS)
+		else if (lump_type == LUMP_ROADBOUNDS)
 		{
 			printf("LUMP_ROADBOUNDS: size: %d\n", size);
 			ProcessRoadBoundsLump((char *)ptr, size);
@@ -361,14 +364,23 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 		{
 			quit = true;
 		}
+		else
+		{
+			printf("ERROR - unknown lump type %d... assuming it's Driver 1 level\n", lump_type);
+			gDriver1Level = true;
+			numLumps = lump_type;
+
+			lump_ptr += 4;
+			continue;
+		}
 
 		lump_size = size + 3;
 		lump_ptr = (char*)ptr + (lump_size & ~0x3); // aligned to 4-byte boundary
 
 		if (quit) 
 			return;
-
-	} while (true);
+		numLumps--;
+	} while (numLumps != 0);
 }
 
 
@@ -701,9 +713,6 @@ int xa_timeout = 0;
 int ThisMotion = 0;
 int IconsLoaded = 0;
 
-// TODO: AI.C?
-SPEECH_QUEUE gSpeechQueue;
-
 // OVERLAY
 int gLoadedOverlay = 0;
 
@@ -716,6 +725,8 @@ int wetness = 0;
 
 extern char* mallocptr_start; // SYSTEM.C
 extern char* mallocDebugMark;
+
+extern SPEECH_QUEUE gSpeechQueue;
 
 // [D]
 void GameInit(void)
@@ -861,7 +872,7 @@ void GameInit(void)
 	int_garage_door();
 	SpoolSYNC();
 
-	Emulator_SaveVRAM("VRAM_AFTER_LOAD.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+	//Emulator_SaveVRAM("VRAM_AFTER_LOAD.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 
 	InitialiseCarHandling();
 	ClearMem((char *)&player, 0x3a0);
@@ -939,7 +950,7 @@ void GameInit(void)
 	FrAng = 0x200;
 
 	if (gWeather == 1) 
-		wetness = 0x1b58;
+		wetness = 7000;
 	else 
 		wetness = 0;
 
@@ -1748,8 +1759,6 @@ void GameLoop(void)
 	}
 }
 
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ StepGame()
@@ -2173,7 +2182,9 @@ void DrawGame(void)
 
 		ObjectDrawnCounter++;
 
-		while ((VSync(-1) - frame) < 2);
+		VSync(0);
+		VSync(0);
+		//while ((VSync(-1) - frame) < 2);
 
 		frame = VSync(-1);
 		SwapDrawBuffers();

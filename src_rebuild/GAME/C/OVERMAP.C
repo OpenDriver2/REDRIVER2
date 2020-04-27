@@ -2038,6 +2038,10 @@ unsigned short civ_clut[8][32][6];
 // [D]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
+	extern bool gDriver1Level;
+	if (gDriver1Level)
+		return;
+
 	char cVar1;
 	ushort uVar2;
 	int *local_s0_96;
