@@ -1593,7 +1593,7 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 		if (2 < iVar5) 
 		{
 			setPolyFT4(local_t0_688);
-			addPrim(current->ot + (iVar5 >> 1), local_t0_688);
+			addPrim(current->ot + (iVar5 >> 1) + 5, local_t0_688);
 
 			if (((int)uVar7 < 2) || (iVar3 < 0))
 			{
