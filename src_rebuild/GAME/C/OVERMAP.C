@@ -2,33 +2,38 @@
 #include "OVERMAP.H"
 #include "TEXTURE.H"
 #include "CARS.H"
+#include "SYSTEM.H"
+#include "MISSION.H"
+#include "MDRAW.H"
+
+#include "STRINGS.H"
 
 OVERMAP overlaidmaps[4] =
 {
-  { 197, 318, 384, 672, '\xFC', '\x99', 2145 },
-  { 229, 85, 544, 352, '\xBB', '\x88', 2048 },
-  { 68, 457, 288, 672, '\xBD', '\xBB', 1911 },
-  { 159, 207, 416, 576, '\xFC', 'D', 2048 }
+	{ 197, 318, 384, 672, 252, 153, 2145 },
+	{ 229, 85, 544, 352, 187, 136, 2048 },
+	{ 68, 457, 288, 672, 189, 187, 1911 },
+	{ 159, 207, 416, 576, 252, 68, 2048 }
 };
 
 SXYPAIR MapSegmentPos[16] =
 {
-  { 0, 0 },
-  { 8, 0 },
-  { 16, 0 },
-  { 24, 0 },
-  { 0, 32 },
-  { 8, 32 },
-  { 16, 32 },
-  { 24, 32 },
-  { 0, 64 },
-  { 8, 64 },
-  { 16, 64 },
-  { 24, 64 },
-  { 0, 96 },
-  { 8, 96 },
-  { 16, 96 },
-  { 24, 96 }
+	{ 0, 0 },
+	{ 8, 0 },
+	{ 16, 0 },
+	{ 24, 0 },
+	{ 0, 32 },
+	{ 8, 32 },
+	{ 16, 32 },
+	{ 24, 32 },
+	{ 0, 64 },
+	{ 8, 64 },
+	{ 16, 64 },
+	{ 24, 64 },
+	{ 0, 96 },
+	{ 8, 96 },
+	{ 16, 96 },
+	{ 24, 96 }
 };
 
 XYPAIR NVertex[4] = { { -2, 3 }, { -2, -3 }, { 2, 3 }, { 2, -3 } };
@@ -47,6 +52,24 @@ char* palettedir[] = {
 	"VEGAS",
 	"RIO",
 };
+
+char* MapBitMaps;
+static char MapBuffer[520];
+static unsigned short MapClut;
+static RECT16 MapRect;
+
+static int tilehnum = 0;
+static char maptile[4][4];
+static int old_x_mod = 0;
+static int old_y_mod = 0;
+
+static int x_map = 0;
+static int y_map = 0;
+
+static int map_x_offset = 0;
+static int map_z_offset = 0;
+static unsigned short MapTPage = 0;
+
 
 // decompiled code
 // original method signature: 
@@ -420,36 +443,40 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 	/* end block 2 */
 	// End Line: 1983
 
+// [D]
 void ProcessOverlayLump(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 	SXYPAIR *pSVar2;
 	TEXTURE_DETAILS local_20;
 
-	GetTextureDetails(s_OVERHEAD_000103f4, &local_20);
+	GetTextureDetails("OVERHEAD", &local_20);
+
 	MapTPage = local_20.tpageid;
-	MapClut = GetClut((int)mapclutpos.x, (int)mapclutpos.y);
+	MapClut = GetClut(mapclutpos.x, mapclutpos.y);
+
 	uVar1 = 0;
-	pSVar2 = &MapSegmentPos;
+	pSVar2 = MapSegmentPos;
+
 	MapRect.w = 0x40;
 	MapRect.h = 0x100;
-	MapRect.x = (short)(((uint)MapTPage & 0xf) << 6);
-	MapRect.y = (short)(((uint)MapTPage & 0x10) << 4);
+	MapRect.x = (MapTPage & 0xf) << 6;
+	MapRect.y = (MapTPage & 0x10) << 4;
+
 	do {
-		pSVar2->x = (short)((int)((uVar1 & 3) * 0x20 + (uint)local_20.coords.u0) >> 2);
-		pSVar2->y = (ushort)local_20.coords.v0 + (short)((int)uVar1 >> 2) * 0x20;
-		uVar1 = uVar1 + 1;
-		pSVar2 = pSVar2 + 1;
-	} while ((int)uVar1 < 0x10);
+		pSVar2->x = (((uVar1 & 3) * 32 + local_20.coords.u0) >> 2);
+		pSVar2->y = local_20.coords.v0 + (uVar1 >> 2) * 32;
+
+		uVar1++;
+		pSVar2++;
+	} while (uVar1 < 16);
+
 	MapBitMaps = mallocptr;
 	memcpy(mallocptr, lump_ptr, lump_size);
 	mallocptr = mallocptr + lump_size;
-	LoadImage(&mapclutpos, MapBitMaps + 0x200);
+
+	LoadImage(&mapclutpos, (u_long *)(MapBitMaps + 0x200));
 	DrawSync(0);
-	return;
-	*/
 }
 
 
@@ -583,10 +610,9 @@ ulong Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitOverheadMap(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char *pcVar1;
 	int iVar2;
 	int iVar3;
@@ -595,36 +621,45 @@ void InitOverheadMap(void)
 	int iVar5;
 
 	iVar4 = 0;
-	if (gMultiplayerLevels == 0) {
+
+	if (gMultiplayerLevels == 0) 
+	{
 		SetMapPos();
 		tilehnum = overlaidmaps[GameLevel].width;
-		if (tilehnum < 0) {
+
+		if (tilehnum < 0) 
 			tilehnum = tilehnum + 0x1f;
-		}
+
 		tilehnum = tilehnum >> 5;
+
 		iVar3 = 0;
 		do {
 			iVar2 = 0;
 			iVar5 = iVar3 + 1;
-			pcVar1 = &maptile + iVar3;
+			pcVar1 = maptile[iVar3];
 			tpage = iVar4;
+
 			do {
 				*pcVar1 = (char)tpage;
 				iVar4 = tpage + 1;
 				pcVar1 = pcVar1 + 4;
+
 				LoadMapTile(tpage, (x_map >> 5) + iVar2, (y_map >> 5) + iVar3);
+
 				iVar2 = iVar2 + 1;
 				tpage = iVar4;
 			} while (iVar2 < 4);
 			iVar3 = iVar5;
+
 		} while (iVar5 < 4);
+
 		old_x_mod = x_map & 0x1f;
 		old_y_mod = y_map & 0x1f;
 	}
-	else {
+	else 
+	{
 		InitMultiplayerMap();
 	}
-	return;*/
 }
 
 
@@ -758,6 +793,12 @@ void InitOverheadMap(void)
 
 void DrawOverheadMap(void)
 {
+	if (gMultiplayerLevels != 0)
+	{
+		DrawMultiplayerMap();
+		return;
+	}
+
 	UNIMPLEMENTED();
 	/*
 	    byte bVar1;
@@ -1734,32 +1775,27 @@ void DrawCopIndicators(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitMultiplayerMap(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	short local_30;
-	short local_2e;
-	undefined2 local_2c;
-	undefined2 local_2a;
-	char acStack40[32];
+	RECT16 rect;
+	char filename[32];
 
-	if (MissionHeader->region != 0) {
-		sprintf(acStack40, s_MAPS_REG_d__d_00010428, MissionHeader->region, GameLevel);
-		iVar1 = FileExists(acStack40);
-		if (iVar1 != 0) {
-			Loadfile(acStack40, MapBitMaps);
-			local_2c = 0x10;
-			local_2a = 0x40;
-			local_30 = MapRect.x + MapSegmentPos.x;
-			local_2e = MapRect.y + MapSegmentPos.y;
-			LoadImage(&local_30, MapBitMaps);
+	if (MissionHeader->region != 0)
+	{
+		sprintf(filename, "MAPS\\REG%d.%d", MissionHeader->region, GameLevel);
+
+		if (FileExists(filename) != 0)
+		{
+			Loadfile(filename, MapBitMaps);
+			rect.w = 0x10;
+			rect.h = 0x40;
+			rect.x = MapRect.x + MapSegmentPos[0].x;
+			rect.y = MapRect.y + MapSegmentPos[0].y;
+			LoadImage(&rect, (u_long *)MapBitMaps);
 			DrawSync(0);
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -1803,128 +1839,133 @@ void InitMultiplayerMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawMultiplayerMap(void)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
+	short uVar1;
 	ushort uVar2;
 	DB *pDVar3;
-	char cVar4;
-	ulong *puVar5;
-	uint *puVar6;
-	char *pcVar7;
-	_PLAYER *p_Var8;
+	ulong *puVar4;
+	POLY_FT4 *poly;
+	char *pcVar5;
+	_PLAYER *pPVar6;
+	int iVar7;
+	char *pcVar8;
+	unsigned char g;
+	unsigned char r;
 	int iVar9;
-	char *pcVar10;
-	uchar g;
-	uchar r;
-	int iVar11;
-	undefined2 uVar12;
-	int iVar13;
+	short sVar10;
+	int yPos;
 	VECTOR local_40;
 	int local_30;
 	int local_2c;
 
 	map_x_offset = 0;
 	map_z_offset = 0;
-	iVar13 = 0x60;
-	if (NumPlayers == 1) {
-		iVar13 = 0xac;
-	}
-	if (MissionHeader->region != 0) {
-		iVar9 = 0;
+	yPos = 96;
+
+	if (NumPlayers == 1)
+		yPos = 172;
+
+	if (MissionHeader->region != 0) 
+	{
+		iVar7 = 0;
 		DrawMultiplayerTargets();
-		local_2c = iVar13 + 0x40;
-		local_30 = iVar13 + -1;
-		if (NumPlayers != 0) {
-			p_Var8 = &player;
-			iVar11 = 0;
+
+		local_2c = yPos + 64;
+		local_30 = yPos - 1;
+
+		if (NumPlayers != 0) 
+		{
+			pPVar6 = player;
 			r = -1;
-			g = '\0';
+			g = 0;
 			do {
-				local_40.vx = p_Var8->pos[0];
-				local_40.vz = *(int *)((int)player.pos + iVar11 + 8);
-				iVar9 = iVar9 + 1;
+				local_40.vx = pPVar6->pos[0];
+				local_40.vz = pPVar6->pos[2];
+				iVar7 ++;
 				local_40.vy = 0;
+
 				WorldToMultiplayerMap(&local_40, &local_40);
+
 				local_40.vx = local_40.vx + 0xf0;
-				local_40.vz = local_40.vz + iVar13;
-				DrawPlayerDot(&local_40, -*(short *)&p_Var8->dir, r, g, 0, 8);
-				p_Var8 = p_Var8 + 1;
-				iVar11 = iVar11 + 0x74;
-				r = r + '\x01';
-				g = g + -1;
-			} while (iVar9 < (int)(uint)NumPlayers);
+				local_40.vz = local_40.vz + yPos;
+
+				DrawPlayerDot(&local_40, -*(short *)&pPVar6->dir, r, g, 0, 8);
+
+				pPVar6++;
+				r++;
+				g--;
+			} while (iVar7 < (int)(uint)NumPlayers);
 		}
-		puVar6 = (uint *)current->primptr;
-		*(char *)((int)puVar6 + 3) = '\t';
-		*(char *)((int)puVar6 + 7) = ',';
-		*(undefined2 *)(puVar6 + 2) = 0xf0;
-		uVar12 = (undefined2)iVar13;
-		*(undefined2 *)((int)puVar6 + 10) = uVar12;
-		*(undefined2 *)(puVar6 + 4) = 0x130;
-		*(undefined2 *)((int)puVar6 + 0x12) = uVar12;
-		*(undefined2 *)(puVar6 + 6) = 0xf0;
-		*(undefined2 *)(puVar6 + 8) = 0x130;
-		*(undefined2 *)((int)puVar6 + 0x1a) = (short)local_2c;
-		*(undefined2 *)((int)puVar6 + 0x22) = (short)local_2c;
-		*(char *)(puVar6 + 3) = (char)MapSegmentPos.x << 2;
-		*(char *)((int)puVar6 + 0xd) = (char)MapSegmentPos.y;
-		*(char *)(puVar6 + 5) = (char)MapSegmentPos.x * '\x04' + '?';
-		*(char *)((int)puVar6 + 0x15) = (char)MapSegmentPos.y;
-		*(char *)(puVar6 + 7) = (char)MapSegmentPos.x << 2;
-		*(char *)((int)puVar6 + 0x1d) = (char)MapSegmentPos.y + '?';
-		*(char *)(puVar6 + 9) = (char)MapSegmentPos.x * '\x04' + '?';
-		*(char *)((int)puVar6 + 0x25) = (char)MapSegmentPos.y + '?';
-		uVar2 = MapClut;
-		uVar1 = MapTPage;
-		*(char *)((int)puVar6 + 7) = '.';
-		*(ushort *)((int)puVar6 + 0xe) = uVar2;
-		*(ushort *)((int)puVar6 + 0x16) = uVar1;
-		cVar4 = 'd';
-		if (gTimeOfDay == 3) {
-			cVar4 = '2';
-		}
-		*(char *)(puVar6 + 1) = cVar4;
-		*(char *)((int)puVar6 + 5) = cVar4;
-		*(char *)((int)puVar6 + 6) = cVar4;
-		pDVar3 = current;
-		*puVar6 = *puVar6 & 0xff000000 | *current->ot & 0xffffff;
-		*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)puVar6 & 0xffffff;
-		pcVar10 = pDVar3->primptr;
-		pcVar7 = pcVar10 + 0x28;
-		pDVar3->primptr = pcVar7;
-		SetLineF4(pcVar7);
-		*(undefined2 *)(pcVar10 + 0x30) = 0xef;
-		pcVar10[0x2c] = '\0';
-		pcVar10[0x2d] = '\0';
-		pcVar10[0x2e] = -0x80;
-		pDVar3 = current;
-		*(short *)(pcVar10 + 0x32) = (short)local_30;
-		*(undefined2 *)(pcVar10 + 0x34) = 0x130;
-		*(undefined2 *)(pcVar10 + 0x38) = 0x130;
-		*(short *)(pcVar10 + 0x36) = (short)local_30;
-		*(undefined2 *)(pcVar10 + 0x3c) = 0xf0;
-		*(short *)(pcVar10 + 0x3a) = (short)local_2c;
-		*(short *)(pcVar10 + 0x3e) = (short)local_2c;
-		*(uint *)(pcVar10 + 0x28) = *(uint *)(pcVar10 + 0x28) & 0xff000000 | pDVar3->ot[1] & 0xffffff;
-		puVar5 = pDVar3->ot;
-		puVar5[1] = puVar5[1] & 0xff000000 | (uint)pcVar7 & 0xffffff;
-		SetLineF2(pcVar10 + 0x44);
-		pcVar10[0x48] = '\0';
-		pcVar10[0x49] = '\0';
-		pcVar10[0x4a] = -0x80;
-		pDVar3 = current;
-		*(undefined2 *)(pcVar10 + 0x4c) = 0xef;
-		*(undefined2 *)(pcVar10 + 0x4e) = uVar12;
-		*(undefined2 *)(pcVar10 + 0x50) = 0xef;
-		*(short *)(pcVar10 + 0x52) = (short)local_2c;
-		*(uint *)(pcVar10 + 0x44) = *(uint *)(pcVar10 + 0x44) & 0xff000000 | pDVar3->ot[1] & 0xffffff;
-		pDVar3->ot[1] = pDVar3->ot[1] & 0xff000000 | (uint)(pcVar10 + 0x44) & 0xffffff;
-		pDVar3->primptr = pDVar3->primptr + 0x2c;
+
+		poly = (POLY_FT4 *)current->primptr;
+		setPolyFT4(poly);
+		setSemiTrans(poly, 1);
+		poly->x0 = 0xf0;
+		poly->y0 = yPos;
+		poly->x1 = 0x130;
+		poly->y1 = yPos;
+		poly->x2 = 0xf0;
+		poly->x3 = 0x130;
+		poly->y2 = local_2c;
+		poly->y3 = local_2c;
+		poly->u0 = MapSegmentPos[0].x << 2;
+		poly->v0 = MapSegmentPos[0].y;
+		poly->u1 = MapSegmentPos[0].x * '\x04' + '?';
+		poly->v1 = MapSegmentPos[0].y;
+		poly->u2 = MapSegmentPos[0].x << 2;
+		poly->v2 = MapSegmentPos[0].y + '?';
+		poly->u3 = MapSegmentPos[0].x * '\x04' + '?';
+		poly->v3 = MapSegmentPos[0].y + '?';
+		poly->clut = MapClut;
+		poly->tpage = MapTPage;
+
+		r = 100;
+		if (gTimeOfDay == 3) 
+			r = 50;
+
+		poly->r0 = r;
+		poly->g0 = r;
+		poly->b0 = r;
+
+		addPrim(current->ot, poly);
+		current->primptr += sizeof(POLY_FT4);
+
+		LINE_F4* linef4 = (LINE_F4*)current->primptr;
+		setLineF4(linef4);
+		
+		linef4->r0 = 0;
+		linef4->g0 = 0;
+		linef4->b0 = 0x80;
+
+		linef4->x0 = 239;
+		linef4->y0 = yPos - 1;
+		linef4->x1 = 304;
+		linef4->x2 = 304;
+		linef4->y1 = yPos - 1;
+		linef4->x3 = 240;
+		linef4->y2 = yPos + 64;
+		linef4->y3 = yPos + 64;
+
+		addPrim(current->ot+1, linef4);
+		current->primptr += sizeof(LINE_F4);
+
+		LINE_F2* linef2 = (LINE_F2*)current->primptr;
+		setLineF2(linef2);
+
+		linef2->r0 = 0;
+		linef2->g0 = 0;
+		linef2->b0 = 0x80;
+
+		linef2->x0 = 239;
+		linef2->y0 = yPos;
+		linef2->x1 = 239;
+		linef2->y1 = yPos + 64;
+
+		addPrim(current->ot + 1, linef2);
+		current->primptr += sizeof(LINE_F2);
 	}
-	return;*/
 }
 
 
