@@ -1904,23 +1904,22 @@ void CheckLoadAreaData(int cellx, int cellz)
 // [D]
 void ClearRegion(int target_region)
 {
-	//long *pvsptr;S
+	long *pvsptr;
 	ushort *cell_ptrs_s;
 	int loop;
 
 	loop = 1024;
 	cell_ptrs_s = cell_ptrs + target_region * 1024;
-	//pvsptr = (long *)PVS_Buffers[target_region];
+	pvsptr = (long *)PVS_Buffers[target_region];
 
 	do {
 		*cell_ptrs_s++ = 0xffff;
-		//*pvsptr++ = 0;
-	} while (loop-- != 0);
+		*pvsptr++ = 0;
+	} while (--loop != 0);
 
 	ClearMem(PVS_Buffers[target_region]-4, pvsSize[target_region]);
-	*(char **)(RoadMapDataRegions + target_region) = PVS_Buffers[0];
+	RoadMapDataRegions[target_region] = (short*)PVS_Buffers[0];
 }
-
 
 
 // decompiled code
