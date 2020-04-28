@@ -609,6 +609,7 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int ghost_mode = 0;
 int playerghost = 0;
 int playerhitcopsanyway = 0;
 

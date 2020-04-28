@@ -19179,11 +19179,11 @@ struct MODEL // hashcode: 0x3A42A4FE (dec: 977446142)
 	unsigned short num_point_normals; // size=0, offset=10
 	unsigned short num_vertices; // size=0, offset=12
 	unsigned short num_polys; // size=0, offset=14
-	int vertices; // size=0, offset=16
-	int poly_block; // size=0, offset=20
-	int normals; // size=0, offset=24
-	int point_normals; // size=0, offset=28
-	int collision_block; // size=0, offset=32
+	int vertices; // size=0, offset=16				SVECTOR list
+	int poly_block; // size=0, offset=20			POLY* list
+	int normals; // size=0, offset=24				SVECTOR list
+	int point_normals; // size=0, offset=28			SVECTOR list
+	int collision_block; // size=0, offset=32		COLLISION_PACKET list
 };
 
 typedef enum PAUSEMODE // Hashcode: 0x086AB147 (dec: 141209927)

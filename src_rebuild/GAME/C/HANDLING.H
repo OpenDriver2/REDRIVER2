@@ -1,6 +1,9 @@
 #ifndef HANDLING_H
 #define HANDLING_H
 
+extern int ghost_mode;
+extern int playerghost;
+extern int playerhitcopsanyway;
 
 extern void InitCarPhysics(_CAR_DATA *cp, long (*startpos)[4], int direction); // 0x0005381C
 

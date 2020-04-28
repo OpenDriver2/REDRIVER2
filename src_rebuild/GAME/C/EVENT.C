@@ -345,6 +345,9 @@ Helicopter HelicopterData =
 
 EventGlobal events;
 
+CELL_OBJECT *EventCop;
+int event_models_active = 0;
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ GetVisValue(int index /*$t1*/, int zDir /*$a1*/)

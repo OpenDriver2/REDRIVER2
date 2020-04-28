@@ -699,10 +699,6 @@ void InitModelNames(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// TODO: SPOOL?
-PACKED_CELL_OBJECT** pcoplist;
-CELL_OBJECT** coplist;
-
 ulong* transparent_buffer;
 
 // system?

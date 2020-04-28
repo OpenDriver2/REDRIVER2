@@ -22,6 +22,9 @@ int old_region = 0;
 int current_cell_x = 0;
 int current_cell_z = 0;
 
+PACKED_CELL_OBJECT** pcoplist;
+CELL_OBJECT** coplist;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ NewProcessRoadMapLump(struct ROAD_MAP_LUMP_DATA *pRoadMapLumpData /*$s0*/, char *pLumpFile /*$s1*/)

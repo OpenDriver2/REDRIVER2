@@ -2,6 +2,17 @@
 #include "OBJCOLL.H"
 #include "CARS.H"
 #include "CAMERA.H"
+#include "BCOLLIDE.H"
+#include "BCOLL3D.H"
+#include "EVENT.H"
+#include "MAP.H"
+#include "DRAW.H"
+#include "HANDLING.H"
+#include "MODELS.H"
+#include "MISSION.H"
+#include "PEDEST.H"
+#include "MAIN.H"
+
 
 // decompiled code
 // original method signature: 
@@ -651,12 +662,11 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 // [D]
 void SetCopListCell(int x, int z)
 {
-	XZPAIR local_10;
+	XZPAIR cell;
 
-	local_10.x = x;
-	local_10.z = z;
-	CollisionCopList(&local_10, (int *)0x0);
-	return;
+	cell.x = x;
+	cell.z = z;
+	CollisionCopList(&cell, NULL);
 }
 
 
@@ -679,10 +689,7 @@ void SetCopListCell(int x, int z)
 void BuildCollisionCopList(int *count)
 {
 	CollisionCopList((XZPAIR *)0x0, count);
-	return;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -838,176 +845,202 @@ void CollisionCopList(XZPAIR *pos, int *count)
 	/* end block 3 */
 	// End Line: 1377
 
+int boxOverlap = 0;
+ushort gLastModelCollisionCheck;
+int ExBoxDamage = 0;
+
+// [D]
 void CheckScenaryCollisions(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	int iVar2;
+	long lVar1;
+	long lVar2;
 	int iVar3;
-	uint uVar4;
+	MODEL *pMVar4;
 	int iVar5;
-	int *piVar6;
+	int iVar6;
 	int iVar7;
 	int iVar8;
-	int *piVar9;
+	uint uVar9;
+	int iVar10;
+	int *piVar11;
+	int iVar12;
+	int iVar13;
+	COLLISION_PACKET *piVar14;
 	CELL_OBJECT *cop;
-	BUILDING_BOX local_88;
-	long local_68;
-	long local_64;
-	int local_60;
-	int local_58;
-	int local_50;
-	MODEL *local_4c;
-	int local_48;
-	int local_44;
-	int local_40;
-	int local_3c;
-	int local_38;
-	int local_30;
+	VECTOR player_pos;
+	BUILDING_BOX bbox;
+	XZPAIR box;
+	VECTOR offset;
+	int mdcount;
+	MODEL *model;
+	int num_cb;
+	int x1;
+	int lbody;
+	int extraDist;
 
-	if ((cp->controlType == '\x05') && ((cp->ap).carCos == (CAR_COSMETICS *)0x0)) {
-		local_40 = 0x168;
-	}
-	else {
-		local_40 = (int)(((cp->ap).carCos)->colBox).vz;
-	}
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
+	if (cp->controlType == 5 && cp->ap.carCos == NULL) 
+		lbody = 360;
+	else 
+		lbody = cp->ap.carCos->colBox.vz;
+
+	if (cp < car_data) 
+	{
+		while (FrameCnt != 0x78654321) 
 			trap(0x400);
-		}
 	}
-	if ((ghost_mode == 0) && ((cp->controlType != '\x01' || (playerghost == 0)))) {
+
+	if (ghost_mode == 0 && (cp->controlType != 1 || playerghost == 0))
+	{
 		EventCollisions(cp, 0);
-		local_3c = 0x244;
-		iVar5 = (cp->hd).where.t[0];
-		iVar7 = (cp->hd).where.t[2];
+
+		lVar2 = car_data[0].hd.where.t[2];
+		lVar1 = car_data[0].hd.where.t[0];
+
+		extraDist = 0x244;
+
+		iVar10 = cp->hd.where.t[0];
+		iVar12 = cp->hd.where.t[2];
+
 		boxOverlap = -1;
-		local_68 = car_data[0].hd.where.t[0];
-		local_64 = car_data[0].hd.where.t[2];
-		if (cp->controlType == '\x06') {
-			local_3c = 100;
-		}
-		iVar1 = iVar5 + units_across_halved;
-		iVar2 = iVar1 + -0x400;
-		if (iVar2 < 0) {
-			iVar2 = iVar1 + 0x3ff;
-		}
-		iVar1 = iVar7 + units_down_halved;
-		iVar3 = iVar1 + -0x400;
-		if (iVar3 < 0) {
-			iVar3 = iVar1 + 0x3ff;
-		}
-		SetCopListCell(iVar2 >> 0xb, iVar3 >> 0xb);
-		local_50 = 0;
-		Havana3DOcclusion(0x5c, &local_50);
-		local_44 = 0;
-		if (0 < local_50 + event_models_active) {
+
+		if (cp->controlType == 6)
+			extraDist = 100;
+
+		iVar3 = iVar10 + units_across_halved;
+		iVar6 = iVar3-1024;
+
+		if (iVar6 < 0)
+			iVar6 = iVar3 + 1023;
+
+		iVar3 = iVar12 + units_down_halved;
+		iVar8 = iVar3-1024;
+
+		if (iVar8 < 0)
+			iVar8 = iVar3 + 1023;
+
+		SetCopListCell(iVar6 / 2048, iVar8 / 2048);
+		mdcount = 0;
+		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
+		x1 = 0;
+		if (0 < mdcount + event_models_active) 
+		{
 			do {
-				if (local_44 < local_50) {
-					cop = coplist[local_44];
+				if (x1 < mdcount) {
+					cop = coplist[x1];
 				}
 				else {
-					cop = EventCop + (local_44 - local_50);
+					cop = EventCop + (x1 - mdcount);
 				}
-				local_4c = modelpointers1536[cop->type];
-				local_38 = local_44 + 1;
-				if (((((uint)local_4c->num_vertices - 3 < 300) && (local_4c->num_point_normals < 300)) &&
-					(local_4c->num_polys < 300)) &&
-					((piVar6 = (int *)local_4c->collision_block, piVar6 != (int *)0x0 &&
-					(iVar2 = (cop->pos).vx - iVar5, iVar3 = (cop->pos).vz - iVar7,
-						iVar1 = local_4c->bounding_sphere + local_3c + (cp->hd).speed,
-						iVar2 * iVar2 + iVar3 * iVar3 < iVar1 * iVar1)))) {
-					piVar9 = piVar6 + 1;
-					local_48 = *piVar6;
-					iVar1 = 0;
-					if (0 < local_48) {
+
+				pMVar4 = modelpointers[cop->type];
+				iVar3 = x1 + 1;
+
+				if ((pMVar4->num_vertices - 3 < 300 && pMVar4->num_point_normals < 300 && pMVar4->num_polys < 300) &&
+					((piVar11 = (int *)pMVar4->collision_block, piVar11 != NULL &&
+					(iVar8 = cop->pos.vx - iVar10, iVar7 = cop->pos.vz - iVar12,
+					iVar6 = pMVar4->bounding_sphere + extraDist + cp->hd.speed,
+					iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6))))
+				{
+					piVar14 = (COLLISION_PACKET*)(piVar11 + 1);
+					iVar6 = *piVar11;
+					iVar8 = 0;
+					if (0 < iVar6) 
+					{
 						do {
-							uVar4 = -(uint)cop->yang & 0x3f;
-							local_60 = (int)*(short *)((int)piVar9 + 2) * (int)(&matrixtable)[uVar4].m[0] +
-								(int)*(short *)((int)piVar9 + 6) * (int)(&matrixtable)[uVar4].m[6] + 0x800
-								>> 0xc;
-							local_58 = (int)*(short *)((int)piVar9 + 2) * (int)(&matrixtable)[uVar4].m[2] +
-								(int)*(short *)((int)piVar9 + 6) * (int)(&matrixtable)[uVar4].m[8] + 0x800
-								>> 0xc;
-							local_88.pos.vx = (cop->pos).vx + local_60;
-							local_88.pos.vy = (cop->pos).vy + (int)*(short *)(piVar9 + 1);
-							local_88.pos.vz = (cop->pos).vz + local_58;
-							local_88.pos.pad = (uint)(local_4c->flags2 >> 10) & 1;
-							iVar2 = (uint)*(ushort *)((int)piVar9 + 0x12) << 0x10;
-							local_88.xsize = (iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1;
-							iVar2 = (uint)*(ushort *)((int)piVar9 + 0xe) << 0x10;
-							local_88.zsize = (iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1;
-							local_88.height = (int)*(short *)(piVar9 + 4);
-							local_88.theta = ((uint)cop->yang + (int)*(short *)((int)piVar9 + 10)) * 0x40 & 0xfff;
+							uVar9 = -cop->yang & 0x3f;
+
+							// box 'rotated' by matrix
+							// [A] FIXME: replace add+shift by division
+							bbox.pos.vx = cop->pos.vx + (piVar14->xpos * matrixtable[uVar9].m[0][0] + piVar14->zpos * matrixtable[uVar9].m[2][0] + 0x800 >> 0xc);
+							bbox.pos.vy = cop->pos.vy + piVar14->ypos;
+							bbox.pos.vz = cop->pos.vz + (piVar14->xpos * matrixtable[uVar9].m[0][2] + piVar14->zpos * matrixtable[uVar9].m[2][2] +0x800 >> 0xc);
+
+							bbox.pos.pad = (pMVar4->flags2 >> 10) & 1;
+
+							iVar7 = piVar14->zsize << 0x10;
+							bbox.xsize = (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
+
+							iVar7 = piVar14->xsize << 0x10;
+							bbox.zsize = (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
+
+							bbox.height = piVar14->ysize;
+							bbox.theta = (cop->yang + piVar14->yang) * 64 & 0xfff;
+
 							gLastModelCollisionCheck = cop->type;
-							if ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == 0x15) {
-								if ((local_44 < local_50) || (cop->pad == '\0')) {
-									CarBuildingCollision(cp, &local_88, cop, 0);
+							
+							if (CAR_INDEX(cp) == 0x15)
+							{
+								if (x1 < mdcount || (cop->pad == 0))
+								{
+									CarBuildingCollision(cp, &bbox, cop, 0);
 								}
-								else {
-									iVar2 = CarBuildingCollision(cp, &local_88, cop, 0);
-									if (iVar2 != 0) {
+								else 
+								{
+									iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
+
+									if (iVar7 != 0)
+									{
 										bKillTanner = 1;
-										player.dying = '\x01';
+										player[0].dying = 1;
 									}
 								}
 							}
-							else {
-								if (cp->controlType == '\x05') {
-									if (((modelpointers1536[cop->type]->flags2 & 0xa00) == 0) &&
-										((100 < local_88.xsize || (100 < local_88.zsize)))) {
-										iVar2 = 5;
-										local_88.xsize = local_88.xsize + 100;
-										local_88.zsize = local_88.zsize + 100;
-										iVar3 = local_40 >> 0x1f;
-										while (((iVar8 = local_40 - iVar3 >> 1, iVar8 <= gCameraDistance &&
-											(local_30 = iVar2, iVar2 = CarBuildingCollision(cp, &local_88, cop, 0),
-												iVar2 != 0)) && (0 < local_30))) {
+							else
+							{
+								if (cp->controlType == 5) 
+								{
+									if ((modelpointers[cop->type]->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize))) 
+									{
+										iVar7 = 5;
+										bbox.xsize = bbox.xsize + 100;
+										bbox.zsize = bbox.zsize + 100;
+										while (((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
+											(iVar5 = CarBuildingCollision(cp, &bbox, cop, 0),
+												iVar5 != 0)) && (0 < iVar7))) 
+										{
 											gCameraDistance = gCameraDistance - boxOverlap;
-											if (gCameraDistance < iVar8) {
-												gCameraDistance = iVar8;
-											}
-											iVar8 = gCameraDistance;
-											uVar4 = (cp->hd).direction & 0xfff;
-											(cp->hd).where.t[0] =
-												local_68 +
-												((gCameraDistance * rcossin_tbl[uVar4 * 2]) / 2 + 0x800 >> 0xc);
-											iVar2 = local_30 + -1;
-											(cp->hd).where.t[2] =
-												local_64 + ((iVar8 * rcossin_tbl[uVar4 * 2 + 1]) / 2 + 0x800 >> 0xc);
+											if (gCameraDistance < iVar13)
+												gCameraDistance = iVar13;
+											
+											iVar13 = gCameraDistance;
+											uVar9 = cp->hd.direction & 0xfff;
+											cp->hd.where.t[0] =lVar1 + ((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2 + 0x800 >> 0xc);
+											iVar7 = iVar7 + -1;
+											cp->hd.where.t[2] = lVar2 + ((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2 + 0x800 >> 0xc);
 										}
 									}
 								}
-								else {
-									if ((local_44 < local_50) || (cop->pad == '\0')) {
-										iVar2 = CarBuildingCollision
-										(cp, &local_88, cop, (uint)(local_4c->flags2 >> 10) & 1);
-										if (iVar2 != 0) {
-											(cp->ap).needsDenting = '\x01';
-										}
+								else 
+								{
+									if (x1 < mdcount || cop->pad == 0) 
+									{
+										iVar7 = CarBuildingCollision(cp, &bbox, cop, (pMVar4->flags2 >> 10) & 1);
+
+										if (iVar7 != 0) 
+											cp->ap.needsDenting = 1;
 									}
-									else {
-										*(int *)(cp->st + 0x24) = (int)&ExBoxDamage + *(int *)(cp->st + 0x24);
-										iVar2 = CarBuildingCollision(cp, &local_88, cop, 0);
-										if (iVar2 != 0) {
-											(cp->ap).needsDenting = '\x01';
-										}
-										*(int *)(cp->st + 0x24) = *(int *)(cp->st + 0x24) + -700000;
+									else
+									{
+										cp->st.n.linearVelocity[2] = (int)&ExBoxDamage + cp->st.n.linearVelocity[2];
+										iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
+
+										if (iVar7 != 0)
+											cp->ap.needsDenting = 1;
+
+										cp->st.n.linearVelocity[2] = cp->st.n.linearVelocity[2] + -700000;
 									}
 								}
 							}
-							iVar1 = iVar1 + 1;
-							piVar9 = piVar9 + 5;
-						} while (iVar1 < local_48);
+							iVar8 = iVar8 + 1;
+							piVar14 = piVar14 + 5;
+						} while (iVar8 < iVar6);
 					}
 				}
-				local_44 = local_38;
-			} while (local_38 < local_50 + event_models_active);
+				x1 = iVar3;
+			} while (iVar3 < mdcount + event_models_active);
 		}
 		EventCollisions(cp, 1);
 	}
-	return;*/
 }
 
 
@@ -1218,13 +1251,14 @@ void DoScenaryCollisions(void)
 {
 	_CAR_DATA *cp;
 
-	cp = car_data + 0x13;
+	cp = car_data + 19;
+
 	do {
 		if (cp->controlType != 0)
 		{
 			if (cp->controlType == 2)
 			{
-				if ((cp->totalDamage != 0) && ((10 < (cp->hd).speed || (((uint)cp->id + CameraCnt & 3) == 0))))
+				if (cp->totalDamage != 0 && (10 < cp->hd.speed || (cp->id + CameraCnt & 3) == 0))
 				{
 					CheckScenaryCollisions(cp);
 				}
@@ -1234,8 +1268,8 @@ void DoScenaryCollisions(void)
 				CheckScenaryCollisions(cp);
 			}
 		}
-		cp = cp + -1;
-	} while (car_data <= cp);
+		cp--;
+	} while (cp >= car_data);
 }
 
 

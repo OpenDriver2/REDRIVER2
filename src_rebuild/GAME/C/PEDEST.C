@@ -33,6 +33,8 @@ VECTOR tannerLookAngle = { 0, 0, 0, 0 };
 long force[4] = { 0x9000, 0, 0, 0 };
 long point[4] = { 0, 0, 0x5A, 0 };
 
+int bKillTanner = 0;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ IHaveThePower()

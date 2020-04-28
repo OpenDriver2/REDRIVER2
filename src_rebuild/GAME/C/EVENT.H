@@ -3,6 +3,9 @@
 
 extern EventGlobal events;
 
+extern CELL_OBJECT *EventCop;
+extern int event_models_active;
+
 extern int GetVisValue(int index, int zDir); // 0x00045AB8
 
 extern void VisibilityLists(VisType type, int i); // 0x00045C68

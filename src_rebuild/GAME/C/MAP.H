@@ -11,6 +11,8 @@ extern int LoadedArea;
 extern int initarea;
 
 extern char *map_lump;
+extern PACKED_CELL_OBJECT** pcoplist;
+extern CELL_OBJECT** coplist;
 extern unsigned short *cell_ptrs;
 extern PACKED_CELL_OBJECT* cell_objects;
 extern int sizeof_cell_object_computed_values;
