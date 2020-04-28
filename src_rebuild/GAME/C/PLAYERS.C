@@ -35,78 +35,66 @@ PEDESTRIAN *pPlayerPed = NULL;
 // [D]
 void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int direction, long(*startPos)[4], int externModel, int palette, char *padid)
 {
-	char cVar1;
-	PEDESTRIAN *pPVar2;
 	int model;
-	long lVar3;
 	uint playerType;
 
-	playerType = externModel & 0xff;
-	ClearMem((char *)locPlayer, 0x74);
-	if ((gStartOnFoot == 0) || (carCtrlType == '\x04')) {
-		if (MissionHeader->residentModels[0] == playerType) {
+	playerType = externModel & 0xFF;
+	ClearMem((char *)locPlayer, sizeof(_PLAYER));
+
+	if (gStartOnFoot == 0 || carCtrlType == 4)
+	{
+		model = 0xFF;
+
+		if (MissionHeader->residentModels[0] == playerType) 
 			model = 0;
-		}
-		else {
-			if (MissionHeader->residentModels[1] == playerType) {
-				model = 1;
-			}
-			else {
-				if (MissionHeader->residentModels[2] == playerType) {
-					model = 2;
-				}
-				else {
-					if (MissionHeader->residentModels[3] == playerType) {
-						model = 3;
-					}
-					else {
-						model = 0xff;
-						if (MissionHeader->residentModels[4] == playerType) {
-							model = 4;
-						}
-					}
-				}
-			}
-		}
+		else if(MissionHeader->residentModels[1] == playerType)
+			model = 1;
+		else if (MissionHeader->residentModels[2] == playerType)
+			model = 2;
+		else if (MissionHeader->residentModels[3] == playerType)
+			model = 3;
+		else if (MissionHeader->residentModels[4] == playerType)
+			model = 4;
+
 		InitCar(cp, direction, startPos, carCtrlType, model, palette & 0xff, &locPlayer->padid);
-		cp->controlFlags = cp->controlFlags | 4;
+
+		cp->controlFlags |= 4;
 		locPlayer->worldCentreCarId = cp->id;
 		locPlayer->cameraView = (NumPlayers == 2) << 1;
 		locPlayer->playerCarId = cp->id;
-		cVar1 = cp->id;
-		locPlayer->playerType = '\x01';
-		locPlayer->spoolXZ = (VECTOR *)(cp->hd).where.t;
-		locPlayer->cameraCarId = cVar1;
-		lVar3 = (cp->hd).where.t[1];
-		locPlayer->car_is_sounding = '\0';
-		locPlayer->pos[1] = lVar3;
+		locPlayer->playerType = 1;
+		locPlayer->spoolXZ = (VECTOR *)cp->hd.where.t;
+		locPlayer->cameraCarId = cp->id;
+		locPlayer->car_is_sounding = 0;
+		locPlayer->pos[1] = cp->hd.where.t[1];
 	}
-	else {
+	else 
+	{
 		ActivatePlayerPedestrian(NULL, padid, direction, startPos, playerType);
-		locPlayer->playerType = '\x02';
-		pPVar2 = pPlayerPed;
+
+		locPlayer->playerType = 2;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
-		model = (pPVar2->position).vy;
 		locPlayer->playerCarId = -1;
-		locPlayer->car_is_sounding = '\x02';
-		locPlayer->cameraView = '\0';
-		locPlayer->pos[1] = -model;
+		locPlayer->car_is_sounding = 2;
+		locPlayer->cameraView = 0;
+		locPlayer->pos[1] = -pPlayerPed->position.vy;
 	}
+
 	locPlayer->pos[0] = (*startPos)[0];
-	lVar3 = (*startPos)[2];
-	locPlayer->cameraAngle = 0x800;
+	locPlayer->pos[2] = (*startPos)[2];
+
+	locPlayer->cameraAngle = 2048;
 	locPlayer->headPos = 0;
 	locPlayer->headTarget = 0;
-	locPlayer->headTimer = '\0';
-	locPlayer->pos[2] = lVar3;
-	cVar1 = *padid;
+	locPlayer->headTimer = 0;
 	locPlayer->targetCarId = -1;
 	locPlayer->car_sound_timer = -1;
-	(locPlayer->wheelnoise).chan = -1;
-	(locPlayer->wheelnoise).sound = -1;
-	(locPlayer->skidding).chan = -1;
-	(locPlayer->skidding).sound = -1;
-	locPlayer->padid = cVar1;
+	locPlayer->wheelnoise.chan = -1;
+	locPlayer->wheelnoise.sound = -1;
+	locPlayer->skidding.chan = -1;
+	locPlayer->skidding.sound = -1;
+
+	locPlayer->padid = *padid;
 }
 
 
@@ -377,51 +365,41 @@ LAB_000737d4:
 // [D]
 void UpdatePlayers(void)
 {
-	int iVar1;
-	long lVar2;
-	PEDESTRIAN *pPVar3;
-	long lVar4;
-	long lVar5;
+	int carId;
+	PEDESTRIAN *ped;
 	_PLAYER *locPlayer;
 
 	pedestrianFelony = 0;
 
-	if ((gInGameCutsceneActive == 0) && (player[0].playerType = '\x01', player[0].pPed != NULL)) 
-	{
-		player[0].playerType = '\x02';
-	}
+	if (gInGameCutsceneActive == 0)
+		player[0].playerType = (player[0].pPed != NULL) ? 2 : 1;
 
 	locPlayer = player;
 
 	// [A] cycle might be wrong
-	if (true) 
-	{
-		do {
-			if (locPlayer->playerType == '\x01')
-			{
-				iVar1 = (int)locPlayer->playerCarId;
-				lVar2 = car_data[iVar1].hd.where.t[0];
-				lVar4 = car_data[iVar1].hd.where.t[1];
-				lVar5 = car_data[iVar1].hd.where.t[2];
-				iVar1 = car_data[iVar1].hd.direction;
-				locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
-				locPlayer->pos[0] = lVar2;
-				locPlayer->pos[1] = lVar4;
-				locPlayer->pos[2] = lVar5;
-				locPlayer->dir = iVar1;
-			}
-			else if (locPlayer->playerType == '\x02') 
-			{
-				pPVar3 = locPlayer->pPed;
-				locPlayer->pos[0] = (pPVar3->position).vx;
-				locPlayer->pos[1] = -(pPVar3->position).vy;
-				locPlayer->pos[2] = (pPVar3->position).vz;
-				locPlayer->dir = (int)(pPVar3->dir).vy + -0x800;
-			}
+	do {
+		if (locPlayer->playerType == 1)
+		{
+			carId = locPlayer->playerCarId;
 
-			locPlayer++;
-		} while (locPlayer <= &player[7]);
-	}
+			locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
+
+			locPlayer->pos[0] = car_data[carId].hd.where.t[0];
+			locPlayer->pos[1] = car_data[carId].hd.where.t[1];
+			locPlayer->pos[2] = car_data[carId].hd.where.t[2];
+			locPlayer->dir = car_data[carId].hd.direction;
+		}
+		else if (locPlayer->playerType == 2) 
+		{
+			ped = locPlayer->pPed;
+			locPlayer->pos[0] = ped->position.vx;
+			locPlayer->pos[1] = -ped->position.vy;
+			locPlayer->pos[2] = ped->position.vz;
+			locPlayer->dir = ped->dir.vy + -0x800;
+		}
+
+		locPlayer++;
+	} while (locPlayer <= &player[7]);
 }
 
 
