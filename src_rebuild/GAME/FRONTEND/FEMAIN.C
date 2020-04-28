@@ -2435,10 +2435,17 @@ int CarSelectScreen(int bSetup)
 	}
 	bDoingCarSelect = 1;
 	if (NumPlayers == 1) {
+#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
+		CarAvailability[0][9] = 1;
+		CarAvailability[1][9] = 1;
+		CarAvailability[2][9] = 1;
+		CarAvailability[3][9] = 1;
+#else
 		CarAvailability[0][9] = AvailableCheats.cheat5;
 		CarAvailability[1][9] = AvailableCheats.cheat6;
 		CarAvailability[2][9] = AvailableCheats.cheat7;
 		CarAvailability[3][9] = AvailableCheats.cheat8;
+#endif
 	}
 	if ((gFurthestMission == 0x28) && (NumPlayers == 1)) {
 		iVar5 = 4;
