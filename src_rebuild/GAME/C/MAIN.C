@@ -1722,7 +1722,6 @@ void GameLoop(void)
 
 			setPolyFT3(null);
 
-			null->code = '$';
 			null->x0 = -1;
 			null->y0 = -1;
 			null->x1 = -1;

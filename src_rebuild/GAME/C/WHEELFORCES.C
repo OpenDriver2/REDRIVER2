@@ -1195,21 +1195,21 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				{
 					if (cp->controlType == 3) 
 					{
-						//force.vx = sdx * cp->thrust;
-						//force.vz = sdz * cp->thrust;
+						force.vx = sdx * cp->thrust;
+						force.vz = sdz * cp->thrust;
 					}
 				}
 				else 
 				{
-					//iVar10 = (iVar5 >> 0xd) + iVar10 >> 1;
-					//iVar5 = (((-iVar10 * iVar11 + 0x800 >> 0xc) * sdz - (-iVar10 * iVar12 + 0x800 >> 0xc) * sdx) + 1024) / 2048;
+					//sidevel = (sidevel >> 0xd) + iVar10 >> 1;
+					//iVar5 = (((-sidevel * lfz + 0x800 >> 0xc) * sdz - (-sidevel * lfx + 0x800 >> 0xc) * sdx) + 1024) / 2048;
 
 					//force.vx = iVar5 * sdz;
 					//force.vz = -iVar5 * sdx;
 				}
 
-				//if (cp->hd.front_vel < slidevel)
-				//	cp->hd.front_vel = slidevel;
+				if (cp->hd.front_vel < slidevel)
+					cp->hd.front_vel = slidevel;
 			}
 			else
 			{
@@ -1228,8 +1228,8 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 					sidevel = (frontFS * sidevel + 8192) / 16384;
 				}
 
-				//if (cp->hd.rear_vel < slidevel)
-				//	cp->hd.rear_vel = slidevel;
+				if (cp->hd.rear_vel < slidevel)
+					cp->hd.rear_vel = slidevel;
 			}
 
 			// add the driving forces
@@ -1287,9 +1287,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			cp->hd.acc[1] += force.vy;
 			cp->hd.acc[2] += force.vz;
 
-			cp->hd.aacc[0] += ((wheelPos[1] * force.vz - wheelPos[2] * force.vy) + 4096) / 4096;
-			cp->hd.aacc[1] += ((wheelPos[2] * force.vx - wheelPos[0] * force.vz) + 4096) / 4096;
-			cp->hd.aacc[2] += ((wheelPos[0] * force.vy - wheelPos[1] * force.vx) + 4096) / 4096;
+			cp->hd.aacc[0] += (wheelPos[1] * force.vz - wheelPos[2] * force.vy) / 4096;
+			cp->hd.aacc[1] += (wheelPos[2] * force.vx - wheelPos[0] * force.vz) / 4096;
+			cp->hd.aacc[2] += (wheelPos[0] * force.vy - wheelPos[1] * force.vx) / 4096;
 
 			wh->susCompression = newCompression;
 		}

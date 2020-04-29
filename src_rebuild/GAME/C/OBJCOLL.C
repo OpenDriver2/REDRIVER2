@@ -11,6 +11,9 @@
 #include "MODELS.H"
 #include "MISSION.H"
 #include "PEDEST.H"
+#include "SPOOL.H"
+#include "CELL.H"
+
 #include "MAIN.H"
 
 
@@ -688,7 +691,7 @@ void SetCopListCell(int x, int z)
 // [D]
 void BuildCollisionCopList(int *count)
 {
-	CollisionCopList((XZPAIR *)0x0, count);
+	CollisionCopList(NULL, count);
 }
 
 // decompiled code
@@ -737,60 +740,65 @@ void BuildCollisionCopList(int *count)
 	/* end block 3 */
 	// End Line: 1240
 
+// [D]
 void CollisionCopList(XZPAIR *pos, int *count)
 {
-	UNIMPLEMENTED();
-	/*
-	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT *pCVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	uint local_48;
-	uint local_44;
-	CELL_ITERATOR CStack64;
-	uint local_28;
-	uint local_24;
+	static XZPAIR initial;
 
-	if (pos == (XZPAIR *)0x0) {
-		iVar2 = 0;
-		local_48 = initial_24;
+	PACKED_CELL_OBJECT *ppco;
+	CELL_OBJECT *cop;
+	int i;
+	int j;
+	XZPAIR cell;
+	CELL_ITERATOR ci;
+	XZPAIR cbr;
+
+	if (pos == NULL)
+	{
+		i = 0;
+		cell.x = initial.x;
+
 		do {
-			iVar4 = 0;
-			iVar2 = iVar2 + 1;
-			local_44 = DAT_000ab04c;
+			j = 0;
+
+			i++;
+			cell.z = initial.z;
+
 			do {
-				local_28 = local_48 >> 5;
-				local_24 = local_44 >> 5;
-				iVar3 = cells_across;
-				if (cells_across < 0) {
-					iVar3 = cells_across + 0x1f;
-				}
-				iVar4 = iVar4 + 1;
-				if (local_28 + local_24 * (iVar3 >> 5) ==
-					RoadMapRegions[(local_28 & 1) + (local_24 & 1) * 2]) {
-					ppco = GetFirstPackedCop(local_48, local_44, &CStack64, 1);
-					pCVar1 = UnpackCellObject(ppco, &CStack64.nearCell);
-					while (pCVar1 != (CELL_OBJECT *)0x0) {
-						coplist[*count] = pCVar1;
-						pCVar1->pad = *(uchar *)count;
-						pcoplist[*count] = CStack64.ppco;
-						ppco = GetNextPackedCop(&CStack64);
-						pCVar1 = UnpackCellObject(ppco, &CStack64.nearCell);
+				j++;
+
+				// [A] FIXME: replace with 'cell_header.region_size'
+				if ((cell.x / 32) + (cell.z / 32) * (cells_across / 32) == RoadMapRegions[((cell.x / 32) & 1) + ((cell.z / 32) & 1) * 2])
+				{
+					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
+					cop = UnpackCellObject(ppco, &ci.near);
+
+					while (cop != NULL) 
+					{
+						coplist[*count] = cop;
+						cop->pad = *(unsigned char *)count;
+						pcoplist[*count] = ci.ppco;
+
+						ppco = GetNextPackedCop(&ci);
+						cop = UnpackCellObject(ppco, &ci.near);
+
 						*count = *count + 1;
 					}
 				}
-				local_44 = local_44 + 1;
-			} while (iVar4 < 2);
-			local_48 = local_48 + 1;
-		} while (iVar2 < 2);
+
+				cell.z++;
+			} while (j < 2);
+
+			cell.x++;
+		} while (i < 2);
 	}
-	else {
-		initial_24 = pos->x;
-		DAT_000ab04c = pos->z;
+	else
+	{
+		initial.x = pos->x;
+		initial.z = pos->z;
+
 		ClearCopUsage();
 	}
-	return;*/
 }
 
 
