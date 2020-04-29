@@ -996,103 +996,91 @@ int maxrevrise = 1600;
 // [D]
 void ControlCarRevs(_CAR_DATA *cp)
 {
-	int uVar1;
-	int player_id;
-	int desiredRevs;
-	int sVar4;
-	int oldRevs;
-	int acc;
-	char spin;
+	int player_id, acc, spin, oldvol;
+	int oldRevs, newRevs, desiredRevs;
 
 	acc = cp->thrust;
 	spin = cp->wheelspin;
-
+	oldRevs = cp->hd.revs;
 	player_id = GetPlayerId(cp);
-
-	uVar1 = cp->hd.revs;
-	oldRevs = uVar1;
 
 	cp->hd.changingGear = 0;
 
-	// [A] The next code might be calculated invalidly.
-	if ((spin == 0 && (cp->hd.wheel[1].susCompression != 0 || (cp->hd.wheel[3].susCompression != 0))) || (acc == 0))
+	if (spin == 0 && (cp->hd.wheel[1].susCompression || cp->hd.wheel[3].susCompression || acc == 0))
 	{
-		uVar1 = GetEngineRevs(cp);
-		desiredRevs = uVar1;
+		desiredRevs = GetEngineRevs(cp);
 	}
-	else 
+	else
 	{
 		desiredRevs = 20160;
 
-		if(cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0) 
+		if (cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0)
 		{
 			desiredRevs = 30719;
 			spin = 1;
 		}
 
-		if (uVar1 < 8000) 
+		if (oldRevs < 8000)
 			oldRevs = 8000;
 
 		cp->hd.gear = 0;
 	}
 
-	if (maxrevdrop < oldRevs-desiredRevs) 
+	newRevs = desiredRevs;
+	desiredRevs = (oldRevs - newRevs);
+
+	if (maxrevdrop < desiredRevs)
 	{
 		acc = 0;
-		desiredRevs = maxrevdrop;
-
 		cp->hd.changingGear = 1;
-
-		desiredRevs = (oldRevs - desiredRevs);
+		newRevs = oldRevs - maxrevdrop;
 	}
 
-	maxrevrise = desiredRevs;
+	desiredRevs = newRevs - oldRevs;
 
-	if (maxrevrise < desiredRevs - oldRevs)
-		maxrevrise = oldRevs + maxrevrise;
+	if (maxrevrise < desiredRevs)
+		newRevs = oldRevs + maxrevrise;
 
-	cp->hd.revs = maxrevrise;
-
-	if (-1 < player_id) 
+	cp->hd.revs = newRevs;
+	if (player_id != -1)
 	{
-		if (acc == 0 && maxrevrise < 7001)
+		if (acc == 0 && newRevs < 7001)
 		{
 			acc = player[player_id].revsvol;
-			sVar4 = player[player_id].idlevol+200;
 
-			player[player_id].idlevol = sVar4;
-			player[player_id].revsvol = acc-200;
+			player[player_id].idlevol += 200;
+			player[player_id].revsvol = acc - 200;
 
-			if (-6000 < sVar4) 
+			if (-6000 < player[player_id].idlevol)
 				player[player_id].idlevol = -6000;
 
 			if (player[player_id].revsvol < -10000)
 				player[player_id].revsvol = -10000;
 		}
-		else 
+		else
 		{
-			sVar4 = -6750;
-			if (acc != 0) 
+			int sVar4 = -6750;
+			if (acc != 0)
 				sVar4 = -5500;
 
-			if (spin == 0) 
+			if (spin == 0)
 				acc = -64;
-			else 
+			else
 				acc = -256;
 
 			player[player_id].idlevol += acc;
 
-			if (spin == 0) 
+			if (spin == 0)
 				acc = 175;
 			else
 				acc = 700;
 
 			player[player_id].revsvol = player[player_id].revsvol + acc;
 
-			if (player[player_id].idlevol < -10000) 
+			if (player[player_id].idlevol < -10000)
 				player[player_id].idlevol = -10000;
 
-			if (sVar4 < player[player_id].revsvol) 
+			if (sVar4 < player[player_id].revsvol)
 				player[player_id].revsvol = sVar4;
 		}
 	}
