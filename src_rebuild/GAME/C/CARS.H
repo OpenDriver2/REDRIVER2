@@ -26,6 +26,9 @@ extern MODEL *gCleanWheelModelPtr;
 extern MODEL *gFastWheelModelPtr;
 extern MODEL *gDamWheelModelPtr;
 
+extern char LeftLight;
+extern char RightLight;
+
 extern void plotNewCarModel(CAR_MODEL *car, int palette); // 0x00020C94
 
 extern void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg); // 0x000237B8

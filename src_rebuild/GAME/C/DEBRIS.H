@@ -1,6 +1,27 @@
 #ifndef DEBRIS_H
 #define DEBRIS_H
 
+extern TEXTURE_DETAILS smoke_texture;
+extern TEXTURE_DETAILS debris_texture;
+extern TEXTURE_DETAILS litter_texture;
+extern TEXTURE_DETAILS cop_texture;
+extern TEXTURE_DETAILS light_texture;
+extern TEXTURE_DETAILS gTyreTexture;
+extern TEXTURE_DETAILS flare_texture;
+extern TEXTURE_DETAILS sea_texture;
+extern TEXTURE_DETAILS bird_texture1;
+extern TEXTURE_DETAILS bird_texture2;
+extern TEXTURE_DETAILS lensflare_texture;
+extern TEXTURE_DETAILS sun_texture;
+extern TEXTURE_DETAILS moon_texture;
+extern TEXTURE_DETAILS drop_texture;
+extern TEXTURE_DETAILS collon_texture;
+
+extern TEXTURE_DETAILS texturePedHead;
+extern TEXTURE_DETAILS tannerShadow_texture;
+
+extern TEXTURE_DETAILS lightref_texture;
+
 extern int gNight;
 extern char gRainCount;
 extern int gEffectsTimer;

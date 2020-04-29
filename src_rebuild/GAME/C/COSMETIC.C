@@ -3,6 +3,8 @@
 #include "SYSTEM.H"
 #include "MISSION.H"
 #include "HANDLING.H"
+#include "CARS.H"
+#include "DEBRIS.H"
 
 #include <string.h>
 
@@ -749,214 +751,240 @@ LAB_000302c4:
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+int gPlayerCarLights = 0;
+int gcar_num = 0;
+
+// [D]
 void AddNightLights(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
-	short sVar3;
-	char cVar4;
-	uint uVar5;
-	int iVar6;
-	char cVar7;
-	int iVar8;
-	short *psVar9;
-	CAR_COSMETICS *pCVar10;
-	undefined4 local_68;
-	uint local_64;
-	uint local_60;
-	uint local_5c;
-	uint local_58;
-	uint local_54;
-	CVECTOR local_50[2];
-	int local_48;
-	uchar *local_44;
-	uint local_40;
-	int local_3c;
-	int local_38;
-	int local_34;
-	SVECTOR *local_30;
+	ushort uVar3;
+	short sVar4;
+	char cVar5;
+	ushort uVar6;
+	uint uVar8;
+	uint uVar9;
+	int iVar10;
+	char cVar11;
+	int iVar12;
+	short *psVar13;
+	CAR_COSMETICS *pCVar14;
+	SVECTOR Position1;
+	SVECTOR Position2;
+	SVECTOR vec;
+	CVECTOR col;
+	int lit;
+	char *life2;
+	short loop;
+	short doubleFlag;
+	short verticalFlag;
+	short cogOffset;
 	short *local_2c;
 
-	local_44 = (uchar *)&(cp->ap).life2;
-	local_30 = (SVECTOR *)&local_68;
-	local_48 = 0;
-	local_40 = 0;
-	LeftLight = '\0';
-	RightLight = '\0';
-	pCVar10 = (cp->ap).carCos;
-	psVar9 = (cp->ap).damage;
-	local_3c = (int)(short)(pCVar10->extraInfo & 0x8000);
-	sVar1 = (pCVar10->cog).vx;
-	local_34 = (int)sVar1;
-	local_38 = (int)(short)(pCVar10->extraInfo & 0x2000);
-	gcar_num = (int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2;
-	uVar5 = *(uint *)&(pCVar10->headLight).vz;
-	local_58._0_2_ = (short)*(undefined4 *)&pCVar10->headLight;
-	local_58 = CONCAT22((short)((uint)*(undefined4 *)&pCVar10->headLight >> 0x10) + (pCVar10->cog).vy,
-		sVar1 + (short)local_58);
-	local_54._0_2_ = (short)uVar5;
-	iVar6 = (((uint)(ushort)pCVar10->extraInfo & 0xc00) >> 8) + 10;
-	local_54 = uVar5 & 0xffff0000 | (uint)(ushort)((short)local_54 + (pCVar10->cog).vz);
+	life2 = &cp->ap.life2;
+
+	lit = 0;
+	loop = 0;
+	LeftLight = 0;
+	RightLight = 0;
+
+	pCVar14 = cp->ap.carCos;
+	uVar3 = pCVar14->extraInfo;
+	psVar13 = cp->ap.damage;
+
+	sVar1 = pCVar14->cog.vx;
+	gcar_num = CAR_INDEX(cp);
+
+	vec.vx = pCVar14->headLight.vx + pCVar14->cog.vx;
+	vec.vy = pCVar14->headLight.vy + pCVar14->cog.vy;
+	vec.vz = pCVar14->headLight.vz + pCVar14->cog.vz;
+	iVar10 = (((uint)(ushort)pCVar14->extraInfo & 0xc00) >> 8) + 10;
+	vec.vz = vec.vz + pCVar14->cog.vz;
+
 	do {
-		cVar7 = '\0';
-		uVar5 = 8 << (local_40 & 0x1f);
-		sVar1 = (short)iVar6;
-		local_64._0_2_ = (short)local_54;
-		if (local_3c == 0) {
-			local_2c = (cp->ap).damage;
-			local_68 = local_58;
-			sVar2 = *psVar9 >> 6;
-			local_64 = local_54 & 0xffff0000 | (uint)(ushort)((short)local_64 + sVar2);
-			local_5c = local_5c & 0xffff0000 | (uint)(ushort)((short)local_5c + sVar2);
-			if (*psVar9 < 1000) {
-				cVar7 = '\x01';
-				local_50[0].r = -1;
-				local_50[0].b = -1;
-				local_50[0].g = -1;
-				local_48 = local_48 + 1;
-				ShowCarlight(local_30, cp, local_50, 0x14, &light_texture, uVar5 & 0xff | 1);
+		cVar11 = 0;
+		uVar8 = 8 << (loop & 0x1f);
+		sVar4 = (short)iVar10;
+		iVar10 = lit;
+
+		if ((uVar3 & 0x8000) == 0) 
+		{
+			Position1.vx = vec.vx;
+			Position1.vy = vec.vy;
+			sVar2 = *psVar13 >> 6;
+			Position1.vz = (vec.vz + sVar2);
+			Position2.vz = (vec.vz + sVar2);
+			if (*psVar13 < 1000) 
+			{
+				cVar11 = 1;
+
+				col.r = -1;
+				col.b = -1;
+				col.g = -1;
+
+				ShowCarlight(&Position1, cp, &col, 20, &light_texture, uVar8 & 0xff | 1);
+				iVar10 = lit + 1;
 			}
 		}
-		else {
-			local_2c = (cp->ap).damage;
-			local_68._2_2_ = (short)(local_58 >> 0x10);
-			if (local_38 == 0) {
-				local_2c = (cp->ap).damage;
-				sVar2 = *psVar9 >> 6;
-				local_64 = local_54 & 0xffff0000 | (uint)(ushort)((short)local_64 + sVar2);
-				local_68._0_2_ = (short)local_58;
-				local_5c = local_54 & 0xffff0000 | (uint)(ushort)((short)local_64 + sVar2);
-				local_68 = local_58 & 0xffff0000 | (uint)(ushort)(sVar1 + (short)local_68);
-				local_60 = local_58 & 0xffff0000 | (uint)(ushort)((short)local_68 - sVar1);
-				if (*psVar9 < 1000) {
-					local_50[0].r = -1;
-					local_50[0].b = -1;
-					local_50[0].g = -1;
-					ShowCarlight(local_30, cp, local_50, 0x14, &light_texture, uVar5 & 0xff | 1);
-					sVar2 = (cp->ap).damage[0];
-					iVar6 = local_48;
-					goto joined_r0x00030874;
+		else if ((uVar3 & 0x2000) == 0)
+		{
+			sVar2 = *psVar13 >> 6;
+			Position1.vz = vec.vz + sVar2;
+			Position2.vz = vec.vz + sVar2;
+			Position1.vx = sVar4 + vec.vx;
+			Position2.vx = vec.vx - sVar4;
+
+			if (*psVar13 < 1000) 
+			{
+				col.r = -1;
+				col.b = -1;
+				col.g = -1;
+				ShowCarlight(&Position1, cp, &col, 0x14, &light_texture, uVar8 & 0xff | 1);
+				sVar2 = (cp->ap).damage[0];
+				goto joined_r0x00030874;
+			}
+		}
+		else 
+		{
+			sVar2 = *psVar13 >> 6;
+			Position1.vz = vec.vz + sVar2;
+			Position2.vz = vec.vz + sVar2;
+			Position1.vy = sVar4 + vec.vy;
+			Position2.vy = vec.vy - sVar4;
+
+			if (*psVar13 < 1000)
+			{
+				col.r = -1;
+				col.b = -1;
+				col.g = -1;
+				ShowCarlight(&Position1, cp, &col, 20, &light_texture, uVar8 & 0xff | 1);
+				sVar2 = *psVar13;
+			joined_r0x00030874:
+				cVar11 = 1;
+				iVar10 = lit + 1;
+
+				if (sVar2 < 500) 
+				{
+					lit = lit + 2;
+					cVar11 = 2;
+					col.r = -1;
+					col.b = -1;
+					col.g = -1;
+					ShowCarlight(&Position2, cp, &col, 20, &light_texture, 1);
+					iVar10 = lit;
 				}
 			}
-			else {
-				sVar2 = *psVar9 >> 6;
-				local_64 = local_54 & 0xffff0000 | (uint)(ushort)((short)local_64 + sVar2);
-				local_5c = local_54 & 0xffff0000 | (uint)(ushort)((short)local_64 + sVar2);
-				local_68 = local_58 & 0xffff | (uint)(ushort)(sVar1 + local_68._2_2_) << 0x10;
-				local_60 = local_58 & 0xffff | (uint)(ushort)(local_68._2_2_ - sVar1) << 0x10;
-				if (*psVar9 < 1000) {
-					local_50[0].r = -1;
-					local_50[0].b = -1;
-					local_50[0].g = -1;
-					ShowCarlight(local_30, cp, local_50, 0x14, &light_texture, uVar5 & 0xff | 1);
-					sVar2 = *psVar9;
-					iVar6 = local_48;
-				joined_r0x00030874:
-					cVar7 = '\x01';
-					local_48 = iVar6 + 1;
-					if (sVar2 < 500) {
-						local_48 = iVar6 + 2;
-						cVar7 = '\x02';
-						local_50[0].r = -1;
-						local_50[0].b = -1;
-						local_50[0].g = -1;
-						ShowCarlight((SVECTOR *)&local_60, cp, local_50, 0x14, &light_texture, 1);
-					}
-				}
-			}
 		}
-		iVar6 = (int)-sVar1;
-		sVar1 = (short)local_34 * 2;
-		local_58 = local_58 & 0xffff0000 | (uint)(ushort)(sVar1 - (short)local_58);
-		cVar4 = cVar7;
-		if (local_40 == 0) {
-			cVar4 = RightLight;
-			LeftLight = cVar7;
+
+		lit = iVar10;
+		local_2c = cp->ap.damage;
+		iVar10 = -sVar4;
+		//vec._0_4_ = vec._0_4_ & 0xffff0000 | (uint)(ushort)(sVar1 * 2 - vec.vx);
+		cVar5 = cVar11;
+
+		if (loop == 0) 
+		{
+			cVar5 = RightLight;
+			LeftLight = cVar11;
 		}
-		RightLight = cVar4;
-		psVar9 = psVar9 + 1;
-		local_40 = (int)((local_40 + 1) * 0x10000) >> 0x10;
-		if (1 < (int)local_40) {
-			local_50[0].r = -0x38;
-			if (cp->controlType != '\x01') {
-				local_50[0].r = -1;
-			}
-			local_50[0].b = '\0';
-			local_50[0].g = '\0';
-			uVar5 = *(uint *)&(pCVar10->brakeLight).vz;
-			local_58._0_2_ = (short)*(undefined4 *)&pCVar10->brakeLight;
-			local_3c = (int)(short)(pCVar10->extraInfo & 0x4000);
-			local_38 = (int)(short)(pCVar10->extraInfo & 0x1000);
-			local_58 = CONCAT22((short)((uint)*(undefined4 *)&pCVar10->brakeLight >> 0x10) +
-				(pCVar10->cog).vy, (short)local_34 + (short)local_58);
-			local_54._0_2_ = (short)uVar5;
-			local_54 = uVar5 & 0xffff0000 | (uint)(ushort)((short)local_54 + (pCVar10->cog).vz);
-			iVar6 = (((uint)(ushort)pCVar10->extraInfo & 0x300) >> 6) + 10;
-			if ((pCVar10->extraInfo & 8U) != 0) {
-				local_40 = 0;
+
+		RightLight = cVar5;
+		psVar13 = psVar13 + 1;
+		loop = ((loop + 1) * 0x10000) >> 0x10;
+
+		if (1 < loop)
+		{
+			col.r = 56;
+
+			if (cp->controlType != 1)
+				col.r = 1;
+
+			col.b = 0;
+			col.g = 0;
+
+			uVar3 = pCVar14->extraInfo;
+
+			vec.vx = pCVar14->brakeLight.vx + pCVar14->cog.vx;
+			vec.vy = pCVar14->brakeLight.vy + pCVar14->cog.vy;
+			vec.vz = pCVar14->brakeLight.vz + pCVar14->cog.vz;
+
+			iVar10 = ((pCVar14->extraInfo & 0x300) >> 6) + 10;
+
+			if ((pCVar14->extraInfo & 8U) != 0) 
+			{
+				loop = 0;
+
 				do {
-					uVar5 = 2 << (local_40 & 0x1f);
-					iVar8 = (int)((4 - local_40) * 0x10000) >> 0x10;
-					sVar2 = (short)iVar6;
-					if (local_3c == 0) {
-						local_68 = local_58;
-						local_64 = local_54;
-						if (local_2c[iVar8] < 500) {
-							ShowCarlight(local_30, cp, local_50, 0x11, &light_texture, uVar5 & 0xff);
-							*local_44 = *local_44 + '\x10';
+					uVar8 = 2 << (loop & 0x1f);
+					iVar12 = ((4 - loop) * 0x10000) >> 0x10;
+					sVar4 = iVar10;
+
+					if ((uVar3 & 0x4000) == 0)
+					{
+						Position1 = vec;
+
+						if (local_2c[iVar12] < 500)
+						{
+							ShowCarlight(&Position1, cp, &col, 17, &light_texture, uVar8 & 0xff);
+
+							*life2 = *life2 + 16;
 						}
 					}
-					else {
-						local_5c._0_2_ = (short)local_54;
-						local_68._2_2_ = (short)(local_58 >> 0x10);
-						if (local_38 == 0) {
-							sVar3 = local_2c[iVar8];
-							local_64 = local_54 & 0xffff0000 | (uint)(ushort)((short)local_5c + (sVar3 >> 6));
-							local_68._0_2_ = (short)local_58;
-							local_5c = local_54 & 0xffff0000 | (uint)(ushort)((short)local_5c + (sVar3 >> 6));
-							local_68 = local_58 & 0xffff0000 | (uint)(ushort)(sVar2 + (short)local_68);
-							local_60 = local_58 & 0xffff0000 | (uint)(ushort)((short)local_68 - sVar2);
+					else 
+					{
+						if ((uVar3 & 0x1000) == 0) 
+						{
+							sVar2 = local_2c[iVar12];
+							Position1.vx = sVar4 + vec.vx;
+							Position2.vx = vec.vx - sVar4;
 						}
-						else {
-							sVar3 = local_2c[iVar8];
-							local_64 = local_54 & 0xffff0000 | (uint)(ushort)((short)local_5c + (sVar3 >> 6));
-							local_5c = local_54 & 0xffff0000 | (uint)(ushort)((short)local_5c + (sVar3 >> 6));
-							local_68 = local_58 & 0xffff | (uint)(ushort)(sVar2 + local_68._2_2_) << 0x10;
-							local_60 = local_58 & 0xffff | (uint)(ushort)(local_68._2_2_ - sVar2) << 0x10;
+						else
+						{
+							sVar2 = local_2c[iVar12];
+							Position1.vy = sVar4 + vec.vy;
+							Position2.vy = vec.vy - sVar4;
 						}
-						if (sVar3 < 500) {
-							ShowCarlight(local_30, cp, local_50, 0x11, &light_texture, uVar5 & 0xff);
-							ShowCarlight((SVECTOR *)&local_60, cp, local_50, 0x11, &light_texture, 0);
-							*local_44 = *local_44 + '\x10';
+
+						Position2.vz = uVar6 + (sVar2 >> 6);
+						Position1.vz = uVar6 + (sVar2 >> 6);
+
+						if (sVar2 < 500)
+						{
+							ShowCarlight(&Position1, cp, &col, 17, &light_texture, uVar8 & 0xff);
+							ShowCarlight(&Position2, cp, &col, 17, &light_texture, 0);
+
+							*life2 = *life2 + 16;
 						}
 					}
-					iVar6 = (int)-sVar2;
-					local_40 = (int)((local_40 + 1) * 0x10000) >> 0x10;
-					local_58 = local_58 & 0xffff0000 | (uint)(ushort)(sVar1 - (short)local_58);
-				} while ((int)local_40 < 2);
+
+					iVar10 = -sVar4;
+					loop = ((loop + 1) * 0x10000) >> 0x10;
+					vec.vx = sVar1 * 2 - vec.vx;
+				} while (loop < 2);
 			}
-			if (local_48 != 0) {
-				local_50[0].r = (uchar)(local_48 << 4);
-				local_50[0].g = local_50[0].r;
-				local_50[0].b = local_50[0].r;
-				PlacePoolForCar(cp, local_50, 1);
+			if (lit != 0) 
+			{
+				col.r = (lit << 4);
+				col.g = col.r;
+				col.b = col.r;
+				PlacePoolForCar(cp, &col, 1);
 			}
-			local_50[0].r = *local_44;
-			if (local_50[0].r != '\0') {
-				local_50[0].b = '\0';
-				local_50[0].g = '\0';
-				PlacePoolForCar(cp, local_50, 0);
-				*local_44 = '\0';
+
+			if (col.r != 0) 
+			{
+				col.b = 0;
+				col.g = 0;
+				col.r = 0;
+				PlacePoolForCar(cp, &col, 0);
 			}
-			if (cp->controlType == '\x01') {
-				gPlayerCarLights = local_48;
-			}
+
+			if (cp->controlType == 1)
+				gPlayerCarLights = lit;
+
 			return;
 		}
 	} while (true);
-	*/
 }
 
 

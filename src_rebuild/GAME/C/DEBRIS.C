@@ -9,6 +9,11 @@
 #include "SOUND.H"
 #include "MAIN.H"
 #include "SYSTEM.H"
+#include "CARS.H"
+#include "CAMERA.H"
+#include "DR2ROADS.H"
+
+#include "INLINE_C.H"
 
 #include <stdlib.h>
 
@@ -2544,16 +2549,16 @@ void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 13215
 
+int CarLightFadeBack = 0;
+int CarLightFadeFront = 0;
+
+// [D]
 void FindCarLightFade(MATRIX *carToCamera)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-
-	iVar1 = (int)((uint)(ushort)carToCamera->m[8] << 0x10) >> 0x12;
-	CarLightFadeFront = iVar1 + -0x7c;
-	CarLightFadeBack = -0x7c - iVar1;
-	return;*/
+	int zz;
+	zz = carToCamera->m[2][2] / 4; //(carToCamera->m[2][2] << 0x10) >> 0x12;
+	CarLightFadeFront = zz - 124;
+	CarLightFadeBack = -124 - zz;
 }
 
 
@@ -2582,60 +2587,66 @@ void FindCarLightFade(MATRIX *carToCamera)
 
 void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	VECTOR local_48;
-	VECTOR local_38;
-	CVECTOR local_28[2];
+	VECTOR v1t;
+	VECTOR v1l;
+	CVECTOR flareCol;
 
-	if (cp <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
+
+	if (cp < car_data) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	iVar1 = 0xff;
-	if ((uchar)flag == -1) {
-		flag._0_1_ = '\0';
-	}
-	else {
+
+	iVar1 = 255;
+
+	if (flag == -1)
+		flag = 0;
+
+	else
+	{
 		iVar1 = CarLightFadeBack;
-		if ((flag & 1U) != 0) {
+
+		if ((flag & 1U) != 0) 
 			iVar1 = CarLightFadeFront;
-		}
-		if (iVar1 < 0) {
+
+		if (iVar1 < 0) 
 			return;
-		}
 	}
-	col->r = (uchar)((int)((uint)col->r * iVar1) >> 10);
-	col->b = (uchar)((int)((uint)col->b * iVar1) >> 10);
-	col->g = (uchar)((int)((uint)col->g * iVar1) >> 10);
-	setCopControlWord(2, 0, *(undefined4 *)(cp->hd).drawCarMat.m);
-	setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).drawCarMat.m + 2));
-	setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).drawCarMat.m + 4));
-	setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).drawCarMat.m + 6));
-	setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).drawCarMat.m + 8));
-	local_38.vx = (cp->hd).where.t[0] - camera_position.vx;
-	local_38.vy = -camera_position.vy - (cp->hd).where.t[1];
-	local_38.vz = (cp->hd).where.t[2] - camera_position.vz;
-	InitFXPos(&local_38, v1, cp);
-	if (9 < wetness) {
-		local_48.vx = local_38.vx;
-		local_48.vy = local_38.vy;
-		local_48.vz = local_38.vz;
-		local_48.pad = local_38.pad;
-		local_48.vy = MapHeight((VECTOR *)(cp->hd).where.t);
-		local_48.vy = -camera_position.vy - local_48.vy;
+	col->r = (((uint)col->r * iVar1) >> 10);
+	col->b = (((uint)col->b * iVar1) >> 10);
+	col->g = (((uint)col->g * iVar1) >> 10);
+
+	gte_SetRotMatrix(&cp->hd.drawCarMat);
+
+	v1l.vx = (cp->hd).where.t[0] - camera_position.vx;
+	v1l.vy = -camera_position.vy - cp->hd.where.t[1];
+	v1l.vz = (cp->hd).where.t[2] - camera_position.vz;
+
+	InitFXPos(&v1l, v1, cp);
+
+	if (9 < wetness) 
+	{
+		v1t.vx = v1l.vx;
+		v1t.vy = v1l.vy;
+		v1t.vz = v1l.vz;
+		v1t.pad = v1l.pad;
+		iVar1 = MapHeight((VECTOR *)(cp->hd).where.t);
+		v1t.vy = -camera_position.vy - iVar1;
 	}
-	col->cd = (uchar)flag;
-	ShowLight(&local_38, col, size, texture);
-	local_28[0].r = col->r >> 1;
-	local_28[0].g = col->g >> 1;
-	local_28[0].b = col->b >> 1;
-	ShowFlare(&local_38, local_28, (short)((uint)((int)size * 0x30000) >> 0x10),
-		((int)v1->vx + (int)v1->vz >> 2) + ((cp->hd).direction - (int)camera_angle.vy) * 2);
-	DisplayLightReflections(&local_48, col, size, &lightref_texture);
-	return;*/
+
+	col->cd = flag;
+
+	ShowLight(&v1l, col, size, texture);
+
+	flareCol.r = col->r >> 1;
+	flareCol.g = col->g >> 1;
+	flareCol.b = col->b >> 1;
+
+	ShowFlare(&v1l, &flareCol, (short)((uint)((int)size * 0x30000) >> 0x10), (v1->vx + v1->vz >> 2) + (cp->hd.direction - camera_angle.vy) * 2);
+
+	DisplayLightReflections(&v1t, col, size, &lightref_texture);
 }
 
 
