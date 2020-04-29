@@ -13,6 +13,7 @@
 #include "CAMERA.H"
 #include "DR2ROADS.H"
 
+#include "GTEREG.H"
 #include "INLINE_C.H"
 
 #include <stdlib.h>
@@ -2491,37 +2492,27 @@ LAB_00035098:
 	/* end block 4 */
 	// End Line: 13203
 
+// [D]
 void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	long lVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
+	SVECTOR svectmp;
 
 	if (cp < car_data) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	setCopControlWord(2, 0, *(undefined4 *)(cp->hd).drawCarMat.m);
-	setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).drawCarMat.m + 2));
-	setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).drawCarMat.m + 4));
-	setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).drawCarMat.m + 6));
-	setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).drawCarMat.m + 8));
-	setCopControlWord(2, 0x2800, vec->vx);
-	setCopControlWord(2, 0x3000, vec->vy);
-	setCopControlWord(2, 0x3800, vec->vz);
-	setCopReg(2, in_zero, *(undefined4 *)svec);
-	setCopReg(2, in_at, *(undefined4 *)&svec->vz);
-	copFunction(2, 0x480012);
-	lVar1 = getCopReg(2, 0x19);
-	vec->vx = lVar1;
-	lVar1 = getCopReg(2, 0x1a);
-	vec->vy = lVar1;
-	lVar1 = getCopReg(2, 0x1b);
-	vec->vz = lVar1;
-	return;*/
+
+	gte_SetRotMatrix(&cp->hd.drawCarMat);
+	gte_SetTransVector(vec);
+
+	gte_ldv0(svec);
+
+	docop2(0x480012);
+
+	vec->vx = MAC1;
+	vec->vy = MAC2;
+	vec->vz = MAC3;
 }
 
 
