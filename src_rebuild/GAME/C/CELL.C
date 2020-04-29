@@ -34,7 +34,6 @@ unsigned char cell_object_computed_values[2048];
 void ClearCopUsage(void)
 {
 	ClearMem((char *)cell_object_computed_values, sizeof_cell_object_computed_values);
-	return;
 }
 
 // decompiled code

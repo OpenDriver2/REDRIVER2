@@ -105,12 +105,12 @@ int current_object_computed_value = 0;
 
 int combointensity;
 
-unsigned long model_object_ptrs[512];
-unsigned long anim_obj_buffer[20];
-
 int buildingsFound = 0;
 int cell_object_index = 0;
+
 CELL_OBJECT cell_object_buffer[1024];
+CELL_OBJECT* model_object_ptrs[512];
+CELL_OBJECT* anim_obj_buffer[20];
 
 unsigned long *tile_overflow_buffer;
 
@@ -622,31 +622,25 @@ LAB_0003f6a4:
 	/* end block 3 */
 	// End Line: 1709
 
-CELL_OBJECT * UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
+CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	CELL_OBJECT *returnObject0;
-	int iVar1;
-	CELL_OBJECT *returnObject;
+	CELL_OBJECT *pco;
 
-	iVar1 = cell_object_index;
-	if (ppco != (PACKED_CELL_OBJECT *)0x0) {
-		returnObject = cell_object_buffer + cell_object_index;
-		(returnObject->pos).vx =
-			near->x + ((int)(((uint)(ppco->pos).vx - (uint)*(ushort *)&near->x) * 0x10000) >> 0x10);
-		cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(ppco->pos).vy << 0x10) >> 0x11;
-		returnObject0 = cell_object_buffer + cell_object_index;
+	if (ppco != NULL)
+	{
+		pco = &cell_object_buffer[cell_object_index];
 		cell_object_index = cell_object_index + 1U & 0x3ff;
-		(returnObject0->pos).vz =
-			near->z + ((int)(((uint)(ppco->pos).vz - (uint)*(ushort *)&near->z) * 0x10000) >> 0x10);
-		*(uint *)&cell_object_buffer[iVar1].pad =
-			((uint)(ppco->value >> 6) | ((uint)(ppco->pos).vy & 1) << 10) << 0x10 |
-			((uint)ppco->value & 0x3f) << 8;
-		return returnObject;
+
+		pco->pos.vx = near->x + ((ppco->pos.vx - near->x) * 0x10000) / 0x10000;
+		pco->pos.vz = near->z + ((ppco->pos.vz - near->z) * 0x10000) / 0x10000;
+		pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
+		pco->yang = ppco->value & 0x3f;
+		pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+
+		return pco;
 	}
-	return (CELL_OBJECT *)0x0;*/
+
+	return NULL;
 }
 
 
@@ -884,8 +878,6 @@ void DrawMapPSX(int *comp_val)
 	//undefined4 uVar14;
 	long lVar15;
 	MODEL *pMVar16;
-	CELL_OBJECT **ppCVar17;
-	ulong *puVar18;
 	int iVar19;
 	int iVar20;
 	uint backPlane;
@@ -989,18 +981,14 @@ void DrawMapPSX(int *comp_val)
 
 					if (0 < iVar7) 
 					{
-						puVar18 = anim_obj_buffer;
 						do {
-							cop = (CELL_OBJECT *)*puVar18;
+							cop = (CELL_OBJECT *)anim_obj_buffer[iVar7--];
 							newpos.vx = cop->pos.vx - camera_position.vx;
 							newpos.vy = cop->pos.vy - camera_position.vy;
 							newpos.vz = cop->pos.vz - camera_position.vz;
 							Apply_Inv_CameraMatrix(&newpos);
 
 							gte_SetRotMatrix(&matrixtable[cop->yang]);
-
-							puVar18 = (ulong *)((CELL_OBJECT **)puVar18 + 1);
-							iVar7 = iVar7 + -1;
 							DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
 							
 						} while (iVar7 != 0);
@@ -1022,32 +1010,28 @@ void DrawMapPSX(int *comp_val)
 
 				local_34 = local_34 + -1;
 
-				if (cellx + cellz < 32) // < 16)
+				if (cellx + cellz < 16) // < 16)
 				{
 					cellx = camx + iVar19;
 					cellz = camz + iVar20;
 
 					if( rightPlane < 0 && leftPlane > 0 && backPlane < farClipLimit &&  // check planes
 						cellx > -1 && cellx < cells_across &&							// check cell ranges
-						cellz > -1 && cellz < cells_down/*
-						PVS_ptr[iVar19]*/) // check PVS table		// [A] disabled
+						cellz > -1 && cellz < cells_down /*&&
+						PVS_ptr[iVar19]*/) // check PVS table		// [A] please enable after PVSDecode will work properly
 					{
 						pPVar5 = GetFirstPackedCop(cellx, cellz, &ci, 1);
 						if (pPVar5)
 						{
-							ppCVar17 = (CELL_OBJECT **)(&anim_obj_buffer + iVar7);
-
 							do {
 								pMVar16 = modelpointers[(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10];
 
-								cellx = FrustrumCheck16(pPVar5, (int)pMVar16->bounding_sphere);
-
-								if (cellx != -1)
+								if (FrustrumCheck16(pPVar5, pMVar16->bounding_sphere) != -1)
 								{
 									uVar1 = pMVar16->shape_flags;
+
 									if ((uVar1 & 0x4000) == 0)
 									{
-
 										uVar9 = (uint)pPVar5->value & 0x3f;
 
 										if ((pPVar5->value & 0xf) != 0)
@@ -1070,14 +1054,16 @@ void DrawMapPSX(int *comp_val)
 												//TRZ = pMVar3->t[2];
 											}
 										}
-										cellx = cell_object_index;
+
 										if (((uVar1 & 0x480) == 0) && ((pMVar16->flags2 & 0xc000) == 0))
 										{
-											cop = NULL;
-
+#if 1
+											cop = UnpackCellObject(pPVar5, &ci.near);
+#else
 											if (pPVar5 != NULL)
 											{
-												cop = cell_object_buffer + cell_object_index;
+
+												cop = &cell_object_buffer[cell_object_index];
 												(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
 
 												cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
@@ -1094,57 +1080,31 @@ void DrawMapPSX(int *comp_val)
 													((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
 														((uint)pPVar5->value & 0x3f) << 8;
 											}
+#endif
 
-											if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14))
+											if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 20))
 											{
-												*ppCVar17 = cop;
-												ppCVar17 = ppCVar17 + 1;
-												iVar7 = iVar7 + 1;
+												anim_obj_buffer[iVar7++] = cop;
 											}
 
-											if (other_models_found < 0xc0)
-											{
-												ppCVar6 = (CELL_OBJECT **)(model_object_ptrs + other_models_found);
-												other_models_found = other_models_found + 1;
-												*ppCVar6 = cop;
-											}
+											if (other_models_found < 192)
+												model_object_ptrs[other_models_found++] = cop;
 										}
 										else
 										{
-											if (((pMVar16->flags2 & 0x80) != 0) && (alleycount = alleycount + 1, alleycount == 0xd))
+											if (((pMVar16->flags2 & 0x80) != 0) && (alleycount++, alleycount == 13))
 											{
-												cop = NULL;
-
-												if (pPVar5 != NULL)
-												{
-													cop = cell_object_buffer + cell_object_index;
-													(cop->pos).vx =
-														ci.near.x +
-														((int)(((uint)(pPVar5->pos).vx -
-														(ci.near.x & 0xffffU)) * 0x10000) >>
-															0x10);
-													cell_object_buffer[cell_object_index].pos.vy =
-														(int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-													pCVar2 = cell_object_buffer + cell_object_index;
-													cell_object_index = cell_object_index + 1U & 0x3ff;
-													(pCVar2->pos).vz =
-														ci.near.z +
-														((int)(((uint)(pPVar5->pos).vz -
-														(ci.near.z & 0xffffU)) * 0x10000) >>
-															0x10);
-													*(uint *)&cell_object_buffer[cellx].pad =
-														((uint)(pPVar5->value >> 6) |
-														((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
-															((uint)pPVar5->value & 0x3f) << 8;
-												}
+												cop = UnpackCellObject(pPVar5, &ci.near);
 
 												uVar9 = groundDebrisIndex & 0xf;
 												ground_debris[uVar9].pos.vx = (cop->pos).vx;
 												ground_debris[uVar9].pos.vy = (cop->pos).vy;
 												ground_debris[uVar9].pos.vz = (cop->pos).vz;
-												groundDebrisIndex = groundDebrisIndex + 1;
-												alleycount = 0;
 												ground_debris[uVar9].pad = cop->pad;
+
+												alleycount = 0;
+
+												groundDebrisIndex++;
 											}
 
 											if (tiles_found < 0x100)
@@ -1156,69 +1116,25 @@ void DrawMapPSX(int *comp_val)
 									}
 									else
 									{
-										if (numSpritesFound < 0x4b)
+										if (numSpritesFound < 75)
+											spriteList[numSpritesFound++] = pPVar5;
+
+										if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 20))
 										{
-											ppPVar8 = spriteList + numSpritesFound;
-											numSpritesFound = numSpritesFound + 1;
-											*ppPVar8 = pPVar5;
+											cop = UnpackCellObject(pPVar5, &ci.near);
+											anim_obj_buffer[iVar7++] = cop;
 										}
 
-										cellx = cell_object_index;
-
-										if (((pMVar16->flags2 & 1) != 0) && (iVar7 < 0x14))
+										if (((pMVar16->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount++, uVar9 == 0))
 										{
-											cop = NULL;
+											cop = UnpackCellObject(pPVar5, &ci.near);
 
-											if (pPVar5 != NULL)
-											{
-												cop = cell_object_buffer + cell_object_index;
-
-												(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
-												cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-
-												pCVar2 = cell_object_buffer + cell_object_index;
-												cell_object_index = cell_object_index + 1U & 0x3ff;
-
-												(pCVar2->pos).vz = ci.near.z + ((int)(((uint)(pPVar5->pos).vz - (ci.near.z & 0xffffU)) * 0x10000) >> 0x10);
-												*(uint *)&cell_object_buffer[cellx].pad = ((uint)(pPVar5->value >> 6) | ((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 | ((uint)pPVar5->value & 0x3f) << 8;
-											}
-
-											*ppCVar17 = cop;
-											ppCVar17 = ppCVar17 + 1;
-											iVar7 = iVar7 + 1;
-										}
-										cellx = cell_object_index;
-
-										if (((pMVar16->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount = treecount + 1, uVar9 == 0))
-										{
-											cop = NULL;
-											if (pPVar5 != NULL) {
-												cop = cell_object_buffer + cell_object_index;
-												(cop->pos).vx =
-													ci.near.x +
-													((int)(((uint)(pPVar5->pos).vx -
-													(ci.near.x & 0xffffU)) * 0x10000) >>
-														0x10);
-												cell_object_buffer[cell_object_index].pos.vy =
-													(int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-												pCVar2 = cell_object_buffer + cell_object_index;
-												cell_object_index = cell_object_index + 1U & 0x3ff;
-												(pCVar2->pos).vz =
-													ci.near.z +
-													((int)(((uint)(pPVar5->pos).vz -
-													(ci.near.z & 0xffffU)) * 0x10000) >>
-														0x10);
-												*(uint *)&cell_object_buffer[cellx].pad =
-													((uint)(pPVar5->value >> 6) |
-													((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
-														((uint)pPVar5->value & 0x3f) << 8;
-											}
 											uVar9 = groundDebrisIndex & 0xf;
-											ground_debris[uVar9].pos.vx = (cop->pos).vx;
-											ground_debris[uVar9].pos.vy = (cop->pos).vy;
-											ground_debris[uVar9].pos.vz = (cop->pos).vz;
-											groundDebrisIndex = groundDebrisIndex + 1;
+											ground_debris[uVar9].pos.vx = cop->pos.vx;
+											ground_debris[uVar9].pos.vy = cop->pos.vy;
+											ground_debris[uVar9].pos.vz = cop->pos.vz;
 											ground_debris[uVar9].pad = cop->pad;
+											groundDebrisIndex++;
 										}
 									}
 								}
@@ -2510,7 +2426,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 	// End Line: 5026
 
 // [D]
-int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp)
+int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 {
 	/*
 	it contains prettier yet bugged code
@@ -2602,37 +2518,52 @@ int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp)
 		plotContext.current = current;
 		puVar6 = puVar6 + 4;
 	} while (-1 < iVar8);
+
 	current->ot = current->ot + 8;
-	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
-	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+
+	plotContext.ptexture_pages = &texture_pages;
+	plotContext.ptexture_cluts = &texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = 0;
 	iVar8 = 0;
-	if (0 < num_buildings) {
+
+	if (0 < num_buildings) 
+	{
 		pcVar5 = (plotContext.current)->primtab + -(int)((plotContext.current)->primptr + -0x1e000);
-		while (55999 < (int)pcVar5) {
+
+		while (55999 < (int)pcVar5) 
+		{
 			local_s0_312 = (CELL_OBJECT *)*objects;
 			uVar3 = (uint)local_s0_312->yang;
-			if (uVar9 == uVar3) {
+
+			if (uVar9 == uVar3) 
+			{
 				Apply_InvCameraMatrixSetTrans(&local_s0_312->pos);
 			}
-			else {
+			else 
+			{
 				Apply_InvCameraMatrixAndSetMatrix(&local_s0_312->pos, CompoundMatrix + uVar3);
 				uVar9 = uVar3;
 			}
+
 			model = modelpointers[local_s0_312->type];
 			savedOT = current->ot;
-			iVar4 = (uint)model->zBias - 0x40;
-			if (iVar4 < 0) {
+			iVar4 = model->zBias - 64;
+			if (iVar4 < 0)
 				iVar4 = 0;
-			}
-			objects = (ulong *)((CELL_OBJECT **)objects + 1);
+
+			objects++;
 			current->ot = savedOT + iVar4 * 4;
-			PlotBuildingModelSubdivNxN(model, (uint)local_s0_312->yang, (_pct *)&plotContext, 1);
+
+			PlotBuildingModelSubdivNxN(model, local_s0_312->yang, &plotContext, 1);
+
 			pDVar1 = current;
 			iVar8 = iVar8 + 1;
 			current->ot = savedOT;
-			if (num_buildings <= iVar8) break;
+
+			if (num_buildings <= iVar8) 
+				break;
+
 			pcVar5 = pDVar1->primtab + -(int)(pDVar1->primptr + -0x1e000);
 		}
 	}

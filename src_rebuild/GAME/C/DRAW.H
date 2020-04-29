@@ -57,7 +57,7 @@ extern void DrawAllTheCars(int view); // 0x000407D8
 
 extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, struct _pct *pc, int n); // 0x00040A90
 
-extern int DrawAllBuildings(unsigned long *objects, int num_buildings, DB *disp); // 0x000411F4
+extern int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp); // 0x000411F4
 
 extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags); // 0x0004143C
 
