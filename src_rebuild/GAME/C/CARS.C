@@ -1779,7 +1779,6 @@ LAB_00023598:
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-int lightning = 0;
 
 // [D]
 void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)

@@ -5,6 +5,12 @@
 #include "PRES.H"
 #include "DIRECTOR.H"
 #include "MOTION_C.H"
+#include "PAUSE.H"
+#include "SOUND.H"
+#include "MAIN.H"
+#include "SYSTEM.H"
+
+#include <stdlib.h>
 
 TEXTURE_DETAILS digit_texture;
 TEXTURE_DETAILS pause;
@@ -5043,49 +5049,45 @@ void DisplaySmoke(SMOKE *smoke)
 	/* end block 2 */
 	// End Line: 10703
 
+// [D]
 void add_haze(int top_col, int bot_col, short ot_pos)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	char cVar2;
-	uint *puVar3;
-	int iVar4;
-	char *pcVar5;
+	unsigned char uVar2;
+	TILE *polys;
 
-	iVar4 = (int)ot_pos;
-	if ((9 < top_col) && (FastForward == 0)) {
-		puVar3 = (uint *)current->primptr;
-		*(char *)((int)puVar3 + 3) = '\x03';
-		cVar2 = (char)top_col;
-		*(char *)(puVar3 + 1) = cVar2;
-		*(char *)((int)puVar3 + 5) = cVar2;
-		*(char *)((int)puVar3 + 6) = cVar2;
-		*(char *)((int)puVar3 + 7) = 'b';
-		pDVar1 = current;
-		*(undefined2 *)(puVar3 + 3) = 0x140;
-		*(undefined2 *)(puVar3 + 2) = 0;
-		*(undefined2 *)((int)puVar3 + 10) = 0;
-		*(undefined2 *)((int)puVar3 + 0xe) = 0x100;
-		*puVar3 = *puVar3 & 0xff000000 | pDVar1->ot[iVar4] & 0xffffff;
-		pDVar1->ot[iVar4] = pDVar1->ot[iVar4] & 0xff000000 | (uint)puVar3 & 0xffffff;
-		pcVar5 = pDVar1->primptr;
-		pDVar1->primptr = pcVar5 + 0x10;
-		pcVar5[0x13] = '\a';
-		pcVar5[0x17] = '$';
-		pDVar1 = current;
-		*(undefined2 *)(pcVar5 + 0x18) = 0xffff;
-		*(undefined2 *)(pcVar5 + 0x1a) = 0xffff;
-		*(undefined2 *)(pcVar5 + 0x20) = 0xffff;
-		*(undefined2 *)(pcVar5 + 0x22) = 0xffff;
-		*(undefined2 *)(pcVar5 + 0x28) = 0xffff;
-		*(undefined2 *)(pcVar5 + 0x2a) = 0xffff;
-		*(undefined2 *)(pcVar5 + 0x26) = 0x20;
-		*(uint *)(pcVar5 + 0x10) = *(uint *)(pcVar5 + 0x10) & 0xff000000 | pDVar1->ot[iVar4] & 0xffffff;
-		pDVar1->ot[iVar4] = pDVar1->ot[iVar4] & 0xff000000 | (uint)(pcVar5 + 0x10) & 0xffffff;
-		pDVar1->primptr = pDVar1->primptr + 0x20;
+	if ((9 < top_col) && (FastForward == 0))
+	{
+		polys = (TILE *)current->primptr;
+
+		setTile(polys);
+
+		polys->r0 = top_col;
+		polys->g0 = top_col;
+		polys->b0 = top_col;
+
+		setSemiTrans(polys, 1);
+		polys->w = 320;
+		polys->x0 = 0;
+		polys->y0 = 0;
+		polys->h = 256;
+		addPrim(current->ot + ot_pos, polys);
+
+		current->primptr += sizeof(TILE);
+
+		POLY_FT3* null = (POLY_FT3*)current->primptr;
+		setPolyFT3(null);
+
+		null->x0 = -1;
+		null->y0 = -1;
+		null->x1 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->y2 = -1;
+		null->tpage = 0x20;
+		addPrim(current->ot + ot_pos, null);
+
+		current->primptr += sizeof(POLY_FT3);
 	}
-	return;*/
 }
 
 
@@ -5733,36 +5735,46 @@ void DisplayLightReflections(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAI
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int lightning = 0;
+int LightningTimer = 10;
+int ThunderTimer = 0;
+static int ThunderDistance = 0;
+
+// [D]
 void DoLightning(void)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 
-	if (pauseflag == 0) {
-		if (LightningTimer < -10) {
+	if (pauseflag == 0) 
+	{
+		if (LightningTimer < -10) 
+		{
 			uVar1 = rand();
 			LightningTimer = uVar1 & 0xff;
 		}
-		else {
+		else 
 			LightningTimer = LightningTimer - 1;
-		}
-		if ((LightningTimer < 0) && (uVar1 = rand(), (uVar1 & 1) == 0)) {
+	
+		if ((LightningTimer < 0) && (uVar1 = rand(), (uVar1 & 1) == 0))
+		{
 			RequestThunder();
 			uVar1 = rand();
-			if ((uVar1 & 1) == 0) {
+
+			if ((uVar1 & 1) == 0) 
+			{
 				NightAmbient = NightAmbient << 1;
-				if (0x80 < NightAmbient) {
+				if (0x80 < NightAmbient) 
 					NightAmbient = 0x80;
-				}
+
 				lightning = 2;
 				return;
 			}
+
 			add_haze(0x32, 0, 0x107e);
 		}
+
 		lightning = 0;
 	}
-	return;*/
 }
 
 
@@ -5785,16 +5797,11 @@ void DoLightning(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitThunder(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-
 	ThunderTimer = -1;
-	iVar1 = rand();
-	ThunderDistance = iVar1 % 5000;
-	return;*/
+	ThunderDistance = rand() % 5000;
 }
 
 
@@ -5810,15 +5817,13 @@ void InitThunder(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void RequestThunder(void)
 {
-	UNIMPLEMENTED();
-	/*
 	ThunderTimer = ThunderDistance >> 8;
-	if (ThunderTimer < 1) {
+
+	if (ThunderTimer < 1)
 		ThunderTimer = 1;
-	}
-	return;*/
 }
 
 
@@ -5846,33 +5851,37 @@ void RequestThunder(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DoThunder(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 
-	if (pauseflag == 0) {
+	if (pauseflag == 0) 
+	{
 		iVar1 = rand();
-		ThunderDistance = (ThunderDistance + 0x28) - iVar1 % 0x50;
-		if (ThunderDistance < 0xfa) {
-			ThunderDistance = 0xfa;
-		}
-		if (5000 < ThunderDistance) {
-			ThunderDistance = (int)&DAT_00001388;
-		}
-		iVar1 = ThunderTimer + -1;
-		if ((-1 < ThunderTimer) && (ThunderTimer = iVar1, iVar1 == 0)) {
+		ThunderDistance = (ThunderDistance + 40) - iVar1 % 80;
+
+		if (ThunderDistance < 250)
+			ThunderDistance = 250;
+
+		if (5000 < ThunderDistance) 
+			ThunderDistance = 5000;
+
+		iVar1 = ThunderTimer-1;
+
+		if ((-1 < ThunderTimer) && (ThunderTimer = iVar1, iVar1 == 0)) 
+		{
 			iVar2 = rand();
+
 			iVar1 = iVar2;
-			if (iVar2 < 0) {
+
+			if (iVar2 < 0)
 				iVar1 = iVar2 + 0x7ff;
-			}
-			StartSound(-1, 1, 0xc, -ThunderDistance, iVar2 + (iVar1 >> 0xb) * -0x800 + 0xc00);
+
+			StartSound(-1, 1, 12, -ThunderDistance, iVar2 - (iVar1 >> 0xb) * 2048 + 3072);
 		}
 	}
-	return;*/
 }
 
 
