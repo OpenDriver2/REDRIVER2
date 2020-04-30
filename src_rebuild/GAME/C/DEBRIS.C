@@ -12,6 +12,8 @@
 #include "CARS.H"
 #include "CAMERA.H"
 #include "DR2ROADS.H"
+#include "CONVERT.H"
+#include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"
@@ -2605,15 +2607,15 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 		if (iVar1 < 0) 
 			return;
 	}
-	col->r = (((uint)col->r * iVar1) >> 10);
-	col->b = (((uint)col->b * iVar1) >> 10);
-	col->g = (((uint)col->g * iVar1) >> 10);
+	col->r = ((col->r * iVar1) >> 10);
+	col->b = ((col->b * iVar1) >> 10);
+	col->g = ((col->g * iVar1) >> 10);
 
 	gte_SetRotMatrix(&cp->hd.drawCarMat);
 
-	v1l.vx = (cp->hd).where.t[0] - camera_position.vx;
+	v1l.vx = cp->hd.where.t[0] - camera_position.vx;
 	v1l.vy = -camera_position.vy - cp->hd.where.t[1];
-	v1l.vz = (cp->hd).where.t[2] - camera_position.vz;
+	v1l.vz = cp->hd.where.t[2] - camera_position.vz;
 
 	InitFXPos(&v1l, v1, cp);
 
@@ -2623,7 +2625,7 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 		v1t.vy = v1l.vy;
 		v1t.vz = v1l.vz;
 		v1t.pad = v1l.pad;
-		iVar1 = MapHeight((VECTOR *)(cp->hd).where.t);
+		iVar1 = MapHeight((VECTOR *)cp->hd.where.t);
 		v1t.vy = -camera_position.vy - iVar1;
 	}
 
@@ -2820,6 +2822,8 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
 	UNIMPLEMENTED();
+	Apply_Inv_CameraMatrix(v1);
+
 	/*
 	uchar uVar1;
 	short sVar2;
@@ -3410,107 +3414,94 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+int LightSortCorrect = 0;
+
+// [D]
 void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	uint uVar2;
-	DB *pDVar3;
-	uchar uVar4;
-	undefined4 in_zero;
-	undefined4 in_at;
-	short sVar5;
-	undefined4 in_v1;
-	MATRIX *m;
-	SVECTOR *r;
-	uint *puVar6;
-	undefined4 local_60;
-	undefined4 local_5c;
-	undefined4 local_58;
-	undefined4 local_54;
-	undefined4 local_50;
-	undefined4 local_4c;
-	undefined4 local_48;
-	undefined4 local_44;
-	SVECTOR local_40;
-	undefined4 local_38;
-	undefined4 local_34;
-	undefined4 local_30;
-	undefined4 local_2c;
-	undefined4 local_28;
-	int local_18;
+	POLY_FT4 *poly;
+	SVECTOR vert[4];
+	SVECTOR direction;
+	MATRIX temp_matrix;
+	int z;
 
-	setCopControlWord(2, 0x2800, v1->vx);
-	setCopControlWord(2, 0x3000, v1->vy);
-	setCopControlWord(2, 0x3800, v1->vz);
-	m = (MATRIX *)&local_38;
-	r = &local_40;
-	local_40.vy = 0;
-	local_40.vx = 0;
-	local_40.vz = (short)rotation;
-	RotMatrixXYZ(m, r);
-	setCopControlWord(2, 0, local_38);
-	setCopControlWord(2, 0x800, local_34);
-	setCopControlWord(2, 0x1000, local_30);
-	setCopControlWord(2, 0x1800, local_2c);
-	setCopControlWord(2, 0x2000, local_28);
-	sVar5 = -size;
-	local_60 = CONCAT22(sVar5, sVar5);
-	local_5c = (uint)local_5c._2_2_ << 0x10;
-	local_58 = CONCAT22(sVar5, size);
-	local_54 = (uint)local_54._2_2_ << 0x10;
-	local_50 = CONCAT22(size, sVar5);
-	local_4c = (uint)local_4c._2_2_ << 0x10;
-	local_48 = CONCAT22(size, size);
-	local_44 = (uint)local_44._2_2_ << 0x10;
-	setCopReg(2, in_zero, local_60);
-	setCopReg(2, in_at, local_5c);
-	setCopReg(2, &local_60, local_58);
-	setCopReg(2, in_v1, local_54);
-	setCopReg(2, m, local_50);
-	setCopReg(2, r, local_4c);
-	copFunction(2, 0x280030);
-	puVar6 = (uint *)current->primptr;
-	*(uchar *)(puVar6 + 3) = flare_texture.coords.u0;
-	*(uchar *)((int)puVar6 + 0xd) = flare_texture.coords.v0;
-	*(uchar *)(puVar6 + 5) = flare_texture.coords.u1;
-	*(uchar *)((int)puVar6 + 0x15) = flare_texture.coords.v1;
-	*(uchar *)(puVar6 + 7) = flare_texture.coords.u2;
-	*(char *)((int)puVar6 + 0x1d) = flare_texture.coords.v2 + -1;
-	*(uchar *)(puVar6 + 9) = flare_texture.coords.u3;
-	uVar4 = flare_texture.coords.v3;
-	*(char *)((int)puVar6 + 3) = '\t';
-	*(char *)((int)puVar6 + 7) = '.';
-	*(char *)((int)puVar6 + 0x25) = uVar4 + -1;
-	*(uchar *)(puVar6 + 1) = col->r >> 1;
-	*(byte *)((int)puVar6 + 5) = col->g >> 1;
-	*(byte *)((int)puVar6 + 6) = col->b >> 1;
-	iVar1 = getCopReg(2, 0x13);
-	if (0x27 < iVar1 >> 3) {
-		local_18 = (iVar1 >> 3) + LightSortCorrect;
-		if (local_18 < 1) {
-			local_18 = 1;
-		}
-		uVar2 = getCopReg(2, 0xc);
-		puVar6[2] = uVar2;
-		uVar2 = getCopReg(2, 0xd);
-		puVar6[4] = uVar2;
-		uVar2 = getCopReg(2, 0xe);
-		puVar6[6] = uVar2;
-		pDVar3 = current;
-		setCopReg(2, in_zero, local_48);
-		setCopReg(2, in_at, local_44);
-		copFunction(2, 0x180001);
-		*(ushort *)((int)puVar6 + 0x16) = flare_texture.tpageid | 0x20;
-		*(ushort *)((int)puVar6 + 0xe) = flare_texture.clutid;
-		*puVar6 = *puVar6 & 0xff000000 | pDVar3->ot[local_18] & 0xffffff;
-		pDVar3->ot[local_18] = pDVar3->ot[local_18] & 0xff000000 | (uint)puVar6 & 0xffffff;
-		pDVar3->primptr = pDVar3->primptr + 0x28;
-		uVar2 = getCopReg(2, 0xe);
-		puVar6[8] = uVar2;
+	gte_SetTransVector(v1);
+
+	//setCopControlWord(2, 0x2800, v1->vx);
+	//setCopControlWord(2, 0x3000, v1->vy);
+	//setCopControlWord(2, 0x3800, v1->vz);
+
+	direction.vy = 0;
+	direction.vx = 0;
+	direction.vz = (short)rotation;
+
+	RotMatrixXYZ(&temp_matrix, &direction);
+
+	gte_SetRotMatrix(&temp_matrix);
+
+	vert[0].vx = -size; //vert[0]._0_4_ = CONCAT22(sVar5, sVar5);
+	vert[0].vy = -size; //vert[0]._4_4_ = (uint)(ushort)vert[0].pad << 0x10;
+	vert[0].vz = 0;
+
+	vert[1].vx = -size; //vert[1]._0_4_ = CONCAT22(sVar5, size);
+	vert[1].vy = size; //vert[1]._4_4_ = (uint)(ushort)vert[1].pad << 0x10;
+	vert[1].vz = 0;
+
+	vert[2].vx = size; //vert[2]._0_4_ = CONCAT22(size, sVar5);
+	vert[2].vy = -size; //vert[2]._4_4_ = (uint)(ushort)vert[2].pad << 0x10;
+	vert[2].vz = 0;
+
+	vert[3].vx = size; //vert[3]._0_4_ = CONCAT22(size, size);
+	vert[3].vy = size; //vert[3]._4_4_ = (uint)(ushort)vert[3].pad << 0x10;
+	vert[3].vz = 0;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	docop2(0x280030);
+
+	poly = (POLY_FT4 *)current->primptr;
+
+	poly->u0 = flare_texture.coords.u0;
+	poly->v0 = flare_texture.coords.v0;
+	poly->u1 = flare_texture.coords.u1;
+	poly->v1 = flare_texture.coords.v1;
+	poly->u2 = flare_texture.coords.u2;
+	poly->v2 = flare_texture.coords.v2-1;
+	poly->u3 = flare_texture.coords.u3;
+	poly->v3 = flare_texture.coords.v3-1;
+
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+
+	poly->r0 = col->r >> 1;
+	poly->g0 = col->g >> 1;
+	poly->b0 = col->b >> 1;
+
+	z = SZ3;
+
+	if (39 < z >> 3) 
+	{
+		z = (z >> 3) + LightSortCorrect;
+
+		if (z < 1)
+			z = 1;
+
+		*(uint *)&poly->x0 = SXY0;
+		*(uint *)&poly->x1 = SXY1;
+		*(uint *)&poly->x2 = SXY2;
+
+		gte_ldv0(&vert[3]);
+
+		docop2(0x180001);
+		*(uint *)&poly->x3 = SXY2;
+
+		poly->tpage = flare_texture.tpageid | 0x20;
+		poly->clut = flare_texture.clutid;
+
+		addPrim(current->ot + z, poly);
+
+		current->primptr += sizeof(POLY_FT4);
 	}
-	return;*/
 }
 
 

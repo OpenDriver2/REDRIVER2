@@ -815,6 +815,7 @@ void AddNightLights(_CAR_DATA *cp)
 			sVar2 = *psVar13 >> 6;
 			Position1.vz = (vec.vz + sVar2);
 			Position2.vz = (vec.vz + sVar2);
+
 			if (*psVar13 < 1000) 
 			{
 				cVar11 = 1;
@@ -832,8 +833,12 @@ void AddNightLights(_CAR_DATA *cp)
 			sVar2 = *psVar13 >> 6;
 			Position1.vz = vec.vz + sVar2;
 			Position2.vz = vec.vz + sVar2;
+
 			Position1.vx = sVar4 + vec.vx;
+			Position1.vy = vec.vy;
+
 			Position2.vx = vec.vx - sVar4;
+			Position2.vy = vec.vy;
 
 			if (*psVar13 < 1000) 
 			{
@@ -880,7 +885,7 @@ void AddNightLights(_CAR_DATA *cp)
 		lit = iVar10;
 		local_2c = cp->ap.damage;
 		iVar10 = -sVar4;
-		//vec._0_4_ = vec._0_4_ & 0xffff0000 | (uint)(ushort)(sVar1 * 2 - vec.vx);
+		vec.vx = sVar1 * 2 - vec.vx;
 		cVar5 = cVar11;
 
 		if (loop == 0) 
@@ -938,16 +943,22 @@ void AddNightLights(_CAR_DATA *cp)
 							sVar2 = local_2c[iVar12];
 							Position1.vx = sVar4 + vec.vx;
 							Position2.vx = vec.vx - sVar4;
+
+							Position1.vy = vec.vy;
+							Position2.vy = vec.vy;
 						}
 						else
 						{
 							sVar2 = local_2c[iVar12];
 							Position1.vy = sVar4 + vec.vy;
 							Position2.vy = vec.vy - sVar4;
+
+							Position1.vx = vec.vx;
+							Position2.vx = vec.vx;
 						}
 
-						Position2.vz = uVar6 + (sVar2 >> 6);
-						Position1.vz = uVar6 + (sVar2 >> 6);
+						Position2.vz = vec.vz + (sVar2 >> 6);
+						Position1.vz = vec.vz + (sVar2 >> 6);
 
 						if (sVar2 < 500)
 						{
