@@ -1,6 +1,26 @@
 #include "THISDUST.H"
 #include "BCOLLIDE.H"
+#include "COSMETIC.H"
+#include "PAD.H"
+#include "DEBRIS.H"
+#include "EVENT.H"
+#include "OBJCOLL.H"
+#include "MODELS.H"
+#include "SOUND.H"
+#include "GAMESND.H"
+#include "GLAUNCH.H"
+#include "MAIN.H"
+#include "MISSION.H"
+#include "FELONY.H"
+#include "WHEELFORCES.H"
+#include "HANDLING.H"
+#include "CAMERA.H"
+#include "OBJANIM.H"
 
+#include "STRINGS.H"
+#include "GTEREG.H"
+#include "INLINE_C.H"
+#include <stdlib.h>
 
 // decompiled code
 // original method signature: 
@@ -38,11 +58,11 @@
 	/* end block 2 */
 	// End Line: 241
 
+int boxOverlap = 0;
+
+// [D]
 int bcollided2d(CDATA2D *body, int needOverlap)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -62,18 +82,21 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 	int *piVar17;
 	int iVar18;
 	int iVar19;
-	uint uVar20;
+	int uVar20;
 	VECTOR *pVVar21;
-	long *plVar22;
+	int *plVar22;
 	int *piVar23;
 	int iVar24;
 	int *piVar25;
+	VECTOR delta;
 
 	iVar19 = 1;
 	pCVar11 = body + 1;
 	uVar5 = body[1].theta - body->theta;
+
 	sVar1 = rcossin_tbl[(uVar5 + 0x400 & 0x7ff) * 2];
 	sVar2 = rcossin_tbl[(uVar5 & 0x7ff) * 2];
+
 	do {
 		iVar19 = iVar19 + -1;
 		uVar5 = pCVar11->theta & 0xfff;
@@ -85,10 +108,11 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		pCVar11->axis[1].vx = (int)sVar4;
 		pCVar11 = pCVar11 + -1;
 	} while (iVar19 != -1);
+
 	uVar5 = 0;
 	uVar20 = 1;
 	piVar23 = body[1].limit;
-	plVar22 = &body[1].axis[0].vz;
+	plVar22 = (int*)&body[1].axis[0].vz;
 	pVVar21 = body[1].axis;
 	piVar25 = body[1].dist;
 	iVar24 = 100;
@@ -105,16 +129,18 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		piVar13 = plVar22 + 4;
 		pVVar12 = pVVar21 + 1;
 		piVar10 = piVar25 + 1;
+
 		do {
-			*piVar10 = pVVar12->vx * (iVar19 - iVar8) + *piVar13 * (iVar6 - iVar9) + 0x800 >> 0xc;
-			iVar7 = *piVar17 + (*piVar16 * (int)sVar1 + *piVar14 * (int)sVar2 + 0x800 >> 0xc);
+			*piVar10 = pVVar12->vx * (iVar19 - iVar8) + *piVar13 * (iVar6 - iVar9) +0x800 >> 0xc;
+			iVar7 = *piVar17 + (*piVar16 * (int)sVar1 + *piVar14 * (int)sVar2 +0x800 >> 0xc);
 			*piVar15 = iVar7;
-			if (iVar7 < *piVar10) {
+
+			if (iVar7 < *piVar10)
 				return 0;
-			}
-			if (*piVar10 < -iVar7) {
+		
+			if (*piVar10 < -iVar7)
 				return 0;
-			}
+		
 			piVar17 = piVar17 + -1;
 			piVar16 = piVar16 + -1;
 			piVar15 = piVar15 + -1;
@@ -124,70 +150,82 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 			iVar18 = iVar18 + -1;
 			piVar10 = piVar10 + -1;
 		} while (iVar18 != -1);
+
 		uVar5 = uVar20 & 1;
-		piVar23 = piVar23 + -0x19;
-		plVar22 = plVar22 + -0x19;
+		piVar23 = piVar23-25;
+		plVar22 = plVar22-25;
 		pVVar21 = (VECTOR *)&pVVar21[-7].pad;
-		piVar25 = piVar25 + -0x19;
+		piVar25 = piVar25-25;
 		uVar20 = uVar20 - 1;
-		iVar24 = iVar24 + -100;
-		if (uVar20 == 0xffffffff) {
-			if (needOverlap != 0) {
+		iVar24 = iVar24-100;
+
+		if (uVar20 == -1) 
+		{
+			if (needOverlap != 0) 
+			{
 				iVar19 = body[1].dist[0];
 				iVar6 = body[1].limit[0];
-				if (iVar19 < 0) {
+				if (iVar19 < 0)
 					iVar19 = -iVar19;
-				}
-				if (iVar6 < 0) {
+			
+				if (iVar6 < 0)
 					iVar6 = -iVar6;
-				}
+			
 				iVar8 = iVar19 - iVar6;
-				if (iVar8 < 0) {
+				if (iVar8 < 0)
 					iVar8 = iVar6 - iVar19;
-				}
+			
 				iVar9 = body->axis[0].vx;
 				iVar6 = body->axis[0].vz;
-				iVar19 = iVar9 * body[1].axis[0].vx + iVar6 * body[1].axis[0].vz + 0x800 >> 0xc;
-				if (iVar19 < 0) {
+				iVar19 = iVar9 * (body[1].axis[0].vx + iVar6 * body[1].axis[0].vz / 4096);// +0x800 >> 0xc;
+
+				if (iVar19 < 0) 
 					iVar19 = -iVar19;
-				}
-				if (iVar19 < 0xb) {
+
+				if (iVar19 < 0xb) 
+				{
 					iVar8 = -1;
 				}
-				else {
+				else 
+				{
 					iVar8 = (iVar8 << 0xc) / iVar19;
-					if (iVar19 == 0) {
+					if (iVar19 == 0) 
+					{
 						trap(7);
 					}
 				}
 				iVar19 = body[1].dist[1];
 				iVar24 = body[1].limit[1];
-				if (iVar19 < 0) {
+
+				if (iVar19 < 0)
 					iVar19 = -iVar19;
-				}
-				if (iVar24 < 0) {
+			
+				if (iVar24 < 0)
 					iVar24 = -iVar24;
-				}
+			
 				iVar18 = iVar19 - iVar24;
-				if (iVar18 < 0) {
+				if (iVar18 < 0)
 					iVar18 = iVar24 - iVar19;
-				}
+			
 				iVar19 = iVar9 * body[1].axis[1].vx + iVar6 * body[1].axis[1].vz + 0x800 >> 0xc;
-				if (iVar19 < 0) {
+				if (iVar19 < 0)
 					iVar19 = -iVar19;
-				}
+			
 				iVar6 = iVar8;
-				if ((10 < iVar19) && (iVar6 = (iVar18 << 0xc) / iVar19, iVar19 == 0)) {
+				if ((10 < iVar19) && (iVar6 = (iVar18 << 0xc) / iVar19, iVar19 == 0)) 
+				{
 					trap(7);
 				}
+
 				boxOverlap = iVar6;
-				if ((-1 < iVar8) && (boxOverlap = iVar8, iVar6 < iVar8)) {
+				if ((-1 < iVar8) && (boxOverlap = iVar8, iVar6 < iVar8))
+				{
 					boxOverlap = iVar6;
 				}
 			}
 			return 1;
 		}
-	} while (true);*/
+	} while (true);
 }
 
 
@@ -249,10 +287,9 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 	/* end block 4 */
 	// End Line: 432
 
+// [D]
 void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	int iVar2;
 	int iVar3;
@@ -278,12 +315,16 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	iVar15 = 0;
 	bVar1 = false;
 	iVar16 = body->limit[0] + 1;
-	if ((body->isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0)) {
+
+	if ((body->isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0)) 
+	{
 		if ((body[1].length[0] << 2 <= body[1].length[1]) ||
-			(body[1].length[1] << 2 <= body[1].length[0])) {
+			(body[1].length[1] << 2 <= body[1].length[0])) 
+		{
 			bVar1 = true;
 		}
 	}
+
 	uVar8 = 1;
 	do {
 		iVar11 = 1;
@@ -292,21 +333,26 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 		do {
 			iVar5 = piVar6[2] - *piVar6;
 			iVar2 = *piVar6 + piVar6[2];
-			if ((iVar5 < iVar16) &&
-				(iVar15 = -1, iVar16 = iVar5, uVar17 = uVar8, iVar19 = iVar11, uVar8 == 1)) {
+
+			if ((iVar5 < iVar16) && (iVar15 = -1, iVar16 = iVar5, uVar17 = uVar8, iVar19 = iVar11, uVar8 == 1))
+			{
 				iVar15 = 1;
 			}
-			if ((iVar2 < iVar16) &&
-				(iVar15 = 1, iVar16 = iVar2, uVar17 = uVar8, iVar19 = iVar11, uVar8 == 1)) {
+			if ((iVar2 < iVar16) && (iVar15 = 1, iVar16 = iVar2, uVar17 = uVar8, iVar19 = iVar11, uVar8 == 1)) 
+			{
 				iVar15 = -1;
 			}
+
 			iVar11 = iVar11 + -1;
 			piVar6 = piVar6 + -1;
+
 		} while (iVar11 != -1);
 		iVar11 = 1;
 		uVar8 = uVar12;
 	} while (uVar12 != 0xffffffff);
-	if (bVar1) {
+
+	if (bVar1)
+	{
 		piVar9 = body[1].length + 1;
 		piVar6 = body[1].length;
 		piVar14 = body[1].dist + 1;
@@ -314,12 +360,16 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 		do {
 			iVar5 = *piVar13 - *piVar14;
 			iVar2 = *piVar14 + *piVar13;
-			if ((iVar5 < iVar2) && (*piVar9 < *piVar6 << 2)) {
+
+			if ((iVar5 < iVar2) && (*piVar9 < *piVar6 << 2)) 
+			{
 				uVar17 = 1;
 				iVar15 = 1;
 				iVar19 = iVar11;
 			}
-			if ((iVar2 < iVar5) && (*piVar9 < *piVar6 << 2)) {
+
+			if ((iVar2 < iVar5) && (*piVar9 < *piVar6 << 2)) 
+			{
 				uVar17 = 1;
 				iVar15 = -1;
 				iVar19 = iVar11;
@@ -331,40 +381,41 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 			piVar13 = piVar13 + -1;
 		} while (iVar11 != -1);
 	}
+
 	pCVar7 = body + (uVar17 ^ 1);
 	pVVar18 = body[uVar17].axis + iVar19;
 	iVar5 = pCVar7->axis[0].vx;
 	iVar2 = pVVar18->vx;
-	piVar6 = &body[uVar17].axis[iVar19].vz;
+	piVar6 = (int*)&body[uVar17].axis[iVar19].vz;
 	iVar11 = *piVar6;
 	iVar19 = iVar15;
-	if (-1 < iVar5 * iVar2 + pCVar7->axis[0].vz * iVar11 + 0x800) {
+
+	if (-1 < iVar5 * iVar2 + pCVar7->axis[0].vz * iVar11);// + 0x800)
 		iVar19 = -iVar15;
-	}
+
 	iVar3 = pCVar7->axis[1].vx;
 	iVar10 = iVar15;
-	if (-1 < iVar3 * iVar2 + pCVar7->axis[1].vz * iVar11 + 0x800) {
+	if (-1 < iVar3 * iVar2 + pCVar7->axis[1].vz * iVar11);// +0x800)
 		iVar10 = -iVar15;
-	}
-	(collisionResult->hit).vx =
-		(pCVar7->x).vx +
-		(iVar5 * pCVar7->length[0] * iVar19 + iVar3 * pCVar7->length[1] * iVar10 + 0x800 >> 0xc);
+
+	collisionResult->hit.vx = (pCVar7->x).vx + (iVar5 * pCVar7->length[0] * iVar19 + iVar3 * pCVar7->length[1] * iVar10) / 4096;
+
 	iVar11 = pCVar7->axis[0].vz;
 	iVar2 = pCVar7->length[0];
 	iVar4 = pCVar7->axis[1].vz;
 	iVar5 = pCVar7->length[1];
-	iVar3 = (pCVar7->x).vz;
+	iVar3 = pCVar7->x.vz;
+
 	collisionResult->penetration = iVar16;
-	(collisionResult->hit).vz =
-		iVar3 + (iVar11 * iVar2 * iVar19 + iVar4 * iVar5 * iVar10 + 0x800 >> 0xc);
-	if (uVar17 != 0) {
+	collisionResult->hit.vz = iVar3 + (iVar11 * iVar2 * iVar19 + iVar4 * iVar5 * iVar10) / 4096;
+	
+	if (uVar17 != 0)
 		iVar15 = -iVar15;
-	}
+
 	iVar16 = pVVar18->vx;
-	(collisionResult->surfNormal).vy = 0;
-	(collisionResult->surfNormal).vx = iVar16 * iVar15;
-	(collisionResult->surfNormal).vz = *piVar6 * iVar15;
-	return;*/
+	collisionResult->surfNormal.vy = 0;
+	collisionResult->surfNormal.vx = iVar16 * iVar15;
+	collisionResult->surfNormal.vz = *piVar6 * iVar15;
 }
 
 
@@ -398,155 +449,168 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	/* end block 3 */
 	// End Line: 639
 
+// [D]
 int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	undefined4 *puVar1;
-	int iVar2;
-	long lVar3;
-	undefined4 uVar4;
-	long lVar5;
-	CDATA2D *pCVar6;
-	undefined4 *puVar7;
-	int iVar8;
-	undefined4 *puVar9;
-	undefined4 *puVar10;
+	int *piVar1;
+	VECTOR *pVVar2;
+	int iVar3;
+	long lVar4;
+	CDATA2D *pCVar5;
+	int *local_a1_184;
+	int iVar6;
+	int *piVar7;
+	int *piVar8;
+	int iVar9;
+	int iVar10;
 	int iVar11;
 	int iVar12;
 	int iVar13;
-	int iVar14;
-	int iVar15;
-	long *plVar16;
-	long *plVar17;
+	CDATA2D *pCVar14;
+	long *plVar15;
+	int iVar16;
+	int iVar17;
 	int iVar18;
-	int *piVar19;
-	int iVar20;
-	int iVar21;
-	long alStack248[16];
-	int aiStack184[4];
-	undefined4 auStack168[21];
-	int local_54[9];
-	long *local_30;
-	long *local_2c;
+	CDATA2D original[2];
 
-	iVar13 = 1;
-	iVar21 = 1;
-	iVar15 = 0x1000;
-	iVar18 = 0x800;
-	iVar20 = 1;
-	pCVar6 = cd + 1;
-	iVar12 = 100;
-	local_30 = alStack248;
-	local_2c = alStack248 + 2;
+	iVar11 = 1;
+	iVar18 = 1;
+	iVar13 = 0x1000;
+	iVar16 = 0x800;
+	iVar17 = 1;
+	pCVar5 = cd + 1;
+	iVar10 = 100;
+
+	// [A] oh my God, this needs serious refactoring...
+
 	do {
-		iVar14 = 1;
-		puVar10 = (undefined4 *)((int)auStack168 + iVar12);
-		puVar7 = (undefined4 *)((int)cd->dist + iVar12 + 4);
-		puVar9 = (undefined4 *)((int)auStack168 + iVar12 + 8);
-		*(long *)((int)local_30 + iVar12) = (pCVar6->x).vx;
-		*(long *)((int)local_2c + iVar12) = (pCVar6->x).vz;
-		*(int *)((int)aiStack184 + iVar12) = pCVar6->theta;
+		iVar12 = 1;
+		piVar8 = (int *)((int)original[0].dist + iVar10 + 4);
+		local_a1_184 = (int *)((int)cd->dist + iVar10 + 4);
+		piVar7 = (int *)((int)original[0].limit + iVar10 + 4);
+
+		*(long *)((int)&original[0].x.vx + iVar10) = (pCVar5->x).vx;
+		*(long *)((int)&original[0].x.vz + iVar10) = (pCVar5->x).vz;
+		*(int *)((int)&original[0].theta + iVar10) = pCVar5->theta;
+
 		do {
-			puVar1 = puVar7 + 2;
-			uVar4 = *puVar7;
-			puVar7 = puVar7 + -1;
-			iVar14 = iVar14 + -1;
-			*puVar9 = *puVar1;
-			*puVar10 = uVar4;
-			puVar10 = puVar10 + -1;
-			puVar9 = puVar9 + -1;
-		} while (iVar14 != -1);
-		pCVar6 = pCVar6 + -1;
-		iVar20 = iVar20 + -1;
-		iVar12 = iVar12 + -100;
-	} while (iVar20 != -1);
-	iVar12 = 7;
+			piVar1 = local_a1_184 + 2;
+			iVar3 = *local_a1_184;
+			local_a1_184 = local_a1_184 + -1;
+			iVar12 = iVar12 + -1;
+			*piVar7 = *piVar1;
+			*piVar8 = iVar3;
+			piVar8 = piVar8 + -1;
+			piVar7 = piVar7 + -1;
+		} while (iVar12 != -1);
+
+		pCVar5 = pCVar5 + -1;
+		iVar17 = iVar17 + -1;
+		iVar10 = iVar10 + -100;
+	} while (iVar17 != -1);
+
+	iVar10 = 7;
 	do {
-		iVar14 = 1;
-		iVar20 = iVar12 + -1;
-		pCVar6 = cd + 1;
-		do {
-			iVar8 = (pCVar6->vel).vx >> 1;
-			iVar2 = (pCVar6->vel).vz;
-			iVar11 = pCVar6->avel >> 1;
-			(pCVar6->vel).vx = iVar8;
-			pCVar6->avel = iVar11;
-			iVar2 = iVar2 >> 1;
-			(pCVar6->vel).vz = iVar2;
-			if (iVar13 == 0) {
-				(pCVar6->x).vx = (pCVar6->x).vx + iVar8;
-				iVar8 = pCVar6->theta;
-				(pCVar6->x).vz = (pCVar6->x).vz + iVar2;
-				iVar8 = iVar8 + iVar11;
+		iVar12 = 1;
+		iVar17 = iVar10 + -1;
+		pCVar5 = cd + 1;
+		do 
+		{
+			iVar6 = (pCVar5->vel).vx >> 1;
+			iVar3 = (pCVar5->vel).vz;
+			iVar9 = pCVar5->avel >> 1;
+			(pCVar5->vel).vx = iVar6;
+			pCVar5->avel = iVar9;
+			iVar3 = iVar3 >> 1;
+			(pCVar5->vel).vz = iVar3;
+
+			if (iVar11 == 0) 
+			{
+				(pCVar5->x).vx = (pCVar5->x).vx + iVar6;
+				iVar6 = pCVar5->theta;
+				(pCVar5->x).vz = (pCVar5->x).vz + iVar3;
+				iVar6 = iVar6 + iVar9;
 			}
-			else {
-				(pCVar6->x).vx = (pCVar6->x).vx - iVar8;
-				iVar8 = pCVar6->theta;
-				(pCVar6->x).vz = (pCVar6->x).vz - iVar2;
-				iVar8 = iVar8 - iVar11;
+			else 
+			{
+				(pCVar5->x).vx = (pCVar5->x).vx - iVar6;
+				iVar6 = pCVar5->theta;
+				(pCVar5->x).vz = (pCVar5->x).vz - iVar3;
+				iVar6 = iVar6 - iVar9;
 			}
-			pCVar6->theta = iVar8;
-			iVar14 = iVar14 + -1;
-			pCVar6 = pCVar6 + -1;
-		} while (iVar14 != -1);
-		if (iVar13 == 0) {
-			iVar21 = 0;
-			iVar13 = iVar18;
+
+			pCVar5->theta = iVar6;
+			iVar12 = iVar12 + -1;
+			pCVar5 = pCVar5 + -1;
+		} while (iVar12 != -1);
+
+		if (iVar11 == 0)
+		{
+			iVar18 = 0;
+			iVar11 = iVar16;
 		}
-		else {
-			iVar13 = -iVar18;
+		else 
+		{
+			iVar11 = -iVar16;
 		}
-		iVar15 = iVar15 + iVar13;
-		iVar13 = bcollided2d(cd, 0);
-		if (iVar12 != 0) {
-			iVar18 = iVar18 >> 1;
+
+		iVar13 = iVar13 + iVar11;
+		iVar11 = bcollided2d(cd, 0);
+		if (iVar10 != 0) {
+			iVar16 = iVar16 >> 1;
 		}
-		iVar14 = 1;
-		iVar12 = iVar20;
-	} while (iVar20 != -1);
-	if (iVar13 == 0) {
-		pCVar6 = cd + 1;
+		iVar12 = 1;
+		iVar10 = iVar17;
+	} while (iVar17 != -1);
+
+	if (iVar11 == 0)
+	{
+		pCVar5 = cd + 1;
+
 		do {
-			iVar12 = (pCVar6->vel).vz;
-			iVar20 = pCVar6->avel;
-			iVar14 = iVar14 + -1;
-			(pCVar6->x).vx = (pCVar6->x).vx + (pCVar6->vel).vx;
-			iVar13 = pCVar6->theta;
-			(pCVar6->x).vz = (pCVar6->x).vz + iVar12;
-			pCVar6->theta = iVar13 + iVar20;
-			pCVar6 = pCVar6 + -1;
-		} while (iVar14 != -1);
+			iVar10 = (pCVar5->vel).vz;
+			iVar17 = pCVar5->avel;
+			iVar12 = iVar12 + -1;
+			(pCVar5->x).vx = (pCVar5->x).vx + (pCVar5->vel).vx;
+			iVar11 = pCVar5->theta;
+			(pCVar5->x).vz = (pCVar5->x).vz + iVar10;
+			pCVar5->theta = iVar11 + iVar17;
+			pCVar5 = pCVar5 + -1;
+		} while (iVar12 != -1);
+
 		bcollided2d(cd, 0);
-		iVar15 = iVar15 + iVar18;
+		iVar13 = iVar13 + iVar16;
 	}
-	else {
-		iVar13 = 1;
-		if (iVar21 != 0) {
-			piVar19 = local_54;
-			plVar17 = local_2c + 0x19;
-			pCVar6 = cd + 1;
-			plVar16 = local_30 + 0x19;
+	else 
+	{
+		iVar11 = 1;
+		if (iVar18 != 0)
+		{
+			piVar7 = &original[1].theta;
+			plVar15 = &original[1].x.vz;
+			pCVar5 = cd + 1;
+			pCVar14 = original + 1;
+
 			do {
-				iVar15 = *piVar19;
-				piVar19 = piVar19 + -0x19;
-				lVar5 = *plVar17;
-				plVar17 = plVar17 + -0x19;
-				lVar3 = *plVar16;
-				plVar16 = plVar16 + -0x19;
-				iVar13 = iVar13 + -1;
-				(pCVar6->x).vx = lVar3;
-				(pCVar6->x).vz = lVar5;
-				pCVar6->theta = iVar15;
+				iVar13 = *piVar7;
+				piVar7 = piVar7 + -0x19;
+				lVar4 = *plVar15;
+				plVar15 = plVar15 + -0x19;
+				pVVar2 = &pCVar14->x;
+				pCVar14 = pCVar14 + -1;
+				iVar11 = iVar11 + -1;
+				(pCVar5->x).vx = pVVar2->vx;
+				(pCVar5->x).vz = lVar4;
+				pCVar5->theta = iVar13;
 				bcollided2d(cd, 0);
-				pCVar6 = pCVar6 + -1;
-			} while (iVar13 != -1);
-			iVar15 = 0x1000;
+				pCVar5 = pCVar5 + -1;
+			} while (iVar11 != -1);
+			iVar13 = 0x1000;
 		}
 	}
-	collisionResult->neverfree = iVar21;
-	return iVar15;*/
+	collisionResult->neverfree = iVar18;
+
+	return iVar13;
 }
 
 
@@ -1029,365 +1093,423 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	/* end block 2 */
 	// End Line: 1967
 
+// [D]
 int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int mightBeABarrier)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uchar uVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar2;
-	long lVar3;
-	int iVar4;
-	int iVar5;
-	int chan;
-	long lVar6;
-	int iVar7;
-	uint uVar8;
-	CAR_COSMETICS *pCVar9;
-	int iVar10;
-	int strikeVel;
-	SMASHABLE_OBJECT *pSVar11;
-	short scale;
-	SMASHABLE_OBJECT *pSVar12;
-	MODEL *pMVar13;
-	undefined4 local_98;
-	uint local_94;
-	VECTOR local_90;
-	int local_80;
-	int local_7c;
-	int local_78;
-	int local_60;
-	int local_5c;
-	int local_58;
-	VECTOR local_50;
-	VECTOR VStack64;
-	int local_30;
-	int local_2c;
+	static CDATA2D cd[2]; // offset 0x0
+	static CRET2D collisionResult; // offset 0xd0
 
-	pMVar13 = modelpointers1536[cop->type];
-	local_2c = GetPlayerId(cp);
-	DAT_000ac940 = (uint)(cp->controlType == '\x05');
-	if (cp->controlType == '\x06') {
-		DAT_000ac940 = DAT_000ac940 + 2;
-	}
-	DAT_000ac9a4 = (uint)(mightBeABarrier == 0);
-	strikeVel = (cp->hd).oBox.location.vy + (int)*(short *)&(building->pos).vy;
-	if (strikeVel < 0) {
-		strikeVel = -strikeVel;
-	}
-	chan = (uint)(ushort)(cp->hd).oBox.length[1] << 0x10;
-	uVar2 = 0;
-	if (((strikeVel <= building->height / 2 + ((chan >> 0x10) - (chan >> 0x1f) >> 1)) &&
-		(uVar2 = 0, (cop->pos).vx != -0x2b90140)) && (uVar2 = 0, (pMVar13->shape_flags & 0x10) == 0))
+	unsigned char uVar1;
+	int iVar2;
+	uint uVar3;
+	long lVar4;
+	long lVar5;
+	long lVar6;
+	long lVar7;
+	int strikeVel;
+	long lVar8;
+	int iVar9;
+	int iVar10;
+	uint uVar11;
+	CAR_COSMETICS *pCVar12;
+	int iVar13;
+	int iVar14;
+	SMASHABLE_OBJECT *pSVar15;
+	short scale;
+	int iVar16;
+	int iVar17;
+	int iVar18;
+	SMASHABLE_OBJECT *pSVar19;
+	MODEL *pMVar20;
+	VECTOR tempwhere;
+	SVECTOR boxDisp;
+	VECTOR velocity;
+	long pointVel[4];
+	long reaction[4];
+	long lever[4];
+	VECTOR LeafPosition;
+	VECTOR lamp_velocity;
+	int debris_colour;
+	int player_id;
+
+	pMVar20 = modelpointers[cop->type];
+	iVar2 = GetPlayerId(cp);
+
+	cd[0].isCameraOrTanner = (cp->controlType == '\x05');
+
+	if (cp->controlType == 6)
+		cd[0].isCameraOrTanner = cd[0].isCameraOrTanner + 2;
+
+	cd[1].isCameraOrTanner = (mightBeABarrier == 0);
+	iVar14 = cp->hd.oBox.location.vy + building->pos.vy;
+
+	if (iVar14 < 0)
+		iVar14 = -iVar14;
+
+	strikeVel = cp->hd.oBox.length[1] << 0x10;
+	uVar3 = 0;
+
+	if (((iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1)) &&
+		(uVar3 = 0, (cop->pos).vx != -0x2b90140)) && (uVar3 = 0, (pMVar20->shape_flags & 0x10) == 0)) 
 	{
-		lVar3 = (cp->hd).where.t[0];
-		lVar6 = (cp->hd).where.t[2];
-		local_30 = GetDebrisColour(cp);
-		setCopControlWord(2, 0, *(undefined4 *)(cp->hd).where.m);
-		setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).where.m + 2));
-		setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).where.m + 4));
-		setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).where.m + 6));
-		setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).where.m + 8));
-		setCopControlWord(2, 0x2800, (cp->hd).where.t[0]);
-		setCopControlWord(2, 0x3000, (cp->hd).where.t[1]);
-		setCopControlWord(2, 0x3800, (cp->hd).where.t[2]);
-		pCVar9 = (cp->ap).carCos;
-		local_98 = CONCAT22(-(pCVar9->cog).vy, -(pCVar9->cog).vx);
-		local_94 = local_94 & 0xffff0000 | (uint)(ushort)-(pCVar9->cog).vz;
-		setCopReg(2, in_zero, local_98);
-		setCopReg(2, in_at, local_94);
-		copFunction(2, 0x480012);
-		cd_24 = getCopReg(2, 0x19);
-		DAT_000ac8e4 = getCopReg(2, 0x1a);
-		DAT_000ac8e8 = getCopReg(2, 0x1b);
-		DAT_000ac920 = (cp->hd).direction;
-		if (cp->controlType == '\x06') {
-			DAT_000ac910 = *(int *)(cp->st + 0x1c) + 0x800 >> 0xc;
-			DAT_000ac918 = *(int *)(cp->st + 0x24) + 0x800 >> 0xc;
-			strikeVel = (cp->hd).where.t[2];
-			(cp->hd).where.t[0] = (cp->hd).where.t[0] + DAT_000ac910;
-			(cp->hd).where.t[2] = strikeVel + DAT_000ac918;
-			DAT_000ac924 = 0x5a;
-			DAT_000ac928 = 0x5a;
+		lVar4 = cp->hd.where.t[0];
+		lVar8 = cp->hd.where.t[2];
+
+		iVar14 = GetDebrisColour(cp);
+		gte_SetRotMatrix(&cp->hd.where);
+		gte_SetTransMatrix(&cp->hd.where);
+
+		pCVar12 = cp->ap.carCos;
+
+		boxDisp.vx = -pCVar12->cog.vx;
+		boxDisp.vx = -pCVar12->cog.vy;
+		boxDisp.vz = -pCVar12->cog.vz;
+
+		gte_ldv0(&boxDisp);
+
+		docop2(0x480012);
+
+		cd[0].x.vx = MAC1;
+		cd[0].x.vy = MAC2;
+		cd[0].x.vz = MAC3; 
+
+		cd[0].theta = cp->hd.direction;
+
+		if (cp->controlType == 6)
+		{
+			cd[0].vel.vx = cp->st.n.linearVelocity[0] / 4096;
+			cd[0].vel.vz = cp->st.n.linearVelocity[2] / 4096;
+
+			cp->hd.where.t[0] += cd[0].vel.vx;
+			cp->hd.where.t[2] += cd[0].vel.vz;
+
+			cd[0].length[0] = 0x5a;
+			cd[0].length[1] = 0x5a;
 		}
-		else {
-			if (cp->controlType == '\x05') {
-				DAT_000ac910 = 0;
-				DAT_000ac918 = 0;
-				DAT_000ac928 = 5;
-				DAT_000ac924 = gCameraDistance / 2;
+		else 
+		{
+			if (cp->controlType == 5) 
+			{
+				cd[0].vel.vx = 0;
+				cd[0].vel.vz = 0;
+				cd[0].length[1] = 5;
+				cd[0].length[0] = gCameraDistance / 2;
 			}
-			else {
-				scale = (((cp->ap).carCos)->colBox).vx;
-				DAT_000ac910 = *(int *)(cp->st + 0x1c) + 0x800 >> 0xc;
-				DAT_000ac918 = *(int *)(cp->st + 0x24) + 0x800 >> 0xc;
-				strikeVel = (cp->hd).where.t[2];
-				(cp->hd).where.t[0] = (cp->hd).where.t[0] + DAT_000ac910;
-				pCVar9 = (cp->ap).carCos;
-				(cp->hd).where.t[2] = strikeVel + DAT_000ac918;
-				DAT_000ac924 = (int)(pCVar9->colBox).vz + 0xf;
-				DAT_000ac928 = (int)scale + 0xf;
-				if ((handlingType[cp->hndType].fourWheelDrive == '\x01') || (cp->hndType == 5)) {
-					DAT_000ac928 = DAT_000ac928 * 0xd;
-					if (DAT_000ac928 < 0) {
-						DAT_000ac928 = DAT_000ac928 + 0xf;
-					}
-					DAT_000ac928 = DAT_000ac928 >> 4;
+			else 
+			{
+				scale = cp->ap.carCos->colBox.vx;
+				cd[0].vel.vx = cp->st.n.linearVelocity[0] / 4096;
+				cd[0].vel.vz = cp->st.n.linearVelocity[2] / 4096;
+
+				cp->hd.where.t[0] += cd[0].vel.vx;
+				cp->hd.where.t[2] += cd[0].vel.vz;
+
+				pCVar12 = cp->ap.carCos;
+				cd[0].length[0] = pCVar12->colBox.vz;// +0xf;
+				cd[0].length[1] = pCVar12->colBox.vx;// +0xf;
+
+				if ((handlingType[cp->hndType].fourWheelDrive == 1) || (cp->hndType == 5))
+				{
+					cd[0].length[1] *= 13;
+
+					//if (cd[0].length[1] < 0) 
+					//	cd[0].length[1] += 0xf;
+
+					cd[0].length[1] = cd[0].length[1] >> 4;
 				}
 			}
 		}
-		DAT_000ac93c = (*(int *)(cp->st + 0x2c) + 0x800 >> 0xc) * 5 >> 5;
-		DAT_000ac944 = (cp->hd).where.t[0] +
-			((int)(((uint)*(ushort *)&(building->pos).vx - (uint)*(ushort *)(cp->hd).where.t)
-				* 0x10000) >> 0x10);
-		DAT_000ac94c = (cp->hd).where.t[2] +
-			((int)(((uint)*(ushort *)&(building->pos).vz -
-			(uint)*(ushort *)((cp->hd).where.t + 2)) * 0x10000) >> 0x10);
-		DAT_000ac984 = building->theta;
-		DAT_000ac988 = building->xsize;
-		DAT_000ac98c = building->zsize;
-		DAT_000ac974 = 0;
-		DAT_000ac97c = 0;
-		DAT_000ac9a0 = 0;
-		if (cp->controlType == '\x05') {
-			strikeVel = bcollided2d((CDATA2D *)&cd_24, 1);
-			uVar2 = (uint)(strikeVel != 0);
+		cd[0].avel = (cp->st.n.angularVelocity[1] / 4096) * 5 >> 5;
+		cd[1].x.vx = cp->hd.where.t[0] + ((int)(((uint)*(ushort *)&(building->pos).vx - (uint)*(ushort *)cp->hd.where.t) * 0x10000) >> 0x10);
+		cd[1].x.vz = cp->hd.where.t[2] + ((int)(((uint)*(ushort *)&(building->pos).vz - (uint)*(ushort *)(cp->hd.where.t + 2)) * 0x10000) >> 0x10);
+
+		cd[1].theta = building->theta;
+
+		cd[1].length[0] = building->xsize;
+		cd[1].length[1] = building->zsize;
+
+		cd[1].vel.vx = 0;
+		cd[1].vel.vz = 0;
+		cd[1].avel = 0;
+
+		if (cp->controlType == 5) 
+		{
+			iVar2 = bcollided2d(cd, 1);
+			uVar3 = (iVar2 != 0);
 		}
-		else {
-			strikeVel = bcollided2d((CDATA2D *)&cd_24, 0);
-			if (strikeVel == 0) {
-				uVar2 = 0;
+		else 
+		{
+			strikeVel = bcollided2d(cd, 0);
+			if (strikeVel == 0) 
+			{
+				uVar3 = 0;
 			}
-			else {
-				bFindCollisionTime((CDATA2D *)&cd_24, (CRET2D *)&collisionResult_25);
-				bFindCollisionPoint((CDATA2D *)&cd_24, (CRET2D *)&collisionResult_25);
-				DAT_000ac9c0 = -DAT_000ac9c0;
-				DAT_000ac9c4 = 0;
-				DAT_000ac9b4 = (cp->hd).where.t[1] + 0x29;
-				DAT_000ac9c8 = -DAT_000ac9c8;
-				local_60 = (cp->hd).where.t[0] + (DAT_000ac9d0 * DAT_000ac9c0 + 0x800 >> 0xc);
-				(cp->hd).where.t[0] = local_60;
-				local_58 = (cp->hd).where.t[2] + (DAT_000ac9d0 * DAT_000ac9c8 + 0x800 >> 0xc);
-				(cp->hd).where.t[2] = local_58;
-				local_58 = DAT_000ac9b8 - local_58;
-				local_5c = DAT_000ac9b4 - (cp->hd).where.t[1];
-				local_60 = collisionResult_25 - local_60;
-				local_80 = ((*(int *)(cp->st + 0x2c) * local_58 - *(int *)(cp->st + 0x30) * local_5c) +
-					0x800 >> 0xc) + *(int *)(cp->st + 0x1c);
-				local_7c = ((*(int *)(cp->st + 0x30) * local_60 - *(int *)(cp->st + 0x28) * local_58) +
-					0x800 >> 0xc) + *(int *)(cp->st + 0x20);
-				local_78 = ((*(int *)(cp->st + 0x28) * local_5c - *(int *)(cp->st + 0x2c) * local_60) +
-					0x800 >> 0xc) + *(int *)(cp->st + 0x24);
-				strikeVel = local_80;
-				if (local_80 < 0) {
-					strikeVel = local_80 + 0xff;
-				}
-				chan = DAT_000ac9c0;
-				if (DAT_000ac9c0 < 0) {
-					chan = DAT_000ac9c0 + 0xf;
-				}
-				iVar7 = local_7c;
-				if (local_7c < 0) {
-					iVar7 = local_7c + 0xff;
-				}
-				iVar4 = DAT_000ac9c4;
-				if (DAT_000ac9c4 < 0) {
-					iVar4 = DAT_000ac9c4 + 0xf;
-				}
-				iVar10 = local_78;
-				if (local_78 < 0) {
-					iVar10 = local_78 + 0xff;
-				}
-				iVar5 = DAT_000ac9c8;
-				if (DAT_000ac9c8 < 0) {
-					iVar5 = DAT_000ac9c8 + 0xf;
-				}
-				chan = (strikeVel >> 8) * (chan >> 4) + (iVar7 >> 8) * (iVar4 >> 4) +
-					(iVar10 >> 8) * (iVar5 >> 4);
-				strikeVel = -chan;
-				if (chan < 0) {
-					if (cp->controlType == '\x01') {
-						if (strikeVel < 0x20) {
-							scale = (short)((uint)(chan * -0x800000) >> 0x10);
-						}
-						else {
+			else 
+			{
+				bFindCollisionTime(cd, &collisionResult);
+				bFindCollisionPoint(cd, &collisionResult);
+
+				collisionResult.surfNormal.vx = -collisionResult.surfNormal.vx;
+				collisionResult.surfNormal.vy = 0;
+				collisionResult.hit.vy = cp->hd.where.t[1] + 0x29;
+				collisionResult.surfNormal.vz = -collisionResult.surfNormal.vz;
+
+				iVar17 = cp->hd.where.t[0] + (collisionResult.penetration * collisionResult.surfNormal.vx) / 4096;
+				cp->hd.where.t[0] = iVar17;
+
+				iVar9 = cp->hd.where.t[2] + (collisionResult.penetration * collisionResult.surfNormal.vz) / 4096;
+				cp->hd.where.t[2] = iVar9;
+
+				iVar18 = cp->st.n.angularVelocity[1];
+				iVar9 = collisionResult.hit.vz - iVar9;
+				iVar10 = cp->st.n.angularVelocity[2];
+				iVar16 = collisionResult.hit.vy - cp->hd.where.t[1];
+				iVar17 = collisionResult.hit.vx - iVar17;
+				iVar13 = cp->st.n.angularVelocity[0];
+
+				strikeVel = ((iVar18 * iVar9 - iVar10 * iVar16) / 4096) + cp->st.n.linearVelocity[0];
+				iVar10 = ((iVar10 * iVar17 - iVar13 * iVar9) / 4096) + cp->st.n.linearVelocity[1];
+				iVar13 = ((iVar13 * iVar16 - iVar18 * iVar17) / 4096) + cp->st.n.linearVelocity[2];
+
+				//if (strikeVel < 0)
+				//	strikeVel = strikeVel + 0xff;
+
+				lVar5 = collisionResult.surfNormal.vx;
+
+				if (collisionResult.surfNormal.vx < 0)
+					lVar5 = collisionResult.surfNormal.vx + 0xf;
+
+				//if (iVar10 < 0)
+				//	iVar10 = iVar10 + 0xff;
+	
+				lVar6 = collisionResult.surfNormal.vy;
+				if (collisionResult.surfNormal.vy < 0)
+					lVar6 = collisionResult.surfNormal.vy + 0xf;
+	
+				//if (iVar13 < 0)
+				//	iVar13 = iVar13 + 0xff;
+		
+				lVar7 = collisionResult.surfNormal.vz;
+
+				//if (collisionResult.surfNormal.vz < 0)
+				//	lVar7 = collisionResult.surfNormal.vz + 0xf;
+
+				iVar10 = (strikeVel >> 8) * (lVar5 >> 4) + (iVar10 >> 8) * (lVar6 >> 4) + (iVar13 >> 8) * (lVar7 >> 4);
+				strikeVel = -iVar10;
+
+				if (iVar10 < 0) 
+				{
+					if (cp->controlType == 1) 
+					{
+						if (strikeVel < 0x20) 
+							scale = ((uint)(iVar10 * -0x800000) >> 0x10);
+						else 
 							scale = 0x1000;
-						}
-						if ((pMVar13->flags2 & 0x800) == 0) {
-							NoteFelony(&felonyData, '\x06', scale);
-						}
-						else {
-							NoteFelony(&felonyData, '\a', scale);
-						}
+
+						if ((pMVar20->flags2 & 0x800) == 0) 
+							NoteFelony(&felonyData, 6, scale);
+						else
+							NoteFelony(&felonyData, 7, scale);
 					}
-					DAT_000ac9b4 = -DAT_000ac9b4;
-					iVar7 = *(int *)(cp->st + 0x1c);
-					if (iVar7 < 0) {
-						iVar7 = iVar7 + 0xfff;
-					}
-					local_90.vx = iVar7 >> 0xc;
-					iVar7 = *(int *)(cp->st + 0x24);
-					local_90.vy = -0x11;
-					if (iVar7 < 0) {
-						iVar7 = iVar7 + 0xfff;
-					}
-					local_90.vz = iVar7 >> 0xc;
-					if ((pMVar13->flags2 & 0x800) != 0) {
-						damage_object(cop, &local_90);
-						strikeVel = local_30 << 0x10;
-						if ((pMVar13->shape_flags & 8) == 0) {
-							pSVar11 = &smashable;
-							chan = smashable.modelIdx;
-							pSVar12 = (SMASHABLE_OBJECT *)0x0;
-							if (smashable.name != (char *)0x0) {
-								while ((pSVar12 = pSVar11, modelpointers1536[chan] != pMVar13 &&
-									(pSVar12 = (SMASHABLE_OBJECT *)0x0, pSVar11[1].name != (char *)0x0))) {
-									chan = pSVar11[1].modelIdx;
-									pSVar11 = pSVar11 + 1;
+
+					collisionResult.hit.vy = -collisionResult.hit.vy;
+
+					iVar13 = cp->st.n.linearVelocity[0];
+
+					//if (iVar13 < 0)
+					//	iVar13 = iVar13 + 0xfff;
+
+					velocity.vx = iVar13 >> 0xc;
+					iVar13 = cp->st.n.linearVelocity[2];
+					velocity.vy = -0x11;
+
+					//if (iVar13 < 0)
+					//	iVar13 = iVar13 + 0xfff;
+
+					velocity.vz = iVar13 >> 0xc;
+
+					if ((pMVar20->flags2 & 0x800) != 0)
+					{
+						damage_object(cop, &velocity);
+
+						if ((pMVar20->shape_flags & 8) == 0)
+						{
+							pSVar15 = smashable;
+							strikeVel = pSVar15->modelIdx;
+							pSVar19 = NULL;
+
+							if (pSVar15->name != NULL)
+							{
+								while ((pSVar19 = pSVar15, modelpointers[strikeVel] != pMVar20 && (pSVar19 = NULL, pSVar15[1].name != NULL)))
+								{
+									strikeVel = pSVar15[1].modelIdx;
+									pSVar15 = pSVar15 + 1;
 								}
 							}
-							if (pSVar12 == (SMASHABLE_OBJECT *)0x0) {
-								pSVar12 = &smashable;
-							}
-							uVar2 = local_90.vx ^ local_90.vz;
-							uVar8 = collisionResult_25 ^ DAT_000ac9b8;
-							chan = GetFreeChannel();
-							if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
-								SetPlayerOwnsChannel(chan, (char)local_2c);
-							}
-							Start3DSoundVolPitch
-							(chan, 1, pSVar12->sound, collisionResult_25, -DAT_000ac9b4, DAT_000ac9b8,
-								pSVar12->volume, pSVar12->pitch + ((uVar2 * uVar8 & 0x3ff) - 0x200));
+
+							if (pSVar19 == NULL)
+								pSVar19 = smashable;
+
+							uVar3 = velocity.vx ^ velocity.vz;
+							uVar11 = collisionResult.hit.vx ^ collisionResult.hit.vz;
+							strikeVel = GetFreeChannel();
+
+							if ((1 < NumPlayers) && (NoPlayerControl == 0))
+								SetPlayerOwnsChannel(strikeVel, iVar2);
+
+							Start3DSoundVolPitch(strikeVel, 1, pSVar19->sound, collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, pSVar19->volume, pSVar19->pitch + ((uVar3 * uVar11 & 0x3ff) - 0x200));
 						}
-						(cp->hd).where.t[0] = lVar3;
-						(cp->hd).where.t[2] = lVar6;
-						DAT_000ac9b4 = DAT_000ac9b4 + 0x1e;
-						Setup_Sparks((VECTOR *)&collisionResult_25, &local_90, 10, '\0');
-						Setup_Debris((VECTOR *)&collisionResult_25, &local_90, 5, 0);
-						Setup_Debris((VECTOR *)&collisionResult_25, &local_90, 5, strikeVel);
-						if (cp->controlType == '\x01') {
-							SetPadVibration((int)**(char **)cp->ai, '\x03');
-						}
+
+						cp->hd.where.t[0] = lVar4;
+						cp->hd.where.t[2] = lVar8;
+
+						collisionResult.hit.vy = collisionResult.hit.vy + 0x1e;
+
+						Setup_Sparks((VECTOR *)&collisionResult, &velocity, 10, '\0');
+						Setup_Debris((VECTOR *)&collisionResult, &velocity, 5, 0);
+						Setup_Debris((VECTOR *)&collisionResult, &velocity, 5, iVar14 << 0x10);
+
+						if (cp->controlType == 1)
+							SetPadVibration((int)cp->ai.padid, 3);
+
 						return 0;
 					}
-					if ((0x3600 < strikeVel) && (32000 < (cp->hd).wheel_speed + 16000U)) {
-						if ((pMVar13->flags2 & 0x2000) == 0) {
-							if ((gNight != 0) &&
-								((modelpointers1536[gLastModelCollisionCheck]->flags2 & 0x1000) != 0)) {
-								iVar7 = damage_lamp(cop);
-								if (iVar7 != 0) {
-									memset(&VStack64, 0, 0x10);
-									DAT_000ac9b4 = 0xfffffd26;
-									Setup_Sparks((VECTOR *)&collisionResult_25, &VStack64, 0x14, '\0');
-									DAT_000ac9b4 = 0x2da;
+					if ((0x3600 < strikeVel) && (32000 < cp->hd.wheel_speed + 16000U))
+					{
+						if ((pMVar20->flags2 & 0x2000) == 0) 
+						{
+							if (gNight != 0 && (modelpointers[gLastModelCollisionCheck]->flags2 & 0x1000) != 0)
+							{
+								iVar2 = damage_lamp(cop);
+								if (iVar2 != 0)
+								{
+									memset(&lamp_velocity, 0, sizeof(lamp_velocity));
+
+									collisionResult.hit.vy = -0x2da;
+									Setup_Sparks((VECTOR *)&collisionResult, &lamp_velocity, 0x14, 0);
+									collisionResult.hit.vy = 0x2da;
 								}
 							}
-							local_90.vy = local_90.vy + -0x14;
-							DAT_000ac9b4 = DAT_000ac9b4 + 0x1e;
-							Setup_Sparks((VECTOR *)&collisionResult_25, &local_90, 4, '\0');
-							DAT_000ac9b4 = DAT_000ac9b4 + -0x1e;
-							local_90.vy = local_90.vy + 0x14;
+
+							velocity.vy = velocity.vy - 0x14;
+							collisionResult.hit.vy = collisionResult.hit.vy + 0x1e;
+							Setup_Sparks((VECTOR *)&collisionResult, &velocity, 4, '\0');
+							collisionResult.hit.vy = collisionResult.hit.vy + -0x1e;
+							velocity.vy = velocity.vy + 0x14;
 						}
-						else {
-							uVar2 = rand();
-							local_50.vx = collisionResult_25;
-							local_50.vy = -((uVar2 & 0xfe) + 600) - DAT_000ac9b4;
-							local_50.vz = DAT_000ac9b8;
-							AddLeaf(&local_50, 3, 1);
+						else 
+						{
+							uVar3 = rand();
+							LeafPosition.vx = collisionResult.hit.vx;
+							LeafPosition.vy = -((uVar3 & 0xfe) + 600) - collisionResult.hit.vy;
+							LeafPosition.vz = collisionResult.hit.vz;
+							AddLeaf(&LeafPosition, 3, 1);
 						}
-						if ((0x1b000 < strikeVel) &&
-							(Setup_Debris((VECTOR *)&collisionResult_25, &local_90, 6, local_30 << 0x10),
-								cp->controlType == '\x01')) {
-							SetPadVibration((int)**(char **)cp->ai, '\x01');
+
+						if ((0x1b000 < strikeVel) && (Setup_Debris((VECTOR *)&collisionResult, &velocity, 6, iVar14 << 0x10), cp->controlType == 1)) 
+						{
+							SetPadVibration((int)cp->ai.padid, 1);
 						}
 					}
-					DamageCar(cp, (CDATA2D *)&cd_24, (CRET2D *)&collisionResult_25, strikeVel);
-					iVar7 = local_60 * DAT_000ac9c0 + local_5c * DAT_000ac9c4 + local_58 * DAT_000ac9c8 +
-						0x800 >> 0xc;
-					iVar7 = (((local_60 * local_60 + local_58 * local_58) - iVar7 * iVar7) *
-						(int)car_cosmetics[(byte)(cp->ap).model].twistRateY + 0x800 >> 0xc) + 0x1000;
-					if (strikeVel < 0x7f001) {
-						strikeVel = (chan * -0x1000) / iVar7;
-						if (iVar7 == 0) {
+					DamageCar(cp, cd, &collisionResult, strikeVel);
+
+					iVar2 = (iVar17 * collisionResult.surfNormal.vx + iVar16 * collisionResult.surfNormal.vy + iVar9 * collisionResult.surfNormal.vz) / 4096;
+					iVar2 = (((iVar17 * iVar17 + iVar9 * iVar9) - iVar2 * iVar2) * car_cosmetics[cp->ap.model].twistRateY) / 4096 + 0x1000;
+
+					if (strikeVel < 0x7f001) 
+					{
+						iVar14 = (iVar10 * -0x1000) / iVar2;
+						if (iVar2 == 0) 
 							trap(7);
-						}
 					}
-					else {
-						if (iVar7 == 0) {
+					else 
+					{
+						if (iVar2 == 0)
 							trap(7);
-						}
-						strikeVel = strikeVel / iVar7 << 0xc;
+
+						iVar14 = strikeVel / iVar2 << 0xc;
 					}
-					if (strikeVel < 0) {
-						strikeVel = strikeVel + 0x3f;
-					}
-					strikeVel = strikeVel >> 6;
-					chan = DAT_000ac9c0;
-					if (DAT_000ac9c0 < 0) {
-						chan = DAT_000ac9c0 + 0x3f;
-					}
-					iVar7 = strikeVel * (chan >> 6);
-					chan = DAT_000ac9c4;
-					if (DAT_000ac9c4 < 0) {
-						chan = DAT_000ac9c4 + 0x3f;
-					}
-					iVar4 = strikeVel * (chan >> 6);
-					chan = DAT_000ac9c8;
-					if (DAT_000ac9c8 < 0) {
-						chan = DAT_000ac9c8 + 0x3f;
-					}
-					strikeVel = strikeVel * (chan >> 6);
-					if (cp->controlType != '\x04') {
-						iVar10 = local_5c * strikeVel + 0x800;
-						chan = iVar10 >> 0xc;
-						if (cp->controlType == '\x03') {
-							chan = iVar10 >> 0xd;
-						}
-						chan = (cp->hd).aacc[0] + chan;
-						(cp->hd).aacc[0] = chan;
-						iVar5 = local_58 * iVar4 + 0x800;
-						iVar10 = iVar5 >> 0xc;
-						if (cp->controlType == '\x03') {
-							iVar10 = iVar5 >> 0xd;
-						}
-						(cp->hd).aacc[0] = chan - iVar10;
+
+					//if (iVar14 < 0)
+					//	iVar14 = iVar14 + 0x3f;
+	
+					iVar14 = iVar14 >> 6;
+					lVar4 = collisionResult.surfNormal.vx;
+
+					//if (collisionResult.surfNormal.vx < 0)
+					//	lVar4 = collisionResult.surfNormal.vx + 0x3f;
+
+					iVar2 = iVar14 * (lVar4 >> 6);
+					lVar4 = collisionResult.surfNormal.vy;
+
+					//if (collisionResult.surfNormal.vy < 0)
+					//	lVar4 = collisionResult.surfNormal.vy + 0x3f;
+
+					strikeVel = iVar14 * (lVar4 >> 6);
+					lVar4 = collisionResult.surfNormal.vz;
+
+					if (collisionResult.surfNormal.vz < 0)
+						lVar4 = collisionResult.surfNormal.vz + 0x3f;
+
+					iVar14 = iVar14 * (lVar4 >> 6);
+
+					if (cp->controlType != 4) 
+					{
+						iVar13 = iVar16 * iVar14;// +0x800;
+						iVar10 = iVar13 / 4096;// >> 0xc;
+
+						if (cp->controlType == 3) 
+							iVar10 = iVar13 >> 0xd;
+
+						iVar10 = cp->hd.aacc[0] + iVar10;
+						cp->hd.aacc[0] = iVar10;
+						iVar18 = iVar9 * strikeVel;// +0x800;
+						iVar13 = iVar18 >> 0xc;
+
+						if (cp->controlType == 3)
+							iVar13 = iVar18 >> 0xd;
+
+						cp->hd.aacc[0] = iVar10 - iVar13;
 					}
 					uVar1 = cp->controlType;
-					(cp->hd).aacc[1] =
-						((cp->hd).aacc[1] + (local_58 * iVar7 + 0x800 >> 0xc)) -
-						(local_60 * strikeVel + 0x800 >> 0xc);
-					if (uVar1 != '\x04') {
-						iVar10 = local_60 * iVar4 + 0x800;
-						chan = iVar10 >> 0xc;
-						if (uVar1 == '\x03') {
-							chan = iVar10 >> 0xd;
-						}
-						chan = (cp->hd).aacc[2] + chan;
-						(cp->hd).aacc[2] = chan;
-						iVar5 = local_5c * iVar7 + 0x800;
-						iVar10 = iVar5 >> 0xc;
-						if (cp->controlType == '\x03') {
-							iVar10 = iVar5 >> 0xd;
-						}
-						(cp->hd).aacc[2] = chan - iVar10;
+					cp->hd.aacc[1] += (iVar9 * iVar2) / 4096 - (iVar17 * iVar14) / 4096;
+
+					if (uVar1 != 4) 
+					{
+						iVar10 = iVar17 * strikeVel;
+						iVar9 = iVar10 / 4096;
+
+						if (uVar1 == 3) 
+							iVar9 = iVar10 >> 0xd;
+
+						iVar9 = cp->hd.aacc[2] + iVar9;
+						cp->hd.aacc[2] = iVar9;
+						iVar13 = iVar16 * iVar2;
+						iVar10 = iVar13 / 4096;
+
+						if (cp->controlType == 3)
+							iVar10 = iVar13 >> 0xd;
+
+						cp->hd.aacc[2] = iVar9 - iVar10;
 					}
+
 					uVar1 = cp->controlType;
-					*(int *)(cp->st + 0x1c) = *(int *)(cp->st + 0x1c) + iVar7;
-					if (uVar1 != '\x04') {
-						*(int *)(cp->st + 0x20) = *(int *)(cp->st + 0x20) + iVar4;
-					}
-					*(int *)(cp->st + 0x24) = *(int *)(cp->st + 0x24) + strikeVel;
+					cp->st.n.linearVelocity[0] = cp->st.n.linearVelocity[0] + iVar2;
+
+					if (cp->controlType != 4)
+						cp->st.n.linearVelocity[1] = cp->st.n.linearVelocity[1] + strikeVel;
+
+					cp->st.n.linearVelocity[2] = cp->st.n.linearVelocity[2] + iVar14;
 				}
-				uVar2 = 1;
+				uVar3 = 1;
 			}
-			strikeVel = *(int *)(cp->st + 0x24);
-			(cp->hd).where.t[0] = (cp->hd).where.t[0] - (*(int *)(cp->st + 0x1c) + 0x800 >> 0xc);
-			(cp->hd).where.t[2] = (cp->hd).where.t[2] - (strikeVel + 0x800 >> 0xc);
+
+			cp->hd.where.t[0] -= cp->st.n.linearVelocity[0] / 4096;
+			cp->hd.where.t[2] -= cp->st.n.linearVelocity[2] / 4096;
 		}
 	}
-	return uVar2;*/
+
+	return uVar3;
 }
 
 

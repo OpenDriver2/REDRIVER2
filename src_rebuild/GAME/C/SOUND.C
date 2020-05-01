@@ -443,7 +443,7 @@ int StartSound(int channel, int bank, int sample, int volume, int pitch)
 	if (channel < 0)
 		channel = GetFreeChannel();
 
-	if (channel < 0x10) 
+	if (channel < 16) 
 	{
 		channels[channel].srcposition = (VECTOR *)0x0;
 		channels[channel].srcvolume = volume;
@@ -1984,16 +1984,18 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 
 	if (10000 < local_a2_160) 
 	{
-		local_a2_184 = 0x2710;
-		local_v0_204 = 0x1388;
+		local_a2_184 = 10000;
+		local_v0_204 = 5000;
 	}
 
 	iVar7 = ((local_v0_204 + local_a2_184 + local_a2_184 / 8 + local_a2_184 / 128) * master_volume) / 16384;
 	sVar4 = iVar7;
 	channels[channel].attr.volume.left = sVar4;
+
 	if (iVar5 != 0) {
 		sVar4 = -sVar4;
 	}
+
 	channels[channel].attr.volume.right = sVar4;
 
 	if (iVar7 == 0)

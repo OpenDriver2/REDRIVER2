@@ -853,7 +853,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 	/* end block 3 */
 	// End Line: 1377
 
-int boxOverlap = 0;
+extern int boxOverlap;
 ushort gLastModelCollisionCheck;
 int ExBoxDamage = 0;
 
@@ -915,18 +915,20 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 			extraDist = 100;
 
 		iVar3 = iVar10 + units_across_halved;
-		iVar6 = iVar3-1024;
+		iVar6 = iVar3 - 1024;
 
-		if (iVar6 < 0)
-			iVar6 = iVar3 + 1023;
+		//if (iVar6 < 0)
+		//	iVar6 = iVar3 + 1023;
 
 		iVar3 = iVar12 + units_down_halved;
-		iVar8 = iVar3-1024;
+		iVar8 = iVar3 - 1024;
 
-		if (iVar8 < 0)
-			iVar8 = iVar3 + 1023;
+		//if (iVar8 < 0)
+		//	iVar8 = iVar3 + 1023;
 
+		// [A] FIXME: replace with 'cell_header.cell_size'
 		SetCopListCell(iVar6 / 2048, iVar8 / 2048);
+
 		mdcount = 0;
 		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
 		x1 = 0;

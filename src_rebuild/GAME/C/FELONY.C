@@ -21,6 +21,8 @@ FELONY_VALUE initialFelonyValue[12] =
   { 4096, 0 }
 };
 
+FELONY_DATA felonyData;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitFelonyDelayArray(struct FELONY_DELAY *pFelonyDelay /*$a0*/, short *pMaximum /*$a1*/, int count /*$a2*/)

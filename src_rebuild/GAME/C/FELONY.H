@@ -1,6 +1,7 @@
 #ifndef FELONY_H
 #define FELONY_H
 
+extern FELONY_DATA felonyData;
 
 extern void InitFelonyDelayArray(struct FELONY_DELAY *pFelonyDelay, short *pMaximum, int count); // 0x0004D364
 

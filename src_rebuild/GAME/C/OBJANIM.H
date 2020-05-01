@@ -1,6 +1,7 @@
 #ifndef OBJANIM_H
 #define OBJANIM_H
 
+extern SMASHABLE_OBJECT smashable[];
 
 extern void InitCyclingPals(); // 0x000149B4
 

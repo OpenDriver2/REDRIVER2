@@ -1,6 +1,7 @@
 #ifndef OBJCOLL_H
 #define OBJCOLL_H
 
+extern ushort gLastModelCollisionCheck;
 
 extern char CellEmpty(VECTOR *pPosition, int radius); // 0x00069BA4
 

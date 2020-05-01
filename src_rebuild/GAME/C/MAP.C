@@ -1232,7 +1232,8 @@ unsigned char *PVSEncodeTable = NULL;
 // [A] - might contain bugs
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	// next code is crashing game
+	// [A] next code is crashing game
+	// Does not correctly decoding
 	UNIMPLEMENTED();
 	return;
 
