@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DebugOverlay.cpp" />
     <ClCompile Include="EMULATOR\ABS.C" />
     <ClCompile Include="EMULATOR\CRASHHANDLER.C" />
     <ClCompile Include="EMULATOR\EMULATOR.C" />

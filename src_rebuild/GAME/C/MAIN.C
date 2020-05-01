@@ -2906,6 +2906,12 @@ void RenderGame2(int view)
 	}
 
 	DrawAllTheCars(view);
+
+#ifndef PSX
+	extern void DrawDebugOverlays();
+
+	DrawDebugOverlays();
+#endif
 }
 
 

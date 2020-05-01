@@ -258,6 +258,9 @@
     <ClCompile Include="GAME\C\ENVSOUND.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="DebugOverlay.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">
