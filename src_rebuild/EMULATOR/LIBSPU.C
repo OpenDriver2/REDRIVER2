@@ -523,6 +523,35 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 			int loopStart = 0, loopLen = 0;
 			int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE - voice.attr.addr, &loopStart, &loopLen, true);
+#if 0	// sample test
+			{
+				ALuint aalSource;
+				ALuint aalBuffer;
+
+				alGenSources(1, &aalSource);
+				alGenBuffers(1, &aalBuffer);
+
+				// update AL buffer
+				alBufferData(aalBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 11000);
+
+				// set the buffer
+				alSourcei(aalSource, AL_BUFFER, aalBuffer);
+				alSourcef(aalSource, AL_GAIN, 1.0f);// TODO: panning
+				alSourcef(aalSource, AL_PITCH, 1);
+
+				alSourcePlay(aalSource);
+				int status;
+				do
+				{
+					alGetSourcei(aalSource, AL_SOURCE_STATE, &status);
+				} while (status == AL_PLAYING);
+
+				alSourceStop(aalSource);
+
+				alDeleteSources(1, &aalSource);
+				alDeleteBuffers(1, &aalBuffer);
+			}
+#endif
 
 			if (loopLen > 0)
 			{
@@ -714,16 +743,39 @@ void SpuSetReverbModeDepth(short depth_left, short depth_right)
 
 void SpuSetVoiceVolume(int vNum, short volL, short volR)
 {
-	UNIMPLEMENTED();
+	SpuVoiceAttr attr;
+
+	attr.mask = SPU_VOICE_VOLL | SPU_VOICE_VOLR;
+	attr.voice = SPU_VOICECH(vNum);
+	attr.volume.left = volL;
+	attr.volume.right = volR;
+
+	SpuSetVoiceAttr(&attr);
 }
 
 void SpuSetVoicePitch(int vNum, unsigned short pitch)
 {
 	SpuVoiceAttr attr;
+
 	attr.mask = SPU_VOICE_PITCH;
 	attr.voice = SPU_VOICECH(vNum);
 	attr.pitch = pitch;
+
 	SpuSetVoiceAttr(&attr);
+}
+
+void SpuGetVoiceVolume(int vNum, short *volL, short *volR)
+{
+	if(volL)
+		*volL = s_SpuVoices[vNum].attr.volume.left;
+
+	if(volR)
+		*volR = s_SpuVoices[vNum].attr.volume.right;
+}
+
+void SpuGetVoicePitch(int vNum, unsigned short *pitch)
+{
+	*pitch = s_SpuVoices[vNum].attr.pitch;
 }
 
 void SpuSetVoiceAR(int vNum, unsigned short AR)
