@@ -22,6 +22,8 @@
 #include "INLINE_C.H"
 #include <stdlib.h>
 
+#define COLLISION_DEBUG
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ bcollided2d(struct CDATA2D *body /*$t4*/, int needOverlap /*$fp*/)
@@ -60,6 +62,8 @@
 
 int boxOverlap = 0;
 
+// Checks of two bodies collides (basic check)
+// also initializes axes
 // [D]
 int bcollided2d(CDATA2D *body, int needOverlap)
 {
@@ -92,47 +96,60 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 
 	iVar19 = 1;
 	pCVar11 = body + 1;
-	uVar5 = body[1].theta - body->theta;
+	uVar5 = body[1].theta - body[0].theta;
 
 	sVar1 = rcossin_tbl[(uVar5 + 0x400 & 0x7ff) * 2];
 	sVar2 = rcossin_tbl[(uVar5 & 0x7ff) * 2];
 
+	// calc axes of each box
 	do {
-		iVar19 = iVar19 + -1;
-		uVar5 = pCVar11->theta & 0xfff;
+		uVar5 = body[iVar19].theta & 0xfff;
 		sVar3 = rcossin_tbl[uVar5 * 2];
-		pCVar11->axis[0].vx = (int)sVar3;
 		sVar4 = rcossin_tbl[uVar5 * 2 + 1];
-		pCVar11->axis[1].vz = -(int)sVar3;
-		pCVar11->axis[0].vz = (int)sVar4;
-		pCVar11->axis[1].vx = (int)sVar4;
-		pCVar11 = pCVar11 + -1;
+
+		body[iVar19].axis[0].vx = sVar3;
+		body[iVar19].axis[0].vz = sVar4;
+
+		body[iVar19].axis[1].vz = -sVar3;
+		body[iVar19].axis[1].vx = sVar4;
+
+		iVar19--;
 	} while (iVar19 != -1);
 
 	uVar5 = 0;
 	uVar20 = 1;
+
 	piVar23 = body[1].limit;
-	plVar22 = (int*)&body[1].axis[0].vz;
 	pVVar21 = body[1].axis;
 	piVar25 = body[1].dist;
+
+	plVar22 = (int*)&body[1].axis[0].vz;
+
 	iVar24 = 100;
-	iVar19 = (body->x).vx;
-	iVar8 = body[1].x.vx;
-	iVar6 = (body->x).vz;
+
+	iVar19 = body[0].x.vx;
+	iVar6 = body[0].x.vz;
+
 	iVar9 = body[1].x.vz;
+	iVar8 = body[1].x.vx;
+
 	do {
-		iVar18 = 1;
-		piVar17 = (int *)((int)body->length + iVar24 + 4);
-		piVar16 = body->length + uVar5 * 0x19 + 1;
+		
 		piVar15 = piVar23 + 1;
+
+		piVar17 = body[uVar20].length + 1;//(int *)((int)body->length + iVar24 + 4);
+
+		piVar16 = body[uVar5].length + 1;//->length + uVar5 * 25 + 1;
 		piVar14 = body[uVar5].length;
+
 		piVar13 = plVar22 + 4;
-		pVVar12 = pVVar21 + 1;
+		pVVar12 = body[uVar20].axis + 1;
 		piVar10 = piVar25 + 1;
 
+		iVar18 = 1;
 		do {
-			*piVar10 = pVVar12->vx * (iVar19 - iVar8) + *piVar13 * (iVar6 - iVar9) +0x800 >> 0xc;
-			iVar7 = *piVar17 + (*piVar16 * (int)sVar1 + *piVar14 * (int)sVar2 +0x800 >> 0xc);
+			*piVar10 = (pVVar12->vx * (iVar19 - iVar8) + *piVar13 * (iVar6 - iVar9)) / 4096;// +0x800 >> 0xc;
+			iVar7 = *piVar17 + (*piVar16 * (int)sVar1 + *piVar14 * (int)sVar2) / 4096;
 			*piVar15 = iVar7;
 
 			if (iVar7 < *piVar10)
@@ -141,23 +158,24 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 			if (*piVar10 < -iVar7)
 				return 0;
 		
-			piVar17 = piVar17 + -1;
-			piVar16 = piVar16 + -1;
-			piVar15 = piVar15 + -1;
-			piVar14 = piVar14 + 1;
-			piVar13 = piVar13 + -4;
-			pVVar12 = pVVar12 + -1;
-			iVar18 = iVar18 + -1;
-			piVar10 = piVar10 + -1;
+			piVar17--;
+			piVar16--;
+			piVar15--;
+			pVVar12--;
+			iVar18--;
+			piVar10--;
+			piVar13 -= 4;
+			piVar14++;
 		} while (iVar18 != -1);
 
 		uVar5 = uVar20 & 1;
-		piVar23 = piVar23-25;
-		plVar22 = plVar22-25;
-		pVVar21 = (VECTOR *)&pVVar21[-7].pad;
+		piVar23 -= 25;
+		plVar22 -= 25;
+		//pVVar21 = (VECTOR *)&pVVar21[-7].pad;
 		piVar25 = piVar25-25;
-		uVar20 = uVar20 - 1;
-		iVar24 = iVar24-100;
+		iVar24-= 100;
+
+		uVar20--;
 
 		if (uVar20 == -1) 
 		{
@@ -165,6 +183,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 			{
 				iVar19 = body[1].dist[0];
 				iVar6 = body[1].limit[0];
+
 				if (iVar19 < 0)
 					iVar19 = -iVar19;
 			
@@ -175,9 +194,9 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 				if (iVar8 < 0)
 					iVar8 = iVar6 - iVar19;
 			
-				iVar9 = body->axis[0].vx;
-				iVar6 = body->axis[0].vz;
-				iVar19 = iVar9 * (body[1].axis[0].vx + iVar6 * body[1].axis[0].vz / 4096);// +0x800 >> 0xc;
+				iVar9 = body[0].axis[0].vx;
+				iVar6 = body[0].axis[0].vz;
+				iVar19 = (iVar9 * body[1].axis[0].vx + iVar6 * body[1].axis[0].vz) / 4096;// +0x800 >> 0xc;
 
 				if (iVar19 < 0) 
 					iVar19 = -iVar19;
@@ -207,7 +226,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 				if (iVar18 < 0)
 					iVar18 = iVar24 - iVar19;
 			
-				iVar19 = iVar9 * body[1].axis[1].vx + iVar6 * body[1].axis[1].vz + 0x800 >> 0xc;
+				iVar19 = (iVar9 * body[1].axis[1].vx + iVar6 * body[1].axis[1].vz) / 4096;// +0x800 >> 0xc;
 				if (iVar19 < 0)
 					iVar19 = -iVar19;
 			
@@ -218,14 +237,21 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 				}
 
 				boxOverlap = iVar6;
-				if ((-1 < iVar8) && (boxOverlap = iVar8, iVar6 < iVar8))
+
+				if (-1 < iVar8)
 				{
-					boxOverlap = iVar6;
+					boxOverlap = iVar8;
+
+					if(iVar6 < iVar8)
+						boxOverlap = iVar6;
 				}
 			}
 			return 1;
 		}
+
 	} while (true);
+
+	return 0;
 }
 
 
@@ -1145,7 +1171,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		pCVar12 = cp->ap.carCos;
 
 		boxDisp.vx = -pCVar12->cog.vx;
-		boxDisp.vx = -pCVar12->cog.vy;
+		boxDisp.vy = -pCVar12->cog.vy;
 		boxDisp.vz = -pCVar12->cog.vz;
 
 		gte_ldv0(&boxDisp);
@@ -1166,8 +1192,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
 
-			cd[0].length[0] = 0x5a;
-			cd[0].length[1] = 0x5a;
+			cd[0].length[0] = 90;
+			cd[0].length[1] = 90;
 		}
 		else 
 		{
@@ -1198,7 +1224,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					//if (cd[0].length[1] < 0) 
 					//	cd[0].length[1] += 0xf;
 
-					cd[0].length[1] = cd[0].length[1] >> 4;
+					cd[0].length[1] /= 16;
 				}
 			}
 		}
@@ -1231,25 +1257,118 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			{
 				bFindCollisionTime(cd, &collisionResult);
 				bFindCollisionPoint(cd, &collisionResult);
+#ifdef COLLISION_DEBUG
+				{
+					extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+					extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+					
+
+					CVECTOR bbcv = { 0, 0, 250 };
+					CVECTOR rrcv = { 250, 0, 0 };
+					CVECTOR yycv = { 250, 250, 0 };
+
+					// show collision point and normal
+					{
+
+						VECTOR pb = collisionResult.hit;
+						pb.vy += 16;
+
+						// display collision point
+						Debug_AddLine(collisionResult.hit, pb, rrcv);
+
+						VECTOR nb = collisionResult.hit;
+						nb.vx += collisionResult.surfNormal.vx / 16;
+						nb.vy += collisionResult.surfNormal.vy / 16;
+						nb.vz += collisionResult.surfNormal.vz / 16;
+
+						// show collision normal
+						Debug_AddLine(collisionResult.hit, nb, bbcv);
+					}
+
+					// show both box axes
+					{
+						VECTOR _zero = { 0 };
+						VECTOR b1p = *(VECTOR*)cp->hd.where.t;
+						VECTOR b2p = building->pos;
+						b2p.vy = b1p.vy;
+
+						// show position to position
+						//Debug_AddLine(b1p1, b2p1, yycv);
+
+						VECTOR b1ax[2] = { {0} , {0} };
+						b1ax[0].vx = (cd[0].axis[0].vx * cd[0].length[0]) / 4096;
+						b1ax[0].vz = (cd[0].axis[0].vz * cd[0].length[0]) / 4096;
+						b1ax[1].vx = (cd[0].axis[1].vx * cd[0].length[1]) / 4096;
+						b1ax[1].vz = (cd[0].axis[1].vz * cd[0].length[1]) / 4096;
+
+						// show axis of body 1
+						Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+						Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+						
+						// display 2D box 1
+						{
+							int h = b1ax[0].vy;
+							VECTOR box_points[4] = {
+								{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+								{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+								{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+								{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+							};
+
+							Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+							Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+							Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+							Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+						}
+
+						VECTOR b2ax[2] = { {0} , {0} };
+						b2ax[0].vx += (cd[1].axis[0].vx * cd[1].length[0]) / 4096;
+						b2ax[0].vz += (cd[1].axis[0].vz * cd[1].length[0]) / 4096;
+						b2ax[1].vx += (cd[1].axis[1].vx * cd[1].length[1]) / 4096;
+						b2ax[1].vz += (cd[1].axis[1].vz * cd[1].length[1]) / 4096;
+
+						// show axis of body 2
+						Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
+						Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
+
+						// display 2D box 2
+						{
+							int h = b2ax[0].vy;
+							VECTOR box_points[4] = {
+								{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
+								{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
+
+								{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
+								{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
+							};
+
+							Debug_AddLineOfs(box_points[0], box_points[1], b2p, yycv);
+							Debug_AddLineOfs(box_points[1], box_points[2], b2p, yycv);
+							Debug_AddLineOfs(box_points[2], box_points[3], b2p, yycv);
+							Debug_AddLineOfs(box_points[3], box_points[0], b2p, yycv);
+						}
+					}
+				}
+#endif
 
 				collisionResult.surfNormal.vx = -collisionResult.surfNormal.vx;
 				collisionResult.surfNormal.vy = 0;
-				collisionResult.hit.vy = cp->hd.where.t[1] + 0x29;
 				collisionResult.surfNormal.vz = -collisionResult.surfNormal.vz;
 
-				iVar17 = cp->hd.where.t[0] + (collisionResult.penetration * collisionResult.surfNormal.vx) / 4096;
-				cp->hd.where.t[0] = iVar17;
+				collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
-				iVar9 = cp->hd.where.t[2] + (collisionResult.penetration * collisionResult.surfNormal.vz) / 4096;
-				cp->hd.where.t[2] = iVar9;
+				cp->hd.where.t[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 4096;
+				cp->hd.where.t[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 4096;
 
-				iVar18 = cp->st.n.angularVelocity[1];
-				iVar9 = collisionResult.hit.vz - iVar9;
-				iVar10 = cp->st.n.angularVelocity[2];
-				iVar16 = collisionResult.hit.vy - cp->hd.where.t[1];
-				iVar17 = collisionResult.hit.vx - iVar17;
 				iVar13 = cp->st.n.angularVelocity[0];
+				iVar18 = cp->st.n.angularVelocity[1];
+				iVar10 = cp->st.n.angularVelocity[2];
 
+				iVar17 = collisionResult.hit.vx - cp->hd.where.t[0];
+				iVar16 = collisionResult.hit.vy - cp->hd.where.t[1];
+				iVar9 = collisionResult.hit.vz - cp->hd.where.t[2];
+				
 				strikeVel = ((iVar18 * iVar9 - iVar10 * iVar16) / 4096) + cp->st.n.linearVelocity[0];
 				iVar10 = ((iVar10 * iVar17 - iVar13 * iVar9) / 4096) + cp->st.n.linearVelocity[1];
 				iVar13 = ((iVar13 * iVar16 - iVar18 * iVar17) / 4096) + cp->st.n.linearVelocity[2];
@@ -1285,7 +1404,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					if (cp->controlType == 1) 
 					{
 						if (strikeVel < 0x20) 
-							scale = ((iVar10 * -0x800000) >> 0x10);
+							scale = ((iVar10 << 0x17) >> 0x10);
 						else 
 							scale = 0x1000;
 
@@ -1297,19 +1416,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 					collisionResult.hit.vy = -collisionResult.hit.vy;
 
-					iVar13 = cp->st.n.linearVelocity[0];
-
-					//if (iVar13 < 0)
-					//	iVar13 = iVar13 + 0xfff;
-
-					velocity.vx = iVar13 / 4096;
-					iVar13 = cp->st.n.linearVelocity[2];
-					velocity.vy = -0x11;
-
-					//if (iVar13 < 0)
-					//	iVar13 = iVar13 + 0xfff;
-
-					velocity.vz = iVar13 / 4096;
+					velocity.vx = cp->st.n.linearVelocity[0] / 4096;
+					velocity.vy = -17;
+					velocity.vz = cp->st.n.linearVelocity[2] / 4096;
 
 					if ((pMVar20->flags2 & 0x800) != 0)
 					{
@@ -1340,7 +1449,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 							if ((1 < NumPlayers) && (NoPlayerControl == 0))
 								SetPlayerOwnsChannel(strikeVel, iVar2);
 
-							Start3DSoundVolPitch(strikeVel, 1, pSVar19->sound, collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, pSVar19->volume, pSVar19->pitch + ((uVar3 * uVar11 & 0x3ff) - 0x200));
+							Start3DSoundVolPitch(strikeVel, 1, pSVar19->sound, 
+								collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, 
+								pSVar19->volume, pSVar19->pitch + ((uVar3 * uVar11 & 0x3ff) - 0x200));
 						}
 
 						cp->hd.where.t[0] = lVar4;
@@ -1357,6 +1468,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 						return 0;
 					}
+
 					if ((0x3600 < strikeVel) && (32000 < cp->hd.wheel_speed + 16000U))
 					{
 						if ((pMVar20->flags2 & 0x2000) == 0) 
@@ -1368,17 +1480,19 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 								{
 									memset(&lamp_velocity, 0, sizeof(lamp_velocity));
 
-									collisionResult.hit.vy = -0x2da;
+									collisionResult.hit.vy = -730;
 									Setup_Sparks(&collisionResult.hit, &lamp_velocity, 0x14, 0);
-									collisionResult.hit.vy = 0x2da;
+									collisionResult.hit.vy = 730;
 								}
 							}
 
-							velocity.vy = velocity.vy - 0x14;
-							collisionResult.hit.vy += 0x1e;
+							velocity.vy -= 20;
+							collisionResult.hit.vy += 30;
+
 							Setup_Sparks(&collisionResult.hit, &velocity, 4, '\0');
-							collisionResult.hit.vy -= 0x1e;
-							velocity.vy = velocity.vy + 0x14;
+
+							collisionResult.hit.vy -= 30;
+							velocity.vy += 20;
 						}
 						else 
 						{
@@ -1386,6 +1500,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 							LeafPosition.vx = collisionResult.hit.vx;
 							LeafPosition.vy = -((uVar3 & 0xfe) + 600) - collisionResult.hit.vy;
 							LeafPosition.vz = collisionResult.hit.vz;
+
 							AddLeaf(&LeafPosition, 3, 1);
 						}
 
@@ -1416,67 +1531,66 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					//if (iVar14 < 0)
 					//	iVar14 = iVar14 + 0x3f;
 	
-					iVar14 = iVar14 >> 6;
+					iVar14 = iVar14 / 64;
 					lVar4 = collisionResult.surfNormal.vx;
 
 					//if (collisionResult.surfNormal.vx < 0)
 					//	lVar4 = collisionResult.surfNormal.vx + 0x3f;
 
-					iVar2 = iVar14 * (lVar4 >> 6);
+					iVar2 = iVar14 * (lVar4 / 64);
 					lVar4 = collisionResult.surfNormal.vy;
 
 					//if (collisionResult.surfNormal.vy < 0)
 					//	lVar4 = collisionResult.surfNormal.vy + 0x3f;
 
-					strikeVel = iVar14 * (lVar4 >> 6);
+					strikeVel = iVar14 * (lVar4 / 64);
 					lVar4 = collisionResult.surfNormal.vz;
 
-					if (collisionResult.surfNormal.vz < 0)
-						lVar4 = collisionResult.surfNormal.vz + 0x3f;
+					//if (collisionResult.surfNormal.vz < 0)
+					//	lVar4 = collisionResult.surfNormal.vz + 0x3f;
 
-					iVar14 = iVar14 * (lVar4 >> 6);
+					iVar14 = iVar14 * (lVar4 / 64);
 
 					if (cp->controlType != 4) 
 					{
-						iVar13 = iVar16 * iVar14;// +0x800;
-						iVar10 = iVar13 / 4096;// >> 0xc;
+						iVar13 = iVar16 * iVar14;
+						iVar10 = iVar13 / 4096;
 
 						if (cp->controlType == 3) 
 							iVar10 = iVar13 / 8192;
 
-						iVar10 = cp->hd.aacc[0] + iVar10;
-						cp->hd.aacc[0] = iVar10;
-						iVar18 = iVar9 * strikeVel;// +0x800;
+						cp->hd.aacc[0] += iVar10;
+
+						iVar18 = iVar9 * strikeVel;
 						iVar13 = iVar18 / 4096;
 
 						if (cp->controlType == 3)
 							iVar13 = iVar18 / 8192;
 
-						cp->hd.aacc[0] = iVar10 - iVar13;
+						cp->hd.aacc[0] -= iVar13;
 					}
-					uVar1 = cp->controlType;
+
 					cp->hd.aacc[1] += (iVar9 * iVar2) / 4096 - (iVar17 * iVar14) / 4096;
 
-					if (uVar1 != 4) 
+					if (cp->controlType != 4)
 					{
 						iVar10 = iVar17 * strikeVel;
 						iVar9 = iVar10 / 4096;
 
-						if (uVar1 == 3) 
-							iVar9 = iVar10 >> 0xd;
+						if (cp->controlType == 3)
+							iVar9 = iVar10 / 8192;
 
-						iVar9 = cp->hd.aacc[2] + iVar9;
-						cp->hd.aacc[2] = iVar9;
+						cp->hd.aacc[2] += iVar9;
+
 						iVar13 = iVar16 * iVar2;
 						iVar10 = iVar13 / 4096;
 
 						if (cp->controlType == 3)
 							iVar10 = iVar13 / 8192;
 
-						cp->hd.aacc[2] = iVar9 - iVar10;
+						cp->hd.aacc[2] -= iVar10;
 					}
 
-					uVar1 = cp->controlType;
 					cp->st.n.linearVelocity[0] += iVar2;
 
 					if (cp->controlType != 4)
