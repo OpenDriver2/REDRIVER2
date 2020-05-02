@@ -12,6 +12,8 @@
 #include "MISSION.H"
 #include "GLAUNCH.H"
 #include "GAMESND.H"
+#include "XAPLAY.H"
+
 
 #include <string.h>
 #include <stdlib.h>
@@ -908,76 +910,98 @@ void PauseXM(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+static __pauseinfo pause;
+
+// [D] [A] please refactor
 void PauseSFX(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	ushort uVar1;
 	bool bVar2;
 	short sVar3;
 	short sVar4;
-	ushort *puVar5;
-	__pauseinfo *p_Var6;
-	int iVar7;
-	int iVar8;
+	short *local_s0_76;
+	short *local_s0_252;
+	ushort *local_s0_364;
+	int iVar5;
+	int iVar6;
+	short *local_s2_68;
 
-	if (sound_paused == 0) {
+	if (sound_paused == 0) 
+	{
 		pause.max = 0;
-		iVar7 = 0;
-		iVar8 = 0xdd488;
-		puVar5 = pause.voll;
+		iVar5 = 0;
+		
+		local_s0_76 = (short *)pause.voll;
+		local_s2_68 = (short *)pause.volr;
+
 		do {
-			SpuGetVoiceVolume(iVar7, puVar5, iVar8);
-			if (puVar5[0x10] < *puVar5) {
-				uVar1 = *puVar5;
+			SpuGetVoiceVolume(iVar5, local_s0_76, local_s2_68);
+
+			if (*local_s2_68 < *local_s0_76)
+				uVar1 = *local_s0_76;
+			else
+				uVar1 = *local_s2_68;
+
+			if (pause.max < uVar1) 
+			{
+				pause.max = *local_s2_68;
+
+				if (*local_s2_68 < *local_s0_76)
+					pause.max = *local_s0_76;
 			}
-			else {
-				uVar1 = puVar5[0x10];
-			}
-			if (pause.max < uVar1) {
-				pause.max = puVar5[0x10];
-				if (puVar5[0x10] < *puVar5) {
-					pause.max = *puVar5;
-				}
-			}
-			iVar8 = iVar8 + 2;
-			puVar5 = puVar5 + 1;
-			iVar7 = iVar7 + 1;
-			pause.lev = (short)gMasterVolume + 10000;
-		} while (iVar7 < 0x10);
-		iVar7 = 0x60;
+
+			local_s2_68++;
+			local_s0_76++;
+			iVar5++;
+
+			pause.lev = gMasterVolume + 10000;
+		} while (iVar5 < 16);
+
+		iVar5 = 96;
+
+		// fade?
 		do {
-			iVar8 = 0;
-			puVar5 = pause.volr;
+			iVar6 = 0;
+
+			local_s0_76 = (short *)pause.voll;
+			local_s0_252 = (short *)pause.volr;
+
 			do {
-				sVar4 = (short)((uint)puVar5[-0x10] - iVar7);
-				if ((int)((uint)puVar5[-0x10] - iVar7) < 0) {
+
+				sVar4 = *local_s0_76 - iVar5;
+
+				if (*local_s0_76 - iVar5 < 0)
 					sVar4 = 0;
-				}
-				sVar3 = (short)((uint)*puVar5 - iVar7);
-				if ((int)((uint)*puVar5 - iVar7) < 0) {
+
+				sVar3 = *local_s0_252 - iVar5;
+
+				if (*local_s0_252 - iVar5 < 0) 
 					sVar3 = 0;
-				}
-				SpuSetVoiceVolume(iVar8, (int)sVar4, (int)sVar3);
-				iVar8 = iVar8 + 1;
-				puVar5 = puVar5 + 1;
-			} while (iVar8 < 0x10);
-			bVar2 = iVar7 < (int)(uint)pause.max;
-			iVar7 = iVar7 + 0x60;
+
+				SpuSetVoiceVolume(iVar6, sVar4, sVar3);
+
+				iVar6++;
+				local_s0_252++;
+				local_s0_76++;
+			} while (iVar6 < 16);
+
+			bVar2 = iVar5 < pause.max;
+			iVar5 = iVar5 + 96;
 		} while (bVar2);
-		iVar7 = 0;
-		p_Var6 = &pause;
+
+		iVar5 = 0;
+		local_s0_364 = pause.pitch;
+
 		do {
-			SpuGetVoicePitch(iVar7, p_Var6);
-			SpuSetVoicePitch(iVar7, 0);
-			iVar7 = iVar7 + 1;
-			p_Var6 = (__pauseinfo *)(p_Var6->pitch + 1);
-		} while (iVar7 < 0x10);
+			SpuGetVoicePitch(iVar5, local_s0_364);
+			SpuSetVoicePitch(iVar5, 0);
+
+			iVar5 = iVar5 + 1;
+			local_s0_364++;
+		} while (iVar5 < 16);
+
 		sound_paused = 1;
 	}
-	return;
-	*/
 }
 
 
@@ -993,15 +1017,13 @@ void PauseSFX(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void PauseSound(void)
 {
-	UNIMPLEMENTED();
-	/*
 	SetReverbInGameState(0);
 	PauseXM();
 	PauseSFX();
 	PauseXA();
-	return;*/
 }
 
 
@@ -1090,71 +1112,87 @@ void UnPauseXM(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [A] please refactor
 void UnPauseSFX(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	bool bVar1;
-	undefined *puVar2;
-	ushort uVar3;
-	ushort *puVar4;
-	ushort uVar5;
-	__pauseinfo *p_Var6;
-	int iVar7;
-	int iVar8;
+	ushort local_v0_108;
+	ushort uVar2;
+	ushort *puVar2;
+	ushort *puVar3;
+	ushort uVar4;
+	ushort *local_s0_44;
+	int iVar5;
+	int iVar6;
 
 	if (sound_paused != 0) {
-		p_Var6 = &pause;
-		iVar8 = 0;
+		local_s0_44 = pause.pitch;
+		iVar6 = 0;
+
 		do {
-			puVar4 = p_Var6->pitch;
-			p_Var6 = (__pauseinfo *)(p_Var6->pitch + 1);
-			iVar7 = iVar8 + 1;
-			SpuSetVoicePitch(iVar8, (uint)*puVar4);
-			iVar8 = iVar7;
-		} while (iVar7 < 0x10);
-		if ((pause.lev != 0) &&
-			(puVar2 = &DAT_00002710 + gMasterVolume, (undefined *)(uint)pause.lev != puVar2)) {
-			puVar4 = pause.volr;
-			iVar8 = 0xf;
+			puVar3 = local_s0_44;
+			local_s0_44++;// = (__pauseinfo *)(local_s0_44->pitch + 1);
+			iVar5 = iVar6 + 1;
+
+			SpuSetVoicePitch(iVar6, *puVar3);
+
+			iVar6 = iVar5;
+		} while (iVar5 < 0x10);
+
+		local_v0_108 = 10000 + gMasterVolume;
+
+		if (pause.lev != 0 && pause.lev != local_v0_108) 
+		{
+			puVar2 = pause.voll;
+			puVar3 = pause.volr;
+			iVar6 = 0xf;
 			do {
-				if (pause.lev == 0) {
+				if (pause.lev == 0)
 					trap(7);
-				}
-				puVar4[-0x10] = (ushort)((int)((uint)puVar4[-0x10] * (int)puVar2) / (int)(uint)pause.lev);
-				if (pause.lev == 0) {
+
+				*puVar2 = ((*puVar2 * local_v0_108) / pause.lev);
+
+				if (pause.lev == 0)
 					trap(7);
-				}
-				*puVar4 = (ushort)((int)((uint)*puVar4 * (int)puVar2) / (int)(uint)pause.lev);
-				iVar8 = iVar8 + -1;
-				puVar4 = puVar4 + 1;
-			} while (-1 < iVar8);
+
+				*puVar3 = ((*puVar3 * local_v0_108) / pause.lev);
+
+				iVar6--;
+				puVar3++;
+				puVar2++;
+			} while (-1 < iVar6);
 		}
-		iVar8 = 0x60;
+
+		iVar6 = 0x60;
+
 		do {
-			iVar7 = 0;
-			puVar4 = pause.volr;
+			iVar5 = 0;
+
+			puVar2 = pause.voll;
+			puVar3 = pause.volr;
+
 			do {
-				uVar3 = puVar4[-0x10];
-				if (iVar8 < (int)(uint)puVar4[-0x10]) {
-					uVar3 = (ushort)iVar8;
-				}
-				uVar5 = *puVar4;
-				if (iVar8 < (int)(uint)*puVar4) {
-					uVar5 = (ushort)iVar8;
-				}
-				SpuSetVoiceVolume(iVar7, (int)(short)uVar3, (int)(short)uVar5);
-				iVar7 = iVar7 + 1;
-				puVar4 = puVar4 + 1;
-			} while (iVar7 < 0x10);
-			bVar1 = iVar8 < (int)(uint)pause.max;
-			iVar8 = iVar8 + 0x60;
+				uVar2 = *puVar2;
+				if (iVar6 < *puVar2)
+					uVar2 = iVar6;
+
+				uVar4 = *puVar3;
+				if (iVar6 < *puVar3)
+					uVar4 = iVar6;
+
+				SpuSetVoiceVolume(iVar5, uVar2, uVar4);
+
+				iVar5++;
+				puVar3++;
+				puVar2++;
+			} while (iVar5 < 16);
+
+			bVar1 = iVar6 < pause.max;
+			iVar6 = iVar6 + 0x60;
 		} while (bVar1);
+
 		sound_paused = 0;
 	}
-	return;
-	*/
 }
 
 
@@ -1182,15 +1220,12 @@ void UnPauseSFX(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void UnPauseSound(void)
 {
-	UNIMPLEMENTED();
-	/*
 	UnPauseXM();
 	UnPauseSFX();
 	ResumeXA();
-	return;
-	*/
 }
 
 
