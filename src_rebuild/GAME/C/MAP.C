@@ -250,11 +250,9 @@ MODEL * FindModelPtrWithName(char *name)
 	/* end block 3 */
 	// End Line: 1558
 
+// [D]
 int FindModelIdxWithName(char *name)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char cVar1;
 	int iVar2;
 	int iVar3;
@@ -278,7 +276,6 @@ int FindModelIdxWithName(char *name)
 		} while (iVar3 < num_models_in_pack);
 	}
 	return -1;
-	*/
 }
 
 
