@@ -70,4 +70,26 @@ void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)
 	ld.posA = pointA;
 	ld.posB = pointB;
 	ld.color = color;
+
+	ld.posA.vy *= -1;
+	ld.posB.vy *= -1;
+}
+
+void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color)
+{
+	LineDef_t& ld = gDebug_Lines[gDebug_numLines++];
+	ld.posA = pointA;
+	ld.posB = pointB;
+	ld.color = color;
+
+	ld.posA.vx += ofs.vx;
+	ld.posA.vy += ofs.vy;
+	ld.posA.vz += ofs.vz;
+
+	ld.posB.vx += ofs.vx;
+	ld.posB.vy += ofs.vy;
+	ld.posB.vz += ofs.vz;
+
+	ld.posA.vy *= -1;
+	ld.posB.vy *= -1;
 }
