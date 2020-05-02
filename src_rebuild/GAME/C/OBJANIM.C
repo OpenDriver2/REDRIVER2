@@ -1,6 +1,6 @@
 #include "THISDUST.H"
 #include "OBJANIM.H"
-
+#include "MAP.H"
 
 CYCLE_OBJECT Lev0[2] =
 {
@@ -88,35 +88,35 @@ VECTOR gMissionDoorPosition = { 108000, 0, 4294575046, 0 };
 SMASHABLE_OBJECT smashable[] =
 {
 	{ 0, "CONE_TASTIC", 5, 0, 800 },
-	{ 0, "BOX_TASTIC", 4, 4294961296, 4096 },
-	{ 0, "BOX2_TASTIC", 4, 4294961296, 4096 },
-	{ 0, "BOX3_TASTIC", 4, 4294961296, 4096 },
+	{ 0, "BOX_TASTIC", 4, -6000, 4096 },
+	{ 0, "BOX2_TASTIC", 4, -6000, 4096 },
+	{ 0, "BOX3_TASTIC", 4, -6000, 4096 },
 	{ 0, "CONE1_TASTIC", 5, 0, 800 },
 	{ 0, "CONE2_TASTIC", 5, 0, 800 },
-	{ 0, "BIN_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "BARRIER_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "BARREL_TASTIC", 6, 4294963996, 2400 },
-	{ 0, "BARREL1_TASTIC", 6, 4294963996, 2400 },
-	{ 0, "BARREL2_TASTIC", 6, 4294963996, 2400 },
-	{ 0, "TABLE_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "BENCH_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "CHAIR_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "CHAIR1_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "CHAIR2_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "UMBRELLA_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "UMBRELLA1_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "PHONE_TASTIC", 6, 4294963996, 3600 },
-	{ 0, "PHONE1_TASTIC", 6, 4294963996, 3600 },
-	{ 0, "SIGN00_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "NEWS_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "PARKING_TASTIC", 6, 4294959796, 4096 },
-	{ 0, "DRINKS_TASTIC", 6, 4294963996, 3600 },
-	{ 0, "FENCE_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "FENCE00_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "FENCE01_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "FENCE02_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "FENCE03_TASTIC", 7, 4294960796, 3200 },
-	{ 0, "FENCE04_TASTIC", 7, 4294960796, 3200 },
+	{ 0, "BIN_TASTIC", 7, -6500, 3200 },
+	{ 0, "BARRIER_TASTIC", 7, -6500, 3200 },
+	{ 0, "BARREL_TASTIC", 6, -3300, 2400 },
+	{ 0, "BARREL1_TASTIC", 6, -3300, 2400 },
+	{ 0, "BARREL2_TASTIC", 6, -3300, 2400 },
+	{ 0, "TABLE_TASTIC", 7, -6500, 3200 },
+	{ 0, "BENCH_TASTIC", 7, -6500, 3200 },
+	{ 0, "CHAIR_TASTIC", 7, -6500, 3200 },
+	{ 0, "CHAIR1_TASTIC", 7, -6500, 3200 },
+	{ 0, "CHAIR2_TASTIC", 7, -6500, 3200 },
+	{ 0, "UMBRELLA_TASTIC", 7, -6500, 3200 },
+	{ 0, "UMBRELLA1_TASTIC", 7, -6500, 3200 },
+	{ 0, "PHONE_TASTIC", 6, -3300, 3600 },
+	{ 0, "PHONE1_TASTIC", 6, -3300, 3600 },
+	{ 0, "SIGN00_TASTIC", 7, -6500, 3200 },
+	{ 0, "NEWS_TASTIC", 7, -6500, 3200 },
+	{ 0, "PARKING_TASTIC", 6, -7500, 4096 },
+	{ 0, "DRINKS_TASTIC", 6, -3300, 3600 },
+	{ 0, "FENCE_TASTIC", 7, -6500, 3200 },
+	{ 0, "FENCE00_TASTIC", 7, -6500, 3200 },
+	{ 0, "FENCE01_TASTIC", 7, -6500, 3200 },
+	{ 0, "FENCE02_TASTIC", 7, -6500, 3200 },
+	{ 0, "FENCE03_TASTIC", 7, -6500, 3200 },
+	{ 0, "FENCE04_TASTIC", 7, -6500, 3200 },
 	{ 0, "CONE_TASTIC1", 5, 0, 800 },
 	{ 0, "CONE_TASTIC2", 5, 0, 800 },
 	{ 0, "CONE_TASTIC3", 5, 0, 800 },
@@ -394,25 +394,22 @@ void ColourCycle(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void FindSmashableObjects(void)
 {
-	UNIMPLEMENTED();
-	/*
 	SMASHABLE_OBJECT *pSVar1;
 	int iVar2;
 	SMASHABLE_OBJECT *pSVar3;
 
-	pSVar3 = &smashable;
-	if (smashable.name != (char *)0x0) {
+	pSVar3 = smashable;
+	if (smashable[0].name != NULL) {
 		do {
 			iVar2 = FindModelIdxWithName(pSVar3->name);
 			pSVar3->modelIdx = iVar2;
 			pSVar1 = pSVar3 + 1;
 			pSVar3 = pSVar3 + 1;
-		} while (pSVar1->name != (char *)0x0);
+		} while (pSVar1->name != NULL);
 	}
-	return;
-	*/
 }
 
 
@@ -471,7 +468,7 @@ void InitAnimatingObjects(void)
 			do {
 				pMVar2 = FindModelPtrWithName(*(char **)(puVar7 + 8));
 				iVar5 = 0;
-				if (pMVar2 == (MODEL *)0x0) {
+				if (pMVar2 == NULL) {
 					*(undefined4 *)(puVar7 + 4) = 0xffffffff;
 				}
 				else {
@@ -502,11 +499,9 @@ void InitAnimatingObjects(void)
 				puVar7 = puVar7 + 0x10;
 			} while (iVar6 < num_anim_objects);
 		}
-	}
+	}*/
 	FindSmashableObjects();
-	InitCyclingPals();
-	return;
-	*/
+	//InitCyclingPals();
 }
 
 
