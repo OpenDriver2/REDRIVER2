@@ -1042,8 +1042,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 									}
 								}
 							}
-							iVar8 = iVar8 + 1;
-							piVar14 = piVar14 + 5;
+							iVar8++;
+							piVar14++;
 						} while (iVar8 < iVar6);
 					}
 				}
