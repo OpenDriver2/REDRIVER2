@@ -33,6 +33,7 @@ extern int gTannerActionNeeded;
 extern int gLockPickingAttempted;
 extern char lockAllTheDoors;
 extern int gCantDrive;
+extern int gPlayerDamageFactor;
 
 extern int requestStationaryCivCar;
 extern int numCivCars;

@@ -82,12 +82,12 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	}
 	cp->hd.direction = direction;
 
-	cp->hd.autoBrake = '\0';
+	cp->hd.autoBrake = 0;
 
-	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * iVar2 / 4096;
-	cp->st.n.orientation[1] = (int)rcossin_tbl[direction & 0xffeU];
+	cp->st.n.orientation[0] = -rcossin_tbl[(direction & 0xffeU) + 1] * iVar2 / 4096;
+	cp->st.n.orientation[1] = rcossin_tbl[direction & 0xffeU];
 	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * iVar2 / 4096;
-	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
+	cp->st.n.orientation[3] = rcossin_tbl[(direction & 0xffeU) + 1];
 
 	cp->st.n.fposition[0] = (*startpos)[0] << 4;
 	cp->st.n.fposition[1] = (*startpos)[1] << 4;
@@ -119,7 +119,7 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
 	cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
 	
-	cVar3 = (char)(iVar5 >> 5);
+	cVar3 = (iVar5 >> 5);
 	cVar1 = 14 - cVar3;
 	
 	cVar3 = cVar3 + 14;
@@ -189,7 +189,7 @@ void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 	cp->st.n.orientation[2] = (rcossin_tbl[uVar3] * iVar1) / 4096;
 	cp->st.n.orientation[3] = rcossin_tbl[uVar3 + 1];
 
-	RebuildCarMatrix((RigidBodyState *)&cp->st, cp);
+	RebuildCarMatrix(&cp->st, cp);
 	SetShadowPoints(cp);
 }
 
@@ -697,6 +697,8 @@ void GlobalTimeStep(void)
 			cp->hd.aacc[1] = 0;
 			cp->hd.aacc[2] = 0;
 
+			st = &cp->st;
+
 			iVar15 = iVar15 + iVar9;
 			cp->st.n.linearVelocity[0] = iVar5 + howHard;
 			iVar5 = cp->st.n.linearVelocity[2];
@@ -707,16 +709,13 @@ void GlobalTimeStep(void)
 			iVar5 = (cp->st).n.angularVelocity[1];
 			cp->st.n.angularVelocity[0] = howHard + iVar19;
 			howHard = (cp->st).n.angularVelocity[2];
-			st = &cp->st;
+			
 			cp->st.n.angularVelocity[1] = iVar5 + iVar21;
 			cp->st.n.angularVelocity[2] = howHard + iVar24;
 
 			if (200000 < iVar15) 
 			{
 				iVar15 = iVar15 * 3;
-				if (iVar15 < 0)
-					iVar15 = iVar15 + 3;
-
 				cp->st.n.linearVelocity[1] = iVar15 / 4;
 			}
 			if (cp->hd.speed == 0)
@@ -780,18 +779,19 @@ void GlobalTimeStep(void)
 				angvel[1] = cp->st.n.angularVelocity[1] / 8192;
 				angvel[2] = cp->st.n.angularVelocity[2] / 8192;
 
-				delta_orientation[0] = ((-orient[1] * angvel[2] + orient[2] * angvel[1] + orient[3] * angvel[0]));
-				delta_orientation[1] = ((orient[0] * angvel[2] - orient[2] * angvel[0]) + orient[3] * angvel[1]);
+				delta_orientation[0] = (-orient[1] * angvel[2] + orient[2] * angvel[1] + orient[3] * angvel[0]);
+				delta_orientation[1] = (orient[0] * angvel[2] - orient[2] * angvel[0]) + orient[3] * angvel[1];
 				delta_orientation[2] = (-orient[0] * angvel[1] + orient[1] * angvel[0] + orient[3] * angvel[2]);
-				delta_orientation[3] = (((-orient[0] * angvel[0] - orient[1] * angvel[1]) - orient[2] * angvel[2]));
+				delta_orientation[3] = (-orient[0] * angvel[0] - orient[1] * angvel[1]) - orient[2] * angvel[2];
 
 				orient[0] += delta_orientation[0] / 4096;
 				orient[1] += delta_orientation[1] / 4096;
 				orient[2] += delta_orientation[2] / 4096;
 				orient[3] += delta_orientation[3] / 4096;
 
-				RebuildCarMatrix((RigidBodyState *)st, cp);
+				RebuildCarMatrix(st, cp);
 			}
+
 			iVar28 = iVar28 + 1;
 		} while (iVar28 < num_active_cars);
 	}
@@ -869,7 +869,7 @@ void GlobalTimeStep(void)
 								if (0 < RKstep)
 									p_Var25 = &_tp[local_30]; //(RigidBodyState *)((int)_tp[0].v + local_30);
 
-								if (((c1->hd).mayBeColliding != 0) && (((c1->hd).speed != 0 || ((cp->hd).speed != 0))))
+								if ((c1->hd.mayBeColliding != 0) && (((c1->hd).speed != 0 || ((cp->hd).speed != 0))))
 								{
 
 									iVar28 = (cp->hd).where.t[0];
@@ -1004,6 +1004,7 @@ void GlobalTimeStep(void)
 												}
 											}
 										}
+
 										iVar9 = howHard * 9;
 										if (iVar9 < 0) {
 											iVar9 = iVar9 + 3;
@@ -1437,28 +1438,28 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	iVar8 = (*qua)[2];
 	iVar7 = (*qua)[3];
 
-	sVar1 = (iVar5 * iVar5 + 1024) / 2048;
-	sVar2 = (iVar8 * iVar8 + 1024) / 2048;
-	sVar3 = (iVar6 * iVar6 + 1024) / 2048;
+	sVar1 = (iVar5 * iVar5) / 2048;
+	sVar2 = (iVar8 * iVar8) / 2048;
+	sVar3 = (iVar6 * iVar6) / 2048;
 
 	m->m[0][0] = 4096 - (sVar1 + sVar2);
 	m->m[1][1] = 4096 - (sVar3 + sVar2);
 	m->m[2][2] = 4096 - (sVar3 + sVar1);
 
-	sVar2 = (iVar8 * iVar7 + 1024) / 2048;
-	sVar1 = (iVar6 * iVar5 + 1024) / 2048;
+	sVar2 = (iVar8 * iVar7) / 2048;
+	sVar1 = (iVar6 * iVar5) / 2048;
 
 	m->m[0][1] = sVar1 - sVar2;
 
-	sVar3 = (iVar6 * iVar8 + 1024) / 2048;
-	sVar4 = (iVar5 * iVar7 + 1024) / 2048;
+	sVar3 = (iVar6 * iVar8) / 2048;
+	sVar4 = (iVar5 * iVar7) / 2048;
 
 	m->m[0][2] = sVar3 + sVar4;
 	m->m[1][0] = sVar1 + sVar2;
 	m->m[2][0] = sVar3 - sVar4;
 
-	sVar2 = (iVar6 * iVar7 + 1024) / 2048;
-	sVar1 = (iVar5 * iVar8 + 1024) / 2048;
+	sVar2 = (iVar6 * iVar7) / 2048;
+	sVar1 = (iVar5 * iVar8) / 2048;
 
 	m->m[1][2] = sVar1 - sVar2;
 	m->m[2][1] = sVar1 + sVar2;
@@ -1505,9 +1506,7 @@ void initOBox(_CAR_DATA *cp)
 
 	short sVar2;
 	int iVar3;
-	long uVar4;
-	long uVar5;
-	long uVar6;
+
 
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
@@ -1519,25 +1518,22 @@ void initOBox(_CAR_DATA *cp)
 	gte_ldv0(&boxDisp);
 	docop2(0x480012);
 
-	if (cp->controlType == '\x03') 
+	if (cp->controlType == 3) 
 	{
-		iVar3 = (int)(((cp->ap).carCos)->colBox).vx * 0xe;
-		if (iVar3 < 0)
-		{
-			iVar3 = iVar3 + 0xf;
-		}
-		sVar2 = (short)(iVar3 >> 4);
-		(cp->hd).oBox.length[0] = sVar2;
+		iVar3 = cp->ap.carCos->colBox.vx * 14;
+
+		sVar2 = (iVar3 >> 4);
+		cp->hd.oBox.length[0] = sVar2;
 	}
 	else 
 	{
-		sVar2 = (((cp->ap).carCos)->colBox).vx;
-		(cp->hd).oBox.length[0] = sVar2;
+		sVar2 = cp->ap.carCos->colBox.vx;
+		cp->hd.oBox.length[0] = sVar2;
 	}
 
-	(cp->hd).oBox.location.vx = MAC1;
-	(cp->hd).oBox.location.vy = MAC2;
-	(cp->hd).oBox.location.vz = MAC3;
+	cp->hd.oBox.location.vx = MAC1;
+	cp->hd.oBox.location.vy = MAC2;
+	cp->hd.oBox.location.vz = MAC3;
 
 	IR1 = sVar2;
 	IR2 = 0;
@@ -1545,12 +1541,12 @@ void initOBox(_CAR_DATA *cp)
 
 	docop2(0x49e012);
 
-	sVar2 = (((cp->ap).carCos)->colBox).vy;
-	(cp->hd).oBox.length[1] = sVar2;
+	sVar2 = cp->ap.carCos->colBox.vy;
+	cp->hd.oBox.length[1] = sVar2;
 
-	(cp->hd).oBox.radii[0].vx = IR1;
-	(cp->hd).oBox.radii[0].vy = IR2;
-	(cp->hd).oBox.radii[0].vz = IR3;
+	cp->hd.oBox.radii[0].vx = IR1;
+	cp->hd.oBox.radii[0].vy = IR2;
+	cp->hd.oBox.radii[0].vz = IR3;
 
 	IR1 = 0;
 	IR2 = sVar2;
@@ -1558,12 +1554,12 @@ void initOBox(_CAR_DATA *cp)
 
 	docop2(0x49e012);
 
-	sVar2 = (((cp->ap).carCos)->colBox).vz;
-	(cp->hd).oBox.length[2] = sVar2;
+	sVar2 = cp->ap.carCos->colBox.vz;
+	cp->hd.oBox.length[2] = sVar2;
 
-	(cp->hd).oBox.radii[1].vx = IR1;
-	(cp->hd).oBox.radii[1].vy = IR2;
-	(cp->hd).oBox.radii[1].vz = IR3;
+	cp->hd.oBox.radii[1].vx = IR1;
+	cp->hd.oBox.radii[1].vy = IR2;
+	cp->hd.oBox.radii[1].vz = IR3;
 
 	IR1 = 0;
 	IR2 = 0;
@@ -1571,13 +1567,9 @@ void initOBox(_CAR_DATA *cp)
 
 	docop2(0x49e012);
 
-	uVar4 = getCopReg(2, 0x4800);
-	uVar5 = getCopReg(2, 0x5000);
-	uVar6 = getCopReg(2, 0x5800);
-
-	(cp->hd).oBox.radii[2].vx = IR1;
-	(cp->hd).oBox.radii[2].vy = IR2;
-	(cp->hd).oBox.radii[2].vz = IR3;
+	cp->hd.oBox.radii[2].vx = IR1;
+	cp->hd.oBox.radii[2].vy = IR2;
+	cp->hd.oBox.radii[2].vz = IR3;
 }
 
 
@@ -1629,7 +1621,6 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	cp->hd.where.t[0] = st->n.fposition[0] / 16;
 	cp->hd.where.t[1] = st->n.fposition[1] / 16;
 	cp->hd.where.t[2] = st->n.fposition[2] / 16;
-
 	
 	iVar6 = st->n.orientation[0];
 	iVar5 = st->n.orientation[1];
