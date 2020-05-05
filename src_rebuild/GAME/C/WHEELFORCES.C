@@ -395,8 +395,7 @@ void StepOneCar(_CAR_DATA *cp)
 		reaction[2] = ((_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0])) / 4096 + _cl.vel[2];
 
 		iVar4 = (deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]) / 4096;
-		iVar4 = (((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) 
-			* car_cosmetics[cp->ap.model].twistRateY) / 4096 + 4069;
+		iVar4 = (((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) / 4096 + 4096;
 
 		if (iVar4 == 0) 
 		{
@@ -436,7 +435,7 @@ void StepOneCar(_CAR_DATA *cp)
 				partdir.vy = 0x32;
 				partdir.vz = 0;
 
-				Setup_Sparks((VECTOR *)&deepestPoint, &partdir, 0xf, 1);
+				Setup_Sparks((VECTOR *)&deepestPoint, &partdir, 15, 1);
 			}
 			else
 			{
@@ -761,15 +760,15 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 	sVar5 = car_cosmetics[uVar10].twistRateZ;
 
 	iVar15 = 2;
-	piVar13 = cl->avel + 2;
+	piVar13 = &cl->avel[2];
 
-	psVar14 = (short*)cp->hd.where.m + 8;
+	psVar14 = &cp->hd.where.m[2][2];
 	piVar12 = cp->hd.aacc + 2;
 
 	do {
-		iVar11 = *piVar12 * (int)sVar4 +
-			((int)*psVar14 *
-			((int)sVar5 - (int)sVar4) * ((sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8) / 4096) + *piVar13 * -0x80) / 4096;
+		iVar11 = *piVar12 * sVar4 +
+			(*psVar14 *
+			(sVar5 - sVar4) * ((sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8) / 4096) - *piVar13 * 0x80) / 4096;
 		*piVar12 = iVar11;
 
 		if (cl->extraangulardamping == 1)
