@@ -257,12 +257,11 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 	int iVar2;
 
 	iVar2 = GlobalPositionToCellNumber(pPosition);
-	if (iVar2 == -1) {
-		cVar1 = '\x01';
-	}
-	else {
+	if (iVar2 == -1)
+		cVar1 = 1;
+	else
 		cVar1 = CellEmpty(pPosition, radius);
-	}
+
 	return cVar1;
 }
 
@@ -773,7 +772,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
 					cop = UnpackCellObject(ppco, &ci.near);
 
-					while (cop != NULL) 
+					while (cop != NULL)
 					{
 						coplist[*count] = cop;
 						cop->pad = *(unsigned char *)count;
@@ -886,14 +885,14 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	int lbody;
 	int extraDist;
 
-	if (cp->controlType == 5 && cp->ap.carCos == NULL) 
+	if (cp->controlType == 5 && cp->ap.carCos == NULL)
 		lbody = 360;
-	else 
+	else
 		lbody = cp->ap.carCos->colBox.vz;
 
-	if (cp < car_data) 
+	if (cp < car_data)
 	{
-		while (FrameCnt != 0x78654321) 
+		while (FrameCnt != 0x78654321)
 			trap(0x400);
 	}
 
@@ -932,15 +931,13 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 		mdcount = 0;
 		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
 		x1 = 0;
-		if (0 < mdcount + event_models_active) 
+		if (0 < mdcount + event_models_active)
 		{
 			do {
-				if (x1 < mdcount) {
+				if (x1 < mdcount)
 					cop = coplist[x1];
-				}
-				else {
-					cop = EventCop + (x1 - mdcount);
-				}
+				else
+					cop = &EventCop[x1 - mdcount];
 
 				pMVar4 = modelpointers[cop->type];
 				iVar3 = x1 + 1;
@@ -948,13 +945,13 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 				if ((pMVar4->num_vertices - 3 < 300 && pMVar4->num_point_normals < 300 && pMVar4->num_polys < 300) &&
 					((piVar11 = (int *)pMVar4->collision_block, piVar11 != NULL &&
 					(iVar8 = cop->pos.vx - iVar10, iVar7 = cop->pos.vz - iVar12,
-					iVar6 = pMVar4->bounding_sphere + extraDist + cp->hd.speed,
-					iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6))))
+						iVar6 = pMVar4->bounding_sphere + extraDist + cp->hd.speed,
+						iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6))))
 				{
 					piVar14 = (COLLISION_PACKET*)(piVar11 + 1);
 					iVar6 = *piVar11;
 					iVar8 = 0;
-					if (0 < iVar6) 
+					if (0 < iVar6)
 					{
 						do {
 							uVar9 = -cop->yang & 0x3f;
@@ -977,14 +974,14 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 							bbox.theta = (cop->yang + piVar14->yang) * 64 & 0xfff;
 
 							gLastModelCollisionCheck = cop->type;
-							
+
 							if (CAR_INDEX(cp) == 21)
 							{
 								if (x1 < mdcount || (cop->pad == 0))
 								{
 									CarBuildingCollision(cp, &bbox, cop, 0);
 								}
-								else 
+								else
 								{
 									iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
 
@@ -997,37 +994,37 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 							}
 							else
 							{
-								if (cp->controlType == 5) 
+								if (cp->controlType == 5)
 								{
-									if ((modelpointers[cop->type]->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize))) 
+									if ((modelpointers[cop->type]->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
 									{
 										iVar7 = 5;
-										bbox.xsize = bbox.xsize + 100;
-										bbox.zsize = bbox.zsize + 100;
+										bbox.xsize += 100;
+										bbox.zsize += 100;
 
-										while (((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
-											(iVar5 = CarBuildingCollision(cp, &bbox, cop, 0),
-												iVar5 != 0)) && (0 < iVar7))) 
+										while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
+											CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
 										{
-											gCameraDistance = gCameraDistance - boxOverlap;
+											gCameraDistance -= boxOverlap;
 											if (gCameraDistance < iVar13)
 												gCameraDistance = iVar13;
-											
+
 											iVar13 = gCameraDistance;
 											uVar9 = cp->hd.direction & 0xfff;
+
 											cp->hd.where.t[0] = lVar1 + ((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2) / 4096;
-											iVar7 = iVar7 + -1;
-											cp->hd.where.t[2] = lVar2 + ((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2) / 4096;
+											cp->hd.where.t[2] = lVar2 + ((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2) / 4096; 
+											iVar7--;
 										}
 									}
 								}
-								else 
+								else
 								{
-									if (x1 < mdcount || cop->pad == 0) 
+									if (x1 < mdcount || cop->pad == 0)
 									{
 										iVar7 = CarBuildingCollision(cp, &bbox, cop, (pMVar4->flags2 >> 10) & 1);
 
-										if (iVar7 != 0) 
+										if (iVar7 != 0)
 											cp->ap.needsDenting = 1;
 									}
 									else
@@ -1050,6 +1047,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 				x1 = iVar3;
 			} while (iVar3 < mdcount + event_models_active);
 		}
+
 		EventCollisions(cp, 1);
 	}
 }
