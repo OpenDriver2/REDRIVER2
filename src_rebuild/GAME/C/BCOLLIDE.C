@@ -22,8 +22,6 @@
 #include "INLINE_C.H"
 #include <stdlib.h>
 
-#define COLLISION_DEBUG
-
 // decompiled code
 // original method signature: 
 // int /*$ra*/ bcollided2d(struct CDATA2D *body /*$t4*/, int needOverlap /*$fp*/)
@@ -64,7 +62,7 @@ int boxOverlap = 0;
 
 // Checks of two bodies collides (basic check)
 // also initializes axes
-// [D]
+// [D] [A]
 int bcollided2d(CDATA2D *body, int needOverlap)
 {
 	short sVar1;
@@ -323,29 +321,29 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	int iVar5;
 	int *piVar6;
 	CDATA2D *pCVar7;
-	int uVar8;
+	uint uVar8;
 	int *piVar9;
 	int iVar10;
 	int iVar11;
-	int uVar12;
+	int local_t1_132;
+	int *piVar12;
 	int *piVar13;
-	int *piVar14;
+	int iVar14;
 	int iVar15;
-	int iVar16;
-	int uVar17;
-	VECTOR *pVVar18;
-	int iVar19;
+	int local_t5_4;
+	VECTOR *pVVar16;
+	int iVar17;
 
-	uVar17 = 0;
-	iVar19 = 0;
-	iVar15 = 0;
+	local_t5_4 = 0;
+	iVar17 = 0;
+	iVar14 = 0;
 	bVar1 = false;
-	iVar16 = body->limit[0] + 1;
+	iVar15 = body->limit[0] + 1;
 
-	if ((body->isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0)) 
+	if ((body->isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0))
 	{
 		if ((body[1].length[0] << 2 <= body[1].length[1]) ||
-			(body[1].length[1] << 2 <= body[1].length[0])) 
+			(body[1].length[1] << 2 <= body[1].length[0]))
 		{
 			bVar1 = true;
 		}
@@ -354,77 +352,82 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	uVar8 = 1;
 	do {
 		iVar11 = 1;
-		uVar12 = uVar8 - 1;
+		local_t1_132 = uVar8 - 1;
 		piVar6 = body[uVar8].dist + 1;
+
 		do {
 			iVar5 = piVar6[2] - *piVar6;
 			iVar2 = *piVar6 + piVar6[2];
 
-			if ((iVar5 < iVar16) && (iVar15 = -1, iVar16 = iVar5, uVar17 = uVar8, iVar19 = iVar11, uVar8 == 1))
-			{
-				iVar15 = 1;
-			}
-			if ((iVar2 < iVar16) && (iVar15 = 1, iVar16 = iVar2, uVar17 = uVar8, iVar19 = iVar11, uVar8 == 1)) 
-			{
-				iVar15 = -1;
+			if ((iVar5 < iVar15) &&
+				(iVar14 = -1, iVar15 = iVar5, local_t5_4 = uVar8, iVar17 = iVar11, uVar8 == 1)) {
+				iVar14 = 1;
 			}
 
-			iVar11 = iVar11 + -1;
-			piVar6 = piVar6 + -1;
+			if ((iVar2 < iVar15) &&
+				(iVar14 = 1, iVar15 = iVar2, local_t5_4 = uVar8, iVar17 = iVar11, uVar8 == 1)) {
+				iVar14 = -1;
+			}
 
+			iVar11--;
+			piVar6--;
 		} while (iVar11 != -1);
-		iVar11 = 1;
-		uVar8 = uVar12;
-	} while (uVar12 != 0xffffffff);
 
-	if (bVar1)
+		iVar11 = 1;
+		uVar8 = local_t1_132;
+	} while (local_t1_132 != -1);
+
+	if (bVar1) 
 	{
 		piVar9 = body[1].length + 1;
 		piVar6 = body[1].length;
-		piVar14 = body[1].dist + 1;
-		piVar13 = body[1].limit + 1;
+		piVar13 = body[1].dist + 1;
+		piVar12 = body[1].limit + 1;
+
 		do {
-			iVar5 = *piVar13 - *piVar14;
-			iVar2 = *piVar14 + *piVar13;
+			iVar5 = *piVar12 - *piVar13;
+			iVar2 = *piVar13 + *piVar12;
 
 			if ((iVar5 < iVar2) && (*piVar9 < *piVar6 << 2)) 
 			{
-				uVar17 = 1;
-				iVar15 = 1;
-				iVar19 = iVar11;
+				local_t5_4 = 1;
+				iVar14 = 1;
+				iVar17 = iVar11;
 			}
 
 			if ((iVar2 < iVar5) && (*piVar9 < *piVar6 << 2)) 
 			{
-				uVar17 = 1;
-				iVar15 = -1;
-				iVar19 = iVar11;
+				local_t5_4 = 1;
+				iVar14 = -1;
+				iVar17 = iVar11;
 			}
-			piVar9 = piVar9 + -1;
-			piVar6 = piVar6 + 1;
-			piVar14 = piVar14 + -1;
-			iVar11 = iVar11 + -1;
-			piVar13 = piVar13 + -1;
+
+			piVar9--;
+			piVar6++;
+			piVar13--;
+			iVar11--;
+			piVar12--;
 		} while (iVar11 != -1);
 	}
 
-	pCVar7 = body + (uVar17 ^ 1);
-	pVVar18 = body[uVar17].axis + iVar19;
+	pCVar7 = body + (local_t5_4 ^ 1);
+	pVVar16 = body[local_t5_4].axis + iVar17;
 	iVar5 = pCVar7->axis[0].vx;
-	iVar2 = pVVar18->vx;
-	piVar6 = (int*)&body[uVar17].axis[iVar19].vz;
-	iVar11 = *piVar6;
-	iVar19 = iVar15;
+	iVar2 = pVVar16->vx;
+	piVar6 = (int*)&body[local_t5_4].axis[iVar17].vz;
+	iVar11 = body[local_t5_4].axis[iVar17].vz;
+	iVar17 = iVar14;
 
-	if (-1 < iVar5 * iVar2 + pCVar7->axis[0].vz * iVar11);// + 0x800)
-		iVar19 = -iVar15;
+	if (-1 < iVar5 * iVar2 + pCVar7->axis[0].vz * iVar11)
+		iVar17 = -iVar14;
 
 	iVar3 = pCVar7->axis[1].vx;
-	iVar10 = iVar15;
-	if (-1 < iVar3 * iVar2 + pCVar7->axis[1].vz * iVar11);// +0x800)
-		iVar10 = -iVar15;
+	iVar10 = iVar14;
 
-	collisionResult->hit.vx = (pCVar7->x).vx + (iVar5 * pCVar7->length[0] * iVar19 + iVar3 * pCVar7->length[1] * iVar10) / 4096;
+	if (-1 < iVar3 * iVar2 + pCVar7->axis[1].vz * iVar11) 
+		iVar10 = -iVar14;
+
+	collisionResult->hit.vx = pCVar7->x.vx + (iVar5 * pCVar7->length[0] * iVar17 + iVar3 * pCVar7->length[1] * iVar10) / 4096;
 
 	iVar11 = pCVar7->axis[0].vz;
 	iVar2 = pCVar7->length[0];
@@ -432,16 +435,17 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	iVar5 = pCVar7->length[1];
 	iVar3 = pCVar7->x.vz;
 
-	collisionResult->penetration = iVar16;
-	collisionResult->hit.vz = iVar3 + (iVar11 * iVar2 * iVar19 + iVar4 * iVar5 * iVar10) / 4096;
-	
-	if (uVar17 != 0)
-		iVar15 = -iVar15;
+	collisionResult->penetration = iVar15;
+	collisionResult->hit.vz = pCVar7->x.vz + (iVar11 * iVar2 * iVar17 + iVar4 * iVar5 * iVar10) / 4096;
 
-	iVar16 = pVVar18->vx;
+	if (local_t5_4 != 0)
+		iVar14 = -iVar14;
+
+	iVar15 = pVVar16->vx;
+
 	collisionResult->surfNormal.vy = 0;
-	collisionResult->surfNormal.vx = iVar16 * iVar15;
-	collisionResult->surfNormal.vz = *piVar6 * iVar15;
+	collisionResult->surfNormal.vx = iVar15 * iVar14;
+	collisionResult->surfNormal.vz = *piVar6 * iVar14;
 }
 
 
@@ -1144,7 +1148,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	pMVar20 = modelpointers[cop->type];
 	iVar2 = GetPlayerId(cp);
 
-	cd[0].isCameraOrTanner = (cp->controlType == '\x05');
+	cd[0].isCameraOrTanner = (cp->controlType == 5);
 
 	if (cp->controlType == 6)
 		cd[0].isCameraOrTanner = cd[0].isCameraOrTanner + 2;
@@ -1159,7 +1163,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	uVar3 = 0;
 
 	if (((iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1)) &&
-		(uVar3 = 0, (cop->pos).vx != -0x2b90140)) && (uVar3 = 0, (pMVar20->shape_flags & 0x10) == 0)) 
+		(uVar3 = 0, (cop->pos).vx != 0xFD46FEC0)) && (uVar3 = 0, (pMVar20->shape_flags & 0x10) == 0))
 	{
 		lVar4 = cp->hd.where.t[0];
 		lVar8 = cp->hd.where.t[2];
