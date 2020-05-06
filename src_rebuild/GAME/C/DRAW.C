@@ -626,8 +626,9 @@ CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
 		pco = &cell_object_buffer[cell_object_index];
 		cell_object_index = cell_object_index + 1U & 0x3ff;
 
-		pco->pos.vx = near->x + ((ppco->pos.vx - near->x) * 0x10000) / 0x10000;
-		pco->pos.vz = near->z + ((ppco->pos.vz - near->z) * 0x10000) / 0x10000;
+		pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
+		pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
+
 		pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
 		pco->yang = ppco->value & 0x3f;
 		pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);

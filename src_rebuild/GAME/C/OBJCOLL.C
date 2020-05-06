@@ -903,7 +903,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 		lVar2 = car_data[0].hd.where.t[2];
 		lVar1 = car_data[0].hd.where.t[0];
 
-		extraDist = 0x244;
+		extraDist = 580;
 
 		iVar10 = cp->hd.where.t[0];
 		iVar12 = cp->hd.where.t[2];
@@ -930,6 +930,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 		mdcount = 0;
 		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
+
 		x1 = 0;
 		if (0 < mdcount + event_models_active)
 		{
@@ -942,17 +943,22 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 				pMVar4 = modelpointers[cop->type];
 				iVar3 = x1 + 1;
 
-				if ((pMVar4->num_vertices - 3 < 300 && pMVar4->num_point_normals < 300 && pMVar4->num_polys < 300) &&
-					((piVar11 = (int *)pMVar4->collision_block, piVar11 != NULL &&
-					(iVar8 = cop->pos.vx - iVar10, iVar7 = cop->pos.vz - iVar12,
-						iVar6 = pMVar4->bounding_sphere + extraDist + cp->hd.speed,
-						iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6))))
+				if (pMVar4->collision_block > 0 &&
+					pMVar4->num_vertices-3 < 300 && 
+					pMVar4->num_point_normals < 300 &&
+					pMVar4->num_polys < 300)
 				{
-					piVar14 = (COLLISION_PACKET*)(piVar11 + 1);
-					iVar6 = *piVar11;
-					iVar8 = 0;
-					if (0 < iVar6)
+					iVar8 = cop->pos.vx - iVar10;
+					iVar7 = cop->pos.vz - iVar12;
+					iVar6 = pMVar4->bounding_sphere + extraDist + cp->hd.speed;
+
+					if (iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6)
 					{
+						iVar8 = 0;
+
+						iVar6 = *(int *)pMVar4->collision_block;	// box count
+						piVar14 = (COLLISION_PACKET*)(pMVar4->collision_block + 4);
+
 						do {
 							uVar9 = -cop->yang & 0x3f;
 
@@ -1013,7 +1019,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 											uVar9 = cp->hd.direction & 0xfff;
 
 											cp->hd.where.t[0] = lVar1 + ((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2) / 4096;
-											cp->hd.where.t[2] = lVar2 + ((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2) / 4096; 
+											cp->hd.where.t[2] = lVar2 + ((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2) / 4096;
 											iVar7--;
 										}
 									}
@@ -1044,6 +1050,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 						} while (iVar8 < iVar6);
 					}
 				}
+
 				x1 = iVar3;
 			} while (iVar3 < mdcount + event_models_active);
 		}
