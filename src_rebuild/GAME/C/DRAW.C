@@ -80,11 +80,6 @@ SVECTOR night_colours[4] =
 
 unsigned long planeColours[8];
 
-inline int GetModelNumber()
-{
-	return current->primtab - (current->primptr - 0x1E000);
-}
-
 MATRIX inv_camera_matrix;
 MATRIX face_camera;
 MATRIX2 CompoundMatrix[64];
@@ -2620,16 +2615,15 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 	/* end block 4 */
 	// End Line: 5556
 
+// [D]
 void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags)
 {
 	OTTYPE *savedOT = current->ot;
 
-	if (matrix != NULL) {
+	if (matrix != NULL)
+	{
 		MATRIX comb;
-
-		setCopControlWord(2, 5, pos->vx);
-		setCopControlWord(2, 6, pos->vy);
-		setCopControlWord(2, 7, pos->vz);
+		gte_SetTransVector(pos);
 
 		MulMatrix0(&inv_camera_matrix, matrix, &comb);
 		SetRotMatrix(&comb);
@@ -2655,7 +2649,7 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	plotContext.flags = flags;
 	plotContext.current = current;
 
-	if (GetModelNumber() < 56000)
+	if (56000 < (current->primtab-(current->primptr-0x1e000)))
 		PlotBuildingModelSubdivNxN(model, 0, &plotContext, 1);
 
 	current->ot = savedOT;
