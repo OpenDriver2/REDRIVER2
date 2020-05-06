@@ -102,7 +102,8 @@ template<int x> struct compile_time_assert_test {};
 #define UNIMPLEMENTED() UNIMPLEMENTED_PRINTONCE() //eprinterr("Unimplemented!\n");
 #endif // UNIMPLEMENTED
 
-
+// math constant
+const int ONE = 4096;
 
 struct VECTOR2 // hashcode: 0x7572A047 (dec: 1970446407)
 {

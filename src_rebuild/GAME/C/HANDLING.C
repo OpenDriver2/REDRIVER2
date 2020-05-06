@@ -1259,12 +1259,11 @@ void GlobalTimeStep(void)
 						iVar5 = iVar5 + 1;
 					}
 
-					pp_Var26 = pp_Var26 + 1;
-					lVar10 = ratan2(cp->hd.where.m[0][2], cp->hd.where.m[2][2]);
-					iVar15 = iVar15 + 1;
-					bVar4 = iVar15 < num_active_cars;
-					cp->hd.direction = lVar10;
-				} while (bVar4);
+					cp->hd.direction = ratan2(cp->hd.where.m[0][2], cp->hd.where.m[2][2]);
+
+					pp_Var26++;
+					iVar15++;
+				} while (iVar15 < num_active_cars);
 			}
 			return;
 		}

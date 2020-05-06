@@ -1453,6 +1453,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						return 0;
 					}
 
+
+
 					if ((0x3600 < strikeVel) && (32000 < cp->hd.wheel_speed + 16000U))
 					{
 						if ((pMVar20->flags2 & 0x2000) == 0) 
@@ -1512,6 +1514,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 						iVar14 = (strikeVel / iVar2) * 4096;
 					}
+
+					// [A] temporary hack
+					cp->st.n.fposition[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 512;
+					cp->st.n.fposition[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 512;
 
 					iVar14 = iVar14 / 64;
 					lVar4 = collisionResult.surfNormal.vx;
