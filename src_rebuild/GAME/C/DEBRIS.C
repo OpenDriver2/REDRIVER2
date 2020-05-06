@@ -13,6 +13,10 @@
 #include "CAMERA.H"
 #include "DR2ROADS.H"
 #include "CONVERT.H"
+#include "MAP.H"
+#include "MISSION.H"
+#include "DRAW.H"
+#include "MODELS.H"
 #include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"
@@ -178,6 +182,10 @@ VECTOR dummy = { 0 };
 int gNight = 0;
 char gRainCount = 30;
 int gEffectsTimer = 41;
+
+int NextDamagedPmeter = 0;
+int SmashablesHit = 0;
+DAMAGED_OBJECT damaged_object[9];
 
 // decompiled code
 // original method signature: 
@@ -1501,99 +1509,91 @@ void AddGroundDebris(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern _pct plotContext;
+
+
+// [D] [A]
 void DrawSmashable_sprites(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	char *pcVar2;
-	DAMAGED_OBJECT *pDVar3;
+	//undefined4 uVar1;
+	int iVar2;
+	char *pcVar3;
+	DAMAGED_OBJECT *dam;
 	MODEL *model;
 	int iVar4;
-	int local_80;
-	long local_7c;
-	int local_78;
-	undefined *local_70;
-	undefined4 local_6c;
-	undefined *local_68;
-	undefined4 local_64;
-	undefined *local_60;
-	undefined4 local_5c;
-	undefined4 local_58;
-	undefined4 local_54;
-	undefined4 local_50;
-	undefined4 local_4c;
-	undefined4 local_48;
-	undefined4 local_44;
-	undefined4 local_40;
-	long local_3c;
-	long local_38;
-	long local_34;
-	undefined *local_30;
+	VECTOR pos;
+	MATRIX object_matrix;
+	MATRIX spritematrix;
 
-	pDVar3 = damaged_object;
+	dam = damaged_object;
 	iVar4 = 7;
-	local_30 = PTR_DAT_00010634;
 	do {
-		if (pDVar3->active != '\0') {
-			model = modelpointers1536[(pDVar3->cop).type];
-			local_68 = PTR_DAT_0001063c;
-			local_64 = DAT_00010640;
-			local_60 = PTR_DAT_00010644;
-			local_5c = DAT_00010648;
-			local_58 = DAT_0001064c;
-			local_54 = DAT_00010650;
-			local_50 = face_camera.m[0]._0_4_;
-			local_4c = face_camera.m._4_4_;
-			local_48 = face_camera.m[1]._2_4_;
-			local_44 = face_camera.m[2]._0_4_;
-			local_40 = face_camera._16_4_;
-			local_3c = face_camera.t[0];
-			local_38 = face_camera.t[1];
-			local_70 = local_30;
-			local_6c = DAT_00010638;
-			local_34 = face_camera.t[2];
-			if ((model->shape_flags & 0x4000) == 0) {
-				RotMatrixY(pDVar3->rot_speed * (uint)(byte)pDVar3->damage * 3 & 0xfff, &local_70);
-			}
-			RotMatrixZ(pDVar3->rot_speed * (uint)(byte)pDVar3->damage & 0xfff, &local_70);
-			local_80 = pDVar3->vx - camera_position.vx;
-			local_7c = (pDVar3->cop).pos.vy - camera_position.vy;
-			local_78 = (pDVar3->cop).pos.vz - camera_position.vz;
-			Apply_Inv_CameraMatrix(&local_80);
-			setCopControlWord(2, 0, local_70);
-			setCopControlWord(2, 0x800, local_6c);
-			setCopControlWord(2, 0x1000, local_68);
-			setCopControlWord(2, 0x1800, local_64);
-			setCopControlWord(2, 0x2000, local_60);
-			setCopControlWord(2, 0x2800, local_80);
-			setCopControlWord(2, 0x3000, local_7c);
-			setCopControlWord(2, 0x3800, local_78);
-			local_80 = pDVar3->vx;
-			local_7c = (pDVar3->cop).pos.vy;
-			local_78 = (pDVar3->cop).pos.vz;
+		if (dam->active != 0)
+		{
+			model = modelpointers[dam->cop.type];
+
+			object_matrix.m[0][0] = 0x1000;
+			object_matrix.m[1][0] = 0;
+			object_matrix.m[2][0] = 0;
+
+			object_matrix.m[0][1] = 0;
+			object_matrix.m[1][1] = 0x1000;
+			object_matrix.m[2][1] = 0;
+
+			object_matrix.m[0][2] = 0;
+			object_matrix.m[1][2] = 0;
+			object_matrix.m[2][2] = 0x1000;
+
+			if ((model->shape_flags & 0x4000) == 0)
+				RotMatrixY(dam->rot_speed * dam->damage * 3 & 0xfff, &object_matrix);
+
+			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
+
+			pos.vx = dam->vx - camera_position.vx;
+			pos.vy = (dam->cop).pos.vy - camera_position.vy;
+			pos.vz = (dam->cop).pos.vz - camera_position.vz;
+
+			Apply_Inv_CameraMatrix(&pos);
+
+			gte_SetRotMatrix(&object_matrix);
+			gte_SetTransVector(&pos);
+
+			pos.vx = dam->vx;
+			pos.vy = (dam->cop).pos.vy;
+			pos.vz = (dam->cop).pos.vz;
+
 			SetFrustrumMatrix();
-			iVar1 = FrustrumCheck(&local_80, (int)model->bounding_sphere);
-			if (iVar1 != -1) {
-				if ((model->shape_flags & 0x4000) == 0) {
+
+			iVar2 = FrustrumCheck(&pos, model->bounding_sphere);
+
+			if (iVar2 != -1)
+			{
+				if ((model->shape_flags & 0x4000) == 0)
+				{
 					PlotMDL_less_than_128(model);
 				}
-				else {
-					if ((gWeather - 1U < 2) || (gTimeOfDay == 3)) {
-						DAT_1f8000c0 = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
+				else
+				{
+					UNIMPLEMENTED();
+
+					if ((gWeather - 1U < 2) || (gTimeOfDay == 3))
+					{
+						plotContext.colour = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
 					}
-					else {
-						DAT_1f8000c0 = 0x2c808080;
+					else 
+					{
+						plotContext.colour = 0x2c808080;
 					}
-					pcVar2 = (char *)Asm_PlotSprite(model, current->primptr, current->ot, 0);
-					current->primptr = pcVar2;
+
+					// [A]
+					//current->primptr = Asm_PlotSprite(model, current->primptr, current->ot, 0);
+
 				}
 			}
 		}
-		iVar4 = iVar4 + -1;
-		pDVar3 = pDVar3 + 1;
+		iVar4--;
+		dam++;
 	} while (-1 < iVar4);
-	return;*/
 }
 
 
@@ -1638,11 +1638,9 @@ void DrawSmashable_sprites(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int MoveSmashable_object(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char cVar1;
 	short sVar2;
 	short sVar3;
@@ -1653,28 +1651,34 @@ int MoveSmashable_object(void)
 
 	pDVar5 = damaged_object;
 	iVar7 = 7;
+
 	do {
-		if (pDVar5->active != '\0') {
-			iVar6 = (pDVar5->cop).pos.vy;
-			if (iVar6 < 0x32 - player.pos[1]) {
-				iVar4 = (pDVar5->cop).pos.vz;
-				pDVar5->vx = pDVar5->vx + (int)(pDVar5->velocity).vx;
+		if (pDVar5->active != 0) 
+		{
+			iVar6 = pDVar5->cop.pos.vy;
+
+			if (iVar6 < 50 - player[0].pos[1]) 
+			{
+				iVar4 = pDVar5->cop.pos.vz;
+				pDVar5->vx = pDVar5->vx + pDVar5->velocity.vx;
 				sVar2 = (pDVar5->velocity).vz;
 				cVar1 = pDVar5->damage;
-				(pDVar5->cop).pos.vy = iVar6 + (pDVar5->velocity).vy;
+				pDVar5->cop.pos.vy = iVar6 + pDVar5->velocity.vy;
 				sVar3 = (pDVar5->velocity).vy;
-				(pDVar5->cop).pos.vz = iVar4 + sVar2;
-				pDVar5->damage = cVar1 + '\x01';
-				(pDVar5->velocity).vy = sVar3 + 10;
+				pDVar5->cop.pos.vz = iVar4 + sVar2;
+				pDVar5->damage = cVar1 + 1;
+				pDVar5->velocity.vy = sVar3 + 10;
 			}
-			else {
-				pDVar5->active = '\0';
+			else 
+			{
+				pDVar5->active = 0;
 			}
+
 		}
-		iVar7 = iVar7 + -1;
-		pDVar5 = pDVar5 + 1;
+		iVar7--;
+		pDVar5++;
 	} while (-1 < iVar7);
-	return 0;*/
+	return 0;
 }
 
 
@@ -2264,62 +2268,58 @@ int damage_lamp(CELL_OBJECT *cop)
 	/* end block 4 */
 	// End Line: 5654
 
+// [D]
 int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	DAMAGED_OBJECT *pDVar1;
-	int iVar2;
-	short sVar3;
-	uint uVar4;
-	PACKED_CELL_OBJECT *pPVar5;
+	DAMAGED_OBJECT *dam;
+	PACKED_CELL_OBJECT *pcop;
 
-	iVar2 = NextDamagedPmeter;
-	damaged_object[NextDamagedPmeter].active = '\x01';
-	damaged_object[NextDamagedPmeter].damage = '\0';
-	damaged_object[NextDamagedPmeter].cop.pos.vx = (cop->pos).vx;
-	damaged_object[NextDamagedPmeter].cop.pos.vy = (cop->pos).vy;
-	damaged_object[NextDamagedPmeter].cop.pos.vz = (cop->pos).vz;
-	*(undefined4 *)&damaged_object[NextDamagedPmeter].cop.pad = *(undefined4 *)&cop->pad;
-	damaged_object[NextDamagedPmeter].vx = (cop->pos).vx;
-	damaged_object[NextDamagedPmeter].velocity.vx = (short)(velocity->vx >> 10);
-	SmashablesHit = SmashablesHit + 1;
-	pDVar1 = damaged_object + NextDamagedPmeter;
-	NextDamagedPmeter = NextDamagedPmeter + 1;
-	(pDVar1->velocity).vz = (short)(velocity->vz >> 10);
-	pPVar5 = pcoplist[cop->pad];
-	pPVar5->value = 0xffff;
-	(pPVar5->pos).vy = 1;
-	if (damaged_object[iVar2].velocity.vx < 0) {
-		damaged_object[iVar2].velocity.vy = *(short *)&velocity->vx;
-	}
-	else {
-		damaged_object[iVar2].velocity.vy = -*(short *)&velocity->vx;
-	}
-	if (damaged_object[iVar2].velocity.vz < 0) {
-		sVar3 = damaged_object[iVar2].velocity.vy + *(short *)&velocity->vz;
-	}
-	else {
-		sVar3 = damaged_object[iVar2].velocity.vy - *(short *)&velocity->vz;
-	}
-	damaged_object[iVar2].velocity.vy = sVar3;
-	damaged_object[iVar2].velocity.vy = damaged_object[iVar2].velocity.vy >> 1;
-	uVar4 = rand();
-	if ((uVar4 & 1) == 0) {
-		damaged_object[iVar2].rot_speed = -(int)damaged_object[iVar2].velocity.vy;
-	}
-	else {
-		damaged_object[iVar2].rot_speed = (int)damaged_object[iVar2].velocity.vy;
-	}
-	if (damaged_object[iVar2].velocity.vy < -0x43) {
-		damaged_object[iVar2].velocity.vy = -0x43;
-	}
-	if (7 < NextDamagedPmeter) {
+	dam = &damaged_object[NextDamagedPmeter];
+	SmashablesHit++;
+	NextDamagedPmeter++;
+
+	dam->active = 1;
+	dam->damage = 0;
+	dam->cop.pos.vx = cop->pos.vx;
+	dam->cop.pos.vy = cop->pos.vy;
+	dam->cop.pos.vz = cop->pos.vz;
+	*(uint *)&dam->cop.pad = *(uint *)&cop->pad;
+
+	dam->vx = cop->pos.vx;
+
+	dam->velocity.vx = (velocity->vx >> 10);
+	dam->velocity.vz = (velocity->vz >> 10);
+
+	pcop = pcoplist[cop->pad];
+	pcop->value = 0xffff;
+	pcop->pos.vy = 1;
+
+	if (dam->velocity.vx < 0)
+		dam->velocity.vy = velocity->vx;
+	else 
+		dam->velocity.vy = -velocity->vx;
+
+	if (dam->velocity.vz < 0)
+		dam->velocity.vy += velocity->vz;
+	else
+		dam->velocity.vy -= velocity->vz;
+
+	dam->velocity.vy /= 2;
+
+	if ((rand() & 1) == 0)
+		dam->rot_speed = -dam->velocity.vy;
+	else
+		dam->rot_speed = dam->velocity.vy;
+
+	if (dam->velocity.vy < -67)
+		dam->velocity.vy = -67;
+
+	if (7 < NextDamagedPmeter)
 		NextDamagedPmeter = 0;
-	}
-	(cop->pos).vx = -0x2b90140;
-	return 0;*/
+
+	cop->pos.vx = -0x2b90140;
+
+	return 0;
 }
 
 
