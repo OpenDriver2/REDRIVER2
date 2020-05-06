@@ -4,6 +4,7 @@
 #include "EMULATOR_PRIVATE.H"
 #include <assert.h>
 
+#include "LIBMATH.H"
 
 #include "INLINE_C.H"
 
@@ -4453,32 +4454,38 @@ int rcos(int a)
 
 long ratan2(long y, long x)
 {
-	bool bVar1;
-	bool bVar2;
-	int iVar3;
-	int iVar4;
+#if 1
+	const double ONE_BY_2048 = 1.0 / 2048;
+	const double CONV = 2048.0 / M_PI;
 
-	bVar1 = x < 0;
-	if (bVar1) {
+	float real = atan2(double(y) * ONE_BY_2048, double(x) * ONE_BY_2048);
+	return real * CONV;
+#else
+	int iVar3, iVar4;
+
+	bool bVar1 = x < 0;
+	bool bVar2 = y < 0;
+
+	if (x < 0)
 		x = -x;
-	}
-	bVar2 = y < 0;
-	if (bVar2) {
-		y = -y;
-	}
 
-	if ((x != 0) || (iVar3 = 0, y != 0)) 
+	if (y < 0)
+		y = -y;
+
+	iVar3 = 0;
+
+	if (x != 0 || y != 0) 
 	{
 		if (y < x)
 		{
-			iVar3 = x >> 10;
-			if ((y & 0x7fe00000U) == 0) 
+			iVar3 = x / 1024;
+			if ((y & 0x7fe00000U) == 0)
 			{
-				iVar4 = (y << 10) / x;
+				iVar4 = (y * 1024) / x;
 				if (x == 0) {
 					//trap(0x1c00); // [A]
 				}
-				if ((x == 0xffffffff) && (y << 10 == -0x80000000)) {
+				if ((x == -1) && (y * 1024 == 0x8000)) {
 					//trap(0x1800); // [A]
 				}
 			}
@@ -4488,23 +4495,23 @@ long ratan2(long y, long x)
 				if (iVar3 == 0) {
 					//trap(0x1c00); // [A]
 				}
-				if ((iVar3 == -1) && (y == 0x80000000)) {
+				if ((iVar3 == -1) && (y == 0x8000)) {
 					//trap(0x1800); // [A]
 				}
 			}
-			iVar3 = (int)ratan_tbl[iVar4];
+			iVar3 = ratan_tbl[iVar4];
 		}
 		else 
 		{
-			iVar3 = y >> 10;
+			iVar3 = y / 1024;
 
-			if ((x & 0x7fe00000U) == 0) 
+			if ((x & 0x7fe00000U) == 0)
 			{
-				iVar4 = (x << 10) / y;
+				iVar4 = (x * 1024) / y;
 				if (y == 0) {
 					//trap(0x1c00); // [A]
 				}
-				if ((y == 0xffffffff) && (x << 10 == -0x80000000)) {
+				if ((y == -1) && (x << 10 == 0x8000)) {
 					//trap(0x1800); // [A]
 				}
 			}
@@ -4514,22 +4521,24 @@ long ratan2(long y, long x)
 				if (iVar3 == 0) {
 					//trap(0x1c00); // [A]
 				}
-				if ((iVar3 == -1) && (x == 0x80000000)) {
+				if ((iVar3 == -1) && (x == 0x8000)) {
 					//trap(0x1800); // [A]
 				}
 			}
 
-			iVar3 = 0x400 - (int)ratan_tbl[iVar4];
+			iVar3 = 1024 - ratan_tbl[iVar4];
 		}
-		if (bVar1) {
-			iVar3 = 0x800 - iVar3;
-		}
-		if (bVar2) {
+		if (bVar1) 
+			iVar3 = 2048 - iVar3;
+		
+		if (bVar2) 
 			iVar3 = -iVar3;
-		}
 	}
 
+	printf("ratan2(%d,%d) = %d (real=%g)\n", y, x, iVar3, real);
+
 	return iVar3;
+#endif
 }
 
 short SQRT[] = {
