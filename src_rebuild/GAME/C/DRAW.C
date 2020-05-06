@@ -2619,7 +2619,7 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags)
 {
 	OTTYPE *savedOT = current->ot;
-
+	
 	if (matrix != NULL)
 	{
 		MATRIX comb;

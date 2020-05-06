@@ -1516,32 +1516,30 @@ extern _pct plotContext;
 void DrawSmashable_sprites(void)
 {
 	//undefined4 uVar1;
-	int iVar2;
-	char *pcVar3;
 	DAMAGED_OBJECT *dam;
 	MODEL *model;
-	int iVar4;
+	int count;
 	VECTOR pos;
 	MATRIX object_matrix;
 	MATRIX spritematrix;
 
 	dam = damaged_object;
-	iVar4 = 7;
+	count = 7;
 	do {
 		if (dam->active != 0)
 		{
 			model = modelpointers[dam->cop.type];
 
 			object_matrix.m[0][0] = 0x1000;
-			object_matrix.m[1][0] = 0;
-			object_matrix.m[2][0] = 0;
-
 			object_matrix.m[0][1] = 0;
-			object_matrix.m[1][1] = 0x1000;
-			object_matrix.m[2][1] = 0;
-
 			object_matrix.m[0][2] = 0;
+
+			object_matrix.m[1][0] = 0;
+			object_matrix.m[1][1] = 0x1000;
 			object_matrix.m[1][2] = 0;
+
+			object_matrix.m[2][0] = 0;
+			object_matrix.m[2][1] = 0;
 			object_matrix.m[2][2] = 0x1000;
 
 			if ((model->shape_flags & 0x4000) == 0)
@@ -1550,8 +1548,8 @@ void DrawSmashable_sprites(void)
 			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
 
 			pos.vx = dam->vx - camera_position.vx;
-			pos.vy = (dam->cop).pos.vy - camera_position.vy;
-			pos.vz = (dam->cop).pos.vz - camera_position.vz;
+			pos.vy = dam->cop.pos.vy - camera_position.vy;
+			pos.vz = dam->cop.pos.vz - camera_position.vz;
 
 			Apply_Inv_CameraMatrix(&pos);
 
@@ -1559,14 +1557,12 @@ void DrawSmashable_sprites(void)
 			gte_SetTransVector(&pos);
 
 			pos.vx = dam->vx;
-			pos.vy = (dam->cop).pos.vy;
-			pos.vz = (dam->cop).pos.vz;
+			pos.vy = dam->cop.pos.vy;
+			pos.vz = dam->cop.pos.vz;
 
 			SetFrustrumMatrix();
 
-			iVar2 = FrustrumCheck(&pos, model->bounding_sphere);
-
-			if (iVar2 != -1)
+			if (FrustrumCheck(&pos, model->bounding_sphere) != -1)
 			{
 				if ((model->shape_flags & 0x4000) == 0)
 				{
@@ -1591,9 +1587,9 @@ void DrawSmashable_sprites(void)
 				}
 			}
 		}
-		iVar4--;
+		count--;
 		dam++;
-	} while (-1 < iVar4);
+	} while (-1 < count);
 }
 
 
