@@ -2313,7 +2313,7 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	if (7 < NextDamagedPmeter)
 		NextDamagedPmeter = 0;
 
-	cop->pos.vx = -0x2b90140;
+	cop->pos.vx = 0xFD46FEC0;
 
 	return 0;
 }

@@ -67,11 +67,11 @@ int boxOverlap = 0;
 // [D] [A]
 int bcollided2d(CDATA2D *body, int needOverlap)
 {
-	short sVar1;
-	short sVar2;
+	short ac;
+	short as;
 	short sVar3;
 	short sVar4;
-	int uVar5;
+	int dtheta;
 	int iVar6;
 	int iVar7;
 	int iVar8;
@@ -96,16 +96,16 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 
 	iVar19 = 1;
 	pCVar11 = body + 1;
-	uVar5 = body[1].theta - body[0].theta;
+	dtheta = body[1].theta - body[0].theta;
 
-	sVar1 = rcossin_tbl[(uVar5 + 0x400 & 0x7ff) * 2];
-	sVar2 = rcossin_tbl[(uVar5 & 0x7ff) * 2];
+	ac = rcossin_tbl[(dtheta + 0x400 & 0x7ff) * 2];
+	as = rcossin_tbl[(dtheta & 0x7ff) * 2];
 
 	// calc axes of each box
 	do {
-		uVar5 = body[iVar19].theta & 0xfff;
-		sVar3 = rcossin_tbl[uVar5 * 2];
-		sVar4 = rcossin_tbl[uVar5 * 2 + 1];
+		dtheta = body[iVar19].theta & 0xfff;
+		sVar3 = rcossin_tbl[dtheta * 2];
+		sVar4 = rcossin_tbl[dtheta * 2 + 1];
 
 		body[iVar19].axis[0].vx = sVar3;
 		body[iVar19].axis[0].vz = sVar4;
@@ -116,125 +116,116 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		iVar19--;
 	} while (iVar19 != -1);
 
-	uVar5 = 0;
+	dtheta = 0;
 	uVar20 = 1;
 
 	piVar23 = body[1].limit;
-	pVVar21 = body[1].axis;
 	piVar25 = body[1].dist;
-
-	plVar22 = (int*)&body[1].axis[0].vz;
 
 	iVar24 = 100;
 
-	iVar19 = body[0].x.vx;
-	iVar6 = body[0].x.vz;
-
-	iVar9 = body[1].x.vz;
-	iVar8 = body[1].x.vx;
+	delta.vx = body[0].x.vx - body[1].x.vx;
+	delta.vz = body[0].x.vz - body[1].x.vz;
 
 	do {
-		
+
 		piVar15 = piVar23 + 1;
+		piVar10 = piVar25 + 1;
 
 		piVar17 = body[uVar20].length + 1;
+		piVar16 = body[dtheta].length + 1;
+		piVar14 = body[dtheta].length;
 
-		piVar16 = body[uVar5].length + 1;
-		piVar14 = body[uVar5].length;
-
-		piVar13 = plVar22 + 4;
 		pVVar12 = body[uVar20].axis + 1;
-		piVar10 = piVar25 + 1;
+		
 
 		iVar18 = 1;
 		do {
-			*piVar10 = (pVVar12->vx * (iVar19 - iVar8) + *piVar13 * (iVar6 - iVar9)) / 4096;
-			iVar7 = *piVar17 + (*piVar16 * sVar1 + *piVar14 * sVar2) / 4096;
+			*piVar10 = (pVVar12->vx * delta.vx + pVVar12->vz * delta.vz) / 4096;
+			iVar7 = *piVar17 + (*piVar16 * ac + *piVar14 * as) / 4096;
 			*piVar15 = iVar7;
 
 			if (iVar7 < *piVar10)
 				return 0;
-		
+
 			if (*piVar10 < -iVar7)
 				return 0;
-		
+
+			piVar15--;
+			piVar10--;
+
 			piVar17--;
 			piVar16--;
-			piVar15--;
+
+
+
 			pVVar12--;
 			iVar18--;
-			piVar10--;
-			piVar13 -= 4;
+			
 			piVar14++;
 		} while (iVar18 != -1);
 
-		uVar5 = uVar20 & 1;
+		dtheta = uVar20 & 1;
+
 		piVar23 -= 25;
 		plVar22 -= 25;
-		//pVVar21 = (VECTOR *)&pVVar21[-7].pad;
-		piVar25 = piVar25-25;
-		iVar24-= 100;
+		piVar25 = piVar25 - 25;
+		iVar24 -= 100;
 
 		uVar20--;
 
-		if (uVar20 == -1) 
+		if (uVar20 == -1)
 		{
-			if (needOverlap != 0) 
+			if (needOverlap != 0)
 			{
 				iVar19 = body[1].dist[0];
 				iVar6 = body[1].limit[0];
 
 				if (iVar19 < 0)
 					iVar19 = -iVar19;
-			
+
 				if (iVar6 < 0)
 					iVar6 = -iVar6;
-			
+
 				iVar8 = iVar19 - iVar6;
 				if (iVar8 < 0)
 					iVar8 = iVar6 - iVar19;
-			
+
 				iVar9 = body[0].axis[0].vx;
 				iVar6 = body[0].axis[0].vz;
+
 				iVar19 = (iVar9 * body[1].axis[0].vx + iVar6 * body[1].axis[0].vz) / 4096;
 
-				if (iVar19 < 0) 
+				if (iVar19 < 0)
 					iVar19 = -iVar19;
 
-				if (iVar19 < 0xb) 
-				{
+				if (iVar19 < 11)
 					iVar8 = -1;
-				}
-				else 
-				{
-					iVar8 = (iVar8 << 0xc) / iVar19;
-					if (iVar19 == 0) 
-					{
-						trap(7);
-					}
-				}
+				else
+					iVar8 = (iVar8 * 4096) / iVar19;
+
+
 				iVar19 = body[1].dist[1];
 				iVar24 = body[1].limit[1];
 
 				if (iVar19 < 0)
 					iVar19 = -iVar19;
-			
+
 				if (iVar24 < 0)
 					iVar24 = -iVar24;
-			
+
 				iVar18 = iVar19 - iVar24;
 				if (iVar18 < 0)
 					iVar18 = iVar24 - iVar19;
-			
+
 				iVar19 = (iVar9 * body[1].axis[1].vx + iVar6 * body[1].axis[1].vz) / 4096;
 				if (iVar19 < 0)
 					iVar19 = -iVar19;
-			
+
 				iVar6 = iVar8;
-				if ((10 < iVar19) && (iVar6 = (iVar18 << 0xc) / iVar19, iVar19 == 0)) 
-				{
-					trap(7);
-				}
+
+				if (10 < iVar19)
+					iVar6 = (iVar18 * 4096) / iVar19;
 
 				boxOverlap = iVar6;
 
@@ -242,7 +233,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 				{
 					boxOverlap = iVar8;
 
-					if(iVar6 < iVar8)
+					if (iVar6 < iVar8)
 						boxOverlap = iVar6;
 				}
 			}
@@ -1112,8 +1103,8 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 // [D]
 int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int mightBeABarrier)
 {
-	static CDATA2D cd[2]; // offset 0x0
-	static CRET2D collisionResult; // offset 0xd0
+	static CDATA2D cd[2] = {0}; // offset 0x0
+	static CRET2D collisionResult = { 0 }; // offset 0xd0
 
 	unsigned char uVar1;
 	int iVar2;
@@ -1165,8 +1156,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	strikeVel = cp->hd.oBox.length[1] << 0x10;
 	uVar3 = 0;
 
-	if (((iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1)) &&
-		(uVar3 = 0, (cop->pos).vx != 0xFD46FEC0)) && (uVar3 = 0, (pMVar20->shape_flags & 0x10) == 0))
+	if (iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1) && (cop->pos.vx != 0xFD46FEC0) && (pMVar20->shape_flags & 0x10) == 0)
 	{
 		lVar4 = cp->hd.where.t[0];
 		lVar8 = cp->hd.where.t[2];
@@ -1193,8 +1183,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		if (cp->controlType == 6)
 		{
-			cd[0].vel.vx = cp->st.n.linearVelocity[0] / 4096;
-			cd[0].vel.vz = cp->st.n.linearVelocity[2] / 4096;
+			cd[0].vel.vx = cp->st.n.linearVelocity[0] / 4096;// + 0x800 >> 0xc;
+			cd[0].vel.vz = cp->st.n.linearVelocity[2] / 4096;// + 0x800 >> 0xc;
 
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
@@ -1202,44 +1192,39 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			cd[0].length[0] = 90;
 			cd[0].length[1] = 90;
 		}
-		else 
+		else if (cp->controlType == 5)
 		{
-			if (cp->controlType == 5) 
+			cd[0].vel.vx = 0;
+			cd[0].vel.vz = 0;
+			cd[0].length[1] = 5;
+			cd[0].length[0] = gCameraDistance / 2;
+		}
+		else
+		{
+			cd[0].vel.vx = cp->st.n.linearVelocity[0] / 4096;// +0x800 >> 0xc;
+			cd[0].vel.vz = cp->st.n.linearVelocity[2] / 4096;// + 0x800 >> 0xc;
+
+			cp->hd.where.t[0] += cd[0].vel.vx;
+			cp->hd.where.t[2] += cd[0].vel.vz;
+
+			cd[0].length[0] = cp->ap.carCos->colBox.vz + 15;
+			cd[0].length[1] = cp->ap.carCos->colBox.vx + 15;
+
+			if (handlingType[cp->hndType].fourWheelDrive == 1 || cp->hndType == 5)
 			{
-				cd[0].vel.vx = 0;
-				cd[0].vel.vz = 0;
-				cd[0].length[1] = 5;
-				cd[0].length[0] = gCameraDistance / 2;
-			}
-			else 
-			{
-				scale = cp->ap.carCos->colBox.vx;
-				cd[0].vel.vx = cp->st.n.linearVelocity[0] / 4096;
-				cd[0].vel.vz = cp->st.n.linearVelocity[2] / 4096;
-
-				cp->hd.where.t[0] += cd[0].vel.vx;
-				cp->hd.where.t[2] += cd[0].vel.vz;
-
-				pCVar12 = cp->ap.carCos;
-				cd[0].length[0] = pCVar12->colBox.vz + 15;
-				cd[0].length[1] = pCVar12->colBox.vx + 15;
-
-				if ((handlingType[cp->hndType].fourWheelDrive == 1) || (cp->hndType == 5))
-				{
-					cd[0].length[1] *= 13;
-					cd[0].length[1] /= 16;
-				}
+				cd[0].length[1] = cd[0].length[1] * 13;
+				cd[0].length[1] = cd[0].length[1] >> 4;
 			}
 		}
+
 		cd[0].avel = (cp->st.n.angularVelocity[1] / 4096) * 5 >> 5;
-		cd[1].x.vx = building->pos.vx;
-		cd[1].x.vz = building->pos.vz; 
+
+		cd[1].x.vx = cp->hd.where.t[0] + (((building->pos.vx - cp->hd.where.t[0]) << 0x10) >> 0x10);
+		cd[1].x.vz = cp->hd.where.t[2] + (((building->pos.vz - cp->hd.where.t[2]) << 0x10) >> 0x10);
 
 		cd[1].theta = building->theta;
-
 		cd[1].length[0] = building->xsize;
 		cd[1].length[1] = building->zsize;
-
 		cd[1].vel.vx = 0;
 		cd[1].vel.vz = 0;
 		cd[1].avel = 0;
@@ -1252,6 +1237,86 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		else 
 		{
 			strikeVel = bcollided2d(cd, 0);
+
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+			extern int gShowCollisionDebug;
+			if (gShowCollisionDebug)
+			{
+				extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+				extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+				CVECTOR bbcv = { 0, 0, 250 };
+				CVECTOR rrcv = { 250, 0, 0 };
+				CVECTOR yycv = { 250, 250, 0 };
+
+				// show both box axes
+				{
+					VECTOR _zero = { 0 };
+					VECTOR b1p = cd[0].x;
+					VECTOR b2p = cd[1].x;
+					b2p.vy = b1p.vy;
+
+					// show position to position
+					//Debug_AddLine(b1p1, b2p1, yycv);
+
+					VECTOR b1ax[2] = { {0} , {0} };
+					b1ax[0].vx = (cd[0].axis[0].vx * cd[0].length[0]) / 4096;
+					b1ax[0].vz = (cd[0].axis[0].vz * cd[0].length[0]) / 4096;
+					b1ax[1].vx = (cd[0].axis[1].vx * cd[0].length[1]) / 4096;
+					b1ax[1].vz = (cd[0].axis[1].vz * cd[0].length[1]) / 4096;
+
+					// show axis of body 1
+					Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+					Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+					// display 2D box 1
+					{
+						int h = b1ax[0].vy;
+						VECTOR box_points[4] = {
+							{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+							{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+							{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+							{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+						};
+
+						Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+						Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+						Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+						Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+					}
+
+					VECTOR b2ax[2] = { {0} , {0} };
+					b2ax[0].vx += (cd[1].axis[0].vx * cd[1].length[0]) / 4096;
+					b2ax[0].vz += (cd[1].axis[0].vz * cd[1].length[0]) / 4096;
+					b2ax[1].vx += (cd[1].axis[1].vx * cd[1].length[1]) / 4096;
+					b2ax[1].vz += (cd[1].axis[1].vz * cd[1].length[1]) / 4096;
+
+					// show axis of body 2
+					Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
+					Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
+
+					CVECTOR& collColor = strikeVel ? rrcv : yycv;
+
+					// display 2D box 2
+					{
+						int h = b2ax[0].vy;
+						VECTOR box_points[4] = {
+							{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
+							{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
+
+							{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
+							{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
+						};
+
+						Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
+						Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
+						Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
+						Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
+					}
+				}
+			}
+#endif
 			if (strikeVel == 0) 
 			{
 				uVar3 = 0;
@@ -1267,7 +1332,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				{
 					extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 					extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
-					
 
 					CVECTOR bbcv = { 0, 0, 250 };
 					CVECTOR rrcv = { 250, 0, 0 };
@@ -1289,71 +1353,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 						// show collision normal
 						Debug_AddLine(collisionResult.hit, nb, bbcv);
-					}
-
-					// show both box axes
-					{
-						VECTOR _zero = { 0 };
-						VECTOR b1p = *(VECTOR*)cp->hd.where.t;
-						VECTOR b2p = building->pos;
-						b2p.vy = b1p.vy;
-
-						// show position to position
-						//Debug_AddLine(b1p1, b2p1, yycv);
-
-						VECTOR b1ax[2] = { {0} , {0} };
-						b1ax[0].vx = (cd[0].axis[0].vx * cd[0].length[0]) / 4096;
-						b1ax[0].vz = (cd[0].axis[0].vz * cd[0].length[0]) / 4096;
-						b1ax[1].vx = (cd[0].axis[1].vx * cd[0].length[1]) / 4096;
-						b1ax[1].vz = (cd[0].axis[1].vz * cd[0].length[1]) / 4096;
-
-						// show axis of body 1
-						Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
-						Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
-						
-						// display 2D box 1
-						{
-							int h = b1ax[0].vy;
-							VECTOR box_points[4] = {
-								{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
-								{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
-
-								{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
-								{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
-							};
-
-							Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
-							Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
-							Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
-							Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
-						}
-
-						VECTOR b2ax[2] = { {0} , {0} };
-						b2ax[0].vx += (cd[1].axis[0].vx * cd[1].length[0]) / 4096;
-						b2ax[0].vz += (cd[1].axis[0].vz * cd[1].length[0]) / 4096;
-						b2ax[1].vx += (cd[1].axis[1].vx * cd[1].length[1]) / 4096;
-						b2ax[1].vz += (cd[1].axis[1].vz * cd[1].length[1]) / 4096;
-
-						// show axis of body 2
-						Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
-						Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
-
-						// display 2D box 2
-						{
-							int h = b2ax[0].vy;
-							VECTOR box_points[4] = {
-								{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
-								{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
-
-								{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
-								{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
-							};
-
-							Debug_AddLineOfs(box_points[0], box_points[1], b2p, yycv);
-							Debug_AddLineOfs(box_points[1], box_points[2], b2p, yycv);
-							Debug_AddLineOfs(box_points[2], box_points[3], b2p, yycv);
-							Debug_AddLineOfs(box_points[3], box_points[0], b2p, yycv);
-						}
 					}
 				}
 #endif
