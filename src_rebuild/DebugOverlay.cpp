@@ -67,6 +67,9 @@ void DrawDebugOverlays()
 
 void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)
 {
+	if (gDebug_numLines + 1 > 512)
+		return;
+
 	LineDef_t& ld = gDebug_Lines[gDebug_numLines++];
 	ld.posA = pointA;
 	ld.posB = pointB;
@@ -78,6 +81,9 @@ void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)
 
 void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color)
 {
+	if (gDebug_numLines + 1 > 512)
+		return;
+
 	LineDef_t& ld = gDebug_Lines[gDebug_numLines++];
 	ld.posA = pointA;
 	ld.posB = pointB;
