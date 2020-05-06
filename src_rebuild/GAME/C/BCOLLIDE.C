@@ -1261,7 +1261,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				bFindCollisionTime(cd, &collisionResult);
 				bFindCollisionPoint(cd, &collisionResult);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+				extern int gShowCollisionDebug;
+				if(gShowCollisionDebug)
 				{
 					extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 					extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);

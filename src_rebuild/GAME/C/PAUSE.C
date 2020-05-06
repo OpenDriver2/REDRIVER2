@@ -73,24 +73,28 @@ extern void LoadSky(void);
 void DebugTimeOfDayDay(int direction)
 {
 	gTimeOfDay = 1;
+	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayNight(int direction)
 {
 	gTimeOfDay = 3;
+	gWantNight = 1;
 	LoadSky();
 }
 
 void DebugTimeOfDayDusk(int direction)
 {
 	gTimeOfDay = 0;
+	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayDawn(int direction)
 {
 	gTimeOfDay = 2;
+	gWantNight = 0;
 	LoadSky();
 }
 

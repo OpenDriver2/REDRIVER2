@@ -11,6 +11,7 @@ int(*GPU_printf)(const char *fmt, ...);
 
 extern int g_texturelessMode;
 extern int g_wireframeMode;
+int gShowCollisionDebug = 0;
 extern int gDrawDistance;
 
 void GameDebugKeys(int nKey, bool down)
@@ -37,6 +38,11 @@ void GameDebugKeys(int nKey, bool down)
 			gDrawDistance = 6000;
 
 		printf("gDrawDistance = %d\n", gDrawDistance);
+	}
+	else if (nKey == SDL_SCANCODE_F3)
+	{
+		gShowCollisionDebug ^= 1;
+		printf("Collision debug %s\n", gShowCollisionDebug ? "ON" : "OFF");
 	}
 }
 
