@@ -13,6 +13,9 @@ extern int g_texturelessMode;
 extern int g_wireframeMode;
 int gShowCollisionDebug = 0;
 extern int gDrawDistance;
+extern int gDisplayPosition;
+extern int gDisplayDrawStats;
+
 
 void GameDebugKeys(int nKey, bool down)
 {
@@ -41,8 +44,18 @@ void GameDebugKeys(int nKey, bool down)
 	}
 	else if (nKey == SDL_SCANCODE_F3)
 	{
+		gDisplayPosition ^= 1;
+		printf("Position display %s\n", gDisplayPosition ? "ON" : "OFF");
+	}
+	else if (nKey == SDL_SCANCODE_F4)
+	{
 		gShowCollisionDebug ^= 1;
 		printf("Collision debug %s\n", gShowCollisionDebug ? "ON" : "OFF");
+	}
+	else if (nKey == SDL_SCANCODE_F5)
+	{
+		gDisplayDrawStats ^= 1;
+		printf("Stats %s\n", gDisplayDrawStats ? "ON" : "OFF");
 	}
 }
 

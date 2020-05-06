@@ -168,7 +168,6 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		dtheta = uVar20 & 1;
 
 		piVar23 -= 25;
-		plVar22 -= 25;
 		piVar25 = piVar25 - 25;
 		iVar24 -= 100;
 

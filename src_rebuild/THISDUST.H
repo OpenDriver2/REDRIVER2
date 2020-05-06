@@ -20677,10 +20677,10 @@ enum GAMEMODE // Hashcode: 0xA71425E4 (dec: -1491851804)
 
 struct MISSION_STEP // hashcode: 0x6445CD70 (dec: 1682296176)
 {
-	unsigned char flags; // size=3, offset=0
-	unsigned char recap; // size=5, offset=3
-	unsigned char data; // size=7, offset=8
-	unsigned char disc; // size=1, offset=15
+	unsigned char flags : 3; // size=3, offset=0
+	unsigned char recap : 5; // size=5, offset=3
+	unsigned char data : 7; // size=7, offset=8
+	unsigned char disc : 1; // size=1, offset=15
 };
 
 typedef struct PSXSCREEN PSXSCREEN;

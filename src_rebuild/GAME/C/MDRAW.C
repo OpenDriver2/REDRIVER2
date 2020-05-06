@@ -43,7 +43,7 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int gDisplayPosition = 1; // [A] was 0
+int gDisplayPosition = 0;
 
 // [D]
 void DrawMission(void)

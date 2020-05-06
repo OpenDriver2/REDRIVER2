@@ -10,7 +10,10 @@
 #include "GAME/C/CAMERA.H"
 #include "GAME/C/DRAW.H"
 #include "GAME/C/SYSTEM.H"
+#include "GAME/C/PRES.H"
+#include "GAME/C/SPOOL.H"
 
+int gDisplayDrawStats = 0;
 
 struct LineDef_t
 {
@@ -63,6 +66,20 @@ void DrawDebugOverlays()
 		gDebug_numLines--;
 	}
 	gDebug_numLines = 0;
+
+	char tempBuf[128];
+
+	int primTabLeft = current->primptr - current->primtab;
+
+	if (gDisplayDrawStats)
+	{
+		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, 0x1a180);
+		PrintString(tempBuf, 10, 80);
+
+		extern volatile int spoolactive;
+		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d", doSpooling, allowSpecSpooling, spoolactive);
+		PrintString(tempBuf, 10, 90);
+	}
 }
 
 void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)

@@ -14,6 +14,7 @@
 #include "GAMESND.H"
 #include "SYSTEM.H"
 #include "CAMERA.H"
+#include "FMVPLAY.H"
 #include "../FRONTEND/FEMAIN.H"
 
 #include <string.h>
@@ -467,86 +468,96 @@ void RunMissionLadder(int newgame)
 {
 	UNIMPLEMENTED();
 	/*
-
 	bool bVar1;
-	byte bVar2;
-	byte *pbVar3;
-	RENDER_ARGS local_30;
+	unsigned char bVar2;
+	MISSION_STEP *CurrentStep;
+	RENDER_ARGS RenderArgs;
 
 	bVar1 = false;
-	if (newgame != 0) {
+	if (newgame != 0)
 		gMissionLadderPos = 0;
+
+	RenderArgs.nRenders = 0;
+	CurrentStep = MissionLadder + gMissionLadderPos;
+
+	if (newgame == 0 && CurrentStep->flags != 0)	// (CurrentStep & 0xf8)
+	{
+		RenderArgs.Args[0].render = 97;
+
+		if (CurrentStep->recap > 11)
+			RenderArgs.Args[0].render = 98;
+
+		RenderArgs.Args[0].credits = 0;
+		RenderArgs.Args[0].recap = RecapFrameLength[CurrentStep->recap - 1];
+		RenderArgs.nRenders = 1;
 	}
-	local_30.nRenders = 0;
-	pbVar3 = &MissionLadder[0].flags + gMissionLadderPos * 2;
-	if ((newgame == 0) && ((*pbVar3 & 0xf8) != 0)) {
-		local_30.Args[0].render = 'a';
-		if (0xb < *pbVar3 >> 3) {
-			local_30.Args[0].render = 'b';
-		}
-		local_30.Args[0].credits = '\0';
-		local_30.Args[0].recap = RecapFrameLength[(uint)(*pbVar3 >> 3) - 1];
-		local_30.nRenders = 1;
-	}
+
 	do {
-		if ((pbVar3[1] & 0x80) == 0) {
+		if (CurrentStep->disc == 0)
 			CheckForCorrectDisc(0);
-		}
-		else {
+		else 
 			CheckForCorrectDisc(1);
+
+		if (RenderArgs.nRenders == 4) {
+			SetPleaseWait(NULL);
+			PlayRender(&RenderArgs);
+			RenderArgs.nRenders = 0;
+			SetPleaseWait(NULL);
 		}
-		if (local_30.nRenders == 4) {
-			SetPleaseWait((char *)0x0);
-			PlayRender(&local_30);
-			local_30.nRenders = 0;
-			SetPleaseWait((char *)0x0);
-		}
-		gMissionLadderPos = (int)(pbVar3 + -0x9f01c) >> 1;
-		bVar2 = *pbVar3 & 7;
-		if (bVar2 == 2) {
-			if (local_30.nRenders != 0) {
-				SetPleaseWait((char *)0x0);
-				PlayRender(&local_30);
-				local_30.nRenders = 0;
+
+		gMissionLadderPos = CurrentStep - MissionLadder;// (int)(CurrentStep + -0x4f80e) >> 1;
+		bVar2 = CurrentStep->flags;// *(byte *)CurrentStep & 7;
+
+		if (bVar2 == 2) 
+		{
+			if (RenderArgs.nRenders != 0) 
+			{
+				SetPleaseWait(NULL);
+				PlayRender(&RenderArgs);
+				RenderArgs.nRenders = 0;
 			}
-			SetPleaseWait((char *)0x0);
-			gCurrentMissionNumber = (uint)pbVar3[1] & 0x7f;
+
+			SetPleaseWait(NULL);
+			gCurrentMissionNumber = CurrentStep->data;// (uint)*(byte *)((int)CurrentStep + 1) & 0x7f;
 			LaunchGame();
-			if (WantedGameMode == '\x05') {
-				if (gFurthestMission < gCurrentMissionNumber) {
+
+			if (WantedGameMode == GAMEMODE_NEXTMISSION) 
+			{
+				if (gFurthestMission < gCurrentMissionNumber) 
 					gFurthestMission = gCurrentMissionNumber;
-				}
 			}
-			else {
+			else 
+			{
 				bVar1 = true;
 			}
 		}
-		else {
-			if (bVar2 < 3) {
-				if (bVar2 == 1) {
-					local_30.Args[local_30.nRenders].render = pbVar3[1] & 0x7f;
-					local_30.Args[local_30.nRenders].recap = 0;
-					local_30.Args[local_30.nRenders].credits = '\0';
-					local_30.nRenders = local_30.nRenders + 1;
-				}
-			}
-			else {
-				if (bVar2 == 4) {
-					SetPleaseWait((char *)0x0);
-					local_30.Args[local_30.nRenders].render = pbVar3[1] & 0x7f;
-					local_30.Args[local_30.nRenders].recap = 0;
-					local_30.Args[local_30.nRenders].credits = '\x01';
-					local_30.nRenders = local_30.nRenders + 1;
-					PlayRender(&local_30);
-					SetPleaseWait((char *)0x0);
-					bVar1 = true;
-					AvailableCheats._0_1_ = (byte)AvailableCheats | 0xf;
-				}
-			}
+		else if (bVar2 == 1) 
+		{
+			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;// *(byte *)((int)CurrentStep + 1) & 0x7f;
+			RenderArgs.Args[RenderArgs.nRenders].recap = 0;
+			RenderArgs.Args[RenderArgs.nRenders].credits = 0;
+			RenderArgs.nRenders++;
 		}
-		pbVar3 = pbVar3 + 2;
+		else if (bVar2 == 4)
+		{
+			SetPleaseWait(NULL);
+
+			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;// *(byte *)((int)CurrentStep + 1) & 0x7f;
+			RenderArgs.Args[RenderArgs.nRenders].recap = 0;
+			RenderArgs.Args[RenderArgs.nRenders].credits = 1;
+			RenderArgs.nRenders++;
+
+			PlayRender(&RenderArgs);
+
+			SetPleaseWait(NULL);
+
+			bVar1 = true;
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 0xf;
+		}
+
+		CurrentStep = CurrentStep + 1;
 	} while (!bVar1);
-	return;*/
+	*/
 }
 
 
