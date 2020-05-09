@@ -4570,6 +4570,10 @@ short SQRT[] = {
 
 long SquareRoot0(long a)
 {
+#if 1
+	return sqrtl(a);
+#else
+	// THIS SQUARE ROOT SEEMS TO BE BUGGED
 	int v0, v1, t0, t1, t2, t3, t4;
 
 	v0 = gte_leadingzerocount(a);
@@ -4600,4 +4604,5 @@ long SquareRoot0(long a)
 	}
 
 	return 0;
+#endif
 }
