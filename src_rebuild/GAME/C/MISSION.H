@@ -39,6 +39,7 @@ extern int requestStationaryCivCar;
 extern int numCivCars;
 extern int maxCivCars;
 extern int numParkedCars;
+extern int maxParkedCars;
 
 extern int gCopDifficultyLevel;
 extern int maxCopCars;

@@ -7,6 +7,7 @@ extern int cell_slots_add[5];
 extern char* specmallocptr;
 extern char *specLoadBuffer;
 
+extern char specModelValid;
 extern int allowSpecSpooling;
 extern int startSpecSpool;
 

@@ -11,6 +11,7 @@
 #include "CAMERA.H"
 #include "OVERLAY.H"
 #include "EVENT.H"
+#include "CIV_AI.H"
 
 #include <string.h>
 
@@ -152,8 +153,6 @@ MR_MISSION Mission;
 u_long MissionStack[16][16];
 MR_THREAD MissionThreads[16];
 
-unsigned char reservedSlots[20];	// car slots
-
 unsigned char playercollected[2] = { 0, 0 };
 
 int TAIL_GETTINGCLOSE = 7000;
@@ -223,7 +222,7 @@ void InitialiseMissionDefaults(void)
 	gPlayerWithTheFlag = -1;
 	last_flag = -1;
 
-	ClearMem((char *)reservedSlots, 0x14);
+	ClearMem((char *)reservedSlots, sizeof(reservedSlots));
 	cop_adjust = 0;
 	playercollected[0] = '\0';
 	playercollected[1] = '\0';

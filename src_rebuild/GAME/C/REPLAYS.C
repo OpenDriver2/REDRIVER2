@@ -1,5 +1,7 @@
 #include "THISDUST.H"
 #include "REPLAYS.H"
+#include "MAP.H"
+#include "SPOOL.H"
 
 char AnalogueUnpack[] = { 0, 0xCD, 0xC1, 0xB5, 0xA9, 0x9D, 0x91, 0x85, 0, 0x33, 0x3F, 0x4B, 0x57, 0x63, 0x6F, 0x7B };
 
@@ -777,41 +779,42 @@ char GetPingInfo(char *cookieCount)
 	/* end block 5 */
 	// End Line: 2833
 
+// [D]
 int valid_region(int x, int z)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 
 	iVar1 = (x >> 0x10) + regions_across / 2;
 	iVar2 = (z >> 0x10) + regions_down / 2;
+
 	if (-1 < iVar1) {
-		if (regions_across < iVar1) {
+		if (regions_across < iVar1)
 			return 0;
-		}
-		if (-1 < iVar2) {
-			if (regions_down < iVar2) {
+
+		if (-1 < iVar2) 
+		{
+			if (regions_down < iVar2)
 				return 0;
-			}
+
 			iVar1 = iVar1 + iVar2 * regions_across;
-			if (iVar1 != regions_unpacked[0]) {
-				if (iVar1 == regions_unpacked[1]) {
+
+			if (iVar1 != regions_unpacked[0])
+			{
+				if (iVar1 == regions_unpacked[1])
 					return iVar1 + 1;
-				}
-				if (iVar1 == regions_unpacked[2]) {
+	
+				if (iVar1 == regions_unpacked[2])
 					return iVar1 + 1;
-				}
-				if (iVar1 != regions_unpacked[3]) {
+
+				if (iVar1 != regions_unpacked[3]) 
 					return 0;
-				}
 			}
+
 			return iVar1 + 1;
 		}
 	}
 	return 0;
-	*/
 }
 
 
