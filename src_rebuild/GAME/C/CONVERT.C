@@ -369,34 +369,38 @@ void Getlong(char *dest, char *source)
 	/* end block 4 */
 	// End Line: 953
 
+static long rseed[17]; // offset 0xBD510
+static int randomindex = 0;
+static int randomcounter = 0;
+
+// [D]
 void RandomInit(long i1, long i2)
 {
-	UNIMPLEMENTED();
-	/*
 	int step;
 	long *plVar1;
 	int iVar2;
 
-	plVar1 = &LONG_000bd518;
+	plVar1 = rseed + 2;
 	step = 0x3b1cb49;
 	iVar2 = 0xe;
 	randomindex = 0;
 	randomcounter = 0;
-	rseed = i1;
-	LONG_000bd514 = i2;
+	rseed[0] = i1;
+	rseed[1] = i2;
+
 	do {
 		*plVar1 = step;
 		plVar1 = plVar1 + 1;
 		iVar2 = iVar2 + -1;
 		step = step + 0x1c05e5f;
 	} while (-1 < iVar2);
+
 	step = 0;
+
 	do {
 		Random2(step);
 		step = step + 1;
 	} while (step < 0x44);
-	return;
-	*/
 }
 
 
@@ -429,11 +433,9 @@ void RandomInit(long i1, long i2)
 	/* end block 4 */
 	// End Line: 1014
 
+extern int frameStart;
+
 long Random2(int step)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	return (CameraCnt - frameStart) * (CameraCnt - frameStart) * 0x19660d + 0x3c6ef35fU >> 8 & 0xffff;
-	*/
 }
