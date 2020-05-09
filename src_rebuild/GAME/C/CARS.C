@@ -2257,7 +2257,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
 
 									((ushort*)civ_clut)[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
-									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
+									pCVar10->vindices = pbVar9[4] | (pbVar9[5] | pbVar9[6] << 8) << 8;
 									
 									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] | ((uint)pbVar9[9] | (uint)pbVar9[10] << 8) << 8;
 									carPolyBuffer[iVar11].clut_uv0 = ((int)(cVar6 * 0x180 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
@@ -2286,8 +2286,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									uVar5 = *(ushort *)(pbVar9 + 0x10);
 									carPolyBuffer[iVar11].originalindex = sVar13;
 									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
+
 									pCVar10 = carPolyBuffer + iVar11 + 1;
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[6] | (uint)pbVar9[7] << 8) << 8;
+									pCVar10->vindices = pbVar9[4] | (pbVar9[6] | pbVar9[7] << 8) << 8;
 
 									carPolyBuffer[iVar11 + 1].nindices = (uint)pbVar9[8] | ((uint)pbVar9[10] | (uint)pbVar9[0xb] << 8) << 8;
 									carPolyBuffer[iVar11 + 1].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
