@@ -12,6 +12,7 @@ extern int copsAreInPursuit;
 extern int requestRoadblock;
 extern int roadblockDelay;
 extern int roadblockDelayDiff;
+extern int  requestCopCar;
 
 extern void InitCopState(_CAR_DATA *cp, char *extraData); // 0x0002F680
 

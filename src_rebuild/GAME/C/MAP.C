@@ -22,6 +22,17 @@ int old_region = 0;
 int current_cell_x = 0;
 int current_cell_z = 0;
 
+int num_regions;
+int view_dist;
+int pvs_square;
+int pvs_square_sq;
+
+int units_across_halved;
+int units_down_halved;
+
+int regions_across;
+int regions_down;
+
 PACKED_CELL_OBJECT** pcoplist;
 CELL_OBJECT** coplist;
 

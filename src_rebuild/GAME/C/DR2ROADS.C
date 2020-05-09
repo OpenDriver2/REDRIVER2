@@ -15,6 +15,7 @@ sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fa
 #endif
 
 ROAD_MAP_LUMP_DATA roadMapLumpData;
+short* RoadMapDataRegions[4];
 
 int NumTempJunctions = 0;
 DRIVER2_JUNCTION *Driver2JunctionsPtr = NULL;
@@ -23,7 +24,8 @@ ulong *Driver2TempJunctionsPtr = NULL;
 DRIVER2_CURVE *Driver2CurvesPtr = NULL;
 int NumDriver2Curves = 0;
 
-short* RoadMapDataRegions[4];
+int NumDriver2Straights = 0;
+DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 
 // decompiled code
 // original method signature: 
@@ -48,12 +50,8 @@ short* RoadMapDataRegions[4];
 
 void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	Getlong((char *)&NumDriver2Straights, lump_file);
 	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
-	return;
-	*/
 }
 
 
@@ -512,11 +510,9 @@ _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 	/* end block 4 */
 	// End Line: 599
 
+// [D]
 int RoadInCell(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	short sVar2;
 	ushort uVar3;
@@ -527,63 +523,78 @@ int RoadInCell(VECTOR *pos)
 	ushort *puVar7;
 	short *psVar8;
 
-	iVar4 = pos->vx + -0x200;
-	iVar5 = pos->vz + -0x200;
-	psVar8 = RoadMapDataRegions4
-		[iVar4 >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (iVar5 >> 0xf & 2U) ^
-		cells_down >> 5 & 2U];
-	if (*psVar8 == 2) {
+	iVar4 = pos->vx-0x200;
+	iVar5 = pos->vz-0x200;
+
+	psVar8 = RoadMapDataRegions[iVar4 >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (iVar5 >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+
+	if (*psVar8 == 2)
+	{
 		puVar7 = (ushort *)(psVar8 + (iVar4 >> 10 & 0x3fU) + (iVar5 >> 10 & 0x3fU) * 0x40 + 4);
-		uVar6 = SEXT24((short)*puVar7);
+		uVar6 = ((short)*puVar7);
 		uVar3 = *puVar7;
-		if (uVar6 == 0xffffffff) {
+
+		if (uVar6 == 0xffffffff) 
+		{
 			return -1;
 		}
-		if ((uVar3 & 0xe000) == 0) {
+
+		if ((uVar3 & 0xe000) == 0)
+		{
 			plane = (_sdPlane *)((int)psVar8 + uVar6 * 0xc + (int)psVar8[1]);
 		}
-		else {
-			if ((uVar6 & 0x8000) != 0) {
+		else 
+		{
+			if ((uVar6 & 0x8000) != 0)
+			{
 				sVar2 = psVar8[1];
 				bVar1 = ((uint)uVar3 & 0x6000) == 0x2000;
-				if (bVar1) {
+				if (bVar1)
+				{
 					puVar7 = (ushort *)((int)psVar8 + ((uint)uVar3 & 0x1fff) * 2 + (int)psVar8[2] + 2);
 					goto LAB_0001335c;
 				}
+
 			LAB_00013370:
 				uVar3 = *puVar7;
-				if ((uVar3 & 0x4000) == 0) {
+				if ((uVar3 & 0x4000) == 0)
+				{
 					plane = (_sdPlane *)((int)psVar8 + (int)sVar2) + (short)uVar3;
-					if (0x1f < plane->surface) goto LAB_0001340c;
+					if (0x1f < plane->surface) 
+						goto LAB_0001340c;
 				}
-				else {
-					plane = FindRoadInBSP((_sdNode *)
-						((int)psVar8 + ((uint)uVar3 & 0x3fff) * 4 + (int)psVar8[3]),
-						(_sdPlane *)((int)psVar8 + (int)sVar2));
-					if (plane != (_sdPlane *)0x0) goto LAB_00013414;
+				else 
+				{
+					plane = FindRoadInBSP((_sdNode *)((int)psVar8 + ((uint)uVar3 & 0x3fff) * 4 + (int)psVar8[3]), (_sdPlane *)((int)psVar8 + (int)sVar2));
+					if (plane != NULL) 
+						goto LAB_00013414;
 				}
+
 				puVar7 = puVar7 + 2;
 				if (!bVar1) goto LAB_0001340c;
 			LAB_0001335c:
-				if (puVar7[-1] == 0x8000) {
+				if (puVar7[-1] == 0x8000)
+				{
 					bVar1 = false;
 				}
 				goto LAB_00013370;
 			}
-			plane = (_sdPlane *)0x0;
+			plane = NULL;
 		}
 	LAB_0001340c:
-		if (plane == (_sdPlane *)0x0) {
+
+		if (plane == NULL) 
 			return -1;
-		}
+
 	LAB_00013414:
-		if (0x1f < plane->surface) {
+		if (0x1f < plane->surface)
+		{
 			iVar4 = sdHeightOnPlane(pos, plane);
 			pos->vy = iVar4 + 0x100;
-			return (int)plane->surface + -0x20;
+
+			return plane->surface-0x20;
 		}
 	}
-	return -1;*/
 }
 
 

@@ -2,10 +2,19 @@
 #define DR2ROADS_H
 
 extern ROAD_MAP_LUMP_DATA roadMapLumpData;
+
 extern int NumTempJunctions;
 extern DRIVER2_JUNCTION *Driver2JunctionsPtr;
 extern ulong *Driver2TempJunctionsPtr;
+
+extern int NumDriver2Straights;
+extern DRIVER2_STRAIGHT *Driver2StraightsPtr;
+
+extern DRIVER2_CURVE *Driver2CurvesPtr;
+extern int NumDriver2Curves;
+
 extern short* RoadMapDataRegions[4];
+
 
 extern void ProcessStraightsDriver2Lump(char *lump_file, int lump_size); // 0x000136C0
 

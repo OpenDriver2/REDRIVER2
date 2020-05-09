@@ -1140,19 +1140,11 @@ char gRightWayUp = 0;	// cheat
 int num_active_cars = 0;
 unsigned long lead_pad = 0;
 
-int distFurthestCivCarSq = 0;
-
 int numInactiveCars = 0;
 int numActiveCops = 0;
-char furthestCivID = 0;
 int leadCarId = 0;
 
 VECTOR leadcar_pos;
-
-unsigned long PingBufferPos = 0;
-_PING_PACKET *PingBuffer = NULL;
-
-int frameStart = 0;
 
 void StepSim(void)
 {
@@ -1962,11 +1954,11 @@ void StepGame(void)
 				gLightsOn = 1;
 				puVar4 = lightsOnDelay;
 				do {
-					if (*puVar4 != '\0') {
-						*puVar4 = *puVar4 + -1;
-					}
-					puVar4 = puVar4 + 1;
-				} while ((int)puVar4 < 0xd56e4);
+					if (*puVar4 != 0)
+						*puVar4 = *puVar4 - 1;
+
+					puVar4++;
+				} while (puVar4 < lightsOnDelay + sizeof(lightsOnDelay));
 			}
 
 			NightAmbient = 0x4e;

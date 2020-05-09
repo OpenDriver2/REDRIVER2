@@ -30,6 +30,17 @@ extern int current_barrel_region_zcell;
 
 extern char* PVS_Buffers[4];
 
+extern int num_regions;
+extern int view_dist;
+extern int pvs_square;
+extern int pvs_square_sq;
+
+extern int units_across_halved;
+extern int units_down_halved;
+
+extern int regions_across;
+extern int regions_down;
+
 extern void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile); // 0x0005D7BC
 
 extern void ProcessJunctionsLump(char *lump_file, int lump_size); // 0x0005D6CC
