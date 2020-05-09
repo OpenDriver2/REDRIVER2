@@ -15,6 +15,10 @@ char* DentingFiles[] =
 	"LEVELS\\RIO.DEN",
 };
 
+unsigned char gCarDamageZoneVerts[5][6][50];
+unsigned char gHDCarDamageZonePolys[5][6][70];
+unsigned char gHDCarDamageLevels[5][255];
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitialiseDenting()
@@ -84,151 +88,169 @@ void InitialiseDenting(void)
 	/* end block 3 */
 	// End Line: 580
 
+// [D]
 void DentCar(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-
-	/*
 	short *psVar1;
 	short *psVar2;
-	short *psVar3;
-	byte bVar4;
-	short sVar5;
-	ushort uVar6;
-	short sVar7;
-	int iVar8;
-	uint uVar9;
-	int iVar10;
-	undefined2 *puVar11;
+	unsigned char bVar3;
+	short sVar4;
+	ushort uVar5;
+	short sVar6;
+	int iVar7;
+	uint uVar8;
+	int iVar9;
+	short *puVar10;
+	short *psVar11;
 	DENTUVS *pDVar12;
-	short *psVar13;
+	SVECTOR *CleanVertPtr;
+	int iVar13;
 	int iVar14;
-	int iVar15;
-	byte *pbVar16;
-	short *psVar17;
-	int iVar18;
-	SVECTOR *pSVar19;
-	short *psVar20;
-	DENTUVS *pDVar21;
-	MODEL *pMVar22;
-	uint uVar23;
-	int iVar24;
+	unsigned char *pbVar15;
+	unsigned char* DamPtr;
+	SVECTOR *DamVertPtr;
+	int iVar16;
+	SVECTOR *pSVar17;
+	short *psVar18;
+	DENTUVS *pDVar19;
+	MODEL *pMVar20;
+	uint uVar21;
+	int iVar22;
 
-	iVar24 = 0;
-	psVar20 = (short *)&DAT_1f800044;
-	uVar23 = (uint)(byte)(cp->ap).model;
+	short tempDamage[512];
+	memset(tempDamage, 0, sizeof(tempDamage));
+
+	iVar22 = 0;
+	psVar18 = tempDamage;
+	uVar21 = cp->ap.model;
 	cp->lowDetail = -1;
 	(cp->ap).qy = 0;
 	(cp->ap).qw = 0;
 
-	pMVar22 = gCarCleanModelPtr5[uVar23];
-	if (pMVar22 != NULL) {
-		iVar14 = 0;
-		if (pMVar22->num_vertices != 0) {
-			puVar11 = (undefined2 *)&DAT_1f800044;
+	pMVar20 = gCarCleanModelPtr[uVar21];
+	if (pMVar20 != NULL) 
+	{
+		iVar13 = 0;
+
+		if (pMVar20->num_vertices != 0) 
+		{
+			puVar10 = tempDamage;
 			do {
-				*puVar11 = 0;
-				iVar14 = iVar14 + 1;
-				puVar11 = puVar11 + 1;
-			} while (iVar14 < (int)(uint)pMVar22->num_vertices);
+				*puVar10++ = 0;
+				iVar13++;
+			} while (iVar13 < pMVar20->num_vertices);
 		}
-		iVar8 = 0;
-		iVar14 = 0;
+
+		iVar7 = 0;
+		iVar13 = 0;
+
 		do {
-			sVar5 = *(short *)((int)(cp->ap).damage + iVar8);
-			iVar10 = (int)sVar5;
-			if (iVar24 < iVar10) {
-				iVar24 = iVar10;
-			}
-			iVar15 = 0;
-			iVar18 = iVar14 + 1;
-			while ((iVar15 < 0x32 &&
-				(gCarDamageZoneVerts[iVar15 + iVar8 * 0x10 + iVar14 * 0x12 + uVar23 * 300] !=
-					0xff))) {
-				psVar13 = (short *)(&DAT_1f800044 +
-					(uint)gCarDamageZoneVerts
-					[iVar15 + iVar8 * 0x10 + iVar14 * 0x12 + uVar23 * 300] * 2)
-					;
-				if ((int)*psVar13 == 0) {
-					sVar7 = *psVar13 + sVar5;
-				}
-				else {
-					sVar7 = (short)((int)*psVar13 + iVar10 >> 1);
-				}
-				*psVar13 = sVar7;
-				iVar15 = iVar15 + 1;
-			}
-			iVar8 = iVar18 * 2;
-			iVar14 = iVar18;
-		} while (iVar18 < 6);
-	}
-	pSVar19 = gTempCarVertDump + (uint)(byte)cp->id * 0x84;
-	psVar17 = (short *)gCarDamModelPtr5[uVar23]->vertices;
-	psVar13 = (short *)gCarCleanModelPtr5[uVar23]->vertices;
-	if (((gCarCleanModelPtr5[uVar23] != NULL) && (gCarDamModelPtr5[uVar23] != NULL)) &&
-		(iVar24 = 0, pMVar22->num_vertices != 0)) {
-		do {
-			pSVar19->vx = *psVar13 + (short)(((int)*psVar17 - (int)*psVar13) * (int)*psVar20 >> 0xc)
-				;
-			pSVar19->vy = psVar13[1] +
-				(short)(((int)psVar17[1] - (int)psVar13[1]) * (int)*psVar20 >> 0xc);
-			psVar1 = psVar17 + 2;
-			psVar2 = psVar13 + 2;
-			sVar5 = *psVar20;
-			iVar24 = iVar24 + 1;
-			psVar20 = psVar20 + 1;
-			psVar17 = psVar17 + 4;
-			psVar3 = psVar13 + 2;
-			psVar13 = psVar13 + 4;
-			pSVar19->vz = *psVar3 + (short)(((int)*psVar1 - (int)*psVar2) * (int)sVar5 >> 0xc);
-			pSVar19 = pSVar19 + 1;
-		} while (iVar24 < (int)(uint)pMVar22->num_vertices);
-	}
-	pDVar21 = gTempHDCarUVDump + (uint)(byte)cp->id * 0xff;
-	if (pMVar22 != NULL) {
-		iVar24 = 0;
-		pDVar12 = pDVar21;
-		if (pMVar22->num_polys != 0) {
-			do {
-				pDVar12->u3 = '\0';
-				iVar24 = iVar24 + 1;
-				pDVar12 = pDVar21 + iVar24;
-			} while (iVar24 < (int)(uint)pMVar22->num_polys);
-		}
-		iVar14 = 0;
-		iVar24 = 0;
-		do {
-			uVar6 = *(ushort *)((int)(cp->ap).damage + iVar14);
+			sVar4 = *(cp->ap.damage + iVar7);
+			iVar9 = sVar4;
+
+			if (iVar22 < iVar9) 
+				iVar22 = iVar9; // MaxDamage?
+
 			iVar14 = 0;
-			iVar8 = iVar24 + 1;
-			while ((iVar14 < 0x46 &&
-				(pDVar12 = pDVar21 + gHDCarDamageZonePolys
-					[iVar14 + iVar24 * 0x46 + uVar23 * 0x1a4],
-					gHDCarDamageZonePolys[iVar14 + iVar24 * 0x46 + uVar23 * 0x1a4] != 0xff))) {
-				uVar9 = (uint)(byte)pDVar12->u3 + ((int)((uint)uVar6 << 0x10) >> 0x1a);
-				pDVar12->u3 = (char)uVar9;
-				if (2 < (uVar9 & 0xff)) {
-					pDVar12->u3 = '\x02';
-				}
-				iVar14 = iVar14 + 1;
+			iVar16 = iVar13 + 1;
+
+			DamPtr = gCarDamageZoneVerts[cp->ap.model][iVar7];
+
+			while (iVar14 < 50 && *DamPtr != 0xff)
+			{
+				psVar11 = (short *)(tempDamage + *DamPtr);
+
+				if (*psVar11 == 0)
+					*psVar11 += sVar4;
+				else 
+					*psVar11 += iVar9 / 2;
+
+				iVar14++;
+				DamPtr++;
 			}
-			iVar14 = iVar8 * 2;
-			iVar24 = iVar8;
-		} while (iVar8 < 6);
-		pbVar16 = gHDCarDamageLevels + uVar23 * 0xff;
-		iVar24 = 0;
-		if (pMVar22->num_polys != 0) {
+
+			iVar7 = iVar16;
+			iVar13 = iVar16;
+		} while (iVar16 < 6);
+	}
+	
+	pSVar17 = gTempCarVertDump[cp->id];
+	DamVertPtr = (SVECTOR *)gCarDamModelPtr[uVar21]->vertices;
+	CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[uVar21]->vertices;
+
+	iVar22 = 0;
+	if ((gCarCleanModelPtr[uVar21] != NULL && gCarDamModelPtr[uVar21] != NULL) && pMVar20->num_vertices != 0) 
+	{
+		do {
+			pSVar17->vx = CleanVertPtr->vx + ((DamVertPtr->vx - CleanVertPtr->vx) * (int)*psVar18) / 4096;
+			pSVar17->vy = CleanVertPtr->vy + ((DamVertPtr->vy - CleanVertPtr->vy) * (int)*psVar18) / 4096;
+			pSVar17->vz = CleanVertPtr->vz + ((DamVertPtr->vz - CleanVertPtr->vz) * (int)*psVar18) / 4096;
+
+			iVar22++;
+			psVar18++;
+			DamVertPtr++;
+			CleanVertPtr++;
+
+			pSVar17++;
+		} while (iVar22 < pMVar20->num_vertices);
+	}
+
+	pDVar19 = gTempHDCarUVDump[cp->id];
+	
+	if (pMVar20 != NULL) 
+	{
+		iVar22 = 0;
+		pDVar12 = pDVar19;
+		if (pMVar20->num_polys != 0) 
+		{
 			do {
-				bVar4 = *pbVar16;
-				pbVar16 = pbVar16 + 1;
-				iVar24 = iVar24 + 1;
-				pDVar21->u3 = (char)(((uint)bVar4 ^ 1 ^ ((uint)bVar4 ^ 1 | (uint)(byte)pDVar21->u3))
+				pDVar12->u3 = 0;
+				iVar22++;
+				pDVar12++;
+			} while (iVar22 < pMVar20->num_polys);
+		}
+
+		iVar13 = 0;
+		iVar22 = 0;
+
+		do {
+			uVar5 = *(ushort *)(cp->ap.damage + iVar13);
+
+			iVar13 = 0;
+			iVar7 = iVar22 + 1;
+
+			while (iVar13 < 70 && gHDCarDamageZonePolys[cp->ap.model][iVar22][iVar13] != 0xFF)
+			{
+				pDVar12 = pDVar19 + gHDCarDamageZonePolys[cp->ap.model][iVar22][iVar13];
+
+				uVar8 = pDVar12->u3 + ((int)((uint)uVar5 << 0x10) >> 0x1a);
+				pDVar12->u3 = uVar8;
+
+				if (2 < (uVar8 & 0xff))
+					pDVar12->u3 = 2;
+
+				iVar13 = iVar13 + 1;
+			}
+
+			iVar13 = iVar7;
+			iVar22 = iVar7;
+		} while (iVar7 < 6);
+
+		pbVar15 = gHDCarDamageLevels[uVar21];
+		iVar22 = 0;
+
+		if (pMVar20->num_polys != 0) 
+		{
+			do {
+				bVar3 = *pbVar15;
+				pbVar15 = pbVar15 + 1;
+				iVar22 = iVar22 + 1;
+				pDVar19->u3 = ((bVar3 ^ 1 ^ (bVar3 ^ 1 | pDVar19->u3))
 					<< 6);
-				pDVar21 = pDVar21 + 1;
-			} while (iVar24 < (int)(uint)pMVar22->num_polys);
+				pDVar19 = pDVar19 + 1;
+			} while (iVar22 < pMVar20->num_polys);
 		}
 	}
-	*/
 }
 
 
@@ -289,81 +311,62 @@ void DentCar(_CAR_DATA *cp)
 // [D]
 void CreateDentableCar(_CAR_DATA *cp)
 {
-	char bVar1;
-	short sVar2;
-	short sVar3;
-	short sVar4;
-	DENTUVS *pDVar5;
-	short *psVar6;
-	MODEL *pMVar7;
-	SVECTOR *pSVar8;
-	int iVar9;
-	uint uVar10;
-	uint uVar11;
+	MODEL *srcModel;
+	SVECTOR *dst;
+	int count;
+	SVECTOR *src;
+	uint uVar7;
+	uint model;
 
-	uVar11 = cp->ap.model;
+	model = cp->ap.model;
 
-	pMVar7 = gCarCleanModelPtr[uVar11];
-
-	if (pMVar7 != NULL)
+	srcModel = gCarCleanModelPtr[model];
+	if (srcModel != NULL)
 	{
-		psVar6 = (short *)pMVar7->vertices;
-		uVar10 = (uint)pMVar7->num_vertices;
-		pSVar8 = gTempCarVertDump[cp->id];
+		src = (SVECTOR *)srcModel->vertices;
+		uVar7 = srcModel->num_vertices;
+		dst = gTempCarVertDump[cp->id];
 
-		while (uVar10 = uVar10 - 1, uVar10 != 0xffffffff) 
+		while (uVar7 = uVar7 - 1, uVar7 != 0xffffffff) 
 		{
-			sVar2 = *psVar6;
-			sVar3 = psVar6[1];
-			sVar4 = psVar6[2];
-			psVar6 = psVar6 + 4;
-			pSVar8->vx = sVar2;
-			pSVar8->vy = sVar3;
-			pSVar8->vz = sVar4;
-			pSVar8 = pSVar8 + 1;
+			dst->vx = src->vx;
+			dst->vy = src->vy;
+			dst->vz = src->vz;
+			src++;
+			dst++;
 		}
+		count = 0;
 
-		iVar9 = 0;
-		bVar1 = cp->id;
-		pDVar5 = gTempHDCarUVDump[bVar1];
-
-		if (gCarCleanModelPtr[uVar11]->num_polys != 0)
+		if (gCarCleanModelPtr[model]->num_polys != 0) 
 		{
 			do {
-				pDVar5->u3 = '\0';
-				iVar9 = iVar9 + 1;
-				pDVar5 = gTempHDCarUVDump[bVar1] + iVar9;
-			} while (iVar9 < gCarCleanModelPtr[uVar11]->num_polys);
+				gTempHDCarUVDump[cp->id][count].u3 = 0;
+				count++;
+			} while (count < gCarCleanModelPtr[model]->num_polys);
 		}
 	}
 
-	pMVar7 = gCarLowModelPtr[uVar11];
-	if (pMVar7 != NULL)
+	srcModel = gCarLowModelPtr[model];
+	if (srcModel != NULL)
 	{
-		iVar9 = 0;
-		bVar1 = cp->id;
-		pDVar5 = gTempLDCarUVDump[bVar1];
+		count = 0;
 
-		if (pMVar7->num_polys != 0) 
+		if (srcModel->num_polys != 0)
 		{
 			do {
-				pDVar5->u3 = '\0';
-				iVar9 = iVar9 + 1;
-				pDVar5 = gTempLDCarUVDump[bVar1] + iVar9;
-			} while (iVar9 < gCarLowModelPtr[uVar11]->num_polys);
+				gTempLDCarUVDump[cp->id][count].u3 = 0;
+				count++;
+			} while (count < gCarLowModelPtr[model]->num_polys);
 		}
 	}
-	iVar9 = 5;
 
-	if (gDontResetCarDamage == 0)
+	count = 5;
+	if (gDontResetCarDamage == 0) 
 	{
-		psVar6 = cp->ap.damage + 5;
-
 		do {
-			*psVar6 = 0;
-			iVar9 = iVar9 + -1;
-			psVar6 = psVar6 + -1;
-		} while (-1 < iVar9);
+			cp->ap.damage[count] = 0;
+			count--;
+		} while (-1 < count);
 
 		cp->totalDamage = 0;
 	}
@@ -722,10 +725,6 @@ void LoadDenting(int level)
 		// Start line: 2047
 	/* end block 2 */
 	// End Line: 2048
-
-unsigned char gCarDamageZoneVerts[5][6][50];
-unsigned char gHDCarDamageZonePolys[5][6][70];
-unsigned char gHDCarDamageLevels[5][255];
 
 // [D]
 void ProcessDentLump(char *lump_ptr, int lump_size)
