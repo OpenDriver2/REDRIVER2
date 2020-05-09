@@ -103,7 +103,10 @@ void LoadBankFromLump(int bank, int lump)
 	size = blockLimit[lump+1] - blockLimit[lump];
 	LoadfileSeg(name, _sbank_buffer, blockLimit[lump], size);
 
-	LoadSoundBankDynamic(_sbank_buffer, size, bank);
+	if (size > 0 && blockLimit[lump] && blockLimit[lump + 1]) // [A]
+		LoadSoundBankDynamic(_sbank_buffer, size, bank);
+	else
+		printf("WARNING: sound bank lump %d is not valid!\n", lump);
 }
 
 

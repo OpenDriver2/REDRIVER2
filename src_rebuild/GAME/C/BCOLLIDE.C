@@ -1499,11 +1499,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					DamageCar(cp, cd, &collisionResult, strikeVel);
 
 					iVar2 = (iVar17 * collisionResult.surfNormal.vx + iVar16 * collisionResult.surfNormal.vy + iVar9 * collisionResult.surfNormal.vz) / 4096;
-					iVar2 = (((iVar17 * iVar17 + iVar9 * iVar9) - iVar2 * iVar2) * car_cosmetics[cp->ap.model].twistRateY) / 4096 + 0x1000;
+					iVar2 = (((iVar17 * iVar17 + iVar9 * iVar9) - iVar2 * iVar2) * car_cosmetics[cp->ap.model].twistRateY) / 4096 + 4096;
 
 					if (strikeVel < 0x7f001) 
 					{
-						iVar14 = (iVar10 * -0x1000) / iVar2;
+						iVar14 = -(iVar10 * 4096) / iVar2;
 						if (iVar2 == 0)
 							trap(7);
 					}
