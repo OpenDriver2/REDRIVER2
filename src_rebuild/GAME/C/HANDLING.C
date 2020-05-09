@@ -1321,7 +1321,7 @@ void SetShadowPoints(_CAR_DATA *c0)
 {
 	bool bVar1;
 	uint uVar2;
-	uint *puVar3;
+	uint puVar3;
 	SVECTOR *pSVar5;
 	int iVar6;
 	SVECTOR disp;
@@ -1366,15 +1366,15 @@ void SetShadowPoints(_CAR_DATA *c0)
 		c0->hd.shadowPoints[iVar6].vy = surfacePoint.vy;
 		c0->hd.shadowPoints[iVar6].vz = surfacePoint.vz;
 
-		puVar3 = (uint *)&(c0->hd).shadowPoints[iVar6].vy;
-		uVar2 = *puVar3;
+		puVar3 = c0->hd.shadowPoints[iVar6].vy;
+		uVar2 = puVar3;
 
 		bVar1 = hSubShad != 0;
 
-		*puVar3 = uVar2 & 0xfffffffe;
+		c0->hd.shadowPoints[iVar6].vy = uVar2 & 0xfffffffe;
 
 		if (bVar1)
-			*puVar3 = uVar2 & 0xfffffffe | 1;
+			c0->hd.shadowPoints[iVar6].vy = uVar2 & 0xfffffffe | 1;
 
 		iVar6 = iVar6 + 1;
 		pSVar5 = pSVar5 + 1;

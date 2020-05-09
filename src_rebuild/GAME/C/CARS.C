@@ -847,10 +847,12 @@ void DrawCar(_CAR_DATA *cp, int view)
 	local_c0.vz = pos.vz;
 
 	SetFrustrumMatrix();
-	iVar6 = FrustrumCheck(&pos, 800);
-	if (iVar6 == -1) {
+
+	if (FrustrumCheck(&pos, 800) == -1)
 		return;
-	}
+
+	iVar6 = 0;
+
 	iVar11 = (int)(cp->hd).oBox.radii[0].vx;
 	iVar9 = (int)(cp->hd).oBox.radii[2].vx;
 	vvvar = pos.vx + iVar11;
@@ -872,20 +874,19 @@ void DrawCar(_CAR_DATA *cp, int view)
 	corners[1].vy = pos.vy;
 	corners[0].vy = pos.vy;
 
-	vvvar = FrustrumCheck(&pos, 0);
-
-	if ((((vvvar == -1) && (vvvar = FrustrumCheck(corners, 0), vvvar == -1)) &&
-		(vvvar = FrustrumCheck(corners + 1, 0), vvvar == -1)) &&
-		((vvvar = FrustrumCheck(corners + 2, 0), vvvar == -1 &&
-		(vvvar = FrustrumCheck(corners + 3, 0), vvvar == -1)))) 
+	if (FrustrumCheck(&pos, 0) == -1 && 
+		FrustrumCheck(corners, 0) == -1 &&
+		FrustrumCheck(corners + 1, 0) == -1 &&
+		FrustrumCheck(corners + 2, 0) == -1 &&
+		FrustrumCheck(corners + 3, 0) == -1)
 	{
 		iVar6 = -1;
 	}
 
-	d.vx = (cp->hd).oBox.location.vx - camera_position.vx;
-	d.vy = -camera_position.vy - (cp->hd).oBox.location.vy;
-	d.vz = (cp->hd).oBox.location.vz - camera_position.vz;
-	iVar11 = (int)(cp->hd).oBox.length[0];
+	d.vx = cp->hd.oBox.location.vx - camera_position.vx;
+	d.vy = -camera_position.vy - cp->hd.oBox.location.vy;
+	d.vz = cp->hd.oBox.location.vz - camera_position.vz;
+	iVar11 = cp->hd.oBox.length[0];
 
 	vvvar = d.vx * cp->hd.oBox.radii[0].vx + d.vy * cp->hd.oBox.radii[0].vy + d.vz * cp->hd.oBox.radii[0].vz;
 
@@ -897,7 +898,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (vvvar < iVar11 * iVar11) 
 	{
-		vvvar = (int)(cp->hd).oBox.length[1];
+		vvvar = cp->hd.oBox.length[1];
 		if (iVar9 < 0) 
 			iVar9 = -iVar9;
 
@@ -912,6 +913,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 				iVar6 = -1;
 		}
 	}
+
 	if (iVar6 == -1)
 		return;
 
@@ -935,7 +937,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		} while (-1 < iVar6);
 	}*/
 
-	if (((pos.vz < 0x157d) && (gForceLowDetailCars == 0)) || (cp->controlType == '\x01')) 
+	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == 1) 
 	{
 		vvvar = cp->hd.speed * 0x2000;
 		iVar6 = MaxPlayerDamage[0];
@@ -945,7 +947,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 			iVar6 = MaxPlayerDamage[(int)cp->ai.padid];
 		}
 
-		if ((int)(uint)cp->totalDamage < iVar6) 
+		if (cp->totalDamage < iVar6) 
 		{
 			sVar3 = cp->ap.damage[0];
 
@@ -985,6 +987,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		gTempCarUVPtr = gTempHDCarUVDump[cp->id];
 		NewCarModel[uVar12].vlist = gTempCarVertDump[cp->id];
 		NewCarModel[uVar12].nlist = gTempCarVertDump[cp->id];
+
 		MulMatrix0(&inv_camera_matrix, m1, &workmatrix);
 		FindCarLightFade(&workmatrix);
 
@@ -994,6 +997,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	}
 	else 
 	{
+		
 		NewLowCarModel[uVar12].nlist = gTempCarVertDump[cp->id];
 		gTempCarUVPtr = gTempLDCarUVDump[cp->id];
 
@@ -1003,11 +1007,12 @@ void DrawCar(_CAR_DATA *cp, int view)
 			PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
 		}
 
-		ComputeCarLightingLevels(cp, '\0');
-		MulMatrix0(&inv_camera_matrix, m1, (MATRIX *)&d);
-		FindCarLightFade((MATRIX *)&d);
+		ComputeCarLightingLevels(cp, 0);
+		MulMatrix0(&inv_camera_matrix, m1, &workmatrix);
+		FindCarLightFade(&workmatrix);
 
-		DrawCarObject(NewLowCarModel + uVar12, (MATRIX *)&d, &pos, &local_c0, cp->ap.palette, cp, 0);
+		DrawCarObject(NewLowCarModel + uVar12, &workmatrix, &pos, &local_c0, cp->ap.palette, cp, 0);
+		
 	}
 
 	TransparentObject = 0;
@@ -1022,6 +1027,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 			CivCarFX(cp);
 		}
 	}
+	
 	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
 	{
 		if (cp->controlType == 2) 

@@ -701,7 +701,7 @@ int gShadowTexturePage;
 int gShadowTextureNum;
 
 UV shadowuv;
-POLY_FT4 shadowPolys[20][2];
+POLY_FT4 shadowPolys[2][20];
 
 // [D]
 void InitShadow(void)
@@ -766,7 +766,6 @@ void InitShadow(void)
 			uVar7 = shadowuv.v2;
 			uVar6 = shadowuv.u2;
 
-			iVar12 = iVar12 + -1;
 			setPolyFT4(pPVar11);
 
 			pPVar11->r0 = 'P';
@@ -787,6 +786,7 @@ void InitShadow(void)
 			pPVar11->v3 = uVar9;
 
 			pPVar11 ++;
+			iVar12--;
 		} while (-1 < iVar12);
 
 		iVar12 = iVar13;
@@ -1075,8 +1075,7 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 
 	memcpy(spd, sps, sizeof(POLY_FT4)*4);
 
-	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &spd[0]);
-	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &spd[1]);
+	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), spd);
 #endif // PSX
 }
 
@@ -1156,7 +1155,7 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip
 	gte_SetTransVector(&dummy);
 	gte_SetRotMatrix(&inv_camera_matrix);
 
-	sps = shadowPolys[slot + current->id];
+	sps = &shadowPolys[current->id][slot];
 
 	gte_ldv3(&points[0], &points[1], &points[2]);
 
