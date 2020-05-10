@@ -887,9 +887,12 @@ void GlobalTimeStep(void)
 									uVar6 = cp->id;
 									uVar14 = c1->id;
 
-									if (bbox[uVar14].x0 < bbox[uVar6].x1 && bbox[uVar14].z0 < bbox[uVar6].z1 &&
-										bbox[uVar6].x0 < bbox[uVar14].x1 && bbox[uVar6].z0 < bbox[uVar14].z1 &&
-										bbox[uVar14].y0 < bbox[uVar6].y1 && bbox[uVar6].y0 < bbox[uVar14].y1 &&
+									BOUND_BOX* bb1 = &bbox[cp->id];
+									BOUND_BOX* bb2 = &bbox[c1->id];
+
+									if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 &&
+										bb1->x0 < bb2->x1 && bb1->z0 < bb2->z1 &&
+										bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
 										CarCarCollision3(cp, c1, &local_58, (VECTOR *)collisionpoint, (VECTOR *)normal) != 0) 
 									{
 										collisionpoint[1] -= 60;
@@ -1804,6 +1807,7 @@ void CheckCarToCarCollisions(void)
 		if (cp->controlType == 0) // [A] required as game crashing
 		{
 			cp++;
+			bb2++;
 			iVar8--;
 			continue;
 		}
@@ -1923,7 +1927,7 @@ void CheckCarToCarCollisions(void)
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
-		if (gShowCollisionDebug)
+		if (gShowCollisionDebug && car_data[iVar8].controlType != 0)
 		{
 			extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 
@@ -2441,6 +2445,7 @@ void InitSkidding(void)
 	/* end block 2 */
 	// End Line: 6289
 
+// [D]
 void TerminateSkidding(int player_id)
 {
 	int channel;
@@ -2537,8 +2542,6 @@ void TerminateSkidding(int player_id)
 char rear_only = 0;
 char continuous_track = 0;
 int last_track_state = -1;
-
-#include "PRES.H"
 
 // [D]
 void CheckCarEffects(_CAR_DATA *cp, int player_id)
