@@ -825,37 +825,37 @@ void GlobalTimeStep(void)
 						if (RKstep == 0) 
 						{
 							st = &cp->st;
-							local_4c = &_d0[local_40];
+							local_4c = _d0;
 
 							local_34 = local_40 << 1;
 						}
 						else 
 						{
 							st = &_tp[local_40];
-							local_4c = &_d1[local_40];
+							local_4c = _d1;
 						}
 
 						long* orient = st->n.orientation;
 
-						local_4c->n.fposition[0] = st->n.linearVelocity[0] / 256;
-						local_4c->n.fposition[1] = st->n.linearVelocity[1] / 256;
-						local_4c->n.fposition[2] = st->n.linearVelocity[2] / 256;
+						local_4c[local_40].n.fposition[0] = st->n.linearVelocity[0] / 256;
+						local_4c[local_40].n.fposition[1] = st->n.linearVelocity[1] / 256;
+						local_4c[local_40].n.fposition[2] = st->n.linearVelocity[2] / 256;
 
 						AV[0] = st->n.angularVelocity[0] / 4096; // [A] / 8192; temporarily set to 4096 here because it makes rotations reaaaal slow
 						AV[1] = st->n.angularVelocity[1] / 4096; // [A] / 8192;
 						AV[2] = st->n.angularVelocity[2] / 4096; // [A] / 8192;
 
-						local_4c->n.orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]) / 8192;
-						local_4c->n.orientation[1] = ((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]) / 8192;
-						local_4c->n.orientation[2] = (-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]) / 8192;
-						local_4c->n.orientation[3] = ((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]) / 8192;
+						local_4c[local_40].n.orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]) / 8192;
+						local_4c[local_40].n.orientation[1] = ((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]) / 8192;
+						local_4c[local_40].n.orientation[2] = (-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]) / 8192;
+						local_4c[local_40].n.orientation[3] = ((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]) / 8192;
 
-						local_4c->n.linearVelocity[0] = 0;
-						local_4c->n.linearVelocity[1] = 0;
-						local_4c->n.linearVelocity[2] = 0;
-						local_4c->n.angularVelocity[0] = 0;
-						local_4c->n.angularVelocity[1] = 0;
-						local_4c->n.angularVelocity[2] = 0;
+						local_4c[local_40].n.linearVelocity[0] = 0;
+						local_4c[local_40].n.linearVelocity[1] = 0;
+						local_4c[local_40].n.linearVelocity[2] = 0;
+						local_4c[local_40].n.angularVelocity[0] = 0;
+						local_4c[local_40].n.angularVelocity[1] = 0;
+						local_4c[local_40].n.angularVelocity[2] = 0;
 
 						local_48 = 0;
 
@@ -889,22 +889,30 @@ void GlobalTimeStep(void)
 										bbox[uVar14].y0 < bbox[uVar6].y1 && bbox[uVar6].y0 < bbox[uVar14].y1 &&
 										CarCarCollision3(cp, c1, &local_58, (VECTOR *)collisionpoint, (VECTOR *)normal) != 0) 
 									{
-										collisionpoint[1] = collisionpoint[1]-60;
-										lever0[0] = collisionpoint[0] - iVar28;
-										lever0[2] = collisionpoint[2] - howHard;
-										lever1[0] = collisionpoint[0] - iVar21;
-										lever1[2] = collisionpoint[2] - iVar24;
-										iVar19 = collisionpoint[1] - iVar19;
-										iVar9 = collisionpoint[1] - iVar9;
+										collisionpoint[1] -= 60;
+
+										lever0[0] = collisionpoint[0] - cp->hd.where.t[0];
+										lever0[2] = collisionpoint[2] - cp->hd.where.t[2];
+
+										lever1[0] = collisionpoint[0] - c1->hd.where.t[0];
+										lever1[2] = collisionpoint[2] - c1->hd.where.t[2];
+
+										iVar19 = collisionpoint[1] - cp->hd.where.t[1];
+										iVar9 = collisionpoint[1] - c1->hd.where.t[1];
+
 										iVar28 = 0x2f - (iVar19 + iVar9) / 2;
+
 										lever0[1] = iVar19 + iVar28;
 										lever1[1] = iVar9 + iVar28;
+
 										iVar28 = local_58 * 0xc000;
 
 										howHard = (((st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) / 4096) + st->n.linearVelocity[0]) -
 											(((p_Var25->n.angularVelocity[1] * lever1[2] - p_Var25->n.angularVelocity[2] * lever1[1]) / 4096) + p_Var25->n.linearVelocity[0]);
+
 										iVar19 = (((st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) / 4096) + st->n.linearVelocity[1]) -
 											(((p_Var25->n.angularVelocity[2] * lever1[0] - p_Var25->n.angularVelocity[0] * lever1[2]) / 4096) + p_Var25->n.linearVelocity[1]);
+
 										iVar9 = (((st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) / 4096) + st->n.linearVelocity[2]) -
 											(((p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) / 4096) + p_Var25->n.linearVelocity[2]);
 
@@ -939,11 +947,13 @@ void GlobalTimeStep(void)
 
 										if ((0 < howHard) && (-1 < RKstep))
 										{
-											iVar9 = DamageCar3D(cp, (long(*)[4])lever0, howHard >> 1, c1);
+											iVar9 = DamageCar3D(cp, (long(*)[4])lever0, howHard / 2, c1);
+
 											if (iVar9 != 0) 
 												cp->ap.needsDenting = 1;
 
-											iVar9 = DamageCar3D(c1, (long(*)[4])lever1, howHard >> 1, cp);
+											iVar9 = DamageCar3D(c1, (long(*)[4])lever1, howHard / 2, cp);
+
 											if (iVar9 != 0) 
 												c1->ap.needsDenting = 1;
 
@@ -972,10 +982,11 @@ void GlobalTimeStep(void)
 
 											if (0x1b00 < howHard) 
 											{
-												velocity.vy = -0x11;
-												velocity.vx = cp->st.n.linearVelocity[0] >> 0xc;
+												velocity.vy = -17;
+												velocity.vx = cp->st.n.linearVelocity[0] / 4096;
+												velocity.vz = cp->st.n.linearVelocity[2] / 4096;
+
 												collisionpoint[1] = -collisionpoint[1];
-												velocity.vz = cp->st.n.linearVelocity[2] >> 0xc;
 
 												if ((cp->controlType == 1) || (c1->controlType == 1))
 												{
@@ -1054,24 +1065,24 @@ void GlobalTimeStep(void)
 											velocity.vz = (normal[2] >> 3) * iVar19 >> 6;
 											velocity.vy = (normal[1] >> 3) * iVar19 >> 6;
 
-											plVar17 = local_4c->v + local_40 * 5 + local_34 * 4;
-											plVar17[7] = plVar17[7] - velocity.vx;
-											plVar17[8] = plVar17[8] - velocity.vy;
-											plVar17[9] = plVar17[9] - velocity.vz;
+											local_4c[local_40].n.linearVelocity[0] -= velocity.vx;
+											local_4c[local_40].n.linearVelocity[1] -= velocity.vy;
+											local_4c[local_40].n.linearVelocity[2] -= velocity.vz;
 
-											iVar19 = (int)sVar3 >> 1;
+											iVar19 = sVar3 >> 1;
 											torque[0] = ((velocity.vy * lever0[2] - velocity.vz * lever0[1]) / 4096) * iVar19;
+											torque[1] = ((velocity.vz * lever0[0] - velocity.vx * lever0[2]) / 4096) * iVar19;
 											torque[2] = ((velocity.vx * lever0[1] - velocity.vy * lever0[0]) / 4096) * iVar19;
 
-											if (c1->controlType == 4) 
+											if (c1->controlType == 4) // infinite mass
 											{
 												torque[0] = 0;
 												torque[2] = 0;
 											}
 
-											plVar17[10] = plVar17[10] + torque[0];
-											plVar17[0xb] = plVar17[0xb] + ((velocity.vz * lever0[0] -velocity.vx * lever0[2]) / 4096) * iVar19;
-											plVar17[0xc] = plVar17[0xc] + torque[2];
+											local_4c[local_40].n.angularVelocity[0] += torque[0];
+											local_4c[local_40].n.angularVelocity[1] += torque[1];
+											local_4c[local_40].n.angularVelocity[2] += torque[2];
 										}
 
 										if (uVar2 != 7 && iVar9 != 0x7fff)
