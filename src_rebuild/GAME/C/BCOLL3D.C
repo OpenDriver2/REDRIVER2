@@ -33,86 +33,98 @@
 	/* end block 2 */
 	// End Line: 167
 
+// [D]
 void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, int nSign)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	short *psVar2;
+	//short *psVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
 	int iVar6;
-	short *psVar7;
+	//short *psVar7;
 	SVECTOR_NOPAD *pSVar8;
 	int iVar9;
-	int local_38;
-	int local_34;
-	int local_30;
-	int local_18;
-	int local_14;
-	int local_10;
 
-	local_18 = (cp1->hd).oBox.location.vx;
-	local_38 = (int)(cp0->hd).where.m[i];
-	psVar2 = (cp0->hd).where.m + i;
-	local_14 = (cp1->hd).oBox.location.vy;
-	local_34 = (int)psVar2[3];
-	local_10 = (cp1->hd).oBox.location.vz;
-	local_30 = (int)psVar2[6];
-	iVar4 = (local_18 - (cp0->hd).oBox.location.vx) * local_38 +
-		(local_14 - (cp0->hd).oBox.location.vy) * local_34 +
-		(local_10 - (cp0->hd).oBox.location.vz) * local_30 + 0x800 >> 0xc;
-	if (iVar4 < 0) {
-		local_38 = -local_38;
-		local_34 = -local_34;
-		local_30 = -local_30;
+	VECTOR normal;
+	VECTOR diff;
+	VECTOR point;
+
+	point.vx = cp1->hd.oBox.location.vx;
+	point.vy = cp1->hd.oBox.location.vy;
+	point.vz = cp1->hd.oBox.location.vz;
+
+	normal.vx = cp0->hd.where.m[0][i];
+	normal.vy = cp0->hd.where.m[1][i];
+	normal.vz = cp0->hd.where.m[2][i];
+
+	diff.vx = point.vx - cp0->hd.oBox.location.vx;
+	diff.vy = point.vy - cp0->hd.oBox.location.vy;
+	diff.vz = point.vz - cp0->hd.oBox.location.vz;
+
+	iVar4 = (diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz) / 4096;
+
+	if (iVar4 < 0) 
+	{
+		normal.vx = -normal.vx;
+		normal.vy = -normal.vy;
+		normal.vz = -normal.vz;
 	}
-	else {
+	else 
+	{
 		iVar4 = -iVar4;
 	}
-	pSVar8 = (cp1->hd).oBox.radii;
+
+	pSVar8 = cp1->hd.oBox.radii;
+	iVar4 += cp0->hd.oBox.length[i];
+
 	iVar9 = 2;
-	psVar7 = &(cp1->hd).oBox.radii[0].vz;
-	psVar2 = &(cp1->hd).oBox.radii[0].vy;
-	iVar4 = iVar4 + (cp0->hd).oBox.length[i];
+
 	do {
-		iVar3 = (int)pSVar8->vx;
-		iVar5 = (int)*psVar2;
-		iVar6 = (int)*psVar7;
-		iVar1 = iVar3 * local_38 + iVar5 * local_34 + iVar6 * local_30 + 0x800 >> 0xc;
-		if (iVar1 < 0) {
+		iVar3 = pSVar8->vx;
+		iVar5 = pSVar8->vy;
+		iVar6 = pSVar8->vz;
+
+		iVar1 = (iVar3 * normal.vx + iVar5 * normal.vy + iVar6 * normal.vz) / 4096;
+
+		if (iVar1 < 0) 
+		{
 			iVar1 = -iVar1;
 		}
-		else {
+		else 
+		{
 			iVar3 = -iVar3;
 			iVar5 = -iVar5;
 			iVar6 = -iVar6;
 		}
-		local_14 = local_14 + iVar5;
-		local_18 = local_18 + iVar3;
-		local_10 = local_10 + iVar6;
-		iVar4 = iVar4 + iVar1;
-		pSVar8 = pSVar8 + 1;
-		psVar7 = psVar7 + 3;
-		iVar9 = iVar9 + -1;
-		psVar2 = psVar2 + 3;
+
+		point.vy += iVar5;
+		point.vx += iVar3;
+		point.vz += iVar6;
+
+		iVar4 += iVar1;
+
+		pSVar8++;
+		iVar9--;
 	} while (-1 < iVar9);
-	if ((iVar4 < least->depth) && (least->depth = iVar4, -1 < iVar4)) {
-		(least->location).vx = local_18;
-		(least->location).vy = local_14;
-		(least->location).vz = local_10;
-		if (nSign < 0) {
-			local_38 = -local_38;
-			local_34 = -local_34;
-			local_30 = -local_30;
+
+	if (iVar4 < least->depth && (least->depth = iVar4, -1 < iVar4))
+	{
+		least->location.vx = point.vx;
+		least->location.vy = point.vy;
+		least->location.vz = point.vz;
+
+		if (nSign < 0) 
+		{
+			normal.vx = -normal.vx;
+			normal.vy = -normal.vy;
+			normal.vz = -normal.vz;
 		}
-		(least->normal).vx = local_38;
-		(least->normal).vy = local_34;
-		(least->normal).vz = local_30;
+
+		least->normal.vx = normal.vx;
+		least->normal.vy = normal.vy;
+		least->normal.vz = normal.vz;
 	}
-	return;
-	*/
 }
 
 
@@ -140,31 +152,35 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 	/* end block 3 */
 	// End Line: 267
 
+// [D]
 int collided3d(_CAR_DATA *cp0, _CAR_DATA *cp1, TestResult *least)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int i;
 
 	least->depth = 0x40000000;
 	PointFaceCheck(cp0, cp1, 1, least, 1);
-	if ((-1 < least->depth) && (PointFaceCheck(cp1, cp0, 1, least, -1), -1 < least->depth)) {
+
+	if (least->depth > -1 && (PointFaceCheck(cp1, cp0, 1, least, -1), least->depth > -1))
+	{
 		least->depth = 0x40000000;
 		i = 0;
-		while (PointFaceCheck(cp0, cp1, i, least, 1), -1 < least->depth) {
+
+		while (PointFaceCheck(cp0, cp1, i, least, 1), least->depth > -1) 
+		{
 			PointFaceCheck(cp1, cp0, i, least, -1);
-			i = i + 2;
-			if (least->depth < 0) {
+
+			i += 2;
+
+			if (least->depth < 0)
 				return 0;
-			}
-			if (2 < i) {
+			
+			if (i > 2)
 				return 1;
-			}
+		
 		}
 	}
+
 	return 0;
-	*/
 }
 
 
@@ -193,26 +209,26 @@ int collided3d(_CAR_DATA *cp0, _CAR_DATA *cp1, TestResult *least)
 	/* end block 3 */
 	// End Line: 361
 
+// [D]
 int CarCarCollision3(_CAR_DATA *c0, _CAR_DATA *c1, int *depth, VECTOR *where, VECTOR *normal)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	TestResult local_38;
+	int res;
+	TestResult tr;
 
-	iVar1 = collided3d(c0, c1, &local_38);
-	if (iVar1 != 0) {
-		*depth = local_38.depth;
-		where->vx = local_38.location.vx;
-		where->vy = local_38.location.vy;
-		where->vz = local_38.location.vz;
-		normal->vx = local_38.normal.vx;
-		normal->vy = local_38.normal.vy;
-		normal->vz = local_38.normal.vz;
+	res = collided3d(c0, c1, &tr);
+
+	if (res != 0)
+	{
+		*depth = tr.depth;
+		where->vx = tr.location.vx;
+		where->vy = tr.location.vy;
+		where->vz = tr.location.vz;
+		normal->vx = tr.normal.vx;
+		normal->vy = tr.normal.vy;
+		normal->vz = tr.normal.vz;
 	}
-	return iVar1;
-	*/
+
+	return res;
 }
 
 
