@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 
+#define COLLISION_DEBUG
 
 // decompiled code
 // original method signature: 
@@ -1877,10 +1878,11 @@ void CheckCarToCarCollisions(void)
 
 		iVar6 = cp->hd.where.t[1];
 
-		iVar2 = iVar6 - 2400;
+		// [A] 2400 for box size - bye bye collision check performance under bridges
+		iVar2 = iVar6 - colBox->vy * 2;// -2400;
 		bb2->y0 = iVar2 >> 4;
 
-		iVar2 = iVar6 + 2400;
+		iVar2 = iVar6 + colBox->vy * 4;// +2400;
 		bb2->y1 = iVar2 >> 4;
 
 		if (cp->hndType == 0)
@@ -1897,6 +1899,7 @@ void CheckCarToCarCollisions(void)
 	do {
 
 		iVar2 = iVar8 + 1;
+		bool mayBeColliding = false;
 
 		if (iVar2 < 20) 
 		{
@@ -1910,12 +1913,56 @@ void CheckCarToCarCollisions(void)
 					(iVar8 == 0 || car_data[iVar8].controlType != 0) && car_data[iVar6].controlType != 0)
 				{
 					car_data[iVar8].hd.mayBeColliding = car_data[iVar6].hd.mayBeColliding = 1;
+					mayBeColliding = true;
 				}
 
 				iVar6++;
 				bb1++;
 			} while (iVar6 < 20);
 		}
+
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+		extern int gShowCollisionDebug;
+		if (gShowCollisionDebug)
+		{
+			extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+
+			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR rrcv = { 250, 0, 0 };
+			CVECTOR yycv = { 250, 250, 0 };
+
+			CVECTOR bbcol = mayBeColliding ? rrcv : yycv;
+
+			VECTOR box_pointsy0[4] = {
+				{bb2->x0 * 16, bb2->y0 * 16, bb2->z0 * 16, 0},	// front left
+				{bb2->x1 * 16, bb2->y0 * 16, bb2->z0 * 16, 0},	// front right
+				{bb2->x1 * 16, bb2->y0 * 16, bb2->z1 * 16, 0},	// back right
+				{bb2->x0 * 16, bb2->y0 * 16, bb2->z1 * 16, 0},	// back left
+			};
+
+			Debug_AddLine(box_pointsy0[0], box_pointsy0[1], bbcol);
+			Debug_AddLine(box_pointsy0[1], box_pointsy0[2], bbcol);
+			Debug_AddLine(box_pointsy0[2], box_pointsy0[3], bbcol);
+			Debug_AddLine(box_pointsy0[3], box_pointsy0[0], bbcol);
+
+			VECTOR box_pointsy1[4] = {
+				{bb2->x0 * 16, bb2->y1 * 16, bb2->z0 * 16, 0},	// front left
+				{bb2->x1 * 16, bb2->y1 * 16, bb2->z0 * 16, 0},	// front right
+				{bb2->x1 * 16, bb2->y1 * 16, bb2->z1 * 16, 0},	// back right
+				{bb2->x0 * 16, bb2->y1 * 16, bb2->z1 * 16, 0},	// back left
+			};
+
+			Debug_AddLine(box_pointsy1[0], box_pointsy1[1], bbcol);
+			Debug_AddLine(box_pointsy1[1], box_pointsy1[2], bbcol);
+			Debug_AddLine(box_pointsy1[2], box_pointsy1[3], bbcol);
+			Debug_AddLine(box_pointsy1[3], box_pointsy1[0], bbcol);
+
+			Debug_AddLine(box_pointsy0[0], box_pointsy1[0], bbcol);
+			Debug_AddLine(box_pointsy0[1], box_pointsy1[1], bbcol);
+			Debug_AddLine(box_pointsy0[2], box_pointsy1[2], bbcol);
+			Debug_AddLine(box_pointsy0[3], box_pointsy1[3], bbcol);
+		}
+#endif
 
 		bb2 = bb2 + 1;
 		iVar8 = iVar2;
