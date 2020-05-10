@@ -28,6 +28,8 @@
 #include "INLINE_C.H"
 #include "STRINGS.H"
 
+#include <stdlib.h>
+
 
 // decompiled code
 // original method signature: 
@@ -1791,7 +1793,7 @@ void CheckCarToCarCollisions(void)
 
 	cp = car_data;
 
-	if (ghost_mode)
+	if (ghost_mode == 1)
 		return;
 
 	bb2 = bbox;
@@ -1810,17 +1812,11 @@ void CheckCarToCarCollisions(void)
 		iVar6 = colBox->vy;
 		iVar2 = colBox->vz * 9;
 
-		//if (iVar2 < 0)
-		//	iVar2 = iVar2 + 7;
-	
 		iVar9 = cp->hd.where.m[0][2] * (iVar2 >> 3);
 		iVar4 = colBox->vx * 9;
 
 		if (iVar9 < 0)
 			iVar9 = -iVar9;
-	
-		//if (iVar4 < 0)
-		//	iVar4 = iVar4 + 7;
 	
 		iVar10 = cp->hd.where.m[0][0] * (iVar4 >> 3);
 
@@ -1842,77 +1838,49 @@ void CheckCarToCarCollisions(void)
 	
 		iVar6 = (iVar2 + iVar4) / 4096 + iVar6;
 
-		//if (iVar5 < 0)
-		//	iVar5 = iVar5 + 0xf;
-	
 		iVar4 = cp->hd.where.t[2];
 		iVar2 = iVar4 - iVar6;
 		bb2->x0 = iVar5 >> 4;
 
-		//if (iVar2 < 0)
-		//	iVar2 = iVar2 + 0xf;
-
 		bb2->z0 = iVar2 >> 4;
 		iVar10 = iVar10 + iVar9;
 
-		//if (iVar10 < 0)
-		//	iVar10 = iVar10 + 0xf;
-	
 		iVar4 = iVar4 + iVar6;
 		bb2->x1 = iVar10 >> 4;
 
-		//if (iVar4 < 0)
-		//	iVar4 = iVar4 + 0xf;
-	
 		iVar2 = cp->st.n.linearVelocity[0];
 		bb2->z1 = iVar4 >> 4;
 
 		if (iVar2 < 0) 
 		{
 			iVar2 = iVar2 / 4096;
-			//if (iVar2 < 0)
-			//	iVar2 = iVar2 + 7;
-
 			bb2->x0 = (iVar5 >> 4) + (iVar2 >> 3);
 		}
 		else
 		{
 			iVar2 = iVar2 / 4096;
-			//if (iVar2 < 0)
-			//	iVar2 = iVar2 + 7;
-
 			bb2->x1 = (iVar10 >> 4) + (iVar2 >> 3);
 		}
+
 		iVar2 = cp->st.n.linearVelocity[2];
 
 		if (iVar2 < 0)
 		{
 			iVar2 = iVar2 / 4096;
-			//if (iVar2 < 0)
-			//	iVar2 = iVar2 + 7;
-
 			bb2->z0 = bb2->z0 + (iVar2 >> 3);
 		}
 		else
 		{
 			iVar2 = iVar2 / 4096;
-			//if (iVar2 < 0)
-			//	iVar2 = iVar2 + 7;
-
 			bb2->z1 = bb2->z1 + (iVar2 >> 3);
 		}
 
 		iVar6 = cp->hd.where.t[1];
-		iVar2 = iVar6 + -2400;
-		if (iVar2 < 0)
-			iVar2 = iVar6 + -2385;
 
+		iVar2 = iVar6 - 2400;
 		bb2->y0 = iVar2 >> 4;
+
 		iVar2 = iVar6 + 2400;
-
-		//if (iVar2 < 0)
-		//	iVar2 = iVar6 + 2415;
-
 		bb2->y1 = iVar2 >> 4;
 
 		if (cp->hndType == 0)
@@ -2260,11 +2228,7 @@ LAB_00055c58:
 	{
 		if ((pad & 0x80) != 0) 
 		{
-			iVar3 = (cp->hd).wheel_speed * 1500;
-			if (iVar3 < 0) 
-			{
-				iVar3 = iVar3 + 0x3ff;
-			}
+			iVar3 = cp->hd.wheel_speed * 1500;
 			iVar3 = (iVar3 >> 10) / 4096;
 
 			if (-iVar3 < 0x17) 
@@ -2763,51 +2727,61 @@ LAB_00056814:
 	/* end block 3 */
 	// End Line: 6658
 
+char DebrisTimer = 0;
+
+// [D]
 void jump_debris(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
-	byte bVar2;
-	uint uVar3;
-	WHEEL *pWVar4;
-	int iVar5;
-	VECTOR local_30;
-	VECTOR local_20;
+	unsigned char bVar2;
 
-	iVar5 = 0;
-	pWVar4 = (cp->hd).wheel;
+	WHEEL *wheel;
+	int count;
+	VECTOR position;
+	VECTOR velocity;
+
+	count = 0;
+	wheel = cp->hd.wheel;
+
 	do {
-		iVar5 = iVar5 + 1;
-		if (pWVar4->susCompression != '\0') {
-			DebrisTimer = '\0';
-			cp->wasOnGround = '\x01';
+		
+		if (wheel->susCompression != 0) 
+		{
+			DebrisTimer = 0;
+			cp->wasOnGround = 1;
 			return;
 		}
-		pWVar4 = pWVar4 + 1;
-	} while (iVar5 < 4);
-	if (cp->wasOnGround == '\x01') {
-		cp->wasOnGround = '\0';
-		DebrisTimer = 'P';
+
+		wheel++;
+		count++;
+	} while (count < 4);
+
+	if (cp->wasOnGround == 1) 
+	{
+		cp->wasOnGround = 0;
+		DebrisTimer = 80;
 		nose_down(cp);
 	}
-	cVar1 = DebrisTimer + -1;
-	if ((DebrisTimer != '\0') && (bVar2 = DebrisTimer - 1, DebrisTimer = cVar1, bVar2 < 0x4b)) {
-		memset(&local_20, 0, 0x10);
-		uVar3 = rand();
-		local_20.vx = (cp->hd).where.t[0] + ((uVar3 & 0x1ff) - 0x100);
-		local_20.vy = 200 - (cp->hd).where.t[1];
-		uVar3 = rand();
-		local_30.vz = (cp->hd).where.t[2] + ((uVar3 & 0x1ff) - 0x100);
-		local_30.vx = local_20.vx;
-		local_30.vy = local_20.vy;
-		local_30.pad = local_20.pad;
-		local_20.vz = local_30.vz;
-		memset(&local_20, 0, 0x10);
-		Setup_Debris(&local_30, &local_20, 5, 0xb);
+
+	cVar1 = DebrisTimer-1;
+
+	if ((DebrisTimer != 0) && (bVar2 = DebrisTimer - 1, DebrisTimer = cVar1, bVar2 < 0x4b))
+	{
+		memset(&velocity, 0, sizeof(velocity));
+
+		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 0x100);
+		velocity.vy = 200 - (cp->hd).where.t[1];
+
+		position.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 0x100);
+		position.vx = velocity.vx;
+		position.vy = velocity.vy;
+		position.pad = velocity.pad;
+
+		velocity.vz = position.vz;
+
+		memset(&velocity, 0, sizeof(velocity));
+		Setup_Debris(&position, &velocity, 5, 0xb);
 	}
-	return;
-	*/
 }
 
 
@@ -2826,20 +2800,12 @@ void jump_debris(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 7462
 
+// [D]
 void nose_down(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	short sVar2;
-
-	sVar1 = (cp->hd).where.m[3];
-	*(int *)(cp->st + 0x28) = *(int *)(cp->st + 0x28) + (int)(cp->hd).where.m[0] * 0x32;
-	sVar2 = (cp->hd).where.m[6];
-	*(int *)(cp->st + 0x2c) = *(int *)(cp->st + 0x2c) + (int)sVar1 * 0x32;
-	*(int *)(cp->st + 0x30) = *(int *)(cp->st + 0x30) + (int)sVar2 * 0x32;
-	return;
-	*/
+	cp->st.n.angularVelocity[0] += cp->hd.where.m[0][0] * 50;
+	cp->st.n.angularVelocity[1] += cp->hd.where.m[1][0] * 50;
+	cp->st.n.angularVelocity[2] += cp->hd.where.m[2][0] * 50;
 }
 
 
