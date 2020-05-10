@@ -49,23 +49,33 @@ void DrawDebugOverlays()
 
 		docop2(0x280030);
 
-		LINE_F2* line = (LINE_F2*)current->primptr;
-		setLineF2(line);
-		setSemiTrans(line, 1);
-		line->x0 = SX0;
-		line->y0 = SY0;
-		line->x1 = SX1;
-		line->y1 = SY1;
-		line->r0 = ld.color.r;
-		line->g0 = ld.color.g;
-		line->b0 = ld.color.b;
+		//docop2(0x1400006);
 
-		addPrim(current->ot + 2, line);
+		//if (SZ3 > 0)
+		{
+			LINE_F2* line = (LINE_F2*)current->primptr;
+			setLineF2(line);
+			setSemiTrans(line, 1);
+			line->x0 = SX0;
+			line->y0 = SY0;
+			line->x1 = SX1;
+			line->y1 = SY1;
+			line->r0 = ld.color.r;
+			line->g0 = ld.color.g;
+			line->b0 = ld.color.b;
 
-		current->primptr += sizeof(LINE_F2);
+			addPrim(current->ot + 2, line);
+
+			current->primptr += sizeof(LINE_F2);
+		}
 		gDebug_numLines--;
 	}
 	gDebug_numLines = 0;
+
+	DR_TPAGE* tp = (DR_TPAGE*)current->primptr;
+	setDrawTPage(tp, 0, 0, 0);
+	addPrim(current->ot + 2, tp);
+	current->primptr += sizeof(DR_TPAGE);
 
 	char tempBuf[128];
 
