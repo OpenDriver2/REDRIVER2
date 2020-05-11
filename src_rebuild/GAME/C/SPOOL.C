@@ -355,8 +355,8 @@ void test_changemode(void)
 		}
 		else if (bVar1 == 1)
 		{
-			sectors_to_read = 0x11;
-			target_address = target_address + 0x4000;
+			sectors_to_read = 17;
+			target_address += 0x4000;
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
 			ntpages = tsetcounter;
@@ -996,30 +996,24 @@ void _RequestSpool(int type, int data, int offset, int loadsize, char *address, 
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 #endif _DEBUG
 {
-	int iVar2;
-	SPOOLQ *next;
-
-	iVar2 = citylumps[GameLevel][3].x;
-
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0x7ff;
-	}
-
-	next = &spooldata[spoolcounter];
-
-	next->type = (unsigned char)type;
-	next->data = (unsigned char)data;
-	next->sector = (iVar2 >> 0xb) + offset;
-	next->nsectors = (ushort)loadsize;
-	next->addr = address;
-	next->func = func;
-
-#ifdef _DEBUG
-	if (loadsize == 0) 
+	if (loadsize == 0)
 	{
 		printf("DENY RequesySpool, loadsize==0!\n");
 		return;
 	}
+
+	SPOOLQ *next;
+
+	next = &spooldata[spoolcounter];
+
+	next->type = type;
+	next->data = data;
+	next->sector = (citylumps[GameLevel][3].x / 2048) + offset;
+	next->nsectors = loadsize;
+	next->addr = address;
+	next->func = func;
+
+#ifdef _DEBUG
 	next->requestby = requestby;
 	next->requestbyline = line;
 #endif // _DEBUG
@@ -1070,18 +1064,13 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 void InitSpooling(void)
 {
 	int target_region;
-	short *psVar1;
 
 	target_region = 0;
-	psVar1 = loading_region;
 
 	do {
-		*psVar1 = -1;
-
+		loading_region[target_region] = -1;
 		ClearRegion(target_region);
-
-		target_region = target_region + 1;
-		psVar1 = psVar1 + 1;
+		target_region++;
 	} while (target_region < 4);
 
 	spool_regioncounter = 0;
@@ -1098,8 +1087,6 @@ void InitSpooling(void)
 	loadbank_write = 0;
 	spoolseek = 0;
 	unpack_cellptr_flag = 0;
-
-	return;
 }
 
 
@@ -1241,8 +1228,6 @@ void SendTPage(void)
 			}
 		}
 	}
-
-	Emulator_SaveVRAM("VRAM_AREATSETS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 
@@ -1333,7 +1318,7 @@ void LoadInAreaTSets(int area)
 	char *address;
 	int availableslots[16];
 
-	pbVar7 = AreaTPages + area * 0x10;
+	pbVar7 = AreaTPages + area * 16;
 	bVar2 = AreaData[area].num_tpages;
 
 	uVar9 = (uint)bVar2;
@@ -1360,7 +1345,10 @@ void LoadInAreaTSets(int area)
 					uVar3 = 1;
 					do {
 						offset = uVar3;
-						if ((int)uVar9 <= (int)offset) break;
+
+						if ((int)uVar9 <= (int)offset)
+							break;
+
 						uVar3 = offset + 1;
 					} while (tpageslots[iVar6] != pbVar7[offset]); // [A]
 				}
@@ -1671,12 +1659,10 @@ void init_spooled_models(void)
 // [D]
 void SetupModels(void)
 {
-	if (old_region == -1) {
+	if (old_region == -1)
 		init_spooled_models();
-	}
-	else {
+	else
 		models_ready = 1;
-	}
 }
 
 
@@ -1713,12 +1699,10 @@ void SetupModels(void)
 // [D]
 void LoadInAreaModels(int area)
 {
-	uint loadsize;
+	int length = AreaData[area].model_size;
+	newmodels = (ushort *)(model_spool_buffer + (length - 1) * 0x800);
 
-	loadsize = (uint)AreaData[area].model_size;
-	newmodels = (ushort *)(model_spool_buffer + (loadsize - 1) * 0x800);
-
-	RequestSpool(3, 0, (uint)AreaData[area].model_offset, loadsize, model_spool_buffer, SetupModels);
+	RequestSpool(3, 0, AreaData[area].model_offset, length, model_spool_buffer, SetupModels);
 }
 
 
@@ -1758,16 +1742,16 @@ void LoadInAreaModels(int area)
 // [D]
 void CheckLoadAreaData(int cellx, int cellz)
 {
-	unsigned char bVar1;
+	unsigned char nAreas;
 	unsigned char bVar2;
-	bool bVar3;
+	bool force_load_boundary;
 	unsigned char *pbVar4;
 	uint uVar5;
 	int iVar6;
 	uint area;
 	Spool *spoolptr;
 
-	bVar3 = false;
+	force_load_boundary = false;
 
 	if (spoolinfo_offsets[current_region] != 0xffff)
 	{
@@ -1779,7 +1763,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 		}
 		else
 		{
-			bVar1 = spoolptr->num_connected_areas;
+			nAreas = spoolptr->num_connected_areas;
 			if (old_region == -1)
 			{
 				LoadedArea = old_region;
@@ -1789,7 +1773,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 				if (spoolptr->super_region == -1)
 					return;
 
-				if (bVar1 == 0)
+				if (nAreas == 0)
 					return;
 			}
 
@@ -1799,7 +1783,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 				iVar6 = 0xf;
 
 			area = 0;
-			if (bVar1 != 0)
+			if (nAreas != 0)
 			{
 				pbVar4 = spoolptr->connected_areas;
 				do {
@@ -1811,34 +1795,34 @@ void CheckLoadAreaData(int cellx, int cellz)
 						new_area_location = uVar5;
 
 						// [A] bounds?
-						if (bVar2 == 0 && (0x20 - iVar6 < cellz))
+						if (bVar2 == 0 && (32 - iVar6 < cellz))
 						{
-							bVar3 = true;
+							force_load_boundary = true;
 						}
-						else if (bVar2 == 1 && (0x20 - iVar6 < cellx))
+						else if (bVar2 == 1 && (32 - iVar6 < cellx))
 						{
-							bVar3 = true;
+							force_load_boundary = true;
 						}
 						else if (bVar2 == 2 && (cellz < iVar6))
 						{
-							bVar3 = true;
+							force_load_boundary = true;
 						}
 						else if (bVar2 == 3 && (cellx < iVar6))
 						{
-							bVar3 = true;
+							force_load_boundary = true;
 						}
 					}
 
-					if (bVar3)
+					if (force_load_boundary)
 						break;
 
 					area = area + 1;
 					pbVar4 = spoolptr->connected_areas + area;
 
-				} while ((int)area < (int)(uint)bVar1);
+				} while (area < nAreas);
 			}
 
-			if (area == (uint)bVar1)
+			if (area == nAreas)
 			{
 				if (LoadedArea != -1)
 					return;
@@ -2040,7 +2024,7 @@ void UnpackRegion(int region_to_unpack, int target_barrel_region)
 	if (loading_region[target_barrel_region] == -1) 
 	{
 		if (LoadRegionData(region_to_unpack, target_barrel_region))
-			spool_regioncounter = spool_regioncounter + 1;
+			spool_regioncounter++;
 
 		regions_unpacked[target_barrel_region] = region_to_unpack;
 		RoadMapRegions[target_barrel_region] = region_to_unpack;
@@ -2442,11 +2426,7 @@ void data_cb_textures(void)
 // [D]
 void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
-	uint uVar1;
-
-	uVar1 = (uint)intr;
-
-	if (intr == '\x01')
+	if (intr == 1)
 	{
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
@@ -2462,12 +2442,10 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 		if (sectors_this_chunk == 0) 
 		{
 			if (nTPchunks_reading != 0)
-			{
-				loadbank_read = loadbank_read + 1;
-			}
+				loadbank_read++;
 
-			nTPchunks_reading = nTPchunks_reading + 1;
-			chunk_complete = uVar1;
+			nTPchunks_reading++;
+			chunk_complete = intr;
 
 			if (sectors_to_read == 0)
 			{
@@ -2475,16 +2453,18 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 
 				if (ntpages == 0)
 				{
-					spoolpos_reading = spoolpos_reading + 1;
+					spoolpos_reading++;
 					test_changemode();
 				}
 				else
 				{
 					nTPchunks_reading = 0;
 					sectors_to_read = 17;
+
 					target_address = spooldata[spoolpos_reading].addr + 0x4000;
-					spoolpos_reading = spoolpos_reading + 1;
-					sectors_this_chunk = uVar1;
+					spoolpos_reading++;
+
+					sectors_this_chunk = intr;
 				}
 			}
 			else 
@@ -2495,9 +2475,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 		}
 	}
 	else 
-	{
 		FoundError("ready_cb_textures", intr, result);
-	}
 }
 
 
@@ -2534,10 +2512,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 
 void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
-	uint uVar1;
-
-	uVar1 = (uint)intr;
-	if (intr == '\x01') 
+	if (intr == 1) 
 	{
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
@@ -2552,12 +2527,12 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 
 		if (sectors_this_chunk == 0) 
 		{
-			spoolpos_reading = spoolpos_reading + 1;
-			chunk_complete = uVar1;
+			spoolpos_reading++;
+			chunk_complete = intr;
 
 			if (sectors_to_read == 0)
 			{
-				endchunk = uVar1;
+				endchunk = intr;
 				test_changemode();
 			}
 			else 
@@ -2567,9 +2542,8 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 			}
 		}
 	}
-	else {
+	else 
 		FoundError("ready_cb_regions", intr, result);
-	}
 }
 
 
@@ -2616,11 +2590,9 @@ void data_cb_regions(void)
 		chunk_complete = 0;
 
 		if (spooldata[spoolpos_writing].func != NULL)
-		{
 			(spooldata[spoolpos_writing].func)();
-		}
 
-		spoolpos_writing = spoolpos_writing + 1;
+		spoolpos_writing++;
 
 		if (endchunk != 0)
 		{
@@ -2847,7 +2819,7 @@ void data_cb_misc(void)
 			(*spooldata[spoolpos_writing].func)();
 		}
 
-		spoolpos_writing = spoolpos_writing + 1;
+		spoolpos_writing++;
 
 		if (switch_spooltype == 0)
 		{
@@ -2896,7 +2868,7 @@ void data_cb_misc(void)
 // [D]
 void ready_cb_misc(unsigned char intr, unsigned char *result)
 {
-	if (intr == '\x01') 
+	if (intr == 1) 
 	{
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
@@ -2910,8 +2882,8 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 
 		if (sectors_to_read == 0) 
 		{
-			spoolpos_reading = spoolpos_reading + 1;
-			chunk_complete = (uint)intr;
+			spoolpos_reading++;
+			chunk_complete = intr;
 			test_changemode();
 		}
 	}
