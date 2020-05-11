@@ -312,36 +312,6 @@ void LoadFont(char *buffer)
 	pcVar2 = AsciiTable;
 
 	memcpy(AsciiTable, addr, 256);
-	/*
-	// ALIGNED INLINE MEMCPY???
-	if (((uint)addr & 3) == 0) {
-		piVar1 = addr;
-		do {
-			iVar6 = piVar1[1];
-			iVar4 = piVar1[2];
-			iVar5 = piVar1[3];
-			*(int *)pcVar2 = *piVar1;
-			((int *)pcVar2)[1] = iVar6;
-			((int *)pcVar2)[2] = iVar4;
-			((int *)pcVar2)[3] = iVar5;
-			piVar1 = piVar1 + 4;
-			pcVar2 = (char *)((int *)pcVar2 + 4);
-		} while (piVar1 != addr + 0x40);
-	}
-	else {
-		piVar1 = addr;
-		do {
-			iVar6 = piVar1[1];
-			iVar4 = piVar1[2];
-			iVar5 = piVar1[3];
-			*(int *)pcVar2 = *piVar1;
-			((int *)pcVar2)[1] = iVar6;
-			((int *)pcVar2)[2] = iVar4;
-			((int *)pcVar2)[3] = iVar5;
-			piVar1 = piVar1 + 4;
-			pcVar2 = (char *)((int *)pcVar2 + 4);
-		} while (piVar1 != addr + 0x40);
-	}*/
 
 	fontclutid = GetClut((int)fontclutpos.x, (int)fontclutpos.y);
 	iVar6 = 0xf;

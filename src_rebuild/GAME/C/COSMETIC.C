@@ -120,44 +120,6 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 
 			memcpy(&car_cosmetics[i], ptr, sizeof(CAR_COSMETICS));
 
-			/*
-			// Again, a memcpy...
-			plVar1 = local_a2_276 + 0x38;
-
-			if (((uint)local_a2_276 & 3) == 0) {
-				do {
-					lVar2 = local_a2_276[1];
-					local_t2_284 = local_a2_276[2];
-					local_t3_288 = local_a2_276[3];
-					*(long *)&pCVar3->headLight = *local_a2_276;
-					*(long *)&(pCVar3->headLight).vz = lVar2;
-					*(long *)&pCVar3->frontInd = local_t2_284;
-					*(long *)&(pCVar3->frontInd).vz = local_t3_288;
-					local_a2_276 = local_a2_276 + 4;
-					pCVar3 = (CAR_COSMETICS *)&pCVar3->backInd;
-				} while (local_a2_276 != plVar1);
-			}
-			else {
-				do {
-					local_t1_204 = local_a2_276[1];
-					local_t2_212 = local_a2_276[2];
-					local_t3_220 = local_a2_276[3];
-					*(long *)&pCVar3->headLight = *local_a2_276;
-					*(long *)&(pCVar3->headLight).vz = local_t1_204;
-					*(long *)&pCVar3->frontInd = local_t2_212;
-					*(long *)&(pCVar3->frontInd).vz = local_t3_220;
-					local_a2_276 = local_a2_276 + 4;
-					pCVar3 = (CAR_COSMETICS *)&pCVar3->backInd;
-				} while (local_a2_276 != plVar1);
-			}
-
-			lVar2 = local_a2_276[1];
-			local_t1_340 = local_a2_276[2];
-			*(long *)&pCVar3->headLight = *local_a2_276;
-			*(long *)&(pCVar3->headLight).vz = lVar2;
-			*(long *)&pCVar3->frontInd = local_t1_340;
-			*/
-
 			FixCarCos(&car_cosmetics[i], externalModelNumber);
 		}
 		i++;
