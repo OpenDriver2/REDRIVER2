@@ -1573,86 +1573,79 @@ void SendSBK(void)
 // [D]
 void init_spooled_models(void)
 {
-	ushort uVar1;
-	ushort uVar2;
-	ushort *puVar3;
+	int nmodels;
+	ushort lod;
 	MODEL **ppMVar4;
-	uint model_number;
-	MODEL *model1;
-	MODEL *model;
+	int model_number;
 	MODEL *parentmodel;
-	int iVar5;
-	int iVar6;
+	char *addr;
+	MODEL *model;
+	int i;
+	int size;
 
-	model = (MODEL *)model_spool_buffer;
+	addr = model_spool_buffer;
 	ppMVar4 = modelpointers;
-	iVar5 = 0x5ff;
+	
 	models_ready = 0;
-	uVar1 = *newmodels;
-	newmodels = newmodels + 1;
+	nmodels = *newmodels++;
 
+	i = 1535;
 	do {
-		if (model <= *ppMVar4) 
-		{
+		if (addr <= (char*)*ppMVar4)
 			*ppMVar4 = &dummyModel;
-		}
 
-		iVar5 = iVar5 + -1;
-		ppMVar4 = ppMVar4 + 1;
-	} while (-1 < iVar5);
+		i--;
+		ppMVar4++;
+	} while (-1 < i);
 
-	iVar5 = 0;
-
-	if (uVar1 != 0) 
+	i = 0;
+	if (nmodels != 0) 
 	{
 		do {
-			puVar3 = Low2LowerDetailTable;
-			model_number = (uint)newmodels[iVar5];
-			iVar6 = *(int *)model;
 
-			parentmodel = (MODEL *)&model->instance_number; // as it has address now
-			modelpointers[model_number] = parentmodel;
-			pLodModels[model_number] = parentmodel;
+			model_number = newmodels[i];
 
-			uVar2 = puVar3[model_number];
+			size = *(int *)addr;
+			model = (MODEL *)(addr + 4);
 
-			if ((uVar2 != 0xffff) && ((uint)uVar2 != model_number))
+			modelpointers[model_number] = model;
+			pLodModels[model_number] = model;
+
+			lod = Low2LowerDetailTable[model_number];
+
+			if ((lod != 0xffff) && (lod != model_number)) 
+				pLodModels[model_number] = modelpointers[lod];
+
+			if(model->instance_number == -1)
 			{
-				pLodModels[model_number] = modelpointers[(uint)uVar2];
-			}
-
-			if ((int)model->bounding_sphere == -1) // something here is unclear
-			{
-				if (*(int *)(model + 1) != 0) {
-					*(int *)(model + 1) = (int)&parentmodel->shape_flags + *(int *)(model + 1);
-				}
-
-				model->poly_block = (int)&parentmodel->shape_flags + model->poly_block;
-				model->point_normals = (int)&parentmodel->shape_flags + model->point_normals;
-				model->collision_block = (int)&parentmodel->shape_flags + model->collision_block;
+				if (model->collision_block != 0)
+					model->collision_block = (int)(char*)model + model->collision_block;
+				
+				model->vertices = (int)(char*)model + model->vertices;
+				model->normals = (int)(char*)model + model->normals;
+				model->point_normals = (int)(char*)model + model->point_normals;
 
 				InitSpooledAnimObj(model_number);
 			}
 			else 
 			{
-				model1 = modelpointers[(int)model->bounding_sphere]; // something here is unclear
+				parentmodel = modelpointers[model->instance_number];
 
-				if (model1->collision_block != 0) 
-				{
-					*(int *)(model + 1) = model1->collision_block;
-				}
+				if (parentmodel->collision_block != 0)
+					*(int *)(addr + 36) = parentmodel->collision_block;
+				
+				model->vertices = parentmodel->vertices;
+				model->normals = parentmodel->normals;
+				model->point_normals = parentmodel->point_normals;
 
-				model->poly_block = model1->vertices;
-				model->point_normals = model1->normals;
-				model->collision_block = model1->point_normals;
-
-				InitSpooledAnimObj((int)model->bounding_sphere);
+				InitSpooledAnimObj(parentmodel->instance_number);
 			}
+			model->poly_block = (int)(char*)model + model->poly_block;
 
-			iVar5 = iVar5 + 1;
-			model->normals = (int)&parentmodel->shape_flags + model->normals;
-			model = (MODEL *)((int)&parentmodel->shape_flags + iVar6);
-		} while (iVar5 < (int)(uint)uVar1);
+			addr += size + 4;
+
+			i++;
+		} while (i < nmodels);
 	}
 	LoadingArea = 0;
 }
@@ -3355,14 +3348,14 @@ void CleanModelSpooled(void)
 {
 	int *piVar1;
 	ushort *puVar2;
-	MODEL *pMVar3;
 	int iVar4;
 	int *piVar5;
 	int *in_a3;
 
 	piVar5 = (int *)specLoadBuffer;
-	if (specBlocksToLoad == lastCleanBlock + -1) {
-		piVar5 = (int *)(specLoadBuffer + 0xc);
+	if (specBlocksToLoad == lastCleanBlock-1) 
+	{
+		piVar5 = (int *)(specLoadBuffer + 12);
 		modelMemory = (int *)specmallocptr;
 		gCarCleanModelPtr[4] = (MODEL *)specmallocptr;
 	}
@@ -3371,13 +3364,11 @@ void CleanModelSpooled(void)
 	{
 		do {
 			iVar4 = *piVar5;
-			piVar5 = piVar5 + 1;
+			piVar5++;
 			*modelMemory = iVar4;
-			modelMemory = modelMemory + 1;
+			modelMemory++;
 		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
-
-	pMVar3 = gCarCleanModelPtr[4];
 
 	if (&gCarCleanModelPtr[4][1].poly_block < modelMemory)
 	{
@@ -3386,18 +3377,21 @@ void CleanModelSpooled(void)
 
 	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
 	{
+		specBlocksToLoad = 0;
+
 		piVar5 = &gCarCleanModelPtr[4]->normals;
 		piVar1 = &gCarCleanModelPtr[4]->point_normals;
-		specBlocksToLoad = 0;
 		puVar2 = &gCarCleanModelPtr[4]->shape_flags;
+
 		modelMemory = in_a3;
 		gCarCleanModelPtr[4]->vertices = (int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->vertices;
-		NewCarModel[4].nlist = (SVECTOR *)((int)&pMVar3->shape_flags + *piVar1);
-		pMVar3->normals = (int)puVar2 + *piVar5;
-		*(SVECTOR **)&pMVar3->point_normals = NewCarModel[4].nlist;
-		pMVar3->poly_block = (int)&pMVar3->shape_flags + pMVar3->poly_block;
-		NewCarModel[4].vlist = (SVECTOR *)pMVar3->vertices;
+		NewCarModel[4].nlist = (SVECTOR *)((int)&gCarCleanModelPtr[4]->shape_flags + *piVar1);
+		gCarCleanModelPtr[4]->normals = (int)puVar2 + *piVar5;
+		*(SVECTOR **)&gCarCleanModelPtr[4]->point_normals = NewCarModel[4].nlist;
+		gCarCleanModelPtr[4]->poly_block = (int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->poly_block;
+		NewCarModel[4].vlist = (SVECTOR *)gCarCleanModelPtr[4]->vertices;
 	}
+
 	if (quickSpool != 1)
 	{
 		DrawSyncCallback(SpecialStartNextBlock);
