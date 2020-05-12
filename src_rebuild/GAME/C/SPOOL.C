@@ -91,7 +91,6 @@ int unpack_cellptr_flag;
 
 char *packed_cell_pointers;
 SPL_REGIONINFO spool_regioninfo[8];
-//unsigned long unpack_cellptr_tbl[3];
 
 static int sectors_this_chunk;
 static volatile int sectors_to_read;
@@ -116,7 +115,7 @@ unsigned short *newmodels;
 
 struct SPOOLQ spooldata[48];
 
-#ifndef PSX
+#if !defined(PSX) && !defined(SIMPLE_SPOOL)
 #include <assert.h>
 
 typedef void(*data_callbackFn)(void);
@@ -152,12 +151,12 @@ void getLevSectorPC(char* dest, int count)
 	assert(dest);
 	assert(sectors_to_read > 0);
 
-	SDL_LockMutex(levelSpoolerPCMutex);
+	//SDL_LockMutex(levelSpoolerPCMutex);
 
 	memcpy(dest, g_sectorData, count);
 	g_isSectorDataRead = true;
 
-	SDL_UnlockMutex(levelSpoolerPCMutex);
+	//SDL_UnlockMutex(levelSpoolerPCMutex);
 }
 
 void levelSpoolerPCDataCallback(data_callbackFn cb)
@@ -237,14 +236,10 @@ int levelSpoolerPCFunc(void* data)
 
 		if (readyCb)
 		{
-			//SDL_LockMutex(levelSpoolerPCMutex);
-
-			readyCb(1, { 0x0 });			
-
+			readyCb(1, { 0x0 });
+			
 			if (g_isSectorDataRead && dataCb)
 				dataCb();
-
-			//SDL_UnlockMutex(levelSpoolerPCMutex);
 		}
 		else
 			break;
@@ -323,7 +318,10 @@ void startReadLevSectorsPC(int sector)
 // [D]
 void test_changemode(void)
 {
+#ifndef SIMPLE_SPOOL
 	char bVar1;
+
+	SPOOLQ *current = &spooldata[spoolpos_reading];
 
 	if (spoolpos_reading == spoolcounter)
 	{
@@ -337,16 +335,16 @@ void test_changemode(void)
 		levelSpoolerSeekCmd = -1;
 #endif // PSX
 	}
-	else if (current_sector == spooldata[spoolpos_reading].sector)
+	else if (current_sector == current->sector)
 	{
-		target_address = spooldata[spoolpos_reading].addr;
-		bVar1 = spooldata[spoolpos_reading].type;
+		target_address = current->addr;
+		bVar1 = current->type;
 		switch_spooltype = 1;
 
 		if (bVar1 == 0)
 		{
 			sectors_to_read = spool_regioninfo[spool_regionpos + 1].nsectors;
-			sectors_this_chunk = (spooldata[spoolpos_reading].nsectors);
+			sectors_this_chunk = (current->nsectors);
 #ifdef PSX
 			CdReadyCallback(ready_cb_regions);
 #else
@@ -369,8 +367,8 @@ void test_changemode(void)
 		}
 		else if (bVar1 == 2)
 		{
-			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
-			send_bank = (spooldata[spoolpos_reading].data);
+			sectors_to_read = (current->nsectors);
+			send_bank = (current->data);
 			sample_chunk = 0;
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
@@ -385,7 +383,7 @@ void test_changemode(void)
 		}
 		else if (bVar1 == 3)
 		{
-			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
+			sectors_to_read = (current->nsectors);
 #ifdef PSX
 			CdReadyCallback(ready_cb_misc);
 #else
@@ -403,6 +401,7 @@ void test_changemode(void)
 		levelSpoolerPCReadyCallback(NULL);
 #endif // PSX
 	}
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -424,45 +423,50 @@ void test_changemode(void)
 // [D]
 void changemode(SPOOLQ *current)
 {
-	char bVar1;
-
+#ifndef SIMPLE_SPOOL
 	switch_spooltype = 0;
 	endchunk = 0;
 
-	bVar1 = current->type;
-
-	if(bVar1 == 0)
+	switch (current->type)
 	{
+		case 0:
+		{
 #ifdef PSX
-		CdDataCallback(data_cb_regions);
+			CdDataCallback(data_cb_regions);
 #else
-		levelSpoolerPCDataCallback(data_cb_regions);
+			levelSpoolerPCDataCallback(data_cb_regions);
 #endif // PSX
-	}
-	else if (bVar1 == 1)
-	{
+			break;
+		}
+		case 1:
+		{
 #ifdef PSX
-		CdDataCallback(data_cb_textures);
+			CdDataCallback(data_cb_textures);
 #else
-		levelSpoolerPCDataCallback(data_cb_textures);
+			levelSpoolerPCDataCallback(data_cb_textures);
 #endif // PSX
-	}
-	else if (bVar1 == 2)
-	{
+			break;
+		}
+		case 2:
+		{
 #ifdef PSX
-		CdDataCallback(data_cb_soundbank);
+			CdDataCallback(data_cb_soundbank);
 #else
-		levelSpoolerPCDataCallback(data_cb_soundbank);
+			levelSpoolerPCDataCallback(data_cb_soundbank);
 #endif // PSX
-	}
-	else if (bVar1 == 3)
-	{
+			break;
+		}
+		case 3:
+		{
 #ifdef PSX
-		CdDataCallback(data_cb_misc);
+			CdDataCallback(data_cb_misc);
 #else
-		levelSpoolerPCDataCallback(data_cb_misc);
+			levelSpoolerPCDataCallback(data_cb_misc);
 #endif // PSX
+			break;
+		}
 	}
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -868,20 +872,101 @@ void CheckValidSpoolData(void)
 // [D]
 void UpdateSpool(void)
 {
+#ifdef SIMPLE_SPOOL
+	extern char g_CurrentLevelFileName[64];
+
+	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
+
+	for (; spoolpos_reading < spoolcounter; spoolpos_reading++)
+	{
+		SPOOLQ *current = &spooldata[spoolpos_reading];
+
+#ifdef _DEBUG
+		char* nameType;
+		switch (current->type)
+		{
+		case 0:	// regions
+			nameType = "REGION";
+			break;
+		case 1:	// textures
+			nameType = "TPAGE";
+			break;
+		case 2:	// sbk
+			nameType = "SBK";
+			break;
+		case 3:	// misc
+			nameType = "MISC";
+			break;
+		}
+
+		printf("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+#endif // _DEBUG
+
+		// seek to required sector
+		fseek(fp, current->sector * 2048, SEEK_SET);
+
+		switch (current->type)
+		{
+		case 0:	// regions
+			fread(current->addr, 2048, current->nsectors, fp);
+
+			if (current->func)
+				current->func();
+
+			break;
+		case 1:	// textures
+
+			// read cluts
+			nTPchunks = 0;
+			fread(current->addr + 0x4000, 2048, 1, fp);
+			SendTPage();
+
+			nTPchunks++;
+
+			// read tpage (4 sectors 4 times = 16)
+			for (int i = 0; i < 4; i++)
+			{
+				fread(current->addr + (loadbank_write & 1U) * TPAGE_WIDTH * 32, 2048, 4, fp);
+				SendTPage();
+
+				nTPchunks++;
+			}
+
+			break;
+		case 2:	// sbk
+			// nothing to do with this
+			break;
+		case 3:	// misc
+			fread(current->addr, 2048, current->nsectors, fp);
+
+			if (current->func)
+				current->func();
+
+			break;
+		}
+	}
+
+	spoolcounter = 0;
+	spoolpos_reading = 0;
+	spoolactive = 0;
+	
+#else
 	char bVar1;
 	int iVar3;
 	CdlLOC pos;
 
 	iVar3 = XAPrepared();
 
+	SPOOLQ *current = &spooldata[spoolpos_reading];
+
 	if (iVar3 != 1) 
 	{
-		target_address = spooldata[spoolpos_reading].addr;
-		bVar1 = spooldata[spoolpos_reading].type;
+		target_address = current->addr;
+		bVar1 = current->type;
 
 		if (bVar1 == 0) // SPOOLTYPE_REGIONS
 		{
-			sectors_this_chunk = (spooldata[spoolpos_reading].nsectors);
+			sectors_this_chunk = (current->nsectors);
 			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
 
 			spoolseek = 5;
@@ -915,9 +1000,9 @@ void UpdateSpool(void)
 		}
 		else if (bVar1 == 2) // SPOOLTYPE_SOUNDBANK
 		{
-			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
+			sectors_to_read = (current->nsectors);
 
-			send_bank = (spooldata[spoolpos_reading].data);
+			send_bank = (current->data);
 			spoolseek = 5;
 			sample_chunk = 0;
 			nTPchunks_reading = 0;
@@ -936,7 +1021,7 @@ void UpdateSpool(void)
 		}
 		else if (bVar1 == 3)  // SPOOLTYPE_MISC
 		{
-			sectors_to_read = (spooldata[spoolpos_reading].nsectors);
+			sectors_to_read = (current->nsectors);
 
 			spoolseek = 5;
 #ifdef PSX
@@ -948,7 +1033,7 @@ void UpdateSpool(void)
 #endif // PSX
 		}
 
-		current_sector = spooldata[spoolpos_reading].sector;
+		current_sector = current->sector;
 		endchunk = 0;
 		switch_spooltype = 0;
 
@@ -960,6 +1045,7 @@ void UpdateSpool(void)
 		startReadLevSectorsPC(current_sector);
 #endif // PSX
 	}
+#endif
 }
 
 
@@ -996,12 +1082,6 @@ void _RequestSpool(int type, int data, int offset, int loadsize, char *address, 
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 #endif _DEBUG
 {
-	if (loadsize == 0)
-	{
-		printf("DENY RequesySpool, loadsize==0!\n");
-		return;
-	}
-
 	SPOOLQ *next;
 
 	next = &spooldata[spoolcounter];
@@ -1151,9 +1231,12 @@ void SendTPage(void)
 	iVar7 = tsetinfo[tsetpos * 2];
 	iVar5 = tsetinfo[tsetpos * 2 + 1];
 
+	if (iVar7 == 0xFF || iVar5 == 0xFF)	// [A] bug fix
+		return;
+
 	if (nTPchunks == 0) 
 	{
-		if (iVar5 != tpageloaded[iVar7] - 1)
+		if (iVar5 != tpageloaded[iVar7]-1)
 		{
 			npalettes = *(int *)(model_spool_buffer + 0xE000);
 
@@ -1199,7 +1282,7 @@ void SendTPage(void)
 	{
 		if (iVar5 != tpageloaded[iVar7] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xa000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
+			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
@@ -1250,12 +1333,8 @@ void SendTPage(void)
 // [D]
 void SpoolSYNC(void)
 {
-	printf("SpoolSYNC...\n"); // [A]
-
 	do {
 	} while (spoolactive != 0);
-
-	printf("SpoolSYNC END\n"); // [A]
 }
 
 
@@ -1299,6 +1378,10 @@ void SpoolSYNC(void)
 // [D]
 void LoadInAreaTSets(int area)
 {
+	// [A] bug fix
+	if (area == 0xFF)
+		return;
+
 	bool bVar1;
 	
 	uint uVar3;
@@ -1620,7 +1703,7 @@ void init_spooled_models(void)
 				parentmodel = modelpointers[model->instance_number];
 
 				if (parentmodel->collision_block != 0)
-					*(int *)(addr + 36) = parentmodel->collision_block;
+					model->collision_block = parentmodel->collision_block;
 				
 				model->vertices = parentmodel->vertices;
 				model->normals = parentmodel->normals;
@@ -1699,6 +1782,10 @@ void SetupModels(void)
 // [D]
 void LoadInAreaModels(int area)
 {
+	// [A] bug fix
+	if (area == 0xFF)
+		return;
+
 	int length = AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (length - 1) * 0x800);
 
@@ -1739,7 +1826,7 @@ void LoadInAreaModels(int area)
 	/* end block 4 */
 	// End Line: 3523
 
-// [D]
+// [D] [A] bugged
 void CheckLoadAreaData(int cellx, int cellz)
 {
 	unsigned char nAreas;
@@ -1748,104 +1835,100 @@ void CheckLoadAreaData(int cellx, int cellz)
 	unsigned char *pbVar4;
 	uint uVar5;
 	int iVar6;
-	uint area;
+	int i;
 	Spool *spoolptr;
 
 	force_load_boundary = false;
 
-	if (spoolinfo_offsets[current_region] != 0xffff)
-	{
-		spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
+	if (spoolinfo_offsets[current_region] == 0xffff)
+		return;
 
-		if (old_region == -1 && spoolptr->super_region != 0xFF)
+	spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
+
+	if (old_region == -1 && spoolptr->super_region != -1)
+	{
+		LoadedArea = spoolptr->super_region;
+	}
+	else
+	{
+		nAreas = spoolptr->num_connected_areas;
+
+		if (old_region == -1)
 		{
-			area = spoolptr->super_region;
+			LoadedArea = old_region;
 		}
 		else
 		{
-			nAreas = spoolptr->num_connected_areas;
+			if (spoolptr->super_region == -1)
+				return;
 
-			if (old_region == -1)
-			{
-				LoadedArea = old_region;
-			}
-			else
-			{
-				if (spoolptr->super_region == 0xFF)
-					return;
-
-				if (nAreas == 0)
-					return;
-			}
-
-			iVar6 = 0xd;
-
-			if (lead_car == 0)
-				iVar6 = 0xf;
-
-			area = 0;
-			if (nAreas != 0)
-			{
-				pbVar4 = spoolptr->connected_areas;
-
-				do {
-					bVar2 = *pbVar4 >> 6;
-					uVar5 = (uint)bVar2;
-
-					if (LoadedArea != ((uint)*pbVar4 & 0x3f)) 
-					{
-						new_area_location = uVar5;
-
-						// [A] bounds?
-						if (bVar2 == 0 && (32 - iVar6 < cellz))
-						{
-							force_load_boundary = true;
-						}
-						else if (bVar2 == 1 && (32 - iVar6 < cellx))
-						{
-							force_load_boundary = true;
-						}
-						else if (bVar2 == 2 && (cellz < iVar6))
-						{
-							force_load_boundary = true;
-						}
-						else if (bVar2 == 3 && (cellx < iVar6))
-						{
-							force_load_boundary = true;
-						}
-					}
-
-					if (force_load_boundary)
-						break;
-
-					area++;
-					pbVar4 = spoolptr->connected_areas + area;
-
-				} while (area < nAreas);
-			}
-
-			if (area == nAreas)
-			{
-				if (LoadedArea != 0xFF)
-					return;
-
-				area = initarea;
-
-				if (initarea == 0xFF)
-					return;
-			}
-			else
-			{
-				area = (uint)spoolptr->connected_areas[area] & 0x3f;
-			}
+			if (nAreas == 0)
+				return;
 		}
 
-		LoadingArea = 1;
-		LoadedArea = area;
+		iVar6 = (lead_car == 0) ? 15 : 13;
 
-		LoadInAreaTSets(area);
-		LoadInAreaModels(LoadedArea);
+		i = 0;
+		if (nAreas != 0)
+		{
+			pbVar4 = spoolptr->connected_areas;
+
+			do {
+				bVar2 = *pbVar4 >> 6;
+				uVar5 = (uint)bVar2;
+
+				if (LoadedArea != ((uint)*pbVar4 & 0x3f)) 
+				{
+					new_area_location = uVar5;
+
+					// [A] bounds?
+					if (bVar2 == 0 && (32 - iVar6 < cellz))
+					{
+						force_load_boundary = true;
+					}
+					else if (bVar2 == 1 && (32 - iVar6 < cellx))
+					{
+						force_load_boundary = true;
+					}
+					else if (bVar2 == 2 && (cellz < iVar6))
+					{
+						force_load_boundary = true;
+					}
+					else if (bVar2 == 3 && (cellx < iVar6))
+					{
+						force_load_boundary = true;
+					}
+				}
+
+				if (force_load_boundary)
+					break;
+
+				i++;
+				pbVar4++;
+
+			} while (i < nAreas);
+		}
+
+		if (nAreas == i)
+		{
+			if (LoadedArea != -1)
+				return;
+
+			LoadedArea = initarea;
+
+			if (initarea == -1)
+				return;
+		}
+		else
+		{
+			LoadedArea = *pbVar4 & 0x3f;
+		}
 	}
+
+	LoadingArea = 1;
+
+	LoadInAreaTSets(LoadedArea);
+	LoadInAreaModels(LoadedArea);
 }
 
 
@@ -2217,6 +2300,7 @@ void WaitCloseLid(void)
 // [D]
 void FoundError(char *name, unsigned char intr, unsigned char *result)
 {
+#ifndef SIMPLE_SPOOL
 	CdlLOC p;
 
 	if ((*result & 0x10) != 0) 
@@ -2235,6 +2319,7 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 #else
 	UNIMPLEMENTED();
 #endif
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -2339,7 +2424,8 @@ void GotRegion(void)
 // [D]
 void data_cb_textures(void)
 {
-	printf("data_cb_textures remaining: %d\n", sectors_to_read);
+#ifndef SIMPLE_SPOOL
+	//printf("data_cb_textures remaining: %d\n", sectors_to_read);
 
 	if (chunk_complete != 0) 
 	{
@@ -2389,6 +2475,7 @@ void data_cb_textures(void)
 			}
 		}
 	}
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -2426,6 +2513,7 @@ void data_cb_textures(void)
 // [D]
 void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
+#ifndef SIMPLE_SPOOL
 	if (intr == 1)
 	{
 #ifdef PSX
@@ -2449,7 +2537,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 
 			if (sectors_to_read == 0)
 			{
-				ntpages = ntpages + -1;
+				ntpages--;
 
 				if (ntpages == 0)
 				{
@@ -2476,6 +2564,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 	}
 	else 
 		FoundError("ready_cb_textures", intr, result);
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -2512,6 +2601,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 
 void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
+#ifndef SIMPLE_SPOOL
 	if (intr == 1) 
 	{
 #ifdef PSX
@@ -2544,6 +2634,7 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 	}
 	else 
 		FoundError("ready_cb_regions", intr, result);
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -2583,14 +2674,17 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 // [D]
 void data_cb_regions(void)
 {
+#ifndef SIMPLE_SPOOL
 	//printf("data_cb_regions remaining: %d\n", sectors_to_read);
+
+	SPOOLQ* current = &spooldata[spoolpos_writing];
 
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
 
-		if (spooldata[spoolpos_writing].func != NULL)
-			(spooldata[spoolpos_writing].func)();
+		if (current->func != NULL)
+			(current->func)();
 
 		spoolpos_writing++;
 
@@ -2620,10 +2714,11 @@ void data_cb_regions(void)
 			}
 			else 
 			{
-				changemode(spooldata + spoolpos_writing);
+				changemode(&spooldata[spoolpos_writing]);
 			}
 		}
 	}
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -2808,15 +2903,18 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 // [D]
 void data_cb_misc(void)
 {
+#ifndef SIMPLE_SPOOL
 	//printf("data_cb_misc remaining: %d\n", sectors_to_read);
+
+	SPOOLQ *current = &spooldata[spoolpos_writing];
 
 	if (chunk_complete != 0) 
 	{
 		chunk_complete = 0;
 
-		if (spooldata[spoolpos_writing].func != NULL) 
+		if (current->func != NULL)
 		{
-			(*spooldata[spoolpos_writing].func)();
+			(*current->func)();
 		}
 
 		spoolpos_writing++;
@@ -2847,6 +2945,7 @@ void data_cb_misc(void)
 			changemode(spooldata + spoolpos_writing);
 		}
 	}
+#endif // SIMPLE_SPOOL
 }
 
 
@@ -2868,6 +2967,7 @@ void data_cb_misc(void)
 // [D]
 void ready_cb_misc(unsigned char intr, unsigned char *result)
 {
+#ifndef SIMPLE_SPOOL
 	if (intr == 1) 
 	{
 #ifdef PSX
@@ -2891,6 +2991,7 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 	{
 		FoundError("ready_cb_misc", intr, result);
 	}
+#endif // SIMPLE_SPOOL
 }
 
 
