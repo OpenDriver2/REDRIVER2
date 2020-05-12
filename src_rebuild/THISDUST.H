@@ -10,7 +10,7 @@
 #include "LIBGTE.H"
 
 // TODO: VERSION.H
-#define GAME_VERSION_N		"0.4"
+#define GAME_VERSION_N		"0.6"
 #define GAME_TITLE			"REDRIVER2"
 #define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
 
