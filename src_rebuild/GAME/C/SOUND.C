@@ -26,7 +26,6 @@ long banksize[2] = { 88064, 412672 };
 char banks[24] = { 0 };
 
 SAMPLE_DATA samples[7][35];
-int VABID = -1;
 
 unsigned long channel_lookup[16]; // offset 0xDD3D8
 CHANNEL_DATA channels[16]; // offset 0xDE480
@@ -35,6 +34,9 @@ int master_volume = 0;	// why need two?
 
 int gMasterVolume = 0;
 int gMusicVolume = 0;
+
+int Song_ID = -1;
+int VABID = -1;
 
 // decompiled code
 // original method signature: 
@@ -97,7 +99,7 @@ void InitSound(void)
 
 	ResetSound();
 
-	XM_OnceOffInit(1);
+	XM_OnceOffInit(0);	// [A] PAL or NTSC here
 
 	SetMasterVolume(gMasterVolume);
 	VSyncCallback(VsyncProc);
@@ -860,6 +862,9 @@ static __pauseinfo musps;
 // [D]
 void PauseXM(void)
 {
+	if (Song_ID == -1)	// [A] bug fix
+		return;
+
 	bool bVar1;
 	int fade;
 
@@ -1062,6 +1067,9 @@ void PauseSound(void)
 // [D]
 void UnPauseXM(void)
 {
+	if (Song_ID == -1)
+		return;
+
 	bool bVar1;
 	int fade;
 
@@ -1747,6 +1755,9 @@ void FreeXM(void)
 // [D]
 void StartXM(int reverb)
 {
+	if (Song_ID == -1)
+		return;
+
 	int ct;
 
 	ct = 16;
@@ -1830,6 +1841,10 @@ void SetXMVolume(int volume)
 		vol = 10000;
 
 	gMusicVolume = volume;
+
+	if (Song_ID == -1)
+		return;
+
 	XM_SetMasterVol(Song_ID, (char)((int)vol >> 7) + (char)((uint)vol >> 8));
 }
 

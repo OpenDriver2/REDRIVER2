@@ -5,6 +5,11 @@ extern int gMasterVolume;
 extern int gMusicVolume;
 extern CHANNEL_DATA channels[16];
 
+
+extern int Song_ID;
+extern int VABID;
+extern int music_paused;
+
 extern void InitSound(); // 0x000790E4
 
 extern void ClearChannelFields(int channel); // 0x000791D4
