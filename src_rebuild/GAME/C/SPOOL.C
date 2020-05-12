@@ -991,7 +991,7 @@ void UpdateSpool(void)
 // [D]
 #ifdef _DEBUG
 void _RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func, const char* requestby, int line)
-#define RequestSpool(type, data, offset, loadsize, address, func) _RequestSpool(type, data, offset, loadsize, address, func, __FUNCTION__, __LINE__)
+#define RequestSpool(type, data, offset, loadsize, loadaddr, func) _RequestSpool(type, data, offset, loadsize, loadaddr, func, __FUNCTION__, __LINE__)
 #else
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
 #endif _DEBUG
@@ -1306,113 +1306,119 @@ void SpoolSYNC(void)
 void LoadInAreaTSets(int area)
 {
 	bool bVar1;
-	unsigned char bVar2;
+	
 	uint uVar3;
 	int iVar4;
-	uint offset;
+	int offset;
 	int *piVar5;
-	int iVar6;
-	unsigned char *pbVar7;
-	int iVar8;
-	uint uVar9;
-	char *address;
+	int i;
+
+	int slot;
+
+	unsigned char *tpages;
+	int ntpages_to_load;
+	int navailable;
+
+	char *loadaddr;
 	int availableslots[16];
 
-	pbVar7 = AreaTPages + area * 16;
-	bVar2 = AreaData[area].num_tpages;
+	tpages = AreaTPages + area * 16;
+	ntpages_to_load = AreaData[area].num_tpages;
 
-	uVar9 = (uint)bVar2;
-	address = model_spool_buffer + 0xa000;
-	iVar8 = 0;
+	loadaddr = model_spool_buffer + 0xa000;
+	navailable = 0;
 
-	if (slotsused < 0x13)
+	if (slotsused < 19)
 	{
 		piVar5 = availableslots;
-		iVar6 = slotsused;
+		slot = slotsused;
+
 		do {
 			offset = 0;
 
-			if (tpageslots[iVar6] == 0xff) // [A]
+			if (tpageslots[slot] == 0xff) // [A]
 			{
-				*piVar5 = iVar6;
-				piVar5 = piVar5 + 1;
-				iVar8 = iVar8 + 1;
+				*piVar5++ = slot;
+				navailable++;
 			}
 			else 
 			{
-				if ((bVar2 != 0) && (tpageslots[iVar6] != *pbVar7)) // [A]
+				if (ntpages_to_load != 0 && tpageslots[slot] != *tpages) // [A]
 				{
 					uVar3 = 1;
 					do {
 						offset = uVar3;
 
-						if ((int)uVar9 <= (int)offset)
+						if (ntpages_to_load <= offset)
 							break;
 
 						uVar3 = offset + 1;
-					} while (tpageslots[iVar6] != pbVar7[offset]); // [A]
+					} while (tpageslots[slot] != tpages[offset]); // [A]
 				}
 
-				if (offset == uVar9) 
+				if (offset == ntpages_to_load)
 				{
-					*piVar5 = iVar6;
-					piVar5 = piVar5 + 1;
-					iVar8 = iVar8 + 1;
+					*piVar5++ = slot;
+					navailable++;
 				}
 			}
-			iVar6 = iVar6 + 1;
-		} while (iVar6 < 0x13);
+
+			slot++;
+		} while (slot < 19);
 	}
 
-	offset = (uint)AreaData[area].gfx_offset;
-	iVar6 = 0;
+	offset = AreaData[area].gfx_offset;
+	i = 0;
 
-	if (bVar2 != 0) 
+	if (ntpages_to_load != 0) 
 	{
-		uVar3 = (uint)*pbVar7;
+		uVar3 = *tpages;
 
-		if (tpageloaded[uVar3] != '\0')	// weird goto lol
+		if (tpageloaded[uVar3] != 0)	// weird goto lol
+		{
 			goto LAB_0007bc94;
+		}
 
-		bVar1 = 0 < iVar8;
-		iVar8 = iVar8 + -1;
+		bVar1 = 0 < navailable;
+		navailable--;
 
 		if (bVar1) 
 		{
-			iVar4 = availableslots[iVar8];
+			iVar4 = availableslots[navailable];
 
 			while (true) 
 			{
-				*(int *)((int)tsetinfo + (tsetcounter << 3 | 4U)) = iVar4;
+				tsetinfo[tsetcounter*2 + 1] = iVar4;
 
 				while (true)
 				{
-					RequestSpool(1, 0, offset, 0x11, address, SendTPage);
+					RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
+					offset += 17;
 
-					offset = offset + 0x11;
-					iVar6 = iVar6 + 1;
-					iVar4 = tsetcounter * 2;
-					tsetcounter = tsetcounter + 1;
-					tsetinfo[iVar4] = (uint)*pbVar7;
-					pbVar7 = pbVar7 + 1;
+					i++;
+					tsetinfo[tsetcounter * 2] = *tpages;
 
-					if ((int)uVar9 <= iVar6)
-					{
+					tsetcounter++;
+					tpages++;
+
+					if (ntpages_to_load <= i)
 						return;
-					}
 
-					uVar3 = (uint)*pbVar7;
+					uVar3 = *tpages;
 
-					if (tpageloaded[uVar3] == '\0')
+					if (tpageloaded[uVar3] == 0)
 						break;
+
 				LAB_0007bc94:
-					*(int *)((int)tsetinfo + (tsetcounter << 3 | 4U)) = (uint)tpageloaded[uVar3] - 1;
+					tsetinfo[tsetcounter * 2 + 1] = tpageloaded[uVar3] - 1;
 				}
 
-				bVar1 = iVar8 < 1;
-				iVar8 = iVar8 + -1;
-				if (bVar1) break;
-				iVar4 = availableslots[iVar8];
+				if (navailable < 1)
+					break;
+
+				navailable--;
+
+				iVar4 = availableslots[navailable];
 			}
 		}
 	}
@@ -1757,13 +1763,14 @@ void CheckLoadAreaData(int cellx, int cellz)
 	{
 		spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
 
-		if ((old_region == -1) && (spoolptr->super_region != -1))
+		if (old_region == -1 && spoolptr->super_region != -1)
 		{
-			area = (uint)spoolptr->super_region;
+			area = spoolptr->super_region;
 		}
 		else
 		{
 			nAreas = spoolptr->num_connected_areas;
+
 			if (old_region == -1)
 			{
 				LoadedArea = old_region;
@@ -1786,6 +1793,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 			if (nAreas != 0)
 			{
 				pbVar4 = spoolptr->connected_areas;
+
 				do {
 					bVar2 = *pbVar4 >> 6;
 					uVar5 = (uint)bVar2;
@@ -1816,7 +1824,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 					if (force_load_boundary)
 						break;
 
-					area = area + 1;
+					area++;
 					pbVar4 = spoolptr->connected_areas + area;
 
 				} while (area < nAreas);
