@@ -1319,7 +1319,7 @@ void LoadInAreaTSets(int area)
 	tpages = AreaTPages + area * 16;
 	ntpages_to_load = AreaData[area].num_tpages;
 
-	loadaddr = model_spool_buffer + 0xa000;
+	loadaddr = model_spool_buffer + 0xA000;
 	navailable = 0;
 
 	if (slotsused < 19)
@@ -1757,7 +1757,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 	{
 		spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
 
-		if (old_region == -1 && spoolptr->super_region != -1)
+		if (old_region == -1 && spoolptr->super_region != 0xFF)
 		{
 			area = spoolptr->super_region;
 		}
@@ -1771,7 +1771,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 			}
 			else
 			{
-				if (spoolptr->super_region == -1)
+				if (spoolptr->super_region == 0xFF)
 					return;
 
 				if (nAreas == 0)
@@ -1826,12 +1826,12 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 			if (area == nAreas)
 			{
-				if (LoadedArea != -1)
+				if (LoadedArea != 0xFF)
 					return;
 
 				area = initarea;
 
-				if (initarea == -1)
+				if (initarea == 0xFF)
 					return;
 			}
 			else
@@ -2339,7 +2339,7 @@ void GotRegion(void)
 // [D]
 void data_cb_textures(void)
 {
-	//printf("data_cb_textures remaining: %d\n", sectors_to_read);
+	printf("data_cb_textures remaining: %d\n", sectors_to_read);
 
 	if (chunk_complete != 0) 
 	{
@@ -2349,16 +2349,14 @@ void data_cb_textures(void)
 		SendTPage();
 
 		if (nTPchunks != 0)
-		{
-			loadbank_write = loadbank_write + 1;
-		}
+			loadbank_write++;
 
-		nTPchunks_writing = nTPchunks_writing + 1;
+		nTPchunks_writing++;
 
 		if (nTPchunks_writing == 5)
 		{
 			nTPchunks_writing = 0;
-			spoolpos_writing = spoolpos_writing + 1;
+			spoolpos_writing++;
 
 			if (ntpages == 0)
 			{
