@@ -172,67 +172,75 @@ void SetupScreenFade(int start, int end, int speed)
 // [D]
 void FadeGameScreen(int flag, int speed)
 {
-	static POLY_F4 poly; // offset 0x0
-	static POLY_FT4 p; // offset 0x20
-
 	bool bVar1;
 
-	if (flag == 0) {
+	if (flag == 0)
 		bVar1 = screen_fade_value < screen_fade_end;
-	}
-	else {
+	else
 		bVar1 = screen_fade_end < screen_fade_value;
-	}
 
-	if (bVar1) {
-		if (screen_fade_value < 0) {
-			poly.r0 = 0;
+	if (bVar1)
+	{
+		POLY_F4* poly = (POLY_F4 *)current->primptr;
+
+		if (screen_fade_value < 0) 
+		{
+			poly->r0 = 0;
 		}
-		else {
-			poly.r0 = screen_fade_value;
-			if (0xff < screen_fade_value) {
-				poly.r0 = -1;
+		else 
+		{
+			poly->r0 = screen_fade_value;
+
+			if (0xff < screen_fade_value)
+			{
+				poly->r0 = -1;
 			}
 		}
-		setPolyFT4(&p);
-		setSemiTrans(&p, 1);
-		p.x0 = -1;
-		p.y0 = -1;
-		p.y1 = -1;
-		p.x2 = -1;
-		p.x1 = 0;
-		p.y2 = 0;
-		p.x3 = 0;
-		p.y3 = 0;
-		p.tpage = 0x40;
 
-		setPolyF4(&poly);
-		setSemiTrans(&poly, 1);
-		poly.y2 = 256;
-		poly.y3 = 256;
-		poly.x0 = 0;
-		poly.y0 = 0;
-		poly.x1 = 320;
-		poly.y1 = 0;
-		poly.x2 = 0;
-		poly.x3 = 320;
+		poly->g0 = poly->b0 = poly->r0;
 
-		if (flag == 0) {
+		setPolyF4(poly);
+		setSemiTrans(poly, 1);
+		poly->y2 = 256;
+		poly->y3 = 256;
+		poly->x0 = 0;
+		poly->y0 = 0;
+		poly->x1 = 320;
+		poly->y1 = 0;
+		poly->x2 = 0;
+		poly->x3 = 320;
+
+		if (flag == 0)
 			screen_fade_value = screen_fade_value + speed;
-		}
-		else {
+		else
 			screen_fade_value = screen_fade_value - speed;
-		}
 
-		poly.g0 = poly.r0;
-		poly.b0 = poly.r0;
-		DrawPrim(&p);
-		DrawPrim(&poly);
+		addPrim(current->ot, poly);
+
+		current->primptr += sizeof(POLY_F4);
+
+		POLY_FT4* null = (POLY_FT4*)current->primptr;
+
+		setPolyFT4(null);
+		setSemiTrans(null, 1);
+		null->x0 = -1;
+		null->y0 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->x1 = 0;
+		null->y2 = 0;
+		null->x3 = 0;
+		null->y3 = 0;
+		null->tpage = 0x40;
+
+		addPrim(current->ot, null);
+		current->primptr += sizeof(POLY_FT4);
+
 	}
-	else {
+	else
+	{
 		FadingScreen = 0;
 	}
-	return;
 }
 
 
@@ -463,25 +471,25 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 // [D]
 void CloseShutters(int speed, int width, int height)
 {
-	bool bVar1;
-	int iVar2;
+	bool done;
+	int h;
 	POLY_F4 poly[2];
 
-	iVar2 = 0;
-	bVar1 = false;
+	h = 0;
+	done = false;
 
 	setPolyF4(&poly[0]);
 	setPolyF4(&poly[1]);
 
-	poly[0].r0 = '\0';
-	poly[0].g0 = '\0';
-	poly[0].b0 = '\0';
-	poly[1].r0 = '\0';
-	poly[1].g0 = '\0';
-	poly[1].b0 = '\0';
+	poly[0].r0 = 0;
+	poly[0].g0 = 0;
+	poly[0].b0 = 0;
+	poly[1].r0 = 0;
+	poly[1].g0 = 0;
+	poly[1].b0 = 0;
 
 	do {
-		poly[0].y2 = (short)iVar2;
+		poly[0].y2 = (short)h;
 		poly[1].y0 = (short)height - poly[0].y2;
 		poly[1].y2 = poly[1].y0 + poly[0].y2;
 		poly[0].x0 = 0;
@@ -501,15 +509,20 @@ void CloseShutters(int speed, int width, int height)
 		DrawPrim(poly);
 		DrawPrim(poly + 1);
 
-		iVar2 = iVar2 + speed;
-		if (0xff < iVar2) {
-			bVar1 = true;
-		}
-	} while (!bVar1);
+#ifndef PSX
+		DrawSync(-1);
+#endif // !PSX
+
+		if (0xff < h) 
+			done = true;
+
+		h += speed;
+
+	} while (!done);
 
 	// [A] causes crash
-	//ClearOTagR((u_long*)current->ot, 0x1080);
-	//ClearOTagR((u_long*)last->ot, 0x1080);
+	ClearOTagR((u_long*)current->ot, 0x1080);
+	ClearOTagR((u_long*)last->ot, 0x1080);
 
 	SetDispMask(0);
 }

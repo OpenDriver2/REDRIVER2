@@ -1666,8 +1666,13 @@ void GameLoop(void)
 	static POLY_FT3 buffer[2];
 	static POLY_FT3 *null;
 
-	if (NewLevel != 0) {
-		CloseShutters(2, 0x140, 0x200);
+	if (NewLevel != 0)
+	{
+#ifdef PSX
+		CloseShutters(2, 320, 512);
+#else
+		CloseShutters(16, 320, 512);
+#endif // PSX
 	}
 
 	DisableDisplay();
