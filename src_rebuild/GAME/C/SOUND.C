@@ -855,26 +855,27 @@ void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volu
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+static __pauseinfo musps;
+
+// [D]
 void PauseXM(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	bool bVar1;
-	int iVar2;
+	int fade;
 
-	if (music_paused == 0) {
+	if (music_paused == 0) 
+	{
 		musps.max = 0;
-		iVar2 = 0x60;
+		fade = 96;
+
 		do {
-			bVar1 = iVar2 < 0;
-			iVar2 = iVar2 + 0x60;
+			bVar1 = fade < 0;
+			fade+= 96;
 		} while (bVar1);
+
 		XM_Pause(Song_ID);
 		music_paused = 1;
 	}
-	return;
-	*/
 }
 
 
@@ -1058,25 +1059,24 @@ void PauseSound(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void UnPauseXM(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	bool bVar1;
-	int iVar2;
+	int fade;
 
-	if (music_paused != 0) {
-		iVar2 = 0x60;
+	if (music_paused != 0)
+	{
+		fade = 96;
+
 		do {
-			bVar1 = iVar2 < (int)(uint)musps.max;
-			iVar2 = iVar2 + 0x60;
+			bVar1 = fade < musps.max;
+			fade = fade + 96;
 		} while (bVar1);
+
 		XM_Restart(Song_ID);
 		music_paused = 0;
 	}
-	return;
-	*/
 }
 
 
@@ -1542,28 +1542,27 @@ int LoadSoundBank(char *address, int length, int bank)
 	/* end block 3 */
 	// End Line: 4725
 
+// [D]
 void UpdateXMSamples(int num_samps)
 {
-	UNIMPLEMENTED();
-	/*
 	ulong *puVar1;
 	int slot;
 	int iVar2;
 	SAMPLE_DATA *pSVar3;
 
-	if (0 < num_samps) {
-		pSVar3 = samples;
+	if (0 < num_samps) 
+	{
+		pSVar3 = samples[0];
 		slot = 0;
 		do {
 			puVar1 = &pSVar3->address;
 			pSVar3 = pSVar3 + 1;
 			iVar2 = slot + 1;
+
 			XM_SetVAGAddress(VABID, slot, *puVar1);
 			slot = iVar2;
 		} while (iVar2 < num_samps);
 	}
-	return;
-	*/
 }
 
 
@@ -1711,20 +1710,18 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void FreeXM(void)
 {
-	UNIMPLEMENTED();
+	if (Song_ID == -1)
+		return;
 
-	/*
-	if (Song_ID != -1) {
-		XM_Exit();
-		XM_FreeAllSongIDs();
-		XM_CloseVAB2(VABID);
-		Song_ID = -1;
-		VABID = -1;
-	}
-	return;
-	*/
+	XM_Exit();
+	XM_FreeAllSongIDs();
+	XM_CloseVAB2(VABID);
+
+	Song_ID = -1;
+	VABID = -1;
 }
 
 
@@ -1747,27 +1744,23 @@ void FreeXM(void)
 	/* end block 2 */
 	// End Line: 4461
 
+// [D]
 void StartXM(int reverb)
 {
-	UNIMPLEMENTED();
+	int ct;
 
-	/*
-	uint uVar1;
-
-	uVar1 = 0x10;
+	ct = 16;
 	XM_PlayStart(Song_ID, -1);
 	SpuSetReverb(1);
+
 	do {
-		if (reverb == 0) {
-			SpuSetReverbVoice(0, 1 << (uVar1 & 0x1f));
-		}
-		else {
-			SpuSetReverbVoice(1, 1 << (uVar1 & 0x1f));
-		}
-		uVar1 = uVar1 + 1;
-	} while ((int)uVar1 < 0x18);
-	return;
-	*/
+		if (reverb == 0)
+			SpuSetReverbVoice(0, SPU_VOICECH(ct));
+		else
+			SpuSetReverbVoice(1, SPU_VOICECH(ct));
+
+		ct++;
+	} while (ct < 24);
 }
 
 
@@ -1793,12 +1786,10 @@ void StartXM(int reverb)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void StopXM(void)
 {
-	UNIMPLEMENTED();
-
-	//XM_PlayStop(Song_ID);
-	return;
+	XM_PlayStop(Song_ID);
 }
 
 
@@ -1826,24 +1817,20 @@ void StopXM(void)
 	/* end block 3 */
 	// End Line: 4603
 
+// [D]
 void SetXMVolume(int volume)
 {
-	UNIMPLEMENTED();
+	int vol;
 
-	/*
-	undefined *puVar1;
+	vol = 10000 + volume;
+	if (vol < 0)
+		vol = 0;
 
-	puVar1 = &DAT_00002710 + volume;
-	if ((int)puVar1 < 0) {
-		puVar1 = (undefined *)0x0;
-	}
-	if (10000 < (int)puVar1) {
-		puVar1 = &DAT_00002710;
-	}
+	if (vol > 10000)
+		vol = 10000;
+
 	gMusicVolume = volume;
-	XM_SetMasterVol(Song_ID, (char)((int)puVar1 >> 7) + (char)((uint)puVar1 >> 8));
-	return;
-	*/
+	XM_SetMasterVol(Song_ID, (char)((int)vol >> 7) + (char)((uint)vol >> 8));
 }
 
 
@@ -2492,9 +2479,8 @@ void VsyncProc(void)
 {
 	vblcounter = vblcounter + 1;
 
-	if (Song_ID != -1) {
+	if (Song_ID != -1)
 		XM_Update();
-	}
 
 	SoundHandler();
 }

@@ -724,6 +724,12 @@ void SpuFree(unsigned long addr)
 	/*free((void*)(uintptr_t)addr)*/;
 }
 
+unsigned long SpuFlush(unsigned long ev)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
 void SpuSetCommonMasterVolume(short mvol_left, short mvol_right)// (F)
 {
 	//MasterVolume.VolumeLeft.Raw = mvol_left;
