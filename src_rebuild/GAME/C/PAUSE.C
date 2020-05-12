@@ -386,93 +386,114 @@ int playerwithcontrol[3] = { 0 };
 // [D]
 int ShowPauseMenu(PAUSEMODE mode)
 {
-	int iVar1;
-	uint uVar2;
-	uint uVar3;
+	PAUSEMODE passed_mode;
 	RECT16 rect;
 
-	uVar2 = (uint)mode;
 	ReadControllers();
-	if (mode == PAUSEMODE_PAUSEP1) {
+
+	if (mode == PAUSEMODE_PAUSEP1)
+	{
+		playerwithcontrol[0] = 1;
 		playerwithcontrol[1] = 0;
 		playerwithcontrol[2] = 0;
-		playerwithcontrol[0] = uVar2;
 	}
-	else {
-		if (mode == PAUSEMODE_PAUSEP2) {
-			playerwithcontrol[0] = 0;
-			playerwithcontrol[1] = 1;
-			playerwithcontrol[2] = 0;
-		}
-		else {
-			playerwithcontrol[0] = 0;
-			playerwithcontrol[1] = 0;
-			playerwithcontrol[2] = 1;
-		}
+	else if (mode == PAUSEMODE_PAUSEP2) 
+	{
+		playerwithcontrol[0] = 0;
+		playerwithcontrol[1] = 1;
+		playerwithcontrol[2] = 0;
 	}
+	else 
+	{
+		playerwithcontrol[0] = 0;
+		playerwithcontrol[1] = 0;
+		playerwithcontrol[2] = 1;
+	}
+
 	SetDispMask(1);
+
 	SfxVolume(0);
 	MusicVolume(0);
+
 	StopPadVibration(0);
 	StopPadVibration(1);
+
 	InitaliseMenu(mode);
 	gDrawPauseMenus = 1;
-	if (((NoPlayerControl == 0) && (iVar1 = OnScoreTable(NULL), iVar1 != -1)) &&
-		(allownameentry != 0)) {
+
+	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry != 0) 
+	{
 		gScoreEntered = 0;
 		sprintf(EnterScoreText, "Please enter your score");
 		sprintf(EnterNameText, "Please enter your name:");
 	}
-	else {
+	else
+	{
 		gScoreEntered = 1;
 		sprintf(EnterScoreText, "View score table");
 		sprintf(EnterNameText, "High scores");
 	}
-	uVar3 = uVar2;
-	if (mode == PAUSEMODE_PADERROR) {
-		uVar3 = 0;
-	}
+
+	passed_mode = mode;
+
+	if (mode == PAUSEMODE_PADERROR)
+		mode = PAUSEMODE_PAUSE;
+
 	PauseReturnValue = 0;
+
 	do {
 		UpdatePadData();
-		if (uVar2 == 5) {
-			if (pad_connected == 1) {
-				InitaliseMenu((PAUSEMODE)uVar3);
-				uVar2 = uVar3;
+
+		if (passed_mode == PAUSEMODE_PADERROR)
+		{
+			if (pad_connected == 1) 
+			{
+				InitaliseMenu(mode);
+				passed_mode = mode;
 			}
-			else {
+			else 
+			{
 				InitaliseMenu(PAUSEMODE_PADERROR);
 			}
 		}
-		else {
-			if (pad_connected != 1) {
-				uVar2 = 5;
+		else 
+		{
+			if (pad_connected != 1) 
+			{
+				passed_mode = PAUSEMODE_PADERROR;
 				InitaliseMenu(PAUSEMODE_PADERROR);
 			}
 		}
-		if (pad_connected < 1) {
+
+		if (pad_connected < 1) 
 			playerwithcontrol[2] = 1;
-		}
+
 		ControlMenu();
 		DrawGame();
+
 	} while (PauseReturnValue == 0);
+
 	gDrawPauseMenus = 0;
-	if (1 < NumPlayers) {
+
+	if (1 < NumPlayers)
+	{
 		rect.x = 0;
-		rect.w = 0x140;
+		rect.w = 320;
 		rect.h = 1;
-		rect.y = (current->draw).clip.y + (current->draw).clip.h;
-		ClearImage2(&rect, '\0', '\0', '\0');
+		rect.y = current->draw.clip.y + current->draw.clip.h;
+		ClearImage2(&rect, 0, 0, 0);
 		DrawGame();
+
 		rect.x = 0;
-		rect.w = 0x140;
+		rect.w = 320;
 		rect.h = 1;
-		rect.y = (current->draw).clip.y + (current->draw).clip.h;
-		ClearImage2(&rect, '\0', '\0', '\0');
+		rect.y = current->draw.clip.y + current->draw.clip.h;
+		ClearImage2(&rect, 0, 0, 0);
 		DrawGame();
 	}
-	if (true) {
-		switch (PauseReturnValue) {
+
+	switch (PauseReturnValue)
+	{
 		case 1:
 			pauseflag = 0;
 			break;
@@ -490,8 +511,9 @@ int ShowPauseMenu(PAUSEMODE mode)
 			break;
 		case 7:
 			EndGame(GAMEMODE_NEXTMISSION);
-		}
+			break;
 	}
+
 	return PauseReturnValue;
 }
 
@@ -523,13 +545,12 @@ int ShowPauseMenu(PAUSEMODE mode)
 // [D]
 void DrawPauseMenus(void)
 {
-	if ((gDrawPauseMenus != 0) && (gShowMap == 0)) {
-		if (gEnteringScore == 0) {
+	if (gDrawPauseMenus != 0 && gShowMap == 0) 
+	{
+		if (gEnteringScore == 0)
 			DrawVisibleMenus();
-		}
-		else {
+		else 
 			DrawHighScoreMenu(gScorePosition);
-		}
 	}
 }
 
@@ -637,35 +658,27 @@ void EnterName(void)
 // [D]
 int MaxMenuStringLength(MENU_HEADER *pMenu)
 {
-	char bVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	MENU_ITEM *pMVar5;
+	int max;
+	int temp;
+	MENU_ITEM *pItems;
 
-	pMVar5 = pMenu->MenuItems;
-	iVar2 = StringWidth(pMenu->Title);
-	bVar1 = pMVar5->Type;
+	pItems = pMenu->MenuItems;
+	max = StringWidth(pMenu->Title);
 
-	while ((bVar1 & 0x80) == 0)
+	while ((pItems->Type & 0x80) == 0)
 	{
-		iVar3 = StringWidth(pMVar5->Text);
+		temp = StringWidth(pItems->Text);
 
-		if ((pMVar5->Type & 0x18) != 0) 
-		{
-			iVar4 = StringWidth(" 100");
-			iVar3 = iVar3 + iVar4;
-		}
+		if ((pItems->Type & 0x18) != 0) 
+			temp = temp + StringWidth(" 100");
 
-		if (iVar2 < iVar3)
-		{
-			iVar2 = iVar3;
-		}
+		if (max < temp)
+			max = temp;
 
-		bVar1 = pMVar5[1].Type;
-		pMVar5 = pMVar5 + 1;
+		pItems++;
 	}
-	return iVar2;
+
+	return max;
 }
 
 
@@ -694,7 +707,7 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	/* end block 3 */
 	// End Line: 2442
 
-// [D]
+// [D] [A] please get rid of inlined code
 void InitaliseMenu(PAUSEMODE mode)
 {
 	unsigned char uVar1;
@@ -711,85 +724,96 @@ void InitaliseMenu(PAUSEMODE mode)
 	ppMVar8 = ActiveItem;
 	ppMVar6 = VisibleMenus;
 	iVar10 = 2;
+
 	do {
-		*ppMVar8 = NULL;
-		ppMVar8 = ppMVar8 + 1;
-		*ppMVar6 = NULL;
-		iVar10 = iVar10 + -1;
-		ppMVar6 = ppMVar6 + 1;
+		*ppMVar8++ = NULL;
+		*ppMVar6++ = NULL;
+
+		iVar10--;
 	} while (-1 < iVar10);
+
 	allownameentry = 0;
-	switch (mode) {
+
+	switch (mode) 
+	{
 	case PAUSEMODE_PAUSE:
 	case PAUSEMODE_PAUSEP1:
 	case PAUSEMODE_PAUSEP2:
-		if ((NumPlayers == 1) && (gMultiplayerLevels == 0)) {
-			if (gInGameCutsceneActive == 0) {
+		if (NumPlayers == 1 && gMultiplayerLevels == 0) 
+		{
+			if (gInGameCutsceneActive == 0)
+			{
 				ActiveMenu = &PauseMenuHeader;
 			}
-			else {
+			else 
+			{
 				ActiveMenu = &CutscenePauseMenuHeader;
 			}
 		}
-		else {
+		else 
+		{
 			ActiveMenu = &MultiplayerPauseHeader;
 		}
 		break;
 	case PAUSEMODE_GAMEOVER:
-		switch (GameType) {
-		case GAME_PURSUIT:
-		switchD_0006c3b4_caseD_3:
-			ActiveMenu = &ChaseGameFinishedHeader;
-			gMissionCompletionState = mode;
-			goto LAB_0006c5d0;
-		case GAME_GETAWAY:
-		case GAME_CHECKPOINT:
-			if (NumPlayers == 1) {
-				ActiveMenu = &DrivingGameFinishedHeader;
-				allownameentry = 0;
-				gMissionCompletionState = mode;
-				goto LAB_0006c5d0;
-			}
-			break;
-		case GAME_GATERACE:
-		case GAME_TRAILBLAZER:
-		case GAME_SURVIVAL:
-			if (NumPlayers == 1) {
-				ActiveMenu = &DrivingGameFinishedHeader;
-				gMissionCompletionState = mode;
-				allownameentry = (uint)NumPlayers;
-				goto LAB_0006c5d0;
-			}
-			break;
-		default:
-			if (NumPlayers == 1) goto switchD_0006c460_caseD_1;
-		}
-	LAB_0006c4c0:
-		ActiveMenu = &MultiplayerFinishedHeader;
-		gMissionCompletionState = mode;
-		break;
-	case PAUSEMODE_COMPLETE:
-		if (true) {
-			switch (GameType) {
-			case GAME_MISSION:
-				ActiveMenu = &MissionCompleteHeader;
+		switch (GameType) 
+		{
+			case GAME_PURSUIT:
+			switchD_0006c3b4_caseD_3:
+				ActiveMenu = &ChaseGameFinishedHeader;
 				gMissionCompletionState = mode;
 				goto LAB_0006c5d0;
 			case GAME_GETAWAY:
-			case GAME_GATERACE:
 			case GAME_CHECKPOINT:
+				if (NumPlayers == 1) {
+					ActiveMenu = &DrivingGameFinishedHeader;
+					allownameentry = 0;
+					gMissionCompletionState = mode;
+					goto LAB_0006c5d0;
+				}
+				break;
+			case GAME_GATERACE:
 			case GAME_TRAILBLAZER:
 			case GAME_SURVIVAL:
-			case GAME_COPSANDROBBERS:
 				if (NumPlayers == 1) {
 					ActiveMenu = &DrivingGameFinishedHeader;
 					gMissionCompletionState = mode;
 					allownameentry = (uint)NumPlayers;
 					goto LAB_0006c5d0;
 				}
-				goto LAB_0006c4c0;
-			case GAME_PURSUIT:
-				goto switchD_0006c3b4_caseD_3;
+				break;
+			default:
+				if (NumPlayers == 1)
+					goto switchD_0006c460_caseD_1;
+		}
+	LAB_0006c4c0:
+		ActiveMenu = &MultiplayerFinishedHeader;
+		gMissionCompletionState = mode;
+		break;
+	case PAUSEMODE_COMPLETE:
+		if (true)
+		{
+			switch (GameType) 
+			{
+				case GAME_MISSION:
+					ActiveMenu = &MissionCompleteHeader;
+					gMissionCompletionState = mode;
+					goto LAB_0006c5d0;
+				case GAME_GETAWAY:
+				case GAME_GATERACE:
+				case GAME_CHECKPOINT:
+				case GAME_TRAILBLAZER:
+				case GAME_SURVIVAL:
+				case GAME_COPSANDROBBERS:
+					if (NumPlayers == 1) {
+						ActiveMenu = &DrivingGameFinishedHeader;
+						gMissionCompletionState = mode;
+						allownameentry = (uint)NumPlayers;
+						goto LAB_0006c5d0;
+					}
+					goto LAB_0006c4c0;
+				case GAME_PURSUIT:
+					goto switchD_0006c3b4_caseD_3;
 			}
 		}
 	switchD_0006c460_caseD_1:

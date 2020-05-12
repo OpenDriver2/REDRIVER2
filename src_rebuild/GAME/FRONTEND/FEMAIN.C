@@ -930,7 +930,7 @@ void DrawScreen(PSXSCREEN *pScr)
 			FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
 #endif
 		}
-		SetTextColour(-0x80, '\0', '\0');
+		SetTextColour(0x80, 0, 0);
 
 		DisplayOnScreenText();
 		pDVar2 = current;
