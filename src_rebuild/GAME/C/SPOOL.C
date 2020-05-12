@@ -1142,69 +1142,62 @@ int tsetinfo[32];
 void SendTPage(void)
 {
 	unsigned char bVar1;
-	int iVar2;
-	uint uVar3;
-	uint *puVar4;
+	ulong *clutptr;
 	int iVar5;
-	int iVar6;
+	int npalettes;
 	int iVar7;
 	RECT16 cluts;
 
 	iVar7 = tsetinfo[tsetpos * 2];
-	iVar5 = *(int *)((int)tsetinfo + (tsetpos << 3 | 4U));
+	iVar5 = tsetinfo[tsetpos * 2 + 1];
 
 	if (nTPchunks == 0) 
 	{
-		if (iVar5 != (uint)tpageloaded[iVar7] - 1)
+		if (iVar5 != tpageloaded[iVar7] - 1)
 		{
-			iVar6 = *(int *)(model_spool_buffer + 0xe000);
+			npalettes = *(int *)(model_spool_buffer + 0xE000);
 
 			tpage.w = 64;
 			tpage.h = 64;
 			cluts.w = 64;
 
-			tpage.y = slot_tpagepos[iVar5].vy;
-			cluts.y = slot_clutpos[iVar5].vy;
 			tpage.x = slot_tpagepos[iVar5].vx;
+			tpage.y = slot_tpagepos[iVar5].vy;
+
+			cluts.y = slot_clutpos[iVar5].vy;
 			cluts.x = slot_clutpos[iVar5].vx;
 
-			iVar5 = iVar6;
-			if (iVar6 < 0) 
-			{
-				iVar5 = iVar6 + 3;
-			}
+			cluts.h = npalettes / 4 + 1;
 
-			cluts.h = (short)(iVar5 >> 2) + 1;
-			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xe004));
-			puVar4 = (uint *)(texture_cluts[iVar7]);
+			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xE000 + 4));
+
+			clutptr = (ulong *)(texture_cluts[iVar7]);
 			iVar5 = 0;
 
-			if (0 < iVar6)
+			if (0 < npalettes)
 			{
-				iVar2 = (int)((uint)cluts.x << 0x10) >> 0x10;
 				do {
-					uVar3 = (int)((uint)cluts.y << 0x10) >> 10;
+					//int test1 = (uVar3 | iVar2 + 0x10 >> 4 & 0x3fU) << 0x10 | uVar3 | (int)((uint)cluts.x << 0x10) >> 0x14 & 0x3fU;
+					//int test2 = (uVar3 | iVar2 + 0x30 >> 4 & 0x3fU) << 0x10 | uVar3 | iVar2 + 0x20 >> 4 & 0x3fU;
 
-					*puVar4 = (uVar3 | iVar2 + 0x10 >> 4 & 0x3fU) << 0x10 |
-						uVar3 | (int)((uint)cluts.x << 0x10) >> 0x14 & 0x3fU;
+					clutptr[0] = getClut(cluts.x + 16, cluts.y) << 0x10 | getClut(cluts.x, cluts.y);
+					clutptr[1] = getClut(cluts.x + 48, cluts.y) << 0x10 | getClut(cluts.x + 32, cluts.y);
 
-					puVar4[1] = (uVar3 | iVar2 + 0x30 >> 4 & 0x3fU) << 0x10 |
-						uVar3 | iVar2 + 0x20 >> 4 & 0x3fU;
-
-					puVar4 = puVar4 + 2;
-					cluts.y = cluts.y + 1;
-					iVar5 = iVar5 + 4;
-				} while (iVar5 < iVar6);
+					clutptr+=2;
+					cluts.y++;
+					iVar5 += 4;;
+				} while (iVar5 < npalettes);
 			}
 
-			texture_pages[iVar7] =
-				(short)(tpage.y & 0x100U) >> 4 | (ushort)(((uint)(ushort)tpage.x & 0x3ff) >> 6) |
-				(ushort)(((uint)(ushort)tpage.y & 0x200) << 2);
+			texture_pages[iVar7] = getTPage(0, 0, tpage.x, tpage.y);
+
+			// OLD VALUE: (short)(tpage.y & 0x100U) >> 4 | (ushort)(((uint)(ushort)tpage.x & 0x3ff) >> 6) | (ushort)(((uint)(ushort)tpage.y & 0x200) << 2);
+			// please check me if above is correct
 		}
 	}
 	else 
 	{
-		if (iVar5 != (uint)tpageloaded[iVar7] - 1) 
+		if (iVar5 != tpageloaded[iVar7] - 1) 
 		{
 			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xa000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
 			tpage.y = tpage.y + tpage.h;
@@ -1213,16 +1206,17 @@ void SendTPage(void)
 		if (nTPchunks == 4)
 		{
 			bVar1 = tpageslots[iVar5];
-			tpageslots[iVar5] = (unsigned char)iVar7;
+			tpageslots[iVar5] = iVar7;
 
-			if(bVar1 != 0xFF)
-				tpageloaded[bVar1] = '\0';
+			if(bVar1 != 0xFF)	// [A] bug fix
+				tpageloaded[bVar1] = 0;
 
-			tpageloaded[iVar7] = (char)iVar5 + 1;
+			tpageloaded[iVar7] = iVar5 + 1;
 
 			tsetpos++;
 
-			if (tsetpos == tsetcounter) {
+			if (tsetpos == tsetcounter)
+			{
 				tsetcounter = 0;
 				tsetpos = 0;
 			}
