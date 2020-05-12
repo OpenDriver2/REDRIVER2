@@ -805,7 +805,7 @@ void GameInit(void)
 	}
 	else if (GameLevel == 0)
 	{
-		gMusicType = 6;
+		gMusicType = 2;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
 			gMusicType = 6;
