@@ -53,7 +53,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	int iVar1;
 	MODEL **ppMVar2;
 	char* ptr;
-	MODEL *pMVar3;
+	MODEL *model;
 	MODEL *parentmodel;
 	int iVar4;
 	int modelAmts;
@@ -75,7 +75,11 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			int size = *(int*)ptr;
 			ptr += sizeof(int);
 
-			modelpointers[i] = (MODEL*)ptr;
+			if (size) // [A] bug fix. Use dummyModel for empty slot
+				modelpointers[i] = (MODEL*)ptr;
+			else
+				modelpointers[i] = &dummyModel;
+
 			ptr += size;
 		}
 	}
@@ -87,49 +91,47 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 
 		// process parent instances
 		do {
-			pMVar3 = *ppMVar2;
+			model = *ppMVar2;
 
-			if ((pMVar3[-1].collision_block != 0) && ((int)pMVar3->instance_number != -1)) {
+			if (model->instance_number != -1) 
+			{
+				parentmodel = modelpointers[model->instance_number];
 
-				parentmodel = modelpointers[(int)pMVar3->instance_number];
-
-				if (parentmodel->collision_block != 0) {
-					pMVar3->collision_block =
-						(int)&parentmodel->shape_flags + parentmodel->collision_block;
-				}
+				if (parentmodel->collision_block != 0)
+					model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
 
 				// convert to real offsets
-				pMVar3->vertices = (int)&parentmodel->shape_flags + parentmodel->vertices;
-				pMVar3->normals = (int)&parentmodel->shape_flags + parentmodel->normals;
-				pMVar3->point_normals = (int)&parentmodel->shape_flags + parentmodel->point_normals;
+				model->vertices = (int)(char*)parentmodel + parentmodel->vertices;
+				model->normals = (int)(char*)parentmodel + parentmodel->normals;
+				model->point_normals = (int)(char*)parentmodel + parentmodel->point_normals;
 			}
 
-			iVar4 = iVar4 + -1;
-			ppMVar2 = ppMVar2 + 1;
+			iVar4--;
+			ppMVar2++;
 		} while (iVar4 != 0);
 	}
 
 	// process models without parents
-	if (0 < modelAmts) {
+	if (0 < modelAmts) 
+	{
 		ppMVar2 = modelpointers;
 		do {
-			pMVar3 = *ppMVar2;
-			if (pMVar3[-1].collision_block != 0) {
-				if (pMVar3->instance_number == -1) 
-				{
-					if (pMVar3->collision_block != 0) {
-						pMVar3->collision_block =
-							(int)&pMVar3->shape_flags + pMVar3->collision_block;
-					}
-					pMVar3->vertices = (int)&pMVar3->shape_flags + pMVar3->vertices;
-					pMVar3->normals = (int)&pMVar3->shape_flags + pMVar3->normals;
-					pMVar3->point_normals = (int)&pMVar3->shape_flags + pMVar3->point_normals;
-				}
+			model = *ppMVar2;
 
-				pMVar3->poly_block = (int)&pMVar3->shape_flags + pMVar3->poly_block;
+			if (model->instance_number == -1) 
+			{
+				if (model->collision_block != 0)
+					model->collision_block += (int)(char*)model;
+
+				model->vertices += (int)(char*)model;
+				model->normals += (int)(char*)model;
+				model->point_normals += (int)(char*)model;
 			}
-			modelAmts = modelAmts + -1;
-			ppMVar2 = ppMVar2 + 1;
+
+			model->poly_block += (int)(char*)model;
+
+			modelAmts--;
+			ppMVar2++;
 		} while (modelAmts != 0);
 	}
 }
