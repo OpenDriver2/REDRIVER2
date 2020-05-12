@@ -28,7 +28,12 @@ extern unsigned int g_swapTime;
 int VSync(int mode)
 {
 	if (mode < 0)
+	{
+		if (vsync_callback != NULL)
+			vsync_callback();
+
 		return SDL_GetTicks() - g_swapTime;
+	}
 
 	if (mode == 0)
 	{
