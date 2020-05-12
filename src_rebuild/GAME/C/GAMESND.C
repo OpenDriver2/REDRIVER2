@@ -19,6 +19,7 @@
 #include "WHEELFORCES.H"
 #include "ENVSOUND.H"
 #include "CONVERT.H"
+#include "XMPLAY.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -2777,49 +2778,65 @@ void SoundTasks(void)
 	/* end block 3 */
 	// End Line: 2774
 
+static int copmusic = 0;
+int current_music_id;
+
+static char header_pt[3868];
+static char song_pt[2992];
+
+// [D]
 void InitMusic(int musicnum)
 {
 	UNIMPLEMENTED();
+	return;	// [A] disabled, has issues with LoadSoundBankDynamic
 
-	/*
+	static char *music_pt; // offset 0xc
+	static char *sample_pt; // offset 0x10
+	static char xm_samples; // offset 0x4
+
+	char* name = "SOUND\\MUSIC.BIN";
+
 	char *addr;
 	int iVar1;
-	int local_20;
-	int local_1c;
-	int local_18;
+	int musicpos[3];
 
 	copmusic = 0;
-	puts(s_NewLevel_in_InitMusic___00010b04);
+	puts("NewLevel in InitMusic()\n");
 	AllocateReverb(3, 0x4000);
+
 	current_music_id = musicnum;
-	LoadfileSeg(s_SOUND_MUSIC_BIN_00010af4, (char *)&local_20, musicnum << 3, 0xc);
+	LoadfileSeg(name, (char *)musicpos, musicnum * 8, sizeof(musicpos));
 	addr = mallocptr;
-	if (NewLevel != 0) {
-		DAT_000aa524 = (uchar *)mallocptr;
-		DAT_000aa528 = mallocptr + ((local_1c - local_20) + 3U & 0xfffffffc);
-		mallocptr = DAT_000aa528;
-		LoadfileSeg(s_SOUND_MUSIC_BIN_00010af4, addr, local_20,
-			(local_1c - local_20) + (local_18 - local_1c));
+
+	if (NewLevel != 0) 
+	{
+		music_pt = mallocptr;
+		sample_pt = mallocptr + musicpos[1] - musicpos[0]; // ((musicpos[1] - musicpos[0]) + 3U & 0xfffffffc);
+
+		mallocptr = sample_pt;
+		LoadfileSeg(name, addr, musicpos[0], (musicpos[1] - musicpos[0]) + (musicpos[2] - musicpos[1]));
 	}
-	if (Song_ID == -1) {
+
+	if (Song_ID == -1) 
+	{
 		VABID = XM_GetFreeVAB();
-		if (NewLevel != 0) {
-			iVar1 = LoadSoundBank(DAT_000aa528, local_18 - local_1c, 0);
-			xm_samples_90 = (byte)iVar1;
-		}
-		UpdateXMSamples((uint)xm_samples_90);
+
+		if (NewLevel != 0) 
+			xm_samples = LoadSoundBank(sample_pt, musicpos[2] - musicpos[1], 0);
+
+		UpdateXMSamples(xm_samples);
 		XM_GetFileHeaderSize();
-		XM_SetFileHeaderAddress((uchar *)header_pt);
+		XM_SetFileHeaderAddress((unsigned char*)header_pt);
 		XM_GetSongSize();
-		XM_SetSongAddress((uchar *)song_pt);
+		XM_SetSongAddress((unsigned char*)song_pt);
 	}
-	InitXMData(DAT_000aa524, 0, 0);
-	Song_ID = XM_Init(VABID, 0, 0, 0x10, 1, -1, 0, 0);
-	if (music_paused != 0) {
+
+	InitXMData((unsigned char*)music_pt, 0, 0);
+
+	Song_ID = XM_Init(VABID, 0, 0, 16, 1, -1, 0, 0);
+
+	if (music_paused != 0) 
 		XM_Pause(Song_ID);
-	}
-	return;
-	*/
 }
 
 
