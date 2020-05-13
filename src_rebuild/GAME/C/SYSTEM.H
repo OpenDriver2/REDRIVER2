@@ -7,6 +7,7 @@ extern char  _other_buffer[0x50000];		// 0xF3000
 
 extern char* mallocptr;
 #define D_MALLOC(size)	mallocptr; mallocptr += size
+#define NOTIFY_MALLOC() printf("------ malloc in " __FUNCTION__ ", line %d\n", __LINE__)
 
 extern int leadAIRequired;
 extern int leadAILoaded;

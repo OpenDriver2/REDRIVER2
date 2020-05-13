@@ -2781,8 +2781,8 @@ void SoundTasks(void)
 static int copmusic = 0;
 int current_music_id;
 
-static char header_pt[3868];
-static char song_pt[2992];
+static char header_pt[sizeof(XMHEADER)];
+static char song_pt[sizeof(XMSONG)];
 
 // [D]
 void InitMusic(int musicnum)
@@ -2794,7 +2794,6 @@ void InitMusic(int musicnum)
 	char* name = "SOUND\\MUSIC.BIN";
 
 	char *addr;
-	int iVar1;
 	int musicpos[3];
 
 	copmusic = 0;
@@ -2803,15 +2802,20 @@ void InitMusic(int musicnum)
 
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char *)musicpos, musicnum * 8, sizeof(musicpos));
+
 	addr = mallocptr;
+	NOTIFY_MALLOC();
+
+	int sample_len = musicpos[2] - musicpos[1];
+	int music_len = musicpos[1] - musicpos[0];
 
 	if (NewLevel != 0) 
 	{
 		music_pt = mallocptr;
-		sample_pt = mallocptr + musicpos[1] - musicpos[0]; // ((musicpos[1] - musicpos[0]) + 3U & 0xfffffffc);
+		sample_pt = mallocptr + music_len; // (sample_len + 3U & 0xfffffffc);
 
 		mallocptr = sample_pt;
-		LoadfileSeg(name, addr, musicpos[0], (musicpos[1] - musicpos[0]) + (musicpos[2] - musicpos[1]));
+		LoadfileSeg(name, addr, musicpos[0], music_len + sample_len);
 	}
 
 	if (Song_ID == -1) 
@@ -2819,9 +2823,10 @@ void InitMusic(int musicnum)
 		VABID = XM_GetFreeVAB();
 
 		if (NewLevel != 0) 
-			xm_samples = LoadSoundBank(sample_pt, musicpos[2] - musicpos[1], 0);
+			xm_samples = LoadSoundBank(sample_pt, sample_len, 0);
 
 		UpdateXMSamples(xm_samples);
+
 		XM_GetFileHeaderSize();
 		XM_SetFileHeaderAddress((unsigned char*)header_pt);
 		XM_GetSongSize();

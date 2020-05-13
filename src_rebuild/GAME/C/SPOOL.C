@@ -2154,6 +2154,7 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 	size = *(int *)lump_ptr << 0xb;
 
 	model_spool_buffer = mallocptr;
+	NOTIFY_MALLOC();
 
 	if (size < 0x10000) {
 		size = 0x10000;
@@ -2179,6 +2180,7 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		cell_objects_add[i] = cell_objects_add[4];
 		cell_slots_add[i] = cell_slots_add[4];
 		PVS_Buffers[i] = mallocptr + 4;
+		NOTIFY_MALLOC();
 
 		cell_slots_add[4] += *piVar4;
 		cell_objects_add[4] += piVar4[4];
@@ -2188,6 +2190,7 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		piVar1 = piVar4 + 8;
 		piVar4++;
 
+		NOTIFY_MALLOC();
 		mallocptr += (*piVar1 + 0x7ffU & 0xfffff800);
 
 		i++;

@@ -476,6 +476,7 @@ void LoadGameLevel(void)
 
 	malloc_lump = mallocptr;
 	mallocptr += (nsectors * CDSECTOR_SIZE);
+	NOTIFY_MALLOC();
 
 #ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
@@ -725,6 +726,7 @@ void GameInit(void)
 #endif // PSX
 
 		packed_cell_pointers = D_MALLOC(0x1000);
+		NOTIFY_MALLOC();
 	}
 
 	gameinit = 1;
@@ -904,10 +906,12 @@ void GameInit(void)
 	if (NewLevel != 0) 
 	{
 		pcoplist = (PACKED_CELL_OBJECT **)(mallocptr + 1024);
-		transparent_buffer = (ulong *)(mallocptr + 2048);
+		//transparent_buffer = (ulong *)(mallocptr + 2048);		// [A] unused
 		tile_overflow_buffer = (ulong *)mallocptr;
 		coplist = (CELL_OBJECT **)mallocptr;
-		mallocptr = mallocptr + 0x900;
+
+		mallocptr += 2304;
+		NOTIFY_MALLOC();
 	}
 
 	if (NoPlayerControl == 0) 

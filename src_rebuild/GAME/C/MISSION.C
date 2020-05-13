@@ -354,6 +354,7 @@ void LoadMission(int missionnum)
 	if (NewLevel != 0) 
 	{
 		MissionLoadAddress = (_MISSION *)mallocptr;
+		NOTIFY_MALLOC();
 	}
 
 	sprintf(acStack64, "MISSIONS\\MISSIONS.BLK");
@@ -524,7 +525,8 @@ LAB_00060e70:
 	}
 
 	if (NewLevel != 0) {
-		if (MissionHeader->route == 0) {
+		if (MissionHeader->route == 0)
+		{
 			mallocptr = mallocptr + (iVar4 + 3U & 0xfffffffc);
 #ifdef PSX
 			Loadfile("PATH.BIN", (char *)popNode);
@@ -532,7 +534,8 @@ LAB_00060e70:
 			leadAILoaded = 0;
 			pathAILoaded = 1;
 		}
-		else {
+		else 
+		{
 			piVar11 = (int *)(MissionStrings + MissionHeader->route);
 			NumTempJunctions = *piVar11;
 			memcpy(Driver2TempJunctionsPtr, piVar11 + 1, NumTempJunctions << 2);
