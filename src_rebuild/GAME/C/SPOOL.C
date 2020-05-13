@@ -894,7 +894,7 @@ void UpdateSpool(void)
 		switch (current->type)
 		{
 		case 0:	// regions
-			nameType = "REGION";
+			nameType = "REGION"; 
 			break;
 		case 1:	// textures
 			nameType = "TPAGE";
@@ -1655,7 +1655,6 @@ void init_spooled_models(void)
 {
 	int nmodels;
 	ushort lod;
-	MODEL **ppMVar4;
 	int model_number;
 	MODEL *parentmodel;
 	char *addr;
@@ -1664,69 +1663,60 @@ void init_spooled_models(void)
 	int size;
 
 	addr = model_spool_buffer;
-	ppMVar4 = modelpointers;
-	
 	models_ready = 0;
+
 	nmodels = *newmodels++;
 
-	i = 1535;
-	do {
-		if (addr <= (char*)*ppMVar4)
-			*ppMVar4 = &dummyModel;
-
-		i--;
-		ppMVar4++;
-	} while (-1 < i);
-
-	i = 0;
-	if (nmodels != 0) 
+	for (i = 0; i < 1536; i++)
 	{
-		do {
-
-			model_number = newmodels[i];
-
-			size = *(int *)addr;
-			model = (MODEL *)(addr + 4);
-
-			modelpointers[model_number] = model;
-			pLodModels[model_number] = model;
-
-			lod = Low2LowerDetailTable[model_number];
-
-			if ((lod != 0xffff) && (lod != model_number)) 
-				pLodModels[model_number] = modelpointers[lod];
-
-			if(model->instance_number == -1)
-			{
-				if (model->collision_block != 0)
-					model->collision_block = (int)(char*)model + model->collision_block;
-				
-				model->vertices = (int)(char*)model + model->vertices;
-				model->normals = (int)(char*)model + model->normals;
-				model->point_normals = (int)(char*)model + model->point_normals;
-
-				InitSpooledAnimObj(model_number);
-			}
-			else 
-			{
-				parentmodel = modelpointers[model->instance_number];
-
-				if (parentmodel->collision_block != 0)
-					model->collision_block = parentmodel->collision_block;
-				
-				model->vertices = parentmodel->vertices;
-				model->normals = parentmodel->normals;
-				model->point_normals = parentmodel->point_normals;
-
-				InitSpooledAnimObj(parentmodel->instance_number);
-			}
-			model->poly_block = (int)(char*)model + model->poly_block;
-
-			addr += size + 4;
-
-			i++;
-		} while (i < nmodels);
+		if (addr <= (char*)&modelpointers[i])
+			modelpointers[i] = &dummyModel;
 	}
+
+	for (i = 0; i < nmodels; i++)
+	{
+		model_number = newmodels[i];
+
+		size = *(int *)addr;
+		model = (MODEL *)(addr + 4);
+
+		modelpointers[model_number] = model;
+		pLodModels[model_number] = model;
+
+		lod = Low2LowerDetailTable[model_number];
+
+		if (lod != 0xffff && lod != model_number)
+			pLodModels[model_number] = modelpointers[lod];
+
+		if (model->instance_number == -1)
+		{
+			if (model->collision_block != 0)
+				model->collision_block += (int)model;
+
+			model->vertices += (int)model;
+			model->normals += (int)model;
+			model->point_normals += (int)model;
+
+			InitSpooledAnimObj(model_number);
+		}
+		else
+		{
+			parentmodel = modelpointers[model->instance_number];
+
+			if (parentmodel->collision_block != 0)
+				model->collision_block = parentmodel->collision_block;
+
+			model->vertices = parentmodel->vertices;
+			model->normals = parentmodel->normals;
+			model->point_normals = parentmodel->point_normals;
+
+			InitSpooledAnimObj(parentmodel->instance_number);
+		}
+		model->poly_block += (int)model;
+
+		addr += size + 4;
+	}
+
 	LoadingArea = 0;
 }
 
@@ -4315,7 +4305,7 @@ void InitSpecSpool(void)
 		allowSpecSpooling = 0;
 	}
 	else {
-		allowSpecSpooling = 1;
+		allowSpecSpooling = 0;
 	}
 
 	specModelValid = 1;
