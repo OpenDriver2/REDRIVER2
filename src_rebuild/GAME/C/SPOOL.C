@@ -3302,42 +3302,41 @@ void SpecClutsSpooled(void)
 	pcVar11 = specLoadBuffer;
 	do {
 		iVar5 = 7;
-		if (iVar9 == 0) {
+		if (iVar9 == 0)
 			iVar5 = 6;
-		}
+
 		iVar10 = 0;
-		bVar1 = specTpages[GameLevel][specspooldata[2]-1];
-		uVar7 = (uint)bVar1;
+
 		iVar6 = specialSlot + iVar9;
-		carTpages[GameLevel][iVar5] = bVar1;	// [A]
 
-		tpageslots[iVar6] = bVar1;
-		tpageloaded[uVar7] = (char)specialSlot + (char)iVar9 + '\x01';
+		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + iVar9];
 
-		sVar2 = tpagepos[iVar6].x;
-		slot_tpagepos[iVar6].vx = sVar2;
-		sVar3 = tpagepos[iVar6].y;
-		slot_tpagepos[iVar6].vy = sVar3;
-		uVar4 = GetTPage(0, 0, (int)sVar2, (int)sVar3);
-		texture_pages[uVar7] = uVar4;
-		iVar9 = iVar9 + 1;
+		carTpages[GameLevel][iVar5] = tpageslots[iVar6] = tpage;
+		tpageloaded[tpage] = specialSlot + iVar9 + 1;
 
-		if (0 < tpage_texamts[uVar7])
+		slot_tpagepos[iVar6].vx = tpagepos[iVar6].x;
+		slot_tpagepos[iVar6].vy = tpagepos[iVar6].y;
+
+		texture_pages[tpage] = GetTPage(0, 0, slot_tpagepos[iVar6].vx, slot_tpagepos[iVar6].vy);
+		
+
+		if (0 < tpage_texamts[tpage])
 		{
-			puVar8 = texture_cluts[uVar7];
+			puVar8 = texture_cluts[tpage];
 
 			do {
 				LoadImage2(&specCluts, (u_long*)pcVar11);
-				pcVar11 = pcVar11 + 0x20;
-				iVar10 = iVar10 + 1;
+				pcVar11 += 32;
+				
 
-				uVar4 = GetClut((int)specCluts.x, (int)specCluts.y);
-				*puVar8 = uVar4;
-
+				*puVar8++ = GetClut(specCluts.x, specCluts.y);
 				IncrementClutNum(&specCluts);
-				puVar8 = puVar8 + 1;
-			} while (iVar10 < tpage_texamts[uVar7]);
+
+				iVar10++;
+			} while (iVar10 < tpage_texamts[tpage]);
 		}
+
+		iVar9++;
 	} while (iVar9 < 2);
 
 	if (quickSpool != 1)
