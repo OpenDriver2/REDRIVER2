@@ -315,8 +315,8 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	} while (iVar8 < 5);
 
 
-	mallocptr = specmallocptr + uVar9;
-	specLoadBuffer = mallocptr - 2048; // [A]
+	mallocptr = specmallocptr + uVar9 + 2048; // [A] temporary here, fixes car model spooling
+	specLoadBuffer = mallocptr - 2048;
 
 	buildNewCars();
 
@@ -360,41 +360,35 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 // [D]
 MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 {
-	int iVar1;
 	int size;
-
 	MODEL *model;
 
 	model = (MODEL *)*dest;
 
-	if (KeepNormals == 0) {
-		size = *(int *)(src + 0x18);
-	}
-	else {
-		size = *(int *)(src + 0x14);
-	}
+	char* mem = src;
+
+	if (KeepNormals == 0)
+		size = ((MODEL*)src)->normals;
+	else 
+		size = ((MODEL*)src)->poly_block;
 
 	memcpy(*dest, src, size);
-	if (KeepNormals == 0) {
-		iVar1 = model->normals;
-	}
+
+	if (KeepNormals == 0)
+		size = model->normals;
 	else 
-	{
-		iVar1 = model->poly_block;
-	}
+		size = model->poly_block;
+	
+	*dest += size + 2;
 
-	*dest = (char *)((int)&model->flags2 + iVar1 + 1 & 0xfffffffc);
+	model->vertices += (int)model;
+	model->normals += (int)model;
+	model->poly_block = (int)src + model->poly_block;
 
-	model->vertices = (int)&model->shape_flags + model->vertices;
-	model->normals = (int)&model->shape_flags + model->normals;
-	*(char **)&model->poly_block = src + model->poly_block;
-
-	if (KeepNormals == 0) {
+	if (KeepNormals == 0)
 		model->point_normals = 0;
-	}
-	else {
-		model->point_normals = (int)&model->shape_flags + model->point_normals;
-	}
+	else
+		model->point_normals += (int)model;
 
 	return model;
 }

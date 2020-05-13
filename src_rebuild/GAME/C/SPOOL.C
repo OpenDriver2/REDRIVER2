@@ -3414,13 +3414,9 @@ void CleanModelSpooled(void)
 		gCarCleanModelPtr[4] = (MODEL *)specmallocptr;
 	}
 
-	if (piVar5 < (int*)(specLoadBuffer + 0x800)) 
-	{
-		// memcpy
-		do {
-			*modelMemory++ = *piVar5++;
-		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
-	}
+	// memcpy
+	while (piVar5 < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *piVar5++;
 
 	in_a3 = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
@@ -3506,13 +3502,9 @@ void DamagedModelSpooled(void)
 		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
 
-	if (piVar3 < (int*)(specLoadBuffer + 0x800))
-	{
-		// memcpy
-		do {
-			*modelMemory++ = *piVar3++;
-		} while (piVar3 < (int*)(specLoadBuffer + 0x800));
-	}
+	// memcpy
+	while (piVar3 < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *piVar3++;
 
 	in_a3 = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
@@ -3586,7 +3578,6 @@ void LowModelSpooled(void)
 {
 	int *piVar1;
 	ushort *puVar2;
-	MODEL *pMVar3;
 	int iVar4;
 	int *piVar5;
 	int *in_a3;
@@ -3599,13 +3590,9 @@ void LowModelSpooled(void)
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
 
-	if (piVar5 < (int*)(specLoadBuffer + 0x800))
-	{
-		// memcpy
-		do {
-			*modelMemory++ = *piVar5++;
-		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
-	}
+	// memcpy
+	while (piVar5 < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *piVar5++;
 
 	in_a3 = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
@@ -4305,7 +4292,7 @@ void InitSpecSpool(void)
 		allowSpecSpooling = 0;
 	}
 	else {
-		allowSpecSpooling = 0;
+		allowSpecSpooling = 1;
 	}
 
 	specModelValid = 1;
