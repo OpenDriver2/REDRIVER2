@@ -67,17 +67,15 @@ int CurrentCh;
 
 
 short iVABID[8] = { -1,-1,-1,-1,-1,-1,-1,-1 };
-short XMSongIDs[32] =
+short XMSongIDs[24] =
 { -1,-1,-1,-1,-1,-1,-1,-1,
  -1,-1,-1,-1,-1,-1,-1,-1,
- -1,-1,-1,-1,-1,-1,-1,-1,
- -1,-1,-1,-1,-1,-1,-1,-1 };
+ -1,-1,-1,-1,-1,-1,-1,-1};
 
-short XMSPU_SFX[32] =
+short XMSPU_SFX[24] =
 { -1,-1,-1,-1,-1,-1,-1,-1,
  -1,-1,-1,-1,-1,-1,-1,-1,
- -1,-1,-1,-1,-1,-1,-1,-1,
- -1,-1,-1,-1,-1,-1,-1,-1 };
+ -1,-1,-1,-1,-1,-1,-1,-1};
 
 /*****************************************************************************
 LINEAR FREQUENCY TABLE used to calculate final SPU pitch
@@ -450,8 +448,8 @@ int InitXMData(u_char *mpp, int XM_ID, int S3MPan)
 	mhu->tempo = getWord(mpp + MD_tempo);
 	mhu->bpm = getWord(mpp + MD_bpm);
 	mhu->XMPSXChannels = mhu->XMChannels;
-	if (mhu->XMPSXChannels > 32)
-		mhu->XMPSXChannels = 32;
+	if (mhu->XMPSXChannels > 24)
+		mhu->XMPSXChannels = 24;
 
 	for (t = 0; t < mhu->songlength; t++)
 	{
@@ -644,7 +642,7 @@ int fr;
 				XMCU=&mu->XM_Chnl[i];		/* Build list of SPU Channels to use */
 				XMCU->SPUChannel=Chn;		/* Depending on bitmask */
 				mu->MaxChans++;
-				if (Chn<32)
+				if (Chn<24)
 					InitSPUChannel(Chn);
 				Chn++;
 			}
@@ -660,7 +658,7 @@ int fr;
 			{
 				XMCU=&mu->XM_Chnl[i];		/* Build list of SPU Channels to use */
 				fr=0;
-				for (t=0;t<32;t++)
+				for (t=0;t<24;t++)
 				{
 					if (XMSPU_SFX[t]==0)
 					{
@@ -2383,7 +2381,9 @@ void UpdateHardware(void)
 				Ch2 = GetEmpty(XMC->SPUChannel);
 
 				if (Ch2 != -1)
-					XMC->SPUChannel = Ch2;
+					Chnl = Ch2;
+					
+				XMC->SPUChannel = Chnl;
 
 				prd=XMC->period; 
 				if (ms->NotAmiga==0)
@@ -2394,17 +2394,20 @@ void UpdateHardware(void)
 				XMC->OldLVol=XMC->LVol; 
 				XMC->OldRVol=XMC->RVol; 
 				DoDolbySS(); 
-				SPUKeyOn=(1<<Ch2); 
+				SPUKeyOn|=(1<< Chnl);
 				XMC->SPUPitch=prd; 
 				XMC->OldPeriod=XMC->period; 
-				PlaySFX(ms->VabID,Ch2,XMC->sample,prd,DVL,DVR); 
+
+				PlaySFX(ms->VabID,Chnl,XMC->sample,prd,DVL,DVR);
 			} 
 		} 
 	} 
 	if (SPUKeyOn!=0) 
 	{
+		//XMTime1 = 1;
 		SpuSetKey(1, SPUKeyOn);
 		SpuFlush(SPU_EVENT_ALL);
+		aa = 0;
 	} 
 
 	MaxChans=ms->MaxChans;
@@ -2699,6 +2702,7 @@ int t;
 	JP_Do_Nothing=0;
 }
 
+#include "THISDUST.H"
 
 
 /*****************************************************************************
@@ -2718,13 +2722,12 @@ void PlaySFX(int VBID,int Channel,int Inst,int Pitch,int LV,int RV)
 {
 	int a;
 
-  /* Mask which specific voice attributes are to be set */
-  xm_g_s_attr.mask = (SPU_VOICE_VOLL |
-		   SPU_VOICE_VOLR | 
-		   SPU_VOICE_PITCH |
-		   SPU_VOICE_WDSA |
-		   SPU_VOICE_LSAX  
-		   );
+	/* Mask which specific voice attributes are to be set */
+	xm_g_s_attr.mask = (SPU_VOICE_VOLL |
+						SPU_VOICE_VOLR | 
+						SPU_VOICE_PITCH |
+						SPU_VOICE_WDSA |
+						SPU_VOICE_LSAX);
 
 	xm_g_s_attr.voice = SPU_VOICECH(Channel);	//(1<<Channel);
 	xm_g_s_attr.volume.left  = LV; 
@@ -3015,7 +3018,7 @@ void JPClearSPUFlags(int SongID)
 {
 	int i;
 
-	for (i = 0; i < 32; i++)
+	for (i = 0; i < 24; i++)
 	{
 		if (XMSPU_SFX[i] == SongID)
 			XMSPU_SFX[i] = 0;
