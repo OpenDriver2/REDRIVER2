@@ -3429,10 +3429,7 @@ void CleanModelSpooled(void)
 		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
 
-	if (&gCarCleanModelPtr[4][1].poly_block < modelMemory)
-	{
-		in_a3 = (int *)((int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->poly_block);
-	}
+	in_a3 = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
 	if (specBlocksToLoad == 0 || in_a3 < modelMemory)
 	{
@@ -3524,10 +3521,7 @@ void DamagedModelSpooled(void)
 		} while (piVar3 < (int*)(specLoadBuffer + 0x800));
 	}
 
-	if (&gCarDamModelPtr[4][1].poly_block < modelMemory)
-	{
-		in_a3 = (int *)((int)&gCarDamModelPtr[4]->shape_flags + gCarDamModelPtr[4]->normals);
-	}
+	in_a3 = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
 	if (specBlocksToLoad == 0 || in_a3 < modelMemory) 
 	{
@@ -3620,10 +3614,7 @@ void LowModelSpooled(void)
 		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
 
-	if (&gCarLowModelPtr[4][1].poly_block < modelMemory) 
-	{
-		in_a3 = (int *)((int)&gCarLowModelPtr[4]->shape_flags + gCarLowModelPtr[4]->poly_block);
-	}
+	in_a3 = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
 	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
 	{
