@@ -173,14 +173,14 @@ void DentCar(_CAR_DATA *cp)
 			iVar13 = iVar16;
 		} while (iVar16 < 6);
 	}
-	
-	pSVar17 = gTempCarVertDump[cp->id];
-	DamVertPtr = (SVECTOR *)gCarDamModelPtr[uVar21]->vertices;
-	CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[uVar21]->vertices;
 
 	iVar22 = 0;
 	if ((gCarCleanModelPtr[uVar21] != NULL && gCarDamModelPtr[uVar21] != NULL) && pMVar20->num_vertices != 0) 
 	{
+		pSVar17 = gTempCarVertDump[cp->id];
+		DamVertPtr = (SVECTOR *)gCarDamModelPtr[uVar21]->vertices;
+		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[uVar21]->vertices;
+
 		do {
 			pSVar17->vx = CleanVertPtr->vx + ((DamVertPtr->vx - CleanVertPtr->vx) * (int)*psVar18) / 4096;
 			pSVar17->vy = CleanVertPtr->vy + ((DamVertPtr->vy - CleanVertPtr->vy) * (int)*psVar18) / 4096;
