@@ -666,32 +666,32 @@ void LoadPermanentTPages(int *sector)
 	char *tpageaddress;
 	DVECTOR *pDVar19;
 
+	// init tpage and cluts
 	psVar14 = texture_pages;
-	nsectors_00 = 0x7f;
+	nsectors_00 = 127;
 	MaxSpecCluts = 0;
-
 	do {
-		uVar9 = GetTPage(0, 0, 960, 0);
-		*psVar14 = uVar9;
-		nsectors_00 = nsectors_00 + -1;
-		psVar14 = ((u_short *)psVar14 + 1);
+		*psVar14 = GetTPage(0, 0, 960, 0);
+		nsectors_00--;
+		psVar14++;
 	} while (-1 < nsectors_00);
 
 	nsectors_00 = 0;
 	iVar17 = 1;
 
 	do {
-		puVar15 = (u_short *)(texture_cluts[nsectors_00]);
+		puVar15 = texture_cluts[nsectors_00];
+
 		nsectors_00 = 31;
 		do {
-			uVar9 = GetClut(960, 16);
-			*puVar15 = uVar9;
-			nsectors_00 = nsectors_00 + -1;
-			puVar15 = puVar15 + 1;
+			*puVar15 = GetClut(960, 16);
+			nsectors_00--;
+			puVar15++;
 		} while (-1 < nsectors_00);
+
 		bVar3 = iVar17 < 128;
 		nsectors_00 = iVar17;
-		iVar17 = iVar17 + 1;
+		iVar17++;
 	} while (bVar3);
 
 	slotsused = 0;
@@ -726,17 +726,15 @@ void LoadPermanentTPages(int *sector)
 	load_civ_palettes(&clutpos);
 
 	tpageaddress = mallocptr;
-	if (0 < nperms) {
-		addr = &permlist->y;
+	if (0 < nperms)
+	{
+		XYPAIR* perm = permlist;
 		iVar17 = nperms;
+
 		do {
-			nsectors = *addr + 0x7ff;
-			if (nsectors < 0) {
-				nsectors = *addr + 0xffe;
-			}
-			nsectors_00 = nsectors_00 + (nsectors >> 0xb);
-			iVar17 = iVar17 + -1;
-			addr = addr + 2;
+			nsectors_00 += (perm->y + 2047) / CDSECTOR_SIZE;
+			iVar17--;
+			perm++;
 		} while (iVar17 != 0);
 	}
 
@@ -746,9 +744,11 @@ void LoadPermanentTPages(int *sector)
 	loadsectorsPC(g_CurrentLevelFileName, mallocptr, *sector, nsectors_00);
 #endif // PSX
 
-	*sector = *sector + nsectors_00;
+	*sector += nsectors_00;
+
 	nsectors_00 = 0;
-	if (0 < nperms) {
+	if (0 < nperms) 
+	{
 		do {
 			nsectors = nsectors_00 + 1;
 			iVar17 = permlist[nsectors_00].y;
@@ -759,7 +759,7 @@ void LoadPermanentTPages(int *sector)
 			LoadTPageAndCluts(&tpage, &clutpos, nsectors_00, tpageaddress);
 			slotsused++;
 
-			tpageaddress = tpageaddress + (iVar17 + 0x7ffU & 0xfffff800);
+			tpageaddress += (iVar17 + 0x7ffU & 0xfffff800);
 			nsectors_00 = nsectors;
 		} while (nsectors < nperms);
 	}
@@ -778,23 +778,21 @@ void LoadPermanentTPages(int *sector)
 	carTpages[GameLevel][6] = page1;
 	carTpages[GameLevel][7] = page2;
 
-	iVar17 = nspecpages;
-	bVar3 = nspecpages != 0;
-
-	if (bVar3) {
+	if (nspecpages != 0)
+	{
 		iVar13 = 0;
 		nsectors_00 = 0;
 		nsectors = 0;
-		if (0 < iVar17) {
-			piVar12 = &speclist->y;
+
+		iVar17 = nspecpages;
+
+		if (0 < iVar17)
+		{
+			XYPAIR* spec = speclist;
 			do {
-				iVar10 = *piVar12 + 0x7ff;
-				if (iVar10 < 0) {
-					iVar10 = *piVar12 + 0xffe;
-				}
-				nsectors = nsectors + (iVar10 >> 0xb);
-				iVar17 = iVar17 + -1;
-				piVar12 = piVar12 + 2;
+				nsectors += ((spec->y + 0x7ff) / 2048);
+				iVar17--;
+				spec++;
 			} while (iVar17 != 0);
 		}
 
@@ -804,64 +802,79 @@ void LoadPermanentTPages(int *sector)
 		loadsectorsPC(g_CurrentLevelFileName, (char *)addr, *sector, nsectors);
 #endif // PSX
 
-		*sector = *sector + nsectors;
+
+		*sector += nsectors;
 		uVar18 = 0;
 
-		if (0 < nspecpages) {
+		if (0 < nspecpages) 
+		{
 			do {
-				iVar13 = iVar13 + *addr;
-				iVar17 = speclist[uVar18].y;
+				iVar13 += *addr;
+
+				iVar17 = speclist[uVar18].y;	// must be size
 				tpageId = speclist[uVar18].x;
-				if ((uVar18 & 1) != 0) {
-					if (MaxSpecCluts < iVar13) {
+
+				if ((uVar18 & 1) != 0) 
+				{
+					if (iVar13 > MaxSpecCluts)
 						MaxSpecCluts = iVar13;
-					}
+
 					iVar13 = 0;
 				}
-				if ((tpageId == page1) || (tpageId == page2)) {
+
+				// find a special car TPAGEs
+				if (page1 == tpageId || page2 == tpageId)
+				{
 					update_slotinfo(tpageId, slotsused, &tpage);
 					LoadTPageAndCluts(&tpage, &clutpos, tpageId, (char *)addr);
-					nsectors_00 = nsectors_00 + *addr;
-					slotsused = slotsused + 1;
+
+					nsectors_00 += *addr;
+					slotsused++;
 				}
-				uVar18 = uVar18 + 1;
-				addr = (int *)((int)addr + (iVar17 + 0x7ffU & 0xfffff800));
-			} while ((int)uVar18 < nspecpages);
+
+				uVar18++;
+				addr = (int *)((int)addr + (iVar17 + 0x7ffU & 0xfffff800));	// [A] don't touch this sphaget for now
+
+			} while (uVar18 < nspecpages);
 		}
 
-		if (nsectors_00 < MaxSpecCluts) {
+		if (nsectors_00 < MaxSpecCluts)
+		{
 			do {
-				nsectors_00 = nsectors_00 + 1;
+				nsectors_00++;
 				IncrementClutNum(&clutpos);
 			} while (nsectors_00 < MaxSpecCluts);
 		}
 	}
-	if (clutpos.x != 0x3c0) {
-		clutpos.y = clutpos.y + 1;
-		clutpos.x = 0x3c0;
+
+	if (clutpos.x != 960) 
+	{
+		clutpos.y++;
+		clutpos.x = 960;
 	}
+
 	if (slotsused < 19) 
 	{
 		pDVar19 = &slot_tpagepos[slotsused];
 		pDVar16 = &slot_clutpos[slotsused];
 
 		nsectors_00 = slotsused;
+
 		do {
-			sVar8 = clutpos.y;
-			sVar7 = clutpos.x;
-			sVar6 = tpage.y;
-			sVar5 = tpage.x;
-			puVar11 = &tpageslots[nsectors_00];
-			nsectors_00 = nsectors_00 + 1;
-			*puVar11 = -1;
-			pDVar16->vx = sVar7;
-			pDVar16->vy = sVar8;
-			pDVar19->vx = sVar5;
-			pDVar19->vy = sVar6;
+			tpageslots[nsectors_00] = 0xFF;
+
+			pDVar16->vx = clutpos.x;
+			pDVar16->vy = clutpos.y;
+			pDVar19->vx = tpage.x;
+			pDVar19->vy = tpage.y;
+
 			IncrementTPageNum(&tpage);
-			pDVar19 = pDVar19 + 1;
-			clutpos.y = clutpos.y + 8;
-			pDVar16 = pDVar16 + 1;
+			clutpos.y += 8;
+
+			pDVar19++;
+			pDVar16++;
+
+			nsectors_00++;
 		} while (nsectors_00 < 19);
 	}
 
