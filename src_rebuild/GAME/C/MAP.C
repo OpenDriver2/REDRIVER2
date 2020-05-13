@@ -668,6 +668,7 @@ int CheckUnpackNewRegions(void)
 				regions_to_unpack[2].zoffset = -1;
 				goto LAB_0005c9dc;
 			}
+
 			regions_to_unpack[2].xoffset = 1;
 			regions_to_unpack[2].zoffset = -1;
 		}
@@ -696,12 +697,9 @@ LAB_0005c9dc:
 
 			iVar7 = cells_across;
 
-			//if (cells_across < 0) {
-			//	iVar7 = cells_across + 31;
-			//}
-
 			target_region = (region_x + iVar4 & 1U) + (region_z + iVar6 & 1U) * 2;
 			iVar7 = current_region + iVar4 + iVar6 * (iVar7 / 32);
+
 			if ((iVar7 != regions_unpacked[target_region]) && (loading_region[target_region] == -1))
 			{
 				ClearRegion(target_region);
@@ -713,18 +711,20 @@ LAB_0005c9dc:
 				{
 					uVar2 = spoolinfo_offsets[iVar7];
 
-					if ((old_region == -1) && (bVar1 = (RegionSpoolInfo + uVar2)[4], bVar1 != 0xff))
-						initarea = bVar1;
+					Spool *spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[iVar7]);
+
+					if (old_region == -1 && spoolptr->super_region != 0xFF)
+						initarea = spoolptr->super_region;
 
 					sortregions[iVar8].vx = iVar7;
 					sortregions[iVar8].vy = target_region;
-					sortregions[iVar8].vz = *(short *)(RegionSpoolInfo + uVar2);
+					sortregions[iVar8].vz = spoolptr->offset;//  *(short *)(RegionSpoolInfo + uVar2);
 
 					sortorder[iVar8] = iVar8;
-					iVar8 = iVar8 + 1;
+					iVar8++;
 				}
 			}
-			iVar9 = iVar9 + 1;
+			iVar9++;
 			iVar7 = iVar9 * 8;
 		} while (iVar9 < iVar12);
 	}
@@ -733,11 +733,14 @@ LAB_0005c9dc:
 	{
 		iVar12 = 0;
 		iVar9 = 1;
+
 		do {
-			if (iVar9 < iVar8) {
+			if (iVar9 < iVar8) 
+			{
 				puVar11 = sortorder + iVar12;
 				puVar10 = sortorder + iVar9;
 				iVar7 = iVar8 - iVar9;
+
 				do {
 					uVar2 = *puVar11;
 
@@ -747,10 +750,11 @@ LAB_0005c9dc:
 						*puVar10 = uVar2;
 					}
 
-					iVar7 = iVar7 + -1;
-					puVar10 = puVar10 + 1;
+					iVar7--;
+					puVar10++;
 				} while (iVar7 != 0);
 			}
+
 			uVar5 = sortorder[iVar12];
 			UnpackRegion(sortregions[uVar5].vx, sortregions[uVar5].vy);
 
@@ -970,80 +974,59 @@ void InitMap(void)
 		pbVar2 = &tpageslots[slotsused];
 		iVar3 = slotsused;
 		do {
-			if (*pbVar2 != 0xff) {
-				tpageloaded[*pbVar2] = '\0';
-			}
-			*pbVar2 = 0xff;
-			iVar3 = iVar3 + 1;
-			pbVar2 = pbVar2 + 1;
-		} while (iVar3 < 0x13);
+			if (*pbVar2 != 0xff)
+				tpageloaded[*pbVar2] = 0;
+
+			*pbVar2++ = 0xff;
+			iVar3++;
+		} while (iVar3 < 19);
 	}
 
 	// load regions synchronously
 	if (doSpooling == 0) 
 	{
 		old_region = -1;
-		if (multiplayerregions[1] == -1) {
+
+		if (multiplayerregions[1] == -1) 
+		{
 			multiplayerregions[1] = multiplayerregions[0] + 1;
-			iVar3 = cells_across;
-			if (cells_across < 0) {
-				iVar3 = cells_across + 0x1f;
-			}
-			multiplayerregions[2] = multiplayerregions[0] - (iVar3 >> 5);
+			multiplayerregions[2] = multiplayerregions[0] - (cells_across >> 5);
 			multiplayerregions[3] = multiplayerregions[2] + 1;
 		}
+
 		piVar4 = multiplayerregions;
 		iVar3 = 3;
 		do {
 			region_to_unpack = *piVar4;
-			iVar1 = cells_across;
-
-			if (cells_across < 0) {
-				iVar1 = cells_across + 0x1f;
-			}
-
-			iVar1 = iVar1 >> 5;
-
-			if (iVar1 == 0) {
-				trap(7);
-			}
-			if (iVar1 == 0) {
-				trap(7);
-			}
+			iVar1 = cells_across >> 5;
 
 			if (spoolinfo_offsets[region_to_unpack] != 0xffff) 
 			{
-				if (RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8] != 0xff) 
-				{
-					initarea = (uint)(char)RegionSpoolInfo[(uint)spoolinfo_offsets[region_to_unpack] + 8];
-				}
+				Spool *spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[region_to_unpack]);
+
+				if (spoolptr->super_region != 0xff)
+					initarea = spoolptr->super_region;
 
 				UnpackRegion(region_to_unpack, (region_to_unpack % iVar1 & 1U) + (region_to_unpack / iVar1 & 1U) * 2);
 			}
 
-			iVar3 = iVar3 + -1;
-			piVar4 = piVar4 + 1;
+			iVar3--;
+			piVar4++;
 		} while (-1 < iVar3);
 
 		LoadInAreaTSets(initarea);
 		LoadInAreaModels(initarea);
 
 		current_cell_x = camera_position.vx + units_across_halved;
-		if (current_cell_x < 0) {
-			current_cell_x = current_cell_x + 0x7ff;
-		}
-
 		current_cell_x = current_cell_x >> 0xb;
-		current_cell_z = camera_position.vz + units_down_halved;
-		if (current_cell_z < 0) {
-			current_cell_z = current_cell_z + 0x7ff;
-		}
 
+		current_cell_z = camera_position.vz + units_down_halved;
 		current_cell_z = current_cell_z >> 0xb;
 
 		StartSpooling();
 	}
-	else {
+	else 
+	{
 		regions_unpacked[0] = -1;
 		regions_unpacked[1] = -1;
 		regions_unpacked[2] = -1;
