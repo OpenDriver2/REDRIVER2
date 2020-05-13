@@ -2787,9 +2787,6 @@ static char song_pt[2992];
 // [D]
 void InitMusic(int musicnum)
 {
-	UNIMPLEMENTED();
-	return;	// [A] disabled, has issues with LoadSoundBankDynamic
-
 	static char *music_pt; // offset 0xc
 	static char *sample_pt; // offset 0x10
 	static char xm_samples; // offset 0x4

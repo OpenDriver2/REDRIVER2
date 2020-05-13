@@ -241,23 +241,24 @@ bool Emulator_InitSound()
 
 #include <math.h>
 
+
 // PSX ADPCM coefficients
-const double K0[5] = { 0, 0.9375, 1.796875, 1.53125, 1.90625 };
-const double K1[5] = { 0, 0, -0.8125, -0.859375, -0.9375 };
+const float K0[5] = { 0, 0.9375, 1.796875, 1.53125, 1.90625 };
+const float K1[5] = { 0, 0, -0.8125, -0.859375, -0.9375 };
 
 // PSX ADPCM decoding routine - decodes a single sample
-short vagToPcm(unsigned char soundParameter, int soundData, double* vagPrev1, double* vagPrev2)
+short vagToPcm(unsigned char soundParameter, int soundData, float* vagPrev1, float* vagPrev2)
 {
 	int resultInt = 0;
 
-	double dTmp1 = 0.0;
-	double dTmp2 = 0.0;
-	double dTmp3 = 0.0;
+	float dTmp1 = 0.0;
+	float dTmp2 = 0.0;
+	float dTmp3 = 0.0;
 
 	if (soundData > 7)
 		soundData -= 16;
 
-	dTmp1 = (double)soundData * pow(2, (double)(12 - (soundParameter & 0x0F)));
+	dTmp1 = (float)soundData * pow(2, (float)(12 - (soundParameter & 0x0F)));
 
 	dTmp2 = (*vagPrev1) * K0[(soundParameter >> 4) & 0x0F];
 	dTmp3 = (*vagPrev2) * K1[(soundParameter >> 4) & 0x0F];
@@ -276,49 +277,69 @@ short vagToPcm(unsigned char soundParameter, int soundData, double* vagPrev1, do
 	return (short)resultInt;
 }
 
-// Main decoding routine - Takes PSX ADPCM formatted audio data and converts it to PCM. It also extracts the looping information if used.
-int decodeSound(unsigned char* iData, short* oData, int soundSize, int* loopStart, int* loopLength, bool breakOnEnd = false)
+enum ADPCM_FLAGS 
 {
-	unsigned char sp = 0;
+	LoopEnd = 1 << 0,		// Jump to repeat address after this block
+							// 1 - Copy repeatAddress to currentAddress AFTER this block
+							//     set ENDX (TODO: Immediately or after this block?)
+							// 0 - Nothing
+
+	Repeat = 1 << 1,		// Takes an effect only with LoopEnd bit set.
+							// 1 - Loop normally
+							// 0 - Loop and force Release
+
+	LoopStart = 1 << 2,		// Mark current address as the beginning of repeat
+							// 1 - Load currentAddress to repeatAddress
+							// 0 - Nothing
+};
+
+
+// Main decoding routine - Takes PSX ADPCM formatted audio data and converts it to PCM. It also extracts the looping information if used.
+int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStart, int* loopLength, bool breakOnEnd = false)
+{
+	unsigned char sp;
+	unsigned char flag;
 	int sd = 0;
-	double vagPrev1 = 0.0;
-	double vagPrev2 = 0.0;
+	float vagPrev1 = 0.0;
+	float vagPrev2 = 0.0;
 	int k = 0;
+
+	int loopStrt = 0, loopEnd = 0;
 
 	for (int i = 0; i < soundSize; i++)
 	{
 		if (i % 16 == 0)
 		{
 			sp = iData[i];
-
-			if (breakOnEnd && (iData[i + 1] & 0x0F) == 1)
-				return k;
-
-			if ((iData[i + 1] & 0x0E) == 6)
-				(*loopStart) = k;
-
-			if ((iData[i + 1] & 0x0F) == 3)
-			{
-				(*loopLength) = (k + 28) - (*loopStart);
-				if (breakOnEnd)
-					return k;
-			}
-
-			if ((iData[i + 1] & 0x0F) == 7)
-			{
-				(*loopLength) = (k + 28) - (*loopStart);
-				if (breakOnEnd)
-					return k;
-			}
-
-
+			flag = iData[i+1];
 			i += 2;
 		}
 
-		sd = (int)iData[i] & 0x0F;
+		sd = (int)iData[i] & 0xF;
 		oData[k++] = vagToPcm(sp, sd, &vagPrev1, &vagPrev2);
-		sd = ((int)iData[i] >> 4) & 0x0F;
+
+		sd = ((int)iData[i] >> 4) & 0xF;
 		oData[k++] = vagToPcm(sp, sd, &vagPrev1, &vagPrev2);
+
+		// flags parsed
+		if (flag & ADPCM_FLAGS::LoopStart)
+		{
+			loopStrt = k;
+		}
+
+		if (flag & ADPCM_FLAGS::LoopEnd)
+		{
+			loopEnd = k;
+
+			if (flag & ADPCM_FLAGS::Repeat)
+			{
+				*loopStart = loopStrt;
+				*loopLength = loopEnd - loopStrt;
+			}
+
+			if (breakOnEnd)
+				return loopEnd;
+		}
 	}
 
 	return soundSize;
@@ -353,7 +374,7 @@ unsigned long SpuWrite(unsigned char* addr, unsigned long size)
 		alGenBuffers(1, &alBuffer);
 
 		int loopStart = 0, loopLen = 0;
-		int count = decodeSound(addr, waveBuffer, size, &loopStart, &loopLen);
+		int count = decodeSound(addr, size, waveBuffer, &loopStart, &loopLen);
 
 		// update AL buffer
 		alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 11000);
@@ -502,16 +523,21 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		if (arg->voice != SPU_VOICECH(i))
+		if (!(arg->voice & SPU_VOICECH(i)))
 			continue;
 
 		SPUVoice& voice = s_SpuVoices[i];
 
+		ALuint alSource = voice.alSource;
+		ALuint alBuffer = voice.alBuffer;
+
 		// update sample
 		if ((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
 		{
-			ALuint alSource  = voice.alSource;
-			ALuint alBuffer = voice.alBuffer;
+			//ALuint tmp = voice.alSource[1];
+			//voice.alSource[1] = voice.alSource[0];
+			//voice.alSource[1] = tmp;
+			//alSource = voice.alSource[0];
 
 			alSourcei(alSource, AL_BUFFER, 0);
 
@@ -522,7 +548,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 				voice.attr.loop_addr = arg->loop_addr;
 
 			int loopStart = 0, loopLen = 0;
-			int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, waveBuffer, SPU_MEMSIZE - voice.attr.addr, &loopStart, &loopLen, true);
+			int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, SPU_MEMSIZE - voice.attr.addr, waveBuffer, &loopStart, &loopLen, true);
 #if 0	// sample test
 			{
 				ALuint aalSource;
@@ -555,10 +581,11 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 			if (loopLen > 0)
 			{
-				//loopStart += voice.attr.loop_addr;
+				if (arg->mask & SPU_VOICE_LSAX)
+					loopStart += voice.attr.loop_addr - voice.attr.addr;
 
-				//int sampleOffs[] = { loopStart, loopStart + loopLen };
-				//alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+				int sampleOffs[] = { loopStart, loopStart + loopLen };
+				alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
 
 				alSourcei(alSource, AL_LOOPING, AL_TRUE);
 			}
@@ -586,9 +613,9 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			float pan = (acosf(left_gain) + asinf(right_gain)) / ((float)M_PI); // average angle in [0,1]
 			pan = 2 * pan - 1; // convert to [-1, 1]
 			pan = pan * 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
-			alSource3f(voice.alSource, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
+			alSource3f(alSource, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
 
-			alSourcef(voice.alSource, AL_GAIN, (left_gain+right_gain)*0.5f);
+			alSourcef(alSource, AL_GAIN, (left_gain+right_gain)*0.5f);
 		}
 
 		// update pitch
@@ -598,7 +625,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 			float pitch = float(voice.attr.pitch) / 4096.0f;
 
-			alSourcef(voice.alSource, AL_PITCH, pitch);
+			alSourcef(alSource, AL_PITCH, pitch);
 		}
 	}
 }
@@ -607,7 +634,7 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 {
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		if (voice_bit != SPU_VOICECH(i))
+		if (!(voice_bit & SPU_VOICECH(i)))
 			continue;
 
 		SPUVoice& voice = s_SpuVoices[i];
@@ -615,13 +642,15 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 		//int state;
 		//alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
 
+		ALuint alSource = voice.alSource;
+
 		if (on_off)
 		{
-			alSourcePlay(voice.alSource);
+			alSourcePlay(alSource);
 		}
 		else
 		{
-			alSourceStop(voice.alSource);
+			alSourceStop(alSource);
 		}
 	}
 }
@@ -637,7 +666,9 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 
 		SPUVoice& voice = s_SpuVoices[i];
 
-		alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+		ALuint alSource = voice.alSource;
+
+		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 		break;
 	}
 
@@ -650,8 +681,10 @@ void SpuGetAllKeysStatus(char* status)
 	{
 		SPUVoice& voice = s_SpuVoices[i];
 
+		ALuint alSource = voice.alSource;
+
 		int state;
-		alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
+		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 
 		status[i] = (state == AL_PLAYING);
 	}
@@ -710,7 +743,7 @@ long SpuMalloc(long size)
 	int addr = s_spuMallocVal;
 	s_spuMallocVal += size;
 
-	return s_spuMallocVal; /*(long)(uintptr_t)malloc(size)*/;
+	return addr; /*(long)(uintptr_t)malloc(size)*/;
 }
 
 long SpuMallocWithStartAddr(unsigned long addr, long size)
@@ -726,7 +759,7 @@ void SpuFree(unsigned long addr)
 
 unsigned long SpuFlush(unsigned long ev)
 {
-	UNIMPLEMENTED();
+	//UNIMPLEMENTED();
 	return 0;
 }
 

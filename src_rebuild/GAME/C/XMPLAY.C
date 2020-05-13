@@ -2374,7 +2374,7 @@ void UpdateHardware(void)
 			XMC=&ms->XM_Chnl[t];
 			if(XMC->kick)
 			{
-				Chnl = XMC->SPUChannel; // [A] might be incorrect
+				Chnl = XMC->SPUChannel;
 
 				SpuSetKey(0, 1 << XMC->SPUChannel);
 
