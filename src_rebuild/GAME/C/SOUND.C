@@ -1553,24 +1553,9 @@ int LoadSoundBank(char *address, int length, int bank)
 // [D]
 void UpdateXMSamples(int num_samps)
 {
-	ulong *puVar1;
-	int slot;
-	int iVar2;
-	SAMPLE_DATA *pSVar3;
-
-	if (0 < num_samps) 
-	{
-		pSVar3 = samples[0];
-		slot = 0;
-		do {
-			puVar1 = &pSVar3->address;
-			pSVar3 = pSVar3 + 1;
-			iVar2 = slot + 1;
-
-			XM_SetVAGAddress(VABID, slot, *puVar1);
-			slot = iVar2;
-		} while (iVar2 < num_samps);
-	}
+	int i;
+	for (i = 0; i < num_samps; i++)
+		XM_SetVAGAddress(VABID, i, samples[0][i].address);
 }
 
 
