@@ -1275,36 +1275,17 @@ void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 // [D]
 void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 {
-	ushort *puVar1;
-	int iVar2;
+	int i;
 
-	MODEL **ppMVar3;
-	MODEL **ppMVar4;
-
-	puVar1 = (ushort *)(lump_ptr + num_models_in_pack * 2);
 	Low2HighDetailTable = (ushort *)lump_ptr;
-	Low2LowerDetailTable = puVar1;
+	Low2LowerDetailTable = (ushort *)(lump_ptr + num_models_in_pack * 2);
 
-	if (0 < num_models_in_pack) 
+	for (i = 0; i < num_models_in_pack; i++)
 	{
-		ppMVar3 = pLodModels;
-		ppMVar4 = modelpointers;
-		iVar2 = num_models_in_pack;
-		do {
-			if (*puVar1 == 0xffff) 
-			{
-				*ppMVar3 = *ppMVar4;
-			}
-			else 
-			{
-				*ppMVar3 = modelpointers[*puVar1];
-			}
-
-			ppMVar3 = ppMVar3 + 1;
-			ppMVar4 = ppMVar4 + 1;
-			iVar2 = iVar2 + -1;
-			puVar1 = puVar1 + 1;
-		} while (iVar2 != 0);
+		if (Low2LowerDetailTable[i] == 0xFFFF)
+			pLodModels[i] = modelpointers[i];
+		else
+			pLodModels[i] = modelpointers[Low2LowerDetailTable[i]];
 	}
 }
 
