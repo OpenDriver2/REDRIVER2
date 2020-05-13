@@ -20551,84 +20551,6 @@ struct __bitfield64 // hashcode: 0x2A3F54F0 (dec: 708793584)
 	long l; // size=0, offset=4
 };
 
-struct XMCHANNEL // hashcode: 0xE51AB9FB (dec: -451233285)
-{
-	unsigned short Octave; // size=0, offset=0
-	short LVol; // size=0, offset=2
-	short RVol; // size=0, offset=4
-	short OldLVol; // size=0, offset=6
-	short OldRVol; // size=0, offset=8
-	unsigned short OldPeriod; // size=0, offset=10
-	unsigned char OldSample; // size=0, offset=12
-	unsigned long OldSOff; // size=0, offset=16
-	unsigned long SOffset; // size=0, offset=20
-	unsigned char nothing; // size=0, offset=24
-	unsigned char ChDead; // size=0, offset=25
-	unsigned char panenvflg; // size=0, offset=26
-	unsigned char panenvpts; // size=0, offset=27
-	unsigned char panenvsus; // size=0, offset=28
-	unsigned char panenvbeg; // size=0, offset=29
-	unsigned char panenvend; // size=0, offset=30
-	short panenvp; // size=0, offset=32
-	unsigned short panenva; // size=0, offset=34
-	unsigned short panenvb; // size=0, offset=36
-	unsigned short keyoffspd; // size=0, offset=38
-	unsigned char envflg; // size=0, offset=40
-	unsigned char envpts; // size=0, offset=41
-	unsigned char envsus; // size=0, offset=42
-	unsigned char envbeg; // size=0, offset=43
-	unsigned char envend; // size=0, offset=44
-	short envp; // size=0, offset=46
-	unsigned short enva; // size=0, offset=48
-	unsigned short envb; // size=0, offset=50
-	unsigned char ins; // size=0, offset=52
-	unsigned char vol; // size=0, offset=53
-	unsigned char dat; // size=0, offset=54
-	unsigned char datold; // size=0, offset=55
-	unsigned char eff; // size=0, offset=56
-	unsigned char nott; // size=0, offset=57
-	unsigned char oldvslide; // size=0, offset=58
-	unsigned char oldfvslide; // size=0, offset=59
-	unsigned char oldfslide; // size=0, offset=60
-	short fadevol; // size=0, offset=62
-	unsigned char keyon; // size=0, offset=64
-	unsigned char kick; // size=0, offset=65
-	unsigned char sample; // size=0, offset=66
-	short handle; // size=0, offset=68
-	unsigned long start; // size=0, offset=72
-	unsigned char panning; // size=0, offset=76
-	unsigned char pansspd; // size=0, offset=77
-	char volume; // size=0, offset=78
-	unsigned short period; // size=0, offset=80
-	unsigned short SPUPitch; // size=0, offset=82
-	char transpose; // size=0, offset=84
-	unsigned char note; // size=0, offset=85
-	short ownper; // size=0, offset=86
-	short ownvol; // size=0, offset=88
-	short UserVol; // size=0, offset=90
-	char retrig; // size=0, offset=92
-	unsigned short c2spd; // size=0, offset=94
-	char tmpvolume; // size=0, offset=96
-	unsigned short tmpperiod; // size=0, offset=98
-	unsigned short wantedperiod; // size=0, offset=100
-	unsigned short slidespeed; // size=0, offset=102
-	unsigned short portspeed; // size=0, offset=104
-	unsigned char s3mtremor; // size=0, offset=106
-	unsigned char s3mvolslide; // size=0, offset=107
-	unsigned char s3mrtgspeed; // size=0, offset=108
-	unsigned char s3mrtgslide; // size=0, offset=109
-	unsigned char glissando; // size=0, offset=110
-	unsigned char wavecontrol; // size=0, offset=111
-	char vibpos; // size=0, offset=112
-	unsigned char vibspd; // size=0, offset=113
-	unsigned char vibdepth; // size=0, offset=114
-	char trmpos; // size=0, offset=115
-	unsigned char trmspd; // size=0, offset=116
-	unsigned char trmdepth; // size=0, offset=117
-	unsigned char SPUChannel; // size=0, offset=118
-	unsigned char Dolby; // size=0, offset=119
-};
-
 struct GEAR_DESC // hashcode: 0xE4380123 (dec: -466091741)
 {
 	int lowidl_ws; // size=0, offset=0
@@ -20651,8 +20573,6 @@ typedef struct __othercarsound othercarsound;
 typedef struct __tunnelinfo tunnelinfo;
 
 typedef struct __bitfield64 bitfield64;
-
-typedef struct XMCHANNEL XMCHANNEL;
 
 typedef struct GEAR_DESC GEAR_DESC;
 
@@ -21437,110 +21357,6 @@ struct XA_TRACK // hashcode: 0xB1C796C2 (dec: -1312319806)
 };
 
 typedef struct XA_TRACK XA_TRACK;
-
-struct XM_HeaderInfo // hashcode: 0x9062161D (dec: -1872620003)
-{
-	unsigned short BPM; // size=0, offset=0
-	unsigned short Speed; // size=0, offset=2
-};
-
-struct XM_VABInfo // hashcode: 0xC48161AF (dec: -998153809)
-{
-	unsigned char *Address; // size=0, offset=0
-	unsigned long Size; // size=0, offset=4
-};
-
-struct XM_Feedback // hashcode: 0x33E30C2B (dec: 870517803)
-{
-	unsigned char Volume; // size=0, offset=0
-	short Panning; // size=0, offset=2
-	int CurrentStart; // size=0, offset=4
-	short PlayNext; // size=0, offset=8
-	unsigned short SongLength; // size=0, offset=10
-	unsigned char Status; // size=0, offset=12
-	unsigned short PatternPos; // size=0, offset=14
-	short SongPos; // size=0, offset=16
-	unsigned short CurrentPattern; // size=0, offset=18
-	unsigned short SongSpeed; // size=0, offset=20
-	unsigned short SongBPM; // size=0, offset=22
-	int SongLoop; // size=0, offset=24
-	int ActiveVoices; // size=0, offset=28
-};
-
-struct XMHEADER // hashcode: 0x33619ACC (dec: 862034636)
-{
-	unsigned short version; // size=0, offset=0
-	unsigned short songlength; // size=0, offset=2
-	unsigned short restart; // size=0, offset=4
-	unsigned short numchn; // size=0, offset=6
-	unsigned short numpat; // size=0, offset=8
-	unsigned short numins; // size=0, offset=10
-	unsigned short flags; // size=0, offset=12
-	unsigned short tempo; // size=0, offset=14
-	unsigned short bpm; // size=0, offset=16
-	unsigned short XMChannels; // size=0, offset=18
-	unsigned short XMPSXChannels; // size=0, offset=20
-	unsigned long (*JAP_PAT_ADDR[256]); // size=1024, offset=24
-	unsigned long (*JAP_PAT_ADDR2[256]); // size=1024, offset=1048
-	unsigned long (*JAP_InstrumentOffset[128]); // size=512, offset=2072
-	unsigned long (*JAP_SampAddr[128]); // size=512, offset=2584
-	unsigned long (*JAP_SampHdrAddr[128]); // size=512, offset=3096
-	unsigned char jorders[256]; // size=256, offset=3608
-	int S3MPanning; // size=0, offset=3864
-};
-
-struct XMSONG // hashcode: 0x1E1B078A (dec: 505087882)
-{
-	unsigned char Status; // size=0, offset=0
-	int HeaderNum; // size=0, offset=4
-	int CurPos; // size=0, offset=8
-	unsigned short reppos; // size=0, offset=12
-	unsigned short repcnt; // size=0, offset=14
-	unsigned short vbtick; // size=0, offset=16
-	unsigned short patbrk; // size=0, offset=18
-	unsigned char patdly; // size=0, offset=20
-	unsigned char patdly2; // size=0, offset=21
-	unsigned short numrow; // size=0, offset=22
-	short posjmp; // size=0, offset=24
-	unsigned short PatternPos; // size=0, offset=26
-	short SongPos; // size=0, offset=28
-	unsigned short CurrentPattern; // size=0, offset=30
-	unsigned short SongSpeed; // size=0, offset=32
-	unsigned short SongBPM; // size=0, offset=34
-	int SongLoop; // size=0, offset=36
-	unsigned char SongVolume; // size=0, offset=40
-	unsigned char MasterVolume; // size=0, offset=41
-	int XMActiveVoices; // size=0, offset=44
-	int NotAmiga; // size=0, offset=48
-	unsigned char XMPlay; // size=0, offset=52
-	int FirstCh; // size=0, offset=56
-	int JBPM; // size=0, offset=60
-	int PCounter; // size=0, offset=64
-	unsigned short PatSize; // size=0, offset=68
-	unsigned long *PatAdr; // size=0, offset=72
-	unsigned long *PatAdr2; // size=0, offset=76
-	int PlayMask; // size=0, offset=80
-	int SFXNum; // size=0, offset=84
-	struct XMCHANNEL XM_Chnl[24]; // size=2880, offset=88
-	int JUp; // size=0, offset=2968
-	short PlayNext; // size=0, offset=2972
-	short BPlayNext; // size=0, offset=2974
-	short BPlayFlag; // size=0, offset=2976
-	int CurrentStart; // size=0, offset=2980
-	unsigned char VabID; // size=0, offset=2984
-	short UserPan; // size=0, offset=2986
-	unsigned char MaxChans; // size=0, offset=2988
-};
-
-typedef struct XM_HeaderInfo XM_HeaderInfo;
-
-typedef struct XM_VABInfo XM_VABInfo;
-
-typedef struct XM_Feedback XM_Feedback;
-
-typedef struct XMHEADER XMHEADER;
-
-typedef struct XMSONG XMSONG;
 
 struct FE_CHARDATA // hashcode: 0x3BD93806 (dec: 1004091398)
 {
