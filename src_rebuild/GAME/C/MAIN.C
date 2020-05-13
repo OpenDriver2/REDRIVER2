@@ -438,36 +438,23 @@ void LoadGameLevel(void)
 
 	if (gMultiplayerLevels == 0)
 	{
-		if (gTimeOfDay == 3) {
+		if (gTimeOfDay == 3)
 			SetCityType(CITYTYPE_NIGHT);
-		}
-		else {
+		else 
 			SetCityType(CITYTYPE_DAY);
-		}
 	}
-	else {
-		if (gTimeOfDay == 3) {
+	else 
+	{
+		if (gTimeOfDay == 3)
 			SetCityType(CITYTYPE_MULTI_NIGHT);
-		}
-		else {
+		else
 			SetCityType(CITYTYPE_MULTI_DAY);
-		}
 	}
+
 	ReportMode(0);
-	sector = citylumps[GameLevel][0].x;
 
-	if (sector < 0) {
-		sector = sector + 2047;
-	}
-
-	nsectors = citylumps[GameLevel][0].y;
-	sector = sector / CDSECTOR_SIZE;
-
-	if (nsectors < 0) {
-		nsectors = nsectors + (CDSECTOR_SIZE-1);
-	}
-
-	nsectors = nsectors / CDSECTOR_SIZE;
+	sector = citylumps[GameLevel][0].x / CDSECTOR_SIZE;
+	nsectors = citylumps[GameLevel][0].y / CDSECTOR_SIZE;
 
 #ifdef PSX 
 	loadsectors(_frontend_buffer, sector, nsectors);
@@ -485,21 +472,10 @@ void LoadGameLevel(void)
 	LoadPermanentTPages(&sector);
 
 	malloc_lump = mallocptr;
-	sector = citylumps[GameLevel][CITYLUMP_DATA2].x;
+	sector = citylumps[GameLevel][CITYLUMP_DATA2].x / CDSECTOR_SIZE;
+	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y / CDSECTOR_SIZE;
 
-	if (sector < 0) {
-		sector = sector + (CDSECTOR_SIZE-1);
-	}
-
-	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y;
-	sector = sector / CDSECTOR_SIZE;
-
-	if (nsectors < 0) {
-		nsectors = nsectors + (CDSECTOR_SIZE-1);
-	}
-
-	nsectors = nsectors / CDSECTOR_SIZE;
-	mallocptr = mallocptr + (nsectors * CDSECTOR_SIZE);
+	mallocptr += (nsectors * CDSECTOR_SIZE);
 
 #ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
