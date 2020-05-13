@@ -157,6 +157,7 @@ struct SPUVoice
 
 	ALuint alBuffer;
 	ALuint alSource;
+	int sampledirty;
 };
 
 SPUVoice s_SpuVoices[SPU_VOICES];
@@ -233,6 +234,8 @@ bool Emulator_InitSound()
 
 		alSourcei(voice.alSource, AL_SOURCE_RELATIVE, AL_TRUE);
 	}
+
+	memset(&s_SpuMemory, 0, sizeof(s_SpuMemory));
 
 	return true;
 }
@@ -517,10 +520,81 @@ void SpuInit(void)
 	_SpuInit(0);
 }
 
+void UpdateVoiceSample(SPUVoice& voice)
+{
+	//if (!voice.sampledirty)
+	//	return;
+
+	voice.sampledirty = 0;
+
+	static short waveBuffer[SPU_REALMEMSIZE];
+
+	ALuint alSource = voice.alSource;
+	ALuint alBuffer = voice.alBuffer;
+
+	int loopStart = 0, loopLen = 0;
+	int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, SPU_REALMEMSIZE - voice.attr.addr, waveBuffer, &loopStart, &loopLen, true);
+
+	if (count == 0)
+		return;
+
+#if 0	// sample test
+	{
+		ALuint aalSource;
+		ALuint aalBuffer;
+
+		alGenSources(1, &aalSource);
+		alGenBuffers(1, &aalBuffer);
+
+		// update AL buffer
+		alBufferData(aalBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 11000);
+
+		// set the buffer
+		alSourcei(aalSource, AL_BUFFER, aalBuffer);
+		alSourcef(aalSource, AL_GAIN, 1.0f);// TODO: panning
+		alSourcef(aalSource, AL_PITCH, 1);
+
+		alSourcePlay(aalSource);
+		int status;
+		do
+		{
+			alGetSourcei(aalSource, AL_SOURCE_STATE, &status);
+		} while (status == AL_PLAYING);
+
+		alSourceStop(aalSource);
+
+		alDeleteSources(1, &aalSource);
+		alDeleteBuffers(1, &aalBuffer);
+	}
+#endif
+
+	alSourcei(alSource, AL_BUFFER, 0);
+
+	if (loopLen > 0)
+	{
+		loopStart += voice.attr.loop_addr - voice.attr.addr;
+
+		int sampleOffs[] = { loopStart, loopStart + loopLen };
+		alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+
+		alSourcei(alSource, AL_LOOPING, AL_TRUE);
+	}
+	else
+	{
+		int sampleOffs[] = { 0, 0 };
+		alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		alSourcei(alSource, AL_LOOPING, AL_FALSE);
+	}
+
+
+	alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
+
+	// set the buffer
+	alSourcei(alSource, AL_BUFFER, alBuffer);
+}
+
 void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
-	static short waveBuffer[SPU_MEMSIZE];
-
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (!(arg->voice & SPU_VOICECH(i)))
@@ -529,7 +603,6 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		SPUVoice& voice = s_SpuVoices[i];
 
 		ALuint alSource = voice.alSource;
-		ALuint alBuffer = voice.alBuffer;
 
 		// update sample
 		if ((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
@@ -539,63 +612,21 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			//voice.alSource[1] = tmp;
 			//alSource = voice.alSource[0];
 
-			alSourcei(alSource, AL_BUFFER, 0);
-
 			if (arg->mask & SPU_VOICE_WDSA)
+			{
+				if (voice.attr.addr != arg->addr)
+					voice.sampledirty++;
+
 				voice.attr.addr = arg->addr;
-
+			}
+			
 			if (arg->mask & SPU_VOICE_LSAX)
+			{
+				if(voice.attr.loop_addr != arg->loop_addr)
+					voice.sampledirty++;
+
 				voice.attr.loop_addr = arg->loop_addr;
-
-			int loopStart = 0, loopLen = 0;
-			int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, SPU_MEMSIZE - voice.attr.addr, waveBuffer, &loopStart, &loopLen, true);
-#if 0	// sample test
-			{
-				ALuint aalSource;
-				ALuint aalBuffer;
-
-				alGenSources(1, &aalSource);
-				alGenBuffers(1, &aalBuffer);
-
-				// update AL buffer
-				alBufferData(aalBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 11000);
-
-				// set the buffer
-				alSourcei(aalSource, AL_BUFFER, aalBuffer);
-				alSourcef(aalSource, AL_GAIN, 1.0f);// TODO: panning
-				alSourcef(aalSource, AL_PITCH, 1);
-
-				alSourcePlay(aalSource);
-				int status;
-				do
-				{
-					alGetSourcei(aalSource, AL_SOURCE_STATE, &status);
-				} while (status == AL_PLAYING);
-
-				alSourceStop(aalSource);
-
-				alDeleteSources(1, &aalSource);
-				alDeleteBuffers(1, &aalBuffer);
-			}
-#endif
-
-			if (loopLen > 0)
-			{
-				if (arg->mask & SPU_VOICE_LSAX)
-					loopStart += voice.attr.loop_addr - voice.attr.addr;
-
-				int sampleOffs[] = { loopStart, loopStart + loopLen };
-				alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
-
-				alSourcei(alSource, AL_LOOPING, AL_TRUE);
-			}
-			else
-				alSourcei(alSource, AL_LOOPING, AL_FALSE);
-
-			alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
-
-			// set the buffer
-			alSourcei(alSource, AL_BUFFER, alBuffer);
+			}			
 		}
 
 		// update volume
@@ -646,6 +677,7 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 
 		if (on_off)
 		{
+			UpdateVoiceSample(voice);
 			alSourcePlay(alSource);
 		}
 		else
