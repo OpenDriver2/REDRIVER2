@@ -68,7 +68,7 @@ volatile int spoolactive;	// volatile is required at least for PC
 volatile int quickSpool;
 int models_ready;
 
-short specspooldata[3] = { 20, 10 };
+short specspooldata[3] = { 20, 10, 4 };
 
 int tsetcounter;
 int tsetpos;
@@ -877,6 +877,14 @@ void UpdateSpool(void)
 
 	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
 
+	if (!fp)
+	{
+		char errPrint[1024];
+		sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+		return;
+	}
+
 	for (; spoolpos_reading < spoolcounter; spoolpos_reading++)
 	{
 		SPOOLQ *current = &spooldata[spoolpos_reading];
@@ -949,6 +957,8 @@ void UpdateSpool(void)
 	spoolcounter = 0;
 	spoolpos_reading = 0;
 	spoolactive = 0;
+
+	fclose(fp);
 	
 #else
 	char bVar1;
@@ -1091,7 +1101,7 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 	next->type = type;
 	next->data = data;
-	next->sector = (citylumps[GameLevel][3].x / 2048) + offset;
+	next->sector = (citylumps[GameLevel][CITYLUMP_SPOOL].x / 2048) + offset;
 	next->nsectors = loadsize;
 	next->addr = address;
 	next->func = func;
@@ -3414,11 +3424,9 @@ void CleanModelSpooled(void)
 
 	if (piVar5 < (int*)(specLoadBuffer + 0x800)) 
 	{
+		// memcpy
 		do {
-			iVar4 = *piVar5;
-			piVar5++;
-			*modelMemory = iVar4;
-			modelMemory++;
+			*modelMemory++ = *piVar5++;
 		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
 
@@ -3427,27 +3435,23 @@ void CleanModelSpooled(void)
 		in_a3 = (int *)((int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->poly_block);
 	}
 
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
+	if (specBlocksToLoad == 0 || in_a3 < modelMemory)
 	{
 		specBlocksToLoad = 0;
 
-		piVar5 = &gCarCleanModelPtr[4]->normals;
-		piVar1 = &gCarCleanModelPtr[4]->point_normals;
-		puVar2 = &gCarCleanModelPtr[4]->shape_flags;
-
 		modelMemory = in_a3;
-		gCarCleanModelPtr[4]->vertices = (int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->vertices;
-		NewCarModel[4].nlist = (SVECTOR *)((int)&gCarCleanModelPtr[4]->shape_flags + *piVar1);
-		gCarCleanModelPtr[4]->normals = (int)puVar2 + *piVar5;
-		*(SVECTOR **)&gCarCleanModelPtr[4]->point_normals = NewCarModel[4].nlist;
-		gCarCleanModelPtr[4]->poly_block = (int)&gCarCleanModelPtr[4]->shape_flags + gCarCleanModelPtr[4]->poly_block;
+
+		gCarCleanModelPtr[4]->vertices += (int)gCarCleanModelPtr[4];
+		gCarCleanModelPtr[4]->normals += (int)gCarCleanModelPtr[4];
+		gCarCleanModelPtr[4]->point_normals += (int)gCarCleanModelPtr[4];
+		gCarCleanModelPtr[4]->poly_block += (int)gCarCleanModelPtr[4];
+
+		NewCarModel[4].nlist = (SVECTOR *)gCarCleanModelPtr[4]->point_normals;
 		NewCarModel[4].vlist = (SVECTOR *)gCarCleanModelPtr[4]->vertices;
 	}
 
 	if (quickSpool != 1)
-	{
 		DrawSyncCallback(SpecialStartNextBlock);
-	}
 }
 
 
@@ -3517,34 +3521,31 @@ void DamagedModelSpooled(void)
 	{
 		// memcpy
 		do {
-			iVar2 = *piVar3;
-			piVar3 = piVar3 + 1;
-			*modelMemory = iVar2;
-			modelMemory = modelMemory + 1;
+			*modelMemory++ = *piVar3++;
 		} while (piVar3 < (int*)(specLoadBuffer + 0x800));
 	}
-
-	pMVar1 = gCarDamModelPtr[4];
 
 	if (&gCarDamModelPtr[4][1].poly_block < modelMemory)
 	{
 		in_a3 = (int *)((int)&gCarDamModelPtr[4]->shape_flags + gCarDamModelPtr[4]->normals);
 	}
 
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory)) 
+	if (specBlocksToLoad == 0 || in_a3 < modelMemory) 
 	{
 		piVar3 = &gCarDamModelPtr[4]->normals;
 
 		specBlocksToLoad = 0;
 		modelMemory = in_a3;
-		gCarDamModelPtr[4]->vertices = (int)&gCarDamModelPtr[4]->shape_flags + gCarDamModelPtr[4]->vertices;
-		pMVar1->normals = (int)&pMVar1->shape_flags + *piVar3;
-		pMVar1->poly_block = (int)&pMVar1->shape_flags + pMVar1->poly_block;
-		pMVar1->point_normals = (int)&pMVar1->shape_flags + pMVar1->point_normals;
+
+		gCarDamModelPtr[4]->vertices += (int)gCarDamModelPtr[4];
+		gCarDamModelPtr[4]->normals += (int)gCarDamModelPtr[4];
+		gCarDamModelPtr[4]->poly_block += (int)gCarDamModelPtr[4];
+		gCarDamModelPtr[4]->point_normals += (int)gCarDamModelPtr[4];
 	}
-	if (quickSpool != 1) {
+
+	if (quickSpool != 1)
 		DrawSyncCallback(SpecialStartNextBlock);
-	}
+
 }
 
 
@@ -3605,39 +3606,38 @@ void LowModelSpooled(void)
 	int *in_a3;
 
 	piVar5 = (int *)specLoadBuffer;
-	if (specBlocksToLoad == lengthLowBlock + -1) {
+
+	if (specBlocksToLoad == lengthLowBlock + -1) 
+	{
 		piVar5 = (int *)(specLoadBuffer + lowOffset);
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
 
-	// This is a while() {}, not do{}while() xDD
 	if (piVar5 < (int*)(specLoadBuffer + 0x800))
 	{
+		// memcpy
 		do {
-			iVar4 = *piVar5;
-			piVar5 = piVar5 + 1;
-			*modelMemory = iVar4;
-			modelMemory = modelMemory + 1;
+			*modelMemory++ = *piVar5++;
 		} while (piVar5 < (int*)(specLoadBuffer + 0x800));
 	}
-	pMVar3 = gCarLowModelPtr[4];
 
-	if (&gCarLowModelPtr[4][1].poly_block < modelMemory) {
+	if (&gCarLowModelPtr[4][1].poly_block < modelMemory) 
+	{
 		in_a3 = (int *)((int)&gCarLowModelPtr[4]->shape_flags + gCarLowModelPtr[4]->poly_block);
 	}
 
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory)) {
-		piVar5 = &gCarLowModelPtr[4]->normals;
-		piVar1 = &gCarLowModelPtr[4]->point_normals;
+	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
+	{
 		specBlocksToLoad = 0;
-		puVar2 = &gCarLowModelPtr[4]->shape_flags;
 		modelMemory = in_a3;
-		gCarLowModelPtr[4]->vertices = (int)&gCarLowModelPtr[4]->shape_flags + gCarLowModelPtr[4]->vertices;
-		NewLowCarModel[4].nlist = (SVECTOR *)((int)&pMVar3->shape_flags + *piVar1);
-		pMVar3->normals = (int)puVar2 + *piVar5;
-		*(SVECTOR **)&pMVar3->point_normals = NewLowCarModel[4].nlist;
-		pMVar3->poly_block = (int)&pMVar3->shape_flags + pMVar3->poly_block;
-		NewLowCarModel[4].vlist = (SVECTOR *)pMVar3->vertices;
+
+		gCarLowModelPtr[4]->vertices += (int)gCarLowModelPtr[4];
+		gCarLowModelPtr[4]->normals += (int)gCarLowModelPtr[4];
+		gCarLowModelPtr[4]->poly_block += (int)gCarLowModelPtr[4];
+		gCarLowModelPtr[4]->point_normals += (int)gCarLowModelPtr[4];
+
+		NewLowCarModel[4].nlist = (SVECTOR *)gCarLowModelPtr[4]->point_normals;
+		NewLowCarModel[4].vlist = (SVECTOR *)gCarLowModelPtr[4]->vertices;
 	}
 
 	if (quickSpool != 1) {
@@ -3700,8 +3700,6 @@ void CleanSpooled(void)
 	int iVar4;
 	MODEL *model;
 
-	pcVar2 = specmallocptr;
-
 	if (specBlocksToLoad == 6)
 	{
 		lastCleanBlock = *(int *)specmallocptr + 0x80b;
@@ -3715,25 +3713,25 @@ void CleanSpooled(void)
 		iVar3 = iVar4 + 0x80b;
 		lengthLowBlock = (iVar3 >> 0xb) - firstLowBlock;
 
-		lowOffset = (*(int *)specmallocptr + *(int *)(specmallocptr + 4)) - (firstLowBlock * 0x800 + -0xc);
+		lowOffset = (*(int *)specmallocptr + *(int *)(specmallocptr + 4)) - (firstLowBlock * 0x800 + -12);
 
-		firstDamBlock = *(int *)specmallocptr + 0xc;
+		firstDamBlock = *(int *)specmallocptr + 12;
 		firstDamBlock = firstDamBlock >> 0xb;
 
 		iVar3 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0x80b;
 
 		lengthDamBlock = (iVar3 >> 0xb) - firstDamBlock;
-		damOffset = *(int *)specmallocptr - (firstDamBlock * 0x800 + -0xc);
+		damOffset = *(int *)specmallocptr - (firstDamBlock * 0x800 + -12);
 	}
 
 	model = (MODEL *)(specmallocptr + 12);
 
 	if (specBlocksToLoad == 7-lastCleanBlock) 
 	{
-		model->vertices = (int)model + model->vertices;
-		model->poly_block = (int)model + model->poly_block;
-		model->normals = (int)model + model->normals;
-		model->point_normals = (int)model + model->point_normals;
+		model->vertices += (int)model;
+		model->poly_block += (int)model;
+		model->normals += (int)model;
+		model->point_normals += (int)model;
 
 		whichCP = baseSpecCP;
 
@@ -3795,18 +3793,16 @@ void LowSpooled(void)
 	{
 		model = (MODEL *)(specmallocptr + lowOffset);
 
-		model->vertices = (int)model + model->vertices;
-		model->normals = (int)model + model->normals;
-		model->poly_block = (int)model + model->poly_block;
-		model->point_normals = (int)model + model->point_normals;
+		model->vertices += (int)model;
+		model->normals += (int)model;
+		model->poly_block += (int)model;
+		model->point_normals += (int)model;
 
 		buildNewCarFromModel(&NewLowCarModel[4], model, 0);
 	}
 
 	if (quickSpool != 1) 
-	{
 		DrawSyncCallback(SpecialStartNextBlock);
-	}
 }
 
 
@@ -3902,7 +3898,7 @@ void Tada(void)
 
 			SetupSpecCosmetics(specLoadBuffer);
 			FixCarCos(&car_cosmetics[4], MissionHeader->residentModels[4]);
-			SetupSpecDenting(specLoadBuffer + 236);
+			SetupSpecDenting(specLoadBuffer + sizeof(CAR_COSMETICS));
 
 			if (quickSpool == 1)
 				return;
@@ -3979,6 +3975,7 @@ void SpecialStartNextBlock(void)
 	loadaddr = specLoadBuffer;
 	DrawSyncCallback(0);
 
+	// if previous state blocks are fully loaded, start next state
 	if (specBlocksToLoad == 0)
 	{
 		switch (specialState) 
@@ -3986,37 +3983,32 @@ void SpecialStartNextBlock(void)
 			case 0:
 			case 1:
 				specBlocksToLoad = 16;
-				specialState++;
 				break;
 			case 2:
 			case 3:
 				specBlocksToLoad = 1;
-				specialState++;
 				break;
 			case 4:
 				specBlocksToLoad = 7;
-				specialState++;
 				break;
 			case 5:
 			case 8:
 				specBlocksToLoad = lengthLowBlock;
-				specialState++;
 				break;
 			case 6:
 				specBlocksToLoad = lastCleanBlock;
-				specialState++;
 				break;
 			case 7:
 				specBlocksToLoad = lengthDamBlock;
-				specialState++;
 				break;
 			default:
 				specBlocksToLoad = 0;
-				specialState++;
 		}
+
+		specialState++;
 	}
 
-	fileSector = 0x1400 + (citystart[GameLevel] - (citylumps[GameLevel][3].x / 2048)) + (specspooldata[2]-1) * 42;
+	fileSector = 0x1400 + (citystart[GameLevel] - citylumps[GameLevel][CITYLUMP_SPOOL].x / 2048) + (specspooldata[2]-1) * 42;
 
 	switch (specialState)
 	{
@@ -4073,8 +4065,6 @@ void SpecialStartNextBlock(void)
 
 	RequestSpool(3, 0, fileSector, 1, loadaddr, spoolFunc);
 	specBlocksToLoad--;
-
-	printf("specBlocksToLoad = %d (specialState = %d)\n", specBlocksToLoad, specialState);
 }
 
 
@@ -4120,27 +4110,20 @@ void SpecialStartNextBlock(void)
 // [D]
 void CheckSpecialSpool(void)
 {
-	bool bVar1;
+	int ret;
 	int iVar2;
 	_CAR_DATA *lcp;
 
 	if (startSpecSpool != -1 && startSpecSpool+400 < CameraCnt) 
 	{
-		if (specSpoolComplete == 0)
+		while (specSpoolComplete == 0)
 		{
-			do 
-			{
-				SpoolSYNC();
-				iVar2 = DrawSync(1);
+			SpoolSYNC();
 
-				if (iVar2 == 0)
-				{
-					SpecialStartNextBlock();
-				}
+			if (DrawSync(1) == 0)
+				SpecialStartNextBlock();
 
-				StartSpooling();
-
-			} while (specSpoolComplete == 0);
+			StartSpooling();
 		}
 
 		specModelValid = 1;
@@ -4156,35 +4139,30 @@ void CheckSpecialSpool(void)
 		LoadedArea != -1 &&
 		SpecialByRegion[GameLevel][LoadedArea] != MissionHeader->residentModels[4]-7) 
 	{
-		specModelValid = 0;
-
 		lcp = car_data;
-		bVar1 = false;
 
+		// if there are cars that still using special models, deny spooling
 		do	// [A]
 		{
-			if (4 < MissionHeader->residentModels[lcp->ap.model]) 
-				bVar1 = true;
+			if (MissionHeader->residentModels[lcp->ap.model] > 4)
+				return;
 
 			lcp++;
-		} while (lcp < &car_data[19]);
+		} while (lcp < &car_data[20]);
 
-		if (!bVar1) 
-		{
-			startSpecSpool = CameraCnt;
 
-			gCarDamModelPtr[4] = NULL;
-			gCarCleanModelPtr[4] = NULL;
-			gCarLowModelPtr[4] = NULL;
+		specModelValid = 0;
+		startSpecSpool = CameraCnt;
 
-			specspooldata[2] = SpecialByRegion[GameLevel][LoadedArea];
-			MissionHeader->residentModels[4] = SpecialByRegion[GameLevel][LoadedArea] + 7;
+		gCarDamModelPtr[4] = NULL;
+		gCarCleanModelPtr[4] = NULL;
+		gCarLowModelPtr[4] = NULL;
 
-			if (specialState == 0)
-			{
-				SpecialStartNextBlock();
-			}
-		}
+		specspooldata[2] = SpecialByRegion[GameLevel][LoadedArea];
+		MissionHeader->residentModels[4] = SpecialByRegion[GameLevel][LoadedArea] + 7;
+
+		if (specialState == 0)
+			SpecialStartNextBlock();
 	}
 }
 
@@ -4217,7 +4195,7 @@ void QuickSpoolSpecial(void)
 	gCarDamModelPtr[4] = NULL;
 	gCarLowModelPtr[4] = NULL;
 
-	specspooldata[2] = *(short *)(MissionHeader->residentModels + 4) + -7;
+	specspooldata[2] = MissionHeader->residentModels[4]-7;
 
 	do {
 		SpoolSYNC();
@@ -4256,9 +4234,9 @@ void PrepareSecretCar(void)
 	gCarLowModelPtr[4] = NULL;
 
 	specspooldata[2] = 5;
-	specModelValid = '\0';
+	specModelValid = 0;
 	startSpecSpool = CameraCnt;
-	MissionHeader->residentModels[4] = 0xc;
+	MissionHeader->residentModels[4] = 12;
 	specialState = 0;
 	specBlocksToLoad = 0;
 	SpecialStartNextBlock();
@@ -4344,9 +4322,7 @@ void InitSpecSpool(void)
 		allowSpecSpooling = 0;
 	}
 	else {
-		//UNIMPLEMENTED();
-		allowSpecSpooling = 1;	// [A] temporarily disabled
-		//allowSpecSpooling = 0;
+		allowSpecSpooling = 1;
 	}
 
 	specModelValid = 1;

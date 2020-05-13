@@ -211,38 +211,42 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 		{
 			iVar2 = piVar6[1];
 			iVar4 = *(int *)(pcVar7 + *piVar6 + 0xb4);
-			if (iVar2 != -1) {
+			if (iVar2 != -1) 
+			{
 				iVar4 = iVar4 + *(int *)(pcVar7 + iVar2 + 0xb8);
 			}
 
 			iVar3 = piVar6[2];
-			if (iVar3 != -1) {
+			if (iVar3 != -1)
+			{
 				iVar4 = iVar4 + *(int *)(pcVar7 + iVar3 + 0xb4);
 			}
 
 			uVar5 = (iVar4 + 0x800U & 0xfffff800) + 0x800;
-			if ((int)uVar9 < (int)uVar5) {
+			if ((int)uVar9 < (int)uVar5) 
+			{
 				uVar9 = uVar5;
 			}
 
 			uVar5 = (iVar2 - *piVar6) + 0x800U & 0xfffff800;
-			if ((int)uVar9 < (int)uVar5) {
+			if ((int)uVar9 < (int)uVar5)
+			{
 				uVar9 = uVar5;
 			}
 
 			uVar5 = (iVar3 - iVar2) + 0x800U & 0xfffff800;
-			if ((int)uVar9 < (int)uVar5) {
+			if ((int)uVar9 < (int)uVar5) 
+			{
 				uVar9 = uVar5;
 			}
 
-			if ((iVar8 != 0xb) &&
-				(uVar5 = (piVar6[3] - iVar3) + 0x800U & 0xfffff800, (int)uVar9 < (int)uVar5)) 
+			if ((iVar8 != 0xb) && (uVar5 = (piVar6[3] - iVar3) + 0x800U & 0xfffff800, (int)uVar9 < (int)uVar5)) 
 			{
 				uVar9 = uVar5;
 			}
 		}
-		iVar8 = iVar8 + 1;
-		piVar6 = piVar6 + 3;
+		iVar8++;
+		piVar6+=3;
 	} while (iVar8 < 0xd);
 
 	iVar8 = 0;
@@ -251,7 +255,6 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	ppMVar11 = gCarDamModelPtr;
 	ppMVar10 = gCarCleanModelPtr;
 
-	iVar2 = 0;
 	do {
 		*ppMVar10 = NULL;
 		*ppMVar11 = NULL;
@@ -262,7 +265,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			specmallocptr = mallocptr;
 		}
 
-		iVar4 = *(int *)((int)MissionHeader->residentModels + iVar2);
+		iVar4 = MissionHeader->residentModels[iVar8];
 
 		if (iVar4 == 0xd) 
 		{
@@ -280,29 +283,31 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 
 		if (iVar4 != -1) 
 		{
-			piVar6 = (int *)(pcVar7 + iVar4 * 0xc);
+			piVar6 = (int *)(pcVar7 + iVar4 * 12);
 
-			if (*piVar6 != -1) {
+			if (*piVar6 != -1) 
+			{
 				pMVar1 = GetCarModel(pcVar7 + *piVar6 + 0xa0, &mallocptr, 1);
 				*ppMVar10 = pMVar1;
 			}
 
-			if (piVar6[1] != -1) {
+			if (piVar6[1] != -1) 
+			{
 				pMVar1 = GetCarModel(pcVar7 + piVar6[1] + 0xa0, &mallocptr, 0);
 				*ppMVar11 = pMVar1;
 			}
 
-			if (piVar6[2] != -1) {
-				pMVar1 = GetCarModel(pcVar7 + piVar6[2] + 0xa0, &mallocptr, 1);
+			if (piVar6[2] != -1) 
+			{
+				pMVar1 = GetCarModel(pcVar7 + piVar6[2] + 160, &mallocptr, 1);
 				*ppMVar12 = pMVar1;
 			}
 		}
 
-		ppMVar12 = ppMVar12 + 1;
-		ppMVar11 = ppMVar11 + 1;
-		ppMVar10 = ppMVar10 + 1;
-		iVar8 = iVar8 + 1;
-		iVar2 = iVar2 + 4;
+		ppMVar12++;
+		ppMVar11++;
+		ppMVar10++;
+		iVar8++;
 	} while (iVar8 < 5);
 
 	mallocptr = specmallocptr + uVar9;
