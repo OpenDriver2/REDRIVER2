@@ -229,23 +229,8 @@ void AddReverseLight(_CAR_DATA *cp)
 // [D]
 void SetupSpecCosmetics(char *loadbuffer)
 {
-	int iVar1;
-	int *from;
-	int *to;
-
-	to = (int *)(car_cosmetics + 4);
-	from = (int *)(loadbuffer + sizeof(CAR_COSMETICS));
-
-	// Again, while() {} instead of do {} while()
-	if (loadbuffer < (char*)from) 
-	{
-		do {
-			iVar1 = *(int *)loadbuffer;
-			loadbuffer = (char *)((int *)loadbuffer + 1);
-			*to = iVar1;
-			to = to + 1;
-		} while (loadbuffer < (char*)from);
-	}
+	// [A] this is better
+	memcpy(&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 }
 
 

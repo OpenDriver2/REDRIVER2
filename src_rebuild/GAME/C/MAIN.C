@@ -453,8 +453,8 @@ void LoadGameLevel(void)
 
 	ReportMode(0);
 
-	sector = citylumps[GameLevel][0].x / CDSECTOR_SIZE;
-	nsectors = citylumps[GameLevel][0].y / CDSECTOR_SIZE;
+	sector = citylumps[GameLevel][CITYLUMP_DATA1].x / CDSECTOR_SIZE;
+	nsectors = citylumps[GameLevel][CITYLUMP_DATA1].y / CDSECTOR_SIZE;
 
 #ifdef PSX 
 	loadsectors(_frontend_buffer, sector, nsectors);
@@ -471,10 +471,10 @@ void LoadGameLevel(void)
 	// CITYLUMP_TPAGE is right next after DATA1
 	LoadPermanentTPages(&sector);
 
-	malloc_lump = mallocptr;
 	sector = citylumps[GameLevel][CITYLUMP_DATA2].x / CDSECTOR_SIZE;
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y / CDSECTOR_SIZE;
 
+	malloc_lump = mallocptr;
 	mallocptr += (nsectors * CDSECTOR_SIZE);
 
 #ifdef PSX
@@ -487,7 +487,7 @@ void LoadGameLevel(void)
 
 	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));
 
-	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x;
+	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x; // not used anyway
 
 	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
 	InitDebrisNames();

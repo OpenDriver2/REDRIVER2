@@ -816,38 +816,10 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 // [D]
 void SetupSpecDenting(char *loadbuffer)
 {
-	unsigned char *from;
-	unsigned char *to;
-
-	from = (unsigned char*)gCarDamageZoneVerts[4];
-	to = (unsigned char*)&gCarDamageZoneVerts[4][5][50]; // [A]
-	if (true) {
-		do {
-			*from = *loadbuffer;
-			from = from + 1;
-			loadbuffer = (char *)((unsigned char *)loadbuffer + 1);
-		} while (from < to);
-	}
-
-	from = (unsigned char*)gHDCarDamageZonePolys[4];
-	to = (unsigned char*)&gHDCarDamageZonePolys[4][5][70]; // [A]
-	if (true) {
-		do {
-			*from = *loadbuffer;
-			from = from + 1;
-			loadbuffer = (char *)((unsigned char *)loadbuffer + 1);
-		} while (from < to);
-	}
-
-	from = (unsigned char*)gHDCarDamageLevels[4];
-	to = (unsigned char*)&gHDCarDamageLevels[4][255]; // [A]
-	if (true) {
-		do {
-			*from = *loadbuffer;
-			from = from + 1;
-			loadbuffer = (char *)((unsigned char *)loadbuffer + 1);
-		} while (from < to);
-	}
+	// [A] this is better
+	memcpy(*gCarDamageZoneVerts[4], loadbuffer, 300);
+	memcpy(*gHDCarDamageZonePolys[4], loadbuffer + 300, 420);
+	memcpy(gHDCarDamageLevels[4], loadbuffer + 300 + 420, 255);
 }
 
 
