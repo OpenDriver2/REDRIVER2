@@ -560,13 +560,12 @@ XM_Init
 int  XM_Init(int VabID,int XM_ID,int SongID, int FirstCh,
 				 int Loop,int PlayMask,int PlayType,int SFXNum)
 {
-int i;
-int pmsk;
-int Chn;
-int t;
-int SngID;
-int fr;
-
+	int i;
+	int pmsk;
+	int Chn;
+	int t;
+	int SngID;
+	int fr;
 
 	if (SongID==-1)
 	{
@@ -2703,7 +2702,6 @@ int t;
 }
 
 #include "THISDUST.H"
-
 
 /*****************************************************************************
 PlaySFX

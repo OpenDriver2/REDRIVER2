@@ -65,8 +65,6 @@ typedef struct _XMCHANNEL {
 	u_char OldSample;
 	u_long OldSOff;
 	u_long SOffset;
-	u_long LoopFlag;
-	u_long LoopStart;
 	u_char nothing;
 	u_char ChDead;
 	u_char panenvflg;		/* envelope flag */
@@ -169,7 +167,7 @@ typedef struct _XMSONG {
 	u_long *PatAdr2;
 	int	  PlayMask;
 	int	  SFXNum;
-	XMCHANNEL XM_Chnl[32];	  /* max 32 channels per song*/
+	XMCHANNEL XM_Chnl[24];	  /* max 32 channels per song*/
 	int JUp;
 	short	  PlayNext;
 	short BPlayNext;
