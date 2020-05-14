@@ -359,14 +359,14 @@ XM_Update
 
 void XM_Update(void)
 {
-	XM_SCAN=VSync(1);
+	//XM_SCAN=VSync(1);
 
 	if (JP_Do_Nothing)			/* Failsafe switch - if called on interrupt */
 		return;
 
 	UpdateXMData();
 
-	XM_SCAN=VSync(1)-XM_SCAN;
+	//XM_SCAN=VSync(1)-XM_SCAN;
 
 }
 
@@ -2691,6 +2691,7 @@ int t;
 		XMCU=&mu->XM_Chnl[t];
 		XMCU->keyon=0;
 		XMCU->tmpvolume=64;
+		XMCU->kick=1;			// [A] temporary fix
 	}
 
 	mu->posjmp=1;
