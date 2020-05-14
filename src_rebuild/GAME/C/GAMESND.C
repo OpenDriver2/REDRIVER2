@@ -2515,24 +2515,30 @@ void JerichoSpeak(void)
 	/* end block 3 */
 	// End Line: 6264
 
+static int copmusic = 0;
+int current_music_id;
+
+static char header_pt[sizeof(XMHEADER)];
+static char song_pt[sizeof(XMSONG)];
+
+// [D]
 void FunkUpDaBGMTunez(int funk)
 {
-	UNIMPLEMENTED();
-	/*
 	if (funk == 0) {
-		if (copmusic != 0) {
+		if (copmusic != 0)
+		{
 			copmusic = 0;
 			XM_SetSongPos(Song_ID, 0);
 		}
 	}
-	else {
-		if (copmusic == 0) {
+	else 
+	{
+		if (copmusic == 0) 
+		{
 			copmusic = 1;
-			XM_SetSongPos(Song_ID, *(ushort *)(coptrackpos + current_music_id));
+			XM_SetSongPos(Song_ID, coptrackpos[current_music_id]);
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -2778,18 +2784,14 @@ void SoundTasks(void)
 	/* end block 3 */
 	// End Line: 2774
 
-static int copmusic = 0;
-int current_music_id;
-
-static char header_pt[sizeof(XMHEADER)];
-static char song_pt[sizeof(XMSONG)];
-
 // [D]
 void InitMusic(int musicnum)
 {
 	static char *music_pt; // offset 0xc
 	static char *sample_pt; // offset 0x10
 	static char xm_samples; // offset 0x4
+	int sample_len;
+	int music_len;
 
 	char* name = "SOUND\\MUSIC.BIN";
 
@@ -2803,11 +2805,12 @@ void InitMusic(int musicnum)
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char *)musicpos, musicnum * 8, sizeof(musicpos));
 
-	addr = mallocptr;
-	NOTIFY_MALLOC();
+	MALLOC_BEGIN()
 
-	int sample_len = musicpos[2] - musicpos[1];
-	int music_len = musicpos[1] - musicpos[0];
+	addr = mallocptr;
+
+	sample_len = musicpos[2] - musicpos[1];
+	music_len = musicpos[1] - musicpos[0];
 
 	if (NewLevel != 0) 
 	{
@@ -2817,6 +2820,8 @@ void InitMusic(int musicnum)
 		mallocptr = sample_pt;
 		LoadfileSeg(name, addr, musicpos[0], music_len + sample_len);
 	}
+
+	MALLOC_END();
 
 	if (Song_ID == -1) 
 	{
@@ -2832,6 +2837,8 @@ void InitMusic(int musicnum)
 		XM_GetSongSize();
 		XM_SetSongAddress((unsigned char*)song_pt);
 	}
+
+	
 
 	InitXMData((unsigned char*)music_pt, 0, 0);
 
