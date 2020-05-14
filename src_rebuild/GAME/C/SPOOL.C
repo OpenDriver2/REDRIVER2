@@ -47,7 +47,7 @@ int cell_slots_add[5];
 SXYPAIR* Music_And_AmbientOffsets;
 
 AreaDataStr* AreaData;
-unsigned char* AreaTPages;
+unsigned char* AreaTPages;	// 16 per area
 int NumAreas;
 
 char* RegionSpoolInfo;
@@ -1957,6 +1957,7 @@ void ClearRegion(int target_region)
 	} while (--loop != 0);
 
 	ClearMem(PVS_Buffers[target_region]-4, pvsSize[target_region]);
+
 	RoadMapDataRegions[target_region] = (short*)PVS_Buffers[0];
 }
 
@@ -2123,71 +2124,91 @@ void UnpackRegion(int region_to_unpack, int target_barrel_region)
 	/* end block 3 */
 	// End Line: 4182
 
+inline int _getIntAdv(char** ptr)
+{
+	int value = *(int*)*ptr;
+	*ptr += 4;
+	return value;
+}
+
+#define getIntAdv(ptr) _getIntAdv(&ptr)
+
 // [D]
 void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 {
-	int *piVar1;
 	int i;
-	int *piVar3;
-	int *piVar4;
-	int *piVar5;
 	int size;
+	char *alloclist;
 
-	piVar3 = pvsSize;
 	pvsSize[0] = 0;
 	pvsSize[1] = 0;
 	pvsSize[2] = 0;
 	pvsSize[3] = 0;
 
-	size = *(int *)lump_ptr << 0xb;
+	char* ptr = lump_ptr;
 
-	MALLOC_BEGIN();
-
-	model_spool_buffer = mallocptr;
+	size = getIntAdv(ptr) * 2048;
 
 	if (size < 0x10000)
-		size = 0x10000;
+		size = 0x10000;	// smaller still should be fixed to 64k
 
-	mallocptr += size;
-
+	MALLOC_BEGIN();
+	model_spool_buffer = D_MALLOC(size);
 	MALLOC_END();
 
 	cell_slots_add[4] = 0;
 	cell_objects_add[4] = 0;
 
-	Music_And_AmbientOffsets = (SXYPAIR *)(lump_ptr + 8);
-	piVar4 = (int *)((int)(lump_ptr + 4) + *(int *)(lump_ptr + 4) + 4);
+	int music_and_ambients_size = getIntAdv(ptr);
+	Music_And_AmbientOffsets = (SXYPAIR *)ptr;	// [A] seems to be UNUSED
+	ptr += music_and_ambients_size;
 
-	NumAreas = *piVar4;
-	AreaData = (AreaDataStr *)(piVar4 + 1);
-	AreaTPages = (unsigned char *)(piVar4 + NumAreas * 4 + 1);
+	NumAreas = getIntAdv(ptr);
+	AreaData = (AreaDataStr *)ptr; 
+	ptr += sizeof(AreaDataStr) * NumAreas;
 
-	piVar5 = (int *)AreaTPages + NumAreas * 4;
-	piVar4 = piVar5;
+	AreaTPages = (unsigned char *)ptr;
+	ptr += NumAreas * 16;
 
-	i = 0;
-	do {
-		MALLOC_BEGIN();
+	// get the pointers
+	int* slots_add = (int *)ptr;
+	ptr += sizeof(int) * 4;
+
+	int* objects_add = (int *)ptr;
+	ptr += sizeof(int) * 4;
+
+	int* pvsSizes = (int *)ptr;
+	ptr += sizeof(int) * 4;
+
+	for (i = 0; i < 4; i++)
+	{
+		int slots_count = slots_add[i];
+		int objects_count = objects_add[i];
+
+		// set last totals
 		cell_objects_add[i] = cell_objects_add[4];
 		cell_slots_add[i] = cell_slots_add[4];
-		PVS_Buffers[i] = mallocptr + 4;
+		
+		// increment totals
+		cell_slots_add[4] += slots_count;
+		cell_objects_add[4] += objects_count;
 
-		cell_slots_add[4] += *piVar4;
-		cell_objects_add[4] += piVar4[4];
+		// by the fact it's a roadmap size + pvs size
+		pvsSize[i] = pvsSizes[i] + 0x7ffU & 0xfffff800;
 
-		*piVar3 = piVar4[8] + 0x7ffU & 0xfffff800;
-		piVar3 = (int *)((uint *)piVar3 + 1);
-		piVar1 = piVar4 + 8;
-		piVar4++;
-
-		mallocptr += (*piVar1 + 0x7ffU & 0xfffff800);
+		MALLOC_BEGIN();
+		alloclist = D_MALLOC(pvsSize[i]);
 		MALLOC_END();
 
-		i++;
-	} while (i < 4);
+		PVS_Buffers[i] = alloclist + 4;		// +4 for -1 cases
+	}
 
-	RegionSpoolInfo = (char *)((int)(piVar5 + 0xc) + piVar5[0xc] * 2 + 8);
-	spoolinfo_offsets = (ushort *)(piVar5 + 0xd);
+	int num_of_regions = getIntAdv(ptr);
+	spoolinfo_offsets = (ushort*)ptr;
+	ptr += sizeof(ushort) * num_of_regions;
+
+	int spoolinfo_size = getIntAdv(ptr);
+	RegionSpoolInfo = ptr;
 }
 
 
