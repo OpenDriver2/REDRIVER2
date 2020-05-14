@@ -658,6 +658,8 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 			alSourcef(alSource, AL_PITCH, pitch);
 		}
+		
+		// TODO: ADSR
 	}
 }
 
@@ -851,10 +853,20 @@ void SpuGetVoicePitch(int vNum, unsigned short *pitch)
 
 void SpuSetVoiceAR(int vNum, unsigned short AR)
 {
-	UNIMPLEMENTED();
+	SpuVoiceAttr attr;
+
+	attr.mask = SPU_VOICE_ADSR_AR;
+	attr.ar = AR;
+
+	SpuSetVoiceAttr(&attr);
 }
 
 void SpuSetVoiceRR(int vNum, unsigned short RR)
 {
-	UNIMPLEMENTED();
+	SpuVoiceAttr attr;
+
+	attr.mask = SPU_VOICE_ADSR_RR;
+	attr.rr = RR;
+
+	SpuSetVoiceAttr(&attr);
 }
