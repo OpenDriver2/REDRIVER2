@@ -3111,79 +3111,68 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	ushort *puVar1;
 	ushort *puVar2;
 	ushort uVar3;
-	int iVar4;
-	int *piVar5;
+	int loop;
 	uint uVar6;
 	uint uVar7;
 
-	//unpack_cellptr_tbl[0] is region_to_unpack;
-	//unpack_cellptr_tbl[1] is target_barrel_region;
-	//unpack_cellptr_tbl[2] is cell_addr;
-
+	int packtype;
+	
 	unpack_cellptr_flag = 0;
-	iVar4 = *(int *)(cell_addr + 4);
+	packtype = *(int *)(cell_addr + 4);
 	puVar1 = (ushort *)(cell_addr + 8);
 
-	if (iVar4 == 0) 
+	if (packtype == 0)
 	{
-		iVar4 = 0x3ff;
-		puVar1 = cell_ptrs + target_barrel_region * 0x400 + 0x3ff;
-		do {
-			*puVar1 = 0xffff;
-			iVar4 = iVar4 + -1;
-			puVar1 = puVar1 + -1;
-		} while (-1 < iVar4);
+		puVar1 = cell_ptrs + target_barrel_region * 1024;
+
+		for (loop = 0; loop < 1024; loop++)
+			*puVar1++ = 0xffff;
 	}
-	else {
-		if (iVar4 == 1)
+	else if (packtype == 1)
+	{
+		puVar2 = cell_ptrs + target_barrel_region * 1024;
+
+		for (loop = 0; loop < 1024; loop++)
 		{
-			piVar5 = cell_slots_add + target_barrel_region;
-			iVar4 = 0x3ff;
-			puVar2 = cell_ptrs + target_barrel_region * 0x400;
-			do {
-				uVar3 = *puVar1;
-				puVar1 = puVar1 + 1;
-				if (uVar3 != 0xffff) {
-					uVar3 = uVar3 + *(short *)piVar5;
-				}
-				*puVar2 = uVar3;
-				iVar4 = iVar4 + -1;
-				puVar2 = puVar2 + 1;
-			} while (-1 < iVar4);
-			return;
-		}
+			uVar3 = *puVar1++;
 
-		if (iVar4 == 2)
+			if (uVar3 != 0xffff)
+				uVar3 += cell_slots_add[target_barrel_region];
+
+			*puVar2++ = uVar3;
+		}
+	}
+	else if (packtype == 2)
+	{
+		uVar6 = 0x8000;
+		uVar7 = (uint)*puVar1;
+
+		puVar2 = (ushort *)(cell_addr + 10);
+		puVar1 = cell_ptrs + target_barrel_region * 1024;
+
+		for (loop = 0; loop < 1024; loop++)
 		{
-			uVar6 = 0x8000;
-			uVar7 = (uint)*puVar1;
-			puVar2 = (ushort *)(cell_addr + 10);
-			piVar5 = cell_slots_add + target_barrel_region;
-			iVar4 = 0x3ff;
-			puVar1 = cell_ptrs + target_barrel_region * 0x400;
-			do {
-				if ((uVar7 & uVar6) == 0) {
-					uVar3 = 0xffff;
-				}
-				else {
-					uVar3 = *puVar2;
-					puVar2 = puVar2 + 1;
-					uVar3 = uVar3 + *(short *)piVar5;
-				}
-				uVar6 = (int)uVar6 >> 1;
-				*puVar1 = uVar3;
-				if (uVar6 == 0) {
-					uVar6 = 0x8000;
-					uVar7 = (uint)*puVar2;
-					puVar2 = puVar2 + 1;
-				}
-				iVar4 = iVar4 + -1;
-				puVar1 = puVar1 + 1;
-			} while (-1 < iVar4);
+			if (uVar7 & uVar6)
+			{
+				uVar3 = *puVar2++;
+				uVar3 += cell_slots_add[target_barrel_region];
 
-			return;
+			}
+			else
+				uVar3 = 0xffff;
+
+			uVar6 >>= 1;
+			*puVar1++ = uVar3;
+
+			if (uVar6 == 0)
+			{
+				uVar6 = 0x8000;
+				uVar7 = *puVar2++;
+			}
 		}
-
+	}
+	else 
+	{
 		if (FrameCnt != 0x78654321)
 		{
 			do {
@@ -3191,7 +3180,6 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 			} while (FrameCnt != 0x78654321);
 
 			unpack_cellptr_flag = 0;
-			return;
 		}
 	}
 }
