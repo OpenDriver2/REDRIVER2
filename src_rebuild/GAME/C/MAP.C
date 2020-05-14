@@ -831,12 +831,11 @@ void ControlMap(void)
 	region_z = current_cell_z / 32;
 
 	old_region = current_region;
-	region_to_unpack = cells_across;
 
 	current_barrel_region_xcell = current_cell_x - region_x * 32;
 	current_barrel_region_zcell = current_cell_z - region_z * 32;
 
-	region_to_unpack = region_x + region_z * (region_to_unpack / 32);
+	region_to_unpack = region_x + region_z * (cells_across / 32);
 	
 	if (current_region == -1)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
@@ -859,12 +858,11 @@ void ControlMap(void)
 	region_z = current_cell_z / cell_header.region_size;
 
 	old_region = current_region;
-	region_to_unpack = cells_across;
 
 	current_barrel_region_xcell = current_cell_x - region_x * cell_header.region_size;
 	current_barrel_region_zcell = current_cell_z - region_z * cell_header.region_size;
 
-	region_to_unpack = region_x + region_z * (region_to_unpack / cell_header.region_size);
+	region_to_unpack = region_x + region_z * (cells_across / cell_header.region_size);
 
 	if (current_region == -1)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
@@ -1073,46 +1071,33 @@ void InitMap(void)
 	/* end block 3 */
 	// End Line: 2686
 
+// [D] [A]
 void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-	uint uVar4;
-	int iVar5;
+	int cz;
+	int cx;
 
-	iVar5 = pos->vx + units_across_halved;
-	if (iVar5 < 0) {
-		iVar5 = iVar5 + 0x7ff;
-	}
-	iVar2 = pos->vz + units_down_halved;
-	iVar5 = iVar5 >> 0xb;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0x7ff;
-	}
-	iVar2 = iVar2 >> 0xb;
-	*ccx = iVar5;
-	*ccz = iVar2;
-	iVar1 = iVar5;
-	if (iVar5 < 0) {
-		iVar1 = iVar5 + 0x1f;
-	}
-	uVar4 = iVar1 >> 5;
-	iVar1 = iVar2;
-	if (iVar2 < 0) {
-		iVar1 = iVar2 + 0x1f;
-	}
-	uVar3 = iVar1 >> 5;
-	iVar1 = cells_across;
-	if (cells_across < 0) {
-		iVar1 = cells_across + 0x1f;
-	}
-	GetPVSRegionCell2(uVar4 & 1 | (uVar3 & 1) << 1, uVar4 + uVar3 * (iVar1 >> 5),
-		(iVar2 + uVar3 * -0x20) * 0x20 + iVar5 + uVar4 * -0x20, tgt);
-	return;
-	*/
+	int rz;
+	int rx;
+
+	cx = (pos->vx + units_across_halved) / 2048;
+	cz = (pos->vz + units_down_halved) / 2048;
+
+	*ccx = cx;
+	*ccz = cz;
+
+	rx = cx / 32;
+	rz = cz / 32;
+
+	int barrel_region_x = (rx & 1);
+	int barrel_region_z = (rz & 1);
+
+	// [A] might be wrong...
+	GetPVSRegionCell2(
+		barrel_region_x + barrel_region_z * 2,
+		rx + rz * (cells_across / 32), 
+		(cz - rz * 32) * 32 + cx - rx * 32, 
+		tgt);
 }
 
 
@@ -1217,136 +1202,145 @@ unsigned char *PVSEncodeTable = NULL;
 // byte swapped short
 #define SW_SHORT(a,b) (((a) << 8) | (b))
 
-// [A] - might contain bugs
+// [A] - bugged
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	// [A] next code is crashing game
-	// Does not correctly decoding
+	// don't draw non-loaded regions
+	for (int k = 0; k < pvs_square_sq; k++)
+		output[k] = 1;
+
 	UNIMPLEMENTED();
 	return;
 
 	char scratchPad[1024];
 
 	unsigned char bVar1;
-    int local_v0_580;
-    int iVar2;
-    char *pcVar3;
-    unsigned char *pbVar4;
-    uint uVar5;
-    int iVar6;
-    int iVar7;
-    int iVar8;
-    int iVar9;
-    char *decodebuf;
+	int local_v0_580;
+	int iVar2;
+	char *pcVar3;
+	unsigned char *pbVar4;
+	uint uVar5;
+	int iVar6;
+	int iVar7;
+	int iVar8;
+	int iVar9;
+	char *decodebuf;
 
-    decodebuf = scratchPad;
-    ClearMem(decodebuf,pvs_square_sq);
+	decodebuf = scratchPad;
+	ClearMem(decodebuf,pvs_square_sq);
 
-    iVar2 = 0;
+	iVar2 = 0;
 
 	// this is correct I HOPE
-    if (sz != 0) {
-        pcVar3 = nybblearray;
-        do 
+	if (sz != 0) 
+	{
+		pcVar3 = nybblearray;
+		do 
 		{
-            pbVar4 = (unsigned char *)(celldata + iVar2);
-            iVar2 = iVar2 + 1;
-            *(ushort *)pcVar3 = SW_SHORT(*pbVar4,*pbVar4 >> 4) & 0xf0f;
-            pcVar3 = (char *)((ushort *)pcVar3 + 1);
-        } while (iVar2 < (int)(uint)sz);
-    }
+			pbVar4 = (unsigned char *)(celldata + iVar2);
+            
+			*(ushort *)pcVar3 = SW_SHORT(*pbVar4,*pbVar4 >> 4) & 0xf0f;
+			pcVar3 += 2;
 
-    iVar9 = ((uint)sz & 0x7fff) << 1;
-    iVar2 = 0;
+			iVar2++;
+		} while (iVar2 < sz);
+	}
 
-	/*
-    if ((sz & 0x7fff) != 0)
+	iVar9 = ((uint)sz & 0x7fff) << 1;
+	iVar2 = 0;
+
+	if ((sz & 0x7fff) != 0)
 	{
-        pcVar3 = nybblearray;
-        iVar8 = 0;
-        do {
-            bVar1 = *pcVar3;
-            iVar7 = iVar8 + 1;
-            if (bVar1 < 0xc)
+		pcVar3 = nybblearray;
+		iVar8 = 0;
+		do {
+			bVar1 = *pcVar3;
+			iVar7 = iVar8 + 1;
+
+			if (bVar1 < 12)
 			{
-                iVar8 = (uint)bVar1 * 2;
-LAB_0005d0c8:
-                uVar5 = (uint)SW_SHORT(PVSEncodeTable[iVar8],(PVSEncodeTable + iVar8)[1]);
-            }
-            else {
-                if (iVar7 == iVar9) break;
-                uVar5 = ((uint)bVar1 & 3) * 0x10 + (uint)nybblearray[iVar8 + 1];
-                iVar7 = iVar8 + 2;
-                if (uVar5 < 0x3c) {
-                    iVar8 = uVar5 * 2 + 0x18;
-                    goto LAB_0005d0c8;
-                }
-                iVar7 = iVar8 + 4;
-                uVar5 = ((uVar5 & 3) * 0x10 + (uint)nybblearray[iVar8 + 2]) * 0x10 +
-                        (uint)nybblearray[iVar8 + 3];
-            }
-            iVar8 = iVar2 + ((int)uVar5 >> 1);
-            *(unsigned char *)(iVar8 + decodebuf) = 1;
-            iVar2 = iVar8 + 1;
-            if ((uVar5 & 1) != 0) {
-                *(unsigned char *)((int)&decodebuf + iVar8 + 1) = 1;
-                iVar2 = iVar8 + 2;
-            }
-            pcVar3 = nybblearray + iVar7;
-            iVar8 = iVar7;
-        } while (iVar7 < iVar9);
-    }
+				iVar8 = (uint)bVar1 * 2;
+	LAB_0005d0c8:
+				uVar5 = (uint)SW_SHORT(PVSEncodeTable[iVar8],PVSEncodeTable[iVar8 + 1]);
+			}
+			else
+			{
+				if (iVar7 == iVar9) 
+					break;
 
-    iVar2 = pvs_square;
+				uVar5 = ((uint)bVar1 & 3) * 0x10 + (uint)nybblearray[iVar8 + 1];
+				iVar7 = iVar8 + 2;
 
-    if (havanaCorruptCellBodge == 0) 
+				if (uVar5 < 0x3c) 
+				{
+					iVar8 = uVar5 * 2 + 0x18;
+					goto LAB_0005d0c8;
+				}
+
+				iVar7 = iVar8 + 4;
+				uVar5 = ((uVar5 & 3) * 0x10 + (uint)nybblearray[iVar8 + 2]) * 0x10 +
+						(uint)nybblearray[iVar8 + 3];
+			}
+			iVar8 = iVar2 + ((int)uVar5 >> 1);
+			*(unsigned char *)(iVar8 + decodebuf) = 1;
+			iVar2 = iVar8 + 1;
+
+			if ((uVar5 & 1) != 0) 
+			{
+				*(unsigned char *)((int)decodebuf + iVar8 + 1) = 1;
+				iVar2 = iVar8 + 2;
+			}
+
+			pcVar3 = nybblearray + iVar7;
+			iVar8 = iVar7;
+		} while (iVar7 < iVar9);
+	}
+
+	iVar2 = pvs_square;
+
+	if (havanaCorruptCellBodge == 0) 
 	{
-        *(unsigned char *)(pvs_square_sq + decodebuf - 1) = *(unsigned char *)(pvs_square_sq + decodebuf - 1) ^ 1;
-    }
+		*(unsigned char *)(pvs_square_sq + decodebuf - 1) = *(unsigned char *)(pvs_square_sq + decodebuf - 1) ^ 1;
+	}
 
-    iVar7 = iVar2 + -2;
-    iVar8 = iVar2 + -1;
-    pbVar4 = (unsigned char *)(iVar7 * iVar2 + iVar2 + decodebuf - 1);
-    iVar9 = iVar7;
-    while (-1 < iVar9) {
-        iVar9 = iVar9 + -1;
-        iVar6 = iVar2;
-        if (0 < iVar2) {
-            do {
-                iVar6 = iVar6 + -1;
-                *pbVar4 = *pbVar4 ^ pbVar4[iVar2];
-                pbVar4 = pbVar4 + -1;
-            } while (iVar6 != 0);
-        }
-    }
-    pbVar4 = (unsigned char *)(iVar8 * iVar2 + iVar2 + decodebuf - 2);
-    while (-1 < iVar8) {
-        iVar8 = iVar8 + -1;
-        iVar2 = iVar7;
-        while (-1 < iVar2) {
-            iVar2 = iVar2 + -1;
-            *pbVar4 = *pbVar4 ^ pbVar4[1];
-            pbVar4 = pbVar4 + -1;
-        }
-        pbVar4 = pbVar4 + -1;
-    }
-    iVar2 = 0x6e;
-    do {
-        local_v0_580 = *decodebuf;
-        decodebuf = decodebuf + 1;
-        iVar2 = iVar2 + -1;
-        *(int *)output = local_v0_580;
-        output = (char *)((int *)output + 1);
-    } while (iVar2 != -1);
-	*/
+	iVar7 = iVar2-2;
+	iVar8 = iVar2-1;
+	pbVar4 = (unsigned char *)(iVar7 * iVar2 + iVar2 + decodebuf - 1);
+	iVar9 = iVar7;
 
-	// [A] added temporarily as override
-	iVar2 = 440;
-	do {
-		*output++ = 1;
-		iVar2--;
-	} while (iVar2 != -1);
+	while (-1 < iVar9) 
+	{
+		iVar9 = iVar9 + -1;
+		iVar6 = iVar2;
 
+		if (0 < iVar2)
+		{
+			do {
+				*pbVar4 = *pbVar4 ^ pbVar4[iVar2];
+				pbVar4--;
+				iVar6--;
+			} while (iVar6 != 0);
+		}
+	}
+	pbVar4 = (unsigned char *)(iVar8 * iVar2 + iVar2 + decodebuf - 2);
+
+	while (-1 < iVar8) 
+	{
+		iVar8--;
+		iVar2 = iVar7;
+
+		while (-1 < iVar2)
+		{
+			*pbVar4 = *pbVar4 ^ pbVar4[1];
+			pbVar4--;
+
+			iVar2--;
+		}
+
+		pbVar4--;
+	}
+
+	memcpy(output, decodebuf, pvs_square_sq-1);	// 110*4
 }
 
 
@@ -1428,46 +1422,35 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 	uint havanaCorruptCellBodge;
 	char *tbp;
 	char *bp;
-	uint length;
+	ushort length;
 
-	if (regions_unpacked[source_region] == region && (loading_region[source_region] == -1)) 
+	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1) 
 	{
 		bp = PVS_Buffers[source_region];
-		PVSEncodeTable = (unsigned char *)(bp + 0x802);
+		PVSEncodeTable = (unsigned char *)(bp + 2050);
 		tbp = bp + (cell << 1);
 
-		length = SW_SHORT(tbp[2], tbp[3]) - SW_SHORT(*tbp, tbp[1]) & 0xffff;
+		length = SW_SHORT(tbp[2], tbp[3]) - SW_SHORT(*tbp, tbp[1]);// &0xffff;
 
 		if (length == 0) 
 		{
-			k = 0;
-			if (0 < pvs_square_sq) {
-				do {
-					*output++ = 1;
-					k++;
-				} while (k < pvs_square_sq);
-			}
+			for (k = 0; k < pvs_square_sq; k++)
+				output[k] = 1;
 		}
-		else {
+		else 
+		{
 			havanaCorruptCellBodge = 0;
-			if ((regions_unpacked[source_region] == 0x9e) && (cell == 0xa8)) {
-				havanaCorruptCellBodge = (uint)(GameLevel == 1);
-			}
+			if (regions_unpacked[source_region] == 158 && cell == 168) 
+				havanaCorruptCellBodge = (GameLevel == 1);
 
-			PVSDecode(output, bp + SW_SHORT(*tbp, tbp[1]), (ushort)length, havanaCorruptCellBodge);
+			PVSDecode(output, bp + SW_SHORT(*tbp, tbp[1]), length, havanaCorruptCellBodge);
 		}
 	}
 	else 
 	{
-		k = 0;
-		if (0 < pvs_square_sq) 
-		{
-			do 
-			{
-				*output++ = 0;
-				k++;
-			} while (k < pvs_square_sq);
-		}
+		// don't draw non-loaded regions
+		for (k = 0; k < pvs_square_sq; k++)
+			output[k] = 0;
 	}
 }
 

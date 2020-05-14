@@ -116,7 +116,7 @@ PACKED_CELL_OBJECT *spriteList[75];
 OUT_CELL_FILE_HEADER cell_header;
 #endif // PSX
 
-char CurrentPVS[444]; // 21*21+4
+char CurrentPVS[444]; // 20*20+4
 MATRIX2 matrixtable[64];
 int setupYet = 0;
 
@@ -1002,8 +1002,8 @@ void DrawMapPSX(int *comp_val)
 
 					if( rightPlane < 0 && leftPlane > 0 && backPlane < farClipLimit &&  // check planes
 						cellx > -1 && cellx < cells_across &&							// check cell ranges
-						cellz > -1 && cellz < cells_down /*&&
-						PVS_ptr[iVar19]*/) // check PVS table		// [A] please enable after PVSDecode will work properly
+						cellz > -1 && cellz < cells_down &&
+						PVS_ptr[iVar19]) // check PVS table		// [A] please enable after PVSDecode will work properly
 					{
 						ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
 
@@ -1322,23 +1322,30 @@ void SetupPlaneColours(ulong ambient)
 // [D]
 void SetupDrawMapPSX(void)
 {
-	current_cell_x = camera_position.vx + units_across_halved;
-	current_cell_x /= 2048;		// cell_header.cell_size
+	int region_x1; 
+	int region_z1;
+	int current_barrel_region_x1;
+	int current_barrel_region_z1;
 
-	current_cell_z = camera_position.vz + units_down_halved;
-	current_cell_z /= 2048;
-	
+	int theta;
+
+	current_cell_x = (camera_position.vx + units_across_halved) / 2048;// cell_header.cell_size
+	current_cell_z = (camera_position.vz + units_down_halved) / 2048;
+
+	region_x1 = current_cell_x / 32; // cell_header.region_size;
+	region_z1 = current_cell_z / 32; // cell_header.region_size;
+
+	current_barrel_region_x1 = (region_x1 & 1);
+	current_barrel_region_z1 = (region_z1 & 1);
+
 	GetPVSRegionCell2(
-		(current_cell_x / 32 & 1) | (current_cell_z / 32 & 1) / 2,				// cell_header.region_size
-		(current_cell_x / 32) + (current_cell_z / 32) * (cells_across / 32),
-		((current_cell_z & 31) / 32) | (current_cell_x & 31),
+		current_barrel_region_x1 + current_barrel_region_z1 * 2,
+		region_x1 + region_z1 * cells_across / 32,
+		(current_cell_z % 32) * 32 + (current_cell_x % 32), 
 		CurrentPVS);
 
-	// [A]
-	for (int i = 0; i < 64; i++)
-	{
-		MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[i], (MATRIX*)&CompoundMatrix[i]);
-	}
+	for (theta = 0; theta < 64; theta++)
+		MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[theta], (MATRIX*)&CompoundMatrix[theta]);
 
 	InitFrustrumMatrix();
 	SetFrustrumMatrix();
