@@ -336,28 +336,21 @@ void InitCellData(void)
 {
 	int loop;
 
-	cell_ptrs = (ushort *)mallocptr;
+	MALLOC_BEGIN();
 
-	loop = 4095;
-	do {
+	cell_ptrs = (ushort *)D_MALLOC(4096 * sizeof(short));
+
+	// init cell pointers
+	for (loop = 0; loop < 4096; loop++)
 		cell_ptrs[loop] = 0xFF;
-		loop--;
-	} while (0 < loop);
 
-	cell_objects = (PACKED_CELL_OBJECT *)(mallocptr + 8192);
+	// (mallocptr + 8192);
+	cell_objects = (PACKED_CELL_OBJECT*)D_MALLOC((num_straddlers + cell_objects_add[4]) * sizeof(PACKED_CELL_OBJECT));
+	cells = (CELL_DATA*)D_MALLOC(cell_slots_add[4] * sizeof(CELL_DATA));
 
-	mallocptr = (char *)(&cell_objects[num_straddlers + cell_objects_add[4]].pos.vx + cell_slots_add[4]);
+	MALLOC_END();
 
-	if (((uint)mallocptr & 2) != 0) 
-	{
-		mallocptr = (char *)((ushort *)mallocptr + 1);
-	}
-	NOTIFY_MALLOC();
-
-	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / 8;	// might be error
-	cells = (CELL_DATA *)(cell_objects + num_straddlers + cell_objects_add[4]);
-
-	return;
+	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / 8;
 }
 
 
