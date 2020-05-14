@@ -187,135 +187,119 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 // [D]
 int ProcessCarModelLump(char *lump_ptr, int lump_size)
 {
-	MODEL *pMVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	uint uVar5;
-	int *piVar6;
-	char *pcVar7;
-	int iVar8;
-	uint uVar9;
-	MODEL **ppMVar10;
-	MODEL **ppMVar11;
-	MODEL **ppMVar12;
+	
+	int size;
+	int *offsets;
+	char *models_offset;
 
-	uVar9 = 0;
-	iVar8 = 8;
-	pcVar7 = lump_ptr + 4;
-	piVar6 = (int *)(lump_ptr + 100);
 
-	// compute size
-	do {
-		if (*piVar6 != -1)
+	MODEL *model;
+	int model_number;
+	int i;
+
+	int specMemReq;
+
+	specMemReq = 0;
+
+	models_offset = lump_ptr + 4 + 160;	// also skip model count
+	offsets = (int*)(lump_ptr + 100);
+
+	// compute special memory requirement for spooling
+	for (i = 8; i < 13; i++)
+	{
+		int cleanOfs = offsets[0];
+		int damOfs = offsets[1];
+		int lowOfs = offsets[2];
+
+		if (cleanOfs != -1)
 		{
-			iVar2 = piVar6[1];
-			iVar4 = *(int *)(pcVar7 + *piVar6 + 0xb4);
-			if (iVar2 != -1) 
-			{
-				iVar4 = iVar4 + *(int *)(pcVar7 + iVar2 + 0xb8);
-			}
+			size = ((MODEL*)(models_offset + cleanOfs))->poly_block;
 
-			iVar3 = piVar6[2];
-			if (iVar3 != -1)
-			{
-				iVar4 = iVar4 + *(int *)(pcVar7 + iVar3 + 0xb4);
-			}
+			if (damOfs != -1)
+				size += ((MODEL*)(models_offset + damOfs))->normals;
 
-			uVar5 = (iVar4 + 0x800U & 0xfffff800) + 0x800;
-			if ((int)uVar9 < (int)uVar5) 
-			{
-				uVar9 = uVar5;
-			}
+			if (lowOfs != -1)
+				size += ((MODEL*)(models_offset + lowOfs))->poly_block;
 
-			uVar5 = (iVar2 - *piVar6) + 0x800U & 0xfffff800;
-			if ((int)uVar9 < (int)uVar5)
-			{
-				uVar9 = uVar5;
-			}
+			size = (size + 2048) + 2048;
+			if (size > specMemReq)
+				specMemReq = size;
 
-			uVar5 = (iVar3 - iVar2) + 0x800U & 0xfffff800;
-			if ((int)uVar9 < (int)uVar5) 
-			{
-				uVar9 = uVar5;
-			}
+			size = (damOfs - cleanOfs) + 2048;
+			if (size > specMemReq)
+				specMemReq = size;
 
-			if ((iVar8 != 0xb) && (uVar5 = (piVar6[3] - iVar3) + 0x800U & 0xfffff800, (int)uVar9 < (int)uVar5)) 
+			size = (lowOfs - damOfs) + 2048;
+			if (size > specMemReq)
+				specMemReq = size;
+
+			if (i != 11)	// what the fuck is this hack about?
 			{
-				uVar9 = uVar5;
+				// next model offset?
+				size = (offsets[3] - lowOfs) + 2048;
+
+				if(size > specMemReq)
+					specMemReq = size;
 			}
 		}
-		iVar8++;
-		piVar6+=3;
-	} while (iVar8 < 0xd);
 
-	iVar8 = 0;
+		offsets += 3;
+	}
 
-	ppMVar12 = gCarLowModelPtr;
-	ppMVar11 = gCarDamModelPtr;
-	ppMVar10 = gCarCleanModelPtr;
-
-	do {
-		*ppMVar10 = NULL;
-		*ppMVar11 = NULL;
-		*ppMVar12 = NULL;
-
-		MALLOC_BEGIN();
-
-		if (iVar8 == 4) 
+	for (i = 0; i < 5; i++)
+	{
+		if (i == 4)
 			specmallocptr = mallocptr;
 
-		iVar4 = MissionHeader->residentModels[iVar8];
+		model_number = MissionHeader->residentModels[i];
 
-		if (iVar4 == 0xd) 
+		if (model_number == 13)
 		{
-			iVar4 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
+			model_number = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 
-			if (iVar4 < 1) 
-			{
-				iVar4 = 1;
-			}
-			else if (4 < iVar4)
-			{
-				iVar4 = 4;
-			}
+			if (model_number < 1)
+				model_number = 1;
+			else if (model_number > 4)
+				model_number = 4;
 		}
 
-		if (iVar4 != -1) 
+		if (model_number != -1)
 		{
-			piVar6 = (int *)(pcVar7 + iVar4 * 12);
+			offsets = (int *)(lump_ptr + 4 + model_number * sizeof(int)*3);
 
-			if (*piVar6 != -1) 
+			int cleanOfs = offsets[0];
+			int damOfs = offsets[1];
+			int lowOfs = offsets[2];
+
+			if (cleanOfs != -1)
 			{
-				pMVar1 = GetCarModel(pcVar7 + *piVar6 + 0xa0, &mallocptr, 1);
-				*ppMVar10 = pMVar1;
+				MALLOC_BEGIN();
+				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1);
+				gCarCleanModelPtr[i] = model;
+				MALLOC_END();
 			}
 
-			if (piVar6[1] != -1) 
+			if (damOfs != -1)
 			{
-				pMVar1 = GetCarModel(pcVar7 + piVar6[1] + 0xa0, &mallocptr, 0);
-				*ppMVar11 = pMVar1;
+				MALLOC_BEGIN();
+				model = GetCarModel(models_offset + damOfs, &mallocptr, 0);
+				gCarDamModelPtr[i] = model;
+				MALLOC_END();
 			}
 
-			if (piVar6[2] != -1) 
+			if (lowOfs != -1)
 			{
-				pMVar1 = GetCarModel(pcVar7 + piVar6[2] + 160, &mallocptr, 1);
-				*ppMVar12 = pMVar1;
+				MALLOC_BEGIN();
+				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1);
+				gCarLowModelPtr[i] = model;
+				MALLOC_END();
 			}
 		}
-
-		MALLOC_END();
-
-		ppMVar12++;
-		ppMVar11++;
-		ppMVar10++;
-		iVar8++;
-	} while (iVar8 < 5);
-
+	}
 
 	MALLOC_BEGIN();
-	mallocptr = specmallocptr + uVar9 + 2048; // [A] temporary here, fixes car model spooling
-	specLoadBuffer = mallocptr - 2048;
+	mallocptr = specmallocptr + specMemReq;
+	specLoadBuffer = specmallocptr + specMemReq - 2048;
 	MALLOC_END();
 
 	buildNewCars();
