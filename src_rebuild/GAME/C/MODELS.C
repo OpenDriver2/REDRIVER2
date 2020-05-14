@@ -260,11 +260,10 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 		*ppMVar11 = NULL;
 		*ppMVar12 = NULL;
 
+		MALLOC_BEGIN();
+
 		if (iVar8 == 4) 
-		{
 			specmallocptr = mallocptr;
-			NOTIFY_MALLOC();
-		}
 
 		iVar4 = MissionHeader->residentModels[iVar8];
 
@@ -290,23 +289,22 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			{
 				pMVar1 = GetCarModel(pcVar7 + *piVar6 + 0xa0, &mallocptr, 1);
 				*ppMVar10 = pMVar1;
-				NOTIFY_MALLOC();
 			}
 
 			if (piVar6[1] != -1) 
 			{
 				pMVar1 = GetCarModel(pcVar7 + piVar6[1] + 0xa0, &mallocptr, 0);
 				*ppMVar11 = pMVar1;
-				NOTIFY_MALLOC();
 			}
 
 			if (piVar6[2] != -1) 
 			{
 				pMVar1 = GetCarModel(pcVar7 + piVar6[2] + 160, &mallocptr, 1);
 				*ppMVar12 = pMVar1;
-				NOTIFY_MALLOC();
 			}
 		}
+
+		MALLOC_END();
 
 		ppMVar12++;
 		ppMVar11++;
@@ -315,8 +313,10 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	} while (iVar8 < 5);
 
 
+	MALLOC_BEGIN();
 	mallocptr = specmallocptr + uVar9 + 2048; // [A] temporary here, fixes car model spooling
 	specLoadBuffer = mallocptr - 2048;
+	MALLOC_END();
 
 	buildNewCars();
 

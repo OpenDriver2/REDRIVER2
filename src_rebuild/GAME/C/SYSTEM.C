@@ -27,7 +27,7 @@ char g_allocatedMem[0x200000 + DEBUG_MARK_SIZE];	// 0x137400 (_ramsize). TODO: u
 char* mallocDebugMark = g_allocatedMem + 0x200000;
 char* mallocptr = g_allocatedMem;
 
-char* mallocptr_start = g_allocatedMem;
+const char* mallocptr_start = g_allocatedMem;
 
 int leadAIRequired = 0;
 int leadAILoaded = 0;

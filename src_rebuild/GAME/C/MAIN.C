@@ -474,9 +474,9 @@ void LoadGameLevel(void)
 	sector = citylumps[GameLevel][CITYLUMP_DATA2].x / CDSECTOR_SIZE;
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y / CDSECTOR_SIZE;
 
-	malloc_lump = mallocptr;
-	mallocptr += (nsectors * CDSECTOR_SIZE);
-	NOTIFY_MALLOC();
+	MALLOC_BEGIN();
+	malloc_lump = D_MALLOC(nsectors * CDSECTOR_SIZE);
+	MALLOC_END();
 
 #ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
@@ -696,7 +696,6 @@ int gLoadedMotionCapture = 0;
 int FrAng = 0;
 int wetness = 0;
 
-extern char* mallocptr_start; // SYSTEM.C
 extern char* mallocDebugMark;
 
 extern SPEECH_QUEUE gSpeechQueue;
@@ -720,13 +719,14 @@ void GameInit(void)
 #ifdef PSX
 		mallocptr = 0x137400;
 #else
-		mallocptr = mallocptr_start;
+		mallocptr = (char*)mallocptr_start;
 		*((int*)mallocDebugMark) = 0x1f100ded;
 		*((int*)mallocDebugMark+1) = 0x12345678;
 #endif // PSX
 
+		MALLOC_BEGIN();
 		packed_cell_pointers = D_MALLOC(0x1000);
-		NOTIFY_MALLOC();
+		MALLOC_END();
 	}
 
 	gameinit = 1;
@@ -905,13 +905,14 @@ void GameInit(void)
 
 	if (NewLevel != 0) 
 	{
-		pcoplist = (PACKED_CELL_OBJECT **)(mallocptr + 1024);
-		//transparent_buffer = (ulong *)(mallocptr + 2048);		// [A] unused
-		tile_overflow_buffer = (ulong *)mallocptr;
-		coplist = (CELL_OBJECT **)mallocptr;
+		MALLOC_BEGIN();
+		char* mem = D_MALLOC(1024);
+		tile_overflow_buffer = (ulong *)mem;
+		coplist = (CELL_OBJECT **)mem;
 
-		mallocptr += 2304;
-		NOTIFY_MALLOC();
+		pcoplist = (PACKED_CELL_OBJECT **)D_MALLOC(1024 + 256);
+		//transparent_buffer = D_MALLOC(256);		// [A] unused
+		MALLOC_END();
 	}
 
 	if (NoPlayerControl == 0) 

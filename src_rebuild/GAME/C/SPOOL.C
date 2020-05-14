@@ -177,7 +177,7 @@ void levelSpoolerPCReadyCallback(ready_callbackFn cb)
 int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
-	printf("Running SPOOL thread...\n");
+	printWarning("Running SPOOL thread...\n");
 
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
@@ -208,14 +208,14 @@ int levelSpoolerPCFunc(void* data)
 
 			if (sector == -1)
 			{
-				//printf("SPOOL thread recieved 'CdlPause'\n", sector);
+				printInfo("SPOOL thread recieved 'CdlPause'\n", sector);
 
 				levelSpoolerSeekCmd = 0;
 				g_spoolDoneFlag = true;
 			}
 			else
 			{
-				printf("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
+				printInfo("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
 
 				// seek
 				fseek(fp, sector * 2048, SEEK_SET);
@@ -246,7 +246,7 @@ int levelSpoolerPCFunc(void* data)
 
 	} while (!g_spoolDoneFlag);
 
-	printf("SPOOLER thread work done.\n");
+	printInfo("SPOOLER thread work done.\n");
 
 	fclose(fp);
 
@@ -279,7 +279,7 @@ void startReadLevSectorsPC(int sector)
 
 		if (NULL == levelSpoolerPCThread)
 		{
-			printf("SDL_CreateThread failed: %s\n", SDL_GetError());
+			printError("SDL_CreateThread failed: %s\n", SDL_GetError());
 		}
 	}
 }
@@ -813,8 +813,6 @@ void CheckValidSpoolData(void)
 
 		if (iVar1 != 0)
 		{
-			printf("Waiting to load regions...\n"); // [A]
-
 			stopgame();
 
 			while (spoolactive != 0)
@@ -907,7 +905,7 @@ void UpdateSpool(void)
 			break;
 		}
 
-		printf("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+		printWarning("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
 #endif // _DEBUG
 
 		// seek to required sector
@@ -2143,14 +2141,16 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 
 	size = *(int *)lump_ptr << 0xb;
 
-	model_spool_buffer = mallocptr;
-	NOTIFY_MALLOC();
+	MALLOC_BEGIN();
 
-	if (size < 0x10000) {
+	model_spool_buffer = mallocptr;
+
+	if (size < 0x10000)
 		size = 0x10000;
-	}
 
 	mallocptr += size;
+
+	MALLOC_END();
 
 	cell_slots_add[4] = 0;
 	cell_objects_add[4] = 0;
@@ -2167,10 +2167,10 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 
 	i = 0;
 	do {
+		MALLOC_BEGIN();
 		cell_objects_add[i] = cell_objects_add[4];
 		cell_slots_add[i] = cell_slots_add[4];
 		PVS_Buffers[i] = mallocptr + 4;
-		NOTIFY_MALLOC();
 
 		cell_slots_add[4] += *piVar4;
 		cell_objects_add[4] += piVar4[4];
@@ -2180,8 +2180,8 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		piVar1 = piVar4 + 8;
 		piVar4++;
 
-		NOTIFY_MALLOC();
 		mallocptr += (*piVar1 + 0x7ffU & 0xfffff800);
+		MALLOC_END();
 
 		i++;
 	} while (i < 4);
@@ -2291,7 +2291,7 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 	}
 
 #ifdef _DEBUG
-	printf("FoundError: %s, intr: %d\n", name, intr);
+	printError("FoundError: %s, intr: %d\n", name, intr);
 #endif // _DEBUG
 
 	spoolerror = 0x3c;
@@ -2438,7 +2438,7 @@ void data_cb_textures(void)
 
 					if (spoolpos_writing == spoolcounter)
 					{
-						printf("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
+						printWarning("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
 
 						spoolcounter = 0;
 						spoolpos_writing = 0;
@@ -2682,7 +2682,7 @@ void data_cb_regions(void)
 
 				if (spoolpos_writing == spoolcounter) 
 				{
-					printf("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
+					printWarning("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
 
 					spoolcounter = 0;
 					spoolpos_writing = 0;
@@ -2910,7 +2910,7 @@ void data_cb_misc(void)
 #endif // PSX
 			if (spoolpos_writing == spoolcounter)
 			{
-				printf("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+				printWarning("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
 
 				spoolcounter = 0;
 				spoolpos_writing = 0;

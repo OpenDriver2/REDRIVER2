@@ -351,11 +351,11 @@ void LoadMission(int missionnum)
 	unsigned long header;
 
 	InitialiseMissionDefaults();
+
+	MALLOC_BEGIN();
+
 	if (NewLevel != 0) 
-	{
 		MissionLoadAddress = (_MISSION *)mallocptr;
-		NOTIFY_MALLOC();
-	}
 
 	sprintf(acStack64, "MISSIONS\\MISSIONS.BLK");
 
@@ -560,6 +560,9 @@ LAB_00060e70:
 			CopsAllowed = 0;
 		}
 	}
+
+	MALLOC_END();
+
 	sprintf(acStack64, "MISSIONS\\PATH%d.%d", gCurrentMissionNumber, 0);
 	iVar4 = FileExists(acStack64);
 	if (iVar4 != 0) {
