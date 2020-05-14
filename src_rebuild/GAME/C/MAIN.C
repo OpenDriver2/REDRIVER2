@@ -2620,7 +2620,7 @@ void UpdatePlayerInformation(void)
 				do {
 					if (((uint)*pbVar3 & 7) == 1) 
 					{
-						if (pWVar4->susCompression == 9) 
+						if (pWVar4->susCompression == 0) 
 						{
 							if ((car_data[iVar2].hd.where.t[1] < -1000) && (gDieWithFade == 0))
 							{
@@ -2629,7 +2629,7 @@ void UpdatePlayerInformation(void)
 						}
 						else 
 						{
-							iVar6 = iVar6 + 1;
+							iVar6++;
 						}
 					}
 
@@ -2638,7 +2638,7 @@ void UpdatePlayerInformation(void)
 					pbVar3 = pbVar3 + 4;
 				} while (-1 < iVar5);
 
-				if (iVar6 == 4) 
+				if (iVar6 == 4) // apply water damage
 				{
 					car_data[iVar2].totalDamage =
 						car_data[iVar2].totalDamage + (short)(MaxPlayerDamage[iVar8] / 0x50);
