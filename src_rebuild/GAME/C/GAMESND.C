@@ -2838,8 +2838,6 @@ void InitMusic(int musicnum)
 		XM_SetSongAddress((unsigned char*)song_pt);
 	}
 
-	
-
 	InitXMData((unsigned char*)music_pt, 0, 0);
 
 	Song_ID = XM_Init(VABID, 0, 0, 16, 1, -1, 0, 0);

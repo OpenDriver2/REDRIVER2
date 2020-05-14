@@ -465,7 +465,7 @@ void LoadGameLevel(void)
 
 	sector += nsectors;
 
-	// CITYLUMP_DATA1
+	// CITYLUMP_DATA1 - load-time lump
 	ProcessLumps(_frontend_buffer+8, nsectors * CDSECTOR_SIZE);
 
 	// CITYLUMP_TPAGE is right next after DATA1
@@ -486,6 +486,7 @@ void LoadGameLevel(void)
 #endif // PSX
 	sector += nsectors;
 
+	// CITYLUMP_DATA2 - in-memory lump
 	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));
 
 	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x; // not used anyway

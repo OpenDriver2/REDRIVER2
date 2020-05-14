@@ -862,9 +862,6 @@ static __pauseinfo musps;
 // [D]
 void PauseXM(void)
 {
-	if (Song_ID == -1)	// [A] bug fix
-		return;
-
 	bool bVar1;
 	int fade;
 
@@ -878,7 +875,9 @@ void PauseXM(void)
 			fade+= 96;
 		} while (bVar1);
 
-		XM_Pause(Song_ID);
+		if (Song_ID != -1)	// [A] bug fix
+			XM_Pause(Song_ID);
+
 		music_paused = 1;
 	}
 }
