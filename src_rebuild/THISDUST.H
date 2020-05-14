@@ -9,6 +9,12 @@
 #include "LIBSPU.H"
 #include "LIBGTE.H"
 
+// from redriver2_psxpc
+void printMsg(char *fmt, ...);
+void printInfo(char *fmt, ...);
+void printWarning(char *fmt, ...);
+void printError(char *fmt, ...);
+
 // TODO: VERSION.H
 #define GAME_VERSION_N		"0.6"
 #define GAME_TITLE			"REDRIVER2"
@@ -20,7 +26,7 @@
 #else
 
 #if _MSC_VER >= 1400
-#define trap(ode) {printf("EXCEPTION code: %x\n", ode); __debugbreak();}
+#define trap(ode) {printError("EXCEPTION code: %x\n", ode); __debugbreak();}
 #else
 #define trap(ode) {_asm int 0x03}
 #endif
@@ -93,7 +99,7 @@ template<int x> struct compile_time_assert_test {};
 #endif
 
 #undef eprintf
-#define eprintf(fmt, ...) printf("[GAME] " fmt, ##__VA_ARGS__)
+#define eprintf(fmt, ...) printMsg("[GAME] " fmt, ##__VA_ARGS__)
 
 #define UNIMPLEMENTED_PRINTONCE() { static bool _stop = false; if(!_stop) eprinterr("Unimplemented!\n"); _stop = true; }
 
@@ -18543,14 +18549,6 @@ extern int zVal; // offset 0xAA75C
 static unsigned short *zVis; // offset 0xAADB4
 */
 
-struct RECT // hashcode: 0xDFC821CB (dec: -540532277)
-{
-	short x; // size=0, offset=0
-	short y; // size=0, offset=2
-	short w; // size=0, offset=4
-	short h; // size=0, offset=6
-};
-
 struct SndVolume2 // hashcode: 0xE6064619 (dec: -435796455)
 {
 	short left; // size=0, offset=0
@@ -19034,8 +19032,6 @@ typedef struct CRVECTOR3 CRVECTOR3;
 
 typedef struct CRVECTOR4 CRVECTOR4;
 
-typedef struct RECT RECT;
-
 typedef struct SndVolume2 SndVolume2;
 
 typedef struct VECTOR_NOPAD VECTOR_NOPAD;
@@ -19138,13 +19134,9 @@ typedef char *caddr_t;
 
 typedef long *qaddr_t;
 
-typedef unsigned long ino_t;
-
 typedef long swblk_t;
 
 typedef unsigned int size_t;
-
-typedef short dev_t;
 
 typedef long off_t;
 
@@ -21619,7 +21611,7 @@ typedef struct MCSLOT MCSLOT;
 
 typedef unsigned short PadData;
 
-struct POINT // hashcode: 0xE123415E (dec: -517783202)
+struct POINT2D // hashcode: 0xE123415E (dec: -517783202)
 {
 	int x; // size=0, offset=0
 	int y; // size=0, offset=4
@@ -21653,8 +21645,8 @@ struct DISPMAN // hashcode: 0xA30E425F (dec: -1559346593)
 	char m_textBuffer[256]; // size=256, offset=8
 	DR_AREA m_sliceClipArea; // size=12, offset=264
 	DR_AREA m_screenClipArea; // size=12, offset=276
-	RECT m_backRect[7]; // size=56, offset=288
-	RECT m_srcRect[7]; // size=56, offset=344
+	RECT16 m_backRect[7]; // size=56, offset=288
+	RECT16 m_srcRect[7]; // size=56, offset=344
 	int s_screenMode; // size=0, offset=400
 	int dispWidth; // size=0, offset=404
 	int dispHeight; // size=0, offset=408
@@ -21719,8 +21711,6 @@ struct DISPMAN // hashcode: 0xA30E425F (dec: -1559346593)
 	char m_saveFilename[32]; // size=32, offset=18024
 	FILEFORMAT *m_fileFormatPtr; // size=340, offset=18056
 };
-
-typedef struct POINT POINT;
 
 typedef struct DISPMAN DISPMAN;
 
