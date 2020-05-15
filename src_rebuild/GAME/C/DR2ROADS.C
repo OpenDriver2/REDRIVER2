@@ -127,39 +127,35 @@ void ProcessCurvesDriver2Lump(char *lump_file, int lump_size)
 	/* end block 3 */
 	// End Line: 724
 
+int NumDriver2Junctions = 0;
+
+// [D]
 void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	int iVar2;
-	short *psVar3;
-	DRIVER2_JUNCTION *pDVar4;
-	DRIVER2_JUNCTION *pDVar5;
-	int iVar6;
-	DRIVER2_JUNCTION *pDVar7;
+	int loop;
+	DRIVER2_JUNCTION *p;
+	OLD_DRIVER2_JUNCTION *old;
+	int i;
 
 	Getlong((char *)&NumDriver2Junctions, lump_file);
-	iVar1 = NumDriver2Junctions;
-	pDVar4 = (DRIVER2_JUNCTION *)(lump_file + 4);
-	Driver2JunctionsPtr = pDVar4;
-	if ((fix != 0) && (iVar2 = 0, pDVar5 = pDVar4, 0 < NumDriver2Junctions)) {
-		do {
-			iVar2 = iVar2 + 1;
-			pDVar7 = pDVar4 + 1;
-			psVar3 = pDVar5[1].ExitIdx;
-			iVar6 = 3;
-			do {
-				psVar3 = psVar3 + 1;
-				iVar6 = iVar6 + -1;
-				pDVar4->ExitIdx[0] = *psVar3;
-				pDVar4 = (DRIVER2_JUNCTION *)(pDVar4->ExitIdx + 1);
-			} while (-1 < iVar6);
-			pDVar4 = pDVar7;
-			pDVar5 = pDVar5 + 2;
-		} while (iVar2 < iVar1);
+
+	p = (DRIVER2_JUNCTION *)(lump_file + 4);
+	Driver2JunctionsPtr = p;
+
+	if (fix)
+	{
+		loop = 0;
+		old = (OLD_DRIVER2_JUNCTION *)(lump_file + 4);
+
+		for (loop = 0; loop < NumDriver2Junctions; loop++)
+		{
+			for (i = 0; i < 4; i++)
+				p->ExitIdx[i] = old->ExitIdx[i];
+
+			p++;
+			old++;
+		}
 	}
-	return;*/
 }
 
 
