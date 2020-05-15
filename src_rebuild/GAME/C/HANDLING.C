@@ -2060,7 +2060,7 @@ void CheckCarToCarCollisions(void)
 
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-#if 1
+#if 0
 	extern MATRIX camera_matrix;
 
 	// [A]

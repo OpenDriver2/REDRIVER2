@@ -1706,7 +1706,7 @@ void SetupWalker(PEDESTRIAN *pPed)
 void SetupRunner(PEDESTRIAN *pPed)
 {
 	pPed->type = PED_ACTION_RUN;
-	pPed->frame1 = '\0';
+	pPed->frame1 = 0;
 	pPed->speed = 40;
 	SetupPedMotionData(pPed);
 
@@ -2483,7 +2483,7 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 
 	uVar4 = iVar3 + 0x800U & 0xfff;
 
-	if ((NoPlayerControl == 0) && (gInGameCutsceneActive == 0)) 
+	if (NoPlayerControl == 0 && gInGameCutsceneActive == 0) 
 	{
 		player[0].cameraView = 5;
 		player[0].cameraPos.vx = carToGetIn->hd.where.t[0] - ((iVar5 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
@@ -2503,6 +2503,7 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 			pos[1] = -player[0].pos[1];
 			pos[2] = player[0].pos[2];
 
+			// HEY!
 			CreatePedAtLocation(&pos, 8);
 			Start3DSoundVolPitch(-1, 6, 5, pos[0], pos[1], pos[2], 0, 0x1000);
 
@@ -3074,7 +3075,7 @@ void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 	_CAR_DATA *cp;
 	int iVar1;
 	int iVar2;
-	int local_20[2];
+	int distToCarSq;
 
 	iVar2 = 0;
 	iVar1 = (int)pPed->padId;
@@ -3082,11 +3083,11 @@ void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 	if (iVar1 < 0)
 		iVar1 = -iVar1;
 
-	cp = FindClosestCar(player[iVar1].pos[0], player[iVar1].pos[1], player[iVar1].pos[2], local_20);
+	cp = FindClosestCar(player[iVar1].pos[0], player[iVar1].pos[1], player[iVar1].pos[2], &distToCarSq);
 
 	if (cp->ap.model == 4) 
 		iVar2 = FindPointOfCollision(cp, (VECTOR *)&pPed->position);
-	else if (cp && TannerCanEnterCar(cp, local_20[0]))
+	else if (cp && TannerCanEnterCar(cp, distToCarSq))
 		iVar2 = 1;
 
 	if (iVar2 != 0)

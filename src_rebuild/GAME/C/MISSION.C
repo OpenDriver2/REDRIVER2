@@ -12,6 +12,7 @@
 #include "OVERLAY.H"
 #include "EVENT.H"
 #include "CIV_AI.H"
+#include "CARS.H"
 
 #include <string.h>
 
@@ -1316,16 +1317,13 @@ LAB_00061b4c:
 	/* end block 3 */
 	// End Line: 6945
 
+// [D]
 void SetConfusedCar(int slot)
 {
-	UNIMPLEMENTED();
-	/*
-	car_data[slot].controlType = '\x02';
-	car_data[slot].ai[0xf9] = 3;
-	car_data[slot].ai[0xc] = 7;
-	*(undefined4 *)(car_data[slot].ai + 8) = 0;
-	return;
-	*/
+	car_data[slot].controlType = 2;
+	car_data[slot].ai.c.thrustState = 3;
+	car_data[slot].ai.c.ctrlState = 7;
+	car_data[slot].ai.c.ctrlNode = NULL;
 }
 
 
