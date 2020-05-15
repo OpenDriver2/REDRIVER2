@@ -732,36 +732,40 @@ void DrawFadePoly(void)
 // [D]
 void DisplayMissionTitle(void)
 {
-	static int fadeVal = 0;
-
-	if ((bWantFade != 0) && (CameraCnt == 1)) 
+	if (bWantFade != 0 && CameraCnt == 1) 
 	{
 		bWantFade = 0;
 		bMissionTitleFade = CameraCnt;
 	}
 
-	if ((bMissionTitleFade != 0) && (pauseflag == 0)) 
+	if (bMissionTitleFade != 0 && pauseflag == 0) 
 	{
-		fadeVal = fadeVal + -6;
+		fadeVal -= 6;
 		if (NoPlayerControl == 0)
 		{
 			if (gMissionTitle != (char *)0x0) 
 			{
+#ifdef PSX
 				gShowMap = 1;
-				SetTextColour('|', 'l', '(');
+				SetTextColour(124, 108, 40);
 				PrintStringCentred(gMissionTitle, 0x78);
 				gShowMap = 0;
+#else
+				SetTextColour(124, 108, 40);
+				PrintStringCentred(gMissionTitle, 0x78);
+#endif
 			}
 
 			DrawFadePoly();
 		}
-		else {
-			if (fadeVal < 0) {
+		else 
+		{
+			if (fadeVal < 0) 
+			{
 				bMissionTitleFade = 0;
-				if (gInGameCutsceneActive == 0) 
-				{
+				if (gInGameCutsceneActive == 0)
 					gStopPadReads = 0;
-				}
+
 				gShowMap = 0;
 				fadeVal = 0;
 			}
