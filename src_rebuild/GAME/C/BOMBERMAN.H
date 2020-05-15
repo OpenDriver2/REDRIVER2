@@ -2,6 +2,7 @@
 #define BOMBERMAN_H
 
 extern MODEL* gBombModel;
+extern _ExOBJECT explosion[5];
 
 extern void InitThrownBombs(); // 0x0001F570
 

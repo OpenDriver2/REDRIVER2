@@ -407,17 +407,12 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 // [D]
 int GetSurfaceIndex(VECTOR *pos)
 {
-	_sdPlane *p_Var1;
-	int iVar2;
+	_sdPlane *plane = sdGetCell(pos);
 
-	p_Var1 = sdGetCell(pos);
-	if (p_Var1 == (_sdPlane *)0x0) {
-		iVar2 = -0x20;
-	}
-	else {
-		iVar2 = (int)p_Var1->surface + -0x20;
-	}
-	return iVar2;
+	if (plane == NULL)
+		return -32;
+ 
+	return plane->surface - 32;
 }
 
 

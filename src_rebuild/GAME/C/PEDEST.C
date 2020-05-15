@@ -15,6 +15,11 @@
 #include "GLAUNCH.H"
 #include "CUTSCENE.H"
 #include "CAMERA.H"
+#include "PAUSE.H"
+#include "AI.H"
+#include "CARS.H"
+#include "FELONY.H"
+#include "BOMBERMAN.H"
 
 #include "STRINGS.H"
 
@@ -75,6 +80,8 @@ int tannerTurn = 0;
 int bKilled = 0;
 int bReverseAnimation = 0;
 int iIdleTimer = 0;
+
+PEDESTRIAN_ROADS pedestrian_roads;
 
 unsigned long tannerPad;
 
@@ -2907,104 +2914,119 @@ LAB_000700b4:
 	/* end block 4 */
 	// End Line: 7286
 
+// [D]
 void AnimatePed(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	PED_ACTION_TYPE PVar2;
 	ushort uVar3;
 	bool bVar4;
 	int iVar5;
-	byte bVar6;
+	unsigned char bVar6;
 	uint uVar7;
 	long lVar8;
-	VECTOR local_20;
+	VECTOR vec;
 
-	if (pauseflag == 0) {
-		local_20.vx = (pPed->position).vx;
+	if (pauseflag)
+		return;
+
+	vec.vx = pPed->position.vx;
+	vec.vz = pPed->position.vz;
+	vec.vy = -pPed->position.vy;
+
+	cVar1 = pPed->speed;
+
+	if (pPed->pedType == CIVILIAN && (pPed->flags & 0x8000U) != 0) 
+	{
+		iVar5 = MapHeight(&vec);
+		lVar8 = -0x3c - iVar5;
+	}
+	else 
+	{
+		iVar5 = MapHeight(&vec);
+		lVar8 = -0x82 - iVar5;
+	}
+
+	if (cVar1 < 0)
+	{
+		uVar3 = (pPed->dir).vy;
 		cVar1 = pPed->speed;
-		local_20.vz = (pPed->position).vz;
-		local_20.vy = -(pPed->position).vy;
-		if ((pPed->pedType == CIVILIAN) && ((pPed->flags & 0x8000U) != 0)) {
-			iVar5 = MapHeight(&local_20);
-			lVar8 = -0x3c - iVar5;
-		}
-		else {
-			iVar5 = MapHeight(&local_20);
-			lVar8 = -0x82 - iVar5;
-		}
-		if (cVar1 < '\0') {
-			uVar3 = (pPed->dir).vy;
-			cVar1 = pPed->speed;
-			(pPed->position).vx =
-				(pPed->position).vx - ((int)cVar1 * (int)rcossin_tbl[((uint)uVar3 & 0xfff) * 2] >> 0xc);
-			iVar5 = (pPed->position).vz -
-				((int)cVar1 * (int)rcossin_tbl[(-(int)(short)uVar3 & 0xfffU) * 2 + 1] >> 0xc);
-		}
-		else {
-			cVar1 = pPed->speed;
-			uVar7 = (int)(pPed->dir).vy - 0x800U & 0xfff;
-			(pPed->position).vx = (pPed->position).vx + ((int)cVar1 * (int)rcossin_tbl[uVar7 * 2] >> 0xc);
-			iVar5 = (pPed->position).vz + ((int)cVar1 * (int)rcossin_tbl[uVar7 * 2 + 1] >> 0xc);
-		}
-		(pPed->position).vz = iVar5;
-		PVar2 = pPed->type;
-		if (((PVar2 != PED_ACTION_SIT) && (PVar2 != PED_ACTION_COPCROUCH)) &&
-			(PVar2 != PED_ACTION_COPSTAND)) {
-			(pPed->position).vy = lVar8;
-			(pPed->velocity).vy = 10;
-		}
-		if ((bReverseAnimation == 0) || (pPed->pedType != TANNER_MODEL)) {
-			bVar6 = pPed->frame1 + 1;
-			pPed->frame1 = bVar6;
-			if ((uint)pPed->type - 8 < 3) {
-				bVar4 = bVar6 < 0x1f;
-			}
-			else {
-				bVar4 = bVar6 < 0x10;
-			}
-			if (!bVar4) {
-				pPed->frame1 = '\0';
-			}
-		}
-		else {
-			if (pPed->frame1 == '\0') {
-				pPed->frame1 = '\x0f';
-			}
-			pPed->frame1 = pPed->frame1 + -1;
-		}
-		if (((pPed->pedType == TANNER_MODEL) && (pPed->type < PED_ACTION_BACK)) &&
-			((iVar5 = PedSurfaceType((VECTOR *)&pPed->position), iVar5 != 4 &&
-			(((iVar5 != 6 && (iVar5 != 0xb)) && (iVar5 != 9)))))) {
-			if (pPed->frame1 == '\x03') {
-				Start3DSoundVolPitch
-				(-1, 6, 0, (pPed->position).vx, (pPed->position).vy, (pPed->position).vz, -5000, 0x1000);
-			}
-			if (pPed->frame1 == '\v') {
-				Start3DSoundVolPitch
-				(-1, 6, 1, (pPed->position).vx, (pPed->position).vy, (pPed->position).vz, -5000, 0x1000);
-			}
-		}
-		if (pPed->pedType != CIVILIAN) {
-			iVar5 = (int)pPed->padId;
-			if (iVar5 < 0) {
-				iVar5 = -iVar5;
-			}
-			(&player)[iVar5].pos[0] = (pPed->position).vx;
-			iVar5 = (int)pPed->padId;
-			if (iVar5 < 0) {
-				iVar5 = -iVar5;
-			}
-			(&player)[iVar5].pos[1] = -(pPed->position).vy;
-			iVar5 = (int)pPed->padId;
-			if (iVar5 < 0) {
-				iVar5 = -iVar5;
-			}
-			(&player)[iVar5].pos[2] = (pPed->position).vz;
+		pPed->position.vx = pPed->position.vx - (cVar1 * rcossin_tbl[(uVar3 & 0xfff) * 2] >> 0xc);
+		iVar5 = pPed->position.vz - (cVar1 * rcossin_tbl[(-uVar3 & 0xfffU) * 2 + 1] >> 0xc);		// [A] is it valid?
+	}
+	else 
+	{
+		cVar1 = pPed->speed;
+		uVar7 = (int)(pPed->dir).vy - 0x800U & 0xfff;
+		pPed->position.vx = pPed->position.vx + ((int)cVar1 * (int)rcossin_tbl[uVar7 * 2] >> 0xc);
+		iVar5 = pPed->position.vz + ((int)cVar1 * (int)rcossin_tbl[uVar7 * 2 + 1] >> 0xc);
+	}
+
+	pPed->position.vz = iVar5;
+	PVar2 = pPed->type;
+
+	if (PVar2 != PED_ACTION_SIT && PVar2 != PED_ACTION_COPCROUCH && PVar2 != PED_ACTION_COPSTAND)
+	{
+		pPed->position.vy = lVar8;
+		pPed->velocity.vy = 10;
+	}
+
+	if ((bReverseAnimation == 0) || (pPed->pedType != TANNER_MODEL)) 
+	{
+		bVar6 = pPed->frame1 + 1;
+		pPed->frame1 = bVar6;
+
+		if (pPed->type - 8 < 3)
+			bVar4 = bVar6 < 0x1f;
+		else 
+			bVar4 = bVar6 < 0x10;
+
+		if (!bVar4)
+			pPed->frame1 = 0;
+	}
+	else
+	{
+		if (pPed->frame1 == 0) 
+			pPed->frame1 = 15;
+
+		pPed->frame1--;
+	}
+
+	if (pPed->pedType == TANNER_MODEL && pPed->type < PED_ACTION_BACK)
+	{
+		iVar5 = PedSurfaceType((VECTOR *)&pPed->position);
+
+		if (iVar5 != 4 && iVar5 != 6 && iVar5 != 11 && iVar5 != 9)
+		{
+			if (pPed->frame1 == 3)
+				Start3DSoundVolPitch(-1, 6, 0, pPed->position.vx, pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+
+			if (pPed->frame1 == 11)
+				Start3DSoundVolPitch(-1, 6, 1, pPed->position.vx, pPed->position.vy, pPed->position.vz, -5000, 0x1000);
 		}
 	}
-	return;*/
+
+	if (pPed->pedType != CIVILIAN)
+	{
+		iVar5 = pPed->padId;
+
+		if (iVar5 < 0)
+			iVar5 = -iVar5;
+
+		player[iVar5].pos[0] = pPed->position.vx;
+		iVar5 = pPed->padId;
+
+		if (iVar5 < 0)
+			iVar5 = -iVar5;
+
+		player[iVar5].pos[1] = -pPed->position.vy;
+		iVar5 = pPed->padId;
+
+		if (iVar5 < 0)
+			iVar5 = -iVar5;
+
+		player[iVar5].pos[2] = pPed->position.vz;
+	}
 }
 
 
@@ -3038,10 +3060,9 @@ void AnimatePed(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 6715
 
+// [D]
 void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	_CAR_DATA *cp;
 	int iVar1;
 	int iVar2;
@@ -3049,28 +3070,27 @@ void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 
 	iVar2 = 0;
 	iVar1 = (int)pPed->padId;
-	if (iVar1 < 0) {
+
+	if (iVar1 < 0)
 		iVar1 = -iVar1;
-	}
-	cp = FindClosestCar((&player)[iVar1].pos[0], (&player)[iVar1].pos[1], (&player)[iVar1].pos[2],
-		local_20);
-	if ((cp->ap).model == '\x04') {
+
+	cp = FindClosestCar(player[iVar1].pos[0], player[iVar1].pos[1], player[iVar1].pos[2], local_20);
+
+	if (cp->ap.model == 4) 
 		iVar2 = FindPointOfCollision(cp, (VECTOR *)&pPed->position);
-	}
-	else {
-		if ((cp != (_CAR_DATA *)0x0) && (iVar1 = TannerCanEnterCar(cp, local_20[0]), iVar1 != 0)) {
-			iVar2 = 1;
-		}
-	}
-	if (iVar2 != 0) {
+	else if (cp && TannerCanEnterCar(cp, local_20[0]))
+		iVar2 = 1;
+
+	if (iVar2 != 0)
+	{
 		carToGetIn = cp;
 		pPed->type = PED_ACTION_GETINCAR;
-		pPed->fpAgitatedState = PTR_PedGetInCar_000a167c;
-		Start3DSoundVolPitch(-1, 6, 2, player.pos[0], player.pos[1], player.pos[2], 0, 0x1000);
+		pPed->fpAgitatedState = PedGetInCar;
+
+		Start3DSoundVolPitch(-1, 6, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 0x1000);
 		SetupPedestrian(pPed);
 		SetupGetInCar(pPed);
 	}
-	return;*/
 }
 
 
@@ -3114,32 +3134,29 @@ void CivPedDoNothing(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 23048
 
+// [D]
 void SetupCivPedRouteData(VECTOR *pPos)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	VECTOR local_20;
+	VECTOR baseLoc;
 
-	local_20.vx = pPos->vx;
-	local_20.vy = pPos->vy;
-	local_20.vz = pPos->vz;
-	iVar1 = GetSurfaceIndex(&local_20);
-	pedestrian_roads.pos = (short)iVar1;
-	local_20.vz = pPos->vz + -0x80;
-	iVar1 = GetSurfaceIndex(&local_20);
-	pedestrian_roads.north = (short)iVar1;
-	local_20.vz = pPos->vz + 0x80;
-	iVar1 = GetSurfaceIndex(&local_20);
-	pedestrian_roads.south = (short)iVar1;
-	local_20.vz = pPos->vz;
-	local_20.vx = pPos->vx + -0x80;
-	iVar1 = GetSurfaceIndex(&local_20);
-	pedestrian_roads.east = (short)iVar1;
-	local_20.vx = pPos->vx + 0x80;
-	iVar1 = GetSurfaceIndex(&local_20);
-	pedestrian_roads.west = (short)iVar1;
-	return;*/
+	baseLoc.vx = pPos->vx;
+	baseLoc.vy = pPos->vy;
+	baseLoc.vz = pPos->vz;
+
+	pedestrian_roads.pos = GetSurfaceIndex(&baseLoc);
+
+	baseLoc.vz = pPos->vz - 128;
+	pedestrian_roads.north = GetSurfaceIndex(&baseLoc);
+
+	baseLoc.vz = pPos->vz + 128;
+	pedestrian_roads.south = GetSurfaceIndex(&baseLoc);
+
+	baseLoc.vz = pPos->vz;
+	baseLoc.vx = pPos->vx - 128;
+	pedestrian_roads.east = GetSurfaceIndex(&baseLoc);
+
+	baseLoc.vx = pPos->vx + 128;
+	pedestrian_roads.west = GetSurfaceIndex(&baseLoc);
 }
 
 
@@ -3730,21 +3747,22 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 	/* end block 3 */
 	// End Line: 24072
 
+// [D]
 int PingOutPed(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int iVar2;
+	int pz;
+	int px;
+	int ps;
 
-	iVar2 = (pPed->position).vx - player.pos[0];
-	iVar1 = (pPed->position).vz - player.pos[2];
-	if (iVar2 * iVar2 + iVar1 * iVar1 < 0x190a0101) {
-		return (uint)(-player.pos[1] - (pPed->position).vy < 0x201) ^ 1;
-	}
+	px = (pPed->position).vx - player[0].pos[0];
+	pz = (pPed->position).vz - player[0].pos[2];
+
+	ps = px * px + pz * pz;
+
+	if (ps <= 20496 * 20496)
+		return (-player[0].pos[1] - pPed->position.vy < 513) ^ 1;
+
 	return 1;
-	*/
 }
 
 
@@ -3790,67 +3808,83 @@ int PingOutPed(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 9331
 
+// [D]
 void SetupCivJump(PEDESTRIAN *pPed, _CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	short scale;
-	int iVar2;
+	int iVar1;
+	long lVar2;
+	int y;
 	int iVar3;
-	int iVar4;
-	int iVar5;
+	short scale;
+	int x;
+	ushort uVar4;
 
-	if (pPed->type != PED_ACTION_JUMP) {
-		pPed->frame1 = '\0';
-		pPed->speed = '\x1e';
-		if (cp == car_data + player.playerCarId) {
+	if (pPed->type != PED_ACTION_JUMP)
+	{
+		pPed->frame1 = 0;
+		pPed->speed = 30;
+
+		if (cp == &car_data[player[0].playerCarId])
+		{
 			scale = 0x1000;
-			if (player.horn.on != '\0') {
+
+			if (player[0].horn.on != 0)
 				scale = 0x800;
-			}
-			NoteFelony(&felonyData, '\x01', scale);
+
+			NoteFelony(&felonyData, 1, scale);
 		}
 	}
+
 	pPed->type = PED_ACTION_JUMP;
 	pPed->flags = pPed->flags | 0x10;
-	pPed->fpAgitatedState = PTR_CivPedJump_000a1694;
+	pPed->fpAgitatedState = CivPedJump;
 	SetupPedMotionData(pPed);
-	if (cp == (_CAR_DATA *)0x0) {
-		if (bAvoidTanner == 0) {
-			scale = ratan2((pPed->position).vx - explosion[bAvoidBomb].pos.vx,
-				(pPed->position).vz - explosion[bAvoidBomb].pos.vz);
-			uVar1 = scale - 0x800;
+
+	if (cp == NULL) 
+	{
+		if (bAvoidTanner == 0)
+		{
+			lVar2 = ratan2(pPed->position.vx - explosion[bAvoidBomb].pos.vx, pPed->position.vz - explosion[bAvoidBomb].pos.vz);
+			uVar4 = lVar2 - 0x800;
 		}
-		else {
+		else 
+		{
 			scale = 0x400;
-			if ((-((int)(player.pPed)->speed *
-				(int)rcossin_tbl[((int)((player.pPed)->dir).vy - 0x800U & 0xfff) * 2 + 1]) >> 0xc) *
-				(((player.pPed)->position).vx - (pPed->position).vx) +
-				((int)(player.pPed)->speed *
-				(int)rcossin_tbl[((int)((player.pPed)->dir).vy - 0x800U & 0xfff) * 2] >> 0xc) *
-					(((player.pPed)->position).vz - (pPed->position).vz) + 0x800 < 0) {
+
+			// [A] fuck....
+			if ((-((int)(player[0].pPed)->speed *
+				(int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2 + 1]) >>
+				0xc) * (((player[0].pPed)->position).vx - (pPed->position).vx) +
+				((int)(player[0].pPed)->speed *
+				(int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2] >> 0xc) *
+					(((player[0].pPed)->position).vz - (pPed->position).vz) + 0x800 < 0) 
+			{
 				scale = -0x400;
 			}
-			uVar1 = scale + ((player.pPed)->dir).vy;
+
+			uVar4 = scale + ((player[0].pPed)->dir).vy;
 		}
 	}
-	else {
-		iVar5 = (cp->hd).where.t[0] - (pPed->position).vx;
-		iVar4 = *(int *)(cp->st + 0x24);
-		iVar3 = *(int *)(cp->st + 0x1c);
-		iVar2 = (cp->hd).where.t[2] - (pPed->position).vz;
-		if ((iVar4 == 0) && (-iVar3 == 0)) {
-			uVar1 = ratan2(iVar2, iVar5);
+	else
+	{
+		x = (cp->hd).where.t[0] - (pPed->position).vx;
+		iVar3 = (cp->st).n.linearVelocity[2];
+		y = (cp->hd).where.t[2] - (pPed->position).vz;
+		iVar1 = -(cp->st).n.linearVelocity[0];
+
+		if ((iVar3 == 0) && (iVar1 == 0))
+		{
+			lVar2 = ratan2(y, x);
+			uVar4 = lVar2;
 		}
-		else {
-			scale = ratan2(*(undefined4 *)(cp->st + 0x24), *(undefined4 *)(cp->st + 0x1c));
-			uVar1 = ((short)~(ushort)(iVar4 * iVar5 + -iVar3 * iVar2 + 0x800 >> 0x1c) >> 0xf & 0x800U) -
-				scale;
+		else 
+		{
+			lVar2 = ratan2((cp->st).n.linearVelocity[2], (cp->st).n.linearVelocity[0]);
+			uVar4 = ((short)~(ushort)(iVar3 * x + iVar1 * y + 0x800 >> 0x1c) >> 0xf & 0x800U) - lVar2;
 		}
 	}
-	(pPed->dir).vy = uVar1 & 0xfff;
-	return;*/
+
+	(pPed->dir).vy = uVar4 & 0xfff;
 }
 
 
@@ -3876,33 +3910,27 @@ void SetupCivJump(PEDESTRIAN *pPed, _CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 8095
 
+// [D]
 void CivPedJump(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	char cVar1;
-	undefined *puVar2;
-
-	cVar1 = pPed->frame1;
-	if (cVar1 == '\x02') {
+	if (pPed->frame1 == 2)
 		pPed->speed = pPed->speed << 1;
-		cVar1 = pPed->frame1;
-	}
-	if (cVar1 == '\x0e') {
+	else if (pPed->frame1 == 14)
 		pPed->speed = pPed->speed >> 1;
-	}
+
 	AnimatePed(pPed);
-	if (0x1d < (byte)pPed->frame1) {
-		pPed->frame1 = '\0';
-		puVar2 = PTR_CivPedWalk_000a168c;
+
+	if (pPed->frame1 > 29)
+	{
+		pPed->frame1 = 0;
 		pPed->type = PED_ACTION_CIVWALK;
-		pPed->fpRestState = puVar2;
+		pPed->fpRestState = CivPedWalk;
+
 		SetupPedMotionData(pPed);
-		pPed->fpAgitatedState = (_func_2 *)0x0;
+
+		pPed->fpAgitatedState = NULL;
 		pPed->flags = pPed->flags & 0xffffffef;
 	}
-	return;
-	*/
 }
 
 
@@ -3921,22 +3949,18 @@ void CivPedJump(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 24420
 
+// [D]
 void SetupCivPedWalk(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	char cVar1;
+	pPed->flags |= 0x10;
 
-	pPed->flags = pPed->flags | 0x10;
-	cVar1 = '\n';
-	if (pPed->type == PED_ACTION_RUN) {
-		cVar1 = '\x1e';
-	}
-	pPed->speed = cVar1;
+	if (pPed->type == PED_ACTION_RUN)
+		pPed->speed = 30;
+	else
+		pPed->speed = 10;
+
 	SetupPedMotionData(pPed);
-	pPed->frame1 = '\0';
-	return;
-	*/
+	pPed->frame1 = 0;
 }
 
 
@@ -3968,10 +3992,9 @@ void SetupCivPedWalk(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 9678
 
+// [D]
 void CivPedWalk(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	short sVar2;
 	ushort uVar3;
@@ -3979,73 +4002,84 @@ void CivPedWalk(PEDESTRIAN *pPed)
 	int turn;
 	int iVar5;
 
-	if ((pPed->flags & 0x10U) == 0) {
+	if ((pPed->flags & 0x10U) == 0)
 		SetupCivPedWalk(pPed);
-	}
-	iVar5 = (int)pPed->speed;
-	if ((*(uint *)&pPed->speed & 0xffff00) == 0x90000) {
-		sVar2 = (pPed->dir).vy;
-		uVar4 = (int)(pPed->dir).vy + 0x800;
+
+	iVar5 = pPed->speed;
+
+	if ((*(uint *)&pPed->speed & 0xffff00) == 0x90000)
+	{
+		sVar2 = pPed->dir.vy;
+		uVar4 = pPed->dir.vy + 2048;
 	}
 	else {
-		sVar2 = (pPed->dir).vy;
-		uVar4 = (int)(pPed->dir).vy + 0x73a;
+		sVar2 = pPed->dir.vy;
+		uVar4 = pPed->dir.vy + 1850;
 	}
-	if ((pPed->flags & 2U) == 0) {
+	if ((pPed->flags & 2U) == 0)
+	{
 		turn = IsPavement((pPed->position).vx + ((int)rcossin_tbl[(uVar4 & 0xfff) * 2] >> 5),
 			(pPed->position).vy,
 			(pPed->position).vz + ((int)rcossin_tbl[(uVar4 & 0xfff) * 2 + 1] >> 5), pPed);
-		if (turn == 0) {
+
+		if (turn == 0) 
+		{
 			if ((*(uint *)&pPed->speed & 0xffff00) == 0x90000) {
 				uVar4 = (int)(pPed->dir).vy + 0xa00U & 0xfff;
 				turn = IsPavement((pPed->position).vx + ((int)rcossin_tbl[uVar4 * 2] * 0x80 >> 0xc),
 					(pPed->position).vy,
 					(pPed->position).vz + ((int)rcossin_tbl[uVar4 * 2 + 1] * 0x80 >> 0xc),
 					(PEDESTRIAN *)0x0);
-				if (turn == 0) {
+
+				if (turn == 0) 
 					uVar4 = pPed->flags & 0xffffdfff;
-				}
-				else {
+				else
 					uVar4 = pPed->flags | 0x2000;
-				}
+
 				pPed->flags = uVar4;
 			}
-			turn = -0x80;
-			if ((pPed->flags & 0x2000U) != 0) {
-				turn = 0x80;
-			}
-			if (pPed->doing_turn < ' ') {
+
+			turn = -128;
+
+			if ((pPed->flags & 0x2000U) != 0) 
+				turn = 128;
+
+			if (pPed->doing_turn < 32) 
+			{
 				SetPedestrianTurn(pPed, turn);
-				pPed->doing_turn = pPed->doing_turn + '\x01';
+				pPed->doing_turn++;
 			}
-			else {
-				uVar4 = (int)(pPed->dir).vy + 0x800U & 0xfff;
-				(pPed->velocity).vx = (short)(iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc);
-				(pPed->velocity).vz = (short)(iVar5 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc);
+			else 
+			{
+				uVar4 = pPed->dir.vy + 0x800U & 0xfff;
+				pPed->velocity.vx = (iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc);
+				pPed->velocity.vz = (iVar5 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc);
 			}
-			pPed->finished_turn = '\0';
+			pPed->finished_turn = 0;
 		}
-		else {
-			cVar1 = pPed->finished_turn;
-			pPed->doing_turn = '\0';
-			pPed->finished_turn = cVar1 + '\x01';
-			if ('\b' < cVar1) {
-				uVar3 = (pPed->dir).vy + 0x200U & 0xfc00;
-				(pPed->dir).vy = uVar3;
+		else
+		{
+			pPed->doing_turn = 0;
+
+			if (pPed->finished_turn++ > 8)
+			{
+				uVar3 = pPed->dir.vy + 0x200U & 0xfc00;
+				pPed->dir.vy = uVar3;
 				uVar4 = (int)(short)uVar3 + 0x800U & 0xfff;
-				(pPed->velocity).vx = (short)(iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc);
+				pPed->velocity.vx = (short)(iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc);
 				sVar2 = rcossin_tbl[uVar4 * 2 + 1];
-				pPed->finished_turn = '\t';
-				(pPed->velocity).vz = (short)(iVar5 * sVar2 >> 0xc);
+				pPed->finished_turn = 9;
+				pPed->velocity.vz = (short)(iVar5 * sVar2 >> 0xc);
 			}
 		}
 	}
-	else {
-		pPed->speed = '\0';
-		(pPed->dir).vy = sVar2 + pPed->head_rot;
+	else 
+	{
+		pPed->speed = 0;
+		pPed->dir.vy = sVar2 + pPed->head_rot;
 	}
+
 	AnimatePed(pPed);
-	return;*/
 }
 
 
@@ -4079,8 +4113,7 @@ void CivPedWalk(PEDESTRIAN *pPed)
 // [D]
 void CivPedSit(PEDESTRIAN *pPed)
 {
-	pPed->frame1 = '\0';
-	return;
+	pPed->frame1 = 0;
 }
 
 
@@ -4115,14 +4148,12 @@ void CivPedSit(PEDESTRIAN *pPed)
 
 void HandlePedestrians(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((gInGameCutsceneActive == 0) && (NumPlayers == 1)) {
+	if (gInGameCutsceneActive == 0 && NumPlayers == 1) 
+	{
 		BuildCarCollisionBox();
 		ControlPedestrians();
 		PingInPedestrians();
 	}
-	return;*/
 }
 
 
@@ -4150,31 +4181,27 @@ void HandlePedestrians(void)
 	/* end block 3 */
 	// End Line: 8931
 
+// [D]
 void PedestrianActionInit_WalkToTarget(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	int dir;
+	dir = CalcPedestrianDirection(0, (pPed->position).vx, (pPed->position).vz, &pPed->target);
 
-	iVar1 = CalcPedestrianDirection(0, (pPed->position).vx, (pPed->position).vz, &pPed->target);
-	if (iVar1 != 0) {
-		pPed->last_dir = (short)iVar1;
-		if (iVar1 == 1) {
-			(pPed->dir).vy = 0x400;
-		}
-		if (iVar1 == 2) {
-			(pPed->dir).vy = 0xc00;
-		}
-		if (iVar1 == 4) {
-			(pPed->dir).vy = 0;
-		}
-		if (iVar1 == 8) {
-			(pPed->dir).vy = 0x800;
-		}
+	if (dir != 0)
+	{
+		pPed->last_dir = dir;
+
+		if (dir == 1)
+			pPed->dir.vy = 0x400;
+		else if (dir == 2)
+			pPed->dir.vy = 0xc00;
+		else if (dir == 4)
+			pPed->dir.vy = 0;
+		else if (dir == 8)
+			pPed->dir.vy = 0x800;
+
 		CorrectPathPosition(pPed, (VECTOR *)&pPed->position);
 	}
-	return;
-	*/
 }
 
 

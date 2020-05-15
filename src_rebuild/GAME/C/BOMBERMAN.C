@@ -2,6 +2,7 @@
 #include "BOMBERMAN.H"
 
 MODEL* gBombModel;
+_ExOBJECT explosion[5];
 
 // decompiled code
 // original method signature: 
