@@ -667,24 +667,23 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 {
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		if (!(voice_bit & SPU_VOICECH(i)))
-			continue;
-
-		SPUVoice& voice = s_SpuVoices[i];
-
-		//int state;
-		//alGetSourcei(voice.alSource, AL_SOURCE_STATE, &state);
-
-		ALuint alSource = voice.alSource;
-
-		if (on_off)
+		if (voice_bit & SPU_VOICECH(i))
 		{
-			UpdateVoiceSample(voice);
-			alSourcePlay(alSource);
-		}
-		else
-		{
-			alSourceStop(alSource);
+			SPUVoice& voice = s_SpuVoices[i];
+
+			ALuint alSource = voice.alSource;
+
+			if (on_off)
+			{
+				alSourceStop(alSource);
+				UpdateVoiceSample(voice);
+
+				alSourcePlay(alSource);
+			}
+			else
+			{
+				alSourceStop(alSource);
+			}
 		}
 	}
 }
