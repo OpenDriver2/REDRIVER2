@@ -2,6 +2,9 @@
 #include "AI.H"
 #include "MISSION.H"
 #include "COSMETIC.H"
+#include "COP_AI.H"
+#include "CARS.H"
+#include "PLAYERS.H"
 
 // decompiled code
 // original method signature: 
@@ -79,7 +82,7 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 	if ((cp->controlType == 2 || cp->controlType == 7) && 
 		(cp->controlFlags & 1) == 0 && 
 		(cp->controlFlags & 2) == 0 && 
-		cp->hd.where.m[0][1] > 99)			// not flipped over
+		cp->hd.where.m[1][1] > 99)			// not flipped over
 	{
 		iVar1 = cp->hd.wheel_speed / 4096;
 
@@ -126,42 +129,50 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 	/* end block 3 */
 	// End Line: 650
 
+int player_position_known = 0;
+
 int TannerStuckInCar(int doSpeedCheck)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	short *psVar1;
 	int iVar2;
 	int iVar3;
 
-	iVar3 = (int)player.playerCarId;
-	if ((NumPlayers < 2) && (player.playerType == '\x01')) {
-		if (iVar3 < 0) {
+	_CAR_DATA *cp;
+
+	if (NumPlayers < 2 && player[0].playerType == 1)
+	{
+		if (player[0].playerCarId < 0)
+		{
 			psVar1 = &pedestrianFelony;
 		}
-		else {
-			psVar1 = &car_data[iVar3].felonyRating;
+		else 
+		{
+			cp = &car_data[player[0].playerCarId];
+			psVar1 = &cp->felonyRating;
 		}
-		if ((((*psVar1 < 0x293) || (player_position_known < 1)) &&
-			((car_data[iVar3].hd.wheel[1].surface & 7) != 1)) &&
-			((car_data[iVar3].hd.wheel[3].surface & 7) != 1)) {
-			if (doSpeedCheck != 0) {
-				iVar2 = car_data[iVar3].hd.wheel_speed + 0x800 >> 0xc;
-				if (iVar2 < 0) {
+
+		if ((*psVar1 < 0x293 || player_position_known < 1) &&
+			(cp->hd.wheel[1].surface & 7) != 1 &&
+			(cp->hd.wheel[3].surface & 7) != 1)
+		{
+			if (doSpeedCheck != 0)
+			{
+				iVar2 = cp->hd.wheel_speed / 4096;
+
+				if (iVar2 < 0)
 					iVar2 = -iVar2;
-				}
-				if (2 < iVar2) {
+
+				if (2 < iVar2)
 					return 1;
-				}
 			}
-			if ((99 < car_data[iVar3].hd.where.m[4]) && (lockAllTheDoors == '\0')) {
+
+			if (cp->hd.where.m[1][1] > 99 && lockAllTheDoors == 0)
+			{
 				return 0;
 			}
 		}
 	}
 	return 1;
-	*/
 }
 
 
