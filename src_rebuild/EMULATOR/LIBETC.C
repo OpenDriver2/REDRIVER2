@@ -24,28 +24,26 @@ int ResetCallback(void)
 }
 
 extern unsigned int g_swapTime;
-extern void Emulator_DoVSyncCallback();
+extern int Emulator_DoVSyncCallback();
 
 int VSync(int mode)
 {
 	if (mode < 0)
 	{
-		Emulator_DoVSyncCallback();
-
-		return SDL_GetTicks() - g_swapTime;
+		// don't wait but still return vblank count
+		return Emulator_DoVSyncCallback(); 
 	}
 
 	if (mode == 0)
 	{
-		Emulator_DoVSyncCallback();
-
 		Emulator_WaitForTimestep(1);
 	}
 	else if (mode > 0)
 	{
+		// FIXME: wait many times?
 	}
 
-	return SDL_GetTicks();
+	return Emulator_DoVSyncCallback();
 }
 
 int VSyncCallback(void(*f)(void))

@@ -315,32 +315,51 @@ static int Emulator_InitialiseGLEW()
 	return TRUE;
 }
 
-#define VSYNC_IN_THREAD	// might be not so safe, however, less timing issues
-
 SDL_Thread* g_vblankThread = NULL;
 SDL_mutex* g_vblankMutex = NULL;
 volatile bool g_stopVblank = false;
 volatile int g_vblankTime = 0;
 volatile int g_vblanksDone = 0;
+volatile int g_lastVblankCnt = 0;
 
-extern void (*vsync_callback)(void);
+extern void(*vsync_callback)(void);
 
-void Emulator_DoVSyncCallback()
+int Emulator_DoVSyncCallback()
 {
-#ifndef VSYNC_IN_THREAD
-	// do vblank events
 	SDL_LockMutex(g_vblankMutex);
 
-	while (g_vblanksDone)
-	{
-		if (vsync_callback)
-			vsync_callback();
+	int vblcnt = g_vblanksDone - g_lastVblankCnt;
 
-		g_vblanksDone--;
+	static bool canDoCb = true;
+
+	if (canDoCb && vsync_callback)	// prevent recursive calls
+	{
+		canDoCb = false;
+
+		// do vblank callbacks
+		int i = vblcnt;
+		while (i)
+		{
+			vsync_callback();
+			i--;
+		}
+
+		canDoCb = true;
 	}
 
+	g_lastVblankCnt = g_vblanksDone;
+
 	SDL_UnlockMutex(g_vblankMutex);
-#endif // VSYNC_IN_THREAD
+
+	if (g_swapInterval == 0)
+	{
+		// extra speedup.
+		// does not affect `vsync_callback` count
+		g_vblanksDone += 200;
+		g_lastVblankCnt += 200;
+	}
+
+	return g_vblanksDone;
 }
 
 int vblankThreadMain(void* data)
@@ -354,14 +373,8 @@ int vblankThreadMain(void* data)
 			// do vblank events
 			SDL_LockMutex(g_vblankMutex);
 
-#ifdef VSYNC_IN_THREAD
-			if (vsync_callback)
-				vsync_callback();
-#else
 			g_vblanksDone++;
-#endif // VSYNC_IN_THREAD
 			g_vblankTime = SDL_GetTicks();
-			
 
 			SDL_UnlockMutex(g_vblankMutex);
 		}

@@ -2178,10 +2178,6 @@ void DrawGame(void)
 
 		while ((VSync(-1) - frame) < 2);
 
-#ifndef PSX
-		Emulator_WaitForTimestep(2);
-#endif
-
 		frame = VSync(-1);
 		SwapDrawBuffers();
 	}
