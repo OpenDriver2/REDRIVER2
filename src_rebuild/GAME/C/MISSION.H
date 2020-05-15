@@ -33,6 +33,8 @@ extern int gGotInStolenCar;
 extern int gCopCarTheftAttempted;
 extern int gLockPickingAttempted;
 extern char lockAllTheDoors;
+extern int bStopTanner;
+extern int tannerDeathTimer;
 extern int gCantDrive;
 extern int gPlayerDamageFactor;
 

@@ -12,6 +12,8 @@
 #include "SOUND.H"
 #include "PAD.H"
 #include "CIV_AI.H"
+#include "GLAUNCH.H"
+#include "CUTSCENE.H"
 
 #include "STRINGS.H"
 
@@ -1749,7 +1751,7 @@ void SetupBack(PEDESTRIAN *pPed)
 	/* end block 4 */
 	// End Line: 18694
 
-_CAR_DATA *pCivCarToGetIn;
+_CAR_DATA *pCivCarToGetIn = NULL;
 
 // [D]
 void CivGetIn(PEDESTRIAN *pPed)		// [A] UNUSED
@@ -2259,27 +2261,32 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 5593
 
+_CAR_DATA *carToGetIn;
+int bReverseYRotation = 0;
+
+// [D]
 void PedGetOutCar(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 
-	player.pos[0] = (pPed->position).vx;
-	pPed->speed = '\0';
-	pPed->frame1 = pPed->frame1 + '\x01';
-	player.pos[1] = -(pPed->position).vy;
-	player.pos[2] = (pPed->position).vz;
-	if (0xe < (byte)pPed->frame1) {
+	pPed->speed = 0;
+	pPed->frame1++;
+
+	player[0].pos[0] = pPed->position.vx;
+	player[0].pos[1] = -pPed->position.vy;
+	player[0].pos[2] = pPed->position.vz;
+
+	if (pPed->frame1 > 14)
+	{
 		ChangeCarPlayerToPed(0);
-		sVar1 = *(short *)&(carToGetIn->hd).direction;
-		pPed->speed = '\0';
-		pPed->fpAgitatedState = (_func_2 *)0x0;
+
+		pPed->speed = 0;
+		pPed->fpAgitatedState = NULL;
 		pPed->flags = pPed->flags & 0xffffffef;
-		(pPed->dir).vy = sVar1 + -0x800;
+		pPed->dir.vy = carToGetIn->hd.direction - 2048;
+
 		bReverseYRotation = 0;
 	}
-	return;*/
 }
 
 
@@ -2315,10 +2322,11 @@ void PedGetOutCar(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 6269
 
+int lastCarCameraView = 0;
+
+// [D]
 void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	short sVar2;
 	int iVar3;
@@ -2327,43 +2335,41 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	int iVar6;
 	int iVar7;
 
-	lastCarCameraView = ZEXT14((byte)player.cameraView);
-	iVar5 = (pCar->hd).direction;
-	pPed->speed = '\0';
-	iVar6 = (pCar->hd).direction;
+	lastCarCameraView = player[0].cameraView;
+	pPed->speed = 0;
+
+	iVar5 = pCar->hd.direction;
+	iVar6 = pCar->hd.direction;
 	iVar3 = rsin(iVar6);
 	sVar2 = rcos(iVar6);
 	iVar7 = 400;
-	bVar1 = -1 < (int)sVar2 * ((pCar->hd).where.t[0] - (pPed->position).vx) +
-		(int)(short)-(short)(iVar3 * 0x1000 >> 0xc) *
-		((pCar->hd).where.t[2] - (pPed->position).vz) + 0x800;
-	if (bVar1) {
-		sVar2 = (short)iVar6 + -0x400;
-	}
-	else {
-		sVar2 = (short)iVar6 + 0x400;
-	}
-	bReverseYRotation = ZEXT14(!bVar1);
-	(pPed->dir).vy = sVar2;
-	if (side == 1) {
+
+	bVar1 = -1 < sVar2 * (pCar->hd.where.t[0] - pPed->position.vx) - (iVar3 * 0x1000 >> 0xc) * (pCar->hd.where.t[2] - pPed->position.vz) + 0x800;
+
+	if (bVar1)
+		sVar2 = iVar6 - 0x400;
+	else
+		sVar2 = iVar6 + 0x400;
+
+	bReverseYRotation = !bVar1;
+	pPed->dir.vy = sVar2;
+
+	if (side == 1)
 		iVar7 = -400;
-	}
+
 	uVar4 = iVar5 + 0x800U & 0xfff;
-	if (NoPlayerControl == 0) {
-		player.cameraView = '\x05';
-		player.cameraPos.vx =
-			(pCar->hd).where.t[0] -
-			((iVar7 * (int)rcossin_tbl[uVar4 * 2 + 1] >> 0xc) -
-			((int)rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
-		player.cameraPos.vy = -200 - (pCar->hd).where.t[1];
-		player.cameraPos.vz =
-			(pCar->hd).where.t[2] +
-			(iVar7 * (int)rcossin_tbl[uVar4 * 2] >> 0xc) +
-			((int)rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
+
+	if (NoPlayerControl == 0)
+	{
+		player[0].cameraView = 5;
+		player[0].cameraPos.vx = pCar->hd.where.t[0] - ((iVar7 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
+
+		player[0].cameraPos.vy = -200 - pCar->hd.where.t[1];
+		player[0].cameraPos.vz = pCar->hd.where.t[2] + (iVar7 * rcossin_tbl[uVar4 * 2] >> 0xc) + (rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
 	}
-	pPed->frame1 = '\0';
+
+	pPed->frame1 = 0;
 	carToGetIn = pCar;
-	return;*/
 }
 
 
@@ -2421,68 +2427,66 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	/* end block 4 */
 	// End Line: 6526
 
+// [D]
 void SetupGetInCar(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	_CAR_DATA *p_Var1;
 	short sVar2;
 	int iVar3;
 	uint uVar4;
 	int iVar5;
 	int iVar6;
-	long local_20;
-	int local_1c;
-	long local_18;
+
+	long pos[4];
 
 	bReverseAnimation = 0;
-	pPed->speed = '\0';
-	iVar6 = (carToGetIn->hd).direction;
+	pPed->speed = 0;
+
+	iVar6 = carToGetIn->hd.direction;
 	iVar3 = rsin(iVar6);
 	sVar2 = rcos(iVar6);
-	p_Var1 = carToGetIn;
-	if ((int)sVar2 * ((carToGetIn->hd).where.t[0] - (pPed->position).vx) +
-		(int)(short)-(short)(iVar3 * 0x1000 >> 0xc) *
-		((carToGetIn->hd).where.t[2] - (pPed->position).vz) + 0x800 < 0) {
+
+	if (sVar2 * (carToGetIn->hd.where.t[0] - pPed->position.vx) - (iVar3 * 0x1000 >> 0xc) * (carToGetIn->hd.where.t[2] - pPed->position.vz) + 0x800 < 0) 
 		iVar6 = iVar6 + 0x400;
-	}
-	else {
-		iVar6 = iVar6 + -0x400;
-	}
+	else 
+		iVar6 = iVar6 - 0x400;
+
 	iVar5 = 400;
-	(pPed->dir).vy = (short)iVar6;
-	iVar3 = (p_Var1->hd).direction;
-	if (iVar3 < iVar6) {
+
+	pPed->dir.vy = iVar6;
+	iVar3 = carToGetIn->hd.direction;
+
+	if (iVar3 < iVar6)
 		iVar5 = -400;
-	}
+
 	uVar4 = iVar3 + 0x800U & 0xfff;
-	if ((NoPlayerControl == 0) && (gInGameCutsceneActive == 0)) {
-		player.cameraView = '\x05';
-		player.cameraPos.vx =
-			(p_Var1->hd).where.t[0] -
-			((iVar5 * (int)rcossin_tbl[uVar4 * 2 + 1] >> 0xc) -
-			((int)rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
-		player.cameraPos.vy = -200 - (p_Var1->hd).where.t[1];
-		player.cameraPos.vz =
-			(p_Var1->hd).where.t[2] +
-			(iVar5 * (int)rcossin_tbl[uVar4 * 2] >> 0xc) +
-			((int)rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
+
+	if ((NoPlayerControl == 0) && (gInGameCutsceneActive == 0)) 
+	{
+		player[0].cameraView = 5;
+		player[0].cameraPos.vx = carToGetIn->hd.where.t[0] - ((iVar5 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
+		player[0].cameraPos.vy = -200 - carToGetIn->hd.where.t[1];
+		player[0].cameraPos.vz = p_Var1->hd.where.t[2] + (iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc) + (rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
 	}
-	if ((carToGetIn->controlFlags & 4) == 0) {
-		if (((carToGetIn->controlType == '\x02') && (carToGetIn->ai[0xf9] == 3)) &&
-			(carToGetIn->ai[0xc] == 5)) {
-			carToGetIn->controlFlags = carToGetIn->controlFlags | 4;
+
+	if ((carToGetIn->controlFlags & 4) == 0)
+	{
+		if (carToGetIn->controlType == 2 && carToGetIn->ai.c.thrustState == 3 && carToGetIn->ai.c.ctrlState == 5) 
+		{
+			carToGetIn->controlFlags |= 4;
 		}
-		else {
-			local_20 = player.pos[0];
-			local_1c = -player.pos[1];
-			local_18 = player.pos[2];
-			CreatePedAtLocation((long(*)[4])&local_20, 8);
-			Start3DSoundVolPitch(-1, 6, 5, local_20, local_1c, local_18, 0, 0x1000);
-			carToGetIn->controlFlags = carToGetIn->controlFlags | 4;
+		else 
+		{
+			pos[0] = player[0].pos[0];
+			pos[1] = -player[0].pos[1];
+			pos[2] = player[0].pos[2];
+
+			CreatePedAtLocation(&pos, 8);
+			Start3DSoundVolPitch(-1, 6, 5, pos[0], pos[1], pos[2], 0, 0x1000);
+
+			carToGetIn->controlFlags |= 4;
 		}
 	}
-	return;*/
 }
 
 
@@ -2507,33 +2511,39 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 17841
 
+int bTannerSitting = 0;
+
+// [D]
 void PedGetInCar(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	_CAR_DATA *newCar;
 	int playerID;
 
-	pPed->speed = '\0';
-	if ((byte)pPed->frame1 < 0xf) {
+	pPed->speed = 0;
+
+	if (pPed->frame1 < 0xf) 
+	{
 		AnimatePed(pPed);
 	}
-	else {
+	else 
+	{
 		playerID = (int)pPed->padId;
-		pPed->speed = '\0';
+		pPed->speed = 0;
 		newCar = carToGetIn;
-		pPed->fpAgitatedState = (_func_2 *)0x0;
-		if (playerID < 0) {
+		pPed->fpAgitatedState = NULL;
+
+		if (playerID < 0)
 			playerID = -playerID;
-		}
+
 		pPed->flags = pPed->flags & 0xffffffef;
+
 		ChangePedPlayerToCar(playerID, newCar);
 		DestroyPedestrian(pPed);
-		pPlayerPed = (PEDESTRIAN *)0x0;
+
+		pPlayerPed = NULL;
 		bTannerSitting = 0;
-		numTannerPeds = numTannerPeds + -1;
+		numTannerPeds--;
 	}
-	return;*/
 }
 
 
@@ -2552,19 +2562,15 @@ void PedGetInCar(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 6053
 
+// [D]
 void SetupPressButton(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined *puVar1;
-
 	pPed->type = PED_ACTION_PRESSBUTTON;
 	SetupPedMotionData(pPed);
-	puVar1 = PTR_PedPressButton_000a1698;
-	pPed->speed = '\0';
-	pPed->frame1 = '\0';
-	pPed->fpAgitatedState = puVar1;
-	return;*/
+
+	pPed->speed = 0;
+	pPed->frame1 = 0;
+	pPed->fpAgitatedState = PedPressButton;
 }
 
 
