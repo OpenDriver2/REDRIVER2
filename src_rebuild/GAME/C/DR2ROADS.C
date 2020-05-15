@@ -320,7 +320,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 {
 	long lVar1;
-	uint uVar2;
+	int uVar2;
 	DRIVER2_CURVE *pDVar3;
 	int iVar4;
 
@@ -337,9 +337,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 			pDVar3 = Driver2CurvesPtr + (((uint)(ushort)plane->surface & 0x1fff) - 0x20);
 			lVar1 = ratan2(pDVar3->Midz - pos->vz, pDVar3->Midx - pos->vx);
 			iVar4 = (int)pDVar3->gradient * (lVar1 + 0x800U & 0xfff);
-			if (iVar4 < 0) {
-				iVar4 = iVar4 + 0xfff;
-			}
+
 			return (iVar4 >> 0xc) - (int)pDVar3->height;
 		}
 
@@ -348,14 +346,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 		if (iVar4 != 0)
 		{
 			if (iVar4 == 0x4000) 
-			{
 				return -uVar2;
-			}
-
-			if (iVar4 == 0) 
-			{
-				trap(7);
-			}
 
 			return -uVar2 - (int)((int)plane->a * ((pos->vx - 0x200U & 0xffff) + 0x200) +
 				(int)plane->c * ((pos->vz - 0x200U & 0xffff) + 0x200)) / iVar4;

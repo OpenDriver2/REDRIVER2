@@ -131,8 +131,8 @@ void InitSound(void)
 // [D]
 void ClearChannelFields(int channel)
 {
-	channels[channel].loop = '\0';
-	channels[channel].locked = '\0';
+	channels[channel].loop = 0;
+	channels[channel].locked = 0;
 	channels[channel].time = 0;
 	channels[channel].samplerate = 0;
 	channels[channel].srcvolume = -10000;
@@ -442,22 +442,16 @@ char SetPlayerOwnsChannel(int chan, char player)
 // [D]
 int StartSound(int channel, int bank, int sample, int volume, int pitch)
 {
-	int iVar1;
-
 	if (channel < 0)
 		channel = GetFreeChannel();
 
-	if (channel < 16) 
-	{
-		channels[channel].srcposition = (VECTOR *)0x0;
-		channels[channel].srcvolume = volume;
+	if (channel < 0 || channel >= 16)	// [A]
+		return -1;
 
-		iVar1 = CompleteSoundSetup(channel, bank, sample, pitch, 0);
-	}
-	else 
-		iVar1 = -1;
+	channels[channel].srcposition = (VECTOR *)0x0;
+	channels[channel].srcvolume = volume;
 
-	return iVar1;
+	return CompleteSoundSetup(channel, bank, sample, pitch, 0);
 }
 
 
@@ -514,7 +508,7 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	if (channel < 0)
 		channel = GetFreeChannel();
 
-	if (channel < 0x10) 
+	if (channel < 16) 
 	{
 		channels[channel].srcposition = &channels[channel].position;
 		channels[channel].position.vx = x;
@@ -658,22 +652,25 @@ void SetChannelPitch(int channel, int pitch)
 {
 	long rate;
 
-	if (channel < 16 && sound_paused == 0) 
+	if (channel < 0 || channel >= 16)	// [A]
+		return;
+
+	if (sound_paused)
+		return;
+
+	if (channels[channel].time != 0 && 0x80 < pitch) 
 	{
-		if (channels[channel].time != 0 && 0x80 < pitch) 
-		{
-			channels[channel].srcpitch = pitch;
+		channels[channel].srcpitch = pitch;
 
-			rate = (channels[channel].samplerate * ((channels[channel].dopplerScale * pitch) / 4096)) / 44100;
+		rate = (channels[channel].samplerate * ((channels[channel].dopplerScale * pitch) / 4096)) / 44100;
 
-			if (16383 < rate)
-				rate = 16383;
+		if (16383 < rate)
+			rate = 16383;
 
-			channels[channel].attr.mask = 0x10;
-			channels[channel].attr.pitch = rate;
+		channels[channel].attr.mask = 0x10;
+		channels[channel].attr.pitch = rate;
 
-			SpuSetVoiceAttr(&channels[channel].attr);
-		}
+		SpuSetVoiceAttr(&channels[channel].attr);
 	}
 }
 
@@ -698,7 +695,10 @@ void SetChannelPitch(int channel, int pitch)
 // [D]
 void SetChannelVolume(int channel, int volume, int proximity)
 {
-	if (channel < 16 && sound_paused == 0 && channels[channel].time != 0) 
+	if (channel < 0 || channel >= 16)	// [A]
+		return;
+
+	if (sound_paused == 0 && channels[channel].time != 0) 
 	{
 		channels[channel].srcvolume = volume;
 
@@ -806,7 +806,10 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 // [D]
 void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volume, int pitch, int proximity)
 {
-	if (camera_change != 1 && old_camera_change != 1 && channel < 16 && sound_paused == 0)
+	if (channel < 0 || channel >= 16)	// [A]
+		return;
+
+	if (camera_change != 1 && old_camera_change != 1 && sound_paused == 0)
 	{
 		if (velocity == NULL) 
 			velocity = dummylong;
@@ -1271,30 +1274,24 @@ void UnPauseSound(void)
 //  [D]
 void StopChannel(int channel)
 {
-	unsigned char uVar1;
-	int iVar2;
-	uint uVar3;
-	int iVar4;
+	unsigned char lock;
+	int vsync;
 
-	if (channel < 16)
-	{
-		uVar1 = channels[channel].locked;
-		iVar2 = VSync(-1);
+	if (channel < 0 || channel >= 16)	// [A]
+		return;
 
-		SpuSetKey(0, channels[channel].attr.voice);
+	lock = channels[channel].locked;
+	vsync = VSync(-1);
 
-		do {
-			uVar3 = SpuGetKeyStatus(channels[channel].attr.voice);
+	SpuSetKey(0, channels[channel].attr.voice);
 
-			if ((uVar3 & 0xff) == 0)
-				break;
+	do {
+		if (SpuGetKeyStatus(channels[channel].attr.voice) == 0)
+			break;
+	} while (VSync(-1) - vsync < 8);
 
-			iVar4 = VSync(-1);
-		} while (iVar4 - iVar2 < 8);
-
-		ClearChannelFields(channel);
-		channels[channel].locked = uVar1;
-	}
+	ClearChannelFields(channel);
+	channels[channel].locked = lock;
 }
 
 
@@ -1337,14 +1334,14 @@ void StopChannel(int channel)
 // [D]
 void StopAllChannels(void)
 {
-	int channel;
+	int ct;
 
-	channel = 0;
+	ct = 0;
 	do {
-		StopChannel(channel);
+		StopChannel(ct);
 		VSync(0);
-		channel = channel + 1;
-	} while (channel < 0x10);
+		ct++;
+	} while (ct < 16);
 }
 
 
@@ -1371,8 +1368,10 @@ void StopAllChannels(void)
 // [D]
 void LockChannel(int channel)
 {
-	if (channel < 16) 
-		channels[channel].locked = 1;
+	if (channel < 0 || channel >= 16)	// [A]
+		return;
+
+	channels[channel].locked = 1;
 }
 
 
@@ -1389,8 +1388,10 @@ void LockChannel(int channel)
 // [D]
 void UnlockChannel(int c)
 {
-	if (c < 16)
-		channels[c].locked = 0;
+	if (c < 0 || c >= 16)	// [A]
+		return;
+
+	channels[c].locked = 0;
 }
 
 
@@ -2252,31 +2253,29 @@ int CalculateVolume(int channel)
 {
 	int iVar1;
 	int iVar2;
-	VECTOR *pVVar3;
-
-	int puVar4;
 	int iVar5;
 
-	puVar4 = 10000 + channels[channel].srcvolume;
+	VECTOR *pp;
 
-	if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
+	int volume;
+
+	volume = 10000 + channels[channel].srcvolume;
+
+	if (1 < NumPlayers && NoPlayerControl == 0) 
 	{
-		iVar1 = (int)puVar4 * 3;
-		puVar4 = (iVar1 / 4);
-		if (iVar1 < 0) {
-			puVar4 = (iVar1 + 3) / 4;
-		}
+		iVar1 = volume * 3;
+		volume = (iVar1 / 4);
 	}
 
-	pVVar3 = channels[channel].srcposition;
+	pp = channels[channel].srcposition;
 
-	if (pVVar3 != NULL) // [A]
+	if (pp != NULL) // [A]
 	{
 		iVar1 = channels[channel].player;
 
-		IR1 = (pVVar3->vx - player[iVar1].cameraPos.vx);
-		IR2 = (pVVar3->vy + player[iVar1].cameraPos.vy);
-		IR3 = (pVVar3->vz - player[iVar1].cameraPos.vz);
+		IR1 = (pp->vx - player[iVar1].cameraPos.vx);
+		IR2 = (pp->vy + player[iVar1].cameraPos.vy);
+		IR3 = (pp->vz - player[iVar1].cameraPos.vz);
 
 		docop2(0xa00428);
 
@@ -2286,38 +2285,29 @@ int CalculateVolume(int channel)
 
 		iVar1 = SquareRoot0(iVar1 + iVar2 + iVar5);
 
-		iVar2 = iVar1 + -16000;
+		iVar2 = iVar1-16000;
 
-		if (iVar1 < 1024) {
+		if (iVar1 < 1024)
+		{
 			iVar1 = 1024;
 			iVar2 = -0x3a80;
 		}
 
-		if (iVar2 < 0) {
+		if (iVar2 < 0)
 			iVar2 = 0;
-		}
-		else if (0x1000 < iVar2) {
+		else if (0x1000 < iVar2) 
 			iVar2 = 4069;
-		}
 
 		iVar5 = 0xbd0000 / (iVar1 + 2000);
 
-		if (iVar1 + 2000 == 0) {
-			trap(7);
-		}
-
-		if (iVar2 != 0) {
+		if (iVar2 != 0)
 			iVar5 = iVar5 * (4096 - iVar2) / 4096;
-		}
-		iVar5 = iVar5 * puVar4;
-		puVar4 = iVar5 / 4096;
 
-		if (iVar5 < 0) {
-			puVar4 = (iVar5 + 0xfff) / 4096;
-		}
+		iVar5 *= volume;
+		volume = iVar5 / 4096;
 	}
 
-	return puVar4-10000;
+	return volume-10000;
 }
 
 

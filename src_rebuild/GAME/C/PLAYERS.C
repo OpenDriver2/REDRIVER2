@@ -155,8 +155,8 @@ void ChangeCarPlayerToPed(int playerID)
 	player[playerID].skidding.sound = -1;
 
 	StopChannel(player[playerID].skidding.chan);
-
 	UnlockChannel(player[playerID].skidding.chan);
+
 	player[playerID].wheelnoise.sound = -1;
 
 	StopChannel(player[playerID].wheelnoise.chan);
