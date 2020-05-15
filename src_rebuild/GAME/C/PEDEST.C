@@ -14,6 +14,7 @@
 #include "CIV_AI.H"
 #include "GLAUNCH.H"
 #include "CUTSCENE.H"
+#include "CAMERA.H"
 
 #include "STRINGS.H"
 
@@ -2584,20 +2585,21 @@ void SetupPressButton(PEDESTRIAN *pPed)
 	/* end block 1 */
 	// End Line: 18176
 
+// [D]
 void PedPressButton(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((byte)pPed->frame1 < 0xf) {
+	if (pPed->frame1 < 0xf) 
+	{
 		AnimatePed(pPed);
 	}
-	else {
+	else
+	{
 		pPed->type = PED_ACTION_BACK;
-		pPed->fpAgitatedState = (_func_2 *)0x0;
-		pPed->frame1 = '\0';
+		pPed->fpAgitatedState = NULL;
+		pPed->frame1 = 0;
+
 		SetupPedMotionData(pPed);
 	}
-	return;*/
 }
 
 
@@ -2611,21 +2613,15 @@ void PedPressButton(PEDESTRIAN *pPed)
 	/* end block 1 */
 	// End Line: 6121
 
+// [D]
 void SetupTannerSitDown(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined *puVar1;
-
 	pPed->type = PED_ACTION_SIT;
 	SetupPedMotionData(pPed);
-	puVar1 = PTR_TannerSitDown_000a169c;
-	pPed->frame1 = '\0';
-	pPed->fpAgitatedState = puVar1;
-	return;*/
+
+	pPed->frame1 = 0;
+	pPed->fpAgitatedState = TannerSitDown;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -2669,68 +2665,84 @@ void SetupTannerSitDown(PEDESTRIAN *pPed)
 /* WARNING: Removing unreachable block (ram,0x0006fde0) */
 /* WARNING: Removing unreachable block (ram,0x0006fe8c) */
 
+extern short padd;
+SVECTOR camAngle;
+
+// [D]
 void TannerCameraHandler(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	short sVar2;
 	int iVar3;
 
-	camera_position.vy = ((int)pPed->head_pos + -0x1c) - player.pos[1];
-	if (Pads[player.padid].type == '\x04') {
-		iVar3 = (int)Pads[player.padid].mapanalog[0];
-		if ((iVar3 < -0x20) || (0x20 < iVar3)) {
+	int padid = player[0].padid;
+
+	camera_position.vy = pPed->head_pos - 28 - player[0].pos[1];
+
+	if (Pads[padid].type == 4)
+	{
+		iVar3 = Pads[padid].mapanalog[0];
+
+		if (iVar3 < -32 || iVar3 > 32) 
+		{
 			iVar1 = iVar3;
-			if (iVar3 < 0) {
+
+			if (iVar3 < 0)
 				iVar1 = -iVar3;
-			}
-			tannerLookAngle.vy = (iVar1 + -0x20) * 9;
-			if (iVar3 < 0) {
-				tannerLookAngle.vy = (iVar1 + -0x20) * -9;
-			}
+
+			tannerLookAngle.vy = (iVar1 - 32) * 9;
+
+			if (iVar3 < 0) 
+				tannerLookAngle.vy = (iVar1 - 32) * -9;
 		}
-		else {
+		else 
+		{
 			tannerLookAngle.vy = 0;
 		}
-		tannerLookAngle.vx = -(int)Pads[player.padid].mapanalog[1];
-		if (tannerLookAngle.vx < -0x20) {
-			tannerLookAngle.vx = tannerLookAngle.vx + -0x80;
-		}
-		else {
-			if (tannerLookAngle.vx < 0x21) {
-				tannerLookAngle.vx = 0;
-			}
-		}
+
+		tannerLookAngle.vx = -Pads[padid].mapanalog[1];
+
+		if (tannerLookAngle.vx < -32)
+			tannerLookAngle.vx = tannerLookAngle.vx - 128;
+		else if (tannerLookAngle.vx < 33)
+			tannerLookAngle.vx = 0;
 	}
-	else {
+	else 
+	{
 		tannerLookAngle.vx = 0;
 		tannerLookAngle.vy = 0;
 		tannerLookAngle.vz = 0;
 	}
-	if ((padd & 1U) == 0) {
+
+	if ((padd & 1U) == 0)
+	{
 		sVar2 = 0;
-		if ((padd & 2U) != 0) {
+		if ((padd & 2U) != 0) 
+		{
 			sVar2 = -0x400;
 		}
 	}
-	else {
+	else 
+	{
 		sVar2 = 0x400;
-		if ((padd & 2U) != 0) {
+		if ((padd & 2U) != 0)
+		{
 			sVar2 = 0x800;
 		}
 	}
-	camera_position.vx = player.pos[0];
-	camera_position.vz = player.pos[2];
-	camera_angle.vx = camAngle.vx + (short)tannerLookAngle.vx;
-	camera_angle.vy = (camAngle.vy - (short)tannerLookAngle.vy) + sVar2 & 0xfff;
-	camera_angle.vz = camAngle.vz + (short)tannerLookAngle.vz;
+	camera_position.vx = player[0].pos[0];
+	camera_position.vz = player[0].pos[2];
+
+	camera_angle.vx = camAngle.vx + tannerLookAngle.vx;
+	camera_angle.vy = (camAngle.vy - tannerLookAngle.vy) + sVar2 & 0xfff;
+	camera_angle.vz = camAngle.vz + tannerLookAngle.vz;
+
 	bTannerSitting = 1;
-	tracking_car = '\0';
-	player.cameraPos.vx = player.pos[0];
-	player.cameraPos.vy = camera_position.vy;
-	player.cameraPos.vz = player.pos[2];
-	return;*/
+	tracking_car = 0;
+
+	player[0].cameraPos.vx = player[0].pos[0];
+	player[0].cameraPos.vy = camera_position.vy;
+	player[0].cameraPos.vz = player[0].pos[2];
 }
 
 
@@ -2758,67 +2770,85 @@ void TannerCameraHandler(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 7119
 
+static int oldCamView;
+
+// [D]
 void TannerSitDown(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 	int iVar2;
 
-	if ((oldCamView != 2) && (player.cameraView == '\x02')) {
+	if (oldCamView != 2 && player[0].cameraView == 2)
+	{
 		camAngle.vx = camera_angle.vx;
 		camAngle.vy = camera_angle.vy;
 		camAngle.vz = camera_angle.vz;
 	}
-	if (pPed->frame1 == '\x0f') {
-		if (bReverseAnimation == 0) {
-			oldCamView = ZEXT14((byte)player.cameraView);
+
+	if (pPed->frame1 == 15)
+	{
+		if (bReverseAnimation == 0)
+		{
+			oldCamView = player[0].cameraView;
 			bFreezeAnimation = 1;
-			if (player.cameraView == '\x02') {
+
+			if (player[0].cameraView == 2) 
+			{
 				uVar1 = pPed->flags | 4;
 			}
-			else {
+			else 
+			{
 				bTannerSitting = 0;
 				uVar1 = pPed->flags & 0xfffffffb;
 			}
+
 			pPed->flags = uVar1;
-			if ((tannerPad & 0x10) == 0) {
+
+			if ((tannerPad & 0x10) == 0)
 				return;
-			}
-			tracking_car = '\x01';
+
+			tracking_car = 1;
 			bReverseAnimation = 1;
 			bFreezeAnimation = 0;
 			bTannerSitting = 0;
+
 			pPed->flags = pPed->flags & 0xfffffffb;
+
 			oldCamView = -1;
 			return;
 		}
 	LAB_00070054:
-		if (pPed->frame1 == '\0') {
-			pPed->frame1 = '\0';
-			pPed->fpAgitatedState = (_func_2 *)0x0;
+		if (pPed->frame1 == 0)
+		{
+			pPed->frame1 = 0;
+			pPed->fpAgitatedState = NULL;
 			pPed->flags = pPed->flags & 0xffffffef;
+
 			tannerLookAngle.vx = 0;
 			tannerLookAngle.vy = 0;
 			tannerLookAngle.vz = 0;
 			bFreezeAnimation = 0;
 			bReverseAnimation = 0;
+
 			return;
 		}
-		if (bReverseAnimation != 0) {
-			iVar2 = (pPed->position).vy + -2;
+
+		if (bReverseAnimation != 0)
+		{
+			iVar2 = pPed->position.vy - 2;
 			goto LAB_000700b4;
 		}
 	}
-	else {
-		if (bReverseAnimation != 0) goto LAB_00070054;
+	else 
+	{
+		if (bReverseAnimation != 0) 
+			goto LAB_00070054;
 	}
-	iVar2 = (pPed->position).vy + 2;
+
+	iVar2 = pPed->position.vy + 2;
 LAB_000700b4:
-	(pPed->position).vy = iVar2;
+	pPed->position.vy = iVar2;
 	AnimatePed(pPed);
-	return;
-	*/
 }
 
 
