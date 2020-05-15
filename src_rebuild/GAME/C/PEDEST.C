@@ -4281,73 +4281,94 @@ void CorrectPathPosition(PEDESTRIAN *pedestrian, VECTOR *position)
 	/* end block 3 */
 	// End Line: 10738
 
+// [D]
 int CalcPedestrianDirection(int last_dir, int wx, int wz, VECTOR *target)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	long lVar1;
 	int iVar2;
 	uint uVar3;
 	uint uVar4;
 	uint uVar5;
 
-	uVar5 = (uint)(pedestrian_roads.west == -0x14);
-	uVar4 = (uint)(pedestrian_roads.west == -0x14);
-	if (pedestrian_roads.east == -0x14) {
+	uVar5 = pedestrian_roads.west == -20;
+	uVar4 = pedestrian_roads.west == -20;
+
+	if (pedestrian_roads.east == -20) 
+	{
 		uVar5 = uVar5 | 2;
-		uVar4 = uVar4 + 1;
+		uVar4++;
 	}
-	if (pedestrian_roads.north == -0x14) {
+
+	if (pedestrian_roads.north == -20)
+	{
 		uVar5 = uVar5 | 4;
-		uVar4 = uVar4 + 1;
+		uVar4++;
 	}
-	if (pedestrian_roads.south == -0x14) {
+
+	if (pedestrian_roads.south == -20)
+	{
 		uVar5 = uVar5 | 8;
-		uVar4 = uVar4 + 1;
+		uVar4++;
 	}
+
 	uVar3 = uVar5 & last_dir;
-	if ((uVar3 == 0) && (uVar3 = uVar5, 1 < uVar4)) {
+
+	if ((uVar3 == 0) && (uVar3 = uVar5, 1 < uVar4)) 
+	{
 		lVar1 = Random2(0);
 		uVar3 = 0x10;
-		if (uVar4 == 0) {
+
+		if (uVar4 == 0)
 			trap(7);
-		}
+
 		iVar2 = lVar1 % uVar4 + 1;
-		while (iVar2 != 0) {
+
+		while (iVar2 != 0) 
+		{
 			uVar3 = (int)uVar3 >> 1;
-			if ((uVar5 & uVar3) != 0) {
-				iVar2 = iVar2 + -1;
-			}
+			if ((uVar5 & uVar3) != 0) 
+				iVar2--;
 		}
+
 		uVar3 = uVar5 & uVar3;
 	}
+
 	uVar4 = wx & 0xfffffc00;
 	uVar5 = wz & 0xfffffc00;
-	if (uVar3 == 2) {
+
+	if (uVar3 == 2)
+	{
 		iVar2 = uVar4 + 0x600;
 	}
-	else {
-		if (2 < uVar3) {
-			if (uVar3 == 4) {
+	else 
+	{
+		if (2 < uVar3) 
+		{
+			if (uVar3 == 4) 
+			{
 				iVar2 = uVar5 + 0x600;
 			}
-			else {
+			else 
+			{
 				iVar2 = uVar5 - 0x200;
-				if (uVar3 != 8) goto LAB_0007177c;
+				if (uVar3 != 8)
+					goto LAB_0007177c;
 			}
+
 			target->vx = uVar4 + 0x200;
 			target->vz = iVar2;
+
 			goto LAB_0007177c;
 		}
 		iVar2 = uVar4 - 0x200;
-		if (uVar3 != 1) goto LAB_0007177c;
+		if (uVar3 != 1) 
+			goto LAB_0007177c;
 	}
 	target->vx = iVar2;
 	target->vz = uVar5 + 0x200;
 LAB_0007177c:
 	target->vy = 0;
-	return uVar3;*/
+	return uVar3;
 }
 
 
@@ -4381,34 +4402,30 @@ LAB_0007177c:
 	/* end block 4 */
 	// End Line: 18855
 
+// [D] [A] might be incorrect
 int IsPavement(int x, int y, int z, PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	uint uVar2;
-	VECTOR local_18;
+	int r;
+	VECTOR v;
 
-	local_18.vy = -y;
-	local_18.vx = x;
-	local_18.vz = z;
-	iVar1 = GetSurfaceIndex(&local_18);
-	if (iVar1 == -0x14) {
-		iVar1 = RoadInCell(&local_18);
-		uVar2 = (uint)(iVar1 != 0);
+	v.vy = -y;
+	v.vx = x;
+	v.vz = z;
+	r = GetSurfaceIndex(&v);
+
+	if (r == -20) 
+	{
+		return (RoadInCell(&v) != 0);
 	}
-	else {
-		if (pPed != (PEDESTRIAN *)0x0) {
-			if (((iVar1 != -0x1a) && (iVar1 != -0x17)) && (iVar1 != -0x20)) {
-				return 0;
-			}
-			pPed->flags = pPed->flags | 1;
-		}
-		uVar2 = 0;
+	else if (pPed)
+	{
+		if (r != -26 && r != -23 && r != -32)
+			return 0;
+
+		pPed->flags |= 1;
 	}
-	return uVar2;
-	*/
+
+	return 0;
 }
 
 
@@ -4442,10 +4459,9 @@ int IsPavement(int x, int y, int z, PEDESTRIAN *pPed)
 	/* end block 4 */
 	// End Line: 18489
 
+// [D]
 void SetPedestrianTurn(PEDESTRIAN *pedestrian, int turn)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	short sVar2;
 	short sVar3;
@@ -4456,16 +4472,19 @@ void SetPedestrianTurn(PEDESTRIAN *pedestrian, int turn)
 	iVar4 = (pedestrian->position).vx;
 	sVar2 = (pedestrian->velocity).vz;
 	iVar5 = (pedestrian->position).vz;
+
 	uVar6 = (pedestrian->dir).vy + turn & 0xfff;
 	(pedestrian->dir).vy = (short)uVar6;
+
 	uVar6 = uVar6 + 0x800 & 0xfff;
 	sVar3 = (pedestrian->velocity).vx;
+
 	(pedestrian->position).vz = iVar5 - sVar2;
+
 	cVar1 = pedestrian->speed;
 	(pedestrian->position).vx = iVar4 - sVar3;
 	(pedestrian->velocity).vx = (short)((int)cVar1 * (int)rcossin_tbl[uVar6 * 2] >> 0xc);
 	(pedestrian->velocity).vz = (short)((int)cVar1 * (int)rcossin_tbl[uVar6 * 2 + 1] >> 0xc);
-	return;*/
 }
 
 
@@ -4512,37 +4531,42 @@ void SetPedestrianTurn(PEDESTRIAN *pedestrian, int turn)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 SEATED_PEDESTRIANS * FindSeated(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
 	SEATED_PEDESTRIANS *seatedptr;
 
-	if (seated_pedestrian != (SEATED_PEDESTRIANS *)0x0) {
-		if (seated_pedestrian->rotation == 9999) {
-			return (SEATED_PEDESTRIANS *)0x0;
-		}
+	if (seated_pedestrian) 
+	{
+		if (seated_pedestrian->rotation == 9999)
+			return NULL;
+
 		iVar3 = 3;
+
 		do {
 			seated_count = seated_count + 1;
 			seatedptr = seated_pedestrian + seated_count;
-			if (seated_pedestrian[seated_count].rotation == 9999) {
+
+			if (seated_pedestrian[seated_count].rotation == 9999) 
+			{
 				seated_count = 0;
 				seatedptr = seated_pedestrian;
 			}
-			if ((seatedptr->index == '\0') &&
-				(iVar2 = seatedptr->x - player.pos[0] >> 0xc, iVar1 = seatedptr->z - player.pos[2] >> 0xc,
-					iVar3 = iVar3 + -1, (iVar2 * iVar2 + iVar1 * iVar1) - 0xbU < 0x1d)) {
+
+			if (seatedptr->index == 0 &&
+				(iVar2 = seatedptr->x - player[0].pos[0] >> 0xc, iVar1 = seatedptr->z - player[0].pos[2] >> 0xc,
+					iVar3 = iVar3 + -1, (iVar2 * iVar2 + iVar1 * iVar1) - 0xbU < 0x1d))
+			{
 				add_seated(seatedptr, seated_count);
 				return seatedptr;
 			}
+
 		} while (iVar3 != 0);
 	}
-	return (SEATED_PEDESTRIANS *)0x0;*/
+	return NULL;
 }
 
 
