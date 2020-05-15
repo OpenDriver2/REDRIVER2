@@ -10,6 +10,7 @@
 #include "OVERLAY.H"
 #include "REPLAYS.H"
 #include "PAUSE.H"
+#include "PLAYERS.H"
 
 // decompiled code
 // original method signature: 

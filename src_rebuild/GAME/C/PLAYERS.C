@@ -31,6 +31,7 @@
 	// End Line: 151
 
 PEDESTRIAN *pPlayerPed = NULL;
+_PLAYER player[8];
 
 // [D]
 void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int direction, long(*startPos)[4], int externModel, int palette, char *padid)

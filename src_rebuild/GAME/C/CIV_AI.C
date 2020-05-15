@@ -15,6 +15,7 @@
 #include "REPLAYS.H"
 #include "CONVERT.H"
 #include "SPOOL.H"
+#include "PLAYERS.H"
 
 char speedLimits[3] = { 56, 97, 138 };
 

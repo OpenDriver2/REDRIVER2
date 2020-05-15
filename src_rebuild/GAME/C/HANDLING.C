@@ -23,6 +23,7 @@
 #include "SOUND.H"
 #include "GLAUNCH.H"
 #include "SHADOW.H"
+#include "PLAYERS.H"
 
 #include "GTEREG.H"
 #include "INLINE_C.H"

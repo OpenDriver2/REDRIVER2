@@ -5,6 +5,7 @@
 #include "SYSTEM.H"
 #include "MISSION.H"
 #include "MDRAW.H"
+#include "PLAYERS.H"
 
 #include "STRINGS.H"
 

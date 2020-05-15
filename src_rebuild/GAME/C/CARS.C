@@ -19,6 +19,7 @@
 #include "CUTSCENE.H"
 #include "CONVERT.H"
 #include "PAUSE.H"
+#include "PLAYERS.H"
 #include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"

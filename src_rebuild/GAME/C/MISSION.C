@@ -142,11 +142,12 @@ int lastsay = -1;
 
 int gCarWithABerm = -1;
 int gCantDrive = 0;
+int gDontResetCarDamage = 0;
+int bMissionTitleFade = 0;
+
 int gGotInStolenCar = 0;
 int gCopCarTheftAttempted = 0;
 int gLockPickingAttempted = 0;
-int gDontResetCarDamage = 0;
-int bMissionTitleFade = 0;
 STOPCOPS gStopCops;
 
 MR_MISSION Mission;
@@ -303,7 +304,6 @@ void InitialiseMissionDefaults(void)
 
 _MISSION* MissionLoadAddress;
 _MISSION *MissionHeader;
-_PLAYER player[8];
 STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;

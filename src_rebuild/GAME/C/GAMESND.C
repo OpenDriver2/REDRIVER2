@@ -20,6 +20,7 @@
 #include "ENVSOUND.H"
 #include "CONVERT.H"
 #include "XMPLAY.H"
+#include "PLAYERS.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 

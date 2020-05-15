@@ -11,6 +11,7 @@
 #include "CUTSCENE.H"
 #include "CARS.H"
 #include "PRES.H"
+#include "PLAYERS.H"
 
 COLOUR_BAND felonyColour[3] =
 {

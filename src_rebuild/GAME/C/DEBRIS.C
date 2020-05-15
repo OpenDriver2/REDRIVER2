@@ -17,6 +17,7 @@
 #include "MISSION.H"
 #include "DRAW.H"
 #include "MODELS.H"
+#include "PLAYERS.H"
 #include "../ASM/ASMTEST.H"
 
 #include "GTEREG.H"

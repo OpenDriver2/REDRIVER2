@@ -19308,12 +19308,15 @@ struct MR_TIMER // hashcode: 0xEA39F36E (dec: -365300882)
 	long count; // size=0, offset=8
 };
 
+struct PEDESTRIAN;
+typedef void(*pedFunc)(PEDESTRIAN *pPed);
+
 struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
 {
 	PEDESTRIAN *pNext; // size=92, offset=0
 	PEDESTRIAN *pPrev; // size=92, offset=4
-	void (*fpRestState)(); // size=0, offset=8
-	void (*fpAgitatedState)(); // size=0, offset=12
+	pedFunc fpRestState; // size=0, offset=8
+	pedFunc fpAgitatedState; // size=0, offset=12
 	char padId; // size=0, offset=16
 	enum PED_MODEL_TYPES pedType; // size=1, offset=17
 	VECTOR_NOPAD position; // size=12, offset=20
@@ -19336,7 +19339,7 @@ struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
 	enum PED_ACTION_TYPE type; // size=1, offset=89
 };
 
-enum PED_ACTION_TYPE // Hashcode: 0x3531DCAF (dec: 892460207)
+enum PED_ACTION_TYPE : char // Hashcode: 0x3531DCAF (dec: 892460207)
 {
 	PED_ACTION_WALK = 0,
 	PED_ACTION_RUN = 1,
@@ -19356,7 +19359,7 @@ enum PED_ACTION_TYPE // Hashcode: 0x3531DCAF (dec: 892460207)
 	PED_ACTION_STOPPING = 15,
 };
 
-enum PED_MODEL_TYPES // Hashcode: 0x2858A7E3 (dec: 676898787)
+enum PED_MODEL_TYPES : char // Hashcode: 0x2858A7E3 (dec: 676898787)
 {
 	TANNER_MODEL = 0,
 	OTHER_MODEL = 1,

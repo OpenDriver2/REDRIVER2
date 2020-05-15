@@ -1,6 +1,7 @@
 #ifndef PEDEST_H
 #define PEDEST_H
 
+extern SEATED_PEDESTRIANS *seated_pedestrian;
 extern int bKillTanner;
 
 extern void IHaveThePower(); // 0x0006DD34

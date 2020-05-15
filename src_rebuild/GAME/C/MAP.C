@@ -9,6 +9,7 @@
 #include "CAMERA.H"
 #include "GLAUNCH.H"
 #include "MODELS.H"
+#include "PLAYERS.H"
 
 #include "STRINGS.H"
 

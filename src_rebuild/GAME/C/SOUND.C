@@ -13,7 +13,7 @@
 #include "GLAUNCH.H"
 #include "GAMESND.H"
 #include "XAPLAY.H"
-
+#include "PLAYERS.H"
 
 #include <string.h>
 #include <stdlib.h>

@@ -424,7 +424,6 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int SpoolLumpOffset;
-SEATED_PEDESTRIANS* seated_pedestrian = NULL;
 
 // [D]
 void LoadGameLevel(void)

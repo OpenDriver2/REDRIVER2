@@ -341,7 +341,7 @@ int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStar
 			}
 
 			if (breakOnEnd)
-				return loopEnd;
+				return k;
 		}
 	}
 
