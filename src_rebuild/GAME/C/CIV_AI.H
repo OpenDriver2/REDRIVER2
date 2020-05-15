@@ -9,6 +9,7 @@ extern int frameStart;
 extern int distFurthestCivCarSq;
 extern char furthestCivID;
 
+extern char makeLimoPullOver;
 
 extern int InitCar(_CAR_DATA *cp, int direction, long (*startPos)[4], unsigned char control, int model, int palette, char *extraData); // 0x00023DE8
 

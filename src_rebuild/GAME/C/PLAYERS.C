@@ -11,6 +11,7 @@
 #include "GLAUNCH.H"
 #include "GAMESND.H"
 #include "SOUND.H"
+#include "FELONY.H"
 
 // decompiled code
 // original method signature: 
@@ -202,119 +203,126 @@ void ChangeCarPlayerToPed(int playerID)
 	/* end block 4 */
 	// End Line: 409
 
+extern int lastCarCameraView;
+
 void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	char cVar2;
-	byte bVar3;
+	char bVar3;
 	bool bVar4;
 	uint uVar5;
 	int channel;
 	uint uVar6;
 	int channel_00;
-	long *plVar7;
+
+	_PLAYER *lPlayer = &player[playerID];
 
 	bVar4 = false;
-	uVar5 = CarHasSiren((uint)(byte)(newCar->ap).model);
-	plVar7 = (newCar->hd).where.t;
-	if ((((newCar->controlType != '\x02') && (newCar->controlType != '\a')) || (newCar->ai[0xf9] != 3)
-		) || ((newCar->ai[0xc] != 7 && (newCar->ai[0xc] != 5)))) {
+	uVar5 = CarHasSiren(newCar->ap.model);
+
+	if (((newCar->controlType != 2 && newCar->controlType != 7) || newCar->ai.c.thrustState != 3) || (newCar->ai.c.ctrlState != 7 && newCar->ai.c.ctrlState != 5))
+	{
 		bVar4 = true;
 	}
-	(&player)[playerID].playerType = '\x01';
-	(&player)[playerID].playerCarId = newCar->id;
-	bVar1 = gInGameCutsceneActive == 0;
-	(&player)[playerID].cameraCarId = newCar->id;
-	if ((bVar1) && (gInGameChaseActive == 0)) {
+
+	lPlayer->playerType = 1;
+	lPlayer->playerCarId = newCar->id;
+	lPlayer->cameraCarId = newCar->id;
+
+	if (gInGameCutsceneActive == 0 && gInGameChaseActive == 0)
+	{
 		cVar2 = newCar->id;
-		(&player)[playerID].spoolXZ = (VECTOR *)(newCar->hd).where.t;
-		(&player)[playerID].worldCentreCarId = cVar2;
+		lPlayer->spoolXZ = (VECTOR *)newCar->hd.where.t;
+		lPlayer->worldCentreCarId = cVar2;
 	}
-	bVar3 = NoPlayerControl;
-	(&player)[playerID].cameraView = (char)lastCarCameraView;
+
+	lPlayer->cameraView = lastCarCameraView;
 	channel = 0x1000;
-	if (bVar3 == 0) {
-		channel = (newCar->hd).direction + 0x600;
+
+	if (NoPlayerControl == 0) 
+	{
+		channel = newCar->hd.direction + 0x600;
 	}
-	(&player)[playerID].cameraAngle = channel;
-	(&player)[playerID].headPos = 0;
-	(&player)[playerID].headTarget = 0;
-	(&player)[playerID].headTimer = '\0';
-	(&player)[playerID].padid = '\0';
-	(&player)[playerID].pPed = (PEDESTRIAN *)0x0;
-	if (playerID * 0x74 == 0) {
-		newCar->controlType = '\x01';
-		*(undefined4 *)newCar->ai = 0xd9772;
-		newCar->hndType = '\0';
-		if ((gCurrentMissionNumber != 0x20) &&
-			(MissionHeader->residentModels[(byte)(newCar->ap).model] == 0)) {
-			NoteFelony(&felonyData, '\v', 0x1000);
+
+	lPlayer->cameraAngle = channel;
+	lPlayer->headPos = 0;
+	lPlayer->headTarget = 0;
+	lPlayer->headTimer = 0;
+	lPlayer->padid = 0;
+	lPlayer->pPed = NULL;
+
+	if (playerID * 0x74 == 0)
+	{
+		newCar->controlType = 1;
+		newCar->ai.padid = (char*)player[0].padid;		// [A] was *(undefined4 *)newCar->ai = 0xd9772;
+		newCar->hndType = 0;
+		if (gCurrentMissionNumber != 0x20 && MissionHeader->residentModels[newCar->ap.model] == 0)
+		{
+			NoteFelony(&felonyData, 11, 0x1000);
 		}
 	}
-	if ((gCurrentMissionNumber == 0x21) && ((newCar->ap).model == '\x04')) {
-		makeLimoPullOver = '\0';
+
+	if (gCurrentMissionNumber == 33 && newCar->ap.model == 4) 
+	{
+		makeLimoPullOver = 0;
 	}
-	Start3DSoundVolPitch(-1, 6, 3, *plVar7, (newCar->hd).where.t[1], (newCar->hd).where.t[2], 0, 0x1000);
-	bVar3 = (newCar->ap).model;
-	if (bVar3 == 4) {
+
+	Start3DSoundVolPitch(-1, 6, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
+	bVar3 = newCar->ap.model;
+
+	if (bVar3 == 4)
 		uVar6 = ResidentModelsBodge();
-	}
-	else {
-		if (bVar3 < 3) {
-			uVar6 = (uint)(byte)(newCar->ap).model;
-		}
-		else {
-			uVar6 = (uint)(byte)(newCar->ap).model - 1;
-		}
-	}
+	else if (bVar3 < 3)
+		uVar6 = newCar->ap.model;
+	else
+		uVar6 = newCar->ap.model - 1;
+
 	channel = 1;
-	if (playerID != 0) {
+	if (playerID != 0) 
 		channel = 4;
-	}
-	Start3DSoundVolPitch
-	(channel, 3, uVar6 * 3 + 1, *plVar7, (newCar->hd).where.t[1], (newCar->hd).where.t[2], -10000,
-		0x1000);
-	bVar3 = (newCar->ap).model;
-	if (bVar3 == 4) {
+
+	Start3DSoundVolPitch(channel, 3, uVar6 * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
+	bVar3 = newCar->ap.model;
+
+	if (bVar3 == 4) 
+	{
 		channel_00 = ResidentModelsBodge();
 		channel = channel_00 << 1;
 	}
 	else {
-		if (bVar3 < 3) {
-			channel = (uint)(byte)(newCar->ap).model * 3;
+		if (bVar3 < 3) 
+		{
+			channel = newCar->ap.model * 3;
 			goto LAB_000737d4;
 		}
-		channel_00 = (uint)(byte)(newCar->ap).model - 1;
+
+		channel_00 = newCar->ap.model - 1;
 		channel = channel_00 * 2;
 	}
+
 	channel = channel + channel_00;
+
 LAB_000737d4:
 	channel_00 = 0;
-	if (playerID != 0) {
+	if (playerID != 0)
 		channel_00 = 3;
-	}
-	Start3DSoundVolPitch
-	(channel_00, 3, channel, *plVar7, (newCar->hd).where.t[1], (newCar->hd).where.t[2], -10000,
-		0x1000);
-	if (uVar5 != 0) {
+
+	Start3DSoundVolPitch(channel_00, 3, channel, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
+	if (uVar5 != 0) 
+	{
 		channel = 2;
-		if (playerID != 0) {
+
+		if (playerID != 0) 
 			channel = 5;
-		}
-		Start3DSoundVolPitch
-		(channel, (uVar5 & 0xff00) >> 8, uVar5 & 0xff, *plVar7, (newCar->hd).where.t[1],
-			(newCar->hd).where.t[2], -10000, 0x81);
+
+		Start3DSoundVolPitch(channel, (uVar5 & 0xff00) >> 8, uVar5 & 0xff, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x81);
 	}
-	if (bVar4) {
-		HaveCarSoundStraightAway((char)playerID);
-	}
-	else {
-		RequestSlightPauseBeforeCarSoundStarts((char)playerID);
-	}
-	return;
-	*/
+
+	if (bVar4)
+		HaveCarSoundStraightAway(playerID);
+	else
+		RequestSlightPauseBeforeCarSoundStarts(playerID);
 }
 
 
