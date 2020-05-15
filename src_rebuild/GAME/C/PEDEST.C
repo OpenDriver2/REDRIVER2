@@ -117,76 +117,66 @@ unsigned long tannerPad;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int bPower = 0;
+int oldWeather = 0;
+int powerCounter = 0;
+
+// [D]
+// Havana easter egg.
 void IHaveThePower(void)
 {
-	UNIMPLEMENTED();
-	/*
-	long lVar1;
-	long lVar2;
-	long lVar3;
-	long lVar4;
-	long lVar5;
-	int iVar6;
-	int iVar7;
-	_CAR_DATA *p_Var8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
-	int iVar13;
+	_CAR_DATA *cp;
 
-	iVar6 = gWeather;
-	lVar4 = point[0];
-	lVar1 = force[0];
-	p_Var8 = car_data;
-	if (GameLevel != 1) {
+	if (GameLevel != 1)
 		return;
-	}
-	if ((((player.pos[0] < -0x38ad3) || (-0x38945 < player.pos[0])) || (player.pos[2] < -0x39ac5)) ||
-		(-0x39937 < player.pos[2])) {
-		if (bPower != 0) {
+
+	if (player[0].pos[0] > -231749 || player[0].pos[0] < -232147 || 
+		player[0].pos[2] < -236229 || player[0].pos[2] > -235831)
+	{
+		// if player gets out the zone, restore weather back
+		if (bPower != 0) 
+		{
 			bPower = 0;
 			gWeather = oldWeather;
 		}
+		return;
 	}
-	else {
-		if ((tannerPad & 0x20) != 0) {
-			if (bPower == 0) {
-				bPower = GameLevel;
-				gWeather = GameLevel;
-				oldWeather = iVar6;
-			}
-			powerCounter = powerCounter + 1;
-			if (powerCounter < 0x14) {
-				do {
-					lVar5 = point[1];
-					lVar3 = force[2];
-					lVar2 = force[1];
-					if (p_Var8->controlType != '\0') {
-						iVar9 = point[1] * force[2];
-						iVar10 = point[2] * force[1];
-						iVar11 = point[2] * lVar1;
-						iVar12 = lVar4 * force[2];
-						iVar13 = lVar4 * force[1];
-						iVar7 = (p_Var8->hd).acc[1];
-						(p_Var8->hd).acc[0] = (p_Var8->hd).acc[0] + lVar1;
-						iVar6 = (p_Var8->hd).acc[2];
-						(p_Var8->hd).acc[1] = iVar7 + lVar2;
-						(p_Var8->hd).acc[2] = iVar6 + lVar3;
-						(p_Var8->hd).aacc[0] = (p_Var8->hd).aacc[0] + ((iVar9 - iVar10) + 0x800 >> 0xc);
-						(p_Var8->hd).aacc[1] = (p_Var8->hd).aacc[1] + ((iVar11 - iVar12) + 0x800 >> 0xc);
-						(p_Var8->hd).aacc[2] = (p_Var8->hd).aacc[2] + ((iVar13 - lVar5 * lVar1) + 0x800 >> 0xc);
-					}
-					p_Var8 = p_Var8 + 1;
-				} while (p_Var8 < (_CAR_DATA *)0xd4698);
-			}
-			if (0x30 < powerCounter) {
-				powerCounter = 0;
-				return;
-			}
+
+	if ((tannerPad & 0x20) != 0)
+	{
+		if (bPower == 0)
+		{
+			bPower = GameLevel;
+			gWeather = GameLevel;
+			oldWeather = gWeather;
 		}
+
+		powerCounter++;
+
+		// make cars go crazy
+		if (powerCounter < 20)
+		{
+			cp = car_data;
+
+			do {
+				if (cp->controlType != 0)
+				{
+					cp->hd.acc[0] += force[0];
+					cp->hd.acc[1] += force[1];
+					cp->hd.acc[2] += force[2];
+
+					cp->hd.aacc[0] += (point[1] * force[2] - point[2] * force[1]) / 4096;
+					cp->hd.aacc[1] += (point[2] * force[0] - point[0] * force[2]) / 4096;
+					cp->hd.aacc[2] += (point[0] * force[1] - point[1] * force[0]) / 4096;
+				}
+
+				cp++;
+			} while (cp < &car_data[20]);
+		}
+
+		if (powerCounter > 48)
+			powerCounter = 0;
 	}
-	return;*/
 }
 
 
@@ -274,7 +264,7 @@ void ProcessTannerPad(PEDESTRIAN *pPed, ulong pad, char PadSteer, char use_analo
 	if (bKillTanner != 0)
 		pPed->flags |= 4;
 
-	IHaveThePower();	// process Havana cheat near the entrance cemetery
+	IHaveThePower();	// process Havana easter egg near the entrance cemetery
 
 	vec.vx = pPed->position.vx;
 	vec.vz = pPed->position.vz;
