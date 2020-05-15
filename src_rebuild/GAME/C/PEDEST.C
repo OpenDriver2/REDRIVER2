@@ -244,8 +244,6 @@ void IHaveThePower(void)
 
 void ProcessTannerPad(PEDESTRIAN *pPed, ulong pad, char PadSteer, char use_analogue)
 {
-	UNIMPLEMENTED();
-	/*
 	PED_ACTION_TYPE PVar1;
 	int iVar2;
 	int iVar3;
@@ -254,118 +252,140 @@ void ProcessTannerPad(PEDESTRIAN *pPed, ulong pad, char PadSteer, char use_analo
 	SEATED_PEDESTRIANS *pSVar6;
 	short sVar7;
 	uint uVar8;
-	VECTOR local_58;
-	VECTOR local_48;
-	VECTOR VStack56;
-	VECTOR local_28;
-	_sdPlane *local_18[2];
+	VECTOR vec;
+	VECTOR normal;
+	VECTOR out;
+	VECTOR tVec;
+	_sdPlane *SurfacePtr;
 
-	local_18[0] = (_sdPlane *)0x0;
+	SurfacePtr = NULL;
 	tannerPad = pad;
-	if (use_analogue != '\0') {
+
+	if (use_analogue) 
+	{
 		tannerPad = pad;
-		if (PadSteer < '\0') {
+
+		if (PadSteer < 0)
 			tannerPad = pad | 0x8000;
-		}
-		if ('\0' < PadSteer) {
+		else if (PadSteer > 0)
 			tannerPad = tannerPad | 0x2000;
-		}
 	}
-	if (bKillTanner != 0) {
-		pPed->flags = pPed->flags | 4;
-	}
-	IHaveThePower();
-	local_58.vx = (pPed->position).vx;
-	local_58.vz = (pPed->position).vz;
-	local_58.vy = -(pPed->position).vy;
-	iVar2 = MapHeight(&local_58);
+
+	if (bKillTanner != 0)
+		pPed->flags |= 4;
+
+	IHaveThePower();	// process Havana cheat near the entrance cemetery
+
+	vec.vx = pPed->position.vx;
+	vec.vz = pPed->position.vz;
+	vec.vy = -pPed->position.vy;
+	iVar2 = MapHeight(&vec);
 	uVar8 = (int)(pPed->dir).vy - 0x800U & 0xfff;
-	local_28.vy = local_58.vy;
-	local_28.pad = local_58.pad;
+	tVec.vy = vec.vy;
+	tVec.pad = vec.pad;
 	iVar2 = -0x82 - iVar2;
 	bStopTanner = 0;
-	local_28.vx = local_58.vx + ((int)rcossin_tbl[uVar8 * 2] * 5 >> 9);
-	local_28.vz = local_58.vz + ((int)rcossin_tbl[uVar8 * 2 + 1] * 5 >> 9);
-	iVar3 = MapHeight(&local_28);
+	tVec.vx = vec.vx + (rcossin_tbl[uVar8 * 2] * 5 >> 9);
+	tVec.vz = vec.vz + (rcossin_tbl[uVar8 * 2 + 1] * 5 >> 9);
+	iVar3 = MapHeight(&tVec);
 	iVar4 = (-0x82 - iVar3) - iVar2;
-	if (iVar4 < 0) {
+
+	if (iVar4 < 0)
 		iVar4 = iVar2 - (-0x82 - iVar3);
-	}
-	if (iVar4 < 0x3f3) {
-		p_Var5 = sdGetCell(&local_28);
+
+	if (iVar4 < 1011)
+	{
+		p_Var5 = sdGetCell(&tVec);
 		sVar7 = -0x20;
-		if (p_Var5 != (_sdPlane *)0x0) {
+
+		if (p_Var5 != NULL) 
 			sVar7 = p_Var5->surface;
-		}
+
 		uVar8 = ((int)((uint)(ushort)p_Var5->b << 0x10) >> 0x12) - 0x800U & 0xfff;
 		iVar3 = uVar8 - 0x800;
-		if (iVar3 < 0) {
+
+		if (iVar3 < 0)
 			iVar3 = 0x800 - uVar8;
-		}
-		if ((((iVar3 < 0x44d) && (sVar7 != 6)) && (sVar7 != 9)) && (sVar7 != -0x20)) goto LAB_0006e104;
+
+		if ((((iVar3 < 0x44d) && (sVar7 != 6)) && (sVar7 != 9)) && (sVar7 != -0x20))
+			goto LAB_0006e104;
 	}
 	bStopTanner = 1;
 LAB_0006e104:
-	if ((pPed->type != PED_ACTION_SIT) && (bStopTanner == 0)) {
-		(pPed->position).vy = iVar2;
-	}
-	if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) ||
-		((gInGameCutsceneID != 0 || ((CameraCnt != 0x1cb || (pPed->pedType == TANNER_MODEL)))))) {
-		if ((tannerPad & 0x10) != 0) {
-			if (((pPed->type != PED_ACTION_GETINCAR) && (pPed->type != PED_ACTION_GETOUTCAR)) &&
-				(gCantDrive == 0)) {
+
+	if ((pPed->type != PED_ACTION_SIT) && (bStopTanner == 0))
+		pPed->position.vy = iVar2;
+
+	if ((gInGameCutsceneActive == 0 || gCurrentMissionNumber != 0x17) ||
+		((gInGameCutsceneID != 0 || (CameraCnt != 0x1cb || (pPed->pedType == TANNER_MODEL)))))
+	{
+		if ((tannerPad & 0x10) != 0) 
+		{
+			if (pPed->type != PED_ACTION_GETINCAR && pPed->type != PED_ACTION_GETOUTCAR && gCantDrive == 0) 
+			{
 				DeActivatePlayerPedestrian(pPed);
 			}
-			if ((((tannerPad & 0x10) != 0) && (PVar1 = pPed->type, PVar1 != PED_ACTION_GETINCAR)) &&
-				((PVar1 != PED_ACTION_GETOUTCAR &&
-				((PVar1 != PED_ACTION_SIT &&
-					(pSVar6 = FindTannerASeat(pPed), pSVar6 != (SEATED_PEDESTRIANS *)0x0)))))) {
+
+			PVar1 = pPed->type;
+
+			if ((tannerPad & 0x10) != 0 && PVar1 != PED_ACTION_GETINCAR && PVar1 != PED_ACTION_GETOUTCAR && PVar1 != PED_ACTION_SIT && FindTannerASeat(pPed) != NULL)
+			{
 				SetupTannerSitDown(pPed);
 			}
 		}
-		if ((((gTannerActionNeeded != 0) && ((tannerPad & 0x10) != 0)) &&
-			(pPed->type != PED_ACTION_GETINCAR)) && (pPed->type != PED_ACTION_GETOUTCAR)) {
+
+		if (gTannerActionNeeded != 0 && (tannerPad & 0x10) != 0 && pPed->type != PED_ACTION_GETINCAR && pPed->type != PED_ACTION_GETOUTCAR) 
+		{
 			SetupPressButton(pPed);
 		}
-		if (pPed != (PEDESTRIAN *)0x0) {
-			if (pPed->fpAgitatedState == (_func_2 *)0x0) {
+
+		if (pPed != NULL) 
+		{
+			if (pPed->fpAgitatedState == NULL)
 				(*pPed->fpRestState)(pPed);
-			}
-			else {
+			else
 				(*pPed->fpAgitatedState)(pPed);
-			}
-			if ((player.cameraView == '\x02') && (pPed->type != PED_ACTION_GETINCAR)) {
-				if (oldCamView != (uint)(byte)player.cameraView) {
+
+			if (player[0].cameraView == 2 && pPed->type != PED_ACTION_GETINCAR) 
+			{
+				if (oldCamView != player[0].cameraView) 
+				{
 					camAngle.vx = camera_angle.vx;
 					camAngle.vz = camera_angle.vz;
 				}
-				camAngle.vy = player.headPos._2_2_ - (short)player.dir & 0xfff;
+
+				camAngle.vy = player[0].headPos - player[0].dir & 0xfff;
 				TannerCameraHandler(pPed);
 			}
-			else {
+			else 
+			{
 				bTannerSitting = 0;
 			}
-			oldCamView = ZEXT14((byte)player.cameraView);
+
+			oldCamView = player[0].cameraView;
 			TannerCollision(pPed);
-			if (GameLevel == 0) {
-				FindSurfaceD2((VECTOR *)&player, &local_48, &VStack56, local_18);
-				if (((local_18[0]->surface != -1) && (local_18[0]->surface < 0x20)) &&
-					((local_18[0]->surface & 0x10U) != 0)) {
-					(pPed->position).vx = (pPed->position).vx + (local_48.vx >> 6);
-					(pPed->position).vz = (pPed->position).vz + (local_48.vz >> 6);
+
+			if (GameLevel == 0) 
+			{
+				FindSurfaceD2((VECTOR *)player, &normal, &out, &SurfacePtr);
+
+				if (SurfacePtr->surface != -1 && SurfacePtr->surface < 0x20 && (SurfacePtr->surface & 0x10U) != 0)
+				{
+					pPed->position.vx += (normal.vx >> 6);
+					pPed->position.vz += (normal.vz >> 6);
 				}
 			}
 		}
 	}
-	else {
-		iVar2 = (int)pPed->padId;
-		if (iVar2 < 0) {
+	else 
+	{
+		iVar2 = pPed->padId;
+		if (iVar2 < 0)
 			iVar2 = -iVar2;
-		}
-		(&player)[iVar2].pPed = (PEDESTRIAN *)0x0;
+
+		player[iVar2].pPed = NULL;
 		DestroyPedestrian(pPed);
 	}
-	return;*/
 }
 
 
