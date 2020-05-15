@@ -11,6 +11,7 @@
 #include "GAMESND.H"
 #include "SOUND.H"
 #include "PAD.H"
+#include "CIV_AI.H"
 
 #include "STRINGS.H"
 
@@ -1654,15 +1655,14 @@ void SetupDoNowt(PEDESTRIAN *pPed)
 	/* end block 1 */
 	// End Line: 20768
 
+// [D]
 void SetupWalker(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	pPed->type = PED_ACTION_WALK;
-	pPed->speed = '\x14';
+	pPed->speed = 14;
 	SetupPedMotionData(pPed);
-	pPed->flags = pPed->flags | 0x10;
-	return;*/
+
+	pPed->flags |= 0x10;
 }
 
 
@@ -1676,16 +1676,15 @@ void SetupWalker(PEDESTRIAN *pPed)
 	/* end block 1 */
 	// End Line: 20803
 
+// [D]
 void SetupRunner(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	pPed->type = PED_ACTION_RUN;
 	pPed->frame1 = '\0';
-	pPed->speed = '(';
+	pPed->speed = 40;
 	SetupPedMotionData(pPed);
-	pPed->flags = pPed->flags | 0x10;
-	return;*/
+
+	pPed->flags |= 0x10;
 }
 
 
@@ -1699,17 +1698,15 @@ void SetupRunner(PEDESTRIAN *pPed)
 	/* end block 1 */
 	// End Line: 20827
 
+// [D]
 void SetupBack(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	pPed->type = PED_ACTION_WALK;
-	pPed->frame1 = '\0';
+	pPed->frame1 = 0;
 	pPed->speed = -10;
 	SetupPedMotionData(pPed);
-	pPed->flags = pPed->flags | 0x10;
-	return;
-	*/
+
+	pPed->flags |= 0x10;
 }
 
 
@@ -1750,30 +1747,34 @@ void SetupBack(PEDESTRIAN *pPed)
 	/* end block 4 */
 	// End Line: 18694
 
-void CivGetIn(PEDESTRIAN *pPed)
+_CAR_DATA *pCivCarToGetIn;
+
+// [D]
+void CivGetIn(PEDESTRIAN *pPed)		// [A] UNUSED
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	uint uVar2;
 	DRIVER2_CURVE *curve;
 	DRIVER2_STRAIGHT *straight;
 
-	straight = (DRIVER2_STRAIGHT *)0x0;
-	InitCivState(pCivCarToGetIn, (char *)0x0);
-	uVar2 = *(uint *)pCivCarToGetIn->ai;
-	curve = (DRIVER2_CURVE *)0x0;
-	if ((((uVar2 & 0xffffe000) == 0) && ((int)(uVar2 & 0x1fff) < NumDriver2Straights)) &&
-		(-1 < (int)uVar2)) {
+	straight = NULL;
+	curve = NULL;
+
+	InitCivState(pCivCarToGetIn, NULL);
+	uVar2 = (int)pCivCarToGetIn->ai.padid;
+	
+	if ((uVar2 & 0xffffe000) == 0 && (uVar2 & 0x1fff) < NumDriver2Straights && uVar2 > -1) 
+	{
 		straight = Driver2StraightsPtr + uVar2;
 	}
-	else {
-		curve = Driver2CurvesPtr + *(int *)pCivCarToGetIn->ai + -0x4000;
+	else
+	{
+		curve = Driver2CurvesPtr + uVar2-0x4000;
 	}
-	iVar1 = CheckChangeLanes(straight, curve, *(int *)(pCivCarToGetIn->ai + 0x28), pCivCarToGetIn, 0);
-	pCivCarToGetIn->ai[0xfb] = (byte)iVar1;
+
+	pCivCarToGetIn->ai.c.currentLane = CheckChangeLanes(straight, curve, pCivCarToGetIn->ai.c.targetRoute[0].distAlongSegment, pCivCarToGetIn, 0);
+
 	DestroyPedestrian(pPed);
-	return;*/
 }
 
 
@@ -1801,16 +1802,15 @@ void CivGetIn(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 4707
 
+// [D]
 void CopStand(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
+	VECTOR v;
+	v.vx = pPed->position.vx - player[0].pos[0];
+	v.vz = pPed->position.vz - player[0].pos[2];
 
-	pPed->frame1 = '\0';
-	sVar1 = ratan2();
-	(pPed->dir).vy = 0x400 - sVar1;
-	return;*/
+	pPed->frame1 = 0;
+	pPed->dir.vy = 0x400 - ratan2(v.vz, v.vx);
 }
 
 
