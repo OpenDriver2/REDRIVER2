@@ -14,6 +14,7 @@
 #include "OBJCOLL.H"
 #include "PAD.H"
 #include "PLAYERS.H"
+#include "PEDEST.H"
 #include "DRAW.H"
 
 #include "INLINE_C.H"
@@ -90,8 +91,6 @@ static long baseDir = 0;
 char tracking_car = 0;
 
 int gCameraAngle = 0x800; // offset 0xAA104
-
-int bTannerSitting = 0;
 
 int TargetCar = 0;
 int CameraCar = 0;
@@ -876,7 +875,7 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 
 		if (zoom == 0) 
 		{
-			scr_z = 256;
+			scr_z = iVar1 = 256;
 		}
 		else 
 		{

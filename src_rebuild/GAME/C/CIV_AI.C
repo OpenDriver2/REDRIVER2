@@ -169,54 +169,60 @@ LAB_00023fe4:
 	/* end block 3 */
 	// End Line: 6498
 
+// [D]
 _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	int iVar3;
 	int iVar4;
-	_CAR_DATA *p_Var5;
-	uint uVar6;
-	_CAR_DATA *p_Var7;
+	_CAR_DATA *lcp;
+	uint retDistSq;
+	_CAR_DATA *retCar;
 
-	p_Var7 = (_CAR_DATA *)0x0;
-	uVar6 = 0x7fffffff;
-	p_Var5 = car_data;
+	retCar = (_CAR_DATA *)0x0;
+	retDistSq = 0x7fffffff; // INT_MAX
+	lcp = car_data;
+
 	do {
-		if (p_Var5->controlType != '\0') {
-			iVar3 = (p_Var5->hd).where.t[1];
+		if (lcp->controlType != 0)
+		{
+			iVar3 = lcp->hd.where.t[1];
+
 			iVar1 = y - iVar3;
-			if (iVar1 < 0) {
+			if (iVar1 < 0) 
 				iVar1 = iVar3 - y;
-			}
-			if (iVar1 < 800) {
-				iVar3 = x - (p_Var5->hd).where.t[0];
+
+			if (iVar1 < 800) 
+			{
+				iVar3 = x - lcp->hd.where.t[0];
 				iVar1 = iVar3;
-				if (iVar3 < 0) {
+
+				if (iVar3 < 0)
 					iVar1 = -iVar3;
-				}
-				if (iVar1 < 0x1000) {
-					iVar4 = z - (p_Var5->hd).where.t[2];
+
+				if (iVar1 < 0x1000) 
+				{
+					iVar4 = z - lcp->hd.where.t[2];
 					iVar1 = iVar4;
 					if (iVar4 < 0) {
 						iVar1 = -iVar4;
 					}
-					if ((iVar1 < 0x1000) && (uVar2 = iVar3 * iVar3 + iVar4 * iVar4, uVar2 < uVar6)) {
-						uVar6 = uVar2;
-						p_Var7 = p_Var5;
+					if ((iVar1 < 0x1000) && (uVar2 = iVar3 * iVar3 + iVar4 * iVar4, uVar2 < retDistSq)) 
+					{
+						retDistSq = uVar2;
+						retCar = lcp;
 					}
 				}
 			}
 		}
-		p_Var5 = p_Var5 + 1;
-	} while (p_Var5 <= (_CAR_DATA *)((int)&car_data[0x13].lastPad + 3U));
-	if (distToCarSq != (int *)0x0) {
-		*distToCarSq = uVar6;
-	}
-	return p_Var7;*/
+		lcp++;
+	} while (lcp <= &car_data[20]);
+
+	if (distToCarSq) 
+		*distToCarSq = retDistSq;
+
+	return retCar;
 }
 
 

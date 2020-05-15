@@ -713,7 +713,6 @@ LAB_0004dc60:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-char first_offence = 0;
 int TimeSinceLastSpeech = 0;
 
 // [D]

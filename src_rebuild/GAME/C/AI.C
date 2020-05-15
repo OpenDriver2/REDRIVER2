@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "AI.H"
-
+#include "MISSION.H"
+#include "COSMETIC.H"
 
 // decompiled code
 // original method signature: 
@@ -65,33 +66,39 @@ void StoreGameFlags(void)
 	/* end block 3 */
 	// End Line: 661
 
+// [D]
 int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 
-	if ((cp->controlFlags & 1) != 0) {
+	if ((cp->controlFlags & 1) != 0) 
 		gCopCarTheftAttempted = 1;
-	}
-	if ((((cp->controlType == '\x02') || (cp->controlType == '\a')) && ((cp->controlFlags & 1) == 0))
-		&& (((cp->controlFlags & 2) == 0 && (99 < (cp->hd).where.m[4])))) {
-		iVar1 = (cp->hd).wheel_speed + 0x800 >> 0xc;
-		if (iVar1 < 0) {
+
+
+	if ((cp->controlType == 2 || cp->controlType == 7) && 
+		(cp->controlFlags & 1) == 0 && 
+		(cp->controlFlags & 2) == 0 && 
+		cp->hd.where.m[0][1] > 99)			// not flipped over
+	{
+		iVar1 = cp->hd.wheel_speed / 4096;
+
+		if (iVar1 < 0) 
 			iVar1 = -iVar1;
-		}
-		if (iVar1 < 3) {
-			iVar1 = (int)car_cosmetics[(byte)(cp->ap).model].colBox.vx * 2;
+
+		if (iVar1 < 3)
+		{
+			iVar1 = car_cosmetics[cp->ap.model].colBox.vx * 2;
 			iVar2 = iVar1 * iVar1;
-			if (5000 < iVar1) {
+
+			if (5000 < iVar1)
 				iVar2 = 25000000;
-			}
+
 			return (uint)(iVar2 < distToCarSq) ^ 1;
 		}
 	}
-	return 0;*/
+
+	return 0;
 }
 
 

@@ -84,6 +84,10 @@ int iIdleTimer = 0;
 PEDESTRIAN_ROADS pedestrian_roads;
 
 unsigned long tannerPad;
+extern short padd;
+SVECTOR camAngle;
+static int oldCamView;
+int bTannerSitting = 0;
 
 // decompiled code
 // original method signature: 
@@ -171,7 +175,7 @@ void IHaveThePower(void)
 				}
 
 				cp++;
-			} while (cp < &car_data[20]);
+			} while (cp <= &car_data[20]);
 		}
 
 		if (powerCounter > 48)
@@ -2529,8 +2533,6 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 17841
 
-int bTannerSitting = 0;
-
 // [D]
 void PedGetInCar(PEDESTRIAN *pPed)
 {
@@ -2682,8 +2684,7 @@ void SetupTannerSitDown(PEDESTRIAN *pPed)
 /* WARNING: Removing unreachable block (ram,0x0006fde0) */
 /* WARNING: Removing unreachable block (ram,0x0006fe8c) */
 
-extern short padd;
-SVECTOR camAngle;
+
 
 // [D]
 void TannerCameraHandler(PEDESTRIAN *pPed)
@@ -2786,8 +2787,6 @@ void TannerCameraHandler(PEDESTRIAN *pPed)
 		// Start line: 7118
 	/* end block 3 */
 	// End Line: 7119
-
-static int oldCamView;
 
 // [D]
 void TannerSitDown(PEDESTRIAN *pPed)
@@ -2981,15 +2980,14 @@ void AnimatePed(PEDESTRIAN *pPed)
 		pPed->velocity.vy = 10;
 	}
 
-	if ((bReverseAnimation == 0) || (pPed->pedType != TANNER_MODEL)) 
+	if (bReverseAnimation == 0 || pPed->pedType != TANNER_MODEL) 
 	{
-		bVar6 = pPed->frame1 + 1;
-		pPed->frame1 = bVar6;
+		pPed->frame1++;
 
 		if (pPed->type - 8 < 3)
-			bVar4 = bVar6 < 0x1f;
+			bVar4 = pPed->frame1 < 0x1f;
 		else 
-			bVar4 = bVar6 < 0x10;
+			bVar4 = pPed->frame1 < 0x10;
 
 		if (!bVar4)
 			pPed->frame1 = 0;

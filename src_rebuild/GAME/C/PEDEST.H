@@ -3,6 +3,7 @@
 
 extern SEATED_PEDESTRIANS *seated_pedestrian;
 extern int bKillTanner;
+extern int bTannerSitting;
 
 extern void IHaveThePower(); // 0x0006DD34
 

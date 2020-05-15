@@ -4127,7 +4127,7 @@ void CheckSpecialSpool(void)
 				return;
 
 			lcp++;
-		} while (lcp < &car_data[20]);
+		} while (lcp <= &car_data[20]);
 
 
 		specModelValid = 0;

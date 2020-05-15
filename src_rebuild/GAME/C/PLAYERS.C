@@ -8,6 +8,9 @@
 #include "PEDEST.H"
 #include "CUTSCENE.H"
 #include "CARS.H"
+#include "GLAUNCH.H"
+#include "GAMESND.H"
+#include "SOUND.H"
 
 // decompiled code
 // original method signature: 
@@ -118,63 +121,52 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 	/* end block 2 */
 	// End Line: 261
 
+// [D]
 void ChangeCarPlayerToPed(int playerID)
 {
-	UNIMPLEMENTED();
-	/*
-	char cVar1;
-	PEDESTRIAN *pPVar2;
-	int channel;
-	int iVar3;
+	_CAR_DATA *lcp = &car_data[player[playerID].playerCarId];
 
-	iVar3 = (int)(&player)[playerID].playerCarId;
-	my_sly_var = playerID;
-	(&player)[playerID].headTimer = '\0';
-	(&player)[playerID].cameraView = '\0';
-	channel = 0x1000;
-	if (NoPlayerControl == 0) {
-		channel = car_data[iVar3].hd.direction + 0x600;
+	//my_sly_var = playerID;
+	player[playerID].headTimer = 0;
+	player[playerID].cameraView = 0;
+	player[playerID].cameraAngle = (NoPlayerControl == 0) ? (lcp->hd.direction + 1536) : 4096;
+	player[playerID].headTimer = 0;
+	player[playerID].playerType = 2;
+	player[playerID].headPos = 0;
+	player[playerID].headTarget = 0;
+	player[playerID].playerCarId = -1;
+	player[playerID].cameraCarId = -1;
+	player[playerID].targetCarId = -1;
+
+	if (gInGameCutsceneActive == 0 && gInGameChaseActive == 0)
+	{
+		player[playerID].worldCentreCarId = -1;
+		player[playerID].spoolXZ = (VECTOR *)&pPlayerPed->position;
 	}
-	(&player)[playerID].cameraAngle = channel;
-	(&player)[playerID].headTimer = '\0';
-	(&player)[playerID].playerType = '\x02';
-	channel = gInGameCutsceneActive;
-	(&player)[playerID].headPos = 0;
-	(&player)[playerID].headTarget = 0;
-	(&player)[playerID].playerCarId = -1;
-	(&player)[playerID].cameraCarId = -1;
-	(&player)[playerID].targetCarId = -1;
-	pPVar2 = pPlayerPed;
-	if ((channel == 0) && (gInGameChaseActive == 0)) {
-		(&player)[playerID].worldCentreCarId = -1;
-		(&player)[playerID].spoolXZ = (VECTOR *)&pPVar2->position;
-	}
-	channel = 1;
-	car_data[iVar3].controlType = '\x02';
-	car_data[iVar3].wheel_angle = 0;
-	car_data[iVar3].ai[0xf9] = 3;
-	car_data[iVar3].ai[0xc] = 7;
-	if (playerID != 0) {
-		channel = 4;
-	}
-	StopChannel(channel);
-	cVar1 = (&player)[playerID].skidding.chan;
-	(&player)[playerID].skidding.sound = -1;
-	StopChannel((int)cVar1);
-	UnlockChannel((int)(&player)[playerID].skidding.chan);
-	cVar1 = (&player)[playerID].wheelnoise.chan;
-	(&player)[playerID].wheelnoise.sound = -1;
-	StopChannel((int)cVar1);
-	UnlockChannel((int)(&player)[playerID].wheelnoise.chan);
-	Start3DSoundVolPitch
-	(-1, 6, 3, car_data[iVar3].hd.where.t[0], car_data[iVar3].hd.where.t[1],
-		car_data[iVar3].hd.where.t[2], 0, 0x1000);
-	first_offence = '\x01';
-	channel = CarHasSiren((uint)(byte)car_data[iVar3].ap.model);
-	if (channel != 0) {
-		(&player)[playerID].horn.on = '\0';
-	}
-	return;*/
+
+	lcp->controlType = 2;
+	lcp->wheel_angle = 0;
+	lcp->ai.c.thrustState = 3;
+	lcp->ai.c.ctrlState = 7;
+
+	// stop skidding for P1 or P2
+	StopChannel(playerID != 0 ? 4 : 1);
+	player[playerID].skidding.sound = -1;
+
+	StopChannel(player[playerID].skidding.chan);
+
+	UnlockChannel(player[playerID].skidding.chan);
+	player[playerID].wheelnoise.sound = -1;
+
+	StopChannel(player[playerID].wheelnoise.chan);
+	UnlockChannel(player[playerID].wheelnoise.chan);
+
+	Start3DSoundVolPitch(-1, 6, 3, lcp->hd.where.t[0], lcp->hd.where.t[1], lcp->hd.where.t[2], 0, 0x1000);
+
+	first_offence = 1;
+
+	if (CarHasSiren(lcp->ap.model) != 0)
+		player[playerID].horn.on = 0;
 }
 
 

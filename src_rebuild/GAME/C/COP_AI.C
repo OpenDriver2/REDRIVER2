@@ -26,6 +26,7 @@ int requestRoadblock = 0;
 int roadblockDelay = 0xfa;
 int roadblockDelayDiff = 0x5dc;
 int requestCopCar = 0;
+char first_offence = 0;
 
 // decompiled code
 // original method signature: 
