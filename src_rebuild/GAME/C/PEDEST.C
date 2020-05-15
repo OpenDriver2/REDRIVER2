@@ -4599,49 +4599,57 @@ SEATED_PEDESTRIANS * FindSeated(void)
 	/* end block 3 */
 	// End Line: 11494
 
+// [D]
 SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
-	SEATED_PEDESTRIANS *pSVar3;
-	SEATED_PEDESTRIANS *pSVar4;
+	SEATED_PEDESTRIANS *seatedptr;
+	SEATED_PEDESTRIANS *theOne;
 	int iVar5;
 
-	pSVar4 = (SEATED_PEDESTRIANS *)0x0;
+	theOne = NULL;
 	iVar5 = 0x1000;
 	seated_count = 0;
-	if (seated_pedestrian->rotation != 9999) {
+
+	if (seated_pedestrian->rotation != 9999) 
+	{
+		seatedptr = seated_pedestrian;
 		seated_count = 0;
 		iVar1 = 0;
 		do {
-			pSVar3 = (SEATED_PEDESTRIANS *)(&seated_pedestrian->x + iVar1 + seated_count);
-			iVar1 = pSVar3->x - player.pos[0];
-			seated_count = seated_count + 1;
-			if (iVar1 < 0) {
-				iVar1 = player.pos[0] - pSVar3->x;
-			}
-			iVar2 = pSVar3->z - player.pos[2];
-			if (iVar2 < 0) {
-				iVar2 = player.pos[2] - pSVar3->z;
-			}
+			iVar1 = seatedptr->x - player[0].pos[0];
+			seated_count++;
+
+			if (iVar1 < 0)
+				iVar1 = player[0].pos[0] - seatedptr->x;
+
+			iVar2 = seatedptr->z - player[0].pos[2];
+
+			if (iVar2 < 0)
+				iVar2 = player[0].pos[2] - seatedptr->z;
+
 			if (((iVar1 < 200) && (iVar2 < 200)) &&
-				(iVar1 = iVar1 * iVar1 + iVar2 * iVar2 >> 0xc, iVar1 < iVar5)) {
-				pSVar4 = pSVar3;
+				(iVar1 = iVar1 * iVar1 + iVar2 * iVar2 >> 0xc, iVar1 < iVar5)) 
+			{
+				theOne = seatedptr;
 				iVar5 = iVar1;
 			}
-			iVar1 = seated_count * 2;
-		} while (pSVar3->rotation != 9999);
+
+			seatedptr++;
+		} while (seatedptr->rotation != 9999);
 	}
-	if ((iVar5 < 6) && (pSVar4 != (SEATED_PEDESTRIANS *)0x0)) {
-		(pPed->dir).vy = pSVar4->rotation;
-		(pPed->position).vx = pSVar4->x;
-		(pPed->position).vz = pSVar4->z;
-		return pSVar4;
+
+	if (iVar5 < 6 && theOne) 
+	{
+		pPed->dir.vy = theOne->rotation;
+		pPed->position.vx = theOne->x;
+		pPed->position.vz = theOne->z;
+
+		return theOne;
 	}
-	return (SEATED_PEDESTRIANS *)0x0;*/
+
+	return NULL;
 }
 
 
@@ -4675,46 +4683,48 @@ SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed)
 	/* end block 4 */
 	// End Line: 11597
 
+// [D]
 void add_seated(SEATED_PEDESTRIANS *seatedptr, int seat_index)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined *puVar1;
 	PEDESTRIAN *pedptr;
 	int iVar2;
 	long lVar3;
 	long lVar4;
 
-	if ((num_pedestrians < 0x14) && (pedptr = CreatePedestrian(), pedptr != (PEDESTRIAN *)0x0)) {
-		seatedptr->index = '\x02';
+	if (num_pedestrians < 20)
+	{
+		pedptr = CreatePedestrian();
+
+		if (!pedptr)
+			return;
+
+		seatedptr->index = 2;
 		pedptr->type = PED_ACTION_CIVSIT;
-		pedptr->speed = '\0';
-		(pedptr->velocity).vx = 0;
-		(pedptr->velocity).vy = 0;
-		(pedptr->velocity).vz = 0;
-		(pedptr->dir).vy = seatedptr->rotation;
-		(pedptr->position).vx = seatedptr->x;
-		(pedptr->position).vz = seatedptr->z;
-		(pedptr->position).vy = player.pos[1];
-		iVar2 = MapHeight((VECTOR *)&pedptr->position);
-		(pedptr->position).vy = -0x4b - iVar2;
+		pedptr->speed = 0;
+		pedptr->velocity.vx = 0;
+		pedptr->velocity.vy = 0;
+		pedptr->velocity.vz = 0;
+		pedptr->dir.vy = seatedptr->rotation;
+		pedptr->position.vx = seatedptr->x;
+		pedptr->position.vz = seatedptr->z;
+		pedptr->position.vy = player[0].pos[1];
+		pedptr->position.vy = -75 - MapHeight((VECTOR *)&pedptr->position);
 		pedptr->index = 1;
 		pedptr->seat_index = (char)seat_index;
 		pedptr->pedType = CIVILIAN;
 		SetupPedestrian(pedptr);
-		puVar1 = PTR_CivPedSit_000a1690;
-		pedptr->fpAgitatedState = (_func_2 *)0x0;
-		pedptr->fpRestState = puVar1;
+
+		pedptr->fpAgitatedState = NULL;
+		pedptr->fpRestState = CivPedSit;
+
 		lVar3 = Random2(0);
 		lVar4 = Random2(0);
-		pedptr->pallet =
-			(char)lVar3 + (char)(lVar3 / 5) * -5 + ((char)lVar4 + (char)(lVar4 / 5) * -5) * '\x10';
+		pedptr->pallet = lVar3 + (lVar3 / 5) * -5 + (lVar4 + (lVar4 / 5) * -5) * 16;
 		lVar3 = Random2(0);
-		if ((lVar3 / 6) * 6 == lVar3 + -3) {
-			pedptr->flags = pedptr->flags | 0x4000;
-		}
+
+		if ((lVar3 / 6) * 6 == lVar3-3) 
+			pedptr->flags |= 0x4000;
 	}
-	return;*/
 }
 
 
@@ -5035,53 +5045,61 @@ int CheckForPlayerCar(PEDESTRIAN *pedestrian, CAR_COLLISION_BOX *collision_box)
 	/* end block 4 */
 	// End Line: 12129
 
+int basic_car_interest;
+
+// [D]
 void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
-	uint uVar5;
+	int uVar5;
 	int iVar6;
-	undefined *puVar7;
+	int puVar7;
 
-	iVar6 = (int)player.playerCarId;
-	basic_car_interest = (car_data[iVar6].hd.wheel_speed >> 10) + (uint)car_data[iVar6].totalDamage;
+	iVar6 = player[0].playerCarId;
+
+	basic_car_interest = (car_data[iVar6].hd.wheel_speed >> 10) + car_data[iVar6].totalDamage;
+
 	iVar4 = (pPed->position).vx - car_data[iVar6].hd.where.t[0];
 	iVar2 = (pPed->position).vz - car_data[iVar6].hd.where.t[2];
+
 	iVar6 = iVar4;
-	if (iVar4 < 0) {
+	if (iVar4 < 0)
 		iVar6 = -iVar4;
-	}
+
 	iVar3 = iVar2;
-	if (iVar2 < 0) {
+
+	if (iVar2 < 0)
 		iVar3 = -iVar2;
-	}
-	if (iVar6 + iVar3 < 0x1771) {
-		puVar7 = &DAT_00001770 + -(iVar6 + iVar3);
-	}
-	else {
-		puVar7 = (undefined *)0x0;
-	}
-	if (pPed->type == PED_ACTION_JUMP) {
+
+	if (iVar6 + iVar3 < 6001) 
+		puVar7 = 6000 + -(iVar6 + iVar3);
+	else
+		puVar7 = 0;
+
+	if (pPed->type == PED_ACTION_JUMP) 
+	{
 		sVar1 = ratan2(iVar2, iVar4);
-		pPed->head_rot = (pPed->dir).vy + sVar1 + 0xc00U & 0xfff;
+		pPed->head_rot = (pPed->dir).vy + sVar1 + 0xc00U & 0xfff;		// [A] might be bugged
 	}
-	else {
-		if (2999 < (int)(puVar7 + basic_car_interest)) {
-			pPed->interest = (short)(puVar7 + basic_car_interest);
+	else
+	{
+		if (2999 < (puVar7 + basic_car_interest)) 
+		{
+			pPed->interest = (puVar7 + basic_car_interest);
 			iVar6 = ratan2(iVar2, iVar4);
-			uVar5 = (uint)(ushort)(pPed->dir).vy + iVar6 + 0xc00 & 0xfff;
-			pPed->head_rot = (short)uVar5;
-			if (0x8fe < uVar5 - 0x381) {
+			uVar5 = pPed->dir.vy + iVar6 + 0xc00 & 0xfff;		// [A] might be bugged
+
+			pPed->head_rot = uVar5;
+			if (0x8fe < uVar5 - 0x381) 
+			{
 				return;
 			}
 		}
 		pPed->head_rot = 0;
 	}
-	return;*/
 }
 
 
@@ -5116,20 +5134,13 @@ void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 
 int PedSurfaceType(VECTOR *ped_pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	_sdPlane *p_Var1;
-	int iVar2;
+	_sdPlane *sfc_ptr;
+	sfc_ptr = sdGetCell(ped_pos);
 
-	p_Var1 = sdGetCell(ped_pos);
-	if (p_Var1 == (_sdPlane *)0x0) {
-		iVar2 = 0;
-	}
-	else {
-		iVar2 = (int)p_Var1->surface;
-	}
-	return iVar2;*/
+	if (!sfc_ptr)
+		return 0;
+
+	return sfc_ptr->surface;
 }
 
 
@@ -5155,11 +5166,7 @@ int PedSurfaceType(VECTOR *ped_pos)
 
 void ProcessChairLump(char *lump_file, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
 	seated_pedestrian = (SEATED_PEDESTRIANS *)lump_file;
-	return;
-	*/
 }
 
 
