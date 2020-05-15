@@ -1177,6 +1177,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	strikeVel = cp->hd.oBox.length[1] << 0x10;
 	uVar3 = 0;
 
+	pCVar12 = cp->ap.carCos;
+	if (pCVar12 == NULL)	// [A] potential crash fix
+		return 0;
+
 	if (iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1) && (cop->pos.vx != 0xFD46FEC0) && (pMVar20->shape_flags & 0x10) == 0)
 	{
 		lVar4 = cp->hd.where.t[0];
@@ -1185,8 +1189,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		iVar14 = GetDebrisColour(cp);
 		gte_SetRotMatrix(&cp->hd.where);
 		gte_SetTransMatrix(&cp->hd.where);
-
-		pCVar12 = cp->ap.carCos;
 
 		boxDisp.vx = -pCVar12->cog.vx;
 		boxDisp.vy = -pCVar12->cog.vy;

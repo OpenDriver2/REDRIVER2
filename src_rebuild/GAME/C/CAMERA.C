@@ -660,124 +660,155 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	int iVar9;
 	int iVar10;
 
-	iVar3 = (int)lp->cameraCarId;
-	if (iVar3 < 0) {
-		maxCameraDist = 0x352;
-		iVar9 = -0xdc;
+	iVar3 = lp->cameraCarId;
+
+	if (iVar3 < 0) 
+	{
+		maxCameraDist = 850;
+		iVar9 = -220;
 		iVar10 = 10;
 	}
-	else {
+	else 
+	{
 		pCVar5 = car_data[iVar3].ap.carCos;
-		iVar10 = (int)(pCVar5->colBox).vy;
+		iVar10 = pCVar5->colBox.vy;
+
 		iVar9 = iVar10 * -3 + 0x55;
-		maxCameraDist = (int)(pCVar5->colBox).vz * 2 + iVar10 + 0xf8;
-		iVar3 = car_data[iVar3].hd.wheel_speed + 0x800 >> 0xc;
-		if (iVar3 < 0) {
+		maxCameraDist = pCVar5->colBox.vz * 2 + iVar10 + 248;
+		iVar3 = car_data[iVar3].hd.wheel_speed / 4096;
+
+		if (iVar3 < 0) 
 			iVar3 = -iVar3;
-		}
+
 		iVar10 = 10;
-		if ((9 < iVar3) && (gCameraDistance + 0x1e <= maxCameraDist)) {
+
+		if (iVar3 > 9 && (gCameraDistance + 30 <= maxCameraDist))
 			iVar10 = 0x14;
-		}
 	}
-	if (pauseflag == 0) {
+
+	if (pauseflag == 0)
 		TurnHead(lp);
-	}
-	camera_angle.vx = 0x19;
+
+	camera_angle.vx = 25;
 	uVar7 = lp->cameraAngle - (int)*(short *)((int)&lp->headPos + 2);
-	if (pauseflag == 0) {
-		if ((paddCamera & 3) == 3) {
+
+	if (pauseflag == 0) 
+	{
+		if ((paddCamera & 3) == 3)
+		{
 			uVar7 = baseDir & 0xfff;
 			goto LAB_000201cc;
 		}
 	}
-	else {
-		if (EditMode != 2) goto LAB_000201cc;
+	else 
+	{
+		if (EditMode != 2)
+			goto LAB_000201cc;
 	}
+
 	uVar6 = ((baseDir + gCameraAngle) - lp->cameraAngle) + 0x800U & 0xfff;
 	iVar3 = uVar6 - 0x800;
-	if (iVar3 < 0) {
-		iVar3 = uVar6 - 0x7f9;
-	}
-	lp->cameraAngle = lp->cameraAngle + (iVar3 >> 3) & 0xfff;
+
+	lp->cameraAngle += (iVar3 >> 3) & 0xfff;
+
 LAB_000201cc:
 	uVar7 = uVar7 & 0xfff;
 	iVar8 = lp->cameraDist;
+
 	iVar3 = rcossin_tbl[uVar7 * 2] * iVar8;
-	if (iVar3 < 0) {
-		iVar3 = iVar3 + 0xfff;
-	}
 	(lp->cameraPos).vx = basePos[0] + (iVar3 >> 0xc);
+
 	iVar8 = rcossin_tbl[uVar7 * 2 + 1] * iVar8;
-	if (iVar8 < 0) {
-		iVar8 = iVar8 + 0xfff;
-	}
 	(lp->cameraPos).vz = basePos[2] + (iVar8 >> 0xc);
+
 	(lp->cameraPos).vy = basePos[1];
+	(lp->cameraPos).vy = iVar9 - basePos[1];
+
 	iVar3 = MapHeight(&lp->cameraPos);
 	iVar8 = (iVar9 - iVar3) + -100;
-	(lp->cameraPos).vy = iVar9 - basePos[1];
 	iVar9 = MapHeight((VECTOR *)basePos);
-	if (iVar8 < (lp->cameraPos).vy) {
+
+	if (iVar8 < (lp->cameraPos).vy)
+	{
 		iVar4 = iVar9 - iVar3;
-		if (iVar4 < 0) {
+		if (iVar4 < 0) 
 			iVar4 = iVar3 - iVar9;
-		}
-		if (iVar4 < 900) {
-			camera_angle.vx = (short)((lp->cameraPos).vy - iVar8 >> 1) + 0x19;
-			(lp->cameraPos).vy = iVar8;
+
+		if (iVar4 < 900)
+		{
+			camera_angle.vx = (lp->cameraPos.vy - iVar8 >> 1) + 25;
+			lp->cameraPos.vy = iVar8;
 		}
 	}
-	jcam = car_data + 0x14;
-	ClearMem((char *)(car_data + 0x14), 0x29c);
-	jcam->controlType = '\x05';
+
+	jcam = car_data + 20;
+	ClearMem((char *)jcam, sizeof(_CAR_DATA));
+
+	jcam->controlType = 5;
+
 	p_Var1 = jcam;
 	iVar3 = maxCameraDist;
-	if ((int)lp->cameraCarId < 0) {
+	gCameraDistance = iVar3;
+
+	if (lp->cameraCarId < 0) 
+	{
 		pCVar5 = NULL;
 	}
-	else {
-		pCVar5 = car_data[(int)lp->cameraCarId].ap.carCos;
+	else 
+	{
+		pCVar5 = car_data[lp->cameraCarId].ap.carCos;
 	}
+
 	(jcam->ap).carCos = pCVar5;
 	(p_Var1->hd).direction = uVar7;
-	gCameraDistance = iVar3;
+	
 	iVar9 = iVar3 * rcossin_tbl[uVar7 * 2] + 0x800;
 	iVar9 = basePos[0] + ((iVar9 >> 0xc) - (iVar9 >> 0x1f) >> 1);
 	(p_Var1->hd).where.t[0] = iVar9;
 	(p_Var1->hd).oBox.location.vx = iVar9;
 	iVar9 = -(lp->cameraPos).vy;
 	(p_Var1->hd).where.t[1] = iVar9;
+
 	(p_Var1->hd).oBox.location.vy = iVar9;
 	iVar3 = iVar3 * rcossin_tbl[uVar7 * 2 + 1] + 0x800;
 	iVar3 = basePos[2] + ((iVar3 >> 0xc) - (iVar3 >> 0x1f) >> 1);
 	(p_Var1->hd).where.t[2] = iVar3;
 	(p_Var1->hd).oBox.location.vz = iVar3;
-	CheckScenaryCollisions(car_data + 0x14);
+
+	CheckScenaryCollisions(car_data + 20);
 	p_Var1 = jcam;
+
 	iVar10 = lp->cameraDist + iVar10;
 	iVar3 = gCameraDistance;
-	if (iVar10 < gCameraDistance) {
+
+	if (iVar10 < gCameraDistance)
 		iVar3 = iVar10;
-	}
+
 	lp->cameraDist = iVar3;
 	iVar3 = -(p_Var1->hd).where.t[1];
 	(p_Var1->hd).where.t[1] = iVar3;
 	(lp->cameraPos).vy = iVar3;
+
 	uVar7 = (p_Var1->hd).direction & 0xfff;
 	(p_Var1->hd).direction = uVar7;
+
 	iVar3 = lp->cameraDist;
+
 	iVar10 = basePos[0] + (iVar3 * rcossin_tbl[uVar7 * 2] + 0x800 >> 0xc);
 	(lp->cameraPos).vx = iVar10;
-	iVar3 = basePos[2] +
-		(iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1] + 0x800 >> 0xc);
+
+	iVar3 = basePos[2] + (iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1] + 0x800 >> 0xc);
 	(lp->cameraPos).vz = iVar3;
+
 	sVar2 = ratan2(basePos[0] - iVar10, basePos[2] - iVar3);
+
 	camera_angle.vy = -sVar2 & 0xfff;
 	camera_angle.vz = 0;
+
 	SetGeomScreen(0x100);
 	scr_z = 0x100;
-	switch_detail_distance = (int)0x2710;
+	switch_detail_distance = 10000;
+
 	BuildWorldMatrix();
 }
 
