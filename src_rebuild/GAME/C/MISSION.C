@@ -112,8 +112,6 @@ char NewLevel = 1;
 GAMETYPE GameType = GAME_MISSION;
 int gCurrentMissionNumber = 0;
 
-char lockAllTheDoors = 0;
-int gTannerActionNeeded = 0;
 int maxPlayerCars = 1;
 int maxCivCars = 14;
 int maxParkedCars = 7;
@@ -145,9 +143,13 @@ int gCantDrive = 0;
 int gDontResetCarDamage = 0;
 int bMissionTitleFade = 0;
 
+char lockAllTheDoors = 0;
+int gTannerActionNeeded = 0;
 int gGotInStolenCar = 0;
 int gCopCarTheftAttempted = 0;
 int gLockPickingAttempted = 0;
+int bStopTanner = 0;
+int tannerDeathTimer = 0;
 STOPCOPS gStopCops;
 
 MR_MISSION Mission;

@@ -73,6 +73,8 @@ int bKilled = 0;
 int bReverseAnimation = 0;
 int iIdleTimer = 0;
 
+unsigned long tannerPad;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ IHaveThePower()
@@ -1829,116 +1831,143 @@ void CopStand(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 5333
 
+int iAllowWatch = 0;
+
+// [D]
 void PedDoNothing(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	char cVar3;
-	byte bVar4;
+	unsigned char bVar4;
 	int iVar5;
 	short sVar6;
 
-	pPed->speed = '\0';
-	if ((pPed->flags & 0x10U) == 0) {
+	pPed->speed = 0;
+
+	if ((pPed->flags & 0x10U) == 0) 
+	{
 		SetupDoNowt(pPed);
 		pPed->flags = pPed->flags | 0x10;
 	}
-	if ((tannerPad & 0x1040) != 0) {
+
+	if ((tannerPad & 0x1040) != 0)
+	{
 		iIdleTimer = 0;
 		pPed->flags = pPed->flags & 0xffffffef;
-		pPed->fpAgitatedState = PTR_PedUserRunner_000a1678;
+		pPed->fpAgitatedState = PedUserRunner;
 		SetupRunner(pPed);
+
 		goto LAB_0006f530;
 	}
-	if ((tannerPad & 0x4080) != 0) {
+
+	if ((tannerPad & 0x4080) != 0)
+	{
 		iIdleTimer = 0;
 		pPed->flags = pPed->flags & 0xffffffef;
-		pPed->fpAgitatedState = PTR_PedUserWalker_000a1674;
+		pPed->fpAgitatedState = PedUserWalker;
 		SetupBack(pPed);
+
 		goto LAB_0006f530;
 	}
-	sVar6 = (short)tannerTurnStep;
-	sVar1 = (short)tannerTurnMax;
-	if ((tannerPad & 0x2000) == 0) {
-		if ((tannerPad & 0x8000) == 0) {
-			pPed->frame1 = '\0';
-			iIdleTimer = iIdleTimer + 1;
+
+	sVar6 = tannerTurnStep;
+	sVar1 = tannerTurnMax;
+
+	if ((tannerPad & 0x2000) == 0) 
+	{
+		if ((tannerPad & 0x8000) == 0) 
+		{
+			pPed->frame1 = 0;
+
+			iIdleTimer++;
 			iVar5 = tannerTurn + 2;
-			if (tannerTurn < 0) {
+
+			if (tannerTurn < 0)
+			{
 				tannerTurn = iVar5;
-				if (0 < iVar5) {
+
+				if (0 < iVar5) 
+				{
 					tannerTurn = 0;
 					goto LAB_0006f4a8;
 				}
 			}
-			else {
+			else 
+			{
 			LAB_0006f4a8:
-				iVar5 = tannerTurn + -2;
-				if ((0 < tannerTurn) && (tannerTurn = iVar5, iVar5 < 0)) {
+				iVar5 = tannerTurn - 2;
+				if ((0 < tannerTurn) && (tannerTurn = iVar5, iVar5 < 0)) 
+				{
 					tannerTurn = 0;
 				}
 			}
-			if (tannerTurn != 0) {
-				if (tannerTurn < 0) {
-					sVar6 = ((pPed->dir).vy + 0x40) -
-						((short)tannerTurn + (short)tannerTurnMax) * (short)tannerTurnStep;
-				}
-				else {
-					sVar6 = (pPed->dir).vy + -0x40 +
-						((short)tannerTurnMax - (short)tannerTurn) * (short)tannerTurnStep;
-				}
-				(pPed->dir).vy = sVar6;
+
+			if (tannerTurn != 0)
+			{
+				if (tannerTurn < 0)
+					sVar6 = pPed->dir.vy + 64 - (tannerTurn + tannerTurnMax) * tannerTurnStep;
+				else
+					sVar6 = pPed->dir.vy - 64 + (tannerTurnMax - tannerTurn) * tannerTurnStep;
+
+				pPed->dir.vy = sVar6;
 			}
 			goto LAB_0006f530;
 		}
+
 		iIdleTimer = 0;
-		tannerTurn = tannerTurn + 2;
-		if (tannerTurnMax < tannerTurn) {
+		tannerTurn += 2;
+
+		if (tannerTurnMax < tannerTurn)
 			tannerTurn = tannerTurnMax;
-		}
+	
 		sVar2 = (short)tannerTurn;
-		bVar4 = pPed->frame1 + 1;
-		pPed->frame1 = bVar4;
-		(pPed->dir).vy = (pPed->dir).vy + -0x40 + (sVar1 - sVar2) * sVar6;
-		if (0xf < bVar4) {
-			pPed->frame1 = '\0';
-		}
+
+		pPed->frame1++;
+		pPed->dir.vy -= 64 + (sVar1 - sVar2) * sVar6;
+
+		if (pPed->frame1 > 15)
+			pPed->frame1 = 0;
 	}
-	else {
+	else 
+	{
 		iIdleTimer = 0;
-		tannerTurn = tannerTurn + -2;
-		if (tannerTurn < -tannerTurnMax) {
+		tannerTurn -= 2;
+
+		if (tannerTurn < -tannerTurnMax) 
 			tannerTurn = -tannerTurnMax;
-		}
+
 		cVar3 = pPed->frame1;
-		(pPed->dir).vy = ((pPed->dir).vy + 0x40) - ((short)tannerTurn + sVar1) * sVar6;
-		if (cVar3 == '\0') {
-			cVar3 = '\x0f';
-		}
-		else {
-			cVar3 = cVar3 + -1;
-		}
+		pPed->dir.vy = ((pPed->dir).vy + 0x40) - (tannerTurn + sVar1) * sVar6;
+
+		if (cVar3 == 0) 
+			cVar3 = 15;
+		else
+			cVar3--;
+
 		pPed->frame1 = cVar3;
 	}
 	pPed->head_rot = 0;
+
 LAB_0006f530:
-	if (0x77 < iIdleTimer) {
-		pPed->frame1 = '\0';
+	if (iIdleTimer > 119) 
+	{
+		pPed->frame1 = 0;
 		pPed->type = PED_ACTION_TIME;
+
 		SetupPedMotionData(pPed);
-		pPed->flags = pPed->flags | 0x10;
-		pPed->fpAgitatedState = PTR_PedCarryOutAnimation_000a1684;
+
+		pPed->flags |= 0x10;
+		pPed->fpAgitatedState = PedCarryOutAnimation;
+
 		iIdleTimer = -2;
-		if (pPed->type == PED_ACTION_TIME) {
+
+		if (pPed->type == PED_ACTION_TIME)
 			iAllowWatch = 3;
-		}
-		if (iAllowWatch != 0) {
-			iAllowWatch = iAllowWatch + -1;
-		}
+
+		if (iAllowWatch != 0)
+			iAllowWatch--;
 	}
-	return;*/
 }
 
 
@@ -1959,10 +1988,9 @@ LAB_0006f530:
 	/* end block 2 */
 	// End Line: 5641
 
+// [D]
 void PedUserRunner(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -1972,91 +2000,103 @@ void PedUserRunner(PEDESTRIAN *pPed)
 	char cVar7;
 	short sVar8;
 
-	if ((pPed->flags & 0x10U) == 0) {
+	if ((pPed->flags & 0x10U) == 0) 
+	{
 		SetupRunner(pPed);
 	}
-	if ((tannerPad & 0x1040) == 0) {
-		uVar5 = pPed->flags;
-		pPed->doing_turn = '\0';
-		(pPed->dir).vz = 0;
-		pPed->speed = '\0';
-		pPed->fpAgitatedState = (_func_2 *)0x0;
-		pPed->flags = uVar5 & 0xffffffef;
+
+	if ((tannerPad & 0x1040) == 0)
+	{
+		pPed->doing_turn = 0;
+		pPed->dir.vz = 0;
+		pPed->speed = 0;
+		pPed->fpAgitatedState = NULL;
+		pPed->flags = pPed->flags & 0xffffffef;
 	}
-	else {
-		if (bStopTanner == 0) {
-			pPed->speed = '(' - (char)(tannerDeathTimer >> 1);
-		}
-		else {
-			pPed->speed = '\0';
-		}
+	else 
+	{
+		if (bStopTanner == 0)
+			pPed->speed = 40 - (tannerDeathTimer >> 1);
+		else 
+			pPed->speed = 0;
 	}
-	if ((tannerPad & 0x2000) != 0) {
-		if (-4 < pPed->doing_turn) {
-			pPed->doing_turn = pPed->doing_turn + -1;
-		}
-		tannerTurn = tannerTurn + -2;
-		if (tannerTurn < -tannerTurnMax) {
+	if ((tannerPad & 0x2000) != 0) 
+	{
+		if (pPed->doing_turn > -4)
+			pPed->doing_turn--;
+
+		tannerTurn -= 2;;
+		if (tannerTurn < -tannerTurnMax)
 			tannerTurn = -tannerTurnMax;
-		}
-		sVar2 = (short)tannerTurn;
-		sVar3 = (short)tannerTurnMax;
-		sVar1 = (short)tannerTurnStep;
-		sVar8 = (pPed->dir).vy;
+
+		sVar2 = tannerTurn;
+		sVar3 = tannerTurnMax;
+		sVar1 = tannerTurnStep;
+		sVar8 = pPed->dir.vy;
+
 		pPed->head_rot = 0;
-		(pPed->dir).vz = (short)pPed->doing_turn * 0x14;
-		sVar8 = (sVar8 + 0x40) - (sVar2 + sVar3) * sVar1;
+		pPed->dir.vz = pPed->doing_turn * 20;
+		sVar8 = sVar8 + 64 - (sVar2 + sVar3) * sVar1;
+
 		goto LAB_0006f7f0;
 	}
-	if ((tannerPad & 0x8000) != 0) {
-		if (pPed->doing_turn < '\x04') {
-			pPed->doing_turn = pPed->doing_turn + '\x01';
-		}
-		tannerTurn = tannerTurn + 2;
-		if (tannerTurnMax < tannerTurn) {
+
+	if ((tannerPad & 0x8000) != 0) 
+	{
+		if (pPed->doing_turn < 4)
+			pPed->doing_turn++;
+
+		tannerTurn += 2;
+
+		if (tannerTurnMax < tannerTurn)
 			tannerTurn = tannerTurnMax;
-		}
-		sVar2 = (short)tannerTurn;
-		sVar1 = (short)tannerTurnMax;
-		sVar8 = (short)tannerTurnStep;
+
+		sVar2 = tannerTurn;
+		sVar1 = tannerTurnMax;
+		sVar8 = tannerTurnStep;
+
 		pPed->head_rot = 0;
-		(pPed->dir).vz = (short)pPed->doing_turn * 0x14;
-		sVar8 = (pPed->dir).vy + -0x40 + (sVar1 - sVar2) * sVar8;
+		pPed->dir.vz = pPed->doing_turn * 20;
+		sVar8 = pPed->dir.vy - 64 + (sVar1 - sVar2) * sVar8;
 		goto LAB_0006f7f0;
 	}
-	cVar4 = pPed->doing_turn;
-	cVar7 = pPed->doing_turn;
-	if (cVar4 < '\0') {
-		pPed->doing_turn = cVar7 + '\x02';
-		cVar4 = pPed->doing_turn;
-		cVar7 = pPed->doing_turn;
-	}
-	if ('\0' < cVar4) {
-		pPed->doing_turn = cVar7 + -2;
-	}
-	if (tannerTurn < 0) {
-		tannerTurn = tannerTurn + 2;
-		if (0 < tannerTurn) {
+
+	// [A] might be wrong?
+	if (pPed->doing_turn < 0)
+		pPed->doing_turn += 2;
+	else if (pPed->doing_turn > 0)
+		pPed->doing_turn -= 2;
+
+	if (tannerTurn < 0) 
+	{
+		tannerTurn += 2;
+		if (0 < tannerTurn)
+		{
 			tannerTurn = 0;
 			goto code_r0x0006f79c;
 		}
 	}
-	else {
+	else
+	{
 	code_r0x0006f79c:
-		iVar6 = tannerTurn + -2;
-		if ((0 < tannerTurn) && (tannerTurn = iVar6, iVar6 < 0)) {
+		iVar6 = tannerTurn-2;
+
+		if ((0 < tannerTurn) && (tannerTurn = iVar6, iVar6 < 0)) 
+		{
 			tannerTurn = 0;
 		}
 	}
-	sVar2 = (short)tannerTurn;
-	sVar1 = (short)tannerTurnMax;
-	sVar8 = (short)tannerTurnStep;
-	(pPed->dir).vz = (short)pPed->doing_turn * 0x14;
-	sVar8 = (pPed->dir).vy + -0x40 + (sVar1 - sVar2) * sVar8;
+
+	sVar2 = tannerTurn;
+	sVar1 = tannerTurnMax;
+	sVar8 = tannerTurnStep;
+
+	pPed->dir.vz = pPed->doing_turn * 20;
+	sVar8 = pPed->dir.vy - 64 + (sVar1 - sVar2) * sVar8;
 LAB_0006f7f0:
-	(pPed->dir).vy = sVar8;
+
+	pPed->dir.vy = sVar8;
 	AnimatePed(pPed);
-	return;*/
 }
 
 
@@ -2084,37 +2124,40 @@ LAB_0006f7f0:
 	/* end block 3 */
 	// End Line: 5279
 
+// [D]
 void PedUserWalker(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-
-	if ((pPed->flags & 0x10U) == 0) {
+	if ((pPed->flags & 0x10U) == 0) 
+	{
 		SetupWalker(pPed);
 	}
-	if ((tannerPad & 0x4080) == 0) {
+
+	if ((tannerPad & 0x4080) == 0) 
+	{
 		pPed->type = PED_ACTION_STOPPING;
-		pPed->frame1 = '\0';
-		pPed->speed = '\0';
-		pPed->fpAgitatedState = (_func_2 *)0x0;
+		pPed->frame1 = 0;
+		pPed->speed = 0;
+		pPed->fpAgitatedState = NULL;
 		pPed->flags = pPed->flags & 0xffffffef;
 	}
-	else {
+	else 
+	{
 		pPed->speed = -10;
 	}
-	if ((tannerPad & 0x2000) != 0) {
-		sVar1 = (pPed->dir).vy;
+
+	if ((tannerPad & 0x2000) != 0) 
+	{
 		pPed->head_rot = 0;
-		(pPed->dir).vy = sVar1 + 0x14;
+		pPed->dir.vy += 20;
 	}
-	if ((tannerPad & 0x8000) != 0) {
-		sVar1 = (pPed->dir).vy;
+
+	if ((tannerPad & 0x8000) != 0) 
+	{
 		pPed->head_rot = 0;
-		(pPed->dir).vy = sVar1 + -0x14;
+		pPed->dir.vy -= 20;
 	}
+
 	AnimatePed(pPed);
-	return;*/
 }
 
 
@@ -2133,54 +2176,71 @@ void PedUserWalker(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 17248
 
+int iFreezeTimer = 0;
+int bFreezeAnimation = 0;
+int allreadydone = 0;
+
+// [D]
 void PedCarryOutAnimation(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	pPed->speed = '\0';
-	if (tannerPad != 0) {
-		pPed->frame1 = '\0';
-		pPed->fpAgitatedState = (_func_2 *)0x0;
+	pPed->speed = 0;
+	if (tannerPad != 0) 
+	{
+		pPed->frame1 = 0;
+		pPed->fpAgitatedState = NULL;
 		pPed->flags = pPed->flags & 0xffffffef;
+
 		bFreezeAnimation = 0;
 		bReverseAnimation = 0;
 		allreadydone = 0;
 	}
-	if (bFreezeAnimation == 0) {
+
+	if (bFreezeAnimation == 0) 
+	{
 		AnimatePed(pPed);
 	}
-	else {
-		if (iFreezeTimer == 0) {
+	else 
+	{
+		if (iFreezeTimer == 0)
+		{
 			bFreezeAnimation = 0;
 			bReverseAnimation = 1;
 			iFreezeTimer = 0;
 		}
-		iFreezeTimer = iFreezeTimer + -1;
+
+		iFreezeTimer--;
 	}
-	if (bReverseAnimation == 0) {
-		if ((0xe < (byte)pPed->frame1) && (bFreezeAnimation == 0)) {
-			if (pPed->type == PED_ACTION_TIME) {
+
+	if (bReverseAnimation == 0)
+	{
+		if ((0xe < pPed->frame1) && (bFreezeAnimation == 0)) 
+		{
+			if (pPed->type == PED_ACTION_TIME) 
+			{
 				bFreezeAnimation = 1;
 				iFreezeTimer = 0xc;
 			}
-			else {
-				pPed->frame1 = '\0';
-				pPed->fpAgitatedState = (_func_2 *)0x0;
+			else 
+			{
+				pPed->frame1 = 0;
+				pPed->fpAgitatedState = NULL;
 				pPed->flags = pPed->flags & 0xffffffef;
 			}
 		}
 	}
-	else {
-		if (pPed->frame1 == '\0') {
-			pPed->frame1 = '\0';
-			pPed->fpAgitatedState = (_func_2 *)0x0;
+	else 
+	{
+		if (pPed->frame1 == 0)
+		{
+			pPed->frame1 = 0;
+			pPed->fpAgitatedState = NULL;
 			pPed->flags = pPed->flags & 0xffffffef;
+
 			bFreezeAnimation = 0;
 			bReverseAnimation = 0;
 			allreadydone = 0;
 		}
 	}
-	return;*/
 }
 
 
