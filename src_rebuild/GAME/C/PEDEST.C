@@ -1945,10 +1945,10 @@ void PedDoNothing(PEDESTRIAN *pPed)
 		if (tannerTurnMax < tannerTurn)
 			tannerTurn = tannerTurnMax;
 	
-		sVar2 = (short)tannerTurn;
+		sVar2 = tannerTurn;
 
 		pPed->frame1++;
-		pPed->dir.vy -= 64 + (sVar1 - sVar2) * sVar6;
+		pPed->dir.vy += -64 + (sVar1 - sVar2) * sVar6;
 
 		if (pPed->frame1 > 15)
 			pPed->frame1 = 0;
@@ -1962,7 +1962,7 @@ void PedDoNothing(PEDESTRIAN *pPed)
 			tannerTurn = -tannerTurnMax;
 
 		cVar3 = pPed->frame1;
-		pPed->dir.vy = ((pPed->dir).vy + 0x40) - (tannerTurn + sVar1) * sVar6;
+		pPed->dir.vy += 64 - (tannerTurn + sVar1) * sVar6;
 
 		if (cVar3 == 0) 
 			cVar3 = 15;
@@ -2984,12 +2984,12 @@ void AnimatePed(PEDESTRIAN *pPed)
 	{
 		pPed->frame1++;
 
-		if (pPed->type - 8 < 3)
-			bVar4 = pPed->frame1 < 0x1f;
-		else 
-			bVar4 = pPed->frame1 < 0x10;
+		if ((uint)pPed->type - 8 < 3)	// [A] TODO: figure out what type it is to have extended frames
+			bVar6 = 31;
+		else
+			bVar6 = 16;
 
-		if (!bVar4)
+		if (pPed->frame1 >= bVar6)
 			pPed->frame1 = 0;
 	}
 	else
