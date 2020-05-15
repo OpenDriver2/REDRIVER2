@@ -24,21 +24,20 @@ int ResetCallback(void)
 }
 
 extern unsigned int g_swapTime;
+extern void Emulator_DoVSyncCallback();
 
 int VSync(int mode)
 {
 	if (mode < 0)
 	{
-		if (vsync_callback != NULL)
-			vsync_callback();
+		Emulator_DoVSyncCallback();
 
 		return SDL_GetTicks() - g_swapTime;
 	}
 
 	if (mode == 0)
 	{
-		if (vsync_callback != NULL)
-			vsync_callback();
+		Emulator_DoVSyncCallback();
 
 		Emulator_WaitForTimestep(1);
 	}

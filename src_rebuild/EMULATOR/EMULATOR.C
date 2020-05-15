@@ -315,8 +315,80 @@ static int Emulator_InitialiseGLEW()
 	return TRUE;
 }
 
+#define VSYNC_IN_THREAD	// might be not so safe, however, less timing issues
+
+SDL_Thread* g_vblankThread = NULL;
+SDL_mutex* g_vblankMutex = NULL;
+volatile bool g_stopVblank = false;
+volatile int g_vblankTime = 0;
+volatile int g_vblanksDone = 0;
+
+extern void (*vsync_callback)(void);
+
+void Emulator_DoVSyncCallback()
+{
+#ifndef VSYNC_IN_THREAD
+	// do vblank events
+	SDL_LockMutex(g_vblankMutex);
+
+	while (g_vblanksDone)
+	{
+		if (vsync_callback)
+			vsync_callback();
+
+		g_vblanksDone--;
+	}
+
+	SDL_UnlockMutex(g_vblankMutex);
+#endif // VSYNC_IN_THREAD
+}
+
+int vblankThreadMain(void* data)
+{
+	do
+	{
+		int delta = g_vblankTime + FIXED_TIME_STEP - SDL_GetTicks();
+
+		if (delta <= 0)
+		{
+			// do vblank events
+			SDL_LockMutex(g_vblankMutex);
+
+#ifdef VSYNC_IN_THREAD
+			if (vsync_callback)
+				vsync_callback();
+#else
+			g_vblanksDone++;
+#endif // VSYNC_IN_THREAD
+			g_vblankTime = SDL_GetTicks();
+			
+
+			SDL_UnlockMutex(g_vblankMutex);
+		}
+	} while (!g_stopVblank);
+
+	return 0;
+}
+
 static int Emulator_InitialiseCore()
 {
+	g_vblankThread = SDL_CreateThread(vblankThreadMain, "vbl", NULL);
+
+	if (NULL == g_vblankThread)
+	{
+		eprintf("SDL_CreateThread failed: %s\n", SDL_GetError());
+		return FALSE;
+	}
+
+	g_vblankMutex = SDL_CreateMutex();
+	if (NULL == g_vblankMutex)
+	{
+		eprintf("SDL_CreateMutex failed: %s\n", SDL_GetError());
+		return FALSE;
+	}
+
+	g_vblankTime = SDL_GetTicks();
+
 	return TRUE;
 }
 
@@ -2032,9 +2104,10 @@ void Emulator_SwapWindow()
 
 void Emulator_WaitForTimestep(int count)
 {
-	if (g_swapInterval > 0) 
+	// additional wait for swap
+	if (g_swapInterval > 0)
 	{
-		int delta = g_swapTime + FIXED_TIME_STEP*count - SDL_GetTicks();
+		int delta = g_swapTime + FIXED_TIME_STEP * count - SDL_GetTicks();
 
 		if (delta > 0) {
 			SDL_Delay(delta);
@@ -2073,6 +2146,18 @@ void Emulator_EndScene()
 
 void Emulator_ShutDown()
 {
+	// quit vblank thread
+	if (g_vblankThread)
+	{
+		g_stopVblank = true;
+
+		int returnValue;
+		SDL_WaitThread(g_vblankThread, &returnValue);
+	}
+
+	if(g_vblankMutex)
+		SDL_DestroyMutex(g_vblankMutex);
+
 #if defined(OGL) || defined(OGLES)
 	Emulator_DestroyTexture(vramTexture);
 	Emulator_DestroyTexture(whiteTexture);
