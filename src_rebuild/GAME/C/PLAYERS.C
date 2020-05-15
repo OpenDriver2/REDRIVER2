@@ -419,19 +419,13 @@ void UpdatePlayers(void)
 	/* end block 2 */
 	// End Line: 944
 
+// [D]
 void RequestSlightPauseBeforeCarSoundStarts(char player_id)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-
-	uVar1 = (uint)(byte)player_id;
-	(&player)[uVar1].car_is_sounding = '\x02';
-	(&player)[uVar1].car_sound_timer = 10;
-	(&player)[uVar1].idlevol = -10000;
-	(&player)[uVar1].revsvol = -10000;
-	return;
-	*/
+	player[player_id].car_is_sounding = 2;
+	player[player_id].car_sound_timer = 10;
+	player[player_id].idlevol = -10000;
+	player[player_id].revsvol = -10000;
 }
 
 
@@ -445,14 +439,11 @@ void RequestSlightPauseBeforeCarSoundStarts(char player_id)
 	/* end block 1 */
 	// End Line: 961
 
+// [D]
 void HaveCarSoundStraightAway(char player_id)
 {
-	UNIMPLEMENTED();
-	/*
-	(&player)[(byte)player_id].car_is_sounding = '\0';
-	(&player)[(byte)player_id].car_sound_timer = -1;
-	return;
-	*/
+	player[player_id].car_is_sounding = 0;
+	player[player_id].car_sound_timer = -1;
 }
 
 
@@ -466,14 +457,11 @@ void HaveCarSoundStraightAway(char player_id)
 	/* end block 1 */
 	// End Line: 972
 
+// [D]
 void MakeTheCarShutUp(char player_id)
 {
-	UNIMPLEMENTED();
-	/*
-	(&player)[(byte)player_id].car_is_sounding = '\x01';
-	(&player)[(byte)player_id].car_sound_timer = -1;
-	return;
-	*/
+	player[player_id].car_is_sounding = 1;
+	player[player_id].car_sound_timer = -1;
 }
 
 
