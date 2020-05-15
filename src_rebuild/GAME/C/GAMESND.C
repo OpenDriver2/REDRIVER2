@@ -127,45 +127,54 @@ void LoadBankFromLump(int bank, int lump)
 	/* end block 2 */
 	// End Line: 2854
 
+// [D]
 int CarHasSiren(int index)
 {
-	return 1;
-/*
 	int iVar1;
 	int iVar2;
 	int *piVar3;
 
-	if (index == 4) {
-		if (GameLevel == 2) {
+	if (index == 4) 
+	{
+		if (GameLevel == 2) 
+		{
 			iVar2 = MissionHeader->residentModels[4];
 			iVar1 = 9;
 		}
-		else {
-			if (GameLevel < 3) {
-				if (GameLevel != 0) {
+		else 
+		{
+			if (GameLevel < 3)
+			{
+				if (GameLevel != 0) 
+				{
 					piVar3 = &MissionHeader->weather;
 					goto LAB_00052374;
 				}
+
 				iVar2 = MissionHeader->residentModels[4];
 				iVar1 = 8;
 			}
-			else {
-				if (GameLevel != 3) {
+			else
+			{
+				if (GameLevel != 3) 
+				{
 					piVar3 = &MissionHeader->weather;
 					goto LAB_00052374;
 				}
+
 				iVar2 = MissionHeader->residentModels[4];
 				iVar1 = 10;
 			}
 		}
-		if (iVar2 == iVar1) {
+
+		if (iVar2 == iVar1) 
+		{
 			return 0x110;
 		}
 	}
-	piVar3 = &MissionHeader->id + index;
+
 LAB_00052374:
-	return (uint)(piVar3[0x18] == 0) << 9;
-*/
+	return (MissionHeader->residentModels[index] == 0) << 9;
 }
 
 

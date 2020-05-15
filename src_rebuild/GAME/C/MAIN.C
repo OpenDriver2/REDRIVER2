@@ -1144,7 +1144,7 @@ void StepSim(void)
 	int *piVar6;
 	uint uVar7;
 	_CAR_DATA *cp;
-	_PLAYER *pPVar8;
+	_PLAYER *pl;
 	int i;
 	int car;
 
@@ -1253,45 +1253,40 @@ LAB_00059c1c:
 		do {
 			cVar1 = cp->controlType;
 
-			if (cVar1 == '\x02') 
+			if (cVar1 == 2) 
 			{
 				numCivCars = numCivCars + 1;
 
 				if ((cp->controlFlags & 1) != 0) 
 				{
-					numCopCars = numCopCars + 1;
+					numCopCars++;
 				}
 
 				if (((cp->controlFlags & 2) != 0) && (cp->ai.c.thrustState == 3))
 				{
 					if (cp->ai.c.ctrlState == 5)
 					{
-						numParkedCars = numParkedCars + 1;
+						numParkedCars++;
 					}
 
 					if ((cp->controlFlags & 2) != 0) 
 					{
-						numRoadblockCars = numRoadblockCars + 1;
+						numRoadblockCars++;
 					}
 				}
 			}
-			else 
+			else if (cVar1 == 3)
 			{
-				if (cVar1 == '\x03')
-				{
-					numCopCars = numCopCars + 1;
+				numCopCars++;
 
-					if (cp->ai.p.dying == 0) 
-					{
-						numActiveCops = numActiveCops + 1;
-					}
+				if (cp->ai.p.dying == 0)
+				{
+					numActiveCops++;
 				}
-				else {
-					if (cVar1 == '\0')
-					{
-						numInactiveCars = numInactiveCars + 1;
-					}
-				}
+			}
+			else if (cVar1 == 0)
+			{
+				numInactiveCars++;
 			}
 
 			cp++;
@@ -1319,7 +1314,7 @@ LAB_00059c1c:
 			switch (cp->controlType) 
 			{
 			case 1:
-				t0 = (ulong)Pads[(int)cp->ai.padid].mapped;	// [A] padid might be wrong
+				t0 = Pads[(int)cp->ai.padid].mapped;	// [A] padid might be wrong
 				t1 = Pads[(int)cp->ai.padid].mapanalog[2];
 				t2 = Pads[(int)cp->ai.padid].type & 4;
 
@@ -1329,10 +1324,10 @@ LAB_00059c1c:
 					{
 						t0 = 0x80;
 
-						if ((cp->hd).wheel_speed < 0x9001)
+						if (cp->hd.wheel_speed < 0x9001)
 							t0 = 0x10;
 
-						t1 = '\0';
+						t1 = 0;
 						t2 = 1;
 					}
 					cjpRecord((int)cp->ai.padid, &t0, &t1, &t2);
@@ -1375,13 +1370,13 @@ LAB_00059c1c:
 	}
 
 	i = 0;
-	pPVar8 = player;
+	pl = player;
 	car = 7;
 
 	do {
-		if (pPVar8->playerType == '\x02') 
+		if (pl->playerType == 2) 
 		{
-			stream = pPVar8->padid;
+			stream = pl->padid;
 
 			if (stream < 0)
 			{
@@ -1392,7 +1387,7 @@ LAB_00059c1c:
 			}
 			else
 			{
-				if (Pads[stream].type == '\x04') 
+				if (Pads[stream].type == 4) 
 				{
 					cVar1 = Pads[stream].mapanalog[3];
 
@@ -1402,15 +1397,17 @@ LAB_00059c1c:
 					}
 					else 
 					{
-						if ((cVar1 < -100) && ('\x7f' < cVar1)) 
+						if ((cVar1 < -100) && (127 < cVar1)) 
 						{
-							stream = (int)pPVar8->padid;
+							stream = (int)pl->padid;
 							uVar2 = Pads[stream].mapped | 0x1000;
 						}
 						else 
 						{
-							if (cVar1 < '!') goto LAB_0005a2dc;
-							stream = (int)pPVar8->padid;
+							if (cVar1 < 33) 
+								goto LAB_0005a2dc;
+
+							stream = (int)pl->padid;
 							uVar2 = Pads[stream].mapped | 0x4000;
 						}
 						Pads[stream].mapped = uVar2;
@@ -1428,7 +1425,7 @@ LAB_00059c1c:
 					if (gStopPadReads != 0)
 					{
 						t2 = 0;
-						t1 = '\0';
+						t1 = 0;
 						t0 = 0;
 					}
 					cjpRecord(stream, &t0, &t1, &t2);
@@ -1444,7 +1441,7 @@ LAB_00059c1c:
 		}
 	LAB_0005a3d0:
 		i = i + 0x74;
-		pPVar8 = pPVar8 + 1;
+		pl = pl + 1;
 		car = car + -1;
 	} while (-1 < car);
 
@@ -1454,6 +1451,7 @@ LAB_00059c1c:
 	{
 		requestStationaryCivCar = 0;
 	}
+
 	if ((game_over == 0) && (ControlCops(), gLoadedMotionCapture != 0))
 	{
 		HandlePedestrians();
@@ -1473,25 +1471,26 @@ LAB_00059c1c:
 	if (NumPlayers != 0)
 	{
 		car = 0;
-		pPVar8 = player;
+		pl = player;
 		do {
-			if ((pPVar8->horn).on == '\0') 
+			if (pl->horn.on == 0) 
 			{
 			LAB_0005a5b8:
 				stream = CarHasSiren(car_data[player[car].playerCarId].ap.model);
 
-				if ((stream == 0) && (pPVar8->pPed == NULL)) 
+				if (stream == 0 && pl->pPed == NULL) 
 				{
 					stream = 2;
 					if (i != 0) 
 						stream = 5;
 
 					StopChannel(stream);
-					player[car].horn.request = '\0';
-					player[car].horn.time = '\0';
+					player[car].horn.request = 0;
+					player[car].horn.time = 0;
 				}
 			}
-			else {
+			else 
+			{
 				uVar5 = 4;
 
 				if (i != 0) 
@@ -1501,24 +1500,21 @@ LAB_00059c1c:
 
 				if (stream == 0) 
 				{
-					stream = CarHasSiren(car_data[pPVar8->playerCarId].ap.model);
+					stream = CarHasSiren(car_data[pl->playerCarId].ap.model);
 
-					if (((stream == 0) && (pPVar8->pPed == NULL)) && (pPVar8->horn.request == '\0')) 
-						pPVar8->horn.request = '\x01';
+					if (stream == 0 && pl->pPed == NULL && pl->horn.request == 0)
+						pl->horn.request = 1;
 
-
-					pPVar8->horn.time = '\v';
+					pl->horn.time = 11;
 				}
-				else 
-				{
-					if ((pPVar8->horn).on == '\0')
-						goto LAB_0005a5b8;
-				}
+
 			}
+
 			DealWithHorn(&player[car].horn.request, i);
+
 			car++;
 			i = i + 1;
-			pPVar8 = pPVar8 + 1;
+			pl = pl + 1;
 		} while (i < (int)(uint)NumPlayers);
 	}
 
@@ -3096,70 +3092,69 @@ void InitGameVariables(void)
 
 void DealWithHorn(char *hr, int i)
 {
-	UNIMPLEMENTED();
-
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	int channel;
-	int channel_00;
-	uint uVar2;
+	int modelId;
+	_CAR_DATA* car;
 
-	channel = (int)(&player)[i].playerCarId;
+	channel = player[i].playerCarId;
+	car = &car_data[player[i].playerCarId];
+
 	bVar1 = *hr;
-	if (bVar1 == 1) {
+
+	if (bVar1 == 0)
+	{
+		return;
+	}
+	else if (bVar1 == 1) 
+	{
 		channel = 2;
-		if (i != 0) {
+
+		if (i != 0)
 			channel = 5;
-		}
+
 		StopChannel(channel);
 	}
-	else {
-		if (bVar1 < 2) {
-			if (bVar1 == 0) {
-				return;
-			}
+	else if (bVar1 == 2)
+	{
+		bVar1 = car->ap.model;
+
+		if (bVar1 == 4)
+			modelId = ResidentModelsBodge();
+		else if (bVar1 < 3)
+			modelId = car->ap.model;
+		else
+			modelId = car->ap.model - 1;
+
+		channel = 2;
+
+		if (i != 0)
+			channel = 5;
+
+		Start3DSoundVolPitch(channel, 3, modelId * 3 + 2,
+			car->hd.where.t[0],
+			car->hd.where.t[1],
+			car->hd.where.t[2], -10000,
+			0x1000);
+
+		if ((1 < NumPlayers) && (NoPlayerControl == 0))
+		{
+			channel = 2;
+
+			if (i != 0)
+				channel = 5;
+
+			SetPlayerOwnsChannel(channel, (char)i);
 		}
-		else {
-			if (bVar1 == 2) {
-				bVar1 = car_data[channel].ap.model;
-				if (bVar1 == 4) {
-					uVar2 = ResidentModelsBodge();
-				}
-				else {
-					if (bVar1 < 3) {
-						uVar2 = (uint)(byte)car_data[channel].ap.model;
-					}
-					else {
-						uVar2 = (uint)(byte)car_data[channel].ap.model - 1;
-					}
-				}
-				channel_00 = 2;
-				if (i != 0) {
-					channel_00 = 5;
-				}
-				Start3DSoundVolPitch
-				(channel_00, 3, uVar2 * 3 + 2, car_data[channel].hd.where.t[0],
-					car_data[channel].hd.where.t[1], car_data[channel].hd.where.t[2], -10000, 0x1000);
-				if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
-					channel_00 = 2;
-					if (i != 0) {
-						channel_00 = 5;
-					}
-					SetPlayerOwnsChannel(channel_00, (char)i);
-				}
-				channel_00 = 2;
-				if (i != 0) {
-					channel_00 = 5;
-				}
-				SetChannelPosition3(channel_00, (VECTOR *)car_data[channel].hd.where.t,
-					(long *)(car_data[channel].st + 0x1c), -2000, i * 8 + 0x1000, 0);
-			}
-		}
+
+		channel = 2;
+		if (i != 0)
+			channel = 5;
+
+		SetChannelPosition3(channel, (VECTOR *)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 0x1000, 0);
 	}
-	uVar2 = (uint)(byte)*hr + 1 & 0xff;
-	*hr = (char)uVar2 - (((byte)((ulonglong)uVar2 * 0xaaaaaaab >> 0x20) & 0xfe) + (char)(uVar2 / 3));
-	return;
-	*/
+
+	*hr = (*hr+1) % 28;	// [A]
 }
 
 
