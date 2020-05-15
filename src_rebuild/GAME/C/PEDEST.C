@@ -58,8 +58,9 @@ static int numCopPeds = 0;
 int pinginPedAngle = 0;
 
 PEDESTRIAN pedestrians[28];
-PEDESTRIAN *pUsedPeds;	// linked list of pedestrians
-PEDESTRIAN *pFreePeds;
+PEDESTRIAN *pUsedPeds = NULL;	// linked list of pedestrians
+PEDESTRIAN *pFreePeds = NULL;
+PEDESTRIAN *pHold = NULL;
 
 int max_pedestrians;
 int num_pedestrians;
@@ -1485,22 +1486,17 @@ void DrawAllPedestrians(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int TannerActionHappening(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 
-	if (player.pPed == (PEDESTRIAN *)0x0) {
-		return 0;
-	}
-	iVar1 = 0;
-	if (((player.pPed)->type == PED_ACTION_PRESSBUTTON) &&
-		(iVar1 = 1, (player.pPed)->frame1 != '\x0e')) {
-		iVar1 = 0;
-	}
-	return iVar1;*/
+	PEDESTRIAN *pPed = player[0].pPed;
+
+	if (pPed && pPed->type == PED_ACTION_PRESSBUTTON)
+		return pPed->frame1 != 14;
+
+	return 0;
 }
 
 
@@ -1549,60 +1545,73 @@ int TannerActionHappening(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int bAvoidTanner = 0;
+int bAvoidBomb = -1;
+
+// [D]
 void ControlPedestrians(void)
 {
-	UNIMPLEMENTED();
-	/*
-	_CAR_DATA *cp;
-	int iVar1;
+	_CAR_DATA *pCar;
 	PEDESTRIAN *pPed;
-	PEDESTRIAN *pPed_00;
-	PEDESTRIAN *pPVar2;
+	PEDESTRIAN *pPedNext;
 
 	pPed = pUsedPeds;
-	pPed_00 = pUsedPeds;
-	if (pUsedPeds != (PEDESTRIAN *)0x0) {
-		do {
-			pPVar2 = pPed->pNext;
-			if (pPed->pedType == CIVILIAN) {
-				CalculatePedestrianInterest(pPed);
-				if (pPed->fpAgitatedState == (_func_2 *)0x0) {
-					(*pPed->fpRestState)(pPed);
-				}
-				else {
-					(*pPed->fpAgitatedState)(pPed);
-				}
-				if ((pPed->type != PED_ACTION_GETINCAR) && (cp = CheckForCar(pPed), cp != (_CAR_DATA *)0x0))
+
+	while (pPed)
+	{
+		pPedNext = pPed->pNext;	// in case if ped gets removed
+
+		if (pPed->pedType == CIVILIAN)
+		{
+			CalculatePedestrianInterest(pPed);
+
+			if (pPed->fpAgitatedState == NULL)
+				(*pPed->fpRestState)(pPed);
+			else 
+				(*pPed->fpAgitatedState)(pPed);
+
+			if (pPed->type != PED_ACTION_GETINCAR)
+			{
+				pCar = CheckForCar(pPed);
+
+				if (pCar)
+					SetupCivJump(pPed, pCar);
+			}
+
+			if (bAvoidTanner == 0) 
+			{
+				if (bAvoidBomb != -1)
 				{
-					SetupCivJump(pPed, cp);
-				}
-				if (bAvoidTanner == 0) {
-					if (bAvoidBomb != -1) {
-						SetupCivJump(pPed, (_CAR_DATA *)0x0);
-						bAvoidBomb = -1;
-					}
-				}
-				else {
-					SetupCivJump(pPed, (_CAR_DATA *)0x0);
-					bAvoidTanner = 0;
+					SetupCivJump(pPed, NULL);
+					bAvoidBomb = -1;
 				}
 			}
-			pPed = pPVar2;
-			pPed_00 = pUsedPeds;
-		} while (pPVar2 != (PEDESTRIAN *)0x0);
-	}
-	while (pPed_00 != (PEDESTRIAN *)0x0) {
-		if ((pPed_00->pedType == CIVILIAN) &&
-			((iVar1 = PingOutPed(pPed_00), iVar1 != 0 || ((pPed_00->flags & 1U) != 0)))) {
-			pHold = pPed_00->pNext;
-			DestroyPedestrian(pPed_00);
-			pPed_00 = pHold;
+			else 
+			{
+				SetupCivJump(pPed, NULL);
+				bAvoidTanner = 0;
+			}
 		}
-		else {
-			pPed_00 = pPed_00->pNext;
+
+		pPed = pPedNext;
+	}
+
+	pPed = pUsedPeds;
+
+	// remove peds with PingOut
+	while (pPed)
+	{
+		if (pPed->pedType == CIVILIAN && (PingOutPed(pPed) != 0 || (pPed->flags & 1U) != 0))
+		{
+			pHold = pPed->pNext;
+			DestroyPedestrian(pPed);
+			pPed = pHold;
+		}
+		else 
+		{
+			pPed = pPed->pNext;
 		}
 	}
-	return;*/
 }
 
 
@@ -1621,17 +1630,17 @@ void ControlPedestrians(void)
 	/* end block 2 */
 	// End Line: 20723
 
+// [D]
 void SetupDoNowt(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	pPed->speed = '\0';
-	(pPed->dir).vz = 0;
-	pPed->doing_turn = '\0';
+	pPed->speed = 0;
+	pPed->dir.vz = 0;
+	pPed->doing_turn = 0;
 	pPed->type = PED_ACTION_BACK;
+
 	SetupPedMotionData(pPed);
-	pPed->flags = pPed->flags | 0x10;
-	return;*/
+
+	pPed->flags |= 0x10;
 }
 
 
