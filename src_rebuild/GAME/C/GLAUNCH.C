@@ -466,8 +466,6 @@ void ReInitFrontend(void)
 
 void RunMissionLadder(int newgame)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	unsigned char bVar2;
 	MISSION_STEP *CurrentStep;
@@ -505,7 +503,7 @@ void RunMissionLadder(int newgame)
 			SetPleaseWait(NULL);
 		}
 
-		gMissionLadderPos = CurrentStep - MissionLadder;// (int)(CurrentStep + -0x4f80e) >> 1;
+		gMissionLadderPos++;// = CurrentStep - MissionLadder;// (int)(CurrentStep + -0x4f80e) >> 1;
 		bVar2 = CurrentStep->flags;// *(byte *)CurrentStep & 7;
 
 		if (bVar2 == 2) 
@@ -552,12 +550,14 @@ void RunMissionLadder(int newgame)
 			SetPleaseWait(NULL);
 
 			bVar1 = true;
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 0xf;
+
+			UNIMPLEMENTED();
+			// [A] fix me pls
+			//AvailableCheats._0_1_ = (byte)AvailableCheats | 0xf;
 		}
 
 		CurrentStep = CurrentStep + 1;
 	} while (!bVar1);
-	*/
 }
 
 
