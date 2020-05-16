@@ -45,6 +45,7 @@ extern int numParkedCars;
 extern int maxParkedCars;
 
 extern int gCopDifficultyLevel;
+extern int gCopRespawnTime;
 extern int maxCopCars;
 
 extern MR_MISSION Mission;

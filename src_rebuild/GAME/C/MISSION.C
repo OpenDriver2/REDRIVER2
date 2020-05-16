@@ -19,6 +19,8 @@
 #include "SCORES.H"
 #include "AI.H"
 #include "MAIN.H"
+#include "MC_SND.H"
+#include "COP_AI.H"
 
 #include <string.h>
 
@@ -105,6 +107,7 @@ char* MissionName[37] =
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int gCopDifficultyLevel = 0;
+int gCopRespawnTime = 0;
 
 GAMEMODE CurrentGameMode = GAMEMODE_NORMAL;
 GAMEMODE WantedGameMode = GAMEMODE_NORMAL;
@@ -1023,32 +1026,32 @@ void SetPlayerMessage(int player, char *message, int priority, int seconds)
 	/* end block 3 */
 	// End Line: 6689
 
+// [D]
 int TargetComplete(_TARGET *target, int player)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
-	uint uVar2;
+	unsigned long complete;
 
-	uVar2 = target->data[1];
-	if (player == 0) {
-		uVar1 = uVar2 & 2;
+	if (player == 0) 
+	{
+		complete = target->data[1] & 2;
 	}
-	else {
-		uVar1 = uVar2 & 0x100;
-		if (player != 1) {
-			if ((uVar2 & 0x102) == 0x102) {
+	else 
+	{
+		complete = target->data[1] & 0x100;
+
+		if (player != 1) 
+		{
+			if ((target->data[1] & 0x102) == 0x102)
 				return 1;
-			}
+
 			return 0;
 		}
 	}
-	if (uVar1 == 0) {
+
+	if (complete == 0)
 		return 0;
-	}
+
 	return 1;
-	*/
 }
 
 
@@ -1081,32 +1084,33 @@ int TargetComplete(_TARGET *target, int player)
 	/* end block 4 */
 	// End Line: 6735
 
+// [D]
 int TargetActive(_TARGET *target, int player)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
+	unsigned long active;
 	uint uVar2;
 
-	uVar2 = target->data[1];
-	if (player == 0) {
-		uVar1 = uVar2 & 1;
+	if (player == 0) 
+	{
+		active = target->data[1] & 1;
 	}
-	else {
-		uVar1 = uVar2 & 0x800;
-		if (player != 1) {
-			if ((uVar2 & 0x801) == 0x801) {
+	else 
+	{
+		active = target->data[1] & 0x800;
+
+		if (player != 1) 
+		{
+			if ((target->data[1] & 0x801) == 0x801)
 				return 1;
-			}
+
 			return 0;
 		}
 	}
-	if (uVar1 == 0) {
+
+	if (active == 0)
 		return 0;
-	}
+
 	return 1;
-	*/
 }
 
 
@@ -1399,33 +1403,28 @@ void SetConfusedCar(int slot)
 // [D]
 void HandleMissionThreads(void)
 {
-	UNIMPLEMENTED();
-	return;
-/*
 	uint *puVar1;
 	_TARGET *p_Var2;
 	uint uVar3;
-	int iVar4;
 	int iVar5;
 	uint fnc;
 	MR_THREAD *thread;
 	uint uVar6;
 
-	iVar4 = 0xf;
+	iVar5 = 0xf;
 	p_Var2 = MissionTargets;
 
 	do {
 		p_Var2->data[1] = p_Var2->data[1] & 0xfffff9ff;
 
 		p_Var2++;
-		iVar4--;
-	} while (-1 < iVar4);
+		iVar5--;
+	} while (-1 < iVar5);
 
 	iVar5 = 0;
-	iVar4 = 0;
 
 	do {
-		thread = &MissionThreads[iVar4];
+		thread = &MissionThreads[iVar5];
 		uVar6 = thread->active;
 		iVar5++;
 
@@ -1482,13 +1481,12 @@ void HandleMissionThreads(void)
 			}
 		}
 
-		iVar4 = iVar5 * 0x10;
 
 		if (0xf < iVar5)
 			return;
 
 	} while (true);
-	*/
+
 }
 
 
@@ -1522,207 +1520,240 @@ void HandleMissionThreads(void)
 	/* end block 4 */
 	// End Line: 5061
 
+// [D]
 int MRCommand(MR_THREAD *thread, ulong cmd)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	long cutscene;
-	long seconds;
-	int iVar1;
-	ulong addr;
-	short *psVar2;
-	uint uVar3;
+	long val1;
+	long val2;
 
-	if (cmd == 0x1000051) {
-		CompleteAllActiveTargets((uint)thread->player);
-		cutscene = MRPop(thread);
-		TriggerInGameCutscene(cutscene);
-		if ((gInGameCutsceneActive == 0) && (gCutsceneAtEnd == 0)) {
+	if (cmd == 0x1000051)				// PlayMissionSound
+	{
+		CompleteAllActiveTargets(thread->player);
+		val1 = MRPop(thread);
+		TriggerInGameCutscene(val1);
+
+		if ((gInGameCutsceneActive == 0) && (gCutsceneAtEnd == 0))
+		{
 			return 1;
 		}
+
 		RequestXA();
-		InitializeCutsceneSound(cutscene);
+		InitializeCutsceneSound(val1);
 		return 1;
 	}
-	if (cmd < 0x1000052) {
-		if (cmd == 0x1000021) {
-			CompleteAllActiveTargets((uint)thread->player);
+	else if (cmd == 0x1000021)			// CompleteAllActiveTargets
+	{
+		CompleteAllActiveTargets(thread->player);
+		return 1;
+	}
+	else if (cmd == 0x1000010)			// SetVariable
+	{
+		val1 = MRPop(thread);
+		val2 = MRPop(thread);
+		MRSetVariable(thread, val1, val2);
+		return 1;
+	}
+	else if (cmd == 0x1000011)			// Jump
+	{
+		val1 = MRPop(thread);
+		return MRJump(thread, val1);
+	}
+	else if (cmd == 0x1000001)			// JumpIf
+	{
+		val1 = MRPop(thread);
+		val2 = MRPop(thread);
+
+		if (val2 != 0)
+			return 1;
+
+		return MRJump(thread, val1);
+	}
+	else if (cmd == 0x1000022)			// MultiCarEvent
+	{
+		val1 = MRPop(thread);
+		MultiCarEvent(MissionTargets + val1);
+		return 1;
+	}
+	else if (cmd == 0x1000030)			// SetPlayerFelony
+	{
+		val1 = MRPop(thread);
+
+		if (player[0].playerCarId < 0)
+			pedestrianFelony = val1;
+		else
+			car_data[player[0].playerCarId].felonyRating = val1;
+	}
+	else if (cmd == 0x1000050)			// ShowPlayerMessage
+	{
+		val1 = MRPop(thread);
+		val2 = MRPop(thread);
+		SetPlayerMessage(thread->player, MissionStrings + val1, 0, val2);
+
+		return 1;
+	}
+	else if (cmd == 0x1000070)			// TriggerEvent
+	{
+		val1 = MRPop(thread);
+		TriggerEvent(val1);
+		return 1;
+	}
+	else if (cmd == 0x1000080)			// SetDoorsLocked
+	{
+		val1 = MRPop(thread);
+		lockAllTheDoors = val1;
+		return 1;
+	}
+	else if (cmd == 0x1000054)			// SetStealMessage
+	{
+		val1 = MRPop(thread);
+		Mission.StealMessage = MissionStrings + val1;
+	}
+	else if (cmd == 0x1000055)			// ShowOutOfTimeMessage
+	{
+		SetPlayerMessage(1, MissionStrings + MissionHeader->msgOutOfTime, 2, 2);
+		return 1;
+	}
+	else if (cmd == 0x1001000)			// StopThread
+	{
+		return MRStopThread(thread);
+	}
+	else if (cmd == 0x1001002)			// StartThreadForPlayer
+	{
+		val1 = MRPop(thread);
+		MRStartThread(thread, val1, thread->player);
+		return 1;
+	}
+	else if (cmd == 0x1001003)			// StartThread2
+	{
+		val1 = MRPop(thread);
+		MRStartThread(thread, val1, 1);
+		return 1;
+	}
+	else if (cmd == 0x1000100)			// SetCameraEvent
+	{
+		SpecialCamera(SPECIAL_CAMERA_SET, 0);
+		return 1;
+	}
+	else if (cmd == 0x1000071)			// AwardPlayerCheat
+	{
+		val1 = MRPop(thread);
+
+		UNIMPLEMENTED();	// [A]
+
+		/*
+		if ((val1 & 0x8000) != 0) {
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 1;
+		}
+		if ((val1 & 0x4000) != 0) {
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 2;
+		}
+		if ((val1 & 0x10000) != 0) {
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 4;
+		}
+		if ((val1 & 0x20000) != 0) {
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 8;
+		}
+		if ((val1 & 1) != 0) {
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 0x10;
+		}
+		if ((val1 & 0x10) != 0) {
+			AvailableCheats._0_1_ = (byte)AvailableCheats | 0x40;
+		}
+		if ((val1 & 0x100) != 0) {
+			AvailableCheats._1_1_ = AvailableCheats._1_1_ | 1;
+		}
+		if ((val1 & 0x1000) != 0) {
+			AvailableCheats._1_1_ = AvailableCheats._1_1_ | 2;
+		}
+		if ((val1 & 0x2000) == 0) {
 			return 1;
 		}
-		if (cmd < 0x1000022) {
-			if (cmd == 0x1000010) {
-				addr = MRPop(thread);
-				cutscene = MRPop(thread);
-				MRSetVariable(thread, addr, cutscene);
-				return 1;
-			}
-			if (0x1000010 < cmd) {
-				if (cmd != 0x1000011) {
-					return 1;
-				}
-				cutscene = MRPop(thread);
-				iVar1 = MRJump(thread, cutscene);
-				return iVar1;
-			}
-			if (cmd != 0x1000000) {
-				if (cmd != 0x1000001) {
-					return 1;
-				}
-				cutscene = MRPop(thread);
-				seconds = MRPop(thread);
-				if (seconds != 0) {
-					return 1;
-				}
-				iVar1 = MRJump(thread, cutscene);
-				return iVar1;
-			}
+		*/
+
+		printWarning("AvailableCheats set cmd opcode: %x\n", cmd);
+
+		//AvailableCheats._1_1_ = AvailableCheats._1_1_ | 4;
+
+		return 1;
+	}
+	else if (cmd == 0x1000090)			// SetRaining
+	{
+		printWarning("gWeather=1 cmd opcode: %x\n", cmd);
+		gWeather = 1;
+		return 1;
+	}
+
+	// below is fucked code
+	if (cmd < 0x1000052) 
+	{
+		if (cmd < 0x1000022) 
+		{
+
 		}
-		else {
-			if (cmd == 0x1000040) {
-				iVar1 = (uint)thread->player * 0xc;
-				(&DAT_000d7c28)[iVar1] = (&DAT_000d7c28)[iVar1] | 2;
+		else 
+		{
+			if (cmd == 0x1000040) 
+			{
+				Mission.timer[thread->player].flags |= 2;
 			}
-			else {
-				if (cmd < 0x1000041) {
-					if (cmd == 0x1000022) {
-						cutscene = MRPop(thread);
-						MultiCarEvent(MissionTargets + cutscene);
-						return 1;
-					}
-					if (cmd != 0x1000030) {
-						return 1;
-					}
-					cutscene = MRPop(thread);
-					iVar1 = (int)player.playerCarId;
-					if (iVar1 != -1) {
-						if (iVar1 < 0) {
-							psVar2 = &pedestrianFelony;
-						}
-						else {
-							psVar2 = &car_data[iVar1].felonyRating;
-						}
-						*psVar2 = (short)cutscene;
-					}
+			else 
+			{
+				if (cmd < 0x1000041) 
+				{
+
 				}
-				else {
-					if (cmd == 0x1000042) {
+				else
+				{
+					if (cmd == 0x1000042)
+					{
 						MissionHeader->timerFlags = MissionHeader->timerFlags | 0x1000;
 					}
-					else {
-						if (0x1000041 < cmd) {
-							if (cmd != 0x1000050) {
-								return 1;
-							}
-							cutscene = MRPop(thread);
-							seconds = MRPop(thread);
-							SetPlayerMessage((uint)thread->player, MissionStrings + cutscene, 0, seconds);
+					else 
+					{
+						if (0x1000041 < cmd) 
+						{
 							return 1;
 						}
-						iVar1 = (uint)thread->player * 0xc;
-						(&DAT_000d7c28)[iVar1] = (&DAT_000d7c28)[iVar1] & 0xfd;
+
+						printWarning("timer flags remove cmd opcode: %x\n", cmd);
+
+						Mission.timer[thread->player].flags = Mission.timer[thread->player].flags & 0xfd;
 					}
 				}
 			}
 		}
 	}
-	else {
-		if (cmd == 0x1000081) {
+	else 
+	{
+		if (cmd == 0x1000081)		// LockPlayerCar
+		{
 			gCantDrive = 1;
 		}
-		else {
-			if (cmd < 0x1000082) {
-				if (cmd == 0x1000070) {
-					cutscene = MRPop(thread);
-					TriggerEvent(cutscene);
-					return 1;
-				}
-				if (0x1000070 < cmd) {
-					if (cmd != 0x1000071) {
-						if (cmd != 0x1000080) {
-							return 1;
-						}
-						cutscene = MRPop(thread);
-						lockAllTheDoors = (char)cutscene;
-						return 1;
-					}
-					uVar3 = MRPop(thread);
-					if ((uVar3 & 0x8000) != 0) {
-						AvailableCheats._0_1_ = (byte)AvailableCheats | 1;
-					}
-					if ((uVar3 & 0x4000) != 0) {
-						AvailableCheats._0_1_ = (byte)AvailableCheats | 2;
-					}
-					if ((uVar3 & 0x10000) != 0) {
-						AvailableCheats._0_1_ = (byte)AvailableCheats | 4;
-					}
-					if ((uVar3 & 0x20000) != 0) {
-						AvailableCheats._0_1_ = (byte)AvailableCheats | 8;
-					}
-					if ((uVar3 & 1) != 0) {
-						AvailableCheats._0_1_ = (byte)AvailableCheats | 0x10;
-					}
-					if ((uVar3 & 0x10) != 0) {
-						AvailableCheats._0_1_ = (byte)AvailableCheats | 0x40;
-					}
-					if ((uVar3 & 0x100) != 0) {
-						AvailableCheats._1_1_ = AvailableCheats._1_1_ | 1;
-					}
-					if ((uVar3 & 0x1000) != 0) {
-						AvailableCheats._1_1_ = AvailableCheats._1_1_ | 2;
-					}
-					if ((uVar3 & 0x2000) == 0) {
-						return 1;
-					}
-					AvailableCheats._1_1_ = AvailableCheats._1_1_ | 4;
-					return 1;
-				}
-				if (cmd == 0x1000054) {
-					cutscene = MRPop(thread);
-					DAT_000d7c4c = MissionStrings + cutscene;
-				}
-				else {
-					if (cmd != 0x1000055) {
-						return 1;
-					}
-					SetPlayerMessage(1, MissionStrings + MissionHeader->msgOutOfTime, 2, 2);
-				}
+		else 
+		{
+			if (cmd < 0x1000082) 
+			{
+
 			}
-			else {
-				if (cmd == 0x1001000) {
-					iVar1 = MRStopThread(thread);
-					return iVar1;
-				}
-				if (0x1001000 < cmd) {
-					if (cmd == 0x1001002) {
-						addr = MRPop(thread);
-						MRStartThread(thread, addr, thread->player);
+			else 
+			{
+				if (0x1001000 < cmd) 
+				{
+					if (0x1001001 < cmd) 
+					{
 						return 1;
 					}
-					if (0x1001001 < cmd) {
-						if (cmd != 0x1001003) {
-							return 1;
-						}
-						addr = MRPop(thread);
-						MRStartThread(thread, addr, '\x01');
-						return 1;
-					}
+
+					printWarning("SetMissionComplete cmd opcode: %x\n", cmd);
+
 					SetMissionComplete();
 					return 1;
 				}
-				if (cmd != 0x1000090) {
-					if (cmd != 0x1000100) {
-						return 1;
-					}
-					SpecialCamera(SPECIAL_CAMERA_SET, 0);
-					return 1;
-				}
-				gWeather = 1;
 			}
 		}
 	}
+
 	return 1;
-	*/
 }
 
 
@@ -2949,7 +2980,7 @@ int MRCreateCar(_TARGET *target)
 	if (target->data[9] == 2) 
 	{
 		curslot = PingInCivCar(666);
-		curslot = curslot + -1;
+		curslot--;
 	}
 	else
 	{
