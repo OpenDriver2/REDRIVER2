@@ -925,7 +925,7 @@ void DrawScreen(PSXSCREEN *pScr)
 				local_30 = local_30 + 0x3c;
 			} while (iVar7 < (int)uVar4);
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 			FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
 			FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
 #endif

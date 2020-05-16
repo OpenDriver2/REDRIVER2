@@ -29,6 +29,7 @@ extern int current_barrel_region_xcell;
 extern int current_barrel_region_zcell;
 
 extern char* PVS_Buffers[4];
+extern int pvsSize[4];
 
 extern int num_regions;
 extern int view_dist;

@@ -30,8 +30,6 @@
 int date_date = 0xA11;
 int date_time = 0x27220B;
 
-int pvsSize[4] = { 0, 0, 0, 0 };
-
 int SpecialByRegion[4][20] = {
 	{5, 1, 3, 3, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 2, 3, 2, 2, 3, 0},
 	{2, 4, 1, 1, 4, 4, 3, 3, 3, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -800,18 +798,12 @@ void DrawCDicon(void)
 // [D]
 void CheckValidSpoolData(void)
 {
-	int iVar1;
-
-	if (models_ready != 0) 
-	{
+	if (models_ready != 0)
 		init_spooled_models();
-	}
 
 	if (spoolactive != 0)
 	{
-		iVar1 = check_regions_present();
-
-		if (iVar1 != 0)
+		if (check_regions_present() != 0)
 		{
 			stopgame();
 
@@ -1164,6 +1156,7 @@ void InitSpooling(void)
 		target_region++;
 	} while (target_region < 4);
 
+	newmodels = NULL;
 	spool_regioncounter = 0;
 	spoolerror = 0;
 	spool_regionpos = 0;
@@ -1663,17 +1656,21 @@ void init_spooled_models(void)
 	addr = model_spool_buffer;
 	models_ready = 0;
 
-	nmodels = *newmodels++;
+	nmodels = *newmodels;
 
-	for (i = 0; i < 1536; i++)
-	{
-		if (addr <= (char*)&modelpointers[i])
-			modelpointers[i] = &dummyModel;
-	}
+	printInfo("loading %d model slots\n", nmodels);
+
+	//for (i = 0; i < 1536; i++)
+	//{
+	//	if (addr <= (char*)&modelpointers[i])
+	//		modelpointers[i] = &dummyModel;
+	//}
+
+	unsigned short* new_model_numbers = newmodels + 1;
 
 	for (i = 0; i < nmodels; i++)
 	{
-		model_number = newmodels[i];
+		model_number = new_model_numbers[i];
 
 		size = *(int *)addr;
 		model = (MODEL *)(addr + 4);
@@ -1779,8 +1776,24 @@ void SetupModels(void)
 // [D]
 void LoadInAreaModels(int area)
 {
+	if (newmodels)
+	{
+		// clear old model ids
+		int nmodels = *newmodels;
+		unsigned short* new_model_numbers = newmodels + 1;
+
+		// set old model ids to dummy
+		for (int i = 0; i < nmodels; i++)
+		{
+			int model_number = newmodels[i];
+			modelpointers[model_number] = &dummyModel;
+		}
+
+		printInfo("freed %d model slots\n", nmodels);
+	}
+
 	int length = AreaData[area].model_size;
-	newmodels = (ushort *)(model_spool_buffer + (length - 1) * 0x800);
+	newmodels = (ushort *)(model_spool_buffer + (length-1) * 2048);
 
 	RequestSpool(3, 0, AreaData[area].model_offset, length, model_spool_buffer, SetupModels);
 }

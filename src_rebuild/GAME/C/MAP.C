@@ -1198,6 +1198,7 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 char nybblearray[512] = { 0 };
 
 char* PVS_Buffers[4] = { 0 };
+int pvsSize[4] = { 0, 0, 0, 0 };
 unsigned char *PVSEncodeTable = NULL;
 
 // byte swapped short
