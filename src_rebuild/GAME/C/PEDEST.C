@@ -150,9 +150,9 @@ void IHaveThePower(void)
 	{
 		if (bPower == 0)
 		{
-			bPower = GameLevel;
-			gWeather = GameLevel;
 			oldWeather = gWeather;
+			bPower = 1;
+			gWeather = 1;
 		}
 
 		powerCounter++;
@@ -2289,8 +2289,6 @@ int bReverseYRotation = 0;
 // [D]
 void PedGetOutCar(PEDESTRIAN *pPed)
 {
-	short sVar1;
-
 	pPed->speed = 0;
 	pPed->frame1++;
 
@@ -2384,8 +2382,8 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	if (NoPlayerControl == 0)
 	{
 		player[0].cameraView = 5;
-		player[0].cameraPos.vx = pCar->hd.where.t[0] - ((iVar7 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
 
+		player[0].cameraPos.vx = pCar->hd.where.t[0] - ((iVar7 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
 		player[0].cameraPos.vy = -200 - pCar->hd.where.t[1];
 		player[0].cameraPos.vz = pCar->hd.where.t[2] + (iVar7 * rcossin_tbl[uVar4 * 2] >> 0xc) + (rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
 	}
@@ -2639,6 +2637,7 @@ void SetupTannerSitDown(PEDESTRIAN *pPed)
 	pPed->type = PED_ACTION_SIT;
 	SetupPedMotionData(pPed);
 
+	pPed->speed = 0;
 	pPed->frame1 = 0;
 	pPed->fpAgitatedState = TannerSitDown;
 }
@@ -2865,6 +2864,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 	iVar2 = pPed->position.vy + 2;
 LAB_000700b4:
 	pPed->position.vy = iVar2;
+
 	AnimatePed(pPed);
 }
 
@@ -2957,6 +2957,8 @@ void AnimatePed(PEDESTRIAN *pPed)
 		lVar8 = -0x82 - iVar5;
 	}
 
+	PVar2 = pPed->type;
+
 	if (cVar1 < 0)
 	{
 		uVar3 = (pPed->dir).vy;
@@ -2964,7 +2966,7 @@ void AnimatePed(PEDESTRIAN *pPed)
 		pPed->position.vx = pPed->position.vx - (cVar1 * rcossin_tbl[(uVar3 & 0xfff) * 2] >> 0xc);
 		iVar5 = pPed->position.vz - (cVar1 * rcossin_tbl[(-uVar3 & 0xfffU) * 2 + 1] >> 0xc);		// [A] is it valid?
 	}
-	else 
+	else
 	{
 		cVar1 = pPed->speed;
 		uVar7 = (int)(pPed->dir).vy - 0x800U & 0xfff;
@@ -2973,7 +2975,6 @@ void AnimatePed(PEDESTRIAN *pPed)
 	}
 
 	pPed->position.vz = iVar5;
-	PVar2 = pPed->type;
 
 	if (PVar2 != PED_ACTION_SIT && PVar2 != PED_ACTION_COPCROUCH && PVar2 != PED_ACTION_COPSTAND)
 	{
@@ -3084,6 +3085,9 @@ void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 		iVar1 = -iVar1;
 
 	cp = FindClosestCar(player[iVar1].pos[0], player[iVar1].pos[1], player[iVar1].pos[2], &distToCarSq);
+
+	if (!cp)
+		return;
 
 	if (cp->ap.model == 4) 
 		iVar2 = FindPointOfCollision(cp, (VECTOR *)&pPed->position);
