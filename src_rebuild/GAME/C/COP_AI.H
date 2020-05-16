@@ -13,6 +13,8 @@ extern int requestRoadblock;
 extern int roadblockDelay;
 extern int roadblockDelayDiff;
 extern int  requestCopCar;
+extern int cop_respawn_timer;
+
 extern char first_offence;
 
 extern void InitCopState(_CAR_DATA *cp, char *extraData); // 0x0002F680

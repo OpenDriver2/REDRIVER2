@@ -16,6 +16,7 @@
 #include "CONVERT.H"
 #include "SPOOL.H"
 #include "PLAYERS.H"
+#include "COP_AI.H"
 
 char speedLimits[3] = { 56, 97, 138 };
 
@@ -180,7 +181,7 @@ _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 	uint retDistSq;
 	_CAR_DATA *retCar;
 
-	retCar = (_CAR_DATA *)0x0;
+	retCar = NULL;
 	retDistSq = 0x7fffffff; // INT_MAX
 	lcp = car_data;
 
@@ -3566,87 +3567,106 @@ LAB_00028774:
 	/* end block 3 */
 	// End Line: 5132
 
+// [D]
 int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*startPos)[4], int externalModel, int palette, int controlFlags)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uchar *puVar1;
+	unsigned char *puVar1;
 	int iVar2;
 	_CAR_DATA *cp;
+	_CAR_DATA *carCnt;
 	int iVar3;
 	int iVar4;
 	int iVar5;
 	uint uVar6;
 	int iVar7;
 	int model;
-	char acStack72[8];
-	undefined2 local_40;
-	undefined2 local_3e;
-	undefined4 local_3c;
-	undefined local_38;
-	byte local_37;
+	_EXTRA_CIV_DATA civDat;
+	long tempRes[4];
+	long tmpQ[4];
 
-	uVar6 = externalModel & 0xff;
-	if (MissionHeader->residentModels[0] == uVar6) {
+	if (MissionHeader->residentModels[0] == externalModel)
 		model = 0;
-	}
-	else {
+	else if (MissionHeader->residentModels[1] == externalModel)
 		model = 1;
-		if ((((MissionHeader->residentModels[1] != uVar6) &&
-			(model = 2, MissionHeader->residentModels[2] != uVar6)) &&
-			(model = 3, MissionHeader->residentModels[3] != uVar6)) &&
-			(model = 0xff, MissionHeader->residentModels[4] == uVar6)) {
-			model = 4;
-		}
-	}
-	if (model != 0xff) {
-		if ((4 < (byte)externalModel) && (specModelValid == '\0')) {
+	else if (MissionHeader->residentModels[2] == externalModel)
+		model = 2;
+	else if (MissionHeader->residentModels[3] == externalModel)
+		model = 3;
+	else if (MissionHeader->residentModels[4] == externalModel)
+		model = 4;
+
+	if (model != 0xff) 
+	{
+		if (4 < externalModel && specModelValid == 0) 
+		{
 			return -1;
 		}
-		cp = car_data;
+
+		cp = NULL;
+		carCnt = car_data;
 		puVar1 = reservedSlots;
-		do {
-			if ((cp->controlType == '\0') && (*puVar1 == '\0')) goto LAB_00028a68;
-			cp = cp + 1;
-			puVar1 = puVar1 + 1;
-		} while (cp < car_data + 0x13);
-		cp = (_CAR_DATA *)0x0;
-	LAB_00028a68:
-		if (cp != (_CAR_DATA *)0x0) {
-			local_3c = 3;
-			local_3e = 7;
-			if ((controlFlags & 1U) != 0) {
+
+		if (true) 
+		{
+			do {
+				if ((carCnt->controlType == 0) && (*puVar1 == 0))
+				{
+					cp = carCnt;
+					break;
+				}
+
+				carCnt++;
+				puVar1++;
+			} while (carCnt < car_data + 19);
+		}
+
+		if (cp != NULL) 
+		{
+			civDat.thrustState = 3;
+			civDat.ctrlState = 7;
+
+			if ((controlFlags & 1U) != 0) 
+			{
 				requestCopCar = 0;
-				numCopCars = numCopCars + 1;
+				numCopCars++;
 				cop_respawn_timer = gCopRespawnTime;
 			}
-			local_37 = (byte)controlFlags | 4;
-			if ((gCurrentMissionNumber != 0x20) && ((byte)externalModel == 0)) {
-				local_37 = (byte)controlFlags | 6;
-			}
-			local_38 = (undefined)palette;
-			local_40 = (undefined2)direction;
-			InitCar(cp, direction, startPos, '\x02', model, 0, acStack72);
+
+			civDat.controlFlags = controlFlags | 4;
+
+			if ((gCurrentMissionNumber != 0x20) && (externalModel == 0))
+				civDat.controlFlags = controlFlags | 6;
+
+			civDat.palette = palette;
+			civDat.angle = direction;
+
+			InitCar(cp, direction, startPos,  2, model, 0, (char *)&civDat);
+
 			uVar6 = (orientZ - (orientZ >> 0x1f)) * 2 & 0x3ffc;
 			iVar7 = (int)*(short *)((int)rcossin_tbl + uVar6);
 			iVar4 = (int)*(short *)((int)rcossin_tbl + uVar6 + 2);
-			iVar3 = *(int *)(cp->st + 0x10) * iVar7 + *(int *)(cp->st + 0xc) * iVar4 + 0x800 >> 0xc;
-			model = (*(int *)(cp->st + 0x10) * iVar4 - *(int *)(cp->st + 0xc) * iVar7) + 0x800 >> 0xc;
-			iVar2 = *(int *)(cp->st + 0x18) * iVar7 + *(int *)(cp->st + 0x14) * iVar4 + 0x800 >> 0xc;
+
+			tmpQ[0] = (cp->st.n.orientation[1] * iVar7 + cp->st.n.orientation[0] * iVar4) / 4096;
+			tmpQ[1] = (cp->st.n.orientation[1] * iVar4 - cp->st.n.orientation[0] * iVar7) / 4096;
+			tmpQ[2] = (cp->st.n.orientation[3] * iVar7 + cp->st.n.orientation[2] * iVar4) / 4096;
+			tmpQ[3] = (cp->st.n.orientation[3] * iVar4 - cp->st.n.orientation[2] * iVar7) / 4096;
+
 			uVar6 = (orientX - (orientX >> 0x1f)) * 2 & 0x3ffc;
 			iVar5 = (int)*(short *)((int)rcossin_tbl + uVar6);
-			iVar4 = (*(int *)(cp->st + 0x18) * iVar4 - *(int *)(cp->st + 0x14) * iVar7) + 0x800 >> 0xc;
 			iVar7 = (int)*(short *)((int)rcossin_tbl + uVar6 + 2);
-			*(int *)(cp->st + 0xc) = iVar4 * iVar5 + iVar3 * iVar7 + 0x800 >> 0xc;
-			*(int *)(cp->st + 0x10) = iVar2 * iVar5 + model * iVar7 + 0x800 >> 0xc;
-			*(int *)(cp->st + 0x14) = (iVar2 * iVar7 - model * iVar5) + 0x800 >> 0xc;
-			*(int *)(cp->st + 0x18) = (iVar4 * iVar7 - iVar3 * iVar5) + 0x800 >> 0xc;
-			numCivCars = numCivCars + 1;
-			return (uint)(byte)cp->id;
+
+			cp->st.n.orientation[0] = (tmpQ[3] * iVar5 + tmpQ[0] * iVar7) / 4096;
+			cp->st.n.orientation[1] = (tmpQ[2] * iVar5 + tmpQ[1] * iVar7) / 4096;
+			cp->st.n.orientation[2] = (tmpQ[2] * iVar7 - tmpQ[1] * iVar5) / 4096;
+			cp->st.n.orientation[3] = (tmpQ[3] * iVar7 - tmpQ[0] * iVar5) / 4096;
+
+			numCivCars++;
+
+			return cp->id;
 		}
 	}
-	return -1;*/
+
+	return -1;
 }
 
 
