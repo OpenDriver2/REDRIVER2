@@ -673,10 +673,11 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	XYPAIR cellPos;
 
 	sdLevel = 0;
-	cellPos.x = pos->vx - 0x200;
-	cellPos.y = pos->vz - 0x200;
+	cellPos.x = pos->vx-0x200;
+	cellPos.y = pos->vz-0x200;
 
 	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+
 	plane = NULL;
 
 	if (*buffer == 2) 
@@ -687,59 +688,55 @@ _sdPlane * sdGetCell(VECTOR *pos)
 		{
 			plane = &sea;
 		}
-		else 
-		{
+		else {
 			if (((uint)(ushort)*surface & 0x6000) == 0x2000) 
 			{
-				psVar2 = (short *)((int)buffer + ((uint)(ushort)*surface & 0x1fff) * 2 + (int)buffer[2]);
+				psVar2 = (short *)((int)buffer +((uint)(ushort)*surface & 0x1fff) * 2 + (int)buffer[2]);
 
-				do {
-					if (-0x100 - pos->vy <= (int)*psVar2) 
-						break;
-
-					psVar2 += 2;
-					sdLevel++;
+				do 
+				{
+					if (-0x100 - pos->vy <= (int)*psVar2) break;
+					psVar2 = psVar2 + 2;
+					sdLevel = sdLevel + 1;
 				} while (*psVar2 != -0x8000);
 
 				surface = psVar2 + 1;
 			}
 
-			do {
+			do 
+			{
 				bVar1 = false;
 				surface1 = surface;
-
 				if ((*surface & 0x4000U) != 0) 
 				{
 					cellPos.x = cellPos.x & 0x3ff;
 					cellPos.y = cellPos.y & 0x3ff;
-					surface1 = sdGetBSP((_sdNode *)((int)buffer +((uint)(ushort)*surface & 0x3fff) * sizeof(_sdNode) + (int)buffer[3]), &cellPos);
 
-					if (*surface1 == 0x7fff) 
-					{
+					surface1 = sdGetBSP((_sdNode *)((int)buffer + ((uint)(ushort)*surface & 0x3fff) * 4 + (int)buffer[3]), &cellPos);
+					if (*surface1 == 0x7fff) {
 						sdLevel = sdLevel + 1;
 						bVar1 = true;
 						surface1 = surface + 2;
 					}
 				}
 				surface = surface1;
-
 			} while (bVar1);
 
-			plane = (_sdPlane *)((int)buffer + (int)*surface1 * sizeof(_sdPlane) + (int)buffer[1]);
+			plane = (_sdPlane *)((int)buffer + (int)*surface1 * 0xc + (int)buffer[1]);
 
-			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1))
+			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) 
 			{
-				if ((uint)(ushort)plane->surface - 0x10 < 0x10) {
+				if ((uint)(ushort)plane->surface - 0x10 < 0x10) 
+				{
 					plane = EventSurface(pos, plane);
 				}
 			}
-			else 
+			else
 			{
 				plane = &sea;
 			}
 		}
 	}
-
 	return plane;
 }
 
@@ -778,34 +775,37 @@ short* sdGetBSP(_sdNode *node, XYPAIR *pos)
 	int local_a2_4;
 
 	local_a2_4 = node->value;
-	if (local_a2_4 < 0)
-	{
+	if (local_a2_4 < 0) {
 		do {
-			local_v1_48 = (local_a2_4 << 21) >> 19 & 0x3ffc;	// << 2 bits = * 4
-
-			int dot = pos->y * rcossin_tbl[local_v1_48 / 2 + 1] - pos->x * rcossin_tbl[local_v1_48 / 2];
-
-			if (dot < ((local_a2_4 << 9) >> 0x14) << 0xc) 	// dot < dist*4096
+			local_v1_48 = (local_a2_4 << 0x15) >> 0x13 & 0x3ffc;
+			if (pos->y * (int)*(short *)((int)rcossin_tbl + local_v1_48 + 2) -
+				pos->x * (int)*(short *)((int)rcossin_tbl + local_v1_48) <
+				((local_a2_4 << 9) >> 0x14) << 0xc) {
 				node = node + 1;
-			else
-				node = node + ((local_a2_4 << 1) >> 0x18);	// offset
-
+			}
+			else {
+				node = node + ((local_a2_4 << 1) >> 0x18);
+			}
 			local_a2_4 = node->value;
 		} while ((local_a2_4 & 0x80000000U) != 0);
 	}
 	return (short *)node;
 #else
 	// new
-	while (node->value < 0)
+	if (node->value < 0)
 	{
-		int ang = ((node->n.angle * 4) & 0x3ffc) / 2;
-		int dot = pos->y * rcossin_tbl[ang + 1] - pos->x * rcossin_tbl[ang];
+		do
+		{
+			int ang = ((node->n.angle * 4) & 0x3ffc) / 2;
+			int dot = pos->y * rcossin_tbl[ang + 1] - pos->x * rcossin_tbl[ang];
 
-		if (dot < node->n.dist * 4096)
-			node++;
-		else
-			node += node->n.offset;
+			if (dot < node->n.dist * 4096)
+				node++;
+			else
+				node += node->n.offset;
+		} while ((node->value & 0x80000000U) != 0);
 	}
+
 	return (short *)node;
 #endif
 }
