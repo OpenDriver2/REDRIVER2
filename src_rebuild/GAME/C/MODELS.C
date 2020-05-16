@@ -248,6 +248,10 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 
 	for (i = 0; i < 5; i++)
 	{
+		gCarCleanModelPtr[i] = NULL;
+		gCarDamModelPtr[i] = NULL;
+		gCarLowModelPtr[i] = NULL;
+
 		if (i == 4)
 			specmallocptr = mallocptr;
 
