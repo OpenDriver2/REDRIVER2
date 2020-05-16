@@ -871,8 +871,7 @@ void ControlMap(void)
 	current_region = region_to_unpack;
 	CheckUnpackNewRegions();
 
-	if (old_region == current_region || old_region == -1)
-		CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
+	CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
 
 	current_cell_x = (camera_position.vx + units_across_halved) / cell_header.cell_size;
 	current_cell_z = (camera_position.vz + units_down_halved) / cell_header.cell_size;

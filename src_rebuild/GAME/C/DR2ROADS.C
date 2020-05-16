@@ -684,7 +684,7 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	{
 		surface = buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 0x40 + 4;
 
-		if (*surface == 0xffff) 
+		if (*surface == -1) 
 		{
 			plane = &sea;
 		}

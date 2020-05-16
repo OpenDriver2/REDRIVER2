@@ -1832,7 +1832,7 @@ void LoadInAreaModels(int area)
 	/* end block 4 */
 	// End Line: 3523
 
-// [D] [A] bugged
+// [D]
 void CheckLoadAreaData(int cellx, int cellz)
 {
 	int nAreas;
@@ -1846,6 +1846,13 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 	spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
 
+#ifndef PSX
+	if (LoadedArea != spoolptr->super_region && spoolptr->super_region != 0xFF && old_region != -1)
+	{
+		LoadedArea = spoolptr->super_region;
+	}
+	else
+#endif
 	if (old_region == -1 && spoolptr->super_region != 0xFF)
 	{
 		// just load the area if no
