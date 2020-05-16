@@ -13,6 +13,12 @@
 #include "EVENT.H"
 #include "CIV_AI.H"
 #include "CARS.H"
+#include "PLAYERS.H"
+#include "REPLAYS.H"
+#include "GLAUNCH.H"
+#include "SCORES.H"
+#include "AI.H"
+#include "MAIN.H"
 
 #include <string.h>
 
@@ -136,7 +142,7 @@ int g321GoDelay = 0;
 int last_flag = -1;
 int cop_adjust = 0;
 
-int gLapTimes[5][2];
+int gLapTimes[2][5];
 int lastsay = -1;
 
 int gCarWithABerm = -1;
@@ -235,8 +241,8 @@ void InitialiseMissionDefaults(void)
 
 	for (i = 0; i < 5; i++)
 	{
-		gLapTimes[i][0] = -1;
-		gLapTimes[i][1] = -1;
+		gLapTimes[0][i] = -1;
+		gLapTimes[1][i] = -1;
 	}
 
 	gCarWithABerm = -1;
@@ -568,45 +574,48 @@ LAB_00060e70:
 
 	sprintf(acStack64, "MISSIONS\\PATH%d.%d", gCurrentMissionNumber, 0);
 	iVar4 = FileExists(acStack64);
-	if (iVar4 != 0) {
+
+	if (iVar4 != 0)
 		LoadfileSeg(acStack64, (char *)(MissionTargets + 4), 0, 0x280);
-	}
-	if ((MissionHeader->type & 1U) != 0) {
+
+	if ((MissionHeader->type & 1U) != 0) 
 		RestoreStartData();
-	}
+
 	PreProcessTargets();
-	if (gCurrentMissionNumber - 1U < 0x28) {
+
+	if (gCurrentMissionNumber - 1U < 0x28)
+	{
 		loadsize = gCurrentMissionNumber;
-		if (0x24 < gCurrentMissionNumber) {
+
+		if (0x24 < gCurrentMissionNumber) 
 			loadsize = gCurrentMissionNumber - 1U;
-		}
-		if (0xb < (int)loadsize) {
+
+
+		if (0xb < (int)loadsize) 
 			loadsize = loadsize - 1;
-		}
-		if (7 < (int)loadsize) {
+		if (7 < (int)loadsize) 
 			loadsize = loadsize - 1;
-		}
+
 		gMissionTitle = MissionName[loadsize - 1];
 	}
-	else {
+	else
+	{
 		gMissionTitle = NULL;
 	}
+
 	if (wantedCar[0] != -1) 
 	{
 		PlayerStartInfo[0]->model = wantedCar[0];
 
 		if ((wantedCar[0] == 0) || (4 < wantedCar[0])) 
 		{
-			PlayerStartInfo[0]->palette = '\0';
+			PlayerStartInfo[0]->palette = 0;
 
 			if (3 < wantedCar[0])
-			{
 				MissionHeader->residentModels[4] = wantedCar[0];
-			}
 		}
-		else {
+		else 
 			MissionHeader->residentModels[0] = wantedCar[0];
-		}
 	}
 
 	if (wantedCar[1] != -1)
@@ -614,20 +623,15 @@ LAB_00060e70:
 		PlayerStartInfo[1]->model = wantedCar[1];
 
 		if ((wantedCar[1] == 0) || (4 < wantedCar[1]))
-		{
-			PlayerStartInfo[1]->palette = '\0';
-		}
+			PlayerStartInfo[1]->palette = 0;
 		else
-		{
 			MissionHeader->residentModels[1] = wantedCar[1];
-		}
 	}
 
 	if (GameType == GAME_CAPTURETHEFLAG)
 		ActivateNextFlag();
 
-	MRInitialiseThread((MR_THREAD *)&MissionThreads, MissionScript, '\0');
-	return;
+	MRInitialiseThread((MR_THREAD *)&MissionThreads, MissionScript, 0);
 }
 
 
@@ -654,77 +658,92 @@ void HandleMission(void)
 	int iVar1;
 	uint uVar2;
 
-	if (Mission.active == 0) {
+	if (!Mission.active)
 		return;
-	}
-	if (gInGameCutsceneActive != 0) {
-		return;
-	}
-	if (gInGameCutsceneDelay != 0) {
-		return;
-	}
-	if (CameraCnt != 0) 
-		goto LAB_00061388;
 
-	if ((MissionHeader->type & 4U) != 0) {
-		HandleMissionThreads();
-		Mission.message_timer[0] = 0;
-		Mission.message_timer[1] = 0;
-		MRCommitThreadGenocide();
-		MRInitialiseThread(MissionThreads, MissionScript, '\0');
-	}
+	if(gInGameCutsceneActive)
+		return;
 
-	uVar2 = MissionHeader->type & 0x30;
-	if (uVar2 != 0x10) {
-		if (uVar2 < 0x11) {
-			if (uVar2 == 0) {
+	if(gInGameCutsceneDelay)
+		return;
+
+	// init frame
+	if (CameraCnt == 0)
+	{
+		if ((MissionHeader->type & 4U) != 0)
+		{
+			HandleMissionThreads();
+			Mission.message_timer[0] = 0;
+			Mission.message_timer[1] = 0;
+
+			MRCommitThreadGenocide();
+			MRInitialiseThread(MissionThreads, MissionScript, 0);
+		}
+
+		uVar2 = MissionHeader->type & 0x30;
+
+		FelonyBar.active = 0;
+
+		if (uVar2 != 0x10)
+		{
+			if (uVar2 < 0x11)
+			{
+				if (uVar2 == 0)
+				{
+					FelonyBar.active = 1;
+				}
+				else
+				{
+					FelonyBar.active = 0;
+				}
+			}
+
+			if (uVar2 == 0x20)
+			{
 				FelonyBar.active = 1;
+				FelonyBar.flags |= 2;
 			}
-			else {
-				FelonyBar.active = 0;
-			}
-			goto LAB_00061388;
-		}
-		if (uVar2 == 0x20) {
-			FelonyBar.active = 1;
-			FelonyBar.flags = FelonyBar.flags | 2;
-			goto LAB_00061388;
 		}
 	}
-	FelonyBar.active = 0;
-
-LAB_00061388:
 
 	MRHandleCarRequests();
 
-	if (((bMissionTitleFade == 0) && (iVar1 = Handle321Go(), iVar1 == 0)) && (iVar1 = HandleGameOver(), iVar1 == 0))
+	if (bMissionTitleFade)
+		return;
+
+	if (Handle321Go())
+		return;
+
+	if (HandleGameOver())
+		return;
+
+	if (Mission.message_timer[0] != 0)
+		Mission.message_timer[0]--;
+
+	if (Mission.message_timer[1] != 0)
+		Mission.message_timer[1]--;
+
+	if (Mission.ChaseHitDelay != 0)
+		Mission.ChaseHitDelay--;
+
+	gTannerActionNeeded = 0;
+
+	HandleTimer(&Mission.timer[0]);
+	HandleTimer(&Mission.timer[1]);
+
+	HandleThrownBombs();
+	HandleMissionThreads();
+
+	if(gCopCarTheftAttempted != 0) 
 	{
-		if (Mission.message_timer[0] != 0) {
-			Mission.message_timer[0] = Mission.message_timer[0] + -1;
-		}
-		if (Mission.message_timer[1] != 0) {
-			Mission.message_timer[1] = Mission.message_timer[1] + -1;
-		}
-		if (Mission.ChaseHitDelay != 0) {
-			Mission.ChaseHitDelay = Mission.ChaseHitDelay + -1;
-		}
+		SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
+		gCopCarTheftAttempted = 0;
+	}
 
-		gTannerActionNeeded = 0;
-
-		HandleTimer(Mission.timer);
-		HandleTimer(Mission.timer + 1);
-		HandleThrownBombs();
-		HandleMissionThreads();
-
-		if (gCopCarTheftAttempted != 0) {
-			SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
-			gCopCarTheftAttempted = 0;
-		}
-
-		if ((gLockPickingAttempted != 0) && (NumPlayers == 1)) {
-			SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
-			gLockPickingAttempted = 0;
-		}
+	if(gLockPickingAttempted != 0 && NumPlayers == 1)
+	{
+		SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
+		gLockPickingAttempted = 0;
 	}
 }
 
@@ -747,37 +766,43 @@ void HandleTimer(MR_TIMER *timer)
 	int iVar3;
 
 	bVar1 = timer->flags;
-	if ((bVar1 & 4) != 0) {
+
+	if ((bVar1 & 4) != 0) 
 		return;
-	}
-	if ((bVar1 & 1) == 0) {
+
+	if ((bVar1 & 1) == 0) 
 		return;
-	}
-	if ((bVar1 & 2) == 0) {
+
+	if ((bVar1 & 2) == 0) 
+	{
 		iVar3 = timer->count + -100;
 		timer->count = iVar3;
-		if (iVar3 < 1) {
-			if (((MissionHeader->timerFlags & 0x1000U) == 0) ||
-				(iVar3 = DetonatorTimer(), iVar3 == 0)) {
-				if ((timer->flags & 8) == 0) {
-					if (Mission.gameover_delay == -1) {
+		if (iVar3 < 1) 
+		{
+			if (((MissionHeader->timerFlags & 0x1000U) == 0) || DetonatorTimer() == 0)
+			{
+				if ((timer->flags & 8) == 0)
+				{
+					if (Mission.gameover_delay == -1)
 						SetMissionFailed(FAILED_OUTOFTIME);
-					}
-					if ((timer->flags & 0x10) != 0) {
+
+					if ((timer->flags & 0x10) != 0) 
+					{
 						events.cameraEvent = (_EVENT *)0x1;
 						BombThePlayerToHellAndBack(gCarWithABerm);
 					}
 				}
-				else {
-					if (Mission.gameover_delay == -1) {
-						SetMissionComplete();
-						timer->count = 0;
-						goto LAB_000615e0;
-					}
+				else if (Mission.gameover_delay == -1)
+				{
+					SetMissionComplete();
+					timer->count = 0;
+					goto LAB_000615e0;
 				}
+
 				timer->count = 0;
 			}
-			else {
+			else 
+			{
 				MissionHeader->timerFlags = MissionHeader->timerFlags & 0xefff;
 				timer->count = 9000;
 				timer->flags = timer->flags | 0x28;
@@ -787,14 +812,16 @@ void HandleTimer(MR_TIMER *timer)
 	else {
 		iVar3 = timer->count + 100;
 		timer->count = iVar3;
-		if (10799999 < iVar3) {
+
+		if (10799999 < iVar3)
 			timer->count = 10799999;
-		}
+
 	}
 
 LAB_000615e0:
 	iVar3 = timer->count;
 	uVar2 = (iVar3 / 180000);
+
 	timer->min = uVar2;
 	timer->sec = (iVar3 / 3000) + uVar2 * -0x3c;
 	timer->frac = ((iVar3 % 3000) / 0x1e);
@@ -864,20 +891,19 @@ void RegisterChaseHit(int car1, int car2)
 	/* end block 3 */
 	// End Line: 6577
 
+// [D]
 void PauseMissionTimer(int pause)
 {
-	UNIMPLEMENTED();
-	/*
-	if (pause == 0) {
-		DAT_000d7c28 = DAT_000d7c28 & 0xfb;
-		DAT_000d7c34 = DAT_000d7c34 & 0xfb;
+	if (pause == 0) 
+	{
+		Mission.timer[0].flags &= ~4;
+		Mission.timer[1].flags &= ~4;
 	}
-	else {
-		DAT_000d7c28 = DAT_000d7c28 | 4;
-		DAT_000d7c34 = DAT_000d7c34 | 4;
+	else 
+	{
+		Mission.timer[0].flags |= 4;
+		Mission.timer[1].flags |= 4;
 	}
-	return;
-	*/
 }
 
 
@@ -905,36 +931,40 @@ void PauseMissionTimer(int pause)
 	/* end block 3 */
 	// End Line: 6610
 
+// [D]
 void SetMissionMessage(char *message, int priority, int seconds)
 {
-	UNIMPLEMENTED();
-	/*
 	short *psVar1;
 	uint uVar2;
 	char **ppcVar3;
 
-	if (((message != MissionStrings + -1) && (message != (char *)0x0)) &&
-		(uVar2 = (uint)NumPlayers, NumPlayers != 0)) {
-		ppcVar3 = (char **)&DAT_000d7c1c;
-		psVar1 = &DAT_000d7c16;
+	uVar2 = (uint)NumPlayers;
+	if (message != MissionStrings - 1 && message != NULL && NumPlayers != 0) 
+	{
+		ppcVar3 = Mission.message_string;
+		psVar1 = Mission.message_priority;
+
 		do {
-			if ((psVar1[-2] == 0) || (*psVar1 <= priority)) {
+			if ((psVar1[-2] == 0) || (*psVar1 <= priority)) 
+			{
 				*ppcVar3 = message;
-				*psVar1 = (short)priority;
-				if (seconds == 0) {
+				*psVar1 = priority;
+
+				if (seconds == 0) 
+				{
 					psVar1[-2] = 5;
 				}
-				else {
-					psVar1[-2] = (short)seconds * 0x1e;
+				else 
+				{
+					psVar1[-2] = seconds * 30;
 				}
 			}
-			ppcVar3 = ppcVar3 + 1;
-			uVar2 = uVar2 - 1;
-			psVar1 = psVar1 + 1;
+
+			ppcVar3++;
+			uVar2--;
+			psVar1++;
 		} while (uVar2 != 0);
 	}
-	return;
-	*/
 }
 
 
@@ -953,19 +983,19 @@ void SetMissionMessage(char *message, int priority, int seconds)
 	/* end block 2 */
 	// End Line: 6659
 
+// [D]
 void SetPlayerMessage(int player, char *message, int priority, int seconds)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((message != MissionStrings + -1) && (message != (char *)0x0)) {
-		if (((&DAT_000d7c12)[player] == 0) || ((short)(&DAT_000d7c16)[player] <= priority)) {
-			*(char **)(&DAT_000d7c1c + player) = message;
-			(&DAT_000d7c16)[player] = (short)priority;
-			(&DAT_000d7c12)[player] = (short)seconds * 0x1e;
+	if (message != MissionStrings-1 && message != NULL) 
+	{
+		if (Mission.message_timer[player] == 0 || 
+			Mission.message_priority[player] <= priority)
+		{
+			Mission.message_string[player] = message;
+			Mission.message_priority[player] = priority;
+			Mission.message_timer[player] = seconds * 30;
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -1366,70 +1396,97 @@ void SetConfusedCar(int slot)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleMissionThreads(void)
 {
 	UNIMPLEMENTED();
-	/*
-	_TARGET *p_Var1;
-	uint uVar2;
-	int iVar3;
+	return;
+/*
+	uint *puVar1;
+	_TARGET *p_Var2;
+	uint uVar3;
 	int iVar4;
+	int iVar5;
 	uint fnc;
 	MR_THREAD *thread;
-	uint uVar5;
+	uint uVar6;
 
-	iVar3 = 0xf;
-	p_Var1 = MissionTargets;
+	iVar4 = 0xf;
+	p_Var2 = MissionTargets;
+
 	do {
-		iVar3 = iVar3 + -1;
-		p_Var1->data[1] = p_Var1->data[1] & 0xfffff9ff;
-		p_Var1 = p_Var1 + 1;
-	} while (-1 < iVar3);
+		p_Var2->data[1] = p_Var2->data[1] & 0xfffff9ff;
+
+		p_Var2++;
+		iVar4--;
+	} while (-1 < iVar4);
+
+	iVar5 = 0;
 	iVar4 = 0;
-	iVar3 = 0;
+
 	do {
-		thread = (MR_THREAD *)(&MissionThreads + iVar3);
-		uVar5 = (uint)thread->active;
-		iVar4 = iVar4 + 1;
-		if (((thread->active != 0) && (DAT_000d7c0c == -1)) && (gInGameCutsceneActive == 0)) {
-			while (gInGameCutsceneDelay == 0) {
-				fnc = **(uint **)((int)&DAT_000d7b10 + iVar3);
-				uVar2 = fnc & 0xff000000;
-				*(uint **)((int)&DAT_000d7b10 + iVar3) = *(uint **)((int)&DAT_000d7b10 + iVar3) + 1;
-				if (uVar2 == 0x2000000) {
+		thread = &MissionThreads[iVar4];
+		uVar6 = thread->active;
+		iVar5++;
+
+		if (thread->active != 0 && Mission.gameover_delay == -1 && gInGameCutsceneActive == 0)
+		{
+			while (gInGameCutsceneDelay == 0)
+			{
+				fnc = *thread->pc;
+				uVar3 = fnc & 0xff000000;
+				thread->pc++;
+
+				if (uVar3 == 0x2000000)
+				{
 				LAB_00061db8:
 					MRPush(thread, fnc);
 				}
-				else {
-					if (uVar2 < 0x2000001) {
-						if (uVar2 == 0) goto LAB_00061db8;
-						if (uVar2 == 0x1000000) {
-							uVar5 = MRCommand(thread, fnc);
+				else 
+				{
+					if (uVar3 < 0x2000001) 
+					{
+						if (uVar3 == 0) 
+							goto LAB_00061db8;
+						if (uVar3 == 0x1000000) 
+						{
+							uVar6 = MRCommand(thread, fnc);
 						}
 					}
-					else {
-						if (uVar2 == 0x4000000) {
-							uVar5 = MRFunction(thread, fnc);
+					else
+					{
+						if (uVar3 == 0x4000000) 
+						{
+							uVar6 = MRFunction(thread, fnc);
 						}
-						else {
-							if (uVar2 < 0x4000001) {
-								if (uVar2 == 0x3000000) {
-									uVar5 = MROperator(thread, fnc);
+						else 
+						{
+							if (uVar3 < 0x4000001) 
+							{
+								if (uVar3 == 0x3000000) 
+								{
+									uVar6 = MROperator(thread, fnc);
 								}
 							}
-							else {
-								if (uVar2 == 0xff000000) goto LAB_00061db8;
+							else 
+							{
+								if (uVar3 == 0xff000000)
+									goto LAB_00061db8;
 							}
 						}
 					}
 				}
-				if (((uVar5 == 0) || (DAT_000d7c0c != -1)) || (gInGameCutsceneActive != 0)) break;
+
+				if (((uVar6 == 0) || (Mission.gameover_delay != -1)) || (gInGameCutsceneActive != 0)) 
+					break;
 			}
 		}
-		iVar3 = iVar4 * 0x10;
-		if (0xf < iVar4) {
+
+		iVar4 = iVar5 * 0x10;
+
+		if (0xf < iVar5)
 			return;
-		}
+
 	} while (true);
 	*/
 }
@@ -1782,23 +1839,19 @@ int MROperator(MR_THREAD *thread, ulong op)
 
 int MRFunction(MR_THREAD *thread, ulong fnc)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int value;
-	long lVar1;
+	long value;
 
-	if (fnc == 0x4000020) {
-		lVar1 = MRPop(thread);
-		value = MRProcessTarget(thread, MissionTargets + lVar1);
+	if (fnc == 0x4000020) 
+	{
+		value = MRPop(thread);
+		value = MRProcessTarget(thread, MissionTargets + value);
+
 		MRPush(thread, value);
-		value = 1;
+
+		return 1;
 	}
-	else {
-		value = MRStopThread(thread);
-	}
-	return value;
-	*/
+
+	return MRStopThread(thread);
 }
 
 
@@ -1825,7 +1878,7 @@ int MRFunction(MR_THREAD *thread, ulong fnc)
 // [D]
 void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 {
-	thread->active = '\x01';
+	thread->active = 1;
 	thread->pc = pc;
 	thread->player = player;
 	thread->sp = thread->initial_sp;
@@ -1859,23 +1912,23 @@ void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 
 void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
 {
-	UNIMPLEMENTED();
-	return;
-	/*
-	int iVar1;
+	int i;
 	MR_THREAD *thread;
 
-	iVar1 = 0;
+	i = 0;
 	thread = (MR_THREAD *)&MissionThreads;
+
 	do {
-		iVar1 = iVar1 + 1;
-		if (thread->active == '\0') {
+		i++;
+
+		if (thread->active == 0)
+		{
 			MRInitialiseThread(thread, callingthread->pc + addr, player);
 			return;
 		}
-		thread = thread + 1;
-	} while (iVar1 < 0x10);
-	return;*/
+
+		thread++;
+	} while (i < 16);
 }
 
 
@@ -1897,7 +1950,7 @@ void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
 // [D]
 int MRStopThread(MR_THREAD *thread)
 {
-	thread->active = '\0';
+	thread->active = 0;
 	return 0;
 }
 
@@ -1933,22 +1986,16 @@ int MRStopThread(MR_THREAD *thread)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void MRCommitThreadGenocide(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	MR_THREAD *thread;
+	int i;
 
-	thread = (MR_THREAD *)&MissionThreads;
-	iVar1 = 0xf;
+	i = 16;
 	do {
-		MRStopThread(thread);
-		iVar1 = iVar1 + -1;
-		thread = thread + 1;
-	} while (-1 < iVar1);
-	return;
-	*/
+		MRStopThread(&MissionThreads[i]);
+		i--;
+	} while (-1 < i);
 }
 
 
@@ -1970,16 +2017,11 @@ void MRCommitThreadGenocide(void)
 // [D]
 int MRJump(MR_THREAD *thread, long jump)
 {
-	uint uVar1;
+	if (jump + 2U < 3)
+		return MRStopThread(thread);
 
-	if (jump + 2U < 3) {
-		uVar1 = MRStopThread(thread);
-	}
-	else {
-		uVar1 = (uint)~jump >> 0x1f;
-		thread->pc = thread->pc + jump;
-	}
-	return uVar1;
+	thread->pc += jump;
+	return ~jump >> 0x1f;
 }
 
 
@@ -2006,12 +2048,8 @@ int MRJump(MR_THREAD *thread, long jump)
 // [D]
 void MRPush(MR_THREAD *thread, long value)
 {
-	ulong *puVar1;
-
-	puVar1 = thread->sp;
-	*puVar1 = value;
-	thread->sp = puVar1 + 1;
-	return;
+	*thread->sp = value;
+	thread->sp++;
 }
 
 
@@ -2040,11 +2078,8 @@ void MRPush(MR_THREAD *thread, long value)
 // [D]
 long MRPop(MR_THREAD *thread)
 {
-	ulong *puVar1;
-
-	puVar1 = thread->sp;
-	thread->sp = puVar1 + -1;
-	return puVar1[-1];
+	thread->sp--;
+	return *thread->sp;
 }
 
 
@@ -2080,21 +2115,21 @@ long MRGetParam(MR_THREAD *thread)
 
 	var = MRPop(thread);
 	uVar1 = var & 0xff000000;
+
 	if (uVar1 == 0x2000000) {
 		var = MRGetVariable(thread, var);
 	}
-	else {
-		if (uVar1 < 0x2000001) {
-			if (uVar1 != 0) {
-				return 0;
-			}
-		}
-		else {
-			if (uVar1 != 0xff000000) {
-				return 0;
-			}
-		}
+	else if (uVar1 < 0x2000001) 
+	{
+		if (uVar1 != 0)
+			return 0;
 	}
+	else 
+	{
+		if (uVar1 != 0xff000000)
+			return 0;
+	}
+
 	return var;
 }
 
@@ -2852,12 +2887,8 @@ int MRRequestCar(_TARGET *target)
 
 void MRHandleCarRequests(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if (DAT_000d7c3c != (_TARGET *)0x0) {
-		MRCreateCar(DAT_000d7c3c);
-	}
-	return;*/
+	if (Mission.CarTarget)
+		MRCreateCar(Mission.CarTarget);
 }
 
 
@@ -2893,11 +2924,11 @@ void MRHandleCarRequests(void)
 	/* end block 3 */
 	// End Line: 7216
 
+static char NewLeadDelay = 0;
+
+// [D]
 int MRCreateCar(_TARGET *target)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	int curslot;
 	uint uVar2;
@@ -2906,54 +2937,66 @@ int MRCreateCar(_TARGET *target)
 	int direction;
 	uint uVar4;
 	uint uVar5;
-	long local_40;
-	undefined *local_3c;
-	int local_38;
-	char local_30[8];
+	long pos[4];
+	char playerid;
 
-	local_40 = target->data[3];
-	local_38 = target->data[4];
+	pos[0] = target->data[3];
+	pos[2] = target->data[4];
+	pos[1] = 10000;
+
 	uVar2 = target->data[10];
-	local_3c = &DAT_00002710;
+	
 	bVar1 = (uVar2 & 8) != 0;
 	direction = target->data[5];
 	uVar4 = target->data[7];
 	uVar5 = target->data[8];
-	if (target->data[9] == 2) {
-		curslot = PingInCivCar(0x29a);
+
+	if (target->data[9] == 2) 
+	{
+		curslot = PingInCivCar(666);
 		curslot = curslot + -1;
 	}
-	else {
-		curslot = CreateStationaryCivCar
-		(direction, 0, (uint)((uVar2 & 0x40000) != 0) << 10, (long(*)[4])&local_40,
-			uVar4 & 0xff, uVar5 & 0xff, (uint)bVar1);
+	else
+	{
+		curslot = CreateStationaryCivCar(direction, 0, (uint)((uVar2 & 0x40000) != 0) << 10, (long(*)[4])pos, target->data[7], target->data[8], (uint)bVar1);
 	}
-	if (curslot < 0) {
+
+	if (curslot < 0)
+	{
 		requestStationaryCivCar = 1;
 		direction = 0;
 	}
-	else {
-		if (bVar1) {
+	else 
+	{
+		if (bVar1)
+		{
 			newslot = NumReplayStreams + cop_adjust;
-			cop_adjust = cop_adjust + 1;
+			cop_adjust++;
 			curslot = Swap2Cars(curslot, newslot);
 		}
-		DAT_000d7c3c = 0;
+
+		Mission.CarTarget = NULL;
 		requestStationaryCivCar = 0;
-		if ((target->data[9] == 3) && ((target->data[10] & 1U) == 0)) {
-			local_30[0] = -1;
-			InitPlayer(_PLAYER_ARRAY_000d979c, car_data + curslot, '\x04', direction, (long(*)[4])&local_40,
-				uVar4 & 0xff, uVar5 & 0xff, local_30);
+
+		if ((target->data[9] == 3) && ((target->data[10] & 1U) == 0))
+		{
+			playerid = 0xff;
+
+			InitPlayer((_PLAYER *)(player + 1), car_data + curslot, 4, direction, (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
+
 			EnablePercentageBar(&DamageBar, target->data[0xd]);
-			NewLeadDelay = '\0';
+			NewLeadDelay = 0;
 		}
+
 		target->data[3] = car_data[curslot].hd.where.t[0];
-		lVar3 = car_data[curslot].hd.where.t[2];
 		target->data[6] = curslot;
 		target->data[1] = target->data[1] | 0x40000000;
-		target->data[4] = lVar3;
+		target->data[4] = car_data[curslot].hd.where.t[2];
+
 		car_data[curslot].inform = target->data + 1;
-		if ((uVar2 & 0x80000) != 0) {
+
+		if ((uVar2 & 0x80000) != 0)
+		{
 			car_data[curslot].totalDamage = 0xffff;
 			car_data[curslot].ap.damage[0] = 0xfff;
 			car_data[curslot].ap.damage[1] = 0xfff;
@@ -2961,15 +3004,16 @@ int MRCreateCar(_TARGET *target)
 			car_data[curslot].ap.damage[3] = 0xfff;
 			car_data[curslot].ap.damage[4] = 0xfff;
 			car_data[curslot].ap.damage[5] = 0xfff;
-			car_data[curslot].ap.needsDenting = '\x01';
+			car_data[curslot].ap.needsDenting = 1;
 		}
+
 		direction = 1;
-		if ((target->data[10] & 0x200000U) != 0) {
+
+		if ((target->data[10] & 0x200000U) != 0) 
 			gCarWithABerm = curslot;
-		}
 	}
+
 	return direction;
-	*/
 }
 
 
@@ -2988,15 +3032,11 @@ int MRCreateCar(_TARGET *target)
 	/* end block 2 */
 	// End Line: 9318
 
+// [D]
 void MRCancelCarRequest(_TARGET *target)
 {
-	UNIMPLEMENTED();
-	/*
-	if (DAT_000d7c3c == target) {
-		DAT_000d7c3c = (_TARGET *)0x0;
-	}
-	return;
-	*/
+	if (Mission.CarTarget == target)
+		Mission.CarTarget = NULL;
 }
 
 
@@ -3037,69 +3077,76 @@ void MRCancelCarRequest(_TARGET *target)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void PreProcessTargets(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	_TARGET *p_Var2;
-	int chase;
+	_TARGET *target;
+	int i;
 
-	chase = 0;
-	if (0 < MissionHeader->nCutscenes) {
-		do {
-			PreLoadInGameCutscene(chase);
-			chase = chase + 1;
-		} while (chase < MissionHeader->nCutscenes);
+	for (i = 0; i < MissionHeader->nCutscenes; i++)
+	{
+		PreLoadInGameCutscene(i);
 	}
-	chase = 0xf;
-	p_Var2 = MissionTargets;
+
+	i = 15;
+
+	target = MissionTargets;
 	do {
-		iVar1 = p_Var2->data[0];
-		if (iVar1 == 4) {
+		iVar1 = target->data[0];
+
+		if (iVar1 == 4) 
+		{
 		LAB_00063a48:
-			PlayerStartInfo8[1] = (STREAM_SOURCE *)(ReplayStreams + 1);
-			ReplayStreams[1].SourceType.type = '\x01';
-			ReplayStreams[1].SourceType.model = *(uchar *)(p_Var2->data + 7);
-			ReplayStreams[1].SourceType.palette = *(uchar *)(p_Var2->data + 8);
-			ReplayStreams[1].SourceType.controlType = '\x01';
+			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
+
+			ReplayStreams[1].SourceType.type = 1;
+			ReplayStreams[1].SourceType.model = target->data[7];
+			ReplayStreams[1].SourceType.palette = target->data[8];
+			ReplayStreams[1].SourceType.controlType = 1;
 			ReplayStreams[1].SourceType.flags = 0;
-			ReplayStreams[1].SourceType.rotation = *(ushort *)(p_Var2->data + 5);
-			ReplayStreams[1].SourceType.position.vx = p_Var2->data[3];
+			ReplayStreams[1].SourceType.rotation = target->data[5];
+			ReplayStreams[1].SourceType.position.vx = target->data[3];
 			ReplayStreams[1].SourceType.position.vy = 0;
-			ReplayStreams[1].SourceType.position.vz = p_Var2->data[4];
-			if ((p_Var2->data[9] & 3U) != 0) {
-				p_Var2->data[0xb] = -1;
-			}
-			p_Var2->data[6] = 1;
-			p_Var2->data[1] = p_Var2->data[1] | 0x40000000;
+			ReplayStreams[1].SourceType.position.vz = target->data[4];
+
+			if ((target->data[9] & 3U) != 0)
+				target->data[11] = -1;
+	
+			target->data[6] = 1;
+			target->data[1] |= 0x40000000;
 		}
-		else {
-			if (iVar1 == 2) {
-				if ((p_Var2->data[1] & 0x20U) != 0) goto LAB_00063a48;
-				if ((p_Var2->data[9] == 3) && ((p_Var2->data[10] & 1U) != 0)) {
-					PreLoadInGameCutscene(gRandomChase);
-				}
-			}
-			else {
-				if (iVar1 == 1) {
-					if ((p_Var2->data[1] & 0x30000U) == 0x30000) {
-						p_Var2->data[1] = p_Var2->data[1] | 0x102;
-					}
-					if ((p_Var2->data[1] & 0x100000U) != 0) {
-						p_Var2->data[10] = p_Var2->data[3];
-						p_Var2->data[0xb] = p_Var2->data[4];
-					}
-				}
+		else if (iVar1 == 2)
+		{
+			if ((target->data[1] & 0x20U) != 0) 
+				goto LAB_00063a48;
+
+			if ((target->data[9] == 3) && ((target->data[10] & 1U) != 0)) 
+			{
+				PreLoadInGameCutscene(gRandomChase);
 			}
 		}
-		chase = chase + -1;
-		p_Var2 = p_Var2 + 1;
-		if (chase < 0) {
+		else if (iVar1 == 1)
+		{
+			if ((target->data[1] & 0x30000U) == 0x30000)
+			{
+				target->data[1] |= 0x102;
+			}
+
+			if ((target->data[1] & 0x100000U) != 0) 
+			{
+				target->data[10] = target->data[3];
+				target->data[11] = target->data[4];
+			}
+		}
+
+		i--;
+		target++;
+
+		if (i < 0)
 			return;
-		}
+	
 	} while (true);
-	*/
 }
 
 
@@ -3205,144 +3252,170 @@ int Handle321Go(void)
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern int test42;	// why 42?
+
+// [D]
 int HandleGameOver(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
 	uint uVar2;
 	int iVar3;
-	int player;
+	int player_id;
 	uint uVar4;
-	int iVar5;
-	int iVar6;
-	byte *pbVar7;
 
-	if (DAT_000d7c0c != -1) {
+	_PLAYER* lp;
+	_CAR_DATA *cp;
+
+	int iVar6;
+
+	if (Mission.gameover_delay != -1) 
+	{
 		gStopPadReads = 1;
-		if (DAT_000d7c0c != 0) {
+
+		if (Mission.gameover_delay != 0)
+		{
 			gStopPadReads = 1;
-			DAT_000d7c0c = DAT_000d7c0c + -1;
+			Mission.gameover_delay--;
 			return 0;
 		}
-		if (DAT_000d7c12 == 0) {
-			if (DAT_000d7c14 == 0) {
-				if (DAT_000d7c10 == PAUSEMODE_COMPLETE) {
+
+		if (Mission.message_timer[0] == 0) 
+		{
+			if (Mission.message_timer[1] == 0) 
+			{
+				if (Mission.gameover_mode == PAUSEMODE_COMPLETE)
 					StoreEndData();
-				}
-				EnablePause(DAT_000d7c10);
+
+				EnablePause(Mission.gameover_mode);
 				return 1;
 			}
+
 			gStopPadReads = 1;
 			return 0;
 		}
+
 		gStopPadReads = 1;
 		return 0;
 	}
-	player = 0;
+
+	player_id = 0;
 	uVar2 = (uint)NumPlayers;
 	uVar4 = 0;
-	if (NumPlayers != 0) {
-		pbVar7 = &DAT_000d7c28;
-		iVar6 = 0;
-		iVar5 = 0;
+
+	if (NumPlayers != 0)
+	{
 		do {
-			if ((&player.playerType)[iVar5] == '\x01') {
-				if (((DAT_000d7c28 & 0x10) != 0) || (iVar3 = TannerStuckInCar(0), iVar3 != 0)) {
-					iVar3 = (int)(&player.playerCarId)[iVar5];
-					if (((&MaxPlayerDamage)[player] <= (int)(uint)car_data[iVar3].totalDamage) &&
-						((&player.dying)[iVar5] == '\0')) {
-						(&player.dying)[iVar5] = '\x01';
+			lp = &player[player_id];
+
+			if (lp->playerType == 1)
+			{
+				if (((Mission.timer[0].flags & 0x10) != 0) ||
+					(iVar3 = TannerStuckInCar(0), iVar3 != 0)) 
+				{
+					iVar3 = lp->playerCarId;
+
+					if (MaxPlayerDamage[player_id] <= car_data[iVar3].totalDamage && lp->dying == 0)
+					{
+						lp->dying = 1;
 					}
-					if (car_data[iVar3].hd.where.m[4] < 100) {
-						bVar1 = (&player.upsideDown)[iVar5] + 1;
-						(&player.upsideDown)[iVar5] = bVar1;
-						if ((0xb4 < bVar1) &&
-							(bVar1 = (&player.dying)[iVar5],
-								car_data[iVar3].totalDamage = *(ushort *)((int)&MaxPlayerDamage + iVar6),
-								bVar1 < 0x1e)) {
-							(&player.dying)[iVar5] = '\x1e';
+
+					if (car_data[iVar3].hd.where.m[1][1] < 100) 
+					{
+						lp->upsideDown++;
+
+						if (0xb4 < lp->upsideDown)
+						{
+							car_data[iVar3].totalDamage = MaxPlayerDamage[player_id];
+
+							if(lp->dying < 30)
+								lp->dying = 30;
 						}
 					}
-					else {
-						(&player.upsideDown)[iVar5] = '\0';
+					else 
+					{
+						lp->upsideDown = 0;
 					}
 				}
 			}
-			else {
-				if ((&player.playerType)[iVar5] == '\x02') {
-					test42 = GetSurfaceIndex((VECTOR *)((int)player.pos + iVar5));
-					if (((test42 == -0x1a) || (test42 == -0x17)) && ((&player.dying)[iVar5] == '\0')) {
-						if ((GameLevel == 3) && (gCurrentMissionNumber != 0x23)) {
+			else
+			{
+				if (lp->playerType == 2)
+				{
+					test42 = GetSurfaceIndex((VECTOR *)lp->pos);
+
+					if (((test42 == -26) || (test42 == -23)) &&(lp->dying == '\0'))
+					{
+						if ((GameLevel == 3) && (gCurrentMissionNumber != 0x23))
 							tannerDeathTimer = tannerDeathTimer + 1;
-						}
-						else {
+						else 
 							tannerDeathTimer = 0x40;
-						}
 					}
-					else {
+					else
 						tannerDeathTimer = 0;
-					}
 				}
 			}
-			if (tannerDeathTimer == 0x40) {
-				(&player.dying)[iVar5] = '\x01';
-			}
-			bVar1 = (&player.dying)[iVar5];
-			if (bVar1 != 0) {
-				if (gGotInStolenCar == 0) {
-					if ((*pbVar7 & 0x10) != 0) {
+			if (tannerDeathTimer == 64)
+				lp->dying = 1;
+
+			if (lp->dying != 0)
+			{
+				if (gGotInStolenCar == 0) 
+				{
+					if ((Mission.timer[player_id].flags & 0x10) != 0)
 						BombThePlayerToHellAndBack(gCarWithABerm);
-					}
-					if ((&player.playerType)[iVar5] == '\x02') {
-						SetPlayerMessage(player, MissionStrings + MissionHeader->msgDrowned, 2, 2);
-					}
-					else {
-						SetPlayerMessage(player, MissionStrings + MissionHeader->msgCarWrecked, 2, 2);
-					}
-					(&player.dying)[iVar5] = (&player.dying)[iVar5] + '\x01';
+
+					if (lp->playerType == 2) 
+						SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgDrowned, 2, 2);
+					else 
+						SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgCarWrecked, 2, 2);
+
+					lp->dying++;
 				}
-				bVar1 = (&player.dying)[iVar5];
 			}
-			if (0x28 < bVar1) {
+
+			if (0x28 < lp->dying)
 				uVar4 = uVar4 + 1;
-			}
-			pbVar7 = pbVar7 + 0xc;
-			iVar6 = iVar6 + 4;
-			uVar2 = (uint)NumPlayers;
-			player = player + 1;
-			iVar5 = iVar5 + 0x74;
-		} while (player < (int)uVar2);
+
+			player_id++;
+
+		} while (player_id < NumPlayers);
 	}
-	if (uVar4 == 0) {
+
+	if (uVar4 == 0)
 		return 0;
-	}
-	if (GameType == GAME_CHECKPOINT) {
+
+	if (GameType == GAME_CHECKPOINT) 
+	{
 	LAB_00063eb0:
-		if (NumPlayers != 1) {
-			if (uVar4 != uVar2) {
+		if (NumPlayers != 1)
+		{
+			if (uVar4 != uVar2) 
 				return 0;
-			}
+
 			goto LAB_00063ee4;
 		}
 	}
-	else {
-		if (GameType < GAME_TRAILBLAZER) {
-			if (GameType == GAME_TAKEADRIVE) goto LAB_00063eb0;
+	else 
+	{
+		if (GameType < GAME_TRAILBLAZER) 
+		{
+			if (GameType == GAME_TAKEADRIVE) 
+				goto LAB_00063eb0;
 		}
-		else {
-			if (GameType == GAME_SECRET) goto LAB_00063eb0;
+		else
+		{
+			if (GameType == GAME_SECRET) 
+				goto LAB_00063eb0;
 		}
 	}
-	player = TannerStuckInCar(0);
-	if (player == 0) {
+
+	player_id = TannerStuckInCar(0);
+
+	if (player_id == 0) 
 		return 0;
-	}
+
 LAB_00063ee4:
 	SetMissionOver(PAUSEMODE_GAMEOVER);
 	return 0;
-	*/
 }
 
 
@@ -3382,34 +3455,33 @@ LAB_00063ee4:
 	/* end block 5 */
 	// End Line: 9720
 
+// [D]
 void CompleteAllActiveTargets(int player)
 {
-	UNIMPLEMENTED();
-	/*
 	_TARGET *p_Var1;
 	int iVar2;
 	uint uVar3;
 	uint uVar4;
 
 	uVar4 = 0x800;
-	if (player == 0) {
+
+	if (player == 0) 
+	{
 		uVar4 = 1;
 		uVar3 = 2;
 	}
-	else {
-		uVar3 = 0x100;
-	}
-	iVar2 = 0xf;
+	else 
+		uVar3 = 256;
+
+	iVar2 = 15;
 	p_Var1 = MissionTargets;
 	do {
-		if (((p_Var1->data[0] < 4) && (0 < p_Var1->data[0])) && ((p_Var1->data[1] & uVar4) != 0)) {
-			p_Var1->data[1] = p_Var1->data[1] | uVar3;
-		}
-		iVar2 = iVar2 + -1;
-		p_Var1 = p_Var1 + 1;
+		if ((p_Var1->data[0] < 4) && (0 < p_Var1->data[0]) && (p_Var1->data[1] & uVar4) != 0) 
+			p_Var1->data[1] |= uVar3;
+
+		iVar2--;
+		p_Var1++;
 	} while (-1 < iVar2);
-	return;
-	*/
 }
 
 
@@ -3435,58 +3507,71 @@ void CompleteAllActiveTargets(int player)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetMissionComplete(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
-	switch (GameType) {
+	switch (GameType) 
+	{
 	case GAME_MISSION:
-		if ((DAT_000d7c28 & 0x10) != 0) {
-			DAT_000d7c28 = DAT_000d7c28 | 0x20;
+		if ((Mission.timer[0].flags & 0x10) != 0)
+		{
+			Mission.timer[0].flags = Mission.timer[0].flags | 0x20;
 			DetonatorTimer();
 			return;
 		}
-		if (gFurthestMission < gCurrentMissionNumber) {
+
+		if (gFurthestMission < gCurrentMissionNumber) 
+		{
 			gFurthestMission = gCurrentMissionNumber;
 		}
+
 	default:
 		SetMissionMessage(MissionStrings + MissionHeader->msgComplete, 3, 2);
 		break;
 	case GAME_CHECKPOINT:
 	case GAME_CAPTURETHEFLAG:
 	case GAME_SECRET:
-		if (NumPlayers < 2) {
+		if (NumPlayers < 2) 
+		{
 			SetMissionMessage(MissionStrings + MissionHeader->msgComplete, 3, 2);
 			break;
 		}
-		if (gPlayerScore.P2items <= gPlayerScore.items) {
-			if (gPlayerScore.P2items == gPlayerScore.items) {
-				SetPlayerMessage(0, s_Pareggio__00011824, 3, 2);
-				SetPlayerMessage(1, s_Pareggio__00011824, 3, 2);
+
+		if (gPlayerScore.P2items <= gPlayerScore.items)
+		{
+			if (gPlayerScore.P2items == gPlayerScore.items)
+			{
+				SetPlayerMessage(0, "Draw!", 3, 2);
+				SetPlayerMessage(1, "Draw!", 3, 2);
 				break;
 			}
+
 			goto LAB_000640bc;
 		}
+
 		SetPlayerMessage(0, MissionStrings + MissionHeader->msgDrowned, 3, 2);
 		iVar1 = MissionHeader->msgComplete;
+
 		goto LAB_000640ec;
 	case GAME_COPSANDROBBERS:
-		if (Player2DamageBar.position < Player2DamageBar.max) {
+		if (Player2DamageBar.position < Player2DamageBar.max)
+		{
 			SetPlayerMessage(0, MissionStrings + MissionHeader->msgDrowned, 3, 2);
 			iVar1 = MissionHeader->msgComplete;
 		}
-		else {
-		LAB_000640bc:
+		else 
+		{
+	LAB_000640bc:
 			SetPlayerMessage(0, MissionStrings + MissionHeader->msgComplete, 3, 2);
 			iVar1 = MissionHeader->msgDrowned;
 		}
 	LAB_000640ec:
 		SetPlayerMessage(1, MissionStrings + iVar1, 3, 2);
 	}
+
 	SetMissionOver(PAUSEMODE_COMPLETE);
-	return;*/
 }
 
 
@@ -3505,21 +3590,20 @@ void SetMissionComplete(void)
 	/* end block 2 */
 	// End Line: 9911
 
+// [D]
 void SetMissionFailed(FAIL_REASON reason)
 {
-	UNIMPLEMENTED();
-	/*
-	if (reason == FAILED_CnR_LOSTHIM) {
+	if (reason == FAILED_CnR_LOSTHIM) 
+	{
 		SetPlayerMessage(0, MissionStrings + MissionHeader->msgDrowned, 3, 2);
 		SetPlayerMessage(1, MissionStrings + MissionHeader->msgComplete, 3, 2);
 	}
-	else {
-		if ((reason < FAILED_MESSAGESET) && (reason == FAILED_OUTOFTIME)) {
-			SetMissionMessage(MissionStrings + MissionHeader->msgOutOfTime, 3, 2);
-		}
+	else if ((reason < FAILED_MESSAGESET) && (reason == FAILED_OUTOFTIME))
+	{
+		SetMissionMessage(MissionStrings + MissionHeader->msgOutOfTime, 3, 2);
 	}
+
 	SetMissionOver(PAUSEMODE_GAMEOVER);
-	return;*/
 }
 
 
@@ -3533,18 +3617,19 @@ void SetMissionFailed(FAIL_REASON reason)
 	/* end block 1 */
 	// End Line: 9951
 
+_CAR_DATA* gBombTargetVehicle = NULL;
+
+// [D]
 void SetMissionOver(PAUSEMODE mode)
 {
-	UNIMPLEMENTED();
-	/*
 	ReleaseInGameCutscene();
 	PauseMissionTimer(1);
-	gBombTargetVehicle = (_CAR_DATA *)0x0;
-	DAT_000d7c0c = 0x3c;
-	DAT_000d7c10 = mode;
-	DAT_000d7c40 = 0;
-	return;
-	*/
+
+	gBombTargetVehicle = NULL;
+
+	Mission.gameover_delay = 0x3c;
+	Mission.gameover_mode = mode;
+	Mission.ChaseTarget = NULL;
 }
 
 
@@ -3580,41 +3665,46 @@ void SetMissionOver(PAUSEMODE mode)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ActivateNextFlag(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	_TARGET *p_Var2;
+	_TARGET *target;
 	int iVar3;
 	int iVar4;
 
-	if (last_flag == -1) {
+	if (last_flag == -1)
 		last_flag = 0;
-	}
-	else {
-		MissionTargets[last_flag].data[1] = MissionTargets[last_flag].data[1] | 0x102;
-	}
+	else
+		MissionTargets[last_flag].data[1] |= 0x102;
+
 	iVar4 = 0;
 	iVar3 = last_flag;
-	while (true) {
+
+	while (true) 
+	{
 		iVar3 = iVar3 + 1;
 		iVar1 = iVar3;
-		if (iVar3 < 0) {
+
+		if (iVar3 < 0) 
+		{
 			iVar1 = iVar4 + last_flag + 0x10;
 		}
+
 		iVar1 = iVar3 + (iVar1 >> 4) * -0x10;
-		p_Var2 = MissionTargets + iVar1;
-		if ((p_Var2->data[0] == 1) && ((p_Var2->data[1] & 0x30000U) == 0x30000)) break;
-		iVar4 = iVar4 + 1;
-		if (0xf < iVar4) {
+		target = MissionTargets + iVar1;
+
+		if ((target->data[0] == 1) && ((target->data[1] & 0x30000U) == 0x30000))
+			break;
+
+		iVar4++;
+
+		if (0xf < iVar4) 
 			return;
-		}
 	}
-	p_Var2->data[1] = p_Var2->data[1] & 0xfffffefd;
+
+	target->data[1] = target->data[1] & 0xfffffefd;
 	last_flag = iVar1;
-	return;
-	*/
 }
 
 
@@ -3643,26 +3733,23 @@ void ActivateNextFlag(void)
 	/* end block 3 */
 	// End Line: 10071
 
+// [D]
 int CalcLapTime(int player, int time, int lap)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int *piVar2;
-	int iVar3;
+	int i;
+	int ptime;
 
-	iVar3 = 0;
-	if (0 < lap) {
-		piVar2 = &gLapTimes + player * 5;
+	ptime = 0;
+
+	if (0 < lap) 
+	{
 		do {
-			iVar1 = *piVar2;
-			piVar2 = piVar2 + 1;
-			lap = lap + -1;
-			iVar3 = iVar3 + iVar1;
+			ptime += gLapTimes[player][lap];
+			lap--;
 		} while (lap != 0);
 	}
-	return time - iVar3;*/
+
+	return time - ptime;
 }
 
 
@@ -3681,19 +3768,17 @@ int CalcLapTime(int player, int time, int lap)
 	/* end block 2 */
 	// End Line: 10089
 
+// [D]
 void SetCarToBeStolen(_TARGET *target, int player)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((target->data[10] & 0x800000U) != 0) {
+	if ((target->data[10] & 0x800000U) != 0)
 		MakePhantomCarEqualPlayerCar();
-	}
+
 	target->data[9] = 1;
-	target->data[10] = 0x30;
-	target->data[0xc] = 0;
-	SetPlayerMessage(player, DAT_000d7c4c, 2, 2);
-	return;
-	*/
+	target->data[10] = 48;
+	target->data[12] = 0;
+
+	SetPlayerMessage(player, Mission.StealMessage, 2, 2);
 }
 
 
@@ -3714,13 +3799,9 @@ void SetCarToBeStolen(_TARGET *target, int player)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void MakePhantomCarEqualPlayerCar(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if (player.playerType == '\x01') {
-		DAT_000d7c44 = (int)player.playerCarId;
-	}
-	return;
-	*/
+	if (player[0].playerType == 1)
+		Mission.PhantomCarId = player[0].playerCarId;
 }

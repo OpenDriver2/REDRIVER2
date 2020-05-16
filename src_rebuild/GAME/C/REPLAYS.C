@@ -9,6 +9,9 @@ int gOutOfTape = 0;
 
 REPLAY_PARAMETER_BLOCK *ReplayParameterPtr = NULL;
 
+REPLAY_STREAM ReplayStreams[8];
+int NumReplayStreams = 1;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitPadRecording()

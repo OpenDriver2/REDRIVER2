@@ -119,8 +119,6 @@ enum LevLumpType
 	LUMP_JUNCTIONS2_NEW		= 43,		// Only appear in release Driver2
 };
 
-REPLAY_STREAM ReplayStreams[8];
-
 int HitLeadCar = 0;
 int game_over = 0;
 int saved_counter = 0;

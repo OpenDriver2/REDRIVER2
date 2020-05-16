@@ -1,6 +1,8 @@
 #ifndef SCORES_H
 #define SCORES_H
 
+extern SCORE_TABLES ScoreTables;
+extern PLAYER_SCORE gPlayerScore;
 
 extern void InitialiseScoreTables(); // 0x00074EC0
 

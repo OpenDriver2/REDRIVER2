@@ -34,8 +34,8 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-struct SCORE_TABLES ScoreTables;
-struct PLAYER_SCORE gPlayerScore;
+SCORE_TABLES ScoreTables;
+PLAYER_SCORE gPlayerScore;
 
 void InitialiseScoreTables(void)
 {

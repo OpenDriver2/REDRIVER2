@@ -4,6 +4,9 @@
 extern int gOutOfTape;
 extern REPLAY_PARAMETER_BLOCK *ReplayParameterPtr;
 
+extern REPLAY_STREAM ReplayStreams[8];
+extern int NumReplayStreams;
+
 extern void InitPadRecording(); // 0x0001A09C
 
 extern int SaveReplayToBuffer(char *buffer); // 0x0001A234
