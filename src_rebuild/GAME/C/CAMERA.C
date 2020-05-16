@@ -721,10 +721,10 @@ LAB_000201cc:
 	(lp->cameraPos).vz = basePos[2] + (iVar8 >> 0xc);
 
 	(lp->cameraPos).vy = basePos[1];
+	iVar3 = MapHeight(&lp->cameraPos);
 	(lp->cameraPos).vy = iVar9 - basePos[1];
 
-	iVar3 = MapHeight(&lp->cameraPos);
-	iVar8 = (iVar9 - iVar3) + -100;
+	iVar8 = (iVar9 - iVar3) -100;
 	iVar9 = MapHeight((VECTOR *)basePos);
 
 	if (iVar8 < (lp->cameraPos).vy)
@@ -1163,15 +1163,12 @@ int OK_To_Zoom(void)
 	/* end block 3 */
 	// End Line: 2953
 
+// [D]
 void SetBasePos(VECTOR *pVec)
 {
-	UNIMPLEMENTED();
-	/*
 	basePos[0] = pVec->vx;
 	basePos[1] = pVec->vy;
 	basePos[2] = pVec->vz;
-	return;
-	*/
 }
 
 
