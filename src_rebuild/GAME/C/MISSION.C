@@ -1752,61 +1752,56 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	/* end block 3 */
 	// End Line: 7384
 
+// [D]
 int MROperator(MR_THREAD *thread, ulong op)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	bool bVar1;
-	long lVar2;
-	long lVar3;
-	int iVar4;
-	long value;
+    long val1;
+    long val2;
+    long result;
+    
+    result = 0;
 
-	value = 0;
-	lVar2 = MRGetParam(thread);
-	lVar3 = MRGetParam(thread);
-	switch (op) {
-	case 0x3000003:
-		if (lVar2 == 0) break;
-		goto LAB_0006451c;
-	case 0x3000004:
-		if (lVar2 != 0) goto LAB_00064534;
-	LAB_0006451c:
-		if (lVar3 != 0) {
-			value = 1;
-		}
-		break;
-	case 0x3000005:
-		if (lVar2 == lVar3) break;
-	LAB_00064534:
-		value = 1;
-		break;
-	case 0x3000006:
-		if (lVar2 == lVar3) {
-			value = 1;
-		}
-		break;
-	case 0x3000007:
-		bVar1 = lVar3 < lVar2;
-		goto LAB_00064558;
-	case 0x3000008:
-		bVar1 = lVar2 < lVar3;
-	LAB_00064558:
-		if (bVar1) {
-			value = 1;
-		}
-		break;
-	case 0x3000009:
-		value = lVar2 + lVar3;
-		break;
-	default:
-		iVar4 = MRStopThread(thread);
-		return iVar4;
-	}
-	MRPush(thread, value);
-	return 1;
-	*/
+    val1 = MRGetParam(thread);
+    val2 = MRGetParam(thread);
+
+    switch(op) 
+	{
+		case 0x3000003: // AND
+			if (val1 != 0 && val2 != 0)
+				result = 1;
+			break;
+		case 0x3000004:	// OR
+			if (val1 != 0 || val2 != 0)
+			{
+				result = 1;
+				break;
+			}
+			break;
+		case 0x3000005:	// NEQ
+			if (val1 != val2)
+				result = 1;
+			break;
+		case 0x3000006:	// EQ
+			if (val1 == val2)
+				result = 1;
+			break;
+		case 0x3000007: // GT
+			if(val1 > val2)
+				result = 1;
+			break;
+		case 0x3000008:	// LT
+			if (val1 < val2)
+				result = 1;
+			break;
+		case 0x3000009: // ADD
+			result = val1 + val2;
+			break;
+		default:
+			return MRStopThread(thread);
+    }
+
+    MRPush(thread, result);
+    return 1;
 }
 
 
