@@ -18690,12 +18690,18 @@ struct _sdPlane // hashcode: 0x873C357E (dec: -2026097282)
 	int d; // size=0, offset=8
 };
 
-struct _sdNode // hashcode: 0xD508740E (dec: -720866290)
+struct sdNodePACKED
 {
-	int angle; // size=11, offset=0
-	int dist; // size=12, offset=11
-	int offset; // size=8, offset=23
-	int node; // size=1, offset=31
+	int angle : 11; // offset=0 bit
+	int dist : 12; // offset=11 bit
+	int offset : 8; // offset=23 bit
+	int node : 1; // offset=31 bit
+};
+
+union _sdNode // hashcode: 0xD508740E (dec: -720866290)
+{
+	int value;
+	sdNodePACKED n;
 };
 
 struct WHEEL // hashcode: 0x76B6CC6D (dec: 1991691373)
@@ -19069,8 +19075,6 @@ typedef struct DRIVER2_JUNCTION DRIVER2_JUNCTION;
 typedef struct DRIVER2_CURVE DRIVER2_CURVE;
 
 typedef struct _sdPlane sdPlane;
-
-typedef struct _sdNode sdNode;
 
 typedef struct CIV_ROUTE_ENTRY CIV_ROUTE_ENTRY;
 
