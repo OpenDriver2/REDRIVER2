@@ -1245,7 +1245,7 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 		} while (iVar13 < (int)((uint)model->num_vertices + 3));
 	}
 
-	if (0 < scratchPad_zbuff[10])
+	if (0 < scratchPad_zbuff[16])
 	{
 		pbVar14 = (unsigned char *)model->poly_block;
 		uVar17 = skyred;
