@@ -495,7 +495,7 @@ void LoadMission(int missionnum)
 		for (int i = 0; i < NumPlayers; i++)
 		{
 			Mission.timer[i].flags = bVar7;
-			Mission.timer[i].count = (int)MissionHeader->timer * 3000;
+			Mission.timer[i].count = MissionHeader->timer * 3000;
 		}
 	}
 
@@ -1701,46 +1701,24 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		gWeather = 1;
 		return 1;
 	}
+	else if (cmd == 0x1000040)
+	{
+		Mission.timer[thread->player].flags |= 2;
+	}
+	else  if (cmd == 0x1000042)
+	{
+		MissionHeader->timerFlags = MissionHeader->timerFlags | 0x1000;
+	}
+	else if (cmd == 0x1000041)
+	{
+		Mission.timer[thread->player].flags = Mission.timer[thread->player].flags & 0xfd;
+		return 1;
+	}
 
 	// below is fucked code
 	if (cmd < 0x1000052) 
 	{
-		if (cmd < 0x1000022) 
-		{
 
-		}
-		else 
-		{
-			if (cmd == 0x1000040) 
-			{
-				Mission.timer[thread->player].flags |= 2;
-			}
-			else 
-			{
-				if (cmd < 0x1000041) 
-				{
-
-				}
-				else
-				{
-					if (cmd == 0x1000042)
-					{
-						MissionHeader->timerFlags = MissionHeader->timerFlags | 0x1000;
-					}
-					else 
-					{
-						if (0x1000041 < cmd) 
-						{
-							return 1;
-						}
-
-						printWarning("timer flags remove cmd opcode: %x\n", cmd);
-
-						Mission.timer[thread->player].flags = Mission.timer[thread->player].flags & 0xfd;
-					}
-				}
-			}
-		}
 	}
 	else 
 	{
@@ -2199,32 +2177,31 @@ long MRGetParam(MR_THREAD *thread)
 	/* end block 3 */
 	// End Line: 7778
 
+// [D]
 long MRGetVariable(MR_THREAD *thread, ulong var)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	if (var == 0x2000101) {
+	if (var == 0x2000101) 
+	{
 		return gCopMaxPowerScale;
 	}
-	if (var < 0x2000102) {
-		if (var == 0x2000008) {
-			return (int)(&DAT_000d7c2c)[(uint)thread->player * 3] / 3000;
-		}
-		if (var == 0x2000100) {
-			return gCopDesiredSpeedScale;
-		}
+	else if (var == 0x2000008)
+	{
+		return Mission.timer[thread->player].count / 3000;
 	}
-	else {
-		if (var == 0x2000102) {
-			return gMinimumCops;
-		}
-		if (var == 0x2000103) {
-			return maxCopCars;
-		}
+	else if (var == 0x2000100)
+	{
+		return gCopDesiredSpeedScale;
 	}
+	else if (var == 0x2000102)
+	{
+		return gMinimumCops;
+	}
+	else if (var == 0x2000103)
+	{
+		return maxCopCars;
+	}
+
 	return 0;
-	*/
 }
 
 
@@ -2243,51 +2220,55 @@ long MRGetVariable(MR_THREAD *thread, ulong var)
 	/* end block 2 */
 	// End Line: 7830
 
+// [D]
 void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 {
-	UNIMPLEMENTED();
-	return;
-	/*
-	if (var == 0x2000101) {
+	if (var == 0x2000101) 
+	{
 		gCopMaxPowerScale = value;
 		return;
 	}
-	if (var < 0x2000102) {
-		if (var == 0x2000008) {
-			(&DAT_000d7c2c)[(uint)thread->player * 3] = value * 3000;
-			return;
-		}
-		if (var != 0x2000100) {
-			return;
-		}
+	else if (var == 0x2000008)
+	{
+		Mission.timer[thread->player].count = value * 3000;
+		return;
+	}
+	else if (var == 0x2000100)
+	{
 		gCopDesiredSpeedScale = value;
 		return;
 	}
-	if (var == 0x2000102) {
+	else if (var == 0x2000102)
+	{
 		gMinimumCops = value;
 		return;
 	}
-	if (var != 0x2000103) {
-		return;
-	}
-	if (value == 4) {
-		if (GameType == GAME_SURVIVAL) {
-			gDontPingInCops = 0;
-			gBatterPlayer = 1;
-			goto LAB_00064984;
+	else if (var == 0x2000103)
+	{
+		if (value == 4)
+		{
+			if (GameType == GAME_SURVIVAL)
+			{
+				gDontPingInCops = 0;
+				gBatterPlayer = 1;
+			}
+			else
+			{
+				gDontPingInCops = 1;
+				gBatterPlayer = 0;
+			}
 		}
-		gDontPingInCops = 1;
+		else
+		{
+			gDontPingInCops = 0;
+			gBatterPlayer = 0;
+		}
+
+		if (0 < value)
+			CopsAllowed = 1;
+
+		maxCopCars = value;
 	}
-	else {
-		gDontPingInCops = 0;
-	}
-	gBatterPlayer = 0;
-LAB_00064984:
-	if (0 < value) {
-		CopsAllowed = 1;
-	}
-	maxCopCars = value;
-	return;*/
 }
 
 
@@ -3524,8 +3505,7 @@ int HandleGameOver(void)
 
 			if (lp->playerType == 1)
 			{
-				if (((Mission.timer[0].flags & 0x10) != 0) ||
-					(iVar3 = TannerStuckInCar(0), iVar3 != 0)) 
+				if ((Mission.timer[0].flags & 0x10) != 0 || TannerStuckInCar(0) != 0)
 				{
 					iVar3 = lp->playerCarId;
 
