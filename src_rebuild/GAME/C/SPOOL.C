@@ -1785,7 +1785,7 @@ void LoadInAreaModels(int area)
 		// set old model ids to dummy
 		for (int i = 0; i < nmodels; i++)
 		{
-			int model_number = newmodels[i];
+			int model_number = new_model_numbers[i];
 			modelpointers[model_number] = &dummyModel;
 		}
 
