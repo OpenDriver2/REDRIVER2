@@ -534,47 +534,45 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	/* end block 3 */
 	// End Line: 2100
 
+// [D]
 ulong Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	short sVar1;
-	uint uVar2;
-	int iVar3;
-	int iVar4;
-	ulong uVar5;
+	int iVar2;
+	uint uVar3;
+	long y;
+	int x;
+	ulong uVar4;
 
-	iVar4 = pPoint1->vx - pPoint2->vx;
-	if (iVar4 < 0) {
-		iVar4 = pPoint2->vx - pPoint1->vx;
+	x = pPoint1->vx - pPoint2->vx;
+
+	if (x < 0)
+		x = pPoint2->vx - pPoint1->vx;
+
+	y = pPoint1->vz - pPoint2->vz;
+
+	if (y < 0) 
+		y = pPoint2->vz - pPoint1->vz;
+
+	uVar3 = ratan2(y, x);
+	if ((uVar3 & 0x7ff) - 0x200 < 0x401)
+	{
+		sVar1 = rcossin_tbl[(uVar3 & 0xfff) * 2];
+		x = y;
 	}
-	iVar3 = pPoint1->vz - pPoint2->vz;
-	if (iVar3 < 0) {
-		iVar3 = pPoint2->vz - pPoint1->vz;
+	else 
+	{
+		sVar1 = rcossin_tbl[(uVar3 & 0xfff) * 2 + 1];
 	}
-	uVar2 = ratan2();
-	if ((uVar2 & 0x7ff) - 0x200 < 0x401) {
-		sVar1 = rcossin_tbl[(uVar2 & 0xfff) * 2];
-		iVar4 = iVar3;
-	}
-	else {
-		sVar1 = rcossin_tbl[(uVar2 & 0xfff) * 2 + 1];
-	}
-	iVar3 = (int)sVar1;
-	if (iVar4 < 0x80000) {
-		uVar5 = (iVar4 << 0xc) / iVar3;
-		if (iVar3 == 0) {
-			trap(7);
-		}
-	}
-	else {
-		if (iVar3 == 0) {
-			trap(7);
-		}
-		uVar5 = (iVar4 << 9) / iVar3 << 3;
-	}
-	return uVar5;*/
+
+	iVar2 = sVar1;
+
+	if (x < 0x80000) 
+		uVar4 = (x << 0xc) / iVar2;
+	else 
+		uVar4 = (x << 9) / iVar2 << 3;
+
+	return uVar4;
 }
 
 
