@@ -122,7 +122,7 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 
 		_pg.primptr = (unsigned char*)current->primptr;
 		_pg.intensity = 0;
-		_pg.pciv_clut = (unsigned short *)civ_clut + 0xc0;
+		_pg.pciv_clut = (unsigned short *)&civ_clut[1];// +0xc0; // [A]
 		_pg.damageLevel = (unsigned char *)gTempCarUVPtr;
 
 		_pg.ot = (OTTYPE *)(current->ot + 0x1c);
@@ -2257,7 +2257,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									iVar12 = iVar11 + 1;
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
 
-									((ushort*)civ_clut)[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+									civ_clut[cVar6][pbVar9[2]][0] = texture_cluts[pbVar9[1]][pbVar9[2]]; // [A]
+									//((ushort*)civ_clut)[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+									
 									pCVar10->vindices = pbVar9[4] | (pbVar9[5] | pbVar9[6] << 8) << 8;
 									
 									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] | ((uint)pbVar9[9] | (uint)pbVar9[10] << 8) << 8;
@@ -2276,7 +2278,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
 									iVar8 = cVar6 * 0x180;
 
-									*((ushort*)civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6]) = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
+									civ_clut[cVar6][pbVar9[2]][0] = texture_cluts[pbVar9[1]][pbVar9[2]]; // [A]
+
+									//*((ushort*)civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6]) = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
 
 									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
 

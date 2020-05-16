@@ -263,7 +263,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	local_28.h = 0x100;
 
 	unpackTexture(_other_buffer, (char*)puVar2);
-	LoadImage(&local_28, (u_long *)&_other_buffer);
+	LoadImage(&local_28, (u_long *)_other_buffer);
 
 	uVar1 = GetTPage(0, 0, (int)tpage->x, (int)tpage->y);
 	texture_pages[tpage2send] = uVar1;
@@ -739,9 +739,9 @@ void LoadPermanentTPages(int *sector)
 	}
 
 #ifdef PSX
-	loadsectors(mallocptr, *sector, nsectors_00);
+	loadsectors(tpageaddress, *sector, nsectors_00);
 #else
-	loadsectorsPC(g_CurrentLevelFileName, mallocptr, *sector, nsectors_00);
+	loadsectorsPC(g_CurrentLevelFileName, tpageaddress, *sector, nsectors_00);
 #endif // PSX
 
 	*sector += nsectors_00;

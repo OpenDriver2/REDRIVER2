@@ -520,7 +520,6 @@ void CloseShutters(int speed, int width, int height)
 
 	} while (!done);
 
-	// [A] causes crash
 	ClearOTagR((u_long*)current->ot, 0x1080);
 	ClearOTagR((u_long*)last->ot, 0x1080);
 

@@ -1793,20 +1793,21 @@ void SetFEDrawMode(void)
 	SetDefDrawEnv(&MPBuff[0][1].draw, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
 	SetDefDispEnv(&MPBuff[0][1].disp, (int)draw_mode.x1, (int)draw_mode.y1, 0x280, 0x200);
 
-	MPBuff[0][0].draw.isbg = '\0';
-	MPBuff[0][0].disp.isinter = '\x01';
-	MPBuff[0][0].draw.dfe = '\x01';
+	MPBuff[0][0].draw.isbg = 0;
+	MPBuff[0][0].disp.isinter = 1;
+	MPBuff[0][0].draw.dfe = 1;
 	MPBuff[0][0].disp.screen.h = 256;
-	MPBuff[0][0].primtab = _tempPrimTab1;
-	MPBuff[0][0].primptr = _tempPrimTab1;
-	MPBuff[0][0].ot = _tempOT1;
-	MPBuff[0][1].draw.isbg = '\0';
-	MPBuff[0][1].disp.isinter = '\x01';
-	MPBuff[0][1].draw.dfe = '\x01';
+	MPBuff[0][0].primtab = _primTab1;
+	MPBuff[0][0].primptr = _primTab1;
+	MPBuff[0][0].ot = _OT1;
+
+	MPBuff[0][1].draw.isbg = 0;
+	MPBuff[0][1].disp.isinter = 1;
+	MPBuff[0][1].draw.dfe = 1;
 	MPBuff[0][1].disp.screen.h = 256;
-	MPBuff[0][1].primtab = _tempPrimTab2;
-	MPBuff[0][1].primptr = _tempPrimTab2;
-	MPBuff[0][1].ot = _tempOT2;
+	MPBuff[0][1].primtab = _primTab2;
+	MPBuff[0][1].primptr = _primTab2;
+	MPBuff[0][1].ot = _OT2;
 
 	last = &MPBuff[0][1];
 	current = &MPBuff[0][0];

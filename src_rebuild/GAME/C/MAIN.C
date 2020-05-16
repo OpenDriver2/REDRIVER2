@@ -696,8 +696,6 @@ int gLoadedMotionCapture = 0;
 int FrAng = 0;
 int wetness = 0;
 
-extern char* mallocDebugMark;
-
 extern SPEECH_QUEUE gSpeechQueue;
 
 // [D]
@@ -719,9 +717,14 @@ void GameInit(void)
 #ifdef PSX
 		mallocptr = 0x137400;
 #else
+
+#ifdef USE_CRT_MALLOC
+		sys_freeall();
+		mallocptr_start = D_MALLOC(0x200000);
+#else
+
+#endif // USE_CRT_MALLOC
 		mallocptr = (char*)mallocptr_start;
-		*((int*)mallocDebugMark) = 0x1f100ded;
-		*((int*)mallocDebugMark+1) = 0x12345678;
 #endif // PSX
 
 		MALLOC_BEGIN();

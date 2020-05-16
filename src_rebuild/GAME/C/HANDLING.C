@@ -2060,7 +2060,7 @@ void CheckCarToCarCollisions(void)
 
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-#if 0
+#if 1
 	extern MATRIX camera_matrix;
 
 	// [A]
@@ -2167,13 +2167,17 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			iVar7 = 0;
 			use_analogue = '\x01';
 		}
-		if (-1 < iVar3) {
+		if (-1 < iVar3)
+		{
 			iVar4 = CarHasSiren(cp->ap.model);
 			if (iVar4 == 0) {
 				bVar5 = (pad >> 3) & 1;
 			}
-			else {
-				if (((cp->lastPad & 8U) != 0) || ((pad & 8) == 0)) goto LAB_00055c58;
+			else 
+			{
+				if (((cp->lastPad & 8U) != 0) || ((pad & 8) == 0)) 
+					goto LAB_00055c58;
+
 				bVar5 = player[iVar3].horn.on ^ 8;
 			}
 			player[iVar3].horn.on = bVar5;

@@ -168,7 +168,7 @@ void FadeInHiresScreen(char *filename)
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
-	LoadfileSeg(filename, _overlay_buffer, 20, sizeof(_overlay_buffer));
+	LoadfileSeg(filename, _overlay_buffer, 20, 0x4ff80);
 	LoadClut((u_long*)_overlay_buffer, 640, 511);
 
 	DrawSync(0);

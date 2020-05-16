@@ -1,14 +1,34 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-extern char _overlay_buffer[0x50000];		// 0x1C0000
-extern char _frontend_buffer[0x50000];		// 0xFB400
-extern char  _other_buffer[0x50000];		// 0xF3000
+extern char* _overlay_buffer;		// 0x1C0000
+extern char* _frontend_buffer;		// 0xFB400
+extern char* _other_buffer;			// 0xF3000
+
+extern OTTYPE* _OT1;				// 0xF3000
+extern OTTYPE* _OT2;				// 0xF7200
+
+extern char* _primTab1;				// 0xFB400
+extern char* _primTab2;				// 0x119400
 
 extern const char* mallocptr_start;
 
 extern char* mallocptr;
+
+#ifdef USE_CRT_MALLOC
+
+extern char* sys_malloc(int size, char* funcname, int line);
+extern void sys_freeall();
+
+#ifdef _DEBUG
+#define D_MALLOC(size)	sys_malloc(size, __FUNCTION__, __LINE__)
+#else
+#define D_MALLOC(size)	sys_malloc(size, NULL, 0)
+#endif
+
+#else
 #define D_MALLOC(size)	mallocptr; mallocptr += (size)
+#endif
 
 #define MALLOC_BEGIN() \
 	{ \
@@ -43,12 +63,6 @@ extern DB* current;
 
 #define OTLEN	13
 #define	OTSIZE	(1<<OTLEN)		/* ordering table size */
-
-extern OTTYPE _tempOT1[OTSIZE];
-extern OTTYPE _tempOT2[OTSIZE];
-
-extern char _tempPrimTab1[0x1a180];		// 0xFB400
-extern char _tempPrimTab2[0x1a180];		// 0x119400
 
 #define CITYLUMP_DATA1		0
 #define CITYLUMP_TPAGE		1

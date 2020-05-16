@@ -221,7 +221,7 @@ void InitialiseMissionDefaults(void)
 		Mission.message_string[i] = NULL;
 	}
 
-	Driver2TempJunctionsPtr = (ulong *)&_overlay_buffer;
+	Driver2TempJunctionsPtr = (ulong *)_overlay_buffer;
 	NumTempJunctions = 0;
 	gPlayerWithTheFlag = -1;
 	last_flag = -1;

@@ -18,16 +18,51 @@
 
 #include <string.h>
 
-char _overlay_buffer[0x50000];		// 0x1C0000
-char _frontend_buffer[0x50000];		// 0xFB400
-char _other_buffer[0x50000];		// 0xF3000
+// Initialized in redriver2_main
+char*	_overlay_buffer = NULL;		// 0x1C0000
+char*	_frontend_buffer = NULL;	// 0xFB400
+char*	_other_buffer = NULL;		// 0xF3000
+OTTYPE*	_OT1 = NULL;				// 0xF3000
+OTTYPE*	_OT2 = NULL;				// 0xF7200
+char*	_primTab1 = NULL;			// 0xFB400
+char*	_primTab2 = NULL;			// 0x119400
 
-#define DEBUG_MARK_SIZE (sizeof(int)*2)
-char g_allocatedMem[0x200000 + DEBUG_MARK_SIZE];	// 0x137400 (_ramsize). TODO: use real malloc
-char* mallocDebugMark = g_allocatedMem + 0x200000;
+#ifdef USE_CRT_MALLOC
+
+char* mallocptr = NULL;
+const char* mallocptr_start = NULL;
+
+void* g_dynamicAllocs[1024] = { 0 };
+int g_numDynamicAllocs = 0;
+
+char* sys_malloc(int size, char* funcname, int line)
+{
+#ifdef _DEBUG
+	printWarning("CRT malloc(%d) in %s, line %d\n", size, funcname, __LINE__);
+#endif // _DEBUG
+
+	void* ptr = malloc(size);
+	g_dynamicAllocs[g_numDynamicAllocs++] = ptr;
+
+	return (char*)ptr;
+}
+
+void sys_freeall()
+{
+	for (int i = 0; i < g_numDynamicAllocs; i++)
+	{
+		free(g_dynamicAllocs[i]);
+		g_dynamicAllocs[i] = NULL;
+	}
+	g_numDynamicAllocs = 0;
+}
+#else
+
+char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc
 char* mallocptr = g_allocatedMem;
-
 const char* mallocptr_start = g_allocatedMem;
+
+#endif
 
 int leadAIRequired = 0;
 int leadAILoaded = 0;
@@ -59,12 +94,6 @@ DRAW_MODE draw_mode_ntsc =
 DB MPBuff[2][2];
 DB* last;
 DB* current;
-
-OTTYPE _tempOT1[OTSIZE];		// 0xF3000
-OTTYPE _tempOT2[OTSIZE];		// 0xF7200
-
-char _tempPrimTab1[0x1a180];	// 0xFB400
-char _tempPrimTab2[0x1a180];	// 0x119400
 
 static CITYTYPE lasttype = (CITYTYPE)-1;
 static int lastcity = -1;
@@ -1221,13 +1250,13 @@ void SetupDrawBufferData(int num_players)
 
 			if (toggle)
 			{
-				otpt = (u_long*)_tempOT2;
-				primpt = PRIMpt = (unsigned char*)_tempPrimTab2;
+				otpt = (u_long*)_OT2;
+				primpt = PRIMpt = (unsigned char*)_primTab2;
 			}
 			else
 			{
-				otpt = (u_long*)_tempOT1;
-				primpt = PRIMpt = (unsigned char*)_tempPrimTab1;
+				otpt = (u_long*)_OT1;
+				primpt = PRIMpt = (unsigned char*)_primTab1;
 			}
 
 			toggle ^= 1;

@@ -1,8 +1,12 @@
 ﻿// redriver2_psxpc.cpp
 //
 
-
+#include "THISDUST.H"
 #include "GAME/C/MAIN.H"
+#include "GAME/C/SYSTEM.H"
+
+
+
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
 
@@ -232,12 +236,40 @@ void GameDebugKeys(int nKey, bool down)
 	}
 }
 
+#ifndef USE_CRT_MALLOC
+char g_Overlay_buffer[0x50000];		// 0x1C0000
+char g_Frontend_buffer[0x50000];	// 0xFB400
+char g_Other_buffer[0x50000];		// 0xF3000
+OTTYPE g_OT1[OTSIZE];				// 0xF3000
+OTTYPE g_OT2[OTSIZE];				// 0xF7200
+char g_PrimTab1[0x1a180];			// 0xFB400
+char g_PrimTab2[0x1a180];			// 0x119400
+#endif
+
 int main()
 {
+#ifdef USE_CRT_MALLOC
+	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
+	_frontend_buffer = (char*)malloc(0x50000);			// 0xFB400
+	_other_buffer = (char*)malloc(0x50000);				// 0xF3000
+	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000
+	_OT2 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF7200
+	_primTab1 = (char*)malloc(0x1a180);					// 0xFB400
+	_primTab2 = (char*)malloc(0x1a180);					// 0x119400
+#else
+	_overlay_buffer = g_Overlay_buffer;		// 0x1C0000
+	_frontend_buffer = g_Frontend_buffer;	// 0xFB400
+	_other_buffer = g_Other_buffer;			// 0xF3000
+	_OT1 = g_OT1;							// 0xF3000
+	_OT2 = g_OT2;							// 0xF7200
+	_primTab1 = g_PrimTab1;					// 0xFB400
+	_primTab2 = g_PrimTab2;					// 0x119400
+#endif
+
 	//g_texturelessMode = 1;
 	//g_wireframeMode = 1;
 	gameDebugKeys = GameDebugKeys;
-	gDrawDistance = 1300;		// best distance
+	gDrawDistance = 600;					// best distance
 
 	GPU_printf = printf;
 
