@@ -871,31 +871,34 @@ LAB_000615e0:
 	/* end block 2 */
 	// End Line: 4466
 
+// [D]
 void RegisterChaseHit(int car1, int car2)
 {
-	UNIMPLEMENTED();
-	/*
-	int player;
+	int player_id;
 
-	if ((DAT_000d7c40 != 0) && (DAT_000d7c48 == 0)) {
-		if (gPlayerWithTheFlag == -1) {
-			if ((car1 == *(int *)(DAT_000d7c40 + 0x18)) || (car2 == *(int *)(DAT_000d7c40 + 0x18))) {
-				*(int *)(DAT_000d7c40 + 0x34) = *(int *)(DAT_000d7c40 + 0x34) + -1;
-				DAT_000d7c48 = 0x14;
+	if (Mission.ChaseTarget && Mission.ChaseHitDelay == 0) 
+	{
+		if (gPlayerWithTheFlag == -1) 
+		{
+			if (car1 == Mission.ChaseTarget->data[6] || car2 == Mission.ChaseTarget->data[6]) 
+			{
+				(Mission.ChaseTarget)->data[0xd] = (Mission.ChaseTarget)->data[0xd] + -1;
+				Mission.ChaseHitDelay = 0x14;
 				DamageBar.position = DamageBar.position + 1;
 			}
 		}
-		else {
-			player = 1 - gPlayerWithTheFlag;
-			gPlayerWithTheFlag = player;
-			(&player)[player].targetCarId = -1;
-			DAT_000d7c48 = 0x14;
-			(&player)[1 - player].targetCarId = (char)gPlayerWithTheFlag;
-			SetPlayerMessage(player, s_Ce_l_hai_fatta__00011808, 2, 1);
+		else 
+		{
+			player_id = 1 - gPlayerWithTheFlag;
+			gPlayerWithTheFlag = player_id;
+
+			player[player_id].targetCarId = -1;
+			Mission.ChaseHitDelay = 20;
+			player[1 - player_id].targetCarId = gPlayerWithTheFlag;
+
+			SetPlayerMessage(player_id, "You got the flag!",2,1);
 		}
 	}
-	return;
-	*/
 }
 
 

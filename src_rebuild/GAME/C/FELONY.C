@@ -1,6 +1,6 @@
 #include "THISDUST.H"
 #include "FELONY.H"
-
+#include "STRINGS.H"
 
 short initialOccurrenceDelay[12] = { 0x18, 0, 0, 0, 0, 0, 0, 0, 0x18, 0, 0x18, 0 };
 short initialReccurrenceDelay[12] = { 0x80, 0, 0x80, 0x40, 0x40, 0x20, 0x20, 0, 0x80, 0x100 };
@@ -22,6 +22,13 @@ FELONY_VALUE initialFelonyValue[12] =
 };
 
 FELONY_DATA felonyData;
+
+int FelonyIncreaseTime = 0;
+int FelonyDecreaseTime = 0;
+
+int FelonyIncreaseTimer = 0;
+int FelonyDecreaseTimer = 0;
+
 
 // decompiled code
 // original method signature: 
@@ -52,12 +59,14 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 	FELONY_DELAY *pFVar1;
 
 	pFVar1 = pFelonyDelay + count;
-	if (pFelonyDelay < pFVar1) {
+
+	if (pFelonyDelay < pFVar1)
+	{
 		do {
 			pFelonyDelay->current = 0;
-			pFelonyDelay->maximum = *pMaximum;
-			pFelonyDelay = pFelonyDelay + 1;
-			pMaximum = pMaximum + 1;
+			pFelonyDelay->maximum = *pMaximum++;
+
+			pFelonyDelay++;
 		} while (pFelonyDelay < pFVar1);
 	}
 	return;
@@ -97,23 +106,16 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 	/* end block 3 */
 	// End Line: 1374
 
+// [D]
 void InitFelonyData(FELONY_DATA *pFelonyData)
 {
-	UNIMPLEMENTED();
-	/*
 	FELONY_VALUE *pFVar1;
 	FELONY_VALUE *pFVar2;
 
-	InitFelonyDelayArray((FELONY_DELAY *)pFelonyData, initialOccurrenceDelay, 0xc);
-	InitFelonyDelayArray(pFelonyData->reoccurrenceDelay, initialReccurrenceDelay, 0xc);
-	pFVar1 = &initialFelonyValue;
-	pFVar2 = pFelonyData->value;
-	do {
-		*pFVar2 = *pFVar1;
-		pFVar1 = pFVar1 + 1;
-		pFVar2 = pFVar2 + 1;
-	} while (pFVar1 < UpdateEnvSounds);
-	return;*/
+	InitFelonyDelayArray(pFelonyData->occurrenceDelay, initialOccurrenceDelay, 12);
+	InitFelonyDelayArray(pFelonyData->reoccurrenceDelay, initialReccurrenceDelay, 12);
+
+	memcpy(&pFelonyData->value, &initialFelonyValue, sizeof(initialFelonyValue));
 }
 
 
@@ -797,16 +799,15 @@ LAB_0004d1ec:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitFelonySystem(void)
 {
-	UNIMPLEMENTED();
-	/*
 	FelonyIncreaseTime = 0x1f;
 	FelonyDecreaseTime = 0x1f;
 	FelonyIncreaseTimer = 0;
 	FelonyDecreaseTimer = 0;
+
 	InitFelonyData(&felonyData);
-	return;*/
 }
 
 
@@ -820,30 +821,34 @@ void InitFelonySystem(void)
 	/* end block 1 */
 	// End Line: 1715
 
+// [D]
 void CarHitByPlayer(_CAR_DATA *victim, int howHard)
 {
-	UNIMPLEMENTED();
-	/*
 	char type;
 
-	if ((0 < howHard) && (victim->controlType != '\x03')) {
-		if ((victim->controlFlags & 1) == 0) {
-			if (howHard < 0x20) {
-				NoteFelony(&felonyData, '\x04', (short)((uint)(howHard << 0x17) >> 0x10));
+	if ((0 < howHard) && (victim->controlType != 3)) 
+	{
+		if ((victim->controlFlags & 1) == 0)
+		{
+			if (howHard < 0x20) 
+			{
+				NoteFelony(&felonyData, 4, (howHard << 0x17) >> 0x10);
 				return;
 			}
-			type = '\x04';
+			type = 4;
 		}
-		else {
-			if (howHard < 0x10) {
-				NoteFelony(&felonyData, '\x05', (short)((uint)(howHard << 0x18) >> 0x10));
+		else
+		{
+			if (howHard < 0x10)
+			{
+				NoteFelony(&felonyData, 5, (howHard << 0x18) >> 0x10);
 				return;
 			}
-			type = '\x05';
+			type = 5;
 		}
+
 		NoteFelony(&felonyData, type, 0x1000);
 	}
-	return;*/
 }
 
 

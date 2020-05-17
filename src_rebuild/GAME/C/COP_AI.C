@@ -11,6 +11,8 @@
 #include "GAMESND.H"
 #include "CUTSCENE.H"
 #include "CONVERT.H"
+#include "MAP.H"
+#include "CAMERA.H"
 
 COP_DATA gCopData = { 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
 
@@ -39,7 +41,9 @@ int roadblockDelayDiff = 0x5dc;
 int requestCopCar = 0;
 int cop_respawn_timer = 0;
 char first_offence = 0;
+
 ROADBLOCK Roadblock;
+VECTOR roadblockLoc;
 
 static int said_picked_up = 0;
 
@@ -1364,207 +1368,266 @@ void UpdateCopSightData(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char CopWorkMem[444];
+COP_SIGHT_DATA copSightData;
+
+// [D]
 void ControlCopDetection(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	char cVar2;
-	short sVar3;
-	int iVar4;
+	unsigned char uVar1;
+	bool bVar2;
+	char cVar3;
+	short sVar4;
+	int y;
 	short *psVar5;
 	long lVar6;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
-	int direction;
-	uint uVar7;
-	VECTOR local_40;
-	int local_30;
-	int local_28;
-	int local_20;
-	int local_1c;
 
-	local_40.vx = player.pos[0];
-	local_40.vz = player.pos[2];
-	GetVisSetAtPosition(&local_40, CopWorkMem, &local_20, &local_1c);
-	if ((int)player.playerCarId < 0) {
+	int x;
+	int iVar7;
+	_CAR_DATA *cp;
+	VECTOR vec;
+	VECTOR delta;
+	int ccx;
+	int ccz;
+
+	vec.vx = player[0].pos[0];
+	vec.vz = player[0].pos[2];
+
+	GetVisSetAtPosition(&vec, CopWorkMem, &ccx, &ccz);
+
+	if (player[0].playerCarId < 0)
 		psVar5 = &pedestrianFelony;
-	}
-	else {
-		psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	bVar1 = 0x292 < *psVar5;
+	else 
+		psVar5 = &car_data[player[0].playerCarId].felonyRating;
+
+	bVar2 = 0x292 < *psVar5;
+
 	copSightData.surroundViewDistance = 0xaa0;
-	if (bVar1) {
+
+	if (bVar2)
 		copSightData.surroundViewDistance = 0x1540;
-	}
+
 	copSightData.frontViewDistance = 0x1e8c;
-	if (bVar1) {
+
+	if (bVar2)
 		copSightData.frontViewDistance = 0x3fc0;
-	}
+
 	copSightData.frontViewAngle = 0x200;
-	if (bVar1) {
+
+	if (bVar2)
 		copSightData.frontViewAngle = 0x400;
-	}
-	bVar1 = player_position_known < 1;
+
+
+	bVar2 = player_position_known < 1;
 	player_position_known = 2;
-	if (bVar1) {
+
+	if (bVar2) 
 		player_position_known = 1;
-	}
+
 	CopsCanSeePlayer = 0;
-	if ((player.playerType != '\x02') && (-1 < player.playerCarId)) {
-		if (numRoadblockCars != 0) {
-			direction = roadblockLoc.vx - player.pos[0];
-			if (direction < 0) {
-				direction = -direction;
+
+	if ((player[0].playerType != 2) && (-1 < player[0].playerCarId))
+	{
+		if (numRoadblockCars != 0)
+		{
+			x = roadblockLoc.vx - player[0].pos[0];
+			if (x < 0) {
+				x = -x;
 			}
-			iVar4 = roadblockLoc.vz - player.pos[2];
-			if (iVar4 < 0) {
-				iVar4 = -iVar4;
+			y = roadblockLoc.vz - player[0].pos[2];
+			if (y < 0) {
+				y = -y;
 			}
-			if (((direction >> 8) * (direction >> 8) + (iVar4 >> 8) * (iVar4 >> 8) < 0x668) &&
-				(direction = newPositionVisible(&roadblockLoc, CopWorkMem, local_20, local_1c), direction != 0
-					)) {
+			if (((x >> 8) * (x >> 8) + (y >> 8) * (y >> 8) < 0x668) &&
+				(x = newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz), x != 0)) {
 				CopsCanSeePlayer = 1;
 			}
 		}
-		if (CopsCanSeePlayer == 0) {
-			uVar7 = 0xd43fc;
-			while (0xd1267 < uVar7) {
-				cVar2 = *(char *)(uVar7 + 0x189);
-				if (cVar2 == '\x03') {
-					if (*(char *)(uVar7 + 0x19f) == '\0') goto LAB_0002eed0;
+
+		if (CopsCanSeePlayer == 0) 
+		{
+			cp = &car_data[19];
+
+			while (car_data <= cp)
+			{
+				uVar1 = cp->controlType;
+
+				if (uVar1 == 3) 
+				{
+					if (cp->ai.p.dying == 0) 
+						goto LAB_0002eed0;
 				}
-				else {
-					if ((*(byte *)(uVar7 + 0x18a) & 1) != 0) {
+				else 
+				{
+					if ((cp->controlFlags & 1) != 0)
+					{
 					LAB_0002eed0:
-						local_40.vx = *(long *)(uVar7 + 0x14);
-						local_40.vz = *(long *)(uVar7 + 0x1c);
-						direction = *(int *)(uVar7 + 0x14) - player.pos[0];
-						if (direction < 0) {
-							direction = player.pos[0] - *(int *)(uVar7 + 0x14);
-						}
-						iVar4 = *(int *)(uVar7 + 0x1c) - player.pos[2];
-						if (iVar4 < 0) {
-							iVar4 = player.pos[2] - *(int *)(uVar7 + 0x1c);
-						}
-						direction = SquareRoot0(direction * direction + iVar4 * iVar4);
-						if ((cVar2 == '\x03') &&
-							(*(undefined2 *)(uVar7 + 0x1a0) = (short)direction, *(char *)(uVar7 + 0x19e) != '\0')
-							) {
+						vec.vx = (cp->hd).where.t[0];
+						vec.vz = (cp->hd).where.t[2];
+						y = (cp->hd).where.t[0];
+						x = y - player[0].pos[0];
+
+						if (x < 0)
+							x = player[0].pos[0] - y;
+
+						iVar7 = (cp->hd).where.t[2];
+						y = iVar7 - player[0].pos[2];
+
+						if (y < 0) 
+							y = player[0].pos[2] - iVar7;
+
+						lVar6 = SquareRoot0(x * x + y * y);
+
+						if ((uVar1 == 3) && (cp->ai.p.DistanceToPlayer = lVar6, cp->ai.p.close_pursuit != 0))
+						{
 						LAB_0002f040:
 							CopsCanSeePlayer = 1;
 							break;
 						}
-						iVar4 = newPositionVisible(&local_40, CopWorkMem, local_20, local_1c);
-						if (iVar4 != 0) {
-							if (direction < copSightData.surroundViewDistance) {
+
+						if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) != 0)
+						{
+							if (lVar6 < copSightData.surroundViewDistance) 
+							{
 							LAB_0002f030:
-								bVar1 = true;
+								bVar2 = true;
 							}
-							else {
-								bVar1 = false;
-								if (direction < copSightData.frontViewDistance) {
-									local_30 = (targetVehicle->hd).where.t[0] - *(int *)(uVar7 + 0x14);
-									local_28 = (targetVehicle->hd).where.t[2] - *(int *)(uVar7 + 0x1c);
-									direction = ratan2(local_30, local_28);
-									if (direction - *(int *)(uVar7 + 0x68) < 0) {
-										direction = ratan2(local_30, local_28);
-										direction = *(int *)(uVar7 + 0x68) - direction;
+							else 
+							{
+								bVar2 = false;
+								if (lVar6 < copSightData.frontViewDistance)
+								{
+									y = (targetVehicle->hd).where.t[0] - (cp->hd).where.t[0];
+									x = (targetVehicle->hd).where.t[2] -(cp->hd).where.t[2];
+
+									lVar6 = ratan2(y, x);
+
+									if (lVar6 - (cp->hd).direction < 0) 
+									{
+										lVar6 = ratan2(y, x);
+										x = (cp->hd).direction - lVar6;
 									}
-									else {
-										direction = ratan2(local_30, local_28);
-										direction = direction - *(int *)(uVar7 + 0x68);
+									else
+									{
+										lVar6 = ratan2(y, x);
+										x = lVar6 - (cp->hd).direction;
 									}
-									if ((direction < (int)copSightData.frontViewAngle) ||
-										(bVar1 = false, direction < (int)copSightData.frontViewAngle + 0x200))
+
+									if ((x < copSightData.frontViewAngle) || (bVar2 = false, x < copSightData.frontViewAngle + 0x200)) 
 										goto LAB_0002f030;
 								}
 							}
-							if (bVar1) goto LAB_0002f040;
+							if (bVar2) 
+								goto LAB_0002f040;
 						}
 					}
 				}
-				uVar7 = uVar7 - 0x29c;
+				cp = cp + -1;
 			}
 		}
 	}
-	if (((numActiveCops == 0) && (OutOfSightCount < 0x100)) && (8 < CameraCnt)) {
+
+	if (numActiveCops == 0 && OutOfSightCount < 0x100 && 8 < CameraCnt) 
+	{
 		OutOfSightCount = 0x100;
 	}
-	if (CopsCanSeePlayer == 0) {
-		direction = OutOfSightCount + 1;
-		if (0xff < OutOfSightCount) {
-			if (OutOfSightCount == 0x100) {
+
+	if (CopsCanSeePlayer == 0)
+	{
+		x = OutOfSightCount + 1;
+
+		if (0xff < OutOfSightCount) 
+		{
+			if (OutOfSightCount == 0x100) 
+			{
 				player_position_known = -1;
 				OutOfSightCount = 0x101;
-				if ((int)player.playerCarId < 0) {
+
+				if (player[0].playerCarId < 0)
 					psVar5 = &pedestrianFelony;
-				}
-				else {
-					psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-				}
-				direction = OutOfSightCount;
-				if ((0x292 < *psVar5) && (first_offence == '\0')) {
+				else
+					psVar5 = &car_data[player[0].playerCarId].felonyRating;
+
+				x = OutOfSightCount;
+
+				if ((0x292 < *psVar5) && (first_offence == '\0'))
+				{
 					CopSay(0xc, 0);
 					FunkUpDaBGMTunez(0);
-					direction = OutOfSightCount;
+
+					x = OutOfSightCount;
 				}
 			}
-			else {
+			else 
+			{
 				player_position_known = 0;
-				direction = OutOfSightCount;
+				x = OutOfSightCount;
 			}
 		}
 	}
-	else {
+	else 
+	{
 		OutOfSightCount = 0;
-		direction = OutOfSightCount;
+		x = OutOfSightCount;
 	}
-	OutOfSightCount = direction;
-	if (player_position_known < 1) {
-		uVar7 = 0xd43fc;
+
+	OutOfSightCount = x;
+
+	if (player_position_known < 1)
+	{
+		cp = &car_data[19];
+
 		do {
-			if (*(char *)(uVar7 + 0x189) == '\x03') {
-				local_40.vx = *(long *)(uVar7 + 0x14);
-				local_40.vz = *(long *)(uVar7 + 0x1c);
-				direction = newPositionVisible(&local_40, CopWorkMem, local_20, local_1c);
-				if ((direction == 0) &&
-					(sVar3 = *(short *)(uVar7 + 0x1ac) + 1, *(short *)(uVar7 + 0x1ac) = sVar3, 0x32 < sVar3))
+			if (cp->controlType == 3)
+			{
+				vec.vx = (cp->hd).where.t[0];
+				vec.vz = (cp->hd).where.t[2];
+
+				// make cop lose target if target is hidden
+				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && 
+					cp->ai.p.hiddenTimer++ > 0x32)
 				{
-					*(undefined *)(uVar7 + 0x189) = 0;
-					*(undefined2 *)(uVar7 + 0x1ac) = 0;
-					*(undefined2 *)(uVar7 + 0x28c) = 0;
-					numCopCars = numCopCars + -1;
+					cp->controlType = 0;
+					cp->ai.p.hiddenTimer = 0;
+					cp->thrust = 0;
+					numCopCars--;
 				}
 			}
-			uVar7 = uVar7 - 0x29c;
-		} while (0xd1267 < uVar7);
+
+			cp--;
+		} while (car_data <= cp);
 	}
-	direction = player_position_known;
-	if ((player_position_known == 1) && (first_offence == '\0')) {
+
+	x = player_position_known;
+
+	if ((player_position_known == 1) && (first_offence == 0)) 
+	{
 		lVar6 = Random2(2);
-		cVar2 = GetCarDirectionOfTravel(car_data + player.playerCarId);
-		CopSay(lVar6 % 2 + 10, CONCAT31(extraout_var, cVar2));
-		said_picked_up = direction;
-		LastHeading = CONCAT31(extraout_var, cVar2);
+		cVar3 = GetCarDirectionOfTravel(car_data + player[0].playerCarId);
+
+		CopSay(lVar6 % 2 + 10, cVar3);
+
+		said_picked_up = x;
+
+		LastHeading = cVar3;
 	}
-	if (CopsCanSeePlayer == 0) {
+
+	if (CopsCanSeePlayer == 0) 
 		said_picked_up = 0;
+
+	else if ((first_offence == 0) && (said_picked_up == 0)) 
+	{
+		lVar6 = Random2(2);
+
+		x = GetCarDirectionOfTravel(&car_data[player[0].playerCarId]);
+
+		if ((lVar6 == (lVar6 / 5) * 5) && (x != LastHeading))
+			CopSay(lVar6 % 2 + 10, x);
+
+		said_picked_up = 1;
+		LastHeading = x;
 	}
-	else {
-		if ((first_offence == '\0') && (said_picked_up == 0)) {
-			lVar6 = Random2(2);
-			cVar2 = GetCarDirectionOfTravel(car_data + player.playerCarId);
-			direction = CONCAT31(extraout_var_00, cVar2);
-			if ((lVar6 == (lVar6 / 5) * 5) && (direction != LastHeading)) {
-				CopSay(lVar6 % 2 + 10, direction);
-			}
-			said_picked_up = 1;
-			LastHeading = direction;
-		}
-	}
-	return;*/
+	return;
 }
 
 
