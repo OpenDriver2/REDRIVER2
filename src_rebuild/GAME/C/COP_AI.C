@@ -450,8 +450,11 @@ void ControlCops(void)
 			gBatterPlayer = 1;
 
 		ControlCopDetection();
+
 		AdjustFelony(&felonyData);
+
 		ControlNumberOfCops();
+
 		direction = 0;
 
 		if (0 < player_position_known) 
@@ -480,7 +483,7 @@ void ControlCops(void)
 				said_picked_up = 1;
 				direction = copsAreInPursuit;
 			}
-		}
+		} 
 	}
 	copsAreInPursuit = direction;
 }
@@ -1724,79 +1727,96 @@ LAB_0002f7c4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+ROADBLOCK Roadblock;
+
+// [D]
 void ControlNumberOfCops(void)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short *psVar2;
 	short *psVar3;
 	uint uVar4;
 	_CAR_DATA *p_Var5;
-	uint uVar6;
-	int iVar7;
+	int iVar6;
+	uint uVar7;
 	int iVar8;
 
 	psVar2 = gCopData.trigger;
 	iVar8 = 0;
-	while (true) {
+
+	while (true) 
+	{
 		sVar1 = *psVar2;
-		psVar2 = psVar2 + 1;
-		if ((int)player.playerCarId < 0) {
+		psVar2++;
+
+		if (player[0].playerCarId < 0)
 			psVar3 = &pedestrianFelony;
-		}
-		else {
-			psVar3 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (*psVar3 < sVar1) break;
-		iVar8 = iVar8 + 1;
+		else 
+			psVar3 = &car_data[player[0].playerCarId].felonyRating;
+
+		if (*psVar3 < sVar1)
+			break;
+
+		iVar8++;
 	}
-	iVar7 = gMinimumCops;
-	if ((iVar8 < gMinimumCops) || (iVar7 = maxCopCars, maxCopCars < iVar8)) {
-		iVar8 = iVar7;
+
+	iVar6 = gMinimumCops;
+
+	if ((iVar8 < gMinimumCops) || (iVar6 = maxCopCars, maxCopCars < iVar8)) 
+	{
+		iVar8 = iVar6;
 	}
-	if ((numCopCars < iVar8) && (gDontPingInCops == 0)) {
+	if (numCopCars < iVar8 && gDontPingInCops == 0)
+	{
 		iVar8 = gCopRespawnTime;
-		if (Roadblock.status == '\x02') {
+
+		if (Roadblock.status == 2) 
 			iVar8 = Roadblock.copRespawnTime;
-		}
-		if ((int)player.playerCarId < 0) {
+
+		if (player[0].playerCarId < 0)
 			psVar2 = &pedestrianFelony;
-		}
-		else {
-			psVar2 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (iVar8 * (0x1000 - (*psVar2 * gCopData.autoRespawnScaleLimit >> 0xc)) >> 0xc <
-			cop_respawn_timer + 1) {
+		else
+			psVar2 = &car_data[(int)player[0].playerCarId].felonyRating;
+
+
+		if (iVar8 * (0x1000 - (*psVar2 * gCopData.autoRespawnScaleLimit >> 0xc)) >> 0xc < cop_respawn_timer + 1) 
 			requestCopCar = 1;
-		}
-		cop_respawn_timer = cop_respawn_timer + 1;
+
+		cop_respawn_timer++;
 		return;
 	}
-	if (iVar8 < numCopCars) {
-		uVar6 = 0x7fffffff;
-		do {
-			gCopData.cutOffDistance = 0;
-			p_Var5 = car_data;
-			iVar7 = 0;
-			do {
-				if (p_Var5->controlType == '\x03') {
-					uVar4 = (uint)*(ushort *)(p_Var5->ai + 0x14);
-					if ((uVar4 < uVar6) && (iVar7 = iVar7 + 1, (uint)gCopData.cutOffDistance < uVar4)) {
-						gCopData.cutOffDistance = uVar4;
-					}
-				}
-				p_Var5 = p_Var5 + 1;
-			} while (p_Var5 < (_CAR_DATA *)0xd4698);
-			uVar6 = gCopData.cutOffDistance;
-		} while (iVar8 < iVar7);
+
+	if (numCopCars <= iVar8)
+	{
+		gCopData.cutOffDistance = 0x7fffffff;
 		cop_respawn_timer = 0;
 		return;
 	}
+
 	gCopData.cutOffDistance = 0x7fffffff;
+
+	do {
+		uVar7 = 0;
+		p_Var5 = car_data;
+		iVar6 = 0;
+
+		if (true) {
+			do {
+				if (p_Var5->controlType == 3) 
+				{
+					uVar4 = p_Var5->ai.p.DistanceToPlayer;
+					if ((uVar4 < gCopData.cutOffDistance) && (iVar6 = iVar6 + 1, uVar7 < uVar4))
+					{
+						uVar7 = uVar4;
+					}
+				}
+				p_Var5++;
+			} while (p_Var5 < &car_data[20]);
+		}
+		gCopData.cutOffDistance = uVar7;
+	} while (iVar8 < iVar6);
+
 	cop_respawn_timer = 0;
-	return;
-	*/
 }
 
 
