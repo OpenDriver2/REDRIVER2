@@ -46,7 +46,15 @@ extern int maxParkedCars;
 
 extern int gCopDifficultyLevel;
 extern int gCopRespawnTime;
+
 extern int maxCopCars;
+
+extern int gMinimumCops;
+extern int gCopDesiredSpeedScale;
+extern int gCopMaxPowerScale;
+extern int gCurrentResidentSlot;
+extern int gPuppyDogCop;
+extern int CopsAllowed;
 
 extern MR_MISSION Mission;
 
