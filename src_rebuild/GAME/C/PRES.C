@@ -794,88 +794,99 @@ int PrintStringFeature(char *string, int x, int y, int w, int h, int transparent
 	/* end block 4 */
 	// End Line: 1388
 
+// [D]
 void PrintStringBoxed(char *string, int ix, int iy)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uchar uVar2;
-	short sVar3;
-	DB *pDVar4;
-	int iVar5;
-	ulong *puVar6;
+	char bVar1;
+	char *pbVar2;
+	unsigned char uVar3;
+	short sVar4;
+	DB *pDVar5;
+	int iVar6;
 	uint uVar7;
-	byte *pbVar8;
-	uint *puVar9;
+	ulong *puVar8;
+	SPRT *font;
+	int iVar9;
 	int iVar10;
-	int iVar11;
-	byte local_40;
-	byte local_3f[31];
+	char word[32];
 
-	puVar9 = (uint *)current->primptr;
-	if (*string != '\0') {
-		iVar11 = 1;
-		iVar10 = ix;
+	font = (SPRT *)current->primptr;
+
+	if (*string != 0) 
+	{
+		iVar10 = 1;
+		iVar9 = ix;
 		do {
-			string = GetNextWord(string, (char *)&local_40);
-			iVar5 = StringWidth((char *)&local_40);
-			if ((0x134 < iVar10 + iVar5) && ((iVar11 != 1 || (*string != '\0')))) {
+			string = GetNextWord(string, word);
+			iVar6 = StringWidth(word);
+
+			if (0x134 < iVar9 + iVar6 && (iVar10 != 1 || (*string != 0)))
+			{
 				iy = iy + 0xe;
-				iVar10 = ix;
+				iVar9 = ix;
 			}
-			pbVar8 = local_3f;
-			bVar1 = local_40;
-			while (bVar1 != 0) {
-				if (bVar1 == 0x20) {
-					iVar10 = iVar10 + 4;
+
+			pbVar2 = word;
+			bVar1 = word[0];
+
+			while (pbVar2 = pbVar2 + 1, bVar1 != 0) 
+			{
+				if (bVar1 == 32) 
+				{
+					iVar9 = iVar9 + 4;
 				}
-				else {
-					uVar7 = (uint)(byte)AsciiTable[bVar1];
-					if (uVar7 != 0xffffffff) {
-						*(char *)((int)puVar9 + 3) = '\x04';
-						*(char *)((int)puVar9 + 7) = 'd';
-						*(uchar *)(puVar9 + 1) = gFontColour.r;
-						*(uchar *)((int)puVar9 + 5) = gFontColour.g;
-						uVar2 = gFontColour.b;
-						*(short *)(puVar9 + 2) = (short)iVar10;
-						*(uchar *)((int)puVar9 + 6) = uVar2;
-						*(short *)((int)puVar9 + 10) = (short)fontinfo[uVar7].offy + (short)iy;
-						*(uchar *)(puVar9 + 3) = fontinfo[uVar7].x;
-						*(char *)((int)puVar9 + 0xd) = fontinfo[uVar7].y + -0x2e;
-						pDVar4 = current;
-						sVar3 = fontclutid;
-						*(ushort *)(puVar9 + 4) = (ushort)fontinfo[uVar7].width;
-						bVar1 = fontinfo[uVar7].height;
-						*(short *)((int)puVar9 + 0xe) = sVar3;
-						*(ushort *)((int)puVar9 + 0x12) = (ushort)bVar1;
-						*puVar9 = *puVar9 & 0xff000000 | *pDVar4->ot & 0xffffff;
-						puVar6 = pDVar4->ot;
-						*puVar6 = *puVar6 & 0xff000000 | (uint)puVar9 & 0xffffff;
-						puVar9 = puVar9 + 5;
-						iVar10 = iVar10 + (uint)fontinfo[uVar7].width;
+				else 
+				{
+					uVar7 = AsciiTable[bVar1];
+
+					if (uVar7 != 0xffffffff) 
+					{
+						setSprt(font);
+
+						font->r0 = gFontColour.r;
+						font->g0 = gFontColour.g;
+						font->b0 = gFontColour.b;
+
+						font->x0 = iVar9;
+						font->y0 = fontinfo[uVar7].offy + iy;
+						font->u0 = fontinfo[uVar7].x;
+						font->v0 = fontinfo[uVar7].y - 46;
+
+						font->w = fontinfo[uVar7].width;
+						font->clut = fontclutid;
+						font->h = fontinfo[uVar7].height;;
+
+						addPrim(current->ot, font);
+
+						font++;
+						iVar9 = iVar9 + (uint)fontinfo[uVar7].width;
 					}
 				}
-				bVar1 = *pbVar8;
-				pbVar8 = pbVar8 + 1;
+
+				bVar1 = *pbVar2;
 			}
-			iVar11 = iVar11 + 1;
-		} while (*string != '\0');
+			iVar10++;
+		} while (*string != 0);
 	}
-	*(char *)((int)puVar9 + 3) = '\a';
-	*(char *)((int)puVar9 + 7) = '&';
-	pDVar4 = current;
-	sVar3 = fonttpage;
-	*(undefined2 *)(puVar9 + 2) = 0xffff;
-	*(undefined2 *)((int)puVar9 + 10) = 0xffff;
-	*(undefined2 *)(puVar9 + 4) = 0xffff;
-	*(undefined2 *)((int)puVar9 + 0x12) = 0xffff;
-	*(undefined2 *)(puVar9 + 6) = 0xffff;
-	*(undefined2 *)((int)puVar9 + 0x1a) = 0xffff;
-	*(short *)((int)puVar9 + 0x16) = sVar3;
-	*puVar9 = *puVar9 & 0xff000000 | *pDVar4->ot & 0xffffff;
-	*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar9 & 0xffffff;
-	*(uint **)&pDVar4->primptr = puVar9 + 8;
-	return;*/
+
+	POLY_FT3* null = (POLY_FT3*)font;
+
+	setPolyFT3(null);
+#ifdef PSX
+	setSemiTrans(null, 1);
+#endif
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = fonttpage;
+
+	addPrim(current->ot, null);
+
+	pDVar5->primptr = (char)(null+1);
 }
 
 
