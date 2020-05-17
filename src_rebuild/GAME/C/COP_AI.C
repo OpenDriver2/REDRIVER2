@@ -1584,8 +1584,7 @@ void ControlCopDetection(void)
 				vec.vz = (cp->hd).where.t[2];
 
 				// make cop lose target if target is hidden
-				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && 
-					cp->ai.p.hiddenTimer++ > 0x32)
+				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && cp->ai.p.hiddenTimer++ > 0x32)
 				{
 					cp->controlType = 0;
 					cp->ai.p.hiddenTimer = 0;

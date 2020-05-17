@@ -1,5 +1,11 @@
 #include "THISDUST.H"
 #include "CUTSCENE.H"
+#include "MISSION.H"
+#include "CARS.H"
+#include "PLAYERS.H"
+#include "REPLAYS.H"
+#include "GAMESND.H"
+#include "GLAUNCH.H"
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
@@ -7,6 +13,20 @@ int gInGameChaseActive = 0;
 int gInGameCutsceneID = -1;
 int gCutsceneAtEnd = 0;
 int gThePlayerCar = -1;
+
+static int CutsceneStreamIndex = 0;
+int CutsceneFrameCnt = 0;
+static int NumCutsceneStreams = 0;
+static int gHaveInGameCutscene = 0;
+static int gCSDestroyPlayer = 0;
+static int PreLoadedCutscene = -1;
+static char *CutsceneReplayStart = NULL;
+PLAYBACKCAMERA *CutsceneCamera = NULL;
+static int CutsceneInReplayBuffer = 0;
+int CutsceneEventTrigger = 0;
+static int CutsceneLength = 0;
+static int BlackBorderHeight = 0;
+int JustReturnedFromCutscene = 0;
 
 // decompiled code
 // original method signature: 
@@ -29,10 +49,9 @@ int gThePlayerCar = -1;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitInGameCutsceneVariables(void)
 {
-	UNIMPLEMENTED();
-	/*
 	CutsceneStreamIndex = 0;
 	CutsceneFrameCnt = 0;
 	NumCutsceneStreams = 0;
@@ -51,8 +70,8 @@ void InitInGameCutsceneVariables(void)
 	gInGameCutsceneID = -1;
 	gCutsceneAtEnd = 0;
 	JustReturnedFromCutscene = 0;
+
 	FreeCutsceneBuffer();
-	return;*/
 }
 
 
@@ -251,8 +270,6 @@ void DrawInGameCutscene(void)
 
 void TriggerChase(int *car, int cutscene)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int *piVar2;
 	int iVar3;
@@ -262,41 +279,58 @@ void TriggerChase(int *car, int cutscene)
 	cutscene_00 = gRandomChase;
 	piVar4 = car_data[*car].inform;
 	iVar3 = 0;
-	car_data[*car].inform = (int *)0x0;
+	car_data[*car].inform = NULL;
 	gInGameChaseActive = TriggerInGameCutsceneSystem(cutscene_00);
-	if (gInGameChaseActive != 0) {
-		if (CutsceneStreamIndex < NumReplayStreams) {
-			piVar2 = &ReplayStreams[CutsceneStreamIndex].length;
-			iVar1 = NumReplayStreams - CutsceneStreamIndex;
+
+	if (gInGameChaseActive == 0)
+		goto LAB_000316a8;
+
+	if (CutsceneStreamIndex < NumReplayStreams) 
+	{
+		piVar2 = &ReplayStreams[CutsceneStreamIndex].length;
+		iVar1 = NumReplayStreams - CutsceneStreamIndex;
+		cutscene_00 = iVar3;
+		do {
+			iVar3 = *piVar2;
+			if (*piVar2 < cutscene_00) {
+				iVar3 = cutscene_00;
+			}
+			iVar1 = iVar1 + -1;
+			piVar2 = piVar2 + 0x11;
 			cutscene_00 = iVar3;
-			do {
-				iVar3 = *piVar2;
-				if (*piVar2 < cutscene_00) {
-					iVar3 = cutscene_00;
-				}
-				iVar1 = iVar1 + -1;
-				piVar2 = piVar2 + 0x11;
-				cutscene_00 = iVar3;
-			} while (iVar1 != 0);
-		}
-		switch (gCurrentMissionNumber) {
+		} while (iVar1 != 0);
+	}
+
+	if (false) 
+	{
+	switchD_000315e4_caseD_3:
+		Mission.timer[0].count = (iVar3 / 0x1e) * 3000 + -15000;
+	}
+	else 
+	{
+		switch (gCurrentMissionNumber)
+		{
 		case 2:
 		case 4:
 		case 6:
 		case 10:
 		case 0x12:
-			DAT_000d7c2c = &DAT_00003a98 + (iVar3 / 0x1e) * 3000;
+			Mission.timer[0].count = (long)(15000 + (iVar3 / 0x1e) * 3000);
 			break;
 		default:
-			DAT_000d7c2c = (undefined *)((iVar3 / 0x1e) * 3000 + -15000);
+			goto switchD_000315e4_caseD_3;
 		}
-		DAT_000d7c28 = 1;
-		*car = CutsceneStreamIndex;
-		player.targetCarId = (char)CutsceneStreamIndex;
-		InitLeadHorn();
 	}
+
+	Mission.timer[0].flags = 1;
+
+	*car = CutsceneStreamIndex;
+
+	player[0].targetCarId = CutsceneStreamIndex;
+
+	InitLeadHorn();
+LAB_000316a8:
 	car_data[*car].inform = piVar4;
-	return;*/
 }
 
 
