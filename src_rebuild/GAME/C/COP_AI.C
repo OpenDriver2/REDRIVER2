@@ -39,6 +39,7 @@ int roadblockDelayDiff = 0x5dc;
 int requestCopCar = 0;
 int cop_respawn_timer = 0;
 char first_offence = 0;
+ROADBLOCK Roadblock;
 
 static int said_picked_up = 0;
 
@@ -1726,8 +1727,6 @@ LAB_0002f7c4:
 	// End Line: 3561
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-ROADBLOCK Roadblock;
 
 // [D]
 void ControlNumberOfCops(void)

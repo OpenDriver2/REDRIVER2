@@ -1202,7 +1202,7 @@ char PlaySpeech(SPEECH_QUEUE *pSpeechQueue, int sound)
 // [D]
 void InitSpeechQueue(SPEECH_QUEUE *pSpeechQueue)
 {
-	ClearMem((char *)pSpeechQueue, 0x28);
+	ClearMem((char *)pSpeechQueue, sizeof(SPEECH_QUEUE));
 
 	if (GameType != GAME_MISSION) 
 		pSpeechQueue->allowed = 2;
@@ -1236,65 +1236,67 @@ void InitSpeechQueue(SPEECH_QUEUE *pSpeechQueue)
 	/* end block 4 */
 	// End Line: 1258
 
+// [D]
 void ControlSpeech(SPEECH_QUEUE *pSpeechQueue)
 {
-	UNIMPLEMENTED();
-
-	/*
 	char cVar1;
-	int iVar2;
 	uint uVar3;
 
-	if (GameType != GAME_MISSION) goto LAB_0004e5d0;
-	if ((bMissionTitleFade == 0) || (pSpeechQueue->allowed = '\x01', bMissionTitleFade == 0)) {
-		cVar1 = pSpeechQueue->allowed;
-		if (cVar1 == '\x01') {
-			pSpeechQueue->allowed = '\x02';
-			goto LAB_0004e5c0;
-		}
-	}
-	else {
-	LAB_0004e5c0:
-		cVar1 = pSpeechQueue->allowed;
-	}
-	if (cVar1 != '\x02') {
-		return;
-	}
-LAB_0004e5d0:
-	if (pSpeechQueue->count < 1) {
-		TimeSinceLastSpeech = TimeSinceLastSpeech + 1;
-		if ((pSpeechQueue->is_playing != '\0') &&
-			(iVar2 = SpuGetKeyStatus(1 << ((uint)(byte)pSpeechQueue->chan & 0x1f)), iVar2 == 0)) {
-			SetReverbChannelState((uint)(byte)pSpeechQueue->chan, (uint)(byte)pSpeechQueue->reverb);
-			UnlockChannel((uint)(byte)pSpeechQueue->chan);
-			pSpeechQueue->is_playing = '\0';
-		}
-	}
-	else {
-		if (pSpeechQueue->is_playing == '\0') {
-			uVar3 = GetFreeChannel();
-			pSpeechQueue->chan = (char)uVar3;
-			LockChannel(uVar3 & 0xff);
-			iVar2 = SetReverbChannelState((uint)(byte)pSpeechQueue->chan, 0);
-			pSpeechQueue->reverb = (char)iVar2;
-			pSpeechQueue->is_playing = '\x01';
-			(&channels)[(byte)pSpeechQueue->chan].time = 0;
-			iVar2 = pSpeechQueue->count + -1;
-			pSpeechQueue->count = iVar2;
-			DoSpeech((uint)(byte)pSpeechQueue->chan, pSpeechQueue->slot[iVar2]);
-		}
-		else {
-			iVar2 = SpuGetKeyStatus(1 << ((uint)(byte)pSpeechQueue->chan & 0x1f));
-			if (iVar2 == 0) {
-				iVar2 = pSpeechQueue->count + -1;
-				pSpeechQueue->count = iVar2;
-				DoSpeech((uint)(byte)pSpeechQueue->chan, pSpeechQueue->slot[iVar2]);
+	if (GameType == GAME_MISSION)
+	{
+		if (bMissionTitleFade == 0 || (pSpeechQueue->allowed = 1, bMissionTitleFade == 0))
+		{
+			cVar1 = pSpeechQueue->allowed;
+			if (cVar1 == 1)
+			{
+				pSpeechQueue->allowed = 2;
+				cVar1 = pSpeechQueue->allowed;
 			}
 		}
-		TimeSinceLastSpeech = 0;
+		else
+		{
+			cVar1 = pSpeechQueue->allowed;
+		}
+
+		if (cVar1 != 2)
+			return;
 	}
-	return;
-	*/
+
+	if (pSpeechQueue->count < 1) 
+	{
+		TimeSinceLastSpeech++;
+
+		if (pSpeechQueue->is_playing != 0 && SpuGetKeyStatus(SPU_VOICECH(pSpeechQueue->chan)) == 0)
+		{
+			SetReverbChannelState(pSpeechQueue->chan, pSpeechQueue->reverb);
+			UnlockChannel(pSpeechQueue->chan);
+
+			pSpeechQueue->is_playing = 0;
+		}
+	}
+	else if (pSpeechQueue->is_playing == 0)
+	{
+		pSpeechQueue->chan = GetFreeChannel();
+
+		LockChannel(pSpeechQueue->chan);
+
+		pSpeechQueue->reverb = SetReverbChannelState(pSpeechQueue->chan, 0);
+		pSpeechQueue->is_playing = 1;
+
+		channels[pSpeechQueue->chan].time = 0;
+
+		pSpeechQueue->count--;
+
+		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+	}
+	else if (SpuGetKeyStatus( SPU_VOICECH(pSpeechQueue->chan) ) == 0)
+	{
+		pSpeechQueue->count--;
+
+		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+	}
+
+	TimeSinceLastSpeech = 0;
 }
 
 
@@ -1326,12 +1328,11 @@ void CopSay(int phrase, int direction)
 
 		if (phrase == 10)
 		{
-			if (cop_bank == '\x01') {
+			if (cop_bank == 1) 
 				return;
-			}
-			if ((cop_bank != '\x02') && (cop_bank != '\x03')) {
+
+			if ((cop_bank != 2) && (cop_bank !=3))
 				return;
-			}
 		}
 		else 
 		{
