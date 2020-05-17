@@ -20,6 +20,7 @@
 #include "CARS.H"
 #include "FELONY.H"
 #include "BOMBERMAN.H"
+#include "BCOLLIDE.H"
 
 #include "STRINGS.H"
 
@@ -3473,11 +3474,11 @@ void TannerCollision(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 8378
 
+#define COLLISION_DEBUG
+
+// [D]
 int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	int iVar3;
@@ -3485,42 +3486,73 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 	int iVar5;
 	int iVar6;
 
-	cd.length[0] = 0x78;
-	cd.length[1] = 0xc;
-	cd.x.vx = pPos->vx;
-	cd.x.vz = pPos->vz;
-	cd.theta = (int)((player.pPed)->dir).vy - 0x800U & 0xfff;
-	CDATA2D_000d9554.length[0] = (int)car_cosmetics[(byte)(pCar->ap).model].colBox.vz;
-	CDATA2D_000d9554.length[1] = (int)car_cosmetics[(byte)(pCar->ap).model].colBox.vx;
-	CDATA2D_000d9554.x.vx = (pCar->hd).where.t[0];
-	CDATA2D_000d9554.x.vz = (pCar->hd).where.t[2];
-	CDATA2D_000d9554.theta = (pCar->hd).direction;
-	iVar1 = bcollided2d(&cd, 1);
-	if (iVar1 != 0) {
-		bFindCollisionPoint(&cd, (CRET2D *)&collisionResult_124);
-		uVar2 = (uint)(byte)(pCar->ap).model;
-		iVar6 = (int)car_cosmetics[uVar2].colBox.vx;
-		iVar4 = ((collisionResult_124 - CDATA2D_000d9554.x.vx) *
-			(int)rcossin_tbl[(CDATA2D_000d9554.theta & 0xfffU) * 2 + 1] >> 0xc) -
-			((DAT_000d9498 - CDATA2D_000d9554.x.vz) *
-			(int)rcossin_tbl[(CDATA2D_000d9554.theta & 0xfffU) * 2] >> 0xc);
-		iVar5 = iVar6 + 0x60;
-		iVar3 = (int)car_cosmetics[uVar2].colBox.vz;
-		iVar1 = ((collisionResult_124 - CDATA2D_000d9554.x.vx) *
-			(int)rcossin_tbl[(CDATA2D_000d9554.theta & 0xfffU) * 2] >> 0xc) +
-			((DAT_000d9498 - CDATA2D_000d9554.x.vz) *
-			(int)rcossin_tbl[(CDATA2D_000d9554.theta & 0xfffU) * 2 + 1] >> 0xc);
-		iVar6 = iVar6 + -0x60;
-		if ((iVar3 + -0x1e0 < iVar1) && (iVar1 < iVar3 + -200)) {
-			if ((iVar6 < iVar4) && (iVar4 < iVar5)) {
+	static CDATA2D cdata;
+	static CRET2D collisionResult;
+
+	//_DAT_000d9534 = 0x78;
+	//_DAT_000d9538 = 0xc;
+	//_DAT_000d9530 = ((player[0].pPed)->dir).vy - 0x800U & 0xfff;
+
+	collisionResult.hit.vx = pPos->vx;
+	collisionResult.hit.vz = pPos->vz;
+
+	cdata.length[0] = car_cosmetics[pCar->ap.model].colBox.vz;
+	cdata.length[1] = car_cosmetics[pCar->ap.model].colBox.vx;
+
+	cdata.x.vx = pCar->hd.where.t[0];
+	cdata.x.vz = pCar->hd.where.t[2];
+
+	cdata.theta = pCar->hd.direction;
+
+	if (bcollided2d(&cdata, 1) != 0)
+	{
+		bFindCollisionPoint(&cdata, &collisionResult);
+
+		uVar2 = pCar->ap.model;
+
+		iVar4 = ((pPos->vx - cdata.x.vx) * rcossin_tbl[(cdata.theta & 0xfffU) * 2 + 1] >> 0xc) -
+				((pPos->vz - cdata.x.vz) * rcossin_tbl[(cdata.theta & 0xfffU) * 2] >> 0xc);
+
+		iVar1 = ((pPos->vx - cdata.x.vx) * rcossin_tbl[(cdata.theta & 0xfffU) * 2] >> 0xc) +
+				((pPos->vz - cdata.x.vz) * rcossin_tbl[(cdata.theta & 0xfffU) * 2 + 1] >> 0xc);
+
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+		extern int gShowCollisionDebug;
+		if (gShowCollisionDebug)
+		{
+			extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+			extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR rrcv = { 250, 0, 0 };
+			CVECTOR yycv = { 250, 250, 0 };
+
+			VECTOR _zero = { 0, 100, 0 };
+			VECTOR up = { 0, 200, 0 };
+
+			Debug_AddLineOfs(_zero, up, *pPos, rrcv);
+
+			Debug_AddLineOfs(_zero, up, cdata.x, yycv);
+
+			Debug_AddLineOfs(_zero, up, collisionResult.hit, bbcv);
+		}
+#endif
+
+		iVar5 = car_cosmetics[uVar2].colBox.vx + 96;
+		iVar3 = car_cosmetics[uVar2].colBox.vz;
+		iVar6 = car_cosmetics[uVar2].colBox.vx - 96;
+
+		if ((car_cosmetics[uVar2].colBox.vz-480 < iVar1) && (iVar1 < car_cosmetics[uVar2].colBox.vz -200))
+		{
+			if ((iVar6 < iVar4) && (iVar4 < iVar5)) 
 				return 1;
-			}
-			if ((iVar4 < -iVar6) && (-iVar5 < iVar4)) {
+
+			if ((iVar4 < -iVar6) && (-iVar5 < iVar4)) 
 				return 1;
-			}
+
 		}
 	}
-	return 0;*/
+	return 0;
 }
 
 

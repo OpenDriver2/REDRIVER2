@@ -883,7 +883,7 @@ void RegisterChaseHit(int car1, int car2)
 			if (car1 == Mission.ChaseTarget->data[6] || car2 == Mission.ChaseTarget->data[6]) 
 			{
 				(Mission.ChaseTarget)->data[0xd] = (Mission.ChaseTarget)->data[0xd] + -1;
-				Mission.ChaseHitDelay = 0x14;
+				Mission.ChaseHitDelay = 20;
 				DamageBar.position = DamageBar.position + 1;
 			}
 		}

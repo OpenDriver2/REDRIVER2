@@ -801,10 +801,8 @@ void PrintStringBoxed(char *string, int ix, int iy)
 	char *pbVar2;
 	unsigned char uVar3;
 	short sVar4;
-	DB *pDVar5;
 	int iVar6;
 	uint uVar7;
-	ulong *puVar8;
 	SPRT *font;
 	int iVar9;
 	int iVar10;
@@ -886,7 +884,7 @@ void PrintStringBoxed(char *string, int ix, int iy)
 
 	addPrim(current->ot, null);
 
-	pDVar5->primptr = (char)(null+1);
+	current->primptr = (char*)(null+1);
 }
 
 
@@ -1135,31 +1133,32 @@ int PrintScaledString(int y, char *string, int scale)
 	/* end block 4 */
 	// End Line: 2506
 
+// [D]
 char * GetNextWord(char *string, char *word)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char cVar1;
 
 	cVar1 = *string;
 	do {
-		if (cVar1 == '\0') {
+		if (cVar1 == '\0')
+		{
 		LAB_00074d88:
 			*word = '\0';
 			return string;
 		}
+
 		string = string + 1;
-		if (cVar1 == ' ') {
+		if (cVar1 == ' ')
+		{
 			*word = ' ';
 			word = word + 1;
 			goto LAB_00074d88;
 		}
+
 		*word = cVar1;
 		cVar1 = *string;
 		word = word + 1;
 	} while (true);
-	*/
 }
 
 
