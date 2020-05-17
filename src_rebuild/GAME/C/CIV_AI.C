@@ -120,8 +120,8 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 		break;
 	case 3:
 		InitCopState(cp, extraData);
-		cp->ap.palette = '\0';
-		numCopCars = numCopCars + 1;
+		cp->ap.palette = 0;
+		numCopCars++;
 		break;
 	case 4:
 		UNIMPLEMENTED();

@@ -1,5 +1,13 @@
 #include "THISDUST.H"
 #include "COP_AI.H"
+#include "CIV_AI.H"
+#include "AI.H"
+#include "MISSION.H"
+#include "SYSTEM.H"
+#include "FELONY.H"
+#include "CARS.H"
+#include "PATHFIND.H"
+
 
 COP_DATA gCopData = { 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
 
@@ -44,31 +52,32 @@ char first_offence = 0;
 	/* end block 2 */
 	// End Line: 1155
 
+// [D]
 void InitCopState(_CAR_DATA *cp, char *extraData)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
+	ClearMem((char *)&cp->ai.p, sizeof(COP));
 
-	ClearMem((char *)cp->ai, 0x28);
-	cp->controlType = '\x03';
-	cp->controlFlags = '\0';
-	cp->ai[0x11] = 1;
-	if (gCopDifficultyLevel == 1) {
-		cp->hndType = '\x03';
+	cp->controlType = 3;
+	cp->controlFlags = 0;
+	cp->ai.p.justPinged = 1;
+
+	if (gCopDifficultyLevel == 1) 
+	{
+		cp->hndType = 3;
 	}
-	else {
-		uVar1 = '\x04';
-		if (gCopDifficultyLevel < 2) {
-			if (gCopDifficultyLevel != 0) {
-				cp->hndType = '\x04';
+	else 
+	{
+		cp->hndType = 4;
+		if (gCopDifficultyLevel < 2) 
+		{
+			if (gCopDifficultyLevel != 0)
+			{
+				cp->hndType = 4;
 				return;
 			}
-			uVar1 = '\x02';
+			cp->hndType = 2;
 		}
-		cp->hndType = uVar1;
 	}
-	return;*/
 }
 
 
@@ -197,58 +206,79 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int player_position_known = 0;
+VECTOR lastKnownPosition;
+VECTOR CarTail;
+_CAR_DATA *targetVehicle;
+
+int numActiveCops = 0;
+int pathStraight = 0;
+int LastHeading = 0;
+int OutOfSightCount = 0;
+
 void InitCops(void)
 {
-	UNIMPLEMENTED();
-	/*
-	targetVehicle = car_data;
+	targetVehicle = &car_data[0];
 	requestCopCar = 0;
+
 	InitFelonySystem();
 	InitPathFinding();
+
 	felonyData.pursuitFelonyScale = 3000;
+
 	gCopDesiredSpeedScale = 0x1000;
 	gCopMaxPowerScale = 0x1000;
 	gPuppyDogCop = 0;
+
 	copsAreInPursuit = 0;
+
 	player_position_known = 2;
 	OutOfSightCount = 0;
+
 	UpdateCopSightData();
+
 	gCopData.autoMaxPowerScaleLimit = 0;
 	gCopData.autoDesiredSpeedScaleLimit = 0;
-	if (GameType == GAME_GETAWAY) {
-		gCopRespawnTime = (int)&DAT_00002710;
+
+	if (GameType == GAME_GETAWAY) 
+	{
+		gCopRespawnTime = 10000;
 	}
-	else {
-		if (GameType == GAME_SURVIVAL) {
-			gCopRespawnTime = 0;
-			gCopDesiredSpeedScale = (int)&DAT_000011f4;
-			gCopMaxPowerScale = (int)&DAT_000011f4;
-			gCopData.autoMaxPowerScaleLimit = 0x400;
-			gCopData.autoDesiredSpeedScaleLimit = 0x400;
-		}
-		else {
-			gCopRespawnTime = 0x140;
-			if (gCurrentMissionNumber < 0x28) {
-				gCopRespawnTime = gCurrentMissionNumber * -4 + 0x140;
-			}
-		}
+	else if (GameType == GAME_SURVIVAL)
+	{
+		gCopRespawnTime = 0;
+		gCopDesiredSpeedScale = 4596;
+		gCopMaxPowerScale = 4596;
+		gCopData.autoMaxPowerScaleLimit = 1024;
+		gCopData.autoDesiredSpeedScaleLimit = 1024;
 	}
+	else
+	{
+		gCopRespawnTime = 320;
+
+		if (gCurrentMissionNumber < 0x28)
+			gCopRespawnTime = gCurrentMissionNumber * -4 + 0x140;
+	}
+
 	LastHeading = -1;
-	CarTail.vx = 0;
 	pathStraight = 0;
 	numActiveCops = 0;
+
 	OutOfSightCount = 0;
 	cop_respawn_timer = 0;
 	CopsCanSeePlayer = 0;
+
+	CarTail.vx = 0;
 	CarTail.vy = 0;
 	CarTail.vz = 0;
+
 	lastKnownPosition.vx = 0x7fffffff;
 	lastKnownPosition.vy = 0x7fffffff;
 	lastKnownPosition.vz = 0x7fffffff;
+
 	InitCopData(&gCopData);
+
 	copsAreInPursuit = 0;
-	return;
-	*/
 }
 
 

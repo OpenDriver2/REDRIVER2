@@ -17,6 +17,9 @@ extern int cop_respawn_timer;
 
 extern char first_offence;
 
+extern int player_position_known;
+extern int numActiveCops;
+
 extern void InitCopState(_CAR_DATA *cp, char *extraData); // 0x0002F680
 
 extern void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to); // 0x0002D78C

@@ -129,8 +129,6 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 	/* end block 3 */
 	// End Line: 650
 
-int player_position_known = 0;
-
 int TannerStuckInCar(int doSpeedCheck)
 {
 	short *psVar1;

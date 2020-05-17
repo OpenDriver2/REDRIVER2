@@ -1123,7 +1123,6 @@ int num_active_cars = 0;
 unsigned long lead_pad = 0;
 
 int numInactiveCars = 0;
-int numActiveCops = 0;
 int leadCarId = 0;
 
 VECTOR leadcar_pos;
