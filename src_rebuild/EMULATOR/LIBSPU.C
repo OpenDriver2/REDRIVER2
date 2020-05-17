@@ -308,6 +308,7 @@ int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStar
 	int k = 0;
 
 	int loopStrt = 0, loopEnd = 0;
+	int breakOn = -1;
 
 	for (int i = 0; i < soundSize; i++)
 	{
@@ -324,24 +325,30 @@ int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStar
 		sd = ((int)iData[i] >> 4) & 0xF;
 		oData[k++] = vagToPcm(sp, sd, &vagPrev1, &vagPrev2);
 
-		// flags parsed
-		if (flag & ADPCM_FLAGS::LoopStart)
-		{
-			loopStrt = k;
-		}
+		if (breakOnEnd && k == breakOn)
+			return k;
 
-		if (flag & ADPCM_FLAGS::LoopEnd)
+		if (breakOn == -1)
 		{
-			loopEnd = k;
-
-			if (flag & ADPCM_FLAGS::Repeat)
+			// flags parsed
+			if (flag & ADPCM_FLAGS::LoopStart)
 			{
-				*loopStart = loopStrt;
-				*loopLength = loopEnd - loopStrt;
+				loopStrt = k + 26;
 			}
 
-			if (breakOnEnd)
-				return k;
+			if (flag & ADPCM_FLAGS::LoopEnd)
+			{
+				loopEnd = k + 26;
+
+				if (flag & ADPCM_FLAGS::Repeat)
+				{
+					*loopStart = loopStrt;
+					*loopLength = loopEnd - loopStrt;
+				}
+
+				if (breakOnEnd)
+					breakOn = k + 26;
+			}
 		}
 	}
 

@@ -204,7 +204,7 @@ MENU_ITEM CutscenePauseItems[] =
 MENU_ITEM MissionCompleteItems[8] =
 {
 	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
-	{ "Next Mission", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
+	{ "Continue", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
