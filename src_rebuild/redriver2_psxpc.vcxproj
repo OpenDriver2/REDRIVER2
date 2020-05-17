@@ -223,6 +223,7 @@
     <ClCompile Include="GAME\C\OVERLAY.C" />
     <ClCompile Include="GAME\C\OVERMAP.C" />
     <ClCompile Include="GAME\C\PAD.C" />
+    <ClCompile Include="GAME\C\PATHFIND.C" />
     <ClCompile Include="GAME\C\PAUSE.C" />
     <ClCompile Include="GAME\C\PEDEST.C" />
     <ClCompile Include="GAME\C\PLAYERS.C" />
