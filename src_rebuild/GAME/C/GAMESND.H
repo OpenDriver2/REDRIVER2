@@ -1,6 +1,7 @@
 #ifndef GAMESND_H
 #define GAMESND_H
 
+extern int TimeSinceLastSpeech;
 
 extern void LoadBankFromLump(int bank, int lump); // 0x00052460
 

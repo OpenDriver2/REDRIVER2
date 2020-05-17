@@ -6,8 +6,11 @@
 #include "SYSTEM.H"
 #include "FELONY.H"
 #include "CARS.H"
+#include "PLAYERS.H"
 #include "PATHFIND.H"
-
+#include "GAMESND.H"
+#include "CUTSCENE.H"
+#include "CONVERT.H"
 
 COP_DATA gCopData = { 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
 
@@ -37,6 +40,7 @@ int requestCopCar = 0;
 int cop_respawn_timer = 0;
 char first_offence = 0;
 
+static int said_picked_up = 0;
 
 // decompiled code
 // original method signature: 
@@ -347,12 +351,12 @@ void InitCops(void)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char last_cop_phrase = 0;
+
+// [D]
 void ControlCops(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
-	undefined3 extraout_var;
 	long lVar2;
 	long lVar3;
 	short *psVar4;
@@ -360,107 +364,125 @@ void ControlCops(void)
 	int iVar5;
 
 	gCopData.autoBatterPlayerTrigger = 0x800;
-	if ((CopsAllowed == 0) || (gInGameCutsceneActive != 0)) {
+
+	if (CopsAllowed == 0 || gInGameCutsceneActive != 0) 
+	{
 		player_position_known = 0;
 		CopsCanSeePlayer = 0;
 		requestCopCar = 0;
 		direction = copsAreInPursuit;
 	}
-	else {
-		if (-1 < (int)player.playerCarId) {
-			targetVehicle = car_data + (int)player.playerCarId;
+	else 
+	{
+		if (-1 < player[0].playerCarId) 
+			targetVehicle = car_data + player[0].playerCarId;
+
+		if (0 < player_position_known)
+		{
+			lastKnownPosition.vx = player[0].pos[0];
+			lastKnownPosition.vy = player[0].pos[1];
+			lastKnownPosition.vz = player[0].pos[2];
+			lastKnownPosition.pad = player[0].pos[3];
 		}
-		if (0 < player_position_known) {
-			lastKnownPosition.vx = player.pos[0];
-			lastKnownPosition.vy = player.pos[1];
-			lastKnownPosition.vz = player.pos[2];
-			lastKnownPosition.pad = player.pos[3];
-		}
+
 		UpdateCopMap();
 		direction = LastHeading;
-		if (((first_offence == '\0') && (CopsCanSeePlayer != 0)) && (numActiveCops != 0)) {
-			if ((int)player.playerCarId < 0) {
+
+		if (first_offence == 0 && CopsCanSeePlayer != 0 && numActiveCops != 0) 
+		{
+			if (player[0].playerCarId < 0) 
+			{
 				psVar4 = &pedestrianFelony;
 			}
-			else {
-				psVar4 = &car_data[(int)player.playerCarId].felonyRating;
+			else
+			{
+				psVar4 = &car_data[player[0].playerCarId].felonyRating;
 			}
-			if (((0x292 < *psVar4) && (0x2d0 < TimeSinceLastSpeech)) && (0x14 < (targetVehicle->hd).speed)
-				) {
+
+			if (658 < *psVar4 && 720 < TimeSinceLastSpeech && 20 < targetVehicle->hd.speed)
+			{
 				cVar1 = GetCarDirectionOfTravel(targetVehicle);
-				direction = CONCAT31(extraout_var, cVar1);
+
+				direction = cVar1;
 				lVar2 = Random2(1);
-				if (direction != LastHeading) {
-					iVar5 = MaxPlayerDamage * 3;
-					if (iVar5 < 0) {
-						iVar5 = iVar5 + 3;
-					}
-					if (iVar5 >> 2 < (int)(uint)car_data[player.playerCarId].totalDamage) {
+
+				if (direction != LastHeading)
+				{
+					iVar5 = MaxPlayerDamage[0] * 3;
+
+					if (iVar5 >> 2 < car_data[player[0].playerCarId].totalDamage) 
+					{
 						lVar3 = lVar2;
-						if (lVar2 < 0) {
-							lVar3 = lVar2 + 3;
-						}
 						iVar5 = (lVar3 >> 2) * -4;
 					}
-					else {
+					else
+					{
 						iVar5 = (lVar2 / 3) * -3;
 					}
+
 					iVar5 = lVar2 + iVar5;
-					if (((first_offence == '\0') && (_last_cop_phrase != iVar5)) &&
-						(0x2d0 < TimeSinceLastSpeech)) {
-						if (iVar5 < 3) {
+
+					if (first_offence == 0 && last_cop_phrase != iVar5 && (720 < TimeSinceLastSpeech))
+					{
+						if (iVar5 < 3) 
+						{
 							CopSay(iVar5 + 0xf, direction);
-							_last_cop_phrase = iVar5;
+							last_cop_phrase = iVar5;
 						}
-						else {
+						else
+						{
 							CopSay(6, 0);
-							_last_cop_phrase = iVar5;
+							last_cop_phrase = iVar5;
 						}
 					}
 				}
 			}
 		}
+
 		LastHeading = direction;
-		if ((int)player.playerCarId < 0) {
+
+		if (player[0].playerCarId < 0)
 			psVar4 = &pedestrianFelony;
-		}
-		else {
-			psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (gCopData.autoBatterPlayerTrigger <= *psVar4) {
+		else 
+			psVar4 = &car_data[(int)player[0].playerCarId].felonyRating;
+
+		if (gCopData.autoBatterPlayerTrigger <= *psVar4)
 			gBatterPlayer = 1;
-		}
+
 		ControlCopDetection();
 		AdjustFelony(&felonyData);
 		ControlNumberOfCops();
 		direction = 0;
-		if (0 < player_position_known) {
-			if ((int)player.playerCarId < 0) {
+
+		if (0 < player_position_known) 
+		{
+			if (player[0].playerCarId < 0)
 				psVar4 = &pedestrianFelony;
-			}
-			else {
-				psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			if (0x292 < *psVar4) {
+			else
+				psVar4 = &car_data[(int)player[0].playerCarId].felonyRating;
+
+			if (0x292 < *psVar4)
+			{
 				direction = 1;
 			}
 		}
-		if (direction != 0) {
-			if (copsAreInPursuit == 0) {
-				Pads[0].alarmShakeCounter = '\f';
-			}
-			if ((direction != 0) &&
-				(copsAreInPursuit = direction, FunkUpDaBGMTunez(1), direction = copsAreInPursuit,
-					first_offence != '\0')) {
+
+		if (direction != 0) 
+		{
+			if (copsAreInPursuit == 0) 
+				Pads[0].alarmShakeCounter = 12;
+
+			if ((direction != 0) && (copsAreInPursuit = direction, FunkUpDaBGMTunez(1), direction = copsAreInPursuit, first_offence != 0)) 
+			{
 				CopSay(9, 0);
-				first_offence = '\0';
+
+				first_offence = 0;
 				said_picked_up = 1;
 				direction = copsAreInPursuit;
 			}
 		}
 	}
 	copsAreInPursuit = direction;
-	return;*/
 }
 
 
@@ -486,20 +508,18 @@ void ControlCops(void)
 	/* end block 3 */
 	// End Line: 1649
 
+// [D]
 void CopControl(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-
 	CopControl1(cp);
-	bVar1 = cp->ai[0x13];
+
 	CheckPingOut(cp);
-	if ((bVar1 == 0) && (cp->controlType == '\0')) {
-		numActiveCops = numActiveCops + -1;
-		numCopCars = numCopCars + -1;
+
+	if (cp->ai.p.dying == 0 && cp->controlType == 0)
+	{
+		numActiveCops--;
+		numCopCars--;
 	}
-	return;*/
 }
 
 
@@ -1101,28 +1121,29 @@ int FindCost(int x, int z, int dvx, int dvz)
 	/* end block 4 */
 	// End Line: 4379
 
+// [D]
 void InitCopData(COP_DATA *pCopData)
 {
-	UNIMPLEMENTED();
-	/*
 	short *psVar1;
 	int iVar2;
 	int iVar3;
 
 	psVar1 = pCopData->trigger;
 	iVar3 = 0;
-	if (psVar1 < pCopData->trigger + 4) {
+
+	if (psVar1 < pCopData->trigger + 4)
+	{
 		iVar2 = 0x3330000;
 		do {
-			*psVar1 = (short)iVar3;
+			*psVar1 = iVar3;
 			iVar3 = iVar2 >> 0x10;
-			psVar1 = psVar1 + 1;
-			iVar2 = iVar2 + 0x3330000;
+			psVar1++;
+			iVar2 += 0x3330000;
 		} while (psVar1 < pCopData->trigger + 4);
 	}
+
 	*psVar1 = 0x7fff;
 	said_picked_up = 0;
-	return;*/
 }
 
 
