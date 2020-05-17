@@ -3486,35 +3486,27 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 	int iVar5;
 	int iVar6;
 
-	static CDATA2D cdata;
+	static CDATA2D cd[2];
 	static CRET2D collisionResult;
 
-	//_DAT_000d9534 = 0x78;
-	//_DAT_000d9538 = 0xc;
-	//_DAT_000d9530 = ((player[0].pPed)->dir).vy - 0x800U & 0xfff;
+	cd[0].length[0] = 120;
+	cd[0].length[1] = 12;
 
-	collisionResult.hit.vx = pPos->vx;
-	collisionResult.hit.vz = pPos->vz;
+	cd[0].x.vx = pPos->vx;
+	cd[0].x.vz = pPos->vz;
+	cd[0].theta = ((player[0].pPed)->dir).vy - 0x800U & 0xfff;
 
-	cdata.length[0] = car_cosmetics[pCar->ap.model].colBox.vz;
-	cdata.length[1] = car_cosmetics[pCar->ap.model].colBox.vx;
+	cd[1].length[0] = car_cosmetics[pCar->ap.model].colBox.vz;
+	cd[1].length[1] = car_cosmetics[pCar->ap.model].colBox.vx;
 
-	cdata.x.vx = pCar->hd.where.t[0];
-	cdata.x.vz = pCar->hd.where.t[2];
+	cd[1].x.vx = pCar->hd.where.t[0];
+	cd[1].x.vz = pCar->hd.where.t[2];
+	cd[1].theta = pCar->hd.direction;
 
-	cdata.theta = pCar->hd.direction;
-
-	if (bcollided2d(&cdata, 1) != 0)
+	iVar1 = bcollided2d(cd, 1);
+	if (iVar1 != 0) 
 	{
-		bFindCollisionPoint(&cdata, &collisionResult);
-
-		uVar2 = pCar->ap.model;
-
-		iVar4 = ((pPos->vx - cdata.x.vx) * rcossin_tbl[(cdata.theta & 0xfffU) * 2 + 1] >> 0xc) -
-				((pPos->vz - cdata.x.vz) * rcossin_tbl[(cdata.theta & 0xfffU) * 2] >> 0xc);
-
-		iVar1 = ((pPos->vx - cdata.x.vx) * rcossin_tbl[(cdata.theta & 0xfffU) * 2] >> 0xc) +
-				((pPos->vz - cdata.x.vz) * rcossin_tbl[(cdata.theta & 0xfffU) * 2 + 1] >> 0xc);
+		bFindCollisionPoint(cd, &collisionResult);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
@@ -3530,28 +3522,38 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 			VECTOR _zero = { 0, 100, 0 };
 			VECTOR up = { 0, 200, 0 };
 
-			Debug_AddLineOfs(_zero, up, *pPos, rrcv);
+			Debug_AddLineOfs(_zero, up, cd[0].x, rrcv);
 
-			Debug_AddLineOfs(_zero, up, cdata.x, yycv);
+			Debug_AddLineOfs(_zero, up, cd[1].x, yycv);
 
 			Debug_AddLineOfs(_zero, up, collisionResult.hit, bbcv);
 		}
 #endif
 
-		iVar5 = car_cosmetics[uVar2].colBox.vx + 96;
-		iVar3 = car_cosmetics[uVar2].colBox.vz;
-		iVar6 = car_cosmetics[uVar2].colBox.vx - 96;
+		uVar2 = pCar->ap.model;
 
-		if ((car_cosmetics[uVar2].colBox.vz-480 < iVar1) && (iVar1 < car_cosmetics[uVar2].colBox.vz -200))
+		iVar6 = car_cosmetics[uVar2].colBox.vx;
+		iVar4 = ((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) / 4096 -
+				((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) / 4096;
+
+		iVar5 = iVar6 + 96;
+		iVar3 = car_cosmetics[uVar2].colBox.vz;
+
+		iVar1 = ((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) / 4096 +
+				((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) / 4096;
+
+		iVar6 = iVar6 - 96;
+
+		if ((iVar3 - 480 < iVar1) && (iVar1 < iVar3 - 200)) 
 		{
 			if ((iVar6 < iVar4) && (iVar4 < iVar5)) 
 				return 1;
 
 			if ((iVar4 < -iVar6) && (-iVar5 < iVar4)) 
 				return 1;
-
 		}
 	}
+
 	return 0;
 }
 
