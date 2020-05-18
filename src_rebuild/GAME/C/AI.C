@@ -129,13 +129,14 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 	/* end block 3 */
 	// End Line: 650
 
+// [D]
 int TannerStuckInCar(int doSpeedCheck)
 {
 	short *psVar1;
 	int iVar2;
 	int iVar3;
 
-	_CAR_DATA *cp;
+	_CAR_DATA *cp = NULL;
 
 	if (NumPlayers < 2 && player[0].playerType == 1)
 	{
@@ -150,6 +151,7 @@ int TannerStuckInCar(int doSpeedCheck)
 		}
 
 		if ((*psVar1 < 0x293 || player_position_known < 1) &&
+			cp &&
 			(cp->hd.wheel[1].surface & 7) != 1 &&
 			(cp->hd.wheel[3].surface & 7) != 1)
 		{

@@ -1,6 +1,7 @@
 #ifndef CUTSCENE_H
 #define CUTSCENE_H
 
+extern int gInGameCutsceneID;
 extern int gInGameCutsceneActive;
 extern int gInGameCutsceneDelay;
 extern int gInGameChaseActive;
