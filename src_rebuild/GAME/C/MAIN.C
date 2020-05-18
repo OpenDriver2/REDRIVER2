@@ -2165,7 +2165,8 @@ void DrawGame(void)
 {
 	static unsigned long frame = 0;
 
-	if ((NumPlayers == 1) || (NoPlayerControl != 0)) {
+	if ((NumPlayers == 1) || (NoPlayerControl != 0)) 
+	{
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
 		RenderGame2(0);
@@ -2173,11 +2174,12 @@ void DrawGame(void)
 		ObjectDrawnCounter++;
 
 		while ((VSync(-1) - frame) < 2);
-
 		frame = VSync(-1);
+
 		SwapDrawBuffers();
 	}
-	else {
+	else 
+	{
 		ObjectDrawnValue = FrameCnt;
 		RenderGame2(0);
 		ObjectDrawnCounter++;
@@ -2190,6 +2192,9 @@ void DrawGame(void)
 		ObjectDrawnCounter++;
 
 		SwapDrawBuffers2(1);
+
+		while ((VSync(-1) - frame) < 2);
+		frame = VSync(-1);
 	}
 
 	FrameCnt++;

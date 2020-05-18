@@ -6,6 +6,11 @@
 #include "REPLAYS.H"
 #include "GAMESND.H"
 #include "GLAUNCH.H"
+#include "CIV_AI.H"
+#include "PEDEST.H"
+#include "PRES.H"
+
+#include "LIBETC.H"
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
@@ -268,69 +273,51 @@ void DrawInGameCutscene(void)
 	/* end block 3 */
 	// End Line: 1389
 
+// [D]
 void TriggerChase(int *car, int cutscene)
 {
-	int iVar1;
-	int *piVar2;
-	int iVar3;
-	int cutscene_00;
-	int *piVar4;
+	int *inform;
+	int i;
+	int length;
 
-	cutscene_00 = gRandomChase;
-	piVar4 = car_data[*car].inform;
-	iVar3 = 0;
+	inform = car_data[*car].inform;
 	car_data[*car].inform = NULL;
-	gInGameChaseActive = TriggerInGameCutsceneSystem(cutscene_00);
 
-	if (gInGameChaseActive == 0)
-		goto LAB_000316a8;
+	gInGameChaseActive = TriggerInGameCutsceneSystem(gRandomChase);
 
-	if (CutsceneStreamIndex < NumReplayStreams) 
+	if (gInGameChaseActive)
 	{
-		piVar2 = &ReplayStreams[CutsceneStreamIndex].length;
-		iVar1 = NumReplayStreams - CutsceneStreamIndex;
-		cutscene_00 = iVar3;
-		do {
-			iVar3 = *piVar2;
-			if (*piVar2 < cutscene_00) {
-				iVar3 = cutscene_00;
-			}
-			iVar1 = iVar1 + -1;
-			piVar2 = piVar2 + 0x11;
-			cutscene_00 = iVar3;
-		} while (iVar1 != 0);
-	}
+		length = 0;
 
-	if (false) 
-	{
-	switchD_000315e4_caseD_3:
-		Mission.timer[0].count = (iVar3 / 0x1e) * 3000 + -15000;
-	}
-	else 
-	{
+		// find maximum length of cutscene
+		for (i = CutsceneStreamIndex; i < NumReplayStreams; i++)
+		{
+			if (ReplayStreams[i].length > length)
+				length = ReplayStreams[i].length;
+		}
+
 		switch (gCurrentMissionNumber)
 		{
-		case 2:
-		case 4:
-		case 6:
-		case 10:
-		case 0x12:
-			Mission.timer[0].count = (long)(15000 + (iVar3 / 0x1e) * 3000);
-			break;
-		default:
-			goto switchD_000315e4_caseD_3;
+			case 2:
+			case 4:
+			case 6:
+			case 10:
+			case 18:
+				Mission.timer[0].count = (15000 + (length / 30) * 3000);
+				break;
+			default:
+				Mission.timer[0].count = (length / 30) * 3000 - 15000;
 		}
+
+		Mission.timer[0].flags = 1;
+
+		*car = CutsceneStreamIndex;
+		player[0].targetCarId = CutsceneStreamIndex;
+
+		InitLeadHorn();
 	}
 
-	Mission.timer[0].flags = 1;
-
-	*car = CutsceneStreamIndex;
-
-	player[0].targetCarId = CutsceneStreamIndex;
-
-	InitLeadHorn();
-LAB_000316a8:
-	car_data[*car].inform = piVar4;
+	car_data[*car].inform = inform;
 }
 
 
@@ -620,10 +607,7 @@ void ReleaseInGameCutscene(void)
 // [D]
 int PreLoadInGameCutscene(int chase)
 {
-	int iVar1;
-
-	iVar1 = LoadInGameCutscene(chase);
-	return (uint)(iVar1 != 0);
+	return LoadInGameCutscene(chase) != 0;
 }
 
 
@@ -695,28 +679,22 @@ int CutsceneCameraChange(int cameracnt)
 	/* end block 3 */
 	// End Line: 3302
 
+// [D]
 int LoadInGameCutscene(int subindex)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
+	if (CutsceneInReplayBuffer)
+		return LoadCutsceneToBuffer(subindex);
 
-	if (CutsceneInReplayBuffer == 0) {
-		iVar1 = LoadCutsceneToBuffer(subindex);
-		if (iVar1 != 0) {
-			iVar1 = LoadCutsceneToReplayBuffer(0);
-			if (iVar1 != 0) {
-				CutsceneInReplayBuffer = 1;
-				PreLoadedCutscene = subindex;
-			}
-			FreeCutsceneBuffer();
+	if (LoadCutsceneToBuffer(subindex) != 0)
+	{
+		if (LoadCutsceneToReplayBuffer(0) != 0)
+		{
+			CutsceneInReplayBuffer = 1;
+			PreLoadedCutscene = subindex;
 		}
+
+		FreeCutsceneBuffer();
 	}
-	else {
-		iVar1 = LoadCutsceneToBuffer(subindex);
-	}
-	return iVar1;*/
 }
 
 
@@ -941,23 +919,21 @@ int TriggerInGameCutsceneSystem(int cutscene)
 	/* end block 4 */
 	// End Line: 2641
 
+// [D]
 void SetNullPlayer(int plr)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	int carId = player[plr].playerCarId;
 
-	iVar1 = (int)(&player)[plr].playerCarId;
-	if (iVar1 != -1) {
-		car_data[iVar1].controlType = '\x02';
-		car_data[iVar1].ai[0xf9] = 3;
-		car_data[iVar1].ai[0xc] = 7;
-		*(undefined4 *)(car_data[iVar1].ai + 8) = 0;
-		(&player)[plr].playerCarId = -1;
+	if (carId != -1) 
+	{
+		car_data[carId].controlType = 2;
+		car_data[carId].ai.c.thrustState = 3;
+		car_data[carId].ai.c.ctrlState = 7;
+		car_data[carId].ai.c.ctrlNode = NULL;
+		player[plr].playerCarId = -1;
 	}
-	(&player)[plr].playerType = '\x03';
-	return;
-	*/
+
+	player[plr].playerType = 3;
 }
 
 
@@ -988,23 +964,21 @@ void SetNullPlayer(int plr)
 	/* end block 4 */
 	// End Line: 2688
 
+// [D]
 void SetNullPlayerDontKill(int plr)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	int carId = player[plr].playerCarId;
 
-	iVar1 = (int)(&player)[plr].playerCarId;
-	if (iVar1 != -1) {
-		car_data[iVar1].controlType = '\a';
-		car_data[iVar1].ai[0xf9] = 3;
-		car_data[iVar1].ai[0xc] = 7;
-		*(undefined4 *)(car_data[iVar1].ai + 8) = 0;
-		(&player)[plr].playerCarId = -1;
+	if (carId != -1)
+	{
+		car_data[carId].controlType = 7;
+		car_data[carId].ai.c.thrustState = 3;
+		car_data[carId].ai.c.ctrlState = 7;
+		car_data[carId].ai.c.ctrlNode = NULL;
+		player[plr].playerCarId = -1;
 	}
-	(&player)[plr].playerType = '\x03';
-	return;
-	*/
+
+	player[plr].playerType = 3;
 }
 
 
@@ -1025,27 +999,24 @@ void SetNullPlayerDontKill(int plr)
 
 void DestroyPlayer(int plr, int fully)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((PlayerStartInfo8[plr]->flags & 2) == 0) {
-		if (fully != 0) {
-			if (((&player)[plr].playerType == '\x01') &&
-				((int)(&player)[plr].playerCarId != gThePlayerCar)) {
-				PingOutCar(car_data + (int)(&player)[plr].playerCarId);
-			}
-			if ((&player)[plr].pPed != (PEDESTRIAN *)0x0) {
-				DestroyPedestrian((&player)[plr].pPed);
-			}
-		}
-		(&player)[plr].playerType = '\x03';
-		(&player)[plr].playerCarId = -1;
-		(&player)[plr].pPed = (PEDESTRIAN *)0x0;
-	}
-	else {
+	if (PlayerStartInfo[plr]->flags & 2)
+	{
 		SetNullPlayerDontKill(plr);
+		return;
 	}
-	return;
-	*/
+
+	if (fully) 
+	{
+		if (player[plr].playerType == 1 && player[plr].playerCarId != gThePlayerCar) 
+			PingOutCar(&car_data[player[plr].playerCarId]);
+
+		if (player[plr].pPed != NULL) 
+			DestroyPedestrian(player[plr].pPed);
+	}
+
+	player[plr].playerType = 3;
+	player[plr].playerCarId = -1;
+	player[plr].pPed = NULL;
 }
 
 
@@ -1382,10 +1353,30 @@ int LoadCutsceneToBuffer(int subindex)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [A] From Code Review
 void ShowCutsceneError(void)
 {
-	// TODO: some debug codes
-	return;
+	RECT16 rect;
+
+	printf("Cutscene initialisation error!\n");
+	SetDispMask(0);
+	DrawSync(0);
+
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 320;
+	rect.h = 256;
+
+	ClearImage2(&rect, 0,0,0);
+	DrawSync(0);
+
+	SetTextColour(128, 0, 0);
+	PrintStringCentred("CUTSCENE ERROR!", 0x78);
+
+	DrawSync(0);
+	SetDispMask(1);
+
+	VSync(20);
 }
 
 

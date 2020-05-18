@@ -1042,37 +1042,15 @@ void DrawMapPSX(int *comp_val)
 
 									if (((uVar1 & 0x480) == 0) && ((model->flags2 & 0xc000) == 0))
 									{
-#if 1
 										cop = UnpackCellObject(ppco, &ci.near);
-#else
-										if (pPVar5 != NULL)
-										{
 
-											cop = &cell_object_buffer[cell_object_index];
-											(cop->pos).vx = ci.near.x + ((int)(((uint)(pPVar5->pos).vx - (ci.near.x & 0xffffU)) * 0x10000) >> 0x10);
-
-											cell_object_buffer[cell_object_index].pos.vy = (int)((uint)(pPVar5->pos).vy << 0x10) >> 0x11;
-											pCVar2 = cell_object_buffer + cell_object_index;
-											cell_object_index = cell_object_index + 1U & 0x3ff;
-
-											(pCVar2->pos).vz =
-												ci.near.z +
-												((int)(((uint)(pPVar5->pos).vz -
-												(ci.near.z & 0xffffU)) * 0x10000) >>
-													0x10);
-											*(uint *)&cell_object_buffer[cellx].pad =
-												((uint)(pPVar5->value >> 6) |
-												((uint)(pPVar5->pos).vy & 1) << 10) << 0x10 |
-													((uint)pPVar5->value & 0x3f) << 8;
-										}
-#endif
 
 										if (((model->flags2 & 1) != 0) && (anim_objs < 20))
 										{
 											anim_obj_buffer[anim_objs++] = cop;
 										}
 
-										if (other_models_found < 192) // [A] bug fixes
+										if (other_models_found < 192)
 											model_object_ptrs[other_models_found++] = cop;
 									}
 									else
@@ -1095,7 +1073,7 @@ void DrawMapPSX(int *comp_val)
 										if (tiles_found < 0x100)
 										{
 											*(PACKED_CELL_OBJECT **)(tile_overflow_buffer + tiles_found) = ppco;
-											tiles_found = tiles_found + 1;
+											tiles_found++;
 										}
 									}
 								}
