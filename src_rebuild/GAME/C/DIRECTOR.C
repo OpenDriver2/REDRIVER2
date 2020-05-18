@@ -1,5 +1,13 @@
 #include "THISDUST.H"
 #include "DIRECTOR.H"
+#include "CAMERA.H"
+#include "PLAYERS.H"
+#include "EVENT.H"
+#include "OVERMAP.H"
+#include "REPLAYS.H"
+#include "CARS.H"
+
+#include "STRINGS.H"
 
 TEXTURE_DETAILS delcam; // address 0xC0EE0
 TEXTURE_DETAILS incar; // address 0xBF950
@@ -575,25 +583,28 @@ int CheckCameraChange(int CameraCnt)
 	/* end block 3 */
 	// End Line: 5356
 
+extern char CameraChanged;
+
+// [D]
 void SetPlaybackCamera(PLAYBACKCAMERA *camera)
 {
-	UNIMPLEMENTED();
-	/*
-	CameraPos.vy = (int)camera->CameraPosvy;
+	CameraPos.vy = camera->CameraPosvy;
 	camera_angle.vx = (camera->angle).vx;
 	camera_angle.vy = (camera->angle).vy;
 	camera_angle.vz = (camera->angle).vz;
-	gCameraDistance = (int)camera->gCameraDistance;
-	gCameraMaxDistance = (int)camera->gCameraMaxDistance;
-	gCameraAngle = (int)camera->gCameraAngle;
+	gCameraDistance = camera->gCameraDistance;
+	gCameraMaxDistance = camera->gCameraMaxDistance;
+	gCameraAngle = camera->gCameraAngle;
 	cameraview = camera->cameraview & 7;
-	tracking_car = (char)(((uint)(byte)camera->cameraview & 8) >> 3);
-	CameraChanged = '\x01';
-	player.cameraPos.vx = (camera->position).vx;
-	player.cameraPos.vy = (camera->position).vy;
-	player.cameraPos.vz = (camera->position).vz;
-	player.cameraCarId = *(char *)&(camera->angle).pad;
-	return;*/
+
+	tracking_car = (camera->cameraview & 8) >> 3;
+
+	CameraChanged = 1;
+
+	player[0].cameraPos.vx = (camera->position).vx;
+	player[0].cameraPos.vy = (camera->position).vy;
+	player[0].cameraPos.vz = (camera->position).vz;
+	player[0].cameraCarId = camera->angle.pad;
 }
 
 
@@ -627,20 +638,18 @@ void SetPlaybackCamera(PLAYBACKCAMERA *camera)
 	/* end block 2 */
 	// End Line: 1547
 
+// [D]
 int IsMovingCamera(PLAYBACKCAMERA *lastcam, PLAYBACKCAMERA *nextcam, int cameracnt)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	PLAYBACKCAMERA *pPVar2;
 	int iVar3;
 	int iVar4;
-	byte bVar5;
+	unsigned char bVar5;
 	int iVar6;
 	int iVar7;
 	int iVar8;
-	long *plVar9;
+	PLAYBACKCAMERA *pPVar9;
 	int iVar10;
 	int iVar11;
 	int iVar12;
@@ -648,90 +657,72 @@ int IsMovingCamera(PLAYBACKCAMERA *lastcam, PLAYBACKCAMERA *nextcam, int camerac
 	int iVar14;
 	long lVar15;
 	long lVar16;
-	long lVar17;
+	uint uVar17;
 	uint uVar18;
-	long local_38;
-	long local_34;
-	long local_30;
-	short local_2c;
-	short sStack42;
-	short local_28;
+	PLAYBACKCAMERA cam;
 
-	if (lastcam != (PLAYBACKCAMERA *)0x0) {
-		if ((cameraview != 5) && (cameraview != 1)) {
-			return 0;
+	if (lastcam == NULL)
+		return 0;
+
+	if (cameraview != 5 && cameraview != 1)
+		return 0;
+
+	bVar5 = nextcam->cameraview & 0x87;
+
+	if ((bVar5 == 133) || (bVar5 == 129))
+	{
+		cameracnt = cameracnt - lastcam->FrameCnt;
+		iVar14 = nextcam->FrameCnt - lastcam->FrameCnt;
+		uVar18 = (cameracnt * 0x800) / iVar14;
+
+		iVar7 = nextcam->position.vx;
+		iVar6 = nextcam->position.vy;
+		iVar10 = (rcossin_tbl[(uVar18 * 3 & 0xfff) * 2 + 1] + rcossin_tbl[(uVar18 & 0xfff) * 2 + 1] * -9 >> 4) + 0x800;
+
+		iVar3 = lastcam->position.vx;
+		iVar1 = lastcam->position.vy;
+		iVar8 = nextcam->position.vz;
+		iVar4 = lastcam->position.vz;
+
+		iVar11 = nextcam->angle.vx - lastcam->angle.vx;
+		iVar12 = nextcam->angle.vy - lastcam->angle.vy;
+		iVar13 = nextcam->angle.vz - lastcam->angle.vz;
+
+		if (iVar11 < -0x800) {
+			iVar11 = iVar11 + 0x1000;
 		}
-		bVar5 = nextcam->cameraview & 0x87;
-		if ((bVar5 == 0x85) || (bVar5 == 0x81)) {
-			cameracnt = cameracnt - lastcam->FrameCnt;
-			iVar14 = nextcam->FrameCnt - lastcam->FrameCnt;
-			uVar18 = (cameracnt * 0x800) / iVar14;
-			if (iVar14 == 0) {
-				trap(7);
-			}
-			iVar7 = (nextcam->position).vx;
-			iVar6 = (nextcam->position).vy;
-			iVar10 = ((int)rcossin_tbl[(uVar18 * 3 & 0xfff) * 2 + 1] +
-				(int)rcossin_tbl[(uVar18 & 0xfff) * 2 + 1] * -9 >> 4) + 0x800;
-			iVar3 = (lastcam->position).vx;
-			iVar1 = (lastcam->position).vy;
-			iVar8 = (nextcam->position).vz;
-			iVar4 = (lastcam->position).vz;
-			iVar11 = (int)(nextcam->angle).vx - (int)(lastcam->angle).vx;
-			iVar12 = (int)(nextcam->angle).vy - (int)(lastcam->angle).vy;
-			iVar13 = (int)(nextcam->angle).vz - (int)(lastcam->angle).vz;
-			if (iVar11 < -0x800) {
-				iVar11 = iVar11 + 0x1000;
-			}
-			if (0x800 < iVar11) {
-				iVar11 = iVar11 + -0x1000;
-			}
-			if (iVar12 < -0x800) {
-				iVar12 = iVar12 + 0x1000;
-			}
-			if (0x800 < iVar12) {
-				iVar12 = iVar12 + -0x1000;
-			}
-			if (iVar13 < -0x800) {
-				iVar13 = iVar13 + 0x1000;
-			}
-			if (0x800 < iVar13) {
-				iVar13 = iVar13 + -0x1000;
-			}
-			plVar9 = (long *)&local_38;
-			pPVar2 = lastcam;
-			do {
-				lVar15 = (pPVar2->position).vy;
-				lVar16 = (pPVar2->position).vz;
-				lVar17 = *(long *)&pPVar2->angle;
-				*plVar9 = (pPVar2->position).vx;
-				plVar9[1] = lVar15;
-				plVar9[2] = lVar16;
-				plVar9[3] = lVar17;
-				pPVar2 = (PLAYBACKCAMERA *)&(pPVar2->angle).vz;
-				plVar9 = plVar9 + 4;
-			} while (pPVar2 != (PLAYBACKCAMERA *)&lastcam->cameraview);
-			*plVar9 = (pPVar2->position).vx;
-			local_38 = (lastcam->position).vx + ((iVar7 - iVar3) * 0x40 * iVar10 + 0x20000 >> 0x12);
-			local_34 = (lastcam->position).vy + ((iVar6 - iVar1) * 0x40 * iVar10 + 0x20000 >> 0x12);
-			local_30 = (lastcam->position).vz + ((iVar8 - iVar4) * 0x40 * iVar10 + 0x20000 >> 0x12);
-			if (iVar14 == 0) {
-				trap(7);
-			}
-			local_2c = (lastcam->angle).vx + (short)(((iVar11 << 6) / iVar14) * cameracnt >> 6);
-			if (iVar14 == 0) {
-				trap(7);
-			}
-			sStack42 = (lastcam->angle).vy + (short)(((iVar12 << 6) / iVar14) * cameracnt >> 6);
-			if (iVar14 == 0) {
-				trap(7);
-			}
-			local_28 = (lastcam->angle).vz + (short)(((iVar13 << 6) / iVar14) * cameracnt >> 6);
-			SetPlaybackCamera((PLAYBACKCAMERA *)&local_38);
-			return 1;
+		if (0x800 < iVar11) {
+			iVar11 = iVar11 + -0x1000;
 		}
+		if (iVar12 < -0x800) {
+			iVar12 = iVar12 + 0x1000;
+		}
+		if (0x800 < iVar12) {
+			iVar12 = iVar12 + -0x1000;
+		}
+		if (iVar13 < -0x800) {
+			iVar13 = iVar13 + 0x1000;
+		}
+		if (0x800 < iVar13) {
+			iVar13 = iVar13 + -0x1000;
+		}
+
+		memcpy(&cam, lastcam, sizeof(PLAYBACKCAMERA));
+
+		cam.position.vx = lastcam->position.vx;
+		cam.position.vx = lastcam->position.vx + ((iVar7 - iVar3) * 0x40 * iVar10 + 0x20000 >> 0x12);
+		cam.position.vy = lastcam->position.vy + ((iVar6 - iVar1) * 0x40 * iVar10 + 0x20000 >> 0x12);
+		cam.position.vz = lastcam->position.vz + ((iVar8 - iVar4) * 0x40 * iVar10 + 0x20000 >> 0x12);
+
+		cam.angle.vx = lastcam->angle.vx + (short)(((iVar11 << 6) / iVar14) * cameracnt >> 6);
+		cam.angle.vy = lastcam->angle.vy + (short)(((iVar12 << 6) / iVar14) * cameracnt >> 6);
+		cam.angle.vz = lastcam->angle.vz + (short)(((iVar13 << 6) / iVar14) * cameracnt >> 6);
+
+		SetPlaybackCamera(&cam);
+		return 1;
 	}
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -2747,11 +2738,9 @@ int SelectCameraCar(int current)
 	/* end block 4 */
 	// End Line: 4852
 
+// [D]
 int InvalidCamera(int car_num)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	uint uVar2;
 	ulong uVar3;
@@ -2760,75 +2749,93 @@ int InvalidCamera(int car_num)
 	uint uVar6;
 	int iVar7;
 
-	if (cameraview != 0) {
-		if (cameraview != 2) {
-			uVar3 = Long2DDistance(player.spoolXZ, &player.cameraPos);
-			if (11000 < (int)uVar3) {
-				player.cameraCarId = -1;
-				if (player.playerType != '\x02') {
-					player.cameraCarId = player.playerCarId;
-				}
+	if (cameraview != 0)
+	{
+		if (cameraview != 2)
+		{
+			uVar3 = Long2DDistance(player[0].spoolXZ, &player[0].cameraPos);
+			if (11000 < uVar3) 
+			{
+				player[0].cameraCarId = -1;
+
+				if (player[0].playerType != 2)
+					player[0].cameraCarId = player[0].playerCarId;
+
 				CameraPos.vy = -300;
 				cameraview = 0;
 				return 1;
 			}
-			iVar4 = valid_region(player.cameraPos.vx, player.cameraPos.vz);
-			if (iVar4 != 0) {
+
+			iVar4 = valid_region(player[0].cameraPos.vx, player[0].cameraPos.vz);
+
+			if (iVar4 != 0)
 				return 0;
-			}
-			player.cameraCarId = -1;
-			if (player.playerType != '\x02') {
-				player.cameraCarId = player.playerCarId;
-			}
+
+			player[0].cameraCarId = -1;
+
+			if (player[0].playerType != 2)
+				player[0].cameraCarId = player[0].playerCarId;
+
 			cameraview = 2;
 			return 1;
 		}
+
 		bVar1 = false;
-		if (-1 < car_num) {
-			bVar1 = car_data[car_num].controlType == '\0';
-		}
-		if ((car_num == -1) && (player.playerType != '\x02')) {
+
+		if (-1 < car_num)
+			bVar1 = car_data[car_num].controlType == 0;
+
+		if (car_num == -1 && player[0].playerType != 2) 
 			bVar1 = true;
-		}
+
 		uVar6 = 0;
-		if (car_num < -1) {
-			if (*events.track != (_EVENT *)0x0) {
+
+		if (car_num < -1)
+		{
+			if (*events.track != NULL)
+			{
 				uVar2 = 1;
 				do {
 					uVar6 = uVar2 & 0xff;
 					uVar2 = uVar6 + 1;
-				} while (events.track[uVar6] != (_EVENT *)0x0);
+				} while (events.track[uVar6] != NULL);
 			}
-			if (-2 - car_num < (int)uVar6) {
+
+			if (-2 - car_num < uVar6)
 				bVar1 = true;
-			}
-			iVar5 = player.pos[0] - (events.track[car_num * 0x3fffffff + -2]->position).vx;
+
+			iVar5 = player[0].pos[0] - (events.track[car_num * 0x3fffffff + -2]->position).vx;
 			iVar4 = iVar5;
-			if (iVar5 < 0) {
+
+			if (iVar5 < 0)
 				iVar4 = -iVar5;
-			}
-			iVar7 = player.pos[2] - (events.track[car_num * 0x3fffffff + -2]->position).vz;
-			if (iVar4 < 15000) {
+
+			iVar7 = player[0].pos[2] - (events.track[car_num * 0x3fffffff + -2]->position).vz;
+
+			if (iVar4 < 15000) 
+			{
 				iVar4 = iVar7;
-				if (iVar7 < 0) {
+				if (iVar7 < 0)
 					iVar4 = -iVar7;
-				}
-				if ((iVar4 < 15000) && (iVar5 * iVar5 + iVar7 * iVar7 < 225000000)) {
+	
+				if (iVar4 < 15000 && (iVar5 * iVar5 + iVar7 * iVar7 < 225000000)) 
 					bVar1 = true;
-				}
 			}
 		}
-		if (bVar1) {
-			player.cameraCarId = -1;
-			if (player.playerType != '\x02') {
-				player.cameraCarId = player.playerCarId;
-			}
+
+		if (bVar1)
+		{
+			player[0].cameraCarId = -1;
+
+			if (player[0].playerType != 2) 
+				player[0].cameraCarId = player[0].playerCarId;
+
 			CameraPos.vy = -300;
 			return 1;
 		}
 	}
+
 	return 0;
-	*/
 }
 
 

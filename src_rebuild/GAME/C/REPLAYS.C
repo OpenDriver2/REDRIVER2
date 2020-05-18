@@ -8,6 +8,8 @@
 #include "GLAUNCH.H"
 #include "MISSION.H"
 #include "DIRECTOR.H"
+#include "CAMERA.H"
+#include "CIV_AI.H"
 
 char AnalogueUnpack[] = { 0, 0xCD, 0xC1, 0xB5, 0xA9, 0x9D, 0x91, 0x85, 0, 0x33, 0x3F, 0x4B, 0x57, 0x63, 0x6F, 0x7B };
 
@@ -733,29 +735,30 @@ int LoadAttractReplay(int mission)
 	/* end block 3 */
 	// End Line: 2365
 
+// [D]
 char GetPingInfo(char *cookieCount)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	char cVar1;
 	_PING_PACKET *p_Var2;
 
 	p_Var2 = PingBuffer + PingBufferPos;
-	if ((PingBuffer != (_PING_PACKET *)0x0) && (PingBufferPos < 400)) {
+
+	if (PingBuffer != NULL && PingBufferPos < 400)
+	{
 		cVar1 = -1;
-		if (p_Var2->frame != 0xffff) {
-			if ((CameraCnt - frameStart & 0xffffU) < (uint)p_Var2->frame) {
+		if (p_Var2->frame != 0xffff) 
+		{
+			if ((CameraCnt - frameStart & 0xffffU) < p_Var2->frame) 
 				return -1;
-			}
+
 			cVar1 = p_Var2->carId;
 			*cookieCount = p_Var2->cookieCount;
 			PingBufferPos = PingBufferPos + 1;
 		}
 		return cVar1;
 	}
+
 	return -1;
-	*/
 }
 
 

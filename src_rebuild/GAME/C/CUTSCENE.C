@@ -1106,35 +1106,36 @@ void DestroyPlayer(int plr, int fully)
 	/* end block 4 */
 	// End Line: 3831
 
+// [D]
 void FindNextCutChange(int cameracnt)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
+	bool found;
 	int iVar2;
 	PLAYBACKCAMERA *pPVar3;
-	int iVar4;
+	int nextframe;
 	int iVar5;
 
-	bVar1 = false;
-	iVar4 = 0x186a1;
-	iVar5 = 0x3b;
+	found = false;
+	nextframe = 100001;
+	iVar5 = 59;
 	pPVar3 = CutsceneCamera;
+
 	do {
 		iVar2 = pPVar3->FrameCnt;
-		if ((cameracnt <= iVar2) && (iVar2 < iVar4)) {
-			bVar1 = true;
-			iVar4 = iVar2;
+
+		if (cameracnt <= iVar2 && iVar2 < nextframe) 
+		{
+			found = true;
+			nextframe = iVar2;
 			CutNextChange = pPVar3;
 		}
-		iVar5 = iVar5 + -1;
-		pPVar3 = pPVar3 + 1;
+
+		iVar5--;
+		pPVar3++;
 	} while (-1 < iVar5);
-	if (!bVar1) {
+
+	if (!found)
 		CutNextChange->next = -2;
-	}
-	return;
-	*/
 }
 
 
