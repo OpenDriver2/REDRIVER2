@@ -2235,81 +2235,80 @@ void DoPoliceLoudhailer(int cars, ushort *indexlist, ulong *dist)
 void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 {
 	int iVar1;
-	uint uVar2;
+	int chan;
 	long lVar3;
 	int iVar4;
 	int iVar5;
 	int iVar6;
-	uint uVar7;
-	uint phrase;
+	int playerid;
+	int phrase;
 	int sample;
 
-	uVar7 = player_id;
-	sample = 8;
-	phrase = 0;
+	playerid = player_id < 0 ? 0 : player_id;
 
 	if (impact < 25)
 		return;
 
-	if ((((int)uVar7 < 0) && (uVar7 = 0, 1 < NumPlayers)) && (NoPlayerControl == 0))
+	if(NumPlayers > 1 && NoPlayerControl == 0)
 	{
-		iVar4 = cp->hd.where.t[0];
-		iVar5 = iVar4 - player[0].pos[0];
-		iVar1 = cp->hd.where.t[2];
-		iVar6 = iVar1 - player[0].pos[2];
-		iVar4 = iVar4 - player[1].pos[0];
-		iVar1 = iVar1 - player[1].pos[2];
-		uVar7 = (uint)((uint)(iVar4 * iVar4 + iVar1 * iVar1) < (uint)(iVar5 * iVar5 + iVar6 * iVar6));
+		iVar5 = cp->hd.where.t[0] - player[0].pos[0];
+		iVar6 = cp->hd.where.t[2] - player[0].pos[2];
+
+		iVar4 = cp->hd.where.t[0] - player[1].pos[0];
+		iVar1 = cp->hd.where.t[2] - player[1].pos[2];
+
+		playerid = (iVar4 * iVar4 + iVar1 * iVar1) < (iVar5 * iVar5 + iVar6 * iVar6);
 	}
 
-	if (player[uVar7].crash_timer != 0)
+	if(player[playerid].crash_timer != 0)
 		return;
+
+	sample = 8;
+	phrase = 0;
 
 	if (car_car == 0)
 	{
-		if (0x30c < impact) goto LAB_0004f7a8;
-	LAB_0004f7b4:
-		if (car_car == 0)
+		if (impact > 780)
 		{
-			if (0x15e < impact) goto LAB_0004f7d8;
+			sample = 10;
+			phrase = 1;
 		}
-		else 
+		else if (impact > 350)
 		{
-			if (0x17c < impact)
-			{
-			LAB_0004f7d8:
-				sample = 9;
-				phrase = 2;
-			}
+			sample = 9;
+			phrase = 2;
 		}
 	}
-	else 
+	else
 	{
-		if (impact < 0x385) goto LAB_0004f7b4;
-	LAB_0004f7a8:
-		sample = 10;
-		phrase = 1;
+		if (impact > 900)
+		{
+			sample = 10;
+			phrase = 1;
+		}
+		else if (impact > 380)
+		{
+			sample = 9;
+			phrase = 2;
+		}
 	}
 
-	uVar2 = GetFreeChannel();
-	SetPlayerOwnsChannel(uVar2 & 0xff, (char)uVar7);
-	iVar1 = impact;
+	chan = GetFreeChannel();
 
-	if (impact < 0)
-		iVar1 = impact + 0x3ff;
-	
-	Start3DSoundVolPitch(uVar2 & 0xff, 1, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact + (iVar1 >> 10) * -1024 + 3584);
+	SetPlayerOwnsChannel(chan, playerid);
+	Start3DSoundVolPitch(chan, 1, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact - (impact / 1024) * 1024 + 3584);
 
-	sample = GetPlayerId(cp);
-	if ((sample != 0) || ((((2 < gCurrentMissionNumber - 2U && (gCurrentMissionNumber != 9)) && 
-		((gCurrentMissionNumber != 10 && (gCurrentMissionNumber != 0x1b)))) || ((impact & 5U) == 0)))) 
-		goto LAB_0004f930;
+	player[playerid].crash_timer = 2;
+
+	if (GetPlayerId(cp) != 0 || 
+		(gCurrentMissionNumber - 2 > 2 && gCurrentMissionNumber != 9 && gCurrentMissionNumber != 10 && gCurrentMissionNumber != 27 || (impact & 5) == 0))
+		return;
 
 	lVar3 = Random2(1);
 
 	if (lVar3 == (lVar3 / 3) * 3) 
 	{
-		phrase = phrase | 4;
+		phrase |= 4;
 	}
 	else 
 	{
@@ -2326,21 +2325,19 @@ void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 				BodSay(sample);
 			}
 
-			goto LAB_0004f930;
+			return;
 		}
 
-		if (phrase == 0) 
-			goto LAB_0004f930;
+		if (phrase == 0)
+			return;
 
-		uVar2 = Random2(1);
 		phrase = 2;
 
-		if ((uVar2 & 1) != 0) 
+		if ((Random2(1) & 1) != 0)
 			phrase = 1;
 	}
+
 	BodSay(phrase);
-LAB_0004f930:
-	player[uVar7].crash_timer = 2;
 }
 
 
@@ -2634,11 +2631,8 @@ void SoundTasks(void)
 			if (*piVar2 == 0) 
 				pPVar5->car_is_sounding = 0;
 
-			piVar2 = &pPVar5->crash_timer;
-			channel = *piVar2;
-
-			if (0 < channel) 
-				*piVar2 = channel + -1;
+			if (pPVar5->crash_timer > 0)
+				pPVar5->crash_timer--;
 
 			if (pPVar5->playerCarId < 0)
 			{

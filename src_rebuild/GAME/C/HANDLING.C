@@ -954,15 +954,11 @@ void GlobalTimeStep(void)
 
 										if ((0 < howHard) && (-1 < RKstep))
 										{
-											iVar9 = DamageCar3D(cp, (long(*)[4])lever0, howHard / 2, c1);
-
-											if (iVar9 != 0) 
-												cp->ap.needsDenting = 1;
-
-											iVar9 = DamageCar3D(c1, (long(*)[4])lever1, howHard / 2, cp);
-
-											if (iVar9 != 0) 
+											if (DamageCar3D(c1, (long(*)[4])lever1, howHard / 2, cp))
 												c1->ap.needsDenting = 1;
+
+											if (DamageCar3D(cp, (long(*)[4])lever0, howHard / 2, c1))
+												cp->ap.needsDenting = 1;
 
 											if (0x32000 < howHard) 
 											{
@@ -2892,21 +2888,18 @@ void nose_down(_CAR_DATA *cp)
 // [D]
 int GetPlayerId(_CAR_DATA *cp)
 {
-	char *pcVar1;
-	int iVar2;
-	_PLAYER *pPVar3;
-	int iVar4;
+	int i;
+	int p_id;
 
-	iVar2 = 0;
-	pPVar3 = player;
-	while ((iVar4 = -1, iVar2 < 3 &&
-		(pcVar1 = &pPVar3->playerCarId, pPVar3 = pPVar3 + 1, iVar4 = iVar2,
-			car_data + *pcVar1 != cp)))
+	for (i = 0; i < 3; i++)
 	{
-		iVar2 = iVar2 + 1;
+		p_id = player[i].playerCarId;
+
+		if (&car_data[p_id] == cp)
+			return i;
 	}
 
-	return iVar4;
+	return -1;
 }
 
 

@@ -382,12 +382,13 @@ void LoadMission(int missionnum)
 	if (NewLevel != 0) 
 		MissionLoadAddress = (_MISSION *)mallocptr;
 
+
 	sprintf(filename, "MISSIONS\\MISSIONS.BLK");
 
 	if (FileExists(filename) == 0)
 		return;
 
-	LoadfileSeg(filename, (char*)&header, missionnum << 2, 4);
+	LoadfileSeg(filename, (char*)&header, missionnum * 4, 4);
 
 	if (header == 0) 
 	{
@@ -2558,7 +2559,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 							Mission.ChaseTarget = MissionTargets;
 							gPlayerWithTheFlag = thread->player;
 
-							SetPlayerMessage(thread->player, "You did it!",2,1);
+							SetPlayerMessage(thread->player, "You got the flag!",2,1);
 
 							player[1 - gPlayerWithTheFlag].targetCarId = gPlayerWithTheFlag;
 						}

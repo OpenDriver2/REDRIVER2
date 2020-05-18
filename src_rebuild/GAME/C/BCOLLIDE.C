@@ -775,19 +775,14 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 	int value;
 	int iVar1;
 	bool fakeDamage;
-	int iVar2;
 
-	iVar2 = strikeVel;
-	//if (strikeVel < 0)
-	//	iVar2 = strikeVel + 0x7f;
+	int player_id;
+	int kludge;
 
 	strikeVel = strikeVel * 0x177;
 
-	value = (uint)(ushort)(((cp->ap).carCos)->colBox).vz << 0x10;
+	value = cp->ap.carCos->colBox.vz << 0x10;
 	value = (value >> 0x10) - (value >> 0x1f) >> 1;
-
-	//if (strikeVel < 0)
-	//	strikeVel = strikeVel + 255;
 
 	strikeVel = strikeVel >> 8;
 
@@ -796,112 +791,88 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		if (cp->totalDamage == 0)
 			cp->totalDamage = 1;
 
-		iVar2 = 0;
+		return 0;
+	}
+
+	iVar1 = (cp->hd.where.m[0][2] * (*delta)[0] + cp->hd.where.m[1][2] * (*delta)[1] + cp->hd.where.m[2][2] * (*delta)[2]) / 4096;
+
+	if ((cp->hd.where.m[0][0] * (*delta)[0] + cp->hd.where.m[1][0] * (*delta)[1] + cp->hd.where.m[2][0] * (*delta)[2]) / 4096 < 1)
+	{
+		region = 0;
+
+		if ((iVar1 <= value) && (region = 4, -value < iVar1)) 
+			region = 5;
 	}
 	else 
 	{
-		iVar1 = (cp->hd.where.m[0][2] * (*delta)[0] + cp->hd.where.m[1][2] * (*delta)[1] + cp->hd.where.m[2][2] * (*delta)[2]) / 4096;
+		region = 1;
 
-		if ((cp->hd.where.m[0][0] * (*delta)[0] + cp->hd.where.m[1][0] * (*delta)[1] + cp->hd.where.m[2][0] * (*delta)[2]) / 4096 < 1)
-		{
-			region = 0;
-
-			if ((iVar1 <= value) && (region = 4, -value < iVar1)) 
-			{
-				region = 5;
-			}
-		}
-		else 
-		{
-			region = 1;
-			if ((iVar1 <= value) && (region = 3, -value < iVar1))
-			{
-				region = 2;
-			}
-		}
-
-		if (cp->controlType == 1) 
-		{
-			value = (strikeVel / 350 + 0x200) * 3;
-			//if (value < 0)
-			//	value = value + 7;
-		
-			value = value >> 3;
-			if (0x477 < value)
-				value = 0x477;
-		
-		}
-		else if (cp->controlType == 4)
-		{
-			if (pOtherCar->controlType == 1)
-			{
-				value = (strikeVel / 350 + 0x200) * 3;
-				//if (value < 0)
-				//	value = value + 7;
-
-				value = value >> 3;
-
-				if (0x477 < value)
-					value = 0x477;
-
-				cp->ai.l.takeDamage = 0x32;
-			}
-			else
-			{
-				value = strikeVel / 350 + 0x200;
-				//if (value < 0)
-				//	value = strikeVel / 350 + 0x203;
-
-				value = value >> 2;
-				if (0x2fa < value)
-					value = 0x2fa;
-
-				if (cp->ai.l.takeDamage == 0)
-					value = 0;
-			}
-		}
-		else 
-		{
-			iVar1 = (strikeVel / 400 + 0x400) * 7;
-			value = iVar1 >> 3;
-
-			//if (iVar1 < 0)
-			//	value = iVar1 + 7 >> 3;
-		}
-
-		fakeDamage = false;
-
-		if (cp->controlType == 3) 
-			fakeDamage = pOtherCar->controlType == 3;
-
-		ApplyDamage(cp, region, value, fakeDamage);
-
-		value = GetPlayerId(cp);
-		region = (char)value;
-
-		if (region < 0) 
-		{
-			value = GetPlayerId(pOtherCar);
-			region = (char)value;
-		}
-
-		value = GetPlayerId(cp);
-
-		if ((value != 0) || (value = 2, pOtherCar->controlType != 2)) 
-		{
-			iVar1 = GetPlayerId(pOtherCar);
-			value = 1;
-
-			if ((iVar1 == 0) && (cp->controlType == 2)) 
-				value = 2;
-		}
-
-		CollisionSound(region, cp, iVar2 >> 7, value);
-
-		iVar2 = 1;
+		if ((iVar1 <= value) && (region = 3, -value < iVar1))
+			region = 2;
 	}
 
-	return iVar2;
+	if (cp->controlType == 1) 
+	{
+		value = (strikeVel / 350 + 0x200) * 3;
+
+		value = value >> 3;
+		if (0x477 < value)
+			value = 0x477;
+		
+	}
+	else if (cp->controlType == 4)
+	{
+		if (pOtherCar->controlType == 1)
+		{
+			value = (strikeVel / 350 + 0x200) * 3;
+
+			value = value >> 3;
+
+			if (0x477 < value)
+				value = 0x477;
+
+			cp->ai.l.takeDamage = 0x32;
+		}
+		else
+		{
+			value = strikeVel / 350 + 0x200;
+
+			value = value >> 2;
+			if (0x2fa < value)
+				value = 0x2fa;
+
+			if (cp->ai.l.takeDamage == 0)
+				value = 0;
+		}
+	}
+	else 
+	{
+		iVar1 = (strikeVel / 400 + 0x400) * 7;
+		value = iVar1 >> 3;
+	}
+
+	fakeDamage = cp->controlType == 3 && pOtherCar->controlType == 3;
+
+	ApplyDamage(cp, region, value, fakeDamage);
+
+	player_id = GetPlayerId(cp);
+
+	if (player_id < 0)
+		player_id = GetPlayerId(pOtherCar);
+
+	kludge = GetPlayerId(cp);
+
+	if (kludge != 0 || (kludge = 2, pOtherCar->controlType != 2))
+	{
+		kludge = 1;
+
+		if (GetPlayerId(pOtherCar) == 0 && cp->controlType == 2)
+			kludge = 2;
+	}
+
+	CollisionSound(player_id, cp, strikeVel / 128, kludge);
+
+	return 1;
 }
 
 
