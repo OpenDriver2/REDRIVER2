@@ -18,6 +18,7 @@
 #include "DENTING.H"
 #include "PAUSE.H"
 #include "OVERMAP.H"
+#include "DIRECTOR.H"
 
 #include "LIBETC.H"
 #include "STRINGS.H"
@@ -411,7 +412,9 @@ void TriggerInGameCutscene(int cutscene)
 
 			gStopPadReads = 1;
 			scr_z = 0x100;
-			if (gCSDestroyPlayer != 0) {
+
+			if (gCSDestroyPlayer) 
+			{
 				DestroyPlayer(0, 1);
 			}
 		}
@@ -522,7 +525,7 @@ void ReleaseInGameCutscene(void)
 
 	if (gInGameChaseActive != 0 && Mission.ChaseTarget != NULL) 
 	{
-		player[1].padid = -0x80;
+		player[1].padid = -128;
 	}
 
 	if (gInGameCutsceneActive != 0)
@@ -663,32 +666,37 @@ int PreLoadInGameCutscene(int chase)
 	/* end block 2 */
 	// End Line: 3213
 
+// [D]
 int CutsceneCameraChange(int cameracnt)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	cameracnt = cameracnt - CutsceneCameraOffset;
-	if (CutNextChange->FrameCnt != cameracnt) {
-		if (cameracnt < CutNextChange->FrameCnt) {
+	cameracnt -= CutsceneCameraOffset;
+
+	if (CutNextChange->FrameCnt != cameracnt) 
+	{
+		if (cameracnt < CutNextChange->FrameCnt) 
+		{
 			IsMovingCamera(CutLastChange, CutNextChange, cameracnt);
 			return 0;
 		}
-		if (CutNextChange->next == -2) {
+
+		if (CutNextChange->next == -2) 
 			return 0;
-		}
 	}
-	if ((CutLastChange != CutNextChange) && (-1 < (CutNextChange->angle).pad)) {
-		(CutNextChange->angle).pad = (CutNextChange->angle).pad + (short)CutsceneStreamIndex;
-	}
+
+	if (CutLastChange != CutNextChange && -1 < CutNextChange->angle.pad)
+		CutNextChange->angle.pad += CutsceneStreamIndex;
+
 	SetPlaybackCamera(CutNextChange);
-	if (-1 < cameracnt) {
-		InvalidCamera((int)player.cameraCarId);
+
+	if (-1 < cameracnt) 
+	{
+		InvalidCamera(player[0].cameraCarId);
+
 		CutLastChange = CutNextChange;
 		FindNextCutChange(cameracnt + 1);
 	}
+
 	return 1;
-	*/
 }
 
 
