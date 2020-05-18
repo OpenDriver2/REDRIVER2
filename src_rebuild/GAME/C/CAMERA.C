@@ -106,7 +106,7 @@ void InitCamera(_PLAYER *lp)
 	int iVar2;
 	CAR_COSMETICS *pCVar3;
 	_EVENT *p_Var4;
-	SVECTOR boxDisp;
+	SVECTOR boxDisp = { 0 };
 
 	if (events.cameraEvent == NULL) 
 	{
@@ -151,10 +151,12 @@ void InitCamera(_PLAYER *lp)
 
 			// [A]
 			pCVar3 = car_data[iVar2].ap.carCos;
-			boxDisp.vx = -pCVar3->cog.vx;
-			boxDisp.vy = -pCVar3->cog.vy;
-			boxDisp.vz = -pCVar3->cog.vz;
-
+			if (pCVar3)
+			{
+				boxDisp.vx = -pCVar3->cog.vx;
+				boxDisp.vy = -pCVar3->cog.vy;
+				boxDisp.vz = -pCVar3->cog.vz;
+			}
 
 			gte_ldv0(&boxDisp);
 
@@ -670,19 +672,29 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	else 
 	{
 		pCVar5 = car_data[iVar3].ap.carCos;
-		iVar10 = pCVar5->colBox.vy;
 
-		iVar9 = iVar10 * -3 + 0x55;
-		maxCameraDist = pCVar5->colBox.vz * 2 + iVar10 + 248;
-		iVar3 = car_data[iVar3].hd.wheel_speed / 4096;
+		if(pCVar5)
+		{
+			iVar10 = pCVar5->colBox.vy;
 
-		if (iVar3 < 0) 
-			iVar3 = -iVar3;
+			iVar9 = iVar10 * -3 + 0x55;
+			maxCameraDist = pCVar5->colBox.vz * 2 + iVar10 + 248;
+			iVar3 = car_data[iVar3].hd.wheel_speed / 4096;
 
-		iVar10 = 10;
+			if (iVar3 < 0)
+				iVar3 = -iVar3;
 
-		if (iVar3 > 9 && (gCameraDistance + 30 <= maxCameraDist))
-			iVar10 = 0x14;
+			iVar10 = 10;
+
+			if (iVar3 > 9 && (gCameraDistance + 30 <= maxCameraDist))
+				iVar10 = 0x14;
+		}
+		else
+		{
+			maxCameraDist = 850;
+			iVar9 = -220;
+			iVar10 = 10;
+		}
 	}
 
 	if (pauseflag == 0)

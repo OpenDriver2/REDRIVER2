@@ -9,8 +9,18 @@
 #include "CIV_AI.H"
 #include "PEDEST.H"
 #include "PRES.H"
+#include "SYSTEM.H"
+#include "CAMERA.H"
+#include "MAIN.H"
+#include "MC_SND.H"
+#include "HANDLING.H"
+#include "EVENT.H"
+#include "DENTING.H"
+#include "PAUSE.H"
+#include "OVERMAP.H"
 
 #include "LIBETC.H"
+#include "STRINGS.H"
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
@@ -26,12 +36,19 @@ static int gHaveInGameCutscene = 0;
 static int gCSDestroyPlayer = 0;
 static int PreLoadedCutscene = -1;
 static char *CutsceneReplayStart = NULL;
-PLAYBACKCAMERA *CutsceneCamera = NULL;
 static int CutsceneInReplayBuffer = 0;
 int CutsceneEventTrigger = 0;
 static int CutsceneLength = 0;
 static int BlackBorderHeight = 0;
 int JustReturnedFromCutscene = 0;
+
+CUTSCENE_BUFFER CutsceneBuffer = { 0 };
+
+static PLAYBACKCAMERA *CutLastChange;
+static PLAYBACKCAMERA *CutNextChange;
+PLAYBACKCAMERA *CutsceneCamera = NULL;
+
+static int CutsceneCameraOffset = 0;
 
 // decompiled code
 // original method signature: 
@@ -116,51 +133,64 @@ void InitInGameCutsceneVariables(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleInGameCutscene(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
-	if (gInGameCutsceneDelay != 0) {
+	if (gInGameCutsceneDelay != 0) 
+	{
 		BlackBorderHeight = gInGameCutsceneDelay;
-		gInGameCutsceneDelay = gInGameCutsceneDelay + 1;
-		if (0x1b < gInGameCutsceneDelay) {
+		gInGameCutsceneDelay++;
+
+		if (27 < gInGameCutsceneDelay)
+		{
 			TriggerInGameCutscene(gInGameCutsceneID);
 			gInGameCutsceneDelay = 0;
 			BlackBorderHeight = 0x1c;
 		}
 	}
-	if (gHaveInGameCutscene == 0) {
+
+	if (gHaveInGameCutscene == 0)
 		return;
-	}
-	if (pauseflag != 0) {
+
+	if (pauseflag != 0)
 		return;
+
+
+	if (CameraCnt < 2)
+		BlackBorderHeight = 28;
+
+	if (CutsceneLength-28 < CutsceneFrameCnt) 
+	{
+		iVar1 = BlackBorderHeight - 1;
+
+		if (BlackBorderHeight < 1)
+			goto LAB_000326f4;
 	}
-	if (CameraCnt < 2) {
-		BlackBorderHeight = 0x1c;
-	}
-	if (CutsceneLength + -0x1c < CutsceneFrameCnt) {
-		iVar1 = BlackBorderHeight + -1;
-		if (BlackBorderHeight < 1) goto LAB_000326f4;
-	}
-	else {
+	else 
+	{
 		iVar1 = BlackBorderHeight + 1;
-		if (0x1b < BlackBorderHeight) goto LAB_000326f4;
+
+		if (27 < BlackBorderHeight)
+			goto LAB_000326f4;
 	}
+
 	BlackBorderHeight = iVar1;
+
 LAB_000326f4:
-	CutsceneFrameCnt = CutsceneFrameCnt + 1;
-	if (CutsceneFrameCnt == CutsceneLength) {
+	CutsceneFrameCnt++;
+
+	if (CutsceneFrameCnt == CutsceneLength) 
+	{
 		gHaveInGameCutscene = 0;
-		if (gInGameCutsceneActive != 0) {
+
+		if (gInGameCutsceneActive != 0)
 			JustReturnedFromCutscene = 1;
-		}
+
 		ReleaseInGameCutscene();
 		InitOverheadMap();
 	}
-	return;
-	*/
 }
 
 
@@ -350,38 +380,47 @@ void TriggerChase(int *car, int cutscene)
 	/* end block 3 */
 	// End Line: 2727
 
+static int SavedCameraView = 0;
+static int SavedWorldCentreCarId = 0;
+static VECTOR *SavedSpoolXZ = NULL;
+static int SavedCameraCarId = 0;
+static int SavedCameraAngle = 0;
+
+// [D]
 void TriggerInGameCutscene(int cutscene)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	if (IsCutsceneResident(cutscene) == 0)
+		return;
 
-	iVar1 = IsCutsceneResident(cutscene);
-	if (iVar1 != 0) {
-		gInGameCutsceneID = cutscene;
-		if ((CameraCnt < 3) || (0x1b < gInGameCutsceneDelay)) {
-			SavedCameraCarId = (int)player.cameraCarId;
-			SavedCameraView = ZEXT14(cameraview);
-			SavedWorldCentreCarId = (int)player.worldCentreCarId;
-			SavedCameraAngle = gCameraAngle;
-			SavedSpoolXZ = player.spoolXZ;
-			gInGameCutsceneActive = TriggerInGameCutsceneSystem(cutscene);
-			if (gInGameCutsceneActive != 0) {
-				TerminateSkidding(0);
-				TerminateSkidding(1);
-				gStopPadReads = 1;
-				scr_z = 0x100;
-				if (gCSDestroyPlayer != 0) {
-					DestroyPlayer(0, 1);
-				}
+	gInGameCutsceneID = cutscene;
+
+	if (CameraCnt < 3 || 27 < gInGameCutsceneDelay)
+	{
+		SavedCameraCarId = player[0].cameraCarId;
+		SavedCameraView = cameraview;
+		SavedWorldCentreCarId = player[0].worldCentreCarId;
+		SavedCameraAngle = gCameraAngle;
+		SavedSpoolXZ = player[0].spoolXZ;
+
+		gInGameCutsceneActive = TriggerInGameCutsceneSystem(cutscene);
+
+		if (gInGameCutsceneActive != 0) 
+		{
+			TerminateSkidding(0);
+			TerminateSkidding(1);
+
+			gStopPadReads = 1;
+			scr_z = 0x100;
+			if (gCSDestroyPlayer != 0) {
+				DestroyPlayer(0, 1);
 			}
 		}
-		else {
-			gCutsceneAtEnd = 1;
-			gInGameCutsceneDelay = gInGameCutsceneDelay + 1;
-		}
 	}
-	return;*/
+	else 
+	{
+		gCutsceneAtEnd = 1;
+		gInGameCutsceneDelay = gInGameCutsceneDelay + 1;
+	}
 }
 
 
@@ -417,30 +456,23 @@ void TriggerInGameCutscene(int cutscene)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int CalcInGameCutsceneSize(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int local_88[16];
-	char acStack72[64];
+	CUTSCENE_HEADER header;
+	char filename[64];
 
-	if (gCurrentMissionNumber < 0x15) {
-		sprintf(acStack72, s_REPLAYS_CUT_d_R_0001058c);
-	}
-	else {
-		sprintf(acStack72, s_REPLAYS_A_CUT_d_R_0001059c);
-	}
-	iVar1 = FileExists(acStack72);
-	if (iVar1 == 0) {
-		local_88[0] = 0;
-	}
-	else {
-		LoadfileSeg(acStack72, (char *)local_88, 0, 0x40);
-	}
-	return local_88[0];
-	*/
+	if (gCurrentMissionNumber < 21)
+		sprintf(filename, "REPLAYS\\CUT%d.R");
+	else 
+		sprintf(filename, "REPLAYS\\A\\CUT%d.R");
+
+	if (FileExists(filename) == 0)
+		return 0;
+
+	LoadfileSeg(filename, (char *)&header, 0, sizeof(CUTSCENE_HEADER));
+
+	return header.maxsize;
 }
 
 
@@ -483,88 +515,94 @@ int CalcInGameCutsceneSize(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [A] might be incorrect
 void ReleaseInGameCutscene(void)
 {
-	UNIMPLEMENTED();
-	/*
-	PEDESTRIAN *pPVar1;
-	_PLAYER *p_Var2;
-	_PLAYER *p_Var3;
-	long lVar4;
-	long lVar5;
-	long lVar6;
 	int plr;
 
-	if ((gInGameChaseActive != 0) && (DAT_000d7c40 != 0)) {
-		_PLAYER_ARRAY_000d979c[0].padid = -0x80;
+	if (gInGameChaseActive != 0 && Mission.ChaseTarget != NULL) 
+	{
+		player[1].padid = -0x80;
 	}
-	if (gInGameCutsceneActive != 0) {
+
+	if (gInGameCutsceneActive != 0)
+	{
 		PingOutAllCivCarsAndCopCars();
 		InitCivCars();
-		if (CutsceneStreamIndex < NumReplayStreams) {
+
+		if (CutsceneStreamIndex < NumReplayStreams)
+		{
 			plr = CutsceneStreamIndex;
+
 			do {
-				if ((PlayerStartInfo8[plr]->flags & 4) == 0) {
+				if ((PlayerStartInfo[plr]->flags & 4) == 0)
+				{
 					DestroyPlayer(plr, 1);
 				}
-				else {
-					p_Var2 = &player + plr;
-					p_Var3 = &player;
-					do {
-						lVar4 = p_Var2->pos[1];
-						lVar5 = p_Var2->pos[2];
-						lVar6 = p_Var2->pos[3];
-						p_Var3->pos[0] = p_Var2->pos[0];
-						p_Var3->pos[1] = lVar4;
-						p_Var3->pos[2] = lVar5;
-						p_Var3->pos[3] = lVar6;
-						p_Var2 = (_PLAYER *)&p_Var2->dir;
-						p_Var3 = (_PLAYER *)&p_Var3->dir;
-					} while (p_Var2 != (_PLAYER *)&(&player)[plr].crash_timer);
-					p_Var3->pos[0] = p_Var2->pos[0];
-					if (player.playerType == '\x02') {
-						(player.pPed)->padId = '\0';
+				else 
+				{
+					memcpy(&player[0], &player[plr], sizeof(_PLAYER));
+
+					if (player[0].playerType == 2) 
+					{
+						player[0].pPed->padId = 0;
 						SavedWorldCentreCarId = -1;
-						pPVar1 = player.pPed;
+						SavedSpoolXZ = (VECTOR *)&player[0].pPed->position;
 					}
-					else {
-						Swap2Cars((int)player.playerCarId, 0);
-						SavedWorldCentreCarId = (int)player.playerCarId;
-						pPVar1 = (PEDESTRIAN *)&car_data[SavedWorldCentreCarId].hd.where;
-						*(undefined4 *)car_data[SavedWorldCentreCarId].ai = 0xd9772;
+					else 
+					{
+						Swap2Cars(player[0].playerCarId, 0);
+						SavedWorldCentreCarId = player[0].playerCarId;
+
+						SavedSpoolXZ = (VECTOR *)car_data[SavedWorldCentreCarId].hd.where.t;
+
+						car_data[SavedWorldCentreCarId].ai.padid = (char*)player[0].padid;
 					}
-					SavedSpoolXZ = (VECTOR *)&pPVar1->position;
+
 					SavedCameraCarId = SavedWorldCentreCarId;
+
 					DestroyPlayer(plr, 0);
 				}
-				plr = plr + 1;
+
+				plr++;
 			} while (plr < NumReplayStreams);
 		}
+
 		gThePlayerCar = -1;
-		player.targetCarId = -1;
+		player[0].targetCarId = -1;
+
 		DestroyCivPedestrians();
 		AdjustPlayerCarVolume();
-		plr = (int)player.playerCarId;
-		player.padid = '\0';
-		player.worldCentreCarId = (char)SavedWorldCentreCarId;
-		player.spoolXZ = SavedSpoolXZ;
-		player.cameraCarId = (char)SavedCameraCarId;
-		if (plr != -1) {
-			*(undefined4 *)car_data[plr].ai = 0xd9772;
-			car_data[plr].controlType = '\x01';
+
+		plr = player[0].playerCarId;
+
+		player[0].padid = 0;
+		player[0].worldCentreCarId = SavedWorldCentreCarId;
+		player[0].spoolXZ = SavedSpoolXZ;
+		player[0].cameraCarId = SavedCameraCarId;
+
+		if (plr != -1) 
+		{
+			car_data[plr].ai.padid = (char*)player[0].padid;
+			car_data[plr].controlType = 1;
 		}
-		cameraview = (byte)SavedCameraView;
+
+		cameraview = SavedCameraView;
 		gCameraAngle = SavedCameraAngle;
-		InitCamera(&player);
-		player.cameraAngle = 0;
-		player.cameraDist = 1000;
+
+		InitCamera(&player[0]);
+
+		player[0].cameraAngle = 0;
+		player[0].cameraDist = 1000;
+
 		CutsceneEventTrigger = 0;
 	}
-	if (CutsceneReplayStart != (char *)0x0) {
+
+	if (CutsceneReplayStart != NULL) 
 		replayptr = CutsceneReplayStart;
-	}
+
 	NumReplayStreams = NumReplayStreams - NumCutsceneStreams;
-	CutsceneReplayStart = (char *)0x0;
+	CutsceneReplayStart = NULL;
 	CutsceneStreamIndex = 0;
 	NumCutsceneStreams = 0;
 	PreLoadedCutscene = -1;
@@ -572,15 +610,14 @@ void ReleaseInGameCutscene(void)
 	gCSDestroyPlayer = 0;
 	CutsceneLength = 0;
 	BlackBorderHeight = 0;
-	CutsceneCamera = (PLAYBACKCAMERA *)0x0;
+	CutsceneCamera = NULL;
 	gInGameChaseActive = 0;
 	gInGameCutsceneActive = 0;
 	CutsceneFrameCnt = 0;
 	gInGameCutsceneDelay = 0;
 	gStopPadReads = 0;
-	xa_timeout = 0x46;
-	return;
-	*/
+
+	xa_timeout = 70;
 }
 
 
@@ -764,131 +801,141 @@ int LoadInGameCutscene(int subindex)
 	/* end block 4 */
 	// End Line: 2210
 
+// [D] [A] might be bugged
 int TriggerInGameCutsceneSystem(int cutscene)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uchar uVar1;
-	ushort uVar2;
-	bool bVar3;
+	static char padid[8];
+
 	int iVar4;
 	_CAR_DATA *cp;
-	REPLAY_STREAM *pRVar5;
+	REPLAY_STREAM *stream;
 	int player_id;
-	long(*startPos)[4];
-	int iVar6;
-	int iVar7;
-	int local_40;
-	int local_3c;
-	int local_38;
-	char *local_34;
-	long(*local_30)[4];
-	int local_2c;
+	int bDamageOverride;
 
-	if ((-1 < cutscene) &&
-		(gHaveInGameCutscene = LoadCutsceneInformation(cutscene), gHaveInGameCutscene != 0)) {
+	bDamageOverride = 0;
+
+	if (cutscene > -1 && (gHaveInGameCutscene = LoadCutsceneInformation(cutscene), gHaveInGameCutscene != 0)) 
+	{
 		PingOutAllCivCarsAndCopCars();
 		InitCivCars();
 		DestroyCivPedestrians();
-		if (CutsceneStreamIndex <= (int)player.playerCarId) {
-			Swap2Cars((int)player.playerCarId, 0);
-			SavedCameraCarId = (int)player.cameraCarId;
-			SavedWorldCentreCarId = (int)player.playerCarId;
-			SavedSpoolXZ = player.spoolXZ;
+
+		if (CutsceneStreamIndex <= player[0].playerCarId)
+		{
+			Swap2Cars(player[0].playerCarId, 0);
+			SavedCameraCarId = player[0].cameraCarId;
+			SavedWorldCentreCarId = player[0].playerCarId;
+			SavedSpoolXZ = player[0].spoolXZ;
 		}
-		if (CutsceneEventTrigger != 0) {
+
+		if (CutsceneEventTrigger != 0) 
+		{
 			TriggerEvent(CutsceneEventTrigger);
 		}
+
 		gThePlayerCar = -1;
-		local_2c = CutsceneStreamIndex * 4;
-		if (CutsceneStreamIndex < NumReplayStreams) {
-			local_3c = CutsceneStreamIndex * 0x29c;
-			iVar6 = CutsceneStreamIndex * 0x74;
-			startPos = (long(*)[4])&ReplayStreams[CutsceneStreamIndex].SourceType.position;
-			pRVar5 = ReplayStreams + CutsceneStreamIndex;
-			local_34 = &(&player)[CutsceneStreamIndex].playerCarId;
+
+		if (CutsceneStreamIndex < NumReplayStreams)
+		{
+			stream = ReplayStreams + CutsceneStreamIndex;
 			player_id = CutsceneStreamIndex;
-			iVar7 = iVar6;
-			local_38 = local_3c;
-			local_30 = startPos;
+
 			do {
-				uVar2 = (pRVar5->SourceType).flags;
-				*(REPLAY_STREAM **)((int)PlayerStartInfo8 + local_2c) = pRVar5;
-				if (((((uVar2 & 4) != 0) && (gCSDestroyPlayer = 1, (pRVar5->SourceType).type == '\x01')) &&
-					(gThePlayerCar = player_id, gCutsceneAtEnd != 0)) && (player.playerType == '\x01')) {
-					uVar1 = *(uchar *)(MissionHeader->residentModels +
-						(byte)car_data[player.playerCarId].ap.model);
-					local_40 = 1;
-					(pRVar5->SourceType).palette = car_data[player.playerCarId].ap.palette;
+				PlayerStartInfo[player_id] = &stream->SourceType;
+
+				if ((stream->SourceType.flags & 4) != 0 &&
+					(gCSDestroyPlayer = 1, stream->SourceType.type == 1) &&
+					(gThePlayerCar = player_id, gCutsceneAtEnd != 0) &&
+					(player[0].playerType == 1))
+				{
+					stream->SourceType.palette = car_data[player[0].playerCarId].ap.palette;
+					stream->SourceType.model = MissionHeader->residentModels[car_data[player[0].playerCarId].ap.model];
+
+					bDamageOverride = 1;
 					gCutsceneAtEnd = 0;
-					(pRVar5->SourceType).model = uVar1;
 				}
-				uVar1 = (pRVar5->SourceType).type;
-				(&padid_33)[player_id] = -(char)player_id;
-				bVar3 = uVar1 == '\x02';
-				gStartOnFoot = ZEXT14(bVar3);
-				if ((bVar3) || (((pRVar5->SourceType).flags & 1) == 0)) {
+
+				padid[player_id] = -player_id;
+				gStartOnFoot = stream->SourceType.type == 2;
+
+				if (gStartOnFoot || (stream->SourceType.flags & 1) == 0)
+				{
 					TerminateSkidding(player_id);
-					cp = (_CAR_DATA *)((int)car_data[0].hd.where.m + local_38);
-					InitPlayer((_PLAYER *)((int)player.pos + iVar6), cp, (pRVar5->SourceType).controlType,
-						(uint)(pRVar5->SourceType).rotation, startPos, (uint)(pRVar5->SourceType).model,
-						(uint)(pRVar5->SourceType).palette, &padid_33 + player_id);
-					if (local_40 != 0) {
-						iVar4 = (int)player.playerCarId;
-						(&car_data[0].ap.needsDenting)[local_38] = '\x01';
-						*(short *)((int)car_data[0].ap.damage + local_38) = car_data[iVar4].ap.damage[0];
-						*(short *)((int)car_data[0].ap.damage + local_38 + 2) = car_data[iVar4].ap.damage[1];
-						*(short *)((int)car_data[0].ap.damage + local_38 + 4) = car_data[iVar4].ap.damage[2];
-						*(short *)((int)car_data[0].ap.damage + local_38 + 6) = car_data[iVar4].ap.damage[3];
-						*(short *)((int)car_data[0].ap.damage + local_38 + 8) = car_data[iVar4].ap.damage[4];
-						*(short *)((int)car_data[0].ap.damage + local_38 + 10) = car_data[iVar4].ap.damage[5];
-						local_40 = 0;
-						*(ushort *)((int)&car_data[0].totalDamage + local_38) = car_data[iVar4].totalDamage;
+
+					cp = &car_data[player_id];
+
+					InitPlayer(&player[player_id], cp,
+						stream->SourceType.controlType, 
+						stream->SourceType.rotation,
+						(long(*)[4])&stream->SourceType.position,
+						stream->SourceType.model,
+						stream->SourceType.palette,
+						&padid[player_id]);
+
+					if (bDamageOverride != 0) 
+					{
+						iVar4 = player[0].playerCarId;
+
+						cp->ap.needsDenting = 1;
+						cp->ap.damage[0] = car_data[iVar4].ap.damage[0];
+						cp->ap.damage[1] = car_data[iVar4].ap.damage[1];
+						cp->ap.damage[2] = car_data[iVar4].ap.damage[2];
+						cp->ap.damage[3] = car_data[iVar4].ap.damage[3];
+						cp->ap.damage[4] = car_data[iVar4].ap.damage[4];
+						cp->ap.damage[5] = car_data[iVar4].ap.damage[5];
+
+						bDamageOverride = 0;
+
+						cp->totalDamage = car_data[iVar4].totalDamage;
 						DentCar(cp);
 					}
 				}
-				else {
-					iVar4 = CreateStationaryCivCar
-					((uint)(pRVar5->SourceType).rotation, 0, 0x400, local_30,
-						(uint)(pRVar5->SourceType).model, (uint)(pRVar5->SourceType).palette, 0);
-					if (iVar4 != -1) {
-						*local_34 = (char)iVar4;
+				else 
+				{
+					iVar4 = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024, 
+						(long(*)[4])&stream->SourceType.position,
+						stream->SourceType.model, 
+						stream->SourceType.palette, 0);
+
+					if (iVar4 != -1) 
+					{
+						player[player_id].playerCarId = iVar4;
 						SetNullPlayer(player_id);
 					}
 				}
-				if (player_id == CutsceneStreamIndex) {
-					if (gStartOnFoot == 0) {
-						player.spoolXZ = (VECTOR *)((int)car_data[0].hd.where.t + local_3c);
-						player.worldCentreCarId = (char)CutsceneStreamIndex;
+
+				if (player_id == CutsceneStreamIndex)
+				{
+					if (gStartOnFoot == 0) 
+					{
+						player[0].spoolXZ = (VECTOR *)car_data[player_id].hd.where.t;
+						player[0].worldCentreCarId = CutsceneStreamIndex;
 					}
-					else {
-						player.worldCentreCarId = -1;
-						player.spoolXZ = (VECTOR *)(*(int *)((int)&player.pPed + iVar7) + 0x14);
+					else 
+					{
+						player[0].worldCentreCarId = -1;
+						player[0].spoolXZ = (VECTOR *)&player[player_id].pPed->position;
 					}
 				}
-				if (CutsceneLength < pRVar5->length) {
-					CutsceneLength = pRVar5->length;
-				}
-				iVar7 = iVar7 + 0x74;
-				startPos = (long(*)[4])(startPos + 4 + 1);
-				iVar6 = iVar6 + 0x74;
-				pRVar5 = pRVar5 + 1;
-				player_id = player_id + 1;
-				local_3c = local_3c + 0x29c;
-				local_38 = local_38 + 0x29c;
-				local_34 = local_34 + 0x74;
-				local_30 = (long(*)[4])(local_30 + 4 + 1);
-				local_2c = local_2c + 4;
+
+				if (CutsceneLength < stream->length)
+					CutsceneLength = stream->length;
+
+				stream++;
+				player_id++;
+
 			} while (player_id < NumReplayStreams);
 		}
+
 		CutsceneCameraOffset = CameraCnt + 1;
 		CutNextChange = CutsceneCamera;
-		CutLastChange = (PLAYBACKCAMERA *)0x0;
+		CutLastChange = NULL;
+
 		return 1;
 	}
+
 	ShowCutsceneError();
-	return 0;*/
+	return 0;
 }
 
 
@@ -1117,138 +1164,65 @@ void FindNextCutChange(int cameracnt)
 	/* end block 4 */
 	// End Line: 2853
 
+// [D]
 int LoadCutsceneToReplayBuffer(int residentCutscene)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	bool bVar1;
-	char *__dest;
-	int iVar2;
-	REPLAY_STREAM *pRVar3;
-	int iVar4;
-	int *piVar5;
-	_PING_PACKET *p_Var6;
-	_PING_PACKET *p_Var7;
-	int *piVar8;
-	_PING_PACKET _Var9;
-	_PING_PACKET _Var10;
-	_PING_PACKET _Var11;
-	int iVar12;
-	long lVar13;
-	long lVar14;
-	uint __n;
-	int *piVar15;
+	REPLAY_SAVE_HEADER *rheader;
+	REPLAY_STREAM_HEADER *sheader;
+	char *pt;
 
-	piVar15 = (int *)CutsceneBuffer.residentPointers[residentCutscene];
-	if (((piVar15 == (int *)0x0) || (*piVar15 != 0x14793209)) ||
-		(*(_func_4 *)((int)piVar15 + 7) == (_func_4)0x0)) {
+	rheader = (REPLAY_SAVE_HEADER *)CutsceneBuffer.residentPointers[residentCutscene];
+
+	if (rheader == NULL || rheader && (rheader->magic != 0x14793209 || rheader->NumReplayStreams == 0) )
+	{
 		ShowCutsceneError();
-		iVar2 = 0;
+		return 0;
 	}
-	else {
-		CutsceneStreamIndex = NumReplayStreams;
-		NumCutsceneStreams = ZEXT14((byte)*(_func_4 *)((int)piVar15 + 7));
-		iVar4 = NumReplayStreams + (uint)(byte)*(_func_4 *)((int)piVar15 + 7);
-		CutsceneReplayStart = replayptr;
-		CutsceneEventTrigger = ZEXT14((byte)*(_func_4 *)((int)piVar15 + 10));
-		bVar1 = NumReplayStreams < iVar4;
-		piVar15 = piVar15 + 0x47;
-		iVar2 = NumReplayStreams;
-		NumReplayStreams = iVar4;
-		if (bVar1) {
-			do {
-				pRVar3 = ReplayStreams + iVar2;
-				iVar4 = iVar2 + 1;
-				piVar5 = piVar15;
-				do {
-					iVar12 = piVar5[1];
-					lVar13 = piVar5[2];
-					lVar14 = piVar5[3];
-					*(int *)&pRVar3->SourceType = *piVar5;
-					*(int *)&(pRVar3->SourceType).flags = iVar12;
-					(pRVar3->SourceType).position.vx = lVar13;
-					(pRVar3->SourceType).position.vy = lVar14;
-					__dest = replayptr;
-					piVar5 = piVar5 + 4;
-					pRVar3 = (REPLAY_STREAM *)&(pRVar3->SourceType).position.vz;
-				} while (piVar5 != piVar15 + 0xc);
-				*(char **)&ReplayStreams[iVar2].InitialPadRecordBuffer = replayptr;
-				*(char **)&ReplayStreams[iVar2].PadRecordBuffer = __dest;
-				ReplayStreams[iVar2].PadRecordBufferEnd = (PADRECORD *)(__dest + piVar15[0xc]);
-				ReplayStreams[iVar2].length = piVar15[0xd];
-				ReplayStreams[iVar2].playbackrun = '\0';
-				__n = piVar15[0xc] + 3U & 0xfffffffc;
-				memcpy(__dest, piVar15 + 0xe, __n);
-				replayptr = replayptr + __n;
-				piVar15 = (int *)((int)(piVar15 + 0xe) + __n);
-				iVar2 = iVar4;
-			} while (iVar4 < NumReplayStreams);
-		}
-		CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
-		if ((((uint)piVar15 | (uint)replayptr) & 3) == 0) {
-			piVar5 = piVar15;
-			piVar8 = (int *)replayptr;
-			do {
-				iVar4 = piVar5[1];
-				iVar12 = piVar5[2];
-				iVar2 = piVar5[3];
-				*piVar8 = *piVar5;
-				piVar8[1] = iVar4;
-				piVar8[2] = iVar12;
-				piVar8[3] = iVar2;
-				piVar5 = piVar5 + 4;
-				piVar8 = piVar8 + 4;
-			} while (piVar5 != piVar15 + 0x21c);
-		}
-		else {
-			piVar5 = piVar15;
-			piVar8 = (int *)replayptr;
-			do {
-				iVar2 = piVar5[1];
-				iVar4 = piVar5[2];
-				iVar12 = piVar5[3];
-				*piVar8 = *piVar5;
-				piVar8[1] = iVar2;
-				piVar8[2] = iVar4;
-				piVar8[3] = iVar12;
-				piVar5 = piVar5 + 4;
-				piVar8 = piVar8 + 4;
-			} while (piVar5 != piVar15 + 0x21c);
-		}
-		p_Var7 = (_PING_PACKET *)(piVar15 + 0x21c);
-		replayptr = replayptr + 0x870;
-		p_Var6 = PingBuffer;
-		if ((((uint)p_Var7 | (uint)PingBuffer) & 3) == 0) {
-			do {
-				_Var10 = p_Var7[1];
-				_Var11 = p_Var7[2];
-				_Var9 = p_Var7[3];
-				*p_Var6 = *p_Var7;
-				p_Var6[1] = _Var10;
-				p_Var6[2] = _Var11;
-				p_Var6[3] = _Var9;
-				p_Var7 = p_Var7 + 4;
-				p_Var6 = p_Var6 + 4;
-			} while (p_Var7 != (_PING_PACKET *)(piVar15 + 0x3ac));
-		}
-		else {
-			do {
-				_Var9 = p_Var7[1];
-				_Var10 = p_Var7[2];
-				_Var11 = p_Var7[3];
-				*p_Var6 = *p_Var7;
-				p_Var6[1] = _Var9;
-				p_Var6[2] = _Var10;
-				p_Var6[3] = _Var11;
-				p_Var7 = p_Var7 + 4;
-				p_Var6 = p_Var6 + 4;
-			} while (p_Var7 != (_PING_PACKET *)(piVar15 + 0x3ac));
-		}
-		PingBufferPos = 0;
-		iVar2 = 1;
+	CutsceneStreamIndex = NumReplayStreams;
+	NumCutsceneStreams = rheader->NumReplayStreams;
+	
+	CutsceneReplayStart = replayptr;
+	CutsceneEventTrigger = rheader->CutsceneEvent;
+
+	pt = (char *)(rheader + 1);
+	
+	// add to existing replay streams
+	for (int i = NumReplayStreams; i < (NumReplayStreams + rheader->NumReplayStreams); i++)
+	{
+		sheader = (REPLAY_STREAM_HEADER *)pt;
+		pt += sizeof(REPLAY_STREAM_HEADER);
+
+		REPLAY_STREAM* destStream = &ReplayStreams[i];
+
+		// copy source type
+		memcpy(&ReplayStreams[i].SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
+
+		// init buffers
+		ReplayStreams[i].InitialPadRecordBuffer = (PADRECORD*)replayptr;
+		ReplayStreams[i].PadRecordBuffer = (PADRECORD*)replayptr;
+		ReplayStreams[i].PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+		ReplayStreams[i].length = sheader->Length;
+
+		// copy pad data and advance buffer
+		memcpy(replayptr, pt, sheader->Size);
+		replayptr += sheader->Size;
+
+		pt += sheader->Size + sizeof(PADRECORD) & 0xfffffffc;
 	}
-	return iVar2;*/
+	NumReplayStreams += rheader->NumReplayStreams;
+
+	// copy cutscene cameras and pings
+	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
+
+	memcpy(CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * 60);		// MAX_CUTSCENE_CAMERAS
+	replayptr += sizeof(PLAYBACKCAMERA) * 60;
+
+	pt += sizeof(PLAYBACKCAMERA) * 60;
+
+	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 940);				// MAX_REPLAY_PINGS
+	PingBufferPos = 0;
+
+	return 1;
 }
 
 
@@ -1285,49 +1259,58 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	/* end block 4 */
 	// End Line: 3091
 
+// [D]
 int LoadCutsceneToBuffer(int subindex)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int offset;
-	uint loadsize;
-	char acStack440[4];
-	ushort auStack436[174];
-	char acStack88[64];
+	int size;
 
-	if (gCurrentMissionNumber < 0x15) {
-		sprintf(acStack88, s_REPLAYS_CUT_d_R_0001058c);
-	}
-	else {
-		sprintf(acStack88, s_REPLAYS_A_CUT_d_R_0001059c);
-	}
-	offset = FileExists(acStack88);
-	if (offset != 0) {
-		LoadfileSeg(acStack88, acStack440, 0, 0x40);
-		if (auStack436[subindex * 2] != 0xffff) {
-			offset = (uint)auStack436[subindex * 2] << 2;
-			loadsize = (uint)auStack436[subindex * 2 + 1];
-			if (CutsceneBuffer.bytesFree < (int)loadsize) {
+	CUTSCENE_HEADER header;
+	char filename[64];
+
+	if (gCurrentMissionNumber < 21) 
+		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
+	else 
+		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+
+	if (FileExists(filename))
+	{
+		LoadfileSeg(filename, (char *)&header, 0, sizeof(CUTSCENE_HEADER));
+
+		if (header.data[subindex].offset != 0xffff)
+		{
+			offset = header.data[subindex].offset * 4;
+			size = header.data[subindex].size;
+
+			if (CutsceneBuffer.bytesFree < size) 
+			{
+				// load into lead/path AI buffer
 				leadAILoaded = 0;
 				pathAILoaded = 0;
-				CutsceneBuffer.currentPointer = popNode;
+
+				CutsceneBuffer.currentPointer = _other_buffer2;
 				CutsceneBuffer.bytesFree = 0xc000;
-				LoadfileSeg(acStack88, (char *)popNode, offset, loadsize);
+
+				LoadfileSeg(filename, _other_buffer2, offset, size);
 			}
-			else {
-				LoadfileSeg(acStack88, (char *)CutsceneBuffer.currentPointer, offset, loadsize);
+			else 
+			{
+				LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 			}
-			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = (uchar)subindex;
+
+			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
 			CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = CutsceneBuffer.currentPointer;
-			CutsceneBuffer.numResident = CutsceneBuffer.numResident + 1;
-			CutsceneBuffer.currentPointer = (code *)((char *)CutsceneBuffer.currentPointer + loadsize);
-			CutsceneBuffer.bytesFree = CutsceneBuffer.bytesFree - loadsize;
+			CutsceneBuffer.numResident++;
+			CutsceneBuffer.currentPointer = CutsceneBuffer.currentPointer + size;
+			CutsceneBuffer.bytesFree = CutsceneBuffer.bytesFree - size;
+
 			return 1;
 		}
 	}
+
 	ShowCutsceneError();
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -1409,37 +1392,33 @@ void ShowCutsceneError(void)
 	/* end block 4 */
 	// End Line: 4233
 
+// [D]
 int LoadCutsceneInformation(int cutscene)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int residentCutscene;
-	int iVar1;
-	byte *pbVar2;
+	int i;
 
-	if (cutscene == PreLoadedCutscene) {
+	if (cutscene == PreLoadedCutscene) 
+	{
 		PreLoadedCutscene = -1;
-		residentCutscene = 1;
+		return 1;
 	}
-	else {
-		ReleaseInGameCutscene();
-		pbVar2 = CutsceneBuffer.residentCutscenes;
-		residentCutscene = 0;
-		do {
-			if ((cutscene == (uint)*pbVar2) &&
-				(iVar1 = LoadCutsceneToReplayBuffer(residentCutscene), iVar1 != 0)) {
-				*pbVar2 = 0xff;
-				CutsceneBuffer.residentPointers[residentCutscene] = (_func_4 *)0x0;
+
+	ReleaseInGameCutscene();
+
+	for(i = 0; i < 4; i++)
+	{
+		if (cutscene == CutsceneBuffer.residentCutscenes[i])
+		{
+			if (LoadCutsceneToReplayBuffer(i))
+			{
+				CutsceneBuffer.residentCutscenes[i] = 0xFF;
+				CutsceneBuffer.residentPointers[i] = NULL;
 				return 1;
 			}
-			iVar1 = residentCutscene + 1;
-			pbVar2 = CutsceneBuffer.residentCutscenes + residentCutscene + 1;
-			residentCutscene = iVar1;
-		} while (iVar1 < 4);
-		residentCutscene = 0;
-	}
-	return residentCutscene;*/
+		}
+	};
+
+	return 0;
 }
 
 
@@ -1479,26 +1458,21 @@ int LoadCutsceneInformation(int cutscene)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void FreeCutsceneBuffer(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	_func_4 **pp_Var2;
+	int i;
+	for (i = 0; i < 4; i++)
+	{
+		CutsceneBuffer.residentCutscenes[i] = -1;
+		CutsceneBuffer.residentPointers[i] = NULL;
+	}
 
-	iVar1 = 0;
-	pp_Var2 = CutsceneBuffer.residentPointers;
-	do {
-		CutsceneBuffer.residentCutscenes[iVar1] = -1;
-		*pp_Var2 = (_func_4 *)0x0;
-		iVar1 = iVar1 + 1;
-		pp_Var2 = pp_Var2 + 1;
-	} while (iVar1 < 4);
 	CutsceneBuffer.numResident = 0;
 	CutsceneBuffer.currentPointer = CutsceneBuffer.buffer;
-	CutsceneBuffer.bytesFree = 0x2000;
-	ClearMem(CutsceneBuffer.buffer, 0x2000);
-	return;*/
+
+	CutsceneBuffer.bytesFree = sizeof(CutsceneBuffer.buffer);
+	ClearMem(CutsceneBuffer.buffer, sizeof(CutsceneBuffer.buffer));
 }
 
 
@@ -1531,28 +1505,21 @@ void FreeCutsceneBuffer(void)
 	/* end block 4 */
 	// End Line: 4356
 
+// [D]
 int IsCutsceneResident(int cutscene)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte *pbVar1;
-	int iVar2;
-	int iVar3;
+	int i;
 
-	if (cutscene != PreLoadedCutscene) {
-		pbVar1 = CutsceneBuffer.residentCutscenes;
-		iVar2 = 0;
-		while (iVar3 = iVar2 + 1, cutscene != (uint)*pbVar1) {
-			pbVar1 = CutsceneBuffer.residentCutscenes + iVar2 + 1;
-			iVar2 = iVar3;
-			if (3 < iVar3) {
-				return 0;
-			}
-		}
+	if (cutscene == PreLoadedCutscene)
+		return 1;
+
+	for (i = 0; i < 4; i++)
+	{
+		if (CutsceneBuffer.residentCutscenes[i] == cutscene)
+			return 1;
 	}
-	return 1;
-	*/
+
+	return 0;
 }
 
 
