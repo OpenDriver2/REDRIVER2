@@ -3118,46 +3118,49 @@ int PingOutAllSpecialCivCars(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int PingOutAllCivCarsAndCopCars(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	uint *puVar2;
-	_CAR_DATA *mem;
+	_CAR_DATA *cp;
 
-	mem = car_data;
+	cp = car_data;
+
 	do {
-		if ((uint)mem->controlType - 2 < 2) {
-			testNumPingedOut = testNumPingedOut + 1;
-			if (mem->controlType == 2) {
-				if ((mem->controlFlags & 1) != 0) {
-					numCopCars = numCopCars + -1;
+
+		if (cp->controlType - 2 < 2) 
+		{
+			testNumPingedOut++;
+
+			if (cp->controlType == 2) 
+			{
+				if ((cp->controlFlags & 1) != 0) 
+				{
+					numCopCars--;
 				}
-				numCivCars = numCivCars + -1;
-				if ((mem->ai[0xf9] == 3) && (mem->ai[0xc] == 5)) {
+				numCivCars--;
+				if (cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState == 5) 
+				{
 					numParkedCars = numParkedCars + -1;
 				}
 			}
-			else {
-				if ((PingOutCivsOnly != '\0') &&
-					(iVar1 = valid_region((mem->hd).where.t[0], (mem->hd).where.t[2]), iVar1 != 0))
+			else
+			{
+				if (PingOutCivsOnly != 0 && valid_region(cp->hd.where.t[0], cp->hd.where.t[2]))
 					goto LAB_0002852c;
 			}
-			puVar2 = (uint *)mem->inform;
-			if (puVar2 != (uint *)0x0) {
-				*puVar2 = *puVar2 ^ 0x40000000;
-			}
-			ClearMem((char *)mem, 0x29c);
-			mem->controlType = '\0';
+
+			if (cp->inform != NULL)
+				*cp->inform ^= 0x40000000;
+
+			ClearMem((char *)cp, sizeof(_CAR_DATA));
+			cp->controlType = 0;
 		}
+
 	LAB_0002852c:
-		mem = mem + 1;
-		if ((_CAR_DATA *)((int)&car_data[0x13].lastPad + 3U) < mem) {
-			return 1;
-		}
-	} while (true);*/
+		cp++;
+	} while (cp < car_data + 20);
+
+	return 1;
 }
 
 
@@ -3388,7 +3391,7 @@ void InitCivCars(void)
 	requestRoadblock = 0;
 	makeLimoPullOver = 0;
 	frameStart = CameraCnt;
-	roadblockDelay = (&roadblockDelayDiff)[gCopDifficultyLevel] + (Random2(0) & 0xff);
+	roadblockDelay = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 	PingOutCivsOnly = 0;
 	roadblockCount = roadblockDelay;
 }

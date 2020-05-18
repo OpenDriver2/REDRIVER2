@@ -11,7 +11,7 @@ extern int roadblockCount;
 extern int copsAreInPursuit;
 extern int requestRoadblock;
 extern int roadblockDelay;
-extern int roadblockDelayDiff;
+extern int roadblockDelayDiff[3];
 extern int  requestCopCar;
 extern int cop_respawn_timer;
 
