@@ -1,6 +1,8 @@
 #include "THISDUST.H"
 #include "OBJANIM.H"
 #include "MAP.H"
+#include "MODELS.H"
+#include "TEXTURE.H"
 
 CYCLE_OBJECT Lev0[2] =
 {
@@ -44,44 +46,56 @@ int Num_LevCycleObjs[] = { 2, 0, 12, 0 };
 
 ANIMATED_OBJECT Lev0AnimObjects[9] =
 {
-  { 0, 0, "TLIGHT01", '\0' },
-  { 1, 0, "TLIGHT02", '\0' },
-  { 2, 0, "SLIGHT01", '\x01' },
-  { 3, 0, "LOW_SLIGHT01", '\x01' },
-  { 4, 0, "DLIGHT01", '\x01' },
-  { 5, 0, "STRUT", '\0' },
-  { 6, 0, "NPLIGHT", '\0' },
-  { 7, 0, "TLIGHT01_LOW", '\0' },
-  { 8, 0, "TLIGHT02_LOW", '\0' }
+  { 0, 0, "TLIGHT01", 0 },
+  { 1, 0, "TLIGHT02", 0 },
+  { 2, 0, "SLIGHT01", 1 },
+  { 3, 0, "LOW_SLIGHT01", 1 },
+  { 4, 0, "DLIGHT01", 1 },
+  { 5, 0, "STRUT", 0 },
+  { 6, 0, "NPLIGHT", 0 },
+  { 7, 0, "TLIGHT01_LOW", 0 },
+  { 8, 0, "TLIGHT02_LOW", 0 }
 };
 
 ANIMATED_OBJECT Lev1AnimObjects[5] =
 {
-  { 0, 0, "TLIGHT1", '\0' },
-  { 1, 0, "TLIGHT2", '\0' },
-  { 2, 0, "SLIGHT1", '\x01' },
-  { 3, 0, "SLIGHT2", '\x01' },
-  { 4, 0, "DLIGHT1", '\x01' }
+  { 0, 0, "TLIGHT1", 0 },
+  { 1, 0, "TLIGHT2", 0 },
+  { 2, 0, "SLIGHT1", 1 },
+  { 3, 0, "SLIGHT2", 1 },
+  { 4, 0, "DLIGHT1", 1 }
 };
 
 ANIMATED_OBJECT Lev2AnimObjects[5] =
 {
-  { 0, 0, "TLIGHT01", '\0' },
-  { 1, 0, "TLIGHT02", '\0' },
-  { 2, 0, "SLIGHT01", '\x01' },
-  { 3, 0, "DLIGHT01", '\x01' },
-  { 4, 0, "SLIGHT02", '\x01' }
+  { 0, 0, "TLIGHT01", 0 },
+  { 1, 0, "TLIGHT02", 0 },
+  { 2, 0, "SLIGHT01", 1 },
+  { 3, 0, "DLIGHT01", 1 },
+  { 4, 0, "SLIGHT02", 1 }
 };
 
 ANIMATED_OBJECT Lev3AnimObjects[4] =
 {
-  { 0, 0, "TLIGHT01", '\0' },
-  { 1, 0, "TLIGHT02", '\0' },
-  { 2, 0, "SLIGHT01", '\x01' },
-  { 3, 0, "MLIGHT01", '\x01' }
+  { 0, 0, "TLIGHT01", 0 },
+  { 1, 0, "TLIGHT02", 0 },
+  { 2, 0, "SLIGHT01", 0 },
+  { 3, 0, "MLIGHT01", 0 }
 };
 
-ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = { Lev0AnimObjects, Lev1AnimObjects, Lev2AnimObjects, Lev3AnimObjects };
+ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = { 
+	Lev0AnimObjects, 
+	Lev1AnimObjects, 
+	Lev2AnimObjects, 
+	Lev3AnimObjects 
+};
+
+int Level_NumAnimatedObjects[] = { 
+	9, 
+	5, 
+	5, 
+	4
+};
 
 VECTOR gMissionDoorPosition = { 108000, 0, 4294575046, 0 };
 
@@ -128,10 +142,12 @@ SMASHABLE_OBJECT smashable[] =
 };
 
 
-int Level_NumAnimatedObjects[] = { 9, 5, 5, 4, 0, 6, 0, 0 };
+int num_anim_objects = 0;
+int num_cycle_obj = 0;
 
-char* texture_pages = 0;	// some big empty array
-char* texture_cluts = 0;	// some big empty array
+TEXTURE_DETAILS cycle_tex[12];
+int cycle_phase = 0;
+int cycle_timer = 0;
 
 
 // decompiled code
@@ -166,29 +182,22 @@ char* texture_cluts = 0;	// some big empty array
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitCyclingPals(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	char **ppcVar2;
-	TEXTURE_DETAILS *info;
+	int i;
 
 	num_cycle_obj = Num_LevCycleObjs[GameLevel];
-	ppcVar2 = (char **)Lev_CycleObjPtrs4[GameLevel];
-	if ((num_cycle_obj != 0) && (iVar1 = 0, 0 < num_cycle_obj)) {
-		info = &cycle_tex;
-		do {
-			iVar1 = iVar1 + 1;
-			GetTextureDetails(*ppcVar2, info);
-			ppcVar2 = ppcVar2 + 5;
-			info = info + 1;
-		} while (iVar1 < num_cycle_obj);
+	CYCLE_OBJECT *cyc = Lev_CycleObjPtrs[GameLevel];
+
+	for (i = 0; i < num_cycle_obj; i++)
+	{
+		GetTextureDetails(cyc->name, &cycle_tex[i]);
+		cyc++;
 	}
+
 	cycle_phase = 0;
 	cycle_timer = 0;
-	return;
-	*/
 }
 
 
@@ -448,60 +457,74 @@ void FindSmashableObjects(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitAnimatingObjects(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	MODEL *pMVar2;
-	MODEL **ppMVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	undefined *puVar7;
+	ANIMATED_OBJECT *aop;
+
+	int loop;
+	int count1;
+	int count;
+	MODEL *modelPtr;
 
 	num_anim_objects = Level_NumAnimatedObjects[GameLevel];
-	if (num_anim_objects != 0) {
-		puVar7 = Level_AnimatingObjectPtrs4[GameLevel];
-		iVar6 = 0;
-		if (0 < num_anim_objects) {
-			do {
-				pMVar2 = FindModelPtrWithName(*(char **)(puVar7 + 8));
-				iVar5 = 0;
-				if (pMVar2 == NULL) {
-					*(undefined4 *)(puVar7 + 4) = 0xffffffff;
-				}
-				else {
-					if (pMVar2 != modelpointers1536[0]) {
-						ppMVar3 = modelpointers1536;
-						do {
-							ppMVar3 = ppMVar3 + 1;
-							iVar5 = iVar5 + 1;
-						} while (pMVar2 != *ppMVar3);
-					}
-					*(int *)(puVar7 + 4) = iVar5;
-					iVar4 = num_models_in_pack;
-					bVar1 = 0 < num_models_in_pack;
-					pMVar2->flags2 = pMVar2->flags2 | 1;
-					if (bVar1) {
-						ppMVar3 = modelpointers1536;
-						do {
-							pMVar2 = *ppMVar3;
-							if ((int)pMVar2->instance_number == iVar5) {
-								pMVar2->flags2 = pMVar2->flags2 | 1;
-							}
-							iVar4 = iVar4 + -1;
-							ppMVar3 = ppMVar3 + 1;
-						} while (iVar4 != 0);
-					}
-				}
-				iVar6 = iVar6 + 1;
-				puVar7 = puVar7 + 0x10;
-			} while (iVar6 < num_anim_objects);
+	aop = Level_AnimatingObjectPtrs[GameLevel];
+
+	for (loop = 0; loop < num_anim_objects; loop++)
+	{
+#if 0
+		// Reflections way
+		modelPtr = FindModelPtrWithName(aop->name);
+
+		if (modelPtr == NULL)
+		{
+			aop->model_num = -1;
 		}
-	}*/
+		else
+		{
+			// find model number in model pointers
+			count = 0;
+			while (modelPtr != modelpointers[count])
+				count++;
+
+			aop->model_num = count;
+			modelPtr->flags2 |= 1;
+
+			for (count1 = num_models_in_pack; count1 != 0; count1--)
+			{
+				if (modelpointers[count1]->instance_number == count)
+					modelpointers[count1]->flags2 |= 1;
+			}
+		}
+
+		aop++;
+#else
+		// My way
+		int model_idx = FindModelIdxWithName(aop->name);
+
+		if (model_idx != -1 && modelpointers[model_idx] != &dummyModel)
+		{
+			modelPtr = modelpointers[model_idx];
+			modelPtr->flags2 |= 1;
+
+			aop->model_num = model_idx;
+
+			if (modelPtr->instance_number != -1 &&
+				modelpointers[modelPtr->instance_number] != &dummyModel)
+			{
+				modelPtr = modelpointers[modelPtr->instance_number];
+				modelPtr->flags2 |= 1;
+			}
+		}
+		else
+			aop->model_num = -1;
+
+		aop++;
+#endif
+	}
+
 	FindSmashableObjects();
-	//InitCyclingPals();
+	InitCyclingPals();
 }
 
 
@@ -530,27 +553,27 @@ void InitAnimatingObjects(void)
 	/* end block 3 */
 	// End Line: 1640
 
+// [D]
 void InitSpooledAnimObj(int model_number)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined *puVar1;
-	int iVar2;
+	int i;
+	ANIMATED_OBJECT *aop;
 
-	puVar1 = Level_AnimatingObjectPtrs4[GameLevel];
-	iVar2 = 0;
-	if (0 < num_anim_objects) {
-		do {
-			iVar2 = iVar2 + 1;
-			if (*(int *)(puVar1 + 4) == model_number) {
-				modelpointers1536[model_number]->flags2 = modelpointers1536[model_number]->flags2 | 1;
-				return;
-			}
-			puVar1 = puVar1 + 0x10;
-		} while (iVar2 < num_anim_objects);
+	if (model_number == -1)
+		return;
+
+	aop = Level_AnimatingObjectPtrs[GameLevel];
+
+	// Reflections way
+	for (i = 0; i < num_anim_objects; i++)
+	{
+		if (aop->model_num == model_number)
+		{
+			modelpointers[model_number]->flags2 |= 1;
+			break;
+		}
+		aop++;
 	}
-	return;
-	*/
 }
 
 
@@ -576,12 +599,12 @@ void InitSpooledAnimObj(int model_number)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+GARAGE_DOOR CurrentGarage;
+
+// [D]
 void int_garage_door(void)
 {
-	UNIMPLEMENTED();
-	/*
-	CurrentGarage.cop = (CELL_OBJECT *)0x0;
-	return;*/
+	CurrentGarage.cop = NULL;
 }
 
 
@@ -611,33 +634,27 @@ void int_garage_door(void)
 	/* end block 3 */
 	// End Line: 1735
 
+// [D]
 int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint type;
-	uint *puVar1;
-	int iVar2;
+	int loop;
+	int type;
+	ANIMATED_OBJECT *aop;
 
-	type = SEXT24(model->instance_number);
-	puVar1 = (uint *)Level_AnimatingObjectPtrs4[GameLevel];
-	if (type == 0xffffffff) {
-		type = (uint)cop->type;
+	aop = Level_AnimatingObjectPtrs[GameLevel];
+	type = model->instance_number == -1 ? cop->type : model->instance_number;
+
+	for (loop = 0; loop < num_anim_objects; loop++)
+	{
+		if (type == aop->model_num)
+		{
+			animate_object(cop, type);
+			break;
+		}
+		aop++;
 	}
-	iVar2 = 0;
-	if (0 < num_anim_objects) {
-		do {
-			if (type == puVar1[1]) {
-				type = *puVar1;
-				animate_object(cop, type);
-			}
-			iVar2 = iVar2 + 1;
-			puVar1 = puVar1 + 4;
-		} while (iVar2 < num_anim_objects);
-	}
+
 	return 0;
-	*/
 }
 
 

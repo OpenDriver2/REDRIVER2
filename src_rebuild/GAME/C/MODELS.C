@@ -7,12 +7,12 @@
 
 #include <string.h>
 
-MODEL dummyModel;
+MODEL dummyModel = { 0 };
 
 char* modelname_buffer = NULL;
 char *car_models_lump = NULL;
 
-MODEL* modelpointers[1536] = { 0 };
+MODEL* modelpointers[1536] = { NULL };
 int num_models_in_pack = 0;
 
 unsigned short *Low2HighDetailTable = NULL;
@@ -67,6 +67,9 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	// assign model pointers
 	if (0 < modelAmts) 
 	{
+		for (i = 0; i < 1536; i++) // [A] bug fix. Init with dummyModel
+			modelpointers[i] = &dummyModel;
+
 		ppMVar2 = modelpointers;
 		iVar4 = modelAmts;
 
@@ -75,10 +78,8 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			int size = *(int*)ptr;
 			ptr += sizeof(int);
 
-			if (size) // [A] bug fix. Use dummyModel for empty slot
+			if (size) 
 				modelpointers[i] = (MODEL*)ptr;
-			else
-				modelpointers[i] = &dummyModel;
 
 			ptr += size;
 		}
