@@ -14,22 +14,21 @@
 
 void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 {
-	UNIMPLEMENTED();
-	/*
-	mat->m[0] = 0x1000;
-	mat->m[1] = 0;
-	mat->m[2] = 0;
-	mat->m[3] = 0;
-	mat->m[4] = 0x1000;
-	mat->m[5] = 0;
-	mat->m[6] = 0;
-	mat->m[7] = 0;
-	mat->m[8] = 0x1000;
-	RotMatrixX((int)angles->vx, mat);
-	RotMatrixZ((int)angles->vz, mat);
-	RotMatrixY((int)angles->vy, mat);
-	return;
-	*/
+	mat->m[0][0] = 0x1000;
+	mat->m[0][1] = 0;
+	mat->m[0][2] = 0;
+
+	mat->m[1][0] = 0;
+	mat->m[1][1] = 0x1000;
+	mat->m[1][2] = 0;
+
+	mat->m[2][0] = 0;
+	mat->m[2][1] = 0;
+	mat->m[2][2] = 0x1000;
+
+	RotMatrixX(angles->vx, mat);
+	RotMatrixZ(angles->vz, mat);
+	RotMatrixY(angles->vy, mat);
 }
 
 
@@ -121,18 +120,13 @@ void RotMatrixXYZ(MATRIX *m, SVECTOR *r)
 
 void _MatrixRotate(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	/*
-	long local_18;
-	long local_14;
-	long local_10;
+	VECTOR temp;
 
-	ApplyRotMatrixLV(pos, &local_18);
-	pos->vx = local_18;
-	pos->vy = local_14;
-	pos->vz = local_10;
-	return;
-	*/
+	ApplyRotMatrixLV(pos, &temp);
+
+	pos->vx = temp.vx;
+	pos->vy = temp.vy;
+	pos->vz = temp.vz;
 }
 
 
@@ -336,7 +330,6 @@ void Getlong(char *dest, char *source)
 	dest[1] = source[1];
 	dest[2] = source[2];
 	dest[3] = source[3];
-	return;
 }
 
 
