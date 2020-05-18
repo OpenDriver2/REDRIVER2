@@ -8,6 +8,10 @@
 
 #include "INLINE_C.H"
 
+#define	FIX_BIT	12
+#define	FIX_1	(1<<FIX_BIT)
+#define	FIX(a)	((a)>>FIX_BIT)
+
 // LUT for cos and sin
 // 8192 entries, even entry = Sin, odd entry = Cos
 // take TR angle (between 0 and 65535), shift R by 3 (to get between 0 and 8191), and with 8190 (to get between 0 and 8190)
@@ -4068,133 +4072,88 @@ void SetFarColor(long rfc, long gfc, long bfc)
     UNIMPLEMENTED();
 }
 
+#define	APPLYMATRIX(m,v0,v1)	{\
+	int vx = v0->vx;\
+	int vy = v0->vy;\
+	int vz = v0->vz;\
+	v1->vx = FIX(m->m[0][0]*vx + m->m[0][1]*vy + m->m[0][2]*vz );\
+	v1->vy = FIX(m->m[1][0]*vx + m->m[1][1]*vy + m->m[1][2]*vz );\
+	v1->vz = FIX(m->m[2][0]*vx + m->m[2][1]*vy + m->m[2][2]*vz );\
+}
+
+VECTOR *ApplyMatrix(MATRIX *m, SVECTOR *v0, VECTOR *v1)
+{
+	APPLYMATRIX(m, v0, v1)
+	return v1;
+}
+
+VECTOR *ApplyRotMatrix(SVECTOR *v0, VECTOR *v1)
+{
+	MATRIX temp;
+	gte_ReadRotMatrix(&temp);
+
+	MATRIX* m = &temp;
+
+	APPLYMATRIX(m, v0, v1);
+	return v1;
+}
+
+VECTOR *ApplyRotMatrixLV(VECTOR *v0, VECTOR *v1)
+{
+	MATRIX temp;
+	gte_ReadRotMatrix(&temp);
+
+	MATRIX* m = &temp;
+
+	APPLYMATRIX(m, v0, v1);
+	return v1;
+}
+
+SVECTOR *ApplyMatrixSV(MATRIX *m, SVECTOR *v0, SVECTOR *v1)
+{
+	APPLYMATRIX(m, v0, v1)
+	return v1;
+}
+
+VECTOR *ApplyMatrixLV(MATRIX *m, VECTOR *v0, VECTOR *v1)
+{
+	APPLYMATRIX(m, v0, v1)
+	return v1;
+}
+
 MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
 {
-    int t7 = r->vx;
-    int t9 = t7 & 0xFFF;
-    int t8 = 0;
-    int t3 = 0;
-    int t0 = 0;
-    int t6 = 0;
-    int t1 = 0;
-    int t4 = 0;
-    int t5 = 0;
-    int t2 = 0;
+	int c0,c1,c2;
+	int s0,s1,s2;
+	int s2p0,s2m0,c2p0,c2m0;
+	int	s2c0,s2s0,c2c0,c2s0;
 
-    if (t7 < 0)
-    {
-        t7 = -t7;
-        t7 &= 0xFFF;
-        t9 = gte_rcossin_tbl[t7];
-        t8 = (t9 << 16) >> 16;
-        t3 = -t8;
-        t0 = t9 >> 16;
-    }
-    else
-    {
-        //loc_244
-        t9 = gte_rcossin_tbl[t9];
-        t3 = (t9 << 16) >> 16;
-        t0 = t9 >> 16;
-    }
+	c0=rcos(r->vx);
+	c1=rcos(r->vy);
+	c2=rcos(r->vz);
+	s0=rsin(r->vx);
+	s1=rsin(r->vy);
+	s2=rsin(r->vz);
+	s2p0=rsin( r->vz + r->vx );
+	s2m0=rsin( r->vz - r->vx );
+	c2p0=rcos( r->vz + r->vx );
+	c2m0=rcos( r->vz - r->vx );
+	s2c0 =	(s2p0+s2m0)/2;
+	c2s0 =	(s2p0-s2m0)/2;
+	s2s0 =	(c2m0-c2p0)/2;
+	c2c0 =	(c2m0+c2p0)/2;
 
-    //loc_264
-    t7 = r->vy;
-    t9 = t7 & 0xFFF;
+	m->m[0][0]=  FIX(c2*c1);
+	m->m[1][0]=  s2c0 + FIX(c2s0*s1);
+	m->m[2][0]=  s2s0 - FIX(c2c0*s1);
+	m->m[0][1]= -FIX(s2*c1);
+	m->m[1][1]=  c2c0 - FIX(s2s0*s1);
+	m->m[2][1]=  c2s0 + FIX(s2c0*s1);
+	m->m[0][2]=  s1;
+	m->m[1][2]= -FIX(c1*s0);
+	m->m[2][2]=  FIX(c1*c0);
 
-    if (t7 < 0)
-    {
-        t7 = -t7;
-        t7 &= 0xFFF;
-        t9 = gte_rcossin_tbl[t7];
-        t4 = (t9 << 16) >> 16;
-        t6 = -t4;
-        t1 = t9 >> 16;
-    }
-    else
-    {
-        //loc_2A8
-        t9 = gte_rcossin_tbl[t9];
-        t6 = (t9 << 16) >> 16;
-        t4 = -t6;
-        t1 = t9 >> 16;
-    }
-
-    //loc_2CC
-    t8 = t1 * t3;
-    t7 = r->vz;
-    m->m[0][2] = t6;
-    t9 = -t8;
-    t6 = t9 >> 12;
-    t8 = t1 * t0;
-    m->m[1][2] = t6;
-    t9 = t7 & 0xFFF;
-
-    if (t7 < 0)
-    {
-        t6 = t8 >> 12;
-        m->m[2][2] = t6;
-        t7 = -t7;
-        t7 &= 0xFFF;
-        t9 = gte_rcossin_tbl[t7];
-        t8 = t9 & 0xFFFF;
-        t5 = -t8;
-        t2 = t9 >> 16;
-    }
-    else
-    {
-        //loc_334
-        t7 = t8;
-        t6 = t7 >> 12;
-        m->m[2][2] = t6;
-        t9 = gte_rcossin_tbl[t9];
-        t5 = t9 & 0xFFFF;
-        t2 = t9 >> 16;
-    }
-
-    //loc_360
-    t7 = t2 * t1;
-    t6 = t7 >> 12;
-    m->m[0][0] = t6;
-
-    t7 = t5 * t1;
-    t6 = -t7;
-    t7 = t6 >> 12;
-    m->m[0][1] = t7;
-
-    t7 = t2 * t4;
-    t8 = t7 >> 12;
-    t7 = t8 * t3;
-    t6 = t7 >> 12;
-    t7 = t5 * t0;
-    t9 = t7 >> 12;
-    t7 = t9 - t6;
-    m->m[1][0] = t7;
-
-    t6 = t8 * t0;
-    t7 = t6 >> 12;
-    t6 = t5 * t3;
-    t9 = t6 >> 12;
-    t6 = t9 + t7;
-    m->m[2][0] = t6;
-
-    t7 = t5 * t4;
-    t8 = t7 >> 12;
-    t7 = t8 * t3;
-    t6 = t7 >> 12;
-    t7 = t2 * t0;
-    t9 = t7 >> 12;
-    t7 = t9 + t6;
-    m->m[1][1] = t7;
-
-    t6 = t8 * t0;
-    t7 = t6 >> 12;
-    t6 = t2 * t3;
-    t9 = t6 >> 12;
-    t6 = t9 - t7;
-    m->m[2][1] = t6;
-
-    return m;
+	return m;
 }
 
 MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
@@ -4386,16 +4345,24 @@ MATRIX* RotMatrixZ(long r, MATRIX *m)
 
 MATRIX* TransMatrix(MATRIX* m, VECTOR* v)
 {
-    ((int*)m)[5] = v->vx;
-    ((int*)m)[6] = v->vy;
-    ((int*)m)[7] = v->vz;
+	m->t[0] = v->vx;
+	m->t[1] = v->vy;
+	m->t[2] = v->vz;
     return m;
 }
 
 MATRIX* ScaleMatrix(MATRIX* m, VECTOR* v)
 {
-    UNIMPLEMENTED();
-    return NULL;
+	m->m[0][0] = FIX(m->m[0][0] * v->vx);
+	m->m[0][1] = FIX(m->m[0][1] * v->vx);
+	m->m[0][2] = FIX(m->m[0][2] * v->vx);
+	m->m[1][0] = FIX(m->m[1][0] * v->vy);
+	m->m[1][1] = FIX(m->m[1][1] * v->vy);
+	m->m[1][2] = FIX(m->m[1][2] * v->vy);
+	m->m[2][0] = FIX(m->m[2][0] * v->vz);
+	m->m[2][1] = FIX(m->m[2][1] * v->vz);
+	m->m[2][2] = FIX(m->m[2][2] * v->vz);
+	return m;
 }
 
 void SetDQA(int iDQA)
