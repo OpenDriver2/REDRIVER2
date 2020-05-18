@@ -2462,6 +2462,7 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 
 	bReverseAnimation = 0;
 	pPed->speed = 0;
+	pPed->frame1 = 0;
 
 	iVar6 = carToGetIn->hd.direction;
 	iVar3 = rsin(iVar6);
