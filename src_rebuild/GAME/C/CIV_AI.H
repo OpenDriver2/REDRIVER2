@@ -2,8 +2,6 @@
 #define CIV_AI_H
 
 extern unsigned char reservedSlots[20];
-extern unsigned long PingBufferPos;
-extern _PING_PACKET *PingBuffer;
 extern int frameStart;
 
 extern int distFurthestCivCarSq;

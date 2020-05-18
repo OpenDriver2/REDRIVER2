@@ -240,10 +240,12 @@ void GameDebugKeys(int nKey, bool down)
 char g_Overlay_buffer[0x50000];		// 0x1C0000
 char g_Frontend_buffer[0x50000];	// 0xFB400
 char g_Other_buffer[0x50000];		// 0xF3000
+char g_Other_buffer2[0x50000];		// 0xE7000
 OTTYPE g_OT1[OTSIZE];				// 0xF3000
 OTTYPE g_OT2[OTSIZE];				// 0xF7200
 char g_PrimTab1[0x1a180];			// 0xFB400
 char g_PrimTab2[0x1a180];			// 0x119400
+char g_Replay_buffer[0x50000];		// 0x1fabbc
 #endif
 
 int main()
@@ -252,18 +254,22 @@ int main()
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
 	_frontend_buffer = (char*)malloc(0x50000);			// 0xFB400
 	_other_buffer = (char*)malloc(0x50000);				// 0xF3000
+	_other_buffer2 = (char*)malloc(0x50000);			// 0xE7000
 	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000
 	_OT2 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF7200
 	_primTab1 = (char*)malloc(0x1a180);					// 0xFB400
 	_primTab2 = (char*)malloc(0x1a180);					// 0x119400
+	_replay_buffer = (char*)malloc(0x50000);			// 0x1fabbc
 #else
 	_overlay_buffer = g_Overlay_buffer;		// 0x1C0000
 	_frontend_buffer = g_Frontend_buffer;	// 0xFB400
 	_other_buffer = g_Other_buffer;			// 0xF3000
+	_other_buffer2 = g_Other_buffer2;		// 0xE7000
 	_OT1 = g_OT1;							// 0xF3000
 	_OT2 = g_OT2;							// 0xF7200
 	_primTab1 = g_PrimTab1;					// 0xFB400
 	_primTab2 = g_PrimTab2;					// 0x119400
+	_replay_buffer = g_Replay_buffer;		// 0x1fabbc
 #endif
 
 	//g_texturelessMode = 1;

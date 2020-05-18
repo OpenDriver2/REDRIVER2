@@ -9,6 +9,9 @@ extern int gChaseNumber;
 extern int gRandomChase;
 extern int gSubGameNumber;
 
+extern int gLoadedReplay;
+extern int gHaveStoredData;
+
 extern int gMissionLadderPos;
 extern int gFurthestMission;
 extern int gWantNight;

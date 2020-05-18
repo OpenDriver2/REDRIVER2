@@ -22,10 +22,12 @@
 char*	_overlay_buffer = NULL;		// 0x1C0000
 char*	_frontend_buffer = NULL;	// 0xFB400
 char*	_other_buffer = NULL;		// 0xF3000
+char*	_other_buffer2 = NULL;		// 0xE7000
 OTTYPE*	_OT1 = NULL;				// 0xF3000
 OTTYPE*	_OT2 = NULL;				// 0xF7200
 char*	_primTab1 = NULL;			// 0xFB400
 char*	_primTab2 = NULL;			// 0x119400
+char*	_replay_buffer = NULL;		// 0x1FABBC
 
 #ifdef USE_CRT_MALLOC
 
@@ -200,6 +202,9 @@ void ClearMem(char *mem, int size)
 // [D]
 void setMem8(unsigned char *mem, unsigned char val, int size)
 {
+#ifndef PSX
+	memset(mem, 0, size);
+#else
 	UNIMPLEMENTED();
 	/*
 	int *puVar1;
@@ -228,6 +233,7 @@ void setMem8(unsigned char *mem, unsigned char val, int size)
 	}
 	return;
 	*/
+#endif
 }
 
 
@@ -258,6 +264,9 @@ void setMem8(unsigned char *mem, unsigned char val, int size)
 
 void setMem16(ushort *mem, ushort val, int size)
 {
+#ifndef PSX
+	memset(mem, 0, size);
+#else
 	UNIMPLEMENTED();
 	/*
 	bool bVar1;
@@ -288,6 +297,7 @@ void setMem16(ushort *mem, ushort val, int size)
 	}
 	return;
 	*/
+#endif
 }
 
 

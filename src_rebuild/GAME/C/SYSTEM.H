@@ -4,12 +4,14 @@
 extern char* _overlay_buffer;		// 0x1C0000
 extern char* _frontend_buffer;		// 0xFB400
 extern char* _other_buffer;			// 0xF3000
+extern char* _other_buffer2;		// 0xE7000
 
 extern OTTYPE* _OT1;				// 0xF3000
 extern OTTYPE* _OT2;				// 0xF7200
 
 extern char* _primTab1;				// 0xFB400
 extern char* _primTab2;				// 0x119400
+extern char* _replay_buffer;		// 0x1FABBC
 
 extern const char* mallocptr_start;
 

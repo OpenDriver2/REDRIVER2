@@ -185,6 +185,55 @@ char carNumLookup[4][10] = {
 	{0x1, 0x2, 0x3, 0x4, 0x0, 0x8, 0x9, 0xA, 0xB, 0xC},
 };
 
+int minmaxSelections[4][2] = {
+
+	{ 0, 8 },
+	{ 8, 17 },
+	{ 18, 27 },
+	{ 28, 37 }
+};
+
+BOTCH botch[38] = {
+	{ 0x1, &MissionName[0]},
+	{ 0x2, &MissionName[1]},
+	{ 0x3, &MissionName[2]},
+	{ 0x4, &MissionName[3]},
+	{ 0x5, &MissionName[4]},
+	{ 0x6, &MissionName[5]},
+	{ 0x7, &MissionName[6]},
+	{ 0x9, &MissionName[7]},
+	{ 0xa, &MissionName[8]},
+	{ 0xb, &MissionName[9]},
+	{ 0xd, &MissionName[10]},
+	{ 0xe, &MissionName[11]},
+	{ 0xf, &MissionName[12]},
+	{ 0x10, &MissionName[13]},
+	{ 0x11, &MissionName[14]},
+	{ 0x12, &MissionName[15]},
+	{ 0x13, &MissionName[16]},
+	{ 0x14, &MissionName[17]},
+	{ 0x15, &MissionName[18]},
+	{ 0x16, &MissionName[19]},
+	{ 0x17, &MissionName[20]},
+	{ 0x18, &MissionName[21]},
+	{ 0x19, &MissionName[22]},
+	{ 0x1a, &MissionName[23]},
+	{ 0x1b, &MissionName[24]},
+	{ 0x1c, &MissionName[25]},
+	{ 0x1d, &MissionName[26]},
+	{ 0x1e, &MissionName[27]},
+	{ 0x1f, &MissionName[28]},
+	{ 0x20, &MissionName[29]},
+	{ 0x21, &MissionName[30]},
+	{ 0x22, &MissionName[31]},
+	{ 0x23, &MissionName[32]},
+	{ 0x25, &MissionName[33]},
+	{ 0x26, &MissionName[34]},
+	{ 0x27, &MissionName[35]},
+	{ 0x28, &MissionName[36]},
+	{ 0,NULL}
+};
+
 char ScreenTitle[128];
 char ScoreName[128];
 
@@ -2616,147 +2665,160 @@ int VibroOnOffScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 7792
 
+int currMission = 0;
+int missionSetup = 0;
+
+// [D]
 int MissionSelectScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-
-	byte bVar1;
+	unsigned char bVar1;
 	bool bVar2;
 	bool bVar3;
-	uchar uVar4;
+	unsigned char uVar4;
 	PSXSCREEN *pPVar5;
-	int *piVar6;
+	BOTCH *pBVar6;
 	int iVar7;
 	int iVar8;
 
-	if (bSetup == 0) {
-		if ((uRam001cc5dc & 0x40) == 0) {
-			if ((uRam001cc5dc & 0x10) == 0) {
-				if ((uRam001cc5dc & 0x1000) == 0) {
-					if ((uRam001cc5dc & 0x4000) == 0) {
+	if (bSetup == 0) 
+	{
+		if ((fePad & 0x40U) == 0)
+		{
+			if ((fePad & 0x10U) == 0) 
+			{
+				if ((fePad & 0x1000U) == 0) 
+				{
+					if ((fePad & 0x4000U) == 0) 
+					{
 						return 0;
 					}
 					bVar1 = pCurrButton->d;
 				}
-				else {
+				else 
+				{
 					bVar1 = pCurrButton->u;
 				}
-				DAT_FRNT__001c6a8c = (uint)bVar1 - 1;
+				currSelIndex = bVar1 - 1;
 			}
-			else {
-				DAT_FRNT__001c6a74 = 0;
-				DAT_FRNT__001c6ab0 = 0;
+			else
+			{
+				missionSetup = 0;
+				bMissionSelect = 0;
 			}
 		}
-		else {
-			if (DAT_FRNT__001c6a8c == 5) {
-				iVar7 = DAT_FRNT__001cc54c + 4;
-				if ((iVar7 < *(int *)(DAT_FRNT__001c6a70 * 8 + 0x1c6b9c)) && (iVar7 < gFurthestMission)) {
+		else 
+		{
+			if (currSelIndex == 5) 
+			{
+				iVar7 = currMission + 4;
+				if ((iVar7 < minmaxSelections[currCity][1]) && (iVar7 < gFurthestMission))
+				{
 				LAB_FRNT__001c41fc:
-					DAT_FRNT__001cc54c = iVar7;
+					currMission = iVar7;
 					FESound(3);
-					(*(code *)(&PTR_CentreScreen_FRNT__001c6a20)[(uint)(byte)pCurrScreen->userFunctionNum - 1]
-						)(1);
-					DAT_FRNT__001c6aa0 = 1;
+					fpUserFunctions[pCurrScreen->userFunctionNum-1](1);
+					bRedrawFrontend = 1;
 					return 1;
 				}
 			}
-			else {
-				if (DAT_FRNT__001c6a8c == 0) {
-					if (*(int *)(&DAT_FRNT__001c6b98 + DAT_FRNT__001c6a70 * 8) < DAT_FRNT__001cc54c) {
-						iVar7 = DAT_FRNT__001cc54c + -4;
+			else 
+			{
+				if (currSelIndex == 0)
+				{
+					if (minmaxSelections[currCity][0] < currMission)
+					{
+						iVar7 = currMission + -4;
 						goto LAB_FRNT__001c41fc;
 					}
 				}
-				else {
+				else
+				{
 					bReturnToMain = 0;
 					GameType = GAME_REPLAYMISSION;
-					feVariableSave[1] = DAT_FRNT__001c6a8c;
-					feVariableSave[0] = DAT_FRNT__001cc54c;
-					feVariableSave[2] = DAT_FRNT__001c6a70;
-					gCurrentMissionNumber =
-						(&DAT_FRNT__001c6bb8)[(DAT_FRNT__001cc54c + DAT_FRNT__001c6a8c + -1) * 2];
+					feVariableSave[1] = currSelIndex;
+					feVariableSave[0] = currMission;
+					feVariableSave[2] = currCity;
+					gCurrentMissionNumber = botch[currMission + currSelIndex + -1].missNum;
 				}
 			}
 		}
 		return 0;
 	}
-	DAT_FRNT__001c6ab0 = 1;
-	if (DAT_FRNT__001c6a74 == 0) {
-		DAT_FRNT__001cc54c = *(int *)(&DAT_FRNT__001c6b98 + DAT_FRNT__001c6a70 * 8);
-		DAT_FRNT__001c6a8c = 0;
-		if (GameType == GAME_REPLAYMISSION) {
-			LoadBackgroundFile(s_DATA_CITYBACK_RAW_FRNT__001c08b4);
+
+	bMissionSelect = 1;
+	if (missionSetup == 0)
+	{
+		currMission = minmaxSelections[currCity][0];
+		currSelIndex = 0;
+
+		if (GameType == GAME_REPLAYMISSION) 
+		{
+			LoadBackgroundFile("DATA\\CITYBACK.RAW");
 		}
 	}
+
 	pPVar5 = pCurrScreen;
 	if (feVariableSave[0] != -1) {
-		DAT_FRNT__001cc54c = feVariableSave[0];
-		DAT_FRNT__001c6a8c = feVariableSave[1];
-		DAT_FRNT__001c6a70 = feVariableSave[2];
+		currMission = feVariableSave[0];
+		currSelIndex = feVariableSave[1];
+		currCity = feVariableSave[2];
 	}
 	iVar8 = 0;
 	bVar2 = false;
 	bVar3 = false;
 	iVar7 = 0;
-	piVar6 = &DAT_FRNT__001c6bb8 + DAT_FRNT__001cc54c * 2;
+	pBVar6 = botch + currMission;
 	do {
-		if (((gFurthestMission < *piVar6) ||
-			(*(int *)(DAT_FRNT__001c6a70 * 8 + 0x1c6b9c) < iVar7 + DAT_FRNT__001cc54c)) ||
-			(0x24 < iVar7 + DAT_FRNT__001cc54c)) {
+		if (((gFurthestMission < pBVar6->missNum) ||
+			(minmaxSelections[currCity][1] < iVar7 + currMission)) ||
+			(0x24 < iVar7 + currMission)) {
 			bVar2 = true;
 		}
 		else {
 			iVar8 = iVar8 + 1;
 		}
 		iVar7 = iVar7 + 1;
-		piVar6 = piVar6 + 2;
+		pBVar6 = pBVar6 + 1;
 	} while ((iVar7 < 4) && (!bVar2));
-	uVar4 = (uchar)iVar8;
-	if (iVar8 == 1) {
+	uVar4 = iVar8;
+	if (iVar8 == 1) 
+	{
 		pCurrScreen->buttons[1].d = '\x02';
 		pPVar5->buttons[1].u = '\x02';
-		sprintf(pCurrScreen->buttons[1].Name,
-			(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)[DAT_FRNT__001cc54c]);
-		sprintf(pCurrScreen->buttons[2].Name, &DAT_FRNT__001c0830);
-		sprintf(pCurrScreen->buttons[3].Name, &DAT_FRNT__001c0830);
+		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+		sprintf(pCurrScreen->buttons[2].Name, NullStr);
+		sprintf(pCurrScreen->buttons[3].Name, NullStr);
 	LAB_FRNT__001c3e3c:
-		sprintf(pCurrScreen->buttons[4].Name, &DAT_FRNT__001c0830);
+		sprintf(pCurrScreen->buttons[4].Name, NullStr);
 	}
-	else {
-		if (iVar8 == 2) {
+	else 
+	{
+		if (iVar8 == 2)
+		{
 			pCurrScreen->buttons[1].u = '\x03';
 			pCurrScreen->buttons[1].d = '\x03';
 			pCurrScreen->buttons[2].u = uVar4;
 			pCurrScreen->buttons[2].d = uVar4;
-			sprintf(pCurrScreen->buttons[1].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)[DAT_FRNT__001cc54c]);
-			sprintf(pCurrScreen->buttons[2].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)
-				[DAT_FRNT__001cc54c + 1]);
-			sprintf(pCurrScreen->buttons[3].Name, &DAT_FRNT__001c0830);
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[3].Name, NullStr);
 			goto LAB_FRNT__001c3e3c;
 		}
-		if (iVar8 == 3) {
+		if (iVar8 == 3)
+		{
 			pCurrScreen->buttons[1].u = '\x04';
 			pCurrScreen->buttons[1].d = uVar4;
 			pCurrScreen->buttons[2].u = '\x02';
 			pCurrScreen->buttons[2].d = '\x04';
 			pCurrScreen->buttons[3].u = uVar4;
 			pCurrScreen->buttons[3].d = '\x02';
-			sprintf(pCurrScreen->buttons[1].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)[DAT_FRNT__001cc54c]);
-			sprintf(pCurrScreen->buttons[2].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)
-				[DAT_FRNT__001cc54c + 1]);
-			sprintf(pCurrScreen->buttons[3].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)
-				[DAT_FRNT__001cc54c + 2]);
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
 			goto LAB_FRNT__001c3e3c;
 		}
-		if (iVar8 == 4) {
+		if (iVar8 == 4)
+		{
 			pCurrScreen->buttons[1].u = '\x05';
 			pCurrScreen->buttons[1].d = '\x03';
 			pCurrScreen->buttons[2].u = '\x02';
@@ -2765,29 +2827,27 @@ int MissionSelectScreen(int bSetup)
 			pCurrScreen->buttons[3].d = '\x05';
 			pCurrScreen->buttons[4].u = uVar4;
 			pCurrScreen->buttons[4].d = '\x02';
-			sprintf(pCurrScreen->buttons[1].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)[DAT_FRNT__001cc54c]);
-			sprintf(pCurrScreen->buttons[2].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)
-				[DAT_FRNT__001cc54c + 1]);
-			sprintf(pCurrScreen->buttons[3].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)
-				[DAT_FRNT__001cc54c + 2]);
-			sprintf(pCurrScreen->buttons[4].Name,
-				(&PTR_s_Informazioni_sorveglianza_FRNT__001c06e4_FRNT__001c68f8)
-				[DAT_FRNT__001cc54c + 3]);
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
+			sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
 		}
 	}
+
 	pPVar5 = pCurrScreen;
-	if (((iVar8 == 4) &&
-		((int)(&DAT_FRNT__001c6bb8)[(DAT_FRNT__001cc54c + 4) * 2] <= gFurthestMission)) &&
-		(DAT_FRNT__001cc54c + 4 != *(int *)(DAT_FRNT__001c6a70 * 8 + 0x1c6b9c))) {
+
+	if (((iVar8 == 4) && (botch[currMission + 4].missNum <= gFurthestMission)) && (currMission + 4 != minmaxSelections[currCity][1])) 
+	{
 		bVar3 = true;
 	}
-	if (bVar3) {
-		if (DAT_FRNT__001cc54c == *(int *)(&DAT_FRNT__001c6b98 + DAT_FRNT__001c6a70 * 8)) {
+
+	if (bVar3) 
+	{
+		if (currMission == minmaxSelections[currCity][0]) 
+		{
 		LAB_FRNT__001c406c:
-			if (bVar3) {
+			if (bVar3) 
+			{
 				pCurrScreen->buttons[1].u = '\x06';
 				pCurrScreen->buttons[4].d = '\x06';
 				pCurrScreen->buttons[5].u = '\x05';
@@ -2796,12 +2856,14 @@ int MissionSelectScreen(int bSetup)
 				pCurrScreen->buttons[5].action = 0;
 				pPVar5->buttons[0].action = 0x500;
 			}
-			else {
+			else
+			{
 				pCurrScreen->buttons[0].action = 0x500;
 				pPVar5->buttons[5].action = 0x500;
 			}
+
 			pCurrButton = pPVar5->buttons + 1;
-			DAT_FRNT__001c6a8c = 1;
+			currSelIndex = 1;
 			goto LAB_FRNT__001c40d8;
 		}
 		pCurrScreen->buttons[0].u = '\x06';
@@ -2814,9 +2876,11 @@ int MissionSelectScreen(int bSetup)
 		pCurrScreen->buttons[0].action = 0;
 		pPVar5->buttons[5].action = 0;
 	}
-	else {
-		if (DAT_FRNT__001cc54c == *(int *)(&DAT_FRNT__001c6b98 + DAT_FRNT__001c6a70 * 8))
+	else 
+	{
+		if (currMission == minmaxSelections[currCity][0])
 			goto LAB_FRNT__001c406c;
+
 		pCurrScreen->buttons[0].u = uVar4 + '\x01';
 		pCurrScreen->buttons[0].d = '\x02';
 		pCurrScreen->buttons[1].u = '\x01';
@@ -2826,20 +2890,24 @@ int MissionSelectScreen(int bSetup)
 		pPVar5->buttons[5].action = 0x500;
 	}
 	pCurrButton = pPVar5->buttons;
-	DAT_FRNT__001c6a8c = 0;
+	currSelIndex = 0;
+
 LAB_FRNT__001c40d8:
-	if (DAT_FRNT__001c6a78 == -1) {
-		SetupExtraPoly(s_DATA_CITY_RAW_FRNT__001c088c, DAT_FRNT__001c6a70, 0);
+	if (loaded[0] == -1) 
+	{
+		SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
 	}
-	else {
-		DAT_FRNT__001c6a90 = 1;
+	else
+	{
+		bDrawExtra = 1;
 	}
-	feVariableSave[0] = 0xffffffff;
-	feVariableSave[1] = 0xffffffff;
-	feVariableSave[2] = 0xffffffff;
-	feVariableSave[3] = 0xffffffff;
-	DAT_FRNT__001c6a74 = 1;
-	return 1;*/
+
+	feVariableSave[0] = -1;
+	feVariableSave[1] = -1;
+	feVariableSave[2] = -1;
+	feVariableSave[3] = -1;
+	missionSetup = 1;
+	return 1;
 }
 
 
@@ -2902,78 +2970,84 @@ LAB_FRNT__001c40d8:
 	/* end block 4 */
 	// End Line: 8335
 
+// [D]
 int MissionCityScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-
-	byte bVar1;
+	unsigned char bVar1;
 	DB *pDVar2;
 	PSXSCREEN *pPVar3;
 	int iVar4;
 	uint *puVar5;
-	undefined4 local_10;
-	undefined4 local_c;
+	RECT16 rect;
 
 	pPVar3 = pCurrScreen;
-	if (bSetup == 0) {
-		if ((uRam001cc5dc & 0x10) != 0) {
-			DAT_FRNT__001c6a90 = 0;
+	if (bSetup == 0)
+	{
+		if ((fePad & 0x10U) != 0) 
+		{
+			bDrawExtra = 0;
 			FESound(0);
-			DAT_FRNT__001c6aac = 1;
-			LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
+			bDoneAllready = 1;
+			LoadBackgroundFile("DATA\\GFX.RAW");
 			return 0;
 		}
-		if ((uRam001cc5dc & 0x1000) == 0) {
-			if ((uRam001cc5dc & 0x4000) == 0) {
-				DAT_FRNT__001c6a70 = (uint)pCurrButton->u & 3;
+
+		if ((fePad & 0x1000U) == 0) 
+		{
+			if ((fePad & 0x4000U) == 0) 
+			{
+				currCity = (uint)pCurrButton->u & 3;
 				return 0;
 			}
 			bVar1 = pCurrButton->d;
 		}
-		else {
+		else 
+		{
 			bVar1 = pCurrButton->u;
 		}
-		local_10 = DAT_FRNT__001c0884;
-		local_c = DAT_FRNT__001c0888;
-		DAT_FRNT__001c6a70 = (uint)bVar1 - 1;
-		LoadImage(&local_10, &DAT_0013f400 + DAT_FRNT__001c6a70 * 0x8000);
+
+		rect = extraRect;
+		currCity = (uint)bVar1 - 1;
+		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+
 		DrawSync(0);
 		DisplayOnScreenText();
-		pDVar2 = current;
-		DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-		*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-		DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar2->ot[3] & 0xffffff;
-		puVar5 = (uint *)pDVar2->ot[3];
-		*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
+
+		addPrim(current->ot + 2, &extraSprt);
+		addPrim(current->ot + 2, &extraDummy);
+
 		EndFrame();
 		return 0;
 	}
 	GameType = GAME_MISSION;
-	if (gFurthestMission == 0) {
+	if (gFurthestMission == 0)
+	{
 		iVar4 = 0x300;
 	LAB_FRNT__001c43f4:
 		pCurrScreen->buttons[0].action = iVar4;
 		pPVar3->buttons[1].action = iVar4;
 		pPVar3->buttons[2].action = iVar4;
 	}
-	else {
-		if (gFurthestMission < 10) {
+	else
+	{
+		if (gFurthestMission < 10)
+		{
 			pCurrScreen->buttons[0].action = 0x113;
 			pPVar3->buttons[1].action = 0x300;
 			pPVar3->buttons[2].action = 0x300;
 			pPVar3->buttons[3].action = 0x300;
 			goto LAB_FRNT__001c4404;
 		}
-		if (gFurthestMission < 0x15) {
+		if (gFurthestMission < 0x15)
+		{
 			pCurrScreen->buttons[0].action = 0x113;
 			pPVar3->buttons[1].action = 0x113;
 			pPVar3->buttons[2].action = 0x300;
 			pPVar3->buttons[3].action = 0x300;
 			goto LAB_FRNT__001c4404;
 		}
-		if (0x1e < gFurthestMission) {
+		if (0x1e < gFurthestMission)
+		{
 			iVar4 = 0x113;
 			goto LAB_FRNT__001c43f4;
 		}
@@ -2982,16 +3056,21 @@ int MissionCityScreen(int bSetup)
 		pPVar3->buttons[1].action = 0x113;
 		pPVar3->buttons[2].action = 0x113;
 	}
+
 	pPVar3->buttons[3].action = iVar4;
 LAB_FRNT__001c4404:
-	LoadBackgroundFile(s_DATA_CITYBACK_RAW_FRNT__001c08b4);
-	if (DAT_FRNT__001c6a78 == -1) {
-		SetupExtraPoly(s_DATA_CITY_RAW_FRNT__001c088c, 0, 0);
+
+	LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+	if (loaded[0] == -1)
+	{
+		SetupExtraPoly("DATA\\CITY.RAW", 0, 0);
 	}
-	else {
-		DAT_FRNT__001c6a90 = 1;
+	else
+	{
+		bDrawExtra = 1;
 	}
-	return 0;*/
+	return 0;
 }
 
 

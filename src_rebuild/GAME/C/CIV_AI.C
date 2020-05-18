@@ -39,9 +39,6 @@ int testNumPingedOut = 0;
 int currentAngle = 0;
 int closeEncounter = 3;
 
-unsigned long PingBufferPos = 0;
-_PING_PACKET *PingBuffer = NULL;
-
 // decompiled code
 // original method signature: 
 // int /*$ra*/ InitCar(struct _CAR_DATA *cp /*$s0*/, int direction /*$s6*/, long (*startPos)[4] /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)

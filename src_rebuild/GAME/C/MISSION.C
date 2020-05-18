@@ -883,9 +883,9 @@ void RegisterChaseHit(int car1, int car2)
 		{
 			if (car1 == Mission.ChaseTarget->data[6] || car2 == Mission.ChaseTarget->data[6]) 
 			{
-				(Mission.ChaseTarget)->data[0xd] = (Mission.ChaseTarget)->data[0xd] + -1;
+				Mission.ChaseTarget->data[0xd]--;
 				Mission.ChaseHitDelay = 20;
-				DamageBar.position = DamageBar.position + 1;
+				DamageBar.position++;
 			}
 		}
 		else 
@@ -1183,6 +1183,12 @@ int Swap2Cars(int curslot, int newslot)
 
 	if (curslot == newslot)
 		return newslot;
+
+	ctrlNodeNewId = -1;
+	pnodeNewId = -1;
+
+	ctrlNodeCurId = -1;
+	pnodeCurId = -1;
 
 	// hold cur slot nodes
 	cp = &car_data[curslot];
