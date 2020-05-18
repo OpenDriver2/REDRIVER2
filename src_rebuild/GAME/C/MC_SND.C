@@ -1,6 +1,9 @@
 #include "THISDUST.H"
 #include "MC_SND.H"
-
+#include "CUTSCENE.H"
+#include "MISSION.H"
+#include "CARS.H"
+#include "PLAYERS.H"
 
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -1157,66 +1160,74 @@ void SetMSoundVar(int var, VECTOR *V)
 
 /* WARNING: Type propagation algorithm not settling */
 
+int cutscene_timer = 0;
+
+// [D]
 char SilenceThisCar(int car)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	bool bVar2;
 
-	if (gInGameCutsceneActive == 0) {
+	if (gInGameCutsceneActive == 0)
+	{
 		bVar2 = false;
-		if (car_data[car].controlType == '\a') {
-			bVar2 = car_data[car].ai[0xc] == 7;
+
+		if (car_data[car].controlType == 7) 
+		{
+			bVar2 = car_data[car].ai.c.ctrlState == 7;
 		}
+
 		return (char)bVar2;
 	}
-	switch (gCurrentMissionNumber) {
+
+	switch (gCurrentMissionNumber) 
+	{
 	case 1:
 	case 0xe:
 	case 0x11:
-		if (gInGameCutsceneID != 0) {
-			return '\0';
-		}
-		if (car == 1) {
-			return '\x01';
-		}
+		if (gInGameCutsceneID != 0)
+			return 0;
+
+		if (car == 1)
+			return 1;
+
 		break;
 	case 2:
-		if (gInGameCutsceneID != 1) {
-			return '\0';
-		}
-		if ((car == 2) && (cutscene_timer < 200)) {
-			return '\x01';
-		}
-		if (car != 1) {
-			return '\0';
-		}
+		if (gInGameCutsceneID != 1)
+			return 0;
+	
+		if (car == 2 && cutscene_timer < 200)
+			return 1;
+
+		if (car != 1)
+			return 0;
+	
 		bVar2 = cutscene_timer < 0x23;
 		goto LAB_0005ef14;
 	case 3:
 	case 0x19:
-		if (gInGameCutsceneID != 0) {
-			return '\0';
-		}
+		if (gInGameCutsceneID != 0)
+			return 0;
+
 		iVar1 = 2;
 		goto LAB_0005ef3c;
 	case 6:
-		if (gInGameCutsceneID == 0) {
+		if (gInGameCutsceneID == 0) 
+		{
 			bVar2 = car - 2U < 2;
 		}
-		else {
-			if (gInGameCutsceneID != 1) {
-				return '\0';
-			}
+		else 
+		{
+			if (gInGameCutsceneID != 1)
+				return 0;
+		
 			bVar2 = cutscene_timer < 0xfd;
 		}
 	LAB_0005ef14:
-		if (bVar2) {
-			return '\x01';
-		}
-		return '\0';
+		if (bVar2)
+			return 1;
+
+		return 0;
 	case 7:
 	case 0x13:
 	case 0x15:
@@ -1224,93 +1235,98 @@ char SilenceThisCar(int car)
 	case 0x1e:
 	case 0x1f:
 		if (gInGameCutsceneID != 0) {
-			return '\0';
+			return 0;
 		}
-		return '\x01';
+		return 1;
 	case 10:
 		if (gInGameCutsceneID != 0) {
-			return '\0';
+			return 0;
 		}
 		iVar1 = 3;
 	LAB_0005ef3c:
 		if (car == iVar1) {
-			return '\x01';
+			return 1;
 		}
-		return '\0';
+		return 0;
 	case 0x10:
-		if (gInGameCutsceneID != 0) {
-			return '\0';
-		}
-		if (car != 1) {
-			return '\x01';
-		}
+		if (gInGameCutsceneID != 0)
+			return 0;
+
+		if (car != 1)
+			return 1;
+
 		break;
 	case 0x12:
-		if ((gInGameCutsceneID == 0) && (car != 1)) {
-			return '\x01';
-		}
-		if ((gInGameCutsceneID == 1) && (2 < car)) {
-			return '\x01';
-		}
-		if (car == 1) {
-			bVar2 = cutscene_timer < 0x1d7;
+		if (gInGameCutsceneID == 0 && car != 1)
+			return 1;
+
+		if (gInGameCutsceneID == 1 && car > 2)
+			return 1;
+
+		if (car == 1)
+		{
+			bVar2 = cutscene_timer < 471;
 			goto LAB_0005f098;
 		}
+
 		break;
 	case 0x17:
-		if (gInGameCutsceneID != 0) {
-			return '\0';
-		}
-		if (cutscene_timer < 0xa0) {
-			return '\x01';
-		}
-		if (car != 1) {
-			return '\0';
-		}
-		bVar2 = cutscene_timer < 0x1a0;
+		if (gInGameCutsceneID != 0) 
+			return 0;
+
+		if (cutscene_timer < 160)
+			return 1;
+
+		if (car != 1)
+			return 0;
+
+		bVar2 = cutscene_timer < 416;
 		goto LAB_0005f098;
 	case 0x1b:
-		if (gInGameCutsceneID != 0) {
-			return '\0';
-		}
+		if (gInGameCutsceneID != 0)
+			return 0;
+
 		if (car - 6U < 2) {
-			return '\x01';
+			return 1;
 		}
 		if (1 < car - 2U) {
-			return '\0';
+			return 0;
 		}
-		bVar2 = cutscene_timer < 0x2a9;
+		bVar2 = cutscene_timer < 681;
 	LAB_0005f098:
-		if (!bVar2) {
-			return '\x01';
-		}
-		return '\0';
+		if (!bVar2)
+			return 1;
+	
+		return 0;
 	case 0x1d:
-		if (gInGameCutsceneID == 0) {
-			return '\x01';
-		}
-		if (gInGameCutsceneID == 1) {
+		if (gInGameCutsceneID == 0)
+			return 1;
+
+		if (gInGameCutsceneID == 1) 
+		{
 			bVar2 = car - 4U < 2;
 			goto LAB_0005ef14;
 		}
 		break;
 	case 0x21:
-		if ((gInGameCutsceneID == 1) && (car != 1)) {
-			return '\x01';
-		}
+		if (gInGameCutsceneID == 1 && car != 1)
+			return 1;
+
 		break;
 	case 0x26:
-		if (gInGameCutsceneID == 0) {
+		if (gInGameCutsceneID == 0) 
+		{
 			bVar2 = car - 2U < 2;
 			goto LAB_0005ef14;
 		}
+
 		break;
 	case 0x27:
-		if (gInGameCutsceneID == 0) {
-			return '\x01';
-		}
+		if (gInGameCutsceneID == 0)
+			return 1;
 	}
-	return '\0';*/
+
+	return 0;
 }
 
 
@@ -1326,23 +1342,22 @@ char SilenceThisCar(int car)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void AdjustPlayerCarVolume(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if (gInGameCutsceneID == 0) {
-		if (((gCurrentMissionNumber == 3) || (gCurrentMissionNumber == 5)) ||
-			(gCurrentMissionNumber == 0x1b)) {
-			player.revsvol = -0x1a5e;
-			player.idlevol = -10000;
+	if (gInGameCutsceneID == 0) 
+	{
+		if (gCurrentMissionNumber == 3 || gCurrentMissionNumber == 5 || gCurrentMissionNumber == 27)
+		{
+			player[0].revsvol = -0x1a5e;
+			player[0].idlevol = -10000;
 		}
-		else {
-			player.revsvol = -10000;
-			player.idlevol = -8000;
+		else 
+		{
+			player[0].revsvol = -10000;
+			player[0].idlevol = -8000;
 		}
 	}
-	return;
-	*/
 }
 
 
