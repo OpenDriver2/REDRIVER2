@@ -2,6 +2,12 @@
 #include "REPLAYS.H"
 #include "MAP.H"
 #include "SPOOL.H"
+#include "SYSTEM.H"
+#include "CUTSCENE.H"
+#include "PLAYERS.H"
+#include "GLAUNCH.H"
+#include "MISSION.H"
+#include "DIRECTOR.H"
 
 char AnalogueUnpack[] = { 0, 0xCD, 0xC1, 0xB5, 0xA9, 0x9D, 0x91, 0x85, 0, 0x33, 0x3F, 0x4B, 0x57, 0x63, 0x6F, 0x7B };
 
@@ -11,6 +17,20 @@ REPLAY_PARAMETER_BLOCK *ReplayParameterPtr = NULL;
 
 REPLAY_STREAM ReplayStreams[8];
 int NumReplayStreams = 1;
+
+char *ReplayStart;
+char *replayptr = NULL;
+int ReplaySize = 0;
+
+unsigned long PingBufferPos = 0;
+_PING_PACKET *PingBuffer = NULL;
+
+SXYPAIR *PlayerWayRecordPtr = NULL;
+PLAYBACKCAMERA *PlaybackCamera = NULL;
+
+int TimeToWay = 0;
+short PlayerWaypoints = 0;
+int way_distance = 0;
 
 // decompiled code
 // original method signature: 
@@ -43,66 +63,58 @@ int NumReplayStreams = 1;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitPadRecording(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char *pcVar1;
 	char *pcVar2;
-	int iVar3;
-	uint uVar4;
-	uchar *puVar5;
-	int iVar6;
+
+	int i;
 	REPLAY_STREAM *stream;
 
 	gOutOfTape = 0;
-	if (gLoadedReplay == 0) {
-		PingBuffer = (_PING_PACKET *)&DAT_001fb698;
-		ReplayStart = &DAT_001fabbc;
+
+	if (gLoadedReplay == 0)
+	{
 		NumReplayStreams = 0;
-		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)&DAT_001fabbc;
-		PlayerWayRecordPtr = (SXYPAIR *)&DAT_001fabd0;
-		PlaybackCamera = (PLAYBACKCAMERA *)&DAT_001fae28;
-		replayptr = &DAT_001fbcd8;
-		setMem8(&DAT_001fb698, -1, 0x640);
+
+		ReplayStart = _replay_buffer;
+		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)ReplayStart;
+
+		PlayerWayRecordPtr = (SXYPAIR *)(ReplayStart + sizeof(REPLAY_PARAMETER_BLOCK));
+
+		PlaybackCamera = (PLAYBACKCAMERA *)((char*)PlayerWayRecordPtr + sizeof(SXYPAIR) * 150);
+
+		PingBuffer = (_PING_PACKET *)((char*)PlaybackCamera + sizeof(PLAYBACKCAMERA) * 60);
+		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * 400);
+
+		replayptr = (char*)PingBuffer + sizeof(_PING_PACKET) * 400;
+
 		pcVar1 = ReplayStart;
-		pcVar2 = replayptr + -0x3444;
-		iVar3 = CalcInGameCutsceneSize();
-		uVar4 = (uint)NumPlayers;
-		if (NumPlayers == 0) {
-			trap(7);
-		}
-		iVar6 = 0;
-		if (NumPlayers != 0) {
-			stream = ReplayStreams;
-			do {
-				AllocateReplayStream(stream, ((uint)(pcVar1 + (-iVar3 - (int)pcVar2)) / 3) / uVar4);
-				iVar6 = iVar6 + 1;
-				NumReplayStreams = NumReplayStreams + 1;
-				stream = stream + 1;
-			} while (iVar6 < (int)(uint)NumPlayers);
-		}
-		ReplaySize = (int)(replayptr + -(int)ReplayStart);
+		pcVar2 = replayptr-0x3444;
+
+		int cutsceneSize = CalcInGameCutsceneSize();
+
+		for (i = 0; i < NumPlayers; i++)
+			AllocateReplayStream(&ReplayStreams[i], ((int)(pcVar1 + (-cutsceneSize - (int)pcVar2)) / sizeof(PADRECORD)) / NumPlayers);
+
+		ReplaySize = (replayptr - ReplayStart);
 	}
-	else {
-		if (0 < NumReplayStreams) {
-			puVar5 = &ReplayStreams[0].playbackrun;
-			iVar3 = NumReplayStreams;
-			do {
-				iVar3 = iVar3 + -1;
-				*puVar5 = '\0';
-				*(undefined4 *)(puVar5 + -8) = *(undefined4 *)(puVar5 + -0xc);
-				puVar5 = puVar5 + 0x44;
-			} while (iVar3 != 0);
+	else
+	{
+		for (i = 0; i < NumReplayStreams; i++)
+		{
+			ReplayStreams[i].playbackrun = 0;
+			ReplayStreams[i].PadRecordBuffer = ReplayStreams[0].InitialPadRecordBuffer;
 		}
 	}
-	TimeToWay = 0x96;
+
+	TimeToWay = 150;
 	PlayerWaypoints = 0;
 	way_distance = 100;
+
 	InitDirectorVariables();
 	InitInGameCutsceneVariables();
-	return;
-	*/
 }
 
 
@@ -983,26 +995,26 @@ void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 	/* end block 4 */
 	// End Line: 3418
 
+// [D]
 void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 {
-	UNIMPLEMENTED();
-	/*
-	char *pcVar1;
-
-	pcVar1 = replayptr;
-	stream->playbackrun = '\0';
+	stream->playbackrun = 0;
 	stream->length = 0;
-	*(char **)&stream->InitialPadRecordBuffer = pcVar1;
-	*(char **)&stream->PadRecordBuffer = pcVar1;
-	stream->PadRecordBufferEnd = (PADRECORD *)(pcVar1 + maxpad * 3);
-	if (NoPlayerControl == 0) {
-		*pcVar1 = '\0';
-		stream->InitialPadRecordBuffer->analogue = '\0';
-		stream->InitialPadRecordBuffer->run = -0x12;
+
+	stream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
+	stream->PadRecordBuffer = (PADRECORD*)replayptr;
+
+	stream->PadRecordBufferEnd = (PADRECORD *)(replayptr + maxpad * sizeof(PADRECORD));
+
+	if (NoPlayerControl == 0)
+	{
+		*replayptr = 0;
+
+		stream->InitialPadRecordBuffer->analogue = 0;
+		stream->InitialPadRecordBuffer->run = 0xEE;
 	}
-	replayptr = (char *)((uint)(replayptr + maxpad * 3 + 3) & 0xfffffffc);
-	return;
-	*/
+
+	replayptr = (char *)(stream->PadRecordBufferEnd+1);
 }
 
 
