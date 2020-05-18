@@ -960,12 +960,13 @@ void SwapDrawBuffers(void)
 {
 	DrawSync(0);
 
-	if (DoNotSwap == 0) {
+	if (DoNotSwap == 0)
+	{
 		PutDispEnv(&current->disp);
-		PutDrawEnv(&current->draw);
 	}
 
 	DoNotSwap = 0;
+
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)(current->ot + 0x107f));
 
@@ -979,6 +980,7 @@ void SwapDrawBuffers(void)
 		current = &MPBuff[0][0];
 		last = &MPBuff[0][1];
 	}
+
 	ClearOTagR((u_long*)current->ot, 0x1080);
 	current->primptr = current->primtab;
 }
@@ -1014,15 +1016,16 @@ void SwapDrawBuffers2(int player)
 	uint uVar1;
 
 	DrawSync(0);
+
 	if (player == 0) {
 		PutDispEnv(&current->disp);
 	}
 
 	PutDrawEnv(&current->draw);
-	DrawOTag((u_long*)current->ot + 0x107f);
+	DrawOTag((u_long*)(current->ot + 0x107f));
 
-
-	if (player == 1) {
+	if (player == 1)
+	{
 		uVar1 = FrameCnt & 1;
 
 		// [A] i guess it should work as intended
@@ -1130,12 +1133,10 @@ void SetupDrawBuffers(void)
 	MPBuff[0][0].disp.screen.y = draw_mode_pal.framey;
 	MPBuff[0][1].disp.screen.y = draw_mode_pal.framey;
 
-	if (NoPlayerControl == 0) {
+	if (NoPlayerControl == 0) 
 		SetupDrawBufferData(NumPlayers);
-	}
-	else {
+	else 
 		SetupDrawBufferData(1);
-	}
 
 	ppDVar5 = MPlast;
 	ppDVar3 = MPcurrent;
