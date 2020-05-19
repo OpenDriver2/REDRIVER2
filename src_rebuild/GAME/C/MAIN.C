@@ -1361,7 +1361,7 @@ LAB_00059c1c:
 				}*/
 				break;
 			case 7:
-				cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+				cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
 				ProcessCarPad(cp, t0, t1, t2);
 			}
 		}
@@ -1369,84 +1369,72 @@ LAB_00059c1c:
 		cp++;
 	}
 
-	i = 0;
-	pl = player;
-	car = 7;
+	for (i = 0; i < 8; i++)
+	{
+		pl = &player[i];
 
-	do {
-		if (pl->playerType == 2) 
+		if (pl->playerType != 2)
+			continue;
+
+		stream = pl->padid;
+
+		if (stream < 0)
 		{
+			stream = cjpPlay(-stream, &t0, &t1, &t2);
+
+			if (stream != 0)
+				ProcessTannerPad(pl->pPed, t0, t1, t2);
+		}
+		else
+		{
+			if (Pads[stream].type == 4)
+			{
+				cVar1 = Pads[stream].mapanalog[3];
+
+				if ((cVar1 < -64) && (-100 < cVar1))
+				{
+					Pads[stream].mapped = Pads[stream].mapped | 0x1008;
+				}
+				else if ((cVar1 < -100) && (127 < cVar1))
+				{
+					stream = pl->padid;
+					Pads[stream].mapped = Pads[stream].mapped | 0x1000;
+				}
+				else if (cVar1 > 32)
+				{
+					stream = pl->padid;
+					Pads[stream].mapped = Pads[stream].mapped | 0x4000;
+				}
+			}
+
 			stream = pl->padid;
 
-			if (stream < 0)
+			t0 = Pads[stream].mapped;
+			t1 = Pads[stream].mapanalog[2];
+			t2 = Pads[stream].type & 4;
+
+			if (NoPlayerControl == 0)
 			{
-				stream = cjpPlay(stream, &t0, &t1, &t2);
-				if (stream != 0) {
-					ProcessTannerPad(player[i].pPed, t0, t1, t2);
+				if (gStopPadReads != 0)
+				{
+					t2 = 0;
+					t1 = 0;
+					t0 = 0;
 				}
+
+				cjpRecord(stream, &t0, &t1, &t2);
 			}
 			else
 			{
-				if (Pads[stream].type == 4) 
-				{
-					cVar1 = Pads[stream].mapanalog[3];
-
-					if ((cVar1 < -0x40) && (-100 < cVar1)) 
-					{
-						Pads[stream].mapped = Pads[stream].mapped | 0x1008;
-					}
-					else 
-					{
-						if ((cVar1 < -100) && (127 < cVar1)) 
-						{
-							stream = (int)pl->padid;
-							uVar2 = Pads[stream].mapped | 0x1000;
-						}
-						else 
-						{
-							if (cVar1 < 33) 
-								goto LAB_0005a2dc;
-
-							stream = (int)pl->padid;
-							uVar2 = Pads[stream].mapped | 0x4000;
-						}
-						Pads[stream].mapped = uVar2;
-					}
-				}
-			LAB_0005a2dc:
-				stream = player[i].padid;
-
-				t0 = (ulong)Pads[stream].mapped;
-				t1 = Pads[stream].mapanalog[2];
-				t2 = Pads[stream].type & 4;
-
-				if (NoPlayerControl == 0)
-				{
-					if (gStopPadReads != 0)
-					{
-						t2 = 0;
-						t1 = 0;
-						t0 = 0;
-					}
-					cjpRecord(stream, &t0, &t1, &t2);
-				}
-				else 
-				{
-					stream = cjpPlay(stream, &t0, &t1, &t2);
-					if (stream == 0) goto LAB_0005a3d0;
-				}
-
-				ProcessTannerPad(player[i].pPed, t0, t1, t2);
+				if (cjpPlay(stream, &t0, &t1, &t2) == 0)
+					continue;
 			}
-		}
-	LAB_0005a3d0:
-		i = i + 0x74;
-		pl = pl + 1;
-		car = car + -1;
-	} while (-1 < car);
 
-	if ((requestStationaryCivCar == 1) &&
-		((numCivCars < maxCivCars ||
+			ProcessTannerPad(pl->pPed, t0, t1, t2);
+		}
+	}
+
+	if ((requestStationaryCivCar == 1) && ((numCivCars < maxCivCars ||
 		(PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))) 
 	{
 		requestStationaryCivCar = 0;
@@ -1513,8 +1501,8 @@ LAB_00059c1c:
 			DealWithHorn(&player[car].horn.request, i);
 
 			car++;
-			i = i + 1;
-			pl = pl + 1;
+			i++;
+			pl++;
 		} while (i < (int)(uint)NumPlayers);
 	}
 
@@ -1997,15 +1985,15 @@ void StepGame(void)
 		PrintStringFeature("Fast forward", 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
-	if ((AttractMode == 0) && (pauseflag == 0)) 
+	if (AttractMode == 0 && pauseflag == 0) 
 	{
-		if (NoPlayerControl == 0) 
+		//if (NoPlayerControl == 0) 
 		{
 			if (2 < FrameCnt)
 			{
 				if (NumPlayers == 1) 
 				{
-					if (((paddp == 0x800) && (bMissionTitleFade == 0)) && (gInGameCutsceneActive == 0))
+					if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
 					{
 						EnablePause(PAUSEMODE_PAUSE);
 					}
@@ -2014,7 +2002,7 @@ void StepGame(void)
 				{
 					EnablePause(PAUSEMODE_PAUSEP1);
 				}
-				else if ((NumPlayers == 2) && ((Pads[1].dirnew & 0x800) != 0))
+				else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800) != 0)
 				{
 					EnablePause(PAUSEMODE_PAUSEP2);
 				}
@@ -2025,62 +2013,59 @@ void StepGame(void)
 	else 
 	{
 	LAB_0005b0a8:
-		if (NoPlayerControl == 0) 
+		if (NoPlayerControl == 0)
 		{
-			if (((pad_connected < 1) && (2 < FrameCnt)) && ((bMissionTitleFade == 0 && (gInGameCutsceneActive == 0))))
+			if (pad_connected < 1 && FrameCnt > 2 && bMissionTitleFade == 0 && gInGameCutsceneActive == 0)
 			{
 				pauseflag = 1;
 				PauseSound();
 			}
 
-			if ((NoPlayerControl == 0) && (NoTextureMemory != 0))
-			{
-				NoTextureMemory = NoTextureMemory + -1;
-			}
+			if (NoPlayerControl == 0 && NoTextureMemory != 0)
+				NoTextureMemory--;
 		}
 	}
 
-	CameraChanged = '\0';
+	CameraChanged = 0;
 	old_camera_change = camera_change;
 
-	if ((pauseflag == 0) && (NoPlayerControl != 0)) 
+	if (pauseflag == 0 && NoPlayerControl != 0) 
 	{
 		if (gInGameCutsceneActive == 0) 
 		{
-			iVar2 = CheckCameraChange(CameraCnt);
-			camera_change = (char)iVar2;
+			camera_change = CheckCameraChange(CameraCnt);
 			goto LAB_0005b1e0;
 		}
 	}
 	else {
 		if (gInGameCutsceneActive == 0) 
 		{
-			camera_change = '\0';
+			camera_change = 0;
 			goto LAB_0005b1e0;
 		}
 	}
 
-	iVar2 = CutsceneCameraChange(CameraCnt);
-	camera_change = (char)iVar2;
+	camera_change = CutsceneCameraChange(CameraCnt);
 LAB_0005b1e0:
-
 
 
 	if (pauseflag == 0) 
 	{
 		StepSim();
 
-		if (gDieWithFade != 0) {
+		if (gDieWithFade != 0)
+		{
 			gDieWithFade = gDieWithFade + 1;
 		}
-		if (paused != 0) {
+		if (paused != 0) 
+		{
 			CamerasSaved = 1;
 			paused = 0;
 		}
 	}
 	else 
 	{
-		if (((NoPlayerControl == 0) && (AttractMode == 0)) && (game_over == 0)) 
+		if (NoPlayerControl == 0 && AttractMode == 0 && game_over == 0) 
 		{
 			if (pad_connected < 1)
 				EnablePause(PAUSEMODE_PADERROR);
@@ -2091,7 +2076,7 @@ LAB_0005b1e0:
 		paused = 1;
 	}
 
-	if ((NoPlayerControl != 0) && (AttractMode == 0)) 
+	if (NoPlayerControl != 0 && AttractMode == 0) 
 		ControlReplay();
 	
 	if (gRightWayUp != 0) 
@@ -2100,7 +2085,7 @@ LAB_0005b1e0:
 		gRightWayUp = 0;
 	}
 
-	if ((AttractMode != 0) && ((paddp != 0 || (ReplayParameterPtr->RecordingEnd <= CameraCnt)))) 
+	if (AttractMode != 0 && (paddp != 0 || ReplayParameterPtr->RecordingEnd <= CameraCnt)) 
 		EndGame(GAMEMODE_QUIT);
 
 	UpdatePlayerInformation();
@@ -2251,7 +2236,7 @@ void EndGame(GAMEMODE mode)
 // [D]
 void EnablePause(PAUSEMODE mode)
 {
-	if (((quick_replay != 0) || (NoPlayerControl == 0)) || (mode != PAUSEMODE_GAMEOVER))
+	if ((quick_replay != 0 || NoPlayerControl == 0) || mode != PAUSEMODE_GAMEOVER)
 	{
 		WantPause = 1;
 		PauseMode = mode;
@@ -2293,7 +2278,7 @@ void EnablePause(PAUSEMODE mode)
 // [D]
 void CheckForPause(void)
 {
-	if ((gDieWithFade > 15) && ((quick_replay != 0 || (NoPlayerControl == 0)))) 
+	if (gDieWithFade > 15 && (quick_replay != 0 || NoPlayerControl == 0)) 
 	{
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;

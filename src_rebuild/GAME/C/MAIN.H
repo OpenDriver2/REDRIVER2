@@ -4,6 +4,7 @@
 extern int xa_timeout;
 extern int FrameCnt;
 extern int CurrentPlayerView;
+extern char CameraChanged;
 extern int FrAng;
 extern int gStopPadReads;
 extern int num_active_cars;
