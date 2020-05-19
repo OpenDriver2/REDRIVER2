@@ -604,7 +604,8 @@ void ReleaseInGameCutscene(void)
 	if (CutsceneReplayStart != NULL) 
 		replayptr = CutsceneReplayStart;
 
-	NumReplayStreams = NumReplayStreams - NumCutsceneStreams;
+	NumReplayStreams -= NumCutsceneStreams;
+
 	CutsceneReplayStart = NULL;
 	CutsceneStreamIndex = 0;
 	NumCutsceneStreams = 0;
@@ -851,16 +852,23 @@ int TriggerInGameCutsceneSystem(int cutscene)
 			do {
 				PlayerStartInfo[player_id] = &stream->SourceType;
 
-				if ((stream->SourceType.flags & 4) != 0 &&
-					(gCSDestroyPlayer = 1, stream->SourceType.type == 1) &&
-					(gThePlayerCar = player_id, gCutsceneAtEnd != 0) &&
-					(player[0].playerType == 1))
+				if (stream->SourceType.flags & 4)
 				{
-					stream->SourceType.palette = car_data[player[0].playerCarId].ap.palette;
-					stream->SourceType.model = MissionHeader->residentModels[car_data[player[0].playerCarId].ap.model];
+					gCSDestroyPlayer = 1;
 
-					bDamageOverride = 1;
-					gCutsceneAtEnd = 0;
+					if (stream->SourceType.type == 1)
+					{
+						gThePlayerCar = player_id;
+
+						if (gCutsceneAtEnd != 0 && player[0].playerType == 1)
+						{
+							stream->SourceType.palette = car_data[player[0].playerCarId].ap.palette;
+							stream->SourceType.model = MissionHeader->residentModels[car_data[player[0].playerCarId].ap.model];
+
+							bDamageOverride = 1;
+							gCutsceneAtEnd = 0;
+						}
+					}
 				}
 
 				padid[player_id] = -player_id;
