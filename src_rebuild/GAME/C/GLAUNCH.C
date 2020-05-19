@@ -503,7 +503,7 @@ void RunMissionLadder(int newgame)
 			SetPleaseWait(NULL);
 		}
 
-		gMissionLadderPos++;// = CurrentStep - MissionLadder;// (int)(CurrentStep + -0x4f80e) >> 1;
+		gMissionLadderPos = CurrentStep - MissionLadder;// (int)(CurrentStep + -0x4f80e) >> 1;
 		bVar2 = CurrentStep->flags;// *(byte *)CurrentStep & 7;
 
 		if (bVar2 == 2) 
@@ -855,7 +855,7 @@ void LaunchGame(void)
 
 int FindMissionLadderPos(int mission)
 {
-	MISSION_STEP *step = &MissionLadder[mission];
+	MISSION_STEP *step = MissionLadder;
 	int pos = 0;
 	bool end = false;
 
