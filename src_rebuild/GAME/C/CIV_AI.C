@@ -3123,7 +3123,7 @@ int PingOutAllCivCarsAndCopCars(void)
 
 	do {
 
-		if (cp->controlType - 2 < 2) 
+		if ((uint)cp->controlType - 2 < 2) 
 		{
 			testNumPingedOut++;
 
@@ -3231,10 +3231,12 @@ int CheckPingOut(_CAR_DATA *cp)
 				numParkedCars = numParkedCars + -1;
 			}
 		}
-		else {
-			if ((PingOutCivsOnly != '\0') && (iVar2 = valid_region(x, z), iVar2 != 0))
+		else 
+		{
+			if (PingOutCivsOnly != 0 && (iVar2 = valid_region(x, z), iVar2 != 0))
 				goto LAB_00028694;
 		}
+
 		puVar3 = (uint *)cp->inform;
 
 		if (puVar3 != NULL) 
@@ -3243,6 +3245,7 @@ int CheckPingOut(_CAR_DATA *cp)
 		ClearMem((char *)cp, sizeof(_CAR_DATA));
 		cp->controlType = 0;
 	}
+
 LAB_00028694:
 	if ((requestStationaryCivCar == 1) && (distFurthestCivCarSq < iVar1)) {
 		furthestCivID = cp->id;
@@ -3905,51 +3908,66 @@ int PingInCivCar(int minPingInDist)
 	curve = NULL;
 	local_34 = 0xffffff;
 	local_2c = 0;
+
 	PingOutCivsOnly = 1;
-	if (((requestCopCar == 0) && (numParkedCars < maxParkedCars)) &&
-		((gCurrentMissionNumber != 0x21 || (numCivCars != 0)))) {
+
+	if (((requestCopCar == 0) && (numParkedCars < maxParkedCars)) && ((gCurrentMissionNumber != 0x21 || (numCivCars != 0)))) 
+	{
 		local_2c = 1;
 	}
+
 	playerNum = 0;
-	if (NumPlayers == 2) {
+
+	if (NumPlayers == 2) 
 		playerNum = CameraCnt & 1;
-	}
-	if ((MissionHeader->type & 4U) != 0) {
+
+	if ((MissionHeader->type & 4U) != 0)
+	{
 		PingOutCivsOnly = 1;
 		return 0;
 	}
-	if (gInGameCutsceneActive != 0) {
+
+	if (gInGameCutsceneActive != 0)
+	{
 		PingOutCivsOnly = 1;
 		return 0;
 	}
-	if ((maxCivCars + -1 <= numCivCars) && (gInGameChaseActive == 0)) {
+
+	if (maxCivCars-1 <= numCivCars && gInGameChaseActive == 0)
+	{
 		PingOutCivsOnly = 1;
 		return 0;
 	}
-	if (1 < NumPlayers) {
+
+	if (1 < NumPlayers) 
+	{
 		PingOutCivsOnly = 1;
 		return 0;
 	}
+
 	p_Var13 = car_data;
 	puVar15 = reservedSlots;
+
+	// find a free slot
 	cp = NULL;
 
-	if (true) 
-	{
-		do {
-			if ((p_Var13->controlType == 0) && (cp = p_Var13, *puVar15 == 0))
-				goto LAB_00028f40;
-			p_Var13 = p_Var13 + 1;
-			puVar15 = puVar15 + 1;
-		} while (p_Var13 < car_data + 19);
-		cp = NULL;
-	}
+	do {
+		if (p_Var13->controlType == 0 && *puVar15 == 0)
+		{
+			cp = p_Var13;
+			break;
+		}
 
-LAB_00028f40:
-	if (cp == NULL) {
+		p_Var13++;
+		puVar15++;
+	} while (p_Var13 < car_data + 19);
+
+	if (cp == NULL)
+	{
 		PingOutCivsOnly = 1;
 		return 0;
 	}
+
 	ClearMem((char *)&civDat, 0x14);
 	baseLoc.vx = (player[playerNum].spoolXZ)->vx;
 	baseLoc.vz = (player[playerNum].spoolXZ)->vz;
@@ -4236,10 +4254,11 @@ LAB_00028f40:
 	}
 	if ((civDat.thrustState != 3) ||
 		(((cVar5 = '\0', gInGameCutsceneActive == 0 && (gInGameChaseActive == 0)) &&
-		((model = Random2(0), (model & 0x40) == 0 || (cVar5 = '\x03', gCurrentMissionNumber == 0x20)
-			))))) {
+		((model = Random2(0), (model & 0x40) == 0 || (cVar5 = '\x03', gCurrentMissionNumber == 0x20)))))) 
+	{
 		cVar5 = '\0';
 	}
+
 	modelRandomList[12] = cVar5;
 	if (((specModelValid == '\0') || (allowSpecSpooling == 0)) ||
 		(MissionHeader->residentModels[4] == 0xc)) 
@@ -4274,24 +4293,24 @@ LAB_00028f40:
 		model = Random2(0);
 		model = modelRandomList[model & 0xf];
 	}
-	else {
+	else 
+	{
 		model = 3;
 	}
 
-	if ((gCurrentMissionNumber == 0x21) && (minPingInDist == 0x29a)) {
+	if ((gCurrentMissionNumber == 0x21) && (minPingInDist == 0x29a))
 		model = 4;
-	}
-	if (requestCopCar != 0) {
+
+	if (requestCopCar != 0) 
 		civDat.controlFlags = 1;
-	}
+
 	if ((MissionHeader->residentModels[model] == 0) || (4 < MissionHeader->residentModels[model]))
 	{
 		civDat.palette = 0;
 	}
 	else 
 	{
-		if ((player[0].playerType == 1) &&
-			((uint)car_data[player[0].playerCarId].ap.model == model)) 
+		if (player[0].playerType == 1 && car_data[player[0].playerCarId].ap.model == model) 
 		{
 			lVar9 = Random2(0);
 			lVar8 = lVar9;
@@ -4514,10 +4533,12 @@ LAB_00028f40:
 			p_Var13 = p_Var13 + 1;
 		} while (p_Var13 < car_data+20);
 	}
+
 	if (closeEncounter < iVar6)
 		return 0;
 
 	civDat.surfInd = roadSeg;
+
 	if (roadSeg < 0) 
 		goto LAB_0002a368;
 
@@ -4534,19 +4555,19 @@ LAB_00028f40:
 		if (cp->ai.c.ctrlState != 5) 
 			goto LAB_0002a430;
 
-		cp->controlFlags = cp->controlFlags | 4;
+		cp->controlFlags |= 4;
 	}
 
 	if (cp->ai.c.ctrlState == 5)
-		numParkedCars = numParkedCars + 1;
+		numParkedCars++;
 
 LAB_0002a430:
 	if ((cp->controlFlags & 1) != 0) 
 	{
 		requestCopCar = 0;
-		numCopCars = numCopCars + 1;
+		numCopCars++;
 	}
-	numCivCars = numCivCars + 1;
+	numCivCars++;
 
 	if ((cp->controlFlags & 1) != 0)
 		PassiveCopTasks(cp);
