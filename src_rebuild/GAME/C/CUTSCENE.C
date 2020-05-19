@@ -871,7 +871,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 					}
 				}
 
-				padid[player_id] = player_id;
+				padid[player_id] = -player_id;
 				gStartOnFoot = stream->SourceType.type == 2;
 
 				if (gStartOnFoot || (stream->SourceType.flags & 1) == 0)

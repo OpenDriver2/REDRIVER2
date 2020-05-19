@@ -5,7 +5,11 @@
 #include "EVENT.H"
 #include "OVERMAP.H"
 #include "REPLAYS.H"
+#include "CUTSCENE.H"
 #include "CARS.H"
+#include "PAUSE.H"
+#include "MAIN.H"
+#include "GLAUNCH.H"
 
 #include "STRINGS.H"
 
@@ -74,6 +78,14 @@ char menu6[] = { 0xA, 0xB, 0xC, 0xE, 0xF, 0x10, 0xFF };
 int FastForward = 0;
 int EditMode = 0;
 
+PLAYBACKCAMERA *LastChange = NULL;
+PLAYBACKCAMERA *ThisChange = NULL;
+PLAYBACKCAMERA *NextChange = NULL;
+
+int FastForwardCameraCnt = 0;
+int PlayMode = 0;
+int SetFastForward = 0;
+
 
 // decompiled code
 // original method signature: 
@@ -110,30 +122,33 @@ int EditMode = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char GreyIcons[24];
+int CursorX = 0;
+int ClearCameras = 0;
+int menuactive = 0;
+
+// [D]
 void InitDirectorVariables(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char *pcVar1;
-	int iVar2;
+	int count;
 
 	PlayMode = 0;
 	CameraChanged = NoPlayerControl != 0;
-	iVar2 = 0x17;
-	pcVar1 = &CHAR____000cbe27;
+	
 	menuactive = 1;
 	ClearCameras = 0;
 	EditMode = 0;
 	AutoDirect = 0;
 	CursorX = 0;
+
+	count = 23;
 	do {
-		*pcVar1 = '\0';
-		iVar2 = iVar2 + -1;
-		pcVar1 = pcVar1 + -1;
-	} while (-1 < iVar2);
-	LastChange = (PLAYBACKCAMERA *)0x0;
+		GreyIcons[count--] = 0;
+	} while (-1 < count);
+
+	LastChange = NULL;
 	FastForwardCameraCnt = 0;
-	return;*/
 }
 
 
@@ -388,56 +403,59 @@ void EditCamera(int CameraCnt)
 	/* end block 4 */
 	// End Line: 1215
 
+// [D]
 void RecordCamera(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	PLAYBACKCAMERA *pPVar2;
 
-	if (((((((LastChange == (PLAYBACKCAMERA *)0x0) ||
-		((uint)(byte)LastChange->cameraview !=
-		((uint)cameraview & 7 | (uint)(byte)tracking_car << 3))) ||
-			((int)player.cameraCarId != (int)(LastChange->angle).pad)) ||
-		((cameraview == 1 || (((uint)cameraview & 7) == 5)))) ||
-		(((int)LastChange->gCameraDistance != gCameraDistance ||
-		(((int)LastChange->gCameraMaxDistance != gCameraMaxDistance ||
-			((int)LastChange->gCameraAngle != gCameraAngle)))))) ||
-			((int)LastChange->CameraPosvy != CameraPos.vy)) &&
-		(pPVar2 = FindFreeCamera(), pPVar2 != (PLAYBACKCAMERA *)0x0)) {
-		if (CameraCnt == 0) {
+	if (((((((LastChange == NULL) ||
+		(LastChange->cameraview !=
+		(cameraview & 7 | tracking_car << 3))) ||
+			(player[0].cameraCarId != (LastChange->angle).pad)) ||
+		((cameraview == 1 || ((cameraview & 7) == 5)))) ||
+		((LastChange->gCameraDistance != gCameraDistance ||
+		((LastChange->gCameraMaxDistance != gCameraMaxDistance ||
+			(LastChange->gCameraAngle != gCameraAngle)))))) ||
+			(LastChange->CameraPosvy != CameraPos.vy)) &&
+		(pPVar2 = FindFreeCamera(), pPVar2 != NULL))
+	{
+		if (CameraCnt == 0) 
+		{
 			ThisChange = PlaybackCamera;
 		}
-		else {
-			if ((ThisChange == (PLAYBACKCAMERA *)0x0) || (CameraCnt != ThisChange->FrameCnt)) {
+		else
+		{
+			if ((ThisChange == NULL) || (CameraCnt != ThisChange->FrameCnt)) 
+			{
 				pPVar2->next = LastChange->next;
 				pPVar2->prev = LastChange->idx;
 				LastChange->next = pPVar2->idx;
 				ThisChange = pPVar2;
-				if (pPVar2->next != 0xfe) {
-					PlaybackCamera[(byte)pPVar2->next].prev = pPVar2->idx;
+				if (pPVar2->next != 0xfe)
+				{
+					PlaybackCamera[pPVar2->next].prev = pPVar2->idx;
 				}
 			}
 		}
 		ThisChange->cameraview = cameraview & 7 | tracking_car << 3;
 		LastChange = ThisChange;
-		(ThisChange->position).vx = player.cameraPos.vx;
-		(LastChange->position).vy = player.cameraPos.vy;
-		(LastChange->position).vz = player.cameraPos.vz;
+		(ThisChange->position).vx = player[0].cameraPos.vx;
+		(LastChange->position).vy = player[0].cameraPos.vy;
+		(LastChange->position).vz = player[0].cameraPos.vz;
 		(LastChange->angle).vx = camera_angle.vx;
 		(LastChange->angle).vy = camera_angle.vy;
 		(LastChange->angle).vz = camera_angle.vz;
-		cVar1 = player.cameraCarId;
-		LastChange->gCameraDistance = (short)gCameraDistance;
+		cVar1 = player[0].cameraCarId;
+		LastChange->gCameraDistance = gCameraDistance;
 		LastChange->FrameCnt = CameraCnt;
-		LastChange->gCameraMaxDistance = (short)gCameraMaxDistance;
-		LastChange->gCameraAngle = (short)gCameraAngle;
-		(LastChange->angle).pad = (short)cVar1;
-		LastChange->CameraPosvy = (short)CameraPos.vy;
+		LastChange->gCameraMaxDistance = gCameraMaxDistance;
+		LastChange->gCameraAngle = gCameraAngle;
+		(LastChange->angle).pad = cVar1;
+		LastChange->CameraPosvy = CameraPos.vy;
 	}
+
 	FindNextChange(CameraCnt);
-	return;
-	*/
 }
 
 
@@ -468,18 +486,18 @@ void RecordCamera(int CameraCnt)
 	/* end block 3 */
 	// End Line: 3596
 
+// [D]
 void FindNextChange(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
-	PLAYBACKCAMERA *pPVar2;
+	PLAYBACKCAMERA *restoreChange;
 	int iVar3;
 	PLAYBACKCAMERA *pPVar4;
 	int iVar5;
 	int iVar6;
 
-	pPVar2 = NextChange;
+	restoreChange = NextChange;
+
 	iVar5 = 0x186a1;
 	bVar1 = false;
 	iVar6 = 0x3b;
@@ -487,19 +505,22 @@ void FindNextChange(int CameraCnt)
 	pPVar4 = PlaybackCamera;
 	do {
 		iVar3 = pPVar4->FrameCnt;
-		if ((CameraCnt <= iVar3) && (iVar3 < iVar5)) {
+		if ((CameraCnt <= iVar3) && (iVar3 < iVar5)) 
+		{
 			bVar1 = true;
 			iVar5 = iVar3;
 			NextChange = pPVar4;
 		}
+
 		iVar6 = iVar6 + -1;
 		pPVar4 = pPVar4 + 1;
 	} while (-1 < iVar6);
-	if (!bVar1) {
-		NextChange = pPVar2;
-		pPVar2->next = -2;
+
+	if (!bVar1) 
+	{
+		NextChange = restoreChange;
+		restoreChange->next = -2;
 	}
-	return;*/
 }
 
 
@@ -523,23 +544,25 @@ void FindNextChange(int CameraCnt)
 	/* end block 3 */
 	// End Line: 1401
 
+
+// [D]
 int CheckCameraChange(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-
-	if (JustReturnedFromCutscene != 0) {
+	if (JustReturnedFromCutscene != 0) 
+	{
 		JustReturnedFromCutscene = 0;
 		SetCameraReturnedFromCutscene(CameraCnt);
 	}
+
 	if (((CameraCnt != -1) && (DoAutoDirect(), gStopPadReads == 0)) &&
-		(iVar1 = InvalidCamera((int)player.cameraCarId), iVar1 != 0)) {
+		(InvalidCamera(player[0].cameraCarId) != 0))
+	{
 		RecordCamera(CameraCnt);
 		return 0;
 	}
-	if (NextChange->FrameCnt != CameraCnt) {
+
+	if (NextChange->FrameCnt != CameraCnt)
+	{
 		if (CameraCnt < NextChange->FrameCnt) {
 			IsMovingCamera(LastChange, NextChange, CameraCnt);
 			return 0;
@@ -548,18 +571,23 @@ int CheckCameraChange(int CameraCnt)
 			return 0;
 		}
 	}
+
 	SetPlaybackCamera(NextChange);
-	iVar1 = InvalidCamera((int)player.cameraCarId);
-	if (iVar1 == 0) {
+
+	if (InvalidCamera(player[0].cameraCarId) == 0)
+	{
 		LastChange = NextChange;
 		FindNextChange(CameraCnt + 1);
 	}
-	if ((PlayMode == 1) && (CameraCnt != FastForwardCameraCnt)) {
+
+	if ((PlayMode == 1) && (CameraCnt != FastForwardCameraCnt))
+	{
 		SetFastForward = 0;
 		FastForward = 0;
 		pauseflag = PlayMode;
 	}
-	return 1;*/
+
+	return 1;
 }
 
 
@@ -582,8 +610,6 @@ int CheckCameraChange(int CameraCnt)
 		// Start line: 5355
 	/* end block 3 */
 	// End Line: 5356
-
-extern char CameraChanged;
 
 // [D]
 void SetPlaybackCamera(PLAYBACKCAMERA *camera)
@@ -1026,25 +1052,21 @@ void CameraBar(int CameraCnt)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 PLAYBACKCAMERA * FindFreeCamera(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	PLAYBACKCAMERA *pPVar1;
-	int iVar2;
+	int count;
 
-	iVar2 = 0;
-	pPVar1 = PlaybackCamera;
+	count = 0;
+
 	do {
-		iVar2 = iVar2 + 1;
-		if (pPVar1->FrameCnt == 100000) {
-			return pPVar1;
-		}
-		pPVar1 = pPVar1 + 1;
-	} while (iVar2 < 0x3c);
-	return (PLAYBACKCAMERA *)0x0;
-	*/
+		if (PlaybackCamera[count].FrameCnt == 100000)
+			return &PlaybackCamera[count];
+
+		count++;
+	} while (count < 60);
+
+	return NULL;
 }
 
 
@@ -1068,20 +1090,13 @@ PLAYBACKCAMERA * FindFreeCamera(void)
 	/* end block 3 */
 	// End Line: 4229
 
+// [D]
 void deleteCamera(int count)
 {
-	UNIMPLEMENTED();
-	/*
-	PLAYBACKCAMERA *pPVar1;
-	PLAYBACKCAMERA *pPVar2;
-
-	PlaybackCamera[count].idx = (char)count;
-	pPVar2 = PlaybackCamera + count;
-	pPVar2->prev = -1;
-	pPVar1 = PlaybackCamera;
-	pPVar2->FrameCnt = 100000;
-	pPVar1[count].next = -2;
-	return;*/
+	PlaybackCamera[count].idx = count;
+	PlaybackCamera[count].prev = -1;
+	PlaybackCamera[count].FrameCnt = 100000;
+	PlaybackCamera[count].next = -2;
 }
 
 
@@ -1119,22 +1134,21 @@ void deleteCamera(int count)
 
 void DeleteAllCameras(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int count;
 
 	count = 0;
 	do {
 		deleteCamera(count);
-		count = count + 1;
-	} while (count < 0x3c);
-	LastChange = (PLAYBACKCAMERA *)0x0;
+		count++;
+	} while (count < 60);
+
+	LastChange = NULL;
+
 	RecordCamera(0);
 	CheckCameraChange(-1);
+
 	LastChange->prev = -1;
 	LastChange->next = -2;
-	return;
-	*/
 }
 
 

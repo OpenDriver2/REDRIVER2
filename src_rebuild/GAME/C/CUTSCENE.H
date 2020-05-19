@@ -9,6 +9,8 @@ extern int gInGameCutsceneID;
 extern int gCutsceneAtEnd;
 extern int gThePlayerCar;
 
+extern int JustReturnedFromCutscene;
+
 extern void InitInGameCutsceneVariables(); // 0x000325C0
 
 extern void HandleInGameCutscene(); // 0x0003262C
