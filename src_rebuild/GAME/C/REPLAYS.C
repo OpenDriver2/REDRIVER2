@@ -98,7 +98,10 @@ void InitPadRecording(void)
 		int cutsceneSize = CalcInGameCutsceneSize();
 
 		for (i = 0; i < NumPlayers; i++)
+		{
 			AllocateReplayStream(&ReplayStreams[i], ((int)(pcVar1 + (-cutsceneSize - (int)pcVar2)) / sizeof(PADRECORD)) / NumPlayers);
+			NumReplayStreams++;
+		}
 
 		ReplaySize = (replayptr - ReplayStart);
 	}
