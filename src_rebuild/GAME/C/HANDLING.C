@@ -877,13 +877,13 @@ void GlobalTimeStep(void)
 
 								if (c1->hd.mayBeColliding != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
 								{
-									iVar28 = (cp->hd).where.t[0];
-									iVar19 = (cp->hd).where.t[1];
-									howHard = (cp->hd).where.t[2];
+									iVar28 = cp->hd.where.t[0];
+									iVar19 = cp->hd.where.t[1];
+									howHard = cp->hd.where.t[2];
 
-									iVar21 = (c1->hd).where.t[0];
-									iVar9 = (c1->hd).where.t[1];
-									iVar24 = (c1->hd).where.t[2];
+									iVar21 = c1->hd.where.t[0];
+									iVar9 = c1->hd.where.t[1];
+									iVar24 = c1->hd.where.t[2];
 
 									uVar6 = cp->id;
 									uVar14 = c1->id;
@@ -2057,75 +2057,57 @@ void CheckCarToCarCollisions(void)
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
 #if 1
-	extern MATRIX camera_matrix;
+	extern int gInGameCutsceneActive;
+	if (gInGameCutsceneActive == 0)
+	{
+		extern MATRIX camera_matrix;
 
-	// [A]
-	if ((pad & 4) == 0) {
-		
-		if ((pad & 0x2000) != 0) 
-		{
-			//RotMatrixY(3200, &cp->hd.where);
-			//cp->hd.direction -= 30;
-			//cp->st.n.angularVelocity[1] += 5000;
+		// [A]
+		if ((pad & 4) == 0) {
+
+			if ((pad & 0x2000) != 0)
+			{
+				//RotMatrixY(3200, &cp->hd.where);
+				//cp->hd.direction -= 30;
+				//cp->st.n.angularVelocity[1] += 5000;
+			}
+
+			if ((pad & 0x8000) != 0)
+			{
+				//cp->hd.direction += 30;
+				//RotMatrixY(-3200, &cp->hd.where);
+				//cp->st.n.angularVelocity[1] -= 5000;
+			}
+
+			if ((pad & 0x40) != 0)
+			{
+				//cp->st.n.angularVelocity
+				//cp->st.n.linearVelocity[1] += 12150;
+			}
+
+			if ((pad & 0x80) != 0)
+			{
+				//cp->st.n.linearVelocity[1] -= 12150;
+			}
+
+			if ((pad & 0x1000) != 0)
+			{
+				cp->st.n.linearVelocity[1] += 10000;
+
+				//cp->st.n.linearVelocity[0] += camera_matrix.m[0][2];
+				//cp->st.n.linearVelocity[2] += camera_matrix.m[2][2];
+				//cp->hd.where.t[0] += camera_matrix.m[0][2] / 30;
+				//cp->hd.where.t[2] += camera_matrix.m[2][2] / 30;
+			}
+
+			if ((pad & 0x4000) != 0)
+			{
+				//cp->hd.where.t[0] -= camera_matrix.m[0][2] / 30;
+				//cp->hd.where.t[2] -= camera_matrix.m[2][2] / 30;
+			}
 		}
 
-		if ((pad & 0x8000) != 0) 
-		{
-			//cp->hd.direction += 30;
-			//RotMatrixY(-3200, &cp->hd.where);
-			//cp->st.n.angularVelocity[1] -= 5000;
-		}
-		
-		if ((pad & 0x40) != 0)
-		{
-			//cp->st.n.angularVelocity
-			//cp->st.n.linearVelocity[1] += 12150;
-		}
-
-		if ((pad & 0x80) != 0)
-		{
-			//cp->st.n.linearVelocity[1] -= 12150;
-		}
-
-		if ((pad & 0x1000) != 0) 
-		{
-			cp->st.n.linearVelocity[1] += 10000;
-
-			//cp->st.n.linearVelocity[0] += camera_matrix.m[0][2];
-			//cp->st.n.linearVelocity[2] += camera_matrix.m[2][2];
-			//cp->hd.where.t[0] += camera_matrix.m[0][2] / 30;
-			//cp->hd.where.t[2] += camera_matrix.m[2][2] / 30;
-		}
-
-		if ((pad & 0x4000) != 0)
-		{
-			//cp->hd.where.t[0] -= camera_matrix.m[0][2] / 30;
-			//cp->hd.where.t[2] -= camera_matrix.m[2][2] / 30;
-		}
 	}
-	
-	/*
-	int direction = cp->hd.direction;
-
-	cp->st.n.orientation[0] = -(int)rcossin_tbl[(direction & 0xffeU) + 1] * 5 + 0x800 >> 0xc;
-	cp->st.n.orientation[1] = (int)rcossin_tbl[direction & 0xffeU];
-	cp->st.n.orientation[2] = rcossin_tbl[direction & 0xffeU] * 5 + 0x800 >> 0xc;
-	cp->st.n.orientation[3] = (int)rcossin_tbl[(direction & 0xffeU) + 1];
-
-	RebuildCarMatrix(&cp->st, cp);
-
-	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
-	cp->hd.drawCarMat.m[0][1] = cp->hd.where.m[0][1];
-	cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
-
-	cp->hd.drawCarMat.m[1][0] = -cp->hd.where.m[1][0];
-	cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
-	cp->hd.drawCarMat.m[1][2] = -cp->hd.where.m[1][2];
-
-	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
-	cp->hd.drawCarMat.m[2][1] = cp->hd.where.m[2][1];
-	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
-	*/
 #endif
 	char cVar1;
 	short sVar2;
@@ -2135,147 +2117,156 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	CAR_COSMETICS *pCVar6;
 	int iVar7;
 
-	iVar7 = (int)PadSteer;
-	iVar3 = GetPlayerId(cp);
-	bVar5 = cp->controlType;
-	if (bVar5 == 1) {
-		if (((pad & 0x1010) == 0x1010) && (-1 < iVar3)) {
-			iVar4 = TannerStuckInCar(1);
-			if (iVar4 == 0) {
-				if (player[0].dying == '\0') {
-					ActivatePlayerPedestrian(cp, NULL, 0, NULL, 0);
-				}
-			}
-			else {
-				if (lockAllTheDoors != '\0')
-				{
-					gLockPickingAttempted = (uint)bVar5;
-				}
-			}
-		}
-		if (((gStopPadReads != 0) ||
-			(MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage)) || (gCantDrive != 0)
-			) {
-			pad = 0x10;
-			if (0x9000 < (cp->hd).wheel_speed) {
-				pad = 0x80;
-			}
-			iVar7 = 0;
-			use_analogue = '\x01';
-		}
-		if (-1 < iVar3)
-		{
-			iVar4 = CarHasSiren(cp->ap.model);
-			if (iVar4 == 0) {
-				bVar5 = (pad >> 3) & 1;
-			}
-			else 
-			{
-				if (((cp->lastPad & 8U) != 0) || ((pad & 8) == 0)) 
-					goto LAB_00055c58;
+	int player_id;
+	int int_steer;
+	int analog_angle;
 
-				bVar5 = player[iVar3].horn.on ^ 8;
+	iVar7 = PadSteer;
+
+	int_steer = PadSteer;
+	player_id = GetPlayerId(cp);
+	bVar5 = cp->controlType;
+
+	// control player
+	if (cp->controlType == 1) 
+	{
+		if ((pad & 0x1010) == 0x1010 && (player_id > -1))
+		{
+			if (TannerStuckInCar(1) == 0)
+			{
+				if (player[0].dying == 0)
+					ActivatePlayerPedestrian(cp, NULL, 0, NULL, 0);
 			}
-			player[iVar3].horn.on = bVar5;
+			else if (lockAllTheDoors != 1)
+				gLockPickingAttempted = 1;
+		}
+
+		if ((gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage) || gCantDrive != 0) 
+		{
+			pad = 0x10;
+
+			if (0x9000 < cp->hd.wheel_speed)
+				pad = 0x80;
+
+			analog_angle = 0;
+			use_analogue = 1;
+		}
+
+		if (player_id > -1)
+		{
+			if (CarHasSiren(cp->ap.model) == 0)
+			{
+				player[player_id].horn.on = (pad >> 3) & 1;
+			}
+			else if((cp->lastPad & 8U) == 0 && (pad & 8) != 0)
+			{
+				player[player_id].horn.on ^= 8;
+			}
 		}
 	}
-LAB_00055c58:
-	if (90 < (cp->hd).autoBrake)
-	{
-		(cp->hd).autoBrake = 90;
-	}
+
+	if (cp->hd.autoBrake > 90)
+		cp->hd.autoBrake = 90;
+
 	if ((pad & 0x10) == 0)
 	{
-		cp->handbrake = '\0';
-		if ((pad & 0x20) == 0) {
-			cp->wheelspin = '\0';
-		}
-		else {
+		cp->handbrake = 0;
+
+		if ((pad & 0x20) == 0)
+			cp->wheelspin = 0;
+		else 
 			cp->wheelspin = 1;
-		}
-		if ((cp->wheelspin != '\0') && (0x6e958 < (cp->hd).wheel_speed))
+
+		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 0x6e958)
 		{
-			cp->wheelspin = '\0';
-			pad = pad | 0x40;
+			cp->wheelspin = 0;
+			pad |= 0x40;
 		}
 	}
-	else {
-		cp->handbrake = '\x01';
-	}
-	if (use_analogue == '\0')
+	else 
 	{
-		if ((pad & 4) == 0) {
-			if (((pad & 0x2000) != 0) &&
-				(sVar2 = cp->wheel_angle + 0x20, cp->wheel_angle = sVar2, 0x160 < sVar2)) {
-				cp->wheel_angle = 0x160;
-			}
-			if (((pad & 0x8000) != 0) &&
-				(sVar2 = cp->wheel_angle + -0x20, cp->wheel_angle = sVar2, sVar2 < -0x160)) {
-				cp->wheel_angle = -0x160;
-			}
-		}
-		else {
-			if (((pad & 0x2000) != 0) &&
-				(sVar2 = cp->wheel_angle + 0x40, cp->wheel_angle = sVar2, 0x1ff < sVar2)) {
-				cp->wheel_angle = 0x1ff;
-			}
-			if (((pad & 0x8000) != 0) &&
-				(sVar2 = cp->wheel_angle + -0x40, cp->wheel_angle = sVar2, sVar2 < -0x1ff)) {
-				cp->wheel_angle = -0x1ff;
-			}
-		}
-		if ((pad & 0xa000) != 0) 
+		cp->handbrake = 1;
+	}
+
+	if (use_analogue == 0)
+	{
+		if ((pad & 4) == 0)
 		{
-			cVar1 = (cp->hd).autoBrake;
-			goto code_r0x00055e8c;
+			// regular steer
+			if((pad & 0x2000) != 0)
+			{
+				cp->wheel_angle += 32;
+
+				if (cp->wheel_angle > 352)
+					cp->wheel_angle = 352;
+			}
+			
+			if ((pad & 0x8000) != 0)
+			{
+				cp->wheel_angle -= 32;
+
+				if (cp->wheel_angle < -352)
+					cp->wheel_angle = -352;
+			}
 		}
-		(cp->hd).autoBrake = '\0';
+		else
+		{
+			// fast steer
+			if ((pad & 0x2000) != 0)
+			{
+				cp->wheel_angle += 64;
+
+				if (cp->wheel_angle > 511)
+					cp->wheel_angle = 511;
+			}
+
+			if ((pad & 0x8000) != 0)
+			{
+				cp->wheel_angle -= 64;
+
+				if (cp->wheel_angle < -511)
+					cp->wheel_angle = -511;
+			}
+		}
+
+		if ((pad & 0xa000) != 0) 
+			cp->hd.autoBrake++;
+		else
+			cp->hd.autoBrake = 0;
 	}
 	else 
 	{
 		if ((pad & 4) == 0) 
 		{
-			iVar7 = iVar7 * ((iVar7 * iVar7) / 0x50);
-			iVar3 = (int)(iVar7 * 0x66666667) >> 0x20;
+			int_steer *= ((int_steer * int_steer) / 80);
+			analog_angle = (int)((uint)int_steer * 0x66666667) >> 0x20;
 		}
 		else 
 		{
-			iVar7 = iVar7 * ((iVar7 * iVar7) / 0x3c);
-			iVar3 = (int)(iVar7 * 0x88888889) >> 0x20;
+			int_steer *= ((int_steer * int_steer) / 60);
+			analog_angle = (int)((uint)int_steer * 0x88888889) >> 0x20;
 		}
 
-		iVar3 = (iVar3 >> 5) - (iVar7 >> 0x1f);
+		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
 
-		cp->wheel_angle = (ushort)iVar3 & 0xfffc;
+		cp->wheel_angle = analog_angle & 0xfffc;
 
-		if (iVar3 + 0x10eU < 0x21d)
-		{
+		if (analog_angle + 270 < 541)
 			cp->hd.autoBrake = 0;
-		}
 		else
-		{
-			cVar1 = (cp->hd).autoBrake;
-		code_r0x00055e8c:
-			cp->hd.autoBrake = cVar1 + 1;
-		}
+			cp->hd.autoBrake++;
 	}
-	if ((pad & 0xa000) == 0) {
+
+	if ((pad & 0xa000) == 0)
+	{
 		if (cp->wheel_angle < -64) 
-		{
-			cp->wheel_angle = cp->wheel_angle + 64;
-		}
+			cp->wheel_angle += 64;
+		else if (cp->wheel_angle < 65)
+			cp->wheel_angle = 0;
 		else
-		{
-			if (cp->wheel_angle < 65)
-			{
-				cp->wheel_angle = 0;
-			}
-			else 
-			{
-				cp->wheel_angle = cp->wheel_angle - 64;
-			}
-		}
+			cp->wheel_angle -= 64;
 	}
+
 	if (gTimeInWater != 0)
 	{
 		if ((pad & 0x80) != 0) 
@@ -2287,7 +2278,8 @@ LAB_00055c58:
 			{
 				sVar2 = -5000;
 			}
-			else {
+			else
+			{
 				sVar2 = (short)((uint)((iVar3 + 0x116) * -0x12aa) >> 8);
 			}
 
@@ -2348,8 +2340,8 @@ LAB_00055c58:
 					if (3050 < cp->ap.carCos->powerRatio) 
 						cp->thrust = (car_data[iVar3].ap.carCos->powerRatio * 0x1333) / 4096;
 
-					iVar7 = (cp->hd).where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
-					iVar3 = (cp->hd).where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;
+					iVar7 = cp->hd.where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
+					iVar3 = cp->hd.where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;
 
 					iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
 
@@ -2377,6 +2369,7 @@ LAB_00055c58:
 			goto LAB_00056284;
 		}
 	}
+
 	cp->thrust = 0;
 
 LAB_00056284:
@@ -2821,7 +2814,7 @@ void jump_debris(_CAR_DATA *cp)
 		memset(&velocity, 0, sizeof(velocity));
 
 		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 0x100);
-		velocity.vy = 200 - (cp->hd).where.t[1];
+		velocity.vy = 200 - cp->hd.where.t[1];
 
 		position.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 0x100);
 		position.vx = velocity.vx;
