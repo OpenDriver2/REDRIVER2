@@ -2083,12 +2083,12 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		*/
 
 		// [A] - don't use odd poly_ft prims
-		DR_TPAGE* tp = (DR_TPAGE*)pDVar4->primptr;
+		DR_TPAGE* tp = (DR_TPAGE*)current->primptr;
 
 		setDrawTPage(tp, 0, 0, 0x1a);
-		addPrim(pDVar4->ot+1, tp);
+		addPrim(current->ot + 1, tp);
 
-		pDVar4->primptr += sizeof(DR_TPAGE);
+		current->primptr += sizeof(DR_TPAGE);
 	}
 	return iVar5;
 }
