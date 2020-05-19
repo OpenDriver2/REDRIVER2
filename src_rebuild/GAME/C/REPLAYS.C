@@ -11,7 +11,10 @@
 #include "CAMERA.H"
 #include "CIV_AI.H"
 
-char AnalogueUnpack[] = { 0, 0xCD, 0xC1, 0xB5, 0xA9, 0x9D, 0x91, 0x85, 0, 0x33, 0x3F, 0x4B, 0x57, 0x63, 0x6F, 0x7B };
+char AnalogueUnpack[16] = { 
+	0, -51, -63, -75, -87, -99, -111, -123,
+	0,  51,  63,  75,  87,  99,  111,  123
+};
 
 int gOutOfTape = 0;
 
@@ -865,28 +868,31 @@ int valid_region(int x, int z)
 	/* end block 3 */
 	// End Line: 2932
 
+// [D]
 int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	uint uVar2;
-	ulong local_18[2];
+	int ret;
+	int t1;
+	ulong t0;
 
-	iVar1 = Get(stream, local_18);
-	uVar2 = local_18[0] >> 8 & 0xf;
-	if (uVar2 == 0) {
-		*psteer = '\0';
-		*ptype = '\0';
+	ret = Get(stream, &t0);
+
+	t1 = t0 >> 8 & 0xf;
+
+	*ppad = t0 & 0xf0fc;
+
+	if (t1 == 0) 
+	{
+		*psteer = 0;
+		*ptype = 0;
 	}
-	else {
-		*psteer = AnalogueUnpack[uVar2];
-		*ptype = '\x04';
+	else 
+	{
+		*psteer = AnalogueUnpack[t1];
+		*ptype = 4;
 	}
-	*ppad = local_18[0] & 0xf0fc;
-	return iVar1;
-	*/
+
+	return ret;
 }
 
 
@@ -1049,34 +1055,36 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 	/* end block 3 */
 	// End Line: 3467
 
+// [D]
 int Get(int stream, ulong *pt0)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uchar uVar1;
-	char cVar2;
-	PADRECORD *pPVar3;
+	REPLAY_STREAM* rstream;
 
-	if (stream < NumReplayStreams) {
-		pPVar3 = ReplayStreams[stream].PadRecordBuffer;
-		if (pPVar3 + 1 <= ReplayStreams[stream].PadRecordBufferEnd) {
-			uVar1 = pPVar3->pad;
-			cVar2 = pPVar3->analogue;
-			if (ReplayStreams[stream].playbackrun < pPVar3->run) {
-				ReplayStreams[stream].playbackrun = ReplayStreams[stream].playbackrun + 1;
+	if (stream < NumReplayStreams)
+	{
+		rstream = &ReplayStreams[stream];
+
+		if (rstream->PadRecordBuffer+1 <= rstream->PadRecordBufferEnd)
+		{
+			*pt0 = SW_SHORT(rstream->PadRecordBuffer->pad, rstream->PadRecordBuffer->analogue);
+
+			if (rstream->playbackrun < rstream->PadRecordBuffer->run)
+			{
+				rstream->playbackrun++;
 			}
-			else {
-				ReplayStreams[stream].PadRecordBuffer = pPVar3 + 1;
-				ReplayStreams[stream].playbackrun = '\0';
+			else 
+			{
+				rstream->PadRecordBuffer++;
+				rstream->playbackrun = 0;
 			}
-			*pt0 = (uint)CONCAT11(uVar1, cVar2);
+
 			return 1;
 		}
 	}
-	*pt0 = 0x10;
+
+	*pt0 = 16;
+
 	return 0;
-	*/
 }
 
 

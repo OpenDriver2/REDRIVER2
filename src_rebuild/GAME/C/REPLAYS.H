@@ -12,6 +12,8 @@ extern char *replayptr;
 extern unsigned long PingBufferPos;
 extern _PING_PACKET *PingBuffer;
 
+extern PLAYBACKCAMERA *PlaybackCamera;
+
 extern void InitPadRecording(); // 0x0001A09C
 
 extern int SaveReplayToBuffer(char *buffer); // 0x0001A234
