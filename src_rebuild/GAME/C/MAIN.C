@@ -1314,9 +1314,9 @@ LAB_00059c1c:
 			switch (cp->controlType) 
 			{
 			case 1:
-				t0 = Pads[(int)cp->ai.padid].mapped;	// [A] padid might be wrong
-				t1 = Pads[(int)cp->ai.padid].mapanalog[2];
-				t2 = Pads[(int)cp->ai.padid].type & 4;
+				t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
+				t1 = Pads[*cp->ai.padid].mapanalog[2];
+				t2 = Pads[*cp->ai.padid].type & 4;
 
 				if (NoPlayerControl == 0) 
 				{
@@ -1330,11 +1330,11 @@ LAB_00059c1c:
 						t1 = 0;
 						t2 = 1;
 					}
-					cjpRecord((int)cp->ai.padid, &t0, &t1, &t2);
+					cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
 				}
 				else 
 				{
-					cjpPlay((int)cp->ai.padid, &t0, &t1, &t2);
+					cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
 				}
 
 				ProcessCarPad(cp, t0, t1, t2);
@@ -1361,7 +1361,7 @@ LAB_00059c1c:
 				}*/
 				break;
 			case 7:
-				cjpPlay((int)cp->ai.padid, &t0, &t1, &t2);
+				cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
 				ProcessCarPad(cp, t0, t1, t2);
 			}
 		}

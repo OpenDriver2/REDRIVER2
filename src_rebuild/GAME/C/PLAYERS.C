@@ -255,7 +255,7 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 	if (playerID * 0x74 == 0)
 	{
 		newCar->controlType = 1;
-		newCar->ai.padid = (char*)player[0].padid;		// [A] was *(undefined4 *)newCar->ai = 0xd9772;
+		newCar->ai.padid = &player[0].padid;
 		newCar->hndType = 0;
 		if (gCurrentMissionNumber != 0x20 && MissionHeader->residentModels[newCar->ap.model] == 0)
 		{

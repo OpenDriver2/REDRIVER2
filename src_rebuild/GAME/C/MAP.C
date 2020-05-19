@@ -1200,9 +1200,6 @@ char* PVS_Buffers[4] = { 0 };
 int pvsSize[4] = { 0, 0, 0, 0 };
 unsigned char *PVSEncodeTable = NULL;
 
-// byte swapped short
-#define SW_SHORT(a,b) (((a) << 8) | (b))
-
 // [A] - bugged
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {

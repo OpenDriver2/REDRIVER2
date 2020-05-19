@@ -945,7 +945,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		if (cp->controlType == 1)
 		{
-			iVar6 = MaxPlayerDamage[(int)cp->ai.padid];
+			iVar6 = MaxPlayerDamage[*cp->ai.padid];
 		}
 
 		if (cp->totalDamage < iVar6) 

@@ -70,6 +70,9 @@ typedef uint64_t OTTYPE;
 typedef unsigned long OTTYPE;
 #endif // USE_32_BIT_ADDR
 
+// byte swapped short
+#define SW_SHORT(a,b) (((a) << 8) | (b))
+
 #if !defined( __TYPEINFOGEN__ ) && !defined( _lint ) && defined(_WIN32)	// pcLint has problems with assert_offsetof()
 
 template<bool> struct compile_time_assert_failed;

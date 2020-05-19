@@ -1788,7 +1788,7 @@ void CivGetIn(PEDESTRIAN *pPed)		// [A] UNUSED
 	curve = NULL;
 
 	InitCivState(pCivCarToGetIn, NULL);
-	uVar2 = (int)pCivCarToGetIn->ai.padid;
+	uVar2 = *pCivCarToGetIn->ai.padid;
 	
 	if ((uVar2 & 0xffffe000) == 0 && (uVar2 & 0x1fff) < NumDriver2Straights && uVar2 > -1) 
 	{

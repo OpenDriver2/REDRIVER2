@@ -466,9 +466,9 @@ int CalcInGameCutsceneSize(void)
 	char filename[64];
 
 	if (gCurrentMissionNumber < 21)
-		sprintf(filename, "REPLAYS\\CUT%d.R");
+		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
 	else 
-		sprintf(filename, "REPLAYS\\A\\CUT%d.R");
+		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
 
 	if (FileExists(filename) == 0)
 		return 0;
@@ -559,7 +559,7 @@ void ReleaseInGameCutscene(void)
 
 						SavedSpoolXZ = (VECTOR *)car_data[SavedWorldCentreCarId].hd.where.t;
 
-						car_data[SavedWorldCentreCarId].ai.padid = (char*)player[0].padid;
+						car_data[SavedWorldCentreCarId].ai.padid = &player[0].padid;
 					}
 
 					SavedCameraCarId = SavedWorldCentreCarId;
@@ -586,7 +586,7 @@ void ReleaseInGameCutscene(void)
 
 		if (plr != -1) 
 		{
-			car_data[plr].ai.padid = (char*)player[0].padid;
+			car_data[plr].ai.padid = &player[0].padid;
 			car_data[plr].controlType = 1;
 		}
 
@@ -852,7 +852,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 			do {
 				PlayerStartInfo[player_id] = &stream->SourceType;
 
-				if (stream->SourceType.flags & 4)
+				if ((stream->SourceType.flags & 4) != 0)
 				{
 					gCSDestroyPlayer = 1;
 
@@ -871,7 +871,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 					}
 				}
 
-				padid[player_id] = -player_id;
+				padid[player_id] = player_id;
 				gStartOnFoot = stream->SourceType.type == 2;
 
 				if (gStartOnFoot || (stream->SourceType.flags & 1) == 0)

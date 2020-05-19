@@ -92,12 +92,7 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	{
 	case 1:
 	case 7:
-		if (extraData == NULL) {
-			cp->ai.c.currentRoad = 0;
-		}
-		else {
-			cp->ai.c.currentRoad = *extraData;
-		}
+		cp->ai.padid = extraData;
 
 		player[cp->id].worldCentreCarId = cp->id;
 		cp->hndType = 0;
@@ -106,6 +101,7 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 		cp->hndType = 1;
 		cp->controlFlags = extraData[0x11];
 		InitCivState(cp, extraData);
+
 		if (extraData == NULL)
 		{
 			cp->ap.palette = 0;

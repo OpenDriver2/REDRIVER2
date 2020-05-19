@@ -996,10 +996,10 @@ void GlobalTimeStep(void)
 													Setup_Sparks((VECTOR *)collisionpoint, &velocity, 6, 0);
 
 													if (cp->controlType == 1) 
-														SetPadVibration((int)cp->ai.padid, 1);
+														SetPadVibration(*cp->ai.padid, 1);
 
 													if (c1->controlType == 1)
-														SetPadVibration((int)c1->ai.padid, 1);
+														SetPadVibration(*c1->ai.padid, 1);
 												}
 
 												if (0x2400 < howHard) 
@@ -2154,7 +2154,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			}
 		}
 		if (((gStopPadReads != 0) ||
-			(MaxPlayerDamage[(int)cp->ai.padid] <= (int)(uint)cp->totalDamage)) || (gCantDrive != 0)
+			(MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage)) || (gCantDrive != 0)
 			) {
 			pad = 0x10;
 			if (0x9000 < (cp->hd).wheel_speed) {

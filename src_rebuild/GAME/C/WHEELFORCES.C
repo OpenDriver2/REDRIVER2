@@ -1055,10 +1055,10 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			if (newCompression < 0x55)
 			{
 				if (newCompression > 48) 
-					SetPadVibration((int)cp->ai.padid, 3);
+					SetPadVibration(*cp->ai.padid, 3);
 			}
 			else 
-				SetPadVibration((int)cp->ai.padid, 2);
+				SetPadVibration(*cp->ai.padid, 2);
 		}
 
 		// clamp to not make it too jumpy
@@ -1465,11 +1465,11 @@ LAB_00082b9c:
 			}
 			if (newCompression < 0x55) {
 				if (0x30 < newCompression) {
-					SetPadVibration((int)cp->ai.padid, '\x03');
+					SetPadVibration(*cp->ai.padid, 3);
 				}
 			}
 			else {
-				SetPadVibration((int)cp->ai.padid, '\x02');
+				SetPadVibration(*cp->ai.padid, 2);
 			}
 		}
 		if (0x2a < newCompression) {

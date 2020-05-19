@@ -1443,7 +1443,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						Setup_Debris(&collisionResult.hit, &velocity, 5, iVar14 << 0x10);
 
 						if (cp->controlType == 1)
-							SetPadVibration((int)cp->ai.padid, 3);
+							SetPadVibration(*cp->ai.padid, 3);
 
 						return 0;
 					}
@@ -1487,7 +1487,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 						if ((0x1b000 < strikeVel) && (Setup_Debris(&collisionResult.hit, &velocity, 6, iVar14 << 0x10), cp->controlType == 1)) 
 						{
-							SetPadVibration((int)cp->ai.padid, 1);
+							SetPadVibration(*cp->ai.padid, 1);
 						}
 					}
 
