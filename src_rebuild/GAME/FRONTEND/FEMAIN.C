@@ -1251,8 +1251,6 @@ void ReInitScreens(void)
 	fePad = 0;
 	ScreenDepth = 0;
 
-	gIdleReplay = 0;
-
 	loaded[0] = -1;
 	loaded[1] = -1;
 	loaded[2] = -1;

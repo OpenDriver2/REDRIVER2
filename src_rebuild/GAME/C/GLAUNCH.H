@@ -30,6 +30,9 @@ extern int AutoDirect;
 
 extern int quick_replay;
 
+extern MISSION_DATA MissionStartData;
+extern MISSION_DATA MissionEndData;
+
 extern void GameStart(); // 0x00052A28
 
 extern void StartRender(int renderNum); // 0x000536B0

@@ -38,10 +38,10 @@ static int gCSDestroyPlayer = 0;
 static int PreLoadedCutscene = -1;
 static char *CutsceneReplayStart = NULL;
 static int CutsceneInReplayBuffer = 0;
-int CutsceneEventTrigger = 0;
 static int CutsceneLength = 0;
 static int BlackBorderHeight = 0;
 int JustReturnedFromCutscene = 0;
+int CutsceneEventTrigger = 0;
 
 CUTSCENE_BUFFER CutsceneBuffer = { 0 };
 
@@ -1212,13 +1212,13 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
 
 		// copy source type
-		memcpy(&ReplayStreams[i].SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
+		memcpy(&destStream->SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
 
 		// init buffers
-		ReplayStreams[i].InitialPadRecordBuffer = (PADRECORD*)replayptr;
-		ReplayStreams[i].PadRecordBuffer = (PADRECORD*)replayptr;
-		ReplayStreams[i].PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
-		ReplayStreams[i].length = sheader->Length;
+		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
+		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
+		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+		destStream->length = sheader->Length;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 

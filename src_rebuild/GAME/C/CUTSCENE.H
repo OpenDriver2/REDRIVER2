@@ -10,6 +10,7 @@ extern int gCutsceneAtEnd;
 extern int gThePlayerCar;
 
 extern int JustReturnedFromCutscene;
+extern int CutsceneEventTrigger;
 
 extern void InitInGameCutsceneVariables(); // 0x000325C0
 
