@@ -3,6 +3,7 @@
 
 extern int gShowMap;
 extern int pauseflag;
+extern PAUSEMODE gMissionCompletionState;
 
 extern int ShowPauseMenu(enum PAUSEMODE mode); // 0x0006BF50
 

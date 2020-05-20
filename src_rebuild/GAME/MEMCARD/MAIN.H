@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MCMAIN_H
+#define MCMAIN_H
 
 
 extern int CallMemoryCard(int flags, int ingame); // 0x000872F0

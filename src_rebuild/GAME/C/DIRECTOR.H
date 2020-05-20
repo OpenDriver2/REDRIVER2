@@ -22,9 +22,9 @@ extern TEXTURE_DETAILS playpause;
 extern TEXTURE_DETAILS save2card;
 extern TEXTURE_DETAILS restart;
 
-
 extern int FastForward;
 extern int EditMode;
+extern int ClearCameras;
 
 extern void InitDirectorVariables(); // 0x0003E79C
 

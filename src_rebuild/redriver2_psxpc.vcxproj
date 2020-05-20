@@ -229,6 +229,7 @@
     <ClCompile Include="GAME\C\PLAYERS.C" />
     <ClCompile Include="GAME\C\PRES.C" />
     <ClCompile Include="GAME\C\REPLAYS.C" />
+    <ClCompile Include="GAME\C\ROADBITS.C" />
     <ClCompile Include="GAME\C\SCORES.C" />
     <ClCompile Include="GAME\C\SHADOW.C" />
     <ClCompile Include="GAME\C\SKY.C" />

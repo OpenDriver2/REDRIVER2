@@ -16,11 +16,10 @@
 	/* end block 2 */
 	// End Line: 298
 
-char ROADS_GetRouteData(int x,int z,ROUTE_DATA *pRouteData)
-
+char ROADS_GetRouteData(int x, int z, ROUTE_DATA *pRouteData)
 {
-  pRouteData->type = 0;
-  return '\x01';
+	pRouteData->type = 0;
+	return 1;
 }
 
 
