@@ -2261,7 +2261,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			}
 
 			cp->thrust = sVar2;
-			cp->thrust = cp->thrust * FIXED(cp->ap.carCos->powerRatio);
+			cp->thrust = FIXED(cp->thrust * cp->ap.carCos->powerRatio);
 			goto LAB_00056284;
 		}
 

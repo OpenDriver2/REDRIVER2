@@ -1360,7 +1360,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				cp->st.n.fposition[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 1024;
 				cp->st.n.fposition[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 1024;
 
-				// OLD code
 				//cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
 				//cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
 
