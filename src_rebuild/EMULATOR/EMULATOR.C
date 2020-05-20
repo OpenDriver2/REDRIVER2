@@ -2054,9 +2054,14 @@ void Emulator_UpdateInput()
 			{
 				unsigned short controllerInputs = UpdateGameControllerInput(padHandle[i]);
 
-				padData[i][0] = 0;
-				padData[i][1] = 0x41;//?
-				((unsigned short*)padData[i])[1] = kbInputs & controllerInputs;
+				PADRAW* pad = (PADRAW*)padData[i];
+				pad->status = 0;	// PadStateStable?
+				pad->id = 0;
+				*(unsigned short*)pad->buttons = kbInputs & controllerInputs;
+				pad->analog[0] = 128;
+				pad->analog[1] = 128;
+				pad->analog[2] = 128;
+				pad->analog[3] = 128;
 			}
 		}
 	}
@@ -2065,9 +2070,15 @@ void Emulator_UpdateInput()
 		//Update keyboard
 		if (padData[0] != NULL)
 		{
-			padData[0][0] = 0;
-			padData[0][1] = 0x41;//?
-			((unsigned short*)padData[0])[1] = kbInputs;
+			PADRAW* pad = (PADRAW*)padData[0];
+
+			pad->status = 0;	// PadStateStable?
+			pad->id = 0x41;
+			*(unsigned short*)pad->buttons = kbInputs;
+			pad->analog[0] = 128;
+			pad->analog[1] = 128;
+			pad->analog[2] = 128;
+			pad->analog[3] = 128;
 		}
 	}
 

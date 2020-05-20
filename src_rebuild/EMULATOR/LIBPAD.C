@@ -14,14 +14,32 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 	if (pad1 != NULL)
 	{
 		padData[0] = pad1;
-		padData[0][0] = 0xFF;
+
+		PADRAW* pad = (PADRAW*)pad1;
+		pad->status = 0xFF;
+		pad->id = 0;
+		pad->analog[0] = 128;
+		pad->analog[1] = 128;
+		pad->analog[2] = 128;
+		pad->analog[3] = 128;
 	}
+	else
+		padData[0] = NULL;
 
 	if (pad2 != NULL)
 	{
 		padData[1] = pad2;
-		padData[1][0] = 0xFF;
+
+		PADRAW* pad = (PADRAW*)pad2;
+		pad->status = 0xFF;
+		pad->id = 0;
+		pad->analog[0] = 128;
+		pad->analog[1] = 128;
+		pad->analog[2] = 128;
+		pad->analog[3] = 128;
 	}
+	else
+		padData[0] = NULL;
 
 	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0)
 	{
