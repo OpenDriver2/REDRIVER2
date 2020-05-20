@@ -382,7 +382,6 @@ void LoadMission(int missionnum)
 	if (NewLevel != 0) 
 		MissionLoadAddress = (_MISSION *)mallocptr;
 
-
 	sprintf(filename, "MISSIONS\\MISSIONS.BLK");
 
 	if (FileExists(filename) == 0)
@@ -427,6 +426,7 @@ void LoadMission(int missionnum)
 		return;
 	}
 
+
 	MissionHeader->id = 0;
 
 	if (MissionHeader->region != 0)
@@ -442,11 +442,35 @@ void LoadMission(int missionnum)
 	Mission.active = 1;
 	GameLevel = MissionHeader->city;
 
-	PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
-	PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
-	PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
-	PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
-	PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+#ifdef CUTSCENE_RECORDER
+	// load some data from target cutscene mission
+	extern int gCutsceneAsReplay;
+	if(gCutsceneAsReplay)
+	{
+		LoadfileSeg(filename, (char*)&header, gCutsceneAsReplay * 4, 4);
+
+		if (header == 0)
+			return;
+
+		_MISSION missionTempHeader;
+
+		loadsize = header >> 0x13;
+		LoadfileSeg(filename, (char *)&missionTempHeader, header & 0x7ffff, sizeof(_MISSION));
+
+		memcpy(MissionHeader->residentModels, missionTempHeader.residentModels, sizeof(missionTempHeader.residentModels));
+		MissionHeader->time = missionTempHeader.time;
+		MissionHeader->weather = missionTempHeader.weather;
+	}
+	
+	if (gCutsceneAsReplay == 0)
+#endif
+	{
+		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
+		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
+		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
+		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
+		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+	}
 
 	if (MissionHeader->maxDamage != 0) 
 	{

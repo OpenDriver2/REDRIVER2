@@ -115,7 +115,7 @@ void InitPadRecording(void)
 		for (i = 0; i < NumReplayStreams; i++)
 		{
 			ReplayStreams[i].playbackrun = 0;
-			ReplayStreams[i].PadRecordBuffer = ReplayStreams[0].InitialPadRecordBuffer;
+			ReplayStreams[i].PadRecordBuffer = ReplayStreams[i].InitialPadRecordBuffer;
 		}
 	}
 
@@ -435,6 +435,71 @@ int SaveReplayToBuffer(char *buffer)
 	/* end block 5 */
 	// End Line: 1588
 
+#ifdef CUTSCENE_RECORDER
+int gCutsceneAsReplay = 0;
+int gCutsceneAsReplay_PlayerId = 0;
+int gCutsceneAsReplay_PlayerChanged = 0;
+char gCutsceneRecorderPauseText[64] = { 0 };
+
+void NextCutsceneRecorderPlayer(int dir)
+{
+	int old_player = gCutsceneAsReplay_PlayerId;
+
+	if(dir > 0)
+		gCutsceneAsReplay_PlayerId++;
+	else if(dir < 0)
+		gCutsceneAsReplay_PlayerId--;
+
+	if (gCutsceneAsReplay_PlayerId >= NumReplayStreams)
+		gCutsceneAsReplay_PlayerId -= NumReplayStreams;
+	else if (gCutsceneAsReplay_PlayerId < 0)
+		gCutsceneAsReplay_PlayerId += NumReplayStreams;
+
+	if (old_player != gCutsceneAsReplay_PlayerId)
+		gCutsceneAsReplay_PlayerChanged = 1;
+
+	sprintf(gCutsceneRecorderPauseText, "CUTSCENE PLAYER ID: %d", gCutsceneAsReplay_PlayerId);
+}
+
+int LoadCutsceneAsReplay(int subindex)
+{
+	int offset;
+	int size;
+
+	if (gCutsceneAsReplay_PlayerId > 0)
+		gCutsceneAsReplay_PlayerChanged = 1;
+
+	NextCutsceneRecorderPlayer(0);
+
+	CUTSCENE_HEADER header;
+	char filename[64];
+
+	if (gCutsceneAsReplay < 21)
+		sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
+	else
+		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCutsceneAsReplay);
+
+	if (FileExists(filename))
+	{
+		LoadfileSeg(filename, (char *)&header, 0, sizeof(CUTSCENE_HEADER));
+
+		if (header.data[subindex].offset != 0xffff)
+		{
+			offset = header.data[subindex].offset * 4;
+			size = header.data[subindex].size;
+
+			LoadfileSeg(filename, _other_buffer, offset, size);
+
+			return LoadReplayFromBuffer(_other_buffer);
+		}
+	}
+
+	printError("Invalid cutscene subindex or mission!\n");
+
+	return 0;
+}
+#endif // CUTSCENE_RECORDER
+
 // [D]
 int LoadReplayFromBuffer(char *buffer)
 {
@@ -454,7 +519,12 @@ int LoadReplayFromBuffer(char *buffer)
 
 	GameLevel = header->GameLevel;
 	GameType = (GAMETYPE)header->GameType;
-	gCurrentMissionNumber = header->MissionNumber;
+
+#ifdef CUTSCENE_RECORDER
+	if(gCutsceneAsReplay == 0)
+#endif
+		gCurrentMissionNumber = header->MissionNumber;
+
 	NumReplayStreams = header->NumReplayStreams;
 	NumPlayers = header->NumPlayers;
 	gRandomChase = header->RandomChase;
@@ -469,6 +539,7 @@ int LoadReplayFromBuffer(char *buffer)
 
 	pt = (char*)(header+1);
 
+	int maxLength = 0;
 	for (int i = 0; i < NumReplayStreams; i++)
 	{
 		sheader = (REPLAY_STREAM_HEADER *)pt;
@@ -485,6 +556,9 @@ int LoadReplayFromBuffer(char *buffer)
 		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
 		destStream->length = sheader->Length;
 
+		if (sheader->Length > maxLength)
+			maxLength = sheader->Length;
+
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 
 		// copy pad data and advance buffer
@@ -495,12 +569,33 @@ int LoadReplayFromBuffer(char *buffer)
 	}
 
 	ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)replayptr;
-	memcpy(ReplayParameterPtr, pt, sizeof(REPLAY_PARAMETER_BLOCK));
-	pt += sizeof(REPLAY_PARAMETER_BLOCK);
+#ifdef CUTSCENE_RECORDER
+	if (gCutsceneAsReplay != 0)
+	{
+		memset(ReplayParameterPtr, 0, sizeof(REPLAY_PARAMETER_BLOCK));
+		ReplayParameterPtr->RecordingEnd = maxLength;
+	}
+	else
+#endif
+	{
+		memcpy(ReplayParameterPtr, pt, sizeof(REPLAY_PARAMETER_BLOCK));
+		pt += sizeof(REPLAY_PARAMETER_BLOCK);
+	}
+
 
 	PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
-	memcpy(PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * 150);
-	pt += sizeof(SXYPAIR) * 150;
+#ifdef CUTSCENE_RECORDER
+	if (gCutsceneAsReplay != 0)
+	{
+		memset(PlayerWayRecordPtr, 0, sizeof(SXYPAIR) * 150);
+	}
+	else
+#endif
+	{
+		memcpy(PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * 150);
+		pt += sizeof(SXYPAIR) * 150;
+	}
+		
 
 	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + 150);
 	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * 60);
@@ -722,6 +817,11 @@ int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 	int ret;
 	int t1;
 	ulong t0;
+
+#ifdef CUTSCENE_RECORDER
+	if (stream < 0)
+		stream = -stream;
+#endif
 
 	ret = Get(stream, &t0);
 

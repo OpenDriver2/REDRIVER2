@@ -4,7 +4,7 @@
 #include "THISDUST.H"
 #include "GAME/C/MAIN.H"
 #include "GAME/C/SYSTEM.H"
-
+#include "GAME/C/GLAUNCH.H"
 
 
 #include "EMULATOR.H"
@@ -248,7 +248,7 @@ char g_PrimTab2[0x1a180];			// 0x119400
 char g_Replay_buffer[0x50000];		// 0x1fabbc
 #endif
 
-int main()
+int main(int argc, char** argv)
 {
 #ifdef USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
@@ -280,8 +280,7 @@ int main()
 	GPU_printf = printf;
 
 	Emulator_Initialise("REDRIVER2", 800, 600);
-
-	redriver2_main();
+	redriver2_main(argc, argv);
 
 	Emulator_ShutDown();
 }

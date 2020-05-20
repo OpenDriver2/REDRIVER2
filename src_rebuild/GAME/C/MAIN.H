@@ -42,7 +42,7 @@ extern void EnablePause(enum PAUSEMODE mode); // 0x0005C590
 
 extern void CheckForPause(); // 0x0005C5D0
 
-extern int redriver2_main(); // 0x0005B384
+extern int redriver2_main(int argc, char** argv); // 0x0005B384
 
 extern void FadeScreen(int end_value); // 0x0005C668
 

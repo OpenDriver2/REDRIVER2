@@ -191,14 +191,15 @@ void GameStart(void)
 			LaunchGame();
 			break;
 		case GAME_IDLEDEMO:
-			iVar2 = LoadAttractReplay(gCurrentMissionNumber);
 			iVar1 = gVibration;
-			gVibration = iVar1;
-			if (iVar2 != 0) {
+			if (LoadAttractReplay(gCurrentMissionNumber))
+			{
 				gVibration = 0;
 				CurrentGameMode = GAMEMODE_DEMO;
 				gLoadedReplay = 1;
+
 				LaunchGame();
+
 				gLoadedReplay = 0;
 				gVibration = iVar1;
 			}

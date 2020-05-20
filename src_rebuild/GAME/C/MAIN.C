@@ -63,6 +63,7 @@
 #include "PAUSE.H"
 
 #include <stdlib.h>
+#include "STRINGS.H"
 
 #include "../FRONTEND/FEMAIN.H"
 
@@ -860,10 +861,10 @@ void GameInit(void)
 	{
 		do {
 			pSVar3 = PlayerStartInfo[i];
-			padid = -(char)i;
+			padid = -i;
 
-			if (i < (int)(uint)NumPlayers) 
-				padid = (char)i;
+			if (i < NumPlayers) 
+				padid = i;
 
 			gStartOnFoot = (pSVar3->type == 2);
 
@@ -886,6 +887,16 @@ void GameInit(void)
 			i++;
 		} while (i < numPlayersToCreate);
 	}
+
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	extern int gCutsceneAsReplay_PlayerId;
+	if (gCutsceneAsReplay != 0)
+	{
+		player[0].playerCarId = gCutsceneAsReplay_PlayerId;
+		player[0].cameraCarId = gCutsceneAsReplay_PlayerId;
+	}
+#endif
 
 	if (pathAILoaded != 0)
 		InitCops();
@@ -918,6 +929,10 @@ void GameInit(void)
 
 	if (NoPlayerControl == 0) 
 	{
+#ifdef CUTSCENE_RECORDER
+		extern int gCutsceneAsReplay;
+		if(gCutsceneAsReplay == 0)
+#endif
 		DeleteAllCameras();
 	}
 	else 
@@ -1362,6 +1377,31 @@ LAB_00059c1c:
 				}*/
 				break;
 			case 7:
+#ifdef CUTSCENE_RECORDER
+				extern int gCutsceneAsReplay;
+				extern int gCutsceneAsReplay_PlayerId;
+
+				if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
+				{
+					t0 = Pads[0].mapped;	// [A] padid might be wrong
+					t1 = Pads[0].mapanalog[2];
+					t2 = Pads[0].type & 4;
+
+					if (gStopPadReads != 0)
+					{
+						t0 = 0x80;
+
+						if (cp->hd.wheel_speed < 0x9001)
+							t0 = 0x10;
+
+						t1 = 0;
+						t2 = 1;
+					}
+
+					cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
+				}
+				else
+#endif
 				cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
 				ProcessCarPad(cp, t0, t1, t2);
 			}
@@ -2390,7 +2430,7 @@ void SsSetSerialVol(char param_1, short param_2, short param_3)
 #ifdef PSX
 int main(void)
 #else
-int redriver2_main(void)
+int redriver2_main(int argc, char** argv)
 #endif // PSX
 {
 	char *PALScreenNames[4] = {		// [A] don't show publisher logo
@@ -2437,13 +2477,18 @@ int redriver2_main(void)
 	Init_FileSystem();
 	InitSound();
 
-	//PlayFMV(99);	// [A] don't show publisher logo
+#ifndef PSX
+	if(argc <= 1)
+#endif
+	{
+		//PlayFMV(99);	// [A] don't show publisher logo
 
-	ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
+		ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
 
-	PlayFMV(0);		// play intro movie
+		PlayFMV(0);		// play intro movie
 
-	CheckForCorrectDisc(0);
+		CheckForCorrectDisc(0);
+	}
 
 	// Init frontend
 #ifdef PSX
@@ -2459,6 +2504,47 @@ int redriver2_main(void)
 	LoadBankFromLump(1, 0);
 
 	InitialiseScoreTables();
+
+#ifdef CUTSCENE_RECORDER
+	for (int i = 0; i < argc; i++)
+	{
+		if (!_stricmp(argv[i], "-recordcutscene"))
+		{
+			if (argc-i < 3)
+			{
+				printWarning("Example: -recordcutscene <mission_number> <base_mission> <player_id>");
+				return 0;
+			}
+
+			SetFEDrawMode();
+
+			gInFrontend = 0;
+			AttractMode = 0;
+
+			int player_id = atoi(argv[i+3]);
+
+			extern int LoadCutsceneAsReplay(int subindex);
+			extern int gCutsceneAsReplay;
+			extern int gCutsceneAsReplay_PlayerId;
+
+			gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
+			gCurrentMissionNumber = atoi(argv[i + 2]);		// acts as base mission. Some mission requires other base
+			gCutsceneAsReplay_PlayerId = atoi(argv[i + 3]);
+
+			if (LoadCutsceneAsReplay(0))
+			{
+				CurrentGameMode = GAMEMODE_REPLAY;
+				gLoadedReplay = 1;
+
+				LaunchGame();
+
+				gLoadedReplay = 0;
+			}
+			gCutsceneAsReplay = 0;
+			return 1;
+		}
+	}
+#endif
 
 	// now run the frontend
 	DoFrontEnd();
@@ -2985,7 +3071,7 @@ void InitGameVariables(void)
 		gLoadedMotionCapture = 0;
 	}
 
-	gRainCount = '\0';
+	gRainCount = 0;
 
 	if ((NoPlayerControl == 0) || (AttractMode != 0)) {
 		pauseflag = 0;
@@ -3010,40 +3096,63 @@ void InitGameVariables(void)
 	FrameCnt = 0;
 	CameraCnt = 0;
 
-	ClearMem((char *)&lightsOnDelay, 0x14);
+	ClearMem((char *)&lightsOnDelay, sizeof(lightsOnDelay));
 
 	PlayerStartInfo[0] = &ReplayStreams[0].SourceType;
-	ClearMem((char *)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
-	PlayerStartInfo[0]->type = 1;
-	PlayerStartInfo[0]->model = defaultPlayerModel[0];
-	PlayerStartInfo[0]->palette = defaultPlayerPalette;
-	PlayerStartInfo[0]->controlType = 1;
-	PlayerStartInfo[0]->flags = 0;
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay == 0)
+	{
+#endif
+		ClearMem((char *)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
-	PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
-	PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
-	PlayerStartInfo[0]->position.vy = 0;
-	PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
+		PlayerStartInfo[0]->type = 1;
+		PlayerStartInfo[0]->model = defaultPlayerModel[0];
+		PlayerStartInfo[0]->palette = defaultPlayerPalette;
+		PlayerStartInfo[0]->controlType = 1;
+		PlayerStartInfo[0]->flags = 0;
 
-	numPlayersToCreate = 1;
+		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
+		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
+		PlayerStartInfo[0]->position.vy = 0;
+		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
 
-	if (NumPlayers == 2) {
-		PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
-		ClearMem((char *)PlayerStartInfo[1], sizeof(STREAM_SOURCE));
+		numPlayersToCreate = 1;
 
-		PlayerStartInfo[1]->type = 1;
-		PlayerStartInfo[1]->model = defaultPlayerModel[1];
-		PlayerStartInfo[1]->palette = defaultPlayerPalette;
-		PlayerStartInfo[1]->controlType = 1;
-		PlayerStartInfo[1]->flags = 0;
-		PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
-		PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
-		PlayerStartInfo[1]->position.vy = 0;
-		PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+		if (NumPlayers == 2)
+		{
+			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
+			ClearMem((char *)PlayerStartInfo[1], sizeof(STREAM_SOURCE));
 
-		numPlayersToCreate = NumPlayers;
+			PlayerStartInfo[1]->type = 1;
+			PlayerStartInfo[1]->model = defaultPlayerModel[1];
+			PlayerStartInfo[1]->palette = defaultPlayerPalette;
+			PlayerStartInfo[1]->controlType = 1;
+			PlayerStartInfo[1]->flags = 0;
+			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
+			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
+			PlayerStartInfo[1]->position.vy = 0;
+			PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+
+			numPlayersToCreate = NumPlayers;
+		}
+#ifdef CUTSCENE_RECORDER
 	}
+	else
+	{
+		extern int gCutsceneAsReplay_PlayerId;
+		extern int gCutsceneAsReplay_PlayerChanged;
+
+		for (int i = 0; i < NumReplayStreams; i++)
+		{
+			PlayerStartInfo[i] = &ReplayStreams[i].SourceType;
+		}
+
+		numPlayersToCreate = NumReplayStreams;
+	}
+#endif // CUTSCENE_RECORDER
+
 
 	InitCivCars();
 	return;

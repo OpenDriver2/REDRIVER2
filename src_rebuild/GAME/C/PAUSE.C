@@ -160,12 +160,20 @@ MENU_HEADER YesNoRestartHeader =
 MENU_HEADER YesNoQuitHeader =
 { "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
+#ifdef CUTSCENE_RECORDER
+extern void NextCutsceneRecorderPlayer(int dir);
+extern char gCutsceneRecorderPauseText[64];
+#endif
+
 MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
+#ifdef CUTSCENE_RECORDER
+	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
@@ -223,8 +231,11 @@ MENU_ITEM MissionFailedItems[6] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM TakeARideFinishedItems[6] =
+MENU_ITEM TakeARideFinishedItems[] =
 {
+#ifdef CUTSCENE_RECORDER
+	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
+#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -1504,7 +1515,8 @@ void ControlMenu(void)
 	{
 		controlmenu_debounce = controlmenu_debounce + -1;
 		iVar3 = 2;
-		if (controlmenu_debounce != 0) goto LAB_0006cd08;
+		if (controlmenu_debounce != 0) 
+			goto LAB_0006cd08;
 	}
 
 	bVar2 = true;

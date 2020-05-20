@@ -1195,6 +1195,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		ShowCutsceneError();
 		return 0;
 	}
+
 	CutsceneStreamIndex = NumReplayStreams;
 	NumCutsceneStreams = rheader->NumReplayStreams;
 	
