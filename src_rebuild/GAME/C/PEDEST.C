@@ -379,6 +379,7 @@ LAB_0006e104:
 			iVar2 = -iVar2;
 
 		player[iVar2].pPed = NULL;
+		player[iVar2].playerType = 0;
 		DestroyPedestrian(pPed);
 	}
 }
@@ -911,8 +912,8 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 	dir = d - 0x800;
 	v.vy = y;
-	v.vx -= (iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1] >> 0xc);
-	v.vz += (iVar3 * rcossin_tbl[(d & 0xfffU) * 2] >> 0xc);
+	v.vx -= FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
+	v.vz += FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
 
 	side = 0;
 
@@ -924,8 +925,8 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 			v.vy = y;
 
-			v.vx -= (-iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1] >> 0xc);
-			v.vz += (-iVar3 * rcossin_tbl[(d & 0xfffU) * 2] >> 0xc);
+			v.vx -= FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
+			v.vz += FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
 
 			iVar3 = QuickBuildingCollisionCheck(&v, dir, 10, 10, 10);
 			if (iVar3 != 0)
@@ -2365,7 +2366,7 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	sVar2 = rcos(iVar6);
 	iVar7 = 400;
 
-	bVar1 = -1 < sVar2 * (pCar->hd.where.t[0] - pPed->position.vx) - (iVar3 * 0x1000 >> 0xc) * (pCar->hd.where.t[2] - pPed->position.vz) + 0x800;
+	bVar1 = -1 < sVar2 * (pCar->hd.where.t[0] - pPed->position.vx) - FIXED(iVar3 * 0x1000) * (pCar->hd.where.t[2] - pPed->position.vz) + 0x800;
 
 	if (bVar1)
 		sVar2 = iVar6 - 0x400;
@@ -2384,9 +2385,9 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	{
 		player[0].cameraView = 5;
 
-		player[0].cameraPos.vx = pCar->hd.where.t[0] - ((iVar7 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
+		player[0].cameraPos.vx = pCar->hd.where.t[0] - FIXED(iVar7 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800);
 		player[0].cameraPos.vy = -200 - pCar->hd.where.t[1];
-		player[0].cameraPos.vz = pCar->hd.where.t[2] + (iVar7 * rcossin_tbl[uVar4 * 2] >> 0xc) + (rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
+		player[0].cameraPos.vz = pCar->hd.where.t[2] + FIXED(iVar7 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800);
 	}
 
 	pPed->frame1 = 0;
@@ -2468,7 +2469,7 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 	iVar3 = rsin(iVar6);
 	sVar2 = rcos(iVar6);
 
-	if (sVar2 * (carToGetIn->hd.where.t[0] - pPed->position.vx) - (iVar3 * 0x1000 >> 0xc) * (carToGetIn->hd.where.t[2] - pPed->position.vz) + 0x800 < 0) 
+	if (sVar2 * (carToGetIn->hd.where.t[0] - pPed->position.vx) - FIXED(iVar3 * 0x1000) * (carToGetIn->hd.where.t[2] - pPed->position.vz) + 0x800 < 0)
 		iVar6 = iVar6 + 0x400;
 	else 
 		iVar6 = iVar6 - 0x400;
@@ -2486,9 +2487,9 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 	if (NoPlayerControl == 0 && gInGameCutsceneActive == 0) 
 	{
 		player[0].cameraView = 5;
-		player[0].cameraPos.vx = carToGetIn->hd.where.t[0] - ((iVar5 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc) - (rcossin_tbl[uVar4 * 2] * 800 >> 0xc));
+		player[0].cameraPos.vx = carToGetIn->hd.where.t[0] - FIXED(iVar5 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800);
 		player[0].cameraPos.vy = -200 - carToGetIn->hd.where.t[1];
-		player[0].cameraPos.vz = carToGetIn->hd.where.t[2] + (iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc) + (rcossin_tbl[uVar4 * 2 + 1] * 800 >> 0xc);
+		player[0].cameraPos.vz = carToGetIn->hd.where.t[2] + FIXED(iVar5 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800);
 	}
 
 	if ((carToGetIn->controlFlags & 4) == 0)
@@ -2965,15 +2966,15 @@ void AnimatePed(PEDESTRIAN *pPed)
 	{
 		uVar3 = (pPed->dir).vy;
 		cVar1 = pPed->speed;
-		pPed->position.vx = pPed->position.vx - (cVar1 * rcossin_tbl[(uVar3 & 0xfff) * 2] >> 0xc);
-		iVar5 = pPed->position.vz - (cVar1 * rcossin_tbl[(-uVar3 & 0xfffU) * 2 + 1] >> 0xc);		// [A] is it valid?
+		pPed->position.vx = pPed->position.vx - FIXED(cVar1 * rcossin_tbl[(uVar3 & 0xfff) * 2]);
+		iVar5 = pPed->position.vz - FIXED(cVar1 * rcossin_tbl[(-uVar3 & 0xfffU) * 2 + 1]);		// [A] is it valid?
 	}
 	else
 	{
 		cVar1 = pPed->speed;
 		uVar7 = (int)(pPed->dir).vy - 0x800U & 0xfff;
-		pPed->position.vx = pPed->position.vx + ((int)cVar1 * (int)rcossin_tbl[uVar7 * 2] >> 0xc);
-		iVar5 = pPed->position.vz + ((int)cVar1 * (int)rcossin_tbl[uVar7 * 2 + 1] >> 0xc);
+		pPed->position.vx = pPed->position.vx + FIXED((int)cVar1 * (int)rcossin_tbl[uVar7 * 2]);
+		iVar5 = pPed->position.vz + FIXED((int)cVar1 * (int)rcossin_tbl[uVar7 * 2 + 1]);
 	}
 
 	pPed->position.vz = iVar5;

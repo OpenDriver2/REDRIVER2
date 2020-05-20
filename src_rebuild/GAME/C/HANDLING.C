@@ -2216,8 +2216,6 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			int_steer *= ((int_steer * int_steer) / 80);
 			//analog_angle = int_steer / 2;
 			analog_angle = ((long long)int_steer * 0x66666667) >> 32;
-
-			printInfo("Analogue: %d vs %d\n", int_steer, analog_angle);
 		}
 		else 
 		{

@@ -111,12 +111,18 @@ template<int x> struct compile_time_assert_test {};
 #define UNIMPLEMENTED() UNIMPLEMENTED_PRINTONCE() //eprinterr("Unimplemented!\n");
 #endif // UNIMPLEMENTED
 
-#define ONE 4096
-#define PH_ONE 256
+#define ONE				4096
+#define PH_ONE			256
+
+#define ONE_BITS		12
+#define ONE_BIT			(1 << ONE_BITS)
+
+#define PH_ONE_BITS		8
+#define PH_ONE_BIT		(1 << PH_ONE_BITS)
 
 // math constants
-#define	FIXED(a)		((a) / ONE)
-#define	PH_FIXED(a)		((a) / PH_ONE)
+#define	FIXED(a)		(int(a) / ONE)
+#define	PH_FIXED(a)		(int(a) / PH_ONE)
 
 struct VECTOR2 // hashcode: 0x7572A047 (dec: 1970446407)
 {

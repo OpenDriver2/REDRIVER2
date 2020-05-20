@@ -338,7 +338,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 			lVar1 = ratan2(pDVar3->Midz - pos->vz, pDVar3->Midx - pos->vx);
 			iVar4 = (int)pDVar3->gradient * (lVar1 + 0x800U & 0xfff);
 
-			return (iVar4 >> 0xc) - (int)pDVar3->height;
+			return FIXED(iVar4) - pDVar3->height;
 		}
 
 		iVar4 = (int)plane->b;

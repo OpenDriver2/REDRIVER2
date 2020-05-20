@@ -1942,12 +1942,12 @@ int GetNodePos(DRIVER2_STRAIGHT *straight, DRIVER2_JUNCTION *junction, DRIVER2_C
 			sideShift = ((straight->NumLanes & 0xf) * 0x200 - (laneNo * 0x200 + 0x100)) + test42;
 
 			*x = straight->Midx +
-				(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2] + 0x800 >> 0xc) +
-				(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1] + 0x800 >> 0xc);
+				FIXED(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2]) +
+				FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
 
 			*z = (straight->Midz +
-				(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2 + 1] + 0x800 >> 0xc)) -
-				(sideShift * rcossin_tbl[(angle & 0xfffU) * 2] + 0x800 >> 0xc);
+				FIXED(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) -
+				FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
 
 			goto LAB_00026f00;
 		}
@@ -1972,8 +1972,8 @@ int GetNodePos(DRIVER2_STRAIGHT *straight, DRIVER2_JUNCTION *junction, DRIVER2_C
 	test42 = uVar1 * 0x80;
 	radius = curve->inside * 0x400 + laneNo * 0x200 + 0x100 + test42;
 
-	*x = curve->Midx + (radius * rcossin_tbl[(angle & 0xfffU) * 2] + 0x800 >> 0xc);
-	*z = curve->Midz + (radius * rcossin_tbl[(angle & 0xfffU) * 2 + 1] + 0x800 >> 0xc);
+	*x = curve->Midx + FIXED(radius * rcossin_tbl[(angle & 0xfffU) * 2]);
+	*z = curve->Midz + FIXED(radius * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
 LAB_00026f00:
 	if (uVar3 != 0) 
 	{

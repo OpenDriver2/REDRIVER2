@@ -1840,7 +1840,7 @@ void ControlNumberOfCops(void)
 			psVar2 = &car_data[(int)player[0].playerCarId].felonyRating;
 
 
-		if (iVar8 * (0x1000 - (*psVar2 * gCopData.autoRespawnScaleLimit >> 0xc)) >> 0xc < cop_respawn_timer + 1) 
+		if (iVar8 * FIXED(0x1000 - FIXED(*psVar2 * gCopData.autoRespawnScaleLimit)) < cop_respawn_timer + 1)
 			requestCopCar = 1;
 
 		cop_respawn_timer++;
