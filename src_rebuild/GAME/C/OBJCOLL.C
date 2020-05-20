@@ -965,9 +965,9 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							// box 'rotated' by matrix
 							// [A] FIXME: replace add+shift by division
-							bbox.pos.vx = cop->pos.vx + (piVar14->xpos * matrixtable[uVar9].m[0][0] + piVar14->zpos * matrixtable[uVar9].m[2][0]) / 4096;
+							bbox.pos.vx = cop->pos.vx + FIXED(piVar14->xpos * matrixtable[uVar9].m[0][0] + piVar14->zpos * matrixtable[uVar9].m[2][0]);
 							bbox.pos.vy = cop->pos.vy + piVar14->ypos;
-							bbox.pos.vz = cop->pos.vz + (piVar14->xpos * matrixtable[uVar9].m[0][2] + piVar14->zpos * matrixtable[uVar9].m[2][2]) / 4096;
+							bbox.pos.vz = cop->pos.vz + FIXED(piVar14->xpos * matrixtable[uVar9].m[0][2] + piVar14->zpos * matrixtable[uVar9].m[2][2]);
 
 							bbox.pos.pad = (pMVar4->flags2 >> 10) & 1;
 
@@ -1019,8 +1019,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 											iVar13 = gCameraDistance;
 											uVar9 = cp->hd.direction & 0xfff;
 
-											cp->hd.where.t[0] = lVar1 + ((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2) / 4096;
-											cp->hd.where.t[2] = lVar2 + ((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2) / 4096;
+											cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
+											cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
 											iVar7--;
 										}
 									}

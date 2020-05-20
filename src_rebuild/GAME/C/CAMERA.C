@@ -337,8 +337,8 @@ void ModifyCamera(void)
 						iVar6 = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
 
 					uVar5 = baseDir + 0x800 & 0xfff;
-					lp->cameraPos.vx = basePos[0] + (rcossin_tbl[uVar5 * 2] * (iVar6 - 60)) / 4096;
-					lp->cameraPos.vz = basePos[2] + (rcossin_tbl[uVar5 * 2 + 1] * (iVar6 - 60)) / 4096;
+					lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[uVar5 * 2] * (iVar6 - 60));
+					lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[uVar5 * 2 + 1] * (iVar6 - 60));
 				}
 			}
 		}
@@ -679,7 +679,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 
 			iVar9 = iVar10 * -3 + 0x55;
 			maxCameraDist = pCVar5->colBox.vz * 2 + iVar10 + 248;
-			iVar3 = car_data[iVar3].hd.wheel_speed / 4096;
+			iVar3 = FIXED(car_data[iVar3].hd.wheel_speed);
 
 			if (iVar3 < 0)
 				iVar3 = -iVar3;
@@ -727,10 +727,10 @@ LAB_000201cc:
 	iVar8 = lp->cameraDist;
 
 	iVar3 = rcossin_tbl[uVar7 * 2] * iVar8;
-	(lp->cameraPos).vx = basePos[0] + (iVar3 >> 0xc);
+	(lp->cameraPos).vx = basePos[0] + FIXED(iVar3);
 
 	iVar8 = rcossin_tbl[uVar7 * 2 + 1] * iVar8;
-	(lp->cameraPos).vz = basePos[2] + (iVar8 >> 0xc);
+	(lp->cameraPos).vz = basePos[2] + FIXED(iVar8);
 
 	(lp->cameraPos).vy = basePos[1];
 	iVar3 = MapHeight(&lp->cameraPos);
@@ -805,11 +805,11 @@ LAB_000201cc:
 
 	iVar3 = lp->cameraDist;
 
-	iVar10 = basePos[0] + (iVar3 * rcossin_tbl[uVar7 * 2]) / 4096;
-	iVar3 = basePos[2] + (iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1]) / 4096;
+	iVar10 = basePos[0] + FIXED(iVar3 * rcossin_tbl[uVar7 * 2]);
+	iVar3 = basePos[2] + FIXED(iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1]);
 
-	(lp->cameraPos).vz = iVar3;
-	(lp->cameraPos).vx = iVar10;
+	lp->cameraPos.vz = iVar3;
+	lp->cameraPos.vx = iVar10;
 
 	sVar2 = ratan2(basePos[0] - iVar10, basePos[2] - iVar3);
 

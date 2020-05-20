@@ -62,7 +62,7 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 	diff.vy = point.vy - cp0->hd.oBox.location.vy;
 	diff.vz = point.vz - cp0->hd.oBox.location.vz;
 
-	iVar4 = (diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz) / 4096;
+	iVar4 = FIXED(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
 
 	if (iVar4 < 0) 
 	{
@@ -85,7 +85,7 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 		iVar5 = pSVar8->vy;
 		iVar6 = pSVar8->vz;
 
-		iVar1 = (iVar3 * normal.vx + iVar5 * normal.vy + iVar6 * normal.vz) / 4096;
+		iVar1 = FIXED(iVar3 * normal.vx + iVar5 * normal.vy + iVar6 * normal.vz);
 
 		if (iVar1 < 0) 
 		{

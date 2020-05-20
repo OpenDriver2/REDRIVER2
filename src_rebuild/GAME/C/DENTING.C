@@ -182,9 +182,9 @@ void DentCar(_CAR_DATA *cp)
 		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[uVar21]->vertices;
 
 		do {
-			pSVar17->vx = CleanVertPtr->vx + ((DamVertPtr->vx - CleanVertPtr->vx) * (int)*psVar18) / 4096;
-			pSVar17->vy = CleanVertPtr->vy + ((DamVertPtr->vy - CleanVertPtr->vy) * (int)*psVar18) / 4096;
-			pSVar17->vz = CleanVertPtr->vz + ((DamVertPtr->vz - CleanVertPtr->vz) * (int)*psVar18) / 4096;
+			pSVar17->vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * (int)*psVar18);
+			pSVar17->vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * (int)*psVar18);
+			pSVar17->vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * (int)*psVar18);
 
 			iVar22++;
 			psVar18++;

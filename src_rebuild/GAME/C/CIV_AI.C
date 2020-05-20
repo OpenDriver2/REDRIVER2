@@ -3645,19 +3645,19 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*star
 			iVar7 = (int)*(short *)((int)rcossin_tbl + uVar6);
 			iVar4 = (int)*(short *)((int)rcossin_tbl + uVar6 + 2);
 
-			tmpQ[0] = (cp->st.n.orientation[1] * iVar7 + cp->st.n.orientation[0] * iVar4) / 4096;
-			tmpQ[1] = (cp->st.n.orientation[1] * iVar4 - cp->st.n.orientation[0] * iVar7) / 4096;
-			tmpQ[2] = (cp->st.n.orientation[3] * iVar7 + cp->st.n.orientation[2] * iVar4) / 4096;
-			tmpQ[3] = (cp->st.n.orientation[3] * iVar4 - cp->st.n.orientation[2] * iVar7) / 4096;
+			tmpQ[0] = FIXED(cp->st.n.orientation[1] * iVar7 + cp->st.n.orientation[0] * iVar4);
+			tmpQ[1] = FIXED(cp->st.n.orientation[1] * iVar4 - cp->st.n.orientation[0] * iVar7);
+			tmpQ[2] = FIXED(cp->st.n.orientation[3] * iVar7 + cp->st.n.orientation[2] * iVar4);
+			tmpQ[3] = FIXED(cp->st.n.orientation[3] * iVar4 - cp->st.n.orientation[2] * iVar7);
 
 			uVar6 = (orientX - (orientX >> 0x1f)) * 2 & 0x3ffc;
 			iVar5 = (int)*(short *)((int)rcossin_tbl + uVar6);
 			iVar7 = (int)*(short *)((int)rcossin_tbl + uVar6 + 2);
 
-			cp->st.n.orientation[0] = (tmpQ[3] * iVar5 + tmpQ[0] * iVar7) / 4096;
-			cp->st.n.orientation[1] = (tmpQ[2] * iVar5 + tmpQ[1] * iVar7) / 4096;
-			cp->st.n.orientation[2] = (tmpQ[2] * iVar7 - tmpQ[1] * iVar5) / 4096;
-			cp->st.n.orientation[3] = (tmpQ[3] * iVar7 - tmpQ[0] * iVar5) / 4096;
+			cp->st.n.orientation[0] = FIXED(tmpQ[3] * iVar5 + tmpQ[0] * iVar7);
+			cp->st.n.orientation[1] = FIXED(tmpQ[2] * iVar5 + tmpQ[1] * iVar7);
+			cp->st.n.orientation[2] = FIXED(tmpQ[2] * iVar7 - tmpQ[1] * iVar5);
+			cp->st.n.orientation[3] = FIXED(tmpQ[3] * iVar7 - tmpQ[0] * iVar5);
 
 			numCivCars++;
 

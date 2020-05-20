@@ -170,9 +170,9 @@ void IHaveThePower(void)
 					cp->hd.acc[1] += force[1];
 					cp->hd.acc[2] += force[2];
 
-					cp->hd.aacc[0] += (point[1] * force[2] - point[2] * force[1]) / 4096;
-					cp->hd.aacc[1] += (point[2] * force[0] - point[0] * force[2]) / 4096;
-					cp->hd.aacc[2] += (point[0] * force[1] - point[1] * force[0]) / 4096;
+					cp->hd.aacc[0] += FIXED(point[1] * force[2] - point[2] * force[1]);
+					cp->hd.aacc[1] += FIXED(point[2] * force[0] - point[0] * force[2]);
+					cp->hd.aacc[2] += FIXED(point[0] * force[1] - point[1] * force[0]);
 				}
 
 				cp++;
@@ -3534,14 +3534,14 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 		uVar2 = pCar->ap.model;
 
 		iVar6 = car_cosmetics[uVar2].colBox.vx;
-		iVar4 = ((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) / 4096 -
-				((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) / 4096;
+		iVar4 = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) -
+				FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]);
 
 		iVar5 = iVar6 + 96;
 		iVar3 = car_cosmetics[uVar2].colBox.vz;
 
-		iVar1 = ((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) / 4096 +
-				((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) / 4096;
+		iVar1 = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) +
+				FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]);
 
 		iVar6 = iVar6 - 96;
 

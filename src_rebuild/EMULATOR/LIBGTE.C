@@ -8,9 +8,8 @@
 
 #include "INLINE_C.H"
 
-#define	FIX_BIT	12
-#define	FIX_1	(1<<FIX_BIT)
-#define	FIX(a)	((a)>>FIX_BIT)
+#define ONE 4096
+#define	FIXED(a)			((a) / ONE)
 
 // LUT for cos and sin
 // 8192 entries, even entry = Sin, odd entry = Cos
@@ -4023,21 +4022,21 @@ MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 	vx = m1->m[0][0];
 	vy = m1->m[1][0];
 	vz = m1->m[2][0];
-	m2->m[0][0] = FIX(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
-	m2->m[1][0] = FIX(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
-	m2->m[2][0] = FIX(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
+	m2->m[0][0] = FIXED(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
+	m2->m[1][0] = FIXED(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
+	m2->m[2][0] = FIXED(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
 	vx = m1->m[0][1];
 	vy = m1->m[1][1];
 	vz = m1->m[2][1];
-	m2->m[0][1] = FIX(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
-	m2->m[1][1] = FIX(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
-	m2->m[2][1] = FIX(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
+	m2->m[0][1] = FIXED(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
+	m2->m[1][1] = FIXED(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
+	m2->m[2][1] = FIXED(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
 	vx = m1->m[0][2];
 	vy = m1->m[1][2];
 	vz = m1->m[2][2];
-	m2->m[0][2] = FIX(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
-	m2->m[1][2] = FIX(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
-	m2->m[2][2] = FIX(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
+	m2->m[0][2] = FIXED(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
+	m2->m[1][2] = FIXED(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
+	m2->m[2][2] = FIXED(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
 #endif
 
 	return m2;
@@ -4069,9 +4068,9 @@ void SetFarColor(long rfc, long gfc, long bfc)
 	int vx = v0->vx;\
 	int vy = v0->vy;\
 	int vz = v0->vz;\
-	v1->vx = FIX(m->m[0][0]*vx + m->m[0][1]*vy + m->m[0][2]*vz );\
-	v1->vy = FIX(m->m[1][0]*vx + m->m[1][1]*vy + m->m[1][2]*vz );\
-	v1->vz = FIX(m->m[2][0]*vx + m->m[2][1]*vy + m->m[2][2]*vz );\
+	v1->vx = FIXED(m->m[0][0]*vx + m->m[0][1]*vy + m->m[0][2]*vz );\
+	v1->vy = FIXED(m->m[1][0]*vx + m->m[1][1]*vy + m->m[1][2]*vz );\
+	v1->vz = FIXED(m->m[2][0]*vx + m->m[2][1]*vy + m->m[2][2]*vz );\
 }
 
 VECTOR *ApplyMatrix(MATRIX *m, SVECTOR *v0, VECTOR *v1)
@@ -4136,15 +4135,15 @@ MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
 	s2s0 =	(c2m0-c2p0)/2;
 	c2c0 =	(c2m0+c2p0)/2;
 
-	m->m[0][0]=  FIX(c2*c1);
-	m->m[1][0]=  s2c0 + FIX(c2s0*s1);
-	m->m[2][0]=  s2s0 - FIX(c2c0*s1);
-	m->m[0][1]= -FIX(s2*c1);
-	m->m[1][1]=  c2c0 - FIX(s2s0*s1);
-	m->m[2][1]=  c2s0 + FIX(s2c0*s1);
+	m->m[0][0]=  FIXED(c2*c1);
+	m->m[1][0]=  s2c0 + FIXED(c2s0*s1);
+	m->m[2][0]=  s2s0 - FIXED(c2c0*s1);
+	m->m[0][1]= -FIXED(s2*c1);
+	m->m[1][1]=  c2c0 - FIXED(s2s0*s1);
+	m->m[2][1]=  c2s0 + FIXED(s2c0*s1);
 	m->m[0][2]=  s1;
-	m->m[1][2]= -FIX(c1*s0);
-	m->m[2][2]=  FIX(c1*c0);
+	m->m[1][2]= -FIXED(c1*s0);
+	m->m[2][2]=  FIXED(c1*c0);
 
 	return m;
 }
@@ -4191,9 +4190,10 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 
 	iVar7 = iVar7 >> 0x10;
 	uVar4 = (r->vz);
+
 	m->m[1][2] = sVar3;
-	m->m[0][2] = (short)(iVar1 * iVar6 >> 0xc);
-	sVar3 = (short)(iVar7 * iVar6 >> 0xc);
+	m->m[0][2] = FIXED(iVar1 * iVar6);
+	sVar3 = FIXED(iVar7 * iVar6);
 
 	if ((int)uVar4 < 0)
 	{
@@ -4209,14 +4209,15 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 	}
 
 	iVar8 = iVar8 >> 0x10;
-	m->m[1][0] = (short)(iVar2 * iVar6 >> 0xc);
-	m->m[1][1] = (short)(iVar8 * iVar6 >> 0xc);
-	iVar6 = iVar1 * iVar5 >> 0xc;
-	m->m[0][0] = (short)(iVar7 * iVar8 >> 0xc) + (short)(iVar6 * iVar2 >> 0xc);
-	m->m[0][1] = (short)(iVar6 * iVar8 >> 0xc) - (short)(iVar7 * iVar2 >> 0xc);
-	iVar5 = iVar7 * iVar5 >> 0xc;
-	m->m[2][1] = (short)(iVar1 * iVar2 >> 0xc) + (short)(iVar5 * iVar8 >> 0xc);
-	m->m[2][0] = (short)(iVar5 * iVar2 >> 0xc) - (short)(iVar1 * iVar8 >> 0xc);
+
+	m->m[1][0] = FIXED(iVar2 * iVar6);
+	m->m[1][1] = FIXED(iVar8 * iVar6);
+	iVar6 = FIXED(iVar1 * iVar5);
+	m->m[0][0] = FIXED(iVar7 * iVar8) + FIXED(iVar6 * iVar2);
+	m->m[0][1] = FIXED(iVar6 * iVar8) - FIXED(iVar7 * iVar2);
+	iVar5 = FIXED(iVar7 * iVar5);
+	m->m[2][1] = FIXED(iVar1 * iVar2) + FIXED(iVar5 * iVar8);
+	m->m[2][0] = FIXED(iVar5 * iVar2) - FIXED(iVar1 * iVar8);
 
 	return m;
 }
@@ -4257,16 +4258,16 @@ MATRIX* RotMatrixX(long r, MATRIX *m)
 	int t1, t2;
 	t1 = m->m[1][0];
 	t2 = m->m[2][0];
-	m->m[1][0] = FIX(t1*c0 - t2 * s0);
-	m->m[2][0] = FIX(t1*s0 + t2 * c0);
+	m->m[1][0] = FIXED(t1*c0 - t2 * s0);
+	m->m[2][0] = FIXED(t1*s0 + t2 * c0);
 	t1 = m->m[1][1];
 	t2 = m->m[2][1];
-	m->m[1][1] = FIX(t1*c0 - t2 * s0);
-	m->m[2][1] = FIX(t1*s0 + t2 * c0);
+	m->m[1][1] = FIXED(t1*c0 - t2 * s0);
+	m->m[2][1] = FIXED(t1*s0 + t2 * c0);
 	t1 = m->m[1][2];
 	t2 = m->m[2][2];
-	m->m[1][2] = FIX(t1*c0 - t2 * s0);
-	m->m[2][2] = FIX(t1*s0 + t2 * c0);
+	m->m[1][2] = FIXED(t1*c0 - t2 * s0);
+	m->m[2][2] = FIXED(t1*s0 + t2 * c0);
 #endif
 	return m;
 }
@@ -4316,16 +4317,16 @@ MATRIX* RotMatrixY(long r, MATRIX *m)
 	int t1, t2;
 	t1 = m->m[0][0];
 	t2 = m->m[2][0];
-	m->m[0][0] = FIX(t1*c0 + t2 * s0);
-	m->m[2][0] = FIX(-t1 * s0 + t2 * c0);
+	m->m[0][0] = FIXED(t1*c0 + t2 * s0);
+	m->m[2][0] = FIXED(-t1 * s0 + t2 * c0);
 	t1 = m->m[0][1];
 	t2 = m->m[2][1];
-	m->m[0][1] = FIX(t1*c0 + t2 * s0);
-	m->m[2][1] = FIX(-t1 * s0 + t2 * c0);
+	m->m[0][1] = FIXED(t1*c0 + t2 * s0);
+	m->m[2][1] = FIXED(-t1 * s0 + t2 * c0);
 	t1 = m->m[0][2];
 	t2 = m->m[2][2];
-	m->m[0][2] = FIX(t1*c0 + t2 * s0);
-	m->m[2][2] = FIX(-t1 * s0 + t2 * c0);
+	m->m[0][2] = FIXED(t1*c0 + t2 * s0);
+	m->m[2][2] = FIXED(-t1 * s0 + t2 * c0);
 #endif
 	return m;
 }
@@ -4377,16 +4378,16 @@ MATRIX* RotMatrixZ(long r, MATRIX *m)
 	int t1,t2;
 	t1 = m->m[0][0];
 	t2 = m->m[1][0];
-	m->m[0][0] = FIX(t1*c0 - t2*s0);
-	m->m[1][0] = FIX(t1*s0 + t2*c0);
+	m->m[0][0] = FIXED(t1*c0 - t2*s0);
+	m->m[1][0] = FIXED(t1*s0 + t2*c0);
 	t1 = m->m[0][1];
 	t2 = m->m[1][1];
-	m->m[0][1] = FIX(t1*c0 - t2*s0);
-	m->m[1][1] = FIX(t1*s0 + t2*c0);
+	m->m[0][1] = FIXED(t1*c0 - t2*s0);
+	m->m[1][1] = FIXED(t1*s0 + t2*c0);
 	t1 = m->m[0][2];
 	t2 = m->m[1][2];
-	m->m[0][2] = FIX(t1*c0 - t2*s0);
-	m->m[1][2] = FIX(t1*s0 + t2*c0);
+	m->m[0][2] = FIXED(t1*c0 - t2*s0);
+	m->m[1][2] = FIXED(t1*s0 + t2*c0);
 #endif
 	return m;
 }
@@ -4401,15 +4402,15 @@ MATRIX* TransMatrix(MATRIX* m, VECTOR* v)
 
 MATRIX* ScaleMatrix(MATRIX* m, VECTOR* v)
 {
-	m->m[0][0] = FIX(m->m[0][0] * v->vx);
-	m->m[0][1] = FIX(m->m[0][1] * v->vx);
-	m->m[0][2] = FIX(m->m[0][2] * v->vx);
-	m->m[1][0] = FIX(m->m[1][0] * v->vy);
-	m->m[1][1] = FIX(m->m[1][1] * v->vy);
-	m->m[1][2] = FIX(m->m[1][2] * v->vy);
-	m->m[2][0] = FIX(m->m[2][0] * v->vz);
-	m->m[2][1] = FIX(m->m[2][1] * v->vz);
-	m->m[2][2] = FIX(m->m[2][2] * v->vz);
+	m->m[0][0] = FIXED(m->m[0][0] * v->vx);
+	m->m[0][1] = FIXED(m->m[0][1] * v->vx);
+	m->m[0][2] = FIXED(m->m[0][2] * v->vx);
+	m->m[1][0] = FIXED(m->m[1][0] * v->vy);
+	m->m[1][1] = FIXED(m->m[1][1] * v->vy);
+	m->m[1][2] = FIXED(m->m[1][2] * v->vy);
+	m->m[2][0] = FIXED(m->m[2][0] * v->vz);
+	m->m[2][1] = FIXED(m->m[2][1] * v->vz);
+	m->m[2][2] = FIXED(m->m[2][2] * v->vz);
 	return m;
 }
 

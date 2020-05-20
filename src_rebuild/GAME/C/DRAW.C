@@ -367,9 +367,9 @@ void DrawSprites(int numFound)
 	int local_38;
 	int local_2c;
 
-	z = (camera_matrix.m[2][0] * day_vectors[GameLevel].vx) / 4096 +
-		(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) / 4096 +
-		(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) / 4096 + 0x1000 * 0xc00;
+	z = FIXED(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
+		FIXED(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
+		FIXED(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
 
 	uVar6 = (z >> 0x12) + 0x20U & 0xff;
 
