@@ -18628,7 +18628,7 @@ struct PSXBUTTON // hashcode: 0x41BD456C (dec: 1102923116)
 struct PADRECORD // hashcode: 0x0D20CEBD (dec: 220253885)
 {
 	unsigned char pad; // size=0, offset=0
-	char analogue; // size=0, offset=1
+	unsigned char analogue; // size=0, offset=1
 	unsigned char run; // size=0, offset=2
 };
 
@@ -21024,21 +21024,11 @@ typedef struct tRange tRange;
 
 typedef struct tAABB tAABB;
 
-struct PADRAW // hashcode: 0xEE7F60F7 (dec: -293641993)
-{
-	unsigned char status; // size=0, offset=0
-	unsigned char id; // size=0, offset=1
-	unsigned char buttons[2]; // size=2, offset=2
-	unsigned char analog[4]; // size=4, offset=4
-};
-
 struct DUPLICATION // hashcode: 0x6B8217F0 (dec: 1803687920)
 {
 	char *buffer; // size=0, offset=0
 	int size; // size=0, offset=4
 };
-
-typedef struct PADRAW PADRAW;
 
 typedef struct DUPLICATION DUPLICATION;
 

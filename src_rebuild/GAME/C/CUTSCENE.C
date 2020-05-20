@@ -1220,13 +1220,13 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		ReplayStreams[i].PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
 		ReplayStreams[i].length = sheader->Length;
 
-		int size = sheader->Size + sizeof(PADRECORD) & 0xfffffffc;
+		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 
 		// copy pad data and advance buffer
 		memcpy(replayptr, pt, size);
 		replayptr += size;
 
-		pt += sheader->Size + sizeof(PADRECORD) & 0xfffffffc;
+		pt += size;
 	}
 
 	NumReplayStreams += rheader->NumReplayStreams;

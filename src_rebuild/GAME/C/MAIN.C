@@ -1330,6 +1330,7 @@ LAB_00059c1c:
 						t1 = 0;
 						t2 = 1;
 					}
+
 					cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
 				}
 				else 

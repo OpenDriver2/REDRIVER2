@@ -397,31 +397,41 @@ void MapPad(int pad, PADRAW *pData)
 	uint uVar10;
 	ushort uVar11;
 
-	if (pData->status != '\0') {
-		Pads[pad].type = '\0';
+	if (pData->status != 0)
+	{
+		Pads[pad].type = 0;
 		return;
 	}
+
 	bVar4 = pData->id >> 4;
-	if (bVar4 == 4) {
-		Pads[pad].type = '\x02';
+
+	if (bVar4 == 4)
+	{
+		Pads[pad].type = 2;
 	}
-	else {
-		if (bVar4 != 7) {
-			Pads[pad].type = '\x01';
-			return;
-		}
-		Pads[pad].type = '\x04';
+	else if(bVar4 == 7)
+	{
+		Pads[pad].type = 4;
 	}
+	else
+	{
+		Pads[pad].type = 1;
+		return;
+	}
+
 	uVar11 = Pads[pad].direct;
 	uVar10 = ~(uint)((pData->buttons[0] << 8) | (pData->buttons[1])) & 0xffff;
+
 	Pads[pad].direct = (ushort)uVar10;
 	Pads[pad].dirnew = (ushort)uVar10 & ~uVar11;
-	Pads[pad].diranalog[0] = pData->analog[0] + 128;
-	Pads[pad].diranalog[1] = pData->analog[1] + 128;
-	Pads[pad].diranalog[2] = pData->analog[2] + 128;
-	uVar1 = Pads[pad].active;
-	Pads[pad].diranalog[3] = pData->analog[3] + 128;
-	if (uVar1 != '\0') {
+
+	Pads[pad].diranalog[0] = pData->analog[0] - 128;
+	Pads[pad].diranalog[1] = pData->analog[1] - 128;
+	Pads[pad].diranalog[2] = pData->analog[2] - 128;
+	Pads[pad].diranalog[3] = pData->analog[3] - 128;
+
+	if (Pads[pad].active != 0) 
+	{
 		uVar11 = 0;
 		uVar9 = 0;
 		uVar5 = uVar10;
@@ -437,7 +447,8 @@ void MapPad(int pad, PADRAW *pData)
 		uVar3 = Pads[pad].mappings.swap_analog;
 		Pads[pad].mapped = uVar11;
 		Pads[pad].mapnew = uVar11 & ~uVar2;
-		if (uVar3 == 0) {
+		if (uVar3 == 0) 
+		{
 			cVar6 = Pads[pad].diranalog[1];
 			cVar7 = Pads[pad].diranalog[2];
 			cVar8 = Pads[pad].diranalog[3];

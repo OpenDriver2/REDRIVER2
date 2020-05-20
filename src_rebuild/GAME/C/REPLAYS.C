@@ -877,9 +877,9 @@ int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 
 	ret = Get(stream, &t0);
 
-	t1 = t0 >> 8 & 0xf;
+	t1 = (t0 >> 8) & 0xF;
 
-	*ppad = t0 & 0xf0fc;
+	*ppad = t0 & 0xF0FC;
 
 	if (t1 == 0) 
 	{
@@ -928,67 +928,68 @@ void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 	REPLAY_PARAMETER_BLOCK *pRVar1;
 	int iVar2;
 	int iVar3;
-	uint uVar4;
+	int t1;
 	ulong t0;
 
-	if ((-1 < stream) && (stream < NumReplayStreams)) 
+	if (stream > -1 && stream < NumReplayStreams) 
 	{
-		t0 = *ppad;
 		iVar3 = (int)*psteer;
 
 		RecordWaypoint();
 
 		if ((*ptype & 4U) == 0) 
 		{
-			uVar4 = 0;
+			t1 = 0;
 		}
 		else 
 		{
 			if (iVar3 < -45) 
 			{
-				iVar2 = -0x2d - iVar3 >> 0x1f;
-				uVar4 = (((-0x2d - iVar3) / 6 + iVar2 >> 1) - iVar2) + 1;
+				iVar2 = -45 - iVar3 >> 0x1f;
+				t1 = (((-45 - iVar3) / 6 + iVar2 >> 1) - iVar2) + 1;
 			}
 			else if (iVar3 < 46)
 			{
-				uVar4 = 8;
+				t1 = 8;
 			}
 			else
 			{
-				iVar2 = iVar3 + -0x2d >> 0x1f;
-				uVar4 = (((iVar3 + -0x2d) / 6 + iVar2 >> 1) - iVar2) + 9;
+				iVar2 = iVar3 - 45 >> 0x1f;
+				t1 = (((iVar3 - 45) / 6 + iVar2 >> 1) - iVar2) + 9;
 			}
 		}
 
-		t0 = t0 & 0xf0fc | (uVar4 & 0xf) << 8;
+		t0 = (t1 & 0xF) << 8 | *ppad & 0xF0FC;
 
 		if (Put(stream, &t0) == 0)
 		{
 			gOutOfTape = 1;
 		}
-		else 
+		else if(NoPlayerControl == 0)
 		{
-			if ((((NoPlayerControl == 0) && (ClearCameras = 1, true)) && (ReplayMode != 3)) && (ReplayMode != 8)) 
+			ClearCameras = 1;
+
+			if (ReplayMode != 3 && ReplayMode != 8)
 			{
 				ReplayStreams[stream].length = CameraCnt;
 				ReplayParameterPtr->RecordingEnd = CameraCnt;
 			}
 		}
 
-		uVar4 = t0 >> 8 & 0xf;
+		t1 = (t0 >> 8) & 0xF;
 
-		if (uVar4 == 0) 
+		if (t1 == 0) 
 		{
 			*psteer = 0;
 			*ptype = 0;
 		}
 		else 
 		{
-			*psteer = AnalogueUnpack[uVar4];
+			*psteer = AnalogueUnpack[t1];
 			*ptype = 4;
 		}
 
-		*ppad = t0 & 0xf0fc;
+		*ppad = t0 & 0xF0FC;
 	}
 }
 
@@ -1037,7 +1038,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 		stream->InitialPadRecordBuffer->run = 0xEE;
 	}
 
-	replayptr = (char *)(stream->PadRecordBufferEnd+1);
+	replayptr = (char *)(((uint)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);
 }
 
 
@@ -1077,7 +1078,8 @@ int Get(int stream, ulong *pt0)
 
 		if (rstream->PadRecordBuffer+1 <= rstream->PadRecordBufferEnd)
 		{
-			*pt0 = SW_SHORT(rstream->PadRecordBuffer->pad, rstream->PadRecordBuffer->analogue);
+			ulong t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
+			*pt0 = t0;
 
 			if (rstream->playbackrun < rstream->PadRecordBuffer->run)
 			{
@@ -1150,11 +1152,11 @@ int Put(int stream, ulong *pt0)
 	padbuf = rstream->PadRecordBuffer;
 	t0 = *pt0;
 
-	if (CameraCnt != 0 && padbuf->run != -18)
+	if (CameraCnt != 0 && padbuf->run != 0xEE)
 	{
-		if (padbuf->pad == (t0 >> 8 & 0xff) &&
+		if (padbuf->pad == ((t0 >> 8) & 0xff) &&
 			padbuf->analogue == (t0 & 0xff) && 
-			padbuf->run != -113)
+			padbuf->run != 0x8F)
 		{
 			padbuf->run++;
 			return 1;
@@ -1162,8 +1164,8 @@ int Put(int stream, ulong *pt0)
 
 		padbuf++;
 
-		padbuf->pad = (t0 >> 8);
-		padbuf->analogue = t0;
+		padbuf->pad = (t0 >> 8) & 0xFF;
+		padbuf->analogue = t0 & 0xFF;
 		padbuf->run = 0;
 
 		rstream->PadRecordBuffer = padbuf;
@@ -1171,8 +1173,8 @@ int Put(int stream, ulong *pt0)
 		return 1;
 	}
 
-	padbuf->pad = (t0 >> 8);
-	padbuf->analogue = t0;
+	padbuf->pad = (t0 >> 8) & 0xFF;
+	padbuf->analogue = t0 & 0xFF;
 	padbuf->run = 0;
 
 	return 1;
