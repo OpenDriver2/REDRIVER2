@@ -1239,7 +1239,8 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	pt += sizeof(PLAYBACKCAMERA) * 60;
 
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 940);				// MAX_REPLAY_PINGS
+	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);				// MAX_REPLAY_PINGS
+
 	PingBufferPos = 0;
 
 	return 1;
@@ -1293,6 +1294,8 @@ int LoadCutsceneToBuffer(int subindex)
 	else 
 		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
 
+	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
+
 	if (FileExists(filename))
 	{
 		LoadfileSeg(filename, (char *)&header, 0, sizeof(CUTSCENE_HEADER));
@@ -1321,8 +1324,8 @@ int LoadCutsceneToBuffer(int subindex)
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
 			CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = CutsceneBuffer.currentPointer;
 			CutsceneBuffer.numResident++;
-			CutsceneBuffer.currentPointer = CutsceneBuffer.currentPointer + size;
-			CutsceneBuffer.bytesFree = CutsceneBuffer.bytesFree - size;
+			CutsceneBuffer.currentPointer += size;
+			CutsceneBuffer.bytesFree -= size;
 
 			return 1;
 		}

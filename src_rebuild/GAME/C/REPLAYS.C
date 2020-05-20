@@ -86,14 +86,14 @@ void InitPadRecording(void)
 		ReplayStart = _replay_buffer;
 		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)ReplayStart;
 
-		PlayerWayRecordPtr = (SXYPAIR *)(ReplayStart + sizeof(REPLAY_PARAMETER_BLOCK));
+		PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
 
-		PlaybackCamera = (PLAYBACKCAMERA *)((char*)PlayerWayRecordPtr + sizeof(SXYPAIR) * 150);
+		PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + 150);
 
-		PingBuffer = (_PING_PACKET *)((char*)PlaybackCamera + sizeof(PLAYBACKCAMERA) * 60);
+		PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
 		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * 400);
 
-		replayptr = (char*)PingBuffer + sizeof(_PING_PACKET) * 400;
+		replayptr = (char*)(PingBuffer + 400);
 
 		pcVar1 = ReplayStart;
 		pcVar2 = replayptr-0x3444;
