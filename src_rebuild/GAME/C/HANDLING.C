@@ -845,14 +845,14 @@ void GlobalTimeStep(void)
 						local_4c[local_40].n.fposition[1] = st->n.linearVelocity[1] / 256;
 						local_4c[local_40].n.fposition[2] = st->n.linearVelocity[2] / 256;
 
-						AV[0] = st->n.angularVelocity[0] / 4096; // [A] / 8192; temporarily set to 4096 here because it makes rotations reaaaal slow
-						AV[1] = st->n.angularVelocity[1] / 4096; // [A] / 8192;
-						AV[2] = st->n.angularVelocity[2] / 4096; // [A] / 8192;
+						AV[0] = st->n.angularVelocity[0] / 8192;
+						AV[1] = st->n.angularVelocity[1] / 8192;
+						AV[2] = st->n.angularVelocity[2] / 8192;
 
-						local_4c[local_40].n.orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]) / 8192;
-						local_4c[local_40].n.orientation[1] = ((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]) / 8192;
-						local_4c[local_40].n.orientation[2] = (-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]) / 8192;
-						local_4c[local_40].n.orientation[3] = ((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]) / 8192;
+						local_4c[local_40].n.orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]) / 4096;
+						local_4c[local_40].n.orientation[1] = ((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]) / 4096;
+						local_4c[local_40].n.orientation[2] = (-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]) / 4096;
+						local_4c[local_40].n.orientation[3] = ((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]) / 4096;
 
 						local_4c[local_40].n.linearVelocity[0] = 0;
 						local_4c[local_40].n.linearVelocity[1] = 0;
@@ -2035,7 +2035,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
 #if 1
 	extern int gInGameCutsceneActive;
-	if (gInGameCutsceneActive == 0)
+	if (gInGameCutsceneActive == 0 && cp->controlType == 1)
 	{
 		extern MATRIX camera_matrix;
 
