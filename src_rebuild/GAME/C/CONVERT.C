@@ -45,7 +45,7 @@ void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 // [D]
 void _RotMatrixX(MATRIX *m, short ang)
 {
-	RotMatrixX((int)ang, m);
+	RotMatrixX(ang, m);
 }
 
 
@@ -62,7 +62,7 @@ void _RotMatrixX(MATRIX *m, short ang)
 // [D]
 void _RotMatrixY(MATRIX *m, short ang)
 {
-	RotMatrixY((int)ang, m);
+	RotMatrixY(ang, m);
 }
 
 
@@ -79,7 +79,7 @@ void _RotMatrixY(MATRIX *m, short ang)
 // [D]
 void _RotMatrixZ(MATRIX *m, short ang)
 {
-	RotMatrixZ((int)ang, m);
+	RotMatrixZ(ang, m);
 }
 
 

@@ -923,32 +923,9 @@ void GlobalTimeStep(void)
 										iVar9 = (((st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) / 4096) + st->n.linearVelocity[2]) -
 											(((p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) / 4096) + p_Var25->n.linearVelocity[2]);
 
-										//if (howHard < 0) 
-										//{
-										//	howHard = howHard + 0xff;
-										//}
-
 										lVar10 = normal[0];
-										//if (normal[0] < 0) 
-										//{
-										//	lVar10 = normal[0] + 0x1f;
-										//}
-
-										//if (iVar19 < 0) 
-										//{
-										//	iVar19 = iVar19 + 0xff;
-										//}
-
 										lVar7 = normal[1];
-										//if (normal[1] < 0) 
-										//	lVar7 = normal[1] + 0x1f;
-
-										//if (iVar9 < 0)
-										//	iVar9 = iVar9 + 0xff;
-
 										lVar8 = normal[2];
-										//if (normal[2] < 0)
-										//	lVar8 = normal[2] + 0x1f;
 
 										howHard = (howHard >> 8) * (lVar10 >> 5) + (iVar19 >> 8) * (lVar7 >> 5) + (iVar9 >> 8) * (lVar8 >> 5);
 
@@ -2239,12 +2216,14 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if ((pad & 4) == 0) 
 		{
 			int_steer *= ((int_steer * int_steer) / 80);
-			analog_angle = (int)((uint)int_steer * 0x66666667) >> 0x20;
+			analog_angle = int_steer / 2;
+			//analog_angle = (int)((uint)int_steer * 0x66666667) >> 0x20;
 		}
 		else 
 		{
 			int_steer *= ((int_steer * int_steer) / 60);
-			analog_angle = (int)((uint)int_steer * 0x88888889) >> 0x20;
+			analog_angle = int_steer / 2;
+			//analog_angle =  (int)((uint)int_steer * 0x88888889) >> 0x20;
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
@@ -2321,6 +2300,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				}
 				cp->thrust = sVar2;
 			}
+
 			if (cp->controlType == 1) 
 			{
 				if (player[0].playerCarId == cp->id) 

@@ -805,11 +805,11 @@ LAB_000201cc:
 
 	iVar3 = lp->cameraDist;
 
-	iVar10 = basePos[0] + (iVar3 * rcossin_tbl[uVar7 * 2] + 0x800 >> 0xc);
-	(lp->cameraPos).vx = iVar10;
+	iVar10 = basePos[0] + (iVar3 * rcossin_tbl[uVar7 * 2]) / 4096;
+	iVar3 = basePos[2] + (iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1]) / 4096;
 
-	iVar3 = basePos[2] + (iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1] + 0x800 >> 0xc);
 	(lp->cameraPos).vz = iVar3;
+	(lp->cameraPos).vx = iVar10;
 
 	sVar2 = ratan2(basePos[0] - iVar10, basePos[2] - iVar3);
 

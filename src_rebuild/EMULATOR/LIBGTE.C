@@ -2629,7 +2629,7 @@ unsigned char ida_chars[] =
   0xFA, 0xFF, 0x00, 0x10
 };
 
-short ratan_tbl[1024] = {
+short ratan_tbl[1025] = {
 	0x000,   0x001,   0x002,   0x002,
 	0x003,   0x003,   0x004,   0x005,
 	0x005,   0x006,   0x007,   0x007,
@@ -2885,7 +2885,8 @@ short ratan_tbl[1024] = {
 	0x1FB,   0x1FB,   0x1FC,   0x1FC,
 	0x1FC,   0x1FD,   0x1FD,   0x1FD,
 	0x1FE,   0x1FE,   0x1FE,   0x1FF,
-	0x1FF,   0x1FF,   0x1FF,   0x200
+	0x1FF,   0x1FF,   0x1FF,   0x200,
+	0x200
 };
 
 unsigned int* gte_rcossin_tbl = (unsigned int*)&ida_chars[0];///@FIXME convert to uint[];
@@ -4008,44 +4009,36 @@ long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2
 
 MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 {
-	/*
-	// In case of needs...
-	// this is not PSX GTE correct code, GTE macro performs better...
-
-	gte_SetRotMatrix(m0);
-
-	VX0 = m1->m[0][0];
-	VY0 = m1->m[0][1];
-	VZ0 = m1->m[0][2];
-
-	docop2(0x486012);
-
-	VX0 = m1->m[1][0];
-	VY0 = m1->m[1][1];
-	VZ0 = m1->m[1][2];
-
-	m2->m[0][0] = IR1;
-	m2->m[0][1] = IR2;
-	m2->m[0][2] = IR3;
-
-	docop2(0x486012);
-
-	VX0 = m1->m[2][0];
-	VY0 = m1->m[2][1];
-	VZ0 = m1->m[2][2];
-
-	m2->m[1][0] = IR1;
-	m2->m[1][1] = IR2;
-	m2->m[1][2] = IR3;
-
-	docop2(0x486012);
-
-	m2->m[2][0] = IR1;
-	m2->m[2][1] = IR2;
-	m2->m[2][2] = IR3;
-	*/
-
+#if 0
 	gte_MulMatrix0(m0, m1, m2);
+#else
+	/* これでもm0==m2の時ヤバイ */
+	int vx, vy, vz;
+	MATRIX tmp;
+	/* のでm0をtmpにコピー */
+	if (m0 == m2) {
+		tmp = *m0; m0 = &tmp;
+	}
+
+	vx = m1->m[0][0];
+	vy = m1->m[1][0];
+	vz = m1->m[2][0];
+	m2->m[0][0] = FIX(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
+	m2->m[1][0] = FIX(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
+	m2->m[2][0] = FIX(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
+	vx = m1->m[0][1];
+	vy = m1->m[1][1];
+	vz = m1->m[2][1];
+	m2->m[0][1] = FIX(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
+	m2->m[1][1] = FIX(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
+	m2->m[2][1] = FIX(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
+	vx = m1->m[0][2];
+	vy = m1->m[1][2];
+	vz = m1->m[2][2];
+	m2->m[0][2] = FIX(m0->m[0][0] * vx + m0->m[0][1] * vy + m0->m[0][2] * vz);
+	m2->m[1][2] = FIX(m0->m[1][0] * vx + m0->m[1][1] * vy + m0->m[1][2] * vz);
+	m2->m[2][2] = FIX(m0->m[2][0] * vx + m0->m[2][1] * vy + m0->m[2][2] * vz);
+#endif
 
 	return m2;
 }
@@ -4230,6 +4223,7 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 
 MATRIX* RotMatrixX(long r, MATRIX *m)
 {
+#if 0
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -4257,12 +4251,29 @@ MATRIX* RotMatrixX(long r, MATRIX *m)
 	m->m[2][0] = (short)(iVar4 * sVar1 + iVar5 * m->m[2][0] >> 0xc);
 	m->m[2][1] = (short)(iVar4 * sVar2 + iVar5 * m->m[2][1] >> 0xc);
 	m->m[2][2] = (short)(iVar4 * sVar3 + iVar5 * m->m[2][2] >> 0xc);
-
+#else
+	int s0 = rsin(r);
+	int c0 = rcos(r);
+	int t1, t2;
+	t1 = m->m[1][0];
+	t2 = m->m[2][0];
+	m->m[1][0] = FIX(t1*c0 - t2 * s0);
+	m->m[2][0] = FIX(t1*s0 + t2 * c0);
+	t1 = m->m[1][1];
+	t2 = m->m[2][1];
+	m->m[1][1] = FIX(t1*c0 - t2 * s0);
+	m->m[2][1] = FIX(t1*s0 + t2 * c0);
+	t1 = m->m[1][2];
+	t2 = m->m[2][2];
+	m->m[1][2] = FIX(t1*c0 - t2 * s0);
+	m->m[2][2] = FIX(t1*s0 + t2 * c0);
+#endif
 	return m;
 }
 
 MATRIX* RotMatrixY(long r, MATRIX *m)
 {
+#if 0
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -4299,18 +4310,36 @@ MATRIX* RotMatrixY(long r, MATRIX *m)
 	m->m[2][0] = (iVar7 * sVar1 + iVar8 * sVar2 >> 0xc);
 	m->m[2][1] = (iVar7 * sVar3 + iVar8 * sVar4 >> 0xc);
 	m->m[2][2] = (iVar7 * sVar5 + iVar8 * sVar6 >> 0xc);
-
+#else
+	int s0 = rsin(r);
+	int c0 = rcos(r);
+	int t1, t2;
+	t1 = m->m[0][0];
+	t2 = m->m[2][0];
+	m->m[0][0] = FIX(t1*c0 + t2 * s0);
+	m->m[2][0] = FIX(-t1 * s0 + t2 * c0);
+	t1 = m->m[0][1];
+	t2 = m->m[2][1];
+	m->m[0][1] = FIX(t1*c0 + t2 * s0);
+	m->m[2][1] = FIX(-t1 * s0 + t2 * c0);
+	t1 = m->m[0][2];
+	t2 = m->m[2][2];
+	m->m[0][2] = FIX(t1*c0 + t2 * s0);
+	m->m[2][2] = FIX(-t1 * s0 + t2 * c0);
+#endif
 	return m;
 }
 
 MATRIX* RotMatrixZ(long r, MATRIX *m)
 {
+#if 0
 	short sVar1;
 	short sVar2;
 	short sVar3;
 	short sVar4;
 	short sVar5;
 	short sVar6;
+
 	int iVar7;
 	int iVar8;
 
@@ -4322,6 +4351,7 @@ MATRIX* RotMatrixZ(long r, MATRIX *m)
 		iVar8 = *(int *)(rcossin_tbl + (r & 0xfffU) * 2);
 		iVar7 = (int)(short)iVar8;
 	}
+
 	iVar8 = iVar8 >> 0x10;
 
 	sVar1 = m->m[0][0];
@@ -4335,11 +4365,29 @@ MATRIX* RotMatrixZ(long r, MATRIX *m)
 
 	m->m[0][0] = (iVar8 * sVar1 - iVar7 * sVar2 >> 0xc);
 	m->m[0][1] = (iVar8 * sVar3 - iVar7 * sVar4 >> 0xc);
+
 	m->m[0][2] = (iVar8 * sVar5 - iVar7 * sVar6 >> 0xc);
 	m->m[1][0] = (iVar7 * sVar1 + iVar8 * sVar2 >> 0xc);
+
 	m->m[1][1] = (iVar7 * sVar3 + iVar8 * sVar4 >> 0xc);
 	m->m[1][2] = (iVar7 * sVar5 + iVar8 * sVar6 >> 0xc);
-
+#else
+	int s0 = rsin(r);
+	int c0 = rcos(r);
+	int t1,t2;
+	t1 = m->m[0][0];
+	t2 = m->m[1][0];
+	m->m[0][0] = FIX(t1*c0 - t2*s0);
+	m->m[1][0] = FIX(t1*s0 + t2*c0);
+	t1 = m->m[0][1];
+	t2 = m->m[1][1];
+	m->m[0][1] = FIX(t1*c0 - t2*s0);
+	m->m[1][1] = FIX(t1*s0 + t2*c0);
+	t1 = m->m[0][2];
+	t2 = m->m[1][2];
+	m->m[0][2] = FIX(t1*c0 - t2*s0);
+	m->m[1][2] = FIX(t1*s0 + t2*c0);
+#endif
 	return m;
 }
 
@@ -4411,27 +4459,45 @@ int isin(int x)
 
 int rsin(int a)
 {
+#if 0
 	return isin(a);
+#else
+	if (a < 0)
+		return -rcossin_tbl[(-a & 0xfffU) * 2];
+
+	return rcossin_tbl[(a & 0xfffU) * 2];
+#endif
 }
 
 int rcos(int a)
 {
+#if 0
 	return isin(a + 1024);
+#else
+	if (a < 0) 
+		return rcossin_tbl[(-a & 0xfffU) * 2 + 1];
+
+	return rcossin_tbl[(a & 0xfffU) * 2 + 1];
+#endif
 }
 
 long ratan2(long y, long x)
 {
-#if 1
+#if 0 // don't use it
 	const double ONE_BY_2048 = 1.0 / 2048;
 	const double CONV = 2048.0 / M_PI;
 
 	float real = atan2(double(y) * ONE_BY_2048, double(x) * ONE_BY_2048);
 	return real * CONV;
 #else
-	int iVar3, iVar4;
+	long v;
+	ulong ang;
 
-	bool bVar1 = x < 0;
-	bool bVar2 = y < 0;
+	bool xlt0 = x < 0;
+	bool ylt0 = y < 0;
+
+	if (x == 0 && y == 0)
+		return 0;
 
 	if (x < 0)
 		x = -x;
@@ -4439,72 +4505,32 @@ long ratan2(long y, long x)
 	if (y < 0)
 		y = -y;
 
-	iVar3 = 0;
-
-	if (x != 0 || y != 0) 
+	if (y < x)
 	{
-		if (y < x)
-		{
-			iVar3 = x / 1024;
-			if ((y & 0x7fe00000U) == 0)
-			{
-				iVar4 = (y * 1024) / x;
-				if (x == 0) {
-					//trap(0x1c00); // [A]
-				}
-				if ((x == -1) && (y * 1024 == 0x8000)) {
-					//trap(0x1800); // [A]
-				}
-			}
-			else 
-			{
-				iVar4 = y / iVar3;
-				if (iVar3 == 0) {
-					//trap(0x1c00); // [A]
-				}
-				if ((iVar3 == -1) && (y == 0x8000)) {
-					//trap(0x1800); // [A]
-				}
-			}
-			iVar3 = ratan_tbl[iVar4];
-		}
+		if (((ulong)y & 0x7fe00000U) == 0)
+			ang = (y * 1024) / x;
 		else 
-		{
-			iVar3 = y / 1024;
+			ang = y / (x / 1024);
 
-			if ((x & 0x7fe00000U) == 0)
-			{
-				iVar4 = (x * 1024) / y;
-				if (y == 0) {
-					//trap(0x1c00); // [A]
-				}
-				if ((y == -1) && (x << 10 == 0x8000)) {
-					//trap(0x1800); // [A]
-				}
-			}
-			else 
-			{
-				iVar4 = x / iVar3;
-				if (iVar3 == 0) {
-					//trap(0x1c00); // [A]
-				}
-				if ((iVar3 == -1) && (x == 0x8000)) {
-					//trap(0x1800); // [A]
-				}
-			}
+		v = ratan_tbl[ang];
+	}
+	else 
+	{
+		if(((ulong)x & 0x7fe00000U) == 0)
+			ang = (x * 1024) / y;
+		else 
+			ang = x / (y / 1024);
 
-			iVar3 = 1024 - ratan_tbl[iVar4];
-		}
-		if (bVar1) 
-			iVar3 = 2048 - iVar3;
-		
-		if (bVar2) 
-			iVar3 = -iVar3;
+		v = 1024 - ratan_tbl[ang];
 	}
 
-	printf("ratan2(%d,%d) = %d (real=%g)\n", y, x, iVar3, real);
+	if (xlt0)
+		v = 2048 - v;
+		
+	if (ylt0)
+		v = -v;
 
-	return iVar3;
+	return v;
 #endif
 }
 

@@ -904,7 +904,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 #if 0
 	// THIS IS ALMOST CORRECT
 
-	// Has problems:	uncontrollable sliding
+	// Has problems:
 	//					some unimplemented code
 	int oldCompression;
 	short sVar1;
@@ -1216,7 +1216,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				{
 					sidevel = (rearFS * sidevel) / 4096;
 
-					if ((handlingType[cp->hndType].autoBrakeOn != 1) && (0 < sidevel * cp->wheel_angle))
+					if ((handlingType[cp->hndType].autoBrakeOn != 0) && (0 < sidevel * cp->wheel_angle))
 						cp->hd.autoBrake = -1;
 
 					force.vx = -lfx * cp->thrust;
