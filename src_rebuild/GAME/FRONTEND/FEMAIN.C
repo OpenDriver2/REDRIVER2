@@ -267,10 +267,12 @@ int carSelection = 0;
 int currSelIndex = 0;
 int lastCutCity = -1;
 int lastCity = -1;
+int currMission = -1;
+int missionSetup = 0;
 
 char* ScreenNames[12] = { 0 };
 
-char loaded[3] = { -1, 255, 0 };
+char loaded[3] = { -1, -1, -1 };
 
 PSXSCREEN* pCurrScreen = NULL;
 PSXSCREEN* pNewScreen = NULL;
@@ -1251,6 +1253,9 @@ void ReInitScreens(void)
 
 	gIdleReplay = 0;
 
+	loaded[0] = -1;
+	loaded[1] = -1;
+	loaded[2] = -1;
 	padsConnected[0] = 1;
 	padsConnected[1] = 0;
 	bCdIconSetup = 0;
@@ -1264,6 +1269,8 @@ void ReInitScreens(void)
 
 	ScreenNames[0] = 0;
 	gInFrontend = 1;
+	currMission = -1;
+	missionSetup = 0;
 #endif // !PSX
 
 	if (bCdIconSetup == 0) {
@@ -2664,9 +2671,6 @@ int VibroOnOffScreen(int bSetup)
 		// Start line: 7791
 	/* end block 4 */
 	// End Line: 7792
-
-int currMission = 0;
-int missionSetup = 0;
 
 // [D]
 int MissionSelectScreen(int bSetup)

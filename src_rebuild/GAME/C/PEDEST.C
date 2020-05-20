@@ -2385,9 +2385,9 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	{
 		player[0].cameraView = 5;
 
-		player[0].cameraPos.vx = pCar->hd.where.t[0] - FIXED(iVar7 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800);
+		player[0].cameraPos.vx = pCar->hd.where.t[0] - (FIXED(iVar7 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800));
 		player[0].cameraPos.vy = -200 - pCar->hd.where.t[1];
-		player[0].cameraPos.vz = pCar->hd.where.t[2] + FIXED(iVar7 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800);
+		player[0].cameraPos.vz = pCar->hd.where.t[2] + (FIXED(iVar7 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800));
 	}
 
 	pPed->frame1 = 0;
@@ -2487,9 +2487,9 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 	if (NoPlayerControl == 0 && gInGameCutsceneActive == 0) 
 	{
 		player[0].cameraView = 5;
-		player[0].cameraPos.vx = carToGetIn->hd.where.t[0] - FIXED(iVar5 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800);
+		player[0].cameraPos.vx = carToGetIn->hd.where.t[0] - (FIXED(iVar5 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800));
 		player[0].cameraPos.vy = -200 - carToGetIn->hd.where.t[1];
-		player[0].cameraPos.vz = carToGetIn->hd.where.t[2] + FIXED(iVar5 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800);
+		player[0].cameraPos.vz = carToGetIn->hd.where.t[2] + (FIXED(iVar5 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800));
 	}
 
 	if ((carToGetIn->controlFlags & 4) == 0)
