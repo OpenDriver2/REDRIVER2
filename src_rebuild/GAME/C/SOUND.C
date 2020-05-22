@@ -2278,7 +2278,7 @@ int CalculateVolume(int channel)
 		ofse.vy = pp->vy + player[iVar1].cameraPos.vy;
 		ofse.vz = pp->vz - player[iVar1].cameraPos.vz;
 
-		gte_ldclmv(&ofse);
+		gte_ldlvl(&ofse);
 
 		docop2(0xa00428);
 
