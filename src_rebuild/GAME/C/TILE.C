@@ -347,10 +347,10 @@ void DrawTILES(int tile_amount)
 
 		if (iVar1 < 7001)
 		{
+#ifdef PSX
 			if (Low2HighDetailTable[uVar3] != 0xffff)
 				uVar3 = Low2HighDetailTable[uVar3];
 
-#ifdef PSX
 			if (iVar1 < 2000) 
 				TileNxN(modelpointers[uVar3], 4, 0x4b);
 			else 

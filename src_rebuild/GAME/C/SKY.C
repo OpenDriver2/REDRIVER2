@@ -1104,10 +1104,10 @@ short scratchPad_zbuff[256];
 void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
 	POLYFT4 *pPVar3;
-	POLY_FT4 *local_t2_64;
+	POLY_FT4 *poly;
 
 	pPVar3 = scratchPad_skyPolygonsPtr;
-	local_t2_64 = (POLY_FT4 *)current->primptr;
+	poly = (POLY_FT4 *)current->primptr;
 
 	if ((((((-1 < (int)((uint)(ushort)scratchPad_skyVertices[pPVar3->v0].vy << 0x10)) ||
 		(-1 < (int)((uint)(ushort)scratchPad_skyVertices[pPVar3->v1].vy << 0x10))) ||
@@ -1122,51 +1122,53 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		((scratchPad_skyVertices[pPVar3->v2].vx < 0x141 ||
 		(scratchPad_skyVertices[pPVar3->v3].vx < 0x141)))))) 
 	{
-		setPolyFT4(local_t2_64);
+		setPolyFT4(poly);
 
-		local_t2_64->r0 = r;
-		local_t2_64->g0 = g;
-		local_t2_64->b0 = b;
+		poly->r0 = r;
+		poly->g0 = g;
+		poly->b0 = b;
 
 
-		local_t2_64->x0 = scratchPad_skyVertices[pPVar3->v0].vx;
-		local_t2_64->y0 = scratchPad_skyVertices[pPVar3->v0].vy - offset;
-		local_t2_64->x1 = scratchPad_skyVertices[pPVar3->v1].vx;
-		local_t2_64->y1 = scratchPad_skyVertices[pPVar3->v1].vy - offset;
-		local_t2_64->x2 = scratchPad_skyVertices[pPVar3->v3].vx;
-		local_t2_64->y2 = scratchPad_skyVertices[pPVar3->v3].vy - offset;
-		local_t2_64->x3 = scratchPad_skyVertices[pPVar3->v2].vx;
-		local_t2_64->y3 = scratchPad_skyVertices[pPVar3->v2].vy - offset;
+		poly->x0 = scratchPad_skyVertices[pPVar3->v0].vx;
+		poly->y0 = scratchPad_skyVertices[pPVar3->v0].vy - offset;
+		poly->x1 = scratchPad_skyVertices[pPVar3->v1].vx;
+		poly->y1 = scratchPad_skyVertices[pPVar3->v1].vy - offset;
+		poly->x2 = scratchPad_skyVertices[pPVar3->v3].vx;
+		poly->y2 = scratchPad_skyVertices[pPVar3->v3].vy - offset;
+		poly->x3 = scratchPad_skyVertices[pPVar3->v2].vx;
+		poly->y3 = scratchPad_skyVertices[pPVar3->v2].vy - offset;
 
-		local_t2_64->u0 = skytexuv[skytexnum].u2;
-		local_t2_64->v0 = skytexuv[skytexnum].v2;
-		local_t2_64->u1 = skytexuv[skytexnum].u3;
-		local_t2_64->v1 = skytexuv[skytexnum].v3;
-		local_t2_64->u2 = skytexuv[skytexnum].u0;
-		local_t2_64->v2 = skytexuv[skytexnum].v0;
-		local_t2_64->u3 = skytexuv[skytexnum].u1;
-		local_t2_64->v3 = skytexuv[skytexnum].v1;
-		local_t2_64->clut = skyclut[skytexnum];
-		local_t2_64->tpage = skytpage[skytexnum];
+		poly->u0 = skytexuv[skytexnum].u2;
+		poly->v0 = skytexuv[skytexnum].v2;
+		poly->u1 = skytexuv[skytexnum].u3;
+		poly->v1 = skytexuv[skytexnum].v3;
+		poly->u2 = skytexuv[skytexnum].u0;
+		poly->v2 = skytexuv[skytexnum].v0;
+		poly->u3 = skytexuv[skytexnum].u1;
+		poly->v3 = skytexuv[skytexnum].v1;
+		poly->clut = skyclut[skytexnum];
+		poly->tpage = skytpage[skytexnum];
 
-		addPrim(current->ot + 0x107f, local_t2_64);
+		addPrim(current->ot + 0x107f, poly);
 
 #ifdef PGXP
+		poly->pgxp_index = 0xFFFF;
+		/*
 		// sky needs to be fixed
 		uint lookup0 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v0].vx, scratchPad_skyVertices[pPVar3->v0].vy);
 		uint lookup1 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v1].vx, scratchPad_skyVertices[pPVar3->v1].vy);
 		uint lookup2 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v2].vx, scratchPad_skyVertices[pPVar3->v2].vy);
 		uint lookup3 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v3].vx, scratchPad_skyVertices[pPVar3->v3].vy);
 
-		uint newlookup0 = PGXP_LOOKUP_HALF(local_t2_64->x0, local_t2_64->y0);
-		uint newlookup1 = PGXP_LOOKUP_HALF(local_t2_64->x1, local_t2_64->y1);
-		uint newlookup2 = PGXP_LOOKUP_HALF(local_t2_64->x2, local_t2_64->y2);
-		uint newlookup3 = PGXP_LOOKUP_HALF(local_t2_64->x3, local_t2_64->y3);
+		uint newlookup0 = PGXP_LOOKUP_HALF(poly->x0, poly->y0);
+		uint newlookup1 = PGXP_LOOKUP_HALF(poly->x1, poly->y1);
+		uint newlookup2 = PGXP_LOOKUP_HALF(poly->x2, poly->y2);
+		uint newlookup3 = PGXP_LOOKUP_HALF(poly->x3, poly->y3);
 
-		PGXP_UpdateCacheLookup(lookup0, newlookup0, 0.99f, local_t2_64->pgxp_index);
-		PGXP_UpdateCacheLookup(lookup1, newlookup1, 0.99f, local_t2_64->pgxp_index);
-		PGXP_UpdateCacheLookup(lookup2, newlookup2, 0.99f, local_t2_64->pgxp_index);
-		PGXP_UpdateCacheLookup(lookup3, newlookup3, 0.99f, local_t2_64->pgxp_index);
+		PGXP_UpdateCacheLookup(lookup0, newlookup0, 0.99f, poly->pgxp_index);
+		PGXP_UpdateCacheLookup(lookup1, newlookup1, 0.99f, poly->pgxp_index);
+		PGXP_UpdateCacheLookup(lookup2, newlookup2, 0.99f, poly->pgxp_index);
+		PGXP_UpdateCacheLookup(lookup3, newlookup3, 0.99f, poly->pgxp_index);*/
 #endif
 
 		current->primptr = current->primptr + sizeof(POLY_FT4);
