@@ -8,7 +8,6 @@
 #include "MAIN.H"
 
 #include "LIBGTE.H"
-#include "GTEREG.H"
 #include "INLINE_C.H"
 
 int sky_y_offset[4] = { 14, 14, 14, 14 };

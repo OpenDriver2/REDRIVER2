@@ -14,7 +14,6 @@
 #include "SYSTEM.H"
 
 #include "INLINE_C.H"
-#include "GTEREG.H"
 #include "LIBMATH.H"
 
 _HANDLING_TYPE handlingType[7] =

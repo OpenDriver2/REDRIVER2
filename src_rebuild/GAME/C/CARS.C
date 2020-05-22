@@ -22,7 +22,6 @@
 #include "PLAYERS.H"
 #include "../ASM/ASMTEST.H"
 
-#include "GTEREG.H"
 #include "INLINE_C.H"
 #include "LIBAPI.H"
 

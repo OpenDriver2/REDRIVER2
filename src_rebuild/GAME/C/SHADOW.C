@@ -7,7 +7,6 @@
 #include "DRAW.H"
 
 #include "INLINE_C.H"
-#include "GTEREG.H"
 #include "STRINGS.H"
 
 // decompiled code

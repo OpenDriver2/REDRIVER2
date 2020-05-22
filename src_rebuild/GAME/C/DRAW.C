@@ -1,7 +1,6 @@
 #include "THISDUST.H"
 
 #include "INLINE_C.H"
-#include "GTEREG.H"
 
 #include "DRAW.H"
 #include "MAIN.H"

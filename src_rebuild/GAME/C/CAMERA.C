@@ -19,7 +19,6 @@
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
-#include "GTEREG.H"
 
 
 VECTOR CameraPos =

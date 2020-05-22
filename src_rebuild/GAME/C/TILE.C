@@ -8,7 +8,6 @@
 #include "TEXTURE.H"
 #include "../ASM/ASMTEST.H"
 
-#include "GTEREG.H"
 #include "INLINE_C.H"
 
 // decompiled code

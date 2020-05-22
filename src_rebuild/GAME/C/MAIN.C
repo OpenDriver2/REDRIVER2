@@ -1892,7 +1892,7 @@ void StepGame(void)
 	float aspectVar = float(screenH) / float(screenW);
 
 	FrAng = ratan2(160, float(scr_z) * aspectVar* 1.35f);
-
+	
 	aspect.m[0][0] = 5500 * aspectVar;
 	aspect.m[0][1] = 0;
 	aspect.m[0][2] = 0;
@@ -1904,6 +1904,7 @@ void StepGame(void)
 	aspect.m[2][0] = 0;
 	aspect.m[2][1] = 0;
 	aspect.m[2][2] = 4096;
+	
 #else
 	FrAng = ratan2(160, scr_z);
 #endif

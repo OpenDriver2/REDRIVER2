@@ -5,7 +5,6 @@
 #include "LIBETC.H"
 #include "LIBGTE.H"
 
-#include "GTEREG.H"
 #include "INLINE_C.H"
 
 #include "CAMERA.H"

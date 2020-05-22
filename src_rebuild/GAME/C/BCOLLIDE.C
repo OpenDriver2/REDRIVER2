@@ -18,7 +18,6 @@
 #include "OBJANIM.H"
 
 #include "STRINGS.H"
-#include "GTEREG.H"
 #include "INLINE_C.H"
 #include <stdlib.h>
 
