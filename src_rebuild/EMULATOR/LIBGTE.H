@@ -2,6 +2,20 @@
 #define LIBGTE_H
 
 #include "TYPES.H"
+#include "GTE/half_float.h"
+
+#ifdef PGXP
+struct PGXPVData
+{
+	uint lookup;
+	half z;
+};
+
+extern int g_pgxpVertexIndex;
+
+void PGXP_ClearCache();
+bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
+#endif
 
 extern short rcossin_tbl[8192];
 
@@ -180,21 +194,5 @@ extern long SquareRoot0(long a);
 extern int rsin(int a);
 extern int rcos(int a);
 extern long ratan2(long y, long x);
-
-#if defined(PGXP)
-#define MAX_NUM_VERTICES 32768
-
-struct PGXPVertex
-{
-	unsigned int originalSXY2;
-	float x;
-	float y;
-	float z;
-};
-
-extern struct PGXPVertex pgxp_vertex_buffer[MAX_NUM_VERTICES];
-extern int pgxp_vertex_index;
-extern int pgxp_vertex_count;
-#endif
 
 #endif

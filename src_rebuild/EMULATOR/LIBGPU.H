@@ -3,6 +3,14 @@
 
 #include "LIBGTE.H"
 
+#ifdef PGXP
+#include "GTE/half_float.h"
+typedef half VERTTYPE;
+#else
+typedef short VERTTYPE;
+#endif
+
+
 extern	int (*GPU_printf)(const char *fmt, ...);
 
 #define WAIT_TIME	0x800000
@@ -181,9 +189,6 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 
 #define LEN_OFFSET (4)
 
-#if defined(PGXP)
-#define setpgxpindex(p, _pgxp_index) (((P_TAG *)(p))->pgxp_index  = (u_short)(_pgxp_index))
-#endif
 #define setlen( p, _len) 	(((P_TAG *)(p))->len  = (u_char)(_len))
 #define setaddr(p, _addr)	(((P_TAG *)(p))->addr = (u_long)(_addr))
 #define setcode(p, _code)	(((P_TAG *)(p))->code = (u_char)(_code))
@@ -195,10 +200,13 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 #define isendprim(p) 		((((P_TAG *)(p))->addr)==0xffffff)
 
 #if defined(PGXP)
-#define addPrim(ot, p)		setaddr(p, getaddr(ot)), setaddr(ot, p), setpgxpindex(p, pgxp_vertex_index)
+#define setpgxpindex(p, _pgxp_index) (((P_TAG *)(p))->pgxp_index = (u_short)(_pgxp_index))
+#define addPrim(ot, p)		setaddr(p, getaddr(ot)), setaddr(ot, p), setpgxpindex(p, g_pgxpVertexIndex)
 #else
 #define addPrim(ot, p)		setaddr(p, getaddr(ot)), setaddr(ot, p)
 #endif
+
+
 #define addPrims(ot, p0, p1)	setaddr(p1, getaddr(ot)),setaddr(ot, p0)
 
 #define catPrim(p0, p1)		setaddr(p0, p1)
@@ -383,9 +391,9 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
-	short	x1,	y1;
-	short	x2,	y2;
+	VERTTYPE	x0, y0;
+	VERTTYPE	x1,	y1;
+	VERTTYPE	x2,	y2;
 } POLY_F3;				/* Flat Triangle */
 
 typedef struct {
@@ -401,10 +409,10 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
-	short	x1,	y1;
-	short	x2,	y2;
-	short	x3,	y3;
+	VERTTYPE	x0, y0;
+	VERTTYPE	x1,	y1;
+	VERTTYPE	x2,	y2;
+	VERTTYPE	x3,	y3;
 } POLY_F4;				/* Flat Quadrangle */
 
 typedef struct {
@@ -420,11 +428,11 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	u1, v1;	u_short	tpage;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_char	u2, v2;	u_short	pad1;
 } POLY_FT3;				/* Flat Textured Triangle */
 
@@ -441,13 +449,13 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	u1, v1;	u_short	tpage;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_char	u2, v2;	u_short	pad1;
-	short	x3,	y3;
+	VERTTYPE	x3,	y3;
 	u_char	u3, v3;	u_short	pad2;
 } POLY_FT4;				/* Flat Textured Quadrangle */
 
@@ -464,11 +472,11 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	r1, g1, b1, pad1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	r2, g2, b2, pad2;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 } POLY_G3;				/* Gouraud Triangle */
 
 typedef struct {
@@ -484,13 +492,13 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	r1, g1, b1, pad1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	r2, g2, b2, pad2;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_char	r3, g3, b3, pad3;
-	short	x3,	y3;
+	VERTTYPE	x3,	y3;
 } POLY_G4;				/* Gouraud Quadrangle */
 
 typedef struct {
@@ -506,13 +514,13 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
 	u_char	r1, g1, b1, p1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	u1, v1;	u_short	tpage;
 	u_char	r2, g2, b2, p2;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_char	u2, v2;	u_short	pad2;
 } POLY_GT3;				/* Gouraud Textured Triangle */
 
@@ -529,16 +537,16 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
 	u_char	r1, g1, b1, p1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	u1, v1;	u_short	tpage;
 	u_char	r2, g2, b2, p2;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_char	u2, v2;	u_short	pad2;
 	u_char	r3, g3, b3, p3;//10
-	short	x3,	y3;//11
+	VERTTYPE	x3,	y3;//11
 	u_char	u3, v3;	u_short	pad3;
 } POLY_GT4;				/* Gouraud Textured Quadrangle */
 
@@ -558,8 +566,8 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
-	short	x1,	y1;
+	VERTTYPE	x0, 	y0;
+	VERTTYPE	x1,	y1;
 } LINE_F2;				/* Unconnected Flat Line */
 
 typedef struct {
@@ -575,9 +583,9 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	r1, g1, b1, p1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 } LINE_G2;				/* Unconnected Gouraud Line */
 
 typedef struct {
@@ -593,9 +601,9 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
-	short	x1,	y1;
-	short	x2,	y2;
+	VERTTYPE	x0, 	y0;
+	VERTTYPE	x1,	y1;
+	VERTTYPE	x2,	y2;
 	u_long	pad;
 } LINE_F3;				/* 2 connected Flat Line */
 
@@ -612,11 +620,11 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	r1, g1, b1, p1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	r2, g2, b2, p2;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_long	pad;
 } LINE_G3;				/* 2 connected Gouraud Line */
 
@@ -633,10 +641,10 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
-	short	x1,	y1;
-	short	x2,	y2;
-	short	x3,	y3;
+	VERTTYPE	x0, 	y0;
+	VERTTYPE	x1,	y1;
+	VERTTYPE	x2,	y2;
+	VERTTYPE	x3,	y3;
 	u_long	pad;
 } LINE_F4;				/* 3 connected Flat Line Quadrangle */
 
@@ -653,13 +661,13 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	r1, g1, b1, p1;
-	short	x1,	y1;
+	VERTTYPE	x1,	y1;
 	u_char	r2, g2, b2, p2;
-	short	x2,	y2;
+	VERTTYPE	x2,	y2;
 	u_char	r3, g3, b3, p3;
-	short	x3,	y3;
+	VERTTYPE	x3,	y3;
 	u_long	pad;
 } LINE_G4;				/* 3 connected Gouraud Line */
 
@@ -679,9 +687,9 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
-	short	w,	h;
+	VERTTYPE	w,	h;
 } SPRT;					/* free size Sprite */
 
 typedef struct {
@@ -697,7 +705,7 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
 } SPRT_16;				/* 16x16 Sprite */
 		   
@@ -714,7 +722,7 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 	u_char	u0, v0;	u_short	clut;
 } SPRT_8;				/* 8x8 Sprite */
 		   
@@ -734,8 +742,8 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
-	short	w,	h;
+	VERTTYPE	x0, 	y0;
+	VERTTYPE	w,	h;
 } TILE;					/* free size Tile */
 
 typedef struct {
@@ -751,7 +759,7 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 } TILE_16;				/* 16x16 Tile */
 
 typedef struct {
@@ -767,7 +775,7 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 } TILE_8;				/* 8x8 Tile */
 
 typedef struct {
@@ -783,7 +791,7 @@ typedef struct {
 	u_long	tag;
 #endif
 	u_char	r0, g0, b0, code;
-	short	x0, 	y0;
+	VERTTYPE	x0, 	y0;
 } TILE_1;				/* 1x1 Tile */
 
 /*

@@ -139,6 +139,40 @@ extern int docop2(int op);
 	MTC2(*(uint*)((char*)r2+0), 4);\
 	MTC2(*(uint*)((char*)r2+4), 5);
 
+#ifdef PGXP
+#include "GTE/half_float.h"
+struct HalfVector3D
+{
+	half x, y, z;
+};
+
+extern HalfVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
+extern HalfVector3D g_FP_SXYZ1;
+extern HalfVector3D g_FP_SXYZ2;
+
+// swc2 14
+#define gte_stsxy( r0 ) \
+	*(uint*)((char*)r0) = *(uint*)&g_FP_SXYZ2.x;
+
+// mfc2 12-14
+#define gte_stsxy3( r0, r1, r2 )	\
+	*(uint*)((char*)r0) = *(uint*)&g_FP_SXYZ0.x;\
+	*(uint*)((char*)r1) = *(uint*)&g_FP_SXYZ1.x;\
+	*(uint*)((char*)r2) = *(uint*)&g_FP_SXYZ2.x;
+
+// swc2 14
+#define gte_stsxy2( r0 ) gte_stsxy(r0)
+
+// swc2 13
+#define gte_stsxy1( r0 ) \
+	*(uint*)((char*)r0) = *(uint*)&g_FP_SXYZ1.x;
+
+// swc2 12
+#define gte_stsxy0( r0 ) \
+	*(uint*)((char*)r0) = *(uint*)&g_FP_SXYZ0.x;
+
+#else
+
 // swc2 14
 #define gte_stsxy( r0 ) \
 	*(uint*)((char*)r0) = MFC2(14);
@@ -159,6 +193,8 @@ extern int docop2(int op);
 // swc2 12
 #define gte_stsxy0( r0 ) \
 	*(uint*)((char*)r0) = MFC2(12);
+
+#endif
 
 // swc2 8
 #define gte_stdp( r0 ) \

@@ -18,16 +18,6 @@
 
 #define WIDE_SCREEN (0)
 
-#if defined(PGXP)
-#define MAX_NUM_VERTICES 32768
-//Index of last vertex added to vertex buffer
-int pgxp_vertex_index = 0;
-
-int pgxp_vertex_count = 0;
-
-struct PGXPVertex pgxp_vertex_buffer[MAX_NUM_VERTICES];
-#endif
-
 #if !defined(GTE_EXTERNAL)
 
 GTERegisters gteRegs;
@@ -482,6 +472,46 @@ int Lm_H(long long value, int sf) {
     return value_12;
 }
 
+#ifdef PGXP
+HalfVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
+HalfVector3D g_FP_SXYZ1;
+HalfVector3D g_FP_SXYZ2;
+
+PGXPVData g_pgxpCache[65535];
+int g_pgxpVertexIndex = 0;
+
+void PGXP_ClearCache()
+{
+	g_pgxpVertexIndex = 0;
+}
+
+bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
+{
+	if (indexhint == 0xFFFF)
+	{
+		out.z = 1.0f;
+		return false;
+	}
+
+	int start = indexhint - 8; // index hint allows us to start from specific index
+
+	for (int i = max(0, start); i < g_pgxpVertexIndex; i++)
+	{
+		if (g_pgxpCache[i].lookup == lookup)
+		{
+			out = g_pgxpCache[i];
+			return true;
+		}
+	}
+
+	// fill with default values
+	out.z = 1.0f;
+
+	return false;
+}
+
+#endif // PGXP
+
 int docop2(int op) {
     int v;
     int lm;
@@ -518,10 +548,41 @@ int docop2(int op) {
         SY2 = int(Lm_G2(F((long long)OFY + ((long long)IR2 * h_over_sz3)) >> 16));
 
 #if defined(PGXP)
-        pgxp_vertex_buffer[pgxp_vertex_index].originalSXY2 = SXY2;
-        pgxp_vertex_buffer[pgxp_vertex_index].x = (Lm_G1_ia((long long)OFX + (long long)(IR1 * h_over_sz3))) / (float)(1 << 16);
-        pgxp_vertex_buffer[pgxp_vertex_index].y = (Lm_G2_ia((long long)OFY + (long long)(IR2 * h_over_sz3))) / (float)(1 << 16);
-        pgxp_vertex_buffer[pgxp_vertex_index++].z = max(SZ3, H / 2) / (float)(1 << 16);
+		{
+			g_FP_SXYZ0 = g_FP_SXYZ1;
+			g_FP_SXYZ1 = g_FP_SXYZ2;
+
+			g_FP_SXYZ2.x = (double(OFX) + double(float(IR1) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.y = (double(OFY) + double(float(IR2) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
+
+			PGXPVData vdata;
+			vdata.lookup = g_FP_SXYZ2.x.sh | (g_FP_SXYZ2.y.sh << 16);		// hash short values
+			vdata.z = g_FP_SXYZ2.z;		// store Z
+
+			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
+		}
+
+		//{
+		//	const double one_by_4096 = 1.0f / 4096.0f;
+		//	const double one_by_65k = 1.0f / (128.0f*1024.0f);
+
+		//	double fMAC1 = ((double)((float)TRX * 4096.0f) + ((float)R11 * (float)VX0) + ((float)R12 * (float)VY0) + ((float)R13 * (float)VZ0));
+		//	double fMAC2 = ((double)((float)TRY * 4096.0f) + ((float)R21 * (float)VX0) + ((float)R22 * (float)VY0) + ((float)R23 * (float)VZ0));
+		//	double fMAC3 = ((double)((float)TRZ * 4096.0f) + ((float)R31 * (float)VX0) + ((float)R32 * (float)VY0) + ((float)R33 * (float)VZ0));
+
+		//	double fIR1 = one_by_4096 * fMAC1;
+		//	double fIR2 = one_by_4096 * fMAC2;
+
+		//	g_FP_SXYZ0 = g_FP_SXYZ1;
+		//	g_FP_SXYZ1 = g_FP_SXYZ2;
+
+		//	double scale = h_over_sz3;// 4096.0f; // h_over_sz3
+
+		//	g_FP_SXYZ2.x = (double(OFX) + fIR1 * scale) / float(1 << 16);
+		//	g_FP_SXYZ2.y = (double(OFY) + fIR2 * scale) / float(1 << 16);
+		//	g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
+		//}
 #endif
         MAC0 = int(F((long long)DQB + ((long long)DQA * h_over_sz3)));
         IR0 = Lm_H(m_mac0, 1);
@@ -890,7 +951,8 @@ int docop2(int op) {
         GTELOG("%08x RTPT", op);
 #endif
 
-        for (v = 0; v < 3; v++) {
+        for (v = 0; v < 3; v++) 
+		{
             MAC1 = A1(/*int44*/(long long)((long long)TRX << 12) + (R11 * VX(v)) + (R12 * VY(v)) + (R13 * VZ(v)));
             MAC2 = A2(/*int44*/(long long)((long long)TRY << 12) + (R21 * VX(v)) + (R22 * VY(v)) + (R23 * VZ(v)));
             MAC3 = A3(/*int44*/(long long)((long long)TRZ << 12) + (R31 * VX(v)) + (R32 * VY(v)) + (R33 * VZ(v)));
@@ -908,10 +970,18 @@ int docop2(int op) {
             SY2 = Lm_G2(F((long long)OFY + ((long long)IR2 * h_over_sz3)) >> 16);
 
 #if defined(PGXP)
-            pgxp_vertex_buffer[pgxp_vertex_index].originalSXY2 = SXY2;
-            pgxp_vertex_buffer[pgxp_vertex_index].x = Lm_G1_ia((long long)OFX + (long long)(IR1 * h_over_sz3)) / (float)(1 << 16);
-            pgxp_vertex_buffer[pgxp_vertex_index].y = Lm_G2_ia((long long)OFY + (long long)(IR2 * h_over_sz3)) / (float)(1 << 16);
-            pgxp_vertex_buffer[pgxp_vertex_index++].z = max(SZ3, H / 2) / (float)(1 << 16);
+			g_FP_SXYZ0 = g_FP_SXYZ1;
+			g_FP_SXYZ1 = g_FP_SXYZ2;
+
+			g_FP_SXYZ2.x = (double(OFX) + double(float(IR1) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.y = (double(OFY) + double(float(IR2) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
+
+			PGXPVData vdata;
+			vdata.lookup = g_FP_SXYZ2.x.sh | (g_FP_SXYZ2.y.sh << 16);		// hash short values
+			vdata.z = g_FP_SXYZ2.z;		// store Z
+
+			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 #endif
         }
 

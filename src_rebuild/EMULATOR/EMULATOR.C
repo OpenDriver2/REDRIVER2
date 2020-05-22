@@ -479,23 +479,23 @@ void Emulator_CounterLoop()
 	}
 }
 
-void Emulator_GenerateLineArray(struct Vertex* vertex, short* p0, short* p1)
+void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
 {
 	// swap line coordinates for left-to-right and up-to-bottom direction
 	if (p0[0] > p1[0]) {
-		short *tmp = p0;
+		VERTTYPE *tmp = p0;
 		p0 = p1;
 		p1 = tmp;
 	} else if (p0[0] == p1[0]) {
 		 if (p0[1] > p1[1]) {
-			short *tmp = p0;
+			 VERTTYPE *tmp = p0;
 			p0 = p1;
 			p1 = tmp;
 		 }
 	}
 
-	int dx = p1[0] - p0[0];
-	int dy = p1[1] - p0[1];
+	VERTTYPE dx = p1[0] - p0[0];
+	VERTTYPE dy = p1[1] - p0[1];
 
 	if (dx > abs(dy)) { // horizontal
 		vertex[0].x = p0[0];
@@ -524,106 +524,12 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, short* p0, short* p1)
 	} // TODO diagonal line alignment
 }
 
-void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, short* p0, short* p1, short* p2)
+void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx)
 {
 	assert(p0);
 	assert(p1);
 	assert(p2);
 
-#if defined(GTE_EXTERNAL)
-	float halfW, halfH;
-	halfW = (float)activeDispEnv.disp.w * 0.5f;
-	halfH = (float)activeDispEnv.disp.h * 0.5f;
-
-	OGLVertex pgv0, pgv1, pgv2;
-	PGXP_GetVertex(0, (uint*)p0, &pgv0, halfW, halfH);
-	PGXP_GetVertex(0, (uint*)p1, &pgv1, halfW, halfH);
-	PGXP_GetVertex(0, (uint*)p2, &pgv2, halfW, halfH);
-
-	vertex[0].x = pgv0.x;
-	vertex[0].y = pgv0.y;
-
-	vertex[1].x = pgv1.x;
-	vertex[1].y = pgv1.y;
-
-	vertex[2].x = pgv2.x;
-	vertex[2].y = pgv2.y;
-
-#elif defined(PGXP)
-
-	PGXPVertex* pgxp_vertex_0 = NULL;
-	PGXPVertex* pgxp_vertex_1 = NULL;
-	PGXPVertex* pgxp_vertex_2 = NULL;
-
-	//Locate each vertex based on SXY2 (very slow)
-	for (int i = 0; i < pgxp_vertex_index; i++)
-	{
-		if (pgxp_vertex_0 && pgxp_vertex_1 && pgxp_vertex_2) {
-			break;
-		}
-
-		if (pgxp_vertex_0 == NULL)
-		{
-			if (((unsigned int*)p0)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_0 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-
-		if (pgxp_vertex_1 == NULL)
-		{
-			if (((unsigned int*)p1)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_1 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-
-		if (pgxp_vertex_2 == NULL)
-		{
-			if (((unsigned int*)p2)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_2 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-	}
-
-	//Copy over position
-	if (pgxp_vertex_0 != NULL)
-	{
-		vertex[0].x = pgxp_vertex_0->x;
-		vertex[0].y = pgxp_vertex_0->y;
-	}
-	else
-	{
-		vertex[0].x = (float)p0[0];
-		vertex[0].y = (float)p0[1];
-	}
-
-	if (pgxp_vertex_1 != NULL)
-	{
-		vertex[1].x = pgxp_vertex_1->x;
-		vertex[1].y = pgxp_vertex_1->y;
-	}
-	else
-	{
-		vertex[1].x = (float)p1[0];
-		vertex[1].y = (float)p1[1];
-	}
-
-	if (pgxp_vertex_2 != NULL)
-	{
-		vertex[2].x = pgxp_vertex_2->x;
-		vertex[2].y = pgxp_vertex_2->y;
-	}
-	else
-	{
-		vertex[2].x = (float)p2[0];
-		vertex[2].y = (float)p2[1];
-	}
-#else
 	vertex[0].x = p0[0];
 	vertex[0].y = p0[1];
 
@@ -632,133 +538,35 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, short* p0, shor
 
 	vertex[2].x = p2[0];
 	vertex[2].y = p2[1];
+
+#ifdef PGXP
+	uint lookup0 = p0[0].sh | (p0[1].sh << 16);
+	uint lookup1 = p1[0].sh | (p1[1].sh << 16);
+	uint lookup2 = p2[0].sh | (p2[1].sh << 16);
+
+	PGXPVData vd0, vd1, vd2;
+
+	PGXP_GetCacheData(vd0, lookup0, gteidx);
+	vertex[0].w = vd0.z;
+	vertex[0].z = 0.95f;
+
+	PGXP_GetCacheData(vd1, lookup1, gteidx);
+	vertex[1].w = vd1.z;
+	vertex[1].z = 0.95f;
+
+	PGXP_GetCacheData(vd2, lookup2, gteidx);
+	vertex[2].w = vd2.z;
+	vertex[2].z = 0.95f;
 #endif
 }
 
-void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, short* p0, short* p1, short* p2, short* p3)
+void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx)
 {
 	assert(p0);
 	assert(p1);
 	assert(p2);
 	assert(p3);
 
-#if defined(GTE_EXTERNAL)
-	float halfW, halfH;
-	halfW = (float)activeDispEnv.disp.w * 0.5f;
-	halfH = (float)activeDispEnv.disp.h * 0.5f;
-
-	OGLVertex pgv0, pgv1, pgv2, pgv3;
-	PGXP_GetVertex(0, (uint*)p0, &pgv0, halfW, halfH);
-	PGXP_GetVertex(0, (uint*)p1, &pgv1, halfW, halfH);
-	PGXP_GetVertex(0, (uint*)p2, &pgv2, halfW, halfH);
-	PGXP_GetVertex(0, (uint*)p3, &pgv3, halfW, halfH);
-
-	vertex[0].x = pgv0.x;
-	vertex[0].y = pgv0.y;
-
-	vertex[1].x = pgv1.x;
-	vertex[1].y = pgv1.y;
-
-	vertex[2].x = pgv2.x;
-	vertex[2].y = pgv2.y;
-
-	vertex[3].x = pgv3.x;
-	vertex[3].y = pgv3.y;
-#elif defined(PGXP)
-	PGXPVertex* pgxp_vertex_0 = NULL;
-	PGXPVertex* pgxp_vertex_1 = NULL;
-	PGXPVertex* pgxp_vertex_2 = NULL;
-	PGXPVertex* pgxp_vertex_3 = NULL;
-
-	//Locate each vertex based on SXY2 (very slow)
-	for (int i = 0; i < pgxp_vertex_index; i++)
-	{
-		if (pgxp_vertex_0 && pgxp_vertex_1 && pgxp_vertex_2 && pgxp_vertex_3) {
-			break;
-		}
-
-		if (pgxp_vertex_0 == NULL)
-		{
-			if (((unsigned int*)p0)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_0 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-
-		if (pgxp_vertex_1 == NULL)
-		{
-			if (((unsigned int*)p1)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_1 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-
-		if (pgxp_vertex_2 == NULL)
-		{
-			if (((unsigned int*)p2)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_2 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-
-		if (pgxp_vertex_3 == NULL)
-		{
-			if (((unsigned int*)p3)[0] == pgxp_vertex_buffer[i].originalSXY2)
-			{
-				pgxp_vertex_3 = &pgxp_vertex_buffer[i];
-				continue;
-			}
-		}
-	}
-
-	//Copy over position
-	if (pgxp_vertex_0 != NULL)
-	{
-		vertex[0].x = pgxp_vertex_0->x;
-		vertex[0].y = pgxp_vertex_0->y;
-	}
-	else
-	{
-		vertex[0].x = (float)p0[0];
-		vertex[0].y = (float)p0[1];
-	}
-
-	if (pgxp_vertex_1 != NULL)
-	{
-		vertex[1].x = pgxp_vertex_1->x;
-		vertex[1].y = pgxp_vertex_1->y;
-	}
-	else
-	{
-		vertex[1].x = (float)p1[0];
-		vertex[1].y = (float)p1[1];
-	}
-
-	if (pgxp_vertex_2 != NULL)
-	{
-		vertex[2].x = pgxp_vertex_2->x;
-		vertex[2].y = pgxp_vertex_2->y;
-	}
-	else
-	{
-		vertex[2].x = (float)p2[0];
-		vertex[2].y = (float)p2[1];
-	}
-
-	if (pgxp_vertex_3 != NULL)
-	{
-		vertex[3].x = pgxp_vertex_3->x;
-		vertex[3].y = pgxp_vertex_3->y;
-	}
-	else
-	{
-		vertex[3].x = (float)p3[0];
-		vertex[3].y = (float)p3[1];
-	}
-#else
 	vertex[0].x = p0[0];
 	vertex[0].y = p0[1];
 
@@ -770,66 +578,37 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, short* p0, short* p
 
 	vertex[3].x = p3[0];
 	vertex[3].y = p3[1];
+
+#ifdef PGXP
+	uint lookup0 = p0[0].sh | (p0[1].sh << 16);
+	uint lookup1 = p1[0].sh | (p1[1].sh << 16);
+	uint lookup2 = p2[0].sh | (p2[1].sh << 16);
+	uint lookup3 = p3[0].sh | (p3[1].sh << 16);
+
+	PGXPVData vd0, vd1, vd2, vd3;
+
+	PGXP_GetCacheData(vd0, lookup0, gteidx);
+	vertex[0].w = vd0.z;
+	vertex[0].z = 0.95f;
+
+	PGXP_GetCacheData(vd1, lookup1, gteidx);
+	vertex[1].w = vd1.z;
+	vertex[1].z = 0.95f;
+
+	PGXP_GetCacheData(vd2, lookup2, gteidx);
+	vertex[2].w = vd2.z;
+	vertex[2].z = 0.95f;
+
+	PGXP_GetCacheData(vd3, lookup3, gteidx);
+	vertex[3].w = vd3.z;
+	vertex[3].z = 0.95f;
 #endif
 }
 
-void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, short* p0, short w, short h)
+void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short w, short h, ushort gteidx)
 {
 	assert(p0);
 
-#if defined(GTE_EXTERNAL)
-	float halfW, halfH;
-	halfW = (float)activeDispEnv.disp.w * 0.5f;
-	halfH = (float)activeDispEnv.disp.h * 0.5f;
-
-	OGLVertex pgv0;
-	PGXP_GetVertex(0, (uint*)p0, &pgv0, halfW, halfH);
-
-
-	vertex[0].x = pgv0.x;
-	vertex[0].y = pgv0.y;
-
-	vertex[1].x = vertex[0].x;
-	vertex[1].y = vertex[0].y + h;
-
-	vertex[2].x = vertex[0].x + w;
-	vertex[2].y = vertex[0].y + h;
-
-	vertex[3].x = vertex[0].x + w;
-	vertex[3].y = vertex[0].y;
-#elif defined(PGXP)
-	PGXPVertex* pgxp_vertex_0 = NULL;
-
-	//Locate each vertex based on SXY2 (very slow)
-	for (int i = 0; i < pgxp_vertex_index; i++)
-	{
-		if (((unsigned int*)p0)[0] == pgxp_vertex_buffer[i].originalSXY2)
-		{
-			pgxp_vertex_0 = &pgxp_vertex_buffer[i];
-			break;
-		}
-	}
-
-	if (pgxp_vertex_0 != NULL)
-	{
-		vertex[0].x = pgxp_vertex_0->x;
-		vertex[0].y = pgxp_vertex_0->y;
-	}
-	else
-	{
-		vertex[0].x = (float)p0[0];
-		vertex[0].y = (float)p0[1];
-	}
-
-	vertex[1].x = vertex[0].x;
-	vertex[1].y = vertex[0].y + h;
-
-	vertex[2].x = vertex[0].x + w;
-	vertex[2].y = vertex[0].y + h;
-
-	vertex[3].x = vertex[0].x + w;
-	vertex[3].y = vertex[0].y;
-#else
 	vertex[0].x = p0[0];
 	vertex[0].y = p0[1];
 
@@ -841,6 +620,14 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, short* p0, short w,
 
 	vertex[3].x = vertex[0].x + w;
 	vertex[3].y = vertex[0].y;
+
+#ifdef PGXP
+	uint lookup0 = p0[0].sh | (p0[1].sh << 16);
+
+	PGXPVData vd0;
+	PGXP_GetCacheData(vd0, lookup0, gteidx);
+	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = vd0.z;
+	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.95f;
 #endif
 }
 
@@ -851,108 +638,6 @@ void Emulator_GenerateTexcoordArrayQuad(struct Vertex* vertex, unsigned char* uv
 	assert(uv2);
 	assert(uv3);
 
-#if defined(PGXP) && 0
-	/*
-	Locate polygon in ztable
-	*/
-
-	PGXPPolygon* z0 = NULL;
-	PGXPPolygon* z1 = NULL;
-	PGXPPolygon* z2 = NULL;
-	PGXPPolygon* z3 = NULL;
-
-	//Can speed this up by storing last index found and using as start iter
-	for (int i = pgxp_polgon_table_index; i > -1; i--)
-	{
-		if (uv0 != NULL)
-		{
-			if (((unsigned int*)uv0)[0] == pgxp_polygons[i].originalSXY)
-			{
-				z0 = &pgxp_polygons[i];
-				//z0->bUsed = TRUE;
-			}
-		}
-
-		if (uv1 != NULL)
-		{
-			if (((unsigned int*)uv1)[0] == pgxp_polygons[i].originalSXY)
-			{
-				z1 = &pgxp_polygons[i];
-				//z1->bUsed = TRUE;
-			}
-		}
-
-		if (uv2 != NULL)
-		{
-			if (((unsigned int*)uv2)[0] == pgxp_polygons[i].originalSXY)
-			{
-				z2 = &pgxp_polygons[i];
-				//z2->bUsed = TRUE;
-			}
-		}
-
-		if (uv3 != NULL)
-		{
-			if (((unsigned int*)uv3)[0] == pgxp_polygons[i].originalSXY)
-			{
-				z3 = &pgxp_polygons[i];
-				//z3->bUsed = TRUE;
-			}
-		}
-
-		if ((z0 != NULL || uv0 == NULL) && (z1 != NULL || uv1 == NULL) && (z2 != NULL || uv2 == NULL) && (z3 != NULL || uv3 == NULL))
-			break;
-	}
-
-	//Copy over uvs
-	if (uv0 != NULL)
-	{
-		vertex[0].x = p0[0];
-		vertex[0].y = p0[1];
-	}
-
-	if (uv1 != NULL)
-	{
-		vertex[1].x = p1[0];
-		vertex[1].y = p1[1];
-	}
-	else
-	{
-		if (w != -1 && h != -1)
-		{
-			vertex[1].x = p0[0];
-			vertex[1].y = p0[1] + h;
-		}
-	}
-
-	if (uv2 != NULL)
-	{
-		vertex[2].x = p2[0];
-		vertex[2].y = p2[1];
-	}
-	else
-	{
-		if (w != -1 && h != -1)
-		{
-			vertex[2].x = p0[0] + w;
-			vertex[2].y = p0[1] + h;
-		}
-	}
-
-	if (uv3 != NULL)
-	{
-		vertex[3].x = p3[0];
-		vertex[3].y = p3[1];
-	}
-	else
-	{
-		if (w != -1 && h != -1)
-		{
-			vertex[3].x = p0[0] + w;
-			vertex[3].y = p0[1];
-		}
-	}
-#else
 	const unsigned char bright = 2;
 
 	vertex[0].u      = uv0[0];
@@ -982,7 +667,6 @@ void Emulator_GenerateTexcoordArrayQuad(struct Vertex* vertex, unsigned char* uv
 	vertex[3].dither = dither;
 	vertex[3].page   = page;
 	vertex[3].clut   = clut;
-#endif
 }
 
 void Emulator_GenerateTexcoordArrayTriangle(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither)
@@ -991,9 +675,6 @@ void Emulator_GenerateTexcoordArrayTriangle(struct Vertex* vertex, unsigned char
 	assert(uv1);
 	assert(uv2);
 
-#if defined(PGXP) && 0
-	#error COPY IMPLEMENTATION FROM Emulator_GenerateTexcoordArrayQuad
-#else
 	const unsigned char bright = 2;
 
 	vertex[0].u      = uv0[0];
@@ -1016,7 +697,6 @@ void Emulator_GenerateTexcoordArrayTriangle(struct Vertex* vertex, unsigned char
 	vertex[2].dither = dither;
 	vertex[2].page   = page;
 	vertex[2].clut   = clut;
-#endif
 }
 
 void Emulator_GenerateTexcoordArrayRect(struct Vertex* vertex, unsigned char* uv, short page, short clut, short w, short h)
@@ -1267,6 +947,13 @@ GLint u_Projection;
 		"	vec2 VRAM(vec2 uv) { return texture2D(s_texture, uv).rg; }\n"
 #endif
 
+#ifdef PGXP
+#define GTE_PERSPECTIVE_CORRECTION \
+"		gl_Position *= a_w;\n"
+#else
+#define GTE_PERSPECTIVE_CORRECTION
+#endif
+
 const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
@@ -1275,6 +962,8 @@ const char* gte_shader_4 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
+	"	attribute float a_z;\n"
+	"	attribute float a_w;\n"
 	"	uniform mat4 Projection;\n"
 	"	void main() {\n"
 	"		v_texcoord = a_texcoord;\n"
@@ -1285,6 +974,7 @@ const char* gte_shader_4 =
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
 	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
 	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
+	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"
 	GTE_FETCH_VRAM_FUNC
@@ -1316,6 +1006,8 @@ const char* gte_shader_8 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
+	"	attribute float a_z;\n"
+	"	attribute float a_w;\n"
 	"	uniform mat4 Projection;\n"
 	"	void main() {\n"
 	"		v_texcoord = a_texcoord;\n"
@@ -1326,6 +1018,7 @@ const char* gte_shader_8 =
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
 	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
 	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
+	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"
 	GTE_FETCH_VRAM_FUNC
@@ -1350,6 +1043,8 @@ const char* gte_shader_16 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
+	"	attribute float a_z;\n"
+	"	attribute float a_w;\n"
 	"	uniform mat4 Projection;\n"
 	"	void main() {\n"
 	"		vec2 page\n;"
@@ -1361,6 +1056,7 @@ const char* gte_shader_16 =
 	"		v_color = a_color;\n"
 	"		v_color.xyz *= a_texcoord.z;\n"
 	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
+	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"
 	GTE_FETCH_VRAM_FUNC
@@ -1482,6 +1178,11 @@ ShaderID Shader_Compile(const char *source)
     glBindAttribLocation(program, a_texcoord, "a_texcoord");
     glBindAttribLocation(program, a_color,    "a_color");
 
+#ifdef PGXP
+	glBindAttribLocation(program, a_z, "a_z");
+	glBindAttribLocation(program, a_w, "a_w");
+#endif
+
     glLinkProgram(program);
     Shader_CheckProgramStatus(program);
 
@@ -1566,7 +1267,7 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
 	glGenTextures(1, &vramTexture);
@@ -1588,6 +1289,12 @@ int Emulator_Initialise()
     glEnableVertexAttribArray(a_color);
 #if defined(PGXP)
 	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
+
+	glVertexAttribPointer(a_z, 1,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+	glVertexAttribPointer(a_w, 1,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->w);
+
+	glEnableVertexAttribArray(a_z);
+	glEnableVertexAttribArray(a_w);
 #else
 	glVertexAttribPointer(a_position, 4, GL_SHORT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
 #endif
@@ -1666,7 +1373,7 @@ void Emulator_SetShader(const ShaderID &shader)
 	#error
 #endif
 
-	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, 0.0f, 1.0f);
+	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, -1.0f, 1.0f);
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
@@ -2006,7 +1713,7 @@ bool Emulator_BeginScene()
 	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
 
 	Emulator_SetShader(g_gte_shader_4);
-	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, 0.0f, 1.0f);
+	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, -1.0f, 1.0f);
 
 	begin_scene_flag = true;
 
@@ -2334,13 +2041,6 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 #endif
 
 	g_PreviousBlendMode = blendMode;
-}
-
-void Emulator_SetPGXPVertexCount(int vertexCount)
-{
-#if defined(PGXP)
-	pgxp_vertex_count = vertexCount;
-#endif
 }
 
 void Emulator_SetViewPort(int x, int y, int width, int height)

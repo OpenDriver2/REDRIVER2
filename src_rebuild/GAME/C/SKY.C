@@ -1088,7 +1088,16 @@ LAB_00078a68:
 extern _pct plotContext;
 
 POLYFT4* scratchPad_skyPolygonsPtr;		// 1f80003c
+#ifdef PGXP
+
+typedef struct {		/* 2D short vector */
+	half vx, vy;
+} DVECTORF;
+
+DVECTORF scratchPad_skyVertices[256];	// 1f800044
+#else
 DVECTOR scratchPad_skyVertices[256];	// 1f800044
+#endif
 short scratchPad_zbuff[256];
 
 // [D]
@@ -1118,6 +1127,7 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		local_t2_64->r0 = r;
 		local_t2_64->g0 = g;
 		local_t2_64->b0 = b;
+
 		local_t2_64->x0 = scratchPad_skyVertices[pPVar3->v0].vx;
 		local_t2_64->y0 = scratchPad_skyVertices[pPVar3->v0].vy - offset;
 		local_t2_64->x1 = scratchPad_skyVertices[pPVar3->v1].vx;
@@ -1126,6 +1136,7 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		local_t2_64->y2 = scratchPad_skyVertices[pPVar3->v3].vy - offset;
 		local_t2_64->x3 = scratchPad_skyVertices[pPVar3->v2].vx;
 		local_t2_64->y3 = scratchPad_skyVertices[pPVar3->v2].vy - offset;
+
 		local_t2_64->u0 = skytexuv[skytexnum].u2;
 		local_t2_64->v0 = skytexuv[skytexnum].v2;
 		local_t2_64->u1 = skytexuv[skytexnum].u3;
@@ -1186,9 +1197,15 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 
 	SVECTOR *pSVar6;
 	
+#ifdef PGXP
+	DVECTORF *dv0;
+	DVECTORF *dv1;
+	DVECTORF *dv2;
+#else
 	DVECTOR *dv0;
 	DVECTOR *dv1;
 	DVECTOR *dv2;
+#endif
 
 	SVECTOR *v0;
 	SVECTOR *v1;

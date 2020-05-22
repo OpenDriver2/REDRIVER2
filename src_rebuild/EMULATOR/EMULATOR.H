@@ -128,8 +128,13 @@ struct Vertex
 #else
 	short  x, y, page, clut;
 #endif
+
 	u_char u, v, bright, dither;
 	u_char r, g, b, a;
+
+#if defined(PGXP)
+	float z, w;
+#endif
 };
 #pragma pack(pop)
 
@@ -137,7 +142,9 @@ enum ShaderAttrib
 {
 	a_position,
 	a_texcoord,
-	a_color
+	a_color,
+	a_w,
+	a_z
 };
 
 enum BlendMode
@@ -191,10 +198,10 @@ extern void Emulator_SwapWindow();
 extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_CounterLoop();
 
-extern void Emulator_GenerateLineArray(struct Vertex* vertex, short* p0, short* p1);
-extern void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, short* p0, short* p1, short* p2);
-extern void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, short* p0, short* p1, short* p2, short* p3);
-extern void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, short* p0, short w, short h);
+extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);
+extern void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx);
+extern void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx);
+extern void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short w, short h, ushort gteidx);
 
 extern void Emulator_GenerateTexcoordArrayTriangle(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither);
 extern void Emulator_GenerateTexcoordArrayQuad(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, unsigned char* uv3, short page, short clut, unsigned char dither);

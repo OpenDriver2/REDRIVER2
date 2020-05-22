@@ -270,6 +270,9 @@
     <ClCompile Include="GAME\C\ROADBITS.C">
       <Filter>main\C</Filter>
     </ClCompile>
+    <ClCompile Include="EMULATOR\GTE\half_float.cpp">
+      <Filter>EMULATOR\GTE</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">
@@ -365,10 +368,29 @@
     <ClInclude Include="EMULATOR\GTE\sqrt_tbl.h">
       <Filter>EMULATOR\GTE</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>EMULATOR</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\GTE\half_float.h">
+      <Filter>EMULATOR\GTE</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Decompilation.txt">
       <Filter>main</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="main.ico">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
 </Project>

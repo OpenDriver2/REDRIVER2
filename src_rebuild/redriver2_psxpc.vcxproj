@@ -244,6 +244,7 @@
     <ClCompile Include="GAME\C\XMPLAY.C" />
     <ClCompile Include="GAME\FRONTEND\FEMAIN.C" />
     <ClCompile Include="GAME\MEMCARD\MCMAIN.C" />
+    <ClCompile Include="EMULATOR\GTE\half_float.cpp" />
     <ClCompile Include="redriver2_psxpc.c" />
     <ClCompile Include="THISDUST.C">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -281,10 +282,19 @@
     <ClInclude Include="GAME\C\CD_ICON.H" />
     <ClInclude Include="EMULATOR\GTE\ratan_tbl.h" />
     <ClInclude Include="EMULATOR\GTE\rcossin_tbl.h" />
+    <ClInclude Include="EMULATOR\GTE\half_float.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="THISDUST.H" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Decompilation.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
+    <Image Include="main.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
