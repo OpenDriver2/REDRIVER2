@@ -25,6 +25,9 @@
     <Filter Include="main\ASM">
       <UniqueIdentifier>{bcdfce60-4640-49e6-ad0e-98690203bef6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="EMULATOR\GTE">
+      <UniqueIdentifier>{7d3622eb-b172-49b5-bbba-c317d9d86c22}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EMULATOR\ABS.C">
@@ -352,6 +355,15 @@
     </ClInclude>
     <ClInclude Include="GAME\C\CD_ICON.H">
       <Filter>main\C</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\GTE\ratan_tbl.h">
+      <Filter>EMULATOR\GTE</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\GTE\rcossin_tbl.h">
+      <Filter>EMULATOR\GTE</Filter>
+    </ClInclude>
+    <ClInclude Include="EMULATOR\GTE\sqrt_tbl.h">
+      <Filter>EMULATOR\GTE</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

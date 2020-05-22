@@ -98,7 +98,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;PGXP;SIMPLE_SPOOL;USE_CRT_MALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;SIMPLE_SPOOL;USE_CRT_MALLOC;PGXP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./;EMULATOR;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -262,6 +262,7 @@
     <ClInclude Include="EMULATOR\EMULATOR_VERSION.H" />
     <ClInclude Include="EMULATOR\GPU_D3D9.H" />
     <ClInclude Include="EMULATOR\GTEREG.H" />
+    <ClInclude Include="EMULATOR\GTE\sqrt_tbl.h" />
     <ClInclude Include="EMULATOR\INLINE_C.H" />
     <ClInclude Include="EMULATOR\KERNEL.H" />
     <ClInclude Include="EMULATOR\LIBAPI.H" />
@@ -278,6 +279,8 @@
     <ClInclude Include="EMULATOR\STRINGS.H" />
     <ClInclude Include="EMULATOR\TYPES.H" />
     <ClInclude Include="GAME\C\CD_ICON.H" />
+    <ClInclude Include="EMULATOR\GTE\ratan_tbl.h" />
+    <ClInclude Include="EMULATOR\GTE\rcossin_tbl.h" />
     <ClInclude Include="THISDUST.H" />
   </ItemGroup>
   <ItemGroup>

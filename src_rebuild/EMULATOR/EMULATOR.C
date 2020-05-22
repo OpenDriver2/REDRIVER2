@@ -530,7 +530,27 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, short* p0, shor
 	assert(p1);
 	assert(p2);
 
-#if defined(PGXP)
+#if defined(GTE_EXTERNAL)
+	float halfW, halfH;
+	halfW = (float)activeDispEnv.disp.w * 0.5f;
+	halfH = (float)activeDispEnv.disp.h * 0.5f;
+
+	OGLVertex pgv0, pgv1, pgv2;
+	PGXP_GetVertex(0, (uint*)p0, &pgv0, halfW, halfH);
+	PGXP_GetVertex(0, (uint*)p1, &pgv1, halfW, halfH);
+	PGXP_GetVertex(0, (uint*)p2, &pgv2, halfW, halfH);
+
+	vertex[0].x = pgv0.x;
+	vertex[0].y = pgv0.y;
+
+	vertex[1].x = pgv1.x;
+	vertex[1].y = pgv1.y;
+
+	vertex[2].x = pgv2.x;
+	vertex[2].y = pgv2.y;
+
+#elif defined(PGXP)
+
 	PGXPVertex* pgxp_vertex_0 = NULL;
 	PGXPVertex* pgxp_vertex_1 = NULL;
 	PGXPVertex* pgxp_vertex_2 = NULL;
@@ -622,7 +642,29 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, short* p0, short* p
 	assert(p2);
 	assert(p3);
 
-#if defined(PGXP)
+#if defined(GTE_EXTERNAL)
+	float halfW, halfH;
+	halfW = (float)activeDispEnv.disp.w * 0.5f;
+	halfH = (float)activeDispEnv.disp.h * 0.5f;
+
+	OGLVertex pgv0, pgv1, pgv2, pgv3;
+	PGXP_GetVertex(0, (uint*)p0, &pgv0, halfW, halfH);
+	PGXP_GetVertex(0, (uint*)p1, &pgv1, halfW, halfH);
+	PGXP_GetVertex(0, (uint*)p2, &pgv2, halfW, halfH);
+	PGXP_GetVertex(0, (uint*)p3, &pgv3, halfW, halfH);
+
+	vertex[0].x = pgv0.x;
+	vertex[0].y = pgv0.y;
+
+	vertex[1].x = pgv1.x;
+	vertex[1].y = pgv1.y;
+
+	vertex[2].x = pgv2.x;
+	vertex[2].y = pgv2.y;
+
+	vertex[3].x = pgv3.x;
+	vertex[3].y = pgv3.y;
+#elif defined(PGXP)
 	PGXPVertex* pgxp_vertex_0 = NULL;
 	PGXPVertex* pgxp_vertex_1 = NULL;
 	PGXPVertex* pgxp_vertex_2 = NULL;
@@ -735,7 +777,27 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, short* p0, short w,
 {
 	assert(p0);
 
-#if defined(PGXP)
+#if defined(GTE_EXTERNAL)
+	float halfW, halfH;
+	halfW = (float)activeDispEnv.disp.w * 0.5f;
+	halfH = (float)activeDispEnv.disp.h * 0.5f;
+
+	OGLVertex pgv0;
+	PGXP_GetVertex(0, (uint*)p0, &pgv0, halfW, halfH);
+
+
+	vertex[0].x = pgv0.x;
+	vertex[0].y = pgv0.y;
+
+	vertex[1].x = vertex[0].x;
+	vertex[1].y = vertex[0].y + h;
+
+	vertex[2].x = vertex[0].x + w;
+	vertex[2].y = vertex[0].y + h;
+
+	vertex[3].x = vertex[0].x + w;
+	vertex[3].y = vertex[0].y;
+#elif defined(PGXP)
 	PGXPVertex* pgxp_vertex_0 = NULL;
 
 	//Locate each vertex based on SXY2 (very slow)
@@ -767,7 +829,6 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, short* p0, short w,
 
 	vertex[3].x = vertex[0].x + w;
 	vertex[3].y = vertex[0].y;
-
 #else
 	vertex[0].x = p0[0];
 	vertex[0].y = p0[1];
