@@ -2509,9 +2509,7 @@ void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 
 	docop2(0x480012);
 
-	vec->vx = MAC1;
-	vec->vy = MAC2;
-	vec->vz = MAC3;
+	gte_stlvnl(vec);
 }
 
 
@@ -3474,7 +3472,7 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 	poly->g0 = col->g >> 1;
 	poly->b0 = col->b >> 1;
 
-	z = SZ3;
+	gte_stsz(&z);
 
 	if (39 < z >> 3) 
 	{
@@ -3483,14 +3481,11 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 		if (z < 1)
 			z = 1;
 
-		*(uint *)&poly->x0 = SXY0;
-		*(uint *)&poly->x1 = SXY1;
-		*(uint *)&poly->x2 = SXY2;
-
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 		gte_ldv0(&vert[3]);
 
 		docop2(0x180001);
-		*(uint *)&poly->x3 = SXY2;
+		gte_stsxy(&poly->x3);
 
 		poly->tpage = flare_texture.tpageid | 0x20;
 		poly->clut = flare_texture.clutid;

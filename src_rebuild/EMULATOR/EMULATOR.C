@@ -368,7 +368,7 @@ int vblankThreadMain(void* data)
 	{
 		int delta = g_vblankTime + FIXED_TIME_STEP - SDL_GetTicks();
 
-		if (delta <= 0)
+		if (delta < 0)
 		{
 			// do vblank events
 			SDL_LockMutex(g_vblankMutex);

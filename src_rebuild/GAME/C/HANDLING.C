@@ -1327,9 +1327,7 @@ void SetShadowPoints(_CAR_DATA *c0)
 
 		docop2(0x480012);
 
-		pointPos.vx = MAC1; // getCopReg(2, 0x19);
-		pointPos.vy = MAC2; // getCopReg(2, 0x1a);
-		pointPos.vz = MAC3; // getCopReg(2, 0x1b);
+		gte_stlvnl(&pointPos);
 
 		static int hSubShad = 0;
 
@@ -1504,32 +1502,32 @@ void initOBox(_CAR_DATA *cp)
 		sVar2 = cp->ap.carCos->colBox.vx;
 		cp->hd.oBox.length[0] = sVar2;
 	}
+	/*
+	gte_stlvnl(&cp->hd.oBox.location);
 
-	cp->hd.oBox.location.vx = MAC1;
-	cp->hd.oBox.location.vy = MAC2;
-	cp->hd.oBox.location.vz = MAC3;
-
+	VECTOR svx = { sVar2, 0 ,0 };
+	VECTOR svy = { 0, cp->ap.carCos->colBox.vy ,0 };
+	VECTOR svz = { 0, 0 ,cp->ap.carCos->colBox.vz };
+	
 	IR1 = sVar2;
 	IR2 = 0;
 	IR3 = 0;
 
 	docop2(0x49e012);
 
-	sVar2 = cp->ap.carCos->colBox.vy;
-	cp->hd.oBox.length[1] = sVar2;
+	cp->hd.oBox.length[1] = cp->ap.carCos->colBox.vy;
 
 	cp->hd.oBox.radii[0].vx = IR1;
 	cp->hd.oBox.radii[0].vy = IR2;
 	cp->hd.oBox.radii[0].vz = IR3;
 
 	IR1 = 0;
-	IR2 = sVar2;
+	IR2 = cp->ap.carCos->colBox.vy;
 	IR3 = 0;
 
 	docop2(0x49e012);
 
-	sVar2 = cp->ap.carCos->colBox.vz;
-	cp->hd.oBox.length[2] = sVar2;
+	cp->hd.oBox.length[2] = cp->ap.carCos->colBox.vz;
 
 	cp->hd.oBox.radii[1].vx = IR1;
 	cp->hd.oBox.radii[1].vy = IR2;
@@ -1537,13 +1535,36 @@ void initOBox(_CAR_DATA *cp)
 
 	IR1 = 0;
 	IR2 = 0;
-	IR3 = sVar2;
+	IR3 = cp->ap.carCos->colBox.vz;
 
 	docop2(0x49e012);
 
 	cp->hd.oBox.radii[2].vx = IR1;
 	cp->hd.oBox.radii[2].vy = IR2;
 	cp->hd.oBox.radii[2].vz = IR3;
+	*/
+	// NEW
+	
+	gte_stlvnl(&cp->hd.oBox.location);
+
+	VECTOR svx = { sVar2, 0 ,0 };
+	VECTOR svy = { 0, cp->ap.carCos->colBox.vy ,0 };
+	VECTOR svz = { 0, 0 ,cp->ap.carCos->colBox.vz };
+
+	gte_ldlvl(&svx);
+
+	docop2(0x49e012);
+	cp->hd.oBox.length[1] = cp->ap.carCos->colBox.vy;
+	gte_stsv(&cp->hd.oBox.radii[0]);
+
+	gte_ldlvl(&svy);
+	docop2(0x49e012);
+	cp->hd.oBox.length[2] = cp->ap.carCos->colBox.vz;
+	gte_stsv(&cp->hd.oBox.radii[1]);
+
+	gte_ldlvl(&svz);
+	docop2(0x49e012);
+	gte_stsv(&cp->hd.oBox.radii[2]);
 }
 
 

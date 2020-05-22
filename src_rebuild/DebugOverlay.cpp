@@ -56,10 +56,10 @@ void DrawDebugOverlays()
 			LINE_F2* line = (LINE_F2*)current->primptr;
 			setLineF2(line);
 			setSemiTrans(line, 1);
-			line->x0 = SX0;
-			line->y0 = SY0;
-			line->x1 = SX1;
-			line->y1 = SY1;
+
+			gte_stsxy0(&line->x0)
+			gte_stsxy1(&line->x1);
+
 			line->r0 = ld.color.r;
 			line->g0 = ld.color.g;
 			line->b0 = ld.color.b;

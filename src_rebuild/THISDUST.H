@@ -124,6 +124,55 @@ template<int x> struct compile_time_assert_test {};
 #define	FIXED(a)		(int(a) / ONE)
 #define	PH_FIXED(a)		(int(a) / PH_ONE)
 
+#define SetVec(_v, _x, _y, _z) \
+{ \
+	(_v)->vx = _x; \
+	(_v)->vy = _y; \
+	(_v)->vz = _z; \
+}
+
+#define VecAdd(vecOut, vecLeft, vecRight) \
+{ \
+	(vecOut)->vx = (vecLeft)->vx + (vecRight)->vx; \
+	(vecOut)->vy = (vecLeft)->vy + (vecRight)->vy; \
+	(vecOut)->vz = (vecLeft)->vz + (vecRight)->vz; \
+}
+
+#define VecSubtract(vecOut, vecLeft, vecRight) \
+{ \
+	(vecOut)->vx = (vecLeft)->vx - (vecRight)->vx; \
+	(vecOut)->vy = (vecLeft)->vy - (vecRight)->vy; \
+	(vecOut)->vz = (vecLeft)->vz - (vecRight)->vz; \
+}
+
+#define VecAddEq(vecLeft, vecRight) \
+{ \
+	(vecLeft)->vx += (vecRight)->vz; \
+	(vecLeft)->vy += (vecRight)->vy; \
+	(vecLeft)->vz += (vecRight)->vz; \
+}
+
+#define VecSubtractEq(vecLeft, vecRight) \
+{ \
+	(vecLeft)->vx -= (vecRight)->vx; \
+	(vecLeft)->vy -= (vecRight)->vy; \
+	(vecLeft)->vz -= (vecRight)->vz; \
+}
+
+#define VecDivEq(vecLeft, vecRight) \
+{ \
+	(vecLeft)->vx /= (vecRight)->vz; \
+	(vecLeft)->vy /= (vecRight)->vy; \
+	(vecLeft)->vz /= (vecRight)->vz; \
+}
+
+#define VecMulEq(vecLeft, vecRight) \
+{ \
+	(vecLeft)->vx *= (vecRight)->vx; \
+	(vecLeft)->vy *= (vecRight)->vy; \
+	(vecLeft)->vz *= (vecRight)->vz; \
+}
+
 struct VECTOR2 // hashcode: 0x7572A047 (dec: 1970446407)
 {
 	int vx; // size=0, offset=0
@@ -20278,6 +20327,17 @@ struct Spool // hashcode: 0x25ACC86C (dec: 632080492)
 	unsigned char num_connected_areas; // size=0, offset=9
 	unsigned char roadm_size; // size=0, offset=10
 	unsigned char roadh_size; // size=0, offset=11
+};
+
+union VERT_INDEX
+{
+	struct {
+		unsigned char v0; // size=0, offset=4
+		unsigned char v1; // size=0, offset=5
+		unsigned char v2; // size=0, offset=6
+		unsigned char v3; // size=0, offset=7
+	};
+	uint value;
 };
 
 struct PL_POLYFT4 // hashcode: 0x851A459F (dec: -2061875809)

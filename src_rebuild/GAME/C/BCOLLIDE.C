@@ -1169,9 +1169,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		docop2(0x480012);
 
-		cd[0].x.vx = MAC1;
-		cd[0].x.vy = MAC2;
-		cd[0].x.vz = MAC3; 
+		gte_stlvnl(&cd[0].x);
 
 		cd[0].theta = cp->hd.direction;
 

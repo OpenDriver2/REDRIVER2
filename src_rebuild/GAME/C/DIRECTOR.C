@@ -704,8 +704,8 @@ int IsMovingCamera(PLAYBACKCAMERA *lastcam, PLAYBACKCAMERA *nextcam, int camerac
 	if (lastcam == NULL)
 		return 0;
 
-	//if (cameraview != 5 && cameraview != 1)
-	//	return 0;
+	if (cameraview != 5 && cameraview != 1)
+		return 0;
 
 	bVar5 = nextcam->cameraview & 0x87;
 

@@ -6,6 +6,7 @@
 #include "LIBGTE.H"
 
 #include "GTEREG.H"
+#include "INLINE_C.H"
 
 #include "CAMERA.H"
 #include "XMPLAY.H"
@@ -2256,6 +2257,7 @@ int CalculateVolume(int channel)
 	int iVar5;
 
 	VECTOR *pp;
+	VECTOR ofse = {0};
 
 	int volume;
 
@@ -2272,18 +2274,18 @@ int CalculateVolume(int channel)
 	if (pp != NULL) // [A]
 	{
 		iVar1 = channels[channel].player;
+		
+		ofse.vx = pp->vx - player[iVar1].cameraPos.vx;
+		ofse.vy = pp->vy + player[iVar1].cameraPos.vy;
+		ofse.vz = pp->vz - player[iVar1].cameraPos.vz;
 
-		IR1 = (pp->vx - player[iVar1].cameraPos.vx);
-		IR2 = (pp->vy + player[iVar1].cameraPos.vy);
-		IR3 = (pp->vz - player[iVar1].cameraPos.vz);
+		gte_ldclmv(&ofse);
 
 		docop2(0xa00428);
 
-		iVar1 = MAC1;
-		iVar2 = MAC2;
-		iVar5 = MAC3;
+		gte_stlvnl(&ofse);
 
-		iVar1 = SquareRoot0(iVar1 + iVar2 + iVar5);
+		iVar1 = SquareRoot0(ofse.vx + ofse.vy + ofse.vz);
 
 		iVar2 = iVar1-16000;
 

@@ -162,9 +162,7 @@ void InitCamera(_PLAYER *lp)
 
 			docop2(0x480012);
 
-			basePos[0] = MAC1;
-			basePos[1] = MAC2;
-			basePos[2] = MAC3;
+			gte_stlvnl(basePos);
 
 			baseDir = car_data[iVar2].hd.direction;			
 		}

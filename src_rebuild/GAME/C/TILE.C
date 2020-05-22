@@ -146,16 +146,14 @@ void Tile1x1(MODEL *model)
 		uVar8 = ((uint *)polys)[2]; // uv0
 		uVar12 = ((uint *)polys)[3]; // uv2
 
-		iVar2 = MAC0;  //getCopReg(2, 0x18);
+		gte_stopz(&iVar2);
 		docop2(0x158002d);
 
 		plotContext.ot = ot;
 
 		if (iVar2 < 0) 
 		{
-			uVar3 = SXY0; // getCopReg(2, 0xc);
-
-			*(uint *)&(prims->x0) = uVar3;
+			gte_stsxy0(&prims->x0);
 			sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
 
 			gte_ldv0(sv3);
@@ -163,9 +161,11 @@ void Tile1x1(MODEL *model)
 			docop2(0x180001);
 			docop2(0x1400006);
 
-			iVar2 = MAC0; //getCopReg(2, 0x18);
+			gte_stopz(&iVar2);
 
-			if ((iVar2 < 0) && (local_10 = OTZ, 1 < local_10))
+			gte_stotz(&local_10);
+
+			if (iVar2 < 0 && 1 < local_10)
 			{
 			LAB_00041cc4:
 
@@ -176,18 +176,12 @@ void Tile1x1(MODEL *model)
 				//ot[(local_10 >> 1) + 0x85] = (uint)plotContext.field_0x90 & 0xffffff;
 				//(plotContext.field_0x90)->tag = uVar10 & 0xffffff | 0x9000000;
 
-				uVar3 = SXY0;//getCopReg(2, 0xc);
-				*(uint *)&(prims->x1) = uVar3;
-				uVar3 = SXY1;// getCopReg(2, 0xd);
-				*(uint *)&(prims->x2) = uVar3;
-				uVar3 = SXY2;// getCopReg(2, 0xe);
-				*(uint *)&(prims->x3) = uVar3;
-				uVar5 = plotContext.colour;
+				gte_stsxy3(&prims->x1, &prims->x2, &prims->x3);
 				*(uint *)&(prims->u0) = uVar8 & 0xffff | (uint)uVar1 << 0x10;
 				*(uint *)&(prims->u1) = uVar8 >> 0x10 | in_a1;
 				*(uint *)&(prims->u2) = uVar12 >> 0x10;
 				*(uint *)&(prims->u3) = uVar12 & 0xffff;
-				*(ulong *)&(prims->r0) = uVar5;
+				*(ulong *)&(prims->r0) = plotContext.colour;
 
 				plotContext.primptr += sizeof(POLY_FT4);
 				prims = (POLY_FT4*)plotContext.primptr;
@@ -195,13 +189,11 @@ void Tile1x1(MODEL *model)
 		}
 		else 
 		{
-			local_10 = OTZ;// getCopReg(2, 7);
+			gte_stotz(&local_10);
 
 			if (1 < local_10)
 			{
-				uVar3 = SXY0;// getCopReg(2, 0xc);
-
-				*(uint *)&(prims->x0) = uVar3;
+				gte_stsxy0(&prims->x0);
 				sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
 
 				gte_ldv0(sv3);
@@ -599,10 +591,9 @@ void DrawTILES(int tile_amount)
 	/* end block 4 */
 	// End Line: 709
 
+// [D] [A] - I don't expect this to work...
 void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 	uint uVar2;
 	uint uVar3;
@@ -617,137 +608,165 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	uint uVar12;
 	int iVar13;
 
-	if (n == 4) {
-		uVar3 = *(uint *)*VSP;
-		uVar2 = *(uint *)&(*VSP)[0].vz;
+	//       N       0   1   2    3    4
+	//
+	//(*VSP)[n][0]   0   5   10   15   20
+	//(*VSP)[n][1]   1   6   11   16   21
+	//(*VSP)[n][2]   2   7   12   17   22
+	//(*VSP)[n][3]   3   8   13   18   23
+	//(*VSP)[n][4]   4   9   14   19   24
+
+	if (n == 4) 
+	{
+		uVar3 = *(uint *)&(*VSP)[0][0].vx;
+		uVar2 = *(uint *)&(*VSP)[0][0].vz;
 		uVar5 = uVar3 ^ 0x8000;
-		uVar9 = *(uint *)(*VSP + 4) ^ 0x8000;
+		uVar9 = *(uint *)&(*VSP)[0][4].vx ^ 0x8000;
 		uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-		*(uint *)(*VSP + 2) = uVar5 ^ 0x8000;
+		
 		uVar6 = uVar2 ^ 0x8000;
-		uVar3 = uVar3 ^ 0x8000;
-		uVar9 = *(uint *)(*VSP + 4) ^ 0x8000;
-		uVar10 = *(uint *)&(*VSP)[4].vz ^ 0x8000;
-		uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-		*(uint *)(*VSP + 1) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
 		uVar2 = uVar2 ^ 0x8000;
-		*(uint *)(*VSP + 3) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[2].vz = uVar6 ^ 0x8000;
-		*(uint *)&(*VSP)[1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		if (m == 1) {
-			uVar2 = *(uint *)&(*VSP)[5].vz;
-			uVar5 = *(uint *)(*VSP + 5) ^ 0x8000;
-			uVar9 = *(uint *)(*VSP + 9) ^ 0x8000;
+		uVar3 = uVar3 ^ 0x8000;
+
+		uVar9 = *(uint *)&(*VSP)[0][4].vx ^ 0x8000;
+		uVar10 = *(uint *)&(*VSP)[0][4].vz ^ 0x8000;
+		uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+
+		*(uint *)&(*VSP)[0][2].vx = uVar5 ^ 0x8000;
+		*(uint *)&(*VSP)[0][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+		*(uint *)&(*VSP)[0][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+		*(uint *)&(*VSP)[0][2].vz = uVar6 ^ 0x8000;
+		*(uint *)&(*VSP)[0][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+		*(uint *)&(*VSP)[0][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+
+		if (m == 1) 
+		{
+			uVar2 = *(uint *)&(*VSP)[1][0].vz;
+			uVar5 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[1][4].vx ^ 0x8000;
 			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-			*(uint *)(*VSP + 7) = uVar5 ^ 0x8000;
+			
 			uVar6 = uVar2 ^ 0x8000;
-			uVar3 = *(uint *)(*VSP + 5) ^ 0x8000;
-			uVar9 = *(uint *)(*VSP + 9) ^ 0x8000;
-			uVar10 = *(uint *)&(*VSP)[9].vz ^ 0x8000;
-			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-			*(uint *)(*VSP + 6) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
 			uVar2 = uVar2 ^ 0x8000;
-			*(uint *)(*VSP + 8) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[7].vz = uVar6 ^ 0x8000;
-			*(uint *)&(*VSP)[6].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[8].vz =
-				(uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			uVar3 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[1][4].vx ^ 0x8000;
+			uVar10 = *(uint *)&(*VSP)[1][4].vz ^ 0x8000;
+			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+
+			*(uint *)&(*VSP)[1][2].vx = uVar5 ^ 0x8000;
+			*(uint *)&(*VSP)[1][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][2].vz = uVar6 ^ 0x8000;
+			*(uint *)&(*VSP)[1][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
 		}
-		else {
-			iVar13 = 4;
-			uVar2 = *(uint *)&(*VSP)[0x14].vz;
-			uVar5 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-			uVar9 = *(uint *)(*VSP + 0x18) ^ 0x8000;
+		else 
+		{
+			
+			uVar2 = *(uint *)&(*VSP)[4][0].vz;
+			uVar5 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[4][4].vx ^ 0x8000;
 			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-			*(uint *)(*VSP + 0x16) = uVar5 ^ 0x8000;
+			
 			uVar6 = uVar2 ^ 0x8000;
-			uVar3 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-			uVar9 = *(uint *)(*VSP + 0x18) ^ 0x8000;
-			uVar10 = *(uint *)&(*VSP)[0x18].vz ^ 0x8000;
-			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-			*(uint *)(*VSP + 0x15) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
 			uVar2 = uVar2 ^ 0x8000;
-			*(uint *)(*VSP + 0x17) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[0x16].vz = uVar6 ^ 0x8000;
-			*(uint *)&(*VSP)[0x15].vz =
-				(uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[0x17].vz =
-				(uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+
+			uVar3 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[4][4].vx ^ 0x8000;
+			uVar10 = *(uint *)&(*VSP)[4][4].vz ^ 0x8000;
+			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+
+			*(uint *)&(*VSP)[4][2].vx = uVar5 ^ 0x8000;
+			*(uint *)&(*VSP)[4][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[4][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[4][2].vz = uVar6 ^ 0x8000;
+			*(uint *)&(*VSP)[4][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[4][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			
+			iVar13 = 4;
 			do {
 				iVar13 = iVar13 + -1;
-				uVar3 = *(uint *)*VSP;
-				uVar2 = *(uint *)&(*VSP)[0].vz;
+				uVar3 = *(uint *)&(*VSP)[0][0].vx;
+				uVar2 = *(uint *)&(*VSP)[0][0].vz;
 				uVar5 = uVar3 ^ 0x8000;
-				uVar9 = *(uint *)(*VSP + 0x14) ^ 0x8000;
+				uVar9 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
 				uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-				*(uint *)(*VSP + 10) = uVar5 ^ 0x8000;
+				
 				uVar6 = uVar2 ^ 0x8000;
-				uVar3 = uVar3 ^ 0x8000;
-				uVar9 = *(uint *)(*VSP + 0x14) ^ 0x8000;
-				uVar10 = *(uint *)&(*VSP)[0x14].vz ^ 0x8000;
-				uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-				*(uint *)(*VSP + 5) = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
 				uVar2 = uVar2 ^ 0x8000;
-				*(uint *)(*VSP + 0xf) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000
-					;
-				*(uint *)&(*VSP)[10].vz = uVar6 ^ 0x8000;
-				*(uint *)&(*VSP)[5].vz =
-					(uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[0xf].vz =
-					(uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-				VSP = (MVERTEX(*)[5][5])(*VSP + 1);
+				uVar3 = uVar3 ^ 0x8000;
+				uVar9 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
+				uVar10 = *(uint *)&(*VSP)[4][0].vz ^ 0x8000;
+				uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+
+				*(uint *)&(*VSP)[2][0].vx = uVar5 ^ 0x8000;
+				*(uint *)&(*VSP)[1][0].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
+				*(uint *)&(*VSP)[3][0].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+				*(uint *)&(*VSP)[2][0].vz = uVar6 ^ 0x8000;
+				*(uint *)&(*VSP)[1][0].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+				*(uint *)&(*VSP)[3][0].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+
+				VSP++;// = (MVERTEX(*)[5][5])(*VSP + 1);
+
 			} while (-1 < iVar13);
 		}
 	}
-	else {
-		uVar2 = *(uint *)*VSP;
-		uVar9 = *(uint *)(*VSP + 2);
-		uVar6 = *(uint *)&(*VSP)[0].vz;
+	else 
+	{
+		uVar2 = *(uint *)&(*VSP)[0][0].vx;
+		uVar9 = *(uint *)&(*VSP)[0][2].vx;
+		uVar6 = *(uint *)&(*VSP)[0][0].vz;
+
 		uVar5 = uVar2 ^ 0x8000;
 		uVar3 = uVar9 ^ 0x8000;
 		uVar10 = (uVar5 | uVar3) - ((int)(uVar5 ^ uVar3) >> 1 & 0xffff7fffU);
-		uVar5 = *(uint *)&(*VSP)[2].vz;
-		*(uint *)(*VSP + 1) = uVar10 ^ 0x8000;
+		uVar5 = *(uint *)&(*VSP)[0][2].vz;
+		
 		uVar3 = uVar6 ^ 0x8000;
 		uVar5 = uVar5 ^ 0x8000;
 		uVar3 = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0x7f7f7fffU);
-		*(uint *)&(*VSP)[1].vz = uVar3 ^ 0x8000;
-		if (m == 1) {
-			uVar5 = *(uint *)(*VSP + 5) ^ 0x8000;
-			uVar9 = *(uint *)(*VSP + 7) ^ 0x8000;
+
+		*(uint *)&(*VSP)[0][1].vx = uVar10 ^ 0x8000;
+		*(uint *)&(*VSP)[0][1].vz = uVar3 ^ 0x8000;
+
+		if (m == 1) 
+		{
+			uVar5 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[1][2].vx ^ 0x8000;
 			*(uint *)(*VSP + 6) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			uVar5 = *(uint *)&(*VSP)[5].vz ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[7].vz ^ 0x8000;
-			*(uint *)&(*VSP)[6].vz = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+
+			uVar5 = *(uint *)&(*VSP)[1][0].vz ^ 0x8000;
+			uVar9 = *(uint *)&(*VSP)[1][2].vz ^ 0x8000;
+			*(uint *)&(*VSP)[1][1].vz = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0x7f7f7fffU) ^ 0x8000;
 		}
-		else {
+		else 
+		{
 			uVar2 = uVar2 ^ 0x8000;
 			uVar9 = uVar9 ^ 0x8000;
-			uVar4 = *(uint *)&(*VSP)[10].vz;
-			uVar7 = *(uint *)(*VSP + 10) ^ 0x8000;
-			uVar11 = *(uint *)(*VSP + 0xc) ^ 0x8000;
+			uVar4 = *(uint *)&(*VSP)[2][0].vz;
+			uVar7 = *(uint *)&(*VSP)[2][0].vx ^ 0x8000;
+			uVar11 = *(uint *)&(*VSP)[2][2].vx ^ 0x8000;
 			uVar11 = (uVar7 | uVar11) - ((int)(uVar7 ^ uVar11) >> 1 & 0xffff7fffU);
-			*(uint *)(*VSP + 0xb) = uVar11 ^ 0x8000;
+			
 			uVar7 = uVar4 ^ 0x8000;
-			uVar1 = *(uint *)(*VSP + 0xc) ^ 0x8000;
-			uVar12 = *(uint *)&(*VSP)[0xc].vz ^ 0x8000;
-			uVar8 = (uVar7 | uVar12) - ((int)(uVar7 ^ uVar12) >> 1 & 0x7f7f7fffU);
-			uVar7 = *(uint *)(*VSP + 10) ^ 0x8000;
-			*(uint *)(*VSP + 5) = (uVar2 | uVar7) - ((int)(uVar2 ^ uVar7) >> 1 & 0xffff7fffU) ^ 0x8000;
 			uVar6 = uVar6 ^ 0x8000;
 			uVar4 = uVar4 ^ 0x8000;
-			*(uint *)(*VSP + 6) = (uVar10 | uVar11) - ((int)(uVar10 ^ uVar11) >> 1 & 0xffff7fffU) ^ 0x8000
-				;
-			*(uint *)(*VSP + 7) = (uVar9 | uVar1) - ((int)(uVar9 ^ uVar1) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[0xb].vz = uVar8 ^ 0x8000;
-			*(uint *)&(*VSP)[5].vz = (uVar6 | uVar4) - ((int)(uVar6 ^ uVar4) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[6].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[7].vz =
-				(uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			uVar1 = *(uint *)&(*VSP)[2][2].vx ^ 0x8000;
+			uVar12 = *(uint *)&(*VSP)[2][2].vz ^ 0x8000;
+			uVar8 = (uVar7 | uVar12) - ((int)(uVar7 ^ uVar12) >> 1 & 0x7f7f7fffU);
+			uVar7 = *(uint *)&(*VSP)[2][0].vx ^ 0x8000;
+
+			*(uint *)&(*VSP)[2][1].vx = uVar11 ^ 0x8000;
+			*(uint *)&(*VSP)[1][0].vx =(uVar2 | uVar7) - ((int)(uVar2 ^ uVar7) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][1].vx =(uVar10 | uVar11) - ((int)(uVar10 ^ uVar11) >> 1 & 0xffff7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][2].vx = (uVar9 | uVar1) - ((int)(uVar9 ^ uVar1) >> 1 & 0xffff7fffU) ^ 0x8000;
+
+			*(uint *)&(*VSP)[2][1].vz = uVar8 ^ 0x8000;
+			*(uint *)&(*VSP)[1][0].vz =(uVar6 | uVar4) - ((int)(uVar6 ^ uVar4) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][1].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+			*(uint *)&(*VSP)[1][2].vz =(uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
 		}
 	}
-	return;*/
 }
 
 
@@ -814,144 +833,168 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+
 void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 {
 	UNIMPLEMENTED();
 	/*
 	int iVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar2;
-	MVERTEX(*paaMVar3)[5][5];
-	MVERTEX(*paaMVar4)[5][5];
+	uint uVar3;
+	uint *puVar4;
+	uint *local_a0_1124;
 	int iVar5;
-	uint *puVar6;
-	undefined4 *puVar7;
-	int iVar8;
-	int iVar9;
-	MVERTEX *pMVar10;
-	int iVar11;
+	POLY_FT4 *prim;
+	MVERTEX *vertex;
+	int iVar6;
+	OTTYPE *ot;
+	MVERTEX(*VST)[5][5];
+	int iVar7;
+	int Z1;
+	int Z2;
 
-	iVar11 = 0;
-	puVar6 = *(uint **)(pc->ptexture_pages + 0x46);
-	paaMVar4 = VSP;
-	if (0 < n) {
+	iVar7 = 0;
+	prim = (POLY_FT4 *)pc->primptr;
+	local_a0_1124 = (uint *)VSP;
+
+	if (0 < n)
+	{
 		do {
-			iVar8 = m + -1;
-			iVar5 = iVar11 + 2;
-			if (iVar8 != -1) {
-				pMVar10 = *VSP + iVar8 * 5;
+			iVar6 = m-1;
+			iVar5 = iVar7 + 2;
+
+			if (iVar6 != -1) 
+			{
+				VST = (MVERTEX(*)[5][5])(*VSP + iVar6 * 5);
 				do {
-					puVar7 = (undefined4 *)(&pMVar10->vx + iVar11 * 4);
-					iVar9 = *(int *)(pc->ptexture_pages + 0x48);
-					setCopReg(2, in_zero, *puVar7);
-					setCopReg(2, in_at, puVar7[1]);
-					setCopReg(2, puVar7 + 10, puVar7[2]);
-					setCopReg(2, puVar7 + 2, puVar7[3]);
-					setCopReg(2, paaMVar4, puVar7[10]);
-					setCopReg(2, 0x9000000, puVar7[0xb]);
-					copFunction(2, 0x280030);
-					copFunction(2, 0x158002d);
-					iVar1 = getCopReg(2, 7);
-					if (1 < iVar1) {
-						_DAT_1f800208 = getCopReg(2, 0xc);
-						_DAT_1f80020c = getCopReg(2, 0xd);
-						DAT_1f800210 = getCopReg(2, 0xe);
-						paaMVar4 = (MVERTEX(*)[5][5])(iVar9 + (iVar1 >> 1) * 4);
-						*puVar6 = *(uint *)*paaMVar4 & 0xffffff | 0x9000000;
-						uVar2 = getCopReg(2, 0xc);
-						puVar6[2] = uVar2;
-						uVar2 = getCopReg(2, 0xd);
-						puVar6[4] = uVar2;
-						uVar2 = getCopReg(2, 0xe);
-						puVar6[6] = uVar2;
-						uVar2 = getCopReg(2, 0xd);
-						puVar6[0x10] = uVar2;
-						setCopReg(2, in_zero, puVar7[4]);
-						setCopReg(2, in_at, puVar7[5]);
-						setCopReg(2, puVar7 + 0xc, puVar7[0xe]);
-						setCopReg(2, puVar7 + 0xe, puVar7[0xf]);
-						setCopReg(2, puVar7 + 4, puVar7[0xc]);
-						setCopReg(2, 0x9000000, puVar7[0xd]);
-						copFunction(2, 0x280030);
-						copFunction(2, 0x158002d);
-						DAT_1f80021c = getCopReg(2, 0xc);
-						DAT_1f800220 = getCopReg(2, 0xd);
-						DAT_1f800224 = getCopReg(2, 0xe);
-						if (((DAT_1f80020c < 0x140) || (DAT_1f800208 < 0x140)) || ((ushort)DAT_1f800210 < 0x140)
-							) {
+					vertex = (MVERTEX*)*VST + iVar7;
+					ot = pc->ot;
+
+					gte_ldv3(&vertex[0], &vertex[1], &vertex[2]);
+
+					docop2(0x280030);
+					docop2(0x158002d);
+
+					gte_stotz(&iVar1);
+
+					if (1 < iVar1) 
+					{
+						SXYPAIR DAT_1f800208 = *(SXYPAIR*)&SXY0;
+						SXYPAIR DAT_1f80020c = *(SXYPAIR*)&SXY1;
+						SXYPAIR DAT_1f800210 = *(SXYPAIR*)&SXY2;
+						gte_stsxy3(&DAT_1f800208, &DAT_1f80020c, &DAT_1f800210);
+
+						setPolyFT4(prim);
+						addPrim(ot + (iVar1 >> 1), prim);
+
+						*(uint *)&prim->x0 = *(uint *)&DAT_1f800208;
+						*(uint *)&prim->x1 = *(uint *)&DAT_1f80020c;
+						*(uint *)&prim->x2 = *(uint *)&DAT_1f800210;
+						*(uint *)&prim[1].x2 = *(uint *)&DAT_1f80020c;
+
+						gte_ldv3(&vertex[2], &vertex[7], &vertex[6]);
+
+						docop2(0x280030);
+						docop2(0x158002d);
+
+						SXYPAIR DAT_1f80021c = *(SXYPAIR*)&SXY0;
+						SXYPAIR DAT_1f800220 = *(SXYPAIR*)&SXY1;
+						SXYPAIR DAT_1f800224 = *(SXYPAIR*)&SXY2;
+
+						if ((((ushort)DAT_1f80020c.x < 0x140) ||
+							((ushort)DAT_1f800208.x < 0x140)) ||
+							((ushort)DAT_1f800210.x < 0x140))
+						{
 						LAB_00042824:
-							if (((0x109 < DAT_1f80020a) && (0x109 < DAT_1f80020e)) &&
-								((0x109 < DAT_1f800210._2_2_ &&
-								(((DAT_1f800224._2_2_ = (ushort)(DAT_1f800224 >> 0x10), 0x109 < DAT_1f800224._2_2_
-									&& (-1 < (int)((uint)(DAT_1f80020e ^ DAT_1f80020a) << 0x10))) &&
-									(DAT_1f800210._0_2_ = DAT_1f800210._2_2_,
-										-1 < (int)((uint)(DAT_1f80020e ^ DAT_1f800210._2_2_) << 0x10)))))))
+							if (((0x109 < (ushort)DAT_1f800208.y) &&
+								(0x109 < (ushort)DAT_1f80020c.y)) &&
+								((0x109 < (ushort)DAT_1f800210.y &&
+								(((DAT_1f800224.y = (short)(DAT_1f800224.x >> 0x10), 0x109 < (ushort)DAT_1f800224.y &&	// PLS HELP
+								(-1 < (int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800208.y) << 0x10))) &&
+								(DAT_1f800210.x = DAT_1f800210.y, -1 < (int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800210.y)
+								<< 0x10)))))))
 								goto LAB_00042900;
-							*(uint *)*paaMVar4 = (uint)puVar6 & 0xffffff;
-							uVar2 = getCopReg(2, 0xe);
-							puVar6[8] = uVar2;
-							puVar6[1] = *(uint *)(pc->ptexture_pages + 0x4e);
-							puVar6[3] = (uint)*(ushort *)((int)puVar7 + 6) | *(uint *)(pc->ptexture_pages + 0x4a);
-							puVar6[5] = (uint)*(ushort *)((int)puVar7 + 0xe) |
-								*(uint *)(pc->ptexture_pages + 0x4c);
-							puVar6[7] = (uint)*(ushort *)((int)puVar7 + 0x2e);
-							puVar6[9] = (uint)*(ushort *)((int)puVar7 + 0x36);
-							puVar6 = puVar6 + 10;
+
+							//*local_a0_1124 = (uint)prim & 0xffffff;
+
+							setPolyFT4(prim);
+							addPrim(ot + (iVar1 >> 1), prim);
+
+							gte_stsxy(&prim->x3);
+
+							*(uint *)&prim->r0 = pc->colour;
+							*(uint *)&prim->u0 = (uint)vertex->uv | pc->clut;
+							*(uint *)&prim->u1 = (uint)vertex[1].uv | pc->tpage;
+							*(uint *)&prim->u2 = (uint)vertex[5].uv;
+							*(uint *)&prim->u3 = (uint)vertex[6].uv;
+
+							prim++;
+							//pc->primptr = (char*)prim;
+							return;
 						}
-						else {
-							if ((((ushort)DAT_1f800224 < 0x140) ||
-								((int)((uint)(DAT_1f80020c ^ DAT_1f800208) << 0x10) < 0)) ||
-								((int)((uint)(DAT_1f80020c ^ (ushort)DAT_1f800210) << 0x10) < 0))
+						else 
+						{
+							if ((((ushort)DAT_1f800224.x < 0x140) ||
+								((int)((uint)(ushort)(DAT_1f80020c.x ^ DAT_1f800208.x) << 0x10) < 0)) ||
+								((int)((uint)(ushort)(DAT_1f80020c.x ^ DAT_1f800210.x) << 0x10) < 0))
 								goto LAB_00042824;
+
 						LAB_00042900:
-							paaMVar4 = (MVERTEX(*)[5][5])(uint)(ushort)DAT_1f800210;
-							puVar6[6] = _DAT_1f80020c;
+							//local_a0_1124 = (uint *)(uint)(ushort)DAT_1f800210.x;
+							*(SXYPAIR *)&prim->x2 = DAT_1f80020c;
 						}
-						iVar1 = getCopReg(2, 7);
-						paaMVar3 = (MVERTEX(*)[5][5])(iVar9 + (iVar1 >> 1) * 4);
-						if (((DAT_1f80021c._2_2_ < 0x10a) || (DAT_1f800220._2_2_ < 0x10a)) ||
-							(((DAT_1f800224._2_2_ < 0x10a ||
-							((DAT_1f80020e < 0x10a || ((int)((uint)(DAT_1f80020e ^ DAT_1f80020a) << 0x10) < 0))
-								)) || ((int)((uint)(DAT_1f80020e ^ DAT_1f800210._2_2_) << 0x10) < 0)))) {
-							if (((0x13f < DAT_1f80020c) && (0x13f < (ushort)DAT_1f800220)) &&
-								(0x13f < (ushort)DAT_1f80021c)) {
-								if (((0x13f < (ushort)DAT_1f800224) &&
-									(-1 < (int)((uint)((ushort)DAT_1f800220 ^ (ushort)DAT_1f80021c) << 0x10))) &&
-									(paaMVar4 = (MVERTEX(*)[5][5])(DAT_1f800224 & 0xffff),
-										-1 < (int)((uint)((ushort)DAT_1f800220 ^ (ushort)DAT_1f800224) << 0x10)))
+
+						gte_stotz(&iVar1);
+						//puVar4 = ot + (iVar1 >> 1);
+
+						if ((((ushort)DAT_1f80021c.y < 0x10a) ||
+							((ushort)DAT_1f800220.y < 0x10a)) ||
+							((((ushort)DAT_1f800224.y < 0x10a ||
+							(((ushort)DAT_1f80020c.y < 0x10a ||
+							((int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800208.y) << 0x10) < 0)))) ||
+							((int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800210.y) << 0x10) < 0))))
+						{
+							if (((0x13f < (ushort)DAT_1f80020c.x) &&
+								(0x13f < (ushort)DAT_1f800220.x)) &&
+								(0x13f < (ushort)DAT_1f80021c.x))
+							{
+								if (((0x13f < (ushort)DAT_1f800224.x) &&
+									(-1 < (int)((uint)(ushort)(DAT_1f800220.x ^ DAT_1f80021c.x) << 0x10))) &&
+									(//local_a0_1124 = (uint *)(DAT_1f800224.x & 0xffff),
+									-1 < (int)((uint)(ushort)(DAT_1f800220.x ^ DAT_1f800224.x) << 0x10)))
 									goto LAB_00042ab4;
 							}
-							uVar2 = *(uint *)*paaMVar3;
-							*(uint *)*paaMVar3 = (uint)puVar6 & 0xffffff;
-							*puVar6 = uVar2 & 0xffffff | 0x9000000;
-							puVar6[1] = *(uint *)(pc->ptexture_pages + 0x4e);
-							uVar2 = getCopReg(2, 0xc);
-							puVar6[2] = uVar2;
-							uVar2 = getCopReg(2, 0xd);
-							puVar6[4] = uVar2;
-							uVar2 = getCopReg(2, 0xe);
-							puVar6[8] = uVar2;
-							puVar6[3] = (uint)*(ushort *)((int)puVar7 + 0x16) |
-								*(uint *)(pc->ptexture_pages + 0x4a);
-							puVar6[5] = (uint)*(ushort *)((int)puVar7 + 0x3e) |
-								*(uint *)(pc->ptexture_pages + 0x4c);
-							puVar6[7] = (uint)*(ushort *)((int)puVar7 + 0xe);
-							puVar6[9] = (uint)*(ushort *)((int)puVar7 + 0x36);
-							puVar6 = puVar6 + 10;
-							paaMVar4 = paaMVar3;
+
+							setPolyFT4(prim);
+
+							*(uint *)&prim->r0 = pc->colour;
+
+							gte_stsxy3(&prim->x0, &prim->x1, &prim->x3);
+
+							*(uint *)&prim->u0 = (uint)vertex[2].uv | pc->clut;
+							*(uint *)&prim->u1 = (uint)vertex[7].uv | pc->tpage;
+							*(uint *)&prim->u2 = (uint)vertex[1].uv;
+							*(uint *)&prim->u3 = (uint)vertex[6].uv;
+
+							prim++;
+							//local_a0_1124 = puVar4;
+
+							//pc->primptr = (char*)prim;
+							return;
 						}
 					}
+
 				LAB_00042ab4:
-					iVar8 = iVar8 + -1;
-					pMVar10 = (MVERTEX *)(&pMVar10[-0x19].vx + 0x50);
-				} while (iVar8 != -1);
+					iVar6--;
+					VST = (MVERTEX(*)[5][5])(VST-1 + 20);
+
+				} while (iVar6 != -1);
 			}
-			iVar11 = iVar5;
+
+			iVar7 = iVar5;
 		} while (iVar5 < n);
 	}
-	*(uint **)(pc->ptexture_pages + 0x46) = puVar6;
-	return;*/
+
+	pc->primptr = (char*)prim;*/
 }
 
 

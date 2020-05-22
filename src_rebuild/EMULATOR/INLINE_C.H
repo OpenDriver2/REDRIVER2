@@ -4,17 +4,19 @@
 extern void gte_SetGeomScreen(int h);
 extern int gte_ldlzc(int input);
 
+extern int docop2(int op);
+
 // load mtc2 9,10,11
 #define gte_ldclmv( r0 ) \
-	IR1 = *(ushort*)((char*)r0);\
-	IR2 = *(ushort*)((char*)r0+6);\
-	IR3 = *(ushort*)((char*)r0+12);\
+	MTC2(*(ushort*)((char*)r0), 9);\
+	MTC2(*(ushort*)((char*)r0+6), 10);\
+	MTC2(*(ushort*)((char*)r0+12), 11);\
 
 // store mfc2 9,10,11
 #define gte_stclmv( r0 ) \
-	*(ushort*)((char*)r0) = IR1; \
-	*(ushort*)((char*)r0 + 6) = IR2; \
-	*(ushort*)((char*)r0 + 12) = IR3;
+	*(ushort*)((char*)r0) = MFC2(9) & 0xFFFF; \
+	*(ushort*)((char*)r0 + 6) = MFC2(10) & 0xFFFF; \
+	*(ushort*)((char*)r0 + 12) = MFC2(11) & 0xFFFF;
 
 // load ctc2 8-11
 #define gte_SetLightMatrix( r0 ) \
@@ -107,12 +109,6 @@ extern int gte_ldlzc(int input);
 	MTC2(*(uint*)((char*)r0 + 4), 10);\
 	MTC2(*(uint*)((char*)r0 + 8), 11);
 
-// swc2 9-11
-#define gte_stlvl( r0 ) \
-	*(uint*)((char*)r0) = MFC2(9); \
-	*(uint*)((char*)r0 + 4) = MFC2(10);\
-	*(uint*)((char*)r0 + 8) = MFC2(11);
-
 // ctc2 21-23
 #define gte_ldfc( r0 ) \
 	CTC2(*(uint*)((char*)r0+0), 21);\
@@ -143,24 +139,111 @@ extern int gte_ldlzc(int input);
 	MTC2(*(uint*)((char*)r2+0), 4);\
 	MTC2(*(uint*)((char*)r2+4), 5);
 
+// swc2 14
+#define gte_stsxy( r0 ) \
+	*(uint*)((char*)r0) = MFC2(14);
+
 // mfc2 12-14
 #define gte_stsxy3( r0, r1, r2 )	\
-	*(uint*)((char*)r0+0) = SXY0;\
-	*(uint*)((char*)r1+0) = SXY1;\
-	*(uint*)((char*)r2+0) = SXY2;
+	*(uint*)((char*)r0) = MFC2(12);\
+	*(uint*)((char*)r1) = MFC2(13);\
+	*(uint*)((char*)r2) = MFC2(14);
 
-#define gte_rtpt() docop2(0x280030);
+// swc2 14
+#define gte_stsxy2( r0 ) gte_stsxy(r0)
 
+// swc2 13
+#define gte_stsxy1( r0 ) \
+	*(uint*)((char*)r0) = MFC2(13);
+
+// swc2 12
+#define gte_stsxy0( r0 ) \
+	*(uint*)((char*)r0) = MFC2(12);
+
+// swc2 8
 #define gte_stdp( r0 ) \
-	*(uint*)((char*)r0 + 0) = IR0; \
+	*(uint*)((char*)r0) = MFC2(8); \
 
+// cfc2 31
 #define gte_stflg( r0 ) \
-	*(uint*)((char*)r0+0) = FLAG;
+	*(uint*)((char*)r0) = CFC2(31);
 
+// swc2 7
+#define gte_stotz( r0 ) \
+	*(uint*)((char*)r0) = MFC2(7);
+
+// mfc2 19 
 #define gte_stszotz( r0 ) \
-	*(uint*)((char*)r0+0) = SZ3 >> 2;
+	*(uint*)((char*)r0) = MFC2(19) >> 2;
+
+// swc2 24
+#define gte_stopz( r0 ) \
+	*(uint*)((char*)r0) = MFC2(24);
+
+// swc2 19
+#define gte_stsz( r0 ) \
+	*(uint*)((char*)r0) = MFC2(19);
+
+// swc2 9-11
+#define gte_stlvl( r0 ) \
+	*(uint*)((char*)r0) = MFC2(9); \
+	*(uint*)((char*)r0 + 4) = MFC2(10);\
+	*(uint*)((char*)r0 + 8) = MFC2(11);
+
+// mfc2 9, 10, 11
+#define gte_stsv( r0 ) \
+	*(ushort*)((char*)r0) = MFC2(9) & 0xFFFF; \
+	*(ushort*)((char*)r0 + 2) = MFC2(10) & 0xFFFF;\
+	*(ushort*)((char*)r0 + 4) = MFC2(11) & 0xFFFF;
+
+// swc2 17,18,19
+#define gte_stsz3( r0, r1, r2 ) \
+	*(uint*)((char*)r0) = MFC2(17);\
+	*(uint*)((char*)r1) = MFC2(18);\
+	*(uint*)((char*)r2) = MFC2(19);
+
+// swc2 25,26,27
+#define gte_stlvnl( r0 ) \
+	*(uint*)((char*)r0 + 0) = MFC2(25);\
+	*(uint*)((char*)r0 + 4) = MFC2(26);\
+	*(uint*)((char*)r0 + 8) = MFC2(27);
+
+// ctc2 5,6,7
+#define gte_ldtr( r0, r1, r2 ) \
+	CTC2(*(uint*)((char*)r0), 5);\
+	CTC2(*(uint*)((char*)r1), 6);\
+	CTC2(*(uint*)((char*)r2), 7);\
+
+// cfc2 5,6,7
+#define gte_sttr( r0 ) \
+	*(uint*)((char*)r0 + 0) = CFC2(5);\
+	*(uint*)((char*)r0 + 4) = CFC2(6);\
+	*(uint*)((char*)r0 + 8) = CFC2(7);
+
+// swc2 22
+#define gte_strgb( r0 )\
+	*(uint*)((char*)r0) = MFC2(22);
+
+// swc2 20 21 22
+#define gte_strgb3( r0, r1, r2 )\
+	*(uint*)((char*)r0) = MFC2(20);\
+	*(uint*)((char*)r1) = MFC2(21);\
+	*(uint*)((char*)r2) = MFC2(22);
+
+// ctc2 13 14 15
+#define gte_ldbkdir( r0, r1, r2 ) \
+	CTC2(r0, 13); \
+	CTC2(r1, 14); \
+	CTC2(r2, 15);
+
+// cfc2 21,22,23
+#define gte_stfc( r0 )\
+	*(uint*)((char*)r0 + 0) = CFC2(21);\
+	*(uint*)((char*)r0 + 4) = CFC2(22);\
+	*(uint*)((char*)r0 + 8) = CFC2(23);
 
 #define gte_rtir() docop2(0x49E012);
+#define gte_rtpt() docop2(0x280030);
 
 // TODO: GTEMAC
 #define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\

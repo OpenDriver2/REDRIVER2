@@ -5,7 +5,7 @@
 
 void gte_SetGeomScreen(int h)
 {
-	H = h;
+	CTC2(*(uint*)&h, 26);
 }
 
 int gte_ldlzc(int input)

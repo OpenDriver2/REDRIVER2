@@ -219,18 +219,14 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 			*(uint *)&prim->r0 = uVar4 | 0x20000000;
 
 			docop2(0x1400006);
-			iVar1 = MAC0;  //getCopReg(2, 0x18);
+			gte_stopz(&iVar1);
 			docop2(0x158002d);
 
 			if (-1 < iVar1) 
 			{
-				uVar2 = SXY0; // getCopReg(2, 0xc);
-				*(uint *)&prim->x0 = uVar2;
-				uVar2 = SXY1; // getCopReg(2, 0xd);
-				*(uint *)&prim->x1 = uVar2;
-				uVar2 = SXY2; // getCopReg(2, 0xe);
-				*(uint *)&prim->x2 = uVar2;
-				iVar1 = OTZ; // getCopReg(2, 7);
+				gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+				gte_stotz(&iVar1);
 
 				setPolyF3(prim);
 				addPrim(ot + (iVar1 >> 1), prim);
@@ -339,19 +335,16 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 			*(uint *)&prim->u0 = iVar4 + uVar2;
 			*(uint *)&prim->u1 = iVar5 + uVar2;
 			*(CAR_POLY **)&prim->u2 = src;
+
 			docop2(0x1400006);
-			iVar3 = MAC0; // getCopReg(2, 0x18);
+			gte_stopz(&iVar3);
 			docop2(0x158002d);
 
 			if (-1 < iVar3) 
 			{
-				uVar1 = SXY0; // getCopReg(2, 0xc);
-				*(uint *)&prim->x0 = uVar1;
-				uVar1 = SXY1; //getCopReg(2, 0xd);
-				*(uint *)&prim->x1 = uVar1;
-				uVar1 = SXY2; //getCopReg(2, 0xe);
-				*(uint *)&prim->x2 = uVar1;
-				iVar3 = OTZ; //getCopReg(2, 7);
+				gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+				gte_stotz(&iVar3);
 
 				setPolyFT3(prim);
 				addPrim(ot + (iVar3 >> 1), prim);
@@ -465,17 +458,18 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		gte_ldv3(pSVar8, pSVar6, pSVar4);
 
 		docop2(0x280030);
+		docop2(0x1400006);
+
 		uVar9 = src->nindices;
 		uVar12 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 5 & 0x7f8U));
-		docop2(0x1400006);
 		uVar11 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 0xd & 0x7f8U));
 
-		iVar1 = MAC0;	//  getCopReg(2, 0x18);
+		gte_stopz(&iVar1);
 
 		docop2(0x158002d);
 		src = src + 1;
 
-		iVar2 = OTZ;	// getCopReg(2, 7);
+		gte_stotz(&iVar2);
 
 		if (-1 < iVar1 && 0 < iVar2) 
 		{
@@ -489,12 +483,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 			*(uint *)&prim->u1 = iVar14 + uVar7;
 			*(uint *)&prim->u2 = iVar13 + uVar7;
 
-			uVar3 = SXY0;	// getCopReg(2, 0xc);
-			*(uint *)&prim->x0 = uVar3;
-			uVar3 = SXY1;	// getCopReg(2, 0xd);
-			*(uint *)&prim->x1 = uVar3;
-			uVar3 = SXY2;	// getCopReg(2, 0xe);
-			*(uint *)&prim->x2 = uVar3;
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
 			setPolyGT3(prim);
 			addPrim(pg->ot + (iVar2 >> 1), prim);
@@ -605,19 +594,15 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			docop2(0x1400006);
 
-			iVar2 = MAC0; // getCopReg(2, 0x18);
+			gte_stopz(&iVar2);
 			docop2(0x158002d);
 
-			local_4 = OTZ;// getCopReg(2, 7);
+			gte_stotz(&local_4);
 
 			if (-1 < iVar2 && 0 < local_4)
 			{
-				uVar3 = SXY0; // getCopReg(2, 0xc);
-				*(uint *)&prim->x0 = uVar3;
-				uVar3 = SXY1; // getCopReg(2, 0xd);
-				*(uint *)&prim->x1 = uVar3;
-				uVar3 = SXY2; // getCopReg(2, 0xe);
-				*(uint *)&prim->x2 = uVar3;
+				gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
 				*(uint *)&prim->u0 = (uVar8 & 0xffff | (uint)uVar1 << 0x10) + uVar5;
 				*(uint *)&prim->u1 = iVar9 + uVar5;
 				*(uint *)&prim->u2 = iVar10 + uVar5;
@@ -1137,13 +1122,9 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, in
 
 	docop2(0x480012);
 
-	modelLocation.vx = MAC1;  //getCopReg(2, 0x19);
-	modelLocation.vy = MAC2;  //getCopReg(2, 0x1a);
-	modelLocation.vz = MAC3;  //getCopReg(2, 0x1b);
+	gte_stlvnl(&modelLocation);
 
-	TRX = modelLocation.vx;
-	TRY = modelLocation.vy;
-	TRZ = modelLocation.vz;
+	gte_SetTransVector(&modelLocation);
 
 	savedSP = SetSp(0x1f800308);
 
@@ -1447,13 +1428,14 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 		docop2(0x486012);
 
-		uVar10 = IR1;  //getCopReg(2, 0x4800);
-		uVar11 = IR2;  //getCopReg(2, 0x5000);
-		uVar12 = IR3;  //getCopReg(2, 0x5800);
+		VECTOR newTransform;
+		gte_stlvl(&newTransform);
 
-		TRX = uVar10 + pos->vx;
-		TRY = uVar11 + pos->vy;
-		TRZ = uVar12 + pos->vz;
+		newTransform.vx += pos->vx;
+		newTransform.vy += pos->vy;
+		newTransform.vz += pos->vz;
+
+		gte_SetTransVector(&newTransform);
 
 		if ((wheelnum & 1) == 0) 
 		{
@@ -1583,17 +1565,15 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 		docop2(0x280030);
 		docop2(0x1400006);
 
-		iVar3 = MAC0;	//getCopReg(2, 0x18);
-		uVar4 = SXY0;	//getCopReg(2, 0xc);
-
-		*(uint *)&local_t0_688->x0 = uVar4;
+		gte_stopz(&iVar3);
+		gte_stsxy0(&local_t0_688->x0);
 
 		gte_ldv0((SVECTOR *)(verts + (uVar8 >> 0x18)));
 
 		docop2(0x180001);
 		docop2(0x168002e);
 
-		iVar5 = OTZ;
+		gte_stotz(&iVar5);
 
 		if (2 < iVar5) 
 		{
@@ -1624,30 +1604,22 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 				bVar6 = local_t0_688->code | 2;
 			}
 
-			//local_t0_688->code = bVar6;
-			//*(uint *)&local_t0_688->u0 = *(ushort*)&local_t1_28->uv0 | (uint)sVar1 << 0x10;
+			gte_stsxy3(&local_t0_688->x1, &local_t0_688->x3, &local_t0_688->x2);
+
 			local_t0_688->u0 = local_t1_28->uv1.u;
 			local_t0_688->v0 = local_t1_28->uv1.v;
 			local_t0_688->clut = sVar1;
 
-			uVar4 = SXY0;// getCopReg(2, 0xc);
-			*(uint *)&local_t0_688->x1 = uVar4;
 			local_t0_688->u1 = local_t1_28->uv0.u;
 			local_t0_688->v1 = local_t1_28->uv0.v;
 			local_t0_688->tpage = uVar2 | 0x20;
-			//*(uint *)&local_t0_688->u1 = *(ushort*)&local_t1_28->uv1 | ((uint)uVar2 | 0x20) << 0x10;
 
-			uVar4 = SXY2;// getCopReg(2, 0xe);
-			*(uint *)&local_t0_688->x2 = uVar4;
 			local_t0_688->u2 = local_t1_28->uv2.u;
 			local_t0_688->v2 = local_t1_28->uv2.v;
 
-			//*(uint *)&local_t0_688->u2 = *(ushort*)&local_t1_28->uv3;
-			uVar4 = SXY1;// getCopReg(2, 0xd);
-			*(uint *)&local_t0_688->x3 = uVar4;
 			local_t0_688->u3 = local_t1_28->uv3.u;
 			local_t0_688->v3 = local_t1_28->uv3.v;
-			//*(uint *)&local_t0_688->u3 = *(ushort*)&local_t1_28->uv2;
+
 
 			local_t0_688++;
 		}
@@ -1840,9 +1812,8 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 	gte_ldv0(&lightsourcevector);
 	docop2(0x486012);
 
-	light_matrix.m[0][0] = IR1;
-	light_matrix.m[0][1] = IR2;
-	light_matrix.m[0][2] = IR3;
+	gte_stsv(light_matrix.m[0]);
+
 
 	bVar2 = false;
 
@@ -1909,9 +1880,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 					docop2(0x118043f);
 
-					*(uint*)&c0 = RGB0;
-					*(uint*)&c1 = RGB1;
-					*(uint*)&c2 = RGB2;
+					gte_strgb3(&c0,&c1,&c2);
 
 					//c0 = (short)uVar4;
 					//uVar4 = uVar4 & 0xffff;
@@ -2509,15 +2478,11 @@ void setupLightingMatrices(void)
 
 	if (gTimeOfDay == 3) 
 	{
-		RBK = 0x400;
-		GBK = 0x400;
-		BBK = 0x400;
+		gte_ldbkdir(0x400, 0x400, 0x400);
 		return;
 	}
 
-	RBK = 0x8c0;
-	GBK = 0x8c0;
-	BBK = 0x8c0;
+	gte_ldbkdir(0x8c0, 0x8c0, 0x8c0);
 }
 
 

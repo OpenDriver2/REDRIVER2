@@ -346,9 +346,7 @@ void StepOneCar(_CAR_DATA *cp)
 
 			docop2(0x480012);
 
-			pointPos[0] = MAC1; // getCopReg(2, 0x19);
-			pointPos[1] = MAC2; // getCopReg(2, 0x1a);
-			pointPos[2] = MAC3; // getCopReg(2, 0x1b);
+			gte_stlvnl(pointPos);
 
 			lever[0] = pointPos[0] - cp->hd.where.t[0];
 			lever[1] = pointPos[1] - cp->hd.where.t[1];
@@ -1388,9 +1386,9 @@ LAB_00082b9c:
 		gte_ldv0(&car_cos->wheelDisp[i]);
 
 		docop2(0x480012);
-		wheelPosPtr->vx = MAC1;
-		wheelPosPtr2->vy = MAC2;
-		wheelPosPtr2->vz = MAC3;
+		gte_stlvnl(wheelPos);
+
+
 		iVar4 = FindSurfaceD2(wheelPosPtr, surfaceNormalPtr, surfacePointPtr, surfacePtrPtr);
 		bVar7 = false;
 		iVar4 = (iVar4 * (0x7e90 - wetness) >> 0xf) + 500;

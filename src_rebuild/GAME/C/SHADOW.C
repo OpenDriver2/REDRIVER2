@@ -1165,25 +1165,16 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip
 	points[3].vy = -shadowPoints[2].vy - camera_position.vy;
 	points[3].vz = shadowPoints[2].vz - camera_position.vz;
 
-	uVar1 = SXY0;  //getCopReg(2, 0xc);
-	*(uint *)&sps->x0 = uVar1;
-	uVar1 = SXY1;  //getCopReg(2, 0xd);
-	*(uint *)&sps->x1 = uVar1;
-	uVar1 = SXY2;  //getCopReg(2, 0xe);
-	*(uint *)&sps->x3 = uVar1;
+	gte_stsxy3(&sps->x0, &sps->x1, &sps->x3);
 
-	z0 = SZ1; //getCopReg(2, 0x11);
-	z1 = SZ2; // getCopReg(2, 0x12);
-	z2 = SZ3; //getCopReg(2, 0x13);
+	gte_stsz3(&z0,&z1,&z2);
 
 	gte_ldv0(&points[3]);
 
 	docop2(0x180001);
 
-	z3 = SZ3;		//getCopReg(2, 0x13);
-	uVar1 = SXY2;	// getCopReg(2, 0xe);
-
-	*(uint *)&sps->x2 = uVar1;
+	gte_stsz(&z3);
+	gte_stsxy(&sps->x2);
 
 	if (z0 < z1) {
 		z0 = (z0 + z1) / 2;
