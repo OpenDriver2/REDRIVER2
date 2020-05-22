@@ -522,6 +522,11 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 		vertex[3].x = vertex[0].x + 1;
 		vertex[3].y = vertex[0].y;
 	} // TODO diagonal line alignment
+
+#ifdef PGXP
+	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
+	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
+#endif
 }
 
 void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx)
@@ -540,23 +545,23 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	vertex[2].y = p2[1];
 
 #ifdef PGXP
-	uint lookup0 = p0[0].sh | (p0[1].sh << 16);
-	uint lookup1 = p1[0].sh | (p1[1].sh << 16);
-	uint lookup2 = p2[0].sh | (p2[1].sh << 16);
+	uint lookup0 = PGXP_LOOKUP_HALF(p0[0], p0[1]);
+	uint lookup1 = PGXP_LOOKUP_HALF(p1[0], p1[1]);
+	uint lookup2 = PGXP_LOOKUP_HALF(p2[0], p2[1]);
 
 	PGXPVData vd0, vd1, vd2;
 
 	PGXP_GetCacheData(vd0, lookup0, gteidx);
 	vertex[0].w = vd0.z;
-	vertex[0].z = 0.95f;
+	vertex[0].z = 0.0f;
 
 	PGXP_GetCacheData(vd1, lookup1, gteidx);
 	vertex[1].w = vd1.z;
-	vertex[1].z = 0.95f;
+	vertex[1].z = 0.0f;
 
 	PGXP_GetCacheData(vd2, lookup2, gteidx);
 	vertex[2].w = vd2.z;
-	vertex[2].z = 0.95f;
+	vertex[2].z = 0.0f;
 #endif
 }
 
@@ -580,28 +585,28 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	vertex[3].y = p3[1];
 
 #ifdef PGXP
-	uint lookup0 = p0[0].sh | (p0[1].sh << 16);
-	uint lookup1 = p1[0].sh | (p1[1].sh << 16);
-	uint lookup2 = p2[0].sh | (p2[1].sh << 16);
-	uint lookup3 = p3[0].sh | (p3[1].sh << 16);
+	uint lookup0 = PGXP_LOOKUP_HALF(p0[0], p0[1]);
+	uint lookup1 = PGXP_LOOKUP_HALF(p1[0], p1[1]);
+	uint lookup2 = PGXP_LOOKUP_HALF(p2[0], p2[1]);
+	uint lookup3 = PGXP_LOOKUP_HALF(p3[0], p3[1]);
 
 	PGXPVData vd0, vd1, vd2, vd3;
 
 	PGXP_GetCacheData(vd0, lookup0, gteidx);
 	vertex[0].w = vd0.z;
-	vertex[0].z = 0.95f;
+	vertex[0].z = 0.0f;
 
 	PGXP_GetCacheData(vd1, lookup1, gteidx);
 	vertex[1].w = vd1.z;
-	vertex[1].z = 0.95f;
+	vertex[1].z = 0.0f;
 
 	PGXP_GetCacheData(vd2, lookup2, gteidx);
 	vertex[2].w = vd2.z;
-	vertex[2].z = 0.95f;
+	vertex[2].z = 0.0f;
 
 	PGXP_GetCacheData(vd3, lookup3, gteidx);
 	vertex[3].w = vd3.z;
-	vertex[3].z = 0.95f;
+	vertex[3].z = 0.0f;
 #endif
 }
 
@@ -622,12 +627,12 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 	vertex[3].y = vertex[0].y;
 
 #ifdef PGXP
-	uint lookup0 = p0[0].sh | (p0[1].sh << 16);
+	uint lookup0 = PGXP_LOOKUP_HALF(p0[0], p0[1]);
 
 	PGXPVData vd0;
 	PGXP_GetCacheData(vd0, lookup0, gteidx);
 	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = vd0.z;
-	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.95f;
+	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
 #endif
 }
 
@@ -771,6 +776,11 @@ void Emulator_GenerateTexcoordArrayLineZero(struct Vertex* vertex, unsigned char
 	vertex[3].dither = dither;
 	vertex[3].page   = 0;
 	vertex[3].clut   = 0;
+
+#ifdef PGXP
+	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
+	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
+#endif
 }
 
 void Emulator_GenerateTexcoordArrayTriangleZero(struct Vertex* vertex, unsigned char dither)
@@ -797,6 +807,11 @@ void Emulator_GenerateTexcoordArrayTriangleZero(struct Vertex* vertex, unsigned 
 	vertex[2].dither = dither;
 	vertex[2].page   = 0;
 	vertex[2].clut   = 0;
+
+#ifdef PGXP
+	vertex[0].w = vertex[1].w = vertex[2].w = 1.0f;
+	vertex[0].z = vertex[1].z = vertex[2].z = 0.0f;
+#endif
 }
 
 void Emulator_GenerateTexcoordArrayQuadZero(struct Vertex* vertex, unsigned char dither)
@@ -958,6 +973,7 @@ const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
 	"varying vec4 v_page_clut;\n"
+	"varying float v_depth;\n"
 	"#ifdef VERTEX\n"
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
@@ -973,7 +989,7 @@ const char* gte_shader_4 =
 	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
 	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
-	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
+	"		gl_Position = Projection * vec4(a_position.xy, a_z, 1.0);\n"
 	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"
@@ -1267,7 +1283,8 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	//glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
 	glGenTextures(1, &vramTexture);
@@ -1703,6 +1720,10 @@ bool Emulator_BeginScene()
 
 #if defined(OGL) || defined(OGLES)
 	glBindVertexArray(dynamic_vertex_array);
+
+	glClearDepth(1.0f);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 #elif defined(D3D9)
 	d3ddev->BeginScene();
 	d3ddev->SetVertexDeclaration(vertexDecl);

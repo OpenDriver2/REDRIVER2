@@ -510,6 +510,26 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	return false;
 }
 
+void PGXP_UpdateCacheLookup(uint old_lookup, uint new_lookup, float new_z, ushort indexhint)
+{
+	if (indexhint == 0xFFFF)
+		return;
+
+	int start = indexhint - 8; // index hint allows us to start from specific index
+
+	for (int i = max(0, start); i < g_pgxpVertexIndex; i++)
+	{
+		if (g_pgxpCache[i].lookup == old_lookup)
+		{
+			if (new_z >= 0)
+				g_pgxpCache[i].z = new_z;
+
+			g_pgxpCache[i].lookup = new_lookup;
+			return;
+		}
+	}
+}
+
 #endif // PGXP
 
 int docop2(int op) {
@@ -557,32 +577,11 @@ int docop2(int op) {
 			g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
 
 			PGXPVData vdata;
-			vdata.lookup = g_FP_SXYZ2.x.sh | (g_FP_SXYZ2.y.sh << 16);		// hash short values
+			vdata.lookup = PGXP_LOOKUP_HALF(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
 			vdata.z = g_FP_SXYZ2.z;		// store Z
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 		}
-
-		//{
-		//	const double one_by_4096 = 1.0f / 4096.0f;
-		//	const double one_by_65k = 1.0f / (128.0f*1024.0f);
-
-		//	double fMAC1 = ((double)((float)TRX * 4096.0f) + ((float)R11 * (float)VX0) + ((float)R12 * (float)VY0) + ((float)R13 * (float)VZ0));
-		//	double fMAC2 = ((double)((float)TRY * 4096.0f) + ((float)R21 * (float)VX0) + ((float)R22 * (float)VY0) + ((float)R23 * (float)VZ0));
-		//	double fMAC3 = ((double)((float)TRZ * 4096.0f) + ((float)R31 * (float)VX0) + ((float)R32 * (float)VY0) + ((float)R33 * (float)VZ0));
-
-		//	double fIR1 = one_by_4096 * fMAC1;
-		//	double fIR2 = one_by_4096 * fMAC2;
-
-		//	g_FP_SXYZ0 = g_FP_SXYZ1;
-		//	g_FP_SXYZ1 = g_FP_SXYZ2;
-
-		//	double scale = h_over_sz3;// 4096.0f; // h_over_sz3
-
-		//	g_FP_SXYZ2.x = (double(OFX) + fIR1 * scale) / float(1 << 16);
-		//	g_FP_SXYZ2.y = (double(OFY) + fIR2 * scale) / float(1 << 16);
-		//	g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
-		//}
 #endif
         MAC0 = int(F((long long)DQB + ((long long)DQA * h_over_sz3)));
         IR0 = Lm_H(m_mac0, 1);

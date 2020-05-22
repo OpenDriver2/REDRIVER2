@@ -15,6 +15,9 @@ extern int g_pgxpVertexIndex;
 
 void PGXP_ClearCache();
 bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
+void PGXP_UpdateCacheLookup(uint old_lookup, uint new_lookup, float new_z, ushort indexhint);
+
+#define PGXP_LOOKUP_HALF(x, y) (x.sh | (y.sh << 16))
 #endif
 
 extern short rcossin_tbl[8192];
