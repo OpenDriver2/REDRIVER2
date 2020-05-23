@@ -615,10 +615,8 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 	vertex[3].y = vertex[0].y;
 
 #ifdef PGXP
-	PGXP_APPLY(vertex[0], p0);
-
-	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w;
-	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z;
+	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w = 1.0f;
+	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z = 0.0f;
 #endif
 }
 
@@ -762,11 +760,6 @@ void Emulator_GenerateTexcoordArrayLineZero(struct Vertex* vertex, unsigned char
 	vertex[3].dither = dither;
 	vertex[3].page   = 0;
 	vertex[3].clut   = 0;
-
-#ifdef PGXP
-	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
-	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
-#endif
 }
 
 void Emulator_GenerateTexcoordArrayTriangleZero(struct Vertex* vertex, unsigned char dither)
@@ -794,10 +787,6 @@ void Emulator_GenerateTexcoordArrayTriangleZero(struct Vertex* vertex, unsigned 
 	vertex[2].page   = 0;
 	vertex[2].clut   = 0;
 
-#ifdef PGXP
-	vertex[0].w = vertex[1].w = vertex[2].w = 1.0f;
-	vertex[0].z = vertex[1].z = vertex[2].z = 0.0f;
-#endif
 }
 
 void Emulator_GenerateTexcoordArrayQuadZero(struct Vertex* vertex, unsigned char dither)
@@ -950,16 +939,17 @@ GLint u_Projection;
 
 #ifdef PGXP
 #define GTE_PERSPECTIVE_CORRECTION \
-"		gl_Position *= a_w;\n"
+		"	vec4 fragPosition = Projection * vec4(a_position.xy, a_z, 1.0) * a_w;\n"\
+		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION
+		"	gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
 #endif
 
 const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
 	"varying vec4 v_page_clut;\n"
-	"varying float v_depth;\n"
 	"#ifdef VERTEX\n"
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
@@ -975,7 +965,6 @@ const char* gte_shader_4 =
 	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
 	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
-	"		gl_Position = Projection * vec4(a_position.xy, a_z, 1.0);\n"
 	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"
@@ -1019,7 +1008,6 @@ const char* gte_shader_8 =
 	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
 	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
-	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
 	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"
@@ -1057,7 +1045,6 @@ const char* gte_shader_16 =
 	"		v_texcoord.xy *= vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
 	"		v_color = a_color;\n"
 	"		v_color.xyz *= a_texcoord.z;\n"
-	"		gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
 	GTE_PERSPECTIVE_CORRECTION
 	"	}\n"
 	"#else\n"

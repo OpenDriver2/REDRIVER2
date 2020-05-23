@@ -31,7 +31,7 @@ extern int g_pgxpVertexIndex;
 
 void PGXP_ClearCache();
 bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
-void PGXP_UpdateCacheLookup(uint old_lookup, uint new_lookup, float new_z, ushort indexhint);
+ushort PGXP_GetIndex();
 #else
 typedef short VERTTYPE;
 #endif

@@ -479,10 +479,22 @@ PGXPVector3D g_FP_SXYZ2;
 
 PGXPVData g_pgxpCache[65535];
 int g_pgxpVertexIndex = 0;
+bool g_pgxpTransformed = false;
 
 void PGXP_ClearCache()
 {
 	g_pgxpVertexIndex = 0;
+}
+
+ushort PGXP_GetIndex()
+{
+	if (g_pgxpTransformed)
+	{
+		g_pgxpTransformed = false;
+		return g_pgxpVertexIndex;
+	}
+	
+	return 0xFFFF;
 }
 
 // sets copy of cached vertex data to out
@@ -575,6 +587,7 @@ int docop2(int op) {
 			vdata.pz = g_FP_SXYZ2.pz;
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
+			g_pgxpTransformed = true;
 		}
 #endif
         MAC0 = int(F((long long)DQB + ((long long)DQA * h_over_sz3)));
@@ -1004,6 +1017,7 @@ int docop2(int op) {
 			vdata.pz = g_FP_SXYZ2.pz;
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
+			g_pgxpTransformed = true;
 #endif
         }
 
