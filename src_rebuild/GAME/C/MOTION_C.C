@@ -1,16 +1,8 @@
 #include "THISDUST.H"
 #include "MOTION_C.H"
-
-TEXTURE_DETAILS jeans_texture;
-TEXTURE_DETAILS arm1_texture;
-TEXTURE_DETAILS forearm1_texture;
-TEXTURE_DETAILS chest1_texture;
-TEXTURE_DETAILS head1_texture;
-
-MODEL* gPed1HeadModelPtr;
-MODEL* gPed2HeadModelPtr;
-MODEL* gPed3HeadModelPtr;
-MODEL* gPed4HeadModelPtr;
+#include "PEDEST.H"
+#include "SYSTEM.H"
+#include "STRINGS.H"
 
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
@@ -47,7 +39,7 @@ PED_DATA MainPed[23] =
 	{ 2, 68u, &jeans_texture, JEANS_PAL }
 };
 
-/*
+
 // FIXME: could be incorrect
 BONE Skel[23] =
 {
@@ -305,9 +297,23 @@ BONE Skel[23] =
 	NULL
   }
 };
-*/
 
 int boneIdvals[15] = { 2, 3, 4, 6, 7, 8, 0xA, 0xB, 0xC, 0xF, 0x10, 0x11, 0x13, 0x14, 0x15 };
+
+TEXTURE_DETAILS jeans_texture;
+TEXTURE_DETAILS arm1_texture;
+TEXTURE_DETAILS forearm1_texture;
+TEXTURE_DETAILS chest1_texture;
+TEXTURE_DETAILS head1_texture;
+
+MODEL* gPed1HeadModelPtr;
+MODEL* gPed2HeadModelPtr;
+MODEL* gPed3HeadModelPtr;
+MODEL* gPed4HeadModelPtr;
+
+char* MotionCaptureData[24];	// [A] actually, pointers
+int ThisMotion;
+
 
 
 // decompiled code
@@ -328,18 +334,21 @@ int boneIdvals[15] = { 2, 3, 4, 6, 7, 8, 0xA, 0xB, 0xC, 0xF, 0x10, 0x11, 0x13, 0
 		// Start line: 5202
 	/* end block 3 */
 	// End Line: 5203
-
+// [D]
 void ProcessMotionLump(char *lump_ptr, int lump_size)
 {
-	UNIMPLEMENTED();
-	/*
-	if (ThisMotion < 0x18) {
-		memcpy(mallocptr, lump_ptr, lump_size);
-		*(char **)(MotionCaptureData + ThisMotion) = mallocptr;
-		mallocptr = mallocptr + (lump_size + 3U & 0xfffffffc);
-		ThisMotion = ThisMotion + 1;
+	if (ThisMotion < 24) 
+	{
+		int size = (lump_size + 3U & 0xfffffffc);
+
+		MALLOC_BEGIN();
+		MotionCaptureData[ThisMotion] = D_MALLOC(size);
+		MALLOC_END();
+
+		memcpy(MotionCaptureData[ThisMotion], lump_ptr, lump_size);
+
+		ThisMotion++;
 	}
-	return;*/
 }
 
 
@@ -358,12 +367,10 @@ void ProcessMotionLump(char *lump_ptr, int lump_size)
 	/* end block 2 */
 	// End Line: 5390
 
+// [D]
 void SetupPedMotionData(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	pPed->motion = (char *)MotionCaptureData[pPed->type];
-	return;*/
+	pPed->motion = MotionCaptureData[pPed->type];
 }
 
 
@@ -392,19 +399,17 @@ void SetupPedMotionData(PEDESTRIAN *pPed)
 	/* end block 4 */
 	// End Line: 6513
 
+// [D]
 void SetupPedestrian(PEDESTRIAN *pedptr)
 {
-	/*
-	PED_ACTION_TYPE PVar1;
+	pedptr->velocity.vy = 10;
+	pedptr->speed = 10;
 
-	(pedptr->velocity).vy = 10;
-	pedptr->speed = '\n';
-	PVar1 = pedptr->type;
-	(pedptr->dir).vx = 0;
-	(pedptr->dir).vz = 0;
-	pedptr->frame1 = '\0';
-	pedptr->motion = (char *)MotionCaptureData[PVar1];
-	return;*/
+	pedptr->dir.vx = 0;
+	pedptr->dir.vz = 0;
+
+	pedptr->frame1 = 0;
+	pedptr->motion = MotionCaptureData[pedptr->type];
 }
 
 
@@ -674,86 +679,101 @@ LAB_000657dc:
 	// End Line: 2721
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
+int cTannerVNumbers[24];
+SVECTOR vTannerList[210];
 
+int cJerichoVNumbers[7];
+SVECTOR vJerichoList[102];
+
+int vStored = 0;
+
+// [D]
 void StoreVertexLists(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 *puVar1;
-	short *psVar2;
-	BONE *pBVar3;
-	undefined2 *puVar4;
-	SVECTOR *pSVar5;
-	undefined2 *puVar6;
-	short *psVar7;
+	short *psVar1;
+	BONE *pBVar2;
+	SVECTOR *pSVar3;
+	SVECTOR *local_a2_76;
+	SVECTOR *local_a2_308;
+	int iVar4;
+	MODEL *pMVar5;
+	MODEL *local_t0_256;
+	int iVar6;
+	int iVar7;
 	int iVar8;
-	MODEL *pMVar9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
-	int iVar13;
 
-	iVar12 = 0;
-	iVar13 = 0;
-	pBVar3 = &Skel;
-	iVar11 = 0x15;
-	do {
-		iVar8 = 0;
-		if (pBVar3->pModel == (MODEL **)0x0) {
-			*(undefined4 *)(&cTannerVNumbers + (uint)pBVar3->id * 4) = 0xffffffff;
-		}
-		else {
-			pMVar9 = *pBVar3->pModel;
-			puVar6 = (undefined2 *)pMVar9->vertices;
-			*(int *)(&cTannerVNumbers + ((uint)pBVar3->id & 0x7f) * 4) = iVar13;
-			if (pMVar9->num_vertices != 0) {
-				puVar4 = &vTannerList + iVar12 * 4;
-				do {
-					iVar13 = iVar13 + 1;
-					iVar8 = iVar8 + 1;
-					*puVar4 = *puVar6;
-					iVar12 = iVar12 + 1;
-					puVar4[1] = puVar6[1];
-					puVar1 = puVar6 + 2;
-					puVar6 = puVar6 + 4;
-					puVar4[2] = *puVar1;
-					puVar4 = puVar4 + 4;
-				} while (iVar8 < (int)(uint)pMVar9->num_vertices);
-			}
-		}
-		pBVar3 = pBVar3 + 1;
-		iVar11 = iVar11 + -1;
-	} while (-1 < iVar11);
+	iVar7 = 0;
 	iVar8 = 0;
-	iVar13 = 0;
-	iVar12 = 0;
-	iVar11 = 0;
+	pBVar2 = Skel;
+	iVar6 = 21;
+
 	do {
-		iVar10 = *(int *)((int)&pmJerichoModels6 + iVar11);
-		iVar12 = iVar12 + 1;
-		if (iVar10 != 0) {
-			psVar7 = *(short **)(iVar10 + 0x10);
-			*(int *)((int)&cJerichoVNumbers + iVar11) = iVar8;
-			iVar11 = 0;
-			if (*(short *)(iVar10 + 0xc) != 0) {
-				pSVar5 = &vJerichoList + iVar13;
+		iVar4 = 0;
+		if (pBVar2->pModel == NULL)
+		{
+			cTannerVNumbers[pBVar2->id] = -1;
+		}
+		else
+		{
+			pMVar5 = *pBVar2->pModel;
+			local_a2_76 = (SVECTOR *)pMVar5->vertices;
+			cTannerVNumbers[(uint)pBVar2->id & 0x7f] = iVar8;
+
+			if (pMVar5->num_vertices != 0)
+			{
+				pSVar3 = vTannerList + iVar7;
 				do {
 					iVar8 = iVar8 + 1;
-					iVar11 = iVar11 + 1;
-					pSVar5->vx = *psVar7;
-					iVar13 = iVar13 + 1;
-					pSVar5->vy = psVar7[1];
-					psVar2 = psVar7 + 2;
-					psVar7 = psVar7 + 4;
-					pSVar5->vz = *psVar2;
-					pSVar5 = pSVar5 + 1;
-				} while (iVar11 < (int)(uint)*(ushort *)(iVar10 + 0xc));
+					iVar4 = iVar4 + 1;
+					pSVar3->vx = local_a2_76->vx;
+					iVar7 = iVar7 + 1;
+					pSVar3->vy = local_a2_76->vy;
+					psVar1 = &local_a2_76->vz;
+					local_a2_76 = local_a2_76 + 1;
+					pSVar3->vz = *psVar1;
+					pSVar3 = pSVar3 + 1;
+				} while (iVar4 < (int)(uint)pMVar5->num_vertices);
 			}
 		}
-		iVar11 = iVar12 * 4;
-	} while (iVar12 < 6);
+		pBVar2 = pBVar2 + 1;
+		iVar6 = iVar6 + -1;
+	} while (-1 < iVar6);
+
+	iVar4 = 0;
+	iVar8 = 0;
+	iVar7 = 0;
+	iVar6 = 0;
+
+	do {
+		local_t0_256 = *(MODEL **)((int)pmJerichoModels + iVar6);
+
+		iVar7 = iVar7 + 1;
+		if (local_t0_256 != NULL)
+		{
+			local_a2_308 = (SVECTOR *)local_t0_256->vertices;
+			*(int *)((int)cJerichoVNumbers + iVar6) = iVar4;
+			iVar6 = 0;
+
+			if (local_t0_256->num_vertices != 0)
+			{
+				pSVar3 = vJerichoList + iVar8;
+				do {
+					iVar4 = iVar4 + 1;
+					iVar6 = iVar6 + 1;
+					pSVar3->vx = local_a2_308->vx;
+					iVar8 = iVar8 + 1;
+					pSVar3->vy = local_a2_308->vy;
+					psVar1 = &local_a2_308->vz;
+					local_a2_308 = local_a2_308 + 1;
+					pSVar3->vz = *psVar1;
+					pSVar3 = pSVar3 + 1;
+				} while (iVar6 < (int)(uint)local_t0_256->num_vertices);
+			}
+		}
+		iVar6 = iVar7 * 4;
+	} while (iVar7 < 6);
+
 	vStored = 1;
-	return;*/
 }
 
 
@@ -797,9 +817,14 @@ void StoreVertexLists(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+PEDESTRIAN *pDrawingPed = NULL;
+
 void SetupTannerSkeleton(void)
 {
 	UNIMPLEMENTED();
+
+
+
 	/*
 	short sVar1;
 	SVECTOR *pSVar2;
@@ -2007,28 +2032,27 @@ void DrawCiv(PEDESTRIAN *pPed)
 	/* end block 2 */
 	// End Line: 7525
 
+// [D]
 void SetSkelModelPointers(int type)
 {
-	UNIMPLEMENTED();
-	/*
 	if (type == 1) {
-		BONE_000a0944.pModel = &pmJerichoModels6;
-		BONE_000a09cc.pModel = &PTR_000d95bc;
-		BONE_000a0a54.pModel = &PTR_000d95c0;
-		BONE_000a0a98.pModel = &PTR_000d95c4;
-		BONE_000a0b64.pModel = &PTR_000d95c8;
-		BONE_000a0ba8.pModel = &PTR_000d95cc;
-		BONE_000a0c74.pModel = (MODEL **)0x0;
+		Skel[2].pModel = &pmJerichoModels[0];
+		Skel[4].pModel = &pmJerichoModels[1];
+		Skel[6].pModel = &pmJerichoModels[2];
+		Skel[7].pModel = &pmJerichoModels[3];
+		Skel[10].pModel = &pmJerichoModels[4];
+		Skel[11].pModel = &pmJerichoModels[5];
+		Skel[14].pModel = NULL;
 		return;
 	}
-	BONE_000a0944.pModel = &pmTannerModels17;
-	BONE_000a09cc.pModel = &PTR_000d96e4;
-	BONE_000a0a54.pModel = &PTR_000d9700;
-	BONE_000a0a98.pModel = &PTR_000d9704;
-	BONE_000a0b64.pModel = &PTR_000d96e8;
-	BONE_000a0ba8.pModel = &PTR_000d96ec;
-	BONE_000a0c74.pModel = &PTR_000d971c;
-	return;*/
+
+	Skel[2].pModel = &pmTannerModels[0];
+	Skel[4].pModel = &pmTannerModels[1];
+	Skel[6].pModel = &pmTannerModels[8];
+	Skel[7].pModel = &pmTannerModels[9];
+	Skel[10].pModel = &pmTannerModels[2];
+	Skel[11].pModel = &pmTannerModels[3];
+	Skel[14].pModel = &pmTannerModels[15];
 }
 
 
