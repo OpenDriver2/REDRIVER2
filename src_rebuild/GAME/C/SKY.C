@@ -1152,23 +1152,8 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		addPrim(current->ot + 0x107f, poly);
 
 #ifdef PGXP
+		// disable PGXP lookups as verts has been modified
 		poly->pgxp_index = 0xFFFF;
-		/*
-		// sky needs to be fixed
-		uint lookup0 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v0].vx, scratchPad_skyVertices[pPVar3->v0].vy);
-		uint lookup1 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v1].vx, scratchPad_skyVertices[pPVar3->v1].vy);
-		uint lookup2 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v2].vx, scratchPad_skyVertices[pPVar3->v2].vy);
-		uint lookup3 = PGXP_LOOKUP_HALF(scratchPad_skyVertices[pPVar3->v3].vx, scratchPad_skyVertices[pPVar3->v3].vy);
-
-		uint newlookup0 = PGXP_LOOKUP_HALF(poly->x0, poly->y0);
-		uint newlookup1 = PGXP_LOOKUP_HALF(poly->x1, poly->y1);
-		uint newlookup2 = PGXP_LOOKUP_HALF(poly->x2, poly->y2);
-		uint newlookup3 = PGXP_LOOKUP_HALF(poly->x3, poly->y3);
-
-		PGXP_UpdateCacheLookup(lookup0, newlookup0, 0.99f, poly->pgxp_index);
-		PGXP_UpdateCacheLookup(lookup1, newlookup1, 0.99f, poly->pgxp_index);
-		PGXP_UpdateCacheLookup(lookup2, newlookup2, 0.99f, poly->pgxp_index);
-		PGXP_UpdateCacheLookup(lookup3, newlookup3, 0.99f, poly->pgxp_index);*/
 #endif
 
 		current->primptr = current->primptr + sizeof(POLY_FT4);

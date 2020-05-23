@@ -529,6 +529,29 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 #endif
 }
 
+#ifdef PGXP
+
+#define PGXP_APPLY(v, p) \
+{\
+	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);		\
+	PGXPVData vd;									\
+	if(PGXP_GetCacheData(vd, lookup, gteidx)) {		\
+		v.x = vd.px;\
+		v.y = vd.py;\
+		v.w = vd.pz;\
+		v.z = 0.0f;\
+	} else { \
+		v.w = 1.0f; \
+		v.z = 0.0f; \
+	}\
+}
+
+#else
+
+#define PGXP_APPLY(v, p)
+
+#endif
+
 void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx)
 {
 	assert(p0);
@@ -544,25 +567,10 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	vertex[2].x = p2[0];
 	vertex[2].y = p2[1];
 
-#ifdef PGXP
-	uint lookup0 = PGXP_LOOKUP_HALF(p0[0], p0[1]);
-	uint lookup1 = PGXP_LOOKUP_HALF(p1[0], p1[1]);
-	uint lookup2 = PGXP_LOOKUP_HALF(p2[0], p2[1]);
+	PGXP_APPLY(vertex[0], p0);
+	PGXP_APPLY(vertex[1], p1);
+	PGXP_APPLY(vertex[2], p2);
 
-	PGXPVData vd0, vd1, vd2;
-
-	PGXP_GetCacheData(vd0, lookup0, gteidx);
-	vertex[0].w = vd0.z;
-	vertex[0].z = 0.0f;
-
-	PGXP_GetCacheData(vd1, lookup1, gteidx);
-	vertex[1].w = vd1.z;
-	vertex[1].z = 0.0f;
-
-	PGXP_GetCacheData(vd2, lookup2, gteidx);
-	vertex[2].w = vd2.z;
-	vertex[2].z = 0.0f;
-#endif
 }
 
 void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx)
@@ -584,30 +592,10 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	vertex[3].x = p3[0];
 	vertex[3].y = p3[1];
 
-#ifdef PGXP
-	uint lookup0 = PGXP_LOOKUP_HALF(p0[0], p0[1]);
-	uint lookup1 = PGXP_LOOKUP_HALF(p1[0], p1[1]);
-	uint lookup2 = PGXP_LOOKUP_HALF(p2[0], p2[1]);
-	uint lookup3 = PGXP_LOOKUP_HALF(p3[0], p3[1]);
-
-	PGXPVData vd0, vd1, vd2, vd3;
-
-	PGXP_GetCacheData(vd0, lookup0, gteidx);
-	vertex[0].w = vd0.z;
-	vertex[0].z = 0.0f;
-
-	PGXP_GetCacheData(vd1, lookup1, gteidx);
-	vertex[1].w = vd1.z;
-	vertex[1].z = 0.0f;
-
-	PGXP_GetCacheData(vd2, lookup2, gteidx);
-	vertex[2].w = vd2.z;
-	vertex[2].z = 0.0f;
-
-	PGXP_GetCacheData(vd3, lookup3, gteidx);
-	vertex[3].w = vd3.z;
-	vertex[3].z = 0.0f;
-#endif
+	PGXP_APPLY(vertex[0], p0);
+	PGXP_APPLY(vertex[1], p1);
+	PGXP_APPLY(vertex[2], p2);
+	PGXP_APPLY(vertex[3], p3);
 }
 
 void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short w, short h, ushort gteidx)
@@ -627,12 +615,10 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 	vertex[3].y = vertex[0].y;
 
 #ifdef PGXP
-	uint lookup0 = PGXP_LOOKUP_HALF(p0[0], p0[1]);
+	PGXP_APPLY(vertex[0], p0);
 
-	PGXPVData vd0;
-	PGXP_GetCacheData(vd0, lookup0, gteidx);
-	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = vd0.z;
-	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
+	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w;
+	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z;
 #endif
 }
 

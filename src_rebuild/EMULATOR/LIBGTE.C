@@ -473,9 +473,9 @@ int Lm_H(long long value, int sf) {
 }
 
 #ifdef PGXP
-HalfVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
-HalfVector3D g_FP_SXYZ1;
-HalfVector3D g_FP_SXYZ2;
+PGXPVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
+PGXPVector3D g_FP_SXYZ1;
+PGXPVector3D g_FP_SXYZ2;
 
 PGXPVData g_pgxpCache[65535];
 int g_pgxpVertexIndex = 0;
@@ -485,11 +485,14 @@ void PGXP_ClearCache()
 	g_pgxpVertexIndex = 0;
 }
 
+// sets copy of cached vertex data to out
 bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 {
 	if (indexhint == 0xFFFF)
 	{
-		out.z = 1.0f;
+		out.px = 0.0f;
+		out.py = 0.0f;
+		out.pz = 1.0f;
 		return false;
 	}
 
@@ -499,35 +502,19 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	{
 		if (g_pgxpCache[i].lookup == lookup)
 		{
-			out = g_pgxpCache[i];
+			out.px = g_pgxpCache[i].px;
+			out.py = g_pgxpCache[i].py;
+			out.pz = g_pgxpCache[i].pz;
+
 			return true;
 		}
 	}
 
-	// fill with default values
-	out.z = 1.0f;
+	out.px = 0.0f;
+	out.py = 0.0f;
+	out.pz = 1.0f;
 
 	return false;
-}
-
-void PGXP_UpdateCacheLookup(uint old_lookup, uint new_lookup, float new_z, ushort indexhint)
-{
-	if (indexhint == 0xFFFF)
-		return;
-
-	int start = indexhint - 8; // index hint allows us to start from specific index
-
-	for (int i = max(0, start); i < g_pgxpVertexIndex; i++)
-	{
-		if (g_pgxpCache[i].lookup == old_lookup)
-		{
-			if (new_z >= 0)
-				g_pgxpCache[i].z = new_z;
-
-			g_pgxpCache[i].lookup = new_lookup;
-			return;
-		}
-	}
 }
 
 #endif // PGXP
@@ -572,13 +559,20 @@ int docop2(int op) {
 			g_FP_SXYZ0 = g_FP_SXYZ1;
 			g_FP_SXYZ1 = g_FP_SXYZ2;
 
-			g_FP_SXYZ2.x = (double(OFX) + double(float(IR1) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.y = (double(OFY) + double(float(IR2) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
+			g_FP_SXYZ2.px = (double(OFX) + double(float(IR1) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.py = (double(OFY) + double(float(IR2) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.pz = float(max(SZ3, H / 2)) / float(1 << 16);
+
+			// make half-float equivalents
+			g_FP_SXYZ2.x = g_FP_SXYZ2.px;
+			g_FP_SXYZ2.y = g_FP_SXYZ2.py;
+			g_FP_SXYZ2.z = g_FP_SXYZ2.pz;
 
 			PGXPVData vdata;
-			vdata.lookup = PGXP_LOOKUP_HALF(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
-			vdata.z = g_FP_SXYZ2.z;		// store Z
+			vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
+			vdata.px = g_FP_SXYZ2.px;
+			vdata.py = g_FP_SXYZ2.py;
+			vdata.pz = g_FP_SXYZ2.pz;
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 		}
@@ -594,14 +588,14 @@ int docop2(int op) {
 
 #ifdef PGXP
 		{
-			float fSX0 = g_FP_SXYZ0.x;
-			float fSY0 = g_FP_SXYZ0.y;
+			float fSX0 = g_FP_SXYZ0.px;
+			float fSY0 = g_FP_SXYZ0.py;
 
-			float fSX1 = g_FP_SXYZ1.x;
-			float fSY1 = g_FP_SXYZ1.y;
+			float fSX1 = g_FP_SXYZ1.px;
+			float fSY1 = g_FP_SXYZ1.py;
 
-			float fSX2 = g_FP_SXYZ2.x;
-			float fSY2 = g_FP_SXYZ2.y;
+			float fSX2 = g_FP_SXYZ2.px;
+			float fSY2 = g_FP_SXYZ2.py;
 
 			float nclip = (fSX0 * fSY1) + (fSX1 * fSY2) + (fSX2 * fSY0) - (fSX0 * fSY2) - (fSX1 * fSY0) - (fSX2 * fSY1);
 
@@ -994,13 +988,20 @@ int docop2(int op) {
 			g_FP_SXYZ0 = g_FP_SXYZ1;
 			g_FP_SXYZ1 = g_FP_SXYZ2;
 
-			g_FP_SXYZ2.x = (double(OFX) + double(float(IR1) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.y = (double(OFY) + double(float(IR2) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.z = float(max(SZ3, H / 2)) / float(1 << 16);
+			g_FP_SXYZ2.px = (double(OFX) + double(float(IR1) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.py = (double(OFY) + double(float(IR2) * float(h_over_sz3))) / float(1 << 16);
+			g_FP_SXYZ2.pz = float(max(SZ3, H / 2)) / float(1 << 16);
+
+			// make half-float equivalents
+			g_FP_SXYZ2.x = g_FP_SXYZ2.px;
+			g_FP_SXYZ2.y = g_FP_SXYZ2.py;
+			g_FP_SXYZ2.z = g_FP_SXYZ2.pz;
 
 			PGXPVData vdata;
-			vdata.lookup = g_FP_SXYZ2.x.sh | (g_FP_SXYZ2.y.sh << 16);		// hash short values
-			vdata.z = g_FP_SXYZ2.z;		// store Z
+			vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
+			vdata.px = g_FP_SXYZ2.px;
+			vdata.py = g_FP_SXYZ2.py;
+			vdata.pz = g_FP_SXYZ2.pz;
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 #endif

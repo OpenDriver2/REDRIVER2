@@ -2,13 +2,29 @@
 #define LIBGTE_H
 
 #include "TYPES.H"
-#include "GTE/half_float.h"
 
 #ifdef PGXP
+#include "GTE/half_float.h"
+
+typedef half VERTTYPE;
+#define PGXP_LOOKUP_VALUE(x, y) (x.sh | (y.sh << 16))
+
+struct PGXPVector3D
+{
+	float px, py, pz;	// 32 bit values
+	VERTTYPE x, y, z;	// 16 bit values (for lookup and backwards compat if not found in cache)
+};
+
+extern PGXPVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
+extern PGXPVector3D g_FP_SXYZ1;
+extern PGXPVector3D g_FP_SXYZ2;
+
 struct PGXPVData
 {
 	uint lookup;
-	half z;
+	float px;
+	float py;
+	float pz;
 };
 
 extern int g_pgxpVertexIndex;
@@ -16,8 +32,8 @@ extern int g_pgxpVertexIndex;
 void PGXP_ClearCache();
 bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
 void PGXP_UpdateCacheLookup(uint old_lookup, uint new_lookup, float new_z, ushort indexhint);
-
-#define PGXP_LOOKUP_HALF(x, y) (x.sh | (y.sh << 16))
+#else
+typedef short VERTTYPE;
 #endif
 
 extern short rcossin_tbl[8192];

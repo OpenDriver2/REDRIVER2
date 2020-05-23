@@ -3,14 +3,6 @@
 
 #include "LIBGTE.H"
 
-#ifdef PGXP
-#include "GTE/half_float.h"
-typedef half VERTTYPE;
-#else
-typedef short VERTTYPE;
-#endif
-
-
 extern	int (*GPU_printf)(const char *fmt, ...);
 
 #define WAIT_TIME	0x800000
