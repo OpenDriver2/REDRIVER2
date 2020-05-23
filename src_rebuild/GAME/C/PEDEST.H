@@ -1,9 +1,14 @@
 #ifndef PEDEST_H
 #define PEDEST_H
 
+extern MODEL* pmTannerModels[17];;
+extern MODEL* pmJerichoModels[6];
+
 extern SEATED_PEDESTRIANS *seated_pedestrian;
 extern int bKillTanner;
 extern int bTannerSitting;
+
+
 
 extern void IHaveThePower(); // 0x0006DD34
 

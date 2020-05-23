@@ -21,11 +21,12 @@
 #include "FELONY.H"
 #include "BOMBERMAN.H"
 #include "BCOLLIDE.H"
-
+#include "MAP.H"
 #include "STRINGS.H"
 
 
 MODEL* pmTannerModels[17] = { 0 };
+MODEL* pmJerichoModels[6] = { 0 };
 
 void PedDoNothing(PEDESTRIAN *pPed);
 void PedUserWalker(PEDESTRIAN *pPed);
@@ -414,40 +415,41 @@ LAB_0006e104:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitTanner(void)
 {
-	UNIMPLEMENTED();
-	/*
-	pmTannerModels17 = FindModelPtrWithName(s_TORSO_000aa890);
-	PTR_000d96e4 = FindModelPtrWithName(&DAT_000aa898);
-	PTR_000d96e8 = FindModelPtrWithName(s_U_ARM_RIGHT_00011b7c);
-	PTR_000d96ec = FindModelPtrWithName(s_L_ARM_RIGHT_00011b88);
-	PTR_000d96f0 = FindModelPtrWithName(s_HAND_RIGHT_00011b94);
-	PTR_000d96f4 = FindModelPtrWithName(s_THIGH_RIGHT_00011ba0);
-	PTR_000d96f8 = FindModelPtrWithName(s_CALF_RIGHT_00011bac);
-	PTR_000d96fc = FindModelPtrWithName(s_FOOT_LEFT_00011bb8);
-	PTR_000d9700 = FindModelPtrWithName(s_U_ARM_LEFT_00011bc4);
-	PTR_000d9704 = FindModelPtrWithName(s_L_ARM_LEFT_00011bd0);
-	PTR_000d9708 = FindModelPtrWithName(s_HAND_LEFT_00011bdc);
-	PTR_000d970c = FindModelPtrWithName(s_THIGH_LEFT_00011be8);
-	PTR_000d9710 = FindModelPtrWithName(s_CALF_LEFT_00011bf4);
-	PTR_000d9714 = FindModelPtrWithName(s_FOOT_RIGHT_00011c00);
-	PTR_000d9718 = FindModelPtrWithName(&DAT_000aa8a0);
-	PTR_000d971c = FindModelPtrWithName(&DAT_000aa8a8);
-	PTR_000d9720 = FindModelPtrWithName((char *)&PTR_DAT_000aa8b0);
-	pmJerichoModels6 = FindModelPtrWithName(s_JERI_TORSO_00011c0c);
-	PTR_000d95bc = FindModelPtrWithName(s_JERI_HEAD_00011c18);
-	PTR_000d95c0 = FindModelPtrWithName(s_JERI_U_ARM_LEFT_00011c24);
-	PTR_000d95c4 = FindModelPtrWithName(s_JERI_L_ARM_LEFT_00011c34);
-	PTR_000d95c8 = FindModelPtrWithName(s_JERI_U_ARM_RIGHT_00011c44);
-	PTR_000d95cc = FindModelPtrWithName(s_JERI_L_ARM_RIGHT_00011c58);
+	pmTannerModels[0] = FindModelPtrWithName("TORSO");
+	pmTannerModels[1] = FindModelPtrWithName("HEAD");
+	pmTannerModels[2] = FindModelPtrWithName("U_ARM_RIGHT");
+	pmTannerModels[3] = FindModelPtrWithName("L_ARM_RIGHT");
+	pmTannerModels[4] = FindModelPtrWithName("HAND_RIGHT");
+	pmTannerModels[5] = FindModelPtrWithName("THIGH_RIGHT");
+	pmTannerModels[6] = FindModelPtrWithName("CALF_RIGHT");
+	pmTannerModels[7] = FindModelPtrWithName("FOOT_LEFT");
+	pmTannerModels[8] = FindModelPtrWithName("U_ARM_LEFT");
+	pmTannerModels[9] = FindModelPtrWithName("L_ARM_LEFT");
+	pmTannerModels[10] = FindModelPtrWithName("HAND_LEFT");
+	pmTannerModels[11] = FindModelPtrWithName("THIGH_LEFT");
+	pmTannerModels[12] = FindModelPtrWithName("CALF_LEFT");
+	pmTannerModels[13] = FindModelPtrWithName("FOOT_RIGHT");
+	pmTannerModels[14] = FindModelPtrWithName("NECK");
+	pmTannerModels[15] = FindModelPtrWithName("HIPS");
+	pmTannerModels[16] = FindModelPtrWithName("BAG");
+
+	pmJerichoModels[0] = FindModelPtrWithName("JERI_TORSO");
+	pmJerichoModels[1] = FindModelPtrWithName("JERI_HEAD");
+	pmJerichoModels[2] = FindModelPtrWithName("JERI_U_ARM_LEFT");
+	pmJerichoModels[3] = FindModelPtrWithName("JERI_L_ARM_LEFT");
+	pmJerichoModels[4] = FindModelPtrWithName("JERI_U_ARM_RIGHT");
+	pmJerichoModels[5] = FindModelPtrWithName("JERI_L_ARM_RIGHT");
+
 	SetSkelModelPointers(0);
 	StoreVertexLists();
+
 	numTannerPeds = 0;
 	bTannerSitting = 0;
 	bKillTanner = 0;
 	bKilled = 0;
-	return;*/
 }
 
 
