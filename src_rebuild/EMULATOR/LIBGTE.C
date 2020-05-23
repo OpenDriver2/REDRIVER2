@@ -592,7 +592,29 @@ int docop2(int op) {
         GTELOG("%08x NCLIP", op);
 #endif
 
-        MAC0 = int(F((long long)(SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1)));
+#ifdef PGXP
+		{
+			float fSX0 = g_FP_SXYZ0.x;
+			float fSY0 = g_FP_SXYZ0.y;
+
+			float fSX1 = g_FP_SXYZ1.x;
+			float fSY1 = g_FP_SXYZ1.y;
+
+			float fSX2 = g_FP_SXYZ2.x;
+			float fSY2 = g_FP_SXYZ2.y;
+
+			float nclip = (fSX0 * fSY1) + (fSX1 * fSY2) + (fSX2 * fSY0) - (fSX0 * fSY2) - (fSX1 * fSY0) - (fSX2 * fSY1);
+
+			float absNclip = fabs(nclip);
+
+			if ((0.1f < absNclip) && (absNclip < 1.0f))
+				nclip += (nclip < 0.0f) ? -1.0f : 1.0f;
+
+			MAC0 = nclip;
+		}
+#else
+		MAC0 = int(F((long long)(SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1)));
+#endif
         return 1;
 
     case 0x0c:
