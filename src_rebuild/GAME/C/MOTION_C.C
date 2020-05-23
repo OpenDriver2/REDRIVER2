@@ -3,6 +3,8 @@
 #include "PEDEST.H"
 #include "SYSTEM.H"
 #include "STRINGS.H"
+#include "MISSION.H"
+#include "TEXTURE.H"
 
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
@@ -314,7 +316,13 @@ MODEL* gPed4HeadModelPtr;
 char* MotionCaptureData[24];	// [A] actually, pointers
 int ThisMotion;
 
+int cTannerVNumbers[24];
+SVECTOR vTannerList[210];
 
+int cJerichoVNumbers[7];
+SVECTOR vJerichoList[102];
+
+int vStored = 0;
 
 // decompiled code
 // original method signature: 
@@ -679,13 +687,6 @@ LAB_000657dc:
 	// End Line: 2721
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-int cTannerVNumbers[24];
-SVECTOR vTannerList[210];
-
-int cJerichoVNumbers[7];
-SVECTOR vJerichoList[102];
-
-int vStored = 0;
 
 // [D]
 void StoreVertexLists(void)
@@ -1620,41 +1621,42 @@ void newRotateBones(BONE *poBone)
 	/* end block 3 */
 	// End Line: 4473
 
-SVECTOR * GetModelVertPtr(int boneId, int modelType)
+// [D]
+SVECTOR* GetModelVertPtr(int boneId, int modelType)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
+	int startVertex;
 
-	if (pDrawingPed->pedType == OTHER_MODEL) {
-		switch (boneId) {
+	if (pDrawingPed->pedType != OTHER_MODEL)
+	{
+		if (cTannerVNumbers[boneId & 0x7f] != -1) 
+			return vTannerList + cTannerVNumbers[boneId & 0x7f];
+
+		return NULL;
+	}
+
+	switch (boneId) {
 		case 2:
-			iVar1 = cJerichoVNumbers;
+			startVertex = cJerichoVNumbers[0];
 			break;
-		default:
-			return (SVECTOR *)(&vTannerList + *(int *)(&cTannerVNumbers + (boneId & 0x7fU) * 4) * 4);
 		case 4:
-			iVar1 = DAT_000d7d0c;
+			startVertex = cJerichoVNumbers[1];
 			break;
 		case 6:
-			iVar1 = DAT_000d7d10;
+			startVertex = cJerichoVNumbers[2];
 			break;
 		case 7:
-			iVar1 = DAT_000d7d14;
+			startVertex = cJerichoVNumbers[3];
 			break;
 		case 10:
-			iVar1 = DAT_000d7d18;
+			startVertex = cJerichoVNumbers[4];
 			break;
-		case 0xb:
-			iVar1 = DAT_000d7d1c;
-		}
-		return &vJerichoList + iVar1;
+		case 11:
+			startVertex = cJerichoVNumbers[5];
+		default:
+			return vTannerList + cTannerVNumbers[boneId & 0x7f];
 	}
-	if (*(int *)(&cTannerVNumbers + (boneId & 0x7fU) * 4) == -1) {
-		return (SVECTOR *)0x0;
-	}
-	return (SVECTOR *)(&vTannerList + *(int *)(&cTannerVNumbers + (boneId & 0x7fU) * 4) * 4);*/
+
+	return vJerichoList + startVertex;
 }
 
 
@@ -2107,7 +2109,7 @@ void DrawTanner(PEDESTRIAN *pPed)
 	uint uVar1;
 	int iVar2;
 	uint uVar3;
-	int iVar4;
+	int i;
 	int iVar5;
 	int iVar6;
 	int iVar7;
@@ -2172,17 +2174,17 @@ void DrawTanner(PEDESTRIAN *pPed)
 	iVar9 = (int)local_32;
 	iVar8 = (int)rcossin_tbl[uVar1 * 2 + 1];
 	uVar1 = (uint)(ushort)(pPed->dir).vx & 0xfff;
-	iVar4 = (int)rcossin_tbl[uVar1 * 2 + 1];
+	i = (int)rcossin_tbl[uVar1 * 2 + 1];
 	iVar6 = (int)rcossin_tbl[uVar3 * 2];
 	iVar5 = (int)rcossin_tbl[uVar1 * 2];
-	iVar7 = (iVar4 * iVar6 + 0x800 >> 0xc) + ((iVar2 * iVar5 + 0x800 >> 0xc) * iVar9 + 0x800 >> 0xc);
+	iVar7 = (i * iVar6 + 0x800 >> 0xc) + ((iVar2 * iVar5 + 0x800 >> 0xc) * iVar9 + 0x800 >> 0xc);
 	local_38 = (short)(iVar2 * iVar8 + 0x800 >> 0xc);
 	local_2e = -(short)(iVar8 * iVar5 + 0x800 >> 0xc);
 	local_24 = (int)(Skel.pvOrigPos)->vx;
 	local_20 = (int)(Skel.pvOrigPos)->vy;
 	local_1c = (int)(Skel.pvOrigPos)->vz;
-	local_30 = (short)(iVar4 * iVar8 + 0x800 >> 0xc);
-	iVar2 = (-iVar4 * (iVar2 * iVar9 + 0x800 >> 0xc) + 0x800 >> 0xc) + (iVar5 * iVar6 + 0x800 >> 0xc);
+	local_30 = (short)(i * iVar8 + 0x800 >> 0xc);
+	iVar2 = (-i * (iVar2 * iVar9 + 0x800 >> 0xc) + 0x800 >> 0xc) + (iVar5 * iVar6 + 0x800 >> 0xc);
 	local_36 = (undefined2)iVar2;
 	local_34 = (undefined2)iVar7;
 	local_2c = -(short)(iVar6 * iVar8 + 0x800 >> 0xc);
@@ -2396,77 +2398,88 @@ int DrawCharacter(PEDESTRIAN *pPed)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+POLY_FT4 ft4TannerShadow[2];
+extern TEXTURE_DETAILS tannerShadow_texture;
+RECT16 rectTannerWindow;
+TILE tileTannerClear[2];
+
+// [D]
 void InitTannerShadow(void)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	ushort uVar2;
-	uchar uVar3;
-	uchar uVar4;
-	undefined *puVar5;
-	POLY_FT4 *pPVar6;
-	int iVar7;
-	uint uVar8;
-	uchar uVar9;
-	uchar uVar10;
-	uchar uVar11;
+	unsigned char uVar3;
+	unsigned char brightness;
+	TILE *tile;
+	POLY_FT4 *poly;
+	int i;
+	uint uVar5;
+	unsigned char uVar6;
+	unsigned char uVar7;
+	unsigned char uVar8;
+
+	if (gTimeOfDay == 3)
+		brightness = 12;
+	else
+		brightness = 32;
+
+	poly = ft4TannerShadow;
+	i = 1;
 
 	uVar3 = tannerShadow_texture.coords.u0;
-	if (gTimeOfDay == 3) {
-		uVar4 = '\f';
-	}
-	else {
-		uVar4 = ' ';
-	}
-	pPVar6 = ft4TannerShadow;
-	iVar7 = 1;
-	uVar11 = tannerShadow_texture.coords.u0 + '?';
-	uVar10 = tannerShadow_texture.coords.v0 + '\x7f';
-	uVar9 = tannerShadow_texture.coords.v0 + ' ';
-	uVar1 = (&tpagepos)[nperms + 1].x;
-	uVar8 = (uint)(ushort)(&tpagepos)[nperms + 1].y + 0x80;
-	uVar2 = (ushort)uVar8;
+	uVar8 = tannerShadow_texture.coords.u0 + 63;
+	uVar7 = tannerShadow_texture.coords.v0 + 127;
+	uVar6 = tannerShadow_texture.coords.v0 + 32;
+
+	uVar1 = tpagepos[nperms + 1].x;
+	uVar5 = (uint)(ushort)tpagepos[nperms + 1].y + 128;
+	uVar2 = (ushort)uVar5;
+
 	do {
-		iVar7 = iVar7 + -1;
+		
 		rectTannerWindow.w = 0x40;
 		rectTannerWindow.h = 0x80;
 		rectTannerWindow.x = uVar1;
 		rectTannerWindow.y = uVar2;
-		pPVar6->u0 = uVar11;
-		pPVar6->v0 = uVar9;
-		pPVar6->u1 = uVar3;
-		pPVar6->v1 = uVar9;
-		pPVar6->u2 = uVar11;
-		pPVar6->v2 = uVar10;
-		pPVar6->u3 = uVar3;
-		pPVar6->v3 = uVar10;
-		pPVar6->tpage =
-			(short)(uVar2 & 0x100) >> 4 | (ushort)(((uint)uVar1 & 0x3ff) >> 6) | 0x100 |
-			(ushort)((uVar8 & 0x200) << 2);
-		*(undefined *)((int)&pPVar6->tag + 3) = 9;
-		pPVar6->code = '.';
-		pPVar6->r0 = uVar4;
-		pPVar6->g0 = uVar4;
-		pPVar6->b0 = uVar4;
-		pPVar6 = pPVar6 + 1;
-	} while (-1 < iVar7);
-	puVar5 = &tileTannerClear;
-	iVar7 = 1;
+
+		poly->u0 = uVar8;
+		poly->v0 = uVar6;
+		poly->u1 = uVar3;
+		poly->v1 = uVar6;
+		poly->u2 = uVar8;
+		poly->v2 = uVar7;
+		poly->u3 = uVar3;
+		poly->v3 = uVar7;
+
+		poly->tpage = (short)(uVar2 & 0x100) >> 4 | (ushort)(((uint)uVar1 & 0x3ff) >> 6) | 0x100 | (ushort)((uVar5 & 0x200) << 2);
+
+		setPolyFT4(poly);
+		setSemiTrans(poly, 1);
+
+		poly->r0 = brightness;
+		poly->g0 = brightness;
+		poly->b0 = brightness;
+
+		poly++;
+		i--;
+	} while (-1 < i);
+
+	tile = tileTannerClear;
+	i = 1;
 	do {
-		puVar5[3] = 3;
-		puVar5[7] = 0x60;
-		*(undefined2 *)(puVar5 + 8) = 0;
-		*(undefined2 *)(puVar5 + 10) = 0;
-		*(undefined2 *)(puVar5 + 0xc) = 0x40;
-		*(undefined2 *)(puVar5 + 0xe) = 0x80;
-		puVar5[4] = 0;
-		puVar5[5] = 0;
-		puVar5[6] = 0;
-		iVar7 = iVar7 + -1;
-		puVar5 = puVar5 + 0x10;
-	} while (-1 < iVar7);
-	return;*/
+
+		setTile(tile);
+
+		tile->x0 = 0;
+		tile->y0 = 0;
+		tile->w = 0x40;
+		tile->h = 0x80;
+		tile->r0 = 0;
+		tile->g0 = 0;
+		tile->b0 = 0;
+		i--;
+		tile++;
+	} while (-1 < i);
 }
 
 
@@ -3328,36 +3341,36 @@ void wjmDraw3(void)
 	undefined2 uVar1;
 	int iVar2;
 	DB *pDVar3;
-	int iVar4;
+	int i;
 	uint uVar5;
 	uint uVar6;
 	uint *puVar7;
 
-	iVar4 = DAT_1f80003c;
+	i = DAT_1f80003c;
 	iVar2 = DAT_1f80001c;
 	puVar7 = (uint *)current->primptr;
 	puVar7[1] = combointensity;
 	*(char *)((int)puVar7 + 3) = '\a';
 	*(char *)((int)puVar7 + 7) = '$';
 	if (palnumber == -1) {
-		uVar5 = (uint)*(byte *)(iVar4 + 1);
-		uVar6 = (uint)(ushort)(&texture_cluts)[uVar5 * 0x20 + (uint)*(byte *)(iVar4 + 2)] << 0x10;
+		uVar5 = (uint)*(byte *)(i + 1);
+		uVar6 = (uint)(ushort)(&texture_cluts)[uVar5 * 0x20 + (uint)*(byte *)(i + 2)] << 0x10;
 	}
 	else {
-		uVar5 = (uint)*(byte *)(iVar4 + 1);
+		uVar5 = (uint)*(byte *)(i + 1);
 		uVar6 = palnumber;
 	}
 	uVar1 = (&texture_pages)[uVar5];
-	puVar7[2] = (&DAT_1f800044)[*(byte *)(iVar4 + 4)];
-	puVar7[3] = *(ushort *)(iVar4 + 8) | uVar6;
-	puVar7[4] = (&DAT_1f800044)[*(byte *)(iVar4 + 5)];
-	puVar7[5] = CONCAT22(uVar1, *(undefined2 *)(iVar4 + 10));
-	puVar7[6] = (&DAT_1f800044)[*(byte *)(iVar4 + 6)];
-	puVar7[7] = (uint)*(ushort *)(iVar4 + 0xc);
+	puVar7[2] = (&DAT_1f800044)[*(byte *)(i + 4)];
+	puVar7[3] = *(ushort *)(i + 8) | uVar6;
+	puVar7[4] = (&DAT_1f800044)[*(byte *)(i + 5)];
+	puVar7[5] = CONCAT22(uVar1, *(undefined2 *)(i + 10));
+	puVar7[6] = (&DAT_1f800044)[*(byte *)(i + 6)];
+	puVar7[7] = (uint)*(ushort *)(i + 0xc);
 	pDVar3 = current;
-	iVar2 = ((int)*(short *)((uint)*(byte *)(iVar4 + 4) * 2 + iVar2) +
-		(int)*(short *)((uint)*(byte *)(iVar4 + 5) * 2 + iVar2) +
-		(int)*(short *)((uint)*(byte *)(iVar4 + 6) * 2 + iVar2)) / 3;
+	iVar2 = ((int)*(short *)((uint)*(byte *)(i + 4) * 2 + iVar2) +
+		(int)*(short *)((uint)*(byte *)(i + 5) * 2 + iVar2) +
+		(int)*(short *)((uint)*(byte *)(i + 6) * 2 + iVar2)) / 3;
 	*puVar7 = *puVar7 & 0xff000000 | current->ot[iVar2] & 0xffffff;
 	pDVar3->ot[iVar2] = pDVar3->ot[iVar2] & 0xff000000 | (uint)puVar7 & 0xffffff;
 	pDVar3->primptr = pDVar3->primptr + 0x20;

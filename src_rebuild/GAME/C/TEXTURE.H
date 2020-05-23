@@ -26,6 +26,8 @@ extern RECT16 tpage;
 extern short specialSlot;
 extern int slotsused;
 
+extern int nperms;
+
 extern int NoTextureMemory;
 
 extern char specTpages[4][12];
