@@ -134,19 +134,19 @@ void Tile1x1(MODEL *model)
 		sv2 = verts + (uVar10 >> 0x18);
 
 		gte_ldv3(sv0, sv1, sv2);
-		docop2(0x280030);
+		gte_rtpt();
 
 		uVar8 = uVar11 >> 8 & 0xff;
 		uVar1 = *(ushort *)((int)*plotContext.ptexture_cluts + (uVar11 >> 0xf & 0x1fe) + uVar8 * 0x40);
 		in_a1 = (uint)(*plotContext.ptexture_pages)[uVar8] << 0x10;
 
-		docop2(0x1400006);
+		gte_nclip();
 
 		uVar8 = ((uint *)polys)[2]; // uv0
 		uVar12 = ((uint *)polys)[3]; // uv2
 
 		gte_stopz(&iVar2);
-		docop2(0x158002d);
+		gte_avsz3();
 
 		plotContext.ot = ot;
 
@@ -157,8 +157,8 @@ void Tile1x1(MODEL *model)
 
 			gte_ldv0(sv3);
 
-			docop2(0x180001);
-			docop2(0x1400006);
+			gte_rtps();
+			gte_nclip();
 
 			gte_stopz(&iVar2);
 
@@ -196,7 +196,7 @@ void Tile1x1(MODEL *model)
 				sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
 
 				gte_ldv0(sv3);
-				docop2(0x180001);
+				gte_rtps();
 
 				goto LAB_00041cc4;
 			}
@@ -869,8 +869,8 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 
 					gte_ldv3(&vertex[0], &vertex[1], &vertex[2]);
 
-					docop2(0x280030);
-					docop2(0x158002d);
+					gte_rtpt();
+					gte_avsz3();
 
 					gte_stotz(&iVar1);
 
@@ -891,8 +891,8 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 
 						gte_ldv3(&vertex[2], &vertex[7], &vertex[6]);
 
-						docop2(0x280030);
-						docop2(0x158002d);
+						gte_rtpt();
+						gte_avsz3();
 
 						SXYPAIR DAT_1f80021c = *(SXYPAIR*)&SXY0;
 						SXYPAIR DAT_1f800220 = *(SXYPAIR*)&SXY1;

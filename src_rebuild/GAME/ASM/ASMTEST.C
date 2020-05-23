@@ -83,9 +83,9 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 {
 #ifndef PSX
 	VECTOR local;
-	local.vx = ((pcop->pos).vx - camera_position.vx) * 0x10000 >> 0x11;
-	local.vy = ((pcop->pos).vy - camera_position.vy) * 0x10000 >> 0x11;
-	local.vz = ((pcop->pos).vz - camera_position.vz) * 0x10000 >> 0x11;
+	local.vx = (pcop->pos.vx - camera_position.vx) * 0x10000 >> 0x11;
+	local.vy = (pcop->pos.vy - camera_position.vy) * 0x10000 >> 0x11;
+	local.vz = (pcop->pos.vz - camera_position.vz) * 0x10000 >> 0x11;
 
 	gte_ldlvl(&local);
 

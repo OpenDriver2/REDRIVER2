@@ -476,173 +476,176 @@ void SetupPedestrian(PEDESTRIAN *pedptr)
 
 void DrawBodySprite(int boneId, long v1, long v2, int sz, int sy)
 {
-	UNIMPLEMENTED();
 	/*
-	DB *pDVar1;
-	uint uVar2;
-	int iVar3;
-	byte bVar4;
-	uint uVar5;
-	ulong *puVar6;
+	DB *current;
+	uint uVar1;
+	long lVar2;
+	byte bVar3;
+	uint uVar4;
+	ulong *ot;
+	int iVar5;
+	uint uVar6;
 	int iVar7;
-	uint uVar8;
-	uint *puVar9;
-	int iVar10;
+	POLY_FT4 *prims;
+	int iVar8;
+	int iVar9;
+	uint uVar10;
+	TEXTURE_DETAILS *body_texture;
+	int x;
+	int y;
 	int iVar11;
 	uint uVar12;
-	TEXTURE_DETAILS *pTVar13;
-	int iVar14;
-	int iVar15;
-	int iVar16;
-	uint uVar17;
-	int iVar18;
+	int iVar13;
+	int y1;
+	int z1;
 
-	uVar17 = v1 & 0xffff0000;
-	iVar16 = v1 * 0x10000;
-	uVar2 = v2 & 0xffff0000;
-	iVar15 = iVar16 + v2 * -0x10000;
-	iVar14 = uVar17 - uVar2;
-	uVar12 = boneId & 0x7f;
-	pTVar13 = MainPed[uVar12].ptd;
-	iVar3 = ratan2(iVar15, iVar14);
+	uVar12 = v1 & 0xffff0000;
+	iVar11 = v1 * 0x10000;
+	uVar1 = v2 & 0xffff0000;
+	y = iVar11 + v2 * -0x10000;
+	x = uVar12 - uVar1;
+	uVar10 = boneId & 0x7f;
+	body_texture = MainPed[uVar10].ptd;
+	lVar2 = ratan2(y, x);
 	if (bDoingShadow == 0) {
-		iVar7 = gCurrentZ + (scr_z >> 2);
+		iVar5 = gCurrentZ + (scr_z >> 2);
 	}
 	else {
-		iVar7 = sz + (scr_z >> 2);
+		iVar5 = sz + (scr_z >> 2);
 	}
-	iVar18 = (scr_z << 0xc) / iVar7;
-	if (iVar7 == 0) {
+	iVar13 = (scr_z << 0xc) / iVar5;
+	if (iVar5 == 0) {
 		trap(7);
 	}
-	if (uVar12 == 2) {
-		iVar18 = iVar18 + ((int)((uint)*(ushort *)
+	if (uVar10 == 2) {
+		iVar13 = iVar13 + ((int)((uint)*(ushort *)
 			((int)rcossin_tbl +
 			(((int)(pDrawingPed->dir).vy + (int)camera_angle.vy) * 8 &
 				0x3ff8U) + 2) << 0x10) >> 0x16);
 	}
-	puVar9 = (uint *)current->primptr;
+	prims = (POLY_FT4 *)current->primptr;
 	if (pDrawingPed->type == PED_ACTION_JUMP) {
-		uVar8 = (uint)(byte)MainPed[uVar12].cWidth + 4;
+		uVar6 = (uint)(byte)MainPed[uVar10].cWidth + 4;
 	}
 	else {
 		if (bDoingShadow == 0) {
 			if ((pDrawingPed->flags & 0x8000U) == 0) {
 				if ((pDrawingPed->flags & 0x4000U) == 0) {
-					uVar8 = (uint)(byte)MainPed[uVar12].cWidth + 3;
+					uVar6 = (uint)(byte)MainPed[uVar10].cWidth + 3;
 				}
 				else {
-					uVar8 = (uint)(byte)MainPed[uVar12].cWidth + 8;
+					uVar6 = (uint)(byte)MainPed[uVar10].cWidth + 8;
 				}
 			}
 			else {
-				uVar8 = (uint)(byte)MainPed[uVar12].cWidth - 3;
+				uVar6 = (uint)(byte)MainPed[uVar10].cWidth - 3;
 			}
 		}
 		else {
-			uVar8 = (uint)(byte)MainPed[uVar12].cWidth;
+			uVar6 = (uint)(byte)MainPed[uVar10].cWidth;
 		}
 	}
-	iVar7 = (int)(iVar18 * (int)rcossin_tbl[(-iVar3 & 0xfffU) * 2 + 1] * 3 * (uVar8 & 0x3f)) >> 9;
-	bVar4 = MainPed[uVar12].cAdj & 0xf;
-	iVar11 = iVar15 >> bVar4;
-	iVar10 = iVar14 >> bVar4;
-	iVar3 = (int)(iVar18 * rcossin_tbl[(-iVar3 & 0xfffU) * 2] * (uVar8 & 0x3f)) >> 8;
-	if ((((uVar12 == 0x13) || (uVar12 == 0xf)) && (pDrawingPed->type != PED_ACTION_JUMP)) &&
+	iVar7 = (int)(iVar13 * (int)rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 3 * (uVar6 & 0x3f)) >> 9;
+	bVar3 = MainPed[uVar10].cAdj & 0xf;
+	iVar9 = y >> bVar3;
+	iVar8 = x >> bVar3;
+	iVar5 = (int)(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * (uVar6 & 0x3f)) >> 8;
+	if ((((uVar10 == 0x13) || (uVar10 == 0xf)) && (pDrawingPed->type != PED_ACTION_JUMP)) &&
 		(bDoingShadow == 0)) {
-		iVar15 = -iVar15 >> 3;
-		iVar14 = -iVar14 >> 3;
+		y = -y >> 3;
+		x = -x >> 3;
 	}
 	else {
-		uVar5 = (uint)(MainPed[uVar12].cAdj >> 4);
-		iVar15 = iVar15 >> uVar5;
-		iVar14 = iVar14 >> uVar5;
+		uVar4 = (uint)(MainPed[uVar10].cAdj >> 4);
+		y = y >> uVar4;
+		x = x >> uVar4;
 	}
-	puVar9[2] = (uVar17 + iVar3 + iVar10 & 0xffff0000) + (iVar16 + iVar7 + iVar11 >> 0x10);
-	puVar9[4] = ((uVar17 - iVar3) + iVar10 & 0xffff0000) + ((iVar16 - iVar7) + iVar11 >> 0x10);
-	puVar9[6] = ((uVar2 + iVar3) - iVar14 & 0xffff0000) + ((v2 * 0x10000 + iVar7) - iVar15 >> 0x10);
-	puVar9[8] = ((uVar2 - iVar3) - iVar14 & 0xffff0000) + ((v2 * 0x10000 - iVar7) - iVar15 >> 0x10);
+	*(uint *)&prims->x0 = (uVar12 + iVar5 + iVar8 & 0xffff0000) + (iVar11 + iVar7 + iVar9 >> 0x10);
+	*(uint *)&prims->x1 =
+		((uVar12 - iVar5) + iVar8 & 0xffff0000) + ((iVar11 - iVar7) + iVar9 >> 0x10);
+	*(uint *)&prims->x2 = ((uVar1 + iVar5) - x & 0xffff0000) + ((v2 * 0x10000 + iVar7) - y >> 0x10);
+	*(uint *)&prims->x3 = ((uVar1 - iVar5) - x & 0xffff0000) + ((v2 * 0x10000 - iVar7) - y >> 0x10);
 	if (bDoingShadow == 0) {
-		uVar17 = (uint)pTVar13->tpageid << 0x10;
-		if (MainPed[uVar12].texPal != NO_PAL) {
-			if (MainPed[uVar12].texPal == JEANS_PAL) {
-				bVar4 = pDrawingPed->pallet >> 4;
-				uVar2 = (uint)bVar4;
+		uVar12 = (uint)body_texture->tpageid << 0x10;
+		if (MainPed[uVar10].texPal != NO_PAL) {
+			if (MainPed[uVar10].texPal == JEANS_PAL) {
+				bVar3 = pDrawingPed->pallet >> 4;
+				uVar1 = (uint)bVar3;
 			}
 			else {
-				bVar4 = pDrawingPed->pallet & 0xf;
-				uVar2 = (uint)pDrawingPed->pallet & 0xf;
+				bVar3 = pDrawingPed->pallet & 0xf;
+				uVar1 = (uint)pDrawingPed->pallet & 0xf;
 			}
-			if (bVar4 != 0) {
-				uVar2 = (uint)civ_clut[(uint)(byte)pTVar13->texture_number * 6 + uVar2] << 0x10;
+			if (bVar3 != 0) {
+				uVar1 = (uint)civ_clut[(uint)(byte)body_texture->texture_number * 6 + uVar1] << 0x10
+					;
 				goto LAB_00065688;
 			}
 		}
-		uVar2 = (uint)pTVar13->clutid << 0x10;
+		uVar1 = (uint)body_texture->clutid << 0x10;
 	}
 	else {
-		uVar17 = gShadowTexturePage << 0x10;
-		uVar2 = (uint)(ushort)(&texture_cluts)[gShadowTexturePage * 0x20 + gShadowTextureNum] << 0x10;
+		uVar12 = gShadowTexturePage << 0x10;
+		uVar1 = (uint)(ushort)texture_cluts[gShadowTexturePage * 0x20 + gShadowTextureNum] << 0x10;
 	}
 LAB_00065688:
-	if (uVar12 == 4) {
+	if (uVar10 == 4) {
 		if (bDoingShadow == 0) {
-			iVar3 = (int)((int)camera_angle.vy + (int)(pDrawingPed->dir).vy & 0xfffU) >> 7;
-			puVar9[3] = (*(ushort *)&pTVar13->coords | uVar2) + iVar3;
-			puVar9[5] = (*(ushort *)&(pTVar13->coords).u1 | uVar17) + iVar3;
-			puVar9[7] = (uint)*(ushort *)&(pTVar13->coords).u2 + iVar3;
-			puVar9[9] = (uint)*(ushort *)&(pTVar13->coords).u3 + iVar3;
+			x = (int)((int)camera_angle.vy + (int)(pDrawingPed->dir).vy & 0xfffU) >> 7;
+			*(uint *)&prims->u0 = (*(ushort *)&body_texture->coords | uVar1) + x;
+			*(uint *)&prims->u1 = (*(ushort *)&(body_texture->coords).u1 | uVar12) + x;
+			*(uint *)&prims->u2 = (uint)*(ushort *)&(body_texture->coords).u2 + x;
+			*(uint *)&prims->u3 = (uint)*(ushort *)&(body_texture->coords).u3 + x;
 			goto LAB_000657dc;
 		}
 	}
 	else {
 		if (bDoingShadow == 0) {
-			if (uVar12 == 2) {
-				puVar9[3] = *(ushort *)&pTVar13->coords | uVar2;
-				puVar9[5] = *(ushort *)&(pTVar13->coords).u1 | uVar17;
-				puVar9[7] = (uint)*(ushort *)&(pTVar13->coords).u2;
-				puVar9[9] = (uint)*(ushort *)&(pTVar13->coords).u3;
+			if (uVar10 == 2) {
+				*(uint *)&prims->u0 = *(ushort *)&body_texture->coords | uVar1;
+				*(uint *)&prims->u1 = *(ushort *)&(body_texture->coords).u1 | uVar12;
+				*(uint *)&prims->u2 = (uint)*(ushort *)&(body_texture->coords).u2;
+				*(uint *)&prims->u3 = (uint)*(ushort *)&(body_texture->coords).u3;
 			}
 			else {
-				puVar9[3] = *(ushort *)&(pTVar13->coords).u2 | uVar2;
-				puVar9[5] = *(ushort *)&(pTVar13->coords).u3 | uVar17;
-				puVar9[7] = (uint)*(ushort *)&pTVar13->coords;
-				puVar9[9] = (uint)*(ushort *)&(pTVar13->coords).u1;
+				*(uint *)&prims->u0 = *(ushort *)&(body_texture->coords).u2 | uVar1;
+				*(uint *)&prims->u1 = *(ushort *)&(body_texture->coords).u3 | uVar12;
+				*(uint *)&prims->u2 = (uint)*(ushort *)&body_texture->coords;
+				*(uint *)&prims->u3 = (uint)*(ushort *)&(body_texture->coords).u1;
 			}
 			goto LAB_000657dc;
 		}
 	}
-	puVar9[3] = shadowuv._0_2_ | uVar2;
-	puVar9[5] = shadowuv._0_2_ | uVar17;
-	puVar9[7] = (uint)shadowuv._0_2_;
-	puVar9[9] = (uint)shadowuv._0_2_;
+	*(uint *)&prims->u0 = shadowuv._0_2_ | uVar1;
+	*(uint *)&prims->u1 = shadowuv._0_2_ | uVar12;
+	*(uint *)&prims->u2 = (uint)shadowuv._0_2_;
+	*(uint *)&prims->u3 = (uint)shadowuv._0_2_;
 LAB_000657dc:
-	*(char *)((int)puVar9 + 3) = '\t';
-	*(char *)((int)puVar9 + 7) = ',';
+	*(undefined *)((int)&prims->tag + 3) = 9;
+	prims->code = ',';
 	combointensity._0_1_ = '@';
 	if (gNight == 1) {
-		*(char *)(puVar9 + 1) = '@';
-		*(char *)((int)puVar9 + 5) = '@';
+		prims->r0 = '@';
+		prims->g0 = '@';
 	}
 	else {
-		*(char *)(puVar9 + 1) = (char)((uint)combointensity >> 0x10);
-		*(char *)((int)puVar9 + 5) = (char)((uint)combointensity >> 8);
+		prims->r0 = (uchar)((uint)combointensity >> 0x10);
+		prims->g0 = (uchar)((uint)combointensity >> 8);
 	}
-	*(char *)((int)puVar9 + 6) = (char)combointensity;
-	pDVar1 = current;
+	prims->b0 = (uchar)combointensity;
+	current = current;
 	if (bDoingShadow == 0) {
-		iVar3 = sz + sy >> 4;
-		*puVar9 = *puVar9 & 0xff000000 | current->ot[iVar3 + ((int)uVar8 >> 5)] & 0xffffff;
-		puVar6 = pDVar1->ot + iVar3 + ((int)uVar8 >> 5);
-		*puVar6 = *puVar6 & 0xff000000 | (uint)puVar9 & 0xffffff;
+		x = sz + sy >> 4;
+		prims->tag = prims->tag & 0xff000000 | current->ot[x + ((int)uVar6 >> 5)] & 0xffffff;
+		ot = current->ot + x + ((int)uVar6 >> 5);
+		*ot = *ot & 0xff000000 | (uint)prims & 0xffffff;
 	}
 	else {
-		*puVar9 = *puVar9 & 0xff000000 | current->ot[0x107f] & 0xffffff;
-		puVar6 = pDVar1->ot;
-		puVar6[0x107f] = puVar6[0x107f] & 0xff000000 | (uint)puVar9 & 0xffffff;
+		prims->tag = prims->tag & 0xff000000 | current->ot[0x107f] & 0xffffff;
+		ot = current->ot;
+		ot[0x107f] = ot[0x107f] & 0xff000000 | (uint)prims & 0xffffff;
 	}
-	current->primptr = current->primptr + 0x28;
-	return;*/
+	current->primptr = current->primptr + 0x28;*/
 }
 
 

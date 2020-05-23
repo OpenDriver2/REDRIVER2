@@ -682,7 +682,6 @@ int gameinit = 0;
 int gMusicType = 0;
 int xa_timeout = 0;
 
-int ThisMotion = 0;
 int IconsLoaded = 0;
 
 // OVERLAY

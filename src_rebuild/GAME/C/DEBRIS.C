@@ -3451,7 +3451,7 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	poly = (POLY_FT4 *)current->primptr;
 
@@ -3483,7 +3483,7 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 		gte_ldv0(&vert[3]);
 
-		docop2(0x180001);
+		gte_rtps();
 		gte_stsxy(&poly->x3);
 
 		poly->tpage = flare_texture.tpageid | 0x20;

@@ -44,14 +44,15 @@ void DrawDebugOverlays()
 		b.vy = ld.posB.vy - camera_position.vy;
 		b.vz = ld.posB.vz - camera_position.vz;
 
-		gte_ldv0(&a);
-		gte_ldv1(&b);
+		gte_ldv3(&a, &b, &b);
 
-		docop2(0x280030);
+		gte_rtpt();
+		gte_avsz4();
+		
+		int z;
+		gte_stopz(&z);
 
-		//docop2(0x1400006);
-
-		//if (SZ3 > 0)
+		if (z > 0)
 		{
 			LINE_F2* line = (LINE_F2*)current->primptr;
 			setLineF2(line);

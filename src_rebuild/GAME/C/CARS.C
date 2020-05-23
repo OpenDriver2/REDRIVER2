@@ -115,9 +115,9 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 		setupLightingMatrices();
 
 		gte_ldv0(&carLightD);
-		MTC2(lightlevel, 6);
+		gte_ldrgb(&lightlevel);
 
-		docop2(0x108041b);
+		gte_nccs();
 
 		_pg.primptr = (unsigned char*)current->primptr;
 		_pg.intensity = 0;
@@ -213,13 +213,13 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 
 			gte_ldv3(v0, v1, v2);
 
-			docop2(0x280030);
+			gte_rtpt();
 
 			*(uint *)&prim->r0 = uVar4 | 0x20000000;
 
-			docop2(0x1400006);
+			gte_nclip();
 			gte_stopz(&iVar1);
-			docop2(0x158002d);
+			gte_avsz3();
 
 			if (-1 < iVar1) 
 			{
@@ -311,7 +311,7 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 	FT3rgbb = pg->intensity | 0x24000000;
 	ot = pg->ot;
 
-	MTC2(FT3rgbb, 6);
+	gte_ldrgb(&FT3rgbb);
 
 	pCVar6 = src;
 	if (0 < numTris) {
@@ -323,7 +323,7 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 
 			gte_ldv3(v0, v1, v2);
 
-			docop2(0x280030);
+			gte_rtpt();
 
 			iVar4 = pCVar6->clut_uv0;
 			iVar5 = pCVar6->tpage_uv1;
@@ -335,9 +335,9 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 			*(uint *)&prim->u1 = iVar5 + uVar2;
 			*(CAR_POLY **)&prim->u2 = src;
 
-			docop2(0x1400006);
+			gte_nclip();
 			gte_stopz(&iVar3);
-			docop2(0x158002d);
+			gte_avsz3();
 
 			if (-1 < iVar3) 
 			{
@@ -435,7 +435,8 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	prim = (POLY_GT3 *)pg->primptr;
 	puVar5 = pg->pciv_clut;
 
-	MTC2(pg->intensity | 0x34000000, 6);
+	uint GT3rgb = pg->intensity | 0x34000000;
+	gte_ldrgb(&GT3rgb);
 
 	while (true) 
 	{
@@ -456,8 +457,8 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 		gte_ldv3(pSVar8, pSVar6, pSVar4);
 
-		docop2(0x280030);
-		docop2(0x1400006);
+		gte_rtpt();
+		gte_nclip();
 
 		uVar9 = src->nindices;
 		uVar12 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 5 & 0x7f8U));
@@ -465,7 +466,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 		gte_stopz(&iVar1);
 
-		docop2(0x158002d);
+		gte_avsz3();
 		src = src + 1;
 
 		gte_stotz(&iVar2);
@@ -569,7 +570,8 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 	uVar4 = pg->intensity | 0x24000000;
 	puVar6 = pg->pciv_clut;
 
-	MTC2(pg->intensity | 0x24000000, 6); // setCopReg(2, vlist, uVar4);
+	uint GT3rgb = pg->intensity | 0x24000000;
+	gte_ldrgb(&GT3rgb);
 
 	pCVar11 = src;
 	if (0 < numTris) 
@@ -582,7 +584,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			gte_ldv3(pSVar7, local_v1_100, local_v0_116);
 
-			docop2(0x280030);
+			gte_rtpt();
 
 			uVar8 = pCVar11->clut_uv0;
 			iVar9 = pCVar11->tpage_uv1;
@@ -591,10 +593,10 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 			uVar1 = puVar6[palette + ((int)uVar8 >> 0x10)];
 			uVar5 = (uint)pg->damageLevel[pCVar11->originalindex];
 
-			docop2(0x1400006);
+			gte_nclip();
 
 			gte_stopz(&iVar2);
-			docop2(0x158002d);
+			gte_avsz3();
 
 			gte_stotz(&local_4);
 
@@ -1561,16 +1563,16 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 
 		gte_ldv3(pSVar9, local_v1_308, local_v0_320);
 
-		docop2(0x280030);
-		docop2(0x1400006);
+		gte_rtpt();
+		gte_nclip();
 
 		gte_stopz(&iVar3);
 		gte_stsxy0(&local_t0_688->x0);
 
 		gte_ldv0((SVECTOR *)(verts + (uVar8 >> 0x18)));
 
-		docop2(0x180001);
-		docop2(0x168002e);
+		gte_rtps();
+		gte_avsz4();
 
 		gte_stotz(&iVar5);
 
@@ -1845,7 +1847,8 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 		//if (bVar2) 
 		{
-			MTC2(combointensity & 0xffffffU | 0x34000000, 6);
+			uint rgbval = combointensity & 0xffffffU | 0x34000000;
+			gte_ldrgb(&rgbval);
 
 			cp->ap.qy = *(short *)(cp->st.n.orientation + 1);
 			cp->ap.qw = *(short *)(cp->st.n.orientation + 3);
@@ -1877,7 +1880,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 				{
 					gte_ldv3(&local_a3_900[0], &local_a3_900[1], &local_a3_900[2]);
 
-					docop2(0x118043f);
+					gte_ncct();
 
 					gte_strgb3(&c0,&c1,&c2);
 

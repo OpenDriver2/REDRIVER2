@@ -1264,7 +1264,7 @@ long RotTransPers(struct SVECTOR* v0, long* sxy, long* p, long* flag)
 {
 	gte_ldv0(v0);
 
-    docop2(0x180001);
+    gte_rtps();
 
 	gte_stsxy(sxy);
 	gte_stdp(p);
@@ -1294,10 +1294,10 @@ void NormalColorCol(struct SVECTOR* v0, struct CVECTOR* v1, struct CVECTOR* v2)
 long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2, struct SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/)
 {
 	gte_ldv3(v0,v1,v2);
-    docop2(0x280030);
+    gte_rtpt();
 	gte_stflg(flag);
 
-    docop2(0x1400006);
+    gte_nclip();
 
 	int opz;
 	gte_stopz(&opz);
@@ -1308,13 +1308,13 @@ long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2
 
 		gte_ldv0(v3);
 
-        docop2(0x180001);
+        gte_rtps();
 
 		gte_stsxy(sxy3);
 		gte_stdp(p);
 		gte_stflg(flag);
 
-        docop2(0x168002E);
+        gte_avsz4();
 
 		gte_stotz(otz);
     }

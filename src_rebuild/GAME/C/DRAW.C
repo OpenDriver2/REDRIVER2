@@ -175,12 +175,12 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 	{
 		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
 
-		docop2(0x280030);
+		gte_rtpt();
 
 		int ZZ;
 		gte_stopz(&ZZ);
 
-		docop2(0x158002d);
+		gte_avsz3();
 
 		int Z;
 		gte_stotz(&Z);
@@ -200,7 +200,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 			gte_stsxy3(&poly->x0, &poly->x1, &poly->x3);
 
 			gte_ldv0(&verts[src->v3]);
-			docop2(0x180001);
+			gte_rtps();
 
 			gte_stsxy(&poly->x2);
 
@@ -2045,7 +2045,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		pSVar5 = verts + ((uint)vidx >> 0x18);
 
 		gte_ldv3(pSVar10, local_v1_404, pSVar5);
-		docop2(0x280030);
+		gte_rtpt();
 
 		if (((uVar20 ^ uVar18) & 0xffff00) != 0)
 		{
@@ -2058,7 +2058,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			uVar20 = uVar18;
 		}
 
-		docop2(0x1400006);
+		gte_nclip();
 
 		uint DAT_1f800208;
 		uint DAT_1f80020c;
@@ -2131,8 +2131,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 					gte_ldv0(puVar6);
 
-					docop2(0x180001);
-					docop2(0x168002e);
+					gte_rtps();
+					gte_avsz4();
 
 					UVar2 = polys->uv3;
 

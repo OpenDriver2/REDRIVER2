@@ -1158,7 +1158,7 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip
 
 	gte_ldv3(&points[0], &points[1], &points[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	points[3].vx = shadowPoints[2].vx - camera_position.vx;
 	points[3].vy = -shadowPoints[2].vy - camera_position.vy;
@@ -1170,7 +1170,7 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip
 
 	gte_ldv0(&points[3]);
 
-	docop2(0x180001);
+	gte_rtps();
 
 	gte_stsz(&z3);
 	gte_stsxy(&sps->x2);

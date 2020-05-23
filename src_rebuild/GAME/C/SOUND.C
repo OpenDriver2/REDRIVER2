@@ -2280,7 +2280,7 @@ int CalculateVolume(int channel)
 
 		gte_ldlvl(&ofse);
 
-		docop2(0xa00428);
+		gte_sqr0();
 
 		gte_stlvnl(&ofse);
 

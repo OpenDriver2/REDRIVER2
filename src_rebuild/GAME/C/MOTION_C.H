@@ -12,6 +12,8 @@ extern MODEL* gPed2HeadModelPtr;
 extern MODEL* gPed3HeadModelPtr;
 extern MODEL* gPed4HeadModelPtr;
 
+extern int ThisMotion;
+
 extern void ProcessMotionLump(char *lump_ptr, int lump_size); // 0x00069A38
 
 extern void SetupPedMotionData(PEDESTRIAN *pPed); // 0x00069AB8

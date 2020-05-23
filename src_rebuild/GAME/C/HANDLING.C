@@ -1510,17 +1510,17 @@ void initOBox(_CAR_DATA *cp)
 
 	gte_ldlvl(&svx);
 
-	docop2(0x49e012);
+	gte_rtir();
 	cp->hd.oBox.length[1] = cp->ap.carCos->colBox.vy;
 	gte_stsv(&cp->hd.oBox.radii[0]);
 
 	gte_ldlvl(&svy);
-	docop2(0x49e012);
+	gte_rtir();
 	cp->hd.oBox.length[2] = cp->ap.carCos->colBox.vz;
 	gte_stsv(&cp->hd.oBox.radii[1]);
 
 	gte_ldlvl(&svz);
-	docop2(0x49e012);
+	gte_rtir();
 	gte_stsv(&cp->hd.oBox.radii[2]);
 }
 
