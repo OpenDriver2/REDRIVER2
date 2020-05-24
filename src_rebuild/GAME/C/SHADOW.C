@@ -9,6 +9,12 @@
 #include "INLINE_C.H"
 #include "STRINGS.H"
 
+int gShadowTexturePage;
+int gShadowTextureNum;
+
+UV shadowuv;
+POLY_FT4 shadowPolys[2][20];
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitTyreTracks()
@@ -695,12 +701,6 @@ void DrawTyreTracks(void)
 	// End Line: 1673
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-int gShadowTexturePage;
-int gShadowTextureNum;
-
-UV shadowuv;
-POLY_FT4 shadowPolys[2][20];
 
 // [D]
 void InitShadow(void)

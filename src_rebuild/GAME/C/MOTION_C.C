@@ -5,6 +5,11 @@
 #include "STRINGS.H"
 #include "MISSION.H"
 #include "TEXTURE.H"
+#include "OVERMAP.H"
+#include "CAMERA.H"
+#include "SHADOW.H"
+#include "DEBRIS.H"
+#include "DRAW.H"
 
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
@@ -474,15 +479,17 @@ void SetupPedestrian(PEDESTRIAN *pedptr)
 	/* end block 3 */
 	// End Line: 1975
 
+int bDoingShadow = 0;
+int gCurrentZ;
+PEDESTRIAN *pDrawingPed = NULL;
+
+// [D] [A] change to VERTTYPE?
 void DrawBodySprite(int boneId, long v1, long v2, int sz, int sy)
 {
-	/*
-	DB *current;
 	uint uVar1;
 	long lVar2;
-	byte bVar3;
+	unsigned char bVar3;
 	uint uVar4;
-	ulong *ot;
 	int iVar5;
 	uint uVar6;
 	int iVar7;
@@ -507,90 +514,94 @@ void DrawBodySprite(int boneId, long v1, long v2, int sz, int sy)
 	uVar10 = boneId & 0x7f;
 	body_texture = MainPed[uVar10].ptd;
 	lVar2 = ratan2(y, x);
-	if (bDoingShadow == 0) {
+
+	if (bDoingShadow == 0) 
 		iVar5 = gCurrentZ + (scr_z >> 2);
-	}
-	else {
+	else 
 		iVar5 = sz + (scr_z >> 2);
-	}
+
 	iVar13 = (scr_z << 0xc) / iVar5;
-	if (iVar5 == 0) {
-		trap(7);
-	}
+
 	if (uVar10 == 2) {
-		iVar13 = iVar13 + ((int)((uint)*(ushort *)
-			((int)rcossin_tbl +
-			(((int)(pDrawingPed->dir).vy + (int)camera_angle.vy) * 8 &
-				0x3ff8U) + 2) << 0x10) >> 0x16);
+		iVar13 = iVar13 + ((int)((uint)*(ushort *)((int)rcossin_tbl +((pDrawingPed->dir.vy + camera_angle.vy) * 8 & 0x3ff8U) + 2) << 0x10) >> 0x16);
 	}
 	prims = (POLY_FT4 *)current->primptr;
-	if (pDrawingPed->type == PED_ACTION_JUMP) {
-		uVar6 = (uint)(byte)MainPed[uVar10].cWidth + 4;
+
+	if (pDrawingPed->type == PED_ACTION_JUMP)
+	{
+		uVar6 = MainPed[uVar10].cWidth + 4;
 	}
-	else {
-		if (bDoingShadow == 0) {
-			if ((pDrawingPed->flags & 0x8000U) == 0) {
-				if ((pDrawingPed->flags & 0x4000U) == 0) {
-					uVar6 = (uint)(byte)MainPed[uVar10].cWidth + 3;
-				}
-				else {
-					uVar6 = (uint)(byte)MainPed[uVar10].cWidth + 8;
-				}
-			}
-			else {
-				uVar6 = (uint)(byte)MainPed[uVar10].cWidth - 3;
-			}
+	else if (bDoingShadow == 0)
+	{
+		if ((pDrawingPed->flags & 0x8000U) == 0) 
+		{
+			if ((pDrawingPed->flags & 0x4000U) == 0)
+				uVar6 = MainPed[uVar10].cWidth + 3;
+			else 
+				uVar6 = MainPed[uVar10].cWidth + 8;
 		}
-		else {
-			uVar6 = (uint)(byte)MainPed[uVar10].cWidth;
-		}
+		else 
+			uVar6 = MainPed[uVar10].cWidth - 3;
 	}
+	else
+		uVar6 = MainPed[uVar10].cWidth;
+
 	iVar7 = (int)(iVar13 * (int)rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 3 * (uVar6 & 0x3f)) >> 9;
 	bVar3 = MainPed[uVar10].cAdj & 0xf;
 	iVar9 = y >> bVar3;
 	iVar8 = x >> bVar3;
 	iVar5 = (int)(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * (uVar6 & 0x3f)) >> 8;
-	if ((((uVar10 == 0x13) || (uVar10 == 0xf)) && (pDrawingPed->type != PED_ACTION_JUMP)) &&
-		(bDoingShadow == 0)) {
+
+	if ((((uVar10 == 0x13) || (uVar10 == 0xf)) && (pDrawingPed->type != PED_ACTION_JUMP)) && (bDoingShadow == 0))
+	{
 		y = -y >> 3;
 		x = -x >> 3;
 	}
-	else {
+	else
+	{
 		uVar4 = (uint)(MainPed[uVar10].cAdj >> 4);
 		y = y >> uVar4;
 		x = x >> uVar4;
 	}
+
 	*(uint *)&prims->x0 = (uVar12 + iVar5 + iVar8 & 0xffff0000) + (iVar11 + iVar7 + iVar9 >> 0x10);
-	*(uint *)&prims->x1 =
-		((uVar12 - iVar5) + iVar8 & 0xffff0000) + ((iVar11 - iVar7) + iVar9 >> 0x10);
+	*(uint *)&prims->x1 = ((uVar12 - iVar5) + iVar8 & 0xffff0000) + ((iVar11 - iVar7) + iVar9 >> 0x10);
 	*(uint *)&prims->x2 = ((uVar1 + iVar5) - x & 0xffff0000) + ((v2 * 0x10000 + iVar7) - y >> 0x10);
 	*(uint *)&prims->x3 = ((uVar1 - iVar5) - x & 0xffff0000) + ((v2 * 0x10000 - iVar7) - y >> 0x10);
-	if (bDoingShadow == 0) {
+
+	if (bDoingShadow == 0)
+	{
 		uVar12 = (uint)body_texture->tpageid << 0x10;
-		if (MainPed[uVar10].texPal != NO_PAL) {
-			if (MainPed[uVar10].texPal == JEANS_PAL) {
+		if (MainPed[uVar10].texPal != NO_PAL) 
+		{
+			if (MainPed[uVar10].texPal == JEANS_PAL) 
+			{
 				bVar3 = pDrawingPed->pallet >> 4;
 				uVar1 = (uint)bVar3;
 			}
-			else {
+			else
+			{
 				bVar3 = pDrawingPed->pallet & 0xf;
 				uVar1 = (uint)pDrawingPed->pallet & 0xf;
 			}
-			if (bVar3 != 0) {
-				uVar1 = (uint)civ_clut[(uint)(byte)body_texture->texture_number * 6 + uVar1] << 0x10
-					;
+			if (bVar3 != 0) 
+			{
+				uVar1 = (uint)civ_clut[body_texture->texture_number * 6 + uVar1] << 0x10;
 				goto LAB_00065688;
 			}
 		}
 		uVar1 = (uint)body_texture->clutid << 0x10;
 	}
-	else {
+	else
+	{
 		uVar12 = gShadowTexturePage << 0x10;
 		uVar1 = (uint)(ushort)texture_cluts[gShadowTexturePage * 0x20 + gShadowTextureNum] << 0x10;
 	}
 LAB_00065688:
-	if (uVar10 == 4) {
-		if (bDoingShadow == 0) {
+	if (uVar10 == 4) 
+	{
+		if (bDoingShadow == 0)
+		{
 			x = (int)((int)camera_angle.vy + (int)(pDrawingPed->dir).vy & 0xfffU) >> 7;
 			*(uint *)&prims->u0 = (*(ushort *)&body_texture->coords | uVar1) + x;
 			*(uint *)&prims->u1 = (*(ushort *)&(body_texture->coords).u1 | uVar12) + x;
@@ -599,8 +610,10 @@ LAB_00065688:
 			goto LAB_000657dc;
 		}
 	}
-	else {
-		if (bDoingShadow == 0) {
+	else 
+	{
+		if (bDoingShadow == 0) 
+		{
 			if (uVar10 == 2) {
 				*(uint *)&prims->u0 = *(ushort *)&body_texture->coords | uVar1;
 				*(uint *)&prims->u1 = *(ushort *)&(body_texture->coords).u1 | uVar12;
@@ -616,36 +629,38 @@ LAB_00065688:
 			goto LAB_000657dc;
 		}
 	}
-	*(uint *)&prims->u0 = shadowuv._0_2_ | uVar1;
-	*(uint *)&prims->u1 = shadowuv._0_2_ | uVar12;
-	*(uint *)&prims->u2 = (uint)shadowuv._0_2_;
-	*(uint *)&prims->u3 = (uint)shadowuv._0_2_;
+
+	*(uint *)&prims->u0 = *(uint*)&shadowuv | uVar1;
+	*(uint *)&prims->u1 = *(uint*)&shadowuv | uVar12;
+	*(uint *)&prims->u2 = *(uint*)&shadowuv;
+	*(uint *)&prims->u3 = *(uint*)&shadowuv;
+
 LAB_000657dc:
-	*(undefined *)((int)&prims->tag + 3) = 9;
-	prims->code = ',';
-	combointensity._0_1_ = '@';
-	if (gNight == 1) {
-		prims->r0 = '@';
-		prims->g0 = '@';
+
+	setPolyFT4(prims);
+
+	if (gNight == 1) 
+	{
+		prims->r0 = 64;
+		prims->g0 = 64;
 	}
-	else {
-		prims->r0 = (uchar)((uint)combointensity >> 0x10);
-		prims->g0 = (uchar)((uint)combointensity >> 8);
+	else 
+	{
+		prims->r0 = (combointensity >> 0x10) & 0xFF;
+		prims->g0 = (combointensity >> 8) & 0xFF;
 	}
-	prims->b0 = (uchar)combointensity;
-	current = current;
-	if (bDoingShadow == 0) {
+
+	prims->b0 = combointensity & 0xFF;
+
+	if (bDoingShadow == 0)
+	{
 		x = sz + sy >> 4;
-		prims->tag = prims->tag & 0xff000000 | current->ot[x + ((int)uVar6 >> 5)] & 0xffffff;
-		ot = current->ot + x + ((int)uVar6 >> 5);
-		*ot = *ot & 0xff000000 | (uint)prims & 0xffffff;
+		addPrim(current->ot + x + ((int)uVar6 >> 5), prims);
 	}
-	else {
-		prims->tag = prims->tag & 0xff000000 | current->ot[0x107f] & 0xffffff;
-		ot = current->ot;
-		ot[0x107f] = ot[0x107f] & 0xff000000 | (uint)prims & 0xffffff;
-	}
-	current->primptr = current->primptr + 0x28;*/
+	else
+		addPrim(current->ot + 0x107f, prims);
+
+	current->primptr += sizeof(POLY_FT4);
 }
 
 
@@ -821,8 +836,6 @@ void StoreVertexLists(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-PEDESTRIAN *pDrawingPed = NULL;
-
 void SetupTannerSkeleton(void)
 {
 	UNIMPLEMENTED();
@@ -831,72 +844,74 @@ void SetupTannerSkeleton(void)
 
 	/*
 	short sVar1;
-	SVECTOR *pSVar2;
-	SVECTOR_NOPAD *pSVar3;
-	short sVar4;
-	BONE *pBVar5;
-	undefined4 *puVar6;
-	int iVar7;
+	SVECTOR_NOPAD *local_v0_180;
+	SVECTOR_NOPAD *pSVar2;
+	SVECTOR *local_a0_448;
+	short sVar3;
+	BONE *pBVar4;
+	BONE *local_a3_436;
+	short *local_t0_244;
+	int iVar5;
 
-	Skel.pvOrigPos =
-		(SVECTOR_NOPAD *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x92);
-	Skel.pvRotation = (SVECTOR *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x98)
-		;
-	Skel.vCurrPos.vx = (long)(Skel.pvOrigPos)->vx;
-	Skel.vCurrPos.vy = -(int)(Skel.pvOrigPos)->vy;
-	iVar7 = 0x15;
-	Skel.vOffset.vx = 0;
-	Skel.vOffset.vy = 0;
-	Skel.vOffset.vz = 0;
-	Skel.vCurrPos.vz = -(int)(Skel.pvOrigPos)->vz;
-	pSVar2 = (SVECTOR *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x9e);
-	pSVar3 = (SVECTOR_NOPAD *)(pDrawingPed->motion + 0xe);
-	pBVar5 = &Skel;
+	Skel[0].pvOrigPos =
+		 (SVECTOR_NOPAD *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x92);
+	Skel[0].pvRotation =
+		 (SVECTOR *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x98);
+	Skel[0].vCurrPos.vx = (long)(Skel[0].pvOrigPos)->vx;
+	Skel[0].vCurrPos.vy = -(int)(Skel[0].pvOrigPos)->vy;
+	iVar5 = 0x15;
+	Skel[0].vOffset.vx = 0;
+	Skel[0].vOffset.vy = 0;
+	Skel[0].vOffset.vz = 0;
+	Skel[0].vCurrPos.vz = -(int)(Skel[0].pvOrigPos)->vz;
+	local_v0_180 = (SVECTOR_NOPAD *)
+				   (pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x9e);
+	pSVar2 = (SVECTOR_NOPAD *)(pDrawingPed->motion + 0xe);
+	pBVar4 = Skel;
 	do {
-		iVar7 = iVar7 + -1;
-		pBVar5[1].pvRotation = pSVar2;
-		pBVar5[1].pvOrigPos = pSVar3;
+		iVar5 = iVar5 + -1;
+		*(SVECTOR_NOPAD **)&pBVar4[1].pvRotation = local_v0_180;
+		pBVar4[1].pvOrigPos = pSVar2;
 		sVar1 = (short)bodyShiftValue;
-		pSVar2 = (SVECTOR *)&pSVar2->pad;
-		pSVar3 = pSVar3 + 1;
-		pBVar5 = pBVar5 + 1;
-	} while (-1 < iVar7);
-	DAT_1f800008._0_2_ = (BONE_000a0900.pvOrigPos)->vx;
-	puVar6 = &DAT_1f800010;
-	iVar7 = 0x14;
-	DAT_1f800008._2_2_ = -(BONE_000a0900.pvOrigPos)->vy;
-	DAT_1f80000c = -(BONE_000a0900.pvOrigPos)->vz;
-	pBVar5 = &BONE_000a0900;
+		local_v0_180 = local_v0_180 + 1;
+		pSVar2 = pSVar2 + 1;
+		pBVar4 = pBVar4 + 1;
+	} while (-1 < iVar5);
+	SVECTOR_1f800008.vx = (Skel[1].pvOrigPos)->vx;
+	local_t0_244 = &SVECTOR_1f800010;
+	iVar5 = 0x14;
+	SVECTOR_1f800008.vy = -(Skel[1].pvOrigPos)->vy;
+	SVECTOR_1f800008.vz = -(Skel[1].pvOrigPos)->vz;
+	pBVar4 = Skel + 1;
 	do {
-		*(short *)puVar6 = (pBVar5[1].pvOrigPos)->vx - (pBVar5[1].pParent)->pvOrigPos->vx;
-		sVar4 = (pBVar5[1].pParent)->pvOrigPos->vy - (pBVar5[1].pvOrigPos)->vy;
-		*(short *)((int)puVar6 + 2) = sVar4;
-		*(short *)(puVar6 + 1) = (pBVar5[1].pParent)->pvOrigPos->vz - (pBVar5[1].pvOrigPos)->vz;
-		if (pBVar5[1].id == JOINT_1) {
-			*(short *)((int)puVar6 + 2) = sVar4 - sVar1;
+		local_t0_244->vx = (pBVar4[1].pvOrigPos)->vx - (pBVar4[1].pParent)->pvOrigPos->vx;
+		sVar3 = (pBVar4[1].pParent)->pvOrigPos->vy - (pBVar4[1].pvOrigPos)->vy;
+		local_t0_244->vy = sVar3;
+		local_t0_244->vz = (pBVar4[1].pParent)->pvOrigPos->vz - (pBVar4[1].pvOrigPos)->vz;
+		if (pBVar4[1].id == JOINT_1) {
+			local_t0_244->vy = sVar3 - sVar1;
 		}
-		puVar6 = puVar6 + 2;
-		iVar7 = iVar7 + -1;
-		pBVar5 = pBVar5 + 1;
-	} while (-1 < iVar7);
-	pBVar5 = &BONE_000a0900;
-	puVar6 = &DAT_1f800008;
-	iVar7 = 0x15;
+		local_t0_244 = local_t0_244 + 1;
+		iVar5 = iVar5 + -1;
+		pBVar4 = pBVar4 + 1;
+	} while (-1 < iVar5);
+	local_a3_436 = Skel;
+	local_a0_448 = &SVECTOR_1f800008;
+	iVar5 = 0x15;
 	do {
-		sVar1 = *(short *)puVar6;
-		(pBVar5->vCurrPos).vx = (int)sVar1;
-		(pBVar5->vOffset).vx = (int)sVar1;
-		sVar1 = *(short *)((int)puVar6 + 2);
-		iVar7 = iVar7 + -1;
-		(pBVar5->vCurrPos).vy = (int)sVar1;
-		(pBVar5->vOffset).vy = (int)sVar1;
-		sVar1 = *(short *)(puVar6 + 1);
-		puVar6 = puVar6 + 2;
-		(pBVar5->vCurrPos).vz = (int)sVar1;
-		(pBVar5->vOffset).vz = (int)sVar1;
-		pBVar5 = pBVar5 + 1;
-	} while (-1 < iVar7);
-	return;*/
+		local_a3_436 = local_a3_436 + 1;
+		sVar1 = local_a0_448->vx;
+		(local_a3_436->vCurrPos).vx = (int)sVar1;
+		(local_a3_436->vOffset).vx = (int)sVar1;
+		sVar1 = local_a0_448->vy;
+		iVar5 = iVar5 + -1;
+		(local_a3_436->vCurrPos).vy = (int)sVar1;
+		(local_a3_436->vOffset).vy = (int)sVar1;
+		sVar1 = local_a0_448->vz;
+		local_a0_448 = local_a0_448 + 1;
+		(local_a3_436->vCurrPos).vz = (int)sVar1;
+		(local_a3_436->vOffset).vz = (int)sVar1;
+	} while (-1 < iVar5);*/
 }
 
 

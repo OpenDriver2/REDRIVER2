@@ -1,6 +1,9 @@
 #ifndef SHADOW_H
 #define SHADOW_H
 
+extern int gShadowTexturePage;
+extern int gShadowTextureNum;
+extern UV shadowuv;
 
 extern void InitTyreTracks(); // 0x00077524
 
