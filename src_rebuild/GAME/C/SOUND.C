@@ -1598,28 +1598,30 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 
 	if (address == NULL) 
 	{
-		switch (length) {
+		switch (length)
+		{
 			case 0:
-				if (dbank == 0) {
+				if (dbank == 0)
+				{
 					lsbTabs.append = 0;
+					puts("*---LSBD(): successful init---*\n");
 				}
-				iVar5 = 0;
 				break;
 			case 1:
 				lsbTabs.memtop = lsbTabs.addr;
-				iVar5 = lsbTabs.addr;
+				puts("*---LSBD(): saved memtop---*\n");
 				break;
 			case 2:
 				lsbTabs.addr = lsbTabs.memtop;
-				iVar5 = lsbTabs.memtop;
+				puts("*---LSBD(): goneto memtop---*\n");
 				break;
 			case 3:
 				lsbTabs.bnktop[dbank] = lsbTabs.count[dbank];
-				iVar5 = lsbTabs.count[dbank];
+				printf("*---LSBD(): saved banktop %d---*\n", lsbTabs.bnktop[dbank]);
 				break;
 			case 4:
 				lsbTabs.count[dbank] = lsbTabs.bnktop[dbank];
-				iVar5 = lsbTabs.bnktop[dbank];
+				printf("*---LSBD(): goneto banktop %d---*\n", lsbTabs.count[dbank]);
 				break;
 			default:
 				goto switchD_00079c20_caseD_5;
@@ -1629,19 +1631,18 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	{
 	switchD_00079c20_caseD_5:
 
-		// [A] this next code appears to be not-so-valid
-		// FIXME: PLEASE DEBUG THIS FUNCTION
-		// OR DECOMPILE PROPERLY
 		if (lsbTabs.append == 0) 
 		{
 			iVar5 = 6;
 			piVar2 = lsbTabs.count + 6;
 			lsbTabs.addr = bankaddr[1];
+
 			do {
 				*piVar2 = 0;
-				iVar5 = iVar5 + -1;
-				piVar2 = piVar2 + -1;
+				iVar5--;
+				piVar2--;
 			} while (-1 < iVar5);
+
 			lsbTabs.append = 1;
 		}
 
@@ -1662,7 +1663,8 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 
 		iVar6 = num_samples;
 
-		if (0 < num_samples) {
+		if (0 < num_samples) 
+		{
 			do {
 				
 				iVar4 = *piVar2;
