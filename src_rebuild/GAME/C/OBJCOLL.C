@@ -1219,7 +1219,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 							
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 							extern int gShowCollisionDebug;
-							//if (gShowCollisionDebug)
+							if (gShowCollisionDebug)
 							{
 								extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 								extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);

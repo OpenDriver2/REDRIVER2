@@ -24,8 +24,10 @@
 #include "MAP.H"
 #include "SYSTEM.H"
 
-#include "STRINGS.H"
+#include "../ASM/ASMTEST.H"
 
+#include "STRINGS.H"
+#include "INLINE_C.H"
 
 
 MODEL* pmTannerModels[17] = { 0 };
@@ -635,6 +637,7 @@ void InitPedestrians(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DestroyPedestrians(void)
 {
 	while (pUsedPeds)
@@ -681,25 +684,25 @@ void DestroyPedestrians(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DestroyCivPedestrians(void)
 {
-	UNIMPLEMENTED();
-	/*
-	PEDESTRIAN *pPVar1;
-	PEDESTRIAN *pPVar2;
+	PEDESTRIAN *pPed;
+	PEDESTRIAN *pHPed;
 
-	pPVar1 = pUsedPeds;
-	if (pUsedPeds != (PEDESTRIAN *)0x0) {
-		do {
-			pPVar2 = pPVar1->pNext;
-			if (pPVar1->pedType == CIVILIAN) {
-				DestroyPedestrian(pUsedPeds);
-				num_pedestrians = num_pedestrians + -1;
-			}
-			pPVar1 = pPVar2;
-		} while (pPVar2 != (PEDESTRIAN *)0x0);
+	pPed = pUsedPeds;
+	while (pPed != NULL)
+	{
+		pHPed = pPed->pNext;
+
+		if (pPed->pedType == CIVILIAN)
+		{
+			DestroyPedestrian(pUsedPeds);
+			num_pedestrians--;
+		}
+
+		pPed = pHPed;
 	}
-	return;*/
 }
 
 
@@ -1425,70 +1428,42 @@ LAB_0006f100:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawAllPedestrians(void)
 {
-	UNIMPLEMENTED();
-	/*
-	PED_ACTION_TYPE PVar1;
-	PEDESTRIAN **ppPVar2;
-	int iVar3;
-	undefined4 in_a2;
-	undefined4 in_a3;
-	undefined4 local_38;
-	undefined4 local_30;
-	undefined4 local_24;
-	undefined4 local_34;
-	undefined4 local_2c;
-	undefined4 local_20;
-	undefined4 local_28;
-	undefined4 local_1c;
 	PEDESTRIAN *pPed;
+	MATRIX mStore;
 
-	local_38 = getCopControlWord(2, 0);
-	local_34 = getCopControlWord(2, 0x800);
-	local_30 = getCopControlWord(2, 0x1000);
-	local_2c = getCopControlWord(2, 0x1800);
-	local_28 = getCopControlWord(2, 0x2000);
-	local_24 = getCopControlWord(2, 0x2800);
-	local_20 = getCopControlWord(2, 0x3000);
-	local_1c = getCopControlWord(2, 0x3800);
+	gte_ReadRotMatrix(&mStore);
+
 	pPed = pUsedPeds;
-	if (pUsedPeds != (PEDESTRIAN *)0x0) {
-		do {
-			PVar1 = pPed->type;
-			if (((uint)pPed->pedType - 2 < 2) &&
-				(iVar3 = PositionVisible((VECTOR *)&pPed->position), iVar3 != 0)) {
-				iVar3 = FrustrumCheck((VECTOR *)&pPed->position, 0x3c, in_a2, in_a3, local_38, local_34, local_30,
-					local_2c, local_28, local_24, local_20, local_1c);
-				if (iVar3 != -1) {
-					if ((uint)PVar1 - 8 < 6) {
-						DrawCiv(pPed);
-					}
-					else {
-						DrawCharacter(pPed);
-					}
-				}
-			}
-			ppPVar2 = &pPed->pNext;
-			pPed = *ppPVar2;
-		} while (*ppPVar2 != (PEDESTRIAN *)0x0);
-	}
-	setCopControlWord(2, 0, local_38);
-	setCopControlWord(2, 0x800, local_34);
-	setCopControlWord(2, 0x1000, local_30);
-	setCopControlWord(2, 0x1800, local_2c);
-	setCopControlWord(2, 0x2000, local_28);
-	pPed = pUsedPeds;
-	while (pPed != (PEDESTRIAN *)0x0) {
-		if ((((pPed->pedType < OTHER_SPRITE) && ((pPed->flags & 4U) == 0)) &&
-			(iVar3 = PositionVisible((VECTOR *)&pPed->position), iVar3 != 0)) &&
-			(iVar3 = FrustrumCheck((VECTOR *)&pPed->position, 0x3c, in_a2, in_a3, local_38, local_34, local_30,
-				local_2c, local_28, local_24, local_20, local_1c), iVar3 != -1)) {
-			DrawTanner(pPed);
+	while (pPed != NULL)
+	{
+		if (pPed->pedType - 2 < 2 && PositionVisible((VECTOR *)&pPed->position) != 0 && FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
+		{
+			if (pPed->type - 8 < 6)
+				DrawCiv(pPed);
+			else 
+				DrawCharacter(pPed);
 		}
+
 		pPed = pPed->pNext;
 	}
-	return;*/
+
+	gte_SetRotMatrix(&mStore);
+
+	pPed = pUsedPeds;
+	while (pPed != NULL) 
+	{
+		if (pPed->pedType < OTHER_SPRITE && (pPed->flags & 4U) == 0 &&
+			PositionVisible((VECTOR *)&pPed->position) != 0 &&
+			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
+		{
+			DrawTanner(pPed);
+		}
+
+		pPed = pPed->pNext;
+	}
 }
 
 
