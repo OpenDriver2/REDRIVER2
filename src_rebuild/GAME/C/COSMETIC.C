@@ -46,12 +46,12 @@ char* CosmeticFiles[] = {
 	/* end block 4 */
 	// End Line: 2382
 
-char _cosmeticBuffer[0xc30];
+char _cosmeticBuffer[3120];
 
 // [D]
 void LoadCosmetics(int level)
 {
-	LoadfileSeg(CosmeticFiles[level], _cosmeticBuffer, 0, 0xc30);
+	LoadfileSeg(CosmeticFiles[level], _cosmeticBuffer, 0, sizeof(_cosmeticBuffer));
 	ProcessCosmeticsLump(_cosmeticBuffer, 0);
 }
 
@@ -90,6 +90,7 @@ void LoadCosmetics(int level)
 	// End Line: 2427
 
 CAR_COSMETICS car_cosmetics[5];
+CAR_COSMETICS dummyCosmetics = { 0 };
 
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 {

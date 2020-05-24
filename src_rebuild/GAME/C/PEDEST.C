@@ -22,6 +22,8 @@
 #include "BOMBERMAN.H"
 #include "BCOLLIDE.H"
 #include "MAP.H"
+#include "SYSTEM.H"
+
 #include "STRINGS.H"
 
 
@@ -3411,40 +3413,42 @@ void PingInPedestrians(void)
 	/* end block 4 */
 	// End Line: 21346
 
+_CAR_DATA *pcdTanner;
+
+// [D]
 void TannerCollision(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	_CAR_DATA *p_Var2;
-	long lVar3;
+	if (pPed->type == PED_ACTION_SIT)
+		return;
 
-	if (pPed->type != PED_ACTION_SIT) {
-		pcdTanner = car_data + 0x15;
-		ClearMem((char *)(car_data + 0x15), 0x29c);
-		pcdTanner->id = '\x15';
-		pcdTanner->controlType = '\x06';
-		p_Var2 = pcdTanner;
-		(pcdTanner->hd).direction = (int)(pPed->dir).vy - 0x800U & 0xfff;
-		lVar3 = (pPed->position).vx;
-		(p_Var2->hd).oBox.location.vx = lVar3;
-		(p_Var2->hd).where.t[0] = lVar3;
-		iVar1 = -(pPed->position).vy;
-		(p_Var2->hd).oBox.location.vy = iVar1;
-		(p_Var2->hd).where.t[1] = iVar1;
-		lVar3 = (pPed->position).vz;
-		*(undefined4 *)(p_Var2->st + 0x1c) = 0;
-		*(undefined4 *)(p_Var2->st + 0x20) = 0;
-		*(undefined4 *)(p_Var2->st + 0x24) = 0;
-		(p_Var2->hd).oBox.location.vz = lVar3;
-		(p_Var2->hd).where.t[2] = lVar3;
-		CheckScenaryCollisions(car_data + 0x15);
-		TannerCarCollisionCheck((VECTOR *)&pPed->position, (int)(pPed->dir).vy, 0);
-		p_Var2 = pcdTanner;
-		(pPed->position).vx = (pcdTanner->hd).where.t[0];
-		(pPed->position).vz = (p_Var2->hd).where.t[2];
-	}
-	return;*/
+	pcdTanner = &car_data[21];
+
+	ClearMem((char*)pcdTanner, sizeof(_CAR_DATA));
+
+	pcdTanner->id = 21;
+	pcdTanner->controlType = 6;
+	pcdTanner->ap.carCos = &dummyCosmetics;
+
+	pcdTanner->hd.direction = pPed->dir.vy - 0x800U & 0xfff;
+
+	pcdTanner->hd.oBox.location.vx = pPed->position.vx;
+	pcdTanner->hd.where.t[0] = pPed->position.vx;
+
+	pcdTanner->hd.oBox.location.vy = -pPed->position.vy;
+	pcdTanner->hd.where.t[1] = -pPed->position.vy;
+
+	pcdTanner->hd.oBox.location.vz = pPed->position.vz;
+	pcdTanner->hd.where.t[2] = pPed->position.vz;
+
+	pcdTanner->st.n.linearVelocity[0] = 0;
+	pcdTanner->st.n.linearVelocity[1] = 0;
+	pcdTanner->st.n.linearVelocity[2] = 0;
+
+	CheckScenaryCollisions(pcdTanner);
+	TannerCarCollisionCheck((VECTOR *)&pPed->position, pPed->dir.vy, 0);
+
+	pPed->position.vx = pcdTanner->hd.where.t[0];
+	pPed->position.vz = pcdTanner->hd.where.t[2];
 }
 
 

@@ -16,6 +16,7 @@
 #include "PLAYERS.H"
 #include "PEDEST.H"
 #include "DRAW.H"
+#include "COSMETIC.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
@@ -749,42 +750,35 @@ LAB_000201cc:
 		}
 	}
 
-	jcam = car_data + 20;
+	jcam = &car_data[20];
 	ClearMem((char *)jcam, sizeof(_CAR_DATA));
 
 	jcam->controlType = 5;
 
-	p_Var1 = jcam;
 	iVar3 = maxCameraDist;
 	gCameraDistance = iVar3;
 
 	if (lp->cameraCarId < 0) 
-	{
-		pCVar5 = NULL;
-	}
+		jcam->ap.carCos = &dummyCosmetics;
 	else 
-	{
-		pCVar5 = car_data[lp->cameraCarId].ap.carCos;
-	}
+		jcam->ap.carCos = car_data[lp->cameraCarId].ap.carCos;
 
-	(jcam->ap).carCos = pCVar5;
-	(p_Var1->hd).direction = uVar7;
+	jcam->hd.direction = uVar7;
 	
 	iVar9 = iVar3 * rcossin_tbl[uVar7 * 2] + 0x800;
 	iVar9 = basePos[0] + ((iVar9 >> 0xc) - (iVar9 >> 0x1f) >> 1);
-	(p_Var1->hd).where.t[0] = iVar9;
-	(p_Var1->hd).oBox.location.vx = iVar9;
+	jcam->hd.where.t[0] = iVar9;
+	jcam->hd.oBox.location.vx = iVar9;
 	iVar9 = -(lp->cameraPos).vy;
-	(p_Var1->hd).where.t[1] = iVar9;
+	jcam->hd.where.t[1] = iVar9;
 
-	(p_Var1->hd).oBox.location.vy = iVar9;
+	jcam->hd.oBox.location.vy = iVar9;
 	iVar3 = iVar3 * rcossin_tbl[uVar7 * 2 + 1] + 0x800;
 	iVar3 = basePos[2] + ((iVar3 >> 0xc) - (iVar3 >> 0x1f) >> 1);
-	(p_Var1->hd).where.t[2] = iVar3;
-	(p_Var1->hd).oBox.location.vz = iVar3;
+	jcam->hd.where.t[2] = iVar3;
+	jcam->hd.oBox.location.vz = iVar3;
 
-	CheckScenaryCollisions(car_data + 20);
-	p_Var1 = jcam;
+	CheckScenaryCollisions(jcam);
 
 	iVar10 = lp->cameraDist + iVar10;
 	iVar3 = gCameraDistance;
@@ -793,17 +787,17 @@ LAB_000201cc:
 		iVar3 = iVar10;
 
 	lp->cameraDist = iVar3;
-	iVar3 = -(p_Var1->hd).where.t[1];
-	(p_Var1->hd).where.t[1] = iVar3;
+	iVar3 = -jcam->hd.where.t[1];
+	jcam->hd.where.t[1] = iVar3;
 	(lp->cameraPos).vy = iVar3;
 
-	uVar7 = (p_Var1->hd).direction & 0xfff;
-	(p_Var1->hd).direction = uVar7;
+	uVar7 = jcam->hd.direction & 0xfff;
+	jcam->hd.direction = uVar7;
 
 	iVar3 = lp->cameraDist;
 
 	iVar10 = basePos[0] + FIXED(iVar3 * rcossin_tbl[uVar7 * 2]);
-	iVar3 = basePos[2] + FIXED(iVar3 * rcossin_tbl[((p_Var1->hd).direction & 0xfffU) * 2 + 1]);
+	iVar3 = basePos[2] + FIXED(iVar3 * rcossin_tbl[(jcam->hd.direction & 0xfffU) * 2 + 1]);
 
 	lp->cameraPos.vz = iVar3;
 	lp->cameraPos.vx = iVar10;

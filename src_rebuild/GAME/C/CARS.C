@@ -817,7 +817,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		else if(sVar3 < 1000)
 			RightLight = 1;
 		else
-			RightLight = '\0';
+			RightLight = 0;
 
 		if (gLightsOn == 0) 
 			return;

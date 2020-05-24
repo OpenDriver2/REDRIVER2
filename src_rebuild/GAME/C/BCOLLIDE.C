@@ -1148,8 +1148,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	uVar3 = 0;
 
 	pCVar12 = cp->ap.carCos;
-	if (pCVar12 == NULL)	// [A] potential crash fix
-		return 0;
 
 	if (iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1) && (cop->pos.vx != 0xFD46FEC0) && (pMVar20->shape_flags & 0x10) == 0)
 	{
@@ -1353,12 +1351,18 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
-				// [A] temporary hack
-				cp->st.n.fposition[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 1024;
-				cp->st.n.fposition[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 1024;
+				if (cp->controlType == 6)	// [A] temporary hack
+				{
+					cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
+					cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
+				}
+				else
+				{
+					
+					cp->st.n.fposition[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 1024;
+					cp->st.n.fposition[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 1024;
+				}
 
-				//cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
-				//cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
 
 				iVar13 = cp->st.n.angularVelocity[0];
 				iVar18 = cp->st.n.angularVelocity[1];
