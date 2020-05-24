@@ -863,7 +863,6 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	long lVar1;
 	long lVar2;
 	int iVar3;
-	MODEL *pMVar4;
 	int iVar5;
 	int iVar6;
 	int iVar7;
@@ -873,7 +872,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	int *piVar11;
 	int iVar12;
 	int iVar13;
-	COLLISION_PACKET *piVar14;
+	COLLISION_PACKET *collide;
 	CELL_OBJECT *cop;
 	VECTOR player_pos;
 	BUILDING_BOX bbox;
@@ -941,44 +940,43 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 				else
 					cop = &EventCop[x1 - mdcount];
 
-				pMVar4 = modelpointers[cop->type];
+				model = modelpointers[cop->type];
 				iVar3 = x1 + 1;
 
-				if (pMVar4->collision_block > 0 &&
-					pMVar4->num_vertices-3 < 300 && 
-					pMVar4->num_point_normals < 300 &&
-					pMVar4->num_polys < 300)
+				if (model->collision_block > 0 &&
+					model->num_vertices-3 < 300 && 
+					model->num_point_normals < 300 &&
+					model->num_polys < 300)
 				{
 					iVar8 = cop->pos.vx - iVar10;
 					iVar7 = cop->pos.vz - iVar12;
-					iVar6 = pMVar4->bounding_sphere + extraDist + cp->hd.speed;
+					iVar6 = model->bounding_sphere + extraDist + cp->hd.speed;
 
 					if (iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6)
 					{
-						iVar8 = 0;
+						iVar6 = *(int *)model->collision_block;	// box count
+						collide = (COLLISION_PACKET*)(model->collision_block + 4);
 
-						iVar6 = *(int *)pMVar4->collision_block;	// box count
-						piVar14 = (COLLISION_PACKET*)(pMVar4->collision_block + 4);
-
-						do {
+						for (int i = 0; i < iVar6; i++)
+						{
 							uVar9 = -cop->yang & 0x3f;
 
 							// box 'rotated' by matrix
 							// [A] FIXME: replace add+shift by division
-							bbox.pos.vx = cop->pos.vx + FIXED(piVar14->xpos * matrixtable[uVar9].m[0][0] + piVar14->zpos * matrixtable[uVar9].m[2][0]);
-							bbox.pos.vy = cop->pos.vy + piVar14->ypos;
-							bbox.pos.vz = cop->pos.vz + FIXED(piVar14->xpos * matrixtable[uVar9].m[0][2] + piVar14->zpos * matrixtable[uVar9].m[2][2]);
+							bbox.pos.vx = cop->pos.vx + FIXED(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
+							bbox.pos.vy = cop->pos.vy + collide->ypos;
+							bbox.pos.vz = cop->pos.vz + FIXED(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
 
-							bbox.pos.pad = (pMVar4->flags2 >> 10) & 1;
+							bbox.pos.pad = (model->flags2 >> 10) & 1;
 
-							iVar7 = piVar14->zsize << 0x10;
-							bbox.xsize = (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
+							//iVar7 = collide->zsize << 0x10;
+							bbox.xsize = collide->zsize / 2; // (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
 
-							iVar7 = piVar14->xsize << 0x10;
-							bbox.zsize = (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
+							//iVar7 = collide->xsize << 0x10;
+							bbox.zsize = collide->xsize / 2;// //;(iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
 
-							bbox.height = piVar14->ysize;
-							bbox.theta = (cop->yang + piVar14->yang) * 64 & 0xfff;
+							bbox.height = collide->ysize;
+							bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
 
 							gLastModelCollisionCheck = cop->type;
 
@@ -1003,7 +1001,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 							{
 								if (cp->controlType == 5)
 								{
-									if ((modelpointers[cop->type]->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
+									if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
 									{
 										iVar7 = 5;
 										bbox.xsize += 100;
@@ -1029,7 +1027,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 								{
 									if (x1 < mdcount || cop->pad == 0)
 									{
-										iVar7 = CarBuildingCollision(cp, &bbox, cop, (pMVar4->flags2 >> 10) & 1);
+										iVar7 = CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1);
 
 										if (iVar7 != 0)
 											cp->ap.needsDenting = 1;
@@ -1046,9 +1044,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 									}
 								}
 							}
-							iVar8++;
-							piVar14++;
-						} while (iVar8 < iVar6);
+							collide++;
+						};
 					}
 				}
 
@@ -1110,11 +1107,10 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 1892
 
+// [D]
 int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	CDATA2D cd[2] = { 0 };
 	bool bVar1;
 	int iVar2;
 	int iVar3;
@@ -1122,108 +1118,201 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	int iVar5;
 	int iVar6;
 	int iVar7;
-	MODEL *pMVar8;
+	MODEL *model;
 	uint uVar9;
-	int *piVar10;
-	int iVar11;
+	int iVar10;
+	int *piVar11;
 	int iVar12;
-	int *piVar13;
-	CELL_OBJECT *pCVar14;
-	short local_5c;
-	int local_30[2];
+	int iVar13;
+	COLLISION_PACKET *collide;
+	CELL_OBJECT *cop;
+	VECTOR player_pos;
+	BUILDING_BOX bbox;
+	VECTOR offset;
+	int mdcount;
 
 	iVar5 = pPos->vx;
 	boxOverlap = -1;
-	iVar11 = pPos->vz;
-	iVar12 = iVar5 + units_across_halved;
-	iVar4 = iVar12 + -0x400;
-	if (iVar4 < 0) {
-		iVar4 = iVar12 + 0x3ff;
-	}
-	iVar12 = iVar11 + units_down_halved;
-	iVar7 = iVar12 + -0x400;
-	if (iVar7 < 0) {
-		iVar7 = iVar12 + 0x3ff;
-	}
-	SetCopListCell(iVar4 >> 0xb, iVar7 >> 0xb);
-	local_30[0] = 0;
-	Havana3DOcclusion(0x5c, local_30);
+	iVar12 = pPos->vz;
+	iVar13 = iVar5 + units_across_halved;
+	iVar4 = iVar13 - 0x400;
+	iVar13 = iVar12 + units_down_halved;
+	iVar7 = iVar13 - 0x400;
+
+	SetCopListCell(iVar4 / 2048, iVar7 / 2048);
+	mdcount = 0;
+
+	Havana3DOcclusion(BuildCollisionCopList, &mdcount);
 	iVar4 = 0;
-	if (0 < local_30[0] + event_models_active) {
-		bVar1 = 0 < local_30[0];
+
+	if (0 < mdcount + event_models_active)
+	{
+		bVar1 = 0 < mdcount;
 		do {
-			if (bVar1) {
-				pCVar14 = coplist[iVar4];
-			}
-			else {
-				pCVar14 = EventCop + (iVar4 - local_30[0]);
-			}
-			pMVar8 = modelpointers1536[pCVar14->type];
-			if (((((uint)pMVar8->num_vertices - 3 < 300) && (pMVar8->num_point_normals < 300)) &&
-				(pMVar8->num_polys < 300)) &&
-				((piVar10 = (int *)pMVar8->collision_block, piVar10 != (int *)0x0 &&
-				(iVar7 = (pCVar14->pos).vx - iVar5, iVar6 = (pCVar14->pos).vz - iVar11,
-					iVar12 = pMVar8->bounding_sphere + extra, iVar7 * iVar7 + iVar6 * iVar6 < iVar12 * iVar12)
-					))) {
-				piVar13 = piVar10 + 1;
-				iVar7 = *piVar10;
-				iVar12 = 0;
-				if (0 < iVar7) {
-					do {
-						uVar9 = -(uint)pCVar14->yang & 0x3f;
-						local_5c = (short)(pCVar14->pos).vy + *(short *)(piVar13 + 1);
-						iVar2 = (uint)*(ushort *)((int)piVar13 + 0x12) << 0x10;
-						iVar3 = (uint)*(ushort *)((int)piVar13 + 0xe) << 0x10;
-						iVar6 = pPos->vy + (int)local_5c;
-						if (iVar6 < 0) {
+			if (bVar1)
+				cop = coplist[iVar4];
+			else
+				cop = EventCop + (iVar4 - mdcount);
+
+			model = modelpointers[cop->type];
+
+			if (model->collision_block > 0 &&
+				model->num_vertices - 3 < 300 && 
+				model->num_point_normals < 300 && 
+				model->num_polys < 300)
+			{
+				piVar11 = (int *)model->collision_block;
+
+				iVar13 = model->bounding_sphere + extra;
+				iVar7 = cop->pos.vx - iVar5;
+				iVar6 = cop->pos.vz - iVar12;
+
+				if (iVar7 * iVar7 + iVar6 * iVar6 < iVar13 * iVar13)
+				{
+					iVar7 = *(int *)model->collision_block;
+					collide = (COLLISION_PACKET*)(model->collision_block + 4);
+
+					for (int i = 0; i < iVar7; i++)
+					{
+						uVar9 = -cop->yang & 0x3f;
+						bbox.pos.vy = cop->pos.vy + collide->ypos;
+						iVar2 = collide->zsize;
+						iVar3 = collide->xsize;
+						iVar10 = collide->ysize;
+						iVar6 = pPos->vy + bbox.pos.vy;
+
+						if (iVar6 < 0)
 							iVar6 = -iVar6;
-						}
-						if (iVar6 < ((int)((uint)*(ushort *)(piVar13 + 4) << 0x10) >> 0x10) -
-							((int)((uint)*(ushort *)(piVar13 + 4) << 0x10) >> 0x1f) >> 1) {
-							CDATA2D_000d920c.theta =
-								((uint)pCVar14->yang + (int)*(short *)((int)piVar13 + 10)) * 0x40 & 0xfff;
-							gLastModelCollisionCheck = pCVar14->type;
-							cd.x.vx = pPos->vx;
-							cd.x.vz = pPos->vz;
-							CDATA2D_000d920c.length[1] = ((iVar3 >> 0x10) - (iVar3 >> 0x1f) >> 1) + 100;
-							cd.vel.vx = 0;
-							cd.vel.vz = 0;
-							CDATA2D_000d920c.x.vx =
-								pPos->vx +
-								((int)((((pCVar14->pos).vx +
-								((int)*(short *)((int)piVar13 + 2) * (int)(&matrixtable)[uVar9].m[0] +
-									(int)*(short *)((int)piVar13 + 6) * (int)(&matrixtable)[uVar9].m[6] +
-									0x800 >> 0xc) & 0xffffU) - (uint)*(ushort *)&pPos->vx) * 0x10000) >>
-									0x10);
-							CDATA2D_000d920c.vel.vx = 0;
-							CDATA2D_000d920c.vel.vz = 0;
-							CDATA2D_000d920c.avel = 0;
-							CDATA2D_000d920c.x.vz =
-								pPos->vz +
-								((int)((((pCVar14->pos).vz +
-								((int)*(short *)((int)piVar13 + 2) * (int)(&matrixtable)[uVar9].m[2] +
-									(int)*(short *)((int)piVar13 + 6) * (int)(&matrixtable)[uVar9].m[8] +
-									0x800 >> 0xc) & 0xffffU) - (uint)*(ushort *)&pPos->vz) * 0x10000) >>
-									0x10);
-							cd.theta = dir;
-							cd.length[0] = l;
-							cd.length[1] = w;
-							CDATA2D_000d920c.length[0] = ((iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1) + 100;
-							iVar6 = bcollided2d(&cd, 1);
-							if (iVar6 != 0) {
-								return 1;
+
+						if (iVar6 < (iVar10) / 2)
+						{
+							
+
+							gLastModelCollisionCheck = cop->type;
+
+							cd[0].theta = dir;
+							cd[0].length[0] = l;
+							cd[0].length[1] = w;
+
+							cd[0].x.vx = pPos->vx;
+							cd[0].x.vz = pPos->vz;
+
+							cd[0].vel.vx = 0;
+							cd[0].vel.vz = 0;
+
+							offset.vx = cop->pos.vx + FIXED(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
+							offset.vz = cop->pos.vz + FIXED(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
+
+							cd[1].theta = (cop->yang + collide->yang) * 64 & 0xfff;
+
+							cd[1].length[0] = collide->zsize / 2 + 100;
+							cd[1].length[1] = collide->xsize / 2 + 100;
+
+							cd[1].x.vx = pPos->vx + (((offset.vx - pPos->vx) << 0x10) >> 0x10);
+							cd[1].x.vz = pPos->vz + (((offset.vz - pPos->vz) << 0x10) >> 0x10);
+
+							cd[1].vel.vx = 0;
+							cd[1].vel.vz = 0;
+							cd[1].avel = 0;
+
+							int res = bcollided2d(cd, 1);
+							
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+							extern int gShowCollisionDebug;
+							//if (gShowCollisionDebug)
+							{
+								extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+								extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+								CVECTOR bbcv = { 0, 0, 250 };
+								CVECTOR rrcv = { 250, 0, 0 };
+								CVECTOR yycv = { 250, 250, 0 };
+
+								// show both box axes
+								{
+									VECTOR _zero = { 0 };
+									VECTOR b1p = cd[0].x;
+									VECTOR b2p = cd[1].x;
+									b2p.vy = b1p.vy;
+
+									// show position to position
+									//Debug_AddLine(b1p1, b2p1, yycv);
+
+									VECTOR b1ax[2] = { {0} , {0} };
+									b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
+									b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
+									b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
+									b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+
+									// show axis of body 1
+									Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+									Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+									// display 2D box 1
+									{
+										int h = b1ax[0].vy;
+										VECTOR box_points[4] = {
+											{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+											{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+											{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+											{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+										};
+
+										Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+										Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+										Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+										Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+									}
+
+									VECTOR b2ax[2] = { {0} , {0} };
+									b2ax[0].vx += FIXED(cd[1].axis[0].vx * cd[1].length[0]);
+									b2ax[0].vz += FIXED(cd[1].axis[0].vz * cd[1].length[0]);
+									b2ax[1].vx += FIXED(cd[1].axis[1].vx * cd[1].length[1]);
+									b2ax[1].vz += FIXED(cd[1].axis[1].vz * cd[1].length[1]);
+
+									// show axis of body 2
+									Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
+									Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
+
+									CVECTOR& collColor = res ? rrcv : yycv;
+
+									// display 2D box 2
+									{
+										int h = b2ax[0].vy;
+										VECTOR box_points[4] = {
+											{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
+											{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
+
+											{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
+											{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
+										};
+
+										Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
+										Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
+										Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
+										Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
+									}
+								}
 							}
+#endif
+							
+
+							if(res)
+								return 1;
 						}
-						iVar12 = iVar12 + 1;
-						piVar13 = piVar13 + 5;
-					} while (iVar12 < iVar7);
+
+						collide++;
+
+					}
 				}
 			}
-			iVar4 = iVar4 + 1;
-			bVar1 = iVar4 < local_30[0];
-		} while (iVar4 < local_30[0] + event_models_active);
+
+			iVar4++;
+			bVar1 = iVar4 < mdcount;
+		} while (iVar4 < mdcount + event_models_active);
 	}
-	return 0;*/
+	return 0;
 }
 
 

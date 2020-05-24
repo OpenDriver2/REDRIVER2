@@ -922,24 +922,6 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	v.vx = x - FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
 	v.vz = z + FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
 
-#if defined(COLLISION_DEBUG) && !defined(PSX)
-	extern int gShowCollisionDebug;
-	if (gShowCollisionDebug)
-	{
-		extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
-		extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
-
-		CVECTOR bbcv = { 0, 0, 250 };
-		CVECTOR rrcv = { 250, 0, 0 };
-		CVECTOR yycv = { 250, 250, 0 };
-
-		VECTOR _zero = { 0, 100, 0 };
-		VECTOR up = { 0, 800, 0 };
-
-		Debug_AddLineOfs(_zero, up, v, bbcv);
-	}
-#endif
-
 	side = 0;
 
 	if (pCar != NULL)
@@ -953,25 +935,8 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 			v.vx = x - FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
 			v.vz = z + FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
 
-#if defined(COLLISION_DEBUG) && !defined(PSX)
-			extern int gShowCollisionDebug;
-			if (gShowCollisionDebug)
-			{
-				extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
-				extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
-
-				CVECTOR bbcv = { 0, 0, 250 };
-				CVECTOR rrcv = { 250, 0, 0 };
-				CVECTOR yycv = { 250, 250, 0 };
-
-				VECTOR _zero = { 0, 100, 0 };
-				VECTOR up = { 0, 800, 0 };
-
-				Debug_AddLineOfs(_zero, up, v, bbcv);
-			}
-#endif
-
 			iVar3 = QuickBuildingCollisionCheck(&v, dir, 10, 10, 10);
+
 			if (iVar3 != 0)
 				return 0;
 
