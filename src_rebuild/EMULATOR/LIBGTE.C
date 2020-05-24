@@ -622,6 +622,7 @@ int docop2(int op) {
 #else
 		MAC0 = int(F((long long)(SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1)));
 #endif
+		FLAG = 0;
         return 1;
 
     case 0x0c:

@@ -2,6 +2,7 @@
 #define GAMESND_H
 
 extern int TimeSinceLastSpeech;
+extern char force_siren[8];
 
 extern void LoadBankFromLump(int bank, int lump); // 0x00052460
 

@@ -13,6 +13,7 @@ extern char tracking_car;
 extern int CameraCnt;
 
 extern int TargetCar;
+extern int CameraCar;
 
 extern SVECTOR camera_angle;
 extern int gCameraAngle;

@@ -438,7 +438,8 @@ LAB_0003f0c4:
 		plotContext.scribble[2] = pco->pos.vz;
 
 		z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)plotContext.scribble, (MATRIX2 *)&face_camera);
-		if(z < 0)//[A] (z < 1001)
+#if 0
+		if(z < 1001)
 		{
 			uVar11 = (uint)model->num_polys;
 			iVar10 = model->poly_block;
@@ -475,10 +476,15 @@ LAB_0003f0c4:
 			}
 		}
 		else 
+#else
+		if (z > 0)
+#endif
 		{
-			plotContext.ot = plotContext.ot + -0x85;
+			plotContext.ot -= 133;
+
 			Tile1x1(model);
-			plotContext.ot = plotContext.ot + 0x85;
+
+			plotContext.ot += 133;
 		}
 
 		local_2c--;

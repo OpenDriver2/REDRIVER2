@@ -5,6 +5,10 @@
 #include "HANDLING.H"
 #include "CARS.H"
 #include "DEBRIS.H"
+#include "PAUSE.H"
+#include "CAMERA.H"
+#include "DIRECTOR.H"
+#include "MAIN.H"
 
 #include <string.h>
 
@@ -523,138 +527,143 @@ void AddBrakeLight(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 1348
 
+int main_cop_light_pos = 0;
+
+// [D]
 void AddCopCarLight(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	uint uVar2;
-	CAR_COSMETICS *pCVar3;
-	int iVar4;
-	byte *pbVar5;
-	uint uVar6;
-	int iVar7;
-	SVECTOR local_58;
-	CVECTOR local_50[2];
-	int local_48;
-	int local_44;
-	_CAR_DATA *local_40;
-	int local_3c;
-	int local_38;
-	undefined **local_34;
-	undefined4 local_30;
-	int local_2c;
+	static char xpos1[8] = {
+		0x30, 0x20, 0x10,  0x0,
+		0x0, 0x10, 0x20, 0x30
+	};
 
-	local_3c = 1;
-	pbVar5 = (byte *)&(cp->ap).coplife;
-	if (cp < car_data) {
+	short sVar1;
+	short sVar2;
+	int iVar3;
+	int uVar4;
+	short sVar5;
+	char cVar6;
+	int iVar7;
+	CAR_COSMETICS *pCVar8;
+	char *coplife;
+	uint uVar10;
+	int iVar11;
+	SVECTOR v1;
+	CVECTOR col;
+
+	sVar5 = 1;
+	coplife = &cp->ap.coplife;
+
+	if (cp < car_data) 
+	{
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if ((CameraCar == (int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2) && (cameraview == 2)) {
+
+	if (CameraCar == CAR_INDEX(cp) && cameraview == 2)
 		return;
-	}
-	if (FastForward != 0) {
+
+	if (FastForward != 0) 
 		return;
-	}
-	if ((cp->hd).where.m[4] < 100) {
+
+	if (cp->hd.where.m[1][1] < 100)
 		return;
-	}
-	pCVar3 = (cp->ap).carCos;
-	sVar1 = (pCVar3->cog).vx;
-	if (GameLevel == 1) {
-	LAB_00030268:
-		iVar7 = 1;
-		local_2c = 2;
-		uVar6 = 3;
-		local_30 = 0x30;
-	}
-	else {
-		if (GameLevel < 2) {
-			if (GameLevel == 0) {
-				iVar7 = 2;
-				local_2c = 2;
-				uVar6 = 3;
-				local_30 = 0x10;
-				goto LAB_000302c4;
-			}
-		}
-		else {
-			if (GameLevel == 3) goto LAB_00030268;
-		}
+
+	pCVar8 = (cp->ap).carCos;
+	sVar1 = (pCVar8->cog).vx;
+
+	if (GameLevel == 1 || GameLevel == 3)
+	{
+		iVar11 = 1;
 		iVar7 = 2;
-		local_2c = 3;
-		local_30 = 0x10;
-		uVar6 = main_cop_light_pos + ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2) & 7;
+		uVar10 = 3;
+		cVar6 = 48;
 	}
-LAB_000302c4:
-	if (iVar7 + -1 != -1) {
-		local_38 = 2;
-		local_40 = cp;
-		iVar7 = iVar7 + -1;
-		do {
-			iVar4 = local_2c + -1;
-			local_44 = iVar7 + -1;
-			local_48 = -local_3c;
-			if (iVar4 != -1) {
-				local_34 = &PTR_DAT_0009c004;
-				do {
-					local_58.vx = sVar1;
-					if ((GameLevel != 1) && (GameLevel != 3)) {
-						local_58.vx = sVar1 + ((ushort)*(byte *)(uVar6 + (int)local_34) +
-							(pCVar3->policeLight).vx) * (short)local_3c;
-					}
-					local_50[0].g = 'Z';
-					local_58.vy = (pCVar3->policeLight).vy + (pCVar3->cog).vy;
-					if (gNight != 0) {
-						local_50[0].g = '2';
-					}
-					if (((pauseflag == 0) && ((CameraCnt & 1U) != 0)) && (GameLevel == local_38)) {
-						uVar6 = uVar6 + 1;
-					}
-					uVar6 = uVar6 & 7;
-					local_58.vz = (pCVar3->policeLight).vz + (pCVar3->cog).vz;
-					if ((char)*pbVar5 < '\0') {
-						uVar2 = 0xff - (uint)*pbVar5;
-					}
-					else {
-						uVar2 = (uint)*pbVar5;
-					}
-					if (GameLevel == 1) {
-					LAB_00030434:
-						local_50[0].b = -1;
-						local_50[0].r = local_50[0].g;
-					}
-					else {
-						if (1 < GameLevel) {
-							if (GameLevel != 3) goto LAB_0003041c;
-							goto LAB_00030434;
-						}
-						if (GameLevel != 0) {
-						LAB_0003041c:
-							if (iVar7 == 0) goto LAB_00030434;
-						}
-						local_50[0].r = -1;
-						local_50[0].b = local_50[0].g;
-					}
-					if (pauseflag == 0) {
-						*pbVar5 = *pbVar5 + (char)local_30;
-					}
-					ShowCarlight(&local_58, local_40, local_50, (short)((int)uVar2 >> 1), &light_texture, 0xff);
-					if (((pauseflag == 0) && ((CameraCnt & 1U) != 0)) && (GameLevel == local_38)) {
-						uVar6 = uVar6 + 1;
-					}
-					iVar4 = iVar4 + -1;
-					uVar6 = uVar6 & 7;
-				} while (iVar4 != -1);
+	else if (GameLevel == 0)
+	{
+		iVar11 = 2;
+		iVar7 = 2;
+		uVar10 = 3;
+		cVar6 = 16;
+	}
+	else 
+	{
+		iVar11 = 2;
+		iVar7 = 3;
+		cVar6 = 16;
+		uVar10 = main_cop_light_pos + CAR_INDEX(cp) & 7;
+	}
+
+	do {
+		sVar2 = sVar5;
+		iVar11--;
+
+		if (iVar11 == -1)
+			return;
+
+		iVar3 = iVar7;
+
+		while (iVar3--, sVar5 = -sVar2, iVar3 != -1) 
+		{
+			v1.vx = sVar1;
+
+			if (GameLevel != 1 && GameLevel != 3) 
+				v1.vx = sVar1 + (xpos1[uVar10] + (pCVar8->policeLight).vx) * sVar2;
+
+			col.g = 90;
+			v1.vy = pCVar8->policeLight.vy + pCVar8->cog.vy;
+
+			if (gNight != 0)
+				col.g = 50;
+
+			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2) 
+				uVar10++;
+
+			uVar10 = uVar10 & 7;
+			v1.vz = (pCVar8->policeLight).vz + (pCVar8->cog).vz;
+
+			uVar4 = *coplife;
+
+			// [A] too entangled...
+			if (GameLevel == 1)
+			{
+			LAB_00030434:
+				col.b = -1;
+				col.r = col.g;
 			}
-			local_3c = local_48;
-			iVar7 = local_44;
-		} while (local_44 != -1);
-	}
-	return;
-	*/
+			else 
+			{
+				if (1 < GameLevel) 
+				{
+					if (GameLevel != 3) 
+						goto LAB_0003041c;
+					goto LAB_00030434;
+				}
+
+				if (GameLevel != 0)
+				{
+				LAB_0003041c:
+					if (iVar11 == 0) 
+						goto LAB_00030434;
+				}
+
+				col.r = -1;
+				col.b = col.g;
+			}
+
+			if (pauseflag == 0) 
+				cp->ap.coplife += cVar6;
+
+			ShowCarlight(&v1, cp, &col, uVar4 >> 1, &light_texture, 0xff);
+
+			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2) 
+				uVar10++;
+
+			uVar10 = uVar10 & 7;
+		}
+
+	} while (true);
 }
 
 

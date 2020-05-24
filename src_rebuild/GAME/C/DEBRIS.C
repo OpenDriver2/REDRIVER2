@@ -2588,7 +2588,7 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 
 	iVar1 = 255;
 
-	if (flag == -1)
+	if (flag == 0xFF)
 		flag = 0;
 
 	else
