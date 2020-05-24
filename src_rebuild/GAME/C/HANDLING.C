@@ -30,8 +30,6 @@
 
 #include <stdlib.h>
 
-#define COLLISION_DEBUG
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitCarPhysics(struct _CAR_DATA *cp /*$s0*/, long (*startpos)[4] /*$t0*/, int direction /*$a2*/)

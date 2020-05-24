@@ -21,8 +21,6 @@
 #include "INLINE_C.H"
 #include <stdlib.h>
 
-#define COLLISION_DEBUG
-
 // decompiled code
 // original method signature: 
 // int /*$ra*/ bcollided2d(struct CDATA2D *body /*$t4*/, int needOverlap /*$fp*/)

@@ -27,6 +27,7 @@
 #include "STRINGS.H"
 
 
+
 MODEL* pmTannerModels[17] = { 0 };
 MODEL* pmJerichoModels[6] = { 0 };
 
@@ -886,10 +887,12 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 		}
 	}
 
+	int x, z;
+
 	if (pCar == NULL) 
 	{
-		v.vx = (*position)[0];
-		v.vz = (*position)[2];
+		x = (*position)[0];
+		z = (*position)[2];
 
 		iVar3 = 1;
 		d = direction;
@@ -897,8 +900,8 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	}
 	else
 	{
-		v.vx = pCar->hd.where.t[0];
-		v.vz = pCar->hd.where.t[2];
+		x = pCar->hd.where.t[0];
+		z = pCar->hd.where.t[2];
 
 		y = pCar->hd.where.t[1];
 		d = pCar->hd.direction;
@@ -916,8 +919,26 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 	dir = d - 0x800;
 	v.vy = y;
-	v.vx -= FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
-	v.vz += FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
+	v.vx = x - FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
+	v.vz = z + FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
+
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+	extern int gShowCollisionDebug;
+	if (gShowCollisionDebug)
+	{
+		extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+		extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+		CVECTOR yycv = { 250, 250, 0 };
+
+		VECTOR _zero = { 0, 100, 0 };
+		VECTOR up = { 0, 800, 0 };
+
+		Debug_AddLineOfs(_zero, up, v, bbcv);
+	}
+#endif
 
 	side = 0;
 
@@ -929,8 +950,26 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 			v.vy = y;
 
-			v.vx -= FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
-			v.vz += FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
+			v.vx = x - FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
+			v.vz = z + FIXED(-iVar3 * rcossin_tbl[(d & 0xfffU) * 2]);
+
+#if defined(COLLISION_DEBUG) && !defined(PSX)
+			extern int gShowCollisionDebug;
+			if (gShowCollisionDebug)
+			{
+				extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+				extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+				CVECTOR bbcv = { 0, 0, 250 };
+				CVECTOR rrcv = { 250, 0, 0 };
+				CVECTOR yycv = { 250, 250, 0 };
+
+				VECTOR _zero = { 0, 100, 0 };
+				VECTOR up = { 0, 800, 0 };
+
+				Debug_AddLineOfs(_zero, up, v, bbcv);
+			}
+#endif
 
 			iVar3 = QuickBuildingCollisionCheck(&v, dir, 10, 10, 10);
 			if (iVar3 != 0)
@@ -3487,8 +3526,6 @@ void TannerCollision(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 8378
 
-#define COLLISION_DEBUG
-
 // [D]
 int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 {
@@ -3698,7 +3735,7 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 
 		if (cp1->controlType != 0) 
 		{
-			iVar3 = (cp1->hd).where.t[1] + pPos->vy;
+			iVar3 = cp1->hd.where.t[1] + pPos->vy;
 
 			if (iVar3 < 0) {
 				iVar3 = -iVar3;
