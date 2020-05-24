@@ -3499,7 +3499,7 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 	int iVar5;
 	int iVar6;
 
-	static CDATA2D cd[2];
+	CDATA2D cd[2];
 	static CRET2D collisionResult;
 
 	cd[0].length[0] = 120;
@@ -3654,11 +3654,9 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 /* WARNING: Removing unreachable block (ram,0x00070ec8) */
 /* WARNING: Type propagation algorithm not settling */
 
+// [D]
 int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	int iVar3;
@@ -3671,113 +3669,112 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 	int iVar10;
 	int iVar11;
 	int iVar12;
-	_CAR_DATA *p_Var13;
+	_CAR_DATA *cp1;
+	int carLength;
+	int dNewLBODY[2];
+	VECTOR velocity;
+	long pointVel[4];
+	long reaction[4];
+	long lever[4];
 
-	cd.length[0] = 0x3c;
-	cd.length[1] = 0x3c;
-	cd.x.vx = pPos->vx;
-	cd.x.vz = pPos->vz;
-	p_Var13 = (_CAR_DATA *)0xd43fc;
-	cd.theta = dir;
+	static struct CRET2D collisionResult; // offset 0x30
+	CDATA2D cd[2];
+
+	cd[0].length[0] = 0x3c;
+	cd[0].length[1] = 0x3c;
+	cd[0].x.vx = pPos->vx;
+	cd[0].x.vz = pPos->vz;
+	cp1 = car_data + 0x13;
+	cd[0].theta = dir;
+
 	do {
-		uVar2 = (uint)(byte)(p_Var13->ap).model;
-		CDATA2D_000d9554.x.vx = (p_Var13->hd).where.t[0];
-		CDATA2D_000d9554.length[0] = (int)car_cosmetics[uVar2].colBox.vz;
-		CDATA2D_000d9554.length[1] = (int)car_cosmetics[uVar2].colBox.vx;
-		CDATA2D_000d9554.theta = (p_Var13->hd).direction;
-		CDATA2D_000d9554.x.vz = (p_Var13->hd).where.t[2];
-		if (p_Var13->controlType != '\0') {
-			iVar3 = (p_Var13->hd).where.t[1] + pPos->vy;
+		uVar2 = cp1->ap.model;
+
+		cd[1].x.vx = cp1->hd.where.t[0];
+		cd[1].length[0] = car_cosmetics[uVar2].colBox.vz;
+		cd[1].length[1] = car_cosmetics[uVar2].colBox.vx;
+		cd[1].theta = cp1->hd.direction;
+		cd[1].x.vz = cp1->hd.where.t[2];
+
+		if (cp1->controlType != 0) 
+		{
+			iVar3 = (cp1->hd).where.t[1] + pPos->vy;
+
 			if (iVar3 < 0) {
 				iVar3 = -iVar3;
 			}
-			if ((iVar3 < 500) && (iVar3 = bcollided2d(&cd, 1), iVar3 != 0)) {
-				if (bQuick != 0) {
+
+			if (iVar3 < 500 && bcollided2d(cd, 1) != 0)
+			{
+				if (bQuick != 0)
 					return 1;
-				}
-				if (0x32 < (p_Var13->hd).wheel_speed + 0x800 >> 0xc) {
+
+				if (50 < FIXED(cp1->hd.wheel_speed))
 					return 1;
-				}
-				bFindCollisionPoint(&cd, (CRET2D *)&collisionResult_128);
-				iVar3 = -DAT_000d94d8;
-				iVar1 = -DAT_000d94d0;
-				iVar10 = car_data[21].hd.where.t[2] + (DAT_000d94e0 * iVar3 + 0x800 >> 0xc);
-				iVar12 = DAT_000d94c8 - iVar10;
-				DAT_000d94c4 = car_data[21].hd.where.t[1] + 0x3c;
-				iVar9 = DAT_000d94c4 - car_data[21].hd.where.t[1];
-				iVar8 = car_data[21].hd.where.t[0] + (DAT_000d94e0 * iVar1 + 0x800 >> 0xc);
-				iVar11 = collisionResult_128 - iVar8;
-				DAT_000d94d4 = 0;
-				iVar7 = ((car_data[21].st._44_4_ * iVar12 - car_data[21].st._48_4_ * iVar9) + 0x800 >> 0xc)
-					+ car_data[21].st._28_4_;
-				iVar5 = ((car_data[21].st._40_4_ * iVar9 - car_data[21].st._44_4_ * iVar11) + 0x800 >> 0xc)
-					+ car_data[21].st._36_4_;
-				if (iVar7 < 0) {
-					iVar7 = iVar7 + 0xff;
-				}
+
+				bFindCollisionPoint(cd, &collisionResult);
+				iVar3 = -collisionResult.surfNormal.vz;
+				iVar1 = -collisionResult.surfNormal.vx;
+				iVar10 = pcdTanner->hd.where.t[2] + FIXED(collisionResult.penetration * iVar3);
+				iVar12 = collisionResult.hit.vz - iVar10;
+				collisionResult.hit.vy = pcdTanner->hd.where.t[1] + 0x3c;
+				iVar9 = collisionResult.hit.vy - pcdTanner->hd.where.t[1];
+				iVar8 = pcdTanner->hd.where.t[0] + FIXED(collisionResult.penetration * iVar1);
+				iVar11 = collisionResult.hit.vx - iVar8;
+				collisionResult.surfNormal.vy = 0;
+
+				iVar7 = FIXED(pcdTanner->st.n.angularVelocity[1] * iVar12 - pcdTanner->st.n.angularVelocity[2] * iVar9) + pcdTanner->st.n.linearVelocity[0];
+				iVar5 = FIXED(pcdTanner->st.n.angularVelocity[0] * iVar9 - pcdTanner->st.n.angularVelocity[1] * iVar11) + pcdTanner->st.n.linearVelocity[2];
+
 				iVar4 = iVar1;
-				if (0 < DAT_000d94d0) {
-					iVar4 = iVar1 + 0xf;
-				}
-				if (iVar5 < 0) {
-					iVar5 = iVar5 + 0xff;
-				}
 				iVar6 = iVar3;
-				if (0 < DAT_000d94d8) {
-					iVar6 = iVar3 + 0xf;
-				}
+
 				iVar5 = (iVar7 >> 8) * (iVar4 >> 4) + (iVar5 >> 8) * (iVar6 >> 4);
-				if (iVar5 < 0) {
-					iVar7 = iVar11 * iVar1 + iVar12 * iVar3 + 0x800 >> 0xc;
-					iVar7 = (((iVar11 * iVar11 + iVar12 * iVar12) - iVar7 * iVar7) *
-						(int)car_cosmetics[(byte)car_data[21].ap.model].twistRateY + 0x800 >> 0xc) +
-						0x1000;
-					if (-iVar5 < 0x7f001) {
+
+				if (iVar5 < 0)
+				{
+					iVar7 = FIXED(iVar11 * iVar1 + iVar12 * iVar3);
+					iVar7 = FIXED(((iVar11 * iVar11 + iVar12 * iVar12) - iVar7 * iVar7) * car_cosmetics[pcdTanner->ap.model].twistRateY) + 0x1000;
+
+					if (-iVar5 < 0x7f001)
 						iVar5 = (iVar5 * -0x1000) / iVar7;
-						if (iVar7 == 0) {
-							trap(7);
-						}
-					}
-					else {
-						if (iVar7 == 0) {
-							trap(7);
-						}
+					else
 						iVar5 = -iVar5 / iVar7 << 0xc;
-					}
-					if (iVar5 < 0) {
-						iVar5 = iVar5 + 0x3f;
-					}
+
 					iVar7 = iVar1;
-					if (0 < DAT_000d94d0) {
+
+					if (0 < collisionResult.surfNormal.vx)
 						iVar7 = iVar1 + 0x3f;
-					}
+
 					iVar4 = (iVar5 >> 6) * (iVar7 >> 6);
 					iVar7 = iVar3;
-					if (0 < DAT_000d94d8) {
+
+					if (0 < collisionResult.surfNormal.vz) 
 						iVar7 = iVar3 + 0x3f;
-					}
+
 					iVar5 = (iVar5 >> 6) * (iVar7 >> 6);
-					car_data[21].st._28_4_ = car_data[21].st._28_4_ + iVar4;
-					car_data[21].st._36_4_ = car_data[21].st._36_4_ + iVar5;
-					car_data[21].hd.aacc[2] = car_data[21].hd.aacc[2] - (iVar9 * iVar4 + 0x800 >> 0xc);
-					car_data[21].hd.aacc[0] = car_data[21].hd.aacc[0] + (iVar9 * iVar5 + 0x800 >> 0xc);
-					car_data[21].hd.aacc[1] =
-						(car_data[21].hd.aacc[1] + (iVar12 * iVar4 + 0x800 >> 0xc)) -
-						(iVar11 * iVar5 + 0x800 >> 0xc);
-					DAT_000d94c4 = -DAT_000d94c4;
+					pcdTanner->st.n.linearVelocity[0] = pcdTanner->st.n.linearVelocity[0] + iVar4;
+					pcdTanner->st.n.linearVelocity[2] = pcdTanner->st.n.linearVelocity[2] + iVar5;
+
+					pcdTanner->hd.aacc[2] = pcdTanner->hd.aacc[2] - FIXED(iVar9 * iVar4);
+					pcdTanner->hd.aacc[0] = pcdTanner->hd.aacc[0] + FIXED(iVar9 * iVar5);
+
+					pcdTanner->hd.aacc[1] = (pcdTanner->hd.aacc[1] + FIXED(iVar12 * iVar4)) - FIXED(iVar11 * iVar5);
+
+					collisionResult.hit.vy = -collisionResult.hit.vy;
 				}
-				car_data[21].hd.where.t[0] = iVar8 - (car_data[21].st._28_4_ + 0x800 >> 0xc);
-				car_data[21].hd.where.t[2] = iVar10 - (car_data[21].st._36_4_ + 0x800 >> 0xc);
-				DAT_000d94d0 = iVar1;
-				DAT_000d94d8 = iVar3;
+
+				pcdTanner->hd.where.t[0] = iVar8 - FIXED(pcdTanner->st.n.linearVelocity[0]);
+				pcdTanner->hd.where.t[2] = iVar10 - FIXED(pcdTanner->st.n.linearVelocity[2]);
+
+				collisionResult.surfNormal.vx = iVar1;
+				collisionResult.surfNormal.vz = iVar3;
 			}
 		}
-		p_Var13 = p_Var13 + -1;
-		if (p_Var13 < car_data) {
-			return 0;
-		}
-	} while (true);
-	*/
+		cp1--;
+	} while (cp1 >= car_data);
+
+	return 0;
 }
 
 
