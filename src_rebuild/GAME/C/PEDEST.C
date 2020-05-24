@@ -1291,67 +1291,72 @@ void PlaceRoadBlockCops(void)
 	/* end block 2 */
 	// End Line: 4496
 
+// [D]
 int CreatePedAtLocation(long(*pPos)[4], int pedType)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	PEDESTRIAN *pPed;
-	int iVar1;
-	_func_1 *p_Var2;
-	long lVar3;
 
-	if (pedType - 0xcU < 2) {
-		if (7 < numCopPeds) {
+	if (pedType - 0xcU < 2) 
+	{
+		if (numCopPeds > 7)
 			return 0;
-		}
 	}
-	else {
-		if (0xf < num_pedestrians) {
-			return 0;
-		}
-	}
-	pPed = CreatePedestrian();
-	if (pPed == (PEDESTRIAN *)0x0) {
+	else if (num_pedestrians > 15)
 		return 0;
-	}
-	(pPed->position).vx = (*pPos)[0];
-	(pPed->position).vy = (*pPos)[1];
-	lVar3 = (*pPos)[2];
+
+	pPed = CreatePedestrian();
+
+	if (pPed == NULL)
+		return 0;
+
+	pPed->position.vx = (*pPos)[0];
+	pPed->position.vy = (*pPos)[1];
+	pPed->position.vz = (*pPos)[2];
+
 	pPed->pedType = CIVILIAN;
-	(pPed->dir).vz = 0;
-	(pPed->dir).vx = 0;
-	(pPed->dir).vy = 0;
+
+	pPed->dir.vz = 0;
+	pPed->dir.vx = 0;
+	pPed->dir.vy = 0;
 	pPed->type = (PED_ACTION_TYPE)pedType;
 	pPed->flags = 0;
-	(pPed->position).vz = lVar3;
-	p_Var2 = (_func_1 *)PTR_CopStand_000a16a0;
-	if (pedType == 8) {
+
+	pedFunc pedRestState = fpPedPersonalityFunctions[12];
+
+	if (pedType == 8) 
+	{
 		pPed->flags = 0;
-		p_Var2 = (_func_1 *)PTR_CivPedWalk_000a168c;
+		pedRestState = fpPedPersonalityFunctions[7];
 	}
-	else {
-		if (((pedType < 8) || (0xd < pedType)) || (pedType < 0xc)) goto LAB_0006f100;
+	else 
+	{
+		if (pedType < 8 || pedType > 13 || pedType < 12)
+			goto LAB_0006f100;
+
 		pPed->flags = 8;
-		pPed->pallet = 'U';
+		pPed->pallet = 85;
 	}
-	pPed->fpRestState = p_Var2;
+
+	pPed->fpRestState = pedRestState;
+
 LAB_0006f100:
-	pPed->fpAgitatedState = (_func_2 *)0x0;
+
+	pPed->fpAgitatedState = NULL;
 	SetupPedMotionData(pPed);
-	if (pPed->type == PED_ACTION_COPSTAND) {
-		iVar1 = MapHeight((VECTOR *)&pPed->position);
-		lVar3 = -0x62 - iVar1;
+
+	if (pPed->type == PED_ACTION_COPSTAND) 
+	{
+		pPed->position.vy = -98 - MapHeight((VECTOR *)&pPed->position);
 	}
-	else {
-		if (pPed->type != PED_ACTION_COPCROUCH) {
+	else 
+	{
+		if (pPed->type != PED_ACTION_COPCROUCH)
 			return 1;
-		}
-		iVar1 = MapHeight((VECTOR *)&pPed->position);
-		lVar3 = -0x3e - iVar1;
+
+		pPed->position.vy = -62 - MapHeight((VECTOR *)&pPed->position);
 	}
-	(pPed->position).vy = lVar3;
-	return 1;*/
+
+	return 1;
 }
 
 
