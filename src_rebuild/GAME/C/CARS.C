@@ -16,6 +16,8 @@
 #include "CIV_AI.H"
 #include "COP_AI.H"
 #include "MC_SND.H"
+#include "GAMESND.H"
+#include "PLAYERS.H"
 #include "CUTSCENE.H"
 #include "CONVERT.H"
 #include "PAUSE.H"
@@ -801,9 +803,9 @@ void DrawCar(_CAR_DATA *cp, int view)
 		if (499 < sVar3)
 		{
 			if (sVar3 < 1000)
-				LeftLight = '\x01';
+				LeftLight = 1;
 			else 
-				LeftLight = '\0';
+				LeftLight = 0;
 		}
 
 		// it has a bug... I know that since 2002...
@@ -1003,6 +1005,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	}
 
 	TransparentObject = 0;
+
 	if (cp->controlType == 2)
 	{
 		PlayerCarFX(cp);
@@ -1019,7 +1022,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	{
 		if (cp->controlType == 2) 
 		{
-			if ((cp->ai.c.thrustState != 3) || (((bVar1 = cp->ai.c.ctrlState, bVar1 != 5 && (bVar1 != 7)) && (bVar1 != 8))))
+			if(cp->ai.c.thrustState != 3 || (cp->ai.c.ctrlState != 5 && cp->ai.c.ctrlState != 7 && cp->ai.c.ctrlState != 8))
 			{
 				AddNightLights(cp);
 			}
@@ -1035,10 +1038,10 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (cp->controlType == 3)
 	{
-		if ((int)player[0].playerCarId < 0) 
+		if (player[0].playerCarId < 0) 
 			psVar7 = &pedestrianFelony;
 		else 
-			psVar7 = &car_data[(int)player[0].playerCarId].felonyRating;
+			psVar7 = &car_data[player[0].playerCarId].felonyRating;
 
 		if (*psVar7 > 0x292 && (MissionHeader->residentModels[3] == 0))
 		{
@@ -1049,22 +1052,20 @@ void DrawCar(_CAR_DATA *cp, int view)
 		}
 	}
 
-	// WTF IS THIS?
-	UNIMPLEMENTED(); // [A]
-	/*
-	if (((*(uint *)&cp->hndType & 0x2ff00) != 0x20200) &&
-		(((gInGameCutsceneActive == 0 || (cp->controlType != '\a')) ||
-		(force_siren[CAR_INDEX(cp)] == '\0'))))
+	// optimzed check for hndType, controlType, controlFlags
+	//cp->hndType != 2;
+	//cp->controlType != 2;
+	if ((*(uint *)&cp->hndType & 0x2ff00) != 0x20200 && ((gInGameCutsceneActive == 0 || cp->controlType != 7) || force_siren[CAR_INDEX(cp)] == 0 ))
 	{
 		if (gCurrentMissionNumber != 0x1a) 
 			return;
 
-		if ((cp->ap).model != 4) 
+		if (cp->ap.model != 4) 
 			return;
 
 		if (cp->controlType != 10)
 			return;
-	}*/
+	}
 
 	if (cp->ai.p.dying < 0x4b)
 		AddCopCarLight(cp);
