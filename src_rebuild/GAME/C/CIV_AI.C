@@ -131,6 +131,8 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 LAB_00023fe4:
 	CreateDentableCar(cp);
 	DentCar(cp);
+
+	return 1;
 }
 
 
@@ -3036,36 +3038,37 @@ int PingOutCar(_CAR_DATA *cp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int PingOutAllSpecialCivCars(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint *puVar1;
-	_CAR_DATA *mem;
+	_CAR_DATA *lcp;
 
-	mem = car_data;
-	do {
-		if ((mem->controlType == '\x02') && (4 < MissionHeader->residentModels[(byte)(mem->ap).model]))
+	lcp = car_data;
+
+	while (lcp < &car_data[20])
+	{
+		if (lcp->controlType == 2 && MissionHeader->residentModels[lcp->ap.model] > 4)
 		{
-			testNumPingedOut = testNumPingedOut + 1;
-			if ((mem->controlFlags & 1) != 0) {
-				numCopCars = numCopCars + -1;
-			}
-			numCivCars = numCivCars + -1;
-			if ((mem->ai[0xf9] == 3) && (mem->ai[0xc] == 5)) {
-				numParkedCars = numParkedCars + -1;
-			}
-			puVar1 = (uint *)mem->inform;
-			if (puVar1 != (uint *)0x0) {
-				*puVar1 = *puVar1 ^ 0x40000000;
-			}
-			ClearMem((char *)mem, 0x29c);
-			mem->controlType = '\0';
+			testNumPingedOut++;
+			numCivCars--;
+
+			if (lcp->controlFlags & 1) 
+				numCopCars--;
+
+			if (lcp->ai.c.thrustState == 3 && lcp->ai.c.ctrlState == 5)
+				numParkedCars--;
+
+			if (lcp->inform != NULL)
+				*lcp->inform ^= 0x40000000;
+
+			ClearMem((char *)lcp, sizeof(_CAR_DATA));
+			lcp->controlType = 0;
 		}
-		mem = mem + 1;
-	} while (mem < car_data + 0x14);
-	return 1;*/
+
+		lcp++;
+	} 
+
+	return 1;
 }
 
 
@@ -3154,7 +3157,7 @@ int PingOutAllCivCarsAndCopCars(void)
 
 	LAB_0002852c:
 		cp++;
-	} while (cp < car_data + 20);
+	} while (cp < &car_data[20]);
 
 	return 1;
 }
