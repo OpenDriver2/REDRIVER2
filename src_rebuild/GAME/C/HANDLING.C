@@ -306,12 +306,13 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 	delta.vy = 0;
 
 	doWheels = 1;
-	delta.vz = -(short)(((int)carCos->wheelDisp[0].vz + (int)carCos->wheelDisp[1].vz-14) / 2);
+	delta.vz = -(carCos->wheelDisp[0].vz + carCos->wheelDisp[1].vz-14) / 2;
 
 	UpdateCarPoints(carCos);
 
-	if ((carCos == car_cosmetics + 2) && (gCurrentMissionNumber == 7)) {
-		car_cosmetics[2].mass = car_cosmetics[2].mass * 3;
+	if (carCos == &car_cosmetics[2] && gCurrentMissionNumber == 7) 
+	{
+		car_cosmetics[2].mass *= 3;
 	}
 }
 
