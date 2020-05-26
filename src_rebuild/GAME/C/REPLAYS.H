@@ -7,10 +7,12 @@ extern REPLAY_PARAMETER_BLOCK *ReplayParameterPtr;
 extern REPLAY_STREAM ReplayStreams[8];
 extern int NumReplayStreams;
 
+extern char *ReplayStart;
 extern char *replayptr;
 
 extern unsigned long PingBufferPos;
 extern _PING_PACKET *PingBuffer;
+
 
 extern PLAYBACKCAMERA *PlaybackCamera;
 

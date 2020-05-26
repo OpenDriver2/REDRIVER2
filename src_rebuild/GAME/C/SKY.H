@@ -1,6 +1,8 @@
 #ifndef SKY_H
 #define SKY_H
 
+extern SVECTOR sun_position[4];
+extern SVECTOR moon_position[4];
 
 extern void LoadSky(); // 0x000775C8
 

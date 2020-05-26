@@ -1439,7 +1439,9 @@ void DrawAllPedestrians(void)
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
-		if (pPed->pedType - 2 < 2 && PositionVisible((VECTOR *)&pPed->position) != 0 && FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
+		if (pPed->pedType - 2 < 2 &&  // ???
+			PositionVisible((VECTOR *)&pPed->position) != 0 &&
+			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
 		{
 			if (pPed->type - 8 < 6)
 				DrawCiv(pPed);
@@ -1506,8 +1508,6 @@ void DrawAllPedestrians(void)
 // [D]
 int TannerActionHappening(void)
 {
-	int iVar1;
-
 	PEDESTRIAN *pPed = player[0].pPed;
 
 	if (pPed && pPed->type == PED_ACTION_PRESSBUTTON)

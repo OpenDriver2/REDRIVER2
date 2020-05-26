@@ -10,6 +10,10 @@
 #include "SHADOW.H"
 #include "DEBRIS.H"
 #include "DRAW.H"
+#include "DR2ROADS.H"
+#include "SKY.H"
+
+#include "INLINE_C.H"
 
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
@@ -50,259 +54,259 @@ PED_DATA MainPed[23] =
 // FIXME: could be incorrect
 BONE Skel[23] =
 {
-  {
-	ROOT,
-	NULL,
-	1,
-	{ &Skel[LOWERBACK], &Skel[HIPS], NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  },
-  {
-	LOWERBACK,
-	&Skel[ROOT],
-	3,
-	{ &Skel[JOINT_1], &Skel[LHIP], &Skel[RHIP] },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  },
-  {
-	JOINT_1,
-	&Skel[LOWERBACK],
-	3,
-	{ &Skel[NECK], &Skel[LSHOULDER], &Skel[RSHOULDER] },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[0]
-  },
-  {
-	NECK,
-	&Skel[JOINT_1],
-	1,
-	{ &Skel[HEAD], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[14]
-  },
-  {
-	HEAD,
-	&Skel[NECK],
-	0,
-	{ NULL, NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[1]
-  },
-  {
-	LSHOULDER,
-	&Skel[JOINT_1],
-	1,
-	{ &Skel[LELBOW], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  },
-  {
-	LELBOW,
-	&Skel[LSHOULDER],
-	1,
-	{ &Skel[LHAND], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[8]
-  },
-  {
-	LHAND,
-	&Skel[LELBOW],
-	1,
-	{ &Skel[LFINGERS], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[9]
-  },
-  {
-	LFINGERS,
-	&Skel[LHAND],
-	0,
-	{ NULL, NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[10]
-  },
-  {
-	RSHOULDER,
-	&Skel[JOINT_1],
-	1,
-	{ &Skel[RELBOW], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  },
-  {
-	RELBOW,
-	&Skel[RSHOULDER],
-	1,
-	{ &Skel[RHAND], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[2]
-  },
-  {
-	RHAND,
-	&Skel[RELBOW],
-	1,
-	{ &Skel[RFINGERS], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[3]
-  },
-  {
-	RFINGERS,
-	&Skel[RHAND],
-	0,
-	{ NULL, NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[4]
-  },
-  {
-	HIPS,
-	&Skel[0],
-	0,
-	{ &Skel[RHIP], &Skel[LHIP], NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  },
-  {
-	LHIP,
-	&Skel[HIPS],
-	1,
-	{ &Skel[LKNEE], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[15]
-  },
-  {
-	LKNEE,
-	&Skel[LHIP],
-	1,
-	{ &Skel[LFOOT], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[11]
-  },
-  {
-	LFOOT,
-	&Skel[LKNEE],
-	1,
-	{ &Skel[LTOE], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[12]
-  },
-  {
-	LTOE,
-	&Skel[LFOOT],
-	0,
-	{ NULL, NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[13]
-  },
-  {
-	RHIP,
-	&Skel[HIPS],
-	1,
-	{ &Skel[RKNEE], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  },
-  {
-	RKNEE,
-	&Skel[RHIP],
-	1,
-	{ &Skel[RFOOT], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[5]
-  },
-  {
-	RFOOT,
-	&Skel[RKNEE],
-	1,
-	{ &Skel[RFOOT], NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[6]
-  },
-  {
-	RTOE,
-	&Skel[RFOOT],
-	0,
-	{ NULL, NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	&pmTannerModels[7]
-  },
-  {
-	JOINT,
-	&Skel[LOWERBACK],
-	0,
-	{ NULL, NULL, NULL },
-	NULL,
-	NULL,
-	{ 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 },
-	NULL
-  }
+	{
+		ROOT,
+		NULL,
+		1,
+		{ &Skel[LOWERBACK], &Skel[HIPS], NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	},
+	{
+		LOWERBACK,
+		&Skel[ROOT],
+		3,
+		{ &Skel[JOINT_1], &Skel[LHIP], &Skel[RHIP] },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	},
+	{
+		JOINT_1,
+		&Skel[LOWERBACK],
+		3,
+		{ &Skel[NECK], &Skel[LSHOULDER], &Skel[RSHOULDER] },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[0]
+	},
+	{
+		NECK,
+		&Skel[JOINT_1],
+		1,
+		{ &Skel[HEAD], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[14]
+	},
+	{
+		HEAD,
+		&Skel[NECK],
+		0,
+		{ NULL, NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[1]
+	},
+	{
+		LSHOULDER,
+		&Skel[JOINT_1],
+		1,
+		{ &Skel[LELBOW], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	},
+	{
+		LELBOW,
+		&Skel[LSHOULDER],
+		1,
+		{ &Skel[LHAND], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[8]
+	},
+	{
+		LHAND,
+		&Skel[LELBOW],
+		1,
+		{ &Skel[LFINGERS], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[9]
+	},
+	{
+		LFINGERS,
+		&Skel[LHAND],
+		0,
+		{ NULL, NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[10]
+	},
+	{
+		RSHOULDER,
+		&Skel[JOINT_1],
+		1,
+		{ &Skel[RELBOW], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	},
+	{
+		RELBOW,
+		&Skel[RSHOULDER],
+		1,
+		{ &Skel[RHAND], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[2]
+	},
+	{
+		RHAND,
+		&Skel[RELBOW],
+		1,
+		{ &Skel[RFINGERS], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[3]
+	},
+	{
+		RFINGERS,
+		&Skel[RHAND],
+		0,
+		{ NULL, NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[4]
+	},
+	{
+		HIPS,
+		&Skel[0],
+		0,
+		{ &Skel[RHIP], &Skel[LHIP], NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	},
+	{
+		LHIP,
+		&Skel[HIPS],
+		1,
+		{ &Skel[LKNEE], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[15]
+	},
+	{
+		LKNEE,
+		&Skel[LHIP],
+		1,
+		{ &Skel[LFOOT], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[11]
+	},
+	{
+		LFOOT,
+		&Skel[LKNEE],
+		1,
+		{ &Skel[LTOE], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[12]
+	},
+	{
+		LTOE,
+		&Skel[LFOOT],
+		0,
+		{ NULL, NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[13]
+	},
+	{
+		RHIP,
+		&Skel[HIPS],
+		1,
+		{ &Skel[RKNEE], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	},
+	{
+		RKNEE,
+		&Skel[RHIP],
+		1,
+		{ &Skel[RFOOT], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[5]
+	},
+	{
+		RFOOT,
+		&Skel[RKNEE],
+		1,
+		{ &Skel[RTOE], NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[6]
+	},
+	{
+		RTOE,
+		&Skel[RFOOT],
+		0,
+		{ NULL, NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		&pmTannerModels[7]
+	},
+	{
+		JOINT,
+		&Skel[LOWERBACK],
+		0,
+		{ NULL, NULL, NULL },
+		NULL,
+		NULL,
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		NULL
+	}
 };
 
 int boneIdvals[15] = { 2, 3, 4, 6, 7, 8, 0xA, 0xB, 0xC, 0xF, 0x10, 0x11, 0x13, 0x14, 0x15 };
@@ -836,82 +840,128 @@ void StoreVertexLists(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int bodyShiftValue = 0;
+
+// [D]
 void SetupTannerSkeleton(void)
 {
-	UNIMPLEMENTED();
-
-
-
-	/*
 	short sVar1;
 	SVECTOR_NOPAD *local_v0_180;
 	SVECTOR_NOPAD *pSVar2;
 	SVECTOR *local_a0_448;
 	short sVar3;
-	BONE *pBVar4;
-	BONE *local_a3_436;
-	short *local_t0_244;
-	int iVar5;
+	BONE *pBone;
+	BONE *pBone1;
+	SVECTOR *local_t0_244;
+	int i;
 
-	Skel[0].pvOrigPos =
-		 (SVECTOR_NOPAD *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x92);
-	Skel[0].pvRotation =
-		 (SVECTOR *)(pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x98);
-	Skel[0].vCurrPos.vx = (long)(Skel[0].pvOrigPos)->vx;
-	Skel[0].vCurrPos.vy = -(int)(Skel[0].pvOrigPos)->vy;
-	iVar5 = 0x15;
+	Skel[0].pvOrigPos = (SVECTOR_NOPAD *)(pDrawingPed->motion + pDrawingPed->frame1 * 144 + 146);
+	Skel[0].pvRotation = (SVECTOR *)(pDrawingPed->motion + pDrawingPed->frame1 * 144 + 152);
+
+	Skel[0].vCurrPos.vx = Skel[0].pvOrigPos->vx;
+	Skel[0].vCurrPos.vy = -Skel[0].pvOrigPos->vy;
+
+	
+
 	Skel[0].vOffset.vx = 0;
 	Skel[0].vOffset.vy = 0;
 	Skel[0].vOffset.vz = 0;
-	Skel[0].vCurrPos.vz = -(int)(Skel[0].pvOrigPos)->vz;
-	local_v0_180 = (SVECTOR_NOPAD *)
-				   (pDrawingPed->motion + (uint)(byte)pDrawingPed->frame1 * 0x90 + 0x9e);
-	pSVar2 = (SVECTOR_NOPAD *)(pDrawingPed->motion + 0xe);
-	pBVar4 = Skel;
+	Skel[0].vCurrPos.vz = -Skel[0].pvOrigPos->vz;
+
+	local_v0_180 = (SVECTOR_NOPAD *)(pDrawingPed->motion + pDrawingPed->frame1 * 144 + 158);
+	pSVar2 = (SVECTOR_NOPAD *)(pDrawingPed->motion + 14);
+
+	i = 21;
+	pBone = Skel;
 	do {
-		iVar5 = iVar5 + -1;
-		*(SVECTOR_NOPAD **)&pBVar4[1].pvRotation = local_v0_180;
-		pBVar4[1].pvOrigPos = pSVar2;
-		sVar1 = (short)bodyShiftValue;
-		local_v0_180 = local_v0_180 + 1;
-		pSVar2 = pSVar2 + 1;
-		pBVar4 = pBVar4 + 1;
-	} while (-1 < iVar5);
-	SVECTOR_1f800008.vx = (Skel[1].pvOrigPos)->vx;
-	local_t0_244 = &SVECTOR_1f800010;
-	iVar5 = 0x14;
-	SVECTOR_1f800008.vy = -(Skel[1].pvOrigPos)->vy;
-	SVECTOR_1f800008.vz = -(Skel[1].pvOrigPos)->vz;
-	pBVar4 = Skel + 1;
+		i--;
+		pBone[1].pvRotation = (SVECTOR*)local_v0_180;
+		pBone[1].pvOrigPos = pSVar2;
+
+		local_v0_180++;
+		pSVar2++;
+		pBone++;
+	} while (-1 < i);
+
+	SVECTOR SVECTOR_ARRAY_1f800008[24];
+
+	i = 20;
+
+	SVECTOR_ARRAY_1f800008[0].vx = (Skel[1].pvOrigPos)->vx;
+	SVECTOR_ARRAY_1f800008[0].vy = -(Skel[1].pvOrigPos)->vy;
+	SVECTOR_ARRAY_1f800008[0].vz = -(Skel[1].pvOrigPos)->vz;
+
+	local_t0_244 = SVECTOR_ARRAY_1f800008;
+	pBone = Skel + 1;
+
 	do {
-		local_t0_244->vx = (pBVar4[1].pvOrigPos)->vx - (pBVar4[1].pParent)->pvOrigPos->vx;
-		sVar3 = (pBVar4[1].pParent)->pvOrigPos->vy - (pBVar4[1].pvOrigPos)->vy;
-		local_t0_244->vy = sVar3;
-		local_t0_244->vz = (pBVar4[1].pParent)->pvOrigPos->vz - (pBVar4[1].pvOrigPos)->vz;
-		if (pBVar4[1].id == JOINT_1) {
-			local_t0_244->vy = sVar3 - sVar1;
+		SVECTOR* _prev = local_t0_244;
+		local_t0_244++;
+
+		local_t0_244->vx = pBone[1].pvOrigPos->vx - pBone[1].pParent->pvOrigPos->vx;
+		local_t0_244->vy = pBone[1].pParent->pvOrigPos->vy - pBone[1].pvOrigPos->vy;
+		local_t0_244->vz = pBone[1].pParent->pvOrigPos->vz - pBone[1].pvOrigPos->vz;
+
+		if (pBone[1].id == JOINT_1) 
+			local_t0_244->vy -= bodyShiftValue;
+
+		i--;
+		pBone++;
+	} while (-1 < i);
+
+	pBone1 = Skel;
+	local_a0_448 = SVECTOR_ARRAY_1f800008;
+	i = 21;
+	do {
+		pBone1++;
+
+		pBone1->vCurrPos.vx = local_a0_448->vx;
+		pBone1->vOffset.vx = local_a0_448->vx;
+
+		pBone1->vCurrPos.vy = local_a0_448->vy;
+		pBone1->vOffset.vy = local_a0_448->vy;
+
+		pBone1->vCurrPos.vz = local_a0_448->vz;
+		pBone1->vOffset.vz = local_a0_448->vz;
+
+		local_a0_448++;
+		i--;
+	} while (-1 < i);
+
+	// Draw T POSE
+	{
+		extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+		extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+		CVECTOR yycv = { 250, 250, 0 };
+
+		for (int i = 0; i < 23; i++)
+		{
+			pBone = &Skel[i];
+
+			for (int j = 0; j < pBone->numChildren; j++)
+			{
+				VECTOR v0 = { 
+					pBone->pvOrigPos->vx,
+					pBone->pvOrigPos->vy,
+					pBone->pvOrigPos->vz };
+
+				VECTOR v1 = { 
+					pBone->pChildren[j]->pvOrigPos->vx,
+					pBone->pChildren[j]->pvOrigPos->vy,
+					pBone->pChildren[j]->pvOrigPos->vz };
+
+				VECTOR ofs = *(VECTOR*)&pDrawingPed->position;
+				ofs.vy = -ofs.vy;
+				//ofs.vy += 270;
+
+				Debug_AddLineOfs(v0, v1, ofs, bbcv);
+			}
+
 		}
-		local_t0_244 = local_t0_244 + 1;
-		iVar5 = iVar5 + -1;
-		pBVar4 = pBVar4 + 1;
-	} while (-1 < iVar5);
-	local_a3_436 = Skel;
-	local_a0_448 = &SVECTOR_1f800008;
-	iVar5 = 0x15;
-	do {
-		local_a3_436 = local_a3_436 + 1;
-		sVar1 = local_a0_448->vx;
-		(local_a3_436->vCurrPos).vx = (int)sVar1;
-		(local_a3_436->vOffset).vx = (int)sVar1;
-		sVar1 = local_a0_448->vy;
-		iVar5 = iVar5 + -1;
-		(local_a3_436->vCurrPos).vy = (int)sVar1;
-		(local_a3_436->vOffset).vy = (int)sVar1;
-		sVar1 = local_a0_448->vz;
-		local_a0_448 = local_a0_448 + 1;
-		(local_a3_436->vCurrPos).vz = (int)sVar1;
-		(local_a3_436->vOffset).vz = (int)sVar1;
-	} while (-1 < iVar5);*/
+	}
 }
 
 
@@ -1763,20 +1813,23 @@ SVECTOR* GetModelVertPtr(int boneId, int modelType)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+int bAllreadyRotated = 0;
+
 void DrawCiv(PEDESTRIAN *pPed)
 {
 	UNIMPLEMENTED();
 	/*
-	bool bVar1;
+	short *psVar1;
+	bool bVar2;
 	undefined4 in_zero;
 	undefined4 in_at;
-	undefined4 uVar2;
 	undefined4 uVar3;
 	undefined4 uVar4;
 	undefined4 uVar5;
-	int iVar6;
-	undefined4 *puVar7;
+	undefined4 uVar6;
+	int iVar7;
 	int iVar8;
+	SVECTOR *vert1;
 	int iVar9;
 	int iVar10;
 	uint v1;
@@ -1791,79 +1844,73 @@ void DrawCiv(PEDESTRIAN *pPed)
 	int iVar17;
 	uint uVar18;
 	int iVar19;
-	undefined2 *puVar20;
-	undefined4 *puVar21;
-	undefined4 *puVar22;
-	int *piVar23;
-	undefined4 *puVar24;
-	uint *puVar25;
-	int *piVar26;
-	int iVar27;
-	undefined4 local_a0;
-	uint local_9c;
-	short local_88;
-	short sStack134;
-	short local_84;
-	short local_80;
-	short sStack126;
-	short local_7c;
-	uint local_78;
-	uint local_74;
-	uint local_70;
-	uint local_6c;
-	uint local_68;
-	CVECTOR local_58[2];
-	VECTOR local_50;
-	undefined4 local_40;
+	MATRIX *pMVar20;
+	SVECTOR *pLerpData;
+	SVECTOR *vert2;
+	SVECTOR *pSVar21;
+	SVECTOR *pSVar22;
+	MATRIX *pMVar23;
+	SVECTOR *pSVar24;
+	int *piVar25;
+	int iVar26;
+	SVECTOR pos;
+	VECTOR pos1;
+	SVECTOR temp1;
+	SVECTOR temp2;
+	MATRIX workmatrix;
+	CVECTOR cv;
+	VECTOR ppos;
+	undefined4 uStack64;
 	int local_38;
 	CVECTOR *local_34;
 	VECTOR *local_30;
 
-	puVar25 = &DAT_1f800010;
-	piVar23 = &DAT_1f800210;
-	puVar20 = &DAT_1f800090;
+	pSVar24 = &SVECTOR_1f800010;
+	pSVar22 = &SVECTOR_1f800210;
+	pMVar20 = &MATRIX_1f800090;
 	local_38 = 0;
-	puVar21 = (undefined4 *)pPed->motion;
-	iVar27 = 0;
+	vert1 = (SVECTOR *)pPed->motion;
+	iVar26 = 0;
 	boneId = (uint)((byte)pPed->frame1 >> 1);
-	puVar7 = puVar21 + boneId * 0x3c;
+	vert2 = vert1 + boneId * 0x1e;
 	uVar13 = (uint)(*(byte *)((int)&pPed->flags + 1) >> 7);
 	pDrawingPed = pPed;
 	if ((pPed->frame1 & 1U) == 0) {
 		iVar11 = 0x1e;
 		do {
-			*puVar20 = *(undefined2 *)puVar7;
+			pMVar20->m[0] = vert2->vx;
 			iVar11 = iVar11 + -1;
-			puVar20[1] = (short)((int)*(short *)((int)puVar7 + 2) >> uVar13);
-			puVar21 = puVar7 + 1;
-			puVar7 = puVar7 + 2;
-			puVar20[2] = *(undefined2 *)puVar21;
-			puVar20 = puVar20 + 4;
+			*(undefined2 *)pMVar20->m = (short)((int)vert2->vy >> uVar13);
+			psVar1 = &vert2->vz;
+			vert2 = vert2 + 1;
+			*(short *)pMVar20->m = *psVar1;
+			pMVar20 = (MATRIX *)(pMVar20->m + 4);
 		} while (0 < iVar11);
 	}
 	else {
 		if ((byte)pPed->frame1 < 0x1e) {
-			puVar21 = puVar21 + (boneId + 1) * 0x3c;
+			vert1 = vert1 + (boneId + 1) * 0x1e;
 		}
 		iVar11 = 0x1e;
+		pLerpData = (SVECTOR *)pMVar20;
 		do {
-			uVar2 = *puVar21;
-			uVar4 = puVar21[1];
-			uVar3 = *puVar7;
-			uVar5 = puVar7[1];
-			local_88 = (short)uVar2;
-			local_80 = (short)uVar3;
+			uVar3 = *(undefined4 *)vert1;
+			uVar5 = *(undefined4 *)&vert1->vz;
+			uVar4 = *(undefined4 *)vert2;
+			uVar6 = *(undefined4 *)&vert2->vz;
+			temp1.vx = (short)uVar3;
+			temp2.vx = (short)uVar4;
 			iVar11 = iVar11 + -1;
-			*puVar20 = (short)((int)local_88 + (int)local_80 >> 1);
-			sStack134 = (short)((uint)uVar2 >> 0x10);
-			sStack126 = (short)((uint)uVar3 >> 0x10);
-			puVar21 = puVar21 + 2;
-			puVar20[1] = (short)((int)sStack134 + (int)sStack126 >> uVar13 + 1);
-			local_84 = (short)uVar4;
-			local_7c = (short)uVar5;
-			puVar7 = puVar7 + 2;
-			puVar20[2] = (short)((int)local_84 + (int)local_7c >> 1);
-			puVar20 = puVar20 + 4;
+			pLerpData->vx = (short)((int)temp1.vx + (int)temp2.vx >> 1);
+			temp1.vy = (short)((uint)uVar3 >> 0x10);
+			temp2.vy = (short)((uint)uVar4 >> 0x10);
+			vert1 = vert1 + 1;
+			pLerpData->vy = (short)((int)temp1.vy + (int)temp2.vy >> uVar13 + 1);
+			temp1.vz = (short)uVar5;
+			temp2.vz = (short)uVar6;
+			vert2 = vert2 + 1;
+			pLerpData->vz = (short)((int)temp1.vz + (int)temp2.vz >> 1);
+			pLerpData = pLerpData + 1;
 		} while (0 < iVar11);
 	}
 	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
@@ -1871,19 +1918,19 @@ void DrawCiv(PEDESTRIAN *pPed)
 	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
 	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
 	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	local_a0 = CONCAT22(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy,
+	pos._0_4_ = CONCAT22(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy,
 		*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx);
-	local_9c = local_9c & 0xffff0000 |
+	pos._4_4_ = pos._4_4_ & 0xffff0000 |
 		(uint)(ushort)(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz);
-	setCopReg(2, in_zero, local_a0);
-	setCopReg(2, in_at, local_9c);
+	setCopReg(2, in_zero, pos._0_4_);
+	setCopReg(2, in_at, pos._4_4_);
 	copFunction(2, 0x486012);
-	uVar2 = getCopReg(2, 0x19);
-	uVar3 = getCopReg(2, 0x1a);
-	uVar4 = getCopReg(2, 0x1b);
-	setCopControlWord(2, 0x2800, uVar2);
-	setCopControlWord(2, 0x3000, uVar3);
-	setCopControlWord(2, 0x3800, uVar4);
+	uVar3 = getCopReg(2, 0x19);
+	uVar4 = getCopReg(2, 0x1a);
+	uVar5 = getCopReg(2, 0x1b);
+	setCopControlWord(2, 0x2800, uVar3);
+	setCopControlWord(2, 0x3000, uVar4);
+	setCopControlWord(2, 0x3800, uVar5);
 	uVar12 = (uint)(ushort)(pDrawingPed->dir).vy & 0xfff;
 	uVar13 = (uint)(ushort)(pDrawingPed->dir).vz & 0xfff;
 	iVar9 = (int)rcossin_tbl[uVar12 * 2 + 1];
@@ -1899,11 +1946,11 @@ void DrawCiv(PEDESTRIAN *pPed)
 	iVar10 = (int)(short)uVar18;
 	boneId = -(iVar17 * iVar8 + 0x800 >> 0xc);
 	uVar12 = iVar11 * iVar17 + 0x800 >> 0xc;
-	iVar6 = (int)(short)uVar12;
+	iVar7 = (int)(short)uVar12;
 	uVar15 = (-iVar11 * (iVar9 * iVar19 + 0x800 >> 0xc) + 0x800 >> 0xc) +
 		(iVar8 * iVar14 + 0x800 >> 0xc);
-	v1 = (iVar10 * iVar6 + 0x800 >> 0xc) - (((int)(uVar15 * 0x10000) >> 0x10) * iVar19 + 0x800 >> 0xc)
-		;
+	v1 = (iVar10 * iVar7 + 0x800 >> 0xc) -
+		(((int)(uVar15 * 0x10000) >> 0x10) * iVar19 + 0x800 >> 0xc);
 	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
 	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
 	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
@@ -1919,13 +1966,14 @@ void DrawCiv(PEDESTRIAN *pPed)
 	setCopReg(2, 0x4800, uVar15 & 0xffff);
 	setCopReg(2, 0x5000, uVar12 & 0xffff);
 	setCopReg(2, 0x5800, (uint)(ushort)((short)(((int)(uVar16 * 0x10000) >> 0x10) * iVar19 + 0x800 >>
-		0xc) - (short)(iVar10 * (short)boneId + 0x800 >> 0xc)));
+		0xc) - (short)(iVar10 * (short)boneId + 0x800 >> 0xc)))
+		;
 	copFunction(2, 0x49e012);
 	iVar11 = getCopReg(2, 0x4800);
 	uVar12 = getCopReg(2, 0x5000);
 	iVar9 = getCopReg(2, 0x5800);
-	local_78 = uVar13 & 0xffff | iVar11 << 0x10;
-	local_6c = uVar18 & 0xffff | iVar9 << 0x10;
+	workmatrix.m[0]._0_4_ = uVar13 & 0xffff | iVar11 << 0x10;
+	workmatrix.m[2]._0_4_ = uVar18 & 0xffff | iVar9 << 0x10;
 	setCopReg(2, 0x4800, uVar16 & 0xffff);
 	setCopReg(2, 0x5000, boneId & 0xffff);
 	setCopReg(2, 0x5800, v1 & 0xffff);
@@ -1933,98 +1981,100 @@ void DrawCiv(PEDESTRIAN *pPed)
 	uVar13 = getCopReg(2, 0x4800);
 	iVar11 = getCopReg(2, 0x5000);
 	uVar15 = getCopReg(2, 0x5800);
-	local_74 = iVar8 << 0x10 | uVar13 & 0xffff;
-	local_70 = uVar12 & 0xffff | iVar11 << 0x10;
-	local_68 = local_68 & 0xffff0000 | uVar15 & 0xffff;
-	setCopControlWord(2, 0, local_78);
-	setCopControlWord(2, 0x800, local_74);
-	setCopControlWord(2, 0x1000, local_70);
-	setCopControlWord(2, 0x1800, local_6c);
-	setCopControlWord(2, 0x2000, local_68);
-	setCopReg(2, in_zero, _DAT_1f800090);
-	setCopReg(2, in_at, _DAT_1f800094);
-	setCopReg(2, 0x1f800090, DAT_1f800098);
-	setCopReg(2, iVar6, DAT_1f80009c);
-	setCopReg(2, boneId, DAT_1f8000a0);
-	setCopReg(2, v1, DAT_1f8000a4);
+	workmatrix.m._4_4_ = iVar8 << 0x10 | uVar13 & 0xffff;
+	workmatrix.m[1]._2_4_ = uVar12 & 0xffff | iVar11 << 0x10;
+	workmatrix._16_4_ = workmatrix._16_4_ & 0xffff0000 | uVar15 & 0xffff;
+	setCopControlWord(2, 0, workmatrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, workmatrix.m._4_4_);
+	setCopControlWord(2, 0x1000, workmatrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, workmatrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, workmatrix._16_4_);
+	setCopReg(2, in_zero, MATRIX_1f800090.m[0]._0_4_);
+	setCopReg(2, in_at, MATRIX_1f800090.m._4_4_);
+	setCopReg(2, 0x1f800090, MATRIX_1f800090.m[1]._2_4_);
+	setCopReg(2, iVar7, MATRIX_1f800090.m[2]._0_4_);
+	setCopReg(2, boneId, MATRIX_1f800090._16_4_);
+	setCopReg(2, v1, MATRIX_1f800090.t[0]);
 	copFunction(2, 0x280030);
 	gCurrentZ = getCopReg(2, 0x13);
-	local_30 = &local_50;
-	DAT_1f800210 = gCurrentZ;
+	local_30 = &ppos;
+	SVECTOR_1f800210._0_4_ = gCurrentZ;
 	if (gCurrentZ <= switch_detail_distance) {
-		local_34 = local_58;
-		piVar26 = boneIdvals;
+		local_34 = &cv;
+		piVar25 = boneIdvals;
 		iVar11 = 0;
-		puVar22 = &DAT_1f800210;
-		puVar21 = &DAT_1f800010;
-		iVar6 = 0xe;
-		puVar7 = (undefined4 *)&DAT_1f800090;
+		pSVar21 = &SVECTOR_1f800210;
+		vert2 = &SVECTOR_1f800010;
+		iVar7 = 0xe;
+		pMVar20 = &MATRIX_1f800090;
 		do {
-			if (iVar27 < 0x1e) {
-				uVar2 = getCopReg(2, 0xc);
-				*puVar21 = uVar2;
-				uVar2 = getCopReg(2, 0xd);
-				puVar21[1] = uVar2;
-				uVar2 = getCopReg(2, 0xe);
-				puVar21[2] = uVar2;
-				uVar2 = getCopReg(2, 0x11);
-				*puVar22 = uVar2;
-				uVar2 = getCopReg(2, 0x12);
-				puVar22[1] = uVar2;
-				uVar2 = getCopReg(2, 0x13);
-				puVar22[2] = uVar2;
+			if (iVar26 < 0x1e) {
+				uVar3 = getCopReg(2, 0xc);
+				*(undefined4 *)vert2 = uVar3;
+				uVar3 = getCopReg(2, 0xd);
+				*(undefined4 *)&vert2->vz = uVar3;
+				uVar3 = getCopReg(2, 0xe);
+				*(undefined4 *)(vert2 + 1) = uVar3;
+				uVar3 = getCopReg(2, 0x11);
+				*(undefined4 *)pSVar21 = uVar3;
+				uVar3 = getCopReg(2, 0x12);
+				*(undefined4 *)&pSVar21->vz = uVar3;
+				uVar3 = getCopReg(2, 0x13);
+				*(undefined4 *)(pSVar21 + 1) = uVar3;
 			}
-			bVar1 = iVar27 < 0x1b;
-			puVar24 = puVar7;
-			if (bVar1) {
-				puVar24 = puVar7 + 6;
-				puVar22 = puVar22 + 3;
-				puVar21 = puVar21 + 3;
-				iVar27 = iVar27 + 3;
-				setCopReg(2, in_zero, *puVar24);
-				setCopReg(2, in_at, puVar7[7]);
-				setCopReg(2, (uint)bVar1, puVar7[8]);
-				setCopReg(2, iVar11, puVar7[9]);
-				setCopReg(2, boneId, puVar7[10]);
-				setCopReg(2, v1, puVar7[0xb]);
+			bVar2 = iVar26 < 0x1b;
+			pMVar23 = pMVar20;
+			if (bVar2) {
+				pMVar23 = (MATRIX *)(pMVar20->t + 1);
+				pSVar21 = (SVECTOR *)&pSVar21[1].vz;
+				vert2 = (SVECTOR *)&vert2[1].vz;
+				iVar26 = iVar26 + 3;
+				setCopReg(2, in_zero, *(undefined4 *)pMVar23->m);
+				setCopReg(2, in_at, pMVar20->t[2]);
+				setCopReg(2, (uint)bVar2, *(undefined4 *)pMVar20[1].m);
+				setCopReg(2, iVar11, *(undefined4 *)(pMVar20[1].m + 2));
+				setCopReg(2, boneId, *(undefined4 *)(pMVar20[1].m + 4));
+				setCopReg(2, v1, *(undefined4 *)(pMVar20[1].m + 6));
 				copFunction(2, 0x280030);
 			}
-			boneId = *piVar26;
+			boneId = *piVar25;
 			if ((boneId == 4) &&
-				(v1 = 1, iVar11 = DAT_1f800210, DAT_1f800210 <= switch_detail_distance >> 1)) {
+				(v1 = 1, iVar11 = SVECTOR_1f800210._0_4_,
+					SVECTOR_1f800210._0_4_ <= switch_detail_distance >> 1)) {
 				local_38 = 1;
 			}
 			else {
-				v1 = *puVar25;
-				DrawBodySprite(boneId, v1, puVar25[1], *piVar23, piVar23[1]);
+				v1 = *(uint *)pSVar24;
+				DrawBodySprite(boneId, v1, *(long *)&pSVar24->vz, *(int *)pSVar22, *(int *)&pSVar22->vz)
+					;
 			}
-			puVar25 = puVar25 + 2;
-			piVar23 = piVar23 + 2;
-			iVar6 = iVar6 + -1;
-			piVar26 = (int *)((uint *)piVar26 + 1);
-			puVar7 = puVar24;
-		} while (-1 < iVar6);
+			pSVar24 = pSVar24 + 1;
+			pSVar22 = pSVar22 + 1;
+			iVar7 = iVar7 + -1;
+			piVar25 = (int *)((uint *)piVar25 + 1);
+			pMVar20 = pMVar23;
+		} while (-1 < iVar7);
 		if (local_38 != 0) {
 			bAllreadyRotated = 0;
 			DoCivHead((SVECTOR *)&DAT_1f8000b8, (SVECTOR *)&DAT_1f8000b0);
-			local_40 = 0;
-			local_50.pad = 0;
+			uStack64 = 0;
+			ppos.pad = 0;
 			setCopControlWord(2, 0x2800, 0);
 			setCopControlWord(2, 0x3000, 0);
 			setCopControlWord(2, 0x3800, 0);
 		}
-		local_50.vx = (pPed->position).vx;
-		local_50.vy = (pPed->position).vy;
-		local_50.vz = (pPed->position).vz;
+		ppos.vx = (pPed->position).vx;
+		ppos.vy = (pPed->position).vy;
+		ppos.vz = (pPed->position).vz;
 		boneId = (uint)(byte)pPed->frame1 & 0xf;
 		uVar13 = boneId * 2;
-		iVar27 = MapHeight(local_30);
-		local_58[0].b = '(';
-		local_58[0].g = '(';
-		local_58[0].r = '(';
-		local_50.vx = local_50.vx - camera_position.vx;
-		local_50.vy = (10 - iVar27) - camera_position.vy;
-		local_50.vz = local_50.vz - camera_position.vz;
+		iVar26 = MapHeight(local_30);
+		cv.b = '(';
+		cv.g = '(';
+		cv.r = '(';
+		ppos.vx = ppos.vx - camera_position.vx;
+		ppos.vy = (10 - iVar26) - camera_position.vy;
+		ppos.vz = ppos.vz - camera_position.vz;
 		if (uVar13 < 8) {
 			size = (short)uVar13 + 0x50;
 		}
@@ -2032,8 +2082,7 @@ void DrawCiv(PEDESTRIAN *pPed)
 			size = (short)boneId * -2 + 0x70;
 		}
 		RoundShadow(local_30, local_34, size);
-	}
-	return;*/
+	}*/
 }
 
 
@@ -2120,125 +2169,79 @@ void SetSkelModelPointers(int type)
 	/* end block 2 */
 	// End Line: 5130
 
+int iCurrBone = 0;
+
+
 void DrawTanner(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	int iVar2;
-	uint uVar3;
-	int i;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	VECTOR local_70;
-	CVECTOR local_60[2];
-	undefined4 local_58;
-	undefined4 local_54;
-	undefined4 local_50;
-	undefined4 local_4c;
-	undefined4 local_48;
-	undefined4 local_44;
-	undefined4 local_40;
-	undefined4 local_3c;
-	short local_38;
-	undefined2 local_36;
-	undefined2 local_34;
-	short local_32;
-	short local_30;
-	short local_2e;
-	short local_2c;
-	short local_2a;
-	short local_28;
-	int local_24;
-	int local_20;
-	int local_1c;
+	int iVar1;
+	VECTOR v;
+	CVECTOR cV;
+	MATRIX mRotStore;
+	MATRIX iMatrix;
 
 	bDoingShadow = 0;
-	local_58 = getCopControlWord(2, 0);
-	local_54 = getCopControlWord(2, 0x800);
-	local_50 = getCopControlWord(2, 0x1000);
-	local_4c = getCopControlWord(2, 0x1800);
-	local_48 = getCopControlWord(2, 0x2000);
-	local_44 = getCopControlWord(2, 0x2800);
-	local_40 = getCopControlWord(2, 0x3000);
-	local_3c = getCopControlWord(2, 0x3800);
+
+	gte_ReadRotMatrix(&mRotStore);
+	gte_sttr(mRotStore.t);
+
 	pDrawingPed = pPed;
+
 	SetupTannerSkeleton();
-	if (pPed->pedType == OTHER_MODEL) {
-		BONE_000a09cc.pModel = &PTR_000d95bc;
-		BONE_000a0a54.pModel = &PTR_000d95c0;
-		BONE_000a0944.pModel = &pmJerichoModels6;
-		BONE_000a0a98.pModel = &PTR_000d95c4;
-		BONE_000a0b64.pModel = &PTR_000d95c8;
-		BONE_000a0ba8.pModel = &PTR_000d95cc;
-		BONE_000a0c74.pModel = (MODEL **)0x0;
+
+	if (pPed->pedType == OTHER_MODEL) 
+	{
+		Skel[4].pModel = pmJerichoModels;
+		Skel[6].pModel = pmJerichoModels + 2;
+		Skel[2].pModel = pmJerichoModels;
+		Skel[7].pModel = pmJerichoModels + 3;
+		Skel[10].pModel = pmJerichoModels + 4;
+		Skel[11].pModel = pmJerichoModels + 5;
+		Skel[14].pModel = NULL;
 	}
-	else {
-		BONE_000a09cc.pModel = &PTR_000d96e4;
-		BONE_000a0a54.pModel = &PTR_000d9700;
-		BONE_000a0a98.pModel = &PTR_000d9704;
-		BONE_000a0944.pModel = &pmTannerModels17;
-		BONE_000a0b64.pModel = &PTR_000d96e8;
-		BONE_000a0ba8.pModel = &PTR_000d96ec;
-		BONE_000a0c74.pModel = &PTR_000d971c;
+	else 
+	{
+		Skel[4].pModel = pmTannerModels;
+		Skel[6].pModel = pmTannerModels + 8;
+		Skel[7].pModel = pmTannerModels + 9;
+		Skel[2].pModel = pmTannerModels;
+		Skel[10].pModel = pmTannerModels + 2;
+		Skel[11].pModel = pmTannerModels + 3;
+		Skel[14].pModel = pmTannerModels + 0xf;
 	}
-	uVar3 = (uint)(ushort)(pPed->dir).vy & 0xfff;
-	uVar1 = (uint)(ushort)(pPed->dir).vz & 0xfff;
-	iVar2 = (int)rcossin_tbl[uVar3 * 2 + 1];
-	local_32 = rcossin_tbl[uVar1 * 2];
-	iVar9 = (int)local_32;
-	iVar8 = (int)rcossin_tbl[uVar1 * 2 + 1];
-	uVar1 = (uint)(ushort)(pPed->dir).vx & 0xfff;
-	i = (int)rcossin_tbl[uVar1 * 2 + 1];
-	iVar6 = (int)rcossin_tbl[uVar3 * 2];
-	iVar5 = (int)rcossin_tbl[uVar1 * 2];
-	iVar7 = (i * iVar6 + 0x800 >> 0xc) + ((iVar2 * iVar5 + 0x800 >> 0xc) * iVar9 + 0x800 >> 0xc);
-	local_38 = (short)(iVar2 * iVar8 + 0x800 >> 0xc);
-	local_2e = -(short)(iVar8 * iVar5 + 0x800 >> 0xc);
-	local_24 = (int)(Skel.pvOrigPos)->vx;
-	local_20 = (int)(Skel.pvOrigPos)->vy;
-	local_1c = (int)(Skel.pvOrigPos)->vz;
-	local_30 = (short)(i * iVar8 + 0x800 >> 0xc);
-	iVar2 = (-i * (iVar2 * iVar9 + 0x800 >> 0xc) + 0x800 >> 0xc) + (iVar5 * iVar6 + 0x800 >> 0xc);
-	local_36 = (undefined2)iVar2;
-	local_34 = (undefined2)iVar7;
-	local_2c = -(short)(iVar6 * iVar8 + 0x800 >> 0xc);
-	local_2a = (short)((iVar7 * 0x10000 >> 0x10) * iVar9 + 0x800 >> 0xc) -
-		(short)((int)local_38 * (int)local_2e + 0x800 >> 0xc);
-	local_28 = (short)((int)local_38 * (int)local_30 + 0x800 >> 0xc) -
-		(short)((iVar2 * 0x10000 >> 0x10) * iVar9 + 0x800 >> 0xc);
-	newRotateBones(&BONE_000a0900);
-	setCopControlWord(2, 0, local_58);
-	setCopControlWord(2, 0x800, local_54);
-	setCopControlWord(2, 0x1000, local_50);
-	setCopControlWord(2, 0x1800, local_4c);
-	setCopControlWord(2, 0x2000, local_48);
+
+	Skel[4].pModel = Skel[4].pModel + 1;
+	newRotateBones(Skel + 1);
+
+	gte_SetRotMatrix(&mRotStore);
+	gte_SetTransMatrix(&mRotStore);
+
 	iCurrBone = 0;
 	newShowTanner();
-	local_70.vx = ((pPed->position).vx - camera_position.vx) + (int)(Skel.pvOrigPos)->vx;
-	local_70.vz = ((pPed->position).vz - camera_position.vz) + (int)(Skel.pvOrigPos)->vz;
-	local_70.vy = MapHeight((VECTOR *)&pPed->position);
+
+	v.vx = (pPed->position.vx - camera_position.vx) + Skel[0].pvOrigPos->vx;
+	v.vz = (pPed->position.vz - camera_position.vz) + Skel[0].pvOrigPos->vz;
+
 	bDoingShadow = 1;
-	local_70.vy = -camera_position.vy - local_70.vy;
-	if (pPed->padId == '\0') {
-		if (gTimeOfDay == 3) {
-			local_60[0].b = '\f';
-			local_60[0].g = '\f';
-			local_60[0].r = '\f';
-			TannerShadow(&local_70, moon_position + GameLevel, local_60, (pPed->dir).vy);
+	v.vy = -camera_position.vy - MapHeight((VECTOR *)&pPed->position);
+
+	if (pPed->padId == '\0') 
+	{
+		if (gTimeOfDay == 3)
+		{
+			cV.b = 12;
+			cV.g = 12;
+			cV.r = 12;
+			TannerShadow(&v, moon_position + GameLevel, &cV, (pPed->dir).vy);
 		}
 		else {
-			local_60[0].b = ' ';
-			local_60[0].g = ' ';
-			local_60[0].r = ' ';
-			TannerShadow(&local_70, sun_position + GameLevel, local_60, (pPed->dir).vy);
+			cV.b = ' ';
+			cV.g = ' ';
+			cV.r = ' ';
+			TannerShadow(&v, sun_position + GameLevel, &cV, (pPed->dir).vy);
 		}
 	}
 	bDoingShadow = 0;
-	return;*/
 }
 
 
