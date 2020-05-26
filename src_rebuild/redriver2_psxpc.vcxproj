@@ -98,7 +98,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;SIMPLE_SPOOL;USE_CRT_MALLOC;PGXP;COLLISION_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;SIMPLE_SPOOL;USE_CRT_MALLOC;PGXP;COLLISION_DEBUG;NTSC_VERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./;EMULATOR;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -133,7 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;PGXP;DEBUG_OPTIONS;SIMPLE_SPOOL;USE_CRT_MALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;GLEW;OGL;USE_32_BIT_ADDR;PGXP;DEBUG_OPTIONS;SIMPLE_SPOOL;USE_CRT_MALLOC;NTSC_VERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <CompileAs>CompileAsCpp</CompileAs>
       <AdditionalIncludeDirectories>./;EMULATOR;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

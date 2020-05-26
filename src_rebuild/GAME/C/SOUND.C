@@ -99,7 +99,7 @@ void InitSound(void)
 
 	ResetSound();
 
-	XM_OnceOffInit(0);	// [A] PAL or NTSC here
+	XM_OnceOffInit(GetVideoMode());	// [A] PAL or NTSC here
 
 	SetMasterVolume(gMasterVolume);
 	VSyncCallback(VsyncProc);

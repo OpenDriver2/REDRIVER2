@@ -54,11 +54,20 @@ int VSyncCallback(void(*f)(void))
 
 long GetVideoMode(void)
 {
+#ifdef NTSC_VERSION
 	return MODE_NTSC;
+#else
+	return MODE_PAL;
+#endif
 }
 
 long SetVideoMode(long mode)
 {
 	UNIMPLEMENTED();
+
+#ifdef NTSC_VERSION
 	return MODE_NTSC;
+#else
+	return MODE_PAL;
+#endif
 }

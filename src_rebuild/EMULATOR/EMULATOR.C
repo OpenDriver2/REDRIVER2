@@ -18,14 +18,13 @@
 #endif
 #include <assert.h>
 
-#define FIXED_TIME_STEP    16
-#define SWAP_INTERVAL      1
-
 #if defined(NTSC_VERSION)
-#define COUNTER_UPDATE_INTERVAL (263)
+#define FIXED_TIME_STEP    16		// 16.6667	= 60 FPS
 #else
-#define COUNTER_UPDATE_INTERVAL (313)
+#define FIXED_TIME_STEP    20		// 20.0		= 50 FPS
 #endif
+
+#define SWAP_INTERVAL      1
 
 #include <stdio.h>
 #include <string.h>
@@ -318,7 +317,6 @@ static int Emulator_InitialiseGLEW()
 SDL_Thread* g_vblankThread = NULL;
 SDL_mutex* g_vblankMutex = NULL;
 volatile bool g_stopVblank = false;
-volatile int g_vblankTime = 0;
 volatile int g_vblanksDone = 0;
 volatile int g_lastVblankCnt = 0;
 
@@ -364,9 +362,11 @@ int Emulator_DoVSyncCallback()
 
 int vblankThreadMain(void* data)
 {
+	int vblankTime = SDL_GetTicks();
+
 	do
 	{
-		int delta = g_vblankTime + FIXED_TIME_STEP - SDL_GetTicks();
+		int delta = vblankTime + FIXED_TIME_STEP - SDL_GetTicks();
 
 		if (delta < 0)
 		{
@@ -374,7 +374,7 @@ int vblankThreadMain(void* data)
 			SDL_LockMutex(g_vblankMutex);
 
 			g_vblanksDone++;
-			g_vblankTime = SDL_GetTicks();
+			vblankTime = SDL_GetTicks();
 
 			SDL_UnlockMutex(g_vblankMutex);
 		}
@@ -399,8 +399,6 @@ static int Emulator_InitialiseCore()
 		eprintf("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return FALSE;
 	}
-
-	g_vblankTime = SDL_GetTicks();
 
 	return TRUE;
 }
@@ -438,45 +436,11 @@ void Emulator_Initialise(char* windowName, int width, int height)
 	}
 
 	g_swapTime = SDL_GetTicks() - FIXED_TIME_STEP;
-
-	//counter_thread = std::thread(Emulator_CounterLoop);
 }
 
 void Emulator_GetScreenSize(int& screenWidth, int& screenHeight)
 {
 	SDL_GetWindowSize(g_window, &screenWidth, &screenHeight);
-}
-
-void Emulator_CounterLoop()
-{
-	static int numUpdates = 0;
-	int last_time = 0;
-
-	while (TRUE)
-	{
-		int now = SDL_GetTicks();
-
-		if (now > last_time + 1000)
-		{
-			numUpdates = 0;
-			last_time = now;
-		}
-
-		if (numUpdates++ <= 60)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				//if (!counters[i].IsStopped)
-				{
-					counters[i].cycle += COUNTER_UPDATE_INTERVAL;
-					if (counters[i].target > 0)
-					{
-						counters[i].cycle %= counters[i].target;
-					}
-				}
-			}
-		}
-	}
 }
 
 void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
