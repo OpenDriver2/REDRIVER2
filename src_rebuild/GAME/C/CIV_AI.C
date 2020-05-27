@@ -44,6 +44,8 @@ int testNumPingedOut = 0;
 int currentAngle = 0;
 int closeEncounter = 3;
 
+char junctionLightsPhase[2] = { 0 };
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ InitCar(struct _CAR_DATA *cp /*$s0*/, int direction /*$s6*/, long (*startPos)[4] /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)
@@ -2873,76 +2875,78 @@ int CreateNewNode(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 4218
 
+// [D]
 int InitCivState(_CAR_DATA *cp, char *extraData)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
+	int uVar1;
 	long lVar2;
 	int iVar3;
-	uint *puVar4;
 
-	puVar4 = (uint *)cp->ai;
-	cp->controlType = '\x02';
-	if (extraData == (char *)0x0) {
-		cp->ai[0xf9] = 0;
-	}
-	else {
-		cp->ai[0xf9] = extraData[0xc];
-	}
-	if (cp->ai[0xf9] == 3) {
+	CIV_STATE* cs = &cp->ai.c;
+
+	cp->controlType = 2;
+
+	if (extraData == NULL)
+		cp->ai.c.thrustState = 0;
+	else
+		cp->ai.c.thrustState = extraData[0xc];
+
+	if (cp->ai.c.thrustState == 3) 
+	{
 	LAB_000282b4:
-		if (extraData == (char *)0x0) {
-			cp->ai[0xc] = 0;
-		}
-		else {
-			cp->ai[0xc] = extraData[10];
-		}
+		if (extraData == NULL)
+			cp->ai.c.ctrlState = 0;
+		else
+			cp->ai.c.ctrlState = extraData[10];
+
 		iVar3 = 1;
 	}
-	else {
-		if (extraData == (char *)0x0) {
-			uVar1 = GetSurfaceIndex((VECTOR *)(cp->hd).where.t);
-			*puVar4 = uVar1;
-		}
-		else {
-			*puVar4 = *(uint *)extraData;
-		}
-		uVar1 = *puVar4;
-		if (-1 < (int)uVar1) {
-			*(undefined4 *)(cp->ai + 4) = 0;
-			*(undefined4 *)(cp->ai + 0xf4) = 0;
-			*(undefined4 *)(cp->ai + 8) = 0;
-			*(undefined4 *)(cp->ai + 0x14) = 0xffffffff;
-			if (((((uVar1 & 0xffffe000) == 0) && ((int)(uVar1 & 0x1fff) < NumDriver2Straights)) ||
-				(((uVar1 & 0xffffe000) == 0x4000 && ((int)(uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-				(uVar1 = *puVar4, -1 < (int)uVar1)) {
-				if (cp->ai[0xf9] != 3) {
-					if (((uVar1 & 0xffffe000) == 0) && ((int)(uVar1 & 0x1fff) < NumDriver2Straights)) {
-						cp->ai[0xf8] = speedLimits[(uint)((byte)Driver2StraightsPtr[uVar1].NumLanes >> 4) & 3];
-					}
-					else {
-						cp->ai[0xf8] = speedLimits
-							[(uint)((byte)Driver2CurvesPtr[uVar1 - 0x4000].NumLanes >> 4) & 3];
-					}
+	else 
+	{
+		if (extraData == NULL) 
+			cs->currentRoad = GetSurfaceIndex((VECTOR *)(cp->hd).where.t);
+		else 
+			cs->currentRoad = *(uint *)extraData;
+
+		uVar1 = cs->currentRoad;
+
+		if (uVar1 > -1) 
+		{
+			cp->ai.c.currentNode = 0;
+			cp->ai.c.pnode = NULL;
+			cp->ai.c.ctrlNode = NULL;
+			cp->ai.c.turnNode = -1;
+
+			if (((((uVar1 & 0xffffe000) == 0) && ((uVar1 & 0x1fff) < NumDriver2Straights)) ||
+				(((uVar1 & 0xffffe000) == 0x4000 && ((uVar1 & 0x1fff) < NumDriver2Curves)))) &&
+				(uVar1 = cs->currentRoad, -1 < uVar1))
+			{
+				if (cp->ai.c.thrustState != 3) 
+				{
+					if (((uVar1 & 0xffffe000) == 0) && ((uVar1 & 0x1fff) < NumDriver2Straights))
+						cp->ai.c.maxSpeed = speedLimits[(Driver2StraightsPtr[uVar1].NumLanes >> 4) & 3];
+					else
+						cp->ai.c.maxSpeed = speedLimits[(Driver2CurvesPtr[uVar1 - 0x4000].NumLanes >> 4)& 3];
+	
 					InitNodeList(cp, extraData);
-					*(byte **)(cp->ai + 0xf4) = cp->ai + 0x24;
-					lVar2 = *(long *)(cp->ai + 0x30);
-					(cp->hd).where.t[0] = *(long *)(cp->ai + 0x2c);
-					(cp->hd).where.t[2] = lVar2;
-					if (cp->ai[0xf9] != 3) {
+
+					cp->ai.c.pnode = &cp->ai.c.targetRoute[0];
+					cp->hd.where.t[0] = cp->ai.c.pnode->x;
+					cp->hd.where.t[2] = cp->ai.c.pnode->z;
+
+					if (cp->ai.c.thrustState != 3)
 						return 1;
-					}
+
 				}
 				goto LAB_000282b4;
 			}
 		}
+
 		iVar3 = 0;
-		cp->ai[0xf9] = 3;
-		cp->ai[0xc] = 7;
+		cp->ai.c.thrustState = 3;
+		cp->ai.c.ctrlState = 7;
 	}
-	return iVar3;*/
+	return iVar3;
 }
 
 
@@ -3285,18 +3289,11 @@ LAB_00028694:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetUpTrafficLightPhase(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-
-	iVar1 = TrafficLightCycle(0);
-	junctionLightsPhase = (char)iVar1;
-	iVar1 = TrafficLightCycle(1);
-	CHAR_00h_000aab91 = (char)iVar1;
-	return;
-	*/
+	junctionLightsPhase[0] = TrafficLightCycle(0);
+	junctionLightsPhase[1] = TrafficLightCycle(1);
 }
 
 
@@ -3324,35 +3321,39 @@ void SetUpTrafficLightPhase(void)
 	/* end block 3 */
 	// End Line: 7648
 
+// [D]
 int TrafficLightCycle(int exit)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	int iVar2;
-	uint uVar3;
+	int uVar3;
 
 	uVar3 = CameraCnt - frameStart & 0x1ff;
-	if ((exit == 0) || (exit == 2)) {
+
+	if (exit == 0 || exit == 2)
+	{
 		bVar1 = uVar3 < 0x100;
 		uVar3 = uVar3 - 0x100;
-		if (bVar1) {
+
+		if (bVar1)
 			return 1;
-		}
-		bVar1 = (int)uVar3 < 0x96;
-	}
-	else {
+
 		bVar1 = uVar3 < 0x96;
-		if (0xff < uVar3) {
+	}
+	else 
+	{
+		bVar1 = uVar3 < 0x96;
+
+		if (0xff < uVar3)
 			return 1;
-		}
 	}
+
 	iVar2 = 3;
-	if ((!bVar1) && (iVar2 = 2, 199 < (int)uVar3)) {
+
+	if ((!bVar1) && (iVar2 = 2, 199 < uVar3))
 		return 1;
-	}
-	return iVar2;*/
+
+	return iVar2;
 }
 
 
@@ -4844,13 +4845,18 @@ int CivControl(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 6400
 
+int sideMul = 10;
+int collDat = 0;
+int carnum = 0;
+int newAccel = 2000;
+
+
+#define NODE_VALID(n) ((char*)(n) > (char*)car_data && (char*)(n) < (char*)&car_data[21])
+
 int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	short sVar1;
-	byte bVar2;
+	unsigned char bVar2;
 	CAR_COSMETICS *pCVar3;
 	uint uVar4;
 	int iVar5;
@@ -4860,185 +4866,214 @@ int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 	int iVar9;
 	int iVar10;
 
-	pCVar3 = (cp->ap).carCos;
-	iVar10 = (int)(pCVar3->colBox).vz;
+	pCVar3 = cp->ap.carCos;
+	iVar10 = (pCVar3->colBox).vz;
 	sVar1 = (pCVar3->colBox).vx;
-	if ((cp->id == '\x01') && (cp->ai[0xfa] == 1)) {
-		cp->ai[0xf9] = 3;
-		cp->ai[0xc] = 9;
-		cp->ai[0xfa] = 0;
+
+	if (cp->id == 1 && (cp->ai.c.carMustDie == 1))
+	{
+		cp->ai.c.thrustState = 3;
+		cp->ai.c.ctrlState = 9;
+		cp->ai.c.carMustDie = 0;
 	}
-	switch (cp->ai[0xf9]) {
-	case 0:
-		break;
-	case 1:
-		if ((cp->ai[0xc] == 5) || (cp->ai[0xc] == 8)) {
-			iVar10 = 100;
-		}
-		else {
-			iVar10 = iVar10 * 3;
-		}
-		cp->ai[0x10] = 1;
-		if ((*(int *)(cp->ai + 8) != 0) && (*(short *)(*(int *)(cp->ai + 8) + 2) != 0x7f)) {
-			bVar2 = cp->ai[0xc];
-			if ((bVar2 == 1) && ((&junctionLightsPhase)[cp->ai[0xd]] == '\x03')) {
-			LAB_0002a8b4:
-				cp->ai[0xf9] = 0;
+
+	switch (cp->ai.c.thrustState)
+	{
+		case 0:
+			cp->ai.c.brakeLight = 0;
+
+			if (cp->ai.c.ctrlNode == NULL)
+				goto LAB_0002a800;
+
+			iVar5 = (cp->hd).wheel_speed;
+			iVar9 = (iVar5 * (iVar5 + 0x800 >> 0xc)) / (newAccel << 1);
+
+			if (iVar9 < 0)
+				iVar9 = -iVar9;
+
+			if (!NODE_VALID(cp->ai.c.ctrlNode))		// [A] Weird.
+				goto LAB_0002a670;
+
+			iVar6 = *distToNode;
+			if (iVar9 <= iVar6) goto LAB_0002a800;
+			iVar5 = iVar5 + -120000;
+			iVar9 = iVar6 - iVar10 * 3;
+			if (iVar9 < 0)
+			{
+				if (2 < iVar10 * 3 - iVar6) 
+					goto LAB_0002a7d4;
+			LAB_0002a7f8:
+				cp->ai.c.velRatio = iVar5;
+			}
+			else 
+			{
+				if (2 < iVar9) 
+				{
+				LAB_0002a7d4:
+					iVar6 = iVar6 + iVar10 * -3;
+					iVar5 = iVar5 / iVar6;
+					goto LAB_0002a7f8;
+				}
+				cp->ai.c.velRatio = iVar5;
+			}
+			cp->ai.c.thrustState = 1;
+		LAB_0002a800:
+			if (cp->hd.wheel_speed + 0x800 >> 0xc > cp->ai.c.maxSpeed)
+			{
 				iVar10 = newAccel;
-				*(undefined4 *)(cp->ai + 8) = 0;
-				return iVar10;
+				return iVar10 >> 2;
 			}
-			iVar9 = *distToNode;
-			if (iVar9 < iVar10) {
-				if (bVar2 == 6) goto LAB_0002a8b4;
-				iVar9 = (cp->hd).wheel_speed;
-				iVar10 = -iVar9;
-				if (0 < iVar9) {
-					iVar10 = iVar10 + 3;
+			return newAccel;
+		case 1:
+			if (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 8)
+				iVar10 = 100;
+			else
+				iVar10 = iVar10 * 3;
+
+			cp->ai.c.brakeLight = 1;
+
+			if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 0x7f)
+			{
+				bVar2 = cp->ai.c.ctrlState;
+				if ((bVar2 == 1) && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+				{
+				LAB_0002a8b4:
+					cp->ai.c.thrustState = 0;
+					cp->ai.c.ctrlNode = NULL;
+					iVar10 = newAccel;
+					return iVar10;
 				}
-				iVar10 = iVar10 >> 2;
-				cp->ai[0xf9] = 3;
-			}
-			else {
-				if (bVar2 == 6) {
-					iVar10 = (iVar9 - iVar10) * *(int *)(cp->ai + 0x20) + 70000;
+				iVar9 = *distToNode;
+				if (iVar9 < iVar10) 
+				{
+					if (bVar2 == 6)
+						goto LAB_0002a8b4;
+
+					iVar9 = (cp->hd).wheel_speed;
+					iVar10 = -iVar9;
+					iVar10 = iVar10 >> 2;
+
+					cp->ai.c.thrustState = 3;
 				}
-				else {
-					if (iVar10 < iVar9) {
-						iVar10 = *(int *)(cp->ai + 0x20) * ((iVar9 - iVar10) + 100);
+				else 
+				{
+					if (bVar2 == 6)
+					{
+						iVar10 = (iVar9 - iVar10) * cp->ai.c.velRatio + 70000;
 					}
-					else {
+					else if (iVar10 < iVar9) 
+					{
+						iVar10 = cp->ai.c.velRatio * ((iVar9 - iVar10) + 100);
+					}
+					else
+					{
 						iVar10 = 0;
 					}
+
+					iVar10 = ((iVar10 - (cp->hd).wheel_speed) * newAccel) / 0xf;
 				}
-				iVar10 = ((iVar10 - (cp->hd).wheel_speed) * newAccel) / 0xf;
-			}
-			if ((car_data < *(_CAR_DATA **)(cp->ai + 8)) &&
-				(*(_CAR_DATA **)(cp->ai + 8) < (_CAR_DATA *)0xd4934)) {
-				iVar9 = newAccel;
-				if ((iVar10 <= newAccel) && (iVar9 = iVar10, iVar10 < newAccel * -2)) {
-					iVar9 = newAccel * -2;
+
+				if (NODE_VALID(cp->ai.c.ctrlNode))	// [A] Weird.
+				{
+					iVar9 = newAccel;
+
+					if ((iVar10 <= newAccel) && (iVar9 = iVar10, iVar10 < newAccel * -2)) 
+						iVar9 = newAccel * -2;
+
+					return iVar9;
 				}
-				return iVar9;
 			}
-		}
-	default:
-	LAB_0002a670:
-		cp->ai[0xf9] = 3;
-		cp->ai[0xc] = 7;
-		return 0;
-	case 3:
-		switch (cp->ai[0xc]) {
-		case 1:
-			if ((&junctionLightsPhase)[cp->ai[0xd]] == '\x03') {
-				cp->ai[0xf9] = 0;
-			}
-		case 2:
-			cp->ai[0x10] = 1;
+		default:
+		LAB_0002a670:
+			cp->ai.c.thrustState = 3;
+			cp->ai.c.ctrlState = 7;
 			return 0;
 		case 3:
-			bVar2 = 5;
+			break;
+		case 5:
+		case 6:
+			cp->ai.c.brakeLight = 1;
+			iVar10 = 0x200;
+
+			if (cp->ai.c.ctrlState == 4)
+				iVar10 = 0x800;
+
+			p_Var8 = car_data + 19;
+			uVar4 = cp->hd.direction & 0xfff;
+
+			iVar9 = 0x7fffff;
+
+			if (true) 
+			{
+				do {
+					if (((p_Var8->ai.c.thrustState != 3) && (p_Var8 != cp)) && (p_Var8->controlType != 0)) 
+					{
+						iVar7 = (p_Var8->hd).where.t[0] - (cp->hd).where.t[0];
+						iVar6 = (p_Var8->hd).where.t[2] - (cp->hd).where.t[2];
+
+						iVar5 = iVar7 * rcossin_tbl[uVar4 * 2] + iVar6 * rcossin_tbl[uVar4 * 2 + 1] + 0x800 >> 0xc;
+
+						if (0 < iVar5)
+						{
+							iVar6 = (iVar7 * rcossin_tbl[uVar4 * 2 + 1] - iVar6 * rcossin_tbl[uVar4 * 2]) + 0x800 >> 0xc;
+							if (iVar6 < 0)
+								iVar6 = -iVar6;
+
+							if ((iVar6 < sVar1 * sideMul * 6) && (iVar5 < iVar9))
+								iVar9 = iVar5;
+						}
+					}
+					p_Var8--;
+				} while (p_Var8 >= car_data);
+			}
+
+			if (iVar9 <= iVar10) 
+			{
+				iVar9 = cp->hd.wheel_speed;
+				iVar10 = -iVar9;
+
+				iVar10 = iVar10 >> 2;
+				iVar9 = newAccel;
+
+				if ((iVar10 <= newAccel) && (iVar9 = iVar10, iVar10 < newAccel * -2)) 
+				{
+					iVar9 = newAccel * -2;
+				}
+
+				return iVar9;
+			}
+			cp->ai.c.ctrlState = 0;
+			cp->ai.c.thrustState = 0;
+			iVar10 = newAccel;
+			cp->ai.c.ctrlNode = 0;
+			return iVar10;
+	}
+
+	switch (cp->ai.c.ctrlState)
+	{
+		case 1:
+			if (junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+				cp->ai.c.thrustState = 0;
+
+			cp->ai.c.brakeLight = 1;
+		case 2:
+			cp->ai.c.brakeLight = 1;
+			return 0;
+		case 3:
+			cp->ai.c.thrustState = 5;
+			cp->ai.c.brakeLight = 1;
 			break;
 		case 4:
-			bVar2 = 6;
+			cp->ai.c.thrustState = 6;
+			cp->ai.c.brakeLight = 1;
 			break;
 		default:
-			cp->ai[0x10] = 0;
-			return 0;
-		}
-		cp->ai[0xf9] = bVar2;
-		cp->ai[0x10] = 1;
-		return 0;
-	case 5:
-	case 6:
-		cp->ai[0x10] = 1;
-		iVar10 = 0x200;
-		if (cp->ai[0xc] == 4) {
-			iVar10 = 0x800;
-		}
-		p_Var8 = car_data + 0x13;
-		uVar4 = (cp->hd).direction & 0xfff;
-		iVar9 = 0x7fffff;
-		do {
-			if (((p_Var8->ai[0xf9] != 3) && (p_Var8 != cp)) && (p_Var8->controlType != '\0')) {
-				iVar7 = (p_Var8->hd).where.t[0] - (cp->hd).where.t[0];
-				iVar6 = (p_Var8->hd).where.t[2] - (cp->hd).where.t[2];
-				iVar5 = iVar7 * rcossin_tbl[uVar4 * 2] + iVar6 * rcossin_tbl[uVar4 * 2 + 1] + 0x800 >> 0xc;
-				if (0 < iVar5) {
-					iVar6 = (iVar7 * rcossin_tbl[uVar4 * 2 + 1] - iVar6 * rcossin_tbl[uVar4 * 2]) + 0x800 >>
-						0xc;
-					if (iVar6 < 0) {
-						iVar6 = -iVar6;
-					}
-					if ((iVar6 < (int)sVar1 * sideMul * 6) && (iVar5 < iVar9)) {
-						iVar9 = iVar5;
-					}
-				}
-			}
-			p_Var8 = p_Var8 + -1;
-		} while ((_CAR_DATA *)((int)&cheats.MagicMirror + 3U) < p_Var8);
-		if (iVar10 < iVar9) {
-			cp->ai[0xc] = 0;
-			cp->ai[0xf9] = 0;
-			iVar10 = newAccel;
-			*(undefined4 *)(cp->ai + 8) = 0;
-			return iVar10;
-		}
-		iVar9 = (cp->hd).wheel_speed;
-		iVar10 = -iVar9;
-		if (0 < iVar9) {
-			iVar10 = iVar10 + 3;
-		}
-		iVar10 = iVar10 >> 2;
-		iVar9 = newAccel;
-		if ((iVar10 <= newAccel) && (iVar9 = iVar10, iVar10 < newAccel * -2)) {
-			iVar9 = newAccel * -2;
-		}
-		return iVar9;
+			cp->ai.c.brakeLight = 0;
 	}
-	uVar4 = *(uint *)(cp->ai + 8);
-	cp->ai[0x10] = 0;
-	if (uVar4 == 0) goto LAB_0002a800;
-	iVar5 = (cp->hd).wheel_speed;
-	iVar9 = (iVar5 * (iVar5 + 0x800 >> 0xc)) / (newAccel << 1);
-	if (newAccel << 1 == 0) {
-		trap(7);
-	}
-	if (iVar9 < 0) {
-		iVar9 = -iVar9;
-	}
-	if ((uVar4 < 0xd1269) || (0xd4933 < uVar4)) goto LAB_0002a670;
-	iVar6 = *distToNode;
-	if (iVar9 <= iVar6) goto LAB_0002a800;
-	iVar5 = iVar5 + -120000;
-	iVar9 = iVar6 + iVar10 * -3;
-	if (iVar9 < 0) {
-		if (2 < iVar10 * 3 - iVar6) goto LAB_0002a7d4;
-	LAB_0002a7f8:
-		*(int *)(cp->ai + 0x20) = iVar5;
-	}
-	else {
-		if (2 < iVar9) {
-		LAB_0002a7d4:
-			iVar6 = iVar6 + iVar10 * -3;
-			iVar5 = iVar5 / iVar6;
-			if (iVar6 == 0) {
-				trap(7);
-			}
-			goto LAB_0002a7f8;
-		}
-		*(int *)(cp->ai + 0x20) = iVar5;
-	}
-	cp->ai[0xf9] = 1;
-LAB_0002a800:
-	if ((cp->hd).wheel_speed + 0x800 >> 0xc <= (int)(uint)cp->ai[0xf8]) {
-		return newAccel;
-	}
-	iVar10 = newAccel;
-	if (newAccel < 0) {
-		iVar10 = newAccel + 3;
-	}
-	return iVar10 >> 2;*/
+
+	
+
+	return 0;
 }
 
 
@@ -5486,11 +5521,6 @@ void SetUpCivCollFlags(void)
 	/* end block 5 */
 	// End Line: 7085
 
-int collDat = 0;
-int carnum = 0;
-
-int newAccel = 2000;
-
 // [D]
 int CivAccel(_CAR_DATA *cp)
 {
@@ -5536,14 +5566,15 @@ int CivAccel(_CAR_DATA *cp)
 
 			uVar6 = iVar5 - (iVar4 >> 0x1f) >> 1;
 
-			if (collDat < (uint)(iVar5 * 2)) 
+			if (collDat < (iVar5 * 2)) 
 			{
 				if (((iVar5 * 2) < collDat) && (uVar6 <= collDat)) 
 				{
 					uVar6 = uVar6 + iVar5 * -2;
 					iVar4 = ((collDat + iVar5 * -2) * -100) / uVar6 + 100;
 				}
-				else if ((uVar6 < collDat) && ((uint)(iVar1 >> 2) <= collDat)) {
+				else if ((uVar6 < collDat) && ((iVar1 >> 2) <= collDat))
+				{
 					uVar2 = (iVar1 >> 2) - uVar6;
 					iVar4 = ((collDat - uVar6) * -300) / uVar2 + 400;
 				}
