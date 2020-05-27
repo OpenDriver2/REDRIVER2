@@ -871,6 +871,7 @@ int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 
 char ReplayMode = 0;
 
+// [D]
 void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 {
 	REPLAY_PARAMETER_BLOCK *pRVar1;

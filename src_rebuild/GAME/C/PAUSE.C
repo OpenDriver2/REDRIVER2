@@ -435,8 +435,8 @@ int ShowPauseMenu(PAUSEMODE mode)
 	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry != 0) 
 	{
 		gScoreEntered = 0;
-		sprintf(EnterScoreText, "Please enter your score");
-		sprintf(EnterNameText, "Please enter your name:");
+		sprintf(EnterScoreText, "Enter scores");
+		sprintf(EnterNameText, "Your name:");
 	}
 	else
 	{

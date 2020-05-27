@@ -1,6 +1,12 @@
 #include "THISDUST.H"
 #include "FELONY.H"
 #include "STRINGS.H"
+#include "COP_AI.H"
+#include "PLAYERS.H"
+#include "CARS.H"
+#include "MISSION.H"
+#include "CONVERT.H"
+#include "GAMESND.H"
 
 short initialOccurrenceDelay[12] = { 0x18, 0, 0, 0, 0, 0, 0, 0, 0x18, 0, 0x18, 0 };
 short initialReccurrenceDelay[12] = { 0x80, 0, 0x80, 0x40, 0x40, 0x20, 0x20, 0, 0x80, 0x100 };
@@ -233,150 +239,117 @@ char GetCarDirectionOfTravel(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 953
 
+// [D]
 void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	char cVar2;
-	short *psVar3;
 	uint uVar4;
-	undefined3 extraout_var;
-	short *psVar5;
+	short *felony;
 	uint uVar6;
 	int phrase;
 	uint uVar7;
 
-	uVar6 = (uint)(byte)type;
-	if ((int)player.playerCarId < 0) {
-		psVar5 = &pedestrianFelony;
-	}
-	else {
-		psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	sVar1 = *psVar5;
-	if (pFelonyData->occurrenceDelay[uVar6].current <
-		(&pFelonyData->occurrenceDelay[uVar6].current)[1]) {
+	uVar6 = type;
+	if (player[0].playerCarId < 0)
+		felony = &pedestrianFelony;
+	else
+		felony = &car_data[player[0].playerCarId].felonyRating;
+
+	sVar1 = *felony;
+	if (pFelonyData->occurrenceDelay[uVar6].current < (&pFelonyData->occurrenceDelay[uVar6].current)[1])
 		return;
-	}
-	if ((CopsCanSeePlayer == 0) && (type != '\v')) {
+
+	if (CopsCanSeePlayer == 0 && (type != 11))
 		return;
-	}
-	if (pFelonyData->reoccurrenceDelay[uVar6].current != 0) {
+
+	if (pFelonyData->reoccurrenceDelay[uVar6].current != 0) 
 		return;
-	}
+
 	pFelonyData->reoccurrenceDelay[uVar6].current = pFelonyData->reoccurrenceDelay[uVar6].maximum;
-	if ((int)player.playerCarId < 0) {
-		psVar5 = &pedestrianFelony;
-	}
-	else {
-		psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	if (*psVar5 < 0x293) {
-		phrase = (int)(pFelonyData->occurrenceDelay + uVar6)[0x18].current;
-	}
-	else {
-		phrase = (int)(pFelonyData->occurrenceDelay + uVar6)[0x18].maximum *
-			pFelonyData->pursuitFelonyScale >> 0xc;
-	}
-	if ((int)player.playerCarId < 0) {
-		psVar5 = &pedestrianFelony;
-	}
-	else {
-		psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	if ((int)player.playerCarId < 0) {
-		psVar3 = &pedestrianFelony;
-	}
-	else {
-		psVar3 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	*psVar5 = *psVar3 + (short)(phrase * scale >> 0xc);
-	if ((int)player.playerCarId < 0) {
-		psVar5 = &pedestrianFelony;
-	}
-	else {
-		psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	if (0x1000 < *psVar5) {
-		if ((int)player.playerCarId < 0) {
-			psVar5 = &pedestrianFelony;
-		}
-		else {
-			psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		*psVar5 = 0x1000;
-	}
-	if (player.playerType == '\x02') {
-		if ((int)player.playerCarId < 0) {
-			psVar5 = &pedestrianFelony;
-		}
-		else {
-			psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		*psVar5 = 0;
-	}
-	if (numActiveCops == 0) goto switchD_0004c6a8_caseD_1;
+
+	if (*felony < 0x293)
+		phrase = (pFelonyData->occurrenceDelay + uVar6)[0x18].current;
+	else
+		phrase = (pFelonyData->occurrenceDelay + uVar6)[0x18].maximum * pFelonyData->pursuitFelonyScale >> 0xc;
+
+	*felony += (phrase * scale >> 0xc);
+
+	if (player[0].playerCarId < 0)
+		felony = &pedestrianFelony;
+	else
+		felony = &car_data[player[0].playerCarId].felonyRating;
+
+	if (0x1000 < *felony) 
+		*felony = 0x1000;
+
+	// KILL PEDESTRIA FELONY HERE
+	if (player[0].playerType == 2)
+		*felony = 0;
+
+	if (numActiveCops == 0) 
+		goto switchD_0004c6a8_caseD_1;
+
 	uVar4 = Random2(1);
 	uVar7 = uVar4 & 0xff;
-	cVar2 = GetCarDirectionOfTravel(car_data + player.playerCarId);
-	if (first_offence != '\0') goto switchD_0004c6a8_caseD_1;
-	switch (uVar6) {
-	case 1:
-	case 5:
-	case 6:
-	case 7:
-	case 0xb:
+	cVar2 = GetCarDirectionOfTravel(&car_data[player[0].playerCarId]);
+
+	if (first_offence != 0)
 		goto switchD_0004c6a8_caseD_1;
-	default:
-		if ((uVar7 - (((uint)((ulonglong)uVar7 * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + uVar7 / 0x11) &
-			0xff) == 0) {
-			phrase = MaxPlayerDamage * 3;
-			if (phrase < 0) {
-				phrase = phrase + 3;
-			}
-			if (phrase >> 2 < (int)(uint)car_data[player.playerCarId].totalDamage) {
-				uVar4 = uVar4 & 3;
-			}
-			else {
-				uVar4 = uVar7 - (((uint)((ulonglong)uVar7 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar7 / 3) &
-					0xff;
-			}
-			if (((uint)(byte)last_cop_phrase != uVar4) && (0 < TimeSinceLastSpeech)) {
-				if (uVar4 < 3) {
-					CopSay(uVar4 + 0xf, CONCAT31(extraout_var, cVar2));
+
+	switch (uVar6) 
+	{
+		case 1:
+		case 5:
+		case 6:
+		case 7:
+		case 0xb:
+			goto switchD_0004c6a8_caseD_1;
+		default:
+			if ((uVar7 - (((uint)((long long)uVar7 * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + uVar7 / 0x11) & 0xff) == 0) 
+			{
+				phrase = MaxPlayerDamage[0] * 3;
+
+				if (phrase >> 2 < car_data[player[0].playerCarId].totalDamage)
+					uVar4 = uVar4 & 3;
+				else 
+					uVar4 = uVar7 - (((uint)((long long)uVar7 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar7 / 3) & 0xff;
+
+				if (last_cop_phrase != uVar4 && 0 < TimeSinceLastSpeech) 
+				{
+					if (uVar4 < 3)
+						CopSay(uVar4 + 0xf, cVar2);
+					else
+						CopSay(6, 0);
+
+					last_cop_phrase = uVar4;
 				}
-				else {
-					CopSay(6, 0);
-				}
-				last_cop_phrase = (char)uVar4;
 			}
-		}
-		goto switchD_0004c6a8_caseD_1;
-	case 3:
-		phrase = 5;
-		if ((uVar4 & 3) != 0) goto switchD_0004c6a8_caseD_1;
-		break;
-	case 4:
-		if ((uVar7 - (((uint)((ulonglong)uVar7 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar7 / 3) & 0xff)
-			!= 0) goto switchD_0004c6a8_caseD_1;
-		phrase = (uVar4 & 1) + 7;
+			goto switchD_0004c6a8_caseD_1;
+		case 3:
+			phrase = 5;
+
+			if ((uVar4 & 3) != 0) 
+				goto switchD_0004c6a8_caseD_1;
+
+			break;
+		case 4:
+			if ((uVar7 - (((uint)((long long)uVar7 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar7 / 3) & 0xff) != 0) 
+				goto switchD_0004c6a8_caseD_1;
+
+			phrase = (uVar4 & 1) + 7;
 	}
 	CopSay(phrase, 0);
 switchD_0004c6a8_caseD_1:
-	if (sVar1 < 0x527) {
-		if ((int)player.playerCarId < 0) {
-			psVar5 = &pedestrianFelony;
-		}
-		else {
-			psVar5 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (0x526 < *psVar5) {
+
+	if (sVar1 < 0x527)
+	{
+		if (0x526 < *felony) 
+		{
 			uVar6 = Random2(0);
-			roadblockCount = (&roadblockDelayDiff)[gCopDifficultyLevel] + (uVar6 & 0xff);
+			roadblockCount = roadblockDelayDiff[gCopDifficultyLevel] + (uVar6 & 0xff);
 		}
 	}
-	return;*/
 }
 
 
@@ -411,101 +384,50 @@ switchD_0004c6a8_caseD_1:
 	/* end block 3 */
 	// End Line: 1243
 
+// [D]
 void AdjustFelony(FELONY_DATA *pFelonyData)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	short *psVar2;
-	FELONY_DELAY *pFVar3;
-	short *psVar4;
+	FELONY_DELAY *pFelonyDelay;
+	short *felony;
 
-	if ((int)player.playerCarId < 0) {
-		psVar4 = &pedestrianFelony;
-	}
-	else {
-		psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	if (*psVar4 != 0) {
-		if ((int)player.playerCarId < 0) {
-			psVar4 = &pedestrianFelony;
-		}
-		else {
-			psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (*psVar4 < 0x293) {
-			bVar1 = FelonyDecreaseTimer == FelonyDecreaseTime;
-			FelonyDecreaseTimer = FelonyDecreaseTimer + 1;
-			if (bVar1) {
-				if ((int)player.playerCarId < 0) {
-					psVar4 = &pedestrianFelony;
-				}
-				else {
-					psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-				}
-				if ((int)player.playerCarId < 0) {
-					psVar2 = &pedestrianFelony;
-				}
-				else {
-					psVar2 = &car_data[(int)player.playerCarId].felonyRating;
-				}
-				*psVar4 = *psVar2 + -1;
-				FelonyDecreaseTimer = 0;
-			}
-			goto LAB_0004cbec;
+	if (player[0].playerCarId < 0)
+		felony = &pedestrianFelony;
+	else
+		felony = &car_data[player[0].playerCarId].felonyRating;
+
+	if (*felony != 0 && *felony < 0x293)
+	{
+		if (FelonyDecreaseTimer++ == FelonyDecreaseTime)
+		{
+			*felony--;
+
+			FelonyDecreaseTimer = 0;
 		}
 	}
-	if (CopsCanSeePlayer != 0) {
-		if ((int)player.playerCarId < 0) {
-			psVar4 = &pedestrianFelony;
-		}
-		else {
-			psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if ((0x292 < *psVar4) &&
-			(bVar1 = FelonyIncreaseTimer == FelonyIncreaseTime,
-				FelonyIncreaseTimer = FelonyIncreaseTimer + 1, bVar1)) {
-			if ((int)player.playerCarId < 0) {
-				psVar4 = &pedestrianFelony;
-			}
-			else {
-				psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			if ((int)player.playerCarId < 0) {
-				psVar2 = &pedestrianFelony;
-			}
-			else {
-				psVar2 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			*psVar4 = *psVar2 + 1;
-			if ((int)player.playerCarId < 0) {
-				psVar4 = &pedestrianFelony;
-			}
-			else {
-				psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			if (0x1000 < *psVar4) {
-				if ((int)player.playerCarId < 0) {
-					psVar4 = &pedestrianFelony;
-				}
-				else {
-					psVar4 = &car_data[(int)player.playerCarId].felonyRating;
-				}
-				*psVar4 = 0x1000;
-			}
+	else if (CopsCanSeePlayer) 
+	{
+		if (*felony > 0x292 && FelonyIncreaseTimer++ == FelonyIncreaseTime)
+		{
+			*felony++;
+
+			if (*felony > 0x1000)
+				*felony = 0x1000;
+
 			FelonyIncreaseTimer = 0;
 		}
 	}
-LAB_0004cbec:
-	pFVar3 = pFelonyData->reoccurrenceDelay;
-	while (pFVar3 < (FELONY_DELAY *)pFelonyData->value) {
-		if (pFVar3->current != 0) {
-			pFVar3->current = pFVar3->current + -1;
-		}
-		pFVar3 = pFVar3 + 1;
+
+	pFelonyDelay = pFelonyData->reoccurrenceDelay;
+
+	while (pFelonyDelay <= &pFelonyData->reoccurrenceDelay[11]) 
+	{
+		if (pFelonyDelay->current != 0)
+			pFelonyDelay->current--;
+
+		pFelonyDelay++;
 	}
-	return;
-	*/
 }
 
 
