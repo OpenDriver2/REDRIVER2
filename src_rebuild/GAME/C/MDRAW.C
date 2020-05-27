@@ -11,6 +11,11 @@
 #include "REPLAYS.H"
 #include "PAUSE.H"
 #include "PLAYERS.H"
+#include "MAIN.H"
+#include "SPOOL.H"
+#include "DR2ROADS.H"
+#include "CARS.H"
+#include "TARGETS.H"
 
 // decompiled code
 // original method signature: 
@@ -288,19 +293,13 @@ void DrawMessage(int y, char *string)
 // [D]
 void DrawWorldTargets(void)
 {
-	int iVar1;
-	int iVar2;
+	int i;
 
-	if (Mission.active != 0) {
-		iVar2 = 0;
-		iVar1 = 0;
-		do {
-			iVar2 = iVar2 + 1;
-			DrawWorldTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-			iVar1 = iVar2 * 0x40;
-		} while (iVar2 < 0x10);
-	}
-	return;
+	if (Mission.active == 0)
+		return;
+
+	for(i = 0; i < 16; i++)
+		DrawWorldTarget(&MissionTargets[i]);
 }
 
 
@@ -606,113 +605,135 @@ LAB_0005ff54:
 	/* end block 3 */
 	// End Line: 634
 
+// [D]
 void DrawWorldTarget(_TARGET *target)
 {
-	UNIMPLEMENTED();
-
-	/*
 	int iVar1;
 	int iVar2;
 	ulong uVar3;
 	uint uVar4;
 	long *plVar5;
 	uint flags;
-	VECTOR local_20;
+	VECTOR tv;
 
-	iVar2 = TargetComplete(target, CurrentPlayerView);
-	if (iVar2 != 0) {
+	if (TargetComplete(target, CurrentPlayerView))
 		return;
-	}
-	iVar2 = TargetActive(target, CurrentPlayerView);
-	if (iVar2 == 0) {
+
+	if (TargetActive(target, CurrentPlayerView) == 0)
 		return;
-	}
+
 	iVar2 = target->data[0];
 	gDraw3DArrowBlue = 0;
 	flags = 0;
-	if (iVar2 == 2) {
+
+	if (iVar2 == 2) 
+	{
 		iVar2 = target->data[6];
-		if (iVar2 == -1) {
+
+		if (iVar2 == -1)
+		{
 			gDraw3DArrowBlue = 0;
 			return;
 		}
-		local_20.vx = car_data[iVar2].hd.where.t[0];
-		local_20.vz = car_data[iVar2].hd.where.t[2];
-		local_20.vy = (int)-car_data[iVar2].hd.where.t[1];
+
+		tv.vx = car_data[iVar2].hd.where.t[0];
+		tv.vz = car_data[iVar2].hd.where.t[2];
+		tv.vy = -car_data[iVar2].hd.where.t[1];
 		goto LAB_0005f7dc;
 	}
-	if (2 < iVar2) {
-		if (iVar2 != 3) {
+
+	if (2 < iVar2)
+	{
+		if (iVar2 != 3)
+		{
 			gDraw3DArrowBlue = 0;
 			return;
 		}
+
 		plVar5 = (long *)target->data[4];
-		local_20.vx = *plVar5;
-		local_20.vy = (int)plVar5[1];
-		local_20.vz = plVar5[2];
-		local_20.pad = plVar5[3];
+		tv.vx = *plVar5;
+		tv.vy = (int)plVar5[1];
+		tv.vz = plVar5[2];
+		tv.pad = plVar5[3];
 		goto LAB_0005f7dc;
 	}
-	if (iVar2 != 1) {
+
+	if (iVar2 != 1) 
+	{
 		gDraw3DArrowBlue = 0;
 		return;
 	}
-	local_20.vx = target->data[3];
-	local_20.vz = target->data[4];
-	local_20.vy = &DAT_00002710;
+
+	tv.vx = target->data[3];
+	tv.vz = target->data[4];
+	tv.vy = 10000;
 	uVar4 = target->data[1] & 0x30000;
 	flags = 2;
-	if (uVar4 == 0x20000) {
+
+	if (uVar4 == 0x20000) 
+	{
 	LAB_0005f69c:
 		gDraw3DArrowBlue = iVar2;
 	}
-	else {
-		if (uVar4 < 0x20001) {
-			if (uVar4 != 0x10000) {
+	else 
+	{
+		if (uVar4 < 0x20001) 
+		{
+			if (uVar4 != 0x10000)
+			{
 			LAB_0005f6c8:
 				gDraw3DArrowBlue = CurrentPlayerView;
 			}
 		}
-		else {
-			if (uVar4 != 0x30000) goto LAB_0005f6c8;
+		else
+		{
+			if (uVar4 != 0x30000) 
+				goto LAB_0005f6c8;
+
 			iVar1 = CurrentPlayerView;
-			if (gPlayerWithTheFlag != -1) {
-				if (CurrentPlayerView == gPlayerWithTheFlag) {
+			if (gPlayerWithTheFlag != -1) 
+			{
+				if (CurrentPlayerView == gPlayerWithTheFlag) 
+				{
 					gDraw3DArrowBlue = 0;
 					return;
 				}
-				local_20.vx = (&player)[gPlayerWithTheFlag].pos[0];
-				local_20.vz = (&player)[gPlayerWithTheFlag].pos[2];
+
+				tv.vx = player[gPlayerWithTheFlag].pos[0];
+				tv.vz = player[gPlayerWithTheFlag].pos[2];
 				iVar1 = gPlayerWithTheFlag;
 			}
-			if (iVar1 == 1) goto LAB_0005f69c;
+			if (iVar1 == 1)
+				goto LAB_0005f69c;
 		}
 	}
-	if (((gMultiplayerLevels == 0) || (doSpooling != 0)) &&
-		(uVar3 = Long2DDistance(player.spoolXZ, &local_20), 0x3e1c < (int)uVar3)) {
+
+	if ((gMultiplayerLevels == 0 || doSpooling != 0) && Long2DDistance(player[0].spoolXZ, &tv) > 15900)
 		return;
+
+	if (target->data[7] == 0) 
+	{
+		iVar2 = MapHeight(&tv);
+		tv.vy = -iVar2;
 	}
-	if (target->data[7] == 0) {
-		iVar2 = MapHeight(&local_20);
-		local_20.vy = (int)-iVar2;
+	else 
+	{
+		tv.vy = target->data[6];
 	}
-	else {
-		local_20.vy = (int)target->data[6];
-	}
+
 LAB_0005f7dc:
-	if (((gMultiplayerLevels != 0) && (doSpooling == 0)) ||
-		(uVar3 = Long2DDistance(player.spoolXZ, &local_20), (int)uVar3 < 0x3e1d)) {
-		if ((target->data[2] & 0x20U) != 0) {
+
+	if ((gMultiplayerLevels != 0 && doSpooling == 0) || Long2DDistance(player[0].spoolXZ, &tv) < 0x3e1d)
+	{
+		if ((target->data[2] & 0x20U) != 0)
 			flags = flags | 1;
-		}
-		if ((target->data[2] & 0x80U) != 0) {
+
+		if ((target->data[2] & 0x80U) != 0)
 			flags = flags | 0x20;
-		}
-		if (flags != 0) {
-			Draw3DTarget(&local_20, flags);
-		}
+
+		if (flags != 0) 
+			Draw3DTarget(&tv, flags);
 	}
-	return;*/
 }
 
 

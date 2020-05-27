@@ -236,6 +236,7 @@
     <ClCompile Include="GAME\C\SOUND.C" />
     <ClCompile Include="GAME\C\SPOOL.C" />
     <ClCompile Include="GAME\C\SYSTEM.C" />
+    <ClCompile Include="GAME\C\TARGETS.C" />
     <ClCompile Include="GAME\C\TEXTURE.C" />
     <ClCompile Include="GAME\C\TILE.C" />
     <ClCompile Include="GAME\C\TIME.C" />

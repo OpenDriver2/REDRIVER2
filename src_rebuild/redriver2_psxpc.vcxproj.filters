@@ -273,6 +273,9 @@
     <ClCompile Include="EMULATOR\GTE\half_float.cpp">
       <Filter>EMULATOR\GTE</Filter>
     </ClCompile>
+    <ClCompile Include="GAME\C\TARGETS.C">
+      <Filter>main\C</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMULATOR\ABS.H">

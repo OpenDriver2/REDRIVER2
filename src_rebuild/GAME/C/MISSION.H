@@ -38,6 +38,8 @@ extern int tannerDeathTimer;
 extern int gCantDrive;
 extern int gPlayerDamageFactor;
 
+extern int gPlayerWithTheFlag;
+
 extern int requestStationaryCivCar;
 extern int numCivCars;
 extern int maxCivCars;
