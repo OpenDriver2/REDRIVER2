@@ -6,6 +6,7 @@
 #include "MAP.H"
 #include "SYSTEM.H"
 #include "DEBRIS.H"
+#include "DRAW.H"
 
 #include "../ASM/ASMTEST.H"
 
@@ -225,20 +226,6 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 	SVECTOR temp;
 	int z;
 
-	// [A] FIXME: temporary here
-	MATRIX norot;
-	norot.m[0][0] = 0x1000;
-	norot.m[1][0] = 0;
-	norot.m[2][0] = 0;
-
-	norot.m[0][1] = 0;
-	norot.m[1][1] = 0x1000;
-	norot.m[2][1] = 0;
-
-	norot.m[0][2] = 0;
-	norot.m[1][2] = 0;
-	norot.m[2][2] = 0x1000;
-
 	if (PositionVisible(pPosition) != 0)
 	{
 		cameraPos = &tempVec;
@@ -248,7 +235,7 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 			pSVar10 = pTargetArrowModel->pVerts;
 			WorldToCameraPositions(pPosition, cameraPos, 1);
 
-			gte_SetRotMatrix(&norot);
+			gte_SetRotMatrix(&aspect);
 			gte_SetTransVector(&tempVec);
 
 			pVVar7 = &tempVec;

@@ -1547,6 +1547,11 @@ void DrawSmashable_sprites(void)
 
 			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
 
+			// [A]
+#ifndef PSX
+			MulMatrix0(&aspect, &object_matrix, &object_matrix);
+#endif
+
 			pos.vx = dam->vx - camera_position.vx;
 			pos.vy = dam->cop.pos.vy - camera_position.vy;
 			pos.vz = dam->cop.pos.vz - camera_position.vz;
@@ -3421,32 +3426,31 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 
 	gte_SetTransVector(v1);
 
-	//setCopControlWord(2, 0x2800, v1->vx);
-	//setCopControlWord(2, 0x3000, v1->vy);
-	//setCopControlWord(2, 0x3800, v1->vz);
-
 	direction.vy = 0;
 	direction.vx = 0;
-	direction.vz = (short)rotation;
+	direction.vz = rotation;
 
 	RotMatrixXYZ(&temp_matrix, &direction);
+#ifndef PSX
+	MulMatrix0(&aspect, &temp_matrix, &temp_matrix);
+#endif
 
 	gte_SetRotMatrix(&temp_matrix);
 
-	vert[0].vx = -size; //vert[0]._0_4_ = CONCAT22(sVar5, sVar5);
-	vert[0].vy = -size; //vert[0]._4_4_ = (uint)(ushort)vert[0].pad << 0x10;
+	vert[0].vx = -size;
+	vert[0].vy = -size;
 	vert[0].vz = 0;
 
-	vert[1].vx = -size; //vert[1]._0_4_ = CONCAT22(sVar5, size);
-	vert[1].vy = size; //vert[1]._4_4_ = (uint)(ushort)vert[1].pad << 0x10;
+	vert[1].vx = -size;
+	vert[1].vy = size;
 	vert[1].vz = 0;
 
-	vert[2].vx = size; //vert[2]._0_4_ = CONCAT22(size, sVar5);
-	vert[2].vy = -size; //vert[2]._4_4_ = (uint)(ushort)vert[2].pad << 0x10;
+	vert[2].vx = size;
+	vert[2].vy = -size; 
 	vert[2].vz = 0;
 
-	vert[3].vx = size; //vert[3]._0_4_ = CONCAT22(size, size);
-	vert[3].vy = size; //vert[3]._4_4_ = (uint)(ushort)vert[3].pad << 0x10;
+	vert[3].vx = size;
+	vert[3].vy = size; 
 	vert[3].vz = 0;
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
