@@ -2505,9 +2505,57 @@ int redriver2_main(int argc, char** argv)
 
 	InitialiseScoreTables();
 
-#ifdef CUTSCENE_RECORDER
+#ifndef PSX
 	for (int i = 0; i < argc; i++)
 	{
+		if (!_stricmp(argv[i], "-replay"))
+		{
+			if (argc-i < 2)
+			{
+				printError("-replay missing argument!");
+				return -1;
+			}
+
+			SetFEDrawMode();
+
+			gInFrontend = 0;
+			AttractMode = 0;
+
+			char nameStr[512];
+			sprintf(nameStr, "%s.d2rp", argv[i+1]);
+
+			FILE* fp = fopen(nameStr, "rb");
+			if (fp)
+			{
+				int replay_size = 0;
+				fseek(fp, 0, SEEK_END);
+				replay_size = ftell(fp);
+				fseek(fp, 0, SEEK_SET);
+
+				fread(_overlay_buffer, replay_size, 1, fp);
+				fclose(fp);
+
+				if (LoadReplayFromBuffer(_overlay_buffer))
+				{
+					CurrentGameMode = GAMEMODE_REPLAY;
+					gLoadedReplay = 1;
+
+					LaunchGame();
+
+					gLoadedReplay = 0;
+				}
+				else
+				{
+					printError("Error loading replay file '%s'!\n", nameStr);
+				}
+			}
+			else
+			{
+				printError("Cannot open replay '%s'!\n", nameStr);
+				return -1;
+			}
+		}
+#ifdef CUTSCENE_RECORDER
 		if (!_stricmp(argv[i], "-recordcutscene"))
 		{
 			if (argc-i < 3)
@@ -2543,8 +2591,9 @@ int redriver2_main(int argc, char** argv)
 			gCutsceneAsReplay = 0;
 			return 1;
 		}
-	}
 #endif
+	}
+#endif // PSX
 
 	// now run the frontend
 	DoFrontEnd();
