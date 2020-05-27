@@ -6775,6 +6775,8 @@ LAB_0002c33c:
 	PlaceRoadBlockCops();
 	return;
 	*/
+
+	requestRoadblock = 0;
 }
 
 

@@ -387,38 +387,33 @@ void InitCellData(void)
 	/* end block 4 */
 	// End Line: 1774
 
+// [D]
 int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 
 	iVar2 = pos->vx + units_across_halved;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0x7ff;
-	}
 	iVar1 = pos->vz + units_down_halved;
-	if (iVar1 < 0) {
-		iVar1 = iVar1 + 0x7ff;
-	}
+
 	ccx = (iVar2 >> 0xb) - ccx;
 	ccz = (iVar1 >> 0xb) - ccz;
 	iVar2 = ccx;
-	if (ccx < 0) {
+
+	if (ccx < 0)
 		iVar2 = -ccx;
-	}
-	if (iVar2 <= view_dist) {
+
+	if (iVar2 <= view_dist) 
+	{
 		iVar2 = ccz;
-		if (ccz < 0) {
+
+		if (ccz < 0)
 			iVar2 = -ccz;
-		}
-		if (iVar2 <= view_dist) {
-			return (uint)(pvs[ccx + 10 + (ccz + 10) * pvs_square] != '\0');
-		}
+	
+		if (iVar2 <= view_dist)
+			return pvs[ccx + 10 + (ccz + 10) * pvs_square] != 0;
 	}
-	return 0;*/
+	return 0;
 }
 
 

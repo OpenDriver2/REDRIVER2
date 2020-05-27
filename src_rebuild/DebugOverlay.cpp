@@ -90,6 +90,19 @@ void DrawDebugOverlays()
 		extern volatile int spoolactive;
 		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d", doSpooling, allowSpecSpooling, spoolactive);
 		PrintString(tempBuf, 10, 90);
+
+		extern int numActiveCops;
+		extern int numCopCars;
+		extern int numCivCars;
+		extern int numParkedCars;
+		extern int maxCopCars;
+		extern int maxCivCars;
+
+		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
+		PrintString(tempBuf, 10, 100);
+
+		sprintf(tempBuf, "Cops: %d - %d active - max %d", numCopCars, numActiveCops, maxCopCars);
+		PrintString(tempBuf, 10, 110);
 	}
 }
 

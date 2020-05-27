@@ -1420,22 +1420,20 @@ void ControlCopDetection(void)
 
 	CopsCanSeePlayer = 0;
 
-	if ((player[0].playerType != 2) && (-1 < player[0].playerCarId))
+	if (player[0].playerType != 2 && -1 < player[0].playerCarId)
 	{
 		if (numRoadblockCars != 0)
 		{
 			x = roadblockLoc.vx - player[0].pos[0];
-			if (x < 0) {
+			if (x < 0)
 				x = -x;
-			}
+
 			y = roadblockLoc.vz - player[0].pos[2];
-			if (y < 0) {
+			if (y < 0)
 				y = -y;
-			}
-			if (((x >> 8) * (x >> 8) + (y >> 8) * (y >> 8) < 0x668) &&
-				(x = newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz), x != 0)) {
+
+			if (((x >> 8) * (x >> 8) + (y >> 8) * (y >> 8) < 0x668) && newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
 				CopsCanSeePlayer = 1;
-			}
 		}
 
 		if (CopsCanSeePlayer == 0) 
