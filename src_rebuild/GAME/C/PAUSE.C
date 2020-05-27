@@ -10,6 +10,7 @@
 #include "SCORES.H"
 #include "SOUND.H"
 #include "CUTSCENE.H"
+#include "REPLAYS.H"
 
 static int gScoreEntered = 0;
 static char EnterNameText[32] = { 0 };
@@ -588,10 +589,18 @@ void DrawPauseMenus(void)
 
 void SaveReplay(int direction)
 {
-	UNIMPLEMENTED();
-	/*
+#ifdef PSX
 	CallMemoryCard(0x10, 1);
-	return;*/
+#else
+	int size = SaveReplayToBuffer(_overlay_buffer);
+
+	FILE* fp = fopen("chase.d2rp", "wb");
+	if (fp)
+	{
+		fwrite(_overlay_buffer, size, 1, fp);
+		fclose(fp);
+	}
+#endif
 }
 
 

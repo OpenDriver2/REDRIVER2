@@ -39,6 +39,8 @@ int TimeToWay = 0;
 short PlayerWaypoints = 0;
 int way_distance = 0;
 
+#define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('R' << 8) | 'P' )
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitPadRecording()
@@ -155,246 +157,87 @@ void InitPadRecording(void)
 	/* end block 3 */
 	// End Line: 1349
 
+// [D]
 int SaveReplayToBuffer(char *buffer)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	char cVar1;
-	byte bVar2;
-	REPLAY_PARAMETER_BLOCK *pRVar3;
-	long lVar4;
-	SXYPAIR *pSVar5;
-	PLAYBACKCAMERA *pPVar6;
-	_PING_PACKET *p_Var7;
-	long lVar8;
-	SXYPAIR *pSVar9;
-	PLAYBACKCAMERA *pPVar10;
-	_PING_PACKET *p_Var11;
-	int iVar12;
-	int *piVar13;
-	MISSION_DATA *pMVar14;
-	SXYPAIR *pSVar15;
-	int *piVar16;
-	_PING_PACKET *p_Var17;
-	long *plVar18;
-	int iVar19;
-	SXYPAIR SVar20;
-	REPLAY_STREAM *pRVar21;
-	_PING_PACKET _Var22;
-	SXYPAIR SVar23;
-	_PING_PACKET _Var24;
-	long lVar25;
-	SXYPAIR SVar26;
-	_PING_PACKET _Var27;
-	PADRECORD *pPVar28;
-	uint __n;
-	char *unaff_s2;
-	int iVar29;
-	uint uVar30;
+	REPLAY_STREAM_HEADER *sheader;
+	REPLAY_SAVE_HEADER *header;
 
-	bVar2 = NumPlayers;
-	uVar30 = (uint)NumPlayers;
-	piVar13 = (int *)buffer;
-	if (buffer != (char *)0x0) {
-		*(undefined4 *)buffer = 0x14793209;
-		buffer[4] = (char)GameLevel;
-		buffer[5] = GameType;
-		iVar19 = gCurrentMissionNumber;
-		buffer[7] = bVar2;
-		*(int *)(buffer + 0xfc) = iVar19;
-		plVar18 = (long *)(buffer + 0xc);
-		buffer[8] = NumPlayers;
-		cVar1 = (char)gRandomChase;
-		buffer[10] = -1;
-		buffer[9] = cVar1;
-		pMVar14 = &MissionEndData;
-		buffer[0xb] = (char)gCopDifficultyLevel;
-		*(undefined4 *)(buffer + 0xf0) = ActiveCheats;
-		*(int *)(buffer + 0xf4) = wantedCar[0];
-		piVar13 = (int *)(buffer + 0x11c);
-		*(int *)(buffer + 0xf8) = wantedCar[1];
-		do {
-			lVar25 = (pMVar14->PlayerPos).vx;
-			lVar4 = (pMVar14->PlayerPos).vy;
-			lVar8 = (pMVar14->PlayerPos).vz;
-			*plVar18 = *(long *)&pMVar14->PlayerPos;
-			plVar18[1] = lVar25;
-			plVar18[2] = lVar4;
-			plVar18[3] = lVar8;
-			pMVar14 = (MISSION_DATA *)&(pMVar14->PlayerPos).felony;
-			plVar18 = plVar18 + 4;
-		} while (pMVar14 != (MISSION_DATA *)&MissionEndData.CarPos[5].vz);
-		*plVar18 = MissionEndData.CarPos[5].vz;
-		unaff_s2 = buffer;
+	if (buffer == NULL)
+		return 0;
+
+	char* pt = buffer;
+	header = (REPLAY_SAVE_HEADER*)pt;
+	pt += sizeof(REPLAY_SAVE_HEADER);
+
+	header->magic = 0x14793209;			// TODO: custom
+	header->GameLevel = GameLevel;
+	header->GameType = GameType;
+	header->NumReplayStreams = NumReplayStreams;
+	header->MissionNumber = gCurrentMissionNumber;
+	
+	header->NumPlayers = NumPlayers;
+	header->CutsceneEvent = -1;
+	header->RandomChase = gRandomChase;
+	
+	header->gCopDifficultyLevel = gCopDifficultyLevel;
+	header->ActiveCheats = ActiveCheats;
+
+	header->wantedCar[0] = wantedCar[0];
+	header->wantedCar[1] = wantedCar[1];
+
+	memcpy(&header->SavedData, &MissionEndData, sizeof(MISSION_DATA));
+
+	// write each stream data
+	for (int i = 0; i < NumReplayStreams; i++)
+	{
+		sheader = (REPLAY_STREAM_HEADER *)pt;
+		pt += sizeof(REPLAY_STREAM_HEADER);
+
+		REPLAY_STREAM* srcStream = &ReplayStreams[i];
+
+		// copy source type
+		memcpy(&sheader->SourceType, &srcStream->SourceType, sizeof(STREAM_SOURCE));
+		sheader->Size = srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
+		sheader->Length = srcStream->length;
+
+		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
+
+		// copy pad data to write buffer
+		memcpy(pt, srcStream->InitialPadRecordBuffer, size);
+
+		pt += size;
 	}
-	if (piVar13 != (int *)0x0) {
-		iVar19 = 0;
-		if (bVar2 != 0) {
-			do {
-				pRVar21 = ReplayStreams + iVar19;
-				iVar29 = iVar19 + 1;
-				pPVar28 = (PADRECORD *)
-					((int)ReplayStreams[iVar19].PadRecordBufferEnd -
-					(int)ReplayStreams[iVar19].InitialPadRecordBuffer);
-				piVar16 = piVar13;
-				do {
-					iVar12 = *(int *)&(pRVar21->SourceType).flags;
-					lVar8 = (pRVar21->SourceType).position.vx;
-					lVar4 = (pRVar21->SourceType).position.vy;
-					*piVar16 = *(int *)&pRVar21->SourceType;
-					piVar16[1] = iVar12;
-					piVar16[2] = lVar8;
-					piVar16[3] = lVar4;
-					pRVar21 = (REPLAY_STREAM *)&(pRVar21->SourceType).position.vz;
-					piVar16 = piVar16 + 4;
-				} while (pRVar21 != (REPLAY_STREAM *)&ReplayStreams[iVar19].InitialPadRecordBuffer);
-				*(PADRECORD **)(piVar13 + 0xc) = pPVar28;
-				__n = (uint)(pPVar28 + 1) & 0xfffffffc;
-				piVar13[0xd] = ReplayStreams[iVar19].length;
-				memcpy(piVar13 + 0xe, ReplayStreams[iVar19].InitialPadRecordBuffer, __n);
-				piVar13 = (int *)((int)(piVar13 + 0xe) + __n);
-				iVar19 = iVar29;
-			} while (iVar29 < (int)uVar30);
-		}
-		pRVar3 = ReplayParameterPtr;
-		iVar19 = (ReplayParameterPtr->lead_car_start).vx;
-		iVar29 = (ReplayParameterPtr->lead_car_start).vy;
-		iVar12 = (ReplayParameterPtr->lead_car_start).vz;
-		*piVar13 = ReplayParameterPtr->RecordingEnd;
-		piVar13[1] = iVar19;
-		piVar13[2] = iVar29;
-		piVar13[3] = iVar12;
-		piVar13[4] = *(int *)&pRVar3->Lead_car_dir;
-		pSVar15 = (SXYPAIR *)(piVar13 + 5);
-		pSVar9 = PlayerWayRecordPtr;
-		if ((((uint)PlayerWayRecordPtr | (uint)pSVar15) & 3) == 0) {
-			pSVar5 = PlayerWayRecordPtr + 0x94;
-			do {
-				SVar23 = pSVar9[1];
-				SVar26 = pSVar9[2];
-				SVar20 = pSVar9[3];
-				*pSVar15 = *pSVar9;
-				pSVar15[1] = SVar23;
-				pSVar15[2] = SVar26;
-				pSVar15[3] = SVar20;
-				pSVar9 = pSVar9 + 4;
-				pSVar15 = pSVar15 + 4;
-			} while (pSVar9 != pSVar5);
-		}
-		else {
-			pSVar5 = PlayerWayRecordPtr + 0x94;
-			do {
-				SVar23 = pSVar9[1];
-				SVar26 = pSVar9[2];
-				SVar20 = pSVar9[3];
-				*pSVar15 = *pSVar9;
-				pSVar15[1] = SVar23;
-				pSVar15[2] = SVar26;
-				pSVar15[3] = SVar20;
-				pSVar9 = pSVar9 + 4;
-				pSVar15 = pSVar15 + 4;
-			} while (pSVar9 != pSVar5);
-		}
-		piVar16 = piVar13 + 0x9b;
-		SVar20 = pSVar9[1];
-		*pSVar15 = *pSVar9;
-		pSVar15[1] = SVar20;
-		if ((((uint)PlaybackCamera | (uint)piVar16) & 3) == 0) {
-			pPVar6 = PlaybackCamera + 0x3c;
-			pPVar10 = PlaybackCamera;
-			do {
-				iVar19 = (pPVar10->position).vy;
-				iVar29 = (pPVar10->position).vz;
-				iVar12 = *(int *)&pPVar10->angle;
-				*piVar16 = (pPVar10->position).vx;
-				piVar16[1] = iVar19;
-				piVar16[2] = iVar29;
-				piVar16[3] = iVar12;
-				pPVar10 = (PLAYBACKCAMERA *)&(pPVar10->angle).vz;
-				piVar16 = piVar16 + 4;
-			} while (pPVar10 != pPVar6);
-		}
-		else {
-			pPVar6 = PlaybackCamera + 0x3c;
-			pPVar10 = PlaybackCamera;
-			do {
-				iVar19 = (pPVar10->position).vy;
-				iVar29 = (pPVar10->position).vz;
-				iVar12 = *(int *)&pPVar10->angle;
-				*piVar16 = (pPVar10->position).vx;
-				piVar16[1] = iVar19;
-				piVar16[2] = iVar29;
-				piVar16[3] = iVar12;
-				pPVar10 = (PLAYBACKCAMERA *)&(pPVar10->angle).vz;
-				piVar16 = piVar16 + 4;
-			} while (pPVar10 != pPVar6);
-		}
-		p_Var17 = (_PING_PACKET *)(piVar13 + 0x2b7);
-		if ((((uint)PingBuffer | (uint)p_Var17) & 3) == 0) {
-			p_Var7 = PingBuffer + 400;
-			p_Var11 = PingBuffer;
-			do {
-				_Var22 = p_Var11[1];
-				_Var24 = p_Var11[2];
-				_Var27 = p_Var11[3];
-				*p_Var17 = *p_Var11;
-				p_Var17[1] = _Var22;
-				p_Var17[2] = _Var24;
-				p_Var17[3] = _Var27;
-				p_Var11 = p_Var11 + 4;
-				p_Var17 = p_Var17 + 4;
-			} while (p_Var11 != p_Var7);
-		}
-		else {
-			p_Var7 = PingBuffer + 400;
-			p_Var11 = PingBuffer;
-			do {
-				_Var22 = p_Var11[1];
-				_Var24 = p_Var11[2];
-				_Var27 = p_Var11[3];
-				*p_Var17 = *p_Var11;
-				p_Var17[1] = _Var22;
-				p_Var17[2] = _Var24;
-				p_Var17[3] = _Var27;
-				p_Var11 = p_Var11 + 4;
-				p_Var17 = p_Var17 + 4;
-			} while (p_Var11 != p_Var7);
-		}
-		piVar13 = piVar13 + 0x447;
-		if (piVar13 != (int *)0x0) {
-			*(undefined4 *)(unaff_s2 + 0x100) = 0x91827364;
-			pMVar14 = &MissionStartData;
-			if (((uint)piVar13 & 3) == 0) {
-				do {
-					iVar19 = (pMVar14->PlayerPos).vx;
-					iVar29 = (pMVar14->PlayerPos).vy;
-					iVar12 = (pMVar14->PlayerPos).vz;
-					*piVar13 = *(int *)&pMVar14->PlayerPos;
-					piVar13[1] = iVar19;
-					piVar13[2] = iVar29;
-					piVar13[3] = iVar12;
-					pMVar14 = (MISSION_DATA *)&(pMVar14->PlayerPos).felony;
-					piVar13 = piVar13 + 4;
-				} while (pMVar14 != (MISSION_DATA *)&MissionStartData.CarPos[5].vz);
-			}
-			else {
-				do {
-					iVar19 = (pMVar14->PlayerPos).vx;
-					iVar29 = (pMVar14->PlayerPos).vy;
-					iVar12 = (pMVar14->PlayerPos).vz;
-					*piVar13 = *(int *)&pMVar14->PlayerPos;
-					piVar13[1] = iVar19;
-					piVar13[2] = iVar29;
-					piVar13[3] = iVar12;
-					pMVar14 = (MISSION_DATA *)&(pMVar14->PlayerPos).felony;
-					piVar13 = piVar13 + 4;
-				} while (pMVar14 != (MISSION_DATA *)&MissionStartData.CarPos[5].vz);
-			}
-			*piVar13 = *(int *)&pMVar14->PlayerPos;
-		}
+
+#ifdef CUTSCENE_RECORDER
+	if (gCutsceneAsReplay == 0)
+#endif
+	{
+		memcpy(pt, ReplayParameterPtr, sizeof(REPLAY_PARAMETER_BLOCK));
+		pt += sizeof(REPLAY_PARAMETER_BLOCK);
 	}
-	return (int)&DAT_00003644;*/
+
+#ifdef CUTSCENE_RECORDER
+	if (gCutsceneAsReplay == 0)
+#endif
+	{
+		memcpy(pt, PlayerWayRecordPtr, sizeof(SXYPAIR) * 150);
+		pt += sizeof(SXYPAIR) * 150;
+	}
+
+	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * 60);
+	pt += sizeof(PLAYBACKCAMERA) * 60;
+
+	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * 400);
+	pt += sizeof(_PING_PACKET) * 400;
+
+	if (gHaveStoredData)	
+	{
+		header->HaveStoredData = 0x91827364;	// -0x6e7d8c9c
+		memcpy(pt, &MissionStartData, sizeof(MISSION_DATA));
+	}
+
+	return 0x3644;		// size?
 }
 
 
@@ -503,8 +346,6 @@ int LoadCutsceneAsReplay(int subindex)
 // [D]
 int LoadReplayFromBuffer(char *buffer)
 {
-	REPLAY_STREAM_HEADER *local_s1_516;
-
 	REPLAY_SAVE_HEADER *header;
 	REPLAY_STREAM_HEADER *sheader;
 
@@ -874,7 +715,6 @@ char ReplayMode = 0;
 // [D]
 void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 {
-	REPLAY_PARAMETER_BLOCK *pRVar1;
 	int iVar2;
 	int iVar3;
 	int t1;

@@ -44,7 +44,7 @@ int testNumPingedOut = 0;
 int currentAngle = 0;
 int closeEncounter = 3;
 
-char junctionLightsPhase[2] = { 0 };
+char junctionLightsPhase[2];
 
 // decompiled code
 // original method signature: 
@@ -4179,22 +4179,22 @@ int PingInCivCar(int minPingInDist)
 			if (uVar17 == 0)
 				trap(7);
 
-			uVar18 = (uint)possibleLanes[(lVar8 >> 8) % uVar17];
+			uVar18 = possibleLanes[(lVar8 >> 8) % uVar17];
 			cp->ai.c.currentLane = possibleLanes[(lVar8 >> 8) % uVar17];
 		}
 		if (((uVar18 == 0) && ((straight->NumLanes & 0x40U) != 0)) ||
-			((((uint)straight->NumLanes & 0xf) * 2 - 1 == uVar18 &&
+			(((straight->NumLanes & 0xf) * 2 - 1 == uVar18 &&
 			((straight->NumLanes & 0x80U) != 0)))) 
 		{
 			civDat.thrustState = 3;
 			civDat.ctrlState = 7;
-			if (((int)(uint)straight->AILanes >> ((int)uVar18 / 2 & 0x1fU) & 1U) != 0) 
+			if ((straight->AILanes >> (uVar18 / 2 & 0x1fU) & 1U) != 0) 
 			{
 				civDat.ctrlState = 5;
 			}
 		}
 		else {
-			if (((int)(uint)straight->AILanes >> ((int)uVar18 / 2 & 0x1fU) & 1U) == 0) 
+			if ((straight->AILanes >> (uVar18 / 2 & 0x1fU) & 1U) == 0) 
 			{
 			LAB_00029a28:
 				civPingTest.NotDrivable = civPingTest.NotDrivable + 1;
@@ -4251,7 +4251,7 @@ int PingInCivCar(int minPingInDist)
 				((model - 1 == uVar18 && ((bVar1 & 0x80) != 0)))) {
 				civDat.thrustState = 3;
 				civDat.ctrlState = 7;
-				if (((int)(uint)curve->AILanes >> ((int)uVar18 / 2 & 0x1fU) & 1U) != 0) {
+				if ((curve->AILanes >> ((int)uVar18 / 2 & 0x1fU) & 1U) != 0) {
 					civDat.ctrlState = 5;
 				}
 			}
@@ -4266,14 +4266,14 @@ int PingInCivCar(int minPingInDist)
 		}
 	}
 	if ((civDat.thrustState != 3) ||
-		(((cVar5 = '\0', gInGameCutsceneActive == 0 && (gInGameChaseActive == 0)) &&
-		((model = Random2(0), (model & 0x40) == 0 || (cVar5 = '\x03', gCurrentMissionNumber == 0x20)))))) 
+		(((cVar5 = 0, gInGameCutsceneActive == 0 && (gInGameChaseActive == 0)) &&
+		(((Random2(0) & 0x40) == 0 || (cVar5 = 3, gCurrentMissionNumber == 0x20)))))) 
 	{
-		cVar5 = '\0';
+		cVar5 = 0;
 	}
 
 	modelRandomList[12] = cVar5;
-	if (((specModelValid == '\0') || (allowSpecSpooling == 0)) ||
+	if (((specModelValid == 0) || (allowSpecSpooling == 0)) ||
 		(MissionHeader->residentModels[4] == 0xc)) 
 	{
 		modelRandomList[15] = 0;
@@ -5282,7 +5282,8 @@ void SetUpCivCollFlags(void)
 						LAB_0002b1a4:
 							bVar3 = p_Var16-1 < car_data;
 						}
-						else {
+						else 
+						{
 							if (CAR_INDEX(p_Var16) == 20)
 							{
 								if (player[0].playerType != 2) 
@@ -5350,8 +5351,9 @@ void SetUpCivCollFlags(void)
 									iVar5 = iVar10 - iVar8;
 								}
 								if (499 < iVar5) {
-									if ((int)(p_Var16[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2
-										!= 0x14) goto LAB_0002b1a4;
+									if (CAR_INDEX(p_Var16) != 20)
+										goto LAB_0002b1a4;
+
 									goto LAB_0002af10;
 								}
 							}
@@ -5379,7 +5381,7 @@ void SetUpCivCollFlags(void)
 							bVar3 = p_Var16 + -1 < car_data;
 							if ((local_2c->ai.c.thrustState != 3) &&
 								((p_Var16->controlType == 1 ||
-								(bVar3 = p_Var16 + -1 < car_data, CAR_INDEX(p_Var16) == 0x14))))
+								(bVar3 = p_Var16-1 < car_data, CAR_INDEX(p_Var16) == 20))))
 							{
 								lVar7 = Random2(0);
 								p_Var13 = local_2c;
