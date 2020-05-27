@@ -187,6 +187,20 @@ int NextDamagedPmeter = 0;
 int SmashablesHit = 0;
 DAMAGED_OBJECT damaged_object[9];
 
+int next_debris = 0;
+short debris_alloc[60];
+
+int next_leaf = 0;
+short leaf_alloc[50];
+
+int next_smoke = 0;
+short smoke_alloc[80];
+
+int gNextRainDrop = 0;
+short gRainAlloc[180];
+
+RAIN_TYPE gRain[180];
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ PlacePoolForCar(struct _CAR_DATA *cp /*$s4*/, struct CVECTOR *col /*stack 4*/, int front /*$a2*/)
@@ -633,20 +647,13 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int AllocateLeaf(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	short *psVar1;
-
-	if (0x31 < next_leaf) {
+	if (next_leaf > 49)
 		return -1;
-	}
-	psVar1 = leaf_alloc + next_leaf;
-	next_leaf = next_leaf + 1;
-	return (int)*psVar1;
-	*/
+
+	return leaf_alloc[next_leaf++];
 }
 
 
@@ -665,14 +672,11 @@ int AllocateLeaf(void)
 	/* end block 2 */
 	// End Line: 12097
 
+// [D]
 void ReleaseLeaf(short num)
 {
-	UNIMPLEMENTED();
-	/*
-	next_leaf = next_leaf + -1;
+	next_leaf--;
 	leaf_alloc[next_leaf] = num;
-	return;
-	*/
 }
 
 
@@ -1239,19 +1243,13 @@ void InitDebris(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int AllocateDebris(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	short *psVar1;
-
-	if (0x3b < next_debris) {
+	if (next_debris > 59)
 		return -1;
-	}
-	psVar1 = &debris_alloc + next_debris;
-	next_debris = next_debris + 1;
-	return (int)*psVar1;*/
+
+	return debris_alloc[next_debris++];
 }
 
 
@@ -1275,13 +1273,11 @@ int AllocateDebris(void)
 	/* end block 3 */
 	// End Line: 12487
 
+// [D]
 void ReleaseDebris(short num)
 {
-	UNIMPLEMENTED();
-	/*
-	next_debris = next_debris + -1;
-	(&debris_alloc)[next_debris] = num;
-	return;*/
+	next_debris--;
+	debris_alloc[next_debris] = num;
 }
 
 
@@ -1307,20 +1303,13 @@ void ReleaseDebris(short num)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int AllocateSmoke(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	short *psVar1;
-
-	if (0x4f < next_smoke) {
+	if (next_smoke > 79)
 		return -1;
-	}
-	psVar1 = smoke_alloc + next_smoke;
-	next_smoke = next_smoke + 1;
-	return (int)*psVar1;
-	*/
+
+	return smoke_alloc[next_smoke++];
 }
 
 
@@ -1339,13 +1328,11 @@ int AllocateSmoke(void)
 	/* end block 2 */
 	// End Line: 15399
 
+// [D]
 void ReleaseSmoke(short num)
 {
-	UNIMPLEMENTED();
-	/*
-	next_smoke = next_smoke + -1;
+	next_smoke--;
 	smoke_alloc[next_smoke] = num;
-	return;*/
 }
 
 
@@ -5108,21 +5095,20 @@ void add_haze(int top_col, int bot_col, short ot_pos)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetupRain(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	gNextRainDrop = 0;
+
+	do {
+
+		gRainAlloc[gNextRainDrop] = gNextRainDrop;
+		gRain[gNextRainDrop].oldposition.pad = gNextRainDrop;
+
+		gNextRainDrop++;
+	} while (gNextRainDrop < 180);
 
 	gNextRainDrop = 0;
-	do {
-		iVar1 = gNextRainDrop + 1;
-		gRainAlloc[gNextRainDrop] = (short)gNextRainDrop;
-		gRain[gNextRainDrop].oldposition.pad = (short)gNextRainDrop;
-		gNextRainDrop = iVar1;
-	} while (iVar1 < 0xb4);
-	gNextRainDrop = 0;
-	return;*/
 }
 
 
@@ -5148,19 +5134,15 @@ void SetupRain(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int AllocateRainDrop(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	short *psVar1;
 
-	if (0xb3 < gNextRainDrop) {
+	if (gNextRainDrop > 179)
 		return -1;
-	}
-	psVar1 = gRainAlloc + gNextRainDrop;
-	gNextRainDrop = gNextRainDrop + 1;
-	return (int)*psVar1;*/
+
+	return gRainAlloc[gNextRainDrop++];
 }
 
 
@@ -5179,14 +5161,11 @@ int AllocateRainDrop(void)
 	/* end block 2 */
 	// End Line: 17851
 
+// [D]
 void ReleaseRainDrop(int RainIndex)
 {
-	UNIMPLEMENTED();
-	/*
-	gNextRainDrop = gNextRainDrop + -1;
-	gRainAlloc[gNextRainDrop] = (short)RainIndex;
-	return;
-	*/
+	gNextRainDrop--;
+	gRainAlloc[gNextRainDrop] = RainIndex;
 }
 
 
@@ -5845,30 +5824,30 @@ void DoThunder(void)
 	int iVar1;
 	int iVar2;
 
-	if (pauseflag == 0) 
+	if (pauseflag)
+		return;
+
+	iVar1 = rand();
+	ThunderDistance = (ThunderDistance + 40) - rand() % 80;
+
+	if (ThunderDistance < 250)
+		ThunderDistance = 250;
+
+	if (5000 < ThunderDistance) 
+		ThunderDistance = 5000;
+
+	iVar1 = ThunderTimer-1;
+
+	if (ThunderTimer > -1 && (ThunderTimer = iVar1, iVar1 == 0)) 
 	{
-		iVar1 = rand();
-		ThunderDistance = (ThunderDistance + 40) - iVar1 % 80;
+		iVar2 = rand();
 
-		if (ThunderDistance < 250)
-			ThunderDistance = 250;
+		iVar1 = iVar2;
 
-		if (5000 < ThunderDistance) 
-			ThunderDistance = 5000;
+		if (iVar2 < 0)
+			iVar1 = iVar2 + 0x7ff;
 
-		iVar1 = ThunderTimer-1;
-
-		if ((-1 < ThunderTimer) && (ThunderTimer = iVar1, iVar1 == 0)) 
-		{
-			iVar2 = rand();
-
-			iVar1 = iVar2;
-
-			if (iVar2 < 0)
-				iVar1 = iVar2 + 0x7ff;
-
-			StartSound(-1, 1, 12, -ThunderDistance, iVar2 - (iVar1 >> 0xb) * 2048 + 3072);
-		}
+		StartSound(-1, 1, 12, -ThunderDistance, iVar2 - (iVar1 >> 0xb) * 2048 + 3072);
 	}
 }
 
@@ -5893,28 +5872,28 @@ void DoThunder(void)
 	/* end block 3 */
 	// End Line: 24076
 
+// [D]
 void DoWeather(int weather)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((weather == 1) && (pauseflag == 0)) {
-		if (gEffectsTimer < 0x29) {
-			if ((FrameCnt & 7U) == 0) {
-				gEffectsTimer = gEffectsTimer + 1;
-			}
+	if (weather == 1 && pauseflag == 0) 
+	{
+		if (gEffectsTimer < 0x29) 
+		{
+			if ((FrameCnt & 7U) == 0) 
+				gEffectsTimer++;
 		}
-		else {
+		else
+		{
 			AddRainDrops();
 			DrawRainDrops();
-			if ((FrameCnt & 7U) == 0) {
-				gRainCount = gRainCount + '\x01';
-			}
-			if (0x23 < (byte)gRainCount) {
-				gRainCount = '#';
-			}
+
+			if ((FrameCnt & 7U) == 0)
+				gRainCount = gRainCount + 1;
+
+			if (gRainCount > 35)
+				gRainCount = 35;
 		}
 	}
-	return;*/
 }
 
 
@@ -5943,21 +5922,20 @@ void DoWeather(int weather)
 	/* end block 3 */
 	// End Line: 24131
 
+// [D]
 int GetDebrisColour(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
+	int car_model;
 
-	iVar1 = MissionHeader->residentModels[(byte)(cp->ap).model];
-	if (iVar1 == 0) {
+	car_model = MissionHeader->residentModels[cp->ap.model];
+
+	if (car_model == 0)
 		return 1;
-	}
-	if (iVar1 < 8) {
-		return (iVar1 + -1) * 6 + (uint)(byte)(cp->ap).palette + 7;
-	}
-	return iVar1 + -6;*/
+
+	if(car_model < 8)
+		return (car_model-1) * 6 + cp->ap.palette + 7;
+
+	return car_model - 6;
 }
 
 
