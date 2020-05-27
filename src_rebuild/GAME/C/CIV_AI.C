@@ -27,7 +27,7 @@ char speedLimits[3] = { 56, 97, 138 };
 
 CIV_AI_234fake civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
-unsigned char reservedSlots[20];
+unsigned char reservedSlots[20] = { 0 };
 
 int distFurthestCivCarSq = 0;
 char furthestCivID = 0;
@@ -3449,8 +3449,8 @@ void InitCivCars(void)
 	/* end block 3 */
 	// End Line: 4911
 
-int EVENT_CAR_SPEED = 66; // 60
-int DistanceTriggerCarMoves = 5000;
+const int EVENT_CAR_SPEED = 60;
+const int DistanceTriggerCarMoves = 5000;
 
 // [D] [A]
 int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*stopPos)[4], unsigned char internalModel, int palette)
@@ -3468,6 +3468,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	short sVar9;
 	int iVar10;
 	_EXTRA_CIV_DATA civDat;
+	ClearMem((char *)&civDat, sizeof(civDat));
 
 	y = (stopPos - startPos) >> 2;
 	//ratan2(y, y);
@@ -3509,11 +3510,8 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	cp->st.n.linearVelocity[0] = EVENT_CAR_SPEED * psVar8;
 	cp->st.n.linearVelocity[2] = EVENT_CAR_SPEED * psVar7;
 
-	iVar10 = DistanceTriggerCarMoves;
 
-	iVar1 = iVar10 - cp->ap.carCos->colBox.vz * 3;
-
-	cp->ai.c.velRatio = (EVENT_CAR_SPEED / 4096) / iVar1;
+	cp->ai.c.velRatio = FIXED(EVENT_CAR_SPEED) / (DistanceTriggerCarMoves - cp->ap.carCos->colBox.vz * 3);
 	cp->ai.c.targetRoute->x = (*startPos)[0];
 	cp->ai.c.targetRoute->z = (*startPos)[2];
 
@@ -3522,15 +3520,15 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	cp->ai.c.targetRoute[1].dir = direction;
 	cp->ai.c.targetRoute[1].distAlongSegment = 0;
 
-	cp->ai.c.targetRoute[1].x = (*startPos)[0] + (iVar10 * psVar8 + 0x800 >> 0xc);
-	cp->ai.c.targetRoute[1].z = (*startPos)[2] + (iVar10 * psVar7 + 0x800 >> 0xc);
+	cp->ai.c.targetRoute[1].x = (*startPos)[0] + FIXED(DistanceTriggerCarMoves * psVar8);
+	cp->ai.c.targetRoute[1].z = (*startPos)[2] + FIXED(DistanceTriggerCarMoves * psVar7);
 
 	cp->ai.c.targetRoute[2].pathType = 1;
 	cp->ai.c.targetRoute[2].dir = direction;
 	cp->ai.c.targetRoute[2].distAlongSegment = 0;
 
-	cp->ai.c.targetRoute[2].x = (*startPos)[0] + (iVar10 * (int)psVar8 * 3 + 0x800 >> 0xc);
-	cp->ai.c.targetRoute[2].z = (*startPos)[2] + (iVar10 * (int)psVar7 * 3 + 0x800 >> 0xc);
+	cp->ai.c.targetRoute[2].x = (*startPos)[0] + FIXED(DistanceTriggerCarMoves * psVar8 * 3);
+	cp->ai.c.targetRoute[2].z = (*startPos)[2] + FIXED(DistanceTriggerCarMoves * psVar7 * 3);
 
 	numCivCars++;
 
@@ -3984,7 +3982,7 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	ClearMem((char *)&civDat, 0x14);
+	ClearMem((char *)&civDat, sizeof(civDat));
 	baseLoc.vx = (player[playerNum].spoolXZ)->vx;
 	baseLoc.vz = (player[playerNum].spoolXZ)->vz;
 
@@ -4004,44 +4002,43 @@ int PingInCivCar(int minPingInDist)
 					goto LAB_000294b0;
 				cookieCount = 0;
 			}
-			else {
+			else 
+			{
 				if (cookieCount < 0x37)
 				{
 				LAB_000294b0:
 					cookieCount = cookieCount + 1;
 				}
 				else
-				{
 					cookieCount = 0;
-				}
 			}
-			if (cookieCount == cVar5) break;
-			if (requestCopCar == 0) {
-				model = (int)(cookieCount * 0x1000) / 0x2c;
-			}
-			else {
-				model = (int)(cookieCount * 0x1000) / 0x38;
-			}
-			if (requestCopCar == 0) {
-				iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2] << 3;
-			}
-			else {
-				iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2] * 10;
-			}
-			randomLoc.vx = baseLoc.vx + (iVar6 + 0x800 >> 0xc) * 0x800;
-			if (requestCopCar == 0) {
-				model = (int)(cookieCount * 0x1000) / 0x2c;
-			}
-			else {
-				model = (int)(cookieCount * 0x1000) / 0x38;
-			}
-			if (requestCopCar == 0) {
-				iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2 + 1] << 3;
-			}
-			else {
-				iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
-			}
-			randomLoc.vz = baseLoc.vz + (iVar6 + 0x800 >> 0xc) * 0x800;
+
+			if (cookieCount == cVar5)
+				break;
+
+			if (requestCopCar == 0)
+				model = (cookieCount * 0x1000) / 0x2c;
+			else
+				model = (cookieCount * 0x1000) / 0x38;
+
+			if (requestCopCar == 0)
+				iVar6 = rcossin_tbl[(model & 0xfff) * 2] << 3;
+			else
+				iVar6 = rcossin_tbl[(model & 0xfff) * 2] * 10;
+
+			randomLoc.vx = baseLoc.vx + FIXED(iVar6) * 0x800;
+
+			if (requestCopCar == 0)
+				model = (cookieCount * 0x1000) / 0x2c;
+			else
+				model = (cookieCount * 0x1000) / 0x38;
+
+			if (requestCopCar == 0)
+				iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] << 3;
+			else
+				iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
+
+			randomLoc.vz = baseLoc.vz + FIXED(iVar6) * 0x800;
 			roadSeg = RoadInCell(&randomLoc);
 		} while (((((roadSeg & 0xffffe000U) != 0) ||
 			(NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
@@ -4111,7 +4108,7 @@ int PingInCivCar(int minPingInDist)
 			iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2] * 10;
 		}
 
-		randomLoc.vx = baseLoc.vx + (iVar6 + 0x800 >> 0xc) * 0x800;
+		randomLoc.vx = baseLoc.vx + FIXED(iVar6) * 0x800;
 
 		if (requestCopCar == 0) {
 			model = (int)(cookieCount * 0x1000) / 0x2c;
@@ -4127,7 +4124,7 @@ int PingInCivCar(int minPingInDist)
 			iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
 		}
 
-		randomLoc.vz = baseLoc.vz + (iVar6 + 0x800 >> 0xc) * 0x800;
+		randomLoc.vz = baseLoc.vz + FIXED(iVar6) * 0x800;
 		roadSeg = RoadInCell(&randomLoc);
 	}
 	if (((((roadSeg & 0xffffe000U) != 0) || (NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
@@ -4345,7 +4342,7 @@ int PingInCivCar(int minPingInDist)
 			civDat.palette = (char)lVar8 + (char)(lVar8 / 5) * -5;
 		}
 	}
-	iVar6 = (int)car_cosmetics[model].colBox.vz;
+	iVar6 = car_cosmetics[model].colBox.vz;
 	if ((((roadSeg & 0xffffe000U) == 0) && ((int)(roadSeg & 0x1fffU) < NumDriver2Straights)) && (-1 < roadSeg)) 
 	{
 		uVar17 = 0;
@@ -4369,7 +4366,8 @@ int PingInCivCar(int minPingInDist)
 		sVar2 = straight->angle;
 		lVar9 = SquareRoot0(dx * dx + dz * dz);
 		uVar3 = straight->length;
-		civDat.distAlongSegment = (uVar3 >> 1) + (rcossin_tbl[(sVar2 - lVar8 & 0xfffU) * 2 + 1] * lVar9 + 0x800 >> 0xc);
+
+		civDat.distAlongSegment = (uVar3 >> 1) + FIXED(rcossin_tbl[(sVar2 - lVar8 & 0xfffU) * 2 + 1] * lVar9);
 
 		if (requestCopCar == 0) 
 		{
@@ -4381,18 +4379,15 @@ int PingInCivCar(int minPingInDist)
 				civDat.distAlongSegment = uVar3 - uVar17;
 			}
 		}
-		if ((*(uint *)(straight->ConnectIdx + 3) & 0xffff0000) == 0xff010000) {
+		if ((*(uint *)(straight->ConnectIdx + 3) & 0xffff0000) == 0xff010000)
 			uVar17 = cp->ai.c.currentLane;
-		}
-		else {
-			uVar17 = (int)straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
-		}
-		if ((uVar17 & 1) == 0) {
+		else
+			uVar17 = straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
+
+		if ((uVar17 & 1) == 0)
 			local_34 = straight->angle;
-		}
-		else {
+		else
 			local_34 = straight->angle + 0x800U & 0xfff;
-		}
 	}
 	else 
 	{
@@ -4893,7 +4888,7 @@ int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 				goto LAB_0002a800;
 
 			iVar5 = (cp->hd).wheel_speed;
-			iVar9 = (iVar5 * (iVar5 + 0x800 >> 0xc)) / (newAccel << 1);
+			iVar9 = (iVar5 * FIXED(iVar5)) / (newAccel << 1);
 
 			if (iVar9 < 0)
 				iVar9 = -iVar9;
@@ -4925,7 +4920,7 @@ int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 			}
 			cp->ai.c.thrustState = 1;
 		LAB_0002a800:
-			if (cp->hd.wheel_speed + 0x800 >> 0xc > cp->ai.c.maxSpeed)
+			if (FIXED(cp->hd.wheel_speed) > cp->ai.c.maxSpeed)
 			{
 				iVar10 = newAccel;
 				return iVar10 >> 2;
@@ -5018,11 +5013,11 @@ int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 						iVar7 = (p_Var8->hd).where.t[0] - (cp->hd).where.t[0];
 						iVar6 = (p_Var8->hd).where.t[2] - (cp->hd).where.t[2];
 
-						iVar5 = iVar7 * rcossin_tbl[uVar4 * 2] + iVar6 * rcossin_tbl[uVar4 * 2 + 1] + 0x800 >> 0xc;
+						iVar5 = FIXED(iVar7 * rcossin_tbl[uVar4 * 2] + iVar6 * rcossin_tbl[uVar4 * 2 + 1]);
 
 						if (0 < iVar5)
 						{
-							iVar6 = (iVar7 * rcossin_tbl[uVar4 * 2 + 1] - iVar6 * rcossin_tbl[uVar4 * 2]) + 0x800 >> 0xc;
+							iVar6 = FIXED(iVar7 * rcossin_tbl[uVar4 * 2 + 1] - iVar6 * rcossin_tbl[uVar4 * 2]);
 							if (iVar6 < 0)
 								iVar6 = -iVar6;
 
@@ -5248,7 +5243,7 @@ void SetUpCivCollFlags(void)
 		do {
 			if (local_2c->controlType == 2) 
 			{
-				y = local_2c->hd.wheel_speed + 0x800 >> 0xc;
+				y = FIXED(local_2c->hd.wheel_speed);
 
 				if (local_2c->wheel_angle < 0x3d)
 					y = y * 0xd;
@@ -5611,8 +5606,8 @@ int CivAccel(_CAR_DATA *cp)
 
 		if (cp->ai.c.carPauseCnt > 0 && collDat == 0)
 		{
-			iVar5 = (cp->hd).wheel_speed;
-			iVar4 = iVar5 + 0x800 >> 0xc;
+			iVar5 = cp->hd.wheel_speed;
+			iVar4 = FIXED(iVar5);
 			if (iVar4 < 0)
 				iVar4 = -iVar4;
 
@@ -5869,7 +5864,7 @@ int CivSteerAngle(_CAR_DATA *cp)
 		if (pCVar10->pathType == 0x7f) goto LAB_0002b600;
 	}
 	p_Var7 = cp;
-	p_Var16 = &currentCar;
+	p_Var16 = &currentCar;1
 	do {
 		p_Var9 = p_Var16;
 		p_Var6 = p_Var7;

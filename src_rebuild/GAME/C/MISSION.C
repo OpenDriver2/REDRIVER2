@@ -2671,7 +2671,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 					bVar2 = car_data[slot].ap.palette;
 
 					PingOutCar(car_data + slot);
-					slot = CreateCivCarWotDrivesABitThenStops(direction, (long(*)[4])pos, NULL, internalModel, (uint)bVar2);
+					slot = CreateCivCarWotDrivesABitThenStops(direction, (long(*)[4])pos, NULL, internalModel, bVar2);
 
 					car_data[slot].inform = piVar10;
 
