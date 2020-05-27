@@ -47,6 +47,12 @@ VECTOR roadblockLoc;
 
 static int said_picked_up = 0;
 
+char last_cop_phrase = 0;
+
+char CopWorkMem[444];		// PVS table
+COP_SIGHT_DATA copSightData;
+
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitCopState(struct _CAR_DATA *cp /*$s0*/, char *extraData /*$a1*/)
@@ -355,8 +361,6 @@ void InitCops(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-char last_cop_phrase = 0;
 
 // [D]
 void ControlCops(void)
@@ -1059,43 +1063,37 @@ LAB_0002eba4:
 	/* end block 4 */
 	// End Line: 4803
 
+// [D]
 int FindCost(int x, int z, int dvx, int dvz)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 
-	if (dvx < 0) {
-		dvx = dvx + 0xff;
-	}
-	if (dvz < 0) {
-		dvz = dvz + 0xff;
-	}
-	x = x - ((targetVehicle->hd).where.t[0] + (dvx >> 8));
-	if (x < 0) {
+	x = x - (targetVehicle->hd.where.t[0] + (dvx >> 8));
+
+	if (x < 0)
 		x = -x;
-	}
-	z = z - ((targetVehicle->hd).where.t[2] + (dvz >> 8));
-	if (z < 0) {
+
+	z = z - (targetVehicle->hd.where.t[2] + (dvz >> 8));
+
+	if (z < 0)
 		z = -z;
-	}
+
 	iVar1 = z;
-	if (x < z) {
+
+	if (x < z)
+	{
 		iVar1 = x;
 		x = z;
 	}
-	if (x != 0) {
-		if (x == 0) {
-			trap(7);
-		}
-		x = x * (uint)(byte)sqtbl[(iVar1 << 6) / x];
-		if (x < 0) {
-			x = x + 0x7f;
-		}
+
+	if (x != 0) 
+	{
+		x = x * sqtbl[(iVar1 << 6) / x];
+
 		return x >> 7;
 	}
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -1186,28 +1184,27 @@ void InitCopData(COP_DATA *pCopData)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void UpdateCopSightData(void)
 {
-	UNIMPLEMENTED();
-	/*
 	short *psVar1;
 
-	if ((int)player.playerCarId < 0) {
+	if (player[0].playerCarId < 0)
 		psVar1 = &pedestrianFelony;
-	}
-	else {
-		psVar1 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	if (*psVar1 < 0x293) {
+	else
+		psVar1 = &car_data[player[0].playerCarId].felonyRating;
+
+	if (*psVar1 < 0x293)
+	{
 		copSightData.surroundViewDistance = 0xaa0;
 		copSightData.frontViewDistance = 0x1e8c;
 		copSightData.frontViewAngle = 0x200;
 		return;
 	}
+
 	copSightData.surroundViewDistance = 0x1540;
 	copSightData.frontViewDistance = 0x3fc0;
 	copSightData.frontViewAngle = 0x400;
-	return;*/
 }
 
 
@@ -1367,9 +1364,6 @@ void UpdateCopSightData(void)
 	// End Line: 3043
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-char CopWorkMem[444];
-COP_SIGHT_DATA copSightData;
 
 // [D]
 void ControlCopDetection(void)
@@ -1661,49 +1655,52 @@ void ControlCopDetection(void)
 	/* end block 3 */
 	// End Line: 4655
 
+// [D]
 void PassiveCopTasks(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
 	short *psVar2;
 
-	if ((int)player.playerCarId < 0) {
+	if (player[0].playerCarId < 0)
 		psVar2 = &pedestrianFelony;
-	}
-	else {
-		psVar2 = &car_data[(int)player.playerCarId].felonyRating;
-	}
-	if (*psVar2 < 0x293) {
+	else 
+		psVar2 = &car_data[player[0].playerCarId].felonyRating;
+
+	if (*psVar2 < 0x293)
 		return;
-	}
-	if (player_position_known < 1) {
+
+	if (player_position_known < 1)
 		return;
+
+	ClearMem((char *)&cp->ai.p, sizeof(COP));
+
+	cp->controlType = 3;
+	cp->controlFlags = 0;
+
+	cp->ai.p.justPinged = 1;
+
+	if (gCopDifficultyLevel == 1) 
+	{
+		cp->hndType = 3;
 	}
-	ClearMem((char *)cp->ai, 0x28);
-	cp->controlType = '\x03';
-	cp->controlFlags = '\0';
-	cp->ai[0x11] = 1;
-	if (gCopDifficultyLevel == 1) {
-		cp->hndType = '\x03';
-	}
-	else {
-		uVar1 = '\x04';
-		if (gCopDifficultyLevel < 2) {
-			if (gCopDifficultyLevel != 0) {
-				cp->hndType = '\x04';
+	else 
+	{
+		cp->hndType = 4;
+
+		if (gCopDifficultyLevel < 2)
+		{
+			if (gCopDifficultyLevel != 0) 
+			{
+				cp->hndType = 4;
 				goto LAB_0002f7c4;
 			}
-			uVar1 = '\x02';
+			cp->hndType = 2;
 		}
-		cp->hndType = uVar1;
 	}
+
 LAB_0002f7c4:
-	cp->ai[0x11] = 0;
-	numCivCars = numCivCars + -1;
-	numActiveCops = numActiveCops + 1;
-	return;
-	*/
+	cp->ai.p.justPinged = 0;
+	numCivCars--;
+	numActiveCops++;
 }
 
 

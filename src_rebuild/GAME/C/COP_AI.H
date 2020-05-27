@@ -15,6 +15,8 @@ extern int roadblockDelayDiff[3];
 extern int  requestCopCar;
 extern int cop_respawn_timer;
 
+extern char last_cop_phrase;
+
 extern char first_offence;
 
 extern int player_position_known;

@@ -5,6 +5,7 @@
 #include "COP_AI.H"
 #include "CARS.H"
 #include "PLAYERS.H"
+#include "REPLAYS.H"
 
 // decompiled code
 // original method signature: 
@@ -29,11 +30,8 @@
 
 void StoreGameFlags(void)
 {
-	UNIMPLEMENTED();
-	/*
-	ReplayParameterPtr->weather = (uchar)gWeather;
-	ReplayParameterPtr->timeofday = (uchar)gTimeOfDay;
-	return;*/
+	ReplayParameterPtr->weather = gWeather;
+	ReplayParameterPtr->timeofday = gTimeOfDay;
 }
 
 
@@ -97,7 +95,7 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 			if (5000 < iVar1)
 				iVar2 = 25000000;
 
-			return (uint)(iVar2 < distToCarSq) ^ 1;
+			return (iVar2 < distToCarSq) ^ 1;
 		}
 	}
 
