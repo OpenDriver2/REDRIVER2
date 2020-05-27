@@ -1,6 +1,7 @@
 #ifndef BCOLLIDE_H
 #define BCOLLIDE_H
 
+extern int boxOverlap;
 
 extern int bcollided2d(struct CDATA2D *body, int needOverlap); // 0x0001C51C
 

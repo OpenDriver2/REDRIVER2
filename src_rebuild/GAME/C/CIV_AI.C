@@ -17,6 +17,11 @@
 #include "SPOOL.H"
 #include "PLAYERS.H"
 #include "COP_AI.H"
+#include "GAMESND.H"
+#include "SOUND.H"
+#include "BCOLLIDE.H"
+
+#include "INLINE_C.H"
 
 char speedLimits[3] = { 56, 97, 138 };
 
@@ -4695,8 +4700,7 @@ int CivControl(_CAR_DATA *cp)
 		if (cp->ai.c.changeLaneIndicateCount != 0) 
 			cp->ai.c.changeLaneIndicateCount--;
 
-		if ((((cp->ai.c.ctrlState == 5) && (cp->ai.c.thrustState == 3)) && (cp->totalDamage < 4)) && (((cp->ap).model != 3 &&
-			(lVar2 = Random2(0), (lVar2 + (0x19 - cp->id) * 0x10 & 0xff8) == 0xf00)))) 
+		if (cp->ai.c.ctrlState == 5 && cp->ai.c.thrustState == 3 && cp->totalDamage < 4 && (cp->ap.model != 3 && (Random2(0) + (0x19 - cp->id) * 0x10 & 0xff8) == 0xf00))
 		{
 			AttemptUnPark(cp);
 		}
@@ -4704,15 +4708,11 @@ int CivControl(_CAR_DATA *cp)
 		cp->thrust = CivAccel(cp);
 
 		if (cp->ai.c.thrustState != 3)
-		{
-			iVar3 = CivSteerAngle(cp);
-			cp->wheel_angle = iVar3;
-		}
+			cp->wheel_angle = CivSteerAngle(cp);
 	}
 
-	if ((cp->controlFlags & 1) != 0) {
+	if (cp->controlFlags & 1)
 		PassiveCopTasks(cp);
-	}
 
 	return 1;
 }
@@ -5165,212 +5165,256 @@ LAB_0002a800:
 /* WARNING: Removing unreachable block (ram,0x0002b034) */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int brakeLength[20];
+
+int CAR_PAUSE_START = 100;
+static _CAR_DATA(*horncarflag[2]) = { 0 };
+static unsigned char hornchanflag[2] = { 0 };
+
+// [D]
 void SetUpCivCollFlags(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	ushort uVar2;
 	bool bVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
 	int iVar4;
 	int iVar5;
 	uint uVar6;
 	long lVar7;
 	int iVar8;
 	_CAR_DATA **pp_Var9;
+	int y;
 	int iVar10;
-	int iVar11;
-	_CAR_DATA **pp_Var12;
-	CAR_COSMETICS *pCVar13;
+	_CAR_DATA **pp_Var11;
+	CAR_COSMETICS *pCVar12;
+	_CAR_DATA *p_Var13;
 	uint uVar14;
-	uchar *puVar15;
+	unsigned char *puVar15;
 	_CAR_DATA *p_Var16;
-	undefined4 local_48;
-	uint local_44;
-	undefined4 local_30;
+	SVECTOR boxDisp;
+	int carLength[2];
+	int dNewLBODY[2];
+	long local_30;
 	_CAR_DATA *local_2c;
 
-	ClearMem((char *)brakeLength, 0x50);
-	local_2c = car_data + 0x13;
-	do {
-		if (local_2c->controlType == '\x02') {
-			iVar10 = (local_2c->hd).wheel_speed + 0x800 >> 0xc;
-			if (local_2c->wheel_angle < 0x3d) {
-				iVar10 = iVar10 * 0xd;
-			}
-			else {
-				iVar10 = iVar10 << 2;
-			}
-			pCVar13 = (local_2c->ap).carCos;
-			iVar4 = (int)(pCVar13->colBox).vz;
-			cd.length[0] = iVar10;
-			if (iVar10 < 0) {
-				cd.length[0] = -iVar10;
-			}
-			cd.length[0] = iVar4 + 0x5d + cd.length[0];
-			cd.length[1] = (int)(pCVar13->colBox).vx;
-			setCopControlWord(2, 0, *(undefined4 *)(local_2c->hd).where.m);
-			setCopControlWord(2, 0x800, *(undefined4 *)((local_2c->hd).where.m + 2));
-			setCopControlWord(2, 0x1000, *(undefined4 *)((local_2c->hd).where.m + 4));
-			setCopControlWord(2, 0x1800, *(undefined4 *)((local_2c->hd).where.m + 6));
-			setCopControlWord(2, 0x2000, *(undefined4 *)((local_2c->hd).where.m + 8));
-			setCopControlWord(2, 0x2800, (local_2c->hd).where.t[0]);
-			setCopControlWord(2, 0x3000, (local_2c->hd).where.t[1]);
-			setCopControlWord(2, 0x3800, (local_2c->hd).where.t[2]);
-			local_48 = CONCAT22(-(pCVar13->cog).vy, -(pCVar13->cog).vx);
-			local_44 = local_44 & 0xffff0000 | (uint)(ushort)(((short)iVar10 - (pCVar13->cog).vz) + 0x5d);
-			setCopReg(2, in_zero, local_48);
-			setCopReg(2, in_at, local_44);
-			copFunction(2, 0x480012);
-			cd.x.vx = getCopReg(2, 0x19);
-			cd.x.vy = getCopReg(2, 0x1a);
-			cd.x.vz = getCopReg(2, 0x1b);
-			p_Var16 = car_data + 0x14;
-			cd.theta = (local_2c->hd).direction;
-			do {
-				if ((p_Var16->controlType == '\0') || (p_Var16 == local_2c)) {
-				LAB_0002b1a4:
-					bVar3 = p_Var16 + -1 < car_data;
-				}
-				else {
-					if ((int)(p_Var16[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == 0x14) {
-						if (player.playerType != '\x02') goto LAB_0002b1a4;
-						CDATA2D_000bd0e4.length[0] = 0x3c;
-						CDATA2D_000bd0e4.length[1] = 0x3c;
-						CDATA2D_000bd0e4.x.vx = player.pos[0];
-						CDATA2D_000bd0e4.x.vz = player.pos[2];
-						CDATA2D_000bd0e4.theta = player.dir;
-					}
-					else {
-						pCVar13 = (p_Var16->ap).carCos;
-						CDATA2D_000bd0e4.length[0] = (int)(pCVar13->colBox).vz;
-						CDATA2D_000bd0e4.length[1] = (int)(pCVar13->colBox).vx;
-						CDATA2D_000bd0e4.x.vx = (p_Var16->hd).oBox.location.vx;
-						CDATA2D_000bd0e4.x.vy = (p_Var16->hd).oBox.location.vy;
-						CDATA2D_000bd0e4.x.vz = (p_Var16->hd).oBox.location.vz;
-						CDATA2D_000bd0e4.theta = (p_Var16->hd).direction;
-					}
-					iVar10 = ((cd.length[0] + CDATA2D_000bd0e4.length[0]) * 3) / 2;
-					if (cd.x.vx - CDATA2D_000bd0e4.x.vx < 0) {
-						if (CDATA2D_000bd0e4.x.vx - cd.x.vx < iVar10) goto LAB_0002ae74;
-						goto LAB_0002b1a4;
-					}
-					if (iVar10 <= cd.x.vx - CDATA2D_000bd0e4.x.vx) goto LAB_0002b1a4;
-				LAB_0002ae74:
-					if (cd.x.vz - CDATA2D_000bd0e4.x.vz < 0) {
-						if (CDATA2D_000bd0e4.x.vz - cd.x.vz < iVar10) goto LAB_0002aeb0;
-						goto LAB_0002b1a4;
-					}
-					if (iVar10 <= cd.x.vz - CDATA2D_000bd0e4.x.vz) goto LAB_0002b1a4;
-				LAB_0002aeb0:
-					iVar11 = (local_2c->hd).where.t[1];
-					if ((int)(p_Var16[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == 0x14) {
-					LAB_0002af10:
-						iVar5 = player.pos[1] - iVar11;
-						if (iVar5 < 0) {
-							iVar5 = iVar11 - player.pos[1];
+	CDATA2D cd[2];
+
+	ClearMem((char *)brakeLength, sizeof(brakeLength));
+
+	local_2c = car_data + 19;
+	if (true) {
+		do {
+			if (local_2c->controlType == 2) 
+			{
+				y = local_2c->hd.wheel_speed + 0x800 >> 0xc;
+
+				if (local_2c->wheel_angle < 0x3d)
+					y = y * 0xd;
+				else 
+					y = y << 2;
+
+				pCVar12 = local_2c->ap.carCos;
+				iVar4 = pCVar12->colBox.vz;
+				cd[0].length[0] = y;
+
+				if (y < 0)
+					cd[0].length[0] = -y;
+
+				cd[0].length[0] = iVar4 + 0x5d + cd[0].length[0];
+				cd[0].length[1] = (int)(pCVar12->colBox).vx;
+
+				gte_SetRotMatrix(&local_2c->hd.where.m);
+				gte_SetTransMatrix(&local_2c->hd.where.m);
+
+				boxDisp.vx = -pCVar12->cog.vx;
+				boxDisp.vy = -pCVar12->cog.vy;
+				boxDisp.vz = (y - pCVar12->cog.vz) + 0x5d;
+
+				gte_ldv0(&boxDisp);
+
+				docop2(0x480012);
+
+				gte_stlvnl(&cd[0].x);
+
+				p_Var16 = car_data + 20;
+				cd[0].theta = local_2c->hd.direction;
+				if (true) {
+					do {
+						if (p_Var16->controlType == 0 || p_Var16 == local_2c)
+						{
+						LAB_0002b1a4:
+							bVar3 = p_Var16-1 < car_data;
 						}
-						if (499 < iVar5) goto LAB_0002b1a4;
-					}
-					else {
-						iVar8 = (p_Var16->hd).where.t[1];
-						iVar5 = iVar8 - iVar11;
-						if (iVar5 < 0) {
-							iVar5 = iVar11 - iVar8;
-						}
-						if (499 < iVar5) {
-							if ((int)(p_Var16[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 != 0x14)
+						else {
+							if (CAR_INDEX(p_Var16) == 20)
+							{
+								if (player[0].playerType != 2) 
+									goto LAB_0002b1a4;
+
+								cd[1].length[0] = 0x3c;
+								cd[1].length[1] = 0x3c;
+								cd[1].x.vx = player[0].pos[0];
+								cd[1].x.vz = player[0].pos[2];
+								cd[1].theta = player[0].dir;
+							}
+							else 
+							{
+								pCVar12 = (p_Var16->ap).carCos;
+								cd[1].length[0] = pCVar12->colBox.vz;
+								cd[1].length[1] = pCVar12->colBox.vx;
+								cd[1].x.vx = (p_Var16->hd).oBox.location.vx;
+								cd[1].x.vy = (p_Var16->hd).oBox.location.vy;
+								cd[1].x.vz = (p_Var16->hd).oBox.location.vz;
+								cd[1].theta = (p_Var16->hd).direction;
+							}
+
+							y = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
+							if (cd[0].x.vx - cd[1].x.vx < 0) 
+							{
+								if (cd[1].x.vx - cd[0].x.vx < y) 
+									goto LAB_0002ae74;
+
 								goto LAB_0002b1a4;
-							goto LAB_0002af10;
+							}
+
+							if (y <= cd[0].x.vx - cd[1].x.vx) 
+								goto LAB_0002b1a4;
+
+						LAB_0002ae74:
+							if (cd[0].x.vz - cd[1].x.vz < 0) 
+							{
+								if (cd[1].x.vz - cd[0].x.vz < y)
+									goto LAB_0002aeb0;
+
+								goto LAB_0002b1a4;
+							}
+
+							if (y <= cd[0].x.vz - cd[1].x.vz)
+								goto LAB_0002b1a4;
+
+						LAB_0002aeb0:
+							iVar10 = (local_2c->hd).where.t[1];
+
+							if (CAR_INDEX(p_Var16) == 20)
+							{
+							LAB_0002af10:
+								iVar5 = player[0].pos[1] - iVar10;
+								if (iVar5 < 0)
+									iVar5 = iVar10 - player[0].pos[1];
+
+								if (499 < iVar5)
+									goto LAB_0002b1a4;
+							}
+							else 
+							{
+								iVar8 = (p_Var16->hd).where.t[1];
+								iVar5 = iVar8 - iVar10;
+								if (iVar5 < 0) {
+									iVar5 = iVar10 - iVar8;
+								}
+								if (499 < iVar5) {
+									if ((int)(p_Var16[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2
+										!= 0x14) goto LAB_0002b1a4;
+									goto LAB_0002af10;
+								}
+							}
+
+							if (bcollided2d(cd, 1) == 0)
+								goto LAB_0002b1a4;
+
+							//ratan2(y, local_30);
+							uVar14 = (cd[0].length[0] - iVar4) - boxOverlap;
+
+							if (uVar14 < 1)
+								uVar14 = 1;
+						
+							uVar6 = brakeLength[local_2c->id];
+
+							if ((uVar6 == 0) || (uVar14 < uVar6))
+								brakeLength[local_2c->id] = uVar14;
+	
+							if (local_2c->ai.c.thrustState == 3) 
+								goto LAB_0002b1a4;
+
+							if (CAR_INDEX(p_Var16) == 20)
+								local_2c->ai.c.carPauseCnt = CAR_PAUSE_START;
+			
+							bVar3 = p_Var16 + -1 < car_data;
+							if ((local_2c->ai.c.thrustState != 3) &&
+								((p_Var16->controlType == 1 ||
+								(bVar3 = p_Var16 + -1 < car_data, CAR_INDEX(p_Var16) == 0x14))))
+							{
+								lVar7 = Random2(0);
+								p_Var13 = local_2c;
+
+								bVar3 = false;
+								pp_Var11 = horncarflag;
+								y = 1;
+								pp_Var9 = pp_Var11;
+								do {
+									if (*pp_Var9 == p_Var13) {
+										bVar3 = true;
+									}
+									y = y + -1;
+									pp_Var9 = pp_Var9 + 1;
+								} while (-1 < y);
+								y = 0;
+								puVar15 = hornchanflag;
+								do {
+									if ((!bVar3) && (*puVar15 == 0)) {
+										uVar14 = GetFreeChannel();
+										*puVar15 = uVar14;
+										SpuSetVoiceAR(uVar14 & 0xff, 0x1b);
+										bVar1 = (p_Var13->ap).model;
+
+										if (bVar1 == 4) 
+										{
+											uVar14 = ResidentModelsBodge();
+										}
+										else if(bVar1 < 3) 
+										{
+											uVar14 = (p_Var13->ap).model;
+										}
+										else
+										{
+											uVar14 = (p_Var13->ap).model - 1;
+										}
+
+										Start3DSoundVolPitch(*puVar15, 3, uVar14 * 3 + 2, (p_Var13->hd).where.t[0], (p_Var13->hd).where.t[1], (p_Var13->hd).where.t[2], -2000, 0x1000);
+										bVar1 = *puVar15;
+										uVar2 = channels[bVar1].time;
+										*pp_Var11 = p_Var13;
+
+										channels[bVar1].time = uVar2 + lVar7 + (lVar7 / 0x1e) * -0x1e;
+										break;
+									}
+									pp_Var11 = pp_Var11 + 1;
+									y = y + 1;
+									puVar15 = puVar15 + 1;
+								} while (y < 2);
+								goto LAB_0002b1a4;
+							}
 						}
-					}
-					iVar11 = bcollided2d(&cd, 1);
-					if (iVar11 == 0) goto LAB_0002b1a4;
-					ratan2(iVar10, local_30);
-					uVar14 = (cd.length[0] - iVar4) - boxOverlap;
-					if ((int)uVar14 < 1) {
-						uVar14 = 1;
-					}
-					uVar6 = brakeLength[(byte)local_2c->id];
-					if ((uVar6 == 0) || (uVar14 < uVar6)) {
-						brakeLength[(byte)local_2c->id] = uVar14;
-					}
-					if (local_2c->ai[0xf9] == 3) goto LAB_0002b1a4;
-					iVar10 = (int)(p_Var16[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2;
-					if (iVar10 == 0x14) {
-						*(int *)(local_2c->ai + 0x1c) = CAR_PAUSE_START;
-					}
-					bVar3 = p_Var16 + -1 < car_data;
-					if ((local_2c->ai[0xf9] != 3) &&
-						((p_Var16->controlType == '\x01' || (bVar3 = p_Var16 + -1 < car_data, iVar10 == 0x14)))
-						) {
-						lVar7 = Random2(0);
-						bVar3 = false;
-						pp_Var12 = &horncarflag2;
-						iVar10 = 1;
-						pp_Var9 = pp_Var12;
-						do {
-							if (*pp_Var9 == local_2c) {
-								bVar3 = true;
-							}
-							iVar10 = iVar10 + -1;
-							pp_Var9 = pp_Var9 + 1;
-						} while (-1 < iVar10);
-						iVar10 = 0;
-						puVar15 = &hornchanflag;
-						do {
-							if ((!bVar3) && (*puVar15 == 0)) {
-								uVar14 = GetFreeChannel();
-								*puVar15 = (byte)uVar14;
-								SpuSetVoiceAR(uVar14 & 0xff, 0x1b);
-								bVar1 = (local_2c->ap).model;
-								if (bVar1 == 4) {
-									uVar14 = ResidentModelsBodge();
-								}
-								else {
-									if (bVar1 < 3) {
-										uVar14 = (uint)(byte)(local_2c->ap).model;
-									}
-									else {
-										uVar14 = (uint)(byte)(local_2c->ap).model - 1;
-									}
-								}
-								Start3DSoundVolPitch
-								((uint)*puVar15, 3, uVar14 * 3 + 2, (local_2c->hd).where.t[0],
-									(local_2c->hd).where.t[1], (local_2c->hd).where.t[2], -2000, 0x1000);
-								bVar1 = *puVar15;
-								uVar2 = (&channels)[bVar1].time;
-								*pp_Var12 = local_2c;
-								(&channels)[bVar1].time = uVar2 + (short)lVar7 + (short)(lVar7 / 0x1e) * -0x1e;
-								break;
-							}
-							pp_Var12 = pp_Var12 + 1;
-							iVar10 = iVar10 + 1;
-							puVar15 = puVar15 + 1;
-						} while (iVar10 < 2);
-						goto LAB_0002b1a4;
-					}
+						p_Var16 = p_Var16 + -1;
+					} while (!bVar3);
 				}
-				p_Var16 = p_Var16 + -1;
-			} while (!bVar3);
+			}
+			local_2c = local_2c + -1;
+		} while (local_2c >= car_data);
+	}
+	uVar14 = 0;
+	do {
+		bVar1 = hornchanflag[uVar14];
+
+		if ((bVar1 != 0) && (channels[bVar1].time == 0)) 
+		{
+			horncarflag[uVar14] = NULL;
+			hornchanflag[uVar14] = 0;
+			SpuSetVoiceAR(0, 0x23);
 		}
-		local_2c = local_2c + -1;
-		if (local_2c <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
-			uVar14 = 0;
-			do {
-				bVar1 = (&hornchanflag)[uVar14];
-				if ((bVar1 != 0) && ((&channels)[bVar1].time == 0)) {
-					(&horncarflag2)[uVar14] = (_CAR_DATA *)0x0;
-					(&hornchanflag)[uVar14] = 0;
-					SpuSetVoiceAR(0, 0x23);
-				}
-				uVar14 = uVar14 + 1 & 0xff;
-			} while (uVar14 < 2);
-			return;
-		}
-	} while (true);*/
+		uVar14 = uVar14 + 1 & 0xff;
+
+	} while (uVar14 < 2);
 }
 
 
@@ -5442,99 +5486,108 @@ void SetUpCivCollFlags(void)
 	/* end block 5 */
 	// End Line: 7085
 
+int collDat = 0;
+int carnum = 0;
+
+int newAccel = 2000;
+
+// [D]
 int CivAccel(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
+	CIV_ROUTE_ENTRY *node;
 	uint uVar6;
-	int local_10[2];
+	int distToNode;
 
-	iVar5 = *(int *)(cp->ai + 8);
-	carnum = (int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2;
-	if ((iVar5 == 0) || (cp->ai[0xf9] == 3)) {
-		local_10[0] = -1;
+	node = cp->ai.c.ctrlNode;
+	carnum = CAR_INDEX(cp);
+
+	if (node == NULL || cp->ai.c.thrustState == 3) 
+	{
+		distToNode = -1;
 	}
-	else {
-		iVar3 = (cp->hd).where.t[0] - *(int *)(iVar5 + 8);
-		iVar5 = (cp->hd).where.t[2] - *(int *)(iVar5 + 0xc);
-		local_10[0] = SquareRoot0(iVar3 * iVar3 + iVar5 * iVar5);
+	else 
+	{
+		iVar3 = cp->hd.where.t[0] - node->x;
+		iVar4 = cp->hd.where.t[2] - node->z;
+
+		distToNode = SquareRoot0(iVar3 * iVar3 + iVar4 * iVar4);
 	}
-	if ((cp->ai[0xf9] != 3) && (*(short *)(*(int *)(cp->ai + 8) + 2) == 0x7f)) {
-		local_10[0] = -local_10[0];
+
+	if (cp->ai.c.thrustState != 3 && node && node->pathType == 127)
+	{
+		distToNode = -distToNode;
 	}
-	iVar5 = CivAccelTrafficRules(cp, local_10);
-	if (cp->ai[0xf9] != 3) {
-		collDat = brakeLength[(byte)cp->id];
-		iVar3 = (uint)(ushort)(((cp->ap).carCos)->colBox).vz << 0x10;
-		iVar4 = iVar3 >> 0x10;
-		if (collDat != 0) {
-			iVar1 = iVar4;
-			if (iVar4 < 0) {
-				iVar1 = iVar4 + 3;
-			}
-			uVar6 = iVar4 - (iVar3 >> 0x1f) >> 1;
-			if (collDat < (uint)(iVar4 * 2)) {
-				if (((uint)(iVar4 * 2) < collDat) && (uVar6 <= collDat)) {
-					uVar6 = uVar6 + iVar4 * -2;
-					if (uVar6 == 0) {
-						trap(7);
-					}
-					iVar3 = ((collDat + iVar4 * -2) * -100) / uVar6 + 100;
+
+	iVar3 = CivAccelTrafficRules(cp, &distToNode);
+
+	if (cp->ai.c.thrustState != 3) 
+	{
+		collDat = brakeLength[cp->id];
+		iVar4 = cp->ap.carCos->colBox.vz << 0x10;
+		iVar5 = iVar4 >> 0x10;
+		if (collDat != 0) 
+		{
+			iVar1 = iVar5;
+
+			uVar6 = iVar5 - (iVar4 >> 0x1f) >> 1;
+
+			if (collDat < (uint)(iVar5 * 2)) 
+			{
+				if (((iVar5 * 2) < collDat) && (uVar6 <= collDat)) 
+				{
+					uVar6 = uVar6 + iVar5 * -2;
+					iVar4 = ((collDat + iVar5 * -2) * -100) / uVar6 + 100;
 				}
-				else {
-					if ((uVar6 < collDat) && ((uint)(iVar1 >> 2) <= collDat)) {
-						uVar2 = (iVar1 >> 2) - uVar6;
-						if (uVar2 == 0) {
-							trap(7);
-						}
-						iVar3 = ((collDat - uVar6) * -300) / uVar2 + 400;
-					}
-					else {
-						iVar3 = 100;
-					}
+				else if ((uVar6 < collDat) && ((uint)(iVar1 >> 2) <= collDat)) {
+					uVar2 = (iVar1 >> 2) - uVar6;
+					iVar4 = ((collDat - uVar6) * -300) / uVar2 + 400;
+				}
+				else 
+				{
+					iVar4 = 100;
 				}
 			}
-			else {
-				iVar3 = 0;
+			else 
+			{
+				iVar4 = 0;
 			}
+
 			iVar1 = (cp->hd).wheel_speed;
-			iVar4 = -iVar1;
-			iVar3 = (newAccel * iVar3) / 100;
-			if (0 < iVar1) {
-				iVar4 = iVar4 + 3;
+			iVar5 = -iVar1;
+			iVar4 = (newAccel * iVar4) / 100;
+			iVar5 = iVar5 >> 2;
+
+			if ((iVar5 <= iVar4) && (iVar1 = iVar4 * -2, iVar4 = iVar5, iVar5 < iVar1)) 
+			{
+				iVar4 = iVar1;
 			}
-			iVar4 = iVar4 >> 2;
-			if ((iVar4 <= iVar3) && (iVar1 = iVar3 * -2, iVar3 = iVar4, iVar4 < iVar1)) {
-				iVar3 = iVar1;
-			}
-			if (iVar3 < iVar5) {
-				iVar5 = iVar3;
-			}
+
+			if (iVar4 < iVar3) 
+				iVar3 = iVar4;
 		}
-		if ((0 < *(int *)(cp->ai + 0x1c)) && (collDat == 0)) {
-			iVar4 = (cp->hd).wheel_speed;
-			iVar3 = iVar4 + 0x800 >> 0xc;
-			if (iVar3 < 0) {
-				iVar3 = -iVar3;
-			}
-			iVar1 = -iVar4;
-			if (iVar3 < 3) {
-				if (0 < iVar4) {
-					iVar1 = iVar1 + 3;
-				}
-				iVar5 = iVar1 >> 2;
-				*(int *)(cp->ai + 0x1c) = *(int *)(cp->ai + 0x1c) + -1;
+
+		if (cp->ai.c.carPauseCnt > 0 && collDat == 0)
+		{
+			iVar5 = (cp->hd).wheel_speed;
+			iVar4 = iVar5 + 0x800 >> 0xc;
+			if (iVar4 < 0)
+				iVar4 = -iVar4;
+
+			iVar1 = -iVar5;
+			if (iVar4 < 3)
+			{
+				iVar3 = iVar1 >> 2;
+				cp->ai.c.carPauseCnt -= 1;
 			}
 		}
 	}
-	return iVar5;
-	*/
+
+	return iVar3;
 }
 
 

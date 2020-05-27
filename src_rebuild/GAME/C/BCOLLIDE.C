@@ -1459,8 +1459,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						{
 							if (gNight != 0 && (modelpointers[gLastModelCollisionCheck]->flags2 & 0x1000) != 0)
 							{
-								iVar2 = damage_lamp(cop);
-								if (iVar2 != 0)
+								if (damage_lamp(cop) != 0)
 								{
 									memset(&lamp_velocity, 0, sizeof(lamp_velocity));
 
