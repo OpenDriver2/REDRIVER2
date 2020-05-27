@@ -2065,35 +2065,32 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	short sVar2;
 	int iVar3;
 	int iVar4;
-	unsigned char bVar5;
-	CAR_COSMETICS *pCVar6;
 	int iVar7;
 
 	int player_id;
 	int int_steer;
 	int analog_angle;
 
-	iVar7 = PadSteer;
-
 	int_steer = PadSteer;
 	player_id = GetPlayerId(cp);
-	bVar5 = cp->controlType;
 
 	// control player
 	if (cp->controlType == 1) 
 	{
-		if ((pad & 0x1010) == 0x1010 && (player_id > -1))
+		if ((pad & 0x1010) == 0x1010 && player_id > -1)
 		{
-			if (TannerStuckInCar(1) == 0)
+			if (!TannerStuckInCar(1))
 			{
 				if (player[0].dying == 0)
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, 0);
 			}
 			else if (lockAllTheDoors != 1)
+			{
 				gLockPickingAttempted = 1;
+			}
 		}
 
-		if ((gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage) || gCantDrive != 0) 
+		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0) 
 		{
 			pad = 0x10;
 
@@ -2107,13 +2104,9 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if (player_id > -1)
 		{
 			if (CarHasSiren(cp->ap.model) == 0)
-			{
 				player[player_id].horn.on = (pad >> 3) & 1;
-			}
 			else if((cp->lastPad & 8U) == 0 && (pad & 8) != 0)
-			{
 				player[player_id].horn.on ^= 8;
-			}
 		}
 	}
 
@@ -2191,14 +2184,12 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if ((pad & 4) == 0) 
 		{
 			int_steer *= ((int_steer * int_steer) / 80);
-			//analog_angle = int_steer / 2;
 			analog_angle = ((long long)int_steer * 0x66666667) >> 32;
 		}
 		else 
 		{
 			int_steer *= ((int_steer * int_steer) / 60);
-			//analog_angle = int_steer / 2;
-			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;
+			analog_angle = ((long long)int_steer * 0x88888889) >> 32;
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
@@ -2221,6 +2212,8 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			cp->wheel_angle -= 64;
 	}
 
+	cp->thrust = 0;
+
 	if (gTimeInWater != 0)
 	{
 		if ((pad & 0x80) != 0) 
@@ -2229,24 +2222,17 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			iVar3 = FIXED(iVar3 >> 10);
 
 			if (-iVar3 < 0x17) 
-			{
 				sVar2 = -5000;
-			}
 			else
-			{
-				sVar2 = (short)((uint)((iVar3 + 0x116) * -0x12aa) >> 8);
-			}
+				sVar2 = ((iVar3 + 0x116) * -0x12aa) >> 8;
 
 			cp->thrust = sVar2;
 			cp->thrust = FIXED(cp->thrust * cp->ap.carCos->powerRatio);
-			goto LAB_00056284;
 		}
-
-		if ((pad & 0x40) != 0)
+		else if ((pad & 0x40) != 0)
 		{
-			pCVar6 = cp->ap.carCos;
 			cp->thrust = 0x1333;
-			cp->thrust = FIXED(pCVar6->powerRatio * 0x1333);
+			cp->thrust = FIXED(cp->ap.carCos->powerRatio * 0x1333);
 
 			if (cp->hndType == 5)
 			{
@@ -2260,35 +2246,27 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 					{
 						sVar2 = 6000;
 						if (9 < iVar3) 
-						{
 							sVar2 = 0x1324;
-						}
 					}
 					else
-					{
 						sVar2 = 4000;
-					}
 				}
 				else
-				{
 					sVar2 = 3000;
-				}
+
 				cp->thrust = sVar2;
 			}
 
 			if (cp->controlType == 1) 
 			{
-				if (player[0].playerCarId == cp->id) 
-				{
-					iVar3 = player[0].targetCarId;
-				}
-				else
-				{
-					iVar3 = -1;
+				iVar3 = -1;
 
-					if (player[1].playerCarId == cp->id) 
-						iVar3 = player[1].targetCarId;
-				}
+				if (player[0].playerCarId == cp->id)
+					iVar3 = player[0].targetCarId;
+				else if (player[1].playerCarId == cp->id)
+					iVar3 = player[1].targetCarId;
+				else
+					iVar3 = -1;
 
 				if (iVar3 != -1) 
 				{
@@ -2300,34 +2278,23 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 					iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
 
-					if (iVar3 < 0x15) 
+					if (iVar3 < 21) 
 					{
 						if (iVar3 < 7) 
-						{
-							cp->thrust = ((cp->thrust * 0x1a2c) / 7000);
-						}
+							cp->thrust = ((cp->thrust * 6700) / 7000);
 						else 
-						{
-							cp->thrust = ((cp->thrust * 0x1ce8) / 7000);
-						}
+							cp->thrust = ((cp->thrust * 7400) / 7000);
 					}
 					else
-					{
 						cp->thrust = ((cp->thrust * 8000) / 7000);
-					}
 				}
 			}
 
 			if (cp->hndType == 0 && cp->hd.changingGear != 0)
 				cp->thrust = 1;
-
-			goto LAB_00056284;
 		}
 	}
 
-	cp->thrust = 0;
-
-LAB_00056284:
 	cp->lastPad = pad;
 }
 

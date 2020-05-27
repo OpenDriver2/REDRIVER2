@@ -189,7 +189,13 @@ int SaveReplayToBuffer(char *buffer)
 	memcpy(&header->SavedData, &MissionEndData, sizeof(MISSION_DATA));
 
 	// write each stream data
-	for (int i = 0; i < NumReplayStreams; i++)
+#ifdef CUTSCENE_RECORDER
+	int numStreams = gCutsceneAsReplay ? NumReplayStreams : NumPlayers;
+
+	for (int i = 0; i < numStreams; i++)
+#else
+	for (int i = 0; i < NumPlayers; i++)
+#endif
 	{
 		sheader = (REPLAY_STREAM_HEADER *)pt;
 		pt += sizeof(REPLAY_STREAM_HEADER);
@@ -231,7 +237,8 @@ int SaveReplayToBuffer(char *buffer)
 	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * 400);
 	pt += sizeof(_PING_PACKET) * 400;
 
-	if (gHaveStoredData)	
+	// [A] is that ever valid?
+	if (gHaveStoredData)
 	{
 		header->HaveStoredData = 0x91827364;	// -0x6e7d8c9c
 		memcpy(pt, &MissionStartData, sizeof(MISSION_DATA));

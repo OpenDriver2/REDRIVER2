@@ -2532,10 +2532,10 @@ int redriver2_main(int argc, char** argv)
 				replay_size = ftell(fp);
 				fseek(fp, 0, SEEK_SET);
 
-				fread(_overlay_buffer, replay_size, 1, fp);
+				fread(_other_buffer, replay_size, 1, fp);
 				fclose(fp);
 
-				if (LoadReplayFromBuffer(_overlay_buffer))
+				if (LoadReplayFromBuffer(_other_buffer))
 				{
 					CurrentGameMode = GAMEMODE_REPLAY;
 					gLoadedReplay = 1;

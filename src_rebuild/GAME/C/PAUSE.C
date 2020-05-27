@@ -592,12 +592,12 @@ void SaveReplay(int direction)
 #ifdef PSX
 	CallMemoryCard(0x10, 1);
 #else
-	int size = SaveReplayToBuffer(_overlay_buffer);
+	int size = SaveReplayToBuffer(_other_buffer);
 
 	FILE* fp = fopen("chase.d2rp", "wb");
 	if (fp)
 	{
-		fwrite(_overlay_buffer, size, 1, fp);
+		fwrite(_other_buffer, size, 1, fp);
 		fclose(fp);
 	}
 #endif

@@ -58,7 +58,7 @@ void StoreEndData(void)
 		carpos = MissionEndData.CarPos;
 
 		do {
-			if ((target->data[0] == 2) && ((target->data[1] & 0x10U) != 0))
+			if ((target->data[0] == 2) && ((target->data[1] & 0x10) != 0))
 			{
 				StoreCarPosition(target, carpos);
 				carpos++;
@@ -355,7 +355,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 	}
 	else 
 	{
-		memcpy(&ReplayStreams[numPlayersToCreate].SourceType, &PlayerStartInfo[0], sizeof(STREAM_SOURCE));
+		memcpy(&ReplayStreams[numPlayersToCreate].SourceType, PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[numPlayersToCreate]->type = 3;
 

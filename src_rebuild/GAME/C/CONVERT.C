@@ -225,7 +225,7 @@ void BuildWorldMatrix(void)
 	face_camera_work.m[2][0] = 0;
 	face_camera_work.m[2][2] = 0x1000;
 
-	RotMatrixY(-(int)camera_angle.vy & 0xfff, &face_camera_work);
+	RotMatrixY(-(camera_angle.vy & 0xfff), &face_camera_work);
 	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
 }
 
@@ -370,30 +370,28 @@ static int randomcounter = 0;
 void RandomInit(long i1, long i2)
 {
 	int step;
-	long *plVar1;
-	int iVar2;
+	int count;
 
-	plVar1 = rseed + 2;
+	long *plVar1;
+
 	step = 0x3b1cb49;
-	iVar2 = 0xe;
+	
 	randomindex = 0;
 	randomcounter = 0;
 	rseed[0] = i1;
 	rseed[1] = i2;
 
+	count = 14;
+	plVar1 = rseed + 2;
 	do {
-		*plVar1 = step;
-		plVar1 = plVar1 + 1;
-		iVar2 = iVar2 + -1;
-		step = step + 0x1c05e5f;
-	} while (-1 < iVar2);
+		*plVar1++ = step;
+		count--;
+		step += 0x1c05e5f;
+	} while (-1 < count);
 
 	step = 0;
-
-	do {
-		Random2(step);
-		step = step + 1;
-	} while (step < 0x44);
+	while (step < 68)
+		Random2(step++);
 }
 
 

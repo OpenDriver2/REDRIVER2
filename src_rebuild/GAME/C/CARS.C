@@ -1851,8 +1851,8 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 			uint rgbval = combointensity & 0xffffffU | 0x34000000;
 			gte_ldrgb(&rgbval);
 
-			cp->ap.qy = *(short *)(cp->st.n.orientation + 1);
-			cp->ap.qw = *(short *)(cp->st.n.orientation + 3);
+			cp->ap.qy = cp->st.n.orientation[1];
+			cp->ap.qw = cp->st.n.orientation[3];
 			cp->lowDetail = detail | lightning;
 
 			if (detail == 0) 
@@ -1866,7 +1866,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 				ppMVar6 = gCarCleanModelPtr;
 			}
 
-			uVar9 = (int)(uint)ppMVar6[bVar1]->num_point_normals / 3;
+			uVar9 = ppMVar6[bVar1]->num_point_normals / 3;
 			local_a3_900 = (SVECTOR *)ppMVar6[bVar1]->point_normals;
 
 			uVar7 = cp->id * 0x420;
