@@ -3449,85 +3449,92 @@ void InitCivCars(void)
 	/* end block 3 */
 	// End Line: 4911
 
+int EVENT_CAR_SPEED = 66; // 60
+int DistanceTriggerCarMoves = 5000;
+
+// [D] [A]
 int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*stopPos)[4], unsigned char internalModel, int palette)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
-	uint uVar2;
-	uchar *puVar3;
+	int uVar2;
+	unsigned char *puVar3;
 	long lVar4;
-	int iVar5;
-	_CAR_DATA *cp;
+	int y;
+	_CAR_DATA *p_Var5;
 	CAR_COSMETICS *pCVar6;
-	short *psVar7;
-	short *psVar8;
-	undefined2 uVar9;
+	short psVar7;
+	short psVar8;
+	_CAR_DATA *cp;
+	short sVar9;
 	int iVar10;
-	char acStack56[8];
-	undefined2 local_30;
-	undefined2 local_2e;
-	undefined4 local_2c;
-	undefined local_28;
-	undefined local_27;
+	_EXTRA_CIV_DATA civDat;
 
-	iVar5 = (int)((int)stopPos - (int)startPos) >> 2;
-	ratan2(iVar5, iVar5);
-	cp = car_data;
+	y = (stopPos - startPos) >> 2;
+	//ratan2(y, y);
+
+	p_Var5 = car_data;
 	puVar3 = reservedSlots;
+	cp = NULL;
+
 	do {
-		if ((cp->controlType == '\0') && (*puVar3 == '\0')) goto LAB_00028774;
-		cp = cp + 1;
-		puVar3 = puVar3 + 1;
-	} while (cp < car_data + 0x13);
-	cp = (_CAR_DATA *)0x0;
-LAB_00028774:
-	if (cp == (_CAR_DATA *)0x0) {
-		uVar2 = 0xffffffff;
-	}
-	else {
-		local_2c = 0;
-		local_2e = 8;
-		local_27 = 0;
-		local_28 = (undefined)palette;
-		uVar9 = (undefined2)direction;
-		local_30 = uVar9;
-		InitCar(cp, direction, startPos, '\x02', (uint)internalModel, 0, acStack56);
-		cp->ai[0xc] = 8;
-		psVar8 = rcossin_tbl + (direction & 0xfffU) * 2;
-		cp->ai[0xf8] = (byte)EVENT_CAR_SPEED;
-		iVar5 = EVENT_CAR_SPEED;
-		iVar10 = EVENT_CAR_SPEED * *psVar8;
-		psVar7 = rcossin_tbl + (direction & 0xfffU) * 2 + 1;
-		*(undefined4 *)(cp->st + 0x20) = 0;
-		*(int *)(cp->st + 0x1c) = iVar10;
-		iVar10 = DistanceTriggerCarMoves;
-		pCVar6 = (cp->ap).carCos;
-		*(int *)(cp->st + 0x24) = iVar5 * *psVar7;
-		iVar1 = iVar10 + (int)(pCVar6->colBox).vz * -3;
-		if (iVar1 == 0) {
-			trap(7);
+		if (p_Var5->controlType == 0 && *puVar3 == 0)
+		{
+			cp = p_Var5;
+			break;
 		}
-		*(int *)(cp->ai + 0x20) = (iVar5 << 0xc) / iVar1;
-		*(long *)(cp->ai + 0x2c) = (*startPos)[0];
-		lVar4 = (*startPos)[2];
-		*(byte **)(cp->ai + 8) = cp->ai + 0x34;
-		*(long *)(cp->ai + 0x30) = lVar4;
-		*(undefined2 *)(cp->ai + 0x36) = 1;
-		*(undefined2 *)(cp->ai + 0x34) = uVar9;
-		*(undefined4 *)(cp->ai + 0x38) = 0;
-		*(long *)(cp->ai + 0x3c) = (*startPos)[0] + (iVar10 * *psVar8 + 0x800 >> 0xc);
-		*(long *)(cp->ai + 0x40) = (*startPos)[2] + (iVar10 * *psVar7 + 0x800 >> 0xc);
-		*(undefined2 *)(cp->ai + 0x46) = 1;
-		*(undefined2 *)(cp->ai + 0x44) = uVar9;
-		*(undefined4 *)(cp->ai + 0x48) = 0;
-		*(long *)(cp->ai + 0x4c) = (*startPos)[0] + (iVar10 * (int)*psVar8 * 3 + 0x800 >> 0xc);
-		numCivCars = numCivCars + 1;
-		*(long *)(cp->ai + 0x50) = (*startPos)[0] + (iVar10 * (int)*psVar7 * 3 + 0x800 >> 0xc);
-		uVar2 = (uint)(byte)cp->id;
-	}
-	return uVar2;*/
+
+		p_Var5++;
+		puVar3++;
+	} while (p_Var5 < car_data + 19);
+
+	if (cp == NULL) 
+		return -1;
+
+	civDat.thrustState = 0;
+	civDat.ctrlState = 8;
+	civDat.controlFlags = 0;
+	civDat.palette = palette;
+	civDat.angle = direction;
+
+	InitCar(cp, direction, startPos, 2, internalModel, 0, (char *)&civDat);
+
+	cp->ai.c.ctrlState = 8;
+		
+	cp->ai.c.maxSpeed = EVENT_CAR_SPEED;
+
+	psVar8 = rcossin_tbl[(direction & 0xfffU) * 2];
+	psVar7 = rcossin_tbl[(direction & 0xfffU) * 2 + 1];
+
+	cp->st.n.linearVelocity[1] = 0;
+	cp->st.n.linearVelocity[0] = EVENT_CAR_SPEED * psVar8;
+	cp->st.n.linearVelocity[2] = EVENT_CAR_SPEED * psVar7;
+
+	iVar10 = DistanceTriggerCarMoves;
+
+	iVar1 = iVar10 - cp->ap.carCos->colBox.vz * 3;
+
+	cp->ai.c.velRatio = (EVENT_CAR_SPEED / 4096) / iVar1;
+	cp->ai.c.targetRoute->x = (*startPos)[0];
+	cp->ai.c.targetRoute->z = (*startPos)[2];
+
+	cp->ai.c.ctrlNode = &cp->ai.c.targetRoute[1];
+	cp->ai.c.targetRoute[1].pathType = 1;
+	cp->ai.c.targetRoute[1].dir = direction;
+	cp->ai.c.targetRoute[1].distAlongSegment = 0;
+
+	cp->ai.c.targetRoute[1].x = (*startPos)[0] + (iVar10 * psVar8 + 0x800 >> 0xc);
+	cp->ai.c.targetRoute[1].z = (*startPos)[2] + (iVar10 * psVar7 + 0x800 >> 0xc);
+
+	cp->ai.c.targetRoute[2].pathType = 1;
+	cp->ai.c.targetRoute[2].dir = direction;
+	cp->ai.c.targetRoute[2].distAlongSegment = 0;
+
+	cp->ai.c.targetRoute[2].x = (*startPos)[0] + (iVar10 * (int)psVar8 * 3 + 0x800 >> 0xc);
+	cp->ai.c.targetRoute[2].z = (*startPos)[2] + (iVar10 * (int)psVar7 * 3 + 0x800 >> 0xc);
+
+	numCivCars++;
+
+	return cp->id;
 }
 
 
