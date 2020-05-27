@@ -1102,24 +1102,21 @@ short scratchPad_zbuff[256];
 // [D]
 void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
-	POLYFT4 *pPVar3;
+	POLYFT4 *src;
 	POLY_FT4 *poly;
 
-	pPVar3 = scratchPad_skyPolygonsPtr;
+	src = scratchPad_skyPolygonsPtr;
 	poly = (POLY_FT4 *)current->primptr;
 
-	if ((((((-1 < (int)((uint)(ushort)scratchPad_skyVertices[pPVar3->v0].vy << 0x10)) ||
-		(-1 < (int)((uint)(ushort)scratchPad_skyVertices[pPVar3->v1].vy << 0x10))) ||
-		(-1 < (int)((uint)(ushort)scratchPad_skyVertices[pPVar3->v2].vy << 0x10))) ||
-		(-1 < (int)((uint)(ushort)scratchPad_skyVertices[pPVar3->v3].vy << 0x10))) &&
-		(((-1 < scratchPad_skyVertices[pPVar3->v0].vx ||
-		(-1 < scratchPad_skyVertices[pPVar3->v1].vx)) ||
-		((-1 < scratchPad_skyVertices[pPVar3->v2].vx ||
-		(-1 < scratchPad_skyVertices[pPVar3->v3].vx)))))) &&
-		(((scratchPad_skyVertices[pPVar3->v0].vx < 0x141 ||
-		(scratchPad_skyVertices[pPVar3->v1].vx < 0x141)) ||
-		((scratchPad_skyVertices[pPVar3->v2].vx < 0x141 ||
-		(scratchPad_skyVertices[pPVar3->v3].vx < 0x141)))))) 
+#ifdef PGXP
+	DVECTORF *outpoints = scratchPad_skyVertices;
+#else
+	DVECTOR *outpoints = scratchPad_skyVertices;
+#endif
+
+	if ((outpoints[src->v0].vy > -1 || outpoints[src->v1].vy > -1 || outpoints[src->v2].vy > -1 || outpoints[src->v3].vy > -1) && 
+		(outpoints[src->v0].vx > -1 || outpoints[src->v1].vx > -1 || outpoints[src->v2].vx > -1 || outpoints[src->v3].vx > -1) &&
+		(outpoints[src->v0].vx < 321 || outpoints[src->v1].vx < 321 || outpoints[src->v2].vx < 321 || outpoints[src->v3].vx < 321))
 	{
 		setPolyFT4(poly);
 
@@ -1128,14 +1125,14 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		poly->b0 = b;
 
 
-		poly->x0 = scratchPad_skyVertices[pPVar3->v0].vx;
-		poly->y0 = scratchPad_skyVertices[pPVar3->v0].vy - offset;
-		poly->x1 = scratchPad_skyVertices[pPVar3->v1].vx;
-		poly->y1 = scratchPad_skyVertices[pPVar3->v1].vy - offset;
-		poly->x2 = scratchPad_skyVertices[pPVar3->v3].vx;
-		poly->y2 = scratchPad_skyVertices[pPVar3->v3].vy - offset;
-		poly->x3 = scratchPad_skyVertices[pPVar3->v2].vx;
-		poly->y3 = scratchPad_skyVertices[pPVar3->v2].vy - offset;
+		poly->x0 = outpoints[src->v0].vx;
+		poly->y0 = outpoints[src->v0].vy;
+		poly->x1 = outpoints[src->v1].vx;
+		poly->y1 = outpoints[src->v1].vy;
+		poly->x2 = outpoints[src->v3].vx;
+		poly->y2 = outpoints[src->v3].vy;
+		poly->x3 = outpoints[src->v2].vx;
+		poly->y3 = outpoints[src->v2].vy;
 
 		poly->u0 = skytexuv[skytexnum].u2;
 		poly->v0 = skytexuv[skytexnum].v2;
@@ -1151,9 +1148,8 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		addPrim(current->ot + 0x107f, poly);
 
 #ifdef PGXP
-		// disable PGXP lookups as verts has been modified
 		poly->pgxp_index = 0xFFFF;
-#endif
+#endif 
 
 		current->primptr = current->primptr + sizeof(POLY_FT4);
 	}
@@ -1236,17 +1232,28 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 	{
 		zbuff = scratchPad_zbuff;
 
-		dv2 = scratchPad_skyVertices + 2;
-		dv1 = scratchPad_skyVertices + 1;
 		dv0 = scratchPad_skyVertices;
+		dv1 = scratchPad_skyVertices + 1;
+		dv2 = scratchPad_skyVertices + 2;
 
-		v2 = pSVar6 + 2;
-		v1 = pSVar6 + 1;
 		v0 = pSVar6;
+		v1 = pSVar6 + 1;
+		v2 = pSVar6 + 2;
 
 		do {
-			
-			gte_RotTransPers3(v0, v1, v2, dv0, dv1, dv2, &p, &flag, &z);
+			SVECTOR sv0 = *v0;
+			SVECTOR sv1 = *v1;
+			SVECTOR sv2 = *v2;
+
+			sv0.vy -= sky_y_offset[GameLevel];
+			sv1.vy -= sky_y_offset[GameLevel];
+			sv2.vy -= sky_y_offset[GameLevel];
+
+			gte_ldv3(&sv0, &sv1, &sv2);
+			gte_rtpt();
+			gte_stsxy3(dv0, dv1, dv2);
+
+			gte_stszotz(&z);
 
 			dv2 += 3;
 			dv1 += 3;
@@ -1263,7 +1270,7 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 			zbuff[0] = z;
 
 			zbuff += 3;
-		} while (iVar13 < (int)((uint)model->num_vertices + 3));
+		} while (iVar13 < model->num_vertices + 3);
 	}
 
 	if (0 < scratchPad_zbuff[16])
@@ -1292,11 +1299,11 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 
 				scratchPad_skyPolygonsPtr = (POLYFT4*)pbVar14; //_DAT_1f80003c = pbVar14;
 
-				PlotSkyPoly((uint)bVar1, uVar17, uVar16, uVar4, sky_y_offset[GameLevel]);
+				PlotSkyPoly(bVar1, uVar17, uVar16, uVar4, 0);
 
 				iVar13 = iVar13 + 1;
 				pbVar14 = pbVar14 + PolySizes[*pbVar14];
-			} while (iVar13 < (int)(uint)model->num_polys);
+			} while (iVar13 < model->num_polys);
 		}
 	}
 }
