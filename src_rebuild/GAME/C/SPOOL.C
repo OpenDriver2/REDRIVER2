@@ -4267,61 +4267,87 @@ void PrepareSecretCar(void)
 // [D]
 void InitSpecSpool(void)
 {
-	if (((((((gCurrentMissionNumber == 2) || (gCurrentMissionNumber == 4)) ||
-		(gCurrentMissionNumber == 6)) ||
-		((((gCurrentMissionNumber == 7 || (gCurrentMissionNumber == 10)) ||
-		((gCurrentMissionNumber == 0xb ||
-		((gCurrentMissionNumber == 0xc || (gCurrentMissionNumber == 0xd)))))) ||
-		(gCurrentMissionNumber == 0x10)))) ||
-		(((((gCurrentMissionNumber == 0x12 || (gCurrentMissionNumber == 0x13)) ||
-		(gCurrentMissionNumber == 0x14)) ||
-		((gCurrentMissionNumber == 0x18 || (gCurrentMissionNumber == 0x1a)))) ||
-		((gCurrentMissionNumber == 0x1b ||
-		((gCurrentMissionNumber == 0x1d || (gCurrentMissionNumber == 0x1e)))))))) ||
-		(((((gCurrentMissionNumber == 0x1f ||
-		(((((gCurrentMissionNumber == 0x21 || (gCurrentMissionNumber == 0x23)) ||
-		(gCurrentMissionNumber == 0x26)) ||
-		((gCurrentMissionNumber == 0x27 || (gCurrentMissionNumber == 0x28)))) ||
-		(gCurrentMissionNumber == 0x3a)))) ||
-		((((gCurrentMissionNumber == 0x3b || (gCurrentMissionNumber == 0x3c)) ||
-		((gCurrentMissionNumber == 0x3d ||
-		(((gCurrentMissionNumber == 0x3e || (gCurrentMissionNumber == 0x3f)) ||
-		(gCurrentMissionNumber == 0x40)))))) ||
-		(((gCurrentMissionNumber == 0x41 || (gCurrentMissionNumber == 0x46)) ||
-		(gCurrentMissionNumber == 0x4e)))))) ||
-		(((gCurrentMissionNumber == 0x56 || (gCurrentMissionNumber == 0x5e)) ||
-		((gCurrentMissionNumber == 0x1f2 ||
-		(((gCurrentMissionNumber == 499 || (gCurrentMissionNumber == 500)) ||
-		(gCurrentMissionNumber == 0x1f5)))))))) ||
-		(((gCurrentMissionNumber == 0x1f6 || (gCurrentMissionNumber == 0x1f7)) ||
-		((gCurrentMissionNumber == 0x1f8 ||
-		((((gCurrentMissionNumber == 0x1f9 || (gCurrentMissionNumber == 0xe4)) ||
-		((gCurrentMissionNumber == 0xe5 ||
-		((((gCurrentMissionNumber == 0xec || (gCurrentMissionNumber == 0xed)) ||
-		(gCurrentMissionNumber == 0xf4)) ||
-		((gCurrentMissionNumber == 0xf5 || (gCurrentMissionNumber == 0xfc)))))))) ||
-		(gCurrentMissionNumber == 0xfd)))))))))) ||
-		(((gCurrentMissionNumber == 0x1a4 || (gCurrentMissionNumber == 0x1a5)) ||
-		((((((gCurrentMissionNumber == 0x1ac ||
-		(((gCurrentMissionNumber == 0x1ad || (gCurrentMissionNumber == 0x1b4)) ||
-		(gCurrentMissionNumber == 0x1b5)))) ||
-		(((gCurrentMissionNumber == 0x1bc || (gCurrentMissionNumber == 0x1bd)) ||
-		(gCurrentMissionNumber == 0x160)))) ||
-		((gCurrentMissionNumber == 0x161 || (gCurrentMissionNumber == 0x168)))) ||
-		((gCurrentMissionNumber == 0x169 ||
-		(((gCurrentMissionNumber == 0x170 || (gCurrentMissionNumber == 0x171)) ||
-		(gCurrentMissionNumber == 0x178)))))) ||
-		((((gCurrentMissionNumber == 0x179 || (gCurrentMissionNumber == 0x1e0)) ||
-		(gCurrentMissionNumber == 0x1e1)) ||
-		(((gCurrentMissionNumber == 0x1e2 || (gCurrentMissionNumber == 0x1e3)) ||
-		((gCurrentMissionNumber == 0x1e4 ||
-		(((gCurrentMissionNumber == 0x1e5 || (gCurrentMissionNumber == 0x1e6)) ||
-		(gCurrentMissionNumber == 0x1e7)))))))))))))) // xD
+	switch (gCurrentMissionNumber)
 	{
-		allowSpecSpooling = 0;
-	}
-	else {
-		allowSpecSpooling = 1;
+		case 2: 
+		case 4:
+		case 6:
+		case 7:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+		case 16:
+		case 18:
+		case 19:
+		case 20:
+		case 24:
+		case 26:
+		case 27:
+		case 29:
+		case 30:
+		case 31:
+		case 33:
+		case 35:
+		case 38:
+		case 39:
+		case 40:
+		case 58:
+		case 59:
+		case 60:
+		case 61:
+		case 62:
+		case 63:
+		case 64:
+		case 65:
+		case 70:
+		case 78:
+		case 86:
+		case 94:
+		case 228:
+		case 229:
+		case 236:
+		case 237:
+		case 244:
+		case 245:
+		case 252:
+		case 253:
+		case 352:
+		case 353:
+		case 360:
+		case 169:
+		case 368:
+		case 369:
+		case 376:
+		case 377:
+		case 420:
+		case 421:
+		case 428:
+		case 429:
+		case 436:
+		case 437:
+		case 444:
+		case 445:
+		case 480:
+		case 481:
+		case 482:
+		case 483:
+		case 484:
+		case 485:
+		case 486:
+		case 487:
+		case 498:
+		case 499:
+		case 500:
+		case 501:
+		case 502:
+		case 503:
+		case 504:
+		case 505:
+			allowSpecSpooling = 0;
+			break;
+		default:
+			allowSpecSpooling = 1;
 	}
 
 	specModelValid = 1;

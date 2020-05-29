@@ -535,24 +535,27 @@ int LoadAttractReplay(int mission)
 // [D]
 char GetPingInfo(char *cookieCount)
 {
-	char cVar1;
-	_PING_PACKET *p_Var2;
+	char retCarId;
+	_PING_PACKET *pp;
 
-	p_Var2 = PingBuffer + PingBufferPos;
+	retCarId = -1;
+
+	pp = PingBuffer + PingBufferPos;
 
 	if (PingBuffer != NULL && PingBufferPos < 400)
 	{
-		cVar1 = -1;
-		if (p_Var2->frame != 0xffff) 
+		if (pp->frame != 0xffff) 
 		{
-			if ((CameraCnt - frameStart & 0xffffU) < p_Var2->frame) 
+			if ((CameraCnt - frameStart & 0xffffU) < pp->frame) 
 				return -1;
 
-			cVar1 = p_Var2->carId;
-			*cookieCount = p_Var2->cookieCount;
-			PingBufferPos = PingBufferPos + 1;
+			retCarId = pp->carId;
+			*cookieCount = pp->cookieCount;
+
+			PingBufferPos++;
 		}
-		return cVar1;
+
+		return retCarId;
 	}
 
 	return -1;

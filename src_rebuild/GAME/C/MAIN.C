@@ -743,31 +743,37 @@ void GameInit(void)
 	}
 
 	LoadMission(gCurrentMissionNumber);
-	if (gCurrentMissionNumber == 0x26) {
+
+	if (gCurrentMissionNumber == 38) 
 		MissionHeader->residentModels[4] = 9;
-	}
-	if (GameType == GAME_MISSION) {
+
+	if (GameType == GAME_MISSION) 
 		SetupFadePolys();
-	}
-	if (NewLevel != 0) {
+	
+	if (NewLevel != 0)
 		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 36);
-	}
-	if (AttractMode != 0) {
+
+	if (AttractMode != 0) 
+	{
 		TriggerInGameCutscene(0);
 		NoPlayerControl = 1;
 	}
+
 	ResetSound();
 
 	LockChannel(0);
 	LockChannel(1);
 	LockChannel(2);
-	if (NumPlayers == 2) {
+
+	if (NumPlayers == 2)
+	{
 		LockChannel(3);
 		LockChannel(4);
 		LockChannel(5);
 	}
 
-	if (NewLevel != 0) {
+	if (NewLevel != 0)
+	{
 		ShowLoading();
 		LoadLevelSFX(gCurrentMissionNumber);
 	}
@@ -847,10 +853,8 @@ void GameInit(void)
 	int_garage_door();
 	SpoolSYNC();
 
-	//Emulator_SaveVRAM("VRAM_AFTER_LOAD.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
-
 	InitialiseCarHandling();
-	ClearMem((char *)&player, 0x3a0);
+	ClearMem((char *)player, sizeof(player));
 
 	InitDrivingGames();
 	InitThrownBombs();
@@ -1156,7 +1160,6 @@ void StepSim(void)
 	int stream;
 	uint uVar5;
 	int *piVar6;
-	uint uVar7;
 	_CAR_DATA *cp;
 	_PLAYER *pl;
 	int i;
@@ -1222,37 +1225,32 @@ LAB_00059c1c:
 	}
 	else 
 	{
-		i = 0;
 		if (gInGameChaseActive == 0) 
 		{
-			if ((numCivCars < maxCivCars) && (NumPlayers == 1)) {
-				i = 0;
-				while ((i < 5 && (car = PingInCivCar(15900), car == 0))) 
+			if(numCivCars < maxCivCars && NumPlayers == 1)
+			{
+				// make 5 tries
+				for (i = 0; i < 5; i++)
 				{
-					i = i + 1;
+					if (PingInCivCar(15900))
+						break;
 				}
 			}
 		}
 		else 
 		{
-			if ((PingBufferPos < 400) && ((uint)PingBuffer[PingBufferPos].frame <= (CameraCnt - frameStart & 0xffffU))) 
+			// ping buffer used to spawn civ cars
+			i = 0;
+			while (i < 10 && PingBufferPos < 400 && PingBuffer[PingBufferPos].frame <= (CameraCnt - frameStart & 0xffffU))
 			{
-				while (true)
-				{
-					PingInCivCar(15900);
-					i = i + 1;
-					if (399 < PingBufferPos)
-						break;
-					if (((CameraCnt - frameStart & 0xffffU) < (uint)PingBuffer[PingBufferPos].frame)
-						|| (10 < i)) break;
-				}
+				PingInCivCar(15900);
+				i++;
 			}
 		}
 
 		SetUpCivCollFlags();
 	}
 
-	uVar7 = 0xd43fc;
 	numRoadblockCars = 0;
 	numInactiveCars = 0;
 	numParkedCars = 0;
@@ -1324,87 +1322,86 @@ LAB_00059c1c:
 
 	while (cp <= &car_data[0x13])
 	{
-		if (true) {
-			switch (cp->controlType) 
+		switch (cp->controlType) 
+		{
+		case 1:
+			t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
+			t1 = Pads[*cp->ai.padid].mapanalog[2];
+			t2 = Pads[*cp->ai.padid].type & 4;
+
+			if (NoPlayerControl == 0) 
 			{
-			case 1:
-				t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
-				t1 = Pads[*cp->ai.padid].mapanalog[2];
-				t2 = Pads[*cp->ai.padid].type & 4;
-
-				if (NoPlayerControl == 0) 
+				if (gStopPadReads != 0) 
 				{
-					if (gStopPadReads != 0) 
-					{
-						t0 = 0x80;
+					t0 = 0x80;
 
-						if (cp->hd.wheel_speed < 0x9001)
-							t0 = 0x10;
+					if (cp->hd.wheel_speed < 0x9001)
+						t0 = 0x10;
 
-						t1 = 0;
-						t2 = 1;
-					}
-
-					cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
-				}
-				else 
-				{
-					cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+					t1 = 0;
+					t2 = 1;
 				}
 
-				ProcessCarPad(cp, t0, t1, t2);
-				break;
-			case 2:
-				CivControl(cp);
-				break;
-			case 3:
-				CopControl(cp);
-				break;
-			case 4:
-				UNIMPLEMENTED();
-				/*
-				t2 = 0;
-				t1 = '\0';
-				t0 = 0;
-				t0 = FreeRoamer(cp);	// [A]
-				if (t0_18 == 0) {
-					cp->handbrake = '\x01';
-					cp->wheel_angle = 0;
-				}
-				else {
-					ProcessCarPad(cp, t0_18, t1_19, t2_20);
-				}*/
-				break;
-			case 7:
-#ifdef CUTSCENE_RECORDER
-				extern int gCutsceneAsReplay;
-				extern int gCutsceneAsReplay_PlayerId;
-
-				if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
-				{
-					t0 = Pads[0].mapped;	// [A] padid might be wrong
-					t1 = Pads[0].mapanalog[2];
-					t2 = Pads[0].type & 4;
-
-					if (gStopPadReads != 0)
-					{
-						t0 = 0x80;
-
-						if (cp->hd.wheel_speed < 0x9001)
-							t0 = 0x10;
-
-						t1 = 0;
-						t2 = 1;
-					}
-
-					cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
-				}
-				else
-#endif
-				cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
-				ProcessCarPad(cp, t0, t1, t2);
+				cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
 			}
+			else 
+			{
+				cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
+			}
+
+			ProcessCarPad(cp, t0, t1, t2);
+			break;
+		case 2:
+			CivControl(cp);
+			break;
+		case 3:
+			CopControl(cp);
+			break;
+		case 4:
+			UNIMPLEMENTED();
+			/*
+			t2 = 0;
+			t1 = '\0';
+			t0 = 0;
+			t0 = FreeRoamer(cp);	// [A]
+			if (t0_18 == 0) {
+				cp->handbrake = '\x01';
+				cp->wheel_angle = 0;
+			}
+			else {
+				ProcessCarPad(cp, t0_18, t1_19, t2_20);
+			}*/
+			break;
+		case 7:
+#ifdef CUTSCENE_RECORDER
+			extern int gCutsceneAsReplay;
+			extern int gCutsceneAsReplay_PlayerId;
+
+			if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
+			{
+				t0 = Pads[0].mapped;	// [A] padid might be wrong
+				t1 = Pads[0].mapanalog[2];
+				t2 = Pads[0].type & 4;
+
+				if (gStopPadReads != 0)
+				{
+					t0 = 0x80;
+
+					if (cp->hd.wheel_speed < 0x9001)
+						t0 = 0x10;
+
+					t1 = 0;
+					t2 = 1;
+				}
+
+				cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
+			}
+			else
+#endif
+			cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
+			ProcessCarPad(cp, t0, t1, t2);
 		}
+
 		StepCarPhysics(cp);
 		cp++;
 	}
