@@ -256,18 +256,11 @@ _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 	/* end block 4 */
 	// End Line: 7770
 
+// [D]
 int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE *cv)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-
-	iVar1 = ratan2(x - cv->Midx, z - cv->Midz);
-	return (uint)((int)(((dir - iVar1) + 0x800U & 0xfff) - 0x800) < 1) << 0xb;*/
+	return ((((dir - ratan2(x - cv->Midx, z - cv->Midz)) + 0x800U & 0xfff) - 0x800) < 1) << 0xb;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -278,22 +271,20 @@ int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE *cv)
 	/* end block 1 */
 	// End Line: 1861
 
+// [D]
 void CivCarFX(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	if (cp->ai[0xf9] != 3) {
-		if (*(int *)(cp->ai + 0x14) != -1) {
-			AddIndicatorLight(cp, (uint)cp->ai[0xf]);
-		}
-		if ((*(int *)(cp->ai + 0x18) != 0) && (*(int *)(cp->ai + 0x14) == -1)) {
-			AddIndicatorLight(cp, (uint)cp->ai[0xe]);
-		}
+	if (cp->ai.c.thrustState != 3)
+	{
+		if (cp->ai.c.turnNode != -1)
+			AddIndicatorLight(cp, cp->ai.c.turnDir);
+
+		if (cp->ai.c.changeLaneIndicateCount != 0 && cp->ai.c.turnNode == -1)
+			AddIndicatorLight(cp, cp->ai.c.changeLane);
 	}
-	if (cp->ai[0x10] != 0) {
+
+	if (cp->ai.c.brakeLight != 0)
 		AddBrakeLight(cp);
-	}
-	return;*/
 }
 
 
@@ -3883,6 +3874,7 @@ int dy = 0; // offset 0xAAB44
 int dz = 0; // offset 0xAAB48
 
 // [D] [A] - some register is not properly decompiled
+// TODO: store pings
 int PingInCivCar(int minPingInDist)
 {
 	unsigned char bVar1;
@@ -3983,31 +3975,32 @@ int PingInCivCar(int minPingInDist)
 	}
 
 	ClearMem((char *)&civDat, sizeof(civDat));
-	baseLoc.vx = (player[playerNum].spoolXZ)->vx;
-	baseLoc.vz = (player[playerNum].spoolXZ)->vz;
+	baseLoc.vx = player[playerNum].spoolXZ->vx;
+	baseLoc.vz = player[playerNum].spoolXZ->vz;
 
-	if ((requestCopCar == 0) && (0x2b < cookieCount)) 
+	if (requestCopCar == 0 && cookieCount > 43) 
 	{
-		cookieCount = cookieCount-0x19;
+		cookieCount -= 25;
 	}
 
 	cVar5 = cookieCount;
 
-	if ((useStoredPings == 0) || (gInGameChaseActive == 0)) 
+	if (useStoredPings == 0 || gInGameChaseActive == 0) 
 	{
 		do {
 			if (requestCopCar == 0) 
 			{
-				if (cookieCount < 0x2b)
+				if (cookieCount < 43)
 					goto LAB_000294b0;
+
 				cookieCount = 0;
 			}
 			else 
 			{
-				if (cookieCount < 0x37)
+				if (cookieCount < 55)
 				{
 				LAB_000294b0:
-					cookieCount = cookieCount + 1;
+					cookieCount++;
 				}
 				else
 					cookieCount = 0;
@@ -4040,98 +4033,95 @@ int PingInCivCar(int minPingInDist)
 
 			randomLoc.vz = baseLoc.vz + FIXED(iVar6) * 0x800;
 			roadSeg = RoadInCell(&randomLoc);
+
 		} while (((((roadSeg & 0xffffe000U) != 0) ||
 			(NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
 			(((roadSeg & 0xffffe000U) != 0x4000 ||
 			(NumDriver2Curves <= (int)(roadSeg & 0x1fffU))))) || (roadSeg < 0));
 	}
-	else {
-		cVar5 = GetPingInfo(&cookieCount);
-		iVar6 = cVar5;
-		if (iVar6 == -1) {
+	else 
+	{
+		iVar6 = GetPingInfo(&cookieCount);
+
+		if (iVar6 == -1)
 			return 0;
-		}
-		if (0x13 < iVar6) {
+
+		if (19 < iVar6)
 			return 0;
-		}
+
 		cp = car_data + iVar6;
+
+		// free slot
 		if (car_data[iVar6].controlType != 0) 
 		{
-			testNumPingedOut = testNumPingedOut + 1;
+			testNumPingedOut++;
+
 			if (car_data[iVar6].controlType == 2)
 			{
 				if ((car_data[iVar6].controlFlags & 1) != 0)
-				{
-					numCopCars = numCopCars + -1;
-				}
-				numCivCars = numCivCars + -1;
+					numCopCars--;
+
+				numCivCars--;
+
 				if (car_data[iVar6].ai.c.thrustState == 3 && car_data[iVar6].ai.c.ctrlState == 5)
-				{
-					numParkedCars = numParkedCars + -1;
-				}
+					numParkedCars--;
+
 			LAB_0002910c:
 				puVar14 = (uint *)car_data[iVar6].inform;
 				if (puVar14 != NULL) 
-				{
 					*puVar14 = *puVar14 ^ 0x40000000;
-				}
-				ClearMem((char *)cp, 0x29c);
+
+				ClearMem((char *)cp, sizeof(_CAR_DATA));
 				car_data[iVar6].controlType = 0;
+
 				bVar4 = true;
 			}
-			else 
+			else
 			{
 				if (PingOutCivsOnly == 0)
 					goto LAB_0002910c;
 
-				iVar7 = valid_region(car_data[iVar6].hd.where.t[0], car_data[iVar6].hd.where.t[2]);
 				bVar4 = false;
 
-				if (iVar7 == 0)
+				if (valid_region(car_data[iVar6].hd.where.t[0], car_data[iVar6].hd.where.t[2]) == 0)
 					goto LAB_0002910c;
 			}
-			if (!bVar4) {
+
+			if (!bVar4)
 				return 0;
-			}
-		}
-		if (requestCopCar == 0) {
-			model = (int)(cookieCount * 0x1000) / 0x2c;
-		}
-		else {
-			model = (int)(cookieCount * 0x1000) / 0x38;
 		}
 
-		if (requestCopCar == 0) {
-			iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2] << 3;
-		}
-		else {
-			iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2] * 10;
-		}
+		if (requestCopCar == 0)
+			model = (cookieCount * 0x1000) / 0x2c;
+		else
+			model = (cookieCount * 0x1000) / 0x38;
+
+		if (requestCopCar == 0)
+			iVar6 = rcossin_tbl[(model & 0xfff) * 2] << 3;
+		else
+			iVar6 = rcossin_tbl[(model & 0xfff) * 2] * 10;
 
 		randomLoc.vx = baseLoc.vx + FIXED(iVar6) * 0x800;
 
-		if (requestCopCar == 0) {
-			model = (int)(cookieCount * 0x1000) / 0x2c;
-		}
-		else {
-			model = (int)(cookieCount * 0x1000) / 0x38;
-		}
+		if (requestCopCar == 0)
+			model = (cookieCount * 0x1000) / 0x2c;
+		else
+			model = (cookieCount * 0x1000) / 0x38;
 
-		if (requestCopCar == 0) {
-			iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2 + 1] << 3;
-		}
-		else {
-			iVar6 = (int)rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
-		}
+		if (requestCopCar == 0)
+			iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] << 3;
+		else
+			iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
 
 		randomLoc.vz = baseLoc.vz + FIXED(iVar6) * 0x800;
 		roadSeg = RoadInCell(&randomLoc);
 	}
+
 	if (((((roadSeg & 0xffffe000U) != 0) || (NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
 		(((roadSeg & 0xffffe000U) != 0x4000 || (NumDriver2Curves <= (int)(roadSeg & 0x1fffU))))) ||
 		(roadSeg < 0)) 
 	{
-		civPingTest.OffRoad = civPingTest.OffRoad + 1;
+		civPingTest.OffRoad++;
 		return 0;
 	}
 
@@ -4140,10 +4130,10 @@ int PingInCivCar(int minPingInDist)
 		(roadSeg < 0)) 
 		goto LAB_0002a368;
 
-	ClearMem((char *)carDistLanes, 0xf);
+	ClearMem((char *)carDistLanes, sizeof(carDistLanes));
 
-	if ((((roadSeg & 0xffffe000U) == 0) && ((int)(roadSeg & 0x1fffU) < NumDriver2Straights)) &&
-		(-1 < roadSeg)) {
+	if ((((roadSeg & 0xffffe000U) == 0) && ((int)(roadSeg & 0x1fffU) < NumDriver2Straights)) && (-1 < roadSeg))
+	{
 		straight = Driver2StraightsPtr + roadSeg;
 		if ((straight->NumLanes & 0xfU) == 0) goto LAB_0002a368;
 		if ((gCurrentMissionNumber == 0x21) && (minPingInDist == 0x29a)) {
@@ -4172,12 +4162,11 @@ int PingInCivCar(int minPingInDist)
 					uVar18 = uVar18 + 1 & 0xff;
 				} while (uVar18 < model);
 			}
-			if (uVar17 == 0) {
-				return 0;
-			}
-			lVar8 = Random2(0);
+
 			if (uVar17 == 0)
-				trap(7);
+				return 0;
+
+			lVar8 = Random2(0);
 
 			uVar18 = possibleLanes[(lVar8 >> 8) % uVar17];
 			cp->ai.c.currentLane = possibleLanes[(lVar8 >> 8) % uVar17];
@@ -4188,12 +4177,14 @@ int PingInCivCar(int minPingInDist)
 		{
 			civDat.thrustState = 3;
 			civDat.ctrlState = 7;
+
 			if ((straight->AILanes >> (uVar18 / 2 & 0x1fU) & 1U) != 0) 
 			{
 				civDat.ctrlState = 5;
 			}
 		}
-		else {
+		else 
+		{
 			if ((straight->AILanes >> (uVar18 / 2 & 0x1fU) & 1U) == 0) 
 			{
 			LAB_00029a28:
@@ -4265,6 +4256,7 @@ int PingInCivCar(int minPingInDist)
 				(uint)curve->inside * 0xb) / 7;
 		}
 	}
+
 	if ((civDat.thrustState != 3) ||
 		(((cVar5 = 0, gInGameCutsceneActive == 0 && (gInGameChaseActive == 0)) &&
 		(((Random2(0) & 0x40) == 0 || (cVar5 = 3, gCurrentMissionNumber == 0x20)))))) 
