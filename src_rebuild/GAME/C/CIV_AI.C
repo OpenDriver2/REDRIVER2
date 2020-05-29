@@ -1775,103 +1775,109 @@ LAB_00026928:
 	/* end block 3 */
 	// End Line: 2989
 
+// [D]
 void InitNodeList(_CAR_DATA *cp, char *extraData)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
-	ushort uVar2;
-	undefined2 *puVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
-	int iVar8;
-	DRIVER2_CURVE *pDVar9;
-	DRIVER2_STRAIGHT *pDVar10;
-	uint uVar11;
-	ushort *puVar12;
+	short uVar2;
+	char *pPathType;
+	long lVar3;
+	long lVar4;
+	
+	int uVar5;
+	int uVar6;
 
-	puVar3 = (undefined2 *)(cp->ai + 0x26);
-	iVar6 = 0xc;
-	uVar11 = *(uint *)cp->ai;
-	do {
-		*(undefined4 *)(puVar3 + 3) = 0;
-		*(undefined4 *)(puVar3 + 5) = 0;
-		*puVar3 = 0x7f;
-		iVar6 = iVar6 + -1;
-		puVar3 = puVar3 + 8;
-	} while (-1 < iVar6);
-	iVar6 = (cp->hd).where.t[0];
-	puVar12 = (ushort *)(cp->ai + 0x24);
-	*(int *)(cp->ai + 0x2c) = iVar6;
-	iVar8 = (cp->hd).where.t[2];
-	*(undefined2 *)(cp->ai + 0x26) = 1;
-	*(int *)(cp->ai + 0x30) = iVar8;
-	if ((((uVar11 & 0xffffe000) == 0) && ((int)(uVar11 & 0x1fff) < NumDriver2Straights)) &&
-		(-1 < (int)uVar11)) {
-		pDVar10 = Driver2StraightsPtr + uVar11;
-		iVar6 = iVar6 - pDVar10->Midx;
-		iVar8 = iVar8 - pDVar10->Midz;
-		iVar4 = ratan2(iVar6, iVar8);
-		sVar1 = pDVar10->angle;
-		iVar5 = SquareRoot0(iVar6 * iVar6 + iVar8 * iVar8);
-		*(uint *)(cp->ai + 0x28) =
-			(uint)(pDVar10->length >> 1) +
-			(rcossin_tbl[(sVar1 - iVar4 & 0xfffU) * 2 + 1] * iVar5 + 0x800 >> 0xc);
-		uVar7 = (uint)(ushort)pDVar10->angle & 0xfff;
-		iVar6 = ((uint)(byte)pDVar10->NumLanes & 0xf) * 0x200 +
-			(-iVar6 * (int)rcossin_tbl[uVar7 * 2 + 1] + iVar8 * rcossin_tbl[uVar7 * 2] + 0x800 >>
-				0xc);
-		if (iVar6 < 0) {
-			iVar6 = iVar6 + 0x1ff;
-		}
-		uVar7 = iVar6 >> 9;
-		cp->ai[0xfb] = (byte)uVar7;
-		if ((*(uint *)(pDVar10->ConnectIdx + 3) & 0xffff0000) != 0xff010000) {
-			uVar7 = (int)(uint)(byte)pDVar10->LaneDirs >> ((uint)(cp->ai[0xfb] >> 1) & 0x1f);
-		}
-		if ((uVar7 & 1) == 0) {
-			*puVar12 = pDVar10->angle;
-		}
-		else {
-			*puVar12 = pDVar10->angle + 0x800U & 0xfff;
-		}
+	int y;
+	int x;
+
+	DRIVER2_CURVE *curve;
+	DRIVER2_STRAIGHT *straight;
+	int curRoad;
+
+	CIV_ROUTE_ENTRY* cr;
+	cr = cp->ai.c.targetRoute;
+
+	for(int i = 0; i < 13; i++)
+	{
+		cr->pathType = 127;
+		cr->x = 0;
+		cr->z = 0;
+		cr++;
 	}
-	if ((((uVar11 & 0xffffe000) == 0x4000) && ((int)(uVar11 & 0x1fff) < NumDriver2Curves)) &&
-		(-1 < (int)uVar11)) {
-		if (extraData == (char *)0x0) {
-			pDVar9 = Driver2CurvesPtr + (uVar11 - 0x4000);
-			uVar11 = ratan2(*(int *)(cp->ai + 0x2c) - pDVar9->Midx, *(int *)(cp->ai + 0x30) - pDVar9->Midz)
-				;
-			uVar7 = (uVar11 & 0xfff) - (int)pDVar9->start;
-			uVar11 = uVar7 & 0xf80;
-			if ((9 < (byte)pDVar9->inside) && (uVar11 = uVar7 & 0xfe0, (byte)pDVar9->inside < 0x14)) {
-				uVar11 = uVar7 & 0xfc0;
-			}
-			*(uint *)(cp->ai + 0x28) = uVar11;
-			sVar1 = (short)uVar11 + pDVar9->start;
-			if (*(short *)&pDVar9->NumLanes == -0xff) {
-				uVar11 = (uint)cp->ai[0xfb];
-			}
-			else {
-				uVar11 = (int)(uint)(byte)pDVar9->LaneDirs >> ((uint)(cp->ai[0xfb] >> 1) & 0x1f);
-			}
+
+	cr = &cp->ai.c.targetRoute[0];
+
+	cr->pathType = 1;
+	cr->x = cp->hd.where.t[0];
+	cr->z = cp->hd.where.t[2];
+
+	curRoad = cp->ai.c.currentRoad;
+
+	if ((((curRoad & 0xffffe000U) == 0) && ((curRoad & 0x1fffU) < NumDriver2Straights)) && (-1 < curRoad))
+	{
+		straight = Driver2StraightsPtr + curRoad;
+
+		y = cp->hd.where.t[0] - straight->Midx;
+		x = cp->hd.where.t[2] - straight->Midz;
+
+		lVar3 = ratan2(y, x);
+		sVar1 = straight->angle;
+		lVar4 = SquareRoot0(y * y + x * x);
+
+		cr->distAlongSegment = (straight->length >> 1) + FIXED(rcossin_tbl[(sVar1 - lVar3 & 0xfffU) * 2 + 1] * lVar4);
+
+		uVar5 = straight->angle & 0xfff;
+		y = (straight->NumLanes & 0xf) * 0x200 + FIXED(-y * rcossin_tbl[uVar5 * 2 + 1] + x * rcossin_tbl[uVar5 * 2]);
+
+		uVar5 = y >> 9;
+		cp->ai.c.currentLane = uVar5;
+
+		if ((*(uint *)(straight->ConnectIdx + 3) & 0xffff0000) != 0xff010000)
+			uVar5 = straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
+		if ((uVar5 & 1) == 0) 
+			cr->dir = straight->angle;
+		else
+			cr->dir = straight->angle + 0x800U & 0xfff;
+	}
+
+	if ((((curRoad & 0xffffe000U) == 0x4000) && (curRoad & 0x1fffU) < NumDriver2Curves) && curRoad > -1) 
+	{
+		if (extraData == NULL) 
+		{
+			curve = Driver2CurvesPtr + curRoad - 0x4000;
+
+			uVar5 = ratan2(cr->x- curve->Midx, cr->z - curve->Midz);
+
+			uVar6 = (uVar5 & 0xfff) - curve->start;
+			uVar5 = uVar6 & 0xf80;
+
+			if ((9 < curve->inside) && (uVar5 = uVar6 & 0xfe0, curve->inside < 0x14))
+				uVar5 = uVar6 & 0xfc0;
+
+			cr->distAlongSegment = uVar5; 
+			sVar1 = uVar5 + curve->start;
+
+			if (curve->NumLanes == -1) 
+				uVar5 = cp->ai.c.currentLane;
+			else 
+				uVar5 = curve->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
+
 			uVar2 = sVar1 - 0x400;
-			if ((uVar11 & 1) == 0) {
+
+			if ((uVar5 & 1) == 0)
 				uVar2 = sVar1 + 0x400;
-			}
-			*puVar12 = uVar2;
+
+			cr->dir = uVar2;
 		}
-		else {
-			*(undefined4 *)(cp->ai + 0x28) = *(undefined4 *)(extraData + 4);
-			*puVar12 = *(ushort *)(extraData + 8);
+		else 
+		{
+			cr->distAlongSegment = extraData[4];
+			cr->dir = extraData[8];
 		}
 	}
-	if (extraData != (char *)0x0) {
-		*(undefined4 *)(cp->ai + 0x28) = *(undefined4 *)(extraData + 4);
-	}
-	return;*/
+
+	if (extraData != NULL) 
+		cr->distAlongSegment = extraData[4];
 }
 
 
@@ -4611,38 +4617,35 @@ LAB_0002a430:
 	/* end block 4 */
 	// End Line: 6116
 
+// [D]
 void AttemptUnPark(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uint uVar2;
+	unsigned char bVar1;
+	int curRoad;
 	DRIVER2_STRAIGHT *straight;
 	DRIVER2_CURVE *curve;
 
-	straight = (DRIVER2_STRAIGHT *)0x0;
-	curve = (DRIVER2_CURVE *)0x0;
-	InitCivState(cp, (char *)0x0);
-	uVar2 = *(uint *)cp->ai;
-	if ((((uVar2 & 0xffffe000) == 0) && ((int)(uVar2 & 0x1fff) < NumDriver2Straights)) &&
-		(-1 < (int)uVar2)) {
-		straight = Driver2StraightsPtr + uVar2;
+	straight = NULL;
+	curve = NULL;
+	InitCivState(cp, NULL);
+	curRoad = cp->ai.c.currentRoad;
+
+	if ((curRoad & 0xffffe000) == 0 && (curRoad & 0x1fff) < NumDriver2Straights && curRoad > -1) 
+		straight = Driver2StraightsPtr + curRoad;
+	else 
+		curve = Driver2CurvesPtr + curRoad - 0x4000;
+
+	bVar1 = cp->ai.c.currentLane;
+
+	cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
+
+	if (((bVar1 == cp->ai.c.currentLane) ||
+		(straight != NULL && ((straight->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) || 
+		(curve != NULL && ((curve->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) 
+	{
+		cp->ai.c.thrustState = 3;
+		cp->ai.c.ctrlState = 7;
 	}
-	else {
-		curve = Driver2CurvesPtr + *(int *)cp->ai + -0x4000;
-	}
-	bVar1 = cp->ai[0xfb];
-	uVar2 = CheckChangeLanes(straight, curve, *(int *)(cp->ai + 0x28), cp, 0);
-	cp->ai[0xfb] = (byte)uVar2;
-	if ((((uint)bVar1 == (uVar2 & 0xff)) ||
-		((straight != (DRIVER2_STRAIGHT *)0x0 &&
-		(((int)(uint)(byte)straight->AILanes >> ((uint)(cp->ai[0xfb] >> 1) & 0x1f) & 1U) == 0)))) ||
-			((curve != (DRIVER2_CURVE *)0x0 &&
-		(((int)(uint)(byte)curve->AILanes >> ((uint)(cp->ai[0xfb] >> 1) & 0x1f) & 1U) == 0)))) {
-		cp->ai[0xf9] = 3;
-		cp->ai[0xc] = 7;
-	}
-	return;*/
 }
 
 
@@ -4843,7 +4846,6 @@ int sideMul = 10;
 int collDat = 0;
 int carnum = 0;
 int newAccel = 2000;
-
 
 #define NODE_VALID(n) ((char*)(n) > (char*)car_data && (char*)(n) < (char*)&car_data[21])
 
