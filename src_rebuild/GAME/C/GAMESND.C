@@ -889,12 +889,12 @@ LAB_0004e0dc:
 ushort GetEngineRevs(_CAR_DATA *cp)
 {
 	bool bVar1;
-	short sVar2;
+	int sVar2;
 	int iVar3;
 	GEAR_DESC *pGVar4;
 	int uVar5;
 	int uVar6;
-	short sVar7;
+	int sVar7;
 	int iVar8;
 	int iVar9;
 	int uVar10;
@@ -905,11 +905,9 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 	uVar10 = (cp->controlType == 2);
 
-	if (iVar8 < 1) {
+	if (iVar8 < 1) 
+	{
 		iVar9 = -iVar8;
-
-		//if (0 < iVar8) 
-		//	iVar9 += 0x7ff;
 
 		sVar7 = iVar9 / 2048;
 		uVar6 = 0;
@@ -921,9 +919,6 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	{
 		iVar8 = iVar8 / 2048;
 		sVar7 = iVar8;
-
-		if (false) 
-			uVar5 = 0;
 
 		if (3 < uVar5) 
 			uVar5 = 3;
@@ -946,8 +941,8 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 			if (pGVar4->hi_ws < iVar8) 
 			{
-				pGVar4 = pGVar4 + 1;
-				uVar6 = uVar6 + 1;
+				pGVar4++;
+				uVar6++;
 			}
 
 			bVar1 = uVar5 != uVar6;
@@ -959,7 +954,7 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 	
 	if (sVar2 != 0)
-		return sVar7 * geard[uVar10][uVar6].ratio_ac;// [A] - indexing might be incorrect
+		return sVar7 * geard[uVar10][uVar6].ratio_ac;
 
 	return sVar7 * geard[uVar10][uVar6].ratio_id;
 }
@@ -1022,6 +1017,8 @@ void ControlCarRevs(_CAR_DATA *cp)
 	if (spin == 0 && (cp->hd.wheel[1].susCompression || cp->hd.wheel[3].susCompression || acc == 0))
 	{
 		desiredRevs = GetEngineRevs(cp);
+		if (desiredRevs > 32767)
+			desiredRevs = 32767;
 	}
 	else
 	{

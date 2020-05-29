@@ -81,29 +81,20 @@ _HANDLING_TYPE handlingType[7] =
 // [D]
 void StepCars(void)
 {
-	_CAR_DATA *cp;
-	_CAR_DATA **pp_Var1;
-	_CAR_DATA **pp_Var2;
+	_CAR_DATA **ppCar;
+	_CAR_DATA **end;
 
-	pp_Var2 = active_car_list + num_active_cars;
-	pp_Var1 = active_car_list;
+	ppCar = active_car_list;
+	end = active_car_list + num_active_cars;
 
-	while (pp_Var1 < pp_Var2) 
-	{
-		cp = *pp_Var1;
-		pp_Var1 = pp_Var1 + 1;
+	// step active cars
+	while (ppCar < end)
+		StepOneCar(*ppCar++);
 
-		StepOneCar(cp);
-	}
+	ppCar = active_car_list;
 
-	pp_Var1 = active_car_list;
-
-	while (pp_Var1 < pp_Var2)
-	{
-		cp = *pp_Var1;
-		pp_Var1 = pp_Var1 + 1;
-		ControlCarRevs(cp);
-	}
+	while (ppCar < end)
+		ControlCarRevs(*ppCar++);
 }
 
 

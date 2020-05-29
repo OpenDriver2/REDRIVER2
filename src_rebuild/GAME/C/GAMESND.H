@@ -18,7 +18,7 @@ extern void LoadLevelSFX(int missionNum); // 0x0004D784
 
 extern void StartGameSounds(); // 0x0004DE30
 
-extern unsigned short GetEngineRevs(struct _CAR_DATA *cp); // 0x0004E188
+extern ushort GetEngineRevs(struct _CAR_DATA *cp); // 0x0004E188
 
 extern void ControlCarRevs(struct _CAR_DATA *cp); // 0x0004E2E8
 
