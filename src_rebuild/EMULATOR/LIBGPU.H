@@ -323,7 +323,17 @@ typedef struct {
  * Environment 
  */
 typedef struct {
+#if defined(USE_32_BIT_ADDR)
+	unsigned long tag;
+#if defined(PGXP)
+	unsigned short len;
+	unsigned short pgxp_index;
+#else
+	unsigned long len;
+#endif
+#else
 	u_long	tag;
+#endif
 	u_long	code[15];
 } DR_ENV;				/* Packed Drawing Environment */
 		   
