@@ -6,8 +6,10 @@
 #include "MISSION.H"
 #include "MDRAW.H"
 #include "PLAYERS.H"
+#include "OVERLAY.H"
 
 #include "STRINGS.H"
+#include "INLINE_C.H"
 
 OVERMAP overlaidmaps[4] =
 {
@@ -37,9 +39,19 @@ SXYPAIR MapSegmentPos[16] =
 	{ 24, 96 }
 };
 
-XYPAIR NVertex[4] = { { -2, 3 }, { -2, -3 }, { 2, 3 }, { 2, -3 } };
+XYPAIR NVertex[4] = { 
+	{ -2, 3 }, 
+	{ -2, -3 }, 
+	{ 2, 3 }, 
+	{ 2, -3 } 
+};
 
-XYPAIR north[4] = { { 0, 20 }, { 0, 20 }, { 0, 20 }, { 0, 20 } };
+XYPAIR north[4] = { 
+	{ 0, 20 },
+	{ 0, 20 }, 
+	{ 0, 20 }, 
+	{ 0, 20 } 
+};
 
 VECTOR player_position = { 0, 0, 0, 0 };
 
@@ -799,6 +811,7 @@ void DrawOverheadMap(void)
 	}
 
 	UNIMPLEMENTED();
+
 	/*
 	    byte bVar1;
     short sVar2;
@@ -2323,22 +2336,15 @@ void LoadMapTile(int tpage, int x, int y)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetMapPos(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 
 	iVar1 = overlaidmaps[GameLevel].scale;
-	if (iVar1 == 0) {
-		trap(7);
-	}
-	if (iVar1 == 0) {
-		trap(7);
-	}
-	x_map = overlaidmaps[GameLevel].x_offset + player.pos[0] / iVar1;
-	y_map = overlaidmaps[GameLevel].y_offset - player.pos[2] / iVar1;
-	return;*/
+
+	x_map = overlaidmaps[GameLevel].x_offset + player[0].pos[0] / iVar1;
+	y_map = overlaidmaps[GameLevel].y_offset - player[0].pos[2] / iVar1;
 }
 
 
@@ -2379,45 +2385,45 @@ void SetMapPos(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void draw_box(void)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	ulong *puVar2;
-	uint *puVar3;
+	LINE_F4* linef4 = (LINE_F4*)current->primptr;
+	setLineF4(linef4);
 
-	puVar3 = (uint *)current->primptr;
-	SetLineF4(puVar3);
-	*(char *)(puVar3 + 1) = '\0';
-	*(char *)((int)puVar3 + 5) = '\0';
-	*(char *)((int)puVar3 + 6) = -0x80;
-	pDVar1 = current;
-	*(undefined2 *)(puVar3 + 2) = 0xf9;
-	*(undefined2 *)((int)puVar3 + 10) = 0xb5;
-	*(undefined2 *)(puVar3 + 3) = 0x136;
-	*(undefined2 *)((int)puVar3 + 0xe) = 0xb5;
-	*(undefined2 *)(puVar3 + 4) = 0x136;
-	*(undefined2 *)((int)puVar3 + 0x12) = 0xf2;
-	*(undefined2 *)(puVar3 + 5) = 0xf9;
-	*(undefined2 *)((int)puVar3 + 0x16) = 0xf2;
-	*puVar3 = *puVar3 & 0xff000000 | pDVar1->ot[1] & 0xffffff;
-	puVar2 = pDVar1->ot;
-	puVar2[1] = puVar2[1] & 0xff000000 | (uint)puVar3 & 0xffffff;
-	SetLineF2(puVar3 + 7);
-	*(char *)(puVar3 + 8) = '\0';
-	*(char *)((int)puVar3 + 0x21) = '\0';
-	*(char *)((int)puVar3 + 0x22) = -0x80;
-	pDVar1 = current;
-	*(undefined2 *)(puVar3 + 9) = 0xf9;
-	*(undefined2 *)((int)puVar3 + 0x26) = 0xb5;
-	*(undefined2 *)(puVar3 + 10) = 0xf9;
-	*(undefined2 *)((int)puVar3 + 0x2a) = 0xf2;
-	puVar3[7] = puVar3[7] & 0xff000000 | pDVar1->ot[1] & 0xffffff;
-	pDVar1->ot[1] = pDVar1->ot[1] & 0xff000000 | (uint)(puVar3 + 7) & 0xffffff;
-	pDVar1->primptr = pDVar1->primptr + 0x2c;
-	return;
-	*/
+	linef4->r0 = 0;
+	linef4->g0 = 0;
+	linef4->b0 = 128;
+
+	linef4->x0 = 249;
+	linef4->y0 = 181;
+
+	linef4->x1 = 310;
+	linef4->x2 = 310;
+
+	linef4->y1 = 181;
+	linef4->x3 = 249;
+
+	linef4->y2 = 242;
+	linef4->y3 = 242;
+
+	addPrim(current->ot + 1, linef4);
+	current->primptr += sizeof(LINE_F4);
+
+	LINE_F2* linef2 = (LINE_F2*)current->primptr;
+	setLineF2(linef2);
+
+	linef2->r0 = 0;
+	linef2->g0 = 0;
+	linef2->b0 = 128;
+
+	linef2->x0 = 249;
+	linef2->y0 = 181;
+	linef2->x1 = 249;
+	linef2->y1 = 242;
+
+	addPrim(current->ot + 1, linef2);
+	current->primptr += sizeof(LINE_F2);
 }
 
 
@@ -2458,58 +2464,65 @@ void draw_box(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void DrawN(VECTOR *pScreenPosition, int direct)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	DB *pDVar2;
-	byte bVar3;
-	uint *puVar4;
-	XYPAIR *pXVar5;
-	int local_30;
-	int local_2c;
+	int i;
 
-	pXVar5 = &XYPAIR_0009ba3c;
-	bVar3 = 0;
-	local_30 = NVertex.x + pScreenPosition->vx;
-	local_2c = NVertex.y + pScreenPosition->vz;
+	LINE_F2 *linef2;
+	XYPAIR *pPoint;
+	XYPAIR lastPoint;
+
+	pPoint = NVertex;
+	i = 0;
+
+	lastPoint.x = NVertex[0].x + pScreenPosition->vx;
+	lastPoint.y = NVertex[0].y + pScreenPosition->vz;
+
 	do {
-		puVar4 = (uint *)current->primptr;
-		*(char *)((int)puVar4 + 3) = '\x03';
-		*(char *)((int)puVar4 + 7) = '@';
-		*(undefined2 *)(puVar4 + 2) = (undefined2)local_30;
-		*(undefined2 *)((int)puVar4 + 10) = (undefined2)local_2c;
-		local_30 = pXVar5->x + pScreenPosition->vx;
-		local_2c = pXVar5->y + pScreenPosition->vz;
-		*(undefined2 *)(puVar4 + 3) = (undefined2)local_30;
-		iVar1 = gTimeOfDay;
-		*(undefined2 *)((int)puVar4 + 0xe) = (undefined2)local_2c;
-		if (iVar1 == 3) {
-			*(char *)(puVar4 + 1) = 'K';
-			*(char *)((int)puVar4 + 5) = 'K';
-			*(char *)((int)puVar4 + 6) = 'K';
+		pPoint++;
+		linef2 = (LINE_F2 *)current->primptr;
+
+		setLineF2(linef2);
+
+		linef2->x0 = lastPoint.x;
+		linef2->y0 = lastPoint.y;
+
+		lastPoint.x = pPoint->x + pScreenPosition->vx;
+		lastPoint.y = pPoint->y + pScreenPosition->vz;
+
+		linef2->x1 = lastPoint.x;
+		linef2->y1 = lastPoint.y;
+
+		if (gTimeOfDay == 3)
+		{
+			linef2->r0 = 75;
+			linef2->g0 = 75;
+			linef2->b0 = 75;
 		}
-		else {
-			*(char *)(puVar4 + 1) = '`';
-			*(char *)((int)puVar4 + 5) = '`';
-			*(char *)((int)puVar4 + 6) = '`';
+		else 
+		{
+			linef2->r0 = 96;
+			linef2->g0 = 96;
+			linef2->b0 = 96;
 		}
-		*(byte *)((int)puVar4 + 7) = *(byte *)((int)puVar4 + 7) | 2;
-		pDVar2 = current;
-		if (direct == 0) {
-			*puVar4 = *puVar4 & 0xff000000 | *current->ot & 0xffffff;
-			*pDVar2->ot = *pDVar2->ot & 0xff000000 | (uint)puVar4 & 0xffffff;
+
+		setSemiTrans(linef2, 1);
+		linef2->code = linef2->code | 2;
+
+		if (direct == 0) 
+		{
+			addPrim(current->ot, linef2);
 		}
-		else {
-			DrawPrim(puVar4);
+		else
+		{
+			DrawPrim(linef2);
 		}
-		bVar3 = bVar3 + 1;
-		pXVar5 = pXVar5 + 1;
-		current->primptr = current->primptr + 0x10;
-	} while (bVar3 < 3);
-	return;
-	*/
+
+		current->primptr += sizeof(LINE_F2);
+
+		i++;
+	} while (i < 3);
 }
 
 
@@ -2572,70 +2585,71 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 /* WARNING: Could not reconcile some variable overlaps */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawCompass(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
-	DB *pDVar2;
-	byte bVar3;
-	uint *puVar4;
-	int *piVar5;
-	ulong *potz;
-	VECTOR local_58;
-	int local_48;
-	int local_40;
-	int local_38[2];
-	int local_30;
-	VECTOR local_28;
-	int local_18;
-	int local_10;
+	int i;
+	LINE_G2 *lineg2;
+	VECTOR *pPosition;
+	OTTYPE *potz;
+	VECTOR position[5];
 
-	local_48 = north[GameLevel].x * overlaidmaps[GameLevel].scale;
-	local_40 = north[GameLevel].y * overlaidmaps[GameLevel].scale;
-	local_58.vx = local_48 * 0x14 + 8 >> 4;
-	local_38[0] = local_48 + 2 >> 2;
-	local_58.vz = local_40 * 0x14 + 8 >> 4;
-	local_30 = local_40 + 2 >> 2;
-	local_28.vx = (local_40 - local_48) * 0xab >> 10;
-	local_28.vz = (-local_48 - local_40) * 0xab >> 10;
-	local_10 = -local_28.vx;
-	local_18 = local_28.vz;
-	WorldToOverheadMapPositions(&local_58, &local_58, 3, '\x01', 0);
-	WorldToOverheadMapPositions(&local_28, &local_28, 2, '\x01', 1);
-	piVar5 = local_38;
-	bVar3 = 0;
-	local_28.vx = local_28.vx + local_48;
-	local_28.vz = local_28.vz + local_40;
-	local_18 = local_18 + local_48;
-	local_10 = local_10 + local_40;
+	position[1].vx = north[GameLevel].x * overlaidmaps[GameLevel].scale;
+	position[1].vz = north[GameLevel].y * overlaidmaps[GameLevel].scale;
+	position[0].vx = position[1].vx * 0x14 + 8 >> 4;
+	position[2].vx = position[1].vx + 2 >> 2;
+	position[0].vz = position[1].vz * 0x14 + 8 >> 4;
+	position[2].vz = position[1].vz + 2 >> 2;
+	position[3].vx = (position[1].vz - position[1].vx) * 0xab >> 10;
+	position[3].vz = (-position[1].vx - position[1].vz) * 0xab >> 10;
+	position[4].vz = -position[3].vx;
+	position[4].vx = position[3].vz;
+
+	WorldToOverheadMapPositions(position, position, 3, 1, 0);
+	WorldToOverheadMapPositions(position + 3, position + 3, 2, 1, 1);
+
+	position[3].vx = position[3].vx + position[1].vx;
+	position[3].vz = position[3].vz + position[1].vz;
+	position[4].vx = position[4].vx + position[1].vx;
+	position[4].vz = position[4].vz + position[1].vz;
+
 	potz = current->ot;
+
+	pPosition = position + 2;
+	i = 0;
 	do {
-		puVar4 = (uint *)current->primptr;
-		*(char *)((int)puVar4 + 3) = '\x04';
-		*(char *)((int)puVar4 + 7) = 'P';
-		*(undefined2 *)(puVar4 + 2) = (undefined2)local_48;
-		*(undefined2 *)((int)puVar4 + 10) = (undefined2)local_40;
-		*(undefined2 *)(puVar4 + 4) = *(undefined2 *)piVar5;
-		uVar1 = *(undefined2 *)(piVar5 + 2);
-		piVar5 = piVar5 + 4;
-		*(char *)(puVar4 + 1) = '`';
-		*(char *)((int)puVar4 + 5) = '`';
-		*(char *)((int)puVar4 + 6) = '`';
-		*(char *)(puVar4 + 3) = '\0';
-		*(char *)((int)puVar4 + 0xd) = '\0';
-		*(char *)((int)puVar4 + 0xe) = '\0';
-		*(char *)((int)puVar4 + 7) = 'R';
-		*(undefined2 *)((int)puVar4 + 0x12) = uVar1;
-		pDVar2 = current;
-		bVar3 = bVar3 + 1;
-		*puVar4 = *puVar4 & 0xff000000 | *potz & 0xffffff;
-		*potz = *potz & 0xff000000 | (uint)puVar4 & 0xffffff;
-		pDVar2->primptr = pDVar2->primptr + 0x14;
-	} while (bVar3 < 3);
-	DrawN(&local_58, 0);
+		lineg2 = (LINE_G2 *)current->primptr;
+
+		setLineG2(lineg2);
+
+		lineg2->x0 = position[1].vx;
+		lineg2->y0 = position[1].vz;
+
+		lineg2->x1 = pPosition->vx;
+		lineg2->y1 = pPosition->vz;
+
+
+		lineg2->r0 = 96;
+		lineg2->g0 = 96;
+		lineg2->b0 = 96;
+
+		lineg2->r1 = 0;
+		lineg2->g1 = 0;
+		lineg2->b1 = 0;
+
+		setSemiTrans(lineg2, 1);
+
+		addPrim(potz, lineg2);
+
+		current->primptr += sizeof(LINE_G2);
+
+		pPosition++;
+		i++;
+	} while (i < 3);
+
+	DrawN(position, 0);
+
 	TransparencyOn(potz, 0x20);
-	return;*/
 }
 
 
@@ -3025,72 +3039,65 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 	/* end block 2 */
 	// End Line: 8755
 
+// [D]
 void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPosition, int count, char inputRelative,int outputRelative)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	uint local_50;
-	uint local_4c;
-	uint local_44;
-	uint local_40;
-	undefined4 local_3c;
-	undefined4 local_34;
-	undefined2 local_30;
-	undefined2 local_2e;
-	undefined2 local_2c;
-	undefined auStack40[8];
+	int scale;
+	MATRIX tempMatrix = {0};
+	SVECTOR tempVector;
+	long flag;
 
-	local_4c = (uint)(ushort)rcossin_tbl[(player.dir & 0xfffU) * 2];
-	local_50 = (uint)(ushort)rcossin_tbl[(player.dir & 0xfffU) * 2 + 1];
-	local_44 = (uint)(ushort)-rcossin_tbl[(player.dir & 0xfffU) * 2];
-	local_40 = local_40 & 0xffff0000 | (uint)(ushort)rcossin_tbl[(player.dir & 0xfffU) * 2 + 1];
-	if ((char)outputRelative == '\0') {
-		local_3c = 0x118;
-		local_34 = 0xd4;
+	tempMatrix.m[0][1] = 0;
+	tempMatrix.m[1][0] = 0;
+	tempMatrix.m[1][2] = 0;
+	tempMatrix.m[2][1] = 0;
+	
+	tempMatrix.m[0][0] = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
+	tempMatrix.m[2][2] = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
+
+	tempMatrix.m[2][0] = -rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+	tempMatrix.m[0][2] = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+	
+	tempMatrix.t[1] = 0;
+
+	if (outputRelative == 0)
+	{
+		tempMatrix.t[0] = 280;
+		tempMatrix.t[2] = 212;
 	}
-	else {
-		local_3c = 0;
-		local_34 = 0;
+	else
+	{
+		tempMatrix.t[0] = 0;
+		tempMatrix.t[2] = 0;
 	}
-	setCopControlWord(2, 0, local_50);
-	setCopControlWord(2, 0x800, local_4c);
-	setCopControlWord(2, 0x1000, 0x1000);
-	setCopControlWord(2, 0x1800, local_44);
-	setCopControlWord(2, 0x2000, local_40);
-	setCopControlWord(2, 0x2800, local_3c);
-	setCopControlWord(2, 0x3000, 0);
-	setCopControlWord(2, 0x3800, local_34);
-	count = count + -1;
-	iVar1 = overlaidmaps[GameLevel].scale;
-	while (count != -1) {
-		local_2e = 0;
-		if (inputRelative == '\0') {
-			if (iVar1 == 0) {
-				trap(7);
-			}
-			local_30 = (undefined2)((pGlobalPosition->vx - player.pos[0]) / iVar1);
-			if (iVar1 == 0) {
-				trap(7);
-			}
-			local_2c = (undefined2)((player.pos[2] - pGlobalPosition->vz) / iVar1);
+
+	gte_SetRotMatrix(&tempMatrix);
+	gte_SetTransMatrix(&tempMatrix);
+
+	count--;
+
+	scale = overlaidmaps[GameLevel].scale;
+
+	while (count != -1) 
+	{
+		tempVector.vy = 0;
+		if (inputRelative == 0) 
+		{
+			tempVector.vx = (pGlobalPosition->vx - player[0].pos[0]) / scale;
+			tempVector.vz = (player[0].pos[2] - pGlobalPosition->vz) / scale;
 		}
-		else {
-			if (iVar1 == 0) {
-				trap(7);
-			}
-			local_30 = (undefined2)(pGlobalPosition->vx / iVar1);
-			if (iVar1 == 0) {
-				trap(7);
-			}
-			local_2c = (undefined2)(-pGlobalPosition->vz / iVar1);
+		else 
+		{
+			tempVector.vx = pGlobalPosition->vx / scale;
+			tempVector.vz = -pGlobalPosition->vz / scale;
 		}
-		RotTrans(&local_30, pOverheadMapPosition, auStack40);
-		count = count + -1;
-		pGlobalPosition = pGlobalPosition + 1;
-		pOverheadMapPosition = pOverheadMapPosition + 1;
+
+		RotTrans(&tempVector, pOverheadMapPosition, &flag);
+
+		count--;
+		pGlobalPosition++;
+		pOverheadMapPosition++;
 	}
-	return;*/
 }
 
 
