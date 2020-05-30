@@ -11,6 +11,7 @@
 #include "SOUND.H"
 #include "CUTSCENE.H"
 #include "REPLAYS.H"
+#include "OVERMAP.H"
 
 static int gScoreEntered = 0;
 static char EnterNameText[32] = { 0 };
@@ -1566,20 +1567,18 @@ LAB_0006cd08:
 	/* end block 3 */
 	// End Line: 4871
 
+// [D]
 void PauseMap(int direction)
 {
-	UNIMPLEMENTED();
-	/*
-	FastForward = gShowMap ^ 1;
-	gShowMap = FastForward;
+	gShowMap ^= 1;
+
 	ReadControllers();
+
 	map_x_shift = 0;
 	map_z_shift = 0;
-	if (FastForward == 0) {
+
+	if (gShowMap == 0)
 		InitOverheadMap();
-	}
-	return;
-	*/
 }
 
 
