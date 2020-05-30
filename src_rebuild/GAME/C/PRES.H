@@ -1,6 +1,7 @@
 #ifndef PRES_H
 #define PRES_H
 
+extern short fonttpage;
 
 extern void SetTextColour(unsigned char Red, unsigned char Green, unsigned char Blue); // 0x00074A10
 

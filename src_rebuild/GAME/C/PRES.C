@@ -252,8 +252,7 @@ void PrintStringCentred(char *pString, short y)
 	int iVar1;
 
 	iVar1 = StringWidth(pString);
-	PrintString(pString, (0x140 - iVar1) * 0x8000 >> 0x10, (int)y);
-	return;
+	PrintString(pString, (0x140 - iVar1) * 0x8000 >> 0x10, y);
 }
 
 
@@ -483,7 +482,7 @@ extern int gShowMap;
 // [D]
 int PrintString(char *string, int x, int y)
 {
-	char chr;
+	u_char chr;
 	char bVar1;
 	unsigned char uVar2;
 	int iVar3;
@@ -495,25 +494,37 @@ int PrintString(char *string, int x, int y)
 	SPRT *font;
 	char *pbVar8;
 
+#ifdef PSX
+	int showMap = gShowMap;
+#else
+	int showMap = 0;
+#endif
+
 	x_00 = -1;
-	if (current != NULL) {
+	if (current != NULL)
+	{
 		font = (SPRT *)current->primptr;
-		if (gShowMap != 0) {
+
+		if (showMap != 0)
 			font = (SPRT *)SetFontTPage(font);
-		}
+
 		chr = *string;
 		pbVar8 = (string + 1);
 		x_00 = x;
-		while (chr != 0) {
-			if (chr == 0x20) {
+		while (chr != 0) 
+		{
+			if (chr == 0x20)
+			{
 				x_00 = x_00 + 4;
 			}
-			else {
-				if (((chr < 0x20) || (0x8a < chr)) || (chr < 0x80)) {
+			else
+			{
+				if (chr < 0x20 || 0x8a < chr || chr < 0x80) 
+				{
 					bVar1 = AsciiTable[chr];
-					if (AsciiTable[chr] == 0xff) {
+					if (AsciiTable[chr] == 0xff)
 						bVar1 = AsciiTable[63];
-					}
+
 					uVar7 = (uint)bVar1;
 					chr = fontinfo[uVar7].width;
 
@@ -536,43 +547,45 @@ int PrintString(char *string, int x, int y)
 					font->w = (ushort)chr;
 					font->v0 = uVar2 - 46;
 					sVar4 = fontclutid;
-					iVar3 = gShowMap;
+
 					font->h = (ushort)fontinfo[uVar7].height;
 					font->clut = sVar4;
 					pDVar5 = current;
-					if (iVar3 == 0) {
+
+					if (showMap == 0)
+					{
 						addPrim(current->ot, font);
-						//font->tag = font->tag & 0xff000000 | *current->ot & 0xffffff;
-						//*pDVar5->ot = *pDVar5->ot & 0xff000000 | (uint)font & 0xffffff;
 					}
-					else {
+					else 
+					{
 						DrawPrim(font);
 					}
+
 					font = font + 1;
 					x_00 = x_00 + (uint)chr;
 				}
-				else {
-					if (gShowMap == 0) {
+				else
+				{
+					if (showMap == 0)
 						font = (SPRT *)SetFontTPage(font);
-					}
+
 					font = (SPRT *)DrawButton(chr, font, x_00, y);
 					x_00 = x_00 + 0x18;
-					if (gShowMap != 0) {
+
+					if (showMap != 0)
 						font = (SPRT *)SetFontTPage(font);
-					}
 				}
 			}
 			chr = *pbVar8;
 			pbVar8 = pbVar8 + 1;
 		}
-		if (gShowMap == 0) {
-			pcVar6 = (char *)SetFontTPage(font);
-			current->primptr = pcVar6;
-		}
-		else {
+
+		if (showMap == 0)
+			current->primptr = (char *)SetFontTPage(font);
+		else
 			DrawSync(0);
-		}
 	}
+
 	return x_00;
 }
 
@@ -1005,13 +1018,12 @@ int PrintScaledString(int y, char *string, int scale)
 
 	iVar7 = StringWidth(string);
 	iVar7 = iVar7 * scale;
-	if (iVar7 < 0) {
-		iVar7 = iVar7 + 0xf;
-	}
+
 	font = (POLY_FT4 *)current->primptr;
-	if (gShowMap != 0) {
+
+	if (gShowMap != 0)
 		font = (POLY_FT4 *)SetFontTPage(font);
-	}
+
 	bVar1 = *string;
 	pbVar15 = (char *)(string + 1);
 	iVar7 = 0x140 - (iVar7 >> 4) >> 1;
@@ -1026,35 +1038,37 @@ int PrintScaledString(int y, char *string, int scale)
 		//digit_texture.coords.v0 = uVar10,
 
 		uVar9 = (uint)bVar1 - 0x30;
-		if (bVar1 == 0x20) {
+		if (bVar1 == 0x20) 
+		{
 			iVar8 = scale;
 			if (scale < 0) {
 				iVar8 = scale + 3;
 			}
 			iVar8 = iVar7 + (iVar8 >> 2);
 		}
-		else {
+		else 
+		{
 			iVar8 = iVar7;
 			if ((uVar9 & 0xff) < 10) {
 				bVar1 = fontDigit[uVar9].width;
 				cVar16 = '\0';
-				if ((int)uVar9 < 6) {
+
+				if (uVar9 < 6) 
+				{
 					iVar14 = 0x1c;
 				}
-				else {
+				else 
+				{
 					cVar16 = '\x1c';
 					iVar14 = 0x1f;
 				}
+
 				iVar8 = (iVar14 >> 1) * scale;
-				if (iVar8 < 0) {
-					iVar8 = iVar8 + 0xf;
-				}
+
 				iVar17 = (uint)bVar1 * scale;
 				sVar6 = (short)(iVar8 >> 4);
 				sVar13 = (short)y - sVar6;
-				if (iVar17 < 0) {
-					iVar17 = iVar17 + 0xf;
-				}
+
 				iVar8 = iVar7 + (iVar17 >> 4);
 				cVar2 = fontDigit[uVar9].xOffset;
 
@@ -1187,53 +1201,52 @@ char * GetNextWord(char *string, char *word)
 	/* end block 3 */
 	// End Line: 1834
 
+static char ScoreItems[5][16];
+
 void * DrawButton(unsigned char button, void *prim, int x, int y)
 {
 	UNIMPLEMENTED();
-	return 0;
+	return prim;
 	/*
 	bool bVar1;
 	DB *pDVar2;
 	int iVar3;
 
-	*(undefined *)((int)prim + 3) = 4;
+	*(undefined *)((int)&prim->tag + 3) = 4;
 	iVar3 = (uint)button * 0xe;
-	*(undefined *)((int)prim + 4) = 0x80;
-	*(undefined *)((int)prim + 5) = 0x80;
-	*(undefined *)((int)prim + 6) = 0x80;
-	*(undefined *)((int)prim + 7) = 100;
-	*(undefined2 *)((int)prim + 8) = (short)x;
-	*(short *)((int)prim + 10) = (short)y + -3;
-	*(byte *)((int)prim + 0xc) = (&DAT_000d93c8)[iVar3];
-	*(undefined *)((int)prim + 0xd) = (&DAT_000d93c9)[iVar3];
-	*(short *)((int)prim + 0x10) =
-		(ushort)(byte)(&DAT_000d93ca)[iVar3] - (ushort)(byte)(&DAT_000d93c8)[iVar3];
-	*(short *)((int)prim + 0x12) =
-		(ushort)(byte)(&DAT_000d93cd)[iVar3] - (ushort)(byte)(&DAT_000d93c9)[iVar3];
-	*(undefined2 *)((int)prim + 0xe) = *(undefined2 *)(&DAT_000d93d2 + iVar3);
-	*(undefined *)((int)prim + 0x17) = 7;
-	*(undefined *)((int)prim + 0x1b) = 0x26;
-	*(undefined2 *)((int)prim + 0x1c) = 0xffff;
-	*(undefined2 *)((int)prim + 0x1e) = 0xffff;
-	*(undefined2 *)((int)prim + 0x24) = 0xffff;
-	*(undefined2 *)((int)prim + 0x26) = 0xffff;
-	*(undefined2 *)((int)prim + 0x2c) = 0xffff;
-	*(undefined2 *)((int)prim + 0x2e) = 0xffff;
+	rim->r0 = -0x80;     rim->r0 = -0x80;
+	prim->g0 = -0x80;
+	prim->b0 = -0x80;
+	prim->code = 'd';
+	prim->x0 = (short)x;
+	prim->y0 = (short)y + -3;
+	prim->u0 = ScoreItems[iVar3 + 0x10];
+	prim->v0 = ScoreItems[iVar3 + 0x11];
+	prim->w = (ushort)(byte)ScoreItems[iVar3 + 0x12] - (ushort)(byte)ScoreItems[iVar3 + 0x10];
+	prim->h = (ushort)(byte)ScoreItems[iVar3 + 0x15] - (ushort)(byte)ScoreItems[iVar3 + 0x11];
+	prim->clut = *(ushort *)(ScoreItems + iVar3 + 0x1a);
+	*(undefined *)((int)&prim[1].tag + 3) = 7;
+	prim[1].code = '&';
+	prim[1].x0 = -1;
+	prim[1].y0 = -1;
+	prim[1].w = -1;
+	prim[1].h = -1;
+	*(undefined2 *)&prim[2].r0 = 0xffff;
+	*(undefined2 *)&prim[2].b0 = 0xffff;
 	bVar1 = gShowMap == 0;
-	*(undefined2 *)((int)prim + 0x2a) = *(undefined2 *)(&DAT_000d93d0 + iVar3);
+	*(undefined2 *)((int)&prim[2].tag + 2) = *(undefined2 *)(ScoreItems + iVar3 + 0x18);
 	pDVar2 = current;
 	if (bVar1) {
-		*(uint *)prim = *(uint *)prim & 0xff000000 | *(uint *)*current->ot & 0xffffff;
+		prim->tag = prim->tag & 0xff000000 | *(uint *)*current->ot & 0xffffff;
 		*(uint *)*pDVar2->ot = *(uint *)*pDVar2->ot & 0xff000000 | (uint)prim & 0xffffff;
-		*(uint *)((int)prim + 0x14) =
-			*(uint *)((int)prim + 0x14) & 0xff000000 | *(uint *)*pDVar2->ot & 0xffffff;
-		*(uint *)*pDVar2->ot = *(uint *)*pDVar2->ot & 0xff000000 | (int)prim + 0x14U & 0xffffff;
+		prim[1].tag = prim[1].tag & 0xff000000 | *(uint *)*pDVar2->ot & 0xffffff;
+		*(uint *)*pDVar2->ot = *(uint *)*pDVar2->ot & 0xff000000 | (uint)(prim + 1) & 0xffffff;
 	}
 	else {
-		DrawPrim((int)prim + 0x14U);
+		DrawPrim(prim + 1);
 		DrawPrim(prim);
 	}
-	return (void *)((int)prim + 0x34);
+	return &prim[2].u0;
 	*/
 }
 
@@ -1280,12 +1293,21 @@ void* SetFontTPage(void *prim)
 	null->y2 = -1;
 	null->tpage = fonttpage;
 
-	if (gShowMap == 0) {
+#ifdef PSX
+	if (gShowMap == 0) 
+	{
 		addPrim(current->ot, null);
 	}
-	else {
+	else 
+	{
 		DrawPrim(prim);
 	}
+#else
+	addPrim(current->ot, null);
+#endif
+
+
+
 	return null+1;
 }
 
