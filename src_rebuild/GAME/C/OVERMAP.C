@@ -2930,85 +2930,89 @@ void CopIndicator(int xpos, int strength)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	short sVar3;
 	short sVar4;
-	short sVar5;
-	undefined2 uVar6;
-	DB *pDVar7;
-	uint uVar8;
-	int *piVar9;
-	int *piVar10;
-	uint *puVar11;
-	int iVar12;
+	int uVar7;
+	VECTOR *pVVar8;
+	VECTOR *pNextVertex;
+	POLY_G3 *poly;
+	int iVar9;
 	ulong *potz;
-	int *piVar13;
-	int local_a0;
-	int local_98;
-	int local_90[2];
-	int local_88[26];
-	int aiStack32[4];
+	VECTOR *pVertex;
+	VECTOR *pVVar10;
+	VECTOR vertex[9];
 
-	iVar12 = 0;
+	
+	
 	sVar1 = pCopSightData->frontViewDistance;
 	sVar2 = pCopSightData->surroundViewDistance;
 	sVar3 = pCopSightData->frontViewAngle;
-	local_a0 = pPosition->vx;
-	local_98 = pPosition->vz;
-	piVar13 = local_90;
+	vertex[0].vx = pPosition->vx;
+	vertex[0].vz = pPosition->vz;
+
+	pVertex = pVVar10;
+	pVVar10 = vertex + 1;
+	iVar9 = 0;
 	do {
-		if ((iVar12 <= (int)sVar3) || (sVar4 = sVar2, 0x1000 - (int)sVar3 <= iVar12)) {
+		if ((iVar9 <= sVar3) || (sVar4 = sVar2, 0x1000 - sVar3 <= iVar9)) 
+		{
 			sVar4 = sVar1;
 		}
-		uVar8 = iVar12 + direction & 0xfff;
-		sVar5 = rcossin_tbl[uVar8 * 2 + 1];
-		iVar12 = iVar12 + 0x200;
-		*piVar13 = local_a0 + ((int)rcossin_tbl[uVar8 * 2] * (int)sVar4 + 0x800 >> 0xc);
-		piVar13[2] = local_98 + ((int)sVar5 * (int)sVar4 + 0x800 >> 0xc);
-		piVar13 = piVar13 + 4;
-	} while (iVar12 < 0x1000);
-	WorldToOverheadMapPositions((VECTOR *)&local_a0, (VECTOR *)&local_a0, 9, '\0', 0);
-	potz = current->ot;
-	piVar13 = local_90;
-	while (piVar13 < &stack0xfffffff0) {
-		piVar9 = piVar13 + 4;
-		puVar11 = (uint *)current->primptr;
-		piVar10 = piVar9;
-		if (aiStack32 < piVar9) {
-			piVar10 = local_90;
-		}
-		*(char *)((int)puVar11 + 3) = '\x06';
-		*(char *)((int)puVar11 + 7) = '0';
-		*(undefined2 *)(puVar11 + 2) = (undefined2)local_a0;
-		*(undefined2 *)((int)puVar11 + 10) = (undefined2)local_98;
-		*(undefined2 *)(puVar11 + 4) = *(undefined2 *)piVar13;
-		*(undefined2 *)((int)puVar11 + 0x12) = *(undefined2 *)(piVar13 + 2);
-		*(undefined2 *)(puVar11 + 6) = *(undefined2 *)piVar10;
-		uVar6 = *(undefined2 *)(piVar10 + 2);
-		*(char *)(puVar11 + 1) = '`';
-		*(char *)((int)puVar11 + 5) = '`';
-		*(char *)((int)puVar11 + 6) = '`';
-		*(char *)(puVar11 + 3) = '\0';
-		*(char *)((int)puVar11 + 0xd) = '\0';
-		*(char *)((int)puVar11 + 0xe) = '\0';
-		*(char *)(puVar11 + 5) = '\0';
-		*(char *)((int)puVar11 + 0x15) = '\0';
-		*(char *)((int)puVar11 + 0x16) = '\0';
-		*(char *)((int)puVar11 + 7) = '2';
-		*(undefined2 *)((int)puVar11 + 0x1a) = uVar6;
-		*puVar11 = *puVar11 & 0xff000000 | *potz & 0xffffff;
-		pDVar7 = current;
-		*potz = *potz & 0xff000000 | (uint)puVar11 & 0xffffff;
-		pDVar7->primptr = pDVar7->primptr + 0x1c;
-		piVar13 = piVar9;
+
+		uVar7 = iVar9 + direction & 0xfff;
+
+		iVar9 = iVar9 + 0x200;
+		pVertex->vx = vertex[0].vx + FIXED(rcossin_tbl[uVar7 * 2] * sVar4);
+		pVertex->vz = vertex[0].vz + FIXED(rcossin_tbl[uVar7 * 2 + 1] * sVar4);
+		pVertex = pVertex + 1;
+	} while (iVar9 < 0x1000);
+
+	WorldToOverheadMapPositions(vertex, vertex, 9, 0, 0);
+
+	pVertex = pVVar10;
+
+	while (pVertex < &vertex[9])
+	{
+		pVVar8 = pVertex + 1;
+		
+		pNextVertex = pVVar8;
+
+		if (vertex + 8 < pVVar8)
+			pNextVertex = pVVar10;
+	
+		poly = (POLY_G3 *)current->primptr;
+		setPolyG3(poly);
+		setSemiTrans(poly, 1);
+
+		poly->x0 = vertex[0].vx;
+		poly->y0 = vertex[0].vz;
+		poly->x1 = pVertex->vx;
+		poly->y1 = pVertex->vz;
+		poly->x2 = pNextVertex->vx;
+		poly->y2 = pNextVertex->vz;
+
+		poly->r0 = 96;
+		poly->g0 = 96;
+		poly->b0 = 96;
+		poly->r1 = 0;
+		poly->g1 = 0;
+		poly->b1 = 0;
+		poly->r2 = 0;
+		poly->g2 = 0;
+		poly->b2 = 0;
+		
+		addPrim(current->ot, poly);
+
+		current->primptr += sizeof(POLY_G3);
+		pVertex = pVVar8;
 	}
-	TransparencyOn(potz, 0x20);
-	return;*/
+
+	TransparencyOn(current->ot, 0x20);
 }
 
 
