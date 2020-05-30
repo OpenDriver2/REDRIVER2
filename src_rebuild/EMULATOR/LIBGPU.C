@@ -456,7 +456,7 @@ void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
 void SetDrawArea(DR_AREA *p, RECT16 *r)
 {
 	p->code[0] = (r->x & 0x3FF | ((r->y & 0x3FF) << 10)) | 0xE3000000;
-	p->code[1] = (((r->x + r->w-1) & 0x3FF) | (((r->y + r->h-1) & 0x3FF) << 10)) | 0xE4000000;
+	p->code[1] = (((r->x + r->w) & 0x3FF) | (((r->y + r->h) & 0x3FF) << 10)) | 0xE4000000;
 	p->len = 2;
 	p->tag = p->tag & 0xFFFFFF | 0x2000000;
 }

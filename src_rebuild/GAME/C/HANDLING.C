@@ -2084,7 +2084,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				if (player[0].dying == 0)
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, 0);
 			}
-			else if (lockAllTheDoors != 1)
+			else if (lockAllTheDoors != 0)
 			{
 				gLockPickingAttempted = 1;
 			}

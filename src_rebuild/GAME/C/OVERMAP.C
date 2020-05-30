@@ -1371,7 +1371,7 @@ LAB_00016fac:
 	clipped_size.x = 250;
 	clipped_size.w = 60;
 	clipped_size.h = 60;
-	clipped_size.y = (current->draw).clip.y + 182;
+	clipped_size.y = (current->draw).clip.y + 181;
 
 	drarea = (DR_AREA*)current->primptr;
 
@@ -2531,8 +2531,8 @@ void draw_box(void)
 	linef4->y1 = 181;
 	linef4->x3 = 249;
 
-	linef4->y2 = 242;
-	linef4->y3 = 242;
+	linef4->y2 = 241;
+	linef4->y3 = 241;
 
 	addPrim(current->ot + 1, linef4);
 	current->primptr += sizeof(LINE_F4);
@@ -2547,7 +2547,7 @@ void draw_box(void)
 	linef2->x0 = 249;
 	linef2->y0 = 181;
 	linef2->x1 = 249;
-	linef2->y1 = 242;
+	linef2->y1 = 241;
 
 	addPrim(current->ot + 1, linef2);
 	current->primptr += sizeof(LINE_F2);
