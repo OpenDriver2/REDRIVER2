@@ -337,19 +337,18 @@ void DrawWorldTargets(void)
 // [D]
 void DrawOverheadTargets(void)
 {
-	int iVar1;
-	int iVar2;
+	int i;
 
-	if (Mission.active != 0) {
-		iVar2 = 0;
-		iVar1 = 0;
-		do {
-			iVar2 = iVar2 + 1;
-			DrawOverheadTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-			iVar1 = iVar2 * 0x40;
-		} while (iVar2 < 0x10);
-	}
-	return;
+	if (Mission.active == 0)
+		return;
+
+	i = 0;
+
+	do {
+			
+		DrawOverheadTarget(MissionTargets + i);
+		i++;
+	} while (i < 16);
 }
 
 
@@ -477,43 +476,47 @@ void DrawOverheadTarget(_TARGET *target)
 {
 	int iVar1;
 	int *piVar2;
-	VECTOR local_18;
+	VECTOR tv;
 
-	iVar1 = TargetComplete(target, -1);
-	if (iVar1 != 0) {
+	if (TargetComplete(target, -1))
 		return;
-	}
-	if ((target->data[1] & 0x600U) == 0) {
+
+	if ((target->data[1] & 0x600U) == 0) 
 		return;
-	}
+
 	iVar1 = target->data[0];
-	if (iVar1 != 2) {
-		if (2 < iVar1) {
-			if (iVar1 != 3) {
+
+	if (iVar1 != 2) 
+	{
+		if (2 < iVar1) 
+		{
+			if (iVar1 != 3) 
 				return;
-			}
+
 			piVar2 = (int *)target->data[4];
-			local_18.vx = *piVar2;
-			local_18.vy = piVar2[1];
-			local_18.vz = piVar2[2];
-			local_18.pad = piVar2[3];
+			tv.vx = *piVar2;
+			tv.vy = piVar2[1];
+			tv.vz = piVar2[2];
+			tv.pad = piVar2[3];
+
 			goto LAB_0005fe3c;
 		}
-		if (iVar1 != 1) {
+
+		if (iVar1 != 1)
 			return;
-		}
 	}
-	local_18.vx = target->data[3];
-	local_18.vz = target->data[4];
-	local_18.vy = 0;
+
+	tv.vx = target->data[3];
+	tv.vz = target->data[4];
+	tv.vy = 0;
+
 LAB_0005fe3c:
-	if ((target->data[2] & 0x10U) != 0) {
-		DrawTargetBlip(&local_18, '@', '@', '@', 0x11);
-	}
-	if ((target->data[2] & 0x40U) != 0) {
-		DrawTargetArrow(&local_18, 1);
-	}
-	return;
+
+	if ((target->data[2] & 0x10U) != 0)
+		DrawTargetBlip(&tv, 64, 64, 64, 0x11);
+
+	if ((target->data[2] & 0x40U) != 0)
+		DrawTargetArrow(&tv, 1);
 }
 
 
@@ -541,42 +544,47 @@ void DrawFullscreenTarget(_TARGET *target)
 {
 	int iVar1;
 	int *piVar2;
-	VECTOR local_18;
+	VECTOR tv;
 
 	iVar1 = TargetComplete(target, -1);
-	if (iVar1 != 0) {
+	if (iVar1 != 0)
 		return;
-	}
-	if ((target->data[1] & 0x600U) == 0) {
+
+	if ((target->data[1] & 0x600U) == 0)
 		return;
-	}
+
 	iVar1 = target->data[0];
-	if (iVar1 != 2) {
-		if (2 < iVar1) {
-			if (iVar1 != 3) {
+
+	if (iVar1 != 2) 
+	{
+		if (2 < iVar1) 
+		{
+			if (iVar1 != 3)
 				return;
-			}
+
 			piVar2 = (int *)target->data[4];
-			local_18.vx = *piVar2;
-			local_18.vy = piVar2[1];
-			local_18.vz = piVar2[2];
-			local_18.pad = piVar2[3];
+			tv.vx = *piVar2;
+			tv.vy = piVar2[1];
+			tv.vz = piVar2[2];
+			tv.pad = piVar2[3];
+
 			goto LAB_0005ff54;
 		}
-		if (iVar1 != 1) {
+
+		if (iVar1 != 1)
 			return;
-		}
 	}
-	local_18.vx = target->data[3];
-	local_18.vz = target->data[4];
-	local_18.vy = 0;
+	tv.vx = target->data[3];
+	tv.vz = target->data[4];
+	tv.vy = 0;
+
 LAB_0005ff54:
-	if ((target->data[2] & 0x10U) != 0) {
-		DrawTargetBlip(&local_18, '@', '@', '@', 0x14);
-	}
-	if ((target->data[2] & 0x40U) != 0) {
-		DrawTargetArrow(&local_18, 4);
-	}
+	if ((target->data[2] & 0x10U) != 0)
+		DrawTargetBlip(&tv, 64, 64, 64, 20);
+
+	if ((target->data[2] & 0x40U) != 0)
+		DrawTargetArrow(&tv, 4);
+
 	return;
 }
 
