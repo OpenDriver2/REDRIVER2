@@ -2795,7 +2795,7 @@ void DrawBigCompass(VECTOR *root, int angle)
 	/* end block 4 */
 	// End Line: 6681
 
-// [D]
+// [D] [A] colour values might be wrong
 void CopIndicator(int xpos, int strength)
 {
 	int str2;
@@ -3188,32 +3188,12 @@ void SetFullscreenMapMatrix(void)
 	/* end block 3 */
 	// End Line: 8993
 
+// [D]
 void WorldToFullscreenMap(VECTOR *in, VECTOR *out)
 {
-	UNIMPLEMENTED();
-	/*
-	OVERMAP *pOVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-
-	iVar2 = GameLevel;
-	iVar5 = in->vx;
-	pOVar1 = overlaidmaps + GameLevel;
-	iVar3 = pOVar1->scale;
-	if (iVar3 == 0) {
-		trap(7);
-	}
-	iVar4 = overlaidmaps[GameLevel].x_offset;
 	out->vy = 0;
-	out->vx = iVar4 + iVar5 / iVar3 + 0x31;
-	iVar3 = pOVar1->scale;
-	if (iVar3 == 0) {
-		trap(7);
-	}
-	out->vz = overlaidmaps[iVar2].y_offset - (in->vz / iVar3 + -0x31);
-	return;*/
+	out->vx = overlaidmaps[GameLevel].x_offset + in->vx / overlaidmaps[GameLevel].scale + 49;
+	out->vz = overlaidmaps[GameLevel].y_offset - (in->vz / overlaidmaps[GameLevel].scale - 49);
 }
 
 
@@ -3242,30 +3222,17 @@ void WorldToFullscreenMap(VECTOR *in, VECTOR *out)
 	/* end block 3 */
 	// End Line: 9021
 
+// [D]
 void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	short local_18;
-	undefined2 local_16;
-	short local_14;
-	undefined auStack16[8];
+	SVECTOR pos;
+	long flag;
 
-	iVar1 = overlaidmaps[GameLevel].scale;
-	if (iVar1 == 0) {
-		trap(7);
-	}
-	local_16 = 0;
-	if (iVar1 == 0) {
-		trap(7);
-	}
-	local_18 = (*(short *)&overlaidmaps[GameLevel].x_offset + (short)(in->vx / iVar1) + 0x31) -
-		(short)player_position.vx;
-	local_14 = (*(short *)&overlaidmaps[GameLevel].y_offset - ((short)(in->vz / iVar1) + -0x31)) -
-		(short)player_position.vz;
-	RotTrans(&local_18, out, auStack16);
-	return;*/
+	pos.vy = 0;
+	pos.vx = overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale) + 49) - player_position.vx;
+	pos.vz = overlaidmaps[GameLevel].y_offset - ((in->vz / overlaidmaps[GameLevel].scale) - 49)) - player_position.vz;
+
+	RotTrans(&pos, out, &flag);
 }
 
 
