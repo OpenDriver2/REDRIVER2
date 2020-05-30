@@ -1708,6 +1708,13 @@ bool Emulator_BeginScene()
 	if (g_wireframeMode)
 	{
 		Emulator_SetWireframe(true);
+
+#if defined(OGL) || defined(OGLES)
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+#elif defined(D3D9)
+
+#endif
 	}
 
 	return true;
