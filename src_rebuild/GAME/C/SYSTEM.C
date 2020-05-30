@@ -1131,8 +1131,8 @@ void SetupDrawBuffers(void)
 	DB **ppDVar5;
 	RECT16 rect;
 
-	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, 256);
-	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, 256);
+	SetDefDispEnv(&MPBuff[0][0].disp, 0, 0,   320, 256);
+	SetDefDispEnv(&MPBuff[0][1].disp, 0, 256, 320, 256);
 
 	MPBuff[0][0].disp.screen.h = 256;
 	MPBuff[0][1].disp.screen.h = 256;
@@ -1247,7 +1247,7 @@ void SetupDrawBufferData(int num_players)
 		} while (FrameCnt != 0x78654321);
 	}
 
-	SetGeomOffset(160, height >> 1);
+	SetGeomOffset(160, height / 2);
 	
 	toggle = 0;
 
@@ -1314,13 +1314,13 @@ void SetupDrawBufferData(int num_players)
 void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h)
 {
 	SetDefDrawEnv(&pBuff[0].draw, x, y, w, h);
-	SetDefDrawEnv(&pBuff[1].draw, x, y + 0x100, w, h);
+	SetDefDrawEnv(&pBuff[1].draw, x, y + 256, w, h);
 
 	pBuff[0].id = 0;
-	pBuff[0].draw.dfe = '\x01';
+	pBuff[0].draw.dfe = 1;
 
 	pBuff[1].id = 1;
-	pBuff[1].draw.dfe = '\x01';
+	pBuff[1].draw.dfe = 1;
 }
 
 

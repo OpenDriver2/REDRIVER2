@@ -997,11 +997,11 @@ void DrawOverheadMap(void)
 
 LAB_00016fac:
 
-	//drarea = (DR_AREA *)current->primptr;
-	//SetDrawArea(drarea, &current->draw.clip);
+	drarea = (DR_AREA *)current->primptr;
+	SetDrawArea(drarea, &current->draw.clip);
 
-	//addPrim(current->ot, drarea);
-	//current->primptr += sizeof(DR_AREA);
+	addPrim(current->ot, drarea);
+	current->primptr += sizeof(DR_AREA);
 
 	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
 
@@ -1368,17 +1368,17 @@ LAB_00016fac:
 	addPrim(current->ot, null);
 	current->primptr += sizeof(POLY_FT3);
 
-	clipped_size.x = 0xfa;
-	clipped_size.w = 0x3c;
-	clipped_size.h = 0x3c;
-	clipped_size.y = (current->draw).clip.y + 0xb6;
+	clipped_size.x = 250;
+	clipped_size.w = 60;
+	clipped_size.h = 60;
+	clipped_size.y = (current->draw).clip.y + 182;
 
-	//drarea = (DR_AREA*)current->primptr;
+	drarea = (DR_AREA*)current->primptr;
 
-	//SetDrawArea(drarea, &clipped_size);
+	SetDrawArea(drarea, &clipped_size);
 
-	//addPrim(current->ot, drarea);
-	//current->primptr += sizeof(POLY_FT3);
+	addPrim(current->ot, drarea);
+	current->primptr += sizeof(DR_AREA);
 }
 
 
