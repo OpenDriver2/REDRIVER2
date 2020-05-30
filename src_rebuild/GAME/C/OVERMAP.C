@@ -9,6 +9,8 @@
 #include "OVERLAY.H"
 #include "DEBRIS.H"
 #include "MAP.H"
+#include "CONVERT.H"
+#include "DRAW.H"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"
@@ -76,6 +78,8 @@ char* palettedir[] = {
 	"RIO",
 };
 
+MATRIX map_matrix;
+
 char* MapBitMaps;
 static char MapBuffer[520];
 static unsigned short MapClut;
@@ -92,6 +96,8 @@ static int y_map = 0;
 static int map_x_offset = 0;
 static int map_z_offset = 0;
 static unsigned short MapTPage = 0;
+
+static int gUseRotatedMap = 0;
 
 
 // decompiled code
@@ -3133,38 +3139,26 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void SetFullscreenMapMatrix(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	undefined4 uVar2;
-	undefined4 uVar3;
-	SVECTOR local_10;
+	VECTOR translate = { 160, 0, 128 };
+	SVECTOR direction;
 
-	uVar3 = DAT_00010440;
-	uVar2 = DAT_0001043c;
-	uVar1 = DAT_00010438;
-	local_10.vx = 0;
-	if (gUseRotatedMap == 0) {
-		local_10.vy = 0;
-	}
-	else {
-		local_10.vy = (ushort)player.dir & 0xfff;
-	}
-	local_10.vz = 0;
-	RotMatrixXYZ(&map_matrix, &local_10);
+	direction.vx = 0;
+
+	if (gUseRotatedMap == 0)
+		direction.vy = 0;
+	else
+		direction.vy = player[0].dir & 0xfff;
+
+	direction.vz = 0;
+
+	RotMatrixXYZ(&map_matrix, &direction);		// Why, Reflections? Why? You could have used RotMatrixY
 	MulMatrix0(&aspect, &map_matrix, &map_matrix);
-	setCopControlWord(2, 0, map_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, map_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, map_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, map_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, map_matrix._16_4_);
-	setCopControlWord(2, 0x2800, uVar1);
-	setCopControlWord(2, 0x3000, uVar2);
-	setCopControlWord(2, 0x3800, uVar3);
-	return;
-	*/
+
+	gte_SetRotMatrix(&map_matrix);
+	gte_SetTransVector(&translate);
 }
 
 
@@ -3229,8 +3223,8 @@ void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 	long flag;
 
 	pos.vy = 0;
-	pos.vx = overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale) + 49) - player_position.vx;
-	pos.vz = overlaidmaps[GameLevel].y_offset - ((in->vz / overlaidmaps[GameLevel].scale) - 49)) - player_position.vz;
+	pos.vx = (overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale) + 49) - player_position.vx;
+	pos.vz = (overlaidmaps[GameLevel].y_offset - ((in->vz / overlaidmaps[GameLevel].scale) - 49)) - player_position.vz;
 
 	RotTrans(&pos, out, &flag);
 }
