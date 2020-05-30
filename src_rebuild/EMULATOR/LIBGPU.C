@@ -435,12 +435,17 @@ DRAWENV* SetDefDrawEnv(DRAWENV* env, int x, int y, int w, int h)//(F)
 
 void SetDrawEnv(DR_ENV* dr_env, DRAWENV* env)
 {
-
+	UNIMPLEMENTED();
 }
 
 void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
 {
 	setDrawMode(p, dfe, dtd, tpage, tw);
+}
+
+void SetDrawArea(DR_AREA *p, RECT16 *r)
+{
+	UNIMPLEMENTED();
 }
 
 void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)

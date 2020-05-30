@@ -5067,8 +5067,6 @@ int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 			cp->ai.c.brakeLight = 0;
 	}
 
-	
-
 	return 0;
 }
 

@@ -2,6 +2,7 @@
 #define COP_AI_H
 
 extern COP_DATA gCopData;
+extern COP_SIGHT_DATA copSightData;
 
 extern int CopsCanSeePlayer;
 extern short pedestrianFelony;
