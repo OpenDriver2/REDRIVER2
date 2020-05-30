@@ -11,6 +11,7 @@
 #include "MAP.H"
 #include "CONVERT.H"
 #include "DRAW.H"
+#include "PRES.H"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"
@@ -95,6 +96,10 @@ static int y_map = 0;
 
 static int map_x_offset = 0;
 static int map_z_offset = 0;
+int map_x_shift = 0;
+int map_z_shift = 0;
+
+
 static unsigned short MapTPage = 0;
 
 static int gUseRotatedMap = 0;
@@ -215,14 +220,20 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 
 	poly->clut = light_texture.clutid;
 
-	if ((flags & 4) == 0) 
+#ifdef PSX
+	if ((flags & 4) == 0)
 	{
 		addPrim(current->ot, poly);
 	}
-	else 
+	else
 	{
 		DrawPrim(poly);
 	}
+#else
+	addPrim(current->ot, poly);
+	current->primptr += sizeof(POLY_FT4);
+#endif
+
 }
 
 
@@ -657,11 +668,8 @@ void InitOverheadMap(void)
 	if (gMultiplayerLevels == 0) 
 	{
 		SetMapPos();
+
 		tilehnum = overlaidmaps[GameLevel].width;
-
-		if (tilehnum < 0) 
-			tilehnum = tilehnum + 0x1f;
-
 		tilehnum = tilehnum >> 5;
 
 		iVar3 = 0;
@@ -832,9 +840,6 @@ void DrawOverheadMap(void)
 	}
 
 	UNIMPLEMENTED();
-
-	VECTOR test = {0, 0, 0};
-	DrawBigCompass(&test, 0);
 
 	/*
 	    byte bVar1;
@@ -1395,75 +1400,70 @@ LAB_00016fac:
 
 void DrawFullscreenMap(void)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	short sVar2;
-	char *pcVar3;
-	int iVar4;
-	int iVar5;
-	uint uVar6;
-	uint *puVar7;
-	uint *puVar8;
-	short *psVar9;
+	TILE *polys;
+	int iVar3;
+	TILE_1 *tile1;
+	uint uVar4;
+	POLY_FT4 *back;
+	POLY_FT3 *null;
+	VECTOR *v1;
+	uint *puVar5;
+	SVECTOR *v0;
 	int y;
-	int iVar10;
+	int iVar6;
 	int x;
-	short local_c0;
-	undefined2 local_be;
-	short local_bc;
-	short local_b8;
-	undefined2 local_b6;
-	short local_b4;
-	short local_b0;
-	undefined2 local_ae;
-	short local_ac;
-	short local_a8;
-	undefined2 local_a6;
-	short local_a4;
-	uint local_a0[2];
-	uint local_98[2];
-	undefined2 local_90;
-	undefined2 local_88;
-	undefined2 local_80;
-	undefined2 local_78;
-	undefined2 local_70;
-	undefined2 local_68;
-	VECTOR local_60;
-	int local_50;
-	long local_4c;
-	int local_48;
-	long local_44;
-	undefined auStack64[4];
-	int local_3c;
-	int local_38;
+	SVECTOR mesh[4];
+	VECTOR meshO[4];
+	VECTOR target;
+	VECTOR vec;
+	long flag;
+	int width;
+	int height;
 	int local_34;
 	VECTOR *local_30;
 
-	if ((Pads[0].dirnew & 0x20) != 0) {
+	if ((Pads[0].dirnew & 0x20) != 0) 
+	{
 		map_x_offset = 0;
 		map_z_offset = 0;
 		map_x_shift = 0;
 		map_z_shift = 0;
-		gUseRotatedMap = gUseRotatedMap ^ 1;
+
+		gUseRotatedMap ^= 1;
 	}
+
 	SetFullscreenMapMatrix();
-	pcVar3 = current->primptr;
-	pcVar3[3] = '\x03';
-	pcVar3[7] = '`';
-	pcVar3[4] = '\0';
-	pcVar3[5] = '\0';
-	pcVar3[6] = '\0';
-	*(undefined2 *)(pcVar3 + 8) = 0;
-	*(undefined2 *)(pcVar3 + 10) = 0;
-	*(undefined2 *)(pcVar3 + 0xc) = 0x140;
-	*(undefined2 *)(pcVar3 + 0xe) = 0x100;
-	DrawPrim(pcVar3);
+
+	polys = (TILE *)current->primptr;
+
+	setTile(polys);
+
+	polys->r0 = 0;
+	polys->g0 = 0;
+	polys->b0 = 0;
+
+	polys->x0 = 0;
+	polys->y0 = 0;
+	polys->w = 320;
+	polys->h = 256;
+
+#ifdef PSX
+	DrawPrim(polys);
 	DrawSync(0);
-	local_3c = overlaidmaps[GameLevel].width;
-	local_38 = overlaidmaps[GameLevel].height;
-	WorldToFullscreenMap((VECTOR *)&player, &player_position);
-	if (gUseRotatedMap != 0) {
+#else
+	addPrim(current->ot+2, polys);
+	current->primptr += sizeof(TILE);
+#endif
+
+	width = overlaidmaps[GameLevel].width;
+	height = overlaidmaps[GameLevel].height;
+
+	WorldToFullscreenMap((VECTOR *)player, &player_position);
+
+	if (gUseRotatedMap != 0) 
+	{
 		if ((Pads[0].direct & 0x8000) == 0) {
 			if ((Pads[0].direct & 0x2000) != 0) {
 				map_x_offset = map_x_offset + -8;
@@ -1496,175 +1496,226 @@ void DrawFullscreenMap(void)
 		map_z_shift = 0;
 		goto LAB_00017f8c;
 	}
-	map_x_offset = (player_position.vx + 0xa0) - local_3c;
-	if ((player_position.vx + 0xa0 <= local_3c) &&
-		(map_x_offset = player_position.vx + -0xa0, -1 < map_x_offset)) {
+
+	map_x_offset = (player_position.vx + 0xa0) - width;
+
+	if ((player_position.vx + 0xa0 <= width) &&
+		(map_x_offset = player_position.vx + -0xa0, -1 < map_x_offset))
+	{
 		map_x_offset = 0;
 	}
-	map_z_offset = (player_position.vz + 0x80) - local_38;
-	if ((player_position.vz + 0x80 <= local_38) &&
-		(map_z_offset = player_position.vz + -0x80, -1 < map_z_offset)) {
+
+	map_z_offset = (player_position.vz + 0x80) - height;
+
+	if ((player_position.vz + 0x80 <= height) && (map_z_offset = player_position.vz + -0x80, -1 < map_z_offset)) 
+	{
 		map_z_offset = 0;
 	}
-	if ((Pads[0].direct & 0x8000) == 0) {
+	if ((Pads[0].direct & 0x8000) == 0)
+	{
 		if (((Pads[0].direct & 0x2000) != 0) &&
-			(iVar5 = map_x_shift + -8,
-			((player_position.vx - map_x_offset) + 0xa0) - map_x_shift < local_3c)) goto LAB_00017f0c;
+			(iVar3 = map_x_shift + -8,
+			((player_position.vx - map_x_offset) + 0xa0) - map_x_shift < width)) 
+			goto LAB_00017f0c;
 	}
-	else {
-		iVar5 = map_x_shift + 8;
+	else
+	{
+		iVar3 = map_x_shift + 8;
 		if (0 < ((player_position.vx - map_x_offset) + -0xa0) - map_x_shift) {
 		LAB_00017f0c:
-			map_x_shift = iVar5;
+			map_x_shift = iVar3;
 		}
 	}
-	if ((Pads[0].direct & 0x1000) == 0) {
+
+	if ((Pads[0].direct & 0x1000) == 0) 
+	{
 		if (((Pads[0].direct & 0x4000) != 0) &&
-			(iVar5 = map_z_shift + -8,
-			((player_position.vz - map_z_offset) + 0x80) - map_z_shift < local_38)) goto LAB_00017f64;
+			(iVar3 = map_z_shift + -8,
+			((player_position.vz - map_z_offset) + 0x80) - map_z_shift < height)) goto LAB_00017f64;
 	}
-	else {
-		iVar5 = map_z_shift + 8;
+	else 
+	{
+		iVar3 = map_z_shift + 8;
 		if (0 < ((player_position.vz - map_z_offset) + -0x80) - map_z_shift) {
 		LAB_00017f64:
-			map_z_shift = iVar5;
+			map_z_shift = iVar3;
 		}
 	}
+
 	map_x_offset = map_x_offset + map_x_shift;
 	map_z_offset = map_z_offset + map_z_shift;
 LAB_00017f8c:
-	pcVar3 = current->primptr;
-	pcVar3[3] = '\a';
-	pcVar3[7] = '$';
-	uVar1 = MapTPage;
-	*(undefined2 *)(pcVar3 + 8) = 0xffff;
-	*(undefined2 *)(pcVar3 + 10) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x10) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x12) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x18) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x1a) = 0xffff;
-	*(ushort *)(pcVar3 + 0x16) = uVar1;
-	DrawPrim(pcVar3);
+
+	null = (POLY_FT3 *)current->primptr;
+
+	setPolyFT3(null);
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = MapTPage;
+
+#ifdef PSX
+	DrawPrim(null);
 	DrawSync(0);
-	local_30 = &local_60;
-	iVar5 = 0;
+#else
+	addPrim(current->ot+2, null);
+	current->primptr += sizeof(POLY_FT3);
+#endif
+
+	local_30 = &target;
+	local_34 = 0;
 	while (true) {
-		x = iVar5;
-		iVar5 = local_3c;
-		if (local_3c < 0) {
-			iVar5 = local_3c + 0x1f;
-		}
-		if (iVar5 >> 5 <= x) break;
+		x = local_34;
+		iVar3 = width;
+
+		if (iVar3 >> 5 <= x)
+			break;
+
 		local_34 = x + 1;
-		iVar5 = 0;
-		while (true) {
-			y = iVar5;
-			iVar4 = local_38;
-			if (local_38 < 0) {
-				iVar4 = local_38 + 0x1f;
-			}
-			iVar10 = 0;
-			iVar5 = local_34;
-			if (iVar4 >> 5 <= y) break;
-			puVar8 = (uint *)local_98;
-			puVar7 = (uint *)local_a0;
-			psVar9 = &local_c0;
-			iVar5 = 3;
-			local_be = 0;
-			local_b6 = 0;
-			local_ae = 0;
-			local_a6 = 0;
-			local_c0 = (short)x * 0x20 - (short)player_position.vx;
-			local_b8 = local_c0 + 0x20;
-			local_bc = (short)y * 0x20 - (short)player_position.vz;
-			local_ac = local_bc + 0x20;
-			local_b4 = local_bc;
-			local_b0 = local_c0;
-			local_a8 = local_b8;
-			local_a4 = local_ac;
+		iVar3 = 0;
+
+		while (true) 
+		{
+			y = iVar3;
+			iVar3 = height;
+
+			iVar6 = 0;
+
+			if (iVar3 >> 5 <= y)
+				break;
+
+			puVar5 = (uint *)&meshO[0].vz;
+			v1 = meshO;
+			v0 = mesh;
+			iVar3 = 3;
+			mesh[0].vy = 0;
+			mesh[1].vy = 0;
+			mesh[2].vy = 0;
+			mesh[3].vy = 0;
+			mesh[0].vx = (short)x * 0x20 - (short)player_position.vx;
+			mesh[1].vx = mesh[0].vx + 0x20;
+			mesh[0].vz = (short)y * 0x20 - (short)player_position.vz;
+			mesh[2].vz = mesh[0].vz + 0x20;
+			mesh[1].vz = mesh[0].vz;
+			mesh[2].vx = mesh[0].vx;
+			mesh[3].vx = mesh[1].vx;
+			mesh[3].vz = mesh[2].vz;
+
 			do {
-				RotTrans(psVar9, puVar7, auStack64);
-				*puVar7 = *puVar7 + map_x_offset;
-				uVar6 = *puVar8;
-				*puVar8 = uVar6 + map_z_offset;
-				if ((0x140 < *puVar7) || (0x100 < uVar6 + map_z_offset)) {
-					iVar10 = iVar10 + 1;
+				RotTrans(v0, v1, &flag);
+				v1->vx = v1->vx + map_x_offset;
+				uVar4 = *puVar5;
+				*puVar5 = uVar4 + map_z_offset;
+
+				if ((0x140 < v1->vx) || (0x100 < uVar4 + map_z_offset)) {
+					iVar6 = iVar6 + 1;
 				}
-				puVar8 = puVar8 + 4;
-				puVar7 = puVar7 + 4;
-				iVar5 = iVar5 + -1;
-				psVar9 = psVar9 + 4;
-			} while (-1 < iVar5);
-			iVar5 = y + 1;
-			if (iVar10 != 4) {
+
+				puVar5 = puVar5 + 4;
+				v1 = v1 + 1;
+				iVar3 = iVar3 + -1;
+				v0 = v0 + 1;
+			} while (-1 < iVar3);
+
+			iVar3 = y + 1;
+
+			if(iVar6 != 4) 
+			{
 				LoadMapTile(0, x, y);
-				pcVar3 = current->primptr;
-				pcVar3[3] = '\t';
-				pcVar3[4] = 'X';
-				pcVar3[5] = 'X';
-				pcVar3[6] = 'X';
-				pcVar3[7] = ',';
-				*(undefined2 *)(pcVar3 + 8) = (undefined2)local_a0[0];
-				*(undefined2 *)(pcVar3 + 10) = (undefined2)local_98[0];
-				*(undefined2 *)(pcVar3 + 0x10) = local_90;
-				*(undefined2 *)(pcVar3 + 0x12) = local_88;
-				*(undefined2 *)(pcVar3 + 0x18) = local_80;
-				*(undefined2 *)(pcVar3 + 0x1a) = local_78;
-				*(undefined2 *)(pcVar3 + 0x20) = local_70;
-				*(undefined2 *)(pcVar3 + 0x22) = local_68;
-				pcVar3[0xc] = (char)MapSegmentPos.x << 2;
-				pcVar3[0xd] = (char)MapSegmentPos.y;
-				pcVar3[0x14] = (char)MapSegmentPos.x * '\x04' + '\x1f';
-				pcVar3[0x15] = (char)MapSegmentPos.y;
-				pcVar3[0x1c] = (char)MapSegmentPos.x << 2;
-				pcVar3[0x1d] = (char)MapSegmentPos.y + '\x1f';
-				pcVar3[0x24] = (char)MapSegmentPos.x * '\x04' + '\x1f';
-				pcVar3[0x25] = (char)MapSegmentPos.y + '\x1f';
-				*(ushort *)(pcVar3 + 0xe) = MapClut;
-				DrawPrim(pcVar3);
+
+				back = (POLY_FT4 *)current->primptr;
+				setPolyFT4(back);
+
+				back->r0 = 88;
+				back->g0 = 88;
+				back->b0 = 88;
+
+				back->x0 = meshO[0].vx;
+				back->y0 = meshO[0].vz;
+				back->x1 = meshO[1].vx;
+				back->y1 = meshO[1].vz;
+				back->x2 = meshO[2].vx;
+				back->y2 = meshO[2].vz;
+				back->x3 = meshO[3].vx;
+				back->y3 = meshO[3].vz;
+				back->u0 = MapSegmentPos[0].x << 2;
+				back->v0 = MapSegmentPos[0].y;
+				back->u1 = MapSegmentPos[0].x * '\x04' + '\x1f';
+				back->v1 = MapSegmentPos[0].y;
+				back->u2 = MapSegmentPos[0].x << 2;
+				back->v2 = MapSegmentPos[0].y + '\x1f';
+				back->u3 = MapSegmentPos[0].x * '\x04' + '\x1f';
+				back->v3 = MapSegmentPos[0].y + '\x1f';
+				back->clut = MapClut;
+				back->tpage = MapTPage;
+
+#ifdef PSX
+				DrawPrim(back);
 				DrawSync(0);
+#else
+				addPrim(current->ot+1, back);
+				current->primptr += sizeof(POLY_FT4);
+#endif
 			}
 		}
 	}
-	local_60.vx = 0xa0;
-	local_60.vz = 0x80;
+
+	target.vx = 160;
+	target.vz = 128;
+
 	DrawFullscreenTargets();
-	if (gUseRotatedMap == 0) {
+
+	if (gUseRotatedMap == 0)
 		DrawBigCompass(local_30, 0);
-	}
-	else {
-		DrawBigCompass(local_30, player.dir);
-	}
-	DrawTargetBlip(local_30, '@', '@', '@', 0xe);
-	local_44 = local_60.pad;
-	local_50 = local_60.vx + map_x_offset;
-	local_4c = local_60.vy;
-	local_48 = local_60.vz + map_z_offset;
-	pcVar3 = current->primptr;
-	pcVar3[3] = '\x02';
-	pcVar3[7] = 'h';
-	pcVar3[4] = -1;
-	pcVar3[5] = -1;
-	pcVar3[6] = -1;
-	*(undefined2 *)(pcVar3 + 8) = (undefined2)local_50;
-	*(undefined2 *)(pcVar3 + 10) = (undefined2)local_48;
-	DrawPrim(pcVar3);
-	pcVar3 = current->primptr;
-	pcVar3[3] = '\a';
-	pcVar3[7] = '$';
-	sVar2 = fonttpage;
-	*(undefined2 *)(pcVar3 + 8) = 0xffff;
-	*(undefined2 *)(pcVar3 + 10) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x10) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x12) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x18) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x1a) = 0xffff;
-	*(short *)(pcVar3 + 0x16) = sVar2;
-	DrawPrim(pcVar3);
+	else 
+		DrawBigCompass(local_30, player[0].dir);
+
+	DrawTargetBlip(local_30, 64, 64, 64, 14);
+
+	vec.vx = target.vx + map_x_offset;
+	vec.vz = target.vz + map_z_offset;
+
+	tile1 = (TILE_1 *)current->primptr;
+	setTile1(tile1);
+
+	tile1->r0 = -1;
+	tile1->g0 = -1;
+	tile1->b0 = -1;
+	tile1->x0 = vec.vx;
+	tile1->y0 = vec.vz;
+
+#ifdef PSX
+	DrawPrim(tile1);
+#else
+	addPrim(current->ot+1, tile1);
+	current->primptr += sizeof(TILE_1);
+#endif
+
+	null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = fonttpage;
+
+#ifdef PSX
+	DrawPrim(null);
 	DrawSync(0);
-	SetTextColour(-0x80, -0x80, -0x80);
-	PrintStringCentred(&DAT_00010410, 0xe2);
-	return;*/
+#else
+	addPrim(current->ot+1, null);
+	current->primptr += sizeof(POLY_FT3);
+#endif
+
+	SetTextColour(0x80, 0x80, 0x80);
+
+	PrintStringCentred("\x80 Exit \x81 Rotation \x8a Move", 0xe2);
 }
 
 
@@ -1823,6 +1874,7 @@ void InitMultiplayerMap(void)
 			rect.x = MapRect.x + MapSegmentPos[0].x;
 			rect.y = MapRect.y + MapSegmentPos[0].y;
 			LoadImage(&rect, (u_long *)MapBitMaps);
+
 			DrawSync(0);
 		}
 	}
@@ -2211,44 +2263,45 @@ void load_civ_palettes(RECT16 *cluts)
 	/* end block 5 */
 	// End Line: 5651
 
+// [D]
 void FlashOverheadMap(int r, int g, int b)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	uint *puVar2;
-	char *pcVar3;
+	TILE *prim;
+	POLY_FT3 *null;
 
-	puVar2 = (uint *)current->primptr;
-	*(char *)((int)puVar2 + 3) = '\x03';
-	*(char *)(puVar2 + 1) = (char)r;
-	*(char *)((int)puVar2 + 5) = (char)g;
-	*(char *)((int)puVar2 + 6) = (char)b;
-	*(char *)((int)puVar2 + 7) = 'b';
-	pDVar1 = current;
-	*(undefined2 *)(puVar2 + 2) = 0xfa;
-	*(undefined2 *)((int)puVar2 + 10) = 0xb6;
-	*(undefined2 *)(puVar2 + 3) = 0x3c;
-	*(undefined2 *)((int)puVar2 + 0xe) = 0x3c;
-	*puVar2 = *puVar2 & 0xff000000 | *pDVar1->ot & 0xffffff;
-	*pDVar1->ot = *pDVar1->ot & 0xff000000 | (uint)puVar2 & 0xffffff;
-	pcVar3 = pDVar1->primptr;
-	pDVar1->primptr = pcVar3 + 0x10;
-	pcVar3[0x13] = '\a';
-	pcVar3[0x17] = '$';
-	pDVar1 = current;
-	*(undefined2 *)(pcVar3 + 0x18) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x1a) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x20) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x22) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x28) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x2a) = 0xffff;
-	*(undefined2 *)(pcVar3 + 0x26) = 0x20;
-	*(uint *)(pcVar3 + 0x10) = *(uint *)(pcVar3 + 0x10) & 0xff000000 | *pDVar1->ot & 0xffffff;
-	*pDVar1->ot = *pDVar1->ot & 0xff000000 | (uint)(pcVar3 + 0x10) & 0xffffff;
-	pDVar1->primptr = pDVar1->primptr + 0x20;
-	return;
-	*/
+	prim = (TILE *)current->primptr;
+	setTile(prim);
+	setSemiTrans(prim, 1);
+
+	prim->r0 = r;
+	prim->g0 = g;
+	prim->b0 = b;
+
+	prim->x0 = 0xfa;
+	prim->y0 = 0xb6;
+	prim->w = 0x3c;
+	prim->h = 0x3c;
+
+	addPrim(current->ot, prim);
+
+	current->primptr += sizeof(TILE);
+
+	null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+
+	null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0x20;		// [A] correct me if I'm wrong
+
+	addPrim(current->ot, null);
+
+	current->primptr += sizeof(POLY_FT3);
 }
 
 
@@ -2759,14 +2812,21 @@ void DrawBigCompass(VECTOR *root, int angle)
 		lineg2->g1 = 0;
 		lineg2->b1 = 0;
 
-		//DrawPrim(lineg2);
+#ifdef PSX
+		DrawPrim(lineg2);
+#else
 		addPrim(current->ot, lineg2);	// [A]
+		current->primptr += sizeof(LINE_G2);
+#endif
 
 		i++;
-		current->primptr += sizeof(LINE_G2);
 	} while (i < 3);
 
-	DrawN(position, 0);	// [A] second arg was 1
+#ifdef PSX
+	DrawN(position, 1);
+#else
+	DrawN(position, 0);
+#endif
 }
 
 
