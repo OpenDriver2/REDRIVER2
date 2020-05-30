@@ -2483,9 +2483,9 @@ int redriver2_main(int argc, char** argv)
 		ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
 
 		PlayFMV(0);		// play intro movie
-
-		CheckForCorrectDisc(0);
 	}
+
+	CheckForCorrectDisc(0);
 
 	// Init frontend
 #ifdef PSX

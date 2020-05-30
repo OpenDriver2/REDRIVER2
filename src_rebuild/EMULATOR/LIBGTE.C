@@ -1279,7 +1279,16 @@ long RotTransPers(struct SVECTOR* v0, long* sxy, long* p, long* flag)
 
 void RotTrans(struct SVECTOR* v0, VECTOR* v1, long* flag)
 {
-    UNIMPLEMENTED();
+	long lVar1;
+
+	gte_ldv0(v0);
+
+	docop2(0x480012);
+
+	gte_stlvnl(v1);
+	gte_stflg(flag);
+
+	return;
 }
 
 void NormalColorDpq(struct SVECTOR* v0, struct CVECTOR* v1, long p, struct CVECTOR* v2)
