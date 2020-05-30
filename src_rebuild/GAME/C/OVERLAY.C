@@ -215,7 +215,7 @@ void SetFullscreenDrawing(void)
 	drenv = (DR_ENV *)current->primptr;
 
 	drawenv.clip.x = 0x100;
-	SetDefDrawEnv((DRAWENV *)drawenv.ofs, 0, (uint)(ushort)(current->draw).clip.y & 0x100, 0x140, 0x100);
+	SetDefDrawEnv((DRAWENV *)&drawenv, 0, current->draw.clip.y & 0x100, 0x140, 0x100);
 
 	SetDrawEnv(drenv, &drawenv);
 
@@ -484,15 +484,15 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 		addPrim((u_long*)(current->ot + 1), lineF2);
 		current->primptr += sizeof(LINE_F2);
 
-		TransparencyOn((u_long*)(current->ot + 1), 0x20);
+		TransparencyOn(current->ot + 1, 0x20);
 		
 		string = bar->tag;
 		if (string != NULL)
 		{
 			sVar5 = bar->xpos;
-			y = (int)(((uint)(ushort)bar->ypos - 0xb) * 0x10000) >> 0x10;
+			y = ((bar->ypos - 0xb) * 0x10000) >> 0x10;
 
-			SetTextColour(-0x80, -0x80, '@');
+			SetTextColour(128, 128, 64);
 
 			if ((bar->flags & 1U) == 0)
 				PrintString(string, (int)sVar5 + 8, y);

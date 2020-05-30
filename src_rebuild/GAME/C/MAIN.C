@@ -2214,10 +2214,10 @@ void DrawGame(void)
 		RenderGame2(1);
 		ObjectDrawnCounter++;
 
-		SwapDrawBuffers2(1);
-
 		while ((VSync(-1) - frame) < 2);
 		frame = VSync(-1);
+
+		SwapDrawBuffers2(1);
 	}
 
 	FrameCnt++;

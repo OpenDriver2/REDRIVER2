@@ -1040,11 +1040,6 @@ LAB_00016fac:
 	UNIMPLEMENTED();
 
 	/*
-	v0 = MapMesh + 5;
-	pSVar15 = MapMesh + 10;
-	pSVar17 = MapMesh + 0xf;
-	pSVar19 = MapMesh + 0x14;
-
 	if ((uVar28 < 0x10) && (0x10 < old_x_mod))
 	{
 		r = 0;
@@ -1150,34 +1145,40 @@ LAB_00016fac:
 
 	/*
 	pSVar21 = MapMesh;
+	v0 = MapMesh + 5;
+	pSVar15 = MapMesh + 10;
+	pSVar17 = MapMesh + 15;
+	pSVar19 = MapMesh + 20;
 
 	do {
-		psVar12 = (short *)((int)&MapMesh[2].vz + y);
+		*(short *)((int)&MapMesh[0].vz + y) = -0x23;
 		psVar11 = (short *)((int)&MapMesh[1].vz + y);
+		psVar12 = (short *)((int)&MapMesh[2].vz + y);
 		psVar13 = (short *)((int)&MapMesh[3].vz + y);
+		puVar14 = (short *)((int)&MapMesh[4].vz + y);
 
-		y_00 = y_00 + 1;
-		pSVar21->vx = -0x23;
-		v0->vx = sVar2 + -0x10;
-		v0 = v0 + 1;
-		pSVar21 = pSVar21 + 1;
-		pSVar15->vx = sVar2 + 0x10;
-		pSVar17->vx = sVar2 + 0x30;
-		pSVar19->vx = 0x23;
-		pSVar19 = pSVar19 + 1;
-		pSVar17 = pSVar17 + 1;
-		pSVar15 = pSVar15 + 1;
+		y_00++;
+		
+		pSVar21->vx = -35;
+		v0->vx = sVar2 - 16;
+		pSVar15->vx = sVar2 + 16;
+		pSVar17->vx = sVar2 + 48;
+		pSVar19->vx = 35;
 
-		*(undefined2 *)((int)&MapMesh[0].vz + y) = 0xffdd;
-		puVar14 = (undefined2 *)((int)&MapMesh[4].vz + y);
+
+		*psVar11 = sVar3 - 16;
+		*psVar12 = sVar3 + 16;
+		*psVar13 = sVar3 + 48;
+		*puVar14 = 35;
+
+		pSVar21++;
+		v0++;
+		pSVar15++;
+		pSVar17++;
+		pSVar19++;
 
 		y = y + 0x28;
-		*psVar11 = sVar3 + -0x10;
-		*psVar12 = sVar3 + 0x10;
-		*psVar13 = sVar3 + 0x30;
-		*puVar14 = 0x23;
-	} while (y_00 < 5);
-	*/
+	} while (y_00 < 5);*/
 
 	MapTex[0].u = MapMesh[0][0].vx - MapMesh[1][0].vx;
 
@@ -1225,7 +1226,7 @@ LAB_00016fac:
 
 	direction.vx = 0;
 	direction.vz = 0;
-	direction.vy = (ushort)player[0].dir & 0xfff;
+	direction.vy = player[0].dir & 0xfff;
 
 	RotMatrixXYZ(&map_matrix, &direction);
 	MulMatrix0(&aspect, &map_matrix, &map_matrix);
@@ -1233,27 +1234,25 @@ LAB_00016fac:
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
 
-	/*
 	y = 0;
+	while (y <= r)
+	{
+		v1 = MapMeshO[y];
+		v0 = MapMesh[y];
 
-	do {
-		y_00 = y + 1;
-
+		iVar27 = x + 1;
+		while (iVar27 != 0)
 		{
-			v1 = MapMeshO + y * 5;
-			iVar27 = x + 1;
-			v0 = MapMesh + y * 5;
-			do {
-				RotTrans(v0, v1, &flag);
-				v1 = v1 + 1;
-				iVar27 = iVar27 + -1;
-				v0 = v0 + 1;
-			} while (iVar27 != 0);
+			RotTrans(v0, v1, &flag);
+
+			v1++;
+			v0++;
+
+			iVar27--;
 		}
-
-		y = y_00;
-	} while (y_00 <= r);
-
+		y++;
+	}
+	/*
 	y = 0;
 	if (x != 0) {
 		do {
@@ -2959,7 +2958,7 @@ void CopIndicator(int xpos, int strength)
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
 
-	TransparencyOn(poly, 0x20);
+	TransparencyOn(current->ot, 0x20);
 
 	poly = (POLY_F3 *)current->primptr;
 
@@ -2982,7 +2981,7 @@ void CopIndicator(int xpos, int strength)
 	addPrim(current->ot+1, poly);
 	current->primptr += sizeof(POLY_F3);
 
-	TransparencyOn(poly, 0x40);
+	TransparencyOn(current->ot, 0x40);
 }
 
 

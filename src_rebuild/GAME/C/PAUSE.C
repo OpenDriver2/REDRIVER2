@@ -1070,8 +1070,7 @@ void DrawVisibleMenus(void)
 	if (pMVar10->Title != NULL) 
 {
 		y_00 = y + 0xf;
-		OutputString(pMVar10->Title, 2, (int)(pMVar10->Bound).x, y, (int)(pMVar10->Bound).w, 0x80, 0x20,
-			0x20);
+		OutputString(pMVar10->Title, 2, (int)(pMVar10->Bound).x, y, (int)(pMVar10->Bound).w, 0x80, 0x20, 0x20);
 	}
 	i = 0;
 	uVar5 = (uint)pMVar10->NumItems;
@@ -1167,131 +1166,8 @@ void DrawVisibleMenus(void)
 	setSemiTrans(poly, 1);
 
 	addPrim(current->ot, poly);
-
 	current->primptr += sizeof(POLY_F4);
-	
-	/*
-	
 
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	DB *pDVar4;
-	uint uVar5;
-	int iVar6;
-	int x;
-	char *pString;
-	POLY_FT3 *null;
-	short sVar7;
-	MENU_ITEM *pMVar8;
-	int y;
-	int y_00;
-	MENU_HEADER *pMVar9;
-	int r;
-	int b;
-	int x_00;
-	int i;
-
-	if (1 < NumPlayers) {
-		SetFullscreenDrawing();
-	}
-	pMVar9 = VisibleMenus3[VisibleMenu];
-	y = (int)(pMVar9->Bound).y;
-	y_00 = y;
-	if (pMVar9->Title != NULL) {
-		y_00 = y + 0xf;
-		OutputString(pMVar9->Title, 2, (int)(pMVar9->Bound).x, y, (int)(pMVar9->Bound).w, 0x80, 0x20, 0x20)
-			;
-	}
-	i = 0;
-	uVar5 = (uint)pMVar9->NumItems;
-	pMVar8 = pMVar9->MenuItems;
-	sVar1 = (pMVar9->Bound).x;
-	x_00 = (int)sVar1;
-	sVar2 = (pMVar9->Bound).w;
-	y = (int)sVar2;
-	if (pMVar9->NumItems != 0) {
-		do {
-			if (pMVar8->Text != NULL) {
-				r = 0x80;
-				if (pMVar8 == ActiveItem3[VisibleMenu]) {
-					r = 0;
-					b = 0;
-				}
-				else {
-					b = 0x80;
-				}
-				if ((pMVar8->Type & 8) == 0) {
-					if ((pMVar8->Type & 0x10) != 0) {
-						iVar6 = StringWidth(pMVar8->Text);
-						x = StringWidth(s__100_000aa800);
-						x = x_00 + ((y - iVar6) - x >> 1);
-						iVar6 = StringWidth(pMVar8->Text);
-						iVar6 = x + iVar6;
-						OutputString(pMVar8->Text, 1, x, y_00, y, r, 0x80, b);
-						pString = MusicVolumeText;
-						goto LAB_0006c9ec;
-					}
-					OutputString(pMVar8->Text, (uint)pMVar8->Justify, x_00, y_00, y, r, 0x80, b);
-				}
-				else {
-					iVar6 = StringWidth(pMVar8->Text);
-					x = StringWidth(s__100_000aa800);
-					x = x_00 + ((y - iVar6) - x >> 1);
-					iVar6 = StringWidth(pMVar8->Text);
-					iVar6 = x + iVar6;
-					OutputString(pMVar8->Text, 1, x, y_00, y, r, 0x80, b);
-					pString = SfxVolumeText;
-				LAB_0006c9ec:
-					OutputString(pString, 1, iVar6 + 10, y_00, y, r, 0x80, b);
-				}
-				y_00 = y_00 + 0xf;
-				uVar5 = (uint)pMVar9->NumItems;
-			}
-			pMVar8 = pMVar8 + 1;
-			i = i + 1;
-		} while (i < (int)uVar5);
-	}
-	null = (POLY_FT3 *)current->primptr;
-	*(undefined *)((int)&null->tag + 3) = 7;
-	null->code = '$';
-	pDVar4 = current;
-	null->x0 = -1;
-	null->y0 = -1;
-	null->x1 = -1;
-	null->y1 = -1;
-	null->x2 = -1;
-	null->y2 = -1;
-	null->tpage = 0;
-	null->tag = null->tag & 0xff000000 | *pDVar4->ot & 0xffffff;
-	*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)null & 0xffffff;
-	pString = pDVar4->primptr;
-	pDVar4->primptr = pString + 0x20;
-	pString[0x23] = '\x05';
-	pString[0x27] = '(';
-	*(short *)(pString + 0x28) = sVar1 + -5;
-	sVar3 = (pMVar9->Bound).y;
-	sVar7 = sVar1 + sVar2 + 5;
-	*(short *)(pString + 0x2c) = sVar7;
-	*(short *)(pString + 0x2a) = sVar3 + -5;
-	sVar2 = (pMVar9->Bound).y;
-	*(short *)(pString + 0x30) = sVar1 + -5;
-	*(short *)(pString + 0x2e) = sVar2 + -5;
-	*(short *)(pString + 0x32) = (pMVar9->Bound).y + (pMVar9->Bound).h;
-	*(short *)(pString + 0x34) = sVar7;
-	sVar1 = (pMVar9->Bound).y;
-	sVar2 = (pMVar9->Bound).h;
-	pString[0x24] = '\x10';
-	pString[0x25] = '\x10';
-	pString[0x26] = '\x10';
-	pString[0x27] = '+';
-	pDVar4 = current;
-	*(short *)(pString + 0x36) = sVar1 + sVar2;
-	*(uint *)(pString + 0x20) =
-		*(uint *)(pString + 0x20) & 0xff000000 | *(uint *)*pDVar4->ot & 0xffffff;
-	*(uint *)*pDVar4->ot = *(uint *)*pDVar4->ot & 0xff000000 | (uint)(pString + 0x20) & 0xffffff;
-	pDVar4->primptr = pDVar4->primptr + 0x18;
-	*/
 }
 
 // decompiled code
