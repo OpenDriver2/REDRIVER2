@@ -161,6 +161,7 @@ struct VertexBufferSplit
 	unsigned short vCount;
 	BlendMode      blendMode;
 	TexFormat      texFormat;
+	RECT16         clipRect;
 };
 
 //#define DEBUG_POLY_COUNT
@@ -436,6 +437,15 @@ DRAWENV* SetDefDrawEnv(DRAWENV* env, int x, int y, int w, int h)//(F)
 void SetDrawEnv(DR_ENV* dr_env, DRAWENV* env)
 {
 	UNIMPLEMENTED();
+	/*
+	dr_env->code[0] = ((env->clip.y & 0x3FF) << 10) | env->clip.x & 0x3FF | 0xE3000000;
+	dr_env->code[1] = (((env->clip.y + env->clip.h - 1) & 0x3FF) << 10) | (env->clip.x + env->clip.w - 1) & 0x3FF | 0xE4000000;
+	dr_env->code[2] = ((env->ofs[1] & 0x3FF) << 11) | env->ofs[0] & 0x7FF | 0xE5000000;
+	dr_env->code[3] = 32 * (((256 - env->tw.h) >> 3) & 0x1F) | ((256 - env->tw.w) >> 3) & 0x1F | (((env->tw.y >> 3) & 0x1F) << 15) | (((env->tw.x >> 3) & 0x1F) << 10) | 0xE2000000;
+	dr_env->code[4] = ((env->dtd != 0) << 9) | ((env->dfe != 0) << 10) | env->tpage & 0x1FF | 0xE1000000;
+
+	dr_env->tag = dr_env->tag & 0xFFFFFF | 0x5000000;// 0x50 = gradated line?
+	*/
 }
 
 void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
@@ -445,25 +455,15 @@ void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
 
 void SetDrawArea(DR_AREA *p, RECT16 *r)
 {
-	UNIMPLEMENTED();
+	p->code[0] = (r->x & 0x3FF | ((r->y & 0x3FF) << 10)) | 0xE3000000;
+	p->code[1] = (((r->x + r->w-1) & 0x3FF) | (((r->y + r->h-1) & 0x3FF) << 10)) | 0xE4000000;
+	p->len = 2;
+	p->tag = p->tag & 0xFFFFFF | 0x2000000;
 }
 
 void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
 {
-	char uVar1;
-	ulong uVar2;
-	
-	uVar1 = 5;
-	if ((rect->w == 0) || (rect->h == 0)) {
-		uVar1 = 0;
-	}
-	p->code[0] = 0x1000000;
-	p->code[1] = 0x80000000;
-	*(char *)((int)&p->tag + 3) = uVar1;
-	uVar2 = *(ulong *)rect;
-	p->code[3] = y << 0x10 | x & 0xffffU;
-	p->code[2] = uVar2;
-	p->code[4] = *(ulong *)&rect->w;
+	UNIMPLEMENTED();
 }
 
 u_long DrawSyncCallback(void(*func)(void))
@@ -483,7 +483,15 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 	BlendMode blendMode = semiTrans ? GET_TPAGE_BLEND(page) : BM_NONE;
 	TexFormat texFormat = GET_TPAGE_FORMAT(page);
 
-	if (curSplit.blendMode == blendMode && curSplit.texFormat == texFormat && curSplit.textureId == textureId)
+	RECT16& clipRect = activeDrawEnv.clip;
+
+	if (curSplit.blendMode == blendMode && 
+		curSplit.texFormat == texFormat && 
+		curSplit.textureId == textureId &&
+		curSplit.clipRect.x == clipRect.x &&
+		curSplit.clipRect.y == clipRect.y &&
+		curSplit.clipRect.w == clipRect.w &&
+		curSplit.clipRect.h == clipRect.h)
 	{
 		return;
 	}
@@ -497,6 +505,7 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 	split.vCount    = 0;
 	split.blendMode = blendMode;
 	split.texFormat = texFormat;
+	split.clipRect  = clipRect;
 }
 
 void MakeTriangle()
@@ -508,6 +517,7 @@ void MakeTriangle()
 
 void DrawSplit(const VertexBufferSplit& split)
 {
+	Emulator_SetupClipMode(split.clipRect);
 	Emulator_SetTexture(split.textureId, split.texFormat);
 	Emulator_SetBlendMode(split.blendMode);
 	Emulator_DrawTriangles(split.vIndex, split.vCount / 3);
@@ -1126,28 +1136,50 @@ int ParsePrimitive(uintptr_t primPtr)
 		{
 			switch (pTag->code)
 			{
-			case 0xE1:
+				case 0xE1:
 				{
-		#if defined(USE_32_BIT_ADDR)
+#if defined(USE_32_BIT_ADDR)
 					unsigned short tpage = ((unsigned short*)pTag)[4];
-		#else
+#else
 					unsigned short tpage = ((unsigned short*)pTag)[2];
-		#endif
+#endif
 					//if (tpage != 0)
 					{
 						activeDrawEnv.tpage = tpage;
 					}
 
 					primitive_size = sizeof(DR_TPAGE);
-		#if defined(DEBUG_POLY_COUNT)
+#if defined(DEBUG_POLY_COUNT)
 					polygon_count++;
-		#endif
-
+#endif
 					break;
 				}
+				case 0xE3:
+				{
+					DR_AREA* drarea = (DR_AREA*)pTag;
+
+					RECT16 rect;
+
+					rect.x = drarea->code[0] & 0x3FF;
+					rect.y = ((drarea->code[0] >> 10) & 0x3FF);
+
+					// not W/H but x2 y2
+					rect.w = (drarea->code[1] & 0x3FF) - rect.x;
+					rect.h = ((drarea->code[1] >> 10) & 0x3FF) - rect.y;
+
+					activeDrawEnv.clip = rect;
+
+					primitive_size = sizeof(DR_AREA);
+
+#if defined(DEBUG_POLY_COUNT)
+					polygon_count++;
+#endif
+					break;
+				}
+				// FIXME: there is multiple codes in single DR_* primitive
 				default:
 				{
-					eprinterr("Primitive type error");
+					eprinterr("Primitive type error: %x", pTag->code);
 					assert(FALSE);
 					break;
 				}
@@ -1324,7 +1356,9 @@ u_short LoadClut2(u_long* clut, int x, int y)
 	drawArea.y = y;
 	drawArea.w = 16;
 	drawArea.h = 1;
+
 	LoadImagePSX(&drawArea, clut);
+
 	return getClut(x, y);
 }
 

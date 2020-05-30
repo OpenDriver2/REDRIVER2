@@ -1316,6 +1316,36 @@ void Emulator_Ortho2D(float left, float right, float bottom, float top, float zn
 #endif
 }
 
+void Emulator_SetupClipMode(const RECT16& rect)
+{
+	bool enabled = rect.x - activeDispEnv.disp.x > 0 ||
+		rect.y - activeDispEnv.disp.y > 0 ||
+		rect.w < activeDispEnv.disp.w - 1 ||
+		rect.h < activeDispEnv.disp.h - 1;
+
+	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / (float)activeDispEnv.disp.w;
+	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / (float)activeDispEnv.disp.h;
+	float clipRectW = (float)rect.w / (float)activeDispEnv.disp.w;
+	float clipRectH = (float)rect.h / (float)activeDispEnv.disp.h;
+
+
+
+#if defined(OGL) || defined(OGLES)
+	if (!enabled)
+	{
+		glDisable(GL_SCISSOR_TEST);
+		return;
+	}
+
+	float flipOffset = windowHeight - clipRectH * (float)windowHeight;
+
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(clipRectX * (float)windowWidth, flipOffset - clipRectY * (float)windowHeight, clipRectW * (float)windowWidth, clipRectH * (float)windowHeight);
+#elif defined(D3D9)
+
+#endif
+}
+
 void Emulator_SetShader(const ShaderID &shader)
 {
 #if defined(OGL) || defined(OGLES)
@@ -1797,6 +1827,20 @@ void Emulator_UpdateInput()
 		if (padData[0] != NULL)
 		{
 			PADRAW* pad = (PADRAW*)padData[0];
+
+			pad->status = 0;	// PadStateStable?
+			pad->id = 0x41;
+			*(unsigned short*)pad->buttons = kbInputs;
+			pad->analog[0] = 128;
+			pad->analog[1] = 128;
+			pad->analog[2] = 128;
+			pad->analog[3] = 128;
+		}
+
+		//Update keyboard
+		if (padData[1] != NULL)
+		{
+			PADRAW* pad = (PADRAW*)padData[1];
 
 			pad->status = 0;	// PadStateStable?
 			pad->id = 0x41;
