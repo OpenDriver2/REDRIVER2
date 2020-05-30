@@ -380,89 +380,101 @@ void DrawTargetArrow(VECTOR *pos, ulong flags)
 	/* end block 3 */
 	// End Line: 1822
 
+// [D]
 void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int b, ulong flags)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
 	int iVar2;
 	int iVar3;
-	uint *puVar4;
-	short local_60;
-	short local_58;
-	short local_50;
-	short local_48;
-	short local_40;
-	short local_38;
-	VECTOR local_30;
+	POLY_F3 *poly;
+	VECTOR direction;
+	SVECTOR apos[3];
+	VECTOR opos[3];
+	VECTOR vec;
 
-	if ((flags & 0x20) == 0) {
-		if ((flags & 8) == 0) {
-			if ((flags & 1) == 0) {
-				WorldToFullscreenMap2(pos, &local_30);
+	if ((flags & 0x20) == 0) 
+	{
+		if ((flags & 8) == 0) 
+		{
+			if ((flags & 1) == 0)
+			{
+				WorldToFullscreenMap2(pos, &vec);
 			}
-			else {
-				WorldToOverheadMapPositions(pos, &local_30, 1, '\0', 0);
-				if (0x5e < local_30.vx - 0xe9U) {
+			else
+			{
+				WorldToOverheadMapPositions(pos, &vec, 1, 0, 0);
+				if (0x5e < vec.vx - 0xe9U)
 					return;
-				}
-				if (local_30.vz < 0xae) {
+
+				if (vec.vz < 0xae)
 					return;
-				}
-				if (0xfa < local_30.vz) {
+			
+				if (0xfa < vec.vz)
 					return;
-				}
+
 			}
 		}
-		else {
-			local_30.vx = pos->vx;
-			local_30.vy = pos->vy;
-			local_30.vz = pos->vz;
-			local_30.pad = pos->pad;
+		else 
+		{
+			vec.vx = pos->vx;
+			vec.vy = pos->vy;
+			vec.vz = pos->vz;
+			vec.pad = pos->pad;
 		}
-		if ((flags & 1) == 0) {
-			local_30.vx = local_30.vx + map_x_offset;
-			local_30.vz = local_30.vz + map_z_offset;
+
+		if ((flags & 1) == 0) 
+		{
+			vec.vx = vec.vx + map_x_offset;
+			vec.vz = vec.vz + map_z_offset;
 		}
 	}
-	else {
-		WorldToMultiplayerMap(pos, &local_30);
-		local_30.vx = local_30.vx + 0xf0;
-		local_30.vz = local_30.vz + 0x60;
+	else 
+	{
+		WorldToMultiplayerMap(pos, &vec);
+		vec.vx = vec.vx + 0xf0;
+		vec.vz = vec.vz + 0x60;
 	}
-	iVar2 = (int)rcossin_tbl[((int)rot & 0xfffU) * 2];
-	iVar3 = (int)rcossin_tbl[((int)rot & 0xfffU) * 2 + 1];
-	local_40 = (short)local_30.vx;
-	local_60 = local_40 + (short)(iVar2 * -3 + 0x800 >> 0xc);
-	local_38 = (short)local_30.vz;
-	local_58 = local_38 + (short)(iVar3 * -3 + 0x800 >> 0xc);
-	local_50 = local_40 + (short)(iVar2 * 3 + iVar3 * -2 + 0x800 >> 0xc);
-	local_48 = local_38 + (short)(iVar3 * 3 + iVar2 * 2 + 0x800 >> 0xc);
-	local_40 = local_40 + (short)(iVar3 * 2 + iVar2 * 3 + 0x800 >> 0xc);
-	local_38 = local_38 + (short)(iVar2 * -2 + iVar3 * 3 + 0x800 >> 0xc);
-	puVar4 = (uint *)current->primptr;
-	*(char *)((int)puVar4 + 3) = '\x04';
-	*(char *)((int)puVar4 + 7) = ' ';
-	*(uchar *)(puVar4 + 1) = r;
-	*(uchar *)((int)puVar4 + 5) = g;
-	*(char *)((int)puVar4 + 6) = (char)b;
-	*(short *)(puVar4 + 2) = local_60;
-	*(short *)((int)puVar4 + 10) = local_58;
-	*(short *)(puVar4 + 3) = local_50;
-	*(short *)((int)puVar4 + 0xe) = local_48;
-	*(short *)(puVar4 + 4) = local_40;
-	*(short *)((int)puVar4 + 0x12) = local_38;
-	pDVar1 = current;
+
+	iVar2 = rcossin_tbl[(rot & 0xfffU) * 2];
+	iVar3 = rcossin_tbl[(rot & 0xfffU) * 2 + 1];
+
+	opos[2].vx = vec.vx;
+	opos[2].vz = vec.vz;
+
+	opos[0].vx = opos[2].vx + (iVar2 * -3 + 0x800 >> 0xc);
+	opos[0].vz = opos[2].vz + FIXED(iVar3 * -3);
+
+	opos[1].vx = opos[2].vx + FIXED(iVar2 * 3 + iVar3 * -2);
+	opos[1].vz = opos[2].vz + FIXED(iVar3 * 3 + iVar2 * 2);
+
+	opos[2].vx = opos[2].vx + FIXED(iVar3 * 2 + iVar2 * 3);
+	opos[2].vz = opos[2].vz + FIXED(iVar2 * -2 + iVar3 * 3);
+
+	poly = (POLY_F3 *)current->primptr;
+	setPolyF3(poly);
+
+	poly->r0 = r;
+	poly->g0 = g;
+	poly->b0 = b;
+
+	poly->x0 = opos[0].vx;
+	poly->y0 = opos[0].vz;
+	poly->x1 = opos[1].vx;
+	poly->y1 = opos[1].vz;
+	poly->x2 = opos[2].vx;
+	poly->y2 = opos[2].vz;
+
+#ifdef PSX
 	if ((flags & 4) == 0) {
-		*puVar4 = *puVar4 & 0xff000000 | *current->ot & 0xffffff;
-		*pDVar1->ot = *pDVar1->ot & 0xff000000 | (uint)puVar4 & 0xffffff;
-		pDVar1->primptr = pDVar1->primptr + 0x14;
+		addPrim(current->ot, poly);
+		current->primptr += sizeof(POLY_F3);
 	}
 	else {
-		DrawPrim(puVar4);
+		DrawPrim(poly);
 	}
-	return;
-	*/
+#else
+	addPrim(current->ot, poly);
+	current->primptr += sizeof(POLY_F3);
+#endif
 }
 
 
@@ -1938,7 +1950,7 @@ void DrawMultiplayerMap(void)
 	int iVar9;
 	short sVar10;
 	int yPos;
-	VECTOR local_40;
+	VECTOR target;
 	int local_30;
 	int local_2c;
 
@@ -1963,17 +1975,17 @@ void DrawMultiplayerMap(void)
 			r = -1;
 			g = 0;
 			do {
-				local_40.vx = pPVar6->pos[0];
-				local_40.vz = pPVar6->pos[2];
+				target.vx = pPVar6->pos[0];
+				target.vz = pPVar6->pos[2];
 				iVar7 ++;
-				local_40.vy = 0;
+				target.vy = 0;
 
-				WorldToMultiplayerMap(&local_40, &local_40);
+				WorldToMultiplayerMap(&target, &target);
 
-				local_40.vx = local_40.vx + 0xf0;
-				local_40.vz = local_40.vz + yPos;
+				target.vx = target.vx + 0xf0;
+				target.vz = target.vz + yPos;
 
-				DrawPlayerDot(&local_40, -*(short *)&pPVar6->dir, r, g, 0, 8);
+				DrawPlayerDot(&target, -pPVar6->dir, r, g, 0, 8);
 
 				pPVar6++;
 				r++;
