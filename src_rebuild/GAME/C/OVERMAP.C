@@ -7,6 +7,8 @@
 #include "MDRAW.H"
 #include "PLAYERS.H"
 #include "OVERLAY.H"
+#include "DEBRIS.H"
+#include "MAP.H"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"
@@ -51,6 +53,14 @@ XYPAIR north[4] = {
 	{ 0, 20 }, 
 	{ 0, 20 }, 
 	{ 0, 20 } 
+};
+
+static short big_north[] =
+{
+	2048,
+	2048,
+	2048,
+	2048
 };
 
 VECTOR player_position = { 0, 0, 0, 0 };
@@ -106,102 +116,107 @@ static unsigned short MapTPage = 0;
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char b, ulong flags)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	ushort uVar2;
-	short sVar3;
-	uint *puVar4;
-	long local_28;
-	long local_24;
-	int local_20;
-	long local_1c;
+	int ysize;
+	POLY_FT4 *poly;
+	VECTOR vec;
 
-	if ((flags & 0x20) == 0) {
-		if ((flags & 8) == 0) {
-			if ((flags & 1) == 0) {
-				WorldToFullscreenMap2(pos, (VECTOR *)&local_28);
+	if ((flags & 0x20) == 0) 
+	{
+		if ((flags & 8) == 0)
+		{
+			if ((flags & 1) == 0)
+			{
+				WorldToFullscreenMap2(pos, &vec);
 			}
-			else {
-				WorldToOverheadMapPositions(pos, (VECTOR *)&local_28, 1, '\0', 0);
-				if (0x5e < local_28 - 0xe9U) {
+			else 
+			{
+				WorldToOverheadMapPositions(pos, &vec, 1, 0, 0);
+				if (0x5e < vec.vx - 0xe9U)
 					return;
-				}
-				if (local_20 < 0xae) {
+
+				if (vec.vz < 0xae) 
 					return;
-				}
-				if (0xfa < local_20) {
+			
+				if (0xfa < vec.vz)
 					return;
-				}
+				
 			}
 		}
 		else {
-			local_28 = pos->vx;
-			local_24 = pos->vy;
-			local_20 = pos->vz;
-			local_1c = pos->pad;
+			vec.vx = pos->vx;
+			vec.vy = pos->vy;
+			vec.vz = pos->vz;
+			vec.pad = pos->pad;
 		}
 		if ((flags & 1) == 0) {
-			local_28 = local_28 + map_x_offset;
-			local_20 = local_20 + map_z_offset;
+			vec.vx = vec.vx + map_x_offset;
+			vec.vz = vec.vz + map_z_offset;
 		}
 	}
-	else {
-		WorldToMultiplayerMap(pos, (VECTOR *)&local_28);
-		local_28 = local_28 + 0xf0;
-		local_20 = local_20 + 0x60;
+	else 
+	{
+		WorldToMultiplayerMap(pos, &vec);
+		vec.vx = vec.vx + 0xf0;
+		vec.vz = vec.vz + 0x60;
 	}
-	if ((flags & 0x10) == 0) {
-		sVar3 = 4;
-		if ((flags & 2) != 0) {
-			sVar3 = 3;
+
+	if ((flags & 0x10) == 0) 
+	{
+		ysize = 4;
+
+		if ((flags & 2) != 0) 
+		{
+			ysize = 3;
 		}
 	}
-	else {
-		sVar3 = (short)((int)(uint)(byte)OverlayFlashValue >> 1);
+	else 
+	{
+		ysize = OverlayFlashValue >> 1;
 	}
-	puVar4 = (uint *)current->primptr;
-	*(char *)((int)puVar4 + 3) = '\t';
-	*(char *)((int)puVar4 + 7) = '.';
-	*(short *)(puVar4 + 2) = (short)local_28 - sVar3;
-	*(short *)((int)puVar4 + 10) = (short)local_20 - sVar3;
-	*(short *)(puVar4 + 4) = (short)local_28 + sVar3;
-	*(short *)((int)puVar4 + 0x12) = (short)local_20 - sVar3;
-	*(short *)(puVar4 + 6) = (short)local_28 - sVar3;
-	*(short *)((int)puVar4 + 0x1a) = (short)local_20 + sVar3;
-	*(short *)(puVar4 + 8) = (short)local_28 + sVar3;
-	*(uchar *)(puVar4 + 1) = r;
-	*(uchar *)((int)puVar4 + 5) = g;
-	*(uchar *)((int)puVar4 + 6) = b;
-	*(short *)((int)puVar4 + 0x22) = (short)local_20 + sVar3;
-	*(uchar *)(puVar4 + 3) = light_texture.coords.u0;
-	*(uchar *)((int)puVar4 + 0xd) = light_texture.coords.v0;
-	*(uchar *)(puVar4 + 5) = light_texture.coords.u1;
-	*(uchar *)((int)puVar4 + 0x15) = light_texture.coords.v1;
-	*(uchar *)(puVar4 + 7) = light_texture.coords.u2;
-	*(uchar *)((int)puVar4 + 0x1d) = light_texture.coords.v2;
-	*(uchar *)(puVar4 + 9) = light_texture.coords.u3;
-	*(uchar *)((int)puVar4 + 0x25) = light_texture.coords.v3;
-	if ((flags & 2) == 0) {
-		uVar2 = light_texture.tpageid | 0x20;
+
+	poly = (POLY_FT4 *)current->primptr;
+
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+
+	poly->x0 = vec.vx - ysize;
+	poly->y0 = vec.vz - ysize;
+	poly->x1 = vec.vx + ysize;
+	poly->y1 = vec.vz - ysize;
+	poly->x2 = vec.vx - ysize;
+	poly->y2 = vec.vz + ysize;
+	poly->x3 = vec.vx + ysize;
+	poly->r0 = r;
+	poly->g0 = g;
+	poly->b0 = b;
+	poly->y3 = vec.vz + ysize;
+	poly->u0 = light_texture.coords.u0;
+	poly->v0 = light_texture.coords.v0;
+	poly->u1 = light_texture.coords.u1;
+	poly->v1 = light_texture.coords.v1;
+	poly->u2 = light_texture.coords.u2;
+	poly->v2 = light_texture.coords.v2;
+	poly->u3 = light_texture.coords.u3;
+	poly->v3 = light_texture.coords.v3;
+
+	if ((flags & 2) == 0)
+		poly->tpage = light_texture.tpageid | 0x20;
+	else
+		poly->tpage = light_texture.tpageid | 0x40;
+
+	poly->clut = light_texture.clutid;
+
+	if ((flags & 4) == 0) 
+	{
+		addPrim(current->ot, poly);
 	}
-	else {
-		uVar2 = light_texture.tpageid | 0x40;
+	else 
+	{
+		DrawPrim(poly);
 	}
-	*(ushort *)((int)puVar4 + 0x16) = uVar2;
-	*(ushort *)((int)puVar4 + 0xe) = light_texture.clutid;
-	pDVar1 = current;
-	if ((flags & 4) == 0) {
-		*puVar4 = *puVar4 & 0xff000000 | *current->ot & 0xffffff;
-		*pDVar1->ot = *pDVar1->ot & 0xff000000 | (uint)puVar4 & 0xffffff;
-		pDVar1->primptr = pDVar1->primptr + 0x28;
-	}
-	else {
-		DrawPrim(puVar4);
-	}
-	return;*/
 }
 
 
@@ -811,6 +826,9 @@ void DrawOverheadMap(void)
 	}
 
 	UNIMPLEMENTED();
+
+	VECTOR test = {0, 0, 0};
+	DrawBigCompass(&test, 0);
 
 	/*
 	    byte bVar1;
@@ -2011,40 +2029,30 @@ void DrawMultiplayerMap(void)
 	/* end block 4 */
 	// End Line: 6899
 
+// [D]
 void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
 
 	iVar1 = MissionHeader->region;
-	if (iVar1 != 0) {
+
+	if (iVar1 != 0) 
+	{
 		iVar3 = iVar1 / regions_across;
-		if (regions_across == 0) {
-			trap(7);
-		}
-		if (regions_across == 0) {
-			trap(7);
-		}
 		iVar2 = in->vx - ((iVar1 % regions_across) * 0x10000 + cells_across * -0x400);
 		iVar1 = cells_down * -0x400;
-		if (iVar2 < 0) {
-			iVar2 = iVar2 + 0x7ff;
-		}
+
 		out->vx = iVar2 >> 0xb;
 		iVar1 = in->vz - ((iVar3 + -1) * 0x10000 + iVar1);
-		if (iVar1 < 0) {
-			iVar1 = iVar1 + 0x7ff;
-		}
+
 		out->vz = 0x40 - (iVar1 >> 0xb);
 		return;
 	}
+
 	out->vx = 0x20;
 	out->vz = 0x20;
-	return;
-	*/
 }
 
 
@@ -2700,65 +2708,65 @@ void DrawCompass(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void DrawBigCompass(VECTOR *root, int angle)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
-	byte bVar2;
+	int i;
 	uint uVar3;
-	char *pcVar4;
-	uint uVar5;
-	uint uVar6;
-	int *piVar7;
-	VECTOR local_60;
-	int local_50;
-	int local_4c;
-	int local_40;
-	int local_3c;
-	int local_30;
-	int local_2c;
-	int local_20;
-	int local_1c;
+	LINE_G2 *lineg2;
+	int uVar4;
+	int uVar5;
+	VECTOR *pPosition;
+	VECTOR position[5];
 
-	piVar7 = &local_40;
-	bVar2 = 0;
-	local_40 = root->vx + map_x_offset;
-	uVar5 = big_north[GameLevel] + angle & 0xfff;
-	local_3c = root->vz + map_z_offset;
-	local_50 = local_40 + ((int)rcossin_tbl[uVar5 * 2] * 0x19 >> 0xc);
-	local_60.vx = local_40 + ((int)rcossin_tbl[uVar5 * 2] * 0xf >> 0xb);
-	uVar3 = uVar5 - 200 & 0xfff;
-	uVar6 = uVar5 + 200 & 0xfff;
-	local_4c = local_3c + ((int)rcossin_tbl[uVar5 * 2 + 1] * 0x19 >> 0xc);
-	local_60.vz = local_3c + ((int)rcossin_tbl[uVar5 * 2 + 1] * 0xf >> 0xb);
-	local_30 = local_40 + ((int)rcossin_tbl[uVar3 * 2] * 5 >> 10);
-	local_2c = local_3c + ((int)rcossin_tbl[uVar3 * 2 + 1] * 5 >> 10);
-	local_20 = local_40 + ((int)rcossin_tbl[uVar6 * 2] * 5 >> 10);
-	local_1c = local_3c + ((int)rcossin_tbl[uVar6 * 2 + 1] * 5 >> 10);
+	uVar4 = big_north[GameLevel] + angle & 0xfff;
+
+	position[2].vx = root->vx + map_x_offset;
+	position[2].vy = root->vz + map_z_offset;
+	position[1].vx = position[2].vx + (rcossin_tbl[uVar4 * 2] * 0x19 >> 0xc);
+	position[0].vx = position[2].vx + (rcossin_tbl[uVar4 * 2] * 0xf >> 0xb);
+
+	uVar3 = uVar4 - 200 & 0xfff;
+	uVar5 = uVar4 + 200 & 0xfff;
+
+	position[1].vy = position[2].vy + (rcossin_tbl[uVar4 * 2 + 1] * 0x19 >> 0xc);
+	position[0].vz = position[2].vy + (rcossin_tbl[uVar4 * 2 + 1] * 0xf >> 0xb);
+	position[3].vx = position[2].vx + (rcossin_tbl[uVar3 * 2] * 5 >> 10);
+	position[3].vy = position[2].vy + (rcossin_tbl[uVar3 * 2 + 1] * 5 >> 10);
+	position[4].vx = position[2].vx + (rcossin_tbl[uVar5 * 2] * 5 >> 10);
+	position[4].vy = position[2].vy + (rcossin_tbl[uVar5 * 2 + 1] * 5 >> 10);
+
+	i = 0;
+	pPosition = position + 2;
 	do {
-		pcVar4 = current->primptr;
-		pcVar4[3] = '\x04';
-		pcVar4[7] = 'P';
-		*(undefined2 *)(pcVar4 + 8) = (undefined2)local_50;
-		*(undefined2 *)(pcVar4 + 10) = (undefined2)local_4c;
-		*(undefined2 *)(pcVar4 + 0x10) = *(undefined2 *)piVar7;
-		uVar1 = *(undefined2 *)(piVar7 + 1);
-		piVar7 = piVar7 + 4;
-		pcVar4[4] = '`';
-		pcVar4[5] = '`';
-		pcVar4[6] = '`';
-		pcVar4[0xc] = '\0';
-		pcVar4[0xd] = '\0';
-		pcVar4[0xe] = '\0';
-		pcVar4[7] = 'R';
-		*(undefined2 *)(pcVar4 + 0x12) = uVar1;
-		DrawPrim(pcVar4);
-		bVar2 = bVar2 + 1;
-		current->primptr = current->primptr + 0x14;
-	} while (bVar2 < 3);
-	DrawN(&local_60, 1);
-	return;*/
+		pPosition++;
+		lineg2 = (LINE_G2 *)current->primptr;
+
+		setLineG2(lineg2);
+		setSemiTrans(lineg2, 1);
+
+		lineg2->x0 = position[0].vx;
+		lineg2->y0 = position[0].vy;
+
+		lineg2->x1 = pPosition->vx;
+		lineg2->y1 = pPosition->vy;
+
+		lineg2->r0 = 96;
+		lineg2->g0 = 96;
+		lineg2->b0 = 96;
+
+		lineg2->r1 = 0;
+		lineg2->g1 = 0;
+		lineg2->b1 = 0;
+
+		//DrawPrim(lineg2);
+		addPrim(current->ot, lineg2);	// [A]
+
+		i++;
+		current->primptr += sizeof(LINE_G2);
+	} while (i < 3);
+
+	DrawN(position, 0);	// [A] second arg was 1
 }
 
 

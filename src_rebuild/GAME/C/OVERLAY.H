@@ -7,6 +7,8 @@ extern _PERCENTAGE_BAR DamageBar;
 extern _PERCENTAGE_BAR FelonyBar;
 extern _PERCENTAGE_BAR ProxyBar;
 
+extern char OverlayFlashValue;
+
 extern void InitOverlays(); // 0x00014A58
 
 extern void DisplayOverlays(); // 0x00014C3C

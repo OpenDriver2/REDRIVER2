@@ -12,6 +12,8 @@
 #include "CARS.H"
 #include "PRES.H"
 #include "PLAYERS.H"
+#include "CAMERA.H"
+
 
 COLOUR_BAND felonyColour[3] =
 {
@@ -149,14 +151,10 @@ void DisplayOverlays(void)
 
 			if (CopsCanSeePlayer != 0)
 			{
-				if ((int)player[0].playerCarId < 0)
-				{
+				if (player[0].playerCarId < 0)
 					psVar1 = &pedestrianFelony;
-				}
 				else 
-				{
-					psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
-				}
+					psVar1 = &car_data[player[0].playerCarId].felonyRating;
 
 				if (658 < *psVar1) 
 					DrawCopIndicators();
@@ -876,27 +874,22 @@ void TransparencyOn(void *potz, ushort tpage)
 
 void UpdateFlashValue(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	uint uVar3;
 
 	iVar2 = CameraCnt;
-	if (gShowMap != 0) {
+
+	if (gShowMap != 0) 
 		iVar2 = FrameCnt;
-	}
+
 	iVar1 = iVar2;
-	if (iVar2 < 0) {
-		iVar1 = iVar2 + 0xf;
-	}
-	uVar3 = iVar2 + (iVar1 >> 4) * -0x10 & 0xff;
-	OverlayFlashValue = (char)uVar3;
-	if (7 < uVar3) {
-		OverlayFlashValue = '\x10' - OverlayFlashValue;
-	}
-	return;
-	*/
+
+	uVar3 = iVar2 - (iVar1 >> 4) * 16 & 0xff;
+	OverlayFlashValue = uVar3;
+
+	if (7 < uVar3) 
+		OverlayFlashValue = 16 - OverlayFlashValue;
 }
 
 
