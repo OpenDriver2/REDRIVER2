@@ -1722,54 +1722,48 @@ LAB_00017f8c:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawCopIndicators(void)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
 	int iVar6;
-	_CAR_DATA *p_Var7;
+	_CAR_DATA *cp;
 
-	p_Var7 = car_data;
-	sVar1 = rcossin_tbl[(player.dir & 0xfffU) * 2 + 1];
-	sVar2 = rcossin_tbl[(player.dir & 0xfffU) * 2];
+	sVar1 = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
+	sVar2 = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+
+	cp = car_data;
 	do {
-		if ((p_Var7->controlType == '\x03') && (p_Var7->ai[0x13] == 0)) {
-			iVar6 = (p_Var7->hd).where.t[0] - player.pos[0];
-			iVar4 = (p_Var7->hd).where.t[2] - player.pos[2];
-			iVar5 = ((iVar6 * sVar1 - iVar4 * sVar2) + 0x800 >> 0xc) * 3;
-			if (iVar5 < 0) {
-				iVar5 = iVar5 + 3;
-			}
+		if ((cp->controlType == 3) && (cp->ai.p.dying == 0))
+		{
+			iVar6 = cp->hd.where.t[0] - player[0].pos[0];
+			iVar4 = cp->hd.where.t[2] - player[0].pos[2];
+
+			iVar5 = FIXED(iVar6 * sVar1 - iVar4 * sVar2) * 3;
+
 			iVar5 = iVar5 >> 2;
-			iVar3 = iVar6 * sVar2 + iVar4 * sVar1 + 0x800 >> 0xc;
+			iVar3 = FIXED(iVar6 * sVar2 + iVar4 * sVar1);
+
 			iVar4 = -iVar3;
 			iVar6 = iVar5;
-			if (iVar5 < 0) {
+
+			if (iVar5 < 0)
 				iVar6 = -iVar5;
-			}
-			if (iVar6 < iVar4) {
+			
+			if (iVar6 < iVar4)
+			{
 				iVar5 = (iVar5 * 0x10a) / iVar4;
-				if (iVar4 == 0) {
-					trap(7);
-				}
-				if (0 < iVar3) {
-					iVar4 = iVar4 + 7;
-				}
 				iVar4 = (iVar4 >> 3) + 600;
-				if (iVar4 == 0) {
-					trap(7);
-				}
+
 				CopIndicator(iVar5 + 0xa0, 0x3fff0 / iVar4);
 			}
 		}
-		p_Var7 = p_Var7 + 1;
-	} while (p_Var7 < (_CAR_DATA *)0xd4698);
-	return;*/
+		cp++;
+	} while (cp <= &car_data[20]);
 }
 
 
@@ -2801,64 +2795,62 @@ void DrawBigCompass(VECTOR *root, int angle)
 	/* end block 4 */
 	// End Line: 6681
 
+// [D]
 void CopIndicator(int xpos, int strength)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	DB *pDVar2;
-	char cVar3;
-	uint *puVar4;
-	ulong *puVar5;
-	int iVar6;
+	int str2;
+	POLY_F3 *poly;
+	int iVar5;
 
-	puVar5 = current->ot;
-	if (0xff < strength) {
-		strength = 0xff;
-	}
-	iVar6 = strength * (strength + 0x100);
-	puVar4 = (uint *)current->primptr;
-	*(char *)((int)puVar4 + 3) = '\x04';
-	*(char *)((int)puVar4 + 7) = ' ';
-	*(char *)(puVar4 + 1) = (char)strength;
-	if (strength < 0) {
-		strength = strength + 3;
-	}
-	cVar3 = (char)(strength >> 2);
-	*(char *)((int)puVar4 + 5) = cVar3;
-	sVar1 = (short)xpos;
-	*(char *)((int)puVar4 + 6) = cVar3;
-	*(short *)(puVar4 + 2) = sVar1 + -0xc;
-	*(undefined2 *)((int)puVar4 + 10) = 0x100;
-	*(short *)(puVar4 + 3) = sVar1;
-	*(undefined2 *)((int)puVar4 + 0xe) = 0xe2;
-	*(short *)(puVar4 + 4) = sVar1 + 0xc;
-	*(undefined2 *)((int)puVar4 + 0x12) = 0x100;
-	*(char *)((int)puVar4 + 7) = '\"';
-	*puVar4 = *puVar4 & 0xff000000 | puVar5[1] & 0xffffff;
-	pDVar2 = current;
-	puVar5[1] = puVar5[1] & 0xff000000 | (uint)puVar4 & 0xffffff;
-	pDVar2->primptr = pDVar2->primptr + 0x14;
-	TransparencyOn(puVar5 + 1, 0x20);
-	puVar4 = (uint *)current->primptr;
-	*(char *)((int)puVar4 + 3) = '\x04';
-	cVar3 = (char)(iVar6 >> 9);
-	*(char *)(puVar4 + 1) = cVar3;
-	*(char *)((int)puVar4 + 5) = cVar3;
-	*(char *)((int)puVar4 + 6) = cVar3;
-	*(short *)(puVar4 + 2) = sVar1 + -0xc;
-	*(undefined2 *)((int)puVar4 + 10) = 0x100;
-	*(undefined2 *)((int)puVar4 + 0xe) = 0xe2;
-	*(short *)(puVar4 + 4) = sVar1 + 0xc;
-	*(undefined2 *)((int)puVar4 + 0x12) = 0x100;
-	*(char *)((int)puVar4 + 7) = '\"';
-	*(short *)(puVar4 + 3) = sVar1;
-	*puVar4 = *puVar4 & 0xff000000 | puVar5[1] & 0xffffff;
-	pDVar2 = current;
-	puVar5[1] = puVar5[1] & 0xff000000 | (uint)puVar4 & 0xffffff;
-	pDVar2->primptr = pDVar2->primptr + 0x14;
-	TransparencyOn(puVar5 + 1, 0x40);
-	return;*/
+	if (strength > 255)
+		strength = 255;
+
+	iVar5 = strength * (strength + 0x100);
+	poly = (POLY_F3 *)current->primptr;
+
+	setPolyF3(poly);
+	setSemiTrans(poly, 1);
+
+	poly->r0 = strength;
+
+	str2 = (strength >> 2);
+
+	poly->g0 = str2;
+	poly->b0 = str2;
+	poly->x0 = xpos - 0xc;
+	poly->y0 = 0x100;
+	poly->x1 = xpos;
+	poly->y1 = 0xe2;
+	poly->x2 = xpos + 0xc;
+	poly->y2 = 0x100;
+
+	addPrim(current->ot + 1, poly);
+	current->primptr += sizeof(POLY_F3);
+
+	TransparencyOn(poly, 0x20);
+
+	poly = (POLY_F3 *)current->primptr;
+
+	setPolyF3(poly);
+	setSemiTrans(poly, 1);
+
+	str2 = (iVar5 >> 9);
+
+	poly->r0 = str2;
+	poly->g0 = str2;
+	poly->b0 = str2;
+
+	poly->x0 = xpos - 0xc;
+	poly->y0 = 0x100;
+	poly->y1 = 0xe2;
+	poly->x2 = xpos + 0xc;
+	poly->y2 = 0x100;
+	poly->x1 = xpos;
+
+	addPrim(current->ot+1, poly);
+	current->primptr += sizeof(POLY_F3);
+
+	TransparencyOn(poly, 0x40);
 }
 
 

@@ -385,11 +385,7 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 			poly = (POLY_G4 *)current->primptr;
 			setPolyG4(poly);
 
-			if (bar->max == 0) {
-				trap(7);
-			}
-
-			SetColourByValue(bar->pColourBand, (int)((uint)bar->position << 0xc) / (int)(uint)bar->max, &temp);
+			SetColourByValue(bar->pColourBand, (bar->position << 0xc) / bar->max, &temp);
 
 			poly->r0 = temp.r;
 			poly->g0 = temp.g;
@@ -770,24 +766,17 @@ void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 	if ((pCVar2->flags != 0) && (pCVar2->flags == 2)) 
 	{
 		iVar3 = OverlayFlashValue * (pCVar2->value - pCVar2[-1].value);
-		if (iVar3 < 0) {
-			iVar3 = iVar3 + 7;
-		}
 		value = pCVar2[-1].value + (iVar3 >> 3);
 	}
 
 	iVar3 = pCVar2->value - pCVar2[-1].value;
 	iVar4 = ((value - pCVar2[-1].value) * 0x1000) / iVar3;
 
-	if (iVar3 == 0) {
-		//trap(7); // [A]
-	}
-
 	iVar3 = 0x1000 - iVar4;
 
-	pOut->r = ((int)(iVar3 * (uint)pCVar2[-1].colour.r + iVar4 * (uint)(pCVar2->colour).r) >> 0xc);
-	pOut->g = ((int)(iVar3 * (uint)pCVar2[-1].colour.g + iVar4 * (uint)(pCVar2->colour).g) >> 0xc);
-	pOut->b = ((int)(iVar3 * (uint)pCVar2[-1].colour.b + iVar4 * (uint)(pCVar2->colour).b) >> 0xc);
+	pOut->r = ((iVar3 * pCVar2[-1].colour.r + iVar4 * (pCVar2->colour).r) >> 0xc);
+	pOut->g = ((iVar3 * pCVar2[-1].colour.g + iVar4 * (pCVar2->colour).g) >> 0xc);
+	pOut->b = ((iVar3 * pCVar2[-1].colour.b + iVar4 * (pCVar2->colour).b) >> 0xc);
 }
 
 
@@ -820,7 +809,7 @@ void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 	/* end block 4 */
 	// End Line: 2049
 
-// [D]
+// [D] [A] - bugged
 void TransparencyOn(void *potz, ushort tpage)
 {
 	DR_TPAGE *null;
