@@ -1522,13 +1522,13 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 	SVECTOR *local_v1_308;
 	uint uVar8;
 	SVECTOR *pSVar9;
-	POLY_FT4 *local_t0_688;
+	POLY_FT4 *poly;
 	POLYFT4LIT *local_t1_28;
 	uint in_t5;
 	uint in_t6;
 
 	local_t1_28 = (POLYFT4LIT *)model->poly_block;
-	local_t0_688 = (POLY_FT4 *)current->primptr;
+	poly = (POLY_FT4 *)current->primptr;
 
 	sVar1 = texture_cluts[local_t1_28->texture_set][local_t1_28->texture_id];
 	uVar2 = texture_pages[local_t1_28->texture_set];
@@ -1538,7 +1538,7 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 		if (gTimeOfDay < 3) 
 		{
 			in_t6 = combointensity & 0xffffffU | 0x2c000000;
-			in_t5 = (int)(combointensity & 0xfcfcfcU) >> 2 | 0x2c000000;
+			in_t5 = (combointensity & 0xfcfcfcU) >> 2 | 0x2c000000;
 		}
 		else
 		{
@@ -1547,7 +1547,7 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 				uVar7 = (combointensity & 0xffU) / 3;
 				uVar7 = uVar7 << 0x10 | uVar7 << 8 | uVar7;
 				in_t6 = uVar7 | 0x2c000000;
-				in_t5 = (int)(uVar7 & 0xfcfcfc) >> 2 | 0x2c000000;
+				in_t5 = (uVar7 & 0xfcfcfc) >> 2 | 0x2c000000;
 			}
 		}
 	}
@@ -1568,7 +1568,7 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 		gte_nclip();
 
 		gte_stopz(&iVar3);
-		gte_stsxy0(&local_t0_688->x0);
+		gte_stsxy0(&poly->x0);
 
 		gte_ldv0((SVECTOR *)(verts + (uVar8 >> 0x18)));
 
@@ -1579,55 +1579,39 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 
 		if (2 < iVar5) 
 		{
-			setPolyFT4(local_t0_688);
-			addPrim(current->ot + (iVar5 >> 1) + 5, local_t0_688);
+			setPolyFT4(poly);
+			addPrim(current->ot + (iVar5 >> 1) + 5, poly);
 
-			if (((int)uVar7 < 2) || (iVar3 < 0))
-			{
-				*(uint *)&local_t0_688->r0 = 0x2c000000;
-			}
-			else 
-			{
-				if (((uVar7 ^ wheelnum >> 1) & 1) == 0)
-				{
-					*(uint *)&local_t0_688->r0 = in_t5;
-				}
-				else {
-					*(uint *)&local_t0_688->r0 = in_t6;
-				}
-			}
+			if (uVar7 < 2 || iVar3 < 0)
+				*(uint *)&poly->r0 = 0x2c000000;
+			else if (((uVar7 ^ wheelnum >> 1) & 1) == 0)
+				*(uint *)&poly->r0 = in_t5;
+			else
+				*(uint *)&poly->r0 = in_t6;
 
-			if (transparent == 0) 
-			{
-				bVar6 = local_t0_688->code & 0xfd;
-			}
-			else 
-			{
-				bVar6 = local_t0_688->code | 2;
-			}
+			setSemiTrans(poly, transparent);
 
-			gte_stsxy3(&local_t0_688->x1, &local_t0_688->x3, &local_t0_688->x2);
+			gte_stsxy3(&poly->x1, &poly->x3, &poly->x2);
 
-			local_t0_688->u0 = local_t1_28->uv1.u;
-			local_t0_688->v0 = local_t1_28->uv1.v;
-			local_t0_688->clut = sVar1;
+			poly->u0 = local_t1_28->uv0.u;
+			poly->v0 = local_t1_28->uv0.v;
+			poly->clut = sVar1;
 
-			local_t0_688->u1 = local_t1_28->uv0.u;
-			local_t0_688->v1 = local_t1_28->uv0.v;
-			local_t0_688->tpage = uVar2 | 0x20;
+			poly->u1 = local_t1_28->uv1.u;
+			poly->v1 = local_t1_28->uv1.v;
+			poly->tpage = uVar2 | 0x20;
 
-			local_t0_688->u2 = local_t1_28->uv2.u;
-			local_t0_688->v2 = local_t1_28->uv2.v;
+			poly->u2 = local_t1_28->uv3.u;
+			poly->v2 = local_t1_28->uv3.v;
 
-			local_t0_688->u3 = local_t1_28->uv3.u;
-			local_t0_688->v3 = local_t1_28->uv3.v;
+			poly->u3 = local_t1_28->uv2.u;
+			poly->v3 = local_t1_28->uv2.v;
 
-
-			local_t0_688++;
+			poly++;
 		}
 		local_t1_28++;
 	}
-	current->primptr = (char*)local_t0_688;
+	current->primptr = (char*)poly;
 }
 
 
