@@ -2128,9 +2128,9 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			if (((pc->flags & 6U) != 0) && (Z = 1, (pc->flags & 4U) == 0))
 				Z = -iVar13;
 
-			if (0 < Z)
+			if (Z > 1)
 			{
-				if (rot > 0) //((n == 0) || (rot << 2 <= iVar11 + -0xfa))
+				if (true) //((n == 0) || (rot << 2 <= iVar11 + -0xfa))
 				{
 					puVar6 = (int *)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
 					local_t2_1500 = (POLY_FT4 *)pc->primptr;
@@ -2145,7 +2145,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 					gte_stotz(&iVar11);
 
 					rot = 0xff0000;
-					if (-1 < iVar11)
+					if (0 < iVar11)
 					{
 						rot = 0xffffff;
 						UVar3 = polys->uv2;
