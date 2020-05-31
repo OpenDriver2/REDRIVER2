@@ -477,6 +477,7 @@ u_short GetClut(int x, int y)
 void AddSplit(bool semiTrans, int page, TextureID textureId)
 {
 	VertexBufferSplit& curSplit = g_splits[g_splitIndex];
+
 	BlendMode blendMode = semiTrans ? GET_TPAGE_BLEND(page) : BM_NONE;
 	TexFormat texFormat = GET_TPAGE_FORMAT(page);
 
@@ -505,11 +506,25 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 	split.clipRect  = clipRect;
 }
 
-void MakeTriangle()
+void TriangulateQuad()
 {
-	g_vertexBuffer[g_vertexIndex + 5] = g_vertexBuffer[g_vertexIndex + 3];
-	g_vertexBuffer[g_vertexIndex + 3] = g_vertexBuffer[g_vertexIndex];
-	g_vertexBuffer[g_vertexIndex + 4] = g_vertexBuffer[g_vertexIndex + 2];
+	/*
+	Triangulate like this:
+
+	v0--v1
+	|  / |
+	| /  |
+	v2--v3
+
+	NOTE: v2 swapped with v3 during primitive parsing but it not shown here
+	*/
+
+	g_vertexBuffer[g_vertexIndex + 4] = g_vertexBuffer[g_vertexIndex + 3];
+
+	g_vertexBuffer[g_vertexIndex + 5] = g_vertexBuffer[g_vertexIndex + 2];
+	g_vertexBuffer[g_vertexIndex + 2] = g_vertexBuffer[g_vertexIndex + 3];
+	g_vertexBuffer[g_vertexIndex + 3] = g_vertexBuffer[g_vertexIndex + 1];
+
 }
 
 void DrawSplit(const VertexBufferSplit& split)
@@ -750,7 +765,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuadZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 			primitive_size = sizeof(POLY_F4);
@@ -770,7 +785,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->u0, &poly->u1, &poly->u3, &poly->u2, poly->tpage, poly->clut, GET_TPAGE_DITHER(lastTpage));
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -827,7 +842,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuadZero(&g_vertexBuffer[g_vertexIndex], 1);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r1, &poly->r3, &poly->r2);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -848,7 +863,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->u0, &poly->u1, &poly->u3, &poly->u2, poly->tpage, poly->clut, GET_TPAGE_DITHER(lastTpage));
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r1, &poly->r3, &poly->r2);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -868,7 +883,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -889,7 +904,7 @@ int ParsePrimitive(uintptr_t primPtr)
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
 
-				MakeTriangle();
+				TriangulateQuad();
 
 				g_vertexIndex += 6;
 #if defined(DEBUG_POLY_COUNT)
@@ -902,7 +917,7 @@ int ParsePrimitive(uintptr_t primPtr)
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
 
-				MakeTriangle();
+				TriangulateQuad();
 
 				g_vertexIndex += 6;
 #if defined(DEBUG_POLY_COUNT)
@@ -924,7 +939,7 @@ int ParsePrimitive(uintptr_t primPtr)
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
 
-				MakeTriangle();
+				TriangulateQuad();
 
 				g_vertexIndex += 6;
 #if defined(DEBUG_POLY_COUNT)
@@ -937,7 +952,7 @@ int ParsePrimitive(uintptr_t primPtr)
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
 
-				MakeTriangle();
+				TriangulateQuad();
 
 				g_vertexIndex += 6;
 #if defined(DEBUG_POLY_COUNT)
@@ -950,7 +965,7 @@ int ParsePrimitive(uintptr_t primPtr)
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
 
-				MakeTriangle();
+				TriangulateQuad();
 
 				g_vertexIndex += 6;
 #if defined(DEBUG_POLY_COUNT)
@@ -978,7 +993,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r1);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -998,7 +1013,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuadZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -1019,7 +1034,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayRect(&g_vertexBuffer[g_vertexIndex], &poly->u0, activeDrawEnv.tpage, poly->clut, poly->w, poly->h);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -1039,7 +1054,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuadZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -1059,7 +1074,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuadZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -1079,7 +1094,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayRect(&g_vertexBuffer[g_vertexIndex], &poly->u0, activeDrawEnv.tpage, poly->clut, 8, 8);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -1099,7 +1114,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayQuadZero(&g_vertexBuffer[g_vertexIndex], 0);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
@@ -1119,7 +1134,7 @@ int ParsePrimitive(uintptr_t primPtr)
 			Emulator_GenerateTexcoordArrayRect(&g_vertexBuffer[g_vertexIndex], &poly->u0, activeDrawEnv.tpage, poly->clut, 16, 16);
 			Emulator_GenerateColourArrayQuad(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0, &poly->r0);
 
-			MakeTriangle();
+			TriangulateQuad();
 
 			g_vertexIndex += 6;
 
