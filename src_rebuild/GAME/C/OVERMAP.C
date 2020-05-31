@@ -315,6 +315,7 @@ void DrawTargetArrow(VECTOR *pos, ulong flags)
 	poly = (POLY_G3 *)current->primptr;
 
 	setPolyG3(poly);
+	setSemiTrans(poly, 1);
 
 	poly->r0 = 24;
 	poly->g0 = 24;
