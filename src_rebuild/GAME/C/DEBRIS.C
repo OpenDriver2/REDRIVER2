@@ -18,6 +18,9 @@
 #include "DRAW.H"
 #include "MODELS.H"
 #include "PLAYERS.H"
+#include "SHADOW.H"
+#include "COSMETIC.H"
+
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
@@ -201,6 +204,39 @@ short gRainAlloc[180];
 
 RAIN_TYPE gRain[180];
 
+char PoolPrimData[16] = {
+
+	0x0,  0x8,  0x2,  0x9,
+	0x8,  0x1,  0x9,  0x3,
+	0x4,  0xA,  0x6,  0xB,
+	0xA,  0x5,  0xB,  0x7
+};
+
+int LightSortCorrect = 0;
+
+TEXTURE_DETAILS smoke_texture;
+TEXTURE_DETAILS debris_texture;
+TEXTURE_DETAILS litter_texture;
+TEXTURE_DETAILS cop_texture;
+TEXTURE_DETAILS light_texture;
+TEXTURE_DETAILS gTyreTexture;
+TEXTURE_DETAILS flare_texture;
+TEXTURE_DETAILS sea_texture;
+TEXTURE_DETAILS bird_texture1;
+TEXTURE_DETAILS bird_texture2;
+TEXTURE_DETAILS lensflare_texture;
+TEXTURE_DETAILS sun_texture;
+TEXTURE_DETAILS moon_texture;
+TEXTURE_DETAILS drop_texture;
+TEXTURE_DETAILS collon_texture;
+
+TEXTURE_DETAILS texturePedHead;
+TEXTURE_DETAILS tannerShadow_texture;
+
+TEXTURE_DETAILS lightref_texture;
+TEXTURE_DETAILS light_pool_texture;
+
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ PlacePoolForCar(struct _CAR_DATA *cp /*$s4*/, struct CVECTOR *col /*stack 4*/, int front /*$a2*/)
@@ -309,319 +345,331 @@ RAIN_TYPE gRain[180];
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+//POLY_G3 *spolys = NULL;
+//short light_col = 0;
+
+// [D]
 void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	bool bVar2;
 	DB *pDVar3;
-	uchar uVar4;
-	undefined4 in_zero;
-	undefined4 in_at;
+	unsigned char uVar4;
 	int iVar5;
 	int iVar6;
-	undefined4 *puVar7;
+	SVECTOR *pSVar7;
 	SVECTOR *pSVar8;
 	short sVar9;
-	uint *puVar10;
-	undefined4 uVar11;
-	undefined4 uVar12;
-	undefined4 uVar13;
+	POLY_FT4 *poly;
+	int uVar10;
+	int uVar11;
+	int uVar12;
 	VECTOR *pos;
-	undefined4 *puVar14;
-	uint uVar15;
+	uint uVar13;
+	int iVar14;
+	int iVar15;
 	int iVar16;
-	int iVar17;
-	int iVar18;
-	undefined4 local_340;
-	undefined4 local_33c;
-	undefined4 local_338;
-	undefined4 local_334;
-	undefined4 local_330;
-	undefined4 local_32c;
-	undefined4 local_328;
-	undefined4 local_324;
-	SVECTOR local_268[27];
-	VECTOR local_190;
-	undefined4 local_180;
-	int local_178;
-	undefined4 local_170;
-	int local_168;
-	undefined4 local_160;
-	int local_158;
-	undefined4 local_150;
-	int local_148;
-	undefined4 local_140;
-	int local_138;
-	undefined4 local_130;
-	int local_128;
-	undefined4 local_120;
-	int local_118;
-	undefined4 local_110;
-	int local_108;
-	undefined4 local_100;
-	int local_f8;
-	undefined4 local_f0;
-	int local_e8;
-	undefined4 local_e0;
-	int local_d8;
-	int local_b0;
-	int local_a8;
-	VECTOR local_a0;
-	uint local_90;
-	int local_8c;
-	int local_88;
-	int local_80;
-	int local_7c;
-	int local_78;
+	SVECTOR s[27];
+	SVECTOR sout[27];
+	VECTOR s1[12];
+	MATRIX final_matrix;
+	VECTOR averagepos;
+	VECTOR mid_position;
+	VECTOR toss;
+	long n[4];
+	long z[15];
 	int local_30;
 
 	bVar2 = false;
-	pos = &local_190;
-	puVar7 = &local_340;
-	if (cp <= (_CAR_DATA *)((int)&cheats.MagicMirror + 3U)) {
+	pos = s1;
+	pSVar7 = s;
+
+	if (cp < car_data) 
+	{
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if ((cameraview == 2) && ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == CameraCar)) {
+
+
+	if ((cameraview == 2 && CAR_INDEX(cp) == CameraCar) || player[0].cameraView == 2 && player[0].cameraCarId == CAR_INDEX(cp))	// bug fix
 		bVar2 = true;
+
+	if (front == 0) 
+	{
+		iVar15 = 0;
+		s1[0].vx = -0xcc;
+		s1[1].vx = 0xcc;
+		s1[2].vx = -0xcc;
+		s1[3].vx = 0xcc;
+		s1[3].vz = ((car_cosmetics[cp->ap.model].colBox.vz - 10) * 0x10000) >> 0x10;
+		s1[1].vz = (s1[3].vz + 0xcc) * 0x10000 >> 0x10;
 	}
-	if (front == 0) {
-		iVar17 = 0;
-		local_190.vx = -0xcc;
-		local_180 = 0xcc;
-		local_170 = 0xffffff34;
-		local_160 = 0xcc;
-		local_158 = (int)(((uint)(ushort)car_cosmetics[(byte)(cp->ap).model].colBox.vz - 10) * 0x10000)
-			>> 0x10;
-		local_178 = (local_158 + 0xcc) * 0x10000 >> 0x10;
-	}
-	else {
-		local_158 = (int)(short)-(car_cosmetics[(byte)(cp->ap).model].colBox.vz + 0x32);
-		local_108 = (local_158 + -0x488) * 0x10000 >> 0x10;
-		local_128 = local_158;
-		local_118 = local_158;
-		if (bVar2) {
-			local_178 = local_108 + 600;
-			local_190.vx = 0x88;
-			local_180 = 0xfffffea8;
-			local_170 = 0xffffffeb;
-			local_160 = 0xffffff71;
-			local_150 = 0x158;
-			local_140 = 0xffffff78;
-			local_130 = 0x8f;
-			local_120 = 0x15;
-			local_108 = local_108 + -400;
-			local_f8 = local_158 + 10;
-			local_110 = 0xffffffae;
-			local_f0 = 0x52;
-			local_100 = 0xffffffae;
-			local_e0 = 0x52;
+	else
+	{
+		s1[3].vz = -(car_cosmetics[cp->ap.model].colBox.vz + 0x32);
+		s1[8].vz = (s1[3].vz + -0x488) * 0x10000 >> 0x10;
+		s1[6].vz = s1[3].vz;
+		s1[7].vz = s1[3].vz;
+
+		if (bVar2) 
+		{
+			s1[1].vz = s1[8].vz + 600;
+			s1[0].vx = 0x88;
+			s1[1].vx = -0x158;
+			s1[2].vx = -0x15;
+			s1[3].vx = -0x8f;
+			s1[4].vx = 0x158;
+			s1[5].vx = -0x88;
+			s1[6].vx = 0x8f;
+			s1[7].vx = 0x15;
+			s1[8].vz = s1[8].vz + -400;
+			s1[9].vz = s1[3].vz + 10;
+			s1[8].vx = -0x52;
+			s1[10].vx = 0x52;
+			s1[9].vx = -0x52;
+			s1[11].vx = 0x52;
+			s1[4].vz = s1[1].vz;
+			s1[5].vz = s1[1].vz;
+			s1[10].vz = s1[8].vz;
+			s1[11].vz = s1[9].vz;
+
 			LightSortCorrect = -800;
-			iVar17 = 3;
-			local_148 = local_178;
-			local_138 = local_178;
-			local_e8 = local_108;
-			local_d8 = local_f8;
+			iVar15 = 3;
 		}
-		else {
-			local_178 = local_108 + 100;
-			local_190.vx = 0x88;
-			local_180 = 0xfffffea8;
-			local_170 = 0xffffffeb;
-			local_160 = 0xffffff71;
-			local_150 = 0x158;
-			local_140 = 0xffffff78;
-			local_130 = 0x8f;
-			local_120 = 0x15;
-			local_f0 = 0x52;
-			local_e0 = 0x52;
-			local_110 = 0xffffffae;
-			local_100 = 0xffffffae;
-			iVar17 = 3;
-			local_148 = local_178;
-			local_138 = local_178;
-			local_f8 = local_158;
-			local_e8 = local_108;
-			local_d8 = local_158;
-			if ((player.cameraView == '\x02') && (cp == car_data + player.playerCarId)) {
-				LightSortCorrect = -0x140;
-			}
-			else {
+		else 
+		{
+			s1[1].vz = s1[8].vz + 100;
+			s1[0].vx = 0x88;
+			s1[1].vx = -0x158;
+			s1[2].vx = -0x15;
+			s1[3].vx = -0x8f;
+			s1[4].vx = 0x158;
+			s1[5].vx = -0x88;
+			s1[6].vx = 0x8f;
+			s1[7].vx = 0x15;
+			s1[10].vx = 0x52;
+			s1[11].vx = 0x52;
+			s1[8].vx = -0x52;
+			s1[9].vx = -0x52;
+			s1[4].vz = s1[1].vz;
+			s1[5].vz = s1[1].vz;
+			s1[9].vz = s1[3].vz;
+			s1[10].vz = s1[8].vz;
+			s1[11].vz = s1[3].vz;
+
+			iVar15 = 3;
+
+			if (player[0].cameraView == 2 && cp == &car_data[player[0].playerCarId])
+				LightSortCorrect = -320;
+			else
 				LightSortCorrect = -200;
-			}
 		}
 	}
-	local_190.vz = local_178;
-	local_168 = local_158;
-	SetRotMatrix(&(cp->hd).drawCarMat);
-	local_b0 = 0;
-	local_a8 = 0;
-	local_a0.vx = 0;
-	local_a0.vy = 0;
-	local_a0.vz = -500;
-	_MatrixRotate(&local_a0);
-	local_a0.vx = local_a0.vx + (cp->hd).where.t[0];
-	local_a0.vy = local_a0.vy + (cp->hd).where.t[1];
-	local_a0.vz = local_a0.vz + (cp->hd).where.t[2];
-	iVar5 = MapHeight(&local_a0);
-	puVar14 = puVar7;
-	iVar16 = 0;
-	while (true) {
-		bVar2 = iVar16 < 4;
-		if (iVar17 == 3) {
-			bVar2 = iVar16 < 0xc;
-		}
-		if (!bVar2) break;
+
+	s1[0].vz = s1[1].vz;
+	s1[2].vz = s1[3].vz;
+
+	SetRotMatrix(&cp->hd.drawCarMat);
+
+	mid_position.vx = 0;
+	mid_position.vy = 0;
+	mid_position.vz = -500;
+
+	_MatrixRotate(&mid_position);
+
+	mid_position.vx += cp->hd.where.t[0];
+	mid_position.vy += cp->hd.where.t[1];
+	mid_position.vz += cp->hd.where.t[2];
+
+	iVar5 = MapHeight(&mid_position);
+
+	pSVar8 = pSVar7;
+	iVar14 = 0;
+
+	while (true)
+	{
+		bVar2 = iVar14 < 4;
+
+		if (iVar15 == 3)
+			bVar2 = iVar14 < 0xc;
+
+		if (!bVar2)
+			break;
+
 		pos->vy = 0;
 		_MatrixRotate(pos);
-		local_90 = pos->vx + (cp->hd).where.t[0];
-		local_8c = pos->vy + (cp->hd).where.t[1];
-		iVar18 = (local_90 & 0xffff) - (uint)(ushort)camera_position.vx;
-		local_88 = pos->vz + (cp->hd).where.t[2];
-		*(short *)puVar14 = (short)iVar18;
-		*(short *)(puVar14 + 1) = (short)local_88 - (short)camera_position.vz;
-		local_b0 = local_b0 + (iVar18 * 0x10000 >> 0x10);
-		local_a8 = local_a8 + *(short *)(puVar14 + 1);
-		iVar18 = MapHeight((VECTOR *)&local_90);
-		sVar9 = (short)-iVar18;
-		iVar6 = -iVar18 + iVar5;
-		if (iVar6 < 0) {
-			iVar6 = -iVar5 + iVar18;
-		}
-		if (500 < iVar6) {
-			sVar9 = (short)-iVar5;
-		}
+
+		toss.vx = pos->vx + cp->hd.where.t[0];
+		toss.vy = pos->vy + cp->hd.where.t[1];
+		toss.vz = pos->vz + cp->hd.where.t[2];
+
+		pSVar8->vx = toss.vx - camera_position.vx;
+		pSVar8->vz = toss.vz - camera_position.vz;
+
+		iVar16 = MapHeight(&toss);
+
+		sVar9 = -iVar16;
+		iVar6 = -iVar16 + iVar5;
+
+		if (iVar6 < 0)
+			iVar6 = -iVar5 + iVar16;
+
+		if (500 < iVar6)
+			sVar9 = -iVar5;
+
 		pos = pos + 1;
-		puVar14 = puVar14 + 2;
-		*(short *)((int)&local_340 + iVar16 * 8 + 2) = sVar9 - (short)camera_position.vy;
-		iVar16 = iVar16 + 1;
+		pSVar8 = pSVar8 + 1;
+		s[iVar14].vy = sVar9 - camera_position.vy;
+
+		iVar14++;
 	}
-	local_80 = ((int)local_340._2_2_ * (int)(short)local_334 -
-		(int)(short)local_33c * (int)local_338._2_2_) + 0x800 >> 0xc;
-	local_7c = ((int)(short)local_33c * (int)(short)local_338 -
-		(int)(short)local_340 * (int)(short)local_334) + 0x800 >> 0xc;
-	local_78 = ((int)(short)local_340 * (int)local_338._2_2_ -
-		(int)local_340._2_2_ * (int)(short)local_338) + 0x800 >> 0xc;
-	iVar18 = local_78 * (short)local_32c;
-	iVar5 = local_80 * (short)local_330 + local_7c * local_330._2_2_ + iVar18;
-	if (-1 < iVar5) {
-		if (iVar16 == 0) {
-			trap(7);
+
+	iVar16 = FIXED(s[0].vx * s[1].vy - s[0].vy * s[1].vx) *	s[2].vz;
+	iVar5 =  FIXED(s[0].vy * s[1].vz - s[0].vz * s[1].vy) * s[2].vx +
+			 FIXED(s[0].vz * s[1].vx - s[0].vx * s[1].vz) * s[2].vy + iVar16;
+
+	if (-1 < iVar5)
+	{
+		if (iVar14 == 0) 
+		{
 			trap(7);
 		}
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		setCopControlWord(2, 0x2800, dummy.vx);
-		setCopControlWord(2, 0x3000, dummy.vy);
-		setCopControlWord(2, 0x3800, dummy.vz);
-		if (iVar17 == 0) {
-			setCopReg(2, in_zero, local_340);
-			setCopReg(2, in_at, local_33c);
-			setCopReg(2, 0xacad0, local_338);
-			setCopReg(2, 0xa187c, local_334);
-			setCopReg(2, iVar5, local_330);
-			setCopReg(2, iVar18, local_32c);
-			copFunction(2, 0x280030);
-			puVar10 = (uint *)current->primptr;
-			*(uchar *)(puVar10 + 3) = light_pool_texture.coords.u0;
-			*(uchar *)((int)puVar10 + 0xd) = light_pool_texture.coords.v0;
-			*(uchar *)(puVar10 + 5) = light_pool_texture.coords.u1;
-			*(uchar *)((int)puVar10 + 0x15) = light_pool_texture.coords.v1;
-			*(uchar *)(puVar10 + 7) = light_pool_texture.coords.u2;
-			*(uchar *)((int)puVar10 + 0x1d) = light_pool_texture.coords.v2;
-			*(uchar *)(puVar10 + 9) = light_pool_texture.coords.u3;
-			uVar4 = light_pool_texture.coords.v3;
-			*(char *)((int)puVar10 + 3) = '\t';
-			*(char *)((int)puVar10 + 7) = '.';
-			*(uchar *)((int)puVar10 + 0x25) = uVar4;
-			*(uchar *)(puVar10 + 1) = col->r >> 1;
-			*(byte *)((int)puVar10 + 5) = col->b >> 1;
-			*(byte *)((int)puVar10 + 6) = col->g >> 1;
-			uVar15 = getCopReg(2, 0xc);
-			puVar10[2] = uVar15;
-			uVar15 = getCopReg(2, 0xd);
-			puVar10[4] = uVar15;
-			uVar15 = getCopReg(2, 0xe);
-			puVar10[6] = uVar15;
-			pDVar3 = current;
-			local_30 = getCopReg(2, 0x13);
-			if (0x28 < local_30) {
-				local_30 = local_30 + -0x28;
-			}
-			if (0x31 < local_30) {
-				setCopReg(2, in_zero, local_328);
-				setCopReg(2, in_at, local_324);
-				copFunction(2, 0x180001);
-				*(ushort *)((int)puVar10 + 0x16) = light_pool_texture.tpageid | 0x20;
-				*(ushort *)((int)puVar10 + 0xe) = light_pool_texture.clutid;
-				*puVar10 = *puVar10 & 0xff000000 | pDVar3->ot[local_30 >> 3] & 0xffffff;
-				pDVar3->ot[local_30 >> 3] =
-					pDVar3->ot[local_30 >> 3] & 0xff000000 | (uint)puVar10 & 0xffffff;
-				pDVar3->primptr = pDVar3->primptr + 0x28;
-				uVar15 = getCopReg(2, 0xe);
-				puVar10[8] = uVar15;
+
+		gte_SetRotMatrix(&inv_camera_matrix);
+		gte_SetTransVector(&dummy);
+
+		if (iVar15 == 0) 
+		{
+			gte_ldv3(&s[0], &s[1], &s[2]);
+			gte_rtpt();
+
+			gte_stszotz(&local_30);
+
+			if (local_30 > 40)
+				local_30 -= 40;
+
+			if (local_30 > 49)
+			{
+				poly = (POLY_FT4 *)current->primptr;
+
+				// [A] Emit poly only after ot z checked
+				setPolyFT4(poly);
+				setSemiTrans(poly, 1);
+
+				poly->u0 = light_pool_texture.coords.u0;
+				poly->v0 = light_pool_texture.coords.v0;
+				poly->u1 = light_pool_texture.coords.u1;
+				poly->v1 = light_pool_texture.coords.v1;
+				poly->u2 = light_pool_texture.coords.u2;
+				poly->v2 = light_pool_texture.coords.v2;
+				poly->u3 = light_pool_texture.coords.u3;
+				poly->v3 = light_pool_texture.coords.v3;
+
+				poly->r0 = col->r >> 1;
+				poly->g0 = col->b >> 1;
+				poly->b0 = col->g >> 1;
+
+				gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+				poly->tpage = light_pool_texture.tpageid | 0x20;
+				poly->clut = light_pool_texture.clutid;
+
+				gte_ldv0(&s[3]);
+
+				gte_rtps();
+
+				gte_stsxy(&poly->x3);
+
+				addPrim(current->ot + (local_30 >> 3), poly);
+				current->primptr += sizeof(POLY_FT4);
 			}
 		}
-		else {
-			if (iVar17 == 3) {
-				iVar17 = 0xb;
-				pSVar8 = local_268;
+		else
+		{
+			if (iVar15 == 3)
+			{
+				iVar15 = 11;
+				pSVar8 = sout;
+
 				do {
-					setCopReg(2, in_zero, *puVar7);
-					setCopReg(2, in_at, puVar7[1]);
-					copFunction(2, 0x480012);
-					uVar11 = getCopReg(2, 0x4800);
-					uVar12 = getCopReg(2, 0x5000);
-					uVar13 = getCopReg(2, 0x5800);
-					pSVar8->vx = (short)uVar11;
-					pSVar8->vy = (short)uVar12;
-					pSVar8->vz = (short)uVar13;
-					pSVar8 = pSVar8 + 1;
-					iVar17 = iVar17 + -1;
-					puVar7 = puVar7 + 2;
-				} while (-1 < iVar17);
-				uVar15 = 0;
+					gte_ldv0(pSVar7);
+
+					docop2(0x480012);
+
+					// FIXME: here might be 'gte_stlvnl'
+					gte_stsv(pSVar8);
+
+					//uVar10 = getCopReg(2, 0x4800);
+					//uVar11 = getCopReg(2, 0x5000);
+					//uVar12 = getCopReg(2, 0x5800);
+					//pSVar8->vx = (short)uVar10;
+					//pSVar8->vy = (short)uVar11;
+					//pSVar8->vz = (short)uVar12;
+
+					pSVar8++;
+					iVar15--;
+					pSVar7++;
+				} while (-1 < iVar15);
+
+				uVar13 = 0;
+
 				do {
-					iVar17 = uVar15 * 4;
-					spolys = (POLY_F3 *)current->primptr;
+					iVar15 = uVar13 * 4;
+
+					MATRIX tempmatrix;
+
+					{
+						tempmatrix.m[0][0] = 0x1000;
+						tempmatrix.m[1][0] = 0;
+						tempmatrix.m[2][0] = 0;
+
+						tempmatrix.m[0][1] = 0;
+						tempmatrix.m[1][1] = 0x1000;
+						tempmatrix.m[2][1] = 0;
+
+						tempmatrix.m[0][2] = 0;
+						tempmatrix.m[1][2] = 0;
+						tempmatrix.m[2][2] = 0x1000;
+					}
+
+					//spolys = current->primptr;	// I'm getting rid of this...
 					SetRotMatrix(&tempmatrix);
-					setCopControlWord(2, 0x2800, dummy.vx);
-					setCopControlWord(2, 0x3000, dummy.vy);
-					setCopControlWord(2, 0x3800, dummy.vz);
+					gte_SetTransVector(&dummy);
+
 					bVar1 = RightLight;
-					if ((uVar15 & 2) != 0) {
+
+					if ((uVar13 & 2) != 0)
 						bVar1 = LeftLight;
-					}
-					sVar9 = (ushort)bVar1 * 4 + (ushort)bVar1;
-					light_col = sVar9 * 0x10;
-					if (sVar9 != 0) {
-						if ((uVar15 & 1) == 0) {
-							sQuad(local_268 + (byte)(&CHAR_08h_0009c00d)[iVar17],
-								local_268 + (byte)s__0009c00f[iVar17],
-								local_268 + (byte)(&CHAR_02h_0009c00e)[iVar17],
-								local_268 + (byte)(&PoolPrimData)[iVar17]);
+
+					sVar9 = bVar1 * 4 + bVar1;
+
+					if (sVar9 != 0)
+					{
+						if ((uVar13 & 1) == 0) 
+						{
+							sQuad(sout + PoolPrimData[iVar15 + 1],
+								  sout + PoolPrimData[iVar15 + 3],
+								  sout + PoolPrimData[iVar15 + 2],
+								  sout + PoolPrimData[iVar15], sVar9 * 12, LightSortCorrect);
 						}
-						else {
-							sQuad(local_268 + (byte)(&PoolPrimData)[iVar17],
-								local_268 + (byte)(&CHAR_02h_0009c00e)[iVar17],
-								local_268 + (byte)s__0009c00f[iVar17],
-								local_268 + (byte)(&CHAR_08h_0009c00d)[iVar17]);
+						else
+						{
+							sQuad(sout + PoolPrimData[iVar15],
+								  sout + PoolPrimData[iVar15 + 2],
+								  sout + PoolPrimData[iVar15 + 3],
+								  sout + PoolPrimData[iVar15 + 1], sVar9 * 12, LightSortCorrect);
 						}
-						*(POLY_F3 **)&current->primptr = spolys;
+
+						//current->primptr = spolys;
 					}
-					uVar15 = uVar15 + 1;
-				} while ((int)uVar15 < 4);
+					uVar13++;
+				} while (uVar13 < 4);
 			}
 		}
+
 		LightSortCorrect = -10;
 	}
-	return;*/
 }
 
 
@@ -934,28 +982,6 @@ void SwirlLeaves(_CAR_DATA *cp)
 	// End Line: 3609
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-TEXTURE_DETAILS smoke_texture;
-TEXTURE_DETAILS debris_texture;
-TEXTURE_DETAILS litter_texture;
-TEXTURE_DETAILS cop_texture;
-TEXTURE_DETAILS light_texture;
-TEXTURE_DETAILS gTyreTexture;
-TEXTURE_DETAILS flare_texture;
-TEXTURE_DETAILS sea_texture;
-TEXTURE_DETAILS bird_texture1;
-TEXTURE_DETAILS bird_texture2;
-TEXTURE_DETAILS lensflare_texture;
-TEXTURE_DETAILS sun_texture;
-TEXTURE_DETAILS moon_texture;
-TEXTURE_DETAILS drop_texture;
-TEXTURE_DETAILS collon_texture;
-
-TEXTURE_DETAILS texturePedHead;
-TEXTURE_DETAILS tannerShadow_texture;
-
-TEXTURE_DETAILS lightref_texture;
-TEXTURE_DETAILS light_pool_texture;
 
 // [D]
 void InitDebrisNames(void)
@@ -3399,8 +3425,6 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 	// End Line: 7489
 
 /* WARNING: Could not reconcile some variable overlaps */
-
-int LightSortCorrect = 0;
 
 // [D]
 void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)

@@ -133,10 +133,6 @@ int AttractMode = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-#ifndef PSX
-extern void SsSetSerialVol(char param_1, short param_2, short param_3);
-#endif // PSX
-
 int gLoadedReplay = 0;
 int gHaveStoredData = 0;
 

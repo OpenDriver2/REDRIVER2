@@ -2337,7 +2337,39 @@ void CheckForPause(void)
 	}
 }
 
+// [D]
+void SsSetSerialVol(short s_num, short voll, short volr)
+{
+	SpuCommonAttr attr;
 
+	if ((s_num & 0xffU) == 0)
+	{
+		attr.mask = 0xc0;
+		if (0x7f < voll)
+			voll = 0x7f;
+
+		if (0x7f < volr)
+			volr = 0x7f;
+
+		attr.cd.volume.left = voll * 0x102;
+		attr.cd.volume.right = volr * 0x102;
+	}
+
+	if (s_num == 1)
+	{
+		attr.mask = 0xc00;
+		if (0x7f < voll)
+			voll = 0x7f;
+
+		if (0x7f < volr)
+			volr = 0x7f;
+
+		attr.ext.volume.left = voll * 0x102;
+		attr.ext.volume.right = volr * 0x102;
+	}
+
+	SpuSetCommonAttr(&attr);
+}
 
 // decompiled code
 // original method signature: 
@@ -2379,49 +2411,6 @@ void CheckForPause(void)
 	// End Line: 10067
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// decompiled code
-// original method signature: 
-// void SsSetSerialVol(char param_1,short param_2,short param_3);
- // line -1, offset 0x00092b3c
-// function 'SsSetSerialVol' @0x00092B3C was found in the decompiled code exported from Ghidra, but not the original debug symbol data.
-void SsSetSerialVol(char param_1, short param_2, short param_3)
-{
-	UNIMPLEMENTED();
-
-	/*
-	undefined4 local_30[4];
-	short local_20;
-	short local_1e;
-	short local_14;
-	short local_12;
-
-	if (param_1 == '\0') {
-		local_30[0] = 0xc0;
-		if (0x7f < param_2) {
-			param_2 = 0x7f;
-		}
-		if (0x7f < param_3) {
-			param_3 = 0x7f;
-		}
-		local_20 = param_2 * 0x102;
-		local_1e = param_3 * 0x102;
-	}
-	if (param_1 == '\x01') {
-		local_30[0] = 0xc00;
-		if (0x7f < param_2) {
-			param_2 = 0x7f;
-		}
-		if (0x7f < param_3) {
-			param_3 = 0x7f;
-		}
-		local_14 = param_2 * 0x102;
-		local_12 = param_3 * 0x102;
-	}
-	SpuSetCommonAttr(local_30);
-	return;
-	*/
-}
 
 // [D]
 #ifdef PSX

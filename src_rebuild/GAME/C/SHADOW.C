@@ -1581,109 +1581,108 @@ void clippedPoly(void)
 	/* end block 2 */
 	// End Line: 3252
 
-void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3)
+static int numcv;
+static int lastcv;
+static SVECTOR cv[12];
+
+// [D]
+void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, int LightSortCorrect)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	undefined4 uVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
-	POLY_F3 *pPVar6;
-	DB *pDVar7;
-	undefined4 in_zero;
-	undefined4 in_at;
-	int iVar8;
-	undefined4 in_v1;
-	uint *puVar9;
+	int iVar7;
 
-	pPVar6 = spolys;
-	if ((((v0->vz < 0x3e9) || (v1->vz < 0x3e9)) || (v2->vz < 0x3e9)) ||
-		(bVar1 = v3->vz < 0x3e9, bVar1)) {
-		if (((0 < v0->vz) || (0 < v1->vz)) || ((0 < v2->vz || (0 < v3->vz)))) {
-			cv._0_4_ = *(undefined4 *)v0;
-			SVECTOR_000da938._0_4_ = *(undefined4 *)v1;
-			SVECTOR_ARRAY_000da940[0]._0_4_ = *(undefined4 *)v3;
-			cv._4_4_ = *(uint *)&v0->vz & 0xffff;
-			SVECTOR_ARRAY_000da940[0]._4_4_ = *(uint *)&v3->vz & 0xffff;
+	POLY_G4 *poly;
+
+	poly = (POLY_G4*)current->primptr;
+
+	if (false) // (v0->vz < 1001 || v1->vz < 1001 || v2->vz < 1001 || v3->vz < 1001)
+	{
+		if (0 < v0->vz || 0 < v1->vz || 0 < v2->vz || 0 < v3->vz)
+		{
+			cv[0] = *v0;
+			cv[1] = *v1;
+			cv[2] = *v3;
+
+			cv[1].pad = light_col;
+
 			numcv = 3;
 			lastcv = 2;
-			SVECTOR_000da938._4_4_ = *(uint *)&v1->vz & 0xffff | (uint)(ushort)light_col << 0x10;
 			clippedPoly();
-			cv._0_4_ = *(undefined4 *)v2;
-			SVECTOR_000da938._0_4_ = *(undefined4 *)v1;
-			SVECTOR_ARRAY_000da940[0]._0_4_ = *(undefined4 *)v3;
-			cv._4_4_ = *(uint *)&v2->vz & 0xffff;
-			SVECTOR_ARRAY_000da940[0]._4_4_ = *(uint *)&v3->vz & 0xffff;
+
+			cv[0] = *v2;
+			cv[1] = *v1;
+			cv[2] = *v3;
+
+			cv[1].pad = light_col;
+
 			numcv = 3;
 			lastcv = 2;
-			SVECTOR_000da938._4_4_ = *(uint *)&v1->vz & 0xffff | (uint)(ushort)light_col << 0x10;
 			clippedPoly();
 		}
 	}
-	else {
-		setCopReg(2, in_zero, *(undefined4 *)v0);
-		setCopReg(2, in_at, *(undefined4 *)&v0->vz);
-		setCopReg(2, (uint)bVar1, *(undefined4 *)v1);
-		setCopReg(2, in_v1, *(undefined4 *)&v1->vz);
-		setCopReg(2, v0, *(undefined4 *)v3);
-		setCopReg(2, v1, *(undefined4 *)&v3->vz);
-		copFunction(2, 0x280030);
-		spolys->code = ':';
-		*(undefined *)((int)&pPVar6->tag + 3) = 8;
-		*(undefined *)&pPVar6->x1 = (undefined)light_col;
-		*(undefined *)((int)&pPVar6->x1 + 1) = (undefined)light_col;
-		pPVar6->r0 = '\0';
-		pPVar6->g0 = '\0';
-		pPVar6->b0 = '\0';
-		*(undefined *)&pPVar6[1].tag = 0;
-		*(undefined *)((int)&pPVar6[1].tag + 1) = 0;
-		*(undefined *)((int)&pPVar6[1].tag + 2) = 0;
-		*(undefined *)&pPVar6[1].x0 = 0;
-		*(undefined *)((int)&pPVar6[1].x0 + 1) = 0;
-		*(undefined *)&pPVar6[1].y0 = 0;
-		*(undefined *)&pPVar6->y1 = (undefined)light_col;
-		uVar2 = getCopReg(2, 0xc);
-		*(undefined4 *)&pPVar6->x0 = uVar2;
-		uVar2 = getCopReg(2, 0xd);
-		*(undefined4 *)&pPVar6->x2 = uVar2;
-		uVar2 = getCopReg(2, 0xe);
-		*(undefined4 *)&pPVar6[1].r0 = uVar2;
-		iVar8 = getCopReg(2, 0x11);
-		iVar3 = getCopReg(2, 0x12);
-		iVar4 = getCopReg(2, 0x13);
-		setCopReg(2, in_zero, *(undefined4 *)v2);
-		setCopReg(2, in_at, *(undefined4 *)&v2->vz);
-		copFunction(2, 0x180001);
-		uVar2 = getCopReg(2, 0xe);
-		*(undefined4 *)&pPVar6[1].x1 = uVar2;
-		pDVar7 = current;
-		iVar5 = getCopReg(2, 0x13);
-		iVar8 = (iVar8 + iVar3 + iVar4 + iVar5 >> 2) + LightSortCorrect;
-		if (iVar8 < 0) {
-			iVar8 = 0;
-		}
-		iVar8 = iVar8 >> 3;
-		puVar9 = (uint *)&pPVar6[1].x2;
-		spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar8] & 0xffffff;
-		pDVar7->ot[iVar8] = pDVar7->ot[iVar8] & 0xff000000 | (uint)spolys & 0xffffff;
-		*(undefined *)((int)&pPVar6[1].y2 + 1) = 7;
-		*(undefined *)((int)&pPVar6[2].tag + 3) = 0x24;
-		pDVar7 = current;
-		*(undefined2 *)&pPVar6[2].r0 = 0xffff;
-		*(undefined2 *)&pPVar6[2].b0 = 0xffff;
-		pPVar6[2].x1 = -1;
-		pPVar6[2].y1 = -1;
-		*(undefined2 *)&pPVar6[3].tag = 0xffff;
-		*(undefined2 *)((int)&pPVar6[3].tag + 2) = 0xffff;
-		pPVar6[2].y2 = 0x20;
-		*puVar9 = *puVar9 & 0xff000000 | pDVar7->ot[iVar8] & 0xffffff;
-		pDVar7->ot[iVar8] = pDVar7->ot[iVar8] & 0xff000000 | (uint)puVar9 & 0xffffff;
-		spolys = (POLY_F3 *)&pPVar6[3].x1;
-		pDVar7->primptr = pDVar7->primptr + 0x20;
+	else 
+	{
+		gte_ldv3(v0, v1, v3);
+
+		gte_rtpt();
+
+		setPolyG4(poly);
+		setSemiTrans(poly, 1);
+
+		poly->r1 = light_col;
+		poly->g1 = light_col;
+		poly->b1 = light_col;
+
+		poly->r0 = 0;
+		poly->g0 = 0;
+		poly->b0 = 0;
+
+		poly->r2 = 0;
+		poly->g2 = 0;
+		poly->b2 = 0;
+
+		poly->r3 = 0;
+		poly->g3 = 0;
+		poly->b3 = 0;
+
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+		gte_stsz3(&iVar7, &iVar3, &iVar4);
+
+		gte_ldv0(v2);
+
+		gte_rtps();
+
+		gte_stsxy(&poly->x3);
+
+		gte_stsz(&iVar5);
+
+		iVar7 = (iVar7 + iVar3 + iVar4 + iVar5 >> 2) + LightSortCorrect;
+
+		if (iVar7 < 0)
+			iVar7 = 0;
+	
+		iVar7 = iVar7 >> 3;
+
+		addPrim(current->ot + iVar7, poly);
+		current->primptr += sizeof(POLY_G4);
+
+		POLY_FT3* null = (POLY_FT3*)current->primptr;
+
+		setPolyFT3(null);
+		null->x0 = -1;
+		null->y0 = -1;
+		null->x1 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->y2 = -1;
+		null->tpage = 0x20;
+
+		addPrim(current->ot + iVar7, null);
+		current->primptr += sizeof(POLY_FT3);
 	}
-	return;*/
 }
 
 

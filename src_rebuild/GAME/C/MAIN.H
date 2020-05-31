@@ -16,6 +16,8 @@ extern int wetness;
 
 extern int DawnCount;
 
+extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
+
 typedef void(*occlFunc)(int *comp_val);
 
 extern void ProcessLumps(char *lump_ptr, int lump_size); // 0x00058C08

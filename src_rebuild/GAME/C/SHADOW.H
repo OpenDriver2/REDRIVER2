@@ -25,7 +25,7 @@ extern int clipAgainstZ(); // 0x00076A40
 
 extern void clippedPoly(); // 0x00076CD4
 
-extern void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3); // 0x00077138
+extern void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, int LightSortCorrect); // 0x00077138
 
 
 #endif
