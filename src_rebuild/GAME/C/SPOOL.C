@@ -2389,13 +2389,12 @@ void GotRegion(void)
 
 	Unpack_CellPtrs();
 
-	target_barrel_reg = (uint)spool_regioninfo[spool_regionpos].target_barrel_region;
+	target_barrel_reg = spool_regioninfo[spool_regionpos].target_barrel_region;
 	spool_regionpos++;
 
 	char* pvs = PVS_Buffers[target_barrel_reg];
 
 	loading_region[target_barrel_reg] = -1;
-
 
 	int cbr = *(int *)(pvs - 4);
 	RoadMapDataRegions[target_barrel_reg] = (short*)(pvs + cbr);
