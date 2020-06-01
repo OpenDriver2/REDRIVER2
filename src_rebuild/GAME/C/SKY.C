@@ -6,6 +6,7 @@
 #include "DRAW.H"
 #include "CAMERA.H"
 #include "MAIN.H"
+#include "DEBRIS.H"
 
 #include "LIBGTE.H"
 #include "INLINE_C.H"
@@ -28,17 +29,17 @@ unsigned char HorizonTextures[40] = {
 
 
 SVECTOR sun_position[4] = {
-	{-0x7d00,-0x2af8,-0x1388},
-	{-0x7d00,-0x2af8,-0x1388},
-	{-0x7d00,-0x2af8,-0x1388},
-	{-0x7d00,-0x2af8,-0x1388}
+	{-32000,-11000,-5000},
+	{-32000,-11000,-5000},
+	{-32000,-11000,-5000},
+	{-32000,-11000,-5000}
 };
 
 SVECTOR moon_position[4] = {
-	{-0x7d00,-0x2cec,-0x4650},
-	{-0x7d00,-0x2cec,-0x4650,},
-	{-0x7d00,-0x2cec,-0x4650,},
-	{-0x7d00,-0x2cec,-0x4650,}
+	{-32000,-11500,-18000},
+	{-32000,-11500,-18000,},
+	{-32000,-11500,-18000,},
+	{-32000,-11500,-18000,}
 };
 
 SVECTOR moon_shadow_position[4] =
@@ -51,14 +52,30 @@ SVECTOR moon_shadow_position[4] =
 
 FLAREREC flare_info[8] =
 {
-	{ { 0, 0, 90, 0 }, '\x10', 12288 },
-	{ { 20480, 10240, 1024, 0 }, '\0', 48 },
-	{ { 72, 90, 0, 0 }, '\0', 12288 },
-	{ { 24576, 0, 23040, 0 }, '\0', 0 },
-	{ { 16, 144, 0, 0 }, 'Z', 0 },
-	{ { 16384, 40960, 23040, 23040 }, '\0', 0 },
-	{ { 0, 32, 184, 90 }, '\0', 0 },
-	{ { 0, 8192, 53248, 0 }, '\0', 0 }
+	{
+		{0x0,0x0,0x5a},0x10, 0x30
+	},
+	{
+		{0x50,0x28,0x4},0x30,0x48
+	},
+	{
+		{0x5a,0x0,0x0},0x30,0x60
+	},
+	{
+		{0x0,0x5a,0x0},0x10,0x90
+	},
+	{
+		{0x0,0x0,0x5a,},0x40,0xa0
+	},
+	{
+		{0x5a,0x5a,0x0},0x20,0xb8
+	},
+	{
+		{0x5a,0x0,0x0},0x20,0xd0
+	},
+	{
+		{0x0,0x0,0x5a},0x30,0xf
+	}
 };
 
 VECTOR tunnelPos[3][2] =
@@ -367,6 +384,250 @@ void DrawSkyDome(void)
 
 // decompiled code
 // original method signature: 
+// void /*$ra*/ DisplaySun(struct DVECTOR *pos /*$a0*/, struct CVECTOR *col /*$a1*/, int flare_col /*$a2*/)
+ // line 527, offset 0x000780bc
+	/* begin block 1 */
+		// Start line: 528
+		// Start offset: 0x000780BC
+		// Variables:
+	// 		struct POLY_FT4 *polys; // $a1
+	// 		struct POLY_FT3 *null; // $a3
+	// 		struct VECTOR output; // stack offset -32
+	// 		int width; // $t5
+	// 		int height; // $t4
+	/* end block 1 */
+	// End offset: 0x00078544
+	// End Line: 600
+
+	/* begin block 2 */
+		// Start line: 1431
+	/* end block 2 */
+	// End Line: 1432
+
+	/* begin block 3 */
+		// Start line: 1452
+	/* end block 3 */
+	// End Line: 1453
+
+// [D]
+#ifdef PGXP
+void DisplaySun(DVECTORF *pos, CVECTOR *col, int flare_col)
+#else
+void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col)
+#endif
+{
+	short sVar1;
+	short sVar2;
+	int iVar3;
+
+	POLY_FT4 *polys;
+	POLY_FT3 *null;
+
+	int uVar5;
+	int uVar6;
+	int uVar7;
+	int uVar8;
+
+	short local_20;
+	short local_1c;
+
+	uVar5 = sun_texture.coords.u1;
+	uVar7 = sun_texture.coords.u0;
+	uVar6 = sun_texture.coords.v2;
+	uVar8 = sun_texture.coords.v0;
+
+	null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0;
+
+	addPrim(current->ot + 0x1079, null);
+	current->primptr += sizeof(POLY_FT3);
+
+	polys = (POLY_FT4 *)current->primptr;
+	setPolyFT4(polys);
+	setSemiTrans(polys, 1);
+
+	polys->r0 = col->r;
+	polys->g0 = col->g;
+	polys->b0 = col->b;
+	
+	sVar1 = (((uVar5 - (uVar7 - 1)) / 2) * 3 >> 2);
+	sVar2 = (((uVar6 - (uVar8 - 1)) / 2) * 3 >> 2);
+
+	polys->x0 = pos->vx - sVar1;
+	polys->y0 = pos->vy - sVar2;
+	polys->x1 = pos->vx + sVar1;
+	polys->y1 = pos->vy - sVar2;
+	polys->x2 = pos->vx - sVar1;
+	polys->y2 = pos->vy + sVar2;
+	polys->x3 = pos->vx + sVar1;
+	polys->y3 = pos->vy + sVar2;
+	polys->u0 = sun_texture.coords.u0;
+	polys->v0 = sun_texture.coords.v0;
+	polys->u1 = sun_texture.coords.u1;
+	polys->v1 = sun_texture.coords.v1;
+	polys->u2 = sun_texture.coords.u2;
+	polys->v2 = sun_texture.coords.v2;
+	polys->u3 = sun_texture.coords.u3;
+	polys->v3 = sun_texture.coords.v3;
+	polys->clut = sun_texture.clutid;
+	polys->tpage = sun_texture.tpageid | 0x20;
+
+	addPrim(current->ot + 0x1079, polys);
+	current->primptr += sizeof(POLY_FT4);
+
+	sVar1 = rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
+	sVar2 = rcossin_tbl[camera_angle.vy & 0x1ffe];
+	iVar3 = -(((flare_texture.coords.u1 - (flare_texture.coords.u0 - 1)) / 2) * 3 >> 2);
+
+	polys = (POLY_FT4 *)current->primptr;
+	setPolyFT4(polys);
+	setSemiTrans(polys, 1);
+
+	polys->r0 = (flare_col >> 1);
+	polys->g0 = (flare_col >> 1);
+	polys->b0 = (flare_col >> 2);
+
+	local_20 = ((sVar1 - sVar2) * iVar3 >> 0xc);
+	local_1c = ((sVar2 + sVar1) * iVar3 >> 0xc);
+
+	polys->x0 = pos->vx + local_20;
+	polys->y0 = pos->vy + local_1c;
+	polys->x1 = pos->vx - local_1c;
+	polys->y1 = pos->vy + local_20;
+	polys->x2 = pos->vx + local_1c;
+	polys->y2 = pos->vy - local_20;
+	polys->x3 = pos->vx - local_20;
+	polys->y3 = pos->vy - local_1c;
+	polys->u0 = flare_texture.coords.u0;
+	polys->v0 = flare_texture.coords.v0;
+	polys->u1 = flare_texture.coords.u1;
+	polys->v1 = flare_texture.coords.v1;
+	polys->u2 = flare_texture.coords.u2;
+	polys->v2 = flare_texture.coords.v2;
+	polys->u3 = flare_texture.coords.u3;
+	polys->v3 = flare_texture.coords.v3;
+	polys->clut = flare_texture.clutid;
+	polys->tpage = flare_texture.tpageid | 0x20;
+
+	addPrim(current->ot + 0x1078, polys);
+	current->primptr += sizeof(POLY_FT4);
+}
+
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DisplayMoon(struct DVECTOR *pos /*$t4*/, struct CVECTOR *col /*$t6*/, int flip /*$a2*/)
+ // line 609, offset 0x00078544
+	/* begin block 1 */
+		// Start line: 610
+		// Start offset: 0x00078544
+		// Variables:
+	// 		struct POLY_FT3 *null; // $a0
+	// 		struct VECTOR output; // stack offset -16
+	// 		int width; // $t5
+	// 		int height; // $t3
+	/* end block 1 */
+	// End offset: 0x000787B0
+	// End Line: 649
+
+	/* begin block 2 */
+		// Start line: 1774
+	/* end block 2 */
+	// End Line: 1775
+
+	/* begin block 3 */
+		// Start line: 1784
+	/* end block 3 */
+	// End Line: 1785
+
+	/* begin block 4 */
+		// Start line: 1792
+	/* end block 4 */
+	// End Line: 1793
+
+// [D]
+#ifdef PGXP
+void DisplayMoon(DVECTORF *pos, CVECTOR *col, int flip)
+#else
+void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip)
+#endif
+{
+	short sVar2;
+	int uVar4;
+	int uVar5;
+	POLY_FT3 *null;
+	POLY_FT4 *polys;
+	short sVar6;
+
+	sVar6 = (moon_texture.coords.v2 - (moon_texture.coords.v0 - 1)) / 2;
+	uVar5 = moon_texture.coords.u0;
+	uVar4 = moon_texture.coords.u1;
+
+	if (flip != 0)
+		sVar6 = -sVar6;
+
+	null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0;
+
+	addPrim(current->ot + 0x1079, null);
+
+	current->primptr += sizeof(POLY_FT3);
+
+	polys = (POLY_FT4*)current->primptr;
+
+	setPolyFT4(polys);
+	setSemiTrans(polys, 1);
+
+	polys->r0 = col->r;
+	polys->g0 = col->g;
+	polys->b0 = col->b;
+
+	sVar2 = (uVar4 - (uVar5 - 1)) / 2;
+
+	polys->x0 = pos->vx - sVar2;
+	polys->y0 = pos->vy - sVar6;
+	polys->x1 = pos->vx + sVar2;
+	polys->y1 = pos->vy - sVar6;
+	polys->x2 = pos->vx - sVar2;
+	polys->y2 = pos->vy + sVar6;
+	polys->x3 = pos->vx + sVar2;
+	polys->y3 = pos->vy + sVar6;
+
+	polys->u0 = moon_texture.coords.u0;
+	polys->v0 = moon_texture.coords.v0;
+	polys->u1 = moon_texture.coords.u1;
+	polys->v1 = moon_texture.coords.v1;
+	polys->u2 = moon_texture.coords.u2;
+	polys->v2 = moon_texture.coords.v2;
+	polys->u3 = moon_texture.coords.u3;
+	polys->v3 = moon_texture.coords.v3;
+
+	polys->clut = moon_texture.clutid;
+	polys->tpage = moon_texture.tpageid | 0x20;
+
+	addPrim(current->ot + 0x1079, polys);
+	current->primptr += sizeof(POLY_FT4);
+}
+
+// decompiled code
+// original method signature: 
 // void /*$ra*/ DrawLensFlare()
  // line 351, offset 0x00077a8c
 	/* begin block 1 */
@@ -442,417 +703,221 @@ void DrawSkyDome(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+extern VECTOR dummy;
+
+// [D]
 void DrawLensFlare(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	static char last_attempt_failed; // offset 0x0
+	static short buffer[160];
+
+	unsigned char bVar1;
 	short sVar2;
 	short sVar3;
 	short sVar4;
-	DB *pDVar5;
-	undefined4 in_zero;
-	undefined4 in_at;
-	short sVar6;
+	short sVar5;
+	long lVar6;
 	int iVar7;
 	int iVar8;
-	uint *puVar9;
-	FLAREREC *pFVar10;
-	short *psVar11;
-	short *psVar12;
+	POLY_FT4 *poly;
+	FLAREREC *pFlareInfo;
+	short *puVar9;
+	short *psVar10;
+	DR_MOVE *sample_sun;
 	int flare_col;
-	int iVar13;
-	short sVar15;
-	short sVar16;
-	int iVar14;
-	DVECTOR local_40[2];
-	undefined4 local_38;
-	undefined4 local_34;
-	CVECTOR local_30[2];
-	int local_28;
+	int iVar11;
+	short sVar13;
+	int iVar12;
 
-	local_38 = DAT_000aa928;
-	local_34 = DAT_000aa92c;
-	if (((1 < gWeather - 1U) && (gTimeOfDay != 0)) && (gTimeOfDay != 2)) {
-		local_30[0].r = -1;
-		if (gTimeOfDay == 3) {
-			local_30[0].r = -0x80;
-		}
+#ifdef PGXP
+	DVECTORF sun_pers_conv_position;
+#else
+	DVECTOR sun_pers_conv_position;
+#endif
+	CVECTOR col;
+	int flarez;
+
+	RECT16 source = {
+		1008,
+		456,
+		16,
+		10
+	};
+
+	if (gTimeOfDay != 0 && gTimeOfDay != 2)
+	{
+		col.r = -1;
+
+		if (gTimeOfDay == 3)
+			col.r = -0x80;
+
 		flare_col = 0;
-		local_30[0].g = local_30[0].r;
-		local_30[0].b = local_30[0].r;
-		if ((gTimeOfDay != 3) && (last_attempt_failed_9 == '\0')) {
-			psVar11 = &buffer_10;
-			StoreImage(&local_38, &buffer_10);
+
+		col.g = col.r;
+		col.b = col.r;
+
+		if (gTimeOfDay != 3 && last_attempt_failed == 0)
+		{
+			puVar9 = buffer;
+			StoreImage(&source, (u_long*)buffer);
 			iVar7 = 0;
+
 			do {
 				iVar7 = iVar7 + 1;
 				iVar8 = 0xb;
+
 				do {
-					psVar12 = psVar11;
-					if ((*psVar12 == -1) || (*psVar12 == 0x7fff)) {
-						flare_col = flare_col + 1;
-					}
-					iVar8 = iVar8 + -1;
-					psVar11 = psVar12 + 1;
+					psVar10 = puVar9;
+
+					if ((*psVar10 == -1) || (*psVar10 == 0x7fff))
+						flare_col++;
+
+					iVar8--;
+					puVar9 = psVar10 + 1;
 				} while (-1 < iVar8);
-				psVar11 = psVar12 + 5;
+
+				puVar9 = psVar10 + 5;
 			} while (iVar7 < 10);
 		}
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		setCopControlWord(2, 0x2800, dummy.vx);
-		setCopControlWord(2, 0x3000, dummy.vy);
-		setCopControlWord(2, 0x3800, dummy.vz);
-		if (gTimeOfDay == 3) {
-			setCopReg(2, in_zero, *(undefined4 *)(moon_position + GameLevel));
-			setCopReg(2, in_at, *(undefined4 *)&moon_position[GameLevel].vz);
+
+		gte_SetRotMatrix(&inv_camera_matrix);
+		gte_SetTransVector(&dummy);
+
+		if (gTimeOfDay == 3)
+		{
+			gte_ldv0(&moon_position[GameLevel]);
 		}
-		else {
-			setCopReg(2, in_zero, *(undefined4 *)(sun_position + GameLevel));
-			setCopReg(2, in_at, *(undefined4 *)&sun_position[GameLevel].vz);
+		else
+		{
+			gte_ldv0(&sun_position[GameLevel]);
 		}
-		copFunction(2, 0x180001);
-		local_40[0] = getCopReg(2, 0xe);
-		local_28 = getCopReg(2, 0x13);
-		iVar13 = (int)local_40[0].vx + -0xa0;
-		local_40[0].vy = (short)((uint)local_40[0] >> 0x10);
-		iVar8 = (int)local_40[0].vy + -0x80;
-		iVar7 = SquareRoot0(iVar13 * iVar13 + iVar8 * iVar8);
-		if (gTimeOfDay == 3) {
-			if (iVar7 < 500) {
-				DisplayMoon(local_40, local_30, 0);
-				local_30[0].r = '@';
-				local_30[0].b = '@';
-				local_30[0].g = '@';
-				setCopReg(2, in_zero, *(undefined4 *)(moon_shadow_position + GameLevel));
-				setCopReg(2, in_at, *(undefined4 *)&moon_shadow_position[GameLevel].vz);
-				copFunction(2, 0x180001);
-				local_40[0] = getCopReg(2, 0xe);
-				DisplayMoon(local_40, local_30, 1);
+
+		gte_rtps();
+
+		gte_stsxy(&sun_pers_conv_position);
+
+		gte_stszotz(&iVar7);
+
+
+		iVar11 = sun_pers_conv_position.vx - 160;
+		iVar8 = sun_pers_conv_position.vy - 128;
+		lVar6 = SquareRoot0(iVar11 * iVar11 + iVar8 * iVar8);
+
+		if (gTimeOfDay == 3)
+		{
+			if (lVar6 < 500)
+			{
+				DisplayMoon(&sun_pers_conv_position, &col, 0);
+
+				col.r = 64;
+				col.b = 64;
+				col.g = 64;
+
+				gte_ldv0(&moon_shadow_position[GameLevel]);
+
+				gte_rtps();
+
+				gte_stsxy(&sun_pers_conv_position);
+
+				DisplayMoon(&sun_pers_conv_position, &col, 1);
 			}
 		}
-		else {
-			if ((0 < local_28) && (iVar7 < 500)) {
-				DisplaySun(local_40, local_30, flare_col);
-				iVar14 = (0x3c - (iVar7 >> 1)) * flare_col;
-				add_haze((iVar14 / 6 + (iVar14 >> 0x1f) >> 3) - (iVar14 >> 0x1f), iVar14 >> 6, 7);
-				iVar7 = flare_col / 3 - (iVar7 * 0x50) / 500;
-				if ((-1 < iVar7) && (flare_col != 0)) {
-					pFVar10 = flare_info;
+		else
+		{
+			if ((0 < iVar7) && (lVar6 < 500))
+			{
+				DisplaySun(&sun_pers_conv_position, &col, flare_col);
+
+				iVar7 = (0x3c - (lVar6 >> 1)) * flare_col;
+
+				add_haze((iVar7 / 6 + (iVar7 >> 0x1f) >> 3) - (iVar7 >> 0x1f), iVar7 >> 6, 7);
+
+				iVar7 = flare_col / 3 - (lVar6 * 0x50) / 500;
+
+				if (iVar7 > -1 && flare_col != 0)
+				{
+					pFlareInfo = flare_info;
+
 					do {
-						flare_col = (0x80 - (int)pFVar10->gapmod) * 2;
-						iVar14 = iVar13 * flare_col;
-						sVar15 = (short)((uint)iVar14 >> 8);
+						flare_col = (128 - pFlareInfo->gapmod) * 2;
+						iVar12 = iVar11 * flare_col;
+
 						flare_col = iVar8 * flare_col;
-						sVar16 = (short)((uint)flare_col >> 8);
-						if (iVar14 < 0) {
-							sVar15 = (short)((uint)(iVar14 + 0xff) >> 8);
-						}
-						if (flare_col < 0) {
-							sVar16 = (short)((uint)(flare_col + 0xff) >> 8);
-						}
-						bVar1 = pFVar10->size;
-						puVar9 = (uint *)current->primptr;
-						*(char *)((int)puVar9 + 3) = '\t';
-						*(char *)((int)puVar9 + 7) = '.';
-						sVar2 = (pFVar10->transparency).r;
-						sVar3 = (pFVar10->transparency).g;
-						sVar6 = (short)((int)(uint)bVar1 >> 1);
-						sVar4 = (sVar15 + 0xa0) - sVar6;
-						sVar6 = (sVar16 + 0x80) - sVar6;
-						sVar15 = (pFVar10->transparency).b;
-						*(short *)((int)puVar9 + 10) = sVar6;
-						*(short *)((int)puVar9 + 0x12) = sVar6;
-						*(short *)(puVar9 + 2) = sVar4;
-						*(ushort *)(puVar9 + 4) = sVar4 + (ushort)bVar1;
-						*(short *)(puVar9 + 6) = sVar4;
-						*(short *)((int)puVar9 + 0x1a) = sVar6 + (ushort)bVar1;
-						*(ushort *)(puVar9 + 8) = sVar4 + (ushort)bVar1;
-						*(short *)((int)puVar9 + 0x22) = sVar6 + (ushort)bVar1;
-						*(char *)(puVar9 + 1) = (char)(sVar2 * iVar7 >> 6);
-						*(char *)((int)puVar9 + 5) = (char)(sVar3 * iVar7 >> 6);
-						*(char *)((int)puVar9 + 6) = (char)(sVar15 * iVar7 >> 6);
-						*(uchar *)(puVar9 + 3) = lensflare_texture.coords.u0;
-						*(uchar *)((int)puVar9 + 0xd) = lensflare_texture.coords.v0;
-						*(uchar *)(puVar9 + 5) = lensflare_texture.coords.u1;
-						*(uchar *)((int)puVar9 + 0x15) = lensflare_texture.coords.v1;
-						*(uchar *)(puVar9 + 7) = lensflare_texture.coords.u2;
-						*(char *)((int)puVar9 + 0x1d) = lensflare_texture.coords.v2 + -4;
-						*(uchar *)(puVar9 + 9) = lensflare_texture.coords.u3;
-						*(char *)((int)puVar9 + 0x25) = lensflare_texture.coords.v3 + -4;
-						*(ushort *)((int)puVar9 + 0xe) = lensflare_texture.clutid;
-						pDVar5 = current;
-						*(ushort *)((int)puVar9 + 0x16) = lensflare_texture.tpageid | 0x20;
-						*puVar9 = *puVar9 & 0xff000000 | pDVar5->ot[10] & 0xffffff;
-						pFVar10 = pFVar10 + 1;
-						pDVar5->ot[10] = pDVar5->ot[10] & 0xff000000 | (uint)puVar9 & 0xffffff;
-						pDVar5->primptr = pDVar5->primptr + 0x28;
-					} while (pFVar10 < &tunnelDir);
+
+						poly = (POLY_FT4 *)current->primptr;
+						setPolyFT4(poly);
+						setSemiTrans(poly, 1);
+
+						bVar1 = pFlareInfo->size;
+
+						sVar5 = (bVar1 >> 1);
+						sVar4 = ((iVar12 >> 8) + 0xa0) - sVar5;
+						sVar5 = ((flare_col >> 8) + 0x80) - sVar5;
+
+						poly->y0 = sVar5;
+						poly->y1 = sVar5;
+						poly->x0 = sVar4;
+						poly->x1 = sVar4 + bVar1;
+						poly->x2 = sVar4;
+						poly->y2 = sVar5 + bVar1;
+						poly->x3 = sVar4 + bVar1;
+						poly->y3 = sVar5 + bVar1;
+
+						poly->r0 = (pFlareInfo->transparency.r * iVar7 >> 6);
+						poly->g0 = (pFlareInfo->transparency.g * iVar7 >> 6);
+						poly->b0 = (pFlareInfo->transparency.b * iVar7 >> 6);
+
+						poly->u0 = lensflare_texture.coords.u0;
+						poly->v0 = lensflare_texture.coords.v0;
+						poly->u1 = lensflare_texture.coords.u1;
+						poly->v1 = lensflare_texture.coords.v1;
+						poly->u2 = lensflare_texture.coords.u2;
+						poly->v2 = lensflare_texture.coords.v2 - 4;
+						poly->u3 = lensflare_texture.coords.u3;
+						poly->v3 = lensflare_texture.coords.v3 - 4;
+						poly->clut = lensflare_texture.clutid;
+
+						poly->tpage = lensflare_texture.tpageid | 0x20;
+
+						addPrim(current->ot + 10, poly);
+						current->primptr += sizeof(POLY_FT4);
+
+						pFlareInfo++;
+
+					} while (pFlareInfo < flare_info + 8);
 				}
 			}
-			local_40[0].vx = local_40[0].vx + -8;
-			local_40[0].vy = local_40[0].vy + -4;
-			if (-1 < (int)local_40[0].vx) {
-				if (((-1 < (int)local_40[0].vy) && ((int)local_40[0].vx + 0x10 < 0x141)) &&
-					((int)local_40[0].vy + 10 < 0x101)) {
-					last_attempt_failed_9 = 0;
-					local_38 = CONCAT22(local_40[0].vy + (last->disp).disp.y, local_40[0].vx);
-					puVar9 = (uint *)current->primptr;
-					SetDrawMove(puVar9, &local_38, 0x3f0, 0x1c8);
-					pDVar5 = current;
-					*puVar9 = *puVar9 & 0xff000000 | current->ot[0x20] & 0xffffff;
-					pDVar5->ot[0x20] = pDVar5->ot[0x20] & 0xff000000 | (uint)puVar9 & 0xffffff;
-					pDVar5->primptr = pDVar5->primptr + 0x18;
+			sun_pers_conv_position.vx = sun_pers_conv_position.vx - 8;
+			sun_pers_conv_position.vy = sun_pers_conv_position.vy - 4;
+
+			if (-1 < sun_pers_conv_position.vx)
+			{
+				if (((-1 < sun_pers_conv_position.vy) &&
+					(sun_pers_conv_position.vx + 0x10 < 0x141)) &&
+					(sun_pers_conv_position.vy + 10 < 0x101))
+				{
+					last_attempt_failed = 0;
+
+					source.x = sun_pers_conv_position.vx;
+					source.x = sun_pers_conv_position.vy + last->disp.disp.y;
+
+					UNIMPLEMENTED();
+
+					/*
+					sample_sun = (DR_MOVE *)current->primptr;
+					SetDrawMove(sample_sun, &source, 1008, 456);
+
+					addPrim(current->ot + 0x20, sample_sun);
+					current->primptr += sizeof(DR_MOVE);
+					*/
 					return;
 				}
 			}
-			last_attempt_failed_9 = '\x01';
+
+			last_attempt_failed = 0;
 		}
 	}
-	return;*/
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySun(struct DVECTOR *pos /*$a0*/, struct CVECTOR *col /*$a1*/, int flare_col /*$a2*/)
- // line 527, offset 0x000780bc
-	/* begin block 1 */
-		// Start line: 528
-		// Start offset: 0x000780BC
-		// Variables:
-	// 		struct POLY_FT4 *polys; // $a1
-	// 		struct POLY_FT3 *null; // $a3
-	// 		struct VECTOR output; // stack offset -32
-	// 		int width; // $t5
-	// 		int height; // $t4
-	/* end block 1 */
-	// End offset: 0x00078544
-	// End Line: 600
-
-	/* begin block 2 */
-		// Start line: 1431
-	/* end block 2 */
-	// End Line: 1432
-
-	/* begin block 3 */
-		// Start line: 1452
-	/* end block 3 */
-	// End Line: 1453
-
-void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col)
-{
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	short sVar2;
-	int iVar3;
-	DB *pDVar4;
-	char cVar5;
-	uint *puVar6;
-	uint uVar7;
-	uint uVar8;
-	uint uVar9;
-	uint uVar10;
-	char *pcVar11;
-	short local_20;
-	short local_1c;
-
-	uVar7 = (uint)sun_texture.coords.u1;
-	uVar9 = (uint)sun_texture.coords.u0;
-	uVar8 = (uint)sun_texture.coords.v2;
-	uVar10 = (uint)sun_texture.coords.v0;
-	puVar6 = (uint *)current->primptr;
-	*(char *)((int)puVar6 + 3) = '\a';
-	*(char *)((int)puVar6 + 7) = '$';
-	pDVar4 = current;
-	*(undefined2 *)(puVar6 + 2) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 10) = 0xffff;
-	*(undefined2 *)(puVar6 + 4) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 0x12) = 0xffff;
-	*(undefined2 *)(puVar6 + 6) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 0x1a) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 0x16) = 0;
-	*puVar6 = *puVar6 & 0xff000000 | pDVar4->ot[0x1079] & 0xffffff;
-	pDVar4->ot[0x1079] = pDVar4->ot[0x1079] & 0xff000000 | (uint)puVar6 & 0xffffff;
-	pcVar11 = pDVar4->primptr;
-	pDVar4->primptr = pcVar11 + 0x20;
-	pcVar11[0x23] = '\t';
-	pcVar11[0x27] = ',';
-	pcVar11[0x24] = col->r;
-	pcVar11[0x25] = col->g;
-	pcVar11[0x26] = col->b;
-	pcVar11[0x27] = '.';
-	sVar1 = (short)(((int)(uVar7 - (uVar9 - 1)) / 2) * 3 >> 2);
-	*(short *)(pcVar11 + 0x28) = pos->vx - sVar1;
-	sVar2 = (short)(((int)(uVar8 - (uVar10 - 1)) / 2) * 3 >> 2);
-	*(short *)(pcVar11 + 0x2a) = pos->vy - sVar2;
-	*(short *)(pcVar11 + 0x30) = pos->vx + sVar1;
-	*(short *)(pcVar11 + 0x32) = pos->vy - sVar2;
-	*(short *)(pcVar11 + 0x38) = pos->vx - sVar1;
-	*(short *)(pcVar11 + 0x3a) = pos->vy + sVar2;
-	*(short *)(pcVar11 + 0x40) = pos->vx + sVar1;
-	*(short *)(pcVar11 + 0x42) = pos->vy + sVar2;
-	pcVar11[0x2c] = sun_texture.coords.u0;
-	pcVar11[0x2d] = sun_texture.coords.v0;
-	pcVar11[0x34] = sun_texture.coords.u1;
-	pcVar11[0x35] = sun_texture.coords.v1;
-	pcVar11[0x3c] = sun_texture.coords.u2;
-	pcVar11[0x3d] = sun_texture.coords.v2;
-	pcVar11[0x44] = sun_texture.coords.u3;
-	pcVar11[0x45] = sun_texture.coords.v3;
-	*(ushort *)(pcVar11 + 0x2e) = sun_texture.clutid;
-	pDVar4 = current;
-	*(ushort *)(pcVar11 + 0x36) = sun_texture.tpageid | 0x20;
-	*(uint *)(pcVar11 + 0x20) = *(uint *)(pcVar11 + 0x20) & 0xff000000 | pDVar4->ot[0x1079] & 0xffffff
-		;
-	pDVar4->ot[0x1079] = pDVar4->ot[0x1079] & 0xff000000 | (uint)(pcVar11 + 0x20) & 0xffffff;
-	pDVar4->primptr = pDVar4->primptr + 0x28;
-	sVar1 = rcossin_tbl[((uint)(ushort)camera_angle.vy & 0x1ffe) + 1];
-	sVar2 = rcossin_tbl[(uint)(ushort)camera_angle.vy & 0x1ffe];
-	iVar3 = -(((int)((uint)flare_texture.coords.u1 - ((uint)flare_texture.coords.u0 - 1)) / 2) * 3 >>
-		2);
-	puVar6 = (uint *)pDVar4->primptr;
-	*(char *)((int)puVar6 + 3) = '\t';
-	*(char *)((int)puVar6 + 7) = '.';
-	cVar5 = (char)(flare_col >> 1);
-	*(char *)(puVar6 + 1) = cVar5;
-	*(char *)((int)puVar6 + 5) = cVar5;
-	*(char *)((int)puVar6 + 6) = (char)(flare_col >> 2);
-	local_20 = (short)(((int)sVar1 - (int)sVar2) * iVar3 >> 0xc);
-	*(short *)(puVar6 + 2) = pos->vx + local_20;
-	local_1c = (short)(((int)sVar2 + (int)sVar1) * iVar3 >> 0xc);
-	*(short *)((int)puVar6 + 10) = pos->vy + local_1c;
-	*(short *)(puVar6 + 4) = pos->vx - local_1c;
-	*(short *)((int)puVar6 + 0x12) = pos->vy + local_20;
-	*(short *)(puVar6 + 6) = pos->vx + local_1c;
-	*(short *)((int)puVar6 + 0x1a) = pos->vy - local_20;
-	*(short *)(puVar6 + 8) = pos->vx - local_20;
-	*(short *)((int)puVar6 + 0x22) = pos->vy - local_1c;
-	*(uchar *)(puVar6 + 3) = flare_texture.coords.u0;
-	*(uchar *)((int)puVar6 + 0xd) = flare_texture.coords.v0;
-	*(uchar *)(puVar6 + 5) = flare_texture.coords.u1;
-	*(uchar *)((int)puVar6 + 0x15) = flare_texture.coords.v1;
-	*(uchar *)(puVar6 + 7) = flare_texture.coords.u2;
-	*(uchar *)((int)puVar6 + 0x1d) = flare_texture.coords.v2;
-	*(uchar *)(puVar6 + 9) = flare_texture.coords.u3;
-	*(uchar *)((int)puVar6 + 0x25) = flare_texture.coords.v3;
-	*(ushort *)((int)puVar6 + 0xe) = flare_texture.clutid;
-	*(ushort *)((int)puVar6 + 0x16) = flare_texture.tpageid | 0x20;
-	pDVar4 = current;
-	*puVar6 = *puVar6 & 0xff000000 | current->ot[0x1078] & 0xffffff;
-	pDVar4->ot[0x1078] = pDVar4->ot[0x1078] & 0xff000000 | (uint)puVar6 & 0xffffff;
-	pDVar4->primptr = pDVar4->primptr + 0x28;
-	return;
-	*/
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayMoon(struct DVECTOR *pos /*$t4*/, struct CVECTOR *col /*$t6*/, int flip /*$a2*/)
- // line 609, offset 0x00078544
-	/* begin block 1 */
-		// Start line: 610
-		// Start offset: 0x00078544
-		// Variables:
-	// 		struct POLY_FT3 *null; // $a0
-	// 		struct VECTOR output; // stack offset -16
-	// 		int width; // $t5
-	// 		int height; // $t3
-	/* end block 1 */
-	// End offset: 0x000787B0
-	// End Line: 649
-
-	/* begin block 2 */
-		// Start line: 1774
-	/* end block 2 */
-	// End Line: 1775
-
-	/* begin block 3 */
-		// Start line: 1784
-	/* end block 3 */
-	// End Line: 1785
-
-	/* begin block 4 */
-		// Start line: 1792
-	/* end block 4 */
-	// End Line: 1793
-
-void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip)
-{
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
-	short sVar2;
-	DB *pDVar3;
-	uint uVar4;
-	uint uVar5;
-	uint *puVar6;
-	char *pcVar7;
-	short sVar8;
-
-	sVar8 = (short)((int)((uint)moon_texture.coords.v2 - ((uint)moon_texture.coords.v0 - 1)) / 2);
-	uVar5 = (uint)moon_texture.coords.u0;
-	uVar4 = (uint)moon_texture.coords.u1;
-	if (flip != 0) {
-		sVar8 = -sVar8;
-	}
-	puVar6 = (uint *)current->primptr;
-	*(char *)((int)puVar6 + 3) = '\a';
-	*(char *)((int)puVar6 + 7) = '$';
-	pDVar3 = current;
-	*(undefined2 *)(puVar6 + 2) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 10) = 0xffff;
-	*(undefined2 *)(puVar6 + 4) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 0x12) = 0xffff;
-	*(undefined2 *)(puVar6 + 6) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 0x1a) = 0xffff;
-	*(undefined2 *)((int)puVar6 + 0x16) = 0;
-	*puVar6 = *puVar6 & 0xff000000 | pDVar3->ot[0x1079] & 0xffffff;
-	pDVar3->ot[0x1079] = pDVar3->ot[0x1079] & 0xff000000 | (uint)puVar6 & 0xffffff;
-	pcVar7 = pDVar3->primptr;
-	pDVar3->primptr = pcVar7 + 0x20;
-	pcVar7[0x23] = '\t';
-	pcVar7[0x27] = ',';
-	pcVar7[0x24] = col->r;
-	pcVar7[0x25] = col->g;
-	uVar1 = col->b;
-	pcVar7[0x27] = '.';
-	pcVar7[0x26] = uVar1;
-	sVar2 = (short)((int)(uVar4 - (uVar5 - 1)) / 2);
-	*(short *)(pcVar7 + 0x28) = pos->vx - sVar2;
-	*(short *)(pcVar7 + 0x2a) = pos->vy - sVar8;
-	*(short *)(pcVar7 + 0x30) = pos->vx + sVar2;
-	*(short *)(pcVar7 + 0x32) = pos->vy - sVar8;
-	*(short *)(pcVar7 + 0x38) = pos->vx - sVar2;
-	*(short *)(pcVar7 + 0x3a) = pos->vy + sVar8;
-	*(short *)(pcVar7 + 0x40) = pos->vx + sVar2;
-	*(short *)(pcVar7 + 0x42) = pos->vy + sVar8;
-	pcVar7[0x2c] = moon_texture.coords.u0;
-	pcVar7[0x2d] = moon_texture.coords.v0;
-	pcVar7[0x34] = moon_texture.coords.u1;
-	pcVar7[0x35] = moon_texture.coords.v1;
-	pcVar7[0x3c] = moon_texture.coords.u2;
-	pcVar7[0x3d] = moon_texture.coords.v2;
-	pcVar7[0x44] = moon_texture.coords.u3;
-	pcVar7[0x45] = moon_texture.coords.v3;
-	*(ushort *)(pcVar7 + 0x2e) = moon_texture.clutid;
-	pDVar3 = current;
-	*(ushort *)(pcVar7 + 0x36) = moon_texture.tpageid | 0x20;
-	*(uint *)(pcVar7 + 0x20) = *(uint *)(pcVar7 + 0x20) & 0xff000000 | pDVar3->ot[0x1079] & 0xffffff;
-	pDVar3->ot[0x1079] = pDVar3->ot[0x1079] & 0xff000000 | (uint)(pcVar7 + 0x20) & 0xffffff;
-	pDVar3->primptr = pDVar3->primptr + 0x28;
-	return;
-	*/
-}
-
 
 
 // decompiled code
@@ -1087,16 +1152,13 @@ LAB_00078a68:
 extern _pct plotContext;
 
 POLYFT4* scratchPad_skyPolygonsPtr;		// 1f80003c
+
 #ifdef PGXP
-
-typedef struct {		/* 2D short vector */
-	half vx, vy;
-} DVECTORF;
-
 DVECTORF scratchPad_skyVertices[256];	// 1f800044
 #else
 DVECTOR scratchPad_skyVertices[256];	// 1f800044
 #endif
+
 short scratchPad_zbuff[256];
 
 // [D]
