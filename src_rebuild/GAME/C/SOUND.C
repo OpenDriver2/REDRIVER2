@@ -1752,11 +1752,7 @@ void StartXM(int reverb)
 	SpuSetReverb(1);
 
 	do {
-		if (reverb == 0)
-			SpuSetReverbVoice(0, SPU_VOICECH(ct));
-		else
-			SpuSetReverbVoice(1, SPU_VOICECH(ct));
-
+		SpuSetReverbVoice(reverb, SPU_VOICECH(ct));
 		ct++;
 	} while (ct < 24);
 }

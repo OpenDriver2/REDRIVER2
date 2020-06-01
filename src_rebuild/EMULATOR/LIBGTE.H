@@ -61,6 +61,13 @@ typedef struct {		/* 2D short vector */
 	short vx, vy;
 } DVECTOR;
 
+// special PGXP type
+#ifdef PGXP
+typedef struct {		/* 2D short vector */
+	half vx, vy;
+} DVECTORF;
+#endif
+
 extern void InitGeom();
 extern void SetGeomOffset(int ofx, int ofy);
 extern void SetGeomScreen(int h);

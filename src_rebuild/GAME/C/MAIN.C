@@ -1267,7 +1267,7 @@ LAB_00059c1c:
 
 			if (cVar1 == 2) 
 			{
-				numCivCars = numCivCars + 1;
+				numCivCars++;
 
 				if ((cp->controlFlags & 1) != 0) 
 				{
@@ -1308,18 +1308,19 @@ LAB_00059c1c:
 	if (numRoadblockCars != 0)
 		roadblockCount = roadblockDelay;
 
-	if ((((requestStationaryCivCar == 0) && (requestRoadblock != 0)) && (numRoadblockCars == 0)) && (4 < maxCivCars - numCivCars)) 
+	if (requestStationaryCivCar == 0 && requestRoadblock != 0 && numRoadblockCars == 0 && maxCivCars - numCivCars > 4) 
 	{
 		CreateRoadblock();
 	}
 
-	cp = car_data;
+	
 
 	if (gInGameCutsceneActive == 0) 
 	{
 		CheckSpecialSpool();
 	}
 
+	cp = car_data;
 	while (cp <= &car_data[0x13])
 	{
 		switch (cp->controlType) 
@@ -1471,15 +1472,17 @@ LAB_00059c1c:
 		}
 	}
 
-	if ((requestStationaryCivCar == 1) && ((numCivCars < maxCivCars ||
-		(PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))) 
+	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars))) 
 	{
 		requestStationaryCivCar = 0;
 	}
 
-	if ((game_over == 0) && (ControlCops(), gLoadedMotionCapture != 0))
+	if (game_over == 0)
 	{
-		HandlePedestrians();
+		ControlCops();
+
+		if(gLoadedMotionCapture)
+			HandlePedestrians();
 	}
 
 	i = 0;
@@ -1540,14 +1543,14 @@ LAB_00059c1c:
 			car++;
 			i++;
 			pl++;
-		} while (i < (int)(uint)NumPlayers);
+		} while (i < NumPlayers);
 	}
 
 	SoundTasks();
 
 	static int stupid_logic[4];
 
-	if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) || (gInGameCutsceneID != 0)) 
+	if (gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0) 
 		stupid_logic[0] = player[0].playerCarId;
 	else
 		stupid_logic[0] = 2;
@@ -1562,14 +1565,15 @@ LAB_00059c1c:
 
 	do {
 		car = i + 1;
-		if (car < 4) {
+		if (car < 4)
+		{
 			piVar6 = stupid_logic + car;
 			do {
-				if (*piVar4 == *piVar6) {
+				if (*piVar4 == *piVar6)
 					*piVar6 = -1;
-				}
-				car = car + 1;
-				piVar6 = piVar6 + 1;
+
+				car++;
+				piVar6++;
 			} while (car < 4);
 		}
 		i = i + 1;
@@ -1577,21 +1581,19 @@ LAB_00059c1c:
 	} while (i < 3);
 
 	car = 0;
-	piVar4 = stupid_logic;
 	i = 0;
 
 	do {
 		stream = i;
 
-		if ((*piVar4 != -1) && (cVar1 = SilenceThisCar(car), cVar1 == 0))
+		if ((stupid_logic[car] != -1) && SilenceThisCar(car) == 0)
 		{
 			stream = i + 1;
-			CheckCarEffects(car_data + *piVar4, i);
+			CheckCarEffects(&car_data[stupid_logic[car]], i);
 		}
 
-		car = car + 1;
-		piVar4 = piVar4 + 1;
-	} while ((car < 4) && (i = stream, stream < 2));
+		car++;
+	} while(car < 4 && (i = stream, stream < 2));
 
 	SwirlLeaves(car_data);
 	if ((gStopPadReads == 1) && (((lead_car != 0 && (saved_counter = saved_counter + 1, 0x14 < saved_counter)) && (saved_leadcar_pos == 0)))) 
@@ -1602,8 +1604,8 @@ LAB_00059c1c:
 		leadcar_pos.vz = car_data[lead_car].hd.where.t[2];
 	}
 
-	if ((gInGameCutsceneActive == 0) &&
-		(((car = XAPrepared(), i = xa_timeout, car != 0 && (i = xa_timeout + -1, xa_timeout == 0)) ||
+	if (gInGameCutsceneActive == 0 &&
+		(((i = xa_timeout, XAPrepared() != 0 && (i = xa_timeout + -1, xa_timeout == 0)) ||
 		(xa_timeout = i, xa_timeout == 0))))
 	{
 		StopXA();
@@ -1854,23 +1856,23 @@ void StepGame(void)
 	if (FrameCnt == 5) 
 		SetDispMask(1);
 
-	if (((padd & 0x2000U) != 0) && ((padd & 0x8000U) != 0)) 
+	if ((padd & 0x2000U) != 0 && (padd & 0x8000U) != 0) 
 		padd = padd & 0x5fff;
 
-	uVar3 = (uint)NumPlayers;
+	uVar3 = NumPlayers;
 	controller_bits = padd;
+
 	if (NumPlayers != 0)
 	{
 		pPVar5 = player;
 		do {
-			cVar1 = (pPVar5->horn).time;
-			if ((cVar1 == '\0') || ((pPVar5->horn).on == '\0')) 
-				(pPVar5->horn).time = '\0';
+			if (pPVar5->horn.time == 0 || pPVar5->horn.on == 0)
+				pPVar5->horn.time = 0;
 			else 
-				(pPVar5->horn).time = cVar1 + -1;
+				pPVar5->horn.time--;
 
-			uVar3 = uVar3 - 1;
-			pPVar5 = pPVar5 + 1;
+			uVar3--;
+			pPVar5++;
 		} while (uVar3 != 0);
 	}
 
@@ -2014,12 +2016,12 @@ void StepGame(void)
 	if ((NoPlayerControl != 0) && (AttractMode == 0))
 		ShowReplayOptions();
 	
-	if ((FastForward != 0) && (uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd + -1))
+	if ((FastForward != 0) && (uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd-1))
 	{
 		if (0xf < uVar3)
 			uVar3 = 0x20 - uVar3;
 
-		SetTextColour((uVar3 & 0x1f) << 3, '\0', '\0');
+		SetTextColour((uVar3 & 0x1f) << 3, 0, 0);
 		PrintStringFeature("Fast forward", 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
@@ -2274,7 +2276,7 @@ void EndGame(GAMEMODE mode)
 // [D]
 void EnablePause(PAUSEMODE mode)
 {
-	if ((quick_replay != 0 || NoPlayerControl == 0) || mode != PAUSEMODE_GAMEOVER)
+	if (quick_replay != 0 || NoPlayerControl == 0 || mode != PAUSEMODE_GAMEOVER)
 	{
 		WantPause = 1;
 		PauseMode = mode;
@@ -2572,7 +2574,7 @@ int redriver2_main(int argc, char** argv)
 
 				LaunchGame();
 
-				gLoadedReplay = 0;
+				gLoadedReplay = 0;	
 			}
 			gCutsceneAsReplay = 0;
 			return 1;
@@ -2676,26 +2678,19 @@ void UpdatePlayerInformation(void)
 	int iVar6;
 	int iVar7;
 	int iVar8;
-	_CAR_DATA *p_Var9;
+	_CAR_DATA *cp;
 
-	p_Var9 = NULL;
-	PlayerDamageBar.max = (ushort)MaxPlayerDamage[0];
-	Player2DamageBar.max = (ushort)MaxPlayerDamage[1];
+	cp = NULL;
+	PlayerDamageBar.max = MaxPlayerDamage[0];
+	Player2DamageBar.max = MaxPlayerDamage[1];
 
-	if (gPlayerImmune != 0) 
-	{
-		if ((int)player[0].playerCarId < 0) 
-			psVar1 = &pedestrianFelony;
-		else 
-			psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
-
-		*psVar1 = 0;
-	}
-
-	if ((int)player[0].playerCarId < 0)
+	if (player[0].playerCarId < 0)
 		psVar1 = &pedestrianFelony;
 	else
-		psVar1 = &car_data[(int)player[0].playerCarId].felonyRating;
+		psVar1 = &car_data[player[0].playerCarId].felonyRating;
+
+	if (gPlayerImmune != 0) 
+		*psVar1 = 0;
 
 	FelonyBar.position = *psVar1;
 	if (NumPlayers != 0) 
@@ -2703,31 +2698,31 @@ void UpdatePlayerInformation(void)
 		iVar2 = 0;
 		iVar8 = 0;
 		do {
-			iVar2 = (iVar2 * 4 + iVar8 * -3) * 4;
-			if ((&player[0].playerType)[iVar2] == '\x01') 
+
+			if (player[iVar8].playerType == 1)
 			{
-				iVar2 = (int)(&player[0].playerCarId)[iVar2];
-				p_Var9 = car_data + iVar2;
+				iVar2 = player[iVar8].playerCarId;
+				cp = &car_data[iVar2];
 
 				if (gInvincibleCar != 0)
 				{
-					car_data[iVar2].totalDamage = 0;
-					ClearMem((char *)car_data[iVar2].ap.damage, 0xc);
+					cp->totalDamage = 0;
+					ClearMem((char *)cp->ap.damage, 0xc);
 				}
+
 				iVar6 = 0;
 				iVar7 = iVar8 + 1;
-				pWVar4 = car_data[iVar2].hd.wheel;
-				pbVar3 = &car_data[iVar2].hd.wheel[0].surface;
+				pWVar4 = cp->hd.wheel;
 				iVar5 = 3;
 
 				do {
-					if (((uint)*pbVar3 & 7) == 1) 
+					if ((pWVar4->surface & 7) == 1)
 					{
 						if (pWVar4->susCompression == 0) 
 						{
-							if ((car_data[iVar2].hd.where.t[1] < -1000) && (gDieWithFade == 0))
+							if (cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
 							{
-								gDieWithFade = (uint)*pbVar3 & 7;
+								gDieWithFade = pWVar4->surface & 7;
 							}
 						}
 						else 
@@ -2736,31 +2731,23 @@ void UpdatePlayerInformation(void)
 						}
 					}
 
-					pWVar4 = pWVar4 + 1;
-					iVar5 = iVar5 + -1;
-					pbVar3 = pbVar3 + 4;
+					pWVar4++;
+					iVar5--;
 				} while (-1 < iVar5);
 
 				if (iVar6 == 4) // apply water damage
-				{
-					car_data[iVar2].totalDamage =
-						car_data[iVar2].totalDamage + (short)(MaxPlayerDamage[iVar8] / 0x50);
-				}
+					cp->totalDamage += MaxPlayerDamage[iVar8] / 80;
 
-				if (MaxPlayerDamage[iVar8] < (int)(uint)car_data[iVar2].totalDamage) 
-				{
-					car_data[iVar2].totalDamage = *(ushort *)(MaxPlayerDamage + iVar8);
-				}
+				if (MaxPlayerDamage[iVar8] < cp->totalDamage)
+					cp->totalDamage = MaxPlayerDamage[iVar8];
 
-				if (iVar8 == 0) {
-					PlayerDamageBar.position = car_data[iVar2].totalDamage;
-				}
+				if (iVar8 == 0)
+					PlayerDamageBar.position = cp->totalDamage;
 				else
-				{
-					Player2DamageBar.position = car_data[iVar2].totalDamage;
-				}
+					Player2DamageBar.position = cp->totalDamage;
 			}
-			else {
+			else 
+			{
 				iVar7 = iVar8 + 1;
 				if (iVar8 == 0)
 				{
@@ -2776,14 +2763,14 @@ void UpdatePlayerInformation(void)
 			if (((0x1df < gCurrentMissionNumber) &&
 				(((gCurrentMissionNumber < 0x1e2 ||
 				((gCurrentMissionNumber < 0x1e6 && (0x1e3 < gCurrentMissionNumber)))) &&
-				((p_Var9->hd).where.t[1] < -750)))) && (gDieWithFade == 0))
+				(cp->hd.where.t[1] < -750)))) && (gDieWithFade == 0))
 			{
 				gDieWithFade = 1;
 			}
 
 			iVar2 = iVar7 << 3;
 			iVar8 = iVar7;
-		} while (iVar7 < (int)(uint)NumPlayers);
+		} while (iVar7 < NumPlayers);
 	}
 }
 
@@ -2897,11 +2884,10 @@ void RenderGame2(int view)
 	{
 		uVar3 = CameraCnt & 0x1f;
 
-		if (0xf < uVar3) {
+		if (0xf < uVar3)
 			uVar3 = 0x20 - uVar3;
-		}
 
-		SetTextColour(((uVar3 & 0x1f) << 3), '\0', '\0');
+		SetTextColour((uVar3 & 0x1f) << 3, 0, 0);
 		PrintString("DEMO", 0x23, 0xf);
 	}
 
@@ -2909,35 +2895,28 @@ void RenderGame2(int view)
 	iVar7 = 2;
 
 	do {
-		iVar2 = CarHasSiren((uint)(char)car_data[pPVar6->playerCarId].ap.model);
-
-		if ((iVar2 != 0) && ((pPVar6->horn).on != '\0'))
+		if (CarHasSiren(car_data[pPVar6->playerCarId].ap.model) != 0 && (pPVar6->horn.on != 0))
 			AddCopCarLight(car_data + pPVar6->playerCarId);
 	
-		iVar7 = iVar7 + -1;
-		pPVar6 = pPVar6 + 1;
+		iVar7--;
+		pPVar6++;
 	} while (-1 < iVar7);
 
 	if (gLoadedOverlay != 0)
-	{
 		DisplayOverlays();
-	}
 
 	DrawMission();
 
-	if ((FastForward == 0) && (NumPlayers == 1))
-	{
+	if (FastForward == 0 && NumPlayers == 1)
 		DrawLensFlare();
-	}
 
 	uVar4 = (unsigned char)(gDieWithFade << 4);
 
 	if (gDieWithFade != 0) 
 	{
 		if (0xff < gDieWithFade << 4) 
-		{
 			uVar4 = -1;
-		}
+
 		poly = (POLY_F4 *)current->primptr;
 
 		setPolyF4(poly);
