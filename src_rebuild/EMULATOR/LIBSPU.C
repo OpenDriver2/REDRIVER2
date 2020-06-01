@@ -151,6 +151,7 @@ bool Emulator_InitSound()
 		alGenSources(1, &voice.alSource);
 		alGenBuffers(1, &voice.alBuffer);
 
+		alSourcei(voice.alSource, AL_SOURCE_RESAMPLER_SOFT, 2);	// Use cubic resampler
 		alSourcei(voice.alSource, AL_SOURCE_RELATIVE, AL_TRUE);
 	}
 
