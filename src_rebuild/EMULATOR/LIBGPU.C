@@ -15,9 +15,7 @@
 
 DISPENV activeDispEnv;
 DRAWENV activeDrawEnv;	// word_33BC
-DRAWENV byte_9CCA4;
-int dword_3410 = 0;
-char byte_3352 = 0;
+int g_GPUDisabledState = 0;
 
 #if 0
 char fontDebugTexture[] =
@@ -179,7 +177,7 @@ void ClearVBO()
 {
 	g_vertexIndex = 0;
 	g_splitIndex = 0;
-	g_splits[g_splitIndex].texFormat = (TexFormat)0xFFFF;
+	g_splits[0].texFormat = (TexFormat)0xFFFF;
 }
 
 u_short s_lastSemiTrans = 0xFFFF;
@@ -235,16 +233,17 @@ int DrawSync(int mode)
 	// Update VRAM seems needed to be here
 	//Emulator_UpdateVRAM();
 
-	if (drawsync_callback != NULL)
-	{
-		drawsync_callback();
-	}
-
 	if (g_splitIndex > 0) // don't do flips if nothing to draw.
 	{
 		DrawAggregatedSplits();
 		Emulator_EndScene();
 	}
+
+	if (drawsync_callback != NULL)
+	{
+		drawsync_callback();
+	}
+
 
 	return 0;
 }
@@ -275,7 +274,7 @@ int MargePrim(void* p0, void* p1)
 
 int MoveImage(RECT16* rect, int x, int y)
 {
-	Emulator_CopyVRAM(NULL, x, y, rect->w, rect->h, rect->x, rect->y);
+	Emulator_CopyVRAM(NULL, rect->x, rect->y, rect->w, rect->h, x, y);
 	return 0;
 }
 
@@ -351,7 +350,7 @@ u_long* ClearOTagR(u_long* ot, int n)
 
 void SetDispMask(int mask)
 {
-	UNIMPLEMENTED();
+	g_GPUDisabledState = (mask == 0);
 }
 
 int FntPrint(char* text, ...)
@@ -460,7 +459,21 @@ void SetDrawArea(DR_AREA *p, RECT16 *r)
 
 void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
 {
-	//UNIMPLEMENTED();
+	char len;
+
+	len = 5;
+
+	if (rect->w == 0 || rect->h == 0)
+		len = 0;
+
+	p->code[0] = 0x1000000;
+	p->code[1] = 0x80000000;
+	p->code[2] = *(ulong*)&rect->x;
+	p->code[3] = y << 0x10 | x & 0xffffU;
+	p->code[4] = *(ulong *)&rect->w;
+
+	p->len = len;
+	p->tag = p->tag & 0xFFFFFF | 0x1000000;
 }
 
 u_long DrawSyncCallback(void(*func)(void))
@@ -626,6 +639,9 @@ void DrawOTagEnv(u_long* p, DRAWENV* env)
 
 void DrawOTag(u_long* p)
 {
+	if (g_GPUDisabledState)
+		return;
+
 	if (Emulator_BeginScene())
 	{
 		ClearVBO();
@@ -653,6 +669,9 @@ void DrawOTag(u_long* p)
 
 void DrawPrim(void* p)
 {
+	if (g_GPUDisabledState)
+		return;
+
 	if (Emulator_BeginScene())
 	{
 		ClearVBO();
@@ -667,7 +686,8 @@ void DrawPrim(void* p)
 	{
 		ClearImage(&activeDrawEnv.clip, activeDrawEnv.r0, activeDrawEnv.g0, activeDrawEnv.b0);
 	}
-	else {
+	else 
+	{
 		Emulator_BlitVRAM();
 	}
 
@@ -715,7 +735,38 @@ int ParsePrimitive(uintptr_t primPtr)
 	{
 		case 0x0:
 		{
-			primitive_size = 4;
+			switch (pTag->code)
+			{
+				case 0x01:
+				{
+					DR_MOVE* drmove = (DR_MOVE*)pTag;
+					/*
+					int x, y;
+					y = drmove->code[3] >> 0x10 & 0xFFFF;
+					x = drmove->code[3] & 0xFFFF;
+
+					RECT16 rect;
+					*(ulong*)&rect.x = *(ulong*)&drmove->code[2];
+					*(ulong*)&rect.w = *(ulong*)&drmove->code[4];
+
+					// FIXME:
+					// this is only proof of concept
+					// Also I don't know yet why it is not working
+					Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
+					Emulator_UpdateVRAM();
+					MoveImage(&rect, x, y);
+					*/
+
+					eprinterr("DR_MOVE unimplemented!\n");
+
+					primitive_size = sizeof(DR_MOVE);
+					break;
+				}
+				default:
+					primitive_size = 4;
+			}
+
+			
 			break;
 		}
 		case 0x20:
@@ -1196,11 +1247,6 @@ int ParsePrimitive(uintptr_t primPtr)
 					break;
 				}
 			}
-			break;
-		}
-		case 0x80: {
-			eprinterr("DR_MOVE unimplemented\n");
-			primitive_size = sizeof(DR_MOVE);
 			break;
 		}
 		default:

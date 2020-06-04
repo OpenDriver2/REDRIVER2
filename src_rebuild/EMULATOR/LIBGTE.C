@@ -1761,36 +1761,21 @@ long SquareRoot0(long a)
 #if 1
 	return sqrtl(a);
 #else
-	// THIS SQUARE ROOT SEEMS TO BE BUGGED
-	int v0, v1, t0, t1, t2, t3, t4;
+	// working but bugged
+	int idx;
+	int lzcs;
+	lzcs = gte_leadingzerocount(a);
 
-	v0 = gte_leadingzerocount(a);
+	if (lzcs == 32)
+		return 0;
 
-	if (v0 != 32)
-	{
-		t0 = v0 & 1;
-		v1 = -2;
-		t2 = v0 & v1;
+	lzcs &= 0xfffffffe;
 
-		t1 = 31 - t2;
-		t1 -= t2;
-		t1 >>= 1;
+	if ((lzcs - 24) < 0)
+		idx = a >> (24 - lzcs);
+	else
+		idx = a << (lzcs - 24);
 
-		t3 = t2 - 24;
-
-		if (t3 < 0)
-		{
-			t3 = 24 - t2;
-			t4 = a >> t3;
-		}
-		else
-		{
-			t4 = a << t3;
-		}
-
-		return (SQRT[t4 - 64] << t1) >> 12;
-	}
-
-	return 0;
+	return (SQRT[idx-64] << ((31 - lzcs) >> 1)) >> 12;
 #endif
 }

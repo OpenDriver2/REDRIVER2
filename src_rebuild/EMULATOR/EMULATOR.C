@@ -1596,7 +1596,7 @@ void Emulator_BlitVRAM()
 		return;
 	}
 
-	Emulator_SetTexture(vramTexture, TF_16_BIT);
+	Emulator_SetTexture(vramTexture, (TexFormat)-1);	// avoid shader setup
 	Emulator_SetShader(g_blit_shader);
 
 	u_char l = activeDispEnv.disp.x / 8;
