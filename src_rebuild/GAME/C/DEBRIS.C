@@ -2608,7 +2608,6 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 
 	if (flag == 0xFF)
 		flag = 0;
-
 	else
 	{
 		iVar1 = CarLightFadeBack;
@@ -2631,14 +2630,15 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 
 	InitFXPos(&v1l, v1, cp);
 
-	if (9 < wetness) 
+	if (wetness > 9) 
 	{
 		v1t.vx = v1l.vx;
 		v1t.vy = v1l.vy;
 		v1t.vz = v1l.vz;
+
 		v1t.pad = v1l.pad;
-		iVar1 = MapHeight((VECTOR *)cp->hd.where.t);
-		v1t.vy = -camera_position.vy - iVar1;
+
+		v1t.vy = -camera_position.vy - MapHeight((VECTOR *)cp->hd.where.t);
 	}
 
 	col->cd = flag;
@@ -2649,7 +2649,7 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 	flareCol.g = col->g >> 1;
 	flareCol.b = col->b >> 1;
 
-	ShowFlare(&v1l, &flareCol, (short)((uint)((int)size * 0x30000) >> 0x10), (v1->vx + v1->vz >> 2) + (cp->hd.direction - camera_angle.vy) * 2);
+	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz >> 2) + (cp->hd.direction - camera_angle.vy) * 2);
 
 	DisplayLightReflections(&v1t, col, size, &lightref_texture);
 }
