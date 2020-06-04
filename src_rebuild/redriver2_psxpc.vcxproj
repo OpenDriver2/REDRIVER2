@@ -210,6 +210,7 @@
     <ClCompile Include="GAME\C\GLAUNCH.C" />
     <ClCompile Include="GAME\C\HANDLING.C" />
     <ClCompile Include="GAME\C\JOB_FX.C" />
+    <ClCompile Include="GAME\C\LEADAI.C" />
     <ClCompile Include="GAME\C\LOADVIEW.C" />
     <ClCompile Include="GAME\C\MAIN.C" />
     <ClCompile Include="GAME\C\MAP.C" />
