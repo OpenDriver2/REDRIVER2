@@ -1006,16 +1006,13 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	TransparentObject = 0;
 
-	if (cp->controlType == 2)
+	if (cp->controlType == 1)
 	{
 		PlayerCarFX(cp);
 	}
-	else
+	else if (cp->controlType == 2)
 	{
-		if (cp->controlType == 2)
-		{
-			CivCarFX(cp);
-		}
+		CivCarFX(cp);
 	}
 	
 	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
@@ -1644,41 +1641,52 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 	/* end block 4 */
 	// End Line: 6921
 
+// [D]
 void PlayerCarFX(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	int WheelSpeed;
 
-	iVar1 = (cp->hd).wheel_speed;
-	if (cp < car_data) {
+	WheelSpeed = cp->hd.wheel_speed;
+
+	if (cp < car_data) 
+	{
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if ((iVar1 < 1) || (-1 < cp->thrust)) {
-		if (-1 < iVar1) goto LAB_00023598;
-		if (0 < cp->thrust) goto LAB_0002356c;
+
+	if (WheelSpeed < 1 || cp->thrust > -1)
+	{
+		if (-1 < WheelSpeed)
+			goto LAB_00023598;
+
+		if (0 < cp->thrust)
+			goto LAB_0002356c;
 	}
-	else {
+	else 
+	{
 	LAB_0002356c:
 		AddBrakeLight(cp);
 	}
-	if ((iVar1 < 0) && (cp->thrust < 0)) {
+
+	if (WheelSpeed < 0 && cp->thrust < 0) 
 		AddReverseLight(cp);
-	}
+
 LAB_00023598:
-	if (iVar1 + 199U < 0x4b0c7) {
-		if (cp->wheel_angle < 0xc9) {
-			if (cp->wheel_angle < -200) {
+	if (WheelSpeed + 199U < 0x4b0c7) 
+	{
+		if (cp->wheel_angle < 0xc9) 
+		{
+			if (cp->wheel_angle < -200) 
+			{
 				AddIndicatorLight(cp, 0);
 			}
 		}
-		else {
+		else 
+		{
 			AddIndicatorLight(cp, 1);
 		}
 	}
-	return;*/
 }
 
 
