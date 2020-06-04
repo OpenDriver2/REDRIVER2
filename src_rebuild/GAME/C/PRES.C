@@ -937,27 +937,16 @@ void PrintStringBoxed(char *string, int ix, int iy)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitButtonTextures(void)
 {
-	UNIMPLEMENTED();
-	/*
-	char *name;
-	int iVar1;
-	TEXTURE_DETAILS *info;
-	char **ppcVar2;
-
-	ppcVar2 = &button_names11;
-	iVar1 = 10;
-	info = &button_textures;
-	do {
-		name = *ppcVar2;
-		ppcVar2 = ppcVar2 + 1;
-		iVar1 = iVar1 + -1;
-		GetTextureDetails(name, info);
-		info = info + 1;
-	} while (-1 < iVar1);
-	return;
-	*/
+	int i;
+	i = 0;
+	while (i < 11)
+	{
+		GetTextureDetails(button_names[i], &button_textures[i]);
+		i++;
+	}
 }
 
 
@@ -1201,53 +1190,58 @@ char * GetNextWord(char *string, char *word)
 	/* end block 3 */
 	// End Line: 1834
 
-static char ScoreItems[5][16];
-
-void * DrawButton(unsigned char button, void *prim, int x, int y)
+// [D]
+void* DrawButton(unsigned char button, void *prim, int x, int y)
 {
-	UNIMPLEMENTED();
-	return prim;
-	/*
-	bool bVar1;
-	DB *pDVar2;
-	int iVar3;
+	TEXTURE_DETAILS *btn;
+	SPRT* sprt;
+	POLY_FT3* null;
 
-	*(undefined *)((int)&prim->tag + 3) = 4;
-	iVar3 = (uint)button * 0xe;
-	rim->r0 = -0x80;     rim->r0 = -0x80;
-	prim->g0 = -0x80;
-	prim->b0 = -0x80;
-	prim->code = 'd';
-	prim->x0 = (short)x;
-	prim->y0 = (short)y + -3;
-	prim->u0 = ScoreItems[iVar3 + 0x10];
-	prim->v0 = ScoreItems[iVar3 + 0x11];
-	prim->w = (ushort)(byte)ScoreItems[iVar3 + 0x12] - (ushort)(byte)ScoreItems[iVar3 + 0x10];
-	prim->h = (ushort)(byte)ScoreItems[iVar3 + 0x15] - (ushort)(byte)ScoreItems[iVar3 + 0x11];
-	prim->clut = *(ushort *)(ScoreItems + iVar3 + 0x1a);
-	*(undefined *)((int)&prim[1].tag + 3) = 7;
-	prim[1].code = '&';
-	prim[1].x0 = -1;
-	prim[1].y0 = -1;
-	prim[1].w = -1;
-	prim[1].h = -1;
-	*(undefined2 *)&prim[2].r0 = 0xffff;
-	*(undefined2 *)&prim[2].b0 = 0xffff;
-	bVar1 = gShowMap == 0;
-	*(undefined2 *)((int)&prim[2].tag + 2) = *(undefined2 *)(ScoreItems + iVar3 + 0x18);
-	pDVar2 = current;
-	if (bVar1) {
-		prim->tag = prim->tag & 0xff000000 | *(uint *)*current->ot & 0xffffff;
-		*(uint *)*pDVar2->ot = *(uint *)*pDVar2->ot & 0xff000000 | (uint)prim & 0xffffff;
-		prim[1].tag = prim[1].tag & 0xff000000 | *(uint *)*pDVar2->ot & 0xffffff;
-		*(uint *)*pDVar2->ot = *(uint *)*pDVar2->ot & 0xff000000 | (uint)(prim + 1) & 0xffffff;
+	btn = &button_textures[button - 0x80];
+	sprt = (SPRT*)prim;
+	 
+	setSprt(sprt);
+
+	sprt->r0 = 128;
+	sprt->g0 = 128;
+	sprt->b0 = 128;
+	sprt->x0 = x;
+	sprt->y0 = y - 3;
+	sprt->u0 = btn->coords.u0;
+	sprt->v0 = btn->coords.v0;
+	sprt->w = btn->coords.u1 - btn->coords.u0;
+	sprt->h = btn->coords.v2 - btn->coords.v0;
+	sprt->clut = btn->clutid;
+
+	null = (POLY_FT3*)(sprt + 1);
+	setPolyFT3(null);
+	setSemiTrans(null, 1);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = btn->tpageid;
+
+#ifdef PSX
+	if (gShowMap == 0)
+	{
+		addPrim(current->ot, sprt);
+		addPrim(current->ot, null);
 	}
-	else {
-		DrawPrim(prim + 1);
-		DrawPrim(prim);
+	else 
+	{
+		DrawPrim(null);
+		DrawPrim(sprt);
 	}
-	return &prim[2].u0;
-	*/
+#else
+	addPrim(current->ot, sprt);
+	addPrim(current->ot, null);
+#endif
+
+	return null+1;
 }
 
 

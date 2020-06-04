@@ -1672,7 +1672,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		}
 		*/
 
-		printWarning("AvailableCheats set cmd opcode: %x\n", cmd);
+		printWarning("AvailableCheats set cmd opcode: %x value: %d\n", cmd, val1);
 
 		//AvailableCheats._1_1_ = AvailableCheats._1_1_ | 4;
 
@@ -1680,7 +1680,6 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000090)			// SetRaining
 	{
-		printWarning("gWeather=1 cmd opcode: %x\n", cmd);
 		gWeather = 1;
 		return 1;
 	}
@@ -1697,42 +1696,11 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		Mission.timer[thread->player].flags = Mission.timer[thread->player].flags & 0xfd;
 		return 1;
 	}
-
-	// below is fucked code
-	if (cmd < 0x1000052) 
+	else if (cmd == 0x1001001)
 	{
-
+		SetMissionComplete();
+		return 1;
 	}
-	else 
-	{
-		if (cmd == 0x1000081)		// LockPlayerCar
-		{
-			gCantDrive = 1;
-		}
-		else 
-		{
-			if (cmd < 0x1000082) 
-			{
-
-			}
-			else 
-			{
-				if (0x1001000 < cmd) 
-				{
-					if (0x1001001 < cmd) 
-					{
-						return 1;
-					}
-
-					printWarning("SetMissionComplete cmd opcode: %x\n", cmd);
-
-					SetMissionComplete();
-					return 1;
-				}
-			}
-		}
-	}
-
 	return 1;
 }
 

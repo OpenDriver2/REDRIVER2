@@ -1198,13 +1198,12 @@ unsigned char *PVSEncodeTable = NULL;
 // [A] - bugged
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	/*
 	// don't draw non-loaded regions
 	for (int k = 0; k < pvs_square_sq; k++)
 		output[k] = 1;
 
 	UNIMPLEMENTED();
-	return;*/
+	return;
 	
 
 	char scratchPad[1024];

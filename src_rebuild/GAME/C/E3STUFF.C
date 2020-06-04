@@ -105,8 +105,6 @@ void ShowHiresScreens(char **names, int delay, int wait)
 // [D]
 void FadeInHiresScreen(char *filename)
 {
-	UNIMPLEMENTED();
-	
 	int col;
 	
 	DISPENV disp;
@@ -263,8 +261,6 @@ void FadeInHiresScreen(char *filename)
 // [D]
 void FadeOutHiresScreen(void)
 {
-	UNIMPLEMENTED();
-
 	int col;
 
 	DISPENV disp;
@@ -446,8 +442,6 @@ int lastrequesteddisc = 0;
 // [D]
 void SetPleaseWait(char *buffer)
 {
-	UNIMPLEMENTED();
-
 	CDTYPE CVar1;
 	//undefined3 extraout_var;
 	char *filename;

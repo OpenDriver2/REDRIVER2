@@ -56,6 +56,7 @@
 #include "OBJCOLL.H"
 #include "MC_SND.H"
 #include "FELONY.H"
+#include "LEADAI.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -1359,19 +1360,22 @@ LAB_00059c1c:
 			CopControl(cp);
 			break;
 		case 4:
-			UNIMPLEMENTED();
-			/*
 			t2 = 0;
-			t1 = '\0';
+			t1 = 0;
 			t0 = 0;
-			t0 = FreeRoamer(cp);	// [A]
-			if (t0_18 == 0) {
-				cp->handbrake = '\x01';
+
+			t0 = FreeRoamer(cp);
+
+			if (t0 == 0)
+			{
+				cp->handbrake = 1;
 				cp->wheel_angle = 0;
 			}
-			else {
-				ProcessCarPad(cp, t0_18, t1_19, t2_20);
-			}*/
+			else 
+			{
+				ProcessCarPad(cp, t0, t1, t2);
+			}
+
 			break;
 		case 7:
 #ifdef CUTSCENE_RECORDER
@@ -1739,8 +1743,7 @@ void GameLoop(void)
 
 	if (NoPlayerControl == 0) 
 	{
-		UNIMPLEMENTED(); // [A]
-		//ReplayParameterPtr->RecordingEnd = CameraCnt;
+		ReplayParameterPtr->RecordingEnd = CameraCnt;
 	}
 
 	StopPadVibration(0);
@@ -3080,19 +3083,18 @@ void InitGameVariables(void)
 	InitTyreTracks();
 	TargetCar = 0;
 
-	if (NewLevel != 0) {
+	if (NewLevel != 0) 
+	{
 		gLoadedOverlay = 0;
 		gLoadedMotionCapture = 0;
 	}
 
 	gRainCount = 0;
 
-	if ((NoPlayerControl == 0) || (AttractMode != 0)) {
+	if (NoPlayerControl == 0 || AttractMode != 0)
 		pauseflag = 0;
-	}
-	else {
+	else
 		pauseflag = 1;
-	}
 
 	HitLeadCar = 0;
 	FastForward = 0;
