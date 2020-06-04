@@ -1340,7 +1340,6 @@ RECT16 storeRect = { 768, 475, 255, 36 };
 // [D]
 void NewSelection(short dir)
 {
-	DB *pDVar1;
 	PSXBUTTON *pPVar2;
 	PSXBUTTON *pPVar3;
 	uint uVar4;
@@ -1348,39 +1347,44 @@ void NewSelection(short dir)
 
 	pPVar2 = pCurrButton;
 	uVar4 = dir;// >> 10; //SEXT24(dir);
-	if (pCurrScreen->numButtons == '\0') {
+	if (pCurrScreen->numButtons == 0) {
 		return;
 	}
 	if (uVar4 != 0) {
-		SetDrawMove(&In, &storeRect, (int)pCurrButton->s_x, (int)pCurrButton->s_y);
+		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
 		addPrim(current->ot+9, &In);
-		//In.tag = In.tag & 0xff000000 | *(uint *)current->ot[9] & 0xffffff;
-		//*(uint *)current->ot[9] = *(uint *)current->ot[9] & 0xff000000 | 0x1cc550;
 	}
 	pPVar3 = pPVar2;
-	if ((uVar4 & 0x1000) == 0) {
-		if ((uVar4 & 0x4000) == 0) {
-			if ((uVar4 & 0x8000) == 0) {
+	if ((uVar4 & 0x1000) == 0)
+	{
+		if ((uVar4 & 0x4000) == 0) 
+		{
+			if ((uVar4 & 0x8000) == 0) 
+			{
 				pPVar3 = pCurrButton;
 				if (((uVar4 & 0x2000) == 0) || (pPVar3 = pPVar2, pCurrButton->r == '\0'))
 					goto LAB_FRNT__001c1ff4;
 				FESound(3);
 				uVar4 = (uint)pCurrButton->r;
 			}
-			else {
-				if (pCurrButton->l == '\0') goto LAB_FRNT__001c1ff4;
+			else 
+			{
+				if (pCurrButton->l == 0) 
+					goto LAB_FRNT__001c1ff4;
+
 				FESound(3);
 				uVar4 = (uint)pCurrButton->l;
 			}
 		}
-		else {
-			if (pCurrButton->d == '\0') goto LAB_FRNT__001c1ff4;
+		else
+		{
+			if (pCurrButton->d == 0) goto LAB_FRNT__001c1ff4;
 			FESound(3);
 			uVar4 = (uint)pCurrButton->d;
 		}
 	}
 	else {
-		if (pCurrButton->u == '\0') goto LAB_FRNT__001c1ff4;
+		if (pCurrButton->u == 0) goto LAB_FRNT__001c1ff4;
 		FESound(3);
 		uVar4 = (uint)pCurrButton->u;
 	}
@@ -1391,19 +1395,16 @@ LAB_FRNT__001c1ff4:
 	rect.w = 0xff;
 	rect.h = 0x24;
 	SetDrawMove(&Out, &rect, (int)storeRect.x, (int)storeRect.y);
-	pDVar1 = current;
-	addPrim(current->ot+8, &Out);
-	//Out.tag = Out.tag & 0xff000000 | *(uint *)current->ot[8] & 0xffffff;
 
-	//*(uint *)current->ot[8] = *(uint *)current->ot[8] & 0xff000000 | 0x1cc570;
+	addPrim(current->ot+8, &Out);
+
 	HighlightSprt.x0 = pPVar3->s_x;
 	HighlightSprt.y0 = pPVar3->s_y;
 
-	addPrim(pDVar1->ot+6, &HighlightSprt);
-	//HighlightSprt.tag = HighlightSprt.tag & 0xff000000 | *(uint *)pDVar1->ot[6] & 0xffffff;
+	addPrim(current->ot+6, &HighlightSprt);
 	pCurrButton = pPVar3;
 
-	addPrim(pDVar1->ot + 7, &HighlightDummy);
+	addPrim(current->ot + 7, &HighlightDummy);
 
 	if (pPVar3->action >> 8 == 3) {
 		FEPrintString(pPVar3->Name, (int)pPVar3->x * 2 + (int)pPVar3->w, (int)pPVar3->y, 4, 0x20, 0x20,

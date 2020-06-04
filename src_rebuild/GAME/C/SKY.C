@@ -7,6 +7,7 @@
 #include "CAMERA.H"
 #include "MAIN.H"
 #include "DEBRIS.H"
+#include "PLAYERS.H"
 
 #include "LIBGTE.H"
 #include "INLINE_C.H"
@@ -899,17 +900,14 @@ void DrawLensFlare(void)
 					last_attempt_failed = 0;
 
 					source.x = sun_pers_conv_position.vx;
-					source.x = sun_pers_conv_position.vy + last->disp.disp.y;
+					source.y = sun_pers_conv_position.vy + last->disp.disp.y;
 
-					UNIMPLEMENTED();
-
-					/*
 					sample_sun = (DR_MOVE *)current->primptr;
 					SetDrawMove(sample_sun, &source, 1008, 456);
 
 					addPrim(current->ot + 0x20, sample_sun);
 					current->primptr += sizeof(DR_MOVE);
-					*/
+
 					return;
 				}
 			}
@@ -985,12 +983,16 @@ static long skyred = 0x80;
 static long skygreen = 0x80;
 static long skyblue = 0x80;
 
+int tunnelDir[3][2]=
+{
+	{0x7D0, 0xBF8},
+	{0x800, 0x0},
+	{0x800, 0xFFF}
+};
+
+// [D]
 void TunnelSkyFade(void)
 {
-	UNIMPLEMENTED();
-	skyFade = 0;
-
-#if 0
 	int iVar1;
 	int iVar2;
 	int iVar3;
@@ -999,54 +1001,71 @@ void TunnelSkyFade(void)
 	VECTOR *pVVar6;
 
 	iVar3 = 2;
-	if (GameLevel != 3) {
+
+	if (GameLevel != 3)
 		iVar3 = gTunnelNum;
-	}
+
 	pVVar5 = NULL;
-	if (gTunnelNum == -1) {
+
+	if (gTunnelNum == -1)
 		return;
-	}
+
 	pVVar6 = NULL;
-	if (((tunnelDir[iVar3 * 2] - (int)camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf) {
-		pVVar6 = tunnelPos + iVar3 * 2;
-	}
-	if (((tunnelDir[iVar3 * 2 + 1] - (int)camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf) {
-		pVVar5 = tunnelPos + iVar3 * 2 + 1;
-	}
-	if (pVVar6 == NULL) {
-		if (pVVar5 == NULL) {
+
+	if (((tunnelDir[iVar3][0] - camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf)
+		pVVar6 = &tunnelPos[iVar3][0];
+
+	if (((tunnelDir[iVar3][1] - camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf)
+		pVVar5 = &tunnelPos[iVar3][1];
+
+	if (pVVar6 == NULL) 
+	{
+		if (pVVar5 == NULL) 
+		{
 			skyFade = 0;
 			return;
 		}
+
 		iVar4 = pVVar5->vx;
 		iVar3 = pVVar5->vz;
 	}
-	else {
-		if (pVVar5 != NULL) {
-			iVar1 = pVVar6->vx - player[0].pos[0] >> 0xc;
-			iVar3 = pVVar6->vz - player[0].pos[2] >> 0xc;
-			iVar2 = pVVar5->vx - player[0].pos[0] >> 0xc;
-			iVar4 = pVVar5->vz - player[0].pos[2] >> 0xc;
+	else
+	{
+		if (pVVar5 != NULL) 
+		{
+			iVar1 = FIXED(pVVar6->vx - player[0].pos[0]);
+			iVar3 = FIXED(pVVar6->vz - player[0].pos[2]);
+
+			iVar2 = FIXED(pVVar5->vx - player[0].pos[0]);
+			iVar4 = FIXED(pVVar5->vz - player[0].pos[2]);
+
 			iVar3 = iVar1 * iVar1 + iVar3 * iVar3;
 			iVar4 = iVar2 * iVar2 + iVar4 * iVar4;
-			if (iVar4 <= iVar3) {
+
+			if (iVar4 <= iVar3)
 				iVar3 = iVar4;
-			}
+
 			goto LAB_00078940;
 		}
+
 		iVar4 = pVVar6->vx;
 		iVar3 = pVVar6->vz;
 	}
-	iVar4 = iVar4 - player[0].pos[0] >> 0xc;
-	iVar3 = iVar3 - player[0].pos[2] >> 0xc;
+
+	iVar4 = FIXED(iVar4 - player[0].pos[0]);
+	iVar3 = FIXED(iVar3 - player[0].pos[2]);
+
 	iVar3 = iVar4 * iVar4 + iVar3 * iVar3;
+
 LAB_00078940:
-	if (0x80 < iVar3 * 4) {
+
+	if (0x80 < iVar3 * 4) 
+	{
 		skyFade = 0;
 		return;
 	}
+
 	skyFade = iVar3 * -4 + 0x80;
-#endif
 }
 
 
@@ -1078,7 +1097,8 @@ void calc_sky_brightness(void)
 		skyred = iVar1 + 0x29;
 		skyblue = iVar1 + 0x1c;
 	}
-	else {
+	else 
+	{
 		if (gTimeOfDay != 2) {
 			skyblue = 0x80;
 			skygreen = 0x80;
@@ -1093,30 +1113,30 @@ void calc_sky_brightness(void)
 		skyred = lVar2;
 	}
 	lVar2 = 0x1a;
+
 	if ((skyblue < 0x1a) || (lVar2 = 0x80, skygreen = skyblue, 0x80 < skyblue)) {
 		skygreen = lVar2;
 	}
-	if (skyblue < 0x1a) {
+
+	if (skyblue < 0x1a)
 		skyblue = 0x1a;
-	}
-	else {
-		if (0x80 < skyblue) {
-			skyblue = 0x80;
-		}
-	}
+	else if (0x80 < skyblue)
+		skyblue = 0x80;
+
 LAB_00078a68:
 	if ((((gTunnelNum != -1) && (GameLevel != 0)) && (GameLevel != 2)) &&
-		(((GameLevel != 3 || (gTunnelNum == 1)) && ((GameLevel != 1 || (gTunnelNum != 2)))))) {
+		(((GameLevel != 3 || (gTunnelNum == 1)) && ((GameLevel != 1 || (gTunnelNum != 2)))))) 
+	{
 		TunnelSkyFade();
-		if (skyFade < skyred) {
+		if (skyFade < skyred)
 			skyred = skyFade;
-		}
-		if (skyFade < skygreen) {
+	
+		if (skyFade < skygreen)
 			skygreen = skyFade;
-		}
-		if (skyFade < skyblue) {
+	
+		if (skyFade < skyblue)
 			skyblue = skyFade;
-		}
+	
 	}
 
 }
