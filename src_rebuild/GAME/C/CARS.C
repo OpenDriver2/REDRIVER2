@@ -1026,9 +1026,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		}
 		else
 		{
-			cVar5 = SilenceThisCar(cp->id);
-
-			if (cVar5 == 0)
+			if (SilenceThisCar(cp->id) == 0)
 				AddNightLights(cp);
 		}
 	}

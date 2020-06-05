@@ -2297,10 +2297,8 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 
 	dam->active = 1;
 	dam->damage = 0;
-	dam->cop.pos.vx = cop->pos.vx;
-	dam->cop.pos.vy = cop->pos.vy;
-	dam->cop.pos.vz = cop->pos.vz;
-	*(uint *)&dam->cop.pad = *(uint *)&cop->pad;
+
+	dam->cop = *cop; // copy
 
 	dam->vx = cop->pos.vx;
 
@@ -2834,27 +2832,23 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+
+// [D]
 void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-	UNIMPLEMENTED();
-	Apply_Inv_CameraMatrix(v1);
+	MATRIX norot;
 
-	/*
-	uchar uVar1;
+	unsigned char uVar1;
 	short sVar2;
 	short sVar3;
 	bool bVar4;
-	undefined4 uVar5;
-	DB *current;
-	undefined4 in_zero;
-	undefined4 in_at;
 	short sVar6;
 	long lVar7;
-	byte bVar8;
+	unsigned char bVar8;
 	short sVar9;
 	VECTOR *pVVar10;
 	LAMP_STREAK *pLVar11;
-	undefined2 *puVar12;
+	short *puVar12;
 	int y;
 	short sVar13;
 	CVECTOR *pCVar14;
@@ -2864,316 +2858,376 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	uint uVar17;
 	short *psVar18;
 	int iVar19;
-	POLY_G4 *null;
-	POLY_G4 *null1;
+	POLY_FT3 *null;
 	POLY_G4 *polys;
-	POLY_G4 *local_s0_2572;
 	POLY_FT4 *poly;
 	int iVar20;
 	int iVar21;
-	SVECTOR vert [4];
+	SVECTOR vert[4];
 	SVECTOR tail;
 	SVECTOR head;
 	int z;
 
-	iVar20 = (int)size;
 	pVVar10 = v1;
 	pCVar14 = col;
+
 	Apply_Inv_CameraMatrix(v1);
-	setCopControlWord(2,0x2800,v1->vx);
-	setCopControlWord(2,0x3000,v1->vy);
-	setCopControlWord(2,0x3800,v1->vz);
-	setCopControlWord(2,0,norot.m[0]._0_4_);
-	setCopControlWord(2,0x800,norot.m._4_4_);
-	setCopControlWord(2,0x1000,norot.m[1]._2_4_);
-	setCopControlWord(2,0x1800,norot.m[2]._0_4_);
-	setCopControlWord(2,0x2000,norot._16_4_);
-	uVar17 = -iVar20;
-	vert[3]._4_4_ = (uint)(ushort)vert[3].pad << 0x10;
-	vert[2]._4_4_ = (uint)(ushort)vert[2].pad << 0x10;
-	vert[1]._4_4_ = (uint)(ushort)vert[1].pad << 0x10;
-	vert[0]._4_4_ = (uint)(ushort)vert[0].pad << 0x10;
-	vert[1]._0_4_ = CONCAT22((short)uVar17,size);
-	vert[0]._0_4_ = uVar17 & 0xffff | iVar20 * -0x10000;
-	vert[3]._0_4_ = CONCAT22(size,size);
-	vert[2]._0_4_ = uVar17 & 0xffff | (uint)(ushort)size << 0x10;
-	setCopReg(2,in_zero,vert[0]._0_4_);
-	setCopReg(2,in_at,vert[0]._4_4_);
-	setCopReg(2,vert,vert[1]._0_4_);
-	setCopReg(2,uVar17,vert[1]._4_4_);
-	setCopReg(2,pVVar10,vert[2]._0_4_);
-	setCopReg(2,pCVar14,vert[2]._4_4_);
-	copFunction(2,0x280030);
+
+	gte_SetRotMatrix(&aspect);
+	gte_SetTransVector(v1);
+
+	vert[0].vz = 0;
+	vert[1].vz = 0;
+	vert[2].vz = 0;
+	vert[3].vz = 0;
+
+	vert[0].vx = -size;
+	vert[0].vy = -size;
+
+	vert[1].vx = size;
+	vert[1].vy = -size;
+
+	vert[2].vx = -size;
+	vert[2].vy = size;
+
+	vert[3].vx = size;
+	vert[3].vy = size;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+	gte_rtpt();
+
+	gte_stszotz(&iVar21);
+
+	// discard if too close
+	if (iVar21 < 38)
+		return;
+
 	poly = (POLY_FT4 *)current->primptr;
-	poly->u0 = (texture->coords).u0;
-	poly->v0 = (texture->coords).v0;
-	poly->u1 = (texture->coords).u1;
-	poly->v1 = (texture->coords).v1;
-	poly->u2 = (texture->coords).u2;
-	poly->v2 = (texture->coords).v2;
-	poly->u3 = (texture->coords).u3;
-	uVar1 = (texture->coords).v3;
-	*(undefined *)((int)&poly->tag + 3) = 9;
-	poly->code = '.';
-	poly->v3 = uVar1;
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+
+	poly->u0 = texture->coords.u0;
+	poly->v0 = texture->coords.v0;
+	poly->u1 = texture->coords.u1;
+	poly->v1 = texture->coords.v1;
+	poly->u2 = texture->coords.u2;
+	poly->v2 = texture->coords.v2;
+	poly->u3 = texture->coords.u3;
+	poly->v3 = texture->coords.v3;
+
 	poly->r0 = col->r;
 	poly->g0 = col->g;
 	poly->b0 = col->b;
-	uVar5 = getCopReg(2,0xc);
-	*(undefined4 *)&poly->x0 = uVar5;
-	uVar5 = getCopReg(2,0xd);
-	*(undefined4 *)&poly->x1 = uVar5;
-	uVar5 = getCopReg(2,0xe);
-	*(undefined4 *)&poly->x2 = uVar5;
-	iVar21 = getCopReg(2,0x13);
-	if (0x27 < iVar21) {
-		setCopReg(2,in_zero,vert[3]._0_4_);
-		setCopReg(2,in_at,vert[3]._4_4_);
-		copFunction(2,0x180001);
-		poly->tpage = texture->tpageid | 0x20;
-		poly->clut = texture->clutid;
-		z = (iVar21 >> 3) + LightSortCorrect;
-		if (z < 0) {
-			z = 0;
-		}
-		uVar5 = getCopReg(2,0xe);
-		*(undefined4 *)&poly->x3 = uVar5;
-		current = current;
-		if (z < 10000) {
-			iVar21 = (int)(&DAT_00002710 + -z) >> 0xd;
-		}
-		else {
-			iVar21 = 0;
-		}
-		poly->tag = poly->tag & 0xff000000 | current->ot[z] & 0xffffff;
-		current->ot[z] = current->ot[z] & 0xff000000 | (uint)poly & 0xffffff;
-		bVar4 = 4 < CameraCnt;
-		current->primptr = current->primptr + 0x28;
-		iVar19 = FrameCnt;
-		iVar16 = LightIndex;
-		if (bVar4) {
-			bVar8 = col->cd;
-			iVar15 = -1;
-			if (((bVar8 & 0x20) == 0) || (gLightsOn == 0)) {
-				if ((bVar8 & 2) == 0) {
-					if ((bVar8 & 4) == 0) {
-						if ((bVar8 & 8) == 0) {
-							if ((bVar8 & 0x10) != 0) {
-								iVar15 = 3;
-							}
-						}
-						else {
-							iVar15 = 2;
+
+	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+	gte_ldv0(&vert[3]);
+	gte_rtps();
+
+	gte_stsxy(&poly->x3);
+
+	poly->tpage = texture->tpageid | 0x20;
+	poly->clut = texture->clutid;
+	z = (iVar21 >> 3) + LightSortCorrect;
+
+	if (z < 0)
+		z = 0;
+
+	if (z < 10000)
+		iVar21 = (10000 - z) >> 0xd;
+	else
+		iVar21 = 0;
+
+	addPrim(current->ot + z, poly);
+	current->primptr += sizeof(POLY_FT4);
+
+	iVar19 = FrameCnt;
+	iVar16 = LightIndex;
+
+	if (CameraCnt > 4)
+	{
+		bVar8 = col->cd;
+		iVar15 = -1;
+
+		if ((bVar8 & 0x20) == 0 || gLightsOn == 0) 
+		{
+			if ((bVar8 & 2) == 0) 
+			{
+				if ((bVar8 & 4) == 0) 
+				{
+					if ((bVar8 & 8) == 0) 
+					{
+						if ((bVar8 & 0x10) != 0) 
+						{
+							iVar15 = 3;
 						}
 					}
-					else {
-						iVar15 = 1;
+					else 
+					{
+						iVar15 = 2;
 					}
 				}
-				else {
-					iVar15 = 0;
+				else 
+				{
+					iVar15 = 1;
 				}
 			}
-			else {
-				if ((CameraChanged == '\0') &&
-				   ((int)Known_Lamps[LightIndex].clock == (FrameCnt & 0xffffU) - 1)) {
-					sVar2 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].x;
-					sVar3 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].y;
-					iVar15 = (int)poly->x0 + (int)poly->x3 >> 1;
-					sVar9 = (short)iVar15;
-					sVar13 = poly->y0;
-					sVar6 = poly->y3;
-					Known_Lamps[LightIndex].clock = (short)FrameCnt;
-					y = (int)sVar13 + (int)sVar6 >> 1;
-					Known_Lamps[iVar16].light_trails[iVar19 & 3].x = sVar9;
-					iVar15 = sVar2 - iVar15;
-					if (iVar15 < 0) {
-						iVar15 = -iVar15;
-					}
-					sVar13 = (short)y;
-					Known_Lamps[iVar16].light_trails[FrameCnt & 3].y = sVar13;
-					y = sVar3 - y;
-					if (y < 0) {
-						y = -y;
-					}
-					iVar16 = (int)poly->x0 - (int)poly->x3;
-					if (iVar16 < 0) {
-						iVar16 = -iVar16;
-					}
-					if ((1 < iVar20) && (1 < iVar15 + y)) {
-						polys = (POLY_G4 *)current->primptr;
-						sVar6 = (short)((int)poly->x0 + (int)poly->x3 >> 1);
-						polys->x1 = sVar6;
-						polys->x0 = sVar6;
-						lVar7 = ratan2((int)sVar2 - (int)sVar9,(int)sVar3 - (int)sVar13);
-						if ((col->cd & 0x40) == 0) {
-							uVar17 = -lVar7 & 0xfff;
-							iVar19 = rcossin_tbl[uVar17 * 2 + 1] * iVar16 * 3 >> 0xf;
-							iVar16 = rcossin_tbl[uVar17 * 2] * iVar16 * 3 >> 0xf;
-						}
-						else {
-							uVar17 = -lVar7 & 0xfff;
-							iVar19 = rcossin_tbl[uVar17 * 2 + 1] * iVar16 * 3 >> 0x10;
-							iVar16 = rcossin_tbl[uVar17 * 2] * iVar16 * 3 >> 0x10;
-						}
-						*(int *)&polys->x0 = (sVar13 + iVar16) * 0x10000 + sVar9 + iVar19;
-						*(int *)&polys->x1 = (sVar13 - iVar16) * 0x10000 + (sVar9 - iVar19);
-						*(int *)&polys->x2 = (sVar3 - iVar21) * 0x10000 + (int)sVar2;
-						*(undefined *)((int)&polys->tag + 3) = 8;
-						polys->code = ':';
-						*(int *)&polys->x3 = (sVar3 + iVar21) * 0x10000 + (int)sVar2;
-						polys->r0 = col->r >> 1;
-						polys->g0 = col->g >> 1;
-						polys->b0 = col->b >> 1;
-						polys->r1 = col->r >> 1;
-						polys->g1 = col->g >> 1;
-						bVar8 = col->b;
-						polys->r2 = '\0';
-						polys->g2 = '\0';
-						polys->b2 = '\0';
-						polys->r3 = '\0';
-						polys->g3 = '\0';
-						polys->b3 = '\0';
-						polys->b1 = bVar8 >> 1;
-						current = current;
-						polys->tag = polys->tag & 0xff000000 | current->ot[z] & 0xffffff;
-						current->ot[z] = current->ot[z] & 0xff000000 | (uint)polys & 0xffffff;
-						null = (POLY_G4 *)current->primptr;
-						*(POLY_G4 **)&current->primptr = null + 1;
-						*(undefined *)((int)&null[1].tag + 3) = 7;
-						null[1].code = '$';
-						current = current;
-						null[1].x0 = -1;
-						null[1].y0 = -1;
-						null[1].x1 = -1;
-						null[1].y1 = -1;
-						null[1].x2 = -1;
-						null[1].y2 = -1;
-						*(undefined2 *)&null[1].b2 = 0x20;
-						null[1].tag = null[1].tag & 0xff000000 | current->ot[z] & 0xffffff;
-						current->ot[z] = current->ot[z] & 0xff000000 | (uint)(null + 1) & 0xffffff;
-						current->primptr = current->primptr + 0x20;
-					}
-				}
-				else {
-					iVar16 = 3;
-					pLVar11 = Known_Lamps + LightIndex;
-					do {
-						pLVar11->light_trails[0].x = (short)((int)poly->x0 + (int)poly->x3 >> 1);
-						iVar16 = iVar16 + -1;
-						pLVar11->light_trails[0].y = (short)((int)poly->y0 + (int)poly->y3 >> 1);
-						pLVar11 = (LAMP_STREAK *)(pLVar11->light_trails + 1);
-					} while (-1 < iVar16);
-					Known_Lamps[LightIndex].clock = (short)FrameCnt;
-				}
-				iVar15 = -1;
+			else 
+			{
+				iVar15 = 0;
 			}
-			iVar19 = FrameCnt;
-			iVar16 = gcar_num;
-			if (-1 < iVar15) {
-				if ((CameraChanged == '\0') &&
-				   (psVar18 = car_data[gcar_num].ap.old_clock + iVar15,
-				   (int)*psVar18 == (FrameCnt & 0xffffU) - 1)) {
-					sVar2 = car_data[gcar_num].ap.light_trails[iVar15 * 4 + (FrameCnt - 3U & 3)].x;
-					sVar3 = car_data[gcar_num].ap.light_trails[iVar15 * 4 + (FrameCnt - 3U & 3)].y;
-					y = (int)poly->x0 + (int)poly->x3 >> 1;
-					sVar9 = (short)y;
-					sVar13 = poly->y0;
-					sVar6 = poly->y3;
-					y = sVar2 - y;
-					*psVar18 = (short)FrameCnt;
-					x = (int)sVar13 + (int)sVar6 >> 1;
-					car_data[iVar16].ap.light_trails[iVar15 * 4 + (iVar19 & 3U)].x = sVar9;
-					iVar19 = y;
-					if (y < 0) {
-						iVar19 = -y;
+		}
+		else 
+		{
+			if (CameraChanged == 0 && Known_Lamps[LightIndex].clock == (FrameCnt & 0xffffU) - 1)
+			{
+				sVar2 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].x;
+				sVar3 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].y;
+
+				iVar15 = (poly->x0 + poly->x3) / 2;
+
+				sVar9 = (short)iVar15;
+				sVar13 = poly->y0;
+				sVar6 = poly->y3;
+
+				Known_Lamps[LightIndex].clock = FrameCnt;
+				Known_Lamps[iVar16].light_trails[iVar19 & 3].x = sVar9;
+
+				y = (int)sVar13 + (int)sVar6 >> 1;
+					
+				iVar15 = sVar2 - iVar15;
+
+				if (iVar15 < 0)
+					iVar15 = -iVar15;
+
+				sVar13 = (short)y;
+
+				Known_Lamps[iVar16].light_trails[FrameCnt & 3].y = sVar13;
+
+				y = sVar3 - y;
+
+				if (y < 0)
+					y = -y;
+
+				iVar16 = (int)poly->x0 - (int)poly->x3;
+				if (iVar16 < 0)
+					iVar16 = -iVar16;
+
+				if (1 < size && iVar15 + y > 1)
+				{
+					polys = (POLY_G4 *)current->primptr;
+
+					setPolyG4(polys);
+					setSemiTrans(polys, 1);
+
+					sVar6 = (poly->x0 + poly->x3) / 2;
+					//polys->x1 = sVar6;
+					//polys->x0 = sVar6;
+
+					lVar7 = ratan2(sVar2 - sVar9,sVar3 - sVar13);
+
+					if ((col->cd & 0x40) == 0) 
+					{
+						uVar17 = -lVar7 & 0xfff;
+						iVar19 = rcossin_tbl[uVar17 * 2 + 1] * iVar16 * 3 >> 0xf;
+						iVar16 = rcossin_tbl[uVar17 * 2] * iVar16 * 3 >> 0xf;
 					}
-					sVar13 = (short)x;
-					car_data[iVar16].ap.light_trails[iVar15 * 4 + (FrameCnt & 3U)].y = sVar13;
-					x = sVar3 - x;
-					iVar16 = (int)poly->x0 - (int)poly->x3;
-					if (iVar16 < 0) {
-						iVar16 = -iVar16;
+					else 
+					{
+						uVar17 = -lVar7 & 0xfff;
+						iVar19 = rcossin_tbl[uVar17 * 2 + 1] * iVar16 * 3 >> 0x10;
+						iVar16 = rcossin_tbl[uVar17 * 2] * iVar16 * 3 >> 0x10;
 					}
-					iVar15 = x;
-					if (x < 0) {
-						iVar15 = -x;
-					}
-					if (iVar20 < 2) {
-						return;
-					}
-					if (iVar19 + iVar15 < 2) {
-						return;
-					}
-					local_s0_2572 = (POLY_G4 *)current->primptr;
-					lVar7 = ratan2(y,x);
-					iVar19 = rcossin_tbl[(-lVar7 & 0xfffU) * 2 + 1] * iVar16 * 3 >> 0xf;
-					iVar20 = rcossin_tbl[(-lVar7 & 0xfffU) * 2] * iVar16 * 3 >> 0xf;
-					*(int *)&local_s0_2572->x0 = (sVar13 + iVar20) * 0x10000 + sVar9 + iVar19;
-					*(int *)&local_s0_2572->x1 = (sVar13 - iVar20) * 0x10000 + (sVar9 - iVar19);
-					*(int *)&local_s0_2572->x2 = (sVar3 - iVar21) * 0x10000 + (int)sVar2;
-					*(undefined *)((int)&local_s0_2572->tag + 3) = 8;
-					local_s0_2572->code = ':';
-					*(int *)&local_s0_2572->x3 = (sVar3 + iVar21) * 0x10000 + (int)sVar2;
-					if ((col->cd & 0x18) == 0) {
-						local_s0_2572->r0 = col->r;
-						local_s0_2572->g0 = col->g;
-						local_s0_2572->b0 = col->b;
-						local_s0_2572->r1 = col->r;
-						local_s0_2572->g1 = col->g;
-						bVar8 = col->b;
-					}
-					else {
-						local_s0_2572->r0 = col->r >> 1;
-						local_s0_2572->g0 = col->g >> 1;
-						local_s0_2572->b0 = col->b >> 1;
-						local_s0_2572->r1 = col->r >> 1;
-						local_s0_2572->g1 = col->g >> 1;
-						bVar8 = col->b >> 1;
-					}
-					local_s0_2572->b1 = bVar8;
-					local_s0_2572->r2 = '\0';
-					local_s0_2572->g2 = '\0';
-					local_s0_2572->b2 = '\0';
-					local_s0_2572->r3 = '\0';
-					local_s0_2572->g3 = '\0';
-					local_s0_2572->b3 = '\0';
-					current = current;
-					local_s0_2572->tag = local_s0_2572->tag & 0xff000000 | current->ot[z] & 0xffffff
-					;
-					current->ot[z] = current->ot[z] & 0xff000000 | (uint)local_s0_2572 & 0xffffff;
-					null1 = (POLY_G4 *)current->primptr;
-					*(POLY_G4 **)&current->primptr = null1 + 1;
-					*(undefined *)((int)&null1[1].tag + 3) = 7;
-					null1[1].code = '$';
-					current = current;
-					null1[1].x0 = -1;
-					null1[1].y0 = -1;
-					null1[1].x1 = -1;
-					null1[1].y1 = -1;
-					null1[1].x2 = -1;
-					null1[1].y2 = -1;
-					*(undefined2 *)&null1[1].b2 = 0x20;
-					null1[1].tag = null1[1].tag & 0xff000000 | current->ot[z] & 0xffffff;
-					current->ot[z] = current->ot[z] & 0xff000000 | (uint)(null1 + 1) & 0xffffff;
-					current->primptr = current->primptr + 0x20;
-					return;
+
+					polys->x0 = sVar9 + iVar19;
+					polys->y0 = sVar13 + iVar16;
+
+					polys->x1 = sVar9 - iVar19;
+					polys->y1 = sVar13 - iVar16;
+
+					polys->x2 = sVar2;
+					polys->y2 = sVar3 - iVar21;
+
+					polys->x3 = sVar2;
+					polys->y3 = sVar3 + iVar21;
+
+					//*(int *)&polys->x0 = (sVar13 + iVar16) * 0x10000 + sVar9 + iVar19;
+					//*(int *)&polys->x1 = (sVar13 - iVar16) * 0x10000 + (sVar9 - iVar19);
+					//*(int *)&polys->x2 = (sVar3 - iVar21) * 0x10000 + (int)sVar2;
+					//*(int *)&polys->x3 = (sVar3 + iVar21) * 0x10000 + (int)sVar2;
+
+					polys->r0 = col->r >> 1;
+					polys->g0 = col->g >> 1;
+					polys->b0 = col->b >> 1;
+					polys->r1 = col->r >> 1;
+					polys->g1 = col->g >> 1;
+					bVar8 = col->b;
+					polys->r2 = 0;
+					polys->g2 = 0;
+					polys->b2 = 0;
+					polys->r3 = 0;
+					polys->g3 = 0;
+					polys->b3 = 0;
+					polys->b1 = bVar8 >> 1;
+
+					addPrim(current->ot + z, polys);
+					current->primptr += sizeof(POLY_G4);
+
+					null = (POLY_FT3 *)current->primptr;
+
+					setPolyFT3(null);
+					null->x0 = -1;
+					null->y0 = -1;
+					null->x1 = -1;
+					null->y1 = -1;
+					null->x2 = -1;
+					null->y2 = -1;
+					null->tpage = 0x20;
+
+					addPrim(current->ot + z, null);
+					current->primptr += sizeof(POLY_FT3);
 				}
-				iVar20 = 3;
-				psVar18 = &car_data[gcar_num].ap.light_trails[iVar15 * 4].y;
-				iVar21 = iVar15 * 0x10 + gcar_num * 0x29c;
+			}
+			else
+			{
+				iVar16 = 3;
+
 				do {
-					puVar12 = (undefined2 *)((int)&car_data[0].ap.light_trails[0].x + iVar21);
-					iVar21 = iVar21 + 4;
-					*puVar12 = (short)((int)poly->x0 + (int)poly->x3 >> 1);
-					iVar20 = iVar20 + -1;
-					*psVar18 = (short)((int)poly->y0 + (int)poly->y3 >> 1);
-					psVar18 = psVar18 + 2;
-				} while (-1 < iVar20);
-				car_data[gcar_num].ap.old_clock[iVar15] = (short)FrameCnt;
+					Known_Lamps[LightIndex].light_trails[iVar16].x = (poly->x0 + poly->x3) / 2;
+					Known_Lamps[LightIndex].light_trails[iVar16].y = (poly->y0 + poly->y3) / 2;
+
+					iVar16--;
+				} while (-1 < iVar16);
+
+				Known_Lamps[LightIndex].clock = FrameCnt;
 			}
+
+			iVar15 = -1;
 		}
-	}*/
+
+		iVar19 = FrameCnt;
+		iVar16 = gcar_num;
+
+		if (-1 < iVar15) 
+		{
+			if (CameraChanged == 0 && car_data[gcar_num].ap.old_clock[iVar15] == (FrameCnt & 0xffffU)-1)
+			{
+				sVar2 = car_data[gcar_num].ap.light_trails[iVar15][FrameCnt - 3U & 3].x;
+				sVar3 = car_data[gcar_num].ap.light_trails[iVar15][FrameCnt - 3U & 3].y;
+
+				y = (poly->x0 + poly->x3) / 2;
+				sVar9 = (short)y;
+				sVar13 = poly->y0;
+				sVar6 = poly->y3;
+				y = sVar2 - y;
+				car_data[gcar_num].ap.old_clock[iVar15] = FrameCnt;
+				x = (int)sVar13 + (int)sVar6 >> 1;
+				car_data[iVar16].ap.light_trails[iVar15][iVar19 & 3U].x = sVar9;
+				iVar19 = y;
+				if (y < 0)
+					iVar19 = -y;
+
+				sVar13 = (short)x;
+				car_data[iVar16].ap.light_trails[iVar15][FrameCnt & 3U].y = sVar13;
+				x = sVar3 - x;
+				iVar16 = (int)poly->x0 - (int)poly->x3;
+				if (iVar16 < 0)
+					iVar16 = -iVar16;
+
+				iVar15 = x;
+				if (x < 0)
+					iVar15 = -x;
+		
+				if (size < 2)
+					return;
+
+				if (iVar19 + iVar15 < 2)
+					return;
+
+				polys = (POLY_G4 *)current->primptr;
+
+				setPolyG4(polys);
+				setSemiTrans(polys, 1);
+
+				lVar7 = ratan2(y,x);
+				iVar19 = rcossin_tbl[(-lVar7 & 0xfffU) * 2 + 1] * iVar16 * 3 >> 0xf;
+				iVar20 = rcossin_tbl[(-lVar7 & 0xfffU) * 2] * iVar16 * 3 >> 0xf;
+
+				polys->x0 = sVar9 + iVar19;
+				polys->y0 = sVar13 + iVar20;
+
+				polys->x1 = sVar9 - iVar19;
+				polys->y1 = sVar13 - iVar20;
+
+				polys->x2 = sVar2;
+				polys->y2 = sVar3 - iVar21;
+
+				polys->x3 = sVar2;
+				polys->y3 = sVar3 + iVar21;
+
+				//*(int *)&polys->x0 = (sVar13 + iVar20) * 0x10000 + sVar9 + iVar19;
+				//*(int *)&polys->x1 = (sVar13 - iVar20) * 0x10000 + (sVar9 - iVar19);
+				//*(int *)&polys->x2 = (sVar3 - iVar21) * 0x10000 + (int)sVar2;
+				//*(int *)&polys->x3 = (sVar3 + iVar21) * 0x10000 + (int)sVar2;
+
+				if ((col->cd & 0x18) == 0) 
+				{
+					polys->r0 = col->r;
+					polys->g0 = col->g;
+					polys->b0 = col->b;
+					polys->r1 = col->r;
+					polys->g1 = col->g;
+					bVar8 = col->b;
+				}
+				else 
+				{
+					polys->r0 = col->r >> 1;
+					polys->g0 = col->g >> 1;
+					polys->b0 = col->b >> 1;
+					polys->r1 = col->r >> 1;
+					polys->g1 = col->g >> 1;
+					bVar8 = col->b >> 1;
+				}
+
+				polys->b1 = bVar8;
+				polys->r2 = 0;
+				polys->g2 = 0;
+				polys->b2 = 0;
+				polys->r3 = 0;
+				polys->g3 = 0;
+				polys->b3 = 0;
+
+				addPrim(current->ot + z, polys);
+				current->primptr += sizeof(POLY_G4);
+
+				null = (POLY_FT3 *)current->primptr;
+				setPolyFT3(null);
+
+				null->x0 = -1;
+				null->y0 = -1;
+				null->x1 = -1;
+				null->y1 = -1;
+				null->x2 = -1;
+				null->y2 = -1;
+				null->tpage = 0x20;
+
+				addPrim(current->ot + z, null);
+				current->primptr += sizeof(POLY_FT3);
+				return;
+			}
+
+			iVar20 = 3;
+
+			do {
+				car_data[gcar_num].ap.light_trails[iVar15][iVar20].x = (poly->x0 + poly->x3) / 2;
+				car_data[gcar_num].ap.light_trails[iVar15][iVar20].y = (poly->y0 + poly->y3) / 2;
+
+				iVar20--;
+			} while (-1 < iVar20);
+
+			car_data[gcar_num].ap.old_clock[iVar15] = FrameCnt;
+		}
+	}
 }
 
 

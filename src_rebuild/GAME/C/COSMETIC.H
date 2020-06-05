@@ -4,6 +4,8 @@
 extern CAR_COSMETICS car_cosmetics[5];
 extern CAR_COSMETICS dummyCosmetics;
 
+extern int gcar_num;
+
 extern void LoadCosmetics(int level); // 0x00031160
 
 extern void ProcessCosmeticsLump(char *lump_ptr, int lump_size); // 0x000311B0

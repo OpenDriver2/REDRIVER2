@@ -871,7 +871,7 @@ void AddNightLights(_CAR_DATA *cp)
 			col.r = 56;
 
 			if (cp->controlType != 1)
-				col.r = 1;
+				col.r = 255;
 
 			col.b = 0;
 			col.g = 0;
