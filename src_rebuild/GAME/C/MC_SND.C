@@ -1,9 +1,11 @@
 #include "THISDUST.H"
 #include "MC_SND.H"
+#include "GAMESND.H"
 #include "CUTSCENE.H"
 #include "MISSION.H"
 #include "CARS.H"
 #include "PLAYERS.H"
+#include "CONVERT.H"
 
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -117,31 +119,33 @@ xa_request xa_data[26] = {
 	/* end block 2 */
 	// End Line: 177
 
+// [D]
 char GetMissionSound(char id)
 {
-	UNIMPLEMENTED();
-	return -1;
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	long lVar2;
 	uint uVar3;
 	char *pcVar4;
 	uint uVar5;
 
-	bVar1 = (&missionstarts)[gCurrentMissionNumber];
-	uVar5 = (uint)bVar1;
+	bVar1 = missionstarts[gCurrentMissionNumber];
+	uVar5 = bVar1;
 	lVar2 = Random2(5);
-	if (bVar1 != 0xff) {
+	if (bVar1 != 0xff) 
+	{
 		uVar3 = 1;
+
 		do {
-			bVar1 = (&missionstarts)[gCurrentMissionNumber + (uVar3 & 0xff)];
+			bVar1 = missionstarts[gCurrentMissionNumber + (uVar3 & 0xff)];
 			uVar3 = (uVar3 & 0xff) + 1;
 		} while (bVar1 == 0xff);
+
 		while (uVar5 < (uint)bVar1) {
 			uVar3 = uVar5 + 1;
 			if (id_map[uVar5].in == id) {
 				pcVar4 = &id_map[uVar5].out;
-				if ((uVar3 != (uint)bVar1) && (pcVar4 = &id_map[uVar5].out, id_map[uVar3].in == id)) {
+				if ((uVar3 != (uint)bVar1) && (pcVar4 = &id_map[uVar5].out, id_map[uVar3].in == id))
+				{
 					pcVar4 = &id_map[uVar5 + (lVar2 % 2 & 0xffU)].out;
 				}
 				return *pcVar4 + phrase_top;
@@ -149,7 +153,7 @@ char GetMissionSound(char id)
 			uVar5 = uVar3 & 0xff;
 		}
 	}
-	return -1;*/
+	return -1;
 }
 
 

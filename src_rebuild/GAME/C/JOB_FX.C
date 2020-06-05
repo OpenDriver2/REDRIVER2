@@ -1,5 +1,9 @@
 #include "THISDUST.H"
 #include "JOB_FX.H"
+#include "BOMBERMAN.H"
+#include "PAUSE.H"
+#include "GAMESND.H"
+#include "CARS.H"
 
 MATRIX SS = { 0 };
 
@@ -38,22 +42,15 @@ MATRIX SS = { 0 };
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitExObjects(void)
 {
-	UNIMPLEMENTED();
-	/*
-	_ExOBJECT *p_Var1;
-	int iVar2;
+	int i;
 
-	iVar2 = 4;
-	p_Var1 = explosion + 4;
-	do {
-		p_Var1->time = -1;
-		iVar2 = iVar2 + -1;
-		p_Var1 = p_Var1 + -1;
-	} while (-1 < iVar2);
+	for (i = 0; i < 5; i++)
+		explosion[i].time = -1;
+
 	initExplosion();
-	return;*/
 }
 
 
@@ -81,53 +78,47 @@ void InitExObjects(void)
 	/* end block 3 */
 	// End Line: 264
 
+// [D]
 void AddExplosion(VECTOR pos, int type)
 {
-	UNIMPLEMENTED();
-	/*
-	_ExOBJECT *p_Var1;
-	long in_a1;
-	long in_a2;
-	long in_a3;
-	int iVar2;
+	_ExOBJECT *newExplosion;
+	int i;
 
-	iVar2 = 0;
-	p_Var1 = explosion;
-	while (p_Var1->time != -1) {
-		iVar2 = iVar2 + 1;
-		p_Var1 = p_Var1 + 1;
-		if (4 < iVar2) {
+	i = 0;
+	newExplosion = explosion;
+
+	while (newExplosion->time != -1) 
+	{
+		i++;
+		newExplosion++;
+
+		if (i > 4) 
 			return;
-		}
 	}
-	p_Var1->time = 0;
-	(p_Var1->pos).vx = type;
-	(p_Var1->pos).vy = in_a1;
-	(p_Var1->pos).vz = in_a2;
-	(p_Var1->pos).pad = in_a3;
-	p_Var1->type = (ExplosionType)pos.vx;
-	if ((ExplosionType)pos.vx == LITTLE_BANG) {
-		p_Var1->speed = 0xc0;
-		p_Var1->hscale = 0x400;
-		p_Var1->rscale = 0x400;
-		return;
+
+	newExplosion->time = 0;
+	newExplosion->pos = pos;
+	newExplosion->type = (ExplosionType)type;
+
+	if (type == LITTLE_BANG) 
+	{
+		newExplosion->speed = 0xc0;
+		newExplosion->hscale = 0x400;
+		newExplosion->rscale = 0x400;
 	}
-	if ((ExplosionType)pos.vx < 2) {
-		if ((ExplosionType)pos.vx != BIG_BANG) {
-			return;
-		}
-		p_Var1->speed = 0x80;
-		p_Var1->hscale = 0x1000;
-		p_Var1->rscale = 0x1000;
-		return;
+	else if (type == BIG_BANG)
+	{
+		newExplosion->speed = 0x80;
+		newExplosion->hscale = 0x1000;
+		newExplosion->rscale = 0x1000;
 	}
-	if ((ExplosionType)pos.vx != HEY_MOMMA) {
-		return;
+	else if (type == HEY_MOMMA)
+	{
+		newExplosion->speed = 0x40;
+		newExplosion->hscale = 0x4000;
+		newExplosion->rscale = 0x4000;
 	}
-	p_Var1->speed = 0x40;
-	p_Var1->hscale = 0x4000;
-	p_Var1->rscale = 0x4000;
-	return;*/
+
 }
 
 
@@ -175,57 +166,56 @@ void AddExplosion(VECTOR pos, int type)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleExplosion(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
 	_CAR_DATA *cp;
-	_ExOBJECT *p_Var2;
-	int iVar3;
-	int iVar4;
+	_ExOBJECT *exp;
+	int i;
 
-	if (pauseflag == 0) {
-		iVar3 = 0;
-		iVar4 = 0;
-		p_Var2 = explosion;
-		do {
-			if ((p_Var2->time != -1) && (p_Var2->type != BANG_USED)) {
-				cp = car_data;
-				do {
-					if ((cp == car_data + 0x14) || ((cp != gBombTargetVehicle && (cp->controlType != '\0'))))
-					{
-						ExplosionCollisionCheck(cp, (_ExOBJECT *)((int)&explosion[0].time + iVar4));
-					}
-					cp = cp + 1;
-				} while (cp < (_CAR_DATA *)((int)car_data[0x14].hd.where.m + 1U));
-			}
-			iVar4 = iVar4 + 0x24;
-			iVar3 = iVar3 + 1;
-			p_Var2 = p_Var2 + 1;
-		} while (iVar3 < 5);
-		p_Var2 = explosion;
-		iVar3 = 0;
-		iVar4 = 4;
-		do {
-			iVar1 = p_Var2->time;
-			if (iVar1 != -1) {
-				if (iVar1 == 0) {
-					ExplosionSound((VECTOR *)((int)&explosion[0].pos.vx + iVar3), (uint)p_Var2->type);
-					iVar1 = p_Var2->time;
-				}
-				iVar1 = iVar1 + p_Var2->speed;
-				p_Var2->time = iVar1;
-				if (0xfff < iVar1) {
-					p_Var2->time = -1;
-				}
-			}
-			p_Var2 = p_Var2 + 1;
-			iVar4 = iVar4 + -1;
-			iVar3 = iVar3 + 0x24;
-		} while (-1 < iVar4);
-	}
-	return;*/
+	if (pauseflag != 0)
+		return;
+
+	i = 0;
+	exp = explosion;
+
+	while (i < 5)
+	{
+		if (exp->time != -1 && exp->type != BANG_USED) 
+		{
+			cp = car_data;
+
+			do {
+				if (cp == &car_data[20] || cp != gBombTargetVehicle && cp->controlType != 0)
+					ExplosionCollisionCheck(cp, &explosion[i]);
+
+				cp++;
+			} while (cp < &car_data[20]);
+		}
+
+		i++;
+		exp++;
+	};
+
+	
+	i = 0;
+	exp = explosion;
+	while (i < 5)
+	{
+		if (exp->time != -1)
+		{
+			if (exp->time == 0)
+				ExplosionSound(&exp->pos, exp->type);
+
+			exp->time += exp->speed;
+
+			if (exp->time > 0xfff)
+				exp->time = -1;
+		}
+
+		exp++;
+		i++;
+	};
 }
 
 
@@ -275,33 +265,18 @@ void HandleExplosion(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawAllExplosions(void)
 {
-	UNIMPLEMENTED();
-	/*
-	_ExOBJECT *p_Var1;
-	int iVar2;
-	int iVar3;
-	undefined4 in_stack_ffffffe4;
+	int i;
+	i = 0;
+	while (i < 5)
+	{
+		if (explosion[i].time != -1)
+			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
 
-	p_Var1 = explosion;
-	iVar3 = 0;
-	iVar2 = 4;
-	do {
-		if (p_Var1->time != -1) {
-			DrawExplosion(p_Var1->time,
-				(VECTOR)CONCAT412(in_stack_ffffffe4,
-					CONCAT48(p_Var1->rscale,
-						CONCAT44(*(undefined4 *)
-						((int)&explosion[0].hscale + iVar3),
-							(p_Var1->pos).pad))), (p_Var1->pos).vx,
-							(p_Var1->pos).vy);
-		}
-		p_Var1 = p_Var1 + 1;
-		iVar2 = iVar2 + -1;
-		iVar3 = iVar3 + 0x24;
-	} while (-1 < iVar2);
-	return;*/
+		i++;
+	};
 }
 
 

@@ -21,6 +21,7 @@
 #include "CONVERT.H"
 #include "XMPLAY.H"
 #include "PLAYERS.H"
+#include "MAIN.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -2362,13 +2363,11 @@ void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 	/* end block 2 */
 	// End Line: 2381
 
+// [D]
 void ExplosionSound(VECTOR *pos, int type)
 {
-	UNIMPLEMENTED();
-	/*
 	char id;
 	long lVar1;
-	undefined3 extraout_var;
 	int iVar2;
 	int iVar3;
 	int iVar4;
@@ -2379,65 +2378,69 @@ void ExplosionSound(VECTOR *pos, int type)
 
 	sample = 0xff;
 	lVar1 = Random2(4);
-	if (gCurrentMissionNumber == 0x17) {
+
+	if (gCurrentMissionNumber == 23) 
+	{
 	LAB_0004fa04:
-		id = '\f';
+		id = 12;
 	LAB_0004fa10:
 		id = GetMissionSound(id);
-		sample = CONCAT31(extraout_var, id);
+		sample = id;
 	}
-	else {
-		if (gCurrentMissionNumber < 0x18) {
-			if (gCurrentMissionNumber == 0xd) goto LAB_0004fa04;
+	else 
+	{
+		if (gCurrentMissionNumber < 24) 
+		{
+			if (gCurrentMissionNumber == 13)
+				goto LAB_0004fa04;
 		}
-		else {
-			if ((gCurrentMissionNumber == 0x1e) || (gCurrentMissionNumber == 0x23)) {
-				id = '\x1d';
-				goto LAB_0004fa10;
-			}
+		else if (gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35)
+		{
+			id = 29;
+			goto LAB_0004fa10;
 		}
 	}
-	if (sample == 0xff) {
+
+	if (sample == 0xff)
 		return;
-	}
+
 	iVar3 = pos->vx;
-	if (type == 1) {
+	if (type == 1) 
+	{
 		unaff_s2 = 3;
 		unaff_s1 = 1;
 	}
-	else {
-		if (type < 2) {
+	else
+	{
+		if (type < 2) 
+		{
 			iVar5 = iVar3 * unaff_s2;
-			if (type != 0) goto LAB_0004fab8;
+			if (type != 0) 
+				goto LAB_0004fab8;
 			unaff_s2 = 2;
 			unaff_s1 = 2;
 		}
-		else {
+		else 
+		{
 			iVar5 = iVar3 * unaff_s2;
-			if (type != 0x29a) goto LAB_0004fab8;
+
+			if (type != 0x29a) 
+				goto LAB_0004fab8;
+
 			unaff_s2 = 1;
 			unaff_s1 = 3;
 		}
 	}
+
 	iVar5 = iVar3 * unaff_s2;
 LAB_0004fab8:
-	iVar5 = iVar5 + player.cameraPos.vx * unaff_s1;
-	if (iVar5 < 0) {
-		iVar5 = iVar5 + 3;
-	}
-	iVar4 = pos->vy * unaff_s2 + player.cameraPos.vy * unaff_s1;
-	if (iVar4 < 0) {
-		iVar4 = iVar4 + 3;
-	}
-	iVar2 = pos->vz * unaff_s2 + player.cameraPos.vz * unaff_s1;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 3;
-	}
-	Start3DSoundVolPitch
-	(-1, 5, sample, iVar5 >> 2, iVar4 >> 2, iVar2 >> 2, 0,
-		((FrameCnt * iVar3 ^ lVar1 * pos->vz) & 0x3ffU) + 0xe00);
-	return;
-	*/
+	iVar5 = iVar5 + player[0].cameraPos.vx * unaff_s1;
+
+	iVar4 = pos->vy * unaff_s2 + player[0].cameraPos.vy * unaff_s1;
+
+	iVar2 = pos->vz * unaff_s2 + player[0].cameraPos.vz * unaff_s1;
+
+	Start3DSoundVolPitch(-1, 5, sample, iVar5 >> 2, iVar4 >> 2, iVar2 >> 2, 0, ((FrameCnt * iVar3 ^ lVar1 * pos->vz) & 0x3ffU) + 0xe00);
 }
 
 

@@ -3,6 +3,7 @@
 
 extern int TimeSinceLastSpeech;
 extern char force_siren[8];
+extern char phrase_top;
 
 extern void LoadBankFromLump(int bank, int lump); // 0x00052460
 
