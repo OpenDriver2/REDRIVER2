@@ -2126,7 +2126,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			if (((pc->flags & 6U) != 0) && (Z = 1, (pc->flags & 4U) == 0))
 				Z = -iVar13;
 
-			if (Z > 1)
+			if (Z > 0)
 			{
 				if (true) //((n == 0) || (rot << 2 <= iVar11 + -0xfa))
 				{
