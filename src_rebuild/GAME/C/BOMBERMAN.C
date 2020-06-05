@@ -1,8 +1,24 @@
 #include "THISDUST.H"
 #include "BOMBERMAN.H"
+#include "CONVERT.H"
+#include "OVERMAP.H"
+#include "PLAYERS.H"
+#include "CARS.H"
+#include "GLAUNCH.H"
+#include "JOB_FX.H"
+#include "DR2ROADS.H"
+#include "PAD.H"
+
+#include <stdlib.h>
 
 MODEL* gBombModel;
 _ExOBJECT explosion[5];
+static BOMB ThrownBombs[5];
+static int ThrownBombDelay = 0;
+static int CurrentBomb = 0;
+static int gWantFlash = 0;
+_CAR_DATA *gBombTargetVehicle;
+static int flashval;
 
 // decompiled code
 // original method signature: 
@@ -39,28 +55,18 @@ _ExOBJECT explosion[5];
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitThrownBombs(void)
 {
-	UNIMPLEMENTED();
-	/*
-	BOMB *pBVar1;
-	long lVar2;
-	int iVar3;
-	int in_a0;
+	int i;
 
-	iVar3 = 4;
-	pBVar1 = &BOMB_000aca68;
-	do {
-		pBVar1->flags = '\0';
-		iVar3 = iVar3 + -1;
-		pBVar1 = pBVar1 + -1;
-	} while (-1 < iVar3);
-	lVar2 = Random2(in_a0);
-	ThrownBombDelay = lVar2 % 0x2d + 8;
+	for (i = 0; i < 5; i++)
+		ThrownBombs[i].flags = 0;
+
+	ThrownBombDelay = Random2(0) % 45 + 8;
 	CurrentBomb = 0;
 	gWantFlash = 0;
-	gBombTargetVehicle = (_CAR_DATA *)0x0;
-	return;*/
+	gBombTargetVehicle = NULL;
 }
 
 
@@ -115,119 +121,111 @@ void InitThrownBombs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleThrownBombs(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
-	long lVar2;
-	int iVar3;
-	ulong uVar4;
-	uint uVar5;
-	int iVar6;
-	int in_a0;
 	VECTOR *pos;
 	_CAR_DATA *cp;
-	BOMB *pBVar7;
-	int iVar8;
-	undefined4 in_stack_ffffffcc;
-	int local_30;
-	undefined4 in_stack_ffffffd4;
+	BOMB *bomb;
+	int i;
+	int y;
 
-	if (gBombTargetVehicle != (_CAR_DATA *)0x0) {
-		ThrownBombDelay = ThrownBombDelay + -1;
-		if (ThrownBombDelay == -1) {
-			lVar2 = Random2(in_a0);
-			iVar8 = CurrentBomb;
-			pBVar7 = &ThrownBombs + CurrentBomb;
-			ThrownBombDelay = lVar2 % 0x2d + 8;
-			CurrentBomb = (CurrentBomb + 1) % 5;
-			pBVar7->flags = '\x01';
-			(&ThrownBombs)[iVar8].active = '\x01';
-			cp = gBombTargetVehicle;
-			(&ThrownBombs)[iVar8].position.vx = (gBombTargetVehicle->hd).where.t[0];
-			(&ThrownBombs)[iVar8].position.vy = (cp->hd).where.t[1] + -200;
-			(&ThrownBombs)[iVar8].position.vz = (cp->hd).where.t[2];
-			iVar6 = *(int *)(cp->st + 0x1c);
-			if (iVar6 < 0) {
-				iVar6 = iVar6 + 0xfff;
+	int dx, dz;
+	VECTOR velocity;
+
+	if (gBombTargetVehicle == NULL)
+		return;
+
+	ThrownBombDelay--;
+
+	if (ThrownBombDelay == -1)
+	{
+		ThrownBombDelay = Random2(0) % 45 + 8;
+
+		bomb = &ThrownBombs[CurrentBomb++];
+		CurrentBomb = CurrentBomb % 5;
+
+		bomb->flags = 1;
+		bomb->active = 1;
+
+		bomb->position.vx = gBombTargetVehicle->hd.where.t[0];
+		bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
+		bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
+
+		velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
+		velocity.vy = 0;
+		velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
+
+		bomb->velocity.vx = velocity.vx >> 10;
+		bomb->velocity.vz = velocity.vz >> 10;
+		bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR *)car_data[player[0].playerCarId].hd.where.t) >> 7);
+
+		if ((rand() & 1) == 0)
+			bomb->rot_speed = -bomb->velocity.vy;
+		else
+			bomb->rot_speed = bomb->velocity.vy;
+
+		if (bomb->velocity.vy < -100)
+			bomb->velocity.vy = -100;
+	}
+
+	bomb = ThrownBombs;
+
+	i = 0;
+	while (i < 5)
+	{
+		if ((bomb->flags & 1) != 0) 
+		{
+			bomb->position.vx += bomb->velocity.vx;
+			bomb->position.vy += bomb->velocity.vy;
+			bomb->position.vz += bomb->velocity.vz;
+
+			bomb->velocity.vy += 10;
+
+			bomb->active++;
+
+			y = -MapHeight(&bomb->position);
+
+			if (y < bomb->position.vy)
+			{
+				if ((bomb->flags & 2) == 0) 
+				{
+					bomb->flags |= 2;
+					bomb->position.vy = y;
+					bomb->velocity.vy = -bomb->velocity.vy / 2; // bounce
+				}
+				else 
+				{
+					bomb->flags = 0;
+					bomb->position.vy = y;
+
+					AddExplosion(bomb->position, LITTLE_BANG);
+					AddFlash(&bomb->position);
+
+					dx = (bomb->position.vx - player[0].pos[0]);
+					dz = (bomb->position.vz - player[0].pos[2]);
+
+					if (FIXED(dx * dx + dz * dz) < 1024)
+						SetPadVibration(*car_data[player[0].playerCarId].ai.padid, 3);
+				}
 			}
-			local_30 = iVar6 >> 0xc;
-			iVar3 = *(int *)(cp->st + 0x24);
-			if (iVar3 < 0) {
-				iVar3 = iVar3 + 0xfff;
-			}
-			(&ThrownBombs)[iVar8].velocity.vx = iVar6 >> 0x16;
-			(&ThrownBombs)[iVar8].velocity.vz = iVar3 >> 0x16;
-			uVar4 = Long2DDistance(&(&ThrownBombs)[iVar8].position,
-				(VECTOR *)car_data[player.playerCarId].hd.where.t);
-			(&ThrownBombs)[iVar8].velocity.vy = -(uVar4 >> 7);
-			uVar5 = rand();
-			if ((uVar5 & 1) == 0) {
-				(&ThrownBombs)[iVar8].rot_speed = -*(short *)&(&ThrownBombs)[iVar8].velocity.vy;
-			}
-			else {
-				(&ThrownBombs)[iVar8].rot_speed = *(short *)&(&ThrownBombs)[iVar8].velocity.vy;
-			}
-			if ((&ThrownBombs)[iVar8].velocity.vy < -100) {
-				(&ThrownBombs)[iVar8].velocity.vy = -100;
+
+			cp = car_data;
+			while (cp < car_data + 20)
+			{
+				if (cp != gBombTargetVehicle && cp->controlType != 0 && BombCollisionCheck(cp, pos) != 0)
+				{
+					bomb->flags = 0;
+
+					AddExplosion(bomb->position, BIG_BANG);
+					AddFlash(&bomb->position);
+				}
+				cp++;
 			}
 		}
-		pBVar7 = &ThrownBombs;
-		iVar8 = 0;
-		do {
-			if ((pBVar7->flags & 1) != 0) {
-				pos = &pBVar7->position;
-				iVar3 = (pBVar7->velocity).vy;
-				(pBVar7->position).vx = (pBVar7->position).vx + (pBVar7->velocity).vx;
-				iVar6 = (pBVar7->velocity).vz;
-				uVar1 = pBVar7->active;
-				(pBVar7->position).vy = (pBVar7->position).vy + iVar3;
-				(pBVar7->position).vz = (pBVar7->position).vz + iVar6;
-				(pBVar7->velocity).vy = iVar3 + 10;
-				pBVar7->active = uVar1 + '\x01';
-				iVar6 = MapHeight(pos);
-				iVar6 = -iVar6;
-				if (iVar6 < (pBVar7->position).vy) {
-					if ((pBVar7->flags & 2) == 0) {
-						iVar3 = (pBVar7->velocity).vy;
-						pBVar7->flags = pBVar7->flags | 2;
-						(pBVar7->position).vy = iVar6;
-						(pBVar7->velocity).vy = -iVar3 / 2;
-					}
-					else {
-						pBVar7->flags = '\0';
-						(pBVar7->position).vy = iVar6;
-						AddExplosion((VECTOR)CONCAT412(in_stack_ffffffd4,
-							CONCAT48(local_30, CONCAT44(in_stack_ffffffcc, 1))),
-							(pBVar7->position).vx);
-						AddFlash(pos);
-						iVar3 = (pBVar7->position).vx - player.pos[0];
-						iVar6 = (pBVar7->position).vz - player.pos[2];
-						if (iVar3 * iVar3 + iVar6 * iVar6 >> 0xc < 0x400) {
-							SetPadVibration((int)**(char **)car_data[player.playerCarId].ai, '\x03');
-						}
-					}
-				}
-				cp = car_data;
-				do {
-					if (((cp != gBombTargetVehicle) && (cp->controlType != '\0')) &&
-						(iVar6 = BombCollisionCheck(cp, pos), iVar6 != 0)) {
-						pBVar7->flags = '\0';
-						AddExplosion((VECTOR)(ZEXT1216(CONCAT48(in_stack_ffffffd4,
-							CONCAT44(local_30, in_stack_ffffffcc))) << 0x20),
-							(pBVar7->position).vx);
-						AddFlash(pos);
-					}
-					cp = cp + 1;
-				} while (cp < car_data + 0x14);
-			}
-			pBVar7 = pBVar7 + 1;
-			iVar8 = iVar8 + 1;
-		} while (iVar8 < 5);
-	}
-	return;
-	*/
+		bomb++;
+		i++;
+	};
 }
 
 
@@ -875,25 +873,18 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 	/* end block 4 */
 	// End Line: 1959
 
+// [D]
 void AddFlash(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	/*
-	ulong uVar1;
-	_PLAYER *pPoint2;
+	int dist;
 
-	if (NoPlayerControl == 0) {
-		pPoint2 = &player;
-	}
-	else {
-		pPoint2 = (_PLAYER *)&player.cameraPos;
-	}
-	uVar1 = Long2DDistance(pos, (VECTOR *)pPoint2);
-	if ((int)uVar1 < 0x9c4) {
+	dist = Long2DDistance(pos, NoPlayerControl ? &player[0].cameraPos : (VECTOR*)player[0].pos);
+
+	if (dist < 2500)
+	{
 		gWantFlash = 1;
-		flashval = 0x96 - (int)uVar1 / 0x14;
+		flashval = 150 - dist / 20;
 	}
-	return;*/
 }
 
 
