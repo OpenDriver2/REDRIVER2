@@ -271,6 +271,7 @@ TEXTURE_DETAILS lightref_texture;
 TEXTURE_DETAILS light_pool_texture;
 
 LAMP_STREAK Known_Lamps[21];
+int NewLamp[21];
 int LightIndex = 0;
 
 // decompiled code
@@ -2109,42 +2110,28 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void PreLampStreak(void)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	char *pcVar2;
-	int *piVar3;
-	LAMP_STREAK *pLVar4;
-	int iVar5;
+	int count;
 
-	iVar5 = 0;
-	if (StreakCount1 != 0) {
-		pLVar4 = Known_Lamps;
-		do {
-			if (pLVar4->set == '\0') {
-				StreakCount1 = StreakCount1 + -1;
-				sVar1 = (short)FrameCnt;
-				pLVar4->id = (&NewLamp)[StreakCount1];
-				pLVar4->clock = sVar1 + -2;
-			}
-			iVar5 = iVar5 + 1;
-			pLVar4 = pLVar4 + 1;
-		} while ((iVar5 < 0x14) && (StreakCount1 != 0));
+	for (count = 0; count < 21 && StreakCount1 != 0; count++)
+	{
+		if (Known_Lamps[count].set == 0)
+		{
+			StreakCount1--;
+			Known_Lamps[count].id = NewLamp[StreakCount1];
+			Known_Lamps[count].clock = FrameCnt - 2;
+		}
 	}
-	pcVar2 = &Known_Lamps[0].set;
-	piVar3 = &NewLamp;
-	iVar5 = 0x13;
-	do {
-		*pcVar2 = '\0';
-		pcVar2 = pcVar2 + 0x18;
-		*piVar3 = 0;
-		iVar5 = iVar5 + -1;
-		piVar3 = piVar3 + 1;
-	} while (-1 < iVar5);
+
+	for (count = 0; count < 21; count++)
+	{
+		Known_Lamps[count].set = 0;
+		NewLamp[count] = 0;
+	}
+
 	StreakCount1 = 0;
-	return;*/
 }
 
 
@@ -2177,31 +2164,25 @@ void PreLampStreak(void)
 	/* end block 4 */
 	// End Line: 10535
 
+// [D]
 int find_lamp_streak(int LampId)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	char *pcVar1;
-	int *piVar2;
-	int iVar3;
+	int count;
 
-	iVar3 = 0;
-	pcVar1 = &Known_Lamps[0].set;
-	do {
-		if (*(int *)(pcVar1 + -6) == LampId) {
-			*pcVar1 = '\x01';
-			return iVar3;
+	for (count = 0; count < 21; count++)
+	{
+		if (Known_Lamps[0].id == LampId)
+		{
+			Known_Lamps[0].set = 1;
+			return count;
 		}
-		iVar3 = iVar3 + 1;
-		pcVar1 = pcVar1 + 0x18;
-	} while (iVar3 < 0x14);
-	if (StreakCount1 < 0x14) {
-		piVar2 = &NewLamp + StreakCount1;
-		StreakCount1 = StreakCount1 + 1;
-		*piVar2 = LampId;
 	}
-	return -1;*/
+
+	// allocate new streak
+	if (StreakCount1 < 21)
+		NewLamp[StreakCount1++] = LampId;
+
+	return -1;
 }
 
 
