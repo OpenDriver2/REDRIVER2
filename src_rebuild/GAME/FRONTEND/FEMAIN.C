@@ -1937,6 +1937,10 @@ void EndFrame(void)
 	DrawOTag((u_long*)(pDVar2->ot + 0x10));
 	ClearOTagR((u_long*)(current->ot), 0x10);
 	VSync(0);
+
+#ifndef PSX
+	Emulator_EndScene();
+#endif
 }
 
 

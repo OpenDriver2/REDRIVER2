@@ -2225,6 +2225,10 @@ void DrawGame(void)
 		SwapDrawBuffers2(1);
 	}
 
+#ifndef PSX
+	Emulator_EndScene();
+#endif
+
 	FrameCnt++;
 }
 

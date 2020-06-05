@@ -376,15 +376,19 @@ DISPENV* SetDefDispEnv(DISPENV* env, int x, int y, int w, int h)//(F)
 	env->disp.x = x;
 	env->disp.y = y;
 	env->disp.w = w;
+	env->disp.h = h;
+
 	env->screen.x = 0;
 	env->screen.y = 0;
 	env->screen.w = 0;
 	env->screen.h = 0;
+
 	env->isrgb24 = 0;
 	env->isinter = 0;
+
 	env->pad1 = 0;
 	env->pad0 = 0;
-	env->disp.h = h;
+	
 	return 0;
 }
 
@@ -663,7 +667,6 @@ void DrawOTag(u_long* p)
 	AggregatePTAGsToSplits(p, false);
 
 	DrawAggregatedSplits();
-	Emulator_EndScene();
 }
 
 void DrawPrim(void* p)
@@ -1222,6 +1225,7 @@ int ParsePrimitive(uintptr_t primPtr)
 				}
 				case 0xE3:
 				{
+					// FIXME: this is ugly
 					DR_AREA* drarea = (DR_AREA*)pTag;
 
 					RECT16 rect;
@@ -1236,6 +1240,7 @@ int ParsePrimitive(uintptr_t primPtr)
 					activeDrawEnv.clip = rect;
 
 					primitive_size = sizeof(DR_AREA);
+
 
 #if defined(DEBUG_POLY_COUNT)
 					polygon_count++;

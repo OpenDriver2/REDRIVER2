@@ -214,8 +214,8 @@ void SetFullscreenDrawing(void)
 
 	drenv = (DR_ENV *)current->primptr;
 
-	drawenv.clip.x = 0x100;
-	SetDefDrawEnv((DRAWENV *)&drawenv, 0, current->draw.clip.y & 0x100, 0x140, 0x100);
+	drawenv.clip.x = 256;
+	SetDefDrawEnv((DRAWENV *)&drawenv, 0, current->draw.clip.y & 256, 320, 256);
 
 	SetDrawEnv(drenv, &drawenv);
 

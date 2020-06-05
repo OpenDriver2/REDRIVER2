@@ -1131,29 +1131,24 @@ void SetupDrawBuffers(void)
 	DB **ppDVar5;
 	RECT16 rect;
 
-	SetDefDispEnv(&MPBuff[0][0].disp, 0, 0,   320, 256);
-	SetDefDispEnv(&MPBuff[0][1].disp, 0, 256, 320, 256);
-
+	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, 256);
+	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, 256);
 	MPBuff[0][0].disp.screen.h = 256;
 	MPBuff[0][1].disp.screen.h = 256;
+	MPBuff[0][0].disp.screen.x = draw_mode.framex;
+	MPBuff[0][1].disp.screen.x = draw_mode.framex;
+	MPBuff[0][0].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.y = draw_mode.framey;
 
-	MPBuff[0][0].disp.screen.x = draw_mode_pal.framex;
-	MPBuff[0][1].disp.screen.x = draw_mode_pal.framex;
-
-	MPBuff[0][0].disp.screen.y = draw_mode_pal.framey;
-	MPBuff[0][1].disp.screen.y = draw_mode_pal.framey;
-
-	if (NoPlayerControl == 0) 
+	if (NoPlayerControl == 0)
 		SetupDrawBufferData(NumPlayers);
-	else 
+	else
 		SetupDrawBufferData(1);
 
 	ppDVar5 = MPlast;
-	ppDVar3 = MPcurrent;
-
 	pDVar1 = MPBuff[0];
-	pDVar4 = MPBuff[1];
-	
+	pDVar4 = MPBuff[0] + 1;
+	ppDVar3 = MPcurrent;
 	iVar2 = 1;
 	do {
 		*ppDVar5 = pDVar4;
@@ -1164,15 +1159,12 @@ void SetupDrawBuffers(void)
 		iVar2 = iVar2 + -1;
 		pDVar1 = pDVar1 + 2;
 	} while (-1 < iVar2);
-
-	rect.w = 320;
+	rect.w = 0x140;
 	rect.x = 0;
 	rect.y = 0;
-	rect.h = 512;
-
+	rect.h = 0x200;
 	current = MPcurrent[0];
 	last = MPlast[0];
-
 	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
 }
@@ -1217,8 +1209,8 @@ void SetupDrawBufferData(int num_players)
 	int iVar2;
 	char *pcVar3;
 	OTTYPE *puVar4;
-	int iVar5;
-	int iVar6;
+	int i;
+	int j;
 	int x[2];
 	int y[2];
 	int height;
@@ -1237,8 +1229,8 @@ void SetupDrawBufferData(int num_players)
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
-		y[1] = 0x80;
-		height = 0x7f;
+		y[1] = 128;
+		height = 127;
 	}
 	else
 	{
@@ -1251,9 +1243,9 @@ void SetupDrawBufferData(int num_players)
 	
 	toggle = 0;
 
-	for (int i = 0; i < num_players; i++)
+	for (i = 0; i < 2; i++)
 	{
-		for (int j = 0; j < 2; j++)
+		for (j = 0; j < num_players; j++)
 		{
 			u_long *otpt;
 			unsigned char *primpt;
@@ -1271,15 +1263,12 @@ void SetupDrawBufferData(int num_players)
 			}
 
 			toggle ^= 1;
-			
-			// [A] I have no clue how it should work...
+			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
 			MPBuff[j][i].primtab = (char*)primpt;
 			MPBuff[j][i].primptr = (char*)PRIMpt;
 			MPBuff[j][i].ot = (OTTYPE*)otpt;
 		}
-
-		InitaliseDrawEnv(MPBuff[i], x[i], y[i], 320, height);
-	}
+	};
 
 	aspect.m[0][0] = 4096;
 	aspect.m[0][1] = 0;
@@ -1313,8 +1302,8 @@ void SetupDrawBufferData(int num_players)
 // [D]
 void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h)
 {
-	SetDefDrawEnv(&pBuff[0].draw, x, y, w, h);
-	SetDefDrawEnv(&pBuff[1].draw, x, y + 256, w, h);
+	SetDefDrawEnv(&pBuff[0].draw, x, y + 256, w, h);
+	SetDefDrawEnv(&pBuff[1].draw, x, y, w, h);
 
 	pBuff[0].id = 0;
 	pBuff[0].draw.dfe = 1;

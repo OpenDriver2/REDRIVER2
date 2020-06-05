@@ -208,6 +208,11 @@ void FadeInHiresScreen(char *filename)
 		}
 
 		DrawOTag((u_long*)&ot);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
+
 		col += 4;
 	} while (col < 140);
 
@@ -336,6 +341,11 @@ void FadeOutHiresScreen(void)
 		}
 
 		DrawOTag((u_long*)&ot);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
+
 		col -= 4;
 	} while (col > -4);
 
