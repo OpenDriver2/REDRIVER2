@@ -11,6 +11,11 @@
 #include "CAMERA.H"
 #include "DRAW.H"
 #include "DEBRIS.H"
+#include "MISSION.H"
+#include "DENTING.H"
+#include "COSMETIC.H"
+#include "BCOLLIDE.H"
+#include "PEDEST.H"
 
 #include "../ASM/ASMTEST.H"
 
@@ -373,77 +378,73 @@ void DrawThrownBombs(void)
 	/* end block 2 */
 	// End Line: 1002
 
+// [D]
 void BombThePlayerToHellAndBack(int car)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	ushort uVar2;
-	int iVar3;
-	int iVar4;
-	long lVar5;
-	long *plVar6;
-	long *plVar7;
-	BOMB *pBVar8;
-	long *plVar9;
+	BOMB *bomb;
 
-	if (car != -1) {
-		car_data[car].ap.damage[0] = 0xfff;
-		car_data[car].ap.damage[1] = 0xfff;
-		car_data[car].ap.damage[2] = 0xfff;
-		car_data[car].ap.damage[3] = 0xfff;
-		car_data[car].ap.damage[4] = 0xfff;
-		car_data[car].ap.damage[5] = 0xfff;
-		uVar2 = (ushort)MaxPlayerDamage;
-		car_data[car].ap.needsDenting = '\x01';
-		car_data[car].totalDamage = uVar2;
-		DentCar(car_data + car);
-		iVar1 = CurrentBomb;
-		if (maxCivCars == 0) {
-			trap(7);
-		}
-		gBombTargetVehicle = car_data + (car + 1) % maxCivCars;
-		plVar7 = car_data[car].hd.where.t;
-		pBVar8 = &ThrownBombs + CurrentBomb;
-		CurrentBomb = (CurrentBomb + 1) % 5;
-		plVar6 = car_data[car].hd.where.t + 1;
-		plVar9 = car_data[car].hd.where.t + 2;
-		pBVar8->flags = '\x01';
-		(&ThrownBombs)[iVar1].active = '\x01';
-		iVar3 = CurrentBomb;
-		(&ThrownBombs)[iVar1].position.vx = *plVar7;
-		(&ThrownBombs)[iVar1].position.vy = *plVar6;
-		lVar5 = *plVar9;
-		(&ThrownBombs)[iVar1].velocity.vx = 0;
-		(&ThrownBombs)[iVar1].velocity.vy = 0;
-		(&ThrownBombs)[iVar1].velocity.vz = 0;
-		(&ThrownBombs)[iVar1].position.vz = lVar5;
-		pBVar8 = &ThrownBombs + CurrentBomb;
-		CurrentBomb = (CurrentBomb + 1) % 5;
-		pBVar8->flags = '\x01';
-		(&ThrownBombs)[iVar3].active = '\x01';
-		iVar1 = CurrentBomb;
-		(&ThrownBombs)[iVar3].position.vx = *plVar7 + 0xaa;
-		(&ThrownBombs)[iVar3].position.vy = *plVar6;
-		iVar4 = *plVar9;
-		(&ThrownBombs)[iVar3].velocity.vx = 0;
-		(&ThrownBombs)[iVar3].velocity.vy = 0;
-		(&ThrownBombs)[iVar3].velocity.vz = 0;
-		(&ThrownBombs)[iVar3].position.vz = iVar4 + 0x49;
-		pBVar8 = &ThrownBombs + CurrentBomb;
-		CurrentBomb = (CurrentBomb + 1) % 5;
-		pBVar8->flags = '\x01';
-		(&ThrownBombs)[iVar1].active = '\x01';
-		(&ThrownBombs)[iVar1].position.vx = *plVar7 + -0x6d;
-		(&ThrownBombs)[iVar1].position.vy = *plVar6;
-		iVar3 = *plVar9;
-		(&ThrownBombs)[iVar1].velocity.vx = 0;
-		(&ThrownBombs)[iVar1].velocity.vy = 0;
-		(&ThrownBombs)[iVar1].velocity.vz = 0;
-		(&ThrownBombs)[iVar1].position.vz = iVar3 + -0x93;
+	if (car == -1)
+		return;
+
+	car_data[car].ap.damage[0] = 0xfff;
+	car_data[car].ap.damage[1] = 0xfff;
+	car_data[car].ap.damage[2] = 0xfff;
+	car_data[car].ap.damage[3] = 0xfff;
+	car_data[car].ap.damage[4] = 0xfff;
+	car_data[car].ap.damage[5] = 0xfff;
+
+	car_data[car].ap.needsDenting = 1;
+	car_data[car].totalDamage = MaxPlayerDamage[0];
+
+	DentCar(&car_data[car]);
+
+	if (maxCivCars == 0) 
+	{
+		trap(7);
 	}
-	return;
-	*/
+
+	gBombTargetVehicle = &car_data[(car + 1) % maxCivCars];
+
+	bomb = &ThrownBombs[CurrentBomb++];
+	CurrentBomb = CurrentBomb % 5;
+
+	bomb->flags = 1;
+	bomb->active = 1;
+
+	bomb->position.vx = car_data[car].hd.where.t[0];
+	bomb->position.vy = car_data[car].hd.where.t[1];
+	bomb->position.vz = car_data[car].hd.where.t[2];
+
+	bomb->velocity.vx = 0;
+	bomb->velocity.vy = 0;
+	bomb->velocity.vz = 0;
+		
+	bomb = &ThrownBombs[CurrentBomb++];
+	CurrentBomb = CurrentBomb % 5;
+
+	bomb->flags = 1;
+	bomb->active = 1;
+
+	bomb->position.vx = car_data[car].hd.where.t[0] + 170;
+	bomb->position.vy = car_data[car].hd.where.t[1];
+	bomb->position.vz = car_data[car].hd.where.t[2] + 73;
+
+	bomb->velocity.vx = 0;
+	bomb->velocity.vy = 0;
+	bomb->velocity.vz = 0;
+		
+	bomb = &ThrownBombs[CurrentBomb++];
+	CurrentBomb = CurrentBomb % 5;
+
+	bomb->flags = 1;
+	bomb->active = 1;
+	bomb->position.vx = car_data[car].hd.where.t[0] - 109;
+	bomb->position.vy = car_data[car].hd.where.t[1];
+	bomb->position.vz = car_data[car].hd.where.t[2] - 147;
+
+	bomb->velocity.vx = 0;
+	bomb->velocity.vy = 0;
+	bomb->velocity.vz = 0;
 }
 
 
@@ -479,40 +480,28 @@ void BombThePlayerToHellAndBack(int car)
 	/* end block 3 */
 	// End Line: 1236
 
+// [D]
 int BombCollisionCheck(_CAR_DATA *cp, VECTOR *pPos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
-	int iVar2;
-	CDATA2D local_d8;
-	long local_74;
-	long local_6c;
-	int local_34;
-	int local_30;
-	int local_2c;
-	int local_c;
+	CDATA2D cd[2] = {0};
 
-	uVar1 = (uint)(byte)(cp->ap).model;
-	local_34 = (cp->hd).direction;
-	local_30 = (int)car_cosmetics[uVar1].colBox.vz;
-	local_2c = (int)car_cosmetics[uVar1].colBox.vx;
-	local_74 = (cp->hd).where.t[0];
-	local_6c = (cp->hd).where.t[2];
-	local_d8.x.vx = pPos->vx;
-	local_d8.x.vz = pPos->vz;
-	local_d8.length[0] = 0x28;
-	local_d8.length[1] = 0x28;
-	local_d8.theta = 0;
-	local_d8.avel = 0;
-	local_d8.vel.vx = 0;
-	local_d8.vel.vy = 0;
-	local_d8.vel.vz = 0;
-	local_c = local_30;
-	iVar2 = bcollided2d(&local_d8, 1);
-	return (uint)(iVar2 != 0);
-	*/
+	cd[1].theta = cp->hd.direction;
+	cd[1].length[0] = car_cosmetics[cp->ap.model].colBox.vz;
+	cd[1].length[1] = car_cosmetics[cp->ap.model].colBox.vx;
+	cd[1].x.vx = cp->hd.where.t[0];
+	cd[1].x.vz = cp->hd.where.t[2];
+
+	cd[0].x.vx = pPos->vx;
+	cd[0].x.vz = pPos->vz;
+	cd[0].length[0] = 40;
+	cd[0].length[1] = 40;
+	cd[0].theta = 0;
+	cd[0].avel = 0;
+	cd[0].vel.vx = 0;
+	cd[0].vel.vy = 0;
+	cd[0].vel.vz = 0;
+
+	return bcollided2d(cd, 1) != 0;
 }
 
 
@@ -618,239 +607,217 @@ int BombCollisionCheck(_CAR_DATA *cp, VECTOR *pPos)
 
 /* WARNING: Removing unreachable block (ram,0x0001ef54) */
 
+const int minBoxSize = 90;
+const int littleBoxRange = 400;
+const int halfStrike = 0x32000;
+const int fullStrike = 0x32000;
+
+// [D]
 void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 {
-	UNIMPLEMENTED();
-	/*
+	static int setUsed = 0;
+
 	ExplosionType EVar1;
 	bool bVar2;
 	uint uVar3;
-	_PLAYER *p_Var4;
+	VECTOR *pos;
 	int strikeVel;
 	int iVar5;
 	int iVar6;
 	int iVar7;
 	int iVar8;
-	CDATA2D local_160;
-	long local_fc;
-	long local_f4;
-	int local_bc;
-	int local_b8;
-	int local_b4;
-	int local_94;
-	CRET2D local_90;
-	VECTOR local_68;
-	int local_58;
-	int local_54;
-	int local_50;
-	int local_38;
-	int local_34;
-	int local_30;
+	int iVar9;
+	int iVar10;
+	CDATA2D cd[2];
+	int carLength[2];
+	CRET2D collisionResult;
+	VECTOR velocity;
+	long pointVel[4];
+	long reaction[4];
+	long(*lever)[4];
 
 	bVar2 = cp != car_data + 0x14;
-	if ((player.playerType == '\x02') || (bVar2)) {
-		uVar3 = (uint)(byte)(cp->ap).model;
-		local_fc = (cp->hd).where.t[0];
-		local_b8 = (int)car_cosmetics[uVar3].colBox.vz;
-		local_b4 = (int)car_cosmetics[uVar3].colBox.vx;
-		local_bc = (cp->hd).direction;
-		local_f4 = (cp->hd).where.t[2];
-		if (pE->type < 2) {
+
+	cd[1].x.vx = cp->hd.where.t[0];
+	cd[1].length[0] = car_cosmetics[cp->ap.model].colBox.vz;
+	cd[1].length[1] = car_cosmetics[cp->ap.model].colBox.vx;
+	cd[1].theta = cp->hd.direction;
+	cd[1].x.vz = cp->hd.where.t[2];
+
+	if (false) 
+	{
+	LAB_0001ef58:
+		cd[0].length[1] = 0;
+	}
+	else
+	{
+		if (pE->type < 2) 
+		{
 			strikeVel = pE->speed;
-			if (strikeVel == 0) {
-				trap(7);
-			}
-			if (strikeVel == 0) {
-				trap(7);
-			}
-			if (0x1000 / strikeVel == 0) {
-				trap(7);
-			}
-			local_160.length[1] =
-				minBoxSize + ((pE->time / strikeVel) * littleBoxRange) / (0x1000 / strikeVel);
+			cd[0].length[1] = minBoxSize + ((pE->time / strikeVel) * littleBoxRange) / (0x1000 / strikeVel);
 		}
-		else {
-			if (pE->type == HEY_MOMMA) {
-				p_Var4 = (_PLAYER *)(cp->hd).where.t;
-				if (!bVar2) {
-					p_Var4 = &player;
-				}
-				strikeVel = (pE->pos).vx;
-				local_160.length[1] = strikeVel - p_Var4->pos[0];
-				if (local_160.length[1] < 0) {
-					local_160.length[1] = p_Var4->pos[0] - strikeVel;
-				}
-				iVar5 = (pE->pos).vz;
-				strikeVel = iVar5 - p_Var4->pos[2];
-				if (strikeVel < 0) {
-					strikeVel = p_Var4->pos[2] - iVar5;
-				}
-				if (local_160.length[1] < strikeVel) {
-					local_160.length[1] = strikeVel;
-				}
-				if (local_160.length[1] < 3000) {
-					if (bVar2) {
-						if ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 == (int)player.playerCarId) {
-							cp->totalDamage = (ushort)MaxPlayerDamage;
-							player.dying = '\x01';
-							lockAllTheDoors = '\x01';
-						}
+		else
+		{
+			if (pE->type != HEY_MOMMA) 
+				goto LAB_0001ef58;
+
+			pos = (VECTOR*)cp->hd.where.t;
+			if (!bVar2)
+				pos = (VECTOR*)player->pos;
+
+			strikeVel = (pE->pos).vx;
+			cd[0].length[1] = strikeVel - pos->vx;
+
+			if (cd[0].length[1] < 0)
+				cd[0].length[1] = pos->vx - strikeVel;
+
+			iVar6 = (pE->pos).vz;
+			strikeVel = iVar6 - pos->vz;
+
+			if (strikeVel < 0)
+				strikeVel = pos->vz - iVar6;
+
+			if (cd[0].length[1] < strikeVel)
+				cd[0].length[1] = strikeVel;
+
+			if (cd[0].length[1] < 3000)
+			{
+				if (bVar2)
+				{
+					if (CAR_INDEX(cp) == player[0].playerCarId) 
+					{
+						cp->totalDamage = MaxPlayerDamage[0];
+						player[0].dying = 1;
+						lockAllTheDoors = 1;
 					}
-					else {
-						bKillTanner = 1;
-						player.dying = '\x01';
-					}
 				}
-				else {
-					local_160.length[1] = 10;
+				else 
+				{
+					bKillTanner = 1;
+					player[0].dying = 1;
 				}
 			}
-			else {
-				local_160.length[1] = 0;
+			else 
+			{
+				cd[0].length[1] = 10;
 			}
-		}
-		local_160.x.vx = (pE->pos).vx;
-		local_160.x.vz = (pE->pos).vz;
-		local_160.theta = 0;
-		local_160.avel = 0;
-		local_160.vel.vx = 0;
-		local_160.vel.vy = 0;
-		local_160.vel.vz = 0;
-		local_160.length[0] = local_160.length[1];
-		local_94 = local_b8;
-		strikeVel = bcollided2d(&local_160, 1);
-		if (strikeVel != 0) {
-			bFindCollisionPoint(&local_160, &local_90);
-			iVar8 = *(int *)(cp->st + 0x2c);
-			iVar7 = (cp->hd).where.t[2] + (local_90.penetration * local_90.surfNormal.vz + 0x800 >> 0xc);
-			local_30 = local_90.hit.vz - iVar7;
-			local_34 = (cp->hd).where.t[1];
-			local_90.hit.vy = local_34 + 0x3c;
-			iVar5 = *(int *)(cp->st + 0x30);
-			local_34 = local_90.hit.vy - local_34;
-			iVar6 = (cp->hd).where.t[0] + (local_90.penetration * local_90.surfNormal.vx + 0x800 >> 0xc);
-			local_38 = local_90.hit.vx - iVar6;
-			strikeVel = *(int *)(cp->st + 0x28);
-			local_90.surfNormal.vy = 0;
-			(cp->hd).where.t[2] = iVar7;
-			(cp->hd).where.t[0] = iVar6;
-			local_58 = ((iVar8 * local_30 - iVar5 * local_34) + 0x800 >> 0xc) + *(int *)(cp->st + 0x1c);
-			local_54 = ((iVar5 * local_38 - strikeVel * local_30) + 0x800 >> 0xc) +
-				*(int *)(cp->st + 0x20);
-			local_50 = ((strikeVel * local_34 - iVar8 * local_38) + 0x800 >> 0xc) +
-				*(int *)(cp->st + 0x24);
-			EVar1 = pE->type;
-			if (EVar1 == LITTLE_BANG) {
-				strikeVel = pE->speed;
-				if (strikeVel == 0) {
-					trap(7);
-				}
-				if (strikeVel == 0) {
-					trap(7);
-				}
-				if (0x1000 / strikeVel == 0) {
-					trap(7);
-				}
-				strikeVel = halfStrike - ((pE->time / strikeVel) * halfStrike) / (0x1000 / strikeVel);
-			}
-			else {
-				if (EVar1 < 2) {
-					strikeVel = fullStrike;
-					if (EVar1 != BIG_BANG) {
-						strikeVel = 0;
-					}
-				}
-				else {
-					strikeVel = 0;
-					if (EVar1 == HEY_MOMMA) {
-						strikeVel = fullStrike << 1;
-					}
-				}
-			}
-			DAT_000aa0ec = 1;
-			if (0 < strikeVel) {
-				local_68.vx = *(int *)(cp->st + 0x1c);
-				local_90.hit.vy = -local_90.hit.vy;
-				if (local_68.vx < 0) {
-					local_68.vx = local_68.vx + 0xfff;
-				}
-				local_68.vx = local_68.vx >> 0xc;
-				local_68.vz = *(int *)(cp->st + 0x24);
-				local_68.vy = -0x11;
-				if (local_68.vz < 0) {
-					local_68.vz = local_68.vz + 0xfff;
-				}
-				local_68.vz = local_68.vz >> 0xc;
-				if (0x3600 < strikeVel) {
-					local_90.hit.vy = local_90.hit.vy + 0x1e;
-					local_68.vy = -0x25;
-					Setup_Sparks((VECTOR *)&local_90, &local_68, 4, '\0');
-					local_90.hit.vy = local_90.hit.vy + -0x1e;
-					local_68.vy = local_68.vy + 0x14;
-					if (0x1b000 < strikeVel) {
-						iVar5 = GetDebrisColour(cp);
-						Setup_Debris((VECTOR *)&local_90, &local_68, 6, iVar5 << 0x10);
-						if (cp->controlType == '\x01') {
-							SetPadVibration((int)**(char **)cp->ai, '\x01');
-						}
-					}
-				}
-				DamageCar(cp, &local_160, &local_90, strikeVel);
-				iVar5 = local_38 * local_90.surfNormal.vx + local_34 * local_90.surfNormal.vy +
-					local_30 * local_90.surfNormal.vz + 0x800 >> 0xc;
-				iVar5 = (((local_38 * local_38 + local_30 * local_30) - iVar5 * iVar5) *
-					(int)car_cosmetics[(byte)(cp->ap).model].twistRateY + 0x800 >> 0xc) + 0x1000;
-				if (strikeVel < 0x7f001) {
-					strikeVel = (strikeVel << 0xc) / iVar5;
-					if (iVar5 == 0) {
-						trap(7);
-					}
-				}
-				else {
-					if (iVar5 == 0) {
-						trap(7);
-					}
-					strikeVel = strikeVel / iVar5 << 0xc;
-				}
-				if (strikeVel < 0) {
-					strikeVel = strikeVel + 0x3f;
-				}
-				strikeVel = strikeVel >> 6;
-				if (local_90.surfNormal.vx < 0) {
-					local_90.surfNormal.vx = local_90.surfNormal.vx + 0x3f;
-				}
-				iVar5 = strikeVel * (local_90.surfNormal.vx >> 6);
-				if (local_90.surfNormal.vy < 0) {
-					local_90.surfNormal.vy = local_90.surfNormal.vy + 0x3f;
-				}
-				iVar6 = strikeVel * (local_90.surfNormal.vy >> 6);
-				if (local_90.surfNormal.vz < 0) {
-					local_90.surfNormal.vz = local_90.surfNormal.vz + 0x3f;
-				}
-				strikeVel = strikeVel * (local_90.surfNormal.vz >> 6);
-				*(int *)(cp->st + 0x1c) = *(int *)(cp->st + 0x1c) + iVar5;
-				*(int *)(cp->st + 0x20) = *(int *)(cp->st + 0x20) + iVar6;
-				*(int *)(cp->st + 0x24) = *(int *)(cp->st + 0x24) + strikeVel;
-				(cp->hd).aacc[2] =
-					((cp->hd).aacc[2] + (local_38 * iVar6 + 0x800 >> 0xc)) -
-					(local_34 * iVar5 + 0x800 >> 0xc);
-				(cp->hd).aacc[0] =
-					((cp->hd).aacc[0] + (local_34 * strikeVel + 0x800 >> 0xc)) -
-					(local_30 * iVar6 + 0x800 >> 0xc);
-				(cp->hd).aacc[1] =
-					((cp->hd).aacc[1] + (local_30 * iVar5 + 0x800 >> 0xc)) -
-					(local_38 * strikeVel + 0x800 >> 0xc);
-			}
-		}
-		if (bVar2) {
-			return;
 		}
 	}
-	if (DAT_000aa0ec != 0) {
+
+	cd[0].x.vx = (pE->pos).vx;
+	cd[0].x.vz = (pE->pos).vz;
+	cd[0].theta = 0;
+	cd[0].avel = 0;
+	cd[0].vel.vx = 0;
+	cd[0].vel.vy = 0;
+	cd[0].vel.vz = 0;
+	cd[0].length[0] = cd[0].length[1];
+
+	if (bcollided2d(cd, 1) != 0)
+	{
+		bFindCollisionPoint(cd, &collisionResult);
+
+		iVar9 = cp->hd.where.t[2] + FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
+
+		iVar8 = collisionResult.hit.vz - iVar9;
+		iVar6 = cp->hd.where.t[1];
+		iVar10 = iVar6 + 0x3c;
+		iVar6 = iVar10 - iVar6;
+
+		strikeVel = cp->hd.where.t[0] + FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
+
+		iVar7 = collisionResult.hit.vx - strikeVel;
+		collisionResult.surfNormal.vy = 0;
+
+		cp->hd.where.t[2] = iVar9;
+		cp->hd.where.t[0] = strikeVel;
+
+		if (pE->type == LITTLE_BANG) 
+		{
+			strikeVel = pE->speed;
+			strikeVel = halfStrike - ((pE->time / strikeVel) * halfStrike) / (0x1000 / strikeVel);
+		}
+		else if (pE->type < 2)
+		{
+			strikeVel = fullStrike;
+			if (pE->type != BIG_BANG)
+			{
+				strikeVel = 0;
+			}
+		}
+		else
+		{
+			strikeVel = 0;
+			if (pE->type == HEY_MOMMA)
+			{
+				strikeVel = fullStrike << 1;
+			}
+		}
+
+		setUsed = 1;
+
+		if (0 < strikeVel)
+		{
+			iVar9 = cp->st.n.linearVelocity[0];
+			collisionResult.hit.vy = -iVar10;
+
+			velocity.vx = iVar9 >> 0xc;
+			iVar9 = cp->st.n.linearVelocity[2];
+			velocity.vy = -0x11;
+
+			velocity.vz = iVar9 >> 0xc;
+
+			if (0x3600 < strikeVel) 
+			{
+				collisionResult.hit.vy = collisionResult.hit.vy + 0x1e;
+				velocity.vy = -0x25;
+				Setup_Sparks(&collisionResult.hit, &velocity, 4, 0);
+				collisionResult.hit.vy = collisionResult.hit.vy + -0x1e;
+				velocity.vy = velocity.vy + 0x14;
+
+				if (0x1b000 < strikeVel) 
+				{
+					iVar9 = GetDebrisColour(cp);
+					Setup_Debris(&collisionResult.hit, &velocity, 6, iVar9 << 0x10);
+
+					if (cp->controlType == 1) 
+						SetPadVibration(*cp->ai.padid, 1);
+				}
+			}
+
+			DamageCar(cp, cd, &collisionResult, strikeVel);
+
+			iVar9 = FIXED(iVar7 * collisionResult.surfNormal.vx + iVar6 * collisionResult.surfNormal.vy + iVar8 * collisionResult.surfNormal.vz);
+			iVar9 = FIXED(((iVar7 * iVar7 + iVar8 * iVar8) - iVar9 * iVar9) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;
+
+			if (strikeVel < 0x7f001) 
+				strikeVel = (strikeVel * 4096) / iVar9;
+			else
+				strikeVel = (strikeVel / iVar9) * 4096;
+
+			strikeVel = strikeVel >> 6;
+
+			iVar9 = strikeVel * (collisionResult.surfNormal.vx >> 6);
+			iVar10 = strikeVel * (collisionResult.surfNormal.vy >> 6);
+			strikeVel = strikeVel * (collisionResult.surfNormal.vz >> 6);
+
+			cp->st.n.linearVelocity[0] = cp->st.n.linearVelocity[0] + iVar9;
+			cp->st.n.linearVelocity[1] = cp->st.n.linearVelocity[1] + iVar10;
+			cp->st.n.linearVelocity[2] = cp->st.n.linearVelocity[2] + strikeVel;
+			
+			cp->hd.aacc[0] = (cp->hd.aacc[0] + FIXED(iVar6 * strikeVel)) - FIXED(iVar8 * iVar10);
+			cp->hd.aacc[1] = (cp->hd.aacc[1] + FIXED(iVar8 * iVar9)) - FIXED(iVar7 * strikeVel);
+			cp->hd.aacc[2] = (cp->hd.aacc[2] + FIXED(iVar7 * iVar10)) - FIXED(iVar6 * iVar9);
+		}
+	}
+	if (bVar2) {
+		return;
+	}
+LAB_0001f4b0:
+	if (setUsed != 0) {
 		pE->type = BANG_USED;
-		DAT_000aa0ec = 0;
+		setUsed = 0;
 	}
-	return;*/
 }
 
 
