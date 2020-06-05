@@ -1923,6 +1923,7 @@ void EndFrame(void)
 
 	DrawSync(0);
 	VSync(0);
+
 	PutDispEnv(&current->disp);
 	PutDrawEnv(&current->draw);
 

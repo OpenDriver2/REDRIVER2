@@ -94,6 +94,10 @@ void ShowLoading(void)
 		DrawSync(0);
 		PutDrawEnv(&load_draw);
 		PutDispEnv(&load_disp);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
 	}
 }
 
@@ -421,8 +425,13 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 			iVar12 = iVar12 + -1;
 			pPVar5 = pPVar5 + 1;
 		} while (-1 < iVar12);
+
 		DrawSync(0);
 		VSync(0);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
 
 		PutDispEnv(&load_disp);
 		PutDrawEnv(&load_draw);
@@ -510,8 +519,8 @@ void CloseShutters(int speed, int width, int height)
 		DrawPrim(poly + 1);
 
 #ifndef PSX
-		DrawSync(-1);
-#endif // !PSX
+		Emulator_EndScene();
+#endif
 
 		if (0xff < h) 
 			done = true;

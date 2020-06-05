@@ -1220,8 +1220,9 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	glDisable(GL_DEPTH_TEST);
-	//glEnable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
 	glGenTextures(1, &vramTexture);
@@ -2050,6 +2051,24 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 #endif
 
 	g_PreviousBlendMode = blendMode;
+}
+
+extern void Emulator_SetPolygonOffset(float ofs)
+{
+#if defined(OGL) || defined(OGLES)
+	if (ofs == 0.0f)
+	{
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
+	else
+	{
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(0.0f, ofs);
+	}
+	
+#elif defined(D3D9)
+
+#endif
 }
 
 void Emulator_SetViewPort(int x, int y, int width, int height)

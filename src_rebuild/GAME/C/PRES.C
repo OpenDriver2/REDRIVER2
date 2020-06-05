@@ -494,11 +494,7 @@ int PrintString(char *string, int x, int y)
 	SPRT *font;
 	char *pbVar8;
 
-#ifdef PSX
 	int showMap = gShowMap;
-#else
-	int showMap = 0;
-#endif
 
 	x_00 = -1;
 	if (current != NULL)
@@ -1225,7 +1221,6 @@ void* DrawButton(unsigned char button, void *prim, int x, int y)
 	null->y2 = -1;
 	null->tpage = btn->tpageid;
 
-#ifdef PSX
 	if (gShowMap == 0)
 	{
 		addPrim(current->ot, sprt);
@@ -1236,10 +1231,6 @@ void* DrawButton(unsigned char button, void *prim, int x, int y)
 		DrawPrim(null);
 		DrawPrim(sprt);
 	}
-#else
-	addPrim(current->ot, sprt);
-	addPrim(current->ot, null);
-#endif
 
 	return null+1;
 }
@@ -1287,7 +1278,6 @@ void* SetFontTPage(void *prim)
 	null->y2 = -1;
 	null->tpage = fonttpage;
 
-#ifdef PSX
 	if (gShowMap == 0) 
 	{
 		addPrim(current->ot, null);
@@ -1296,11 +1286,6 @@ void* SetFontTPage(void *prim)
 	{
 		DrawPrim(prim);
 	}
-#else
-	addPrim(current->ot, null);
-#endif
-
-
 
 	return null+1;
 }

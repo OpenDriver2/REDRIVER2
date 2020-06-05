@@ -224,20 +224,15 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 
 	poly->clut = light_texture.clutid;
 
-#ifdef PSX
 	if ((flags & 4) == 0)
 	{
 		addPrim(current->ot, poly);
+		current->primptr += sizeof(POLY_FT4);
 	}
 	else
 	{
 		DrawPrim(poly);
 	}
-#else
-	addPrim(current->ot, poly);
-	current->primptr += sizeof(POLY_FT4);
-#endif
-
 }
 
 
@@ -352,8 +347,6 @@ void DrawTargetArrow(VECTOR *pos, ulong flags)
 
 	null->tpage = 0x40;
 	
-
-#ifdef PSX
 	if ((flags & 4) == 0)
 	{
 		addPrim(current->ot, poly);
@@ -365,11 +358,6 @@ void DrawTargetArrow(VECTOR *pos, ulong flags)
 		DrawPrim(null);
 		DrawPrim(poly);
 	}
-#else
-	addPrim(current->ot, poly);
-	addPrim(current->ot, null);
-	current->primptr += sizeof(POLY_G3) + sizeof(POLY_FT3);
-#endif
 }
 
 
@@ -485,18 +473,15 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 	poly->x2 = opos[2].vx;
 	poly->y2 = opos[2].vz;
 
-#ifdef PSX
-	if ((flags & 4) == 0) {
+	if ((flags & 4) == 0) 
+	{
 		addPrim(current->ot, poly);
 		current->primptr += sizeof(POLY_F3);
 	}
-	else {
+	else 
+	{
 		DrawPrim(poly);
 	}
-#else
-	addPrim(current->ot, poly);
-	current->primptr += sizeof(POLY_F3);
-#endif
 }
 
 
@@ -1516,13 +1501,8 @@ void DrawFullscreenMap(void)
 	polys->w = 320;
 	polys->h = 256;
 
-#ifdef PSX
 	DrawPrim(polys);
 	DrawSync(0);
-#else
-	addPrim(current->ot+2, polys);
-	current->primptr += sizeof(TILE);
-#endif
 
 	width = overlaidmaps[GameLevel].width;
 	height = overlaidmaps[GameLevel].height;
@@ -1624,13 +1604,8 @@ LAB_00017f8c:
 	null->y2 = -1;
 	null->tpage = MapTPage;
 
-#ifdef PSX
 	DrawPrim(null);
 	DrawSync(0);
-#else
-	addPrim(current->ot+2, null);
-	current->primptr += sizeof(POLY_FT3);
-#endif
 
 	local_30 = &target;
 	local_34 = 0;
@@ -1719,13 +1694,8 @@ LAB_00017f8c:
 				back->clut = MapClut;
 				back->tpage = MapTPage;
 
-#ifdef PSX
 				DrawPrim(back);
 				DrawSync(0);
-#else
-				addPrim(current->ot+1, back);
-				current->primptr += sizeof(POLY_FT4);
-#endif
 			}
 		}
 	}
@@ -1754,12 +1724,7 @@ LAB_00017f8c:
 	tile1->x0 = vec.vx;
 	tile1->y0 = vec.vz;
 
-#ifdef PSX
 	DrawPrim(tile1);
-#else
-	addPrim(current->ot+1, tile1);
-	current->primptr += sizeof(TILE_1);
-#endif
 
 	null = (POLY_FT3 *)current->primptr;
 	setPolyFT3(null);
@@ -1772,13 +1737,8 @@ LAB_00017f8c:
 	null->y2 = -1;
 	null->tpage = fonttpage;
 
-#ifdef PSX
 	DrawPrim(null);
 	DrawSync(0);
-#else
-	addPrim(current->ot+1, null);
-	current->primptr += sizeof(POLY_FT3);
-#endif
 
 	SetTextColour(0x80, 0x80, 0x80);
 
@@ -2640,13 +2600,14 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 		if (direct == 0) 
 		{
 			addPrim(current->ot, linef2);
+			current->primptr += sizeof(LINE_F2);
 		}
 		else
 		{
 			DrawPrim(linef2);
 		}
 
-		current->primptr += sizeof(LINE_F2);
+		
 
 		i++;
 	} while (i < 3);
@@ -2878,21 +2839,12 @@ void DrawBigCompass(VECTOR *root, int angle)
 		lineg2->g1 = 0;
 		lineg2->b1 = 0;
 
-#ifdef PSX
 		DrawPrim(lineg2);
-#else
-		addPrim(current->ot, lineg2);	// [A]
-		current->primptr += sizeof(LINE_G2);
-#endif
 
 		i++;
 	} while (i < 3);
 
-#ifdef PSX
 	DrawN(position, 1);
-#else
-	DrawN(position, 0);
-#endif
 }
 
 

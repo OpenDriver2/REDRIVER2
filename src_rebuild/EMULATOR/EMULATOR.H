@@ -196,6 +196,7 @@ extern void Emulator_BlitVRAM();
 extern void Emulator_ShutDown();
 extern void Emulator_SwapWindow();
 extern void Emulator_SetBlendMode(BlendMode blendMode);
+extern void Emulator_SetPolygonOffset(float ofs);
 extern void Emulator_CounterLoop();
 
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);
