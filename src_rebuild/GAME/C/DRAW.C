@@ -14,6 +14,7 @@
 #include "OBJANIM.H"
 #include "TEXTURE.H"
 #include "CARS.H"
+#include "DEBRIS.H"
 #include "../ASM/ASMTEST.H"
 
 #include <string.h>
@@ -90,8 +91,6 @@ static int treecount = 0;
 int numSpritesFound = 0;
 static int alleycount = 0;
 
-int groundDebrisIndex = 0;
-
 int goFaster = 1;
 int fasterToggle = 0;
 
@@ -108,7 +107,6 @@ CELL_OBJECT* anim_obj_buffer[20];
 
 unsigned long *tile_overflow_buffer;
 
-CELL_OBJECT ground_debris[16];
 PACKED_CELL_OBJECT *spriteList[75];
 
 #ifndef PSX

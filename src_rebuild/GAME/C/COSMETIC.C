@@ -541,8 +541,6 @@ void AddBrakeLight(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 1348
 
-int main_cop_light_pos = 0;
-
 // [D]
 void AddCopCarLight(_CAR_DATA *cp)
 {

@@ -27,6 +27,10 @@ extern char gRainCount;
 extern int gEffectsTimer;
 extern int lightning;
 
+extern int main_cop_light_pos;
+extern int groundDebrisIndex;
+extern CELL_OBJECT ground_debris[16];
+
 extern void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front); // 0x00032C10
 
 extern int AllocateLeaf(); // 0x00039A90
