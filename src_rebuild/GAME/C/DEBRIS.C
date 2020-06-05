@@ -2896,7 +2896,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 	gte_rtpt();
 
-	gte_stszotz(&iVar21);
+	gte_stsz(&iVar21);
 
 	// discard if too close
 	if (iVar21 < 38)
@@ -2986,21 +2986,21 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 				iVar15 = (poly->x0 + poly->x3) / 2;
 
-				sVar9 = (short)iVar15;
+				sVar9 = iVar15;
 				sVar13 = poly->y0;
 				sVar6 = poly->y3;
 
 				Known_Lamps[LightIndex].clock = FrameCnt;
 				Known_Lamps[iVar16].light_trails[iVar19 & 3].x = sVar9;
 
-				y = (int)sVar13 + (int)sVar6 >> 1;
+				y = (sVar13 + sVar6) / 2;
 					
 				iVar15 = sVar2 - iVar15;
 
 				if (iVar15 < 0)
 					iVar15 = -iVar15;
 
-				sVar13 = (short)y;
+				sVar13 = y;
 
 				Known_Lamps[iVar16].light_trails[FrameCnt & 3].y = sVar13;
 
@@ -3009,7 +3009,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 				if (y < 0)
 					y = -y;
 
-				iVar16 = (int)poly->x0 - (int)poly->x3;
+				iVar16 = poly->x0 - poly->x3;
 				if (iVar16 < 0)
 					iVar16 = -iVar16;
 
@@ -3116,21 +3116,21 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 				sVar3 = car_data[gcar_num].ap.light_trails[iVar15][FrameCnt - 3U & 3].y;
 
 				y = (poly->x0 + poly->x3) / 2;
-				sVar9 = (short)y;
+				sVar9 = y;
 				sVar13 = poly->y0;
 				sVar6 = poly->y3;
 				y = sVar2 - y;
 				car_data[gcar_num].ap.old_clock[iVar15] = FrameCnt;
-				x = (int)sVar13 + (int)sVar6 >> 1;
+				x = (sVar13 + sVar6) / 2;
 				car_data[iVar16].ap.light_trails[iVar15][iVar19 & 3U].x = sVar9;
 				iVar19 = y;
 				if (y < 0)
 					iVar19 = -y;
 
-				sVar13 = (short)x;
+				sVar13 = x;
 				car_data[iVar16].ap.light_trails[iVar15][FrameCnt & 3U].y = sVar13;
 				x = sVar3 - x;
-				iVar16 = (int)poly->x0 - (int)poly->x3;
+				iVar16 = poly->x0 - poly->x3;
 				if (iVar16 < 0)
 					iVar16 = -iVar16;
 
@@ -3252,91 +3252,72 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	/* end block 2 */
 	// End Line: 7137
 
+// [D]
 void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	DB *pDVar2;
-	ushort uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar4;
-	uint uVar5;
-	uint uVar6;
-	int iVar7;
-	uint *puVar8;
-	undefined4 local_28;
-	uint local_24;
-	uint local_1c;
-	undefined4 local_18;
-	uint local_14;
-	uint local_c;
+	POLY_FT4 *poly;
+	SVECTOR vert[4];
+	int z;
 
-	iVar7 = (int)size;
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	uVar1 = *(ushort *)&v1->vy;
-	size = *(ushort *)&v1->vx - size;
-	uVar6 = iVar7 + (uint)*(ushort *)&v1->vz;
-	uVar4 = iVar7 + (uint)*(ushort *)&v1->vx;
-	uVar5 = (uint)*(ushort *)&v1->vz - iVar7;
-	local_28 = CONCAT22(uVar1, size);
-	local_24 = local_24 & 0xffff0000 | uVar6 & 0xffff;
-	local_1c = local_1c & 0xffff0000 | uVar6 & 0xffff;
-	local_18 = CONCAT22(uVar1, size);
-	local_14 = local_14 & 0xffff0000 | uVar5 & 0xffff;
-	local_c = local_c & 0xffff0000 | uVar5 & 0xffff;
-	setCopReg(2, in_zero, local_28);
-	setCopReg(2, in_at, local_24);
-	setCopReg(2, uVar4, uVar4 & 0xffff | (uint)uVar1 << 0x10);
-	setCopReg(2, uVar5, local_1c);
-	setCopReg(2, uVar6, local_18);
-	setCopReg(2, col, local_14);
-	copFunction(2, 0x280030);
-	puVar8 = (uint *)current->primptr;
-	*(char *)((int)puVar8 + 3) = '\t';
-	*(char *)((int)puVar8 + 7) = ',';
-	*(uchar *)(puVar8 + 3) = light_texture.coords.u0;
-	*(uchar *)((int)puVar8 + 0xd) = light_texture.coords.v0;
-	*(uchar *)(puVar8 + 5) = light_texture.coords.u1;
-	*(uchar *)((int)puVar8 + 0x15) = light_texture.coords.v1;
-	*(uchar *)(puVar8 + 7) = light_texture.coords.u2;
-	*(uchar *)((int)puVar8 + 0x1d) = light_texture.coords.v2;
-	*(uchar *)(puVar8 + 9) = light_texture.coords.u3;
-	*(uchar *)((int)puVar8 + 0x25) = light_texture.coords.v3;
-	*(ushort *)((int)puVar8 + 0x16) = light_texture.tpageid | 0x20;
-	uVar3 = light_texture.clutid;
-	*(char *)((int)puVar8 + 7) = '.';
-	*(ushort *)((int)puVar8 + 0xe) = uVar3;
-	*(uchar *)(puVar8 + 1) = col->r;
-	*(uchar *)((int)puVar8 + 5) = col->g;
-	*(uchar *)((int)puVar8 + 6) = col->b;
-	iVar7 = getCopReg(2, 0x13);
-	if (iVar7 - 0x96U < 0x267b) {
-		uVar5 = getCopReg(2, 0xc);
-		puVar8[2] = uVar5;
-		uVar5 = getCopReg(2, 0xd);
-		puVar8[4] = uVar5;
-		uVar5 = getCopReg(2, 0xe);
-		puVar8[6] = uVar5;
-		pDVar2 = current;
-		setCopReg(2, in_zero, uVar4 & 0xffff | (uint)uVar1 << 0x10);
-		setCopReg(2, in_at, local_c);
-		copFunction(2, 0x180001);
-		*puVar8 = *puVar8 & 0xff000000 | current->ot[iVar7 >> 3] & 0xffffff;
-		pDVar2->ot[iVar7 >> 3] = pDVar2->ot[iVar7 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
-		pDVar2->primptr = pDVar2->primptr + 0x28;
-		uVar4 = getCopReg(2, 0xe);
-		puVar8[8] = uVar4;
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	// [A] might be incorrect
+	vert[0].vx = v1->vx - size;
+	vert[0].vy = v1->vy;
+	vert[0].vz = v1->vz + size;
+
+	vert[1].vx = v1->vx + size;
+	vert[1].vy = v1->vy;
+	vert[1].vz = v1->vz + size;
+
+	vert[2].vx = v1->vx - size;
+	vert[2].vy = v1->vy;
+	vert[2].vz = v1->vz - size;
+
+	vert[3].vx = v1->vx + size;
+	vert[3].vy = v1->vy;
+	vert[3].vz = v1->vz - size;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	gte_rtpt();
+
+	gte_stsz(&z);
+
+	if (z - 150 < 0x267b) 
+	{
+		poly = (POLY_FT4 *)current->primptr;
+
+		setPolyFT4(poly);
+		setSemiTrans(poly, 1);
+
+		poly->u0 = light_texture.coords.u0;
+		poly->v0 = light_texture.coords.v0;
+		poly->u1 = light_texture.coords.u1;
+		poly->v1 = light_texture.coords.v1;
+		poly->u2 = light_texture.coords.u2;
+		poly->v2 = light_texture.coords.v2;
+		poly->u3 = light_texture.coords.u3;
+		poly->v3 = light_texture.coords.v3;
+
+		poly->tpage = light_texture.tpageid | 0x20;
+		poly->clut = light_texture.clutid;;
+
+		poly->r0 = col->r;
+		poly->g0 = col->g;
+		poly->b0 = col->b;
+
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+		gte_ldv0(&vert[3]);
+
+		gte_rtps();
+		gte_stsxy(&poly->x3);
+
+		addPrim(current->ot + (z >> 3), poly);
+		current->primptr += sizeof(POLY_FT4);
 	}
-	return;*/
 }
 
 
@@ -5655,92 +5636,81 @@ void DisplaySplashes(void)
 
 void DisplayLightReflections(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	ushort uVar2;
-	int iVar3;
-	uint uVar4;
-	DB *pDVar5;
-	undefined4 in_zero;
-	undefined4 in_at;
-	undefined2 uVar6;
-	int iVar7;
-	VECTOR *pVVar8;
-	uint *puVar9;
-	uint local_50;
-	uint local_4c;
-	uint local_48;
-	undefined4 local_44;
-	undefined4 local_40;
-	undefined4 local_3c;
-	undefined4 local_38;
-	undefined4 local_34;
-	uint local_30;
+	POLY_FT4 *poly;
+	SVECTOR vert[4];
+	CVECTOR thiscol;
+	int z;
 
-	uVar1 = texture->tpageid;
-	uVar2 = texture->clutid;
-	if (9 < wetness) {
-		setCopControlWord(2, 0x2800, v1->vx);
-		setCopControlWord(2, 0x3000, v1->vy);
-		setCopControlWord(2, 0x3800, v1->vz);
-		pVVar8 = v1;
+	if (9 < wetness)
+	{
+		gte_SetTransVector(v1);
+
 		Apply_Inv_CameraMatrix(v1);
-		setCopControlWord(2, 0x2800, v1->vx);
-		setCopControlWord(2, 0x3000, v1->vy);
-		setCopControlWord(2, 0x3800, v1->vz);
-		setCopControlWord(2, 0, face_camera.m[0]._0_4_);
-		setCopControlWord(2, 0x800, face_camera.m._4_4_);
-		setCopControlWord(2, 0x1000, face_camera.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, face_camera.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, face_camera._16_4_);
-		local_50 = (uint)(ushort)-size;
-		local_4c = local_4c & 0xffff0000;
-		setCopReg(2, in_zero, local_50);
-		setCopReg(2, in_at, local_4c);
-		copFunction(2, 0x180001);
-		local_48 = (uint)(ushort)size;
-		local_44 = (uint)local_44._2_2_ << 0x10;
-		local_3c = (uint)local_3c._2_2_ << 0x10;
-		local_34 = (uint)local_34._2_2_ << 0x10;
-		iVar3 = getCopReg(2, 0x13);
-		if (0x95 < iVar3) {
-			puVar9 = (uint *)current->primptr;
-			uVar4 = getCopReg(2, 0xe);
-			puVar9[2] = uVar4;
-			iVar7 = (iVar3 >> 3) + 0xfa;
-			uVar6 = (undefined2)iVar7;
-			local_40 = CONCAT22(uVar6, -size);
-			local_38 = CONCAT22(uVar6, size);
-			setCopReg(2, in_zero, local_48);
-			setCopReg(2, in_at, local_44);
-			setCopReg(2, iVar7, local_40);
-			setCopReg(2, &local_48, local_3c);
-			setCopReg(2, pVVar8, local_38);
-			setCopReg(2, puVar9, local_34);
-			copFunction(2, 0x280030);
-			puVar9[3] = CONCAT22(uVar2, *(undefined2 *)&texture->coords);
-			puVar9[5] = (uint)*(ushort *)&(texture->coords).u1 | ((uint)uVar1 | 0x20) << 0x10;
-			puVar9[7] = (uint)*(ushort *)&(texture->coords).u2;
-			puVar9[9] = (uint)*(ushort *)&(texture->coords).u3;
-			local_30._0_2_ = CONCAT11(col->g >> 3, col->r >> 3);
-			local_30 = local_30 & 0xff000000 | (uint)(col->b >> 3) << 0x10 | (uint)(ushort)local_30;
-			*(char *)((int)puVar9 + 3) = '\t';
-			puVar9[1] = local_30;
-			*(char *)((int)puVar9 + 7) = '.';
-			pDVar5 = current;
-			*puVar9 = *puVar9 & 0xff000000 | current->ot[iVar3 >> 4] & 0xffffff;
-			pDVar5->ot[iVar3 >> 4] = pDVar5->ot[iVar3 >> 4] & 0xff000000 | (uint)puVar9 & 0xffffff;
-			pDVar5->primptr = pDVar5->primptr + 0x28;
-			uVar4 = getCopReg(2, 0xc);
-			puVar9[4] = uVar4;
-			uVar4 = getCopReg(2, 0xd);
-			puVar9[6] = uVar4;
-			uVar4 = getCopReg(2, 0xe);
-			puVar9[8] = uVar4;
+
+		gte_SetTransVector(v1);
+		gte_SetRotMatrix(&face_camera);
+
+		vert[0].vx = -size;
+		vert[2].vx = -size;
+		vert[1].vx = size;
+		vert[3].vx = size;
+
+		vert[0].vy = 0;
+		vert[0].vz = 0;
+		vert[1].vy = 0;
+		vert[1].vz = 0;
+		vert[2].vy = 0;
+		vert[2].vz = 0;
+		vert[3].vy = 0;
+		vert[3].vz = 0;
+
+		gte_ldv0(&vert[0]);
+
+		gte_rtps();
+
+		gte_stsz(&z);
+
+		if (0x95 < z) 
+		{
+			poly = (POLY_FT4 *)current->primptr;
+			setPolyFT4(poly);
+			setSemiTrans(poly, 1);
+
+			gte_stsxy(&poly->x0);
+
+			vert[2].vy = (z >> 3) + 0xfa;
+			vert[3].vy = (z >> 3) + 0xfa;
+
+			gte_ldv3(&vert[1], &vert[2], &vert[3]);
+
+			gte_rtpt();
+
+			gte_stsxy3(&poly->x1, &poly->x2, &poly->x3);
+
+			poly->u0 = texture->coords.u0;
+			poly->v0 = texture->coords.v0;
+			poly->u1 = texture->coords.u1;
+			poly->v1 = texture->coords.v1;
+			poly->u2 = texture->coords.u2;
+			poly->v2 = texture->coords.v2;
+			poly->u3 = texture->coords.u3;
+			poly->v3 = texture->coords.v3;
+
+			poly->tpage = texture->tpageid | 0x20;
+			poly->clut = texture->clutid;
+
+			thiscol.r = col->r >> 3;
+			thiscol.g = col->g >> 3;
+			thiscol.b = col->b >> 3;
+
+			poly->r0 = thiscol.r;
+			poly->g0 = thiscol.g;
+			poly->b0 = thiscol.b;
+
+			addPrim(current->ot + (z >> 4), poly);
+			current->primptr += sizeof(POLY_FT4);
 		}
 	}
-	return;*/
 }
 
 

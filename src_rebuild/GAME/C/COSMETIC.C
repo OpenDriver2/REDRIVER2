@@ -950,12 +950,14 @@ void AddNightLights(_CAR_DATA *cp)
 				PlacePoolForCar(cp, &col, 1);
 			}
 
+			col.r = *life2;
 			if (col.r != 0) 
 			{
 				col.b = 0;
 				col.g = 0;
-				col.r = 0;
+				
 				PlacePoolForCar(cp, &col, 0);
+				*life2 = 0;
 			}
 
 			if (cp->controlType == 1)
