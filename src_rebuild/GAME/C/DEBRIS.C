@@ -619,7 +619,7 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 
 				gte_stsxy(&poly->x3);
 
-				addPrim(current->ot + (local_30 >> 3), poly);
+				addPrim(current->ot + (local_30 >> 1), poly);
 				current->primptr += sizeof(POLY_FT4);
 			}
 		}
@@ -672,7 +672,7 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 					}
 
 					//spolys = current->primptr;	// I'm getting rid of this...
-					SetRotMatrix(&tempmatrix);
+					gte_SetRotMatrix(&tempmatrix);
 					gte_SetTransVector(&dummy);
 
 					bVar1 = RightLight;

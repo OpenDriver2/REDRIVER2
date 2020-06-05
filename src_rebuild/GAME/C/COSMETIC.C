@@ -768,7 +768,7 @@ void AddNightLights(_CAR_DATA *cp)
 	vec.vy = pCVar14->headLight.vy + pCVar14->cog.vy;
 	vec.vz = pCVar14->headLight.vz + pCVar14->cog.vz;
 	iVar10 = (((uint)(ushort)pCVar14->extraInfo & 0xc00) >> 8) + 10;
-	vec.vz = vec.vz + pCVar14->cog.vz;
+	//vec.vz = vec.vz + pCVar14->cog.vz;
 
 	do {
 		cVar11 = 0;
