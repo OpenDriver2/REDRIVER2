@@ -8,7 +8,13 @@
 #include "JOB_FX.H"
 #include "DR2ROADS.H"
 #include "PAD.H"
+#include "CAMERA.H"
+#include "DRAW.H"
+#include "DEBRIS.H"
 
+#include "../ASM/ASMTEST.H"
+
+#include "INLINE_C.H"
 #include <stdlib.h>
 
 MODEL* gBombModel;
@@ -17,7 +23,7 @@ static BOMB ThrownBombs[5];
 static int ThrownBombDelay = 0;
 static int CurrentBomb = 0;
 static int gWantFlash = 0;
-_CAR_DATA *gBombTargetVehicle;
+_CAR_DATA *gBombTargetVehicle = NULL;
 static int flashval;
 
 // decompiled code
@@ -124,7 +130,6 @@ void InitThrownBombs(void)
 // [D]
 void HandleThrownBombs(void)
 {
-	VECTOR *pos;
 	_CAR_DATA *cp;
 	BOMB *bomb;
 	int i;
@@ -152,9 +157,9 @@ void HandleThrownBombs(void)
 		bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
 		bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
 
-		velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
+		velocity.vx = FIXED(gBombTargetVehicle->st.n.linearVelocity[0]);
 		velocity.vy = 0;
-		velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
+		velocity.vz = FIXED(gBombTargetVehicle->st.n.linearVelocity[2]);
 
 		bomb->velocity.vx = velocity.vx >> 10;
 		bomb->velocity.vz = velocity.vz >> 10;
@@ -206,14 +211,14 @@ void HandleThrownBombs(void)
 					dz = (bomb->position.vz - player[0].pos[2]);
 
 					if (FIXED(dx * dx + dz * dz) < 1024)
-						SetPadVibration(*car_data[player[0].playerCarId].ai.padid, 3);
+						SetPadVibration(player[0].padid, 3);		// [A] bug fix
 				}
 			}
 
 			cp = car_data;
 			while (cp < car_data + 20)
 			{
-				if (cp != gBombTargetVehicle && cp->controlType != 0 && BombCollisionCheck(cp, pos) != 0)
+				if (cp != gBombTargetVehicle && cp->controlType != 0 && BombCollisionCheck(cp, &bomb->position) != 0)
 				{
 					bomb->flags = 0;
 
@@ -279,68 +284,73 @@ void HandleThrownBombs(void)
 /* WARNING: Could not reconcile some variable overlaps */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawThrownBombs(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	BOMB *pBVar2;
-	int iVar3;
-	undefined4 local_50;
-	undefined4 local_4c;
-	undefined4 local_48;
-	undefined4 local_44;
-	undefined4 local_40;
-	int local_30;
-	long local_2c;
-	int local_28;
+	BOMB *bomb;
+	int i;
+	MATRIX object_matrix;
+	VECTOR pos;
 
-	if (gBombModel != (MODEL *)0x0) {
-		pBVar2 = &ThrownBombs;
-		iVar3 = 4;
-		do {
-			if ((pBVar2->flags & 1) != 0) {
-				local_50 = 0x1000;
-				local_44 = 0;
-				local_4c = 0;
-				local_48 = 0x1000;
-				local_40 = CONCAT22(local_40._2_2_, 0x1000);
-				RotMatrixY((int)pBVar2->rot_speed * (uint)pBVar2->active * 3 & 0xfff, &local_50);
-				RotMatrixZ((int)pBVar2->rot_speed * (uint)pBVar2->active & 0xfff, &local_50);
-				local_30 = (pBVar2->position).vx - camera_position.vx;
-				local_2c = (pBVar2->position).vy - camera_position.vy;
-				local_28 = (pBVar2->position).vz - camera_position.vz;
-				Apply_Inv_CameraMatrix(&local_30);
-				setCopControlWord(2, 0, local_50);
-				setCopControlWord(2, 0x800, local_4c);
-				setCopControlWord(2, 0x1000, local_48);
-				setCopControlWord(2, 0x1800, local_44);
-				setCopControlWord(2, 0x2000, local_40);
-				setCopControlWord(2, 0x2800, local_30);
-				setCopControlWord(2, 0x3000, local_2c);
-				setCopControlWord(2, 0x3800, local_28);
-				local_30 = (pBVar2->position).vx;
-				local_2c = (pBVar2->position).vy;
-				local_28 = (pBVar2->position).vz;
-				SetFrustrumMatrix();
-				iVar1 = FrustrumCheck(&local_30, (int)gBombModel->bounding_sphere);
-				if (iVar1 != -1) {
-					PlotMDL_less_than_128(gBombModel);
-				}
-			}
-			iVar3 = iVar3 + -1;
-			pBVar2 = pBVar2 + 1;
-		} while (-1 < iVar3);
-		if (gWantFlash != 0) {
-			add_haze(flashval, flashval, 7);
-			flashval = flashval + -10;
-			if (flashval < 1) {
-				gWantFlash = 0;
+	if (gBombModel == NULL)
+		return;
+
+	bomb = ThrownBombs;
+	i = 0;
+	while (i < 5)
+	{
+		if ((bomb->flags & 1) != 0) 
+		{
+			object_matrix.m[0][0] = 0x1000;
+			object_matrix.m[0][1] = 0;
+			object_matrix.m[0][2] = 0;
+
+			object_matrix.m[1][0] = 0;
+			object_matrix.m[1][1] = 0x1000;
+			object_matrix.m[1][2] = 0;
+
+			object_matrix.m[2][0] = 0;
+			object_matrix.m[2][1] = 0;
+			object_matrix.m[2][2] = 0x1000;
+
+			RotMatrixY(bomb->rot_speed * bomb->active * 3 & 0xfff, &object_matrix);
+			RotMatrixZ(bomb->rot_speed * bomb->active & 0xfff, &object_matrix);
+
+			pos.vx = bomb->position.vx - camera_position.vx;
+			pos.vy = bomb->position.vy - camera_position.vy;
+			pos.vz = bomb->position.vz - camera_position.vz;
+
+			Apply_Inv_CameraMatrix(&pos);
+
+			gte_SetRotMatrix(&object_matrix);
+			gte_SetTransVector(&pos);
+
+			pos.vx = bomb->position.vx;
+			pos.vy = bomb->position.vy;
+			pos.vz = bomb->position.vz;
+
+			SetFrustrumMatrix();
+
+			if (FrustrumCheck(&pos, gBombModel->bounding_sphere) != -1) 
+			{
+				PlotMDL_less_than_128(gBombModel);
 			}
 		}
+
+		i++;
+		bomb++;
 	}
-	return;
-	*/
+
+	if (gWantFlash != 0) 
+	{
+		add_haze(flashval, flashval, 7);
+
+		flashval -= 10;
+
+		if (flashval < 1)
+			gWantFlash = 0;
+	}
 }
 
 

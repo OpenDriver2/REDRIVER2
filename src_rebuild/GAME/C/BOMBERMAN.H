@@ -3,6 +3,7 @@
 
 extern MODEL* gBombModel;
 extern _ExOBJECT explosion[5];
+extern _CAR_DATA *gBombTargetVehicle;
 
 extern void InitThrownBombs(); // 0x0001F570
 

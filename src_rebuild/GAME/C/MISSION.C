@@ -352,7 +352,6 @@ int gMultiplayerLevels = 0;
 // LEADAI
 LEAD_PARAMETERS LeadValues;
 
-_CAR_DATA* gBombTargetVehicle = NULL;
 static char NewLeadDelay = 0;
 
 #define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
