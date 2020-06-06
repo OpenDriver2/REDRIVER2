@@ -23,6 +23,7 @@
 #include "BCOLLIDE.H"
 #include "MAP.H"
 #include "SYSTEM.H"
+#include "HANDLING.H"
 
 #include "../ASM/ASMTEST.H"
 
@@ -859,13 +860,15 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	VECTOR v;
 	long y;
 	long d;
+	_PLAYER* lp;
 
 	bReverseAnimation = 0;
 	iIdleTimer = 0;
 
 	if (padId == NULL) 
 	{
-		playerId = 0;
+		playerId = GetPlayerId(pCar);
+		lp = &player[playerId];
 	}
 	else
 	{
@@ -885,9 +888,12 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 					player[playerId].pPed = pedptr;
 					return 0;
 				}
+
 				pedptr = pedptr->pNext;
 			} while (pedptr != NULL);
 		}
+
+		lp = &player[playerId];
 	}
 
 	int x, z;
@@ -953,7 +959,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	numTannerPeds++;
 
 	if (padId == NULL)
-		pedptr->padId = 0;
+		pedptr->padId = playerId;
 	else
 		pedptr->padId = *padId;
 
@@ -994,29 +1000,29 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	pedptr->head_rot = 0;
 
 	pPlayerPed = pedptr;
-	player[playerId].headTimer = 0;
+	lp->headTimer = 0;
 	pedptr->pedType = (PED_MODEL_TYPES)playerType;
 	SetupPedestrian(pedptr);
 
 	if (pCar == NULL) 
 	{
-		player[playerId].cameraView = 0;
-		player[playerId].headPos = 0;
-		player[playerId].headTarget = 0;
-		player[playerId].headTimer = 0;
-		player[playerId].playerType = 2;
-		player[playerId].cameraAngle = dir;
-		player[playerId].cameraCarId = -1;
-		player[playerId].worldCentreCarId = -1;
+		lp->cameraView = 0;
+		lp->headPos = 0;
+		lp->headTarget = 0;
+		lp->headTimer = 0;
+		lp->playerType = 2;
+		lp->cameraAngle = dir;
+		lp->cameraCarId = -1;
+		lp->worldCentreCarId = -1;
 
-		player[playerId].pos[0] = pedptr->position.vx;
-		player[playerId].pos[1] = pedptr->position.vy;
-		player[playerId].pos[2] = pedptr->position.vz;
+		lp->pos[0] = pedptr->position.vx;
+		lp->pos[1] = pedptr->position.vy;
+		lp->pos[2] = pedptr->position.vz;
 
-		player[playerId].spoolXZ = pos;
-		player[playerId].pPed = pedptr;
-		player[playerId].onGrass = 0;
-		player[playerId].dir = d;
+		lp->spoolXZ = pos;
+		lp->pPed = pedptr;
+		lp->onGrass = 0;
+		lp->dir = d;
 		
 		pedptr->frame1 = 0;
 		pedptr->speed = 0;
@@ -1038,18 +1044,18 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	}
 	else 
 	{
-		MakeTheCarShutUp(0);
-		Start3DSoundVolPitch(-1, 6, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 0x1000);
+		MakeTheCarShutUp(playerId);
+		Start3DSoundVolPitch(-1, 6, 2, lp->pos[0], lp->pos[1], lp->pos[2], 0, 0x1000);
 		SetupGetOutCar(pedptr, pCar, side);
 
-		pedptr->padId = 0;
-		player[0].pPed = pedptr;
+		//pedptr->padId = 0;
+		lp->pPed = pedptr;
 
-		SetConfusedCar(player[0].playerCarId);
+		SetConfusedCar(lp->playerCarId);
 		StopPadVibration(0);
 		StopPadVibration(1);
 
-		player[0].onGrass = 0;
+		lp->onGrass = 0;
 	}
 
 	tannerTurn = 0;
@@ -2279,16 +2285,20 @@ int bReverseYRotation = 0;
 // [D]
 void PedGetOutCar(PEDESTRIAN *pPed)
 {
+	int playerId;
+
+	playerId = pPed->padId;
+
 	pPed->speed = 0;
 	pPed->frame1++;
 
-	player[0].pos[0] = pPed->position.vx;
-	player[0].pos[1] = -pPed->position.vy;
-	player[0].pos[2] = pPed->position.vz;
+	player[playerId].pos[0] = pPed->position.vx;
+	player[playerId].pos[1] = -pPed->position.vy;
+	player[playerId].pos[2] = pPed->position.vz;
 
 	if (pPed->frame1 > 14)
 	{
-		ChangeCarPlayerToPed(0);
+		ChangeCarPlayerToPed(playerId);
 
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
@@ -2344,8 +2354,11 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 	int iVar5;
 	int iVar6;
 	int iVar7;
+	int playerId;
 
-	lastCarCameraView = player[0].cameraView;
+	playerId = pPed->padId;
+
+	lastCarCameraView = player[playerId].cameraView;
 	pPed->speed = 0;
 
 	iVar5 = pCar->hd.direction;
@@ -2371,11 +2384,11 @@ void SetupGetOutCar(PEDESTRIAN *pPed, _CAR_DATA *pCar, int side)
 
 	if (NoPlayerControl == 0)
 	{
-		player[0].cameraView = 5;
+		player[playerId].cameraView = 5;
 
-		player[0].cameraPos.vx = pCar->hd.where.t[0] - (FIXED(iVar7 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800));
-		player[0].cameraPos.vy = -200 - pCar->hd.where.t[1];
-		player[0].cameraPos.vz = pCar->hd.where.t[2] + (FIXED(iVar7 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800));
+		player[playerId].cameraPos.vx = pCar->hd.where.t[0] - (FIXED(iVar7 * rcossin_tbl[uVar4 * 2 + 1]) - FIXED(rcossin_tbl[uVar4 * 2] * 800));
+		player[playerId].cameraPos.vy = -200 - pCar->hd.where.t[1];
+		player[playerId].cameraPos.vz = pCar->hd.where.t[2] + (FIXED(iVar7 * rcossin_tbl[uVar4 * 2]) + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 800));
 	}
 
 	pPed->frame1 = 0;
@@ -3065,17 +3078,17 @@ void AnimatePed(PEDESTRIAN *pPed)
 void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 {
 	_CAR_DATA *cp;
-	int iVar1;
+	int playerId;
 	int iVar2;
 	int distToCarSq;
 
 	iVar2 = 0;
-	iVar1 = (int)pPed->padId;
+	playerId = pPed->padId;
 
-	if (iVar1 < 0)
-		iVar1 = -iVar1;
+	if (playerId < 0)
+		playerId = -playerId;
 
-	cp = FindClosestCar(player[iVar1].pos[0], player[iVar1].pos[1], player[iVar1].pos[2], &distToCarSq);
+	cp = FindClosestCar(player[playerId].pos[0], player[playerId].pos[1], player[playerId].pos[2], &distToCarSq);
 
 	if (!cp)
 		return;

@@ -3951,11 +3951,11 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	if (1 < NumPlayers) 
-	{
-		PingOutCivsOnly = 1;
-		return 0;
-	}
+	//if (1 < NumPlayers)		// [A]
+	//{
+	//	PingOutCivsOnly = 1;
+	//	return 0;
+	//}
 
 	p_Var13 = car_data;
 	puVar15 = reservedSlots;

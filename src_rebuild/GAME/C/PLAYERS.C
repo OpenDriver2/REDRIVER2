@@ -65,7 +65,7 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 
 		cp->controlFlags |= 4;
 		locPlayer->worldCentreCarId = cp->id;
-		locPlayer->cameraView = (NumPlayers == 2) << 1;
+		locPlayer->cameraView = 0;// (NumPlayers == 2) << 1; // [A]
 		locPlayer->playerCarId = cp->id;
 		locPlayer->playerType = 1;
 		locPlayer->spoolXZ = (VECTOR *)cp->hd.where.t;
@@ -249,17 +249,21 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 	lPlayer->headPos = 0;
 	lPlayer->headTarget = 0;
 	lPlayer->headTimer = 0;
-	lPlayer->padid = 0;
+	//lPlayer->padid = 0;
 	lPlayer->pPed = NULL;
 
-	if (playerID * 0x74 == 0)
+	
 	{
 		newCar->controlType = 1;
-		newCar->ai.padid = &player[0].padid;
+		newCar->ai.padid = &lPlayer->padid;
 		newCar->hndType = 0;
-		if (gCurrentMissionNumber != 0x20 && MissionHeader->residentModels[newCar->ap.model] == 0)
+
+		if (playerID == 0)
 		{
-			NoteFelony(&felonyData, 11, 0x1000);
+			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
+			{
+				NoteFelony(&felonyData, 11, 4096);
+			}
 		}
 	}
 
@@ -372,13 +376,13 @@ void UpdatePlayers(void)
 
 	pedestrianFelony = 0;
 
-	if (gInGameCutsceneActive == 0)
-		player[0].playerType = (player[0].pPed != NULL) ? 2 : 1;
-
 	locPlayer = player;
 
 	// [A] cycle might be wrong
 	do {
+		if (gInGameCutsceneActive == 0)
+			locPlayer->playerType = (locPlayer->pPed != NULL) ? 2 : 1;
+
 		if (locPlayer->playerType == 1)
 		{
 			carId = locPlayer->playerCarId;
