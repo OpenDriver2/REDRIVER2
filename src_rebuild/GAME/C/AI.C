@@ -128,23 +128,27 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 	// End Line: 650
 
 // [D]
-int TannerStuckInCar(int doSpeedCheck)
+int TannerStuckInCar(int doSpeedCheck, int player_id)
 {
 	short *psVar1;
 	int iVar2;
 	int iVar3;
 
-	_CAR_DATA *cp = NULL;
+	_CAR_DATA *cp;
+	_PLAYER* lp;
+	
+	cp = NULL;
+	lp = &player[player_id];
 
-	if (NumPlayers < 2 && player[0].playerType == 1)
+	if (lp->playerType == 1)
 	{
-		if (player[0].playerCarId < 0)
+		if (lp->playerCarId < 0)
 		{
 			psVar1 = &pedestrianFelony;
 		}
 		else 
 		{
-			cp = &car_data[player[0].playerCarId];
+			cp = &car_data[lp->playerCarId];
 			psVar1 = &cp->felonyRating;
 		}
 
@@ -170,6 +174,7 @@ int TannerStuckInCar(int doSpeedCheck)
 			}
 		}
 	}
+
 	return 1;
 }
 
