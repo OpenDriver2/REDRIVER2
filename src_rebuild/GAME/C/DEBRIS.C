@@ -430,7 +430,7 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 
 
 	if ((cameraview == 2 && CAR_INDEX(cp) == CameraCar) || 
-		player[0].cameraView == 2 && player[0].cameraCarId == CAR_INDEX(cp))	// bug fix
+		player[CurrentPlayerView].cameraView == 2 && player[CurrentPlayerView].cameraCarId == CAR_INDEX(cp))	// bug fix
 		in_car = true;
 
 	if (front == 0) 
@@ -497,12 +497,12 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 			s1[11].vz = s1[3].vz;
 
 			iVar15 = 3;
-
-			if (player[0].cameraView == 2 && cp == &car_data[player[0].playerCarId])
-				LightSortCorrect = -320;
-			else
-				LightSortCorrect = -200;
 		}
+
+		if (player[CurrentPlayerView].cameraView == 2 && cp == &car_data[player[CurrentPlayerView].playerCarId])
+			LightSortCorrect = -320;
+		else
+			LightSortCorrect = -200;
 	}
 
 	s1[0].vz = s1[1].vz;
@@ -2867,6 +2867,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	SVECTOR tail;
 	SVECTOR head;
 	int z;
+	int index;
 
 	pVVar10 = v1;
 	pCVar14 = col;
@@ -2941,13 +2942,10 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	addPrim(current->ot + z, poly);
 	current->primptr += sizeof(POLY_FT4);
 
-	iVar19 = FrameCnt;
-	iVar16 = LightIndex;
-
 	if (CameraCnt > 4)
 	{
 		bVar8 = col->cd;
-		iVar15 = -1;
+		index = -1;
 
 		if ((bVar8 & 0x20) == 0 || gLightsOn == 0) 
 		{
@@ -2959,22 +2957,22 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 					{
 						if ((bVar8 & 0x10) != 0) 
 						{
-							iVar15 = 3;
+							index = 3;
 						}
 					}
 					else 
 					{
-						iVar15 = 2;
+						index = 2;
 					}
 				}
 				else 
 				{
-					iVar15 = 1;
+					index = 1;
 				}
 			}
 			else 
 			{
-				iVar15 = 0;
+				index = 0;
 			}
 		}
 		else 
@@ -2991,7 +2989,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 				sVar6 = poly->y3;
 
 				Known_Lamps[LightIndex].clock = FrameCnt;
-				Known_Lamps[iVar16].light_trails[iVar19 & 3].x = sVar9;
+				Known_Lamps[LightIndex].light_trails[FrameCnt & 3].x = sVar9;
 
 				y = (sVar13 + sVar6) / 2;
 					
@@ -3002,7 +3000,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 				sVar13 = y;
 
-				Known_Lamps[iVar16].light_trails[FrameCnt & 3].y = sVar13;
+				Known_Lamps[LightIndex].light_trails[FrameCnt & 3].y = sVar13;
 
 				y = sVar3 - y;
 
@@ -3101,34 +3099,32 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 				Known_Lamps[LightIndex].clock = FrameCnt;
 			}
-
-			iVar15 = -1;
 		}
 
-		iVar19 = FrameCnt;
-		iVar16 = gcar_num;
-
-		if (-1 < iVar15) 
+		if (index > -1)
 		{
-			if (CameraChanged == 0 && car_data[gcar_num].ap.old_clock[iVar15] == (FrameCnt & 0xffffU)-1)
+			if (CameraChanged == 0 && car_data[gcar_num].ap.old_clock[index] == (FrameCnt & 0xffffU)-1)
 			{
-				sVar2 = car_data[gcar_num].ap.light_trails[iVar15][FrameCnt - 3U & 3].x;
-				sVar3 = car_data[gcar_num].ap.light_trails[iVar15][FrameCnt - 3U & 3].y;
+				sVar2 = car_data[gcar_num].ap.light_trails[index][FrameCnt - 3U & 3].x;
+				sVar3 = car_data[gcar_num].ap.light_trails[index][FrameCnt - 3U & 3].y;
 
 				y = (poly->x0 + poly->x3) / 2;
 				sVar9 = y;
 				sVar13 = poly->y0;
 				sVar6 = poly->y3;
 				y = sVar2 - y;
-				car_data[gcar_num].ap.old_clock[iVar15] = FrameCnt;
+
+				car_data[gcar_num].ap.old_clock[index] = FrameCnt;
 				x = (sVar13 + sVar6) / 2;
-				car_data[iVar16].ap.light_trails[iVar15][iVar19 & 3U].x = sVar9;
+				car_data[gcar_num].ap.light_trails[index][FrameCnt & 3U].x = sVar9;
+
 				iVar19 = y;
 				if (y < 0)
 					iVar19 = -y;
 
 				sVar13 = x;
-				car_data[iVar16].ap.light_trails[iVar15][FrameCnt & 3U].y = sVar13;
+				car_data[gcar_num].ap.light_trails[index][FrameCnt & 3U].y = sVar13;
+
 				x = sVar3 - x;
 				iVar16 = poly->x0 - poly->x3;
 				if (iVar16 < 0)
@@ -3177,7 +3173,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 					polys->b0 = col->b;
 					polys->r1 = col->r;
 					polys->g1 = col->g;
-					bVar8 = col->b;
+					polys->b1 = col->b;
 				}
 				else 
 				{
@@ -3186,10 +3182,9 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 					polys->b0 = col->b >> 1;
 					polys->r1 = col->r >> 1;
 					polys->g1 = col->g >> 1;
-					bVar8 = col->b >> 1;
+					polys->b1 = col->b >> 1;
 				}
 
-				polys->b1 = bVar8;
 				polys->r2 = 0;
 				polys->g2 = 0;
 				polys->b2 = 0;
@@ -3213,19 +3208,21 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 				addPrim(current->ot + z, null);
 				current->primptr += sizeof(POLY_FT3);
-				return;
 			}
+			else
+			{
+				iVar20 = 0;
 
-			iVar20 = 3;
+				while (iVar20 < 4)
+				{
+					car_data[gcar_num].ap.light_trails[index][iVar20].x = (poly->x0 + poly->x3) / 2;
+					car_data[gcar_num].ap.light_trails[index][iVar20].y = (poly->y0 + poly->y3) / 2;
 
-			do {
-				car_data[gcar_num].ap.light_trails[iVar15][iVar20].x = (poly->x0 + poly->x3) / 2;
-				car_data[gcar_num].ap.light_trails[iVar15][iVar20].y = (poly->y0 + poly->y3) / 2;
+					iVar20++;
+				}
 
-				iVar20--;
-			} while (-1 < iVar20);
-
-			car_data[gcar_num].ap.old_clock[iVar15] = FrameCnt;
+				car_data[gcar_num].ap.old_clock[index] = FrameCnt;
+			 }
 		}
 	}
 }
