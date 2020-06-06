@@ -141,7 +141,6 @@ void SetupScreenFade(int start, int end, int speed)
 	screen_fade_end = end;
 	screen_fade_speed = speed;
 	FadingScreen = 1;
-	return;
 }
 
 // decompiled code
@@ -176,70 +175,64 @@ void SetupScreenFade(int start, int end, int speed)
 // [D]
 void FadeGameScreen(int flag, int speed)
 {
-	bool bVar1;
+	static POLY_F4 poly; // offset 0x0
+	static POLY_FT4 p; // offset 0x20
+
+	bool do_fade;
 
 	if (flag == 0)
-		bVar1 = screen_fade_value < screen_fade_end;
+		do_fade = screen_fade_value < screen_fade_end;
 	else
-		bVar1 = screen_fade_end < screen_fade_value;
+		do_fade = screen_fade_end < screen_fade_value;
 
-	if (bVar1)
+	if (do_fade)
 	{
-		POLY_F4* poly = (POLY_F4 *)current->primptr;
-
 		if (screen_fade_value < 0) 
 		{
-			poly->r0 = 0;
+			poly.r0 = 0;
 		}
 		else 
 		{
-			poly->r0 = screen_fade_value;
+			poly.r0 = screen_fade_value;
 
 			if (0xff < screen_fade_value)
 			{
-				poly->r0 = -1;
+				poly.r0 = -1;
 			}
 		}
 
-		poly->g0 = poly->b0 = poly->r0;
+		poly.g0 = poly.b0 = poly.r0;
 
-		setPolyF4(poly);
-		setSemiTrans(poly, 1);
-		poly->y2 = 256;
-		poly->y3 = 256;
-		poly->x0 = 0;
-		poly->y0 = 0;
-		poly->x1 = 320;
-		poly->y1 = 0;
-		poly->x2 = 0;
-		poly->x3 = 320;
+		setPolyF4(&poly);
+		setSemiTrans(&poly, 1);
+		poly.y2 = 256;
+		poly.y3 = 256;
+		poly.x0 = 0;
+		poly.y0 = 0;
+		poly.x1 = 320;
+		poly.y1 = 0;
+		poly.x2 = 0;
+		poly.x3 = 320;
 
 		if (flag == 0)
 			screen_fade_value = screen_fade_value + speed;
 		else
 			screen_fade_value = screen_fade_value - speed;
 
-		addPrim(current->ot, poly);
+		setPolyFT4(&p);
+		setSemiTrans(&p, 1);
+		p.x0 = -1;
+		p.y0 = -1;
+		p.y1 = -1;
+		p.x2 = -1;
+		p.x1 = 0;
+		p.y2 = 0;
+		p.x3 = 0;
+		p.y3 = 0;
+		p.tpage = 0x40;
 
-		current->primptr += sizeof(POLY_F4);
-
-		POLY_FT4* null = (POLY_FT4*)current->primptr;
-
-		setPolyFT4(null);
-		setSemiTrans(null, 1);
-		null->x0 = -1;
-		null->y0 = -1;
-		null->y1 = -1;
-		null->x2 = -1;
-		null->x1 = 0;
-		null->y2 = 0;
-		null->x3 = 0;
-		null->y3 = 0;
-		null->tpage = 0x40;
-
-		addPrim(current->ot, null);
-		current->primptr += sizeof(POLY_FT4);
-
+		DrawPrim(&p);
+		DrawPrim(&poly);
 	}
 	else
 	{
@@ -581,40 +574,33 @@ static int bWantFade = 0;
 // [D]
 void SetupFadePolys(void)
 {
-	POLY_G4 *pPVar1;
-	POLY_GT4 *pPVar2;
-	int iVar3;
+	int i;
 
-	pPVar1 = fade_g4;
-	pPVar2 = fade_gt4;
-	iVar3 = 1;
+	i = 0;
 
-	do {
-		setPolyG4(pPVar1);
-		setSemiTrans(pPVar1, 1);
+	while (i < 2)
+	{
+		setPolyG4(&fade_g4[i]);
+		setSemiTrans(&fade_g4[i], 1);
 
-		pPVar1 = pPVar1 + 1;
+		setPolyGT4(&fade_gt4[i]);
+		setSemiTrans(&fade_gt4[i], 1);
 
-		setPolyGT4(pPVar2);
-		setSemiTrans(pPVar2, 1);
+		fade_gt4[i].x0 = -1;
+		fade_gt4[i].y0 = -1;
+		fade_gt4[i].x1 = 0;
+		fade_gt4[i].y1 = -1;
+		fade_gt4[i].x2 = -1;
+		fade_gt4[i].y2 = 0;
+		fade_gt4[i].x3 = 0;
+		fade_gt4[i].y3 = 0;
+		fade_gt4[i].tpage = 0x40;
 
-		pPVar2->x0 = -1;
-		pPVar2->y0 = -1;
-		pPVar2->x1 = 0;
-		pPVar2->y1 = -1;
-		pPVar2->x2 = -1;
-		pPVar2->y2 = 0;
-		pPVar2->x3 = 0;
-		pPVar2->y3 = 0;
-		pPVar2->tpage = 0x40;
-
-		iVar3 = iVar3 + -1;
-
-		pPVar2 = pPVar2 + 1;
-	} while (-1 < iVar3);
+		i++;
+	};
 
 	bWantFade = 1;
-	fadeVal = 0xff;
+	fadeVal = 255;
 	gStopPadReads = 1;
 }
 

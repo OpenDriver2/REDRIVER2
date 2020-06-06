@@ -499,6 +499,8 @@ void SetPleaseWait(char *buffer)
 	}
 #else
 	ResetCityType();
+
+	Emulator_EndScene();
 #endif // PSX
 	
 }
