@@ -461,12 +461,15 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	VERTTYPE dx = p1[0] - p0[0];
 	VERTTYPE dy = p1[1] - p0[1];
 
-	if (dx > abs(dy)) { // horizontal
-		vertex[0].x = p0[0];
-		vertex[0].y = p0[1];
+	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-		vertex[1].x = p1[0] + 1;
-		vertex[1].y = p1[1];
+	if (dx > abs(dy)) { // horizontal
+		vertex[0].x = p0[0] + ofsX;
+		vertex[0].y = p0[1] + ofsY;
+
+		vertex[1].x = p1[0] + ofsX + 1;
+		vertex[1].y = p1[1] + ofsY;
 
 		vertex[2].x = vertex[1].x;
 		vertex[2].y = vertex[1].y + 1;
@@ -474,11 +477,11 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 		vertex[3].x = vertex[0].x;
 		vertex[3].y = vertex[0].y + 1;
 	} else { // vertical
-		vertex[0].x = p0[0];
-		vertex[0].y = p0[1];
+		vertex[0].x = p0[0] + ofsX;
+		vertex[0].y = p0[1] + ofsY;
 
-		vertex[1].x = p1[0];
-		vertex[1].y = p1[1] + 1;
+		vertex[1].x = p1[0] + ofsX;
+		vertex[1].y = p1[1] + ofsY + 1;
 
 		vertex[2].x = vertex[1].x + 1;
 		vertex[2].y = vertex[1].y;
@@ -500,8 +503,8 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);		\
 	PGXPVData vd;									\
 	if(PGXP_GetCacheData(vd, lookup, gteidx)) {		\
-		v.x = vd.px;\
-		v.y = vd.py;\
+		v.x = vd.px + ofsX;\
+		v.y = vd.py + ofsY;\
 		v.w = vd.pz;\
 		v.z = 0.0f;\
 	} else { \
@@ -522,19 +525,21 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	assert(p1);
 	assert(p2);
 
-	vertex[0].x = p0[0];
-	vertex[0].y = p0[1];
+	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-	vertex[1].x = p1[0];
-	vertex[1].y = p1[1];
+	vertex[0].x = p0[0] + ofsX;
+	vertex[0].y = p0[1] + ofsY;
 
-	vertex[2].x = p2[0];
-	vertex[2].y = p2[1];
+	vertex[1].x = p1[0] + ofsX;
+	vertex[1].y = p1[1] + ofsY;
+
+	vertex[2].x = p2[0] + ofsX;
+	vertex[2].y = p2[1] + ofsY;
 
 	PGXP_APPLY(vertex[0], p0);
 	PGXP_APPLY(vertex[1], p1);
 	PGXP_APPLY(vertex[2], p2);
-
 }
 
 void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx)
@@ -544,17 +549,20 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	assert(p2);
 	assert(p3);
 
-	vertex[0].x = p0[0];
-	vertex[0].y = p0[1];
+	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-	vertex[1].x = p1[0];
-	vertex[1].y = p1[1];
+	vertex[0].x = p0[0] + ofsX;
+	vertex[0].y = p0[1] + ofsY;
 
-	vertex[2].x = p2[0];
-	vertex[2].y = p2[1];
+	vertex[1].x = p1[0] + ofsX;
+	vertex[1].y = p1[1] + ofsY;
 
-	vertex[3].x = p3[0];
-	vertex[3].y = p3[1];
+	vertex[2].x = p2[0] + ofsX;
+	vertex[2].y = p2[1] + ofsY;
+
+	vertex[3].x = p3[0] + ofsX;
+	vertex[3].y = p3[1] + ofsY;
 
 	PGXP_APPLY(vertex[0], p0);
 	PGXP_APPLY(vertex[1], p1);
@@ -566,8 +574,11 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 {
 	assert(p0);
 
-	vertex[0].x = p0[0];
-	vertex[0].y = p0[1];
+	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+
+	vertex[0].x = p0[0] + ofsX;
+	vertex[0].y = p0[1] + ofsY;
 
 	vertex[1].x = vertex[0].x;
 	vertex[1].y = vertex[0].y + h;
@@ -1220,7 +1231,6 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
@@ -1326,8 +1336,8 @@ void Emulator_SetupClipMode(const RECT16& rect)
 
 	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / (float)activeDispEnv.disp.w;
 	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / (float)activeDispEnv.disp.h;
-	float clipRectW = (float)rect.w / (float)activeDispEnv.disp.w;
-	float clipRectH = (float)rect.h / (float)activeDispEnv.disp.h;
+	float clipRectW = (float)(rect.w) / (float)activeDispEnv.disp.w;
+	float clipRectH = (float)(rect.h) / (float)activeDispEnv.disp.h;
 
 
 
@@ -1341,7 +1351,10 @@ void Emulator_SetupClipMode(const RECT16& rect)
 	float flipOffset = windowHeight - clipRectH * (float)windowHeight;
 
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(clipRectX * (float)windowWidth, flipOffset - clipRectY * (float)windowHeight, clipRectW * (float)windowWidth, clipRectH * (float)windowHeight);
+	glScissor(clipRectX * (float)windowWidth, 
+			  flipOffset - clipRectY * (float)windowHeight, 
+		      clipRectW * (float)windowWidth,
+		      clipRectH * (float)windowHeight);
 #elif defined(D3D9)
 
 #endif
@@ -1358,7 +1371,7 @@ void Emulator_SetShader(const ShaderID &shader)
 	#error
 #endif
 
-	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, -1.0f, 1.0f);
+	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
@@ -1591,6 +1604,9 @@ void Emulator_UpdateVRAM()
 
 void Emulator_BlitVRAM()
 {
+	return; // is that needed?
+	// FIXME: sorry, this does not work
+
 	if (activeDispEnv.isinter)
 	{
 		//Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);

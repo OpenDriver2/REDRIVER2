@@ -1256,7 +1256,6 @@ void ReInitScreens(void)
 	loaded[2] = -1;
 	padsConnected[0] = 1;
 	padsConnected[1] = 0;
-	bCdIconSetup = 0;
 	bMissionSelect = 0;
 	bDoingCarSelect = 0;
 	bDoingCutSelect = 0;
@@ -1716,6 +1715,8 @@ void DoFrontEnd(void)
 	UNIMPLEMENTED();
 	int iVar1;
 
+	FEInitCdIcon();
+
 	ResetGraph(1);
 	SetDispMask(0);
 	//PadChecks();		// [A] there is a BUG
@@ -1742,7 +1743,7 @@ void DoFrontEnd(void)
 	EndFrame();
 	EndFrame();
 	SetDispMask(1);
-	FEInitCdIcon();
+	
 	do {
 		PadChecks();
 		if (currPlayer == 2) {
@@ -2004,13 +2005,13 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	char bVar1;
 	char bVar2;
 	unsigned char uVar3;
-	DB *pDVar4;
 	int iVar5;
 	uint uVar6;
 	uint uVar7;
 	ulong *puVar8;
 	char *pbVar9;
 	SPRT *font;
+	POLY_FT3* null;
 	char *pbVar10;
 	int iVar11;
 
@@ -2064,12 +2065,11 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 					uVar3 = feFont.CharInfo[uVar7].v;
 					font->w = (ushort)bVar1;
 					font->v0 = uVar3;
-					pDVar4 = current;
 					bVar2 = feFont.CharInfo[uVar7].h;
 					iVar5 = iVar5 + (uint)bVar1;
 					font->clut = 0x407c;
 					font->h = (ushort)bVar2;
-					addPrim(pDVar4->ot+1, font);
+					addPrim(current->ot+1, font);
 					font++;
 				}
 				iVar11 = iVar11 + 1;
@@ -2080,26 +2080,19 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		}
 		current->primptr = (char*)font;
 
-		/*
-		// this is not SPRT
-		font->code = '&';
-		pDVar4 = current;
-		font->x0 = -1;
-		font->y0 = -1;
-		font->w = -1;
-		font->h = -1;
-		*(undefined2 *)&font[1].r0 = 0xffff;
-		*(undefined2 *)&font[1].b0 = 0xffff;
-		*(undefined2 *)((int)&font[1].tag + 2) = 0x1a;
-		*/
+		null = (POLY_FT3*)current->primptr;
+		setPolyFT3(null);
+		setSemiTrans(null, 1);
+		null->x0 = -1;
+		null->y0 = -1;
+		null->x1 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->y2 = -1;
+		null->tpage = 0x1a;
 
-		// [A] - don't use odd poly_ft prims
-		DR_TPAGE* tp = (DR_TPAGE*)current->primptr;
-
-		setDrawTPage(tp, 0, 0, 0x1a);
-		addPrim(current->ot + 1, tp);
-
-		current->primptr += sizeof(DR_TPAGE);
+		addPrim(current->ot + 1, null);
+		current->primptr += sizeof(POLY_FT3);
 	}
 	return iVar5;
 }

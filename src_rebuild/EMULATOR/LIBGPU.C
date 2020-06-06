@@ -445,7 +445,7 @@ void SetDrawEnv(DR_ENV* dr_env, DRAWENV* env)
 	dr_env->code[3] = 32 * (((256 - env->tw.h) >> 3) & 0x1F) | ((256 - env->tw.w) >> 3) & 0x1F | (((env->tw.y >> 3) & 0x1F) << 15) | (((env->tw.x >> 3) & 0x1F) << 10) | 0xE2000000;
 	dr_env->code[4] = ((env->dtd != 0) << 9) | ((env->dfe != 0) << 10) | env->tpage & 0x1FF | 0xE1000000;
 	dr_env->len = 5;
-	dr_env->tag = dr_env->tag & 0xFFFFFF | 0x5000000;// 0x50 = gradated line?
+	dr_env->tag = dr_env->tag & 0xFFFFFF | 0x5000000;
 }
 
 void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
@@ -729,7 +729,6 @@ int ParsePrimitive(uintptr_t primPtr)
 	}
 
 	bool semi_transparent = (pTag->code & 2) != 0;
-	int primitive_size = -1;	// -1
 
 #ifdef PGXP
 	unsigned short gte_index = pTag->pgxp_index;
@@ -746,7 +745,8 @@ int ParsePrimitive(uintptr_t primPtr)
 				case 0x01:
 				{
 					DR_MOVE* drmove = (DR_MOVE*)pTag;
-					/*
+#if 0	// [A] this was disabled because Emulator_StoreFrameBuffer slow
+
 					int x, y;
 					y = drmove->code[3] >> 0x10 & 0xFFFF;
 					x = drmove->code[3] & 0xFFFF;
@@ -761,15 +761,14 @@ int ParsePrimitive(uintptr_t primPtr)
 					Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
 					Emulator_UpdateVRAM();
 					MoveImage(&rect, x, y);
-					*/
+#endif
 
-					eprinterr("DR_MOVE unimplemented!\n");
-
-					primitive_size = sizeof(DR_MOVE);
 					break;
 				}
 				default:
-					primitive_size = 4;
+				{
+					eprinterr("Unknown command %02X!\n", pTag->code);
+				}
 			}
 
 			
@@ -787,7 +786,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 3;
 
-			primitive_size = sizeof(POLY_F3);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -806,7 +804,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 3;
 
-			primitive_size = sizeof(POLY_FT3);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -825,7 +822,6 @@ int ParsePrimitive(uintptr_t primPtr)
 			TriangulateQuad();
 
 			g_vertexIndex += 6;
-			primitive_size = sizeof(POLY_F4);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -846,7 +842,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(POLY_FT4);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -864,7 +859,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 3;
 
-			primitive_size = sizeof(POLY_G3);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -883,7 +877,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 3;
 
-			primitive_size = sizeof(POLY_GT3);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -903,7 +896,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(POLY_G4);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -924,7 +916,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(POLY_GT4);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -944,7 +935,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(LINE_F2);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
@@ -982,7 +972,6 @@ int ParsePrimitive(uintptr_t primPtr)
 #endif
 			}
 
-			primitive_size = sizeof(LINE_F3);
 			break;
 		}
 		case 0x4c:
@@ -1030,14 +1019,12 @@ int ParsePrimitive(uintptr_t primPtr)
 #endif
 			}
 
-			primitive_size = sizeof(LINE_F2);
 #if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 #endif
 
 			// TODO: unsupported
 
-			primitive_size = sizeof(LINE_F4);
 			break;
 		}
 		case 0x50:
@@ -1054,7 +1041,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(LINE_G2);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1074,7 +1060,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(TILE);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1095,7 +1080,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(SPRT);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1115,7 +1099,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(TILE_1);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1135,7 +1118,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(TILE_8);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1155,7 +1137,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(SPRT_8);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1175,7 +1156,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(TILE_16);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
@@ -1195,14 +1175,70 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			g_vertexIndex += 6;
 
-			primitive_size = sizeof(SPRT_16);
 	#if defined(DEBUG_POLY_COUNT)
 			polygon_count++;
 	#endif
 			break;
 		}
-		case 0xE0:
+		case 0xE0:  // DR_ENV commands
 		{
+			DR_ENV* drenv = (DR_ENV*)pTag;
+
+			// parse each code of the command
+			for (int i = 0; i < pTag->len; i++)
+			{
+				u_long code = drenv->code[i];
+				u_char drcode = code >> 24 & 0xFF;
+
+				switch (drcode)
+				{
+					case 0xE1:
+					{
+						activeDrawEnv.tpage = (code & 0x1FF);
+						activeDrawEnv.dtd = (code >> 9) & 1;
+						activeDrawEnv.dfe = (code >> 10) & 1;
+						break;
+					}
+					case 0xE2:
+					{
+						activeDrawEnv.tw.w = (code & 0x1F);
+						activeDrawEnv.tw.h = ((code >> 5) & 0x1F);
+						activeDrawEnv.tw.x = ((code >> 10) & 0x1F);
+						activeDrawEnv.tw.y = ((code >> 15) & 0x1F);
+						break;
+					}
+					case 0xE3:
+					{
+						activeDrawEnv.clip.x = code & 1023;
+						activeDrawEnv.clip.y = (code >> 10) & 1023;
+						break;
+					}
+					case 0xE4:
+					{
+						activeDrawEnv.clip.w = code & 1023;
+						activeDrawEnv.clip.h = (code >> 10) & 1023;
+
+						activeDrawEnv.clip.w -= activeDrawEnv.clip.x;
+						activeDrawEnv.clip.h -= activeDrawEnv.clip.y;
+						break;
+					}
+					case 0xE5:
+					{
+						activeDrawEnv.ofs[0] = code & 2047;//sign_x_to_s32(11, (*cb & 2047));
+						activeDrawEnv.ofs[1] = (code >> 11) & 2047; //sign_x_to_s32(11, ((*cb >> 11) & 2047));
+
+						break;
+					}
+					case 0xE6:
+					{
+						eprintf("Mask setting: %08x\n", code);
+						//MaskSetOR = (*cb & 1) ? 0x8000 : 0x0000;
+						//MaskEvalAND = (*cb & 2) ? 0x8000 : 0x0000;
+						break;
+					}
+				}
+			}
+#if 0
 			switch (pTag->code)
 			{
 				case 0xE1:
@@ -1215,9 +1251,10 @@ int ParsePrimitive(uintptr_t primPtr)
 					//if (tpage != 0)
 					{
 						activeDrawEnv.tpage = tpage;
+						//activeDrawEnv.dtd = 
+						//activeDrawEnv.dfe
 					}
 
-					primitive_size = sizeof(DR_TPAGE);
 #if defined(DEBUG_POLY_COUNT)
 					polygon_count++;
 #endif
@@ -1239,9 +1276,6 @@ int ParsePrimitive(uintptr_t primPtr)
 
 					activeDrawEnv.clip = rect;
 
-					primitive_size = sizeof(DR_AREA);
-
-
 #if defined(DEBUG_POLY_COUNT)
 					polygon_count++;
 #endif
@@ -1255,6 +1289,7 @@ int ParsePrimitive(uintptr_t primPtr)
 					break;
 				}
 			}
+#endif
 			break;
 		}
 		default:
@@ -1265,7 +1300,11 @@ int ParsePrimitive(uintptr_t primPtr)
 		}
 	}
 
-	return primitive_size;
+#ifdef USE_32_BIT_ADDR
+	return (pTag->len + 2) * sizeof(long);
+#else
+	return (pTag->len + 1) * sizeof(long);
+#endif
 }
 
 int ParseLinkedPrimitiveList(uintptr_t packetStart, uintptr_t packetEnd)
