@@ -1753,6 +1753,7 @@ void Emulator_TakeScreenshot()
 #endif
 
 GameDebugKeysHandlerFunc gameDebugKeys = NULL;
+int activeControllers = 0x1;
 
 void Emulator_DoDebugKeys(int nKey, bool down)
 {
@@ -1812,6 +1813,16 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 			case SDL_SCANCODE_5:
 				eprintf("saving VRAM.TGA\n");
 				Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+			case SDL_SCANCODE_6:
+
+				
+				activeControllers++;
+				activeControllers = activeControllers % 4;
+
+				if (activeControllers == 0)
+					activeControllers++;
+
+				eprintf("Active keyboard controller: %d\n", activeControllers);
 		}
 	}
 
@@ -1848,7 +1859,7 @@ void Emulator_UpdateInput()
 	else
 	{
 		//Update keyboard
-		if (padData[0] != NULL)
+		if (padData[0] != NULL && activeControllers & 0x1)
 		{
 			PADRAW* pad = (PADRAW*)padData[0];
 
@@ -1862,7 +1873,7 @@ void Emulator_UpdateInput()
 		}
 
 		//Update keyboard
-		if (padData[1] != NULL)
+		if (padData[1] != NULL && activeControllers & 0x2)
 		{
 			PADRAW* pad = (PADRAW*)padData[1];
 
