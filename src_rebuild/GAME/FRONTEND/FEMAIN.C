@@ -243,7 +243,7 @@ int cutSelection = 0;
 int currCity = 0;
 
 int bRedrawFrontend = 0;
-int bReturnToMain = 0;
+int bReturnToMain = 1;
 
 int idle_timer = 0;
 int currPlayer = 1;
@@ -299,6 +299,11 @@ void SetVariable(int var)
 {
 	int code = (var >> 8);
 	int value = (var & 0xff);
+
+	if (0xc < (var >> 8) - 1U) 
+	{
+		return;
+	}
 
 	switch (var >> 8) {
 	case 1:
@@ -1244,7 +1249,7 @@ void ReInitScreens(void)
 	currCity = 0;
 
 	bRedrawFrontend = 0;
-	bReturnToMain = 0;
+	bReturnToMain = 1;
 
 	idle_timer = 0;
 	currPlayer = 1;
@@ -1485,37 +1490,41 @@ int HandleKeyPress(void)
 			fePad = 0;
 	}
 
-	if ((fePad & 0x40U) == 0) {
-		if ((fePad & 0x10U) == 0) {
-			if ((((fePad & 0x5000U) == 0) && ((fePad & 0x8000U) == 0)) &&
-				((fePad & 0x2000U) == 0)) {
+	if ((fePad & 0x40U) == 0)
+	{
+		if ((fePad & 0x10U) == 0) 
+		{
+			if ((fePad & 0x5000U) == 0 && (fePad & 0x8000U) == 0 && (fePad & 0x2000U) == 0) 
+			{
 				return 1;
 			}
 			NewSelection(fePad);
 		}
-		else {
-			if (0 < ScreenDepth) {
-				if (bDoneAllready == 0) {
-					FESound(0);
-				}
-				else {
-					bDoneAllready = 0;
-				}
-				ScreenDepth = ScreenDepth + -1;
-				if (ScreenDepth == 0) {
-					gWantNight = 0;
-					gSubGameNumber = 0;
-					NumPlayers = 1;
-				}
-				pNewScreen = pScreenStack[ScreenDepth];
-				pNewButton = pButtonStack[ScreenDepth];
+		else if (ScreenDepth > 0)
+		{
+
+			if (bDoneAllready == 0)
+				FESound(0);
+			else
+				bDoneAllready = 0;
+
+			ScreenDepth--;
+			if (ScreenDepth == 0) 
+			{
+				gWantNight = 0;
+				gSubGameNumber = 0;
+				NumPlayers = 1;
 			}
+			pNewScreen = pScreenStack[ScreenDepth];
+			pNewButton = pButtonStack[ScreenDepth];
 		}
 	}
-	else {
+	else 
+	{
 		int action = pCurrButton->action >> 8;
 
-		if (action != 3) {
+		if (action != 3)
+		{
 			FESound(2);
 			
 			if (pCurrButton->var != -1)
@@ -1535,11 +1544,13 @@ int HandleKeyPress(void)
 				ScreenDepth = action;
 				break;
 			case 2:
-				if (((NumPlayers == 2) && (bDoingCarSelect != 0)) && (currPlayer == 2)) {
+				if (NumPlayers == 2 && bDoingCarSelect != 0 && currPlayer == 2)
+				{
 					(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
 					bRedrawFrontend = 1;
 				}
-				else {
+				else 
+				{
 					pScreenStack[ScreenDepth] = pCurrScreen;
 					pButtonStack[ScreenDepth] = pCurrButton;
 
@@ -1551,14 +1562,13 @@ int HandleKeyPress(void)
 			case 4:
 				if (ScreenDepth > 0)
 				{
-					action = ScreenDepth - 1;
+					ScreenDepth--;
 
-					if (action == 0)
+					if (ScreenDepth == 0)
 						NumPlayers = 1;
 
-					pNewScreen = pScreenStack[action];
-					pNewButton = pButtonStack[action];
-					ScreenDepth = action;
+					pNewScreen = pScreenStack[ScreenDepth];
+					pNewButton = pButtonStack[ScreenDepth];
 				}
 				break;
 			}
@@ -1651,22 +1661,27 @@ void PadChecks(void)
 		}
 	}
 
-	if ((oldnum != numPadsConnected) &&
-		((((NumPlayers == 2 && (numPadsConnected != NumPlayers)) || (numPadsConnected == 0)) ||
-		(padsConnected[0] == 0)))) {
+	if (oldnum != numPadsConnected && NumPlayers == 2 && numPadsConnected != NumPlayers || numPadsConnected == 0 || padsConnected[0] == 0) 
+	{
 		bReturnToMain = 1;
 		bRedrawFrontend = 1;
 		fePad = 0x10;
-		if (pCurrScreen->userFunctionNum != 0) {
+
+		if (pCurrScreen->userFunctionNum != 0) 
+		{
 			(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0);
 		}
+
 		fePad = 0;
-		if (ScreenDepth != 0) {
+
+		if (ScreenDepth != 0) 
+		{
 			ReInitScreens();
 		}
 	}
 	if (((bRedrawFrontend == 0) && (numPadsConnected != oldnum)) &&
-		((gInFrontend != 0 && ((pCurrScreen != NULL && (pCurrScreen->userFunctionNum != 0)))))) {
+		((gInFrontend != 0 && ((pCurrScreen != NULL && (pCurrScreen->userFunctionNum != 0))))))
+	{
 		(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
 		bRedrawFrontend = 1;
 	}
