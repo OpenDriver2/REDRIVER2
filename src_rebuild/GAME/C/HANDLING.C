@@ -2079,9 +2079,9 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	{
 		if ((pad & 0x1010) == 0x1010 && player_id > -1)
 		{
-			if (!TannerStuckInCar(1))
+			if (!TannerStuckInCar(1, player_id))
 			{
-				if (player[0].dying == 0)
+				if (player[player_id].dying == 0)
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, 0);
 			}
 			else if (lockAllTheDoors != 0)

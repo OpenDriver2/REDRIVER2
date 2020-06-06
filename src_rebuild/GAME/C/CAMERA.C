@@ -100,39 +100,33 @@ SVECTOR camera_angle = { 0,0,0 };
 // [D]
 void InitCamera(_PLAYER *lp)
 {
-	unsigned char bVar1;
-	//undefined4 in_zero;
-	//undefined4 in_at;
-	int iVar2;
-	CAR_COSMETICS *pCVar3;
-	_EVENT *p_Var4;
+	CAR_COSMETICS *car_cos;
+	_EVENT *event;
 	SVECTOR boxDisp = { 0 };
 
 	if (events.cameraEvent == NULL) 
 	{
-		if (NumPlayers == 2)
+		if (NumPlayers == 2 && (lp->cameraView == 1 || lp->cameraView > 2))			// [A]
 		{
-			lp->cameraView = 0x2;
+			lp->cameraView = 0;
 		}
 
 		paddCamera = Pads[lp->padid].mapped;
 
-		if ((NoPlayerControl != 0) || (gInGameCutsceneActive != 0))
+		if (NoPlayerControl != 0 || gInGameCutsceneActive != 0)
 		{
 			lp->cameraView = cameraview;
 		}
 
-		iVar2 = (int)lp->cameraCarId;
-
-		if (iVar2 < 0)
+		if (lp->cameraCarId < 0)
 		{
-			if (iVar2 < -1)
+			if (lp->cameraCarId < -1)
 			{
-				p_Var4 = events.track[-2 - iVar2];
-				basePos[0] = (p_Var4->position).vx;
-				basePos[1] = -(p_Var4->position).vy;
-				basePos[2] = (p_Var4->position).vz;
-				baseDir = (int)p_Var4->rotation + 0x400U & 0xfff;
+				event = events.track[-2 - lp->cameraCarId];
+				basePos[0] = event->position.vx;
+				basePos[1] = -event->position.vy;
+				basePos[2] = event->position.vz;
+				baseDir = event->rotation + 0x400U & 0xfff;
 			}
 			else 
 			{
@@ -146,16 +140,16 @@ void InitCamera(_PLAYER *lp)
 		else 
 		{
 			// [A]
-			gte_SetRotMatrix(&car_data[iVar2].hd.where);
-			gte_SetTransMatrix(&car_data[iVar2].hd.where);
+			gte_SetRotMatrix(&car_data[lp->cameraCarId].hd.where);
+			gte_SetTransMatrix(&car_data[lp->cameraCarId].hd.where);
 
 			// [A]
-			pCVar3 = car_data[iVar2].ap.carCos;
-			if (pCVar3)
+			car_cos = car_data[lp->cameraCarId].ap.carCos;
+			if (car_cos)
 			{
-				boxDisp.vx = -pCVar3->cog.vx;
-				boxDisp.vy = -pCVar3->cog.vy;
-				boxDisp.vz = -pCVar3->cog.vz;
+				boxDisp.vx = -car_cos->cog.vx;
+				boxDisp.vy = -car_cos->cog.vy;
+				boxDisp.vz = -car_cos->cog.vz;
 			}
 
 			gte_ldv0(&boxDisp);
@@ -164,65 +158,68 @@ void InitCamera(_PLAYER *lp)
 
 			gte_stlvnl(basePos);
 
-			baseDir = car_data[iVar2].hd.direction;			
+			baseDir = car_data[lp->cameraCarId].hd.direction;
 		}
 
-		bVar1 = lp->cameraView;
-		if (bVar1 == 1) {
-			if ((NoPlayerControl == 0) && (gInGameCutsceneActive == 0))
+
+		if (lp->cameraView == 0)
+		{
+			if (FrameCnt == 0) 
 			{
-				tracking_car = '\x01';
+				lp->cameraDist = 1000;
+
+				gCameraAngle = 2048;
+				CameraPos.vx = -45;
+				CameraPos.vy = -171;
+				CameraPos.vz = -125;
 			}
+			else
+			{
+				PlaceCameraFollowCar(lp);
+			}
+		}
+		else if (lp->cameraView == 1)
+		{
+			if (NoPlayerControl == 0 && gInGameCutsceneActive == 0)
+				tracking_car = 1;
+
 			PlaceCameraAtLocation(lp, 1);
 		}
-		else {
-			if (bVar1 < 2) {
-				if (bVar1 == 0) {
-					if (FrameCnt == 0) {
-						lp->cameraDist = 1000;
-						gCameraAngle = 0x800;
-						CameraPos.vx = -0x2d;
-						CameraPos.vy = -0xab;
-						CameraPos.vz = -0x7d;
-					}
-					else {
-						PlaceCameraFollowCar(lp);
-					}
-				}
-			}
-			else {
-				if (bVar1 == 2) {
-					if (bTannerSitting == 0) {
-						PlaceCameraInCar(lp, 0);
-					}
-					else {
-						PlaceCameraAtLocation(lp, 0);
-					}
-				}
-				else {
-					if (bVar1 == 5) {
-						if (NoPlayerControl == 0) {
-							if (gInGameCutsceneActive == 0) {
-								tracking_car = '\x01';
-							}
-							TargetCar = 0;
-						}
-						PlaceCameraAtLocation(lp, 0);
-					}
-				}
-			}
+		else if (lp->cameraView == 2)
+		{
+			if (bTannerSitting == 0)
+				PlaceCameraInCar(lp, 0);
+			else
+				PlaceCameraAtLocation(lp, 0);
 		}
-		if ((((gCurrentMissionNumber == 0x16) && (lp->cameraPos.vx < 0)) &&
-			(iVar2 = lp->cameraPos.vz, iVar2 < 0xc1c47)) && (700000 < iVar2)) {
+		else if (lp->cameraView == 5)
+		{
+			if (NoPlayerControl == 0)
+			{
+				if (gInGameCutsceneActive == 0)
+					tracking_car = 1;
+
+				TargetCar = 0;
+			}
+
+			PlaceCameraAtLocation(lp, 0);
+		}
+
+		if (gCurrentMissionNumber == 22 && lp->cameraPos.vx < 0 && lp->cameraPos.vz < 0xc1c47 && lp->cameraPos.vz > 700000)
+		{
 			SpecialCamera(SPECIAL_CAMERA_SET, 0);
 		}
+
 		camera_position.vx = lp->cameraPos.vx;
 		camera_position.vy = lp->cameraPos.vy;
 		camera_position.vz = lp->cameraPos.vz;
+
 		CameraCar = lp->cameraCarId;
+
 		lp->snd_cam_ang = camera_angle.vy;
 	}
-	else {
+	else 
+	{
 		BuildWorldMatrix();
 	}
 }
@@ -300,7 +297,7 @@ void ModifyCamera(void)
 
 	int i;
 
-	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL && NumPlayers == 1) 
+	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL);// && NumPlayers == 1)	// [A]
 	{
 		for(i = 0; i < NumPlayers; i++)
 		{
@@ -308,7 +305,7 @@ void ModifyCamera(void)
 
 			if ((Pads[i].mapped & 0x100) != 0)
 			{
-				if ((lp->viewChange != FrameCnt + -1)) 
+				if (lp->viewChange != FrameCnt-1) 
 				{
 					pCamType = inGameCamera;
 					bVar2 = inGameCamera[0];
@@ -563,7 +560,7 @@ void TurnHead(_PLAYER *lp)
 			if (pPlayerPed != NULL)
 				pPlayerPed->head_rot = 0;
 
-			lp->headTimer = '\0';
+			lp->headTimer = 0;
 			lp->headTarget = 0;
 			goto LAB_00020ae8;
 		}

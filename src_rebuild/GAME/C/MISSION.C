@@ -188,11 +188,13 @@ void InitialiseMissionDefaults(void)
 {
 	int i;
 
-	if ((NumPlayers == 2) || (GAME_TAKEADRIVE < GameType)) {
-		lockAllTheDoors = '\x01';
+	if (NumPlayers == 2 || GameType > GAME_TAKEADRIVE)
+	{
+		lockAllTheDoors = 1;
 	}
-	else {
-		lockAllTheDoors = '\0';
+	else
+	{
+		lockAllTheDoors = 0;
 	}
 
 	maxPlayerCars = 1;
@@ -3454,7 +3456,7 @@ int HandleGameOver(void)
 
 			if (lp->playerType == 1)
 			{
-				if ((Mission.timer[0].flags & 0x10) != 0 || TannerStuckInCar(0) != 0)
+				if ((Mission.timer[0].flags & 0x10) != 0 || TannerStuckInCar(0, player_id) != 0)
 				{
 					iVar3 = lp->playerCarId;
 
@@ -3553,9 +3555,7 @@ int HandleGameOver(void)
 		}
 	}
 
-	player_id = TannerStuckInCar(0);
-
-	if (player_id == 0) 
+	if (TannerStuckInCar(0, 0) == 0)
 		return 0;
 
 LAB_00063ee4:
