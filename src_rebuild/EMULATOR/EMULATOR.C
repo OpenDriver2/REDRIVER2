@@ -1813,9 +1813,9 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 			case SDL_SCANCODE_5:
 				eprintf("saving VRAM.TGA\n");
 				Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
+				break;
 			case SDL_SCANCODE_6:
 
-				
 				activeControllers++;
 				activeControllers = activeControllers % 4;
 
@@ -1823,6 +1823,7 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 					activeControllers++;
 
 				eprintf("Active keyboard controller: %d\n", activeControllers);
+				break;
 		}
 	}
 

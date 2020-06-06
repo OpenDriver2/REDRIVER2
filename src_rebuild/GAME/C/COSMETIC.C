@@ -947,7 +947,7 @@ void AddNightLights(_CAR_DATA *cp)
 				col.r = (lit << 4);
 				col.g = col.r;
 				col.b = col.r;
-				PlacePoolForCar(cp, &col, 1);
+				PlacePoolForCar(cp, &col, 1, 0);
 			}
 
 			col.r = *life2;
@@ -956,7 +956,7 @@ void AddNightLights(_CAR_DATA *cp)
 				col.b = 0;
 				col.g = 0;
 				
-				PlacePoolForCar(cp, &col, 0);
+				PlacePoolForCar(cp, &col, 0, 0);
 				*life2 = 0;
 			}
 

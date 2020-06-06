@@ -1,6 +1,7 @@
 #include "THISDUST.H"
 #include "EVENT.H"
 #include "CARS.H"
+#include "PLAYERS.H"
 
 int ElTrainData[83] = {
 	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
@@ -4456,7 +4457,7 @@ void TriggerDoor(FixedEvent *door, int *stage, int sound)
 VECTOR * TriggerEvent(int i)
 {
 	UNIMPLEMENTED();
-	return (VECTOR*)car_data[0].hd.where.t;
+	return (VECTOR*)player[0].pos;
 	/*
 	ushort uVar1;
 	_EVENT *p_Var2;

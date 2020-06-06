@@ -796,25 +796,16 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (player[view].cameraView == 2 && cp->id == player[view].cameraCarId) 
 	{
-		sVar3 = cp->ap.damage[0];
+		if (cp->ap.damage[0] < 500)
+			LeftLight = 2;
+		else if (cp->ap.damage[0] < 1000)
+			LeftLight = 1;
+		else
+			LeftLight = 0;
 
-		LeftLight = player[view].cameraView;
-
-		if (499 < sVar3)
-		{
-			if (sVar3 < 1000)
-				LeftLight = 1;
-			else 
-				LeftLight = 0;
-		}
-
-		// it has a bug... I know that since 2002...
-
-		sVar3 = (cp->ap).damage[1];
-
-		if (sVar3 < 500) 
+		if (cp->ap.damage[1] < 500)
 			RightLight = 2;
-		else if(sVar3 < 1000)
+		else if(cp->ap.damage[1] < 1000)
 			RightLight = 1;
 		else
 			RightLight = 0;
@@ -825,13 +816,14 @@ void DrawCar(_CAR_DATA *cp, int view)
 		if (lightsOnDelay[cp->id] != 0) 
 			return;
 
-		PlacePoolForCar(cp, &col, 1);
+		PlacePoolForCar(cp, &col, 1, 1);
 		return;
 	}
 
-	pos.vx = (cp->hd).where.t[0];
-	pos.vz = (cp->hd).where.t[2];
-	pos.vy = -(cp->hd).where.t[1];
+	pos.vx = cp->hd.where.t[0];
+	pos.vz = cp->hd.where.t[2];
+	pos.vy = -cp->hd.where.t[1];
+
 	local_c0.vx = pos.vx;
 	local_c0.vz = pos.vz;
 
@@ -982,7 +974,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		DrawCarObject(NewCarModel + uVar12, &workmatrix, &pos, &local_c0, cp->ap.palette,cp, 1);
 
-		DrawCarWheels(cp, &workmatrix, &pos, 0);
+		DrawCarWheels(cp, &workmatrix, &pos, view);
 	}
 	else 
 	{
@@ -1222,12 +1214,12 @@ MODEL *gCleanWheelModelPtr;
 MODEL *gFastWheelModelPtr;
 MODEL *gDamWheelModelPtr;
 
+short FrontWheelRotation[20]; // offset 0x0
+short BackWheelRotation[20]; // offset 0x30
+
 // [D]
 void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 {
-	static short FrontWheelRotation[20]; // offset 0x0
-	static short BackWheelRotation[20]; // offset 0x30
-
 	short sVar1;
 	short sVar2;
 	short sVar3;
@@ -1240,8 +1232,7 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	short sVar9;
 	uint uVar10;
 	uint uVar11;
-	SVECTOR *local_t6_636;
-	SVECTOR *local_t6_916;
+	SVECTOR *VertPtr;
 	uint uVar12;
 	MODEL *model;
 	SVECTOR *pSVar13;
@@ -1266,127 +1257,115 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 		}
 	}
 
-	iVar5 = cp->hd.wheel_speed;
-	if (iVar5 < 0) {
-		iVar5 = iVar5 + 0xff;
-	}
-	iVar5 = iVar5 >> 8;
+	iVar5 = cp->hd.wheel_speed >> 8;
+
 	sVar1 = car_cosmetics[cp->ap.model].wheelSize;
 	iVar7 = iVar5;
 	if (cp->wheelspin != 0)
 		iVar7 = 700;
 
-	if ((cp->hd).wheel[0].locked != 0)
+	if (cp->hd.wheel[0].locked != 0)
 		iVar5 = 0;
 
-	if ((cp->hd).wheel[3].locked != 0)
+	if (cp->hd.wheel[3].locked != 0)
 		iVar7 = 0;
 
-	if (pauseflag == 0)
-	{
-		iVar4 = CAR_INDEX(cp);
-
-		*(ushort *)(FrontWheelRotation + iVar4) = *(ushort *)(FrontWheelRotation + iVar4) + (short)iVar5 & 0xfff;
-		*(ushort *)(BackWheelRotation + iVar4) = *(ushort *)(BackWheelRotation + iVar4) + (short)iVar7 & 0xfff;
-	}
-	if (iVar5 + 400U < 0x321) {
+	if (iVar5 + 400U < 0x321)
 		WheelModelFront = gCleanWheelModelPtr;
-	}
-	else {
+	else
 		WheelModelFront = gFastWheelModelPtr;
-	}
-	if (iVar7 + 400U < 0x321) {
+
+	if (iVar7 + 400U < 0x321)
 		WheelModelBack = gCleanWheelModelPtr;
-	}
-	else {
+	else
 		WheelModelBack = gFastWheelModelPtr;
-	}
 
 	iVar7 = CAR_INDEX(cp);
 	iVar5 = (sVar1 * 14142) / 10000;
-	sVar3 = rcossin_tbl[((uint)*(ushort *)(FrontWheelRotation + iVar7) & 0xfff) * 2];
-	local_t6_636 = (SVECTOR *)WheelModelFront->vertices;
-	sVar8 = FIXED(rcossin_tbl[((uint)*(ushort *)(FrontWheelRotation + iVar7) & 0xfff) * 2 + 1] * iVar5);
-	local_t6_636[8].vy = sVar8;
-	local_t6_636[0xf].vy = sVar8;
+	sVar3 = rcossin_tbl[(FrontWheelRotation[iVar7] & 0xfff) * 2];
+	VertPtr = (SVECTOR *)WheelModelFront->vertices;
+	sVar8 = FIXED(rcossin_tbl[(FrontWheelRotation[iVar7] & 0xfff) * 2 + 1] * iVar5);
+	VertPtr[8].vy = sVar8;
+	VertPtr[0xf].vy = sVar8;
 	sVar3 = FIXED(sVar3 * iVar5);
 	sVar6 = -sVar3;
-	local_t6_636[8].vz = sVar3;
-	local_t6_636[0xf].vz = sVar3;
-	local_t6_636[9].vy = sVar6;
-	local_t6_636[0xe].vy = sVar6;
-	local_t6_636[9].vz = sVar8;
+	VertPtr[8].vz = sVar3;
+	VertPtr[0xf].vz = sVar3;
+	VertPtr[9].vy = sVar6;
+	VertPtr[0xe].vy = sVar6;
+	VertPtr[9].vz = sVar8;
 	sVar2 = -sVar8;
-	local_t6_636[0xe].vz = sVar8;
-	local_t6_636[10].vy = sVar2;
-	local_t6_636[0xd].vy = sVar2;
-	local_t6_636[10].vz = sVar6;
-	local_t6_636[0xd].vz = sVar6;
-	local_t6_636[0xb].vy = sVar3;
-	local_t6_636[0xc].vy = sVar3;
-	local_t6_636[0xb].vz = sVar2;
-	local_t6_636[0xc].vz = sVar2;
-	local_t6_636[0x17].vz = 0;
-	local_t6_636[0x16].vz = 0;
-	local_t6_636[0x15].vy = 0;
-	local_t6_636[0x14].vy = 0;
-	local_t6_636[0x13].vy = 0;
-	local_t6_636[0x12].vy = 0;
-	local_t6_636[0x11].vz = 0;
-	local_t6_636[0x10].vz = 0;
-	local_t6_636[0x17].vy = sVar1;
+	VertPtr[0xe].vz = sVar8;
+	VertPtr[10].vy = sVar2;
+	VertPtr[0xd].vy = sVar2;
+	VertPtr[10].vz = sVar6;
+	VertPtr[0xd].vz = sVar6;
+	VertPtr[0xb].vy = sVar3;
+	VertPtr[0xc].vy = sVar3;
+	VertPtr[0xb].vz = sVar2;
+	VertPtr[0xc].vz = sVar2;
+	VertPtr[0x17].vz = 0;
+	VertPtr[0x16].vz = 0;
+	VertPtr[0x15].vy = 0;
+	VertPtr[0x14].vy = 0;
+	VertPtr[0x13].vy = 0;
+	VertPtr[0x12].vy = 0;
+	VertPtr[0x11].vz = 0;
+	VertPtr[0x10].vz = 0;
+	VertPtr[0x17].vy = sVar1;
 	sVar8 = -sVar1;
-	local_t6_636[0x16].vy = sVar1;
-	local_t6_636[0x15].vz = sVar1;
-	local_t6_636[0x14].vz = sVar1;
-	local_t6_636[0x13].vz = sVar8;
-	local_t6_636[0x12].vz = sVar8;
-	local_t6_636[0x11].vy = sVar8;
-	local_t6_636[0x10].vy = sVar8;
-	sVar3 = rcossin_tbl[((uint)*(ushort *)(BackWheelRotation + iVar7) & 0xfff) * 2];
+	VertPtr[0x16].vy = sVar1;
+	VertPtr[0x15].vz = sVar1;
+	VertPtr[0x14].vz = sVar1;
+	VertPtr[0x13].vz = sVar8;
+	VertPtr[0x12].vz = sVar8;
+	VertPtr[0x11].vy = sVar8;
+	VertPtr[0x10].vy = sVar8;
+	sVar3 = rcossin_tbl[(BackWheelRotation[iVar7] & 0xfff) * 2];
 	psVar17 = &car_cosmetics[cp->ap.model].wheelDisp[0].vz;
 	psVar16 = &car_cosmetics[cp->ap.model].wheelDisp[0].vy;
-	local_t6_916 = (SVECTOR *)WheelModelBack->vertices;
-	sVar9 = FIXED(rcossin_tbl[((uint)*(ushort *)(BackWheelRotation + iVar7) & 0xfff) * 2 + 1] * iVar5);
-	local_t6_916[8].vy = sVar9;
-	local_t6_916[0xf].vy = sVar9;
+
+	VertPtr = (SVECTOR *)WheelModelBack->vertices;
+	sVar9 = FIXED(rcossin_tbl[(BackWheelRotation[iVar7] & 0xfff) * 2 + 1] * iVar5);
+	VertPtr[8].vy = sVar9;
+	VertPtr[0xf].vy = sVar9;
 	sVar3 = FIXED(sVar3 * iVar5);
 	sVar6 = -sVar3;
-	local_t6_916[8].vz = sVar3;
-	local_t6_916[0xf].vz = sVar3;
-	local_t6_916[9].vy = sVar6;
-	local_t6_916[0xe].vy = sVar6;
-	local_t6_916[9].vz = sVar9;
+	VertPtr[8].vz = sVar3;
+	VertPtr[0xf].vz = sVar3;
+	VertPtr[9].vy = sVar6;
+	VertPtr[0xe].vy = sVar6;
+	VertPtr[9].vz = sVar9;
 	sVar2 = -sVar9;
-	local_t6_916[0xe].vz = sVar9;
-	local_t6_916[10].vy = sVar2;
-	local_t6_916[0xd].vy = sVar2;
-	local_t6_916[10].vz = sVar6;
-	local_t6_916[0xd].vz = sVar6;
-	local_t6_916[0xb].vy = sVar3;
-	local_t6_916[0xc].vy = sVar3;
-	local_t6_916[0xb].vz = sVar2;
-	local_t6_916[0xc].vz = sVar2;
-	local_t6_916[0x17].vz = 0;
-	local_t6_916[0x16].vz = 0;
-	local_t6_916[0x15].vy = 0;
-	local_t6_916[0x14].vy = 0;
-	local_t6_916[0x13].vy = 0;
-	local_t6_916[0x12].vy = 0;
-	local_t6_916[0x11].vz = 0;
-	local_t6_916[0x10].vz = 0;
-	local_t6_916[0x17].vy = sVar1;
-	local_t6_916[0x16].vy = sVar1;
-	local_t6_916[0x15].vz = sVar1;
-	local_t6_916[0x14].vz = sVar1;
-	local_t6_916[0x13].vz = sVar8;
-	local_t6_916[0x12].vz = sVar8;
-	local_t6_916[0x11].vy = sVar8;
-	local_t6_916[0x10].vy = sVar8;
+	VertPtr[0xe].vz = sVar9;
+	VertPtr[10].vy = sVar2;
+	VertPtr[0xd].vy = sVar2;
+	VertPtr[10].vz = sVar6;
+	VertPtr[0xd].vz = sVar6;
+	VertPtr[0xb].vy = sVar3;
+	VertPtr[0xc].vy = sVar3;
+	VertPtr[0xb].vz = sVar2;
+	VertPtr[0xc].vz = sVar2;
+	VertPtr[0x17].vz = 0;
+	VertPtr[0x16].vz = 0;
+	VertPtr[0x15].vy = 0;
+	VertPtr[0x14].vy = 0;
+	VertPtr[0x13].vy = 0;
+	VertPtr[0x12].vy = 0;
+	VertPtr[0x11].vz = 0;
+	VertPtr[0x10].vz = 0;
+	VertPtr[0x17].vy = sVar1;
+	VertPtr[0x16].vy = sVar1;
+	VertPtr[0x15].vz = sVar1;
+	VertPtr[0x14].vz = sVar1;
+	VertPtr[0x13].vz = sVar8;
+	VertPtr[0x12].vz = sVar8;
+	VertPtr[0x11].vy = sVar8;
+	VertPtr[0x10].vy = sVar8;
 
 	pSVar13 = car_cosmetics[cp->ap.model].wheelDisp;
 
-	wheelnum = (uint)(ushort)cp->wheel_angle & 0xfff;
+	wheelnum = cp->wheel_angle & 0xfff;
 	SteerMatrix.m[0][0] = rcossin_tbl[wheelnum * 2 + 1];
 	SteerMatrix.m[0][2] = rcossin_tbl[wheelnum * 2];
 	SteerMatrix.m[1][1] = 0x1000;
@@ -1402,9 +1381,10 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 	do {
 		model = WheelModelFront;
-		if ((wheelnum & 1) != 0) {
+
+		if ((wheelnum & 1) != 0)
 			model = WheelModelBack;
-		}
+
 		verts = (SVECTOR *)model->vertices;
 
 		if ((cp->controlType == 1) && (gHubcap.Present[3 - wheelnum] == 0)) 

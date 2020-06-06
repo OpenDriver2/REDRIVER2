@@ -26,6 +26,9 @@ extern MODEL *gCleanWheelModelPtr;
 extern MODEL *gFastWheelModelPtr;
 extern MODEL *gDamWheelModelPtr;
 
+extern short FrontWheelRotation[20];
+extern short BackWheelRotation[20];
+
 extern char LeftLight;
 extern char RightLight;
 

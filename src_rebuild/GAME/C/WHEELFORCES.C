@@ -83,13 +83,42 @@ void StepCars(void)
 {
 	_CAR_DATA **ppCar;
 	_CAR_DATA **end;
+	int car_id;
+
+	int frontWheelSpeed;
+	int backWheelSpeed;
 
 	ppCar = active_car_list;
 	end = active_car_list + num_active_cars;
 
 	// step active cars
 	while (ppCar < end)
-		StepOneCar(*ppCar++);
+	{
+		StepOneCar(*ppCar);
+
+		// update wheel rotation
+		car_id = CAR_INDEX(*ppCar);
+
+		frontWheelSpeed = (*ppCar)->hd.wheel_speed >> 8;
+		backWheelSpeed = frontWheelSpeed;
+
+		if ((*ppCar)->wheelspin != 0)
+			backWheelSpeed = 700;
+
+		if ((*ppCar)->hd.wheel[0].locked != 0)
+			frontWheelSpeed = 0;
+
+		if ((*ppCar)->hd.wheel[3].locked != 0)
+			backWheelSpeed = 0;
+
+		FrontWheelRotation[car_id] += frontWheelSpeed;
+		BackWheelRotation[car_id] += backWheelSpeed;
+
+		FrontWheelRotation[car_id] &= 0xfff;
+		BackWheelRotation[car_id] &= 0xfff;
+
+		ppCar++;
+	}
 
 	ppCar = active_car_list;
 

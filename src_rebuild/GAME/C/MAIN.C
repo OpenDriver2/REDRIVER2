@@ -1498,7 +1498,7 @@ LAB_00059c1c:
 
 	SetSp(oldsp);
 
-	CameraCnt = CameraCnt + 1;
+	CameraCnt++;
 	gBobIndex = gBobIndex + 0x3cU & 0xfff;
 	if (NumPlayers != 0)
 	{
@@ -1712,18 +1712,18 @@ void GameLoop(void)
 		VSync(0);
 	} while (-1 < iVar2);
 
-	while (game_over == 0) {
+	while (game_over == 0) 
+	{
 		StepGame();
 
-		if ((FastForward == 0) || (FrameCnt == (FrameCnt / 7) * 7)) 
+		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7) 
 		{
 			DrawGame();
 		}
 		else
 		{
-			FrameCnt = FrameCnt + 1;
-			uVar1 = FrameCnt & 1;
-			null = buffer + uVar1;
+			FrameCnt++;
+			null = buffer + (FrameCnt & 1);
 
 			setPolyFT3(null);
 
@@ -1751,8 +1751,8 @@ void GameLoop(void)
 	StopAllChannels();
 	FreeXM();
 
-	iVar2 = XAPrepared();
-	if (iVar2 != 0) {
+	if (XAPrepared() != 0) 
+	{
 		StopXA();
 		UnprepareXA();
 	}

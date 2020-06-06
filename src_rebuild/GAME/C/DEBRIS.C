@@ -386,10 +386,9 @@ int LightIndex = 0;
 //short light_col = 0;
 
 // [D]
-void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
+void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 {
 	unsigned char bVar1;
-	bool in_car;
 	DB *pDVar3;
 	unsigned char uVar4;
 	int iVar5;
@@ -417,7 +416,6 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 	long z[15];
 	int local_30;
 
-	in_car = false;
 	pos = s1;
 	pSVar7 = s;
 
@@ -428,10 +426,11 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front)
 		}
 	}
 
-
+	/*
 	if ((cameraview == 2 && CAR_INDEX(cp) == CameraCar) || 
 		player[CurrentPlayerView].cameraView == 2 && player[CurrentPlayerView].cameraCarId == CAR_INDEX(cp))	// bug fix
 		in_car = true;
+	*/
 
 	if (front == 0) 
 	{

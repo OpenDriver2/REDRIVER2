@@ -1826,7 +1826,7 @@ void DrawAllTheCars(int view)
 				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180)) + -iVar3) < 5800) 
 					gForceLowDetailCars = 1;
 
-				if (cars_to_draw[iVar9]->controlType == '\x01')
+				if (cars_to_draw[iVar9]->controlType == 1)
 					gForceLowDetailCars = 0;
 
 				DrawCar(cars_to_draw[iVar9], view);
