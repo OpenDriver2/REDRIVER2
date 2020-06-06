@@ -1624,23 +1624,48 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 3751
 
-
-
 // [D]
 void StepCarPhysics(_CAR_DATA *cp)
 {
-	unsigned char bVar1;
+	_HANDLING_TYPE *hp;
+	int car_id;
 
-	bVar1 = cp->hndType;
-	if (cp->controlType != '\0')
+	int frontWheelSpeed;
+	int backWheelSpeed;
+
+	if (cp->controlType == 0)
+		return;
+
+	hp = &handlingType[cp->hndType];
+
+	if (cp->hndType == 1)
+		hp->aggressiveBraking = 0;
+	else 
+		hp->aggressiveBraking = 1;
+
+	active_car_list[num_active_cars] = cp;
+	num_active_cars++;
+
+	// [A] update wheel rotation - MP fix
+	car_id = CAR_INDEX(cp);
+
+	frontWheelSpeed = cp->hd.wheel_speed >> 8;
+
+	if (cp->hd.wheel[0].locked == 0)
 	{
-		if (bVar1 == 1)
-			handlingType[bVar1].aggressiveBraking = 0;
-		else 
-			handlingType[bVar1].aggressiveBraking = 1;
+		FrontWheelRotation[car_id] += frontWheelSpeed;
+		FrontWheelRotation[car_id] &= 0xfff;
+	}
 
-		active_car_list[num_active_cars] = cp;
-		num_active_cars++;
+	if (cp->hd.wheel[3].locked == 0)
+	{
+		backWheelSpeed = frontWheelSpeed;
+
+		if (cp->wheelspin != 0)
+			backWheelSpeed = 700;
+
+		BackWheelRotation[car_id] += backWheelSpeed;
+		BackWheelRotation[car_id] &= 0xfff;
 	}
 }
 

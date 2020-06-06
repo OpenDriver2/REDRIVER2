@@ -220,7 +220,7 @@ _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 			}
 		}
 		lcp++;
-	} while (lcp <= &car_data[20]);
+	} while (lcp < &car_data[20]);
 
 	if (distToCarSq) 
 		*distToCarSq = retDistSq;

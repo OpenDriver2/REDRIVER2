@@ -1322,7 +1322,7 @@ LAB_00059c1c:
 	}
 
 	cp = car_data;
-	while (cp <= &car_data[0x13])
+	while (cp < &car_data[20])
 	{
 		switch (cp->controlType) 
 		{

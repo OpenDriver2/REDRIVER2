@@ -40,7 +40,6 @@ void InitialiseDenting(void)
 {
 	LoadDenting(GameLevel);
 	InitHubcap();
-	return;
 }
 
 
@@ -145,8 +144,7 @@ void DentCar(_CAR_DATA *cp)
 		iVar13 = 0;
 
 		do {
-			sVar4 = *(cp->ap.damage + iVar7);
-			iVar9 = sVar4;
+			iVar9 = cp->ap.damage[iVar7];
 
 			if (iVar22 < iVar9) 
 				iVar22 = iVar9; // MaxDamage?
@@ -161,7 +159,7 @@ void DentCar(_CAR_DATA *cp)
 				psVar11 = (short *)(tempDamage + *DamPtr);
 
 				if (*psVar11 == 0)
-					*psVar11 += sVar4;
+					*psVar11 += iVar9;
 				else 
 					*psVar11 += iVar9 / 2;
 
@@ -182,9 +180,9 @@ void DentCar(_CAR_DATA *cp)
 		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[uVar21]->vertices;
 
 		do {
-			pSVar17->vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * (int)*psVar18);
-			pSVar17->vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * (int)*psVar18);
-			pSVar17->vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * (int)*psVar18);
+			pSVar17->vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * *psVar18 / 2);
+			pSVar17->vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * *psVar18 / 2);
+			pSVar17->vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * *psVar18 / 2);
 
 			iVar22++;
 			psVar18++;
@@ -315,8 +313,8 @@ void CreateDentableCar(_CAR_DATA *cp)
 	SVECTOR *dst;
 	int count;
 	SVECTOR *src;
-	uint uVar7;
-	uint model;
+	int vcount;
+	int model;
 
 	model = cp->ap.model;
 
@@ -324,25 +322,18 @@ void CreateDentableCar(_CAR_DATA *cp)
 	if (srcModel != NULL)
 	{
 		src = (SVECTOR *)srcModel->vertices;
-		uVar7 = srcModel->num_vertices;
 		dst = gTempCarVertDump[cp->id];
 
-		while (uVar7 = uVar7 - 1, uVar7 != 0xffffffff) 
-		{
-			dst->vx = src->vx;
-			dst->vy = src->vy;
-			dst->vz = src->vz;
-			src++;
-			dst++;
-		}
-		count = 0;
+		vcount = srcModel->num_vertices;
 
-		if (gCarCleanModelPtr[model]->num_polys != 0) 
+		while (vcount-- != -1) 
+			*dst++ = *src++;
+
+		count = 0;
+		while (count < srcModel->num_polys)
 		{
-			do {
-				gTempHDCarUVDump[cp->id][count].u3 = 0;
-				count++;
-			} while (count < gCarCleanModelPtr[model]->num_polys);
+			gTempHDCarUVDump[cp->id][count].u3 = 0;
+			count++;
 		}
 	}
 
@@ -350,23 +341,22 @@ void CreateDentableCar(_CAR_DATA *cp)
 	if (srcModel != NULL)
 	{
 		count = 0;
-
-		if (srcModel->num_polys != 0)
+		while (count < srcModel->num_polys)
 		{
-			do {
-				gTempLDCarUVDump[cp->id][count].u3 = 0;
-				count++;
-			} while (count < gCarLowModelPtr[model]->num_polys);
+			gTempLDCarUVDump[cp->id][count].u3 = 0;
+			count++;
 		}
 	}
 
-	count = 5;
+
 	if (gDontResetCarDamage == 0) 
 	{
-		do {
+		count = 0;
+		while (count < 6)
+		{
 			cp->ap.damage[count] = 0;
-			count--;
-		} while (-1 < count);
+			count++;
+		}
 
 		cp->totalDamage = 0;
 	}
@@ -407,10 +397,7 @@ long gHubcapTime = 0;
 
 void InitHubcap(void)
 {
-	uint uVar1;
-
-	uVar1 = Random2(1);
-	gHubcapTime = uVar1 & 0x7ff;
+	gHubcapTime = Random2(1) & 0x7ff;
 	gHubcap.Present[0] = 1;
 	gHubcap.Present[1] = 1;
 	gHubcap.Present[2] = 1;
@@ -729,56 +716,41 @@ void LoadDenting(int level)
 // [D]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
-	unsigned char uVar1;
-	int *local_v1_316;
-	int *piVar2;
-	int iVar3;
-	int *piVar4;
-	int *piVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-
+	int model;
+	int i;
 	int offset;
 
-	iVar6 = 0;
-	do {
-		iVar3 = MissionHeader->residentModels[iVar6];
+	i = 0;
 
-		if (iVar3 == 0xd)
+	while (i < 5)
+	{
+		model = MissionHeader->residentModels[i];
+
+		if (model == 13)
 		{
-			iVar3 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
+			model = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 
-			if (iVar3 < 1) 
+			if (model < 1) 
 			{
-				iVar3 = 1;
+				model = 1;
 			}
-			else if (4 < iVar3)
+			else if(model > 4)
 			{
-				iVar3 = 4;
+				model = 4;
 			}
 		}
 
-		iVar7 = iVar6 + 1;
-
-		if (iVar3 != -1) 
+		if (model != -1) 
 		{
-			local_v1_316 = (int *)(gCarDamageZoneVerts + iVar6 * 300);
-			offset = *(int *)(lump_ptr + iVar3 * 4);
+			offset = *(int *)(lump_ptr + model * 4);
 
-			piVar4 = (int *)(lump_ptr + offset);
-			piVar2 = piVar4;
-
-			printf("------DENTING slot %d model=%d offset=%d\n", iVar6, iVar3, *(int *)(lump_ptr + iVar3 * 4));
-
-			// [A]
-			memcpy(*gCarDamageZoneVerts[iVar6], lump_ptr+offset, 300);
-			memcpy(*gHDCarDamageZonePolys[iVar6], lump_ptr + offset + 300, 420);
-			memcpy(gHDCarDamageLevels[iVar6], lump_ptr + offset + 300 + 420, 255);
+			memcpy(*gCarDamageZoneVerts[i], lump_ptr+offset, 300);
+			memcpy(*gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
+			memcpy(gHDCarDamageLevels[i], lump_ptr + offset + 300 + 420, 255);
 		}
-		iVar6 = iVar7;
-	} while (iVar7 < 5);
+
+		i++;
+	};
 }
 
 

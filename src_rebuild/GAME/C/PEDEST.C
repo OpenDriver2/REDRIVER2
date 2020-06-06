@@ -183,7 +183,7 @@ void IHaveThePower(void)
 				}
 
 				cp++;
-			} while (cp <= &car_data[20]);
+			} while (cp < &car_data[20]);
 		}
 
 		if (powerCounter > 48)
