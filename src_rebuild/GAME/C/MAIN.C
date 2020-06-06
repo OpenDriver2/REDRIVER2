@@ -1228,7 +1228,7 @@ LAB_00059c1c:
 	{
 		if (gInGameChaseActive == 0) 
 		{
-			if(numCivCars < maxCivCars && NumPlayers == 1)
+			if(numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
 			{
 				// make 5 tries
 				for (i = 0; i < 5; i++)
@@ -1915,7 +1915,7 @@ void StepGame(void)
 		gStopPadReads = 1;
 		TargetCar = 0;
 		cameraview = 0;
-		gSinkingTimer = gSinkingTimer + -1;
+		gSinkingTimer--;
 		gCameraAngle = gCameraAngle - 0x16U & 0xfff;
 
 		if (gCameraDistance < 1000) 
@@ -2625,7 +2625,7 @@ void FadeScreen(int end_value)
 	int tmp2 = pauseflag;
 
 	pauseflag = 1;
-	SetupScreenFade(-0x20, end_value, 1);
+	SetupScreenFade(-32, end_value, 1);
 	FadingScreen = 1;
 
 	do {
@@ -2634,8 +2634,8 @@ void FadeScreen(int end_value)
 
 	DrawSync(0);
 	SetDispMask(0);
+
 	pauseflag = tmp2;
-	return;
 }
 
 
