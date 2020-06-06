@@ -2487,8 +2487,11 @@ int CarSelectScreen(int bSetup)
 		}
 		return 0;
 	}
+
 	bDoingCarSelect = 1;
-	if (NumPlayers == 1) {
+
+	if (NumPlayers == 1) 
+	{
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 		CarAvailability[0][9] = 1;
 		CarAvailability[1][9] = 1;
@@ -2501,55 +2504,59 @@ int CarSelectScreen(int bSetup)
 		CarAvailability[3][9] = AvailableCheats.cheat8;
 #endif
 	}
-	if ((gFurthestMission == 0x28) && (NumPlayers == 1)) {
-		iVar5 = 4;
-		piVar3 = (int*)CarAvailability + 4;
-		do {
-			if (iVar5 != 8) {
-				*piVar3 = 1;
-			}
-			piVar3[10] = 1;
-			piVar3[0x14] = 1;
-			piVar3[0x1e] = 1;
-			iVar5 = iVar5 + 1;
-			piVar3 = piVar3 + 1;
-		} while (iVar5 < 9);
+
+	if (gFurthestMission == 40 && NumPlayers == 1) 
+	{
+		for (int i = 4; i < 9; i++)
+		{
+			if(i != 8)
+				CarAvailability[0][i] = 1;	// remove truck
+
+			CarAvailability[1][i] = 1;
+			CarAvailability[2][i] = 1;
+			CarAvailability[3][i] = 1;
+		}
 	}
-	else {
-		piVar3 = (int*)CarAvailability + 4;
-		iVar5 = 4;
-		do {
-			*piVar3 = 0;
-			piVar3[10] = 0;
-			piVar3[0x14] = 0;
-			piVar3[0x1e] = 0;
-			iVar5 = iVar5 + -1;
-			piVar3 = piVar3 + 1;
-		} while (-1 < iVar5);
+	else 
+	{
+		for (int i = 4; i < 9; i++)
+		{
+			CarAvailability[0][i] = (i == 4); // [A] make cop car only available
+			CarAvailability[1][i] = (i == 4);
+			CarAvailability[2][i] = (i == 4);
+			CarAvailability[3][i] = (i == 4);
+		}
 	}
+
 	if (currPlayer != 1) {
-		if (NumPlayers == 2) {
-			FEPrintStringSized("Player 2", 400, 0x104, 0xc00, 0,
-				0x80, 0x80, 0x80);
+		if (NumPlayers == 2) 
+		{
+			FEPrintStringSized("Player 2", 400, 0x104, 0xc00, 0, 0x80, 0x80, 0x80);
 			return 0;
 		}
 		return 0;
 	}
-	if (feVariableSave[0] == -1) {
+
+	if (feVariableSave[0] == -1) 
+	{
 		carSelection = 0;
-		if (loaded[1] == GameLevel) {
+		if (loaded[1] == GameLevel)
+		{
 			bDrawExtra = currPlayer;
 			LoadImage(&rect, (u_long*)_frontend_buffer);
 		}
-		else {
+		else 
+		{
 			SetupExtraPoly(gfxNames[GameLevel], 0, 0);
 			lastCity = GameLevel;
 		}
 	}
-	else {
+	else 
+	{
 		carSelection = feVariableSave[0];
 		SetupExtraPoly(gfxNames[GameLevel], feVariableSave[0], 0);
 	}
+
 	LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
 	feVariableSave[0] = -1;
 	feVariableSave[1] = -1;
