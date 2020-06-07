@@ -231,6 +231,7 @@ int pathStraight = 0;
 int LastHeading = 0;
 int OutOfSightCount = 0;
 
+// [D]
 void InitCops(void)
 {
 	targetVehicle = &car_data[0];

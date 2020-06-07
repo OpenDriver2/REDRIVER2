@@ -24,6 +24,7 @@
 #include "MAIN.H"
 
 #include "INLINE_C.H"
+#include "STRINGS.H"
 
 char speedLimits[3] = { 56, 97, 138 };
 
@@ -47,6 +48,10 @@ int currentAngle = 0;
 int closeEncounter = 3;
 
 char junctionLightsPhase[2];
+
+int test42 = 0;
+int test123 = 0;
+int test555 = 0;
 
 // decompiled code
 // original method signature: 
@@ -97,6 +102,8 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	InitCarPhysics(cp, (long(*)[4])&tmpStart, direction);
 	cp->ap.palette = (char)palette;
 
+	cp->controlType = control;
+
 	switch (control) 
 	{
 		case 1:
@@ -126,7 +133,6 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 			InitLead(cp);
 			leadCarId = cp->id;
 			cp->hndType = 5;
-			cp->controlType = control;
 			break;
 	}
 
@@ -514,8 +520,6 @@ void CivCarFX(_CAR_DATA *cp)
 /* WARNING: Type propagation algorithm not settling */
 
 int currentRoadId = 0;
-int test123 = 0;
-int test555 = 0;
 int tmpNewRoad[2];
 int newExit = 0;
 int tmpNewLane[2];
@@ -2143,8 +2147,8 @@ void InitNodeList(_CAR_DATA *cp, char *extraData)
 
 		uVar5 = y >> 9;
 		cp->ai.c.currentLane = uVar5;
-
-		if ((*(uint *)(straight->ConnectIdx + 3) & 0xffff0000) != 0xff010000)
+		
+		if (!IS_SINGLE_LANE(straight))
 			uVar5 = straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
 		if ((uVar5 & 1) == 0) 
 			cr->dir = straight->angle;
@@ -2220,7 +2224,6 @@ void InitNodeList(_CAR_DATA *cp, char *extraData)
 
 int angle = 0;
 int distFromCentre = 0;
-int test42 = 0;
 int sideShift = 0;
 int radius = 0;
 
@@ -4507,12 +4510,12 @@ int PingInCivCar(int minPingInDist)
 				do {
 					if (((((uVar18 == 0) || (model - 1 == uVar18)) && (local_2c != 0)) &&
 						(((uVar18 == 0 && ((straight->NumLanes & 0x40U) != 0)) ||
-						((((uint)straight->NumLanes & 0xffffff0f) * 2 - 1 == uVar18 &&
-							((straight->NumLanes & 0x80U) != 0)))))) ||
-							(((((int)(uint)straight->AILanes >> (uVar18 >> 1 & 0x1f) & 1U) != 0 &&
+						(((straight->NumLanes & 0xffffff0f) * 2 - 1 == uVar18 &&
+						((straight->NumLanes & 0x80U) != 0)))))) ||
+						((((straight->AILanes >> (uVar18 >> 1 & 0x1f) & 1U) != 0 &&
 						((uVar18 != 0 || ((straight->NumLanes & 0x40U) == 0)))) &&
-								((((uint)straight->NumLanes & 0xffffff0f) * 2 - 1 != uVar18 ||
-								((straight->NumLanes & 0x80U) == 0)))))) 
+						(((straight->NumLanes & 0xffffff0f) * 2 - 1 != uVar18 ||
+						((straight->NumLanes & 0x80U) == 0)))))) 
 					{
 						possibleLanes[uVar17] = uVar18;
 						uVar17 = uVar17 + 1 & 0xff;
@@ -4561,7 +4564,10 @@ int PingInCivCar(int minPingInDist)
 			curve = Driver2CurvesPtr + roadSeg-0x4000;
 			bVar16 = curve->NumLanes;
 			uVar18 = 0;
-			if ((bVar16 & 0xf) == 0) goto LAB_0002a368;
+
+			if ((bVar16 & 0xf) == 0) 
+				goto LAB_0002a368;
+
 			model = ((uint)bVar16 & 0xf) * 2;
 			uVar17 = 0;
 			if ((bVar16 & 0xf) != 0) {
@@ -4569,12 +4575,12 @@ int PingInCivCar(int minPingInDist)
 					if ((((uVar18 == 0) || (model - 1 == uVar18)) &&
 						((local_2c != 0 &&
 						(((uVar18 == 0 && ((curve->NumLanes & 0x40U) != 0)) ||
-							((((uint)curve->NumLanes & 0xffffff0f) * 2 - 1 == uVar18 &&
-							((curve->NumLanes & 0x80U) != 0)))))))) ||
-								((((int)(uint)curve->AILanes >> (uVar18 >> 1 & 0x1f) & 1U) != 0 &&
+						(((curve->NumLanes & 0xffffff0f) * 2 - 1 == uVar18 &&
+						((curve->NumLanes & 0x80U) != 0)))))))) ||
+						(((curve->AILanes >> (uVar18 >> 1 & 0x1f) & 1U) != 0 &&
 						(((uVar18 != 0 || ((curve->NumLanes & 0x40U) == 0)) &&
-									((((uint)curve->NumLanes & 0xffffff0f) * 2 - 1 != uVar18 ||
-							((curve->NumLanes & 0x80U) == 0)))))))) 
+						(((curve->NumLanes & 0xffffff0f) * 2 - 1 != uVar18 ||
+						((curve->NumLanes & 0x80U) == 0)))))))) 
 					{
 						possibleLanes[uVar17] = uVar18;
 						uVar17 = uVar17 + 1 & 0xff;
@@ -4730,7 +4736,7 @@ int PingInCivCar(int minPingInDist)
 				civDat.distAlongSegment = uVar3 - uVar17;
 			}
 		}
-		if ((*(uint *)(straight->ConnectIdx + 3) & 0xffff0000) == 0xff010000)
+		if (IS_SINGLE_LANE(straight))
 			uVar17 = cp->ai.c.currentLane;
 		else
 			uVar17 = straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
@@ -5285,7 +5291,7 @@ int CivAccelTrafficRules(_CAR_DATA *cp, int *distToNode)
 
 			cp->ai.c.brakeLight = 1;
 
-			if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 0x7f)
+			if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 127)
 			{
 				bVar2 = cp->ai.c.ctrlState;
 				if ((bVar2 == 1) && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
@@ -6158,12 +6164,15 @@ int CivAccel(_CAR_DATA *cp)
 
 /* WARNING: Type propagation algorithm not settling */
 
+const int checkFrames = 20;
+const int maxSteer = 512;
+
+// [D]
 int CivSteerAngle(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	undefined4 *puVar1;
+	CIV_ROUTE_ENTRY *startNode;
+	_CAR_DATA currentCar;
+
 	short sVar2;
 	int iVar3;
 	int iVar4;
@@ -6173,150 +6182,133 @@ int CivSteerAngle(_CAR_DATA *cp)
 	CIV_ROUTE_ENTRY *pCVar8;
 	_CAR_DATA *p_Var9;
 	CIV_ROUTE_ENTRY *pCVar10;
-	undefined4 uVar11;
 	long lVar12;
-	undefined4 *puVar13;
-	int iVar14;
-	CIV_ROUTE_ENTRY *pCVar15;
-	_CAR_DATA *p_Var16;
-	undefined4 *puVar17;
-	undefined4 uVar18;
-	undefined4 uVar19;
-	VECTOR local_28;
+	_CAR_DATA *p_Var15;
+	VECTOR locPath;
+	VECTOR pathPoint;
 
-	pCVar15 = (CIV_ROUTE_ENTRY *)(cp->ai + 0xf4);
-	iVar3 = (cp->hd).wheel_speed;
-	startNode = *(CIV_ROUTE_ENTRY **)(cp->ai + 0xf4);
-	sVar2 = (((cp->ap).carCos)->colBox).vz;
+	pathPoint.vx = 0;
+	pathPoint.vy = 0;
+	pathPoint.vz = 0;
+
+	iVar3 = cp->hd.wheel_speed;
+	startNode = cp->ai.c.pnode;
+
+	sVar2 = cp->ap.carCos->colBox.vz;
 	pCVar8 = startNode + 1;
-	if (pCVar15 <= pCVar8) {
-		pCVar8 = startNode + -0xc;
-	}
+
+	if (cp->ai.c.targetRoute + 13 <= pCVar8)
+		pCVar8 = startNode - 12;
+
 	pCVar10 = startNode + 2;
-	if (pCVar8->pathType == 0x7f) {
+
+	if (pCVar8->pathType == 127)
+	{
 	LAB_0002b600:
 		iVar4 = CreateNewNode(cp);
-		if (iVar4 == 0) goto LAB_0002b76c;
+
+		if (iVar4 == 0)
+			goto LAB_0002b76c;
 	}
-	else {
-		if (pCVar15 <= pCVar10) {
-			pCVar10 = startNode + -0xb;
-		}
+	else
+	{
+		if (cp->ai.c.targetRoute + 13 <= pCVar10)
+			pCVar10 = startNode - 11;
+
 		pCVar8 = startNode + 3;
-		if (pCVar10->pathType == 0x7f) goto LAB_0002b600;
-		if (pCVar15 <= pCVar8) {
-			pCVar8 = startNode + -10;
-		}
+
+		if (pCVar10->pathType == 127)
+			goto LAB_0002b600;
+
+		if (cp->ai.c.targetRoute + 13 <= pCVar8)
+			pCVar8 = startNode - 10;
+
 		pCVar10 = startNode + 4;
-		if (pCVar8->pathType == 0x7f) goto LAB_0002b600;
-		if (pCVar15 <= pCVar10) {
-			pCVar10 = startNode + -9;
-		}
-		if (pCVar10->pathType == 0x7f) goto LAB_0002b600;
+
+		if (pCVar8->pathType == 127)
+			goto LAB_0002b600;
+
+		if (cp->ai.c.targetRoute + 13 <= pCVar10)
+			pCVar10 = startNode - 9;
+
+		if (pCVar10->pathType == 127)
+			goto LAB_0002b600;
 	}
-	p_Var7 = cp;
-	p_Var16 = &currentCar;1
-	do {
-		p_Var9 = p_Var16;
-		p_Var6 = p_Var7;
-		uVar11 = *(undefined4 *)((p_Var6->hd).where.m + 2);
-		uVar18 = *(undefined4 *)((p_Var6->hd).where.m + 4);
-		uVar19 = *(undefined4 *)((p_Var6->hd).where.m + 6);
-		*(undefined4 *)(p_Var9->hd).where.m = *(undefined4 *)(p_Var6->hd).where.m;
-		*(undefined4 *)((p_Var9->hd).where.m + 2) = uVar11;
-		*(undefined4 *)((p_Var9->hd).where.m + 4) = uVar18;
-		*(undefined4 *)((p_Var9->hd).where.m + 6) = uVar19;
-		p_Var7 = (_CAR_DATA *)((p_Var6->hd).where.m + 8);
-		p_Var16 = (_CAR_DATA *)((p_Var9->hd).where.m + 8);
-	} while (p_Var7 != (_CAR_DATA *)&cp->handbrake);
-	lVar5 = (p_Var6->hd).where.t[0];
-	lVar12 = (p_Var6->hd).where.t[1];
-	*(undefined4 *)(p_Var16->hd).where.m = *(undefined4 *)(p_Var7->hd).where.m;
-	(p_Var9->hd).where.t[0] = lVar5;
-	(p_Var9->hd).where.t[1] = lVar12;
-	iVar4 = *(int *)(cp->ai + 0xf4);
-	pCVar8 = (CIV_ROUTE_ENTRY *)(iVar4 + 0x10);
-	if (*(short *)(iVar4 + 2) != 0x7f) {
-		pCVar15 = (CIV_ROUTE_ENTRY *)(cp->ai + 0xf4);
-		if (pCVar15 <= pCVar8) {
-			pCVar8 = (CIV_ROUTE_ENTRY *)(iVar4 + -0xc0);
-		}
-		if (pCVar8->pathType != 0x7f) {
+
+	/* copy car */
+	memcpy(&currentCar, cp, sizeof(_CAR_DATA));
+
+	pCVar8 = cp->ai.c.pnode + 1;
+
+	if (cp->ai.c.pnode->pathType != 127)
+	{
+		if (cp->ai.c.targetRoute + 13 <= pCVar8)
+			pCVar8 = cp->ai.c.pnode - 12;
+
+		if (pCVar8->pathType != 127)
+		{
 			iVar4 = CivFindStation(cp);
-			puVar13 = (undefined4 *)(cp->ai + 0xe4);
-			puVar17 = (undefined4 *)(currentCar.ai + 0xe4);
-			while (cp->ai + 0x24 <= puVar13) {
-				*puVar17 = *puVar13;
-				puVar17[1] = puVar13[1];
-				puVar17[2] = puVar13[2];
-				puVar1 = puVar13 + 3;
-				puVar13 = puVar13 + -4;
-				puVar17[3] = *puVar1;
-				puVar17 = puVar17 + -4;
-			}
-			currentCar.hd.direction = (cp->hd).direction;
-			currentCar.ai._244_4_ = *(undefined4 *)(cp->ai + 0xf4);
-			currentCar.ai._4_4_ = *(undefined4 *)(cp->ai + 4);
-			currentCar.ai._0_4_ = *(undefined4 *)cp->ai;
-			iVar14 = *(int *)(cp->ai + 0xf4);
-			pCVar8 = (CIV_ROUTE_ENTRY *)(iVar14 + 0x10);
-			if (*(short *)(iVar14 + 2) != 0x7f) {
-				if (pCVar15 <= pCVar8) {
-					pCVar8 = (CIV_ROUTE_ENTRY *)(iVar14 + -0xc0);
-				}
-				if (pCVar8->pathType != 0x7f) {
-					CivFindPointOnPath(cp, iVar4 + (iVar3 + 0x800 >> 0xc) * checkFrames + (int)sVar2, &local_28)
-						;
-					iVar3 = ratan2(local_28.vx - (cp->hd).where.t[0], local_28.vz - (cp->hd).where.t[2]);
-					iVar4 = ((iVar3 - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
+
+			/* memcpy all targetRoute */
+			memcpy(&currentCar.ai.c.targetRoute, cp->ai.c.targetRoute, sizeof(cp->ai.c.targetRoute));
+
+			pCVar8 = cp->ai.c.pnode + 1;
+
+			if (cp->ai.c.pnode->pathType != 127)
+			{
+				if (cp->ai.c.targetRoute + 13 <= pCVar8)
+					pCVar8 = cp->ai.c.pnode -12;
+
+				if (pCVar8->pathType != 127)
+				{
+					CivFindPointOnPath(cp, iVar4 + FIXED(iVar3) * checkFrames + sVar2, &pathPoint);
+
+					lVar5 = ratan2(pathPoint.vx - cp->hd.where.t[0], pathPoint.vz - cp->hd.where.t[2]);
+					iVar4 = ((lVar5 - cp->hd.direction) + 0x800U & 0xfff) - 0x800;
 					iVar3 = maxSteer;
-					if ((iVar4 <= maxSteer) && (iVar3 = iVar4, iVar4 < -maxSteer)) {
+
+					if ((iVar4 <= maxSteer) && (iVar3 = iVar4, iVar4 < -maxSteer))
+					{
 						iVar3 = -maxSteer;
 					}
-					p_Var7 = &currentCar;
-					p_Var16 = cp;
-					do {
-						p_Var9 = p_Var16;
-						p_Var6 = p_Var7;
-						uVar11 = *(undefined4 *)((p_Var6->hd).where.m + 2);
-						uVar18 = *(undefined4 *)((p_Var6->hd).where.m + 4);
-						uVar19 = *(undefined4 *)((p_Var6->hd).where.m + 6);
-						*(undefined4 *)(p_Var9->hd).where.m = *(undefined4 *)(p_Var6->hd).where.m;
-						*(undefined4 *)((p_Var9->hd).where.m + 2) = uVar11;
-						*(undefined4 *)((p_Var9->hd).where.m + 4) = uVar18;
-						*(undefined4 *)((p_Var9->hd).where.m + 6) = uVar19;
-						p_Var7 = (_CAR_DATA *)((p_Var6->hd).where.m + 8);
-						p_Var16 = (_CAR_DATA *)((p_Var9->hd).where.m + 8);
-					} while (p_Var7 != (_CAR_DATA *)&currentCar.handbrake);
-					lVar5 = (p_Var6->hd).where.t[0];
-					lVar12 = (p_Var6->hd).where.t[1];
-					*(undefined4 *)(p_Var16->hd).where.m = currentCar._656_4_;
-					(p_Var9->hd).where.t[0] = lVar5;
-					(p_Var9->hd).where.t[1] = lVar12;
+
+					/* copy car data */
+					memcpy(cp, &currentCar, sizeof(_CAR_DATA));
+
 					pCVar8 = startNode;
-					if (startNode == *(CIV_ROUTE_ENTRY **)(cp->ai + 0xf4)) {
+
+					if (startNode == cp->ai.c.pnode)
+					{
 						return iVar3;
 					}
-					do {
-						pCVar8->pathType = 0x7f;
+
+					do 
+					{
+						pCVar8->pathType = 127;
 						pCVar10 = pCVar8 + 1;
-						if (*(int *)(cp->ai + 0x14) == (int)pCVar8 + (-0x1b0 - (int)cp) >> 4) {
-							*(undefined4 *)(cp->ai + 0x14) = 0xffffffff;
+
+						if (cp->ai.c.turnNode == (pCVar8-cp->ai.c.targetRoute))
+						{
+							cp->ai.c.turnNode = -1;
 						}
-						if (pCVar15 <= pCVar10) {
-							pCVar10 = pCVar8 + -0xc;
-						}
+
+						if (cp->ai.c.targetRoute + 13 <= pCVar10)
+							pCVar10 = pCVar8-12;
+
 						pCVar8 = pCVar10;
-					} while (pCVar10 != *(CIV_ROUTE_ENTRY **)(cp->ai + 0xf4));
+					} while (pCVar10 != cp->ai.c.pnode);
+
 					return iVar3;
 				}
 			}
 		}
 	}
+
 LAB_0002b76c:
-	cp->ai[0xf9] = 3;
-	cp->ai[0xc] = 7;
-	return 0;*/
+	cp->ai.c.thrustState = 3;
+	cp->ai.c.ctrlState = 7;
+
+	return 0;
 }
 
 
@@ -6463,92 +6455,118 @@ LAB_0002b76c:
 	/* end block 3 */
 	// End Line: 7499
 
+// [D]
 int CivFindStation(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
+	long lVar1;
 	int iVar2;
-	byte *pbVar3;
-	byte *pbVar4;
-	byte *pbVar5;
-	int iVar6;
-	byte *pbVar7;
+	CIV_ROUTE_ENTRY *pCVar3;
+	CIV_ROUTE_ENTRY *pCVar4;
+	CIV_ROUTE_ENTRY *pCVar5;
+	int a;
+	CIV_ROUTE_ENTRY *pCVar6;
+	int iVar7;
 	int iVar8;
-	byte *pbVar9;
+	int iVar9;
 	int iVar10;
 	int iVar11;
-	int iVar12;
 
-	iVar2 = (cp->hd).where.t[0];
-	iVar6 = *(int *)(cp->ai + 4) + -1;
-	iVar12 = (cp->hd).where.t[2];
-	pbVar3 = cp->ai + 0x24;
-	if (iVar6 != -1) {
-		pbVar9 = pbVar3;
+	iVar2 = cp->hd.where.t[0];
+	iVar11 = cp->hd.where.t[2];
+
+	a = cp->ai.c.currentNode - 1;
+
+	pCVar3 = cp->ai.c.targetRoute;// (CIV_ROUTE_ENTRY *)(cp->ai + 0x24);
+	if (a != -1) 
+	{
+		pCVar6 = pCVar3;
 		do {
-			pbVar3 = pbVar9 + 0x10;
-			if (cp->ai + 0xf4 <= pbVar3) {
-				pbVar3 = pbVar9 + -0xc0;
-			}
-			iVar6 = iVar6 + -1;
-			pbVar9 = pbVar3;
-		} while (iVar6 != -1);
+			pCVar3 = pCVar6 + 1;
+
+			if (cp->ai.c.targetRoute + 13 <= pCVar3)
+				pCVar3 = pCVar6 - 12;
+
+			a--;
+			pCVar6 = pCVar3;
+		} while (a != -1);
 	}
-	pbVar9 = cp->ai + 0xf4;
+
+
 	do {
-		pbVar7 = pbVar3 + 0x10;
-		if (pbVar9 <= pbVar7) {
-			pbVar7 = pbVar3 + -0xc0;
-		}
-		if (pbVar7 == (byte *)0x0) {
-		LAB_0002baac:
-			cp->ai[0xf9] = 3;
-			cp->ai[0xc] = 7;
-			return 0;
-		}
-		iVar11 = *(int *)(pbVar3 + 8);
-		iVar8 = *(int *)(pbVar7 + 8) - iVar11;
-		iVar10 = *(int *)(pbVar3 + 0xc);
-		iVar6 = *(int *)(pbVar7 + 0xc) - iVar10;
-		if (iVar8 * iVar8 + iVar6 * iVar6 < 0) goto LAB_0002baac;
-		iVar1 = SquareRoot0();
-		if (0 < iVar1) {
-			iVar6 = ((iVar2 - iVar11) * iVar8 + (iVar12 - iVar10) * iVar6) / iVar1;
-			if (iVar1 == 0) {
-				trap(7);
+		pCVar6 = pCVar3 + 1;
+
+		if (cp->ai.c.targetRoute + 13 <= pCVar6)
+			pCVar6 = pCVar3 - 12;
+
+		if (pCVar6 == NULL) 
+			break;
+
+		iVar10 = pCVar3->x;
+		iVar8 = pCVar6->x - iVar10;
+		iVar9 = pCVar3->z;
+		iVar7 = pCVar6->z - iVar9;
+		a = iVar8 * iVar8 + iVar7 * iVar7;
+
+		if (a < 0)
+			break;
+
+		lVar1 = SquareRoot0(a);
+
+		if (0 < lVar1) 
+		{
+			a = ((iVar2 - iVar10) * iVar8 + (iVar11 - iVar9) * iVar7) / lVar1;
+
+			if (a < lVar1) 
+			{
+				cp->ai.c.pnode = pCVar3;
+				return a;
 			}
-			if (iVar6 < iVar1) {
-				*(byte **)(cp->ai + 0xf4) = pbVar3;
-				return iVar6;
-			}
 		}
-		iVar6 = *(int *)(cp->ai + 4) + 1;
-		*(int *)(cp->ai + 4) = iVar6;
-		pbVar4 = pbVar7 + 0x10;
-		if (0xc < iVar6) {
-			*(undefined4 *)(cp->ai + 4) = 0;
-		}
-		if (pbVar9 <= pbVar4) {
-			pbVar4 = pbVar7 + -0xc0;
-		}
-		pbVar5 = pbVar7 + 0x20;
-		pbVar3 = pbVar7;
-		if (*(short *)(pbVar4 + 2) == 0x7f) goto LAB_0002ba88;
-		if (pbVar9 <= pbVar5) {
-			pbVar5 = pbVar7 + -0xb0;
-		}
-		pbVar4 = pbVar7 + 0x30;
-		if (*(short *)(pbVar5 + 2) == 0x7f) goto LAB_0002ba88;
-		if (pbVar9 <= pbVar4) {
-			pbVar4 = pbVar7 + -0xa0;
-		}
-		if (*(short *)(pbVar4 + 2) == 0x7f) {
-		LAB_0002ba88:
+
+		cp->ai.c.currentNode++;
+		pCVar5 = pCVar6 + 1;
+
+		if (cp->ai.c.currentNode > 12)
+			cp->ai.c.currentNode = 0;
+
+		if (cp->ai.c.targetRoute + 13 <= pCVar5)
+			pCVar5 = pCVar6 - 12;
+
+		pCVar4 = pCVar6 + 2;
+		pCVar3 = pCVar6;
+
+		if (pCVar5->pathType == 127)
+		{
 			CreateNewNode(cp);
+			continue;
 		}
-	} while (true);*/
+
+		if (cp->ai.c.targetRoute + 13 <= pCVar4)
+			pCVar4 = pCVar6 - 11;
+
+		pCVar5 = pCVar6 + 3;
+
+		if (pCVar4->pathType == 127)
+		{
+			CreateNewNode(cp);
+			continue;
+		}
+
+		if (cp->ai.c.targetRoute + 13 <= pCVar5)
+			pCVar5 = pCVar6 - 10;
+
+		if (pCVar5->pathType == 127)
+		{
+			CreateNewNode(cp);
+			continue;
+		}
+	} while (true);
+
+
+	cp->ai.c.thrustState = 3;
+	cp->ai.c.ctrlState = 7;
+
+	return 0;
 }
 
 
@@ -6609,76 +6627,72 @@ int CivFindStation(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 7705
 
+// [D]
 int CivFindPointOnPath(_CAR_DATA *cp, int station, VECTOR *ppoint)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	byte *pbVar2;
-	byte *pbVar3;
-	byte *pbVar4;
-	int iVar5;
+	int stepSize;
+	CIV_ROUTE_ENTRY *pCVar2;
+	CIV_ROUTE_ENTRY *pCVar3;
+	int dx;
+	int dz;
 	int iVar6;
 	int iVar7;
-	int iVar8;
 
-	pbVar2 = *(byte **)(cp->ai + 0xf4);
-	if (pbVar2 != (byte *)0x0) {
-		pbVar3 = pbVar2;
+
+	if (cp->ai.c.pnode != NULL)
+	{
+		pCVar2 = cp->ai.c.pnode;
 		do {
-			pbVar4 = pbVar3 + 0x10;
-			if (cp->ai + 0xf4 <= pbVar4) {
-				pbVar4 = pbVar3 + -0xc0;
+			pCVar3 = pCVar2 + 1;
+
+			if (cp->ai.c.targetRoute + 13 <= pCVar3)
+			{
+				pCVar3 = pCVar2-12;
 			}
-			if (pbVar4 == (byte *)0x0) {
-				ppoint->vx = *(long *)(pbVar3 + 8);
-				ppoint->vz = *(long *)(pbVar3 + 0xc);
+
+			if (pCVar3 == NULL) 
+			{
+				ppoint->vx = pCVar2->x;
+				ppoint->vz = pCVar2->z;
 				return 1;
 			}
-			iVar7 = *(int *)(pbVar3 + 8);
-			iVar5 = *(int *)(pbVar4 + 8) - iVar7;
-			iVar8 = *(int *)(pbVar3 + 0xc);
-			iVar6 = *(int *)(pbVar4 + 0xc) - iVar8;
-			iVar1 = SquareRoot0(iVar5 * iVar5 + iVar6 * iVar6);
-			if (station < iVar1) {
-				if (station < 0) {
+
+			dx = pCVar3->x - pCVar2->x;
+			dz = pCVar3->z - pCVar2->z;
+
+			stepSize = SquareRoot0(dx * dx + dz * dz);
+
+
+			if (stepSize > station)
+			{
+				if (station < 0)
 					station = 0;
+
+				if (stepSize < 4096)
+				{
+					ppoint->vx += (dx * station) / stepSize;
+					ppoint->vz += (dz * station) / stepSize;
 				}
-				if (iVar1 < 0x1000) {
-					if (iVar1 == 0) {
-						trap(7);
-					}
-					iVar6 = (iVar6 * station) / iVar1;
-					ppoint->vx = iVar7 + (iVar5 * station) / iVar1;
-					if (iVar1 == 0) {
-						trap(7);
-					}
+				else 
+				{
+					stepSize >>= 4;
+
+					ppoint->vx += FIXED(((dx * 256) / stepSize) * station);
+					ppoint->vz += FIXED(((dz * 256) / stepSize) * station);
 				}
-				else {
-					if (iVar1 < 0) {
-						iVar1 = iVar1 + 0xf;
-					}
-					iVar1 = iVar1 >> 4;
-					if (iVar1 == 0) {
-						trap(7);
-					}
-					if (iVar1 == 0) {
-						trap(7);
-					}
-					ppoint->vx = iVar7 + (((iVar5 * 0x100) / iVar1) * station + 0x800 >> 0xc);
-					iVar6 = ((iVar6 * 0x100) / iVar1) * station + 0x800 >> 0xc;
-				}
-				ppoint->vz = iVar8 + iVar6;
+
 				return 1;
 			}
-			station = station - iVar1;
-			pbVar3 = pbVar4;
-		} while (pbVar4 != pbVar2);
+
+			station -= stepSize;
+
+			pCVar2 = pCVar3;
+
+		} while (pCVar3 != cp->ai.c.pnode);
 	}
-	cp->ai[0xf9] = 3;
-	cp->ai[0xc] = 7;
-	return 0;*/
+
+	cp->ai.c.thrustState = 3;
+	cp->ai.c.ctrlState = 7;
 }
 
 
