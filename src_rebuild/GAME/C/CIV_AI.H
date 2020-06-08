@@ -19,7 +19,7 @@ extern void CivCarFX(_CAR_DATA *cp); // 0x0002D084
 
 extern int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDist, CIV_ROUTE_ENTRY *oldNode); // 0x00024028
 
-extern void InitNodeList(_CAR_DATA *cp, char *extraData); // 0x00026964
+extern void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData); // 0x00026964
 
 extern int GetNodePos(DRIVER2_STRAIGHT *straight, DRIVER2_JUNCTION *junction, DRIVER2_CURVE *curve, int distAlongPath, _CAR_DATA *cp, int *x, int *z, int laneNo); // 0x00026CAC
 
@@ -27,7 +27,7 @@ extern int CheckChangeLanes(DRIVER2_STRAIGHT *straight, DRIVER2_CURVE *curve, in
 
 extern int CreateNewNode(_CAR_DATA *cp); // 0x00027530
 
-extern int InitCivState(_CAR_DATA *cp, char *extraData); // 0x000280D8
+extern int InitCivState(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData); // 0x000280D8
 
 extern int PingOutCar(_CAR_DATA *cp); // 0x0002CF80
 

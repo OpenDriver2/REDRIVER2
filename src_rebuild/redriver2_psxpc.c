@@ -226,6 +226,15 @@ void GameDebugKeys(int nKey, bool down)
 		gDisplayDrawStats ^= 1;
 		printf("Stats %s\n", gDisplayDrawStats ? "ON" : "OFF");
 	}
+#ifdef _DEBUG
+	else if (nKey == SDL_SCANCODE_F6)
+	{
+		extern int gStopCivCars;
+		gStopCivCars ^= 1;
+		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
+	}
+#endif
+	
 	else if (nKey == SDL_SCANCODE_KP_DIVIDE)
 	{
 		FunkUpDaBGMTunez(0);

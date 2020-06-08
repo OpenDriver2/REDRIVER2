@@ -1624,6 +1624,10 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 3751
 
+#ifdef _DEBUG
+int gStopCivCars = 0;
+#endif
+
 // [D]
 void StepCarPhysics(_CAR_DATA *cp)
 {
@@ -1643,8 +1647,16 @@ void StepCarPhysics(_CAR_DATA *cp)
 	else 
 		hp->aggressiveBraking = 1;
 
+#ifdef _DEBUG
+	if (!(gStopCivCars && cp->controlType == 2))
+	{
+		active_car_list[num_active_cars] = cp;
+		num_active_cars++;
+	}
+#else
 	active_car_list[num_active_cars] = cp;
 	num_active_cars++;
+#endif
 
 	// [A] update wheel rotation - MP fix
 	car_id = CAR_INDEX(cp);
