@@ -52,6 +52,16 @@ char last_cop_phrase = 0;
 char CopWorkMem[444];		// PVS table
 COP_SIGHT_DATA copSightData;
 
+int player_position_known = 0;
+VECTOR lastKnownPosition;
+VECTOR CarTail;
+_CAR_DATA *targetVehicle;
+
+int numActiveCops = 0;
+int pathStraight = 0;
+int LastHeading = 0;
+int OutOfSightCount = 0;
+
 
 // decompiled code
 // original method signature: 
@@ -232,16 +242,6 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 	// End Line: 1388
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-int player_position_known = 0;
-VECTOR lastKnownPosition;
-VECTOR CarTail;
-_CAR_DATA *targetVehicle;
-
-int numActiveCops = 0;
-int pathStraight = 0;
-int LastHeading = 0;
-int OutOfSightCount = 0;
 
 // [D]
 void InitCops(void)

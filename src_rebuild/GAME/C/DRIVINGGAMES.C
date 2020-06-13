@@ -13,9 +13,13 @@
 #include "CAMERA.H"
 #include "CONVERT.H"
 #include "MAP.H"
+#include "SOUND.H"
+#include "GLAUNCH.H"
+
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
+#include <stdlib.h>
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[6];
@@ -185,184 +189,214 @@ void InitDrivingGames(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleDrivingGames(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
 	bool bVar2;
 	int iVar3;
-	undefined4 *puVar4;
+	int *piVar4;
 	int iVar5;
 	TRAILBLAZER_DATA *pTVar6;
-	int player;
+	int player_id;
 	int iVar7;
 	int iVar8;
 	uint uVar9;
 	int iVar10;
-	int *piVar11;
+	long *plVar11;
 	int iVar12;
-	VECTOR local_60;
-	VECTOR VStack80;
-	VECTOR VStack64;
-	VECTOR *local_30;
-	VECTOR *local_2c;
+	VECTOR vel;
+	VECTOR pos1;
+	VECTOR pos2;
 
-	if (0 < gTrailblazerPrevConeDelay) {
-		gTrailblazerPrevConeDelay = gTrailblazerPrevConeDelay + -1;
-	}
-	if (GameType == GAME_GATERACE) {
-		if (gTrailblazerData == (TRAILBLAZER_DATA *)0x0) goto LAB_0004386c;
+	if (gTrailblazerPrevConeDelay > 0) 
+		gTrailblazerPrevConeDelay--;
+
+	if (GameType == GAME_GATERACE) 
+	{
+		if (gTrailblazerData == NULL)
+			goto LAB_0004386c;
+
 		MoveSmashedCones();
-		local_30 = &VStack80;
-		if (NumPlayers != 0) {
-			local_2c = &VStack64;
-			player = 0;
+
+		if (NumPlayers != 0)
+		{
+			player_id = 0;
 		LAB_0004330c:
 			iVar10 = 0;
-			iVar12 = player + 1;
-			piVar11 = wrongside + player * 6;
+			iVar12 = player_id + 1;
+			plVar11 = &Mission.timer[player_id].count;
+			piVar4 = wrongside[player_id];
 		LAB_0004333c:
-			if (99 < gTrailblazerConeIndex + iVar10) goto LAB_00043658;
-			GetConePos(gTrailblazerConeIndex + iVar10, local_30, 0);
-			GetConePos(gTrailblazerConeIndex + iVar10, local_2c, 1);
-			iVar5 = CarConeCollision(local_30, (int)(&player)[player].playerCarId);
+
+			if (99 < gTrailblazerConeIndex + iVar10) 
+				goto LAB_00043658;
+
+			GetConePos(gTrailblazerConeIndex + iVar10, &pos1, 0);
+			GetConePos(gTrailblazerConeIndex + iVar10, &pos2, 1);
+
+			iVar5 = CarConeCollision(&pos1, (int)player[player_id].playerCarId);
 			uVar9 = (uint)(iVar5 != 0);
-			iVar3 = CarConeCollision(local_2c, (int)(&player)[player].playerCarId);
+			iVar3 = CarConeCollision(&pos2, (int)player[player_id].playerCarId);
 			iVar5 = gTrailblazerConeIndex;
-			if (iVar3 != 0) {
+
+			if (iVar3 != 0)
 				uVar9 = 2;
-			}
-			if (uVar9 == 0) {
+
+			if (uVar9 == 0) 
+			{
 				pTVar6 = gTrailblazerData + gTrailblazerConeIndex + iVar10;
-				uVar9 = (int)pTVar6->rot & 0xfff;
-				iVar8 = (&player)[player].pos[0] - pTVar6->x;
-				iVar3 = (&player)[player].pos[2] - pTVar6->z;
-				if (iVar8 * rcossin_tbl[uVar9 * 2] + iVar3 * rcossin_tbl[uVar9 * 2 + 1] < 1) {
-					*piVar11 = 1;
+				uVar9 = pTVar6->rot & 0xfff;
+				iVar8 = player[player_id].pos[0] - pTVar6->x;
+				iVar3 = player[player_id].pos[2] - pTVar6->z;
+
+				if (iVar8 * rcossin_tbl[uVar9 * 2] + iVar3 * rcossin_tbl[uVar9 * 2 + 1] < 1) 
+				{
+					*piVar4 = 1;
 					goto LAB_00043658;
 				}
+
 				iVar8 = iVar8 * rcossin_tbl[uVar9 * 2 + 1];
-				if (wrongside[player * 6 + iVar10] == 0) goto LAB_00043658;
+
+				if (wrongside[player_id * 6 + iVar10] == 0)
+					goto LAB_00043658;
+
 				iVar3 = iVar3 * rcossin_tbl[uVar9 * 2];
 				iVar7 = iVar8 - iVar3;
-				wrongside[player * 6 + iVar10] = 0;
-				if (iVar7 < 0) {
+				wrongside[player_id][iVar10] = 0;
+
+				if (iVar7 < 0)
 					iVar7 = iVar3 - iVar8;
-				}
-				if ((600 - (iVar5 * 400 + iVar10) / 100) * 0x1000 <= iVar7) goto LAB_00043658;
+
+				if ((600 - (iVar5 * 400 + iVar10) / 100) * 0x1000 <= iVar7) 
+					goto LAB_00043658;
+
 				gTrailblazerConeIndex = iVar5 + 1 + iVar10;
+				plVar11 = &Mission.timer[player_id].count;
 				gTrailblazerPrevConeDelay = 10;
 				gTrailblazerConeCount = gTrailblazerConeCount + 1;
-				(&DAT_000d7c2c)[player * 3] = (&DAT_000d7c2c)[player * 3] + 3000;
-				if (player == 0) {
-					gPlayerScore.items = gPlayerScore.items + 1;
-				}
-				else {
-					gPlayerScore.P2items = gPlayerScore.P2items + 1;
-				}
-				player = 0;
+				*plVar11 = *plVar11 + 3000;
+				if (player_id == 0)
+					gPlayerScore.items++;
+				else
+					gPlayerScore.P2items++;
+
+				player_id = 0;
 				iVar10 = 1;
 				do {
 					iVar5 = 5;
-					puVar4 = &DAT_000cd9bc + player * 6;
+					piVar4 = wrongside[player_id] + 5;
+
 					do {
-						*puVar4 = 0;
+						*piVar4 = 0;
 						iVar5 = iVar5 + -1;
-						puVar4 = puVar4 + -1;
+						piVar4 = piVar4 + -1;
 					} while (-1 < iVar5);
+
 					bVar2 = iVar10 < 2;
-					player = iVar10;
+					player_id = iVar10;
 					iVar10 = iVar10 + 1;
 				} while (bVar2);
 			}
-			else {
-				local_60.vx = *(int *)(car_data[(&player)[player].playerCarId].st + 0x1c);
-				if (local_60.vx < 0) {
-					local_60.vx = local_60.vx + 0xfff;
-				}
-				local_60.vx = local_60.vx >> 0xc;
-				local_60.vy = -0x11;
-				local_60.vz = *(int *)(car_data[(&player)[player].playerCarId].st + 0x24);
-				if (local_60.vz < 0) {
-					local_60.vz = local_60.vz + 0xfff;
-				}
-				local_60.vz = local_60.vz >> 0xc;
-				SetSmashedCone(gTrailblazerConeIndex + iVar10, &local_60, player, uVar9 - 1);
+			else
+			{
+				iVar5 = car_data[player[player_id].playerCarId].st.n.linearVelocity[0];
+
+				vel.vx = iVar5 >> 0xc;
+				vel.vy = -0x11;
+				iVar5 = car_data[player[player_id].playerCarId].st.n.linearVelocity[2];
+
+				vel.vz = iVar5 >> 0xc;
+				SetSmashedCone(gTrailblazerConeIndex + iVar10, &vel, player_id, uVar9 - 1);
 				gTrailblazerConeIndex = gTrailblazerConeIndex + 1 + iVar10;
-				(&DAT_000d7c2c)[player * 3] = (&DAT_000d7c2c)[player * 3] + -3000;
-				SetPlayerMessage(player, s__1_secondo_00010864, 2, 1);
+				*plVar11 = *plVar11 + -3000;
+				SetPlayerMessage(player_id, "-1 second", 2, 1);
 			}
 			goto LAB_00043668;
 		}
 	}
-	else {
-		if ((GameType != GAME_TRAILBLAZER) || (gTrailblazerData == (TRAILBLAZER_DATA *)0x0))
+	else
+	{
+		if (GameType != GAME_TRAILBLAZER || gTrailblazerData == NULL) 
 			goto LAB_0004386c;
+
 		MoveSmashedCones();
-		if (NumPlayers != 0) {
-			player = 0;
+
+		if (NumPlayers != 0) 
+		{
+			player_id = 0;
 			do {
 				iVar10 = 0;
-				iVar12 = player + 1;
+				iVar12 = player_id + 1;
 				do {
-					if (gTrailblazerConeIndex + iVar10 < 100) {
-						GetConePos(gTrailblazerConeIndex + iVar10, &VStack80, -1);
-						iVar5 = CarConeCollision(&VStack80, (int)(&player)[player].playerCarId);
-						if (iVar5 != 0) {
-							cVar1 = (&player)[player].playerCarId;
-							(&DAT_000d7c2c)[player * 3] = (&DAT_000d7c2c)[player * 3] + 3000;
-							local_60.vx = *(int *)(car_data[cVar1].st + 0x1c);
-							if (local_60.vx < 0) {
-								local_60.vx = local_60.vx + 0xfff;
-							}
-							local_60.vx = local_60.vx >> 0xc;
-							local_60.vy = -0x11;
-							local_60.vz = *(int *)(car_data[cVar1].st + 0x24);
-							if (local_60.vz < 0) {
-								local_60.vz = local_60.vz + 0xfff;
-							}
-							local_60.vz = local_60.vz >> 0xc;
-							SetSmashedCone(gTrailblazerConeIndex + iVar10, &local_60, player, 0);
-							gTrailblazerConeCount = gTrailblazerConeCount + 1;
-							gTrailblazerConeIndex = gTrailblazerConeIndex + 1 + iVar10;
-							if (player == 0) {
-								gPlayerScore.items = gPlayerScore.items + 1;
-							}
-							else {
-								gPlayerScore.P2items = gPlayerScore.P2items + 1;
-							}
+					if (gTrailblazerConeIndex + iVar10 < 100) 
+					{
+						GetConePos(gTrailblazerConeIndex + iVar10, &pos1, -1);
+						iVar5 = CarConeCollision(&pos1, (int)player[player_id].playerCarId);
+						if (iVar5 != 0)
+						{
+							cVar1 = player[player_id].playerCarId;
+							plVar11 = &Mission.timer[player_id].count;
+							*plVar11 = *plVar11 + 3000;
+							iVar5 = car_data[cVar1].st.n.linearVelocity[0];
+
+							vel.vx = iVar5 >> 0xc;
+							vel.vy = -0x11;
+							iVar5 = car_data[cVar1].st.n.linearVelocity[2];
+
+							vel.vz = iVar5 >> 0xc;
+							SetSmashedCone(gTrailblazerConeIndex + iVar10, &vel, player_id, 0);
+							gTrailblazerConeCount++;
+							gTrailblazerConeIndex += 1 + iVar10;
+
+							if (player_id == 0)
+								gPlayerScore.items++;
+							else
+								gPlayerScore.P2items++;
+
 						}
 					}
 					iVar10 = iVar10 + 1;
 				} while (iVar10 < 6);
-				player = iVar12;
-			} while (iVar12 < (int)(uint)NumPlayers);
+
+				player_id = iVar12;
+			} while (iVar12 < NumPlayers);
 		}
 	}
+
+	// FUCK, loosing the flow...
 LAB_00043828:
-	if (gTrailblazerConeIndex == 100) {
-		(MissionTargets + NumPlayers)[-1].data[1] = (MissionTargets + NumPlayers)[-1].data[1] | 0x102;
-	}
+	if (gTrailblazerConeIndex == 100) 
+		(MissionTargets + NumPlayers)[-1].data[1] =	(MissionTargets + NumPlayers)[-1].data[1] | 0x102;
+
 LAB_0004386c:
-	if (DAT_000d7c2c < 0) {
-		DAT_000d7c2c = 0;
-	}
-	if (DAT_000d7c38 < 0) {
-		DAT_000d7c38 = 0;
-	}
-	gPlayerScore.time = DAT_000d7c2c;
-	gPlayerScore.P2time = DAT_000d7c38;
+	if (Mission.timer[0].count < 0)
+		Mission.timer[0].count = 0;
+
+	if (Mission.timer[1].count < 0)
+		Mission.timer[1].count = 0;
+
+	gPlayerScore.time = Mission.timer[0].count;
+	gPlayerScore.P2time = Mission.timer[1].count;
+
 	return;
+
 LAB_00043658:
 	iVar10 = iVar10 + 1;
-	piVar11 = piVar11 + 1;
-	if (5 < iVar10) goto LAB_00043668;
+	piVar4 = piVar4 + 1;
+
+	if (5 < iVar10) 
+		goto LAB_00043668;
+
 	goto LAB_0004333c;
+
 LAB_00043668:
-	player = iVar12;
-	if ((int)(uint)NumPlayers <= iVar12) goto LAB_00043828;
-	goto LAB_0004330c;*/
+	player_id = iVar12;
+
+	if (NumPlayers <= iVar12)
+		goto LAB_00043828;
+
+	goto LAB_0004330c;
 }
 
 
@@ -554,67 +588,61 @@ int CarConeCollision(VECTOR *pPos, int car)
 	/* end block 4 */
 	// End Line: 1357
 
+// [D]
 void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	long lVar2;
 	uint uVar3;
 	int chan;
 	TRAILBLAZER_DATA *pTVar4;
-	int iVar5;
-	uint *puVar6;
+	SMASHED_CONE *sc;
 
-	chan = current_smashed_cone;
-	iVar1 = current_smashed_cone + 1;
-	iVar5 = current_smashed_cone * 0x14;
-	puVar6 = (uint *)(&smashed_cones[0].cone + iVar5);
-	current_smashed_cone = iVar1;
-	if (5 < iVar1) {
+	sc = smashed_cones + current_smashed_cone;
+	current_smashed_cone++;
+
+	if (5 < current_smashed_cone)
 		current_smashed_cone = 0;
-	}
-	*puVar6 = *puVar6 & 0xffff00ff | 0x100 | (side & 1U) << 0xf;
-	*(char *)puVar6 = (char)cone;
-	iVar1 = velocity->vx >> 10;
-	*(int *)(&smashed_cones[0].rot_speed + chan * 10) = iVar1;
-	*(int *)((int)&smashed_cones[0].velocity + iVar5 + 4) = velocity->vz >> 10;
-	if (iVar1 < 0) {
-		((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx = velocity->vx;
-	}
-	else {
-		((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx = -velocity->vx;
-	}
-	if (*(int *)((int)&smashed_cones[0].velocity + iVar5 + 4) < 0) {
-		lVar2 = ((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx + velocity->vz;
-	}
-	else {
-		lVar2 = ((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx - velocity->vz;
-	}
-	((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx = lVar2;
-	((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx =
-		((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx >> 1;
-	uVar3 = rand();
-	if ((uVar3 & 1) == 0) {
-		*(short *)(&smashed_cones[0].side + iVar5) =
-			-*(short *)&((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx;
-	}
-	else {
-		*(undefined2 *)(&smashed_cones[0].side + iVar5) =
-			*(undefined2 *)&((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx;
-	}
-	if (((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx < -100) {
-		((VECTOR *)((int)&smashed_cones[0].velocity + iVar5))->vx = -100;
-	}
+
+	//*(uint *)sc = *(uint *)sc & 0xffff00ff | 0x100 | (side & 1U) << 0xf;
+
+	sc->rot_speed = 0x100;
+	sc->side = side;
+	sc->cone = cone;
+
+	sc->velocity.vx = velocity->vx >> 10;
+	sc->velocity.vz = velocity->vz >> 10;
+
+	if (sc->velocity.vx < 0)
+		sc->velocity.vy = velocity->vx;
+	else
+		sc->velocity.vy = -velocity->vx;
+
+	if (sc->velocity.vz < 0)
+		sc->velocity.vy += velocity->vz;
+	else
+		sc->velocity.vy -= velocity->vz;
+
+	sc->velocity.vy = sc->velocity.vy >> 1;
+
+	if ((rand() & 1) == 0)
+		sc->rot_speed = -sc->velocity.vy;
+	else
+		sc->rot_speed = sc->velocity.vy;
+
+	if (sc->velocity.vy < -100)
+		sc->velocity.vy = -100;
+
 	chan = GetFreeChannel();
-	if (chan != -1) {
-		if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
-			SetPlayerOwnsChannel(chan, (char)player);
-		}
+
+	if (chan != -1) 
+	{
+		if (NumPlayers > 1 && NoPlayerControl == 0) 
+			SetPlayerOwnsChannel(chan, player);
+
 		pTVar4 = gTrailblazerData + cone;
-		Start3DSoundVolPitch(chan, 1, 5, pTVar4->x, (int)pTVar4->y, pTVar4->z, -2000, 800);
+		Start3DSoundVolPitch(chan, 1, 5, pTVar4->x, pTVar4->y, pTVar4->z, -2000, 800);
 	}
-	return;*/
 }
 
 
@@ -657,7 +685,6 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 // [D]
 void MoveSmashedCones(void)
 {
-	TRAILBLAZER_DATA *pTVar1;
 	TRAILBLAZER_DATA *pTVar2;
 	SMASHED_CONE *pSVar3;
 	int i;
@@ -671,6 +698,7 @@ void MoveSmashedCones(void)
 		if (pSVar3->cone != -1) 
 		{
 			pTVar2 = gTrailblazerData + pSVar3->cone;
+
 			if (pTVar2->y < 50 - player[0].pos[1])
 			{
 				pTVar2->x += pSVar3->velocity.vx;
@@ -741,7 +769,7 @@ void DrawSmashedCones(void)
 	if (gTrailblazerData == NULL)
 		return;
 
-	i = 5;
+	i = 0;
 	while (i < 6)
 	{
 		sc = &smashed_cones[i];
