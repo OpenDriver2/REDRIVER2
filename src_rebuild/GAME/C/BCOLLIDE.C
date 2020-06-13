@@ -640,8 +640,6 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	/* end block 3 */
 	// End Line: 994
 
-int wibblewibblewoo = 0;
-
 // [D]
 void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
 {
@@ -674,17 +672,17 @@ void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
 		}
 		value = iVar2 >> 4;
 	}
+
 LAB_0001cf9c:
-	wibblewibblewoo = region;
-	if (fakeDamage == 0) {
+
+	if (fakeDamage == 0) 
+	{
 		if (cp->totalDamage < 0xffff - value)
-		{
-			cp->totalDamage = cp->totalDamage + value;
-		}
-		else {
+			cp->totalDamage += value;
+		else
 			cp->totalDamage = 0xffff;
-		}
 	}
+
 	uVar1 = *puVar4;
 	*puVar4 = (uVar1 + value);
 
@@ -713,7 +711,7 @@ LAB_0001cf9c:
 			if (fakeDamage == 0) 
 			{
 				if (cp->totalDamage < 0xffff - (value - *psVar5)) 
-					cp->totalDamage = cp->totalDamage + (value - *psVar5);
+					cp->totalDamage += (value - *psVar5);
 				else 
 					cp->totalDamage = 0xffff;
 			}

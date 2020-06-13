@@ -17,6 +17,9 @@
 #include "PEDEST.H"
 #include "DRAW.H"
 #include "COSMETIC.H"
+#include "CELL.H"
+#include "MODELS.H"
+#include "DRAW.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
@@ -408,113 +411,112 @@ void ModifyCamera(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int CameraCollisionCheck(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT *pCVar2;
-	uint uVar3;
-	MODEL *pMVar4;
+	CELL_OBJECT *cop;
+	uint uVar2;
+	MODEL *model;
+	int iVar3;
+	int iVar4;
 	int iVar5;
-	int iVar6;
+	int *piVar6;
 	int iVar7;
-	int *piVar8;
+	int iVar8;
+	COLLISION_PACKET *collide;
 	int iVar9;
-	int *piVar10;
-	int iVar11;
-	CELL_ITERATOR aCStack168[3];
-	int local_60;
-	int local_58;
+	CELL_ITERATOR ci;
 	int local_50;
-	int local_4c;
 	int local_48;
 
-	iVar11 = 0;
-	iVar1 = scr_z * 3 + -0x17e;
+	iVar9 = 0;
+	iVar1 = scr_z * 3 - 382;
+
 	do {
-		local_60 = camera_position.vx + (iVar11 % 3) * 0x400 + -0x400;
-		iVar7 = local_60 + units_across_halved;
-		local_58 = camera_position.vz + (iVar11 / 3) * 0x400 + -0x400;
-		if (iVar7 < 0) {
-			iVar7 = iVar7 + 0x7ff;
-		}
-		iVar5 = local_58 + units_down_halved;
-		if (iVar5 < 0) {
-			iVar5 = iVar5 + 0x7ff;
-		}
-		if (0 < gCameraDistance) {
-			ppco = GetFirstPackedCop(iVar7 >> 0xb, iVar5 >> 0xb, aCStack168, 0);
-			pCVar2 = UnpackCellObject(ppco, &aCStack168[0].nearCell);
-			while (pCVar2 != (CELL_OBJECT *)0x0) {
-				pMVar4 = modelpointers1536[pCVar2->type];
-				piVar8 = (int *)pMVar4->collision_block;
-				if ((piVar8 != (int *)0x0) && ((pMVar4->flags2 & 0x800) == 0)) {
-					iVar5 = (pCVar2->pos).vx;
-					iVar7 = iVar5 - camera_position.vx;
-					if (iVar7 < 0) {
-						iVar7 = camera_position.vx - iVar5;
-					}
-					iVar6 = (pCVar2->pos).vz;
-					iVar5 = iVar6 - camera_position.vz;
-					if (iVar5 < 0) {
-						iVar5 = camera_position.vz - iVar6;
-					}
-					piVar10 = piVar8 + 1;
-					if (iVar7 * iVar7 + iVar5 * iVar5 <
-						(int)pMVar4->bounding_sphere * (int)pMVar4->bounding_sphere + iVar1 * iVar1) {
-						iVar7 = 0;
-						if (0 < *piVar8) {
+		iVar5 = camera_position.vx + (iVar9 % 3) * 0x400 + -0x400 + units_across_halved;
+		iVar3 = camera_position.vz + (iVar9 / 3) * 0x400 + -0x400 + units_down_halved;
+
+		if (0 < gCameraDistance)
+		{
+			ppco = GetFirstPackedCop(iVar5 >> 0xb, iVar3 >> 0xb, &ci, 0);
+			cop = UnpackCellObject(ppco, &ci.near);
+			while (cop != NULL) 
+			{
+				model = modelpointers[cop->type];
+				piVar6 = (int *)model->collision_block;
+				if ((piVar6 != NULL) && ((model->flags2 & 0x800) == 0)) 
+				{
+					iVar3 = (cop->pos).vx;
+					iVar5 = iVar3 - camera_position.vx;
+					if (iVar5 < 0)
+						iVar5 = camera_position.vx - iVar3;
+
+					iVar4 = (cop->pos).vz;
+					iVar3 = iVar4 - camera_position.vz;
+					if (iVar3 < 0)
+						iVar3 = camera_position.vz - iVar4;
+
+					collide = (COLLISION_PACKET *)(piVar6 + 1);
+					if (iVar5 * iVar5 + iVar3 * iVar3 < model->bounding_sphere * model->bounding_sphere + iVar1 * iVar1) 
+					{
+						iVar5 = 0;
+						if (0 < *piVar6) 
+						{
 							do {
-								uVar3 = (uint)pCVar2->yang;
-								iVar9 = camera_position.vx - (pCVar2->pos).vx;
-								iVar6 = camera_position.vz - (pCVar2->pos).vz;
-								iVar5 = iVar9 * (&matrixtable)[uVar3].m[0] + iVar6 * (&matrixtable)[uVar3].m[6];
-								if (iVar5 < 0) {
-									iVar5 = iVar5 + 0xfff;
+								uVar2 = (uint)cop->yang;
+								iVar7 = camera_position.vx - (cop->pos).vx;
+								iVar4 = camera_position.vz - (cop->pos).vz;
+
+								iVar3 = iVar7 * matrixtable[uVar2].m[0][0] + iVar4 * matrixtable[uVar2].m[2][0];
+								iVar4 = iVar7 * matrixtable[uVar2].m[0][2] + iVar4 * matrixtable[uVar2].m[2][2];
+
+								iVar7 = (iVar3 >> 0xc) - (int)collide->xpos;
+								iVar3 = (camera_position.vy - (cop->pos).vy) - (int)collide->ypos;
+								local_48 = (iVar4 >> 0xc) - (int)collide->zpos;
+								iVar4 = (int)collide->yang;
+								local_50 = iVar7;
+
+								if (iVar4 != 0) 
+								{
+									local_50 = iVar7 * matrixtable[iVar4].m[0][0] + local_48 * matrixtable[iVar4].m[2][0];
+									local_48 = iVar7 * matrixtable[iVar4].m[0][2] + local_48 * matrixtable[iVar4].m[2][2];
 								}
-								iVar6 = iVar9 * (&matrixtable)[uVar3].m[2] + iVar6 * (&matrixtable)[uVar3].m[8];
-								if (iVar6 < 0) {
-									iVar6 = iVar6 + 0xfff;
-								}
-								iVar9 = (iVar5 >> 0xc) - (int)*(short *)((int)piVar10 + 2);
-								local_4c = (camera_position.vy - (pCVar2->pos).vy) - (int)*(short *)(piVar10 + 1);
-								local_48 = (iVar6 >> 0xc) - (int)*(short *)((int)piVar10 + 6);
-								iVar5 = (int)*(short *)((int)piVar10 + 10);
-								local_50 = iVar9;
-								if (iVar5 != 0) {
-									local_50 = iVar9 * (&matrixtable)[iVar5].m[0] +
-										local_48 * (&matrixtable)[iVar5].m[6];
-									local_48 = iVar9 * (&matrixtable)[iVar5].m[2] +
-										local_48 * (&matrixtable)[iVar5].m[8];
-								}
-								iVar5 = (uint)*(ushort *)((int)piVar10 + 0xe) << 0x10;
-								if ((iVar5 >> 0x10 < 500) && ((short)*(ushort *)((int)piVar10 + 0x12) < 500)) break;
-								iVar9 = (iVar5 >> 0x11) + iVar1;
-								iVar6 = ((int)((uint)*(ushort *)((int)piVar10 + 0x12) << 0x10) >> 0x11) + iVar1;
-								iVar5 = ((int)((uint)*(ushort *)(piVar10 + 4) << 0x10) >> 0x11) + iVar1;
-								if (((-iVar9 < local_50) &&
-									(((local_50 < iVar9 && (-iVar6 < local_48)) && (local_48 < iVar6)))) &&
-									((-iVar5 < local_4c && (local_4c < iVar5)))) {
+
+								iVar4 = collide->xsize << 0x10;
+
+								if ((iVar4 >> 0x10 < 500) && (collide->zsize < 500)) 
+									break;
+
+								iVar8 = (iVar4 >> 0x11) + iVar1;
+								iVar7 = ((int)((uint)(ushort)collide->zsize << 0x10) >> 0x11) + iVar1;
+								iVar4 = ((int)((uint)(ushort)collide->ysize << 0x10) >> 0x11) + iVar1;
+
+								if (-iVar8 < local_50 && local_50 < iVar8 &&
+									-iVar7 < local_48 && local_48 < iVar7 &&
+									-iVar4 < iVar3 && iVar3 < iVar4)
+								{
 									return 1;
 								}
-								iVar7 = iVar7 + 1;
-								piVar10 = piVar10 + 5;
-							} while (iVar7 < *piVar8);
+
+								iVar5++;
+								collide++;
+							} while (iVar5 < *piVar6);
 						}
 					}
 				}
-				ppco = GetNextPackedCop(aCStack168);
-				pCVar2 = UnpackCellObject(ppco, &aCStack168[0].nearCell);
+				ppco = GetNextPackedCop(&ci);
+				cop = UnpackCellObject(ppco, &ci.near);
 			}
 		}
-		iVar11 = iVar11 + 1;
-		if (8 < iVar11) {
+		iVar9 = iVar9 + 1;
+		if (8 < iVar9) {
 			return 0;
 		}
-	} while (true);*/
+	} while (true);
+
+	return 0;
 }
 
 
@@ -1116,30 +1118,28 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int OK_To_Zoom(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int iVar2;
-	VECTOR local_18;
+	int old_z;
+	VECTOR temp;
 
-	iVar1 = scr_z;
-	local_18.vx = player.pos[0];
-	local_18.vy = -player.pos[1];
-	local_18.vz = player.pos[2];
-	iVar2 = dist(&camera_position, &local_18);
-	scr_z = (iVar2 >> 4) + 0x100;
-	if (800 < scr_z) {
+	old_z = scr_z;
+
+	temp.vx = player[0].pos[0];
+	temp.vy = -player[0].pos[1];
+	temp.vz = player[0].pos[2];
+
+	scr_z = (dist(&camera_position, &temp) >> 4) + 0x100;
+
+	if (800 < scr_z)
 		scr_z = 800;
-	}
-	if (scr_z < 0x100) {
+
+	if (scr_z < 0x100)
 		scr_z = 0x100;
-	}
-	iVar2 = CameraCollisionCheck();
-	scr_z = iVar1;
-	return (uint)(iVar2 == 0);*/
+
+	scr_z = old_z;
+	return CameraCollisionCheck();
 }
 
 
