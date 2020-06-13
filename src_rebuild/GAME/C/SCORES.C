@@ -100,44 +100,42 @@ void InitialiseScoreTables(void)
 	/* end block 4 */
 	// End Line: 204
 
+// [D]
 int OnScoreTable(SCORE_ENTRY **tablept)
 {
-	UNIMPLEMENTED();
-	return 0; // score tables structure size seems to be not valid
-	/*
-	int iVar1;
+	int position;
 	SCORE_ENTRY *table;
 
-	switch (GameType) {
-	case GAME_GETAWAY:
-		table = ScoreTables.GetawayTable + gSubGameNumber * 5 + GameLevel * 10;
-		iVar1 = CheckGetawayPlacing(table);
-		break;
-	case GAME_GATERACE:
-		iVar1 = 0xda278;
-		goto LAB_00075180;
-	case GAME_CHECKPOINT:
-		table = (SCORE_ENTRY *)(GameLevel * 0x78 + gSubGameNumber * 0x3c + 0xda458);
-		iVar1 = CheckCheckpointPlacing(table);
-		break;
-	case GAME_TRAILBLAZER:
-		iVar1 = 0xda638;
-	LAB_00075180:
-		table = (SCORE_ENTRY *)(GameLevel * 0x78 + gSubGameNumber * 0x3c + iVar1);
-		iVar1 = CheckTrailblazerPlacing(table);
-		break;
-	case GAME_SURVIVAL:
-		table = (SCORE_ENTRY *)(GameLevel * 0x3c + gSubGameNumber * 0x3c + 0xda818);
-		iVar1 = CheckSurvivalPlacing(table);
-		break;
-	default:
-		return -1;
+	switch (GameType)
+	{
+		case GAME_GETAWAY:
+			table = ScoreTables.GetawayTable[GameLevel][gSubGameNumber];
+			position = CheckGetawayPlacing(table);
+			break;
+		case GAME_GATERACE:
+			table = ScoreTables.GateRaceTable[GameLevel][gSubGameNumber];
+			position = CheckTrailblazerPlacing(table);
+			break;
+		case GAME_CHECKPOINT:
+			table = ScoreTables.CheckpointTable[GameLevel][gSubGameNumber];
+			position = CheckCheckpointPlacing(table);
+			break;
+		case GAME_TRAILBLAZER:
+			table = ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber];
+			position = CheckTrailblazerPlacing(table);
+			break;
+		case GAME_SURVIVAL:
+			table = ScoreTables.SurvivalTable[GameLevel][gSubGameNumber];
+			position = CheckSurvivalPlacing(table);
+			break;
+		default:
+			return -1;
 	}
-	if (tablept != NULL) {
+
+	if (tablept != NULL)
 		*tablept = table;
-	}
-	return iVar1;
-	*/
+
+	return position;
 }
 
 
@@ -170,33 +168,26 @@ int OnScoreTable(SCORE_ENTRY **tablept)
 	/* end block 4 */
 	// End Line: 302
 
+// [D]
 void AddScoreToTable(SCORE_ENTRY *table, int entry)
 {
-	UNIMPLEMENTED();
-	/*
+	int i;
 
-	undefined4 uVar1;
-	undefined4 uVar2;
-	int iVar3;
-
+	i = 3;
 	table = table + 4;
-	iVar3 = 3;
-	if (entry < 4) {
+	if (entry < 4) 
+	{
 		do {
-			uVar1 = *(undefined4 *)&table[-1].items;
-			uVar2 = *(undefined4 *)(table[-1].name + 2);
-			iVar3 = iVar3 + -1;
-			table->time = table[-1].time;
-			*(undefined4 *)&table->items = uVar1;
-			*(undefined4 *)(table->name + 2) = uVar2;
-			table = table + -1;
-		} while (entry <= iVar3);
+			// [A] might be incorrect - needs checking
+			*table = table[-1];
+			table--;
+		} while (entry <= i);
 	}
+
 	table->time = gPlayerScore.time;
 	table->items = gPlayerScore.items;
+
 	strcpy(table->name, gPlayerScore.name);
-	return;
-	*/
 }
 
 
