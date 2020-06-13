@@ -367,7 +367,7 @@ void HandleDrivingGames(void)
 	// FUCK, loosing the flow...
 LAB_00043828:
 	if (gTrailblazerConeIndex == 100) 
-		(MissionTargets + NumPlayers)[-1].data[1] =	(MissionTargets + NumPlayers)[-1].data[1] | 0x102;
+		MissionTargets[NumPlayers-1].data[1] =	MissionTargets[NumPlayers-1].data[1] | 0x102;
 
 LAB_0004386c:
 	if (Mission.timer[0].count < 0)
@@ -708,8 +708,6 @@ void MoveSmashedCones(void)
 				pSVar3->velocity.vy += 10;
 				pSVar3->active++;
 
-				// [A] pls check this
-				//*(uint *)pSVar3 = *(uint *)pSVar3 & 0xffff80ff | ((*(uint *)pSVar3 >> 8 & 0x7f) + 1 & 0x7f) << 8;
 			}
 			else
 			{

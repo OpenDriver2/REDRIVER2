@@ -650,23 +650,20 @@ int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 	/* end block 3 */
 	// End Line: 4892
 
+// [D]
 void ReportMode(int on)
 {
-	UNIMPLEMENTED();
-	/*
-	static char param_25 = 0;
+	static unsigned char param[8];
 
-	int iVar1;
+	if (XAPrepared() == 0)
+	{
+		param[0] = 0x80;
 
-	iVar1 = XAPrepared();
-	if (iVar1 == 0) {
-		param_25 = 0x80;
-		if (on != 0) {
-			param_25 = 0x84;
-		}
-		CdControlB(0xe, &param_25, 0);
+		if (on != 0)
+			param[0] = 0x84;
+
+		CdControlB(0xe, param, 0);
 	}
-	return;*/
 }
 
 
@@ -1583,44 +1580,51 @@ int FileExists(char *filename)
 	/* end block 3 */
 	// End Line: 4951
 
-int handle = 0;
-
+// [D]
 CDTYPE DiscSwapped(char *filename)
 {
-	UNIMPLEMENTED();
+#ifndef PSX
 	return CDTYPE_CORRECTDISC;
+#else
+	CDTYPE ret;
+	int iVar1;
+	CdlFILE cdfile;
 
-	/*
-	CDTYPE CVar1;
-	int iVar2;
-	CdlFILE CStack40;
+	iVar1 = CdDiskReady(1);
 
-	iVar2 = CdDiskReady(1);
-	if (iVar2 == 2) {
-		iVar2 = CdGetDiskType();
-		if (iVar2 != 1) {
-			if (iVar2 < 2) {
-				if (iVar2 != 0) {
+	if (iVar1 == 2) 
+	{
+		iVar1 = CdGetDiskType();
+		if (iVar1 != 1) 
+		{
+			if (iVar1 < 2) 
+			{
+				if (iVar1 != 0) 
 					return CDTYPE_DISCERROR;
-				}
+
 				return CDTYPE_NODISC;
 			}
-			if (iVar2 != 2) goto LAB_0007f66c;
-			handle = (int)CdSearchFile(&CStack40, filename);
-			if ((CdlFILE *)handle != (CdlFILE *)0x0) {
+
+			if (iVar1 != 2)
+				goto LAB_0007f66c;
+
+			if (CdSearchFile(&cdfile, filename) != NULL)
 				return CDTYPE_CORRECTDISC;
-			}
+
 		}
-		CVar1 = CDTYPE_WRONGDISC;
+		ret = CDTYPE_WRONGDISC;
 	}
-	else {
+	else
+	{
 	LAB_0007f66c:
-		CVar1 = CDTYPE_DISCERROR;
-		if (iVar2 == 0x10) {
-			CVar1 = CDTYPE_SHELLOPEN;
-		}
+		ret = CDTYPE_DISCERROR;
+
+		if (iVar1 == 0x10)
+			ret = CDTYPE_SHELLOPEN;
 	}
-	return CVar1;*/
+
+	return ret;
+#endif
 }
 
 

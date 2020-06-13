@@ -11,6 +11,8 @@
 #define GET_CURVE(surfid)					(Driver2CurvesPtr + (surfid & 0x1fffU))
 #define GET_JUNCTION(surfid)				(Driver2JunctionsPtr + (surfid & 0x1fffU))
 
+#define IS_SINGLE_LANE(rdcv)				((*(uint*)&(rdcv)->NumLanes & 0xFFFF) == 0xff01)
+
 extern ROAD_MAP_LUMP_DATA roadMapLumpData;
 
 extern int NumTempJunctions;

@@ -498,28 +498,6 @@ void LoadGameLevel(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ReplayLog_Fnarr_He_Said_Log(int val /*$a0*/)
- // line 2973, offset 0x0005c81c
-	/* begin block 1 */
-		// Start line: 5946
-	/* end block 1 */
-	// End Line: 5947
-
-	/* begin block 2 */
-		// Start line: 9921
-	/* end block 2 */
-	// End Line: 9922
-
-int ReplayLog_Fnarr_He_Said_Log(int val)
-{
-	return 0;
-}
-
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitModelNames()
@@ -2779,9 +2757,38 @@ void UpdatePlayerInformation(void)
 			iVar8 = iVar7;
 		} while (iVar7 < NumPlayers);
 	}
+
+
+	// [A] - test
+	/*
+	int surface_index = GetSurfaceIndex((VECTOR*)player[0].pos);
+
+	if (IS_ROAD_SURFACE(surface_index))
+		printWarning("------- road idx: %d\n", (surface_index & 0x1fffU));
+
+	if (IS_CURVED_SURFACE(surface_index))
+	{
+		DRIVER2_CURVE* crv = GET_CURVE(surface_index);
+
+		printWarning("CURVE\nlanes: %d\n", crv->NumLanes, crv->NumLanes);
+	}
+	else if (IS_STRAIGHT_SURFACE(surface_index))
+	{
+		DRIVER2_STRAIGHT* str = GET_STRAIGHT(surface_index);
+
+		printWarning("STRAIGHT\nlanes: %d (s: %d s2: %d, ail: %d), conn: %d %d %d %d, lanedirs: %d, ailanes: %d\n", 
+			str->NumLanes & 0xF, str->NumLanes & 0x40, str->NumLanes & 0x80, str->AILanes, str->ConnectIdx[0], str->ConnectIdx[1], str->ConnectIdx[2], str->ConnectIdx[3], str->LaneDirs);
+		str->NumLanes |= 0x80;
+		
+	}
+	else if (IS_JUNCTION_SURFACE(surface_index))
+	{
+		DRIVER2_JUNCTION* junc = GET_JUNCTION(surface_index);
+
+		printWarning("JUNCTION\nexits: %d %d %d %d, flags: %d\n", junc->ExitIdx[0], junc->ExitIdx[1], junc->ExitIdx[2], junc->ExitIdx[3], junc->flags);
+	}
+	*/
 }
-
-
 
 // decompiled code
 // original method signature: 

@@ -536,12 +536,13 @@ DRIVER2_STRAIGHT* tmpStr[2];
 DRIVER2_CURVE* tmpCrv[2];
 short validExitIdx[4];
 
-#define IS_SINGLE_LANE(rdcv) ((*(uint*)&(rdcv)->NumLanes & 0xFFFF) == 0xff01)
 #define IS_NODE_VALID(n) ((char*)(n) > (char*)car_data && (char*)(n) < (char*)&car_data[21])
 
 // [D] [A] What a fucking long function, might not work as intended...
 int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDist, CIV_ROUTE_ENTRY *oldNode)
 {
+	return 0;// [A] DISABLED due to bugs
+
 	unsigned char bVar1;
 	short sVar2;
 	short uVar3;

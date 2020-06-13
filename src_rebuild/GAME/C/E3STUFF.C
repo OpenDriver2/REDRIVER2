@@ -549,103 +549,123 @@ void SetPleaseWait(char *buffer)
 	/* end block 4 */
 	// End Line: 1179
 
+// [D]
 void CheckForCorrectDisc(int disc)
 {
-	UNIMPLEMENTED();
+	CDTYPE ret;
+	char *mess2;
+	char *exe;
+	int discerror;
+	char *mess;
+	DISPENV disp;
+	DRAWENV draw;
+	RECT16 rect;
 
-	/*
-	CDTYPE CVar1;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
-	char *message;
-	char *filename;
-	int iVar2;
-	char *pString;
-	DISPENV DStack160;
-	DRAWENV DStack136;
-	undefined2 ot;
-	undefined2 local_26;
-	undefined2 local_24;
-	undefined2 local_22;
+	discerror = 0;
 
-	iVar2 = 0;
-	if (lastrequesteddisc != disc) {
+	if (lastrequesteddisc != disc) 
+	{
 		lastrequesteddisc = disc;
 		ResetCityType();
 	}
-	if (disc == 0) {
-		pString = s_Inserisci_il_DISCO_1_0001089c;
-		filename = s__SLES_029_96_1_0001087c;
+
+	if (disc == 0)
+	{
+		mess = "Please insert DISC 1";
+		exe = ".\\SLES_029.96;1";
 	}
-	else {
-		pString = s_Inserisci_il_DISCO_2_000108b4;
-		filename = s__SLES_129_96_1_0001088c;
+	else 
+	{
+		mess = "Please insert DISC 2";
+		exe = ".\\SLES_129.96;1";
 	}
-	CVar1 = DiscSwapped(filename);
-	if (CONCAT31(extraout_var, CVar1) != 4) {
-		LoadFont((char *)0x0);
-		SetupDrawBuffers();
-		DrawSync(0);
+
+	if (DiscSwapped(exe) == CDTYPE_CORRECTDISC)
+		return;
+
+	LoadFont(NULL);
+
+	SetupDrawBuffers();
+	DrawSync(0);
+	VSync(0);
+	SetDispMask(0);
+
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 0x140;
+	rect.h = 0x200;
+
+	ClearImage(&rect, 0, 0, 0);
+	DrawSync(0);
+
+	SetupDefDrawEnv(&draw, 0, 0, 0x140, 0x100);
+	SetupDefDispEnv(&disp, 0, 0, 0x140, 0x100);
+	draw.dfe = 1;
+
+	PutDrawEnv(&draw);
+	PutDispEnv(&disp);
+	SetDispMask(1);
+
+	do {
+		VSync(10);
+
+		ret = DiscSwapped(exe);
+
+		switch (ret) 
+		{
+			case CDTYPE_NODISC:
+				discerror = 0;
+				mess2 = "No DISC inserted";
+				break;
+			case CDTYPE_SHELLOPEN:
+			case CDTYPE_CORRECTDISC:
+				discerror = 0;
+				mess2 = "";
+				break;
+			case CDTYPE_DISCERROR:
+				discerror++;
+
+				if (discerror > 29)
+					mess2 = "No DISC inserted";
+				else
+					mess2 = "Checking...";
+
+				break;
+			case CDTYPE_WRONGDISC:
+				discerror = 0;
+				mess2 = "Incorrect DISC inserted";
+				break;
+		}
+
 		VSync(0);
-		SetDispMask(0);
-		ot = 0;
-		local_26 = 0;
-		local_24 = 0x140;
-		local_22 = 0x200;
-		ClearImage(&ot, 0, 0, 0);
+		rect.y = 0x6e;
+		rect.x = 0;
+		rect.w = 0x140;
+		rect.h = 0x3c;
+		
+		ClearImage(&rect, 0, 0, 0);
 		DrawSync(0);
-		SetupDefDrawEnv(&DStack136, 0, 0, 0x140, 0x100);
-		SetupDefDispEnv(&DStack160, 0, 0, 0x140, 0x100);
-		DStack136.dfe = '\x01';
-		PutDrawEnv(&DStack136);
-		PutDispEnv(&DStack160);
-		SetDispMask(1);
-		do {
-			VSync(10);
-			CVar1 = DiscSwapped(filename);
-			switch (CONCAT31(extraout_var_00, CVar1)) {
-			case 0:
-				iVar2 = 0;
-			LAB_00044bd4:
-				message = s_Nessun_DISCO_inserito_000108cc;
-				break;
-			case 1:
-			case 4:
-				iVar2 = 0;
-				message = (char *)0xaa46c;
-				break;
-			case 2:
-				iVar2 = iVar2 + 1;
-				if (0x1d < iVar2) goto LAB_00044bd4;
-				message = s_Verifica_in_corso____000108e4;
-				break;
-			case 3:
-				iVar2 = 0;
-				message = s_Hai_inserito_il_DISCO_errato_000108fc;
-			}
-			VSync(0);
-			local_26 = 0x6e;
-			ot = 0;
-			local_24 = 0x140;
-			local_22 = 0x3c;
-			ClearImage(&ot, 0, 0, 0);
-			DrawSync(0);
-			gShowMap = 1;
-			SetTextColour(-0x80, -0x80, -0x80);
-			PrintStringCentred(pString, 0x6e);
-			SetTextColour(-0x80, '\x10', '\x10');
-			PrintStringCentred(message, 0x8c);
-			gShowMap = 0;
-		} while (CONCAT31(extraout_var_00, CVar1) != 4);
-		ot = 0;
-		local_26 = 0;
-		local_24 = 0x140;
-		local_22 = 0x200;
-		ClearImage(&ot, 0, 0, 0);
-		DrawSync(0);
-	}
-	return;
-	*/
+		gShowMap = 1;
+
+		SetTextColour(128, 128, 128);
+		PrintStringCentred(mess, 0x6e);
+
+		SetTextColour(128, 16, 16);
+		PrintStringCentred(mess2, 0x8c);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
+
+		gShowMap = 0;
+	} while (ret != CDTYPE_CORRECTDISC);
+
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 0x140;
+	rect.h = 0x200;
+	ClearImage(&rect, 0, 0, 0);
+	DrawSync(0);
 }
 
 

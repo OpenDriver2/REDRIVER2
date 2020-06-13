@@ -40,11 +40,9 @@ int gSubtitles = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ReInitSystem(void)
 {
-	UNIMPLEMENTED();
-
-	/*
 	StopCallback();
 	ResetCallback();
 	ResetGraph(1);
@@ -59,8 +57,6 @@ void ReInitSystem(void)
 	InitSound();
 	SetMasterVolume(gMasterVolume);
 	SetXMVolume(gMusicVolume);
-	*/
-	return;
 }
 
 
@@ -102,33 +98,28 @@ void ReInitSystem(void)
 	/* end block 3 */
 	// End Line: 137
 
+// [D]
 void PlayFMV(unsigned char render)
 {
-	UNIMPLEMENTED();
-
-	/*
-	uint uVar1;
 	RENDER_ARGS args;
 
-	uVar1 = (uint)render;
-	if ((uVar1 - 0x10 < 0xd) || (render == 'b')) {
+	if ((render - 0x10 < 0xd) || (render == 97))
+	{
 		CheckForCorrectDisc(1);
 	}
-	else {
-		if (((uVar1 - 1 & 0xff) < 0xf) || (render == 'a')) {
-			CheckForCorrectDisc(0);
-		}
+	else if (((render - 1 & 0xff) < 0xf) || (render == 98))
+	{
+		CheckForCorrectDisc(0);
 	}
-	args.nRenders = '\x01';
-	args.Args[0].credits = render == '\x1c';
+
+	args.nRenders = 1;
+	args.Args[0].credits = render == 28;
 	args.Args[0].recap = 0;
 	args.Args[0].render = render;
 	PlayRender(&args);
-	if ((uVar1 - 1 & 0xff) < 0x62) {
-		SetPleaseWait((char *)0x0);
-	}
-	return;
-	*/
+
+	if ((render - 1 & 0xff) < 0x62)
+		SetPleaseWait(NULL);
 }
 
 
@@ -163,31 +154,35 @@ void PlayFMV(unsigned char render)
 	/* end block 3 */
 	// End Line: 223
 
+// [D] [A]
 void PlayRender(RENDER_ARGS *args)
 {
-	UNIMPLEMENTED();
-
-	/*
-	int iVar1;
+#ifdef PSX
+	static unsigned long oldsp;
 
 	StopAllChannels();
+
 	FreeXM();
 	SpuQuit();
-	args->screenx = (char)draw_mode_pal.framex;
-	args->screeny = (char)draw_mode_pal.framey;
-	args->subtitle = (uchar)gSubtitles;
-	iVar1 = Loadfile(s_FMV_FMV_EXE_00010aac, &DAT_800ff800);
-	if (iVar1 != 0) {
-		oldsp_12 = GetSp();
+
+	args->screenx = draw_mode_pal.framex;
+	args->screeny = draw_mode_pal.framey;
+	args->subtitle = gSubtitles;
+
+	if (Loadfile("FMV\\FMV.EXE", &DAT_800ff800) != 0)
+	{
+		oldsp = GetSp();
 		EnterCriticalSection();
 		FlushCache();
 		ExitCriticalSection();
 		Exec(&DAT_800ff810, 1, args);
-		SetSp(oldsp_12);
+		SetSp(oldsp);
 	}
+
 	ReInitSystem();
-	return;
-	*/
+#else
+	// TODO: use jpsx?
+#endif
 }
 
 
