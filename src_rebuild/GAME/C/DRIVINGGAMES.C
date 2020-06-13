@@ -10,6 +10,12 @@
 #include "PLAYERS.H"
 #include "COSMETIC.H"
 #include "BCOLLIDE.H"
+#include "CAMERA.H"
+#include "CONVERT.H"
+#include "MAP.H"
+#include "../ASM/ASMTEST.H"
+
+#include "INLINE_C.H"
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[6];
@@ -803,40 +809,39 @@ void DrawSmashedCones(void)
 	/* end block 4 */
 	// End Line: 1751
 
+// [D]
 void DrawCone(VECTOR *position, int cone)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	MATRIX local_40;
-	VECTOR local_20;
+	MATRIX matrix;
+	VECTOR pos;
 
-	if (((gTrailblazerData != (TRAILBLAZER_DATA *)0x0) &&
-		(iVar1 = PositionVisible(position), iVar1 != 0)) &&
-		(iVar1 = FrustrumCheck(position, (int)gTrailblazerConeModel->bounding_sphere), iVar1 != -1)) {
-		local_40.m[0][0] = 0x1000;
-		local_40.m[1][1] = 0x1000;
-		local_40.m[2][2] = 0x1000;
-		local_40.m[1][0] = 0;
-		local_40.m[2][0] = 0;
-		local_40.m[0][1] = 0;
-		local_40.m[2][1] = 0;
-		local_40.m[0][2] = 0;
-		local_40.m[1][2] = 0;
-		_RotMatrixY(&local_40, gTrailblazerData[cone].rot);
-		local_20.vx = position->vx - camera_position.vx;
-		local_20.vy = position->vy - camera_position.vy;
-		local_20.vz = position->vz - camera_position.vz;
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		_MatrixRotate(&local_20);
-		RenderModel(gTrailblazerConeModel, &local_40, &local_20, 0, 0);
+	if (gTrailblazerData == NULL)
+		return;
+
+	if (PositionVisible(position) != 0 && 
+		FrustrumCheck(position, gTrailblazerConeModel->bounding_sphere) != -1)
+	{
+		matrix.m[0][0] = 0x1000;
+		matrix.m[1][1] = 0x1000;
+		matrix.m[2][2] = 0x1000;
+		matrix.m[1][0] = 0;
+		matrix.m[2][0] = 0;
+		matrix.m[0][1] = 0;
+		matrix.m[2][1] = 0;
+		matrix.m[0][2] = 0;
+		matrix.m[1][2] = 0;
+
+		_RotMatrixY(&matrix, gTrailblazerData[cone].rot);
+
+		pos.vx = position->vx - camera_position.vx;
+		pos.vy = position->vy - camera_position.vy;
+		pos.vz = position->vz - camera_position.vz;
+
+		gte_SetRotMatrix(&inv_camera_matrix);
+
+		_MatrixRotate(&pos);
+		RenderModel(gTrailblazerConeModel, &matrix, &pos, 0, 0);
 	}
-	return;
-	*/
 }
 
 
@@ -861,50 +866,40 @@ void DrawCone(VECTOR *position, int cone)
 	/* end block 2 */
 	// End Line: 1683
 
+// [D]
 void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	undefined2 local_40;
-	undefined2 local_3e;
-	undefined2 local_3c;
-	undefined2 local_3a;
-	undefined2 local_38;
-	undefined2 local_36;
-	undefined2 local_34;
-	undefined2 local_32;
-	undefined2 local_30;
-	int local_20;
-	int local_1c;
-	int local_18;
+	MATRIX object_matrix;
+	VECTOR pos;
 
-	local_3a = 0;
-	local_34 = 0;
-	local_3e = 0;
-	local_32 = 0;
-	local_3c = 0;
-	local_36 = 0;
-	local_40 = 0x1000;
-	local_38 = 0x1000;
-	local_30 = 0x1000;
-	RotMatrixY((int)*(short *)&sc->side * (*(uint *)sc >> 8 & 0x7f) * 3 & 0xfff, &local_40);
-	RotMatrixZ((int)*(short *)&sc->side * (*(uint *)sc >> 8 & 0x7f) & 0xfff, &local_40);
-	local_20 = wpos->vx - camera_position.vx;
-	local_1c = wpos->vy - camera_position.vy;
-	local_18 = wpos->vz - camera_position.vz;
-	Apply_Inv_CameraMatrix(&local_20);
-	SetRotMatrix(&local_40);
-	setCopControlWord(2, 0x2800, local_20);
-	setCopControlWord(2, 0x3000, local_1c);
-	setCopControlWord(2, 0x3800, local_18);
+	object_matrix.m[1][0] = 0;
+	object_matrix.m[2][0] = 0;
+	object_matrix.m[0][1] = 0;
+	object_matrix.m[2][1] = 0;
+	object_matrix.m[0][2] = 0;
+	object_matrix.m[1][2] = 0;
+	object_matrix.m[0][0] = 0x1000;
+	object_matrix.m[1][1] = 0x1000;
+	object_matrix.m[2][2] = 0x1000;
+
+	RotMatrixY(sc->rot_speed * sc->active * 3 & 0xfff, &object_matrix);
+	RotMatrixZ(sc->rot_speed * sc->active & 0xfff, &object_matrix);
+
+	pos.vx = wpos->vx - camera_position.vx;
+	pos.vy = wpos->vy - camera_position.vy;
+	pos.vz = wpos->vz - camera_position.vz;
+
+	Apply_Inv_CameraMatrix(&pos);
+	SetRotMatrix(&object_matrix);
+
+	gte_SetTransVector(&pos);
+
 	SetFrustrumMatrix();
-	iVar1 = FrustrumCheck(wpos, (int)gTrailblazerConeModel->bounding_sphere);
-	if (iVar1 != -1) {
+
+	if (FrustrumCheck(wpos, gTrailblazerConeModel->bounding_sphere) != -1)
+	{
 		PlotMDL_less_than_128(gTrailblazerConeModel);
 	}
-	return;
-	*/
 }
 
 
@@ -968,13 +963,13 @@ void GetConePos(int cone, VECTOR *pos, int side)
 
 		if (side == 0) 
 		{
-			pos->vx = pTVar2->x - FIXED(iVar6 >> 0xc);
+			pos->vx = pTVar2->x - FIXED(iVar6);
 			pos->vy = pTVar2->y;
 			iVar4 = -iVar4;
 		}
 		else 
 		{
-			pos->vx = pTVar2->x + FIXED(iVar6 >> 0xc);
+			pos->vx = pTVar2->x + FIXED(iVar6);
 			pos->vy = pTVar2->y;
 		}
 
