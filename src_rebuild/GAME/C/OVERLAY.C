@@ -995,16 +995,16 @@ void DrawDrivingGameOverlays(void)
 
 			if (NumPlayers != 1) 
 			{
-				y = PrintString("Checkpoint", 0x10, 0x24);
+				y = PrintString("Checks", 0x10, 0x24);
 				sprintf(string, "%d/5", gPlayerScore.items);
 				PrintString(string, y + 3, 0x24);
-				y = PrintString("Checkpoint", 0x10, 0x96);
+				y = PrintString("Checks", 0x10, 0x96);
 				sprintf(string, "%d/5", gPlayerScore.P2items);
 				goto LAB_00015b28;
 			}
 
 			piVar3 = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0].time;
-			PrintStringRightAligned("Checkpoint", 0x10e, 0x10);
+			PrintStringRightAligned("Checks", 0x10e, 0x10);
 			sprintf(string, "%d/5", gPlayerScore.items);
 			PrintString(string, 0x111, 0x10);
 
