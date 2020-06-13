@@ -96,6 +96,25 @@ void InitCopState(_CAR_DATA *cp, char *extraData)
 }
 
 
+// decompiled code
+// original method signature: 
+// int /*$ra*/ ReplayLog_Fnarr_He_Said_Log(int val /*$a0*/)
+ // line 2973, offset 0x0005c81c
+	/* begin block 1 */
+		// Start line: 5946
+	/* end block 1 */
+	// End Line: 5947
+
+	/* begin block 2 */
+		// Start line: 9921
+	/* end block 2 */
+	// End Line: 9922
+
+int ReplayLog_Fnarr_He_Said_Log(int val)
+{
+	return 0;
+}
+
 
 // decompiled code
 // original method signature: 
@@ -130,72 +149,65 @@ void InitCopState(_CAR_DATA *cp, char *extraData)
 	/* end block 2 */
 	// End Line: 1187
 
+int distanceReturnedLog[8];
+int distLogIndex;
+int lastDistanceFound;
+
+// [D]
 void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	undefined4 uVar2;
 	uint val;
-	uint uVar3;
-	uint *puVar4;
-	int iVar5;
-	uint local_88[4];
-	long local_78;
-	long local_74;
-	long local_70;
-	long local_6c;
-	int local_68;
-	int local_64;
-	int local_60;
-	undefined4 local_38;
-	undefined4 local_34;
-	undefined4 local_30;
+	uint uVar1;
+	uint *puVar2;
+	int iVar3;
+	int thl[4];
+	VECTOR pos;
+	VECTOR dir;
 
-	uVar2 = DAT_0001053c;
-	uVar1 = DAT_00010534;
-	local_78 = from->vx;
-	local_74 = from->vy;
-	local_70 = from->vz;
-	local_6c = from->pad;
-	if (distance < 0) {
-		distance = distance + 3;
-	}
-	iVar5 = 0;
-	puVar4 = local_88;
+	pos.vx = from->vx;
+	pos.vy = from->vy;
+	pos.vz = from->vz;
+	pos.pad = from->pad;
+
+	iVar3 = 0;
+	puVar2 = (uint *)thl;
 	do {
-		local_38 = uVar1;
-		local_30 = uVar2;
-		local_34 = DAT_00010538;
-		ReplayLog_Fnarr_He_Said_Log(local_78);
-		ReplayLog_Fnarr_He_Said_Log(local_74);
-		ReplayLog_Fnarr_He_Said_Log(local_70);
-		val = getHeadingToPlayer(local_78, local_74, local_70);
+		ReplayLog_Fnarr_He_Said_Log(pos.vx);
+		ReplayLog_Fnarr_He_Said_Log(pos.vy);
+		ReplayLog_Fnarr_He_Said_Log(pos.vz);
+
+		val = getHeadingToPlayer(pos.vx, pos.vy, pos.vz);
 		ReplayLog_Fnarr_He_Said_Log(val);
-		if (iVar5 == 0) {
-			uVar3 = distLogIndex & 7;
+
+		if (iVar3 == 0)
+		{
+			uVar1 = distLogIndex & 7;
 			distLogIndex = distLogIndex + 1;
-			distanceReturnedLog[uVar3] = lastDistanceFound;
+			distanceReturnedLog[uVar1] = lastDistanceFound;
 		}
-		iVar5 = iVar5 + 1;
-		local_64 = 0;
-		local_68 = (distance >> 2) * (int)rcossin_tbl[(val & 0xfff) * 2] + 0x800 >> 0xc;
-		local_60 = (distance >> 2) * (int)rcossin_tbl[(val & 0xfff) * 2 + 1] + 0x800 >> 0xc;
-		*puVar4 = val;
-		local_78 = local_78 + local_68;
-		puVar4 = puVar4 + 1;
-		local_74 = local_74 + local_64;
-		local_70 = local_70 + local_60;
-	} while (iVar5 < 4);
-	to->vx = local_78;
-	to->vy = local_74;
-	to->vz = local_70;
-	to->pad = local_6c;
-	if (((local_88[3] - local_88[0]) + 200 & 0xfff) < 400) {
+
+		dir.vy = 0;
+		dir.vx = FIXED((distance >> 2) * rcossin_tbl[(val & 0xfff) * 2]);
+		dir.vz = FIXED((distance >> 2) * rcossin_tbl[(val & 0xfff) * 2 + 1]);
+
+		*puVar2 = val;
+		pos.vx = pos.vx + dir.vx;
+		puVar2 = puVar2 + 1;
+		pos.vy = pos.vy + dir.vy;
+		pos.vz = pos.vz + dir.vz;
+
+		iVar3++;
+	} while (iVar3 < 4);
+
+	to->vx = pos.vx;
+	to->vy = pos.vy;
+	to->vz = pos.vz;
+	to->pad = pos.pad;
+
+	if (((thl[3] - thl[0]) + 200U & 0xfff) < 400) 
+	{
 		pathStraight = 1;
 	}
-	return;
-	*/
 }
 
 

@@ -18705,9 +18705,9 @@ struct DRIVER2_STRAIGHT // hashcode: 0xCF738039 (dec: -814514119)
 	short bing; // size=0, offset=10
 	short angle; // size=0, offset=12
 	short ConnectIdx[4]; // size=8, offset=14
-	char NumLanes; // size=0, offset=22
-	char LaneDirs; // size=0, offset=23
-	char AILanes; // size=0, offset=24
+	char NumLanes; // size=0, offset=22				// masked: 0xF - lane count, flags: 0x40 - allow non-drivable parked cars, 0x80: allow parked cars
+	char LaneDirs; // size=0, offset=23				// bit field of lanes 
+	char AILanes; // size=0, offset=24				// bit field of lanes which allows spawning active cars. LaneDirs >> (LANE_NUMBER / 2 & 0x1fU)
 	char packing; // size=0, offset=25
 };
 

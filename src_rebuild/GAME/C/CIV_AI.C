@@ -2141,6 +2141,7 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 
 	curRoad = cp->ai.c.currentRoad;
 
+
 	if ((((curRoad & 0xffffe000U) == 0) && ((curRoad & 0x1fffU) < NumDriver2Straights)) && (-1 < curRoad))
 	{
 		straight = Driver2StraightsPtr + curRoad;
@@ -2967,21 +2968,26 @@ int CreateNewNode(_CAR_DATA *cp)
 						if (local_a1_52 <= pCVar4)
 							pCVar5 = local_v1_48 + -0xc;
 
-						if (pCVar5->pathType == 0x7f) {
+						if (pCVar5->pathType == 0x7f)
+						{
 							local_a3_260 = cp->ai.c.currentRoad;
-							if (local_a1_52 <= pCVar4) {
+
+							if (local_a1_52 <= pCVar4)
 								pCVar4 = local_v1_48 + -0xc;
-							}
+
 							if (cp->id == makeNextNodeCtrlNode) 
 							{
 								cp->ai.c.ctrlNode = pCVar4;
 								makeNextNodeCtrlNode = -1;
 							}
+
 							if (((((local_a3_260 & 0xffffe000U) != 0) ||
 								(NumDriver2Straights <= (int)(local_a3_260 & 0x1fffU))) &&
 								(((local_a3_260 & 0xffffe000U) != 0x4000 ||
 								(NumDriver2Curves <= (int)(local_a3_260 & 0x1fffU))))) ||
-									(local_a3_260 < 0)) break;
+								(local_a3_260 < 0)) 
+								break;
+
 							if (((local_a3_260 & 0xffffe000U) == 0) &&
 								((int)(local_a3_260 & 0x1fffU) < NumDriver2Straights)) 
 							{
@@ -2997,9 +3003,10 @@ int CreateNewNode(_CAR_DATA *cp)
 								}
 
 								iVar6 = -1;
-								if ((local_v0_484 & 1U) == 0) {
+
+								if ((local_v0_484 & 1U) == 0)
 									iVar6 = 1;
-								}
+
 								local_a0_536 = straight->length;
 								x = local_v1_48->distAlongSegment + iVar6 * 0x400;
 								pCVar4->distAlongSegment = x;
@@ -3033,10 +3040,12 @@ int CreateNewNode(_CAR_DATA *cp)
 									}
 								}
 							}
-							else {
+							else 
+							{
 								if (((local_a3_260 & 0xffffe000U) == 0x4000) &&
 									(((int)(local_a3_260 & 0x1fffU) < NumDriver2Curves &&
-									(-1 < local_a3_260)))) {
+									(-1 < local_a3_260)))) 
+								{
 									curve = Driver2CurvesPtr + local_a3_260 + -0x4000;
 
 									if (IS_SINGLE_LANE(curve))
@@ -3047,6 +3056,7 @@ int CreateNewNode(_CAR_DATA *cp)
 									{
 										local_v0_840 = curve->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
 									}
+
 									iVar6 = -1;
 
 									if ((local_v0_840 & 1U) == 0)
@@ -3192,17 +3202,17 @@ int CreateNewNode(_CAR_DATA *cp)
 										(cp->ai.c.currentLane = local_a0_1932, local_s1_1816 != 0)) &&
 										((makeLimoPullOver !=  0 ||
 										((cp->ai.c.ctrlState == 0 &&
-											(((straight != NULL &&
-											(((local_a0_1932 == 0 &&
-												((straight->NumLanes & 0x40U) != 0)) ||
-												(((straight->NumLanes & 0xf) * 2 - 1 ==
-												cp->ai.c.currentLane &&
-													((straight->NumLanes & 0x80U) != 0)))))) ||
-													((curve != NULL &&
-												(((cp->ai.c.currentLane == 0 && ((curve->NumLanes & 0x40U) != 0))
-													|| (((curve->NumLanes & 0xf) * 2 - 1 ==
-													cp->ai.c.currentLane &&
-														((curve->NumLanes & 0x80U) != 0))))))))))))))
+										(((straight != NULL &&
+										(((local_a0_1932 == 0 &&
+										((straight->NumLanes & 0x40U) != 0)) ||
+										(((straight->NumLanes & 0xf) * 2 - 1 ==
+										cp->ai.c.currentLane &&
+										((straight->NumLanes & 0x80U) != 0)))))) ||
+										((curve != NULL &&
+										(((cp->ai.c.currentLane == 0 && ((curve->NumLanes & 0x40U) != 0))
+										|| (((curve->NumLanes & 0xf) * 2 - 1 ==
+										cp->ai.c.currentLane &&
+										((curve->NumLanes & 0x80U) != 0))))))))))))))
 									{
 										makeNextNodeCtrlNode = cp->id;
 
@@ -3285,9 +3295,9 @@ int CreateNewNode(_CAR_DATA *cp)
 							}
 							break;
 						}
-						if (local_a1_52 <= pCVar4) {
+						if (local_a1_52 <= pCVar4)
 							pCVar4 = local_v1_48 + -0xc;
-						}
+
 						local_v1_48 = pCVar4;
 					} while (pCVar4 != cp->ai.c.pnode);
 				}
@@ -5136,6 +5146,8 @@ void AttemptUnPark(_CAR_DATA *cp)
 // [D]
 int CivControl(_CAR_DATA *cp)
 {
+	//return 1; // [A] disabled - buggy
+
 	long lVar2;
 	int iVar3;
 

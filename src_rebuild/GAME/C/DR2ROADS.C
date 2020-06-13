@@ -598,7 +598,7 @@ int RoadInCell(VECTOR *pos)
 		{
 			iVar4 = sdHeightOnPlane(pos, plane);
 			pos->vy = iVar4 + 0x100;
-			return (int)plane->surface + -0x20;
+			return plane->surface - 32;
 		}
 	}
 
