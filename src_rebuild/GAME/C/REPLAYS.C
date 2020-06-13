@@ -1002,41 +1002,25 @@ int Put(int stream, ulong *pt0)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void RecordWaypoint(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	int iVar2;
-	int iVar3;
+	if (TimeToWay == 0)
+	{
+		if (PlayerWaypoints < 150)
+		{
+			PlayerWaypoints++;
 
-	iVar2 = PlayerCar;
-	if (TimeToWay == 0) {
-		if (PlayerWaypoints < 0x96) {
-			PlayerWaypoints = PlayerWaypoints + 1;
-			iVar3 = car_data[PlayerCar].hd.where.t[0];
-			iVar1 = iVar3 + 0x200;
-			if (iVar1 < 0) {
-				iVar1 = iVar3 + 0x5ff;
-			}
-			PlayerWayRecordPtr->x = (short)(iVar1 >> 10);
 			TimeToWay = way_distance;
-			iVar1 = car_data[iVar2].hd.where.t[2];
-			iVar2 = iVar1 + 0x200;
-			if (iVar2 < 0) {
-				iVar2 = iVar1 + 0x5ff;
-			}
-			PlayerWayRecordPtr->y = (short)(iVar2 >> 10);
-			PlayerWayRecordPtr = PlayerWayRecordPtr + 1;
+
+			PlayerWayRecordPtr->x = (player[0].pos[0] >> 10);
+			PlayerWayRecordPtr->y = (player[0].pos[2] >> 10);
+
+			PlayerWayRecordPtr++;
 		}
+
 		return;
 	}
-	TimeToWay = TimeToWay + -1;
-	return;
-	*/
+
+	TimeToWay--;
 }
-
-
-
-
-

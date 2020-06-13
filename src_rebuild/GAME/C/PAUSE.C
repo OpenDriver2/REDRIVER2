@@ -646,12 +646,10 @@ void SaveGame(int direction)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void EnterName(void)
 {
-	UNIMPLEMENTED();
-	/*
 	EnterScoreName();
-	return;*/
 }
 
 

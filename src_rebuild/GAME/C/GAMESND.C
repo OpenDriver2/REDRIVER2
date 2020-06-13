@@ -22,6 +22,7 @@
 #include "XMPLAY.H"
 #include "PLAYERS.H"
 #include "MAIN.H"
+#include "SKY.H"
 
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
@@ -2992,13 +2993,11 @@ int AddTunnel(long x1, long y1, long z1, long x2, long y2, long z2)
 	/* end block 4 */
 	// End Line: 3120
 
+// [D]
 void Tunnels(__tunnelinfo *T)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
-	int *piVar3;
 	int iVar4;
 	int iVar5;
 	int on;
@@ -3006,45 +3005,53 @@ void Tunnels(__tunnelinfo *T)
 	iVar5 = 0;
 	gTunnelNum = -1;
 	on = 0;
-	if (T->tunnel_cnt != '\0') {
+
+	if (T->tunnel_cnt != 0) 
+	{
 		iVar4 = 0;
 		do {
-			piVar3 = (int *)((int)&T->coords[0].p2.vx + iVar4);
-			iVar1 = *piVar3;
-			iVar2 = *(int *)((int)&T->coords[0].p1.vx + iVar4);
-			if (iVar2 < iVar1) {
+			iVar1 = T->coords[iVar5].p2.vx;
+			iVar2 = T->coords[iVar5].p1.vx;
+
+			if (iVar2 < iVar1)
 				iVar1 = iVar2;
-			}
-			if (iVar1 < camera_position.vx) {
-				iVar1 = *piVar3;
-				if (iVar1 < iVar2) {
+
+			if (iVar1 < camera_position.vx) 
+			{
+				iVar1 = T->coords[iVar5].p2.vx;
+
+				if (iVar1 < iVar2)
 					iVar1 = iVar2;
-				}
-				if (camera_position.vx < iVar1) {
-					piVar3 = (int *)((int)&T->coords[0].p2.vy + iVar4);
-					iVar1 = *piVar3;
-					iVar2 = *(int *)((int)&T->coords[0].p1.vy + iVar4);
-					if (iVar2 < iVar1) {
+
+				if (camera_position.vx < iVar1) 
+				{
+					iVar1 = T->coords[iVar5].p2.vy;
+					iVar2 = T->coords[iVar5].p1.vy;
+					if (iVar2 < iVar1)
 						iVar1 = iVar2;
-					}
-					if (iVar1 < camera_position.vy) {
-						iVar1 = *piVar3;
-						if (iVar1 < iVar2) {
+
+					if (iVar1 < camera_position.vy)
+					{
+						iVar1 = T->coords[iVar5].p2.vy;
+						if (iVar1 < iVar2)
 							iVar1 = iVar2;
-						}
-						if (camera_position.vy < iVar1) {
-							piVar3 = (int *)((int)&T->coords[0].p2.vz + iVar4);
-							iVar1 = *piVar3;
-							iVar4 = *(int *)((int)&T->coords[0].p1.vz + iVar4);
-							if (iVar4 < iVar1) {
+
+						if (camera_position.vy < iVar1) 
+						{
+							iVar1 = T->coords[iVar5].p2.vz;
+							iVar4 = T->coords[iVar5].p1.vz;
+
+							if (iVar4 < iVar1)
 								iVar1 = iVar4;
-							}
-							if (iVar1 < camera_position.vz) {
-								iVar1 = *piVar3;
-								if (iVar1 < iVar4) {
+
+							if (iVar1 < camera_position.vz) 
+							{
+								iVar1 = T->coords[iVar5].p2.vz;
+								if (iVar1 < iVar4)
 									iVar1 = iVar4;
-								}
-								if (camera_position.vz < iVar1) {
+
+								if (camera_position.vz < iVar1) 
+								{
 									on = 1;
 									gTunnelNum = iVar5;
 									break;
@@ -3056,11 +3063,9 @@ void Tunnels(__tunnelinfo *T)
 			}
 			iVar5 = iVar5 + 1;
 			iVar4 = iVar5 * 0x20;
-		} while (iVar5 < (int)(uint)(byte)T->tunnel_cnt);
+		} while (iVar5 < T->tunnel_cnt);
 	}
 	SetReverbInGameState(on);
-	return;
-	*/
 }
 
 
