@@ -20396,8 +20396,8 @@ struct TRAILBLAZER_DATA // hashcode: 0x99CBFE9E (dec: -1714684258)
 struct SMASHED_CONE // hashcode: 0xC79161AF (dec: -946773585)
 {
 	char cone; // size=0, offset=0
-	unsigned char active; // size=7, offset=8
-	unsigned char side; // size=1, offset=15
+	unsigned char active : 7; // size=7, offset=8
+	unsigned char side : 1; // size=1, offset=15
 	short rot_speed; // size=0, offset=2
 	VECTOR velocity; // size=16, offset=4
 };

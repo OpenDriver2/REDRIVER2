@@ -5,6 +5,11 @@
 #include "CUTSCENE.H"
 #include "MAIN.H"
 #include "SYSTEM.H"
+#include "DRAW.H"
+#include "CARS.H"
+#include "PLAYERS.H"
+#include "COSMETIC.H"
+#include "BCOLLIDE.H"
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[6];
@@ -392,48 +397,58 @@ LAB_00043668:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawDrivingGames(void)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	int cone;
-	int iVar2;
-	VECTOR VStack24;
+	int i;
+	VECTOR wpos;
 
-	if ((((GameType != GAME_GATERACE) && (GameType != GAME_TRAILBLAZER)) ||
-		(gTrailblazerConeModel == (MODEL *)0x0)) || (gTrailblazerData == (TRAILBLAZER_DATA *)0x0)) {
+	if (GameType != GAME_GATERACE && GameType != GAME_TRAILBLAZER || gTrailblazerConeModel == NULL || gTrailblazerData == NULL) 
 		return;
-	}
-	iVar2 = 0;
+
+	i = 0;
 	SetFrustrumMatrix();
 	bVar1 = true;
-	if (gTrailblazerPrevConeDelay == 0) goto LAB_000439dc;
-	iVar2 = -1;
+
+	if (gTrailblazerPrevConeDelay == 0) 
+		goto LAB_000439dc;
+
+	i = -1;
 	do {
-		while (true) {
-			bVar1 = iVar2 < 6;
+
+		while (true) 
+		{
+			bVar1 = i < 6;
 		LAB_000439dc:
-			if (!bVar1) {
+			if (!bVar1) 
+			{
 				DrawSmashedCones();
 				return;
 			}
-			cone = gTrailblazerConeIndex + iVar2;
-			if (cone < 100) break;
+
+			cone = gTrailblazerConeIndex + i;
+			if (cone < 100) 
+				break;
 		LAB_000439d4:
-			iVar2 = iVar2 + 1;
+			i++;
 		}
-		if (GameType != GAME_GATERACE) {
-			GetConePos(cone, &VStack24, -1);
-			DrawCone(&VStack24, gTrailblazerConeIndex + iVar2);
+
+		if (GameType != GAME_GATERACE) 
+		{
+			GetConePos(cone, &wpos, -1);
+			DrawCone(&wpos, gTrailblazerConeIndex + i);
 			goto LAB_000439d4;
 		}
-		GetConePos(cone, &VStack24, 0);
-		DrawCone(&VStack24, gTrailblazerConeIndex + iVar2);
-		GetConePos(gTrailblazerConeIndex + iVar2, &VStack24, 1);
-		DrawCone(&VStack24, gTrailblazerConeIndex + iVar2);
-		iVar2 = iVar2 + 1;
-	} while (true);*/
+
+		GetConePos(cone, &wpos, 0);
+		DrawCone(&wpos, gTrailblazerConeIndex + i);
+		GetConePos(gTrailblazerConeIndex + i, &wpos, 1);
+		DrawCone(&wpos, gTrailblazerConeIndex + i);
+
+		i++;
+	} while (true);
 }
 
 
@@ -475,41 +490,31 @@ void DrawDrivingGames(void)
 	/* end block 4 */
 	// End Line: 1277
 
+// [D]
 int CarConeCollision(VECTOR *pPos, int car)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
-	int iVar2;
-	CDATA2D local_d8;
-	long local_74;
-	long local_6c;
-	int local_34;
-	int local_30;
-	int local_2c;
-	int local_c;
+	int model;
+	CDATA2D cd[2];
 
-	local_d8.x.vx = pPos->vx;
-	local_d8.x.vz = pPos->vz;
-	local_d8.length[0] = 0x28;
-	local_d8.length[1] = 0x28;
-	local_d8.theta = 0;
-	if (car_data[car].controlType == '\0') {
-		iVar2 = 0;
-	}
-	else {
-		uVar1 = (uint)(byte)car_data[car].ap.model;
-		local_74 = car_data[car].hd.where.t[0];
-		local_30 = (int)car_cosmetics[uVar1].colBox.vz;
-		local_2c = (int)car_cosmetics[uVar1].colBox.vx;
-		local_34 = car_data[car].hd.direction;
-		local_6c = car_data[car].hd.where.t[2];
-		local_c = local_30;
-		iVar2 = bcollided2d(&local_d8, 1);
-	}
-	return iVar2;
-	*/
+	cd[0].x.vx = pPos->vx;
+	cd[0].x.vz = pPos->vz;
+	cd[0].length[0] = 0x28;
+	cd[0].length[1] = 0x28;
+	cd[0].theta = 0;
+
+	if (car_data[car].controlType == 0) 
+		return 0;
+
+	model = car_data[car].ap.model;
+
+	cd[1].x.vx = car_data[car].hd.where.t[0];
+	cd[1].length[0] = car_cosmetics[model].colBox.vz;
+	cd[1].length[1] = car_cosmetics[model].colBox.vx;
+
+	cd[1].theta = car_data[car].hd.direction;
+	cd[1].x.vz = car_data[car].hd.where.t[2];
+
+	return bcollided2d(cd, 1);
 }
 
 
@@ -643,44 +648,44 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void MoveSmashedCones(void)
 {
-	UNIMPLEMENTED();
-	/*
 	TRAILBLAZER_DATA *pTVar1;
 	TRAILBLAZER_DATA *pTVar2;
 	SMASHED_CONE *pSVar3;
-	VECTOR *pVVar4;
-	int iVar5;
+	int i;
 
-	pTVar1 = gTrailblazerData;
-	if (gTrailblazerData != (TRAILBLAZER_DATA *)0x0) {
-		pSVar3 = smashed_cones;
-		iVar5 = 5;
-		pVVar4 = &smashed_cones[0].velocity;
-		do {
-			if ((int)pSVar3->cone != -1) {
-				pTVar2 = pTVar1 + (int)pSVar3->cone;
-				if ((int)pTVar2->y < 0x32 - player.pos[1]) {
-					pTVar2->x = pTVar2->x + pVVar4[-1].pad;
-					pTVar2->y = pTVar2->y + *(short *)&pVVar4->vx;
-					pTVar2->z = pTVar2->z + (pSVar3->velocity).vy;
-					pVVar4->vx = pVVar4->vx + 10;
-					*(uint *)pSVar3 =
-						*(uint *)pSVar3 & 0xffff80ff | ((*(uint *)pSVar3 >> 8 & 0x7f) + 1 & 0x7f) << 8;
-				}
-				else {
-					pSVar3->cone = -1;
-					*(uint *)pSVar3 = *(uint *)pSVar3 & 0xffff80ff;
-				}
+	if (gTrailblazerData == NULL)
+		return;
+
+	pSVar3 = smashed_cones;
+	i = 5;
+	do {
+		if (pSVar3->cone != -1) 
+		{
+			pTVar2 = gTrailblazerData + pSVar3->cone;
+			if (pTVar2->y < 50 - player[0].pos[1])
+			{
+				pTVar2->x += pSVar3->velocity.vx;
+				pTVar2->y += pSVar3->velocity.vy;
+				pTVar2->z += pSVar3->velocity.vz;
+
+				pSVar3->velocity.vy += 10;
+				pSVar3->active++;
+
+				// [A] pls check this
+				//*(uint *)pSVar3 = *(uint *)pSVar3 & 0xffff80ff | ((*(uint *)pSVar3 >> 8 & 0x7f) + 1 & 0x7f) << 8;
 			}
-			pSVar3 = (SMASHED_CONE *)&(pSVar3->velocity).pad;
-			iVar5 = iVar5 + -1;
-			pVVar4 = (VECTOR *)&pVVar4[1].vy;
-		} while (-1 < iVar5);
-	}
-	return;
-	*/
+			else
+			{
+				pSVar3->cone = -1;
+				pSVar3->active = 0;
+			}
+		}
+		pSVar3++;
+		i--;
+	} while (-1 < i);
 }
 
 
@@ -717,44 +722,40 @@ void MoveSmashedCones(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawSmashedCones(void)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	char cVar2;
 	SMASHED_CONE *sc;
-	int iVar3;
-	int iVar4;
-	VECTOR VStack40;
+	int i;
 
-	if (gTrailblazerData != (TRAILBLAZER_DATA *)0x0) {
-		iVar4 = 0;
-		iVar3 = 5;
-		do {
-			sc = (SMASHED_CONE *)(&smashed_cones[0].cone + iVar4);
-			if ((*(uint *)sc & 0x7f00) != 0) {
-				if (GameType == GAME_GATERACE) {
-					bVar1 = (*(uint *)sc & 0x8000) != 0;
-					if (bVar1) {
-						cVar2 = sc->cone;
-					}
-					else {
-						cVar2 = sc->cone;
-					}
-					GetConePos((int)cVar2, &VStack40, (uint)bVar1);
-					DrawSmashedCone(sc, &VStack40);
-				}
-				else {
-					GetConePos((int)sc->cone, &VStack40, -1);
-					DrawSmashedCone(sc, &VStack40);
-				}
+	VECTOR wpos;
+
+	if (gTrailblazerData == NULL)
+		return;
+
+	i = 5;
+	while (i < 6)
+	{
+		sc = &smashed_cones[i];
+
+		if (sc->active)
+		{
+			if (GameType == GAME_GATERACE)
+			{
+				GetConePos(sc->cone, &wpos, sc->side);
+				DrawSmashedCone(sc, &wpos);
 			}
-			iVar4 = iVar4 + 0x14;
-			iVar3 = iVar3 + -1;
-		} while (-1 < iVar3);
+			else 
+			{
+				GetConePos(sc->cone, &wpos, -1);
+				DrawSmashedCone(sc, &wpos);
+			}
+		}
+
+		i++;
 	}
-	return;*/
 }
 
 
@@ -935,10 +936,9 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 	/* end block 3 */
 	// End Line: 1745
 
+// [D]
 void GetConePos(int cone, VECTOR *pos, int side)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	TRAILBLAZER_DATA *pTVar2;
 	uint uVar3;
@@ -946,40 +946,40 @@ void GetConePos(int cone, VECTOR *pos, int side)
 	int iVar5;
 	int iVar6;
 
-	if (side == -1) {
+	if (side == -1)
+	{
 		pTVar2 = gTrailblazerData + cone;
+
 		pos->vx = pTVar2->x;
-		pos->vy = (int)pTVar2->y;
+		pos->vy = pTVar2->y;
 		pos->vz = pTVar2->z;
 	}
-	else {
+	else 
+	{
 		pTVar2 = gTrailblazerData + cone;
-		uVar3 = (int)pTVar2->rot & 0xfff;
+
+		uVar3 = pTVar2->rot & 0xfff;
 		iVar4 = cone * -4 + 600;
+
 		iVar6 = iVar4 * rcossin_tbl[uVar3 * 2 + 1];
-		iVar5 = pTVar2->z;
-		if (iVar6 < 0) {
-			iVar6 = iVar6 + 0xfff;
-		}
-		iVar4 = -iVar4 * (int)rcossin_tbl[uVar3 * 2];
-		if (iVar4 < 0) {
-			iVar4 = iVar4 + 0xfff;
-		}
+
+		iVar4 = -iVar4 * rcossin_tbl[uVar3 * 2];
 		iVar4 = iVar4 >> 0xc;
-		if (side == 0) {
-			pos->vx = pTVar2->x - (iVar6 >> 0xc);
-			sVar1 = pTVar2->y;
+
+		if (side == 0) 
+		{
+			pos->vx = pTVar2->x - FIXED(iVar6 >> 0xc);
+			pos->vy = pTVar2->y;
 			iVar4 = -iVar4;
 		}
-		else {
-			pos->vx = pTVar2->x + (iVar6 >> 0xc);
-			sVar1 = pTVar2->y;
+		else 
+		{
+			pos->vx = pTVar2->x + FIXED(iVar6 >> 0xc);
+			pos->vy = pTVar2->y;
 		}
-		pos->vz = iVar5 + iVar4;
-		pos->vy = (int)sVar1;
+
+		pos->vz = pTVar2->z + iVar4;
 	}
-	return;
-	*/
 }
 
 
