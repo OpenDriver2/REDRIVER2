@@ -332,173 +332,151 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 	uint uVar4;
 	POLY_G4 *poly;
 	POLY_G4 *poly2;
-	char *string;
 	short sVar5;
-	short uVar6;
-	short uVar7;
-	int y;
-	char *pcVar8;
 	short sVar9;
 	CVECTOR temp;
-	int max_y;
 
-	if (bar->active != 0)
+	if (bar->active == 0)
+		return;
+
+	if (bar->max < bar->position) 
 	{
-		if (bar->max < bar->position) 
-		{
-			bar->position = bar->max;
-		}
+		bar->position = bar->max;
+	}
 
-		if (bar->max == 0) 
+	if (bar->max == 0) 
+	{
+		sVar5 = bar->xpos;
+		uVar4 = bar->flags;
+		sVar9 = sVar5;
+	}
+	else 
+	{
+		uVar4 = bar->flags;
+
+		if ((uVar4 & 1) == 0) 
 		{
 			sVar5 = bar->xpos;
-			uVar4 = bar->flags;
-			sVar9 = sVar5;
+			sVar9 = sVar5 + ((bar->width * bar->position) / bar->max);
 		}
 		else 
 		{
-			uVar4 = bar->flags;
-
-			if ((uVar4 & 1) == 0) 
-			{
-				sVar5 = bar->xpos;
-				if (bar->max == 0) {
-					trap(7);
-				}
-				sVar9 = sVar5 + (short)((int)((int)bar->width * (uint)bar->position) / (int)(uint)bar->max);
-			}
-			else 
-			{
-				sVar9 = bar->xpos + bar->width;
-				if (bar->max == 0) {
-					trap(7);
-				}
-				sVar5 = sVar9 - (short)((int)((int)bar->width * (uint)bar->position) / (int)(uint)bar->max);
-			}
+			sVar9 = bar->xpos + bar->width;
+			sVar5 = sVar9 - ((bar->width * bar->position) / bar->max);
 		}
+	}
 
-		sVar1 = bar->ypos;
-		sVar3 = sVar1 + bar->height;
+	sVar1 = bar->ypos;
+	sVar3 = bar->ypos + bar->height;
 
-		if ((uVar4 & 2) == 0) 
-		{
-			poly = (POLY_G4 *)current->primptr;
-			setPolyG4(poly);
+	if ((uVar4 & 2) == 0) 
+	{
+		poly = (POLY_G4 *)current->primptr;
+		setPolyG4(poly);
 
-			SetColourByValue(bar->pColourBand, (bar->position << 0xc) / bar->max, &temp);
+		SetColourByValue(bar->pColourBand, (bar->position << 0xc) / bar->max, &temp);
 
-			poly->r0 = temp.r;
-			poly->g0 = temp.g;
-			poly->b0 = temp.b;
-			poly->r1 = temp.r;
-			poly->g1 = temp.g;
-			poly->b1 = temp.b;
-			temp.r = temp.r >> 2;
-			temp.g = temp.g >> 2;
-			temp.b = temp.b >> 2;
-			poly->r2 = temp.r;
-			poly->g2 = temp.g;
-			poly->b2 = temp.b;
-			poly->r3 = temp.r;
-			poly->g3 = temp.g;
-			poly->x0 = sVar5;
-			poly->y0 = sVar1;
-			poly->x1 = sVar9;
-			poly->y1 = sVar1;
-			poly->b3 = temp.b;
-			poly->x2 = sVar5;
-			poly->x3 = sVar9;
-			poly->y2 = sVar3;
-			poly->y3 = sVar3;
+		poly->r0 = temp.r;
+		poly->g0 = temp.g;
+		poly->b0 = temp.b;
+		poly->r1 = temp.r;
+		poly->g1 = temp.g;
+		poly->b1 = temp.b;
+		temp.r = temp.r >> 2;
+		temp.g = temp.g >> 2;
+		temp.b = temp.b >> 2;
+		poly->r2 = temp.r;
+		poly->g2 = temp.g;
+		poly->b2 = temp.b;
+		poly->r3 = temp.r;
+		poly->g3 = temp.g;
+		poly->x0 = sVar5;
+		poly->y0 = bar->ypos;
+		poly->x1 = sVar9;
+		poly->y1 = bar->ypos;
+		poly->b3 = temp.b;
+		poly->x2 = sVar5;
+		poly->x3 = sVar9;
+		poly->y2 = bar->ypos + bar->height;
+		poly->y3 = bar->ypos + bar->height;
 
-			addPrim((u_long*)(current->ot + 1), poly);
-			current->primptr += sizeof(POLY_G4);
-		}
-
-		sVar5 = bar->xpos;
-		sVar9 = sVar5 + bar->width;
-		poly2 = (POLY_G4 *)current->primptr;
-		setPolyG4(poly2);
-		setSemiTrans(poly2,1);
-		poly2->x0 = sVar5;
-		poly2->x2 = sVar5;
-		poly2->code = ':';
-		poly2->r0 = '\0';
-		poly2->g0 = '\0';
-		poly2->b0 = '\0';
-		poly2->r1 = '\0';
-		poly2->g1 = '\0';
-		poly2->b1 = '\0';
-		poly2->r2 = 'd';
-		poly2->g2 = 'd';
-		poly2->b2 = 'd';
-		poly2->r3 = 'd';
-		poly2->g3 = 'd';
-		poly2->b3 = 'd';
-		poly2->y0 = sVar1;
-		poly2->x1 = sVar9;
-		poly2->y1 = sVar1;
-		poly2->x3 = sVar9;
-		poly2->y2 = sVar3;
-		poly2->y3 = sVar3;
-
-		addPrim((u_long*)(current->ot+1), poly2);
+		addPrim((u_long*)(current->ot + 1), poly);
 		current->primptr += sizeof(POLY_G4);
+	}
 
-		LINE_F4* lineF4 = (LINE_F4*)current->primptr;
-		setLineF4(lineF4);
-		lineF4->r0 = 80;
-		lineF4->g0 = 80;
-		lineF4->b0 = 80;
+	poly2 = (POLY_G4 *)current->primptr;
+	setPolyG4(poly2);
+	setSemiTrans(poly2,1);
+	poly2->x0 = bar->xpos;
+	poly2->x2 = bar->xpos;
+	poly2->r0 = 0;
+	poly2->g0 = 0;
+	poly2->b0 = 0;
+	poly2->r1 = 0;
+	poly2->g1 = 0;
+	poly2->b1 = 0;
+	poly2->r2 = 100;
+	poly2->g2 = 100;
+	poly2->b2 = 100;
+	poly2->r3 = 100;
+	poly2->g3 = 100;
+	poly2->b3 = 100;
+	poly2->y0 = bar->ypos;
+	poly2->x1 = bar->xpos + bar->width;
+	poly2->y1 = bar->ypos;
+	poly2->x3 = bar->xpos + bar->width;
+	poly2->y2 = bar->ypos + bar->height;
+	poly2->y3 = bar->ypos + bar->height;
 
-		uVar6 = ((uint)(((int)sVar5 + -1) * 0x10000) >> 0x10);
-		uVar7 = ((uint)(((int)sVar1 + -1) * 0x10000) >> 0x10);
+	addPrim((u_long*)(current->ot+1), poly2);
+	current->primptr += sizeof(POLY_G4);
 
-		lineF4->x0 = uVar6;
-		lineF4->y0 = uVar7;
+	LINE_F4* lineF4 = (LINE_F4*)current->primptr;
+	setLineF4(lineF4);
+	lineF4->r0 = 80;
+	lineF4->g0 = 80;
+	lineF4->b0 = 80;
 
-		lineF4->x1 = sVar9;
-		lineF4->y1 = uVar7;
+	lineF4->x0 = bar->xpos - 1;
+	lineF4->y0 = bar->ypos - 1;
 
-		lineF4->x2 = sVar9;
-		lineF4->x3 = uVar6;
+	lineF4->x1 = bar->xpos + bar->width;
+	lineF4->y1 = bar->ypos - 1;
 
-		lineF4->y2 = sVar3;
-		lineF4->y3 = sVar3;
+	lineF4->x2 = bar->xpos + bar->width;
+	lineF4->x3 = bar->xpos - 1;
 
-		addPrim((u_long*)(current->ot + 1), lineF4);
-		current->primptr += sizeof(LINE_F4);
+	lineF4->y2 = bar->ypos + bar->height;
+	lineF4->y3 = bar->ypos + bar->height;
+
+	addPrim((u_long*)(current->ot + 1), lineF4);
+	current->primptr += sizeof(LINE_F4);
 		
-		LINE_F2* lineF2 = (LINE_F2*)current->primptr;
-		setLineF2(lineF2);
-		lineF2->r0 = 80;
-		lineF2->g0 = 80;
-		lineF2->b0 = 80;
+	LINE_F2* lineF2 = (LINE_F2*)current->primptr;
+	setLineF2(lineF2);
+	lineF2->r0 = 80;
+	lineF2->g0 = 80;
+	lineF2->b0 = 80;
 
-		lineF2->x0 = uVar6;
-		lineF2->y0 = uVar7;
+	lineF2->x0 = bar->xpos - 1;
+	lineF2->y0 = bar->ypos - 1;
 
-		lineF2->x1 = uVar6;
-		lineF2->y1 = sVar3;
+	lineF2->x1 = bar->xpos - 1;
+	lineF2->y1 = bar->ypos + bar->height;
 
-		addPrim((u_long*)(current->ot + 1), lineF2);
-		current->primptr += sizeof(LINE_F2);
+	addPrim((u_long*)(current->ot + 1), lineF2);
+	current->primptr += sizeof(LINE_F2);
 
-		TransparencyOn(current->ot + 1, 0x20);
+	TransparencyOn(current->ot + 1, 0x20);
 		
-		string = bar->tag;
-		if (string != NULL)
-		{
-			sVar5 = bar->xpos;
-			y = ((bar->ypos - 0xb) * 0x10000) >> 0x10;
+	if (bar->tag != NULL)
+	{
+		SetTextColour(128, 128, 64);
 
-			SetTextColour(128, 128, 64);
-
-			if ((bar->flags & 1U) == 0)
-				PrintString(string, (int)sVar5 + 8, y);
-			else
-				PrintStringRightAligned(string, (int)sVar5 + (int)bar->width + -8, y);
-		}
+		if ((bar->flags & 1U) == 0)
+			PrintString(bar->tag, bar->xpos + 8, bar->ypos - 11);
+		else
+			PrintStringRightAligned(bar->tag, bar->xpos + bar->width - 8, bar->ypos - 11);
 	}
 }
 
@@ -543,175 +521,141 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 	/* end block 3 */
 	// End Line: 1179
 
+// [D]
 void DrawProximityBar(_PERCENTAGE_BAR *bar)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	DB *pDVar2;
 	int iVar3;
-	int y;
-	uint *puVar4;
-	char *string;
-	short sVar5;
-	undefined2 uVar6;
-	undefined2 uVar7;
-	char *pcVar8;
-	short sVar9;
-	short sVar10;
-	short sVar11;
+	TILE *tile;
 
-	if (bar->active != 0) {
-		if ((int)(uint)bar->position < TAIL_TOOCLOSE) {
-			bar->position = (ushort)TAIL_TOOCLOSE;
-		}
-		if (TAIL_TOOFAR < (int)(uint)bar->position) {
-			bar->position = (ushort)TAIL_TOOFAR;
-		}
-		sVar1 = bar->width;
-		y = (int)(((TAIL_TOOFAR & 0xffffU) - (TAIL_TOOCLOSE & 0xffffU)) * 0x10000) >> 0x10;
-		if (y == 0) {
-			trap(7);
-		}
-		iVar3 = (uint)bar->position - TAIL_TOOCLOSE;
-		if (y == 0) {
-			trap(7);
-		}
-		puVar4 = (uint *)current->primptr;
-		*(char *)((int)puVar4 + 3) = '\x03';
-		*(char *)((int)puVar4 + 7) = '`';
-		*(char *)(puVar4 + 1) = '\x10';
-		*(char *)((int)puVar4 + 5) = '\x10';
-		*(char *)((int)puVar4 + 6) = '\x10';
-		pDVar2 = current;
-		*(short *)(puVar4 + 2) =
-			(short)((uint)(((sVar1 * iVar3) / y + -1) * 0x10000) >> 0x10) + bar->xpos;
-		sVar1 = bar->ypos;
-		*(undefined2 *)(puVar4 + 3) = 2;
-		*(short *)((int)puVar4 + 10) = sVar1;
-		*(short *)((int)puVar4 + 0xe) = bar->height;
-		*puVar4 = *puVar4 & 0xff000000 | pDVar2->ot[1] & 0xffffff;
-		pDVar2->ot[1] = pDVar2->ot[1] & 0xff000000 | (uint)puVar4 & 0xffffff;
-		string = pDVar2->primptr;
-		pDVar2->primptr = string + 0x10;
-		sVar1 = bar->xpos;
-		sVar10 = bar->ypos;
-		sVar9 = bar->width;
-		sVar11 = bar->height;
-		string[0x13] = '\b';
-		string[0x17] = '8';
-		string[0x14] = -1;
-		string[0x15] = '\0';
-		string[0x16] = '\0';
-		string[0x1c] = '\0';
-		string[0x1d] = -1;
-		string[0x1e] = '\0';
-		string[0x24] = -1;
-		string[0x25] = '\0';
-		string[0x26] = '\0';
-		string[0x2c] = '\0';
-		string[0x2d] = -1;
-		string[0x2e] = '\0';
-		pDVar2 = current;
-		sVar9 = sVar1 + (sVar9 >> 1);
-		sVar11 = sVar10 + sVar11;
-		*(short *)(string + 0x18) = sVar1;
-		*(short *)(string + 0x1a) = sVar10;
-		*(short *)(string + 0x20) = sVar9;
-		*(short *)(string + 0x22) = sVar10;
-		*(short *)(string + 0x28) = sVar1;
-		*(short *)(string + 0x2a) = sVar11;
-		*(short *)(string + 0x30) = sVar9;
-		*(short *)(string + 0x32) = sVar11;
-		*(uint *)(string + 0x10) = *(uint *)(string + 0x10) & 0xff000000 | pDVar2->ot[1] & 0xffffff;
-		pDVar2->ot[1] = pDVar2->ot[1] & 0xff000000 | (uint)(string + 0x10) & 0xffffff;
-		string = pDVar2->primptr;
-		pDVar2->primptr = string + 0x24;
-		sVar1 = bar->ypos;
-		sVar10 = bar->xpos;
-		sVar9 = bar->width;
-		sVar11 = bar->height;
-		string[0x27] = '\b';
-		string[0x2b] = '8';
-		string[0x28] = '\0';
-		string[0x29] = -1;
-		string[0x2a] = '\0';
-		string[0x30] = -1;
-		string[0x31] = '\0';
-		string[0x32] = '\0';
-		string[0x38] = '\0';
-		string[0x39] = -1;
-		string[0x3a] = '\0';
-		string[0x40] = -1;
-		string[0x41] = '\0';
-		string[0x42] = '\0';
-		pDVar2 = current;
-		sVar5 = sVar10 + (sVar9 >> 1);
-		sVar10 = sVar10 + sVar9;
-		sVar11 = sVar1 + sVar11;
-		*(short *)(string + 0x2c) = sVar5;
-		*(short *)(string + 0x2e) = sVar1;
-		*(short *)(string + 0x34) = sVar10;
-		*(short *)(string + 0x36) = sVar1;
-		*(short *)(string + 0x3c) = sVar5;
-		*(short *)(string + 0x3e) = sVar11;
-		*(short *)(string + 0x44) = sVar10;
-		*(short *)(string + 0x46) = sVar11;
-		*(uint *)(string + 0x24) = *(uint *)(string + 0x24) & 0xff000000 | pDVar2->ot[1] & 0xffffff;
-		pDVar2->ot[1] = pDVar2->ot[1] & 0xff000000 | (uint)(string + 0x24) & 0xffffff;
-		pcVar8 = pDVar2->primptr;
-		string = pcVar8 + 0x24;
-		pDVar2->primptr = string;
-		sVar10 = bar->xpos;
-		sVar9 = sVar10 + bar->width;
-		SetLineF4(string);
-		pcVar8[0x28] = 'P';
-		pcVar8[0x29] = 'P';
-		pcVar8[0x2a] = 'P';
-		pDVar2 = current;
-		uVar6 = (undefined2)((uint)(((int)sVar10 + -1) * 0x10000) >> 0x10);
-		*(undefined2 *)(pcVar8 + 0x2c) = uVar6;
-		uVar7 = (undefined2)((uint)(((int)sVar1 + -1) * 0x10000) >> 0x10);
-		*(undefined2 *)(pcVar8 + 0x2e) = uVar7;
-		*(short *)(pcVar8 + 0x30) = sVar9;
-		*(undefined2 *)(pcVar8 + 0x32) = uVar7;
-		*(short *)(pcVar8 + 0x34) = sVar9;
-		*(short *)(pcVar8 + 0x36) = sVar11;
-		*(undefined2 *)(pcVar8 + 0x38) = uVar6;
-		*(short *)(pcVar8 + 0x3a) = sVar11;
-		*(uint *)(pcVar8 + 0x24) = *(uint *)(pcVar8 + 0x24) & 0xff000000 | pDVar2->ot[1] & 0xffffff;
-		pDVar2->ot[1] = pDVar2->ot[1] & 0xff000000 | (uint)string & 0xffffff;
-		pcVar8 = pDVar2->primptr;
-		string = pcVar8 + 0x1c;
-		pDVar2->primptr = string;
-		SetLineF2(string);
-		pcVar8[0x20] = 'P';
-		pcVar8[0x21] = 'P';
-		pcVar8[0x22] = 'P';
-		pDVar2 = current;
-		*(undefined2 *)(pcVar8 + 0x24) = uVar6;
-		*(undefined2 *)(pcVar8 + 0x26) = uVar7;
-		*(undefined2 *)(pcVar8 + 0x28) = uVar6;
-		*(short *)(pcVar8 + 0x2a) = sVar11;
-		*(uint *)(pcVar8 + 0x1c) = *(uint *)(pcVar8 + 0x1c) & 0xff000000 | pDVar2->ot[1] & 0xffffff;
-		pDVar2->ot[1] = pDVar2->ot[1] & 0xff000000 | (uint)string & 0xffffff;
-		pDVar2->primptr = pDVar2->primptr + 0x10;
-		TransparencyOn(pDVar2->ot + 1, 0x20);
-		string = bar->tag;
-		if (string != (char *)0x0) {
-			sVar1 = bar->xpos;
-			y = (int)(((uint)(ushort)bar->ypos - 0xb) * 0x10000) >> 0x10;
-			SetTextColour(-0x80, -0x80, '@');
-			if ((bar->flags & 1U) == 0) {
-				PrintString(string, (int)sVar1 + 8, y);
-			}
-			else {
-				PrintStringRightAligned(string, (int)sVar1 + (int)bar->width + -8, y);
-			}
-		}
+	if (bar->active == 0)
+		return;
+
+	if (bar->position < TAIL_TOOCLOSE)
+		bar->position = TAIL_TOOCLOSE;
+	
+	if (TAIL_TOOFAR < bar->position)
+		bar->position = TAIL_TOOFAR;
+
+	iVar3 = bar->position - TAIL_TOOCLOSE;
+
+	tile = (TILE *)current->primptr;
+	setTile(tile);
+	tile->r0 = 16;
+	tile->g0 = 16;
+	tile->b0 = 16;
+
+	tile->x0 = ((bar->width * iVar3) / (TAIL_TOOFAR - TAIL_TOOCLOSE) - 1) + bar->xpos;
+	tile->w = 2;
+	tile->y0 = bar->ypos;
+	tile->h = bar->height;
+
+	addPrim(current->ot + 1, tile);
+	current->primptr += sizeof(TILE);
+
+	POLY_G4* poly2 = (POLY_G4*)current->primptr;
+	setPolyG4(poly2);
+	poly2->r0 = 255;
+	poly2->g0 = 0;
+	poly2->b0 = 0;
+	poly2->r1 = 0;
+	poly2->g1 = 255;
+	poly2->b1 = 0;
+	poly2->r2 = 255;
+	poly2->g2 = 0;
+	poly2->b2 = 0;
+	poly2->r3 = 0;
+	poly2->g3 = 255;
+	poly2->b3 = 0;
+
+	poly2->x0 = bar->xpos;
+	poly2->y0 = bar->ypos;
+	poly2->x1 = bar->xpos + (bar->width / 2);
+	poly2->y1 = bar->ypos;
+	poly2->x2 = bar->xpos;
+	poly2->y2 = bar->ypos + bar->height;
+	poly2->x3 = bar->xpos + (bar->width / 2);
+	poly2->y3 = bar->ypos + bar->height;
+
+	addPrim(current->ot + 1, poly2);
+	current->primptr += sizeof(POLY_G4);
+
+	poly2 = (POLY_G4*)current->primptr;
+	setPolyG4(poly2);
+
+	poly2->r0 = 0;
+	poly2->g0 = 255;
+	poly2->b0 = 0;
+	poly2->r1 = 255;
+	poly2->g1 = 0;
+	poly2->b1 = 0;
+	poly2->r2 = 0;
+	poly2->g2 = 255;
+	poly2->b2 = 0;
+	poly2->r3 = 255;
+	poly2->g3 = 0;
+	poly2->b3 = 0;
+
+	poly2->x0 = bar->xpos + (bar->width / 2);
+	poly2->y0 = bar->ypos;
+	poly2->x1 = bar->xpos + bar->width;
+	poly2->y1 = bar->ypos;
+	poly2->x2 = bar->xpos + (bar->width / 2);
+	poly2->y2 = bar->ypos + bar->height;
+	poly2->x3 = bar->xpos + bar->width;
+	poly2->y3 = bar->ypos + bar->height;
+
+	addPrim(current->ot + 1, poly2);
+	current->primptr += sizeof(POLY_G4);
+
+	LINE_F4* lineF4 = (LINE_F4*)current->primptr;
+	setLineF4(lineF4);
+	lineF4->r0 = 80;
+	lineF4->g0 = 80;
+	lineF4->b0 = 80;
+
+	lineF4->x0 = bar->xpos - 1;
+	lineF4->y0 = bar->ypos - 1;
+
+	lineF4->x1 = bar->xpos + bar->width;
+	lineF4->y1 = bar->ypos - 1;
+
+	lineF4->x2 = bar->xpos + bar->width;
+	lineF4->x3 = bar->xpos - 1;
+
+	lineF4->y2 = bar->ypos + bar->height;
+	lineF4->y3 = bar->ypos + bar->height;
+
+	addPrim((u_long*)(current->ot + 1), lineF4);
+	current->primptr += sizeof(LINE_F4);
+
+	LINE_F2* lineF2 = (LINE_F2*)current->primptr;
+	setLineF2(lineF2);
+	lineF2->r0 = 80;
+	lineF2->g0 = 80;
+	lineF2->b0 = 80;
+
+	lineF2->x0 = bar->xpos - 1;
+	lineF2->y0 = bar->ypos - 1;
+
+	lineF2->x1 = bar->xpos - 1;
+	lineF2->y1 = bar->ypos + bar->height;
+
+	addPrim((u_long*)(current->ot + 1), lineF2);
+	current->primptr += sizeof(LINE_F2);
+
+	TransparencyOn(current->ot + 1, 0x20);
+
+	TransparencyOn(current->ot + 1, 0x20);
+
+	if (bar->tag != NULL)
+	{
+		SetTextColour(128, 128, 64);
+
+		if ((bar->flags & 1U) == 0)
+			PrintString(bar->tag, bar->xpos + 8, bar->ypos - 11);
+		else 
+			PrintStringRightAligned(bar->tag, bar->xpos + bar->width - 8, bar->ypos - 11);
 	}
-	return;
-	*/
 }
 
 
