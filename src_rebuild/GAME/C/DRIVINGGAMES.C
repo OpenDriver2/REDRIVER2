@@ -1,7 +1,18 @@
 #include "THISDUST.H"
 #include "DRIVINGGAMES.H"
+#include "SCORES.H"
+#include "MISSION.H"
+#include "CUTSCENE.H"
+#include "MAIN.H"
+#include "SYSTEM.H"
 
-MODEL* gTrailblazerConeModel;
+MODEL* gTrailblazerConeModel; 
+SMASHED_CONE smashed_cones[6];
+
+TRAILBLAZER_DATA *gTrailblazerData;
+int gTrailblazerConeCount;
+int gTrailblazerConeIndex;
+static int gTrailblazerPrevConeDelay = 0;
 
 // decompiled code
 // original method signature: 
@@ -35,63 +46,65 @@ MODEL* gTrailblazerConeModel;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+static int wrongside[2][6];
+static int current_smashed_cone = 0;
+
+// [D]
 void InitDrivingGames(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	undefined4 *puVar2;
-	int iVar3;
-	SMASHED_CONE *pSVar4;
-	int iVar5;
-	char acStack72[64];
+	char filename[64];
+	int i;
+	int j;
 
 	gPlayerScore.time = 0;
-	gTrailblazerData = (TRAILBLAZER_DATA *)0x0;
+	gTrailblazerData = NULL;
 	gPlayerScore.items = 0;
 	gPlayerScore.P2time = 0;
 	gPlayerScore.P2items = 0;
-	if ((GameType == GAME_GATERACE) || (GameType == GAME_TRAILBLAZER)) {
-		if ((uint)CutsceneBuffer.bytesFree < 0x4b0) {
-			while (FrameCnt != 0x78654321) {
+
+	if ((GameType == GAME_GATERACE) || (GameType == GAME_TRAILBLAZER)) 
+	{
+		if (CutsceneBuffer.bytesFree < 1200)
+		{
+			while (FrameCnt != 0x78654321) 
+			{
 				trap(0x400);
 			}
 		}
+
 		gTrailblazerConeCount = 0;
 		gTrailblazerConeIndex = 0;
 		gTrailblazerData = (TRAILBLAZER_DATA *)CutsceneBuffer.currentPointer;
-		CutsceneBuffer.bytesFree = CutsceneBuffer.bytesFree + -0x4b0;
-		sprintf(acStack72, s_TRAILS_TRAIL__d_00010854, gCurrentMissionNumber);
-		iVar1 = FileExists(acStack72);
-		if (iVar1 != 0) {
-			Loadfile(acStack72, (char *)gTrailblazerData);
-		}
+
+		CutsceneBuffer.bytesFree -= 1200;
+		sprintf(filename, "TRAILS\\TRAIL.%d", gCurrentMissionNumber);
+
+		if (FileExists(filename) != 0) 
+			Loadfile(filename, (char *)gTrailblazerData);
 	}
-	iVar1 = 0;
-	iVar5 = 0;
-	do {
-		iVar3 = 5;
-		puVar2 = (undefined4 *)((int)&DAT_000cd9bc + iVar5);
-		do {
-			*puVar2 = 0;
-			iVar3 = iVar3 + -1;
-			puVar2 = puVar2 + -1;
-		} while (-1 < iVar3);
-		iVar1 = iVar1 + 1;
-		iVar5 = iVar5 + 0x18;
-	} while (iVar1 < 2);
-	pSVar4 = smashed_cones;
-	iVar1 = 5;
-	do {
-		iVar1 = iVar1 + -1;
-		*(uint *)pSVar4 = *(uint *)pSVar4 & 0xffff80ff;
-		pSVar4->cone = -1;
-		pSVar4 = (SMASHED_CONE *)&(pSVar4->velocity).pad;
-	} while (-1 < iVar1);
-	current_smashed_cone = 0;
-	gTrailblazerPrevConeDelay = 0;
-	return;
-	*/
+
+    i = 0;
+	while (i < 2)
+	{
+        j = 0;
+
+		while (j < 6)
+            wrongside[i][j++] = 0;
+
+        i++;
+    };
+
+    i = 0;
+    while(i < 6)
+	{
+		smashed_cones[i].cone = -1;
+		smashed_cones[i].active = 0;
+		smashed_cones[i].side = 0;
+		smashed_cones[i++].rot_speed = 0;
+    };
+
+    current_smashed_cone = 0;
+    gTrailblazerPrevConeDelay = 0;
 }
 
 

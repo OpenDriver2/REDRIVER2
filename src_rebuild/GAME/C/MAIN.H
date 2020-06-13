@@ -25,8 +25,6 @@ extern void ProcessLumps(char *lump_ptr, int lump_size); // 0x00058C08
 
 extern void LoadGameLevel(); // 0x00059050
 
-extern int ReplayLog_Fnarr_He_Said_Log(int val); // 0x0005C81C
-
 extern void InitModelNames(); // 0x00059238
 
 extern void GameInit(); // 0x00059330
