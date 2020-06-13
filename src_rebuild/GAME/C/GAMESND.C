@@ -1773,7 +1773,7 @@ void DoDopplerSFX(void)
 					goto LAB_0004ebac;
 				}
 			LAB_0004eb68:
-				if (gInGameCutsceneActive != 0 && car_ptr->controlType == 7 && force_idle[*puVar7] != 0) // [A] WTF?
+				if (gInGameCutsceneActive != 0 && car_ptr->controlType == 7 && force_siren[*puVar7] != 0) // [A] WTF?
 					goto LAB_0004eba8;
 			}
 			else 
@@ -2175,10 +2175,9 @@ void DoDopplerSFX(void)
 	/* end block 3 */
 	// End Line: 2219
 
+// [D]
 void DoPoliceLoudhailer(int cars, ushort *indexlist, ulong *dist)
 {
-	UNIMPLEMENTED();
-	/*
 	long lVar1;
 	uint uVar2;
 	uint uVar3;
@@ -2186,40 +2185,43 @@ void DoPoliceLoudhailer(int cars, ushort *indexlist, ulong *dist)
 	int iVar5;
 
 	lVar1 = Random2(0x4e);
-	iVar5 = 0x113;
-	if (GameType == GAME_GETAWAY) {
-		iVar5 = 0x1db;
-	}
-	if ((((gCurrentMissionNumber != 7) && (gCurrentMissionNumber != 9)) &&
-		(gCurrentMissionNumber != 0xb)) &&
-		(((gCurrentMissionNumber != 0x14 && (gCurrentMissionNumber != 0x1a)) &&
-		((gCurrentMissionNumber != 0x1f &&
-			((gCurrentMissionNumber != 0x21 && (gCurrentMissionNumber != 0x28)))))))) {
+	iVar5 = 275;
+
+	if (GameType == GAME_GETAWAY)
+		iVar5 = 475;
+
+	if (gCurrentMissionNumber != 7 && gCurrentMissionNumber != 9 &&
+		gCurrentMissionNumber != 11 && gCurrentMissionNumber != 20 && 
+		gCurrentMissionNumber != 26 && gCurrentMissionNumber != 31 &&
+		gCurrentMissionNumber != 33 && gCurrentMissionNumber != 0x28)
+	{
 		iVar4 = 0;
-		if (0 < cars) {
+
+		if (0 < cars) 
+		{
 			do {
 				uVar2 = (uint)*indexlist;
 				uVar3 = dist[uVar2];
-				if (0x6000 < uVar3) {
+
+				if (0x6000 < uVar3) 
 					dist[uVar2] = uVar3 - 0x6000;
-				}
-				if ((((car_data[uVar2].controlType == '\x03') && (car_data[uVar2].ai[0x13] == 0)) &&
-					(iVar5 < loudhail_time)) && (lVar1 == (lVar1 / 0x1f) * 0x1f)) {
-					Start3DTrackingSound
-					(-1, 2, lVar1 % 2 + 0xd, (VECTOR *)car_data[uVar2].hd.where.t,
-						(long *)(car_data[uVar2].st + 0x1c));
+
+				if (car_data[uVar2].controlType == 3 && car_data[uVar2].ai.p.dying == 0 && iVar5 < loudhail_time && lVar1 == (lVar1 / 31) * 31) 
+				{
+					Start3DTrackingSound(-1, 2, lVar1 % 2 + 13, (VECTOR *)car_data[uVar2].hd.where.t, car_data[uVar2].st.n.linearVelocity);
 					loudhail_time = 0;
 					break;
 				}
-				iVar4 = iVar4 + 1;
-				indexlist = indexlist + 1;
+
+				iVar4++;
+				indexlist++;
 			} while (iVar4 < cars);
 		}
-		if (loudhail_time <= iVar5) {
-			loudhail_time = loudhail_time + 1;
-		}
+
+		if (loudhail_time <= iVar5)
+			loudhail_time++;
+
 	}
-	return;*/
 }
 
 
@@ -2511,34 +2513,34 @@ LAB_0004fab8:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [A] - might be incorrect
 void JerichoSpeak(void)
 {
-	UNIMPLEMENTED();
-
-	/*
+	static unsigned int j_said = 0;
 	uint uVar1;
-	long lVar2;
+	long rnd;
 	short *psVar3;
 
-	lVar2 = Random2(3);
-	uVar1 = j_said_78;
-	if (CopsCanSeePlayer != 0) {
-		if ((int)player.playerCarId < 0) {
+	rnd = Random2(3);
+
+	if (CopsCanSeePlayer != 0) 
+	{
+		if (player[0].playerCarId < 0)
 			psVar3 = &pedestrianFelony;
-		}
-		else {
-			psVar3 = &car_data[(int)player.playerCarId].felonyRating;
-		}
-		if (((0x292 < *psVar3) && (lVar2 == (lVar2 / 5) * 5)) &&
-			(uVar1 = j_said_78 + 1, 0x3c < j_said_78)) {
-			BodSay(lVar2 % 3);
-			j_said_78 = 0;
-			uVar1 = j_said_78;
+		else
+			psVar3 = &car_data[player[0].playerCarId].felonyRating;
+
+		if (((0x292 < *psVar3) && (rnd == (rnd / 5) * 5)))
+		{
+			if (j_said > 60)
+			{
+				BodSay(rnd % 3);
+				j_said = 0;
+			}
+			else
+				j_said++;
 		}
 	}
-	j_said_78 = uVar1;
-	return;
-	*/
 }
 
 
@@ -2917,8 +2919,8 @@ void InitMusic(int musicnum)
 // [D]
 void InitTunnels(char n)
 {
-	if (0x1D < n) 
-		n = 0x1D;
+	if (n > 29) 
+		n = 29;
 
 	tunnels.num_tunnels = n;
 	tunnels.tunnel_cnt = 0;
@@ -3203,10 +3205,11 @@ void AddTunnels(int level)
 	/* end block 3 */
 	// End Line: 5623
 
+static struct __envsoundtags EStags;
+
+// [D]
 void InitEnvSnd(int num_envsnds)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
 	__envsound *p_Var2;
 	uint uVar3;
@@ -3215,41 +3218,44 @@ void InitEnvSnd(int num_envsnds)
 	int iVar6;
 	int iVar7;
 
-	if (0x20 < num_envsnds) {
+	if (num_envsnds > 32)
 		num_envsnds = 0x20;
-	}
-	if (0 < num_envsnds) {
-		p_Var2 = &envsnd;
+
+	if (0 < num_envsnds) 
+	{
+		p_Var2 = envsnd;
 		iVar5 = num_envsnds;
 		do {
-			p_Var2->type = '\0';
-			iVar5 = iVar5 + -1;
-			p_Var2 = p_Var2 + 1;
+			p_Var2->type = 0;
+			iVar5--;
+			p_Var2++;
 		} while (iVar5 != 0);
 	}
-	uVar3 = (uint)NumPlayers;
-	if (NumPlayers != 0) {
+
+	if (NumPlayers != 0) 
+	{
 		iVar5 = 0;
 		iVar7 = 1;
+
 		do {
 			iVar6 = 3;
 			piVar4 = ESdata[iVar5].playing_sound + 3;
 			do {
 				*piVar4 = -1;
-				iVar6 = iVar6 + -1;
-				piVar4 = piVar4 + -1;
+				iVar6--;
+				piVar4--;
 			} while (-1 < iVar6);
-			bVar1 = iVar7 < (int)uVar3;
+
+			bVar1 = iVar7 < NumPlayers;
 			iVar5 = iVar7;
 			iVar7 = iVar7 + 1;
 		} while (bVar1);
 	}
+
 	EStags.frame_cnt = 0;
 	EStags.func_cnt = 0;
 	EStags.num_envsnds = num_envsnds;
 	EStags.envsnd_cnt = 0;
-	return;
-	*/
 }
 
 
@@ -3282,17 +3288,15 @@ void InitEnvSnd(int num_envsnds)
 	/* end block 4 */
 	// End Line: 4245
 
+// [D]
 int SetEnvSndVol(int snd, int vol)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
+	int was;
 
-	iVar1 = (&envsnd)[snd].vol;
-	(&envsnd)[snd].vol = vol;
-	return iVar1;
-	*/
+	was = envsnd[snd].vol;
+	envsnd[snd].vol = vol;
+
+	return was;
 }
 
 
@@ -3311,18 +3315,16 @@ int SetEnvSndVol(int snd, int vol)
 	/* end block 2 */
 	// End Line: 7206
 
+// [D]
 void SetEnvSndPos(int snd, long px, long pz)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((&envsnd)[snd].type == '\x03') {
-		(&envsnd)[snd].pos2.vx = px;
-		(&envsnd)[snd].pos.vx = px;
-		(&envsnd)[snd].pos2.vz = pz;
-		(&envsnd)[snd].pos.vz = pz;
+	if (envsnd[snd].type == 3) 
+	{
+		envsnd[snd].pos2.vx = px;
+		envsnd[snd].pos.vx = px;
+		envsnd[snd].pos2.vz = pz;
+		envsnd[snd].pos.vz = pz;
 	}
-	return;
-	*/
 }
 
 
@@ -3348,60 +3350,56 @@ void SetEnvSndPos(int snd, long px, long pz)
 	/* end block 2 */
 	// End Line: 3578
 
-int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz)
+// [D]
+int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz, long px2, long pz2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int in_stack_0000001c;
-	long in_stack_00000020;
+	__envsound *ep;
 
-	iVar1 = EStags.envsnd_cnt;
-	if (EStags.num_envsnds <= EStags.envsnd_cnt) {
+	if (EStags.envsnd_cnt >= EStags.num_envsnds)
 		return -1;
+
+	ep = &envsnd[EStags.envsnd_cnt];
+
+	ep->type = type;
+	ep->bank = bank;
+	ep->sample = sample;
+	ep->flags = flags;
+	ep->vol = vol;
+
+	switch (type)
+	{
+		case 1:
+		case 2:
+		case 4:
+			ep->pos.vx = px;
+			ep->pos2.vx = px2;
+			ep->pos2.vz = pz2;
+			ep->pos.vz = pz;
+			break;
+		case 3:
+			ep->pos2.vx = px;
+			ep->pos.vx = px;
+			ep->pos2.vz = pz;
+			ep->pos.vz = pz;
+			break;
+		case 5:
+			ep->type = 1;
+			ep->pos.vx = px - px2;
+			ep->pos.vz = pz - px2;
+			ep->pos2.vx = px + px2;
+			ep->pos2.vz = pz + px2;
 	}
-	(&envsnd)[EStags.envsnd_cnt].type = (uchar)type;
-	(&envsnd)[iVar1].bank = bank;
-	(&envsnd)[iVar1].sample = sample;
-	(&envsnd)[iVar1].flags = flags;
-	(&envsnd)[iVar1].vol = vol;
-	iVar1 = EStags.envsnd_cnt;
-	switch (type) {
-	case 1:
-	case 2:
-	case 4:
-		(&envsnd)[EStags.envsnd_cnt].pos.vx = px;
-		(&envsnd)[iVar1].pos2.vx = in_stack_0000001c;
-		(&envsnd)[iVar1].pos2.vz = in_stack_00000020;
-		(&envsnd)[iVar1].pos.vz = pz;
-		break;
-	case 3:
-		(&envsnd)[EStags.envsnd_cnt].pos2.vx = px;
-		(&envsnd)[iVar1].pos.vx = px;
-		(&envsnd)[iVar1].pos2.vz = pz;
-		(&envsnd)[iVar1].pos.vz = pz;
-		break;
-	case 5:
-		(&envsnd)[EStags.envsnd_cnt].type = '\x01';
-		(&envsnd)[iVar1].pos.vx = px - in_stack_0000001c;
-		(&envsnd)[iVar1].pos.vz = pz - in_stack_0000001c;
-		(&envsnd)[iVar1].pos2.vx = px + in_stack_0000001c;
-		(&envsnd)[iVar1].pos2.vz = pz + in_stack_0000001c;
-	}
-	if ((&envsnd)[EStags.envsnd_cnt].pos.vx == (&envsnd)[EStags.envsnd_cnt].pos2.vx) {
-		(&envsnd)[EStags.envsnd_cnt].flags = (&envsnd)[EStags.envsnd_cnt].flags | 1;
-	}
-	if ((&envsnd)[EStags.envsnd_cnt].pos.vz == (&envsnd)[EStags.envsnd_cnt].pos2.vz) {
-		(&envsnd)[EStags.envsnd_cnt].flags = (&envsnd)[EStags.envsnd_cnt].flags | 2;
-	}
-	if (type != 3) {
-		(&envsnd)[EStags.envsnd_cnt].flags = (&envsnd)[EStags.envsnd_cnt].flags | 0x20;
-	}
-	iVar1 = EStags.envsnd_cnt;
-	EStags.envsnd_cnt = EStags.envsnd_cnt + 1;
-	return iVar1;
-	*/
+
+	if (ep->pos.vx == ep->pos2.vx)
+		ep->flags = ep->flags | 1;
+
+	if (ep->pos.vz == ep->pos2.vz)
+		ep->flags = ep->flags | 2;
+
+	if (type != 3)
+		ep->flags = ep->flags | 0x20;
+
+	return EStags.envsnd_cnt++;
 }
 
 
@@ -3437,119 +3435,139 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long
 void IdentifyZone(__envsound *ep, __envsoundinfo *E, int pl)
 {
 	UNIMPLEMENTED();
+	// Fucking floating points...
+
 	/*
 	bool bVar1;
-	float *pfVar2;
-	undefined4 uVar3;
-	undefined4 uVar4;
+	int *piVar2;
+	float uVar3;
+	float uVar4;
 	float fVar5;
-	undefined *puVar6;
+	int puVar6;
 	int iVar7;
 	int iVar8;
 	int iVar9;
 	long lVar10;
-	uint *puVar11;
+	int *puVar11;
 	int iVar12;
 	int iVar13;
-	undefined *puVar14;
+	int puVar14;
 	int iVar15;
-	int iVar16;
-	uint uVar17;
+	float *pfVar16;
+	int iVar17;
+	int uVar18;
 	double in_f12_13;
-	undefined8 uVar18;
-	undefined8 uVar19;
-	uint auStack96[3];
-	float local_54[5];
-	uint local_40;
-	uint local_3c;
-	uint *local_38;
-	uint *local_34;
-	uint *local_30;
+	float uVar19;
+	float uVar20;
+	int temp[4];
+	float _g[4];
+	__bitfield64 zones;
+	int *puStack56;
+	int *puStack52;
+	int *puStack48;
 
-	iVar16 = 3;
-	local_34 = auStack96;
-	pfVar2 = local_54;
-	local_3c = 0;
-	local_40 = 0;
+	puStack52 = temp;
+	iVar17 = 3;
+	piVar2 = temp + 3;
+	zones.l = 0;
+	zones.h = 0;
+
 	do {
-		*pfVar2 = -NAN;
-		iVar16 = iVar16 + -1;
-		pfVar2 = pfVar2 + -1;
-	} while (-1 < iVar16);
-	(E->cam_pos).vx = (&player)[pl].cameraPos.vx;
-	(E->cam_pos).vy = (&player)[pl].cameraPos.vy;
-	iVar16 = 0;
-	(E->cam_pos).vz = (&player)[pl].cameraPos.vz;
-	uVar17 = 0;
-	local_38 = (uint *)E->this;
-	if ((0 < EStags.envsnd_cnt) && ((int)local_54[0] < 0)) {
-		local_30 = auStack96;
+		*piVar2 = -1;
+		iVar17 = iVar17 + -1;
+		piVar2 = piVar2 + -1;
+	} while (-1 < iVar17);
+
+	(E->cam_pos).vx = player[pl].cameraPos.vx;
+	(E->cam_pos).vy = player[pl].cameraPos.vy;
+	(E->cam_pos).vz = player[pl].cameraPos.vz;
+
+	iVar17 = 0;
+	uVar18 = 0;
+	puStack56 = E->thisS;
+	puStack48 = puStack52;
+	if (0 < EStags.envsnd_cnt)
+	{
 		do {
-			if ((ep->type != '\0') && (-0x1d4c < ep->vol)) {
+			if (-1 < temp[3]) 
+				break;
+
+			if ((ep->type != 0) && (-0x1d4c < ep->vol)) 
+			{
 				iVar9 = (ep->pos2).vx;
 				iVar12 = (ep->pos).vx;
 				iVar13 = iVar9;
-				if (iVar12 < iVar9) {
+				if (iVar12 < iVar9)
 					iVar13 = iVar12;
-				}
-				puVar14 = (undefined *)((ep->vol + 0x1d4c) * 4);
+
+				puVar14 = ((ep->vol + 7500) * 4);
 				puVar6 = puVar14;
-				if ((int)puVar14 < 0) {
-					puVar6 = (undefined *)0x0;
-				}
-				if (22000 < (int)puVar6) {
-					puVar6 = &DAT_000055f0;
-				}
+
+				if (puVar14 < 0)
+					puVar6 = NULL;
+
+				if (22000 < puVar6)
+					puVar6 = 0x55f0;
+
 				iVar15 = (E->cam_pos).vx;
-				if (iVar13 - (int)puVar6 < iVar15) {
-					if (iVar9 < iVar12) {
+				if (iVar13 - puVar6 < iVar15)
+				{
+					if (iVar9 < iVar12)
 						iVar9 = iVar12;
-					}
+
 					puVar6 = puVar14;
-					if ((int)puVar14 < 0) {
-						puVar6 = (undefined *)0x0;
-					}
-					if (22000 < (int)puVar6) {
-						puVar6 = &DAT_000055f0;
-					}
-					if (iVar15 < (int)(puVar6 + iVar9)) {
+
+					if (puVar14 < 0)
+						puVar6 = NULL;
+
+					if (22000 < puVar6)
+						puVar6 = 0x55f0;
+
+					if (iVar15 < (puVar6 + iVar9))
+					{
 						iVar13 = (ep->pos2).vz;
 						iVar12 = (ep->pos).vz;
 						iVar9 = iVar13;
-						if (iVar12 < iVar13) {
+
+						if (iVar12 < iVar13)
 							iVar9 = iVar12;
-						}
+	
 						puVar6 = puVar14;
-						if ((int)puVar14 < 0) {
-							puVar6 = (undefined *)0x0;
-						}
-						if (22000 < (int)puVar14) {
-							puVar6 = &DAT_000055f0;
-						}
+						if (puVar14 < 0)
+							puVar6 = NULL;
+
+						if (22000 < puVar14)
+							puVar6 = 0x55f0;
+
 						iVar15 = (E->cam_pos).vz;
-						if (iVar9 - (int)puVar6 < iVar15) {
+						if (iVar9 - puVar6 < iVar15)
+						{
 							iVar9 = iVar13;
-							if (iVar13 < iVar12) {
+
+							if (iVar13 < iVar12)
 								iVar9 = iVar12;
-							}
+
 							iVar7 = (ep->vol + 0x1d4c) * 4;
 							iVar8 = iVar7;
-							if (iVar7 < 0) {
+
+							if (iVar7 < 0)
 								iVar8 = 0;
-							}
-							puVar6 = (undefined *)(iVar9 + iVar8);
-							if (22000 < iVar7) {
-								puVar6 = &DAT_000055f0 + iVar9;
-							}
-							if (iVar15 < (int)puVar6) {
-								if (((ep->type == '\x02') || (ep->type == '\x04')) && ((ep->flags & 3) == 0)) {
-									pfVar2 = local_54 + iVar16 + 1;
+
+							puVar6 = (iVar9 + iVar8);
+							if (22000 < iVar7)
+								puVar6 = 0x55f0 + iVar9;
+	
+							if (iVar15 < (int)puVar6) 
+							{
+								if (ep->type == 2 || ep->type == 4 && (ep->flags & 3) == 0)
+								{
+									pfVar16 = _g + iVar17;
 									uVar3 = __floatsisf(iVar13 - iVar12);
 									iVar9 = (ep->pos).vx;
 									uVar4 = __floatsisf((ep->pos2).vx - iVar9);
 									fVar5 = (float)__divsf3(uVar3, uVar4);
 									lVar10 = (E->cam_pos).vx;
-									*pfVar2 = fVar5;
+									*pfVar16 = fVar5;
 									uVar3 = __floatsisf(lVar10);
 									uVar3 = __mulsf3(fVar5, uVar3);
 									uVar4 = __floatsisf(iVar9);
@@ -3559,135 +3577,163 @@ void IdentifyZone(__envsound *ep, __envsoundinfo *E, int pl)
 									uVar3 = __subsf3(uVar3, uVar4);
 									uVar4 = __floatsisf(iVar12);
 									uVar3 = __addsf3(uVar3, uVar4);
-									uVar18 = __extendsfdf2(uVar3);
-									iVar9 = __fixunssfsi(*pfVar2);
-									iVar13 = __fixunssfsi(*pfVar2);
+									uVar19 = __extendsfdf2(uVar3);
+									iVar9 = __fixunssfsi(*pfVar16);
+									iVar13 = __fixunssfsi(*pfVar16);
 									iVar9 = iVar9 * iVar13 + 1;
-									uVar19 = __floatsidf(iVar9);
-									if (iVar9 < 0) {
-										uVar19 = __adddf3((int)((ulonglong)uVar19 >> 0x20), (int)uVar19, 0, 0x41f00000);
+									uVar20 = __floatsidf(iVar9);
+
+									if (iVar9 < 0) 
+									{
+										uVar20 = __adddf3((int)((ulonglong)uVar20 >> 0x20), (int)uVar20, 0, 0x41f00000);
 									}
-									sqrt(in_f12_13);
-									uVar19 = __divdf3((int)((ulonglong)uVar18 >> 0x20), (int)uVar18,
-										(int)((ulonglong)uVar19 >> 0x20), (int)uVar19);
-									uVar3 = __truncdfsf2((int)((ulonglong)uVar19 >> 0x20), (int)uVar19);
-									if (ep->type == '\x02') {
-										iVar9 = __gesf2(uVar3, 0);
-										if (iVar9 < 0) {
+
+									uVar20 = __divdf3((int)((ulonglong)uVar19 >> 0x20), (int)uVar19, (int)((ulonglong)uVar20 >> 0x20), (int)uVar20);
+									uVar3 = uVar20; // __truncdfsf2((int)((ulonglong)uVar20 >> 0x20), (int)uVar20);
+
+									if (ep->type == 2) 
+									{
+										iVar9 = (uVar3 >= 0) - 1;//__gesf2(uVar3, 0);
+										if (iVar9 < 0) 
+										{
 										LAB_000511e8:
-											uVar3 = __negsf2(uVar3);
+											uVar3 = -uVar3;
 										}
 									}
-									else {
-										if ((ep->flags & 8) != 0) goto LAB_000511e8;
+									else 
+									{
+										if ((ep->flags & 8) != 0)
+											goto LAB_000511e8;
 									}
-									puVar14 = (undefined *)((ep->vol + 0x1d4c) * 4);
+
+									puVar14 = ((ep->vol + 0x1d4c) * 4);
 									puVar6 = puVar14;
-									if ((int)puVar14 < 0) {
-										puVar6 = (undefined *)0x0;
-									}
-									if (22000 < (int)puVar14) {
-										puVar6 = &DAT_000055f0;
-									}
-									uVar4 = __floatsisf(puVar6);
-									iVar9 = __ltsf2(uVar3, uVar4);
-									if (iVar9 < 0) {
-										iVar16 = iVar16 + 1;
-										*local_30 = uVar17;
-										local_30 = local_30 + 1;
+
+									if (puVar14 < 0)
+										puVar6 = NULL;
+
+									if (22000 < puVar14)
+										puVar6 = 0x55f0;
+
+									iVar9 = -(uVar3 < (float)puVar6);// __ltsf2(uVar3, uVar4);
+
+									if (iVar9 < 0) 
+									{
+										iVar17 = iVar17 + 1;
+										*puStack48 = uVar18;
+										puStack48 = puStack48 + 1;
 									}
 								}
-								else {
-									iVar16 = iVar16 + 1;
-									*local_30 = uVar17;
-									local_30 = local_30 + 1;
+								else 
+								{
+									iVar17 = iVar17 + 1;
+									*puStack48 = uVar18;
+									puStack48 = puStack48 + 1;
 								}
 							}
 						}
 					}
 				}
 			}
-			uVar17 = uVar17 + 1;
+			uVar18 = uVar18 + 1;
 			ep = ep + 1;
-		} while (((int)uVar17 < EStags.envsnd_cnt) && ((int)local_54[0] < 0));
+		} while (uVar18 < EStags.envsnd_cnt);
 	}
-	iVar16 = 0;
-	puVar11 = local_34;
-	while (true) {
-		bVar1 = iVar16 < EStags.envsnd_cnt;
-		if (4 < EStags.envsnd_cnt) {
-			bVar1 = iVar16 < 4;
+
+	iVar17 = 0;
+	puVar11 = puStack52;
+	while (true)
+	{
+		bVar1 = iVar17 < EStags.envsnd_cnt;
+
+		if (4 < EStags.envsnd_cnt)
+			bVar1 = iVar17 < 4;
+
+		if (!bVar1)
+			break;
+
+		uVar18 = *puVar11;
+		if (-1 < uVar18) 
+		{
+			if (uVar18 < 0x20)
+				zones.l = zones.l | 1 << (uVar18 & 0x1f);
+			else
+				zones.h = zones.h | 1 << (uVar18 - 0x20 & 0x1f);
 		}
-		if (!bVar1) break;
-		uVar17 = *puVar11;
-		if (-1 < (int)uVar17) {
-			if ((int)uVar17 < 0x20) {
-				local_3c = local_3c | 1 << (uVar17 & 0x1f);
-			}
-			else {
-				local_40 = local_40 | 1 << (uVar17 - 0x20 & 0x1f);
-			}
-		}
+
 		puVar11 = puVar11 + 1;
-		iVar16 = iVar16 + 1;
+		iVar17 = iVar17 + 1;
 	}
-	iVar16 = 3;
-	puVar11 = local_38;
+	iVar17 = 3;
+	puVar11 = puStack56;
+
 	do {
-		uVar17 = *puVar11;
-		if (-1 < (int)uVar17) {
-			if ((int)uVar17 < 0x20) {
-				if ((local_3c & 1 << (uVar17 & 0x1f)) != 0) goto LAB_00051370;
+		uVar18 = *puVar11;
+		if (-1 < uVar18)
+		{
+			if (uVar18 < 0x20) 
+			{
+				if ((zones.l & 1 << (uVar18 & 0x1f)) != 0)
+					goto LAB_00051370;
+
 				*puVar11 = 0xffffffff;
 			}
-			else {
-				if ((local_40 & 1 << (uVar17 - 0x20 & 0x1f)) == 0) {
+			else 
+			{
+				if ((zones.h & 1 << (uVar18 - 0x20 & 0x1f)) == 0) 
+				{
 					*puVar11 = 0xffffffff;
 				}
-				else {
+				else
+				{
 				LAB_00051370:
-					uVar17 = *puVar11;
-					if ((int)uVar17 < 0x20) {
-						local_3c = local_3c & ~(1 << (uVar17 & 0x1f));
-					}
-					else {
-						local_40 = local_40 & ~(1 << (uVar17 - 0x20 & 0x1f));
-					}
+
+					uVar18 = *puVar11;
+
+					if (uVar18 < 0x20)
+						zones.l = zones.l & ~(1 << (uVar18 & 0x1f));
+					else
+						zones.h = zones.h & ~(1 << (uVar18 - 0x20 & 0x1f));
 				}
 			}
 		}
-		iVar16 = iVar16 + -1;
+		iVar17 = iVar17 + -1;
 		puVar11 = puVar11 + 1;
-		if (iVar16 < 0) {
+
+		if (iVar17 < 0) {
 			iVar9 = 1;
-			iVar16 = 0;
+			iVar17 = 0;
 			do {
-				uVar17 = local_34[iVar16];
+				uVar18 = puStack52[iVar17];
 				iVar13 = iVar9;
-				if (-1 < (int)uVar17) {
-					if ((int)uVar17 < 0x20) {
-						uVar17 = local_3c & 1 << (uVar17 & 0x1f);
-					}
-					else {
-						uVar17 = local_40 & 1 << (uVar17 - 0x20 & 0x1f);
-					}
-					if (uVar17 != 0) {
+				if (-1 < uVar18)
+				{
+					if (uVar18 < 0x20)
+						uVar18 = zones.l & 1 << (uVar18 & 0x1f);
+					else
+						uVar18 = zones.h & 1 << (uVar18 - 0x20 & 0x1f);
+
+					if (uVar18 != 0) {
 						iVar9 = 0;
-						while (iVar13 = iVar16 + 1, iVar9 < 4) {
-							if ((int)local_38[iVar9] < 0) {
-								local_38[iVar9] = local_34[iVar16];
-								E->g[iVar9] = local_54[iVar16 + 1];
+						while (iVar13 = iVar17 + 1, iVar9 < 4)
+						{
+							if (puStack56[iVar9] < 0) 
+							{
+								puStack56[iVar9] = puStack52[iVar17];
+								E->g[iVar9] = _g[iVar17];
 								break;
 							}
+
 							iVar9 = iVar9 + 1;
 						}
 					}
 				}
 				iVar9 = iVar13 + 1;
-				iVar16 = iVar13;
-				if (3 < iVar13) {
+				iVar17 = iVar13;
+
+				if (3 < iVar13)
 					return;
-				}
+
 			} while (true);
 		}
 	} while (true);
@@ -4333,35 +4379,38 @@ void InitLeadHorn(void)
 	/* end block 3 */
 	// End Line: 7806
 
+// [D]
 void LeadHorn(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uint uVar2;
+	static unsigned int rnd = 0;
 
-	if (horn_time == 0) {
-		rnd_139 = ((cp->hd).where.t[0] ^ (cp->hd).where.t[2]) * (FrameCnt ^ (cp->hd).where.t[1]) & 0x7f;
-	}
-	horn_time = horn_time + 1;
-	if (horn_time == rnd_139) {
-		bVar1 = (cp->ap).model;
-		if (bVar1 == 4) {
+	int bVar1;
+	int uVar2;
+
+	if (horn_time == 0) 
+		rnd = (cp->hd.where.t[0] ^ cp->hd.where.t[2]) * (FrameCnt ^ cp->hd.where.t[1]) & 0x7f;
+
+	horn_time++;
+
+	if (horn_time == rnd) 
+	{
+		bVar1 = cp->ap.model;
+
+		if (bVar1 == 4) 
+		{
 			uVar2 = ResidentModelsBodge();
 		}
-		else {
-			if (bVar1 < 3) {
-				uVar2 = (uint)(byte)(cp->ap).model;
-			}
-			else {
-				uVar2 = (uint)(byte)(cp->ap).model - 1;
-			}
+		else 
+		{
+			if (bVar1 < 3)
+				uVar2 = cp->ap.model;
+			else
+				uVar2 = cp->ap.model - 1;
 		}
-		Start3DTrackingSound(-1, 3, uVar2 * 3 + 2, (VECTOR *)(cp->hd).where.t, (long *)(cp->st + 0x1c));
+
+		Start3DTrackingSound(-1, 3, uVar2 * 3 + 2, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity);
 		horn_time = 0;
 	}
-	return;
-	*/
 }
 
 

@@ -2,8 +2,11 @@
 #define GAMESND_H
 
 extern int TimeSinceLastSpeech;
-extern char force_siren[8];
+
 extern char phrase_top;
+
+extern char force_idle[8];
+extern char force_siren[8];
 
 extern void LoadBankFromLump(int bank, int lump); // 0x00052460
 
@@ -71,7 +74,7 @@ extern int SetEnvSndVol(int snd, int vol); // 0x00052168
 
 extern void SetEnvSndPos(int snd, long px, long pz); // 0x00052904
 
-extern int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz); // 0x00050C08
+extern int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz, long px2, long pz2); // 0x00050C08
 
 extern void IdentifyZone(struct __envsound *ep, struct __envsoundinfo *E, int pl); // 0x00050E08
 

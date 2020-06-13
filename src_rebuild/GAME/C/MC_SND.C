@@ -6,6 +6,8 @@
 #include "CARS.H"
 #include "PLAYERS.H"
 #include "CONVERT.H"
+#include "SOUND.H"
+#include "XAPLAY.H"
 
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -97,6 +99,7 @@ xa_request xa_data[26] = {
 	{0, 0, 0, 0xFF, 0},
 };
 
+int cutscene_timer = 0;
 
 // decompiled code
 // original method signature: 
@@ -282,25 +285,18 @@ void HandleRequestedXA(void)
 	/* end block 4 */
 	// End Line: 992
 
+// [D]
 void InitializeCutsceneSound(int cutscene)
 {
-	UNIMPLEMENTED();
-	/*
-	char *pcVar1;
-	char *pcVar2;
-	int iVar3;
+	int i;
 
 	cutscene_timer = 0;
-	iVar3 = 0;
-	do {
-		pcVar1 = &force_idle + iVar3;
-		pcVar2 = &force_siren + iVar3;
-		iVar3 = iVar3 + 1;
-		*pcVar1 = -1;
-		*pcVar2 = '\0';
-	} while (iVar3 < 8);
-	return;
-	*/
+	i = 0;
+	while (i < 8)
+	{
+		force_idle[i] = -1;
+		force_siren[i++] = 0;
+	}
 }
 
 
@@ -367,142 +363,152 @@ void InitializeCutsceneSound(int cutscene)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int jericho_in_back = 0;
+static int rio_alarm = 0;
+
+// [D]
 void DoCutsceneSound(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
 
-	cutscene_timer = cutscene_timer + 1;
-	switch (gCurrentMissionNumber) {
-	case 2:
-		if (gInGameCutsceneID != 1) {
-			return;
-		}
-		if (0x4a < cutscene_timer) {
-			s__000aafd1[0] = -1;
-			return;
-		}
-		goto LAB_0005dcfc;
-	case 5:
-		if (gInGameCutsceneID != 0) {
-			return;
-		}
-		if (cutscene_timer < 0x97) {
-			if (0x8c < cutscene_timer) {
-				CHAR_00h_000aafe1 = '\x01';
-				CHAR_00h_000aafe2 = '\0';
+	cutscene_timer++;
+
+	switch (gCurrentMissionNumber)
+	{
+		case 2:
+			if (gInGameCutsceneID != 1) 
+				return;
+
+			if (0x4a < cutscene_timer) 
+			{
+				force_idle[1] = -1;
 				return;
 			}
-			CHAR_00h_000aafe1 = '\0';
-			CHAR_00h_000aafe2 = '\0';
-			return;
-		}
-		goto LAB_0005db74;
-	case 7:
-		if (gInGameCutsceneID == 0) {
-			if (cutscene_timer < 100) {
-				s__000aafd1[0] = '\0';
+
+			force_idle[1] = 0;
+			break;
+		case 5:
+			if (gInGameCutsceneID != 0)
+				return;
+
+			if (cutscene_timer < 0x97)
+			{
+				if (0x8c < cutscene_timer) 
+				{
+					force_siren[1] = 1;
+					force_siren[2] = 0;
+					return;
+				}
+
+				force_siren[1] = 0;
+				force_siren[2] = 0;
+				return;
 			}
-			else {
-				s__000aafd1[0] = -1;
+
+			force_siren[2] = 1;
+			force_siren[1] = 1;
+			break;
+		case 7:
+			if (gInGameCutsceneID == 0) 
+			{
+				if (cutscene_timer < 100)
+					force_idle[1] = 0;
+				else
+					force_idle[1] = -1;
 			}
-		}
-		if (gInGameCutsceneID != 1) {
-			return;
-		}
-		goto LAB_0005dcfc;
-	case 0x12:
-		if (gInGameCutsceneID == 0) {
-			if (cutscene_timer == 1) {
-				MissionSay(0xf);
+			if (gInGameCutsceneID != 1)
+				return;
+
+			force_idle[1] = 0;
+			break;
+		case 0x12:
+			if (gInGameCutsceneID == 0) 
+			{
+				if (cutscene_timer == 1)
+					MissionSay(15);
+
+				if (cutscene_timer == 0xce) 
+					Start3DSoundVolPitch(-1, 6, 4, car_data[2].hd.where.t[0], -car_data[2].hd.where.t[1], car_data[2].hd.where.t[2], -0x9c4, 0xc00);
+
 			}
-			if (cutscene_timer == 0xce) {
-				Start3DSoundVolPitch
-				(-1, 6, 4, car_data[2].hd.where.t[0], -car_data[2].hd.where.t[1],
-					car_data[2].hd.where.t[2], -0x9c4, 0xc00);
-			}
-		}
-		if ((gInGameCutsceneID == 1) && (cutscene_timer == 6)) {
-			PrepareXA();
-		}
-		break;
-	case 0x15:
-		if (gInGameCutsceneID == 0) {
-			jericho_in_back = 1;
-		}
-		break;
-	case 0x19:
-		if (gInGameCutsceneID == 1) {
-			jericho_in_back = gInGameCutsceneID;
-		}
-		break;
-	case 0x1a:
-		if (gInGameCutsceneID != 0) {
-			return;
-		}
-	LAB_0005db74:
-		CHAR_00h_000aafe2 = '\x01';
-		CHAR_00h_000aafe1 = '\x01';
-		break;
-	case 0x1b:
-		if (gInGameCutsceneID != 0) {
-			return;
-		}
-		if (cutscene_timer == 0x1cc) {
-			cVar1 = GetMissionSound('\x18');
-			Start3DTrackingSound
-			(-1, 5, CONCAT31(extraout_var, cVar1), (VECTOR *)car_data[2].hd.where.t, (long *)0x0);
-			CHAR_00h_000aafe7 = '\x01';
-			CHAR_00h_000aafe6 = '\x01';
-			CHAR_00h_000aafe5 = '\x01';
-			CHAR_00h_000aafe4 = '\x01';
-			CHAR_00h_000aafe3 = '\x01';
-			CHAR_00h_000aafe2 = '\x01';
-		}
-		if (cutscene_timer == 0x1fe) {
-			MissionSay(0x17);
-		}
-		if (cutscene_timer < 0x33) {
-			return;
-		}
-		goto LAB_0005dcfc;
-	case 0x1d:
-		if (gInGameCutsceneID == 1) {
-			if (cutscene_timer == 6) {
+			if (gInGameCutsceneID == 1 && cutscene_timer == 6)
 				PrepareXA();
+
+			break;
+		case 0x15:
+			if (gInGameCutsceneID == 0)
+				jericho_in_back = 1;
+
+			break;
+		case 0x19:
+			if (gInGameCutsceneID == 1) 
+				jericho_in_back = gInGameCutsceneID;
+
+			break;
+		case 0x1a:
+			if (gInGameCutsceneID != 0)
+				return;
+
+			force_siren[2] = 1;
+			force_siren[1] = 1;
+			break;
+		case 0x1b:
+			if (gInGameCutsceneID != 0)
+				return;
+
+			if (cutscene_timer == 460) 
+			{
+				cVar1 = GetMissionSound(24);
+				Start3DTrackingSound(-1, 5, cVar1, (VECTOR *)car_data[2].hd.where.t, NULL);
+				force_siren[7] = 1;
+				force_siren[6] = 1;
+				force_siren[5] = 1;
+				force_siren[4] = 1;
+				force_siren[3] = 1;
+				force_siren[2] = 1;
 			}
-			if (cutscene_timer == 0xb4) {
-				cVar1 = GetMissionSound('\x1a');
-				Start3DTrackingSound
-				(-1, 5, CONCAT31(extraout_var_00, cVar1), (VECTOR *)car_data[2].hd.where.t,
-					(long *)(car_data[2].st + 0x1c));
+
+			if (cutscene_timer == 0x1fe) 
+				MissionSay(23);
+
+			if (cutscene_timer < 0x33)
+				return;
+
+			force_idle[1] = 0;
+			break;
+
+		case 0x1d:
+			if (gInGameCutsceneID == 1) 
+			{
+				if (cutscene_timer == 6)
+					PrepareXA();
+
+				if (cutscene_timer == 0xb4) 
+				{
+					cVar1 = GetMissionSound(26);
+					Start3DTrackingSound(-1, 5, cVar1, (VECTOR *)car_data[2].hd.where.t,car_data[2].st.n.linearVelocity);
+				}
+
+				if (cutscene_timer < 0x281)
+					force_siren[3] = 0;
+				else 
+					force_siren[3] = 1;
 			}
-			if (cutscene_timer < 0x281) {
-				CHAR_00h_000aafe3 = '\0';
-			}
-			else {
-				CHAR_00h_000aafe3 = '\x01';
-			}
-		}
-		break;
-	case 0x21:
-		if (gInGameCutsceneID != 1) {
-			return;
-		}
-		if (cutscene_timer == 6) {
-			PrepareXA();
-		}
-		if (cutscene_timer == 0x3c0) {
-			SetEnvSndVol(rio_alarm, 3000);
-		}
-	LAB_0005dcfc:
-		s__000aafd1[0] = '\0';
+			break;
+		case 0x21:
+			if (gInGameCutsceneID != 1)
+				return;
+
+			if (cutscene_timer == 6)
+				PrepareXA();
+
+			if (cutscene_timer == 0x3c0)
+				SetEnvSndVol(rio_alarm, 3000);
+
+			force_idle[1] = 0;
+			break;
+
 	}
-	return;
-	*/
 }
 
 
@@ -1163,8 +1169,6 @@ void SetMSoundVar(int var, VECTOR *V)
 	// End Line: 1342
 
 /* WARNING: Type propagation algorithm not settling */
-
-int cutscene_timer = 0;
 
 // [D]
 char SilenceThisCar(int car)

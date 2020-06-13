@@ -2909,8 +2909,12 @@ void RenderGame2(int view)
 	iVar7 = 2;
 
 	do {
-		if (CarHasSiren(car_data[pPVar6->playerCarId].ap.model) != 0 && (pPVar6->horn.on != 0))
+		if (pPVar6->playerCarId != -1 &&
+			CarHasSiren(car_data[pPVar6->playerCarId].ap.model) != 0 &&
+			pPVar6->horn.on != 0)
+		{
 			AddCopCarLight(car_data + pPVar6->playerCarId);
+		}
 	
 		iVar7--;
 		pPVar6++;

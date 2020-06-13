@@ -14,89 +14,78 @@
 // [D]
 void AddEnvSounds(int level, int time)
 {
-	char flags;
-	int sample;
-	int local_30;
-	int local_2c;
-	long local_28;
-
-	if (time == 3) {
+	if (time == 3)
 		level = level + 4;
+
+	switch (level) 
+	{
+		case 0:
+			AddEnvSnd(1, 0, 4, 2, 0, -0x36ffb, 0xa4bf0, -0x329f6, 0xa09f6);
+			AddEnvSnd(1, 0, 4, 2, 0, 0x12002, -0x57c06, 0x15806, -0x5e808);
+			AddEnvSnd(1, 0x10, 4, 3, 0, 0x2b624, 0x12ebc, 0x363f8, 0xf104);
+		case 4:
+			AddEnvSnd(1, 0x10, 4, 0, -5000, 0x8d9a, -0x28c8a, 0x1126a, -0x434f4);
+			AddEnvSnd(1, 0x10, 4, 0, -5000, 0x8d9a, -0x2673c, 0x1126a, -0x1efb4);
+			AddEnvSnd(1, 0x10, 4, 0, -5000, 0x8d9a, -0x1368c, 0x1126a, -0x1bb5c);
+			break;
+		case 2:
+		case 6:
+			AddEnvSnd(1, 0x10, 4, 1, -6000, 0x2b3cc, 0xe0254, 0x32af0, 0xd5674);
+			AddEnvSnd(1, 0x10, 4, 1, -6000, 0x4268, 0xbfc5c, -92000, 0xf0a96);
+			break;
+		case 3:
+		case 7:
+			AddEnvSnd(1, 0x10, 4, 3, -5000, -0x50b68, 0x2641c, -0x309bc, 0x12016);
+			AddEnvSnd(1, 0x10, 4, 3, -5000, -0x14a14, 0x634ac, 0x3e9f4, 0x5c620);
+			AddEnvSnd(1, 0x10, 4, 3, -5000, -0x37398, -0x7f198, 0x7e2c, -0x82398);
+			AddEnvSnd(1, 0x10, 4, 3, -5000, 0x9182, -0x62444, 89000, -0x82398);
+			AddEnvSnd(4, 0x18, 4, 3, -5000, 0x9470, -0x610bc, 0x28488, -0x4a768);
+			AddEnvSnd(1, 0x10, 4, 3, -5000, 0x279fc, -130000, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, 0x2b110, -0x2fda0, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, 0x27ac4, -0x2fb48, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -75000, -0x5a5b4, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -93000, -0x5a80c, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x1b0d0, -0x5abf4, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x1e58c, -0x5dfe8, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x2321c, -0x5dfe8, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x27f10, -0x5dad4, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x2dadc, -0x5dc64, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x2f058, -0x5d174, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x30958, -0x5909c, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x3370c, -0x58bec, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x33edc, -0x4c9c8, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x33b58, -0x41104, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x1caca, -0x44430, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x1fc34, -0x494a8, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x227f4, -0x5071c, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x1ad1a, -0x51018, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x15536, -0x512a2, 0x40c22, -0x2eff4);
+			AddEnvSnd(3, 0, 4, 0, -1000, -0x12976, -0x52116, 0x40c22, -0x2eff4);
+			break;
+		case 1:
+		case 5:
+			AddEnvSnd(1, 0, 4, 4, -0xdac, 0x4f236, -0x58dae, 0x52e2c, -0x4ee80);
+			AddEnvSnd(1, 0, 4, 4, -0xdac, 0x52e2c, -0x4fbc8, 0x56734, -0x51338);
+
+			if (level == 1)
+			{
+				AddEnvSnd(3, 0, 4, 2, 2000, -0x38ba8, -0x41096, -0x38ba8, -0x41096);
+				AddEnvSnd(3, 0, 4, 2, 2000, 0x3d928, -0x1d2cc, 0x3d928, -0x1d2cc);
+			}
+			else
+			{
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x1bcec, -0x2c308, -0x14244, -250000);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x1895c, -0x3f0ca, -0x15d9c, -0x476f8);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x2d6f4, -0x4e908, -0x15d9c, -0x476f8);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x44df4, -0x49da4, -0x2ea7c, -0x4e908);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x42a68, -0x499bc, -0x47c70, -0x3c6cc);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -300000, -0x32ed8, -0x44f84, -0x3c2e4);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x22ca4, -0x1f464, -0x160bc, -0x27eac);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x4293c, -0x1bf44, -0x2673c, -0x2515c);
+				AddEnvSnd(1, 0x10, 4, 3, -0x1194, -0x25a58, -0x1ed5c, -0x20e2c, -0x1019e);
+			}
+			break;
 	}
-	switch (level) {
-	case 0:
-		AddEnvSnd(1, '\0', 4, 2, 0, -0x36ffb, 0xa4bf0);
-		AddEnvSnd(1, '\0', 4, 2, 0, 0x12002, -0x57c06);
-		AddEnvSnd(1, '\x10', 4, 3, 0, 0x2b624, 0x12ebc);
-	case 4:
-		AddEnvSnd(1, '\x10', 4, 0, -5000, 0x8d9a, -0x28c8a);
-		AddEnvSnd(1, '\x10', 4, 0, -5000, 0x8d9a, -0x2673c);
-		flags = '\x10';
-		sample = 0;
-		local_30 = -5000;
-		local_2c = 0x8d9a;
-		local_28 = -0x1368c;
-		goto LAB_00045498;
-	case 1:
-		AddEnvSnd(3, '\0', 4, 2, 2000, -0x38ba8, -0x41096);
-		AddEnvSnd(3, '\0', 4, 2, 2000, 0x3d928, -0x1d2cc);
-		break;
-	case 2:
-	case 6:
-		AddEnvSnd(1, '\x10', 4, 1, -6000, 0x2b3cc, 0xe0254);
-		AddEnvSnd(1, '\x10', 4, 1, -6000, 0x4268, 0xbfc5c);
-		return;
-	case 3:
-	case 7:
-		AddEnvSnd(1, '\x10', 4, 3, -5000, -0x50b68, 0x2641c);
-		AddEnvSnd(1, '\x10', 4, 3, -5000, -0x14a14, 0x634ac);
-		AddEnvSnd(1, '\x10', 4, 3, -5000, -0x37398, -0x7f198);
-		AddEnvSnd(1, '\x10', 4, 3, -5000, 0x9182, -0x62444);
-		AddEnvSnd(4, '\x18', 4, 3, -5000, 0x9470, -0x610bc);
-		AddEnvSnd(1, '\x10', 4, 3, -5000, 0x279fc, -130000);
-		AddEnvSnd(3, '\0', 4, 0, -1000, 0x2b110, -0x2fda0);
-		AddEnvSnd(3, '\0', 4, 0, -1000, 0x27ac4, -0x2fb48);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -75000, -0x5a5b4);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -93000, -0x5a80c);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x1b0d0, -0x5abf4);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x1e58c, -0x5dfe8);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x2321c, -0x5dfe8);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x27f10, -0x5dad4);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x2dadc, -0x5dc64);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x2f058, -0x5d174);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x30958, -0x5909c);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x3370c, -0x58bec);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x33edc, -0x4c9c8);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x33b58, -0x41104);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x1caca, -0x44430);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x1fc34, -0x494a8);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x227f4, -0x5071c);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x1ad1a, -0x51018);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x15536, -0x512a2);
-		AddEnvSnd(3, '\0', 4, 0, -1000, -0x12976, -0x52116);
-		return;
-	case 5:
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x1bcec, -0x2c308);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x1895c, -0x3f0ca);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x2d6f4, -0x4e908);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x44df4, -0x49da4);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x42a68, -0x499bc);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -300000, -0x32ed8);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x22ca4, -0x1f464);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x4293c, -0x1bf44);
-		AddEnvSnd(1, '\x10', 4, 3, -0x1194, -0x25a58, -0x1ed5c);
-		break;
-	default:
-		return;
-	}
-	AddEnvSnd(1, '\0', 4, 4, -0xdac, 0x4f236, -0x58dae);
-	flags = '\0';
-	sample = 4;
-	local_30 = -0xdac;
-	local_2c = 0x52e2c;
-	local_28 = -0x4fbc8;
-LAB_00045498:
-	AddEnvSnd(1, flags, 4, sample, local_30, local_2c, local_28);
 }
 
 

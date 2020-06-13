@@ -1032,29 +1032,30 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		if (*psVar7 > 0x292 && (MissionHeader->residentModels[3] == 0))
 		{
-			if (cp->ai.p.dying < 0x4b)
+			if (cp->ai.p.dying < 75)
 				AddCopCarLight(cp);
 
 			return;
 		}
 	}
 
+
 	// optimzed check for hndType, controlType, controlFlags
 	//cp->hndType != 2;
 	//cp->controlType != 2;
 	if ((*(uint *)&cp->hndType & 0x2ff00) != 0x20200 && ((gInGameCutsceneActive == 0 || cp->controlType != 7) || force_siren[CAR_INDEX(cp)] == 0 ))
 	{
-		if (gCurrentMissionNumber != 0x1a) 
+		if (gCurrentMissionNumber != 26) 
 			return;
 
 		if (cp->ap.model != 4) 
 			return;
 
-		if (cp->controlType != 10)
+		if (cp->controlType != 7)
 			return;
 	}
 
-	if (cp->ai.p.dying < 0x4b)
+	if (cp->ai.p.dying < 75)
 		AddCopCarLight(cp);
 }
 
