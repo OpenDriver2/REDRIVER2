@@ -541,8 +541,6 @@ short validExitIdx[4];
 // [D] [A] What a fucking long function, might not work as intended...
 int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDist, CIV_ROUTE_ENTRY *oldNode)
 {
-	return 0;// [A] DISABLED due to bugs
-
 	unsigned char bVar1;
 	short sVar2;
 	short uVar3;
@@ -6377,6 +6375,8 @@ const int maxSteer = 512;
 // [D]
 int CivSteerAngle(_CAR_DATA *cp)
 {
+	return 0; // DISABLED because of bugs
+
 	CIV_ROUTE_ENTRY *startNode;
 	_CAR_DATA currentCar;
 

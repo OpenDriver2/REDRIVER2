@@ -3,6 +3,8 @@
 #include "GLAUNCH.H"
 #include "MISSION.H"
 
+#include "STRINGS.H"
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitialiseScoreTables()
@@ -37,66 +39,34 @@
 SCORE_TABLES ScoreTables;
 PLAYER_SCORE gPlayerScore;
 
+// [D]
 void InitialiseScoreTables(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	SCORE_ENTRY *table;
-	int iVar2;
-	int iVar3;
-	int iVar4;
+	int i, j;
 
-	iVar3 = 0;
-	iVar4 = 1;
-	do {
-		table = ScoreTables.GetawayTable + iVar3 * 10;
-		iVar2 = 1;
-		do {
-			ResetTable(table);
-			iVar2 = iVar2 + -1;
-			table = table + 5;
-		} while (-1 < iVar2);
-		table = ScoreTables.CheckpointTable + iVar3 * 10;
-		iVar2 = 1;
-		do {
-			ResetTable(table);
-			iVar2 = iVar2 + -1;
-			table = table + 5;
-		} while (-1 < iVar2);
-		table = ScoreTables.TrailblazerTable + iVar3 * 10;
-		iVar2 = 1;
-		do {
-			ResetTable(table);
-			iVar2 = iVar2 + -1;
-			table = table + 5;
-		} while (-1 < iVar2);
-		table = ScoreTables.GateRaceTable + iVar3 * 10;
-		iVar2 = 1;
-		do {
-			ResetTable(table);
-			iVar2 = iVar2 + -1;
-			table = table + 5;
-		} while (-1 < iVar2);
-		table = ScoreTables.SurvivalTable + iVar3 * 5;
-		iVar3 = 0;
-		do {
-			ResetTable(table);
-			iVar3 = iVar3 + -1;
-			table = table + 5;
-		} while (-1 < iVar3);
-		bVar1 = iVar4 < 4;
-		iVar3 = iVar4;
-		iVar4 = iVar4 + 1;
-	} while (bVar1);
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 2; j++)
+			ResetTable(ScoreTables.GetawayTable[i][j]);
+
+		for (j = 0; j < 2; j++)
+			ResetTable(ScoreTables.CheckpointTable[i][j]);
+
+		for (j = 0; j < 2; j++)
+			ResetTable(ScoreTables.TrailblazerTable[i][j]);
+
+		for (j = 0; j < 2; j++)
+			ResetTable(ScoreTables.GateRaceTable[i][j]);
+
+		ResetTable(ScoreTables.SurvivalTable[i][0]);
+	}
+
 	gPlayerScore.time = 0;
 	gPlayerScore.P2time = 0;
 	gPlayerScore.items = 0;
 	gPlayerScore.P2items = 0;
-	gPlayerScore.name._0_4_ = DAT_000aa8ec;
-	gPlayerScore.name[4] = DAT_000aa8f0;
-	return;
-	*/
+
+	strcpy(gPlayerScore.name, "Mr.X");
 }
 
 
@@ -259,21 +229,22 @@ void AddScoreToTable(SCORE_ENTRY *table, int entry)
 	/* end block 4 */
 	// End Line: 365
 
+// [D]
 int CheckGetawayPlacing(SCORE_ENTRY *table)
 {
-	UNIMPLEMENTED();
+	int i;
 
-	int iVar1;
+	i = 0;
+	while (gPlayerScore.time == -1 || table->time != -1 && table->time <= gPlayerScore.time) 
+	{
+		i++;
+		table++;
 
-	iVar1 = 0;
-	while ((gPlayerScore.time == -1 || ((table->time != -1 && (table->time <= gPlayerScore.time))))) {
-		iVar1 = iVar1 + 1;
-		table = table + 1;
-		if (4 < iVar1) {
+		if (i > 4)
 			return -1;
-		}
 	}
-	return iVar1;
+
+	return i;
 }
 
 
@@ -306,34 +277,37 @@ int CheckGetawayPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 422
 
+// [D]
 int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 {
-	UNIMPLEMENTED();
+	int i;
 
-	int iVar1;
+	i = 0;
 
-	iVar1 = 0;
 	do {
-		if (gPlayerScore.items == -1) {
-			if (gPlayerScore.time != -1) {
-				if (table->time == -1) {
-					return iVar1;
-				}
-				if (table->time < gPlayerScore.time) {
-					return iVar1;
-				}
+		if (gPlayerScore.items == -1) 
+		{
+			if (gPlayerScore.time != -1) 
+			{
+				if (table->time == -1) 
+					return i;
+
+				if (table->time < gPlayerScore.time)
+					return i;
+
 			}
 		}
-		else {
-			if ((table->items == -1) || (table->items < gPlayerScore.items)) {
-				return iVar1;
-			}
+		else if ((table->items == -1) || (table->items < gPlayerScore.items))
+		{
+			return i;
 		}
-		iVar1 = iVar1 + 1;
-		table = table + 1;
-		if (4 < iVar1) {
+
+		i++;
+		table++;
+
+		if (i > 4)
 			return -1;
-		}
+
 	} while (true);
 }
 
@@ -367,21 +341,21 @@ int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 491
 
+// [D]
 int CheckCheckpointPlacing(SCORE_ENTRY *table)
 {
-	UNIMPLEMENTED();
+	int i;
 
-	int iVar1;
+	i = 0;
+	while (gPlayerScore.time == -1 || table->time != -1 && table->time <= gPlayerScore.time) 
+	{
+		i++;
+		table++;
 
-	iVar1 = 0;
-	while ((gPlayerScore.time == -1 || ((table->time != -1 && (table->time <= gPlayerScore.time))))) {
-		iVar1 = iVar1 + 1;
-		table = table + 1;
-		if (4 < iVar1) {
+		if (i > 4)
 			return -1;
-		}
 	}
-	return iVar1;
+	return i;
 }
 
 
@@ -414,21 +388,20 @@ int CheckCheckpointPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 546
 
+// [D]
 int CheckSurvivalPlacing(SCORE_ENTRY *table)
 {
-	UNIMPLEMENTED();
+	int i;
 
-	int iVar1;
-
-	iVar1 = 0;
-	while ((gPlayerScore.time == -1 || ((table->time != -1 && (gPlayerScore.time <= table->time))))) {
-		iVar1 = iVar1 + 1;
-		table = table + 1;
-		if (4 < iVar1) {
+	i = 0;
+	while (gPlayerScore.time == -1 || table->time != -1 && gPlayerScore.time <= table->time) 
+	{
+		i++;
+		table++;
+		if (i > 4) 
 			return -1;
-		}
 	}
-	return iVar1;
+	return i;
 }
 
 
@@ -461,22 +434,20 @@ int CheckSurvivalPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 587
 
+// [D]
 void ResetTable(SCORE_ENTRY *table)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
+	int i;
 
-	iVar1 = 4;
-	do {
+	i = 0;
+	while (i < 5)
+	{
 		table->time = -1;
 		table->items = -1;
-		iVar1 = iVar1 + -1;
-		*(undefined2 *)table->name = DAT_000aa8f4;
-		table = table + 1;
-	} while (-1 < iVar1);
-	return;
-	*/
+		strcpy(table->name, "-");
+		table++;
+		i++;
+	}
 }
 
 

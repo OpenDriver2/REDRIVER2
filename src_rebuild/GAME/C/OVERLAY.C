@@ -13,7 +13,7 @@
 #include "PRES.H"
 #include "PLAYERS.H"
 #include "CAMERA.H"
-
+#include "SCORES.H"
 
 COLOUR_BAND felonyColour[3] =
 {
@@ -943,115 +943,133 @@ void UpdateFlashValue(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawDrivingGameOverlays(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	int *piVar3;
 	int y;
 	int y_00;
-	char acStack64[32];
+	char string[32];
 
-	SetTextColour(-0x80, -0x80, '@');
-	switch (GameType) {
-	case GAME_GETAWAY:
-		y = GameLevel * 10;
-		y_00 = gSubGameNumber * 5;
-		iVar1 = PrintString(s_Il_migliore__00010390, 0x10, 0x3c);
-		PrintScoreTableTime(iVar1 + 3, 0x3c, ScoreTables.GetawayTable[y_00 + y].time);
-		break;
-	case GAME_GATERACE:
-		if (NumPlayers != 1) {
-			y = PrintString(s_Barriere__000103a0, 0x10, 0x24);
-			sprintf(acStack64, s__d__d_000aa024, (int)gPlayerScore.items, 100);
-			PrintString(acStack64, y + 3, 0x24);
-			y = PrintString(s_Barriere__000103a0, 0x10, 0x96);
-			sprintf(acStack64, s__d__d_000aa024, (int)gPlayerScore.P2items, 100);
-		LAB_00015b28:
-			PrintString(acStack64, y + 3, 0x96);
-			return;
-		}
-		piVar3 = (int *)(GameLevel * 0x78 + gSubGameNumber * 0x3c + 0xda278);
-		PrintStringRightAligned(s_Barriere__000103a0, 0x10e, 0x10);
-		sprintf(acStack64, s__d__d_000aa024, (int)gPlayerScore.items, 100);
-		PrintString(acStack64, 0x111, 0x10);
-		y = PrintString(s_Il_migliore__00010390, 0x10, 0x24);
-		PrintScoreTableTime(y + 3, 0x24, *piVar3);
-		y = PrintString(s_Barriere__000103a0, 0x10, 0x34);
-		if (*(short *)(piVar3 + 1) == -1) goto LAB_00015c00;
-	LAB_00015c20:
-		sprintf(acStack64, (char *)&PTR_DAT_000aa030);
-		goto LAB_00015c2c;
-	case GAME_CHECKPOINT:
-		if (NumPlayers != 1) {
-			y = PrintString(s_Tappe_000aa014, 0x10, 0x24);
-			sprintf(acStack64, &DAT_000aa01c, (int)gPlayerScore.items);
-			PrintString(acStack64, y + 3, 0x24);
-			y = PrintString(s_Tappe_000aa014, 0x10, 0x96);
-			sprintf(acStack64, &DAT_000aa01c, (int)gPlayerScore.P2items);
-			goto LAB_00015b28;
-		}
-		piVar3 = (int *)(GameLevel * 0x78 + gSubGameNumber * 0x3c + 0xda458);
-		PrintStringRightAligned(s_Tappe_000aa014, 0x10e, 0x10);
-		sprintf(acStack64, &DAT_000aa01c, (int)gPlayerScore.items);
-		PrintString(acStack64, 0x111, 0x10);
-		goto LAB_00015c88;
-	case GAME_TRAILBLAZER:
-		piVar3 = (int *)(GameLevel * 0x78 + gSubGameNumber * 0x3c + 0xda638);
-		PrintStringRightAligned(s_Coni__000aa034, 0xfa, 0x10);
-		sprintf(acStack64, s__d__d_000aa024, (int)gPlayerScore.items, 100);
-		PrintString(acStack64, 0xfd, 0x10);
-		y = PrintString(s_Il_migliore__00010390, 0x10, 0x24);
-		PrintScoreTableTime(y + 3, 0x24, *piVar3);
-		y = PrintString(s_Coni__000aa034, 0x10, 0x34);
-		if (*(short *)(piVar3 + 1) != -1) goto LAB_00015c20;
-	LAB_00015c00:
-		sprintf(acStack64, &DAT_000aa02c, 0xffffffff);
-	LAB_00015c2c:
-		PrintString(acStack64, y + 3, 0x34);
-		break;
-	case GAME_SURVIVAL:
-		piVar3 = (int *)(GameLevel * 0x3c + gSubGameNumber * 0x3c + 0xda818);
-	LAB_00015c88:
-		y = PrintString(s_Il_migliore__00010390, 0x10, 0x24);
-		PrintScoreTableTime(y + 3, 0x24, *piVar3);
-		break;
-	case GAME_CAPTURETHEFLAG:
-		y = PrintString(s_Bandiere__000103ac, 0x10, 0x10);
-		sprintf(acStack64, (char *)&PTR_DAT_000aa030, (int)gPlayerScore.items);
-		PrintString(acStack64, y + 3, 0x10);
-		y = PrintString(s_Bandiere__000103ac, 0x10, 0x84);
-		sprintf(acStack64, (char *)&PTR_DAT_000aa030, (int)gPlayerScore.P2items);
-		PrintString(acStack64, y + 3, 0x84);
-		break;
-	case GAME_SECRET:
-		y_00 = 0x24;
-		y = 0;
-		if (0 < gNumRaceTrackLaps) {
-			do {
-				iVar2 = y + 1;
-				sprintf(acStack64, s__s__d__000aa03c, &DAT_000aa044, iVar2);
-				iVar1 = PrintString(acStack64, 0x10, y_00);
-				PrintScoreTableTime(iVar1 + 3, y_00, (&gLapTimes)[y]);
-				y = iVar2;
-				y_00 = y_00 + 0x10;
-			} while (iVar2 < gNumRaceTrackLaps);
-		}
-		y = 0x96;
-		if ((1 < NumPlayers) && (y_00 = 0, 0 < gNumRaceTrackLaps)) {
-			do {
-				iVar2 = y_00 + 1;
-				sprintf(acStack64, s__s__d__000aa03c, &DAT_000aa044, iVar2);
-				iVar1 = PrintString(acStack64, 0x10, y);
-				PrintScoreTableTime(iVar1 + 3, y, (&DAT_000d7c64)[y_00]);
-				y_00 = iVar2;
-				y = y + 0x10;
-			} while (iVar2 < gNumRaceTrackLaps);
-		}
+	SetTextColour(128, 128, 64);
+
+	switch (GameType) 
+	{
+		case GAME_GETAWAY:
+			iVar1 = PrintString("Best: ", 0x10, 0x3c);
+			PrintScoreTableTime(iVar1 + 3, 0x3c, ScoreTables.GetawayTable[GameLevel][gSubGameNumber][0].time);
+			break;
+		case GAME_GATERACE:
+
+			if (NumPlayers != 1) 
+			{
+				y = PrintString("Gates:", 0x10, 0x24);
+				sprintf(string, "%d / %d", gPlayerScore.items, 100);
+				PrintString(string, y + 3, 0x24);
+				y = PrintString("Gates:", 0x10, 0x96);
+				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
+			LAB_00015b28:
+				PrintString(string, y + 3, 0x96);
+				return;
+			}
+
+			
+			piVar3 = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0].time;
+			PrintStringRightAligned("Gates:", 0x10e, 0x10);
+			sprintf(string, "%d / %d", gPlayerScore.items, 100);
+			PrintString(string, 0x111, 0x10);
+			y = PrintString("Best:", 0x10, 0x24);
+			PrintScoreTableTime(y + 3, 0x24, *piVar3);
+			y = PrintString("Gates:", 0x10, 0x34);
+
+			if (*(short *)(piVar3 + 1) == -1) 
+				goto LAB_00015c00;
+
+		LAB_00015c20:
+			sprintf(string, "%d");
+			goto LAB_00015c2c;
+
+		case GAME_CHECKPOINT:
+
+			if (NumPlayers != 1) 
+			{
+				y = PrintString("Checkpoint", 0x10, 0x24);
+				sprintf(string, "%d/5", gPlayerScore.items);
+				PrintString(string, y + 3, 0x24);
+				y = PrintString("Checkpoint", 0x10, 0x96);
+				sprintf(string, "%d/5", gPlayerScore.P2items);
+				goto LAB_00015b28;
+			}
+
+			piVar3 = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0].time;
+			PrintStringRightAligned("Checkpoint", 0x10e, 0x10);
+			sprintf(string, "%d/5", gPlayerScore.items);
+			PrintString(string, 0x111, 0x10);
+
+			goto LAB_00015c88;
+		case GAME_TRAILBLAZER:
+			
+			piVar3 = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0].time;
+			PrintStringRightAligned("Cones:", 0xfa, 0x10);
+			sprintf(string, "%d / %d", gPlayerScore.items, 100);
+			PrintString(string, 0xfd, 0x10);
+			y = PrintString("Best", 0x10, 0x24);
+			PrintScoreTableTime(y + 3, 0x24, *piVar3);
+			y = PrintString("Cones:", 0x10, 0x34);
+
+			if (*(short *)(piVar3 + 1) != -1)
+				goto LAB_00015c20;
+
+		LAB_00015c00:
+			sprintf(string, "-");
+		LAB_00015c2c:
+			PrintString(string, y + 3, 0x34);
+			break;
+		case GAME_SURVIVAL:
+			piVar3 = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0].time;
+		LAB_00015c88:
+			y = PrintString("Best:", 0x10, 0x24);
+			PrintScoreTableTime(y + 3, 0x24, *piVar3);
+			break;
+		case GAME_CAPTURETHEFLAG:
+			y = PrintString("Flags:", 0x10, 0x10);
+			sprintf(string, "%d", gPlayerScore.items);
+			PrintString(string, y + 3, 0x10);
+			y = PrintString("Flags:", 0x10, 0x84);
+			sprintf(string, "%d", gPlayerScore.P2items);
+			PrintString(string, y + 3, 0x84);
+			break;
+		case GAME_SECRET:
+			y_00 = 0x24;
+			y = 0;
+			if (0 < gNumRaceTrackLaps)
+			{
+				do {
+					iVar2 = y + 1;
+					sprintf(string, "%s %d:", "Lap", iVar2);
+					iVar1 = PrintString(string, 0x10, y_00);
+					PrintScoreTableTime(iVar1 + 3, y_00, gLapTimes[0][y]);
+					y = iVar2;
+					y_00 = y_00 + 0x10;
+				} while (iVar2 < gNumRaceTrackLaps);
+			}
+
+			y = 0x96;
+			if ((1 < NumPlayers) && (y_00 = 0, 0 < gNumRaceTrackLaps))
+			{
+				do {
+					iVar2 = y_00 + 1;
+					sprintf(string, "%s %d:", "Lap", iVar2);
+					iVar1 = PrintString(string, 0x10, y);
+					PrintScoreTableTime(iVar1 + 3, y, gLapTimes[1][y_00]);
+					y_00 = iVar2;
+					y = y + 0x10;
+				} while (iVar2 < gNumRaceTrackLaps);
+			}
+			break;
 	}
-	return;*/
 }
 
 
@@ -1081,22 +1099,17 @@ void DrawDrivingGameOverlays(void)
 	/* end block 3 */
 	// End Line: 2407
 
+// [D]
 void PrintScoreTableTime(int x, int y, int time)
 {
-	UNIMPLEMENTED();
-	/*
-	char acStack48[32];
+	char string[32];
 
-	if (time == -1) {
-		sprintf(acStack48, s_________000aa04c);
-	}
-	else {
-		sprintf(acStack48, &DAT_000103b8, time / 180000, time / 3000 + (time / 180000) * -0x3c,
-			(time % 3000) / 0x1e);
-	}
-	PrintString(acStack48, x, y);
-	return;
-	*/
+	if (time == -1) 
+		sprintf(string, "-:--.--");
+	else
+		sprintf(string, "%d:%02d.%02d", time / 180000, time / 3000 - (time / 180000) - 60, (time % 3000) / 0x1e);
+
+	PrintString(string, x, y);
 }
 
 
