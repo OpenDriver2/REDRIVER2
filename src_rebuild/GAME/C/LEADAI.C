@@ -1,6 +1,9 @@
 #include "THISDUST.H"
 #include "LEADAI.H"
 
+#include "OVERLAY.H"
+#include "GAMESND.H"
+
 
 // decompiled code
 // original method signature: 
@@ -3732,10 +3735,7 @@ LAB_LEAD__000ec924:
 	// End Line: 7436
 
 ulong FreeRoamer(_CAR_DATA *cp)
-{
-	UNIMPLEMENTED();
-	return 0;
-	/*
+{	
 	ulong uVar1;
 	int iVar2;
 	int iVar3;
@@ -3743,6 +3743,10 @@ ulong FreeRoamer(_CAR_DATA *cp)
 
 	LeadHorn(cp);
 	DamageBar.position = cp->totalDamage;
+
+	UNIMPLEMENTED();
+	return 0;
+	/*
 	if ((((cp->hd).where.m[4] < 100) ||
 		((((cp->hd).wheel[1].surface & 7) == 1 && (((cp->hd).wheel[3].surface & 7) == 1)))) &&
 		(cp->ai[0] != 8)) {

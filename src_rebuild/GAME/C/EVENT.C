@@ -40,9 +40,10 @@ int HavanaMiniData[4] = {
 };
 
 int LiftingBridges[55] = {
-	8, -182784, -175616, -168448, 7, -227328, -162304,
-	-141824, -121344, -100864, -80384, -59904, 256, -312832,
-	-305664, -298496, 1, 324096, -311808, -304640, -297472,
+	8, -182784, -175616, -168448, 
+	7, -227328, -162304, -141824, -121344, -100864, -80384, -59904, 
+	256, -312832, -305664, -298496, 
+	1, 324096, -311808, -304640, -297472,
 	1, 247296, -256512, -249344, -242176, 1, 247296,
 	-262656, -255488, -248320, 1, 324096, 32768, 170496,
 	177664, 184832, 1, -271360, -12800, -5632, 1536,
@@ -56,16 +57,22 @@ int ChicagoCameraHack[3] = {
 };
 
 int HavanaCameraHack[9] = {
-	-491431, 3568, -139048, -453981, 409, -128009, -453975, 429, -127175
+	-491431, 3568, -139048, 
+	-453981, 409, -128009,
+	-453975, 429, -127175
 };
 
 int VegasCameraHack[16] = {
-	124092, 3988, 3494, -11285, 1559, 843824, -38801,
-	2681, 273148, -36925, 2048, 269647, 273935, -65503, 1617, 796775
+	124092, 3988, 3494,
+	-11285, 1559, 843824, 
+	-38801, 2681, 273148, 
+	-36925, 2048, 269647, 273935,
+	-65503, 1617, 796775
 };
 
 int RioCameraHack[6] = {
-	-276620, 3072, -321920, -40920, 3623, 382170
+	-276620, 3072, -321920,
+	-40920, 3623, 382170
 };
 
 MissionTrain missionTrain[2] =
@@ -348,6 +355,21 @@ EventGlobal events;
 
 CELL_OBJECT *EventCop;
 int event_models_active = 0;
+
+static struct _EVENT(*trackingEvent[2]);
+static struct _TARGET(*carEvent[8]);
+static int cameraEventsActive = 0;
+static CameraDelay cameraDelay;
+static Detonator detonator;
+static int eventHaze = 0;
+static int carsOnBoat = 0;
+static int doneFirstHavanaCameraHack = 0;
+static SVECTOR boatOffset;
+static struct FixedEvent *fixedEvent = NULL;
+
+static MultiCar multiCar;
+struct _EVENT *firstEvent;
+struct _EVENT *event;
 
 // decompiled code
 // original method signature: 
@@ -718,21 +740,16 @@ void VisibilityLists(VisType type, int i)
 	/* end block 1 */
 	// End Line: 805
 
+// [D]
 void SetElTrainRotation(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-	/*
-	if (((int)ev->flags & 0x8000U) == 0) {
+	if ((ev->flags & 0x8000U) == 0) 
 		ev->rotation = 0;
-	}
-	else {
+	else 
 		ev->rotation = 0x400;
-	}
-	if (*ev->node < ev->node[2]) {
-		ev->rotation = ev->rotation + 0x800;
-	}
-	return;
-	*/
+
+	if (*ev->node < ev->node[2])
+		ev->rotation += 0x800;
 }
 
 
@@ -762,10 +779,9 @@ void SetElTrainRotation(_EVENT *ev)
 	/* end block 3 */
 	// End Line: 942
 
+// [D]
 void InitTrain(_EVENT *ev, int count, int type)
 {
-	UNIMPLEMENTED();
-	/*
 	ushort uVar1;
 	int *piVar2;
 	uint uVar3;
@@ -777,44 +793,47 @@ void InitTrain(_EVENT *ev, int count, int type)
 	ev->node = ev->data + 3;
 	ev->timer = 0;
 	ev->flags = uVar1 | 2;
-	if (type == 0) {
-		unaff_s2 = -0x6ed;
-		unaff_s1 = 0x640;
+
+	if (type == 0) 
+	{
+		unaff_s2 = -1773;
+		unaff_s1 = 1600;
 		SetElTrainRotation(ev);
 	}
-	else {
-		if (type == 1) {
-			unaff_s2 = -0x2de;
-			unaff_s1 = 0xe74;
-			ev->rotation = 0;
-		}
+	else if (type == 1)
+	{
+		unaff_s2 = -734;
+		unaff_s1 = 3700;
+		ev->rotation = 0;
 	}
+
 	piVar2 = ev->node;
-	(ev->position).vy = unaff_s2;
-	if (piVar2[3] == -0x80000000) {
+	ev->position.vy = unaff_s2;
+
+	if (piVar2[3] == -0x80000000) 
 		uVar1 = ev->flags & 0x8fff;
-	}
-	else {
+	else
 		uVar1 = ev->flags & 0x8fffU | 0x3000;
-	}
+
 	ev->flags = uVar1;
 	piVar4 = ev->node;
 	piVar2 = piVar4 + 2;
-	if (piVar4[2] == -0x7ffffffe) {
+
+	if (piVar4[2] == -0x7ffffffe)
 		piVar2 = piVar4 + 3;
-	}
-	if (((int)ev->flags & 0x8000U) == 0) {
+
+	if ((ev->flags & 0x8000U) == 0) 
+	{
 		uVar3 = *piVar2 - *piVar4 >> 0x1f;
-		(ev->position).vx = *piVar4 + ((count * unaff_s1 ^ uVar3) - uVar3);
-		(ev->position).vz = piVar4[1];
+		ev->position.vx = *piVar4 + ((count * unaff_s1 ^ uVar3) - uVar3);
+		ev->position.vz = piVar4[1];
 	}
-	else {
+	else 
+	{
 		uVar3 = *piVar2 - *piVar4 >> 0x1f;
-		(ev->position).vz = *piVar4 + ((count * unaff_s1 ^ uVar3) - uVar3);
-		(ev->position).vx = piVar4[1];
+		ev->position.vz = *piVar4 + ((count * unaff_s1 ^ uVar3) - uVar3);
+		ev->position.vx = piVar4[1];
 	}
-	return;
-	*/
 }
 
 
@@ -833,17 +852,17 @@ void InitTrain(_EVENT *ev, int count, int type)
 	/* end block 2 */
 	// End Line: 8353
 
+// [D]
 void InitDoor(FixedEvent *ev, _EVENT ***e, int *cEvents)
 {
-	UNIMPLEMENTED();
-	/*
 	ev->active = 0;
 	ev->rotation = ev->finalRotation;
 	ev->flags = ev->flags | 0x200;
-	*(FixedEvent **)*e = ev;
+
+	*(FixedEvent **)*e = ev;	// [A] is that gonna work?
 	*e = &(**e)->next;
-	VisibilityLists(VIS_ADD, (int)((int)ev - (int)fixedEvent) * -0x45d1745d >> 2 | 0x80);
-	return;*/
+
+	VisibilityLists(VIS_ADD, (ev - fixedEvent) * -0x45d1745d >> 2 | 0x80);
 }
 
 
@@ -869,30 +888,33 @@ void InitDoor(FixedEvent *ev, _EVENT ***e, int *cEvents)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitEvents(void)
 {
-	UNIMPLEMENTED();
-	/*
 	events.camera = 0;
-	events.track = &trackingEvent2;
-	cameraEventsActive = 0;
-	trackingEvent2 = (_EVENT *)0x0;
-	event_models_active = 0;
-	events.cameraEvent = (_EVENT *)0x0;
-	cameraDelay.delay = 0;
+	events.track = trackingEvent;
+	events.cameraEvent = NULL;
+
 	detonator.timer = 0;
 	detonator.count = 0;
+
+	trackingEvent[0] = NULL;
+	carEvent[0] = NULL;
+
+	cameraEventsActive = 0;
+	event_models_active = 0;
+	
+	cameraDelay.delay = 0;
 	eventHaze = 0;
 	carsOnBoat = 0;
 	doneFirstHavanaCameraHack = 0;
+
 	boatOffset.vx = 0;
 	boatOffset.vy = 0;
 	boatOffset.vz = 0;
-	carEvent8[0] = (_TARGET *)0x0;
+
 	VisibilityLists(VIS_INIT, 0);
 	TriggerEvent(-1);
-	return;
-	*/
 }
 
 
@@ -1810,25 +1832,27 @@ void SetCamera(_EVENT *ev)
 	/* end block 3 */
 	// End Line: 6985
 
+// [D]
 void EventCollisions(_CAR_DATA *cp, int type)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((carsOnBoat >> ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 & 0x1fU) & 1U) != 0) {
-		if (type != 0) {
-			(cp->hd).where.t[0] = (cp->hd).where.t[0] - (int)boatOffset.vx;
-			(cp->hd).where.t[1] = (cp->hd).where.t[1] - (int)boatOffset.vy;
-			(cp->hd).where.t[2] = (cp->hd).where.t[2] - (int)boatOffset.vz;
-			events.camera = 0;
-			return;
-		}
-		events.draw = 0;
-		events.camera = 1;
-		(cp->hd).where.t[0] = (cp->hd).where.t[0] + (int)boatOffset.vx;
-		(cp->hd).where.t[1] = (cp->hd).where.t[1] + (int)boatOffset.vy;
-		(cp->hd).where.t[2] = (cp->hd).where.t[2] + (int)boatOffset.vz;
+	if (carsOnBoat >> CAR_INDEX(cp) == 0)
+		return;
+
+	if (type != 0) 
+	{
+		cp->hd.where.t[0] -= boatOffset.vx;
+		cp->hd.where.t[1] -= boatOffset.vy;
+		cp->hd.where.t[2] -= boatOffset.vz;
+		events.camera = 0;
+		return;
 	}
-	return;*/
+
+	events.draw = 0;
+	events.camera = 1;
+
+	cp->hd.where.t[0] += boatOffset.vx;
+	cp->hd.where.t[1] += boatOffset.vy;
+	cp->hd.where.t[2] += boatOffset.vz;
 }
 
 
@@ -1855,30 +1879,31 @@ void EventCollisions(_CAR_DATA *cp, int type)
 // [D]
 void NextNode(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-
 	int *piVar1;
 
 	piVar1 = ev->node;
-	if (piVar1[2] == -0x7ffffffe) {
+	if (piVar1[2] == -0x7ffffffe)
+	{
 		ev->node = piVar1 + 2;
 	}
-	else {
+	else
+	{
 		ev->node = piVar1 + 1;
 		ev->flags = ev->flags ^ 0x8000;
 	}
-	if (*ev->node == -0x7fffffff) {
+
+	if (*ev->node == -0x7fffffff) 
+	{
 		ev->node = ev->data + 3;
 	}
-	else {
-		if (ev->node[3] == -0x80000000) {
-			ev->flags = ev->flags & 0x8fff;
-			return;
-		}
+	else if (ev->node[3] == -0x80000000) 
+	{
+		ev->flags = ev->flags & 0x8fff;
+		return;
 	}
+
 	ev->flags = ev->flags & 0x8fffU | 0x3000;
 	SetElTrainRotation(ev);
-	return;
 }
 
 
@@ -2389,33 +2414,36 @@ LAB_00048238:
 	/* end block 3 */
 	// End Line: 10340
 
+// [D]
 int GetBridgeRotation(int timer)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	static int debugRotation = -1;;
+
 	int iVar1;
 
-	if (debugRotation != -1) {
+	if (debugRotation != -1)
 		return debugRotation;
-	}
-	if (0xa28 < timer) {
+
+	if (2600 < timer) 
+	{
 		return 0;
 	}
-	if (timer < 0x641) {
-		if (1000 < timer) {
+
+	if (timer < 1601)
+	{
+		if (1000 < timer) 
+		{
 			timer = 1000;
 		}
 	}
-	else {
-		timer = 0xa28 - timer;
+	else 
+	{
+		timer = 2600 - timer;
 	}
-	iVar1 = (0x1000 - (int)rcossin_tbl[((timer << 0xb) / 1000 & 0xfffU) * 2 + 1]) * 800;
-	if (iVar1 < 0) {
-		iVar1 = iVar1 + 0x1fff;
-	}
+
+	iVar1 = (0x1000 - rcossin_tbl[((timer << 0xb) / 1000 & 0xfffU) * 2 + 1]) * 800;
+
 	return iVar1 >> 0xd;
-	*/
 }
 
 
@@ -5204,38 +5232,45 @@ LAB_0004ba8c:
 	/* end block 4 */
 	// End Line: 8399
 
+// [D]
 void MultiCarEvent(_TARGET *target)
 {
-	UNIMPLEMENTED();
-	/*
-	_EVENT *p_Var1;
+	_EVENT *first;
+	int n;
+	_EVENT *ev;
+	MULTICAR_DATA *data;
 	int i;
-	_EVENT *p_Var2;
-	long *plVar3;
-	int iVar4;
 
-	p_Var1 = firstEvent;
-	iVar4 = 0;
+	first = firstEvent;
+
+	data = (MULTICAR_DATA *)(target->data + 1);
+	
 	firstEvent = multiCar.event + multiCar.count;
-	i = target->data[1];
-	plVar3 = target->data + 1;
-	while (i != -0x80000000) {
-		i = ((int)((int)multiCar.event - (int)event) * -0x33333333 >> 3) + multiCar.count;
-		p_Var2 = event + i;
-		(p_Var2->position).vx = *plVar3;
-		(p_Var2->position).vy = -0x138;
-		(p_Var2->position).vz = plVar3[1];
-		iVar4 = iVar4 + 1;
-		p_Var2->rotation = *(short *)((int)plVar3 + 10);
-		VisibilityLists(VIS_ADD, i);
-		multiCar.count = multiCar.count + 1;
-		plVar3 = plVar3 + 3;
-		if (4 < iVar4) break;
-		i = *plVar3;
+	n = target->data[1];
+	
+	i = 0;
+	while (n != -0x80000000) 
+	{
+		n = ((int)(multiCar.event - event) * -0x33333333 >> 3) + multiCar.count;
+		ev = event + n;
+		ev->position.vx = data->x;
+		ev->position.vy = -0x138;
+		ev->position.vz = data->z;
+		ev->rotation = data->rot;
+
+		VisibilityLists(VIS_ADD, n);
+
+		multiCar.count++;
+		data++;
+		i++;
+
+		if (i > 4) 
+			break;
+
+		n = data->x;
 	}
-	multiCar.event[multiCar.count + -1].next = p_Var1;
-	return;
-	*/
+	
+	multiCar.event[multiCar.count - 1].next = first;
 }
 
 
