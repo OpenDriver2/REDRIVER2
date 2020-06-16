@@ -2481,7 +2481,34 @@ int redriver2_main(int argc, char** argv)
 #ifndef PSX
 	for (int i = 0; i < argc; i++)
 	{
-		if (!_stricmp(argv[i], "-replay"))
+		if (!_stricmp(argv[i], "-players"))
+		{
+			if (argc - i < 2)
+			{
+				printError("-players missing number argument!");
+				return -1;
+			}
+
+			NumPlayers = atoi(argv[i + 1]);
+		}
+		else if (!_stricmp(argv[i], "-mission"))
+		{
+			if (argc - i < 2)
+			{
+				printError("-mission missing number argument!");
+				return -1;
+			}
+
+			SetFEDrawMode();
+
+			gInFrontend = 0;
+			AttractMode = 0;
+
+			gCurrentMissionNumber = atoi(argv[i + 1]);
+
+			LaunchGame();
+		}
+		else if (!_stricmp(argv[i], "-replay"))
 		{
 			if (argc-i < 2)
 			{
