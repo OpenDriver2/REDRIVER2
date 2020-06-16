@@ -223,7 +223,7 @@ void ResetSound(void)
 	do {
 		SpuSetVoiceRR(channel, 6);
 		SpuSetVoiceAR(channel, 35);
-		channel = channel + 1;
+		channel++;
 	} while (channel < 16);
 
 	stop_sound_handler = 0;
@@ -252,13 +252,10 @@ void ResetSound(void)
 
 void SetReverbState(int on)
 {
-	if (on == 0) {
+	if (on == 0)
 		SpuSetReverbVoice(0, 0xffffff);
-	}
-	else {
+	else
 		SpuSetReverbVoice(1, 0xffffff);
-	}
-	return;
 }
 
 
@@ -473,22 +470,20 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, lo
 	if (channel < 0)
 		channel = GetFreeChannel();
 
-	if (channel < 16)
-	{
-		channels[channel].srcposition = position;
-		channels[channel].srcvelocity = velocity;
-		channels[channel].srcpitch = 0x1000;
-		channels[channel].srcvolume = 0;
+	if (channel < 0 || channel >= 16)	// [A]
+		return -1;
 
-		channel_00 = CompleteSoundSetup(channel, bank, sample, 0x1000, 0);
+	channels[channel].srcposition = position;
+	channels[channel].srcvelocity = velocity ? velocity : dummylong;
+	channels[channel].srcpitch = 0x1000;
+	channels[channel].srcvolume = 0;
 
-		ComputeDoppler(&channels[channel_00]);
-		SetChannelPitch(channel_00, 0x1000);
-	}
-	else 
-		channel_00 = -1;
+	channel = CompleteSoundSetup(channel, bank, sample, 0x1000, 0);
 
-	return channel_00;
+	ComputeDoppler(&channels[channel]);
+	SetChannelPitch(channel, 0x1000);
+
+	return channel;
 }
 
 
@@ -508,22 +503,21 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	if (channel < 0)
 		channel = GetFreeChannel();
 
-	if (channel < 16) 
-	{
-		channels[channel].srcposition = &channels[channel].position;
-		channels[channel].position.vx = x;
-		channels[channel].position.vy = y;
-		channels[channel].position.vz = z;
-		channels[channel].srcvolume = volume;
-		channels[channel].srcpitch = pitch;
+	if (channel < 0 || channel >= 16)	// [A]
+		return -1;
 
-		channel = CompleteSoundSetup(channel, bank, sample, pitch, 0);
+	channels[channel].srcposition = &channels[channel].position;
+	channels[channel].srcvelocity = dummylong;
+	channels[channel].position.vx = x;
+	channels[channel].position.vy = y;
+	channels[channel].position.vz = z;
+	channels[channel].srcvolume = volume;
+	channels[channel].srcpitch = pitch;
 
-		ComputeDoppler(&channels[channel]);
-		SetChannelPitch(channel, pitch);
-	}
-	else
-		channel = -1;
+	channel = CompleteSoundSetup(channel, bank, sample, pitch, 0);
+
+	ComputeDoppler(&channels[channel]);
+	SetChannelPitch(channel, pitch);
 
 	return channel;
 	
@@ -745,32 +739,33 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	int iVar6;
 	int iVar7;
 	long *srcVel;
+	_PLAYER *pl;
 
 	srcPos = ch->srcposition;
 
 	if (srcPos == NULL) 
 	{
-		ch->dopplerScale = 0x1000;
+		ch->dopplerScale = ONE;
 	}
 	else 
 	{
-		iVar1 = ch->player;
+		pl = &player[ch->player];
 
-		iVar4 = srcPos->vx - player[ch->player].cameraPos.vx;
-		iVar7 = srcPos->vy + player[ch->player].cameraPos.vy;
-		iVar6 = srcPos->vz - player[ch->player].cameraPos.vz;
+		iVar4 = srcPos->vx - pl->cameraPos.vx;
+		iVar7 = srcPos->vy + pl->cameraPos.vy;
+		iVar6 = srcPos->vz - pl->cameraPos.vz;
 		lVar2 = jsqrt(iVar4 * iVar4 + iVar7 * iVar7 + iVar6 * iVar6);
 
 		srcPos = ch->srcposition;
 		srcVel = ch->srcvelocity;
 
-		iVar6 = (srcPos->vx - player[ch->player].cameraPos.vx) + (srcVel[0] - player[ch->player].camera_vel[0]) / 4096;
-		iVar4 = (srcPos->vy + player[ch->player].cameraPos.vy) + (srcVel[1] - player[ch->player].camera_vel[1]) / 4096;
-		iVar1 = (srcPos->vz - player[ch->player].cameraPos.vz) + (srcVel[2] - player[ch->player].camera_vel[2]) / 4096;
+		iVar6 = (srcPos->vx - pl->cameraPos.vx) + FIXED(srcVel[0] - pl->camera_vel[0]);
+		iVar4 = (srcPos->vy + pl->cameraPos.vy) + FIXED(srcVel[1] - pl->camera_vel[1]);
+		iVar1 = (srcPos->vz - pl->cameraPos.vz) + FIXED(srcVel[2] - pl->camera_vel[2]);
 
 		lVar3 = jsqrt(iVar6 * iVar6 + iVar4 * iVar4 + iVar1 * iVar1);
 
-		iVar1 = (lVar3 - lVar2) * -3 + 0x1000;
+		iVar1 = (lVar3 - lVar2) * -3 + ONE;
 
 		ch->dopplerScale = iVar1;
 		ch->cameradist = lVar2;
@@ -811,11 +806,8 @@ void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volu
 
 	if (camera_change != 1 && old_camera_change != 1 && sound_paused == 0)
 	{
-		if (velocity == NULL) 
-			velocity = dummylong;
-
 		channels[channel].srcposition = position;
-		channels[channel].srcvelocity = velocity;
+		channels[channel].srcvelocity = velocity ? velocity : dummylong;
 		channels[channel].srcvolume = volume;
 
 		if (gSoundMode == 1)
@@ -1865,52 +1857,47 @@ void SetXMVolume(int volume)
 int GetFreeChannel(void)
 {
 	int channel;
-	int iVar1;
-	unsigned char *puVar2;
-	CHANNEL_DATA *pCVar3;
-	ushort uVar4;
+	int it;
+	ushort least;
 
 	char status[24];
 
-	//sizeof(CHANNEL_DATA); == 120 so
-
-	uVar4 = 0;
+	least = 0;
 	SpuGetAllKeysStatus(status);
 
 	channel = 0;
-	puVar2 = &channels[0].locked;
-	while ((*puVar2 != '\0' || (status[channel] != '\0'))) 
-	{
-		channel = channel + 1;
-		puVar2 = puVar2 + 0x78;
 
-		if (0xf < channel)
+	while (channels[channel].locked != 0 || status[channel] != 0)
+	{
+		channel++;
+
+		if (channel > 15)
 		{
 			channel = 0;
-			puVar2 = &channels[0].locked;
 
-			while ((*puVar2 != '\0' || (status[channel] != '\x03'))) 
+			while (channels[channel].locked != 0 || status[channel] != 3)
 			{
-				channel = channel + 1;
-				puVar2 = puVar2 + 0x78;
+				channel++;
 
-				if (0xf < channel) 
+				if (channel > 15) 
 				{
 					channel = -1;
-					iVar1 = 0;
-					pCVar3 = channels;
 
-					do {
-						if ((pCVar3->locked == '\0') && (pCVar3->loop == '\0')) 
+					it = 0;
+
+					while (it < 16)
+					{
+						if (channels[it].locked == 0 && channels[it].loop == 0)
 						{
-							if ((channel == -1) || (pCVar3->time < uVar4)) {
-								channel = iVar1;
-								uVar4 = pCVar3->time;
+							if (channel == -1 || channels[it].time < least)
+							{
+								channel = it;
+								least = channels[it].time;
 							}
 						}
-						iVar1 = iVar1 + 1;
-						pCVar3 = pCVar3 + 1;
-					} while (iVar1 < 0x10);
+
+						it++;
+					}
 
 					if (channel != -1) 
 						StopChannel(channel);
@@ -1967,6 +1954,7 @@ int GetFreeChannel(void)
 
 int gSurround = 0;
 
+// [D]
 void UpdateVolumeAttributesS(int channel, int proximity)
 {
 	bool bVar1;
@@ -2012,7 +2000,7 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 	sVar4 = iVar7;
 	channels[channel].attr.volume.left = sVar4;
 
-	if (iVar5 != 0) {
+	if (gSurround != 0) {
 		sVar4 = -sVar4;
 	}
 
@@ -2066,14 +2054,8 @@ LAB_0007a128:
 	iVar3 = -lVar2 + 0x1c00;
 	iVar5 = iVar3;
 
-	if (iVar3 < 0)
-		iVar5 = -lVar2 + 0x2bff;
-
 	iVar10 = (iVar3 + (iVar5 / 4096) * -4096) - (iVar10 + -4096);
 	iVar5 = iVar10;
-
-	if (iVar10 < 0)
-		iVar5 = iVar10 + 0xfff;
 
 	iVar10 = 0x800 - (iVar10 + (iVar5 / 4096) * -4096);
 

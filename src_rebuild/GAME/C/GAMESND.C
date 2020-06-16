@@ -24,6 +24,8 @@
 #include "MAIN.H"
 #include "SKY.H"
 
+#include <math.h>
+
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(struct __envsound *ep, struct __envsoundinfo *E, int pl);
@@ -2019,7 +2021,7 @@ void DoDopplerSFX(void)
 
 								pCVar17++;
 								vvar4++;
-							} while (vvar4 < 0x10);
+							} while (vvar4 < 16);
 
 							return;
 						}
@@ -2651,30 +2653,28 @@ void SoundTasks(void)
 		do {
 			channel_00 = pPVar5->playerCarId;
 
-			if ((pPVar5->cameraView == 2) || (pPVar5->cameraView == 0)) 
+			if (channel_00 != -1 && (pPVar5->cameraView == 2 || pPVar5->cameraView == 0))
 			{
 				pPVar5->camera_vel[0] = car_data[channel_00].st.n.linearVelocity[0];
 				pPVar5->camera_vel[1] = car_data[channel_00].st.n.linearVelocity[1];
 				pPVar5->camera_vel[2] = car_data[channel_00].st.n.linearVelocity[2];
 			}
-			else {
+			else
+			{
 				pPVar5->camera_vel[0] = 0;
 				pPVar5->camera_vel[1] = 0;
 				pPVar5->camera_vel[2] = 0;
 			}
 
-			piVar2 = &pPVar5->car_sound_timer;
+			if (pPVar5->car_sound_timer > -1)
+				pPVar5->car_sound_timer--;
 
-			if (-1 < *piVar2) {
-				*piVar2 = *piVar2 + -1;
-			}
-
-			if (*piVar2 == 4) 
+			if (pPVar5->car_sound_timer == 4 && channel_00 != -1)
 			{
 				Start3DSoundVolPitch(-1, 6, 4, car_data[channel_00].hd.where.t[0],-car_data[channel_00].hd.where.t[1], car_data[channel_00].hd.where.t[2],-2500, 3072);
 			}
 
-			if (*piVar2 == 0) 
+			if (pPVar5->car_sound_timer == 0)
 				pPVar5->car_is_sounding = 0;
 
 			if (pPVar5->crash_timer > 0)
@@ -2782,8 +2782,8 @@ void SoundTasks(void)
 		DoCutsceneSound();
 	}
 
-	if (gInGameChaseActive != 0) 
-		LeadHorn(car_data + 1);
+	if (gInGameChaseActive != 0)
+		LeadHorn(&car_data[player[0].targetCarId]); //LeadHorn(&car_data[1]);
 
 	if ((force_idle[8] != 0) && (((gCurrentMissionNumber - 0x14U < 2 || (gCurrentMissionNumber == 0x19)) || (gCurrentMissionNumber == 0x27)))) 
 	{
@@ -4394,21 +4394,15 @@ void LeadHorn(_CAR_DATA *cp)
 
 	if (horn_time == rnd) 
 	{
-		bVar1 = cp->ap.model;
-
-		if (bVar1 == 4) 
-		{
+		if (cp->ap.model == 4)
 			uVar2 = ResidentModelsBodge();
-		}
-		else 
-		{
-			if (bVar1 < 3)
-				uVar2 = cp->ap.model;
-			else
-				uVar2 = cp->ap.model - 1;
-		}
+		else if (cp->ap.model < 3)
+			uVar2 = cp->ap.model;
+		else
+			uVar2 = cp->ap.model-1;
 
-		Start3DTrackingSound(-1, 3, uVar2 * 3 + 2, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity);
+		int ch = Start3DTrackingSound(-1, 3, uVar2 * 3 + 2, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity);
+
 		horn_time = 0;
 	}
 }
