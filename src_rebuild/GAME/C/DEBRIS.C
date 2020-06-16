@@ -5637,7 +5637,7 @@ void DisplayLightReflections(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAI
 	CVECTOR thiscol;
 	int z;
 
-	if (9 < wetness)
+	if (9 < wetness && v1->vy > camera_position.vy)
 	{
 		gte_SetTransVector(v1);
 
