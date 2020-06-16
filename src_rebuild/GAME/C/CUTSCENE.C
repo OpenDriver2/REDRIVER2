@@ -226,48 +226,40 @@ LAB_000326f4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawInGameCutscene(void)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	DB *pDVar2;
-	ulong *puVar3;
-	uint *puVar4;
-	uint *puVar5;
+	TILE *tile;
 
-	if ((gInGameCutsceneActive != 0) || (gInGameCutsceneDelay != 0)) {
-		puVar4 = (uint *)current->primptr;
-		SetTile(puVar4);
-		*(char *)(puVar4 + 1) = '\0';
-		*(char *)((int)puVar4 + 5) = '\0';
-		*(char *)((int)puVar4 + 6) = '\0';
-		pDVar2 = current;
-		sVar1 = (short)BlackBorderHeight;
-		*(undefined2 *)(puVar4 + 2) = 0;
-		*(undefined2 *)((int)puVar4 + 10) = 0;
-		*(undefined2 *)(puVar4 + 3) = 0x140;
-		*(short *)((int)puVar4 + 0xe) = sVar1;
-		*puVar4 = *puVar4 & 0xff000000 | *pDVar2->ot & 0xffffff;
-		puVar3 = pDVar2->ot;
-		puVar5 = puVar4 + 4;
-		*puVar3 = *puVar3 & 0xff000000 | (uint)puVar4 & 0xffffff;
-		SetTile(puVar5);
-		*(char *)(puVar4 + 5) = '\0';
-		*(char *)((int)puVar4 + 0x15) = '\0';
-		*(char *)((int)puVar4 + 0x16) = '\0';
-		pDVar2 = current;
-		sVar1 = (short)BlackBorderHeight;
-		*(undefined2 *)(puVar4 + 6) = 0;
-		*(undefined2 *)(puVar4 + 7) = 0x140;
-		*(short *)((int)puVar4 + 0x1a) = 0x100 - sVar1;
-		*(short *)((int)puVar4 + 0x1e) = sVar1;
-		*puVar5 = *puVar5 & 0xff000000 | *pDVar2->ot & 0xffffff;
-		*pDVar2->ot = *pDVar2->ot & 0xff000000 | (uint)puVar5 & 0xffffff;
-		pDVar2->primptr = pDVar2->primptr + 0x20;
-	}
-	return;
-	*/
+	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
+		return;
+
+	tile = (TILE *)current->primptr;
+	SetTile(tile);
+	tile->r0 = 0;
+	tile->g0 = 0;
+	tile->b0 = 0;
+	tile->x0 = 0;
+	tile->y0 = 0;
+	tile->w = 320;
+	tile->h = BlackBorderHeight;
+
+	addPrim(current->ot, tile);
+	tile++;
+
+	SetTile(tile);
+	tile->r0 = 0;
+	tile->g0 = 0;
+	tile->b0 = 0;
+
+	tile->x0 = 0;
+	tile->w = 320;
+	tile->y0 = 256 - BlackBorderHeight;
+	tile->h = BlackBorderHeight;
+
+	addPrim(current->ot, tile);
+
+	current->primptr += sizeof(TILE) * 2;
 }
 
 
