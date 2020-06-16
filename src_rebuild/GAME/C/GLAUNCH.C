@@ -151,7 +151,6 @@ int gWantNight = 0;
 void GameStart(void)
 {
 	int iVar1;
-	int iVar2;
 	int SurvivalCopSettingsBackup;
 
 	if( GameType != GAME_CONTINUEMISSION && 
@@ -174,16 +173,19 @@ void GameStart(void)
 	SurvivalCopSettingsBackup = gCopDifficultyLevel;
 	NewLevel = 1;
 
-	switch (GameType) {
+	switch (GameType) 
+	{
 		case GAME_MISSION:
 			RunMissionLadder(1);
 			break;
 		case GAME_TAKEADRIVE:
-			iVar1 = 0x3a;
-			if (NumPlayers == 1) {
-				iVar1 = 0x32;
-			}
-			gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 0x1b8;
+
+			if (NumPlayers == 1)
+				iVar1 = 50;
+			else
+				iVar1 = 58;
+
+			gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 440;
 			LaunchGame();
 			break;
 		case GAME_IDLEDEMO:
@@ -201,70 +203,70 @@ void GameStart(void)
 			}
 			break;
 		case GAME_PURSUIT:
-			iVar2 = GameLevel * 8 + 0x46;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			gCurrentMissionNumber = GameLevel * 8 + 70 + gWantNight * 4 + gSubGameNumber;
+			LaunchGame();
+			break;
 		case GAME_GETAWAY:
-			iVar2 = GameLevel * 8 + 0x66;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			gCurrentMissionNumber = GameLevel * 8 + 102 + gWantNight * 4 + gSubGameNumber;
+			LaunchGame();
+			break;
 		case GAME_GATERACE:
-			if (NumPlayers == 1) {
-				iVar1 = 0x86;
-			}
-			else {
-				iVar1 = 0xa4;
-			}
+			if (NumPlayers == 1)
+				iVar1 = 134;
+			else
+				iVar1 = 164;
+
 			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			goto LAB_00052e24;
+			LaunchGame();
+			break;
 		case GAME_CHECKPOINT:
-			if (NumPlayers == 1) {
-				iVar1 = 0xc4;
-			}
-			else {
-				iVar1 = 0xe4;
-			}
+			if (NumPlayers == 1)
+				iVar1 = 196;
+			else
+				iVar1 = 228;
+
 			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			goto LAB_00052e24;
+			LaunchGame();
+			break;
 		case GAME_TRAILBLAZER:
-			iVar2 = GameLevel * 8 + 0x104;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			gCurrentMissionNumber = GameLevel * 8 + 260 + gWantNight * 4 + gSubGameNumber;
+			LaunchGame();
+			break;
 		case GAME_SURVIVAL:
 			gCopDifficultyLevel = 2;
-			iVar2 = 0x144;
-			if (NumPlayers == 1) {
-				iVar2 = 0x124;
-			}
-			gCurrentMissionNumber = iVar2 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			
+			if (NumPlayers == 1)
+				iVar1 = 292;
+			else
+				iVar1 = 324;
+
+			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
 			gCopDifficultyLevel = SurvivalCopSettingsBackup;
 			break;
 		case GAME_REPLAYMISSION:
 			GameType = GAME_MISSION;
-			iVar1 = FindMissionLadderPos(gCurrentMissionNumber);
-			if (iVar1 != 0) {
+
+			if (FindMissionLadderPos(gCurrentMissionNumber) != 0)
 				RunMissionLadder(0);
-			}
+
 			GameType = GAME_REPLAYMISSION;
 			break;
 		case GAME_COPSANDROBBERS:
-			iVar2 = GameLevel * 8 + 0x1a4;
-			iVar1 = gWantNight << 2;
-			goto LAB_00052e1c;
+			gCurrentMissionNumber = GameLevel * 8 + 420 + gWantNight * 4 + gSubGameNumber;
+			LaunchGame();
+			break;
 		case GAME_CAPTURETHEFLAG:
-			gCurrentMissionNumber = GameLevel * 8 + 0x160 + gSubGameNumber;
+			gCurrentMissionNumber = GameLevel * 8 + 352 + gSubGameNumber;
 			LaunchGame();
 			break;
 		case GAME_SECRET:
-			iVar2 = 0x1e4;
-			iVar1 = gWantNight;
-			if (NumPlayers == 1) {
-				iVar2 = 0x1e0;
-			}
-		LAB_00052e1c:
-			gCurrentMissionNumber = iVar2 + iVar1 + gSubGameNumber;
-		LAB_00052e24:
+			if (NumPlayers == 1)
+				iVar1 = 480;
+			else
+				iVar1 = 484;
+
+			gCurrentMissionNumber = iVar1 + gWantNight + gSubGameNumber;
 			LaunchGame();
 			break;
 		case GAME_CONTINUEMISSION:
@@ -277,6 +279,7 @@ void GameStart(void)
 			GameType = StoredGameType;
 			LaunchGame();
 			gLoadedReplay = 0;
+			break;
 	}
 
 	wantedCar[1] = -1;
@@ -302,13 +305,11 @@ void GameStart(void)
 	/* end block 2 */
 	// End Line: 2538
 
+// [D]
 void StartRender(int renderNum)
 {
-	UNIMPLEMENTED();
-	/*
-	PlayFMV((uchar)renderNum);
+	PlayFMV(renderNum);
 	ReInitFrontend();
-	return;*/
 }
 
 
@@ -461,21 +462,21 @@ void ReInitFrontend(void)
 	/* end block 4 */
 	// End Line: 2250
 
+// [D]
 void RunMissionLadder(int newgame)
 {
-	bool bVar1;
-	unsigned char bVar2;
+	bool quit;
 	MISSION_STEP *CurrentStep;
 	RENDER_ARGS RenderArgs;
 
-	bVar1 = false;
+	quit = false;
 	if (newgame != 0)
 		gMissionLadderPos = 0;
 
 	RenderArgs.nRenders = 0;
 	CurrentStep = MissionLadder + gMissionLadderPos;
 
-	if (newgame == 0 && CurrentStep->flags != 0)	// (CurrentStep & 0xf8)
+	if (newgame == 0 && CurrentStep->flags != 0)
 	{
 		RenderArgs.Args[0].render = 97;
 
@@ -493,17 +494,17 @@ void RunMissionLadder(int newgame)
 		else 
 			CheckForCorrectDisc(1);
 
-		if (RenderArgs.nRenders == 4) {
+		if (RenderArgs.nRenders == 4) 
+		{
 			SetPleaseWait(NULL);
 			PlayRender(&RenderArgs);
 			RenderArgs.nRenders = 0;
 			SetPleaseWait(NULL);
 		}
 
-		gMissionLadderPos = CurrentStep - MissionLadder;// (int)(CurrentStep + -0x4f80e) >> 1;
-		bVar2 = CurrentStep->flags;// *(byte *)CurrentStep & 7;
+		gMissionLadderPos = CurrentStep - MissionLadder;
 
-		if (bVar2 == 2) 
+		if (CurrentStep->flags == 2)
 		{
 			if (RenderArgs.nRenders != 0) 
 			{
@@ -513,7 +514,7 @@ void RunMissionLadder(int newgame)
 			}
 
 			SetPleaseWait(NULL);
-			gCurrentMissionNumber = CurrentStep->data;// (uint)*(byte *)((int)CurrentStep + 1) & 0x7f;
+			gCurrentMissionNumber = CurrentStep->data;
 			LaunchGame();
 
 			if (WantedGameMode == GAMEMODE_NEXTMISSION) 
@@ -523,21 +524,21 @@ void RunMissionLadder(int newgame)
 			}
 			else 
 			{
-				bVar1 = true;
+				quit = true;
 			}
 		}
-		else if (bVar2 == 1) 
+		else if (CurrentStep->flags == 1)
 		{
-			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;// *(byte *)((int)CurrentStep + 1) & 0x7f;
+			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;
 			RenderArgs.Args[RenderArgs.nRenders].recap = 0;
 			RenderArgs.Args[RenderArgs.nRenders].credits = 0;
 			RenderArgs.nRenders++;
 		}
-		else if (bVar2 == 4)
+		else if (CurrentStep->flags == 4)
 		{
 			SetPleaseWait(NULL);
 
-			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;// *(byte *)((int)CurrentStep + 1) & 0x7f;
+			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;
 			RenderArgs.Args[RenderArgs.nRenders].recap = 0;
 			RenderArgs.Args[RenderArgs.nRenders].credits = 1;
 			RenderArgs.nRenders++;
@@ -546,15 +547,12 @@ void RunMissionLadder(int newgame)
 
 			SetPleaseWait(NULL);
 
-			bVar1 = true;
-
-			UNIMPLEMENTED();
-			// [A] fix me pls
-			//AvailableCheats._0_1_ = (byte)AvailableCheats | 0xf;
+			quit = true;
+			AvailableCheats.cheat5 = true;
 		}
 
-		CurrentStep = CurrentStep + 1;
-	} while (!bVar1);
+		CurrentStep++;
+	} while (!quit);
 }
 
 
@@ -594,18 +592,23 @@ void RunMissionLadder(int newgame)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void GetRandomChase(void)
 {
 	int bump = 0;
 
-	if (gLoadedReplay == 0) {
+	if (gLoadedReplay == 0)
+	{
 		gRandomChase = VSync(-1) % 0xd + 2;
-		if (gRandomChase == gLastChase) {
+
+		if (gRandomChase == gLastChase)
+		{
 			do {
 				gRandomChase = (VSync(-1) + bump) % 0xd + 2;
 				bump++;
 			} while (gRandomChase == gLastChase);
 		}
+
 		gLastChase = gRandomChase;
 	}
 }
@@ -638,6 +641,7 @@ void GetRandomChase(void)
 	/* end block 4 */
 	// End Line: 3008
 
+// [D]
 int FindPrevMissionFromLadderPos(int pos)
 {
 	if (pos-- > 0)
@@ -850,6 +854,7 @@ void LaunchGame(void)
 	/* end block 4 */
 	// End Line: 3337
 
+// [D]
 int FindMissionLadderPos(int mission)
 {
 	MISSION_STEP *step = MissionLadder;
@@ -866,10 +871,12 @@ int FindMissionLadderPos(int mission)
 			} break;
 		case 2:
 			{
-				if (step->data == mission) {
+				if (step->data == mission)
+				{
 					if (pos > 0) {
 						step--;
-						if (step->flags != 2) {
+						if (step->flags != 2)
+						{
 							do {
 								if (--pos <= 0)
 									break;

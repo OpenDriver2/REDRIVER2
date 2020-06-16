@@ -909,10 +909,10 @@ void DrawDrivingGameOverlays(void)
 
 			if (NumPlayers != 1) 
 			{
-				y = PrintString("Gates:", 0x10, 0x24);
+				y = PrintString("Gate:", 0x10, 0x24);
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
 				PrintString(string, y + 3, 0x24);
-				y = PrintString("Gates:", 0x10, 0x96);
+				y = PrintString("Gate:", 0x10, 0x96);
 				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
 			LAB_00015b28:
 				PrintString(string, y + 3, 0x96);
@@ -921,12 +921,12 @@ void DrawDrivingGameOverlays(void)
 
 			
 			piVar3 = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0].time;
-			PrintStringRightAligned("Gates:", 0x10e, 0x10);
+			PrintStringRightAligned("Gate:", 0x10e, 0x10);
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
 			PrintString(string, 0x111, 0x10);
 			y = PrintString("Best:", 0x10, 0x24);
 			PrintScoreTableTime(y + 3, 0x24, *piVar3);
-			y = PrintString("Gates:", 0x10, 0x34);
+			y = PrintString("Gate:", 0x10, 0x34);
 
 			if (*(short *)(piVar3 + 1) == -1) 
 				goto LAB_00015c00;

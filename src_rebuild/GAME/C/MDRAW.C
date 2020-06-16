@@ -436,19 +436,15 @@ void DrawFullscreenTargets(void)
 // [D]
 void DrawMultiplayerTargets(void)
 {
-	int iVar1;
-	int iVar2;
+	int i;
 
-	if (Mission.active != 0) {
-		iVar2 = 0;
-		iVar1 = 0;
-		do {
-			iVar2 = iVar2 + 1;
-			DrawMultiplayerTarget((_TARGET *)((int)MissionTargets->data + iVar1));
-			iVar1 = iVar2 * 0x40;
-		} while (iVar2 < 0x10);
-	}
-	return;
+	if (Mission.active == 0)
+		return;
+
+	i = 0;
+	do {
+		DrawMultiplayerTarget(&MissionTargets[i++]);
+	} while (i < 16);
 }
 
 
@@ -767,87 +763,102 @@ LAB_0005f7dc:
 	/* end block 2 */
 	// End Line: 860
 
+// [D] [A] - not drawn properly...
 void DrawMultiplayerTarget(_TARGET *target)
 {
-	UNIMPLEMENTED();
-
-	/*
 	int iVar1;
 	uint uVar2;
 	long *plVar3;
-	uchar b;
-	uchar g;
-	uchar r;
-	VECTOR local_28;
+	u_char b;
+	u_char g;
+	u_char r;
+	VECTOR tv;
 
-	iVar1 = TargetComplete(target, -1);
-	if (iVar1 != 0) {
+	if (TargetComplete(target, -1) != 0)
 		return;
-	}
-	iVar1 = TargetActive(target, 0);
-	if ((iVar1 == 0) && (iVar1 = TargetActive(target, 1), iVar1 == 0)) {
+
+	if (TargetActive(target, 0) && TargetActive(target, 1))
 		return;
-	}
-	r = '@';
-	g = '@';
-	iVar1 = target->data[0];
-	b = '@';
-	if (iVar1 == 2) {
-		local_28.vx = target->data[3];
-		local_28.vz = target->data[4];
-		local_28.vy = 0;
+
+	r = 64;
+	g = 64;
+	b = 64;
+
+	if (target->data[0] == 2)
+	{
+		tv.vx = target->data[3];
+		tv.vz = target->data[4];
+		tv.vy = 0;
 		goto LAB_0005fa40;
 	}
-	if (2 < iVar1) {
-		if (iVar1 != 3) {
+	if (2 < target->data[0]) 
+	{
+		if (target->data[0] != 3)
 			return;
-		}
+
 		plVar3 = (long *)target->data[4];
-		local_28.vx = *plVar3;
-		local_28.vy = plVar3[1];
-		local_28.vz = plVar3[2];
-		local_28.pad = plVar3[3];
+		tv.vx = *plVar3;
+		tv.vy = plVar3[1];
+		tv.vz = plVar3[2];
+		tv.pad = plVar3[3];
 		goto LAB_0005fa40;
 	}
-	if (iVar1 != 1) {
+
+	if (target->data[0] != 1)
 		return;
-	}
-	local_28.vx = target->data[3];
-	local_28.vz = target->data[4];
-	local_28.vy = 0;
+
+	tv.vx = target->data[3];
+	tv.vz = target->data[4];
+	tv.vy = 0;
 	uVar2 = target->data[1] & 0x30000;
-	if (uVar2 == 0x20000) {
+
+	if (uVar2 == 0x20000) 
+	{
 	LAB_0005f9e4:
-		r = '\0';
-		g = -0x80;
-		b = '\0';
+		r = 0;
+		g = 128;
+		b = 0;
 	}
-	else {
-		if (uVar2 < 0x20001) {
-			if (uVar2 != 0x10000) {
+	else 
+	{
+		if (uVar2 < 0x20001)
+		{
+			if (uVar2 != 0x10000) 
+			{
 			LAB_0005f998:
-				if ((NumPlayers < 2) || (iVar1 = TargetActive(target, -1), iVar1 != 0)) goto LAB_0005fa40;
-				iVar1 = TargetActive(target, 0);
-				if (iVar1 == 0) goto LAB_0005f9e4;
+				if (NumPlayers < 2 || TargetActive(target, -1) != 0)
+					goto LAB_0005fa40;
+
+				if (TargetActive(target, 0) == 0)
+					goto LAB_0005f9e4;
 			}
 		}
-		else {
-			if (uVar2 != 0x30000) goto LAB_0005f998;
-			if (gPlayerWithTheFlag == -1) goto LAB_0005fa40;
-			local_28.vx = (&player)[gPlayerWithTheFlag].pos[0];
-			local_28.vz = (&player)[gPlayerWithTheFlag].pos[2];
-			local_28.vy = 0;
-			if (gPlayerWithTheFlag != 0) goto LAB_0005f9e4;
+		else 
+		{
+			if (uVar2 != 0x30000) 
+				goto LAB_0005f998;
+
+			if (gPlayerWithTheFlag == -1) 
+				goto LAB_0005fa40;
+
+			tv.vx = player[gPlayerWithTheFlag].pos[0];
+			tv.vz = player[gPlayerWithTheFlag].pos[2];
+			tv.vy = 0;
+
+			if (gPlayerWithTheFlag != 0) 
+				goto LAB_0005f9e4;
 		}
-		r = -0x80;
-		g = '\0';
-		b = '\0';
+
+		r = 128;
+		g = 0;
+		b = 0;
 	}
+
 LAB_0005fa40:
-	if ((target->data[2] & 0x10U) != 0) {
-		DrawTargetBlip(&local_28, r, g, b, 0x30);
+	if ((target->data[2] & 0x10U) != 0) 
+	{
+		DrawTargetBlip(&tv, r, g, b, 0x30);
 	}
-	return;*/
 }
 
 

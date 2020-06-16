@@ -5251,7 +5251,7 @@ void MultiCarEvent(_TARGET *target)
 	i = 0;
 	while (n != -0x80000000) 
 	{
-		n = ((int)(multiCar.event - event) * -0x33333333 >> 3) + multiCar.count;
+		n = (multiCar.event - event) + multiCar.count;
 		ev = event + n;
 		ev->position.vx = data->x;
 		ev->position.vy = -0x138;

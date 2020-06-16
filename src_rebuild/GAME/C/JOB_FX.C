@@ -316,10 +316,11 @@ void DrawAllExplosions(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+SVECTOR globemesh[54];
+
+// [D]
 void initExplosion(void)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	short sVar2;
 	uint uVar3;
@@ -327,32 +328,33 @@ void initExplosion(void)
 	uint uVar5;
 	int iVar6;
 	uint uVar7;
-	undefined *puVar8;
+	int puVar8;
 	uint uVar9;
 
-	uVar7 = 0x80;
+	uVar7 = 128;
 	pSVar4 = globemesh;
 	uVar9 = 0;
 	do {
 		uVar3 = uVar7 & 0xfff;
 		uVar7 = uVar7 + 0x200;
 		uVar5 = uVar9 + 2;
+
 		pSVar4->vy = 5;
-		sVar1 = rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1];
 		pSVar4[1].vy = -0x109;
-		sVar2 = rcossin_tbl[(uVar9 & 0xf) * 0x200];
-		pSVar4->vx = (short)((int)sVar1 * 0x200 + 0x800 >> 0xc);
-		sVar1 = rcossin_tbl[uVar3 * 2 + 1];
-		pSVar4->vz = (short)((int)sVar2 * 0x200 + 0x800 >> 0xc);
-		sVar2 = rcossin_tbl[uVar3 * 2];
-		pSVar4[1].vx = (short)((int)sVar1 * 0x1ea + 0x800 >> 0xc);
-		pSVar4[1].vz = (short)((int)sVar2 * 0x1ea + 0x800 >> 0xc);
+
+		pSVar4->vx = FIXED(rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1] * 0x200);
+		pSVar4->vz = FIXED(rcossin_tbl[(uVar9 & 0xf) * 0x200] * 0x200);
+
+		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 0x1ea);
+		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 0x1ea);
+
 		pSVar4 = pSVar4 + 2;
 		uVar9 = uVar5;
-	} while ((int)uVar5 < 0x12);
+	} while (uVar5 < 0x12);
+
 	uVar9 = 0x1300;
-	pSVar4 = globemesh + 0x12;
-	puVar8 = &DAT_00001280;
+	pSVar4 = globemesh + 18;
+	puVar8 = 0x1280;
 	iVar6 = 0x10;
 	do {
 		uVar3 = uVar9 & 0xfff;
@@ -360,20 +362,21 @@ void initExplosion(void)
 		uVar7 = (uint)puVar8 & 0xfff;
 		puVar8 = puVar8 + 0x200;
 		iVar6 = iVar6 + -2;
+
 		pSVar4->vy = -0x109;
-		sVar1 = rcossin_tbl[uVar7 * 2 + 1];
 		pSVar4[1].vy = -0x1f9;
-		sVar2 = rcossin_tbl[uVar7 * 2];
-		pSVar4->vx = (short)((int)sVar1 * 0x1ea + 0x800 >> 0xc);
-		sVar1 = rcossin_tbl[uVar3 * 2 + 1];
-		pSVar4->vz = (short)((int)sVar2 * 0x1ea + 0x800 >> 0xc);
-		sVar2 = rcossin_tbl[uVar3 * 2];
-		pSVar4[1].vx = (short)((int)sVar1 * 0x14a + 0x800 >> 0xc);
-		pSVar4[1].vz = (short)((int)sVar2 * 0x14a + 0x800 >> 0xc);
+
+		pSVar4->vx = FIXED(rcossin_tbl[uVar7 * 2 + 1] * 0x1ea);
+		pSVar4->vz = FIXED(rcossin_tbl[uVar7 * 2] * 0x1ea);
+
+		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 0x14a);
+		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 0x14a);
+
 		pSVar4 = pSVar4 + 2;
 	} while (-1 < iVar6);
-	puVar8 = &DAT_00002580;
-	pSVar4 = globemesh + 0x24;
+
+	puVar8 = 9600;
+	pSVar4 = globemesh + 36;
 	uVar9 = 0x2500;
 	iVar6 = 0x10;
 	do {
@@ -382,19 +385,18 @@ void initExplosion(void)
 		uVar7 = uVar9 & 0xfff;
 		uVar9 = uVar9 + 0x200;
 		iVar6 = iVar6 + -2;
+
 		pSVar4->vy = -0x1f9;
-		sVar1 = rcossin_tbl[uVar7 * 2 + 1];
 		pSVar4[1].vy = -0x269;
-		sVar2 = rcossin_tbl[uVar7 * 2];
-		pSVar4->vx = (short)((int)sVar1 * 0x14a + 0x800 >> 0xc);
-		sVar1 = rcossin_tbl[uVar3 * 2 + 1];
-		pSVar4->vz = (short)((int)sVar2 * 0x14a + 0x800 >> 0xc);
-		sVar2 = rcossin_tbl[uVar3 * 2];
-		pSVar4[1].vx = (short)((int)sVar1 * 100 + 0x800 >> 0xc);
-		pSVar4[1].vz = (short)((int)sVar2 * 100 + 0x800 >> 0xc);
+
+		pSVar4->vx = FIXED(rcossin_tbl[uVar7 * 2 + 1] * 0x14a);
+		pSVar4->vz = FIXED(rcossin_tbl[uVar7 * 2] * 0x14a);
+
+		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 100);
+		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 100);
+
 		pSVar4 = pSVar4 + 2;
 	} while (-1 < iVar6);
-	return;*/
 }
 
 
