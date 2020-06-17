@@ -774,10 +774,10 @@ void DrawMultiplayerTarget(_TARGET *target)
 	u_char r;
 	VECTOR tv;
 
-	if (TargetComplete(target, -1) != 0)
+	if (TargetComplete(target, -1))
 		return;
 
-	if (TargetActive(target, 0) && TargetActive(target, 1))
+	if (TargetActive(target, 0) == 0 && TargetActive(target, 1) == 0)
 		return;
 
 	r = 64;
@@ -791,7 +791,8 @@ void DrawMultiplayerTarget(_TARGET *target)
 		tv.vy = 0;
 		goto LAB_0005fa40;
 	}
-	if (2 < target->data[0]) 
+
+	if (target->data[0] > 2) 
 	{
 		if (target->data[0] != 3)
 			return;

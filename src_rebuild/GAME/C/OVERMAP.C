@@ -174,8 +174,8 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 	else 
 	{
 		WorldToMultiplayerMap(pos, &vec);
-		vec.vx = vec.vx + 0xf0;
-		vec.vz = vec.vz + 0x60;
+		vec.vx += 240;
+		vec.vz += 96;
 	}
 
 	if ((flags & 0x10) == 0) 
@@ -204,10 +204,12 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 	poly->x2 = vec.vx - ysize;
 	poly->y2 = vec.vz + ysize;
 	poly->x3 = vec.vx + ysize;
+	poly->y3 = vec.vz + ysize;
+
 	poly->r0 = r;
 	poly->g0 = g;
 	poly->b0 = b;
-	poly->y3 = vec.vz + ysize;
+	
 	poly->u0 = light_texture.coords.u0;
 	poly->v0 = light_texture.coords.v0;
 	poly->u1 = light_texture.coords.u1;
@@ -440,8 +442,8 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 	else 
 	{
 		WorldToMultiplayerMap(pos, &vec);
-		vec.vx = vec.vx + 0xf0;
-		vec.vz = vec.vz + 0x60;
+		vec.vx += 240;
+		vec.vz += 96;
 	}
 
 	iVar2 = rcossin_tbl[(rot & 0xfffU) * 2];
@@ -1996,8 +1998,8 @@ void DrawMultiplayerMap(void)
 
 				WorldToMultiplayerMap(&target, &target);
 
-				target.vx = target.vx + 0xf0;
-				target.vz = target.vz + yPos;
+				target.vx += 240;
+				target.vz += yPos;
 
 				DrawPlayerDot(&target, -pPVar6->dir, r, g, 0, 8);
 
@@ -2114,23 +2116,22 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 	int iVar2;
 	int iVar3;
 
-	iVar1 = MissionHeader->region;
-
-	if (iVar1 != 0) 
+	if (MissionHeader->region != 0)
 	{
-		iVar3 = iVar1 / regions_across;
-		iVar2 = in->vx - ((iVar1 % regions_across) * 0x10000 + cells_across * -0x400);
-		iVar1 = cells_down * -0x400;
+		iVar3 = MissionHeader->region / regions_across;
+		iVar2 = in->vx - ((MissionHeader->region % regions_across) * 0x10000 - cells_across * 1024);
+		iVar1 = cells_down * -1024;
 
 		out->vx = iVar2 >> 0xb;
-		iVar1 = in->vz - ((iVar3 + -1) * 0x10000 + iVar1);
 
-		out->vz = 0x40 - (iVar1 >> 0xb);
+		iVar1 = in->vz - ((iVar3-1) * 0x10000 + iVar1);
+
+		out->vz = 64 - (iVar1 >> 0xb);
 		return;
 	}
 
-	out->vx = 0x20;
-	out->vz = 0x20;
+	out->vx = 32;
+	out->vz = 32;
 }
 
 
