@@ -749,7 +749,7 @@ void StoreVertexLists(void)
 		{
 			cTannerVNumbers[pBVar2->id] = -1;
 		}
-		else
+		else if(*pBVar2->pModel != NULL)
 		{
 			pMVar5 = *pBVar2->pModel;
 			local_a2_76 = (SVECTOR *)pMVar5->vertices;

@@ -2005,6 +2005,7 @@ void ClearRegion(int target_region)
 	// End Line: 3837
 
 extern bool gDemoLevel;
+extern bool gDriver1Level;
 
 // [D]
 int LoadRegionData(int region, int target_region)
@@ -2029,8 +2030,6 @@ int LoadRegionData(int region, int target_region)
 	offset = spoolptr->offset;
 
 #ifndef PSX
-	extern bool gDriver1Level;
-
 	if (gDemoLevel)
 	{
 		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
@@ -4351,7 +4350,7 @@ void InitSpecSpool(void)
 	}
 
 #ifndef PSX
-	if(gDemoLevel)
+	if(gDemoLevel || gDriver1Level)
 		allowSpecSpooling = 0;
 #endif
 

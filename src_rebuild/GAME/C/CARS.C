@@ -1025,12 +1025,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (cp->controlType == 3)
 	{
-		if (player[0].playerCarId < 0) 
-			psVar7 = &pedestrianFelony;
-		else 
-			psVar7 = &car_data[player[0].playerCarId].felonyRating;
-
-		if (*psVar7 > 0x292 && (MissionHeader->residentModels[3] == 0))
+		if (MissionHeader->residentModels[3] == 0)
 		{
 			if (cp->ai.p.dying < 75)
 				AddCopCarLight(cp);
