@@ -2004,6 +2004,8 @@ void ClearRegion(int target_region)
 	/* end block 2 */
 	// End Line: 3837
 
+extern bool gDemoLevel;
+
 // [D]
 int LoadRegionData(int region, int target_region)
 {
@@ -2026,31 +2028,31 @@ int LoadRegionData(int region, int target_region)
 
 	offset = spoolptr->offset;
 
-//#define HAVANA_AUGUST_DEMO // uncomment to load August Demo HAVANA.LEV
-
-#ifdef HAVANA_AUGUST_DEMO
-	RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
-	offset += spoolptr->roadm_size;
-
-	RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
-	offset += spoolptr->cell_data_size[1];
-		
-	RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
-	offset += spoolptr->cell_data_size[0];
-
-	RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
-	offset += spoolptr->cell_data_size[2];
-
-	//offset -= spoolptr->roadm_size; // [A] if PVS_Buffers loading temporarily disabled this should be uncommented
-
-	spool_regioninfo[spool_regioncounter].nsectors = offset - spoolptr->offset;
-#else
+#ifndef PSX
 	extern bool gDriver1Level;
-	if (gDriver1Level)
-	{
 
+	if (gDemoLevel)
+	{
+		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
+		offset += spoolptr->roadm_size;
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		offset += spoolptr->cell_data_size[1];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[0];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
+		offset += spoolptr->cell_data_size[2];
+
+		//offset -= spoolptr->roadm_size; // [A] if PVS_Buffers loading temporarily disabled this should be uncommented
+	}
+	else if (gDriver1Level)
+	{
+		// TODO: ....
 	}
 	else
+#endif
 	{
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
 		offset += spoolptr->cell_data_size[1];
@@ -2066,7 +2068,6 @@ int LoadRegionData(int region, int target_region)
 	}
 
 	spool_regioninfo[spool_regioncounter].nsectors = offset - spoolptr->offset;
-#endif
 
 	spool_regioninfo[spool_regioncounter].region_to_unpack = region;
 	spool_regioninfo[spool_regioncounter].target_barrel_region = target_region;
@@ -4348,6 +4349,11 @@ void InitSpecSpool(void)
 		default:
 			allowSpecSpooling = 1;
 	}
+
+#ifndef PSX
+	if(gDemoLevel)
+		allowSpecSpooling = 0;
+#endif
 
 	specModelValid = 1;
 	specialState = 0;

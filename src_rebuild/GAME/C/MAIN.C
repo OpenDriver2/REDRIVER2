@@ -187,6 +187,7 @@ unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 	// End Line: 5345
 
 bool gDriver1Level = false;
+bool gDemoLevel = false;
 
 void ProcessLumps(char *lump_ptr, int lump_size)
 {
@@ -289,12 +290,13 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 					puVar9 = puVar9 + 1;
 				} while (lump_type != 0);
 			}
+
+			gDemoLevel = false; // [A]
 		}
 		else if (lump_type == LUMP_JUNCTIONS2)
 		{
 			printf("LUMP_JUNCTIONS2: size: %d\n", size);
-			ProcessJunctionsDriver2Lump
-			((char *)ptr, size, 1);
+			ProcessJunctionsDriver2Lump((char *)ptr, size, 1);
 			lump_type = NumTempJunctions;
 			pDVar8 = Driver2JunctionsPtr;
 			puVar9 = Driver2TempJunctionsPtr;
@@ -307,6 +309,8 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 					puVar9 = puVar9 + 1;
 				} while (lump_type != 0);
 			}
+
+			gDemoLevel = true; // [A]
 		}
 		else if (lump_type == LUMP_JUNCTIONS)
 		{
@@ -2481,6 +2485,26 @@ int redriver2_main(int argc, char** argv)
 #ifndef PSX
 	for (int i = 0; i < argc; i++)
 	{
+		if (!_stricmp(argv[i], "-playercar"))
+		{
+			if (argc - i < 2)
+			{
+				printError("-playercar missing number argument!");
+				return -1;
+			}
+
+			wantedCar[0] = atoi(argv[i + 1]);
+		}
+		if (!_stricmp(argv[i], "-player2car"))
+		{
+			if (argc - i < 2)
+			{
+				printError("-player2car missing number argument!");
+				return -1;
+			}
+
+			wantedCar[1] = atoi(argv[i + 1]);
+		}
 		if (!_stricmp(argv[i], "-players"))
 		{
 			if (argc - i < 2)
