@@ -508,7 +508,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			pan = pan * 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
 			alSource3f(alSource, AL_POSITION, pan * STEREO_FACTOR, 0, -sqrtf(1.0f - pan * pan));
 
-			alSourcef(alSource, AL_GAIN, max(left_gain, right_gain));
+			alSourcef(alSource, AL_GAIN, (left_gain+right_gain)*0.5f);
 		}
 
 		// update pitch
