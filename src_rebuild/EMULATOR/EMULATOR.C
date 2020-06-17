@@ -58,6 +58,7 @@ int g_wireframeMode = 0;
 int g_texturelessMode = 0;
 int g_emulatorPaused = 0;
 int g_polygonSelected = 0;
+int g_pgxpTextureCorrection = 1;
 TextureID g_lastBoundTexture;
 
 void Emulator_ResetDevice()
@@ -502,7 +503,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 {\
 	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);		\
 	PGXPVData vd;									\
-	if(PGXP_GetCacheData(vd, lookup, gteidx)) {		\
+	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) {		\
 		v.x = vd.px + ofsX;\
 		v.y = vd.py + ofsY;\
 		v.w = vd.pz;\
@@ -1824,6 +1825,10 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 
 				eprintf("Active keyboard controller: %d\n", activeControllers);
 				break;
+			case SDL_SCANCODE_7:
+				g_pgxpTextureCorrection ^= 1;
+				break;
+				
 		}
 	}
 
