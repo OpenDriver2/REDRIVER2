@@ -1,6 +1,7 @@
 #ifndef CIV_AI_H
 #define CIV_AI_H
 
+extern unsigned char speedLimits[3];
 extern unsigned char reservedSlots[20];
 extern int frameStart;
 
@@ -8,6 +9,8 @@ extern int distFurthestCivCarSq;
 extern char furthestCivID;
 
 extern char makeLimoPullOver;
+
+extern char junctionLightsPhase[2];
 
 extern int InitCar(_CAR_DATA *cp, int direction, long (*startPos)[4], unsigned char control, int model, int palette, char *extraData); // 0x00023DE8
 

@@ -3,15 +3,15 @@
 
 #define IS_ROAD_SURFACE(surfid)				(((surfid) & 0xFFFFE000) != 0xFFFFE000)		// is any road surface
 
-#define IS_STRAIGHT_SURFACE(surfid)			(((surfid) & 0xFFFFE000) == 0 && (surfid & 0x1fffU) < NumDriver2Straights)
-#define IS_CURVED_SURFACE(surfid)			(((surfid) & 0xFFFFE000) == 0x4000 && (surfid & 0x1fffU) < NumDriver2Curves)
-#define IS_JUNCTION_SURFACE(surfid)			(((surfid) & 0xFFFFE000) == 0x2000 && (surfid & 0x1fffU) < NumDriver2Junctions)
+#define IS_STRAIGHT_SURFACE(surfid)			(((surfid) > -1) && ((surfid) & 0xFFFFE000) == 0 && (surfid & 0x1FFF) < NumDriver2Straights)
+#define IS_CURVED_SURFACE(surfid)			(((surfid) > -1) && ((surfid) & 0xFFFFE000) == 0x4000 && (surfid & 0x1FFF) < NumDriver2Curves)
+#define IS_JUNCTION_SURFACE(surfid)			(((surfid) > -1) && ((surfid) & 0xFFFFE000) == 0x2000 && (surfid & 0x1FFF) < NumDriver2Junctions)
 
-#define GET_STRAIGHT(surfid)				(Driver2StraightsPtr + (surfid & 0x1fffU))
-#define GET_CURVE(surfid)					(Driver2CurvesPtr + (surfid & 0x1fffU))
-#define GET_JUNCTION(surfid)				(Driver2JunctionsPtr + (surfid & 0x1fffU))
+#define GET_STRAIGHT(surfid)				(Driver2StraightsPtr + (surfid & 0x1FFF))
+#define GET_CURVE(surfid)					(Driver2CurvesPtr + (surfid & 0x1FFF))
+#define GET_JUNCTION(surfid)				(Driver2JunctionsPtr + (surfid & 0x1FFF))
 
-#define IS_SINGLE_LANE(rdcv)				((*(uint*)&(rdcv)->NumLanes & 0xFFFF) == 0xff01)
+#define IS_SINGLE_LANE(rdcv)				((*(uint*)&(rdcv)->NumLanes & 0xFFFF) == 0xFF01)
 
 extern ROAD_MAP_LUMP_DATA roadMapLumpData;
 

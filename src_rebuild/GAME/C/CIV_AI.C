@@ -26,7 +26,7 @@
 #include "INLINE_C.H"
 #include "STRINGS.H"
 
-char speedLimits[3] = { 56, 97, 138 };
+unsigned char speedLimits[3] = { 56, 97, 138 };
 
 CIV_AI_234fake civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };

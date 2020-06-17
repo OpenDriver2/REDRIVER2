@@ -2,11 +2,18 @@
 #include "FELONY.H"
 #include "STRINGS.H"
 #include "COP_AI.H"
+#include "CIV_AI.H"
+
 #include "PLAYERS.H"
 #include "CARS.H"
 #include "MISSION.H"
 #include "CONVERT.H"
 #include "GAMESND.H"
+#include "DR2ROADS.H"
+#include "OVERLAY.H"
+#include "MISSION.H"
+
+#include "ABS.H"
 
 short initialOccurrenceDelay[12] = { 0x18, 0, 0, 0, 0, 0, 0, 0, 0x18, 0, 0x18, 0 };
 short initialReccurrenceDelay[12] = { 0x80, 0, 0x80, 0x40, 0x40, 0x20, 0x20, 0, 0x80, 0x100 };
@@ -257,8 +264,44 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 		felony = &car_data[player[0].playerCarId].felonyRating;
 
 	sVar1 = *felony;
-	if (pFelonyData->occurrenceDelay[uVar6].current < (&pFelonyData->occurrenceDelay[uVar6].current)[1])
+	if (pFelonyData->occurrenceDelay[uVar6].current < pFelonyData->occurrenceDelay[uVar6].maximum)
 		return;
+
+#ifdef FELONY_DEBUG
+	switch (type)
+	{
+		case 1:
+			SetPlayerMessage(0, "Scaring pedestrians", 0, 1);
+			break;
+		case 2:
+			SetPlayerMessage(0, "Speeding", 0, 1);
+			break;
+		case 3:
+			SetPlayerMessage(0, "Red light crossing", 0, 1);
+			break;
+		case 4:
+			SetPlayerMessage(0, "Collision with another vehicle", 0, 1);
+			break;
+		case 5:
+			SetPlayerMessage(0, "Collision with cop", 0, 1);
+			break;
+		case 6:
+			SetPlayerMessage(0, "Collision with building", 0, 1);
+			break;
+		case 7:
+			SetPlayerMessage(0, "Damaging propery", 0, 1);
+			break;
+		case 8:
+			SetPlayerMessage(0, "Wrong way", 0, 1);
+			break;
+		case 9:
+			SetPlayerMessage(0, "Driving without lights", 0, 1);
+			break;
+		case 10:
+			SetPlayerMessage(0, "Reckless driving", 0, 1);
+			break;
+	}
+#endif
 
 	if (CopsCanSeePlayer == 0 && (type != 11))
 		return;
@@ -526,181 +569,192 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 /* WARNING: Removing unreachable block (ram,0x0004d214) */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+short playerLastRoad = 0;
+
+// [D]
 void CheckPlayerMiscFelonies(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	bool bVar2;
-	uint uVar3;
-	uint uVar4;
+	unsigned char bVar1;
+	long lVar3;
+	int uVar4;
 	int iVar5;
-	int iVar6;
+	int uVar6;
 	int iVar7;
-	uint uVar8;
-	DRIVER2_JUNCTION *pDVar9;
-	uint unaff_s1;
-	uint uVar10;
-	VECTOR *pos;
-	DRIVER2_CURVE *cv;
-	DRIVER2_STRAIGHT *pDVar11;
+	int iVar8;
 
-	cv = (DRIVER2_CURVE *)0x0;
-	pDVar11 = (DRIVER2_STRAIGHT *)0x0;
-	iVar7 = (int)player.playerCarId;
-	pos = (VECTOR *)car_data[iVar7].hd.where.t;
-	if (player.playerType == '\x02') {
+	bool goingWrongWay;
+	int surfInd;
+	int maxSpeed;
+	int limit;
+	int exitId;
+	int _exitId;
+	VECTOR *carPos;
+	DRIVER2_CURVE *cv;
+	DRIVER2_STRAIGHT *st;
+	DRIVER2_JUNCTION *jn;
+	_CAR_DATA* cp;
+
+	cv = NULL;
+	st = NULL;
+
+	if (player[0].playerType == 2 || player[0].playerCarId < 0 || FelonyBar.active == 0)
 		return;
-	}
-	if (iVar7 < 0) {
-		return;
-	}
-	if (FelonyBar.active == 0) {
-		return;
-	}
-	uVar3 = GetSurfaceIndex(pos);
-	if ((((uVar3 & 0xffffe000) == 0x2000) && ((int)(uVar3 & 0x1fff) < NumDriver2Junctions)) &&
-		(-1 < (int)uVar3)) {
-		if (((((playerLastRoad & 0xe000U) == 0x4000) &&
-			((int)((uint)(ushort)playerLastRoad & 0x1fff) < NumDriver2Curves)) ||
-			(((playerLastRoad & 0xe000U) == 0 &&
-			((int)((uint)(ushort)playerLastRoad & 0x1fff) < NumDriver2Straights)))) &&
-				((-1 < playerLastRoad &&
-			(pDVar9 = Driver2JunctionsPtr + (uVar3 - 0x2000), (pDVar9->flags & 1) != 0)))) {
-			if (pDVar9->ExitIdx[0] == playerLastRoad) {
-				uVar10 = 0;
+
+	cp = &car_data[player[0].playerCarId];
+	carPos = (VECTOR *)cp->hd.where.t;
+
+	surfInd = GetSurfaceIndex(carPos);
+
+	// check junctions
+	if (IS_JUNCTION_SURFACE(surfInd)) // (((surfInd & 0xffffe000U) == 0x2000) && ((int)(surfInd & 0x1fffU) < NumDriver2Junctions)) && (-1 < surfInd))
+	{
+		jn = GET_JUNCTION(surfInd);
+
+		//if (((((playerLastRoad & 0xe000U) == 0x4000) && ((int)((uint)(ushort)playerLastRoad & 0x1fff) < NumDriver2Curves)) || 
+		//	(((playerLastRoad & 0xe000U) == 0 && ((int)((uint)(ushort)playerLastRoad & 0x1fff) < NumDriver2Straights)))) &&
+		//	((-1 < playerLastRoad && (jn = Driver2JunctionsPtr + surfInd + -0x2000, (jn->flags & 1) != 0)))) 
+		if(	(IS_CURVED_SURFACE(playerLastRoad) || IS_STRAIGHT_SURFACE(playerLastRoad)) && (jn->flags & 0x1))
+		{
+			if (jn->ExitIdx[0] == playerLastRoad) 
+			{
+				_exitId = 0;
 			}
-			else {
-				uVar4 = 1;
+			else 
+			{
+				uVar6 = 1;
 				do {
-					uVar8 = uVar4 & 0xff;
-					uVar10 = unaff_s1;
-					if (3 < uVar8) break;
-					uVar4 = uVar8 + 1;
-					uVar10 = uVar8;
-				} while (pDVar9->ExitIdx[uVar8] != playerLastRoad);
+					uVar4 = uVar6 & 0xff;
+					_exitId = exitId;
+
+					if (3 < uVar4)
+						break;
+
+					uVar6 = uVar4 + 1;
+					_exitId = uVar4;
+				} while (jn->ExitIdx[uVar4] != playerLastRoad);
 			}
-			if ((&junctionLightsPhase)[uVar10 & 1] == '\x01') {
-				NoteFelony(&felonyData, '\x03', 0x1000);
+
+			if (junctionLightsPhase[_exitId & 1] == 1) 
+			{
+				NoteFelony(&felonyData, 3, 0x1000);
 			}
 		}
 	}
-	playerLastRoad = (short)uVar3;
-	bVar2 = false;
-	if ((((uVar3 & 0xffffe000) == 0) && ((int)(uVar3 & 0x1fff) < NumDriver2Straights)) &&
-		(-1 < (int)uVar3)) {
-		pDVar11 = Driver2StraightsPtr + uVar3;
-		uVar3 = (uint)(ushort)pDVar11->angle & 0xfff;
-		uVar4 = (uint)(byte)pDVar11->NumLanes & 0xf;
-		uVar3 = uVar4 - ((((pos->vx - pDVar11->Midx) * (int)rcossin_tbl[uVar3 * 2 + 1] -
-			(car_data[iVar7].hd.where.t[2] - pDVar11->Midz) * (int)rcossin_tbl[uVar3 * 2])
-			+ 0x800 >> 0xc) + 0x200 >> 9);
+
+	playerLastRoad = surfInd;
+	goingWrongWay = false;
+
+	// straight or curve
+	if (IS_STRAIGHT_SURFACE(surfInd)) //(((surfInd & 0xffffe000U) == 0) && ((int)(surfInd & 0x1fffU) < NumDriver2Straights)) && (-1 < surfInd)) 
+	{
+		st = GET_STRAIGHT(surfInd); // Driver2StraightsPtr + surfInd;
+		uVar6 = st->angle & 0xfff;
+		uVar4 = st->NumLanes & 0xf;
+		uVar6 = uVar4 - (FIXED((carPos->vx - st->Midx) * rcossin_tbl[uVar6 * 2 + 1] - (carPos->vz - st->Midz) * rcossin_tbl[uVar6 * 2]) + 0x200 >> 9);
 		iVar5 = uVar4 * 2;
-		if ((int)uVar3 < 0) {
-			uVar3 = 0;
-		}
-		if (iVar5 <= (int)uVar3) {
-			uVar3 = iVar5 - 1;
-		}
-		if (((int)(uint)(byte)pDVar11->AILanes >> ((int)uVar3 / 2 & 0x1fU) & 1U) != 0) {
-			uVar4 = ((int)pDVar11->angle - car_data[iVar7].hd.direction) + 0x400U >> 0xb & 1;
-			if ((*(uint *)(pDVar11->ConnectIdx + 3) & 0xffff0000) != 0xff010000) {
-				uVar3 = (int)(uint)(byte)pDVar11->LaneDirs >> ((int)uVar3 / 2 & 0x1fU);
+
+		if (uVar6 < 0)
+			uVar6 = 0;
+	
+		if (iVar5 <= uVar6)
+			uVar6 = iVar5 - 1;
+	
+		if ((st->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0) 
+		{
+			uVar4 = (st->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
+
+			if ((*(uint *)(st->ConnectIdx + 3) & 0xffff0000) != 0xff010000) 
+			{
+				uVar6 = st->LaneDirs >> (uVar6 / 2 & 0x1fU);
 			}
-			if ((uVar3 & 1) == 0) {
-				if (uVar4 == 1) {
-					bVar2 = true;
+
+			if ((uVar6 & 1) == 0) 
+			{
+				if (uVar4 == 1)
+				{
+					goingWrongWay = true;
 				}
 			}
-			else {
-				if (uVar4 == 0) {
-					bVar2 = true;
-				}
+			else if (uVar4 == 0)
+				goingWrongWay = true;
+		}
+	}
+	else if(IS_CURVED_SURFACE(surfInd)) //(((surfInd & 0xffffe000U) == 0x4000) && ((int)(surfInd & 0x1fffU) < NumDriver2Curves)) && (-1 < surfInd))
+	{
+		cv = GET_CURVE(surfInd); // Driver2CurvesPtr + surfInd + -0x4000;
+		iVar5 = carPos->vx - cv->Midx;
+		iVar7 = carPos->vz - cv->Midz;
+		lVar3 = SquareRoot0(iVar5 * iVar5 + iVar7 * iVar7);
+
+		uVar6 = (lVar3 >> 9) - cv->inside * 2;
+		if (uVar6 < 0)
+			uVar6 = 0;
+
+		iVar5 = (cv->NumLanes & 0xf) * 2;
+
+		if (iVar5 <= uVar6)
+			uVar6 = iVar5 - 1;
+
+		if ((cv->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
+		{
+			if (*(short *)&cv->NumLanes != -0xff)
+				uVar6 = cv->LaneDirs >> (uVar6 / 2 & 0x1fU);
+
+			if ((uVar6 & 1) == 0)
+			{
+				if (NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, cv))
+					goingWrongWay = true;
+			}
+			else if (iVar5 == 0)
+			{
+				goingWrongWay = true;
 			}
 		}
 	}
-	else {
-		if ((((uVar3 & 0xffffe000) == 0x4000) && ((int)(uVar3 & 0x1fff) < NumDriver2Curves)) &&
-			(-1 < (int)uVar3)) {
-			cv = Driver2CurvesPtr + (uVar3 - 0x4000);
-			iVar5 = pos->vx - cv->Midx;
-			iVar6 = car_data[iVar7].hd.where.t[2] - cv->Midz;
-			iVar5 = SquareRoot0(iVar5 * iVar5 + iVar6 * iVar6);
-			if (iVar5 < 0) {
-				iVar5 = iVar5 + 0x1ff;
-			}
-			uVar3 = (iVar5 >> 9) + (uint)(byte)cv->inside * -2;
-			if ((int)uVar3 < 0) {
-				uVar3 = 0;
-			}
-			iVar5 = ((uint)(byte)cv->NumLanes & 0xf) * 2;
-			if (iVar5 <= (int)uVar3) {
-				uVar3 = iVar5 - 1;
-			}
-			if (((int)(uint)(byte)cv->AILanes >> ((int)uVar3 / 2 & 0x1fU) & 1U) != 0) {
-				iVar5 = NotTravellingAlongCurve
-				(pos->vx, car_data[iVar7].hd.where.t[2], car_data[iVar7].hd.direction, cv);
-				if (*(short *)&cv->NumLanes != -0xff) {
-					uVar3 = (int)(uint)(byte)cv->LaneDirs >> ((int)uVar3 / 2 & 0x1fU);
-				}
-				if ((uVar3 & 1) == 0) {
-					if (iVar5 != 0) {
-						bVar2 = true;
-					}
-				}
-				else {
-					if (iVar5 == 0) {
-						bVar2 = true;
-					}
-				}
-			}
-		}
-	}
-	if (bVar2) {
-		felonyData.occurrenceDelay[8].current = felonyData.occurrenceDelay[8].current + 1;
-	}
-	else {
+
+	// wrong way
+	if (goingWrongWay)
+		felonyData.occurrenceDelay[8].current++;
+	else
 		felonyData.occurrenceDelay[8].current = 0;
+
+	NoteFelony(&felonyData, 8, 0x1000);
+
+	// if lights are off (broken)
+	if (gTimeOfDay == 3 && cp->ap.damage[0] > 1000 && cp->ap.damage[1] > 1000)
+		NoteFelony(&felonyData, 9, 0x1000);
+
+	// reckless driving.
+	// for that checking if rear wheels are sliding
+	if (cp->wheelspin == 0)
+	{
+		if (ABS(cp->hd.rear_vel) > 11100)
+			felonyData.occurrenceDelay[10].current++;
+		else
+			felonyData.occurrenceDelay[10].current = 0;
 	}
-	NoteFelony(&felonyData, '\b', 0x1000);
-	if (((gTimeOfDay == 3) && (1000 < car_data[iVar7].ap.damage[0])) &&
-		(1000 < car_data[iVar7].ap.damage[1])) {
-		NoteFelony(&felonyData, '\t', 0x1000);
+	else
+	{
+		felonyData.occurrenceDelay[10].current++;
 	}
-	if (car_data[iVar7].wheelspin == '\0') {
-		iVar5 = car_data[iVar7].hd.rear_vel;
-		if (iVar5 < 0) {
-			iVar5 = -iVar5;
-		}
-		if (0x2b5c < iVar5) goto LAB_0004d180;
-		felonyData.occurrenceDelay[10].current = 0;
-	}
-	else {
-	LAB_0004d180:
-		felonyData.occurrenceDelay[10].current = felonyData.occurrenceDelay[10].current + 1;
-	}
-	NoteFelony(&felonyData, '\n', 0x1000);
-	if (pDVar11 == (DRIVER2_STRAIGHT *)0x0) {
-		bVar1 = CHAR_8Ah_0009bf12;
-		if (cv == (DRIVER2_CURVE *)0x0) goto LAB_0004d1ec;
-		bVar1 = cv->NumLanes;
-	}
-	else {
-		bVar1 = pDVar11->NumLanes;
-	}
-	bVar1 = speedLimits[(uint)(bVar1 >> 4) & 3];
-LAB_0004d1ec:
-	uVar3 = (uint)bVar1;
-	if (uVar3 == (uint)(byte)CHAR_8Ah_0009bf12) {
-		iVar5 = (int)(uVar3 * 0x13) >> 4;
-	}
-	else {
-		iVar5 = (int)(uVar3 * 3) >> 1;
-	}
-	if (iVar5 < car_data[iVar7].hd.wheel_speed + 0x800 >> 0xc) {
-		NoteFelony(&felonyData, '\x02', 0x1000);
-	}
-	return;*/
+
+	NoteFelony(&felonyData, 10, 0x1000);
+
+	// check the speed limit
+	if (st != NULL)
+		maxSpeed = speedLimits[(st->NumLanes >> 4) & 3];
+	else if (cv != NULL)
+		maxSpeed = speedLimits[(cv->NumLanes >> 4) & 3];
+	else
+		maxSpeed = speedLimits[2];
+
+	if (speedLimits[2] == maxSpeed)
+		limit = (maxSpeed * 19) >> 4;
+	else 
+		limit = (maxSpeed * 3) >> 1;
+
+	if (FIXED(cp->hd.wheel_speed) > limit)
+		NoteFelony(&felonyData, 2, 0x1000);
 }
 
 
