@@ -1853,12 +1853,17 @@ void Emulator_UpdateInput()
 
 				PADRAW* pad = (PADRAW*)padData[i];
 				pad->status = 0;	// PadStateStable?
-				pad->id = 0;
-				*(unsigned short*)pad->buttons = kbInputs & controllerInputs;
+				pad->id = 0x41;
+				*(unsigned short*)pad->buttons = controllerInputs;
 				pad->analog[0] = 128;
 				pad->analog[1] = 128;
 				pad->analog[2] = 128;
 				pad->analog[3] = 128;
+
+				if (activeControllers & 0x1)
+				{
+					*(unsigned short*)pad->buttons &= kbInputs;
+				}
 			}
 		}
 	}
@@ -1877,20 +1882,20 @@ void Emulator_UpdateInput()
 			pad->analog[2] = 128;
 			pad->analog[3] = 128;
 		}
+	}
 
-		//Update keyboard
-		if (padData[1] != NULL && activeControllers & 0x2)
-		{
-			PADRAW* pad = (PADRAW*)padData[1];
+	//Update keyboard
+	if (padData[1] != NULL && activeControllers & 0x2)
+	{
+		PADRAW* pad = (PADRAW*)padData[1];
 
-			pad->status = 0;	// PadStateStable?
-			pad->id = 0x41;
-			*(unsigned short*)pad->buttons = kbInputs;
-			pad->analog[0] = 128;
-			pad->analog[1] = 128;
-			pad->analog[2] = 128;
-			pad->analog[3] = 128;
-		}
+		pad->status = 0;	// PadStateStable?
+		pad->id = 0x41;
+		*(unsigned short*)pad->buttons = kbInputs;
+		pad->analog[0] = 128;
+		pad->analog[1] = 128;
+		pad->analog[2] = 128;
+		pad->analog[3] = 128;
 	}
 
 #if defined(__ANDROID__)
