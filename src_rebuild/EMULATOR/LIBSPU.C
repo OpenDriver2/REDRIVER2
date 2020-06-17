@@ -12,6 +12,8 @@
 #include <AL/alc.h>
 #include <AL/alext.h>
 
+#include <minmax.h>
+
 // TODO: implement XA, implement ADSR
 
 #define SPU_CENTERNOTE (-32768 / 2)
@@ -140,7 +142,7 @@ bool Emulator_InitSound()
 
 	// Setup defaults
 	alListenerf(AL_GAIN, 1.0f);
-	//alDistanceModel(AL_NONE);
+	alDistanceModel(AL_NONE);
 
 	// create channels
 	for (int i = 0; i < SPU_VOICES; i++)
@@ -496,15 +498,17 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			if (arg->mask & SPU_VOICE_VOLR)
 				voice.attr.volume.right = arg->volume.right;
 
-			float left_gain = float(voice.attr.volume.left) / float(16384);
-			float right_gain = float(voice.attr.volume.right) / float(16384);
+			const float left_gain = float(voice.attr.volume.left) / float(16384);
+			const float right_gain = float(voice.attr.volume.right) / float(16384);
+
+			const float STEREO_FACTOR = 3.0f;
 
 			float pan = (acosf(left_gain) + asinf(right_gain)) / ((float)M_PI); // average angle in [0,1]
-			pan = 2 * pan - 1; // convert to [-1, 1]
+			pan = 2.0f * pan - 1.0f; // convert to [-1, 1]
 			pan = pan * 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
-			alSource3f(alSource, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
+			alSource3f(alSource, AL_POSITION, pan * STEREO_FACTOR, 0, -sqrtf(1.0f - pan * pan));
 
-			alSourcef(alSource, AL_GAIN, (left_gain+right_gain)*0.5f);
+			alSourcef(alSource, AL_GAIN, max(left_gain, right_gain));
 		}
 
 		// update pitch
