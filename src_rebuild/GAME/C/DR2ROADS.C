@@ -149,6 +149,7 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 
 		for (loop = 0; loop < NumDriver2Junctions; loop++)
 		{
+			p->flags = old->flags;
 			for (i = 0; i < 4; i++)
 				p->ExitIdx[i] = old->ExitIdx[i];
 

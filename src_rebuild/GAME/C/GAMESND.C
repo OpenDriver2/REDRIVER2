@@ -2754,6 +2754,7 @@ void SoundTasks(void)
 					}
 				}
 			}
+
 			pPVar5 = pPVar5 + 1;
 			iVar3 = iVar3 + 1;
 		} while (iVar3 < NumPlayers);
