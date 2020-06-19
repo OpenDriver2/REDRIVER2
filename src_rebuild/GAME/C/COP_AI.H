@@ -3,6 +3,7 @@
 
 extern COP_DATA gCopData;
 extern COP_SIGHT_DATA copSightData;
+extern VECTOR roadblockLoc;
 
 extern int CopsCanSeePlayer;
 extern short pedestrianFelony;

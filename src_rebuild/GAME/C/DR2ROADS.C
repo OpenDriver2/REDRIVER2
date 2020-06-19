@@ -431,7 +431,7 @@ int GetSurfaceIndex(VECTOR *pos)
 // [D]
 _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 {
-#if 1
+#if 0
 	_sdPlane *plane;
 
 	while (true) 
@@ -458,8 +458,7 @@ _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 	{
 		if (node->value > -1)
 		{
-			base += node->value;
-			return (base->surface < 32) ? NULL : base;
+			return ((base + node->value)->surface < 32) ? NULL : base;
 		}
 
 		plane = FindRoadInBSP(node+1, base);

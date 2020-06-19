@@ -674,15 +674,15 @@ void GlobalTimeStep(void)
 	StepCars();
 	CheckCarToCarCollisions();
 
-	if (playerghost != 0 && playerhitcopsanyway == 0) 
-		car_data[0].hd.mayBeColliding = 0;
-
 	iVar28 = 0;
 
 	if (0 < num_active_cars) 
 	{
 		do {
 			cp = active_car_list[iVar28];
+
+			if(cp->controlType == 1 && playerghost != 0 && playerhitcopsanyway == 0)
+				cp->hd.mayBeColliding = 0;
 
 			iVar19 = cp->hd.aacc[0];
 			iVar21 = cp->hd.aacc[1];
