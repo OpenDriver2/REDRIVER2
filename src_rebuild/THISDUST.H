@@ -19828,12 +19828,12 @@ struct _PLAYER // hashcode: 0x8C0D3284 (dec: -1945292156)
 	int headPos; // size=0, offset=52
 	int headTarget; // size=0, offset=56
 	int viewChange; // size=0, offset=60
-	char dying; // size=0, offset=64
-	char upsideDown; // size=0, offset=65
+	unsigned char dying; // size=0, offset=64
+	unsigned char upsideDown; // size=0, offset=65
 	char onGrass; // size=0, offset=66
 	char targetCarId; // size=0, offset=67
 	char cameraView; // size=0, offset=68
-	char headTimer; // size=0, offset=69
+	unsigned char headTimer; // size=0, offset=69
 	char playerType; // size=0, offset=70
 	char worldCentreCarId; // size=0, offset=71
 	char playerCarId; // size=0, offset=72

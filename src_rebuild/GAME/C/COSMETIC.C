@@ -10,7 +10,10 @@
 #include "DIRECTOR.H"
 #include "MAIN.H"
 
+#include "INLINE_C.H"
+
 #include <string.h>
+#include <stdlib.h>
 
 char* CosmeticFiles[] = {
 	"LEVELS\\CHICAGO.LCF",
@@ -993,56 +996,47 @@ void AddNightLights(_CAR_DATA *cp)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+int gDoSmoke = 1;
+
+// [D]
 void AddSmokingEngine(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	uint uVar2;
-	CAR_COSMETICS *pCVar3;
-	VECTOR local_40;
-	VECTOR VStack48;
-	undefined4 local_20;
-	uint local_1c;
+	CAR_COSMETICS *car_cos;
+	VECTOR SmokePos;
+	VECTOR Drift;
+	SVECTOR svec;
 
 	if (cp < car_data) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if ((((CameraCnt & 3U) == ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 & 3U)) &&
-		(gDoSmoke != 0)) && (pauseflag == 0)) {
-		pCVar3 = (cp->ap).carCos;
-		uVar2 = *(uint *)&(pCVar3->smoke).vz;
-		local_20._0_2_ = (short)*(undefined4 *)&pCVar3->smoke;
-		local_20._0_2_ = (short)local_20 + (pCVar3->cog).vx;
-		local_20._2_2_ = (short)((uint)*(undefined4 *)&pCVar3->smoke >> 0x10);
-		local_20._2_2_ = local_20._2_2_ + (pCVar3->cog).vy;
-		local_1c._0_2_ = (short)uVar2;
-		local_1c = uVar2 & 0xffff0000 | (uint)(ushort)((short)local_1c + (pCVar3->cog).vz);
-		iVar1 = rand();
-		local_40.vx = (cp->hd).where.t[0];
-		local_20 = CONCAT22(local_20._2_2_, ((ushort)iVar1 & 0x7f) - 0x40);
-		local_40.vz = (cp->hd).where.t[2];
-		local_40.vy = -(cp->hd).where.t[1];
-		if (black_smoke != 0) {
-			local_40.vy = local_40.vy + -0x32;
-		}
-		setCopControlWord(2, 0, *(undefined4 *)(cp->hd).drawCarMat.m);
-		setCopControlWord(2, 0x800, *(undefined4 *)((cp->hd).drawCarMat.m + 2));
-		setCopControlWord(2, 0x1000, *(undefined4 *)((cp->hd).drawCarMat.m + 4));
-		setCopControlWord(2, 0x1800, *(undefined4 *)((cp->hd).drawCarMat.m + 6));
-		setCopControlWord(2, 0x2000, *(undefined4 *)((cp->hd).drawCarMat.m + 8));
-		InitFXPos(&local_40, (SVECTOR *)&local_20, cp);
-		GetSmokeDrift(&VStack48);
-		if (black_smoke == 0) {
-			Setup_Smoke(&local_40, 100, 400, 2, WheelSpeed, &VStack48, 0);
-		}
-		else {
-			Setup_Smoke(&local_40, 100, 500, 1, WheelSpeed, &VStack48, 0);
-		}
+
+	if(((CameraCnt & 3U) == CAR_INDEX(cp) & 3U) && gDoSmoke != 0 && pauseflag == 0)
+	{
+		car_cos = cp->ap.carCos;
+
+		svec.vx = (rand() & 0x7f) - 0x40; //car_cos->smoke.vx + car_cos->cog.vx;
+		svec.vy = car_cos->smoke.vy + car_cos->cog.vy;
+		svec.vz = car_cos->smoke.vz + car_cos->cog.vz;
+
+		SmokePos.vx = cp->hd.where.t[0];
+		SmokePos.vy = -cp->hd.where.t[1];
+		SmokePos.vz = cp->hd.where.t[2];
+		
+		if (black_smoke != 0)
+			SmokePos.vy -= 50;
+	
+		gte_SetRotMatrix(cp->hd.drawCarMat.m);
+
+		InitFXPos(&SmokePos, &svec, cp);
+		GetSmokeDrift(&Drift);
+
+		if (black_smoke == 0)
+			Setup_Smoke(&SmokePos, 100, 400, 2, WheelSpeed, &Drift, 0);
+		else
+			Setup_Smoke(&SmokePos, 100, 500, 1, WheelSpeed, &Drift, 0);
 	}
-	return;*/
 }
 
 
@@ -1070,48 +1064,41 @@ void AddSmokingEngine(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void AddFlamingEngine(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	uint uVar2;
-	CAR_COSMETICS *pCVar3;
-	VECTOR local_38;
-	undefined4 local_28;
-	uint local_24;
-	VECTOR local_20;
+	CAR_COSMETICS *car_cos;
+	VECTOR SmokePos;
+	SVECTOR svec;
+	VECTOR Drift;
 
 	if (cp < car_data) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if ((((CameraCnt & 1U) == ((int)(cp[-0x503].ap.old_clock + 2) * -0x24ca58e9 >> 2 & 1U)) &&
-		(pCVar3 = (cp->ap).carCos, gDoSmoke != 0)) && (pauseflag == 0)) {
-		uVar2 = *(uint *)&(pCVar3->fire).vz;
-		local_28._0_2_ = (short)*(undefined4 *)&pCVar3->fire;
-		local_28._0_2_ = (short)local_28 + (pCVar3->cog).vx;
-		local_28._2_2_ = (short)((uint)*(undefined4 *)&pCVar3->fire >> 0x10);
-		local_28._2_2_ = local_28._2_2_ + (pCVar3->cog).vy;
-		local_24._0_2_ = (short)uVar2;
-		local_24 = uVar2 & 0xffff0000 | (uint)(ushort)((short)local_24 + (pCVar3->cog).vz);
-		iVar1 = rand();
-		local_28 = CONCAT22(local_28._2_2_, (short)local_28 + ((ushort)iVar1 & 0x3f));
-		iVar1 = rand();
-		local_38.vx = (cp->hd).where.t[0];
-		local_24 = local_24 & 0xffff0000 | (uint)(ushort)((short)local_24 + ((ushort)iVar1 & 0x3f));
-		local_38.vz = (cp->hd).where.t[2];
-		local_38.vy = -(cp->hd).where.t[1];
+
+	if ((CameraCnt & 1U) == (CAR_INDEX(cp) & 1U) && gDoSmoke != 0 && pauseflag == 0)
+	{
+		car_cos = cp->ap.carCos;
+
+		svec.vx = (rand() & 0x3f); //car_cos->smoke.vx + car_cos->cog.vx;
+		svec.vy = car_cos->fire.vy + car_cos->cog.vy;
+		svec.vz = car_cos->fire.vz + car_cos->cog.vz + (rand() & 0x3f);
+
+		SmokePos.vx = (cp->hd).where.t[0];
+
+		SmokePos.vz = (cp->hd).where.t[2];
+		SmokePos.vy = -(cp->hd).where.t[1];
+
 		SetRotMatrix(&(cp->hd).drawCarMat);
-		InitFXPos(&local_38, (SVECTOR *)&local_28, cp);
-		local_20.vx = 0;
-		local_20.vy = 0;
-		local_20.vz = 0;
-		Setup_Smoke(&local_38, 0x32, 100, 4, 0, &local_20, 0);
+		InitFXPos(&SmokePos, &svec, cp);
+		Drift.vx = 0;
+		Drift.vy = 0;
+		Drift.vz = 0;
+
+		Setup_Smoke(&SmokePos, 0x32, 100, 4, 0, &Drift, 0);
 	}
-	return;
-	*/
 }
 
 
