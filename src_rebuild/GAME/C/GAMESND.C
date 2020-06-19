@@ -346,16 +346,16 @@ int MapCarIndexToBank(int index)
 
 	iVar1 = MissionHeader->residentModels[index];
 
-	if ((gCurrentMissionNumber - 39 < 2) && (iVar1 == 0xd)) 
+	if (gCurrentMissionNumber - 39 < 2 && iVar1 == 13) 
 	{
 		iVar2 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 		iVar1 = iVar2;
-		if (iVar2 < 1) {
+
+		if (iVar2 < 1)
 			iVar1 = 1;
-		}
-		if (4 < iVar2) {
+
+		if (iVar2 > 4)
 			iVar1 = 4;
-		}
 	}
 
 	iVar2 = iVar1-1;
@@ -363,8 +363,8 @@ int MapCarIndexToBank(int index)
 	if (iVar1 == 0) 
 		iVar2 = 1;
 
-	if (6 < iVar2)
-		iVar2 = iVar2-3;
+	if (iVar2 > 6)
+		iVar2 -= 3;
 
 	return car_banks[GameLevel][iVar2];
 }
@@ -640,7 +640,7 @@ LAB_0004dc60:
 	LoadSoundBankDynamic(NULL, 1, 0);
 	LoadSoundBankDynamic(NULL, 3, 3);
 
-	if (gCurrentMissionNumber - 0x27U < 2) 
+	if (gCurrentMissionNumber - 39 < 2) 
 	{
 		index = MapCarIndexToBank(4);
 		LoadBankFromLump(3, index);

@@ -599,7 +599,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 	int unaff_s8;
 	int iVar30;
 	int numExits;
-	int direction;
+	//int direction;
 	int leftLane;
 	int rightLane;
 	short uVar3;
@@ -892,7 +892,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 					uVar9 = (uint)(ushort)___st->angle & 0xfff;
 					uVar29 = (u_char)___st->NumLanes & 0xffffff0f;
 					test555 = (oldNode->x - ___st->Midx) * (int)rcossin_tbl[uVar9 * 2 + 1] - (oldNode->z - ___st->Midz) * (int)rcossin_tbl[uVar9 * 2];
-					test42 = uVar29 - ((test555 + 0x800 >> 0xc) + 0x200 >> 9);
+					test42 = uVar29 - (FIXED(test555) + 512 >> 9);
 					*piVar25 = test42;
 					unaff_s8 = uVar29 * 2;
 					uVar29 = ((u_char)___st->NumLanes & 0xffffff0f) * 2;
@@ -905,10 +905,10 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 							uVar9 = uVar9 - 1;
 
 							if ((int)uVar9 < 0) 
-								goto LAB_00025e00;
+								goto LAB_00025e00; // break
 
 						} while (((((int)(u_char)___st->AILanes >> ((int)uVar9 / 2 & 0x1fU) & 1U) == 0) || ((uVar9 == 0 && ((___st->NumLanes & 0x40U) != 0)))) ||
-							((((u_char)___st->NumLanes & 0xffffff0f) * 2 - 1 == uVar9 && ((___st->NumLanes & 0x80U) != 0))));
+								((((u_char)___st->NumLanes & 0xffffff0f) * 2 - 1 == uVar9 && ((___st->NumLanes & 0x80U) != 0))));
 
 						uVar25 = uVar9;
 
@@ -922,10 +922,13 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 					} while ((((int)oldNode->dir - (int)___st->angle) + 0x400U & 0x800) == 0);
 
 				LAB_00025e00:
+					if (uVar25 == 0)	// [A] temporary dirty hack
+						uVar25++;
+
 					if ((uVar25 == 0) || (unaff_s8 <= (int)uVar25))
 					{
 						laneFit[iVar22] = 666;
-						goto LAB_00025f34;
+						goto LAB_00025f34; // continue
 					}
 				}
 				else
@@ -981,11 +984,11 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 
 		if (cp->ai.c.ctrlState != '\a') 
 		{
-			if ((((uVar29 & 0xffffe000) == 0) && ((int)(uVar29 & 0x1fff) < NumDriver2Straights)) &&
-				(-1 < (int)uVar29)) {
+			if ((((uVar29 & 0xffffe000) == 0) && ((int)(uVar29 & 0x1fff) < NumDriver2Straights)) && (-1 < (int)uVar29)) 
+			{
 				__st = Driver2StraightsPtr + uVar29;
 				uVar25 = ((int)oldNode->dir - (int)__st->angle) + 0x400U & 0x800;
-				test123 = direction;
+				test123 = uVar25;// direction;
 
 				if ((*(uint *)(__st->ConnectIdx + 3) & 0xffff0000) == 0xff010000)
 				{
@@ -3337,14 +3340,14 @@ int CreateNewNode(_CAR_DATA *cp)
 									lVar2 = SquareRoot0(y * y + x * x);
 									lVar3 = ratan2(y, x);
 									local_a3_2384 = ((lVar3 - local_v1_48->dir) + 0x800U & 0xfff) - 0x800;
-									x = (lVar2 - iVar6) * (int)rcossin_tbl[(local_a3_2384 & 0xfffU) * 2 + 1] + 0x800 >> 0xc;
+									x = FIXED((lVar2 - iVar6) * (int)rcossin_tbl[(local_a3_2384 & 0xfffU) * 2 + 1]);
 									pCVar5 = pCVar4;
 
 									if (0 < x) 
 									{
-										pCVar4->x = local_v1_48->x +(x * rcossin_tbl[((uint)(ushort)local_v1_48->dir & 0xfff) * 2] + 0x800 >> 0xc);
+										pCVar4->x = local_v1_48->x + FIXED(x * rcossin_tbl[((uint)(ushort)local_v1_48->dir & 0xfff) * 2]);
 										pCVar5 = pCVar4 + 1;
-										pCVar4->z = local_v1_48->z +(x * rcossin_tbl[((uint)(ushort)local_v1_48->dir & 0xfff) *	2 + 1] + 0x800 >> 0xc);
+										pCVar4->z = local_v1_48->z + FIXED(x * rcossin_tbl[((uint)(ushort)local_v1_48->dir & 0xfff) *	2 + 1]);
 										sVar1 = local_v1_48->dir;
 										pCVar4->pathType = 1;
 										pCVar4->dir = sVar1;
@@ -3353,14 +3356,14 @@ int CreateNewNode(_CAR_DATA *cp)
 										}
 									}
 
-									iVar6 = (lVar2 - iVar6) * (int)rcossin_tbl[(local_a3_2384 & 0xfffU) * 2] + 0x800 >> 0xc;
+									iVar6 = FIXED((lVar2 - iVar6) * (int)rcossin_tbl[(local_a3_2384 & 0xfffU) * 2]);
 									pCVar4 = pCVar5;
 
 									if (iVar6 < 0) 
 									{
-										pCVar5->x = tempNode.x + (iVar6 * rcossin_tbl[(tempNode.dir & 0xfff) * 2] + 0x800 >> 0xc);
+										pCVar5->x = tempNode.x + FIXED(iVar6 * rcossin_tbl[(tempNode.dir & 0xfff) * 2]);
 										pCVar4 = pCVar5 + 1;
-										pCVar5->z = tempNode.z + (iVar6 * rcossin_tbl[(tempNode.dir & 0xfff) * 2 + 1] + 0x800 >> 0xc);
+										pCVar5->z = tempNode.z + FIXED(iVar6 * rcossin_tbl[(tempNode.dir & 0xfff) * 2 + 1]);
 										pCVar5->pathType = 1;
 										pCVar5->dir = tempNode.dir;
 										if (local_a1_52 <= pCVar4)

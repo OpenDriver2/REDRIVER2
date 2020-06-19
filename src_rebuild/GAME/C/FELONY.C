@@ -624,7 +624,7 @@ void CheckPlayerMiscFelonies(void)
 				uVar6 = 1;
 				do {
 					uVar4 = uVar6 & 0xff;
-					_exitId = exitId;
+					_exitId = uVar4;
 
 					if (3 < uVar4)
 						break;
