@@ -1613,6 +1613,27 @@ MATRIX* RotMatrixZ(long r, MATRIX *m)
 	return m;
 }
 
+MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX *m)
+{
+	// FIXME: make a proper function
+	m->m[0][0] = 0x1000;
+	m->m[0][1] = 0;
+	m->m[0][2] = 0;
+
+	m->m[1][0] = 0;
+	m->m[1][1] = 0x1000;
+	m->m[1][2] = 0;
+
+	m->m[2][0] = 0;
+	m->m[2][1] = 0;
+	m->m[2][2] = 0x1000;
+
+	RotMatrixX(r->vx, m);
+	RotMatrixY(r->vy, m);
+	RotMatrixZ(r->vz, m);
+	return m;
+}
+
 MATRIX* TransMatrix(MATRIX* m, VECTOR* v)
 {
 	m->t[0] = v->vx;

@@ -207,6 +207,7 @@ extern void SetBackColor(long rbk, long gbk, long bbk);
 extern void SetFarColor(long rfc, long gfc, long bfc);
 extern MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m);
 extern MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m);
+extern MATRIX* RotMatrixZYX_gte(struct SVECTOR* r, MATRIX* m);
 extern MATRIX* RotMatrixX(long r, MATRIX *m);
 extern MATRIX* RotMatrixY(long r, MATRIX *m);
 extern MATRIX* RotMatrixZ(long r, MATRIX *m);
