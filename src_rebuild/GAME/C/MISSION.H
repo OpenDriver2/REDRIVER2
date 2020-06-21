@@ -74,10 +74,10 @@ extern char *gMissionTitle;
 
 extern int gMultiplayerLevels;
 
-extern int TAIL_GETTINGCLOSE;
-extern int TAIL_GETTINGFAR;
-extern int TAIL_TOOCLOSE;
-extern int TAIL_TOOFAR;
+extern const int TAIL_GETTINGCLOSE;
+extern const int TAIL_GETTINGFAR;
+extern const int TAIL_TOOCLOSE;
+extern const int TAIL_TOOFAR;
 
 extern int numCopCars;
 

@@ -178,10 +178,10 @@ MR_THREAD MissionThreads[16];
 
 unsigned char playercollected[2] = { 0, 0 };
 
-int TAIL_GETTINGCLOSE = 7000;
-int TAIL_GETTINGFAR = 12900;
-int TAIL_TOOCLOSE = 4000;
-int TAIL_TOOFAR = 15900;
+const int TAIL_GETTINGCLOSE = 7000;
+const int TAIL_GETTINGFAR = 12900;
+const int TAIL_TOOCLOSE = 4000;
+const int TAIL_TOOFAR = 15900;
 
 // [D]
 void InitialiseMissionDefaults(void)
@@ -1812,6 +1812,7 @@ int MROperator(MR_THREAD *thread, ulong op)
 	/* end block 4 */
 	// End Line: 7496
 
+// [D]
 int MRFunction(MR_THREAD *thread, ulong fnc)
 {
 	long value;
@@ -1884,7 +1885,7 @@ void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 	/* end block 3 */
 	// End Line: 7570
 
-
+// [D]
 void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
 {
 	int i;
@@ -2085,13 +2086,14 @@ long MRPop(MR_THREAD *thread)
 // [D]
 long MRGetParam(MR_THREAD *thread)
 {
-	uint var;
+	long var;
 	uint uVar1;
 
 	var = MRPop(thread);
 	uVar1 = var & 0xff000000;
 
-	if (uVar1 == 0x2000000) {
+	if (uVar1 == 0x2000000)
+	{
 		var = MRGetVariable(thread, var);
 	}
 	else if (uVar1 < 0x2000001) 
@@ -2338,18 +2340,14 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 	int slot;
 
 	iVar11 = 0;
-	direction = TargetComplete(target, (uint)thread->player);
-	if (direction != 0) {
+
+	if (TargetComplete(target, thread->player) != 0) 
 		return 1;
-	}
+
 	if (thread->player == 0) 
-	{
 		uVar5 = target->data[1] | 0x201;
-	}
 	else 
-	{
 		uVar5 = target->data[1] | 0xc00;
-	}
 
 	target->data[1] = uVar5;
 

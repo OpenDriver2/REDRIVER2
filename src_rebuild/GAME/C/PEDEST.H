@@ -9,6 +9,7 @@ extern int bKillTanner;
 extern int bTannerSitting;
 extern int bReverseYRotation;
 
+extern PEDESTRIAN *pUsedPeds;
 
 extern void IHaveThePower(); // 0x0006DD34
 

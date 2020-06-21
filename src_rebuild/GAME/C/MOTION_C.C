@@ -491,48 +491,64 @@ PEDESTRIAN *pDrawingPed = NULL;
 // [D] [A] changed to VERTTYPE
 void DrawBodySprite(int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
 {
-	uint uVar1;
+#if 0
+	{
+		LINE_F2* line = (LINE_F2*)current->primptr;
+		setLineF2(line);
+		setSemiTrans(line, 1);
+
+		line->x0 = v1[0];
+		line->y0 = v1[1];
+		line->x1 = v2[0];
+		line->y1 = v2[1];
+
+		line->r0 = 255;
+		line->g0 = 0;
+		line->b0 = 0;
+
+		addPrim(current->ot + 2, line);
+		current->primptr += sizeof(LINE_F2);
+	}
+#endif
+
+	int uVar1;
 	long lVar2;
-	unsigned char bVar3;
-	uint uVar4;
+	char bVar3;
+	int uVar4;
 	int iVar5;
-	uint uVar6;
+	int uVar6;
 	int iVar7;
 	POLY_FT4 *prims;
 	int iVar8;
 	int iVar9;
-	uint uVar10;
+	int uVar10;
 	TEXTURE_DETAILS *body_texture;
 	int x;
 	int y;
 	int iVar11;
-	uint uVar12;
+	int uVar12;
 	int iVar13;
 	int y1;
 	int z1;
 
 	uVar12 = v1[0];// &0xffff0000;
-	iVar11 = v1[1];// *0x10000;
+	iVar11 = v1[1];// << 0x10;
 	uVar1 = v2[0];// &0xffff0000;
-	//v2 * 0x10000
-
-	y = v1[1] + v2[0] * -0x10000;	// [A] wtf?
-	x = v1[0] - v2[0];
+	y = iVar11 - v2[1];// << 0x10;
+	x = uVar12 - uVar1;
 	uVar10 = boneId & 0x7f;
 	body_texture = MainPed[uVar10].ptd;
 	lVar2 = ratan2(y, x);
 
-	if (bDoingShadow == 0) 
+	if (bDoingShadow == 0)
 		iVar5 = gCurrentZ + (scr_z >> 2);
-	else 
+	else
 		iVar5 = sz + (scr_z >> 2);
 
 	iVar13 = (scr_z << 0xc) / iVar5;
 
-	if (uVar10 == 2) {
-		iVar13 = iVar13 + ((int)((uint)*(ushort *)((int)rcossin_tbl +((pDrawingPed->dir.vy + camera_angle.vy) * 8 & 0x3ff8U) + 2) << 0x10) >> 0x16);
-	}
-	prims = (POLY_FT4 *)current->primptr;
+	if (uVar10 == 2)
+		iVar13 = iVar13 + ((int)((uint)*(ushort *)((int)rcossin_tbl + (((int)(pDrawingPed->dir).vy + (int)camera_angle.vy) * 8 & 0x3ff8U) + 2) << 0x10) >> 0x16);
 
 	if (pDrawingPed->type == PED_ACTION_JUMP)
 	{
@@ -540,144 +556,193 @@ void DrawBodySprite(int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
 	}
 	else if (bDoingShadow == 0)
 	{
-		if ((pDrawingPed->flags & 0x8000U) == 0) 
+		if ((pDrawingPed->flags & 0x8000U) == 0)
 		{
 			if ((pDrawingPed->flags & 0x4000U) == 0)
 				uVar6 = MainPed[uVar10].cWidth + 3;
-			else 
+			else
 				uVar6 = MainPed[uVar10].cWidth + 8;
 		}
-		else 
+		else
+		{
 			uVar6 = MainPed[uVar10].cWidth - 3;
+		}
 	}
 	else
+	{
 		uVar6 = MainPed[uVar10].cWidth;
+	}
 
-	iVar7 = (int)(iVar13 * (int)rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 3 * (uVar6 & 0x3f)) >> 9;
+	iVar7 = FIXED(iVar13 * (int)rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 3 * (uVar6 & 0x3f)); // >> 9;
+	iVar5 = FIXED(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * (uVar6 & 0x3f)) * 2; // >> 8;
+
 	bVar3 = MainPed[uVar10].cAdj & 0xf;
 	iVar9 = y >> bVar3;
 	iVar8 = x >> bVar3;
-	iVar5 = (int)(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * (uVar6 & 0x3f)) >> 8;
 
-	if ((((uVar10 == 0x13) || (uVar10 == 0xf)) && (pDrawingPed->type != PED_ACTION_JUMP)) && (bDoingShadow == 0))
+	if (((uVar10 == 19 || uVar10 == 15) && (pDrawingPed->type != PED_ACTION_JUMP)) && (bDoingShadow == 0)) 
 	{
 		y = -y >> 3;
 		x = -x >> 3;
 	}
-	else
+	else 
 	{
-		uVar4 = (uint)(MainPed[uVar10].cAdj >> 4);
+		uVar4 = MainPed[uVar10].cAdj >> 4;
 		y = y >> uVar4;
 		x = x >> uVar4;
 	}
 
-	prims->x0 = v1[0] + iVar5 + iVar8;
-	prims->y0 = v1[1] + iVar7 + iVar9;
+	prims = (POLY_FT4 *)current->primptr;
+	setPolyFT4(prims);
 
-	prims->x1 = (v1[0] - iVar5) + iVar8;
-	prims->y1 = (v1[1] - iVar7) + iVar9;
+	prims->x0 = v1[0] + FIXED(iVar5) + iVar8;
+	prims->y0 = v1[1] + FIXED(iVar7) + iVar9;
 
-	prims->x2 = (v2[0] + iVar5) - x;
-	prims->y2 = (v2[1] + iVar7) - y;
+	prims->x1 = (v1[0] - FIXED(iVar5)) + iVar8;
+	prims->y1 = (v1[1] - FIXED(iVar7)) + iVar9;
 
-	prims->x3 = (v2[0] - iVar5) - x;
-	prims->y3 = (v2[1] - iVar7) - y;
+	prims->x2 = (v2[0] + FIXED(iVar5)) - x;
+	prims->y2 = (v2[1] + FIXED(iVar7)) - y;
 
-	//*(uint *)&prims->x0 = (uVar12 + iVar5 + iVar8 & 0xffff0000) + (iVar11 + iVar7 + iVar9 >> 0x10);
-	//*(uint *)&prims->x1 = ((uVar12 - iVar5) + iVar8 & 0xffff0000) + ((iVar11 - iVar7) + iVar9 >> 0x10);
-	//*(uint *)&prims->x2 = ((uVar1 + iVar5) - x & 0xffff0000) + ((v2 * 0x10000 + iVar7) - y >> 0x10);
-	//*(uint *)&prims->x3 = ((uVar1 - iVar5) - x & 0xffff0000) + ((v2 * 0x10000 - iVar7) - y >> 0x10);
+	prims->x3 = (v2[0] - FIXED(iVar5)) - x;
+	prims->y3 = (v2[1] - FIXED(iVar7)) - y;
 
-	if (bDoingShadow == 0)
+	/*
+	*(uint *)&prims->x0 = (uVar12 + iVar5 + iVar8 & 0xffff0000) | (iVar11 + iVar7 + iVar9 >> 0x10);
+	*(uint *)&prims->x1 = ((uVar12 - iVar5) + iVar8 & 0xffff0000) | ((iVar11 - iVar7) + iVar9 >> 0x10);
+	*(uint *)&prims->x2 = ((uVar1 + iVar5) - x & 0xffff0000) | ((v2 << 0x10 + iVar7) - y >> 0x10);
+	*(uint *)&prims->x3 = ((uVar1 - iVar5) - x & 0xffff0000) | ((v2 << 0x10 - iVar7) - y >> 0x10);
+	*/
+
+	if (bDoingShadow == 0) 
 	{
-		uVar12 = (uint)body_texture->tpageid << 0x10;
+		uVar12 = body_texture->tpageid;// << 0x10;
 		if (MainPed[uVar10].texPal != NO_PAL) 
 		{
-			if (MainPed[uVar10].texPal == JEANS_PAL) 
+			if (MainPed[uVar10].texPal == JEANS_PAL)
 			{
 				bVar3 = pDrawingPed->pallet >> 4;
 				uVar1 = (uint)bVar3;
 			}
-			else
+			else 
 			{
 				bVar3 = pDrawingPed->pallet & 0xf;
 				uVar1 = (uint)pDrawingPed->pallet & 0xf;
 			}
+
 			if (bVar3 != 0) 
 			{
-				uVar1 = (uint)civ_clut[body_texture->texture_number * 6 + uVar1] << 0x10;
+				uVar1 = civ_clut[0][body_texture->texture_number][uVar1];// << 0x10;
 				goto LAB_00065688;
 			}
 		}
-		uVar1 = (uint)body_texture->clutid << 0x10;
+		uVar1 = body_texture->clutid;// << 0x10;
 	}
-	else
+	else 
 	{
-		uVar12 = gShadowTexturePage << 0x10;
-		uVar1 = (uint)(ushort)texture_cluts[gShadowTexturePage * 0x20 + gShadowTextureNum] << 0x10;
+		uVar12 = gShadowTexturePage;// << 0x10;
+		uVar1 = texture_cluts[gShadowTexturePage][gShadowTextureNum];// << 0x10;
 	}
+
 LAB_00065688:
-	if (uVar10 == 4) 
+
+	prims->tpage = uVar12;
+	prims->clut = uVar1;
+
+	if (bDoingShadow == 0)
 	{
-		if (bDoingShadow == 0)
+		if (uVar10 == 4)
 		{
-			x = (camera_angle.vy + pDrawingPed->dir.vy & 0xfffU) >> 7;
+			x = (int)((int)camera_angle.vy + (int)(pDrawingPed->dir).vy & 0xfffU) >> 7;
+
+			prims->u0 = body_texture->coords.u0;// +x;
+			prims->v0 = body_texture->coords.v0;
+
+			prims->u1 = body_texture->coords.u1;// +x;
+			prims->v1 = body_texture->coords.v1;
+
+			prims->u2 = body_texture->coords.u2;// +x;
+			prims->v2 = body_texture->coords.v2;
+
+			prims->u3 = body_texture->coords.u3;// +x;
+			prims->v3 = body_texture->coords.v3;
+
+			/*
 			*(uint *)&prims->u0 = (*(ushort *)&body_texture->coords | uVar1) + x;
 			*(uint *)&prims->u1 = (*(ushort *)&(body_texture->coords).u1 | uVar12) + x;
 			*(uint *)&prims->u2 = (uint)*(ushort *)&(body_texture->coords).u2 + x;
 			*(uint *)&prims->u3 = (uint)*(ushort *)&(body_texture->coords).u3 + x;
-			goto LAB_000657dc;
+			*/
 		}
-	}
-	else 
-	{
-		if (bDoingShadow == 0) 
+		else if (uVar10 == 2)
 		{
-			if (uVar10 == 2) {
-				*(uint *)&prims->u0 = *(ushort *)&body_texture->coords | uVar1;
-				*(uint *)&prims->u1 = *(ushort *)&(body_texture->coords).u1 | uVar12;
-				*(uint *)&prims->u2 = (uint)*(ushort *)&(body_texture->coords).u2;
-				*(uint *)&prims->u3 = (uint)*(ushort *)&(body_texture->coords).u3;
-			}
-			else {
-				*(uint *)&prims->u0 = *(ushort *)&(body_texture->coords).u2 | uVar1;
-				*(uint *)&prims->u1 = *(ushort *)&(body_texture->coords).u3 | uVar12;
-				*(uint *)&prims->u2 = (uint)*(ushort *)&body_texture->coords;
-				*(uint *)&prims->u3 = (uint)*(ushort *)&(body_texture->coords).u1;
-			}
-			goto LAB_000657dc;
+			prims->u0 = body_texture->coords.u0;
+			prims->v0 = body_texture->coords.v0;
+
+			prims->u1 = body_texture->coords.u1;
+			prims->v1 = body_texture->coords.v1;
+
+			prims->u2 = body_texture->coords.u2;
+			prims->v2 = body_texture->coords.v2;
+
+			prims->u3 = body_texture->coords.u3;
+			prims->v3 = body_texture->coords.v3;
+		}
+		else
+		{
+			prims->u0 = body_texture->coords.u2;
+			prims->v0 = body_texture->coords.v2;
+
+			prims->u1 = body_texture->coords.u3;
+			prims->v1 = body_texture->coords.v3;
+
+			prims->u2 = body_texture->coords.u0;
+			prims->v2 = body_texture->coords.v0;
+
+			prims->u3 = body_texture->coords.u1;
+			prims->v3 = body_texture->coords.v1;
 		}
 	}
+	else
+	{
+		prims->u0 = shadowuv.u0;
+		prims->v0 = shadowuv.v0;
 
-	*(uint *)&prims->u0 = *(uint*)&shadowuv | uVar1;
-	*(uint *)&prims->u1 = *(uint*)&shadowuv | uVar12;
-	*(uint *)&prims->u2 = *(uint*)&shadowuv;
-	*(uint *)&prims->u3 = *(uint*)&shadowuv;
+		prims->u1 = shadowuv.u1;
+		prims->v1 = shadowuv.v1;
 
-LAB_000657dc:
+		prims->u2 = shadowuv.u2;
+		prims->v2 = shadowuv.v2;
 
-	setPolyFT4(prims);
+		prims->u3 = shadowuv.u3;
+		prims->v3 = shadowuv.v3;
+	}
 
-	if (gNight == 1) 
+	if (gNight == 1)
 	{
 		prims->r0 = 64;
 		prims->g0 = 64;
+		prims->b0 = 64;
 	}
-	else 
+	else
 	{
 		prims->r0 = (combointensity >> 0x10) & 0xFF;
 		prims->g0 = (combointensity >> 8) & 0xFF;
+		prims->b0 = combointensity & 0xFF;
 	}
 
-	prims->b0 = combointensity & 0xFF;
+	
+	current = current;
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow == 0) 
 	{
 		x = sz + sy >> 4;
 		addPrim(current->ot + x + ((int)uVar6 >> 5), prims);
 	}
 	else
+	{
 		addPrim(current->ot + 0x107f, prims);
+	}
 
 	current->primptr += sizeof(POLY_FT4);
 }
@@ -943,6 +1008,43 @@ void SetupTannerSkeleton(void)
 		local_a0_448++;
 		i--;
 	} while (-1 < i);
+
+#if 0
+		// Draw T POSE
+	{
+		extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+		extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+		CVECTOR yycv = { 250, 250, 0 };
+
+		for (int i = 0; i < 23; i++)
+		{
+			pBone = &Skel[i];
+
+			for (int j = 0; j < pBone->numChildren; j++)
+			{
+				VECTOR v0 = {
+					pBone->pvOrigPos->vx,
+					pBone->pvOrigPos->vy,
+					pBone->pvOrigPos->vz };
+
+				VECTOR v1 = {
+					pBone->pChildren[j]->pvOrigPos->vx,
+					pBone->pChildren[j]->pvOrigPos->vy,
+					pBone->pChildren[j]->pvOrigPos->vz };
+
+				VECTOR ofs = *(VECTOR*)&pDrawingPed->position;
+				ofs.vy = -ofs.vy;
+				//ofs.vy += 270;
+
+				Debug_AddLineOfs(v0, v1, ofs, bbcv);
+			}
+
+		}
+	}
+#endif
 }
 
 
@@ -1750,7 +1852,8 @@ SVECTOR* GetModelVertPtr(int boneId, int modelType)
 		return NULL;
 	}
 
-	switch (boneId) {
+	switch (boneId)
+	{
 		case 2:
 			startVertex = cJerichoVNumbers[0];
 			break;
@@ -1864,6 +1967,16 @@ SVECTOR* GetModelVertPtr(int boneId, int modelType)
 void DrawCiv(PEDESTRIAN *pPed)
 {
 	UNIMPLEMENTED();
+#if 1
+	if (pPed->pedType == TANNER_MODEL)
+		return;
+
+	PED_MODEL_TYPES oldType = pPed->pedType;
+	pPed->pedType = OTHER_SPRITE;
+	DrawCharacter(pPed);
+
+	pPed->pedType = oldType;
+#endif
 	/*
 	short *psVar1;
 	bool bVar2;
@@ -2150,7 +2263,7 @@ void DrawCiv(PEDESTRIAN *pPed)
 // [D]
 void SetSkelModelPointers(int type)
 {
-	if (type == 1) 
+	if (type == OTHER_MODEL) 
 	{
 		Skel[2].pModel = &pmJerichoModels[0];
 		Skel[4].pModel = &pmJerichoModels[1];
@@ -2231,31 +2344,12 @@ void DrawTanner(PEDESTRIAN *pPed)
 
 	SetupTannerSkeleton();
 
-	if (pPed->pedType == OTHER_MODEL) 
-	{
-		Skel[4].pModel = pmJerichoModels;
-		Skel[6].pModel = pmJerichoModels + 2;
-		Skel[2].pModel = pmJerichoModels;
-		Skel[7].pModel = pmJerichoModels + 3;
-		Skel[10].pModel = pmJerichoModels + 4;
-		Skel[11].pModel = pmJerichoModels + 5;
-		Skel[14].pModel = NULL;
-	}
-	else 
-	{
-		Skel[4].pModel = pmTannerModels;
-		Skel[6].pModel = pmTannerModels + 8;
-		Skel[7].pModel = pmTannerModels + 9;
-		Skel[2].pModel = pmTannerModels;
-		Skel[10].pModel = pmTannerModels + 2;
-		Skel[11].pModel = pmTannerModels + 3;
-		Skel[14].pModel = pmTannerModels + 0xf;
-	}
+	SetSkelModelPointers(pPed->pedType);
 
-	Skel[4].pModel = Skel[4].pModel + 1;
+	//Skel[4].pModel = Skel[4].pModel + 1;
 	newRotateBones(Skel + 1);
 
-	// [A] I don't know but it ca
+	// [A] I don't know but it works
 	gte_SetRotMatrix(&inv_camera_matrix);
 
 	iCurrBone = 0;
@@ -2341,87 +2435,96 @@ void DrawTanner(PEDESTRIAN *pPed)
 	/* end block 3 */
 	// End Line: 5345
 
+// [D]
 int DrawCharacter(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	uint uVar1;
-	int iVar2;
+	int iVar1;
+	uint uVar2;
 	ushort size;
-	undefined4 uVar3;
-	undefined4 uVar4;
-	undefined4 uVar5;
-	undefined4 uVar6;
-	undefined4 uVar7;
 	uint uVar8;
-	CVECTOR local_40[2];
-	VECTOR local_38;
-	CVECTOR local_28[2];
-	VECTOR local_20;
+	//MATRIX mRotStore;
+	//MATRIX iMatrix;
+	CVECTOR cV;
+	VECTOR v;
+	CVECTOR cv;
+	VECTOR pos;
 
-	uVar3 = getCopControlWord(2, 0);
-	uVar5 = getCopControlWord(2, 0x800);
-	uVar4 = getCopControlWord(2, 0x1000);
-	uVar6 = getCopControlWord(2, 0x1800);
-	uVar7 = getCopControlWord(2, 0x2000);
-	getCopControlWord(2, 0x2800);
-	getCopControlWord(2, 0x3000);
-	getCopControlWord(2, 0x3800);
+	//uVar3 = getCopControlWord(2, 0);
+	//uVar5 = getCopControlWord(2, 0x800);
+	//uVar4 = getCopControlWord(2, 0x1000);
+	//uVar6 = getCopControlWord(2, 0x1800);
+	//uVar7 = getCopControlWord(2, 0x2000);
+	//getCopControlWord(2, 0x2800);
+	//getCopControlWord(2, 0x3000);
+	//getCopControlWord(2, 0x3800);
+
 	pDrawingPed = pPed;
 	SetupTannerSkeleton();
-	newRotateBones(&BONE_000a0900);
-	setCopControlWord(2, 0, uVar3);
-	setCopControlWord(2, 0x800, uVar5);
-	setCopControlWord(2, 0x1000, uVar4);
-	setCopControlWord(2, 0x1800, uVar6);
-	setCopControlWord(2, 0x2000, uVar7);
+	SetSkelModelPointers(pPed->pedType);
+	newRotateBones(Skel + 1);
+
+	//setCopControlWord(2, 0, uVar3);
+	//setCopControlWord(2, 0x800, uVar5);
+	//setCopControlWord(2, 0x1000, uVar4);
+	//setCopControlWord(2, 0x1800, uVar6);
+	//setCopControlWord(2, 0x2000, uVar7);
+
+	// [A] I don't know but it works
+	gte_SetRotMatrix(&inv_camera_matrix);
+
 	iCurrBone = 0;
 	newShowTanner();
-	if ((pUsedPeds->pNext == (PEDESTRIAN *)0x0) && (pPed->pedType == TANNER_MODEL)) {
-		local_38.vx = ((pPed->position).vx - camera_position.vx) + (int)(Skel.pvOrigPos)->vx;
-		local_38.vz = ((pPed->position).vz - camera_position.vz) + (int)(Skel.pvOrigPos)->vz;
-		local_38.vy = MapHeight((VECTOR *)&pPed->position);
+
+	if (pUsedPeds->pNext == NULL && pPed->pedType == TANNER_MODEL)
+	{
+		v.vx = (pPed->position.vx - camera_position.vx) + Skel[0].pvOrigPos->vx;
+		v.vz = (pPed->position.vz - camera_position.vz) + Skel[0].pvOrigPos->vz;
+
 		bDoingShadow = 1;
-		local_38.vy = -camera_position.vy - local_38.vy;
-		if (gTimeOfDay == 3) {
-			local_40[0].b = '\f';
-			local_40[0].g = '\f';
-			local_40[0].r = '\f';
-			TannerShadow(&local_38, moon_position + GameLevel, local_40, (pPed->dir).vy);
+		v.vy = -camera_position.vy - MapHeight((VECTOR *)&pPed->position);
+
+		if (gTimeOfDay == 3)
+		{
+			cV.b = 12;
+			cV.g = 12;
+			cV.r = 12;
+			TannerShadow(&v, moon_position + GameLevel, &cV, (pPed->dir).vy);
 		}
-		else {
-			local_40[0].b = ' ';
-			local_40[0].g = ' ';
-			local_40[0].r = ' ';
-			TannerShadow(&local_38, sun_position + GameLevel, local_40, (pPed->dir).vy);
+		else 
+		{
+			cV.b = 32;
+			cV.g = 32;
+			cV.r = 32;
+			TannerShadow(&v, sun_position + GameLevel, &cV, (pPed->dir).vy);
 		}
+
 		bDoingShadow = 0;
 	}
-	else {
-		if (pPed->pedType == CIVILIAN) {
-			local_20.vx = (pPed->position).vx;
-			local_20.vy = (pPed->position).vy;
-			local_20.vz = (pPed->position).vz;
-			uVar1 = (uint)(byte)pPed->frame1 & 7;
-			uVar8 = uVar1 * 2;
-			iVar2 = MapHeight(&local_20);
-			local_28[0].b = '(';
-			local_28[0].g = '(';
-			local_28[0].r = '(';
-			local_20.vx = local_20.vx - camera_position.vx;
-			local_20.vy = (0x1e - iVar2) - camera_position.vy;
-			local_20.vz = local_20.vz - camera_position.vz;
-			if (uVar8 < 8) {
-				size = (ushort)uVar8 | 0x50;
-			}
-			else {
-				size = (short)uVar1 * -2 + 0x60;
-			}
-			RoundShadow(&local_20, local_28, size);
-		}
+	else if (pPed->pedType == CIVILIAN)
+	{
+		pos.vx = pPed->position.vx;
+		pos.vy = pPed->position.vy;
+		pos.vz = pPed->position.vz;
+
+		uVar2 = pPed->frame1 & 7;
+		uVar8 = uVar2 * 2;
+
+		cv.b = 40;
+		cv.g = 40;
+		cv.r = 40;
+		pos.vx = pos.vx - camera_position.vx;
+		pos.vy = (0x1e - MapHeight(&pos)) - camera_position.vy;
+		pos.vz = pos.vz - camera_position.vz;
+
+		if (uVar8 < 8) 
+			size = uVar8 | 0x50;
+		else
+			size = uVar2 * -2 + 0x60;
+
+		RoundShadow(&pos, &cv, size);
 	}
-	return 1;*/
+
+	return 1;
 }
 
 

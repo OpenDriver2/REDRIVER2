@@ -449,7 +449,7 @@ void InitTanner(void)
 	pmJerichoModels[4] = FindModelPtrWithName("JERI_U_ARM_RIGHT");
 	pmJerichoModels[5] = FindModelPtrWithName("JERI_L_ARM_RIGHT");
 
-	SetSkelModelPointers(0);
+	SetSkelModelPointers(TANNER_MODEL);
 	StoreVertexLists();
 
 	numTannerPeds = 0;
@@ -757,7 +757,9 @@ void DestroyPedestrian(PEDESTRIAN *pPed)
 			pUsedPeds->pPrev = NULL;
 
 		pPed->pNext = pFreePeds;
-		pFreePeds->pPrev = pPed;
+
+		if(pFreePeds)
+			pFreePeds->pPrev = pPed;
 	}
 	else 
 	{
@@ -766,7 +768,8 @@ void DestroyPedestrian(PEDESTRIAN *pPed)
 			pPed->pNext->pPrev = pPed->pPrev;
 
 		pPed->pNext = pFreePeds;
-		pFreePeds->pPrev = pPed;
+		if(pFreePeds)
+			pFreePeds->pPrev = pPed;
 		pPed->pPrev = NULL;
 	}
 
@@ -3260,121 +3263,152 @@ void SetupCivPedRouteData(VECTOR *pPos)
 
 void PingInPedestrians(void)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
-	undefined *puVar2;
 	PED_ACTION_TYPE PVar3;
-	SEATED_PEDESTRIANS *pSVar4;
 	long lVar5;
 	PEDESTRIAN *pPed;
 	int iVar6;
 	long lVar7;
 	int iVar8;
 	int step;
-	VECTOR local_58;
-	VECTOR local_48[3];
+	VECTOR randomLoc;
+	VECTOR baseLoc;
+	VECTOR position;
+	VECTOR target;
 
 	bVar1 = false;
-	if (((num_pedestrians < 0xf) && (pFreePeds != (PEDESTRIAN *)0x0)) &&
-		(pFreePeds->pNext != (PEDESTRIAN *)0x0)) {
-		local_48[0].vx = player.pos[0];
-		local_48[0].vy = player.pos[1];
-		local_48[0].vz = player.pos[2];
-		if ((gWeather != 0) || (pSVar4 = FindSeated(), pSVar4 == (SEATED_PEDESTRIANS *)0x0)) {
+	if (num_pedestrians < 15 && pFreePeds != NULL && pFreePeds->pNext != NULL)
+	{
+		baseLoc.vx = player[0].pos[0];
+		baseLoc.vy = player[0].pos[1];
+		baseLoc.vz = player[0].pos[2];
+
+		if (gWeather != 0 || FindSeated() == NULL)
+		{
 			step = 0;
 			do {
 				lVar5 = Random2(0);
 				lVar7 = lVar5;
-				if (lVar5 < 0) {
-					lVar7 = lVar5 + 0x7f;
-				}
+
 				pinginPedAngle = pinginPedAngle + 0x51;
 				iVar8 = lVar5 + (lVar7 >> 7) * -0x80 + 0x600;
-				local_58.vy = local_48[0].vy;
-				local_58.vx = local_48[0].vx +
-					iVar8 * ((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8 + 0x800 >> 0xc);
-				local_58.vz = local_48[0].vz +
-					iVar8 * ((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8 + 0x800 >>
-						0xc);
-				iVar8 = MapHeight(&local_58);
-				local_58.vy = -iVar8;
-				if (((local_48[0].vy + -0x200 <= iVar8) && (iVar8 <= local_48[0].vy + 0x200)) &&
-					(iVar8 = IsPavement(local_58.vx, local_58.vy, local_58.vz, (PEDESTRIAN *)0x0), iVar8 != 0))
+				randomLoc.vy = baseLoc.vy;
+				randomLoc.vx = baseLoc.vx + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
+				randomLoc.vz = baseLoc.vz + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
+				iVar8 = MapHeight(&randomLoc);
+				randomLoc.vy = -iVar8;
+
+				if (((baseLoc.vy + -0x200 <= iVar8) && (iVar8 <= baseLoc.vy + 0x200)) && (iVar8 = IsPavement(randomLoc.vx, randomLoc.vy, randomLoc.vz, NULL), iVar8 != 0)) 
 				{
 					bVar1 = true;
-					if (pUsedPeds == (PEDESTRIAN *)0x0) {
+					if (pUsedPeds == NULL) 
+					{
 					LAB_0007068c:
-						if (!bVar1) {
+						if (!bVar1)
 							return;
-						}
-						if (pFreePeds->pNext == (PEDESTRIAN *)0x0) {
+	
+						if (pFreePeds->pNext == NULL)
 							return;
-						}
+
 						pPed = CreatePedestrian();
 						pPed->flags = 0;
-						(pPed->position).vx = local_58.vx;
-						(pPed->position).vy = local_58.vy;
-						pPed->pedType = CIVILIAN;
-						(pPed->dir).vz = 0;
-						(pPed->dir).vx = 0;
-						(pPed->dir).vy = 0;
-						(pPed->position).vz = local_58.vz;
-						local_48[0].vx = local_58.vx;
-						local_48[0].vy = (pPed->position).vy;
-						local_48[0].vz = (pPed->position).vz;
-						local_48[0].vy = MapHeight(local_48);
-						local_48[0].vy = -local_48[0].vy;
-						SetupCivPedRouteData(local_48);
+						pPed->position.vx = randomLoc.vx;
+						pPed->position.vy = randomLoc.vy;
+						pPed->pedType = CIVILIAN; // [A] try :D
+						pPed->dir.vz = 0;
+						pPed->dir.vx = 0;
+						pPed->dir.vy = 0;
+						pPed->position.vz = randomLoc.vz;
+						baseLoc.vx = randomLoc.vx;
+						baseLoc.vy = (pPed->position).vy;
+						baseLoc.vz = (pPed->position).vz;
+						step = MapHeight(&baseLoc);
+						baseLoc.vy = -step;
+
+						SetupCivPedRouteData(&baseLoc);
 						PedestrianActionInit_WalkToTarget(pPed);
-						step = -0x1c;
+
+						step = -28;
+						
+#if 0
 						PVar3 = PED_ACTION_CIVRUN;
-						if ((((pedestrian_roads.north != -0x1c) &&
-							(PVar3 = PED_ACTION_CIVRUN, pedestrian_roads.south != -0x1c)) &&
-							(PVar3 = PED_ACTION_CIVRUN, pedestrian_roads.east != -0x1c)) &&
-							(PVar3 = PED_ACTION_CIVWALK, pedestrian_roads.west == -0x1c)) {
+
+						if (((pedestrian_roads.north != -28 &&
+							(PVar3 = PED_ACTION_CIVRUN, pedestrian_roads.south != -28)) &&
+							(PVar3 = PED_ACTION_CIVRUN, pedestrian_roads.east != -28)) &&
+							(PVar3 = PED_ACTION_CIVWALK, pedestrian_roads.west == -28))
+						{
 							PVar3 = PED_ACTION_CIVRUN;
 						}
+
 						pPed->type = PVar3;
+
+						if (pPed->type == PED_ACTION_CIVRUN) // [A] fix bug
+							pPed->speed = 30;
+#else
+						// [A] using Tanner animation, different skeleton
+						PVar3 = PED_ACTION_RUN;
+
+						if (((pedestrian_roads.north != -28 &&
+							(PVar3 = PED_ACTION_RUN, pedestrian_roads.south != -28)) &&
+							(PVar3 = PED_ACTION_RUN, pedestrian_roads.east != -28)) &&
+							(PVar3 = PED_ACTION_WALK, pedestrian_roads.west == -28))
+						{
+							PVar3 = PED_ACTION_RUN;
+						}
+
+						pPed->type = PVar3;
+
+						if (pPed->type == PED_ACTION_RUN)
+							pPed->speed = 30;
+#endif
+
 						lVar7 = Random2(-0x1c);
 						lVar5 = Random2(step);
-						pPed->pallet = (char)lVar7 + (char)(lVar7 / 5) * -5 +
-							((char)lVar5 + (char)(lVar5 / 5) * -5) * '\x10';
-						if (pPed->type == PED_ACTION_RUN) {
-							pPed->speed = '\x1e';
-						}
+						pPed->pallet = lVar7 + (lVar7 / 5) * -5 + (lVar5 + (lVar5 / 5) * -5) * 16;
+
+
+
 						SetupPedMotionData(pPed);
-						puVar2 = PTR_CivPedWalk_000a168c;
-						pPed->fpAgitatedState = (_func_2 *)0x0;
-						(pPed->dir).vy = 0;
-						pPed->fpRestState = puVar2;
+						pPed->fpAgitatedState = NULL;
+						pPed->dir.vy = 0;
+						pPed->fpRestState = fpPedPersonalityFunctions[7];
 						lVar7 = Random2(0);
-						if ((lVar7 / 6) * 6 != lVar7 + -3) {
+
+						if ((lVar7 / 6) * 6 != lVar7 + -3)
 							return;
-						}
+	
 						pPed->flags = pPed->flags | 0x4000;
 						return;
 					}
-					iVar6 = (pUsedPeds->position).vx - local_58.vx;
-					iVar8 = (pUsedPeds->position).vz;
+
+					iVar6 = pUsedPeds->position.vx - randomLoc.vx;
+					iVar8 = pUsedPeds->position.vz;
 					iVar6 = iVar6 * iVar6;
 					pPed = pUsedPeds;
-					while (bVar1 = true, 15999999 < iVar6 + (iVar8 - local_58.vz) * (iVar8 - local_58.vz)) {
+
+					while (bVar1 = true, 15999999 < iVar6 + (iVar8 - randomLoc.vz) * (iVar8 - randomLoc.vz)) 
+					{
 						pPed = pPed->pNext;
-						if (pPed == (PEDESTRIAN *)0x0) goto LAB_00070674;
-						iVar6 = (pPed->position).vx - local_58.vx;
+
+						if (pPed == NULL) 
+							goto LAB_00070674;
+
+						iVar6 = (pPed->position).vx - randomLoc.vx;
 						iVar6 = iVar6 * iVar6;
 						iVar8 = (pPed->position).vz;
 					}
 					bVar1 = false;
 				}
+
 			LAB_00070674:
 				step = step + 1;
-				if ((0x31 < step) || (bVar1)) goto LAB_0007068c;
+				if ((49 < step) || (bVar1))
+					goto LAB_0007068c;
+
 			} while (true);
 		}
 	}
-	return;*/
 }
 
 
