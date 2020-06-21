@@ -642,7 +642,7 @@ short gCameraDistance = 0x3e8;
 short gCameraMaxDistance = 0x3e8;
 
 _CAR_DATA *jcam = NULL;
-int switch_detail_distance = 0x2710;
+int switch_detail_distance = 10000;
 
 // [D]
 void PlaceCameraFollowCar(_PLAYER *lp)

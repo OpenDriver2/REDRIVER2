@@ -21,6 +21,8 @@ extern short gCameraDistance;
 extern short gCameraMaxDistance;
 extern VECTOR CameraPos;
 
+extern int switch_detail_distance;
+
 extern void InitCamera(_PLAYER *lp); // 0x0001F5F4
 
 extern void ModifyCamera(); // 0x0001FA20
