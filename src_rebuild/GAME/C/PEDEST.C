@@ -3899,12 +3899,10 @@ void SetupCivJump(PEDESTRIAN *pPed, _CAR_DATA *cp)
 			scale = 0x400;
 
 			// [A] fuck....
-			if ((-((int)(player[0].pPed)->speed *
-				(int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2 + 1]) >>
-				0xc) * (((player[0].pPed)->position).vx - (pPed->position).vx) +
-				((int)(player[0].pPed)->speed *
-				(int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2] >> 0xc) *
-					(((player[0].pPed)->position).vz - (pPed->position).vz) + 0x800 < 0) 
+			if (FIXED(-((int)(player[0].pPed)->speed * (int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2 + 1])) * 
+				(((player[0].pPed)->position).vx - (pPed->position).vx) + 
+				FIXED((int)(player[0].pPed)->speed * (int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2]) * 
+				(((player[0].pPed)->position).vz - (pPed->position).vz) + 0x800 < 0) 
 			{
 				scale = -0x400;
 			}
@@ -4071,11 +4069,13 @@ void CivPedWalk(PEDESTRIAN *pPed)
 
 		if (turn == 0) 
 		{
-			if ((*(uint *)&pPed->speed & 0xffff00) == 0x90000) {
+			if ((*(uint *)&pPed->speed & 0xffff00) == 0x90000)
+			{
 				uVar4 = (int)(pPed->dir).vy + 0xa00U & 0xfff;
-				turn = IsPavement((pPed->position).vx + ((int)rcossin_tbl[uVar4 * 2] * 0x80 >> 0xc),
+				turn = IsPavement(
+					(pPed->position).vx + FIXED(rcossin_tbl[uVar4 * 2] * 0x80),
 					(pPed->position).vy,
-					(pPed->position).vz + ((int)rcossin_tbl[uVar4 * 2 + 1] * 0x80 >> 0xc),
+					(pPed->position).vz + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 0x80),
 					(PEDESTRIAN *)0x0);
 
 				if (turn == 0) 
@@ -4099,8 +4099,8 @@ void CivPedWalk(PEDESTRIAN *pPed)
 			else 
 			{
 				uVar4 = pPed->dir.vy + 0x800U & 0xfff;
-				pPed->velocity.vx = (iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc);
-				pPed->velocity.vz = (iVar5 * rcossin_tbl[uVar4 * 2 + 1] >> 0xc);
+				pPed->velocity.vx = FIXED(iVar5 * rcossin_tbl[uVar4 * 2]);
+				pPed->velocity.vz = FIXED(iVar5 * rcossin_tbl[uVar4 * 2 + 1]);
 			}
 			pPed->finished_turn = 0;
 		}
@@ -4112,11 +4112,11 @@ void CivPedWalk(PEDESTRIAN *pPed)
 			{
 				uVar3 = pPed->dir.vy + 0x200U & 0xfc00;
 				pPed->dir.vy = uVar3;
-				uVar4 = (int)(short)uVar3 + 0x800U & 0xfff;
-				pPed->velocity.vx = (short)(iVar5 * rcossin_tbl[uVar4 * 2] >> 0xc);
+				uVar4 = uVar3 + 0x800U & 0xfff;
+				pPed->velocity.vx = FIXED(iVar5 * rcossin_tbl[uVar4 * 2]);
 				sVar2 = rcossin_tbl[uVar4 * 2 + 1];
 				pPed->finished_turn = 9;
-				pPed->velocity.vz = (short)(iVar5 * sVar2 >> 0xc);
+				pPed->velocity.vz = FIXED(iVar5 * sVar2);
 			}
 		}
 	}
@@ -4530,8 +4530,8 @@ void SetPedestrianTurn(PEDESTRIAN *pedestrian, int turn)
 
 	cVar1 = pedestrian->speed;
 	(pedestrian->position).vx = iVar4 - sVar3;
-	(pedestrian->velocity).vx = (short)((int)cVar1 * (int)rcossin_tbl[uVar6 * 2] >> 0xc);
-	(pedestrian->velocity).vz = (short)((int)cVar1 * (int)rcossin_tbl[uVar6 * 2 + 1] >> 0xc);
+	(pedestrian->velocity).vx = FIXED(cVar1 * rcossin_tbl[uVar6 * 2]);
+	(pedestrian->velocity).vz = FIXED(cVar1 * rcossin_tbl[uVar6 * 2 + 1]);
 }
 
 
@@ -4604,8 +4604,8 @@ SEATED_PEDESTRIANS * FindSeated(void)
 			}
 
 			if (seatedptr->index == 0 &&
-				(iVar2 = seatedptr->x - player[0].pos[0] >> 0xc, iVar1 = seatedptr->z - player[0].pos[2] >> 0xc,
-					iVar3 = iVar3 + -1, (iVar2 * iVar2 + iVar1 * iVar1) - 0xbU < 0x1d))
+				(iVar2 = FIXED(seatedptr->x - player[0].pos[0]), iVar1 = FIXED(seatedptr->z - player[0].pos[2]),
+				iVar3 = iVar3 + -1, (iVar2 * iVar2 + iVar1 * iVar1) - 0xbU < 0x1d))
 			{
 				add_seated(seatedptr, seated_count);
 				return seatedptr;
@@ -4677,7 +4677,7 @@ SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed)
 				iVar2 = player[0].pos[2] - seatedptr->z;
 
 			if (((iVar1 < 200) && (iVar2 < 200)) &&
-				(iVar1 = iVar1 * iVar1 + iVar2 * iVar2 >> 0xc, iVar1 < iVar5)) 
+				(iVar1 = FIXED(iVar1 * iVar1 + iVar2 * iVar2), iVar1 < iVar5)) 
 			{
 				theOne = seatedptr;
 				iVar5 = iVar1;

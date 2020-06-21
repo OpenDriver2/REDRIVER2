@@ -12,6 +12,7 @@
 #include "DRAW.H"
 #include "DR2ROADS.H"
 #include "SKY.H"
+#include "PLAYERS.H"
 
 #include "INLINE_C.H"
 
@@ -487,8 +488,8 @@ int bDoingShadow = 0;
 int gCurrentZ;
 PEDESTRIAN *pDrawingPed = NULL;
 
-// [D] [A] change to VERTTYPE?
-void DrawBodySprite(int boneId, long v1, long v2, int sz, int sy)
+// [D] [A] changed to VERTTYPE
+void DrawBodySprite(int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
 {
 	uint uVar1;
 	long lVar2;
@@ -510,11 +511,13 @@ void DrawBodySprite(int boneId, long v1, long v2, int sz, int sy)
 	int y1;
 	int z1;
 
-	uVar12 = v1 & 0xffff0000;
-	iVar11 = v1 * 0x10000;
-	uVar1 = v2 & 0xffff0000;
-	y = iVar11 + v2 * -0x10000;
-	x = uVar12 - uVar1;
+	uVar12 = v1[0];// &0xffff0000;
+	iVar11 = v1[1];// *0x10000;
+	uVar1 = v2[0];// &0xffff0000;
+	//v2 * 0x10000
+
+	y = v1[1] + v2[0] * -0x10000;	// [A] wtf?
+	x = v1[0] - v2[0];
 	uVar10 = boneId & 0x7f;
 	body_texture = MainPed[uVar10].ptd;
 	lVar2 = ratan2(y, x);
@@ -568,17 +571,17 @@ void DrawBodySprite(int boneId, long v1, long v2, int sz, int sy)
 		x = x >> uVar4;
 	}
 
-	prims->x0 = uVar12 + iVar5 + iVar8;
-	prims->y0 = iVar11 + iVar7 + iVar9;
+	prims->x0 = v1[0] + iVar5 + iVar8;
+	prims->y0 = v1[1] + iVar7 + iVar9;
 
-	prims->x1 = (uVar12 - iVar5) + iVar8;
-	prims->y1 = (iVar11 - iVar7) + iVar9;
+	prims->x1 = (v1[0] - iVar5) + iVar8;
+	prims->y1 = (v1[1] - iVar7) + iVar9;
 
-	prims->x2 = (uVar1 + iVar5) - x;
-	prims->y2 = (v2 * 0x10000 + iVar7) - y;
+	prims->x2 = (v2[0] + iVar5) - x;
+	prims->y2 = (v2[1] + iVar7) - y;
 
-	prims->x3 = (uVar1 - iVar5) - x;
-	prims->y3 = (v2 * 0x10000 - iVar7) - y;
+	prims->x3 = (v2[0] - iVar5) - x;
+	prims->y3 = (v2[1] - iVar7) - y;
 
 	//*(uint *)&prims->x0 = (uVar12 + iVar5 + iVar8 & 0xffff0000) + (iVar11 + iVar7 + iVar9 >> 0x10);
 	//*(uint *)&prims->x1 = ((uVar12 - iVar5) + iVar8 & 0xffff0000) + ((iVar11 - iVar7) + iVar9 >> 0x10);
@@ -753,7 +756,7 @@ void StoreVertexLists(void)
 		{
 			pMVar5 = *pBVar2->pModel;
 			local_a2_76 = (SVECTOR *)pMVar5->vertices;
-			cTannerVNumbers[(uint)pBVar2->id & 0x7f] = iVar8;
+			cTannerVNumbers[pBVar2->id] = iVar8;
 
 			if (pMVar5->num_vertices != 0)
 			{
@@ -1086,259 +1089,355 @@ void SetupTannerSkeleton(void)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int bAllreadyRotated = 0;
+
+// [D]
 void newShowTanner(void)
 {
-	UNIMPLEMENTED();
-	/*
 	LIMBS LVar1;
-	PEDESTRIAN *pPVar2;
-	undefined4 in_zero;
-	int iVar3;
-	int zBias;
-	short *psVar4;
-	uint uVar5;
-	int iVar6;
-	int iVar7;
-	MODEL *pMVar8;
-	uint uVar9;
-	BONE *pBVar10;
-	VECTOR local_80;
-	SVECTOR local_70;
-	SVECTOR local_68;
-	long local_60;
-	long local_5c;
-	int local_58;
-	int local_54;
-	undefined4 local_50;
-	long local_4c;
-	long local_48;
-	int local_44;
-	int local_40;
-	undefined4 local_3c;
-	long local_38;
-	long local_34;
-	int local_30;
-	int local_2c;
-	undefined4 local_28;
+	VERTTYPE v1_00[2];
+	VERTTYPE v2_00[2];
 
-	DAT_1f800000 = (pDrawingPed->position).vx;
-	DAT_1f800004 = (pDrawingPed->position).vy;
-	DAT_1f800008 = (pDrawingPed->position).vz;
-	DAT_1f800010 = camera_position.vx;
-	DAT_1f800014 = camera_position.vy;
-	DAT_1f800018 = camera_position.vz;
-	DAT_1f800020 = (int)(Skel.pvOrigPos)->vx;
-	DAT_1f800024 = -(int)(Skel.pvOrigPos)->vy;
-	DAT_1f800028 = (int)(Skel.pvOrigPos)->vz;
-	local_80.vz = 0;
-	local_80.vy = 0;
-	local_80.vx = 0;
-	setCopControlWord(2, 0x2800, 0);
-	setCopControlWord(2, 0x3000, 0);
-	setCopControlWord(2, 0x3800, 0);
-	zBias = 0;
-	Skel.id = Skel.id | 0x80;
-	iVar3 = 0;
+	int iVar3;
+	int sy;
+	BONE *pBone;
+	int vvar1;
+	SVECTOR *mVerts;
+	uint uVar4;
+	int iVar5;
+	MODEL *model;
+	uint uVar6;
+	VECTOR v;
+	SVECTOR v1;
+	SVECTOR v2;
+	long t0;
+	long t1;
+	int z;
+	int z1;
+	int z2;
+	long _t0;
+	long _t1;
+	int _z;
+	int _z1;
+	int _z2;
+	long __t0;
+	long __t1;
+	int __z;
+	int __z1;
+	int __z2;
+
+	VECTOR VECTOR_1f800000;
+	VECTOR VECTOR_1f800010;
+	VECTOR VECTOR_ARRAY_1f800020[64];
+	SVECTOR SVECTOR_1f800200;
+	SVECTOR SVECTOR_1f800208;
+
+	VECTOR_1f800000.vx = (pDrawingPed->position).vx;
+	VECTOR_1f800000.vy = (pDrawingPed->position).vy;
+	VECTOR_1f800000.vz = (pDrawingPed->position).vz;
+	VECTOR_1f800010.vx = camera_position.vx;
+	VECTOR_1f800010.vy = camera_position.vy;
+	VECTOR_1f800010.vz = camera_position.vz;
+	VECTOR_ARRAY_1f800020[0].vx = (long)(Skel[0].pvOrigPos)->vx;
+	VECTOR_ARRAY_1f800020[0].vy = -(int)(Skel[0].pvOrigPos)->vy;
+	VECTOR_ARRAY_1f800020[0].vz = (long)(Skel[0].pvOrigPos)->vz;
+
+	v.vz = 0;
+	v.vy = 0;
+	v.vx = 0;
+
+	gte_SetTransVector(&v);
+
+	vvar1 = 0;
+	Skel[0].id = (LIMBS)(Skel[0].id | 0x80);
+	sy = 0;
 	do {
-		LVar1 = lRoutes[iVar3 + 1];
-		iVar6 = 1;
-		zBias = zBias + 1;
-		pPVar2 = pDrawingPed;
-		while (pDrawingPed = pPVar2, LVar1 != ROOT) {
-			uVar5 = (uint)LVar1;
-			pBVar10 = &Skel + uVar5;
-			if (pBVar10->id < 0x7f) {
-				uVar9 = (uint)*(byte *)((int)MissionName37 + iVar6 + iVar3 + 0x93);
-				(&DAT_1f800020)[(uint)pBVar10->id * 4] =
-					(&DAT_1f800020)[uVar9 * 4] + (&Skel)[uVar5].vCurrPos.vx;
-				(&DAT_1f800024)[(uint)pBVar10->id * 4] =
-					(&DAT_1f800024)[uVar9 * 4] + (&Skel)[uVar5].vCurrPos.vy;
-				(&DAT_1f800028)[(uint)pBVar10->id * 4] =
-					(&DAT_1f800028)[uVar9 * 4] + (&Skel)[uVar5].vCurrPos.vz;
-				if ((pPVar2->pedType == TANNER_MODEL) && (pBVar10->id == HEAD)) {
-					pPVar2->head_pos =
-						(short)((ulonglong)((longlong)((&DAT_1f800024)[uVar9 * 4] + -0x5e) * 0x55555556) >>
-							0x20) - (short)((&DAT_1f800024)[uVar9 * 4] + -0x5e >> 0x1f);
+		LVar1 = lRoutes[vvar1][1];
+		iVar5 = 1;
+
+		while (LVar1 != ROOT) 
+		{
+			LVar1 = lRoutes[vvar1][iVar5];
+			uVar4 = (uint)LVar1;
+			pBone = Skel + uVar4;
+			if (pBone->id < 0x7f)
+			{
+				uVar6 = lRoutes[vvar1][iVar5-1];//  (uint)*(byte *)((int)MissionName37 + iVar5 + sy + 0x93);
+				VECTOR_ARRAY_1f800020[pBone->id].vx = VECTOR_ARRAY_1f800020[uVar6].vx + Skel[uVar4].vCurrPos.vx;
+				VECTOR_ARRAY_1f800020[pBone->id].vy = VECTOR_ARRAY_1f800020[uVar6].vy + Skel[uVar4].vCurrPos.vy;
+				VECTOR_ARRAY_1f800020[pBone->id].vz = VECTOR_ARRAY_1f800020[uVar6].vz + Skel[uVar4].vCurrPos.vz;
+				
+				if ((pDrawingPed->pedType == TANNER_MODEL) && (pBone->id == HEAD)) 
+				{
+					iVar3 = VECTOR_ARRAY_1f800020[uVar6].vy - 94;
+					pDrawingPed->head_pos = iVar3 / 3;
 				}
-				pMVar8 = *(&Skel)[uVar5].pModel;
-				if (((((&Skel)[uVar5].pModel != (MODEL **)0x0) && (bDoingShadow == 0)) &&
-					(pDrawingPed->pedType < OTHER_SPRITE)) && (player.cameraView != '\x02')) {
-					psVar4 = (short *)pMVar8->vertices;
-					iVar7 = 0;
-					if (pMVar8->num_vertices != 0) {
+
+				
+				if ((((Skel[uVar4].pModel != NULL) && (bDoingShadow == 0)) && (pDrawingPed->pedType < OTHER_SPRITE)) && (player[0].cameraView != 2)) 
+				{
+					model = *Skel[uVar4].pModel;
+
+					mVerts = (SVECTOR *)model->vertices;
+					iVar3 = 0;
+					if (model->num_vertices != 0) 
+					{
 						do {
-							iVar7 = iVar7 + 1;
-							*psVar4 = *psVar4 + ((*(short *)(&DAT_1f800020 + uVar9 * 4) + (short)DAT_1f800000) -
-								(short)DAT_1f800010);
-							psVar4[1] = psVar4[1] +
-								((*(short *)(&DAT_1f800024 + uVar9 * 4) + (short)DAT_1f800004) -
-								(short)DAT_1f800014);
-							psVar4[2] = psVar4[2] +
-								((*(short *)(&DAT_1f800028 + uVar9 * 4) + (short)DAT_1f800008) -
-								(short)DAT_1f800018);
-							psVar4 = psVar4 + 4;
-						} while (iVar7 < (int)(uint)pMVar8->num_vertices);
+							iVar3 = iVar3 + 1;
+							mVerts->vx = mVerts->vx + ((*(short *)&VECTOR_ARRAY_1f800020[uVar6].vx + (short)VECTOR_1f800000.vx) - (short)VECTOR_1f800010.vx);
+							mVerts->vy = mVerts->vy + ((*(short *)&VECTOR_ARRAY_1f800020[uVar6].vy + (short)VECTOR_1f800000.vy) - (short)VECTOR_1f800010.vy);
+							mVerts->vz = mVerts->vz + ((*(short *)&VECTOR_ARRAY_1f800020[uVar6].vz + (short)VECTOR_1f800000.vz) - (short)VECTOR_1f800010.vz);
+							mVerts = mVerts + 1;
+						} while (iVar3 < model->num_vertices);
 					}
 				}
-				pBVar10->id = pBVar10->id | 0x80;
+				pBone->id = (LIMBS)(pBone->id | 0x80);
 			}
-			iVar6 = iVar6 + 1;
-			LVar1 = lRoutes[iVar6 + iVar3];
-			pPVar2 = pDrawingPed;
+			iVar5++;
+			
 		}
-		iVar3 = zBias * 8;
-	} while (zBias < 5);
-	pBVar10 = &BONE_000a0900;
-	if (pPVar2->pedType < OTHER_SPRITE) {
-		if ((player.cameraView != '\x02') || (bDoingShadow != 0)) {
-			iVar3 = 0x14;
+		vvar1++;
+		sy = vvar1 * 8;
+	} while (vvar1 < 5);
+
+	pBone = Skel + 1;
+
+	if (pDrawingPed->pedType < OTHER_SPRITE)
+	{
+		if (player[0].cameraView != 2 || bDoingShadow != 0)
+		{
+			sy = 20;
 			do {
-				uVar5 = (uint)pBVar10->id & 0x7f;
-				if (bDoingShadow == 0) {
-					if ((MODEL *)pBVar10->pModel != (MODEL *)0x0) {
-						zBias = (uint)(uVar5 != 4) << 1;
-						if (uVar5 == 2) {
-							zBias = 1;
-						}
-						RenderModel(*(MODEL **)(MODEL *)pBVar10->pModel, (MATRIX *)0x0, &local_80, zBias, 0);
+				uVar4 = (uint)pBone->id & 0x7f;
+				if (bDoingShadow == 0) 
+				{
+					if (pBone->pModel != NULL)
+					{
+						vvar1 = (uint)(uVar4 != 4) << 1;
+
+						if (uVar4 == 2)
+							vvar1 = 1;
+
+						RenderModel(*pBone->pModel, NULL, &v, vvar1, 0);
 					}
 				}
-				else {
-					if (((uVar5 != 5) && (uVar5 != 9)) &&
-						((uVar5 != 0xd &&
-						((((uVar5 != 1 && ((pBVar10->id & 0x7f) != 0)) && (uVar5 != 0x16)) &&
-							((uVar5 != 0xe && (uVar5 != 0x12)))))))) {
-						uVar9 = (uint)pBVar10->pParent->id & 0x7f;
-						_DAT_1f800200 =
-							CONCAT22(*(short *)(&DAT_1f800024 + uVar5 * 4) +
-							(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-								*(short *)(&DAT_1f800020 + uVar5 * 4) +
-								(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-						_DAT_1f800204 =
-							_DAT_1f800204 & 0xffff0000 |
-							(uint)(ushort)(*(short *)(&DAT_1f800028 + uVar5 * 4) +
-							(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
-						_DAT_1f800208 =
-							CONCAT22(*(short *)(&DAT_1f800024 + uVar9 * 4) +
-							(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-								*(short *)(&DAT_1f800020 + uVar9 * 4) +
-								(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-						zBias = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
-						uVar5 = (uint)*(ushort *)(&DAT_1f800028 + uVar9 * 4) + zBias;
-						_DAT_1f80020c = _DAT_1f80020c & 0xffff0000 | uVar5 & 0xffff;
-						setCopReg(2, in_zero, _DAT_1f800200);
-						setCopReg(2, 0x1f800000, _DAT_1f800204);
-						setCopReg(2, zBias, _DAT_1f800208);
-						setCopReg(2, uVar5, _DAT_1f80020c);
-						copFunction(2, 0x280030);
-						local_38 = getCopReg(2, 0xc);
-						local_34 = getCopReg(2, 0xd);
-						gCurrentZ = getCopReg(2, 0x11);
-						local_2c = getCopReg(2, 0x12);
-						local_28 = getCopReg(2, 0x13);
-						local_30 = gCurrentZ;
-						DrawBodySprite((uint)pBVar10->id, local_38, local_34, gCurrentZ, local_2c);
+				else 
+				{
+					if (((uVar4 != 5) && (uVar4 != 9)) &&
+						((uVar4 != 0xd &&
+						((((uVar4 != 1 && ((pBone->id & 0x7f) != 0)) && (uVar4 != 0x16)) &&
+						((uVar4 != 0xe && (uVar4 != 0x12)))))))) 
+					{
+						uVar6 = (uint)pBone->pParent->id & 0x7f;
+
+						SVECTOR_1f800200.vx = VECTOR_ARRAY_1f800020[uVar4].vx + pDrawingPed->position.vx - camera_position.vx;
+						SVECTOR_1f800200.vy = VECTOR_ARRAY_1f800020[uVar4].vy + pDrawingPed->position.vy - camera_position.vy;
+						SVECTOR_1f800200.vz = VECTOR_ARRAY_1f800020[uVar4].vz + pDrawingPed->position.vz - camera_position.vz;
+
+						SVECTOR_1f800208.vx = VECTOR_ARRAY_1f800020[uVar6].vx + pDrawingPed->position.vx - camera_position.vx;
+						SVECTOR_1f800208.vy = VECTOR_ARRAY_1f800020[uVar6].vy + pDrawingPed->position.vy - camera_position.vy;
+						SVECTOR_1f800208.vz = VECTOR_ARRAY_1f800020[uVar6].vz + pDrawingPed->position.vz - camera_position.vz;
+
+						gte_ldv0(&SVECTOR_1f800200);
+						gte_ldv1(&SVECTOR_1f800208);
+
+						gte_rtpt();
+						gte_stsxy0(&v1_00[0]);
+						gte_stsxy1(&v2_00[0]);
+
+						int sz2;
+						gte_stsz3(&z, &z1, &z2);
+
+						gCurrentZ = z1;
+
+						DrawBodySprite((uint)pBone->id, v1_00, v2_00, z, z1);
 					}
 				}
-				iVar3 = iVar3 + -1;
-				pBVar10 = pBVar10 + 1;
-			} while (-1 < iVar3);
+
+#if 0
+				// DEBUG DRAW SKELETON
+				{
+					uVar6 = (uint)pBone->pParent->id & 0x7f;
+
+					extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+					extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+					CVECTOR bbcv = { 0, 0, 250 };
+					CVECTOR rrcv = { 250, 0, 0 };
+					CVECTOR yycv = { 250, 250, 0 };
+
+					VECTOR v0 = {
+						VECTOR_ARRAY_1f800020[uVar4].vx,
+						-VECTOR_ARRAY_1f800020[uVar4].vy,
+						VECTOR_ARRAY_1f800020[uVar4].vz
+					};
+
+					VECTOR v1 = {
+						VECTOR_ARRAY_1f800020[uVar6].vx,
+						-VECTOR_ARRAY_1f800020[uVar6].vy,
+						VECTOR_ARRAY_1f800020[uVar6].vz
+					};
+
+					VECTOR ofs = *(VECTOR*)&pDrawingPed->position;
+					ofs.vy = -ofs.vy;
+					//ofs.vy += 270;
+
+					Debug_AddLineOfs(v0, v1, ofs, bbcv);
+				}
+#endif
+
+				sy = sy + -1;
+				pBone = pBone + 1;
+			} while (-1 < sy);
 		}
 	}
-	else {
-		iVar3 = 0x15;
+	else 
+	{
+		sy = 21;
 		do {
-			uVar5 = (uint)pBVar10->id & 0x7f;
-			if ((((uVar5 != 5) && (uVar5 != 9)) &&
-				((uVar5 != 4 && (((uVar5 != 0xd && (uVar5 != 1)) && ((pBVar10->id & 0x7f) != 0)))))) &&
-				(((uVar5 != 0x16 && (uVar5 != 0xe)) && (uVar5 != 0x12)))) {
-				uVar9 = (uint)pBVar10->pParent->id & 0x7f;
-				_DAT_1f800200 =
-					CONCAT22(*(short *)(&DAT_1f800024 + uVar5 * 4) +
-					(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-						*(short *)(&DAT_1f800020 + uVar5 * 4) +
-						(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-				_DAT_1f800204 =
-					_DAT_1f800204 & 0xffff0000 |
-					(uint)(ushort)(*(short *)(&DAT_1f800028 + uVar5 * 4) +
-					(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
-				_DAT_1f800208 =
-					CONCAT22(*(short *)(&DAT_1f800024 + uVar9 * 4) +
-					(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-						*(short *)(&DAT_1f800020 + uVar9 * 4) +
-						(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-				zBias = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
-				uVar5 = (uint)*(ushort *)(&DAT_1f800028 + uVar9 * 4) + zBias;
-				_DAT_1f80020c = _DAT_1f80020c & 0xffff0000 | uVar5 & 0xffff;
-				setCopReg(2, in_zero, _DAT_1f800200);
-				setCopReg(2, 0x1f800000, _DAT_1f800204);
-				setCopReg(2, zBias, _DAT_1f800208);
-				setCopReg(2, uVar5, _DAT_1f80020c);
+			uVar4 = (uint)pBone->id & 0x7f;
+			if ((((uVar4 != 5) && (uVar4 != 9)) && ((uVar4 != 4 && (((uVar4 != 0xd && (uVar4 != 1)) && ((pBone->id & 0x7f) != 0))))))
+				&& (((uVar4 != 0x16 && (uVar4 != 0xe)) && (uVar4 != 0x12))))
+			{
+				uVar6 = (uint)pBone->pParent->id & 0x7f;
+
+				SVECTOR_1f800200.vx = VECTOR_ARRAY_1f800020[uVar4].vx + pDrawingPed->position.vx - camera_position.vx;
+				SVECTOR_1f800200.vy = VECTOR_ARRAY_1f800020[uVar4].vy + pDrawingPed->position.vy - camera_position.vy;
+				SVECTOR_1f800200.vz = VECTOR_ARRAY_1f800020[uVar4].vz + pDrawingPed->position.vz - camera_position.vz;
+
+				SVECTOR_1f800208.vx = VECTOR_ARRAY_1f800020[uVar6].vx + pDrawingPed->position.vx - camera_position.vx;
+				SVECTOR_1f800208.vy = VECTOR_ARRAY_1f800020[uVar6].vy + pDrawingPed->position.vy - camera_position.vy;
+				SVECTOR_1f800208.vz = VECTOR_ARRAY_1f800020[uVar6].vz + pDrawingPed->position.vz - camera_position.vz;
+
+				gte_ldv0(&SVECTOR_1f800200);
+				gte_ldv1(&SVECTOR_1f800208);
+
+				gte_rtpt();
+				gte_stsxy0(v1_00);
+				gte_stsxy1(v2_00);
+
+				int sz2;
+				gte_stsz3(&z, &z1, &z2);
+
+				gCurrentZ = z1;
+
+				DrawBodySprite((uint)pBone->id, v1_00, v2_00, z, z1);
+
+				/*
+				SVECTOR_1f800200._0_4_ = CONCAT22(
+					*(short *)&VECTOR_ARRAY_1f800020[uVar4].vy + (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+					*(short *)&VECTOR_ARRAY_1f800020[uVar4].vx + (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+
+				SVECTOR_1f800200._4_4_ =
+					SVECTOR_1f800200._4_4_ & 0xffff0000 |
+					(uint)(ushort)(*(short *)&VECTOR_ARRAY_1f800020[uVar4].vz + (*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
+				SVECTOR_1f800208._0_4_ =
+					CONCAT22(
+					*(short *)&VECTOR_ARRAY_1f800020[uVar6].vy + (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+					*(short *)&VECTOR_ARRAY_1f800020[uVar6].vx + (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+
+				vvar1 = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
+				uVar4 = (uint)*(ushort *)&VECTOR_ARRAY_1f800020[uVar6].vz + vvar1;
+
+				SVECTOR_1f800208._4_4_ = SVECTOR_1f800208._4_4_ & 0xffff0000 | uVar4 & 0xffff;
+
+				setCopReg(2, in_zero, SVECTOR_1f800200._0_4_);
+				setCopReg(2, 0x1f800000, SVECTOR_1f800200._4_4_);
+				setCopReg(2, vvar1, SVECTOR_1f800208._0_4_);
+				setCopReg(2, uVar4, SVECTOR_1f800208._4_4_);
 				copFunction(2, 0x280030);
-				local_60 = getCopReg(2, 0xc);
-				local_5c = getCopReg(2, 0xd);
+				v1_00 = getCopReg(2, 0xc);
+				v2_00 = getCopReg(2, 0xd);
 				gCurrentZ = getCopReg(2, 0x11);
-				local_54 = getCopReg(2, 0x12);
-				local_50 = getCopReg(2, 0x13);
-				local_58 = gCurrentZ;
-				DrawBodySprite((uint)pBVar10->id, local_60, local_5c, gCurrentZ, local_54);
+				vvar1 = getCopReg(2, 0x12);
+				getCopReg(2, 0x13);
+				
+				DrawBodySprite((uint)pBone->id, v1_00, v2_00, gCurrentZ, vvar1);
+				*/
 			}
-			iVar3 = iVar3 + -1;
-			pBVar10 = pBVar10 + 1;
-		} while (-1 < iVar3);
-		if (switch_detail_distance >> 2 < gCurrentZ) {
-			uVar5 = (uint)BONE_000a09cc.id & 0x7f;
-			uVar9 = (uint)(BONE_000a09cc.pParent)->id & 0x7f;
-			_DAT_1f800200 =
-				CONCAT22(*(short *)(&DAT_1f800024 + uVar5 * 4) +
-				(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-					*(short *)(&DAT_1f800020 + uVar5 * 4) +
-					(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-			_DAT_1f800204 =
-				_DAT_1f800204 & 0xffff0000 |
-				(uint)(ushort)(*(short *)(&DAT_1f800028 + uVar5 * 4) +
-				(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
-			_DAT_1f800208 =
-				CONCAT22(*(short *)(&DAT_1f800024 + uVar9 * 4) +
-				(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-					*(short *)(&DAT_1f800020 + uVar9 * 4) +
-					(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-			iVar3 = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
-			uVar5 = (uint)*(ushort *)(&DAT_1f800028 + uVar9 * 4) + iVar3;
-			_DAT_1f80020c = _DAT_1f80020c & 0xffff0000 | uVar5 & 0xffff;
-			setCopReg(2, in_zero, _DAT_1f800200);
-			setCopReg(2, 0x1f800000, _DAT_1f800204);
-			setCopReg(2, iVar3, _DAT_1f800208);
-			setCopReg(2, uVar5, _DAT_1f80020c);
+			sy = sy + -1;
+			pBone = pBone + 1;
+		} while (-1 < sy);
+
+		if (switch_detail_distance >> 2 < gCurrentZ) 
+		{
+			uVar4 = (uint)Skel[4].id & 0x7f;
+			uVar6 = (uint)(Skel[4].pParent)->id & 0x7f;
+
+			SVECTOR_1f800200.vx = VECTOR_ARRAY_1f800020[uVar4].vx + pDrawingPed->position.vx - camera_position.vx;
+			SVECTOR_1f800200.vy = VECTOR_ARRAY_1f800020[uVar4].vy + pDrawingPed->position.vy - camera_position.vy;
+			SVECTOR_1f800200.vz = VECTOR_ARRAY_1f800020[uVar4].vz + pDrawingPed->position.vz - camera_position.vz;
+
+			SVECTOR_1f800208.vx = VECTOR_ARRAY_1f800020[uVar6].vx + pDrawingPed->position.vx - camera_position.vx;
+			SVECTOR_1f800208.vy = VECTOR_ARRAY_1f800020[uVar6].vy + pDrawingPed->position.vy - camera_position.vy;
+			SVECTOR_1f800208.vz = VECTOR_ARRAY_1f800020[uVar6].vz + pDrawingPed->position.vz - camera_position.vz;
+
+			gte_ldv0(&SVECTOR_1f800200);
+			gte_ldv1(&SVECTOR_1f800208);
+
+			gte_rtpt();
+			gte_stsxy0(v1_00);
+			gte_stsxy1(v2_00);
+
+			int sz2;
+			gte_stsz3(&z, &z1, &z2);
+
+			gCurrentZ = z1;
+
+			DrawBodySprite((uint)Skel[4].id, v1_00, v2_00, z, z1);
+			
+			/*
+			SVECTOR_1f800200._0_4_ =
+				CONCAT22(
+				*(short *)&VECTOR_ARRAY_1f800020[uVar4].vy + (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+				*(short *)&VECTOR_ARRAY_1f800020[uVar4].vx + (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+			SVECTOR_1f800200._4_4_ =
+				SVECTOR_1f800200._4_4_ & 0xffff0000 |
+				(uint)(ushort)(*(short *)&VECTOR_ARRAY_1f800020[uVar4].vz + (*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
+
+			SVECTOR_1f800208._0_4_ =
+				CONCAT22(
+				*(short *)&VECTOR_ARRAY_1f800020[uVar6].vy + (*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
+				*(short *)&VECTOR_ARRAY_1f800020[uVar6].vx + (*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
+
+			sy = (uint)*(ushort *)&(pDrawingPed->position).vz - (camera_position.vz & 0xffffU);
+			uVar4 = (uint)*(ushort *)&VECTOR_ARRAY_1f800020[uVar6].vz + sy;
+			SVECTOR_1f800208._4_4_ = SVECTOR_1f800208._4_4_ & 0xffff0000 | uVar4 & 0xffff;
+			setCopReg(2, in_zero, SVECTOR_1f800200._0_4_);
+			setCopReg(2, 0x1f800000, SVECTOR_1f800200._4_4_);
+			setCopReg(2, sy, SVECTOR_1f800208._0_4_);
+			setCopReg(2, uVar4, SVECTOR_1f800208._4_4_);
 			copFunction(2, 0x280030);
-			local_4c = getCopReg(2, 0xc);
-			local_48 = getCopReg(2, 0xd);
+			v1_00 = getCopReg(2, 0xc);
+			v2_00 = getCopReg(2, 0xd);
 			gCurrentZ = getCopReg(2, 0x11);
-			local_40 = getCopReg(2, 0x12);
-			local_3c = getCopReg(2, 0x13);
-			local_44 = gCurrentZ;
-			DrawBodySprite((uint)BONE_000a09cc.id, local_4c, local_48, gCurrentZ, local_40);
+			sy = getCopReg(2, 0x12);
+			getCopReg(2, 0x13);
+			DrawBodySprite((uint)Skel[4].id, v1_00, v2_00, gCurrentZ, sy);
+			*/
 		}
-		else {
-			local_70.vx = *(short *)(&DAT_1f800020 + ((uint)BONE_000a09cc.id & 0x7f) * 4);
-			local_70.vy = *(short *)(&DAT_1f800024 + ((uint)BONE_000a09cc.id & 0x7f) * 4);
-			local_70.vz = *(short *)(&DAT_1f800028 + ((uint)BONE_000a09cc.id & 0x7f) * 4);
-			local_68.vx = *(short *)(&DAT_1f800020 + ((uint)(BONE_000a09cc.pParent)->id & 0x7f) * 4);
-			local_68.vy = *(short *)(&DAT_1f800024 + ((uint)(BONE_000a09cc.pParent)->id & 0x7f) * 4);
-			local_68.vz = *(short *)(&DAT_1f800028 + ((uint)(BONE_000a09cc.pParent)->id & 0x7f) * 4);
+		else 
+		{
+			v1.vx = *(short *)&VECTOR_ARRAY_1f800020[(uint)Skel[4].id & 0x7f].vx;
+			v1.vy = *(short *)&VECTOR_ARRAY_1f800020[(uint)Skel[4].id & 0x7f].vy;
+			v1.vz = *(short *)&VECTOR_ARRAY_1f800020[(uint)Skel[4].id & 0x7f].vz;
+			v2.vx = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vx;
+			v2.vy = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vy;
+			v2.vz = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vz;
+
 			bAllreadyRotated = 1;
-			DoCivHead(&local_68, &local_70);
+			DoCivHead(&v2, &v1);
 			bAllreadyRotated = 0;
 		}
 	}
-	pBVar10 = &Skel;
-	iVar3 = 0x16;
+
+	pBone = Skel;
+	sy = 0;
 	do {
-		iVar3 = iVar3 + -1;
-		pBVar10->id = pBVar10->id & 0x7f;
-		pBVar10 = pBVar10 + 1;
-	} while (-1 < iVar3);
-	return;*/
+		sy++;
+		pBone->id = (LIMBS)(pBone->id & 0x7f);
+		pBone++;
+	} while (sy < 23);
 }
 
 
@@ -1615,43 +1714,6 @@ void newRotateBones(BONE *poBone)
 
 		local_30 = local_30 + 1;
 	} while (local_30 < 5);
-
-	
-	// Draw T POSE
-	{
-		extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
-		extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
-
-		CVECTOR bbcv = { 0, 0, 250 };
-		CVECTOR rrcv = { 250, 0, 0 };
-		CVECTOR yycv = { 250, 250, 0 };
-
-		BONE* pBone;
-
-		for (int i = 1; i < 23; i++)
-		{
-			pBone = &Skel[i];
-
-			VECTOR v0 = {
-				pBone->pvOrigPos->vx + pBone->vCurrPos.vx,
-				pBone->pvOrigPos->vy + pBone->vCurrPos.vy,
-				pBone->pvOrigPos->vz + pBone->vCurrPos.vz
-			};
-
-			VECTOR v1 = {
-				pBone->pParent->pvOrigPos->vx + pBone->pParent->vCurrPos.vx,
-				pBone->pParent->pvOrigPos->vy + pBone->pParent->vCurrPos.vy,
-				pBone->pParent->pvOrigPos->vz + pBone->pParent->vCurrPos.vz
-			};
-
-			VECTOR ofs = *(VECTOR*)&pDrawingPed->position;
-			ofs.vy = -ofs.vy;
-			//ofs.vy += 270;
-
-			Debug_AddLineOfs(v0, v1, ofs, bbcv);
-		}
-	}
-	
 }
 
 
@@ -1798,8 +1860,6 @@ SVECTOR* GetModelVertPtr(int boneId, int modelType)
 	// End Line: 4602
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
-int bAllreadyRotated = 0;
 
 void DrawCiv(PEDESTRIAN *pPed)
 {
@@ -2165,14 +2225,8 @@ void DrawTanner(PEDESTRIAN *pPed)
 	int iVar1;
 	VECTOR v;
 	CVECTOR cV;
-	MATRIX mRotStore;
-	MATRIX iMatrix;
 
 	bDoingShadow = 0;
-
-	gte_ReadRotMatrix(&mRotStore);
-	gte_sttr(mRotStore.t);
-
 	pDrawingPed = pPed;
 
 	SetupTannerSkeleton();
@@ -2201,8 +2255,8 @@ void DrawTanner(PEDESTRIAN *pPed)
 	Skel[4].pModel = Skel[4].pModel + 1;
 	newRotateBones(Skel + 1);
 
-	gte_SetRotMatrix(&mRotStore);
-	gte_SetTransMatrix(&mRotStore);
+	// [A] I don't know but it ca
+	gte_SetRotMatrix(&inv_camera_matrix);
 
 	iCurrBone = 0;
 	newShowTanner();
