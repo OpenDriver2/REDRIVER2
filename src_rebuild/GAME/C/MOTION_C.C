@@ -13,6 +13,7 @@
 #include "DR2ROADS.H"
 #include "SKY.H"
 #include "PLAYERS.H"
+#include "MAIN.H"
 
 #include "INLINE_C.H"
 
@@ -1422,6 +1423,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 	int __z;
 	int __z1;
 	int __z2;
+	int draw;
 
 	VECTOR VECTOR_1f800000;
 	VECTOR VECTOR_1f800010;
@@ -1448,6 +1450,9 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 	vvar1 = 0;
 	Skel[0].id = (LIMBS)(Skel[0].id | 0x80);
 	sy = 0;
+
+	draw = (pDrawingPed->padId > -1 && pDrawingPed->padId == CurrentPlayerView) ? player[pDrawingPed->padId].cameraView != 2 : 1;
+
 	do {
 		LVar1 = lRoutes[vvar1][1];
 		iVar5 = 1;
@@ -1470,8 +1475,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 					pDrawingPed->head_pos = iVar3 / 3;
 				}
 
-				
-				if ((((Skel[uVar4].pModel != NULL) && (bDoingShadow == 0)) && (pDrawingPed->pedType < OTHER_SPRITE)) && (player[0].cameraView != 2)) 
+				if (Skel[uVar4].pModel != NULL && bDoingShadow == 0 && pDrawingPed->pedType < OTHER_SPRITE && draw)
 				{
 					model = *Skel[uVar4].pModel;
 
@@ -1501,7 +1505,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 
 	if (pDrawingPed->pedType < OTHER_SPRITE)
 	{
-		if (player[0].cameraView != 2 || bDoingShadow != 0)
+		if (draw || bDoingShadow != 0)
 		{
 			sy = 20;
 			do {

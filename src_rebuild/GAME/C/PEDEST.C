@@ -84,10 +84,8 @@ int num_pedestrians;
 
 char ping_in_pedestrians = 0;
 
-int tannerTurn = 0;
 int bKilled = 0;
 int bReverseAnimation = 0;
-int iIdleTimer = 0;
 
 PEDESTRIAN_ROADS pedestrian_roads;
 
@@ -95,7 +93,6 @@ unsigned long tannerPad;
 extern short padd;
 SVECTOR camAngle;
 static int oldCamView;
-int bTannerSitting = 0;
 
 // decompiled code
 // original method signature: 
@@ -282,7 +279,7 @@ void ProcessTannerPad(PEDESTRIAN *pPed, ulong pad, char PadSteer, char use_analo
 	vec.vz = pPed->position.vz;
 	vec.vy = -pPed->position.vy;
 	iVar2 = MapHeight(&vec);
-	uVar8 = (int)(pPed->dir).vy - 0x800U & 0xfff;
+	uVar8 = (int)pPed->dir.vy - 0x800U & 0xfff;
 	tVec.vy = vec.vy;
 	tVec.pad = vec.pad;
 	iVar2 = -0x82 - iVar2;
@@ -358,10 +355,6 @@ LAB_0006e104:
 
 				camAngle.vy = player[0].headPos - player[0].dir & 0xfff;
 				TannerCameraHandler(pPed);
-			}
-			else 
-			{
-				bTannerSitting = 0;
 			}
 
 			oldCamView = player[0].cameraView;
@@ -453,7 +446,6 @@ void InitTanner(void)
 	StoreVertexLists();
 
 	numTannerPeds = 0;
-	bTannerSitting = 0;
 	bKillTanner = 0;
 	bKilled = 0;
 }
@@ -866,7 +858,9 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	_PLAYER* lp;
 
 	bReverseAnimation = 0;
-	iIdleTimer = 0;
+
+	if (numTannerPeds > 7)
+		return 0;
 
 	if (padId == NULL) 
 	{
@@ -922,13 +916,6 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 	iVar3 += 90;
 
-	if (7 < numTannerPeds) 
-	{
-		bReverseAnimation = 0;
-		iIdleTimer = 0;
-		return 0;
-	}
-
 	dir = d - 0x800;
 	v.vy = y;
 	v.vx = x - FIXED(iVar3 * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
@@ -960,6 +947,8 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 	pedptr = CreatePedestrian();
 	numTannerPeds++;
+
+	pedptr->interest = 0; // idle timer
 
 	if (padId == NULL)
 		pedptr->padId = playerId;
@@ -1061,7 +1050,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 		lp->onGrass = 0;
 	}
 
-	tannerTurn = 0;
+	pedptr->doing_turn = 0;
 	gGotInStolenCar = 0;
 	bKillTanner = 0;
 	bKilled = 0;
@@ -1070,7 +1059,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 	if (gCurrentMissionNumber == 23 && playerType != 0)
 	{
-		tannerTurn = 16;
+		pedptr->doing_turn = 16;
 		pedptr->dir.vy = (pedptr->dir.vy - (tannerTurnMax + 16) * tannerTurnStep) + 294;
 	}
 
@@ -1859,13 +1848,6 @@ int iAllowWatch = 0;
 // [D]
 void PedDoNothing(PEDESTRIAN *pPed)
 {
-	short sVar1;
-	short sVar2;
-	char cVar3;
-	unsigned char bVar4;
-	int iVar5;
-	short sVar6;
-
 	pPed->speed = 0;
 
 	if ((pPed->flags & 0x10U) == 0) 
@@ -1876,7 +1858,7 @@ void PedDoNothing(PEDESTRIAN *pPed)
 
 	if ((tannerPad & 0x1040) != 0)
 	{
-		iIdleTimer = 0;
+		pPed->interest = 0;
 		pPed->flags = pPed->flags & 0xffffffef;
 		pPed->fpAgitatedState = PedUserRunner;
 		SetupRunner(pPed);
@@ -1886,7 +1868,7 @@ void PedDoNothing(PEDESTRIAN *pPed)
 
 	if ((tannerPad & 0x4080) != 0)
 	{
-		iIdleTimer = 0;
+		pPed->interest = 0;
 		pPed->flags = pPed->flags & 0xffffffef;
 		pPed->fpAgitatedState = PedUserWalker;
 		SetupBack(pPed);
@@ -1894,86 +1876,78 @@ void PedDoNothing(PEDESTRIAN *pPed)
 		goto LAB_0006f530;
 	}
 
-	sVar6 = tannerTurnStep;
-	sVar1 = tannerTurnMax;
-
 	if ((tannerPad & 0x2000) == 0) 
 	{
 		if ((tannerPad & 0x8000) == 0) 
 		{
 			pPed->frame1 = 0;
 
-			iIdleTimer++;
-			iVar5 = tannerTurn + 2;
+			pPed->interest++; // idle timer is this now
 
-			if (tannerTurn < 0)
+			if (pPed->doing_turn < 0)
 			{
-				tannerTurn = iVar5;
+				pPed->doing_turn += 2;
 
-				if (0 < iVar5) 
+				if (0 < pPed->doing_turn)
 				{
-					tannerTurn = 0;
+					pPed->doing_turn = 0;
 					goto LAB_0006f4a8;
 				}
 			}
 			else 
 			{
 			LAB_0006f4a8:
-				iVar5 = tannerTurn - 2;
-				if ((0 < tannerTurn) && (tannerTurn = iVar5, iVar5 < 0)) 
+				if (0 < pPed->doing_turn)
 				{
-					tannerTurn = 0;
+					pPed->doing_turn -= 2;
+
+					if(pPed->doing_turn < 0)
+						pPed->doing_turn = 0;
 				}
 			}
 
-			if (tannerTurn != 0)
+			if (pPed->doing_turn != 0)
 			{
-				if (tannerTurn < 0)
-					sVar6 = pPed->dir.vy + 64 - (tannerTurn + tannerTurnMax) * tannerTurnStep;
+				if (pPed->doing_turn < 0)
+					pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
 				else
-					sVar6 = pPed->dir.vy - 64 + (tannerTurnMax - tannerTurn) * tannerTurnStep;
-
-				pPed->dir.vy = sVar6;
+					pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 			}
+
 			goto LAB_0006f530;
 		}
 
-		iIdleTimer = 0;
-		tannerTurn += 2;
+		pPed->interest = 0;
+		pPed->doing_turn += 2;
 
-		if (tannerTurnMax < tannerTurn)
-			tannerTurn = tannerTurnMax;
+		if (tannerTurnMax < pPed->doing_turn)
+			pPed->doing_turn = tannerTurnMax;
 	
-		sVar2 = tannerTurn;
-
 		pPed->frame1++;
-		pPed->dir.vy += -64 + (sVar1 - sVar2) * sVar6;
+		pPed->dir.vy += -64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 
 		if (pPed->frame1 > 15)
 			pPed->frame1 = 0;
 	}
 	else 
 	{
-		iIdleTimer = 0;
-		tannerTurn -= 2;
+		pPed->interest = 0;
+		pPed->doing_turn -= 2;
 
-		if (tannerTurn < -tannerTurnMax) 
-			tannerTurn = -tannerTurnMax;
+		if (pPed->doing_turn < -tannerTurnMax)
+			pPed->doing_turn = -tannerTurnMax;
 
-		cVar3 = pPed->frame1;
-		pPed->dir.vy += 64 - (tannerTurn + sVar1) * sVar6;
+		pPed->dir.vy += 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
 
-		if (cVar3 == 0) 
-			cVar3 = 15;
+		if (pPed->frame1 == 0)
+			pPed->frame1 = 15;
 		else
-			cVar3--;
-
-		pPed->frame1 = cVar3;
+			pPed->frame1--;
 	}
 	pPed->head_rot = 0;
 
 LAB_0006f530:
-	if (iIdleTimer > 119) 
+	if (pPed->interest > 119)
 	{
 		pPed->frame1 = 0;
 		pPed->type = PED_ACTION_TIME;
@@ -1983,7 +1957,7 @@ LAB_0006f530:
 		pPed->flags |= 0x10;
 		pPed->fpAgitatedState = PedCarryOutAnimation;
 
-		iIdleTimer = -2;
+		pPed->interest = -2;
 
 		if (pPed->type == PED_ACTION_TIME)
 			iAllowWatch = 3;
@@ -2014,111 +1988,90 @@ LAB_0006f530:
 // [D]
 void PedUserRunner(PEDESTRIAN *pPed)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	char cVar4;
-	uint uVar5;
-	int iVar6;
-	char cVar7;
-	short sVar8;
 
-	if ((pPed->flags & 0x10U) == 0) 
+	if ((pPed->flags & 0x10U) == 0)
 	{
 		SetupRunner(pPed);
 	}
 
 	if ((tannerPad & 0x1040) == 0)
 	{
-		pPed->doing_turn = 0;
 		pPed->dir.vz = 0;
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
 		pPed->flags = pPed->flags & 0xffffffef;
 	}
-	else 
+	else
 	{
 		if (bStopTanner == 0)
 			pPed->speed = 40 - (tannerDeathTimer >> 1);
-		else 
+		else
 			pPed->speed = 0;
 	}
-	if ((tannerPad & 0x2000) != 0) 
+
+	if ((tannerPad & 0x2000) != 0)
 	{
-		if (pPed->doing_turn > -4)
-			pPed->doing_turn--;
-
-		tannerTurn -= 2;;
-		if (tannerTurn < -tannerTurnMax)
-			tannerTurn = -tannerTurnMax;
-
-		sVar2 = tannerTurn;
-		sVar3 = tannerTurnMax;
-		sVar1 = tannerTurnStep;
-		sVar8 = pPed->dir.vy;
-
-		pPed->head_rot = 0;
-		pPed->dir.vz = pPed->doing_turn * 20;
-		sVar8 = sVar8 + 64 - (sVar2 + sVar3) * sVar1;
-
-		goto LAB_0006f7f0;
-	}
-
-	if ((tannerPad & 0x8000) != 0) 
-	{
-		if (pPed->doing_turn < 4)
-			pPed->doing_turn++;
-
-		tannerTurn += 2;
-
-		if (tannerTurnMax < tannerTurn)
-			tannerTurn = tannerTurnMax;
-
-		sVar2 = tannerTurn;
-		sVar1 = tannerTurnMax;
-		sVar8 = tannerTurnStep;
-
-		pPed->head_rot = 0;
-		pPed->dir.vz = pPed->doing_turn * 20;
-		sVar8 = pPed->dir.vy - 64 + (sVar1 - sVar2) * sVar8;
-		goto LAB_0006f7f0;
-	}
-
-	// [A] might be wrong?
-	if (pPed->doing_turn < 0)
-		pPed->doing_turn += 2;
-	else if (pPed->doing_turn > 0)
 		pPed->doing_turn -= 2;
 
-	if (tannerTurn < 0) 
+		if (pPed->doing_turn < -tannerTurnMax)
+			pPed->doing_turn = -tannerTurnMax;
+
+		pPed->head_rot = 0;
+
+		if (pPed->dir.vz > -80)
+			pPed->dir.vz -= 20;
+
+		pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
+
+		AnimatePed(pPed);
+		return;
+	}
+
+	if ((tannerPad & 0x8000) != 0)
 	{
-		tannerTurn += 2;
-		if (0 < tannerTurn)
+		pPed->doing_turn += 2;
+
+		if (tannerTurnMax < pPed->doing_turn)
+			pPed->doing_turn = tannerTurnMax;
+
+		pPed->head_rot = 0;
+
+		if (pPed->dir.vz < 80)
+			pPed->dir.vz += 20;
+
+		pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
+
+		AnimatePed(pPed);
+		return;
+	}
+
+	if (pPed->dir.vz < 0)
+		pPed->dir.vz += 20;
+	else if (pPed->dir.vz > 0)
+		pPed->dir.vz -= 20;
+
+	if (pPed->doing_turn < 0)
+	{
+		pPed->doing_turn += 2;
+		if (pPed->doing_turn > 0)
 		{
-			tannerTurn = 0;
+			pPed->doing_turn = 0;
 			goto code_r0x0006f79c;
 		}
 	}
 	else
 	{
 	code_r0x0006f79c:
-		iVar6 = tannerTurn-2;
-
-		if ((0 < tannerTurn) && (tannerTurn = iVar6, iVar6 < 0)) 
+		if (pPed->doing_turn > 0)
 		{
-			tannerTurn = 0;
+			pPed->doing_turn -= 2;
+
+			if (pPed->doing_turn < 0)
+				pPed->doing_turn = 0;
 		}
 	}
 
-	sVar2 = tannerTurn;
-	sVar1 = tannerTurnMax;
-	sVar8 = tannerTurnStep;
-
-	pPed->dir.vz = pPed->doing_turn * 20;
-	sVar8 = pPed->dir.vy - 64 + (sVar1 - sVar2) * sVar8;
-LAB_0006f7f0:
-
-	pPed->dir.vy = sVar8;
+	pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 	AnimatePed(pPed);
 }
 
@@ -2236,12 +2189,12 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 
 	if (bReverseAnimation == 0)
 	{
-		if ((0xe < pPed->frame1) && (bFreezeAnimation == 0)) 
+		if (pPed->frame1 > 14 && bFreezeAnimation == 0)
 		{
 			if (pPed->type == PED_ACTION_TIME) 
 			{
 				bFreezeAnimation = 1;
-				iFreezeTimer = 0xc;
+				iFreezeTimer = 12;
 			}
 			else 
 			{
@@ -2567,7 +2520,6 @@ void PedGetInCar(PEDESTRIAN *pPed)
 		DestroyPedestrian(pPed);
 
 		pPlayerPed = NULL;
-		bTannerSitting = 0;
 		numTannerPeds--;
 	}
 }
@@ -2755,6 +2707,7 @@ void TannerCameraHandler(PEDESTRIAN *pPed)
 			sVar2 = 0x800;
 		}
 	}
+
 	camera_position.vx = player[0].pos[0];
 	camera_position.vz = player[0].pos[2];
 
@@ -2762,7 +2715,6 @@ void TannerCameraHandler(PEDESTRIAN *pPed)
 	camera_angle.vy = (camAngle.vy - tannerLookAngle.vy) + sVar2 & 0xfff;
 	camera_angle.vz = camAngle.vz + tannerLookAngle.vz;
 
-	bTannerSitting = 1;
 	tracking_car = 0;
 
 	player[0].cameraPos.vx = player[0].pos[0];
@@ -2801,7 +2753,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 	uint uVar1;
 	int iVar2;
 
-	if (oldCamView != 2 && player[0].cameraView == 2)
+	if (oldCamView != 2 && player[pPed->padId].cameraView == 2)
 	{
 		camAngle.vx = camera_angle.vx;
 		camAngle.vy = camera_angle.vy;
@@ -2812,20 +2764,13 @@ void TannerSitDown(PEDESTRIAN *pPed)
 	{
 		if (bReverseAnimation == 0)
 		{
-			oldCamView = player[0].cameraView;
+			oldCamView = player[pPed->padId].cameraView;
 			bFreezeAnimation = 1;
 
-			if (player[0].cameraView == 2) 
-			{
-				uVar1 = pPed->flags | 4;
-			}
+			if (player[pPed->padId].cameraView == 2)
+				pPed->flags |= pPed->flags | 4;
 			else 
-			{
-				bTannerSitting = 0;
-				uVar1 = pPed->flags & 0xfffffffb;
-			}
-
-			pPed->flags = uVar1;
+				pPed->flags &= ~4;
 
 			if ((tannerPad & 0x10) == 0)
 				return;
@@ -2833,13 +2778,13 @@ void TannerSitDown(PEDESTRIAN *pPed)
 			tracking_car = 1;
 			bReverseAnimation = 1;
 			bFreezeAnimation = 0;
-			bTannerSitting = 0;
 
 			pPed->flags = pPed->flags & 0xfffffffb;
 
 			oldCamView = -1;
 			return;
 		}
+
 	LAB_00070054:
 		if (pPed->frame1 == 0)
 		{
@@ -2934,7 +2879,6 @@ LAB_000700b4:
 // [D]
 void AnimatePed(PEDESTRIAN *pPed)
 {
-	char cVar1;
 	PED_ACTION_TYPE PVar2;
 	ushort uVar3;
 	bool bVar4;
@@ -2951,34 +2895,30 @@ void AnimatePed(PEDESTRIAN *pPed)
 	vec.vz = pPed->position.vz;
 	vec.vy = -pPed->position.vy;
 
-	cVar1 = pPed->speed;
-
 	if (pPed->pedType == CIVILIAN && (pPed->flags & 0x8000U) != 0) 
 	{
 		iVar5 = MapHeight(&vec);
-		lVar8 = -0x3c - iVar5;
+		lVar8 = -60 - iVar5;
 	}
 	else 
 	{
 		iVar5 = MapHeight(&vec);
-		lVar8 = -0x82 - iVar5;
+		lVar8 = -130 - iVar5;
 	}
 
 	PVar2 = pPed->type;
 
-	if (cVar1 < 0)
+	if (pPed->speed < 0)
 	{
-		uVar3 = (pPed->dir).vy;
-		cVar1 = pPed->speed;
-		pPed->position.vx = pPed->position.vx - FIXED(cVar1 * rcossin_tbl[(uVar3 & 0xfff) * 2]);
-		iVar5 = pPed->position.vz - FIXED(cVar1 * rcossin_tbl[(-uVar3 & 0xfffU) * 2 + 1]);		// [A] is it valid?
+		uVar3 = pPed->dir.vy;
+		pPed->position.vx = pPed->position.vx - FIXED(pPed->speed * rcossin_tbl[(uVar3 & 0xfff) * 2]);
+		iVar5 = pPed->position.vz - FIXED(pPed->speed * rcossin_tbl[(-uVar3 & 0xfffU) * 2 + 1]);		// [A] is it valid?
 	}
 	else
 	{
-		cVar1 = pPed->speed;
-		uVar7 = (int)(pPed->dir).vy - 0x800U & 0xfff;
-		pPed->position.vx = pPed->position.vx + FIXED((int)cVar1 * (int)rcossin_tbl[uVar7 * 2]);
-		iVar5 = pPed->position.vz + FIXED((int)cVar1 * (int)rcossin_tbl[uVar7 * 2 + 1]);
+		uVar7 = (int)pPed->dir.vy - 0x800U & 0xfff;
+		pPed->position.vx = pPed->position.vx + FIXED((int)pPed->speed * (int)rcossin_tbl[uVar7 * 2]);
+		iVar5 = pPed->position.vz + FIXED((int)pPed->speed * (int)rcossin_tbl[uVar7 * 2 + 1]);
 	}
 
 	pPed->position.vz = iVar5;
@@ -3963,7 +3903,7 @@ void SetupCivJump(PEDESTRIAN *pPed, _CAR_DATA *cp)
 		}
 	}
 
-	(pPed->dir).vy = uVar4 & 0xfff;
+	pPed->dir.vy = uVar4 & 0xfff;
 }
 
 
@@ -4105,7 +4045,7 @@ void CivPedWalk(PEDESTRIAN *pPed)
 		{
 			if ((*(uint *)&pPed->speed & 0xffff00) == 0x90000)
 			{
-				uVar4 = (int)(pPed->dir).vy + 0xa00U & 0xfff;
+				uVar4 = (int)pPed->dir.vy + 0xa00U & 0xfff;
 				turn = IsPavement(
 					(pPed->position).vx + FIXED(rcossin_tbl[uVar4 * 2] * 0x80),
 					(pPed->position).vy,
@@ -4699,16 +4639,16 @@ SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed)
 		seated_count = 0;
 		iVar1 = 0;
 		do {
-			iVar1 = seatedptr->x - player[0].pos[0];
+			iVar1 = seatedptr->x - pPed->position.vx;
 			seated_count++;
 
 			if (iVar1 < 0)
-				iVar1 = player[0].pos[0] - seatedptr->x;
+				iVar1 = pPed->position.vx - seatedptr->x;
 
-			iVar2 = seatedptr->z - player[0].pos[2];
+			iVar2 = seatedptr->z - pPed->position.vz;
 
 			if (iVar2 < 0)
-				iVar2 = player[0].pos[2] - seatedptr->z;
+				iVar2 = pPed->position.vz - seatedptr->z;
 
 			if (((iVar1 < 200) && (iVar2 < 200)) &&
 				(iVar1 = FIXED(iVar1 * iVar1 + iVar2 * iVar2), iVar1 < iVar5)) 
@@ -5163,7 +5103,7 @@ void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 	if (pPed->type == PED_ACTION_JUMP) 
 	{
 		sVar1 = ratan2(iVar2, iVar4);
-		pPed->head_rot = (pPed->dir).vy + sVar1 + 0xc00U & 0xfff;		// [A] might be bugged
+		pPed->head_rot = pPed->dir.vy + sVar1 + 0xc00U & 0xfff;		// [A] might be bugged
 	}
 	else
 	{

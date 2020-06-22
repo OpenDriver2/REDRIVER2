@@ -6,7 +6,6 @@ extern MODEL* pmJerichoModels[6];
 
 extern SEATED_PEDESTRIANS *seated_pedestrian;
 extern int bKillTanner;
-extern int bTannerSitting;
 extern int bReverseYRotation;
 
 extern PEDESTRIAN *pUsedPeds;

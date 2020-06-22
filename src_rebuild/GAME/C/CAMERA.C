@@ -190,10 +190,7 @@ void InitCamera(_PLAYER *lp)
 		}
 		else if (lp->cameraView == 2)
 		{
-			if (bTannerSitting == 0)
-				PlaceCameraInCar(lp, 0);
-			else
-				PlaceCameraAtLocation(lp, 0);
+			PlaceCameraInCar(lp, 0);
 		}
 		else if (lp->cameraView == 5)
 		{
@@ -592,7 +589,7 @@ void TurnHead(_PLAYER *lp)
 
 	lp->headTimer = bVar1 + 1;
 LAB_00020ae8:
-	lp->headPos = lp->headPos + (lp->headTarget - lp->headPos >> 1);
+	lp->headPos += (lp->headTarget - lp->headPos) / 2;
 }
 
 
@@ -698,7 +695,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		TurnHead(lp);
 
 	camera_angle.vx = 25;
-	uVar7 = lp->cameraAngle - (int)*(short *)((int)&lp->headPos + 2);
+	uVar7 = lp->cameraAngle - (lp->headPos >> 16);
 
 	if (pauseflag == 0) 
 	{
@@ -994,90 +991,99 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 {
 	ushort uVar1;
 	uint uVar2;
-	_CAR_DATA *p_Var3;
+	_CAR_DATA *cp;
 	int iVar4;
 
-	p_Var3 = (_CAR_DATA *)0x0;
-	if (-1 < (int)lp->cameraCarId) {
-		p_Var3 = car_data + (int)lp->cameraCarId;
-	}
+	cp = NULL;
+
+	if (lp->cameraCarId > -1)
+		cp = car_data + lp->cameraCarId;
+
 	viewer_position.vx = 0;
-	if (p_Var3 == (_CAR_DATA *)0x0) {
+
+	if (cp == NULL) 
+	{
 		viewer_position.vz = 0;
-		viewer_position.vy = viewer_position.vy + 0x2a + (int)lp->pPed->head_pos;
+		viewer_position.vy = viewer_position.vy + 42 + lp->pPed->head_pos;
 	}
-	else {
+	else 
+	{
 		viewer_position.vy = 7;
-		viewer_position.vz = (int)(((p_Var3->ap).carCos)->colBox).vz + -0x50;
+		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
 	}
-	if ((paddCamera & 3) == 3) {
+
+	if ((paddCamera & 3) == 3)
 		viewer_position.vz = 0;
-	}
-	if (p_Var3 == (_CAR_DATA *)0x0) {
-		uVar2 = baseDir & 0xfff;
-		lp->cameraPos.vx = basePos[0];
-		lp->cameraPos.vy = -basePos[1];
-		lp->cameraPos.vz = basePos[2];
-		lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[uVar2 * 2] * viewer_position.vz);
-		lp->cameraPos.vy = viewer_position.vy - basePos[1];
-		iVar4 = rcossin_tbl[uVar2 * 2 + 1] * viewer_position.vz;
-	}
-	else {
-		uVar2 = baseDir & 0xfff;
-		lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[uVar2 * 2] * viewer_position.vz);
-		lp->cameraPos.vy = viewer_position.vy - basePos[1];
-		iVar4 = rcossin_tbl[uVar2 * 2 + 1] * viewer_position.vz;
-	}
-	lp->cameraPos.vz = basePos[2] + FIXED(iVar4);
+
+	uVar2 = baseDir & 0xfff;
+
+	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[uVar2 * 2] * viewer_position.vz);
+	lp->cameraPos.vy = viewer_position.vy - basePos[1];
+	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[uVar2 * 2 + 1] * viewer_position.vz);
+
 	TurnHead(lp);
-	if ((paddCamera & 3) == 3) {
-		uVar1 = 0x800 - (short)baseDir;
-	}
-	else {
-		uVar1 = *(short *)((int)&lp->headPos + 2) - (short)baseDir;
-	}
+
+	if ((paddCamera & 3) == 3)
+		uVar1 = 0x800 - baseDir;
+	else
+		uVar1 = (lp->headPos >> 16) - baseDir;
+
 	camera_angle.vy = uVar1 & 0xfff;
-	SetGeomScreen(0x100);
-	scr_z = 0x100;
-	if (p_Var3 == (_CAR_DATA *)0x0) {
-		ClearMem((char *)&inv_camera_matrix, 0x20);
+	SetGeomScreen(256);
+	scr_z = 256;
+
+	if (cp == NULL)
+	{
+		ClearMem((char *)&inv_camera_matrix, sizeof(MATRIX));
+
 		uVar2 = 0x800U - baseDir & 0xfff;
+
 		inv_camera_matrix.m[0][0] = rcossin_tbl[uVar2 * 2 + 1];
 		inv_camera_matrix.m[0][2] = rcossin_tbl[uVar2 * 2];
 		inv_camera_matrix.m[1][1] = 0x1000;
 		inv_camera_matrix.m[2][0] = -inv_camera_matrix.m[0][2];
 		inv_camera_matrix.m[2][2] = inv_camera_matrix.m[0][0];
 	}
-	else {
-		InvertMatrix(&(p_Var3->hd).drawCarMat, &inv_camera_matrix);
+	else
+	{
+		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 	}
-	if ((paddCamera & 3) == 3) {
-		if (p_Var3 != (_CAR_DATA *)0x0) {
-			viewer_position.vz = 0xaa;
-		}
+
+	if ((paddCamera & 3) == 3) 
+	{
+		if (cp != NULL)
+			viewer_position.vz = 170;
 	}
-	else {
+	else 
+	{
 		_RotMatrixY(&inv_camera_matrix, 0x800);
-		_RotMatrixY(&inv_camera_matrix, *(short *)((int)&lp->headPos + 2));
-		if (p_Var3 != (_CAR_DATA *)0x0) {
-			viewer_position.vz = -0xaa;
-		}
+		_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
+
+		if (cp != NULL) 
+			viewer_position.vz = -170;
 	}
+
 	MulMatrix0(&aspect, &inv_camera_matrix, &inv_camera_matrix);
 	InvertMatrix(&inv_camera_matrix, &camera_matrix);
+
 	face_camera_work.m[0][0] = 0x1000;
 	face_camera_work.m[0][2] = 0;
 	face_camera_work.m[2][0] = 0;
 	face_camera_work.m[2][2] = 0x1000;
-	RotMatrixY(-(int)camera_angle.vy & 0xfff, &face_camera_work);
+
+	RotMatrixY(-camera_angle.vy & 0xfff, &face_camera_work);
 	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
-	viewer_position.vy = -0x28;
+
+	viewer_position.vy = -40;
+
 	SetRotMatrix(&camera_matrix);
 	_MatrixRotate(&viewer_position);
+
 	lp->cameraPos.vx += viewer_position.vx;
 	lp->cameraPos.vy += viewer_position.vy;
 	lp->cameraPos.vz += viewer_position.vz;
-	switch_detail_distance = 0x2710;
+
+	switch_detail_distance = 10000;
 }
 
 
