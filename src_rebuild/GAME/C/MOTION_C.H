@@ -20,17 +20,7 @@ extern void SetupPedMotionData(PEDESTRIAN *pPed); // 0x00069AB8
 
 extern void SetupPedestrian(PEDESTRIAN *pedptr); // 0x00069B6C
 
-extern void DrawBodySprite(int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy); // 0x0006520C
-
 extern void StoreVertexLists(); // 0x0006594C
-
-extern void SetupTannerSkeleton(); // 0x00065AD8
-
-extern void newShowTanner(); // 0x00065CD8
-
-extern void newRotateBones(BONE *poBone); // 0x00066648
-
-extern SVECTOR * GetModelVertPtr(int boneId, int modelType); // 0x00066FB8
 
 extern void DrawCiv(PEDESTRIAN *pPed); // 0x000670CC
 
