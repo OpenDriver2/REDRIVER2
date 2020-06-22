@@ -85,7 +85,6 @@ int num_pedestrians;
 char ping_in_pedestrians = 0;
 
 int bKilled = 0;
-int bReverseAnimation = 0;
 
 PEDESTRIAN_ROADS pedestrian_roads;
 
@@ -857,8 +856,6 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	long d;
 	_PLAYER* lp;
 
-	bReverseAnimation = 0;
-
 	if (numTannerPeds > 7)
 		return 0;
 
@@ -948,7 +945,8 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	pedptr = CreatePedestrian();
 	numTannerPeds++;
 
-	pedptr->interest = 0; // idle timer
+	pedptr->interest = 0;		// idle timer
+	pedptr->flags &= ~4;		// reverse animation
 
 	if (padId == NULL)
 		pedptr->padId = playerId;
@@ -1455,7 +1453,7 @@ void DrawAllPedestrians(void)
 	pPed = pUsedPeds;
 	while (pPed != NULL) 
 	{
-		if (pPed->pedType < OTHER_SPRITE && (pPed->flags & 4U) == 0 &&
+		if (pPed->pedType < OTHER_SPRITE &&
 			PositionVisible((VECTOR *)&pPed->position) != 0 &&
 			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
 		{
@@ -2167,7 +2165,7 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 		pPed->flags = pPed->flags & 0xffffffef;
 
 		bFreezeAnimation = 0;
-		bReverseAnimation = 0;
+		pPed->flags &= ~4;
 		allreadydone = 0;
 	}
 
@@ -2180,14 +2178,14 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 		if (iFreezeTimer == 0)
 		{
 			bFreezeAnimation = 0;
-			bReverseAnimation = 1;
+			pPed->flags |= 4;
 			iFreezeTimer = 0;
 		}
 
 		iFreezeTimer--;
 	}
 
-	if (bReverseAnimation == 0)
+	if ((pPed->flags & 4) == 0)
 	{
 		if (pPed->frame1 > 14 && bFreezeAnimation == 0)
 		{
@@ -2213,7 +2211,7 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 			pPed->flags = pPed->flags & 0xffffffef;
 
 			bFreezeAnimation = 0;
-			bReverseAnimation = 0;
+			pPed->flags &= ~4;
 			allreadydone = 0;
 		}
 	}
@@ -2418,7 +2416,7 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 
 	long pos[4];
 
-	bReverseAnimation = 0;
+	pPed->flags &= ~4;
 	pPed->speed = 0;
 	pPed->frame1 = 0;
 
@@ -2762,7 +2760,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 
 	if (pPed->frame1 == 15)
 	{
-		if (bReverseAnimation == 0)
+		if ((pPed->flags & 4U) == 0)
 		{
 			oldCamView = player[pPed->padId].cameraView;
 			bFreezeAnimation = 1;
@@ -2778,7 +2776,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 				return;
 
 			tracking_car = 1;
-			bReverseAnimation = 1;
+			pPed->flags |= 4; // new reverse animation flag
 			bFreezeAnimation = 0;
 
 			pPed->flags = pPed->flags & 0xfffffffb;
@@ -2799,12 +2797,12 @@ void TannerSitDown(PEDESTRIAN *pPed)
 			tannerLookAngle.vz = 0;
 
 			bFreezeAnimation = 0;
-			bReverseAnimation = 0;
+			pPed->flags &= ~4;
 
 			return;
 		}
 
-		if (bReverseAnimation != 0)
+		if ((pPed->flags & 4) != 0)
 		{
 			iVar2 = pPed->position.vy - 2;
 			goto LAB_000700b4;
@@ -2812,7 +2810,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 	}
 	else 
 	{
-		if (bReverseAnimation != 0) 
+		if ((pPed->flags & 4) != 0)
 			goto LAB_00070054;
 	}
 
@@ -2932,7 +2930,7 @@ void AnimatePed(PEDESTRIAN *pPed)
 		pPed->velocity.vy = 10;
 	}
 
-	if (bReverseAnimation == 0 || pPed->pedType != TANNER_MODEL) 
+	if ((pPed->flags & 4) == 0 || pPed->pedType != TANNER_MODEL)
 	{
 		pPed->frame1++;
 
