@@ -449,40 +449,35 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	/* end block 4 */
 	// End Line: 1771
 
+// [D]
 int PositionVisible(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	return 1;
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
 
 	iVar2 = pos->vx + units_across_halved;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0x7ff;
-	}
 	iVar1 = pos->vz + units_down_halved;
-	if (iVar1 < 0) {
-		iVar1 = iVar1 + 0x7ff;
-	}
+
 	iVar3 = (iVar2 >> 0xb) - current_cell_x;
 	iVar1 = (iVar1 >> 0xb) - current_cell_z;
+
 	iVar2 = iVar3;
-	if (iVar3 < 0) {
+
+	if (iVar3 < 0)
 		iVar2 = -iVar3;
-	}
-	if (iVar2 <= view_dist) {
+
+	if (iVar2 <= view_dist) 
+	{
 		iVar2 = iVar1;
-		if (iVar1 < 0) {
+		if (iVar1 < 0)
 			iVar2 = -iVar1;
-		}
-		if (iVar2 <= view_dist) {
-			return (uint)(CurrentPVS[iVar3 + (iVar1 + 10) * pvs_square + 10] != '\0');
-		}
+
+		if (iVar2 <= view_dist)
+			return CurrentPVS[iVar3 + (iVar1 + 10) * pvs_square + 10] != 0;
 	}
+
 	return 0;
-	*/
 }
 
 
@@ -873,6 +868,44 @@ void ControlMap(void)
 #endif
 
 	StartSpooling();
+
+#if 0 // [A] region test view
+	{
+		extern OUT_CELL_FILE_HEADER cell_header;
+
+		int dim_x = cell_header.cells_across / cell_header.region_size;
+		int dim_z = cell_header.cells_down / cell_header.region_size;
+		int numRegions = dim_x * dim_z;
+
+		int counter = 0;
+
+		printInfo("\n\n");
+
+		char regionAcrossDisplay[128] = { 0 };
+
+		// print region map to console
+		for (int i = 0; i < numRegions; i++, counter++)
+		{
+			int curRegIdx = region_z * dim_x + region_x;
+
+			// Debug information: Print the map to the console.
+			regionAcrossDisplay[counter] = (spoolinfo_offsets[i] == 0xFFFF) ? '.' : 'O';
+
+			if (curRegIdx == i)
+			{
+				regionAcrossDisplay[counter] = 'X';
+			}
+
+			if (counter == dim_x - 1)
+			{
+				printInfo("%s\n", regionAcrossDisplay);
+				memset(regionAcrossDisplay, 0, sizeof(regionAcrossDisplay));
+				counter = -1;
+			}
+		}
+		printInfo("\n\n");
+	}
+#endif
 }
 
 
