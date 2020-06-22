@@ -1053,8 +1053,6 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	bKillTanner = 0;
 	bKilled = 0;
 
-	pedptr->flags = pedptr->flags & 0xfffffffb;	// disable some flags?
-
 	if (gCurrentMissionNumber == 23 && playerType != 0)
 	{
 		pedptr->doing_turn = 16;
@@ -1857,7 +1855,7 @@ void PedDoNothing(PEDESTRIAN *pPed)
 	if ((tannerPad & 0x1040) != 0)
 	{
 		pPed->interest = 0;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 		pPed->fpAgitatedState = PedUserRunner;
 		SetupRunner(pPed);
 
@@ -1867,7 +1865,7 @@ void PedDoNothing(PEDESTRIAN *pPed)
 	if ((tannerPad & 0x4080) != 0)
 	{
 		pPed->interest = 0;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 		pPed->fpAgitatedState = PedUserWalker;
 		SetupBack(pPed);
 
@@ -1997,7 +1995,7 @@ void PedUserRunner(PEDESTRIAN *pPed)
 		pPed->dir.vz = 0;
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 	}
 	else
 	{
@@ -2112,7 +2110,7 @@ void PedUserWalker(PEDESTRIAN *pPed)
 		pPed->frame1 = 0;
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 	}
 	else 
 	{
@@ -2162,7 +2160,7 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 	{
 		pPed->frame1 = 0;
 		pPed->fpAgitatedState = NULL;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 
 		bFreezeAnimation = 0;
 		pPed->flags &= ~4;
@@ -2198,7 +2196,7 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 			{
 				pPed->frame1 = 0;
 				pPed->fpAgitatedState = NULL;
-				pPed->flags = pPed->flags & 0xffffffef;
+				pPed->flags &= ~0x10;
 			}
 		}
 	}
@@ -2208,7 +2206,7 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 		{
 			pPed->frame1 = 0;
 			pPed->fpAgitatedState = NULL;
-			pPed->flags = pPed->flags & 0xffffffef;
+			pPed->flags &= ~0x10;
 
 			bFreezeAnimation = 0;
 			pPed->flags &= ~4;
@@ -2256,7 +2254,7 @@ void PedGetOutCar(PEDESTRIAN *pPed)
 
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 		pPed->dir.vy = carToGetIn->hd.direction - 2048;
 
 		bReverseYRotation = 0;
@@ -2512,7 +2510,7 @@ void PedGetInCar(PEDESTRIAN *pPed)
 		if (playerID < 0)
 			playerID = -playerID;
 
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 
 		ChangePedPlayerToCar(playerID, newCar);
 		DestroyPedestrian(pPed);
@@ -2779,8 +2777,6 @@ void TannerSitDown(PEDESTRIAN *pPed)
 			pPed->flags |= 4; // new reverse animation flag
 			bFreezeAnimation = 0;
 
-			pPed->flags = pPed->flags & 0xfffffffb;
-
 			oldCamView = -1;
 			return;
 		}
@@ -2790,7 +2786,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 		{
 			pPed->frame1 = 0;
 			pPed->fpAgitatedState = NULL;
-			pPed->flags = pPed->flags & 0xffffffef;
+			pPed->flags &= ~0x10;
 
 			tannerLookAngle.vx = 0;
 			tannerLookAngle.vy = 0;
@@ -3949,7 +3945,7 @@ void CivPedJump(PEDESTRIAN *pPed)
 		SetupPedMotionData(pPed);
 
 		pPed->fpAgitatedState = NULL;
-		pPed->flags = pPed->flags & 0xffffffef;
+		pPed->flags &= ~0x10;
 	}
 }
 
@@ -4054,11 +4050,9 @@ void CivPedWalk(PEDESTRIAN *pPed)
 					(PEDESTRIAN *)0x0);
 
 				if (turn == 0) 
-					uVar4 = pPed->flags & 0xffffdfff;
+					pPed->flags &= ~0x2000;
 				else
-					uVar4 = pPed->flags | 0x2000;
-
-				pPed->flags = uVar4;
+					pPed->flags |= 0x2000;
 			}
 
 			turn = -128;
