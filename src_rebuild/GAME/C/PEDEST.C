@@ -2767,10 +2767,12 @@ void TannerSitDown(PEDESTRIAN *pPed)
 			oldCamView = player[pPed->padId].cameraView;
 			bFreezeAnimation = 1;
 
+			/*
 			if (player[pPed->padId].cameraView == 2)
-				pPed->flags |= pPed->flags | 4;
+				pPed->flags |= 4;
 			else 
 				pPed->flags &= ~4;
+			*/
 
 			if ((tannerPad & 0x10) == 0)
 				return;
@@ -2795,6 +2797,7 @@ void TannerSitDown(PEDESTRIAN *pPed)
 			tannerLookAngle.vx = 0;
 			tannerLookAngle.vy = 0;
 			tannerLookAngle.vz = 0;
+
 			bFreezeAnimation = 0;
 			bReverseAnimation = 0;
 
