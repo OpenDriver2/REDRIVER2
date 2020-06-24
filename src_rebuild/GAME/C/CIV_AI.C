@@ -1397,7 +1397,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 			{
 				tmpSt = Driver2StraightsPtr + (int)(short)uVar3;
 				iVar30 = *turnAngle;
-				uVar9 = (iVar18 - tmpSt->angle) + 1024 & 0x800;
+				uVar9 = (iVar18 - tmpSt->angle) + 1024;// &0x800;// [A] temporary hack
 
 				if (uVar9 == 0) 
 					iVar30 = -iVar30;
@@ -1411,6 +1411,8 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 					else 
 					{
 						newLane = ((u_char)tmpSt->NumLanes & 0xffffff0f) * 2 - ((uint)cp->ai.c.currentLane + 1);
+						if (newLane == 0) // [A] temporary hack
+							newLane++;
 					}
 
 					if ((uVar9 == 0) || (((int)(u_char)tmpSt->AILanes >> (newLane / 2 & 0x1fU) & 1U) == 0))
@@ -1514,7 +1516,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 				tmpCv = Driver2CurvesPtr + (int)(short)*puVar20 + -0x4000;
 				lVar17 = ratan2(oldNode->x - tmpCv->Midx, oldNode->z - tmpCv->Midz);
 				bVar3 = false;
-				bVar4 = (int)(((iVar18 - lVar17) + 0x800U & 0xfff) - 0x800) < 1;
+				bVar4 = (int)(((iVar18 - lVar17) + 0x800U/* & 0xfff*/) - 0x800) < 1;
 				iVar30 = *turnAngle;
 
 				if (!bVar4)
@@ -1528,8 +1530,9 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 					}
 					else 
 					{
-						newLane = ((u_char)tmpCv->NumLanes & 0xffffff0f) * 2 -
-							((uint)cp->ai.c.currentLane + 1);
+						newLane = ((u_char)tmpCv->NumLanes & 0xffffff0f) * 2 - ((uint)cp->ai.c.currentLane + 1);
+						if (newLane == 0)// [A] temporary hack
+							newLane++;
 					}
 
 					if ((!bVar4) || (((int)(u_char)tmpCv->AILanes >> (newLane / 2 & 0x1fU) & 1U) == 0))
@@ -1793,6 +1796,8 @@ LAB_000252bc:
 			else 
 			{
 				newLane = uVar9 - ((uint)cp->ai.c.currentLane + 1);
+				if (newLane == 0)// [A] temporary hack
+					newLane++;
 			}
 
 			bVar5 = uVar25 == 0;
@@ -1962,6 +1967,8 @@ LAB_000252bc:
 			else 
 			{
 				newLane = uVar9 - ((uint)cp->ai.c.currentLane + 1);
+				if (newLane == 0)// [A] temporary hack
+					newLane++;
 			}
 
 			if (*(short *)&_cv->NumLanes == -0xff)
@@ -5273,10 +5280,10 @@ int CivControl(_CAR_DATA *cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 0
+#if 1
 		{
-			maxCivCars = 2;
-			maxCopCars = 0;
+			//maxCivCars = 2;
+			//maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 			extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
