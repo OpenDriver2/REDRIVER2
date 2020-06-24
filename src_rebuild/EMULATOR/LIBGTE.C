@@ -56,13 +56,6 @@ GTERegisters gteRegs;
 
 void InitGeom()
 {
-    //_patch_gte(); //Extern
-#if 0
-    mfc0    $v0, SR
-        lui     $v1, 0x4000
-        or $v0, $v1
-        mtc0    $v0, SR
-#endif
     ZSF3 = 341;
     ZSF4 = 256;
     H = 1000;
@@ -74,8 +67,8 @@ void InitGeom()
 
 void SetGeomOffset(int ofx, int ofy)
 {
-    OFX = ofx << 16;
-    OFY = ofy << 16;
+    OFX = (ofx << 16);
+    OFY = (ofy << 16);
 }
 
 void SetGeomScreen(int h)

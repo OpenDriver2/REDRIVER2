@@ -111,6 +111,12 @@ void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)
 	if (gDebug_numLines + 1 > 512)
 		return;
 
+	int dx = camera_position.vx - pointA.vx;
+	int dz = camera_position.vz - pointA.vz;
+
+	if (dx * dx + dz * dz > (15000*15000))
+		return;
+
 	LineDef_t& ld = gDebug_Lines[gDebug_numLines++];
 	ld.posA = pointA;
 	ld.posB = pointB;
@@ -123,6 +129,12 @@ void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)
 void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color)
 {
 	if (gDebug_numLines + 1 > 512)
+		return;
+
+	int dx = camera_position.vx - ofs.vx;
+	int dz = camera_position.vz - ofs.vz;
+
+	if (dx * dx + dz * dz > (15000 * 15000))
 		return;
 
 	LineDef_t& ld = gDebug_Lines[gDebug_numLines++];
