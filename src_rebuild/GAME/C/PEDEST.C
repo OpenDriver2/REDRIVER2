@@ -2200,18 +2200,15 @@ void PedCarryOutAnimation(PEDESTRIAN *pPed)
 			}
 		}
 	}
-	else 
+	else if (pPed->frame1 == 0)
 	{
-		if (pPed->frame1 == 0)
-		{
-			pPed->frame1 = 0;
-			pPed->fpAgitatedState = NULL;
-			pPed->flags &= ~0x10;
+		pPed->frame1 = 0;
+		pPed->fpAgitatedState = NULL;
+		pPed->flags &= ~0x10;
 
-			bFreezeAnimation = 0;
-			pPed->flags &= ~4;
-			allreadydone = 0;
-		}
+		bFreezeAnimation = 0;
+		pPed->flags &= ~4;
+		allreadydone = 0;
 	}
 }
 
@@ -2926,7 +2923,7 @@ void AnimatePed(PEDESTRIAN *pPed)
 		pPed->velocity.vy = 10;
 	}
 
-	if ((pPed->flags & 4) == 0 || pPed->pedType != TANNER_MODEL)
+	if ((pPed->flags & 4) == 0)// || pPed->pedType != TANNER_MODEL)
 	{
 		pPed->frame1++;
 

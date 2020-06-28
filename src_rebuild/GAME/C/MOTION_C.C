@@ -2909,6 +2909,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	VECTOR pos;
 	SVECTOR headpos;
 	MATRIX* pHeadRot;
+	int oldcombointensity;
 
 	if (gPed1HeadModelPtr == NULL)
 		return;
@@ -2951,7 +2952,14 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 		plotContext.clut = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 0xf] << 0x10;
 	}
 	
+	oldcombointensity = combointensity;
+
+	if (gNight != 0)
+		combointensity = 0x404040;
+
 	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags);
+
+	combointensity = oldcombointensity;
 
 #if 0
 	int palnumber;
