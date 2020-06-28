@@ -1437,7 +1437,7 @@ void DrawAllPedestrians(void)
 			PositionVisible((VECTOR *)&pPed->position) != 0 &&
 			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
 		{
-			if (pPed->type - 8 < 6)
+			if ((uint)pPed->type - 8 < 6)
 				DrawCiv(pPed);
 			else 
 				DrawCharacter(pPed);
@@ -3198,6 +3198,7 @@ void SetupCivPedRouteData(VECTOR *pPos)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void PingInPedestrians(void)
 {
 	bool bVar1;
@@ -3267,7 +3268,6 @@ void PingInPedestrians(void)
 
 						step = -28;
 						
-#if 0
 						PVar3 = PED_ACTION_CIVRUN;
 
 						if (((pedestrian_roads.north != -28 &&
@@ -3282,23 +3282,6 @@ void PingInPedestrians(void)
 
 						if (pPed->type == PED_ACTION_CIVRUN) // [A] fix bug
 							pPed->speed = 30;
-#else
-						// [A] using Tanner animation, different skeleton
-						PVar3 = PED_ACTION_RUN;
-
-						if (((pedestrian_roads.north != -28 &&
-							(PVar3 = PED_ACTION_RUN, pedestrian_roads.south != -28)) &&
-							(PVar3 = PED_ACTION_RUN, pedestrian_roads.east != -28)) &&
-							(PVar3 = PED_ACTION_WALK, pedestrian_roads.west == -28))
-						{
-							PVar3 = PED_ACTION_RUN;
-						}
-
-						pPed->type = PVar3;
-
-						if (pPed->type == PED_ACTION_RUN)
-							pPed->speed = 30;
-#endif
 
 						lVar7 = Random2(-0x1c);
 						lVar5 = Random2(step);

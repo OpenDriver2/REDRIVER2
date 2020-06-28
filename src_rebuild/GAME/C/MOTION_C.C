@@ -14,6 +14,7 @@
 #include "SKY.H"
 #include "PLAYERS.H"
 #include "MAIN.H"
+#include "MOTION_C.H"
 
 #include "INLINE_C.H"
 
@@ -493,6 +494,7 @@ int gCurrentZ;
 void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
 {
 #if 0
+	// debug code
 	{
 		LINE_F2* line = (LINE_F2*)current->primptr;
 		setLineF2(line);
@@ -511,228 +513,6 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		current->primptr += sizeof(LINE_F2);
 	}
 #endif
-	/*
-	int uVar1;
-	long lVar2;
-	char bVar3;
-	int uVar4;
-	VERTTYPE iVar5;
-	int uVar6;
-	VERTTYPE iVar7;
-	POLY_FT4 *prims;
-	int iVar8;
-	int iVar9;
-	int uVar10;
-	TEXTURE_DETAILS *body_texture;
-	int x;
-	int y;
-	int iVar11;
-	int uVar12;
-	VERTTYPE iVar13;
-	int y1;
-	int z1;
-
-	uVar12 = v1[0];// &0xffff0000;
-	iVar11 = v1[1];// << 0x10;
-	uVar1 = v2[0];// &0xffff0000;
-	y = iVar11 - v2[1];// << 0x10;
-	x = uVar12 - uVar1;
-	uVar10 = boneId & 0x7f;
-	body_texture = MainPed[uVar10].ptd;
-	lVar2 = ratan2(y, x);
-
-	if (bDoingShadow == 0)
-		iVar5 = (VERTTYPE)gCurrentZ + ((VERTTYPE)scr_z / (VERTTYPE)2);
-	else
-		iVar5 = (VERTTYPE)sz + ((VERTTYPE)scr_z / (VERTTYPE)2);
-
-	iVar13 = ((VERTTYPE)scr_z * (VERTTYPE)4096) / (VERTTYPE)iVar5;
-
-	if (uVar10 == 2)
-		iVar13 = iVar13 + ((int)((uint)*(ushort *)((int)rcossin_tbl + (((int)(pDrawingPed->dir).vy + (int)camera_angle.vy) * 8 & 0x3ff8U) + 2) << 0x10) >> 0x16);
-
-	if (pDrawingPed->type == PED_ACTION_JUMP)
-	{
-		uVar6 = MainPed[uVar10].cWidth + 4;
-	}
-	else if (bDoingShadow == 0)
-	{
-		if ((pDrawingPed->flags & 0x8000U) == 0)
-		{
-			if ((pDrawingPed->flags & 0x4000U) == 0)
-				uVar6 = MainPed[uVar10].cWidth + 3;
-			else
-				uVar6 = MainPed[uVar10].cWidth + 8;
-		}
-		else
-		{
-			uVar6 = MainPed[uVar10].cWidth - 3;
-		}
-	}
-	else
-	{
-		uVar6 = MainPed[uVar10].cWidth;
-	}
-
-	iVar5 = FIXED(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * (uVar6 & 0x3f)) * 2; // >> 8;
-	iVar7 = FIXED(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 2 * (uVar6 & 0x3f)); // >> 9;
-
-	bVar3 = MainPed[uVar10].cAdj & 0xf;
-	iVar9 = y >> bVar3;
-	iVar8 = x >> bVar3;
-
-	if (((uVar10 == 19 || uVar10 == 15) && (pDrawingPed->type != PED_ACTION_JUMP)) && (bDoingShadow == 0)) 
-	{
-		y = -y >> 3;
-		x = -x >> 3;
-	}
-	else 
-	{
-		uVar4 = MainPed[uVar10].cAdj >> 4;
-		y = y >> uVar4;
-		x = x >> uVar4;
-	}
-
-	prims = (POLY_FT4 *)current->primptr;
-	setPolyFT4(prims);
-
-	prims->x0 = v1[0] + FIXED(iVar5) + iVar8;
-	prims->y0 = v1[1] + FIXED(iVar7) + iVar9;
-
-	prims->x1 = (v1[0] - FIXED(iVar5)) + iVar8;
-	prims->y1 = (v1[1] - FIXED(iVar7)) + iVar9;
-
-	prims->x2 = (v2[0] + FIXED(iVar5)) - x;
-	prims->y2 = (v2[1] + FIXED(iVar7)) - y;
-
-	prims->x3 = (v2[0] - FIXED(iVar5)) - x;
-	prims->y3 = (v2[1] - FIXED(iVar7)) - y;
-
-	if (bDoingShadow == 0) 
-	{
-		uVar12 = body_texture->tpageid;// << 0x10;
-		if (MainPed[uVar10].texPal != NO_PAL) 
-		{
-			if (MainPed[uVar10].texPal == JEANS_PAL)
-			{
-				bVar3 = pDrawingPed->pallet >> 4;
-				uVar1 = (uint)bVar3;
-			}
-			else 
-			{
-				bVar3 = pDrawingPed->pallet & 0xf;
-				uVar1 = pDrawingPed->pallet & 0xf;
-			}
-
-			if (bVar3 != 0) 
-			{
-				uVar1 = civ_clut[0][body_texture->texture_number][uVar1];// << 0x10;
-				goto LAB_00065688;
-			}
-		}
-		uVar1 = body_texture->clutid;// << 0x10;
-	}
-	else 
-	{
-		uVar12 = gShadowTexturePage;// << 0x10;
-		uVar1 = texture_cluts[gShadowTexturePage][gShadowTextureNum];// << 0x10;
-	}
-
-LAB_00065688:
-
-	prims->tpage = uVar12;
-	prims->clut = uVar1;
-
-	if (bDoingShadow == 0)
-	{
-		if (uVar10 == 4)
-		{
-			x = (camera_angle.vy + pDrawingPed->dir.vy & 0xfffU) >> 7;
-
-			prims->u0 = body_texture->coords.u0 +x;
-			prims->v0 = body_texture->coords.v0;
-
-			prims->u1 = body_texture->coords.u1 +x;
-			prims->v1 = body_texture->coords.v1;
-
-			prims->u2 = body_texture->coords.u2 +x;
-			prims->v2 = body_texture->coords.v2;
-
-			prims->u3 = body_texture->coords.u3 +x;
-			prims->v3 = body_texture->coords.v3;
-		}
-		else if (uVar10 == 2)
-		{
-			prims->u0 = body_texture->coords.u0;
-			prims->v0 = body_texture->coords.v0;
-
-			prims->u1 = body_texture->coords.u1;
-			prims->v1 = body_texture->coords.v1;
-
-			prims->u2 = body_texture->coords.u2;
-			prims->v2 = body_texture->coords.v2;
-
-			prims->u3 = body_texture->coords.u3;
-			prims->v3 = body_texture->coords.v3;
-		}
-		else
-		{
-			prims->u0 = body_texture->coords.u2;
-			prims->v0 = body_texture->coords.v2;
-
-			prims->u1 = body_texture->coords.u3;
-			prims->v1 = body_texture->coords.v3;
-
-			prims->u2 = body_texture->coords.u0;
-			prims->v2 = body_texture->coords.v0;
-
-			prims->u3 = body_texture->coords.u1;
-			prims->v3 = body_texture->coords.v1;
-		}
-	}
-	else
-	{
-		prims->u0 = shadowuv.u0;
-		prims->v0 = shadowuv.v0;
-
-		prims->u1 = shadowuv.u1;
-		prims->v1 = shadowuv.v1;
-
-		prims->u2 = shadowuv.u2;
-		prims->v2 = shadowuv.v2;
-
-		prims->u3 = shadowuv.u3;
-		prims->v3 = shadowuv.v3;
-	}
-
-	if (gNight == 1)
-	{
-		prims->r0 = 64;
-		prims->g0 = 64;
-		prims->b0 = 64;
-	}
-	else
-	{
-		prims->r0 = (combointensity >> 0x10) & 0xFF;
-		prims->g0 = (combointensity >> 8) & 0xFF;
-		prims->b0 = combointensity & 0xFF;
-	}
-
-	
-	current = current;
-
-	if (bDoingShadow == 0) 
-	{
-		x = sz + sy >> 4;
-		addPrim(current->ot + x + ((int)uVar6 >> 6), prims);
-	}
-	else
-	{
-		addPrim(current->ot + 0x107f, prims);
-	}
-
-	current->primptr += sizeof(POLY_FT4);
-	*/
 
 	int clut;
 	long lVar2;
@@ -1662,7 +1442,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 			v2.vz = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vz;
 
 			bAllreadyRotated = 1;
-			DoCivHead(&v2, &v1);
+			DoCivHead(pDrawingPed, &v2, &v1);
 			bAllreadyRotated = 0;
 		}
 	}
@@ -1845,59 +1625,45 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 	MATRIX_1f800020.t[1] = Skel[0].pvOrigPos->vy;
 	MATRIX_1f800020.t[2] = Skel[0].pvOrigPos->vz;
 
-	uVar11 = (int)(pDrawingPed->dir).vx & 0xfff;
-	uVar10 = (int)(pDrawingPed->dir).vy & 0xfff;
-	uVar4 = (int)(pDrawingPed->dir).vz & 0xfff;
+	// RotMatrix inline?
+	// TODO: pretty it
+	{
+		uVar11 = (int)(pDrawingPed->dir).vx & 0xfff;
+		uVar10 = (int)(pDrawingPed->dir).vy & 0xfff;
+		uVar4 = (int)(pDrawingPed->dir).vz & 0xfff;
 
-	iVar6 = (int)rcossin_tbl[uVar10 * 2 + 1];
-	iVar17 = (int)rcossin_tbl[uVar4 * 2];
-	iVar15 = (int)rcossin_tbl[uVar4 * 2 + 1];
-	iVar14 = (int)rcossin_tbl[uVar11 * 2 + 1];
-	iVar12 = (int)rcossin_tbl[uVar11 * 2];
-	iVar13 = (int)rcossin_tbl[uVar10 * 2];
+		iVar6 = (int)rcossin_tbl[uVar10 * 2 + 1];
+		iVar17 = (int)rcossin_tbl[uVar4 * 2];
+		iVar15 = (int)rcossin_tbl[uVar4 * 2 + 1];
+		iVar14 = (int)rcossin_tbl[uVar11 * 2 + 1];
+		iVar12 = (int)rcossin_tbl[uVar11 * 2];
+		iVar13 = (int)rcossin_tbl[uVar10 * 2];
 
-	uVar10 = FIXED(iVar14 * iVar13) + FIXED(FIXED(iVar6 * iVar12) * iVar17);
-	uVar16 = FIXED(iVar6 * iVar15);
-	iVar7 = uVar16;
-	uVar9 = -FIXED(iVar15 * iVar12);
-	uVar11 = FIXED(iVar14 * iVar15);
-	iVar6 = FIXED(-iVar14 * FIXED(iVar6 * iVar17)) + FIXED(iVar12 * iVar13);
+		uVar10 = FIXED(iVar14 * iVar13) + FIXED(FIXED(iVar6 * iVar12) * iVar17);
+		uVar16 = FIXED(iVar6 * iVar15);
+		iVar7 = uVar16;
+		uVar9 = -FIXED(iVar15 * iVar12);
+		uVar11 = FIXED(iVar14 * iVar15);
+		iVar6 = FIXED(-iVar14 * FIXED(iVar6 * iVar17)) + FIXED(iVar12 * iVar13);
 
-	MATRIX_1f800020.m[0][0] = uVar16;
-	MATRIX_1f800020.m[0][1] = iVar6;
-	MATRIX_1f800020.m[0][2] = uVar10;
+		MATRIX_1f800020.m[0][0] = uVar16;
+		MATRIX_1f800020.m[0][1] = iVar6;
+		MATRIX_1f800020.m[0][2] = uVar10;
 
-	MATRIX_1f800020.m[1][0] = rcossin_tbl[uVar4 * 2];
-	MATRIX_1f800020.m[1][1] = uVar11;
-	MATRIX_1f800020.m[1][2] = uVar9;
+		MATRIX_1f800020.m[1][0] = rcossin_tbl[uVar4 * 2];
+		MATRIX_1f800020.m[1][1] = uVar11;
+		MATRIX_1f800020.m[1][2] = uVar9;
 
-	MATRIX_1f800020.m[2][0] = -FIXED(iVar13 * iVar15);
-	MATRIX_1f800020.m[2][1] = FIXED(uVar10 * iVar17) - FIXED(iVar7 * uVar9);
-	MATRIX_1f800020.m[2][2] = FIXED(iVar7 * uVar11) - FIXED(iVar6 * iVar17);
+		MATRIX_1f800020.m[2][0] = -FIXED(iVar13 * iVar15);
+		MATRIX_1f800020.m[2][1] = FIXED(uVar10 * iVar17) - FIXED(iVar7 * uVar9);
+		MATRIX_1f800020.m[2][2] = FIXED(iVar7 * uVar11) - FIXED(iVar6 * iVar17);
+	}
 
-	/*
-	MATRIX_1f800020.m[0]._0_4_ = uVar16 & 0xffff | iVar6 * 0x10000;
-	MATRIX_1f800020.m._4_4_ = uVar10 & 0xffff | (uint)(ushort)rcossin_tbl[uVar4 * 2] << 0x10;
-	MATRIX_1f800020.m[1]._2_4_ = uVar11 & 0xffff | (uint)uVar9 << 0x10;
-	MATRIX_1f800020.m[2]._0_4_ = CONCAT22(FIXED(uVar10 * iVar17) - FIXED(iVar7 * uVar9), -FIXED(iVar13 * iVar15));
-	MATRIX_1f800020._16_4_ = MATRIX_1f800020._16_4_ & 0xffff0000 | (FIXED(iVar7 * uVar11) - FIXED(iVar6 * iVar17));
-	*/
 	SVECTOR_ARRAY_1f800060[0].vx = Skel[0].vOffset.vx;
 	SVECTOR_ARRAY_1f800060[0].vy = Skel[0].vOffset.vy;
 	SVECTOR_ARRAY_1f800060[0].vz = Skel[0].vOffset.vz;
 
 	mStore[0] = MATRIX_1f800020;
-
-	/*
-	mStore[0].m[2]._0_4_ = MATRIX_1f800020.m[2]._0_4_;
-	mStore[0].m[0]._0_4_ = MATRIX_1f800020.m[0]._0_4_;
-	mStore[0].m._4_4_ = MATRIX_1f800020.m._4_4_;
-	mStore[0].m[1]._2_4_ = MATRIX_1f800020.m[1]._2_4_;
-	mStore[0]._16_4_ = MATRIX_1f800020._16_4_;
-	mStore[0].t[0] = MATRIX_1f800020.t[0];
-	mStore[0].t[1] = MATRIX_1f800020.t[1];
-	mStore[0].t[2] = MATRIX_1f800020.t[2];
-	*/
 
 	local_30 = 0;
 	do {
@@ -2098,52 +1864,38 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+// [D]
 void DrawCiv(PEDESTRIAN *pPed)
 {
-	UNIMPLEMENTED();
-#if 1
-	if (pPed->pedType == TANNER_MODEL)
-		return;
-
-	PED_MODEL_TYPES oldType = pPed->pedType;
-	pPed->pedType = OTHER_SPRITE;
-	DrawCharacter(pPed);
-
-	pPed->pedType = oldType;
-#endif
-	/*
 	short *psVar1;
 	bool bVar2;
-	undefined4 in_zero;
-	undefined4 in_at;
-	undefined4 uVar3;
-	undefined4 uVar4;
-	undefined4 uVar5;
-	undefined4 uVar6;
-	int iVar7;
+	long lVar3;
 	int iVar8;
-	SVECTOR *vert1;
-	int iVar9;
+	long lVar9;
+	SVECTOR *vert2;
 	int iVar10;
+	SVECTOR *vert1;
+	int iVar11;
+	int iVar12;
 	uint v1;
 	short size;
 	uint boneId;
-	int iVar11;
-	uint uVar12;
-	uint uVar13;
-	int iVar14;
+	int iVar13;
+	uint uVar14;
 	uint uVar15;
-	uint uVar16;
-	int iVar17;
+	int iVar16;
+	uint uVar17;
 	uint uVar18;
 	int iVar19;
-	MATRIX *pMVar20;
-	SVECTOR *pLerpData;
-	SVECTOR *vert2;
-	SVECTOR *pSVar21;
-	SVECTOR *pSVar22;
-	MATRIX *pMVar23;
+	uint uVar20;
+	int iVar21;
+	SVECTOR *psrLerpData;
+	long *plVar22;
+	long *plVar23;
 	SVECTOR *pSVar24;
+
+	long *zbuff;
+	long *outlongs;
 	int *piVar25;
 	int iVar26;
 	SVECTOR pos;
@@ -2153,229 +1905,237 @@ void DrawCiv(PEDESTRIAN *pPed)
 	MATRIX workmatrix;
 	CVECTOR cv;
 	VECTOR ppos;
-	undefined4 uStack64;
 	int local_38;
-	CVECTOR *local_34;
-	VECTOR *local_30;
+	CVECTOR *_cv;
+	VECTOR *_ppos;
 
-	pSVar24 = &SVECTOR_1f800010;
-	pSVar22 = &SVECTOR_1f800210;
-	pMVar20 = &MATRIX_1f800090;
+	long LONG_ARRAY_1f800010[64];
+	long LONG_ARRAY_1f800210[64];
+	SVECTOR SVECTOR_ARRAY_1f800090[64];
+
+	outlongs = LONG_ARRAY_1f800010;
+	zbuff = LONG_ARRAY_1f800210;
+	psrLerpData = SVECTOR_ARRAY_1f800090;
+
 	local_38 = 0;
 	vert1 = (SVECTOR *)pPed->motion;
 	iVar26 = 0;
-	boneId = (uint)((byte)pPed->frame1 >> 1);
+	boneId = (uint)(pPed->frame1 >> 1);
 	vert2 = vert1 + boneId * 0x1e;
-	uVar13 = (uint)(*(byte *)((int)&pPed->flags + 1) >> 7);
-	pDrawingPed = pPed;
-	if ((pPed->frame1 & 1U) == 0) {
-		iVar11 = 0x1e;
+	uVar15 = pPed->head_pos;// (uint)(*(char *)((int)&pPed->flags + 1) >> 7);	// [A] scale? height offset?
+
+	if ((pPed->frame1 & 1U) == 0)
+	{
+		iVar13 = 30;
 		do {
-			pMVar20->m[0] = vert2->vx;
-			iVar11 = iVar11 + -1;
-			*(undefined2 *)pMVar20->m = (short)((int)vert2->vy >> uVar13);
-			psVar1 = &vert2->vz;
-			vert2 = vert2 + 1;
-			*(short *)pMVar20->m = *psVar1;
-			pMVar20 = (MATRIX *)(pMVar20->m + 4);
-		} while (0 < iVar11);
+			psrLerpData->vx = vert2->vx;
+			psrLerpData->vy = (vert2->vy >> uVar15);
+			psrLerpData->vz = vert2->vz;
+
+			iVar13--;
+			psrLerpData++;
+			vert2++;
+		} while (0 < iVar13);
 	}
-	else {
-		if ((byte)pPed->frame1 < 0x1e) {
-			vert1 = vert1 + (boneId + 1) * 0x1e;
-		}
-		iVar11 = 0x1e;
-		pLerpData = (SVECTOR *)pMVar20;
+	else 
+	{
+		if (pPed->frame1 < 30)
+			vert1 += (boneId + 1) * 30;
+	
+		iVar13 = 30;
 		do {
-			uVar3 = *(undefined4 *)vert1;
-			uVar5 = *(undefined4 *)&vert1->vz;
-			uVar4 = *(undefined4 *)vert2;
-			uVar6 = *(undefined4 *)&vert2->vz;
-			temp1.vx = (short)uVar3;
-			temp2.vx = (short)uVar4;
-			iVar11 = iVar11 + -1;
-			pLerpData->vx = (short)((int)temp1.vx + (int)temp2.vx >> 1);
-			temp1.vy = (short)((uint)uVar3 >> 0x10);
-			temp2.vy = (short)((uint)uVar4 >> 0x10);
-			vert1 = vert1 + 1;
-			pLerpData->vy = (short)((int)temp1.vy + (int)temp2.vy >> uVar13 + 1);
-			temp1.vz = (short)uVar5;
-			temp2.vz = (short)uVar6;
-			vert2 = vert2 + 1;
-			pLerpData->vz = (short)((int)temp1.vz + (int)temp2.vz >> 1);
-			pLerpData = pLerpData + 1;
-		} while (0 < iVar11);
+			// WTF?
+			temp1.vx = vert1->vx;
+			temp2.vx = vert2->vx;
+
+			temp1.vy = vert1->vy;
+			temp2.vy = vert2->vy;
+
+			temp1.vz = vert1->vz;
+			temp2.vz = vert2->vz;
+		
+			psrLerpData->vx = (temp1.vx + temp2.vx >> 1);
+			psrLerpData->vy = (temp1.vy + temp2.vy >> uVar15 + 1);
+			psrLerpData->vz = (temp1.vz + temp2.vz >> 1);
+
+			iVar13--;
+			vert1++;
+			vert2++;
+			psrLerpData++;
+		} while (0 < iVar13);
 	}
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	pos._0_4_ = CONCAT22(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy,
-		*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx);
-	pos._4_4_ = pos._4_4_ & 0xffff0000 |
-		(uint)(ushort)(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz);
-	setCopReg(2, in_zero, pos._0_4_);
-	setCopReg(2, in_at, pos._4_4_);
-	copFunction(2, 0x486012);
-	uVar3 = getCopReg(2, 0x19);
-	uVar4 = getCopReg(2, 0x1a);
-	uVar5 = getCopReg(2, 0x1b);
-	setCopControlWord(2, 0x2800, uVar3);
-	setCopControlWord(2, 0x3000, uVar4);
-	setCopControlWord(2, 0x3800, uVar5);
-	uVar12 = (uint)(ushort)(pDrawingPed->dir).vy & 0xfff;
-	uVar13 = (uint)(ushort)(pDrawingPed->dir).vz & 0xfff;
-	iVar9 = (int)rcossin_tbl[uVar12 * 2 + 1];
-	iVar19 = (int)rcossin_tbl[uVar13 * 2];
-	iVar17 = (int)rcossin_tbl[uVar13 * 2 + 1];
-	boneId = (uint)(ushort)(pDrawingPed->dir).vx & 0xfff;
-	iVar11 = (int)rcossin_tbl[boneId * 2 + 1];
-	iVar14 = (int)rcossin_tbl[uVar12 * 2];
-	iVar8 = (int)rcossin_tbl[boneId * 2];
-	uVar16 = (iVar11 * iVar14 + 0x800 >> 0xc) +
-		((iVar9 * iVar8 + 0x800 >> 0xc) * iVar19 + 0x800 >> 0xc);
-	uVar18 = iVar9 * iVar17 + 0x800 >> 0xc;
-	iVar10 = (int)(short)uVar18;
-	boneId = -(iVar17 * iVar8 + 0x800 >> 0xc);
-	uVar12 = iVar11 * iVar17 + 0x800 >> 0xc;
-	iVar7 = (int)(short)uVar12;
-	uVar15 = (-iVar11 * (iVar9 * iVar19 + 0x800 >> 0xc) + 0x800 >> 0xc) +
-		(iVar8 * iVar14 + 0x800 >> 0xc);
-	v1 = (iVar10 * iVar7 + 0x800 >> 0xc) -
-		(((int)(uVar15 * 0x10000) >> 0x10) * iVar19 + 0x800 >> 0xc);
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopReg(2, 0x4800, uVar18 & 0xffff);
-	setCopReg(2, 0x5000, (uint)(ushort)rcossin_tbl[uVar13 * 2]);
-	setCopReg(2, 0x5800, (uint)(ushort)-(short)(iVar14 * iVar17 + 0x800 >> 0xc));
-	copFunction(2, 0x49e012);
-	uVar13 = getCopReg(2, 0x4800);
-	iVar8 = getCopReg(2, 0x5000);
-	uVar18 = getCopReg(2, 0x5800);
-	setCopReg(2, 0x4800, uVar15 & 0xffff);
-	setCopReg(2, 0x5000, uVar12 & 0xffff);
-	setCopReg(2, 0x5800, (uint)(ushort)((short)(((int)(uVar16 * 0x10000) >> 0x10) * iVar19 + 0x800 >>
-		0xc) - (short)(iVar10 * (short)boneId + 0x800 >> 0xc)))
-		;
-	copFunction(2, 0x49e012);
-	iVar11 = getCopReg(2, 0x4800);
-	uVar12 = getCopReg(2, 0x5000);
-	iVar9 = getCopReg(2, 0x5800);
-	workmatrix.m[0]._0_4_ = uVar13 & 0xffff | iVar11 << 0x10;
-	workmatrix.m[2]._0_4_ = uVar18 & 0xffff | iVar9 << 0x10;
-	setCopReg(2, 0x4800, uVar16 & 0xffff);
-	setCopReg(2, 0x5000, boneId & 0xffff);
-	setCopReg(2, 0x5800, v1 & 0xffff);
-	copFunction(2, 0x49e012);
-	uVar13 = getCopReg(2, 0x4800);
-	iVar11 = getCopReg(2, 0x5000);
-	uVar15 = getCopReg(2, 0x5800);
-	workmatrix.m._4_4_ = iVar8 << 0x10 | uVar13 & 0xffff;
-	workmatrix.m[1]._2_4_ = uVar12 & 0xffff | iVar11 << 0x10;
-	workmatrix._16_4_ = workmatrix._16_4_ & 0xffff0000 | uVar15 & 0xffff;
-	setCopControlWord(2, 0, workmatrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, workmatrix.m._4_4_);
-	setCopControlWord(2, 0x1000, workmatrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, workmatrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, workmatrix._16_4_);
-	setCopReg(2, in_zero, MATRIX_1f800090.m[0]._0_4_);
-	setCopReg(2, in_at, MATRIX_1f800090.m._4_4_);
-	setCopReg(2, 0x1f800090, MATRIX_1f800090.m[1]._2_4_);
-	setCopReg(2, iVar7, MATRIX_1f800090.m[2]._0_4_);
-	setCopReg(2, boneId, MATRIX_1f800090._16_4_);
-	setCopReg(2, v1, MATRIX_1f800090.t[0]);
-	copFunction(2, 0x280030);
-	gCurrentZ = getCopReg(2, 0x13);
-	local_30 = &ppos;
-	SVECTOR_1f800210._0_4_ = gCurrentZ;
-	if (gCurrentZ <= switch_detail_distance) {
-		local_34 = &cv;
+
+	pos.vx = pPed->position.vx - camera_position.vx;
+	pos.vy = pPed->position.vy - camera_position.vy;
+	pos.vz = pPed->position.vz - camera_position.vz;
+
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_ldv0(&pos);
+	docop2(0x486012); // short vector transform
+
+	gte_stlvnl(&pos1);
+	gte_SetTransVector(&pos1);
+
+	// RotMatrix inline?
+	// TODO: pretty it
+	{
+		int uVar11, uVar10, uVar4, iVar6, iVar14, iVar15, iVar17, uVar16, iVar7, uVar9;
+
+		uVar11 = (int)(pPed->dir).vx & 0xfff;
+		uVar10 = (int)(pPed->dir).vy & 0xfff;
+		uVar4 = (int)(pPed->dir).vz & 0xfff;
+
+		iVar6 = (int)rcossin_tbl[uVar10 * 2 + 1];
+		iVar17 = (int)rcossin_tbl[uVar4 * 2];
+		iVar15 = (int)rcossin_tbl[uVar4 * 2 + 1];
+		iVar14 = (int)rcossin_tbl[uVar11 * 2 + 1];
+		iVar12 = (int)rcossin_tbl[uVar11 * 2];
+		iVar13 = (int)rcossin_tbl[uVar10 * 2];
+
+		uVar10 = FIXED(iVar14 * iVar13) + FIXED(FIXED(iVar6 * iVar12) * iVar17);
+		uVar16 = FIXED(iVar6 * iVar15);
+		iVar7 = uVar16;
+		uVar9 = -FIXED(iVar15 * iVar12);
+		uVar11 = FIXED(iVar14 * iVar15);
+		iVar6 = FIXED(-iVar14 * FIXED(iVar6 * iVar17)) + FIXED(iVar12 * iVar13);
+
+		workmatrix.m[0][0] = uVar16;
+		workmatrix.m[0][1] = iVar6;
+		workmatrix.m[0][2] = uVar10;
+
+		workmatrix.m[1][0] = rcossin_tbl[uVar4 * 2];
+		workmatrix.m[1][1] = uVar11;
+		workmatrix.m[1][2] = uVar9;
+
+		workmatrix.m[2][0] = -FIXED(iVar13 * iVar15);
+		workmatrix.m[2][1] = FIXED(uVar10 * iVar17) - FIXED(iVar7 * uVar9);
+		workmatrix.m[2][2] = FIXED(iVar7 * uVar11) - FIXED(iVar6 * iVar17);
+	}
+
+	gte_MulMatrix0(&inv_camera_matrix, &workmatrix, &workmatrix);
+
+	gte_SetRotMatrix(&workmatrix);
+
+	gte_ldv3(&SVECTOR_ARRAY_1f800090[0], &SVECTOR_ARRAY_1f800090[1], &SVECTOR_ARRAY_1f800090[2]);
+
+	gte_rtpt();
+
+	gte_stsz(&gCurrentZ);
+	//gCurrentZ = getCopReg(2, 0x13);
+
+	LONG_ARRAY_1f800210[0] = gCurrentZ;
+
+	if (gCurrentZ <= switch_detail_distance)
+	{
+		_cv = &cv;
 		piVar25 = boneIdvals;
-		iVar11 = 0;
-		pSVar21 = &SVECTOR_1f800210;
-		vert2 = &SVECTOR_1f800010;
-		iVar7 = 0xe;
-		pMVar20 = &MATRIX_1f800090;
+		lVar9 = 0;
+
+		plVar23 = LONG_ARRAY_1f800210;
+		plVar22 = LONG_ARRAY_1f800010;
+		vert2 = SVECTOR_ARRAY_1f800090;
+
+		iVar13 = 0xe;
 		do {
-			if (iVar26 < 0x1e) {
-				uVar3 = getCopReg(2, 0xc);
-				*(undefined4 *)vert2 = uVar3;
-				uVar3 = getCopReg(2, 0xd);
-				*(undefined4 *)&vert2->vz = uVar3;
-				uVar3 = getCopReg(2, 0xe);
-				*(undefined4 *)(vert2 + 1) = uVar3;
-				uVar3 = getCopReg(2, 0x11);
-				*(undefined4 *)pSVar21 = uVar3;
-				uVar3 = getCopReg(2, 0x12);
-				*(undefined4 *)&pSVar21->vz = uVar3;
-				uVar3 = getCopReg(2, 0x13);
-				*(undefined4 *)(pSVar21 + 1) = uVar3;
+			if (iVar26 < 30) 
+			{
+				gte_stsxy3(&plVar22[0], &plVar22[1], &plVar22[2]);
+				gte_stsz3(&plVar23[0], &plVar23[1], &plVar23[2]);
+
+				/*
+				lVar3 = getCopReg(2, 0xc);
+				*plVar22 = lVar3;
+				lVar3 = getCopReg(2, 0xd);
+				plVar22[1] = lVar3;
+				lVar3 = getCopReg(2, 0xe);
+				plVar22[2] = lVar3;
+				4
+				lVar3 = getCopReg(2, 0x11);
+				*plVar23 = lVar3;
+				lVar3 = getCopReg(2, 0x12);
+				plVar23[1] = lVar3;
+				lVar3 = getCopReg(2, 0x13);
+				plVar23[2] = lVar3;
+				*/
 			}
-			bVar2 = iVar26 < 0x1b;
-			pMVar23 = pMVar20;
-			if (bVar2) {
-				pMVar23 = (MATRIX *)(pMVar20->t + 1);
-				pSVar21 = (SVECTOR *)&pSVar21[1].vz;
-				vert2 = (SVECTOR *)&vert2[1].vz;
+
+			if (iVar26 < 27)
+			{
+				vert2 += 3;
+
+				plVar23 = plVar23 + 3;
+				plVar22 = plVar22 + 3;
 				iVar26 = iVar26 + 3;
-				setCopReg(2, in_zero, *(undefined4 *)pMVar23->m);
-				setCopReg(2, in_at, pMVar20->t[2]);
-				setCopReg(2, (uint)bVar2, *(undefined4 *)pMVar20[1].m);
-				setCopReg(2, iVar11, *(undefined4 *)(pMVar20[1].m + 2));
-				setCopReg(2, boneId, *(undefined4 *)(pMVar20[1].m + 4));
-				setCopReg(2, v1, *(undefined4 *)(pMVar20[1].m + 6));
+
+				gte_ldv3(&vert2[0], &vert2[1], &vert2[2]);
+				gte_rtpt();
+
+				/*
+				setCopReg(2, in_zero, *(undefined4 *)pSVar24);
+				setCopReg(2, in_at, *(undefined4 *)&vert2[3].vz);
+
+				setCopReg(2, (uint)bVar2, *(undefined4 *)(vert2 + 4));
+				setCopReg(2, lVar9, *(undefined4 *)&vert2[4].vz);
+
+				setCopReg(2, boneId, *(undefined4 *)(vert2 + 5));
+				setCopReg(2, v1, *(undefined4 *)&vert2[5].vz);
+
 				copFunction(2, 0x280030);
+				*/
 			}
+
 			boneId = *piVar25;
 			if ((boneId == 4) &&
-				(v1 = 1, iVar11 = SVECTOR_1f800210._0_4_,
-					SVECTOR_1f800210._0_4_ <= switch_detail_distance >> 1)) {
+				(v1 = 1, lVar9 = LONG_ARRAY_1f800210[0],
+				LONG_ARRAY_1f800210[0] <= switch_detail_distance >> 1))
+			{
 				local_38 = 1;
 			}
-			else {
-				v1 = *(uint *)pSVar24;
-				DrawBodySprite(boneId, v1, *(long *)&pSVar24->vz, *(int *)pSVar22, *(int *)&pSVar22->vz)
-					;
+			else
+			{
+				DrawBodySprite(pPed, boneId, (VERTTYPE*)&outlongs[0], (VERTTYPE*)&outlongs[1], *zbuff, zbuff[1]);
 			}
-			pSVar24 = pSVar24 + 1;
-			pSVar22 = pSVar22 + 1;
-			iVar7 = iVar7 + -1;
-			piVar25 = (int *)((uint *)piVar25 + 1);
-			pMVar20 = pMVar23;
-		} while (-1 < iVar7);
-		if (local_38 != 0) {
+
+			outlongs += 2;;
+			zbuff += 2;
+			iVar13--;
+			piVar25++;
+		} while (-1 < iVar13);
+
+		if (local_38 != 0) 
+		{
 			bAllreadyRotated = 0;
-			DoCivHead((SVECTOR *)&DAT_1f8000b8, (SVECTOR *)&DAT_1f8000b0);
-			uStack64 = 0;
-			ppos.pad = 0;
-			setCopControlWord(2, 0x2800, 0);
-			setCopControlWord(2, 0x3000, 0);
-			setCopControlWord(2, 0x3800, 0);
+			DoCivHead(pPed, SVECTOR_ARRAY_1f800090 + 5, SVECTOR_ARRAY_1f800090 + 4);
+
+			ppos.vx = 0;
+			ppos.vy = 0;
+			ppos.vz = 0;
+
+			gte_SetTransVector(&ppos);
 		}
+
 		ppos.vx = (pPed->position).vx;
 		ppos.vy = (pPed->position).vy;
 		ppos.vz = (pPed->position).vz;
-		boneId = (uint)(byte)pPed->frame1 & 0xf;
-		uVar13 = boneId * 2;
-		iVar26 = MapHeight(local_30);
-		cv.b = '(';
-		cv.g = '(';
-		cv.r = '(';
+		boneId = pPed->frame1 & 0xf;
+		uVar15 = boneId * 2;
+		iVar26 = MapHeight(&ppos);
+
+		cv.b = 40;
+		cv.g = 40;
+		cv.r = 40;
+
 		ppos.vx = ppos.vx - camera_position.vx;
 		ppos.vy = (10 - iVar26) - camera_position.vy;
 		ppos.vz = ppos.vz - camera_position.vz;
-		if (uVar13 < 8) {
-			size = (short)uVar13 + 0x50;
-		}
-		else {
-			size = (short)boneId * -2 + 0x70;
-		}
-		RoundShadow(local_30, local_34, size);
-	}*/
+
+		if (uVar15 < 8)
+			size = uVar15 + 0x50;
+		else
+			size = boneId * -2 + 0x70;
+
+		RoundShadow(&ppos, _cv, size);
+	}
 }
 
 
@@ -2575,31 +2335,15 @@ int DrawCharacter(PEDESTRIAN *pPed)
 	uint uVar2;
 	ushort size;
 	uint uVar8;
-	//MATRIX mRotStore;
-	//MATRIX iMatrix;
+
 	CVECTOR cV;
 	VECTOR v;
 	CVECTOR cv;
 	VECTOR pos;
 
-	//uVar3 = getCopControlWord(2, 0);
-	//uVar5 = getCopControlWord(2, 0x800);
-	//uVar4 = getCopControlWord(2, 0x1000);
-	//uVar6 = getCopControlWord(2, 0x1800);
-	//uVar7 = getCopControlWord(2, 0x2000);
-	//getCopControlWord(2, 0x2800);
-	//getCopControlWord(2, 0x3000);
-	//getCopControlWord(2, 0x3800);
-
 	SetupTannerSkeleton(pPed);
 	SetSkelModelPointers(pPed->pedType);
 	newRotateBones(pPed, Skel + 1);
-
-	//setCopControlWord(2, 0, uVar3);
-	//setCopControlWord(2, 0x800, uVar5);
-	//setCopControlWord(2, 0x1000, uVar4);
-	//setCopControlWord(2, 0x1800, uVar6);
-	//setCopControlWord(2, 0x2000, uVar7);
 
 	// [A] I don't know but it works
 	gte_SetRotMatrix(&inv_camera_matrix);
@@ -3149,248 +2893,328 @@ void TannerShadow(VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void DoCivHead(SVECTOR *vert1, SVECTOR *vert2)
+void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 {
-	UNIMPLEMENTED();
-	/*
+	SVECTOR spos;
+	VECTOR pos;
+	SVECTOR headpos;
+	MATRIX headrot;
+	MATRIX* pHeadRot;
+
+	headrot.m[0][0] = 0x1000;
+	headrot.m[1][0] = 0;
+	headrot.m[2][0] = 0;
+
+	headrot.m[0][1] = 0;
+	headrot.m[1][1] = 0x1000;
+	headrot.m[2][1] = 0;
+
+	headrot.m[0][2] = 0;
+	headrot.m[1][2] = 0;
+	headrot.m[2][2] = 0x1000;
+
+	headpos.vx = vert1->vx;
+	headpos.vy = vert1->vy;
+	headpos.vz = vert1->vz;
+
+	spos.vx = headpos.vx + pPed->position.vx - camera_position.vx;
+	spos.vy = headpos.vy + pPed->position.vy - camera_position.vy;
+	spos.vz = headpos.vz + pPed->position.vz - camera_position.vz;
+
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_ldv0(&spos);
+	docop2(0x486012);
+	
+	gte_stlvnl(&pos);
+
+	if (bAllreadyRotated)
+	{
+		pHeadRot = NULL;
+		gte_SetTransVector(&pos);
+	}
+	else
+	{
+		pHeadRot = (MATRIX*)&matrixtable[(pPed->dir.vy / 64) & 0x3F];
+	}
+
+	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, 0);
+
+#if 0
+	int palnumber;
 	short sVar1;
 	short sVar2;
+	undefined4 uVar3;
 	MODEL *model;
-	int iVar3;
+	int iVar4;
 	undefined4 in_zero;
 	undefined4 in_at;
-	int local_b8;
-	int local_b4;
-	uint uVar4;
-	ushort uVar5;
-	ushort uVar6;
-	ushort uVar7;
-	int local_b0;
-	int iVar8;
-	uint uVar9;
-	uint uVar10;
-	uint uVar11;
+	int iVar5;
+	int iVar6;
+	uint uVar7;
+	ushort uVar8;
+	ushort uVar9;
+	ushort uVar10;
+	int iVar11;
 	int iVar12;
-	int iVar13;
+	uint uVar13;
 	uint uVar14;
-	int iVar15;
-	uint uVar16;
-	undefined4 local_a0;
-	uint local_9c;
-	uint local_98;
-	uint local_94;
-	uint local_90;
-	uint local_8c;
-	uint local_88;
-	undefined4 local_78;
-	undefined4 local_74;
-	undefined4 local_70;
-	undefined4 local_6c;
-	undefined4 local_68;
-	undefined4 local_64;
-	undefined4 local_60;
-	undefined4 local_5c;
-	VECTOR local_58;
-	uint local_48;
-	uint local_44;
-	uint local_40;
-	uint local_3c;
-	undefined4 local_38;
+	uint uVar15;
+	int iVar16;
+	int iVar17;
+	undefined4 uVar18;
+	undefined4 uVar19;
+	undefined4 uVar20;
+	undefined4 uVar21;
+	uint uVar22;
+	undefined4 uVar23;
+	int iVar24;
+	uint uVar25;
+	VECTOR headpos;
+	SVECTOR final_rotation;
+	SVECTOR spos1;
+	MATRIX work2matrix;
+	MATRIX mRotStore;
+	VECTOR pos1;
+	MATRIX comb;
 
-	iVar3 = combointensity;
+	iVar4 = combointensity;
 	model = gPed1HeadModelPtr;
-	if (gPed1HeadModelPtr != (MODEL *)0x0) {
-		local_78 = getCopControlWord(2, 0);
-		local_74 = getCopControlWord(2, 0x800);
-		local_70 = getCopControlWord(2, 0x1000);
-		local_6c = getCopControlWord(2, 0x1800);
-		local_68 = getCopControlWord(2, 0x2000);
-		local_64 = getCopControlWord(2, 0x2800);
-		local_60 = getCopControlWord(2, 0x3000);
-		local_5c = getCopControlWord(2, 0x3800);
-		if ((pDrawingPed->pallet & 0xf) == 0) {
-			palnumber = -1;
-		}
-		else {
-			palnumber = (uint)civ_clut[(uint)(byte)texturePedHead.texture_number * 6 +
-				((uint)pDrawingPed->pallet & 0xf)] << 0x10;
-		}
-		if (bAllreadyRotated == 0) {
-			if (((pDrawingPed->dir).vx == 0) && ((pDrawingPed->dir).vz == 0)) {
-				uVar5 = (pDrawingPed->dir).vy;
-				if ((uVar5 & 0x3f) == 0) {
-					uVar4 = ((uint)uVar5 & 0xfc0) >> 1;
-					setCopControlWord(2, 0, *(undefined4 *)((int)matrixtable.m + uVar4));
-					setCopControlWord(2, 0x800, *(undefined4 *)((int)matrixtable.m + uVar4 + 4));
-					setCopControlWord(2, 0x1000, *(undefined4 *)((int)matrixtable.m + uVar4 + 8));
-					setCopControlWord(2, 0x1800, *(undefined4 *)((int)matrixtable.m + uVar4 + 0xc));
-					setCopControlWord(2, 0x2000, *(undefined4 *)((int)matrixtable.m + uVar4 + 0x10));
-				}
-				else {
-					local_90 = 0x1000;
-					local_88 = local_88 & 0xffff0000 |
-						(uint)(ushort)rcossin_tbl
-						[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2 + 1];
-					local_98 = (uint)(ushort)rcossin_tbl
-						[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2 + 1];
-					local_94 = (uint)(ushort)rcossin_tbl[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2];
-					local_8c = (uint)(ushort)-rcossin_tbl[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2];
-					setCopControlWord(2, 0, local_98);
-					setCopControlWord(2, 0x800, local_94);
-					setCopControlWord(2, 0x1000, 0x1000);
-					setCopControlWord(2, 0x1800, local_8c);
-					setCopControlWord(2, 0x2000, local_88);
-				}
-			}
-			else {
-				uVar9 = (uint)(ushort)(pDrawingPed->dir).vy & 0xfff;
-				uVar4 = (uint)(ushort)(pDrawingPed->dir).vz & 0xfff;
-				local_b0 = (int)rcossin_tbl[uVar9 * 2 + 1];
-				iVar15 = (int)rcossin_tbl[uVar4 * 2];
-				iVar12 = (int)rcossin_tbl[uVar4 * 2 + 1];
-				uVar14 = (uint)(ushort)(pDrawingPed->dir).vx & 0xfff;
-				local_b8 = (int)rcossin_tbl[uVar14 * 2 + 1];
-				iVar8 = (int)rcossin_tbl[uVar9 * 2];
-				local_b4 = (int)rcossin_tbl[uVar14 * 2];
-				uVar9 = (local_b8 * iVar8 + 0x800 >> 0xc) +
-					((local_b0 * local_b4 + 0x800 >> 0xc) * iVar15 + 0x800 >> 0xc);
-				uVar10 = local_b0 * iVar12 + 0x800 >> 0xc;
-				iVar13 = (int)(short)uVar10;
-				uVar5 = -(short)(iVar12 * local_b4 + 0x800 >> 0xc);
-				uVar14 = local_b8 * iVar12 + 0x800 >> 0xc;
-				local_b8 = (-local_b8 * (local_b0 * iVar15 + 0x800 >> 0xc) + 0x800 >> 0xc) +
-					(local_b4 * iVar8 + 0x800 >> 0xc);
-				local_98 = uVar10 & 0xffff | local_b8 * 0x10000;
-				local_94 = uVar9 & 0xffff | (uint)(ushort)rcossin_tbl[uVar4 * 2] << 0x10;
-				local_90 = uVar14 & 0xffff | (uint)uVar5 << 0x10;
-				local_8c = CONCAT22((short)(((int)(uVar9 * 0x10000) >> 0x10) * iVar15 + 0x800 >> 0xc) -
-					(short)(iVar13 * (short)uVar5 + 0x800 >> 0xc),
-					-(short)(iVar8 * iVar12 + 0x800 >> 0xc));
-				local_88 = local_88 & 0xffff0000 |
-					(uint)(ushort)((short)(iVar13 * (short)uVar14 + 0x800 >> 0xc) -
-					(short)((local_b8 * 0x10000 >> 0x10) * iVar15 + 0x800 >> 0xc));
-				setCopControlWord(2, 0, local_98);
-				setCopControlWord(2, 0x800, local_94);
-				setCopControlWord(2, 0x1000, local_90);
-				setCopControlWord(2, 0x1800, local_8c);
-				setCopControlWord(2, 0x2000, local_88);
-			}
-			setCopReg(2, in_zero, *(undefined4 *)vert1);
-			setCopReg(2, in_at, *(undefined4 *)&vert1->vz);
-			copFunction(2, 0x486012);
-			local_b8 = getCopReg(2, 0x19);
-			local_b4 = getCopReg(2, 0x1a);
-			local_b0 = getCopReg(2, 0x1b);
-		}
-		else {
-			local_b8 = (int)vert1->vx;
-			local_b4 = (int)vert1->vy;
-			local_b0 = (int)vert1->vz;
-		}
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		local_a0 = CONCAT22((short)local_b4 +
-			(*(short *)&(pDrawingPed->position).vy - (short)camera_position.vy),
-			(short)local_b8 +
-			(*(short *)&(pDrawingPed->position).vx - (short)camera_position.vx));
-		local_9c = local_9c & 0xffff0000 |
-			(uint)(ushort)((short)local_b0 +
-			(*(short *)&(pDrawingPed->position).vz - (short)camera_position.vz));
-		setCopReg(2, in_zero, local_a0);
-		setCopReg(2, in_at, local_9c);
-		copFunction(2, 0x486012);
-		local_58.vx = getCopReg(2, 0x19);
-		local_58.vy = getCopReg(2, 0x1a);
-		local_58.vz = getCopReg(2, 0x1b);
-		ratan2((int)vert1->vz - (int)vert2->vz, (int)vert1->vy - (int)vert2->vy);
-		sVar1 = (pDrawingPed->dir).vy;
-		sVar2 = pDrawingPed->head_rot;
-		ratan2((int)vert1->vx - (int)vert2->vx, (int)vert1->vy - (int)vert2->vy, pDrawingPed,
-			(int)vert1->vy, local_b8, local_b4, local_b0);
-		iVar13 = (int)rcossin_tbl[0];
-		uVar4 = (uint)(ushort)(sVar1 - sVar2) & 0xfff;
-		local_b4 = (int)rcossin_tbl[1];
-		local_b8 = rcossin_tbl[uVar4 * 2 + 1] * iVar13 + 0x800 >> 0xc;
-		local_b0 = local_b4 * rcossin_tbl[uVar4 * 2] + 0x800 >> 0xc;
-		uVar14 = local_b0 + (local_b8 * iVar13 + 0x800 >> 0xc);
-		uVar10 = rcossin_tbl[uVar4 * 2 + 1] * local_b4 + 0x800 >> 0xc;
-		uVar5 = -(short)(local_b4 * iVar13 + 0x800 >> 0xc);
-		uVar11 = local_b4 * local_b4 + 0x800 >> 0xc;
-		uVar9 = (-local_b4 * local_b8 + 0x800 >> 0xc) + (iVar13 * rcossin_tbl[uVar4 * 2] + 0x800 >> 0xc)
-			;
-		local_98 = uVar10 & 0xffff | uVar9 * 0x10000;
-		uVar7 = -(short)local_b0;
-		uVar4 = uVar14 & 0xffff;
-		local_94 = uVar4 | (uint)(ushort)rcossin_tbl[0] << 0x10;
-		local_90 = uVar11 & 0xffff | (uint)uVar5 << 0x10;
-		uVar6 = (short)(((int)(uVar14 * 0x10000) >> 0x10) * iVar13 + 0x800 >> 0xc) -
-			(short)((int)(short)uVar10 * (int)(short)uVar5 + 0x800 >> 0xc);
-		local_8c = CONCAT22(uVar6, uVar7);
-		uVar14 = (uint)(ushort)((short)((int)(short)uVar10 * (int)(short)uVar11 + 0x800 >> 0xc) -
-			(short)(((int)(uVar9 * 0x10000) >> 0x10) * iVar13 + 0x800 >> 0xc));
-		local_88 = local_88 & 0xffff0000 | uVar14;
-		setCopControlWord(2, 0, local_98);
-		setCopControlWord(2, 0x800, local_94);
-		setCopControlWord(2, 0x1000, local_90);
-		setCopControlWord(2, 0x1800, local_8c);
-		setCopControlWord(2, 0x2000, local_88);
-		if (gNight != 0) {
-			combointensity = (int)&DAT_00404040;
-		}
-		setCopControlWord(2, 0x2800, local_58.vx);
-		setCopControlWord(2, 0x3000, local_58.vy);
-		setCopControlWord(2, 0x3800, local_58.vz);
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		setCopReg(2, 0x4800, uVar10 & 0xffff);
-		setCopReg(2, 0x5000, (uint)(ushort)rcossin_tbl[0]);
-		setCopReg(2, 0x5800, (uint)uVar7);
-		copFunction(2, 0x49e012);
-		uVar10 = getCopReg(2, 0x4800);
-		local_b4 = getCopReg(2, 0x5000);
-		uVar16 = getCopReg(2, 0x5800);
-		setCopReg(2, 0x4800, uVar9 & 0xffff);
-		setCopReg(2, 0x5000, uVar11 & 0xffff);
-		setCopReg(2, 0x5800, (uint)uVar6);
-		copFunction(2, 0x49e012);
-		local_b8 = getCopReg(2, 0x4800);
-		uVar9 = getCopReg(2, 0x5000);
-		local_b0 = getCopReg(2, 0x5800);
-		local_48 = uVar10 & 0xffff | local_b8 << 0x10;
-		local_3c = uVar16 & 0xffff | local_b0 << 0x10;
-		setCopReg(2, 0x4800, uVar4);
-		setCopReg(2, 0x5000, (uint)uVar5);
-		setCopReg(2, 0x5800, uVar14);
-		copFunction(2, 0x49e012);
-		uVar4 = getCopReg(2, 0x4800);
-		local_b8 = getCopReg(2, 0x5000);
-		uVar14 = getCopReg(2, 0x5800);
-		local_44 = uVar4 & 0xffff | local_b4 << 0x10;
-		local_40 = uVar9 & 0xffff | local_b8 << 0x10;
-		local_38 = uVar14 & 0xffff | (uint)local_38._2_2_ << 0x10;
-		setCopControlWord(2, 0, local_48);
-		setCopControlWord(2, 0x800, local_44);
-		setCopControlWord(2, 0x1000, local_40);
-		setCopControlWord(2, 0x1800, local_3c);
-		setCopControlWord(2, 0x2000, local_38);
-		DrawObject(model, (MATRIX *)&local_98, &local_58, 1);
-		if (gNight != 0) {
-			combointensity = iVar3;
-		}
-		setCopControlWord(2, 0, local_78);
-		setCopControlWord(2, 0x800, local_74);
-		setCopControlWord(2, 0x1000, local_70);
-		setCopControlWord(2, 0x1800, local_6c);
-		setCopControlWord(2, 0x2000, local_68);
+
+	if (gPed1HeadModelPtr == NULL)
+		return;
+
+	gte_ReadRotMatrix(&mRotStore);
+
+	/*
+	uVar18 = getCopControlWord(2, 0);
+	uVar20 = getCopControlWord(2, 0x800);
+	uVar19 = getCopControlWord(2, 0x1000);
+	uVar21 = getCopControlWord(2, 0x1800);
+	uVar23 = getCopControlWord(2, 0x2000);
+	getCopControlWord(2, 0x2800);
+	getCopControlWord(2, 0x3000);
+	getCopControlWord(2, 0x3800);
+	*/
+
+	if ((pPed->pallet & 0xf) == 0)
 		palnumber = -1;
+	else
+		palnumber = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 0xf] << 0x10;
+
+	if (bAllreadyRotated == 0) 
+	{
+		if ((pPed->dir.vx == 0) && (pPed->dir.vz == 0))
+		{
+			uVar8 = pPed->dir.vy;
+			if ((uVar8 & 0x3f) == 0) 
+			{
+				uVar7 = ((uint)uVar8 & 0xfc0) >> 1;
+
+				gte_SetRotMatrix(&matrixtable[uVar7]);
+				/*
+				setCopControlWord(2, 0, *(undefined4 *)((int)matrixtable[0].m + uVar7));
+				setCopControlWord(2, 0x800, *(undefined4 *)((int)matrixtable[0].m + uVar7 + 4));
+				setCopControlWord(2, 0x1000, *(undefined4 *)((int)matrixtable[0].m + uVar7 + 8));
+				setCopControlWord(2, 0x1800, *(undefined4 *)((int)matrixtable[0].m + uVar7 + 0xc));
+				setCopControlWord(2, 0x2000, *(undefined4 *)((int)matrixtable[0].m + uVar7 + 0x10));
+				*/
+			}
+			else
+			{
+				work2matrix.m[1]._2_4_ = 0x1000;
+				work2matrix._16_4_ =
+					work2matrix._16_4_ & 0xffff0000 |
+					(uint)(ushort)rcossin_tbl
+					[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2 + 1];
+				work2matrix.m[0]._0_4_ =
+					(uint)(ushort)rcossin_tbl
+					[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2 + 1];
+				work2matrix.m._4_4_ =
+					(uint)(ushort)rcossin_tbl
+					[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2];
+				work2matrix.m[2]._0_4_ =
+					(uint)(ushort)-rcossin_tbl
+					[((uint)(ushort)(pDrawingPed->dir).vy & 0xfff) * 2];
+
+				gte_SetRotMatrix(&work2matrix);
+				/*
+				setCopControlWord(2, 0, work2matrix.m[0]._0_4_);
+				setCopControlWord(2, 0x800, work2matrix.m._4_4_);
+				setCopControlWord(2, 0x1000, 0x1000);
+				setCopControlWord(2, 0x1800, work2matrix.m[2]._0_4_);
+				setCopControlWord(2, 0x2000, work2matrix._16_4_);
+				*/
+			}
+		}
+		else 
+		{
+			uVar13 = (uint)(ushort)(pPed->dir).vy & 0xfff;
+			uVar7 = (uint)(ushort)(pPed->dir).vz & 0xfff;
+			iVar11 = (int)rcossin_tbl[uVar13 * 2 + 1];
+			iVar24 = (int)rcossin_tbl[uVar7 * 2];
+			iVar16 = (int)rcossin_tbl[uVar7 * 2 + 1];
+			uVar22 = (uint)(ushort)(pPed->dir).vx & 0xfff;
+			iVar5 = (int)rcossin_tbl[uVar22 * 2 + 1];
+			iVar12 = (int)rcossin_tbl[uVar13 * 2];
+			iVar6 = (int)rcossin_tbl[uVar22 * 2];
+			uVar13 = (iVar5 * iVar12 + 0x800 >> 0xc) +
+				((iVar11 * iVar6 + 0x800 >> 0xc) * iVar24 + 0x800 >> 0xc);
+			uVar14 = iVar11 * iVar16 + 0x800 >> 0xc;
+			iVar17 = (int)(short)uVar14;
+			uVar8 = -(short)(iVar16 * iVar6 + 0x800 >> 0xc);
+			uVar22 = iVar5 * iVar16 + 0x800 >> 0xc;
+			iVar5 = (-iVar5 * (iVar11 * iVar24 + 0x800 >> 0xc) + 0x800 >> 0xc) +
+				(iVar6 * iVar12 + 0x800 >> 0xc);
+			work2matrix.m[0]._0_4_ = uVar14 & 0xffff | iVar5 * 0x10000;
+			work2matrix.m._4_4_ = uVar13 & 0xffff | (uint)(ushort)rcossin_tbl[uVar7 * 2] << 0x10
+				;
+			work2matrix.m[1]._2_4_ = uVar22 & 0xffff | (uint)uVar8 << 0x10;
+			work2matrix.m[2]._0_4_ =
+				CONCAT22((short)(((int)(uVar13 * 0x10000) >> 0x10) * iVar24 + 0x800 >> 0xc) -
+				(short)(iVar17 * (short)uVar8 + 0x800 >> 0xc),
+					-(short)(iVar12 * iVar16 + 0x800 >> 0xc));
+			work2matrix._16_4_ =
+				work2matrix._16_4_ & 0xffff0000 |
+				(uint)(ushort)((short)(iVar17 * (short)uVar22 + 0x800 >> 0xc) -
+				(short)((iVar5 * 0x10000 >> 0x10) * iVar24 + 0x800 >> 0xc));
+
+			gte_SetRotMatrix(&work2matrix);
+			/*
+			setCopControlWord(2, 0, work2matrix.m[0]._0_4_);
+			setCopControlWord(2, 0x800, work2matrix.m._4_4_);
+			setCopControlWord(2, 0x1000, work2matrix.m[1]._2_4_);
+			setCopControlWord(2, 0x1800, work2matrix.m[2]._0_4_);
+			setCopControlWord(2, 0x2000, work2matrix._16_4_);
+			*/
+		}
+
+		setCopReg(2, in_zero, *(undefined4 *)vert1);
+		setCopReg(2, in_at, *(undefined4 *)&vert1->vz);
+		copFunction(2, 0x486012);
+		uVar3 = getCopReg(2, 0x19);
+		headpos.vx._0_2_ = (short)uVar3;
+		uVar3 = getCopReg(2, 0x1a);
+		headpos.vy._0_2_ = (short)uVar3;
+		uVar3 = getCopReg(2, 0x1b);
+		headpos.vz._0_2_ = (short)uVar3;
 	}
-	return;*/
+	else 
+	{
+		headpos.vx = vert1->vx;
+		headpos.vy = vert1->vy;
+		headpos.vz = vert1->vz;
+	}
+
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+
+	spos1._0_4_ = CONCAT22((short)headpos.vy +
+		(*(short *)&(pPed->position).vy - (short)camera_position.vy),
+		(short)headpos.vx +
+		(*(short *)&(pPed->position).vx - (short)camera_position.vx));
+	spos1._4_4_ = spos1._4_4_ & 0xffff0000 |
+		(uint)(ushort)((short)headpos.vz +
+		(*(short *)&(pPed->position).vz -
+			(short)camera_position.vz));
+
+	setCopReg(2, in_zero, spos1._0_4_);
+	setCopReg(2, in_at, spos1._4_4_);
+	copFunction(2, 0x486012);
+	pos1.vx = getCopReg(2, 0x19);
+	pos1.vy = getCopReg(2, 0x1a);
+	pos1.vz = getCopReg(2, 0x1b);
+	ratan2((int)vert1->vz - (int)vert2->vz, (int)vert1->vy - (int)vert2->vy);
+	sVar1 = (pPed->dir).vy;
+	sVar2 = pPed->head_rot;
+	ratan2((int)vert1->vx - (int)vert2->vx, (int)vert1->vy - (int)vert2->vy);
+	iVar17 = (int)rcossin_tbl[0];
+	uVar7 = (uint)(ushort)(sVar1 - sVar2) & 0xfff;
+	iVar6 = (int)rcossin_tbl[1];
+	iVar5 = rcossin_tbl[uVar7 * 2 + 1] * iVar17 + 0x800 >> 0xc;
+	iVar11 = iVar6 * rcossin_tbl[uVar7 * 2] + 0x800 >> 0xc;
+	uVar22 = iVar11 + (iVar5 * iVar17 + 0x800 >> 0xc);
+	uVar14 = rcossin_tbl[uVar7 * 2 + 1] * iVar6 + 0x800 >> 0xc;
+	uVar8 = -(short)(iVar6 * iVar17 + 0x800 >> 0xc);
+	uVar15 = iVar6 * iVar6 + 0x800 >> 0xc;
+	uVar13 = (-iVar6 * iVar5 + 0x800 >> 0xc) + (iVar17 * rcossin_tbl[uVar7 * 2] + 0x800 >> 0xc);
+	work2matrix.m[0]._0_4_ = uVar14 & 0xffff | uVar13 * 0x10000;
+	uVar10 = -(short)iVar11;
+	uVar7 = uVar22 & 0xffff;
+	work2matrix.m._4_4_ = uVar7 | (uint)(ushort)rcossin_tbl[0] << 0x10;
+	work2matrix.m[1]._2_4_ = uVar15 & 0xffff | (uint)uVar8 << 0x10;
+	uVar9 = (short)(((int)(uVar22 * 0x10000) >> 0x10) * iVar17 + 0x800 >> 0xc) -
+		(short)((int)(short)uVar14 * (int)(short)uVar8 + 0x800 >> 0xc);
+	work2matrix.m[2]._0_4_ = CONCAT22(uVar9, uVar10);
+	uVar22 = (uint)(ushort)((short)((int)(short)uVar14 * (int)(short)uVar15 + 0x800 >> 0xc) -
+		(short)(((int)(uVar13 * 0x10000) >> 0x10) * iVar17 + 0x800 >> 0xc));
+	work2matrix._16_4_ = work2matrix._16_4_ & 0xffff0000 | uVar22;
+
+	gte_SetRotMatrix(&work2matrix);
+	/*
+	setCopControlWord(2, 0, work2matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, work2matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, work2matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, work2matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, work2matrix._16_4_);
+	*/
+	if (gNight != 0)
+		combointensity = 0x404040;
+
+	gte_SetTransVector(&pos1);
+	/*
+	setCopControlWord(2, 0x2800, pos1.vx);
+	setCopControlWord(2, 0x3000, pos1.vy);
+	setCopControlWord(2, 0x3800, pos1.vz);
+	*/
+	gte_MulMatrix0(&inv_camera_matrix, &work2matrix, &comb);
+
+#if 0
+	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
+	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
+	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
+	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
+	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
+	setCopReg(2, 0x4800, uVar14 & 0xffff);
+	setCopReg(2, 0x5000, (uint)(ushort)rcossin_tbl[0]);
+	setCopReg(2, 0x5800, (uint)uVar10);
+	copFunction(2, 0x49e012); // rtir
+	uVar14 = getCopReg(2, 0x4800);
+	iVar6 = getCopReg(2, 0x5000);
+	uVar25 = getCopReg(2, 0x5800);
+	setCopReg(2, 0x4800, uVar13 & 0xffff);
+	setCopReg(2, 0x5000, uVar15 & 0xffff);
+	setCopReg(2, 0x5800, (uint)uVar9);
+	copFunction(2, 0x49e012);
+	iVar5 = getCopReg(2, 0x4800);
+	uVar13 = getCopReg(2, 0x5000);
+	iVar17 = getCopReg(2, 0x5800);
+	setCopReg(2, 0x4800, uVar7);
+	setCopReg(2, 0x5000, (uint)uVar8);
+	setCopReg(2, 0x5800, uVar22);
+	copFunction(2, 0x49e012);
+	uVar7 = getCopReg(2, 0x4800);
+	iVar11 = getCopReg(2, 0x5000);
+	uVar22 = getCopReg(2, 0x5800);
+	comb.m._4_4_ = uVar7 & 0xffff | iVar6 << 0x10;
+	comb._16_4_ = comb._16_4_ & 0xffff0000 | uVar22 & 0xffff;
+	setCopControlWord(2, 0, uVar14 & 0xffff | iVar5 << 0x10);
+	setCopControlWord(2, 0x800, comb.m._4_4_);
+	setCopControlWord(2, 0x1000, uVar13 & 0xffff | iVar11 << 0x10);
+	setCopControlWord(2, 0x1800, uVar25 & 0xffff | iVar17 << 0x10);
+	setCopControlWord(2, 0x2000, comb._16_4_);
+#endif
+	DrawObject(model, &work2matrix, &pos1, 1);
+
+	if (gNight != 0)
+		combointensity = iVar4;
+
+	gte_SetRotMatrix(&mRotStore);
+
+	palnumber = -1;
+#endif
 }
 
 

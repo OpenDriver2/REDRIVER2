@@ -34,7 +34,7 @@ extern void InitTannerShadow(); // 0x000681EC
 
 extern void TannerShadow(VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle); // 0x00068358
 
-extern void DoCivHead(SVECTOR *vert1, SVECTOR *vert2); // 0x00068B2C
+extern void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2); // 0x00068B2C
 
 extern void DrawObject(MODEL *model, MATRIX *matrix, VECTOR *pos, int z_correct); // 0x00069438
 

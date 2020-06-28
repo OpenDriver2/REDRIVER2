@@ -119,25 +119,18 @@ void InitControllers(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void CloseControllers(void)
 {
-	UNIMPLEMENTED();
-
-	/*
-	PAD *pPVar1;
-	int iVar2;
+	int i;
 
 	PadStopCom();
-	pPVar1 = Pads;
-	iVar2 = 1;
+
 	do {
-		pPVar1->active = '\0';
-		pPVar1->type = '\0';
-		iVar2 = iVar2 + -1;
-		pPVar1 = pPVar1 + 1;
-	} while (-1 < iVar2);
-	return;
-	*/
+		Pads[i].active = 0;
+		Pads[i].type = 0;
+		i++;
+	} while (i < 2);
 }
 
 
