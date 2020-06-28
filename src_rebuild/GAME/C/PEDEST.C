@@ -3953,7 +3953,7 @@ void SetupCivPedWalk(PEDESTRIAN *pPed)
 {
 	pPed->flags |= 0x10;
 
-	if (pPed->type == PED_ACTION_RUN)
+	if (pPed->type == PED_ACTION_CIVRUN)
 		pPed->speed = 30;
 	else
 		pPed->speed = 10;
@@ -5049,56 +5049,50 @@ int basic_car_interest;
 // [D]
 void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 {
-	short sVar1;
-	int iVar2;
-	int iVar3;
+	int y;
+	int iVar1;
+	long lVar2;
+	int x;
+	uint uVar3;
 	int iVar4;
-	int uVar5;
-	int iVar6;
-	int puVar7;
+	int interest;
 
-	iVar6 = player[0].playerCarId;
+	iVar4 = (int)player[0].playerCarId;
+	basic_car_interest = (car_data[iVar4].hd.wheel_speed >> 10) + (uint)car_data[iVar4].totalDamage;
+	x = (pPed->position).vx - car_data[iVar4].hd.where.t[0];
+	y = (pPed->position).vz - car_data[iVar4].hd.where.t[2];
 
-	basic_car_interest = (car_data[iVar6].hd.wheel_speed >> 10) + car_data[iVar6].totalDamage;
+	iVar4 = x;
 
-	iVar4 = (pPed->position).vx - car_data[iVar6].hd.where.t[0];
-	iVar2 = (pPed->position).vz - car_data[iVar6].hd.where.t[2];
+	if (x < 0)
+		iVar4 = -x;
 
-	iVar6 = iVar4;
-	if (iVar4 < 0)
-		iVar6 = -iVar4;
+	iVar1 = y;
+	if (y < 0)
+		iVar1 = -y;
 
-	iVar3 = iVar2;
-
-	if (iVar2 < 0)
-		iVar3 = -iVar2;
-
-	if (iVar6 + iVar3 < 6001) 
-		puVar7 = 6000 + -(iVar6 + iVar3);
+	if (iVar4 + iVar1 < 0x1771)
+		interest = (int)(6000 - (iVar4 + iVar1));
 	else
-		puVar7 = 0;
+		interest = 0;
 
 	if (pPed->type == PED_ACTION_JUMP) 
 	{
-		sVar1 = ratan2(iVar2, iVar4);
-		pPed->head_rot = pPed->dir.vy + sVar1 + 0xc00U & 0xfff;		// [A] might be bugged
+		lVar2 = ratan2(y, x);
+		pPed->head_rot = pPed->dir.vy + lVar2 + 0xc00U & 0xfff;
 	}
-	else
+	else if (2999 < (interest + basic_car_interest)) 
 	{
-		if (2999 < (puVar7 + basic_car_interest)) 
-		{
-			pPed->interest = (puVar7 + basic_car_interest);
-			iVar6 = ratan2(iVar2, iVar4);
-			uVar5 = pPed->dir.vy + iVar6 + 0xc00 & 0xfff;		// [A] might be bugged
+		pPed->interest = (short)(interest + basic_car_interest);
+		lVar2 = ratan2(y, x);
+		uVar3 = (uint)pPed->dir.vy + lVar2 + 0xc00 & 0xfff;
+		pPed->head_rot = (short)uVar3;
 
-			pPed->head_rot = uVar5;
-			if (0x8fe < uVar5 - 0x381) 
-			{
-				return;
-			}
-		}
-		pPed->head_rot = 0;
+		if (0x8fe < uVar3 - 0x381)
+			return;
+
 	}
+	pPed->head_rot = 0;
 }
 
 

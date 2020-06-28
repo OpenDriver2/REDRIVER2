@@ -2893,29 +2893,33 @@ void TannerShadow(VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+extern _pct plotContext;
+
+// [A]
 void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 {
 	SVECTOR spos;
 	VECTOR pos;
 	SVECTOR headpos;
-	MATRIX headrot;
 	MATRIX* pHeadRot;
 
-	headrot.m[0][0] = 0x1000;
-	headrot.m[1][0] = 0;
-	headrot.m[2][0] = 0;
+	if (bAllreadyRotated)
+	{
+		pHeadRot = NULL;
+		headpos.vx = vert1->vx;
+		headpos.vy = vert1->vy;
+		headpos.vz = vert1->vz;
+	}
+	else
+	{
+		pHeadRot = (MATRIX*)&matrixtable[((pPed->dir.vy - pPed->head_rot) / 64) & 0x3F];
+		gte_SetRotMatrix(pHeadRot);
 
-	headrot.m[0][1] = 0;
-	headrot.m[1][1] = 0x1000;
-	headrot.m[2][1] = 0;
+		gte_ldv0(vert1);
+		docop2(0x486012);
 
-	headrot.m[0][2] = 0;
-	headrot.m[1][2] = 0;
-	headrot.m[2][2] = 0x1000;
-
-	headpos.vx = vert1->vx;
-	headpos.vy = vert1->vy;
-	headpos.vz = vert1->vz;
+		gte_stsv(&headpos);
+	}
 
 	spos.vx = headpos.vx + pPed->position.vx - camera_position.vx;
 	spos.vy = headpos.vy + pPed->position.vy - camera_position.vy;
@@ -2924,20 +2928,20 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_ldv0(&spos);
 	docop2(0x486012);
-	
+
 	gte_stlvnl(&pos);
 
-	if (bAllreadyRotated)
-	{
-		pHeadRot = NULL;
-		gte_SetTransVector(&pos);
-	}
-	else
-	{
-		pHeadRot = (MATRIX*)&matrixtable[(pPed->dir.vy / 64) & 0x3F];
-	}
+	gte_SetTransVector(&pos);
 
-	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, 0);
+	int flags = 0;
+
+	if ((pPed->pallet & 0xf))
+	{
+		flags = 0x10; // set custom palette flag
+		plotContext.clut = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 0xf] << 0x10;
+	}
+	
+	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags);
 
 #if 0
 	int palnumber;

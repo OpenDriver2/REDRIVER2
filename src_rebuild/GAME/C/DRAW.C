@@ -2055,10 +2055,12 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		{
 			uVar20 = uVar18 >> 8 & 0xff;
 			rot = (int)(*pc->ptexture_pages + uVar20);
-			pc->clut = (uint)*(ushort *)
-				((int)*pc->ptexture_cluts + (uVar18 >> 0xf & 0x1fe) + uVar20 * 0x40)
-				<< 0x10;
+
 			pc->tpage = (uint)*(ushort *)rot << 0x10;
+
+			if ((pc->flags & 16U) == 0) // [A] custom palette flag
+				pc->clut = (uint)*(ushort *)((int)*pc->ptexture_cluts + (uVar18 >> 0xf & 0x1fe) + uVar20 * 0x40) << 0x10;
+
 			uVar20 = uVar18;
 		}
 
