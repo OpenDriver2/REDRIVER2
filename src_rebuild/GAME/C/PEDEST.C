@@ -4546,10 +4546,10 @@ SEATED_PEDESTRIANS * FindSeated(void)
 		iVar3 = 3;
 
 		do {
-			seated_count = seated_count + 1;
 			seatedptr = seated_pedestrian + seated_count;
+			seated_count++;
 
-			if (seated_pedestrian[seated_count].rotation == 9999) 
+			if (seatedptr->rotation == 9999)
 			{
 				seated_count = 0;
 				seatedptr = seated_pedestrian;

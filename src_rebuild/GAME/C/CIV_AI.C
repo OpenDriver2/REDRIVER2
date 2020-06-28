@@ -5280,7 +5280,7 @@ int CivControl(_CAR_DATA *cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 1
+#if 0
 		{
 			//maxCivCars = 2;
 			//maxCopCars = 0;

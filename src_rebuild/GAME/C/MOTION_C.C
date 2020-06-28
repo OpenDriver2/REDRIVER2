@@ -828,7 +828,7 @@ void StoreVertexLists(void)
 	do {
 		local_t0_256 = pmJerichoModels[iVar7];
 
-		iVar7++;
+		
 		if (local_t0_256 != NULL)
 		{
 			local_a2_308 = (SVECTOR *)local_t0_256->vertices;
@@ -852,6 +852,7 @@ void StoreVertexLists(void)
 				} while (iVar6 < local_t0_256->num_vertices);
 			}
 		}
+		iVar7++;
 
 	} while (iVar7 < 6);
 
@@ -1491,25 +1492,25 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN *pDrawingPed, int boneId, int modelType)
 
 	switch (boneId)
 	{
-	case 2:
-		startVertex = cJerichoVNumbers[0];
-		break;
-	case 4:
-		startVertex = cJerichoVNumbers[1];
-		break;
-	case 6:
-		startVertex = cJerichoVNumbers[2];
-		break;
-	case 7:
-		startVertex = cJerichoVNumbers[3];
-		break;
-	case 10:
-		startVertex = cJerichoVNumbers[4];
-		break;
-	case 11:
-		startVertex = cJerichoVNumbers[5];
-	default:
-		return vTannerList + cTannerVNumbers[boneId & 0x7f];
+		case 2:
+			startVertex = cJerichoVNumbers[0];
+			break;
+		case 4:
+			startVertex = cJerichoVNumbers[1];
+			break;
+		case 6:
+			startVertex = cJerichoVNumbers[2];
+			break;
+		case 7:
+			startVertex = cJerichoVNumbers[3];
+			break;
+		case 10:
+			startVertex = cJerichoVNumbers[4];
+			break;
+		case 11:
+			startVertex = cJerichoVNumbers[5];
+		default:
+			return vTannerList + cTannerVNumbers[boneId & 0x7f];
 	}
 
 	return vJerichoList + startVertex;
@@ -1724,9 +1725,10 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 			Skel[uVar4].vCurrPos.vy = VECTOR_1f800070.vy;
 			Skel[uVar4].vCurrPos.vz = VECTOR_1f800070.vz;
 
-			verts = GetModelVertPtr(pDrawingPed, (uint)LVar2, 0);
+			verts = GetModelVertPtr(pDrawingPed, LVar2, 0);
 			LVar2 = Skel[uVar4].id;
 
+			/**/
             if (((((LVar2 & 0x7f) == 4) || (pDrawingPed->pedType < OTHER_SPRITE)) &&
                 (-1 < (int)((uint)LVar2 << 0x18))) &&
                ((Skel[uVar4].pModel != NULL && (verts != NULL))))
@@ -1737,19 +1739,24 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
                 local_s0_2092 = (SVECTOR *)pMVar5->vertices;
                 pSVar8 = SVECTOR_ARRAY_1f800080;
                 uVar10 = uVar11;
-                if (uVar9 != 0) {
+
+                if (uVar9 != 0) 
+				{
                     do {
                         pSVar8->vx = verts->vx + SVECTOR_ARRAY_1f800060[0].vx;
-                        uVar10 = uVar10 - 1;
                         pSVar8->vy = verts->vy + SVECTOR_ARRAY_1f800060[0].vy;
-                        psVar1 = &verts->vz;
-                        verts = verts + 1;
-                        pSVar8->vz = *psVar1 + SVECTOR_ARRAY_1f800060[0].vz;
+                        pSVar8->vz = verts->vz + SVECTOR_ARRAY_1f800060[0].vz;
+
+						verts = verts + 1;
+						uVar10 = uVar10 - 1;
                         pSVar8 = pSVar8 + 1;
                     } while (uVar10 != 0);
                 }
+
                 verts = SVECTOR_ARRAY_1f800080;
-                if (uVar9 != 0) {
+
+                if (uVar9 != 0)
+				{
                     do {
 						gte_ldv0(verts);
 
@@ -2903,9 +2910,12 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	SVECTOR headpos;
 	MATRIX* pHeadRot;
 
-	if (bAllreadyRotated)
+	if (gPed1HeadModelPtr == NULL)
+		return;
+
+	if (bAllreadyRotated) // not needed to rotate vert1
 	{
-		pHeadRot = NULL;
+		pHeadRot = (MATRIX*)&matrixtable[((pPed->dir.vy - pPed->head_rot) / 64) & 0x3F];
 		headpos.vx = vert1->vx;
 		headpos.vy = vert1->vy;
 		headpos.vz = vert1->vz;
@@ -2913,7 +2923,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	else
 	{
 		pHeadRot = (MATRIX*)&matrixtable[((pPed->dir.vy - pPed->head_rot) / 64) & 0x3F];
-		gte_SetRotMatrix(pHeadRot);
+		gte_SetRotMatrix(&matrixtable[((pPed->dir.vy) / 64) & 0x3F]);
 
 		gte_ldv0(vert1);
 		docop2(0x486012);
