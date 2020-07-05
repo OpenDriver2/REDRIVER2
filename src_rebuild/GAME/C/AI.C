@@ -28,6 +28,7 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void StoreGameFlags(void)
 {
 	ReplayParameterPtr->weather = gWeather;

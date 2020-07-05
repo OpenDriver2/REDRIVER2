@@ -127,7 +127,6 @@ int saved_counter = 0;
 int saved_leadcar_pos = 0;
 int gStopPadReads = 0;
 int DawnCount = 0;
-int variable_weather = 0;
 int current_camera_angle = 0x800;
 int gDieWithFade = 0;
 

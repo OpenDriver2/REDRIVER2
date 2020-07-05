@@ -20,10 +20,13 @@
 #include "PLAYERS.H"
 #include "SHADOW.H"
 #include "COSMETIC.H"
+#include "DENTING.H"
+#include "ROADBITS.H"
 
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
+#include "STRINGS.H"
 
 #include <stdlib.h>
 
@@ -273,6 +276,8 @@ TEXTURE_DETAILS light_pool_texture;
 LAMP_STREAK Known_Lamps[21];
 int NewLamp[21];
 int LightIndex = 0;
+
+int variable_weather = 0;
 
 // decompiled code
 // original method signature: 
@@ -3844,29 +3849,34 @@ void DisplaySpark(SMOKE *spark)
 	/* end block 3 */
 	// End Line: 8077
 
+int SmokeCnt = 0;
+
+// [D]
 void GetSmokeDrift(VECTOR *Wind)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	int iVar2;
+	static int SinTabIndex1 = 10;
+	static int SinTabIndex2 = 0;
+	static int SinTabIndex3 = 5;
+	static int SinX = 0;
+	static int CosX = 0;
+	static int WindMagnitude = 0;
 
-	if (SmokeCnt != CameraCnt) {
+	if (SmokeCnt != CameraCnt)
+	{
 		SmokeCnt = CameraCnt;
-		DAT_000aa378 = DAT_000aa378 + 3 & 0xfff;
-		DAT_000aa37c = DAT_000aa37c + 5 & 0xfff;
-		DAT_000aa380 = DAT_000aa380 + 7 & 0xfff;
-		SinX_103 = (int)rcossin_tbl[DAT_000aa378 * 2] + (int)rcossin_tbl[DAT_000aa37c * 2];
-		CosX_104 = (int)rcossin_tbl[(DAT_000aa378 + 0x400 & 0xfff) * 2] +
-			(int)rcossin_tbl[(DAT_000aa37c + 0x400 & 0xfff) * 2];
-		DAT_000aa384 = (int)((uint)(ushort)rcossin_tbl[DAT_000aa380 * 2] << 0x10) >> 0x1b;
+
+		SinTabIndex1 = SinTabIndex1 + 3 & 0xfff;
+		SinTabIndex2 = SinTabIndex2 + 5 & 0xfff;
+		SinTabIndex3 = SinTabIndex3 + 7 & 0xfff;
+
+		SinX = rcossin_tbl[SinTabIndex1 * 2] + rcossin_tbl[SinTabIndex2 * 2];
+		CosX = rcossin_tbl[(SinTabIndex1 + 0x400 & 0xfff) * 2] + rcossin_tbl[(SinTabIndex2 + 0x400 & 0xfff) * 2];
+		WindMagnitude = (rcossin_tbl[SinTabIndex3 * 2] << 0x10) >> 0x1b;
 	}
-	iVar1 = DAT_000aa384 * CosX_104;
-	iVar2 = -DAT_000aa384 * SinX_103;
+
 	Wind->vy = 0;
-	Wind->vx = iVar1 >> 0xc;
-	Wind->vz = iVar2 >> 0xc;
-	return;*/
+	Wind->vx = FIXED(WindMagnitude * CosX);
+	Wind->vz = FIXED(-WindMagnitude * SinX);
 }
 
 
@@ -4547,12 +4557,11 @@ void DisplayDebris(DEBRIS *debris, char type)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleDebris(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
+	unsigned char bVar1;
+	unsigned char bVar2;
 	char cVar3;
 	char cVar4;
 	short sVar5;
@@ -4567,132 +4576,150 @@ void HandleDebris(void)
 	int iVar14;
 	int iVar15;
 	int iVar16;
-	SMOKE *spark;
-	DEBRIS *debris;
-	LEAF *debris_00;
+	SMOKE *sm;
+	DEBRIS *db;
+	LEAF *lf;
 	int iVar17;
-	undefined4 local_50;
-	undefined4 local_4c;
-	undefined4 local_48;
-	VECTOR local_40;
-	ROUTE_DATA local_30;
+	VECTOR dummy;
+	VECTOR Drift;
+	ROUTE_DATA routeData;
 
-	memset(&local_50, 0, 0x10);
+	memset(&dummy, 0, 0x10);
 	iVar17 = 0;
-	GetSmokeDrift(&local_40);
+	GetSmokeDrift(&Drift);
 	MoveHubcap();
 	SetRotMatrix(&inv_camera_matrix);
-	setCopControlWord(2, 0x2800, local_50);
-	setCopControlWord(2, 0x3000, local_4c);
-	setCopControlWord(2, 0x3800, local_48);
-	if (next_debris != 0) {
-		debris = debris;
+
+	gte_SetTransVector(&dummy);
+
+	if (next_debris != 0) 
+	{
+		db = db;
 		iVar16 = next_debris;
-		if (pauseflag == 0) {
+		if (pauseflag == 0)
+		{
 			do {
-				if ((debris->flags & 2) != 0) {
-					DisplayDebris(debris, '\0');
-					uVar9 = debris->life - 1;
-					debris->life = uVar9;
-					if ((uVar9 == 0) || (iVar15 = (debris->position).vy, 0 < iVar15)) {
-						debris->flags = 0;
-						ReleaseDebris(debris->num);
+				if ((db->flags & 2) != 0) 
+				{
+					DisplayDebris(db, 0);
+					uVar9 = db->life - 1;
+					db->life = uVar9;
+
+					if ((uVar9 == 0) || (iVar15 = (db->position).vy, 0 < iVar15)) 
+					{
+						db->flags = 0;
+						ReleaseDebris(db->num);
 						iVar16 = iVar16 + -1;
 					}
-					else {
-						sVar5 = (debris->direction).vy;
-						sVar10 = (debris->direction).vz;
-						(debris->position).vx = (debris->position).vx + (int)(debris->direction).vx;
-						bVar1 = debris->step;
-						(debris->position).vy = iVar15 + sVar5;
-						uVar9 = debris->pos;
-						(debris->position).vz = (debris->position).vz + (int)sVar10;
-						debris->pos = uVar9 + bVar1;
-						sVar5 = (debris->direction).vy;
+					else
+					{
+						sVar5 = db->direction.vy;
+						sVar10 = db->direction.vz;
+						db->position.vx = db->position.vx + db->direction.vx;
+						bVar1 = db->step;
+						db->position.vy = iVar15 + sVar5;
+						uVar9 = db->pos;
+						db->position.vz = db->position.vz + sVar10;
+						db->pos = uVar9 + bVar1;
+						sVar5 = db->direction.vy;
 						sVar10 = sVar5 + 6;
-						if (debris->type == '\x03') {
+
+						if (db->type == 3) 
 							sVar10 = sVar5 + 1;
-						}
-						(debris->direction).vy = sVar10;
+
+						db->direction.vy = sVar10;
 						iVar16 = iVar16 + -1;
 					}
 				}
-				debris = debris + 1;
+				db = db + 1;
 			} while (iVar16 != 0);
 		}
-		else {
+		else 
+		{
 			do {
-				if ((debris->flags & 2) != 0) {
-					DisplayDebris(debris, '\0');
+				if ((db->flags & 2) != 0) 
+				{
+					DisplayDebris(db, 0);
 					iVar16 = iVar16 + -1;
 				}
-				debris = debris + 1;
+				db = db + 1;
 			} while (iVar16 != 0);
 		}
 	}
-	if (next_leaf != 0) {
-		debris_00 = leaf;
+
+	if (next_leaf != 0) 
+	{
+		lf = leaf;
 		iVar16 = next_leaf;
 		if (pauseflag == 0) {
 			do {
-				if ((debris_00->flags & 2) != 0) {
-					if (debris_00->life == 1) {
-						debris_00->flags = 0;
-						ReleaseLeaf(debris_00->num);
+				if ((lf->flags & 2) != 0) {
+					if (lf->life == 1) {
+						lf->flags = 0;
+						ReleaseLeaf(lf->num);
 					}
-					else {
-						if (pauseflag == 0) {
-							uVar13 = (uint)(ushort)debris_00->sin_index1 + (uint)(byte)debris_00->sin_addition1 &
-								0xfff;
-							uVar11 = (uint)(ushort)debris_00->sin_index2 + (uint)(byte)debris_00->sin_addition2 &
-								0xfff;
+					else
+					{
+						if (pauseflag == 0) 
+						{
+							uVar13 = lf->sin_index1 + lf->sin_addition1 & 0xfff;
+							uVar11 = lf->sin_index2 + lf->sin_addition2 & 0xfff;
 							sVar5 = rcossin_tbl[uVar13 * 2];
 							sVar10 = rcossin_tbl[uVar11 * 2];
-							debris_00->sin_index1 = (short)uVar13;
-							debris_00->sin_index2 = (short)uVar11;
+							lf->sin_index1 = (short)uVar13;
+							lf->sin_index2 = (short)uVar11;
 							sVar6 = rcossin_tbl[uVar13 * 2 + 1];
 							sVar7 = rcossin_tbl[uVar11 * 2 + 1];
 							iVar17 = (int)sVar5 + (int)sVar10;
-							(debris_00->direction).vx = (short)(iVar17 * 5 >> 0xb);
-							(debris_00->direction).vz = (short)(((int)sVar6 + (int)sVar7) * 5 >> 0xb);
+							(lf->direction).vx = (short)(iVar17 * 5 >> 0xb);
+							(lf->direction).vz =
+								(short)(((int)sVar6 + (int)sVar7) * 5 >> 0xb);
 						}
-						GetSmokeDrift(&local_40);
-						iVar14 = (debris_00->position).vy;
-						iVar15 = -((debris_00->position).pad + 0x14);
-						if (iVar14 < iVar15) {
-							sVar5 = (debris_00->direction).vy;
-							sVar10 = (debris_00->direction).vz;
-							(debris_00->position).vx =
-								(debris_00->position).vx + (debris_00->direction).vx + local_40.vx;
-							(debris_00->position).vy = iVar14 + sVar5 + local_40.vy;
-							uVar9 = debris_00->pos;
-							bVar1 = debris_00->step;
-							(debris_00->position).vz = (debris_00->position).vz + sVar10 + local_40.vz;
-							debris_00->pos = uVar9 + bVar1 & 0xff;
+
+						GetSmokeDrift(&Drift);
+						iVar14 = lf->position.vy;
+						iVar15 = -((lf->position).pad + 0x14);
+
+						if (iVar14 < iVar15) 
+						{
+							sVar5 = (lf->direction).vy;
+							sVar10 = (lf->direction).vz;
+							lf->position.vx = lf->position.vx + lf->direction.vx + Drift.vx;
+							lf->position.vy = iVar14 + sVar5 + Drift.vy;
+							uVar9 = lf->pos;
+							bVar1 = lf->step;
+							(lf->position).vz = (lf->position).vz + sVar10 + Drift.vz;
+							lf->pos = uVar9 + bVar1 & 0xff;
 						}
-						else {
-							(debris_00->position).vy = iVar15;
+						else
+						{
+							lf->position.vy = iVar15;
 						}
-						(debris_00->direction).vy = (short)(iVar17 >> 0xb) + 4;
+
+						lf->direction.vy = (iVar17 >> 0xb) + 4;
 					}
+
 					iVar16 = iVar16 + -1;
-					DisplayDebris((DEBRIS *)debris_00, debris_00->type);
+					DisplayDebris((DEBRIS *)lf, lf->type);
 				}
-				debris_00 = debris_00 + 1;
+				lf = lf + 1;
 			} while (iVar16 != 0);
 		}
 		else {
 			do {
-				if ((debris_00->flags & 2) != 0) {
+				if ((lf->flags & 2) != 0) {
 					iVar16 = iVar16 + -1;
-					DisplayDebris((DEBRIS *)debris_00, debris_00->type);
+					DisplayDebris((DEBRIS *)lf, lf->type);
 				}
-				debris_00 = debris_00 + 1;
+				lf = lf + 1;
 			} while (iVar16 != 0);
 		}
 	}
-	spark = smoke;
-	iVar17 = 0x4f;
+
+	sm = smoke;
+	iVar17 = 79;
+
+	/*
 	norot.m[0][0] = 0x1000;
 	norot.m[1][0] = 0;
 	norot.m[2][0] = 0;
@@ -4702,113 +4729,130 @@ void HandleDebris(void)
 	norot.m[0][2] = 0;
 	norot.m[1][2] = 0;
 	norot.m[2][2] = 0x1000;
+	*/
+
 	do {
-		uVar9 = spark->flags;
-		if ((uVar9 & 2) != 0) {
-			if ((uVar9 & 4) == 0) {
-				if (((uVar9 & 8) != 0) && (DisplaySpark(spark), pauseflag == 0)) {
-					cVar12 = (spark->drift_change).vy;
-					iVar16 = (int)(spark->drift_change).vx;
-					iVar15 = (int)(spark->drift_change).vz;
-					(spark->position).vx = (spark->position).vx + iVar16;
-					(spark->position).vy = (spark->position).vy + (short)cVar12;
-					cVar3 = (spark->drift).vx;
-					(spark->position).vz = (spark->position).vz + iVar15;
-					cVar8 = (spark->drift).vx;
-					cVar12 = cVar12 + '\x06';
-					(spark->drift_change).vy = cVar12;
-					if (cVar8 == '\0') {
-						(spark->final_tail_pos).vx = (spark->final_tail_pos).vx + iVar16;
-						(spark->final_tail_pos).vy = (short)cVar12 + (spark->final_tail_pos).vy + -0xc;
-						(spark->final_tail_pos).vz = (spark->final_tail_pos).vz + iVar15;
+		uVar9 = sm->flags;
+		if ((uVar9 & 2) != 0) 
+		{
+			if ((uVar9 & 4) == 0)
+			{
+				if (((uVar9 & 8) != 0) && (DisplaySpark(sm), pauseflag == 0))
+				{
+					cVar12 = (sm->drift_change).vy;
+					iVar16 = (int)(sm->drift_change).vx;
+					iVar15 = (int)(sm->drift_change).vz;
+					(sm->position).vx = (sm->position).vx + iVar16;
+					(sm->position).vy = (sm->position).vy + (short)cVar12;
+					cVar3 = (sm->drift).vx;
+					(sm->position).vz = (sm->position).vz + iVar15;
+					cVar8 = (sm->drift).vx;
+					cVar12 = cVar12 + 6;
+					(sm->drift_change).vy = cVar12;
+
+					if (cVar8 == 0)
+					{
+						(sm->final_tail_pos).vx = (sm->final_tail_pos).vx + iVar16;
+						(sm->final_tail_pos).vy = cVar12 + (sm->final_tail_pos).vy + -0xc;
+						(sm->final_tail_pos).vz = (sm->final_tail_pos).vz + iVar15;
 					}
-					else {
-						(spark->drift).vx = cVar3 + -1;
+					else 
+					{
+						(sm->drift).vx = cVar3 + -1;
 					}
-					if (0 < (spark->position).vy) {
-						spark->flags = 0;
-						ReleaseSmoke((ushort)spark->num);
+
+					if (0 < (sm->position).vy) {
+						sm->flags = 0;
+						ReleaseSmoke((ushort)sm->num);
 					}
 				}
 			}
-			else {
-				if ((uVar9 & 0x8000) == 0) {
-					DisplaySmoke(spark);
+			else
+			{
+				if ((uVar9 & 0x8000) == 0) 
+				{
+					DisplaySmoke(sm);
 				}
-				else {
-					DisplayWater(spark);
+				else 
+				{
+					DisplayWater(sm);
 				}
-				if (pauseflag == 0) {
-					if ((spark->flags & 0x8000) == 0) {
-						if (spark->start_w < 800) {
-							spark->start_w = spark->start_w + (ushort)spark->step;
-						}
-						cVar12 = (spark->drift).vy;
-						cVar8 = (spark->drift).vz;
-						(spark->position).vx = (spark->position).vx + (int)(spark->drift).vx;
-						bVar1 = spark->life;
-						(spark->position).vy = (spark->position).vy + (short)cVar12;
-						bVar2 = spark->halflife;
-						cVar3 = (spark->drift).vx;
-						cVar4 = (spark->drift).vz;
-						(spark->position).vz = (spark->position).vz + (int)cVar8;
+
+				if (pauseflag == 0) 
+				{
+					if ((sm->flags & 0x8000) == 0) 
+					{
+						if (sm->start_w < 800)
+							sm->start_w += sm->step;
+
+						cVar12 = (sm->drift).vy;
+						cVar8 = (sm->drift).vz;
+						(sm->position).vx = (sm->position).vx + (int)(sm->drift).vx;
+						bVar1 = sm->life;
+						(sm->position).vy = (sm->position).vy + (short)cVar12;
+						bVar2 = sm->halflife;
+						cVar3 = (sm->drift).vx;
+						cVar4 = (sm->drift).vz;
+						(sm->position).vz = (sm->position).vz + (int)cVar8;
 						if (bVar2 < bVar1) {
-							cVar8 = (spark->drift_change).vy;
-							(spark->drift).vx = cVar3 - (spark->drift_change).vx;
-							cVar3 = (spark->drift_change).vz;
-							(spark->drift).vy = cVar12 - cVar8;
-							(spark->drift).vz = cVar4 - cVar3;
+							cVar8 = (sm->drift_change).vy;
+							(sm->drift).vx = cVar3 - (sm->drift_change).vx;
+							cVar3 = (sm->drift_change).vz;
+							(sm->drift).vy = cVar12 - cVar8;
+							(sm->drift).vz = cVar4 - cVar3;
 						}
 					}
-					else {
-						ROADS_GetRouteData((spark->position).vx - (int)spark->start_w,
-							(spark->position).vz - (int)spark->start_w, &local_30);
-						uVar9 = modelpointers1536[local_30.type]->shape_flags;
-						ROADS_GetRouteData((spark->position).vx + (int)spark->start_w,
-							(spark->position).vz + (int)spark->start_w, &local_30);
-						if ((spark->start_w < 800) &&
-							((uVar9 & 0x80 & modelpointers1536[local_30.type]->shape_flags & 0x80) != 0)) {
-							spark->start_w = spark->start_w + (ushort)spark->step;
-						}
-						else {
-							spark->start_w = spark->start_w - (ushort)spark->step;
-						}
+					else 
+					{
+						ROADS_GetRouteData((sm->position).vx - (int)sm->start_w, (sm->position).vz - (int)sm->start_w, &routeData);
+						uVar9 = modelpointers[routeData.type]->shape_flags;
+						ROADS_GetRouteData((sm->position).vx + (int)sm->start_w, (sm->position).vz + (int)sm->start_w, &routeData);
+
+						if ((sm->start_w < 800) && ((uVar9 & 0x80 & modelpointers[routeData.type]->shape_flags & 0x80) != 0)) 
+							sm->start_w += sm->step;
+						else
+							sm->start_w -= sm->step;
 					}
 				}
 			}
-			if (((spark->flags & 0x900c) != 0) && (pauseflag == 0)) {
-				iVar16 = (uint)(ushort)spark->transparency - (uint)spark->t_step;
-				spark->transparency = (short)iVar16;
-				if (iVar16 * 0x10000 < 1) {
-					spark->transparency = 0;
-					spark->life = '\x01';
+			if (((sm->flags & 0x900c) != 0) && (pauseflag == 0)) 
+			{
+				iVar16 = sm->transparency - sm->t_step;
+				sm->transparency = (short)iVar16;
+				if (iVar16 * 0x10000 < 1)
+				{
+					sm->transparency = 0;
+					sm->life = 1;
 				}
-				cVar8 = spark->life + -1;
-				spark->life = cVar8;
-				if (cVar8 == '\0') {
-					spark->flags = 0;
-					ReleaseSmoke((ushort)spark->num);
+				cVar8 = sm->life - 1;
+				sm->life = cVar8;
+				if (cVar8 == 0) 
+				{
+					sm->flags = 0;
+					ReleaseSmoke((ushort)sm->num);
 				}
 			}
 		}
-		iVar17 = iVar17 + -1;
-		spark = spark + 1;
+		iVar17--;
+		sm++;
 	} while (-1 < iVar17);
-	if (pauseflag == 0) {
+
+	if (pauseflag == 0)
 		main_cop_light_pos = main_cop_light_pos + 1U & 7;
-	}
-	if (variable_weather != 0) {
-		DAT_000aa388 = (int)rcossin_tbl[(CameraCnt & 0xfffU) * 2] +
-			(int)*(short *)((int)rcossin_tbl + (CameraCnt & 0x3ffcU));
-		gRainCount = (char)((uint)DAT_000aa388 >> 8);
-		if (DAT_000aa388 < 1) {
-			gRainCount = (char)((uint)-DAT_000aa388 >> 8);
-		}
-		if (0xb4 < (byte)gRainCount) {
+
+	if (variable_weather != 0)
+	{
+		static int weather_level;
+
+		weather_level = (int)rcossin_tbl[(CameraCnt & 0xfffU) * 2] + (int)*(short *)((int)rcossin_tbl + (CameraCnt & 0x3ffcU));
+		gRainCount = (char)((uint)weather_level >> 8);
+
+		if (weather_level < 1)
+			gRainCount = (char)((uint)-weather_level >> 8);
+
+		if (0xb4 < gRainCount)
 			gRainCount = -0x4c;
-		}
 	}
-	return;*/
 }
 
 
