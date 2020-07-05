@@ -6,6 +6,12 @@
 #include "MODELS.H"
 #include "CARS.H"
 #include "CONVERT.H"
+#include "PAUSE.H"
+#include "CAMERA.H"
+#include "DRAW.H"
+#include "DR2ROADS.H"
+#include "DEBRIS.H"
+
 
 char* DentingFiles[] =
 {
@@ -395,25 +401,33 @@ void CreateDentableCar(_CAR_DATA *cp)
 extern HUBCAP gHubcap;
 long gHubcapTime = 0;
 
+// [D]
 void InitHubcap(void)
 {
 	gHubcapTime = Random2(1) & 0x7ff;
+
 	gHubcap.Present[0] = 1;
 	gHubcap.Present[1] = 1;
 	gHubcap.Present[2] = 1;
 	gHubcap.Present[3] = 1;
-	gHubcap.Offset[0].vx = 0xcd;
+
+	// right
+	gHubcap.Offset[0].vx = 205;
 	gHubcap.Offset[0].vy = -7;
-	gHubcap.Offset[0].vz = 0x122;
-	gHubcap.Offset[1].vx = 0xcd;
+	gHubcap.Offset[0].vz = 290;
+
+	gHubcap.Offset[1].vx = 205;
 	gHubcap.Offset[1].vy = -7;
-	gHubcap.Offset[1].vz = -0x113;
-	gHubcap.Offset[2].vx = -0xcd;
+	gHubcap.Offset[1].vz = -275;
+
+	// left
+	gHubcap.Offset[2].vx = -205;
 	gHubcap.Offset[2].vy = -7;
-	gHubcap.Offset[2].vz = 0x122;
-	gHubcap.Offset[3].vx = -0xcd;
+	gHubcap.Offset[2].vz = 290;
+
+	gHubcap.Offset[3].vx = -205;
 	gHubcap.Offset[3].vy = -7;
-	gHubcap.Offset[3].vz = -0x113;
+	gHubcap.Offset[3].vz = -275;
 }
 
 
@@ -458,70 +472,54 @@ void InitHubcap(void)
 	/* end block 4 */
 	// End Line: 1472
 
+// [D]
 void LoseHubcap(int Hubcap, int Velocity)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
-	undefined4 local_40;
-	undefined4 local_3c;
-	long local_1c;
+	SVECTOR InitialLocalAngle = { 0, 0, 10 };
+	VECTOR R;
+	VECTOR VW;
 
-	local_40 = DAT_000aa398;
-	local_3c = DAT_000aa39c;
-	if (-1 < car_data[0].hd.wheel_speed) {
-		if (gHubcap.Present[Hubcap] != 0) {
+	if (car_data[0].hd.wheel_speed > -1) 
+	{
+		if (gHubcap.Present[Hubcap] != 0) 
+		{
 			gHubcap.Present[Hubcap] = 0;
+
 			gHubcap.Position.vx = gHubcap.Offset[Hubcap].vx;
 			gHubcap.Position.vy = gHubcap.Offset[Hubcap].vy;
 			gHubcap.Position.vz = gHubcap.Offset[Hubcap].vz;
-			SetRotMatrix(0xd1288);
+
+			SetRotMatrix(&car_data[0].hd.where);
 			_MatrixRotate(&gHubcap.Position);
+
 			gHubcap.Position.vx = gHubcap.Position.vx + car_data[0].hd.where.t[0];
 			gHubcap.Position.vy = gHubcap.Position.vy - car_data[0].hd.where.t[1];
 			gHubcap.Position.vz = gHubcap.Position.vz + car_data[0].hd.where.t[2];
-			gHubcap.Orientation.m[0]._0_4_ = car_data[0].hd.drawCarMat.m[0]._0_4_;
-			gHubcap.Orientation.m._4_4_ = car_data[0].hd.drawCarMat.m._4_4_;
-			gHubcap.Orientation.m[1]._2_4_ = car_data[0].hd.drawCarMat.m[1]._2_4_;
-			gHubcap.Orientation.m[2]._0_4_ = car_data[0].hd.drawCarMat.m[2]._0_4_;
-			gHubcap.Orientation._16_4_ = car_data[0].hd.drawCarMat._16_4_;
-			gHubcap.Orientation.t[0] = car_data[0].hd.drawCarMat.t[0];
-			gHubcap.Orientation.t[1] = car_data[0].hd.drawCarMat.t[1];
-			gHubcap.Orientation.t[2] = car_data[0].hd.drawCarMat.t[2];
-			Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, (SVECTOR *)&local_40);
-			if (Hubcap - 2U < 2) {
-				gHubcap.Orientation.m[0]._0_4_ =
-					gHubcap.Orientation.m[0]._0_4_ & 0xffff0000 |
-					(uint)(ushort)-gHubcap.Orientation.m[0][0];
-				gHubcap.Orientation.m[2]._0_4_ =
-					gHubcap.Orientation.m[2]._0_4_ & 0xffff0000 |
-					(uint)(ushort)-gHubcap.Orientation.m[2][0];
-				gHubcap.Orientation.m._4_4_ =
-					CONCAT22(-gHubcap.Orientation.m[1][0], -(short)gHubcap.Orientation.m._4_4_);
-				gHubcap.Orientation.m[1]._2_4_ =
-					gHubcap.Orientation.m[1]._2_4_ & 0xffff |
-					(uint)(ushort)-gHubcap.Orientation.m[1][2] << 0x10;
-				gHubcap.Orientation._16_4_ =
-					gHubcap.Orientation._16_4_ & 0xffff0000 | (uint)(ushort)-gHubcap.Orientation.m[2][2];
+
+			gHubcap.Orientation = car_data[0].hd.where;
+
+			Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
+
+			if (Hubcap < 2)
+			{
+				gHubcap.Orientation.m[0][0] = -gHubcap.Orientation.m[0][0];
+				gHubcap.Orientation.m[1][0] = -gHubcap.Orientation.m[1][0];
+
+				gHubcap.Orientation.m[2][0] = -gHubcap.Orientation.m[2][0];
+				gHubcap.Orientation.m[0][2] = -gHubcap.Orientation.m[0][2];
+
+				gHubcap.Orientation.m[1][2] = -gHubcap.Orientation.m[1][2];
+				gHubcap.Orientation.m[2][2] = -gHubcap.Orientation.m[2][2];
 			}
-			iVar1 = (car_data[0].st._44_4_ >> 0xc) * gHubcap.Offset[Hubcap].vz;
-			if (iVar1 < 0) {
-				iVar1 = iVar1 + 0xfff;
-			}
-			iVar2 = -(car_data[0].st._44_4_ >> 0xc) * gHubcap.Offset[Hubcap].vx;
-			if (iVar2 < 0) {
-				iVar2 = iVar2 + 0xfff;
-			}
+
 			gHubcap.Duration = 100;
-			gHubcap.Direction.vx = (iVar1 >> 0xc) + (car_data[0].st._28_4_ >> 0xc);
-			gHubcap.Direction.vy = car_data[0].st._32_4_ >> 0xc;
-			gHubcap.Direction.vz = (iVar2 >> 0xc) + (car_data[0].st._36_4_ >> 0xc);
-			gHubcap.Direction.pad = local_1c;
+			gHubcap.Direction.vx = FIXED(FIXED(car_data[0].st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXED(car_data[0].st.n.linearVelocity[0]);
+			gHubcap.Direction.vy = FIXED(car_data[0].st.n.linearVelocity[1]);
+			gHubcap.Direction.vz = FIXED(-FIXED(car_data[0].st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXED(car_data[0].st.n.linearVelocity[2]);
 		}
 	}
-	return;
-	*/
 }
 
 
@@ -583,77 +581,95 @@ void LoseHubcap(int Hubcap, int Velocity)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void MoveHubcap(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	int Velocity;
-	VECTOR local_50;
-	MATRIX MStack64;
-	CVECTOR local_20[2];
+	int savecombo;
+	int cmb;
+	int CurrentMapHeight;
+	int VelocityMagnitude;
+	VECTOR ShadowPos;
+	VECTOR Position;
+	MATRIX Orientation;
+	CVECTOR col = {72,72,72};
 
-	local_20[0] = (CVECTOR)PTR_DAT_000aa3a0;
-	if ((pauseflag == 0) && (0 < gHubcapTime)) {
-		gHubcapTime = gHubcapTime + -1;
+	if (pauseflag == 0 && gHubcapTime > 0) 
+		gHubcapTime--;
+
+	if (gHubcap.Duration < 1 && (gHubcapTime == 0))
+	{
+		VelocityMagnitude = car_data[0].st.n.angularVelocity[0] + car_data[0].st.n.angularVelocity[1] + car_data[0].st.n.angularVelocity[2];
+
+		if (VelocityMagnitude < -1000000) 
+		{
+			LoseHubcap(Random2(2) & 1, VelocityMagnitude);
+			VelocityMagnitude = 3;
+		}
+		else if (VelocityMagnitude > 1000001)
+		{
+			LoseHubcap(Random2(4) & 1 | 2, VelocityMagnitude);
+			VelocityMagnitude = 5;
+		}
+		else
+			return;
+
+		gHubcapTime = Random2(VelocityMagnitude) & 0x417;
 	}
-	if ((gHubcap.Duration < 1) && (gHubcapTime == 0)) {
-		Velocity = car_data[0].st._40_4_ + car_data[0].st._44_4_ + car_data[0].st._48_4_;
-		if (Velocity < -1000000) {
-			uVar1 = Random2(2);
-			LoseHubcap(uVar1 & 1 | 2, Velocity);
-			Velocity = 3;
-		}
-		else {
-			if (Velocity < 0xf4241) {
-				return;
-			}
-			uVar1 = Random2(4);
-			LoseHubcap(uVar1 & 1, Velocity);
-			Velocity = 5;
-		}
-		uVar1 = Random2(Velocity);
-		gHubcapTime = uVar1 & 0x417;
-	}
-	else {
-		if (pauseflag == 0) {
-			gHubcap.Duration = gHubcap.Duration + -1;
-		}
-		if (0 < gHubcap.Duration) {
-			if (pauseflag == 0) {
-				gHubcap.Position.vx = gHubcap.Position.vx + gHubcap.Direction.vx;
-				gHubcap.Position.vy = gHubcap.Position.vy + gHubcap.Direction.vy;
-				gHubcap.Position.vz = gHubcap.Position.vz + gHubcap.Direction.vz;
-				_RotMatrixX(&gHubcap.LocalOrientation, -0xdc);
-				gHubcap.Direction.vy = gHubcap.Direction.vy + 5;
-				Velocity = MapHeight(&gHubcap.Position);
-				if (-0x3c - Velocity <= gHubcap.Position.vy) {
+	else 
+	{
+		if (pauseflag == 0) 
+			gHubcap.Duration--;
+
+		if (0 < gHubcap.Duration) 
+		{
+			if (pauseflag == 0)
+			{
+				gHubcap.Position.vx += gHubcap.Direction.vx;
+				gHubcap.Position.vy += gHubcap.Direction.vy;
+				gHubcap.Position.vz += gHubcap.Direction.vz;
+
+				_RotMatrixX(&gHubcap.LocalOrientation, -220);
+
+				gHubcap.Direction.vy += 5;
+
+				CurrentMapHeight = MapHeight(&gHubcap.Position);
+
+				if (-60 - CurrentMapHeight <= gHubcap.Position.vy)
+				{
 					gHubcap.Direction.vy = -(gHubcap.Direction.vy / 2);
-					gHubcap.Position.vy = -0x3c - Velocity;
+					gHubcap.Position.vy = -0x3c - CurrentMapHeight;
 				}
 			}
-			MulMatrix0(0xc9450, 0xc9470, &MStack64);
+
+			MulMatrix0(&gHubcap.Orientation, &gHubcap.LocalOrientation, &Orientation);
+
 			ShadowPos.vx = gHubcap.Position.vx - camera_position.vx;
-			local_50.vy = gHubcap.Position.vy - camera_position.vy;
+			ShadowPos.vy = -MapHeight(&gHubcap.Position);
 			ShadowPos.vz = gHubcap.Position.vz - camera_position.vz;
-			local_50.vx = ShadowPos.vx;
-			local_50.vz = ShadowPos.vz;
+
+			Position.vx = ShadowPos.vx;
+			Position.vy = gHubcap.Position.vy - camera_position.vy;
+			Position.vz = ShadowPos.vz;
+
 			SetRotMatrix(&inv_camera_matrix);
-			Velocity = MapHeight(&gHubcap.Position);
-			ShadowPos.vy = -Velocity;
-			_MatrixRotate(&local_50);
-			Velocity = combointensity;
-			if (gTimeOfDay == 3) {
-				uVar1 = (combointensity & 0xffU) / 3;
-				combointensity = uVar1 << 0x10 | uVar1 << 8 | uVar1;
+
+			_MatrixRotate(&Position);
+			savecombo = combointensity;
+
+			if (gTimeOfDay == 3)
+			{
+				cmb = (combointensity & 0xffU) / 3;
+				combointensity = cmb << 0x10 | cmb << 8 | cmb;
 			}
-			RenderModel(gHubcapModelPtr, &MStack64, &local_50, 0, 0);
-			ShadowPos.vy = ShadowPos.vy - camera_position.vy;
-			combointensity = Velocity;
-			RoundShadow(&ShadowPos, local_20, 0x41);
+
+			RenderModel(gHubcapModelPtr, &Orientation, &Position, 0, 0);
+			ShadowPos.vy -= camera_position.vy;
+
+			combointensity = savecombo;
+
+			RoundShadow(&ShadowPos, &col, 0x41);
 		}
 	}
-	return;*/
 }
 
 
