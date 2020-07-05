@@ -4744,41 +4744,51 @@ void add_seated(SEATED_PEDESTRIANS *seatedptr, int seat_index)
 	/* end block 2 */
 	// End Line: 11715
 
+CAR_COLLISION_BOX collision_box[8];
+_CAR_DATA* collision_car_ptr[8];
+
+// [D]
 void set_coll_box(int index, _CAR_DATA *cp, int offset)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
 	int iVar5;
+	VECTOR BoxCentre;
 
-	if (8 < index) {
+	if (8 < index)
 		return;
-	}
+
 	iVar5 = 400;
-	if (player.horn.on != '\0') {
-		iVar5 = 0x104;
-		if (cp != car_data + player.playerCarId) goto LAB_00071b00;
-		iVar5 = 0x4b0;
+
+	if (player[0].horn.on != 0) 
+	{
+		iVar5 = 260;
+
+		if (cp != &car_data[player[0].playerCarId]) 
+			goto LAB_00071b00;
+
+		iVar5 = 1200;
 	}
-	if (cp != car_data + player.playerCarId) {
-		iVar5 = iVar5 + -0x8c;
-	}
+
+	if (cp != car_data + player[0].playerCarId) 
+		iVar5 = iVar5 - 140;
+
 LAB_00071b00:
-	iVar1 = *(int *)(cp->st + 0x1c);
-	iVar2 = (cp->hd).where.t[0];
-	iVar4 = *(int *)(cp->st + 0x24);
-	iVar3 = (cp->hd).where.t[2];
-	collision_car_ptr8[index] = cp;
+	iVar1 = cp->st.n.linearVelocity[0];
+	iVar2 = cp->hd.where.t[0];
+	iVar4 = cp->st.n.linearVelocity[2];
+	iVar3 = cp->hd.where.t[2];
+
+	collision_car_ptr[index] = cp;
 	iVar2 = iVar2 + (iVar1 >> (offset & 0x1fU));
 	iVar3 = iVar3 + (iVar4 >> (offset & 0x1fU));
-	(&collision_box)[index].min_x = iVar2 - iVar5;
-	(&collision_box)[index].min_z = iVar3 - iVar5;
-	(&collision_box)[index].max_x = iVar2 + iVar5;
-	(&collision_box)[index].max_z = iVar3 + iVar5;
-	return;*/
+
+	collision_box[index].min_x = iVar2 - iVar5;
+	collision_box[index].min_z = iVar3 - iVar5;
+	collision_box[index].max_x = iVar2 + iVar5;
+	collision_box[index].max_z = iVar3 + iVar5;
 }
 
 
@@ -4825,10 +4835,14 @@ LAB_00071b00:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+CAR_COLLISION_BOX extra_collision_boxes[5];
+CAR_COLLISION_BOX tanner_collision_box;
+int num_extra_boxes_set;
+int collision_boxes_set;
+
+// [D]
 void BuildCarCollisionBox(void)
 {
-	UNIMPLEMENTED();
-	/*
 	CAR_COLLISION_BOX *pCVar1;
 	CAR_COLLISION_BOX *pCVar2;
 	uint uVar3;
@@ -4837,32 +4851,42 @@ void BuildCarCollisionBox(void)
 	_ExOBJECT *p_Var5;
 	_CAR_DATA *cp;
 
-	iVar4 = (int)player.playerCarId;
+	iVar4 = (int)player[0].playerCarId;
 	set_coll_box(0, car_data + iVar4, 8);
 	set_coll_box(1, car_data + iVar4, 9);
 	iVar4 = 2;
 	cp = car_data + (CameraCnt & 3);
 	index = iVar4;
-	if (cp < car_data + 0x14) {
+
+	if (cp < car_data + 20)
+	{
 		do {
 			iVar4 = index;
-			if ((cp != car_data + player.playerCarId) && (cp->controlType != '\0')) {
+
+			if (cp != &car_data[player[0].playerCarId] && cp->controlType != 0) 
+			{
 				iVar4 = index + 1;
 				set_coll_box(index, cp, 8);
 			}
-			cp = cp + 4;
+
+			cp = cp + 4; // WTF?
 			index = iVar4;
-		} while (cp < car_data + 0x14);
+		} while (cp < car_data + 20);
 	}
-	if (player.playerType == '\x02') {
-		uVar3 = (int)((player.pPed)->dir).vy - 0x800U & 0xfff;
-		index = (int)(player.pPed)->speed * (int)rcossin_tbl[uVar3 * 2] * 4 >> 0xc;
-		tanner_collision_box.min_x = ((player.pPed)->position).vx + index + -0x94;
-		tanner_collision_box.max_x = ((player.pPed)->position).vx + index + 0x94;
-		index = (int)(player.pPed)->speed * (int)rcossin_tbl[uVar3 * 2 + 1] * 4 >> 0xc;
-		tanner_collision_box.min_z = ((player.pPed)->position).vz + index + -0x94;
-		tanner_collision_box.max_z = ((player.pPed)->position).vz + index + 0x94;
+
+	if (player[0].playerType == 2)
+	{
+		uVar3 = (int)player[0].pPed->dir.vy - 0x800U & 0xfff;
+
+		index = FIXED(player[0].pPed->speed * (int)rcossin_tbl[uVar3 * 2] * 4);
+		tanner_collision_box.min_x = ((player[0].pPed)->position).vx + index + -148;
+		tanner_collision_box.max_x = ((player[0].pPed)->position).vx + index + 148;
+
+		index = FIXED(player[0].pPed->speed * (int)rcossin_tbl[uVar3 * 2 + 1] * 4);
+		tanner_collision_box.min_z = ((player[0].pPed)->position).vz + index + -148;
+		tanner_collision_box.max_z = ((player[0].pPed)->position).vz + index + 148;
 	}
+
 	num_extra_boxes_set = 0;
 	p_Var5 = explosion;
 	index = 4;
@@ -4870,19 +4894,18 @@ void BuildCarCollisionBox(void)
 	do {
 		if (0x7ff < p_Var5->time) {
 			iVar4 = (p_Var5->pos).vx;
-			extra_collision_boxes[num_extra_boxes_set].min_x = iVar4 + -0x7a0;
-			extra_collision_boxes[num_extra_boxes_set].max_x = iVar4 + 0x7a0;
+			extra_collision_boxes[num_extra_boxes_set].min_x = iVar4 - 1952;
+			extra_collision_boxes[num_extra_boxes_set].max_x = iVar4 + 1952;
 			pCVar1 = extra_collision_boxes + num_extra_boxes_set;
 			pCVar2 = extra_collision_boxes + num_extra_boxes_set;
 			iVar4 = (p_Var5->pos).vz;
 			num_extra_boxes_set = num_extra_boxes_set + 1;
-			pCVar1->min_z = iVar4 + -0x7a0;
-			pCVar2->max_z = iVar4 + 0x7a0;
+			pCVar1->min_z = iVar4 - 1952;
+			pCVar2->max_z = iVar4 + 1952;
 		}
 		index = index + -1;
 		p_Var5 = p_Var5 + 1;
 	} while (-1 < index);
-	return;*/
 }
 
 
@@ -4936,43 +4959,44 @@ void BuildCarCollisionBox(void)
 	/* end block 4 */
 	// End Line: 19532
 
-_CAR_DATA * CheckForCar(PEDESTRIAN *pedestrian)
+// [D]
+_CAR_DATA* CheckForCar(PEDESTRIAN *pedestrian)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
-	CAR_COLLISION_BOX *collision_box;
+	CAR_COLLISION_BOX *cb;
 	_CAR_DATA **pp_Var4;
 
 	iVar3 = 0;
-	if (0 < collision_boxes_set) {
-		pp_Var4 = collision_car_ptr8;
-		collision_box = &collision_box;
+	if (0 < collision_boxes_set) 
+	{
+		pp_Var4 = collision_car_ptr;
+		cb = collision_box;
 		do {
-			iVar1 = CheckForPlayerCar(pedestrian, collision_box);
-			iVar3 = iVar3 + 1;
-			if (iVar1 != 0) {
+			iVar3++;
+
+			if (CheckForPlayerCar(pedestrian, cb) != 0)
 				return *pp_Var4;
-			}
-			pp_Var4 = pp_Var4 + 1;
-			collision_box = collision_box + 1;
+
+			pp_Var4++;
+			cb++;
 		} while (iVar3 < collision_boxes_set);
 	}
 	iVar3 = 0;
+
 	while ((iVar1 = bAvoidBomb, iVar3 < num_extra_boxes_set &&
-		(iVar2 = CheckForPlayerCar(pedestrian, extra_collision_boxes + iVar3), iVar1 = iVar3,
-			iVar2 == 0))) {
-		iVar3 = iVar3 + 1;
+		(iVar1 = iVar3, CheckForPlayerCar(pedestrian, extra_collision_boxes + iVar3) == 0)))
+	{
+		iVar3++;
 	}
+
 	bAvoidBomb = iVar1;
-	if ((player.playerType == '\x02') &&
-		(iVar3 = CheckForPlayerCar(pedestrian, &tanner_collision_box), iVar3 != 0)) {
+
+	if (player[0].playerType == 2 && CheckForPlayerCar(pedestrian, &tanner_collision_box) != 0) 
 		bAvoidTanner = 1;
-	}
-	return (_CAR_DATA *)0x0;*/
+
+	return NULL;
 }
 
 

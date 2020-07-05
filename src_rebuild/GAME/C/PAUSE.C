@@ -1243,26 +1243,34 @@ void ControlMenu(void)
 	MENU_HEADER *menu;
 	ushort uVar6;
 
-	if (playerwithcontrol[2] == 0) {
+	if (playerwithcontrol[2] == 0) 
+	{
 		uVar5 = Pads[1].dirnew;
 		uVar6 = Pads[1].direct;
-		if (playerwithcontrol[0] != 0) {
+
+		if (playerwithcontrol[0] != 0) 
+		{
 			uVar5 = Pads[0].dirnew;
 			uVar6 = Pads[0].direct;
 		}
 	}
-	else {
+	else 
+	{
 		uVar5 = Pads[0].dirnew;
 		uVar6 = Pads[0].direct;
-		if (NumPlayers == 2) {
+
+		if (NumPlayers == 2) 
+		{
 			uVar5 = Pads[1].dirnew | Pads[0].dirnew;
 			uVar6 = Pads[1].direct | Pads[0].direct;
 		}
 	}
-	if (gShowMap != 0) {
-		if ((uVar5 & 0x50) == 0) {
+
+	if (gShowMap != 0) 
+	{
+		if ((uVar5 & 0x50) == 0)
 			return;
-		}
+
 		PauseMap(0);
 		return;
 	}
@@ -1272,27 +1280,30 @@ void ControlMenu(void)
 	if (((uVar6 & 0xa000) == 0) || ((ActiveItem[VisibleMenu]->Type & 4) == 0)) 
 	{
 		controlmenu_debounce = 0;
-		if ((uVar5 & 0x1000) != 0) {
-			ActiveMenuItem = ActiveMenuItem + -1;
-			if (ActiveMenuItem < 0) {
+		if ((uVar5 & 0x1000) != 0)
+		{
+			ActiveMenuItem--;
+
+			if (ActiveMenuItem < 0) 
 				ActiveMenuItem = (uint)ActiveMenu->NumItems - 1;
-			}
+
 			ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
 			return;
 		}
 
 		if ((uVar5 & 0x4000) != 0) 
 		{
-			ActiveMenuItem = ActiveMenuItem + 1;
-			if ((int)((uint)ActiveMenu->NumItems - 1) < ActiveMenuItem)
-			{
+			ActiveMenuItem++;
+
+			if (((uint)ActiveMenu->NumItems - 1) < ActiveMenuItem)
 				ActiveMenuItem = 0;
-			}
+
 			ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
 			return;
 		}
 
-		if ((uVar5 & 0x40) == 0) {
+		if ((uVar5 & 0x40) == 0) 
+		{
 			if ((uVar5 & 0x10) == 0) 
 			{
 				if ((uVar5 & 0x800) == 0) 
@@ -1308,7 +1319,7 @@ void ControlMenu(void)
 				}
 
 				iVar3 = 0;
-				if (ActiveMenu->NumItems == '\0') 
+				if (ActiveMenu->NumItems == 0) 
 				{
 					controlmenu_debounce = 0;
 					return;
@@ -1323,12 +1334,14 @@ void ControlMenu(void)
 						PauseReturnValue = (uint)pMVar4->ExitValue;
 						return;
 					}
-					iVar3 = iVar3 + 1;
-					if ((int)(uint)ActiveMenu->NumItems <= iVar3)
+
+					iVar3++;
+					if ((uint)ActiveMenu->NumItems <= iVar3)
 						break;
 
 					pMVar4 = ActiveMenu->MenuItems + iVar3;
 				}
+
 				controlmenu_debounce = 0;
 				return;
 			}
@@ -1336,11 +1349,13 @@ void ControlMenu(void)
 			if (VisibleMenu < 1)
 			{
 				iVar3 = 0;
-				if (ActiveMenu->NumItems == '\0')
+
+				if (ActiveMenu->NumItems == 0)
 				{
 					controlmenu_debounce = 0;
 					return;
 				}
+
 				EVar1 = ActiveMenu->MenuItems->ExitValue;
 				while (true)
 				{
@@ -1350,16 +1365,22 @@ void ControlMenu(void)
 						PauseReturnValue = (uint)EVar1;
 						return;
 					}
-					iVar3 = iVar3 + 1;
-					if ((int)(uint)ActiveMenu->NumItems <= iVar3) break;
+
+					iVar3++;
+
+					if ((uint)ActiveMenu->NumItems <= iVar3) 
+						break;
+
 					EVar1 = ActiveMenu->MenuItems[iVar3].ExitValue;
 				}
 				controlmenu_debounce = 0;
 				return;
 			}
 		}
-		else {
+		else 
+		{
 			pMVar4 = ActiveItem[VisibleMenu];
+
 			if ((pMVar4->Type & 0x40) != 0) 
 			{
 				menu = pMVar4->SubMenu;
@@ -1368,10 +1389,12 @@ void ControlMenu(void)
 				SetupMenu(menu, 0);
 				return;
 			}
+
 			if ((pMVar4->Type & 2) != 0) 
 			{
 				(*pMVar4->func)(0);
 			}
+
 			EVar1 = ActiveItem[VisibleMenu]->ExitValue;
 
 			if (EVar1 == MENU_QUIT_NONE) 
@@ -1399,6 +1422,7 @@ void ControlMenu(void)
 	{
 		controlmenu_debounce = controlmenu_debounce + -1;
 		iVar3 = 2;
+
 		if (controlmenu_debounce != 0) 
 			goto LAB_0006cd08;
 	}
