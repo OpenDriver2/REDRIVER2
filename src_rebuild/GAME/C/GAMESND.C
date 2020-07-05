@@ -23,6 +23,7 @@
 #include "PLAYERS.H"
 #include "MAIN.H"
 #include "SKY.H"
+#include "DEBRIS.H"
 
 #include <math.h>
 
@@ -3007,6 +3008,7 @@ void Tunnels(__tunnelinfo *T)
 
 	iVar5 = 0;
 	gTunnelNum = -1;
+	NoRainIndoors = 0;
 	on = 0;
 
 	if (T->tunnel_cnt != 0) 
@@ -3057,6 +3059,7 @@ void Tunnels(__tunnelinfo *T)
 								{
 									on = 1;
 									gTunnelNum = iVar5;
+									NoRainIndoors = 1;
 									break;
 								}
 							}

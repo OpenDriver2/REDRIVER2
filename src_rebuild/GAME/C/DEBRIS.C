@@ -4831,7 +4831,7 @@ void HandleDebris(void)
 				if (cVar8 == 0) 
 				{
 					sm->flags = 0;
-					ReleaseSmoke((ushort)sm->num);
+					ReleaseSmoke(sm->num);
 				}
 			}
 		}
@@ -4844,16 +4844,16 @@ void HandleDebris(void)
 
 	if (variable_weather != 0)
 	{
-		static int weather_level;
+		static int weather_level = 0;
 
 		weather_level = (int)rcossin_tbl[(CameraCnt & 0xfffU) * 2] + (int)*(short *)((int)rcossin_tbl + (CameraCnt & 0x3ffcU));
-		gRainCount = (char)((uint)weather_level >> 8);
+		gRainCount = (weather_level >> 8);
 
 		if (weather_level < 1)
-			gRainCount = (char)((uint)-weather_level >> 8);
+			gRainCount = (-weather_level >> 8);
 
-		if (0xb4 < gRainCount)
-			gRainCount = -0x4c;
+		if (gRainCount > 180)
+			gRainCount = 180;
 	}
 }
 
@@ -5225,7 +5225,7 @@ void SetupRain(void)
 		// Start line: 25943
 	/* end block 3 */
 	// End Line: 25944
-
+ 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D]
@@ -5345,8 +5345,7 @@ void DrawRainDrops(void)
 	col = iVar7 >> 1 | (iVar7 >> 1) << 8;
 	col = col | col << 0x10;
 
-	if (NoRainIndoors == 0)
-		DisplaySplashes();
+	DisplaySplashes();
 
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
@@ -5495,11 +5494,10 @@ void AddRainDrops(void)
 
 	first = true;
 
-	if (pauseflag != 0)
+	if (pauseflag != 0 || NoRainIndoors != 0)
 		return;
 
 	uVar8 = gRainCount;
-	NoRainIndoors = 0;
 	wetness += uVar8 / 6;
 	if (wetness > 7000)
 		wetness = 7000;
@@ -5552,7 +5550,6 @@ void AddRainDrops(void)
 		first = false;
 	}
 
-	NoRainIndoors = 1;
 	ReleaseRainDrop(RainIndex);
 }
 

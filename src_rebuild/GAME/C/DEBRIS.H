@@ -27,6 +27,7 @@ extern char gRainCount;
 extern int gEffectsTimer;
 extern int lightning;
 extern int variable_weather;
+extern int NoRainIndoors;
 
 extern int main_cop_light_pos;
 extern int groundDebrisIndex;

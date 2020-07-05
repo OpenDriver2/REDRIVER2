@@ -1065,7 +1065,7 @@ LAB_00078940:
 		return;
 	}
 
-	skyFade = iVar3 * -4 + 0x80;
+	skyFade = iVar3 * -4 + 128;
 }
 
 
