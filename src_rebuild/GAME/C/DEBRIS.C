@@ -4557,6 +4557,8 @@ void DisplayDebris(DEBRIS *debris, char type)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int NoRainIndoors = 0;
+
 // [D]
 void HandleDebris(void)
 {
@@ -5309,105 +5311,109 @@ void ReleaseRainDrop(int RainIndex)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawRainDrops(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	DB *pDVar2;
-	ushort uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar4;
-	int iVar5;
-	uint *puVar6;
-	RAIN_TYPE *pRVar7;
-	int iVar8;
-	uint uVar9;
-	undefined4 local_58;
-	uint local_54;
-	VECTOR local_40;
-	int local_30;
+	int z;
+	DB *pDVar3;
+	ushort uVar4;
+	uint uVar5;
+	uint iVar6;
+	POLY_GT3 *poly;
+	RAIN_TYPE *RainPtr;
+	int iVar7;
+	int col;
+	SVECTOR v;
+	VECTOR drift;
 
-	if (gNextRainDrop != 0) {
-		GetSmokeDrift(&local_40);
-		if (cameraview == 1) {
-			iVar8 = 0x46;
+	if (gNextRainDrop == 0)
+		return;
+
+	GetSmokeDrift(&drift);
+
+	//if (cameraview == 1)
+	//	iVar7 = 70;
+	//else
+	iVar7 = 70;// -car_data[0].hd.wheel_speed;
+
+	if (iVar7 < 50)
+		iVar7 = 50;
+
+	if (gNight != 0)
+		iVar7 -= -15;
+
+	col = iVar7 >> 1 | (iVar7 >> 1) << 8;
+	col = col | col << 0x10;
+
+	if (NoRainIndoors == 0)
+		DisplaySplashes();
+
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	RainPtr = gRain;
+	iVar7 = gNextRainDrop-1;
+
+	while (iVar7 >= 0) 
+	{
+		if (pauseflag == 0) 
+		{
+			RainPtr->position.vy = (RainPtr->position).vy + 0x14;
+			RainPtr->position.vx = (RainPtr->position).vx + drift.vx * -2;
+			RainPtr->position.vz = (RainPtr->position).vz + drift.vz * -2;
 		}
-		else {
-			iVar8 = 0x46 - (int)car_data[0].hd.wheel_speed._2_2_;
-		}
-		if (iVar8 < 0x32) {
-			iVar8 = 0x32;
-		}
-		if (gNight != 0) {
-			iVar8 = iVar8 + -0xf;
-		}
-		uVar9 = iVar8 >> 1 | (iVar8 >> 1) << 8;
-		uVar9 = uVar9 | uVar9 << 0x10;
-		if (NoRainIndoors == 0) {
-			DisplaySplashes();
-		}
-		uVar3 = light_texture.clutid;
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		setCopControlWord(2, 0x2800, dummy.vx);
-		setCopControlWord(2, 0x3000, dummy.vy);
-		setCopControlWord(2, 0x3800, dummy.vz);
-		pRVar7 = gRain;
-		uVar4 = (uint)light_texture.tpageid;
-		iVar8 = gNextRainDrop;
-		while (iVar8 = iVar8 + -1, iVar8 != -1) {
-			if (pauseflag == 0) {
-				(pRVar7->position).vy = (pRVar7->position).vy + 0x14;
-				(pRVar7->position).vx = (pRVar7->position).vx + local_40.vx * -2;
-				(pRVar7->position).vz = (pRVar7->position).vz + local_40.vz * -2;
+
+		v.vx = RainPtr->position.vx - camera_position.vx;
+		v.vy = RainPtr->position.vy - camera_position.vy;
+		v.vz = RainPtr->position.vz - camera_position.vz;
+
+		iVar6 = *(uint *)&RainPtr->oldposition;
+
+		poly = (POLY_GT3 *)current->primptr;
+
+		*(uint *)&poly->r2 = col;
+		*(uint *)&poly->r1 = col;
+		*(uint *)&poly->r0 = 0;
+
+		gte_ldv0(&v);
+		gte_rtps();
+
+		setPolyGT3(poly);
+		setSemiTrans(poly, 1);
+
+		*(uint *)&poly->x0 = *(uint *)&RainPtr->oldposition;
+		gte_stsxy(&poly->x2);
+		gte_stsz(&z);
+
+		if (z - 0x97U < 0x352 && -0x65 < poly->x2 && poly->x2 < 0x1a5 && -0x33 < poly->y2 && poly->y2 < 0x101) 
+		{
+			*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
+
+			if (iVar6 != 0) 
+			{
+				poly->x1 = poly->x2 - ((z >> 10) - 1);
+				poly->x2 = poly->x2 + ((z >> 10) - 1);
+				poly->y1 = poly->y2;
+
+				poly->clut = light_texture.clutid;
+				poly->tpage = light_texture.tpageid | 0x20;
+
+				*(ushort *)&poly->u0 = *(ushort *)&light_texture.coords.u0;
+				*(ushort *)&poly->u1 = *(ushort *)&light_texture.coords.u1;
+				*(ushort *)&poly->u2 = *(ushort *)&light_texture.coords.u2;
+
+				addPrim(current->ot + (z >> 3), poly);
+				current->primptr += sizeof(POLY_GT3);
 			}
-			local_58 = CONCAT22(*(short *)&(pRVar7->position).vy - (short)camera_position.vy,
-				*(short *)&(pRVar7->position).vx - (short)camera_position.vx);
-			local_54 = local_54 & 0xffff0000 |
-				(uint)(ushort)(*(short *)&(pRVar7->position).vz - (short)camera_position.vz);
-			iVar5 = *(int *)&pRVar7->oldposition;
-			puVar6 = (uint *)current->primptr;
-			setCopReg(2, in_zero, local_58);
-			setCopReg(2, in_at, local_54);
-			copFunction(2, 0x180001);
-			*(char *)((int)puVar6 + 3) = '\t';
-			puVar6[7] = uVar9;
-			puVar6[4] = uVar9;
-			puVar6[1] = 0;
-			*(char *)((int)puVar6 + 7) = '6';
-			puVar6[2] = *(uint *)&pRVar7->oldposition;
-			local_30 = getCopReg(2, 0x13);
-			uVar1 = getCopReg(2, 0xe);
-			puVar6[8] = uVar1;
-			if ((((local_30 - 0x97U < 0x352) && (-0x65 < *(short *)(puVar6 + 8))) &&
-				(*(short *)(puVar6 + 8) < 0x1a5)) &&
-				((-0x33 < *(short *)((int)puVar6 + 0x22) && (*(short *)((int)puVar6 + 0x22) < 0x101)))) {
-				*(uint *)&pRVar7->oldposition = puVar6[8];
-				if (iVar5 != 0) {
-					*(short *)(puVar6 + 5) = *(short *)(puVar6 + 8) - ((short)(local_30 >> 10) + -2);
-					*(undefined2 *)((int)puVar6 + 0x16) = *(undefined2 *)((int)puVar6 + 0x22);
-					puVar6[3] = CONCAT22(uVar3, light_texture.coords._0_2_);
-					puVar6[6] = (uint)light_texture.coords._2_2_ | uVar4 | 0x200000;
-					puVar6[9] = (uint)light_texture.coords._4_2_;
-					pDVar2 = current;
-					*puVar6 = *puVar6 & 0xff000000 | current->ot[local_30 >> 3] & 0xffffff;
-					pDVar2->ot[local_30 >> 3] =
-						pDVar2->ot[local_30 >> 3] & 0xff000000 | (uint)puVar6 & 0xffffff;
-					pDVar2->primptr = pDVar2->primptr + 0x28;
-				}
-			}
-			else {
-				ReleaseRainDrop((int)(pRVar7->oldposition).pad);
-			}
-			pRVar7 = pRVar7 + 1;
 		}
+		else 
+		{
+			ReleaseRainDrop(RainPtr->oldposition.pad);
+		}
+
+		RainPtr++;
+		iVar7--;
 	}
-	return;*/
 }
 
 
@@ -5470,82 +5476,84 @@ void DrawRainDrops(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void AddRainDrops(void)
 {
-	UNIMPLEMENTED();
-	/*
+	static unsigned long rand;
+
 	long lVar1;
-	bool bVar2;
+	bool first;
 	short sVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
 	int RainIndex;
 	int iVar4;
 	short sVar5;
 	uint uVar6;
 	short sVar7;
-	uint uVar8;
-	undefined4 local_30;
-	uint local_2c;
-	ROUTE_DATA local_28;
+	int uVar8;
+	SVECTOR v;
+	ROUTE_DATA routeData;
 
-	bVar2 = true;
-	if (pauseflag == 0) {
-		uVar8 = (uint)(byte)gRainCount;
-		NoRainIndoors = 0;
-		wetness = wetness + (int)uVar8 / 6;
-		if (7000 < wetness) {
-			wetness = (int)&DAT_00001b58;
+	first = true;
+
+	if (pauseflag != 0)
+		return;
+
+	uVar8 = gRainCount;
+	NoRainIndoors = 0;
+	wetness += uVar8 / 6;
+	if (wetness > 7000)
+		wetness = 7000;
+
+	gte_SetRotMatrix(&camera_matrix);
+	gte_SetTransVector(&camera_position);
+
+	while (true) 
+	{
+		uVar8--;
+		if (uVar8 == -1)
+			return;
+
+		RainIndex = AllocateRainDrop();
+
+		if (RainIndex < 0)
+			return;
+
+		iVar4 = rand * 0x19660d + 0x3c6ef35f;
+		uVar6 = (iVar4 >> 0x14 & 0x1ffU) + 400;
+		iVar4 = iVar4 * 0x19660d + 0x3c6ef35f;
+		sVar7 = -((iVar4 >> 0x14) & 0x1ff);
+		rand = iVar4 * 0x19660d + 0x3c6ef35f;
+		sVar5 = ((rand >> 0x14) & 0x1ff) - 0x100;
+
+		v.vx = sVar5;
+		v.vy = sVar7;
+		v.vz = uVar6;
+
+		if (512 < uVar6) 
+		{
+			sVar3 = (uVar6 * 0x10000 >> 0x18) + 1;
+			v.vx = sVar5 * sVar3;
+			v.vy = sVar7 * sVar3;
 		}
-		setCopControlWord(2, 0, camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, camera_matrix._16_4_);
-		setCopControlWord(2, 0x2800, camera_position.vx);
-		setCopControlWord(2, 0x3000, camera_position.vy);
-		setCopControlWord(2, 0x3800, camera_position.vz);
-		while (true) {
-			uVar8 = uVar8 - 1;
-			if (uVar8 == 0xffffffff) {
-				return;
-			}
-			RainIndex = AllocateRainDrop();
-			if (RainIndex < 0) {
-				return;
-			}
-			iVar4 = rand_142 * 0x19660d + 0x3c6ef35f;
-			uVar6 = (iVar4 >> 0x14 & 0x1ffU) + 200;
-			iVar4 = iVar4 * 0x19660d + 0x3c6ef35f;
-			sVar7 = -((ushort)(iVar4 >> 0x14) & 0x1ff);
-			rand_142 = iVar4 * 0x19660d + 0x3c6ef35f;
-			sVar5 = ((ushort)(rand_142 >> 0x14) & 0x1ff) - 0x100;
-			local_2c = local_2c & 0xffff0000 | uVar6;
-			local_30 = CONCAT22(sVar7, sVar5);
-			if (0xff < uVar6) {
-				sVar3 = (ushort)(uVar6 * 0x10000 >> 0x18) + 1;
-				local_30 = CONCAT22(sVar7 * sVar3, sVar5 * sVar3);
-			}
-			setCopReg(2, in_zero, local_30);
-			setCopReg(2, in_at, local_2c);
-			copFunction(2, 0x480012);
-			*(undefined4 *)&gRain[RainIndex].oldposition = 0;
-			gRain[RainIndex].oldposition.pad = (short)RainIndex;
-			lVar1 = getCopReg(2, 0x19);
-			gRain[RainIndex].position.vx = lVar1;
-			lVar1 = getCopReg(2, 0x1a);
-			gRain[RainIndex].position.vy = lVar1;
-			lVar1 = getCopReg(2, 0x1b);
-			gRain[RainIndex].position.vz = lVar1;
-			if ((bVar2) &&
-				(ROADS_GetRouteData(gRain[RainIndex].position.vx, gRain[RainIndex].position.vz, &local_28),
-				(modelpointers1536[local_28.type]->flags2 & 0x100) != 0)) break;
-			bVar2 = false;
-		}
-		NoRainIndoors = 1;
-		ReleaseRainDrop(RainIndex);
+
+		gte_ldv0(&v);
+		docop2(0x480012);
+
+		gRain[RainIndex].oldposition.vx = 0;
+		gRain[RainIndex].oldposition.vy = 0;
+		gRain[RainIndex].oldposition.vz = 0;
+		gRain[RainIndex].oldposition.pad = RainIndex;
+
+		gte_stlvnl(&gRain[RainIndex].position)
+
+		if (first && (ROADS_GetRouteData(gRain[RainIndex].position.vx, gRain[RainIndex].position.vz, &routeData), modelpointers[routeData.type]->flags2 & 0x100) != 0)
+			break;
+
+		first = false;
 	}
-	return;*/
+
+	NoRainIndoors = 1;
+	ReleaseRainDrop(RainIndex);
 }
 
 
@@ -5589,62 +5597,63 @@ void AddRainDrops(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DisplaySplashes(void)
 {
-	UNIMPLEMENTED();
-	/*
+	static unsigned long rand;
+
 	int iVar1;
 	uint uVar2;
 	uint uVar3;
 	int iVar4;
-	VECTOR local_60;
-	VECTOR local_50;
-	VECTOR local_40;
-	VECTOR local_30;
-	CVECTOR local_20[2];
+	VECTOR CamGnd;
+	VECTOR Gnd1;
+	VECTOR Gnd2;
+	VECTOR Position;
+	CVECTOR col = { 25, 25, 25};
 
-	local_20[0] = (CVECTOR)PTR_DAT_000aa38c;
-	if (pauseflag == 0) {
-		uVar3 = (uint)((byte)gRainCount >> 2);
-		if (0x1e < (byte)gRainCount >> 2) {
-			uVar3 = 0x1e;
-		}
-		iVar4 = (int)(uVar3 * FrAng * 3) >> 0xc;
-		setCopControlWord(2, 0, norot.m[0]._0_4_);
-		setCopControlWord(2, 0x800, norot.m._4_4_);
-		setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, norot._16_4_);
-		local_60.vx = camera_position.vx;
-		local_60.vz = camera_position.vz;
-		local_60.vy = MapHeight(&local_60);
-		local_60.vy = -camera_position.vy - local_60.vy;
-		uVar3 = FrAng - camera_angle.vy & 0xfff;
-		local_50.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
-		local_50.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
-		iVar1 = MapHeight(&local_50);
-		local_50.vx = local_50.vx - local_60.vx;
-		local_50.vy = (-camera_position.vy - iVar1) - local_60.vy;
-		local_50.vz = local_50.vz - local_60.vz;
-		uVar3 = -FrAng - (int)camera_angle.vy & 0xfff;
-		local_40.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
-		local_40.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
-		iVar1 = MapHeight(&local_40);
-		local_40.vx = local_40.vx - local_60.vx;
-		local_40.vy = (-camera_position.vy - iVar1) - local_60.vy;
-		local_40.vz = local_40.vz - local_60.vz;
-		while (iVar4 = iVar4 + -1, iVar4 != -1) {
-			uVar3 = DAT_000aa390 * 0x19660d + 0x3c6ef35f;
-			uVar2 = uVar3 >> 4 & 0xfff;
-			DAT_000aa390 = uVar3 * 0x19660d + 0x3c6ef35f;
-			uVar3 = DAT_000aa390 >> 0xe & 0xfff;
-			local_30.vx = (int)(local_50.vx * uVar2 + local_40.vx * uVar3 + 0x800) >> 0xc;
-			local_30.vy = ((int)(local_50.vy * uVar2 + local_40.vy * uVar3 + 0x800) >> 0xc) + local_60.vy;
-			local_30.vz = (int)(local_50.vz * uVar2 + local_40.vz * uVar3 + 0x800) >> 0xc;
-			ShowLight(&local_30, local_20, 0xc, &drop_texture);
-		}
+	if (pauseflag != 0)
+		return;
+
+	uVar3 = (gRainCount >> 2);
+	if (0x1e < gRainCount >> 2)
+		uVar3 = 0x1e;
+
+	iVar4 = FIXED(uVar3 * FrAng * 3);
+
+	gte_SetRotMatrix(&aspect); // [A] norot
+
+	CamGnd.vx = camera_position.vx;
+	CamGnd.vz = camera_position.vz;
+	iVar1 = MapHeight(&CamGnd);
+	CamGnd.vy = -camera_position.vy - iVar1;
+	uVar3 = FrAng - camera_angle.vy & 0xfff;
+	Gnd1.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
+	Gnd1.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
+	iVar1 = MapHeight(&Gnd1);
+	Gnd1.vx = Gnd1.vx - CamGnd.vx;
+	Gnd1.vy = (-camera_position.vy - iVar1) - CamGnd.vy;
+	Gnd1.vz = Gnd1.vz - CamGnd.vz;
+	uVar3 = -FrAng - (int)camera_angle.vy & 0xfff;
+	Gnd2.vx = rcossin_tbl[uVar3 * 2] + camera_position.vx;
+	Gnd2.vz = rcossin_tbl[uVar3 * 2 + 1] + camera_position.vz;
+	iVar1 = MapHeight(&Gnd2);
+	Gnd2.vx = Gnd2.vx - CamGnd.vx;
+	Gnd2.vy = (-camera_position.vy - iVar1) - CamGnd.vy;
+	Gnd2.vz = Gnd2.vz - CamGnd.vz;
+
+	while (iVar4 = iVar4 + -1, iVar4 != -1)
+	{
+		uVar3 = rand * 0x19660d + 0x3c6ef35f;
+		uVar2 = uVar3 >> 4 & 0xfff;
+		rand = uVar3 * 0x19660d + 0x3c6ef35f;
+		uVar3 = rand >> 0xe & 0xfff;
+		Position.vx = FIXED(Gnd1.vx * uVar2 + Gnd2.vx * uVar3);
+		Position.vy = FIXED(Gnd1.vy * uVar2 + Gnd2.vy * uVar3) + CamGnd.vy;
+		Position.vz = FIXED(Gnd1.vz * uVar2 + Gnd2.vz * uVar3);
+
+		ShowLight(&Position, &col, 12, &drop_texture);
 	}
-	return;*/
 }
 
 
