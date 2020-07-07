@@ -22,6 +22,8 @@ extern TEXTURE_DETAILS tannerShadow_texture;
 
 extern TEXTURE_DETAILS lightref_texture;
 
+extern VECTOR dummy;
+
 extern int gNight;
 extern char gRainCount;
 extern int gEffectsTimer;

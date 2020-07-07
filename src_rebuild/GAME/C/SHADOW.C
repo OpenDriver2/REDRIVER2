@@ -142,7 +142,7 @@ void GetTyreTrackPositions(_CAR_DATA *cp, int player_id)
 		WheelPos.vx = WheelPos.vx + cp->hd.where.t[0];
 		WheelPos.vz = WheelPos.vz + cp->hd.where.t[2];
 
-		iVar2 = loop >> 1 + player_id * 2;
+		iVar2 = player_id * 2 + (loop / 2);
 
 		tyre_new_positions[iVar2].vx = WheelPos.vx;
 		tyre_new_positions[iVar2].vz = WheelPos.vz;
@@ -372,25 +372,25 @@ LAB_000756d4:
 	{
 		lVar3 = ratan2(oldtp->vz - tyre_new_positions[wheel].vz, oldtp->vx - newtp->vx);
 
-		iVar6 = (int)rcossin_tbl[(-lVar3 & 0xfffU) * 2 + 1] * 0x23;
-		iVar8 = (int)rcossin_tbl[(-lVar3 & 0xfffU) * 2] * 0x23;
+		iVar6 = rcossin_tbl[(-lVar3 & 0xfffU) * 2 + 1] * 0x23;
+		iVar8 = rcossin_tbl[(-lVar3 & 0xfffU) * 2] * 0x23;
 
-		New1.vy = (short)oldtp->vy + -10;
-		New3.vy = (short)tyre_new_positions[wheel].vy + -10;
-		New2.vx = (short)oldtp->vx;
-		sVar1 = (short)(iVar8 >> 0xd);
-		New1.vx = (short)New2.vx + sVar1;
-		New2.vz = (short)oldtp->vz;
-		sVar2 = (short)(iVar6 >> 0xd);
-		New1.vz = (short)New2.vz + sVar2;
-		New2.vx = (short)New2.vx - sVar1;
-		New2.vz = (short)New2.vz - sVar2;
-		New4.vx = (short)newtp->vx;
-		New3.vx = (short)New4.vx + sVar1;
-		New4.vz = (short)tyre_new_positions[wheel].vz;
-		New3.vz = (short)New4.vz + sVar2;
-		New4.vx = (short)New4.vx - sVar1;
-		New4.vz = (short)New4.vz - sVar2;
+		New1.vy = oldtp->vy + -10;
+		New3.vy = tyre_new_positions[wheel].vy + -10;
+		New2.vx = oldtp->vx;
+		sVar1 = (iVar8 >> 0xd);
+		New1.vx = New2.vx + sVar1;
+		New2.vz = oldtp->vz;
+		sVar2 = (iVar6 >> 0xd);
+		New1.vz = New2.vz + sVar2;
+		New2.vx = New2.vx - sVar1;
+		New2.vz = New2.vz - sVar2;
+		New4.vx = newtp->vx;
+		New3.vx = New4.vx + sVar1;
+		New4.vz = tyre_new_positions[wheel].vz;
+		New3.vz = New4.vz + sVar2;
+		New4.vx = New4.vx - sVar1;
+		New4.vz = New4.vz - sVar2;
 
 		iVar6 = *(int *)((int)&num_tyre_tracks + iVar5);
 
@@ -417,18 +417,18 @@ LAB_000756d4:
 
 		*(int *)((int)Cont + iVar5) = 1;
 
-		(tt_p->p1).vx = (short)New1.vx;
-		(tt_p->p1).vy = (short)New1.vy;
-		(tt_p->p1).vz = (short)New1.vz;
-		(tt_p->p2).vx = (short)New2.vx;
-		(tt_p->p2).vy = (short)New1.vy;
-		(tt_p->p2).vz = (short)New2.vz;
-		(tt_p->p3).vx = (short)New3.vx;
-		(tt_p->p3).vy = (short)New3.vy;
-		(tt_p->p3).vz = (short)New3.vz;
-		(tt_p->p4).vx = (short)New4.vx;
-		(tt_p->p4).vy = (short)New3.vy;
-		(tt_p->p4).vz = (short)New4.vz;
+		tt_p->p1.vx = New1.vx;
+		tt_p->p1.vy = New1.vy;
+		tt_p->p1.vz = New1.vz;
+		tt_p->p2.vx = New2.vx;
+		tt_p->p2.vy = New1.vy;
+		tt_p->p2.vz = New2.vz;
+		tt_p->p3.vx = New3.vx;
+		tt_p->p3.vy = New3.vy;
+		tt_p->p3.vz = New3.vz;
+		tt_p->p4.vx = New4.vx;
+		tt_p->p4.vy = New3.vy;
+		tt_p->p4.vz = New4.vz;
 	}
 }
 
@@ -474,197 +474,172 @@ LAB_000756d4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DrawTyreTracks(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
 	bool bVar2;
-	DB *pDVar3;
-	ushort uVar4;
-	undefined4 in_zero;
-	undefined4 in_at;
-	char cVar5;
-	int iVar6;
+	bool bVar3;
+	ushort uVar5;
+	unsigned char col;
 	int iVar7;
-	uint uVar8;
-	uint *puVar9;
-	char *pcVar10;
+	int iVar8;
+	uint uVar9;
+	POLY_FT4 *poly;
+	TYRE_TRACK *tt_p;
 	int iVar11;
 	int iVar12;
 	int iVar13;
 	int iVar14;
 	int iVar15;
-	uint *puVar16;
-	undefined4 local_48;
-	uint local_44;
-	undefined4 local_40;
-	uint local_3c;
-	undefined4 local_38;
-	uint local_34;
-	undefined4 local_30;
-	uint local_2c;
-	int local_28;
+	POLY_FT4 *lasttyre;
+	SVECTOR ps[4];
+	int z;
 
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	iVar7 = 0;
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	iVar8 = 0;
 	iVar14 = 0;
+
 	do {
-		iVar15 = iVar14 + 1;
-		if (*(int *)((int)&num_tyre_tracks + iVar7) != 0) {
-			puVar16 = (uint *)0x0;
-			bVar1 = true;
-			iVar11 = *(int *)((int)&tyre_track_offset + iVar7);
+		if (num_tyre_tracks[iVar14] != 0)
+		{
+			lasttyre = NULL;
+			bVar2 = true;
+			iVar11 = tyre_track_offset[iVar14];
 			iVar13 = 0;
-			if (0 < *(int *)((int)&num_tyre_tracks + iVar7)) {
-				iVar6 = iVar11 * 0x1c;
+
+			if (0 < num_tyre_tracks[iVar14])
+			{
 				do {
-					iVar12 = iVar6 + 0x1c;
-					iVar11 = iVar11 + 1;
-					pcVar10 = &track_buffer[iVar14 * 0x40].type + iVar6;
-					if (iVar11 == 0x40) {
-						iVar12 = 0;
+					tt_p = track_buffer[iVar14] + iVar11;
+
+					iVar11++;
+
+					if (iVar11 == 64) 
 						iVar11 = 0;
-					}
-					if (*pcVar10 != '\x02') {
-						if (((puVar16 == (uint *)0x0) || (*pcVar10 == '\0')) || (bVar2 = true, bVar1)) {
-							iVar6 = ((uint)*(ushort *)(pcVar10 + 4) - (uint)(ushort)camera_position.vx) * 0x10000;
-							bVar1 = true;
-							if (&DAT_00005000 + (iVar6 >> 0x10) < (undefined *)0xa001) {
-								uVar8 = (uint)*(ushort *)(pcVar10 + 8) - (uint)(ushort)camera_position.vz;
-								if (&DAT_00005000 + ((int)(uVar8 * 0x10000) >> 0x10) < (undefined *)0xa001) {
-									local_44 = local_44 & 0xffff0000 | uVar8 & 0xffff;
-									local_48 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 6),
-										(short)((uint)iVar6 >> 0x10));
-									local_34 = local_34 & 0xffff0000 |
-										(uint)(ushort)(*(short *)(pcVar10 + 0x14) - (ushort)camera_position.vz)
-										;
-									local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x12),
-										*(short *)(pcVar10 + 0x10) - (ushort)camera_position.vx);
-									local_40 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0xc),
-										*(short *)(pcVar10 + 10) - (ushort)camera_position.vx);
-									uVar8 = (uint)*(ushort *)(pcVar10 + 0xe) - (uint)(ushort)camera_position.vz;
-									local_3c = local_3c & 0xffff0000 | uVar8 & 0xffff;
-									puVar9 = (uint *)current->primptr;
-									setCopReg(2, in_zero, local_48);
-									setCopReg(2, in_at, local_44);
-									setCopReg(2, &local_48, local_40);
-									setCopReg(2, uVar8, local_3c);
-									setCopReg(2, current, local_38);
-									setCopReg(2, (uint)(ushort)camera_position.vy, local_34);
-									copFunction(2, 0x280030);
-									local_2c = local_2c & 0xffff0000 |
-										(uint)(ushort)(*(short *)(pcVar10 + 0x1a) - (ushort)camera_position.vz)
-										;
-									local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x18),
-										*(short *)(pcVar10 + 0x16) - (ushort)camera_position.vx);
-									uVar8 = getCopReg(2, 0xc);
-									puVar9[2] = uVar8;
-									uVar8 = getCopReg(2, 0xd);
-									puVar9[4] = uVar8;
-									uVar8 = getCopReg(2, 0xe);
-									puVar9[6] = uVar8;
-									local_28 = getCopReg(2, 0x13);
-									setCopReg(2, in_zero, local_30);
-									setCopReg(2, in_at, local_2c);
-									copFunction(2, 0x180001);
-									uVar8 = getCopReg(2, 0xe);
-									puVar9[8] = uVar8;
-									if (0x32 < local_28) goto LAB_00075dbc;
+
+					if (tt_p->type != 2)
+					{
+						ps[0].vx = tt_p->p1.vx - camera_position.vx;
+						ps[0].vy = -camera_position.vy - tt_p->p1.vy;
+						ps[0].vz = tt_p->p1.vz - camera_position.vz;
+
+						ps[1].vx = tt_p->p2.vx - camera_position.vx;
+						ps[1].vy = -camera_position.vy - tt_p->p2.vy;
+						ps[1].vz = tt_p->p2.vz - camera_position.vz;
+
+						ps[2].vx = tt_p->p3.vx - camera_position.vx;
+						ps[2].vy = -camera_position.vy - tt_p->p3.vy;
+						ps[2].vz = tt_p->p3.vz - camera_position.vz;
+
+						ps[3].vx = tt_p->p4.vx - camera_position.vx;
+						ps[3].vy = -camera_position.vy - tt_p->p4.vy;
+						ps[3].vz = tt_p->p4.vz - camera_position.vz;
+
+						if ((lasttyre == NULL || tt_p->type == 0) || (bVar3 = true, bVar2))
+						{
+							bVar2 = true;
+
+							if (0x5000 + ps[0].vx < 0xa001)
+							{
+								if (0x5000 + ps[0].vz < 0xa001)
+								{
+									poly = (POLY_FT4 *)current->primptr;
+
+									gte_ldv3(&ps[0], &ps[1], &ps[2]);
+									gte_rtpt();
+
+									gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+									gte_stsz(&z);
+
+									gte_ldv0(&ps[3]);
+									gte_rtps();
+
+									gte_stsxy(&poly->x3);
+
+									if (0x32 < z)
+										goto LAB_00075dbc;
+
 									goto LAB_00075eec;
 								}
 							}
-							*pcVar10 = '\x02';
+
+							tt_p->type = 2;
 						}
-						else {
-							iVar6 = ((uint)*(ushort *)(pcVar10 + 0x10) - (uint)(ushort)camera_position.vx) *
-								0x10000;
-							puVar9 = (uint *)current->primptr;
-							bVar1 = bVar2;
-							if (&DAT_00002328 + (iVar6 >> 0x10) <= &DAT_00004650) {
-								if (&DAT_00002328 +
-									((int)(((uint)*(ushort *)(pcVar10 + 0x14) - (uint)(ushort)camera_position.vz) *
-										0x10000) >> 0x10) < (undefined *)0x4651) {
-									local_34 = local_34 & 0xffff0000 |
-										(uint)*(ushort *)(pcVar10 + 0x14) - (uint)(ushort)camera_position.vz &
-										0xffff;
-									local_38 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x12),
-										(short)((uint)iVar6 >> 0x10));
-									setCopReg(2, in_zero, local_38);
-									setCopReg(2, in_at, local_34);
-									copFunction(2, 0x180001);
-									local_30 = CONCAT22(-(ushort)camera_position.vy - *(short *)(pcVar10 + 0x18),
-										*(short *)(pcVar10 + 0x16) - (ushort)camera_position.vx);
-									local_2c = local_2c & 0xffff0000 |
-										(uint)(ushort)(*(short *)(pcVar10 + 0x1a) - (ushort)camera_position.vz)
-										;
-									uVar8 = getCopReg(2, 0xe);
-									puVar9[6] = uVar8;
-									local_28 = getCopReg(2, 0x13);
-									setCopReg(2, in_zero, local_30);
-									setCopReg(2, in_at, local_2c);
-									copFunction(2, 0x180001);
-									if (0x32 < local_28) {
-										puVar9[2] = puVar16[6];
-										puVar9[4] = puVar16[8];
-										uVar8 = getCopReg(2, 0xe);
-										puVar9[8] = uVar8;
+						else
+						{
+							poly = (POLY_FT4 *)current->primptr;
+							bVar2 = bVar3;
+
+							if (0x2328 + ps[2].vx <= 0x4650)
+							{
+								if (0x2328 + ps[2].vz < 0x4651)
+								{
+									gte_ldv0(&ps[2]);
+									gte_rtps();
+
+									gte_stsxy(&poly->x2);
+
+									gte_stsz(&z);
+
+									gte_ldv0(&ps[3]);
+									gte_rtps();
+
+									if (50 < z)
+									{
+										*(uint *)&poly->x0 = *(uint *)&lasttyre->x2;
+										*(uint *)&poly->x1 = *(uint *)&lasttyre->x3;
+
+										gte_stsxy(&poly->x3);
+
 									LAB_00075dbc:
-										*(char *)((int)puVar9 + 3) = '\t';
-										*(char *)((int)puVar9 + 7) = ',';
-										if (pcVar10[3] == '\x01') {
-											cVar5 = '\x1a';
-											*(char *)(puVar9 + 1) = '\x1a';
+										setPolyFT4(poly);
+										setSemiTrans(poly, 1);
+
+										if (tt_p->surface == 1)
+										{
+											col = 0x1a;
+											poly->r0 = 0x1a;
 										}
-										else {
-											cVar5 = '#';
-											*(char *)(puVar9 + 1) = '\x11';
+										else
+										{
+											col = 35;
+											poly->r0 = 0x11;
 										}
-										*(char *)((int)puVar9 + 5) = cVar5;
-										*(char *)((int)puVar9 + 6) = cVar5;
-										*(uchar *)(puVar9 + 3) = gTyreTexture.coords.u0;
-										*(uchar *)((int)puVar9 + 0xd) = gTyreTexture.coords.v0;
-										*(uchar *)(puVar9 + 5) = gTyreTexture.coords.u1;
-										*(uchar *)((int)puVar9 + 0x15) = gTyreTexture.coords.v1;
-										*(uchar *)(puVar9 + 7) = gTyreTexture.coords.u2;
-										*(uchar *)((int)puVar9 + 0x1d) = gTyreTexture.coords.v2;
-										*(uchar *)(puVar9 + 9) = gTyreTexture.coords.u3;
-										*(uchar *)((int)puVar9 + 0x25) = gTyreTexture.coords.v3;
-										*(ushort *)((int)puVar9 + 0x16) = gTyreTexture.tpageid | 0x40;
-										uVar4 = gTyreTexture.clutid;
-										*(byte *)((int)puVar9 + 7) = *(byte *)((int)puVar9 + 7) | 2;
-										pDVar3 = current;
-										*(ushort *)((int)puVar9 + 0xe) = uVar4;
-										*puVar9 = *puVar9 & 0xff000000 | pDVar3->ot[local_28 >> 3] & 0xffffff;
-										pDVar3->ot[local_28 >> 3] =
-											pDVar3->ot[local_28 >> 3] & 0xff000000 | (uint)puVar9 & 0xffffff;
-										pDVar3->primptr = pDVar3->primptr + 0x28;
-										puVar16 = puVar9;
-										bVar1 = false;
+
+										poly->g0 = col;
+										poly->b0 = col;
+
+										poly->u0 = gTyreTexture.coords.u0;
+										poly->v0 = gTyreTexture.coords.v0;
+										poly->u1 = gTyreTexture.coords.u1;
+										poly->v1 = gTyreTexture.coords.v1;
+										poly->u2 = gTyreTexture.coords.u2;
+										poly->v2 = gTyreTexture.coords.v2;
+										poly->u3 = gTyreTexture.coords.u3;
+										poly->v3 = gTyreTexture.coords.v3;
+										poly->tpage = gTyreTexture.tpageid | 0x40;
+										poly->clut = gTyreTexture.clutid;
+
+										addPrim(current->ot + (z >> 3), poly);
+										current->primptr += sizeof(POLY_FT4);
+
+										lasttyre = poly;
+										bVar2 = false;
 									}
 								}
 							}
 						}
 					}
 				LAB_00075eec:
-					iVar13 = iVar13 + 1;
-					iVar6 = iVar12;
-				} while (iVar13 < *(int *)((int)&num_tyre_tracks + iVar7));
+					iVar13++;
+				} while (iVar13 < num_tyre_tracks[iVar14]);
 			}
 		}
-		iVar7 = iVar15 * 4;
-		iVar14 = iVar15;
-		if (3 < iVar15) {
-			return;
-		}
-	} while (true);*/
+		iVar14++;
+	} while (iVar14 < 4);
 }
 
 

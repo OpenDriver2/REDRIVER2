@@ -1057,8 +1057,6 @@ void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	if (cp->controlType == 2 && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
 		return;
 
-	// if (((newCar->controlType != 2 && newCar->controlType != 7) || newCar->ai.c.thrustState != 3) || (newCar->ai.c.ctrlState != 7 && newCar->ai.c.ctrlState != 5))
-
 	if (WheelSpeed > 4096 * 64)
 		return;
 

@@ -600,7 +600,7 @@ void MoveHubcap(int playerId)
 	_CAR_DATA* cp;
 	int playerCarId;
 
-	if (pauseflag == 0 && gHubcapTime > 0) 
+	if (pauseflag == 0 && gHubcapTime > 0 && playerId == 0)
 		gHubcapTime--;
 
 	playerCarId = player[playerId].playerCarId;
@@ -608,7 +608,6 @@ void MoveHubcap(int playerId)
 	if (playerCarId < 0)
 		return;
 	
-
 	cp = &car_data[playerCarId];
 
 	if (gHubcap.Duration < 1 && (gHubcapTime == 0))
@@ -630,7 +629,7 @@ void MoveHubcap(int playerId)
 
 		gHubcapTime = Random2(VelocityMagnitude) & 0x417;
 	}
-	else 
+	else if(playerId == 0)
 	{
 		if (pauseflag == 0) 
 			gHubcap.Duration--;

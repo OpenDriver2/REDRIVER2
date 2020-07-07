@@ -4091,7 +4091,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vz = ipos->vz + (rand() & 9);
 			mysmoke->flags = 0x2006;
 			mysmoke->transparency = 0x8c;
-			mysmoke->t_step = 2;
+			mysmoke->t_step = 5;
 			mysmoke->step = 1;
 		}
 
