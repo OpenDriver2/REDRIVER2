@@ -47,133 +47,137 @@ TRI_POINT* debris_rot_table[5] = {
 	debris_rot3,
 };
 
-// debris_colour[4][31]
-CVECTOR debris_colour[124] =
+CVECTOR debris_colour[4][31] =
 {
-  { 100u, 100u, 100u, 0u },
-  { 214u, 214u, 244u, 0u },
-  { 195u, 79u, 65u, 0u },
-  { 83u, 83u, 101u, 0u },
-  { 197u, 142u, 80u, 0u },
-  { 222u, 204u, 196u, 0u },
-  { 189u, 168u, 114u, 0u },
-  { 203u, 180u, 121u, 0u },
-  { 132u, 145u, 103u, 0u },
-  { 168u, 143u, 122u, 0u },
-  { 107u, 107u, 107u, 0u },
-  { 192u, 110u, 110u, 0u },
-  { 130u, 130u, 130u, 0u },
-  { 101u, 129u, 145u, 0u },
-  { 130u, 130u, 130u, 0u },
-  { 181u, 88u, 88u, 0u },
-  { 130u, 105u, 83u, 0u },
-  { 164u, 164u, 164u, 0u },
-  { 126u, 143u, 108u, 0u },
-  { 140u, 163u, 181u, 0u },
-  { 143u, 129u, 152u, 0u },
-  { 156u, 138u, 118u, 0u },
-  { 190u, 190u, 190u, 0u },
-  { 203u, 112u, 112u, 0u },
-  { 255u, 242u, 201u, 0u },
-  { 167u, 145u, 90u, 0u },
-  { 190u, 190u, 190u, 0u },
-  { 150u, 164u, 184u, 0u },
-  { 102u, 102u, 102u, 0u },
-  { 140u, 114u, 99u, 0u },
-  { 75u, 63u, 134u, 0u },
-  { 100u, 100u, 100u, 0u },
-  { 83u, 82u, 97u, 0u },
-  { 138u, 179u, 201u, 0u },
-  { 114u, 159u, 183u, 0u },
-  { 107u, 61u, 46u, 0u },
-  { 162u, 120u, 76u, 0u },
-  { 235u, 227u, 214u, 0u },
-  { 197u, 138u, 121u, 0u },
-  { 159u, 169u, 131u, 0u },
-  { 146u, 178u, 195u, 0u },
-  { 181u, 151u, 101u, 0u },
-  { 230u, 191u, 139u, 0u },
-  { 147u, 147u, 151u, 0u },
-  { 182u, 127u, 138u, 0u },
-  { 160u, 165u, 127u, 0u },
-  { 175u, 203u, 225u, 0u },
-  { 211u, 175u, 117u, 0u },
-  { 209u, 167u, 118u, 0u },
-  { 157u, 147u, 140u, 0u },
-  { 210u, 191u, 145u, 0u },
-  { 155u, 185u, 148u, 0u },
-  { 158u, 210u, 254u, 0u },
-  { 206u, 176u, 134u, 0u },
-  { 236u, 173u, 117u, 0u },
-  { 146u, 146u, 146u, 0u },
-  { 88u, 103u, 128u, 0u },
-  { 96u, 96u, 96u, 0u },
-  { 125u, 92u, 92u, 0u },
-  { 184u, 174u, 155u, 0u },
-  { 42u, 42u, 42u, 0u },
-  { 219u, 37u, 130u, 0u },
-  { 100u, 100u, 100u, 0u },
-  { 112u, 110u, 112u, 0u },
-  { 230u, 212u, 214u, 0u },
-  { 178u, 181u, 175u, 0u },
-  { 120u, 120u, 120u, 0u },
-  { 102u, 101u, 115u, 0u },
-  { 70u, 83u, 100u, 0u },
-  { 206u, 108u, 88u, 0u },
-  { 220u, 136u, 107u, 0u },
-  { 97u, 97u, 97u, 0u },
-  { 139u, 116u, 150u, 0u },
-  { 173u, 173u, 173u, 0u },
-  { 104u, 133u, 173u, 0u },
-  { 224u, 196u, 139u, 0u },
-  { 108u, 146u, 141u, 0u },
-  { 82u, 82u, 82u, 0u },
-  { 123u, 123u, 123u, 0u },
-  { 140u, 67u, 67u, 0u },
-  { 103u, 92u, 121u, 0u },
-  { 219u, 192u, 148u, 0u },
-  { 160u, 185u, 195u, 0u },
-  { 158u, 173u, 130u, 0u },
-  { 183u, 183u, 183u, 0u },
-  { 126u, 98u, 84u, 0u },
-  { 126u, 125u, 156u, 0u },
-  { 36u, 74u, 203u, 0u },
-  { 105u, 105u, 105u, 0u },
-  { 162u, 179u, 183u, 0u },
-  { 102u, 130u, 162u, 0u },
-  { 149u, 88u, 88u, 0u },
-  { 119u, 145u, 129u, 0u },
-  { 100u, 100u, 100u, 0u },
-  { 153u, 149u, 150u, 0u },
-  { 118u, 110u, 131u, 0u },
-  { 135u, 110u, 89u, 0u },
-  { 191u, 102u, 66u, 0u },
-  { 95u, 90u, 101u, 0u },
-  { 157u, 171u, 186u, 0u },
-  { 203u, 184u, 132u, 0u },
-  { 221u, 100u, 100u, 0u },
-  { 149u, 149u, 149u, 0u },
-  { 100u, 118u, 145u, 0u },
-  { 78u, 78u, 78u, 0u },
-  { 105u, 128u, 107u, 0u },
-  { 203u, 94u, 94u, 0u },
-  { 163u, 178u, 152u, 0u },
-  { 167u, 119u, 117u, 0u },
-  { 117u, 139u, 142u, 0u },
-  { 160u, 160u, 160u, 0u },
-  { 92u, 92u, 92u, 0u },
-  { 229u, 144u, 136u, 0u },
-  { 145u, 167u, 149u, 0u },
-  { 198u, 173u, 173u, 0u },
-  { 137u, 163u, 175u, 0u },
-  { 173u, 173u, 173u, 0u },
-  { 143u, 143u, 143u, 0u },
-  { 218u, 198u, 154u, 0u },
-  { 104u, 134u, 78u, 0u },
-  { 172u, 116u, 86u, 0u },
-  { 155u, 170u, 185u, 0u },
-  { 122u, 142u, 147u, 0u },
-  { 193u, 193u, 193u, 0u }
+	{
+		{ 100u, 100u, 100u, 0u },
+		{ 214u, 214u, 244u, 0u },
+		{ 195u, 79u, 65u, 0u },
+		{ 83u, 83u, 101u, 0u },
+		{ 197u, 142u, 80u, 0u },
+		{ 222u, 204u, 196u, 0u },
+		{ 189u, 168u, 114u, 0u },
+		{ 203u, 180u, 121u, 0u },
+		{ 132u, 145u, 103u, 0u },
+		{ 168u, 143u, 122u, 0u },
+		{ 107u, 107u, 107u, 0u },
+		{ 192u, 110u, 110u, 0u },
+		{ 130u, 130u, 130u, 0u },
+		{ 101u, 129u, 145u, 0u },
+		{ 130u, 130u, 130u, 0u },
+		{ 181u, 88u, 88u, 0u },
+		{ 130u, 105u, 83u, 0u },
+		{ 164u, 164u, 164u, 0u },
+		{ 126u, 143u, 108u, 0u },
+		{ 140u, 163u, 181u, 0u },
+		{ 143u, 129u, 152u, 0u },
+		{ 156u, 138u, 118u, 0u },
+		{ 190u, 190u, 190u, 0u },
+		{ 203u, 112u, 112u, 0u },
+		{ 255u, 242u, 201u, 0u },
+		{ 167u, 145u, 90u, 0u },
+		{ 190u, 190u, 190u, 0u },
+		{ 150u, 164u, 184u, 0u },
+		{ 102u, 102u, 102u, 0u },
+		{ 140u, 114u, 99u, 0u },
+		{ 75u, 63u, 134u, 0u },
+	}, {
+		{ 100u, 100u, 100u, 0u },
+		{ 83u, 82u, 97u, 0u },
+		{ 138u, 179u, 201u, 0u },
+		{ 114u, 159u, 183u, 0u },
+		{ 107u, 61u, 46u, 0u },
+		{ 162u, 120u, 76u, 0u },
+		{ 235u, 227u, 214u, 0u },
+		{ 197u, 138u, 121u, 0u },
+		{ 159u, 169u, 131u, 0u },
+		{ 146u, 178u, 195u, 0u },
+		{ 181u, 151u, 101u, 0u },
+		{ 230u, 191u, 139u, 0u },
+		{ 147u, 147u, 151u, 0u },
+		{ 182u, 127u, 138u, 0u },
+		{ 160u, 165u, 127u, 0u },
+		{ 175u, 203u, 225u, 0u },
+		{ 211u, 175u, 117u, 0u },
+		{ 209u, 167u, 118u, 0u },
+		{ 157u, 147u, 140u, 0u },
+		{ 210u, 191u, 145u, 0u },
+		{ 155u, 185u, 148u, 0u },
+		{ 158u, 210u, 254u, 0u },
+		{ 206u, 176u, 134u, 0u },
+		{ 236u, 173u, 117u, 0u },
+		{ 146u, 146u, 146u, 0u },
+		{ 88u, 103u, 128u, 0u },
+		{ 96u, 96u, 96u, 0u },
+		{ 125u, 92u, 92u, 0u },
+		{ 184u, 174u, 155u, 0u },
+		{ 42u, 42u, 42u, 0u },
+		{ 219u, 37u, 130u, 0u },
+	}, {
+		{ 100u, 100u, 100u, 0u },
+		{ 112u, 110u, 112u, 0u },
+		{ 230u, 212u, 214u, 0u },
+		{ 178u, 181u, 175u, 0u },
+		{ 120u, 120u, 120u, 0u },
+		{ 102u, 101u, 115u, 0u },
+		{ 70u, 83u, 100u, 0u },
+		{ 206u, 108u, 88u, 0u },
+		{ 220u, 136u, 107u, 0u },
+		{ 97u, 97u, 97u, 0u },
+		{ 139u, 116u, 150u, 0u },
+		{ 173u, 173u, 173u, 0u },
+		{ 104u, 133u, 173u, 0u },
+		{ 224u, 196u, 139u, 0u },
+		{ 108u, 146u, 141u, 0u },
+		{ 82u, 82u, 82u, 0u },
+		{ 123u, 123u, 123u, 0u },
+		{ 140u, 67u, 67u, 0u },
+		{ 103u, 92u, 121u, 0u },
+		{ 219u, 192u, 148u, 0u },
+		{ 160u, 185u, 195u, 0u },
+		{ 158u, 173u, 130u, 0u },
+		{ 183u, 183u, 183u, 0u },
+		{ 126u, 98u, 84u, 0u },
+		{ 126u, 125u, 156u, 0u },
+		{ 36u, 74u, 203u, 0u },
+		{ 105u, 105u, 105u, 0u },
+		{ 162u, 179u, 183u, 0u },
+		{ 102u, 130u, 162u, 0u },
+		{ 149u, 88u, 88u, 0u },
+		{ 119u, 145u, 129u, 0u },
+	}, {
+		{ 100u, 100u, 100u, 0u },
+		{ 153u, 149u, 150u, 0u },
+		{ 118u, 110u, 131u, 0u },
+		{ 135u, 110u, 89u, 0u },
+		{ 191u, 102u, 66u, 0u },
+		{ 95u, 90u, 101u, 0u },
+		{ 157u, 171u, 186u, 0u },
+		{ 203u, 184u, 132u, 0u },
+		{ 221u, 100u, 100u, 0u },
+		{ 149u, 149u, 149u, 0u },
+		{ 100u, 118u, 145u, 0u },
+		{ 78u, 78u, 78u, 0u },
+		{ 105u, 128u, 107u, 0u },
+		{ 203u, 94u, 94u, 0u },
+		{ 163u, 178u, 152u, 0u },
+		{ 167u, 119u, 117u, 0u },
+		{ 117u, 139u, 142u, 0u },
+		{ 160u, 160u, 160u, 0u },
+		{ 92u, 92u, 92u, 0u },
+		{ 229u, 144u, 136u, 0u },
+		{ 145u, 167u, 149u, 0u },
+		{ 198u, 173u, 173u, 0u },
+		{ 137u, 163u, 175u, 0u },
+		{ 173u, 173u, 173u, 0u },
+		{ 143u, 143u, 143u, 0u },
+		{ 218u, 198u, 154u, 0u },
+		{ 104u, 134u, 78u, 0u },
+		{ 172u, 116u, 86u, 0u },
+		{ 155u, 170u, 185u, 0u },
+		{ 122u, 142u, 147u, 0u },
+		{ 193u, 193u, 193u, 0u }
+	}
 };
 
 unsigned char grassColour[4][3] = {
@@ -3914,62 +3918,64 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 	iVar9 = type >> 0x10;
 	iVar12 = 0;
 
-	if (0 < num_debris) 
+	while (iVar12 < num_debris)
 	{
-		do {
-			iVar5 = AllocateDebris();
-			if (iVar5 == -1)
-				return;
+		iVar5 = AllocateDebris();
+		if (iVar5 == -1)
+			return;
 
-			mydebris = &debris[iVar5];
+		mydebris = &debris[iVar5];
 
-			mydebris->position.vx = ipos->vx;
-			mydebris->position.vy = ipos->vy;
-			mydebris->position.vz = ipos->vz;
+		mydebris->position.vx = ipos->vx;
+		mydebris->position.vy = ipos->vy;
+		mydebris->position.vz = ipos->vz;
 
-			if ((type & 0xffffU) < 8)
+		if ((type & 0xffffU) < 8)
+		{
+			uVar6 = rand();
+			iVar11 = (uVar6 & 0x7f00) * num_debris * 2;
+			iVar10 = (ispeed->vx + ((uVar6 & 0x7f) - 0x40) * num_debris) * 0x400;
+			uVar7 = rand();
+			iVar8 = ispeed->vz;
+			bVar1 = debris_colour[GameLevel][iVar9].r;
+			bVar2 = debris_colour[GameLevel][iVar9].g;
+			bVar3 = debris_colour[GameLevel][iVar9].b;
+			mydebris->step = (char)uVar6;
+			mydebris->rgb.r = bVar1;
+			mydebris->rgb.g = bVar2;
+			mydebris->rgb.b = bVar3;
+			iVar8 = iVar8 + ((uVar7 & 0x7fff) - 0x4000) * num_debris * 2;
+
+			if (gTimeOfDay == 3) 
 			{
-				uVar6 = rand();
-				iVar11 = (uVar6 & 0x7f00) * num_debris * 2;
-				iVar10 = (ispeed->vx + ((uVar6 & 0x7f) - 0x40) * num_debris) * 0x400;
-				uVar7 = rand();
-				iVar8 = ispeed->vz;
-				bVar1 = debris_colour[GameLevel * 0x1f + iVar9].r;
-				bVar2 = debris_colour[GameLevel * 0x1f + iVar9].g;
-				bVar3 = debris_colour[GameLevel * 0x1f + iVar9].b;
-				mydebris->step = (char)uVar6;
-				mydebris->rgb.r = bVar1;
-				mydebris->rgb.g = bVar2;
-				mydebris->rgb.b = bVar3;
-				iVar8 = iVar8 + ((uVar7 & 0x7fff) - 0x4000) * num_debris * 2;
-				if (gTimeOfDay == 3) 
-				{
-					mydebris->rgb.r = bVar1 >> 1;
-					mydebris->rgb.g = bVar2 >> 1;
-					mydebris->rgb.b = bVar3 >> 1;
-				}
+				mydebris->rgb.r = bVar1 >> 1;
+				mydebris->rgb.g = bVar2 >> 1;
+				mydebris->rgb.b = bVar3 >> 1;
 			}
-			else 
-			{
-				iVar11 = ispeed->vy;
-				iVar10 = ispeed->vx;
-				iVar8 = ispeed->vz;
-				mydebris->step = 2;
-				mydebris->rgb.b = 60;
-				mydebris->rgb.g = 60;
-				mydebris->rgb.r = 60;
-			}
-			uVar4 = (ushort)iVar12;
-			iVar12 = iVar12 + 1;
-			mydebris->type = type & 7;
-			mydebris->direction.vy = -(short)(iVar11 >> 0xc);
-			mydebris->life = 0x80;
-			mydebris->direction.vx = (short)(iVar10 >> 0xc);
-			mydebris->direction.vz = (short)(iVar8 >> 0xc);
-			mydebris->flags = 2;
-			mydebris->pos = uVar4 & 0x1f;
-		} while (iVar12 < num_debris);
-	}
+		}
+		else 
+		{
+			iVar11 = ispeed->vy;
+			iVar10 = ispeed->vx;
+			iVar8 = ispeed->vz;
+
+			mydebris->step = 2;
+			mydebris->rgb.b = 60;
+			mydebris->rgb.g = 60;
+			mydebris->rgb.r = 60;
+		}
+		uVar4 = (ushort)iVar12;
+		iVar12 = iVar12 + 1;
+		mydebris->type = type & 7;
+
+		mydebris->direction.vy = -(short)(iVar11 >> 0xc);
+		mydebris->direction.vx = (short)(iVar10 >> 0xc);
+		mydebris->direction.vz = (short)(iVar8 >> 0xc);
+
+		mydebris->life = 0x80;
+		mydebris->flags = 2;
+		mydebris->pos = uVar4 & 0x1f;
+	};
 }
 
 
@@ -4373,128 +4379,114 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 	/* end block 2 */
 	// End Line: 9291
 
+// [D]
 void DisplayDebris(DEBRIS *debris, char type)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar2;
-	uint uVar3;
-	int iVar4;
-	uint *puVar5;
-	char *pcVar6;
-	undefined4 local_38;
-	uint local_34;
-	undefined4 local_30;
-	uint local_2c;
-	undefined4 local_28;
-	uint local_24;
-	undefined4 local_20;
-	uint local_1c;
-	short local_18;
-	short local_14;
-	short local_10;
+	int uVar3;
+	TRI_POINT* tv;
+	POLY_GT4 *poly1;
+	POLY_FT3 *poly;
+	SVECTOR v[4];
+	VECTOR debrisvec;
+	int z;
 
-	iVar4 = (debris->position).vx - camera_position.vx;
-	uVar2 = (debris->position).vy - camera_position.vy;
-	uVar3 = (debris->position).vz - camera_position.vz;
-	if ((((iVar4 < -10000) || ((int)uVar3 < -10000)) || (10000 < iVar4)) || (10000 < (int)uVar3)) {
+	debrisvec.vx = debris->position.vx - camera_position.vx;
+	debrisvec.vy = debris->position.vy - camera_position.vy;
+	debrisvec.vz = debris->position.vz - camera_position.vz;
+
+	if (debrisvec.vx < -10000 || debrisvec.vz < -10000 || 10000 < debrisvec.vx || 10000 < debrisvec.vz)
+	{
 		debris->life = 1;
 	}
-	else {
-		pcVar6 = debris_rot_table5[(byte)debris->type] + ((int)(uint)debris->pos >> 3 & 0x1fU) * 0xc;
-		local_18 = (short)iVar4;
-		local_14 = (short)uVar2;
-		local_38 = CONCAT22(pcVar6[1] + local_14, *pcVar6 + local_18);
-		local_10 = (short)uVar3;
-		uVar3 = uVar3 & 0xffff;
-		local_34 = local_34 & 0xffff0000 | (int)pcVar6[2] + uVar3 & 0xffff;
-		local_30 = CONCAT22(pcVar6[5] + local_14, pcVar6[4] + local_18);
-		local_2c = local_2c & 0xffff0000 | (uint)(ushort)(pcVar6[6] + local_10);
-		iVar4 = (int)pcVar6[9] + (uVar2 & 0xffff);
-		local_28 = CONCAT22((short)iVar4, pcVar6[8] + local_18);
-		local_24 = local_24 & 0xffff0000 | (int)pcVar6[10] + uVar3 & 0xffff;
-		setCopReg(2, in_zero, local_38);
-		setCopReg(2, in_at, local_34);
-		setCopReg(2, iVar4, local_30);
-		setCopReg(2, (int)pcVar6[10] + uVar3, local_2c);
-		setCopReg(2, (int)pcVar6[2] + uVar3, local_28);
-		setCopReg(2, uVar3, local_24);
-		copFunction(2, 0x280030);
-		if ((uint)(byte)type - 1 < 2) {
-			puVar5 = (uint *)current->primptr;
-			local_20 = CONCAT22(local_14 - pcVar6[1], local_18 - *pcVar6);
-			local_1c = local_1c & 0xffff0000 | (uint)(ushort)(local_10 - pcVar6[2]);
-			puVar5[3] = CONCAT22(litter_texture.clutid, litter_texture.coords._0_2_);
-			puVar5[6] = CONCAT22(litter_texture.tpageid, litter_texture.coords._2_2_);
-			puVar5[9] = (uint)litter_texture.coords._4_2_;
-			puVar5[0xc] = (uint)litter_texture.coords._6_2_;
-			uVar2 = getCopReg(2, 0xc);
-			puVar5[2] = uVar2;
-			uVar2 = getCopReg(2, 0xd);
-			puVar5[5] = uVar2;
-			uVar2 = getCopReg(2, 0xe);
-			puVar5[8] = uVar2;
-			iVar4 = getCopReg(2, 0x13);
-			if (0xdf < iVar4) {
-				setCopReg(2, in_zero, local_20);
-				setCopReg(2, in_at, local_1c);
-				copFunction(2, 0x180001);
-				uVar2 = (uint)(byte)combointensity;
-				if (type == '\x02') {
-					uVar2 = ((debris->rgb).b + uVar2) * 0x10000 |
-						((debris->rgb).g + uVar2) * 0x100 | 0x3c000000 | (debris->rgb).r + uVar2;
-				}
-				else {
-					uVar2 = (uint)(debris->rgb).b << 0x10 | (uint)(debris->rgb).g << 8 | 0x3c000000 |
-						(uint)(debris->rgb).r;
-				}
-				puVar5[1] = uVar2;
-				puVar5[7] = uVar2;
-				puVar5[4] = uVar2 + 0x202020;
-				puVar5[10] = uVar2 + 0x303030;
-				*(char *)((int)puVar5 + 3) = '\f';
-				pDVar1 = current;
-				*puVar5 = *puVar5 & 0xff000000 | current->ot[iVar4 >> 3] & 0xffffff;
-				pDVar1->ot[iVar4 >> 3] = pDVar1->ot[iVar4 >> 3] & 0xff000000 | (uint)puVar5 & 0xffffff;
-				uVar2 = getCopReg(2, 0xe);
-				puVar5[0xb] = uVar2;
-				*(uint **)&current->primptr = puVar5 + 0xd;
+	else
+	{
+		tv = (TRI_POINT *)(debris_rot_table[debris->type] + (debris->pos >> 3 & 0x1fU) * 12);
+
+		v[0].vx = tv->v0.vx + debrisvec.vx;
+		v[0].vy = tv->v0.vy + debrisvec.vy;
+		v[0].vz = tv->v0.vz + debrisvec.vz;
+
+		v[1].vx = tv->v1.vx + debrisvec.vx;
+		v[1].vy = tv->v1.vy + debrisvec.vy;
+		v[1].vz = tv->v1.vz + debrisvec.vz;
+
+		v[2].vx = tv->v2.vx + debrisvec.vx;
+		v[2].vy = tv->v2.vy + debrisvec.vy;
+		v[2].vz = tv->v2.vz + debrisvec.vz;
+
+		gte_ldv3(&v[0], &v[1], &v[2]);
+		gte_rtpt();
+
+		if ((uint)type - 1 < 2) 
+		{
+			poly1 = (POLY_GT4 *)current->primptr;
+
+			v[3].vx = debrisvec.vx - tv->v0.vx;
+			v[3].vy = debrisvec.vy - tv->v0.vy;
+			v[3].vz = debrisvec.vz - tv->v0.vz;
+
+			*(ushort *)&poly1->u0 = *(ushort *)&litter_texture.coords.u0;
+			*(ushort *)&poly1->u1 = *(ushort *)&litter_texture.coords.u1;
+			*(ushort *)&poly1->u2 = *(ushort *)&litter_texture.coords.u2;
+			*(ushort *)&poly1->u3 = *(ushort *)&litter_texture.coords.u3;
+
+			poly1->clut = litter_texture.clutid;
+			poly1->tpage = litter_texture.tpageid;
+
+			gte_stsxy3(&poly1->x0, &poly1->x1, &poly1->x2);
+			gte_stsz(&z);
+
+			if (z > 223)
+			{
+				gte_ldv0(&v[3]);
+				gte_rtps();
+
+				gte_stsxy(&poly1->x3);
+
+				if (type == 2) 
+					uVar3 = (debris->rgb.b + combointensity) * 0x10000 | (debris->rgb.g + combointensity) * 0x100 | 0x3c000000 | debris->rgb.r + combointensity;
+				else
+					uVar3 = debris->rgb.b << 0x10 | debris->rgb.g << 8 | 0x3c000000 | debris->rgb.r;
+
+				*(uint *)&poly1->r0 = uVar3;
+				*(uint *)&poly1->r2 = uVar3;
+				*(uint *)&poly1->r1 = uVar3 + 0x202020;
+				*(uint *)&poly1->r3 = uVar3 + 0x303030;
+
+				setPolyGT4(poly1);
+				addPrim(current->ot + (z >> 3), poly1);
+				current->primptr += sizeof(POLY_GT4);
 			}
 		}
-		else {
-			puVar5 = (uint *)current->primptr;
-			*(char *)((int)puVar5 + 3) = '\a';
-			*(char *)((int)puVar5 + 7) = '$';
-			*(uchar *)(puVar5 + 3) = debris_texture.coords.u0;
-			*(uchar *)((int)puVar5 + 0xd) = debris_texture.coords.v0;
-			*(uchar *)(puVar5 + 5) = debris_texture.coords.u1;
-			*(uchar *)((int)puVar5 + 0x15) = debris_texture.coords.v1;
-			*(uchar *)(puVar5 + 7) = debris_texture.coords.u2;
-			*(uchar *)((int)puVar5 + 0x1d) = debris_texture.coords.v2;
-			uVar2 = getCopReg(2, 0xc);
-			puVar5[2] = uVar2;
-			uVar2 = getCopReg(2, 0xd);
-			puVar5[4] = uVar2;
-			uVar2 = getCopReg(2, 0xe);
-			puVar5[6] = uVar2;
-			iVar4 = getCopReg(2, 0x13);
-			*(uchar *)(puVar5 + 1) = (debris->rgb).r;
-			*(uchar *)((int)puVar5 + 5) = (debris->rgb).g;
-			*(uchar *)((int)puVar5 + 6) = (debris->rgb).b;
-			*(ushort *)((int)puVar5 + 0x16) = debris_texture.tpageid;
-			*(ushort *)((int)puVar5 + 0xe) = debris_texture.clutid;
-			pDVar1 = current;
-			if (0xdf < iVar4) {
-				*puVar5 = *puVar5 & 0xff000000 | current->ot[iVar4 >> 3] & 0xffffff;
-				pDVar1->ot[iVar4 >> 3] = pDVar1->ot[iVar4 >> 3] & 0xff000000 | (uint)puVar5 & 0xffffff;
-				pDVar1->primptr = pDVar1->primptr + 0x20;
+		else
+		{
+			poly = (POLY_FT3 *)current->primptr;
+
+			setPolyFT3(poly);
+
+			poly->u0 = debris_texture.coords.u0;
+			poly->v0 = debris_texture.coords.v0;
+			poly->u1 = debris_texture.coords.u1;
+			poly->v1 = debris_texture.coords.v1;
+			poly->u2 = debris_texture.coords.u2;
+			poly->v2 = debris_texture.coords.v2;
+
+			gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+			gte_stsz(&z);
+
+			poly->r0 = debris->rgb.r;
+			poly->g0 = debris->rgb.g;
+			poly->b0 = debris->rgb.b;
+			poly->tpage = debris_texture.tpageid;
+			poly->clut = debris_texture.clutid;
+
+			if (z > 223)
+			{
+				addPrim(current->ot + (z >> 3), poly);
+				current->primptr += sizeof(POLY_FT3);
 			}
 		}
 	}
-	return;*/
 }
 
 
