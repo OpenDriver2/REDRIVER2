@@ -4041,7 +4041,6 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 	int iVar6;
 	uint uVar7;
 	SMOKE *mysmoke;
-	short sVar9;
 
 	iVar5 = AllocateSmoke();
 	if (iVar5 == -1)
@@ -4049,66 +4048,55 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 
 	mysmoke = &smoke[iVar5];
 
-	sVar3 = (short)start_w;
-	sVar9 = (short)end_w;
-
 	if (SmokeType == 4) 
 	{
-		(mysmoke->position).vx = ipos->vx;
-		end_w = end_w - start_w;
+		mysmoke->position.vx = ipos->vx;
 		mysmoke->position.vy = ipos->vy;
-		iVar6 = ipos->vz;
-		mysmoke->start_w = sVar3;
-		mysmoke->final_w = sVar9;
-		mysmoke->position.vz = iVar6;
-		iVar6 = end_w;
-
-		mysmoke->step = ((iVar6 >> 7) << 2);
+		mysmoke->start_w = start_w;
+		mysmoke->final_w = end_w;
+		mysmoke->position.vz = ipos->vz;
+		mysmoke->step = (((end_w - start_w) >> 7) << 2);
 		mysmoke->flags = 0x1006;
 		mysmoke->life = 20;
 		mysmoke->halflife = 10;
 
-
 		if (WheelSpeed < 0x30d41)
-			sVar3 = 0xff;
+			mysmoke->transparency = 0xff;
 		else
-			sVar3 = (short)(800000 - WheelSpeed >> 0xb);
+			mysmoke->transparency = (short)(800000 - WheelSpeed >> 0xb);
 
-		mysmoke->transparency = sVar3;
-		mysmoke->t_step = (end_w >> 2);
+		mysmoke->t_step = ((end_w - start_w) >> 2);
 	}
 	else if (SmokeType == 1)
 	{
 		if (Exhaust == 0)
 		{
-			(mysmoke->position).vx = ipos->vx;
-			mysmoke->position.vy = *(short *)&ipos->vy;
+			mysmoke->position.vx = ipos->vx;
+			mysmoke->position.vy = ipos->vy;
 			mysmoke->position.vz = ipos->vz;
 
 			if (WheelSpeed < 0x30d41)
 				sVar4 = 0xff;
 			else
-				sVar4 = (short)(800000 - WheelSpeed >> 0xb);
+				sVar4 = (800000 - WheelSpeed >> 0xb);
 
 			mysmoke->transparency = sVar4;
-			end_w = end_w - start_w;
-			mysmoke->t_step = (end_w >> 5);
+			mysmoke->t_step = ((end_w - start_w) >> 5);
 		}
 		else
 		{
 			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 			mysmoke->position.vy = ipos->vy;
-			end_w = end_w - start_w;
-			iVar6 = ipos->vz;
+			mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
 			mysmoke->flags = 0x2006;
 			mysmoke->transparency = 0x8c;
 			mysmoke->t_step = 2;
-			mysmoke->position.vz = iVar6 + (rand() & 0x3f);
+			
 		}
 
-		mysmoke->start_w = sVar3;
-		mysmoke->final_w = sVar9;
-		mysmoke->step = ((end_w >> 7) << 2);
+		mysmoke->start_w = start_w;
+		mysmoke->final_w = end_w;
+		mysmoke->step = (((end_w - start_w) >> 7) << 2);
 		mysmoke->flags = 0x2006;
 		mysmoke->life = 40;
 		mysmoke->halflife = 0x14;
@@ -4119,80 +4107,72 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		{
 			if (Exhaust == 0)
 			{
-				uVar7 = rand();
-				(mysmoke->position).vx = ipos->vx + (uVar7 & 0x3f);
+				mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 				mysmoke->position.vy = ipos->vy;
-				uVar7 = rand();
-				iVar6 = ipos->vz;
+				mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
 				mysmoke->flags = 0x16;
-				mysmoke->position.vz = iVar6 + (uVar7 & 0x3f);
+
+				if (SmokeType == 5)
+				{
+					mysmoke->life = 32;
+					mysmoke->step = ((end_w >> 5) << 2);
+					mysmoke->t_step = ((end_w - start_w) >> 5);
+					mysmoke->transparency = WheelSpeed;
+				}
+				else
+				{
+					mysmoke->life = 128;
+					mysmoke->step = ((end_w - start_w) / 0x80 << 3);
+					mysmoke->t_step = (end_w - start_w >> 6);
+					mysmoke->transparency = 80;
+				}
 			}
 			else
 			{
 				mysmoke->position.vx = ipos->vx + (rand() & 7);
 				mysmoke->position.vy = ipos->vy;
+				mysmoke->position.vz = ipos->vz + (rand() & 7);
 
-				iVar6 = ipos->vz;
 				mysmoke->flags = 0x4006;
-				mysmoke->transparency = 0x46;
+				mysmoke->transparency = 70;
 				mysmoke->t_step = 2;
-				mysmoke->position.vz = iVar6 + (rand() & 7);
+				mysmoke->step = 1;
+				mysmoke->life = 24;
 			}
-			mysmoke->start_w = sVar3;
-			mysmoke->final_w = sVar9;
-			if (SmokeType == 5)
-			{
-				mysmoke->life = 32;
-				end_w = end_w - start_w;
-				iVar6 = end_w;
 
-				mysmoke->step = ((iVar6 >> 5) << 2);
-				mysmoke->t_step = (end_w >> 5);
-				mysmoke->transparency = WheelSpeed;
-			}
-			else
-			{
-				mysmoke->life = -0x80;
-
-				mysmoke->step = ((end_w - start_w) / 0x80 << 3);
-				mysmoke->t_step = (end_w - start_w >> 6);
-				mysmoke->transparency = 0x50;
-			}
+			mysmoke->start_w = start_w;
+			mysmoke->final_w = end_w;
 		}
 		else
 		{
 			if (SmokeType == 6)
 			{
-				(mysmoke->position).vx = ipos->vx;
-				mysmoke->position.vy = *(short *)&ipos->vy;
-				iVar6 = ipos->vz;
+				mysmoke->position.vx = ipos->vx;
+				mysmoke->position.vy = ipos->vy;
+				mysmoke->position.vz = ipos->vz;
 				mysmoke->flags = 0x46;
 				mysmoke->transparency = 0xa0;
 				mysmoke->step = 20;
 				mysmoke->t_step = 5;
-				mysmoke->start_w = sVar3;
-				mysmoke->final_w = sVar9;
-				mysmoke->life = -0x4e;
+				mysmoke->start_w = start_w;
+				mysmoke->final_w = end_w;
+				mysmoke->life = 78;
 				mysmoke->halflife = 32;
-				mysmoke->position.vz = iVar6;
 
 				goto LAB_00037884;
 			}
 
 			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 			mysmoke->position.vy = ipos->vy;
-
-			end_w = end_w - start_w;
-			iVar6 = ipos->vz;
 			mysmoke->flags = 0x26;
 			mysmoke->transparency = 0x3c;
 			mysmoke->t_step = 5;
-			mysmoke->start_w = sVar3;
-			mysmoke->final_w = sVar9;
-			mysmoke->position.vz = iVar6 + (rand() & 0x3f);
+			mysmoke->start_w = start_w;
+			mysmoke->final_w = end_w;
+			mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
 
-			mysmoke->step = ((end_w >> 7) << 3);
-			mysmoke->life = -0x80;
+			mysmoke->step = (((end_w - start_w) >> 7) << 3);
+			mysmoke->life = 128;
 		}
 
 		mysmoke->halflife = 64;
@@ -4201,12 +4181,11 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 LAB_00037884:
 	if (Exhaust == 0) 
 	{
-		bVar2 = mysmoke->life;
 		mysmoke->drift.vx = 0;
 		mysmoke->drift.vy = 0;
 		mysmoke->drift.vz = 0;
 
-		if ((bVar2 < 0x28) || (SmokeType == 4)) 
+		if ((mysmoke->life < 0x28) || (SmokeType == 4))
 		{
 			mysmoke->drift_change.vx = 0;
 			mysmoke->drift_change.vy = 1;

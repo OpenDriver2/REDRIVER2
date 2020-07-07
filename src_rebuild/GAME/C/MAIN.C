@@ -3108,7 +3108,7 @@ void RenderGame(void)
 {
 	UpdatePadData();
 
-	DrawGame();
+	DrawGame(); // [A] was inline
 
 	FadeGameScreen(0, 8);
 }
