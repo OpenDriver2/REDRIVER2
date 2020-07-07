@@ -443,7 +443,7 @@ int ShowPauseMenu(PAUSEMODE mode)
 	else
 	{
 		gScoreEntered = 1;
-		sprintf(EnterScoreText, "View score table");
+		sprintf(EnterScoreText, "Score table");
 		sprintf(EnterNameText, "High scores");
 	}
 

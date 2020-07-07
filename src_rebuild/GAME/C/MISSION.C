@@ -1227,7 +1227,7 @@ int Swap2Cars(int curslot, int newslot)
 		if (cp->ai.c.pnode == NULL)
 			pnodeCurId = -1;
 		else 
-			pnodeCurId = cp->ai.c.ctrlNode - cp->ai.c.targetRoute;	// [A]
+			pnodeCurId = cp->ai.c.pnode - cp->ai.c.targetRoute;	// [A]
 	}
 
 	cp->lowDetail = -1;
@@ -1246,7 +1246,7 @@ int Swap2Cars(int curslot, int newslot)
 		if (cp->ai.c.pnode == NULL)
 			pnodeNewId = -1;
 		else
-			pnodeNewId = cp->ai.c.ctrlNode - cp->ai.c.targetRoute;	// [A]
+			pnodeNewId = cp->ai.c.pnode - cp->ai.c.targetRoute;	// [A]
 	}
 
 	cp->lowDetail = -1;
