@@ -1012,7 +1012,7 @@ void AddSmokingEngine(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		}
 	}
 
-	if(((CameraCnt & 3U) == CAR_INDEX(cp) & 3U) && gDoSmoke != 0 && pauseflag == 0)
+	if((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && gDoSmoke != 0 && pauseflag == 0)
 	{
 		car_cos = cp->ap.carCos;
 
