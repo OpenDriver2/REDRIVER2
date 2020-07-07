@@ -3706,117 +3706,93 @@ void DisplayWater(SMOKE *smoke)
 	/* end block 3 */
 	// End Line: 7882
 
+// [D]
 void DisplaySpark(SMOKE *spark)
 {
-	UNIMPLEMENTED();
-	/*
-	char cVar1;
-	ushort uVar2;
-	DB *pDVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar4;
-	undefined2 uVar5;
-	int iVar6;
-	short sVar7;
-	uint *puVar8;
-	undefined4 local_28;
-	uint local_24;
-	undefined4 local_20;
-	uint local_1c;
-	undefined4 local_18;
-	uint local_14;
-	int local_8;
+	int iVar7;
+	POLY_G3 *poly;
+	SVECTOR v[3];
+	SVECTOR TrailPos;
+	int z;
 
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	local_18 = CONCAT22((spark->final_tail_pos).vy - (ushort)camera_position.vy,
-		*(short *)&(spark->final_tail_pos).vx - (short)camera_position.vx);
-	sVar7 = *(short *)&(spark->position).vx - (short)camera_position.vx;
-	local_14 = local_14 & 0xffff0000 |
-		(uint)(ushort)(*(short *)&(spark->final_tail_pos).vz - (ushort)camera_position.vz);
-	iVar6 = (uint)(ushort)(spark->position).vy - (uint)(ushort)camera_position.vy;
-	uVar4 = (uint)*(ushort *)&(spark->position).vz - (uint)(ushort)camera_position.vz;
-	local_24 = local_24 & 0xffff0000 | uVar4 & 0xffff;
-	uVar4 = uVar4 + 5;
-	uVar5 = (undefined2)iVar6;
-	local_28 = CONCAT22(uVar5, sVar7);
-	local_20 = CONCAT22(uVar5, sVar7 + 5);
-	local_1c = local_1c & 0xffff0000 | uVar4 & 0xffff;
-	puVar8 = (uint *)current->primptr;
-	setCopReg(2, in_zero, local_28);
-	setCopReg(2, in_at, local_24);
-	setCopReg(2, uVar4, local_20);
-	setCopReg(2, iVar6, local_1c);
-	setCopReg(2, current, local_18);
-	setCopReg(2, 0x9bdc4, local_14);
-	copFunction(2, 0x280030);
-	*(char *)((int)puVar8 + 7) = '0';
-	*(char *)((int)puVar8 + 3) = '\x06';
-	if (spark->start_w == 2) {
-		iVar6 = (int)(spark->drift).vy * 3;
-		if (gTimeOfDay == 1) {
-			*(uchar *)(puVar8 + 1) = (&grassColour)[iVar6];
-			*(uchar *)((int)puVar8 + 5) = (&UCHAR_s_0009c2e9)[iVar6];
-			*(uchar *)((int)puVar8 + 6) = s_C__0009c2ea[iVar6];
-			*(uchar *)(puVar8 + 3) = (&grassColour)[iVar6];
-			*(uchar *)((int)puVar8 + 0xd) = (&UCHAR_s_0009c2e9)[iVar6];
-			*(uchar *)((int)puVar8 + 0xe) = s_C__0009c2ea[iVar6];
-			iVar6 = ((int)(spark->drift).vy + 2U & 3) * 3;
-			*(uchar *)(puVar8 + 5) = (&grassColour)[iVar6];
-			*(uchar *)((int)puVar8 + 0x15) = (&UCHAR_s_0009c2e9)[iVar6];
-			*(uchar *)((int)puVar8 + 0x16) = s_C__0009c2ea[iVar6];
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	v[2].vx = spark->final_tail_pos.vx - camera_position.vx;
+	v[2].vy = spark->final_tail_pos.vy - camera_position.vy;
+	v[2].vz = spark->final_tail_pos.vz - camera_position.vz;
+
+	v[0].vx = spark->position.vx - camera_position.vx;
+	v[0].vy = spark->position.vy - camera_position.vy;
+	v[0].vz = spark->position.vz - camera_position.vz;
+
+	v[1].vx = spark->position.vx - camera_position.vx + 5;
+	v[1].vy = spark->position.vy - camera_position.vy;
+	v[1].vz = spark->position.vz - camera_position.vz + 5;
+
+	poly = (POLY_G3 *)current->primptr;
+
+	gte_ldv3(&v[0], &v[1], &v[2]);
+	gte_rtpt();
+
+	setPolyG3(poly);
+
+	if (spark->start_w == 2) 
+	{
+		iVar7 = spark->drift.vy * 3;
+
+		if (gTimeOfDay == 1)
+		{
+			poly->r0 = grassColour[iVar7][0];
+			poly->g0 = grassColour[iVar7][1];
+			poly->b0 = grassColour[iVar7][2];
+			poly->r1 = grassColour[iVar7][0];
+			poly->g1 = grassColour[iVar7][1];
+			poly->b1 = grassColour[iVar7][2];
+
+			iVar7 = (spark->drift.vy + 2U & 3) * 3;
+			poly->r2 = grassColour[iVar7][0];
+			poly->g2 = grassColour[iVar7][1];
+			poly->b2 = grassColour[iVar7][2];
 		}
-		else {
-			*(char *)(puVar8 + 1) = '\0';
-			*(char *)((int)puVar8 + 5) = (char)((ushort)spark->transparency >> 3);
-			uVar2 = spark->transparency;
-			*(char *)(puVar8 + 3) = '\0';
-			*(char *)((int)puVar8 + 6) = (char)(uVar2 >> 4);
-			*(char *)((int)puVar8 + 0xd) = (char)((ushort)spark->transparency >> 3);
-			uVar2 = spark->transparency;
-			*(char *)(puVar8 + 5) = '\f';
-			*(char *)((int)puVar8 + 0x15) = '\x04';
-			*(char *)((int)puVar8 + 0x16) = '\x04';
-			*(char *)((int)puVar8 + 0xe) = (char)(uVar2 >> 4);
+		else 
+		{
+			poly->r0 = 0;
+			poly->g0 = (spark->transparency >> 3);
+			poly->r1 = 0;
+			poly->b0 = (spark->transparency >> 4);
+			poly->g1 = (spark->transparency >> 3);
+			poly->r2 = 12;
+			poly->g2 = 4;
+			poly->b2 = 4;
+			poly->b1 = (spark->transparency >> 4);
 		}
 	}
-	else {
-		*(char *)(puVar8 + 1) = *(char *)&spark->transparency;
-		*(char *)((int)puVar8 + 5) = *(char *)&spark->transparency;
-		*(char *)((int)puVar8 + 6) = (char)((ushort)spark->transparency >> 1);
-		*(char *)(puVar8 + 3) = *(char *)&spark->transparency;
-		*(char *)((int)puVar8 + 0xd) = *(char *)&spark->transparency;
-		*(char *)((int)puVar8 + 0xe) = (char)((ushort)spark->transparency >> 1);
-		cVar1 = *(char *)&spark->transparency;
-		*(char *)((int)puVar8 + 0x15) = '\0';
-		*(char *)((int)puVar8 + 0x16) = '\0';
-		*(char *)(puVar8 + 5) = cVar1;
+	else
+	{
+		poly->r0 = spark->transparency;
+		poly->g0 = spark->transparency;
+		poly->b0 = spark->transparency / 2;
+		poly->r1 = spark->transparency;
+		poly->g1 = spark->transparency;
+		poly->b1 = spark->transparency / 2;
+		poly->r2 = spark->transparency;
+		poly->g2 = 0;
+		poly->b2 = 0;
 	}
-	local_8 = getCopReg(2, 0x13);
-	if (0x32 < local_8) {
-		if (local_8 >> 3 < 9) {
-			local_8 = 0x48;
-		}
-		uVar4 = getCopReg(2, 0xc);
-		puVar8[2] = uVar4;
-		uVar4 = getCopReg(2, 0xd);
-		puVar8[4] = uVar4;
-		uVar4 = getCopReg(2, 0xe);
-		puVar8[6] = uVar4;
-		pDVar3 = current;
-		*puVar8 = *puVar8 & 0xff000000 | current->ot[local_8 >> 3] & 0xffffff;
-		pDVar3->ot[local_8 >> 3] = pDVar3->ot[local_8 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
-		pDVar3->primptr = pDVar3->primptr + 0x1c;
+
+	gte_stsz(&z);
+
+	if (50 < z)
+	{
+		if (z >> 3 < 9)
+			z = 72;
+
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+		addPrim(current->ot + (z >> 3), poly);
+
+		current->primptr += sizeof(POLY_G3);
 	}
-	return;
-	*/
 }
 
 
@@ -3918,13 +3894,12 @@ void GetSmokeDrift(VECTOR *Wind)
 	/* end block 3 */
 	// End Line: 8208
 
+// [D]
 void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
-	byte bVar3;
+	unsigned char bVar1;
+	unsigned char bVar2;
+	unsigned char bVar3;
 	ushort uVar4;
 	int iVar5;
 	uint uVar6;
@@ -3934,19 +3909,26 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 	int iVar10;
 	int iVar11;
 	int iVar12;
+	DEBRIS *mydebris;
 
 	iVar9 = type >> 0x10;
 	iVar12 = 0;
-	if (0 < num_debris) {
+
+	if (0 < num_debris) 
+	{
 		do {
 			iVar5 = AllocateDebris();
-			if (iVar5 == -1) {
+			if (iVar5 == -1)
 				return;
-			}
-			debris[iVar5].position.vx = ipos->vx;
-			debris[iVar5].position.vy = ipos->vy;
-			debris[iVar5].position.vz = ipos->vz;
-			if ((type & 0xffffU) < 8) {
+
+			mydebris = &debris[iVar5];
+
+			mydebris->position.vx = ipos->vx;
+			mydebris->position.vy = ipos->vy;
+			mydebris->position.vz = ipos->vz;
+
+			if ((type & 0xffffU) < 8)
+			{
 				uVar6 = rand();
 				iVar11 = (uVar6 & 0x7f00) * num_debris * 2;
 				iVar10 = (ispeed->vx + ((uVar6 & 0x7f) - 0x40) * num_debris) * 0x400;
@@ -3955,38 +3937,39 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 				bVar1 = debris_colour[GameLevel * 0x1f + iVar9].r;
 				bVar2 = debris_colour[GameLevel * 0x1f + iVar9].g;
 				bVar3 = debris_colour[GameLevel * 0x1f + iVar9].b;
-				debris[iVar5].step = (char)uVar6;
-				debris[iVar5].rgb.r = bVar1;
-				debris[iVar5].rgb.g = bVar2;
-				debris[iVar5].rgb.b = bVar3;
+				mydebris->step = (char)uVar6;
+				mydebris->rgb.r = bVar1;
+				mydebris->rgb.g = bVar2;
+				mydebris->rgb.b = bVar3;
 				iVar8 = iVar8 + ((uVar7 & 0x7fff) - 0x4000) * num_debris * 2;
-				if (gTimeOfDay == 3) {
-					debris[iVar5].rgb.r = bVar1 >> 1;
-					debris[iVar5].rgb.g = bVar2 >> 1;
-					debris[iVar5].rgb.b = bVar3 >> 1;
+				if (gTimeOfDay == 3) 
+				{
+					mydebris->rgb.r = bVar1 >> 1;
+					mydebris->rgb.g = bVar2 >> 1;
+					mydebris->rgb.b = bVar3 >> 1;
 				}
 			}
-			else {
+			else 
+			{
 				iVar11 = ispeed->vy;
 				iVar10 = ispeed->vx;
 				iVar8 = ispeed->vz;
-				debris[iVar5].step = '\x02';
-				debris[iVar5].rgb.b = '<';
-				debris[iVar5].rgb.g = '<';
-				debris[iVar5].rgb.r = '<';
+				mydebris->step = 2;
+				mydebris->rgb.b = 60;
+				mydebris->rgb.g = 60;
+				mydebris->rgb.r = 60;
 			}
 			uVar4 = (ushort)iVar12;
 			iVar12 = iVar12 + 1;
-			debris[iVar5].type = (byte)type & 7;
-			debris[iVar5].direction.vy = -(short)(iVar11 >> 0xc);
-			debris[iVar5].life = 0x80;
-			debris[iVar5].direction.vx = (short)(iVar10 >> 0xc);
-			debris[iVar5].direction.vz = (short)(iVar8 >> 0xc);
-			debris[iVar5].flags = 2;
-			debris[iVar5].pos = uVar4 & 0x1f;
+			mydebris->type = type & 7;
+			mydebris->direction.vy = -(short)(iVar11 >> 0xc);
+			mydebris->life = 0x80;
+			mydebris->direction.vx = (short)(iVar10 >> 0xc);
+			mydebris->direction.vz = (short)(iVar8 >> 0xc);
+			mydebris->flags = 2;
+			mydebris->pos = uVar4 & 0x1f;
 		} while (iVar12 < num_debris);
 	}
-	return;*/
 }
 
 
@@ -4040,196 +4023,205 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 
 /* WARNING: Removing unreachable block (ram,0x0003778c) */
 
+// [D]
 void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelSpeed, VECTOR *Drift, int Exhaust)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
-	byte bVar2;
+	unsigned char bVar2;
 	short sVar3;
 	short sVar4;
 	int iVar5;
 	int iVar6;
 	uint uVar7;
-	SMOKE *pSVar8;
+	SMOKE *mysmoke;
 	short sVar9;
 
 	iVar5 = AllocateSmoke();
-	if (iVar5 == -1) {
+	if (iVar5 == -1)
 		return;
-	}
-	pSVar8 = smoke + iVar5;
+
+	mysmoke = &smoke[iVar5];
+
 	sVar3 = (short)start_w;
 	sVar9 = (short)end_w;
-	if (SmokeType == 4) {
-		(pSVar8->position).vx = ipos->vx;
+
+	if (SmokeType == 4) 
+	{
+		(mysmoke->position).vx = ipos->vx;
 		end_w = end_w - start_w;
-		smoke[iVar5].position.vy = *(short *)&ipos->vy;
+		mysmoke->position.vy = ipos->vy;
 		iVar6 = ipos->vz;
-		smoke[iVar5].start_w = sVar3;
-		smoke[iVar5].final_w = sVar9;
-		smoke[iVar5].position.vz = iVar6;
+		mysmoke->start_w = sVar3;
+		mysmoke->final_w = sVar9;
+		mysmoke->position.vz = iVar6;
 		iVar6 = end_w;
-		if (end_w < 0) {
-			iVar6 = end_w + 0x7f;
-		}
-		smoke[iVar5].step = (uchar)((iVar6 >> 7) << 2);
-		smoke[iVar5].flags = 0x1006;
-		smoke[iVar5].life = '\x14';
-		smoke[iVar5].halflife = '\n';
-		if (WheelSpeed < 0x30d41) {
+
+		mysmoke->step = ((iVar6 >> 7) << 2);
+		mysmoke->flags = 0x1006;
+		mysmoke->life = 20;
+		mysmoke->halflife = 10;
+
+
+		if (WheelSpeed < 0x30d41)
 			sVar3 = 0xff;
-		}
-		else {
+		else
 			sVar3 = (short)(800000 - WheelSpeed >> 0xb);
-		}
-		smoke[iVar5].transparency = sVar3;
-		smoke[iVar5].t_step = (uchar)(end_w >> 2);
+
+		mysmoke->transparency = sVar3;
+		mysmoke->t_step = (end_w >> 2);
 	}
-	else {
-		if (SmokeType == 1) {
-			if (Exhaust == 0) {
-				(pSVar8->position).vx = ipos->vx;
-				smoke[iVar5].position.vy = *(short *)&ipos->vy;
-				smoke[iVar5].position.vz = ipos->vz;
-				if (WheelSpeed < 0x30d41) {
-					sVar4 = 0xff;
-				}
-				else {
-					sVar4 = (short)(800000 - WheelSpeed >> 0xb);
-				}
-				smoke[iVar5].transparency = sVar4;
-				end_w = end_w - start_w;
-				smoke[iVar5].t_step = (uchar)(end_w >> 5);
-			}
-			else {
-				uVar7 = rand();
-				(pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
-				smoke[iVar5].position.vy = *(short *)&ipos->vy;
-				uVar7 = rand();
-				end_w = end_w - start_w;
-				iVar6 = ipos->vz;
-				smoke[iVar5].flags = 0x2006;
-				smoke[iVar5].transparency = 0x8c;
-				smoke[iVar5].t_step = '\x02';
-				smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
-			}
-			smoke[iVar5].start_w = sVar3;
-			smoke[iVar5].final_w = sVar9;
-			if (end_w < 0) {
-				end_w = end_w + 0x7f;
-			}
-			smoke[iVar5].step = (uchar)((end_w >> 7) << 2);
-			smoke[iVar5].flags = 0x2006;
-			smoke[iVar5].life = '(';
-			smoke[iVar5].halflife = '\x14';
+	else if (SmokeType == 1)
+	{
+		if (Exhaust == 0)
+		{
+			(mysmoke->position).vx = ipos->vx;
+			mysmoke->position.vy = *(short *)&ipos->vy;
+			mysmoke->position.vz = ipos->vz;
+
+			if (WheelSpeed < 0x30d41)
+				sVar4 = 0xff;
+			else
+				sVar4 = (short)(800000 - WheelSpeed >> 0xb);
+
+			mysmoke->transparency = sVar4;
+			end_w = end_w - start_w;
+			mysmoke->t_step = (end_w >> 5);
 		}
-		else {
-			if ((SmokeType == 2) || (SmokeType == 5)) {
-				if (Exhaust == 0) {
-					uVar7 = rand();
-					(pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
-					smoke[iVar5].position.vy = *(short *)&ipos->vy;
-					uVar7 = rand();
-					iVar6 = ipos->vz;
-					smoke[iVar5].flags = 0x16;
-					smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
-				}
-				else {
-					uVar7 = rand();
-					(pSVar8->position).vx = ipos->vx + (uVar7 & 7);
-					smoke[iVar5].position.vy = *(short *)&ipos->vy;
-					uVar7 = rand();
-					iVar6 = ipos->vz;
-					smoke[iVar5].flags = 0x4006;
-					smoke[iVar5].transparency = 0x46;
-					smoke[iVar5].t_step = '\x02';
-					smoke[iVar5].position.vz = iVar6 + (uVar7 & 7);
-				}
-				smoke[iVar5].start_w = sVar3;
-				smoke[iVar5].final_w = sVar9;
-				if (SmokeType == 5) {
-					smoke[iVar5].life = ' ';
-					end_w = end_w - start_w;
-					iVar6 = end_w;
-					if (end_w < 0) {
-						iVar6 = end_w + 0x1f;
-					}
-					smoke[iVar5].step = (uchar)((iVar6 >> 5) << 2);
-					smoke[iVar5].t_step = (uchar)(end_w >> 5);
-					smoke[iVar5].transparency = (short)WheelSpeed;
-				}
-				else {
-					smoke[iVar5].life = -0x80;
-					smoke[iVar5].step = (uchar)((end_w - start_w) / 0x80 << 3);
-					smoke[iVar5].t_step = (uchar)(end_w - start_w >> 6);
-					smoke[iVar5].transparency = 0x50;
-				}
-			}
-			else {
-				if (SmokeType == 6) {
-					(pSVar8->position).vx = ipos->vx;
-					smoke[iVar5].position.vy = *(short *)&ipos->vy;
-					iVar6 = ipos->vz;
-					smoke[iVar5].flags = 0x46;
-					smoke[iVar5].transparency = 0xa0;
-					smoke[iVar5].step = '\x14';
-					smoke[iVar5].t_step = '\x05';
-					smoke[iVar5].start_w = sVar3;
-					smoke[iVar5].final_w = sVar9;
-					smoke[iVar5].life = -0x4e;
-					smoke[iVar5].halflife = ' ';
-					smoke[iVar5].position.vz = iVar6;
-					goto LAB_00037884;
-				}
-				uVar7 = rand();
-				(pSVar8->position).vx = ipos->vx + (uVar7 & 0x3f);
-				smoke[iVar5].position.vy = *(short *)&ipos->vy;
-				uVar7 = rand();
-				end_w = end_w - start_w;
-				iVar6 = ipos->vz;
-				smoke[iVar5].flags = 0x26;
-				smoke[iVar5].transparency = 0x3c;
-				smoke[iVar5].t_step = '\x05';
-				smoke[iVar5].start_w = sVar3;
-				smoke[iVar5].final_w = sVar9;
-				smoke[iVar5].position.vz = iVar6 + (uVar7 & 0x3f);
-				if (end_w < 0) {
-					end_w = end_w + 0x7f;
-				}
-				smoke[iVar5].step = (uchar)((end_w >> 7) << 3);
-				smoke[iVar5].life = -0x80;
-			}
-			smoke[iVar5].halflife = '@';
+		else
+		{
+			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
+			mysmoke->position.vy = ipos->vy;
+			end_w = end_w - start_w;
+			iVar6 = ipos->vz;
+			mysmoke->flags = 0x2006;
+			mysmoke->transparency = 0x8c;
+			mysmoke->t_step = 2;
+			mysmoke->position.vz = iVar6 + (rand() & 0x3f);
 		}
+
+		mysmoke->start_w = sVar3;
+		mysmoke->final_w = sVar9;
+		mysmoke->step = ((end_w >> 7) << 2);
+		mysmoke->flags = 0x2006;
+		mysmoke->life = 40;
+		mysmoke->halflife = 0x14;
 	}
+	else
+	{
+		if ((SmokeType == 2) || (SmokeType == 5))
+		{
+			if (Exhaust == 0)
+			{
+				uVar7 = rand();
+				(mysmoke->position).vx = ipos->vx + (uVar7 & 0x3f);
+				mysmoke->position.vy = ipos->vy;
+				uVar7 = rand();
+				iVar6 = ipos->vz;
+				mysmoke->flags = 0x16;
+				mysmoke->position.vz = iVar6 + (uVar7 & 0x3f);
+			}
+			else
+			{
+				mysmoke->position.vx = ipos->vx + (rand() & 7);
+				mysmoke->position.vy = ipos->vy;
+
+				iVar6 = ipos->vz;
+				mysmoke->flags = 0x4006;
+				mysmoke->transparency = 0x46;
+				mysmoke->t_step = 2;
+				mysmoke->position.vz = iVar6 + (rand() & 7);
+			}
+			mysmoke->start_w = sVar3;
+			mysmoke->final_w = sVar9;
+			if (SmokeType == 5)
+			{
+				mysmoke->life = 32;
+				end_w = end_w - start_w;
+				iVar6 = end_w;
+
+				mysmoke->step = ((iVar6 >> 5) << 2);
+				mysmoke->t_step = (end_w >> 5);
+				mysmoke->transparency = WheelSpeed;
+			}
+			else
+			{
+				mysmoke->life = -0x80;
+
+				mysmoke->step = ((end_w - start_w) / 0x80 << 3);
+				mysmoke->t_step = (end_w - start_w >> 6);
+				mysmoke->transparency = 0x50;
+			}
+		}
+		else
+		{
+			if (SmokeType == 6)
+			{
+				(mysmoke->position).vx = ipos->vx;
+				mysmoke->position.vy = *(short *)&ipos->vy;
+				iVar6 = ipos->vz;
+				mysmoke->flags = 0x46;
+				mysmoke->transparency = 0xa0;
+				mysmoke->step = 20;
+				mysmoke->t_step = 5;
+				mysmoke->start_w = sVar3;
+				mysmoke->final_w = sVar9;
+				mysmoke->life = -0x4e;
+				mysmoke->halflife = 32;
+				mysmoke->position.vz = iVar6;
+
+				goto LAB_00037884;
+			}
+
+			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
+			mysmoke->position.vy = ipos->vy;
+
+			end_w = end_w - start_w;
+			iVar6 = ipos->vz;
+			mysmoke->flags = 0x26;
+			mysmoke->transparency = 0x3c;
+			mysmoke->t_step = 5;
+			mysmoke->start_w = sVar3;
+			mysmoke->final_w = sVar9;
+			mysmoke->position.vz = iVar6 + (rand() & 0x3f);
+
+			mysmoke->step = ((end_w >> 7) << 3);
+			mysmoke->life = -0x80;
+		}
+
+		mysmoke->halflife = 64;
+	}
+
 LAB_00037884:
-	if (Exhaust == 0) {
-		bVar2 = smoke[iVar5].life;
-		smoke[iVar5].drift.vx = '\0';
-		smoke[iVar5].drift.vy = '\0';
-		smoke[iVar5].drift.vz = '\0';
-		if ((bVar2 < 0x28) || (SmokeType == 4)) {
-			smoke[iVar5].drift_change.vx = '\0';
-			smoke[iVar5].drift_change.vy = '\x01';
-			smoke[iVar5].drift_change.vz = '\0';
+	if (Exhaust == 0) 
+	{
+		bVar2 = mysmoke->life;
+		mysmoke->drift.vx = 0;
+		mysmoke->drift.vy = 0;
+		mysmoke->drift.vz = 0;
+
+		if ((bVar2 < 0x28) || (SmokeType == 4)) 
+		{
+			mysmoke->drift_change.vx = 0;
+			mysmoke->drift_change.vy = 1;
+			mysmoke->drift_change.vz = 0;
 		}
-		else {
-			smoke[iVar5].drift_change.vx = *(char *)&Drift->vx;
-			smoke[iVar5].drift_change.vy = *(char *)&Drift->vy;
-			smoke[iVar5].drift_change.vz = *(char *)&Drift->vz;
+		else 
+		{
+			mysmoke->drift_change.vx = Drift->vx;
+			mysmoke->drift_change.vy = Drift->vy;
+			mysmoke->drift_change.vz = Drift->vz;
 		}
 	}
-	else {
-		smoke[iVar5].drift.vx = *(char *)&Drift->vx;
-		smoke[iVar5].drift.vy = *(char *)&Drift->vy;
-		cVar1 = *(char *)&Drift->vz;
-		smoke[iVar5].drift_change.vx = '\0';
-		smoke[iVar5].drift_change.vy = '\0';
-		smoke[iVar5].drift_change.vz = '\0';
-		smoke[iVar5].drift.vz = cVar1;
+	else
+	{
+		mysmoke->drift.vx = Drift->vx;
+		mysmoke->drift.vy = Drift->vy;
+		mysmoke->drift.vz = Drift->vz;
+
+		mysmoke->drift_change.vx = 0;
+		mysmoke->drift_change.vy = 0;
+		mysmoke->drift_change.vz = 0;
 	}
-	return;*/
 }
 
 
@@ -4270,10 +4262,9 @@ LAB_00037884:
 	/* end block 3 */
 	// End Line: 9008
 
+// [D]
 void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
 	int iVar2;
 	uint uVar3;
@@ -4283,59 +4274,68 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 	int iVar7;
 	int iVar8;
 
-	if ((pauseflag == 0) && (iVar8 = 0, 0 < num_sparks)) {
+	SMOKE *mysmoke;
+
+	if (pauseflag == 0 && 0 < num_sparks) 
+	{
+		iVar8 = 0;
+
 		do {
 			iVar2 = AllocateSmoke();
-			if (iVar2 < 0) {
+			if (iVar2 < 0)
 				return;
-			}
+
+			mysmoke = &smoke[iVar2];
+
 			uVar3 = rand();
 			iVar5 = ipos->vx;
-			smoke[iVar2].position.vx = iVar5;
+			mysmoke->position.vx = iVar5;
 			sVar1 = *(short *)&ipos->vy;
-			smoke[iVar2].position.vy = sVar1;
+			mysmoke->position.vy = sVar1;
 			iVar6 = ipos->vz;
-			smoke[iVar2].final_tail_pos.vy = sVar1;
-			smoke[iVar2].pos = (uchar)(iVar8 << 2);
-			smoke[iVar2].step = (byte)uVar3 & 0x3f;
-			smoke[iVar2].final_tail_pos.vx = iVar5;
-			smoke[iVar2].drift.vx = '\x02';
-			smoke[iVar2].flags = 10;
-			smoke[iVar2].position.vz = iVar6;
-			smoke[iVar2].final_tail_pos.vz = iVar6;
+			mysmoke->final_tail_pos.vy = sVar1;
+			mysmoke->pos = (iVar8 << 2);
+			mysmoke->step = uVar3 & 0x3f;
+			mysmoke->final_tail_pos.vx = iVar5;
+			mysmoke->drift.vx = 2;
+			mysmoke->flags = 10;
+			mysmoke->position.vz = iVar6;
+			mysmoke->final_tail_pos.vz = iVar6;
+
 			iVar7 = ispeed->vx;
 			iVar6 = ispeed->vy;
-			uVar4 = rand();
 			iVar5 = ispeed->vz;
-			smoke[iVar2].drift_change.vx = (char)((int)((iVar7 + -0x4000 + (uVar3 & 0x7f00)) * 4) >> 0xc);
-			smoke[iVar2].drift_change.vy = -(char)((int)((iVar6 + (uVar3 & 0x7f)) * 0x400) >> 0xc);
-			smoke[iVar2].drift_change.vz = (char)(iVar5 + -0x40 + (uVar4 & 0x7f) >> 2);
-			if (SparkType == '\x01') {
-				smoke[iVar2].life = '\n';
-				smoke[iVar2].transparency = 200;
-				smoke[iVar2].t_step = '\x02';
-				smoke[iVar2].start_w = 0;
+
+			mysmoke->drift_change.vx = (char)((int)((iVar7 + -0x4000 + (uVar3 & 0x7f00)) * 4) >> 0xc);
+			mysmoke->drift_change.vy = -(char)((int)((iVar6 + (uVar3 & 0x7f)) * 0x400) >> 0xc);
+			mysmoke->drift_change.vz = (char)(iVar5 + -0x40 + (rand() & 0x7f) >> 2);
+
+			if (SparkType == 1)
+			{
+				mysmoke->life = 10;
+				mysmoke->transparency = 200;
+				mysmoke->t_step = 2;
+				mysmoke->start_w = 0;
 			}
-			else {
-				if (SparkType == '\x02') {
-					smoke[iVar2].life = '\n';
-					smoke[iVar2].transparency = 0xff;
-					smoke[iVar2].t_step = '\n';
-					smoke[iVar2].start_w = 2;
-					iVar5 = rand();
-					smoke[iVar2].drift.vy = (byte)iVar5 & 3;
-				}
-				else {
-					smoke[iVar2].life = '(';
-					smoke[iVar2].transparency = 0xff;
-					smoke[iVar2].t_step = '\n';
-					smoke[iVar2].start_w = 1;
-				}
+			else if (SparkType == 2)
+			{
+				mysmoke->life = 10;
+				mysmoke->transparency = 0xff;
+				mysmoke->t_step = 10;
+				mysmoke->start_w = 2;
+				iVar5 = rand();
+				mysmoke->drift.vy = iVar5 & 3;
+			}
+			else
+			{
+				mysmoke->life = 40;
+				mysmoke->transparency = 0xff;
+				mysmoke->t_step = 10;
+				mysmoke->start_w = 1;
 			}
 			iVar8 = iVar8 + 1;
 		} while (iVar8 < num_sparks);
 	}
-	return;*/
 }
 
 
@@ -4596,7 +4596,7 @@ void HandleDebris(void)
 
 	if (next_debris != 0) 
 	{
-		db = db;
+		db = debris;
 		iVar16 = next_debris;
 		if (pauseflag == 0)
 		{
@@ -4611,7 +4611,6 @@ void HandleDebris(void)
 					{
 						db->flags = 0;
 						ReleaseDebris(db->num);
-						iVar16 = iVar16 + -1;
 					}
 					else
 					{
@@ -4630,10 +4629,10 @@ void HandleDebris(void)
 							sVar10 = sVar5 + 1;
 
 						db->direction.vy = sVar10;
-						iVar16 = iVar16 + -1;
 					}
 				}
-				db = db + 1;
+				iVar16--;
+				db++;
 			} while (iVar16 != 0);
 		}
 		else 
@@ -4642,9 +4641,10 @@ void HandleDebris(void)
 				if ((db->flags & 2) != 0) 
 				{
 					DisplayDebris(db, 0);
-					iVar16 = iVar16 + -1;
+					
 				}
-				db = db + 1;
+				db++;
+				iVar16--;
 			} while (iVar16 != 0);
 		}
 	}
@@ -4655,7 +4655,8 @@ void HandleDebris(void)
 		iVar16 = next_leaf;
 		if (pauseflag == 0) {
 			do {
-				if ((lf->flags & 2) != 0) {
+				if ((lf->flags & 2) != 0)
+				{
 					if (lf->life == 1) {
 						lf->flags = 0;
 						ReleaseLeaf(lf->num);
@@ -4701,10 +4702,11 @@ void HandleDebris(void)
 						lf->direction.vy = (iVar17 >> 0xb) + 4;
 					}
 
-					iVar16 = iVar16 + -1;
+					
 					DisplayDebris((DEBRIS *)lf, lf->type);
 				}
-				lf = lf + 1;
+				lf++;
+				iVar16--;
 			} while (iVar16 != 0);
 		}
 		else {
