@@ -272,6 +272,7 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 		makeLimoPullOver = 0;
 	}
 
+	// door close sound
 	Start3DSoundVolPitch(-1, 6, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
 	bVar3 = newCar->ap.model;
 
@@ -286,6 +287,7 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 	if (playerID != 0) 
 		channel = 4;
 
+	// idle sound
 	Start3DSoundVolPitch(channel, 3, uVar6 * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
 	bVar3 = newCar->ap.model;
 
