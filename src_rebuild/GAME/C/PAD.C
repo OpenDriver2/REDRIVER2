@@ -126,6 +126,7 @@ void CloseControllers(void)
 
 	PadStopCom();
 
+	i = 0;
 	do {
 		Pads[i].active = 0;
 		Pads[i].type = 0;
