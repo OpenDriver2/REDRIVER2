@@ -944,8 +944,11 @@ void DrawCar(_CAR_DATA *cp, int view)
 			{
 				AddSmokingEngine(cp, 0, vvvar);
 			}
+
+			AddExhaustSmoke(cp, 0, vvvar); // [A] get exhaust smoke back
 		}
-		else {
+		else 
+		{
 			if (vvvar + 59999U < 119999) 
 			{
 				AddFlamingEngine(cp);
@@ -955,6 +958,8 @@ void DrawCar(_CAR_DATA *cp, int view)
 			{
 				AddSmokingEngine(cp, 1, vvvar);
 			}
+
+			AddExhaustSmoke(cp, 1, vvvar);	// [A] get exhaust smoke back
 		}
 
 		gTimeInWater = 0x19;

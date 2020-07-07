@@ -24,6 +24,8 @@ extern void AddNightLights(_CAR_DATA *cp); // 0x00030544
 
 extern void AddSmokingEngine(_CAR_DATA *cp, int black_smoke, int WheelSpeed); // 0x00030D9C
 
+extern void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed);
+
 extern void AddFlamingEngine(_CAR_DATA *cp); // 0x00030FAC
 
 

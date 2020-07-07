@@ -4082,21 +4082,22 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 
 			mysmoke->transparency = sVar4;
 			mysmoke->t_step = ((end_w - start_w) >> 5);
+			mysmoke->step = (((end_w - start_w) >> 7) << 2);
 		}
 		else
 		{
-			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
+			mysmoke->position.vx = ipos->vx + (rand() & 9);
 			mysmoke->position.vy = ipos->vy;
-			mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
+			mysmoke->position.vz = ipos->vz + (rand() & 9);
 			mysmoke->flags = 0x2006;
 			mysmoke->transparency = 0x8c;
 			mysmoke->t_step = 2;
-			
+			mysmoke->step = 1;
 		}
 
 		mysmoke->start_w = start_w;
 		mysmoke->final_w = end_w;
-		mysmoke->step = (((end_w - start_w) >> 7) << 2);
+		
 		mysmoke->flags = 0x2006;
 		mysmoke->life = 40;
 		mysmoke->halflife = 0x14;
@@ -4134,7 +4135,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 				mysmoke->position.vz = ipos->vz + (rand() & 7);
 
 				mysmoke->flags = 0x4006;
-				mysmoke->transparency = 70;
+				mysmoke->transparency = 40;
 				mysmoke->t_step = 2;
 				mysmoke->step = 1;
 				mysmoke->life = 24;

@@ -1039,7 +1039,60 @@ void AddSmokingEngine(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	}
 }
 
+// [A] custom function for bringing back exhaust
+void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
+{
+	CAR_COSMETICS *car_cos;
+	VECTOR SmokePos;
+	VECTOR Drift;
+	SVECTOR svec;
+	SVECTOR smokedir;
 
+	if (cp < car_data) {
+		while (FrameCnt != 0x78654321) {
+			trap(0x400);
+		}
+	}
+
+	if (cp->controlType == 2 && cp->ai.c.ctrlState == 7 && cp->ai.c.thrustState == 3)
+		return;
+
+	if (WheelSpeed > 4096 * 64)
+		return;
+
+	if ((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && gDoSmoke != 0 && pauseflag == 0)
+	{
+		car_cos = cp->ap.carCos;
+
+		svec.vx = car_cos->exhaust.vx + car_cos->cog.vx;
+		svec.vy = car_cos->exhaust.vy + car_cos->cog.vy;
+		svec.vz = car_cos->exhaust.vz + car_cos->cog.vz;
+
+		SmokePos.vx = cp->hd.where.t[0];
+		SmokePos.vy = -cp->hd.where.t[1];
+		SmokePos.vz = cp->hd.where.t[2];
+
+		gte_SetRotMatrix(cp->hd.drawCarMat.m);
+
+		InitFXPos(&SmokePos, &svec, cp);
+		GetSmokeDrift(&Drift);
+
+		gte_ldv0(&svec);
+		gte_rtir();
+		gte_stsv(&smokedir);
+
+		Drift.vx /= 2;
+		Drift.vz /= 2;
+
+		Drift.vx -= FIXED(smokedir.vx) / 2;
+		Drift.vz -= FIXED(smokedir.vz) / 2;
+
+		if (black_smoke == 0)
+			Setup_Smoke(&SmokePos, 10, 40, 2, WheelSpeed, &Drift, 1);
+		else
+			Setup_Smoke(&SmokePos, 10, 40, 1, WheelSpeed, &Drift, 1);
+	}
+}
 
 // decompiled code
 // original method signature: 
