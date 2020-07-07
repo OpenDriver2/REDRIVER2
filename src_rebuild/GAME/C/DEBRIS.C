@@ -3743,18 +3743,19 @@ void DisplaySpark(SMOKE *spark)
 
 	if (spark->start_w == 2) 
 	{
-		iVar7 = spark->drift.vy * 3;
+		iVar7 = spark->drift.vy * 3 & 3;
 
 		if (gTimeOfDay == 1)
 		{
 			poly->r0 = grassColour[iVar7][0];
 			poly->g0 = grassColour[iVar7][1];
 			poly->b0 = grassColour[iVar7][2];
+
 			poly->r1 = grassColour[iVar7][0];
 			poly->g1 = grassColour[iVar7][1];
 			poly->b1 = grassColour[iVar7][2];
 
-			iVar7 = (spark->drift.vy + 2U & 3) * 3;
+			iVar7 = (spark->drift.vy + 2U) * 3 & 3;
 			poly->r2 = grassColour[iVar7][0];
 			poly->g2 = grassColour[iVar7][1];
 			poly->b2 = grassColour[iVar7][2];
