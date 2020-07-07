@@ -5,6 +5,11 @@
 #include "MAIN.H"
 #include "CAMERA.H"
 #include "DRAW.H"
+#include "DR2ROADS.H"
+#include "PLAYERS.H"
+#include "DEBRIS.H"
+#include "HANDLING.H"
+#include "CONVERT.H"
 
 #include "INLINE_C.H"
 #include "STRINGS.H"
@@ -14,6 +19,14 @@ int gShadowTextureNum;
 
 UV shadowuv;
 POLY_FT4 shadowPolys[2][20];
+
+VECTOR tyre_new_positions[4];
+VECTOR tyre_save_positions[4];
+int tyre_track_offset[4];
+int num_tyre_tracks[4];
+TYRE_TRACK track_buffer[4][64];
+int smoke_count[4];
+
 
 // decompiled code
 // original method signature: 
@@ -50,25 +63,18 @@ POLY_FT4 shadowPolys[2][20];
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitTyreTracks(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int *piVar1;
-	int *piVar2;
-	int iVar3;
+	int i;
 
-	piVar1 = &num_tyre_tracks;
-	piVar2 = &tyre_track_offset;
-	iVar3 = 3;
-	do {
-		*piVar1 = 0;
-		piVar1 = piVar1 + 1;
-		*piVar2 = 0;
-		iVar3 = iVar3 + -1;
-		piVar2 = piVar2 + 1;
-	} while (-1 < iVar3);
-	return;*/
+	i = 0;
+	while (i < 4)
+	{
+		num_tyre_tracks[i] = 0;
+		tyre_track_offset[i] = 0;
+		i++;
+	}
 }
 
 
@@ -102,45 +108,49 @@ void InitTyreTracks(void)
 	/* end block 2 */
 	// End Line: 545
 
+// [D]
 void GetTyreTrackPositions(_CAR_DATA *cp, int player_id)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	SVECTOR *pSVar3;
-	uint uVar4;
-	CAR_COSMETICS *pCVar5;
-	VECTOR local_58[3];
+	uint loop;
+	CAR_COSMETICS *car_cos;
+	VECTOR WheelPos;
+	VECTOR target_pos;
+	VECTOR normal;
 
-	pCVar5 = (cp->ap).carCos;
-	SetRotMatrix(&(cp->hd).drawCarMat);
-	uVar4 = 0;
-	pSVar3 = pCVar5->wheelDisp;
+	car_cos = (cp->ap).carCos;
+	SetRotMatrix(&cp->hd.drawCarMat);
+
+	loop = 0;
+
+	pSVar3 = car_cos->wheelDisp;
+
 	do {
-		if ((uVar4 & 2) == 0) {
-			local_58[0].vx = (int)pSVar3->vx + -0x11;
-		}
-		else {
-			local_58[0].vx = (int)pSVar3->vx + 0x11;
-		}
-		local_58[0].vy = 0;
-		pSVar3 = pSVar3 + 2;
-		local_58[0].vz = -(int)pCVar5->wheelDisp[uVar4 + 1 & 3].vz;
-		_MatrixRotate(local_58);
-		iVar2 = (int)uVar4 >> 1;
-		uVar4 = uVar4 + 2;
-		local_58[0].vy = (cp->hd).where.t[1];
-		local_58[0].vx = local_58[0].vx + (cp->hd).where.t[0];
-		local_58[0].vz = local_58[0].vz + (cp->hd).where.t[2];
-		iVar2 = iVar2 + player_id * 2;
-		tyre_new_positions[iVar2].vx = local_58[0].vx;
-		tyre_new_positions[iVar2].vz = local_58[0].vz;
-		iVar1 = MapHeight(local_58);
-		tyre_new_positions[iVar2].vy = iVar1;
-	} while ((int)uVar4 < 4);
-	return;
-	*/
+		if ((loop & 2) == 0) 
+			WheelPos.vx = car_cos->wheelDisp[loop].vx + -0x11;
+		else
+			WheelPos.vx = car_cos->wheelDisp[loop].vx + 0x11;
+
+		WheelPos.vy = 0;
+		WheelPos.vz = -car_cos->wheelDisp[loop + 1 & 3].vz;
+
+		_MatrixRotate(&WheelPos);
+
+		WheelPos.vy = cp->hd.where.t[1];
+		WheelPos.vx = WheelPos.vx + cp->hd.where.t[0];
+		WheelPos.vz = WheelPos.vz + cp->hd.where.t[2];
+
+		iVar2 = loop >> 1 + player_id * 2;
+
+		tyre_new_positions[iVar2].vx = WheelPos.vx;
+		tyre_new_positions[iVar2].vz = WheelPos.vz;
+		tyre_new_positions[iVar2].vy = MapHeight(&WheelPos);;
+
+		pSVar3 += 2;
+		loop += 2;
+	} while (loop < 4);
 }
 
 
@@ -164,35 +174,18 @@ void GetTyreTrackPositions(_CAR_DATA *cp, int player_id)
 	/* end block 3 */
 	// End Line: 2918
 
+// [D]
 void SetTyreTrackOldPositions(int player_id)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	uint uVar2;
-	undefined4 uVar3;
-	long lVar4;
-	undefined4 uVar5;
-	long lVar6;
-	long lVar7;
+	//uVar2 = player_id << 5 | 0x10; // [A] plz check me
 
-	uVar2 = player_id << 5 | 0x10;
-	lVar4 = tyre_new_positions[player_id * 2].vy;
-	lVar6 = tyre_new_positions[player_id * 2].vz;
-	lVar7 = tyre_new_positions[player_id * 2].pad;
 	tyre_save_positions[player_id * 2].vx = tyre_new_positions[player_id * 2].vx;
-	tyre_save_positions[player_id * 2].vy = lVar4;
-	tyre_save_positions[player_id * 2].vz = lVar6;
-	tyre_save_positions[player_id * 2].pad = lVar7;
-	uVar1 = *(undefined4 *)((int)&tyre_new_positions[0].vy + uVar2);
-	uVar3 = *(undefined4 *)((int)&tyre_new_positions[0].vz + uVar2);
-	uVar5 = *(undefined4 *)((int)&tyre_new_positions[0].pad + uVar2);
-	*(undefined4 *)((int)&tyre_save_positions[0].vx + uVar2) =
-		*(undefined4 *)((int)&tyre_new_positions[0].vx + uVar2);
-	*(undefined4 *)((int)&tyre_save_positions[0].vy + uVar2) = uVar1;
-	*(undefined4 *)((int)&tyre_save_positions[0].vz + uVar2) = uVar3;
-	*(undefined4 *)((int)&tyre_save_positions[0].pad + uVar2) = uVar5;
-	return;*/
+	tyre_save_positions[player_id * 2].vy = tyre_new_positions[player_id * 2].vy;
+	tyre_save_positions[player_id * 2].vz = tyre_new_positions[player_id * 2].vz;
+
+	tyre_save_positions[player_id * 2 + 1].vx = tyre_new_positions[player_id * 2 + 1].vx;
+	tyre_save_positions[player_id * 2 + 1].vy = tyre_new_positions[player_id * 2 + 1].vy;
+	tyre_save_positions[player_id * 2 + 1].vz = tyre_new_positions[player_id * 2 + 1].vz;
 }
 
 
@@ -262,162 +255,181 @@ void SetTyreTrackOldPositions(int player_id)
 	/* end block 3 */
 	// End Line: 713
 
+// [D]
 void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 {
-	UNIMPLEMENTED();
-	/*
+	static int Cont[4] = { 0, 0, 0, 0 };
+
 	short sVar1;
 	short sVar2;
-	_sdPlane *p_Var3;
-	int iVar4;
-	int *piVar5;
+	_sdPlane *SurfaceDataPtr;
+	long lVar3;
+	int *piVar4;
+	int iVar5;
 	int iVar6;
-	int iVar7;
-	uint uVar8;
-	char cVar9;
-	TYRE_TRACK *unaff_s1;
-	VECTOR *pos;
-	VECTOR *unaff_s5;
-	short local_a8;
-	short local_a4;
-	short local_a0;
-	short local_98;
-	short local_90;
-	short local_88;
-	short local_84;
-	short local_80;
-	short local_78;
-	short local_70;
-	VECTOR local_68;
-	VECTOR aVStack88[2];
-	VECTOR local_30;
+	uint uVar7;
+	int iVar8;
+	char trackSurface;
+	TYRE_TRACK *tt_p;
+	VECTOR *newtp;
+	VECTOR *oldtp;
+	VECTOR unk;
+	VECTOR New1;
+	VECTOR New2;
+	VECTOR New3;
+	VECTOR New4;
+	VECTOR psxoffset;
+	VECTOR SmokeDrift;
+	VECTOR SmokePosition;
+	ROUTE_DATA routeData;
+	VECTOR grass_vector;
 
-	pos = tyre_new_positions + wheel;
-	iVar6 = tyre_new_positions[wheel].vz - camera_position.vz;
-	if (&DAT_0000a000 < &DAT_00005000 + (pos->vx - camera_position.vx)) {
+	newtp = &tyre_new_positions[wheel];
+	iVar5 = tyre_new_positions[wheel].vz - camera_position.vz;
+
+	if (0xa000 < 0x5000 + (newtp->vx - camera_position.vx))
 		return;
-	}
-	if (0x5000 < iVar6) {
+
+	if (0x5000 < iVar5)
 		return;
-	}
-	if (iVar6 < -0x5000) {
+
+	if (iVar5 < -0x5000)
 		return;
-	}
-	if (tracksAndSmoke == 0) {
-		p_Var3 = sdGetCell(pos);
-		cVar9 = '\x01';
-		if (p_Var3->surface == 6) {
+
+	if (tracksAndSmoke == 0) 
+	{
+		SurfaceDataPtr = sdGetCell(newtp);
+		trackSurface = 1;
+		if (SurfaceDataPtr->surface == 6)
 			return;
-		}
-		iVar6 = wheel << 2;
-		if (p_Var3->surface == 4) {
-			cVar9 = '\x02';
-		}
+
+		iVar5 = wheel / 4;
+
+		if (SurfaceDataPtr->surface == 4)
+			trackSurface = 2;
+
 		goto LAB_000756d4;
 	}
-	iVar6 = wheel * 4;
-	uVar8 = (&tyre_track_offset)[wheel] + (&num_tyre_tracks)[wheel];
-	unaff_s5 = tyre_save_positions + wheel;
-	if (0x3f < uVar8) {
-		uVar8 = uVar8 & 0x3f;
-	}
-	unaff_s1 = track_buffer + uVar8 + wheel * 0x40;
-	p_Var3 = sdGetCell(pos);
-	if (p_Var3 == (_sdPlane *)0x0) {
+
+	iVar5 = wheel * 4;
+
+	uVar7 = tyre_track_offset[wheel] + num_tyre_tracks[wheel];
+	oldtp = tyre_save_positions + wheel;
+
+	if (0x3f < uVar7)
+		uVar7 = uVar7 & 0x3f;
+
+	tt_p = track_buffer[wheel] + uVar7;
+	SurfaceDataPtr = sdGetCell(newtp);
+
+	if (SurfaceDataPtr == NULL) 
+	{
 	LAB_00075698:
-		unaff_s1->surface = '\x01';
+		tt_p->surface = 1;
 	}
-	else {
-		if (p_Var3->surface == 6) {
+	else 
+	{
+		if (SurfaceDataPtr->surface == 6) 
 			return;
-		}
-		if (p_Var3->surface != 4) goto LAB_00075698;
-		unaff_s1->surface = '\x02';
-		(&player)[padid].onGrass = '\x01';
+
+		if (SurfaceDataPtr->surface != 4) 
+			goto LAB_00075698;
+
+		tt_p->surface = 2;
+		player[padid].onGrass = 1;
 	}
-	cVar9 = unaff_s1->surface;
+
+	trackSurface = tt_p->surface;
+
 LAB_000756d4:
-	uVar8 = *(uint *)((int)smoke_count + iVar6);
-	local_68.vx = pos->vx;
-	local_68.vz = tyre_new_positions[wheel].vz;
-	local_68.vy = -0x32 - tyre_new_positions[wheel].vy;
-	*(uint *)((int)smoke_count + iVar6) = uVar8 + 1;
-	if ((uVar8 & 3) == 1) {
-		GetSmokeDrift(aVStack88);
-		if (cVar9 == '\x02') {
-			local_30.vx = DAT_00011ce4;
-			local_30.vy = DAT_00011ce8;
-			local_30.vz = DAT_00011cec;
-			local_30.pad = DAT_00011cf0;
-			Setup_Smoke(&local_68, 100, 500, 3, 0, aVStack88, 0);
-			Setup_Sparks(&local_68, &local_30, 5, '\x02');
+	uVar7 = *(uint *)((int)smoke_count + iVar5);
+	psxoffset.vx = newtp->vx;
+	psxoffset.vz = tyre_new_positions[wheel].vz;
+	psxoffset.vy = -0x32 - tyre_new_positions[wheel].vy;
+	*(uint *)((int)smoke_count + iVar5) = uVar7 + 1;
+
+	if ((uVar7 & 3) == 1) 
+	{
+		GetSmokeDrift(&SmokeDrift);
+
+		if (trackSurface == 2) 
+		{
+			grass_vector.vx = 0;
+			grass_vector.vy = 50;
+			grass_vector.vz = 0;
+			grass_vector.pad = 0;
+
+			Setup_Smoke(&psxoffset, 100, 500, 3, 0, &SmokeDrift, 0);
+			Setup_Sparks(&psxoffset, &grass_vector, 5, 2);
 		}
-		else {
-			if (wetness == 0) {
-				Setup_Smoke(&local_68, 100, 500, 2, 0, aVStack88, 0);
-			}
+		else if (wetness == 0) 
+		{
+			Setup_Smoke(&psxoffset, 100, 500, 2, 0, &SmokeDrift, 0);
 		}
 	}
-	if (tracksAndSmoke != 0) {
-		iVar4 = ratan2(unaff_s5->vz - tyre_new_positions[wheel].vz, unaff_s5->vx - pos->vx);
-		iVar7 = (int)rcossin_tbl[(-iVar4 & 0xfffU) * 2 + 1] * 0x23;
-		if (iVar7 < 0) {
-			iVar7 = iVar7 + 0x1fff;
+
+	if (tracksAndSmoke != 0)
+	{
+		lVar3 = ratan2(oldtp->vz - tyre_new_positions[wheel].vz, oldtp->vx - newtp->vx);
+
+		iVar6 = (int)rcossin_tbl[(-lVar3 & 0xfffU) * 2 + 1] * 0x23;
+		iVar8 = (int)rcossin_tbl[(-lVar3 & 0xfffU) * 2] * 0x23;
+
+		New1.vy = (short)oldtp->vy + -10;
+		New3.vy = (short)tyre_new_positions[wheel].vy + -10;
+		New2.vx = (short)oldtp->vx;
+		sVar1 = (short)(iVar8 >> 0xd);
+		New1.vx = (short)New2.vx + sVar1;
+		New2.vz = (short)oldtp->vz;
+		sVar2 = (short)(iVar6 >> 0xd);
+		New1.vz = (short)New2.vz + sVar2;
+		New2.vx = (short)New2.vx - sVar1;
+		New2.vz = (short)New2.vz - sVar2;
+		New4.vx = (short)newtp->vx;
+		New3.vx = (short)New4.vx + sVar1;
+		New4.vz = (short)tyre_new_positions[wheel].vz;
+		New3.vz = (short)New4.vz + sVar2;
+		New4.vx = (short)New4.vx - sVar1;
+		New4.vz = (short)New4.vz - sVar2;
+
+		iVar6 = *(int *)((int)&num_tyre_tracks + iVar5);
+
+		if (iVar6 == 0x40)
+		{
+			piVar4 = (int *)((int)&tyre_track_offset + iVar5);
+			iVar8 = *piVar4;
+			iVar6 = iVar8 + 1;
+			*piVar4 = iVar6;
+
+			if (0x3f < iVar6) 
+				*piVar4 = iVar8 -0x3f;
+
 		}
-		iVar4 = (int)rcossin_tbl[(-iVar4 & 0xfffU) * 2] * 0x23;
-		if (iVar4 < 0) {
-			iVar4 = iVar4 + 0x1fff;
+		else 
+		{
+			*(int *)((int)&num_tyre_tracks + iVar5) = iVar6 + 1;
 		}
-		local_a4 = (short)unaff_s5->vy + -10;
-		local_84 = (short)tyre_new_positions[wheel].vy + -10;
-		local_98 = (short)unaff_s5->vx;
-		sVar1 = (short)(iVar4 >> 0xd);
-		local_a8 = local_98 + sVar1;
-		local_90 = (short)unaff_s5->vz;
-		sVar2 = (short)(iVar7 >> 0xd);
-		local_a0 = local_90 + sVar2;
-		local_98 = local_98 - sVar1;
-		local_90 = local_90 - sVar2;
-		local_78 = (short)pos->vx;
-		local_88 = local_78 + sVar1;
-		local_70 = (short)tyre_new_positions[wheel].vz;
-		local_80 = local_70 + sVar2;
-		local_78 = local_78 - sVar1;
-		local_70 = local_70 - sVar2;
-		iVar7 = *(int *)((int)&num_tyre_tracks + iVar6);
-		if (iVar7 == 0x40) {
-			piVar5 = (int *)((int)&tyre_track_offset + iVar6);
-			iVar4 = *piVar5;
-			iVar7 = iVar4 + 1;
-			*piVar5 = iVar7;
-			if (0x3f < iVar7) {
-				*piVar5 = iVar4 + -0x3f;
-			}
-		}
-		else {
-			*(int *)((int)&num_tyre_tracks + iVar6) = iVar7 + 1;
-		}
-		if ((*(int *)(&Cont_12 + iVar6) == 1) && (continuous_track == '\x01')) {
-			unaff_s1->type = '\x01';
-		}
-		else {
-			unaff_s1->type = '\0';
-		}
-		*(undefined4 *)(&Cont_12 + iVar6) = 1;
-		(unaff_s1->p1).vx = local_a8;
-		(unaff_s1->p1).vy = local_a4;
-		(unaff_s1->p1).vz = local_a0;
-		(unaff_s1->p2).vx = local_98;
-		(unaff_s1->p2).vy = local_a4;
-		(unaff_s1->p2).vz = local_90;
-		(unaff_s1->p3).vx = local_88;
-		(unaff_s1->p3).vy = local_84;
-		(unaff_s1->p3).vz = local_80;
-		(unaff_s1->p4).vx = local_78;
-		(unaff_s1->p4).vy = local_84;
-		(unaff_s1->p4).vz = local_70;
+
+		if ((*(int *)((int)Cont + iVar5) == 1) && (continuous_track == 1))
+			tt_p->type = 1;
+		else
+			tt_p->type = 0;
+
+		*(int *)((int)Cont + iVar5) = 1;
+
+		(tt_p->p1).vx = (short)New1.vx;
+		(tt_p->p1).vy = (short)New1.vy;
+		(tt_p->p1).vz = (short)New1.vz;
+		(tt_p->p2).vx = (short)New2.vx;
+		(tt_p->p2).vy = (short)New1.vy;
+		(tt_p->p2).vz = (short)New2.vz;
+		(tt_p->p3).vx = (short)New3.vx;
+		(tt_p->p3).vy = (short)New3.vy;
+		(tt_p->p3).vz = (short)New3.vz;
+		(tt_p->p4).vx = (short)New4.vx;
+		(tt_p->p4).vy = (short)New3.vy;
+		(tt_p->p4).vz = (short)New4.vz;
 	}
-	return;*/
 }
 
 

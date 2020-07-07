@@ -4,6 +4,7 @@
 extern int ghost_mode;
 extern int playerghost;
 extern int playerhitcopsanyway;
+extern char continuous_track;
 
 extern void InitCarPhysics(_CAR_DATA *cp, long (*startpos)[4], int direction); // 0x0005381C
 

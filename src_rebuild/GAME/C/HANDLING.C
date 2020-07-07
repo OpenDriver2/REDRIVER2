@@ -2682,8 +2682,8 @@ LAB_00056814:
 	{
 		continuous_track = last_track_state == rear_only;
 
-		AddTyreTrack(player_id << 1, (uint)(player_id < 2), player_id);
-		AddTyreTrack(player_id << 1 | 1, (uint)(player_id < 2), player_id);
+		AddTyreTrack(player_id * 2, (player_id < 2), player_id);
+		AddTyreTrack(player_id * 2 + 1, (player_id < 2), player_id);
 
 		last_track_state = rear_only;
 	}
