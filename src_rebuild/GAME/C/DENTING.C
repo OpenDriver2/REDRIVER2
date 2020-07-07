@@ -11,6 +11,7 @@
 #include "DRAW.H"
 #include "DR2ROADS.H"
 #include "DEBRIS.H"
+#include "PLAYERS.H"
 
 
 char* DentingFiles[] =
@@ -473,32 +474,36 @@ void InitHubcap(void)
 	// End Line: 1472
 
 // [D]
-void LoseHubcap(int Hubcap, int Velocity)
+void LoseHubcap(int car, int Hubcap, int Velocity)
 {
 	int iVar1;
 	int iVar2;
 	SVECTOR InitialLocalAngle = { 0, 0, 10 };
 	VECTOR R;
 	VECTOR VW;
+	_CAR_DATA* cp;
 
-	if (car_data[0].hd.wheel_speed > -1) 
+	cp = &car_data[car];
+
+	if (cp->hd.wheel_speed > -1)
 	{
-		if (gHubcap.Present[Hubcap] != 0) 
+		if ((cp->ap.flags & (1 << Hubcap)) == 0) //gHubcap.Present[Hubcap] != 0) 
 		{
-			gHubcap.Present[Hubcap] = 0;
+			cp->ap.flags |= (1 << Hubcap);
+			//gHubcap.Present[Hubcap] = 0;
 
 			gHubcap.Position.vx = gHubcap.Offset[Hubcap].vx;
 			gHubcap.Position.vy = gHubcap.Offset[Hubcap].vy;
 			gHubcap.Position.vz = gHubcap.Offset[Hubcap].vz;
 
-			SetRotMatrix(&car_data[0].hd.where);
+			SetRotMatrix(&cp->hd.where);
 			_MatrixRotate(&gHubcap.Position);
 
-			gHubcap.Position.vx = gHubcap.Position.vx + car_data[0].hd.where.t[0];
-			gHubcap.Position.vy = gHubcap.Position.vy - car_data[0].hd.where.t[1];
-			gHubcap.Position.vz = gHubcap.Position.vz + car_data[0].hd.where.t[2];
+			gHubcap.Position.vx = gHubcap.Position.vx + cp->hd.where.t[0];
+			gHubcap.Position.vy = gHubcap.Position.vy - cp->hd.where.t[1];
+			gHubcap.Position.vz = gHubcap.Position.vz + cp->hd.where.t[2];
 
-			gHubcap.Orientation = car_data[0].hd.where;
+			gHubcap.Orientation = cp->hd.where;
 
 			Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
 
@@ -515,9 +520,9 @@ void LoseHubcap(int Hubcap, int Velocity)
 			}
 
 			gHubcap.Duration = 100;
-			gHubcap.Direction.vx = FIXED(FIXED(car_data[0].st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXED(car_data[0].st.n.linearVelocity[0]);
-			gHubcap.Direction.vy = FIXED(car_data[0].st.n.linearVelocity[1]);
-			gHubcap.Direction.vz = FIXED(-FIXED(car_data[0].st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXED(car_data[0].st.n.linearVelocity[2]);
+			gHubcap.Direction.vx = FIXED(FIXED(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXED(cp->st.n.linearVelocity[0]);
+			gHubcap.Direction.vy = FIXED(cp->st.n.linearVelocity[1]);
+			gHubcap.Direction.vz = FIXED(-FIXED(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXED(cp->st.n.linearVelocity[2]);
 		}
 	}
 }
@@ -582,7 +587,7 @@ void LoseHubcap(int Hubcap, int Velocity)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D]
-void MoveHubcap(void)
+void MoveHubcap(int playerId)
 {
 	int savecombo;
 	int cmb;
@@ -592,22 +597,32 @@ void MoveHubcap(void)
 	VECTOR Position;
 	MATRIX Orientation;
 	CVECTOR col = {72,72,72};
+	_CAR_DATA* cp;
+	int playerCarId;
 
 	if (pauseflag == 0 && gHubcapTime > 0) 
 		gHubcapTime--;
 
+	playerCarId = player[playerId].playerCarId;
+
+	if (playerCarId < 0)
+		return;
+	
+
+	cp = &car_data[playerCarId];
+
 	if (gHubcap.Duration < 1 && (gHubcapTime == 0))
 	{
-		VelocityMagnitude = car_data[0].st.n.angularVelocity[0] + car_data[0].st.n.angularVelocity[1] + car_data[0].st.n.angularVelocity[2];
+		VelocityMagnitude = cp->st.n.angularVelocity[0] + cp->st.n.angularVelocity[1] + cp->st.n.angularVelocity[2];
 
 		if (VelocityMagnitude < -1000000) 
 		{
-			LoseHubcap(Random2(2) & 1, VelocityMagnitude);
+			LoseHubcap(playerCarId, Random2(2) & 1, VelocityMagnitude);
 			VelocityMagnitude = 3;
 		}
 		else if (VelocityMagnitude > 1000001)
 		{
-			LoseHubcap(Random2(4) & 1 | 2, VelocityMagnitude);
+			LoseHubcap(playerCarId, Random2(4) & 1 | 2, VelocityMagnitude);
 			VelocityMagnitude = 5;
 		}
 		else

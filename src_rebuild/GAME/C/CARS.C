@@ -1383,12 +1383,13 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 		verts = (SVECTOR *)model->vertices;
 
-		if ((cp->controlType == 1) && (gHubcap.Present[wheelnum] == 0)) 
+		//if ((cp->controlType == 1) && (gHubcap.Present[wheelnum] == 0)) 
+
+		if(cp->ap.flags & (1 << wheelnum))
 			model = gDamWheelModelPtr;
 
 		if ((wheelnum & 2) == 0) 
 			sVar3 = 0x11 - pSVar13->vx;
-
 		else
 			sVar3 = -0x11 - pSVar13->vx;
 

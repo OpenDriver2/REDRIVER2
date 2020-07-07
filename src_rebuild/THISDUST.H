@@ -18825,7 +18825,10 @@ struct _APPEARANCE_DATA // hashcode: 0x4A050E31 (dec: 1241845297)
 	char life2; // size=0, offset=82
 	char model; // size=0, offset=83
 	char palette; // size=0, offset=84
-	char needsDenting; // size=0, offset=85
+
+	char needsDenting : 1; // size=0, offset=85
+	char flags : 7;			// [A] new: appearance flags, 1,2,3,4 = wheel hubcaps lost
+
 	short damage[6]; // size=12, offset=86
 };
 

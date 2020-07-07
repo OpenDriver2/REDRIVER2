@@ -4582,7 +4582,12 @@ void HandleDebris(void)
 	memset(&dummy, 0, 0x10);
 	iVar17 = 0;
 	GetSmokeDrift(&Drift);
-	MoveHubcap();
+
+	MoveHubcap(0);
+
+	if(NumPlayers > 1)
+		MoveHubcap(1);
+
 	SetRotMatrix(&inv_camera_matrix);
 
 	gte_SetTransVector(&dummy);
