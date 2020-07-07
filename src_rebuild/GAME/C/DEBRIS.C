@@ -4904,192 +4904,210 @@ void HandleDebris(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void DisplaySmoke(SMOKE *smoke)
 {
-	UNIMPLEMENTED();
-	/*
 	short sVar1;
-	ushort uVar2;
-	DB *pDVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	char cVar4;
-	int iVar5;
+	unsigned char uVar5;
 	int iVar6;
-	int *piVar7;
+	int iVar7;
 	long lVar8;
-	uint uVar9;
+	int uVar9;
 	int iVar10;
-	uint uVar11;
+	int uVar11;
 	int iVar12;
-	uint uVar13;
-	uint *puVar14;
-	short sVar15;
-	int local_50;
-	int local_4c;
-	int local_48;
-	undefined4 local_40;
-	undefined4 local_3c;
-	undefined4 local_38;
-	undefined4 local_34;
-	undefined4 local_30;
-	undefined4 local_2c;
-	undefined4 local_28;
-	undefined4 local_24;
-	int local_20;
+	int uVar13;
+	int smoke_z_offset;
+	int tmode;
+	POLY_FT4 *poly;
+	VECTOR v;
+	SVECTOR smokemesh[4];
+	int z;
 
-	local_20 = 0;
-	local_50 = (smoke->position).vx - camera_position.vx;
-	local_4c = (smoke->position).vy - camera_position.vy;
-	sVar1 = smoke->start_w;
-	local_48 = (smoke->position).vz - camera_position.vz;
-	sVar15 = -sVar1;
-	if ((local_50 < 0x5001) && (local_48 < 0x5001)) {
-		piVar7 = &local_50;
-		lVar8 = camera_position.vx;
-		Apply_Inv_CameraMatrix(piVar7);
-		setCopControlWord(2, 0x2800, local_50);
-		setCopControlWord(2, 0x3000, local_4c);
-		setCopControlWord(2, 0x3800, local_48);
-		setCopControlWord(2, 0, norot.m[0]._0_4_);
-		setCopControlWord(2, 0x800, norot.m._4_4_);
-		setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, norot._16_4_);
-		local_40 = CONCAT22(sVar15, sVar15);
-		local_3c = (uint)local_3c._2_2_ << 0x10;
-		local_38 = CONCAT22(sVar15, sVar1);
-		local_34 = (uint)local_34._2_2_ << 0x10;
-		local_30 = CONCAT22(sVar1, sVar15);
-		local_2c = (uint)local_2c._2_2_ << 0x10;
-		local_28 = CONCAT22(sVar1, sVar1);
-		local_24 = (uint)local_24._2_2_ << 0x10;
-		puVar14 = (uint *)current->primptr;
-		setCopReg(2, in_zero, local_40);
-		setCopReg(2, in_at, local_3c);
-		setCopReg(2, current, local_38);
-		setCopReg(2, &local_40, local_34);
-		setCopReg(2, piVar7, local_30);
-		setCopReg(2, lVar8, local_2c);
-		copFunction(2, 0x280030);
-		uVar2 = smoke->flags;
-		uVar13 = 0x20;
-		if ((uVar2 & 0x4000) == 0) {
-			if ((uVar2 & 0x2000) == 0) {
-				if ((uVar2 & 0x1000) == 0) {
-					if ((uVar2 & 0x20) == 0) {
-						if ((uVar2 & 0x40) == 0) {
-							if (gNight == 0) {
-								*(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
-								*(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
-								cVar4 = *(char *)&smoke->transparency + '\n';
+	z = 0;
+	v.vx = smoke->position.vx - camera_position.vx;
+	v.vy = smoke->position.vy - camera_position.vy;
+	v.vz = smoke->position.vz - camera_position.vz;
+
+	if ((v.vx < 0x5001) && (v.vz < 0x5001))
+	{
+		Apply_Inv_CameraMatrix(&v);
+
+		gte_SetTransVector(&v);
+		gte_SetRotMatrix(&aspect);
+
+		smokemesh[0].vx = -smoke->start_w;
+		smokemesh[0].vy = -smoke->start_w;
+		smokemesh[0].vz = 0;
+
+		smokemesh[1].vx = smoke->start_w;
+		smokemesh[1].vy = -smoke->start_w;
+		smokemesh[1].vz = 0;
+
+		smokemesh[2].vx = -smoke->start_w;
+		smokemesh[2].vy = smoke->start_w;
+		smokemesh[2].vz = 0;
+
+		smokemesh[3].vx = smoke->start_w;
+		smokemesh[3].vy = smoke->start_w;
+		smokemesh[3].vz = 0;
+
+		poly = (POLY_FT4 *)current->primptr;
+
+		gte_ldv3(&smokemesh[0], &smokemesh[1], &smokemesh[2]);
+		gte_rtpt();
+
+		tmode = 0x20;
+
+		if ((smoke->flags & 0x4000) == 0)
+		{
+			if ((smoke->flags & 0x2000) == 0)
+			{
+				if ((smoke->flags & 0x1000) == 0)
+				{
+					if ((smoke->flags & 0x20) == 0)
+					{
+						if ((smoke->flags & 0x40) == 0)
+						{
+							if (gNight == 0) 
+							{
+								poly->r0 = smoke->transparency;
+								poly->g0 = smoke->transparency;
+								poly->b0 = smoke->transparency + 10;
 							}
-							else {
-								*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
-								*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 1);
-								cVar4 = (char)((int)smoke->transparency + 10 >> 1);
+							else 
+							{
+								poly->r0 = smoke->transparency / 2;
+								poly->g0 = smoke->transparency / 2;
+								poly->b0 = smoke->transparency + 10 >> 1;
 							}
-							*(char *)((int)puVar14 + 6) = cVar4;
-							local_20 = 0x19;
+
+							z = 0x19;
 						}
-						else {
-							if (gNight == 0) {
-								*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 2);
-								*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 2);
-								*(char *)((int)puVar14 + 6) = (char)((ushort)smoke->transparency >> 2);
-							}
-							else {
-								*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 3);
-								*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 3);
-								*(char *)((int)puVar14 + 6) = (char)((int)smoke->transparency + 10 >> 3);
-							}
+						else if (gNight == 0)
+						{
+							poly->r0 = smoke->transparency >> 2;
+							poly->g0 = smoke->transparency >> 2;
+							poly->b0 = smoke->transparency >> 2;
+						}
+						else
+						{
+							poly->r0 = smoke->transparency >> 3;
+							poly->g0 = smoke->transparency >> 3;
+							poly->b0 = smoke->transparency + 10 >> 3;
 						}
 					}
-					else {
-						*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
-						*(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
-						uVar13 = 0x40;
-						*(char *)((int)puVar14 + 6) = *(char *)&smoke->transparency + '\n';
+					else 
+					{
+						poly->r0 = smoke->transparency >> 1;
+						poly->g0 = smoke->transparency;
+						poly->b0 = smoke->transparency + 10;
+						tmode = 0x40;
 					}
 				}
-				else {
-					uVar11 = (uint)(ushort)smoke->transparency << 0x10;
-					iVar5 = (int)uVar11 >> 0x13;
-					uVar9 = iVar5 + 0x32U & 0xff;
-					cVar4 = (char)uVar9;
-					if (uVar9 < 0x3c) {
-						cVar4 = (char)(uVar11 >> 0x12);
-					}
-					local_20 = 0x12;
-					*(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
-					*(char *)((int)puVar14 + 5) = cVar4;
-					*(char *)((int)puVar14 + 6) = (char)iVar5;
+				else 
+				{
+					uVar11 = smoke->transparency << 0x10;
+					iVar6 = (int)uVar11 >> 0x13;
+					uVar9 = iVar6 + 0x32U & 0xff;
+					uVar5 = uVar9;
+
+					if (uVar9 < 0x3c)
+						uVar5 = (uVar11 >> 0x12);
+	
+					z = 0x12;
+					poly->r0 = smoke->transparency;
+					poly->g0 = uVar5;
+					poly->b0 = iVar6;
 				}
 			}
-			else {
-				if (gNight == 0) {
-					*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 2);
-					*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 2);
-					cVar4 = (char)((ushort)smoke->transparency >> 2);
+			else 
+			{
+				if (gNight == 0)
+				{
+					poly->r0 = smoke->transparency >> 2;
+					poly->g0 = smoke->transparency >> 2;
+					poly->b0 = smoke->transparency >> 2;
 				}
-				else {
-					*(char *)(puVar14 + 1) = (char)((ushort)smoke->transparency >> 1);
-					*(char *)((int)puVar14 + 5) = (char)((ushort)smoke->transparency >> 1);
-					cVar4 = (char)((ushort)smoke->transparency >> 1);
+				else 
+				{
+					poly->r0 = smoke->transparency / 2;
+					poly->g0 = smoke->transparency / 2;
+					poly->b0 = smoke->transparency / 2;
 				}
-				*(char *)((int)puVar14 + 6) = cVar4;
-				uVar13 = 0x40;
-				local_20 = 0x11;
+
+				tmode = 0x40;
+				z = 0x11;
 			}
 		}
-		else {
-			*(char *)(puVar14 + 1) = *(char *)&smoke->transparency;
-			*(char *)((int)puVar14 + 5) = *(char *)&smoke->transparency;
-			*(char *)((int)puVar14 + 6) = *(char *)&smoke->transparency;
+		else 
+		{
+			poly->r0 = smoke->transparency;
+			poly->g0 = smoke->transparency;
+			poly->b0 = smoke->transparency;
 		}
-		uVar9 = getCopReg(2, 0xc);
-		puVar14[2] = uVar9;
-		uVar9 = getCopReg(2, 0xd);
-		puVar14[4] = uVar9;
-		uVar9 = getCopReg(2, 0xe);
-		puVar14[6] = uVar9;
-		iVar5 = getCopReg(2, 0x13);
-		setCopReg(2, in_zero, local_28);
-		setCopReg(2, in_at, local_24);
-		copFunction(2, 0x180001);
-		puVar14[3] = CONCAT22(smoke_texture.clutid, smoke_texture.coords._0_2_);
-		puVar14[5] = (uint)smoke_texture.coords._2_2_ | (smoke_texture.tpageid | uVar13) << 0x10;
-		puVar14[7] = (uint)smoke_texture.coords._4_2_ - 0x400;
-		uVar13 = (uint)smoke_texture.coords._6_2_;
-		*(char *)((int)puVar14 + 3) = '\t';
-		*(char *)((int)puVar14 + 7) = '.';
-		puVar14[9] = uVar13 - 0x400;
-		pDVar3 = current;
-		if (0 < iVar5 >> 3) {
-			local_20 = (iVar5 >> 3) - local_20;
-			if (local_20 < 9) {
-				local_20 = 9;
-			}
-			*puVar14 = *puVar14 & 0xff000000 | current->ot[local_20] & 0xffffff;
-			pDVar3->ot[local_20] = pDVar3->ot[local_20] & 0xff000000 | (uint)puVar14 & 0xffffff;
-			uVar13 = getCopReg(2, 0xe);
-			puVar14[8] = uVar13;
-			if (100 < (int)*(short *)(puVar14 + 4) - (int)*(short *)(puVar14 + 2) >> 1) {
-				iVar10 = (int)*(short *)(puVar14 + 2) + (int)*(short *)(puVar14 + 8) >> 1;
+
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+		
+		gte_stsz(&smoke_z_offset);
+
+		gte_ldv0(&smokemesh[3]);
+		gte_rtps();
+
+		poly->u0 = smoke_texture.coords.u0;
+		poly->v0 = smoke_texture.coords.v0;
+		poly->u1 = smoke_texture.coords.u1;
+		poly->v1 = smoke_texture.coords.v1;
+		poly->u2 = smoke_texture.coords.u2;
+		poly->v2 = smoke_texture.coords.v2 - 4; // [A] ???
+		poly->u3 = smoke_texture.coords.u3;
+		poly->v3 = smoke_texture.coords.v3 - 4; // [A] ???
+
+		/*
+		*(uint *)&poly->u2 = (uint)smoke_texture.coords._4_2_ - 0x400;
+		*(uint *)&poly->u3 = uVar13 - 0x400;
+		*/
+
+		poly->tpage = smoke_texture.tpageid | tmode;
+		poly->clut = smoke_texture.clutid;
+
+		setPolyFT4(poly);
+		setSemiTrans(poly, 1);
+
+		if (0 < smoke_z_offset >> 3)
+		{
+			z = (smoke_z_offset >> 3) - z;
+
+			if (z < 9)
+				z = 9;
+
+			gte_stsxy(&poly->x3);
+			addPrim(current->ot + z, poly);
+
+			if (100 < (int)poly->x1 - (int)poly->x0 >> 1)
+			{
+				iVar10 = (int)poly->x0 + (int)poly->x3 >> 1;
 				iVar12 = iVar10 + -0x32;
 				iVar10 = iVar10 + 0x32;
-				iVar6 = (int)*(short *)((int)puVar14 + 10) + (int)*(short *)((int)puVar14 + 0x22) >> 1;
-				iVar5 = (iVar6 + -0x32) * 0x10000;
-				iVar6 = (iVar6 + 0x32) * 0x10000;
-				puVar14[2] = iVar12 + iVar5;
-				puVar14[4] = iVar10 + iVar5;
-				puVar14[6] = iVar12 + iVar6;
-				puVar14[8] = iVar10 + iVar6;
+				iVar7 = (int)poly->y0 + (int)poly->y3 >> 1;
+				iVar6 = (iVar7 + -0x32) * 0x10000;
+				iVar7 = (iVar7 + 0x32) * 0x10000;
+
+				poly->x0 = iVar6;
+				poly->y0 = iVar12;
+
+				poly->x1 = iVar6;
+				poly->y1 = iVar10;
+
+				poly->x2 = iVar7;
+				poly->y2 = iVar12;
+
+				poly->x3 = iVar7;
+				poly->y3 = iVar10;
 			}
-			current->primptr = current->primptr + 0x28;
+			current->primptr += sizeof(POLY_FT4);
 		}
 	}
-	return;*/
 }
 
 
