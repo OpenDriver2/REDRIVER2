@@ -19903,7 +19903,7 @@ struct CELL_ITERATOR // hashcode: 0x4C2A91BE (dec: 1277858238)
 {
 	struct CELL_DATA *pcd; // size=2, offset=0
 	struct PACKED_CELL_OBJECT *ppco; // size=8, offset=4
-	struct XZPAIR near; // size=8, offset=8
+	struct XZPAIR nearCell; // size=8, offset=8
 	int use_computed; // size=0, offset=16
 };
 /*

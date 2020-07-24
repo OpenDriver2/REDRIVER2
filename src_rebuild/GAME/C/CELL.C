@@ -129,10 +129,10 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	}
 
 	iVar8 = cells_down >> 1;
-	(pci->near).x = (cellx - (cells_across >> 1)) * 0x800;
+	(pci->nearCell).x = (cellx - (cells_across >> 1)) * 0x800;
 	pPVar3 = cell_objects;
 	pCVar5 = pci->pcd;
-	(pci->near).z = (cellz - iVar8) * 0x800;
+	(pci->nearCell).z = (cellz - iVar8) * 0x800;
 	uVar6 = (uint)pCVar5->num;
 	pci->use_computed = use_computed;
 	uVar7 = uVar6 & 0x3fff;

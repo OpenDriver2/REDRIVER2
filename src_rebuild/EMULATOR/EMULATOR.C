@@ -918,7 +918,7 @@ GLint u_Projection;
 		"	vec4 fragPosition = Projection * vec4(a_position.xy, a_z, 1.0) * a_w;\n"\
 		"	gl_Position = fragPosition;\n"
 #else
-#define GTE_PERSPECTIVE_CORRECTION
+#define GTE_PERSPECTIVE_CORRECTION \
 		"	gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
 #endif
 

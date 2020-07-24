@@ -771,7 +771,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 				if ((cell.x / 32) + (cell.z / 32) * (cells_across / 32) == RoadMapRegions[((cell.x / 32) & 1) + ((cell.z / 32) & 1) * 2])
 				{
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
-					cop = UnpackCellObject(ppco, &ci.near);
+					cop = UnpackCellObject(ppco, &ci.nearCell);
 
 					while (cop != NULL)
 					{
@@ -780,7 +780,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 						pcoplist[*count] = ci.ppco;
 
 						ppco = GetNextPackedCop(&ci);
-						cop = UnpackCellObject(ppco, &ci.near);
+						cop = UnpackCellObject(ppco, &ci.nearCell);
 
 						*count = *count + 1;
 					}

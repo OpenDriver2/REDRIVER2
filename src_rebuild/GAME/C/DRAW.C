@@ -1039,7 +1039,7 @@ void DrawMapPSX(int *comp_val)
 
 									if (((uVar1 & 0x480) == 0) && ((model->flags2 & 0xc000) == 0))
 									{
-										cop = UnpackCellObject(ppco, &ci.near);
+										cop = UnpackCellObject(ppco, &ci.nearCell);
 
 
 										if (((model->flags2 & 1) != 0) && (anim_objs < 20))
@@ -1054,7 +1054,7 @@ void DrawMapPSX(int *comp_val)
 									{
 										if (((model->flags2 & 0x80) != 0) && (alleycount++, alleycount == 13))
 										{
-											cop = UnpackCellObject(ppco, &ci.near);
+											cop = UnpackCellObject(ppco, &ci.nearCell);
 
 											uVar9 = groundDebrisIndex & 0xf;
 											ground_debris[uVar9].pos.vx = (cop->pos).vx;
@@ -1081,14 +1081,14 @@ void DrawMapPSX(int *comp_val)
 
 									if (((model->flags2 & 1) != 0) && (anim_objs < 20))
 									{
-										cop = UnpackCellObject(ppco, &ci.near);
+										cop = UnpackCellObject(ppco, &ci.nearCell);
 
 										anim_obj_buffer[anim_objs++] = cop;
 									}
 
 									if (((model->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount++, uVar9 == 0))
 									{
-										cop = UnpackCellObject(ppco, &ci.near);
+										cop = UnpackCellObject(ppco, &ci.nearCell);
 
 										uVar9 = groundDebrisIndex & 0xf;
 										ground_debris[uVar9].pos.vx = cop->pos.vx;

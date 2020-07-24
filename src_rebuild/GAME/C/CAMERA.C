@@ -438,7 +438,7 @@ int CameraCollisionCheck(void)
 		if (0 < gCameraDistance)
 		{
 			ppco = GetFirstPackedCop(iVar5 >> 0xb, iVar3 >> 0xb, &ci, 0);
-			cop = UnpackCellObject(ppco, &ci.near);
+			cop = UnpackCellObject(ppco, &ci.nearCell);
 			while (cop != NULL) 
 			{
 				model = modelpointers[cop->type];
@@ -504,7 +504,7 @@ int CameraCollisionCheck(void)
 					}
 				}
 				ppco = GetNextPackedCop(&ci);
-				cop = UnpackCellObject(ppco, &ci.near);
+				cop = UnpackCellObject(ppco, &ci.nearCell);
 			}
 		}
 		iVar9 = iVar9 + 1;

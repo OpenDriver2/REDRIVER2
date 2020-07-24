@@ -24,10 +24,8 @@
 	// End Line: 25
 
 void FUN_MCARD__000f6588(void)
-
 {
-  erase();
-  return;
+	UNIMPLEMENTED();
 }
 
 
