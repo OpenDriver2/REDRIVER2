@@ -30,6 +30,8 @@ project "PSX"
         "EMULATOR"
     }
 
+    defines { GAME_REGION }
+
     files { 
         "EMULATOR/**.h", 
         "EMULATOR/**.c", 
