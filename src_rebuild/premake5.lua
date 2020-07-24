@@ -1,9 +1,19 @@
 -- premake5.lua
 
+-- you can redefine dependencies
+local SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
+local GLEW_DIR = os.getenv("GLEW_DIR") or "dependencies/glew"
+local OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
+local GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
+
+if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
+    error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
+end
+
 workspace "REDRIVER2"
     configurations { "Debug", "Release" }
 
-    defines { "NTSC_VERSION" } -- or PAL_VERSION
+    defines { VERSION } 
 
     filter "system:Windows"
         defines { "USE_32_BIT_ADDR", "PGXP" }
@@ -29,9 +39,9 @@ project "PSX"
     defines { "OGL", "GLEW" }
 
     includedirs { 
-        "dependencies/SDL2/include",
-        "dependencies/glew/include",
-        "dependencies/openal-soft/include",
+        SDL2_DIR.."/include",
+        GLEW_DIR.."/include",
+        OPENAL_DIR.."/include",
     }
 
     filter "system:Windows"
@@ -43,9 +53,9 @@ project "PSX"
         }
     
         libdirs { 
-            "dependencies/SDL2/lib/x86",
-            "dependencies/glew/lib/Release/Win32",
-            "dependencies/openal-soft/libs/Win32",
+            SDL2_DIR.."/lib/x86",
+            GLEW_DIR.."/lib/Release/Win32",
+            OPENAL_DIR.."/libs/Win32",
         }
 
 -- game iteslf
@@ -59,6 +69,8 @@ project "REDRIVER2"
         ".", 
         "EMULATOR"
     }
+
+    defines { GAME_REGION }
 
     files { 
         "GAME/**.h", 
@@ -80,9 +92,9 @@ project "REDRIVER2"
         defines { "OGL", "GLEW" }
     
         includedirs { 
-            "dependencies/SDL2/include",
-            "dependencies/glew/include",
-            "dependencies/openal-soft/include",
+            SDL2_DIR.."/include",
+            GLEW_DIR.."/include",
+            OPENAL_DIR.."/include",
         }
 
         links { "PSX" } -- only need to link emulator
