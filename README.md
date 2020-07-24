@@ -1,8 +1,9 @@
 # REDRIVER2
 
-PC:
+PC (Windows):
+[![Build status](https://ci.appveyor.com/api/projects/status/smxrjad2rf4fg0py/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2/branch/master)
 <p align="center">
-<a href="https://streamable.com/m8d29f"><img src="https://i.ibb.co/9rTkQND/aaa.png"/><a>
+<a href="https://streamable.com/4p8rx5"><img src="https://i.ibb.co/qJ5PJXj/aaa.png"/><a>
  </p>
  
 Project attempting to reverse-engineer PS1 game Driver 2;
