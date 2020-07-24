@@ -4,10 +4,10 @@
 local SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
 local GLEW_DIR = os.getenv("GLEW_DIR") or "dependencies/glew"
 local OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
-local REGION = os.getenv("REGION") or "NTSC_VERSION" -- or PAL_VERSION
+local GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 
-if not (REGION == "NTSC_VERSION" or REGION == "PAL_VERSION") then
-    error("'REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
+if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
+    error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
 end
 
 workspace "REDRIVER2"
@@ -69,6 +69,8 @@ project "REDRIVER2"
         ".", 
         "EMULATOR"
     }
+
+    defines { GAME_REGION }
 
     files { 
         "GAME/**.h", 

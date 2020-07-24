@@ -24,6 +24,9 @@ environment:
 build:
   project: c:\projects\REDRIVER2\src_rebuild\REDRIVER2.sln
   verbosity: minimal
+
+cache:
+  - '%project_folder%\obj\%configuration%\'
   
 platform:
   - Win32
@@ -48,15 +51,14 @@ install:
 
 before_build:
   - cmd: cd %project_folder%
-  - cmd: dir
   - cmd: premake5 vs2019
   
 artifacts:
-   - path: bin\%configuration%\*.zip
+   - path: src_rebuild\bin\%configuration%\*.zip
      name: Binaries
   
 after_build:
-  - cmd: cd bin\%configuration%
+  - cmd: cd %project_folder%\bin\%configuration%
   - 7z a REDRIVER2.zip ".\*"
   
 #build: off
