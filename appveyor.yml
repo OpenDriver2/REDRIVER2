@@ -1,0 +1,62 @@
+version: 0.5.{build}
+
+branches:
+  only:
+  - master
+  - appveyor
+  
+skip_tags: true
+
+image: Visual Studio 2019
+
+configuration:
+- Debug
+- Release
+
+clone_folder: 'c:\projects\REDRIVER2'
+#lib_folder: %clone_folder%\EXTERNAL
+
+environment:
+  project_folder: 'c:\projects\REDRIVER2\src_rebuild'
+  dependency_folder: '%project_folder%\dependencies'
+
+
+build:
+  project: c:\projects\REDRIVER2\src_rebuild\REDRIVER2.sln
+  verbosity: minimal
+  
+platform:
+  - Win32
+  #- x64
+  
+install:
+  - set SDL2_URL="https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip"
+  - appveyor DownloadFile %SDL2_URL% -FileName SDL2.zip
+  - 7z x SDL2.zip -o%dependency_folder%
+  - set GLEW_URL="https://netix.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip"
+  - appveyor DownloadFile %GLEW_URL% -FileName GLEW.zip
+  - 7z x GLEW.zip -o%dependency_folder%
+  - set OPENAL_URL="https://kcat.strangesoft.net/openal-binaries/openal-soft-1.20.1-bin.zip"
+  - appveyor DownloadFile %OPENAL_URL% -FileName OPENAL.zip
+  - 7z x OPENAL.zip -o%dependency_folder%
+  - set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip"
+  - appveyor DownloadFile %PREMAKE_URL% -FileName premake5.zip
+  - 7z x premake5.zip -o%project_folder%
+  - set SDL2_DIR=%dependency_folder%\SDL2-2.0.12
+  - set GLEW_DIR=%dependency_folder%\glew-2.1.0
+  - set OPENAL_DIR=%dependency_folder%\openal-soft-1.20.1-bin
+
+before_build:
+  - cmd: cd %project_folder%
+  - cmd: dir
+  - cmd: premake5 vs2019
+  
+artifacts:
+   - path: bin\%configuration%\*.zip
+     name: Binaries
+  
+after_build:
+  - cmd: cd bin\%configuration%
+  - 7z a REDRIVER2.zip ".\*"
+  
+#build: off
