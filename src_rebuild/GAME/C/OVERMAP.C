@@ -704,14 +704,15 @@ void InitOverheadMap(void)
 			tpage = iVar4;
 
 			do {
-				*pcVar1 = tpage;
+				maptile[iVar3][iVar2] = tpage;
+				//*pcVar1 = tpage;
 				iVar4 = tpage + 1;
-				pcVar1 = pcVar1 + 4;
+				//pcVar1 = pcVar1 + 4;
 
 				LoadMapTile(tpage, (x_map >> 5) + iVar2, (y_map >> 5) + iVar3);
 
-				iVar2 = iVar2 + 1;
-				tpage = iVar4;
+				tpage++;
+				iVar2++;
 			} while (iVar2 < 4);
 
 			iVar3 = iVar5;

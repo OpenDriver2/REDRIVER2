@@ -256,6 +256,7 @@ int LoadImagePSX(RECT16* rect, u_long* p)
 
 int MargePrim(void* p0, void* p1)
 {
+#if 0
 	int v0 = ((unsigned char*)p0)[3];
 	int v1 = ((unsigned char*)p1)[3];
 
@@ -266,6 +267,37 @@ int MargePrim(void* p0, void* p1)
 	{
 		((char*)p0)[3] = v1;
 		((int*)p1)[0] = 0;
+		return 0;
+	}
+
+	return -1;
+#endif //0
+
+#if defined(USE_32_BIT_ADDR)
+	int v0 = ((int*)p0)[1];
+	int v1 = ((int*)p1)[1];
+#else
+	int v0 = ((unsigned char*)p0)[3];
+	int v1 = ((unsigned char*)p1)[3];
+#endif
+
+	v0 += v1;
+	v1 = v0 + 1;
+
+#if defined(USE_32_BIT_ADDR)
+	if (v1 < 0x12)
+#else
+	if (v1 < 0x11)
+#endif
+	{
+#if defined(USE_32_BIT_ADDR)
+		((int*)p0)[1] = v1;
+		((int*)p1)[1] = 0;
+#else
+		((char*)p0)[3] = v1;
+		((int*)p1)[0] = 0;
+#endif
+
 		return 0;
 	}
 
@@ -304,6 +336,12 @@ int StoreImage2(RECT16 *RECT16, u_long *p)
 	return result;
 }
 
+#ifdef USE_32_BIT_ADDR
+#	define OT_WIDTH 2	// two longs
+#else
+#	define OT_WIDTH 1	// single long
+#endif
+
 u_long* ClearOTag(u_long* ot, int n)
 {
 	//Nothing to do here.
@@ -311,11 +349,11 @@ u_long* ClearOTag(u_long* ot, int n)
 		return NULL;
 
 	//last is special terminator
-	ot[n - 1] = (unsigned long)&terminator;
+	ot[n - OT_WIDTH] = (unsigned long)&terminator;
 
-	for (int i = n - 2; i > -1; i--)
+	for (int i = n - OT_WIDTH; i > -1; i -= OT_WIDTH)
 	{
-		ot[i] = (unsigned long)&ot[i + 1];
+		ot[i] = (unsigned long)&ot[i + OT_WIDTH];
 	}
 
 	return NULL;
@@ -331,17 +369,9 @@ u_long* ClearOTagR(u_long* ot, int n)
 	setaddr(ot, &terminator);
 	setlen(ot, 0);
 
-#if defined(USE_32_BIT_ADDR)
-	for (int i = 2; i < n * 2; i += 2)
-#else
-	for (int i = 1; i < n; i++)
-#endif
+	for (int i = OT_WIDTH; i < n * OT_WIDTH; i += OT_WIDTH)
 	{
-#if defined(USE_32_BIT_ADDR)
-		setaddr(&ot[i], (unsigned long)&ot[i - 2]);
-#else
-		setaddr(&ot[i], (unsigned long)&ot[i - 1]);
-#endif
+		setaddr(&ot[i], (unsigned long)&ot[i - OT_WIDTH]);
 		setlen(&ot[i], 0);
 	}
 

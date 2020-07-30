@@ -269,10 +269,17 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 		((u_long *)p)[1] = 0xe6000000|(pbw?0x01:0),	\
 		((u_long *)p)[2] = 0
 
+#if defined(USE_32_BIT_ADDR)
+#define setDrawMode(p, dfe, dtd, tpage, tw) 		\
+		setlen(p, 3),					\
+		((u_long *)p)[2] = _get_mode(dfe, dtd, tpage),	\
+		((u_long *)p)[3] = _get_tw((RECT16 *)tw)
+#else
 #define setDrawMode(p, dfe, dtd, tpage, tw) 		\
 		setlen(p, 2),					\
 		((u_long *)p)[1] = _get_mode(dfe, dtd, tpage),	\
 		((u_long *)p)[2] = _get_tw((RECT16 *)tw)
+#endif
 
 	
 /*	Primitive 	Lentgh		Code				*/
