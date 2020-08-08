@@ -283,6 +283,29 @@ int LightIndex = 0;
 
 int variable_weather = 0;
 
+int gDoLeaves = 1;
+
+SMOKE* smoke_table;
+SMOKE smoke[80];
+
+SVECTOR leaf_rotvec;
+LEAF leaf[50];
+
+SVECTOR debris_rotvec;
+DEBRIS debris[60];
+
+int StreakCount1 = 0;
+int main_cop_light_pos = 0;
+int NextDamagedLamp = 0;
+
+CELL_OBJECT ground_debris[16];
+int groundDebrisIndex = 0;
+
+DAMAGED_LAMP damaged_lamp[5];
+
+MATRIX debris_mat;
+MATRIX leaf_mat;
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ PlacePoolForCar(struct _CAR_DATA *cp /*$s4*/, struct CVECTOR *col /*stack 4*/, int front /*$a2*/)
@@ -774,7 +797,6 @@ void ReleaseLeaf(short num)
 }
 
 
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ AddLeaf(struct VECTOR *Position /*$s1*/, int num_leaves /*$s5*/, int Type /*$s3*/)
@@ -833,12 +855,10 @@ void ReleaseLeaf(short num)
 	/* end block 3 */
 	// End Line: 2990
 
+// [D]
 void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
+	int bVar2;
 	int iVar3;
 	uint uVar4;
 	int iVar5;
@@ -847,84 +867,95 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	long lVar8;
 	int iVar9;
 
-	if (gDoLeaves != 0) {
-		iVar9 = 0;
-		Position->vy = -Position->vy;
-		iVar3 = MapHeight(Position);
-		Position->pad = iVar3;
-		if (0 < num_leaves) {
-			do {
-				uVar4 = rand();
-				iVar3 = AllocateLeaf();
-				if (iVar3 < 0) {
-					return;
-				}
-				leaf[iVar3].position.vx = Position->vx + (uVar4 & 0xfe);
-				leaf[iVar3].position.vz = Position->vz + ((int)uVar4 >> 8 & 0xfeU);
-				if (Type == 1) {
-					iVar5 = Position->vy;
-				}
-				else {
-					iVar5 = Position->pad;
-				}
-				leaf[iVar3].position.vy = -iVar5;
-				lVar8 = Position->pad;
-				leaf[iVar3].life = 600;
-				leaf[iVar3].flags = 2;
-				bVar1 = (byte)uVar4;
-				leaf[iVar3].direction.vx = 0;
-				leaf[iVar3].direction.vy = 0;
-				leaf[iVar3].direction.vz = 0;
-				leaf[iVar3].pos = (ushort)((int)uVar4 >> 7) & 0xff;
-				leaf[iVar3].step = (bVar1 & 7) + 1;
-				leaf[iVar3].position.pad = lVar8;
-				if (Type == 1) {
-					if ((uVar4 & 3) == 0) {
-						leaf[iVar3].rgb.r = 'n';
-						bVar2 = 0xf;
-						leaf[iVar3].rgb.g = 'p';
-						goto LAB_000336f4;
-					}
-					if ((uVar4 & 3) != 1) {
-						leaf[iVar3].rgb.r = '<';
-						bVar2 = 0x1e;
-						leaf[iVar3].rgb.g = '2';
-						goto LAB_000336f4;
-					}
-					leaf[iVar3].rgb.r = '\x14';
-					leaf[iVar3].rgb.g = ',';
-					leaf[iVar3].rgb.b = '\0';
-				}
-				else {
-					bVar2 = bVar1 & 0x1f;
-					leaf[iVar3].rgb.r = bVar2;
-					leaf[iVar3].rgb.g = bVar2;
-				LAB_000336f4:
-					leaf[iVar3].rgb.b = bVar2;
-				}
-				if (gTimeOfDay == 3) {
-					uVar7 = 0x3f3f3f3f;
-					uVar6 = (int)leaf[iVar3].rgb >> 2;
-				LAB_00033744:
-					*(uint *)&leaf[iVar3].rgb = uVar6 & uVar7;
-				}
-				else {
-					if (gWeather - 1U < 2) {
-						uVar7 = 0x7f7f7f7f;
-						uVar6 = (int)leaf[iVar3].rgb >> 1;
-						goto LAB_00033744;
-					}
-				}
-				iVar9 = iVar9 + 1;
-				leaf[iVar3].sin_index1 = (ushort)uVar4 & 0xfff;
-				leaf[iVar3].sin_index2 = (ushort)((int)uVar4 >> 4) & 0xfff;
-				leaf[iVar3].sin_addition2 = -((byte)(uVar4 >> 8) & 7);
-				leaf[iVar3].sin_addition1 = -(bVar1 & 3);
-				leaf[iVar3].type = (char)Type;
-			} while (iVar9 < num_leaves);
+	if (gDoLeaves == 0)
+		return;
+
+	Position->vy = -Position->vy;
+	Position->pad = MapHeight(Position);
+
+	iVar9 = 0;
+	while (iVar9 < num_leaves)
+	{
+		uVar4 = rand();
+
+		iVar3 = AllocateLeaf();
+		if (iVar3 < 0)
+			return;
+
+		LEAF* myleaf = &leaf[iVar3];
+
+		myleaf->position.vx = Position->vx + (uVar4 & 0xfe);
+		myleaf->position.vz = Position->vz + ((int)uVar4 >> 8 & 0xfeU);
+
+		if (Type == 1)
+			iVar5 = Position->vy;
+		else
+			iVar5 = Position->pad;
+
+		myleaf->position.vy = -iVar5;
+		myleaf->life = 600;
+		myleaf->flags = 2;
+		myleaf->direction.vx = 0;
+		myleaf->direction.vy = 0;
+		myleaf->direction.vz = 0;
+		myleaf->pos = (ushort)((int)uVar4 >> 7) & 0xff;
+		myleaf->step = (uVar4 & 7) + 1;
+		myleaf->position.pad = Position->pad;
+
+		if (Type == 1)
+		{
+			if ((uVar4 & 3) == 0)
+			{
+				myleaf->rgb.r = 'n';
+				bVar2 = 0xf;
+				myleaf->rgb.g = 'p';
+				goto LAB_000336f4;
+			}
+
+			if ((uVar4 & 3) != 1)
+			{
+				myleaf->rgb.r = 60;
+				bVar2 = 30;
+				myleaf->rgb.g = 50;
+				goto LAB_000336f4;
+			}
+
+			myleaf->rgb.r = 20;
+			myleaf->rgb.g = 44;
+			myleaf->rgb.b = 0;
 		}
+		else
+		{
+			bVar2 = uVar4 & 0x1f;
+			myleaf->rgb.r = bVar2;
+			myleaf->rgb.g = bVar2;
+		LAB_000336f4:
+			myleaf->rgb.b = bVar2;
+		}
+
+		if (gTimeOfDay == 3)
+		{
+			uVar7 = 0x3f3f3f3f;
+			uVar6 = *(int*)&myleaf->rgb >> 2;
+		LAB_00033744:
+			*(uint*)&myleaf->rgb = uVar6 & uVar7;
+		}
+		else if (gWeather - 1U < 2)
+		{
+			uVar7 = 0x7f7f7f7f;
+			uVar6 = *(int*)&myleaf->rgb >> 1;
+			goto LAB_00033744;
+		}
+
+
+		myleaf->sin_index1 = uVar4 & 0xfff;
+		myleaf->sin_index2 = ((int)uVar4 >> 4) & 0xfff;
+		myleaf->sin_addition2 = -((uVar4 >> 8) & 7);
+		myleaf->sin_addition1 = -(uVar4 & 3);
+		myleaf->type = Type;
+
+		iVar9++;
 	}
-	return;*/
 }
 
 
@@ -969,39 +1000,41 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	/* end block 4 */
 	// End Line: 17534
 
+// [D]
 void SwirlLeaves(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	int iVar2;
-	LEAF *pLVar3;
-	int iVar4;
+	int XDiff;
+	int ZDiff;
+	LEAF *lpLeaf;
+	int count;
 
 	if (cp < car_data) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if (((0x1d4be < (cp->hd).wheel_speed + 39999U) && (gDoLeaves != 0)) &&
-		(pLVar3 = leaf, pauseflag == 0)) {
-		iVar4 = 0x31;
+
+	lpLeaf = leaf;
+
+	if ((0x1d4be < cp->hd.wheel_speed + 39999U) && gDoLeaves != 0 && pauseflag == 0)
+	{
+		count = 49;
 		do {
-			if ((((pLVar3->flags & 2) != 0) && (-0xb4 < (pLVar3->position).vy + (cp->hd).where.t[1])) &&
-				((iVar2 = (cp->hd).where.t[2] - (pLVar3->position).vz,
-				((cp->hd).where.t[0] - (pLVar3->position).vx) + 0x167U < 0x2cf &&
-					((iVar2 < 0x168 && (-0x168 < iVar2)))))) {
-				iVar2 = rand();
-				iVar1 = (pLVar3->position).vy;
-				(pLVar3->direction).vy = -0x19 - ((ushort)iVar2 & 0x1f);
-				(pLVar3->position).vy = iVar1 + -1;
+			XDiff = cp->hd.where.t[0] - lpLeaf->position.vx;
+			ZDiff = cp->hd.where.t[2] - lpLeaf->position.vz;
+
+			if ((lpLeaf->flags & 2) != 0 && 
+				lpLeaf->position.vy + cp->hd.where.t[1] > -180 &&
+				XDiff + 359 < 719 && ZDiff < 360 && -360 < ZDiff)
+			{
+				lpLeaf->direction.vy = -25 - (rand() & 0x1f);
+				lpLeaf->position.vy--;
 			}
-			iVar4 = iVar4 + -1;
-			pLVar3 = pLVar3 + 1;
-		} while (-1 < iVar4);
+
+			count--;
+			lpLeaf++;
+		} while (-1 < count);
 	}
-	return;
-	*/
 }
 
 
@@ -1145,26 +1178,6 @@ void InitDebrisNames(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-SMOKE *smoke_table;
-SMOKE smoke[80];
-
-SVECTOR leaf_rotvec;
-LEAF leaf[50];
-
-SVECTOR debris_rotvec;
-DEBRIS debris[60];
-
-int StreakCount1 = 0;
-int main_cop_light_pos = 0;
-int NextDamagedLamp = 0;
-
-CELL_OBJECT ground_debris[16];
-int groundDebrisIndex = 0;
-
-DAMAGED_LAMP damaged_lamp[5];
-
-MATRIX debris_mat;
-MATRIX leaf_mat;
 
 // [D]
 void InitDebris(void)
@@ -1444,58 +1457,65 @@ void ReleaseSmoke(short num)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void AddGroundDebris(void)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 	uint uVar2;
 	int iVar3;
 	int Type;
-	CELL_OBJECT *pCVar4;
-	MODEL *pMVar5;
+	CELL_OBJECT *cop;
+	MODEL *model;
 	int iVar6;
-	VECTOR local_30;
+	VECTOR Position;
 
-	if (0x30d3e < car_data[0].hd.wheel_speed + 99999U) {
+	if (0x30d3e < car_data[0].hd.wheel_speed + 99999U)
+	{
 		iVar6 = 0;
-		pCVar4 = ground_debris;
+		cop = ground_debris;
+
 		do {
-			if (pCVar4->type != 0xffff) {
-				Type = (pCVar4->pos).vx - camera_position.vx;
-				pMVar5 = modelpointers1536[pCVar4->type];
-				iVar3 = (pCVar4->pos).vz - camera_position.vz;
-				if (Type < 0) {
+			if (cop->type != 0xffff)
+			{
+				Type = cop->pos.vx - camera_position.vx;
+				model = modelpointers[cop->type];
+				iVar3 = cop->pos.vz - camera_position.vz;
+
+				if (Type < 0)
 					Type = -Type;
-				}
-				if (iVar3 < 0) {
+
+				if (iVar3 < 0)
 					iVar3 = -iVar3;
-				}
-				if (((Type < 0x2329) && (iVar3 < 0x2329)) && ((7000 < Type || (7000 < iVar3)))) {
-					if (0x27 < next_leaf) {
+
+				if (((Type < 0x2329) && (iVar3 < 0x2329)) && ((7000 < Type || (7000 < iVar3))))
+				{
+					if (39 < next_leaf)
 						return;
-					}
+
 					uVar1 = rand();
-					local_30.vy = -10000;
-					local_30.vx = (pCVar4->pos).vx + ((uVar1 & 0x3ff) - 0x200);
+					Position.vy = -10000;
+					Position.vx = cop->pos.vx + ((uVar1 & 0x3ff) - 0x200);
 					uVar2 = rand();
-					local_30.vz = (pCVar4->pos).vz + ((uVar2 & 0x3ff) - 0x200);
+					Position.vz = cop->pos.vz + ((uVar2 & 0x3ff) - 0x200);
 					uVar2 = uVar1 & 7;
-					if ((pMVar5->flags2 & 0x2000) == 0) {
+
+					if ((model->flags2 & 0x2000) == 0) 
+					{
 						uVar2 = uVar1 & 3;
 						Type = 2;
 					}
-					else {
+					else 
+					{
 						Type = 1;
 					}
-					AddLeaf(&local_30, uVar2 + 1, Type);
+
+					AddLeaf(&Position, uVar2 + 1, Type);
 				}
 			}
-			iVar6 = iVar6 + 1;
-			pCVar4 = pCVar4 + 1;
-		} while (iVar6 < 0x10);
+			iVar6++;
+			cop++;
+		} while (iVar6 < 16);
 	}
-	return;*/
 }
 
 
@@ -4653,8 +4673,7 @@ void HandleDebris(void)
 							sVar7 = rcossin_tbl[uVar11 * 2 + 1];
 							iVar17 = (int)sVar5 + (int)sVar10;
 							(lf->direction).vx = (short)(iVar17 * 5 >> 0xb);
-							(lf->direction).vz =
-								(short)(((int)sVar6 + (int)sVar7) * 5 >> 0xb);
+							(lf->direction).vz = (short)(((int)sVar6 + (int)sVar7) * 5 >> 0xb);
 						}
 
 						GetSmokeDrift(&Drift);
