@@ -15,6 +15,8 @@
 #include "SPOOL.H"
 #include "MODELS.H"
 #include "OBJCOLL.H"
+#include "PRES.H"
+#include "SOUND.H"
 #include "../MEMCARD/MAIN.H"
 
 #include "STRINGS.H"
@@ -196,29 +198,28 @@ void InitDirectorVariables(void)
 	/* end block 4 */
 	// End Line: 3267
 
+// [D]
 void DeleteCurrentCamera(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
+	int prev;
+	int next;
 	PLAYBACKCAMERA *Change;
-	uint uVar3;
 
-	bVar1 = LastChange->prev;
-	uVar3 = (uint)bVar1;
-	bVar2 = LastChange->next;
-	if (bVar1 != 0xff) {
-		PlaybackCamera[uVar3].next = bVar2;
-		if (bVar2 != 0xfe) {
-			PlaybackCamera[bVar2].prev = bVar1;
-		}
-		Change = PlaybackCamera + uVar3;
+	prev = LastChange->prev;
+	next = LastChange->next;
+
+	if (prev != 0xff)
+	{
+		PlaybackCamera[prev].next = next;
+
+		if (next != 254)
+			PlaybackCamera[next].prev = prev;
+
 		LastChange->FrameCnt = 100000;
-		setCamera(Change);
-		LastChange = PlaybackCamera + uVar3;
+
+		setCamera(PlaybackCamera + prev);
+		LastChange = PlaybackCamera + prev;
 	}
-	return;*/
 }
 
 
@@ -237,25 +238,26 @@ void DeleteCurrentCamera(int CameraCnt)
 	/* end block 2 */
 	// End Line: 3306
 
+// [D]
 void setCamera(PLAYBACKCAMERA *Change)
 {
-	UNIMPLEMENTED();
-	/*
-	CameraPos.vy = (int)Change->CameraPosvy;
-	camera_angle.vx = (Change->angle).vx;
-	camera_angle.vy = (Change->angle).vy;
-	camera_angle.vz = (Change->angle).vz;
-	gCameraDistance = (int)Change->gCameraDistance;
-	gCameraMaxDistance = (int)Change->gCameraMaxDistance;
-	gCameraAngle = (int)Change->gCameraAngle;
+	CameraPos.vy = Change->CameraPosvy;
+
+	camera_angle.vx = Change->angle.vx;
+	camera_angle.vy = Change->angle.vy;
+	camera_angle.vz = Change->angle.vz;
+
+	gCameraDistance = Change->gCameraDistance;
+	gCameraMaxDistance = Change->gCameraMaxDistance;
+	gCameraAngle = Change->gCameraAngle;
 	cameraview = Change->cameraview & 7;
-	tracking_car = (char)(((uint)(byte)Change->cameraview & 8) >> 3);
-	player.cameraPos.vx = (Change->position).vx;
-	player.cameraPos.vy = (Change->position).vy;
-	player.cameraPos.vz = (Change->position).vz;
-	player.cameraCarId = *(char *)&(Change->angle).pad;
-	return;
-	*/
+
+	tracking_car = (((unsigned char)Change->cameraview & 8) >> 3);
+
+	player[0].cameraPos.vx = Change->position.vx;
+	player[0].cameraPos.vy = Change->position.vy;
+	player[0].cameraPos.vz = Change->position.vz;
+	player[0].cameraCarId = Change->angle.pad;
 }
 
 
@@ -302,8 +304,8 @@ void EditCamera(int CameraCnt)
 {
 	UNIMPLEMENTED();
 	/*
-	byte bVar1;
-	byte bVar2;
+	unsigned char bVar1;
+	unsigned char bVar2;
 	short sVar3;
 	short sVar4;
 	short sVar5;
@@ -315,42 +317,48 @@ void EditCamera(int CameraCnt)
 	long lVar11;
 	long lVar12;
 	int count;
-	undefined4 uVar13;
+	int uVar13;
 	int iVar14;
 	int iVar15;
 
-	if (LastChange == (PLAYBACKCAMERA *)0x0) {
+	if (LastChange == NULL)
 		LastChange = PlaybackCamera;
-	}
+
 	ThisChange = LastChange;
 	LastChange->cameraview = cameraview & 7 | tracking_car << 3;
 	pPVar9 = ThisChange;
-	(ThisChange->position).vx = player.cameraPos.vx;
-	(pPVar9->position).vy = player.cameraPos.vy;
-	(pPVar9->position).vz = player.cameraPos.vz;
-	(pPVar9->angle).vx = camera_angle.vx;
-	(pPVar9->angle).vy = camera_angle.vy;
+	ThisChange->position.vx = player[0].cameraPos.vx;
+	ThisChange->position.vy = player[0].cameraPos.vy;
+	ThisChange->position.vz = player[0].cameraPos.vz;
+	ThisChange->angle.vx = camera_angle.vx;
+	ThisChange->angle.vy = camera_angle.vy;
 	sVar3 = (short)gCameraDistance;
-	(pPVar9->angle).vz = camera_angle.vz;
-	cVar6 = player.cameraCarId;
+	ThisChange->angle.vz = camera_angle.vz;
+	cVar6 = player[0].cameraCarId;
 	sVar5 = (short)gCameraAngle;
 	sVar4 = (short)gCameraMaxDistance;
-	pPVar9->gCameraDistance = sVar3;
-	pPVar9->gCameraMaxDistance = sVar4;
-	pPVar9->gCameraAngle = sVar5;
-	(pPVar9->angle).pad = (short)cVar6;
-	pPVar9->CameraPosvy = (short)CameraPos.vy;
+	ThisChange->gCameraDistance = gCameraDistance;
+	ThisChange->gCameraMaxDistance = gCameraMaxDistance;
+	ThisChange->gCameraAngle = gCameraAngle;
+	ThisChange->angle.pad = (short)player[0].cameraCarId;
+	ThisChange->CameraPosvy = (short)CameraPos.vy;
+
 	iVar8 = 0;
 	count = 0;
+
 	do {
 		pPVar9 = (PLAYBACKCAMERA *)(&(PlaybackCamera->position).vx + iVar8 + count);
 		iVar15 = count + 1;
-		if ((pPVar9 != ThisChange) && (pPVar9->FrameCnt == ThisChange->FrameCnt)) {
+		if ((pPVar9 != ThisChange) && (pPVar9->FrameCnt == ThisChange->FrameCnt))
+		{
 			bVar1 = pPVar9->prev;
 			bVar2 = pPVar9->next;
-			if (bVar1 == 0xff) {
+
+			if (bVar1 == 0xff) 
+			{
 				pPVar10 = (PLAYBACKCAMERA *)&ThisChange->cameraview;
 				pPVar7 = ThisChange;
+
 				do {
 					lVar11 = (pPVar7->position).vy;
 					lVar12 = (pPVar7->position).vz;
@@ -362,29 +370,34 @@ void EditCamera(int CameraCnt)
 					pPVar7 = (PLAYBACKCAMERA *)&(pPVar7->angle).vz;
 					pPVar9 = (PLAYBACKCAMERA *)&(pPVar9->angle).vz;
 				} while (pPVar7 != pPVar10);
+
 				(pPVar9->position).vx = (pPVar7->position).vx;
 				iVar14 = (iVar8 + count) * 4;
 				(&PlaybackCamera->idx)[iVar14] = (char)count;
 				(&PlaybackCamera->prev)[iVar14] = -1;
-				if (ThisChange->next != 0xfe) {
-					PlaybackCamera[(byte)ThisChange->next].prev = (char)count;
-				}
-				deleteCamera((uint)(byte)ThisChange->idx);
+
+				if (ThisChange->next != 254) 
+					PlaybackCamera[ThisChange->next].prev = count;
+
+				deleteCamera(ThisChange->idx);
 				ThisChange = (PLAYBACKCAMERA *)(&(PlaybackCamera->position).vx + iVar8 + count);
 				LastChange = ThisChange;
 			}
-			else {
+			else 
+			{
 				PlaybackCamera[bVar1].next = bVar2;
-				if (bVar2 != 0xfe) {
+				if (bVar2 != 0xfe) 
+				{
 					PlaybackCamera[bVar2].prev = bVar1;
 				}
+
 				deleteCamera(count);
 			}
 		}
+
 		iVar8 = iVar15 * 8;
 		count = iVar15;
-	} while (iVar15 < 0x3c);
-	return;*/
+	} while (iVar15 < 0x3c);*/
 }
 
 
@@ -421,7 +434,7 @@ void EditCamera(int CameraCnt)
 void RecordCamera(int CameraCnt)
 {
 	char cVar1;
-	PLAYBACKCAMERA *pPVar2;
+	PLAYBACKCAMERA *TempChange;
 
 	if (((((((LastChange == NULL) ||
 		(LastChange->cameraview !=
@@ -432,7 +445,7 @@ void RecordCamera(int CameraCnt)
 		((LastChange->gCameraMaxDistance != gCameraMaxDistance ||
 			(LastChange->gCameraAngle != gCameraAngle)))))) ||
 			(LastChange->CameraPosvy != CameraPos.vy)) &&
-		(pPVar2 = FindFreeCamera(), pPVar2 != NULL))
+		(TempChange = FindFreeCamera(), TempChange != NULL))
 	{
 		if (CameraCnt == 0) 
 		{
@@ -442,13 +455,13 @@ void RecordCamera(int CameraCnt)
 		{
 			if ((ThisChange == NULL) || (CameraCnt != ThisChange->FrameCnt)) 
 			{
-				pPVar2->next = LastChange->next;
-				pPVar2->prev = LastChange->idx;
-				LastChange->next = pPVar2->idx;
-				ThisChange = pPVar2;
-				if (pPVar2->next != 0xfe)
+				TempChange->next = LastChange->next;
+				TempChange->prev = LastChange->idx;
+				LastChange->next = TempChange->idx;
+				ThisChange = TempChange;
+				if (TempChange->next != 0xfe)
 				{
-					PlaybackCamera[pPVar2->next].prev = pPVar2->idx;
+					PlaybackCamera[TempChange->next].prev = TempChange->idx;
 				}
 			}
 		}
@@ -1146,6 +1159,7 @@ void deleteCamera(int count)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void DeleteAllCameras(void)
 {
 	int count;
@@ -1392,15 +1406,14 @@ void ShowIcons(char *menu, int selected, int x_offset)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ShowReplayOptions(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((gInGameCutsceneActive == 0) && (quick_replay == 0)) {
+	if (gInGameCutsceneActive == 0 && quick_replay == 0) 
+	{
 		ShowReplayMenu();
 		CameraBar(CameraCnt);
 	}
-	return;*/
 }
 
 
@@ -1456,65 +1469,83 @@ void ShowReplayOptions(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ShowReplayMenu(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char *menu;
 	uint uVar1;
 	int selected;
 
-	if (((menuactive < 1) && (PlayMode != 2)) && (PlayMode != 3)) {
+	if (menuactive < 1 && PlayMode != 2 && PlayMode != 3) 
+	{
 		UnPauseSound();
 		ShowIcons(menu0, 0, 0);
 	}
-	else {
+	else 
+	{
 		PauseSound();
+
 		selected = CursorX;
-		if (menuactive != 1) {
+
+		if (menuactive != 1)
 			selected = 99;
-		}
+
 		ShowIcons(menu1, selected, 0);
 	}
-	if (1 < menuactive) {
-		if (MenuOffset == 0) {
-			if (menuactive != 2) {
+
+	if (menuactive > 1) 
+	{
+		if (MenuOffset == 0) 
+		{
+			if (menuactive != 2)
+			{
 				ShowIcons(menu2, 99, 0);
 				goto LAB_0003c6c4;
 			}
+
 			menu = menu2;
 			selected = 0;
 		}
-		else {
-			if (menuactive != 2) {
+		else 
+		{
+			if (menuactive != 2)
+			{
 				ShowIcons(menu6, 99, MenuOffset);
 				goto LAB_0003c6c4;
 			}
+
 			menu = menu6;
 			selected = MenuOffset;
 		}
+
 		ShowIcons(menu, CursorY + -1, selected);
 	}
+
 LAB_0003c6c4:
-	if (menuactive == 3) {
+	if (menuactive == 3) 
+	{
 		ShowIcons(menu3, CursorX + -6, MenuOffset);
 	}
-	if (menuactive == 4) {
+	else if (menuactive == 4)
+	{
 		ShowIcons(menu4, CursorX + -6, MenuOffset);
 	}
-	if (menuactive == 5) {
+	else if (menuactive == 5)
+	{
 		ShowIcons(menu5, CursorX + -6, MenuOffset);
 	}
-	if ((AutoDirect != 0) && (pauseflag == 0)) {
+
+	if ((AutoDirect != 0) && (pauseflag == 0))
+	{
 		uVar1 = CameraCnt & 0x1f;
-		if (0xf < uVar1) {
+
+		if (0xf < uVar1)
 			uVar1 = 0x20 - uVar1;
-		}
-		SetTextColour((uchar)(uVar1 << 3), '\0', '\0');
-		PrintString(s_Regia_automatica_0001077c, 100, 0x1e);
+	
+		SetTextColour((uVar1 << 3), 0, 0);
+		PrintString("Auto direct", 100, 0x1e);
 	}
 	return;
-	*/
 }
 
 
@@ -2940,29 +2971,22 @@ int InvalidCamera(int car_num)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int NoMoreCamerasErrorMessage(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	PLAYBACKCAMERA *pPVar1;
-	int iVar2;
-	uint uVar3;
+	int strobe;
 
-	pPVar1 = FindFreeCamera();
-	iVar2 = 0;
-	if (pPVar1 == (PLAYBACKCAMERA *)0x0) {
-		if ((FrameCnt & 0x1fU) < 0x10) {
-			uVar3 = FrameCnt & 0x1f;
-		}
-		else {
-			uVar3 = 0x20 - (FrameCnt & 0x1fU);
-		}
-		SetTextColour((uchar)(uVar3 << 3), '\0', '\0');
-		iVar2 = 1;
-	}
-	return iVar2;
-	*/
+	if (FindFreeCamera())
+		return 0;
+
+	if ((FrameCnt & 0x1fU) < 16) 
+		strobe = FrameCnt & 0x1f;
+	else 
+		strobe = 32 - (FrameCnt & 0x1fU);
+
+	SetTextColour((strobe << 3), 0, 0);
+
+	return 1;
 }
 
 
@@ -3000,15 +3024,13 @@ int NoMoreCamerasErrorMessage(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int FirstCamera(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	if ((LastChange != (PLAYBACKCAMERA *)0x0) && (LastChange->prev != -1)) {
+	if (LastChange && LastChange->prev != -1) 
 		return 0;
-	}
-	return 1;*/
+
+	return 1;
 }
 
 
@@ -3042,25 +3064,16 @@ int FirstCamera(void)
 	/* end block 4 */
 	// End Line: 6929
 
+// [D]
 int dist(VECTOR *pos1, VECTOR *pos2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int iVar2;
+	int dx;
+	int dz;
 
-	iVar2 = pos1->vx - pos2->vx;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0xf;
-	}
-	iVar1 = pos1->vz - pos2->vz;
-	if (iVar1 < 0) {
-		iVar1 = iVar1 + 0xf;
-	}
-	iVar2 = SquareRoot0((iVar2 >> 4) * (iVar2 >> 4) + (iVar1 >> 4) * (iVar1 >> 4));
-	return iVar2 << 4;
-	*/
+	dx = pos1->vx - pos2->vx;
+	dz = pos1->vz - pos2->vz;
+
+	return SquareRoot0((dx >> 4) * (dx >> 4) + (dz >> 4) * (dz >> 4)) << 4;
 }
 
 
@@ -3094,25 +3107,26 @@ int dist(VECTOR *pos1, VECTOR *pos2)
 	/* end block 4 */
 	// End Line: 8547
 
+// [D]
 void SetCameraReturnedFromCutscene(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	/*
-	PLAYBACKCAMERA *pPVar1;
-	int iVar2;
+	PLAYBACKCAMERA *next;
+	int count;
 
-	iVar2 = 0;
-	pPVar1 = PlaybackCamera;
-	while ((NextChange = pPVar1, iVar2 < 0x3c &&
-		((NextChange = PlaybackCamera + iVar2, CameraCnt < NextChange->FrameCnt ||
-		((NextChange->next != -2 &&
-			(pPVar1 = PlaybackCamera + (byte)NextChange->next, pPVar1->FrameCnt <= CameraCnt))))))) {
-		iVar2 = iVar2 + 1;
+	count = 0;
+	next = PlaybackCamera;
+
+	while ((NextChange = next, count < 60 &&
+		((NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
+		((NextChange->next != -2 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))))))
+	{
+		count++;
 	}
+
 	LastChange = NextChange;
+
 	SetPlaybackCamera(NextChange);
 	FindNextChange(CameraCnt + 1);
-	return;*/
 }
 
 

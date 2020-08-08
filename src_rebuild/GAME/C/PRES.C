@@ -71,7 +71,6 @@ void SetTextColour(unsigned char Red, unsigned char Green, unsigned char Blue)
 	gFontColour.r = Red;
 	gFontColour.g = Green;
 	gFontColour.b = Blue;
-	return;
 }
 
 
