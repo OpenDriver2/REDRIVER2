@@ -403,6 +403,7 @@ int LoadReplayFromBuffer(char *buffer)
 		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
 		destStream->length = sheader->Length;
+		destStream->playbackrun = 0;
 
 		if (sheader->Length > maxLength)
 			maxLength = sheader->Length;
