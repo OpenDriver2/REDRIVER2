@@ -18,6 +18,17 @@ workspace "REDRIVER2"
     filter "system:Windows"
         defines { "USE_32_BIT_ADDR", "PGXP" }
 
+    filter "configurations:Debug"
+        defines { 
+            "DEBUG", 
+        }
+        symbols "On"
+
+    filter "configurations:Release"
+        defines {
+            "NDEBUG",
+        }
+
 -- EMULATOR layer
 project "PSX"
     kind "StaticLib"
@@ -59,6 +70,9 @@ project "PSX"
             GLEW_DIR.."/lib/Release/Win32",
             OPENAL_DIR.."/libs/Win32",
         }
+
+    filter "configurations:Release"
+        optimize "Full"
 
 -- game iteslf
 project "REDRIVER2"
@@ -107,16 +121,13 @@ project "REDRIVER2"
 
     filter "configurations:Debug"
         defines { 
-            "DEBUG", 
             "DEBUG_OPTIONS",
             "COLLISION_DEBUG" 
          }
-        symbols "On"
 
     filter "configurations:Release"
         defines { 
-            "NDEBUG", 
             "DEBUG_OPTIONS",
             --"COLLISION_DEBUG" 
         }
-        optimize "On"
+        optimize "Size" -- code optimizations are disabled due to calculation differences for replays
