@@ -1055,16 +1055,10 @@ void DrawMapPSX(int *comp_val)
 										if (((model->flags2 & 0x80) != 0) && (alleycount++, alleycount == 13))
 										{
 											cop = UnpackCellObject(ppco, &ci.nearCell);
-
-											uVar9 = groundDebrisIndex & 0xf;
-											ground_debris[uVar9].pos.vx = (cop->pos).vx;
-											ground_debris[uVar9].pos.vy = (cop->pos).vy;
-											ground_debris[uVar9].pos.vz = (cop->pos).vz;
-											ground_debris[uVar9].pad = cop->pad;
+											ground_debris[groundDebrisIndex++] = *cop;
+											groundDebrisIndex = groundDebrisIndex % 16;
 
 											alleycount = 0;
-
-											groundDebrisIndex++;
 										}
 
 										if (tiles_found < 0x100)
@@ -1089,13 +1083,8 @@ void DrawMapPSX(int *comp_val)
 									if (((model->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount++, uVar9 == 0))
 									{
 										cop = UnpackCellObject(ppco, &ci.nearCell);
-
-										uVar9 = groundDebrisIndex & 0xf;
-										ground_debris[uVar9].pos.vx = cop->pos.vx;
-										ground_debris[uVar9].pos.vy = cop->pos.vy;
-										ground_debris[uVar9].pos.vz = cop->pos.vz;
-										ground_debris[uVar9].pad = cop->pad;
-										groundDebrisIndex++;
+										ground_debris[groundDebrisIndex++] = *cop;
+										groundDebrisIndex = groundDebrisIndex % 16;
 									}
 								}
 							}
