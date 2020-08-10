@@ -4401,7 +4401,7 @@ void DisplayDebris(DEBRIS *debris, char type)
 	}
 	else
 	{
-		tv = (TRI_POINT *)(debris_rot_table[debris->type] + (debris->pos >> 3 & 0x1fU) * 12);
+		tv = debris_rot_table[debris->type] + (debris->pos >> 3 & 0x1fU);
 
 		v[0].vx = tv->v0.vx + debrisvec.vx;
 		v[0].vy = tv->v0.vy + debrisvec.vy;
@@ -4422,23 +4422,23 @@ void DisplayDebris(DEBRIS *debris, char type)
 		{
 			poly1 = (POLY_GT4 *)current->primptr;
 
-			v[3].vx = debrisvec.vx - tv->v0.vx;
-			v[3].vy = debrisvec.vy - tv->v0.vy;
-			v[3].vz = debrisvec.vz - tv->v0.vz;
-
-			*(ushort *)&poly1->u0 = *(ushort *)&litter_texture.coords.u0;
-			*(ushort *)&poly1->u1 = *(ushort *)&litter_texture.coords.u1;
-			*(ushort *)&poly1->u2 = *(ushort *)&litter_texture.coords.u2;
-			*(ushort *)&poly1->u3 = *(ushort *)&litter_texture.coords.u3;
-
-			poly1->clut = litter_texture.clutid;
-			poly1->tpage = litter_texture.tpageid;
-
 			gte_stsxy3(&poly1->x0, &poly1->x1, &poly1->x2);
 			gte_stsz(&z);
 
 			if (z > 223)
 			{
+				*(ushort*)&poly1->u0 = *(ushort*)&litter_texture.coords.u0;
+				*(ushort*)&poly1->u1 = *(ushort*)&litter_texture.coords.u1;
+				*(ushort*)&poly1->u2 = *(ushort*)&litter_texture.coords.u2;
+				*(ushort*)&poly1->u3 = *(ushort*)&litter_texture.coords.u3;
+
+				poly1->clut = litter_texture.clutid;
+				poly1->tpage = litter_texture.tpageid;
+
+				v[3].vx = debrisvec.vx - tv->v0.vx;
+				v[3].vy = debrisvec.vy - tv->v0.vy;
+				v[3].vz = debrisvec.vz - tv->v0.vz;
+
 				gte_ldv0(&v[3]);
 				gte_rtps();
 
@@ -4463,26 +4463,23 @@ void DisplayDebris(DEBRIS *debris, char type)
 		{
 			poly = (POLY_FT3 *)current->primptr;
 
-			setPolyFT3(poly);
-
-			poly->u0 = debris_texture.coords.u0;
-			poly->v0 = debris_texture.coords.v0;
-			poly->u1 = debris_texture.coords.u1;
-			poly->v1 = debris_texture.coords.v1;
-			poly->u2 = debris_texture.coords.u2;
-			poly->v2 = debris_texture.coords.v2;
-
 			gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 			gte_stsz(&z);
 
-			poly->r0 = debris->rgb.r;
-			poly->g0 = debris->rgb.g;
-			poly->b0 = debris->rgb.b;
-			poly->tpage = debris_texture.tpageid;
-			poly->clut = debris_texture.clutid;
-
 			if (z > 223)
 			{
+				*(ushort*)&poly->u0 = *(ushort*)&debris_texture.coords.u0;
+				*(ushort*)&poly->u1 = *(ushort*)&debris_texture.coords.u1;
+				*(ushort*)&poly->u2 = *(ushort*)&debris_texture.coords.u2;
+
+				poly->r0 = debris->rgb.r;
+				poly->g0 = debris->rgb.g;
+				poly->b0 = debris->rgb.b;
+
+				poly->tpage = debris_texture.tpageid;
+				poly->clut = debris_texture.clutid;
+
+				setPolyFT3(poly);
 				addPrim(current->ot + (z >> 3), poly);
 				current->primptr += sizeof(POLY_FT3);
 			}
