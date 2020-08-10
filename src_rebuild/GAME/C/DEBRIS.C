@@ -906,9 +906,9 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		{
 			if ((uVar4 & 3) == 0)
 			{
-				myleaf->rgb.r = 'n';
+				myleaf->rgb.r = 110;
 				bVar2 = 0xf;
-				myleaf->rgb.g = 'p';
+				myleaf->rgb.g = 112;
 				goto LAB_000336f4;
 			}
 
@@ -1460,61 +1460,65 @@ void ReleaseSmoke(short num)
 // [D]
 void AddGroundDebris(void)
 {
-	uint uVar1;
-	uint uVar2;
-	int iVar3;
-	int Type;
+	int seed;
+	int number;
+	int zbound;
+	int xbound;
+	int type;
 	CELL_OBJECT *cop;
 	MODEL *model;
-	int iVar6;
+	int count;
 	VECTOR Position;
 
 	if (0x30d3e < car_data[0].hd.wheel_speed + 99999U)
 	{
-		iVar6 = 0;
+		count = 0;
 		cop = ground_debris;
 
 		do {
 			if (cop->type != 0xffff)
 			{
-				Type = cop->pos.vx - camera_position.vx;
 				model = modelpointers[cop->type];
-				iVar3 = cop->pos.vz - camera_position.vz;
 
-				if (Type < 0)
-					Type = -Type;
+				xbound = cop->pos.vx - camera_position.vx;
+				zbound = cop->pos.vz - camera_position.vz;
 
-				if (iVar3 < 0)
-					iVar3 = -iVar3;
+				if (xbound < 0)
+					xbound = -xbound;
 
-				if (((Type < 0x2329) && (iVar3 < 0x2329)) && ((7000 < Type || (7000 < iVar3))))
+				if (zbound < 0)
+					zbound = -zbound;
+
+				if ((xbound < 9001) && (zbound < 9001) && ((7000 < xbound || (7000 < zbound))))
 				{
 					if (39 < next_leaf)
 						return;
 
-					uVar1 = rand();
-					Position.vy = -10000;
-					Position.vx = cop->pos.vx + ((uVar1 & 0x3ff) - 0x200);
-					uVar2 = rand();
-					Position.vz = cop->pos.vz + ((uVar2 & 0x3ff) - 0x200);
-					uVar2 = uVar1 & 7;
+					seed = rand();
+
+					Position.vy = 10000;
+					Position.vx = cop->pos.vx + ((seed & 0x3ff) - 0x200);
+					Position.vz = cop->pos.vz + ((rand() & 0x3ff) - 0x200);
+
+					number = seed & 7;
 
 					if ((model->flags2 & 0x2000) == 0) 
 					{
-						uVar2 = uVar1 & 3;
-						Type = 2;
+						number = seed & 3;
+						type = 2;
 					}
 					else 
 					{
-						Type = 1;
+						type = 1;
 					}
 
-					AddLeaf(&Position, uVar2 + 1, Type);
+					AddLeaf(&Position, number + 1, type);
 				}
 			}
-			iVar6++;
+
+			count++;
 			cop++;
-		} while (iVar6 < 16);
+		} while (count < 16);
 	}
 }
 
