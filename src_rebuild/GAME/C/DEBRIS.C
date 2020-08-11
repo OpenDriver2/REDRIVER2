@@ -1024,8 +1024,8 @@ void SwirlLeaves(_CAR_DATA *cp)
 			ZDiff = cp->hd.where.t[2] - lpLeaf->position.vz;
 
 			if ((lpLeaf->flags & 2) != 0 && 
-				lpLeaf->position.vy + cp->hd.where.t[1] > -180 &&
-				XDiff + 359 < 719 && ZDiff < 360 && -360 < ZDiff)
+				(lpLeaf->position.vy + cp->hd.where.t[1]) > -180 &&
+				-360 < XDiff && XDiff < 360 && -360 < ZDiff && ZDiff < 360)
 			{
 				lpLeaf->direction.vy = -25 - (rand() & 0x1f);
 				lpLeaf->position.vy--;
