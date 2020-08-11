@@ -168,7 +168,7 @@ void HandleThrownBombs(void)
 
 		bomb->velocity.vx = velocity.vx >> 10;
 		bomb->velocity.vz = velocity.vz >> 10;
-		bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR *)car_data[player[0].playerCarId].hd.where.t) >> 7);
+		bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR *)player[0].pos) >> 7);
 
 		if ((rand() & 1) == 0)
 			bomb->rot_speed = -bomb->velocity.vy;

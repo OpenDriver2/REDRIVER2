@@ -2459,7 +2459,13 @@ int redriver2_main(int argc, char** argv)
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
 
+#ifdef DEMO_VERSION
 		ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
+#elif NTSC_VERSION
+		ShowHiresScreens(NTSCScreenNames, 300, 0); // [A]
+#elif PAL_VERSION
+		ShowHiresScreens(PALScreenNames, 300, 0); // [A]
+#endif
 
 		PlayFMV(0);		// play intro movie
 	}
