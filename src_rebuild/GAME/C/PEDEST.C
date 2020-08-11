@@ -4835,8 +4835,13 @@ void BuildCarCollisionBox(void)
 	_CAR_DATA *cp;
 
 	iVar4 = (int)player[0].playerCarId;
-	set_coll_box(0, car_data + iVar4, 8);
-	set_coll_box(1, car_data + iVar4, 9);
+
+	if (iVar4 != -1) // [A] ASan bug fix
+	{
+		set_coll_box(0, car_data + iVar4, 8);
+		set_coll_box(1, car_data + iVar4, 9);
+	}
+
 	iVar4 = 2;
 	cp = car_data + (CameraCnt & 3);
 	index = iVar4;
@@ -4852,7 +4857,7 @@ void BuildCarCollisionBox(void)
 				set_coll_box(index, cp, 8);
 			}
 
-			cp = cp + 4; // WTF?
+			cp = cp + 4; // [A] WTF?
 			index = iVar4;
 		} while (cp < car_data + 20);
 	}
@@ -5061,6 +5066,10 @@ void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 	int interest;
 
 	iVar4 = (int)player[0].playerCarId;
+
+	if (iVar4 == -1) // [A] ASan bug fix
+		return;
+
 	basic_car_interest = (car_data[iVar4].hd.wheel_speed >> 10) + (uint)car_data[iVar4].totalDamage;
 	x = (pPed->position).vx - car_data[iVar4].hd.where.t[0];
 	y = (pPed->position).vz - car_data[iVar4].hd.where.t[2];

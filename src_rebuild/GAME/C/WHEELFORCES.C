@@ -241,7 +241,11 @@ int impulse;
 void StepOneCar(_CAR_DATA *cp)
 {
 	static int frictionLimit[6] = {
-		0x3ED000, 0x13A1000, 0x75C6000, 0x13A1000, 0x11F30, 0x11F14
+		0x3ED000, 0x13A1000,
+
+		0x75C6000, 0x13A1000, 
+
+		0x11F30, 0x11F14
 	};
 
 	int iVar1;
@@ -258,8 +262,7 @@ void StepOneCar(_CAR_DATA *cp)
 	int iVar12;
 	int iVar13;
 	SVECTOR *pSVar14;
-	int unaff_s6;
-	long *plVar15;
+	int friToUse;
 	CAR_LOCALS _cl;
 	long deepestNormal[4];
 	long deepestLever[4];
@@ -274,9 +277,6 @@ void StepOneCar(_CAR_DATA *cp)
 	_sdPlane *SurfacePtr;
 
 	iVar12 = 2;
-	plVar15 = cp->hd.where.t;
-	puVar7 = (long *)(_cl.vel + 2);
-	puVar5 = (long *)(cp->st.v + 2);
 
 	SurfacePtr = NULL;
 	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
@@ -285,11 +285,9 @@ void StepOneCar(_CAR_DATA *cp)
 	_cl.vel[0] = cp->st.n.linearVelocity[0];
 	_cl.vel[1] = cp->st.n.linearVelocity[1];
 	_cl.vel[2] = cp->st.n.linearVelocity[2];
-	_cl.vel[3] = cp->st.n.linearVelocity[3];
 	_cl.avel[0] = cp->st.n.angularVelocity[0];
 	_cl.avel[1] = cp->st.n.angularVelocity[1];
 	_cl.avel[2] = cp->st.n.angularVelocity[2];
-	_cl.avel[3] = cp->st.n.angularVelocity[3];
 
 	cp->hd.acc[0] = 0;
 	cp->hd.acc[1] = -7456; // apply gravity
@@ -333,8 +331,6 @@ void StepOneCar(_CAR_DATA *cp)
 
 		do {
 			gte_ldv0(pSVar14);
-			//setCopReg(2, in_zero, *(undefined4 *)pSVar14);
-			//setCopReg(2, in_at, *(undefined4 *)&pSVar14->vz);
 
 			docop2(0x480012);
 
@@ -352,7 +348,8 @@ void StepOneCar(_CAR_DATA *cp)
 
 				if (iVar12 < iVar4)
 				{
-					unaff_s6 = 0;
+					friToUse = 0;
+
 					deepestNormal[0] = surfaceNormal[0];
 					deepestNormal[1] = surfaceNormal[1];
 					deepestNormal[2] = surfaceNormal[2];
@@ -366,15 +363,14 @@ void StepOneCar(_CAR_DATA *cp)
 					deepestPoint[2] = surfacePoint[2];
 
 					iVar12 = iVar4;
-					if (3 < iVar13)
-					{
-						unaff_s6 = 3;
-					}
+
+					if (iVar13 > 3)
+						friToUse = 3;
 				}
 			}
 
-			iVar13 = iVar13 + -1;
-			pSVar14 = pSVar14 + -1;
+			iVar13--;
+			pSVar14--;
 		} while (iVar13 != -1);
 	}
 
@@ -393,23 +389,27 @@ void StepOneCar(_CAR_DATA *cp)
 		piVar11 = (long*)&direction.vz;
 		piVar10 = deepestNormal + 2;
 		piVar9 = reaction + 2;
-		piVar8 = (long*)frictionLimit + unaff_s6;
+
+		piVar8 = (long*)frictionLimit + friToUse;
 
 		do {
 			iVar6 = *piVar8;
 			iVar4 = *piVar9 * 67;
-			iVar1 = -iVar6;
+			iVar1 = -*piVar8;
 
-			if ((iVar4 <= iVar6) && (iVar6 = iVar4, iVar4 < iVar1)) 
-				iVar6 = iVar1;
+			if (iVar4 <= iVar6)
+			{
+				iVar6 = iVar4;
 
-			iVar4 = *piVar10;
-			piVar10 = piVar10 + -1;
-			piVar9 = piVar9 + -1;
-			piVar8 = piVar8 + -1;
-			iVar13 = iVar13 + -1;
-			*piVar11 = FIXED(impulse * iVar4 - iVar6);
-			piVar11 = piVar11-1;
+				if(iVar4 < iVar1)
+					iVar6 = iVar1;
+			}
+
+			*piVar11-- = FIXED(impulse * *piVar10 - iVar6);
+			piVar10--;
+			piVar9--;
+			piVar8++;	// [A] ASan bug fix
+			iVar13--;
 		} while (-1 < iVar13);
 		
 		if (20000 < impulse) 

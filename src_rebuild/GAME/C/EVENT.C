@@ -4137,11 +4137,12 @@ int OnBoat(VECTOR *pos, _EVENT *ev, int *dist)
 	/* end block 2 */
 	// End Line: 6773
 
+extern _sdPlane sea;
 
 _sdPlane * EventSurface(VECTOR *pos, _sdPlane *plane)
 {
 	UNIMPLEMENTED();
-	return 0;
+	return &sea;
 	/*
 	ushort uVar1;
 	int *piVar2;

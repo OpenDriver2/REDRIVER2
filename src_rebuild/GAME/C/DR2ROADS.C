@@ -658,7 +658,7 @@ int RoadInCell(VECTOR *pos)
 	/* end block 4 */
 	// End Line: 853
 
-int sdLevel = 0;
+int sdLevel = 0; // debug value?
 
 // [D]
 _sdPlane * sdGetCell(VECTOR *pos)
@@ -673,8 +673,9 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	XYPAIR cellPos;
 
 	sdLevel = 0;
-	cellPos.x = pos->vx-0x200;
-	cellPos.y = pos->vz-0x200;
+
+	cellPos.x = pos->vx - 512;
+	cellPos.y = pos->vz - 512;
 
 	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
 
@@ -688,14 +689,17 @@ _sdPlane * sdGetCell(VECTOR *pos)
 		{
 			plane = &sea;
 		}
-		else {
+		else 
+		{
 			if (((uint)(ushort)*surface & 0x6000) == 0x2000) 
 			{
 				psVar2 = (short *)((int)buffer +((uint)(ushort)*surface & 0x1fff) * 2 + (int)buffer[2]);
 
 				do 
 				{
-					if (-0x100 - pos->vy <= (int)*psVar2) break;
+					if (-256 - pos->vy <= (int)*psVar2)
+						break;
+
 					psVar2 = psVar2 + 2;
 					sdLevel = sdLevel + 1;
 				} while (*psVar2 != -0x8000);
@@ -707,13 +711,16 @@ _sdPlane * sdGetCell(VECTOR *pos)
 			{
 				bVar1 = false;
 				surface1 = surface;
+
 				if ((*surface & 0x4000U) != 0) 
 				{
 					cellPos.x = cellPos.x & 0x3ff;
 					cellPos.y = cellPos.y & 0x3ff;
 
 					surface1 = sdGetBSP((_sdNode *)((int)buffer + ((uint)(ushort)*surface & 0x3fff) * 4 + (int)buffer[3]), &cellPos);
-					if (*surface1 == 0x7fff) {
+
+					if (*surface1 == 0x7fff) 
+					{
 						sdLevel = sdLevel + 1;
 						bVar1 = true;
 						surface1 = surface + 2;

@@ -906,17 +906,18 @@ void DrawOverheadMap(void)
 	long flag;
 
 	static int flashtimer = 0;
-	static int ptab[16] = {
+	static int ptab[] = {
 		 0xFF, 0xF0, 0xAA, 0x78,
 		 0x50, 0x37, 0x26, 0x17,
 		 0xD,  0xA,  0x0,  0x0,
 		 0x0,  0x0,  0x0,  0x0,
 	};
 
-	static int ptab2[12] = {
+	static int ptab2[] = {
 		0xFF, 0xFF, 0xF0, 0xAA,
 		0x78, 0x50, 0x37, 0x26,
-		0x17, 0xD,  0xA,  0x0
+		0x17, 0xD,  0xA,  0x0, 
+		0x0
 	};
 
 	VECTOR translate = { 280, 0, 212 };
@@ -970,18 +971,13 @@ void DrawOverheadMap(void)
 			goto LAB_00016fac;
 	}
 
+
 	flashtimer--;
-
 	r = -flashtimer;
-	x = r + 0x2f;
-	y = r + 0x30;
-	y_00 = r + 0x31;
-	iVar27 = r + 0x32;
 
-	r = ptab2[x >> 2] + ptab2[y >> 2] + ptab2[y_00 >> 2] +
-		ptab2[iVar27 >> 2];
-
+	r = ptab2[r + 47 >> 2] + ptab2[r + 48 >> 2] + ptab2[r + 49 >> 2] + ptab2[r + 50 >> 2];
 	r = r >> 2;
+
 	FlashOverheadMap(r, r, r);
 
 LAB_00016fac:
