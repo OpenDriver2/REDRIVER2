@@ -758,7 +758,7 @@ void TransparencyOn(void *potz, ushort tpage)
 {
 	DR_TPAGE *null;
 	null = (DR_TPAGE*)current->primptr;
-	setDrawTPage(null, 1, 1, tpage);	// [A] might be incorrect
+	setDrawTPage(null, 1, 0, tpage);	// [A] might be incorrect
 
 	// original mode:
 	//*(char *)((int)puVar2 + 3) = '\x01';

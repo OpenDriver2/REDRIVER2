@@ -2913,7 +2913,7 @@ void CopIndicator(int xpos, int strength)
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
 
-	TransparencyOn(current->ot, 0x20);
+	TransparencyOn(current->ot + 1, 0x20);
 
 	poly = (POLY_F3 *)current->primptr;
 
@@ -2933,10 +2933,10 @@ void CopIndicator(int xpos, int strength)
 	poly->y2 = 0x100;
 	poly->x1 = xpos;
 
-	addPrim(current->ot+1, poly);
+	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
 
-	TransparencyOn(current->ot, 0x40);
+	TransparencyOn(current->ot + 1, 0x40);
 }
 
 
