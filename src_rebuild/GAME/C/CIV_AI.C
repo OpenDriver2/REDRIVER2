@@ -984,7 +984,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 		uVar29 = tmpNewRoad[newExit];
 		uVar9 = tmpNewLane[newExit];
 
-		if (cp->ai.c.ctrlState != '\a') 
+		if (cp->ai.c.ctrlState != 7) 
 		{
 			if ((((uVar29 & 0xffffe000) == 0) && ((int)(uVar29 & 0x1fff) < NumDriver2Straights)) && (-1 < (int)uVar29)) 
 			{
@@ -1397,7 +1397,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 			{
 				tmpSt = Driver2StraightsPtr + (int)(short)uVar3;
 				iVar30 = *turnAngle;
-				uVar9 = (iVar18 - tmpSt->angle) + 1024;// &0x800;// [A] temporary hack
+				uVar9 = (iVar18 - tmpSt->angle) + 1024 & 0x800;// [A] temporary hack
 
 				if (uVar9 == 0) 
 					iVar30 = -iVar30;
