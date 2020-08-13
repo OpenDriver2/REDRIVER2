@@ -5207,14 +5207,17 @@ void AttemptUnPark(_CAR_DATA *cp)
 
 	bVar1 = cp->ai.c.currentLane;
 
-	cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
-
-	if (((bVar1 == cp->ai.c.currentLane) ||
-		(straight != NULL && ((straight->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) || 
-		(curve != NULL && ((curve->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) 
+	if (straight && curve)
 	{
-		cp->ai.c.thrustState = 3;
-		cp->ai.c.ctrlState = 7;
+		cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
+
+		if (((bVar1 == cp->ai.c.currentLane) ||
+			(straight != NULL && ((straight->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) ||
+			(curve != NULL && ((curve->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0)))
+		{
+			cp->ai.c.thrustState = 3;
+			cp->ai.c.ctrlState = 7;
+		}
 	}
 }
 

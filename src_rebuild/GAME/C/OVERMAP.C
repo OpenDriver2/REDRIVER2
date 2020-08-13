@@ -2707,6 +2707,7 @@ void DrawCompass(void)
 		lineg2 = (LINE_G2 *)current->primptr;
 
 		setLineG2(lineg2);
+		setSemiTrans(lineg2, 1);
 
 		lineg2->x0 = position[1].vx;
 		lineg2->y0 = position[1].vz;
@@ -2723,7 +2724,7 @@ void DrawCompass(void)
 		lineg2->g1 = 0;
 		lineg2->b1 = 0;
 
-		setSemiTrans(lineg2, 1);
+		
 
 		addPrim(potz, lineg2);
 
@@ -2817,14 +2818,14 @@ void DrawBigCompass(VECTOR *root, int angle)
 	i = 0;
 	pPosition = position + 2;
 	do {
-		pPosition++;
+		
 		lineg2 = (LINE_G2 *)current->primptr;
 
 		setLineG2(lineg2);
 		setSemiTrans(lineg2, 1);
 
-		lineg2->x0 = position[0].vx;
-		lineg2->y0 = position[0].vy;
+		lineg2->x0 = position[1].vx;
+		lineg2->y0 = position[1].vy;
 
 		lineg2->x1 = pPosition->vx;
 		lineg2->y1 = pPosition->vy;
@@ -2838,6 +2839,9 @@ void DrawBigCompass(VECTOR *root, int angle)
 		lineg2->b1 = 0;
 
 		DrawPrim(lineg2);
+
+		pPosition++;
+		//current->primptr += sizeof(LINE_G2);
 
 		i++;
 	} while (i < 3);

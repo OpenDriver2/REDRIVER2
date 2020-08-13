@@ -852,7 +852,7 @@ void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volu
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-static __pauseinfo musps;
+static int music_pause_max;
 
 // [D]
 void PauseXM(void)
@@ -862,12 +862,12 @@ void PauseXM(void)
 
 	if (music_paused == 0) 
 	{
-		musps.max = 0;
+		music_pause_max = 0;
 		fade = 96;
 
 		do {
 			bVar1 = fade < 0;
-			fade+= 96;
+			fade += 96;
 		} while (bVar1);
 
 		if (Song_ID != -1)	// [A] bug fix
@@ -1072,8 +1072,8 @@ void UnPauseXM(void)
 		fade = 96;
 
 		do {
-			bVar1 = fade < musps.max;
-			fade = fade + 96;
+			bVar1 = fade < music_pause_max;
+			fade += 96;
 		} while (bVar1);
 
 		XM_Restart(Song_ID);
