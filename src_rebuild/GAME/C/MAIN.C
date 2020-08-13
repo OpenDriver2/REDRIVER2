@@ -2918,6 +2918,7 @@ void RenderGame2(int view)
 	char *pcVar5;
 	_PLAYER *pPVar6;
 	int iVar7;
+	int notInDreaAndStevesEvilLair;
 
 	CurrentPlayerView = view;
 	InitCamera((_PLAYER *)(player + view));
@@ -3026,16 +3027,16 @@ void RenderGame2(int view)
 		pDVar1->primptr += sizeof(POLY_FT3);
 	}
 
-	iVar7 = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);
+	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);
 
 	ScaleCamera();
 
-	if ((iVar7 != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))) 
+	if ((notInDreaAndStevesEvilLair != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr-0x1e000))))
 	{
 		DoWeather(gWeather);
 	}
 
-	if (37000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))
+	if (37000 < (int)(current->primtab + -(int)(current->primptr - 0x1e000)))
 	{
 		DrawTyreTracks();
 	}
@@ -3384,13 +3385,13 @@ void DealWithHorn(char *hr, int i)
 int Havana3DOcclusion(occlFunc func, int *param)
 {
 	bool bVar1;
-	int iVar2;
-	int unaff_s2;
+	int loop;
+	int draw;
 	int iVar3;
 	int iVar4;
-	int iVar5;
+	int outside;
 
-	iVar5 = 1;
+	outside = 1;
 
 	if ((((GameLevel != 1) || (-0x68fdc < camera_position.vx)) || (camera_position.vx < -0x75416))
 		|| ((-0x1b8ae < camera_position.vz || (camera_position.vz < -0x20cb3))))
@@ -3401,14 +3402,15 @@ int Havana3DOcclusion(occlFunc func, int *param)
 
 	if (camera_position.vy < 0x1bf) 
 	{
-		unaff_s2 = 0x10;
+		draw = 16;
 
-		if (-0x729fc < camera_position.vx) 
-			unaff_s2 = 0x11;
+		if (-469500 < camera_position.vx) 
+			draw = 17;
 	}
 	else 
 	{
-		iVar5 = 0;
+		outside = 0;
+
 		if (((camera_position.vx < -0x6e9e5) && (-0x6fa01 < camera_position.vx)) &&
 			((camera_position.vz < -0x1e201 &&
 			((-0x1f205 < camera_position.vz && (camera_position.vy < 0xf73))))))
@@ -3416,21 +3418,21 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			if (camera_position.vy < 0x4dd) 
 			{
 			LAB_0005c2b4:
-				unaff_s2 = 0xf;
+				draw = 15;
 			}
 			else 
 			{
 				bVar1 = camera_position.vy < 0xc00;
 				if (camera_position.vy < 0x7d1) 
 				{
-					unaff_s2 = 0xe;
+					draw = 14;
 				}
 				else 
 				{
 				LAB_0005c2d8:
 					if (bVar1) 
 					{
-						unaff_s2 = 0xd;
+						draw = 13;
 					}
 				}
 			}
@@ -3440,7 +3442,7 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			if (camera_position.vy < 0x6c2)
 				goto LAB_0005c2b4;
 
-			unaff_s2 = 0xe;
+			draw = 14;
 
 			if (camera_position.vy < 0x834) 
 			{
@@ -3449,58 +3451,62 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			}
 
 			if ((((0xbff < camera_position.vy) && (-0x6fa01 < camera_position.vx)) ||
-				(unaff_s2 = 0xc, camera_position.vz < -0x1f9db)) &&
-				(unaff_s2 = 10, camera_position.vz < -0x1f9dc)) {
-				unaff_s2 = 0xb;
+				(draw = 12, camera_position.vz < -0x1f9db)) &&
+				(draw = 10, camera_position.vz < -0x1f9dc)) 
+			{
+				draw = 11;
 			}
 		}
 	}
 
+	if(draw > 14)
+		(*func)(param);
+
 	events.camera = 1;
 
-	iVar2 = unaff_s2 + -1;
-	if (iVar2 < 10) {
-		iVar2 = 10;
-	}
+	loop = draw-1;
+
+	if (loop < 10)
+		loop = 10;
 
 	iVar3 = 0;
 
 	while (true)
 	{
-		if (unaff_s2 + 1 < iVar2) 
+		if (draw + 1 < loop) 
 		{
 			events.camera = 0;
-			return iVar5;
+			return outside;
 		}
 
-		if (iVar2 == 0x10)
+		if (loop == 16)
 			break;
 
-		if (unaff_s2 != iVar2)
+		if (draw != loop)
 		{
 			iVar3 = 200;
 		}
 
-		events.draw = iVar2;
-		current->ot = current->ot + iVar3;
+		events.draw = loop;
+		current->ot += iVar3;
 		(*func)(param);
 
 		iVar4 = iVar3;
 		if (iVar3 != 0) 
 		{
 			iVar4 = 0;
-			current->ot = current->ot + iVar3 * 0x3fffffff;
+			current->ot -= iVar3;// *0x3fffffff;
 		}
 
-		iVar2 = iVar2 + 1;
+		loop++;
 		iVar3 = iVar4;
 	}
 
 	events.camera = 0;
-	if ((unaff_s2 == 0xf) && (-0x6fd11 < camera_position.vx)) 
+	if ((draw == 15) && (-458001 < camera_position.vx)) 
 	{
 		events.camera = 0;
-		return iVar5;
+		return outside;
 	}
 
 	return 1;
