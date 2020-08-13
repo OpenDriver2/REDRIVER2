@@ -458,7 +458,8 @@ _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 	{
 		if (node->value > -1)
 		{
-			return ((base + node->value)->surface < 32) ? NULL : base;
+			base += node->value;
+			return (base->surface < 32) ? NULL : base;
 		}
 
 		plane = FindRoadInBSP(node+1, base);
