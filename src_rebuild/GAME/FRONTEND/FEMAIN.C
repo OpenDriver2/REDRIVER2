@@ -515,52 +515,57 @@ void LoadFrontendScreens(void)
 	/* end block 3 */
 	// End Line: 2960
 
-// [D]
+// [D] [A]
 void LoadBackgroundFile(char *name)
 {
-	int iVar1;
-	int iVar2;
+	int iTpage;
 	int p;
-	int *piVar4;
 	RECT16 rect;
 	int pages[6];
 
-	iVar1 = 11;
+	iTpage = 11;
+
 	pages[0] = 0;
 	pages[1] = 1;
 	pages[2] = 2;
 	pages[3] = 3;
 	pages[4] = 4;
 	pages[5] = 5;
-	iVar2 = strcmp(name, "DATA\\GFX.RAW");
-	mainScreenLoaded = (iVar2 == 0);
-	piVar4 = pages;
-	iVar2 = 5;
-	rect.w = 0x40;
-	rect.h = 0x100;
-	do {
+
+	mainScreenLoaded = (strcmp(name, "DATA\\GFX.RAW") == 0);
+
+	rect.w = 64;
+	rect.h = 256;
+
+	for (int i = 0; i < 6; i++)
+	{
 		FEDrawCDicon();
-		p = *piVar4;
+		
+		p = pages[i];
+
 		LoadfileSeg(name, _overlay_buffer, p * 0x8000, 0x8000);
-		piVar4 = piVar4 + 1;
 		FEDrawCDicon();
-		iVar2 = iVar2 + -1;
+
 		rect.y = (short)(p / 6);
 		rect.x = ((short)p + rect.y * -6) * 64 + 640;
-		rect.y = rect.y * 256;
+		rect.y *= 256;
+
 		LoadImage(&rect, (u_long *)_overlay_buffer);
 		FEDrawCDicon();
-	} while (-1 < iVar2);
-	LoadfileSeg(name, _overlay_buffer, iVar1 * 0x8000, 0x800);
+	}
+
+	LoadfileSeg(name, _overlay_buffer, iTpage * 0x8000, 0x800);
 	FEDrawCDicon();
+
 	rect.h = 1;
-	rect.y = (short)(iVar1 / 6);
-	rect.x = ((short)iVar1 + rect.y * -6) * 64 + 640;
-	rect.y = rect.y * 256;
+	rect.y = (short)(iTpage / 6);
+	rect.x = ((short)iTpage + rect.y * -6) * 64 + 640;
+	rect.y *= 256;
+
 	LoadImage(&rect, (u_long *)_overlay_buffer);
 	DrawSync(0);
+
 	SetupBackgroundPolys();
-	return;
 }
 
 
