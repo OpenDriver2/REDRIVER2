@@ -3297,68 +3297,41 @@ void Unpack_CellPtrs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void SpecClutsSpooled(void)
 {
-	unsigned char bVar1;
-	short sVar2;
-	short sVar3;
-	u_short uVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
-	ushort *puVar8;
-	int iVar9;
-	int iVar10;
-	char *pcVar11;
+	char *loadaddr;
 	RECT16 specCluts;
-
-	iVar9 = 0;
 
 	specCluts.x = slot_clutpos[specialSlot].vx;
 	specCluts.y = slot_clutpos[specialSlot].vy;
 	specCluts.w = 16;
 	specCluts.h = 1;
 
-	pcVar11 = specLoadBuffer;
-	do {
-		iVar5 = 7;
-		if (iVar9 == 0)
-			iVar5 = 6;
+	loadaddr = specLoadBuffer;
 
-		iVar10 = 0;
+	for (int i = 0; i < 2; i++)
+	{
+		int index = specialSlot + i;
+		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + i];
 
-		iVar6 = specialSlot + iVar9;
+		carTpages[GameLevel][(i == 0) ? 6 : 7] = tpageslots[index] = tpage;
+		tpageloaded[tpage] = specialSlot + i + 1;
 
-		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + iVar9];
+		slot_tpagepos[index].vx = tpagepos[index].x;
+		slot_tpagepos[index].vy = tpagepos[index].y;
 
-		carTpages[GameLevel][iVar5] = tpageslots[iVar6] = tpage;
-		tpageloaded[tpage] = specialSlot + iVar9 + 1;
-
-		slot_tpagepos[iVar6].vx = tpagepos[iVar6].x;
-		slot_tpagepos[iVar6].vy = tpagepos[iVar6].y;
-
-		texture_pages[tpage] = GetTPage(0, 0, slot_tpagepos[iVar6].vx, slot_tpagepos[iVar6].vy);
+		texture_pages[tpage] = GetTPage(0, 0, slot_tpagepos[index].vx, slot_tpagepos[index].vy);
 		
-
-		if (0 < tpage_texamts[tpage])
+		for (int j = 0; j < tpage_texamts[tpage]; j++)
 		{
-			puVar8 = texture_cluts[tpage];
+			LoadImage2(&specCluts, (u_long*)loadaddr);
+			loadaddr += 32;
 
-			do {
-				LoadImage2(&specCluts, (u_long*)pcVar11);
-				pcVar11 += 32;
-				
-
-				*puVar8++ = GetClut(specCluts.x, specCluts.y);
-				IncrementClutNum(&specCluts);
-
-				iVar10++;
-			} while (iVar10 < tpage_texamts[tpage]);
+			*texture_cluts[tpage] = GetClut(specCluts.x, specCluts.y);
+			IncrementClutNum(&specCluts);
 		}
-
-		iVar9++;
-	} while (iVar9 < 2);
+	}
 
 	if (quickSpool != 1)
 	{
