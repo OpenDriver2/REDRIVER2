@@ -2501,37 +2501,28 @@ int VibroOnOffScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 7792
 
-// [D]
+// [D] [A]
 int MissionSelectScreen(int bSetup)
 {
-	unsigned char bVar1;
-	bool bVar2;
-	bool bVar3;
-	unsigned char uVar4;
-	PSXSCREEN *pPVar5;
-	BOTCH *pBVar6;
-	int iVar7;
-	int iVar8;
+	int i;
 
-	if (bSetup == 0) 
+	if (!bSetup) 
 	{
 		if ((fePad & 0x40U) == 0)
 		{
-			if ((fePad & 0x10U) == 0) 
+			if ((fePad & 0x10U) == 0)
 			{
-				if ((fePad & 0x1000U) == 0) 
+				if ((fePad & 0x1000U) == 0)
 				{
-					if ((fePad & 0x4000U) == 0) 
-					{
+					if ((fePad & 0x4000U) == 0)
 						return 0;
-					}
-					bVar1 = pCurrButton->d;
+
+					currSelIndex = pCurrButton->d - 1;
 				}
-				else 
+				else
 				{
-					bVar1 = pCurrButton->u;
+					currSelIndex = pCurrButton->u - 1;
 				}
-				currSelIndex = bVar1 - 1;
 			}
 			else
 			{
@@ -2539,194 +2530,194 @@ int MissionSelectScreen(int bSetup)
 				bMissionSelect = 0;
 			}
 		}
-		else 
+		else
 		{
-			if (currSelIndex == 5) 
+			switch (currSelIndex)
 			{
-				iVar7 = currMission + 4;
-				if ((iVar7 < minmaxSelections[currCity][1]) && (iVar7 < gFurthestMission))
-				{
-				LAB_FRNT__001c41fc:
-					currMission = iVar7;
-					FESound(3);
-					fpUserFunctions[pCurrScreen->userFunctionNum-1](1);
-					bRedrawFrontend = 1;
-					return 1;
-				}
-			}
-			else 
-			{
-				if (currSelIndex == 0)
-				{
-					if (minmaxSelections[currCity][0] < currMission)
-					{
-						iVar7 = currMission + -4;
-						goto LAB_FRNT__001c41fc;
-					}
-				}
-				else
-				{
-					bReturnToMain = 0;
-					GameType = GAME_REPLAYMISSION;
-					feVariableSave[1] = currSelIndex;
-					feVariableSave[0] = currMission;
-					feVariableSave[2] = currCity;
-					gCurrentMissionNumber = botch[currMission + currSelIndex + -1].missNum;
-				}
+			case 0:
+				i = currMission - 4;
+				if (minmaxSelections[currCity][0] < currMission)
+					goto CHANGE_PAGE;
+				break;
+			case 5:
+				i = currMission + 4;
+				if ((i < minmaxSelections[currCity][1]) && (i < gFurthestMission))
+					goto CHANGE_PAGE;
+				break;
+
+			default:
+				bReturnToMain = 0;
+				GameType = GAME_REPLAYMISSION;
+				feVariableSave[0] = currMission;
+				feVariableSave[1] = currSelIndex;
+				feVariableSave[2] = currCity;
+				gCurrentMissionNumber = botch[currMission + (currSelIndex - 1)].missNum;
+				break;
+
+			CHANGE_PAGE:
+				currMission = i;
+				FESound(3);
+				fpUserFunctions[pCurrScreen->userFunctionNum - 1](1);
+				bRedrawFrontend = 1;
+				return 1;
 			}
 		}
+
 		return 0;
 	}
 
 	bMissionSelect = 1;
-	if (missionSetup == 0)
+
+	if (!missionSetup)
 	{
 		currMission = minmaxSelections[currCity][0];
 		currSelIndex = 0;
 
-		if (GameType == GAME_REPLAYMISSION) 
-		{
+		if (GameType == GAME_REPLAYMISSION)
 			LoadBackgroundFile("DATA\\CITYBACK.RAW");
-		}
 	}
 
-	pPVar5 = pCurrScreen;
 	if (feVariableSave[0] != -1) {
 		currMission = feVariableSave[0];
 		currSelIndex = feVariableSave[1];
 		currCity = feVariableSave[2];
 	}
-	iVar8 = 0;
-	bVar2 = false;
-	bVar3 = false;
-	iVar7 = 0;
-	pBVar6 = botch + currMission;
-	do {
-		if (((gFurthestMission < pBVar6->missNum) ||
-			(minmaxSelections[currCity][1] < iVar7 + currMission)) ||
-			(0x24 < iVar7 + currMission)) {
-			bVar2 = true;
+
+	int usedB = 0;
+
+	bool done = false;
+	bool bP = false;
+	bool bN = false;
+
+	for (i = 0; (i < 4) && !done; i++)
+	{
+		if ((botch[currMission + i].missNum > gFurthestMission) ||
+			((i + currMission) > minmaxSelections[currCity][1]) ||
+			((i + currMission) > 36)) {
+			done = true;
 		}
 		else {
-			iVar8 = iVar8 + 1;
+			usedB++;
 		}
-		iVar7 = iVar7 + 1;
-		pBVar6 = pBVar6 + 1;
-	} while ((iVar7 < 4) && (!bVar2));
-	uVar4 = iVar8;
-	if (iVar8 == 1) 
+	}
+
+	switch (usedB)
 	{
-		pCurrScreen->buttons[1].d = '\x02';
-		pPVar5->buttons[1].u = '\x02';
+	case 1:
+		pCurrScreen->buttons[1].u = 2;
+		pCurrScreen->buttons[1].d = 2;
 		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
 		sprintf(pCurrScreen->buttons[2].Name, NullStr);
 		sprintf(pCurrScreen->buttons[3].Name, NullStr);
-	LAB_FRNT__001c3e3c:
 		sprintf(pCurrScreen->buttons[4].Name, NullStr);
+		break;
+	case 2:
+		pCurrScreen->buttons[1].u = 3;
+		pCurrScreen->buttons[1].d = 3;
+		pCurrScreen->buttons[2].u = 2;
+		pCurrScreen->buttons[2].d = 2;
+		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+		sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+		sprintf(pCurrScreen->buttons[3].Name, NullStr);
+		sprintf(pCurrScreen->buttons[4].Name, NullStr);
+		break;
+	case 3:
+		pCurrScreen->buttons[1].u = 4;
+		pCurrScreen->buttons[1].d = 3;
+		pCurrScreen->buttons[2].u = 2;
+		pCurrScreen->buttons[2].d = 4;
+		pCurrScreen->buttons[3].u = 3;
+		pCurrScreen->buttons[3].d = 2;
+		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+		sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+		sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
+		sprintf(pCurrScreen->buttons[4].Name, NullStr);
+		break;
+	case 4:
+		pCurrScreen->buttons[1].u = 5;
+		pCurrScreen->buttons[1].d = 3;
+		pCurrScreen->buttons[2].u = 2;
+		pCurrScreen->buttons[2].d = 4;
+		pCurrScreen->buttons[3].u = 3;
+		pCurrScreen->buttons[3].d = 5;
+		pCurrScreen->buttons[4].u = 4;
+		pCurrScreen->buttons[4].d = 2;
+		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+		sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+		sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
+		sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
+		break;
 	}
-	else 
+
+	if ((usedB == 4) &&
+		(botch[currMission + 4].missNum <= gFurthestMission) &&
+		((currMission + 4) != minmaxSelections[currCity][1]))
 	{
-		if (iVar8 == 2)
-		{
-			pCurrScreen->buttons[1].u = '\x03';
-			pCurrScreen->buttons[1].d = '\x03';
-			pCurrScreen->buttons[2].u = uVar4;
-			pCurrScreen->buttons[2].d = uVar4;
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-			sprintf(pCurrScreen->buttons[3].Name, NullStr);
-			goto LAB_FRNT__001c3e3c;
-		}
-		if (iVar8 == 3)
-		{
-			pCurrScreen->buttons[1].u = '\x04';
-			pCurrScreen->buttons[1].d = uVar4;
-			pCurrScreen->buttons[2].u = '\x02';
-			pCurrScreen->buttons[2].d = '\x04';
-			pCurrScreen->buttons[3].u = uVar4;
-			pCurrScreen->buttons[3].d = '\x02';
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
-			goto LAB_FRNT__001c3e3c;
-		}
-		if (iVar8 == 4)
-		{
-			pCurrScreen->buttons[1].u = '\x05';
-			pCurrScreen->buttons[1].d = '\x03';
-			pCurrScreen->buttons[2].u = '\x02';
-			pCurrScreen->buttons[2].d = uVar4;
-			pCurrScreen->buttons[3].u = '\x03';
-			pCurrScreen->buttons[3].d = '\x05';
-			pCurrScreen->buttons[4].u = uVar4;
-			pCurrScreen->buttons[4].d = '\x02';
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
-			sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
-		}
+		bN = true;
 	}
 
-	pPVar5 = pCurrScreen;
-
-	if (((iVar8 == 4) && (botch[currMission + 4].missNum <= gFurthestMission)) && (currMission + 4 != minmaxSelections[currCity][1])) 
-	{
-		bVar3 = true;
-	}
-
-	if (bVar3) 
-	{
-		if (currMission == minmaxSelections[currCity][0]) 
-		{
-		LAB_FRNT__001c406c:
-			if (bVar3) 
-			{
-				pCurrScreen->buttons[1].u = '\x06';
-				pCurrScreen->buttons[4].d = '\x06';
-				pCurrScreen->buttons[5].u = '\x05';
-				pCurrScreen->buttons[5].d = '\x02';
-				pPVar5 = pCurrScreen;
-				pCurrScreen->buttons[5].action = 0;
-				pPVar5->buttons[0].action = 0x500;
-			}
-			else
-			{
-				pCurrScreen->buttons[0].action = 0x500;
-				pPVar5->buttons[5].action = 0x500;
-			}
-
-			pCurrButton = pPVar5->buttons + 1;
-			currSelIndex = 1;
-			goto LAB_FRNT__001c40d8;
-		}
-		pCurrScreen->buttons[0].u = '\x06';
-		pCurrScreen->buttons[0].d = '\x02';
-		pCurrScreen->buttons[5].u = '\x05';
-		pCurrScreen->buttons[5].d = '\x01';
-		pCurrScreen->buttons[1].u = '\x01';
-		pCurrScreen->buttons[4].d = '\x06';
-		pPVar5 = pCurrScreen;
-		pCurrScreen->buttons[0].action = 0;
-		pPVar5->buttons[5].action = 0;
-	}
-	else 
+	if (bN)
 	{
 		if (currMission == minmaxSelections[currCity][0])
-			goto LAB_FRNT__001c406c;
-
-		pCurrScreen->buttons[0].u = uVar4 + '\x01';
-		pCurrScreen->buttons[0].d = '\x02';
-		pCurrScreen->buttons[1].u = '\x01';
-		pCurrScreen->buttons[iVar8].d = '\x01';
-		pPVar5 = pCurrScreen;
-		pCurrScreen->buttons[0].action = 0;
-		pPVar5->buttons[5].action = 0x500;
+		{
+			bP = true;
+		}
+		else
+		{
+			pCurrScreen->buttons[0].u = 6;
+			pCurrScreen->buttons[0].d = 2;
+			pCurrScreen->buttons[5].u = 5;
+			pCurrScreen->buttons[5].d = 1;
+			pCurrScreen->buttons[1].u = 1;
+			pCurrScreen->buttons[4].d = 6;
+			pCurrScreen->buttons[0].action = 0;
+			pCurrScreen->buttons[5].action = 0;
+		}
 	}
-	pCurrButton = pPVar5->buttons;
-	currSelIndex = 0;
+	else
+	{
+		if (currMission == minmaxSelections[currCity][0])
+		{
+			bP = true;
+		}
+		else
+		{
+			pCurrScreen->buttons[0].u = usedB + 1;
+			pCurrScreen->buttons[0].d = 2;
+			pCurrScreen->buttons[1].u = 1;
+			pCurrScreen->buttons[usedB].d = 1;
+			pCurrScreen->buttons[0].action = 0;
+			pCurrScreen->buttons[5].action = 0x500;
+		}
+	}
 
-LAB_FRNT__001c40d8:
-	if (loaded[0] == -1) 
+	if (bP)
+	{
+		if (bN)
+		{
+			pCurrScreen->buttons[1].u = 6;
+			pCurrScreen->buttons[4].d = 6;
+			pCurrScreen->buttons[5].u = 5;
+			pCurrScreen->buttons[5].d = 2;
+			pCurrScreen->buttons[5].action = 0;
+			pCurrScreen->buttons[0].action = 0x500;
+		}
+		else
+		{
+			pCurrScreen->buttons[0].action = 0x500;
+			pCurrScreen->buttons[5].action = 0x500;
+		}
+
+		pCurrButton = pCurrScreen->buttons + 1;
+		currSelIndex = 1;
+	}
+	else
+	{
+		pCurrButton = pCurrScreen->buttons;
+		currSelIndex = 0;
+	}
+
+	if (loaded[0] == -1)
 	{
 		SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
 	}
@@ -2739,7 +2730,9 @@ LAB_FRNT__001c40d8:
 	feVariableSave[1] = -1;
 	feVariableSave[2] = -1;
 	feVariableSave[3] = -1;
+
 	missionSetup = 1;
+
 	return 1;
 }
 
