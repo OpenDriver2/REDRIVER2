@@ -1105,13 +1105,10 @@ void ReInitScreens(void)
 	missionSetup = 0;
 #endif // !PSX
 
-	if (bCdIconSetup == 0) {
+	if (!bCdIconSetup)
 		FEInitCdIcon();
-	}
-	if (bReturnToMain == 0) {
-		bReturnToMain = 1;
-	}
-	else {
+
+	if (bReturnToMain) {
 		ScreenDepth = 0;
 		NumPlayers = 1;
 		gWantNight = 0;
@@ -1124,12 +1121,16 @@ void ReInitScreens(void)
 		feVariableSave[1] = -1;
 		feVariableSave[0] = -1;
 
-		if (mainScreenLoaded == 0) 
+		if (!mainScreenLoaded)
 		{
 			bDrawExtra = 0;
 			LoadBackgroundFile("DATA\\GFX.RAW");
 		}
 	}
+	else {
+		bReturnToMain = 1;
+	}
+
 	pCurrScreen = pScreenStack[ScreenDepth];
 	pNewButton = pButtonStack[ScreenDepth];
 
@@ -1137,8 +1138,6 @@ void ReInitScreens(void)
 	SetupBackgroundPolys();
 
 	idle_timer = VSync(0xffffffff);
-
-	return;
 }
 
 
