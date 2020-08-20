@@ -75,14 +75,15 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 {
 	char bVar1;
 	ushort uVar2;
-	PACKED_CELL_OBJECT *pPVar3;
+	PACKED_CELL_OBJECT *ppco;
 	int iVar4;
-	CELL_DATA *pCVar5;
+	CELL_DATA *celld;
 	uint uVar6;
 	uint uVar7;
-	int iVar8;
+	unsigned short index;
+	unsigned short num;
 
-	iVar8 = ((uint)cellx >> 5 & 1) + ((uint)cellz >> 5 & 1) * 2;
+	index = (cellx >> 5 & 1) + (cellz >> 5 & 1) * 2;
 
 	if (NumPlayers == 2)
 	{
@@ -91,64 +92,59 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 		if (cells_across < 0)
 			iVar4 = cells_across + 0x1f;
 
-		if (RoadMapRegions[iVar8] != ((uint)cellx >> 5) + ((uint)cellz >> 5) * (iVar4 >> 5))
+		if (RoadMapRegions[index] != ((uint)cellx >> 5) + ((uint)cellz >> 5) * (iVar4 >> 5))
 			return NULL;
 	}
 
-	if (cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 + iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))] == 0xffff)
+	if (cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 + index * 0x400 + (cellx - (cellx & 0xffffffe0U))] == 0xffff)
 	{
 		return NULL;
 	}
 
-	pCVar5 = cells + cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 + iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))];
-	pci->pcd = pCVar5;
+	pci->pcd = cells + cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 + index * 0x400 + (cellx - (cellx & 0xffffffe0U))];
+
+	num = pci->pcd->num;
 
 	if (events.camera == 0) 
 	{
-		if ((pCVar5->num & 0x4000) != 0) 
+		if ((pci->pcd->num & 0x4000) != 0)
 		{
 			return NULL;
 		}
 	}
 	else 
 	{
-		uVar2 = pCVar5->num;
-		uVar6 = events.draw | 0x4000;
-		pci->pcd = pCVar5 + 1;
-
-		while ((uint)uVar2 != uVar6)
+		pci->pcd++;
+		while (num != (events.draw | 0x4000))
 		{
-			pCVar5 = pci->pcd;
-
-			if ((pCVar5->num & 0x8000) != 0)
+			if ((pci->pcd->num & 0x8000) != 0)
 				return NULL;
 
-			uVar2 = pCVar5->num;
-			pci->pcd = pCVar5 + 1;
+			num = pci->pcd->num;
+			pci->pcd++;
 		}
 	}
 
-	iVar8 = cells_down >> 1;
-	(pci->nearCell).x = (cellx - (cells_across >> 1)) * 0x800;
-	pPVar3 = cell_objects;
-	pCVar5 = pci->pcd;
-	(pci->nearCell).z = (cellz - iVar8) * 0x800;
-	uVar6 = (uint)pCVar5->num;
+	pci->nearCell.x = (cellx - (cells_across >> 1)) * 0x800;
+	pci->nearCell.z = (cellz - (cells_down >> 1)) * 0x800;
 	pci->use_computed = use_computed;
-	uVar7 = uVar6 & 0x3fff;
-	pPVar3 = pPVar3 + uVar7;
 
-	if ((pPVar3->value == 0xffff) && (((pPVar3->pos).vy & 1) != 0)) 
+	num = pci->pcd->num;
+	
+	uVar7 = num & 0x3fff;
+	ppco = cell_objects + uVar7;
+
+	if ((ppco->value == 0xffff) && (((ppco->pos).vy & 1) != 0)) 
 	{
 	LAB_00023d8c:
-		pPVar3 = GetNextPackedCop(pci);
+		ppco = GetNextPackedCop(pci);
 	}
 	else 
 	{
 		if (use_computed != 0) 
 		{
 			bVar1 = cell_object_computed_values[uVar7 >> 3];
-			uVar6 = 1 << (uVar6 & 7) & 0xffff;
+			uVar6 = 1 << (num & 7) & 0xffff;
 
 			if ((bVar1 & uVar6) != 0)
 				goto LAB_00023d8c;
@@ -156,9 +152,10 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 			cell_object_computed_values[uVar7 >> 3] = bVar1 | (char)uVar6;
 		}
 
-		pci->ppco = pPVar3;
+		pci->ppco = ppco;
 	}
-	return pPVar3;
+
+	return ppco;
 }
 
 

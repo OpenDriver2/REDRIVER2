@@ -1406,6 +1406,7 @@ void SetConfusedCar(int slot)
 // [D]
 void HandleMissionThreads(void)
 {
+#if 0
 	uint *puVar1;
 	_TARGET *p_Var2;
 	uint uVar3;
@@ -1489,7 +1490,65 @@ void HandleMissionThreads(void)
 			return;
 
 	} while (true);
+#endif
 
+	unsigned long value;
+	int i;
+	MR_THREAD* thread;
+	int running;
+
+	i = 0;
+
+	do {
+		MissionTargets[i++].data[1] &= ~0x600;
+	} while (i < 16);
+
+	i = 0;
+
+	do {
+		thread = &MissionThreads[i];
+		running = thread->active;
+
+		if (thread->active != 0 && Mission.gameover_delay == -1 && gInGameCutsceneActive == 0)
+		{
+			while (gInGameCutsceneDelay == 0)
+			{
+				value = *thread->pc;
+				thread->pc++;
+
+				switch (value & 0xff000000)
+				{
+					case 0x0:
+					case 0x2000000:
+					case 0xff000000:
+					{
+						MRPush(thread, value);
+						break;
+					}
+					case 0x1000000:
+					{
+						running = MRCommand(thread, value);
+						break;
+					}
+					case 0x3000000:
+					{
+						running = MROperator(thread, value);
+						break;
+					}
+					case 0x4000000:
+					{
+						running = MRFunction(thread, value);
+						break;
+					}
+				}
+
+				if (running == 0 || Mission.gameover_delay != -1 || gInGameCutsceneActive != 0)
+					break;
+			}
+		}
+
+		i++;
+	} while (i < 16);
 }
 
 
