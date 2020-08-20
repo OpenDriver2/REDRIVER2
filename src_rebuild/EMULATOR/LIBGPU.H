@@ -219,8 +219,8 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 
 #define dumpTPage(tpage)						\
 	GPU_printf("tpage: (%d,%d,%d,%d)\n",				\
-			   ((tpage)>>7)&0x003,((tpage)>>5)&0x003,	\
-			   ((tpage)<<6)&0x7c0,				\
+			   ((tpage)>>7)&0x3,((tpage)>>5)&0x3,	\
+			   ((tpage)<<6)&0x3c0,				\
 			   (((tpage)<<4)&0x100)+(((tpage)>>2)&0x200))
 
 #define dumpClut(clut) \
