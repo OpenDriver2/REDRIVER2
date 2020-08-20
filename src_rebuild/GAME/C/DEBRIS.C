@@ -1800,134 +1800,128 @@ int MoveSmashable_object(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
-	undefined uVar2;
-	uint uVar3;
-	int iVar4;
-	uint uVar5;
-	DAMAGED_LAMP *pDVar6;
-	uint uVar7;
-	int iVar8;
+	int count;
+	DAMAGED_LAMP* dam;
+	int halo_size;
 	short size;
-	VECTOR local_70;
-	VECTOR local_60;
-	VECTOR local_50;
-	uint local_40;
-	uint local_3c;
-	undefined4 local_38;
-	CVECTOR local_30[2];
+	short angle;
+	VECTOR v1;
+	VECTOR v2;
+	VECTOR v3;
+	SVECTOR pos;
+	CVECTOR col;
+	CVECTOR col1;
 
-	pDVar6 = &damaged_lamp;
-	local_38 = DAT_000aa370;
-	local_30[0] = (CVECTOR)PTR_DAT_000aa374;
-	bVar1 = cop->yang;
-	uVar7 = (uint)bVar1;
-	if (type == 0) {
-		iVar8 = 0x19;
+	dam = damaged_lamp;
+	col = {0x8c, 0x8c, 0x8c};
+	col1 = {0x2d, 0x2d, 0x2d};
+
+	angle = cop->yang;
+
+	if (type == 0) 
+	{
+		halo_size = 0x19;
 		size = 0x96;
 	}
-	else {
-		iVar8 = 100;
-		if (type == 1) {
-			iVar8 = 0x32;
-			size = 0x96;
-		}
-		else {
-			size = 300;
-		}
+	else if (type == 1)
+	{
+		halo_size = 0x32;
+		size = 0x96;
 	}
-	iVar4 = 0;
+	else
+	{
+		halo_size = 100;
+		size = 300;
+	}
+
+	count = 0;
 	do {
-		if (cop == pDVar6->cop) {
-			if (2 < (byte)pDVar6->damage) {
+		if (cop == dam->cop) // flicker
+		{
+			if (dam->damage > 2) 
 				return;
-			}
-			uVar3 = rand();
-			uVar3 = (uVar3 & 0x3f) - ((uint)(byte)pDVar6->damage * 0x20 + -0x5a);
-			local_38 = uVar3 & 0xff |
-				(uint)CONCAT21(CONCAT11(local_38._3_1_, (char)uVar3), (char)uVar3) << 8;
-			uVar3 = (uVar3 & 0xff) >> 1;
-			uVar2 = (undefined)uVar3;
-			local_30[0] = (CVECTOR)(uVar3 | (uint)CONCAT21(CONCAT11(local_30[0].cd, uVar2), uVar2) << 8);
+
+			col.r = col.g = col.b = (rand() & 0x3f) - (dam->damage * 32 - 90);
+			col1.r = col1.g = col1.b = col.r >> 1;
+
 			break;
 		}
-		iVar4 = iVar4 + 1;
-		pDVar6 = pDVar6 + 1;
-	} while (iVar4 < 4);
-	if ((bVar1 & 0xf) == 0) {
-		bVar1 = bVar1 >> 4;
-		if (bVar1 == 1) {
-			local_70.vx = ((cop->pos).vx - camera_position.vx) + z;
-			local_70.vz = ((cop->pos).vz - camera_position.vz) - x;
+
+		count++;
+		dam++;
+	} while (count < 4);
+
+	if ((angle & 0xf) == 0)
+	{
+		angle = angle >> 4;
+
+		if (angle == 0)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) + x;
+			v1.vz = (cop->pos.vz - camera_position.vz) + z;
 		}
-		else {
-			if (bVar1 < 2) {
-				if (bVar1 == 0) {
-					local_70.vx = ((cop->pos).vx - camera_position.vx) + x;
-					local_70.vz = ((cop->pos).vz - camera_position.vz) + z;
-				}
-			}
-			else {
-				if (bVar1 == 2) {
-					local_70.vx = ((cop->pos).vx - camera_position.vx) - x;
-					local_70.vz = ((cop->pos).vz - camera_position.vz) - z;
-				}
-				else {
-					if (bVar1 == 3) {
-						local_70.vx = ((cop->pos).vx - camera_position.vx) - z;
-						local_70.vz = ((cop->pos).vz - camera_position.vz) + x;
-					}
-				}
-			}
+		else if (angle == 1)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) + z;
+			v1.vz = (cop->pos.vz - camera_position.vz) - x;
 		}
-		local_70.vy = ((cop->pos).vy - camera_position.vy) + y;
+		else if (angle == 2)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) - x;
+			v1.vz = (cop->pos.vz - camera_position.vz) - z;
+		}
+		else if (angle == 3)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) - z;
+			v1.vz = (cop->pos.vz - camera_position.vz) + x;
+		}
+
+		v1.vy = (cop->pos.vy - camera_position.vy) + y;
 	}
-	else {
-		uVar3 = local_3c & 0xffff0000;
-		local_3c = uVar3 | z & 0xffffU;
-		setCopControlWord(2, 0, *(undefined4 *)(&matrixtable)[uVar7].m);
-		setCopControlWord(2, 0x800, *(undefined4 *)((&matrixtable)[uVar7].m + 2));
-		setCopControlWord(2, 0x1000, *(undefined4 *)((&matrixtable)[uVar7].m + 4));
-		setCopControlWord(2, 0x1800, *(undefined4 *)((&matrixtable)[uVar7].m + 6));
-		setCopControlWord(2, 0x2000, *(undefined4 *)((&matrixtable)[uVar7].m + 8));
-		setCopReg(2, in_zero, x & 0xffffU | y << 0x10);
-		setCopReg(2, in_at, local_3c);
-		copFunction(2, 0x486012);
-		uVar7 = getCopReg(2, 0x4800);
-		iVar4 = getCopReg(2, 0x5000);
-		uVar5 = getCopReg(2, 0x5800);
-		local_40 = uVar7 & 0xffff | iVar4 << 0x10;
-		local_3c = uVar3 | uVar5 & 0xffff;
-		local_70.vx = ((cop->pos).vx - camera_position.vx) + (int)(short)uVar7;
-		local_70.vy = ((cop->pos).vy - camera_position.vy) + (int)(short)iVar4;
-		local_3c._0_2_ = (short)(uVar5 & 0xffff);
-		local_70.vz = ((cop->pos).vz - camera_position.vz) + (int)(short)local_3c;
+	else
+	{
+		pos.vx = x;
+		pos.vy = y;
+		pos.vz = z;
+
+		gte_SetRotMatrix(&matrixtable[angle]);
+		gte_ldv0(&pos);
+
+		docop2(0x486012);
+
+		gte_stsv(&pos);
+		//gte_stlvnl();
+
+		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
+		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
+		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
 	}
-	local_60.vx = local_70.vx;
-	local_60.vz = local_70.vz;
-	local_60.vy = MapHeight(&local_70);
+
+	v2.vx = v1.vx;
+	v2.vz = v1.vz;
+	v2.vy = -camera_position.vy - MapHeight(&v1);
+
 	LightSortCorrect = -0x1e;
-	local_38 = local_38 & 0xffffff;
-	local_60.vy = -camera_position.vy - local_60.vy;
-	local_50.vx = local_70.vx;
-	local_50.vy = local_70.vy;
-	local_50.vz = local_70.vz;
-	local_50.pad = local_70.pad;
-	LightIndex = find_lamp_streak((int)&(cop->pos).vx + x);
-	if (-1 < LightIndex) {
-		local_38 = CONCAT13(0x60, (undefined3)local_38);
+	col.cd = 0;
+
+	v3 = v1;
+
+	LightIndex = find_lamp_streak((int)&cop->pos.vx + x); // wtf?
+
+	if (LightIndex > -1)
+	{
+		col.cd = 0x60;
 	}
-	ShowLight(&local_50, (CVECTOR *)&local_38, (short)iVar8, &light_texture);
-	ShowLight1(&local_50, local_30, size, &light_texture);
-	DisplayLightReflections(&local_60, local_30, (short)(iVar8 << 1), &lightref_texture);
+
+	ShowLight(&v3, &col, halo_size, &light_texture);
+	ShowLight1(&v3, &col1, size, &light_texture);
+
+	DisplayLightReflections(&v2, &col1, (halo_size << 1), &lightref_texture);
+
 	LightSortCorrect = -10;
-	return;*/
 }
 
 
@@ -2709,79 +2703,76 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 	/* end block 2 */
 	// End Line: 6362
 
+// [D]
 void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar uVar1;
-	uint uVar2;
-	int iVar3;
-	DB *pDVar4;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint *puVar5;
-	uint local_24;
-	undefined4 local_20;
-	uint local_1c;
-	uint local_14;
-	undefined4 local_10;
-	uint local_c;
-	int local_8;
+	POLY_FT4* poly;
+	SVECTOR vert[4];
+	int z;
 
-	uVar2 = -(int)size;
-	puVar5 = (uint *)current->primptr;
-	local_c = local_c & 0xffff0000;
-	local_14 = local_14 & 0xffff0000;
-	local_1c = local_1c & 0xffff0000;
-	local_24 = local_24 & 0xffff0000;
-	local_20 = CONCAT22((short)uVar2, size);
-	local_10 = CONCAT22(size, size);
-	setCopReg(2, in_zero, uVar2 & 0xffff | (int)size * -0x10000);
-	setCopReg(2, in_at, local_24);
-	setCopReg(2, uVar2, local_20);
-	setCopReg(2, current, local_1c);
-	setCopReg(2, v1, uVar2 & 0xffff | (uint)(ushort)size << 0x10);
-	setCopReg(2, col, local_14);
-	copFunction(2, 0x280030);
-	*(uchar *)(puVar5 + 3) = (texture->coords).u0;
-	*(uchar *)((int)puVar5 + 0xd) = (texture->coords).v0;
-	*(uchar *)(puVar5 + 5) = (texture->coords).u1;
-	*(uchar *)((int)puVar5 + 0x15) = (texture->coords).v1;
-	*(uchar *)(puVar5 + 7) = (texture->coords).u2;
-	*(uchar *)((int)puVar5 + 0x1d) = (texture->coords).v2;
-	*(uchar *)(puVar5 + 9) = (texture->coords).u3;
-	uVar1 = (texture->coords).v3;
-	*(char *)((int)puVar5 + 3) = '\t';
-	*(char *)((int)puVar5 + 7) = '.';
-	*(uchar *)((int)puVar5 + 0x25) = uVar1;
-	*(uchar *)(puVar5 + 1) = col->r;
-	*(uchar *)((int)puVar5 + 5) = col->g;
-	*(uchar *)((int)puVar5 + 6) = col->b;
-	uVar2 = getCopReg(2, 0xc);
-	puVar5[2] = uVar2;
-	uVar2 = getCopReg(2, 0xd);
-	puVar5[4] = uVar2;
-	uVar2 = getCopReg(2, 0xe);
-	puVar5[6] = uVar2;
-	iVar3 = getCopReg(2, 0x13);
-	if (0x27 < iVar3) {
-		setCopReg(2, in_zero, local_10);
-		setCopReg(2, in_at, local_c);
-		copFunction(2, 0x180001);
-		*(ushort *)((int)puVar5 + 0x16) = texture->tpageid | 0x20;
-		*(ushort *)((int)puVar5 + 0xe) = texture->clutid;
-		local_8 = (iVar3 >> 3) + LightSortCorrect;
-		if (local_8 < 0) {
-			local_8 = 0;
-		}
-		uVar2 = getCopReg(2, 0xe);
-		puVar5[8] = uVar2;
-		pDVar4 = current;
-		*puVar5 = *puVar5 & 0xff000000 | current->ot[local_8] & 0xffffff;
-		pDVar4->ot[local_8] = pDVar4->ot[local_8] & 0xff000000 | (uint)puVar5 & 0xffffff;
-		pDVar4->primptr = pDVar4->primptr + 0x28;
+	poly = (POLY_FT4*)current->primptr;
+
+	vert[0].vz = 0;
+	vert[1].vz = 0;
+	vert[2].vz = 0;
+	vert[3].vz = 0;
+
+	vert[0].vx = -size;
+	vert[0].vy = -size;
+
+	vert[1].vx = size;
+	vert[1].vy = -size;
+
+	vert[2].vx = -size;
+	vert[2].vy = size;
+
+	vert[3].vx = size;
+	vert[3].vy = size;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	docop2(0x280030);
+
+	poly->u0 = (texture->coords).u0;
+	poly->v0 = (texture->coords).v0;
+	poly->u1 = (texture->coords).u1;
+	poly->v1 = (texture->coords).v1;
+	poly->u2 = (texture->coords).u2;
+	poly->v2 = (texture->coords).v2;
+	poly->u3 = (texture->coords).u3;
+	poly->v3 = (texture->coords).v3;;
+
+	setPolyFT4(poly);
+	SetSemiTrans(poly, 1);
+
+	poly->r0 = col->r;
+	poly->g0 = col->g;
+	poly->b0 = col->b;
+
+	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+	gte_stsz(&z);
+
+	if (z > 39)
+	{
+		gte_ldv0(&vert[3]);
+
+		docop2(0x180001);
+
+		poly->tpage = texture->tpageid | 0x20;
+		poly->clut = texture->clutid;
+
+		z = (z >> 3) + LightSortCorrect;
+
+		if (z < 0) 
+			z = 0;
+
+		gte_stsxy(&poly->x3);
+
+		addPrim(current->ot + z, poly);
+
+		current->primptr += sizeof(POLY_FT4);
 	}
-	return;*/
 }
 
 
