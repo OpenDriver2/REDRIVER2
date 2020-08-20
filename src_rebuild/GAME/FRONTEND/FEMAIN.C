@@ -429,47 +429,31 @@ void SetVariable(int var)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void LoadFrontendScreens(void)
 {
-	unsigned char uVar1;
-	int iVar2;
-	int *local_v1_356;
-	int *piVar3;
-	char *ptr;
-	int iVar4;
-	int offset;
-	int iVar5;
 	int iNumScreens;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	short sVar9;
+	char *ptr;
 	RECT16 rect;
 
-	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 0xc);
+	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 12);
 	ShowLoading();
+
 	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
 
 	ptr = _frontend_buffer + 20; // skip header and number of screens
 	iNumScreens = (int)_frontend_buffer[16];
 
-	if (iNumScreens) 
+	for (int i = 0; i < iNumScreens; i++)
 	{
-		for (int i = 0; i < iNumScreens; i++)
-		{
-			PsxScreens[i].numButtons = *ptr++;
-			PsxScreens[i].userFunctionNum = *ptr++;
+		PsxScreens[i].numButtons = *ptr++;
+		PsxScreens[i].userFunctionNum = *ptr++;
 
-			if (PsxScreens[i].numButtons)
-			{
-				for (int j = 0; j < PsxScreens[i].numButtons; j++)
-				{
-					memcpy(&PsxScreens[i].buttons[j], ptr, sizeof(PSXBUTTON));
-					ptr += sizeof(PSXBUTTON);
-				}
-			}
-		}		
+		for (int j = 0; j < PsxScreens[i].numButtons; j++)
+		{
+			memcpy(&PsxScreens[i].buttons[j], ptr, sizeof(PSXBUTTON));
+			ptr += sizeof(PSXBUTTON);
+		}
 	}
 
 	rect.w = 64;
@@ -478,26 +462,24 @@ void LoadFrontendScreens(void)
 	ShowLoading();
 	LoadBackgroundFile("DATA\\GFX.RAW");
 
-	sVar9 = 640;
-	offset = 0x30000;
-	iVar7 = 1;
-	
-	do {
-		iVar7 = iVar7 + -1;
+	for (int i = 0; i < 2; i++)
+	{
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, offset, 0x8000);
-		rect.y = 0x100;
-		rect.x = sVar9;
+		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
+
+		rect.x = 640 + (i * 64);
+		rect.y = 256;
+
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 		DrawSync(0);
-		sVar9 = sVar9 + 64;
-		offset = offset + 0x8000;
-	} while (-1 < iVar7);
-	ShowLoading();
-	
+	}
+
+	ShowLoading();	
 	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
+
 	rect.x = 960;
 	rect.y = 256;
+
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 
