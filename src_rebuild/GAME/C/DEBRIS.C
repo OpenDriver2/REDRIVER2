@@ -2237,39 +2237,41 @@ int find_lamp_streak(int LampId)
 	/* end block 3 */
 	// End Line: 5591
 
+// [D]
 int damage_lamp(CELL_OBJECT *cop)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
-	int iVar2;
+	int old_damage;
+	int count;
 	uint uVar3;
-	DAMAGED_LAMP *pDVar4;
+	DAMAGED_LAMP *dam;
 
-	iVar2 = 0;
-	pDVar4 = &damaged_lamp;
+	count = 0;
+	dam = damaged_lamp;
+
 	do {
-		iVar2 = iVar2 + 1;
-		if (cop == pDVar4->cop) {
-			bVar1 = pDVar4->damage;
+		count++;
+		if (cop == dam->cop) 
+		{
+			old_damage = dam->damage;
 			uVar3 = 0;
-			pDVar4->damage = bVar1 + 1;
-			if (bVar1 < 3) {
-				uVar3 = (uint)((byte)(bVar1 + 1) < 3) ^ 1;
-			}
-			return uVar3;
+			dam->damage++;
+
+			if (old_damage < 3) 
+				return ((old_damage + 1) < 3) ^ 1;
+
+			return 0;
 		}
-		pDVar4 = pDVar4 + 1;
-	} while (iVar2 < 4);
-	iVar2 = NextDamagedLamp + 1;
-	(&damaged_lamp)[NextDamagedLamp].damage = '\0';
-	(&damaged_lamp)[NextDamagedLamp].cop = cop;
-	NextDamagedLamp = iVar2;
-	if (4 < iVar2) {
+		dam++;
+	} while (count < 4);
+
+	// store new cell object
+	damaged_lamp[NextDamagedLamp].damage = 0;
+	damaged_lamp[NextDamagedLamp].cop = cop;
+
+	if (++NextDamagedLamp > 4)
 		NextDamagedLamp = 0;
-	}
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -3371,90 +3373,77 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 	/* end block 2 */
 	// End Line: 7287
 
+// [D]
 void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	DB *pDVar2;
-	ushort uVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar4;
-	uint uVar5;
-	uint uVar6;
-	int iVar7;
-	uint *puVar8;
-	undefined4 local_28;
-	uint local_24;
-	uint local_1c;
-	undefined4 local_18;
-	uint local_14;
-	uint local_c;
+	POLY_FT4* poly;
+	SVECTOR vert[4];
+	int z;
 
-	iVar7 = (int)size;
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	uVar1 = *(ushort *)&v1->vy;
-	size = *(ushort *)&v1->vx - size;
-	uVar6 = iVar7 + (uint)*(ushort *)&v1->vz;
-	uVar4 = iVar7 + (uint)*(ushort *)&v1->vx;
-	uVar5 = (uint)*(ushort *)&v1->vz - iVar7;
-	local_28 = CONCAT22(uVar1, size);
-	local_24 = local_24 & 0xffff0000 | uVar6 & 0xffff;
-	local_1c = local_1c & 0xffff0000 | uVar6 & 0xffff;
-	local_18 = CONCAT22(uVar1, size);
-	local_14 = local_14 & 0xffff0000 | uVar5 & 0xffff;
-	local_c = local_c & 0xffff0000 | uVar5 & 0xffff;
-	setCopReg(2, in_zero, local_28);
-	setCopReg(2, in_at, local_24);
-	setCopReg(2, uVar4, uVar4 & 0xffff | (uint)uVar1 << 0x10);
-	setCopReg(2, uVar5, local_1c);
-	setCopReg(2, uVar6, local_18);
-	setCopReg(2, col, local_14);
-	copFunction(2, 0x280030);
-	puVar8 = (uint *)current->primptr;
-	*(uchar *)(puVar8 + 3) = light_texture.coords.u0;
-	*(uchar *)((int)puVar8 + 0xd) = light_texture.coords.v0;
-	*(uchar *)(puVar8 + 5) = light_texture.coords.u1;
-	*(uchar *)((int)puVar8 + 0x15) = light_texture.coords.v1;
-	*(uchar *)(puVar8 + 7) = light_texture.coords.u2;
-	*(uchar *)((int)puVar8 + 0x1d) = light_texture.coords.v2;
-	*(uchar *)(puVar8 + 9) = light_texture.coords.u3;
-	*(uchar *)((int)puVar8 + 0x25) = light_texture.coords.v3;
-	*(ushort *)((int)puVar8 + 0x16) = light_texture.tpageid | 0x40;
-	uVar3 = light_texture.clutid;
-	*(char *)((int)puVar8 + 3) = '\t';
-	*(char *)((int)puVar8 + 7) = '.';
-	*(ushort *)((int)puVar8 + 0xe) = uVar3;
-	*(uchar *)(puVar8 + 1) = col->r;
-	*(uchar *)((int)puVar8 + 5) = col->g;
-	*(uchar *)((int)puVar8 + 6) = col->b;
-	iVar7 = getCopReg(2, 0x13);
-	if (iVar7 - 0x96U < 0x267b) {
-		uVar5 = getCopReg(2, 0xc);
-		puVar8[2] = uVar5;
-		uVar5 = getCopReg(2, 0xd);
-		puVar8[4] = uVar5;
-		uVar5 = getCopReg(2, 0xe);
-		puVar8[6] = uVar5;
-		pDVar2 = current;
-		setCopReg(2, in_zero, uVar4 & 0xffff | (uint)uVar1 << 0x10);
-		setCopReg(2, in_at, local_c);
-		copFunction(2, 0x180001);
-		*puVar8 = *puVar8 & 0xff000000 | current->ot[iVar7 >> 3] & 0xffffff;
-		pDVar2->ot[iVar7 >> 3] = pDVar2->ot[iVar7 >> 3] & 0xff000000 | (uint)puVar8 & 0xffffff;
-		pDVar2->primptr = pDVar2->primptr + 0x28;
-		uVar4 = getCopReg(2, 0xe);
-		puVar8[8] = uVar4;
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	vert[0].vz = 0;
+	vert[1].vz = 0;
+	vert[2].vz = 0;
+	vert[3].vz = 0;
+
+	vert[0].vx = v1->vx - size;
+	vert[0].vy = v1->vy;
+	vert[0].vz = size + v1->vz;
+
+	vert[1].vx = size + v1->vx;
+	vert[1].vy = v1->vy;
+	vert[1].vz = size + v1->vz;
+
+	vert[2].vx = v1->vx - size;
+	vert[2].vy = v1->vy;
+	vert[2].vz = v1->vz - size;
+
+	vert[3].vx = size + v1->vx;
+	vert[3].vy = v1->vy;
+	vert[3].vz = v1->vz - size;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	docop2(0x280030);
+
+	poly = (POLY_FT4*)current->primptr;
+
+	poly->u0 = light_texture.coords.u0;
+	poly->v0 = light_texture.coords.v0;
+	poly->u1 = light_texture.coords.u1;
+	poly->v1 = light_texture.coords.v1;
+	poly->u2 = light_texture.coords.u2;
+	poly->v2 = light_texture.coords.v2;
+	poly->u3 = light_texture.coords.u3;
+	poly->v3 = light_texture.coords.v3;
+
+	poly->tpage = light_texture.tpageid | 0x40;
+	poly->clut = light_texture.clutid;
+
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+
+	poly->r0 = col->r;
+	poly->g0 = col->g;
+	poly->b0 = col->b;
+
+	gte_stsz(&z);
+
+	if (z - 150 < 9851)
+	{
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+		gte_ldv0(&vert[3]);
+
+		docop2(0x180001);
+
+		gte_stsxy(&poly->x3);
+
+		addPrim(current->ot + (z >> 3), poly);
+		current->primptr += sizeof(POLY_FT4);
 	}
-	return;*/
 }
 
 
