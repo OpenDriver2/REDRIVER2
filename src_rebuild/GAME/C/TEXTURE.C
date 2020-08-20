@@ -103,16 +103,12 @@ short specialSlot;
 // [D]
 void IncrementClutNum(RECT16 *clut)
 {
-	short sVar1;
+	clut->x += 16;
 
-	sVar1 = clut->x + 16;
-	clut->x = sVar1;
-
-	if (sVar1 == 1024) {
+	if (clut->x == 1024) {
 		clut->x = 960;
-		clut->y = clut->y + 1;
+		clut->y += 1;
 	}
-	return;
 }
 
 
