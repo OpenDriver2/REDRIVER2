@@ -911,7 +911,6 @@ void ReloadIcons(void)
 {
 	ReportMode(0);
 	ReportMode(1);
-	return;
 }
 
 
