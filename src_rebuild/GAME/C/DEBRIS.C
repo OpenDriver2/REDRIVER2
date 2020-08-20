@@ -2407,102 +2407,111 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	/* end block 3 */
 	// End Line: 5819
 
+// [D]
 void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	uint uVar3;
 	int iVar4;
 	int iVar5;
-	CVECTOR local_50[2];
-	CVECTOR local_48[2];
-	byte local_40;
-	byte local_3f;
-	byte local_3e;
-	VECTOR local_38;
-	VECTOR local_28;
+	CVECTOR a;
+	CVECTOR c;
+	VECTOR v1;
+	VECTOR v2;
 
-	uVar3 = (int)(short)yang & 0xfff;
-	local_38.vy = ((cop->pos).vy - camera_position.vy) + y;
-	local_38.vx = ((cop->pos).vx - camera_position.vx) +
-		(rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z + 0x800 >> 0xc);
-	local_38.vz = ((cop->pos).vz - camera_position.vz) +
-		((rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x) + 0x800 >> 0xc);
-	if ((flag & 0x200U) == 0) {
-		if ((flag & 0x400U) != 0) {
-			local_50[0].r = 0xff;
-			local_50[0].g = 100;
-			local_50[0].b = 0x23;
+	uVar3 = yang & 0xfff;
+	v1.vy = (cop->pos.vy - camera_position.vy) + y;
+	v1.vx = (cop->pos.vx - camera_position.vx) + FIXED(rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z);
+	v1.vz = (cop->pos.vz - camera_position.vz) + FIXED(rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x);
+
+	if ((flag & 0x200U) == 0) 
+	{
+		if ((flag & 0x400U) != 0) 
+		{
+			a.r = 255;
+			a.g = 100;
+			a.b = 35;
+
 			goto LAB_00035098;
 		}
-		if ((flag & 0x800U) == 0) goto LAB_00035098;
-		local_50[0].r = 0x19;
-		local_50[0].g = 0xff;
+
+		if ((flag & 0x800U) == 0) 
+			goto LAB_00035098;
+
+		a.r = 0x19;
+		a.g = 255;
 	}
-	else {
-		local_50[0].r = 0xff;
-		local_50[0].g = 0x19;
+	else 
+	{
+		a.r = 255;
+		a.g = 0x19;
 	}
-	local_50[0].b = 0x19;
+
+	a.b = 0x19;
+
 LAB_00035098:
-	local_50[0].cd = '\0';
+	a.cd = 0;
 	iVar5 = ((int)camera_angle.vx + 0x800U & 0xfff) - 0x800;
 	iVar1 = iVar5;
-	if (iVar5 < 0) {
+
+	if (iVar5 < 0) 
 		iVar1 = -iVar5;
-	}
+
 	iVar4 = (((-(int)camera_angle.vy & 0xfffU) - (int)(short)yang) + 0x800 & 0xfff) - 0x800;
 	iVar2 = iVar4;
-	if (iVar4 < 0) {
+
+	if (iVar4 < 0)
 		iVar2 = -iVar4;
-	}
-	if (iVar2 < 0x3e9) {
-		local_40 = local_50[0].r;
-		local_48[0].r = local_50[0].r >> 3;
-		local_3e = local_50[0].b;
-		local_48[0].b = local_50[0].b >> 3;
-		local_3f = local_50[0].g;
-		local_48[0].g = local_50[0].g >> 3;
-		local_28.vx = local_38.vx;
-		local_28.vz = local_38.vz;
-		if (iVar1 + iVar2 < 1000) {
+
+	if (iVar2 < 1001)
+	{
+		c.r = a.r >> 3;
+		c.b = a.b >> 3;
+		c.g = a.g >> 3;
+
+		v2.vx = v1.vx;
+		v2.vz = v1.vz;
+
+		if (iVar1 + iVar2 < 1000)
+		{
 			iVar1 = 1000 - (iVar1 + iVar2);
-			if (iVar1 < 0) {
+
+			if (iVar1 < 0)
 				iVar1 = 0;
-			}
-			local_50[0].r = (byte)((int)((uint)local_50[0].r * iVar1) >> 10);
-			LightSortCorrect = -0x8c;
-			local_50[0].b = (byte)((int)((uint)local_50[0].b * iVar1) >> 10);
-			local_50[0].g = (byte)((int)((uint)local_50[0].g * iVar1) >> 10);
-			local_40 = local_50[0].r;
-			local_3f = local_50[0].g;
-			local_3e = local_50[0].b;
-			LightIndex = find_lamp_streak((int)&(cop->pos).vx + y + x);
-			if (LightIndex < 0) {
-				local_50[0].cd = '\0';
-			}
-			else {
-				local_50[0].cd = ' ';
-			}
-			ShowLight(&local_38, local_50, 0x1e, &light_texture);
-			local_50[0].r = local_50[0].r >> 1;
-			local_50[0].b = local_50[0].b >> 1;
-			local_50[0].g = local_50[0].g >> 1;
-			if (gNight != 0) {
-				ShowFlare(&local_38, local_50, 0x96, iVar5 + iVar4 + local_38.vx + local_38.vz >> 3 & 0x1ffe);
-			}
+
+			a.r = (a.r * iVar1) >> 10;
+			a.b = (a.b * iVar1) >> 10;
+			a.g = (a.g * iVar1) >> 10;
+
+			LightSortCorrect = -140;
+			LightIndex = find_lamp_streak((int)&cop->pos.vx + y + x);
+
+			if (LightIndex < 0) 
+				a.cd = 0;
+			else 
+				a.cd = 32;
+
+			ShowLight(&v1, &a, 0x1e, &light_texture);
+
+			a.r = a.r >> 1;
+			a.b = a.b >> 1;
+			a.g = a.g >> 1;
+
+			if (gNight != 0) 
+				ShowFlare(&v1, &a, 0x96, iVar5 + iVar4 + v1.vx + v1.vz >> 3 & 0x1ffe);
 		}
-		local_28.vy = MapHeight(&local_38);
-		local_28.vy = -camera_position.vy - local_28.vy;
-		if (gNight != 0) {
-			ShowGroundLight(&local_28, local_48, 300);
-		}
-		DisplayLightReflections(&local_28, local_50, 100, &lightref_texture);
+
+		iVar1 = MapHeight(&v1);
+		v2.vy = -camera_position.vy - iVar1;
+
+		if (gNight != 0) 
+			ShowGroundLight(&v2, &c, 300);
+
+
+		DisplayLightReflections(&v2, &a, 100, &lightref_texture);
 		LightSortCorrect = -10;
 	}
-	return;*/
 }
 
 
