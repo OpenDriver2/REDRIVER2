@@ -294,16 +294,11 @@ POLY_FT4 cd_sprite;
 SPRT extraSprt;
 POLY_FT3 extraDummy;
 
-// [D]
+// [D] [A]
 void SetVariable(int var)
 {
 	int code = (var >> 8);
 	int value = (var & 0xff);
-
-	if (0xc < (var >> 8) - 1U) 
-	{
-		return;
-	}
 
 	switch (var >> 8) {
 	case 1:
