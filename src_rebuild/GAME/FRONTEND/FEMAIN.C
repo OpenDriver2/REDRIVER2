@@ -992,30 +992,20 @@ void DisplayOnScreenText(void)
 	/* end block 4 */
 	// End Line: 3997
 
-// [D]
+// [D] [A]
 void SetupExtraPoly(char *fileName, int offset, int offset2)
 {
-	int iVar1;
-	int iVar2;
-	char **ppuVar3;
-	RECT16 rect;
+	RECT16 rect = extraRect;
 
-	rect = extraRect;
 	FEDrawCDicon();
 	Loadfile(fileName, _frontend_buffer + offset2);
+
 	setSprt(&extraSprt);
-	//extraSprt.tag._3_1_ = 4;
-	//extraSprt.code = 'd';
-	extraSprt.x0 = 100;
-	extraSprt.w = 255;
-	extraSprt.y0 = 226;
-	extraSprt.r0 = 128;
-	extraSprt.g0 = 128;
-	extraSprt.b0 = 128;
-	extraSprt.u0 = '\0';
-	extraSprt.v0 = '\0';
-	extraSprt.h = 219;
-	extraSprt.clut = 0x403c;
+	setXY0(&extraSprt, 100, 226);
+	setRGB0(&extraSprt, 128, 128, 128);
+	setUV0(&extraSprt, 0, 0);
+	setWH(&extraSprt, 255, 219);
+	setClut(&extraSprt, 960, 256);
 
 	rect.x = 896;
 	rect.y = 256;
@@ -1025,43 +1015,34 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
 	DrawSync(0);
 	VSync(0);
+
 	setPolyFT3(&extraDummy);
-	extraDummy.x0 = -1;
-	extraDummy.y0 = -1;
-	extraDummy.x1 = -1;
-	extraDummy.y1 = -1;
-	extraDummy.x2 = -1;
-	extraDummy.y2 = -1;
-	extraDummy.tpage = 0x1e;
+	setXY3(&extraDummy, -1, -1, -1, -1, -1, -1);
+	setTPage(&extraDummy, 0, 0, 896, 256);
+
 	bDrawExtra = 1;
-	iVar1 = strcmp(fileName, "DATA\\CITY.RAW");
-	if (iVar1 == 0) {
+
+	if (strcmp(fileName, "DATA\\CITY.RAW") == 0) {
 		loaded[0] = 1;
 		loaded[1] = -1;
 	}
-	iVar1 = 0;
-	ppuVar3 = gfxNames;
-	do {
-		iVar2 = strcmp(fileName, *ppuVar3);
-		if (iVar2 == 0) {
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (strcmp(fileName, gfxNames[i]) == 0) {
 			loaded[0] = -1;
-			loaded[1] = (char)iVar1;
+			loaded[1] = (char)i;
 			loaded[2] = -1;
 		}
-		iVar1 = iVar1 + 1;
-		ppuVar3 = ppuVar3 + 1;
-	} while (iVar1 < 4);
-	iVar1 = 0;
-	ppuVar3 = cutGfxNames;
-	do {
-		iVar2 = strcmp(fileName, *ppuVar3);
-		if (iVar2 == 0) {
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (strcmp(fileName, cutGfxNames[i]) == 0) {
 			loaded[1] = -1;
-			loaded[2] = (char)iVar1;
+			loaded[2] = (char)i;
 		}
-		iVar1 = iVar1 + 1;
-		ppuVar3 = ppuVar3 + 1;
-	} while (iVar1 < 4);
+	}
 }
 
 
