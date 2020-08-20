@@ -730,7 +730,6 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 			}
 		}
 	}
-	return;
 }
 
 
