@@ -148,6 +148,8 @@ _pct plotContext;
 	/* end block 3 */
 	// End Line: 1306
 
+MVERTEX MVERTEX_ARRAY_1f800228[5][5];
+
 // [D] [A]
 void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 {
@@ -161,15 +163,15 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 	uVar3 = *(uint *)&src->v0;
 
 	plotContext.colour = 0x2e000000;
-	//plotContext.ot = plotContext.ot + 0x1c;
 
-	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
-	plotContext.tpage = texture_pages[src->texture_set];// << 0x40;
+
+	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];// << 0x10;
+	plotContext.tpage = (texture_pages[src->texture_set]);// << 0x10;
 
 	if (3200 < z) 
 		m = 2;
 
-	// [A] this is temporary code to draw shadow sprites
+#if 1 // [A] this is temporary code to draw shadow sprites
 	{
 		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
 
@@ -212,32 +214,28 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 			plotContext.primptr += sizeof(POLY_FT4);
 		}
 	}
+#else
+	plotContext.ot += 28;
 
-#if 0
-	MVERTEX_ARRAY_1f800228[0]._0_4_ = *(undefined4 *)(verts + (uVar3 & 0xff));
-	puVar1 = (undefined4 *)((int)&verts->vx + (uVar3 >> 5 & 0x7f8));
-	MVERTEX_ARRAY_1f800228[0]._4_4_ =
-		*(uint *)&verts[uVar3 & 0xff].vz & 0xffff | (uint)(ushort)src->uv0 << 0x10;
-	uVar4 = puVar1[1];
-	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m) = *puVar1;
-	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m].vz = uVar4;
-	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m].uv = src->uv1;
-	uVar4 = *(undefined4 *)&verts[uVar3 >> 0x18].vz;
-	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m * 5) = *(undefined4 *)(verts + (uVar3 >> 0x18));
-	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m * 5].vz = uVar4;
-	puVar1 = (undefined4 *)((int)&verts->vx + (uVar3 >> 0xd & 0x7f8));
-	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m * 5].uv = src->uv3;
-	uVar4 = puVar1[1];
-	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m * 6) = *puVar1;
-	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m * 6].vz = uVar4;
-	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m * 6].uv = src->uv2;
-	
-	
+	copyVector(&MVERTEX_ARRAY_1f800228[0][0], &verts[src->v0]);
+	MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&src->uv0;
+
+	copyVector(&MVERTEX_ARRAY_1f800228[0][1], &verts[src->v1]);
+	MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&src->uv1;
+
+	copyVector(&MVERTEX_ARRAY_1f800228[0][2], &verts[src->v3]);
+	MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&src->uv3;
+
+	copyVector(&MVERTEX_ARRAY_1f800228[0][3], &verts[src->v2]);
+	MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&src->uv2;
+
 	makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m);
-	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, (_pct *)&plotContext);
-#endif //0
+	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, &plotContext);
+	
+	plotContext.ot -= 28;
+#endif
 
-	//plotContext.ot = plotContext.ot + -0x1c;
+
 }
 
 
@@ -334,7 +332,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 MATRIX shadowMatrix;
-MVERTEX MVERTEX_ARRAY_1f800228[5][5];
+
 
 // [D] [A]
 void DrawSprites(int numFound)
@@ -2036,6 +2034,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		pSVar10 = verts + ((uint)vidx & 0xff);
 		local_v1_404 = (SVECTOR *)((int)&verts->vx + ((uint)vidx >> 5 & 0x7f8));
 		pSVar5 = verts + ((uint)vidx >> 0x18);
+		puVar6 = (int*)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
 
 		gte_ldv3(pSVar10, local_v1_404, pSVar5);
 		gte_rtpt();
@@ -2119,9 +2118,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 			if (Z > 0)
 			{
-				if (true) //((n == 0) || (rot << 2 <= iVar11 + -0xfa))
-				{
-					puVar6 = (int *)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
+				if ((n == 0) || (rot << 2 <= iVar11 + -0xfa))
+				{					
 					local_t2_1500 = (POLY_FT4 *)pc->primptr;
 
 					gte_ldv0(puVar6);
@@ -2178,6 +2176,26 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 				}
 				else
 				{
+					SVECTOR* v0 = pSVar10;
+					SVECTOR* v1 = local_v1_404;
+					SVECTOR* v2 = pSVar5;
+					SVECTOR* v3 = (SVECTOR*)puVar6;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][0], v0);
+					MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&polys->uv0;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][1], v1);
+					MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&polys->uv1;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][2], v2);
+					MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&polys->uv3;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][3], v3);
+					MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&polys->uv2;
+
+					makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot);
+					drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot, pc);
+
 					/*
 					iVar13 = rot << 1;
 					rot = n;

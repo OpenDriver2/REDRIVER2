@@ -592,6 +592,107 @@ void DrawTILES(int tile_amount)
 // [D] [A] - I don't expect this to work...
 void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 {
+	/* vertices by index in quad:
+		3---------2
+		|         |
+		|         |
+		|         |
+		0---------1
+	*/
+
+	// 0 3 2 1
+
+	// do subdivision
+	MVERTEX v1, v2, v3, v4;
+	MVERTEX e1, e2, e3, e4, e5;
+	MVERTEX p1, p2, p3, p4, p5;
+
+	v1 = (*VSP)[0][0];
+	v2 = (*VSP)[0][1];
+	v3 = (*VSP)[0][3];
+	v4 = (*VSP)[0][2];
+
+	VecSubtract(&e1, &v2, &v1); // plane[1] - plane[0];
+	e1.uv.u0 = (v2.uv.u0 - v1.uv.u0) / 2;
+	e1.uv.v0 = (v2.uv.v0 - v1.uv.v0) / 2;
+
+	VecSubtract(&e2, &v3, &v4); // plane[2] - plane[3];
+	e2.uv.u0 = (v3.uv.u0 - v4.uv.u0) / 2;
+	e2.uv.v0 = (v3.uv.v0 - v4.uv.v0) / 2;
+
+	VecSubtract(&e3, &v4, &v1); // plane[3] - plane[0];
+	e3.uv.u0 = (v4.uv.u0 - v1.uv.u0) / 2;
+	e3.uv.v0 = (v4.uv.v0 - v1.uv.v0) / 2;
+
+	VecSubtract(&e4, &v3, &v2); // plane[2] - plane[1];
+	e4.uv.u0 = (v3.uv.u0 - v2.uv.u0) / 2;
+	e4.uv.v0 = (v3.uv.v0 - v2.uv.v0) / 2;
+
+	//-----------
+
+	// half them all
+	SetVec(&e1, e1.vx / 2, e1.vy / 2, e1.vz / 2);
+
+	SetVec(&e2, e2.vx / 2, e2.vy / 2, e2.vz / 2);
+
+	SetVec(&e3, e3.vx / 2, e3.vy / 2, e3.vz / 2);
+
+	SetVec(&e4, e4.vx / 2, e4.vy / 2, e4.vz / 2);
+
+	//-----------
+
+	VecAdd(&p1, &e1, &v1); // e1 * 0.5f + plane[0];
+	p1.uv.u0 = e1.uv.u0 + v1.uv.u0;
+	p1.uv.v0 = e1.uv.v0 + v1.uv.v0;
+
+	VecAdd(&p2, &e2, &v4); // e2 * 0.5f + plane[3];
+	p2.uv.u0 = e2.uv.u0 + v4.uv.u0;
+	p2.uv.v0 = e2.uv.v0 + v4.uv.v0;
+
+	VecAdd(&p3, &e3, &v1); // e3 * 0.5f + plane[0];
+	p3.uv.u0 = e3.uv.u0 + v1.uv.u0;
+	p3.uv.v0 = e3.uv.v0 + v1.uv.v0;
+
+	VecAdd(&p4, &e4, &v2); // e4 * 0.5f + plane[1];
+	p4.uv.u0 = e4.uv.u0 + v2.uv.u0;
+	p4.uv.v0 = e4.uv.v0 + v2.uv.v0;
+
+	//-----------
+
+	VecSubtract(&e5, &p2, &p1); // p2 - p1;
+	e5.uv.u0 = (p2.uv.u0 - p1.uv.u0) / 2;
+	e5.uv.v0 = (p2.uv.v0 - p1.uv.v0) / 2;
+
+	SetVec(&e5, e5.vx / 2, e5.vy / 2, e5.vz / 2);
+
+
+	VecAdd(&p5, &e5, &p1); // e5 * 0.5f + p1;
+	p5.uv.u0 = e5.uv.u0 + p1.uv.u0;
+	p5.uv.v0 = e5.uv.v0 + p1.uv.v0;
+
+	//-----------
+
+	(*VSP)[0][0] = v1; // { plane[0], p1, p5, p3 },
+	(*VSP)[0][1] = p1;
+	(*VSP)[0][2] = p3;
+	(*VSP)[0][3] = p5;
+
+	(*VSP)[1][0] = p1; // { p1, plane[1], p4, p5 },
+	(*VSP)[1][1] = v2;
+	(*VSP)[1][2] = p5;
+	(*VSP)[1][3] = p4;
+
+	(*VSP)[2][0] = p5; // { p5, p4, plane[2], p2 },
+	(*VSP)[2][1] = p4;
+	(*VSP)[2][2] = p2;
+	(*VSP)[2][3] = v3;
+
+	(*VSP)[3][0] = p3; // { p3, p5, p2, plane[3] }
+	(*VSP)[3][1] = p5;
+	(*VSP)[3][2] = v4;
+	(*VSP)[3][3] = p2;
+
+	/*
 	uint uVar1;
 	uint uVar2;
 	uint uVar3;
@@ -764,7 +865,7 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 			*(uint *)&(*VSP)[1][1].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
 			*(uint *)&(*VSP)[1][2].vz =(uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
 		}
-	}
+	}*/
 }
 
 
@@ -834,7 +935,48 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 
 void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 {
-	UNIMPLEMENTED();
+	POLY_FT4* prim;
+	int z;
+
+	prim = (POLY_FT4*)pc->primptr;
+
+	for (int index = 0; index < 4; index++)
+	{
+		setPolyFT4(prim);
+		*(ulong*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
+
+		// test
+		gte_ldv3(&(*VSP)[index][0], &(*VSP)[index][1], &(*VSP)[index][2]);
+		gte_rtpt();
+		gte_avsz3();
+		
+		gte_stotz(&z);
+
+		if (z > 5)
+		{
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+			gte_ldv0(&(*VSP)[index][3]);
+			gte_rtps();
+
+			gte_stsxy(&prim->x3);
+
+			*(ushort*)&prim->u0 = (*VSP)[index][0].uv.val;
+			*(ushort*)&prim->u1 = (*VSP)[index][1].uv.val;
+			*(ushort*)&prim->u2 = (*VSP)[index][2].uv.val;
+			*(ushort*)&prim->u3 = (*VSP)[index][3].uv.val;
+
+			prim->clut = pc->clut >> 0x10;
+			prim->tpage = pc->tpage >> 0x10;
+
+			addPrim(pc->ot + (z >> 1), prim);
+
+			prim++;
+		}
+	}
+
+	pc->primptr = (char*)prim;
+
 	/*
 	int iVar1;
 	uint uVar3;

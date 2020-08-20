@@ -902,9 +902,13 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 		*(uint *)&pPVar10->u0 = *(uint *)&sps->u0;
 		*(uint *)&pPVar10->u1 = *(uint *)&sps->u1;
 		*(uint *)&pPVar10->u2 = *(uint *)&sps->u2;
-		iVar24 = iVar24 + -1;
 		*(uint *)&pPVar10->u3 = *(uint *)&sps->u3;
+
+		pPVar10->tpage = sps->tpage;
+		pPVar10->clut = sps->clut;
+
 		pPVar10 = pPVar10 + 1;
+		iVar24 = iVar24 + -1;
 	} while (-1 < iVar24);
 
 	iVar12 = *(uint *)&sps->x1;
@@ -1057,9 +1061,9 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 	POLY_FT4 *spd;
 
 	spd = (POLY_FT4 *)current->primptr;
-	current->primptr += sizeof(POLY_FT4) * 4;
+	current->primptr += sizeof(POLY_FT4);
 
-	memcpy(spd, sps, sizeof(POLY_FT4)*4);
+	memcpy(spd, sps, sizeof(POLY_FT4));
 
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), spd);
 #endif // PSX

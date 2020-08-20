@@ -20374,7 +20374,13 @@ struct MVERTEX // hashcode: 0xCC5E5250 (dec: -866233776)
 	short vx; // size=0, offset=0
 	short vy; // size=0, offset=2
 	short vz; // size=0, offset=4
-	unsigned short uv; // size=0, offset=6
+	union {
+		short val;
+		struct {
+			unsigned char u0; // size=0, offset=0
+			unsigned char v0; // size=0, offset=1
+		};
+	}uv; // size=0, offset=6
 };
 
 struct VERTEX // hashcode: 0x01A9F7DD (dec: 27916253)
