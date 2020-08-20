@@ -4381,52 +4381,40 @@ int GameNameScreen(int bSetup)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void FEInitCdIcon(void)
 {
-	ushort *puVar1;
-	int iVar2;
+	ushort *palette;
 	RECT16 rect;
 
-	puVar1 = cd_icon + 10;
-	iVar2 = 0xd;
-	do {
-		iVar2 = iVar2 + -1;
-		*puVar1 = *puVar1 & 0x7fff;
-		puVar1 = puVar1 + 1;
-	} while (-1 < iVar2);
+	palette = cd_icon + 10;
+
+	for (int i = 0; i < 14; i++)
+	{
+		*palette &= 0x7fff;
+		palette++;
+	}
+
 	cd_icon[10] = 0;
-	rect.x = 0x3c0;
-	rect.y = 0x1b2;
+	
+	rect.x = 960;
+	rect.y = 434;
 	rect.w = 8;
-	rect.h = 0x20;
-	cd_icon[24] = cd_icon[24] | 0x8000;
-	cd_icon[25] = cd_icon[25] | 0x8000;
+	rect.h = 32;
+	
+	cd_icon[24] |= 0x8000;
+	cd_icon[25] |= 0x8000;
+
 	LoadImage(&rect, (u_long *)(cd_icon + 0x18));
+
 	setPolyFT4(&cd_sprite);
-	cd_sprite.r0 = 128;
-	cd_sprite.g0 = 128;
-	cd_sprite.b0 = 128;
-	cd_sprite.v0 = -0x4d;
-	cd_sprite.v1 = -0x4d;
-	cd_sprite.u0 = '\0';
-	cd_sprite.u1 = ' ';
-	cd_sprite.u2 = '\0';
-	cd_sprite.v2 = -0x2d;
-	cd_sprite.u3 = ' ';
-	cd_sprite.v3 = -0x2d;
-	cd_sprite.clut = GetClut(0x3c0, 0x1b1);
-	cd_sprite.tpage = GetTPage(0, 0, 0x3c0, 0x100);
+	setRGB0(&cd_sprite, 128, 128, 128);
+	setUVWH(&cd_sprite, 0, 178, 32, 32);
+	setXYWH(&cd_sprite, 80, 38, 38, 21);
+	setClut(&cd_sprite, 960, 433);
+	setTPage(&cd_sprite, 0, 0, 960, 256);
+
 	bCdIconSetup = 1;
-	cd_sprite.x0 = 0x50;
-	cd_sprite.y0 = 0x26;
-	cd_sprite.x1 = 0x76;
-	cd_sprite.y1 = 0x26;
-	cd_sprite.x2 = 0x50;
-	cd_sprite.y2 = 0x3b;
-	cd_sprite.x3 = 0x76;
-	cd_sprite.y3 = 0x3b;
-	return;
 }
 
 
