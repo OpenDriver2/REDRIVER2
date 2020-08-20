@@ -918,48 +918,46 @@ char cutUnlock[] = {
 
 char* NullStr = "\0";
 
-// [D]
+// [D] [A]
 void DisplayOnScreenText(void)
 {
-	uint transparent;
-	char *__src;
-	int iVar1;
-	char **ppcVar2;
+	char *text;
 
 	sprintf(ScreenTitle, NullStr);
+
 	if (padsConnected[0] == 0) {
-		transparent = (uint)Pads[0].type;
-		if (Pads[0].type == '\0') {
-			__src = "Please insert controller into Port 1";
-				transparent = 1;
+		int transparent = 0;
+
+		if (Pads[0].type == 0) {
+			text = "Please insert controller into Port 1";
+			transparent = 1;
 		}
 		else {
-			if (Pads[0].type != '\x01') {
+			if (Pads[0].type != 1)
 				return;
-			}
-			__src = "Incompatible controller in Port 1";
+
+			text = "Incompatible controller in Port 1";
 		}
-		FEPrintStringSized(__src, 0x28, 400, 0xc00, transparent, 0x40, 0x40, 0x40);
+
+		FEPrintStringSized(text, 40, 400, 0xc00, transparent, 64, 64, 64);
 	}
 	else {
-		if ((bDoingScores == 0) && (iVar1 = 0, bDoingCarSelect == 0)) {
-			if (0 < ScreenDepth) {
-				ppcVar2 = ScreenNames;
-				do {
-					if (0 < iVar1) {
-						strcat(ScreenTitle, (char *)" - ");
-					}
-					__src = *ppcVar2;
-					ppcVar2 = ppcVar2 + 1;
-					strcat(ScreenTitle, __src);
-					iVar1 = iVar1 + 1;
-				} while (iVar1 < ScreenDepth);
+		if (!bDoingScores && !bDoingCarSelect) {
+			for (int i = 0; i < ScreenDepth; i++)
+			{
+				if (i > 0)
+					strcat(ScreenTitle, " - ");
+
+				strcat(ScreenTitle, ScreenNames[i]);
 			}
-			FEPrintStringSized(ScreenTitle, 0x28, 400, 0xc00, 1, 0x40, 0x40, 0x40);
+
+			FEPrintStringSized(ScreenTitle, 40, 400, 0xc00, 1, 64, 64, 64);
 		}
-		if (bInCutSelect != 0) {
-			FEPrintStringSized(CutSceneNames[cutSelection + CutAmountsTotal[currCity]], 100, 0xe2,
-				0xc00, 1, 0x60, 0x60, 0x60);
+
+		if (bInCutSelect) {
+			text = CutSceneNames[cutSelection + CutAmountsTotal[currCity]];
+
+			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
 		}
 	}
 }
