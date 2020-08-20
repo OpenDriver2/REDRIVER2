@@ -3694,10 +3694,10 @@ void DisplayScoreTable(void)
 
 	OnScoreTable(&pSE);
 
-	sprintf(text, ScreenNames[ScreenDepth + -1]);
-	FEPrintString(text, 0x14, 200, 2, (uint)otherCol.r, (uint)otherCol.g, (uint)otherCol.b);
+	sprintf(text, ScreenNames[ScreenDepth - 1]);
+	FEPrintString(text, 20, 200, 2, otherCol.r, otherCol.g, otherCol.b);
 	sprintf(text, CityNames[GameLevel]);
-	FEPrintString(text, 0x118, 200, 2, (uint)otherCol.r, (uint)otherCol.g, (uint)otherCol.b);
+	FEPrintString(text, 280, 200, 2, otherCol.r, otherCol.g, otherCol.b);
 
 	iVar2 = ((uint)GameType - 4) * 8;
 
@@ -3715,23 +3715,22 @@ void DisplayScoreTable(void)
 
 	if ((GameType != GAME_PURSUIT) && (GameType != GAME_SURVIVAL)) {
 		sprintf(text, "%s", gameNames[iVar2 + GameLevel * 2 + GameNum]);
-		FEPrintStringSized(text, 0x1a4, 0xce, 0xc00, 2, (uint)otherCol.r, (uint)otherCol.g,
-			(uint)otherCol.b);
+		FEPrintStringSized(text, 420, 206, 0xc00, 2, otherCol.r, otherCol.g, otherCol.b);
 	}
 
-	y = 0xf0;
+	y = 240;
 	iVar2 = 0;
 	iVar3 = 4;
 
 	do {
 		sprintf(text, pSE->name + iVar2);
-		FEPrintString(text, 0x14, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b);
+		FEPrintString(text, 20, y, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 
 		if ((GameType == GAME_GATERACE) || (GameType == GAME_TRAILBLAZER)) 
 		{
 			if (pSE->items + iVar2 != -1) {
 				sprintf(text, "%d");
-				FEPrintString(text, 0x8c, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b)
+				FEPrintString(text, 140, y, 2, scoreCol.r, scoreCol.g, scoreCol.b)
 					;
 			}
 		}
@@ -3741,10 +3740,10 @@ void DisplayScoreTable(void)
 		if (iVar1 != -1) {
 			sprintf(text, "%d:%02d.%02d", iVar1 / 180000,
 				iVar1 / 3000 + (iVar1 / 180000) * -0x3c, (iVar1 % 3000) / 0x1e);
-			FEPrintString(text, 0x118, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b);
+			FEPrintString(text, 280, y, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 		}
 
-		y = y + 0x24;
+		y = y + 36;
 		iVar3 = iVar3 + -1;
 		iVar2 = iVar2 + 0xc;
 
