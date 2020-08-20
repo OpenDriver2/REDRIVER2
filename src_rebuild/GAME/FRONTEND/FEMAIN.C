@@ -761,39 +761,14 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 
 
-// [D]
+// [D] [A]
 void DrawScreen(PSXSCREEN *pScr)
 {
-	short sVar1;
-	DB *pDVar2;
-	u_long *puVar3;
-	uint uVar4;
-	int local_68;
-	char *string;
-	POLY_FT4 *pPVar5;
-	PSXSCREEN *pPVar6;
-	int iVar7;
-	PSXBUTTON *pPVar8;
-	char *pcVar9;
-	char *pcVar10;
-	char *string_00;
-	char *pcVar11;
-	int local_64;
-	int local_60;
 	char version_info[32];
 	int numBtnsToDraw;
-	int local_34;
-	char *local_30;
 
-	pDVar2 = current;
-	pPVar5 = BackgroundPolys;
-	iVar7 = 5;
-	do {
-		addPrim(&pDVar2->ot[0xb], pPVar5);
-	
-		iVar7 = iVar7 + -1;
-		pPVar5 = pPVar5 + 1;
-	} while (-1 < iVar7);
+	for (int i = 0; i < 6; i++)
+		addPrim(current->ot + 11, &BackgroundPolys[i]);
 
 	if (pScr == NULL) {
 		EndFrame();
@@ -801,91 +776,72 @@ void DrawScreen(PSXSCREEN *pScr)
 	else {
 		GetTimeStamp(version_info);
 
-		if ((bDoingCutSelect == 0) || (0x27 < gFurthestMission)) {
-			uVar4 = (uint)pScr->numButtons;
+		if (bDoingCutSelect && (gFurthestMission > 39)) {
+			numBtnsToDraw = pScr->numButtons - 1;
 		}
 		else {
-			uVar4 = (uint)pScr->numButtons - 1;
+			numBtnsToDraw = pScr->numButtons;
 		}
-		iVar7 = 0;
-		if (0 < (int)uVar4) {
-			local_34 = 0;
-			pcVar9 = pScr->buttons[0].Name;
-			pPVar8 = pScr->buttons;
-			pPVar6 = pScr;
-			pcVar10 = pcVar9;
-			string_00 = pcVar9;
-			pcVar11 = pcVar9;
-			local_30 = pcVar9;
-			do {
-				local_68 = *(int *)((int)&pScr->buttons[0].action + local_34) >> 8;
-				if (local_68 != 5) {
-					if (pPVar8 == pCurrButton) {
-						string = pcVar10;
-						if (local_68 == 3) {
-						LAB_FRNT__001c16a8:
-							sVar1 = pPVar6->buttons[0].x;
-							local_68 = 0x20;
-							local_64 = 0x20;
-							local_60 = 0x20;
-						}
-						else {
-							string = pcVar11;
-							if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
-								((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-								((bInCutSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) {
-							LAB_FRNT__001c174c:
-								FEPrintString(string, (int)pPVar6->buttons[0].x * 2 +
-									(int)pPVar6->buttons[0].w,
-									(int)pPVar6->buttons[0].y, 4, 0x7c, 0x6c, 0x28);
-								goto LAB_FRNT__001c17ac;
-							}
-							sVar1 = pPVar6->buttons[0].x;
-							local_68 = 0x80;
-							local_64 = 0x80;
-							local_60 = 0x80;
-							string = pcVar9;
-						}
-						FEPrintString(string, (int)sVar1 * 2 + (int)pPVar6->buttons[0].w,
-							(int)pPVar6->buttons[0].y, 4, local_68, local_64, local_60);
+
+		for (int i = 0; i < numBtnsToDraw; i++)
+		{
+			PSXBUTTON *button = &pScr->buttons[i];
+			int status = button->action >> 8;
+
+			if (status != 5)
+			{
+				if (button == pCurrButton)
+				{
+					if (status == 3)
+					{
+						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
 					}
-					else {
-						if (local_68 == 3) {
-							string = pPVar8->Name;
-							goto LAB_FRNT__001c16a8;
+					else
+					{
+						if ((bMissionSelect && ((i == 0) || (i == 5))) ||
+							((bDoingCarSelect && ((i == 0) || (i == 2)))) ||
+							((bInCutSelect && ((i == 0) || (i == 2)))))
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
 						}
-						string = local_30;
-						if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
-							((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-							((bInCutSelect != 0 && ((iVar7 == 0 || (iVar7 == 2))))))
-							goto LAB_FRNT__001c174c;
-						FEPrintString(string_00,
-							(int)pPVar6->buttons[0].x * 2 + (int)pPVar6->buttons[0].w,
-							(int)pPVar6->buttons[0].y, 4, 0x80, 0x80, 0x80);
+						else
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+						}
 					}
 				}
-			LAB_FRNT__001c17ac:
-				pPVar6 = (PSXSCREEN *)(pPVar6->buttons[0].Name + 0x1c);
-				string_00 = string_00 + 0x3c;
-				pcVar9 = pcVar9 + 0x3c;
-				pcVar11 = pcVar11 + 0x3c;
-				pcVar10 = pcVar10 + 0x3c;
-				pPVar8 = pPVar8 + 1;
-				iVar7 = iVar7 + 1;
-				local_34 = local_34 + 0x3c;
-				local_30 = local_30 + 0x3c;
-			} while (iVar7 < (int)uVar4);
+				else
+				{
+					if (status == 3)
+					{
+						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
+					}
+					else
+					{
+						if ((bMissionSelect && ((i == 0) || (i == 5))) ||
+							((bDoingCarSelect && ((i == 0) || (i == 2)))) ||
+							((bInCutSelect && ((i == 0) || (i == 2)))))
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
+						}
+						else
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+						}
+					}
+				}
+			}
+		}
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-			FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
-			FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
+		FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
+		FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
 #endif
-		}
-		SetTextColour(0x80, 0, 0);
+
+		SetTextColour(128, 0, 0);
 
 		DisplayOnScreenText();
-		pDVar2 = current;
-
+		
 		if (bDrawExtra != 0) {
 			addPrim(current->ot + 2, &extraSprt);
 			addPrim(current->ot + 3, &extraDummy);
