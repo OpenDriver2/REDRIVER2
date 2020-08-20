@@ -1173,12 +1173,10 @@ RECT16 storeRect = { 768, 475, 255, 36 };
 // [D]
 void NewSelection(short dir)
 {
-	PSXBUTTON *pPVar2;
-	PSXBUTTON *pPVar3;
+	PSXBUTTON *pNewB;
 	uint uVar4;
 	RECT16 rect;
 
-	pPVar2 = pCurrButton;
 	uVar4 = dir;// >> 10; //SEXT24(dir);
 	if (pCurrScreen->numButtons == 0) {
 		return;
@@ -1187,78 +1185,66 @@ void NewSelection(short dir)
 		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
 		addPrim(current->ot+9, &In);
 	}
-	pPVar3 = pPVar2;
-	if ((uVar4 & 0x1000) == 0)
+
+	int btn = 0;
+
+	if ((dir & 0x1000) != 0)
 	{
-		if ((uVar4 & 0x4000) == 0) 
-		{
-			if ((uVar4 & 0x8000) == 0) 
-			{
-				pPVar3 = pCurrButton;
-				if (((uVar4 & 0x2000) == 0) || (pPVar3 = pPVar2, pCurrButton->r == '\0'))
-					goto LAB_FRNT__001c1ff4;
-				FESound(3);
-				uVar4 = (uint)pCurrButton->r;
-			}
-			else 
-			{
-				if (pCurrButton->l == 0) 
-					goto LAB_FRNT__001c1ff4;
-
-				FESound(3);
-				uVar4 = (uint)pCurrButton->l;
-			}
-		}
-		else
-		{
-			if (pCurrButton->d == 0) goto LAB_FRNT__001c1ff4;
-			FESound(3);
-			uVar4 = (uint)pCurrButton->d;
-		}
+		btn = pCurrButton->u;
 	}
-	else {
-		if (pCurrButton->u == 0) goto LAB_FRNT__001c1ff4;
+	else if ((dir & 0x4000) != 0)
+	{
+		btn = pCurrButton->d;
+	}
+	else if ((dir & 0x8000) != 0)
+	{
+		btn = pCurrButton->l;
+	}
+	else if ((dir & 0x2000) != 0)
+	{
+		btn = pCurrButton->r;
+	}
+
+	if (btn != 0)
+	{
 		FESound(3);
-		uVar4 = (uint)pCurrButton->u;
+		pNewB = &pCurrScreen->buttons[btn - 1];
 	}
-	pPVar3 = (PSXBUTTON *)&pCurrScreen[-1].buttons[uVar4 + 7].w;
-LAB_FRNT__001c1ff4:
-	rect.x = pPVar3->s_x;
-	rect.y = pPVar3->s_y;
-	rect.w = 0xff;
-	rect.h = 0x24;
-	SetDrawMove(&Out, &rect, (int)storeRect.x, (int)storeRect.y);
+	else
+	{
+		pNewB = pCurrButton;
+	}
 
-	addPrim(current->ot+8, &Out);
+	rect.x = pNewB->s_x;
+	rect.y = pNewB->s_y;
+	rect.w = 255;
+	rect.h = 36;
 
-	HighlightSprt.x0 = pPVar3->s_x;
-	HighlightSprt.y0 = pPVar3->s_y;
+	SetDrawMove(&Out, &rect, storeRect.x, storeRect.y);
+	addPrim(current->ot + 8, &Out);
 
-	addPrim(current->ot+6, &HighlightSprt);
-	pCurrButton = pPVar3;
-
+	setXY0(&HighlightSprt, pNewB->s_x, pNewB->s_y);
+	
+	addPrim(current->ot + 6, &HighlightSprt);
 	addPrim(current->ot + 7, &HighlightDummy);
 
-	if (pPVar3->action >> 8 == 3) {
-		FEPrintString(pPVar3->Name, (int)pPVar3->x * 2 + (int)pPVar3->w, (int)pPVar3->y, 4, 0x20, 0x20,
-			0x20);
+	pCurrButton = pNewB;
+
+	if ((pNewB->action >> 8) == 3) {
+		FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 32, 32, 32);
 	}
 	else {
-		if ((((bDoingCarSelect == 0) ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))) &&
-			((bMissionSelect == 0 ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 5)))))) &&
-			((bInCutSelect == 0 ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))))) 
+		if ((bMissionSelect && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[5]))) ||
+			((bDoingCarSelect && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[2])))) ||
+			((bInCutSelect && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[2])))))
 		{
-			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
-				(int)pCurrButton->y, 4, 0x80, 0x80, 0x80);
+			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 124, 108, 40);
 		}
 		else {
-			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
-				(int)pCurrButton->y, 4, 0x7c, 0x6c, 0x28);
+			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 128, 128, 128);
 		}
 	}
+
 	EndFrame();
 }
 
