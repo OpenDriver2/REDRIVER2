@@ -73,78 +73,92 @@
 	/* end block 2 */
 	// End Line: 127
 
+// [D] [A] might be bugged
 char CellEmpty(VECTOR *pPosition, int radius)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT *pCVar1;
+	PACKED_CELL_OBJECT* ppco;
+	CELL_OBJECT* pCellObject;
+	MODEL* pModel;
+	int num_cb;
+	int box_loop;
+	int sphere_sq;
+	int iVar1;
 	int iVar2;
 	int iVar3;
 	uint uVar4;
 	int iVar5;
-	int *piVar6;
+	int* piVar6;
 	int iVar7;
 	int iVar8;
-	int *piVar9;
+	COLLISION_PACKET* collide;
+	int iVar9;
 	int iVar10;
 	int iVar11;
-	int iVar12;
-	CELL_ITERATOR CStack48;
+	CELL_ITERATOR ci;
 
 	iVar3 = pPosition->vx + units_across_halved;
-	if (iVar3 < 0) {
-		iVar3 = iVar3 + 0x7ff;
-	}
-	iVar2 = pPosition->vz + units_down_halved;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0x7ff;
-	}
-	ppco = GetFirstPackedCop(iVar3 >> 0xb, iVar2 >> 0xb, &CStack48, 0);
-	pCVar1 = UnpackCellObject(ppco, &CStack48.nearCell);
+	iVar1 = pPosition->vz + units_down_halved;
+
+	ppco = GetFirstPackedCop(iVar3 >> 0xb, iVar1 >> 0xb, &ci, 0);
+	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
+
 	do {
-		if (pCVar1 == (CELL_OBJECT *)0x0) {
-			return '\x01';
-		}
-		piVar6 = (int *)modelpointers1536[pCVar1->type]->collision_block;
-		if (piVar6 != (int *)0x0) {
-			iVar12 = (int)(((uint)*(ushort *)&(pCVar1->pos).vx - (uint)*(ushort *)&pPosition->vx) *
-				0x10000) >> 0x10;
-			iVar2 = (int)(((uint)*(ushort *)&(pCVar1->pos).vz - (uint)*(ushort *)&pPosition->vz) * 0x10000
-				) >> 0x10;
-			iVar3 = (int)modelpointers1536[pCVar1->type]->bounding_sphere + 0x244;
-			piVar9 = piVar6 + 1;
-			if (iVar12 * iVar12 + iVar2 * iVar2 < iVar3 * iVar3) {
-				iVar3 = 0;
-				if (0 < *piVar6) {
-					do {
-						iVar11 = (int)*(short *)((int)piVar9 + 0x12) * 0x800 + radius * 0x1000;
-						iVar10 = (int)*(short *)((int)piVar9 + 0xe) * 0x800 + radius * 0x1000;
-						uVar4 = ((uint)pCVar1->yang + (int)*(short *)((int)piVar9 + 10)) * 0x100 & 0x3f00;
-						iVar7 = pPosition->vy +
-							((int)(((uint)*(ushort *)&(pCVar1->pos).vy + (uint)*(ushort *)(piVar9 + 1)) *
-								0x10000) >> 0x10) + 0x50;
-						if (iVar7 < 0) {
-							iVar7 = -iVar7;
-						}
-						iVar8 = (int)*(short *)((int)rcossin_tbl + uVar4 + 2);
-						iVar5 = (int)*(short *)((int)rcossin_tbl + uVar4);
-						if (((iVar7 < (((int)((uint)*(ushort *)(piVar9 + 4) << 0x10) >> 0x10) -
-							((int)((uint)*(ushort *)(piVar9 + 4) << 0x10) >> 0x1f) >> 1) + 0x3c) &&
-							((uint)((iVar12 * iVar8 - iVar2 * iVar5) + iVar10) < (uint)(iVar10 * 2))) &&
-							((uint)(iVar2 * iVar8 + iVar12 * iVar5 + iVar11) < (uint)(iVar11 * 2))) {
-							return '\0';
-						}
-						iVar3 = iVar3 + 1;
-						piVar9 = piVar9 + 5;
-					} while (iVar3 < *piVar6);
+		if (!pCellObject) 
+			return 1;
+	
+		pModel = modelpointers[pCellObject->type];
+
+		piVar6 = (int*)pModel->collision_block;
+
+		if (piVar6 != NULL)
+		{
+			num_cb = *piVar6;
+
+			iVar11 = ((pCellObject->pos.vx - pPosition->vx) * 0x10000) >> 0x10;
+			iVar1 = ((pCellObject->pos.vz - pPosition->vz) * 0x10000) >> 0x10;
+
+			sphere_sq = pModel->bounding_sphere + 580;
+			sphere_sq = (sphere_sq * sphere_sq);
+
+			collide = (COLLISION_PACKET*)(piVar6 + 1);
+
+			if (iVar11 * iVar11 + iVar1 * iVar1 < sphere_sq)
+			{
+				box_loop = 0;
+
+				while (box_loop < num_cb)
+				{
+					iVar10 = collide->zsize * 0x800 + radius * 0x1000;
+					iVar9 = collide->xsize * 0x800 + radius * 0x1000;
+					uVar4 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
+					iVar7 = pPosition->vy + ((int)(((uint) * (ushort*)&(pCellObject->pos).vy + (uint)(ushort)collide->ypos) * 0x10000) >> 0x10) + 0x50;
+
+					if (iVar7 < 0)
+						iVar7 = -iVar7;
+
+					iVar8 = (int)*(short*)((int)rcossin_tbl + uVar4 + 2);
+					iVar5 = (int)*(short*)((int)rcossin_tbl + uVar4);
+					iVar2 = (uint)(ushort)collide->ysize << 0x10;
+
+					if (((iVar7 < ((iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1) + 0x3c) &&
+						((uint)((iVar11 * iVar8 - iVar1 * iVar5) + iVar9) < (uint)(iVar9 * 2))) &&
+						((uint)(iVar1 * iVar8 + iVar11 * iVar5 + iVar10) < (uint)(iVar10 * 2))) 
+					{
+						return 0;
+					}
+
+					box_loop++;
+					collide++;
 				}
 			}
 		}
-		ppco = GetNextPackedCop(&CStack48);
-		pCVar1 = UnpackCellObject(ppco, &CStack48.nearCell);
-	} while (true);*/
+
+		ppco = GetNextPackedCop(&ci);
+		pCellObject = UnpackCellObject(ppco, &ci.nearCell);
+
+	} while (true);
+
+	return 0;
 }
 
 
@@ -183,11 +197,9 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	/* end block 4 */
 	// End Line: 1774
 
+// [D]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
@@ -196,36 +208,25 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	int iVar6;
 
 	iVar1 = pPosition->vx + units_across_halved;
-	iVar3 = iVar1 + -0x400;
-	if (iVar3 < 0) {
-		iVar3 = iVar1 + 0x3ff;
-	}
+	iVar3 = iVar1 - 1024;
+
 	iVar1 = pPosition->vz + units_down_halved;
-	iVar2 = iVar1 + -0x400;
+	iVar2 = iVar1 - 1024;
 	iVar3 = iVar3 >> 0xb;
-	if (iVar2 < 0) {
-		iVar2 = iVar1 + 0x3ff;
-	}
+
 	iVar2 = iVar2 >> 0xb;
 	iVar1 = iVar3;
-	if (iVar3 < 0) {
-		iVar1 = iVar3 + 0x1f;
-	}
+
 	uVar5 = iVar1 >> 5;
 	iVar1 = iVar2;
-	if (iVar2 < 0) {
-		iVar1 = iVar2 + 0x1f;
-	}
+
 	uVar4 = iVar1 >> 5;
 	iVar6 = (uVar5 & 1) + (uVar4 & 1) * 2;
-	iVar1 = cells_across;
-	if (cells_across < 0) {
-		iVar1 = cells_across + 0x1f;
-	}
-	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * (iVar1 >> 5)) {
+
+	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * (cells_across >> 5))
 		return -1;
-	}
-	return (uint)cell_ptrs[(iVar2 + uVar4 * -0x20) * 0x20 + iVar6 * 0x400 + iVar3 + uVar5 * -0x20];*/
+
+	return cell_ptrs[(iVar2 - uVar4 * 32) * 32 + iVar6 * 1024 + iVar3 - uVar5 * 32];
 }
 
 
@@ -492,139 +493,146 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 	/* end block 4 */
 	// End Line: 655
 
+int testRadius = 222;
 
+// [D]
 char lineClear(VECTOR *v1, VECTOR *v2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
-	VECTOR *pVVar2;
-	PACKED_CELL_OBJECT *ppco;
+	VECTOR* pVVar2;
+	PACKED_CELL_OBJECT* ppco;
 	int iVar3;
-	CELL_OBJECT *pCVar4;
-	int iVar5;
+	CELL_OBJECT* pCellObject;
+	int iVar4;
 	int cellz;
+	int iVar5;
 	int iVar6;
-	int iVar7;
 	int cellx;
-	int iVar8;
-	uint uVar9;
+	int iVar7;
+	uint uVar8;
+	int iVar9;
+	MODEL* pModel;
 	int iVar10;
-	MODEL *pMVar11;
+	int* piVar11;
 	int iVar12;
-	int *piVar13;
+	uint uVar13;
 	int iVar14;
-	uint uVar15;
+	int iVar15;
 	int iVar16;
 	int iVar17;
 	int iVar18;
 	int iVar19;
-	int iVar20;
-	int iVar21;
-	int *piVar22;
-	CELL_ITERATOR CStack136;
-	tRay local_70;
-	tAABB local_50;
-	int local_38;
-	int local_30;
+	COLLISION_PACKET* collide;
+	VECTOR pos;
+	VECTOR va;
+	VECTOR vb;
+	CELL_ITERATOR ci;
+	tRay ray;
+	tAABB box;
+	int we;
 
-	iVar7 = v1->vx;
-	iVar10 = v1->vy;
-	iVar12 = v1->vz;
-	iVar16 = v2->vx;
-	local_38 = 0;
-	iVar1 = iVar16 - iVar7;
-	iVar14 = v2->vy;
-	iVar18 = v2->vz;
-	iVar5 = iVar18 - iVar12;
+	iVar6 = v1->vx;
+	iVar9 = v1->vy;
+	iVar10 = v1->vz;
+	iVar14 = v2->vx;
+	we = 0;
+	iVar1 = iVar14 - iVar6;
+	iVar12 = v2->vy;
+	iVar16 = v2->vz;
+	iVar4 = iVar16 - iVar10;
 	iVar3 = -1;
-	iVar6 = -1;
+	iVar5 = -1;
+
 	do {
-		if (local_38 == 0) {
+		if (we == 0) 
+		{
 			cellx = v2->vx + units_across_halved;
 			pVVar2 = v2;
-			if (cellx < 0) {
-				cellx = cellx + 0x7ff;
-			}
 		}
-		else {
+		else
+		{
 			cellx = v1->vx + units_across_halved;
 			pVVar2 = v1;
-			if (cellx < 0) {
-				cellx = cellx + 0x7ff;
-			}
 		}
+
 		cellz = pVVar2->vz + units_down_halved;
 		cellx = cellx >> 0xb;
-		if (cellz < 0) {
-			cellz = cellz + 0x7ff;
-		}
+
 		cellz = cellz >> 0xb;
-		if ((iVar3 != cellx) || (iVar6 != cellz)) {
-			ppco = GetFirstPackedCop(cellx, cellz, &CStack136, 0);
-			while (pCVar4 = UnpackCellObject(ppco, &CStack136.nearCell), pCVar4 != (CELL_OBJECT *)0x0) {
-				pMVar11 = modelpointers1536[pCVar4->type];
-				piVar13 = (int *)pMVar11->collision_block;
-				if (((piVar13 != (int *)0x0) && ((pMVar11->flags2 & 0xa00) == 0)) &&
-					(iVar8 = (int)(((uint)*(ushort *)&(pCVar4->pos).vx - ((iVar7 + iVar16) / 2 & 0xffffU)) *
-						0x10000) >> 0x10,
-						iVar6 = (int)(((uint)*(ushort *)&(pCVar4->pos).vz - ((iVar12 + iVar18) / 2 & 0xffffU)) *
-							0x10000) >> 0x10, iVar3 = (int)pMVar11->bounding_sphere + 800,
-						iVar8 * iVar8 + iVar6 * iVar6 < iVar3 * iVar3)) {
-					piVar22 = piVar13 + 1;
-					iVar6 = *piVar13;
-					iVar3 = 0;
-					if (0 < iVar6) {
-						local_30 = 0xa3812;
-						do {
-							uVar9 = -(uint)pCVar4->yang & 0x3f;
-							uVar15 = ((uint)pCVar4->yang + (int)*(short *)((int)piVar22 + 10)) * 0x100 & 0x3f00;
-							iVar19 = (int)*(short *)(uVar15 + local_30);
-							iVar21 = iVar7 - ((pCVar4->pos).vx +
-								((int)*(short *)((int)piVar22 + 2) * (int)(&matrixtable)[uVar9].m[0]
-									+ (int)*(short *)((int)piVar22 + 6) *
-									(int)(&matrixtable)[uVar9].m[6] + 0x800 >> 0xc));
-							iVar20 = (int)*(short *)((int)rcossin_tbl + uVar15);
-							iVar17 = iVar12 - ((pCVar4->pos).vz +
-								((int)*(short *)((int)piVar22 + 2) * (int)(&matrixtable)[uVar9].m[2]
-									+ (int)*(short *)((int)piVar22 + 6) *
-									(int)(&matrixtable)[uVar9].m[8] + 0x800 >> 0xc));
-							iVar8 = (uint)*(ushort *)((int)piVar22 + 0xe) << 0x10;
-							local_50.slab[0].upper = ((iVar8 >> 0x10) - (iVar8 >> 0x1f) >> 1) + testRadius;
-							local_50.slab[0].lower = -local_50.slab[0].upper;
-							local_50.slab[1].upper =
-								(((int)((uint)*(ushort *)(piVar22 + 4) << 0x10) >> 0x10) -
-								((int)((uint)*(ushort *)(piVar22 + 4) << 0x10) >> 0x1f) >> 1) + testRadius;
-							local_50.slab[1].lower = -local_50.slab[1].upper;
-							local_70.org[1] =
-								(iVar10 - ((int)((-(uint)*(ushort *)(piVar22 + 1) -
-								(uint)*(ushort *)&(pCVar4->pos).vy) * 0x10000) >> 0x10)) + 0x50;
-							iVar8 = (uint)*(ushort *)((int)piVar22 + 0x12) << 0x10;
-							local_50.slab[2].upper = ((iVar8 >> 0x10) - (iVar8 >> 0x1f) >> 1) + testRadius;
-							local_50.slab[2].lower = -local_50.slab[2].upper;
-							local_70.org[0] = (iVar19 * iVar21 - iVar20 * iVar17) + 0x800 >> 0xc;
-							local_70.org[2] = iVar19 * iVar17 + iVar20 * iVar21 + 0x800 >> 0xc;
-							local_70.dir[0] = (iVar19 * iVar1 - iVar20 * iVar5) + 0x800 >> 0xc;
-							local_70.dir[2] = iVar19 * iVar5 + iVar20 * iVar1 + 0x800 >> 0xc;
-							local_70.dir[1] = iVar14 - iVar10;
-							iVar8 = RaySlabsIntersection(&local_70, &local_50);
-							if (iVar8 != 0) {
-								return '\0';
-							}
-							iVar3 = iVar3 + 1;
-							piVar22 = piVar22 + 5;
-						} while (iVar3 < iVar6);
+		if ((iVar3 != cellx) || (iVar5 != cellz))
+		{
+			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0);
+			while (pCellObject = UnpackCellObject(ppco, &ci.nearCell)) 
+			{
+				pModel = modelpointers[pCellObject->type];
+
+				piVar11 = (int*)pModel->collision_block;
+
+				if (piVar11 != NULL && (pModel->flags2 & 0xa00) == 0)
+				{
+					iVar7 = (int)((pCellObject->pos.vx - ((iVar6 + iVar14) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+					iVar5 = (int)((pCellObject->pos.vz - ((iVar10 + iVar16) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+					iVar3 = (int)pModel->bounding_sphere + 800;
+
+					if (iVar7 * iVar7 + iVar5 * iVar5 < iVar3 * iVar3)
+					{
+						collide = (COLLISION_PACKET*)(piVar11 + 1);
+
+						iVar5 = *piVar11;
+						iVar3 = 0;
+						if (0 < iVar5)
+						{
+							do {
+								uVar8 = -pCellObject->yang & 0x3f;
+								uVar13 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
+
+								iVar17 = (int)*(short*)((int)rcossin_tbl + uVar13 + 2);
+								iVar18 = (int)*(short*)((int)rcossin_tbl + uVar13);
+
+								iVar19 = iVar6 - ((pCellObject->pos).vx + FIXED(collide->xpos * matrixtable[uVar8].m[0][0] + collide->zpos * matrixtable[uVar8].m[2][0]));
+								iVar15 = iVar10 - ((pCellObject->pos).vz + FIXED(collide->xpos * matrixtable[uVar8].m[0][2] + collide->zpos * matrixtable[uVar8].m[2][2]));
+
+								iVar7 = collide->xsize << 0x10;
+
+								box.slab[0].upper = ((iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1) + testRadius;
+								box.slab[0].lower = -box.slab[0].upper;
+
+								iVar7 = collide->ysize << 0x10;
+								box.slab[1].upper = ((iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1) + testRadius;
+								box.slab[1].lower = -box.slab[1].upper;
+
+								ray.org[1] = (iVar9 - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
+
+								iVar7 = collide->zsize << 0x10;
+								box.slab[2].upper = ((iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1) + testRadius;
+								box.slab[2].lower = -box.slab[2].upper;
+
+								ray.org[0] = FIXED(iVar17 * iVar19 - iVar18 * iVar15);
+								ray.org[2] = FIXED(iVar17 * iVar15 + iVar18 * iVar19);
+								ray.dir[0] = FIXED(iVar17 * iVar1 - iVar18 * iVar4);
+								ray.dir[2] = FIXED(iVar17 * iVar4 + iVar18 * iVar1);
+								ray.dir[1] = iVar12 - iVar9;
+
+								if (RaySlabsIntersection(&ray, &box) != 0)
+									return 0;
+
+								iVar3++;
+								collide++;
+
+							} while (iVar3 < iVar5);
+						}
 					}
 				}
-				ppco = GetNextPackedCop(&CStack136);
+
+				ppco = GetNextPackedCop(&ci);
 			}
 		}
-		local_38 = local_38 + 1;
+		we++;
 		iVar3 = cellx;
-		iVar6 = cellz;
-	} while (local_38 < 2);
-	return '\x01';*/
+		iVar5 = cellz;
+	} while (we < 2);
+
+	return 1;
 }
 
 
