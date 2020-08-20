@@ -1953,150 +1953,125 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uint uVar2;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar3;
-	int iVar4;
-	uint uVar5;
-	int unaff_s1;
-	VECTOR local_58;
-	VECTOR local_48;
-	int local_38;
-	int local_34;
-	int local_30;
-	long local_2c;
-	uint local_28;
-	uint local_24;
-	CVECTOR local_20[4];
+	short yang;
+	int iVar2;
+	int angle;
+	int size;
+	VECTOR v1;
+	VECTOR v2;
+	VECTOR v3;
+	SVECTOR pos;
+	CVECTOR col;
+	CVECTOR col1;
 
-	bVar1 = cop->yang;
-	uVar3 = (uint)bVar1;
-	if ((bVar1 & 0xf) == 0) {
-		bVar1 = bVar1 >> 4;
-		if (bVar1 == 1) {
-			local_58.vx = ((cop->pos).vx - camera_position.vx) + z;
-			local_58.vz = ((cop->pos).vz - camera_position.vz) - x;
+	yang = cop->yang;
+	angle = yang;
+
+	if ((yang & 0xf) == 0) 
+	{
+		yang = yang >> 4;
+
+		if (yang == 0)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) + x;
+			v1.vz = (cop->pos.vz - camera_position.vz) + z;
 		}
-		else {
-			if (bVar1 < 2) {
-				if (bVar1 == 0) {
-					local_58.vx = ((cop->pos).vx - camera_position.vx) + x;
-					local_58.vz = ((cop->pos).vz - camera_position.vz) + z;
-				}
-			}
-			else {
-				if (bVar1 == 2) {
-					local_58.vx = ((cop->pos).vx - camera_position.vx) - x;
-					local_58.vz = ((cop->pos).vz - camera_position.vz) - z;
-				}
-				else {
-					if (bVar1 == 3) {
-						local_58.vx = ((cop->pos).vx - camera_position.vx) - z;
-						local_58.vz = ((cop->pos).vz - camera_position.vz) + x;
-					}
-				}
-			}
+		else if (yang == 1) 
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) + z;
+			v1.vz = (cop->pos.vz - camera_position.vz) - x;
 		}
-		local_58.vy = ((cop->pos).vy - camera_position.vy) + y;
-	}
-	else {
-		uVar2 = local_24 & 0xffff0000;
-		local_24 = uVar2 | z & 0xffffU;
-		setCopControlWord(2, 0, *(undefined4 *)(&matrixtable)[uVar3].m);
-		setCopControlWord(2, 0x800, *(undefined4 *)((&matrixtable)[uVar3].m + 2));
-		setCopControlWord(2, 0x1000, *(undefined4 *)((&matrixtable)[uVar3].m + 4));
-		setCopControlWord(2, 0x1800, *(undefined4 *)((&matrixtable)[uVar3].m + 6));
-		setCopControlWord(2, 0x2000, *(undefined4 *)((&matrixtable)[uVar3].m + 8));
-		setCopReg(2, in_zero, x & 0xffffU | y << 0x10);
-		setCopReg(2, in_at, local_24);
-		copFunction(2, 0x486012);
-		uVar3 = getCopReg(2, 0x4800);
-		iVar4 = getCopReg(2, 0x5000);
-		uVar5 = getCopReg(2, 0x5800);
-		local_28 = uVar3 & 0xffff | iVar4 << 0x10;
-		local_24 = uVar2 | uVar5 & 0xffff;
-		local_58.vx = ((cop->pos).vx - camera_position.vx) + (int)(short)uVar3;
-		local_58.vy = ((cop->pos).vy - camera_position.vy) + (int)(short)iVar4;
-		local_24._0_2_ = (short)(uVar5 & 0xffff);
-		local_58.vz = ((cop->pos).vz - camera_position.vz) + (int)(short)local_24;
-	}
-	if ((byte)colour == 1) {
-		local_20[0].r = '\0';
-		local_20[0].g = '(';
-		local_20[0].b = '\0';
-	}
-	else {
-		if ((byte)colour < 2) {
-			if ((byte)colour == 0) {
-				local_20[0].r = '(';
-				local_20[0].g = '\n';
-				local_20[0].b = '\0';
-			}
+		else if (yang == 2)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) - x;
+			v1.vz = (cop->pos.vz - camera_position.vz) - z;
 		}
-		else {
-			if ((byte)colour == 2) {
-				local_20[0].g = 'F';
-				local_20[0].r = 'U';
-				local_20[0].b = '\x05';
-			}
-			else {
-				if ((byte)colour == 3) {
-					local_20[0].g = '(';
-					local_20[0].b = '#';
-					local_20[0].r = '(';
-				}
-			}
+		else if (yang == 3)
+		{
+			v1.vx = (cop->pos.vx - camera_position.vx) - z;
+			v1.vz = (cop->pos.vz - camera_position.vz) + x;
 		}
+
+		v1.vy = (cop->pos.vy - camera_position.vy) + y;
 	}
-	if ((byte)type == 1) {
-		unaff_s1 = 300;
+	else
+	{
+		pos.vx = x;
+		pos.vy = y;
+		pos.vz = z;
+
+		gte_SetRotMatrix(&matrixtable[angle]);
+		gte_ldv0(&pos);
+
+		docop2(0x486012);
+
+		gte_stsv(&pos);
+		//gte_stlvnl();
+
+		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
+		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
+		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
 	}
-	else {
-		if ((byte)type < 2) {
-			if ((byte)type == 0) {
-				unaff_s1 = 400;
-			}
-		}
-		else {
-			if ((byte)type == 2) {
-				unaff_s1 = 200;
-			}
-			else {
-				if ((byte)type == 3) {
-					unaff_s1 = 0x96;
-				}
-			}
-		}
+
+	if (colour == 0)
+	{
+		col.r = 40;
+		col.g = 10;
+		col.b = 0;
 	}
-	local_48.vx = local_58.vx;
-	local_48.vz = local_58.vz;
-	local_48.vy = MapHeight(&local_58);
+	else if (colour == 1) 
+	{
+		col.r = 0;
+		col.g = 40;
+		col.b = 0;
+	}
+	else if (colour == 2)
+	{
+		col.g = 70;
+		col.r = 85;
+		col.b = 5;
+	}
+	else if (colour == 3)
+	{
+		col.g = 40;
+		col.b = 35;
+		col.r = 40;
+	}
+
+	if (type == 0)
+	{
+		size = 400;
+	}
+	else if (type == 1)
+	{
+		size = 300;
+	}
+	else if (type == 2)
+	{
+		size = 200;
+	}
+	else if (type == 3)
+	{
+		size = 0x96;
+	}
+
+	v2.vx = v1.vx;
+	v2.vz = v1.vz;
+	v2.vy = -camera_position.vy - MapHeight(&v1);
+
 	LightSortCorrect = -10;
-	local_20[0].cd = '\0';
-	local_48.vy = -camera_position.vy - local_48.vy;
-	local_38 = local_58.vx;
-	local_34 = local_58.vy;
-	local_30 = local_58.vz;
-	local_2c = local_58.pad;
-	Apply_Inv_CameraMatrix(&local_58);
-	setCopControlWord(2, 0x2800, local_58.vx);
-	setCopControlWord(2, 0x3000, local_58.vy);
-	setCopControlWord(2, 0x3800, local_58.vz);
-	setCopControlWord(2, 0, norot.m[0]._0_4_);
-	setCopControlWord(2, 0x800, norot.m._4_4_);
-	setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, norot._16_4_);
-	ShowLight1(&local_58, local_20, (short)unaff_s1, &light_texture);
-	DisplayLightReflections
-	(&local_48, local_20, (short)((uint)(unaff_s1 << 0xd) >> 0x10), &lightref_texture);
-	return;*/
+	col.cd = 0;
+
+	Apply_Inv_CameraMatrix(&v1);
+
+	gte_SetRotMatrix(&aspect);
+	gte_SetTransVector(&v1);
+
+	ShowLight1(&v1, &col, size, &light_texture);
+	DisplayLightReflections(&v2, &col, (size << 0xd) >> 0x10, &lightref_texture);
 }
 
 
