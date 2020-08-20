@@ -2796,95 +2796,92 @@ int MissionSelectScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 8335
 
-// [D]
+// [D] [A]
 int MissionCityScreen(int bSetup)
 {
 	unsigned char bVar1;
 	DB *pDVar2;
-	PSXSCREEN *pPVar3;
 	int iVar4;
-	uint *puVar5;
+
 	RECT16 rect;
 
-	pPVar3 = pCurrScreen;
-	if (bSetup == 0)
+	if (!bSetup)
 	{
-		if ((fePad & 0x10U) != 0) 
+		if ((fePad & 0x10) != 0)
 		{
 			bDrawExtra = 0;
 			FESound(0);
 			bDoneAllready = 1;
 			LoadBackgroundFile("DATA\\GFX.RAW");
-			return 0;
 		}
-
-		if ((fePad & 0x1000U) == 0) 
+		else
 		{
-			if ((fePad & 0x4000U) == 0) 
+			if ((fePad & 0x1000) != 0)
 			{
-				currCity = (uint)pCurrButton->u & 3;
+				currCity = pCurrButton->u - 1;
+			}
+			else if ((fePad & 0x4000) != 0)
+			{
+				currCity = pCurrButton->d - 1;
+			}
+			else
+			{
+				currCity = pCurrButton->u & 3;
 				return 0;
 			}
-			bVar1 = pCurrButton->d;
+
+			rect = extraRect;
+			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+
+			DrawSync(0);
+			DisplayOnScreenText();
+
+			addPrim(current->ot + 2, &extraSprt);
+			addPrim(current->ot + 2, &extraDummy);
+
+			EndFrame();
 		}
-		else 
-		{
-			bVar1 = pCurrButton->u;
-		}
 
-		rect = extraRect;
-		currCity = (uint)bVar1 - 1;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
-
-		DrawSync(0);
-		DisplayOnScreenText();
-
-		addPrim(current->ot + 2, &extraSprt);
-		addPrim(current->ot + 2, &extraDummy);
-
-		EndFrame();
 		return 0;
 	}
+	
 	GameType = GAME_MISSION;
+
 	if (gFurthestMission == 0)
 	{
-		iVar4 = 0x300;
-	LAB_FRNT__001c43f4:
-		pCurrScreen->buttons[0].action = iVar4;
-		pPVar3->buttons[1].action = iVar4;
-		pPVar3->buttons[2].action = iVar4;
+		pCurrScreen->buttons[0].action = 0x300;
+		pCurrScreen->buttons[1].action = 0x300;
+		pCurrScreen->buttons[2].action = 0x300;
+		pCurrScreen->buttons[3].action = 0x300;
+	}
+	else if(gFurthestMission < 10)
+	{
+		pCurrScreen->buttons[0].action = 0x113;
+		pCurrScreen->buttons[1].action = 0x300;
+		pCurrScreen->buttons[2].action = 0x300;
+		pCurrScreen->buttons[3].action = 0x300;
+	}
+	else if (gFurthestMission < 21)
+	{
+		pCurrScreen->buttons[0].action = 0x113;
+		pCurrScreen->buttons[1].action = 0x113;
+		pCurrScreen->buttons[2].action = 0x300;
+		pCurrScreen->buttons[3].action = 0x300;
+	}
+	else if (gFurthestMission < 30)
+	{
+		pCurrScreen->buttons[0].action = 0x113;
+		pCurrScreen->buttons[1].action = 0x113;
+		pCurrScreen->buttons[2].action = 0x113;
+		pCurrScreen->buttons[3].action = 0x300;
 	}
 	else
 	{
-		if (gFurthestMission < 10)
-		{
-			pCurrScreen->buttons[0].action = 0x113;
-			pPVar3->buttons[1].action = 0x300;
-			pPVar3->buttons[2].action = 0x300;
-			pPVar3->buttons[3].action = 0x300;
-			goto LAB_FRNT__001c4404;
-		}
-		if (gFurthestMission < 0x15)
-		{
-			pCurrScreen->buttons[0].action = 0x113;
-			pPVar3->buttons[1].action = 0x113;
-			pPVar3->buttons[2].action = 0x300;
-			pPVar3->buttons[3].action = 0x300;
-			goto LAB_FRNT__001c4404;
-		}
-		if (0x1e < gFurthestMission)
-		{
-			iVar4 = 0x113;
-			goto LAB_FRNT__001c43f4;
-		}
-		iVar4 = 0x300;
 		pCurrScreen->buttons[0].action = 0x113;
-		pPVar3->buttons[1].action = 0x113;
-		pPVar3->buttons[2].action = 0x113;
+		pCurrScreen->buttons[1].action = 0x113;
+		pCurrScreen->buttons[2].action = 0x113;
+		pCurrScreen->buttons[3].action = 0x113;
 	}
-
-	pPVar3->buttons[3].action = iVar4;
-LAB_FRNT__001c4404:
 
 	LoadBackgroundFile("DATA\\CITYBACK.RAW");
 
@@ -2896,6 +2893,7 @@ LAB_FRNT__001c4404:
 	{
 		bDrawExtra = 1;
 	}
+
 	return 0;
 }
 
