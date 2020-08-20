@@ -1913,13 +1913,8 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		null = (POLY_FT3*)current->primptr;
 		setPolyFT3(null);
 		setSemiTrans(null, 1);
-		null->x0 = -1;
-		null->y0 = -1;
-		null->x1 = -1;
-		null->y1 = -1;
-		null->x2 = -1;
-		null->y2 = -1;
-		null->tpage = 0x1a;
+		setXY3(null, -1, -1, -1, -1, -1, -1);
+		setTPage(null, 0, 0, 640, 256);
 
 		addPrim(current->ot + 1, null);
 		current->primptr += sizeof(POLY_FT3);
