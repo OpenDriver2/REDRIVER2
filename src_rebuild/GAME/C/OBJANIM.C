@@ -6,7 +6,10 @@
 #include "DEBRIS.H"
 #include "CIV_AI.H"
 #include "MAIN.H"
-
+#include "MISSION.H"
+#include "CARS.H"
+#include "PLAYERS.H"
+#include "COP_AI.H"
 
 CYCLE_OBJECT Lev0[2] =
 {
@@ -271,91 +274,98 @@ void ColourCycle(void)
 	byte bVar1;
 	byte bVar2;
 	undefined2 uVar3;
-	DB *pDVar4;
-	undefined2 *__dest;
+	DB* pDVar4;
+	undefined2* __dest;
 	int iVar5;
 	int iVar6;
-	uint *puVar7;
-	undefined *puVar8;
-	TEXTURE_DETAILS *pTVar9;
+	uint* puVar7;
+	CYCLE_OBJECT* cyc;
+	TEXTURE_DETAILS* pTVar8;
+	int iVar9;
 	int iVar10;
 	int iVar11;
 	int iVar12;
-	int iVar13;
-	undefined2 local_38;
-	ushort local_36;
-	undefined2 local_34;
-	undefined2 local_32;
+	RECT16 vram;
 	int local_30;
 
-	if (LoadingArea == 0) {
-		if ((pauseflag == 0) && (gTimeOfDay == 3)) {
-			local_34 = 0x10;
-			local_32 = 1;
-			puVar8 = Lev_CycleObjPtrs4[GameLevel];
-			if (num_cycle_obj != 0) {
-				iVar10 = 0;
-				if (0 < num_cycle_obj) {
-					iVar11 = 0xab3b0;
+	if (LoadingArea == 0)
+	{
+		if ((pauseflag == 0) && (gTimeOfDay == 3)) 
+		{
+			vram.w = 0x10;
+			vram.h = 1;
+			cyc = Lev_CycleObjPtrs[GameLevel];
+
+			if (num_cycle_obj != 0)
+			{
+				iVar9 = 0;
+
+				if (0 < num_cycle_obj)
+				{
+					iVar10 = 0xab3b0;
 					local_30 = 0;
-					iVar13 = 0;
 					iVar12 = 0;
-					pTVar9 = &cycle_tex;
+					iVar11 = 0;
+					pTVar8 = cycle_tex;
+
 					do {
-						bVar1 = pTVar9->texture_page;
-						bVar2 = pTVar9->texture_number;
-						if (tpageloaded[(uint)bVar1] != '\0') {
-							if (cycle_phase == 0) {
-								local_38 = (undefined2)
-									(((uint)(ushort)(&texture_cluts)[(uint)bVar1 * 0x20 + (uint)bVar2] & 0x3f
-										) << 4);
-								*(undefined2 *)(puVar8 + 4) = local_38;
-								local_36 = (ushort)(&texture_cluts)[(uint)bVar1 * 0x20 + (uint)bVar2] >> 6 & 0x1ff;
-								*(ushort *)(puVar8 + 6) = local_36;
-								StoreImage(&local_38, iVar11);
+						bVar1 = pTVar8->texture_page;
+						bVar2 = pTVar8->texture_number;
+
+						if (tpageloaded[bVar1] != 0) 
+						{
+							if (cycle_phase == 0) 
+							{
+								vram.x = (short)(((uint)(ushort)texture_cluts[(uint)bVar1 * 0x20 + (uint)bVar2] & 0x3f) << 4);
+								cyc->vx = vram.x;
+								vram.y = (ushort)texture_cluts[(uint)bVar1 * 0x20 + (uint)bVar2] >> 6 & 0x1ff;
+								cyc->vy = vram.y;
+
+								StoreImage(&vram, iVar10);
 							}
-							else {
-								if ((cycle_timer & *(ushort *)(puVar8 + 0xc)) == 0) {
-									if ((int)*(short *)(puVar8 + 8) != -1) {
+							else 
+							{
+								if ((ushort)(cycle_timer & cyc->speed1) == 0) 
+								{
+									if ((int)cyc->start1 != -1) {
+										iVar6 = iVar11 + 0xab3b0;
+										iVar5 = (int)cyc->start1 * 2;
+										__dest = (undefined2*)(iVar5 + iVar6);
+										uVar3 = *__dest;
+										memmove(__dest, (void*)(iVar6 + iVar5 + 2), ((uint)(ushort)cyc->stop1 - (uint)(ushort)cyc->start1 & 0xffff) << 1);
+										*(undefined2*)((int)cyc->stop1 * 2 + iVar6) = uVar3;
+									}
+								}
+
+								if ((ushort)(cycle_timer & cyc->speed2) == 0) {
+									if ((int)cyc->start2 != -1) {
 										iVar6 = iVar12 + 0xab3b0;
-										iVar5 = (int)*(short *)(puVar8 + 8) * 2;
-										__dest = (undefined2 *)(iVar5 + iVar6);
+										iVar5 = (int)cyc->start2 * 2;
+										__dest = (undefined2*)(iVar5 + iVar6);
 										uVar3 = *__dest;
-										memmove(__dest, (void *)(iVar6 + iVar5 + 2),
-											((uint)*(ushort *)(puVar8 + 10) - (uint)*(ushort *)(puVar8 + 8) & 0xffff
-												) << 1);
-										*(undefined2 *)((int)*(short *)(puVar8 + 10) * 2 + iVar6) = uVar3;
+										memmove(__dest, (void*)(iVar6 + iVar5 + 2), ((uint)(ushort)cyc->stop2 - (uint)(ushort)cyc->start2 & 0xffff) << 1);
+										*(undefined2*)((int)cyc->stop2 * 2 + iVar6) = uVar3;
 									}
 								}
-								if ((cycle_timer & *(ushort *)(puVar8 + 0x12)) == 0) {
-									if ((int)*(short *)(puVar8 + 0xe) != -1) {
-										iVar6 = iVar13 + 0xab3b0;
-										iVar5 = (int)*(short *)(puVar8 + 0xe) * 2;
-										__dest = (undefined2 *)(iVar5 + iVar6);
-										uVar3 = *__dest;
-										memmove(__dest, (void *)(iVar6 + iVar5 + 2),
-											((uint)*(ushort *)(puVar8 + 0x10) - (uint)*(ushort *)(puVar8 + 0xe) &
-												0xffff) << 1);
-										*(undefined2 *)((int)*(short *)(puVar8 + 0x10) * 2 + iVar6) = uVar3;
-									}
-								}
-								local_38 = *(undefined2 *)(puVar8 + 4);
-								puVar7 = (uint *)((int)&cyclecluts[0].tag + local_30);
-								local_36 = *(ushort *)(puVar8 + 6);
-								SetDrawLoad(puVar7, &local_38);
+
+								vram.x = cyc->vx;
+								puVar7 = (uint*)((int)&cyclecluts[0].tag + local_30);
+								vram.y = cyc->vy;
+								SetDrawLoad(puVar7, &vram);
 								pDVar4 = current;
 								*puVar7 = *puVar7 & 0xff000000 | *current->ot & 0xffffff;
 								*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar7 & 0xffffff;
 							}
 						}
-						iVar11 = iVar11 + 0x44;
-						iVar13 = iVar13 + 0x44;
+						iVar10 = iVar10 + 0x44;
 						iVar12 = iVar12 + 0x44;
-						pTVar9 = pTVar9 + 1;
-						iVar10 = iVar10 + 1;
+						iVar11 = iVar11 + 0x44;
 						local_30 = local_30 + 0x44;
-						puVar8 = puVar8 + 0x14;
-					} while (iVar10 < num_cycle_obj);
+
+						pTVar8 = pTVar8 + 1;
+						iVar9 = iVar9 + 1;
+						cyc = cyc + 1;
+					} while (iVar9 < num_cycle_obj);
 				}
 				if (cycle_phase != 0) {
 					cycle_timer = cycle_timer + 1;
@@ -364,10 +374,11 @@ void ColourCycle(void)
 			}
 		}
 	}
-	else {
+	else 
+	{
 		cycle_phase = 0;
 	}
-	return;*/
+	*/
 }
 
 
@@ -1167,54 +1178,55 @@ LAB_000145f8:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void animate_garage_door(void)
 {
-	UNIMPLEMENTED();
-	/*
-	short *psVar1;
-	int iVar2;
-	int iVar3;
+	short* psVar1;
+	int dz;
+	int dx;
 
-	if (CurrentGarage.cop != (CELL_OBJECT *)0x0) {
-		if ((gCurrentMissionNumber != 0x35) && (CopsCanSeePlayer != 0)) {
-			if ((int)player.playerCarId < 0) {
-				psVar1 = &pedestrianFelony;
-			}
-			else {
-				psVar1 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			if (0x292 < *psVar1) {
-				((CurrentGarage.cop)->pos).vx = CurrentGarage.old_pos.vx;
-				((CurrentGarage.cop)->pos).vy = CurrentGarage.old_pos.vy;
-				((CurrentGarage.cop)->pos).vz = CurrentGarage.old_pos.vz;
-				CurrentGarage.cop = (CELL_OBJECT *)0x0;
-				return;
-			}
-		}
-		iVar3 = CurrentGarage.old_pos.vx - car_data[0].hd.where.t[0];
-		iVar2 = CurrentGarage.old_pos.vz - car_data[0].hd.where.t[2];
-		if (iVar3 < 0) {
-			iVar3 = -iVar3;
-		}
-		if (iVar2 < 0) {
-			iVar2 = -iVar2;
-		}
-		if ((iVar3 + iVar2 < 0x1771) && (gStopPadReads == 0)) {
-			if ((iVar3 + iVar2 < 4000) && (CurrentGarage.old_pos.vy + -400 < CurrentGarage.pos.vy)) {
-				CurrentGarage.rotation = CurrentGarage.rotation + 0x19;
-				CurrentGarage.pos.vy = CurrentGarage.pos.vy + -0xc;
-			}
-		}
-		else {
-			if (CurrentGarage.pos.vy < CurrentGarage.old_pos.vy) {
-				CurrentGarage.pos.vy = CurrentGarage.pos.vy + 0xc;
-				CurrentGarage.rotation = CurrentGarage.rotation + -0x19;
-				return;
-			}
+	if (CurrentGarage.cop == NULL)
+		return;
+
+	int playerCarId = player[0].playerCarId;
+
+	if (gCurrentMissionNumber != 53 && CopsCanSeePlayer != 0)
+	{
+		if (playerCarId < 0)
+			psVar1 = &pedestrianFelony;
+		else 
+			psVar1 = &car_data[playerCarId].felonyRating;
+
+		if (0x292 < *psVar1) 
+		{
+			CurrentGarage.cop->pos = CurrentGarage.old_pos;
+			CurrentGarage.cop = NULL;
+			return;
 		}
 	}
-	return;
-	*/
+
+	dx = CurrentGarage.old_pos.vx - car_data[playerCarId].hd.where.t[0]; // [A] bug fixe
+	dz = CurrentGarage.old_pos.vz - car_data[playerCarId].hd.where.t[2];
+
+	if (dx < 0)
+		dx = -dx;
+
+	if (dz < 0)
+		dz = -dz;
+
+	if ((dx + dz < 6001) && (gStopPadReads == 0))
+	{
+		if ((dx + dz < 4000) && (CurrentGarage.old_pos.vy - 400 < CurrentGarage.pos.vy)) 
+		{
+			CurrentGarage.rotation = CurrentGarage.rotation + 25;
+			CurrentGarage.pos.vy = CurrentGarage.pos.vy - 12;
+		}
+	}
+	else if (CurrentGarage.pos.vy < CurrentGarage.old_pos.vy) 
+	{
+		CurrentGarage.pos.vy = CurrentGarage.pos.vy + 12;
+		CurrentGarage.rotation = CurrentGarage.rotation - 25;
+	}
 }
 
 
