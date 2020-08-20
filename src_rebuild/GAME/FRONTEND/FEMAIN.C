@@ -606,130 +606,54 @@ void LoadBackgroundFile(char *name)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void SetupBackgroundPolys(void)
 {
 	POLY_FT4 *poly;
-	int i;
 
-	poly = BackgroundPolys;
-	i = 5;
-	do {
+	for (int i = 0; i < 6; i++)
+	{
+		poly = &BackgroundPolys[i];
+
 		setPolyFT4(poly);
 		setRGB0(poly, 128, 128, 128);
+	}
 
-		i--;
-		poly++;
-	} while (-1 < i);
+	poly = &BackgroundPolys[0];
+	setXYWH(poly, 0, 0, 256, 256);
+	setUVWH(poly, 0, 0, 255, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 640, 0);
 
-	BackgroundPolys[0].x0 = 0;
-	BackgroundPolys[0].y0 = 0;
-	BackgroundPolys[0].u0 = '\0';
-	BackgroundPolys[0].v0 = '\x01';
-	BackgroundPolys[0].clut = getClut(960, 256);
-	BackgroundPolys[0].x1 = 0x100;
-	BackgroundPolys[0].y1 = 0;
-	BackgroundPolys[0].u1 = -1;
-	BackgroundPolys[0].v1 = '\x01';
-	BackgroundPolys[0].tpage = getTPage(0, 0, 640, 0);
-	BackgroundPolys[0].x2 = 0;
-	BackgroundPolys[0].y2 = 0x100;
-	BackgroundPolys[0].u2 = '\0';
-	BackgroundPolys[0].v2 = -1;
-	BackgroundPolys[0].x3 = 0x100;
-	BackgroundPolys[0].y3 = 0x100;
-	BackgroundPolys[0].u3 = -1;
-	BackgroundPolys[0].v3 = -1;
-	BackgroundPolys[1].x0 = 0x100;
-	BackgroundPolys[1].y0 = 0;
-	BackgroundPolys[1].u0 = '\0';
-	BackgroundPolys[1].v0 = '\x01';
-	BackgroundPolys[1].clut = getClut(960, 256);
-	BackgroundPolys[1].x1 = 0x200;
-	BackgroundPolys[1].y1 = 0;
-	BackgroundPolys[1].u1 = -1;
-	BackgroundPolys[1].v1 = '\x01';
-	BackgroundPolys[1].tpage = getTPage(0, 0, 704, 0);
-	BackgroundPolys[1].x2 = 0x100;
-	BackgroundPolys[1].y2 = 0x100;
-	BackgroundPolys[1].u2 = '\0';
-	BackgroundPolys[1].v2 = -1;
-	BackgroundPolys[1].x3 = 0x200;
-	BackgroundPolys[1].y3 = 0x100;
-	BackgroundPolys[1].u3 = -1;
-	BackgroundPolys[1].v3 = -1;
-	BackgroundPolys[2].x0 = 0x200;
-	BackgroundPolys[2].y0 = 0;
-	BackgroundPolys[2].u0 = '\0';
-	BackgroundPolys[2].v0 = '\x01';
-	BackgroundPolys[2].clut = getClut(960, 256);
-	BackgroundPolys[2].x1 = 0x280;
-	BackgroundPolys[2].y1 = 0;
-	BackgroundPolys[2].u1 = -0x80;
-	BackgroundPolys[2].v1 = '\x01';
-	BackgroundPolys[2].tpage = getTPage(0, 0, 768, 0);
-	BackgroundPolys[2].x2 = 0x200;
-	BackgroundPolys[2].y2 = 0x100;
-	BackgroundPolys[2].u2 = '\0';
-	BackgroundPolys[2].v2 = -1;
-	BackgroundPolys[2].x3 = 0x280;
-	BackgroundPolys[2].y3 = 0x100;
-	BackgroundPolys[2].u3 = -0x80;
-	BackgroundPolys[2].v3 = -1;
-	BackgroundPolys[3].x0 = 0;
-	BackgroundPolys[3].y0 = 0x100;
-	BackgroundPolys[3].u0 = '\0';
-	BackgroundPolys[3].v0 = '\0';
-	BackgroundPolys[3].clut = getClut(960, 256);
-	BackgroundPolys[3].x1 = 0x100;
-	BackgroundPolys[3].y1 = 0x100;
-	BackgroundPolys[3].u1 = -1;
-	BackgroundPolys[3].v1 = '\0';
-	BackgroundPolys[3].tpage = getTPage(0, 0, 832, 0);
-	BackgroundPolys[3].x2 = 0;
-	BackgroundPolys[3].y2 = 0x200;
-	BackgroundPolys[3].u2 = '\0';
-	BackgroundPolys[3].v2 = -1;
-	BackgroundPolys[3].x3 = 0x100;
-	BackgroundPolys[3].y3 = 0x200;
-	BackgroundPolys[3].u3 = -1;
-	BackgroundPolys[3].v3 = -1;
-	BackgroundPolys[4].x0 = 0x100;
-	BackgroundPolys[4].y0 = 0x100;
-	BackgroundPolys[4].u0 = '\0';
-	BackgroundPolys[4].v0 = '\0';
-	BackgroundPolys[4].clut = getClut(960, 256);
-	BackgroundPolys[4].x1 = 0x200;
-	BackgroundPolys[4].y1 = 0x100;
-	BackgroundPolys[4].u1 = -1;
-	BackgroundPolys[4].v1 = '\0';
-	BackgroundPolys[4].tpage = getTPage(0, 0, 896, 0);
-	BackgroundPolys[4].x2 = 0x100;
-	BackgroundPolys[4].y2 = 0x200;
-	BackgroundPolys[4].u2 = '\0';
-	BackgroundPolys[4].v2 = -1;
-	BackgroundPolys[4].x3 = 0x200;
-	BackgroundPolys[4].y3 = 0x200;
-	BackgroundPolys[4].u3 = -1;
-	BackgroundPolys[4].v3 = -1;
-	BackgroundPolys[5].x0 = 0x200;
-	BackgroundPolys[5].y0 = 0x100;
-	BackgroundPolys[5].u0 = '\0';
-	BackgroundPolys[5].v0 = '\0';
-	BackgroundPolys[5].clut = getClut(960, 256);
-	BackgroundPolys[5].x1 = 0x280;
-	BackgroundPolys[5].y1 = 0x100;
-	BackgroundPolys[5].u1 = -0x80;
-	BackgroundPolys[5].v1 = '\0';
-	BackgroundPolys[5].tpage = getTPage(0, 0, 960, 0);
-	BackgroundPolys[5].x2 = 0x200;
-	BackgroundPolys[5].y2 = 0x200;
-	BackgroundPolys[5].u2 = '\0';
-	BackgroundPolys[5].v2 = -1;
-	BackgroundPolys[5].x3 = 0x280;
-	BackgroundPolys[5].y3 = 0x200;
-	BackgroundPolys[5].u3 = -0x80;
-	BackgroundPolys[5].v3 = -1;
+	poly = &BackgroundPolys[1];
+	setXYWH(poly, 256, 0, 256, 256);
+	setUVWH(poly, 0, 1, 255, 254);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 704, 0);
+
+	poly = &BackgroundPolys[2];
+	setXYWH(poly, 512, 0, 128, 256);
+	setUVWH(poly, 0, 1, 128, 254);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 768, 0);
+
+	poly = &BackgroundPolys[3];
+	setXYWH(poly, 0, 256, 256, 256);
+	setUVWH(poly, 0, 0, 255, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 832, 0);
+
+	poly = &BackgroundPolys[4];
+	setXYWH(poly, 256, 256, 256, 256);
+	setUVWH(poly, 0, 0, 255, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 896, 0);
+
+	poly = &BackgroundPolys[5];
+	setXYWH(poly, 512, 256, 128, 256);
+	setUVWH(poly, 0, 0, 128, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 960, 0);
 }
 
 
@@ -773,24 +697,14 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 	setSprt(&HighlightSprt);
 	setRGB0(&HighlightSprt, 128, 128, 128);
-	HighlightSprt.x0 = 0x16c;
-	HighlightSprt.y0 = 0xc6;
-	HighlightSprt.w = 0x100;
-	HighlightSprt.u0 = '\0';
-	HighlightSprt.v0 = '\0';
-	HighlightSprt.h = 0x24;
+	setXY0(&HighlightSprt, 364, 198);
+	setUV0(&HighlightSprt, 0, 0);
+	setWH(&HighlightSprt, 256, 36);
 	setClut(&HighlightSprt, 960, 258);
 
 	setPolyFT4(&HighlightDummy);
-	//HighlightDummy.code = '$';
-	HighlightDummy.x0 = -1;
-	HighlightDummy.y0 = -1;
-	HighlightDummy.x1 = -1;
-	HighlightDummy.y1 = -1;
-	HighlightDummy.x2 = -1;
-	HighlightDummy.y2 = -1;
-	//setTPage(&HighlightDummy, 0,0, 1728, 256); // feels wrong
-	HighlightDummy.tpage = 0x1b;
+	setXY3(&HighlightDummy, -1, -1, -1, -1, -1, -1);
+	setTPage(&HighlightDummy, 0, 0, 704, 256);
 
 	pNewScreen = NULL;
 	pCurrScreen = pScr;
