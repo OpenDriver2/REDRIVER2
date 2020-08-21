@@ -3315,10 +3315,8 @@ void SpecClutsSpooled(void)
 		int index = specialSlot + i;
 		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + i];
 
-		tpageslots[index] = tpage;
-		tpageloaded[tpage] = index + 1;
-
-		carTpages[GameLevel][(i == 0) ? 6 : 7] = tpage;
+		carTpages[GameLevel][(i == 0) ? 6 : 7] = tpageslots[index] = tpage;
+		tpageloaded[tpage] = specialSlot + i + 1;
 
 		slot_tpagepos[index].vx = tpagepos[index].x;
 		slot_tpagepos[index].vy = tpagepos[index].y;
