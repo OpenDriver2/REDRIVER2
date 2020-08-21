@@ -1552,95 +1552,121 @@ void PadChecks(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void DoFrontEnd(void)
 {
-	UNIMPLEMENTED();
-	int iVar1;
-
 	FEInitCdIcon();
 
 	ResetGraph(1);
 	SetDispMask(0);
+
 	//PadChecks();		// [A] there is a BUG
+
 	bRedrawFrontend = 0;
 	gInFrontend = 1;
-	idle_timer = VSync(0xffffffff);
+
+	idle_timer = VSync(-1);
+
 	LoadFrontendScreens();
+
 	pCurrScreen = PsxScreens;
 	pCurrButton = PsxScreens[0].buttons;
+
 	SetupBackgroundPolys();
 	SetupScreenSprts(pCurrScreen);
+
 	SetDispMask(0);
 	ResetGraph(0);
+
 	SetFEDrawMode();
+
 	SetVideoMode(video_mode);
 	EnableDisplay();
+
 	DrawScreen(pCurrScreen);
 	EndFrame();
+
 	NewSelection(0);
+
 	EndFrame();
 	EndFrame();
 	EndFrame();
 	EndFrame();
 	EndFrame();
 	EndFrame();
+
 	SetDispMask(1);
 	
-	do {
+	do
+	{
 		PadChecks();
+
 		if (currPlayer == 2) {
 			if (Pads[1].type < 2) {
-				if ((fePad & 0x10U) == 0) {
-					fePad = 0;
-				}
-				else {
-					fePad = 0x10;
-				}
+				fePad = ((fePad & 0x10) != 0) ? 0x10 : 0;
 			}
 			else {
 				fePad = Pads[1].mapnew;
 			}
 		}
-		iVar1 = HandleKeyPress();
-		if ((iVar1 != 0) && (pNewScreen != NULL)) {
-			SetupScreenSprts(pNewScreen);
-			DrawScreen(pCurrScreen);
-			EndFrame();
-			NewSelection(0);
-		}
-		if (bRedrawFrontend != 0) {
-			DrawScreen(pCurrScreen);
-			EndFrame();
-			NewSelection(0);
-			bRedrawFrontend = 0;
-		}
 
-		iVar1 = VSync(0xffffffff);
-		if (0x708 < iVar1 - idle_timer) {
-			if (ScreenDepth == 0) {
-				GameType = GAME_IDLEDEMO;
-				gCurrentMissionNumber = gIdleReplay + 400;
-				gIdleReplay = gIdleReplay + 1;
-				if (gIdleReplay == 4) {
-					gIdleReplay = 0;
-				}
-				pScreenStack[0] = pCurrScreen;
-				pButtonStack[0] = pCurrButton;
-				ScreenNames[0] = pCurrButton->Name;
-				GameStart();
-				pCurrScreen = pScreenStack[ScreenDepth];
+		if (HandleKeyPress())
+		{
+			if (pNewScreen != NULL)
+			{
+				SetupScreenSprts(pNewScreen);
 				bRedrawFrontend = 1;
-				ScreenDepth = 0;
 			}
-			idle_timer = VSync(0xffffffff);
 		}
 
 #ifndef PSX
-		// [A] Always redraw frontend
+		if (bRedrawFrontend)
+		{
+			// flush the old screen
+			EndFrame();
+
+			bRedrawFrontend = 0;
+		}
+
 		DrawScreen(pCurrScreen);
 		NewSelection(0);
+#else
+		if (bRedrawFrontend)
+		{
+			DrawScreen(pCurrScreen);
+			EndFrame();
+
+			NewSelection(0);
+
+			bRedrawFrontend = 0;
+		}
 #endif
+
+		if ((VSync(-1) - idle_timer) > 1800)
+		{
+			if (ScreenDepth == 0)
+			{
+				GameType = GAME_IDLEDEMO;
+
+				gCurrentMissionNumber = gIdleReplay + 400;
+				
+				if (++gIdleReplay == 4)
+					gIdleReplay = 0;
+
+				pScreenStack[0] = pCurrScreen;
+				pButtonStack[0] = pCurrButton;
+				ScreenNames[0] = pCurrButton->Name;
+
+				GameStart();
+
+				pCurrScreen = pScreenStack[0];
+
+				bRedrawFrontend = 1;
+				ScreenDepth = 0; // fail-safe?
+			}
+
+			idle_timer = VSync(-1);
+		}
 	} while (true);
 }
 
