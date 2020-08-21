@@ -3914,20 +3914,18 @@ int SubtitlesOnOffScreen(int bSetup)
 // [D]
 int CityCutOffScreen(int bSetup)
 {
-	PSXSCREEN *pPVar1;
-
-	pPVar1 = pCurrScreen;
-	if (bSetup != 0) {
-		if (gFurthestMission < 0x14) {
+	if (bSetup)
+	{
+		if (gFurthestMission < 20)
+		{
 			pCurrScreen->buttons[2].action = 0x300;
 		}
-		else {
-			if (0x1d < gFurthestMission) {
-				return 0;
-			}
-		}
-		pPVar1->buttons[3].action = 0x300;
+		else if (gFurthestMission < 29)
+		{
+			pCurrScreen->buttons[3].action = 0x300;
+		}	
 	}
+
 	return 0;
 }
 
