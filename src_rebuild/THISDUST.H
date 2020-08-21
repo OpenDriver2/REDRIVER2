@@ -19610,8 +19610,8 @@ struct OVERMAP // hashcode: 0x34D52BCC (dec: 886385612)
 	int y_offset; // size=0, offset=4
 	int width; // size=0, offset=8
 	int height; // size=0, offset=12
-	char toptile; // size=0, offset=16
-	char dummy; // size=0, offset=17
+	unsigned char toptile; // size=0, offset=16
+	unsigned char dummy; // size=0, offset=17
 	int scale; // size=0, offset=20
 };
 /*

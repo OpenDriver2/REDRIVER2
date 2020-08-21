@@ -21,10 +21,12 @@ Project attempting to reverse-engineer PS1 game Driver 2;
 - IDB based on Spanish SYM when dealing with things Ghidra can't handle properly - manual decompilation (mostly GTE code)
 
 ### Usage
-- Assuming you have compiled the most recent code. Copy DRIVER2 folder from your **game CD** to location where compiled EXE is located.
+- Assuming you have compiled the most recent code or got artifacts from Appveyor. Copy DRIVER2 folder from your **game CD** to location where compiled EXE is located.
 
 ### Credits
 - Soapy - lead programmer
-- Gh0stBlade - API-level PSY-Q libraries reimplementation (aka HLE PSX Emulator)
+- Fireboyd78 - code refactoring and improvements
+- Krishty, someone972 - formats decoding
+- Gh0stBlade - API-level PSY-Q libraries reimplementation (HLE PSX Emulator)
 - Ben Lincoln - This Dust Remembers What It Once Was (*TDR*)
 - Stohrendorf - Symdump tool
