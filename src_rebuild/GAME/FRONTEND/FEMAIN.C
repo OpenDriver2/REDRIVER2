@@ -843,9 +843,9 @@ void DrawScreen(PSXSCREEN *pScr)
 
 		DisplayOnScreenText();
 		
-		if (bDrawExtra != 0) {
-			addPrim(current->ot + 2, &extraSprt);
-			addPrim(current->ot + 3, &extraDummy);
+		if (bDrawExtra) {
+			addPrim(&current->ot[2], &extraSprt);
+			addPrim(&current->ot[3], &extraDummy);
 		}
 	}
 }
