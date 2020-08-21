@@ -1301,48 +1301,24 @@ int HandleKeyPress(void)
 	if ((pCurrScreen == NULL) || (pCurrButton == NULL))
 		return 0;
 
-	if (pCurrScreen->userFunctionNum != 0) {
-		if ((fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0) != 0)
-			fePad = 0;
-	}
-
-	if ((fePad & 0x40U) == 0)
+	if (pCurrScreen->userFunctionNum != 0)
 	{
-		if ((fePad & 0x10U) == 0) 
+		// notify the user function first
+		if ((fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0) != 0)
 		{
-			if ((fePad & 0x5000U) == 0 && (fePad & 0x8000U) == 0 && (fePad & 0x2000U) == 0) 
-			{
-				return 1;
-			}
-			NewSelection(fePad);
-		}
-		else if (ScreenDepth > 0)
-		{
-
-			if (bDoneAllready == 0)
-				FESound(0);
-			else
-				bDoneAllready = 0;
-
-			ScreenDepth--;
-			if (ScreenDepth == 0) 
-			{
-				gWantNight = 0;
-				gSubGameNumber = 0;
-				NumPlayers = 1;
-			}
-			pNewScreen = pScreenStack[ScreenDepth];
-			pNewButton = pButtonStack[ScreenDepth];
+			// user function handled the key press
+			fePad = 0;
 		}
 	}
-	else 
+
+	if ((fePad & 0x40) != 0)
 	{
 		int action = pCurrButton->action >> 8;
 
 		if (action != 3)
 		{
 			FESound(2);
-			
+
 			if (pCurrButton->var != -1)
 				SetVariable(pCurrButton->var);
 
@@ -1354,18 +1330,19 @@ int HandleKeyPress(void)
 
 				ScreenNames[ScreenDepth] = pCurrButton->Name;
 
-				action = (ScreenDepth < 11) ? ScreenDepth + 1 : 10;
-
 				pNewScreen = &PsxScreens[pCurrButton->action & 0xFF];
-				ScreenDepth = action;
+
+				if (ScreenDepth < 10)
+					ScreenDepth++;
+
 				break;
 			case 2:
-				if (NumPlayers == 2 && bDoingCarSelect != 0 && currPlayer == 2)
+				if ((NumPlayers == 2) && (bDoingCarSelect != 0) && (currPlayer == 2))
 				{
 					(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
 					bRedrawFrontend = 1;
 				}
-				else 
+				else
 				{
 					pScreenStack[ScreenDepth] = pCurrScreen;
 					pButtonStack[ScreenDepth] = pCurrButton;
@@ -1378,9 +1355,7 @@ int HandleKeyPress(void)
 			case 4:
 				if (ScreenDepth > 0)
 				{
-					ScreenDepth--;
-
-					if (ScreenDepth == 0)
+					if (--ScreenDepth == 0)
 						NumPlayers = 1;
 
 					pNewScreen = pScreenStack[ScreenDepth];
@@ -1390,7 +1365,44 @@ int HandleKeyPress(void)
 			}
 		}
 	}
+	else if ((fePad & 0x10) != 0)
+	{
+		if (ScreenDepth > 0)
+		{
+			if (!bDoneAllready) {
+				FESound(0);
+			}
+			else {
+				bDoneAllready = 0;
+			}
+
+			if (--ScreenDepth == 0)
+			{
+				gWantNight = 0;
+				gSubGameNumber = 0;
+				NumPlayers = 1;
+			}
+
+			pNewScreen = pScreenStack[ScreenDepth];
+			pNewButton = pButtonStack[ScreenDepth];
+		}
+	}
+	else
+	{
+		// any d-pad buttons pressed?
+		if ((fePad & (0x8000 | 0x4000 | 0x2000 | 0x1000)) != 0)
+		{
+			NewSelection(fePad);
+		}
+		else
+		{
+			// button pressed, but we didn't handle it
+			return 1;
+		}
+	}
+
 	idle_timer = VSync(-1);
+
 	return 1;
 }
 
