@@ -776,7 +776,8 @@ void DrawScreen(PSXSCREEN *pScr)
 	else {
 		GetTimeStamp(version_info);
 
-		if (bDoingCutSelect && (gFurthestMission > 39)) {
+		if (bDoingCutSelect && (gFurthestMission < 39)) {
+			// hide the Director's Cut button
 			numBtnsToDraw = pScr->numButtons - 1;
 		}
 		else {
