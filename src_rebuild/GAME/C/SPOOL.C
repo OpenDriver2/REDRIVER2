@@ -3315,7 +3315,7 @@ void SpecClutsSpooled(void)
 		int index = specialSlot + i;
 		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + i];
 
-		carTpages[GameLevel][(i == 0) ? 6 : 7] = tpageslots[index] = tpage;
+		carTpages[GameLevel][i + 6] = tpageslots[index] = tpage;
 		tpageloaded[tpage] = specialSlot + i + 1;
 
 		slot_tpagepos[index].vx = tpagepos[index].x;
@@ -3328,7 +3328,7 @@ void SpecClutsSpooled(void)
 			LoadImage2(&specCluts, (u_long*)loadaddr);
 			loadaddr += 32;
 
-			*texture_cluts[tpage] = GetClut(specCluts.x, specCluts.y);
+			texture_cluts[tpage][j] = GetClut(specCluts.x, specCluts.y);
 			IncrementClutNum(&specCluts);
 		}
 	}
