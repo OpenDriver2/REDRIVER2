@@ -3328,7 +3328,7 @@ void SpecClutsSpooled(void)
 			LoadImage2(&specCluts, (u_long*)loadaddr);
 			loadaddr += 32;
 
-			*texture_cluts[tpage] = GetClut(specCluts.x, specCluts.y);
+			texture_cluts[tpage][j] = GetClut(specCluts.x, specCluts.y);
 			IncrementClutNum(&specCluts);
 		}
 	}
