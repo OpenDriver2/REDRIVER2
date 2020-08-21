@@ -2508,29 +2508,7 @@ int MissionSelectScreen(int bSetup)
 
 	if (!bSetup) 
 	{
-		if ((fePad & 0x40U) == 0)
-		{
-			if ((fePad & 0x10U) == 0)
-			{
-				if ((fePad & 0x1000U) == 0)
-				{
-					if ((fePad & 0x4000U) == 0)
-						return 0;
-
-					currSelIndex = pCurrButton->d - 1;
-				}
-				else
-				{
-					currSelIndex = pCurrButton->u - 1;
-				}
-			}
-			else
-			{
-				missionSetup = 0;
-				bMissionSelect = 0;
-			}
-		}
-		else
+		if ((fePad & 0x40) != 0)
 		{
 			switch (currSelIndex)
 			{
@@ -2562,7 +2540,20 @@ int MissionSelectScreen(int bSetup)
 				return 1;
 			}
 		}
-
+		else if ((fePad & 0x10) != 0)
+		{
+			missionSetup = 0;
+			bMissionSelect = 0;
+		}
+		else if ((fePad & 0x1000) != 0)
+		{
+			currSelIndex = pCurrButton->u - 1;
+		}
+		else if ((fePad & 0x4000) != 0)
+		{
+			currSelIndex = pCurrButton->d - 1;
+		}
+		
 		return 0;
 	}
 
@@ -2586,14 +2577,14 @@ int MissionSelectScreen(int bSetup)
 	int usedB = 0;
 
 	bool done = false;
-	bool bP = false;
-	bool bN = false;
+	bool bP = false; // 'Previous' button is visible?
+	bool bN = false; // 'Next' button is visible?
 
 	for (i = 0; (i < 4) && !done; i++)
 	{
 		if ((botch[currMission + i].missNum > gFurthestMission) ||
-			((i + currMission) > minmaxSelections[currCity][1]) ||
-			((i + currMission) > 36)) {
+			((currMission + i) > minmaxSelections[currCity][1]) ||
+			((currMission + i) > 36)) {
 			done = true;
 		}
 		else {
@@ -2658,12 +2649,10 @@ int MissionSelectScreen(int bSetup)
 
 	if (bN)
 	{
-		if (currMission == minmaxSelections[currCity][0])
+		if (currMission != minmaxSelections[currCity][0])
 		{
 			bP = true;
-		}
-		else
-		{
+
 			pCurrScreen->buttons[0].u = 6;
 			pCurrScreen->buttons[0].d = 2;
 			pCurrScreen->buttons[5].u = 5;
@@ -2673,27 +2662,7 @@ int MissionSelectScreen(int bSetup)
 			pCurrScreen->buttons[0].action = 0;
 			pCurrScreen->buttons[5].action = 0;
 		}
-	}
-	else
-	{
-		if (currMission == minmaxSelections[currCity][0])
-		{
-			bP = true;
-		}
 		else
-		{
-			pCurrScreen->buttons[0].u = usedB + 1;
-			pCurrScreen->buttons[0].d = 2;
-			pCurrScreen->buttons[1].u = 1;
-			pCurrScreen->buttons[usedB].d = 1;
-			pCurrScreen->buttons[0].action = 0;
-			pCurrScreen->buttons[5].action = 0x500;
-		}
-	}
-
-	if (bP)
-	{
-		if (bN)
 		{
 			pCurrScreen->buttons[1].u = 6;
 			pCurrScreen->buttons[4].d = 6;
@@ -2702,21 +2671,39 @@ int MissionSelectScreen(int bSetup)
 			pCurrScreen->buttons[5].action = 0;
 			pCurrScreen->buttons[0].action = 0x500;
 		}
+	}
+	else
+	{
+		if (currMission != minmaxSelections[currCity][0])
+		{
+			bP = true;
+
+			pCurrScreen->buttons[0].u = usedB + 1;
+			pCurrScreen->buttons[0].d = 2;
+			pCurrScreen->buttons[1].u = 1;
+			pCurrScreen->buttons[usedB].d = 1;
+			pCurrScreen->buttons[0].action = 0;
+			pCurrScreen->buttons[5].action = 0x500;
+		}
 		else
 		{
+			// list missions only
 			pCurrScreen->buttons[0].action = 0x500;
 			pCurrScreen->buttons[5].action = 0x500;
 		}
-
-		pCurrButton = pCurrScreen->buttons + 1;
-		currSelIndex = 1;
 	}
-	else
+
+	if (bP)
 	{
 		pCurrButton = pCurrScreen->buttons;
 		currSelIndex = 0;
 	}
-
+	else
+	{
+		pCurrButton = pCurrScreen->buttons + 1;
+		currSelIndex = 1;
+	}
+	
 	if (loaded[0] == -1)
 	{
 		SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
@@ -2809,6 +2796,9 @@ int MissionCityScreen(int bSetup)
 	{
 		if ((fePad & 0x10) != 0)
 		{
+			// BUGFIX: unload city image
+			loaded[0] = -1;
+
 			bDrawExtra = 0;
 			FESound(0);
 			bDoneAllready = 1;
