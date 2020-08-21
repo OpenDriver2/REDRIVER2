@@ -2843,104 +2843,102 @@ int MissionSelectScreen(int bSetup)
 // [D] [A]
 int MissionCityScreen(int bSetup)
 {
-	unsigned char bVar1;
-	DB *pDVar2;
-	int iVar4;
-
 	RECT16 rect;
 
-	if (!bSetup)
+	if (bSetup)
 	{
-		if ((fePad & 0x10) != 0)
-		{
-			// BUGFIX: unload city image
-			loaded[0] = -1;
+		GameType = GAME_MISSION;
 
-			bDrawExtra = 0;
-			FESound(0);
-			bDoneAllready = 1;
-			LoadBackgroundFile("DATA\\GFX.RAW");
+		if (gFurthestMission == 0)
+		{
+			pCurrScreen->buttons[0].action = 0x300;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 10)
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 21)
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x113;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 30)
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x113;
+			pCurrScreen->buttons[2].action = 0x113;
+			pCurrScreen->buttons[3].action = 0x300;
 		}
 		else
 		{
-			if ((fePad & 0x1000) != 0)
-			{
-				currCity = pCurrButton->u - 1;
-			}
-			else if ((fePad & 0x4000) != 0)
-			{
-				currCity = pCurrButton->d - 1;
-			}
-			else
-			{
-				currCity = pCurrButton->u & 3;
-				return 0;
-			}
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x113;
+			pCurrScreen->buttons[2].action = 0x113;
+			pCurrScreen->buttons[3].action = 0x113;
+		}
 
-			rect = extraRect;
-			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
 
-			DrawSync(0);
-			DisplayOnScreenText();
-
-			addPrim(current->ot + 2, &extraSprt);
-			addPrim(current->ot + 2, &extraDummy);
-
-			EndFrame();
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", 0, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
 		}
 
 		return 0;
 	}
+
+	if ((fePad & 0x10) != 0)
+	{
+		// BUGFIX: unload city image
+		loaded[0] = -1;
+
+		bDrawExtra = 0;
+		FESound(0);
+		bDoneAllready = 1;
+		LoadBackgroundFile("DATA\\GFX.RAW");
+	}
+	else
+	{
+		if ((fePad & 0x1000) != 0)
+		{
+			currCity = pCurrButton->u - 1;
+		}
+		else if ((fePad & 0x4000) != 0)
+		{
+			currCity = pCurrButton->d - 1;
+		}
+		else
+		{
+			currCity = pCurrButton->u & 3;
+			return 0;
+		}
+
+		rect = extraRect;
+		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+		DrawSync(0);
+
+#ifdef PSX
+		DisplayOnScreenText();
+
+		addPrim(&current->ot[2], &extraSprt);
+		addPrim(&current->ot[3], &extraDummy);
+
+		EndFrame();
+#endif
+	}
 	
-	GameType = GAME_MISSION;
-
-	if (gFurthestMission == 0)
-	{
-		pCurrScreen->buttons[0].action = 0x300;
-		pCurrScreen->buttons[1].action = 0x300;
-		pCurrScreen->buttons[2].action = 0x300;
-		pCurrScreen->buttons[3].action = 0x300;
-	}
-	else if(gFurthestMission < 10)
-	{
-		pCurrScreen->buttons[0].action = 0x113;
-		pCurrScreen->buttons[1].action = 0x300;
-		pCurrScreen->buttons[2].action = 0x300;
-		pCurrScreen->buttons[3].action = 0x300;
-	}
-	else if (gFurthestMission < 21)
-	{
-		pCurrScreen->buttons[0].action = 0x113;
-		pCurrScreen->buttons[1].action = 0x113;
-		pCurrScreen->buttons[2].action = 0x300;
-		pCurrScreen->buttons[3].action = 0x300;
-	}
-	else if (gFurthestMission < 30)
-	{
-		pCurrScreen->buttons[0].action = 0x113;
-		pCurrScreen->buttons[1].action = 0x113;
-		pCurrScreen->buttons[2].action = 0x113;
-		pCurrScreen->buttons[3].action = 0x300;
-	}
-	else
-	{
-		pCurrScreen->buttons[0].action = 0x113;
-		pCurrScreen->buttons[1].action = 0x113;
-		pCurrScreen->buttons[2].action = 0x113;
-		pCurrScreen->buttons[3].action = 0x113;
-	}
-
-	LoadBackgroundFile("DATA\\CITYBACK.RAW");
-
-	if (loaded[0] == -1)
-	{
-		SetupExtraPoly("DATA\\CITY.RAW", 0, 0);
-	}
-	else
-	{
-		bDrawExtra = 1;
-	}
-
 	return 0;
 }
 
