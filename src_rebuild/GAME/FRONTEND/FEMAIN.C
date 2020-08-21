@@ -3269,171 +3269,157 @@ int CutSceneSelectScreen(int bSetup)
 
 int CutSceneCitySelectScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	DB *pDVar1;
-	PSXSCREEN *pPVar2;
-	PSXBUTTON *pPVar3;
-	PSXBUTTON **ppPVar4;
-	uint *puVar5;
-	int offset;
-	undefined *puVar6;
-	undefined4 local_18;
-	undefined4 local_14;
-	undefined4 local_10;
-	undefined4 local_c;
+	RECT16 rect;
 
-	offset = ScreenDepth;
-	local_18 = DAT_FRNT__001c0884;
-	local_14 = DAT_FRNT__001c0888;
-	if (bSetup != 0) {
-		LoadBackgroundFile(s_DATA_CITYBACK_RAW_FRNT__001c08b4);
-		if (feVariableSave[0] == -1) {
-			if (DAT_FRNT__001c69a4 == 0) {
-				DAT_FRNT__001c6a70 = 0;
-				DAT_FRNT__001c69a4 = 1;
+	rect = extraRect;
+
+	if (bSetup)
+	{
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (feVariableSave[0] == -1)
+		{
+			if (bDoingCutSelect == 0) {
+				currCity = 0;
+				bDoingCutSelect = 1;
 			}
 		}
-		else {
-			DAT_FRNT__001c6a70 = feVariableSave[0];
-			feVariableSave[3] = 0xffffffff;
-			feVariableSave[2] = 0xffffffff;
-			feVariableSave[1] = 0xffffffff;
+		else
+		{
+			currCity = feVariableSave[0];
+
+			feVariableSave[3] = -1;
+			feVariableSave[2] = -1;
+			feVariableSave[1] = -1;
 			feVariableSave[0] = -1;
 		}
-		pCurrScreen->buttons[3].d = '\x01';
-		pCurrScreen->buttons[0].u = '\x04';
-		pPVar2 = pCurrScreen;
-		offset = gFurthestMission;
+
+		pCurrScreen->buttons[0].u = 4;
+		pCurrScreen->buttons[3].d = 1;
+
 		if (gFurthestMission == 0) {
 			pCurrScreen->buttons[0].action = 0x300;
-			pPVar2->buttons[1].action = 0x300;
-			pPVar2->buttons[2].action = 0x300;
-			pPVar2->buttons[3].action = 0x300;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 10) {
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 21) {
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x116;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 31) {
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x116;
+			pCurrScreen->buttons[2].action = 0x116;
+			pCurrScreen->buttons[3].action = 0x300;
 		}
 		else {
-			if (gFurthestMission < 10) {
-				pCurrScreen->buttons[0].action = 0x116;
-				pPVar2->buttons[1].action = 0x300;
-				pPVar2->buttons[2].action = 0x300;
-				pPVar2->buttons[3].action = 0x300;
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x116;
+			pCurrScreen->buttons[2].action = 0x116;
+			pCurrScreen->buttons[3].action = 0x116;
+
+			if (gFurthestMission == 40) {
+				pCurrScreen->buttons[0].u = 5;
+				pCurrScreen->buttons[3].d = 5;
+			}
+		}
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", (currCity != 4) ? currCity : 0, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+			if (currCity == 4) {
+				LoadImage(&rect, (u_long *)_frontend_buffer);
 			}
 			else {
-				if (gFurthestMission < 0x15) {
-					pCurrScreen->buttons[0].action = 0x116;
-					pPVar2->buttons[1].action = 0x116;
-					pPVar2->buttons[2].action = 0x300;
-					pPVar2->buttons[3].action = 0x300;
-				}
-				else {
-					if (gFurthestMission < 0x1f) {
-						pCurrScreen->buttons[0].action = 0x116;
-						pPVar2->buttons[1].action = 0x116;
-						pPVar2->buttons[2].action = 0x116;
-						pPVar2->buttons[3].action = 0x300;
-					}
-					else {
-						pCurrScreen->buttons[0].action = 0x116;
-						pPVar2->buttons[1].action = 0x116;
-						pPVar2->buttons[2].action = 0x116;
-						pPVar2->buttons[3].action = 0x116;
-						if (offset == 0x28) {
-							pPVar2->buttons[3].d = '\x05';
-							pCurrScreen->buttons[0].u = '\x05';
-						}
-					}
-				}
+				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
 			}
-		}
-		if (DAT_FRNT__001c6a78 == -1) {
-			offset = DAT_FRNT__001c6a70;
-			if (DAT_FRNT__001c6a70 == 4) {
-				offset = 0;
-			}
-			SetupExtraPoly(s_DATA_CITY_RAW_FRNT__001c088c, offset, 0);
-			return 0;
-		}
-		DAT_FRNT__001c6a90 = 1;
-		if (DAT_FRNT__001c6a70 == 4) {
-			LoadImage(&local_18, &DAT_0013f400);
-		}
-		else {
-			LoadImage(&local_18, &DAT_0013f400 + DAT_FRNT__001c6a70 * 0x8000);
-		}
-		DrawSync(0);
-		return 0;
-	}
-	if ((uRam001cc5dc & 0x40) != 0) {
-		DAT_FRNT__001c6a7b = 0xff;
-		DAT_FRNT__001c6a7c = (undefined)GameLevel;
-		if (GameLevel != 4) {
-			DAT_FRNT__001c6a7b = 0xff;
-			return 0;
-		}
-		bReturnToMain = 0;
-		ppPVar4 = pButtonStack10 + ScreenDepth;
-		pScreenStack10[ScreenDepth] = pCurrScreen;
-		pPVar3 = pCurrButton;
-		*ppPVar4 = pCurrButton;
-		ScreenNames12[offset] = pPVar3->Name;
-		feVariableSave[0] = DAT_FRNT__001c6a70;
-		StartRender(0x60);
-		return 0;
-	}
-	if ((uRam001cc5dc & 0x10) != 0) {
-		FESound(0);
-		DAT_FRNT__001c6aac = 1;
-		LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
-		DAT_FRNT__001c69a4 = 0;
-		DAT_FRNT__001c6a90 = 0;
-		return 0;
-	}
-	if ((uRam001cc5dc & 0x1000) == 0) {
-		if ((uRam001cc5dc & 0x4000) == 0) {
-			return 0;
-		}
-		GameLevel = (uint)pCurrButton->d - 1;
-		DAT_FRNT__001c6a70 = GameLevel;
-		if (GameLevel != 4) {
-			local_10 = DAT_FRNT__001c0884;
-			local_c = DAT_FRNT__001c0888;
-			LoadImage(&local_10, &DAT_0013f400 + GameLevel * 0x8000);
 			DrawSync(0);
-			DisplayOnScreenText();
-			pDVar1 = current;
-			DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-			*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-			DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar1->ot[3] & 0xffffff;
-			puVar5 = (uint *)pDVar1->ot[3];
-			*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
-			EndFrame();
-			return 0;
 		}
+
+		return 0;
 	}
-	else {
-		DAT_FRNT__001c6a70 = (uint)pCurrButton->u - 1;
-		if (DAT_FRNT__001c6a70 != 4) {
-			puVar6 = &DAT_0013f400 + DAT_FRNT__001c6a70 * 0x8000;
-			goto LAB_FRNT__001c4ec0;
+
+	if ((fePad & 0x40U) != 0)
+	{
+		lastCity = -1;
+		lastCutCity = GameLevel;
+
+		if (GameLevel != 4)
+		{
+			lastCity = -1;
 		}
+		else
+		{
+			bReturnToMain = 0;
+
+			pScreenStack[ScreenDepth] = pCurrScreen;
+			pButtonStack[ScreenDepth] = pCurrButton;
+
+			ScreenNames[ScreenDepth] = pCurrButton->Name;
+
+			feVariableSave[0] = currCity;
+
+			StartRender(0x60);
+		}
+
+		return 0;
 	}
-	puVar6 = &DAT_0013f400;
-LAB_FRNT__001c4ec0:
-	local_10 = DAT_FRNT__001c0884;
-	local_c = DAT_FRNT__001c0888;
-	GameLevel = DAT_FRNT__001c6a70;
-	LoadImage(&local_10, puVar6);
+	else if ((fePad & 0x10U) != 0)
+	{
+		FESound(0);
+		bDoneAllready = 1;
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		bDoingCutSelect = 0;
+		bDrawExtra = 0;
+
+		return 0;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currCity = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currCity = pCurrButton->d - 1;
+	}
+
+	GameLevel = currCity;
+
+	rect = extraRect;
+
+	if (GameLevel != 4)
+	{
+		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * 0x8000));
+	}
+	else
+	{
+		LoadImage(&rect, (u_long *)_frontend_buffer);
+	}
+
 	DrawSync(0);
+#ifdef PSX
 	DisplayOnScreenText();
-	pDVar1 = current;
-	DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-	*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-	DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar1->ot[3] & 0xffffff;
-	puVar5 = (uint *)pDVar1->ot[3];
-	*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
+
+	addPrim(&current->ot[2], &extraSprt);
+	addPrim(&current->ot[3], &extraDummy);
+
 	EndFrame();
-	return 0;*/
+#endif
+
+	return 0;
 }
 
 
