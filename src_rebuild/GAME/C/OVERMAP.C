@@ -14,9 +14,11 @@
 #include "PRES.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
+#include "..\ASM\RNC_2.H"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"
+
 
 OVERMAP overlaidmaps[4] =
 {
@@ -2361,41 +2363,42 @@ void FlashOverheadMap(int r, int g, int b)
 	/* end block 4 */
 	// End Line: 5743
 
+// [D]
 void LoadMapTile(int tpage, int x, int y)
 {
-	UNIMPLEMENTED();
-	/*
-	char cVar1;
-	char *pcVar2;
-	int iVar3;
-	short local_10;
-	short local_e;
-	undefined2 local_c;
-	undefined2 local_a;
+	int temp; // $a0
+	int count; // $a2
+	int idx; // $a3
+	RECT16 MapSegment;
 
-	local_c = 8;
-	local_a = 0x20;
-	local_e = MapRect.y + (&MapSegmentPos)[tpage].y;
-	local_10 = MapRect.x + (&MapSegmentPos)[tpage].x;
-	iVar3 = x + y * tilehnum;
-	if ((((iVar3 < (int)(uint)(byte)overlaidmaps[GameLevel].toptile) && (-1 < iVar3)) && (-1 < x << 5)
-		) && (x << 5 < overlaidmaps[GameLevel].width)) {
-		UnpackRNC(MapBitMaps + *(ushort *)(MapBitMaps + iVar3 * 2), MapBuffer);
+	MapSegment.w = 8;
+	MapSegment.h = 0x20;
+	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
+	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
+
+	idx = x + y * tilehnum;
+	temp = x << 5;
+
+	if ((idx < overlaidmaps[GameLevel].toptile && -1 < idx) && (-1 < temp) && (temp < overlaidmaps[GameLevel].width))
+	{
+		UnpackRNC(MapBitMaps + *(ushort*)(MapBitMaps + idx * 2), MapBuffer);
 	}
-	else {
-		iVar3 = 0x1ff;
-		pcVar2 = CHAR_ARRAY_000aba47;
-		cVar1 = overlaidmaps[GameLevel].dummy;
+	else 
+	{
+		count = 0;
+
 		do {
-			*pcVar2 = cVar1;
-			iVar3 = iVar3 + -1;
-			pcVar2 = pcVar2 + -1;
-		} while (-1 < iVar3);
+			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
+		} while (count < 512);
 	}
+
 	DrawSync(0);
-	LoadImage(&local_10, MapBuffer);
+	LoadImage(&MapSegment, (u_long*)MapBuffer);
 	DrawSync(0);
-	return;*/
+
+#ifndef PSX
+	Emulator_UpdateVRAM();
+#endif
 }
 
 
