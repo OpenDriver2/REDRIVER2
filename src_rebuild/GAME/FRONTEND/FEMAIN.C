@@ -2260,176 +2260,189 @@ int CentreScreen(int bSetup)
 // [D]
 int CarSelectScreen(int bSetup)
 {
-	char bVar1;
-	DB *pDVar2;
-	int *piVar3;
-	int iVar4;
-	int iVar5;
-	uint *puVar6;
+	int lastVal;
 	RECT16 rect;
 
-	iVar5 = carSelection;
+	lastVal = carSelection;
 	rect = extraRect;
-	if (bSetup == 0) {
-		if ((fePad & 0x10U) == 0) {
-			if ((fePad & 0x40U) != 0) {
-				if (currSelIndex == 0) {
-					iVar4 = 9;
-					if (carSelection != 0) {
-						iVar4 = carSelection + -1;
-					}
-					while ((carSelection = iVar4,
-						CarAvailability[GameLevel][carSelection] == 0 &&
-						(carSelection != iVar5))) {
-						iVar4 = carSelection + -1;
-						if (carSelection + -1 == -1) {
-							carSelection = 9;
-							iVar4 = carSelection;
-						}
-					}
-				}
-				else {
-					if (currSelIndex != 2) {
-						if (currPlayer == 1) {
-							feVariableSave[0] = carSelection;
-							wantedCar[0] = carNumLookup[GameLevel][carSelection];
-						}
-						else {
-							wantedCar[1] = carNumLookup[GameLevel][carSelection];
-						}
-						if (NumPlayers == 2) {
-							currPlayer = currPlayer + 1;
-							return 0;
-						}
-						return 0;
-					}
-					if (carSelection == 9) {
-						carSelection = 0;
-					}
-					else {
-						carSelection = carSelection + 1;
-					}
-					while ((CarAvailability[GameLevel][carSelection] == 0 &&
-						(iVar4 = carSelection + 1, carSelection != iVar5))) {
-						carSelection = iVar4;
-						if (iVar4 == 10) {
-							carSelection = 0;
-						}
-					}
-				}
-				rect = extraRect;
-				LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
-				DrawSync(0);
-				DisplayOnScreenText();
 
-				pDVar2 = current;
-
-				addPrim(current->ot + 2, &extraSprt);
-				addPrim(current->ot + 3, &extraDummy);
-
-				EndFrame();
-				return 0;
-			}
-			if ((fePad & 0x1000U) == 0) {
-				if ((fePad & 0x4000U) == 0) {
-					return 0;
-				}
-				bVar1 = pCurrButton->d;
-			}
-			else {
-				bVar1 = pCurrButton->u;
-			}
-			currSelIndex = (uint)bVar1 - 1;
-		}
-		else {
-			FESound(0);
-			bDoneAllready = 1;
-			LoadBackgroundFile("DATA\\GFX.RAW");
-			currPlayer = 1;
-			bDrawExtra = 0;
-			bDoingCarSelect = 0;
-		}
-		return 0;
-	}
-
-	bDoingCarSelect = 1;
-
-	if (NumPlayers == 1) 
+	if (bSetup)
 	{
+		bDoingCarSelect = 1;
+
+		// setup secret cars
+		if (NumPlayers == 1)
+		{
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
-		CarAvailability[0][9] = 1;
-		CarAvailability[1][9] = 1;
-		CarAvailability[2][9] = 1;
-		CarAvailability[3][9] = 1;
+			CarAvailability[0][9] = 1;
+			CarAvailability[1][9] = 1;
+			CarAvailability[2][9] = 1;
+			CarAvailability[3][9] = 1;
 #else
-		CarAvailability[0][9] = AvailableCheats.cheat5;
-		CarAvailability[1][9] = AvailableCheats.cheat6;
-		CarAvailability[2][9] = AvailableCheats.cheat7;
-		CarAvailability[3][9] = AvailableCheats.cheat8;
+			CarAvailability[0][9] = AvailableCheats.cheat5;
+			CarAvailability[1][9] = AvailableCheats.cheat6;
+			CarAvailability[2][9] = AvailableCheats.cheat7;
+			CarAvailability[3][9] = AvailableCheats.cheat8;
 #endif
-	}
-
-	if (gFurthestMission == 40 && NumPlayers == 1) 
-	{
-		for (int i = 4; i < 9; i++)
-		{
-			if(i != 8)
-				CarAvailability[0][i] = 1;	// remove truck
-
-			CarAvailability[1][i] = 1;
-			CarAvailability[2][i] = 1;
-			CarAvailability[3][i] = 1;
 		}
-	}
-	else 
-	{
-		for (int i = 4; i < 9; i++)
-		{
-			CarAvailability[0][i] = (i == 4); // [A] make cop car only available
-			CarAvailability[1][i] = (i == 4);
-			CarAvailability[2][i] = (i == 4);
-			CarAvailability[3][i] = (i == 4);
-		}
-	}
 
-	if (currPlayer != 1) {
-		if (NumPlayers == 2) 
+		// setup unlockable cars
+		if ((gFurthestMission == 40) && (NumPlayers == 1))
 		{
-			FEPrintStringSized("Player 2", 400, 0x104, 0xc00, 0, 0x80, 0x80, 0x80);
+			for (int i = 4; i < 9; i++)
+			{
+				if (i != 8)
+					CarAvailability[0][i] = 1;	// remove truck
+
+				CarAvailability[1][i] = 1;
+				CarAvailability[2][i] = 1;
+				CarAvailability[3][i] = 1;
+			}
+		}
+		else
+		{
+			for (int i = 4; i < 9; i++)
+			{
+				// unlock the cop car only
+				int unlocked = (i == 4);
+
+				CarAvailability[0][i] = unlocked; 
+				CarAvailability[1][i] = unlocked;
+				CarAvailability[2][i] = unlocked;
+				CarAvailability[3][i] = unlocked;
+			}
+		}
+
+		if (currPlayer != 1) {
+			if (NumPlayers == 2)
+				FEPrintStringSized("Player 2", 400, 260, 0xc00, 0, 128, 128, 128);
+
 			return 0;
 		}
-		return 0;
+
+		LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
+
+		if (feVariableSave[0] != -1)
+		{
+			carSelection = feVariableSave[0];
+			SetupExtraPoly(gfxNames[GameLevel], carSelection, 0);
+		}
+		else
+		{
+			carSelection = 0;
+
+			if (loaded[1] == GameLevel)
+			{
+				bDrawExtra = 1;
+
+				LoadImage(&rect, (u_long*)_frontend_buffer);
+				DrawSync(0);
+			}
+			else
+			{
+				SetupExtraPoly(gfxNames[GameLevel], carSelection, 0);
+				lastCity = GameLevel;
+			}
+		}
+
+		feVariableSave[0] = -1;
+		feVariableSave[1] = -1;
+		feVariableSave[2] = -1;
+		feVariableSave[3] = -1;
+
+		lastCutCity = -1;
+		currSelIndex = 1;
+
+		pCurrButton = &pCurrScreen->buttons[1];
+
+		return 1;
 	}
 
-	if (feVariableSave[0] == -1) 
+	if ((fePad & 0x10) != 0)
 	{
-		carSelection = 0;
-		if (loaded[1] == GameLevel)
-		{
-			bDrawExtra = currPlayer;
-			LoadImage(&rect, (u_long*)_frontend_buffer);
-		}
-		else 
-		{
-			SetupExtraPoly(gfxNames[GameLevel], 0, 0);
-			lastCity = GameLevel;
-		}
+		FESound(0);
+		bDoneAllready = 1;
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		currPlayer = 1;
+		bDrawExtra = 0;
+		bDoingCarSelect = 0;
 	}
-	else 
+	else if ((fePad & 0x40) != 0)
 	{
-		carSelection = feVariableSave[0];
-		SetupExtraPoly(gfxNames[GameLevel], feVariableSave[0], 0);
+		if (currSelIndex == 0)
+		{
+			// find best-fit for previous vehicle
+			for (int i = (carSelection > 0) ? carSelection - 1 : 9; (i != lastVal); i--)
+			{
+				if (CarAvailability[GameLevel][i] != 0)
+				{
+					carSelection = i;
+					break;
+				}
+
+				// loop-back around and try again
+				if (i == 0)
+					i = 9;
+			}
+		}
+		else if (currSelIndex == 2)
+		{
+			// find best-fit for next vehicle
+			for (int i = (carSelection < 9) ? carSelection + 1 : 0; (i != lastVal); i++)
+			{
+				if (CarAvailability[GameLevel][i] != 0)
+				{
+					carSelection = i;
+					break;
+				}
+
+				// loop-back around and try again
+				if (i == 9)
+					i = 0;
+			}
+		}
+		else
+		{
+			// select the vehicle
+			if (currPlayer == 1)
+			{
+				feVariableSave[0] = carSelection;
+				wantedCar[0] = carNumLookup[GameLevel][carSelection];
+			}
+			else {
+				wantedCar[1] = carNumLookup[GameLevel][carSelection];
+			}
+
+			// time for player 2 to select their vehicle?
+			if (NumPlayers == 2)
+				currPlayer++;
+
+			return 0;
+		}
+		
+		rect = extraRect;
+		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
+		DrawSync(0);
+
+#ifdef PSX
+		DisplayOnScreenText();
+
+		addPrim(&current->ot[2], &extraSprt);
+		addPrim(&current->ot[3], &extraDummy);
+
+		EndFrame();
+#endif
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
 	}
 
-	LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
-	feVariableSave[0] = -1;
-	feVariableSave[1] = -1;
-	feVariableSave[2] = -1;
-	feVariableSave[3] = -1;
-	lastCutCity = -1;
-	currSelIndex = 1;
-	pCurrButton = pCurrScreen->buttons + 1;
-	return 1;
+	return 0;
 }
 
 
@@ -2545,221 +2558,226 @@ int MissionSelectScreen(int bSetup)
 {
 	int i;
 
-	if (!bSetup) 
+	if (bSetup) 
 	{
-		if ((fePad & 0x40) != 0)
+		bMissionSelect = 1;
+
+		if (!missionSetup)
 		{
-			switch (currSelIndex)
-			{
-			case 0:
-				i = currMission - 4;
-				if (minmaxSelections[currCity][0] < currMission)
-					goto CHANGE_PAGE;
-				break;
-			case 5:
-				i = currMission + 4;
-				if ((i < minmaxSelections[currCity][1]) && (i < gFurthestMission))
-					goto CHANGE_PAGE;
-				break;
+			currMission = minmaxSelections[currCity][0];
+			currSelIndex = 0;
 
-			default:
-				bReturnToMain = 0;
-				GameType = GAME_REPLAYMISSION;
-				feVariableSave[0] = currMission;
-				feVariableSave[1] = currSelIndex;
-				feVariableSave[2] = currCity;
-				gCurrentMissionNumber = botch[currMission + (currSelIndex - 1)].missNum;
-				break;
+			if (GameType == GAME_REPLAYMISSION)
+				LoadBackgroundFile("DATA\\CITYBACK.RAW");
+		}
 
-			CHANGE_PAGE:
-				currMission = i;
-				FESound(3);
-				fpUserFunctions[pCurrScreen->userFunctionNum - 1](1);
-				bRedrawFrontend = 1;
-				return 1;
+		if (feVariableSave[0] != -1) {
+			currMission = feVariableSave[0];
+			currSelIndex = feVariableSave[1];
+			currCity = feVariableSave[2];
+		}
+
+		int usedB = 0;
+
+		bool done = false;
+		bool bP = false; // 'Previous' button is visible?
+		bool bN = false; // 'Next' button is visible?
+
+		for (i = 0; (i < 4) && !done; i++)
+		{
+			if ((botch[currMission + i].missNum > gFurthestMission) ||
+				((currMission + i) > minmaxSelections[currCity][1]) ||
+				((currMission + i) > 36)) {
+				done = true;
+			}
+			else {
+				usedB++;
 			}
 		}
-		else if ((fePad & 0x10) != 0)
+
+		switch (usedB)
 		{
-			missionSetup = 0;
-			bMissionSelect = 0;
+		case 1:
+			pCurrScreen->buttons[1].u = 2;
+			pCurrScreen->buttons[1].d = 2;
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, NullStr);
+			sprintf(pCurrScreen->buttons[3].Name, NullStr);
+			sprintf(pCurrScreen->buttons[4].Name, NullStr);
+			break;
+		case 2:
+			pCurrScreen->buttons[1].u = 3;
+			pCurrScreen->buttons[1].d = 3;
+			pCurrScreen->buttons[2].u = 2;
+			pCurrScreen->buttons[2].d = 2;
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[3].Name, NullStr);
+			sprintf(pCurrScreen->buttons[4].Name, NullStr);
+			break;
+		case 3:
+			pCurrScreen->buttons[1].u = 4;
+			pCurrScreen->buttons[1].d = 3;
+			pCurrScreen->buttons[2].u = 2;
+			pCurrScreen->buttons[2].d = 4;
+			pCurrScreen->buttons[3].u = 3;
+			pCurrScreen->buttons[3].d = 2;
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
+			sprintf(pCurrScreen->buttons[4].Name, NullStr);
+			break;
+		case 4:
+			pCurrScreen->buttons[1].u = 5;
+			pCurrScreen->buttons[1].d = 3;
+			pCurrScreen->buttons[2].u = 2;
+			pCurrScreen->buttons[2].d = 4;
+			pCurrScreen->buttons[3].u = 3;
+			pCurrScreen->buttons[3].d = 5;
+			pCurrScreen->buttons[4].u = 4;
+			pCurrScreen->buttons[4].d = 2;
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
+			sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
+			break;
 		}
-		else if ((fePad & 0x1000) != 0)
+
+		if ((usedB == 4) &&
+			(botch[currMission + 4].missNum <= gFurthestMission) &&
+			((currMission + 4) != minmaxSelections[currCity][1]))
 		{
-			currSelIndex = pCurrButton->u - 1;
+			bN = true;
 		}
-		else if ((fePad & 0x4000) != 0)
+
+		if (bN)
 		{
-			currSelIndex = pCurrButton->d - 1;
-		}
-		
-		return 0;
-	}
+			if (currMission != minmaxSelections[currCity][0])
+			{
+				bP = true;
 
-	bMissionSelect = 1;
-
-	if (!missionSetup)
-	{
-		currMission = minmaxSelections[currCity][0];
-		currSelIndex = 0;
-
-		if (GameType == GAME_REPLAYMISSION)
-			LoadBackgroundFile("DATA\\CITYBACK.RAW");
-	}
-
-	if (feVariableSave[0] != -1) {
-		currMission = feVariableSave[0];
-		currSelIndex = feVariableSave[1];
-		currCity = feVariableSave[2];
-	}
-
-	int usedB = 0;
-
-	bool done = false;
-	bool bP = false; // 'Previous' button is visible?
-	bool bN = false; // 'Next' button is visible?
-
-	for (i = 0; (i < 4) && !done; i++)
-	{
-		if ((botch[currMission + i].missNum > gFurthestMission) ||
-			((currMission + i) > minmaxSelections[currCity][1]) ||
-			((currMission + i) > 36)) {
-			done = true;
-		}
-		else {
-			usedB++;
-		}
-	}
-
-	switch (usedB)
-	{
-	case 1:
-		pCurrScreen->buttons[1].u = 2;
-		pCurrScreen->buttons[1].d = 2;
-		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-		sprintf(pCurrScreen->buttons[2].Name, NullStr);
-		sprintf(pCurrScreen->buttons[3].Name, NullStr);
-		sprintf(pCurrScreen->buttons[4].Name, NullStr);
-		break;
-	case 2:
-		pCurrScreen->buttons[1].u = 3;
-		pCurrScreen->buttons[1].d = 3;
-		pCurrScreen->buttons[2].u = 2;
-		pCurrScreen->buttons[2].d = 2;
-		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-		sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-		sprintf(pCurrScreen->buttons[3].Name, NullStr);
-		sprintf(pCurrScreen->buttons[4].Name, NullStr);
-		break;
-	case 3:
-		pCurrScreen->buttons[1].u = 4;
-		pCurrScreen->buttons[1].d = 3;
-		pCurrScreen->buttons[2].u = 2;
-		pCurrScreen->buttons[2].d = 4;
-		pCurrScreen->buttons[3].u = 3;
-		pCurrScreen->buttons[3].d = 2;
-		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-		sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-		sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
-		sprintf(pCurrScreen->buttons[4].Name, NullStr);
-		break;
-	case 4:
-		pCurrScreen->buttons[1].u = 5;
-		pCurrScreen->buttons[1].d = 3;
-		pCurrScreen->buttons[2].u = 2;
-		pCurrScreen->buttons[2].d = 4;
-		pCurrScreen->buttons[3].u = 3;
-		pCurrScreen->buttons[3].d = 5;
-		pCurrScreen->buttons[4].u = 4;
-		pCurrScreen->buttons[4].d = 2;
-		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-		sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-		sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
-		sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
-		break;
-	}
-
-	if ((usedB == 4) &&
-		(botch[currMission + 4].missNum <= gFurthestMission) &&
-		((currMission + 4) != minmaxSelections[currCity][1]))
-	{
-		bN = true;
-	}
-
-	if (bN)
-	{
-		if (currMission != minmaxSelections[currCity][0])
-		{
-			bP = true;
-
-			pCurrScreen->buttons[0].u = 6;
-			pCurrScreen->buttons[0].d = 2;
-			pCurrScreen->buttons[5].u = 5;
-			pCurrScreen->buttons[5].d = 1;
-			pCurrScreen->buttons[1].u = 1;
-			pCurrScreen->buttons[4].d = 6;
-			pCurrScreen->buttons[0].action = 0;
-			pCurrScreen->buttons[5].action = 0;
+				pCurrScreen->buttons[0].u = 6;
+				pCurrScreen->buttons[0].d = 2;
+				pCurrScreen->buttons[5].u = 5;
+				pCurrScreen->buttons[5].d = 1;
+				pCurrScreen->buttons[1].u = 1;
+				pCurrScreen->buttons[4].d = 6;
+				pCurrScreen->buttons[0].action = 0;
+				pCurrScreen->buttons[5].action = 0;
+			}
+			else
+			{
+				pCurrScreen->buttons[1].u = 6;
+				pCurrScreen->buttons[4].d = 6;
+				pCurrScreen->buttons[5].u = 5;
+				pCurrScreen->buttons[5].d = 2;
+				pCurrScreen->buttons[5].action = 0;
+				pCurrScreen->buttons[0].action = 0x500;
+			}
 		}
 		else
 		{
-			pCurrScreen->buttons[1].u = 6;
-			pCurrScreen->buttons[4].d = 6;
-			pCurrScreen->buttons[5].u = 5;
-			pCurrScreen->buttons[5].d = 2;
-			pCurrScreen->buttons[5].action = 0;
-			pCurrScreen->buttons[0].action = 0x500;
-		}
-	}
-	else
-	{
-		if (currMission != minmaxSelections[currCity][0])
-		{
-			bP = true;
+			if (currMission != minmaxSelections[currCity][0])
+			{
+				bP = true;
 
-			pCurrScreen->buttons[0].u = usedB + 1;
-			pCurrScreen->buttons[0].d = 2;
-			pCurrScreen->buttons[1].u = 1;
-			pCurrScreen->buttons[usedB].d = 1;
-			pCurrScreen->buttons[0].action = 0;
-			pCurrScreen->buttons[5].action = 0x500;
+				pCurrScreen->buttons[0].u = usedB + 1;
+				pCurrScreen->buttons[0].d = 2;
+				pCurrScreen->buttons[1].u = 1;
+				pCurrScreen->buttons[usedB].d = 1;
+				pCurrScreen->buttons[0].action = 0;
+				pCurrScreen->buttons[5].action = 0x500;
+			}
+			else
+			{
+				// list missions only
+				pCurrScreen->buttons[0].action = 0x500;
+				pCurrScreen->buttons[5].action = 0x500;
+			}
+		}
+
+		if (bP)
+		{
+			pCurrButton = pCurrScreen->buttons;
+			currSelIndex = 0;
 		}
 		else
 		{
-			// list missions only
-			pCurrScreen->buttons[0].action = 0x500;
-			pCurrScreen->buttons[5].action = 0x500;
+			pCurrButton = pCurrScreen->buttons + 1;
+			currSelIndex = 1;
 		}
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+		}
+
+		feVariableSave[0] = -1;
+		feVariableSave[1] = -1;
+		feVariableSave[2] = -1;
+		feVariableSave[3] = -1;
+
+		missionSetup = 1;
+
+		return 1;
 	}
 
-	if (bP)
+	if ((fePad & 0x40) != 0)
 	{
-		pCurrButton = pCurrScreen->buttons;
-		currSelIndex = 0;
+		i = currMission;
+
+		if (currSelIndex == 0)
+		{
+			i -= 4;
+
+			if (i < minmaxSelections[currCity][0])
+				return 0;
+		}
+		else if (currSelIndex == 5)
+		{
+			i += 4;
+
+			if ((i > minmaxSelections[currCity][1]) || (i > gFurthestMission))
+				return 0;
+		}
+		else
+		{
+			bReturnToMain = 0;
+			GameType = GAME_REPLAYMISSION;
+			feVariableSave[0] = currMission;
+			feVariableSave[1] = currSelIndex;
+			feVariableSave[2] = currCity;
+			gCurrentMissionNumber = botch[currMission + (currSelIndex - 1)].missNum;
+
+			return 0;
+		}
+
+		currMission = i;
+		FESound(3);
+		fpUserFunctions[pCurrScreen->userFunctionNum - 1](1);
+		bRedrawFrontend = 1;
+
+		return 1;
 	}
-	else
+	else if ((fePad & 0x10) != 0)
 	{
-		pCurrButton = pCurrScreen->buttons + 1;
-		currSelIndex = 1;
+		missionSetup = 0;
+		bMissionSelect = 0;
 	}
-	
-	if (loaded[0] == -1)
+	else if ((fePad & 0x1000) != 0)
 	{
-		SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
+		currSelIndex = pCurrButton->u - 1;
 	}
-	else
+	else if ((fePad & 0x4000) != 0)
 	{
-		bDrawExtra = 1;
+		currSelIndex = pCurrButton->d - 1;
 	}
 
-	feVariableSave[0] = -1;
-	feVariableSave[1] = -1;
-	feVariableSave[2] = -1;
-	feVariableSave[3] = -1;
-
-	missionSetup = 1;
-
-	return 1;
+	return 0;
 }
 
 
