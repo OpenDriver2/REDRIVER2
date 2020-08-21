@@ -103,16 +103,12 @@ short specialSlot;
 // [D]
 void IncrementClutNum(RECT16 *clut)
 {
-	short sVar1;
+	clut->x += 16;
 
-	sVar1 = clut->x + 16;
-	clut->x = sVar1;
-
-	if (sVar1 == 1024) {
+	if (clut->x == 1024) {
 		clut->x = 960;
-		clut->y = clut->y + 1;
+		clut->y += 1;
 	}
-	return;
 }
 
 
@@ -230,44 +226,34 @@ char* unpackTexture(char *dest, char *src)
 	return pcVar3;
 }
 
-// [D]
+// [D] [A]
 int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpageaddress)
 {
-	u_short uVar1;
-	u_long *puVar2;
-	u_short *puVar3;
-	int iVar4;
-	int iVar5;
-	RECT16 local_28;
+	int npalettes = *(int *)tpageaddress;
+	tpageaddress += 4;
 
-	iVar5 = *(int *)tpageaddress;
-	puVar2 = (u_long *)(tpageaddress + 4);
-	iVar4 = 0;
+	for (int i = 0; i < npalettes; i++)
+	{
+		LoadImage(cluts, (u_long *)tpageaddress);
+		tpageaddress += 32;
 
-	if (0 < iVar5) {
-		puVar3 = (u_short *)(texture_cluts[tpage2send]);
-		do {
-			LoadImage(cluts, puVar2);
-			puVar2 = puVar2 + 8;
-			iVar4 = iVar4 + 1;
-			uVar1 = GetClut((int)cluts->x, (int)cluts->y);
-			*puVar3 = uVar1;
-			IncrementClutNum(cluts);
-			puVar3 = puVar3 + 1;
-		} while (iVar4 < iVar5);
+		texture_cluts[tpage2send][i] = GetClut(cluts->x, cluts->y);
+		IncrementClutNum(cluts);
 	}
 
-	local_28.x = tpage->x;
-	local_28.y = tpage->y;
-	local_28.w = tpage->w;
-	local_28.h = 0x100;
+	RECT16 temptpage;
 
-	unpackTexture(_other_buffer, (char*)puVar2);
-	LoadImage(&local_28, (u_long *)_other_buffer);
+	temptpage.x = tpage->x;
+	temptpage.y = tpage->y;
+	temptpage.w = tpage->w;
+	temptpage.h = 0x100;
 
-	uVar1 = GetTPage(0, 0, (int)tpage->x, (int)tpage->y);
-	texture_pages[tpage2send] = uVar1;
+	unpackTexture(_other_buffer, tpageaddress);
+	LoadImage(&temptpage, (u_long *)_other_buffer);
+
+	texture_pages[tpage2send] = GetTPage(0, 0, tpage->x, tpage->y);
 	IncrementTPageNum(tpage);
+
 	return 1;
 }
 
@@ -925,7 +911,6 @@ void ReloadIcons(void)
 {
 	ReportMode(0);
 	ReportMode(1);
-	return;
 }
 
 
