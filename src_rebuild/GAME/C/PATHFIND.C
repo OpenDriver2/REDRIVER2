@@ -1289,157 +1289,164 @@ void InitPathFinding(void)
 	/* end block 3 */
 	// End Line: 1655
 
+extern int sdLevel; // D2ROADS
+
+// [D]
 int getInterpolatedDistance(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	bool bVar2;
-	uint uVar3;
-	uint uVar4;
-	int iVar5;
-	uint uVar6;
-	uint uVar7;
-	uint uVar8;
+	int uVar3;
+	int iVar4;
+	int uVar5;
+	int uVar6;
+	int uVar7;
+	int uVar8;
 	int iVar9;
 	int iVar10;
-	uint local_48;
-	uint local_44;
-	uint local_40;
-	ushort local_3c;
-	uint local_38;
-	uint local_30;
+	tNode n;
+	VECTOR sp;
 
 	uVar6 = pos->vz;
-	local_48 = ((int)(pos->vx + ((int)uVar6 >> 1 & 0x1ffU)) >> 9) * 0x200 -
-		((int)(uVar6 & 0x200) >> 1);
-	local_44 = pos->vy;
-	local_40 = ((int)uVar6 >> 9) << 9;
-	local_38 = local_48 & 0xfffffc00;
-	local_30 = local_40 & 0xfffffc00;
-	if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-		[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-		((int)local_30 >> 8 & 7U) & 1U) == 0) {
-		local_44 = 0;
+	n.vx = ((pos->vx + (uVar6 >> 1 & 0x1ffU)) >> 9) * 0x200 - ((uVar6 & 0x200) >> 1);
+	n.vy = pos->vy;
+	n.vz = (uVar6 >> 9) << 9;
+	uVar6 = (n.vz & 0xfffffc00U) >> 8;
+
+	if ((((char*)omap)[((int)(uVar6 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar6 & 7) & 1U) == 0) {
+		n.vy = 0;
 	}
-	else {
-		local_44 = MapHeight((VECTOR *)&local_48);
-		local_44 = local_44 ^ (local_44 ^ sdLevel) & 3;
+	else 
+	{
+		uVar6 = MapHeight((VECTOR*)&n);
+		n.vy = uVar6 ^ (uVar6 ^ sdLevel) & 3;
 	}
-	iVar10 = pos->vz - local_40;
-	iVar9 = (pos->vx - local_48) + (iVar10 >> 1);
-	uVar7 = local_48 + 0x100;
-	uVar3 = local_40 + 0x200;
-	local_38 = uVar7 & 0xfffffc00;
-	local_3c = (&DAT_PATH__000e9b00)
-		[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^ (local_44 & 1) * 0x2040
-		^ (local_44 & 2) << 0xc];
-	uVar6 = (uint)local_3c;
-	local_30 = uVar3 & 0xfffffc00;
-	local_48 = uVar7;
-	local_40 = uVar3;
-	if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-		[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-		((int)local_30 >> 8 & 7U) & 1U) == 0) {
-		local_44 = 0;
+
+	iVar10 = pos->vz - n.vz;
+	iVar9 = (pos->vx - n.vx) + (iVar10 >> 1);
+	uVar7 = n.vx + 0x100;
+	uVar3 = n.vz + 0x200;
+
+	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+
+	uVar6 = n.dist;
+	uVar5 = (uVar3 & 0xfffffc00) >> 8;
+	n.vx = uVar7;
+	n.vz = uVar3;
+
+	if ((((char*)omap)[((uVar5 & 0x7f) >> 3) + ((uVar7 & 0xfffffc00) >> 4 & 0x7c0)] >> (uVar5 & 7) & 1U) == 0) 
+	{
+		n.vy = 0;
 	}
-	else {
-		local_44 = MapHeight((VECTOR *)&local_48);
-		local_44 = local_44 ^ (local_44 ^ sdLevel) & 3;
+	else
+	{
+		uVar3 = MapHeight((VECTOR*)&n);
+		n.vy = uVar3 ^ (uVar3 ^ sdLevel) & 3;
 	}
-	local_3c = (&DAT_PATH__000e9b00)
-		[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^ (local_44 & 1) * 0x2040
-		^ (local_44 & 2) << 0xc];
-	uVar7 = (uint)local_3c;
-	uVar3 = uVar7;
-	if (uVar6 < uVar7) {
+
+	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+
+	uVar5 = n.dist;
+	uVar3 = uVar5;
+
+	if (uVar6 < uVar5)
 		uVar3 = uVar6;
-	}
-	if (iVar10 < iVar9) {
-		local_48 = local_48 + 0x100;
-		local_40 = local_40 - 0x200;
-		local_38 = local_48 & 0xfffffc00;
-		local_30 = local_40 & 0xfffffc00;
-		if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-			((int)local_30 >> 8 & 7U) & 1U) == 0) {
-			uVar4 = 0;
+
+	if (iVar10 < iVar9) 
+	{
+		n.vx = n.vx + 0x100;
+		n.vz = n.vz - 0x200;
+		uVar7 = (int)(n.vz & 0xfffffc00U) >> 8;
+
+		if ((((char*)omap)[((uVar7 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar7 & 7) & 1U) == 0) 
+		{
+			uVar7 = 0;
 		}
-		else {
-			uVar4 = MapHeight((VECTOR *)&local_48);
-			uVar4 = uVar4 ^ (uVar4 ^ sdLevel) & 3;
+		else
+		{
+			uVar7 = MapHeight((VECTOR*)&n);
+			uVar7 = uVar7 ^ (uVar7 ^ sdLevel) & 3;
 		}
-		uVar4 = (uint)(ushort)(&DAT_PATH__000e9b00)
-			[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^
-			(uVar4 & 1) * 0x2040 ^ (uVar4 & 2) << 0xc];
-		uVar8 = uVar4;
-		if (uVar3 < uVar4) {
+
+		uVar7 = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (uVar7 & 1) * 0x2040 ^ (uVar7 & 2) << 0xc];
+
+		uVar8 = uVar7;
+
+		if (uVar3 < uVar7)
 			uVar8 = uVar3;
-		}
+	
 		uVar8 = uVar8 + 0x155;
 		bVar1 = 0xffff < uVar8;
 		bVar2 = uVar8 < uVar6;
-		if (bVar1) {
+
+		if (bVar1)
 			uVar8 = 0xffff;
-		}
-		if (!bVar1 && bVar2) {
+
+		if (!bVar1 && bVar2)
 			uVar6 = uVar8;
-		}
-		if (uVar8 < uVar7) {
+
+		if (uVar8 < uVar5)
+			uVar5 = uVar8;
+
+		iVar4 = uVar7 - uVar6;
+
+		if (uVar8 < uVar7) 
+		{
+			iVar4 = uVar8 - uVar6;
 			uVar7 = uVar8;
 		}
-		iVar5 = uVar4 - uVar6;
-		if (uVar8 < uVar4) {
-			iVar5 = uVar8 - uVar6;
-			uVar4 = uVar8;
-		}
-		iVar5 = iVar5 * iVar9;
-		iVar10 = (uVar7 - uVar4) * iVar10;
+
+		iVar4 = iVar4 * iVar9;
+		iVar10 = (uVar5 - uVar7) * iVar10;
 	}
-	else {
-		local_48 = local_48 - 0x200;
-		local_38 = local_48 & 0xfffffc00;
-		local_30 = local_40 & 0xfffffc00;
-		if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-			((int)local_30 >> 8 & 7U) & 1U) == 0) {
-			uVar4 = 0;
+	else 
+	{
+		n.vx = n.vx - 0x200;
+		uVar7 = (int)(n.vz & 0xfffffc00U) >> 8;
+
+		if ((((char*)omap)[((uVar7 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar7 & 7) & 1U) == 0)
+		{
+			uVar7 = 0;
 		}
-		else {
-			uVar4 = MapHeight((VECTOR *)&local_48);
-			uVar4 = uVar4 ^ (uVar4 ^ sdLevel) & 3;
+		else
+		{
+			uVar7 = MapHeight((VECTOR*)&n);
+			uVar7 = uVar7 ^ (uVar7 ^ sdLevel) & 3;
 		}
-		uVar4 = (uint)(ushort)(&DAT_PATH__000e9b00)
-			[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^
-			(uVar4 & 1) * 0x2040 ^ (uVar4 & 2) << 0xc];
-		uVar8 = uVar4;
-		if (uVar3 < uVar4) {
+
+		uVar7 = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (uVar7 & 1) * 0x2040 ^ (uVar7 & 2) << 0xc];
+
+		uVar8 = uVar7;
+
+		if (uVar3 < uVar7)
 			uVar8 = uVar3;
-		}
+	
 		uVar8 = uVar8 + 0x155;
 		bVar1 = 0xffff < uVar8;
 		bVar2 = uVar8 < uVar6;
-		if (bVar1) {
+		if (bVar1)
 			uVar8 = 0xffff;
-		}
-		if (!bVar1 && bVar2) {
+	
+		if (!bVar1 && bVar2)
 			uVar6 = uVar8;
-		}
-		if (uVar8 < uVar7) {
+	
+		if (uVar8 < uVar5)
+			uVar5 = uVar8;
+
+		iVar4 = uVar7 - uVar6;
+		if (uVar8 < uVar7) 
+		{
+			iVar4 = uVar8 - uVar6;
 			uVar7 = uVar8;
 		}
-		iVar5 = uVar4 - uVar6;
-		if (uVar8 < uVar4) {
-			iVar5 = uVar8 - uVar6;
-			uVar4 = uVar8;
-		}
-		iVar5 = iVar5 * iVar10;
-		iVar10 = (uVar7 - uVar4) * iVar9;
+		iVar4 = iVar4 * iVar10;
+		iVar10 = (uVar5 - uVar7) * iVar9;
 	}
-	uVar6 = uVar6 + (iVar5 + iVar10 >> 9);
-	DAT_PATH__000e9ac8 = uVar6 ^ (uVar6 & 1 ^ uVar6) & 1;
-	return DAT_PATH__000e9ac8;*/
+
+	uVar6 = uVar6 + (iVar4 + iVar10 >> 9);
+	lastDistanceFound = uVar6 ^ (uVar6 & 1 ^ uVar6) & 1;
+
+	return lastDistanceFound;
 }
 
 

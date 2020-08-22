@@ -659,7 +659,7 @@ int RoadInCell(VECTOR *pos)
 	/* end block 4 */
 	// End Line: 853
 
-int sdLevel = 0; // debug value?
+int sdLevel = 0; // pathfinding value
 
 // [D]
 _sdPlane * sdGetCell(VECTOR *pos)
@@ -702,7 +702,7 @@ _sdPlane * sdGetCell(VECTOR *pos)
 						break;
 
 					psVar2 = psVar2 + 2;
-					sdLevel = sdLevel + 1;
+					sdLevel++;
 				} while (*psVar2 != -0x8000);
 
 				surface = psVar2 + 1;
@@ -722,7 +722,7 @@ _sdPlane * sdGetCell(VECTOR *pos)
 
 					if (*surface1 == 0x7fff) 
 					{
-						sdLevel = sdLevel + 1;
+						sdLevel++;
 						bVar1 = true;
 						surface1 = surface + 2;
 					}
