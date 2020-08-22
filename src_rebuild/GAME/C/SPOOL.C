@@ -3002,7 +3002,7 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 		getLevSectorPC(target_address, 0x200);
 #endif // PSX
 
-		target_address = target_address + 0x800;
+		target_address += 0x800;
 		sectors_to_read--;
 		current_sector++;
 
