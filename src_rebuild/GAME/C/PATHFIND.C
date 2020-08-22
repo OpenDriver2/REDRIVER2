@@ -248,7 +248,8 @@ void WunCell(VECTOR *pbase)
 			if (cVar2 == 0)
 				bVar7 = 0xff;
 
-			omap[(iVar4 >> 9 & 0x7fU)][((uVar6 & 0x7f) >> 3)] = omap[(iVar4 >> 9 & 0x7fU)][((uVar6 & 0x7f) >> 3)] ^ (1 << (uVar6 & 7)) & (bVar1 ^ bVar7);
+			bVar1 = omap[(iVar4 >> 9 & 0x7fU)][((uVar6 & 0x7f) >> 3)];
+			omap[(iVar4 >> 9 & 0x7fU)][((uVar6 & 0x7f) >> 3)] = bVar1 ^ (1 << (uVar6 & 7)) & (bVar1 ^ bVar7);
 
 			iVar8++;
 		} while (iVar8 < 6);

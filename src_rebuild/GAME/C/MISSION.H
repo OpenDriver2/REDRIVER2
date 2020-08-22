@@ -57,6 +57,7 @@ extern int gCopMaxPowerScale;
 extern int gCurrentResidentSlot;
 extern int gPuppyDogCop;
 extern int CopsAllowed;
+extern STOPCOPS gStopCops;
 
 extern MR_MISSION Mission;
 
