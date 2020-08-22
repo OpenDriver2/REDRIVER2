@@ -202,7 +202,7 @@ void ClearMem(char *mem, int size)
 // [D]
 void setMem8(unsigned char *mem, unsigned char val, int size)
 {
-	while (size > 0)
+	while (--size > 0)
 		*mem++ = val;
 
 	// TODO: check alignment/bounds?
@@ -236,7 +236,7 @@ void setMem8(unsigned char *mem, unsigned char val, int size)
 
 void setMem16(ushort *mem, ushort val, int size)
 {
-	while (size > 0)
+	while (--size > 0)
 		*mem++ = val;
 
 	// TODO: check alignment/bounds?
