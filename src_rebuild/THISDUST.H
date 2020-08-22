@@ -20659,9 +20659,9 @@ typedef struct GEAR_DESC GEAR_DESC;
 
 struct PSXSCREEN // hashcode: 0x9E392939 (dec: -1640421063)
 {
-	char index; // size=0, offset=0
+	unsigned char index; // size=0, offset=0
 	unsigned char numButtons; // size=0, offset=1
-	char userFunctionNum; // size=0, offset=2
+	unsigned char userFunctionNum; // size=0, offset=2
 	struct PSXBUTTON buttons[8]; // size=480, offset=4
 };
 

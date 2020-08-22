@@ -91,23 +91,12 @@ void InitCopState(_CAR_DATA *cp, char *extraData)
 	cp->controlFlags = 0;
 	cp->ai.p.justPinged = 1;
 
-	if (gCopDifficultyLevel == 1) 
-	{
+	if (gCopDifficultyLevel == 0)
+		cp->hndType = 2;
+	else if (gCopDifficultyLevel == 1) 
 		cp->hndType = 3;
-	}
-	else 
-	{
+	else
 		cp->hndType = 4;
-		if (gCopDifficultyLevel < 2) 
-		{
-			if (gCopDifficultyLevel != 0)
-			{
-				cp->hndType = 4;
-				return;
-			}
-			cp->hndType = 2;
-		}
-	}
 }
 
 

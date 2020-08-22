@@ -33,7 +33,7 @@ CHANNEL_DATA channels[16]; // offset 0xDE480
 int master_volume = 0;	// why need two?
 
 int gMasterVolume = 0;
-int gMusicVolume = 0;
+int gMusicVolume = -4000;
 
 int Song_ID = -1;
 int VABID = -1;
