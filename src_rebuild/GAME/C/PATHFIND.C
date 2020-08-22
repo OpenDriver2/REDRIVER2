@@ -90,18 +90,18 @@ PATHFIND_237fake ends[6][2];
 // [D]
 tNode * popNode(tNode *__return_storage_ptr__)
 {
-	ushort uVar1;
+	short uVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
 	int uVar5;
-	ushort uVar6;
-	uint uVar7;
-	uint uVar8;
+	short uVar6;
+	int uVar7;
+	int uVar8;
 	int iVar9;
 	int iVar10;
-	ushort uVar11;
-	uint uVar12;
+	short uVar11;
+	int uVar12;
 
 	tNode res;
 
@@ -203,7 +203,7 @@ void WunCell(VECTOR *pbase)
 	int iVar3;
 	int iVar4;
 	int iVar5;
-	uint uVar6;
+	int uVar6;
 	unsigned char bVar7;
 	int iVar8;
 	PATHFIND_237fake* pPVar9;
@@ -313,10 +313,10 @@ void WunCell(VECTOR *pbase)
 // [D]
 void InvalidateMap(void)
 {
-	uint uVar1;
+	int uVar1;
 	int iVar2;
-	uint uVar3;
-	uint uVar4;
+	int uVar3;
+	int uVar4;
 	int iVar5;
 	int iVar6;
 	int iVar7;
@@ -449,13 +449,13 @@ unsigned int cellsPerFrame = 4;
 // [D]
 void BloodyHell(void)
 {
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
-	uint uVar4;
+	int uVar1;
+	int uVar2;
+	int uVar3;
+	int uVar4;
 	int iVar5;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int iVar8;
 	VECTOR bPos;
 
@@ -606,47 +606,46 @@ void BloodyHell(void)
 	/* end block 3 */
 	// End Line: 1343
 
+int slowWallTests = 0;
+
+// [D] [A] - might be bugged
 int blocked(tNode *v1, tNode *v2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	bool bVar2;
 	char cVar3;
 	int iVar4;
 	int iVar5;
-	undefined3 extraout_var;
 	int iVar6;
 	int iVar7;
-	uint uVar8;
-	uint uVar9;
-	byte bVar10;
+	int uVar8;
+	int uVar9;
+	unsigned char bVar10;
 
-	if (DAT_PATH__000e913c == 0) {
+	if (slowWallTests == 0)
+	{
 		uVar8 = v1->vz + v2->vz >> 9;
-		uVar8 = (int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)(uVar8 & 0x7f) >> 3) + (v1->vx + v2->vx >> 5 & 0x7f0U)] >>
-			(uVar8 & 7) & 1;
+		uVar8 = ((char*)omap)[((int)(uVar8 & 0x7f) >> 3) + (v1->vx + v2->vx >> 5 & 0x7f0U)] >> (uVar8 & 7) & 1;
 	}
-	else {
+	else 
+	{
 		iVar4 = v1->vx;
 		iVar6 = v2->vx;
 		iVar5 = v1->vz;
 		iVar7 = v2->vz;
-		cVar3 = lineClear((VECTOR *)v1, (VECTOR *)v2);
+		cVar3 = lineClear((VECTOR*)v1, (VECTOR*)v2);
 		bVar10 = 0;
-		bVar2 = CONCAT31(extraout_var, cVar3) == 0;
+		bVar2 = cVar3 == 0;
 		uVar8 = (uint)bVar2;
 		uVar9 = iVar5 + iVar7 >> 9;
-		if (bVar2) {
+
+		if (bVar2)
 			bVar10 = 0xff;
-		}
-		bVar1 = (&DAT_PATH__000e91a8)[((int)(uVar9 & 0x7f) >> 3) + (iVar4 + iVar6 >> 9 & 0x7fU) * 0x10];
-		(&DAT_PATH__000e91a8)[((int)(uVar9 & 0x7f) >> 3) + (iVar4 + iVar6 >> 9 & 0x7fU) * 0x10] =
-			bVar1 ^ (byte)(1 << (uVar9 & 7)) & (bVar1 ^ bVar10);
+
+		bVar1 = omap[(iVar4 + iVar6 >> 9 & 0x7fU)][((int)(uVar9 & 0x7f) >> 3)];
+		omap[(iVar4 + iVar6 >> 9 & 0x7fU)][((int)(uVar9 & 0x7f) >> 3)] = bVar1 ^ (1 << (uVar9 & 7)) & (bVar1 ^ bVar10);
 	}
-	return uVar8;*/
+	return uVar8;
 }
 
 
@@ -665,15 +664,11 @@ int blocked(tNode *v1, tNode *v2)
 	/* end block 2 */
 	// End Line: 1319
 
+// [D]
 void setDistance(tNode *n, ushort dist)
 {
-	UNIMPLEMENTED();
-	/*
 	n->dist = dist | 1;
-	(&DAT_PATH__000e9b00)
-		[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] =
-		dist | 1;
-	return;*/
+	distanceCache[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] = dist | 1;
 }
 
 
