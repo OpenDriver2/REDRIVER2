@@ -113,6 +113,16 @@ unsigned short *newmodels;
 
 struct SPOOLQ spooldata[48];
 
+#ifdef _DEBUG
+#define SPOOL_INFO(msg) printInfo(msg)
+#define SPOOL_WARNING(msg) printWarning(msg)
+#define SPOOL_ERROR(msg) printError(msg)
+#else
+#define SPOOL_INFO(msg) ((void)msg)
+#define SPOOL_WARNING(msg) ((void)msg)
+#define SPOOL_ERROR(msg) ((void)msg)
+#endif
+
 #if !defined(PSX) && !defined(SIMPLE_SPOOL)
 #include <assert.h>
 
@@ -175,7 +185,7 @@ void levelSpoolerPCReadyCallback(ready_callbackFn cb)
 int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
-	printWarning("Running SPOOL thread...\n");
+	SPOOL_WARNING("Running SPOOL thread...\n");
 
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
@@ -206,14 +216,14 @@ int levelSpoolerPCFunc(void* data)
 
 			if (sector == -1)
 			{
-				printInfo("SPOOL thread recieved 'CdlPause'\n", sector);
+				SPOOL_INFO("SPOOL thread recieved 'CdlPause'\n", sector);
 
 				levelSpoolerSeekCmd = 0;
 				g_spoolDoneFlag = true;
 			}
 			else
 			{
-				printInfo("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
+				SPOOL_INFO("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
 
 				// seek
 				fseek(fp, sector * 2048, SEEK_SET);
@@ -244,7 +254,7 @@ int levelSpoolerPCFunc(void* data)
 
 	} while (!g_spoolDoneFlag);
 
-	printInfo("SPOOLER thread work done.\n");
+	SPOOL_INFO("SPOOLER thread work done.\n");
 
 	fclose(fp);
 
@@ -277,7 +287,7 @@ void startReadLevSectorsPC(int sector)
 
 		if (NULL == levelSpoolerPCThread)
 		{
-			printError("SDL_CreateThread failed: %s\n", SDL_GetError());
+			SPOOL_ERROR("SDL_CreateThread failed: %s\n", SDL_GetError());
 		}
 	}
 }
@@ -897,7 +907,7 @@ void UpdateSpool(void)
 			break;
 		}
 
-		printWarning("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+		SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
 #endif // _DEBUG
 
 		// seek to required sector
@@ -1658,7 +1668,7 @@ void init_spooled_models(void)
 
 	nmodels = *newmodels;
 
-	printInfo("loading %d model slots\n", nmodels);
+	SPOOL_INFO("loading %d model slots\n", nmodels);
 
 	//for (i = 0; i < 1536; i++)
 	//{
@@ -1789,7 +1799,7 @@ void LoadInAreaModels(int area)
 			modelpointers[model_number] = &dummyModel;
 		}
 
-		printInfo("freed %d model slots\n", nmodels);
+		SPOOL_INFO("freed %d model slots\n", nmodels);
 	}
 
 	int length = AreaData[area].model_size;
@@ -2326,13 +2336,16 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 #ifndef SIMPLE_SPOOL
 	CdlLOC p;
 
-	if ((*result & 0x10) != 0) 
+#ifdef PSX
+	if ((*result & 0x10) != 0)
 	{
 		WaitCloseLid();
 	}
+#endif // PSX
+
 
 #ifdef _DEBUG
-	printError("FoundError: %s, intr: %d\n", name, intr);
+	SPOOL_ERROR("FoundError: %s, intr: %d\n", name, intr);
 #endif // _DEBUG
 
 	spoolerror = 0x3c;
@@ -2478,7 +2491,7 @@ void data_cb_textures(void)
 
 					if (spoolpos_writing == spoolcounter)
 					{
-						printWarning("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
+						SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
 
 						spoolcounter = 0;
 						spoolpos_writing = 0;
@@ -2722,7 +2735,7 @@ void data_cb_regions(void)
 
 				if (spoolpos_writing == spoolcounter) 
 				{
-					printWarning("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
+					SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
 
 					spoolcounter = 0;
 					spoolpos_writing = 0;
@@ -2950,7 +2963,7 @@ void data_cb_misc(void)
 #endif // PSX
 			if (spoolpos_writing == spoolcounter)
 			{
-				printWarning("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+				SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
 
 				spoolcounter = 0;
 				spoolpos_writing = 0;
