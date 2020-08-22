@@ -28,6 +28,7 @@ tNode heap[201];
 unsigned int numHeapEntries = 0;
 
 PATHFIND_237fake ends[6][2];
+PATHFIND_238fake dirs[6];
 
 // decompiled code
 // original method signature: 
@@ -1983,298 +1984,364 @@ void addCivs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [A] - might be bugged
 void UpdateCopMap(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	uint uVar2;
-	ushort uVar3;
-	int *piVar4;
-	ushort *puVar5;
-	int iVar6;
+	int uVar2;
+	long lVar3;
+	short uVar4;
+	int* piVar5;
+	short* psVar6;
 	int iVar7;
-	uint uVar8;
-	uint uVar9;
-	uint uVar10;
-	uint local_48;
-	uint local_44;
-	uint local_40;
-	undefined4 local_3c;
-	uint local_38;
-	uint local_30;
+	int iVar8;
+	int uVar9;
+	int uVar10;
+	int uVar11;
+	tNode startNode;
+	tNode sp_n;
 
 	BloodyHell();
-	if ((player_position_known == 1) || (CameraCnt == 6)) {
-		DAT_PATH__000f1b00 = 0;
-		setMem16(&DAT_PATH__000e9b00, 0xfffe, 0x4000);
-		DAT_PATH__000e99ac = 3;
+
+	if ((player_position_known == 1) || (CameraCnt == 6)) 
+	{
+		pathFrames = 0;
+		setMem16((ushort*)distanceCache, 0xfffe, 0x4000);
+		DoExtraWorkForNFrames = 3;
 	}
-	if (DAT_PATH__000f1b00 == 0) {
-		if ((player.playerType == '\x01') && ((CopsCanSeePlayer != 0 || (numActiveCops == 0)))) {
-			iVar1 = (int)player.playerCarId;
-			DAT_PATH__000e9ab8 =
-				car_data[iVar1].hd.where.t[0] + (*(int *)(car_data[iVar1].st + 0x1c) + 0x800 >> 0xc) * 8;
-			DAT_PATH__000e9abc =
-				car_data[iVar1].hd.where.t[1] + (*(int *)(car_data[iVar1].st + 0x20) + 0x800 >> 0xc) * 4;
-			DAT_PATH__000e9ac0 =
-				car_data[iVar1].hd.where.t[2] + (*(int *)(car_data[iVar1].st + 0x24) + 0x800 >> 0xc) * 8;
+
+	if (pathFrames == 0) 
+	{
+		if ((player[0].playerType == 1) && ((CopsCanSeePlayer != 0 || (numActiveCops == 0)))) 
+		{
+			iVar1 = (int)player[0].playerCarId;
+
+			searchTarget.vx = car_data[iVar1].hd.where.t[0] + FIXED(car_data[iVar1].st.n.linearVelocity[0]) * 8;
+			searchTarget.vy = car_data[iVar1].hd.where.t[1] + FIXED(car_data[iVar1].st.n.linearVelocity[1]) * 4;
+			searchTarget.vz = car_data[iVar1].hd.where.t[2] + FIXED(car_data[iVar1].st.n.linearVelocity[2]) * 8;
 		}
-		else {
-			if (DAT_PATH__000e9abc == -0x304f) {
-				DAT_PATH__000e9ab8 = player.pos[0];
-				DAT_PATH__000e9abc = player.pos[1];
-				DAT_PATH__000e9ac0 = player.pos[2];
-			}
+		else if (searchTarget.vy == -0x304f) 
+		{
+			searchTarget.vx = player[0].pos[0];
+			searchTarget.vy = player[0].pos[1];
+			searchTarget.vz = player[0].pos[2];
 		}
-		puVar5 = &DAT_PATH__000e9b00;
+
+		psVar6 = distanceCache;
 		iVar1 = 0x3fff;
+
 		do {
-			uVar2 = (uint)*puVar5 + 0x2000;
-			if ((uVar2 & 1) != 0) {
+			uVar2 = (uint)(ushort)*psVar6 + 0x2000;
+			if ((uVar2 & 1) != 0)
 				uVar2 = uVar2 ^ 1;
-			}
-			uVar3 = (ushort)uVar2;
-			if (0xfffe < uVar2) {
-				uVar3 = 0xfffe;
-			}
-			*puVar5 = uVar3;
-			iVar1 = iVar1 + -1;
-			puVar5 = puVar5 + 1;
+
+			uVar4 = (ushort)uVar2;
+			if (0xfffe < uVar2)
+				uVar4 = 0xfffe;
+
+			*psVar6 = uVar4;
+			iVar1--;
+			psVar6 = (short*)((ushort*)psVar6 + 1);
 		} while (-1 < iVar1);
-		local_48 = ((int)(DAT_PATH__000e9ab8 + ((int)DAT_PATH__000e9ac0 >> 1 & 0x1ffU)) >> 9) * 0x200 -
-			((int)(DAT_PATH__000e9ac0 & 0x200) >> 1);
-		local_40 = ((int)DAT_PATH__000e9ac0 >> 9) << 9;
-		local_44 = DAT_PATH__000e9abc;
-		local_38 = local_48 & 0xfffffc00;
-		DAT_PATH__000f279c = 0;
-		local_30 = local_40 & 0xfffffc00;
-		if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-			((int)local_30 >> 8 & 7U) & 1U) == 0) {
-			local_44 = 0;
+
+		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 0x200 - ((searchTarget.vz & 0x200U) >> 1);
+		startNode.vz = (searchTarget.vz >> 9) << 9;
+		startNode.vy = searchTarget.vy;
+		numHeapEntries = 0;
+
+		uVar2 = (int)(startNode.vz & 0xfffffc00U) >> 8;
+
+		if ((((char*)omap)[((uVar2 & 0x7f) >> 3) + ((startNode.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar2 & 7) & 1U) == 0)
+		{
+			startNode.vy = 0;
 		}
-		else {
-			local_44 = MapHeight((VECTOR *)(tNode *)&local_48);
-			local_44 = local_44 ^ (local_44 ^ sdLevel) & 3;
+		else 
+		{
+			uVar2 = MapHeight((VECTOR*)&startNode);
+			startNode.vy = uVar2 ^ (uVar2 ^ sdLevel) & 3;
 		}
-		iVar1 = local_48 - DAT_PATH__000e9ab8;
-		if ((int)(DAT_PATH__000e9ac0 - local_40) <
-			(int)((DAT_PATH__000e9ab8 - local_48) + ((int)(DAT_PATH__000e9ac0 - local_40) >> 1))) {
-			iVar1 = SquareRoot0(iVar1 * iVar1 +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+
+		iVar1 = startNode.vx - searchTarget.vx;
+
+		if (searchTarget.vz - startNode.vz < (searchTarget.vx - startNode.vx) + (searchTarget.vz - startNode.vz >> 1))
+		{
+			lVar3 = SquareRoot0(iVar1 * iVar1 + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, (ushort)uVar2);
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+
+				if (uVar9 != 0) 
+				{
+					uVar4 = heap[uVar9].dist;
+
+					while (uVar2 < uVar4)
+					{
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + 0x100;
-			local_40 = local_40 + 0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+
+			startNode.vx = startNode.vx + 0x100;
+			startNode.vz = startNode.vz + 0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) +
+				(startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries != 0xc6) 
+			{
+				setDistance(&startNode, (ushort)uVar2);
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+				if (uVar9 != 0) 
+				{
+					uVar4 = heap[uVar9].dist;
+					while (uVar2 < uVar4)
+					{
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + 0x100;
-			local_40 = local_40 + -0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c == 0xc6) goto LAB_PATH__000e8dfc;
-			setDistance((tNode *)&local_48, (ushort)uVar2);
-			uVar8 = DAT_PATH__000f279c + 1;
-			uVar10 = uVar8 >> 1;
-			if ((uVar10 != 0) && (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8])) {
-				iVar1 = uVar8 * 0x10;
+
+			startNode.vx = startNode.vx + 0x100;
+			startNode.vz = startNode.vz + -0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries == 0xc6)
+				goto LAB_PATH__000e8dfc;
+
+			setDistance(&startNode, (ushort)uVar2);
+
+			uVar9 = numHeapEntries + 1;
+			uVar11 = uVar9 >> 1;
+
+			if ((uVar11 != 0) && (uVar2 < heap[uVar11].dist))
+			{
+				iVar1 = uVar9 * 0x10;
 				do {
-					uVar8 = uVar10;
-					*(undefined4 *)((int)&DAT_PATH__000f1b08 + iVar1) = (&DAT_PATH__000f1b08)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b0c + iVar1) = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b10 + iVar1) = (&DAT_PATH__000f1b10)[uVar8 * 4];
-					uVar10 = uVar8 >> 1;
-					*(undefined4 *)((int)&DAT_PATH__000f1b14 + iVar1) =
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-					if (uVar10 == 0) break;
-					iVar1 = uVar8 << 4;
-				} while (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8]);
+					uVar9 = uVar11;
+					*(int*)((int)&heap[0].vx + iVar1) = (&heap[0].vx)[uVar9 * 4]; // [A] I cannot understand decompiler shit code
+					*(int*)((int)&heap[0].vy + iVar1) = (&heap[0].vy)[uVar9 * 4];
+					*(int*)((int)&heap[0].vz + iVar1) = (&heap[0].vz)[uVar9 * 4];
+
+					uVar11 = uVar9 >> 1;
+					*(uint*)((int)&heap[0].dist + iVar1) = *(uint*)(&heap[0].dist + uVar9 * 8);
+
+					if (uVar11 == 0)
+						break;
+
+					iVar1 = uVar9 << 4;
+				} while (uVar2 < heap[uVar11].dist);
 			}
 		}
-		else {
-			iVar1 = SquareRoot0(iVar1 * iVar1 +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+		else 
+{
+			lVar3 = SquareRoot0(iVar1 * iVar1 + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+			if (numHeapEntries != 0xc6)
+			{
+				setDistance(&startNode, (ushort)uVar2);
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+				if (uVar9 != 0)
+				{
+					uVar4 = heap[uVar9].dist;
+					while (uVar2 < uVar4)
+					{
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + 0x100;
-			local_40 = local_40 + 0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+
+			startNode.vx = startNode.vx + 0x100;
+			startNode.vz = startNode.vz + 0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, (ushort)uVar2);
+
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+
+				if (uVar9 != 0)
+				{
+					uVar4 = heap[uVar9].dist;
+					while (uVar2 < uVar4) {
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + -0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c == 0xc6) goto LAB_PATH__000e8dfc;
-			setDistance((tNode *)&local_48, (ushort)uVar2);
-			uVar8 = DAT_PATH__000f279c + 1;
-			uVar10 = uVar8 >> 1;
-			if ((uVar10 != 0) && (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8])) {
-				iVar1 = uVar8 * 0x10;
+			startNode.vx = startNode.vx + -0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries == 0xc6)
+				goto LAB_PATH__000e8dfc;
+
+			setDistance(&startNode, (ushort)uVar2);
+			uVar9 = numHeapEntries + 1;
+			uVar11 = uVar9 >> 1;
+
+			if ((uVar11 != 0) && (uVar2 < heap[uVar11].dist)) 
+			{
+				iVar1 = uVar9 * 0x10;
 				do {
-					uVar8 = uVar10;
-					*(undefined4 *)((int)&DAT_PATH__000f1b08 + iVar1) = (&DAT_PATH__000f1b08)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b0c + iVar1) = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b10 + iVar1) = (&DAT_PATH__000f1b10)[uVar8 * 4];
-					uVar10 = uVar8 >> 1;
-					*(undefined4 *)((int)&DAT_PATH__000f1b14 + iVar1) =
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-					if (uVar10 == 0) break;
-					iVar1 = uVar8 << 4;
-				} while (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8]);
+					uVar9 = uVar11;
+					*(int*)((int)&heap[0].vx + iVar1) = (&heap[0].vx)[uVar9 * 4];
+					*(int*)((int)&heap[0].vy + iVar1) = (&heap[0].vy)[uVar9 * 4];
+					*(int*)((int)&heap[0].vz + iVar1) = (&heap[0].vz)[uVar9 * 4];
+					uVar11 = uVar9 >> 1;
+					*(uint*)((int)&heap[0].dist + iVar1) = *(uint*)(&heap[0].dist + uVar9 * 8);
+
+					if (uVar11 == 0)
+						break;
+
+					iVar1 = uVar9 << 4;
+				} while (uVar2 < heap[uVar11].dist);
 			}
 		}
-		DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-		(&DAT_PATH__000f1b08)[uVar8 * 4] = local_48;
-		(&DAT_PATH__000f1b0c)[uVar8 * 4] = local_44;
-		(&DAT_PATH__000f1b10)[uVar8 * 4] = local_40;
-		*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8) = local_3c;
+
+		numHeapEntries++;
+
+		heap[uVar9].vx = startNode.vx;
+		heap[uVar9].vy = startNode.vy;
+		heap[uVar9].vz = startNode.vz;
+		heap[uVar9].dist = startNode.dist;
+		heap[uVar9].ptoey = startNode.ptoey;
 	}
-	else {
+	else
+	{
 		addCivs();
-		iVar1 = DAT_PATH__000f2798 << 2;
-		uVar2 = DAT_PATH__000f2798;
-		if (6 < DAT_PATH__000f2798) {
+
+		iVar1 = cellsThisFrame << 2;
+		uVar2 = cellsThisFrame;
+
+		if (6 < cellsThisFrame) 
+		{
 			uVar2 = 6;
 			iVar1 = 0x18;
 		}
-		iVar1 = iRam000f27c0 + iVar1 * -4 + uVar2 * -5;
-		if (DAT_PATH__000e99ac != 0) {
-			DAT_PATH__000e99ac = DAT_PATH__000e99ac + -1;
-			iVar1 = iVar1 + 0x3c;
+
+		iVar1 = pathIterations - iVar1 * 4 - uVar2 * 5;
+		if (DoExtraWorkForNFrames != 0) 
+		{
+			DoExtraWorkForNFrames--;
+			iVar1 += 60;
 		}
-		iVar7 = iVar1 + -1;
-		if (iVar1 < 0x24) {
-			iVar7 = 0x23;
-		}
-		while (iVar7 != -1) {
-			iVar7 = iVar7 + -1;
+
+		iVar8 = iVar1 - 1;
+
+		if (iVar1 < 0x24)
+			iVar8 = 0x23;
+	
+		while (iVar8 != -1) 
+		{
+			iVar8--;
 			iterate();
 		}
+
 		addCivs();
 	}
 LAB_PATH__000e8dfc:
-	piVar4 = &DAT_PATH__000f27a0;
-	iVar7 = 6;
-	DAT_PATH__000f1b00 = DAT_PATH__000f1b00 + 1;
-	iVar1 = DAT_PATH__000f27bc;
+	piVar5 = distanceReturnedLog;
+	iVar8 = 6;
+	pathFrames = pathFrames + 1;
+	iVar1 = distanceReturnedLog[7];
 	do {
-		if (iVar1 < *piVar4) {
-			iVar1 = *piVar4;
+		if (iVar1 < *piVar5) {
+			iVar1 = *piVar5;
 		}
-		iVar7 = iVar7 + -1;
-		piVar4 = piVar4 + 1;
-	} while (-1 < iVar7);
-	if ((DAT_PATH__000e99a8 < DAT_PATH__000f1b00) ||
-		(2000 < (int)((uint)(ushort)DAT_PATH__000f1b24 - iVar1))) {
-		DAT_PATH__000f1b00 = 0;
+		iVar8 = iVar8 + -1;
+		piVar5 = piVar5 + 1;
+	} while (-1 < iVar8);
+	if ((pathFrames < pathFrames) || (2000 < (int)((uint)heap[1].dist - iVar1))) {
+		pathFrames = 0;
 	}
-	iVar6 = DAT_PATH__000e9ab8 - player.pos[0] >> 4;
-	iVar7 = DAT_PATH__000e9abc - player.pos[1] >> 4;
-	iVar1 = (int)(DAT_PATH__000e9ac0 - player.pos[2]) >> 4;
-	DAT_PATH__000e9acc = iVar6 * iVar6 + iVar7 * iVar7 + iVar1 * iVar1;
-	return;*/
+	iVar7 = searchTarget.vx - player[0].pos[0] >> 4;
+	iVar8 = searchTarget.vy - player[0].pos[1] >> 4;
+	iVar1 = searchTarget.vz - player[0].pos[2] >> 4;
+	playerTargetDistanceSq = iVar7 * iVar7 + iVar8 * iVar8 + iVar1 * iVar1;
 }
 
 
