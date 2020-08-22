@@ -3923,8 +3923,76 @@ int CityCutOffScreen(int bSetup)
 		else if (gFurthestMission < 29)
 		{
 			pCurrScreen->buttons[3].action = 0x300;
-		}	
+		}
+
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (lastCity == -1)
+		{
+			currCity = 0;
+		}
+		else
+		{
+			currCity = lastCity;
+		}
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+
+			RECT16 rect = extraRect;
+			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+			DrawSync(0);
+		}
+
+		return 0;
 	}
+
+	if ((fePad & 0x40U) != 0)
+	{
+		lastCity = currCity;
+
+		bDrawExtra = 0;
+
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		loaded[0] = -1;
+
+		return 0;
+	}
+	if ((fePad & 0x10) != 0)
+	{
+		lastCity = -1;
+
+		bDrawExtra = 0;
+		FESound(0);
+		bDoneAllready = 1;
+
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		loaded[0] = -1;
+
+		return 0;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currCity = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currCity = pCurrButton->d - 1;
+	}
+	else
+	{
+		currCity = pCurrButton->u & 3;
+		return 0;
+	}
+
+	RECT16 rect = extraRect;
+	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+	DrawSync(0);
 
 	return 0;
 }
