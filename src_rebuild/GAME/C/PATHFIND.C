@@ -5,6 +5,7 @@
 #include "OBJCOLL.H"
 #include "DR2ROADS.H"
 #include "PLAYERS.H"
+#include "CAMERA.H"
 
 short distanceCache[16384];
 char omap[128][16];
@@ -442,10 +443,12 @@ void InvalidateMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+unsigned int cellsThisFrame;
+unsigned int cellsPerFrame = 4;
+
+// [D]
 void BloodyHell(void)
 {
-	UNIMPLEMENTED();
-	/*
 	uint uVar1;
 	uint uVar2;
 	uint uVar3;
@@ -454,79 +457,93 @@ void BloodyHell(void)
 	int iVar6;
 	uint uVar7;
 	int iVar8;
-	VECTOR local_30;
+	VECTOR bPos;
 
-	local_30.vy = &DAT_00001fed;
-	DAT_PATH__000f2798 = 0;
-	local_30.vx = player.pos[0] & 0xfffffc00;
-	local_30.vz = player.pos[2] & 0xfffffc00;
-	uVar7 = DAT_PATH__000e9138;
-	if (CameraCnt < 4) {
-		uVar7 = DAT_PATH__000e9138 + 0x14;
-	}
+	bPos.vy = 0x1fed;
+	bPos.vx = player[0].pos[0] & 0xfffffc00;
+	bPos.vz = player[0].pos[2] & 0xfffffc00;
+
+	cellsThisFrame = 0;
+	uVar7 = cellsPerFrame;
+
+	if (CameraCnt < 4)
+		uVar7 = cellsPerFrame + 0x14;
+
 	iVar6 = 0;
-	if (CameraCnt < 8) {
+
+	if (CameraCnt < 8)
 		uVar7 = uVar7 + 4;
-	}
+
 	iVar5 = 0;
 	uVar4 = 0;
 	iVar8 = 0;
+
 	do {
-		if (iVar8 == 200) {
+		if (iVar8 == 200)
 			uVar7 = uVar7 - 1;
-		}
-		uVar2 = (int)local_30.vz >> 10;
-		uVar3 = *(uint *)(&DAT_PATH__000e99b0 + (uVar2 & 1) * 4 + ((int)local_30.vx >> 10 & 0x1fU) * 8);
-		uVar1 = 3 << (uVar2 & 0x1e) &
-			((((int)local_30.vx >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) << (uVar2 & 0x1e) ^ uVar3);
-		if (uVar1 != 0) {
-			*(uint *)(&DAT_PATH__000e99b0 + (uVar2 & 1) * 4 + ((int)local_30.vx >> 10 & 0x1fU) * 8) =
-				uVar3 ^ uVar1;
-			WunCell(&local_30);
-			DAT_PATH__000f2798 = DAT_PATH__000f2798 + 1;
-			if (uVar7 <= DAT_PATH__000f2798) {
+	
+		uVar2 = (int)bPos.vz >> 10;
+
+		uVar3 = dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)];
+		uVar1 = 3 << (uVar2 & 0x1e) & ((((int)bPos.vx >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) << (uVar2 & 0x1e) ^ uVar3);
+
+		if (uVar1 != 0) 
+		{
+			dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)] = uVar3 ^ uVar1;
+			WunCell(&bPos);
+
+			cellsThisFrame++;
+
+			if (uVar7 <= cellsThisFrame)
 				return;
-			}
+
 		}
-		if (uVar4 == 1) {
+		if (uVar4 == 1) 
+		{
 			iVar6 = iVar6 + 1;
-			local_30.vz = local_30.vz + 0x400;
-			if (iVar5 == iVar6) {
+			bPos.vz = bPos.vz + 0x400;
+			if (iVar5 == iVar6)
 				uVar4 = 2;
+		}
+		else if (uVar4 < 2)
+		{
+			if (uVar4 == 0)
+			{
+				iVar5 = iVar5 + 1;
+				bPos.vx = bPos.vx + 0x400;
+				if (iVar5 + iVar6 == 1)
+				{
+					uVar4 = 1;
+				}
+			}
+			else
+			{
+			LAB_PATH__000e7674:
+				iVar6 = iVar6 + -1;
+				bPos.vz = bPos.vz - 0x400;
+
+				if (iVar5 == iVar6)
+					uVar4 = 0;
 			}
 		}
-		else {
-			if (uVar4 < 2) {
-				if (uVar4 == 0) {
-					iVar5 = iVar5 + 1;
-					local_30.vx = local_30.vx + 0x400;
-					if (iVar5 + iVar6 == 1) {
-						uVar4 = 1;
-					}
-				}
-				else {
-				LAB_PATH__000e7674:
-					iVar6 = iVar6 + -1;
-					local_30.vz = local_30.vz - 0x400;
-					if (iVar5 == iVar6) {
-						uVar4 = 0;
-					}
-				}
-			}
-			else {
-				if (uVar4 != 2) goto LAB_PATH__000e7674;
-				iVar5 = iVar5 + -1;
-				local_30.vx = local_30.vx - 0x400;
-				if (iVar5 + iVar6 == 0) {
-					uVar4 = 3;
-				}
-			}
+		else
+		{
+			if (uVar4 != 2)
+				goto LAB_PATH__000e7674;
+
+			iVar5 = iVar5 + -1;
+			bPos.vx = bPos.vx - 0x400;
+
+			if (iVar5 + iVar6 == 0)
+				uVar4 = 3;
 		}
-		iVar8 = iVar8 + 1;
-		if (0x348 < iVar8) {
+
+		iVar8++;
+
+		if (0x348 < iVar8)
 			return;
-		}
-	} while (true);*/
+
+	} while (true);
 }
 
 
