@@ -202,38 +202,10 @@ void ClearMem(char *mem, int size)
 // [D]
 void setMem8(unsigned char *mem, unsigned char val, int size)
 {
-#ifndef PSX
-	memset(mem, 0, size);
-#else
-	UNIMPLEMENTED();
-	/*
-	int *puVar1;
-	int uVar2;
+	while (size > 0)
+		*mem++ = val;
 
-	uVar2 = CONCAT22(CONCAT11(val, val), CONCAT11(val, val));
-	puVar1 = (int *)(mem + size);
-	while ((((uint)mem & 3) != 0 && (mem < puVar1))) {
-		*mem = val;
-		mem = (unsigned char *)((int)mem + 1);
-	}
-	while (mem <= puVar1 + -4) {
-		*(int *)mem = uVar2;
-		((int *)mem)[1] = uVar2;
-		((int *)mem)[2] = uVar2;
-		((int *)mem)[3] = uVar2;
-		mem = (unsigned char *)((int *)mem + 4);
-	}
-	while (mem <= puVar1 + -1) {
-		*(int *)mem = uVar2;
-		mem = (unsigned char *)((int *)mem + 1);
-	}
-	while (mem < puVar1) {
-		*mem = val;
-		mem = (unsigned char *)((int)mem + 1);
-	}
-	return;
-	*/
-#endif
+	// TODO: check alignment/bounds?
 }
 
 
@@ -264,40 +236,10 @@ void setMem8(unsigned char *mem, unsigned char val, int size)
 
 void setMem16(ushort *mem, ushort val, int size)
 {
-#ifndef PSX
-	memset(mem, 0, size);
-#else
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	int uVar2;
-	int *puVar3;
+	while (size > 0)
+		*mem++ = val;
 
-	puVar3 = (int *)(mem + size);
-	uVar2 = CONCAT22(val, val);
-	if (((uint)mem & 2) != 0) {
-		bVar1 = mem < puVar3;
-		do {
-			if (!bVar1) break;
-			*mem = val;
-			mem = (ushort *)((int)mem + 2);
-			bVar1 = mem < puVar3;
-		} while (((uint)mem & 2) != 0);
-	}
-	while (mem <= puVar3 + -4) {
-		*(int *)mem = uVar2;
-		((int *)mem)[1] = uVar2;
-		((int *)mem)[2] = uVar2;
-		((int *)mem)[3] = uVar2;
-		mem = (ushort *)((int *)mem + 4);
-	}
-	while (mem < puVar3) {
-		*mem = val;
-		mem = (ushort *)((int)mem + 2);
-	}
-	return;
-	*/
-#endif
+	// TODO: check alignment/bounds?
 }
 
 
