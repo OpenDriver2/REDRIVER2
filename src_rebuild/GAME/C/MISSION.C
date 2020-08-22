@@ -110,7 +110,7 @@ char* MissionName[37] =
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int gCopDifficultyLevel = 0;
+int gCopDifficultyLevel = 1;
 int gCopRespawnTime = 0;
 
 GAMEMODE CurrentGameMode = GAMEMODE_NORMAL;
@@ -182,6 +182,14 @@ const int TAIL_GETTINGCLOSE = 7000;
 const int TAIL_GETTINGFAR = 12900;
 const int TAIL_TOOCLOSE = 4000;
 const int TAIL_TOOFAR = 15900;
+
+#ifdef DEBUG_OPTIONS
+#define MR_DebugPrint //printInfo
+#define MR_DebugWarn printWarning
+#else
+#define MR_DebugPrint
+#define MR_DebugWarn
+#endif
 
 // [D]
 void InitialiseMissionDefaults(void)
@@ -1522,21 +1530,25 @@ void HandleMissionThreads(void)
 					case 0x2000000:
 					case 0xff000000:
 					{
+						MR_DebugPrint("MR: push %d\n", value);
 						MRPush(thread, value);
 						break;
 					}
 					case 0x1000000:
 					{
+						MR_DebugPrint("MR: command %x\n", value);
 						running = MRCommand(thread, value);
 						break;
 					}
 					case 0x3000000:
 					{
+						MR_DebugPrint("MR: operator %x\n", value);
 						running = MROperator(thread, value);
 						break;
 					}
 					case 0x4000000:
 					{
+						MR_DebugPrint("MR: function %x\n", value);
 						running = MRFunction(thread, value);
 						break;
 					}
@@ -1590,6 +1602,8 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 
 	if (cmd == 0x1000051)				// PlayMissionSound
 	{
+		MR_DebugWarn("MR command: PlayMissionSound\n");
+
 		CompleteAllActiveTargets(thread->player);
 		val1 = MRPop(thread);
 		TriggerInGameCutscene(val1);
@@ -1605,11 +1619,15 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000021)			// CompleteAllActiveTargets
 	{
+		MR_DebugWarn("MR command: CompleteAllActiveTargets\n");
+
 		CompleteAllActiveTargets(thread->player);
 		return 1;
 	}
 	else if (cmd == 0x1000010)			// SetVariable
 	{
+		MR_DebugWarn("MR command: SetVariable\n");
+
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
 		MRSetVariable(thread, val1, val2);
@@ -1617,11 +1635,15 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000011)			// Jump
 	{
+		MR_DebugWarn("MR command: Jump\n");
+
 		val1 = MRPop(thread);
 		return MRJump(thread, val1);
 	}
-	else if (cmd == 0x1000001)			// JumpIf
+	else if (cmd == 0x1000001)			// JumpIf / Wait
 	{
+		//MR_DebugWarn("MR command: JumpIf\n");
+
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
 
@@ -1632,12 +1654,16 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000022)			// MultiCarEvent
 	{
+		MR_DebugWarn("MR command: MultiCarEvent\n");
+
 		val1 = MRPop(thread);
 		MultiCarEvent(MissionTargets + val1);
 		return 1;
 	}
 	else if (cmd == 0x1000030)			// SetPlayerFelony
 	{
+		MR_DebugWarn("MR command: SetPlayerFelony\n");
+
 		val1 = MRPop(thread);
 
 		if (player[0].playerCarId < 0)
@@ -1647,6 +1673,8 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000050)			// ShowPlayerMessage
 	{
+		MR_DebugWarn("MR command: ShowPlayerMessage\n");
+
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
 		SetPlayerMessage(thread->player, MissionStrings + val1, 0, val2);
@@ -1655,49 +1683,67 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000070)			// TriggerEvent
 	{
+		MR_DebugWarn("MR command: TriggerEvent\n");
+
 		val1 = MRPop(thread);
 		TriggerEvent(val1);
 		return 1;
 	}
 	else if (cmd == 0x1000080)			// SetDoorsLocked
 	{
+		MR_DebugWarn("MR command: SetDoorsLocked\n");
+
 		val1 = MRPop(thread);
 		lockAllTheDoors = val1;
 		return 1;
 	}
 	else if (cmd == 0x1000054)			// SetStealMessage
 	{
+		MR_DebugWarn("MR command: SetStealMessage\n");
+
 		val1 = MRPop(thread);
 		Mission.StealMessage = MissionStrings + val1;
 	}
 	else if (cmd == 0x1000055)			// ShowOutOfTimeMessage
 	{
+		MR_DebugWarn("MR command: ShowOutOfTimeMessage\n");
+
 		SetPlayerMessage(1, MissionStrings + MissionHeader->msgOutOfTime, 2, 2);
 		return 1;
 	}
 	else if (cmd == 0x1001000)			// StopThread
 	{
+		MR_DebugWarn("MR command: StopThread\n");
+
 		return MRStopThread(thread);
 	}
 	else if (cmd == 0x1001002)			// StartThreadForPlayer
 	{
+		MR_DebugWarn("MR command: StartThreadForPlayer\n");
+
 		val1 = MRPop(thread);
 		MRStartThread(thread, val1, thread->player);
 		return 1;
 	}
 	else if (cmd == 0x1001003)			// StartThread2
 	{
+		MR_DebugWarn("MR command: StartThread2\n");
+
 		val1 = MRPop(thread);
 		MRStartThread(thread, val1, 1);
 		return 1;
 	}
 	else if (cmd == 0x1000100)			// SetCameraEvent
 	{
+		MR_DebugWarn("MR command: SetCameraEvent\n");
+
 		SpecialCamera(SPECIAL_CAMERA_SET, 0);
 		return 1;
 	}
 	else if (cmd == 0x1000071)			// AwardPlayerCheat
 	{
+		MR_DebugWarn("MR command: AwardPlayerCheat\n");
+
 		val1 = MRPop(thread);
 
 		UNIMPLEMENTED();	// [A]
@@ -1740,24 +1786,29 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000090)			// SetRaining
 	{
+		MR_DebugWarn("MR command: SetRaining\n");
 		gWeather = 1;
 		return 1;
 	}
 	else if (cmd == 0x1000040)
 	{
+		MR_DebugWarn("MR command: player timer flag 2 set\n");
 		Mission.timer[thread->player].flags |= 2;
 	}
 	else  if (cmd == 0x1000042)
 	{
-		MissionHeader->timerFlags = MissionHeader->timerFlags | 0x1000;
+		MR_DebugWarn("MR command: timer flag 0x1000 set\n");
+		MissionHeader->timerFlags |= 0x1000;
 	}
 	else if (cmd == 0x1000041)
 	{
-		Mission.timer[thread->player].flags = Mission.timer[thread->player].flags & 0xfd;
+		MR_DebugWarn("MR command: player timer flag 2 removed\n");
+		Mission.timer[thread->player].flags &= ~2;
 		return 1;
 	}
 	else if (cmd == 0x1001001)
 	{
+		MR_DebugWarn("MR command: SetMissionComplete\n");
 		SetMissionComplete();
 		return 1;
 	}

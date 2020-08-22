@@ -114,13 +114,13 @@ unsigned short *newmodels;
 struct SPOOLQ spooldata[48];
 
 #ifdef _DEBUG
-#define SPOOL_INFO(msg) printInfo(msg)
-#define SPOOL_WARNING(msg) printWarning(msg)
-#define SPOOL_ERROR(msg) printError(msg)
+#define SPOOL_INFO printInfo
+#define SPOOL_WARNING printWarning
+#define SPOOL_ERROR printError
 #else
-#define SPOOL_INFO(msg) ((void)msg)
-#define SPOOL_WARNING(msg) ((void)msg)
-#define SPOOL_ERROR(msg) ((void)msg)
+#define SPOOL_INFO
+#define SPOOL_WARNING
+#define SPOOL_ERROR
 #endif
 
 #if !defined(PSX) && !defined(SIMPLE_SPOOL)
