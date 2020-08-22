@@ -142,9 +142,9 @@ MENU_ITEM DebugOptionsItems[] =
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
 	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
 	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
+	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
 	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
 	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
-	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 

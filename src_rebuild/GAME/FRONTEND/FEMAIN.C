@@ -3924,7 +3924,7 @@ int CityCutOffScreen(int bSetup)
 		{
 			pCurrScreen->buttons[3].action = 0x300;
 		}
-
+#ifndef PSX
 		LoadBackgroundFile("DATA\\CITYBACK.RAW");
 
 		if (lastCity == -1)
@@ -3948,10 +3948,11 @@ int CityCutOffScreen(int bSetup)
 			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
 			DrawSync(0);
 		}
-
+#endif
 		return 0;
 	}
 
+#ifndef PSX
 	if ((fePad & 0x40U) != 0)
 	{
 		lastCity = currCity;
@@ -3993,7 +3994,7 @@ int CityCutOffScreen(int bSetup)
 	RECT16 rect = extraRect;
 	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
 	DrawSync(0);
-
+#endif
 	return 0;
 }
 
