@@ -310,7 +310,7 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 
 	UpdateCarPoints(carCos);
 
-	if (ActiveCheats.cheat10)
+	if (ActiveCheats.cheat10) // [A] cheat for secret car - Fireboyd78
 	{
 		if ((carCos == &car_cosmetics[4]) && (externalModelNumber == 12))
 		{
