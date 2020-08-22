@@ -71,11 +71,33 @@ void TogglePlayerGhost(int direction)
 	playerghost ^= 1;
 }
 
+int lastCar = -1;
+
 void ToggleSecretCarFun(int direction)
 {
 	extern CAR_COSMETICS car_cosmetics[5];
+	extern int wantedCar[2];
 
-	ActiveCheats.cheat10 ^= 1;
+	int active = (ActiveCheats.cheat10 ^= 1);
+
+	if (active)
+	{
+		if (lastCar == -1)
+			lastCar = wantedCar[0];
+
+		// make our current car the secret car
+		wantedCar[0] = 12;
+	}
+	else
+	{
+		if (lastCar != -1)
+		{
+			// restore our initial car
+			wantedCar[0] = lastCar;
+			lastCar = -1;
+		}
+	}
+
 	FixCarCos(&car_cosmetics[4], 12);
 }
 
