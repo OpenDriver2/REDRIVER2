@@ -2790,19 +2790,17 @@ void data_cb_regions(void)
 
 void data_cb_soundbank(void)
 {
-	UNIMPLEMENTED();
-	/*
 	if (chunk_complete != 0) {
 		chunk_complete = 0;
 		SendSBK();
-		loadbank_write = loadbank_write + 1;
+		loadbank_write++;
 		if (endchunk != 0) {
-			spoolpos_writing = spoolpos_writing + 1;
+			spoolpos_writing++;
 			if (switch_spooltype == 0) {
 #ifdef PSX
 				CdDataCallback(0);
 #else
-				UNIMPLEMENTED();
+				levelSpoolerPCDataCallback(NULL);
 #endif // PSX
 				if (spoolpos_writing == spoolcounter) {
 					spoolcounter = 0;
@@ -2819,7 +2817,6 @@ void data_cb_soundbank(void)
 			}
 		}
 	}
-	return;*/
 }
 
 
@@ -2856,12 +2853,7 @@ void data_cb_soundbank(void)
 
 void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-
-	uVar1 = (uint)intr;
-	if (intr == '\x01') {
+	if (intr == 1) {
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
 #else
@@ -2873,12 +2865,12 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 		current_sector++;
 		sectors_to_read--;
 		if (sectors_this_chunk == 0) {
-			loadbank_read = loadbank_read + 1;
-			nTPchunks_reading = nTPchunks_reading + 1;
-			chunk_complete = uVar1;
+			loadbank_read++;
+			nTPchunks_reading++;
+			chunk_complete = intr;
 			if (sectors_to_read == 0) {
-				spoolpos_reading = spoolpos_reading + 1;
-				endchunk = uVar1;
+				spoolpos_reading++;
+				endchunk = intr;
 				test_changemode();
 			}
 			else {
@@ -2891,9 +2883,8 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 		}
 	}
 	else {
-		FoundError(s_ready_cb_soundbank_00011d5c, intr, result);
+		FoundError("ready_cb_soundbank", intr, result);
 	}
-	return;*/
 }
 
 
