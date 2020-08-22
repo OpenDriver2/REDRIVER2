@@ -113,6 +113,16 @@ unsigned short *newmodels;
 
 struct SPOOLQ spooldata[48];
 
+#ifdef _DEBUG
+#define SPOOL_INFO(msg) printInfo(msg)
+#define SPOOL_WARNING(msg) printWarning(msg)
+#define SPOOL_ERROR(msg) printError(msg)
+#else
+#define SPOOL_INFO(msg) ((void)msg)
+#define SPOOL_WARNING(msg) ((void)msg)
+#define SPOOL_ERROR(msg) ((void)msg)
+#endif
+
 #if !defined(PSX) && !defined(SIMPLE_SPOOL)
 #include <assert.h>
 
@@ -175,7 +185,7 @@ void levelSpoolerPCReadyCallback(ready_callbackFn cb)
 int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
-	printWarning("Running SPOOL thread...\n");
+	SPOOL_WARNING("Running SPOOL thread...\n");
 
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
@@ -206,14 +216,14 @@ int levelSpoolerPCFunc(void* data)
 
 			if (sector == -1)
 			{
-				printInfo("SPOOL thread recieved 'CdlPause'\n", sector);
+				SPOOL_INFO("SPOOL thread recieved 'CdlPause'\n", sector);
 
 				levelSpoolerSeekCmd = 0;
 				g_spoolDoneFlag = true;
 			}
 			else
 			{
-				printInfo("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
+				SPOOL_INFO("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
 
 				// seek
 				fseek(fp, sector * 2048, SEEK_SET);
@@ -244,7 +254,7 @@ int levelSpoolerPCFunc(void* data)
 
 	} while (!g_spoolDoneFlag);
 
-	printInfo("SPOOLER thread work done.\n");
+	SPOOL_INFO("SPOOLER thread work done.\n");
 
 	fclose(fp);
 
@@ -277,7 +287,7 @@ void startReadLevSectorsPC(int sector)
 
 		if (NULL == levelSpoolerPCThread)
 		{
-			printError("SDL_CreateThread failed: %s\n", SDL_GetError());
+			SPOOL_ERROR("SDL_CreateThread failed: %s\n", SDL_GetError());
 		}
 	}
 }
@@ -897,7 +907,7 @@ void UpdateSpool(void)
 			break;
 		}
 
-		printWarning("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+		SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
 #endif // _DEBUG
 
 		// seek to required sector
@@ -1658,7 +1668,7 @@ void init_spooled_models(void)
 
 	nmodels = *newmodels;
 
-	printInfo("loading %d model slots\n", nmodels);
+	SPOOL_INFO("loading %d model slots\n", nmodels);
 
 	//for (i = 0; i < 1536; i++)
 	//{
@@ -1789,7 +1799,7 @@ void LoadInAreaModels(int area)
 			modelpointers[model_number] = &dummyModel;
 		}
 
-		printInfo("freed %d model slots\n", nmodels);
+		SPOOL_INFO("freed %d model slots\n", nmodels);
 	}
 
 	int length = AreaData[area].model_size;
@@ -2326,13 +2336,16 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 #ifndef SIMPLE_SPOOL
 	CdlLOC p;
 
-	if ((*result & 0x10) != 0) 
+#ifdef PSX
+	if ((*result & 0x10) != 0)
 	{
 		WaitCloseLid();
 	}
+#endif // PSX
+
 
 #ifdef _DEBUG
-	printError("FoundError: %s, intr: %d\n", name, intr);
+	SPOOL_ERROR("FoundError: %s, intr: %d\n", name, intr);
 #endif // _DEBUG
 
 	spoolerror = 0x3c;
@@ -2478,7 +2491,7 @@ void data_cb_textures(void)
 
 					if (spoolpos_writing == spoolcounter)
 					{
-						printWarning("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
+						SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
 
 						spoolcounter = 0;
 						spoolpos_writing = 0;
@@ -2722,7 +2735,7 @@ void data_cb_regions(void)
 
 				if (spoolpos_writing == spoolcounter) 
 				{
-					printWarning("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
+					SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
 
 					spoolcounter = 0;
 					spoolpos_writing = 0;
@@ -2777,19 +2790,17 @@ void data_cb_regions(void)
 
 void data_cb_soundbank(void)
 {
-	UNIMPLEMENTED();
-	/*
 	if (chunk_complete != 0) {
 		chunk_complete = 0;
 		SendSBK();
-		loadbank_write = loadbank_write + 1;
+		loadbank_write++;
 		if (endchunk != 0) {
-			spoolpos_writing = spoolpos_writing + 1;
+			spoolpos_writing++;
 			if (switch_spooltype == 0) {
 #ifdef PSX
 				CdDataCallback(0);
 #else
-				UNIMPLEMENTED();
+				levelSpoolerPCDataCallback(NULL);
 #endif // PSX
 				if (spoolpos_writing == spoolcounter) {
 					spoolcounter = 0;
@@ -2806,7 +2817,6 @@ void data_cb_soundbank(void)
 			}
 		}
 	}
-	return;*/
 }
 
 
@@ -2843,12 +2853,7 @@ void data_cb_soundbank(void)
 
 void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-
-	uVar1 = (uint)intr;
-	if (intr == '\x01') {
+	if (intr == 1) {
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
 #else
@@ -2860,12 +2865,12 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 		current_sector++;
 		sectors_to_read--;
 		if (sectors_this_chunk == 0) {
-			loadbank_read = loadbank_read + 1;
-			nTPchunks_reading = nTPchunks_reading + 1;
-			chunk_complete = uVar1;
+			loadbank_read++;
+			nTPchunks_reading++;
+			chunk_complete = intr;
 			if (sectors_to_read == 0) {
-				spoolpos_reading = spoolpos_reading + 1;
-				endchunk = uVar1;
+				spoolpos_reading++;
+				endchunk = intr;
 				test_changemode();
 			}
 			else {
@@ -2878,9 +2883,8 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 		}
 	}
 	else {
-		FoundError(s_ready_cb_soundbank_00011d5c, intr, result);
+		FoundError("ready_cb_soundbank", intr, result);
 	}
-	return;*/
 }
 
 
@@ -2950,7 +2954,7 @@ void data_cb_misc(void)
 #endif // PSX
 			if (spoolpos_writing == spoolcounter)
 			{
-				printWarning("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+				SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
 
 				spoolcounter = 0;
 				spoolpos_writing = 0;
@@ -2998,7 +3002,7 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 		getLevSectorPC(target_address, 0x200);
 #endif // PSX
 
-		target_address = target_address + 0x800;
+		target_address += 0x800;
 		sectors_to_read--;
 		current_sector++;
 
@@ -3401,31 +3405,29 @@ int specSpoolComplete;
 // [D]
 void CleanModelSpooled(void)
 {
-	int *piVar1;
-	ushort *puVar2;
-	int iVar4;
-	int *piVar5;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar5 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
+
 	if (specBlocksToLoad == lastCleanBlock-1) 
 	{
-		piVar5 = (int *)(specLoadBuffer + 12);
+		loadaddr = (int *)(specLoadBuffer + 12);
+
 		modelMemory = (int *)specmallocptr;
-		gCarCleanModelPtr[4] = (MODEL *)specmallocptr;
+		gCarCleanModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar5 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar5++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if (specBlocksToLoad == 0 || in_a3 < modelMemory)
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
 		specBlocksToLoad = 0;
-
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarCleanModelPtr[4]->vertices += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->normals += (int)gCarCleanModelPtr[4];
@@ -3490,31 +3492,28 @@ int damOffset;
 // [D]
 void DamagedModelSpooled(void)
 {
-	MODEL *pMVar1;
-	int iVar2;
-	int *piVar3;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar3 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
 
-	if (specBlocksToLoad == lengthDamBlock + -1) 
+	if (specBlocksToLoad == lengthDamBlock-1) 
 	{
-		piVar3 = (int *)(specLoadBuffer + damOffset);
+		loadaddr = (int *)(specLoadBuffer + damOffset);
+
 		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar3 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar3++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if (specBlocksToLoad == 0 || in_a3 < modelMemory) 
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
-		piVar3 = &gCarDamModelPtr[4]->normals;
-
 		specBlocksToLoad = 0;
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarDamModelPtr[4]->vertices += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->normals += (int)gCarDamModelPtr[4];
@@ -3577,30 +3576,28 @@ int lowOffset;
 // [D]
 void LowModelSpooled(void)
 {
-	int *piVar1;
-	ushort *puVar2;
-	int iVar4;
-	int *piVar5;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar5 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
 
-	if (specBlocksToLoad == lengthLowBlock + -1) 
+	if (specBlocksToLoad == lengthLowBlock - 1) 
 	{
-		piVar5 = (int *)(specLoadBuffer + lowOffset);
+		loadaddr = (int *)(specLoadBuffer + lowOffset);
+
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar5 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar5++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
 		specBlocksToLoad = 0;
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarLowModelPtr[4]->vertices += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->normals += (int)gCarLowModelPtr[4];
@@ -3662,37 +3659,38 @@ void LowModelSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void CleanSpooled(void)
 {
-	int *piVar1;
-	char *pcVar2;
-	int iVar3;
-	int iVar4;
 	MODEL *model;
 
 	if (specBlocksToLoad == 6)
 	{
-		lastCleanBlock = *(int *)specmallocptr + 0x80b;
-		lastCleanBlock = lastCleanBlock >> 0xb;
+		// [A] for readability sake
+		int size_1 = ((int *)specmallocptr)[0];
+		int size_2 = ((int *)specmallocptr)[1];
+		int size_3 = ((int *)specmallocptr)[2];
 
-		firstLowBlock = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0xc;
-		firstLowBlock = firstLowBlock >> 0xb;
+		lastCleanBlock = size_1 + 2048 + 11;
+		lastCleanBlock >>= 11;
 
-		iVar4 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + *(int *)(specmallocptr + 8);
+		firstDamBlock = size_1 + 12;
+		firstDamBlock >>= 11;
 
-		iVar3 = iVar4 + 0x80b;
-		lengthLowBlock = (iVar3 >> 0xb) - firstLowBlock;
+		firstLowBlock = size_1 + size_2 + 12;
+		firstLowBlock >>= 11;
 
-		lowOffset = (*(int *)specmallocptr + *(int *)(specmallocptr + 4)) - (firstLowBlock * 0x800 + -12);
+		int lastDamBlock = size_1 + size_2 + 2048 + 11;
+		lastDamBlock >>= 11;
 
-		firstDamBlock = *(int *)specmallocptr + 12;
-		firstDamBlock = firstDamBlock >> 0xb;
+		lengthDamBlock = lastDamBlock - firstDamBlock;
+		damOffset = size_1 - (firstDamBlock * 2048 - 12);
 
-		iVar3 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0x80b;
+		int lastLowBlock = size_1 + size_2 + size_3 + 2048 + 11;
+		lastLowBlock >>= 11;
 
-		lengthDamBlock = (iVar3 >> 0xb) - firstDamBlock;
-		damOffset = *(int *)specmallocptr - (firstDamBlock * 0x800 + -12);
+		lengthLowBlock = lastLowBlock - firstLowBlock;
+		lowOffset = size_1 + size_2 - (firstLowBlock * 2048 - 12);
 	}
 
 	model = (MODEL *)(specmallocptr + 12);

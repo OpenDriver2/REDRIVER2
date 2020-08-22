@@ -12,6 +12,7 @@
 #include "CUTSCENE.H"
 #include "REPLAYS.H"
 #include "OVERMAP.H"
+#include "HANDLING.H"
 
 static int gScoreEntered = 0;
 static char EnterNameText[32] = { 0 };
@@ -68,6 +69,36 @@ void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
 	playerghost ^= 1;
+}
+
+int lastCar = -1;
+
+void ToggleSecretCarFun(int direction)
+{
+	extern CAR_COSMETICS car_cosmetics[5];
+	extern int wantedCar[2];
+
+	int active = (ActiveCheats.cheat10 ^= 1);
+
+	if (active)
+	{
+		if (lastCar == -1)
+			lastCar = wantedCar[0];
+
+		// make our current car the secret car
+		wantedCar[0] = 12;
+	}
+	else
+	{
+		if (lastCar != -1)
+		{
+			// restore our initial car
+			wantedCar[0] = lastCar;
+			lastCar = -1;
+		}
+	}
+
+	FixCarCos(&car_cosmetics[4], 12);
 }
 
 extern void LoadSky(void);
@@ -133,6 +164,7 @@ MENU_ITEM DebugOptionsItems[] =
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
 	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
 	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
+	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
 	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
 	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
