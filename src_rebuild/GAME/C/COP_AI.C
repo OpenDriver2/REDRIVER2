@@ -125,7 +125,6 @@ int ReplayLog_Fnarr_He_Said_Log(int val)
 	return 0;
 }
 
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ WibbleDownTheRoad(struct VECTOR *from /*$a0*/, int distance /*$s1*/, struct VECTOR *to /*$s5*/)
@@ -159,9 +158,9 @@ int ReplayLog_Fnarr_He_Said_Log(int val)
 	/* end block 2 */
 	// End Line: 1187
 
-int distanceReturnedLog[8];
-int distLogIndex;
-int lastDistanceFound;
+extern int distanceReturnedLog[8];
+extern int distLogIndex;
+extern int lastDistanceFound;
 
 // [D]
 void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)

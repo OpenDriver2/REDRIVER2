@@ -1,6 +1,11 @@
 #include "THISDUST.H"
 #include "PATHFIND.H"
-
+#include "SYSTEM.H"
+#include "COP_AI.H"
+             
+int distanceReturnedLog[8];
+int distLogIndex;
+int lastDistanceFound;
 
 // decompiled code
 // original method signature: 
@@ -17,7 +22,7 @@
 	// 		unsigned int here; // $t5
 
 		/* begin block 1.1 */
-			// Start line: 325
+			// Start line: 325                                                                  
 			// Start offset: 0x000E7058
 			// Variables:
 		// 		unsigned int lastEntry; // $t4
@@ -923,35 +928,42 @@ void iterate(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+short distanceCache[16384];
+char omap[128][16];
+long dunyet[32][2];
+
+int pathFrames;
+int DoExtraWorkForNFrames;
+
+VECTOR searchTarget;
+int playerTargetDistanceSq;
+
+// [D]
 void InitPathFinding(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 *puVar1;
-	int iVar2;
+	int i;
 
-	setMem16(&DAT_PATH__000e9b00, 0xfffe, 0x4000);
-	ClearMem(&DAT_PATH__000e91a8, 0x800);
-	ClearMem(&DAT_PATH__000e99b0, 0x100);
+	setMem16((ushort*)distanceCache, 0xfffe, sizeof(distanceCache) / sizeof(short));
+	ClearMem((char*)omap, sizeof(omap));
+	ClearMem((char*)dunyet, sizeof(dunyet));
 	InvalidateMap();
-	iVar2 = 7;
-	DAT_PATH__000e9ac8 = &DAT_00004650;
-	puVar1 = &DAT_PATH__000f27bc;
+
+	lastDistanceFound = 18000;
+
+	i = 0;
 	do {
-		*puVar1 = 18000;
-		iVar2 = iVar2 + -1;
-		puVar1 = puVar1 + -1;
-	} while (iVar2 != -1);
-	DAT_PATH__000e99a8 = 0x50;
-	DAT_PATH__000e99ac = 6;
-	DAT_PATH__000e9ab0 = 0;
-	DAT_PATH__000e9ab8 = 0;
-	DAT_PATH__000e9abc = 0xffffcfb1;
-	DAT_PATH__000e9ac0 = 0;
-	DAT_PATH__000e9acc = 0;
-	DAT_PATH__000f1b00 = 0;
-	uRam000f27c0 = 0x81;
-	return;*/
+		distanceReturnedLog[i++] = 18000;
+	} while (i < 8);
+
+	pathFrames = 80;
+	DoExtraWorkForNFrames = 6;
+	distLogIndex = 0;
+	searchTarget.vx = 0;
+	searchTarget.vy = -0x304f;
+	searchTarget.vz = 0;
+	playerTargetDistanceSq = 0;
+	pathFrames = 0;
+	distanceReturnedLog[8] = 0x81;
 }
 
 
