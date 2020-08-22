@@ -310,6 +310,18 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 
 	UpdateCarPoints(carCos);
 
+	if (ActiveCheats.cheat10)
+	{
+		if ((carCos == &car_cosmetics[4]) && (externalModelNumber == 12))
+		{
+			carCos->powerRatio += (carCos->powerRatio / 2);
+			carCos->mass *= 3;
+			carCos->traction *= 2;
+			carCos->wheelSize += (carCos->wheelSize / 4);
+			carCos->cog.vy -= 20;
+		}
+	}
+
 	if (carCos == &car_cosmetics[2] && gCurrentMissionNumber == 7) 
 	{
 		car_cosmetics[2].mass *= 3;

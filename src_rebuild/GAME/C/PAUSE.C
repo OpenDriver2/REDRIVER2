@@ -12,6 +12,7 @@
 #include "CUTSCENE.H"
 #include "REPLAYS.H"
 #include "OVERMAP.H"
+#include "HANDLING.H"
 
 static int gScoreEntered = 0;
 static char EnterNameText[32] = { 0 };
@@ -68,6 +69,14 @@ void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
 	playerghost ^= 1;
+}
+
+void ToggleSecretCarFun(int direction)
+{
+	extern CAR_COSMETICS car_cosmetics[5];
+
+	ActiveCheats.cheat10 ^= 1;
+	FixCarCos(&car_cosmetics[4], 12);
 }
 
 extern void LoadSky(void);
@@ -135,6 +144,7 @@ MENU_ITEM DebugOptionsItems[] =
 	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
 	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
 	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
+	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
