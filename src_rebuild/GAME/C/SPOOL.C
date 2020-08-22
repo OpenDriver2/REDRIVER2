@@ -3405,31 +3405,29 @@ int specSpoolComplete;
 // [D]
 void CleanModelSpooled(void)
 {
-	int *piVar1;
-	ushort *puVar2;
-	int iVar4;
-	int *piVar5;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar5 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
+
 	if (specBlocksToLoad == lastCleanBlock-1) 
 	{
-		piVar5 = (int *)(specLoadBuffer + 12);
+		loadaddr = (int *)(specLoadBuffer + 12);
+
 		modelMemory = (int *)specmallocptr;
-		gCarCleanModelPtr[4] = (MODEL *)specmallocptr;
+		gCarCleanModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar5 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar5++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if (specBlocksToLoad == 0 || in_a3 < modelMemory)
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
 		specBlocksToLoad = 0;
-
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarCleanModelPtr[4]->vertices += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->normals += (int)gCarCleanModelPtr[4];
@@ -3494,31 +3492,28 @@ int damOffset;
 // [D]
 void DamagedModelSpooled(void)
 {
-	MODEL *pMVar1;
-	int iVar2;
-	int *piVar3;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar3 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
 
-	if (specBlocksToLoad == lengthDamBlock + -1) 
+	if (specBlocksToLoad == lengthDamBlock-1) 
 	{
-		piVar3 = (int *)(specLoadBuffer + damOffset);
+		loadaddr = (int *)(specLoadBuffer + damOffset);
+
 		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar3 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar3++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if (specBlocksToLoad == 0 || in_a3 < modelMemory) 
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
-		piVar3 = &gCarDamModelPtr[4]->normals;
-
 		specBlocksToLoad = 0;
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarDamModelPtr[4]->vertices += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->normals += (int)gCarDamModelPtr[4];
@@ -3581,30 +3576,28 @@ int lowOffset;
 // [D]
 void LowModelSpooled(void)
 {
-	int *piVar1;
-	ushort *puVar2;
-	int iVar4;
-	int *piVar5;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar5 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
 
-	if (specBlocksToLoad == lengthLowBlock + -1) 
+	if (specBlocksToLoad == lengthLowBlock - 1) 
 	{
-		piVar5 = (int *)(specLoadBuffer + lowOffset);
+		loadaddr = (int *)(specLoadBuffer + lowOffset);
+
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar5 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar5++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
 		specBlocksToLoad = 0;
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarLowModelPtr[4]->vertices += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->normals += (int)gCarLowModelPtr[4];
@@ -3666,37 +3659,38 @@ void LowModelSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void CleanSpooled(void)
 {
-	int *piVar1;
-	char *pcVar2;
-	int iVar3;
-	int iVar4;
 	MODEL *model;
 
 	if (specBlocksToLoad == 6)
 	{
-		lastCleanBlock = *(int *)specmallocptr + 0x80b;
-		lastCleanBlock = lastCleanBlock >> 0xb;
+		// [A] for readability sake
+		int size_1 = ((int *)specmallocptr)[0];
+		int size_2 = ((int *)specmallocptr)[1];
+		int size_3 = ((int *)specmallocptr)[2];
 
-		firstLowBlock = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0xc;
-		firstLowBlock = firstLowBlock >> 0xb;
+		lastCleanBlock = size_1 + 2048 + 11;
+		lastCleanBlock >>= 11;
 
-		iVar4 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + *(int *)(specmallocptr + 8);
+		firstDamBlock = size_1 + 12;
+		firstDamBlock >>= 11;
 
-		iVar3 = iVar4 + 0x80b;
-		lengthLowBlock = (iVar3 >> 0xb) - firstLowBlock;
+		firstLowBlock = size_1 + size_2 + 12;
+		firstLowBlock >>= 11;
 
-		lowOffset = (*(int *)specmallocptr + *(int *)(specmallocptr + 4)) - (firstLowBlock * 0x800 + -12);
+		int lastDamBlock = size_1 + size_2 + 2048 + 11;
+		lastDamBlock >>= 11;
 
-		firstDamBlock = *(int *)specmallocptr + 12;
-		firstDamBlock = firstDamBlock >> 0xb;
+		lengthDamBlock = lastDamBlock - firstDamBlock;
+		damOffset = size_1 - (firstDamBlock * 2048 - 12);
 
-		iVar3 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0x80b;
+		int lastLowBlock = size_1 + size_2 + size_3 + 2048 + 11;
+		lastLowBlock >>= 11;
 
-		lengthDamBlock = (iVar3 >> 0xb) - firstDamBlock;
-		damOffset = *(int *)specmallocptr - (firstDamBlock * 0x800 + -12);
+		lengthLowBlock = lastLowBlock - firstLowBlock;
+		lowOffset = size_1 + size_2 - (firstLowBlock * 2048 - 12);
 	}
 
 	model = (MODEL *)(specmallocptr + 12);
