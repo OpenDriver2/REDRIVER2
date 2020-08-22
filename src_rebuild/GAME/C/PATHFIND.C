@@ -897,13 +897,13 @@ void iterate(void)
 				{
 					if (uVar1 < 2) 
 					{
-						iVar9 = (uint)uVar2 + (uint)itHere.dist;
+						iVar9 = uVar2 + itHere.dist;
 					LAB_PATH__000e7a94:
 						uVar6 = (iVar9 >> 1) + 0xdd;
 					}
 					else
 					{
-						iVar9 = (uint)uVar1 - (uint)uVar2;
+						iVar9 = uVar1 - uVar2;
 						uVar6 = 0x10000 - (iVar9 * iVar9) / 3;
 
 						if (uVar6 < 0) 
@@ -2321,7 +2321,7 @@ void UpdateCopMap(void)
 		if (6 < cellsThisFrame) 
 		{
 			uVar2 = 6;
-			iVar1 = 0x18;
+			iVar1 = 24;
 		}
 
 		iVar1 = pathIterations - iVar1 * 4 - uVar2 * 5;
@@ -2333,8 +2333,8 @@ void UpdateCopMap(void)
 
 		iVar8 = iVar1 - 1;
 
-		if (iVar1 < 0x24)
-			iVar8 = 0x23;
+		if (iVar1 < 36)
+			iVar8 = 35;
 	
 		while (iVar8 != -1) 
 		{
@@ -2347,18 +2347,22 @@ void UpdateCopMap(void)
 LAB_PATH__000e8dfc:
 	piVar5 = distanceReturnedLog;
 	iVar8 = 6;
-	pathFrames = pathFrames + 1;
+	pathFrames++;
 	iVar1 = distanceReturnedLog[7];
+
 	do {
-		if (iVar1 < *piVar5) {
+		if (iVar1 < *piVar5)
 			iVar1 = *piVar5;
-		}
-		iVar8 = iVar8 + -1;
-		piVar5 = piVar5 + 1;
+
+		iVar8--;
+		piVar5++;
 	} while (-1 < iVar8);
-	if ((pathFrames < pathFrames) || (2000 < (int)((uint)heap[1].dist - iVar1))) {
+
+	if ((4 < pathFrames) || (2000 < (heap[1].dist - iVar1)))  // [A] was (pathFrames < pathFrames)
+	{
 		pathFrames = 0;
 	}
+
 	iVar7 = searchTarget.vx - player[0].pos[0] >> 4;
 	iVar8 = searchTarget.vy - player[0].pos[1] >> 4;
 	iVar1 = searchTarget.vz - player[0].pos[2] >> 4;

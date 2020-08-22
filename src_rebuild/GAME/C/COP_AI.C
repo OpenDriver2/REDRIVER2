@@ -817,21 +817,22 @@ void CopControl1(_CAR_DATA *cp)
 
 	if (cp->hd.speed < 6 && cp->ai.p.desiredSpeed != 0)
 	{
-		cp->ai.p.stuckTimer = cp->ai.p.stuckTimer + 1;
+		cp->ai.p.stuckTimer++;
 	}
 	else
 	{
 		cp->ai.p.stuckTimer = 0;
 	}
 
-	if (10 < cp->ai.p.stuckTimer > 10 && cp->ai.p.recoveryTimer == 0)
+	if (cp->ai.p.stuckTimer > 10 && cp->ai.p.recoveryTimer == 0)
 	{
-		cp->ai.p.desiredSpeed = -200;
 		cp->ai.p.recoveryTimer = 22;
 		cp->ai.p.lastRecoverStrategy = cp->ai.p.lastRecoverStrategy & 7;
 
 		if (cp->ai.p.desiredSpeed < 0)
 			cp->ai.p.desiredSpeed = 200;
+		else
+			cp->ai.p.desiredSpeed = -200;
 
 		desiredSteerAngle = ((cp->ai.p.lastRecoverStrategy * 5 & 6) - 3) * 0x80;
 		cp->ai.p.stuckTimer = 0;
@@ -1080,7 +1081,7 @@ void CopControl1(_CAR_DATA *cp)
 
 	if (currentSpeed < -50)
 		cp->thrust = -sVar13;
-	if (currentSpeed > 50)
+	else if (currentSpeed > 50)
 		cp->thrust = sVar13;
 	else
 		cp->thrust = (currentSpeed * iVar5) / 50;
