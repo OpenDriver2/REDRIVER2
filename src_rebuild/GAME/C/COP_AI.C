@@ -170,10 +170,8 @@ extern int lastDistanceFound;
 // [D]
 void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 {
-	uint val;
-	uint uVar1;
-	uint *puVar2;
-	int iVar3;
+	int val;
+	int j;
 	int thl[4];
 	VECTOR pos;
 	VECTOR dir;
@@ -183,8 +181,8 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 	pos.vz = from->vz;
 	pos.pad = from->pad;
 
-	iVar3 = 0;
-	puVar2 = (uint *)thl;
+	j = 0;
+
 	do {
 		ReplayLog_Fnarr_He_Said_Log(pos.vx);
 		ReplayLog_Fnarr_He_Said_Log(pos.vy);
@@ -193,25 +191,42 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 		val = getHeadingToPlayer(pos.vx, pos.vy, pos.vz);
 		ReplayLog_Fnarr_He_Said_Log(val);
 
-		if (iVar3 == 0)
+		if (j == 0)
 		{
-			uVar1 = distLogIndex & 7;
-			distLogIndex = distLogIndex + 1;
-			distanceReturnedLog[uVar1] = lastDistanceFound;
+			distanceReturnedLog[distLogIndex & 7] = lastDistanceFound;
+			distLogIndex++;
 		}
 
 		dir.vy = 0;
 		dir.vx = FIXED((distance >> 2) * rcossin_tbl[(val & 0xfff) * 2]);
 		dir.vz = FIXED((distance >> 2) * rcossin_tbl[(val & 0xfff) * 2 + 1]);
 
-		*puVar2 = val;
-		pos.vx = pos.vx + dir.vx;
-		puVar2 = puVar2 + 1;
-		pos.vy = pos.vy + dir.vy;
-		pos.vz = pos.vz + dir.vz;
+		thl[j] = val;
 
-		iVar3++;
-	} while (iVar3 < 4);
+		VECTOR p2 = pos;
+
+		pos.vx += dir.vx;
+		pos.vy += dir.vy;
+		pos.vz += dir.vz;
+
+#if 1
+		{
+			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+			CVECTOR ggcv = { 0, 250, 0 };
+			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR rrcv = { 250, 0, 0 };
+
+			VECTOR _zero = { 0 };
+			VECTOR _up = { 0, 1000, 0 };
+
+			Debug_AddLine(p2, pos, bbcv);
+		}
+#endif
+
+		j++;
+	} while (j < 4);
 
 	to->vx = pos.vx;
 	to->vy = pos.vy;
@@ -686,13 +701,12 @@ VECTOR targetPoint = { 0,0,0 };
 // [D]
 void CopControl1(_CAR_DATA *cp)
 {
-	char bVar1;
 	short sVar2;
-	bool bVar3;
+	int targetFound;
 	char cVar4;
 	int iVar5;
 	long lVar6;
-	int iVar7;
+	int dist;
 	int* piVar8;
 	short* psVar9;
 	int uVar10;
@@ -700,6 +714,7 @@ void CopControl1(_CAR_DATA *cp)
 	int uVar12;
 	short sVar13;
 	int dz;
+	int plcrspd;
 	int iVar14;
 	int dx;
 	int dvx;
@@ -711,6 +726,7 @@ void CopControl1(_CAR_DATA *cp)
 	VECTOR pos;
 	VECTOR doordir;
 	iVectNT path[2];
+	AIZone targetZone;
 
 	desiredSteerAngle = 0;
 
@@ -725,15 +741,14 @@ void CopControl1(_CAR_DATA *cp)
 		return;
 	}
 
-	bVar1 = cp->ai.p.dying;
-
-	if ((bVar1 != 0) || ((27000 < cp->totalDamage && (gCopData.immortal == 0)))) 
+	if (cp->ai.p.dying != 0 || (27000 < cp->totalDamage && gCopData.immortal == 0))
 	{
 		cp->thrust = 0;
-		if (0x55 < bVar1)
+
+		if (cp->ai.p.dying > 85)
 			return;
 
-		if (bVar1 == 0) 
+		if (cp->ai.p.dying == 0)
 			numActiveCops--;
 
 		cp->ai.p.dying++;
@@ -763,24 +778,55 @@ void CopControl1(_CAR_DATA *cp)
 		pos.vx = cp->hd.where.t[0] + FIXED(cp->hd.where.m[0][2] * 400 - cp->hd.where.m[0][0] * 150);
 		pos.vy = cp->hd.where.t[1] + FIXED(cp->hd.where.m[1][2] * 400 - cp->hd.where.m[1][0] * 150);
 		pos.vz = cp->hd.where.t[2] + FIXED(cp->hd.where.m[2][2] * 400 - cp->hd.where.m[2][0] * 150);
-		cp->ai.p.frontLClear = CellAtPositionEmpty(&pos, 0x50);
+		cp->ai.p.frontLClear = CellAtPositionEmpty(&pos, 80);
+
+#ifdef COLLISION_DEBUG
+		{
+			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+			CVECTOR ggcv = { 0, 250, 0 };
+			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR rrcv = { 250, 0, 0 };
+
+			VECTOR _zero = { 0 };
+			VECTOR _up = { 0, 1000, 0 };
+
+			Debug_AddLineOfs(_zero, _up, pos, cp->ai.p.frontLClear ? ggcv : rrcv);
+		}
+#endif
 
 		pos.vx = cp->hd.where.t[0] + FIXED(cp->hd.where.m[0][2] * 400 + cp->hd.where.m[0][0] * 150);
 		pos.vy = cp->hd.where.t[1] + FIXED(cp->hd.where.m[1][2] * 400 + cp->hd.where.m[1][0] * 150);
 		pos.vz = cp->hd.where.t[2] + FIXED(cp->hd.where.m[2][2] * 400 + cp->hd.where.m[2][0] * 150);
-		cp->ai.p.frontRClear = CellAtPositionEmpty(&pos, 0x50);
+		cp->ai.p.frontRClear = CellAtPositionEmpty(&pos, 80);
+
+#ifdef COLLISION_DEBUG
+		{
+			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+			CVECTOR ggcv = { 0, 250, 0 };
+			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR rrcv = { 250, 0, 0 };
+
+			VECTOR _zero = { 0 };
+			VECTOR _up = { 0, 1000, 0 };
+
+			Debug_AddLineOfs(_zero, _up, pos, cp->ai.p.frontRClear ? ggcv : rrcv);
+		}
+#endif
 	}
 
-	iVar14 = (int)cp->hd.where.m[0][0];
 	x = cp->hd.where.t[0];
 	z = cp->hd.where.t[2];
-	iVar5 = (int)cp->hd.where.m[2][0];
+
 	pathStraight = 0;
 
 	dvx = targetVehicle->st.n.linearVelocity[0] - cp->st.n.linearVelocity[0];
 	dvz = targetVehicle->st.n.linearVelocity[2] - cp->st.n.linearVelocity[2];
 
-	if ((cp->hd.speed < 6) && (cp->ai.p.desiredSpeed != 0))
+	if (cp->hd.speed < 6 && cp->ai.p.desiredSpeed != 0)
 	{
 		cp->ai.p.stuckTimer = cp->ai.p.stuckTimer + 1;
 	}
@@ -789,28 +835,26 @@ void CopControl1(_CAR_DATA *cp)
 		cp->ai.p.stuckTimer = 0;
 	}
 
-	if ((10 < cp->ai.p.stuckTimer) && (cp->ai.p.recoveryTimer == 0))
+	if (10 < cp->ai.p.stuckTimer > 10 && cp->ai.p.recoveryTimer == 0)
 	{
-		sVar13 = -200;
-		cp->ai.p.recoveryTimer = 0x16;
-		uVar10 = cp->ai.p.lastRecoverStrategy & 7;
-		cp->ai.p.lastRecoverStrategy = (short)uVar10;
+		cp->ai.p.desiredSpeed = -200;
+		cp->ai.p.recoveryTimer = 22;
+		cp->ai.p.lastRecoverStrategy = cp->ai.p.lastRecoverStrategy & 7;
 
 		if (cp->ai.p.desiredSpeed < 0)
-			sVar13 = 200;
+			cp->ai.p.desiredSpeed = 200;
 
-		desiredSteerAngle = ((uVar10 * 5 & 6) - 3) * 0x80;
-		cp->ai.p.desiredSpeed = sVar13;
+		desiredSteerAngle = ((cp->ai.p.lastRecoverStrategy * 5 & 6) - 3) * 0x80;
 		cp->ai.p.stuckTimer = 0;
 	}
 
-	iVar7 = FindCost(x, z, dvx, dvz);
-	cp->ai.p.close_pursuit = iVar7 < 2800;
-	bVar3 = false;
+	dist = FindCost(x, z, dvx, dvz);
+	cp->ai.p.close_pursuit = (dist < 2800);
+	targetFound = 0;
 
 	if (cp->ai.p.recoveryTimer < 1)
 	{
-		if (iVar7 < 0x20d0)
+		if (dist < 8400)
 		{
 			iVar11 = FIXED(dvx);
 			dvx = FIXED(dvz);
@@ -829,8 +873,8 @@ void CopControl1(_CAR_DATA *cp)
 
 			if (dvx < 0)
 				dvx = 0;
-			else if (0x3c < dvx) 
-				dvx = 0x3c;
+			else if (dvx > 60) 
+				dvx = 60;
 
 			dvz = targetVehicle->hd.where.t[0] + FIXED(targetVehicle->st.n.linearVelocity[0] * dvx);
 			dvx = targetVehicle->hd.where.t[2] + FIXED(targetVehicle->st.n.linearVelocity[2] * dvx);
@@ -859,15 +903,31 @@ void CopControl1(_CAR_DATA *cp)
 
 		if (cp->ai.p.close_pursuit == 0) 
 		{
-			WibbleDownTheRoad((VECTOR*)cp->hd.where.t, cp->hd.speed * 10 + 0x2a8, &targetPoint);
+			WibbleDownTheRoad((VECTOR*)cp->hd.where.t, cp->hd.speed * 10 + 680, &targetPoint);
 		}
 		else 
 		{
 			targetPoint.vx = CarTail.vx;
 			targetPoint.vz = CarTail.vz;
+
+#if 0
+			{
+				extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+				extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+				CVECTOR ggcv = { 0, 250, 0 };
+				CVECTOR bbcv = { 0, 0, 250 };
+				CVECTOR rrcv = { 250, 0, 0 };
+
+				VECTOR _zero = { 0 };
+				VECTOR _up = { 0, 1000, 0 };
+
+				Debug_AddLineOfs(_zero, _up, targetPoint, rrcv);
+			}
+#endif
 		}
 
-		bVar3 = true;
+		targetFound = 1;
 
 		cp->ai.p.targetHistory[1].vx = cp->ai.p.targetHistory[0].vx;
 		cp->ai.p.targetHistory[1].vz = cp->ai.p.targetHistory[0].vz;
@@ -879,64 +939,53 @@ void CopControl1(_CAR_DATA *cp)
 		cp->ai.p.recoveryTimer--;
 	}
 
-#if 0
-	{
-		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
-		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
-
-		CVECTOR ggcv = { 0, 250, 0 };
-		CVECTOR bbcv = { 0, 0, 250 };
-		CVECTOR rrcv = { 250, 0, 0 };
-
-		VECTOR _zero = { 0 };
-		VECTOR _up = { 0, 1000, 0 };
-
-		Debug_AddLineOfs(_zero, _up, targetPoint, rrcv);
-	}
-
-	
-#endif
-
 	if (gTimeInWater == 0) 
 	{
-		bVar3 = false;
+		targetFound = 0;
 	}
 
-	if (bVar3) 
+	/*
+	zoneFrnt = 0,
+	zoneBack = 1,
+	zoneLeft = 2,
+	zoneRght = 3,
+	*/
+
+	if (targetFound) 
 	{
-		dvz = FIXED(iVar14 * cp->st.n.linearVelocity[0] + iVar5 * cp->st.n.linearVelocity[2]);
-		dvx = FIXED((x - targetPoint.vx) * iVar5 + (targetPoint.vz - z) * iVar14);
-		iVar5 = FIXED((targetPoint.vx - x) * iVar14 + (targetPoint.vz - z) * iVar5) - dvz / 0x8c;
+		dvz = FIXED(cp->hd.where.m[0][0] * cp->st.n.linearVelocity[0] + cp->hd.where.m[2][0] * cp->st.n.linearVelocity[2]);
+		dvx = FIXED((x - targetPoint.vx) * cp->hd.where.m[2][0] + (targetPoint.vz - z) * cp->hd.where.m[0][0]);
+		iVar5 = FIXED((targetPoint.vx - x) * cp->hd.where.m[0][0] + (targetPoint.vz - z) * cp->hd.where.m[2][0]) - dvz / 140;
 
 		if (iVar5 < 1) 
 		{
 			if ((iVar5 * -2 < dvx) && (cp->ai.p.frontLClear != 0)) 
 				goto LAB_0002e728;
 
-			uVar10 = 2;
-			bVar3 = -iVar5 < dvx << 2;
+			targetZone = zoneLeft;
+			targetFound = -iVar5 < (dvx << 2);
 		LAB_0002e708:
-			if ((bVar3) && (cp->ai.p.close_pursuit != 0)) 
+			if (targetFound && cp->ai.p.close_pursuit != 0) 
 			{
-				uVar10 = 1;
+				targetZone = zoneBack;
 			}
 		}
 		else 
 		{
 			if ((dvx <= iVar5 * 2) || (cp->ai.p.frontRClear == 0)) 
 			{
-				uVar10 = 3;
-				bVar3 = iVar5 < dvx << 2;
+				targetZone = zoneRght;
+				targetFound = iVar5 < (dvx << 2);
 				goto LAB_0002e708;
 			}
 
 		LAB_0002e728:
-			uVar10 = 0;
+			targetZone = zoneFrnt;
 		}
 
-		uVar12 = iVar5 + dvz / 0x8c;
+		uVar12 = iVar5 + dvz / 140;
 
-		if (uVar10 == 0)
+		if (targetZone == zoneFrnt)
 		{
 			if (pathStraight == 0)
 				piVar8 = speed1;
@@ -944,75 +993,69 @@ void CopControl1(_CAR_DATA *cp)
 				piVar8 = speed2;
 
 			cp->ai.p.desiredSpeed = *(short*)(piVar8 + gCopDifficultyLevel);
+
+			if (player[0].playerCarId < 0)
+				psVar9 = &pedestrianFelony;
+			else
+				psVar9 = &car_data[player[0].playerCarId].felonyRating;
+
 			if (gCopData.cutOffDistance < cp->ai.p.DistanceToPlayer)
 			{
-				sVar13 = cp->ai.p.desiredSpeed;
-
-				if ((int)player[0].playerCarId < 0)
-					psVar9 = &pedestrianFelony;
-				else
-					psVar9 = &car_data[(int)player[0].playerCarId].felonyRating;
-
-				sVar2 = *psVar9;
 				iVar5 = gCopData.cutOffPowerScale;
 			}
 			else
 			{
-				sVar13 = cp->ai.p.desiredSpeed;
-				if ((int)player[0].playerCarId < 0)
-					psVar9 = &pedestrianFelony;
-				else
-					psVar9 = &car_data[(int)player[0].playerCarId].felonyRating;
-
-				sVar2 = *psVar9;
 				iVar5 = gCopDesiredSpeedScale;
 			}
 
-			cp->ai.p.desiredSpeed = FIXED(sVar13 * (iVar5 + FIXED(sVar2 * gCopData.autoDesiredSpeedScaleLimit)));
+			cp->ai.p.desiredSpeed = FIXED(cp->ai.p.desiredSpeed * (iVar5 + FIXED(*psVar9 * gCopData.autoDesiredSpeedScaleLimit)));
 
-			if ((gPuppyDogCop != 0) && (cp->ai.p.close_pursuit != 0))
+			if (gPuppyDogCop != 0 && cp->ai.p.close_pursuit != 0)
 			{
 				iVar5 = targetVehicle->hd.speed + 10;
-				if (iVar7 < 0xfa1)
+
+				if (dist <= 4000)
 				{
-					cp->ai.p.desiredSpeed = *(short*)&targetVehicle->hd.speed + 10;
+					cp->ai.p.desiredSpeed = iVar5;
 				}
 				else
 				{
-					iVar14 = (cp->ai.p.desiredSpeed - iVar5) * (iVar7 + -4000);
-					cp->ai.p.desiredSpeed = (short)iVar5 + ((short)((unsigned long long)((long long)iVar14 * 0x10624dd3) >> 0x28) - (short)(iVar14 >> 0x1f)); // [A] can be invalid
+					iVar14 = (cp->ai.p.desiredSpeed - iVar5) * (dist - 4000);
+					cp->ai.p.desiredSpeed = iVar5 + iVar14 / 4000;// ((short)((unsigned long long)((long long)iVar14 * 0x10624dd3) >> 0x28) - (short)(iVar14 >> 0x1f)); // [A] can be invalid
 				}
 			}
 
-			desiredSteerAngle = (uVar12 * 0x200) / dvx;
+			desiredSteerAngle = (uVar12 * 512) / dvx;
 		}
-		else if (uVar10 == 1)
+		else if (targetZone == zoneBack)
 		{
 			cp->ai.p.desiredSpeed = -70;
 			desiredSteerAngle = 284;
-			if ((int)(uVar12 ^ currentSpeed) < 0) 
+
+			if ((uVar12 ^ currentSpeed) < 0) 
 			{
 				desiredSteerAngle = -284;
 			}
 		}
-		else if (uVar10 < 4)
+		else
 		{
 			cp->ai.p.desiredSpeed = 110;
 
-			if ((cp->ai.p.frontLClear == 0) || (cp->ai.p.frontRClear == 0))
+			if (cp->ai.p.frontLClear == 0 || cp->ai.p.frontRClear == 0)
 			{
 				cp->ai.p.desiredSpeed = -120;
 			}
-			else if (((uVar10 == 2) && (-130 < cp->st.n.angularVelocity[1])) || ((uVar10 == 3 && (cp->st.n.angularVelocity[1] < 130))))
+			else if ((targetZone == zoneLeft && cp->st.n.angularVelocity[1] > -130) || 
+					 (targetZone == zoneRght && cp->st.n.angularVelocity[1] < 130))
 			{
 				cp->wheelspin = 1;
 			}
 
-			desiredSteerAngle = 0x200;
+			desiredSteerAngle = 512;
 
 			if ((uVar12 ^ currentSpeed) < 0)
 			{
-				desiredSteerAngle = -0x200;
+				desiredSteerAngle = -512;
 			}
 		}
 	}
@@ -1022,14 +1065,14 @@ void CopControl1(_CAR_DATA *cp)
 		desiredSteerAngle = 0;
 	}
 
-	if (((iVar7 < 0x1000) && (iVar5 = (int)cp->ai.p.desiredSpeed, 0 < iVar5)) && (gBatterPlayer == 0)) 
+	if (dist < 4096 && cp->ai.p.desiredSpeed > 0 && gBatterPlayer == 0)
 	{
-		iVar14 = targetVehicle->hd.speed - 20;
+		plcrspd = targetVehicle->hd.speed - 20;
 
-		if (iVar14 < 0x14)
-			iVar14 = 0x14;
+		if (plcrspd < 20)
+			plcrspd = 20;
 
-		cp->ai.p.desiredSpeed = FIXED(iVar7 * iVar5 + (4096 - iVar7) * iVar14);
+		cp->ai.p.desiredSpeed = FIXED(dist * cp->ai.p.desiredSpeed + (4096 - dist) * plcrspd);
 	}
 
 	iVar5 = (gCopDifficultyLevel + 8) * 0x400;
@@ -1043,29 +1086,20 @@ void CopControl1(_CAR_DATA *cp)
 	else
 		psVar9 = &car_data[(int)player[0].playerCarId].felonyRating;
 
-	iVar5 = iVar5 * FIXED(gCopMaxPowerScale + FIXED(*psVar9 * gCopData.autoMaxPowerScaleLimit));
-	sVar13 = (short)iVar5;
+	iVar5 = FIXED(iVar5 * (gCopMaxPowerScale + FIXED(*psVar9 * gCopData.autoMaxPowerScaleLimit)));
+	sVar13 = iVar5;
 
 	if (currentSpeed < -50)
-	{
-		sVar13 = -sVar13;
-	}
+		cp->thrust = -sVar13;
+	if (currentSpeed > 50)
+		cp->thrust = sVar13;
 	else
-	{
-		if (0x32 < currentSpeed)
-		{
-			cp->thrust = sVar13;
-			goto LAB_0002eba4;
-		}
-		sVar13 = (short)((currentSpeed * iVar5) / 0x32);
-	}
+		cp->thrust = (currentSpeed * iVar5) / 50;
 
-	cp->thrust = sVar13;
-LAB_0002eba4:
 	iVar5 = cp->hd.speed;
 
 	if (iVar5 < 48) 
-		cp->thrust = (cp->thrust * (iVar5 + 0x50) >> 7);
+		cp->thrust = (cp->thrust * (iVar5 + 80) >> 7);
 
 	if (handlingType[cp->hndType].fourWheelDrive == 1)
 		cp->thrust = cp->thrust >> 1;
@@ -1531,8 +1565,9 @@ void ControlCopDetection(void)
 							y = player[0].pos[2] - iVar7;
 
 						lVar6 = SquareRoot0(x * x + y * y);
+						cp->ai.p.DistanceToPlayer = lVar6;
 
-						if ((uVar1 == 3) && (cp->ai.p.DistanceToPlayer = lVar6, cp->ai.p.close_pursuit != 0))
+						if ((uVar1 == 3) && cp->ai.p.close_pursuit != 0)
 						{
 						LAB_0002f040:
 							CopsCanSeePlayer = 1;

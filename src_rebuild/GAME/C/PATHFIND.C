@@ -2458,9 +2458,9 @@ int getHeadingToPlayer(int vx, int vy, int vz)
 	iVar3 = vy - player[0].pos[1] >> 4;
 	iVar1 = vz - player[0].pos[2] >> 4;
 
-	val = 0xfa4;
+	val = 4004;
 
-	if (playerTargetDistanceSq << 1 <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) 
+	if ((playerTargetDistanceSq << 1) <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) 
 	{
 		pos.vx = vx - 0x80;
 		pos.vy = vy;
@@ -2476,13 +2476,13 @@ int getHeadingToPlayer(int vx, int vy, int vz)
 		pos.vx = vx;
 		iVar4 = getInterpolatedDistance(&pos);
 
-		if (0xf000 < iVar4) 
+		if (iVar4 > 0xf000)
 		{
 			ReplayLog_Fnarr_He_Said_Log(0x3e9);
 			y = lastKnownPosition.vx - pos.vx;
 			x = lastKnownPosition.vz - pos.vz;
 
-			return ratan2(y, x) | 0x1000;
+			return ratan2(y, x) + 4096;
 		}
 
 		val = 0xbbb;
@@ -2500,5 +2500,5 @@ int getHeadingToPlayer(int vx, int vy, int vz)
 	y = player[0].pos[0] - vx;
 	x = player[0].pos[2] - vz;
 
-	return ratan2(y, x) | 0x1000;
+	return ratan2(y, x) + 4096;
 }
