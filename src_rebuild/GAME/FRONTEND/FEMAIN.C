@@ -2380,11 +2380,29 @@ int CarSelectScreen(int bSetup)
 	{
 		FESound(0);
 		bDoneAllready = 1;
+#ifdef PSX
 		LoadBackgroundFile("DATA\\GFX.RAW");
-		currPlayer = 1;
 		bDrawExtra = 0;
+#else
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+
+			RECT16 rect = extraRect;
+			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
+			DrawSync(0);
+		}
+#endif
+		currPlayer = 1;
 		bDoingCarSelect = 0;
 	}
+
 	else if ((fePad & 0x40) != 0)
 	{
 		if (currSelIndex == 0)
@@ -4058,6 +4076,7 @@ int CityCutOffScreen(int bSetup)
 	}
 
 #ifndef PSX
+	/*
 	if ((fePad & 0x40U) != 0)
 	{
 		lastCity = currCity;
@@ -4068,7 +4087,8 @@ int CityCutOffScreen(int bSetup)
 		loaded[0] = -1;
 
 		return 0;
-	}
+	}*/
+
 	if ((fePad & 0x10) != 0)
 	{
 		lastCity = -1;
