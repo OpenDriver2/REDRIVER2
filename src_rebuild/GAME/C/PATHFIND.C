@@ -5,7 +5,9 @@
 #include "OBJCOLL.H"
 #include "DR2ROADS.H"
 #include "PLAYERS.H"
+#include "CARS.H"
 #include "CAMERA.H"
+#include "COP_AI.H"
 
 short distanceCache[16384];
 char omap[128][16];
@@ -1511,61 +1513,63 @@ int getInterpolatedDistance(VECTOR *pos)
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void addCivs(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uint uVar2;
+	unsigned char bVar1;
+	int uVar2;
 	int iVar3;
-	uint uVar4;
-	uint uVar5;
+	int uVar4;
+	int uVar5;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int iVar8;
-	uint uVar9;
+	int uVar9;
 	int iVar10;
 	int iVar11;
-	_CAR_DATA *p_Var12;
+	_CAR_DATA* cp;
 
-	p_Var12 = car_data;
+	cp = car_data;
 	do {
-		if (p_Var12->controlType == '\x02') {
-			iVar11 = (int)(p_Var12->hd).oBox.radii[2].vx;
-			iVar6 = (p_Var12->hd).oBox.location.vx;
-			iVar10 = (int)(p_Var12->hd).oBox.radii[2].vz;
-			iVar8 = (p_Var12->hd).oBox.location.vz;
+		if (cp->controlType == 2) 
+		{
+			iVar11 = cp->hd.oBox.radii[2].vx;
+			iVar6 = cp->hd.oBox.location.vx;
+
+			iVar10 = cp->hd.oBox.radii[2].vz;
+			iVar8 = cp->hd.oBox.location.vz;
+
 			uVar4 = iVar6 + iVar11 >> 8 & 0x7e;
 			uVar2 = iVar8 + iVar10 >> 8;
 			uVar5 = uVar2 & 0x7e;
 			iVar3 = (int)uVar5 >> 3;
-			bVar1 = (byte)(3 << (uVar2 & 6));
+			bVar1 = (3 << (uVar2 & 6));
 			uVar7 = iVar6 - iVar11 >> 8 & 0x7e;
-			(&DAT_PATH__000e91a8)[iVar3 + uVar4 * 0x10] =
-				bVar1 ^ (&DAT_PATH__000e91a8)[iVar3 + uVar4 * 0x10];
+			omap[uVar4][iVar3] = bVar1 ^ omap[uVar4][iVar3];
 			uVar9 = iVar8 - iVar10 >> 8;
-			(&DAT_PATH__000e91a8)[iVar3 + (uVar4 + 1) * 0x10] =
-				bVar1 ^ (&DAT_PATH__000e91a8)[iVar3 + (uVar4 + 1) * 0x10];
+			omap[uVar4 + 1][iVar3] = bVar1 ^ omap[uVar4 + 1][iVar3];
 			uVar2 = uVar9 & 0x7e;
-			if ((uVar4 ^ uVar5 << 8) == uVar7) {
-				if (uVar2 != 0) goto LAB_PATH__000e8310;
+
+			if ((uVar4 ^ uVar5 << 8) == uVar7) 
+			{
+				if (uVar2 != 0)
+					goto LAB_PATH__000e8310;
 			}
-			else {
-				if (uVar2 << 8 != 1) {
-				LAB_PATH__000e8310:
-					bVar1 = (byte)(3 << (uVar9 & 6));
-					(&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + uVar7 * 0x10] =
-						bVar1 ^ (&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + uVar7 * 0x10];
-					(&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + (uVar7 + 1) * 0x10] =
-						bVar1 ^ (&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + (uVar7 + 1) * 0x10];
-				}
+			else if (uVar2 << 8 != 1)
+			{
+			LAB_PATH__000e8310:
+				bVar1 = (3 << (uVar9 & 6));
+				omap[uVar7][uVar2 >> 3] = bVar1 ^ omap[uVar7 * 0x10][uVar2 >> 3];
+				omap[uVar7 + 1][uVar2 >> 3] = bVar1 ^ omap[uVar7 + 1][uVar2 >> 3];
 			}
 		}
-		p_Var12 = p_Var12 + 1;
-		if ((_CAR_DATA *)0xd4697 < p_Var12) {
+
+		cp++;
+
+		if (&car_data[19] < cp)
 			return;
-		}
-	} while (true);*/
+
+	} while (true);
 }
 
 
@@ -2344,56 +2348,63 @@ LAB_PATH__000e8dfc:
 	/* end block 5 */
 	// End Line: 2229
 
+// [D]
 int getHeadingToPlayer(int vx, int vy, int vz)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	int iVar3;
 	int val;
+	long y;
+	long x;
 	int iVar4;
-	VECTOR local_30;
+	VECTOR pos;
 
-	iVar4 = vx - player.pos[0] >> 4;
-	iVar3 = vy - player.pos[1] >> 4;
-	iVar1 = vz - player.pos[2] >> 4;
+	iVar4 = vx - player[0].pos[0] >> 4;
+	iVar3 = vy - player[0].pos[1] >> 4;
+	iVar1 = vz - player[0].pos[2] >> 4;
+
 	val = 0xfa4;
-	if (DAT_PATH__000e9acc << 1 <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) {
-		local_30.vx = vx + -0x80;
-		local_30.vy = vy;
-		local_30.vz = vz + -0x80;
-		iVar1 = getInterpolatedDistance(&local_30);
-		local_30.vx = vx + 0x80;
-		local_30.vz = vz + -0x80;
-		iVar3 = getInterpolatedDistance(&local_30);
-		local_30.vz = vz + 0x80;
-		local_30.vx = vx;
-		iVar4 = getInterpolatedDistance(&local_30);
-		if (0xf000 < iVar4) {
+
+	if (playerTargetDistanceSq << 1 <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) 
+	{
+		pos.vx = vx - 0x80;
+		pos.vy = vy;
+		pos.vz = vz - 0x80;
+
+		iVar1 = getInterpolatedDistance(&pos);
+
+		pos.vx = vx + 0x80;
+		pos.vz = vz - 0x80;
+		iVar3 = getInterpolatedDistance(&pos);
+
+		pos.vz = vz + 0x80;
+		pos.vx = vx;
+		iVar4 = getInterpolatedDistance(&pos);
+
+		if (0xf000 < iVar4) 
+		{
 			ReplayLog_Fnarr_He_Said_Log(0x3e9);
-			vx = lastKnownPosition.vx - local_30.vx;
-			vz = lastKnownPosition.vz - local_30.vz;
-			goto LAB_PATH__000e9048;
+			y = lastKnownPosition.vx - pos.vx;
+			x = lastKnownPosition.vz - pos.vz;
+
+			return ratan2(y, x) | 0x1000;
 		}
+
 		val = 0xbbb;
-		if (0x600 < iVar4) {
+
+		if (iVar4 > 0x600)
+		{
 			ReplayLog_Fnarr_He_Said_Log(0x7d2);
-			uVar2 = ratan2((iVar1 - iVar3) * 2, iVar1 + iVar3 + iVar4 * -2);
-			return uVar2 & 0xfff;
+
+			return ratan2((iVar1 - iVar3) * 2, iVar1 + iVar3 + iVar4 * -2) & 0xfff;
 		}
 	}
+
 	ReplayLog_Fnarr_He_Said_Log(val);
-	vx = player.pos[0] - vx;
-	vz = player.pos[2] - vz;
-LAB_PATH__000e9048:
-	uVar2 = ratan2(vx, vz);
-	return uVar2 | 0x1000;
-	*/
+
+	y = player[0].pos[0] - vx;
+	x = player[0].pos[2] - vz;
+
+	return ratan2(y, x) | 0x1000;
 }
-
-
-
-
-
