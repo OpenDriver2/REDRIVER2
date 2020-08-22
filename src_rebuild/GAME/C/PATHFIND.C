@@ -10,7 +10,7 @@
 #include "COP_AI.H"
 
 short distanceCache[16384];
-char omap[128][16];
+char omap[128][16];				// obstacle map
 long dunyet[32][2];
 int pathIterations;
 
@@ -649,6 +649,7 @@ int blocked(tNode *v1, tNode *v2)
 		bVar1 = omap[(iVar4 + iVar6 >> 9 & 0x7fU)][((int)(uVar9 & 0x7f) >> 3)];
 		omap[(iVar4 + iVar6 >> 9 & 0x7fU)][((int)(uVar9 & 0x7f) >> 3)] = bVar1 ^ (1 << (uVar9 & 7)) & (bVar1 ^ bVar10);
 	}
+
 	return uVar8;
 }
 
@@ -1587,7 +1588,7 @@ void addCivs(void)
 			{
 			LAB_PATH__000e8310:
 				bVar1 = (3 << (uVar9 & 6));
-				omap[uVar7][uVar2 >> 3] = bVar1 ^ omap[uVar7 * 0x10][uVar2 >> 3];
+				omap[uVar7][uVar2 >> 3] = bVar1 ^ omap[uVar7][uVar2 >> 3];
 				omap[uVar7 + 1][uVar2 >> 3] = bVar1 ^ omap[uVar7 + 1][uVar2 >> 3];
 			}
 		}
