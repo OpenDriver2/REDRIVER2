@@ -988,9 +988,9 @@ void iterate(void)
 							uVar7 = uVar8 >> 1;
 							*(uint*)((int)&heap[0].dist + iVar9) = *(uint*)(&heap[0].dist + uVar8 * 8);
 							if (uVar7 == 0) break;
-							iVar9 = uVar8 << 4;
+							iVar9 = uVar8 << 4; // * 16
 						} while (uVar6 < heap[uVar7].dist);
-						iVar9 = uVar8 << 4;
+						iVar9 = uVar8 << 4; // * 16
 					}
 					*(int*)((int)&heap[0].vx + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vx;
 					*(int*)((int)&heap[0].vy + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vy;
@@ -2242,7 +2242,7 @@ void UpdateCopMap(void)
 					if (uVar11 == 0)
 						break;
 
-					iVar1 = uVar9 << 4;
+					iVar1 = uVar9 << 4; // * 16
 				} while (uVar2 < heap[uVar11].dist);
 			}
 		}
@@ -2347,7 +2347,7 @@ void UpdateCopMap(void)
 					if (uVar11 == 0)
 						break;
 
-					iVar1 = uVar9 << 4;
+					iVar1 = uVar9 << 4; // * 16
 				} while (uVar2 < heap[uVar11].dist);
 			}
 		}

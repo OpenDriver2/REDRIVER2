@@ -218,8 +218,10 @@ void GameDebugKeys(int nKey, bool down)
 	}
 	else if (nKey == SDL_SCANCODE_F4)
 	{
-		gShowCollisionDebug ^= 1;
-		printf("Collision debug %s\n", gShowCollisionDebug ? "ON" : "OFF");
+		gShowCollisionDebug++;
+		if (gShowCollisionDebug > 3)
+			gShowCollisionDebug = 0;
+		printf("Collision debug: %d\n", gShowCollisionDebug);
 	}
 	else if (nKey == SDL_SCANCODE_F5)
 	{

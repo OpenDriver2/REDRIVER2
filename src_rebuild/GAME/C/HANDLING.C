@@ -1925,7 +1925,7 @@ void CheckCarToCarCollisions(void)
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
-		if (gShowCollisionDebug && car_data[iVar8].controlType != 0)
+		if (gShowCollisionDebug == 2 && car_data[iVar8].controlType != 0)
 		{
 			extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 
@@ -2057,7 +2057,7 @@ void CheckCarToCarCollisions(void)
 
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-#if 0
+#if 1
 	extern int gInGameCutsceneActive;
 	if (gInGameCutsceneActive == 0 && cp->controlType == 1)
 	{

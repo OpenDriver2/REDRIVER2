@@ -312,82 +312,66 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 {
 	int iVar1;
-	int iVar2;
+	int dir;
 	int iVar3;
-	uint uVar4;
-	int iVar5;
-	tAABB *ptVar6;
-	tRay *ptVar7;
-	int local_18;
-	int local_14;
-	int local_8;
-	int local_4;
+	int local_t0_36;
+	int i;
 
-	iVar5 = 0;
-	local_18 = 0;
-	local_14 = 0x1000;
-	ptVar6 = bbox;
-	ptVar7 = ray;
+	tRange inside;
+	tRange cabbage;
+	tRange scaledCabbage;
+
+	inside.lower = 0;
+	inside.upper = 4096;
+
+	i = 0;
 	do {
-		uVar4 = 0xffffffff;
-		iVar3 = ptVar6->slab[0].lower - ptVar7->org[0];
-		iVar2 = ray->dir[iVar5];
-		iVar1 = bbox->slab[iVar5].upper - ptVar7->org[0];
-		if (-1 < iVar2) {
-			uVar4 = (uint)(iVar2 != 0);
-		}
-		if (uVar4 == 0) {
-			if (0 < iVar3) {
+		local_t0_36 = -1;
+
+		cabbage.lower = bbox->slab[i].lower - ray->org[i];
+		cabbage.upper = bbox->slab[i].upper - ray->org[i];
+
+		dir = ray->dir[i];
+
+		if (dir > -1) 
+			local_t0_36 = (dir != 0);
+
+		if (local_t0_36 == 0) 
+		{
+			if (cabbage.lower > 0)
 				return 0;
-			}
-			if (iVar1 < 0) {
+
+			if (cabbage.upper < 0)
 				return 0;
-			}
-			local_4 = 0x3000;
-			local_8 = -0x3000;
+
+			scaledCabbage.upper = 0x3000;
+			scaledCabbage.lower = -0x3000;
 		}
-		else {
-			if ((int)uVar4 < 1) {
-				if (uVar4 == 0xffffffff) {
-					local_4 = (iVar3 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-					local_8 = (iVar1 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-				}
-			}
-			else {
-				if (uVar4 == 1) {
-					local_8 = (iVar3 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-					local_4 = (iVar1 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-				}
-			}
+		else if (local_t0_36 == -1)
+		{
+			scaledCabbage.upper = (cabbage.lower * 4096) / dir;
+			scaledCabbage.lower = (cabbage.upper * 4096) / dir;
 		}
-		if (local_18 < local_8) {
-			local_18 = local_8;
+		else if (local_t0_36 == 1)
+		{
+			scaledCabbage.lower = (cabbage.lower * 4096) / dir;
+			scaledCabbage.upper = (cabbage.upper * 4096) / dir;
 		}
-		if (local_4 < local_14) {
-			local_14 = local_4;
-		}
-		if (local_14 < local_18) {
+
+		if (inside.lower < scaledCabbage.lower)
+			inside.lower = scaledCabbage.lower;
+
+		if (scaledCabbage.upper < inside.upper)
+			inside.upper = scaledCabbage.upper;
+
+		if (inside.upper < inside.lower)
 			return 0;
-		}
-		ptVar7 = (tRay *)(ptVar7->org + 1);
-		iVar5 = iVar5 + 1;
-		ptVar6 = (tAABB *)(ptVar6->slab + 1);
-		if (2 < iVar5) {
-			return 1;
-		}
-	} while (true);
+
+		i++;
+
+	} while(i < 3);
+
+	return 1;
 }
 
 
@@ -508,13 +492,13 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	int iVar6;
 	int cellx;
 	int iVar7;
-	uint uVar8;
+	int uVar8;
 	int iVar9;
 	MODEL* pModel;
 	int iVar10;
 	int* piVar11;
 	int iVar12;
-	uint uVar13;
+	int uVar13;
 	int iVar14;
 	int iVar15;
 	int iVar16;
@@ -534,7 +518,9 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	iVar9 = v1->vy;
 	iVar10 = v1->vz;
 	iVar14 = v2->vx;
+
 	we = 0;
+
 	iVar1 = iVar14 - iVar6;
 	iVar12 = v2->vy;
 	iVar16 = v2->vz;
@@ -569,9 +555,9 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 				if (piVar11 != NULL && (pModel->flags2 & 0xa00) == 0)
 				{
-					iVar7 = (int)((pCellObject->pos.vx - ((iVar6 + iVar14) / 2 & 0xffffU)) * 0x10000) >> 0x10;
-					iVar5 = (int)((pCellObject->pos.vz - ((iVar10 + iVar16) / 2 & 0xffffU)) * 0x10000) >> 0x10;
-					iVar3 = (int)pModel->bounding_sphere + 800;
+					iVar7 = pCellObject->pos.vx - ((iVar6 + iVar14) / 2 & 0xffffU);
+					iVar5 = pCellObject->pos.vz - ((iVar10 + iVar16) / 2 & 0xffffU);
+					iVar3 = pModel->bounding_sphere + 800;
 
 					if (iVar7 * iVar7 + iVar5 * iVar5 < iVar3 * iVar3)
 					{
@@ -582,38 +568,110 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						if (0 < iVar5)
 						{
 							do {
+
 								uVar8 = -pCellObject->yang & 0x3f;
 								uVar13 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
 
 								iVar17 = (int)*(short*)((int)rcossin_tbl + uVar13 + 2);
 								iVar18 = (int)*(short*)((int)rcossin_tbl + uVar13);
 
-								iVar19 = iVar6 - ((pCellObject->pos).vx + FIXED(collide->xpos * matrixtable[uVar8].m[0][0] + collide->zpos * matrixtable[uVar8].m[2][0]));
-								iVar15 = iVar10 - ((pCellObject->pos).vz + FIXED(collide->xpos * matrixtable[uVar8].m[0][2] + collide->zpos * matrixtable[uVar8].m[2][2]));
+								iVar19 = iVar6 - (pCellObject->pos.vx + FIXED(collide->xpos * matrixtable[uVar8].m[0][0] + collide->zpos * matrixtable[uVar8].m[2][0]));
+								iVar15 = iVar10 - (pCellObject->pos.vz + FIXED(collide->xpos * matrixtable[uVar8].m[0][2] + collide->zpos * matrixtable[uVar8].m[2][2]));
 
-								iVar7 = collide->xsize << 0x10;
-
-								box.slab[0].upper = ((iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1) + testRadius;
+								box.slab[0].upper = collide->xsize / 2 + testRadius;
 								box.slab[0].lower = -box.slab[0].upper;
 
-								iVar7 = collide->ysize << 0x10;
-								box.slab[1].upper = ((iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1) + testRadius;
+								box.slab[1].upper = collide->ysize / 2 + testRadius;
 								box.slab[1].lower = -box.slab[1].upper;
 
-								ray.org[1] = (iVar9 - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
+								ray.org[1] = (iVar9 - (-collide->ypos - pCellObject->pos.vy)) + 80;
 
-								iVar7 = collide->zsize << 0x10;
-								box.slab[2].upper = ((iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1) + testRadius;
+								box.slab[2].upper = collide->zsize / 2 + testRadius;
 								box.slab[2].lower = -box.slab[2].upper;
 
 								ray.org[0] = FIXED(iVar17 * iVar19 - iVar18 * iVar15);
 								ray.org[2] = FIXED(iVar17 * iVar15 + iVar18 * iVar19);
+
 								ray.dir[0] = FIXED(iVar17 * iVar1 - iVar18 * iVar4);
 								ray.dir[2] = FIXED(iVar17 * iVar4 + iVar18 * iVar1);
 								ray.dir[1] = iVar12 - iVar9;
 
+#if defined(COLLISION_DEBUG)
+								int rayResult = RaySlabsIntersection(&ray, &box);
+
+								extern int gShowCollisionDebug;
+								if (gShowCollisionDebug == 3)
+								{
+									CDATA2D cd[2];
+
+									cd[0].x.vx = (pCellObject->pos.vx + FIXED(collide->xpos * matrixtable[uVar8].m[0][0] + collide->zpos * matrixtable[uVar8].m[2][0]));
+									cd[0].x.vz = (pCellObject->pos.vz + FIXED(collide->xpos * matrixtable[uVar8].m[0][2] + collide->zpos * matrixtable[uVar8].m[2][2]));
+									cd[0].x.vy = 0;
+
+									cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+									cd[0].length[0] = collide->zsize / 2;
+									cd[0].length[1] = collide->xsize / 2;
+
+									// calc axes of box
+									int dtheta = cd[0].theta & 0xfff;
+
+									cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
+									cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+
+									cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
+									cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+
+									extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+									extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+									CVECTOR ggcv = { 0, 250, 0 };
+									CVECTOR rrcv = { 250, 0, 0 };
+									CVECTOR yycv = { 250, 250, 0 };
+
+									// show both box axes
+									{
+										VECTOR _zero = { 0 };
+										VECTOR b1p = cd[0].x;
+
+										// show position to position
+										//Debug_AddLine(b1p1, b2p1, yycv);
+
+										VECTOR b1ax[2] = { {0} , {0} };
+										b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
+										b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
+										b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
+										b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+
+										// show axis of body 1
+										Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+										Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+										// display 2D box 1
+										{
+											int h = b1ax[0].vy;
+											VECTOR box_points[4] = {
+												{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+												{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+												{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+												{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+											};
+
+											Debug_AddLineOfs(box_points[0], box_points[1], b1p, rayResult ? ggcv : yycv);
+											Debug_AddLineOfs(box_points[1], box_points[2], b1p, rayResult ? ggcv : yycv);
+											Debug_AddLineOfs(box_points[2], box_points[3], b1p, rayResult ? ggcv : yycv);
+											Debug_AddLineOfs(box_points[3], box_points[0], b1p, rayResult ? ggcv : yycv);
+										}
+									}
+								}
+
+								if (rayResult != 0)
+									return 0;
+
+#else
 								if (RaySlabsIntersection(&ray, &box) != 0)
 									return 0;
+#endif
 
 								iVar3++;
 								collide++;
@@ -1193,8 +1251,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 						if (iVar6 < (iVar10) / 2)
 						{
-							
-
 							gLastModelCollisionCheck = cop->type;
 
 							cd[0].theta = dir;
@@ -1226,7 +1282,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 							
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 							extern int gShowCollisionDebug;
-							if (gShowCollisionDebug)
+							if (gShowCollisionDebug == 1)
 							{
 								extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 								extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
@@ -1303,8 +1359,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 								}
 							}
 #endif
-							
-
 							if(res)
 								return 1;
 						}
