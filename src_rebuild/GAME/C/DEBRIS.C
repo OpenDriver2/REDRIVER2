@@ -31,7 +31,6 @@
 #include <stdlib.h>
 
 TEXTURE_DETAILS digit_texture;
-TEXTURE_DETAILS pause;
 
 TRI_POINT debris_rot1[32]; // offset 0xC0A60
 TRI_POINT debris_rot2[32]; // offset 0xC0BE0

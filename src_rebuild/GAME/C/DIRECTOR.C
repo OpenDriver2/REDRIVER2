@@ -17,6 +17,7 @@
 #include "OBJCOLL.H"
 #include "PRES.H"
 #include "SOUND.H"
+#include "SYSTEM.H"
 #include "../MEMCARD/MAIN.H"
 
 #include "STRINGS.H"
@@ -28,7 +29,7 @@ TEXTURE_DETAILS lookcar; // address 0xC1CB0
 TEXTURE_DETAILS movecam; // address 0xC1C18
 TEXTURE_DETAILS movecampos; // address 0xC08C0
 TEXTURE_DETAILS ok; // address 0xC1BD8
-TEXTURE_DETAILS dir_pause; // address 0xBF970
+TEXTURE_DETAILS pause; // address 0xBF970
 TEXTURE_DETAILS playpause; // address 0xC2A28
 TEXTURE_DETAILS clock; // address 0xBF940
 TEXTURE_DETAILS choosecar; // address 0xC2A08
@@ -44,44 +45,44 @@ TEXTURE_DETAILS frameadv; // address 0xC1D80
 
 REPLAY_ICON replay_icons[23] =
 {
-  { 20, 26, &dir_pause, "Pause", 20, 48 },
-  { 20, 26, &playpause, "Resume", 20, 48 },
-  { 44, 26, &autocam, "Auto director", 44, 48 },
-  { 68, 26, &playcam, "Play camera", 68, 48 },
-  { 92, 26, &frameadv, "Single frame", 92, 48 },
-  { 116, 26, &restart, "Rewind", 116, 48 },
-  { 140, 26, &addcam, "Add camera", 140, 48 },
-  { 164, 26, &editcam, "Edit camera", 164, 48 },
-  { 188, 26, &save2card, "Save replay", 188, 48 },
-  { 212, 26, &ok, "OK", 212, 48 },
-  { 140, 50, &incar, "Inside car", 164, 48 },
-  { 140, 74, &chasecar, "Chase camera", 164, 72 },
-  { 140, 98, &fixedcam, "Fixed camera", 164, 96 },
-  { 140, 122, &ok, "Accept", 164, 120 },
-  { 140, 122, &clock, "Move camera start", 164, 120 },
-  { 140, 146, &delcam, "Delete camera", 164, 144 },
-  { 140, 170, &ok, "Accept", 164, 168 },
-  { 164, 50, &choosecar, "Choose target vehicle", 164, 72 },
-  { 164, 74, &movecampos, "Move camera position", 164, 96 },
-  { 164, 98, &movecampos, "Move camera position", 164, 120 },
-  { 188, 98, &lookcar, "Look at target", 188, 120 },
-  { 212, 98, &movecam, "Move camera", 212, 120 },
-  { 236, 98, &lenschan, "Lens zoom", 236, 120 }
+	{ 20, 26, &pause, "Pause", 20, 48 },
+	{ 20, 26, &playpause, "Resume", 20, 48 },
+	{ 44, 26, &autocam, "Auto director", 44, 48 },
+	{ 68, 26, &playcam, "Play camera", 68, 48 },
+	{ 92, 26, &frameadv, "Single frame", 92, 48 },
+	{ 116, 26, &restart, "Rewind", 116, 48 },
+	{ 140, 26, &addcam, "Add camera", 140, 48 },
+	{ 164, 26, &editcam, "Edit camera", 164, 48 },
+	{ 188, 26, &save2card, "Save replay", 188, 48 },
+	{ 212, 26, &ok, "OK", 212, 48 },
+	{ 140, 50, &incar, "Inside car", 164, 48 },
+	{ 140, 74, &chasecar, "Chase camera", 164, 72 },
+	{ 140, 98, &fixedcam, "Fixed camera", 164, 96 },
+	{ 140, 122, &ok, "Accept", 164, 120 },
+	{ 140, 122, &clock, "Move camera start", 164, 120 },
+	{ 140, 146, &delcam, "Delete camera", 164, 144 },
+	{ 140, 170, &ok, "Accept", 164, 168 },
+	{ 164, 50, &choosecar, "Choose target vehicle", 164, 72 },
+	{ 164, 74, &movecampos, "Move camera position", 164, 96 },
+	{ 164, 98, &movecampos, "Move camera position", 164, 120 },
+	{ 188, 98, &lookcar, "Look at target", 188, 120 },
+	{ 212, 98, &movecam, "Move camera", 212, 120 },
+	{ 236, 98, &lenschan, "Lens zoom", 236, 120 }
 };
 
-char menu0[] = { 0, 0xFF };
+unsigned char menu0[] = { 0, 0xFF };
 
-char menu1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xFF };
+unsigned char menu1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xFF };
 
-char menu2[] = { 0xA, 0xB, 0xC, 0xD, 0xFF };
+unsigned char menu2[] = { 0xA, 0xB, 0xC, 0xD, 0xFF };
 
-char menu3[] = { 0x11, 0xFF };
+unsigned char menu3[] = { 0x11, 0xFF };
 
-char menu4[] = { 0x12, 0xFF };
+unsigned char menu4[] = { 0x12, 0xFF };
 
-char menu5[] = { 0x13, 0x14, 0x15, 0x16, 0xFF };
+unsigned char menu5[] = { 0x13, 0x14, 0x15, 0x16, 0xFF };
 
-char menu6[] = { 0xA, 0xB, 0xC, 0xE, 0xF, 0x10, 0xFF };
+unsigned char menu6[] = { 0xA, 0xB, 0xC, 0xE, 0xF, 0x10, 0xFF };
 
 int FastForward = 0;
 int EditMode = 0;
@@ -102,6 +103,11 @@ char gNoReplaySaveAllowed = 0;
 int CursorY = 0;
 int ReplayContinue = 0;
 int MIN_TRIPOD_CAMERA_HEIGHT = 105;
+
+extern short padd;		// system
+extern int vblcounter;	// sound
+
+int time_taken = 0;
 
 // decompiled code
 // original method signature: 
@@ -1234,139 +1240,138 @@ void DeleteAllCameras(void)
 	/* end block 3 */
 	// End Line: 2137
 
-void ShowIcons(char *menu, int selected, int x_offset)
+// [D]
+void ShowIcons(unsigned char *menu, int selected, int x_offset)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	short sVar2;
-	short sVar3;
-	DB *pDVar4;
-	int iVar5;
-	char cVar6;
-	uint uVar7;
-	uint *puVar8;
-	char *pcVar9;
-	TEXTURE_DETAILS *pTVar10;
-	int iVar11;
+	static int FlashCnt = 0;
 
-	iVar11 = 0;
-	if (CameraCnt < ReplayParameterPtr->RecordingEnd) {
-		CHAR____000cbe11 = '\0';
-		CHAR_ARRAY_000cbe14[0] = '\0';
-		CHAR____000cbe17 = '\0';
-		CHAR____000cbe12 = '\0';
-		iVar5 = NoMoreCamerasErrorMessage();
-		if (iVar5 == 0) {
-			CHAR____000cbe16 = '\0';
-		}
-		else {
-			CHAR____000cbe16 = '\x01';
-		}
+	unsigned int cVar5;
+	SPRT* icon;
+	POLY_FT3* null;
+	TEXTURE_DETAILS* Icon_texture;
+	int count;
+
+	count = 0;
+
+	if (CameraCnt < ReplayParameterPtr->RecordingEnd)
+	{
+		GreyIcons[1] = 0;
+		GreyIcons[4] = 0;
+		GreyIcons[7] = 0;
+		GreyIcons[2] = 0;
+		if (NoMoreCamerasErrorMessage() == 0)
+			GreyIcons[6] = 0;
+		else
+			GreyIcons[6] = 1;
 	}
-	else {
+	else 
+	{
 		ReleaseInGameCutscene();
-		if (time_taken == 0) {
+
+		if (time_taken == 0)
 			time_taken = vblcounter;
-		}
+
 		SetFastForward = 0;
 		FastForward = 0;
-		CHAR____000cbe11 = '\x01';
-		CHAR____000cbe13 = '\x01';
-		CHAR_ARRAY_000cbe14[0] = '\x01';
-		CHAR____000cbe16 = '\x01';
-		CHAR____000cbe17 = '\x01';
-		CHAR____000cbe12 = '\x01';
+		GreyIcons[1] = 1;
+		GreyIcons[3] = 1;
+		GreyIcons[4] = 1;
+		GreyIcons[6] = 1;
+		GreyIcons[7] = 1;
+		GreyIcons[2] = 1;
 	}
-	CHAR_ARRAY_000cbe18[0] = gNoReplaySaveAllowed != '\0';
-	if ((tracking_car == '\0') || (iVar5 = OK_To_Zoom(), iVar5 == 0)) {
-		CHAR____000cbe26 = '\x01';
-	}
-	else {
-		CHAR____000cbe26 = '\0';
-	}
-	iVar5 = FirstCamera();
-	CHAR____000cbe1e = iVar5 != 0;
-	bVar1 = *menu;
-	CHAR_ARRAY_000cbe1f[0] = CHAR____000cbe1e;
-	while (bVar1 != 0xff) {
-		uVar7 = (uint)(byte)*menu;
-		pTVar10 = replay_icons[uVar7].texture;
-		if (selected == iVar11) {
-			SetTextColour(-0x80, -0x80, '@');
-			PrintStringBoxed(replay_icons[uVar7].TextPtr, (int)replay_icons[uVar7].tx + x_offset + 1,
-				(int)replay_icons[uVar7].ty);
+
+	GreyIcons[8] = gNoReplaySaveAllowed != 0;
+
+	if (tracking_car == 0 || OK_To_Zoom() == 0)
+		GreyIcons[22] = 1;
+	else
+		GreyIcons[22] = 0;
+
+	GreyIcons[14] = FirstCamera() != 0;
+	GreyIcons[15] = GreyIcons[14];
+
+	while (*menu != 0xff) 
+	{
+		Icon_texture = replay_icons[*menu].texture;
+
+		if (selected == count)
+		{
+			SetTextColour(128, 128, 64);
+			PrintStringBoxed(replay_icons[*menu].TextPtr, replay_icons[*menu].tx + x_offset + 1, replay_icons[*menu].ty);
 		}
-		puVar8 = (uint *)current->primptr;
-		*(char *)((int)puVar8 + 3) = '\x04';
-		*(char *)((int)puVar8 + 7) = 'd';
-		if ((&GreyIcons)[(byte)*menu] == '\0') {
-			if (selected == iVar11) {
-				cVar6 = (char)(FlashCnt_42 & 0xf);
-				if ((FlashCnt_42 & 0xf) < 8) {
-					cVar6 = '\a' - cVar6;
+
+		icon = (SPRT*)current->primptr;
+		setSprt(icon);
+
+		if (GreyIcons[*menu] == 0) 
+		{
+			if (selected == count) 
+			{
+				cVar5 = (FlashCnt & 0xf);
+
+				if ((FlashCnt & 0xf) < 8) 
+					cVar5 = 7 - cVar5;
+				else
+					cVar5 -= 7;
+
+				if (EditMode == 0) 
+				{
+					icon->r0 = -1;
+					icon->g0 = -1;
+					icon->b0 = -1;
+					FlashCnt = 0;
 				}
-				else {
-					cVar6 = cVar6 + -7;
-				}
-				if (EditMode == 0) {
-					*(char *)(puVar8 + 1) = -1;
-					*(char *)((int)puVar8 + 5) = -1;
-					*(char *)((int)puVar8 + 6) = -1;
-					FlashCnt_42 = 0;
-				}
-				else {
-					cVar6 = cVar6 * '\x1c' + '\x1e';
-					*(char *)(puVar8 + 1) = cVar6;
-					*(char *)((int)puVar8 + 5) = cVar6;
-					*(char *)((int)puVar8 + 6) = cVar6;
-					FlashCnt_42 = FlashCnt_42 + 1;
+				else 
+				{
+					icon->r0 = icon->g0 = icon->b0 = cVar5 * 28 + 30;;
+					FlashCnt++;
 				}
 			}
-			else {
-				*(char *)(puVar8 + 1) = 'd';
-				*(char *)((int)puVar8 + 5) = 'd';
-				*(char *)((int)puVar8 + 6) = 'd';
+			else 
+			{
+				icon->r0 = 100;
+				icon->g0 = 100;
+				icon->b0 = 100;
 			}
 		}
-		else {
-			*(char *)((int)puVar8 + 7) = 'f';
-			*(char *)(puVar8 + 1) = ' ';
-			*(char *)((int)puVar8 + 5) = ' ';
-			*(char *)((int)puVar8 + 6) = ' ';
+		else 
+		{
+			setSemiTrans(icon, 1);
+			icon->r0 = 32;
+			icon->g0 = 32;
+			icon->b0 = 32;
 		}
-		sVar2 = replay_icons[uVar7].x;
-		sVar3 = replay_icons[uVar7].y;
-		*(undefined2 *)(puVar8 + 4) = 0x14;
-		*(undefined2 *)((int)puVar8 + 0x12) = 0x14;
-		*(short *)(puVar8 + 2) = sVar2 + (short)(x_offset + 1);
-		*(short *)((int)puVar8 + 10) = sVar3;
-		*(uchar *)(puVar8 + 3) = (pTVar10->coords).u0;
-		*(uchar *)((int)puVar8 + 0xd) = (pTVar10->coords).v0;
-		pDVar4 = current;
-		*(ushort *)((int)puVar8 + 0xe) = pTVar10->clutid;
-		*puVar8 = *puVar8 & 0xff000000 | *pDVar4->ot & 0xffffff;
-		*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar8 & 0xffffff;
-		pcVar9 = pDVar4->primptr;
-		pDVar4->primptr = pcVar9 + 0x14;
-		pcVar9[0x17] = '\a';
-		pcVar9[0x1b] = '$';
-		*(undefined2 *)(pcVar9 + 0x1c) = 0xffff;
-		*(undefined2 *)(pcVar9 + 0x1e) = 0xffff;
-		*(undefined2 *)(pcVar9 + 0x24) = 0xffff;
-		*(undefined2 *)(pcVar9 + 0x26) = 0xffff;
-		*(undefined2 *)(pcVar9 + 0x2c) = 0xffff;
-		*(undefined2 *)(pcVar9 + 0x2e) = 0xffff;
-		pDVar4 = current;
-		*(ushort *)(pcVar9 + 0x2a) = pTVar10->tpageid;
-		*(uint *)(pcVar9 + 0x14) = *(uint *)(pcVar9 + 0x14) & 0xff000000 | *pDVar4->ot & 0xffffff;
-		*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)(pcVar9 + 0x14) & 0xffffff;
-		menu = (char *)((byte *)menu + 1);
-		pDVar4->primptr = pDVar4->primptr + 0x20;
-		bVar1 = *menu;
-		iVar11 = iVar11 + 1;
+
+		icon->x0 = replay_icons[*menu].x + (x_offset + 1);
+		icon->y0 = replay_icons[*menu].y;
+
+		icon->w = 20;
+		icon->h = 20;
+		icon->u0 = Icon_texture->coords.u0;
+		icon->v0 = Icon_texture->coords.v0;
+		icon->clut = Icon_texture->clutid;
+
+		addPrim(current->ot, icon);
+		current->primptr += sizeof(SPRT);
+
+		null = (POLY_FT3*)current->primptr;
+		setPolyFT3(null);
+
+		null->x0 = -1;
+		null->y0 = -1;
+		null->x1 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->y2 = -1;
+		null->tpage = Icon_texture->tpageid;
+		addPrim(current->ot, null);
+
+		current->primptr += sizeof(POLY_FT3);
+
+		menu++;
+		count++;
 	}
-	return;*/
 }
 
 
@@ -1472,7 +1477,7 @@ void ShowReplayOptions(void)
 // [D]
 void ShowReplayMenu(void)
 {
-	char *menu;
+	unsigned char *menu;
 	uint uVar1;
 	int selected;
 
@@ -1698,12 +1703,6 @@ LAB_0003c6c4:
 
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-extern short padd;		// system
-extern int vblcounter;	// sound
-
-int time_taken = 0;
-
 
 // [D]
 void ControlReplay(void)
