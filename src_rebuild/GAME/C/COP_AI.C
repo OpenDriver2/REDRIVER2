@@ -198,7 +198,9 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 		pos.vy += dir.vy;
 		pos.vz += dir.vz;
 
-#if 1
+#if defined(COLLISION_DEBUG)
+		extern int gShowCollisionDebug;
+		if (gShowCollisionDebug == 3)
 		{
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
@@ -392,6 +394,31 @@ void ControlCops(void)
 	short *psVar4;
 	int direction;
 	int iVar5;
+
+#if defined(COLLISION_DEBUG) // [A] lineClear debugging code - pls remove after fixing bugs
+	extern int gShowCollisionDebug;
+	if (gShowCollisionDebug == 3)
+	{
+		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+		CVECTOR ggcv = { 0, 250, 0 };
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+
+		VECTOR _zero = { 0 };
+		VECTOR _up = { 0, 1000, 0 };
+
+		VECTOR v1 = *(VECTOR*)targetVehicle->hd.where.t;
+		VECTOR v2 = v1;
+		v2.vx -= FIXED(targetVehicle->hd.where.m[2][0] * 1024);
+		v2.vz += FIXED(targetVehicle->hd.where.m[2][2] * 1024);
+
+		int result = lineClear(&v1, &v2);
+
+		Debug_AddLine(v1, v2, result ? ggcv : rrcv);
+	}
+#endif
 
 	gCopData.autoBatterPlayerTrigger = 0x800;
 

@@ -573,13 +573,13 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						iVar4 = va.vx - (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
 						iVar3 = va.vz - (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						
-						box.slab[0].upper = collide->xsize / 2;// +testRadius;
+						box.slab[0].upper = collide->xsize / 2 +testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
 					
-						box.slab[1].upper = collide->ysize / 2;// +testRadius;
+						box.slab[1].upper = collide->ysize / 2 +testRadius;
 						box.slab[1].lower = -box.slab[1].upper;
 						
-						box.slab[2].upper = collide->zsize / 2;// +testRadius;
+						box.slab[2].upper = collide->zsize / 2 +testRadius;
 						box.slab[2].lower = -box.slab[2].upper;
 
 						ray.org[0] = FIXED(cs * iVar4 - sn * iVar3);
