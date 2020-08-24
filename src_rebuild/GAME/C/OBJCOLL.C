@@ -481,30 +481,20 @@ int testRadius = 222;
 // [D]
 char lineClear(VECTOR *v1, VECTOR *v2)
 {
-	int iVar1;
-	VECTOR* pVVar2;
 	PACKED_CELL_OBJECT* ppco;
-	int iVar3;
 	CELL_OBJECT* pCellObject;
-	int iVar4;
-	int cellz;
-	int iVar5;
-	int iVar6;
-	int cellx;
-	int iVar7;
-	int uVar8;
-	int iVar9;
+	MATRIX2* mat;
+	int pos_z;
+	int cell_z;
+	int cell_x;
+	int local_a0_592;
 	MODEL* pModel;
-	int iVar10;
-	int* piVar11;
-	int iVar12;
-	int uVar13;
-	int iVar14;
-	int iVar15;
-	int iVar16;
-	int iVar17;
-	int iVar18;
-	int iVar19;
+	int* piVar2;
+	int local_a3_704;
+	int iVar3;
+	int cs;
+	int sn;
+	int iVar4;
 	COLLISION_PACKET* collide;
 	VECTOR pos;
 	VECTOR va;
@@ -513,180 +503,181 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	tRay ray;
 	tAABB box;
 	int we;
+	int ocz;
+	int ocx;
+	int box_loop; // $s5
+	int num_cb; // $s6
+ 	int sphere_sq; // $v0
+ 	int xd; // $a0
+ 	int zd; // $v1
 
-	iVar6 = v1->vx;
-	iVar9 = v1->vy;
-	iVar10 = v1->vz;
-	iVar14 = v2->vx;
+	va.vx = v1->vx;
+	va.vy = v1->vy;
+	va.vz = v1->vz;
+
+	vb.vx = v2->vx;
+	vb.vy = v2->vy;
+	vb.vz = v2->vz;
+
+	pos.vx = vb.vx - va.vx;
+	pos.vz = vb.vz - va.vz;
+
+	ocx = -1;
+	ocz = -1;
 
 	we = 0;
-
-	iVar1 = iVar14 - iVar6;
-	iVar12 = v2->vy;
-	iVar16 = v2->vz;
-	iVar4 = iVar16 - iVar10;
-	iVar3 = -1;
-	iVar5 = -1;
 
 	do {
 		if (we == 0) 
 		{
-			cellx = v2->vx + units_across_halved;
-			pVVar2 = v2;
+			cell_x = (v2->vx + units_across_halved) / 2048;
+			cell_z = (v2->vz + units_down_halved) / 2048;
 		}
-		else
+		else 
 		{
-			cellx = v1->vx + units_across_halved;
-			pVVar2 = v1;
+			cell_x = (v1->vx + units_across_halved) / 2048;
+			cell_z = (v1->vz + units_down_halved) / 2048;
 		}
 
-		cellz = pVVar2->vz + units_down_halved;
-		cellx = cellx >> 0xb;
-
-		cellz = cellz >> 0xb;
-		if ((iVar3 != cellx) || (iVar5 != cellz))
+		if ((ocx != cell_x) || (ocz != cell_z))
 		{
-			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0);
-			while (pCellObject = UnpackCellObject(ppco, &ci.nearCell)) 
+			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
+
+			while (pCellObject = UnpackCellObject(ppco, &ci.nearCell), pCellObject != NULL)
 			{
 				pModel = modelpointers[pCellObject->type];
+				piVar2 = (int*)pModel->collision_block;
 
-				piVar11 = (int*)pModel->collision_block;
+				xd = ((pCellObject->pos.vx - ((va.vx + vb.vx) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+				zd = ((pCellObject->pos.vz - ((va.vz + vb.vz) / 2 & 0xffffU)) * 0x10000) >> 0x10;
 
-				if (piVar11 != NULL && (pModel->flags2 & 0xa00) == 0)
+				sphere_sq = pModel->bounding_sphere + 800;
+
+				if (piVar2 != NULL && (pModel->flags2 & 0xA00) == 0 && (xd*xd + zd*zd < sphere_sq*sphere_sq))
 				{
-					iVar7 = pCellObject->pos.vx - ((iVar6 + iVar14) / 2 & 0xffffU);
-					iVar5 = pCellObject->pos.vz - ((iVar10 + iVar16) / 2 & 0xffffU);
-					iVar3 = pModel->bounding_sphere + 800;
+					collide = (COLLISION_PACKET*)(piVar2 + 1);
 
-					if (iVar7 * iVar7 + iVar5 * iVar5 < iVar3 * iVar3)
+					num_cb = *piVar2;
+					box_loop = 0;
+
+					while (box_loop < num_cb)
 					{
-						collide = (COLLISION_PACKET*)(piVar11 + 1);
+						local_a0_592 = -pCellObject->yang & 0x3f;
+						local_a3_704 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
 
-						iVar5 = *piVar11;
-						iVar3 = 0;
-						if (0 < iVar5)
-						{
-							do {
+						mat = &matrixtable[local_a0_592];
 
-								uVar8 = -pCellObject->yang & 0x3f;
-								uVar13 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
+						cs = rcossin_tbl[local_a3_704 * 2 + 1];
+						sn = rcossin_tbl[local_a3_704 * 2];
 
-								iVar17 = (int)*(short*)((int)rcossin_tbl + uVar13 + 2);
-								iVar18 = (int)*(short*)((int)rcossin_tbl + uVar13);
+						iVar4 = va.vx - (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						iVar3 = va.vz - (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						
+						box.slab[0].upper = collide->xsize / 2 + testRadius;
+						box.slab[0].lower = -box.slab[0].upper;
+					
+						box.slab[1].upper = collide->ysize / 2 + testRadius;
+						box.slab[1].lower = -box.slab[1].upper;
 
-								iVar19 = iVar6 - (pCellObject->pos.vx + FIXED(collide->xpos * matrixtable[uVar8].m[0][0] + collide->zpos * matrixtable[uVar8].m[2][0]));
-								iVar15 = iVar10 - (pCellObject->pos.vz + FIXED(collide->xpos * matrixtable[uVar8].m[0][2] + collide->zpos * matrixtable[uVar8].m[2][2]));
+						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
+						
+						box.slab[2].upper = collide->zsize / 2 + testRadius;
+						box.slab[2].lower = -box.slab[2].upper;
 
-								box.slab[0].upper = collide->xsize / 2 + testRadius;
-								box.slab[0].lower = -box.slab[0].upper;
-
-								box.slab[1].upper = collide->ysize / 2 + testRadius;
-								box.slab[1].lower = -box.slab[1].upper;
-
-								ray.org[1] = (iVar9 - (-collide->ypos - pCellObject->pos.vy)) + 80;
-
-								box.slab[2].upper = collide->zsize / 2 + testRadius;
-								box.slab[2].lower = -box.slab[2].upper;
-
-								ray.org[0] = FIXED(iVar17 * iVar19 - iVar18 * iVar15);
-								ray.org[2] = FIXED(iVar17 * iVar15 + iVar18 * iVar19);
-
-								ray.dir[0] = FIXED(iVar17 * iVar1 - iVar18 * iVar4);
-								ray.dir[2] = FIXED(iVar17 * iVar4 + iVar18 * iVar1);
-								ray.dir[1] = iVar12 - iVar9;
+						ray.org[0] = FIXED(cs * iVar4 - sn * iVar3);
+						ray.org[2] = FIXED(cs * iVar3 + sn * iVar4);
+						ray.dir[0] = FIXED(cs * pos.vx - sn * pos.vz);
+						ray.dir[2] = FIXED(cs * pos.vz + sn * pos.vx);
+						ray.dir[1] = vb.vy - va.vy;
 
 #if defined(COLLISION_DEBUG)
-								int rayResult = RaySlabsIntersection(&ray, &box);
+						int rayResult = RaySlabsIntersection(&ray, &box);
 
-								extern int gShowCollisionDebug;
-								if (gShowCollisionDebug == 3)
+						extern int gShowCollisionDebug;
+						if (gShowCollisionDebug == 3)
+						{
+							CDATA2D cd[1];
+
+							cd[0].x.vx = (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+							cd[0].x.vz = (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+							cd[0].x.vy = va.vy;
+
+							cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+							cd[0].length[0] = collide->zsize / 2;
+							cd[0].length[1] = collide->xsize / 2;
+
+							// calc axes of box
+							int dtheta = cd[0].theta & 0xfff;
+
+							cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
+							cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+
+							cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
+							cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+
+							extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+							extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+							CVECTOR ggcv = { 0, 250, 0 };
+							CVECTOR rrcv = { 250, 0, 0 };
+							CVECTOR yycv = { 250, 250, 0 };
+
+							// show both box axes
+							{
+								VECTOR _zero = { 0 };
+								VECTOR b1p = cd[0].x;
+
+								// show position to position
+								//Debug_AddLine(b1p1, b2p1, yycv);
+
+								VECTOR b1ax[2] = { {0} , {0} };
+								b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
+								b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
+								b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
+								b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+
+								// show axis of body 1
+								Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+								Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+								// display 2D box 1
 								{
-									CDATA2D cd[2];
+									int h = b1ax[0].vy;
+									VECTOR box_points[4] = {
+										{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+										{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
 
-									cd[0].x.vx = (pCellObject->pos.vx + FIXED(collide->xpos * matrixtable[uVar8].m[0][0] + collide->zpos * matrixtable[uVar8].m[2][0]));
-									cd[0].x.vz = (pCellObject->pos.vz + FIXED(collide->xpos * matrixtable[uVar8].m[0][2] + collide->zpos * matrixtable[uVar8].m[2][2]));
-									cd[0].x.vy = 0;
+										{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+										{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+									};
 
-									cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
-									cd[0].length[0] = collide->zsize / 2;
-									cd[0].length[1] = collide->xsize / 2;
-
-									// calc axes of box
-									int dtheta = cd[0].theta & 0xfff;
-
-									cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
-									cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
-
-									cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
-									cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
-
-									extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
-									extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
-
-									CVECTOR ggcv = { 0, 250, 0 };
-									CVECTOR rrcv = { 250, 0, 0 };
-									CVECTOR yycv = { 250, 250, 0 };
-
-									// show both box axes
-									{
-										VECTOR _zero = { 0 };
-										VECTOR b1p = cd[0].x;
-
-										// show position to position
-										//Debug_AddLine(b1p1, b2p1, yycv);
-
-										VECTOR b1ax[2] = { {0} , {0} };
-										b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
-										b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
-										b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
-										b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
-
-										// show axis of body 1
-										Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
-										Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
-
-										// display 2D box 1
-										{
-											int h = b1ax[0].vy;
-											VECTOR box_points[4] = {
-												{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
-												{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
-
-												{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
-												{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
-											};
-
-											Debug_AddLineOfs(box_points[0], box_points[1], b1p, rayResult ? ggcv : yycv);
-											Debug_AddLineOfs(box_points[1], box_points[2], b1p, rayResult ? ggcv : yycv);
-											Debug_AddLineOfs(box_points[2], box_points[3], b1p, rayResult ? ggcv : yycv);
-											Debug_AddLineOfs(box_points[3], box_points[0], b1p, rayResult ? ggcv : yycv);
-										}
-									}
+									Debug_AddLineOfs(box_points[0], box_points[1], b1p, rayResult ? ggcv : yycv);
+									Debug_AddLineOfs(box_points[1], box_points[2], b1p, rayResult ? ggcv : yycv);
+									Debug_AddLineOfs(box_points[2], box_points[3], b1p, rayResult ? ggcv : yycv);
+									Debug_AddLineOfs(box_points[3], box_points[0], b1p, rayResult ? ggcv : yycv);
 								}
+							}
+						}
 
-								if (rayResult != 0)
-									return 0;
+						if (rayResult != 0)
+							return 0;
 
 #else
-								if (RaySlabsIntersection(&ray, &box) != 0)
-									return 0;
+						if (RaySlabsIntersection(&ray, &box) != 0)
+							return 0;
 #endif
-
-								iVar3++;
-								collide++;
-
-							} while (iVar3 < iVar5);
-						}
+						box_loop++;
+						collide++;
 					}
 				}
-
 				ppco = GetNextPackedCop(&ci);
 			}
 		}
+
 		we++;
-		iVar3 = cellx;
-		iVar5 = cellz;
+
+		ocx = cell_x;
+		ocz = cell_z;
 	} while (we < 2);
 
 	return 1;
