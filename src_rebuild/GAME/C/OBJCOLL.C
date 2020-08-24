@@ -563,7 +563,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 					while (box_loop < num_cb)
 					{
 						local_a0_592 = -pCellObject->yang & 0x3f;
-						local_a3_704 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
+						local_a3_704 = (pCellObject->yang + collide->yang) * 64 & 0xfff;
 
 						mat = &matrixtable[local_a0_592];
 
@@ -573,19 +573,19 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						iVar4 = va.vx - (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
 						iVar3 = va.vz - (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						
-						box.slab[0].upper = collide->xsize / 2 + testRadius;
+						box.slab[0].upper = collide->xsize / 2;// +testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
 					
-						box.slab[1].upper = collide->ysize / 2 + testRadius;
+						box.slab[1].upper = collide->ysize / 2;// +testRadius;
 						box.slab[1].lower = -box.slab[1].upper;
-
-						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
 						
-						box.slab[2].upper = collide->zsize / 2 + testRadius;
+						box.slab[2].upper = collide->zsize / 2;// +testRadius;
 						box.slab[2].lower = -box.slab[2].upper;
 
 						ray.org[0] = FIXED(cs * iVar4 - sn * iVar3);
 						ray.org[2] = FIXED(cs * iVar3 + sn * iVar4);
+						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
+
 						ray.dir[0] = FIXED(cs * pos.vx - sn * pos.vz);
 						ray.dir[2] = FIXED(cs * pos.vz + sn * pos.vx);
 						ray.dir[1] = vb.vy - va.vy;
@@ -651,10 +651,10 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 										{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
 									};
 
-									Debug_AddLineOfs(box_points[0], box_points[1], b1p, rayResult ? ggcv : yycv);
-									Debug_AddLineOfs(box_points[1], box_points[2], b1p, rayResult ? ggcv : yycv);
-									Debug_AddLineOfs(box_points[2], box_points[3], b1p, rayResult ? ggcv : yycv);
-									Debug_AddLineOfs(box_points[3], box_points[0], b1p, rayResult ? ggcv : yycv);
+									Debug_AddLineOfs(box_points[0], box_points[1], b1p, rayResult ? rrcv : ggcv);
+									Debug_AddLineOfs(box_points[1], box_points[2], b1p, rayResult ? rrcv : ggcv);
+									Debug_AddLineOfs(box_points[2], box_points[3], b1p, rayResult ? rrcv : ggcv);
+									Debug_AddLineOfs(box_points[3], box_points[0], b1p, rayResult ? rrcv : ggcv);
 								}
 							}
 						}
