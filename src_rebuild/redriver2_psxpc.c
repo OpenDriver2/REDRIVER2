@@ -187,6 +187,7 @@ extern int gDrawDistance;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
 extern int g_FreeCameraEnabled;
+int gStopCivCars = 0;
 
 extern void FunkUpDaBGMTunez(int funk);
 
@@ -291,12 +292,13 @@ void GameDebugKeys(int nKey, bool down)
 		gDisplayDrawStats ^= 1;
 		printf("Stats %s\n", gDisplayDrawStats ? "ON" : "OFF");
 	}
+#ifdef _DEBUG
 	else if (nKey == SDL_SCANCODE_F6)
 	{
-		extern int gStopCivCars;
 		gStopCivCars ^= 1;
 		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
 	}
+#endif
 	else if (nKey == SDL_SCANCODE_F7)
 	{
 		g_FreeCameraEnabled ^= 1;

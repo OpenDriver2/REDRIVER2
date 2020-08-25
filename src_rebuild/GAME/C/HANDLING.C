@@ -1636,10 +1636,6 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 3751
 
-#ifdef _DEBUG
-int gStopCivCars = 0;
-#endif
-
 // [D]
 void StepCarPhysics(_CAR_DATA *cp)
 {
@@ -1660,6 +1656,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 		hp->aggressiveBraking = 1;
 
 #ifdef _DEBUG
+	extern int gStopCivCars;
 	if (!(gStopCivCars && cp->controlType == 2))
 	{
 		active_car_list[num_active_cars] = cp;
@@ -2057,7 +2054,7 @@ void CheckCarToCarCollisions(void)
 
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-#if 1
+#if 0
 	extern int gInGameCutsceneActive;
 	if (gInGameCutsceneActive == 0 && cp->controlType == 1)
 	{
