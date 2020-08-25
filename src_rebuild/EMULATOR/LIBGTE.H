@@ -213,6 +213,7 @@ extern MATRIX* RotMatrixY(long r, MATRIX *m);
 extern MATRIX* RotMatrixZ(long r, MATRIX *m);
 extern MATRIX* TransMatrix(MATRIX* m, VECTOR* v);
 extern MATRIX* ScaleMatrix(MATRIX* m, VECTOR* v);
+extern MATRIX* MulRotMatrix(MATRIX* m0);
 extern void SetDQA(int iDQA);
 extern void SetDQB(int iDQB);
 extern void SetFogNear(long a, long h);

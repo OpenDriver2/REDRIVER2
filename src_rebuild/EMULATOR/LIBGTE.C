@@ -1363,6 +1363,24 @@ MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 	return m2;
 }
 
+MATRIX* MulRotMatrix(MATRIX* m0)
+{
+    // FIXME: might be wrong
+    gte_ldv0(&m0->m[0]);
+    docop2(0x486012);
+    gte_stsv(&m0->m[0]);
+
+    gte_ldv0(&m0->m[1]);
+    docop2(0x486012);
+    gte_stsv(&m0->m[1]);
+
+    gte_ldv0(&m0->m[2]);
+    docop2(0x486012);
+    gte_stsv(&m0->m[2]);
+
+    return m0;
+}
+
 MATRIX* MulMatrix(MATRIX* m0, MATRIX* m1)
 {
     UNIMPLEMENTED();
