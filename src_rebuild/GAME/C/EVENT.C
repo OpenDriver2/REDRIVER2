@@ -2892,6 +2892,12 @@ LAB_00048934:
 void StepEvents(void)
 {
 	UNIMPLEMENTED();
+
+	if (detonator.timer != 0) 
+	{
+		DetonatorTimer();
+	}
+
 	/*
 	bool bVar1;
 	ushort uVar2;
@@ -4143,131 +4149,148 @@ int OnBoat(VECTOR *pos, _EVENT *ev, int *dist)
 	// End Line: 6773
 
 extern _sdPlane sea;
+int debugOffset = 0;
 
-_sdPlane * EventSurface(VECTOR *pos, _sdPlane *plane)
+// [D]
+_sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 {
-	UNIMPLEMENTED();
-	return &sea;
-	/*
-	ushort uVar1;
-	int *piVar2;
-	uint uVar3;
+	short uVar1;
+	int* piVar2;
+	int uVar3;
 	short sVar4;
 	int iVar5;
-	uint uVar6;
+	int uVar6;
 	int iVar7;
 	int iVar8;
-	_EVENT *ev;
+	_EVENT* ev;
 	int iVar9;
-	int local_18[2];
+	int dist;
 
-	uVar6 = SEXT24((short)(plane->surface & 0xffef));
+	uVar6 = ((plane->surface & 0xffef));
 	ev = event + uVar6;
-	if (GameLevel == 1) {
+
+	if (GameLevel == 1)
+	{
 	LAB_0004a880:
-		if ((ev->flags & 0x800U) != 0) {
-			iVar8 = OnBoat(pos, ev, local_18);
-			if (iVar8 == 0) {
+		if ((ev->flags & 0x800U) != 0)
+		{
+			if (OnBoat(pos, ev, &dist) == 0)
+			{
 			LAB_0004aa60:
 				return &sea;
 			}
+
 			iVar8 = 200;
-			if (GameLevel == 3) {
-				iVar8 = 0x100;
-			}
+
+			if (GameLevel == 3)
+				iVar8 = 256;
+
 			piVar2 = ev->data;
-			uVar6 = piVar2[1] & 0xfff;
-			iVar5 = (int)rcossin_tbl[uVar6 * 2];
-			iVar9 = (int)rcossin_tbl[uVar6 * 2 + 1];
-			if (GameLevel == 3) {
-				iVar7 = local_18[0] * -0x1000 + iVar9 * -0xd00;
-				if (0 < iVar7) {
-					uVar3 = 0xa0U - piVar2[1] & 0xfff;
+			uVar6 = ev->data[1] & 0xfff;
+			iVar5 = rcossin_tbl[uVar6 * 2];
+			iVar9 = rcossin_tbl[uVar6 * 2 + 1];
+
+			if (GameLevel == 3) 
+			{
+				iVar7 = dist * -4096 - iVar9 * 3328;
+
+				if (0 < iVar7) 
+				{
+					uVar3 = 0xa0U - ev->data[1] & 0xfff;
 					iVar9 = (int)rcossin_tbl[uVar3 * 2 + 1];
-					if (iVar9 << 0xb < iVar7) {
+
+					if (iVar9 << 0xb < iVar7) 
+					{
 						debugOffset = iVar7;
 						return &sea;
 					}
-					if (iVar9 == 0) {
-						trap(7);
-					}
-					uVar6 = (iVar8 - ((iVar5 * 0xd00 + 0x800 >> 0xc) + piVar2[2] + (ev->position).vy)) +
-						((iVar7 + 0x800 >> 0xc) * (int)rcossin_tbl[uVar3 * 2]) / iVar9;
-					iVar5 = (int)rcossin_tbl[uVar3 * 2];
+
+					uVar6 = (iVar8 - (FIXED(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXED(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
+					iVar5 = rcossin_tbl[uVar3 * 2];
 					goto LAB_0004a9f8;
 				}
 			}
-			if (iVar9 == 0) {
-				trap(7);
-			}
-			uVar6 = iVar8 + (((iVar5 * local_18[0]) / iVar9 - piVar2[2]) - (ev->position).vy);
+
+			uVar6 = iVar8 + (((iVar5 * dist) / iVar9 - ev->data[2]) - (ev->position).vy);
+
 		LAB_0004a9f8:
-			plane->b = (short)(iVar9 << 2);
+			plane->b = (iVar9 << 2);
 			plane->a = 0;
-			plane->c = (short)(iVar5 << 2);
+			plane->c = (iVar5 << 2);
 			plane->d = uVar6 ^ 0x40000000;
 			return plane;
 		}
+
 		uVar6 = -(ev->position).vy;
-		if (pos->vy < (int)(uVar6 - 100)) {
+
+		if (pos->vy < (int)(uVar6 - 100)) 
+		{
 			uVar6 = 0xbfffee02;
 			goto LAB_0004aa50;
 		}
 	}
-	else {
-		if (1 < GameLevel) {
-			if (GameLevel != 3) {
+	else 
+	{
+		if (1 < GameLevel) 
+		{
+			if (GameLevel != 3)
+			{
 				return &sea;
 			}
 			goto LAB_0004a880;
 		}
-		if (GameLevel != 0) {
+
+		if (GameLevel != 0)
 			return &sea;
-		}
-		if ((ev->flags & 0x30U) == 0) {
+
+		if ((ev->flags & 0x30U) == 0) 
 			iVar8 = pos->vz;
-		}
-		else {
+		else 
 			iVar8 = pos->vx;
-		}
-		if ((uVar6 & 1) == 0) {
-			piVar2 = ev->data;
-			iVar5 = piVar2[1];
-		}
-		else {
-			piVar2 = ev->data;
-			iVar5 = piVar2[-1];
-		}
-		uVar6 = (uint)(ushort)ev->rotation & 0xfff;
+
+		if ((uVar6 & 1) == 0)
+			iVar5 = ev->data[1];
+		else 
+			iVar5 = ev->data[-1]; // [A] WTF?
+
+		uVar6 = ev->rotation & 0xfff;
 		iVar7 = (int)rcossin_tbl[uVar6 * 2 + 1];
-		iVar9 = (iVar5 - *piVar2) * iVar7;
-		iVar8 = iVar8 - *piVar2;
+		iVar9 = (iVar5 - ev->data[0]) * iVar7;
+		iVar8 = iVar8 - ev->data[0];
 		iVar5 = iVar8;
-		if (iVar8 < 0) {
+		if (iVar8 < 0)
 			iVar5 = -iVar8;
-		}
-		if (iVar9 < 0) {
+
+		if (iVar9 < 0)
 			iVar9 = -iVar9;
-		}
-		if (iVar9 < iVar5 << 0xc) goto LAB_0004aa60;
+
+		if (iVar9 < iVar5 << 0xc)
+			goto LAB_0004aa60;
+
 		uVar6 = (iVar8 * rcossin_tbl[uVar6 * 2]) / iVar7;
-		if (iVar7 == 0) {
-			trap(7);
-		}
+
 		sVar4 = (short)(iVar7 << 2);
-		if (0x400 < iVar8) {
-			if (pos->vy + 200 < (int)uVar6) goto LAB_0004aa60;
-			sVar4 = (short)(iVar7 << 2);
+
+		if (iVar8 > 1024) 
+		{
+			if (pos->vy + 200 < (int)uVar6)
+				goto LAB_0004aa60;
+
+			sVar4 = (iVar7 << 2);
 		}
+
 		plane->b = sVar4;
-		if ((ev->flags & 0x30U) == 0) {
+
+		if ((ev->flags & 0x30U) == 0) 
+		{
 			plane->a = 0;
-			uVar1 = rcossin_tbl[((uint)(ushort)ev->rotation & 0xfff) * 2];
+			uVar1 = rcossin_tbl[(ev->rotation & 0xfff) * 2];
 			plane->c = uVar1 * -4;
-			plane->d = (int)((uint)uVar1 * -0x40000) >> 0x10;
+			plane->d = (uVar1 * -0x40000) >> 0x10;
 		}
-		else {
-			sVar4 = rcossin_tbl[((uint)(ushort)ev->rotation & 0xfff) * 2];
+		else 
+		{
+			sVar4 = rcossin_tbl[(ev->rotation & 0xfff) * 2];
 			plane->c = 0;
 			plane->a = sVar4 * -4;
 		}
@@ -4276,7 +4299,6 @@ _sdPlane * EventSurface(VECTOR *pos, _sdPlane *plane)
 LAB_0004aa50:
 	plane->d = uVar6;
 	return plane;
-	*/
 }
 
 
