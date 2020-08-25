@@ -11,6 +11,7 @@
 #include "JOB_FX.H"
 #include "BOMBERMAN.H"
 #include "DEBRIS.H"
+#include "MAIN.H"
 
 int ElTrainData[83] = {
 	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
@@ -4791,133 +4792,160 @@ void OffsetTarget(VECTOR *target)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+//[D]
 void SpecialCamera(enum SpecialCamera type, int change)
 {
-	UNIMPLEMENTED();
-	/*
-	int *in_a2;
-	short *psVar1;
+	static int rememberCamera[3]; // offset 0x230
+	static short boatCamera[6] = {
+		-1000, 2100, 6000,
+		-5000, 3584, -5000
+	};
 
-	if ((change == 0) && (type != SPECIAL_CAMERA_WAIT)) {
+	int* hackCamera;
+	short* boat;
+
+	if ((change == 0) && (type != SPECIAL_CAMERA_WAIT)) 
+	{
 		cameraDelay.delay = 1;
 		cameraDelay.type = (uint)type;
-		_camera_change = 1;
+		camera_change = 1;
 		return;
 	}
-	if (type == SPECIAL_CAMERA_RESET) {
-		events.cameraEvent = (_EVENT *)0x0;
+
+	if (type == SPECIAL_CAMERA_RESET)
+	{
+		events.cameraEvent = NULL;
 		gStopPadReads = 0;
-		camera_position.vx = rememberCamera_97;
-		camera_angle.vy = (short)DAT_000cde84;
-		camera_position.vz = DAT_000cde88;
-		player.cameraPos.vx = rememberCamera_97;
-		player.cameraPos.vy = camera_position.vy;
-		player.cameraPos.vz = DAT_000cde88;
-		player.cameraPos.pad = camera_position.pad;
+
+		camera_position.vx = rememberCamera[0];
+		camera_angle.vy = (short)rememberCamera[1];
+		camera_position.vz = rememberCamera[2];
+
+		player[0].cameraPos.vx = rememberCamera[0];
+		player[0].cameraPos.vy = camera_position.vy;
+		player[0].cameraPos.vz = rememberCamera[2];
+		player[0].cameraPos.pad = camera_position.pad;
 		goto LAB_0004b5b8;
 	}
-	if (SPECIAL_CAMERA_RESET < type) {
-		if (type == SPECIAL_CAMERA_WAIT) {
+
+	if (SPECIAL_CAMERA_RESET < type) 
+	{
+		if (type == SPECIAL_CAMERA_WAIT)
+		{
 			cameraDelay.delay = 100;
 			cameraDelay.type = 1;
 			gStopPadReads = 1;
 		}
 		goto LAB_0004b5b8;
 	}
-	psVar1 = (short *)0x0;
-	rememberCamera_97 = camera_position.vx;
-	DAT_000cde84 = (int)camera_angle.vy;
-	DAT_000cde88 = camera_position.vz;
-	if (GameLevel == 1) {
-		if (gCurrentMissionNumber == 0xf) {
-			psVar1 = (short *)0x9ed8c;
+
+	boat = NULL;
+	rememberCamera[0] = camera_position.vx;
+	rememberCamera[1] = camera_angle.vy;
+	rememberCamera[2] = camera_position.vz;
+
+	if (GameLevel == 1) 
+	{
+		if (gCurrentMissionNumber == 15) 
+		{
+			boat = boatCamera;
 		LAB_0004b418:
-			events.cameraEvent = (_EVENT *)0x1;
+			events.cameraEvent = (_EVENT*)0x1;
 		}
-		else {
-			in_a2 = HavanaCameraHack;
-			if (type == SPECIAL_CAMERA_SET2) {
-				in_a2 = HavanaCameraHack + 6;
+		else 
+		{
+			hackCamera = HavanaCameraHack;
+
+			if (type == SPECIAL_CAMERA_SET2)
+			{
+				hackCamera = HavanaCameraHack + 6;
 				camera_position.vy = -500;
 			}
-			else {
-				if (doneFirstHavanaCameraHack == 0) {
-					doneFirstHavanaCameraHack = 1;
+			else if (doneFirstHavanaCameraHack == 0)
+			{
+				doneFirstHavanaCameraHack = 1;
+			}
+			else
+			{
+			LAB_0004b42c:
+				hackCamera = hackCamera + 3;
+			}
+		}
+	}
+	else 
+	{
+		if (GameLevel == 0) 
+		{
+			hackCamera = ChicagoCameraHack;
+		}
+		else if (GameLevel == 2)
+		{
+			hackCamera = VegasCameraHack;
+			if (gCurrentMissionNumber == 0x17)
+			{
+				if (type != SPECIAL_CAMERA_SET2) 
+				{
+					hackCamera = VegasCameraHack + 6;
+					goto LAB_0004b418;
 				}
-				else {
-				LAB_0004b42c:
-					in_a2 = in_a2 + 3;
+
+				hackCamera = VegasCameraHack + 9;
+			}
+			else if (gCurrentMissionNumber == 0x16)
+			{
+				hackCamera = VegasCameraHack + 0xd;
+				events.cameraEvent = (_EVENT*)0x1;
+				camera_position.vy = -1800;
+			}
+			else if (gCurrentMissionNumber == 0x1e)
+			{
+				hackCamera = hackCamera + 3;
+			}
+		}
+		else if (GameLevel == 3)
+		{
+			if (gCurrentMissionNumber == 35)
+			{
+				boat = boatCamera + 3;
+			}
+			else
+			{
+				hackCamera = RioCameraHack;
+
+				if (0 < camera_position.vz)
+				{
+					hackCamera = RioCameraHack + 3;
 				}
 			}
 		}
 	}
-	else {
-		if (GameLevel < 2) {
-			if (GameLevel == 0) {
-				in_a2 = ChicagoCameraHack;
-			}
-		}
-		else {
-			if (GameLevel == 2) {
-				in_a2 = VegasCameraHack;
-				if (gCurrentMissionNumber == 0x17) {
-					if (type != SPECIAL_CAMERA_SET2) {
-						in_a2 = VegasCameraHack + 6;
-						goto LAB_0004b418;
-					}
-					in_a2 = VegasCameraHack + 9;
-				}
-				else {
-					if (gCurrentMissionNumber < 0x18) {
-						if (gCurrentMissionNumber == 0x16) {
-							in_a2 = INT_ARRAY_0009ed64 + 1;
-							events.cameraEvent = (_EVENT *)0x1;
-							camera_position.vy = -0x708;
-						}
-					}
-					else {
-						if (gCurrentMissionNumber == 0x1e) goto LAB_0004b42c;
-					}
-				}
-			}
-			else {
-				if (GameLevel == 3) {
-					if (gCurrentMissionNumber == 0x23) {
-						psVar1 = (short *)0x9ed92;
-					}
-					else {
-						in_a2 = RioCameraHack;
-						if (0 < camera_position.vz) {
-							in_a2 = RioCameraHack + 3;
-						}
-					}
-				}
-			}
-		}
+
+	if (boat == NULL) 
+	{
+		camera_position.vx = hackCamera[0];
+		camera_angle.vy = hackCamera[1];
+		camera_position.vz = hackCamera[2];
 	}
-	if (psVar1 == (short *)0x0) {
-		camera_position.vx = *in_a2;
-		camera_angle.vy = *(short *)(in_a2 + 1);
-		camera_position.vz = in_a2[2];
+	else 
+	{
+		camera_position.vx = (event->position).vx + boat[0];
+		camera_angle.vy = boat[1];
+		camera_position.vz = (event->position).vz + boat[2];
 	}
-	else {
-		camera_position.vx = (event->position).vx + (int)*psVar1;
-		camera_angle.vy = psVar1[1];
-		camera_position.vz = (event->position).vz + (int)psVar1[2];
-	}
-	player.cameraPos.vx = camera_position.vx;
-	player.cameraPos.vy = camera_position.vy;
-	player.cameraPos.vz = camera_position.vz;
-	player.cameraPos.pad = camera_position.pad;
-	if (events.cameraEvent != (_EVENT *)0x0) {
+
+	player[0].cameraPos = camera_position;
+
+	if (events.cameraEvent != NULL) 
+	{
 		gStopPadReads = 1;
 	}
+
 LAB_0004b5b8:
-	if (type != SPECIAL_CAMERA_WAIT) {
-		_camera_change = 1;
+	if (type != SPECIAL_CAMERA_WAIT) 
+	{
+		camera_change = 1;
 		VisibilityLists(VIS_SORT, 0);
 	}
-	return;*/
 }
 
 
