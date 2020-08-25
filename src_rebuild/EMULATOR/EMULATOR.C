@@ -444,6 +444,11 @@ void Emulator_GetScreenSize(int& screenWidth, int& screenHeight)
 	SDL_GetWindowSize(g_window, &screenWidth, &screenHeight);
 }
 
+void Emulator_SetCursorPosition(int x, int y)
+{
+	SDL_WarpMouseInWindow(g_window, x, y);
+}
+
 void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
 {
 	// swap line coordinates for left-to-right and up-to-bottom direction
@@ -1639,6 +1644,7 @@ void Emulator_BlitVRAM()
 }
 
 void Emulator_DoDebugKeys(int nKey, bool down); // forward decl
+void Emulator_DoDebugMouseMotion(int x, int y);
 
 void Emulator_DoPollEvent()
 {
@@ -1668,6 +1674,10 @@ void Emulator_DoPollEvent()
 					Emulator_ShutDown();
 					break;
 				}
+				break;
+			case SDL_MOUSEMOTION:
+				
+				Emulator_DoDebugMouseMotion(event.motion.x, event.motion.y);
 				break;
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
@@ -1754,7 +1764,14 @@ void Emulator_TakeScreenshot()
 #endif
 
 GameDebugKeysHandlerFunc gameDebugKeys = NULL;
+GameDebugMouseHandlerFunc gameDebugMouse = NULL;
 int activeControllers = 0x1;
+
+void Emulator_DoDebugMouseMotion(int x, int y)
+{
+	if (gameDebugMouse)
+		gameDebugMouse(x, y);
+}
 
 void Emulator_DoDebugKeys(int nKey, bool down)
 {
