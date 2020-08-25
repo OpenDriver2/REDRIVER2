@@ -37,6 +37,7 @@ extern int bStopTanner;
 extern int tannerDeathTimer;
 extern int gCantDrive;
 extern int gPlayerDamageFactor;
+extern int gCarWithABerm;
 
 extern int gPlayerWithTheFlag;
 

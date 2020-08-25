@@ -101,6 +101,8 @@ xa_request xa_data[26] = {
 };
 
 int cutscene_timer = 0;
+long pos[3];
+static int bodgevar = 0;
 
 // decompiled code
 // original method signature: 
@@ -1130,9 +1132,6 @@ switchD_0005e06c_caseD_38:
 		// Start line: 1909
 	/* end block 2 */
 	// End Line: 1910
-
-long pos[3];
-static int bodgevar = 0;
 
 // [D]
 void SetMSoundVar(int var, VECTOR *V)

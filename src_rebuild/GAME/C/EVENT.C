@@ -7,6 +7,10 @@
 #include "CONVERT.H"
 #include "DRAW.H"
 #include "MODELS.H"
+#include "MISSION.H"
+#include "JOB_FX.H"
+#include "BOMBERMAN.H"
+#include "DEBRIS.H"
 
 int ElTrainData[83] = {
 	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
@@ -5040,135 +5044,165 @@ void ScreenShake(int count, SVECTOR *ang)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+static struct _EVENT* firstMissionEvent;
+
+// [D]
 int DetonatorTimer(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	_EVENT *ipos;
-	int count;
-	_EVENT *p_Var1;
-	undefined4 local_2c;
-	undefined4 local_28;
-	undefined4 in_stack_ffffffdc;
-	int local_20;
+	static struct SVECTOR rememberCameraAngle; // offset 0x30
+	static int count = 0; // offset 0x38
 
-	ipos = firstMissionEvent;
-	p_Var1 = event;
-	if (gCurrentMissionNumber == 0x17) {
-		if (detonator.timer - 3U < 0x11) {
-			count = detonator.timer + -2;
+	long* plVar1;
+	_EVENT* _ev;
+	int cnt;
+	_EVENT* ev;
+	VECTOR pos;
+
+	_ev = firstMissionEvent;
+	ev = event;
+	if (gCurrentMissionNumber == 23) 
+	{
+		if (detonator.timer - 3U < 0x11) 
+		{
+			cnt = detonator.timer + -2;
 		}
-		else {
-			if (8 < detonator.timer - 0x1fU) {
-				if (detonator.timer == 0x15) {
-					count_106 = count_106 + 1;
-					if ((count_106 & 7) == 0) {
-						AddExplosion((VECTOR)(ZEXT1216(CONCAT48(in_stack_ffffffdc, CONCAT44(local_28, local_2c)))
-							<< 0x20), camera_position.vx);
+		else 
+		{
+			if (8 < detonator.timer - 0x1fU)
+			{
+				if (detonator.timer == 0x15)
+				{
+					count = count + 1;
+					if ((count & 7) == 0)
+					{
+						AddExplosion(camera_position, BIG_BANG);
 					}
-					camera_position.vz = camera_position.vz + 0x96;
-					if (INT_ARRAY_0009ed64[0] < camera_position.vz) {
-						AddExplosion((VECTOR)CONCAT412(in_stack_ffffffdc,
-							CONCAT48(local_28, CONCAT44(local_2c, 0x29a))),
-							camera_position.vx);
-						rememberCameraAngle_105 = camera_angle._0_4_;
-						DAT_000aad54 = camera_angle._4_4_;
-						DAT_000d7c28 = DAT_000d7c28 & 0xef;
+
+					camera_position.vz += 150;
+
+					if (VegasCameraHack[12] < camera_position.vz)
+					{
+						pos.vx = camera_position.vx;
+						pos.vy = camera_position.vy;
+						pos.vz = 271695;
+
+						AddExplosion(pos, HEY_MOMMA);
+
+						rememberCameraAngle = camera_angle;
+						Mission.timer[0].flags = Mission.timer[0].flags & 0xef;
 						SetMissionComplete();
 					}
-					else {
+					else 
+					{
 						detonator.timer = detonator.timer + 1;
 					}
-					player.cameraPos.vz = camera_position.vz;
+
+					player[0].cameraPos.vz = camera_position.vz;
 				}
-				else {
-					if (detonator.timer < 0x16) {
-						if (detonator.timer == 0) {
-							SpecialCamera(SPECIAL_CAMERA_SET, 0);
-							detonator.timer = 0x46;
-						}
-					}
-					else {
-						if (detonator.timer == 0x16) {
-							SpecialCamera(SPECIAL_CAMERA_SET2, 0);
-						}
-						else {
-							if (detonator.timer == 0x28) {
-								BombThePlayerToHellAndBack(gCarWithABerm);
-								rememberCameraAngle_105 = camera_angle._0_4_;
-								DAT_000aad54 = camera_angle._4_4_;
-								*(int *)(car_data[gCarWithABerm].st + 0x20) =
-									*(int *)(car_data[gCarWithABerm].st + 0x20) + 200000;
-							}
-						}
-					}
+				else if (detonator.timer == 0)
+				{
+					SpecialCamera(SPECIAL_CAMERA_SET, 0);
+					detonator.timer = 0x46;
 				}
+				else if (detonator.timer == 0x16)
+				{
+					SpecialCamera(SPECIAL_CAMERA_SET2, 0);
+				}
+				else if (detonator.timer == 40)
+				{
+					BombThePlayerToHellAndBack(gCarWithABerm);
+					car_data[gCarWithABerm].st.n.linearVelocity[1] += 200000;
+					rememberCameraAngle = camera_angle;
+				}
+
 				goto LAB_0004ba8c;
 			}
-			count = detonator.timer + -0x1e;
+
+			cnt = detonator.timer - 30;
 		}
-		ScreenShake(count, (SVECTOR *)&rememberCameraAngle_105);
+
+		ScreenShake(cnt, &rememberCameraAngle);
+
 		goto LAB_0004ba8c;
 	}
-	if (detonator.timer - 0x8dU < 0x13) {
-		ScreenShake(detonator.timer + -0x8c, (SVECTOR *)&rememberCameraAngle_105);
-		Setup_Smoke((VECTOR *)ipos, 100, 500, 1, 0, &dummy, 0);
+
+	if (detonator.timer - 0x8dU < 0x13) 
+	{
+		ScreenShake(detonator.timer + -0x8c, &rememberCameraAngle);
+		Setup_Smoke(&_ev->position, 100, 500, 1, 0, &dummy, 0);
 		goto LAB_0004ba8c;
 	}
-	if (detonator.timer == 0xa7) {
-		p_Var1 = firstMissionEvent + 1;
+
+	if (detonator.timer == 167)
+	{
+		ev = firstMissionEvent + 1;
 	LAB_0004ba0c:
-		p_Var1 = p_Var1 + 1;
+		ev = ev + 1;
 	}
-	else {
-		if (detonator.timer < 0xa8) {
-			if (detonator.timer == 0) {
-				count = detonator.count + -1;
-				p_Var1 = firstMissionEvent;
-				if (detonator.count < 3) {
-					while (detonator.count = count, detonator.count != -1) {
-						AddExplosion((VECTOR)(ZEXT1216(CONCAT48(in_stack_ffffffdc, CONCAT44(local_28, local_2c)))
-							<< 0x20), (p_Var1->position).vx);
-						count = detonator.count + -1;
-						p_Var1 = p_Var1 + 1;
+	else 
+	{
+		if (detonator.timer < 168)
+		{
+			if (detonator.timer == 0)
+			{
+				cnt = detonator.count + -1;
+				ev = firstMissionEvent;
+				if (detonator.count < 3)
+				{
+					while (detonator.count = cnt, detonator.count != -1) 
+					{
+						AddExplosion(ev->position, BIG_BANG);
+						cnt = detonator.count + -1;
+						ev = ev + 1;
 					}
+
 					return 0;
 				}
+
 				detonator.timer = 200;
 				SpecialCamera(SPECIAL_CAMERA_SET, 0);
-				events.cameraEvent = (_EVENT *)0x1;
-				rememberCameraAngle_105 = camera_angle._0_4_;
-				DAT_000aad54 = camera_angle._4_4_;
+				events.cameraEvent = (_EVENT*)0x1;
+
+				rememberCameraAngle = camera_angle;
 			}
-			else {
-				if (detonator.timer == 0xa0) {
-					ipos = firstMissionEvent + 1;
-					if (GameLevel == 3) {
-						event->flags = event->flags & 0xfffeU | 0x20;
-						ipos = p_Var1;
-					}
-					AddExplosion((VECTOR)CONCAT412(in_stack_ffffffdc,
-						CONCAT48(local_28, CONCAT44(local_2c, 0x29a))),
-						(ipos->position).vx);
+			else if (detonator.timer == 0xa0)
+			{
+				_ev = firstMissionEvent + 1;
+				if (GameLevel == 3)
+				{
+					event->flags = event->flags & 0xfffeU | 0x20;
+					_ev = ev;
 				}
+
+				AddExplosion(_ev->position, HEY_MOMMA);
 			}
+
 			goto LAB_0004ba8c;
 		}
-		p_Var1 = firstMissionEvent;
-		if (detonator.timer == 0xb4) goto LAB_0004ba0c;
-		if (detonator.timer != 0xbe) goto LAB_0004ba8c;
+
+		ev = firstMissionEvent;
+		if (detonator.timer == 180) 
+			goto LAB_0004ba0c;
+
+		if (detonator.timer != 190)
+			goto LAB_0004ba8c;
 	}
-	local_20 = (p_Var1->position).vx;
-	if (GameLevel == 3) {
-		local_20 = local_20 - boatOffset.vx;
+
+	pos.vx = (ev->position).vx;
+	pos.vy = (ev->position).vy;
+	pos.vz = (ev->position).vz;
+
+	if (GameLevel == 3) 
+	{
+		pos.vx = pos.vx - boatOffset.vx;
+		pos.vy = pos.vy - boatOffset.vy;
+		pos.vz = pos.vz - boatOffset.vz;
 	}
-	AddExplosion((VECTOR)(ZEXT1216(CONCAT48(in_stack_ffffffdc, CONCAT44(local_28, local_2c))) << 0x20),
-		local_20);
+
+	AddExplosion(pos, BIG_BANG);
 LAB_0004ba8c:
-	detonator.timer = detonator.timer + -1;
+	detonator.timer--;
 	return 1;
-	*/
 }
 
 
