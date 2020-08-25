@@ -8,6 +8,7 @@
 #include "CONVERT.H"
 #include "SOUND.H"
 #include "XAPLAY.H"
+#include "GLAUNCH.H"
 
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -543,87 +544,79 @@ void DoCutsceneSound(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char es_mobile[1];
+static int holdall;
+
+// [D]
 void InitializeMissionSound(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	char cVar2;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
-	undefined3 extraout_var_01;
-	undefined3 extraout_var_02;
-	undefined3 extraout_var_03;
-	undefined3 extraout_var_04;
-	char *pcVar3;
+	char* pcVar3;
 	int iVar4;
 
 	iVar4 = 0;
-	pcVar3 = &es_mobile;
 	bodgevar = 0;
 	holdall = -1;
-	MissionStartData.PlayerPos._0_4_ = 0xffffffff;
-	do {
-		*pcVar3 = -1;
-		iVar1 = GameLevel;
-		iVar4 = iVar4 + -1;
-		pcVar3 = pcVar3 + -1;
-	} while (-1 < iVar4);
+	//MissionStartData.PlayerPos.vx = 0xffffffff;	// [A] something isn't quite right there
+
+	es_mobile[0] = -1;
+
 	jericho_in_back = 0;
-	if (GameLevel == 1) {
-		if (gCurrentMissionNumber - 0xfU < 2) {
-			cVar2 = GetMissionSound('\x0e');
-			iVar4 = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var, cVar2), 0, -10000, 0);
-			es_mobile = (char)iVar4;
+
+	if (GameLevel == 0)
+	{
+		es_mobile[0] = AddEnvSnd(3, 0, 4, 4, -10000, 0, 0, 0, 0);
+	}
+	else if (GameLevel == 1) 
+	{
+		if (gCurrentMissionNumber - 0xfU < 2)
+		{
+			cVar2 = GetMissionSound(14);
+			es_mobile[0] = AddEnvSnd(3, 32, 5, cVar2, 0, -10000, 0, 0, 0);
 		}
-		if (gCurrentMissionNumber == 0x14) {
-			jericho_in_back = iVar1;
+		else if (gCurrentMissionNumber == 0x14)
+		{
+			jericho_in_back = 1;
 		}
 	}
-	else {
-		if (GameLevel < 2) {
-			if (GameLevel == 0) {
-				iVar4 = AddEnvSnd(3, '\0', 4, 4, -10000, 0, 0);
-				es_mobile = (char)iVar4;
-			}
+	else if (GameLevel == 2)
+	{
+		if (gCurrentMissionNumber == 0x16) 
+		{
+			es_mobile[0] = AddEnvSnd(3, 0, 5, 0, -10000, 0, 0, 0, 0);
 		}
-		else {
-			if (GameLevel == 2) {
-				if (gCurrentMissionNumber == 0x16) {
-					iVar4 = AddEnvSnd(3, '\0', 5, 0, -10000, 0, 0);
-					es_mobile = (char)iVar4;
-				}
-				if (gCurrentMissionNumber == 0x18) {
-					cVar2 = GetMissionSound('\x1f');
-					AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_00, cVar2), 3000, -37000, 0x420a4);
-				}
-			}
-			else {
-				if (GameLevel == 3) {
-					if (gCurrentMissionNumber == 0x20) {
-						cVar2 = GetMissionSound('\x1f');
-						rio_alarm = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_01, cVar2), -10000, -0x1e1c0, -0x3e300);
-					}
-					if (gCurrentMissionNumber == 0x21) {
-						cVar2 = GetMissionSound('\x1f');
-						rio_alarm = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_02, cVar2), -10000, -0x319f2, 0x52e2c);
-					}
-					if (gCurrentMissionNumber == 0x23) {
-						cVar2 = GetMissionSound('$');
-						iVar4 = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_03, cVar2), -10000, 0, 0);
-						es_mobile = (char)iVar4;
-					}
-					if (gCurrentMissionNumber == 0x28) {
-						cVar2 = GetMissionSound('\'');
-						holdall = Start3DSoundVolPitch(-1, 5, CONCAT31(extraout_var_04, cVar2), 0, 0, 0, -10000, 0x1000)
-							;
-						LockChannel(holdall);
-					}
-				}
-			}
+		else if (gCurrentMissionNumber == 0x18)
+		{
+			cVar2 = GetMissionSound(31);
+			AddEnvSnd(3, ' ', 5,  cVar2, 3000, -37000, 0x420a4, 0, 0);
 		}
 	}
-	return;*/
+	else if (GameLevel == 3)
+	{
+		if (gCurrentMissionNumber == 0x20) 
+		{
+			cVar2 = GetMissionSound(31);
+			rio_alarm = AddEnvSnd(3, 32, 5, cVar2, -10000, -0x1e1c0, -0x3e300, 0, 0);
+		}
+		else if (gCurrentMissionNumber == 0x21) 
+		{
+			cVar2 = GetMissionSound(31);
+			rio_alarm = AddEnvSnd(3, 32, 5, cVar2, -10000, -0x319f2, 0x52e2c, 0, 0);
+		}
+		else if (gCurrentMissionNumber == 0x23) 
+		{
+			cVar2 = GetMissionSound(36);
+			iVar4 = AddEnvSnd(3, 32, 5, cVar2, -10000, 0, 0, 0, 0);
+			es_mobile[0] = (char)iVar4;
+		}
+		else if (gCurrentMissionNumber == 0x28) 
+		{
+			cVar2 = GetMissionSound(39);
+			holdall = Start3DSoundVolPitch(-1, 5, cVar2, 0, 0, 0, -10000, 0x1000);
+			LockChannel(holdall);
+		}
+	}
 }
 
 
@@ -1138,18 +1131,20 @@ switchD_0005e06c_caseD_38:
 	/* end block 2 */
 	// End Line: 1910
 
+long pos[3];
+static int bodgevar = 0;
+
+// [D]
 void SetMSoundVar(int var, VECTOR *V)
 {
-	UNIMPLEMENTED();
-	/*
-	if (V != (VECTOR *)0x0) {
+	if (V)
+	{
 		pos[0] = V->vx;
 		pos[1] = V->vy;
 		pos[2] = V->vz;
 	}
+
 	bodgevar = var;
-	return;
-	*/
 }
 
 
@@ -1357,7 +1352,7 @@ void AdjustPlayerCarVolume(void)
 	{
 		if (gCurrentMissionNumber == 3 || gCurrentMissionNumber == 5 || gCurrentMissionNumber == 27)
 		{
-			player[0].revsvol = -0x1a5e;
+			player[0].revsvol = -6750;
 			player[0].idlevol = -10000;
 		}
 		else 
