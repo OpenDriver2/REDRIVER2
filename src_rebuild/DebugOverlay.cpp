@@ -12,6 +12,8 @@
 #include "GAME/C/SYSTEM.H"
 #include "GAME/C/PRES.H"
 #include "GAME/C/SPOOL.H"
+#include "GAME/C/CARS.H"
+#include "GAME/C/PLAYERS.H"
 
 int gDisplayDrawStats = 0;
 
@@ -103,6 +105,13 @@ void DrawDebugOverlays()
 
 		sprintf(tempBuf, "Cops: %d - %d active - max %d", numCopCars, numActiveCops, maxCopCars);
 		PrintString(tempBuf, 10, 110);
+
+		
+		int playerCar = player[0].playerCarId;
+		int speed = car_data[playerCar].hd.speed;
+
+		sprintf(tempBuf, "Speed: %d", speed);
+		PrintString(tempBuf, 10, 120);
 	}
 }
 
@@ -152,4 +161,63 @@ void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& colo
 
 	ld.posA.vy *= -1;
 	ld.posB.vy *= -1;
+}
+
+int g_FreeCameraControls = 0;
+int g_FreeCameraEnabled = 0;
+VECTOR g_FreeCameraPosition;
+SVECTOR g_FreeCameraRotation;
+VECTOR g_FreeCameraVelocity;
+extern int cursorX, cursorY, cursorOldX, cursorOldY;
+
+extern VECTOR lis_pos;
+
+void DoFreeCamera()
+{
+	if (g_FreeCameraEnabled == 0)
+	{
+		g_FreeCameraPosition = camera_position;
+		g_FreeCameraRotation = camera_angle;
+		g_FreeCameraVelocity.vx = 0;
+		g_FreeCameraVelocity.vy = 0;
+		g_FreeCameraVelocity.vz = 0;
+		return;
+	}
+
+	camera_position = g_FreeCameraPosition;
+	camera_angle = g_FreeCameraRotation;
+	lis_pos = camera_position;
+	
+	BuildWorldMatrix();
+
+	g_FreeCameraPosition.vx += FIXED(g_FreeCameraVelocity.vx);
+	g_FreeCameraPosition.vy += FIXED(g_FreeCameraVelocity.vy);
+	g_FreeCameraPosition.vz += FIXED(g_FreeCameraVelocity.vz);
+
+	// deaccel
+	g_FreeCameraVelocity.vx -= (g_FreeCameraVelocity.vx / 4);
+	g_FreeCameraVelocity.vy -= (g_FreeCameraVelocity.vy / 4);
+	g_FreeCameraVelocity.vz -= (g_FreeCameraVelocity.vz / 4);
+
+	// accel
+	if ((g_FreeCameraControls & 0x1) || (g_FreeCameraControls & 0x2)) // forward/back
+	{
+		int sign = (g_FreeCameraControls & 0x2) ? -1 : 1;
+
+		g_FreeCameraVelocity.vx += (inv_camera_matrix.m[2][0] * 32) * sign;
+		g_FreeCameraVelocity.vy += (inv_camera_matrix.m[2][1] * 32) * sign;
+		g_FreeCameraVelocity.vz += (inv_camera_matrix.m[2][2] * 32) * sign;
+	}
+
+	// side
+	if ((g_FreeCameraControls & 0x4) || (g_FreeCameraControls & 0x8)) // right/left
+	{
+		int sign = (g_FreeCameraControls & 0x8) ? 1 : -1;
+
+		g_FreeCameraVelocity.vx += (inv_camera_matrix.m[0][0] * 32) * sign;
+		g_FreeCameraVelocity.vy += (inv_camera_matrix.m[0][1] * 32) * sign;
+		g_FreeCameraVelocity.vz += (inv_camera_matrix.m[0][2] * 32) * sign;
+	}
+
+
 }
