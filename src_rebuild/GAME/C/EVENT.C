@@ -2,6 +2,11 @@
 #include "EVENT.H"
 #include "CARS.H"
 #include "PLAYERS.H"
+#include "MC_SND.H"
+#include "CAMERA.H"
+#include "CONVERT.H"
+#include "DRAW.H"
+#include "MODELS.H"
 
 int ElTrainData[83] = {
 	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
@@ -371,6 +376,8 @@ static MultiCar multiCar;
 struct _EVENT *firstEvent;
 struct _EVENT *event;
 
+static struct EventCamera eventCamera;
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ GetVisValue(int index /*$t1*/, int zDir /*$a1*/)
@@ -422,65 +429,85 @@ int GetVisValue(int index, int zDir)
 {
 	UNIMPLEMENTED();
 	return 0;
+
+	// WEIRD FUNCTION
 	/*
 	uint uVar1;
 	int iVar2;
-	FixedEvent *pFVar3;
-	int *piVar4;
-	int local_10;
-	int local_8;
+	_EVENT* local_a0_176;
+	_EVENT* local_a0_180;
+	VECTOR pos;
 
-	if ((index & 0xc000U) != 0) {
+	if ((index & 0xc000U) != 0) 
+	{
 		uVar1 = ((uint)index >> 0xf ^ 1) & 1;
-		if (zDir == 0) {
-			local_10 = (&player)[uVar1].cameraPos.vx;
+		if (zDir == 0)
+		{
+			pos.vx = player[uVar1].cameraPos.vx;
 			iVar2 = 16000;
 		}
-		else {
-			local_10 = (&player)[uVar1].cameraPos.vz;
+		else
+		{
+			pos.vx = player[uVar1].cameraPos.vz;
 			iVar2 = 16000;
 		}
 		goto LAB_00045c40;
 	}
-	if ((index & 0x80U) == 0) {
+
+	if ((index & 0x80U) == 0) 
+	{
 		iVar2 = (index & 0x7fU) * 0x28;
-		pFVar3 = (FixedEvent *)event;
+		local_a0_176 = event;
 	}
-	else {
+	else 
+	{
 		iVar2 = (index & 0x7fU) * 0x2c;
-		pFVar3 = fixedEvent;
+		local_a0_176 = (_EVENT*)fixedEvent;
 	}
-	piVar4 = (int *)((int)&(pFVar3->position).vx + iVar2);
-	if ((index & 0xf00U) == 0) {
+
+	local_a0_180 = (_EVENT*)((int)&(local_a0_176->position).vx + iVar2);
+
+	if ((index & 0xf00U) == 0)
+	{
 	LAB_00045bbc:
-		local_10 = *piVar4;
-		local_8 = piVar4[2];
-		if ((*(ushort *)(piVar4 + 7) & 0xcc0) == 0x80) {
-			local_10 = local_10 - boatOffset.vx;
-			local_8 = local_8 - boatOffset.vz;
+		pos.vx = (local_a0_180->position).vx;
+		pos.vz = (local_a0_180->position).vz;
+		if ((local_a0_180->flags & 0xcc0U) == 0x80)
+		{
+			pos.vx = pos.vx - boatOffset.vx;
+			pos.vz = pos.vz - boatOffset.vz;
 		}
-		if (zDir != 0) {
-			local_10 = local_8;
+
+		if (zDir != 0)
+		{
+			pos.vx = pos.vz;
 		}
 	}
-	else {
-		if ((*(ushort *)(piVar4 + 7) & 0x30) == 0) {
-			if (zDir != 0) goto LAB_00045bbc;
+	else 
+	{
+		if ((local_a0_180->flags & 0x30U) == 0)
+		{
+			if (zDir != 0)
+				goto LAB_00045bbc;
 		}
-		else {
-			if (zDir == 0) goto LAB_00045bbc;
+		else 
+		{
+			if (zDir == 0)
+				goto LAB_00045bbc;
 		}
-		local_10 = *(int *)(((index & 0xf00U) >> 6) + piVar4[6]);
+
+		pos.vx = *(int*)(((index & 0xf00U) >> 6) + (int)local_a0_180->node);
 	}
-	iVar2 = (int)*(short *)((int)piVar4 + 0x1e);
+	iVar2 = (int)local_a0_180->radius;
 LAB_00045c40:
-	if ((index & 0x2000U) != 0) {
-		local_10 = local_10 - iVar2;
-	}
-	if ((index & 0x1000U) != 0) {
-		local_10 = local_10 + iVar2;
-	}
-	return local_10;*/
+	if ((index & 0x2000U) != 0)
+		pos.vx = pos.vx - iVar2;
+
+	if ((index & 0x1000U) != 0)
+		pos.vx = pos.vx + iVar2;
+
+	return pos.vx;
+	*/
 }
 
 
@@ -1529,27 +1556,14 @@ LAB_000474bc:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitEventCamera(void)
 {
-	UNIMPLEMENTED();
-	/*
-	eventCamera.position.vx = camera_position.vx;
-	eventCamera.position.vy = camera_position.vy;
-	eventCamera.position.vz = camera_position.vz;
-	eventCamera.position.pad = camera_position.pad;
+	eventCamera.position = camera_position;
 	eventCamera.yAng = camera_angle.vy;
-	eventCamera.matrix.m[0]._0_4_ = inv_camera_matrix.m[0]._0_4_;
-	eventCamera.matrix.m._4_4_ = inv_camera_matrix.m._4_4_;
-	eventCamera.matrix.m[1]._2_4_ = inv_camera_matrix.m[1]._2_4_;
-	eventCamera.matrix.m[2]._0_4_ = inv_camera_matrix.m[2]._0_4_;
-	eventCamera.matrix._16_4_ = inv_camera_matrix._16_4_;
-	eventCamera.matrix.t[0] = inv_camera_matrix.t[0];
-	eventCamera.matrix.t[1] = inv_camera_matrix.t[1];
-	eventCamera.matrix.t[2] = inv_camera_matrix.t[2];
+	eventCamera.matrix = inv_camera_matrix;
 	eventCamera.rotate = 1;
 	events.camera = 1;
-	return;
-	*/
 }
 
 
@@ -1575,25 +1589,13 @@ void InitEventCamera(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ResetEventCamera(void)
 {
-	UNIMPLEMENTED();
-	/*
-	camera_position.vx = eventCamera.position.vx;
-	camera_position.vy = eventCamera.position.vy;
-	camera_position.vz = eventCamera.position.vz;
-	camera_position.pad = eventCamera.position.pad;
+	camera_position = eventCamera.position;
 	camera_angle.vy = eventCamera.yAng;
-	inv_camera_matrix.m[0]._0_4_ = eventCamera.matrix.m[0]._0_4_;
-	inv_camera_matrix.m._4_4_ = eventCamera.matrix.m._4_4_;
-	inv_camera_matrix.m[1]._2_4_ = eventCamera.matrix.m[1]._2_4_;
-	inv_camera_matrix.m[2]._0_4_ = eventCamera.matrix.m[2]._0_4_;
-	inv_camera_matrix._16_4_ = eventCamera.matrix._16_4_;
-	inv_camera_matrix.t[0] = eventCamera.matrix.t[0];
-	inv_camera_matrix.t[1] = eventCamera.matrix.t[1];
-	inv_camera_matrix.t[2] = eventCamera.matrix.t[2];
+	inv_camera_matrix = eventCamera.matrix;
 	events.camera = 0;
-	return;*/
 }
 
 
@@ -3228,78 +3230,76 @@ void StepEvents(void)
 void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 {
 	UNIMPLEMENTED();
+
 	/*
 	short sVar1;
 	short sVar2;
 	uint uVar3;
 	int iVar4;
 	int iVar5;
-	MODEL *model;
 	int iVar6;
 	int iVar7;
-	VECTOR local_68;
-	VECTOR local_58;
-	int local_48;
-	int local_44;
-	int local_40;
-	int local_38;
-	int local_34;
-	int local_30;
+	MODEL* model;
+	int iVar8;
+	int iVar9;
+	VECTOR spoke[2];
+	VECTOR offset;
+	VECTOR carPos;
 
-	if (FixedEvent_0009e964.model != -1) {
-		RenderModel(modelpointers1536[FixedEvent_0009e964.model], matrix, pos, 0, 4);
-		if (FixedEvent_0009e964._20_4_ != -1) {
-			RenderModel(modelpointers1536[FixedEvent_0009e964._20_4_], (MATRIX *)0x0, (VECTOR *)0x0, 0, 0);
+	if (chicagoDoor[2].model != -1)
+	{
+		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4);
+
+		if (chicagoDoor[2].model != -1)
+		{
+			RenderModel(modelpointers[chicagoDoor[2]._20_4_], (MATRIX*)0x0, (VECTOR*)0x0, 0, 0);
 		}
-		sVar1 = matrix->m[3];
-		sVar2 = matrix->m[6];
-		matrix->m[0] = -matrix->m[0];
-		matrix->m[3] = -sVar1;
-		matrix->m[6] = -sVar2;
-		RenderModel(modelpointers1536[FixedEvent_0009e964.model], matrix, pos, 0, 4);
-		if (FixedEvent_0009e964._24_4_ != -1) {
-			iVar7 = 0;
-			local_68.vx = DAT_000109b0;
-			local_68.vy = DAT_000109b4;
-			local_68.vz = DAT_000109b8;
-			local_68.pad = DAT_000109bc;
-			local_58.vx = DAT_000109c0;
-			local_58.vy = DAT_000109c4;
-			local_58.vz = DAT_000109c8;
-			local_58.pad = DAT_000109cc;
-			model = modelpointers1536[FixedEvent_0009e964._24_4_];
-			iVar6 = 4;
+
+
+		matrix->m[0][0] = -matrix->m[0][0];
+		matrix->m[1][0] = -matrix->m[1][0];;
+		matrix->m[2][0] = -matrix->m[2][0];
+		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4);
+
+		if (chicagoDoor[2]._24_4_ != -1) 
+		{
+			iVar9 = 0;
+
+			spoke[0].vx = VECTOR_000109b0.vx;
+			spoke[0].vy = VECTOR_000109b0.vy;
+			spoke[0].vz = VECTOR_000109b0.vz;
+			spoke[0].pad = VECTOR_000109b0.pad;
+			spoke[1].vx = VECTOR_000109c0.vx;
+			spoke[1].vy = VECTOR_000109c0.vy;
+			spoke[1].vz = VECTOR_000109c0.vz;
+			spoke[1].pad = VECTOR_000109c0.pad;
+			model = modelpointers[chicagoDoor[2]._24_4_];
+			iVar8 = 4;
+
 			SetRotMatrix(&inv_camera_matrix);
-			_MatrixRotate(&local_68);
-			_MatrixRotate(&local_58);
+			_MatrixRotate(spoke);
+			_MatrixRotate(spoke + 1);
+
 			do {
-				uVar3 = FixedEvent_0009e964.rotation + iVar7 & 0xfff;
-				iVar5 = (int)rcossin_tbl[uVar3 * 2];
+				uVar3 = chicagoDoor[2].rotation + iVar9 & 0xfff;
+				iVar7 = (int)rcossin_tbl[uVar3 * 2];
 				iVar4 = (int)rcossin_tbl[uVar3 * 2 + 1];
-				local_48 = local_68.vx * iVar5 + local_58.vx * iVar4 + 0x800 >> 0xc;
-				local_44 = local_68.vy * iVar5 + local_58.vy * iVar4 + 0x800 >> 0xc;
-				local_38 = pos->vx + local_48;
-				local_40 = local_68.vz * iVar5 + local_58.vz * iVar4 + 0x800 >> 0xc;
-				local_34 = pos->vy + local_44;
-				local_30 = pos->vz + local_40;
-				setCopControlWord(2, 0x2800, local_38);
-				setCopControlWord(2, 0x3000, local_34);
-				setCopControlWord(2, 0x3800, local_30);
-				RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0);
-				local_38 = pos->vx - local_48;
-				local_34 = pos->vy - local_44;
-				local_30 = pos->vz - local_40;
-				setCopControlWord(2, 0x2800, local_38);
-				setCopControlWord(2, 0x3000, local_34);
-				setCopControlWord(2, 0x3800, local_30);
-				RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0);
-				iVar6 = iVar6 + -1;
-				iVar7 = iVar7 + 0x19a;
-			} while (-1 < iVar6);
+				iVar6 = spoke[0].vx * iVar7 + spoke[1].vx * iVar4 + 0x800 >> 0xc;
+				iVar5 = spoke[0].vy * iVar7 + spoke[1].vy * iVar4 + 0x800 >> 0xc;
+				iVar4 = spoke[0].vz * iVar7 + spoke[1].vz * iVar4 + 0x800 >> 0xc;
+				setCopControlWord(2, 0x2800, pos->vx + iVar6);
+				setCopControlWord(2, 0x3000, pos->vy + iVar5);
+				setCopControlWord(2, 0x3800, pos->vz + iVar4);
+				RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0);
+				setCopControlWord(2, 0x2800, pos->vx - iVar6);
+				setCopControlWord(2, 0x3000, pos->vy - iVar5);
+				setCopControlWord(2, 0x3800, pos->vz - iVar4);
+				RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0);
+				iVar8 = iVar8 + -1;
+				iVar9 = iVar9 + 0x19a;
+			} while (-1 < iVar8);
 		}
-	}
-	return;
-	*/
+	}*/
 }
 
 
@@ -4299,25 +4299,17 @@ LAB_0004aa50:
 	/* end block 3 */
 	// End Line: 10455
 
+// [D]
 void MakeEventTrackable(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-	/*
-	_EVENT **pp_Var1;
-	_EVENT **pp_Var2;
+	_EVENT** p;
 
-	pp_Var2 = &trackingEvent2;
-	if (trackingEvent2 != (_EVENT *)0x0) {
-		pp_Var1 = &PTR_000aad74;
-		do {
-			pp_Var2 = pp_Var1;
-			pp_Var1 = pp_Var2 + 1;
-		} while (*pp_Var2 != (_EVENT *)0x0);
-	}
-	*pp_Var2 = ev;
-	pp_Var2[1] = (_EVENT *)0x0;
-	return;
-	*/
+	p = trackingEvent;
+	while (*p)
+		p++;
+
+	*p = ev;
+	p[1] = NULL; // [A] is there a bug huh? I cannot understand...
 }
 
 
@@ -4336,26 +4328,26 @@ void MakeEventTrackable(_EVENT *ev)
 	/* end block 2 */
 	// End Line: 12826
 
+// [D]
 void TriggerDoor(FixedEvent *door, int *stage, int sound)
 {
-	UNIMPLEMENTED();
-	/*
-	if (*stage == 0) {
-		if ((door->flags & 0x30U) != 0x10) {
-			door->flags = door->flags & 0xfdff;
-		}
+	if (*stage == 0)
+	{
+		if ((door->flags & 0x30U) != 0x10) 
+			door->flags &= ~0x200;
+
 		door->active = 2;
 	}
-	else {
+	else 
+	{
 		door->active = 1;
-		door->flags = door->flags | 0x200;
+		door->flags |= 0x200;
+
 		*stage = -1;
 	}
-	if (sound != 0) {
-		SetMSoundVar(1, (VECTOR *)door);
-	}
-	return;
-	*/
+
+	if (sound != 0)
+		SetMSoundVar(1, &door->position);
 }
 
 
@@ -4749,14 +4741,12 @@ switchD_0004afa0_caseD_1:
 	/* end block 3 */
 	// End Line: 10762
 
+// [D]
 void OffsetTarget(VECTOR *target)
 {
-	UNIMPLEMENTED();
-	/*
-	target->vx = target->vx - (int)boatOffset.vx;
-	target->vy = target->vy - (int)boatOffset.vy;
-	target->vz = target->vz - (int)boatOffset.vz;
-	return;*/
+	target->vx -= boatOffset.vx;
+	target->vy -= boatOffset.vy;
+	target->vz -= boatOffset.vz;
 }
 
 
@@ -4949,26 +4939,15 @@ LAB_0004b5b8:
 	/* end block 3 */
 	// End Line: 13725
 
+// [D]
 void ScreenShake(int count, SVECTOR *ang)
 {
-	UNIMPLEMENTED();
-	/*
-	long lVar1;
-
 	eventHaze = count << 2;
-	lVar1 = Random2(0);
-	if (eventHaze << 1 == 0) {
-		trap(7);
-	}
-	camera_angle.vx = (ang->vx + (short)(lVar1 % (eventHaze << 1))) - (short)eventHaze;
-	lVar1 = Random2(0);
-	if (eventHaze * 2 == 0) {
-		trap(7);
-	}
-	camera_angle.vy = (ang->vy + (short)(lVar1 % (eventHaze * 2))) - (short)eventHaze;
+
+	camera_angle.vx = (ang->vx + (Random2(0) % (eventHaze << 1))) - eventHaze;
+	camera_angle.vy = (ang->vy + (Random2(0) % (eventHaze * 2))) - eventHaze;
+
 	eventHaze = eventHaze * 3;
-	return;
-	*/
 }
 
 
