@@ -16,7 +16,8 @@
 #include "SPOOL.H"
 #include "MAP.H"
 #include "TEXTURE.H"
-
+#include "../ASM/ASMTEST.H"
+#include "INLINE_C.H"
 
 
 int ElTrainData[83] = {
@@ -1766,166 +1767,161 @@ void ResetEventCamera(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void SetCamera(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 in_zero;
-	CAR_POLY *in_at;
 	ushort uVar1;
 	short ang;
-	undefined4 uVar2;
+	int uVar2;
 	long lVar3;
 	ushort uVar4;
 	int iVar5;
-	long local_60;
-	short local_5c;
-	long local_58;
-	undefined4 local_50;
-	undefined4 local_4c;
-	undefined4 local_48;
-	undefined4 local_44;
-	undefined4 local_40;
-	undefined4 local_3c;
-	undefined4 local_38;
-	long local_34;
-	long local_30;
-	long local_2c;
-	undefined4 local_28;
-	undefined4 local_24;
+	VECTOR pivot;
+	SVECTOR offset;
+	MATRIX matrix;
+	SVECTOR temp;
 
-	memset(&local_50, 0, 8);
-	if (eventCamera.rotate != 0) {
-		inv_camera_matrix.m[0]._0_4_ = eventCamera.matrix.m[0]._0_4_;
-		inv_camera_matrix.m._4_4_ = eventCamera.matrix.m._4_4_;
-		inv_camera_matrix.m[1]._2_4_ = eventCamera.matrix.m[1]._2_4_;
-		inv_camera_matrix.m[2]._0_4_ = eventCamera.matrix.m[2]._0_4_;
-		inv_camera_matrix._16_4_ = eventCamera.matrix._16_4_;
-		inv_camera_matrix.t[0] = eventCamera.matrix.t[0];
-		inv_camera_matrix.t[1] = eventCamera.matrix.t[1];
-		inv_camera_matrix.t[2] = eventCamera.matrix.t[2];
-	}
-	uVar2 = 0;
-	if ((ev->flags & 0x800U) == 0) {
+	offset.vx = 0;
+	offset.vy = 0;
+	offset.vz = 0;
+
+	if (eventCamera.rotate != 0)
+		inv_camera_matrix = eventCamera.matrix;
+
+	pivot.vy = 0;
+
+	if ((ev->flags & 0x800U) == 0) 
+	{
 		uVar4 = ev->flags & 0x30;
 		iVar5 = (int)ev->rotation;
 		lVar3 = *ev->data;
 	}
-	else {
+	else 
+	{
 		lVar3 = (ev->position).vz;
 		iVar5 = ev->data[1];
-		local_50 = boatOffset._0_4_;
-		local_4c = boatOffset._4_4_;
-		uVar2 = 0x100;
-		if (GameLevel == 1) {
-			uVar2 = 0x6f;
-		}
+		offset = boatOffset;
+		pivot.vy = 0x100;
+
+		if (GameLevel == 1)
+			pivot.vy = 0x6f;
+
 		uVar4 = 0;
 	}
-	if (uVar4 == 0) {
+
+	if (uVar4 == 0) 
+	{
 		iVar5 = -iVar5;
-		local_60 = camera_position.vx;
-		local_58 = lVar3;
+		pivot.vx = camera_position.vx;
+		pivot.vz = lVar3;
 	}
-	else {
-		local_58 = camera_position.vz;
-		local_60 = lVar3;
+	else 
+	{
+		pivot.vz = camera_position.vz;
+		pivot.vx = lVar3;
 	}
-	if (iVar5 == 0) {
-		camera_position.vx = eventCamera.position.vx + (short)local_50;
+
+	if (iVar5 == 0) 
+	{
+		camera_position.vx = eventCamera.position.vx + offset.vx;
+		camera_position.vy = eventCamera.position.vy + offset.vy;
+		camera_position.vz = eventCamera.position.vz + offset.vz;
 		camera_angle.vy = eventCamera.yAng;
-		camera_position.vy = eventCamera.position.vy + local_50._2_2_;
-		camera_position.vz = eventCamera.position.vz + (short)local_4c;
 	}
-	else {
-		camera_position.vx = eventCamera.position.vx;
-		camera_position.vx._0_2_ = (short)eventCamera.position.vx;
-		camera_position.vy = eventCamera.position.vy;
-		camera_position.vy._0_2_ = (short)eventCamera.position.vy;
-		camera_position.vz = eventCamera.position.vz;
-		camera_position.vz._0_2_ = (short)eventCamera.position.vz;
-		camera_position.pad = eventCamera.position.pad;
-		local_48 = 0x1000;
-		local_3c = 0;
-		local_44 = 0;
-		local_40 = 0x1000;
-		local_38 = CONCAT22(local_38._2_2_, 0x1000);
+	else 
+	{
+		camera_position = eventCamera.position;
+
+		matrix.m[0][0] = 0x1000;
+		matrix.m[1][0] = 0;
+		matrix.m[2][0] = 0;
+
+		matrix.m[0][1] = 0;
+		matrix.m[1][1] = 0x1000;
+		matrix.m[2][1] = 0;
+
+		matrix.m[0][2] = 0;
+		matrix.m[1][2] = 0;
+		matrix.m[2][2] = 0x1000;
+
 		ang = (short)iVar5;
-		if (uVar4 == 0x10) {
+
+		if (uVar4 == 0x10) 
+		{
 			camera_angle.vy = camera_angle.vy - ang;
-			in_at = CAR_POLY_ARRAY_000b0000;
-			_RotMatrixY((MATRIX *)&local_48, ang);
+			_RotMatrixY(&matrix, ang);
 		}
-		else {
-			if (uVar4 < 0x11) {
-				if (uVar4 == 0) {
-					_RotMatrixX((MATRIX *)&local_48, ang);
-				}
-			}
-			else {
-				if (uVar4 == 0x20) {
-					_RotMatrixZ((MATRIX *)&local_48, ang);
-				}
-			}
+		else if (uVar4 == 0)
+		{
+			_RotMatrixX(&matrix, ang);
 		}
-		local_5c = (short)uVar2;
-		local_28 = CONCAT22((short)camera_position.vy - local_5c,
-			(short)camera_position.vx - (short)local_60);
-		local_24 = CONCAT22(local_24._2_2_, (short)camera_position.vz - (short)local_58);
-		setCopControlWord(2, 0, local_48);
-		setCopControlWord(2, 0x800, local_44);
-		setCopControlWord(2, 0x1000, local_40);
-		setCopControlWord(2, 0x1800, local_3c);
-		setCopControlWord(2, 0x2000, local_38);
-		setCopControlWord(2, 0x2800, local_60);
-		setCopControlWord(2, 0x3000, uVar2);
-		setCopControlWord(2, 0x3800, local_58);
-		setCopReg(2, in_zero, local_28);
-		setCopReg(2, in_at, local_24);
-		copFunction(2, 0x480012);
-		camera_position.vx = getCopReg(2, 0x19);
-		camera_position.vy = getCopReg(2, 0x1a);
-		camera_position.vz = getCopReg(2, 0x1b);
-		uVar1 = local_44._2_2_ ^ local_48._2_2_ ^ local_44._2_2_;
-		local_48 = local_48 & 0xffff | (uint)(ushort)(local_48._2_2_ ^ local_44._2_2_ ^ uVar1) << 0x10;
-		uVar4 = (ushort)local_3c ^ (ushort)local_44 ^ (ushort)local_3c;
-		local_44 = CONCAT22(uVar1, (ushort)local_44 ^ (ushort)local_3c ^ uVar4);
-		uVar1 = local_3c._2_2_ ^ local_40._2_2_ ^ local_3c._2_2_;
-		local_3c = CONCAT22(uVar1, uVar4);
-		local_40 = local_40 & 0xffff | (uint)(ushort)(local_40._2_2_ ^ local_3c._2_2_ ^ uVar1) << 0x10;
-		setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-		setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-		setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-		setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-		setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-		MulRotMatrix(&local_48);
-		inv_camera_matrix.m[0]._0_4_ = local_48;
-		inv_camera_matrix.m._4_4_ = local_44;
-		inv_camera_matrix.m[1]._2_4_ = local_40;
-		inv_camera_matrix.m[2]._0_4_ = local_3c;
-		inv_camera_matrix._16_4_ = local_38;
-		inv_camera_matrix.t[0] = local_34;
-		inv_camera_matrix.t[1] = local_30;
-		inv_camera_matrix.t[2] = local_2c;
-		camera_position.vx = camera_position.vx + (short)local_50;
-		camera_position.vy = camera_position.vy + local_50._2_2_;
-		camera_position.vz = camera_position.vz + (short)local_4c;
+		else if (uVar4 == 0x20)
+		{
+			_RotMatrixZ(&matrix, ang);
+		}
+
+		temp.vx = camera_position.vx - pivot.vx;
+		temp.vy = camera_position.vy - pivot.vy;
+		temp.vz = camera_position.vz - pivot.vz;
+
+		gte_SetRotMatrix(&matrix);
+		gte_SetTransVector(&pivot);
+
+		gte_ldv0(&temp);
+
+		docop2(0x480012);
+
+		gte_stlvnl(&camera_position);
+
+		/*
+		uVar1 = matrix.m[1][0] ^ matrix.m[0][1] ^ matrix.m[1][0];
+		matrix.m[0]._0_4_ = matrix.m[0]._0_4_ & 0xffff | (uint)(ushort)(matrix.m[0][1] ^ matrix.m[1][0] ^ uVar1) << 0x10;
+		uVar4 = matrix.m[2][0] ^ matrix.m[0][2] ^ matrix.m[2][0];
+		matrix.m._4_4_ = CONCAT22(uVar1, matrix.m[0][2] ^ matrix.m[2][0] ^ uVar4);
+		uVar1 = matrix.m[2][1] ^ matrix.m[1][2] ^ matrix.m[2][1];
+		matrix.m[2]._0_4_ = CONCAT22(uVar1, uVar4);
+		matrix.m[1]._2_4_ = matrix.m[1]._2_4_ & 0xffff | (uint)(ushort)(matrix.m[1][2] ^ matrix.m[2][1] ^ uVar1) << 0x10;
+		*/
+		matrix.m[0][0] = ~matrix.m[0][0];
+		matrix.m[0][1] = ~matrix.m[0][1];
+		matrix.m[0][2] = matrix.m[0][2] ^ 0xFFFF;
+		matrix.m[1][0] = matrix.m[1][0];
+		matrix.m[1][1] = matrix.m[1][1];
+		matrix.m[1][2] = matrix.m[1][2];
+		matrix.m[2][0] = ~matrix.m[2][0];
+		matrix.m[2][1] = ~matrix.m[2][1];
+		matrix.m[2][2] = matrix.m[2][2] ^ 0xFFFF;
+
+		gte_SetRotMatrix(&inv_camera_matrix);
+
+		MulRotMatrix(&matrix);
+		inv_camera_matrix = matrix;
+
+		camera_position.vx += offset.vx;
+		camera_position.vy += offset.vy;
+		camera_position.vz += offset.vz;
 	}
+
 	SetCameraVector();
-	if ((iVar5 != 0) || (eventCamera.rotate != 0)) {
+
+	if ((iVar5 != 0) || (eventCamera.rotate != 0)) 
+	{
 		Set_Inv_CameraMatrix();
 		SetCameraVector();
 		SetupDrawMapPSX();
 	}
+
 	eventCamera.rotate = iVar5;
-	if ((ev->flags & 0x800U) == 0) {
+
+	if ((ev->flags & 0x800U) == 0) 
+	{
 		events.draw = ev->model;
 	}
-	else {
+	else
+	{
 		ev->flags = ev->flags & 0xfffe;
 		events.draw = 0;
 	}
-	return;*/
 }
 
 
