@@ -29,53 +29,53 @@ unsigned int numHeapEntries = 0;
 
 PATHFIND_237fake ends[6][2] = {
 	{
-		{0x0, 0x0},
-		{0x200, 0x0}
+		{0, 0},
+		{512, 0}
 	},
 
 	{
-		{0x0, 0x0},
-		{0x100, 0x200 }
+		{0, 0},
+		{256, 512 }
 	},
 
 	{
-		{0x100, 0x200},
-		{0x200, 0x0}
+		{256, 512},
+		{512, 0}
 	},
 
 	{
-		{0x100, 0x200},
-		{0xFF00, 0x200}
+		{256, 512},
+		{-256, 512}
 	},
 
 	{
-		{0x100, 0x200},
-		{0x0, 0x400}
+		{256, 512},
+		{0, 1024}
 	},
 	{
-		{0x100, 0x200 },
-		{0x200, 0x400}
+		{256, 512 },
+		{512, 1024}
 	}
 };
 
 PATHFIND_238fake dirs[6] = {
 	{
-		0x200,0x0
+		512,0
 	},
 	{
-		0x100,0xFE00
+		256,-512
 	},
 	{
-		0xFF00,0xFE00
+		-256,-512
 	},
 	{
-		0xFE00,0x0
+		-512,0x0
 	},
 	{
-		0xFF00,0x200
+		-256,512
 	},
 	{
-		0x100,0x200
+		256,512
 	},
 };
 
@@ -142,68 +142,60 @@ PATHFIND_238fake dirs[6] = {
 // [D]
 tNode * popNode(tNode *__return_storage_ptr__)
 {
-	short uVar1;
+	ushort uVar1;
 	int iVar2;
 	int iVar3;
 	int iVar4;
-	int uVar5;
-	short uVar6;
-	int uVar7;
-	int uVar8;
-	int iVar9;
-	int iVar10;
-	short uVar11;
-	int uVar12;
-
+	ushort uVar6;
+	uint uVar7;
+	uint child;
+	int d3;
+	int d4;
+	int local_t1_316;
+	int local_t2_320;
+	ushort d;
+	uint here;
 	tNode res;
 
-	uVar5 = heap[1].dist;
-	iVar4 = heap[1].vz;
-	iVar3 = heap[1].vy;
-	iVar2 = heap[1].vx;
+	res = heap[1];
 
-	if (numHeapEntries > 1) 
+	if (numHeapEntries > 1)
 	{
 		uVar1 = heap[numHeapEntries].dist;
-		uVar12 = 1;
 
-		while (true) 
+		here = 1;
+
+		while (true)
 		{
-			uVar7 = uVar12 * 2;
-			uVar11 = heap[uVar12 * 2].dist;
-			uVar8 = uVar7;
-			uVar6 = uVar11;
+			// [A] I don't know what fuckery happening here
+			uVar7 = here + 1;
+			d = heap[uVar7].dist;
+			child = uVar7;
+			uVar6 = d;
 
-			if ((numHeapEntries - 2 <= uVar7) || (uVar8 = uVar7 + 1, uVar6 = heap[uVar7 + 1].dist, heap[uVar7 + 1].dist < uVar11)) 
+			child = uVar7 + 1;
+			uVar6 = heap[uVar7 + 1].dist;
+
+			if (numHeapEntries - 2 <= uVar7 || heap[uVar7 + 1].dist < d)
 			{
-				uVar11 = uVar6;
-				uVar7 = uVar8;
+				d = uVar6;
+				uVar7 = child;
 			}
 
-			if ((numHeapEntries - 2 < uVar7) || (uVar1 <= uVar11)) 
+			if ((numHeapEntries - 2 < uVar7) || (uVar1 <= d))
 				break;
 
-			heap[uVar12].vx = heap[uVar7].vx;
-			heap[uVar12].vy = heap[uVar7].vy;
-			heap[uVar12].vz = heap[uVar7].vz;
-			heap[uVar12].dist = uVar11;
+			heap[here] = heap[uVar7];
 
-			uVar12 = uVar7;
+			here = uVar7;
 		}
 
-		heap[uVar12].vx = heap[numHeapEntries].vx;
-		heap[uVar12].vy = heap[numHeapEntries].vy;
-		heap[uVar12].vz = heap[numHeapEntries].vz;;
-		heap[uVar12].dist = heap[numHeapEntries].dist;
+		heap[here] = heap[numHeapEntries];
 	}
 
 	numHeapEntries--;
 
-	__return_storage_ptr__->vx = iVar2;
-	__return_storage_ptr__->vy = iVar3;
-	__return_storage_ptr__->vz = iVar4;
-	__return_storage_ptr__->dist = uVar5;
-
+	*__return_storage_ptr__ = res;
 	return __return_storage_ptr__;
 }
 
@@ -520,7 +512,7 @@ void BloodyHell(void)
 	uVar7 = cellsPerFrame;
 
 	if (CameraCnt < 4)
-		uVar7 = cellsPerFrame + 0x14;
+		uVar7 = cellsPerFrame + 20;
 
 	iVar6 = 0;
 
@@ -533,7 +525,7 @@ void BloodyHell(void)
 
 	do {
 		if (iVar8 == 200)
-			uVar7 = uVar7 - 1;
+			uVar7--;
 	
 		uVar2 = (int)bPos.vz >> 10;
 
@@ -553,8 +545,8 @@ void BloodyHell(void)
 		}
 		if (uVar4 == 1) 
 		{
-			iVar6 = iVar6 + 1;
-			bPos.vz = bPos.vz + 0x400;
+			iVar6++;
+			bPos.vz = bPos.vz + 1024;
 			if (iVar5 == iVar6)
 				uVar4 = 2;
 		}
@@ -562,8 +554,8 @@ void BloodyHell(void)
 		{
 			if (uVar4 == 0)
 			{
-				iVar5 = iVar5 + 1;
-				bPos.vx = bPos.vx + 0x400;
+				iVar5++;
+				bPos.vx = bPos.vx + 1024;
 				if (iVar5 + iVar6 == 1)
 				{
 					uVar4 = 1;
@@ -572,8 +564,8 @@ void BloodyHell(void)
 			else
 			{
 			LAB_PATH__000e7674:
-				iVar6 = iVar6 + -1;
-				bPos.vz = bPos.vz - 0x400;
+				iVar6--;
+				bPos.vz = bPos.vz - 1024;
 
 				if (iVar5 == iVar6)
 					uVar4 = 0;
@@ -585,7 +577,7 @@ void BloodyHell(void)
 				goto LAB_PATH__000e7674;
 
 			iVar5 = iVar5 + -1;
-			bPos.vx = bPos.vx - 0x400;
+			bPos.vx = bPos.vx - 1024;
 
 			if (iVar5 + iVar6 == 0)
 				uVar4 = 3;
@@ -593,7 +585,7 @@ void BloodyHell(void)
 
 		iVar8++;
 
-		if (0x348 < iVar8)
+		if (840 < iVar8)
 			return;
 
 	} while (true);
@@ -677,26 +669,26 @@ int blocked(tNode *v1, tNode *v2)
 
 	if (slowWallTests == 0)
 	{
-		uVar8 = v1->vz + v2->vz >> 9;
-		uVar8 = ((char*)omap)[((int)(uVar8 & 0x7f) >> 3) + (v1->vx + v2->vx >> 5 & 0x7f0U)] >> (uVar8 & 7) & 1;
+		int x = (v1->vx + v1->vx >> 9 & 0x7f);
+		int z = (v1->vz + v2->vz >> 9 & 0x7f) >> 3;
+
+		uVar8 = omap[x][z] >> (v1->vz + v2->vz >> 9 & 7) & 1;
 	}
 	else 
 	{
-		iVar4 = v1->vx;
-		iVar6 = v2->vx;
-		iVar5 = v1->vz;
-		iVar7 = v2->vz;
+		int x = (v1->vx + v1->vx >> 9 & 0x7f);
+		int z = (v1->vz + v2->vz >> 9 & 0x7f) >> 3;
+
 		cVar3 = lineClear((VECTOR*)v1, (VECTOR*)v2);
 		bVar10 = 0;
 		bVar2 = cVar3 == 0;
 		uVar8 = (uint)bVar2;
-		uVar9 = iVar5 + iVar7 >> 9;
 
 		if (bVar2)
 			bVar10 = 0xff;
 
-		bVar1 = omap[(iVar4 + iVar6 >> 9 & 0x7fU)][((int)(uVar9 & 0x7f) >> 3)];
-		omap[(iVar4 + iVar6 >> 9 & 0x7fU)][((int)(uVar9 & 0x7f) >> 3)] = bVar1 ^ (1 << (uVar9 & 7)) & (bVar1 ^ bVar10);
+		bVar1 = omap[x][z];
+		omap[x][z] = bVar1 ^ (1 << ((v1->vz + v2->vz >> 9) & 7)) & (bVar1 ^ bVar10);
 	}
 
 	return uVar8;
@@ -2407,7 +2399,7 @@ LAB_PATH__000e8dfc:
 		piVar5++;
 	} while (-1 < iVar8);
 
-	if ((4 < pathFrames) || (2000 < (heap[1].dist - iVar1)))  // [A] was (pathFrames < pathFrames)
+	if ((32 < pathFrames) || (2000 < (heap[1].dist - iVar1)))  // [A] was (pathFrames < pathFrames)
 	{
 		pathFrames = 0;
 	}

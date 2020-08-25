@@ -195,9 +195,9 @@ void DoFreeCamera()
 	g_FreeCameraPosition.vz += FIXED(g_FreeCameraVelocity.vz);
 
 	// deaccel
-	g_FreeCameraVelocity.vx -= (g_FreeCameraVelocity.vx / 4);
-	g_FreeCameraVelocity.vy -= (g_FreeCameraVelocity.vy / 4);
-	g_FreeCameraVelocity.vz -= (g_FreeCameraVelocity.vz / 4);
+	g_FreeCameraVelocity.vx -= (g_FreeCameraVelocity.vx / 8);
+	g_FreeCameraVelocity.vy -= (g_FreeCameraVelocity.vy / 8);
+	g_FreeCameraVelocity.vz -= (g_FreeCameraVelocity.vz / 8);
 
 	// accel
 	if ((g_FreeCameraControls & 0x1) || (g_FreeCameraControls & 0x2)) // forward/back
