@@ -3563,101 +3563,82 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 	/* end block 3 */
 	// End Line: 7704
 
+// [D]
 void DisplayWater(SMOKE *smoke)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	short sVar2;
-	uint uVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	DB *pDVar7;
-	undefined4 in_zero;
-	undefined4 in_at;
-	ushort uVar8;
-	int iVar9;
-	uint uVar10;
-	ushort uVar11;
-	short sVar12;
-	uint *puVar13;
-	undefined4 local_30;
-	uint local_2c;
-	uint local_24;
-	undefined4 local_20;
-	uint local_1c;
-	uint local_14;
+	POLY_FT4* poly;
+	VECTOR v;
+	SVECTOR vert[4];
+	
+	int size;
+	int z;
+	int z1;
+	int z2;
+	int z3;
+	int z4;
 
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	sVar1 = smoke->start_w;
-	uVar8 = *(ushort *)&(smoke->position).vx;
-	sVar12 = (uVar8 - sVar1) - (ushort)camera_position.vx;
-	uVar11 = 0x32 - (short)camera_position.vy;
-	local_30 = CONCAT22(uVar11, sVar12);
-	sVar2 = *(short *)&(smoke->position).vz;
-	uVar10 = ((uint)uVar8 + (int)sVar1) - (uint)(ushort)camera_position.vx;
-	local_20 = CONCAT22(uVar11, sVar12);
-	uVar8 = (sVar2 + sVar1) - (ushort)camera_position.vz;
-	local_2c = local_2c & 0xffff0000 | (uint)uVar8;
-	local_24 = local_24 & 0xffff0000 | (uint)uVar8;
-	uVar8 = (sVar2 - sVar1) - (ushort)camera_position.vz;
-	local_1c = local_1c & 0xffff0000 | (uint)uVar8;
-	local_14 = local_14 & 0xffff0000 | (uint)uVar8;
-	puVar13 = (uint *)current->primptr;
-	setCopReg(2, in_zero, local_30);
-	setCopReg(2, in_at, local_2c);
-	setCopReg(2, current, uVar10 & 0xffff | (uint)uVar11 << 0x10);
-	setCopReg(2, &local_30, local_24);
-	setCopReg(2, (uint)(ushort)camera_position.vz, local_20);
-	setCopReg(2, uVar10, local_1c);
-	copFunction(2, 0x280030);
-	*(char *)((int)puVar13 + 7) = ',';
-	*(char *)((int)puVar13 + 3) = '\t';
-	*(char *)(puVar13 + 1) = (char)NightAmbient;
-	*(char *)((int)puVar13 + 5) = (char)NightAmbient;
-	*(char *)((int)puVar13 + 6) = (char)NightAmbient;
-	*(ushort *)((int)puVar13 + 0x16) = sea_texture.tpageid;
-	uVar3 = getCopReg(2, 0xc);
-	puVar13[2] = uVar3;
-	uVar3 = getCopReg(2, 0xd);
-	puVar13[4] = uVar3;
-	uVar3 = getCopReg(2, 0xe);
-	puVar13[6] = uVar3;
-	iVar9 = getCopReg(2, 0x11);
-	iVar4 = getCopReg(2, 0x12);
-	iVar5 = getCopReg(2, 0x13);
-	setCopReg(2, in_zero, uVar10 & 0xffff | (uint)uVar11 << 0x10);
-	setCopReg(2, in_at, local_14);
-	copFunction(2, 0x180001);
-	*(uchar *)(puVar13 + 3) = sea_texture.coords.u0;
-	*(uchar *)((int)puVar13 + 0xd) = sea_texture.coords.v0;
-	*(uchar *)(puVar13 + 5) = sea_texture.coords.u1;
-	*(uchar *)((int)puVar13 + 0x15) = sea_texture.coords.v1;
-	*(uchar *)(puVar13 + 7) = sea_texture.coords.u2;
-	*(uchar *)((int)puVar13 + 0x1d) = sea_texture.coords.v2;
-	*(uchar *)(puVar13 + 9) = sea_texture.coords.u3;
-	*(uchar *)((int)puVar13 + 0x25) = sea_texture.coords.v3;
-	*(ushort *)((int)puVar13 + 0xe) = sea_texture.clutid;
-	pDVar7 = current;
-	iVar6 = getCopReg(2, 0x13);
-	iVar9 = iVar9 + iVar4 + iVar5 + iVar6 >> 5;
-	if (iVar9 < 9) {
-		iVar9 = 9;
-	}
-	*puVar13 = *puVar13 & 0xff000000 | current->ot[iVar9] & 0xffffff;
-	pDVar7->ot[iVar9] = pDVar7->ot[iVar9] & 0xff000000 | (uint)puVar13 & 0xffffff;
-	uVar3 = getCopReg(2, 0xe);
-	puVar13[8] = uVar3;
-	current->primptr = current->primptr + 0x28;
-	return;*/
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	vert[0].vx = (smoke->position.vx - smoke->start_w) - camera_position.vx;
+	vert[0].vy = 50 - camera_position.vy;
+	vert[0].vz = (smoke->position.vz + smoke->start_w) - camera_position.vz;
+
+	vert[1].vx = (smoke->position.vx + smoke->start_w) - camera_position.vx;
+	vert[1].vy = 50 - camera_position.vy;
+	vert[1].vz = (smoke->position.vz + smoke->start_w) - camera_position.vz;
+
+	vert[2].vx = (smoke->position.vx - smoke->start_w) - camera_position.vx;
+	vert[2].vy = 50 - camera_position.vy;
+	vert[2].vz = (smoke->position.vz - smoke->start_w) - camera_position.vz;
+
+	vert[3].vx = (smoke->position.vx + smoke->start_w) - camera_position.vx;
+	vert[3].vy = 50 - camera_position.vy;
+	vert[3].vz = (smoke->position.vz - smoke->start_w) - camera_position.vz;
+
+	poly = (POLY_FT4*)current->primptr;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	docop2(0x280030);
+
+	setPolyFT4(poly);
+
+	poly->r0 = NightAmbient;
+	poly->g0 = NightAmbient;
+	poly->b0 = NightAmbient;
+	poly->tpage = sea_texture.tpageid;
+
+	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+	gte_stsz3(&z1, &z2, &z3);
+
+	gte_ldv0(&vert[3]);
+
+	docop2(0x180001);
+
+	gte_stsxy(&poly->x3);
+
+	poly->u0 = sea_texture.coords.u0;
+	poly->v0 = sea_texture.coords.v0;
+	poly->u1 = sea_texture.coords.u1;
+	poly->v1 = sea_texture.coords.v1;
+	poly->u2 = sea_texture.coords.u2;
+	poly->v2 = sea_texture.coords.v2;
+	poly->u3 = sea_texture.coords.u3;
+	poly->v3 = sea_texture.coords.v3;
+	poly->clut = sea_texture.clutid;
+
+	gte_stsz(&z4);
+
+	z = z1 + z2 + z3 + z4 >> 5;
+
+	if (z < 9)
+		z = 9;
+
+	addPrim(current->ot + z, poly);
+
+	current->primptr += sizeof(POLY_FT4);
 }
 
 
