@@ -856,10 +856,13 @@ void PrintStringBoxed(char *string, int ix, int iy)
 						setXY0(font, x, y + pFontInfo->offy);
 						setUV0(font, pFontInfo->x, pFontInfo->y - 46);
 						setWH(font, pFontInfo->width, pFontInfo->height);
+						
+						font->clut = fontclutid;
 
 						addPrim(current->ot, font);
-
 						font++;
+
+						x += pFontInfo->width;
 					}
 				}
 			}
