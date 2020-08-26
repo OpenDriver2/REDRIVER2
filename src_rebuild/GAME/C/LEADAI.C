@@ -9,6 +9,9 @@ static int randIndex;
 static int randState[17];
 LEAD_PARAMETERS LeadValues;
 
+int road_s = 0;
+int road_c = 0;
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ leadRand()
@@ -1838,87 +1841,78 @@ LAB_LEAD__000e97b4:
 
 /* WARNING: Type propagation algorithm not settling */
 
+// [D]
 int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	DRIVER2_CURVE* curve;
+	int dx;
+	int dz;
+	int normal;
+	int tangent;
 
-	ulong uVar1;
-	int iVar2;
-	DRIVER2_CURVE *pDVar3;
-	int x_00;
-	int y;
-	int iStack48;
-	int iStack44;
-	int iStack40;
-	int iStack36;
-	int iStack32;
-	ulong uStack28;
+	dx = x - basePos->vx;
 
-	x_00 = x - basePos->vx;
-	iVar2 = x_00;
-	if (x_00 < 0) {
-		iVar2 = -x_00;
-	}
-	y = z - basePos->vz;
-	if (iVar2 < 3000) {
-		iVar2 = y;
-		if (y < 0) {
-			iVar2 = -y;
-		}
-		if (iVar2 < 3000) {
+	if (dx < 0)
+		dx = -dx;
+
+	dz = z - basePos->vz;
+
+	if (dx < 3000)
+	{
+		if (dz < 0)
+			dz = -dz;
+
+		if (dz < 3000)
 			return 1;
-		}
 	}
-	switch (intention) {
-	case 0:
-	case 2:
-	case 3:
-		iStack44 = x_00 * DAT_LEAD__000ecd3c + y * DAT_LEAD__000ecd38 + 0x800 >> 0xc;
-		iStack48 = (x_00 * DAT_LEAD__000ecd38 - y * DAT_LEAD__000ecd3c) + 0x800 >> 0xc;
-		PosToIndex(&iStack48, &iStack44, intention, cp);
-		iStack40 = iStack48;
-		iStack36 = iStack44;
-		break;
-	case 1:
-		pDVar3 = Driver2CurvesPtr + *(int *)(cp->ai + 0xc) + -0x4000;
-		x = x - pDVar3->Midx;
-		z = z - pDVar3->Midz;
-		iVar2 = ratan2(x, z);
-		iStack36 = (((iVar2 - *(int *)(cp->ai + 0x50)) + 0x800U & 0xfff) - 0x800) *
-			*(int *)(cp->ai + 0x54) * ((int)((uint)(byte)pDVar3->inside * 0xb000) / 0x7000);
-		iStack40 = *(int *)(cp->ai + 0x4c);
-		uVar1 = hypot(x, z);
-		iStack40 = (iStack40 - uVar1) * *(int *)(cp->ai + 0x54);
-		PosToIndex(&iStack40, &iStack36, intention, cp);
-		break;
-	case 4:
-	case 5:
-		uStack28 = hypot(x_00, y);
-		iVar2 = ratan2(x_00, y);
-		iStack32 = ((iVar2 - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
-		PosToIndex(&iStack32, (int *)&uStack28, intention, cp);
-		if (7000 < (int)uStack28) {
+
+	switch (intention) 
+	{
+		case 0:
+		case 2:
+		case 3:
+			tangent = dx * road_s + dz * road_c + 0x800 >> 0xc;
+			normal = (dx * road_c - dz * road_s) + 0x800 >> 0xc;
+			PosToIndex(&normal, &tangent, intention, cp);
+			break;
+		case 1:
+			curve = Driver2CurvesPtr + cp->ai.l.currentRoad - 0x4000;
+
+			x = x - curve->Midx;
+			z = z - curve->Midz;
+
+			tangent = (((ratan2(x, z) - cp->ai.l.base_Angle) + 0x800U & 0xfff) - 0x800) * cp->ai.l.base_Dir *(((int)curve->inside * 0xb000) / 0x7000);
+			normal = (cp->ai.l.base_Normal - hypot(x, z)) * cp->ai.l.base_Dir;
+
+			PosToIndex(&normal, &tangent, intention, cp);
+			break;
+		case 4:
+		case 5:
+			tangent = hypot(dx, dz);
+			normal = ((ratan2(dx, dz) - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
+
+			PosToIndex(&normal, &tangent, intention, cp);
+
+			if (tangent > 7000)
+				return 0;
+
+			if (normal > -1 && normal < 42)
+				return 1;
+
+		default:
 			return 0;
-		}
-		if ((-1 < iStack32) && (iStack32 < 0x2a)) {
-			return 1;
-		}
-	default:
-		goto LAB_LEAD__000e9b94;
 	}
-	if (0x5800 < iStack36 + 0x800U) {
+
+	if (0x5800 < tangent + 0x800U)
 		return 0;
-	}
-	if (iStack40 < -4) {
+
+	if (normal < -4)
 		return 0;
-	}
-	if (iStack40 < 0x2e) {
+
+	if (normal < 0x2e)
 		return 1;
-	}
-LAB_LEAD__000e9b94:
-	return 0;*/
+
+	return 0;
 }
 
 
