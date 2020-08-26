@@ -14,6 +14,10 @@ static int randIndex;
 static int randState[17];
 LEAD_PARAMETERS LeadValues;
 
+static int pathParams[5] = {
+	20480,-8192, 2048,-4096, 800
+};
+
 int road_s = 0;
 int road_c = 0;
 
@@ -540,192 +544,218 @@ void LeadUpdateState(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 1283
 
+// [D]
 ulong LeadPadResponse(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
+	int steerDelta;
 	int iVar3;
-	int iVar4;
-	int iVar5;
-	undefined *puVar6;
-	uint uVar7;
+	int avel;
+	int deltaTh;
+	long t0;
+	uint uVar4;
 
-	puVar6 = (undefined *)0x0;
-	iVar5 = (((cp->hd).direction - (int)*(short *)(cp->ai + 2)) + 0x800U & 0xfff) - 0x800;
-	iVar4 = *(int *)(cp->st + 0x2c) + 0x800 >> 0xc;
-	switch (cp->ai[0]) {
-	case 0:
-		puVar6 = &DAT_00008010;
-		if (iVar5 < 0) {
-			puVar6 = &DAT_00002010;
-		}
-		break;
-	case 1:
-		puVar6 = (undefined *)0x40;
-		break;
-	case 2:
-		if (iVar4 < 0) {
-			if (iVar4 < 0) {
-				iVar4 = -iVar4;
+	t0 = 0;
+	deltaTh = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
+	avel = FIXED(cp->st.n.angularVelocity[1]);
+	switch (cp->ai.l.dstate)
+	{
+		case 0:
+			t0 = 0x8010;
+			if (deltaTh < 0) {
+				t0 = 0x2010;
 			}
-			puVar6 = &DAT_00002040;
-			if (0x28 < iVar4) {
-				puVar6 = &DAT_00002044;
+			break;
+
+		case 1:
+			t0 = 0x40;
+			break;
+
+		case 2:
+			if (avel < 0) 
+			{
+				if (avel < 0)
+					avel = -avel;
+
+				t0 = 0x2040;
+				if (0x28 < avel)
+					t0 = 0x2044;
+
 			}
-		}
-		else {
-			if (iVar4 < 0) {
-				iVar4 = -iVar4;
+			else 
+			{
+				if (avel < 0)
+					avel = -avel;
+
+				t0 = 0x8040;
+
+				if (0x28 < avel)
+					t0 = 0x8044;
+
 			}
-			puVar6 = &DAT_00008040;
-			if (0x28 < iVar4) {
-				puVar6 = &DAT_00008044;
+			break;
+		case 3:
+
+			uVar4 = cp->ai.l.targetDir & 0xfff;
+			iVar2 = FIXED(-rcossin_tbl[uVar4 * 2 + 1] * ((cp->hd).where.t[0] - cp->ai.l.targetX) + rcossin_tbl[uVar4 * 2] * ((cp->hd).where.t[2] - cp->ai.l.targetZ));
+			iVar3 = pathParams[4];
+
+			if ((pathParams[4] < iVar2) || (iVar3 = -pathParams[4], iVar2 < -pathParams[4])) 
+			{
+				iVar2 = iVar3;
 			}
-		}
-		break;
-	case 3:
-		uVar7 = (uint)*(ushort *)(cp->ai + 2) & 0xfff;
-		iVar2 = -(int)rcossin_tbl[uVar7 * 2 + 1] * ((cp->hd).where.t[0] - *(int *)(cp->ai + 4)) +
-			(int)rcossin_tbl[uVar7 * 2] * ((cp->hd).where.t[2] - *(int *)(cp->ai + 8)) + 0x800 >>
-			0xc;
-		iVar3 = DAT_LEAD__000ecbf8;
-		if ((DAT_LEAD__000ecbf8 < iVar2) || (iVar3 = -DAT_LEAD__000ecbf8, iVar2 < -DAT_LEAD__000ecbf8))
-		{
-			iVar2 = iVar3;
-		}
-		iVar5 = ((int)PTR_DAT_LEAD__000ecbe8 *
-			(-(int)rcossin_tbl[uVar7 * 2 + 1] * (*(int *)(cp->st + 0x1c) + 0x800 >> 0xc) +
-			(int)rcossin_tbl[uVar7 * 2] * (*(int *)(cp->st + 0x24) + 0x800 >> 0xc) + 0x800 >> 0xc)
-			+ DAT_LEAD__000ecbec * iVar4 + DAT_LEAD__000ecbf0 * iVar2 + DAT_LEAD__000ecbf4 * iVar5
-			+ 0x800 >> 0xc) - (int)cp->wheel_angle;
-		puVar6 = (undefined *)0x40;
-		if (0x20 < iVar5) {
-			puVar6 = &DAT_00002040;
-		}
-		if (0x40 < iVar5) {
-			puVar6 = (undefined *)((uint)puVar6 | 4);
-		}
-		if (iVar5 < -0x20) {
-			puVar6 = (undefined *)((uint)puVar6 | 0x8000);
-		}
-		if (iVar5 < -0x40) {
-			puVar6 = (undefined *)((uint)puVar6 | 4);
-		}
-		if (0x3e < iVar5 + 0x1fU) {
-			return (ulong)puVar6;
-		}
-		if (iVar4 < 0) {
-			iVar4 = -iVar4;
-		}
-		if (5 < iVar4) {
-			return (ulong)puVar6;
-		}
-		if (((uint)puVar6 & 0x40) == 0) {
-			return (ulong)puVar6;
-		}
-		goto LAB_LEAD__000e7d50;
-	case 4:
-		uVar7 = 0x20;
-		iVar4 = ((*(int *)(cp->ai + 0x2c) - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
-		if (*(int *)(cp->ai + 0x30) < 0) {
-			uVar7 = 0x80;
-		}
-		if (iVar4 * *(int *)(cp->ai + 0x30) < 1) {
-			puVar6 = (undefined *)(uVar7 | 0x8000);
-		}
-		else {
-			puVar6 = (undefined *)(uVar7 | 0x2000);
-		}
-		if (iVar4 < 0) {
-			iVar4 = -iVar4;
-		}
-		if (200 < iVar4) {
-			if (iVar5 < 0) {
-				iVar5 = -iVar5;
+
+			steerDelta = FIXED(pathParams[0] * FIXED(-rcossin_tbl[uVar4 * 2 + 1] * FIXED((cp->st).n.linearVelocity[0]) + rcossin_tbl[uVar4 * 2] * FIXED((cp->st).n.linearVelocity[2])) + pathParams[1] * avel + pathParams[2] * iVar2 + pathParams[3] * deltaTh) - cp->wheel_angle;
+
+			t0 = 0x40;
+
+			if (0x20 < steerDelta)
+				t0 = 0x2040;
+
+			if (0x40 < steerDelta)
+				t0 = t0 | 4;
+
+			if (steerDelta < -0x20)
+				t0 = t0 | 0x8000;
+
+			if (steerDelta < -0x40)
+				t0 = t0 | 4;
+
+			if (0x3e < steerDelta + 0x1fU)
+				return t0;
+
+			if (avel < 0)
+				avel = -avel;
+
+			if (5 < avel)
+				return t0;
+
+			if ((t0 & 0x40U) == 0)
+				return t0;
+
+			goto LAB_LEAD__000e7d50;
+		case 4:
+
+			uVar4 = 0x20;
+			iVar2 = cp->ai.l.roadForward;
+			iVar3 = ((cp->ai.l.roadPosition - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
+
+			if (iVar2 < 0)
+				uVar4 = 0x80;
+
+			if (iVar3 * iVar2 < 1)
+				t0 = uVar4 | 0x8000;
+			else
+				t0 = uVar4 | 0x2000;
+
+			if (iVar3 < 0)
+				iVar3 = -iVar3;
+
+			if (200 < iVar3) 
+			{
+				if (deltaTh < 0)
+					deltaTh = -deltaTh;
+
+				if (deltaTh < 0x738)
+					t0 = t0 | 4;
 			}
-			if (iVar5 < 0x738) {
-				puVar6 = (undefined *)((uint)puVar6 | 4);
+
+			break;
+		case 5:
+
+			iVar2 = cp->ai.l.panicCount;
+			iVar3 = avel;
+
+			if (avel < 0)
+				iVar3 = -avel;
+
+			iVar1 = iVar2;
+
+			if (iVar2 < 0) 
+				iVar1 = -iVar2;
+
+			if ((iVar1 < 2) || (0x96 < iVar3))
+			{
+				t0 = ((cp->hd).speed < 0x65) << 6;
 			}
-		}
-		break;
-	case 5:
-		iVar2 = *(int *)(cp->ai + 0x24);
-		iVar3 = iVar4;
-		if (iVar4 < 0) {
-			iVar3 = -iVar4;
-		}
-		iVar1 = iVar2;
-		if (iVar2 < 0) {
-			iVar1 = -iVar2;
-		}
-		if ((iVar1 < 2) || (0x96 < iVar3)) {
-			puVar6 = (undefined *)((uint)((cp->hd).speed < 0x65) << 6);
-		}
-		else {
-			puVar6 = (undefined *)0x20;
-			if (100 < (cp->hd).speed) {
-				puVar6 = (undefined *)0x10;
+			else 
+			{
+				t0 = 0x20;
+
+				if (100 < (cp->hd).speed)
+					t0 = 0x10;
+
 			}
-		}
-		if (iVar3 < 0x50) {
-			puVar6 = (undefined *)((uint)puVar6 | 4);
-		}
-		if (iVar2 < 1) {
-			if (iVar2 < 0) {
-				if ((0x95 < iVar3) && (iVar4 < 1)) {
-					return (ulong)puVar6;
+
+			if (iVar3 < 0x50) 
+			{
+				t0 = t0 | 4;
+			}
+
+			if (iVar2 < 1) 
+			{
+				if (iVar2 < 0) 
+				{
+					if ((0x95 < iVar3) && (avel < 1)) 
+						return t0;
+
+					return t0 | 0x8000;
 				}
-				return (uint)puVar6 | 0x8000;
+
+				if ((0 < deltaTh) && ((iVar3 < 0x96 || (0 < avel)))) 
+					t0 = t0 | 0x8000;
+
+
+				if (-1 < deltaTh)
+					return t0;
 			}
-			if ((0 < iVar5) && ((iVar3 < 0x96 || (0 < iVar4)))) {
-				puVar6 = (undefined *)((uint)puVar6 | 0x8000);
+
+			if ((iVar3 < 0x96) || (avel < 0)) 
+				t0 = t0 | 0x2000;
+
+			break;
+		case 6:
+			uVar4 = 0x8000;
+			if (avel < 0)
+				uVar4 = 0x2000;
+
+			if ((cp->ai.l.roadForward < 0) && (100 < (cp->hd).speed))
+				t0 = uVar4 | 0x80;
+			else
+				t0 = uVar4 | 0x40;
+
+			break;
+		case 7:
+			if (avel < 0)
+				avel = -avel;
+
+			if (LeadValues.tAvelLimit <= avel) 
+			{
+				iVar3 = deltaTh;
+				if (deltaTh < 0)
+					iVar3 = -deltaTh;
+
+				if (iVar3 < 0x401)
+					goto LAB_LEAD__000e7d50;
 			}
-			if (-1 < iVar5) {
-				return (ulong)puVar6;
-			}
-		}
-		if ((iVar3 < 0x96) || (iVar4 < 0)) {
-			puVar6 = (undefined *)((uint)puVar6 | 0x2000);
-		}
-		break;
-	case 6:
-		uVar7 = 0x8000;
-		if (iVar4 < 0) {
-			uVar7 = 0x2000;
-		}
-		if ((*(int *)(cp->ai + 0x30) < 0) && (100 < (cp->hd).speed)) {
-			puVar6 = (undefined *)(uVar7 | 0x80);
-		}
-		else {
-			puVar6 = (undefined *)(uVar7 | 0x40);
-		}
-		break;
-	case 7:
-		if (iVar4 < 0) {
-			iVar4 = -iVar4;
-		}
-		if (DAT_LEAD__000ece94 <= iVar4) {
-			iVar4 = iVar5;
-			if (iVar5 < 0) {
-				iVar4 = -iVar5;
-			}
-			if (iVar4 < 0x401) goto LAB_LEAD__000e7d50;
-		}
-		puVar6 = (undefined *)0x8004;
-		if (iVar5 < 0) {
-			puVar6 = (undefined *)0x2004;
-		}
-	LAB_LEAD__000e7d50:
-		puVar6 = (undefined *)((uint)puVar6 | 0x20);
-		break;
-	case 8:
-		FakeMotion(cp);
-		puVar6 = (undefined *)0x0;
+
+			t0 = 0x8004;
+
+			if (deltaTh < 0)
+				t0 = 0x2004;
+
+		LAB_LEAD__000e7d50:
+			t0 = t0 | 0x20;
+			break;
+
+		case 8:
+			FakeMotion(cp);
+			t0 = 0;
+			break;
 	}
-	return (ulong)puVar6;*/
+
+	return t0;
 }
 
 
