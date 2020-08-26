@@ -1938,8 +1938,182 @@ void DrawAllTheCars(int view)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+// [D] [A] custom
 void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 {
+#if 1 // [A] new fully rewritten routine FIXME: still bugged - see tops of barrels at "Caine's Compound"
+
+	int opz;
+	int diff, minZ;
+	int Z;
+	PL_POLYFT4* polys;
+	int i;
+	uint polyVar;
+	u_char temp;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	MVERTEX subdiVerts[5][5];
+
+	srcVerts = (SVECTOR*)model->vertices;
+	pc->ot = pc->current->ot;
+	pc->primptr = pc->current->primptr;
+
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	if ((pc->flags & 1U) != 0) 
+		combointensity |= 0x2000000;
+
+	i = model->num_polys;
+	do
+	{
+		// iterate through polygons
+		// with skipping
+		while (true)
+		{
+			i--;
+
+			if(i == -1)
+			{
+				// done
+				pc->current->primptr = pc->primptr;
+
+				if ((pc->flags & 1U) != 0)
+					combointensity &= ~0x2000000;
+
+				return;
+			}
+
+			ptype = polys->id & 0x1f;
+
+			if ((ptype & 1) == 0) // is FT3 triangle?
+			{
+				temp = polys->uv2.v;
+				polys->uv3.u = polys->uv2.u;
+				polys->uv3.v = temp;
+
+				polys->v3 = polys->v2;
+
+				polys->id = polys->id ^ 1;
+			}
+
+			ptype = (polys->id & 0x1f);
+
+			if (ptype == 11 || ptype == 21)
+				break;
+
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+		}
+
+		if (ptype == 21)
+		{
+			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
+		} 
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(uint*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(rot >> 3) * 4 - temp & 0x1f];
+		}
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		if ((pc->flags & 0x6) != 0)
+		{
+			if((pc->flags & 0x4) == 0)
+				opz = -opz;		// front face
+			else
+				opz = 1;		// no culling
+		}
+
+		if (opz > 0)
+		{
+			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
+
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+
+			if ((pc->flags & 0x10) == 0) // [A] custom palette flag - for pedestrian heads
+				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+
+			minZ = pc->scribble[2];
+			if (pc->scribble[1] < pc->scribble[2])
+				minZ = pc->scribble[1];
+
+			if (pc->scribble[0] < minZ)
+				minZ = pc->scribble[0];
+
+			diff = pc->scribble[2];
+			if (pc->scribble[2] < pc->scribble[1])
+				diff = pc->scribble[1];
+
+			diff = diff - minZ;
+			if (diff < pc->scribble[0])
+				diff = pc->scribble[0] - minZ;
+
+			if (n == 0 || (diff << 2) <= minZ - 250)
+			{
+				prims = (POLY_FT4*)pc->primptr;
+
+				setPolyFT4(prims);
+				*(ulong*)&prims->r0 = pc->colour;
+
+				// retrieve first three verts
+				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+				
+				// translate 4th vert and get OT Z value
+				gte_ldv0(&srcVerts[polys->v2]);
+				gte_rtps();
+				gte_avsz4();
+
+				gte_stotz(&Z);
+
+				gte_stsxy(&prims->x3);
+
+				prims->tpage = pc->tpage >> 0x10;
+				prims->clut = pc->clut >> 0x10;
+
+				*(ushort*)&prims->u0 = *(ushort*)&polys->uv0;
+				*(ushort*)&prims->u1 = *(ushort*)&polys->uv1;
+				*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
+				*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
+
+				addPrim(pc->ot + (Z >> 1), prims);
+
+				pc->primptr += sizeof(POLY_FT4);
+			}
+			else
+			{
+				copyVector(&subdiVerts[0][0], &srcVerts[polys->v0]);
+				subdiVerts[0][0].uv.val = *(ushort*)&polys->uv0;
+
+				copyVector(&subdiVerts[0][1], &srcVerts[polys->v1]);
+				subdiVerts[0][1].uv.val = *(ushort*)&polys->uv1;
+
+				copyVector(&subdiVerts[0][2], &srcVerts[polys->v3]);
+				subdiVerts[0][2].uv.val = *(ushort*)&polys->uv3;
+
+				copyVector(&subdiVerts[0][3], &srcVerts[polys->v2]);
+				subdiVerts[0][3].uv.val = *(ushort*)&polys->uv2;
+
+				makeMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot, pc);
+			}
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+	} while (true);
+
+#else // decompiled routine
+
 	unsigned char uVar1;
 	UV_INFO UVar2;
 	UV_INFO UVar3;
@@ -2268,6 +2442,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			polys = polys + 1;
 		}
 	} while (true);
+#endif
 }
 
 
