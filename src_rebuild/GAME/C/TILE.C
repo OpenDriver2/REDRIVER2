@@ -349,14 +349,11 @@ void DrawTILES(int tile_amount)
 		{
 			if (Low2HighDetailTable[uVar3] != 0xffff)
 				uVar3 = Low2HighDetailTable[uVar3];
-#ifdef PSX
+
 			if (iVar1 < 2000) 
-				TileNxN(modelpointers[uVar3], 4, 0x4b);
+				TileNxN(modelpointers[uVar3], 4, 75);
 			else 
-				TileNxN(modelpointers[uVar3], 2, 0x23);
-#else
-			Tile1x1(modelpointers[uVar3]);	// [A] temporary draw it as it is
-#endif
+				TileNxN(modelpointers[uVar3], 2, 35);
 		}
 		else
 		{
@@ -1210,120 +1207,36 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+// [A] custom implemented function
 void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 {
-	UNIMPLEMENTED_PRINTONCE();
-	/*
-	undefined4 in_zero;
-	undefined4 in_at;
-	undefined4 *puVar1;
-	int iVar2;
-	uint uVar3;
-	undefined4 *ot;
-	int iVar5;
-	undefined4 *puVar6;
-	uint uVar7;
-	undefined4 *puVar8;
-	undefined4 *puVar9;
-	undefined4 uVar10;
-	int local_18;
+	MVERTEX subdivVerts[5][5];
 
-	iVar5 = DAT_1f8000c8;
-	DAT_1f8000b4 = DAT_1f8000b4 + ofse * 4;
-	uVar3 = *(uint *)(polys + 4);
-	puVar9 = (undefined4 *)(DAT_1f8000c8 + (uVar3 & 0xff) * 8);
-	puVar6 = (undefined4 *)(DAT_1f8000c8 + (uVar3 >> 5 & 0x7f8));
-	DAT_1f800228 = *puVar9;
-	DAT_1f80022c._0_2_ = (undefined2)puVar9[1];
-	uVar10 = puVar6[1];
-	(&DAT_1f800228)[n * 2] = *puVar6;
-	(&DAT_1f80022c)[n * 2] = uVar10;
-	iVar2 = (uVar3 >> 0x18) * 8;
-	puVar8 = (undefined4 *)(iVar5 + iVar2);
-	puVar1 = &DAT_1f800228 + m * 10;
-	uVar10 = puVar8[1];
-	*puVar1 = *puVar8;
-	(&DAT_1f80022c)[m * 10] = uVar10;
-	iVar5 = DAT_1f8000c8;
-	ot = (undefined4 *)((uVar3 >> 0xd & 0x7f8) + DAT_1f8000c8);
-	uVar10 = ot[1];
-	puVar1[n * 2] = *ot;
-	(puVar1 + n * 2)[1] = uVar10;
-	setCopReg(2, in_zero, *puVar9);
-	setCopReg(2, in_at, puVar9[1]);
-	setCopReg(2, iVar5, *puVar6);
-	setCopReg(2, iVar2, puVar6[1]);
-	setCopReg(2, ot, *puVar8);
-	setCopReg(2, puVar6, puVar8[1]);
-	copFunction(2, 0x280030);
-	uVar10 = *(undefined4 *)(polys + 0xc);
-	DAT_1f80022c = CONCAT22((short)*(undefined4 *)(polys + 8), (undefined2)DAT_1f80022c);
-	*(undefined2 *)((int)&DAT_1f80022c + n * 8 + 2) =
-		(short)((uint)*(undefined4 *)(polys + 8) >> 0x10);
-	*(undefined2 *)((int)&DAT_1f80022c + m * 0x28 + 2) = (short)((uint)uVar10 >> 0x10);
-	*(undefined2 *)((int)&DAT_1f80022c + n * 8 + m * 0x28 + 2) = (short)uVar10;
-	copFunction(2, 0x1400006);
-	_DAT_1f800208 = getCopReg(2, 0xc);
-	_DAT_1f80020c = getCopReg(2, 0xd);
-	DAT_1f800210 = getCopReg(2, 0xe);
-	if (((0x13f < DAT_1f800208) && (0x13f < DAT_1f80020c)) && (0x13f < (ushort)DAT_1f800210)) {
-		if (_DAT_1f80020c << 0x10 < 0) {
-			DAT_1f800208 = DAT_1f800208 ^ 1;
-		}
-		if (DAT_1f800208 == 0) {
-			if (DAT_1f800210 << 0x10 < 0) {
-				if (DAT_1f80020c == 1) goto LAB_00042f08;
-			}
-			else {
-				if (DAT_1f80020c == 0) goto LAB_00042f08;
-			}
-		}
-	}
-	DAT_1f80020a = (ushort)((uint)_DAT_1f800208 >> 0x10);
-	if (((0x109 < DAT_1f80020a) &&
-		(DAT_1f80020e = (ushort)((uint)_DAT_1f80020c >> 0x10), 0x109 < DAT_1f80020e)) &&
-		(DAT_1f800210._2_2_ = (ushort)((uint)DAT_1f800210 >> 0x10), 0x109 < DAT_1f800210._2_2_)) {
-		iVar5 = (int)(short)DAT_1f80020a;
-		if (0x10f < ((int)(short)DAT_1f80020e - iVar5) + (int)(short)DAT_1f800210._2_2_ + 8U) {
-			if ((int)(short)DAT_1f80020e < 0) {
-				if (iVar5 == 1) {
-				LAB_00042db8:
-					if ((int)((uint)DAT_1f800210._2_2_ << 0x10) < 0) {
-						if (DAT_1f80020e == 1) goto LAB_00042f08;
-					}
-					else {
-						if (DAT_1f80020e == 0) goto LAB_00042f08;
-					}
-				}
-			}
-			else {
-				if (iVar5 == 0) goto LAB_00042db8;
-			}
-		}
-	}
-	local_18 = getCopReg(2, 0x18);
-	if (local_18 < 0) {
-		setCopReg(2, in_zero, (&DAT_1f800228)[m * 10 + n * 2]);
-		setCopReg(2, in_at, (&DAT_1f800228 + m * 10 + n * 2)[1]);
-		copFunction(2, 0x180001);
-		copFunction(2, 0x1400006);
-		local_18 = getCopReg(2, 0x18);
-		local_18 = -local_18;
-	}
-	if (0 < local_18) {
-		uVar3 = *(uint *)polys >> 8 & 0xffff;
-		uVar7 = *(uint *)polys >> 8 & 0xff;
-		if (DAT_1f8000cc != uVar3) {
-			DAT_1f8000b8 = (uint)*(ushort *)((uVar3 >> 8) * 2 + uVar7 * 0x40 + DAT_1f800028) << 0x10;
-			DAT_1f8000bc = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
-			DAT_1f8000cc = uVar3;
-		}
-		makeMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, n);
-		drawMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, n, (_pct *)&DAT_1f800020);
-	}
-LAB_00042f08:
-	DAT_1f8000b4 = DAT_1f8000b4 + ofse * -4;
-	return;*/
+	SVECTOR* verts = plotContext.verts;
+
+	POLYFT4* pft4 = (POLYFT4*)polys;
+	
+	plotContext.clut = (uint)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
+	plotContext.tpage = (uint)(*plotContext.ptexture_pages)[pft4->texture_set] << 0x10;
+
+	copyVector(&subdivVerts[0][0], &verts[pft4->v0]);
+	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;
+
+	copyVector(&subdivVerts[0][1], &verts[pft4->v1]);
+	subdivVerts[0][1].uv.val = *(ushort*)&pft4->uv1;
+
+	copyVector(&subdivVerts[0][2], &verts[pft4->v3]);
+	subdivVerts[0][2].uv.val = *(ushort*)&pft4->uv3;
+
+	copyVector(&subdivVerts[0][3], &verts[pft4->v2]);
+	subdivVerts[0][3].uv.val = *(ushort*)&pft4->uv2;
+
+	plotContext.ot += ofse;
+
+	makeMesh((MVERTEX(*)[5][5])subdivVerts, n, m);
+	drawMesh((MVERTEX(*)[5][5])subdivVerts, n, m, &plotContext);
+
+	plotContext.ot -= ofse;
 }
 
 
@@ -1361,38 +1274,56 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	uint uVar1;
 	unsigned char *polys;
 	uint uVar2;
-	int iVar3;
+	int i;
 	int ofse;
 
 	uVar1 = 0;
-	ofse = 0x85;
+	ofse = 133;
+
 	polys = (unsigned char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
+
 	uVar2 = *(uint *)(model + 1) >> 2;
-	if ((*(uint *)model & 0x40000080) != 0) {
-		ofse = 0xe5;
+
+	// 0x4000
+	// 80
+
+	if ((*(uint *)model & 0x40000080) != 0)
+	{
+		//(model->shape_flags & 0x80);
+		//(model->flags2 & 0x4000);
+
+		ofse = 229;
 	}
-	iVar3 = 0;
-	if (model->num_polys != 0) {
+
+	i = 0;
+
+	if (model->num_polys != 0) 
+	{
 		do {
-			if (true) {
-				switch (uVar1) {
-				case 0:
-				case 1:
-					SubdivNxM((char *)polys, levels, levels, ofse);
-					break;
-				case 3:
-					SubdivNxM((char *)polys, levels, 1, Dofse);
-					break;
-				case 4:
-					SubdivNxM((char *)polys, levels, levels, 0x85);
+			if (true)
+			{
+				switch (uVar1) 
+				{
+					case 0:
+					case 1:
+						SubdivNxM((char *)polys, levels, levels, ofse);
+						break;
+					case 3:
+						SubdivNxM((char *)polys, levels, 1, Dofse);
+						break;
+					case 4:
+						SubdivNxM((char *)polys, levels, levels, 133);
 				}
 			}
+
 			uVar1 = uVar2 & 7;
 			uVar2 = uVar2 >> 3;
-			iVar3 = iVar3 + 1;
-			polys = polys + PolySizes[*polys];
-		} while (iVar3 < (int)(uint)model->num_polys);
+
+			i++;
+			polys += PolySizes[*polys];
+
+		} while (i < model->num_polys);
 	}
 }
 
