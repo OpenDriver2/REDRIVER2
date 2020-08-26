@@ -510,6 +510,11 @@ void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
 	p->tag = p->tag & 0xFFFFFF | 0x1000000;
 }
 
+void SetDrawLoad(DR_LOAD* p, RECT16* RECT16)
+{
+	setDrawLoad(p, RECT16);
+}
+
 u_long DrawSyncCallback(void(*func)(void))
 {
 	drawsync_callback = func;
@@ -1210,6 +1215,21 @@ int ParsePrimitive(uintptr_t primPtr)
 	#endif
 			break;
 		}
+		case 0xA0:  // DR_LOAD commands
+		{
+			DR_LOAD* drload = (DR_LOAD*)pTag;
+
+			RECT16 rect;
+			*(ulong*)&rect.x = *(ulong*)&drload->code[1];
+			*(ulong*)&rect.w = *(ulong*)&drload->code[2];
+
+			LoadImagePSX(&rect, drload->p);
+			//Emulator_UpdateVRAM();			// FIXME: should it be updated immediately?
+
+			// FIXME: is there othercommands?
+
+			break;
+		}
 		case 0xE0:  // DR_ENV commands
 		{
 			DR_ENV* drenv = (DR_ENV*)pTag;
@@ -1268,58 +1288,6 @@ int ParsePrimitive(uintptr_t primPtr)
 					}
 				}
 			}
-#if 0
-			switch (pTag->code)
-			{
-				case 0xE1:
-				{
-#if defined(USE_32_BIT_ADDR)
-					unsigned short tpage = ((unsigned short*)pTag)[4];
-#else
-					unsigned short tpage = ((unsigned short*)pTag)[2];
-#endif
-					//if (tpage != 0)
-					{
-						activeDrawEnv.tpage = tpage;
-						//activeDrawEnv.dtd = 
-						//activeDrawEnv.dfe
-					}
-
-#if defined(DEBUG_POLY_COUNT)
-					polygon_count++;
-#endif
-					break;
-				}
-				case 0xE3:
-				{
-					// FIXME: this is ugly
-					DR_AREA* drarea = (DR_AREA*)pTag;
-
-					RECT16 rect;
-
-					rect.x = drarea->code[0] & 0x3FF;
-					rect.y = ((drarea->code[0] >> 10) & 0x3FF);
-
-					// not W/H but x2 y2
-					rect.w = (drarea->code[1] & 0x3FF) - rect.x;
-					rect.h = ((drarea->code[1] >> 10) & 0x3FF) - rect.y;
-
-					activeDrawEnv.clip = rect;
-
-#if defined(DEBUG_POLY_COUNT)
-					polygon_count++;
-#endif
-					break;
-				}
-				// FIXME: there is multiple codes in single DR_* primitive
-				default:
-				{
-					eprinterr("Primitive type error: %x", pTag->code);
-					assert(FALSE);
-					break;
-				}
-			}
-#endif
 			break;
 		}
 		default:
