@@ -7,6 +7,7 @@
 
 static int randIndex;
 static int randState[17];
+LEAD_PARAMETERS LeadValues;
 
 // decompiled code
 // original method signature: 
@@ -982,130 +983,134 @@ LAB_LEAD__000e824c:
 	/* end block 2 */
 	// End Line: 2159
 
+// [D]
 void PosToIndex(int *normal, int *tangent, int intention, _CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
+	int uVar1;
 	int iVar2;
-	uint uVar3;
+	int uVar3;
 	int iVar4;
 	int iVar5;
 	int iVar6;
 	int iVar7;
 
-	if (intention - 4U < 3) {
+	if (intention - 4U < 3) 
+	{
 		uVar3 = (*normal + 0x800U & 0xfff) - 0x800;
 		*normal = uVar3;
-		if (intention == 6) {
+
+		if (intention == 6)
+		{
 			uVar1 = uVar3;
-			if ((int)uVar3 < 0) {
+			if (uVar3 < 0)
 				uVar1 = -uVar3;
-			}
-			if ((int)uVar1 < 0xf0) {
-				iVar6 = *tangent * (int)rcossin_tbl[(uVar3 & 0xfff) * 2] + 0x800 >> 0xc;
-				if (0x7d < iVar6) {
+
+			if (uVar1 < 0xf0)
+			{
+				iVar6 = FIXED(*tangent * (int)rcossin_tbl[(uVar3 & 0xfff) * 2]);
+				if (0x7d < iVar6) 
+				{
 					*normal = 0x17;
 					return;
 				}
-				if (0x32 < iVar6) {
+
+				if (0x32 < iVar6) 
+				{
 					*normal = 0x16;
 					return;
 				}
-				if (-0x32 < iVar6) {
+
+				if (-0x32 < iVar6) 
+				{
 					*normal = 0x15;
 					return;
 				}
-				if (iVar6 < -0x7c) {
+
+				if (iVar6 < -0x7c)
+				{
 					*normal = 0x13;
 					return;
 				}
+
 				*normal = 0x14;
 				return;
 			}
 		}
 		iVar6 = *normal * 0x15;
 		*normal = iVar6;
-		if (intention == 4) {
+
+		if (intention == 4) 
 			iVar6 = (iVar6 / 6 + (iVar6 >> 0x1f) >> 8) - (iVar6 >> 0x1f);
-		}
-		else {
-			if (intention == 5) {
-				if (iVar6 < 0) {
-					iVar6 = iVar6 + 0x7ff;
-				}
-				iVar6 = iVar6 >> 0xb;
-			}
-			else {
-				if (iVar6 < 0) {
-					iVar6 = iVar6 + 0x3ff;
-				}
-				iVar6 = iVar6 >> 10;
-			}
-		}
+		else if (intention == 5)
+			iVar6 = iVar6 >> 0xb;
+		else
+			iVar6 = iVar6 >> 10;
+
 		*normal = iVar6;
 		iVar6 = *normal;
 	}
-	else {
-		if (1 < (uint)intention) {
+	else 
+	{
+		if (1 < intention) 
+		{
 			iVar2 = (cp->hd).speed;
-			iVar7 = DAT_LEAD__000ecea0;
-			iVar6 = DAT_LEAD__000ecea4;
-			if (100 < iVar2) {
-				iVar7 = DAT_LEAD__000ecec0;
-				iVar6 = DAT_LEAD__000ecec4;
+			iVar7 = LeadValues.tWidth;
+			iVar6 = LeadValues.tWidthMul;
+
+			if (100 < iVar2) 
+			{
+				iVar7 = LeadValues.hWidth;
+				iVar6 = LeadValues.hWidthMul;
 			}
+
 			iVar7 = iVar7 + iVar2 * iVar6;
-			if (iVar2 < 0x65) {
-				if (DAT_LEAD__000eceac == 0) {
-					trap(7);
-				}
-				iVar6 = DAT_LEAD__000ecea8 + iVar2 / DAT_LEAD__000eceac;
+
+			if (iVar2 < 0x65) 
+			{
+				iVar6 = LeadValues.tWidth80 + iVar2 / LeadValues.tWidth80Mul;
 			}
-			else {
-				iVar6 = DAT_LEAD__000ecec8 + iVar2 * iRam000ececc;
+			else 
+			{
+				iVar6 = LeadValues.hWidth80 + iVar2 * LeadValues.hWidth80Mul;
 			}
-			if (iVar2 < 0x65) {
-				iVar2 = DAT_LEAD__000ece98 + iVar2 * DAT_LEAD__000ece9c;
-			}
-			else {
-				iVar2 = DAT_LEAD__000eceb8 + (iVar2 + -100) * DAT_LEAD__000ecebc;
-			}
+
+			if (iVar2 < 0x65)
+				iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
+			else
+				iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+
 			iVar5 = (iVar2 << 3) / 10;
-			if (intention == 2) {
+
+			if (intention == 2)
 				*normal = -*normal;
-			}
+
 			iVar4 = *normal;
-			if (iVar7 < iVar4) {
+
+			if (iVar7 < iVar4)
+			{
 				iVar6 = *tangent;
 				*tangent = (iVar2 + iVar4) - iVar7;
 				*normal = iVar2 - iVar6;
 			}
-			else {
-				if (iVar6 < iVar4) {
-					if (iVar7 - iVar6 == 0) {
-						trap(7);
-					}
-					iVar5 = ((iVar4 - iVar6) * (iVar2 - iVar5)) / (iVar7 - iVar6) + iVar5;
-					*normal = iVar5 - *tangent;
-					*tangent = iVar5;
-				}
-				else {
-					if (0 < iVar4) {
-						iVar6 = (iVar5 * iVar6) / iVar4;
-						if (iVar4 == 0) {
-							trap(7);
-						}
-						*normal = iVar6 - *tangent;
-						*tangent = iVar6;
-					}
-				}
+			else if (iVar6 < iVar4)
+			{
+				iVar5 = ((iVar4 - iVar6) * (iVar2 - iVar5)) / (iVar7 - iVar6) + iVar5;
+				*normal = iVar5 - *tangent;
+				*tangent = iVar5;
+			}
+			else if (0 < iVar4)
+			{
+				iVar6 = (iVar5 * iVar6) / iVar4;
+
+				*normal = iVar6 - *tangent;
+				*tangent = iVar6;
 			}
 		}
+
 		iVar6 = *normal / 100;
 	}
+
 	*normal = iVar6 + 0x15;
-	return;*/
 }
 
 
