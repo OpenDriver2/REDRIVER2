@@ -163,7 +163,7 @@ enum TexFormat
 	TF_16_BIT
 };
 
-#define MAX_NUM_POLY_BUFFER_VERTICES (12040)
+#define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
 #if defined(OGLES) || defined(OGL)

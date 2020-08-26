@@ -86,7 +86,7 @@ void DrawDebugOverlays()
 
 	if (gDisplayDrawStats)
 	{
-		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, 0x1e000);
+		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, PRIMTAB_SIZE);
 		PrintString(tempBuf, 10, 20);
 
 		extern volatile int spoolactive;
