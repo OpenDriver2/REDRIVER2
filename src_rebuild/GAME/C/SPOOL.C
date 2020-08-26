@@ -745,25 +745,22 @@ extern unsigned short cd_icon[288];
 // [D]
 void DrawCDicon(void)
 {
-	ushort *puVar1;
-	int iVar2;
-	RECT16 local_10;
+	ushort *palette;
+	RECT16 dest;
 
 	cd_icon[23] = cd_icon[11];
-	iVar2 = 0xb;
-	puVar1 = cd_icon + 10;
-	do {
-		iVar2 = iVar2 + -1;
-		puVar1[1] = puVar1[2];
-		puVar1 = puVar1 + 1;
-	} while (-1 < iVar2);
 
-	local_10.x = 960;
-	local_10.y = 433;
-	local_10.w = 16;
-	local_10.h = 1;
+	palette = &cd_icon[10];
 
-	LoadImage(&local_10, (u_long *)(cd_icon + 10));
+	for (int i = 0; i < 12; i++)
+	{
+		palette[1] = palette[2];
+		palette++;
+	}
+
+	setRECT16(&dest, 960, 433, 16, 1);
+	LoadImage(&dest, (u_long *)palette);
+
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
 }
@@ -808,25 +805,22 @@ void DrawCDicon(void)
 // [D]
 void CheckValidSpoolData(void)
 {
-	if (models_ready != 0)
+	if (models_ready)
 		init_spooled_models();
 
-	if (spoolactive != 0)
+	if (spoolactive)
 	{
-		if (check_regions_present() != 0)
+		if (check_regions_present())
 		{
 			stopgame();
 
-			while (spoolactive != 0)
+			while (spoolactive)
 			{
 				DrawCDicon();
 				VSync(0);
 			}
 
 			startgame();
-
-			PutDrawEnv(&current->draw);
-			UnPauseSFX();
 		}
 	}
 }
@@ -962,18 +956,15 @@ void UpdateSpool(void)
 	
 #else
 	char bVar1;
-	int iVar3;
 	CdlLOC pos;
-
-	iVar3 = XAPrepared();
 
 	SPOOLQ *current = &spooldata[spoolpos_reading];
 
-	if (iVar3 != 1) 
+	if (!XAPrepared())
 	{
 		target_address = current->addr;
 		bVar1 = current->type;
-
+		
 		if (bVar1 == 0) // SPOOLTYPE_REGIONS
 		{
 			sectors_this_chunk = (current->nsectors);
@@ -996,7 +987,7 @@ void UpdateSpool(void)
 			nTPchunks_writing = 0;
 			sectors_to_read = 17;
 			ntpages = tsetcounter;
-			sectors_this_chunk = (uint)bVar1;
+			sectors_this_chunk = 1;
 
 #ifdef PSX
 			CdDataCallback(data_cb_textures);
@@ -1017,7 +1008,7 @@ void UpdateSpool(void)
 			sample_chunk = 0;
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
-			sectors_this_chunk = (uint)bVar1;
+			sectors_this_chunk = 2;
 
 #ifdef PSX
 			CdDataCallback(data_cb_soundbank);
@@ -1156,15 +1147,11 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 // [D]
 void InitSpooling(void)
 {
-	int target_region;
-
-	target_region = 0;
-
-	do {
-		loading_region[target_region] = -1;
-		ClearRegion(target_region);
-		target_region++;
-	} while (target_region < 4);
+	for (int i = 0; i < 4; i++)
+	{
+		loading_region[i] = -1;
+		ClearRegion(i);
+	}
 
 	newmodels = NULL;
 	spool_regioncounter = 0;
@@ -2939,9 +2926,7 @@ void data_cb_misc(void)
 		chunk_complete = 0;
 
 		if (current->func != NULL)
-		{
 			(*current->func)();
-		}
 
 		spoolpos_writing++;
 
@@ -3053,22 +3038,18 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 // [D]
 void StartSpooling(void)
 {
-	static unsigned char param[8];
-	static unsigned char result[8];
-
-	int iVar1;
-
-	if ((spoolcounter != 0) && (spoolactive == 0))
+	if ((spoolcounter != 0) && !spoolactive)
 	{
-		iVar1 = XAPrepared();
-
-		if (iVar1 == 0)
+		if (!XAPrepared())
 		{
 #ifdef PSX
-			param[0] = -0x80;
-			CdControlB(0xe, param, result);
+			static unsigned char param[8];
+			static unsigned char result[8];
 
-			if ((result[0] & 0x15) != 0)
+			param[0] = CdlModeSize0 | CdlModeSize1 | CdlModeSpeed;
+			CdControlB(CdlSetmode, param, result);
+
+			if ((result[0] & (CdlStatError | CdlStatShellOpen)) != 0)
 			{
 				WaitCloseLid();
 			}
@@ -3076,10 +3057,8 @@ void StartSpooling(void)
 			spoolactive = 1;
 			UpdateSpool();
 
-			if (FastForward != 0)
-			{
+			if (FastForward)
 				SpoolSYNC();
-			}
 		}
 	}
 }

@@ -57,38 +57,26 @@ void ShowLoading(void)
 	POLY_G4 poly;
 
 	if ((NewLevel != 0) || (gInFrontend != 0)) {
-		loading_bar_pos = loading_bar_pos + 1;
-		poly.x1 = (short)(loading_bar_pos * load_steps);
-		if (120 < loading_bar_pos * load_steps) {
-			poly.x1 = 120;
-		}
+		int col = (VERTTYPE)(++loading_bar_pos * load_steps);
+		
+		if (col > 120)
+			col = 120;
 
 		SetPolyG4(&poly);
-		poly.r0 = 30;
-		poly.r2 = 30;
-		poly.g0 = 11;
-		poly.b0 = 11;
-		poly.g2 = 11;
-		poly.b2 = 11;
-		poly.g1 = 11;
-		poly.b1 = 11;
-		poly.g3 = 11;
-		poly.b3 = 11;
-		poly.r1 = 122;
-		poly.r3 = 122;
-        poly.x1 = poly.x1 + 0xb0;
-        poly.y0 = 435;
-        poly.y1 = 435;
-        poly.x0 = 176;
-        poly.x2 = 176;
-        poly.y2 = 460;
-        poly.y3 = 460;
-        poly.x3 = poly.x1;
+
+		setRGB0(&poly, 30, 11, 11);
+		setRGB1(&poly, 122, 11, 11);
+		setRGB2(&poly, 30, 11, 11);
+		setRGB3(&poly, 122, 11, 11);
+
+		setXYWH(&poly, 176, 435, col, 25);
+
 		DrawPrim(&poly);
 		VSync(0);
 		DrawSync(0);
 		PutDrawEnv(&load_draw);
 		PutDispEnv(&load_disp);
+
 		DrawPrim(&poly);
 		VSync(0);
 		DrawSync(0);
@@ -187,49 +175,31 @@ void FadeGameScreen(int flag, int speed)
 
 	if (do_fade)
 	{
-		if (screen_fade_value < 0) 
-		{
-			poly.r0 = 0;
-		}
-		else 
-		{
-			poly.r0 = screen_fade_value;
+		int val = screen_fade_value;
 
-			if (0xff < screen_fade_value)
-			{
-				poly.r0 = -1;
-			}
+		if (val < 0) 
+		{
+			val = 0;
 		}
-
-		poly.g0 = poly.b0 = poly.r0;
+		else if (val > 255)
+		{
+			val = 255;
+		}
 
 		setPolyF4(&poly);
 		setSemiTrans(&poly, 1);
-		poly.y2 = 256;
-		poly.y3 = 256;
-		poly.x0 = 0;
-		poly.y0 = 0;
-		poly.x1 = 320;
-		poly.y1 = 0;
-		poly.x2 = 0;
-		poly.x3 = 320;
+		setRGB0(&poly, val, val, val);
+		setXYWH(&poly, 0, 0, 320, 256);
 
 		if (flag == 0)
-			screen_fade_value = screen_fade_value + speed;
+			screen_fade_value += speed;
 		else
-			screen_fade_value = screen_fade_value - speed;
+			screen_fade_value -= speed;
 
 		setPolyFT4(&p);
 		setSemiTrans(&p, 1);
-		p.x0 = -1;
-		p.y0 = -1;
-		p.y1 = -1;
-		p.x2 = -1;
-		p.x1 = 0;
-		p.y2 = 0;
-		p.x3 = 0;
-		p.y3 = 0;
-		p.tpage = 0x40;
+		setXY4(&p, -1, -1, 0, -1, -1, 0, 0, 0);
+		setTPage(&p, 0, 2, 0, 0);
 
 		DrawPrim(&p);
 		DrawPrim(&poly);
@@ -313,10 +283,8 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	LoadClut((u_long*)&_frontend_buffer[20], 320, 511);
 
 	DrawSync(0);
-	dest.x = 320;
-	dest.y = 0;
-	dest.w = 160;
-	dest.h = 511;
+
+	setRECT16(&dest, 320, 0, 160, 511);
 	LoadImage(&dest, (u_long *)&_frontend_buffer[544]);
 
 	DrawSync(0);
@@ -483,39 +451,21 @@ void CloseShutters(int speed, int width, int height)
 	setPolyF4(&poly[0]);
 	setPolyF4(&poly[1]);
 
-	poly[0].r0 = 0;
-	poly[0].g0 = 0;
-	poly[0].b0 = 0;
-	poly[1].r0 = 0;
-	poly[1].g0 = 0;
-	poly[1].b0 = 0;
+	setRGB0(&poly[0], 0, 0, 0);
+	setRGB0(&poly[1], 0, 0, 0);
 
 	do {
-		poly[0].y2 = (short)h;
-		poly[1].y0 = (short)height - poly[0].y2;
-		poly[1].y2 = poly[1].y0 + poly[0].y2;
-		poly[0].x0 = 0;
-		poly[0].y0 = 0;
-		poly[0].x1 = (short)width;
-		poly[0].y1 = 0;
-		poly[0].x2 = 0;
-		poly[1].x0 = 0;
-		poly[1].x2 = 0;
-		poly[0].x3 = poly[0].x1;
-		poly[0].y3 = poly[0].y2;
-		poly[1].x1 = poly[0].x1;
-		poly[1].y1 = poly[1].y0;
-		poly[1].x3 = poly[0].x1;
-		poly[1].y3 = poly[1].y2;
+		setXYWH(&poly[0], 0, 0, width, h);
+		setXYWH(&poly[1], 0, (height - h), width, h);
 
-		DrawPrim(poly);
-		DrawPrim(poly + 1);
+		DrawPrim(&poly[0]);
+		DrawPrim(&poly[1]);
 
 #ifndef PSX
 		Emulator_EndScene();
 #endif
 
-		if (0xff < h) 
+		if (h > 255) 
 			done = true;
 
 		h += speed;
@@ -574,11 +524,7 @@ static int bWantFade = 0;
 // [D]
 void SetupFadePolys(void)
 {
-	int i;
-
-	i = 0;
-
-	while (i < 2)
+	for (int i = 0; i < 2; i++)
 	{
 		setPolyG4(&fade_g4[i]);
 		setSemiTrans(&fade_g4[i], 1);
@@ -586,17 +532,8 @@ void SetupFadePolys(void)
 		setPolyGT4(&fade_gt4[i]);
 		setSemiTrans(&fade_gt4[i], 1);
 
-		fade_gt4[i].x0 = -1;
-		fade_gt4[i].y0 = -1;
-		fade_gt4[i].x1 = 0;
-		fade_gt4[i].y1 = -1;
-		fade_gt4[i].x2 = -1;
-		fade_gt4[i].y2 = 0;
-		fade_gt4[i].x3 = 0;
-		fade_gt4[i].y3 = 0;
-		fade_gt4[i].tpage = 0x40;
-
-		i++;
+		setXYWH(&fade_gt4[i], -1, -1, 1, 1);
+		setTPage(&fade_gt4[i], 0, 2, 0, 0);
 	};
 
 	bWantFade = 1;
@@ -639,51 +576,27 @@ void SetupFadePolys(void)
 // [D]
 void DrawFadePoly(void)
 {
-	DB *pDVar1;
-	int iVar2;
-	POLY_G4 *pPVar3;
-
-	iVar2 = current->id;
-	pPVar3 = fade_g4 + iVar2;
-
 	if (fadeVal < 0) 
 	{
 		bMissionTitleFade = 0;
-		if (gInGameCutsceneActive == 0) {
+		
+		if (!gInGameCutsceneActive)
 			gStopPadReads = 0;
-		}
+
 		fadeVal = 0;
 	}
 
-	fade_g4[iVar2].x0 = 0;
-	fade_g4[iVar2].y0 = 0;
-	fade_g4[iVar2].x1 = 0x140;
-	fade_g4[iVar2].y1 = 0;
-	fade_g4[iVar2].x2 = 0;
+	POLY_G4 *fl_g4 = &fade_g4[current->id];
 
-	pDVar1 = current;
+	setXYWH(fl_g4, 0, 0, 320, 256);
 
-	fade_g4[iVar2].y2 = 0x100;
-	fade_g4[iVar2].x3 = 0x140;
-	fade_g4[iVar2].y3 = 0x100;
+	setRGB0(fl_g4, fadeVal, fadeVal, fadeVal);
+	setRGB1(fl_g4, fadeVal, fadeVal, fadeVal);
+	setRGB2(fl_g4, fadeVal, fadeVal, fadeVal);
+	setRGB3(fl_g4, fadeVal, fadeVal, fadeVal);
 
-	fade_g4[iVar2].r0 = fadeVal;
-	fade_g4[iVar2].g0 = fadeVal;
-	fade_g4[iVar2].b0 = fadeVal;
-	fade_g4[iVar2].r1 = fadeVal;
-	fade_g4[iVar2].g1 = fadeVal;
-	fade_g4[iVar2].b1 = fadeVal;
-	fade_g4[iVar2].r2 = fadeVal;
-	fade_g4[iVar2].g2 = fadeVal;
-	fade_g4[iVar2].b2 = fadeVal;
-	fade_g4[iVar2].r3 = fadeVal;
-	fade_g4[iVar2].g3 = fadeVal;
-	fade_g4[iVar2].b3 = fadeVal;
-
-	// [A] might be incorrect still
-	addPrim(pDVar1->ot + 1, pPVar3);
-	addPrim(pDVar1->ot + 1, &fade_gt4[pDVar1->id]);
-
+	addPrim(&current->ot[1], fl_g4);
+	addPrim(&current->ot[1], &fade_gt4[current->id]);
 }
 
 

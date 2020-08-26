@@ -630,7 +630,6 @@ void LoadMission(int missionnum)
 				piVar6 = piVar6 + 4;
 				pLVar5 = (LEAD_PARAMETERS *)&pLVar5->tWidth;
 			} while (piVar6 != piVar11 + 0x3f9);
-
 			CopsAllowed = 0;
 		}
 	}
@@ -3441,15 +3440,14 @@ extern int gStopPadReads;
 // [D]
 int Handle321Go(void)
 {
-	if ((MissionHeader->type & 4U) != 0) 
+	if ((MissionHeader->type & 4) != 0) 
 	{
 		gStopPadReads = 1;
-		g321GoDelay = g321GoDelay + 1;
-
-		if (g321GoDelay == 0x60) 
+		
+		if (++g321GoDelay == 96) 
 		{
 			gStopPadReads = 0;
-			MissionHeader->type = MissionHeader->type & 0xfffffffb;
+			MissionHeader->type &= ~4;
 		}
 
 		return 1;

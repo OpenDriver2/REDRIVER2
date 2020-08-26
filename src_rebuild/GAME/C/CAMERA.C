@@ -1008,8 +1008,12 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 	}
 	else 
 	{
-		viewer_position.vy = 7;
-		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
+		// [A] prevent crash from happening
+		if (cp->ap.carCos != NULL)
+		{
+			viewer_position.vy = 7;
+			viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
+		}
 	}
 
 	if ((paddCamera & 3) == 3)
