@@ -1,9 +1,12 @@
 #include "THISDUST.H"
 #include "LEADAI.H"
-
 #include "OVERLAY.H"
 #include "GAMESND.H"
+#include "DR2ROADS.H"
+#include "REPLAYS.H"
 
+static int randIndex;
+static int randState[17];
 
 // decompiled code
 // original method signature: 
@@ -21,18 +24,11 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 int leadRand(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-
-	DAT_LEAD__000ecd34 = (DAT_LEAD__000ecd34 + 1) % 0x11;
-	iVar1 = (&DAT_LEAD__000eccf0)[DAT_LEAD__000ecd34] +
-		(&DAT_LEAD__000eccf0)[(DAT_LEAD__000ecd34 + 0xc) % 0x11];
-	(&DAT_LEAD__000eccf0)[DAT_LEAD__000ecd34] = iVar1;
-	return iVar1;*/
+	randIndex = (randIndex + 1) % 0x11;
+	return randState[randIndex] = randState[randIndex] + randState[(randIndex + 0xc) % 0x11];
 }
 
 
@@ -68,109 +64,116 @@ int leadRand(void)
 	/* end block 2 */
 	// End Line: 560
 
+// [D]
 void InitLead(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
 	int x;
 	int iVar4;
 	int z;
-	uint uVar5;
-	DRIVER2_STRAIGHT *pDVar6;
-	DRIVER2_CURVE *pDVar7;
-	int iVar8;
+	int uVar5;
+	DRIVER2_STRAIGHT* st;
+	DRIVER2_CURVE* cr;
+	int iVar6;
 
-	x = (cp->hd).where.t[0];
-	z = (cp->hd).where.t[2];
-	cp->hndType = '\x05';
-	cp->controlType = '\x04';
-	*(undefined4 *)(cp->ai + 0x2c) = 0x200;
-	cp->ai[0] = 3;
-	*(undefined4 *)(cp->ai + 0x28) = 0x28;
-	*(undefined4 *)(cp->ai + 0x1c) = 2;
-	*(undefined4 *)(cp->ai + 0x30) = 0x1400;
-	cp->ai[100] = 0;
-	iVar1 = valid_region(x, z);
-	x = NumDriver2Straights;
-	pDVar7 = Driver2CurvesPtr;
-	z = -1;
-	if (iVar1 == 0) {
+	x = cp->hd.where.t[0];
+	z = cp->hd.where.t[2];
+
+	cp->hndType = 5;
+	cp->controlType = 4;
+	cp->ai.l.roadPosition = 512;
+	cp->ai.l.dstate = 3;
+	cp->ai.l.recoverTime = 40;
+	cp->ai.l.nextExit = 2;
+	cp->ai.l.roadForward = 5120;
+	cp->ai.l.takeDamage = 0;
+
+	if (valid_region(x, z) == 0)
+	{
+		z = -1;
+
 		iVar1 = 0;
-		if (0 < NumDriver2Straights) {
-			iVar8 = (cp->hd).where.t[0];
-			pDVar6 = Driver2StraightsPtr;
+
+		if (0 < NumDriver2Straights)
+		{
+			iVar6 = (cp->hd).where.t[0];
+			st = Driver2StraightsPtr;
+
 			do {
-				iVar4 = iVar8 - pDVar6->Midx;
-				if (iVar4 < 0) {
-					iVar4 = iVar4 + 0x3ff;
-				}
-				iVar2 = (cp->hd).where.t[2] - pDVar6->Midz;
+				iVar4 = iVar6 - st->Midx;
+
+				iVar2 = (cp->hd).where.t[2] - st->Midz;
 				iVar4 = iVar4 >> 10;
-				if (iVar2 < 0) {
-					iVar2 = iVar2 + 0x3ff;
-				}
+
 				iVar2 = iVar2 >> 10;
 				iVar3 = iVar4 * iVar4 + iVar2 * iVar2;
-				if (((iVar4 < 0x3e9) && (iVar2 < 0x3e9)) && ((iVar3 < z || (z == -1)))) {
-					*(int *)(cp->ai + 0xc) = iVar1;
+
+				if (((iVar4 < 0x3e9) && (iVar2 < 0x3e9)) && ((iVar3 < z || (z == -1))))
+				{
+					cp->ai.l.currentRoad = iVar1;
 					z = iVar3;
 				}
+
 				iVar1 = iVar1 + 1;
-				pDVar6 = pDVar6 + 1;
-			} while (iVar1 < x);
+				st = st + 1;
+			} while (iVar1 < NumDriver2Straights);
 		}
-		x = NumDriver2Curves;
+
 		uVar5 = 0;
-		if (0 < NumDriver2Curves) {
+
+		if (0 < NumDriver2Curves) 
+		{
+			cr = Driver2CurvesPtr;
 			iVar1 = (cp->hd).where.t[0];
 			do {
-				iVar8 = iVar1 - pDVar7->Midx;
-				if (iVar8 < 0) {
-					iVar8 = iVar8 + 0x3ff;
-				}
-				iVar4 = (cp->hd).where.t[2] - pDVar7->Midz;
-				iVar8 = iVar8 >> 10;
-				if (iVar4 < 0) {
-					iVar4 = iVar4 + 0x3ff;
-				}
+				iVar6 = iVar1 - cr->Midx;
+
+				iVar4 = (cp->hd).where.t[2] - cr->Midz;
+				iVar6 = iVar6 >> 10;
+
 				iVar4 = iVar4 >> 10;
-				iVar2 = iVar8 * iVar8 + iVar4 * iVar4;
-				if (((iVar8 < 0x3e9) && (iVar4 < 0x3e9)) && ((iVar2 < z || (z == -1)))) {
-					*(uint *)(cp->ai + 0xc) = uVar5 & 0x4000;
+				iVar2 = iVar6 * iVar6 + iVar4 * iVar4;
+
+				if (((iVar6 < 0x3e9) && (iVar4 < 0x3e9)) && ((iVar2 < z || (z == -1)))) 
+				{
+					cp->ai.l.currentRoad = uVar5 & 0x4000;
 					z = iVar2;
 				}
+
 				uVar5 = uVar5 + 1;
-				pDVar7 = pDVar7 + 1;
-			} while ((int)uVar5 < x);
+				cr = cr + 1;
+			} while ((int)uVar5 < NumDriver2Curves);
 		}
 	}
-	else {
-		x = GetSurfaceIndex((VECTOR *)(cp->hd).where.t);
-		*(int *)(cp->ai + 0xc) = x;
+	else
+	{
+		x = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
+		cp->ai.l.currentRoad = x;
 	}
-	DAT_LEAD__000eccf0 = 0x27a2a;
-	DAT_LEAD__000eccf8 = &DAT_000038b0;
-	DAT_LEAD__000ecd04 = 0xe;
-	DAT_LEAD__000ecd0c = &DAT_00008748;
-	DAT_LEAD__000eccf4 = &DAT_00717d58;
-	DAT_LEAD__000eccfc = &DAT_00701ced;
-	DAT_LEAD__000ecd00 = 0xbdfda3;
-	DAT_LEAD__000ecd08 = &DAT_00268833;
-	DAT_LEAD__000ecd10 = &DAT_00180d85;
-	DAT_LEAD__000ecd14 = &DAT_00127fba;
-	DAT_LEAD__000ecd18 = 0x1678874;
-	DAT_LEAD__000ecd1c = 0x3941b;
-	DAT_LEAD__000ecd20 = &DAT_00701d01;
-	DAT_LEAD__000ecd24 = 0x39369;
-	DAT_LEAD__000ecd28 = &DAT_00001d98;
-	DAT_LEAD__000ecd2c = 0x165dab9;
-	DAT_LEAD__000ecd30 = 0xe9d4a4;
-	DAT_LEAD__000ecd34 = 0;
+
+	randState[0] = 0x27a2a;
+	randState[2] = 0x38b0;
+	randState[5] = 0xe;
+	randState[7] = 0x8748;
+	randState[1] = 0x717d58;
+	randState[3] = 0x701ced;
+	randState[4] = 0xbdfda3;
+	randState[6] = 0x268833;
+	randState[8] = 0x180d85;
+	randState[9] = 0x127fba;
+	randState[10] = 0x1678874;
+	randState[11] = 0x3941b;
+	randState[12] = 0x701d01;
+	randState[13] = 0x39369;
+	randState[14] = 0x1d98;
+	randState[15] = 0x165dab9;
+	randState[16] = 0xe9d4a4;
+
+	randIndex = 0;
+
 	InitLeadHorn();
-	return;*/
 }
 
 
