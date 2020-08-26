@@ -1500,7 +1500,7 @@ void CalcObjectRotationMatrices(void)
 // [D]
 void PlotMDL_less_than_128(MODEL *model)
 {
-	RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0);
+	RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0, 0);
 }
 
 
@@ -2521,7 +2521,7 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 	// End Line: 5556
 
 // [D]
-void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags)
+void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv)
 {
 	OTTYPE *savedOT = current->ot;
 	
@@ -2555,7 +2555,7 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	plotContext.current = current;
 
 	if (56000 < (current->primtab-(current->primptr-0x1e000)))
-		PlotBuildingModelSubdivNxN(model, 0, &plotContext, 1);
+		PlotBuildingModelSubdivNxN(model, 0, &plotContext, subdiv);
 
 	current->ot = savedOT;
 }

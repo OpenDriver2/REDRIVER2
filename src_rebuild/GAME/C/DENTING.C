@@ -676,7 +676,7 @@ void MoveHubcap(int playerId)
 				combointensity = cmb << 0x10 | cmb << 8 | cmb;
 			}
 
-			RenderModel(gHubcapModelPtr, &Orientation, &Position, 0, 0);
+			RenderModel(gHubcapModelPtr, &Orientation, &Position, 0, 0, 0);
 			ShadowPos.vy -= camera_position.vy;
 
 			combointensity = savecombo;

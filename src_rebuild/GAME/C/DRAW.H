@@ -60,7 +60,7 @@ extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, struct _pct *pc, i
 
 extern int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp); // 0x000411F4
 
-extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags); // 0x0004143C
+extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv); // 0x0004143C
 
 extern unsigned long normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
 
