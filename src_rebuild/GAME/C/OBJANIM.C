@@ -10,6 +10,10 @@
 #include "CARS.H"
 #include "PLAYERS.H"
 #include "COP_AI.H"
+#include "SPOOL.H"
+#include "SYSTEM.H"
+#include "PAUSE.H"
+#include "STRINGS.H"
 
 CYCLE_OBJECT Lev0[2] =
 {
@@ -153,6 +157,8 @@ int num_anim_objects = 0;
 int num_cycle_obj = 0;
 
 TEXTURE_DETAILS cycle_tex[12];
+DR_LOAD cyclecluts[12];
+
 int cycle_phase = 0;
 int cycle_timer = 0;
 
@@ -267,118 +273,91 @@ void InitCyclingPals(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ColourCycle(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
-	undefined2 uVar3;
-	DB* pDVar4;
-	undefined2* __dest;
-	int iVar5;
-	int iVar6;
-	uint* puVar7;
+	ushort temp;
+	ushort* bufaddr;
 	CYCLE_OBJECT* cyc;
-	TEXTURE_DETAILS* pTVar8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
+	int i;
 	RECT16 vram;
-	int local_30;
 
 	if (LoadingArea == 0)
 	{
-		if ((pauseflag == 0) && (gTimeOfDay == 3)) 
+		if ((pauseflag == 0) && (gTimeOfDay == 3))
 		{
-			vram.w = 0x10;
+			vram.w = 16;
 			vram.h = 1;
 			cyc = Lev_CycleObjPtrs[GameLevel];
 
 			if (num_cycle_obj != 0)
 			{
-				iVar9 = 0;
+				i = 0;
 
-				if (0 < num_cycle_obj)
+				while (i < num_cycle_obj)
 				{
-					iVar10 = 0xab3b0;
-					local_30 = 0;
-					iVar12 = 0;
-					iVar11 = 0;
-					pTVar8 = cycle_tex;
+					bufaddr = (unsigned short*)cyclecluts[i].p;
 
-					do {
-						bVar1 = pTVar8->texture_page;
-						bVar2 = pTVar8->texture_number;
-
-						if (tpageloaded[bVar1] != 0) 
+					if (tpageloaded[cycle_tex[i].texture_page] != 0)
+					{
+						if (cycle_phase == 0)
 						{
-							if (cycle_phase == 0) 
-							{
-								vram.x = (short)(((uint)(ushort)texture_cluts[(uint)bVar1 * 0x20 + (uint)bVar2] & 0x3f) << 4);
-								cyc->vx = vram.x;
-								vram.y = (ushort)texture_cluts[(uint)bVar1 * 0x20 + (uint)bVar2] >> 6 & 0x1ff;
-								cyc->vy = vram.y;
+							// initialize
+							temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
 
-								StoreImage(&vram, iVar10);
-							}
-							else 
-							{
-								if ((ushort)(cycle_timer & cyc->speed1) == 0) 
-								{
-									if ((int)cyc->start1 != -1) {
-										iVar6 = iVar11 + 0xab3b0;
-										iVar5 = (int)cyc->start1 * 2;
-										__dest = (undefined2*)(iVar5 + iVar6);
-										uVar3 = *__dest;
-										memmove(__dest, (void*)(iVar6 + iVar5 + 2), ((uint)(ushort)cyc->stop1 - (uint)(ushort)cyc->start1 & 0xffff) << 1);
-										*(undefined2*)((int)cyc->stop1 * 2 + iVar6) = uVar3;
-									}
-								}
+							cyc->vx = vram.x = (temp & 0x3f) << 4;
+							cyc->vy = vram.y = (temp >> 6);
 
-								if ((ushort)(cycle_timer & cyc->speed2) == 0) {
-									if ((int)cyc->start2 != -1) {
-										iVar6 = iVar12 + 0xab3b0;
-										iVar5 = (int)cyc->start2 * 2;
-										__dest = (undefined2*)(iVar5 + iVar6);
-										uVar3 = *__dest;
-										memmove(__dest, (void*)(iVar6 + iVar5 + 2), ((uint)(ushort)cyc->stop2 - (uint)(ushort)cyc->start2 & 0xffff) << 1);
-										*(undefined2*)((int)cyc->stop2 * 2 + iVar6) = uVar3;
-									}
-								}
-
-								vram.x = cyc->vx;
-								puVar7 = (uint*)((int)&cyclecluts[0].tag + local_30);
-								vram.y = cyc->vy;
-								SetDrawLoad(puVar7, &vram);
-								pDVar4 = current;
-								*puVar7 = *puVar7 & 0xff000000 | *current->ot & 0xffffff;
-								*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar7 & 0xffffff;
-							}
+							StoreImage(&vram, (u_long*)bufaddr);
 						}
-						iVar10 = iVar10 + 0x44;
-						iVar12 = iVar12 + 0x44;
-						iVar11 = iVar11 + 0x44;
-						local_30 = local_30 + 0x44;
+						else 
+						{
+							if ((cycle_timer & cyc->speed1) == 0) 
+							{
+								if (cyc->start1 != -1)
+								{
+									temp = bufaddr[cyc->start1];
+									memmove(bufaddr + cyc->start1, bufaddr + cyc->start1 + 1, (cyc->stop1 - cyc->start1) << 1);
 
-						pTVar8 = pTVar8 + 1;
-						iVar9 = iVar9 + 1;
-						cyc = cyc + 1;
-					} while (iVar9 < num_cycle_obj);
+									bufaddr[cyc->stop1] = temp;
+								}
+							}
+
+							if ((cycle_timer & cyc->speed2) == 0) 
+							{
+								if (cyc->start2 != -1)
+								{
+									temp = bufaddr[cyc->start2];
+									memmove(bufaddr + cyc->start2, bufaddr + cyc->start2 + 1, (cyc->stop2 - cyc->start2) << 1);
+
+									bufaddr[cyc->stop2] = temp;
+								}
+							}
+
+							vram.x = cyc->vx;
+							vram.y = cyc->vy;
+
+							SetDrawLoad(&cyclecluts[i], &vram);
+
+							addPrim(current->ot, &cyclecluts[i]);
+						}
+					}
+
+					cyc++;
+					i++;
 				}
-				if (cycle_phase != 0) {
-					cycle_timer = cycle_timer + 1;
-				}
+
+				if (cycle_phase != 0) 
+					cycle_timer++;
+
 				cycle_phase = cycle_phase ^ 1;
 			}
 		}
 	}
-	else 
+	else
 	{
 		cycle_phase = 0;
 	}
-	*/
 }
 
 
@@ -421,18 +400,13 @@ void ColourCycle(void)
 // [D]
 void FindSmashableObjects(void)
 {
-	SMASHABLE_OBJECT *pSVar1;
-	int iVar2;
-	SMASHABLE_OBJECT *pSVar3;
+	SMASHABLE_OBJECT *sip;
 
-	pSVar3 = smashable;
-	if (smashable[0].name != NULL) {
-		do {
-			iVar2 = FindModelIdxWithName(pSVar3->name);
-			pSVar3->modelIdx = iVar2;
-			pSVar1 = pSVar3 + 1;
-			pSVar3 = pSVar3 + 1;
-		} while (pSVar1->name != NULL);
+	sip = smashable;
+	while (sip->name != NULL)
+	{
+		sip->modelIdx = FindModelIdxWithName(sip->name);
+		sip++;
 	}
 }
 

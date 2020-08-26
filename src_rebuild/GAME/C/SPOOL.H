@@ -12,6 +12,7 @@ extern int allowSpecSpooling;
 extern int startSpecSpool;
 
 extern int doSpooling;
+extern int LoadingArea;
 
 extern short loading_region[4];
 extern int regions_unpacked[4];
