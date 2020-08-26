@@ -2324,100 +2324,113 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 // [D]
 void MangleWheelModels(void)
 {
-	unsigned char bVar1;
 	UV_INFO UVar2;
 	unsigned char uVar3;
-	int iVar4;
+	int i;
 	uint uVar5;
 	uint uVar6;
 	uint uVar7;
-	POLYFT4LIT *local_a3_608;
-	MODEL *pMVar8;
-	int iVar9;
+	POLYFT4LIT *src;
+	MODEL *m;
+	int j;
 
-	iVar4 = 0;
+	i = 0;
 	do {
-		pMVar8 = gCleanWheelModelPtr;
-		if (((iVar4 != 1) && (pMVar8 = gFastWheelModelPtr, 1 < iVar4)) && (iVar4 == 2)) {
-			pMVar8 = gDamWheelModelPtr;
-		}
-		iVar4 = iVar4 + 1;
-		local_a3_608 = (POLYFT4LIT *)pMVar8->poly_block;
-		iVar9 = 1;
-		uVar5 = *(uint *)&local_a3_608[2].v0;
-		uVar6 = *(uint *)&local_a3_608[2].uv0;
-		uVar7 = *(uint *)&local_a3_608[2].uv2;
-		*(uint *)local_a3_608 = *(uint *)(local_a3_608 + 2);
-		*(uint *)&local_a3_608->v0 = uVar5;
-		*(uint *)&local_a3_608->uv0 = uVar6;
-		*(uint *)&local_a3_608->uv2 = uVar7;
-		local_a3_608->color = local_a3_608[2].color;
-		uVar5 = *(uint *)&local_a3_608[3].v0;
-		uVar6 = *(uint *)&local_a3_608[3].uv0;
-		uVar7 = *(uint *)&local_a3_608[3].uv2;
-		*(uint *)(local_a3_608 + 1) = *(uint *)(local_a3_608 + 3);
-		*(uint *)&local_a3_608[1].v0 = uVar5;
-		*(uint *)&local_a3_608[1].uv0 = uVar6;
-		*(uint *)&local_a3_608[1].uv2 = uVar7;
-		local_a3_608[1].color = local_a3_608[3].color;
-		uVar5 = *(uint *)&local_a3_608[4].v0;
-		uVar6 = *(uint *)&local_a3_608[4].uv0;
-		uVar7 = *(uint *)&local_a3_608[4].uv2;
-		*(uint *)(local_a3_608 + 2) = *(uint *)(local_a3_608 + 4);
-		*(uint *)&local_a3_608[2].v0 = uVar5;
-		*(uint *)&local_a3_608[2].uv0 = uVar6;
-		*(uint *)&local_a3_608[2].uv2 = uVar7;
-		local_a3_608[2].color = local_a3_608[4].color;
-		uVar5 = *(uint *)&local_a3_608[6].v0;
-		uVar6 = *(uint *)&local_a3_608[6].uv0;
-		uVar7 = *(uint *)&local_a3_608[6].uv2;
-		*(uint *)(local_a3_608 + 3) = *(uint *)(local_a3_608 + 6);
-		*(uint *)&local_a3_608[3].v0 = uVar5;
-		*(uint *)&local_a3_608[3].uv0 = uVar6;
-		*(uint *)&local_a3_608[3].uv2 = uVar7;
-		local_a3_608[3].color = local_a3_608[6].color;
-		local_a3_608[2].v0 = '\x10';
-		local_a3_608[2].v1 = '\x11';
-		local_a3_608[2].v2 = '\x17';
-		local_a3_608[2].v3 = '\x16';
-		local_a3_608[3].v0 = '\x15';
-		local_a3_608[3].v1 = '\x14';
-		local_a3_608[3].v3 = '\x12';
-		bVar1 = (local_a3_608->uv0).u;
-		local_a3_608[3].v2 = '\x13';
-		uVar3 = (bVar1 >> 1) + ((local_a3_608->uv2).u >> 1);
-		local_a3_608[3].uv3.u = uVar3;
-		local_a3_608[3].uv2.u = uVar3;
-		local_a3_608[3].uv1.u = uVar3;
-		local_a3_608[3].uv0.u = uVar3;
-		local_a3_608[2].uv3.u = uVar3;
-		local_a3_608[2].uv2.u = uVar3;
-		local_a3_608[2].uv1.u = uVar3;
-		bVar1 = (local_a3_608->uv0).v;
-		local_a3_608[2].uv0.u = uVar3;
-		uVar3 = (bVar1 >> 1) + ((local_a3_608->uv2).v >> 1);
-		local_a3_608[3].uv3.v = uVar3;
-		local_a3_608[3].uv2.v = uVar3;
-		local_a3_608[3].uv1.v = uVar3;
-		local_a3_608[3].uv0.v = uVar3;
-		local_a3_608[2].uv3.v = uVar3;
-		local_a3_608[2].uv2.v = uVar3;
-		local_a3_608[2].uv1.v = uVar3;
-		local_a3_608[2].uv0.v = uVar3;
-		pMVar8->num_polys = 4;
+
+		if (i == 1)
+			m = gFastWheelModelPtr;
+		else if (i == 2)
+			m = gDamWheelModelPtr;
+		else
+			m = gCleanWheelModelPtr;
+
+		
+		src = (POLYFT4LIT *)m->poly_block;
+		
+		uVar5 = *(uint *)&src[2].v0;
+		uVar6 = *(uint *)&src[2].uv0;
+		uVar7 = *(uint *)&src[2].uv2;
+		*(uint *)src = *(uint *)(src + 2);
+		*(uint *)&src->v0 = uVar5;
+		*(uint *)&src->uv0 = uVar6;
+		*(uint *)&src->uv2 = uVar7;
+		src->color = src[2].color;
+
+		uVar5 = *(uint *)&src[3].v0;
+		uVar6 = *(uint *)&src[3].uv0;
+		uVar7 = *(uint *)&src[3].uv2;
+		*(uint *)(src + 1) = *(uint *)(src + 3);
+		*(uint *)&src[1].v0 = uVar5;
+		*(uint *)&src[1].uv0 = uVar6;
+		*(uint *)&src[1].uv2 = uVar7;
+		src[1].color = src[3].color;
+
+		uVar5 = *(uint *)&src[4].v0;
+		uVar6 = *(uint *)&src[4].uv0;
+		uVar7 = *(uint *)&src[4].uv2;
+		*(uint *)(src + 2) = *(uint *)(src + 4);
+		*(uint *)&src[2].v0 = uVar5;
+		*(uint *)&src[2].uv0 = uVar6;
+		*(uint *)&src[2].uv2 = uVar7;
+		src[2].color = src[4].color;
+
+		uVar5 = *(uint *)&src[6].v0;
+		uVar6 = *(uint *)&src[6].uv0;
+		uVar7 = *(uint *)&src[6].uv2;
+		*(uint *)(src + 3) = *(uint *)(src + 6);
+		*(uint *)&src[3].v0 = uVar5;
+		*(uint *)&src[3].uv0 = uVar6;
+		*(uint *)&src[3].uv2 = uVar7;
+		src[3].color = src[6].color;
+
+		src[2].v0 = 16;
+		src[2].v1 = 17;
+		src[2].v2 = 23;
+		src[2].v3 = 22;
+		src[3].v0 = 21;
+		src[3].v1 = 20;
+		src[3].v2 = 19;
+		src[3].v3 = 18;
+
+		uVar3 = (src->uv0.u >> 1) + (src->uv2.u >> 1);
+		src[3].uv3.u = uVar3;
+		src[3].uv2.u = uVar3;
+		src[3].uv1.u = uVar3;
+		src[3].uv0.u = uVar3;
+		src[2].uv3.u = uVar3;
+		src[2].uv2.u = uVar3;
+		src[2].uv1.u = uVar3;
+		src[2].uv0.u = uVar3;
+
+		uVar3 = (src->uv0.v >> 1) + (src->uv2.v >> 1);
+		src[3].uv3.v = uVar3;
+		src[3].uv2.v = uVar3;
+		src[3].uv1.v = uVar3;
+		src[3].uv0.v = uVar3;
+		src[2].uv3.v = uVar3;
+		src[2].uv2.v = uVar3;
+		src[2].uv1.v = uVar3;
+		src[2].uv0.v = uVar3;
+
+		m->num_polys = 4;
+
+		j = 0;
 		do {
-			UVar2 = local_a3_608->uv0;
-			iVar9 = iVar9 + -1;
-			local_a3_608->uv0 = local_a3_608->uv1;
-			local_a3_608->uv1 = local_a3_608->uv2;
-			local_a3_608->uv2 = local_a3_608->uv3;
-			local_a3_608->uv3 = UVar2;
-			local_a3_608 = local_a3_608 + 1;
-		} while (-1 < iVar9);
-	} while (iVar4 < 3);
+			UVar2 = src->uv0;
+			
+			src->uv0 = src->uv1;
+			src->uv1 = src->uv2;
+			src->uv2 = src->uv3;
+			src->uv3 = UVar2;
+
+			src++;
+		} while (++j < 2);
+
+	} while (++i < 3);
 
 	// HACK: Show clean model only in Rio.
-	if (GameLevel == 3) {
+	if (GameLevel == 3) 
+	{
 		gFastWheelModelPtr = gCleanWheelModelPtr;
 	}
 }
