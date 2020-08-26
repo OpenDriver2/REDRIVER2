@@ -360,7 +360,7 @@ int multiplayerregions[4];
 int gMultiplayerLevels = 0;
 
 // LEADAI
-extern LEAD_PARAMETERS LeadValues;
+LEAD_PARAMETERS LeadValues;
 
 static char NewLeadDelay = 0;
 
@@ -630,7 +630,6 @@ void LoadMission(int missionnum)
 				piVar6 = piVar6 + 4;
 				pLVar5 = (LEAD_PARAMETERS *)&pLVar5->tWidth;
 			} while (piVar6 != piVar11 + 0x3f9);
-
 			CopsAllowed = 0;
 		}
 	}

@@ -64,6 +64,7 @@
 	/* end block 3 */
 	// End Line: 2001
 
+#include "CONVERT.H"
 
 // [D]
 void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
