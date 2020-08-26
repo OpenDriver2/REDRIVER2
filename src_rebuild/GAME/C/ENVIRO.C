@@ -24,9 +24,10 @@ short gPlayerCar0ShinyFaces[38];
 	/* end block 2 */
 	// End Line: 93
 
-// [A] - this code is not needed
 void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 {
+#ifdef PSX
+	// [A] - this code is not needed
 	UNIMPLEMENTED();
 	/*
 	short sVar1;
@@ -49,6 +50,7 @@ void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 		shinysrc = shinysrc + 1;
 	}
 	return;*/
+#endif
 }
 
 
@@ -89,9 +91,10 @@ void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [A] - this code is not needed
 void Init_Reflection_Mapping(void)
 {
+#ifdef PSX
+	// [A] - this code is not needed
 	UNIMPLEMENTED();
 	/*
 	char *pcVar1;
@@ -108,6 +111,7 @@ void Init_Reflection_Mapping(void)
 	Env_MakeColourAddTable(gPlayerCar0ShinyFaces, Car0_ShinyTable, 0x100);
 	return;
 	*/
+#endif
 }
 
 

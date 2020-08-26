@@ -802,76 +802,69 @@ int PrintStringFeature(char *string, int x, int y, int w, int h, int transparent
 	/* end block 4 */
 	// End Line: 1388
 
-// [D]
+// [D] [A]
 void PrintStringBoxed(char *string, int ix, int iy)
 {
-	char bVar1;
-	char *pbVar2;
-	unsigned char uVar3;
-	short sVar4;
-	int iVar6;
-	uint uVar7;
 	SPRT *font;
-	int iVar9;
-	int iVar10;
 	char word[32];
+	char *wpt;
+	int x;
+	int y;
+	int index;
+	int wordcount;
 
 	font = (SPRT *)current->primptr;
 
 	if (*string != 0) 
 	{
-		iVar10 = 1;
-		iVar9 = ix;
-		do {
-			string = GetNextWord(string, word);
-			iVar6 = StringWidth(word);
+		wordcount = 1;
+		
+		x = ix;
+		y = iy;
 
-			if (0x134 < iVar9 + iVar6 && (iVar10 != 1 || (*string != 0)))
+		do
+		{
+			string = GetNextWord(string, word);
+
+			if ((x + StringWidth(word)) > 308 && (wordcount != 1 || (*string != 0)))
 			{
-				iy = iy + 0xe;
-				iVar9 = ix;
+				x = ix;
+				y += 14;
 			}
 
-			pbVar2 = word;
-			bVar1 = word[0];
+			wpt = word;
 
-			while (pbVar2 = pbVar2 + 1, bVar1 != 0) 
+			char c = 0;
+			
+			while ((c = *wpt++) != 0) 
 			{
-				if (bVar1 == 32) 
+				if (c == ' ') 
 				{
-					iVar9 = iVar9 + 4;
+					x += 4;
 				}
 				else 
 				{
-					uVar7 = AsciiTable[bVar1];
+					index = AsciiTable[c];
 
-					if (uVar7 != 0xffffffff) 
+					if (index != -1) 
 					{
+						OUT_FONTINFO *pFontInfo = &fontinfo[index];
+
 						setSprt(font);
 
-						font->r0 = gFontColour.r;
-						font->g0 = gFontColour.g;
-						font->b0 = gFontColour.b;
-
-						font->x0 = iVar9;
-						font->y0 = fontinfo[uVar7].offy + iy;
-						font->u0 = fontinfo[uVar7].x;
-						font->v0 = fontinfo[uVar7].y - 46;
-
-						font->w = fontinfo[uVar7].width;
-						font->clut = fontclutid;
-						font->h = fontinfo[uVar7].height;;
+						setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
+						setXY0(font, x, y + pFontInfo->offy);
+						setUV0(font, pFontInfo->x, pFontInfo->y - 46);
+						setWH(font, pFontInfo->width, pFontInfo->height);
 
 						addPrim(current->ot, font);
 
 						font++;
-						iVar9 = iVar9 + (uint)fontinfo[uVar7].width;
 					}
 				}
-
-				bVar1 = *pbVar2;
 			}
-			iVar10++;
+
+			wordcount++;
 		} while (*string != 0);
 	}
 
@@ -891,8 +884,9 @@ void PrintStringBoxed(char *string, int ix, int iy)
 	null->tpage = fonttpage;
 
 	addPrim(current->ot, null);
+	null++;
 
-	current->primptr = (char*)(null+1);
+	current->primptr = (char *)null;
 }
 
 
@@ -1097,29 +1091,22 @@ int PrintScaledString(int y, char *string, int scale)
 // [D]
 char * GetNextWord(char *string, char *word)
 {
-	char cVar1;
+	char c = *string;
 
-	cVar1 = *string;
-	do {
-		if (cVar1 == '\0')
-		{
-		LAB_00074d88:
-			*word = '\0';
-			return string;
-		}
+	while (c != 0)
+	{
+		string++;
 
-		string = string + 1;
-		if (cVar1 == ' ')
-		{
-			*word = ' ';
-			word = word + 1;
-			goto LAB_00074d88;
-		}
+		if ((*word++ = c) == ' ')
+			break;
 
-		*word = cVar1;
-		cVar1 = *string;
-		word = word + 1;
-	} while (true);
+		c = *string;
+	}
+
+	// add null-terminator
+	*word = '\0';
+
+	return string;
 }
 
 

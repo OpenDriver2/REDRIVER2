@@ -1175,10 +1175,8 @@ RECT16 storeRect = { 768, 475, 255, 36 };
 void NewSelection(short dir)
 {
 	PSXBUTTON *pNewB;
-	uint uVar4;
 	RECT16 rect;
 
-	uVar4 = dir;// >> 10; //SEXT24(dir);
 	if (pCurrScreen->numButtons == 0) 
 	{
 #ifndef PSX
@@ -1187,7 +1185,10 @@ void NewSelection(short dir)
 		return;
 	}
 
-	if (uVar4 != 0) {
+	pNewB = pCurrButton;
+
+	// any buttons pressed?
+	if (dir != 0) {
 		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
 		addPrim(current->ot+9, &In);
 	}
@@ -1216,10 +1217,6 @@ void NewSelection(short dir)
 		FESound(3);
 		pNewB = &pCurrScreen->buttons[btn - 1];
 	}
-	else
-	{
-		pNewB = pCurrButton;
-	}
 
 	rect.x = pNewB->s_x;
 	rect.y = pNewB->s_y;
@@ -1229,7 +1226,7 @@ void NewSelection(short dir)
 	SetDrawMove(&Out, &rect, storeRect.x, storeRect.y);
 	addPrim(current->ot + 8, &Out);
 
-	setXY0(&HighlightSprt, pNewB->s_x, pNewB->s_y);
+	setXY0(&HighlightSprt, rect.x, rect.y);
 	
 	addPrim(current->ot + 6, &HighlightSprt);
 	addPrim(current->ot + 7, &HighlightDummy);
@@ -1792,9 +1789,7 @@ void SetFEDrawMode(void)
 // [D]
 void EndFrame(void)
 {
-	char **ppcVar1;
-	DB *pDVar2;
-	DB *pDVar3;
+	DB *db_hold;
 
 	DrawSync(0);
 	VSync(0);
@@ -1802,15 +1797,14 @@ void EndFrame(void)
 	PutDispEnv(&current->disp);
 	PutDrawEnv(&current->draw);
 
-	pDVar3 = last;
-	pDVar2 = current;
-	ppcVar1 = &last->primtab;
+	db_hold = current;
 	current = last;
-	last = pDVar2;
-	pDVar3->primptr = *ppcVar1;
 
-	DrawOTag((u_long*)(pDVar2->ot + 0x10));
-	ClearOTagR((u_long*)(current->ot), 0x10);
+	last->primptr = last->primtab;
+	last = db_hold;
+
+	DrawOTag((u_long*)&db_hold->ot[16]);
+	ClearOTagR((u_long*)current->ot, 16);
 	VSync(0);
 
 #ifndef PSX
@@ -1876,94 +1870,88 @@ void EndFrame(void)
 // [D]
 int FEPrintString(char *string, int x, int y, int justification, int r, int g, int b)
 {
-	char bVar1;
-	char bVar2;
-	unsigned char uVar3;
-	int iVar5;
-	uint uVar6;
-	uint uVar7;
-	ulong *puVar8;
-	char *pbVar9;
-	SPRT *font;
-	POLY_FT3* null;
-	char *pbVar10;
-	int iVar11;
+	if ((current == NULL) || (string == NULL))
+		return -1;
 
-	iVar11 = 0;
-	iVar5 = -1;
-	if (current != NULL) {
-		font = (SPRT *)current->primptr;
-		bVar1 = *string;
-		uVar7 = (uint)bVar1;
-		pbVar10 = (char *)(string + 1);
-		iVar5 = x;
-		if ((justification & 4U) != 0) {
-			iVar5 = 0;
-			uVar6 = uVar7;
-			pbVar9 = pbVar10;
-			bVar2 = bVar1;
-			while (bVar2 != 0) {
-				if (uVar6 == 0x20) {
-					iVar5 = iVar5 + 4;
-				}
-				else {
-					iVar5 = iVar5 + (uint)feFont.CharInfo[uVar6].w;
-				}
-				bVar2 = *pbVar9;
-				uVar6 = (uint)bVar2;
-				pbVar9 = pbVar9 + 1;
+	FE_CHARDATA *pFontInfo;
+	SPRT *font;
+	char let;
+
+	font = (SPRT *)current->primptr;
+	let = *string++;
+
+	if ((justification & 4) != 0)
+	{
+		char *pString = string;
+		char c = let;
+
+		int w = 0;
+
+		while (c != 0) {
+			if (c == ' ') {
+				w += 4;
 			}
-			iVar5 = x - iVar5;
+			else {
+				w += feFont.CharInfo[c].w;
+			}
+
+			c = *pString++;
 		}
-		if ((bVar1 != 0) && (true)) {
-			do {
-				if (uVar7 == 0x20) {
-					iVar5 = iVar5 + 4;
-				}
-				else {
-					bVar1 = feFont.CharInfo[uVar7].w;
-					setSprt(font);
-					//font->code = 'f';
+
+		x -= w;
+	}
+
+	int counter = 0;
+
+	do
+	{
+		if (let == ' ')
+		{
+			x += 4;
+		}
+		else
+		{
+			pFontInfo = &feFont.CharInfo[let];
+
+			int w = pFontInfo->w;
+			int h = pFontInfo->h;
+
+			setSprt(font);
 #ifdef PSX
-					setSemiTrans(font, 1);
+			setSemiTrans(font, 1);
 #endif
 
-					//font->tpage = 0x1a;	// [A]
+			setRGB0(font, r, g, b);
+			setXY0(font, x, y);
+			setUV0(font, pFontInfo->u, pFontInfo->v);
+			setWH(font, w, h);
+			// setTPage(font, 0, 0, 640, 256); // [A]
+			setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
 
-					font->r0 = (unsigned char)r;
-					font->g0 = (unsigned char)g;
-					font->b0 = (unsigned char)b;
-					font->x0 = (short)iVar5;
-					font->y0 = (short)y;
-					font->u0 = feFont.CharInfo[uVar7].u;
-					uVar3 = feFont.CharInfo[uVar7].v;
-					font->w = (ushort)bVar1;
-					font->v0 = uVar3;
-					bVar2 = feFont.CharInfo[uVar7].h;
-					iVar5 = iVar5 + (uint)bVar1;
-					font->clut = 0x407c;
-					font->h = (ushort)bVar2;
-					addPrim(current->ot+1, font);
-					font++;
-				}
-				iVar11 = iVar11 + 1;
-				bVar1 = *pbVar10;
-				uVar7 = (uint)bVar1;
-				pbVar10 = pbVar10 + 1;
-			} while ((bVar1 != 0) && (iVar11 < 0x20));
+			addPrim(&current->ot[1], font);
+			font++;
+
+			// add space for next character
+			x += w;
 		}
-		current->primptr = (char*)font;
 
-		null = (POLY_FT3*)current->primptr;
-		setPolyFT3(null);
-		setSemiTrans(null, 1);
-		setXY3(null, -1, -1, -1, -1, -1, -1);
-		setTPage(null, 0, 0, 640, 256);
+		let = *string++;
+		counter++;
+	} while ((let != 0) && (counter < 32));
 
-		addPrim(current->ot + 1, null);
-		current->primptr += sizeof(POLY_FT3);
-	}
-	return iVar5;
+	// set tail
+	current->primptr = (char *)font;
+
+	POLY_FT3 *null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+	setSemiTrans(null, 1);
+	setXY3(null, -1, -1, -1, -1, -1, -1);
+	setTPage(null, 0, 0, 640, 256);
+
+	addPrim(&current->ot[1], null);
+	current->primptr += sizeof(POLY_FT3);
+
+	return x;
 }
 
 
@@ -1999,88 +1987,57 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 // [D]
 int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, int r, int g, int b)
 {
-	char bVar1;
-	char bVar2;
-	unsigned char uVar3;
-	short sVar4;
-	DB *pDVar5;
-	unsigned char uVar6;
-	int iVar7;
-	short sVar8;
-	uint uVar9;
-	FE_CHARDATA *pFontInfo;
+	if ((current == NULL) || (string == NULL))
+		return -1;
+
 	POLY_FT4 *font;
-	int iVar10;
+	FE_CHARDATA *pFontInfo;
+	char let;
+	int w;
+	int h;
 
-	iVar7 = -1;
-	if (current != NULL) {
-		bVar1 = *string;
-		font = (POLY_FT4 *)current->primptr;
-		iVar7 = x;
-		while (bVar1 != 0) {
-			bVar1 = *string;
-			uVar9 = (uint)bVar1;
-			string = (char *)(string + 1);
-			iVar10 = iVar7;
-			if (bVar1 != 10) {
-				if (bVar1 == 0x20) {
-					iVar10 = iVar7 + 4;
-				}
-				else {
-					pFontInfo = feFont.CharInfo + uVar9;
-					bVar1 = feFont.CharInfo[uVar9].w;
-					bVar2 = feFont.CharInfo[uVar9].h;
+	font = (POLY_FT4 *)current->primptr;
 
-					setPolyFT4(font);
-					//*(undefined *)((int)&font->tag + 3) = 9;
-					//font->code = ',';
-#ifdef PSX
-					setSemiTrans(font, transparent);
-#endif
-					font->tpage = 0x1a;
-					
-					font->r0 = 128;
-					font->g0 = 128;
-					font->b0 = 128;
-					font->u0 = pFontInfo->u;
-					font->v0 = feFont.CharInfo[uVar9].v;
-					font->u1 = feFont.CharInfo[uVar9].w + pFontInfo->u + -1;
-					font->v1 = feFont.CharInfo[uVar9].v;
-					font->u2 = pFontInfo->u;
-					font->v2 = feFont.CharInfo[uVar9].h + feFont.CharInfo[uVar9].v + -1;
-					font->u3 = feFont.CharInfo[uVar9].w + pFontInfo->u + -1;
-					uVar6 = feFont.CharInfo[uVar9].v;
-					uVar3 = feFont.CharInfo[uVar9].h;
-					iVar10 = iVar7 + ((int)((uint)bVar1 * scale) >> 0xc);
-					sVar4 = (short)y;
-					sVar8 = sVar4 + (short)((int)((uint)bVar2 * scale) >> 0xc);
-					font->x0 = (short)iVar7;
-					font->y0 = sVar4;
-					font->x1 = (short)iVar10;
-					font->y1 = sVar4;
-					font->x2 = (short)iVar7;
-					font->y2 = sVar8;
-					font->x3 = (short)iVar10;
-					font->y3 = sVar8;
-					font->clut = 0x407c;
-					font->r0 = (unsigned char)r;
-					font->v3 = uVar3 + uVar6 + -1;
-					font->g0 = (unsigned char)g;
-					font->b0 = (unsigned char)b;
-					pDVar5 = current;
-					addPrim(current->ot + 1, font);
-					//font->tag = font->tag & 0xff000000 | current->ot[1] & 0xffffff;
-					//uVar9 = (uint)font & 0xffffff;
-					font++;
-					///pDVar5->ot[1] = pDVar5->ot[1] & 0xff000000 | uVar9;
-				}
+	while ((let = *string++) != 0)
+	{
+		if (let != '\n') {
+			if (let == ' ')
+			{
+				// add space
+				x += 4;
 			}
-			bVar1 = *string;
-			iVar7 = iVar10;
+			else
+			{
+				pFontInfo = &feFont.CharInfo[let];
+
+				w = (pFontInfo->w * scale) / 4096;
+				h = (pFontInfo->h * scale) / 4096;
+
+				setPolyFT4(font);
+#ifdef PSX
+				setSemiTrans(font, transparent);
+#endif
+
+				setRGB0(font, 128, 128, 128);
+				setUVWH(font, pFontInfo->u, pFontInfo->v, pFontInfo->w - 1, pFontInfo->h - 1);
+				setXYWH(font, x, y, w, h);
+				setRGB0(font, r, g, b);
+				setTPage(font, 0, 0, 640, 256);
+				setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
+
+				addPrim(&current->ot[1], font);
+				font++;
+
+				// make room for next character
+				x += w;
+			}
 		}
-		*(POLY_FT4 **)&current->primptr = font;
 	}
-	return iVar7;
+
+	// set tail
+	current->primptr = (char *)font;
+
+	return x;
 }
 
 
@@ -2105,92 +2062,91 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 	// End Line: 6679
 
 SCREEN_LIMITS screen_limits[2] = {
-	{
-		0xFFE5,
-		0x5,
-		0x23,
-		0x25
-	},
-	{
-		0xFFE0,
-		0xFFF5,
-		0x20,
-		0x15
-	}
+	// min(x/y), max(x/y)
+	{ -27,   5, 35, 37 },
+	{ -32, -11, 32, 21 },
 };
 
 int bScreenSetup = 0;
 
-// [D]
+// [D] [A]
 int CentreScreen(int bSetup)
 {
-	short sVar3;
-
-	if (bSetup != 0)
+	if (bSetup)
 		return 0;
 
-	if ((fePad & 0x2000U) == 0)
+#if defined(DEBUG) && !defined(PSX)
+	char text[32];
+
+	sprintf(text, "X1: %d, Y1: %d", current->disp.screen.x, current->disp.screen.y);
+	FEPrintStringSized(text, 25, 50, 0xC00, 0, 128, 0, 0);
+
+	sprintf(text, "X2: %d, Y2: %d", last->disp.screen.x, last->disp.screen.y);
+	FEPrintStringSized(text, 25, 75, 0xC00, 0, 128, 0, 0);
+#endif
+
+	if ((fePad & 0x40) != 0)
 	{
-		if ((fePad & 0x8000U) == 0)
+		draw_mode_pal.framex = current->disp.screen.x >> 1;
+		draw_mode_pal.framey = current->disp.screen.y;
+		draw_mode_ntsc.framex = current->disp.screen.x >> 1;
+		draw_mode_ntsc.framey = current->disp.screen.y;
+	}
+	else if ((fePad & 0x10) != 0)
+	{
+		current->disp.screen.x = draw_mode.framex << 1;
+		current->disp.screen.y = draw_mode.framey;
+		last->disp.screen.x = draw_mode.framex << 1;
+		last->disp.screen.y = draw_mode.framey;
+	}
+	else
+	{
+		bool done = false;
+
+		if ((fePad & 0x1000) != 0)
 		{
-			if ((fePad & 0x1000U) == 0)
+			if (current->disp.screen.y > screen_limits[0].miny)
 			{
-				if ((fePad & 0x4000U) == 0)
-				{
-					if ((fePad & 0x40U) != 0)
-					{
-						draw_mode_pal.framex = current->disp.screen.x >> 1;
-						draw_mode_pal.framey = current->disp.screen.y;
-						draw_mode_ntsc.framex = current->disp.screen.x >> 1;
-						draw_mode_ntsc.framey = current->disp.screen.y;
-						return 0;
-					}
-
-					if ((fePad & 0x10U) == 0)
-						return 0;
-
-					current->disp.screen.x = draw_mode_pal.framex << 1;
-					current->disp.screen.y = draw_mode_pal.framey;
-					current = last;
-					last->disp.screen.x = draw_mode_pal.framex << 1;
-					current->disp.screen.y = draw_mode_pal.framey;
-					return 0;
-				}
-
-				if (current->disp.screen.y < screen_limits[0].maxy)
-				{
-					current->disp.screen.y = current->disp.screen.y + 1;
-					sVar3 = last->disp.screen.y + 1;
-					goto LAB_FRNT__001c3360;
-				}
-			}
-			else if (screen_limits[0].miny < current->disp.screen.y)
-			{
-				current->disp.screen.y = current->disp.screen.y - 1;
-				sVar3 = last->disp.screen.y + -1;
-			LAB_FRNT__001c3360:
-				last->disp.screen.y = sVar3;
-				FESound(3);
-				return 0;
+				current->disp.screen.y--;
+				last->disp.screen.y--;
+				done = true;
 			}
 		}
-		else if (screen_limits[0].minx < current->disp.screen.x) {
-			current->disp.screen.x = current->disp.screen.x + -1;
-			sVar3 = last->disp.screen.x + -1;
-			goto LAB_FRNT__001c32c0;
+		else if ((fePad & 0x4000) != 0)
+		{
+			if (current->disp.screen.y < screen_limits[0].maxy)
+			{
+				current->disp.screen.y++;
+				last->disp.screen.y++;
+				done = true;
+			}
 		}
-	}
-	else if (current->disp.screen.x < screen_limits[0].maxx)
-	{
-		current->disp.screen.x = current->disp.screen.x + 1;
-		sVar3 = last->disp.screen.x + 1;
-	LAB_FRNT__001c32c0:
-		last->disp.screen.x = sVar3;
-		FESound(3);
-		return 0;
+		else if ((fePad & 0x8000) != 0)
+		{
+			if (current->disp.screen.x > screen_limits[0].minx) {
+				current->disp.screen.x--;
+				last->disp.screen.x--;
+				done = true;
+			}
+		}
+		else if ((fePad & 0x2000) != 0)
+		{
+			if (current->disp.screen.x < screen_limits[0].maxx)
+			{
+				current->disp.screen.x++;
+				last->disp.screen.x++;
+				done = true;
+			}
+		}
+		else
+		{
+			// unhandled button press
+			return 0;
+		}
+
+		FESound((done) ? 3 : 1);
 	}
 
-	FESound(1);
 	return 0;
 }
 
@@ -2507,31 +2463,23 @@ int CarSelectScreen(int bSetup)
 // [D]
 int CopDiffLevelScreen(int bSetup)
 {
-	if (bSetup != 0) 
+	if (bSetup) 
 	{
-		pCurrButton = pCurrScreen->buttons + gCopDifficultyLevel;
+		pCurrButton = &pCurrScreen->buttons[gCopDifficultyLevel];
 		return 1;
 	}
 
-	if ((fePad & 0x40U) == 0) 
-	{
-		if ((fePad & 0x4000U) == 0)
-		{
-			if ((fePad & 0x1000U) == 0)
-			{
-				return 0;
-			}
-
-			currSelIndex = pCurrButton->u - 1;
-		}
-		else 
-		{
-			currSelIndex = pCurrButton->d - 1;
-		}
-	}
-	else 
+	if ((fePad & 0x40) != 0)
 	{
 		gCopDifficultyLevel = currSelIndex;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
 	}
 
 	return 0;
@@ -2563,32 +2511,24 @@ int CopDiffLevelScreen(int bSetup)
 // [D]
 int VibroOnOffScreen(int bSetup)
 {
-	if (bSetup != 0) 
+	if (bSetup) 
 	{
-		currSelIndex = gVibration ^ 1U;
-		pCurrButton = pCurrScreen->buttons + (gVibration ^ 1U);
+		currSelIndex = (gVibration ^ 1);
+		pCurrButton = &pCurrScreen->buttons[currSelIndex];
 		return 1;
 	}
 
-	if ((fePad & 0x40U) == 0) 
+	if ((fePad & 0x40) != 0)
 	{
-		if ((fePad & 0x1000U) == 0) 
-		{
-			if ((fePad & 0x4000U) == 0)
-			{
-				return 0;
-			}
-
-			currSelIndex = pCurrButton->d - 1;
-		}
-		else 
-		{
-			currSelIndex = pCurrButton->u - 1;
-		}
+		gVibration = (currSelIndex ^ 1);
 	}
-	else 
+	else if ((fePad & 0x1000) != 0)
 	{
-		gVibration = currSelIndex ^ 1;
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
 	}
 
 	return 0;
@@ -3611,20 +3551,15 @@ int CutSceneCitySelectScreen(int bSetup)
 // [D]
 int SetVolumeScreen(int bSetup)
 {
-	char** ppcVar1;
-	int iVar3;
-	int iVar4;
-	DB* db_hold;
-	DB* db_hold2;
-	int y;
-	int y_00;
+	int last;
+	int ypos[2] = { 292, 338 };
 	char text[4];
 	RECT16 rect;
 
 	static int masterVolumeHold = 0;
 	static int musicVolumeHold = 0;
 
-	if (bSetup != 0) 
+	if (bSetup) 
 	{
 		currSelIndex = 0;
 
@@ -3633,150 +3568,154 @@ int SetVolumeScreen(int bSetup)
 
 		LoadBackgroundFile("DATA\\VOL.RAW");
 
+#ifdef PSX
 		sprintf(text, "%d", (int)(10000 + gMasterVolume) / 100);
-		FEPrintString(text, 152, 292, 2, 0x80, 0x80, 0x80);
+		FEPrintString(text, 152, ypos[0], 2, 128, 128, 128);
 
 		sprintf(text, "%d", (int)(10000 + gMusicVolume) / 100);
-		FEPrintString(text, 152, 338, 2, 0x80, 0x80, 0x80);
+		FEPrintString(text, 152, ypos[1], 2, 128, 128, 128);
+#endif
+
 		return 0;
 	}
 
-	currSelIndex = pCurrButton->u & 3;
+#ifndef PSX
+	sprintf(text, "%d", (int)(10000 + gMasterVolume) / 100);
+	FEPrintString(text, 152, ypos[0], 2, 128, 128, 128);
 
-	if ((fePad & 0x8000U) == 0)
+	sprintf(text, "%d", (int)(10000 + gMusicVolume) / 100);
+	FEPrintString(text, 152, ypos[1], 2, 128, 128, 128);
+#endif
+
+	// did we make any changes?
+	bool update = false;
+
+	currSelIndex = (pCurrButton->u & 3);
+
+	if ((fePad & 0x10) != 0)
 	{
-		if ((fePad & 0x2000U) == 0) 
-		{
-			if ((fePad & 0x10U) != 0)
-			{
-				FESound(0);
-				bDoneAllready = 1;
+		FESound(0);
+		bDoneAllready = 1;
 
-				gMasterVolume = masterVolumeHold;
-				gMusicVolume = musicVolumeHold;
+		gMasterVolume = masterVolumeHold;
+		gMusicVolume = musicVolumeHold;
 
-				LoadBackgroundFile("DATA\\GFX.RAW");
-				SetMasterVolume(gMasterVolume);
-				SetXMVolume(gMusicVolume);
-				return 0;
-			}
+		LoadBackgroundFile("DATA\\GFX.RAW");
 
-			if ((fePad & 0x40U) == 0)
-				return 0;
+		SetMasterVolume(gMasterVolume);
+		SetXMVolume(gMusicVolume);
 
-			if (currSelIndex != 2)
-				return 0;
-
+		return 0;
+	}
+	else if ((fePad & 0x40) != 0)
+	{
+		if (currSelIndex == 2)
 			LoadBackgroundFile("DATA\\GFX.RAW");
-			return 0;
-		}
 
-		if ((pCurrButton->u & 3) != 0)
-		{
-			if (currSelIndex != 1)
-				goto LAB_FRNT__001c5530;
-
-			gMusicVolume += 100;
-
-			if (gMusicVolume < 1) 
-				goto LAB_FRNT__001c5418;
-
-			gMusicVolume = 0;
-		LAB_FRNT__001c5408:
-			FESound(1);
-			goto LAB_FRNT__001c5424;
-		}
-
-		gMasterVolume += 100;
-
-		if (gMasterVolume < 1) 
-			goto LAB_FRNT__001c52c4;
-		gMasterVolume = 0;
-	LAB_FRNT__001c52b4:
-		FESound(1);
+		return 0;
 	}
-	else 
+	else
 	{
-		if ((pCurrButton->u & 3) != 0)
+		int dir = -1; // -1: no action, 0: limit reached, 1: OK
+
+		if ((fePad & 0x8000) != 0)
 		{
-			if (currSelIndex != 1)
-				goto LAB_FRNT__001c5530;
-
-			gMusicVolume = gMusicVolume - 100;
-
-			if (gMusicVolume < -10000)
+			switch (currSelIndex)
 			{
-				gMusicVolume = -10000;
-				goto LAB_FRNT__001c5408;
+			case 0:
+				gMasterVolume -= 100;
+
+				if (gMasterVolume < -10000)
+				{
+					gMasterVolume = -10000;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMasterVolume;
+				break;
+			case 1:
+				gMusicVolume -= 100;
+
+				if (gMusicVolume < -10000)
+				{
+					gMusicVolume = -10000;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMusicVolume;
+				break;
 			}
-
-		LAB_FRNT__001c5418:
-			FESound(3);
-		LAB_FRNT__001c5424:
-
-			sprintf(text, "%d", (10000 + gMusicVolume) / 100);
-			FEPrintString(text, 0x98, 338, 2, 0x80, 0x80, 0x80);
-
-			sprintf(text, "%d", (10000 + gMusicVolume) / 100);
-			FEPrintString(text, 0x98, 338, 2, 0, 0, 0);
-
-			DrawSync(0);
-			VSync(0);
-
-			PutDispEnv(&current->disp);
-			PutDrawEnv(&current->draw);
-
-			db_hold2 = last;
-			db_hold = current;
-			ppcVar1 = &last->primtab;
-			current = last;
-			last = db_hold;
-			db_hold2->primptr = *ppcVar1;
-
-			DrawOTag((u_long*)(db_hold->ot + 0x10));
-			ClearOTagR((u_long*)current->ot, 0x10);
-
-			VSync(0);
-
-			goto LAB_FRNT__001c5530;
 		}
-		gMasterVolume = gMasterVolume - 100;
-		if (gMasterVolume < -10000) 
+		else if ((fePad & 0x2000) != 0)
 		{
-			gMasterVolume = -10000;
-			goto LAB_FRNT__001c52b4;
+			switch (currSelIndex)
+			{
+			case 0:
+				gMasterVolume += 100;
+
+				if (gMasterVolume > 0)
+				{
+					gMasterVolume = 0;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMasterVolume;
+				break;
+			case 1:
+				gMusicVolume += 100;
+
+				if (gMusicVolume > 0)
+				{
+					gMusicVolume = 0;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMusicVolume;
+				break;
+			}
 		}
-	LAB_FRNT__001c52c4:
-		FESound(3);
+
+		if (dir != -1)
+		{
+			FESound((dir == 1) ? 3 : 1);
+			update = true;
+		}
 	}
 
-	sprintf(text, "%d", (10000 + gMasterVolume) / 100);
-	FEPrintString(text, 152, 292, 2, 0x80, 0x80, 0x80);
+	if (update)
+	{
+		SetMasterVolume(gMasterVolume);
+		SetXMVolume(gMusicVolume);
 
-	sprintf(text, "%d", (10000 + gMasterVolume) / 100);
-	FEPrintString(text, 152, 292, 2, 0, 0, 0);
+#ifdef PSX
+		sprintf(text, "%d", (int)(10000 + last) / 100);
+		FEPrintString(text, 152, ypos[currSelIndex], 2, 128, 128, 128);
 
-	DrawSync(0);
-	VSync(0);
+		sprintf(text, "%d", (int)(10000 + last) / 100);
+		FEPrintString(text, 152, ypos[currSelIndex], 2, 0, 0, 0);
 
-	PutDispEnv(&current->disp);
-	PutDrawEnv(&current->draw);
-
-	db_hold2 = last;
-	db_hold = current;
-	ppcVar1 = &last->primtab;
-	current = last;
-	last = db_hold;
-	db_hold2->primptr = *ppcVar1;
-
-	DrawOTag((u_long*)(db_hold->ot + 0x10));
-	ClearOTagR((u_long*)current->ot, 0x10);
-
-	VSync(0);
-
-LAB_FRNT__001c5530:
-	SetMasterVolume(gMasterVolume);
-	SetXMVolume(gMusicVolume);
+		EndFrame(); // [A] inlined
+#else
+		// don't flush the screen
+		return 1;
+#endif
+	}
 
 	return 0;
 }

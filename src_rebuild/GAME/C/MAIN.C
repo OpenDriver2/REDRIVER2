@@ -57,6 +57,8 @@
 #include "MC_SND.H"
 #include "FELONY.H"
 #include "LEADAI.H"
+#include "ENVIRO.H"
+#include "SEARCH.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -493,10 +495,11 @@ void LoadGameLevel(void)
 
 	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x; // not used anyway
 
-	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
+	Init_Reflection_Mapping();
 	InitDebrisNames();
 	InitShadow();
-	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
+	InitTextureNames();
+
 	ReportMode(1);
 }
 
@@ -1827,7 +1830,7 @@ void StepGame(void)
 		StartXM(0);
 	}
 
-	if (doSpooling != 0) 
+	if (doSpooling) 
 	{
 		CheckValidSpoolData();
 		ControlMap();
