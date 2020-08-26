@@ -17,28 +17,28 @@
 
 CYCLE_OBJECT Lev0[2] =
 {
-  { "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },
-  { "NAVPIR34", 0, 0, 0, 6, 0, 7, 13, 0 }
+	{ "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },
+	{ "NAVPIR34", 0, 0, 0, 6, 0, 7, 13, 0 }
 };
 
 CYCLE_OBJECT Lev1[] = {
-	{ "DOOR11", 0, 0, 1, 7, 2, 8, 14, 3 } ,
+	{ "DOOR11", 0, 0, 1, 7, 2, 8, 14, 3 },
 };
 
 CYCLE_OBJECT Lev2[12] =
 {
-  { "DTSYN01", 0, 0, 0, 3, 0, 4, 14, 0 },
-  { "DTSYN02", 0, 0, 0, 15, 0, 65535, 65535, 0 },
-  { "F-MTSYN2", 0, 0, 0, 3, 0, 10, 14, 0 },
-  { "DTSYN03", 0, 0, 0, 3, 0, 65535, 65535, 0 },
-  { "SYN-CAS1", 0, 0, 0, 3, 0, 4, 14, 0 },
-  { "SYNSLOT", 0, 0, 0, 3, 0, 4, 7, 0 },
-  { "ENT1B", 0, 0, 0, 15, 0, 65535, 65535, 0 },
-  { "FLAMINGO", 0, 0, 0, 3, 0, 9, 12, 0 },
-  { "CYCLE-01", 0, 0, 0, 5, 1, 6, 11, 1 },
-  { "CYCLE-02", 0, 0, 0, 3, 3, 65535, 65535, 0 },
-  { "CYCLE-03", 0, 0, 0, 6, 7, 7, 13, 7 },
-  { "CYCLE-04", 0, 0, 0, 6, 15, 7, 13, 15 }
+	{ "DTSYN01", 0, 0, 0, 3, 0, 4, 14, 0 },
+	{ "DTSYN02", 0, 0, 0, 15, 0, -1, -1, 0 },
+	{ "F-MTSYN2", 0, 0, 0, 3, 0, 10, 14, 0 },
+	{ "DTSYN03", 0, 0, 0, 3, 0, -1, -1, 0 },
+	{ "SYN-CAS1", 0, 0, 0, 3, 0, 4, 14, 0 },
+	{ "SYNSLOT", 0, 0, 0, 3, 0, 4, 7, 0 },
+	{ "ENT1B", 0, 0, 0, 15, 0, -1, -1, 0 },
+	{ "FLAMINGO", 0, 0, 0, 3, 0, 9, 12, 0 },
+	{ "CYCLE-01", 0, 0, 0, 5, 1, 6, 11, 1 },
+	{ "CYCLE-02", 0, 0, 0, 3, 3, -1, -1, 0 },
+	{ "CYCLE-03", 0, 0, 0, 6, 7, 7, 13, 7 },
+	{ "CYCLE-04", 0, 0, 0, 6, 15, 7, 13, 15 }
 };
 
 CYCLE_OBJECT Lev3[] = {
@@ -57,41 +57,41 @@ int Num_LevCycleObjs[] = { 2, 0, 12, 0 };
 
 ANIMATED_OBJECT Lev0AnimObjects[9] =
 {
-  { 0, 0, "TLIGHT01", 0 },
-  { 1, 0, "TLIGHT02", 0 },
-  { 2, 0, "SLIGHT01", 1 },
-  { 3, 0, "LOW_SLIGHT01", 1 },
-  { 4, 0, "DLIGHT01", 1 },
-  { 5, 0, "STRUT", 0 },
-  { 6, 0, "NPLIGHT", 0 },
-  { 7, 0, "TLIGHT01_LOW", 0 },
-  { 8, 0, "TLIGHT02_LOW", 0 }
+	{ 0, 0, "TLIGHT01", 0 },
+	{ 1, 0, "TLIGHT02", 0 },
+	{ 2, 0, "SLIGHT01", 1 },
+	{ 3, 0, "LOW_SLIGHT01", 1 },
+	{ 4, 0, "DLIGHT01", 1 },
+	{ 5, 0, "STRUT", 0 },
+	{ 6, 0, "NPLIGHT", 0 },
+	{ 7, 0, "TLIGHT01_LOW", 0 },
+	{ 8, 0, "TLIGHT02_LOW", 0 }
 };
 
 ANIMATED_OBJECT Lev1AnimObjects[5] =
 {
-  { 0, 0, "TLIGHT1", 0 },
-  { 1, 0, "TLIGHT2", 0 },
-  { 2, 0, "SLIGHT1", 1 },
-  { 3, 0, "SLIGHT2", 1 },
-  { 4, 0, "DLIGHT1", 1 }
+	{ 0, 0, "TLIGHT1", 0 },
+	{ 1, 0, "TLIGHT2", 0 },
+	{ 2, 0, "SLIGHT1", 1 },
+	{ 3, 0, "SLIGHT2", 1 },
+	{ 4, 0, "DLIGHT1", 1 }
 };
 
 ANIMATED_OBJECT Lev2AnimObjects[5] =
 {
-  { 0, 0, "TLIGHT01", 0 },
-  { 1, 0, "TLIGHT02", 0 },
-  { 2, 0, "SLIGHT01", 1 },
-  { 3, 0, "DLIGHT01", 1 },
-  { 4, 0, "SLIGHT02", 1 }
+	{ 0, 0, "TLIGHT01", 0 },
+	{ 1, 0, "TLIGHT02", 0 },
+	{ 2, 0, "SLIGHT01", 1 },
+	{ 3, 0, "DLIGHT01", 1 },
+	{ 4, 0, "SLIGHT02", 1 }
 };
 
 ANIMATED_OBJECT Lev3AnimObjects[4] =
 {
-  { 0, 0, "TLIGHT01", 0 },
-  { 1, 0, "TLIGHT02", 0 },
-  { 2, 0, "SLIGHT01", 0 },
-  { 3, 0, "MLIGHT01", 0 }
+	{ 0, 0, "TLIGHT01", 0 },
+	{ 1, 0, "TLIGHT02", 0 },
+	{ 2, 0, "SLIGHT01", 0 },
+	{ 3, 0, "MLIGHT01", 0 }
 };
 
 ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = { 

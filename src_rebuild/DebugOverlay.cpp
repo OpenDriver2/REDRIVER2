@@ -86,12 +86,12 @@ void DrawDebugOverlays()
 
 	if (gDisplayDrawStats)
 	{
-		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, 0x1a180);
-		PrintString(tempBuf, 10, 80);
+		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, 0x1e000);
+		PrintString(tempBuf, 10, 20);
 
 		extern volatile int spoolactive;
 		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d", doSpooling, allowSpecSpooling, spoolactive);
-		PrintString(tempBuf, 10, 90);
+		PrintString(tempBuf, 10, 30);
 
 		extern int numActiveCops;
 		extern int numCopCars;
@@ -101,17 +101,17 @@ void DrawDebugOverlays()
 		extern int maxCivCars;
 
 		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
-		PrintString(tempBuf, 10, 100);
+		PrintString(tempBuf, 10, 40);
 
 		sprintf(tempBuf, "Cops: %d - %d active - max %d", numCopCars, numActiveCops, maxCopCars);
-		PrintString(tempBuf, 10, 110);
+		PrintString(tempBuf, 10, 50);
 
 		
 		int playerCar = player[0].playerCarId;
 		int speed = car_data[playerCar].hd.speed;
 
-		sprintf(tempBuf, "Speed: %d", speed);
-		PrintString(tempBuf, 10, 120);
+		sprintf(tempBuf, "Car speed: %d", speed);
+		PrintString(tempBuf, 10, 60);
 	}
 }
 

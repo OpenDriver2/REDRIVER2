@@ -586,9 +586,10 @@ void DrawTILES(int tile_amount)
 	/* end block 4 */
 	// End Line: 709
 
-// [D] [A] - I don't expect this to work...
+// [A] custom implemented function
 void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 {
+
 	/* vertices by index in quad:
 		3---------2
 		|         |
@@ -603,6 +604,9 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	MVERTEX v1, v2, v3, v4;
 	MVERTEX e1, e2, e3, e4, e5;
 	MVERTEX p1, p2, p3, p4, p5;
+
+	if (n < 2)
+		return;
 
 	v1 = (*VSP)[0][0];
 	v2 = (*VSP)[0][1];
@@ -688,181 +692,6 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	(*VSP)[3][1] = p5;
 	(*VSP)[3][2] = v4;
 	(*VSP)[3][3] = p2;
-
-	/*
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
-	uint uVar4;
-	uint uVar5;
-	uint uVar6;
-	uint uVar7;
-	uint uVar8;
-	uint uVar9;
-	uint uVar10;
-	uint uVar11;
-	uint uVar12;
-	int iVar13;
-
-	//       N       0   1   2    3    4
-	//
-	//(*VSP)[n][0]   0   5   10   15   20
-	//(*VSP)[n][1]   1   6   11   16   21
-	//(*VSP)[n][2]   2   7   12   17   22
-	//(*VSP)[n][3]   3   8   13   18   23
-	//(*VSP)[n][4]   4   9   14   19   24
-
-	if (n == 4) 
-	{
-		uVar3 = *(uint *)&(*VSP)[0][0].vx;
-		uVar2 = *(uint *)&(*VSP)[0][0].vz;
-		uVar5 = uVar3 ^ 0x8000;
-		uVar9 = *(uint *)&(*VSP)[0][4].vx ^ 0x8000;
-		uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-		
-		uVar6 = uVar2 ^ 0x8000;
-		uVar2 = uVar2 ^ 0x8000;
-		uVar3 = uVar3 ^ 0x8000;
-
-		uVar9 = *(uint *)&(*VSP)[0][4].vx ^ 0x8000;
-		uVar10 = *(uint *)&(*VSP)[0][4].vz ^ 0x8000;
-		uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-
-		*(uint *)&(*VSP)[0][2].vx = uVar5 ^ 0x8000;
-		*(uint *)&(*VSP)[0][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[0][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[0][2].vz = uVar6 ^ 0x8000;
-		*(uint *)&(*VSP)[0][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[0][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-
-		if (m == 1) 
-		{
-			uVar2 = *(uint *)&(*VSP)[1][0].vz;
-			uVar5 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][4].vx ^ 0x8000;
-			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-			
-			uVar6 = uVar2 ^ 0x8000;
-			uVar2 = uVar2 ^ 0x8000;
-			uVar3 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][4].vx ^ 0x8000;
-			uVar10 = *(uint *)&(*VSP)[1][4].vz ^ 0x8000;
-			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-
-			*(uint *)&(*VSP)[1][2].vx = uVar5 ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][2].vz = uVar6 ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		}
-		else 
-		{
-			
-			uVar2 = *(uint *)&(*VSP)[4][0].vz;
-			uVar5 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[4][4].vx ^ 0x8000;
-			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-			
-			uVar6 = uVar2 ^ 0x8000;
-			uVar2 = uVar2 ^ 0x8000;
-
-			uVar3 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[4][4].vx ^ 0x8000;
-			uVar10 = *(uint *)&(*VSP)[4][4].vz ^ 0x8000;
-			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-
-			*(uint *)&(*VSP)[4][2].vx = uVar5 ^ 0x8000;
-			*(uint *)&(*VSP)[4][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[4][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[4][2].vz = uVar6 ^ 0x8000;
-			*(uint *)&(*VSP)[4][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[4][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			
-			iVar13 = 4;
-			do {
-				iVar13 = iVar13 + -1;
-				uVar3 = *(uint *)&(*VSP)[0][0].vx;
-				uVar2 = *(uint *)&(*VSP)[0][0].vz;
-				uVar5 = uVar3 ^ 0x8000;
-				uVar9 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-				uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-				
-				uVar6 = uVar2 ^ 0x8000;
-				uVar2 = uVar2 ^ 0x8000;
-				uVar3 = uVar3 ^ 0x8000;
-				uVar9 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-				uVar10 = *(uint *)&(*VSP)[4][0].vz ^ 0x8000;
-				uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
-
-				*(uint *)&(*VSP)[2][0].vx = uVar5 ^ 0x8000;
-				*(uint *)&(*VSP)[1][0].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[3][0].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[2][0].vz = uVar6 ^ 0x8000;
-				*(uint *)&(*VSP)[1][0].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[3][0].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-
-				VSP++;// = (MVERTEX(*)[5][5])(*VSP + 1);
-
-			} while (-1 < iVar13);
-		}
-	}
-	else 
-	{
-		uVar2 = *(uint *)&(*VSP)[0][0].vx;
-		uVar9 = *(uint *)&(*VSP)[0][2].vx;
-		uVar6 = *(uint *)&(*VSP)[0][0].vz;
-
-		uVar5 = uVar2 ^ 0x8000;
-		uVar3 = uVar9 ^ 0x8000;
-		uVar10 = (uVar5 | uVar3) - ((int)(uVar5 ^ uVar3) >> 1 & 0xffff7fffU);
-		uVar5 = *(uint *)&(*VSP)[0][2].vz;
-		
-		uVar3 = uVar6 ^ 0x8000;
-		uVar5 = uVar5 ^ 0x8000;
-		uVar3 = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0x7f7f7fffU);
-
-		*(uint *)&(*VSP)[0][1].vx = uVar10 ^ 0x8000;
-		*(uint *)&(*VSP)[0][1].vz = uVar3 ^ 0x8000;
-
-		if (m == 1) 
-		{
-			uVar5 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][2].vx ^ 0x8000;
-			*(uint *)(*VSP + 6) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-
-			uVar5 = *(uint *)&(*VSP)[1][0].vz ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][2].vz ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vz = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		}
-		else 
-		{
-			uVar2 = uVar2 ^ 0x8000;
-			uVar9 = uVar9 ^ 0x8000;
-			uVar4 = *(uint *)&(*VSP)[2][0].vz;
-			uVar7 = *(uint *)&(*VSP)[2][0].vx ^ 0x8000;
-			uVar11 = *(uint *)&(*VSP)[2][2].vx ^ 0x8000;
-			uVar11 = (uVar7 | uVar11) - ((int)(uVar7 ^ uVar11) >> 1 & 0xffff7fffU);
-			
-			uVar7 = uVar4 ^ 0x8000;
-			uVar6 = uVar6 ^ 0x8000;
-			uVar4 = uVar4 ^ 0x8000;
-			uVar1 = *(uint *)&(*VSP)[2][2].vx ^ 0x8000;
-			uVar12 = *(uint *)&(*VSP)[2][2].vz ^ 0x8000;
-			uVar8 = (uVar7 | uVar12) - ((int)(uVar7 ^ uVar12) >> 1 & 0x7f7f7fffU);
-			uVar7 = *(uint *)&(*VSP)[2][0].vx ^ 0x8000;
-
-			*(uint *)&(*VSP)[2][1].vx = uVar11 ^ 0x8000;
-			*(uint *)&(*VSP)[1][0].vx =(uVar2 | uVar7) - ((int)(uVar2 ^ uVar7) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vx =(uVar10 | uVar11) - ((int)(uVar10 ^ uVar11) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][2].vx = (uVar9 | uVar1) - ((int)(uVar9 ^ uVar1) >> 1 & 0xffff7fffU) ^ 0x8000;
-
-			*(uint *)&(*VSP)[2][1].vz = uVar8 ^ 0x8000;
-			*(uint *)&(*VSP)[1][0].vz =(uVar6 | uVar4) - ((int)(uVar6 ^ uVar4) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][2].vz =(uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		}
-	}*/
 }
 
 
@@ -929,15 +758,21 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-
+// [A] custom implemented function
 void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 {
 	POLY_FT4* prim;
 	int z;
+	int opz;
 
 	prim = (POLY_FT4*)pc->primptr;
 
-	for (int index = 0; index < 4; index++)
+	int numPolys = 4;
+
+	if (n < 2)
+		numPolys = 1;
+
+	for (int index = 0; index < numPolys; index++)
 	{
 		setPolyFT4(prim);
 		*(ulong*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
@@ -945,16 +780,20 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 		// test
 		gte_ldv3(&(*VSP)[index][0], &(*VSP)[index][1], &(*VSP)[index][2]);
 		gte_rtpt();
+		gte_nclip();
+		gte_stopz(&opz);
+
 		gte_avsz3();
 		
 		gte_stotz(&z);
 
-		if (z > 5)
+		if (opz > 0 && z > 5)
 		{
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
 			gte_ldv0(&(*VSP)[index][3]);
 			gte_rtps();
+
 
 			gte_stsxy(&prim->x3);
 
@@ -973,165 +812,6 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 	}
 
 	pc->primptr = (char*)prim;
-
-	/*
-	int iVar1;
-	uint uVar3;
-	uint *puVar4;
-	uint *local_a0_1124;
-	int iVar5;
-	POLY_FT4 *prim;
-	MVERTEX *vertex;
-	int iVar6;
-	OTTYPE *ot;
-	MVERTEX(*VST)[5][5];
-	int iVar7;
-	int Z1;
-	int Z2;
-
-	iVar7 = 0;
-	prim = (POLY_FT4 *)pc->primptr;
-	local_a0_1124 = (uint *)VSP;
-
-	if (0 < n)
-	{
-		do {
-			iVar6 = m-1;
-			iVar5 = iVar7 + 2;
-
-			if (iVar6 != -1) 
-			{
-				VST = (MVERTEX(*)[5][5])(*VSP + iVar6 * 5);
-				do {
-					vertex = (MVERTEX*)*VST + iVar7;
-					ot = pc->ot;
-
-					gte_ldv3(&vertex[0], &vertex[1], &vertex[2]);
-
-					gte_rtpt();
-					gte_avsz3();
-
-					gte_stotz(&iVar1);
-
-					if (1 < iVar1) 
-					{
-						SXYPAIR DAT_1f800208 = *(SXYPAIR*)&SXY0;
-						SXYPAIR DAT_1f80020c = *(SXYPAIR*)&SXY1;
-						SXYPAIR DAT_1f800210 = *(SXYPAIR*)&SXY2;
-						gte_stsxy3(&DAT_1f800208, &DAT_1f80020c, &DAT_1f800210);
-
-						setPolyFT4(prim);
-						addPrim(ot + (iVar1 >> 1), prim);
-
-						*(uint *)&prim->x0 = *(uint *)&DAT_1f800208;
-						*(uint *)&prim->x1 = *(uint *)&DAT_1f80020c;
-						*(uint *)&prim->x2 = *(uint *)&DAT_1f800210;
-						*(uint *)&prim[1].x2 = *(uint *)&DAT_1f80020c;
-
-						gte_ldv3(&vertex[2], &vertex[7], &vertex[6]);
-
-						gte_rtpt();
-						gte_avsz3();
-
-						SXYPAIR DAT_1f80021c = *(SXYPAIR*)&SXY0;
-						SXYPAIR DAT_1f800220 = *(SXYPAIR*)&SXY1;
-						SXYPAIR DAT_1f800224 = *(SXYPAIR*)&SXY2;
-
-						if ((((ushort)DAT_1f80020c.x < 0x140) ||
-							((ushort)DAT_1f800208.x < 0x140)) ||
-							((ushort)DAT_1f800210.x < 0x140))
-						{
-						LAB_00042824:
-							if (((0x109 < (ushort)DAT_1f800208.y) &&
-								(0x109 < (ushort)DAT_1f80020c.y)) &&
-								((0x109 < (ushort)DAT_1f800210.y &&
-								(((DAT_1f800224.y = (short)(DAT_1f800224.x >> 0x10), 0x109 < (ushort)DAT_1f800224.y &&	// PLS HELP
-								(-1 < (int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800208.y) << 0x10))) &&
-								(DAT_1f800210.x = DAT_1f800210.y, -1 < (int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800210.y)
-								<< 0x10)))))))
-								goto LAB_00042900;
-
-							//*local_a0_1124 = (uint)prim & 0xffffff;
-
-							setPolyFT4(prim);
-							addPrim(ot + (iVar1 >> 1), prim);
-
-							gte_stsxy(&prim->x3);
-
-							*(uint *)&prim->r0 = pc->colour;
-							*(uint *)&prim->u0 = (uint)vertex->uv | pc->clut;
-							*(uint *)&prim->u1 = (uint)vertex[1].uv | pc->tpage;
-							*(uint *)&prim->u2 = (uint)vertex[5].uv;
-							*(uint *)&prim->u3 = (uint)vertex[6].uv;
-
-							prim++;
-							//pc->primptr = (char*)prim;
-							return;
-						}
-						else 
-						{
-							if ((((ushort)DAT_1f800224.x < 0x140) ||
-								((int)((uint)(ushort)(DAT_1f80020c.x ^ DAT_1f800208.x) << 0x10) < 0)) ||
-								((int)((uint)(ushort)(DAT_1f80020c.x ^ DAT_1f800210.x) << 0x10) < 0))
-								goto LAB_00042824;
-
-						LAB_00042900:
-							//local_a0_1124 = (uint *)(uint)(ushort)DAT_1f800210.x;
-							*(SXYPAIR *)&prim->x2 = DAT_1f80020c;
-						}
-
-						gte_stotz(&iVar1);
-						//puVar4 = ot + (iVar1 >> 1);
-
-						if ((((ushort)DAT_1f80021c.y < 0x10a) ||
-							((ushort)DAT_1f800220.y < 0x10a)) ||
-							((((ushort)DAT_1f800224.y < 0x10a ||
-							(((ushort)DAT_1f80020c.y < 0x10a ||
-							((int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800208.y) << 0x10) < 0)))) ||
-							((int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800210.y) << 0x10) < 0))))
-						{
-							if (((0x13f < (ushort)DAT_1f80020c.x) &&
-								(0x13f < (ushort)DAT_1f800220.x)) &&
-								(0x13f < (ushort)DAT_1f80021c.x))
-							{
-								if (((0x13f < (ushort)DAT_1f800224.x) &&
-									(-1 < (int)((uint)(ushort)(DAT_1f800220.x ^ DAT_1f80021c.x) << 0x10))) &&
-									(//local_a0_1124 = (uint *)(DAT_1f800224.x & 0xffff),
-									-1 < (int)((uint)(ushort)(DAT_1f800220.x ^ DAT_1f800224.x) << 0x10)))
-									goto LAB_00042ab4;
-							}
-
-							setPolyFT4(prim);
-
-							*(uint *)&prim->r0 = pc->colour;
-
-							gte_stsxy3(&prim->x0, &prim->x1, &prim->x3);
-
-							*(uint *)&prim->u0 = (uint)vertex[2].uv | pc->clut;
-							*(uint *)&prim->u1 = (uint)vertex[7].uv | pc->tpage;
-							*(uint *)&prim->u2 = (uint)vertex[1].uv;
-							*(uint *)&prim->u3 = (uint)vertex[6].uv;
-
-							prim++;
-							//local_a0_1124 = puVar4;
-
-							//pc->primptr = (char*)prim;
-							return;
-						}
-					}
-
-				LAB_00042ab4:
-					iVar6--;
-					VST = (MVERTEX(*)[5][5])(VST-1 + 20);
-
-				} while (iVar6 != -1);
-			}
-
-			iVar7 = iVar5;
-		} while (iVar5 < n);
-	}
-
-	pc->primptr = (char*)prim;*/
 }
 
 
@@ -1233,8 +913,8 @@ void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 
 	plotContext.ot += ofse;
 
-	makeMesh((MVERTEX(*)[5][5])subdivVerts, n, m);
-	drawMesh((MVERTEX(*)[5][5])subdivVerts, n, m, &plotContext);
+	makeMesh((MVERTEX(*)[5][5])subdivVerts, m, n);
+	drawMesh((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
 
 	plotContext.ot -= ofse;
 }
@@ -1314,6 +994,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 						break;
 					case 4:
 						SubdivNxM((char *)polys, levels, levels, 133);
+						break;
 				}
 			}
 
