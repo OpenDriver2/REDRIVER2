@@ -4,6 +4,9 @@
 #include "GAMESND.H"
 #include "DR2ROADS.H"
 #include "REPLAYS.H"
+#include "PLAYERS.H"
+#include "CAMERA.H"
+#include "CARS.H"
 
 static int randIndex;
 static int randState[17];
@@ -3425,104 +3428,124 @@ LAB_LEAD__000eb96c:
 	/* end block 2 */
 	// End Line: 6938
 
+// [D]
 void SetTarget(_CAR_DATA *cp, int cr, int heading, int *nextJunction)
 {
-	UNIMPLEMENTED();
-	/*
+	static int dx = 0; // offset 0xd8
+	static int dz = 0; // offset 0xdc
+
 	short sVar1;
 	short sVar2;
-	uint uVar3;
+	ushort uVar3;
 	uint uVar4;
-	int iVar5;
-	int iVar6;
+	uint uVar5;
+	long lVar6;
 	int iVar7;
-	DRIVER2_STRAIGHT *pDVar8;
-	DRIVER2_CURVE *pDVar9;
+	int iVar8;
+	int iVar9;
+	int iVar10;
+	DRIVER2_STRAIGHT* straight;
+	DRIVER2_CURVE* curve;
 
-	if (*(int *)(cp->ai + 0x40) == 1) {
-		*(ushort *)(cp->ai + 2) = *(ushort *)(cp->ai + 0x2c);
-		uVar3 = (uint)*(ushort *)(cp->ai + 0x2c) & 0xfff;
-		DAT_LEAD__000ecce8 = (int)rcossin_tbl[uVar3 * 2 + 1] * *(int *)(cp->ai + 0x30) + 0x800 >> 0xc;
-		iVar6 = (int)rcossin_tbl[uVar3 * 2] * *(int *)(cp->ai + 0x30) + 0x800 >> 0xc;
-		iVar5 = (cp->hd).where.t[2];
-		DAT_LEAD__000eccec = iVar6;
-		*(long *)(cp->ai + 4) = (cp->hd).where.t[0] + DAT_LEAD__000ecce8;
-		iVar5 = iVar5 + iVar6;
-		goto LAB_LEAD__000ec5c0;
-	}
-	if ((cr & 0xffffe000U) == 0) {
-		pDVar8 = Driver2StraightsPtr + cr;
-		*(ushort *)(cp->ai + 2) = pDVar8->angle & 0xfff;
-		iVar5 = (int)pDVar8->ConnectIdx[1];
-		if (iVar5 == -1) {
-			iVar5 = (int)pDVar8->ConnectIdx[0];
-		}
-		*nextJunction = iVar5;
-		if ((*(int *)(cp->ai + 0x5c) == -1) ||
-			((*(int *)(cp->ai + 0x5c) == 0 &&
-			(((heading - *(short *)(cp->ai + 2)) + 0x400U & 0x800) != 0)))) {
-			*(ushort *)(cp->ai + 2) = *(ushort *)(cp->ai + 2) ^ 0x800;
-			iVar5 = (int)pDVar8->ConnectIdx[3];
-			if (iVar5 == -1) {
-				iVar5 = (int)pDVar8->ConnectIdx[2];
-			}
-			*nextJunction = iVar5;
-		}
-		iVar7 = (cp->hd).where.t[0];
-		uVar3 = (int)*(short *)(cp->ai + 2) + 0x400U & 0xfff;
-		iVar6 = (cp->hd).where.t[2];
-		sVar1 = rcossin_tbl[uVar3 * 2 + 1];
-		uVar4 = (uint)*(ushort *)(cp->ai + 2) & 0xfff;
-		sVar2 = rcossin_tbl[uVar4 * 2 + 1];
-		iVar5 = ((int)rcossin_tbl[uVar3 * 2] * (pDVar8->Midx - iVar7) +
-			(int)sVar1 * (pDVar8->Midz - iVar6) + 0x800 >> 0xc) +
-			((uint)(byte)pDVar8->NumLanes & 0xf) * -0x200 + *(int *)(cp->ai + 0x2c);
-		*(int *)(cp->ai + 4) =
-			iVar7 + ((int)rcossin_tbl[uVar4 * 2] * *(int *)(cp->ai + 0x30) + 0x800 >> 0xc) +
-			(iVar5 * (int)rcossin_tbl[uVar3 * 2] + 0x800 >> 0xc);
-		*(int *)(cp->ai + 8) =
-			iVar6 + ((int)sVar2 * *(int *)(cp->ai + 0x30) + 0x800 >> 0xc) +
-			(iVar5 * (int)sVar1 + 0x800 >> 0xc);
+	if (cp->ai.l.offRoad == 1)
+	{
+		uVar3 = *(ushort*)&cp->ai.l.roadPosition;
+		iVar8 = cp->ai.l.roadForward;
+		cp->ai.l.targetDir = uVar3;
+		uVar4 = (uint)uVar3 & 0xfff;
+
+		dx = FIXED(rcossin_tbl[uVar4 * 2 + 1] * iVar8);
+		dz = FIXED(rcossin_tbl[uVar4 * 2] * iVar8);
+
+		cp->ai.l.targetX = (cp->hd).where.t[0] + dx;
+		cp->ai.l.targetZ = (cp->hd).where.t[2] + dz;
+
 		return;
 	}
-	if ((cr & 0xffffe000U) != 0x4000) {
+
+	if ((cr & 0xffffe000U) == 0) 
+	{
+		straight = Driver2StraightsPtr + cr;
+		cp->ai.l.targetDir = straight->angle & 0xfff;
+
+		iVar8 = (int)straight->ConnectIdx[1];
+
+		if (iVar8 == -1)
+			iVar8 = (int)straight->ConnectIdx[0];
+
+		*nextJunction = iVar8;
+		iVar8 = cp->ai.l.direction;
+
+		if ((iVar8 == -1) || ((iVar8 == 0 && (((heading - cp->ai.l.targetDir) + 0x400U & 0x800) != 0))))
+		{
+			cp->ai.l.targetDir = cp->ai.l.targetDir ^ 0x800;
+
+			iVar8 = (int)straight->ConnectIdx[3];
+
+			if (iVar8 == -1) 
+				iVar8 = (int)straight->ConnectIdx[2];
+
+			*nextJunction = iVar8;
+		}
+
+		iVar10 = (cp->hd).where.t[0];
+		uVar4 = (int)cp->ai.l.targetDir + 0x400U & 0xfff;
+		iVar9 = (cp->hd).where.t[2];
+		sVar1 = rcossin_tbl[uVar4 * 2 + 1];
+		iVar7 = cp->ai.l.roadForward;
+		uVar5 = (uint)(ushort)cp->ai.l.targetDir & 0xfff;
+		sVar2 = rcossin_tbl[uVar5 * 2 + 1];
+		iVar8 = FIXED(rcossin_tbl[uVar4 * 2] * (straight->Midx - iVar10) + sVar1 * (straight->Midz - iVar9)) +
+				((uint)(u_char)straight->NumLanes & 0xf) * -0x200 + cp->ai.l.roadPosition;
+
+		cp->ai.l.targetX = iVar10 + FIXED(rcossin_tbl[uVar5 * 2] * iVar7) + FIXED(iVar8 * rcossin_tbl[uVar4 * 2]);
+		cp->ai.l.targetZ = iVar9 + FIXED(sVar2 * iVar7) + FIXED(iVar8 * sVar1);
+
 		return;
 	}
-	pDVar9 = Driver2CurvesPtr + cr + -0x4000;
-	iVar5 = ratan2((cp->hd).where.t[0] - pDVar9->Midx, (cp->hd).where.t[2] - pDVar9->Midz);
-	if ((*(int *)(cp->ai + 0x5c) == 1) ||
-		((*(int *)(cp->ai + 0x5c) == 0 && ((iVar5 - heading & 0x800U) != 0)))) {
-		iVar6 = (((uint)(byte)pDVar9->inside + ((uint)(byte)pDVar9->NumLanes & 0xf)) * 0x400 -
-			*(int *)(cp->ai + 0x2c)) + (cp->hd).speed * 2;
-		if (iVar6 == 0) {
-			trap(7);
-		}
-		uVar3 = iVar5 + *(int *)(cp->ai + 0x30) / iVar6;
-		*(short *)(cp->ai + 2) = (short)uVar3 + 0x400;
-		iVar5 = (int)pDVar9->ConnectIdx[1];
-		if (iVar5 != -1) goto code_r0x000ec560;
-		*nextJunction = (int)pDVar9->ConnectIdx[0];
+
+	if ((cr & 0xffffe000U) != 0x4000)
+	{
+		return;
 	}
-	else {
-		iVar6 = (uint)(byte)pDVar9->inside * 0x400 + *(int *)(cp->ai + 0x2c) + (cp->hd).speed * -2;
-		if (iVar6 == 0) {
-			trap(7);
-		}
-		uVar3 = iVar5 - *(int *)(cp->ai + 0x30) / iVar6;
-		*(short *)(cp->ai + 2) = (short)uVar3 + -0x400;
-		iVar5 = (int)pDVar9->ConnectIdx[3];
-		if (iVar5 == -1) {
-			iVar5 = (int)pDVar9->ConnectIdx[2];
-		}
-	code_r0x000ec560:
-		*nextJunction = iVar5;
+
+	curve = Driver2CurvesPtr + cr + -0x4000;
+	lVar6 = ratan2((cp->hd).where.t[0] - curve->Midx, (cp->hd).where.t[2] - curve->Midz);
+	iVar8 = cp->ai.l.direction;
+
+	if ((iVar8 == 1) || ((iVar8 == 0 && ((lVar6 - heading & 0x800U) != 0))))
+	{
+		iVar8 = (((uint)(u_char)curve->inside + ((uint)(u_char)curve->NumLanes & 0xf)) * 0x400 -
+			cp->ai.l.roadPosition) + (cp->hd).speed * 2;
+
+		uVar4 = lVar6 + cp->ai.l.roadForward / iVar8;
+		cp->ai.l.targetDir = (short)uVar4 + 0x400;
+
+		iVar7 = (int)curve->ConnectIdx[1];
+
+		if (iVar7 != -1) 
+			*nextJunction = iVar7;
+		else
+			*nextJunction = (int)curve->ConnectIdx[0];
 	}
-	*(int *)(cp->ai + 4) = pDVar9->Midx + (iVar6 * rcossin_tbl[(uVar3 & 0xfff) * 2] + 0x800 >> 0xc);
-	iVar5 = pDVar9->Midz + (iVar6 * rcossin_tbl[(uVar3 & 0xfff) * 2 + 1] + 0x800 >> 0xc);
-LAB_LEAD__000ec5c0:
-	*(int *)(cp->ai + 8) = iVar5;
-	return;
-	*/
+	else 
+	{
+		iVar8 = (uint)(u_char)curve->inside * 0x400 + cp->ai.l.roadPosition + (cp->hd).speed * -2;
+
+		uVar4 = lVar6 - cp->ai.l.roadForward / iVar8;
+		cp->ai.l.targetDir = (short)uVar4 + -0x400;
+
+		iVar7 = (int)curve->ConnectIdx[3];
+
+		if (iVar7 == -1)
+			iVar7 = (int)curve->ConnectIdx[2];
+
+		*nextJunction = iVar7;
+	}
+
+	cp->ai.l.targetX = curve->Midx + (iVar8 * rcossin_tbl[(uVar4 & 0xfff) * 2] + 0x800 >> 0xc);
+	cp->ai.l.targetZ = curve->Midz + (iVar8 * rcossin_tbl[(uVar4 & 0xfff) * 2 + 1] + 0x800 >> 0xc);
+
 }
 
 
@@ -3576,114 +3599,143 @@ LAB_LEAD__000ec5c0:
 	/* end block 3 */
 	// End Line: 7242
 
+// [D]
 void SelectExit(_CAR_DATA *cp, DRIVER2_JUNCTION *junction)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	uint uVar2;
+	int uVar1;
+	int uVar2;
 	int iVar3;
-	short *psVar4;
+	short* psVar4;
 	int iVar5;
-	uint uVar6;
+	int uVar6;
 	int iVar7;
-	uint uVar8;
-	int iVar9;
-	uint local_38[8];
+	int iVar8;
+	int uVar9;
+	int iVar10;
+	int el[4][2];
 
-	iVar9 = 0;
+	iVar10 = 0;
 	uVar6 = 0;
-	iVar3 = *(int *)(cp->ai + 0x10);
-	iVar7 = 0;
-	if ((int)junction->ExitIdx[0] != iVar3) {
+	iVar3 = cp->ai.l.lastRoad;
+	iVar8 = 0;
+
+	if (junction->ExitIdx[0] != iVar3) 
+	{
 		psVar4 = junction->ExitIdx;
+
 		do {
 			psVar4 = psVar4 + 1;
-			iVar7 = iVar7 + 1;
-			if ((int)*psVar4 == iVar3) goto LAB_LEAD__000ec664;
-		} while (iVar7 < 4);
-		if ((int)junction->ExitIdx[iVar7] != iVar3) {
-			uVar8 = ((int)*(short *)(cp->ai + 2) + 0x200U & 0xfff) >> 10;
+			iVar8 = iVar8 + 1;
+
+			if ((int)*psVar4 == iVar3)
+				goto LAB_LEAD__000ec664;
+
+		} while (iVar8 < 4);
+
+		if (junction->ExitIdx[iVar8] != iVar3)
+		{
+			uVar9 = ((cp->ai.l).targetDir + 0x200U & 0xfff) >> 10;
 			goto LAB_LEAD__000ec684;
 		}
 	}
+
 LAB_LEAD__000ec664:
-	uVar8 = iVar7 + 2U & 3;
+	uVar9 = iVar8 + 2U & 3;
 LAB_LEAD__000ec684:
-	uVar1 = junction->ExitIdx[uVar8];
+
+	uVar1 = junction->ExitIdx[uVar9];
 	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
 		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar8])) {
-		iVar9 = 1;
-		local_38[0] = 0;
-		uVar6 = junction->flags >> (uVar8 << 3) & 0xf;
-		local_38[1] = uVar6;
+		(-1 < junction->ExitIdx[uVar9]))
+	{
+		iVar10 = 1;
+		el[0][0] = 0;
+		uVar6 = junction->flags >> (uVar9 << 3) & 0xf;
+		el[0][1] = uVar6;
 	}
-	uVar2 = uVar8 + 1;
+
+	uVar2 = uVar9 + 1;
 	uVar1 = junction->ExitIdx[uVar2 & 3];
-	iVar3 = iVar9;
+	iVar3 = iVar10;
+
 	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
 		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar2 & 3])) {
-		iVar3 = iVar9 + 1;
-		local_38[iVar9 * 2] = 1;
+		(-1 < junction->ExitIdx[uVar2 & 3]))
+	{
+		iVar3 = iVar10 + 1;
+		el[iVar10][0] = 1;
 		uVar2 = junction->flags >> ((uVar2 & 3) << 3) & 0xf;
 		uVar6 = uVar6 + uVar2;
-		local_38[iVar9 * 2 + 1] = uVar2;
+		el[iVar10][1] = uVar2;
 	}
-	uVar2 = uVar8 - 1;
+
+	uVar2 = uVar9 - 1;
 	uVar1 = junction->ExitIdx[uVar2 & 3];
-	iVar7 = iVar3;
+	iVar8 = iVar3;
+
 	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
 		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar2 & 3])) {
-		iVar7 = iVar3 + 1;
-		local_38[iVar3 * 2] = 0xffffffff;
+		(-1 < junction->ExitIdx[uVar2 & 3]))
+	{
+		iVar8 = iVar3 + 1;
+		el[iVar3][0] = -1;
 		uVar2 = junction->flags >> ((uVar2 & 3) << 3) & 0xf;
 		uVar6 = uVar6 + uVar2;
-		local_38[iVar3 * 2 + 1] = uVar2;
+		el[iVar3][1] = uVar2;
 	}
-	iVar3 = iVar7;
-	if (uVar6 == 0) {
-		iVar3 = iVar7 + 1;
+
+	iVar3 = iVar8;
+
+	if (uVar6 == 0)
+	{
+		iVar3 = iVar8 + 1;
 		uVar6 = 1;
-		local_38[iVar7 * 2] = 2;
-		local_38[iVar7 * 2 + 1] = 1;
+		el[iVar8][0] = 2;
+		el[iVar8][1] = 1;
 	}
-	iVar7 = leadRand();
-	if (iVar7 < 0) {
-		iVar7 = -iVar7;
-	}
-	if (uVar6 == 0) {
-		trap(7);
-	}
-	if (iVar3 != 0) {
-		iVar9 = 1;
-		uVar2 = local_38[1];
-		if (iVar7 % uVar6 < (int)local_38[1]) {
-			*(uint *)(cp->ai + 0x18) = local_38[0];
+
+	iVar8 = leadRand();
+
+	if (iVar8 < 0)
+		iVar8 = -iVar8;
+
+	if (iVar3 != 0) 
+	{
+		iVar10 = 1;
+		iVar7 = el[0][1];
+
+		if (iVar8 % uVar6 < el[0][1]) 
+		{
+			cp->ai.l.nextTurn = el[0][0];
 		}
-		else {
+		else
+		{
 			do {
-				iVar5 = iVar9;
-				if (iVar3 <= iVar5) goto LAB_LEAD__000ec924;
-				uVar2 = uVar2 + local_38[iVar5 * 2 + 1];
-				iVar9 = iVar5 + 1;
-			} while ((int)uVar2 <= iVar7 % uVar6);
-			*(uint *)(cp->ai + 0x18) = local_38[iVar5 * 2];
+				iVar5 = iVar10;
+
+				if (iVar3 <= iVar5)
+					goto LAB_LEAD__000ec924;
+
+				iVar7 = iVar7 + el[iVar5][1];
+				iVar10 = iVar5 + 1;
+			} while (iVar7 <= iVar8 % uVar6);
+
+			cp->ai.l.nextTurn = el[iVar5][0];
 		}
 	}
+
 LAB_LEAD__000ec924:
-	*(uint *)(cp->ai + 0x1c) = uVar8 + *(int *)(cp->ai + 0x18) & 3;
+
+	cp->ai.l.nextExit = uVar9 + cp->ai.l.nextTurn & 3;
+
 	iVar3 = leadRand();
-	if (iVar3 < 0) {
+
+	if (iVar3 < 0)
 		iVar3 = -iVar3;
-	}
-	if (iVar3 == (iVar3 / 3) * 3) {
-		*(int *)(cp->ai + 0x18) = -*(int *)(cp->ai + 0x18);
-	}
-	return;
-	*/
+
+	if (iVar3 == (iVar3 / 3) * 3)
+		cp->ai.l.nextTurn = -cp->ai.l.nextTurn;
+
 }
 
 
@@ -3736,54 +3788,58 @@ LAB_LEAD__000ec924:
 	/* end block 3 */
 	// End Line: 7436
 
+// [D]
 ulong FreeRoamer(_CAR_DATA *cp)
 {	
-	ulong uVar1;
-	int iVar2;
-	int iVar3;
-	int *piVar4;
+	int i;
+	int playerCarId;
+	int seed;
+	int* piVar5;
 
 	LeadHorn(cp);
 	DamageBar.position = cp->totalDamage;
 
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	if ((((cp->hd).where.m[4] < 100) ||
+	if ((((cp->hd).where.m[1][1] < 100) ||
 		((((cp->hd).wheel[1].surface & 7) == 1 && (((cp->hd).wheel[3].surface & 7) == 1)))) &&
-		(cp->ai[0] != 8)) {
-		cp->totalDamage = cp->totalDamage + 100;
+		(cp->ai.l.dstate != 8))
+	{
+		cp->totalDamage += 100;
 	}
-	cp->ai[1] = cp->ai[1] + 1;
-	if (cp->ai[100] != 0) {
-		cp->ai[100] = cp->ai[100] - 1;
-	}
-	if (CameraCnt == 100) {
-		iVar3 = (int)player.playerCarId;
-		iVar2 = car_data[iVar3].hd.speed + 1;
-		iVar3 = (car_data[iVar3].hd.where.t[0] + car_data[iVar3].hd.where.t[2]) / iVar2;
-		if (iVar2 == 0) {
-			trap(7);
+
+	cp->ai.l.ctt++;
+
+	if (cp->ai.l.takeDamage != 0)
+		cp->ai.l.takeDamage--;
+
+	if (CameraCnt == 100)
+	{
+		playerCarId = player[0].playerCarId;
+
+		if (playerCarId >= 0) // [A] bug fix
+		{
+			seed = (car_data[playerCarId].hd.where.t[0] + car_data[playerCarId].hd.where.t[2]) / (car_data[playerCarId].hd.speed + 1);
+
+			piVar5 = randState;
+
+			randIndex = 0;
+
+			i = 16;
+			do {
+				randState[i--] = seed;
+				seed = seed * 0x751 + 0x10cc2af;
+			} while (-1 < i);
+
+			i = 39;
+			do {
+				i--;
+				leadRand();
+			} while (-1 < i);
 		}
-		piVar4 = &DAT_LEAD__000eccf0;
-		iVar2 = 0x10;
-		DAT_LEAD__000ecd34 = 0;
-		do {
-			*piVar4 = iVar3;
-			iVar3 = iVar3 * 0x751 + 0x10cc2af;
-			iVar2 = iVar2 + -1;
-			piVar4 = piVar4 + 1;
-		} while (-1 < iVar2);
-		iVar2 = 0x27;
-		do {
-			iVar2 = iVar2 + -1;
-			leadRand();
-		} while (-1 < iVar2);
 	}
+
 	LeadUpdateState(cp);
-	uVar1 = LeadPadResponse(cp);
-	return uVar1;
-	*/
+
+	return LeadPadResponse(cp);
 }
 
 
