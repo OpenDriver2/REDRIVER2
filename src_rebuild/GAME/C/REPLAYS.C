@@ -164,7 +164,7 @@ int SaveReplayToBuffer(char *buffer)
 	REPLAY_SAVE_HEADER *header;
 
 	if (buffer == NULL)
-		return 0;
+		return 0x3644;
 
 	char* pt = buffer;
 	header = (REPLAY_SAVE_HEADER*)pt;
