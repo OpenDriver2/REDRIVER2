@@ -1878,24 +1878,21 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	char let;
 
 	font = (SPRT *)current->primptr;
-	let = *string++;
-
+	
 	if ((justification & 4) != 0)
 	{
 		char *pString = string;
-		char c = let;
+		char c = 0;
 
 		int w = 0;
 
-		while (c != 0) {
+		while ((c = *pString++) != 0) {
 			if (c == ' ') {
 				w += 4;
 			}
 			else {
 				w += feFont.CharInfo[c].w;
 			}
-
-			c = *pString++;
 		}
 
 		x -= w;
@@ -1903,7 +1900,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 
 	int counter = 0;
 
-	do
+	while ((let = *string++) != 0)
 	{
 		if (let == ' ')
 		{
@@ -1913,9 +1910,6 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		{
 			pFontInfo = &feFont.CharInfo[let];
 
-			int w = pFontInfo->w;
-			int h = pFontInfo->h;
-
 			setSprt(font);
 #ifdef PSX
 			setSemiTrans(font, 1);
@@ -1924,7 +1918,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 			setRGB0(font, r, g, b);
 			setXY0(font, x, y);
 			setUV0(font, pFontInfo->u, pFontInfo->v);
-			setWH(font, w, h);
+			setWH(font, pFontInfo->w, pFontInfo->h);
 			// setTPage(font, 0, 0, 640, 256); // [A]
 			setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
 
@@ -1932,12 +1926,12 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 			font++;
 
 			// add space for next character
-			x += w;
+			x += pFontInfo->w;
 		}
 
-		let = *string++;
-		counter++;
-	} while ((let != 0) && (counter < 32));
+		if (++counter >= 32)
+			break;
+	}
 
 	// set tail
 	current->primptr = (char *)font;
@@ -1949,7 +1943,9 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	setTPage(null, 0, 0, 640, 256);
 
 	addPrim(&current->ot[1], null);
-	current->primptr += sizeof(POLY_FT3);
+	null++;
+
+	current->primptr = (char *)null;
 
 	return x;
 }
