@@ -9,6 +9,11 @@
 #include "CARS.H"
 #include "SPOOL.H"
 #include "HANDLING.H"
+#include "MAP.H"
+#include "CELL.H"
+#include "DRAW.H"
+#include "MODELS.H"
+#include "MAIN.H"
 
 static int randIndex;
 static int randState[17];
@@ -1657,7 +1662,7 @@ void BlockToMap(MAP_DATA *data)
 			iVar15 = (data->cp->ai.l).base_Normal;
 			uVar2 = hypot(y, x_00);
 			cp = data->cp;
-			y = (iVar15 - uVar2) * (cp->ai.l).base_Dir;
+			y = (iVar15 - uVar2) * cp->ai.l.base_Dir;
 			x_00 = ((cp->hd).speed + 100) * 10;
 			if (x < x_00)
 			{
@@ -2320,706 +2325,832 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 3944
 
+int roadAhead[41]; // offset 0x000ecde8
+int localMap[41]; // offset 0x000ecd40
+
+// [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
 void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 {
-	UNIMPLEMENTED();
-	/*
-	short *psVar1;
-	short *psVar2;
+	short* psVar1;
+	short* psVar2;
 	bool bVar3;
-	undefined4 *puVar4;
-	uint cellx;
-	PACKED_CELL_OBJECT *ppco;
-	int iVar5;
-	CELL_OBJECT *pCVar6;
-	undefined *puVar7;
-	undefined4 uVar8;
-	uint uVar9;
-	int *piVar10;
-	MODEL *pMVar11;
+	int cellx;
+	PACKED_CELL_OBJECT* ppco;
+	CELL_OBJECT* cop;
+	long lVar4;
+	int local_v0_4816;
+	int* piVar5;
+	int uVar6;
+	int* piVar7;
+	MODEL* model;
+	int iVar8;
+	int iVar9;
+	int iVar10;
+	int iVar11;
 	int iVar12;
+	int cellz;
+	CAR_COSMETICS* car_cos;
 	int iVar13;
-	uint cellz;
-	CAR_COSMETICS *pCVar14;
+	int iVar14;
 	int iVar15;
 	int iVar16;
-	int iVar17;
-	int iVar18;
-	int *piVar19;
-	int iVar20;
-	_CAR_DATA *p_Var21;
-	uint uVar22;
-	CELL_DATA *local_158;
-	PACKED_CELL_OBJECT *local_154;
-	long local_150;
-	int local_148;
-	int local_140;
-	int local_13c;
-	int local_138;
-	int local_134;
-	int local_130;
-	_CAR_DATA *local_128;
-	VECTOR *local_124;
-	VECTOR *local_120;
-	VECTOR *local_11c;
-	VECTOR *local_118;
-	int local_114;
-	MAP_DATA local_110;
-	int local_f0[42];
-	uint local_48;
-	uint local_44;
-	uint local_40;
-	int local_3c;
-	int local_38;
-	uint local_34;
-	int local_30;
-	int local_2c;
+	COLLISION_PACKET* collide;
+	_CAR_DATA* lcp;
+	int uVar17;
+	VECTOR offset;
+	VECTOR pos;
+	VECTOR vel;
+	VECTOR size;
+	MAP_DATA data;
+	int tmpMap[41];
+	int left;
+	int i;
+	int right;
+	int centre;
+	int laneAvoid;
+	CELL_ITERATOR ci;
 
-	iVar20 = 0x28;
-	local_38 = -1;
-	puVar4 = &DAT_LEAD__000ece88;
+	iVar16 = 0x28;
+	laneAvoid = -1;
+	piVar7 = roadAhead + 0x28;
+
 	do {
-		*puVar4 = 0x5000;
-		iVar20 = iVar20 + -1;
-		puVar4 = puVar4 + -1;
-	} while (-1 < iVar20);
-	piVar10 = &DAT_LEAD__000ecd40;
-	iVar20 = 0x28;
+		*piVar7 = 0x5000;
+		iVar16 = iVar16 + -1;
+		piVar7 = piVar7 + -1;
+	} while (-1 < iVar16);
+
+	piVar7 = localMap;
+	iVar16 = 0x28;
+
 	do {
-		iVar20 = iVar20 + -1;
-		*piVar10 = ((cp->hd).speed + 100) * 10;
-		piVar10 = piVar10 + 1;
-	} while (-1 < iVar20);
-	cellx = (uint)*(ushort *)(cp->ai + 2) & 0xfff;
-	DAT_LEAD__000ecd3c = (int)rcossin_tbl[cellx * 2];
-	iVar20 = basePos->vx + units_across_halved;
-	iVar15 = iVar20 + -0x400;
-	DAT_LEAD__000ecd38 = (int)rcossin_tbl[cellx * 2 + 1];
-	if (iVar15 < 0) {
-		iVar15 = iVar20 + 0x3ff;
-	}
+		iVar16 = iVar16 + -1;
+		*piVar7 = ((cp->hd).speed + 100) * 10;
+		piVar7 = piVar7 + 1;
+	} while (-1 < iVar16);
+
+	cellx = (uint)(ushort)cp->ai.l.targetDir & 0xfff;
+	road_s = (int)rcossin_tbl[cellx * 2];
+	iVar16 = basePos->vx + units_across_halved;
+	iVar13 = iVar16 + -0x400;
+	road_c = (int)rcossin_tbl[cellx * 2 + 1];
+
 	ClearCopUsage();
-	local_30 = 0;
-	cellx = (iVar15 >> 0xb) - 5;
+	iVar16 = 0;
+	cellx = (iVar13 >> 0xb) - 5;
+
 	do {
-		iVar20 = basePos->vz + units_down_halved;
-		iVar15 = iVar20 + -0x400;
-		if (iVar15 < 0) {
-			iVar15 = iVar20 + 0x3ff;
-		}
-		iVar20 = 0;
-		local_2c = cellx << 0xb;
-		local_30 = local_30 + 1;
-		local_34 = cellx + 1;
-		cellz = (iVar15 >> 0xb) - 5;
+		iVar13 = basePos->vz + units_down_halved;
+		iVar11 = iVar13 + -0x400;
+
+		iVar13 = 0;
+		iVar16 = iVar16 + 1;
+		cellz = (iVar11 >> 0xb) - 5;
+
 		do {
-			iVar15 = IsOnMap((local_2c - units_across_halved) + 0x400,
-				(cellz * 0x800 - units_down_halved) + 0x400, basePos, intention, cp);
-			iVar20 = iVar20 + 1;
-			if (iVar15 != 0) {
-				iVar15 = cells_across;
-				if (cells_across < 0) {
-					iVar15 = cells_across + 0x1f;
-				}
-				if (RoadMapRegions[(cellx >> 5 & 1) + (cellz >> 5 & 1) * 2] ==
-					(cellx >> 5) + (cellz >> 5) * (iVar15 >> 5)) {
-					ppco = GetFirstPackedCop(cellx, cellz, (CELL_ITERATOR *)&local_158, 1);
-					while (pCVar6 = UnpackCellObject(ppco, (XZPAIR *)(&local_158 + 8)),
-						pCVar6 != (CELL_OBJECT *)0x0) {
-						pMVar11 = modelpointers1536[pCVar6->type];
-						if (((((uint)pMVar11->num_vertices - 3 < 300) && (pMVar11->num_point_normals < 300)) &&
-							(pMVar11->num_polys < 300)) &&
-							((piVar10 = (int *)pMVar11->collision_block, piVar10 != (int *)0x0 &&
-							((pMVar11->flags2 & 0x800) == 0)))) {
-							iVar15 = *piVar10;
-							piVar10 = piVar10 + 1;
-							if (0 < iVar15) {
+			iVar11 = IsOnMap((cellx * 0x800 - units_across_halved) + 0x400, (cellz * 0x800 - units_down_halved) + 0x400, basePos, intention, cp);
+			iVar13 = iVar13 + 1;
+
+			if (iVar11 != 0) 
+			{
+				iVar11 = cells_across;
+
+				if (RoadMapRegions[(cellx >> 5 & 1) + (cellz >> 5 & 1) * 2] == (cellx >> 5) + (cellz >> 5) * (iVar11 >> 5)) 
+				{
+					ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
+
+					while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
+					{
+						model = modelpointers[cop->type];
+						if (((((uint)model->num_vertices - 3 < 300) && (model->num_point_normals < 300)) &&
+							(model->num_polys < 300)) &&
+							((piVar7 = (int*)model->collision_block, piVar7 != NULL &&
+							((model->flags2 & 0x800) == 0)))) 
+						{
+							iVar11 = *piVar7;
+							collide = (COLLISION_PACKET*)(piVar7 + 1);
+							if (0 < iVar11) {
 								do {
-									uVar9 = -(uint)pCVar6->yang & 0x3f;
-									psVar1 = (short *)((int)piVar10 + 2);
-									psVar2 = (short *)((int)piVar10 + 6);
-									if (*(short *)piVar10 == 0) {
-										iVar17 = (uint)*(ushort *)((int)piVar10 + 0x12) << 0x10;
-										uVar22 = ((uint)pCVar6->yang + (int)*(short *)((int)piVar10 + 10)) * 0x100 &
-											0x3f00;
-										iVar18 = (int)*(short *)((int)rcossin_tbl + uVar22);
-										iVar16 = (iVar17 >> 0x10) - (iVar17 >> 0x1f) >> 1;
-										iVar17 = iVar16 * iVar18;
-										iVar13 = (int)*(short *)((int)rcossin_tbl + uVar22 + 2);
-										iVar5 = (uint)*(ushort *)((int)piVar10 + 0xe) << 0x10;
-										iVar12 = (iVar5 >> 0x10) - (iVar5 >> 0x1f) >> 1;
-										iVar5 = iVar12 * iVar13;
-										iVar16 = iVar16 * iVar13;
-										iVar12 = iVar12 * iVar18;
-										if (iVar17 < 0) {
-											iVar17 = -iVar17;
-										}
-										if (iVar5 < 0) {
-											iVar5 = -iVar5;
-										}
-										local_120 = (VECTOR *)(iVar17 + iVar5 + 0x800 >> 0xc);
-										local_11c = (VECTOR *)(int)*(short *)(piVar10 + 4);
-										if (iVar16 < 0) {
-											iVar16 = -iVar16;
-										}
-										if (iVar12 < 0) {
-											iVar12 = -iVar12;
-										}
-										local_118 = (VECTOR *)((iVar16 - iVar12) + 0x800 >> 0xc);
+									uVar6 = -cop->yang & 0x3f;
+
+									if (collide->type == 0) 
+									{
+										iVar9 = collide->zsize << 0x10;
+										uVar17 = (cop->yang + collide->yang) * 0x100 & 0x3f00;
+										iVar15 = (int)*(short*)((int)rcossin_tbl + uVar17);
+										iVar14 = (iVar9 >> 0x10) - (iVar9 >> 0x1f) >> 1;
+										iVar9 = iVar14 * iVar15;
+										iVar12 = (int)*(short*)((int)rcossin_tbl + uVar17 + 2);
+										iVar10 = collide->xsize << 0x10;
+										iVar8 = (iVar10 >> 0x10) - (iVar10 >> 0x1f) >> 1;
+										iVar10 = iVar8 * iVar12;
+										iVar14 = iVar14 * iVar12;
+										iVar8 = iVar8 * iVar15;
+
+										if (iVar9 < 0)
+											iVar9 = -iVar9;
+
+										if (iVar10 < 0)
+											iVar10 = -iVar10;
+
+										size.vx = FIXED(iVar9 + iVar10);
+										size.vy = (long)collide->ysize;
+
+										if (iVar14 < 0)
+											iVar14 = -iVar14;
+
+										if (iVar8 < 0)
+											iVar8 = -iVar8;
+	
+										size.vz = FIXED(iVar14 - iVar8);
 									}
-									local_140 = ((int)*(short *)((int)piVar10 + 2) * (int)(&matrixtable)[uVar9].m[0] +
-										(int)*(short *)((int)piVar10 + 6) * (int)(&matrixtable)[uVar9].m[6] +
-										0x800 >> 0xc) + (pCVar6->pos).vx;
-									iVar15 = iVar15 + -1;
-									piVar10 = piVar10 + 5;
-									local_13c = -(pCVar6->pos).vy - (pCVar6->pos).vy;
-									local_130 = 0;
-									local_128 = (_CAR_DATA *)0x0;
-									local_110.vel = (VECTOR *)0x0;
-									local_110.pos = (VECTOR *)&local_140;
-									local_110.size = (VECTOR *)(&local_128 + 8);
-									local_110.map = &DAT_LEAD__000ecde8;
-									local_110.local = &DAT_LEAD__000ecd40;
-									local_138 = ((int)*psVar1 * (int)(&matrixtable)[uVar9].m[2] +
-										(int)*psVar2 * (int)(&matrixtable)[uVar9].m[8] + 0x800 >> 0xc) +
-										(pCVar6->pos).vz;
-									local_110.cp = cp;
-									local_110.base = basePos;
-									local_110.intention = intention;
-									BlockToMap(&local_110);
-								} while (iVar15 != 0);
+									offset.vx = FIXED(collide->xpos * matrixtable[uVar6].m[0][0] + collide->zpos * matrixtable[uVar6].m[2][0]) + (cop->pos).vx;
+									offset.vz = FIXED(collide->xpos * matrixtable[uVar6].m[0][2] + collide->zpos * matrixtable[uVar6].m[2][2]) + (cop->pos).vz;
+									offset.vy = -(cop->pos).vy - (cop->pos).vy;
+
+									vel.vx = 0;
+									vel.vz = 0;
+									data.vel = NULL;
+									data.pos = &offset;
+									data.size = &size;
+									data.map = roadAhead;
+									data.local = localMap;
+									
+									data.cp = cp;
+									data.base = basePos;
+									data.intention = intention;
+
+									BlockToMap(&data);
+
+									iVar11--;
+									collide++;
+								} while (iVar11 != 0);
 							}
 						}
-						ppco = GetNextPackedCop((CELL_ITERATOR *)&local_158);
+						ppco = GetNextPackedCop(&ci);
 					}
 				}
 			}
 			cellz = cellz + 1;
-		} while (iVar20 < 0xb);
-		cellx = local_34;
-	} while (local_30 < 0xb);
-	p_Var21 = car_data + 0x13;
-	while ((_CAR_DATA *)((int)&cheats.MagicMirror + 3U) < p_Var21) {
-		if ((p_Var21 != cp) && (p_Var21->controlType != '\0')) {
-			pCVar14 = (p_Var21->ap).carCos;
-			iVar20 = (uint)(ushort)(pCVar14->colBox).vz << 0x10;
-			iVar20 = (int)(p_Var21->hd).where.m[6] * ((iVar20 >> 0x10) - (iVar20 >> 0x1f) >> 1);
-			iVar15 = (uint)(ushort)(pCVar14->colBox).vx << 0x10;
-			iVar15 = (int)(p_Var21->hd).where.m[0] * ((iVar15 >> 0x10) - (iVar15 >> 0x1f) >> 1);
-			if (iVar20 < 0) {
-				iVar20 = -iVar20;
-			}
-			if (iVar15 < 0) {
-				iVar15 = -iVar15;
-			}
-			local_138 = (iVar20 + iVar15 + 0x800 >> 0xc) + (int)(pCVar14->colBox).vy;
-			local_134 = (int)(pCVar14->colBox).vy;
-			iVar20 = (uint)(ushort)(pCVar14->colBox).vz << 0x10;
-			iVar20 = (int)(p_Var21->hd).where.m[8] * ((iVar20 >> 0x10) - (iVar20 >> 0x1f) >> 1);
-			iVar15 = (uint)(ushort)(pCVar14->colBox).vx << 0x10;
-			iVar15 = (int)(p_Var21->hd).where.m[2] * ((iVar15 >> 0x10) - (iVar15 >> 0x1f) >> 1);
-			local_148 = *(int *)(cp->st + 0x1c);
-			local_158 = (CELL_DATA *)(p_Var21->hd).where.t[0];
-			local_154 = (PACKED_CELL_OBJECT *)(p_Var21->hd).where.t[1];
-			local_150 = (p_Var21->hd).where.t[2];
-			if (iVar20 < 0) {
-				iVar20 = -iVar20;
-			}
-			if (iVar15 < 0) {
-				iVar15 = -iVar15;
-			}
-			local_130 = (iVar20 + iVar15 + 0x800 >> 0xc) + (int)(pCVar14->colBox).vy;
-			if (local_148 < 0) {
-				local_148 = local_148 + 0x3ff;
-			}
-			local_140 = *(int *)(cp->st + 0x24);
-			local_148 = local_148 >> 10;
-			if (local_140 < 0) {
-				local_140 = local_140 + 0x3ff;
-			}
-			local_140 = local_140 >> 10;
-			local_11c = (VECTOR *)(&local_158 + 0x10);
-			local_120 = (VECTOR *)&local_158;
-			local_118 = (VECTOR *)(&local_140 + 8);
-			local_110.cp = (_CAR_DATA *)&DAT_LEAD__000ecde8;
-			local_110.base = (VECTOR *)&DAT_LEAD__000ecd40;
-			local_128 = cp;
-			local_124 = basePos;
-			local_114 = intention;
-			BlockToMap((MAP_DATA *)&local_128);
+		} while (iVar13 < 0xb);
+
+		cellx = cellx + 1;
+
+	} while (iVar16 < 0xb);
+
+	lcp = (car_data + 0x13);
+
+	while (car_data < lcp)
+	{
+		if ((lcp != cp) && (lcp->controlType != 0))
+		{
+			car_cos = (lcp->ap).carCos;
+			iVar16 = (uint)(ushort)(car_cos->colBox).vz << 0x10;
+			iVar16 = (int)(lcp->hd).where.m[2][0] * ((iVar16 >> 0x10) - (iVar16 >> 0x1f) >> 1);
+			iVar13 = (uint)(ushort)(car_cos->colBox).vx << 0x10;
+			iVar13 = (int)(lcp->hd).where.m[0][0] * ((iVar13 >> 0x10) - (iVar13 >> 0x1f) >> 1);
+
+			if (iVar16 < 0)
+				iVar16 = -iVar16;
+
+			if (iVar13 < 0)
+				iVar13 = -iVar13;
+
+			size.vx = FIXED(iVar16 + iVar13) + (int)(car_cos->colBox).vy;
+			size.vy = (long)(car_cos->colBox).vy;
+			iVar16 = (uint)(ushort)(car_cos->colBox).vz << 0x10;
+			iVar16 = (int)(lcp->hd).where.m[2][2] * ((iVar16 >> 0x10) - (iVar16 >> 0x1f) >> 1);
+			iVar13 = (uint)(ushort)(car_cos->colBox).vx << 0x10;
+			iVar13 = (int)(lcp->hd).where.m[0][2] * ((iVar13 >> 0x10) - (iVar13 >> 0x1f) >> 1);
+			iVar11 = (cp->st).n.linearVelocity[0];
+			pos.vx = (lcp->hd).where.t[0];
+			pos.vy = (lcp->hd).where.t[1];
+			pos.vz = (lcp->hd).where.t[2];
+
+			if (iVar16 < 0)
+				iVar16 = -iVar16;
+
+			if (iVar13 < 0)
+				iVar13 = -iVar13;
+
+			size.vz = FIXED(iVar16 + iVar13) + (int)(car_cos->colBox).vy;
+
+			iVar16 = (cp->st).n.linearVelocity[2];
+			vel.vx = iVar11 >> 10;
+
+			vel.vz = iVar16 >> 10;
+			data.vel = &vel;
+			data.pos = &pos;
+			data.size = &size;
+			data.map = roadAhead;
+			data.local = localMap;
+			data.cp = cp;
+			data.base = basePos;
+			data.intention = intention;
+
+			BlockToMap(&data);
 		}
-		p_Var21 = p_Var21 + -1;
+		lcp--;
 	}
-	if ((cp->ai[0] != 4) &&
-		(((iVar20 = ((cp->hd).speed + 100) * 8, DAT_LEAD__000ecd90 < iVar20 ||
-		(DAT_LEAD__000ecd94 < iVar20)) || (DAT_LEAD__000ecd98 < iVar20)))) {
-		iVar20 = 1;
-		piVar10 = &DAT_LEAD__000ecd9c;
-		piVar19 = &DAT_LEAD__000ecd8c;
-		while (true) {
-			iVar17 = *piVar19 + (&DAT_LEAD__000ecd40)[0x15 - iVar20] +
-				(&DAT_LEAD__000ecd40)[0x16 - iVar20];
-			iVar15 = piVar10[-2] + piVar10[-1] + *piVar10;
-			if ((iVar17 < iVar15) && (((cp->hd).speed + 100) * 0x18 < iVar15 * 2)) {
-				if (0xd < iVar20) {
-					*(undefined4 *)(cp->ai + 0x24) = 2;
+
+	if ((cp->ai.l.dstate != 4) && (((iVar16 = ((cp->hd).speed + 100) * 8, localMap[20] < iVar16 || (localMap[21] < iVar16)) || (localMap[22] < iVar16))))
+	{
+		iVar16 = 1;
+		piVar7 = localMap + 0x17;
+		piVar5 = localMap + 0x13;
+
+		while (true) 
+		{
+			iVar11 = *piVar5 + localMap[0x15 - iVar16] + localMap[0x16 - iVar16];
+			iVar13 = piVar7[-2] + piVar7[-1] + *piVar7;
+
+			if ((iVar11 < iVar13) && (((cp->hd).speed + 100) * 0x18 < iVar13 * 2))
+			{
+				if (0xd < iVar16) 
+				{
+					cp->ai.l.panicCount = 2;
 					return;
 				}
-				*(undefined4 *)(cp->ai + 0x24) = 1;
+
+				cp->ai.l.panicCount = 1;
 				return;
 			}
-			if ((iVar17 > iVar15) && (((cp->hd).speed + 100) * 0x18 < iVar17 * 2)) break;
-			if (iVar20 == 0x14) {
-				if (iVar17 <= iVar15) {
-					*(undefined4 *)(cp->ai + 0x24) = 2;
-				}
-				else {
-					*(undefined4 *)(cp->ai + 0x24) = 0xfffffffe;
-				}
+
+			if ((iVar11 > iVar13) && (((cp->hd).speed + 100) * 0x18 < iVar11 * 2))
+				break;
+
+			if (iVar16 == 0x14) 
+			{
+				if (iVar11 <= iVar13) 
+					cp->ai.l.panicCount = 2;
+				else 
+					cp->ai.l.panicCount = -2;
 			}
-			piVar10 = piVar10 + 1;
-			iVar20 = iVar20 + 1;
-			piVar19 = piVar19 + -1;
-			if (0x14 < iVar20) {
+
+			piVar7 = piVar7 + 1;
+			iVar16 = iVar16 + 1;
+			piVar5 = piVar5 + -1;
+
+			if (0x14 < iVar16) 
 				return;
-			}
 		}
-		if (0xd < iVar20) {
-			*(undefined4 *)(cp->ai + 0x24) = 0xfffffffe;
+		if (0xd < iVar16)
+		{
+			cp->ai.l.panicCount = -2;
 			return;
 		}
-		*(undefined4 *)(cp->ai + 0x24) = 0xffffffff;
+
+		cp->ai.l.panicCount = -1;
 		return;
 	}
-	*(undefined4 *)(cp->ai + 0x24) = 0;
-	bVar3 = (uint)intention < 2;
+
+	cp->ai.l.panicCount = 0;
+	bVar3 = intention < 2;
 	cellx = intention - 2;
-	if (bVar3) {
-		iVar15 = 0x18;
-		piVar10 = &DAT_LEAD__000ece48;
-		iVar20 = DAT_LEAD__000ece48;
+
+	if (bVar3) 
+	{
+		iVar13 = 0x18;
+		piVar7 = roadAhead + 0x18;
+		iVar16 = roadAhead[24];
+
 		do {
-			if (*piVar10 < iVar20) {
-				iVar20 = *piVar10;
-			}
-			iVar17 = SquareRoot0(iVar15 + -0x15);
-			if (iVar20 < ((cp->hd).speed + 100) * iVar17) {
-				*piVar10 = 0;
-			}
-			iVar15 = iVar15 + 1;
-			piVar10 = piVar10 + 1;
-		} while (iVar15 < 0x29);
-		iVar15 = 0x12;
-		piVar10 = &DAT_LEAD__000ece30;
-		iVar20 = DAT_LEAD__000ece30;
+			if (*piVar7 < iVar16)
+				iVar16 = *piVar7;
+
+			lVar4 = SquareRoot0(iVar13 + -0x15);
+
+			if (iVar16 < ((cp->hd).speed + 100) * lVar4)
+				*piVar7 = 0;
+
+			iVar13 = iVar13 + 1;
+			piVar7 = piVar7 + 1;
+		} while (iVar13 < 0x29);
+
+		iVar13 = 0x12;
+		piVar7 = roadAhead + 0x12;
+		iVar16 = roadAhead[18];
+
 		do {
-			if (*piVar10 < iVar20) {
-				iVar20 = *piVar10;
-			}
-			iVar17 = SquareRoot0(0x15 - iVar15);
-			if (iVar20 < ((cp->hd).speed + 100) * iVar17) {
-				*piVar10 = 0;
-			}
-			iVar15 = iVar15 + -1;
-			piVar10 = piVar10 + -1;
-		} while (-1 < iVar15);
+			if (*piVar7 < iVar16)
+				iVar16 = *piVar7;
+
+			lVar4 = SquareRoot0(0x15 - iVar13);
+
+			if (iVar16 < ((cp->hd).speed + 100) * lVar4)
+				*piVar7 = 0;
+
+			iVar13 = iVar13 + -1;
+			piVar7 = piVar7 + -1;
+		} while (-1 < iVar13);
 	}
-	if (cellx < 2) {
-		piVar19 = &DAT_LEAD__000ecde8;
-		iVar20 = 0x28;
-		piVar10 = local_f0;
+
+	if (cellx < 2)
+	{
+		piVar5 = roadAhead;
+		iVar16 = 0x28;
+		piVar7 = tmpMap;
+
 		do {
-			iVar15 = *piVar19;
-			piVar19 = piVar19 + 1;
-			iVar20 = iVar20 + -1;
-			*piVar10 = iVar15;
-			piVar10 = piVar10 + 1;
-		} while (-1 < iVar20);
-		iVar20 = 0;
+			iVar13 = *piVar5;
+			piVar5 = piVar5 + 1;
+			iVar16 = iVar16 + -1;
+			*piVar7 = iVar13;
+			piVar7 = piVar7 + 1;
+		} while (-1 < iVar16);
+
+		iVar16 = 0;
+
 		do {
-			iVar15 = 0;
-			(&DAT_LEAD__000ecde8)[iVar20] = 0;
-			cellz = iVar20 - 3;
-			iVar17 = iVar20 + 1;
-			if ((int)cellz < iVar20 + 4) {
-				piVar10 = local_f0 + cellz;
+			iVar13 = 0;
+			roadAhead[iVar16] = 0;
+			cellz = iVar16 - 3;
+			iVar11 = iVar16 + 1;
+
+			if ((int)cellz < iVar16 + 4) 
+			{
+				piVar7 = tmpMap + cellz;
 				do {
 					if (cellz < 0x29) {
-						(&DAT_LEAD__000ecde8)[iVar20] = (&DAT_LEAD__000ecde8)[iVar20] + *piVar10;
+						roadAhead[iVar16] = roadAhead[iVar16] + *piVar7;
 					}
-					piVar10 = piVar10 + 1;
+					piVar7 = piVar7 + 1;
 					cellz = cellz + 1;
-					iVar15 = iVar15 + 1;
-				} while ((int)cellz < iVar20 + 4);
+					iVar13 = iVar13 + 1;
+				} while ((int)cellz < iVar16 + 4);
 			}
-			if (iVar15 == 0) {
+			if (iVar13 == 0) {
 				trap(7);
 			}
-			(&DAT_LEAD__000ecde8)[iVar20] = (int)(&DAT_LEAD__000ecde8)[iVar20] / iVar15;
-			iVar20 = iVar17;
-		} while (iVar17 < 0x29);
+			roadAhead[iVar16] = roadAhead[iVar16] / iVar13;
+			iVar16 = iVar11;
+		} while (iVar11 < 0x29);
 	}
-	if (intention == 4) {
-		iVar17 = 0;
-		iVar15 = 0x3f;
-		iVar20 = -0x15;
-		piVar10 = &DAT_LEAD__000ecde8;
+
+	if (intention == 4) 
+	{
+		iVar11 = 0;
+		iVar13 = 0x3f;
+		iVar16 = -0x15;
+		piVar7 = roadAhead;
 		do {
-			iVar5 = *piVar10 * 0x15;
-			*piVar10 = iVar5;
-			if (iVar17 + -0x15 < 0) {
-				if (iVar15 == 0) {
-					trap(7);
-				}
-				*piVar10 = iVar5 / iVar15;
-			}
-			else {
-				if (iVar20 == 0) {
-					trap(7);
-				}
-				*piVar10 = iVar5 / iVar20;
-			}
-			iVar15 = iVar15 + -2;
-			iVar20 = iVar20 + 2;
-			iVar17 = iVar17 + 1;
-			piVar10 = piVar10 + 1;
-		} while (iVar17 < 0x29);
+			iVar9 = *piVar7 * 0x15;
+			*piVar7 = iVar9;
+
+			if (iVar11 + -0x15 < 0)
+				*piVar7 = iVar9 / iVar13;
+			else 
+				*piVar7 = iVar9 / iVar16;
+
+			iVar13 = iVar13 + -2;
+			iVar16 = iVar16 + 2;
+			iVar11 = iVar11 + 1;
+			piVar7 = piVar7 + 1;
+		} while (iVar11 < 0x29);
 	}
-	if ((bVar3) && (*(int *)(cp->ai + 0x18) < 10)) {
-		iVar20 = *(int *)(cp->ai + 0x34);
-		if (iVar20 < 0x1f) {
-			iVar17 = *(int *)(cp->ai + 0x44) - *(int *)(cp->ai + 0x48);
-			iVar15 = *(int *)(cp->ai + 0x2c) - iVar17;
-			if (iVar15 < 0) {
-				iVar15 = iVar17 - *(int *)(cp->ai + 0x2c);
-			}
-			if ((iVar15 < *(int *)(cp->ai + 0x44) / 3) && (iVar20 < 0x1f)) {
-				*(int *)(cp->ai + 0x34) = iVar20 + 1;
-			}
+
+	if ((bVar3) && (cp->ai.l.nextTurn < 10))
+	{
+		iVar16 = cp->ai.l.boringness;
+
+		if (iVar16 < 0x1f) 
+		{
+			iVar9 = cp->ai.l.width;
+			iVar11 = cp->ai.l.roadPosition;
+			iVar10 = iVar9 - cp->ai.l.d;
+			iVar13 = iVar11 - iVar10;
+			if (iVar13 < 0)
+				iVar13 = iVar10 - iVar11;
+
+			if ((iVar13 < iVar9 / 3) && (iVar16 < 0x1f))
+				cp->ai.l.boringness = iVar16 + 1;
+
 		}
-		else {
-			iVar15 = *(int *)(cp->ai + 0x44) - *(int *)(cp->ai + 0x48);
-			iVar20 = *(int *)(cp->ai + 0x2c) - iVar15;
-			if (iVar20 < 0) {
-				iVar20 = iVar15 - *(int *)(cp->ai + 0x2c);
+		else
+		{
+			iVar11 = cp->ai.l.width;
+			iVar13 = cp->ai.l.roadPosition;
+			iVar9 = iVar11 - cp->ai.l.d;
+			iVar16 = iVar13 - iVar9;
+
+			if (iVar16 < 0)
+				iVar16 = iVar9 - iVar13;
+
+			if (iVar16 < iVar11 / 3) 
+			{
+				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
+				cp->ai.l.boringness = cp->ai.l.boringness + 1;
 			}
-			if (iVar20 < *(int *)(cp->ai + 0x44) / 3) {
-				*(int *)(cp->ai + 0x38) = *(int *)(cp->ai + 0x44) - *(int *)(cp->ai + 0x48);
-				*(int *)(cp->ai + 0x34) = *(int *)(cp->ai + 0x34) + 1;
-			}
-			iVar17 = 0;
-			piVar10 = &DAT_LEAD__000ecde8;
-			local_38 = ((*(int *)(cp->ai + 0x38) + *(int *)(cp->ai + 0x48)) - *(int *)(cp->ai + 0x44)) /
-				100 + 0x15;
-			iVar15 = local_38 * 100;
-			iVar20 = local_38 * -100;
+
+			iVar11 = 0;
+			piVar7 = roadAhead;
+			laneAvoid = ((cp->ai.l.avoid + cp->ai.l.d) - cp->ai.l.width) / 100 + 0x15;
+			iVar13 = laneAvoid * 100;
+			iVar16 = laneAvoid * -100;
+
 			do {
-				iVar5 = iVar20;
-				if (-1 < local_38 - iVar17) {
-					iVar5 = iVar15;
-				}
-				if (iVar5 < *(int *)(cp->ai + 0x44) / 3) {
-					*piVar10 = *piVar10 + *(int *)(cp->ai + 0x34) * -100;
-				}
-				piVar10 = piVar10 + 1;
-				iVar20 = iVar20 + 100;
-				iVar17 = iVar17 + 1;
-				iVar15 = iVar15 + -100;
-			} while (iVar17 < 0x29);
-			iVar20 = *(int *)(cp->ai + 0x44) / 3;
-			iVar17 = *(int *)(cp->ai + 0x44) - *(int *)(cp->ai + 0x48);
-			iVar15 = iVar17 - *(int *)(cp->ai + 0x38);
-			if (iVar15 < 0) {
-				if (iVar20 < *(int *)(cp->ai + 0x38) - iVar17) {
-					*(undefined4 *)(cp->ai + 0x34) = 0;
-				}
+				iVar9 = iVar16;
+
+				if (-1 < laneAvoid - iVar11)
+					iVar9 = iVar13;
+
+				if (iVar9 < cp->ai.l.width / 3)
+					*piVar7 = *piVar7 + cp->ai.l.boringness * -100;
+
+				piVar7 = piVar7 + 1;
+				iVar16 = iVar16 + 100;
+				iVar11 = iVar11 + 1;
+				iVar13 = iVar13 + -100;
+			} while (iVar11 < 0x29);
+
+			iVar9 = cp->ai.l.width;
+			iVar16 = iVar9 / 3;
+			iVar11 = cp->ai.l.avoid;
+			iVar9 = iVar9 - cp->ai.l.d;
+			iVar13 = iVar9 - iVar11;
+
+			if (iVar13 < 0) 
+			{
+				if (iVar16 < iVar11 - iVar9)
+					cp->ai.l.boringness = 0;
 			}
-			else {
-				if (iVar20 < iVar15) goto LAB_LEAD__000ea89c;
+			else
+			{
+				if (iVar16 < iVar13) 
+					goto LAB_LEAD__000ea89c;
 			}
 		}
 	}
-	else {
+	else 
+	{
 	LAB_LEAD__000ea89c:
-		*(undefined4 *)(cp->ai + 0x34) = 0;
+		cp->ai.l.boringness = 0;
 	}
-	if (1 < intention - 4U) {
-		local_3c = *(int *)(cp->ai + 0x48);
-		local_44 = 0;
-		local_48 = local_3c - *(int *)(cp->ai + 0x44);
-		local_40 = *(int *)(cp->ai + 0x44) + local_3c;
-		PosToIndex((int *)&local_48, (int *)&local_44, intention, cp);
-		PosToIndex((int *)&local_40, (int *)&local_44, intention, cp);
-		PosToIndex(&local_3c, (int *)&local_44, intention, cp);
-		if (((int)local_48 < local_3c) && (local_3c < (int)local_40)) {
-			iVar20 = *(int *)(cp->ai + 0x18);
-			if (((iVar20 == 0xf) || (iVar20 == 0x11)) && (1 < cellx)) {
-				*(int *)(cp->ai + 0x18) = iVar20 + -0x10;
-				local_44 = local_48;
-				while ((int)local_44 <= (int)local_40) {
-					iVar20 = 2000;
-					if (0 < (int)((local_44 - local_3c) * *(int *)(cp->ai + 0x18))) {
-						iVar20 = -2000;
+
+	if (1 < intention - 4U) 
+	{
+		centre = cp->ai.l.d;
+		right = cp->ai.l.width;
+		i = 0;
+		left = centre - right;
+		right = right + centre;
+
+		PosToIndex(&left, &i, intention, cp);
+		PosToIndex(&right, &i, intention, cp);
+		PosToIndex(&centre, &i, intention, cp);
+
+		if ((left < centre) && (centre < right)) 
+		{
+			iVar16 = cp->ai.l.nextTurn;
+			if (((iVar16 == 0xf) || (iVar16 == 0x11)) && (1 < cellx)) 
+			{
+				cp->ai.l.nextTurn = iVar16 + -0x10;
+				i = left;
+				while (i <= right)
+				{
+					iVar16 = 2000;
+
+					if (0 < (i - centre) * cp->ai.l.nextTurn)
+						iVar16 = -2000;
+
+					if (i < 0x29) 
+					{
+						iVar13 = roadAhead[i];
+
+						if (0 < iVar13)
+							roadAhead[i] = iVar13 + iVar16;
+
 					}
-					if (local_44 < 0x29) {
-						iVar15 = (&DAT_LEAD__000ecde8)[local_44];
-						if (0 < iVar15) {
-							(&DAT_LEAD__000ecde8)[local_44] = iVar15 + iVar20;
-						}
-					}
-					local_44 = local_44 + 1;
+					i = i + 1;
 				}
 			}
-			iVar20 = 0;
-			while (local_48 < 0x29) {
-				(&DAT_LEAD__000ecde8)[local_48] = (&DAT_LEAD__000ecde8)[local_48] - iVar20;
-				if ((int)(&DAT_LEAD__000ecde8)[local_48] < 0) {
-					(&DAT_LEAD__000ecde8)[local_48] = 0;
-				}
-				local_48 = local_48 - 1;
-				iVar20 = iVar20 + 500;
+			iVar16 = 0;
+
+			while (left < 0x29)
+			{
+				roadAhead[left] = roadAhead[left] - iVar16;
+
+				if (roadAhead[left] < 0)
+					roadAhead[left] = 0;
+
+				left = left - 1;
+				iVar16 = iVar16 + 500;
 			}
-			iVar20 = 0;
-			while (local_40 < 0x29) {
-				(&DAT_LEAD__000ecde8)[local_40] = (&DAT_LEAD__000ecde8)[local_40] - iVar20;
-				if ((int)(&DAT_LEAD__000ecde8)[local_40] < 0) {
-					(&DAT_LEAD__000ecde8)[local_40] = 0;
-				}
-				local_40 = local_40 + 1;
-				iVar20 = iVar20 + 500;
+
+			iVar16 = 0;
+
+			while (right < 0x29) 
+			{
+				roadAhead[right] = roadAhead[right] - iVar16;
+
+				if (roadAhead[right] < 0)
+					roadAhead[right] = 0;
+
+				right = right + 1;
+				iVar16 = iVar16 + 500;
 			}
 		}
 	}
-	if (cellx < 3) {
+
+	if (cellx < 3)
+	{
 	LAB_LEAD__000ead84:
 		cellz = 0x15;
-		uVar22 = 0x15;
-		uVar9 = 0;
-		iVar15 = 0x54;
-		iVar20 = DAT_LEAD__000ece3c;
+		uVar17 = 0x15;
+		uVar6 = 0;
+		iVar13 = 0x54;
+		iVar16 = roadAhead[21];
 		do {
-			if (iVar20 < *(int *)((int)&DAT_LEAD__000ecde8 + iVar15)) {
-				iVar20 = *(int *)((int)&DAT_LEAD__000ecde8 + iVar15);
-				cellz = uVar22;
+			if (iVar16 < *(int*)((int)roadAhead + iVar13)) 
+			{
+				iVar16 = *(int*)((int)roadAhead + iVar13);
+				cellz = uVar17;
 			}
-			if ((int)uVar9 < 0) {
-				uVar9 = -uVar9;
+
+			if ((int)uVar6 < 0)
+				uVar6 = -uVar6;
+
+			uVar6 = uVar6 + 1;
+			if ((uVar6 & 1) == 0) {
+				uVar6 = -uVar6;
 			}
-			uVar9 = uVar9 + 1;
-			if ((uVar9 & 1) == 0) {
-				uVar9 = -uVar9;
-			}
-			uVar22 = uVar22 + uVar9;
-			iVar15 = uVar22 * 4;
-		} while (uVar22 < 0x29);
-		if (cellx < 2) {
-			iVar15 = (cp->hd).speed;
-			if (iVar15 < 0x65) {
-				iVar15 = DAT_LEAD__000ece98 + iVar15 * DAT_LEAD__000ece9c;
-			}
-			else {
-				iVar15 = DAT_LEAD__000eceb8 + (iVar15 + -100) * DAT_LEAD__000ecebc;
-			}
-			if (iVar20 < iVar15) {
-				iVar20 = *(int *)(cp->ai + 0x30) + -1;
-				if (-1 < *(int *)(cp->ai + 0x30)) {
-					iVar20 = -1;
-				}
-				*(int *)(cp->ai + 0x30) = iVar20;
-				puVar7 = &DAT_00004e20;
-				if (intention == 3) {
-					puVar7 = (undefined *)0xffffb1e0;
-				}
-				*(undefined **)(cp->ai + 0x2c) = puVar7;
-				if (-0x15 < *(int *)(cp->ai + 0x30)) {
+			uVar17 = uVar17 + uVar6;
+			iVar13 = uVar17 * 4;
+		} while (uVar17 < 0x29);
+
+		if (cellx < 2) 
+		{
+			iVar13 = (cp->hd).speed;
+
+			if (iVar13 < 0x65) 
+				iVar13 = LeadValues.tDist + iVar13 * LeadValues.tDistMul;
+			else
+				iVar13 = LeadValues.hDist + (iVar13 + -100) * LeadValues.hDistMul;
+
+
+			if (iVar16 < iVar13) 
+			{
+				iVar16 = cp->ai.l.roadForward;
+				iVar13 = iVar16 + -1;
+
+				if (-1 < iVar16)
+					iVar13 = -1;
+
+				cp->ai.l.roadForward = iVar13;
+				local_v0_4816 = 0x4e20;
+
+				if (intention == 3)
+					local_v0_4816 = 0xffffb1e0;
+
+				cp->ai.l.roadPosition = local_v0_4816;
+
+				if (-0x15 < cp->ai.l.roadForward)
 					return;
-				}
-				SelectExit(cp, Driver2JunctionsPtr + *(int *)(cp->ai + 0x14) + -0x2000);
+
+				SelectExit(cp, Driver2JunctionsPtr + cp->ai.l.nextJunction + -0x2000);
 				return;
 			}
 		}
 	}
-	else {
-		cellz = *(uint *)(cp->ai + 0x3c);
-		if (*(int *)(cp->ai + 0x34) < 0x1f) {
+	else 
+	{
+		iVar16 = cp->ai.l.boringness;
+		cellz = cp->ai.l.lastTarget;
+
+		if (iVar16 < 0x1f) 
+		{
 		LAB_LEAD__000eac54:
-			iVar20 = cellz - 1;
-			if (iVar20 < 0) {
-				iVar15 = 0;
+			iVar16 = cellz - 1;
+			if (iVar16 < 0) 
+			{
+				iVar13 = 0;
 			}
-			else {
-				iVar15 = iVar20 * 4;
-				if (0x28 < iVar20) {
-					iVar15 = 0xa0;
-				}
+			else 
+			{
+				iVar13 = iVar16 * 4;
+
+				if (0x28 < iVar16) 
+					iVar13 = 0xa0;
 			}
-			iVar20 = (cp->hd).speed;
-			if (*(int *)((int)&DAT_LEAD__000ecde8 + iVar15) <= ((iVar20 + 100) / 0x32) * 0x400) {
-				if ((int)cellz < 0) {
-					iVar15 = 0;
+
+			iVar16 = (cp->hd).speed;
+			if (*(int*)((int)roadAhead + iVar13) <= ((iVar16 + 100) / 0x32) * 0x400)
+			{
+				if ((int)cellz < 0)
+				{
+					iVar13 = 0;
 				}
-				else {
-					uVar9 = cellz;
-					if (0x28 < (int)cellz) {
-						uVar9 = 0x28;
+				else 
+				{
+					uVar6 = cellz;
+					if (0x28 < (int)cellz)
+					{
+						uVar6 = 0x28;
 					}
-					iVar15 = uVar9 << 2;
+					iVar13 = uVar6 << 2;
 				}
-				if (*(int *)((int)&DAT_LEAD__000ecde8 + iVar15) <= ((iVar20 + 100) / 0x32) * 0x400) {
-					iVar15 = cellz + 1;
-					if (iVar15 < 0) {
-						iVar17 = 0;
+
+				if (*(int*)((int)roadAhead + iVar13) <= ((iVar16 + 100) / 0x32) * 0x400)
+				{
+					iVar13 = cellz + 1;
+					if (iVar13 < 0) 
+					{
+						iVar11 = 0;
 					}
-					else {
-						iVar17 = iVar15 * 4;
-						if (0x28 < iVar15) {
-							iVar17 = 0xa0;
-						}
+					else 
+					{
+						iVar11 = iVar13 * 4;
+						if (0x28 < iVar13)
+							iVar11 = 0xa0;
 					}
-					if (*(int *)((int)&DAT_LEAD__000ecde8 + iVar17) <= ((iVar20 + 100) / 0x32) * 0x400)
+
+					if (*(int*)((int)roadAhead + iVar11) <= ((iVar16 + 100) / 0x32) * 0x400)
 						goto LAB_LEAD__000ead84;
 				}
 			}
 		}
-		else {
-			iVar20 = (cellz - local_38) * 100;
-			if (iVar20 < 0) {
-				iVar20 = (cellz - local_38) * -100;
+		else 
+		{
+			iVar13 = (cellz - laneAvoid) * 100;
+			if (iVar13 < 0)
+				iVar13 = (cellz - laneAvoid) * -100;
+
+
+			if (iVar13 < cp->ai.l.width / 3)
+				goto LAB_LEAD__000ead84;
+
+			iVar13 = cellz - 1;
+			if (iVar13 < 0) 
+			{
+				iVar11 = 0;
 			}
-			if (iVar20 < *(int *)(cp->ai + 0x44) / 3) goto LAB_LEAD__000ead84;
-			iVar20 = cellz - 1;
-			if (iVar20 < 0) {
-				iVar15 = 0;
+			else
+			{
+				iVar11 = iVar13 * 4;
+				if (0x28 < iVar13)
+					iVar11 = 0xa0;
+
 			}
-			else {
-				iVar15 = iVar20 * 4;
-				if (0x28 < iVar20) {
-					iVar15 = 0xa0;
+
+			iVar13 = (cp->hd).speed;
+
+			if (*(int*)((int)roadAhead + iVar11) <= ((iVar13 + 100) / 0x32) * 0x400) 
+			{
+				if ((int)cellz < 0) 
+				{
+					iVar11 = 0;
 				}
-			}
-			iVar20 = (cp->hd).speed;
-			if (*(int *)((int)&DAT_LEAD__000ecde8 + iVar15) <= ((iVar20 + 100) / 0x32) * 0x400) {
-				if ((int)cellz < 0) {
-					iVar15 = 0;
+				else 
+				{
+					uVar6 = cellz;
+
+					if (0x28 < (int)cellz)
+						uVar6 = 0x28;
+
+					iVar11 = uVar6 << 2;
 				}
-				else {
-					uVar9 = cellz;
-					if (0x28 < (int)cellz) {
-						uVar9 = 0x28;
+				if (*(int*)((int)roadAhead + iVar11) <= ((iVar13 + 100) / 0x32) * 0x400)
+				{
+					iVar11 = cellz + 1;
+					if (iVar11 < 0) 
+					{
+						iVar9 = 0;
 					}
-					iVar15 = uVar9 << 2;
-				}
-				if (*(int *)((int)&DAT_LEAD__000ecde8 + iVar15) <= ((iVar20 + 100) / 0x32) * 0x400) {
-					iVar15 = cellz + 1;
-					if (iVar15 < 0) {
-						iVar17 = 0;
+					else 
+					{
+						iVar9 = iVar11 * 4;
+						if (0x28 < iVar11)
+							iVar9 = 0xa0;
+
 					}
-					else {
-						iVar17 = iVar15 * 4;
-						if (0x28 < iVar15) {
-							iVar17 = 0xa0;
-						}
-					}
-					if (*(int *)((int)&DAT_LEAD__000ecde8 + iVar17) <= ((iVar20 + 100) / 0x32) * 0x400)
+					if (*(int*)((int)roadAhead + iVar9) <= ((iVar13 + 100) / 0x32) * 0x400)
 						goto LAB_LEAD__000ead84;
 				}
 			}
-			if (*(int *)(cp->ai + 0x34) < 0x1f) goto LAB_LEAD__000eac54;
+			if (iVar16 < 0x1f) goto LAB_LEAD__000eac54;
 		}
-		iVar20 = (&DAT_LEAD__000ecde8)[cellz];
-		uVar9 = cellz - 2;
-		iVar15 = cellz + 2;
-		if ((int)uVar9 < iVar15) {
-			piVar10 = &DAT_LEAD__000ecde8 + uVar9;
+		iVar16 = roadAhead[cellz];
+		uVar6 = cellz - 2;
+		iVar13 = cellz + 2;
+
+		if ((int)uVar6 < iVar13)
+		{
+			piVar7 = roadAhead + uVar6;
 			do {
-				if ((uVar9 < 0x29) && (iVar20 < *piVar10)) {
-					iVar20 = *piVar10;
-					cellz = uVar9;
+				if ((uVar6 < 0x29) && (iVar16 < *piVar7)) 
+				{
+					iVar16 = *piVar7;
+					cellz = uVar6;
 				}
-				uVar9 = uVar9 + 1;
-				piVar10 = piVar10 + 1;
-			} while ((int)uVar9 < iVar15);
+
+				uVar6 = uVar6 + 1;
+				piVar7 = piVar7 + 1;
+			} while ((int)uVar6 < iVar13);
 		}
 	}
-	if ((bVar3) || (intention == 4)) {
-		*(undefined4 *)(cp->ai + 0x30) = 0x1400;
-		iVar20 = 1;
-		if (0x15 < (int)cellz) {
-			iVar20 = -1;
-		}
-		if (cellz != 0x15) {
-			piVar10 = &DAT_LEAD__000ecde8 + cellz;
-			uVar9 = cellz;
+
+	if ((bVar3) || (intention == 4)) 
+	{
+		cp->ai.l.roadForward = 0x1400;
+		iVar16 = 1;
+
+		if (0x15 < (int)cellz) 
+			iVar16 = -1;
+
+		if (cellz != 0x15) 
+		{
+			piVar7 = roadAhead + cellz;
+			uVar6 = cellz;
+
 			do {
-				if (*piVar10 < *(int *)(cp->ai + 0x30)) {
-					*(int *)(cp->ai + 0x30) = *piVar10;
-				}
-				uVar9 = uVar9 + iVar20;
-				piVar10 = piVar10 + iVar20;
-			} while (uVar9 != 0x15);
-			*(uint *)(cp->ai + 0x3c) = cellz;
+				if (*piVar7 < cp->ai.l.roadForward)
+					cp->ai.l.roadForward = *piVar7;
+
+				uVar6 = uVar6 + iVar16;
+				piVar7 = piVar7 + iVar16;
+			} while (uVar6 != 0x15);
+
+			cp->ai.l.lastTarget = cellz;
 			goto LAB_LEAD__000eb0c8;
 		}
 	}
-	else {
-		if (intention == 5) {
-			if ((*(int *)(cp->ai + 0x28) == 0) || (0x14 < *(int *)(cp->ai + 0x28))) {
-				piVar10 = &DAT_LEAD__000ece38;
-				iVar15 = 3;
-				*(undefined4 *)(cp->ai + 0x28) = 0;
-				iVar20 = DAT_LEAD__000ece34;
+	else 
+	{
+		if (intention == 5)
+		{
+			iVar16 = cp->ai.l.recoverTime;
+
+			if ((iVar16 == 0) || (0x14 < iVar16))
+			{
+				piVar7 = roadAhead + 0x14;
+				iVar13 = 3;
+				cp->ai.l.recoverTime = 0;
+				iVar16 = roadAhead[19];
+
 				do {
-					if (*piVar10 < iVar20) {
-						iVar20 = *piVar10;
-					}
-					iVar15 = iVar15 + -1;
-					piVar10 = piVar10 + 1;
-				} while (-1 < iVar15);
-				uVar8 = 0xffffffff;
-				if (DAT_LEAD__000ece80 <= iVar20) {
-					uVar8 = 1;
-				}
-				*(undefined4 *)(cp->ai + 0x30) = uVar8;
+					if (*piVar7 < iVar16)
+						iVar16 = *piVar7;
+
+					iVar13 = iVar13 + -1;
+					piVar7 = piVar7 + 1;
+				} while (-1 < iVar13);
+
+				iVar13 = -1;
+
+				if (roadAhead[38] <= iVar16)
+					iVar13 = 1;
+
+				cp->ai.l.roadForward = iVar13;
 			}
-			if ((((0x5dc < DAT_LEAD__000ece3c) && (0x5dc < DAT_LEAD__000ece40)) &&
-				(0x5dc < DAT_LEAD__000ece38)) && (0x28 < (cp->hd).speed)) {
-				*(undefined4 *)(cp->ai + 0x30) = 0;
+
+			if ((((0x5dc < roadAhead[21]) && (0x5dc < roadAhead[22])) && (0x5dc < roadAhead[20])) && (0x28 < (cp->hd).speed)) 
+			{
+				cp->ai.l.roadForward = 0;
 			}
 		}
-		else {
-			*(undefined4 *)(cp->ai + 0x30) = 0;
+		else
+		{
+			cp->ai.l.roadForward = 0;
 		}
 	}
-	*(uint *)(cp->ai + 0x3c) = cellz;
+
+	cp->ai.l.lastTarget = cellz;
+
 LAB_LEAD__000eb0c8:
-	iVar20 = cellz - 0x15;
-	if (intention == 6) {
+	iVar16 = cellz - 0x15;
+
+	if (intention == 6) 
+	{
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if (intention - 4U < 2) {
-		if (intention == 4) {
-			iVar20 = iVar20 * 0x600;
-		}
-		else {
-			iVar20 = iVar20 * 0x800;
-		}
-		iVar20 = ((iVar20 / 0x15 + 0x800U & 0xfff) + (cp->hd).direction & 0xfff) - 0x800;
+
+	if (intention - 4U < 2) 
+	{
+		if (intention == 4)
+			iVar16 = iVar16 * 0x600;
+		else
+			iVar16 = iVar16 * 0x800;
+
+		iVar16 = ((iVar16 / 0x15 + 0x800U & 0xfff) + (cp->hd).direction & 0xfff) - 0x800;
 	}
-	else {
-		if (bVar3) {
-			iVar20 = (iVar20 * 200 + *(int *)(cp->ai + 0x44)) - *(int *)(cp->ai + 0x48);
+	else 
+	{
+		if (bVar3) 
+		{
+			iVar16 = (iVar16 * 200 + cp->ai.l.width) - cp->ai.l.d;
 		}
-		else {
-			if (1 < cellx) {
+		else 
+		{
+			if (1 < cellx)
 				return;
-			}
-			iVar20 = iVar20 * 100 + *(int *)(cp->ai + 0x44);
+
+			iVar16 = iVar16 * 100 + cp->ai.l.width;
 		}
 	}
-	*(int *)(cp->ai + 0x2c) = iVar20;
-	return;*/
+
+	cp->ai.l.roadPosition = iVar16;
 }
 
 
@@ -4125,16 +4256,17 @@ ulong hypot(long x, long y)
 		x = y;
 	}
 	iVar4 = x >> 0xc;
-	if (x < 0x8000) {
+
+	if (x < 0x8000) 
+	{
 		uVar3 = SquareRoot0(x * x + iVar2 * iVar2);
 	}
-	else {
-		if (iVar4 == 0) {
-			trap(7);
-		}
+	else 
+	{
 		iVar2 = SquareRoot0((iVar2 / iVar4) * (iVar2 / iVar4) + 0x1000800);
 		uVar3 = x + iVar4 * (iVar2 + -0x1000);
 	}
+
 	return uVar3;
 }
 
