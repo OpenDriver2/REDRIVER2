@@ -338,7 +338,7 @@ void LeadUpdateState(_CAR_DATA *cp)
 	switch (cp->ai.l.dstate)
 	{
 		case 0:
-			CheckCurrentRoad((_CAR_DATA*)cp);
+			CheckCurrentRoad(cp);
 			iVar2 = ((cp->hd.direction - (int)cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
 
 			if (cp->hd.speed < 20)
@@ -358,7 +358,7 @@ void LeadUpdateState(_CAR_DATA *cp)
 			}
 			break;
 		case 1:
-			CheckCurrentRoad((_CAR_DATA*)cp);
+			CheckCurrentRoad(cp);
 			iVar2 = ((cp->hd.direction - (int)cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
 
 			if (iVar2 < 0)
@@ -369,7 +369,7 @@ void LeadUpdateState(_CAR_DATA *cp)
 
 			goto LAB_LEAD__000e7748;
 		case 2:
-			CheckCurrentRoad((_CAR_DATA*)cp);
+			CheckCurrentRoad(cp);
 		LAB_LEAD__000e7748:
 			if (iVar3 < 0)
 				iVar3 = -iVar3;
@@ -384,7 +384,7 @@ void LeadUpdateState(_CAR_DATA *cp)
 			if (0x28 < iVar2)
 				cp->ai.l.recoverTime = iVar2 + -1;
 
-			CheckCurrentRoad((_CAR_DATA*)cp);
+			CheckCurrentRoad(cp);
 			uVar7 = cp->hd.direction;
 			uVar4 = uVar7 & 0xfff;
 			iVar3 = cp->hd.speed;
@@ -849,157 +849,190 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 1645
 
+// [D]
 void FakeMotion(_CAR_DATA *cp)
 {
-	UNIMPLEMENTED();
-	/*
+	static int d; // offset 0x0
+	static int toGo; // offset 0x4
+ 	static int angle; // offset 0x8
+ 	static int s; // offset 0xc
+ 	static int c; // offset 0x10
+
 	short sVar1;
-	undefined4 uVar2;
-	ushort uVar3;
-	int iVar4;
-	uint uVar5;
-	int iVar6;
+	int iVar2;
+	long lVar3;
+	short uVar4;
+	int iVar5;
+	int uVar6;
 	int iVar7;
-	uint uVar8;
-	int iVar9;
-	DRIVER2_STRAIGHT *pDVar10;
-	DRIVER2_CURVE *pDVar11;
-	DRIVER2_JUNCTION *junction;
+	int iVar8;
+	int uVar9;
+	int iVar10;
+	DRIVER2_STRAIGHT* straight;
+	DRIVER2_CURVE* curve;
+	DRIVER2_JUNCTION* junction;
 
 	junction = Driver2JunctionsPtr;
-	uVar8 = *(uint *)(cp->ai + 0xc);
-	uVar5 = uVar8 & 0xffffe000;
-	if (uVar5 == 0x2000) {
-		*(uint *)(cp->ai + 0x10) = uVar8;
-		SelectExit(cp, junction + (uVar8 - 0x2000));
-		sVar1 = junction[uVar8 - 0x2000].ExitIdx[*(int *)(cp->ai + 0x1c)];
-		*(short *)(cp->ai + 2) = (short)(*(int *)(cp->ai + 0x1c) << 10);
-		*(undefined4 *)(cp->ai + 0x5c) = 0;
-		*(int *)(cp->ai + 0xc) = (int)sVar1;
+	uVar9 = cp->ai.l.currentRoad;
+	uVar6 = uVar9 & 0xffffe000;
+
+	if (uVar6 == 0x2000) 
+	{
+		cp->ai.l.lastRoad = uVar9;
+		SelectExit(cp, junction + (uVar9 - 0x2000));
+		iVar5 = cp->ai.l.nextExit;
+		sVar1 = junction[uVar9 - 0x2000].ExitIdx[iVar5];
+		cp->ai.l.targetDir = (short)(iVar5 << 10);
+		cp->ai.l.direction = 0;
+		cp->ai.l.currentRoad = (int)sVar1;
 		return;
 	}
-	if ((int)uVar5 < 0x2001) {
-		if (uVar5 != 0) {
+
+	if (uVar6 < 0x2001) 
+	{
+		if (uVar6 != 0) 
+			return;
+
+
+		iVar10 = (cp->hd).where.t[0];
+		iVar8 = (cp->hd).where.t[2];
+		straight = Driver2StraightsPtr + uVar9;
+		iVar7 = straight->Midx;
+		iVar5 = straight->Midz;
+		angle = straight->angle & 0xfff;
+		uVar6 = (straight->ConnectIdx[1]);
+
+		if (uVar6 == -1)
+			uVar6 = (straight->ConnectIdx[0]);
+
+		if (cp->ai.l.direction == 0)
+		{
+			iVar2 = -1;
+
+			if (((cp->ai.l.targetDir - angle) + 0x400U & 0x800) == 0) 
+				iVar2 = 1;
+
+			cp->ai.l.direction = iVar2;
+		}
+
+		if (cp->ai.l.direction == -1)
+		{
+			uVar6 = (straight->ConnectIdx[3]);
+			angle = angle ^ 0x800;
+
+			if (uVar6 == -1)
+				uVar6 = (straight->ConnectIdx[2]);
+		}
+
+		c = rcossin_tbl[(angle & 0xfffU) * 2];
+		s = rcossin_tbl[(angle & 0xfffU) * 2 + 1];
+		d = FIXED(c * (iVar10 - iVar7) + s * (iVar8 - iVar5));
+		toGo = (straight->length >> 1) - d;
+
+		if (-1 < toGo)
+		{
+			d = d + 0x78;
+			iVar5 = s * d;
+			(cp->hd).where.t[0] = FIXED(c * d) + straight->Midx;
+			(cp->hd).where.t[2] = FIXED(iVar5) + straight->Midz;
 			return;
 		}
-		iVar9 = (cp->hd).where.t[0];
-		iVar7 = (cp->hd).where.t[2];
-		pDVar10 = Driver2StraightsPtr + uVar8;
-		iVar6 = pDVar10->Midx;
-		iVar4 = pDVar10->Midz;
-		DAT_LEAD__000ecc18 = (uint)(ushort)pDVar10->angle & 0xfff;
-		uVar5 = SEXT24(pDVar10->ConnectIdx[1]);
-		if (uVar5 == 0xffffffff) {
-			uVar5 = SEXT24(pDVar10->ConnectIdx[0]);
-		}
-		if (*(int *)(cp->ai + 0x5c) == 0) {
-			uVar2 = 0xffffffff;
-			if ((((int)*(short *)(cp->ai + 2) - DAT_LEAD__000ecc18) + 0x400 & 0x800) == 0) {
-				uVar2 = 1;
-			}
-			*(undefined4 *)(cp->ai + 0x5c) = uVar2;
-		}
-		if (*(int *)(cp->ai + 0x5c) == -1) {
-			uVar5 = SEXT24(pDVar10->ConnectIdx[3]);
-			DAT_LEAD__000ecc18 = DAT_LEAD__000ecc18 ^ 0x800;
-			if (uVar5 == 0xffffffff) {
-				uVar5 = SEXT24(pDVar10->ConnectIdx[2]);
-			}
-		}
-		DAT_LEAD__000ecc1c = (int)rcossin_tbl[(DAT_LEAD__000ecc18 & 0xfff) * 2];
-		DAT_LEAD__000ecc20 = (int)rcossin_tbl[(DAT_LEAD__000ecc18 & 0xfff) * 2 + 1];
-		DAT_LEAD__000ecc10 =
-			DAT_LEAD__000ecc1c * (iVar9 - iVar6) + DAT_LEAD__000ecc20 * (iVar7 - iVar4) + 0x800 >> 0xc;
-		DAT_LEAD__000ecc14 = (uint)(pDVar10->length >> 1) - DAT_LEAD__000ecc10;
-		if (-1 < DAT_LEAD__000ecc14) {
-			DAT_LEAD__000ecc10 = DAT_LEAD__000ecc10 + 0x78;
-			iVar4 = DAT_LEAD__000ecc20 * DAT_LEAD__000ecc10;
-			(cp->hd).where.t[0] = (DAT_LEAD__000ecc1c * DAT_LEAD__000ecc10 + 0x800 >> 0xc) + pDVar10->Midx
-				;
-			(cp->hd).where.t[2] = (iVar4 + 0x800 >> 0xc) + pDVar10->Midz;
-			return;
-		}
-		if ((((uVar5 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar5 & 0x1fff))) ||
-			((int)uVar5 < 0)) {
-			*(uint *)(cp->ai + 0xc) = uVar5;
+
+		if ((((uVar6 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (uVar6 & 0x1fff))) || (uVar6 < 0)) 
+		{
+			cp->ai.l.currentRoad = uVar6;
 			goto LAB_LEAD__000e824c;
 		}
 	}
-	else {
-		if (uVar5 != 0x4000) {
+	else 
+	{
+		if (uVar6 != 0x4000)
 			return;
+
+		curve = Driver2CurvesPtr + (uVar9 - 0x4000);
+		lVar3 = ratan2((cp->hd).where.t[0] - curve->Midx, (cp->hd).where.t[2] - curve->Midz);
+		iVar5 = curve->inside * 2 + ((uint)(u_char)curve->NumLanes & 0xf);
+		iVar7 = iVar5 * 0x200;
+
+		if (cp->ai.l.direction == 0)
+		{
+			iVar8 = 1;
+
+			if ((lVar3 - cp->ai.l.targetDir & 0x800U) == 0)
+				iVar8 = -1;
+
+			cp->ai.l.direction = iVar8;
 		}
-		pDVar11 = Driver2CurvesPtr + (uVar8 - 0x4000);
-		iVar4 = ratan2((cp->hd).where.t[0] - pDVar11->Midx, (cp->hd).where.t[2] - pDVar11->Midz);
-		iVar6 = (uint)(byte)pDVar11->inside * 2 + ((uint)(byte)pDVar11->NumLanes & 0xf);
-		iVar7 = iVar6 * 0x200;
-		if (*(int *)(cp->ai + 0x5c) == 0) {
-			uVar2 = 1;
-			if ((iVar4 - *(short *)(cp->ai + 2) & 0x800U) == 0) {
-				uVar2 = 0xffffffff;
-			}
-			*(undefined4 *)(cp->ai + 0x5c) = uVar2;
-		}
-		if (*(int *)(cp->ai + 0x5c) == 1) {
-			if (-1 < (int)(((pDVar11->end - iVar4 & 0xfffU) + 0x800 & 0xfff) - 0x800)) {
-				if (iVar6 == 0) {
-					trap(7);
-				}
-				uVar8 = iVar4 + 0x13193 / iVar7;
-				uVar5 = uVar8 & 0xfff;
-				sVar1 = rcossin_tbl[uVar5 * 2 + 1];
-				(cp->hd).where.t[0] = (rcossin_tbl[uVar5 * 2] * iVar7 + 0x800 >> 0xc) + pDVar11->Midx;
-				iVar4 = pDVar11->Midz;
-				uVar3 = (short)uVar8 + 0x400;
+
+		if (cp->ai.l.direction == 1)
+		{
+			if (-1 < (int)(((curve->end - lVar3 & 0xfffU) + 0x800 & 0xfff) - 0x800)) {
+
+				uVar9 = lVar3 + 0x13193 / iVar7;
+				uVar6 = uVar9 & 0xfff;
+				sVar1 = rcossin_tbl[uVar6 * 2 + 1];
+				(cp->hd).where.t[0] = FIXED(rcossin_tbl[uVar6 * 2] * iVar7) + curve->Midx;
+				iVar5 = curve->Midz;
+				uVar4 = (short)uVar9 + 0x400;
 			LAB_LEAD__000e82cc:
-				*(ushort *)(cp->ai + 2) = uVar3 & 0xfff;
-				(cp->hd).where.t[2] = (sVar1 * iVar7 + 0x800 >> 0xc) + iVar4;
+				cp->ai.l.targetDir = uVar4 & 0xfff;
+				(cp->hd).where.t[2] = FIXED(sVar1 * iVar7) + iVar5;
 				return;
 			}
-			uVar5 = SEXT24(pDVar11->ConnectIdx[1]);
-			if (uVar5 == 0xffffffff) {
-				uVar5 = SEXT24(pDVar11->ConnectIdx[0]);
-			}
-			if (((uVar5 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar5 & 0x1fff))) {
+
+			uVar6 = (curve->ConnectIdx[1]);
+			if (uVar6 == -1)
+				uVar6 = (curve->ConnectIdx[0]);
+
+			if (((uVar6 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar6 & 0x1fff))) 
+			{
 			LAB_LEAD__000e8248:
-				*(uint *)(cp->ai + 0xc) = uVar5;
+				cp->ai.l.currentRoad = uVar6;
 				goto LAB_LEAD__000e824c;
 			}
-			if ((int)uVar5 < 0) {
-				*(uint *)(cp->ai + 0xc) = uVar5;
+
+			if (uVar6 < 0) 
+			{
+				cp->ai.l.currentRoad = uVar6;
 				goto LAB_LEAD__000e824c;
 			}
 		}
-		else {
-			if (-1 < (int)(((iVar4 - pDVar11->start & 0xfffU) + 0x800 & 0xfff) - 0x800)) {
-				if (iVar6 == 0) {
-					trap(7);
-				}
-				uVar8 = iVar4 - 0x13193 / iVar7;
-				uVar5 = uVar8 & 0xfff;
-				sVar1 = rcossin_tbl[uVar5 * 2 + 1];
-				(cp->hd).where.t[0] = (rcossin_tbl[uVar5 * 2] * iVar7 + 0x800 >> 0xc) + pDVar11->Midx;
-				iVar4 = pDVar11->Midz;
-				uVar3 = (short)uVar8 - 0x400;
+		else 
+		{
+			if (-1 < (int)(((lVar3 - curve->start & 0xfffU) + 0x800 & 0xfff) - 0x800)) 
+			{
+
+				uVar9 = lVar3 - 0x13193 / iVar7;
+				uVar6 = uVar9 & 0xfff;
+				sVar1 = rcossin_tbl[uVar6 * 2 + 1];
+				(cp->hd).where.t[0] = FIXED(rcossin_tbl[uVar6 * 2] * iVar7) + curve->Midx;
+				iVar5 = curve->Midz;
+				uVar4 = (short)uVar9 - 0x400;
 				goto LAB_LEAD__000e82cc;
 			}
-			uVar5 = SEXT24(pDVar11->ConnectIdx[3]);
-			if (uVar5 == 0xffffffff) {
-				uVar5 = SEXT24(pDVar11->ConnectIdx[2]);
-			}
-			if ((((uVar5 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar5 & 0x1fff))) ||
-				((int)uVar5 < 0)) goto LAB_LEAD__000e8248;
+			uVar6 = (curve->ConnectIdx[3]);
+
+			if (uVar6 == -1)
+				uVar6 = (curve->ConnectIdx[2]);
+
+			if ((((uVar6 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar6 & 0x1fff))) ||
+				((int)uVar6 < 0)) goto LAB_LEAD__000e8248;
 		}
 	}
-	junction = Driver2JunctionsPtr + (uVar5 - 0x2000);
-	*(undefined4 *)(cp->ai + 0x10) = *(undefined4 *)(cp->ai + 0xc);
+
+	junction = Driver2JunctionsPtr + (uVar6 - 0x2000);
+	cp->ai.l.lastRoad = cp->ai.l.currentRoad;
+
 	SelectExit(cp, junction);
-	sVar1 = junction->ExitIdx[*(int *)(cp->ai + 0x1c)];
-	*(short *)(cp->ai + 2) = (short)(*(int *)(cp->ai + 0x1c) << 10);
-	*(int *)(cp->ai + 0xc) = (int)sVar1;
+
+	iVar5 = cp->ai.l.nextExit;
+	sVar1 = junction->ExitIdx[iVar5];
+
+	cp->ai.l.targetDir = (short)(iVar5 << 10);
+	cp->ai.l.currentRoad = (int)sVar1;
+
 LAB_LEAD__000e824c:
-	*(undefined4 *)(cp->ai + 0x5c) = 0;
-	return;*/
+	cp->ai.l.direction = 0;
 }
 
 
@@ -1387,479 +1420,553 @@ void PosToIndex(int *normal, int *tangent, int intention, _CAR_DATA *cp)
 
 /* WARNING: Type propagation algorithm not settling */
 
+// [D]
 void BlockToMap(MAP_DATA *data)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	int iVar2;
-	int iVar3;
-	ulong uVar4;
-	ulong uVar5;
-	VECTOR *pVVar6;
-	CAR_COSMETICS *pCVar7;
-	VECTOR *pVVar8;
-	_CAR_DATA *p_Var9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
-	long *plVar13;
-	int *tangent;
-	DRIVER2_CURVE *pDVar14;
-	int *tangent_00;
-	int iVar15;
-	int y;
-	int *normal;
-	int iVar16;
-	int *normal_00;
-	uint uVar17;
-	int x;
-	int iStack112;
-	int aiStack108[11];
-	int iStack64;
-	int iStack60;
-	uint uStack56;
-	ulong uStack52;
-	int iStack48;
-	ulong uStack44;
+	static int carLength; // offset 0x14
+	static int carWidth; // offset 0x18
+	static int length; // offset 0x14
+	static int width; // offset 0x18
+	static int left; // offset 0x1c
+	static int right; // offset 0x20
+	static int ldist; // offset 0x24
+	static int rdist; // offset 0x28
+	static struct MAP_DATA newdata; // offset 0x30
 
-	pCVar7 = (data->cp->ap).carCos;
-	DAT_LEAD__000ecc24 = (int)(pCVar7->colBox).vz;
-	DAT_LEAD__000ecc28 = (int)(pCVar7->colBox).vx;
-	switch (data->intention) {
-	case 0:
-	case 2:
-	case 3:
-		pVVar8 = data->pos;
-		pVVar6 = data->base;
-		y = pVVar8->vx - pVVar6->vx;
-		iVar10 = pVVar6->vy - pVVar8->vy;
-		x = pVVar8->vz - pVVar6->vz;
-		if (iVar10 < 1) {
-			iVar3 = (int)(((data->cp->ap).carCos)->colBox).vy;
-		}
-		else {
-			iVar3 = data->size->vy;
-		}
-		if (iVar3 < iVar10) {
-			return;
-		}
-		iVar10 = data->size->vx * DAT_LEAD__000ecd3c;
-		iVar3 = data->size->vz * DAT_LEAD__000ecd38;
-		iVar12 = y * DAT_LEAD__000ecd3c + x * DAT_LEAD__000ecd38 + 0x800 >> 0xc;
-		if (iVar10 < 0) {
-			iVar10 = -iVar10;
-		}
-		if (iVar3 < 0) {
-			iVar3 = -iVar3;
-		}
-		DAT_LEAD__000ecbfc = iVar10 + iVar3 + 0x800 >> 0xc;
-		iVar10 = (y * DAT_LEAD__000ecd38 - x * DAT_LEAD__000ecd3c) + 0x800 >> 0xc;
-		if ((data->intention == 0) || (data->cp->ai[0] == 3)) {
-			x = iVar12;
-			if (iVar12 < 0) {
-				x = -iVar12;
-			}
-			y = ((data->cp->hd).speed + 100) * 10;
-			if (x < y) {
-				x = iVar10;
-				if (iVar10 < 0) {
-					x = -iVar10;
-				}
-				if (x < y) {
-					DAT_LEAD__000ecc44 = data->base;
-					DAT_LEAD__000ecc48 = data->pos;
-					DAT_LEAD__000ecc4c = data->vel;
-					DAT_LEAD__000ecc50 = data->size;
-					DAT_LEAD__000ecc54 = 6;
-					DAT_LEAD__000ecc58 = data->local;
-					DAT_LEAD__000ecc5c = 0;
-					DAT_LEAD__000ecc40 = data->cp;
-					BlockToMap((MAP_DATA *)&DAT_LEAD__000ecc40);
-				}
-			}
-		}
-		if (iVar12 + DAT_LEAD__000ecbfc < 0) {
-			return;
-		}
-		x = data->size->vx * DAT_LEAD__000ecd38;
-		y = data->size->vz * DAT_LEAD__000ecd3c;
-		if (x < 0) {
-			x = -x;
-		}
-		if (y < 0) {
-			y = -y;
-		}
-		pVVar6 = data->vel;
-		DAT_LEAD__000ecc00 = (x + y + 0x800 >> 0xc) + DAT_LEAD__000ecc28 * 2;
-		if (pVVar6 != (VECTOR *)0x0) {
-			x = pVVar6->vx * DAT_LEAD__000ecd3c + pVVar6->vz * DAT_LEAD__000ecd38 + 0x800;
-			y = (x >> 0xc) - (x >> 0x1f) >> 1;
-			iVar12 = iVar12 + y;
-			x = y;
-			if (y < 0) {
-				x = -y;
-			}
-			DAT_LEAD__000ecbfc = DAT_LEAD__000ecbfc + x;
-			if ((y < 0) && (data->intention == 0)) {
-				iVar12 = iVar12 / 2;
-			}
-		}
-		DAT_LEAD__000ecc38 = (iVar12 - DAT_LEAD__000ecbfc) - DAT_LEAD__000ecc24;
-		if ((int)DAT_LEAD__000ecc38 < 0) {
-			DAT_LEAD__000ecc38 = 0;
-		}
-		pVVar6 = data->vel;
-		DAT_LEAD__000ecc2c = iVar10 - DAT_LEAD__000ecc00;
-		iVar10 = iVar10 + DAT_LEAD__000ecc00;
-		DAT_LEAD__000ecc30 = iVar10;
-		if (pVVar6 != (VECTOR *)0x0) {
-			x = pVVar6->vx * DAT_LEAD__000ecd38 + pVVar6->vz * DAT_LEAD__000ecd3c + 0x800 >> 0xc;
-			DAT_LEAD__000ecc30 = iVar10 + x;
-			if (x < 1) {
-				DAT_LEAD__000ecc2c = DAT_LEAD__000ecc2c - x;
-				DAT_LEAD__000ecc30 = iVar10;
-			}
-		}
-		break;
-	case 1:
-		pVVar6 = data->pos;
-		pDVar14 = Driver2CurvesPtr + *(int *)(data->cp->ai + 0xc) + -0x4000;
-		y = pVVar6->vx - pDVar14->Midx;
-		iVar10 = data->base->vy - pVVar6->vy;
-		x = pVVar6->vz - pDVar14->Midz;
-		if (iVar10 < 1) {
-			iVar3 = (int)(((data->cp->ap).carCos)->colBox).vy;
-		}
-		else {
-			iVar3 = data->size->vy;
-		}
-		if (iVar3 < iVar10) {
-			return;
-		}
-		iVar2 = ratan2(y, x);
-		iVar12 = data->size->vx;
-		uVar17 = iVar2 + 0x400U & 0xfff;
-		iVar16 = (int)rcossin_tbl[uVar17 * 2];
-		iVar10 = iVar12 * iVar16;
-		iVar11 = data->size->vz;
-		iVar15 = (int)rcossin_tbl[uVar17 * 2 + 1];
-		iVar3 = iVar11 * iVar15;
-		iVar2 = (((iVar2 - *(int *)(data->cp->ai + 0x50)) + 0x800U & 0xfff) - 0x800) *
-			*(int *)(data->cp->ai + 0x54) * ((int)((uint)(byte)pDVar14->inside * 0xb000) / 0x7000);
-		if (iVar10 < 0) {
-			iVar10 = -iVar10;
-		}
-		if (iVar3 < 0) {
-			iVar3 = -iVar3;
-		}
-		DAT_LEAD__000ecbfc = iVar10 + iVar3 + 0x800 >> 0xc;
-		if (iVar2 + DAT_LEAD__000ecbfc < 0) {
-			return;
-		}
-		iVar12 = iVar12 * iVar15;
-		iVar11 = iVar11 * iVar16;
-		if (iVar12 < 0) {
-			iVar12 = -iVar12;
-		}
-		if (iVar11 < 0) {
-			iVar11 = -iVar11;
-		}
-		pVVar6 = data->vel;
-		DAT_LEAD__000ecc00 = (iVar12 + iVar11 + 0x800 >> 0xc) + DAT_LEAD__000ecc28;
-		if (pVVar6 != (VECTOR *)0x0) {
-			iVar10 = pVVar6->vx * iVar16 + pVVar6->vz * iVar15 + 0x800;
-			iVar3 = (iVar10 >> 0xc) - (iVar10 >> 0x1f) >> 1;
-			iVar2 = iVar2 + iVar3;
-			iVar10 = iVar3;
-			if (iVar3 < 0) {
-				iVar10 = -iVar3;
-			}
-			DAT_LEAD__000ecbfc = DAT_LEAD__000ecbfc + iVar10;
-			if (iVar3 < 0) {
-				iVar2 = iVar2 / 2;
-			}
-		}
-		uVar4 = (iVar2 - DAT_LEAD__000ecbfc) - DAT_LEAD__000ecc24;
-		if ((int)uVar4 < 0) {
-			uVar4 = 0;
-		}
-		iVar10 = *(int *)(data->cp->ai + 0x4c);
-		uVar5 = hypot(y, x);
-		p_Var9 = data->cp;
-		x = (iVar10 - uVar5) * *(int *)(p_Var9->ai + 0x54);
-		iVar10 = ((p_Var9->hd).speed + 100) * 10;
-		if ((int)uVar4 < iVar10) {
-			y = x;
-			if (x < 0) {
-				y = -x;
-			}
-			if (y < iVar10) {
-				DAT_LEAD__000ecc44 = data->base;
-				DAT_LEAD__000ecc48 = data->pos;
-				DAT_LEAD__000ecc4c = data->vel;
-				DAT_LEAD__000ecc50 = data->size;
-				DAT_LEAD__000ecc54 = 6;
-				DAT_LEAD__000ecc58 = data->local;
-				DAT_LEAD__000ecc5c = 0;
-				DAT_LEAD__000ecc40 = p_Var9;
-				BlockToMap((MAP_DATA *)&DAT_LEAD__000ecc40);
-			}
-		}
-		pVVar6 = data->vel;
-		DAT_LEAD__000ecc2c = x - DAT_LEAD__000ecc00;
-		x = x + DAT_LEAD__000ecc00;
-		DAT_LEAD__000ecc30 = x;
-		DAT_LEAD__000ecc38 = uVar4;
-		if (pVVar6 != (VECTOR *)0x0) {
-			iVar10 = pVVar6->vx * iVar15 + pVVar6->vz * iVar16 + 0x800 >> 0xc;
-			DAT_LEAD__000ecc30 = x + iVar10;
-			if (iVar10 < 1) {
-				DAT_LEAD__000ecc2c = DAT_LEAD__000ecc2c - iVar10;
-				DAT_LEAD__000ecc30 = x;
-			}
-		}
-		break;
-	case 4:
-	case 5:
-	case 6:
-		pVVar8 = data->pos;
-		pVVar6 = data->base;
-		x = pVVar8->vx - pVVar6->vx;
-		iVar10 = pVVar6->vy - pVVar8->vy;
-		y = pVVar8->vz - pVVar6->vz;
-		if (iVar10 < 1) {
-			iVar3 = (int)(((data->cp->ap).carCos)->colBox).vy;
-		}
-		else {
-			iVar3 = data->size->vy;
-		}
-		if (iVar3 < iVar10) {
-			return;
-		}
-		uVar4 = hypot(x, y);
-		iVar10 = ratan2(x, y);
-		uVar17 = (iVar10 + 0x800U & 0xfff) - 0x800;
-		pVVar6 = data->size;
-		iVar12 = pVVar6->vx;
-		iVar10 = iVar12 * (int)rcossin_tbl[(uVar17 & 0xfff) * 2];
-		iVar3 = pVVar6->vz * (int)rcossin_tbl[(uVar17 & 0xfff) * 2 + 1];
-		if (iVar10 < 0) {
-			iVar10 = -iVar10;
-		}
-		if (iVar3 < 0) {
-			iVar3 = -iVar3;
-		}
-		DAT_LEAD__000ecbfc = iVar10 + iVar3 + 0x800 >> 0xc;
-		uVar4 = (uVar4 - DAT_LEAD__000ecbfc) - DAT_LEAD__000ecc24;
-		if (((int)uVar4 < 2000) ||
-			(iVar10 = iVar12 * (int)rcossin_tbl[(uVar17 & 0xfff) * 2 + 1], data->intention == 6)) {
-			iStack112 = x + iVar12;
-			aiStack108[5] = x - pVVar6->vx;
-			aiStack108[0] = y + pVVar6->vz;
-			aiStack108[3] = y - pVVar6->vz;
-			aiStack108[2] = iStack112;
-			aiStack108[6] = aiStack108[0];
-			aiStack108[8] = aiStack108[5];
-			aiStack108[9] = aiStack108[3];
-			aiStack108[1] = ratan2();
-			aiStack108[4] = ratan2(aiStack108[2], aiStack108[3]);
-			bVar1 = false;
-			aiStack108[7] = ratan2(aiStack108[5], aiStack108[6]);
-			x = 1;
-			aiStack108[10] = ratan2(aiStack108[8], aiStack108[9]);
-			tangent_00 = aiStack108 + 1;
-			tangent = aiStack108 + 4;
-			DAT_LEAD__000ecc2c = 0;
-			DAT_LEAD__000ecc30 = 0;
-			iVar10 = aiStack108[1] + 0x800 >> 10;
-			do {
-				y = *tangent;
-				if (0 < (int)(((tangent_00[DAT_LEAD__000ecc2c * 3] - y) + 0x800U & 0xfff) - 0x800)) {
-					DAT_LEAD__000ecc2c = x;
-				}
-				if (0 < (int)(((y - tangent_00[DAT_LEAD__000ecc30 * 3]) + 0x800U & 0xfff) - 0x800)) {
-					DAT_LEAD__000ecc30 = x;
-				}
-				iVar3 = y + 0x800 >> 10;
-				if ((iVar10 != iVar3) &&
-					(iVar10 + (iVar10 - (aiStack108[1] + 0x800 >> 0x1f) >> 1) * -2 ==
-						iVar3 + (iVar3 - (y + 0x800 >> 0x1f) >> 1) * -2)) {
-					bVar1 = true;
-				}
-				x = x + 1;
-				tangent = tangent + 3;
-			} while (x < 4);
-			if (bVar1) {
-				DAT_LEAD__000ecc38 = 0;
-				DAT_LEAD__000ecc30 = uVar17 - (data->cp->hd).direction;
-				DAT_LEAD__000ecc2c = DAT_LEAD__000ecc30 + -0x200;
-				DAT_LEAD__000ecc30 = DAT_LEAD__000ecc30 + 0x200;
-			}
-			else {
-				if (DAT_LEAD__000ecc2c + DAT_LEAD__000ecc30 == 3) {
-					uVar4 = 0xffffffff;
-					iVar10 = 0;
-					plVar13 = aiStack108;
-					do {
-						if (((iVar10 != DAT_LEAD__000ecc2c) && (iVar10 != DAT_LEAD__000ecc30)) &&
-							((uVar5 = hypot(plVar13[-1], *plVar13), (int)uVar5 < (int)uVar4 ||
-							(uVar4 == 0xffffffff)))) {
-							uVar4 = uVar5;
-						}
-						iVar10 = iVar10 + 1;
-						plVar13 = plVar13 + 3;
-					} while (iVar10 < 4);
-					iVar10 = (data->cp->hd).direction;
-					DAT_LEAD__000ecc2c = tangent_00[DAT_LEAD__000ecc2c * 3] - iVar10;
-					DAT_LEAD__000ecc30 = tangent_00[DAT_LEAD__000ecc30 * 3] - iVar10;
-					DAT_LEAD__000ecc38 = uVar4;
-				}
-				else {
-					iVar10 = ratan2((&iStack112)[DAT_LEAD__000ecc2c * 3] -
-						(&iStack112)[DAT_LEAD__000ecc30 * 3],
-						aiStack108[DAT_LEAD__000ecc2c * 3] - aiStack108[DAT_LEAD__000ecc30 * 3]);
-					uVar17 = (iVar10 + 0xc00U & 0xfff) - 0x800 & 0xfff;
-					iVar10 = DAT_LEAD__000ecc2c * 3;
-					x = DAT_LEAD__000ecc2c * 3;
-					y = (data->cp->hd).direction;
-					DAT_LEAD__000ecc2c = tangent_00[DAT_LEAD__000ecc2c * 3] - y;
-					DAT_LEAD__000ecc30 = tangent_00[DAT_LEAD__000ecc30 * 3] - y;
-					DAT_LEAD__000ecc38 =
-						(int)rcossin_tbl[uVar17 * 2] * (&iStack112)[iVar10] +
-						(int)rcossin_tbl[uVar17 * 2 + 1] * aiStack108[x] + 0x800 >> 0xc;
-					if ((int)DAT_LEAD__000ecc38 < 0) {
-						DAT_LEAD__000ecc38 = -DAT_LEAD__000ecc38;
+	static int offx;
+
+	int someTempVar;
+
+	bool bVar1;
+	long uVar2;
+	long lVar3;
+	ulong uVar4;
+	VECTOR* pVVar5;
+	CAR_COSMETICS* pCVar6;
+	VECTOR* pVVar7;
+	_CAR_DATA* cp;
+	int x;
+	int iVar8;
+	int iVar9;
+	int x_00;
+	long* plVar10;
+	int* tangent;
+	DRIVER2_CURVE* curve;
+	int* tangent_00;
+	int iVar11;
+	int y;
+	int* normal;
+	int iVar12;
+	int* normal_00;
+	int uVar13;
+	int iVar14;
+	int iVar15;
+	int corners[4][3];
+	int temp;
+	int tdist;
+	int locall;
+	int localld;
+	int localr;
+	int localrd;
+
+	pCVar6 = (data->cp->ap).carCos;
+	carLength = (int)(pCVar6->colBox).vz;
+	carWidth = (int)(pCVar6->colBox).vx;
+
+	switch (data->intention)
+	{
+		case 0:
+		case 2:
+		case 3:
+			pVVar7 = data->pos;
+			pVVar5 = data->base;
+			y = pVVar7->vx - pVVar5->vx;
+			x = pVVar5->vy - pVVar7->vy;
+			x_00 = pVVar7->vz - pVVar5->vz;
+
+			if (x < 1)
+				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			else
+				iVar15 = data->size->vy;
+
+			if (iVar15 < x)
+				return;
+
+			x = data->size->vx * road_s;
+			iVar15 = data->size->vz * road_c;
+			iVar9 = FIXED(y * road_s + x_00 * road_c);
+
+			if (x < 0)
+				x = -x;
+
+			if (iVar15 < 0)
+				iVar15 = -iVar15;
+
+			someTempVar = FIXED(x + iVar15);
+			x = FIXED(y * road_c - x_00 * road_s);
+
+			if ((data->intention == 0) || ((data->cp->ai.l).dstate == 3)) 
+			{
+				x_00 = iVar9;
+				if (iVar9 < 0)
+					x_00 = -iVar9;
+
+				y = ((data->cp->hd).speed + 100) * 10;
+
+				if (x_00 < y) 
+				{
+					x_00 = x;
+
+					if (x < 0) 
+						x_00 = -x;
+
+					if (x_00 < y) 
+					{
+						newdata.base = data->base;
+						newdata.pos = data->pos;
+						newdata.vel = data->vel;
+						newdata.size = data->size;
+						newdata.intention = 6;
+						newdata.map = data->local;
+						newdata.local = NULL;
+						newdata.cp = data->cp;
+						BlockToMap(&newdata);
 					}
 				}
 			}
-			DAT_LEAD__000ecc2c = (DAT_LEAD__000ecc2c + 0x800 & 0xfff) - 0x800;
-			DAT_LEAD__000ecc30 = (DAT_LEAD__000ecc30 + 0x800U & 0xfff) - 0x800;
-		}
-		else {
-			x = pVVar6->vz * (int)rcossin_tbl[(uVar17 & 0xfff) * 2];
-			y = ((uVar17 - (data->cp->hd).direction) + 0x800 & 0xfff) - 0x800;
-			if (iVar10 < 0) {
-				iVar10 = -iVar10;
+
+			if (iVar9 + someTempVar < 0)
+				return;
+
+			x_00 = data->size->vx * road_c;
+			y = data->size->vz * road_s;
+
+			if (x_00 < 0)
+				x_00 = -x_00;
+
+			if (y < 0)
+				y = -y;
+
+			pVVar5 = data->vel;
+			offx = FIXED(x_00 + y) + carWidth * 2;
+
+			if (pVVar5 != NULL) 
+			{
+				x_00 = pVVar5->vx * road_s + pVVar5->vz * road_c + 0x800;
+				y = FIXED(x_00) - (x_00 >> 0x1f) >> 1;
+				iVar9 = iVar9 + y;
+				x_00 = y;
+
+				if (y < 0)
+					x_00 = -y;
+
+				someTempVar = someTempVar + x_00;
+
+				if ((y < 0) && (data->intention == 0))
+					iVar9 = iVar9 / 2;
+	
 			}
-			if (x < 0) {
-				x = -x;
+			rdist = (iVar9 - someTempVar) - carLength;
+
+			if (rdist < 0)
+				rdist = 0;
+
+			pVVar5 = data->vel;
+			left = x - offx;
+			x = x + offx;
+			right = x;
+			if (pVVar5 != NULL) 
+			{
+				x_00 = FIXED(pVVar5->vx * road_c + pVVar5->vz * road_s);
+				right = x + x_00;
+
+				if (x_00 < 1) 
+				{
+					left = left - x_00;
+					right = x;
+				}
 			}
-			DAT_LEAD__000ecc00 = ratan2((iVar10 + x + 0x800 >> 0xc) + DAT_LEAD__000ecc28, uVar4);
-			DAT_LEAD__000ecc2c = y - DAT_LEAD__000ecc00;
-			DAT_LEAD__000ecc30 = y + DAT_LEAD__000ecc00;
-			DAT_LEAD__000ecc38 = uVar4;
-		}
-		break;
-	default:
-		goto LAB_LEAD__000e97b4;
-	}
-	DAT_LEAD__000ecc34 = DAT_LEAD__000ecc38;
-	switch (data->intention) {
-	case 2:
-	case 3:
-		tangent = &DAT_LEAD__000ecc38;
-		tangent_00 = &DAT_LEAD__000ecc34;
-		normal = &DAT_LEAD__000ecc2c;
-		normal_00 = &DAT_LEAD__000ecc30;
-		if (data->intention != 2) {
-			normal_00 = &DAT_LEAD__000ecc2c;
-			tangent = &DAT_LEAD__000ecc34;
-			tangent_00 = &DAT_LEAD__000ecc38;
-			normal = &DAT_LEAD__000ecc30;
-		}
-		iVar10 = DAT_LEAD__000ecec0 + (data->cp->hd).speed * DAT_LEAD__000ecec4;
-		if ((iVar10 < (int)DAT_LEAD__000ecc38) && (iVar10 < (int)DAT_LEAD__000ecc38)) {
-			*tangent_00 = *tangent_00 + DAT_LEAD__000ecc24 * 2;
-			iVar10 = *tangent + DAT_LEAD__000ecc24 * -2;
-			*tangent = iVar10;
-			if (iVar10 < 0) {
-				*tangent = 0;
-			}
-			DAT_LEAD__000ecc2c = DAT_LEAD__000ecc2c - DAT_LEAD__000ecc28;
-			DAT_LEAD__000ecc30 = DAT_LEAD__000ecc30 + DAT_LEAD__000ecc28;
-			iStack64 = *normal;
-			iStack60 = *tangent_00 + DAT_LEAD__000ecbfc * 2;
-			PosToIndex(&iStack64, &iStack60, data->intention, data->cp);
-			PosToIndex(normal, tangent_00, data->intention, data->cp);
-			PosToIndex(normal_00, tangent, data->intention, data->cp);
-			*normal = iStack64;
 			break;
-		}
-	case 0:
-	case 1:
-		PosToIndex(&DAT_LEAD__000ecc2c, &DAT_LEAD__000ecc34, data->intention, data->cp);
-		PosToIndex(&DAT_LEAD__000ecc30, &DAT_LEAD__000ecc38, data->intention, data->cp);
-		break;
-	case 4:
-		uStack56 = DAT_LEAD__000ecc2c;
-		iStack48 = DAT_LEAD__000ecc30;
-		uStack52 = DAT_LEAD__000ecc38;
-		uStack44 = DAT_LEAD__000ecc38;
-		PosToIndex((int *)&uStack56, (int *)&uStack52, 6, data->cp);
-		PosToIndex(&iStack48, (int *)&uStack44, 6, data->cp);
-		uVar17 = uStack56;
-		if (iStack48 < (int)uStack56) {
-			while ((int)uVar17 < 0x29) {
-				if ((uVar17 < 0x29) && ((int)uStack52 < data->local[uVar17])) {
-					data->local[uVar17] = uStack52;
+		case 1:
+			pVVar5 = data->pos;
+			curve = Driver2CurvesPtr + (data->cp->ai.l).currentRoad + -0x4000;
+			y = pVVar5->vx - curve->Midx;
+			x = data->base->vy - pVVar5->vy;
+			x_00 = pVVar5->vz - curve->Midz;
+
+			if (x < 1)
+				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			else
+				iVar15 = data->size->vy;
+
+			if (iVar15 < x)
+				return;
+
+			lVar3 = ratan2(y, x_00);
+			iVar9 = data->size->vx;
+			uVar13 = lVar3 + 0x400U & 0xfff;
+			iVar12 = (int)rcossin_tbl[uVar13 * 2];
+			x = iVar9 * iVar12;
+			iVar8 = data->size->vz;
+			iVar11 = (int)rcossin_tbl[uVar13 * 2 + 1];
+			iVar15 = iVar8 * iVar11;
+			iVar14 = (((lVar3 - (data->cp->ai.l).base_Angle) + 0x800U & 0xfff) - 0x800) *
+				(data->cp->ai.l).base_Dir * ((int)(curve->inside * 0xb000) / 0x7000);
+			if (x < 0)
+				x = -x;
+
+			if (iVar15 < 0)
+				iVar15 = -iVar15;
+
+			someTempVar = FIXED(x + iVar15);
+
+			if (iVar14 + someTempVar < 0)
+				return;
+
+			iVar9 = iVar9 * iVar11;
+			iVar8 = iVar8 * iVar12;
+			if (iVar9 < 0)
+				iVar9 = -iVar9;
+
+			if (iVar8 < 0)
+				iVar8 = -iVar8;
+
+			pVVar5 = data->vel;
+			offx = FIXED(iVar9 + iVar8) + carWidth;
+
+			if (pVVar5 != NULL) 
+			{
+				x = pVVar5->vx * iVar12 + pVVar5->vz * iVar11 + 0x800;
+				iVar15 = FIXED(x) - (x >> 0x1f) >> 1;
+				iVar14 = iVar14 + iVar15;
+				x = iVar15;
+
+				if (iVar15 < 0)
+					x = -iVar15;
+
+				someTempVar = someTempVar + x;
+				if (iVar15 < 0)
+					iVar14 = iVar14 / 2;
+
+			}
+			x = (iVar14 - someTempVar) - carLength;
+
+			if (x < 0)
+				x = 0;
+
+			iVar15 = (data->cp->ai.l).base_Normal;
+			uVar2 = hypot(y, x_00);
+			cp = data->cp;
+			y = (iVar15 - uVar2) * (cp->ai.l).base_Dir;
+			x_00 = ((cp->hd).speed + 100) * 10;
+			if (x < x_00)
+			{
+				iVar15 = y;
+
+				if (y < 0) 
+					iVar15 = -y;
+
+				if (iVar15 < x_00) 
+				{
+					newdata.base = data->base;
+					newdata.pos = data->pos;
+					newdata.vel = data->vel;
+					newdata.size = data->size;
+					newdata.intention = 6;
+					newdata.map = data->local;
+					newdata.local = NULL;
+					newdata.cp = cp;
+					BlockToMap(&newdata);
 				}
-				uVar17 = uVar17 + 1;
 			}
-			DAT_LEAD__000ecc2c = 0xfffff800;
-			PosToIndex((int *)&uStack56, (int *)&uStack52, 6, data->cp);
-			uVar17 = uStack56;
-			if (iStack48 < (int)uStack56) goto LAB_LEAD__000e96f0;
-		}
-		while ((int)uVar17 <= iStack48) {
-			if ((uVar17 < 0x29) && ((int)uStack52 < data->local[uVar17])) {
-				data->local[uVar17] = uStack52;
-			}
-			uVar17 = uVar17 + 1;
-		}
-	case 5:
-	case 6:
-	LAB_LEAD__000e96f0:
-		PosToIndex(&DAT_LEAD__000ecc2c, &DAT_LEAD__000ecc34, data->intention, data->cp);
-		PosToIndex(&DAT_LEAD__000ecc30, &DAT_LEAD__000ecc38, data->intention, data->cp);
-		uVar4 = DAT_LEAD__000ecc34;
-		if (DAT_LEAD__000ecc30 < (int)DAT_LEAD__000ecc2c) {
-			while ((int)DAT_LEAD__000ecc2c < 0x29) {
-				if (((-1 < (int)DAT_LEAD__000ecc2c) && ((int)DAT_LEAD__000ecc2c < 0x29)) &&
-					((int)uVar4 < data->map[DAT_LEAD__000ecc2c])) {
-					data->map[DAT_LEAD__000ecc2c] = uVar4;
+
+			pVVar5 = data->vel;
+			left = y - offx;
+			y = y + offx;
+			right = y;
+			rdist = x;
+
+			if (pVVar5 != NULL)
+			{
+				x = FIXED(pVVar5->vx * iVar11 + pVVar5->vz * iVar12);
+				right = y + x;
+				if (x < 1) 
+				{
+					left = left - x;
+					right = y;
 				}
-				DAT_LEAD__000ecc2c = DAT_LEAD__000ecc2c + 1;
 			}
-			DAT_LEAD__000ecc2c = 0xfffff800;
-			PosToIndex(&DAT_LEAD__000ecc2c, &DAT_LEAD__000ecc34, data->intention, data->cp);
-		}
-		break;
-	default:
-		break;
+
+			break;
+		case 4:
+		case 5:
+		case 6:
+			pVVar7 = data->pos;
+			pVVar5 = data->base;
+			x_00 = pVVar7->vx - pVVar5->vx;
+			x = pVVar5->vy - pVVar7->vy;
+			y = pVVar7->vz - pVVar5->vz;
+
+			if (x < 1)
+				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			else
+				iVar15 = data->size->vy;
+	
+			if (iVar15 < x)
+				return;
+	
+			uVar2 = hypot(x_00, y);
+			lVar3 = ratan2(x_00, y);
+			uVar13 = (lVar3 + 0x800U & 0xfff) - 0x800;
+			pVVar5 = data->size;
+			iVar9 = pVVar5->vx;
+			x = iVar9 * (int)rcossin_tbl[(uVar13 & 0xfff) * 2];
+			iVar15 = pVVar5->vz * (int)rcossin_tbl[(uVar13 & 0xfff) * 2 + 1];
+
+			if (x < 0)
+				x = -x;
+
+			if (iVar15 < 0)
+				iVar15 = -iVar15;
+	
+			someTempVar = FIXED(x + iVar15);
+			x = (uVar2 - someTempVar) - carLength;
+
+			if ((x < 2000) ||
+				(iVar15 = iVar9 * (int)rcossin_tbl[(uVar13 & 0xfff) * 2 + 1], data->intention == 6)) 
+			{
+				corners[0][0] = x_00 + iVar9;
+				corners[2][0] = x_00 - pVVar5->vx;
+				corners[0][1] = y + pVVar5->vz;
+				corners[1][1] = y - pVVar5->vz;
+				corners[1][0] = corners[0][0];
+				corners[2][1] = corners[0][1];
+				corners[3][0] = corners[2][0];
+				corners[3][1] = corners[1][1];
+				corners[0][2] = ratan2(corners[0][0], corners[0][1]);
+				corners[1][2] = ratan2(corners[1][0], corners[1][1]);
+				corners[2][2] = ratan2(corners[2][0], corners[2][1]);
+				corners[3][2] = ratan2(corners[3][0], corners[3][1]);
+
+				bVar1 = false;
+				x_00 = 1;
+				left = 0;
+				right = 0;
+				x = corners[0][2] + 0x800 >> 10;
+				//tangent = corners + 5;	// corners[1][2] = 5
+
+				do {
+					y = corners[x_00][2];
+
+					if (0 < (int)(((corners[left][2] - y) + 0x800U & 0xfff) - 0x800)) 
+						left = x_00;
+
+					if (0 < (int)(((y - corners[right][2]) + 0x800U & 0xfff) - 0x800))
+						right = x_00;
+
+					iVar15 = y + 0x800 >> 10;
+					if ((x != iVar15) && (x + (x - (corners[0][2] + 0x800 >> 0x1f) >> 1) * -2 == iVar15 + (iVar15 - (y + 0x800 >> 0x1f) >> 1) * -2))
+						bVar1 = true;
+
+					x_00 = x_00 + 1;
+					//tangent = tangent + 3;
+				} while (x_00 < 4);
+
+				if (bVar1) 
+				{
+					rdist = 0;
+					right = uVar13 - (data->cp->hd).direction;
+					left = right + -0x200;
+					right = right + 0x200;
+				}
+				else if (left + right == 3)
+				{
+					uVar2 = 0xffffffff;
+					x = 0;
+					do {
+
+						if (((x != left) && (x != right)) && ((uVar4 = hypot(corners[x][0], corners[x][1]), uVar4 < uVar2 || (uVar2 == 0xffffffff))))
+						{
+							uVar2 = uVar4;
+						}
+
+						x = x + 1;
+
+					} while (x < 4);
+
+					x = (data->cp->hd).direction;
+					left = corners[left][2] - x;
+					right = corners[right][2] - x;
+					rdist = uVar2;
+				}
+				else
+				{
+					lVar3 = ratan2(corners[left][0] - corners[right][0], corners[left][1] - corners[right][1]);
+					uVar13 = (lVar3 + 0xc00U & 0xfff) - 0x800 & 0xfff;
+
+					y = (data->cp->hd).direction;
+					left = corners[left][2] - y;
+					right = corners[right][2] - y;
+
+					rdist = FIXED(rcossin_tbl[uVar13 * 2] * corners[left][0] + rcossin_tbl[uVar13 * 2 + 1] * corners[left][1]);
+
+					if (rdist < 0)
+						rdist = -rdist;
+
+				}
+
+				left = (left + 0x800U & 0xfff) - 0x800;
+				right = (right + 0x800U & 0xfff) - 0x800;
+			}
+			else
+			{
+				x_00 = pVVar5->vz * (int)rcossin_tbl[(uVar13 & 0xfff) * 2];
+				y = ((uVar13 - (data->cp->hd).direction) + 0x800 & 0xfff) - 0x800;
+
+				if (iVar15 < 0)
+					iVar15 = -iVar15;
+
+				if (x_00 < 0)
+					x_00 = -x_00;
+
+				offx = ratan2(FIXED(iVar15 + x_00) + carWidth, x);
+				left = y - offx;
+				right = y + offx;
+				rdist = x;
+			}
+
+			break;
+		default:
+			goto LAB_LEAD__000e97b4;
+	}
+
+	ldist = rdist;
+
+	switch (data->intention)
+	{
+		case 2:
+		case 3:
+			tangent = &rdist;
+			tangent_00 = &ldist;
+			normal = &left;
+			normal_00 = &right;
+
+			if (data->intention != 2)
+			{
+				normal_00 = &left;
+				tangent = &ldist;
+				tangent_00 = &rdist;
+				normal = &right;
+			}
+
+			x = LeadValues.hWidth + (data->cp->hd).speed * LeadValues.hWidthMul;
+
+			if ((x < ldist) && (x < rdist))  // [A] was rdist; ghidra bug?
+			{
+				*tangent_00 = *tangent_00 + carLength * 2;
+				x = *tangent + carLength * -2;
+				*tangent = x;
+
+				if (x < 0)
+					*tangent = 0;
+
+				left = left - carWidth;
+				right = right + carWidth;
+				temp = *normal;
+				tdist = *tangent_00 + someTempVar * 2;
+
+				PosToIndex(&temp, &tdist, data->intention, data->cp);
+				PosToIndex(normal, tangent_00, data->intention, data->cp);
+				PosToIndex(normal_00, tangent, data->intention, data->cp);
+
+				*normal = temp;
+				break;
+			}
+		case 0:
+		case 1:
+			PosToIndex(&left, &ldist, data->intention, data->cp);
+			PosToIndex(&right, &rdist, data->intention, data->cp);
+			break;
+		case 4:
+			locall = left;
+			localr = right;
+			localld = rdist;
+			localrd = rdist;
+			PosToIndex(&locall, &localld, 6, data->cp);
+			PosToIndex(&localr, &localrd, 6, data->cp);
+
+			uVar13 = locall;
+
+			if (localr < locall) 
+			{
+				while ((int)uVar13 < 0x29) 
+				{
+					if ((uVar13 < 0x29) && (localld < data->local[uVar13])) 
+						data->local[uVar13] = localld;
+
+					uVar13 = uVar13 + 1;
+				}
+
+				left = -0x800;
+				PosToIndex(&locall, &localld, 6, data->cp);
+				uVar13 = locall;
+
+				if (localr < locall)
+					goto LAB_LEAD__000e96f0;
+
+			}
+			while ((int)uVar13 <= localr) 
+			{
+				if ((uVar13 < 0x29) && (localld < data->local[uVar13]))
+					data->local[uVar13] = localld;
+
+				uVar13 = uVar13 + 1;
+			}
+		case 5:
+		case 6:
+		LAB_LEAD__000e96f0:
+			PosToIndex(&left, &ldist, data->intention, data->cp);
+			PosToIndex(&right, &rdist, data->intention, data->cp);
+			x = ldist;
+
+			if (right < left) 
+			{
+				while (left < 0x29)
+				{
+					if (((-1 < left) && (left < 0x29)) && (x < data->map[left])) 
+						data->map[left] = x;
+
+					left = left + 1;
+				}
+
+				left = -0x800;
+				PosToIndex(&left, &ldist, data->intention, data->cp);
+			}
+
+			break;
+		default:
+			break;
 	}
 LAB_LEAD__000e97b4:
-	iVar10 = DAT_LEAD__000ecc30;
-	uVar17 = DAT_LEAD__000ecc2c;
-	uVar4 = DAT_LEAD__000ecc34;
-	if ((int)DAT_LEAD__000ecc2c < DAT_LEAD__000ecc30) {
-		x = (int)(DAT_LEAD__000ecc38 - DAT_LEAD__000ecc34) /
-			(int)(DAT_LEAD__000ecc30 - DAT_LEAD__000ecc2c);
-		if (DAT_LEAD__000ecc30 - DAT_LEAD__000ecc2c == 0) {
-			trap(7);
+	y = right;
+	x = left;
+	x_00 = ldist;
+
+	if (left < right)
+		iVar15 = (rdist - ldist) / (right - left);
+	else 
+		iVar15 = 0;
+
+	while (x <= y) 
+	{
+		if (((-1 < x) && (x < 0x29)) && (x_00 < data->map[x]))
+		{
+			data->map[x] = x_00;
 		}
+
+		x = x + 1;
+		x_00 = x_00 + iVar15;
 	}
-	else {
-		x = 0;
-	}
-	while ((int)uVar17 <= iVar10) {
-		if (((-1 < (int)uVar17) && ((int)uVar17 < 0x29)) && ((int)uVar4 < data->map[uVar17])) {
-			data->map[uVar17] = uVar4;
-		}
-		uVar17 = uVar17 + 1;
-		uVar4 = uVar4 + x;
-	}
-	return;*/
 }
 
 
@@ -1951,8 +2058,8 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 		case 0:
 		case 2:
 		case 3:
-			tangent = dx * road_s + dz * road_c + 0x800 >> 0xc;
-			normal = (dx * road_c - dz * road_s) + 0x800 >> 0xc;
+			tangent = FIXED(dx * road_s + dz * road_c);
+			normal = FIXED(dx * road_c - dz * road_s);
 			PosToIndex(&normal, &tangent, intention, cp);
 			break;
 		case 1:
@@ -2913,40 +3020,6 @@ LAB_LEAD__000eb0c8:
 	}
 	*(int *)(cp->ai + 0x2c) = iVar20;
 	return;*/
-}
-
-
-
-// autogenerated function stub: 
-// void slowWallTests() /* slowWallTests method signature is not contained in the debug symbol data. This is likely either a library function or the game was compiled without debug symbols. Please refer to the TDR documentation for additional guidance. */
-void slowWallTests()
-{
-	// line 1807, offset 0x000e913c
-	UNIMPLEMENTED();
-}
-
-
-// autogenerated function stub: 
-// void asf() /* asf method signature is not contained in the debug symbol data. This is likely either a library function or the game was compiled without debug symbols. Please refer to the TDR documentation for additional guidance. */
-void asf()
-{ // line 1811, offset 0x000e9158
-	UNIMPLEMENTED();
-}
-
-
-// autogenerated function stub: 
-// void DoExtraWorkForNFrames() /* DoExtraWorkForNFrames method signature is not contained in the debug symbol data. This is likely either a library function or the game was compiled without debug symbols. Please refer to the TDR documentation for additional guidance. */
-void DoExtraWorkForNFrames()
-{ // line 2195, offset 0x000e99ac
-	UNIMPLEMENTED();
-}
-
-
-// autogenerated function stub: 
-// void searchTarget() /* searchTarget method signature is not contained in the debug symbol data. This is likely either a library function or the game was compiled without debug symbols. Please refer to the TDR documentation for additional guidance. */
-void searchTarget()
-{ // line 2233, offset 0x000e9ab8
-	UNIMPLEMENTED();
 }
 
 
