@@ -937,9 +937,12 @@ void FakeMotion(_CAR_DATA *cp)
 		if (-1 < toGo)
 		{
 			d = d + 0x78;
-			iVar5 = s * d;
+
 			(cp->hd).where.t[0] = FIXED(c * d) + straight->Midx;
-			(cp->hd).where.t[2] = FIXED(iVar5) + straight->Midz;
+			(cp->hd).where.t[2] = FIXED(s * d) + straight->Midz;
+
+			cp->st.n.fposition[0] = cp->hd.where.t[0] << 4;
+			cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
 			return;
 		}
 
@@ -982,6 +985,9 @@ void FakeMotion(_CAR_DATA *cp)
 			LAB_LEAD__000e82cc:
 				cp->ai.l.targetDir = uVar4 & 0xfff;
 				(cp->hd).where.t[2] = FIXED(sVar1 * iVar7) + iVar5;
+
+				cp->st.n.fposition[0] = cp->hd.where.t[0] << 4;
+				cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
 				return;
 			}
 
@@ -1810,10 +1816,11 @@ void BlockToMap(MAP_DATA *data)
 					uVar13 = (lVar3 + 0xc00U & 0xfff) - 0x800 & 0xfff;
 
 					y = (data->cp->hd).direction;
-					left = corners[left][2] - y;
-					right = corners[right][2] - y;
 
 					rdist = FIXED(rcossin_tbl[uVar13 * 2] * corners[left][0] + rcossin_tbl[uVar13 * 2 + 1] * corners[left][1]);
+
+					left = corners[left][2] - y;
+					right = corners[right][2] - y;
 
 					if (rdist < 0)
 						rdist = -rdist;
@@ -2826,6 +2833,13 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 			}
 			iVar16 = 0;
 
+			// [A] bug fix
+			if (left < 0)
+				left = 0;
+
+			if (right < 0)
+				right = 0;
+
 			while (left < 0x29)
 			{
 				roadAhead[left] = roadAhead[left] - iVar16;
@@ -2833,7 +2847,7 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 				if (roadAhead[left] < 0)
 					roadAhead[left] = 0;
 
-				left = left - 1;
+				left++;
 				iVar16 = iVar16 + 500;
 			}
 
@@ -2846,7 +2860,7 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 				if (roadAhead[right] < 0)
 					roadAhead[right] = 0;
 
-				right = right + 1;
+				right++;
 				iVar16 = iVar16 + 500;
 			}
 		}
