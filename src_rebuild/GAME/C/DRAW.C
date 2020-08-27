@@ -1941,10 +1941,12 @@ void DrawAllTheCars(int view)
 // [D] [A] custom
 void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 {
-#if 1 // [A] new fully rewritten routine FIXME: still bugged - see tops of barrels at "Caine's Compound"
+#if 1 // [A] new fully rewritten routine 
+	
+	// FIXME: still bugged - see tops of barrels at "Caine's Compound"
 
 	int opz;
-	int diff, minZ;
+	int diff, minZ, maxZ;
 	int Z;
 	PL_POLYFT4* polys;
 	int i;
@@ -1965,44 +1967,29 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		combointensity |= 0x2000000;
 
 	i = model->num_polys;
-	do
+	while (i > 0)
 	{
 		// iterate through polygons
 		// with skipping
-		while (true)
+		ptype = polys->id & 0x1f;
+
+		if ((ptype & 1) == 0) // is FT3 triangle?
 		{
-			i--;
+			temp = polys->uv2.v;
+			polys->uv3.u = polys->uv2.u;
+			polys->uv3.v = temp;
 
-			if(i == -1)
-			{
-				// done
-				pc->current->primptr = pc->primptr;
+			polys->v3 = polys->v2;
 
-				if ((pc->flags & 1U) != 0)
-					combointensity &= ~0x2000000;
+			polys->id = polys->id ^ 1;
+			ptype |= 1;
+		}
 
-				return;
-			}
-
-			ptype = polys->id & 0x1f;
-
-			if ((ptype & 1) == 0) // is FT3 triangle?
-			{
-				temp = polys->uv2.v;
-				polys->uv3.u = polys->uv2.u;
-				polys->uv3.v = temp;
-
-				polys->v3 = polys->v2;
-
-				polys->id = polys->id ^ 1;
-			}
-
-			ptype = (polys->id & 0x1f);
-
-			if (ptype == 11 || ptype == 21)
-				break;
-
+		if (ptype != 11 && ptype != 21)// && ptype != 9 && ptype != 1 && ptype != 13 && ptype != 8 && ptype != 10)
+		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+			i--;
+			continue;
 		}
 
 		if (ptype == 21)
@@ -2045,21 +2032,21 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
 
 			minZ = pc->scribble[2];
-			if (pc->scribble[1] < pc->scribble[2])
+			if (pc->scribble[1] < minZ)
 				minZ = pc->scribble[1];
 
 			if (pc->scribble[0] < minZ)
 				minZ = pc->scribble[0];
 
-			diff = pc->scribble[2];
-			if (pc->scribble[2] < pc->scribble[1])
-				diff = pc->scribble[1];
+			maxZ = pc->scribble[2];
+			if (maxZ < pc->scribble[1])
+				maxZ = pc->scribble[1];
 
-			diff = diff - minZ;
-			if (diff < pc->scribble[0])
+			diff = maxZ - minZ;
+			if (maxZ < pc->scribble[0])
 				diff = pc->scribble[0] - minZ;
 
-			if (n == 0 || (diff << 2) <= minZ - 250)
+			if ((n == 0) || ((diff << 2) <= minZ - 350))
 			{
 				prims = (POLY_FT4*)pc->primptr;
 
@@ -2110,7 +2097,14 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-	} while (true);
+		i--;
+	}
+
+	// done
+	pc->current->primptr = pc->primptr;
+
+	if ((pc->flags & 1U) != 0)
+		combointensity &= ~0x2000000;
 
 #else // decompiled routine
 
