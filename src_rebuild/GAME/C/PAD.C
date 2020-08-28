@@ -2,8 +2,10 @@
 #include "PAD.H"
 #include "SYSTEM.H"
 #include "MISSION.H"
+#include "CUTSCENE.H"
 
 #include <string.h>
+
 
 
 char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
@@ -247,23 +249,22 @@ void ReadControllers(void)
 	/* end block 2 */
 	// End Line: 996
 
+// [D]
 void SetPadVibration(int pad, unsigned char type)
 {
-	UNIMPLEMENTED();
-
-	/*
-	if (-1 < pad) {
-		if ((Pads[pad].dualshock != '\0') && (gInGameCutsceneActive == 0)) {
+	if (pad >= 0)
+	{
+		if(Pads[pad].dualshock != 0 && gInGameCutsceneActive == 0) 
+		{
 			Pads[pad].shake_type = type;
-			Pads[pad].vibrate = '\x06';
+			Pads[pad].vibrate = 6;
 			return;
 		}
-		Pads[pad].shakeptr = (uchar *)0x0;
-		Pads[pad].shake_type = '\0';
-		Pads[pad].vibrate = '\0';
+
+		Pads[pad].shakeptr = NULL;
+		Pads[pad].shake_type = 0;
+		Pads[pad].vibrate = 0;
 	}
-	return;
-	*/
 }
 
 
@@ -282,19 +283,15 @@ void SetPadVibration(int pad, unsigned char type)
 	/* end block 2 */
 	// End Line: 1035
 
+// [D]
 void StopPadVibration(int pad)
 {
-	UNIMPLEMENTED();
-
-	/*
-	Pads[pad].motors[0] = '\0';
-	Pads[pad].motors[1] = '\0';
-	Pads[pad].shakeptr = (uchar *)0x0;
-	Pads[pad].shake_type = '\0';
-	Pads[pad].vibrate = '\0';
-	Pads[pad].alarmShakeCounter = '\0';
-	return;
-	*/
+	Pads[pad].motors[0] = 0;
+	Pads[pad].motors[1] = 0;
+	Pads[pad].shakeptr = NULL;
+	Pads[pad].shake_type = 0;
+	Pads[pad].vibrate = 0;
+	Pads[pad].alarmShakeCounter = 0;
 }
 
 
@@ -315,8 +312,8 @@ void StopPadVibration(int pad)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void StopDualShockMotors(void)
-
 {
 	return;
 }
@@ -337,16 +334,18 @@ void StopDualShockMotors(void)
 	/* end block 2 */
 	// End Line: 1083
 
+// [D]
 void SetDuplicatePadData(char *buffer, int size)
 {
-	if (size - 1U < 0x22) {
+	if (size - 1U < 34) 
+	{
 		DuplicatePadData.buffer = buffer;
 		DuplicatePadData.size = size;
 		return;
 	}
-	DuplicatePadData.buffer = (char *)0x0;
+
+	DuplicatePadData.buffer = NULL;
 	DuplicatePadData.size = 0;
-	return;
 }
 
 
@@ -428,35 +427,37 @@ void MapPad(int pad, PADRAW *pData)
 	{
 		uVar11 = 0;
 		uVar9 = 0;
+
 		uVar5 = uVar10;
+
 		do {
-			if ((uVar5 & 1) != 0) {
-				uVar11 = Pads[pad].mappings.button_lookup[uVar9] | uVar11;
+			if ((uVar5 & 1) != 0)
+			{
+				uVar11 |= Pads[pad].mappings.button_lookup[uVar9];
 			}
+
 			uVar5 = uVar9 + 1;
 			uVar9 = uVar5 & 0xffff;
 			uVar5 = (int)uVar10 >> (uVar5 & 0x1f);
 		} while (uVar9 < 0x10);
-		uVar2 = Pads[pad].mapped;
-		uVar3 = Pads[pad].mappings.swap_analog;
+
 		Pads[pad].mapped = uVar11;
-		Pads[pad].mapnew = uVar11 & ~uVar2;
-		if (uVar3 == 0) 
+		Pads[pad].mapnew = uVar11 & ~Pads[pad].mapped;
+
+		if (Pads[pad].mappings.swap_analog == 0)
 		{
-			cVar6 = Pads[pad].diranalog[1];
-			cVar7 = Pads[pad].diranalog[2];
-			cVar8 = Pads[pad].diranalog[3];
+			Pads[pad].mapanalog[1] = Pads[pad].diranalog[1];
+			Pads[pad].mapanalog[2] = Pads[pad].diranalog[2];
+			Pads[pad].mapanalog[3] = Pads[pad].diranalog[3];
 			Pads[pad].mapanalog[0] = Pads[pad].diranalog[0];
 		}
-		else {
-			cVar6 = Pads[pad].diranalog[3];
-			cVar7 = Pads[pad].diranalog[0];
-			cVar8 = Pads[pad].diranalog[1];
+		else 
+		{
+			Pads[pad].mapanalog[1] = Pads[pad].diranalog[3];
+			Pads[pad].mapanalog[2] = Pads[pad].diranalog[0];
+			Pads[pad].mapanalog[3] = Pads[pad].diranalog[1];
 			Pads[pad].mapanalog[0] = Pads[pad].diranalog[2];
 		}
-		Pads[pad].mapanalog[1] = cVar6;
-		Pads[pad].mapanalog[2] = cVar7;
-		Pads[pad].mapanalog[3] = cVar8;
 	}
 }
 
