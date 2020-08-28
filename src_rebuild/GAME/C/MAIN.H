@@ -1,6 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+extern int game_over;
+
 extern int xa_timeout;
 extern int FrameCnt;
 extern int CurrentPlayerView;

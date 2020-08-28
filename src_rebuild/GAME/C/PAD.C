@@ -3,18 +3,23 @@
 #include "SYSTEM.H"
 #include "MISSION.H"
 #include "CUTSCENE.H"
+#include "PAUSE.H"
+#include "GLAUNCH.H"
+#include "MAIN.H"
+#include "PLAYERS.H"
+#include "CARS.H"
 
 #include <string.h>
 
 
 
-char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
+unsigned char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
 
-char Med_shake_data[] = { 1, 0xC8, 0xC8, 0x64, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0 };
+unsigned char Med_shake_data[] = { 1, 0xC8, 0xC8, 0x64, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0 };
 
-char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0 };
+unsigned char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0 };
 
-char* shake_data[] = { High_shake_data, Med_shake_data, Low_shake_data };
+unsigned char* shake_data[] = { High_shake_data, Med_shake_data, Low_shake_data };
 
 struct PAD Pads[2];
 int numPadsConnected = 0;
@@ -655,72 +660,82 @@ void HandleDualShock(void)
 	/* end block 4 */
 	// End Line: 1124
 
+int gDualShockMax = 255;
+
+// [D]
 void HandlePadVibration(int pad)
 {
-	UNIMPLEMENTED();
-
-	/*
-	byte bVar1;
-	uchar uVar2;
-	byte *pbVar3;
+	unsigned char bVar1;
+	unsigned char uVar2;
+	unsigned char* pbVar3;
 	int iVar4;
-	byte **ppbVar5;
+	unsigned char** ppbVar5;
 	int iVar6;
 
 	iVar6 = 0;
-	if ((((NoPlayerControl != 0) || (gDualShockMax == 0)) || (gDrawPauseMenus != 0)) ||
-		((game_over != 0 || (gInGameCutsceneActive != 0)))) {
+	if ((((NoPlayerControl != 0) || (gDualShockMax == 0)) || (gDrawPauseMenus != 0)) || ((game_over != 0 || (gInGameCutsceneActive != 0))))
+	{
 		StopPadVibration(pad);
 		return;
 	}
-	if ((&player)[pad].onGrass != '\0') {
-		iVar6 = *(int *)(car_data[(&player)[pad].playerCarId].st + 0x2c) >> 0xf;
-		if (iVar6 < 0) {
+
+	if (player[pad].onGrass != '\0') 
+	{
+		iVar6 = car_data[player[pad].playerCarId].st.n.angularVelocity[1] >> 0xf;
+
+		if (iVar6 < 0)
 			iVar6 = -iVar6;
-		}
-		iVar6 = iVar6 + car_data[(&player)[pad].playerCarId].hd.speed;
-		if (0x3c < iVar6) {
+	
+		iVar6 = iVar6 + car_data[player[pad].playerCarId].hd.speed;
+
+		if (0x3c < iVar6)
 			iVar6 = 0x3c;
-		}
-		Pads[pad].vibrate = '\x06';
+	
+		Pads[pad].vibrate = 6;
 	}
-	if (Pads[pad].shake_type == '\0') {
+
+	if (Pads[pad].shake_type == 0)
+	{
 	LAB_0006bd30:
-		if (Pads[pad].shakeptr == (uchar *)0x0) goto LAB_0006bd84;
+		if (Pads[pad].shakeptr == NULL) 
+			goto LAB_0006bd84;
 	}
-	else {
-		if (Pads[pad].shakeptr == (uchar *)0x0) {
-			Pads[pad].shakeptr = shake_data3[(uint)Pads[pad].shake_type - 1];
+	else 
+	{
+		if (Pads[pad].shakeptr == NULL) 
+		{
+			Pads[pad].shakeptr = shake_data[Pads[pad].shake_type - 1];
 			goto LAB_0006bd30;
 		}
 	}
+
 	ppbVar5 = &Pads[pad].shakeptr;
 	bVar1 = **ppbVar5;
 	pbVar3 = *ppbVar5 + 1;
 	*ppbVar5 = pbVar3;
-	iVar6 = iVar6 + (uint)bVar1;
-	if (*pbVar3 == 0) {
-		*ppbVar5 = (byte *)0x0;
-	}
+	iVar6 = iVar6 + bVar1;
+
+	if (*pbVar3 == 0) 
+		*ppbVar5 = NULL;
+
 LAB_0006bd84:
-	if (0xff < iVar6) {
+	if (0xff < iVar6)
 		iVar6 = 0xff;
-	}
+
 	iVar4 = gDualShockMax + 0x100;
 	uVar2 = Pads[pad].alarmShakeCounter;
-	Pads[pad].shake_type = '\0';
-	Pads[pad].motors[1] = (uchar)(iVar6 * iVar4 >> 9);
-	if (uVar2 != '\0') {
-		Pads[pad].alarmShakeCounter = uVar2 + -1;
-		if (uVar2 == '\x01') {
-			Pads[pad].motors[0] = '\0';
-		}
-		else {
-			Pads[pad].motors[0] = '\x01';
-		}
+
+	Pads[pad].shake_type = 0;
+	Pads[pad].motors[1] = (iVar6 * iVar4 >> 9);
+
+	if (uVar2 != 0) 
+	{
+		Pads[pad].alarmShakeCounter = uVar2 - 1;
+		if (uVar2 == 1)
+			Pads[pad].motors[0] = 0;
+		else
+			Pads[pad].motors[0] = 1;
 	}
-	return;
-	*/
 }
 
 
