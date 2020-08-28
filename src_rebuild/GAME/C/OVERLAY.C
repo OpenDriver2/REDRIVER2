@@ -1051,7 +1051,7 @@ void PrintScoreTableTime(int x, int y, int time)
 	if (time == -1) 
 		sprintf(string, "-:--.--");
 	else
-		sprintf(string, "%d:%02d.%02d", time / 180000, time / 3000 - (time / 180000) - 60, (time % 3000) / 0x1e);
+		sprintf(string, "%d:%02d.%02d", time / 180000, time / 3000 - (time / 180000) * 60, (time % 3000) / 30);
 
 	PrintString(string, x, y);
 }
