@@ -892,7 +892,7 @@ void DrawDrivingGameOverlays(void)
 {
 	int iVar1;
 	int iVar2;
-	int *piVar3;
+	SCORE_ENTRY* table;
 	int y;
 	int y_00;
 	char string[32];
@@ -920,19 +920,19 @@ void DrawDrivingGameOverlays(void)
 			}
 
 			
-			piVar3 = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0].time;
+			table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
 			PrintStringRightAligned("Gate:", 0x10e, 0x10);
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
 			PrintString(string, 0x111, 0x10);
 			y = PrintString("Best:", 0x10, 0x24);
-			PrintScoreTableTime(y + 3, 0x24, *piVar3);
+			PrintScoreTableTime(y + 3, 0x24, table->time);
 			y = PrintString("Gate:", 0x10, 0x34);
 
-			if (*(short *)(piVar3 + 1) == -1) 
+			if (table->items == -1)
 				goto LAB_00015c00;
 
 		LAB_00015c20:
-			sprintf(string, "%d");
+			sprintf(string, "%d", table->items);
 			goto LAB_00015c2c;
 
 		case GAME_CHECKPOINT:
@@ -947,7 +947,7 @@ void DrawDrivingGameOverlays(void)
 				goto LAB_00015b28;
 			}
 
-			piVar3 = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0].time;
+			table = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0];
 			PrintStringRightAligned("Checks", 0x10e, 0x10);
 			sprintf(string, "%d/5", gPlayerScore.items);
 			PrintString(string, 0x111, 0x10);
@@ -955,15 +955,15 @@ void DrawDrivingGameOverlays(void)
 			goto LAB_00015c88;
 		case GAME_TRAILBLAZER:
 			
-			piVar3 = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0].time;
+			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
 			PrintStringRightAligned("Cones:", 0xfa, 0x10);
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
 			PrintString(string, 0xfd, 0x10);
 			y = PrintString("Best", 0x10, 0x24);
-			PrintScoreTableTime(y + 3, 0x24, *piVar3);
+			PrintScoreTableTime(y + 3, 0x24, table->time);
 			y = PrintString("Cones:", 0x10, 0x34);
 
-			if (*(short *)(piVar3 + 1) != -1)
+			if (table->items != -1)
 				goto LAB_00015c20;
 
 		LAB_00015c00:
@@ -972,10 +972,10 @@ void DrawDrivingGameOverlays(void)
 			PrintString(string, y + 3, 0x34);
 			break;
 		case GAME_SURVIVAL:
-			piVar3 = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0].time;
+			table = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0];
 		LAB_00015c88:
 			y = PrintString("Best:", 0x10, 0x24);
-			PrintScoreTableTime(y + 3, 0x24, *piVar3);
+			PrintScoreTableTime(y + 3, 0x24, table->time);
 			break;
 		case GAME_CAPTURETHEFLAG:
 			y = PrintString("Flags:", 0x10, 0x10);

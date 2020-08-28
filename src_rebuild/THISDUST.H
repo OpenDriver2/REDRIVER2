@@ -16,7 +16,7 @@ void printWarning(char *fmt, ...);
 void printError(char *fmt, ...);
 
 // TODO: VERSION.H
-#define GAME_VERSION_N		"0.8"
+#define GAME_VERSION_N		"0.93 alpha"
 #define GAME_TITLE			"REDRIVER2"
 #define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
 
