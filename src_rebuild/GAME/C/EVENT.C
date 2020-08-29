@@ -1303,7 +1303,7 @@ void SetUpEvents(int full)
 		e = &(*e)->next;
 		VisibilityLists(VIS_ADD, 130);
 
-		if (full != 0)
+		if (full)
 		{
 			chicagoDoor[2].initialRotation = FindModelIdxWithName("HUB");
 			chicagoDoor[2].minSpeed = FindModelIdxWithName("CAR");
@@ -1313,27 +1313,24 @@ void SetUpEvents(int full)
 			carModel = FindModelIdxWithName("LORRY");
 		}
 
-		i = 40;
-
 		multiCar.count = 0;
 		multiCar.event = event + cEvents;
 		iVar5 = 0;
 
-		iVar4 = 6;
+		ev_00 = multiCar.event;
+		iVar4 = 0;
 		do {
-			ev_00 = multiCar.event;
-
 			ev_00->flags = 0x680;
 
-			if (full != 0)
+			if (full)
 				ev_00->model = carModel;
 
 			ev_00->radius = 0;
-			ev_00->next = ev_00 + 1;
+			ev_00->next = ev_00+1;
 
 			ev_00++;
-			iVar4--;
-		} while (-1 < iVar4);
+			iVar4++;
+		} while (iVar4 < 7);
 
 		cEvents = cEvents + 7;
 	}
@@ -4268,7 +4265,6 @@ void BoatOffset(SVECTOR *offset, _EVENT *ev)
 	offset->vx = 0;
 	offset->vy = -*(short *)(ev->data + 2);
 	offset->vz = *(short *)(ev->data + 4) - *(short *)&(ev->position).vz;
-	return;
 }
 
 
@@ -5587,6 +5583,7 @@ void MultiCarEvent(_TARGET *target)
 		n = (multiCar.event - event) + multiCar.count;
 
 		ev = event + n;
+
 		ev->position.vx = data->x;
 		ev->position.vy = -0x138;
 		ev->position.vz = data->z;
@@ -5604,6 +5601,7 @@ void MultiCarEvent(_TARGET *target)
 		n = data->x;
 	}
 	
+	//firstEvent->next = first; // [A] bug fix
 	multiCar.event[multiCar.count - 1].next = first;
 }
 
