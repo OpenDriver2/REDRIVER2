@@ -2151,7 +2151,7 @@ void StepFromToEvent(_EVENT *ev)
 		iVar4 = (*ev->data + -1) * (int)*(short*)((int)rcossin_tbl + ((uVar3 - (uVar3 >> 0x1f)) * 2 & 0x3ffc));
 	}
 
-	uVar3 = (iVar4 >> 0xc) + 1U ^ uVar2;
+	uVar3 = FIXED(iVar4) + 1U ^ uVar2;
 LAB_00047b78:
 
 	*local_t0_132 = iVar6 + (uVar3 - uVar2);
@@ -2240,283 +2240,304 @@ LAB_00047b78:
 	/* end block 3 */
 	// End Line: 3138
 
+// [D]
 void StepPathEvent(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort *puVar1;
-	ushort uVar2;
-	short sVar3;
+	static int speed;
+
+	short* puVar1;
+	short sVar2;
+	ushort uVar3;
 	int iVar4;
-	int iVar5;
+	long lVar5;
 	int iVar6;
 	int iVar7;
-	int iVar8;
-	int *piVar9;
-	int *piVar10;
+	int* piVar8;
+	int iVar9;
+	int* i;
+	int* from;
+	int iVar10;
 	uint uVar11;
-	int *piVar12;
+	int* to;
+	int iVar12;
+	long* curr;
 	int iVar13;
-	_EVENT *p_Var14;
-	int iVar15;
-	int local_30[4];
-	int local_20;
-	int local_1c;
-	int local_18;
-	int local_14;
+	int turn[4];
+	XZPAIR centre;
+	XZPAIR offset;
 
-	sVar3 = ev->timer;
-	if (ev->timer != 0) {
-		ev->timer = sVar3 + -1;
-		if (sVar3 == 1) {
+	sVar2 = ev->timer;
+
+	if (ev->timer != 0) 
+	{
+		ev->timer = sVar2 + -1;
+
+		if (sVar2 == 1)
+		{
 			do {
 				NextNode(ev);
-				puVar1 = (ushort *)&ev->flags;
+				puVar1 = &ev->flags;
 				ev = ev->next;
-				if (ev == (_EVENT *)0x0) {
-					speed_49 = 0;
+				if (ev == NULL) {
+					speed = 0;
 					return;
 				}
 			} while (ev->flags == (*puVar1 & 0xfbff));
 		}
-		else {
-			if ((ev->flags & 0x100U) != 0) {
-				ev->timer = sVar3;
-			}
+		else if ((ev->flags & 0x100U) != 0) 
+		{
+			ev->timer = sVar2;
 		}
-		speed_49 = 0;
+
+		speed = 0;
 		return;
 	}
-	uVar2 = ev->flags;
-	if ((speed_49 == 0) && ((uVar2 & 0x400) == 0)) {
+
+	uVar3 = ev->flags;
+
+	if ((speed == 0) && ((uVar3 & 0x400) == 0))
 		return;
+
+	from = ev->node;
+	to = from + 2;
+
+	if (*from == -0x7ffffffe) 
+	{
+		iVar12 = 2;
+		i = from + 1;
 	}
-	piVar10 = ev->node;
-	piVar12 = piVar10 + 2;
-	if (*piVar10 == -0x7ffffffe) {
-		iVar13 = 2;
-		piVar9 = piVar10 + 1;
-	}
-	else {
-		iVar13 = 1;
-		piVar9 = piVar10;
-		if (piVar10[2] == -0x7ffffffe) {
-			piVar12 = piVar10 + 3;
+	else 
+	{
+		iVar12 = 1;
+		i = from;
+
+		if (from[2] == -0x7ffffffe) 
+		{
+			to = from + 3;
 		}
-		else {
-			iVar13 = 0;
-			if (piVar10[-1] == -0x7ffffffe) {
-				piVar9 = piVar10 + -2;
-			}
-			else {
-				if (piVar10[2] == -0x7fffffff) {
-					piVar12 = ev->data + 3;
-				}
-				else {
-					if ((piVar10[1] == -0x7fffffff) && (ev->data + 3 < piVar12)) {
-						piVar12 = ev->data + 4;
-					}
-				}
-			}
+		else 
+		{
+			iVar12 = 0;
+
+			if (from[-1] == -0x7ffffffe)
+				i = from + -2;
+			else if (from[2] == -0x7fffffff)
+				to = ev->data + 3;
+			else if ((from[1] == -0x7fffffff) && (ev->data + 3 < to))
+				to = ev->data + 4;
 		}
 	}
-	if ((uVar2 & 0x7000) == 0x1000) {
-		iVar13 = -1;
-		if ((uVar2 & 0x8000) == 0) {
-			iVar13 = 1;
+
+	if ((uVar3 & 0x7000) == 0x1000)
+	{
+		iVar12 = -1;
+
+		if ((uVar3 & 0x8000) == 0)
+		{
+			iVar12 = 1;
 			uVar11 = 0;
 		}
-		else {
+		else 
+		{
 			uVar11 = 3;
 		}
-		if (*piVar10 == -0x7ffffffe) {
-			piVar9 = piVar10 + -2;
-		}
-		if (uVar11 < 4) {
-			piVar10 = local_30 + uVar11;
+		if (*from == -0x7ffffffe) 
+			i = from + -2;
+
+
+		if (uVar11 < 4)
+		{
+			piVar8 = turn + uVar11;
 			do {
-				if (*piVar9 == -0x7fffffff) {
-					piVar9 = ev->data + 3;
-				}
-				else {
-					if (*piVar9 == -0x7ffffffe) {
-						piVar9 = piVar9 + 2;
-					}
-				}
-				uVar11 = uVar11 + iVar13;
-				iVar4 = *piVar9;
-				piVar9 = piVar9 + 1;
-				*piVar10 = iVar4;
-				piVar10 = piVar10 + iVar13;
+
+				if (*i == -0x7fffffff)
+					i = ev->data + 3;
+				else if(*i == -0x7ffffffe)
+					i = i + 2;
+					
+				uVar11 = uVar11 + iVar12;
+				iVar4 = *i;
+				i = i + 1;
+				*piVar8 = iVar4;
+				piVar8 = piVar8 + iVar12;
 			} while (uVar11 < 4);
 		}
-		local_20 = local_30[2] + -0x800;
-		if (-1 < local_30[0] - local_30[2]) {
-			local_20 = local_30[2] + 0x800;
+
+		iVar4 = turn[2] + -0x800;
+
+		if (-1 < turn[0] - turn[2]) 
+			iVar4 = turn[2] + 0x800;
+
+		iVar10 = turn[1] - 0x800;
+
+		if (-1 < turn[3] - turn[1])
+			iVar10 = turn[1] + 0x800;
+
+		if ((ev->flags & 0x400U) != 0)
+			speed = *ev->data;
+
+		offset.x = ((ev->position).vz - iVar10) * speed;
+
+		offset.x = offset.x >> 0xb;
+		offset.z = (iVar4 - (ev->position).vx) * speed;
+		offset.z = offset.z >> 0xb;
+
+		if (((turn[2] - turn[0]) * offset.x + (turn[3] - turn[1]) * offset.z) * iVar12 < 0)
+		{
+			offset.x = -offset.x;
+			offset.z = -offset.z;
 		}
-		local_1c = local_30[1] + -0x800;
-		if (-1 < local_30[3] - local_30[1]) {
-			local_1c = local_30[1] + 0x800;
-		}
-		if ((ev->flags & 0x400U) != 0) {
-			speed_49 = *ev->data;
-		}
-		local_18 = ((ev->position).vz - local_1c) * speed_49;
-		if (local_18 < 0) {
-			local_18 = local_18 + 0x7ff;
-		}
-		local_18 = local_18 >> 0xb;
-		local_14 = (local_20 - (ev->position).vx) * speed_49;
-		if (local_14 < 0) {
-			local_14 = local_14 + 0x7ff;
-		}
-		local_14 = local_14 >> 0xb;
-		if (((local_30[2] - local_30[0]) * local_18 + (local_30[3] - local_30[1]) * local_14) * iVar13 <
-			0) {
-			local_18 = -local_18;
-			local_14 = -local_14;
-		}
-		(ev->position).vx = (ev->position).vx + local_18;
-		(ev->position).vz = (ev->position).vz + local_14;
-		sVar3 = ratan2(local_18, local_14);
-		ev->rotation = sVar3 + 0x400U & 0xfff;
-		if (((int)ev->flags & 0x8000U) == 0) {
-			iVar13 = (ev->position).vz - local_1c;
-			if (local_30[3] - local_30[1] < 0) {
-				if (-1 < iVar13) {
+
+		(ev->position).vx = (ev->position).vx + offset.x;
+		(ev->position).vz = (ev->position).vz + offset.z;
+		lVar5 = ratan2(offset.x, offset.z);
+		ev->rotation = (short)lVar5 + 0x400U & 0xfff;
+
+		if (((int)ev->flags & 0x8000U) == 0)
+		{
+			iVar10 = (ev->position).vz - iVar10;
+
+			if (turn[3] - turn[1] < 0) 
+			{
+				if (-1 < iVar10)
 					return;
-				}
+
 			}
-			else {
-				if (iVar13 < 1) {
-					return;
-				}
-			}
-			(ev->position).vx = local_30[2];
+			else if (iVar10 < 1)
+				return;
+
+			(ev->position).vx = turn[2];
 			NextNode(ev);
 			return;
 		}
-		iVar13 = (ev->position).vx - local_20;
-		if (local_30[0] - local_30[2] < 0) {
-			if (-1 < iVar13) {
+		iVar4 = (ev->position).vx - iVar4;
+
+		if (turn[0] - turn[2] < 0) {
+			if (-1 < iVar4)
 				return;
-			}
+
 		}
-		else {
-			if (iVar13 < 1) {
-				return;
-			}
-		}
-		(ev->position).vz = local_30[1];
+		else if (iVar4 < 1) 
+			return;
+
+		(ev->position).vz = turn[1];
 		NextNode(ev);
 		return;
 	}
-	p_Var14 = ev;
-	if ((uVar2 & 0x8000) != 0) {
-		p_Var14 = (_EVENT *)&(ev->position).vz;
-	}
-	iVar5 = (p_Var14->position).vx;
-	iVar15 = -1;
-	iVar4 = *piVar12 - iVar5;
-	if (-1 < iVar4) {
-		iVar15 = 1;
-	}
-	iVar6 = *piVar9;
-	if (iVar4 < 0) {
+
+	curr = (long*)ev;
+
+	if ((uVar3 & 0x8000) != 0)
+		curr = &(ev->position).vz;
+
+	iVar10 = *curr;
+	iVar13 = -1;
+	iVar4 = *to - iVar10;
+
+	if (-1 < iVar4)
+		iVar13 = 1;
+
+	iVar6 = *i;
+	if (iVar4 < 0)
 		iVar4 = -iVar4;
-	}
-	iVar8 = iVar5 - iVar6;
-	if (iVar8 < 0) {
-		iVar8 = -iVar8;
-	}
-	if (iVar4 < iVar8) {
+
+	iVar9 = iVar10 - iVar6;
+	if (iVar9 < 0)
+		iVar9 = -iVar9;
+
+	if (iVar4 < iVar9) 
+	{
 		iVar7 = 2;
-		iVar8 = iVar4;
+		iVar9 = iVar4;
 	}
-	else {
+	else
 		iVar7 = 1;
+
+	iVar4 = iVar10 - iVar6;
+	if (iVar12 == iVar7)
+		iVar12 = 0;
+
+	if (iVar9 < 0)
+		iVar9 = -iVar9;
+
+	if (iVar4 < 0)
+		iVar4 = iVar6 - iVar10;
+
+	if (iVar4 <= iVar9) 
+	{
+		iVar9 = *curr - iVar6;
+		if (iVar9 < 0)
+			iVar9 = iVar6 - *curr;
+
 	}
-	iVar4 = iVar5 - iVar6;
-	if (iVar13 == iVar7) {
-		iVar13 = 0;
-	}
-	if (iVar8 < 0) {
-		iVar8 = -iVar8;
-	}
-	if (iVar4 < 0) {
-		iVar4 = iVar6 - iVar5;
-	}
-	if (iVar4 <= iVar8) {
-		iVar4 = (p_Var14->position).vx;
-		iVar8 = iVar4 - iVar6;
-		if (iVar8 < 0) {
-			iVar8 = iVar6 - iVar4;
-		}
-	}
-	if ((uVar2 & 0x400) != 0) {
-		if ((uVar2 & 0x80) != 0) {
-			if (CameraCnt < 0x1000) {
-				speed_49 = ev->data[1] * (0x1000 - CameraCnt) + ev->data[2] * CameraCnt;
-				if (speed_49 < 0) {
-					speed_49 = speed_49 + 0xfff;
-				}
-				speed_49 = speed_49 >> 0xc;
+
+	if ((uVar3 & 0x400) != 0) 
+	{
+		if ((uVar3 & 0x80) != 0) 
+		{
+			if (CameraCnt < 0x1000)
+			{
+				speed = ev->data[1] * (0x1000 - CameraCnt) + ev->data[2] * CameraCnt;
+
+				speed = FIXED(speed);
 			}
-			else {
-				speed_49 = ev->data[2];
+			else 
+			{
+				speed = ev->data[2];
 			}
-			debugSpeed = speed_49;
+			//debugSpeed = speed;
 		}
-		speed_49 = ev->data[1];
+		speed = ev->data[1];
 	}
-	if (((iVar8 < 6000) || ((iVar13 == 0 && (iVar8 < 0x1f70)))) && ((ev->flags & 0x400U) != 0)) {
-		if (iVar13 == 0) {
-			if ((ev->flags & 0x7000U) != 0x3000) goto LAB_00048238;
-			iVar4 = (speed_49 - *ev->data) *
-				(int)rcossin_tbl[(((iVar8 + -0x800) * 0x400) / 0x1f70 & 0xfffU) * 2];
-			uVar11 = iVar8 + -0x800 >> 0x1f;
-			speed_49 = (*ev->data ^ uVar11) - uVar11;
-			if (iVar4 < 0) {
-				iVar4 = iVar4 + 0xfff;
-			}
+
+	if (((iVar9 < 6000) || ((iVar12 == 0 && (iVar9 < 0x1f70)))) && ((ev->flags & 0x400U) != 0)) 
+	{
+		if (iVar12 == 0)
+		{
+			if ((ev->flags & 0x7000U) != 0x3000)
+				goto LAB_00048238;
+			iVar4 = (speed - *ev->data) * (int)rcossin_tbl[(((iVar9 + -0x800) * 0x400) / 0x1f70 & 0xfffU) * 2];
+			uVar11 = iVar9 + -0x800 >> 0x1f;
+			speed = (*ev->data ^ uVar11) - uVar11;
 		}
-		else {
-			iVar4 = (speed_49 + -5) * (int)rcossin_tbl[((iVar8 << 10) / 6000 & 0xfffU) * 2];
-			speed_49 = (iVar8 >> 0x1f ^ 5U) - (iVar8 >> 0x1f);
-			if (iVar4 < 0) {
-				iVar4 = iVar4 + 0xfff;
-			}
+		else
+		{
+			iVar4 = (speed + -5) * (int)rcossin_tbl[((iVar9 << 10) / 6000 & 0xfffU) * 2];
+			speed = (iVar9 >> 0x1f ^ 5U) - (iVar9 >> 0x1f);
 		}
-		speed_49 = speed_49 + (iVar4 >> 0xc);
+
+		speed = speed + FIXED(iVar4);
 	}
 LAB_00048238:
-	iVar4 = (p_Var14->position).vx + speed_49 * iVar15;
-	(p_Var14->position).vx = iVar4;
-	if (iVar13 == 0) {
-		uVar2 = ev->flags;
-		if ((uVar2 & 0x7000) != 0) {
-			if (0x7ff < (*piVar12 - iVar4) * iVar15) {
+	iVar4 = *curr + speed * iVar13;
+	*curr = iVar4;
+
+	if (iVar12 == 0)
+	{
+		uVar3 = ev->flags;
+		if ((uVar3 & 0x7000) != 0)
+		{
+			if (0x7ff < (*to - iVar4) * iVar13)
+				return;
+
+			if ((uVar3 & 0x7000) == 0x3000)
+			{
+				ev->flags = uVar3 & 0x8fff | 0x1000;
 				return;
 			}
-			if ((uVar2 & 0x7000) == 0x3000) {
-				ev->flags = uVar2 & 0x8fff | 0x1000;
-				return;
-			}
+
 			return;
 		}
 	}
-	if ((*piVar12 - iVar4) * iVar15 < 0) {
-		if (iVar13 == 0) {
+
+	if ((*to - iVar4) * iVar13 < 0)
+	{
+		if (iVar12 == 0)
 			InitTrain(ev, 0, 0);
-		}
-		else {
-			if ((ev->flags & 0x400U) != 0) {
-				ev->timer = 300;
-			}
-		}
+		else if ((ev->flags & 0x400U) != 0)
+			ev->timer = 300;
+
 	}
-	return;
-	*/
 }
 
 
@@ -2547,7 +2568,7 @@ LAB_00048238:
 // [D]
 int GetBridgeRotation(int timer)
 {
-	static int debugRotation = -1;;
+	static int debugRotation = -1;
 
 	int iVar1;
 
