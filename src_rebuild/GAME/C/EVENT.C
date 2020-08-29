@@ -43,8 +43,10 @@ int ElTrainData[83] = {
 	-18216, -80683, -2147483647
 };
 
+const int t = 2147483648;
+
 int VegasTrainData[7] = {
-	123, 32768, 982000, -68855, 762717, 2147483648
+	0, 123, 0x8000, 0xEFBF0, 0xFFFEF309, 0xBA35D, 0x80000000
 };
 
 int VegasParkedTrains[3] = {
@@ -397,7 +399,6 @@ static MultiCar multiCar;
 struct _EVENT *firstEvent;
 static _EVENT* firstMissionEvent;
 struct _EVENT *event;
-
 
 static struct EventCamera eventCamera;
 
@@ -776,7 +777,7 @@ void VisibilityLists(VisType type, int i)
 
 		while (ev != NULL)
 		{
-			ev->flags = ev->flags & 0xfffb;
+			ev->flags &= ~4;
 			ev = ev->next;
 		}
 
@@ -911,7 +912,7 @@ void InitDoor(FixedEvent *ev, _EVENT ***e, int *cEvents)
 {
 	ev->active = 0;
 	ev->rotation = ev->finalRotation;
-	ev->flags = ev->flags | 0x200;
+	ev->flags |= 0x200;
 
 	*(FixedEvent **)*e = ev;	// [A] is that gonna work?
 	*e = &(**e)->next;
@@ -1270,7 +1271,7 @@ void SetUpEvents(int full)
 				if (bVar1)
 				{
 					bVar1 = false;
-					event[cEvents].flags = event[cEvents].flags | 0x400;
+					event[cEvents].flags |= 0x400;
 				}
 
 				if (full != 0)
@@ -1312,7 +1313,7 @@ void SetUpEvents(int full)
 			carModel = FindModelIdxWithName("LORRY");
 		}
 
-		i = 0x28;
+		i = 40;
 
 		multiCar.count = 0;
 		multiCar.event = event + cEvents;
@@ -1330,10 +1331,9 @@ void SetUpEvents(int full)
 			ev_00->radius = 0;
 			ev_00->next = ev_00 + 1;
 
+			ev_00++;
 			iVar4--;
 		} while (-1 < iVar4);
-
-		ev_00->next = NULL;
 
 		cEvents = cEvents + 7;
 	}
@@ -1427,10 +1427,10 @@ void SetUpEvents(int full)
 			if (full != 0)
 				ev_00->model = trainModel;
 
-			i++;
 			*e = &event[i];
-
 			e = &(*e)->next;
+
+			i++;
 		}
 		event[iVar5 - 1].next = NULL;
 		event[1].next = NULL;
@@ -1459,7 +1459,7 @@ void SetUpEvents(int full)
 
 		ev_00 = event;
 
-		if (gCurrentMissionNumber != 30)
+		if (gCurrentMissionNumber == 30)
 		{
 			event[cEvents].position.vx = -0x2ffb;
 			ev_00[cEvents].position.vy = -0x113;
@@ -3114,7 +3114,7 @@ void StepEvents(void)
 						if ((uVar3 & uVar12) == 0)
 						{
 							if ((uVar2 & 0x80) == 0) 
-								evt = &event[uVar3];
+								evt = &event[uVar3 & 0x7f];
 							else
 								evt = (_EVENT*)&fixedEvent[uVar3 & 0x7f];
 
@@ -3128,9 +3128,10 @@ void StepEvents(void)
 									if (((uVar3 & uVar12) == 0) && ((*puVar11 & 0xfff) == (uVar3 & 0xfff))) 
 									{
 										cop = EventCop + event_models_active;
-										(cop->pos).vx = (evt->position).vx;
-										(cop->pos).vy = (evt->position).vy;
-										(cop->pos).vz = (evt->position).vz;
+
+										cop->pos.vx = evt->position.vx;
+										cop->pos.vy = evt->position.vy;
+										cop->pos.vz = evt->position.vz;
 										cop->yang = (evt->rotation >> 6);
 										cop->type = evt->model;
 
@@ -3139,7 +3140,7 @@ void StepEvents(void)
 										else
 											cop->pad = 0;
 
-										event_models_active = event_models_active + 1;
+										event_models_active++;
 										evt->flags |= 4;
 									}
 									puVar10++;
@@ -4945,7 +4946,6 @@ VECTOR* TriggerEvent(int i)
 					if (count > 1)
 						VisibilityLists(VIS_ADD, count);
 
-					ev = event;
 					count++;
 				} while (count < 9);
 
