@@ -10,6 +10,8 @@ PC (Windows):
  
 Project attempting to reverse-engineer PS1 game Driver 2;
 
+Start Date: 28 March 2019
+
 ### Goals
 - Rebuild all source code from assembly
 - Compile native version for **PC** (and for **PSX** later)
