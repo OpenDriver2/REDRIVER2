@@ -19,6 +19,9 @@ extern int leadCarId;
 
 extern int DawnCount;
 
+extern int ObjectDrawnValue;
+extern int ObjectDrawnCounter;
+
 extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
 
 typedef void(*occlFunc)(int *comp_val);

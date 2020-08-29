@@ -18,9 +18,12 @@
 #include "TEXTURE.H"
 #include "CIV_AI.H"
 #include "PEDEST.H"
+#include "SHADOW.H"
+#include "GAMESND.H"
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
+
 
 
 
@@ -3851,340 +3854,389 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 	/* end block 4 */
 	// End Line: 5645
 
+// [D]
 void DrawEvents(int camera)
 {
-	UNIMPLEMENTED();
-	/*
+	static struct _EVENT *nearestTrain; // offset 0x28
+	static int distanceFromNearestTrain; // offset 0x2c
+
 	bool bVar1;
 	uint uVar2;
 	ushort uVar3;
 	uint uVar4;
 	int local_d8;
-	short *psVar5;
-	FixedEvent *pFVar6;
-	ushort *puVar7;
+	MATRIX* pMVar5;
+	ushort* puVar7;
 	int iVar8;
 	int iVar9;
-	ushort *puVar10;
-	int *piVar11;
-	VECTOR *pVVar12;
-	_EVENT *ev;
-	undefined4 in_stack_ffffff2c;
-	short local_d0;
-	short local_ce;
-	short local_cc;
-	short local_ca;
-	short local_c8;
-	short local_c6;
-	short local_c4;
-	short local_c2;
-	short local_c0;
-	VECTOR local_90;
-	VECTOR local_80[4];
-	int local_40;
-	int local_3c;
-	uint local_38;
-	uint local_34;
-	int local_30;
+	ushort* puVar10;
+	int* piVar11;
+	VECTOR* pVVar12;
+	_EVENT* ev;
+	MATRIX matrix;
+	MATRIX ext;
+	VECTOR pos;
+	VECTOR shadow[4];
+	XZPAIR offset;
+	int thisCamera;
+	int otherCamera;
+	int temp;
 
-	if (CurrentPlayerView == 0) {
-		nearestTrain_70 = (_EVENT *)0x0;
-		local_38 = 0x8000;
-		local_34 = 0x4000;
+	if (CurrentPlayerView == 0) 
+	{
+		nearestTrain = NULL;
+		thisCamera = 0x8000;
+		otherCamera = 0x4000;
 	}
-	else {
-		local_38 = 0x4000;
-		local_34 = 0x8000;
+	else 
+	{
+		thisCamera = 0x4000;
+		otherCamera = 0x8000;
 	}
-	if (camera == 0) {
+
+	if (camera == 0)
+	{
 		SetFrustrumMatrix();
 	}
-	else {
-		if (cameraEventsActive == 0) {
+	else 
+	{
+		if (cameraEventsActive == 0)
 			return;
-		}
+
 		InitEventCamera();
 	}
+
 	VisibilityLists(VIS_NEXT, CurrentPlayerView);
+
 	uVar4 = (uint)*xVis;
-	uVar2 = uVar4 & local_38;
+	uVar2 = uVar4 & thisCamera;
 	puVar10 = xVis;
+
 	do {
-		if (uVar2 != 0) {
-			if (camera == 0) {
-				if (eventHaze != 0) {
+		if (uVar2 != 0)
+		{
+			if (camera == 0)
+			{
+				if (eventHaze != 0)
+				{
 					add_haze(eventHaze, eventHaze, 7);
 				}
 			}
-			else {
+			else 
+			{
 				ResetEventCamera();
 			}
-			if (((camera == 0) && (CurrentPlayerView == (uint)NumPlayers - 1)) &&
-				(local_d8 = (int)es_mobile, local_d8 != -1)) {
-				if (nearestTrain_70 == (_EVENT *)0x0) {
-					SetEnvSndVol(local_d8, -10000);
+
+			if (camera == 0 && (CurrentPlayerView == NumPlayers - 1) && es_mobile[0] != -1)
+			{
+				if (nearestTrain == NULL) 
+				{
+					SetEnvSndVol(es_mobile[0], -10000);
 				}
-				else {
-					SetEnvSndVol(local_d8, 2000);
-					SetEnvSndPos((int)es_mobile, (nearestTrain_70->position).vx, (nearestTrain_70->position).vz)
-						;
+				else 
+				{
+					SetEnvSndVol(es_mobile[0], 2000);
+					SetEnvSndPos(es_mobile[0], nearestTrain->position.vx, nearestTrain->position.vz);
 				}
 			}
 			return;
 		}
-		if ((uVar4 & local_34) == 0) {
-			if ((uVar4 & 0x80) == 0) {
-				local_d8 = (uVar4 & 0x7f) * 0x28;
-				pFVar6 = (FixedEvent *)event;
-			}
-			else {
-				local_d8 = (uVar4 & 0x7f) * 0x2c;
-				pFVar6 = fixedEvent;
-			}
-			ev = (_EVENT *)((int)&(pFVar6->position).vx + local_d8);
+
+		if ((uVar4 & otherCamera) == 0) 
+		{
+			if ((uVar4 & 0x80) == 0) 
+				ev = &event[(uVar4 & 0x7f)];
+			else 
+				ev = (_EVENT*)&fixedEvent[(uVar4 & 0x7f)];
+
 			uVar3 = ev->flags;
-			if ((uVar3 & 4) == 0) {
-				if (camera == 0) {
-					if ((uVar3 & 1) != 1) {
+
+			if ((uVar3 & 4) == 0)
+			{
+				if (camera == 0)
+				{
+					if ((uVar3 & 1) != 1)
+					{
 					LAB_00049d90:
 						uVar4 = (uint)*zVis;
 						puVar7 = zVis;
-						if ((uVar4 & local_38) == 0) {
+						if ((uVar4 & thisCamera) == 0)
+						{
 						LAB_00049db4:
-							if (((uVar4 & local_34) != 0) || (((uint)*puVar10 & 0xfff) != (uVar4 & 0xfff))) break;
+							if (((uVar4 & otherCamera) != 0) || (((uint)*puVar10 & 0xfff) != (uVar4 & 0xfff)))
+								break;
 							ev->flags = uVar3 | 4;
-							if (camera == 0) {
-								if ((es_mobile != -1) && ((uVar3 & 2) != 0)) {
+
+							if (camera == 0) 
+							{
+								if ((es_mobile[0] != -1) && ((uVar3 & 2) != 0)) 
+								{
 									local_d8 = (ev->position).vx;
 									iVar9 = local_d8 - camera_position.vx;
-									if (iVar9 < 0) {
+									if (iVar9 < 0)
 										iVar9 = camera_position.vx - local_d8;
-									}
+
 									iVar8 = (ev->position).vz;
 									local_d8 = iVar8 - camera_position.vz;
-									if (local_d8 < 0) {
+
+									if (local_d8 < 0)
 										local_d8 = camera_position.vz - iVar8;
-									}
-									if ((nearestTrain_70 == (_EVENT *)0x0) ||
-										((uint)(iVar9 + local_d8) < distanceFromNearestTrain_71)) {
-										nearestTrain_70 = ev;
-										distanceFromNearestTrain_71 = iVar9 + local_d8;
+
+									if ((nearestTrain == NULL) ||
+										((uint)(iVar9 + local_d8) < distanceFromNearestTrain)) 
+									{
+										nearestTrain = ev;
+										distanceFromNearestTrain = iVar9 + local_d8;
 									}
 								}
-								local_d8 = FrustrumCheck(ev, (int)modelpointers1536[ev->model]->bounding_sphere);
-								if (local_d8 != -1) {
-									local_90.vx = (ev->position).vx - camera_position.vx;
-									local_90.vy = (ev->position).vy - camera_position.vy;
-									local_d0 = 0x1000;
-									local_ca = 0;
-									local_c4 = 0;
-									local_ce = 0;
-									local_c8 = 0x1000;
-									local_c2 = 0;
-									local_cc = 0;
-									local_c6 = 0;
-									local_c0 = 0x1000;
-									local_90.vz = (ev->position).vz - camera_position.vz;
+
+								local_d8 = FrustrumCheck((VECTOR*)ev, (int)modelpointers[ev->model]->bounding_sphere);
+
+								if (local_d8 != -1)
+								{
+									pos.vx = (ev->position).vx - camera_position.vx;
+									pos.vy = (ev->position).vy - camera_position.vy;
+									matrix.m[0][0] = 0x1000;
+									matrix.m[1][0] = 0;
+									matrix.m[2][0] = 0;
+									matrix.m[0][1] = 0;
+									matrix.m[1][1] = 0x1000;
+									matrix.m[2][1] = 0;
+									matrix.m[0][2] = 0;
+									matrix.m[1][2] = 0;
+									matrix.m[2][2] = 0x1000;
+									pos.vz = (ev->position).vz - camera_position.vz;
 									bVar1 = false;
-									if ((ev->flags & 2U) == 0) {
+
+									if ((ev->flags & 2U) == 0) 
+									{
 										uVar3 = ev->flags & 0xcc0;
-										if (uVar3 == 0x400) goto LAB_0004a118;
-										if (uVar3 < 0x401) {
-											if (uVar3 == 0x80) {
-												_RotMatrixY((MATRIX *)&stack0xffffff30, ev->rotation);
-												local_90.vx = local_90.vx - boatOffset.vx;
-												local_90.vz = local_90.vz - boatOffset.vz;
-												local_90.vy = (local_90.vy - boatOffset.vy) +
-													((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2] +
-														0x800 >> 0xc);
+
+										if (uVar3 == 0x400)
+											goto LAB_0004a118;
+
+										if (uVar3 < 0x401) 
+										{
+											if (uVar3 == 0x80)
+											{
+												_RotMatrixY(&matrix, ev->rotation);
+												pos.vx = pos.vx - boatOffset.vx;
+												pos.vz = pos.vz - boatOffset.vz;
+												pos.vy = (pos.vy - boatOffset.vy) + FIXED((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
 											}
-											else {
-												if (uVar3 != 0xc0) {
-												LAB_0004a140:
-													uVar3 = ev->flags & 0x30;
-													if (uVar3 == 0x10) {
-														_RotMatrixY((MATRIX *)&stack0xffffff30, ev->rotation);
+											else if (uVar3 != 0xc0)
+											{
+											LAB_0004a140:
+												uVar3 = ev->flags & 0x30;
+												if (uVar3 == 0x10) {
+													_RotMatrixY(&matrix, ev->rotation);
+												}
+												else if (uVar3 < 0x11)
+												{
+													if ((ev->flags & 0x30U) == 0)
+													{
+														_RotMatrixX(&matrix, ev->rotation);
 													}
-													else {
-														if (uVar3 < 0x11) {
-															if ((ev->flags & 0x30U) == 0) {
-																_RotMatrixX((MATRIX *)&stack0xffffff30, ev->rotation);
-															}
-														}
-														else {
-															if (uVar3 == 0x20) {
-																_RotMatrixZ((MATRIX *)&stack0xffffff30, ev->rotation);
-															}
-														}
-													}
+												}
+												else if (uVar3 == 0x20)
+												{
+													_RotMatrixZ(&matrix, ev->rotation);
 												}
 											}
 										}
-										else {
-											if (uVar3 == 0x440) {
-												_RotMatrixX((MATRIX *)&stack0xffffff30, ev->rotation);
-											}
-											else {
-												uVar4 = 0;
-												if (uVar3 != 0x480) goto LAB_0004a140;
-												local_d8 = 0;
-												piVar11 = &local_80[0].vz;
-												pVVar12 = local_80;
-												do {
-													if ((uVar4 & 1) == 0) {
-														local_40 = -0xc9;
-													}
-													else {
-														local_40 = 0xc9;
-													}
-													if ((uVar4 & 2) == 0) {
-														local_3c = -0x4ed;
-													}
-													else {
-														local_3c = 0x4ed;
-													}
-													uVar2 = (int)ev->rotation + 0x200U & 0x400;
-													iVar9 = local_40;
-													if (uVar2 != 0) {
-														iVar9 = local_3c;
-													}
-													pVVar12->vx = (ev->position).vx + iVar9;
-													iVar9 = local_3c;
-													if (uVar2 != 0) {
-														iVar9 = local_40;
-													}
-													*piVar11 = (ev->position).vz + iVar9;
-													*(undefined4 *)((int)&local_80[0].vy + local_d8) = 0;
-													piVar11 = piVar11 + 4;
-													pVVar12 = pVVar12 + 1;
-													uVar4 = uVar4 + 1;
-													local_d8 = local_d8 + 0x10;
-												} while ((int)uVar4 < 4);
-												PlaceShadowForCar(local_80, 0xc, (VECTOR *)0x0, 0);
-											LAB_0004a118:
-												_RotMatrixY((MATRIX *)&stack0xffffff30, ev->rotation);
-											}
+										else if (uVar3 == 0x440)
+										{
+											_RotMatrixX(&matrix, ev->rotation);
+										}
+										else
+										{
+											uVar4 = 0;
+
+											if (uVar3 != 0x480) 
+												goto LAB_0004a140;
+	
+											do {
+												if ((uVar4 & 1) == 0)
+													offset.x = -201;
+												else
+													offset.x = 201;
+
+												if ((uVar4 & 2) == 0)
+													offset.z = -1261;
+												else
+													offset.z = 1261;
+
+												uVar2 = ev->rotation + 0x200U & 0x400;
+
+												iVar9 = offset.x;
+												if (uVar2 != 0)
+													iVar9 = offset.z;
+
+												if (uVar2 != 0)
+													offset.z = offset.x;
+
+												shadow[uVar4].vx = (ev->position).vx + iVar9;
+												shadow[uVar4].vy = 0;
+												shadow[uVar4].vz = (ev->position).vz + offset.z;
+
+												uVar4++;
+											} while (uVar4 < 4);
+
+											PlaceShadowForCar(shadow, 12, NULL, 0);
+
+										LAB_0004a118:
+											_RotMatrixY(&matrix, ev->rotation);
 										}
 									}
-									else {
-										_RotMatrixY((MATRIX *)&stack0xffffff30, ev->rotation);
+									else
+									{
+										_RotMatrixY(&matrix, ev->rotation);
 									}
-									setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-									setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-									setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-									setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-									setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-									_MatrixRotate(&local_90);
-									if ((ev->flags & 0xcc0U) == 0xc0) {
-										psVar5 = (short *)&stack0xffffff30;
-										if (ev->model == HelicopterData.cleanModel) {
-											_RotMatrixZ((MATRIX *)&stack0xffffff30, HelicopterData.roll & 0xfff);
-											_RotMatrixX((MATRIX *)&stack0xffffff30, HelicopterData.pitch & 0xfff);
-											_RotMatrixY((MATRIX *)&stack0xffffff30, ev->rotation & 0xfff);
-											DrawRotor((VECTOR)CONCAT214(local_ca, CONCAT212(local_cc, CONCAT210(local_ce,
-												CONCAT28(local_d0, CONCAT44(in_stack_ffffff2c,
-												(MATRIX *)
-													&stack0xffffff30))))),
-													(MATRIX *)(ev->position).vx);
-											RenderModel(modelpointers1536[ev->model], (MATRIX *)&stack0xffffff30, &local_90,
-												0, 0);
-											local_90.vx = (ev->position).vx - camera_position.vx;
-											local_90.vy = -camera_position.vy - (ev->position).vy;
-											local_90.vz = (ev->position).vz - camera_position.vz;
-											setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-											setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-											setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-											setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-											setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-											_MatrixRotate(&local_90);
+
+									gte_SetRotMatrix(&inv_camera_matrix);
+
+									_MatrixRotate(&pos);
+
+									if ((ev->flags & 0xcc0U) == 0xc0) 
+									{
+										pMVar5 = &matrix;
+
+										if (ev->model == HelicopterData.cleanModel) 
+										{
+											_RotMatrixZ(&matrix, HelicopterData.roll & 0xfff);
+											_RotMatrixX(&matrix, HelicopterData.pitch & 0xfff);
+											_RotMatrixY(&matrix, ev->rotation & 0xfff);
+
+											DrawRotor(ev->position, &matrix);
+
+											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1);
+											pos.vx = (ev->position).vx - camera_position.vx;
+											pos.vy = -camera_position.vy - (ev->position).vy;
+											pos.vz = (ev->position).vz - camera_position.vz;
+
+											gte_SetRotMatrix(&inv_camera_matrix);
+
+											_MatrixRotate(&pos);
 											bVar1 = true;
 										}
-										else {
+										else
+										{
 											local_d8 = 2;
+
 											do {
-												local_d8 = local_d8 + -1;
-												*psVar5 = *psVar5 << 1;
-												psVar5 = psVar5 + 4;
-											} while (-1 < local_d8);
-											_RotMatrixY((MATRIX *)&stack0xffffff30, 0xafd);
-											RenderModel(modelpointers1536[ev->model], (MATRIX *)&stack0xffffff30, &local_90,
-												0, 0);
+												local_d8--;
+												pMVar5->m[0][0] = pMVar5->m[0][0] << 1;
+												pMVar5 = (MATRIX*)(pMVar5->m + 4);
+											} while (-1 < local_d8); // rotation???
+
+											_RotMatrixY(&matrix, 0xafd);
+											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1);
 										}
 									}
-									if ((ev->flags & 0x800U) != 0) {
-										_RotMatrixX((MATRIX *)&stack0xffffff30, (short)ev->data[1]);
+
+									if ((ev->flags & 0x800U) != 0) 
+									{
+										_RotMatrixX(&matrix, (short)ev->data[1]);
+
 										local_d8 = gTimeOfDay;
-										local_90.vy = local_90.vy - ev->data[2];
-										local_30 = combointensity;
-										if ((ev->flags & 0x20U) == 0) {
+										pos.vy = pos.vy - ev->data[2];
+										temp = combointensity;
+
+										if ((ev->flags & 0x20U) == 0)
+										{
 											ev->flags = ev->flags | 1;
-											if (local_d8 != 3) {
+											if (local_d8 != 3) 
+											{
 												bVar1 = true;
 											}
 										}
-										else {
+										else
+										{
 											SetupPlaneColours(0x80a0c);
 										}
 									}
-									if (bVar1) {
-										local_c8 = -local_c8;
-										local_c6 = -local_c6;
-										SetupPlaneColours((ulong)&DAT_00464a40);
-										RenderModel(modelpointers1536[ev->model], (MATRIX *)&stack0xffffff30, &local_90,
-											400, 2);
+
+									if (bVar1) 
+									{
+										matrix.m[1][0] = -matrix.m[1][0];
+										matrix.m[1][1] = -matrix.m[1][1];
+										matrix.m[1][2] = -matrix.m[1][2];
+
+										SetupPlaneColours(0x00464a40);
+
+										RenderModel(modelpointers[ev->model], &matrix, &pos, 400, 2, 1);
 									}
-									else {
-										if ((ev->flags & 0xcc0U) == 0x440) {
-											DrawFerrisWheel((MATRIX *)&stack0xffffff30, &local_90);
-										}
-										else {
-											RenderModel(modelpointers1536[ev->model], (MATRIX *)&stack0xffffff30, &local_90,
-												0, 0);
-										}
+									else 
+									{
+										if ((ev->flags & 0xcc0U) == 0x440) 
+											DrawFerrisWheel(&matrix, &pos);
+										else 
+											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1);
 									}
+
 									if ((ev->flags & 0x800U) != 0) {
-										combointensity = local_30;
-										local_c8 = 0x1000;
-										local_c6 = 0;
-										local_c4 = 0x1000;
-										local_c2 = 0;
-										local_c0 = 0;
-										local_90.vy = local_90.vy + ev->data[2];
-										if (gTimeOfDay != 1) {
-											SetupPlaneColours((ulong)&DAT_00282828);
+										combointensity = temp;
+										matrix.m[0][0] = 0;
+										matrix.m[0][1] = 0;
+										matrix.m[1][0] = 0;
+										matrix.m[1][1] = 0x1000;
+										matrix.m[1][2] = 0;
+										matrix.m[2][0] = 0x1000;
+										matrix.m[2][1] = 0;
+										matrix.m[2][2] = 0;
+
+										pos.vy = pos.vy + ev->data[2];
+
+										if ((foam.rotate & 0x8000U) == 0) 
+										{
+											matrix.m[0][2] = -0x1000;
 										}
-										if ((foam.rotate & 0x8000U) == 0) {
+										else 
+										{
+											matrix.m[0][2] = 0x1000;
+										}
+
+										if (gTimeOfDay != 1)
+										{
+											SetupPlaneColours(0x00282828);
+										}
+
+										if ((foam.rotate & 0x8000U) == 0)
 											local_d8 = 1;
-										}
-										else {
+										else
 											local_d8 = 3;
-										}
-										RenderModel(foam.model, (MATRIX *)&stack0xffffff30, &local_90, 200, local_d8);
+
+										RenderModel(foam.model, &matrix, &pos, 200, local_d8, 1);
 										SetupPlaneColours(combointensity);
 									}
 								}
 							}
-							else {
+							else 
+{
 								SetCamera(ev);
-								DrawMapPSX((int *)&ObjectDrawnValue);
+								DrawMapPSX((int*)&ObjectDrawnValue);
 							}
 						}
 					}
 				}
-				else {
-					if ((uVar3 & 1) != 0) goto LAB_00049d90;
+				else
+ {
+					if ((uVar3 & 1) != 0)
+						goto LAB_00049d90;
 				}
 			}
 		}
 	LAB_0004a58c:
-		puVar10 = puVar10 + 1;
+		puVar10++;
 		uVar4 = (uint)*puVar10;
-		uVar2 = uVar4 & local_38;
+		uVar2 = uVar4 & thisCamera;
 	} while (true);
+
 	uVar4 = (uint)puVar7[1];
 	puVar7 = puVar7 + 1;
-	if ((uVar4 & local_38) != 0) goto LAB_0004a58c;
-	goto LAB_00049db4;*/
+	if ((uVar4 & thisCamera) != 0)
+		goto LAB_0004a58c;
+	goto LAB_00049db4;
 }
 
 
