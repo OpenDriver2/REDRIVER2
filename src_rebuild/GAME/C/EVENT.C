@@ -605,171 +605,187 @@ LAB_00045c40:
 
 /* WARNING: Type propagation algorithm not settling */
 
+static unsigned short* xVis;
+static unsigned short* zVis;
+
+// [D]
 void VisibilityLists(VisType type, int i)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
-	ushort uVar2;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	int *piVar6;
-	ushort *puVar7;
-	_EVENT *p_Var8;
-	int iVar9;
-	undefined *puVar10;
-	FixedEvent *pFVar11;
-	ushort *puVar12;
-	ushort uVar13;
-	int iVar14;
-	int iVar15;
-	undefined4 *puVar16;
-	int zDir;
-	int iVar17;
-	undefined *puVar18;
-	undefined **ppuVar19;
-	int iVar20;
-	undefined local_22c[4];
-	int local_228[128];
+	static unsigned short xList[128]; // offset 0x0
+ 	static unsigned short zList[128]; // offset 0x100
+ 	static unsigned short (*firstX[2]); // offset 0x0
+ 	static unsigned short (*firstZ[2]); // offset 0x8
+ 	static int count; // offset 0x10
 
-	debugCount = &count_10;
-	if (type == VIS_SORT) {
+	static unsigned short(*list[2]) = {
+		xList, zList
+	};
+
+	ushort uVar1;
+	int iVar2;
+	uint uVar3;
+	int iVar4;
+	int* piVar5;
+	_EVENT* ev;
+	int iVar6;
+	ushort* puVar7;
+	FixedEvent* _ev;
+	ushort* puVar8;
+	ushort uVar9;
+	int iVar10;
+	int iVar11;
+	int* piVar12;
+	int zDir;
+	int iVar13;
+	ushort** ppuVar14;
+	int iVar15;
+	int table[128];
+
+	//debugCount = &count.10;
+	if (type == VIS_SORT)
+	{
 		zDir = 0;
 		do {
-			if (0 < count_10) {
-				ppuVar19 = &PTR_xList_6_000aa4c0 + zDir;
-				puVar18 = &stack0xfffffdd0 + 8;
-				iVar17 = 0;
+			if (0 < count) 
+			{
+				iVar13 = 0;
+
 				do {
-					iVar5 = GetVisValue((uint)*(ushort *)(*ppuVar19 + iVar17 * 2), zDir);
-					iVar9 = iVar17 * 4;
-					iVar20 = iVar17 + 1;
-					*(int *)(puVar18 + iVar17 * 4) = iVar5;
-					if ((iVar17 != 0) && (iVar5 < *(int *)(puVar18 + (iVar17 + -1) * 4))) {
-						uVar1 = *(undefined2 *)(*ppuVar19 + iVar17 * 2);
-						if (0 < iVar17) {
-							puVar16 = (undefined4 *)(puVar18 + iVar17 * 4);
-							iVar14 = iVar9 + -8;
-							iVar15 = iVar17;
-							iVar3 = iVar17 + -1;
+					iVar4 = GetVisValue(list[zDir][iVar13], zDir);
+					iVar6 = iVar13 * 4;
+					iVar15 = iVar13 + 1;
+					table[iVar13] = iVar4;
+
+					if ((iVar13 != 0) && (iVar4 < table[iVar13 - 1])) 
+					{
+						uVar9 = list[zDir][iVar13];
+
+						if (0 < iVar13) 
+						{
+							piVar12 = table + iVar13;
+							iVar10 = iVar6 + -8;
+							iVar11 = iVar13;
+							iVar2 = iVar13 + -1;
 							do {
-								iVar17 = iVar3;
-								iVar9 = iVar9 + -4;
-								puVar10 = (&PTR_xList_6_000aa4c0)[zDir];
-								*puVar16 = *(undefined4 *)(puVar18 + iVar9);
-								puVar16 = puVar16 + -1;
-								*(undefined2 *)(puVar10 + iVar15 * 2) = *(undefined2 *)(puVar10 + iVar15 * 2 + -1);
-								if (iVar17 < 1) break;
-								piVar6 = (int *)(puVar18 + iVar14);
-								iVar14 = iVar14 + -4;
-								iVar15 = iVar17;
-								iVar3 = iVar17 + -1;
-							} while (iVar5 < *piVar6);
+								iVar13 = iVar2;
+								iVar6 = iVar6 + -4;
+								puVar7 = list[zDir];
+								*piVar12 = *(int*)((int)table + iVar6); // pointer fuckery. PLS fix
+								piVar12 = piVar12 + -1;
+								puVar7[iVar11] = (puVar7 + iVar11)[-1];
+
+								if (iVar13 < 1) 
+									break;
+
+								piVar5 = (int*)((int)table + iVar10);
+								iVar10 = iVar10 + -4;
+								iVar11 = iVar13;
+								iVar2 = iVar13 + -1;
+							} while (iVar4 < *piVar5);
 						}
-						*(int *)(puVar18 + iVar17 * 4) = iVar5;
-						*(undefined2 *)(*ppuVar19 + iVar17 * 2) = uVar1;
+						table[iVar13] = iVar4;
+						list[zDir][iVar13] = uVar9;
 					}
-					iVar17 = iVar20;
-				} while (iVar20 < count_10);
+					iVar13 = iVar15;
+				} while (iVar15 < count);
 			}
-			zDir = zDir + 1;
+			zDir++;
 		} while (zDir < 2);
-		uVar4 = (uint)NumPlayers;
+
 		zDir = 0;
-		if (NumPlayers != 0) {
+
+		while (zDir < NumPlayers)
+		{
+			uVar9 = 0x8000;
+			if (zDir != 0)
+				uVar9 = 0x4000;
+
+			firstX[zDir] = xList;
 			do {
-				uVar13 = 0x8000;
-				if (zDir != 0) {
-					uVar13 = 0x4000;
-				}
-				(&firstX_8)[zDir] = 0xcdc50;
-				do {
-					puVar7 = (ushort *)(&firstX_8)[zDir];
-					uVar2 = *puVar7;
-					*(ushort **)(&firstX_8 + zDir) = puVar7 + 1;
-				} while ((uVar2 & uVar13) == 0);
-				(&firstZ_9)[zDir] = 0xcdd50;
-				do {
-					puVar7 = (ushort *)(&firstZ_9)[zDir];
-					uVar2 = *puVar7;
-					*(ushort **)(&firstZ_9 + zDir) = puVar7 + 1;
-				} while ((uVar2 & uVar13) == 0);
-				zDir = zDir + 1;
-			} while (zDir < (int)uVar4);
+				puVar7 = firstX[zDir];
+				uVar1 = *puVar7;
+				firstX[zDir] = puVar7 + 1;
+			} while ((uVar1 & uVar9) == 0);
+
+			firstZ[zDir] = zList;
+			do {
+				puVar7 = firstZ[zDir];
+				uVar1 = *puVar7;
+				firstZ[zDir] = puVar7 + 1;
+			} while ((uVar1 & uVar9) == 0);
+			zDir++;
 		}
 	}
-	else {
-		if (type < VIS_ADD) {
-			if (type == VIS_INIT) {
-				zList_7 = 0xa000;
-				xList_6 = 0xa000;
-				DAT_000cdd52 = 0x9000;
-				DAT_000cdc52 = 0x9000;
-				count_10 = 2;
-				if (NumPlayers == 2) {
-					DAT_000cdd54 = 0x6000;
-					DAT_000cdc54 = 0x6000;
-					DAT_000cdd56 = 0x5000;
-					DAT_000cdc56 = 0x5000;
-					count_10 = 4;
-				}
-				uVar4 = (uint)NumPlayers;
-				zDir = 0;
-				if (NumPlayers != 0) {
-					do {
-						iVar17 = zDir + 1;
-						(&firstX_8)[zDir] = 0xcdc50;
-						(&firstZ_9)[zDir] = 0xcdd50;
-						zDir = iVar17;
-					} while (iVar17 < (int)uVar4);
-				}
-			}
+	else if (type == VIS_INIT)
+	{
+		zList[0] = -0x6000;
+		xList[0] = -0x6000;
+		zList[1] = -0x7000;
+		xList[1] = -0x7000;
+		count = 2;
+
+		if (NumPlayers == 2)
+		{
+			zList[2] = 0x6000;
+			xList[2] = 0x6000;
+			zList[3] = 0x5000;
+			xList[3] = 0x5000;
+			count = 4;
 		}
-		else {
-			if (type == VIS_ADD) {
-				if ((i & 0x80U) == 0) {
-					zDir = (i & 0x7fU) * 0x28;
-					pFVar11 = (FixedEvent *)event;
-				}
-				else {
-					zDir = (i & 0x7fU) * 0x2c;
-					pFVar11 = fixedEvent;
-				}
-				uVar13 = (ushort)i;
-				if (*(short *)((int)&pFVar11->radius + zDir) == 0) {
-					puVar7 = &xList_6 + count_10;
-					puVar12 = &zList_7 + count_10;
-					count_10 = count_10 + 1;
-					*puVar7 = uVar13;
-					*puVar12 = uVar13;
-				}
-				else {
-					(&xList_6)[count_10] = uVar13 | 0x2000;
-					zDir = count_10 + 1;
-					(&zList_7)[count_10] = uVar13 | 0x2000;
-					count_10 = count_10 + 2;
-					(&xList_6)[zDir] = uVar13 | 0x1000;
-					(&zList_7)[zDir] = uVar13 | 0x1000;
-				}
-			}
-			else {
-				if (type == VIS_NEXT) {
-					p_Var8 = firstEvent;
-					if (firstEvent != (_EVENT *)0x0) {
-						do {
-							p_Var8->flags = p_Var8->flags & 0xfffb;
-							p_Var8 = p_Var8->next;
-						} while (p_Var8 != (_EVENT *)0x0);
-					}
-					xVis = (ushort *)(&firstX_8)[i];
-					zVis = (ushort *)(&firstZ_9)[i];
-				}
-			}
+
+		zDir = 0;
+		while (zDir < NumPlayers)
+		{
+			firstX[zDir] = xList;
+			firstZ[zDir] = zList;
+			zDir++;
 		}
 	}
-	return;
-	*/
+	else if (type == VIS_ADD)
+	{
+		if ((i & 0x80U) == 0)
+		{
+			zDir = (i & 0x7fU) * sizeof(_EVENT);
+			_ev = (FixedEvent*)&event[i];
+		}
+		else
+		{
+			zDir = (i & 0x7fU) * sizeof(FixedEvent);
+			_ev = &fixedEvent[i];
+		}
+
+		if (_ev->radius == 0)
+		{
+			xList[count] = i;
+			zList[count] = i;
+
+			count++;
+		}
+		else
+		{
+			xList[count] = i | 0x2000;
+			zList[count] = i | 0x2000;
+
+			xList[count + 1] = i | 0x1000;
+			zList[count + 1] = i | 0x1000;
+
+			count++;
+		}
+	}
+	else if (type == VIS_NEXT)
+	{
+		ev = firstEvent;
+		if (firstEvent != NULL)
+		{
+			do {
+				ev->flags = ev->flags & 0xfffb;
+				ev = ev->next;
+			} while (ev != NULL);
+		}
+
+		xVis = firstX[i];
+		zVis = firstZ[i];
+	}
 }
 
 

@@ -19012,6 +19012,22 @@ struct _EVENT // hashcode: 0xDD197EB3 (dec: -585531725)
 	struct _EVENT *next; // size=40, offset=36
 };
 
+struct FixedEvent // hashcode: 0xF758406C (dec: -145211284)
+{
+	VECTOR position; // size=16, offset=0
+	short rotation; // size=0, offset=16
+	short active; // size=0, offset=18
+	unsigned short initialRotation; // size=0, offset=20
+	unsigned short finalRotation; // size=0, offset=22
+	unsigned short minSpeed; // size=0, offset=24
+	unsigned short maxSpeed; // size=0, offset=26
+	short flags; // size=0, offset=28
+	short radius; // size=0, offset=30
+	int model; // size=0, offset=32
+	_EVENT* next; // size=40, offset=36
+	char* modelName; // size=0, offset=40
+};
+
 struct MAPPING // hashcode: 0x46E5EAED (dec: 1189473005)
 {
 	unsigned short button_lookup[16]; // size=32, offset=0
@@ -20426,22 +20442,6 @@ struct POLYCOORD // hashcode: 0x567DCFE0 (dec: 1451085792)
 };
 
 typedef struct POLYCOORD POLYCOORD;
-
-struct FixedEvent // hashcode: 0xF758406C (dec: -145211284)
-{
-	VECTOR position; // size=16, offset=0
-	short rotation; // size=0, offset=16
-	short active; // size=0, offset=18
-	unsigned short initialRotation; // size=0, offset=20
-	unsigned short finalRotation; // size=0, offset=22
-	unsigned short minSpeed; // size=0, offset=24
-	unsigned short maxSpeed; // size=0, offset=26
-	short flags; // size=0, offset=28
-	short radius; // size=0, offset=30
-	int model; // size=0, offset=32
-	_EVENT *next; // size=40, offset=36
-	char *modelName; // size=0, offset=40
-};
 
 struct EventGlobal // hashcode: 0xF4852999 (dec: -192599655)
 {
