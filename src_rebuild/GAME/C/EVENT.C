@@ -2060,101 +2060,113 @@ void NextNode(_EVENT *ev)
 	/* end block 3 */
 	// End Line: 3012
 
+// [D]
 void StepFromToEvent(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
+	int uVar1;
+	int uVar2;
+	int uVar3;
 	int iVar4;
 	int iVar5;
-	_EVENT *in_t0;
-	_EVENT *p_Var6;
-	int iVar7;
-	uint uVar8;
-	int *piVar9;
+	long* in_t0;
+	long* local_t0_132;
+	int iVar6;
+	int uVar7;
+	int* piVar8;
 
-	if (0 < ev->timer) {
-		ev->timer = ev->timer + -1;
+	if (ev->timer > 0) 
+	{
+		ev->timer--;
 		return;
 	}
-	if (ev->timer != 0) {
+
+	if (ev->timer != 0)
 		return;
+
+	uVar2 = ev->flags & 0xc000;
+	piVar8 = ev->node + 1;
+
+	if (uVar2 == 0x4000) 
+	{
+		local_t0_132 = &(ev->position).vy;
 	}
-	uVar2 = (int)ev->flags & 0xc000;
-	piVar9 = ev->node + 1;
-	if (uVar2 == 0x4000) {
-		p_Var6 = (_EVENT *)&(ev->position).vy;
+	else if (uVar2 < 0x4001)
+	{
+		local_t0_132 = (long*)ev;
+
+		if (uVar2 != 0)
+			local_t0_132 = in_t0;
 	}
-	else {
-		if (uVar2 < 0x4001) {
-			p_Var6 = ev;
-			if (uVar2 != 0) {
-				p_Var6 = in_t0;
-			}
-		}
-		else {
-			p_Var6 = in_t0;
-			if (uVar2 == 0x8000) {
-				p_Var6 = (_EVENT *)&(ev->position).vz;
-			}
-		}
+	else
+	{
+		local_t0_132 = in_t0;
+
+		if (uVar2 == 0x8000)
+			local_t0_132 = &(ev->position).vz;
 	}
-	iVar7 = (p_Var6->position).vx;
+
+	iVar6 = *local_t0_132;
 	iVar5 = *ev->node;
-	iVar4 = *piVar9;
-	uVar3 = iVar7 - iVar5;
-	uVar8 = iVar4 - iVar7;
+	iVar4 = *piVar8;
+	uVar3 = iVar6 - iVar5;
+	uVar7 = iVar4 - iVar6;
 	uVar2 = uVar3;
-	if ((int)uVar3 < 0) {
+
+	if (uVar3 < 0)
 		uVar2 = -uVar3;
-	}
-	uVar1 = uVar8;
-	if ((int)uVar8 < 0) {
-		uVar1 = -uVar8;
-	}
-	if ((int)uVar1 < (int)uVar2) {
-		uVar3 = uVar8;
-	}
+
+	uVar1 = uVar7;
+
+	if (uVar7 < 0)
+		uVar1 = -uVar7;
+
+	if (uVar1 < uVar2) 
+		uVar3 = uVar7;
+
 	uVar2 = iVar4 - iVar5 >> 0x1f;
-	if ((ev->flags & 0xc000U) == 0x4000) {
-		if ((int)uVar3 < 0) {
+
+	if ((ev->flags & 0xc000U) == 0x4000)
+	{
+		if (uVar3 < 0) 
 			uVar3 = -uVar3;
-		}
-		if (0x400 < (int)uVar3) {
+
+		if (0x400 < (int)uVar3) 
+		{
 			uVar3 = *ev->data ^ uVar2;
 			goto LAB_00047b78;
 		}
-		iVar4 = (*ev->data + -1) * (int)rcossin_tbl[(uVar3 & 0xfff) * 2];
+		iVar4 = (*ev->data + -1) * rcossin_tbl[(uVar3 & 0xfff) * 2];
 	}
-	else {
-		if ((int)uVar3 < 0) {
+	else
+	{
+		if (uVar3 < 0)
 			uVar3 = -uVar3;
-		}
-		if (0x800 < (int)uVar3) {
+
+		if (0x800 < uVar3)
+		{
 			uVar3 = *ev->data ^ uVar2;
 			goto LAB_00047b78;
 		}
-		iVar4 = (*ev->data + -1) *
-			(int)*(short *)((int)rcossin_tbl + ((uVar3 - ((int)uVar3 >> 0x1f)) * 2 & 0x3ffc));
+
+		iVar4 = (*ev->data + -1) * (int)*(short*)((int)rcossin_tbl + ((uVar3 - (uVar3 >> 0x1f)) * 2 & 0x3ffc));
 	}
-	if (iVar4 < 0) {
-		iVar4 = iVar4 + 0xfff;
-	}
+
 	uVar3 = (iVar4 >> 0xc) + 1U ^ uVar2;
 LAB_00047b78:
-	(p_Var6->position).vx = iVar7 + (uVar3 - uVar2);
-	iVar4 = *piVar9;
-	if ((int)(uVar8 ^ iVar4 - (p_Var6->position).vx) < 0) {
-		(p_Var6->position).vx = iVar4;
+
+	*local_t0_132 = iVar6 + (uVar3 - uVar2);
+	iVar4 = *piVar8;
+
+	if ((uVar7 ^ iVar4 - *local_t0_132) < 0) 
+	{
+		*local_t0_132 = iVar4;
+
 		ev->timer = -1;
-		if (ev == events.cameraEvent) {
+
+		if (ev == events.cameraEvent)
 			SpecialCamera(SPECIAL_CAMERA_RESET, 0);
-		}
+
 	}
-	return;
-	*/
 }
 
 
