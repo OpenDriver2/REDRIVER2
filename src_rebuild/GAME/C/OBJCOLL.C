@@ -1083,20 +1083,19 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 								{
 									if (x1 < mdcount || cop->pad == 0)
 									{
-										iVar7 = CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1);
-
-										if (iVar7 != 0)
+										if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
 											cp->ap.needsDenting = 1;
 									}
 									else
 									{
 										cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
-										iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
 
-										if (iVar7 != 0)
+										if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
+										{
 											cp->ap.needsDenting = 1;
+											//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
+										}
 
-										cp->st.n.linearVelocity[2] -= 700000;
 									}
 								}
 							}

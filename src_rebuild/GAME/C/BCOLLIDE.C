@@ -1354,11 +1354,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				}
 				else
 				{
-					
 					cp->st.n.fposition[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 1024;
 					cp->st.n.fposition[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 1024;
 				}
-
 
 				iVar13 = cp->st.n.angularVelocity[0];
 				iVar18 = cp->st.n.angularVelocity[1];
@@ -1375,6 +1373,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				lVar5 = collisionResult.surfNormal.vx;
 				lVar6 = collisionResult.surfNormal.vy;
 				lVar7 = collisionResult.surfNormal.vz;
+
+				if (cop->pad == 1) // [A] Vegas train velocity - added here
+				{
+					iVar13 += 700000;
+				}
 
 				iVar10 = (strikeVel >> 8) * (lVar5 >> 4) + (iVar10 >> 8) * (lVar6 >> 4) + (iVar13 >> 8) * (lVar7 >> 4);
 				strikeVel = -iVar10;
