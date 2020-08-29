@@ -2676,97 +2676,115 @@ void DoAutoDirect(void)
 	/* end block 3 */
 	// End Line: 4593
 
+// [D]
 int SelectCameraCar(int current)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	int iVar2;
-	_EVENT *p_Var3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	long local_10;
-	long local_c;
+	int count;
 
-	if (current < 0x14) {
-		if (current < -1) {
-			current = 0x12 - current;
-		}
-		iVar1 = current + 1;
-		if (iVar1 != current) {
-			iVar7 = iVar1 * 0x29c;
+	_EVENT* event;
+	int dz;
+	int dx;
+	_CAR_DATA* car;
+	XZPAIR pos;
+
+	if (current < 0x14)
+	{
+		if (current < -1)
+			current = 18 - current;
+
+		count = current + 1;
+
+		if (count != current) 
+		{
 			do {
-				p_Var3 = (_EVENT *)0x0;
-				iVar6 = 0;
-				if (iVar1 < 0x14) {
-					iVar6 = (int)car_data[0].hd.where.m + iVar7;
-					if ((&car_data[0].controlType)[iVar7] == '\x03') {
-						local_10 = *(int *)((int)car_data[0].hd.where.t + iVar7);
-						local_c = *(int *)((int)car_data[0].hd.where.t + iVar7 + 8);
+				event = NULL;
+				car = NULL;
+
+				if (count < 20)
+				{
+					car = &car_data[count];
+
+					if (car->controlType == 3)
+					{
+						pos.x = car->hd.where.t[0];
+						pos.z = car->hd.where.t[2];
 					}
-					else {
-						if ((&car_data[0].controlType)[iVar7] == '\x01') {
-							if ((int)_PLAYER_ARRAY_000d979c[0].playerCarId == (uint)(byte)(&car_data[0].id)[iVar7]
-								) {
-								return (int)_PLAYER_ARRAY_000d979c[0].playerCarId;
-							}
-							return (int)player.playerCarId;
+					else 
+					{
+						if (car->controlType == 1)
+						{
+							if (player[1].playerCarId == car->id)
+								return player[1].playerCarId;
+
+							return player[0].playerCarId;
 						}
-						iVar6 = 0;
-						if ((iVar1 == -1) && (player.playerType == '\x02')) {
+
+						car = NULL;
+
+						if (count == -1 && (player[0].playerType == 2))
 							return -1;
-						}
 					}
 				}
-				else {
-					p_Var3 = events.track[iVar1 + -0x14];
-					if (p_Var3 == (_EVENT *)0x0) {
-						iVar7 = -0x29c;
-						iVar1 = -1;
-						if (player.playerType == '\x02') {
-							iVar7 = -0x538;
-							iVar1 = -2;
+				else 
+				{
+					event = events.track[count - 20];
+
+					if (event == NULL) 
+					{
+						count = -1;
+
+						if (player[0].playerType == 2) 
+						{
+							count = -2;
 						}
 					}
-					else {
-						local_10 = (p_Var3->position).vx;
-						local_c = (p_Var3->position).vz;
+					else 
+					{
+						pos.x = event->position.vx;
+						pos.z = event->position.vz;
 					}
 				}
-				if ((iVar6 != 0) || (p_Var3 != (_EVENT *)0x0)) {
-					iVar5 = player.pos[0] - local_10;
-					iVar2 = iVar5;
-					if (iVar5 < 0) {
-						iVar2 = -iVar5;
-					}
-					iVar4 = player.pos[2] - local_c;
-					if (iVar2 < 15000) {
-						iVar2 = iVar4;
-						if (iVar4 < 0) {
-							iVar2 = -iVar4;
-						}
-						if ((iVar2 < 15000) && (iVar5 * iVar5 + iVar4 * iVar4 < 225000000)) {
-							if (iVar6 != 0) {
-								return (uint)*(byte *)(iVar6 + 0x18b);
+
+				if (car != NULL || event != NULL)
+				{
+					dx = player[0].pos[0] - pos.x;
+
+					if (dx < 0)
+						dx = -dx;
+
+					dz = player[0].pos[2] - pos.z;
+
+					if (dx < 15000)
+					{
+						if (dz < 0)
+							dz = -dz;
+
+						if (dz < 15000 && (dx * dx + dz * dz < 225000000))
+						{
+							if (car != NULL) 
+							{
+								return car->id;
 							}
-							return 0x12 - iVar1;
+
+							return 18 - count;
 						}
 					}
 				}
-				iVar1 = iVar1 + 1;
-				iVar7 = iVar7 + 0x29c;
-			} while (iVar1 != current);
+
+				count++;
+			} while (count != current);
 		}
-		printf(s_ERROR__SelectCameraCar_00010790);
-		iVar1 = (int)player.playerCarId;
+
+		printf("ERROR:_SelectCameraCar\n");
+
+		count = player[0].playerCarId;
 	}
-	else {
-		iVar1 = 0;
+	else
+	{
+		count = 0;
 	}
-	return iVar1;*/
+
+	return count;
 }
 
 
