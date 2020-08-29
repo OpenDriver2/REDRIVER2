@@ -2777,6 +2777,7 @@ void data_cb_regions(void)
 
 void data_cb_soundbank(void)
 {
+#ifndef SIMPLE_SPOOL
 	if (chunk_complete != 0) {
 		chunk_complete = 0;
 		SendSBK();
@@ -2804,6 +2805,7 @@ void data_cb_soundbank(void)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -2840,6 +2842,7 @@ void data_cb_soundbank(void)
 
 void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 {
+#ifndef SIMPLE_SPOOL
 	if (intr == 1) {
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
@@ -2872,6 +2875,7 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 	else {
 		FoundError("ready_cb_soundbank", intr, result);
 	}
+#endif
 }
 
 
