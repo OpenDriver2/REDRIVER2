@@ -1805,12 +1805,12 @@ void DrawAllTheCars(int view)
 
 			do {
 				// Don't exceed draw buffers
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180))) < 5800)
+				if ((int)(current->primtab + (-3000 - (int)(current->primptr- PRIMTAB_SIZE))) < 5800)
 					return;
 
 				// try reducing detail level
 				// this looks really ugly
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180)) + -iVar3) < 5800) 
+				if ((int)(current->primtab + (-3000 - (int)(current->primptr- PRIMTAB_SIZE)) + -iVar3) < 5800)
 					gForceLowDetailCars = 1;
 
 				if (cars_to_draw[iVar9]->controlType == 1)
@@ -2497,146 +2497,74 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 // [D]
 int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 {
-	/*
-	it contains prettier yet bugged code
+	int mat;
+	int zbias;
+	int drawlimit;
+	MODEL *model;
+	OTTYPE* savedOT;
+	CELL_OBJECT *cop;
+	int i;
+	int prev_mat;
 
-	int prev_mat = -1;
+	prev_mat = -1;
 
-	for (int i = 0; i < 8; i++) {
-		plotContext.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	for (i = 0; i < 8; i++ ) 
+	{
+		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[4] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	current->ot += 8;
 
+	plotContext.current = current;
 	plotContext.ptexture_pages = &texture_pages;
 	plotContext.ptexture_cluts = &texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = 0;
-	plotContext.current = current;
 
-	if (num_buildings > 0) {
-		int model_number = GetModelNumber();
+	i = 0;
 
-		if (model_number > 55999) {
-			for (int i = 0; i < num_buildings, model_number > 55999; i++, model_number = GetModelNumber()) 
-			{
-				CELL_OBJECT *building = (CELL_OBJECT *)objects[i];
-				
-				int mat = building->yang;
+	while(i < num_buildings)
+	{
+		cop = (CELL_OBJECT *)*objects;
+		mat = cop->yang;
 
-				if (mat == prev_mat) {
-					Apply_InvCameraMatrixSetTrans(&building->pos);
-				}
-				else {
-					Apply_InvCameraMatrixAndSetMatrix(&building->pos, &CompoundMatrix[mat]);
-					prev_mat = mat;
-				}
-
-				MODEL *model = modelpointers[building->type];
-
-				OTTYPE *savedOT = current->ot;
-
-				int zBias = (model->zBias - 64);
-
-				if (zBias < 0)
-					zBias = 0;
-
-				current->ot += (zBias * 4);
-
-				PlotBuildingModelSubdivNxN(model, building->yang, &plotContext, 1);
-
-				current->ot = savedOT;
-			}
+		if (prev_mat == mat) 
+		{
+			Apply_InvCameraMatrixSetTrans(&cop->pos);
 		}
+		else 
+		{
+			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
+			prev_mat = mat;
+		}
+
+		model = modelpointers[cop->type];
+
+		savedOT = current->ot;
+
+		zbias = model->zBias - 64;
+
+		if (zbias < 0)
+			zbias = 0;
+
+		current->ot = savedOT + zbias * 4;
+		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
+		current->ot = savedOT;
+
+		drawlimit = (int)current->primptr - (int)current->primtab;
+
+		if (PRIMTAB_SIZE - drawlimit < 60000)
+			break;
+
+		i++;
+		objects++;
 	}
-	
+
 	current->ot -= 8;
 
-	return 0;
-	*/
-
-	DB *pDVar1;
-	ulong uVar2;
-	uint uVar3;
-	int iVar4;
-	char *pcVar5;
-	MODEL *model;
-	uint *puVar6;
-	ulong *puVar7;
-	OTTYPE* savedOT;
-	CELL_OBJECT *local_s0_312;
-	int iVar8;
-	uint uVar9;
-
-	uVar9 = 0xffffffff;
-	puVar6 = (uint *)(plotContext.f4colourTable + 3);
-	puVar7 = planeColours;
-	iVar8 = 7;
-	do {
-		puVar6[-3] = *puVar7 | 0x2c000000;
-		puVar6[-1] = planeColours[4] | 0x2c000000;
-		uVar2 = planeColours[0];
-		puVar7 = puVar7 + 1;
-		*puVar6 = 0x2c00f0f0;
-		puVar6[-2] = uVar2 | 0x2c000000;
-		iVar8 = iVar8 + -1;
-		*puVar6 = planeColours[0] | 0x2c000000;
-		plotContext.current = current;
-		puVar6 = puVar6 + 4;
-	} while (-1 < iVar8);
-
-	current->ot = current->ot + 8;
-
-	plotContext.ptexture_pages = &texture_pages;
-	plotContext.ptexture_cluts = &texture_cluts;
-	plotContext.polySizes = PolySizes;
-	plotContext.flags = 0;
-	iVar8 = 0;
-
-	if (0 < num_buildings) 
-	{
-		pcVar5 = (plotContext.current)->primtab + -(int)((plotContext.current)->primptr + -0x1e000);
-
-		while (55999 < (int)pcVar5) 
-		{
-			local_s0_312 = (CELL_OBJECT *)*objects;
-			uVar3 = (uint)local_s0_312->yang;
-
-			if (uVar9 == uVar3) 
-			{
-				Apply_InvCameraMatrixSetTrans(&local_s0_312->pos);
-			}
-			else 
-			{
-				Apply_InvCameraMatrixAndSetMatrix(&local_s0_312->pos, CompoundMatrix + uVar3);
-				uVar9 = uVar3;
-			}
-
-			model = modelpointers[local_s0_312->type];
-			savedOT = current->ot;
-			iVar4 = model->zBias - 64;
-			if (iVar4 < 0)
-				iVar4 = 0;
-
-			objects++;
-			current->ot = savedOT + iVar4 * 4;
-
-			PlotBuildingModelSubdivNxN(model, local_s0_312->yang, &plotContext, 1);
-
-			pDVar1 = current;
-			iVar8 = iVar8 + 1;
-			current->ot = savedOT;
-
-			if (num_buildings <= iVar8) 
-				break;
-
-			pcVar5 = pDVar1->primtab + -(int)(pDVar1->primptr + -0x1e000);
-		}
-	}
-	current->ot = current->ot + -8;
 	return 0;
 }
 
@@ -2692,7 +2620,11 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 // [D]
 void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv)
 {
-	OTTYPE *savedOT = current->ot;
+	int i;
+	int zbias;
+	OTTYPE* savedOT;
+
+	savedOT = current->ot;
 	
 	if (matrix != NULL)
 	{
@@ -2703,18 +2635,19 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 		SetRotMatrix(&comb);
 	}
 
-	int spacefree = (zBias >> 3) + (model->zBias - 64);
+	zbias = (zBias >> 3) + (model->zBias - 64);
 
-	if (spacefree < 0)
-		spacefree = 0;
+	if (zbias < 0)
+		zbias = 0;
 	
-	current->ot += (spacefree * 4);
+	current->ot += (zbias * 4);
 
-	for (int i = 0; i < 8; i++) {
-		plotContext.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	for (i = 0; i < 8; i++)
+	{
+		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[4] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	plotContext.ptexture_pages = &texture_pages;
@@ -2723,7 +2656,7 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	plotContext.flags = flags;
 	plotContext.current = current;
 
-	if (56000 < (current->primtab-(current->primptr-0x1e000)))
+	if (56000 < (current->primtab-(current->primptr - PRIMTAB_SIZE)))
 		PlotBuildingModelSubdivNxN(model, 0, &plotContext, subdiv);
 
 	current->ot = savedOT;

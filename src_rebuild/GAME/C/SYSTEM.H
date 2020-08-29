@@ -67,7 +67,7 @@ extern DB* current;
 #define	OTSIZE	(1<<OTLEN)		/* ordering table size */
 
 #ifdef USE_32_BIT_ADDR
-#	define PRIMTAB_SIZE 0x20000
+#	define PRIMTAB_SIZE 0x50000
 #else
 #	define PRIMTAB_SIZE 0x1e000
 #endif

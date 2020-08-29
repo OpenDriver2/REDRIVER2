@@ -3034,12 +3034,12 @@ void RenderGame2(int view)
 
 	ScaleCamera();
 
-	if ((notInDreaAndStevesEvilLair != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr-0x1e000))))
+	if ((notInDreaAndStevesEvilLair != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr- PRIMTAB_SIZE))))
 	{
 		DoWeather(gWeather);
 	}
 
-	if (37000 < (int)(current->primtab + -(int)(current->primptr - 0x1e000)))
+	if (37000 < (int)(current->primtab + -(int)(current->primptr - PRIMTAB_SIZE)))
 	{
 		DrawTyreTracks();
 	}
