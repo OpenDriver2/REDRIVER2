@@ -20059,10 +20059,10 @@ struct PLAYBACKCAMERA // hashcode: 0xF83C80A8 (dec: -130252632)
 	short gCameraDistance; // size=0, offset=26
 	short gCameraMaxDistance; // size=0, offset=28
 	short gCameraAngle; // size=0, offset=30
-	char cameraview; // size=0, offset=32
-	char next; // size=0, offset=33
-	char prev; // size=0, offset=34
-	char idx; // size=0, offset=35
+	unsigned char cameraview; // size=0, offset=32
+	unsigned char next; // size=0, offset=33
+	unsigned char prev; // size=0, offset=34
+	unsigned char idx; // size=0, offset=35
 };
 
 struct CUTSCENE_BUFFER // hashcode: 0x4B940558 (dec: 1267991896)

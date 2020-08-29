@@ -306,104 +306,72 @@ void setCamera(PLAYBACKCAMERA *Change)
 	/* end block 4 */
 	// End Line: 1030
 
+// [D]
 void EditCamera(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	/*
-	unsigned char bVar1;
-	unsigned char bVar2;
-	short sVar3;
-	short sVar4;
-	short sVar5;
-	char cVar6;
-	PLAYBACKCAMERA *pPVar7;
-	int iVar8;
-	PLAYBACKCAMERA *pPVar9;
-	PLAYBACKCAMERA *pPVar10;
-	long lVar11;
-	long lVar12;
+	int prev;
+	int next;
 	int count;
-	int uVar13;
-	int iVar14;
-	int iVar15;
+	PLAYBACKCAMERA* camera;
 
 	if (LastChange == NULL)
 		LastChange = PlaybackCamera;
 
 	ThisChange = LastChange;
 	LastChange->cameraview = cameraview & 7 | tracking_car << 3;
-	pPVar9 = ThisChange;
+
 	ThisChange->position.vx = player[0].cameraPos.vx;
 	ThisChange->position.vy = player[0].cameraPos.vy;
 	ThisChange->position.vz = player[0].cameraPos.vz;
 	ThisChange->angle.vx = camera_angle.vx;
 	ThisChange->angle.vy = camera_angle.vy;
-	sVar3 = (short)gCameraDistance;
 	ThisChange->angle.vz = camera_angle.vz;
-	cVar6 = player[0].cameraCarId;
-	sVar5 = (short)gCameraAngle;
-	sVar4 = (short)gCameraMaxDistance;
+	ThisChange->angle.pad = player[0].cameraCarId;
 	ThisChange->gCameraDistance = gCameraDistance;
-	ThisChange->gCameraMaxDistance = gCameraMaxDistance;
-	ThisChange->gCameraAngle = gCameraAngle;
-	ThisChange->angle.pad = (short)player[0].cameraCarId;
-	ThisChange->CameraPosvy = (short)CameraPos.vy;
 
-	iVar8 = 0;
+	ThisChange->gCameraAngle = gCameraAngle;
+	ThisChange->gCameraMaxDistance = gCameraMaxDistance;
+
+	ThisChange->CameraPosvy = CameraPos.vy;
+
 	count = 0;
 
 	do {
-		pPVar9 = (PLAYBACKCAMERA *)(&(PlaybackCamera->position).vx + iVar8 + count);
-		iVar15 = count + 1;
-		if ((pPVar9 != ThisChange) && (pPVar9->FrameCnt == ThisChange->FrameCnt))
+		camera = &PlaybackCamera[count];
+
+		if (camera != ThisChange && camera->FrameCnt == ThisChange->FrameCnt)
 		{
-			bVar1 = pPVar9->prev;
-			bVar2 = pPVar9->next;
+			prev = camera->prev;
+			next = camera->next;
 
-			if (bVar1 == 0xff) 
+			if (prev == 255)
 			{
-				pPVar10 = (PLAYBACKCAMERA *)&ThisChange->cameraview;
-				pPVar7 = ThisChange;
+				*camera = *ThisChange;
 
-				do {
-					lVar11 = (pPVar7->position).vy;
-					lVar12 = (pPVar7->position).vz;
-					uVar13 = *(undefined4 *)&pPVar7->angle;
-					(pPVar9->position).vx = (pPVar7->position).vx;
-					(pPVar9->position).vy = lVar11;
-					(pPVar9->position).vz = lVar12;
-					*(undefined4 *)&pPVar9->angle = uVar13;
-					pPVar7 = (PLAYBACKCAMERA *)&(pPVar7->angle).vz;
-					pPVar9 = (PLAYBACKCAMERA *)&(pPVar9->angle).vz;
-				} while (pPVar7 != pPVar10);
+				PlaybackCamera[ThisChange->next].idx = count;
+				PlaybackCamera[ThisChange->next].prev = -1;
 
-				(pPVar9->position).vx = (pPVar7->position).vx;
-				iVar14 = (iVar8 + count) * 4;
-				(&PlaybackCamera->idx)[iVar14] = (char)count;
-				(&PlaybackCamera->prev)[iVar14] = -1;
-
-				if (ThisChange->next != 254) 
+				if (ThisChange->next != 254)
 					PlaybackCamera[ThisChange->next].prev = count;
 
 				deleteCamera(ThisChange->idx);
-				ThisChange = (PLAYBACKCAMERA *)(&(PlaybackCamera->position).vx + iVar8 + count);
+
+				ThisChange = camera;
 				LastChange = ThisChange;
 			}
 			else 
 			{
-				PlaybackCamera[bVar1].next = bVar2;
-				if (bVar2 != 0xfe) 
-				{
-					PlaybackCamera[bVar2].prev = bVar1;
-				}
+				PlaybackCamera[prev].next = next;
+
+				if (next != 254)
+					PlaybackCamera[next].prev = prev;
 
 				deleteCamera(count);
 			}
 		}
 
-		iVar8 = iVar15 * 8;
-		count = iVar15;
-	} while (iVar15 < 0x3c);*/
+		count++;
+	} while (count < 60);
 }
 
 
@@ -471,20 +439,22 @@ void RecordCamera(int CameraCnt)
 				}
 			}
 		}
-		ThisChange->cameraview = cameraview & 7 | tracking_car << 3;
+
 		LastChange = ThisChange;
-		(ThisChange->position).vx = player[0].cameraPos.vx;
-		(LastChange->position).vy = player[0].cameraPos.vy;
-		(LastChange->position).vz = player[0].cameraPos.vz;
-		(LastChange->angle).vx = camera_angle.vx;
-		(LastChange->angle).vy = camera_angle.vy;
-		(LastChange->angle).vz = camera_angle.vz;
-		cVar1 = player[0].cameraCarId;
+
+		ThisChange->cameraview = cameraview & 7 | tracking_car << 3;
+		
+		LastChange->position.vx = player[0].cameraPos.vx;
+		LastChange->position.vy = player[0].cameraPos.vy;
+		LastChange->position.vz = player[0].cameraPos.vz;
+		LastChange->angle.vx = camera_angle.vx;
+		LastChange->angle.vy = camera_angle.vy;
+		LastChange->angle.vz = camera_angle.vz;
+		LastChange->angle.pad = player[0].cameraCarId;
 		LastChange->gCameraDistance = gCameraDistance;
 		LastChange->FrameCnt = CameraCnt;
 		LastChange->gCameraMaxDistance = gCameraMaxDistance;
 		LastChange->gCameraAngle = gCameraAngle;
-		(LastChange->angle).pad = cVar1;
 		LastChange->CameraPosvy = CameraPos.vy;
 	}
 
@@ -826,226 +796,248 @@ int IsMovingCamera(PLAYBACKCAMERA *lastcam, PLAYBACKCAMERA *nextcam, int camerac
 	/* end block 4 */
 	// End Line: 1698
 
+// [D] please process it and refactor; It works fines
 void CameraBar(int CameraCnt)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	bool bVar2;
-	DB *pDVar3;
-	char cVar4;
-	short sVar5;
+	bool bVar1;
+	unsigned char uVar2;
+	short sVar3;
+	int iVar4;
+	unsigned  bVar5;
+	PLAYBACKCAMERA* local_v1_272;
 	int iVar6;
-	byte bVar7;
-	long *plVar8;
-	int iVar9;
-	char cVar10;
-	int iVar11;
-	PLAYBACKCAMERA *pPVar12;
-	short sVar13;
-	int iVar14;
-	undefined2 uVar15;
+	unsigned  uVar7;
+	PLAYBACKCAMERA* local_a0_1024;
+	int iVar8;
+	POLY_G4* camera;
+	LINE_F2* bar;
+	short sVar9;
+	int iVar10;
+	short sVar11;
+	uint uVar12;
+	
+	uint uVar13;
+	uint uVar14;
+	int iVar15;
 	uint uVar16;
-	uint *puVar17;
-	uint uVar18;
-	uint uVar19;
-	int iVar20;
-	uint uVar21;
-	uint uVar22;
+	uint uVar17;
 
-	uVar18 = 0;
-	uVar19 = 0;
-	uVar22 = 0;
-	iVar20 = 1;
-	uVar21 = 0;
-	bVar2 = true;
-	puVar17 = (uint *)current->primptr;
-	*(char *)((int)puVar17 + 3) = '\x03';
-	*(char *)((int)puVar17 + 7) = '@';
-	*(char *)(puVar17 + 1) = '\0';
-	*(char *)((int)puVar17 + 5) = '\0';
-	*(char *)((int)puVar17 + 6) = '\0';
-	pDVar3 = current;
-	*(undefined2 *)((int)puVar17 + 10) = 0xc;
-	*(undefined2 *)(puVar17 + 2) = 0xa0;
-	*(undefined2 *)(puVar17 + 3) = 0xa0;
-	*(undefined2 *)((int)puVar17 + 0xe) = 0x16;
-	*puVar17 = *puVar17 & 0xff000000 | *pDVar3->ot & 0xffffff;
-	*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)puVar17 & 0xffffff;
-	pPVar12 = PlaybackCamera;
-	pDVar3->primptr = pDVar3->primptr + 0x10;
-	if (pPVar12->FrameCnt == 100000) {
+	uVar13 = 0;
+	uVar14 = 0;
+	uVar17 = 0;
+	iVar15 = 1;
+	
+	bVar1 = true;
+
+	bar = (LINE_F2*)current->primptr;
+
+	setLineF2(bar);
+
+	bar->r0 = 0;
+	bar->g0 = 0;
+	bar->b0 = 0;
+	bar->y0 = 0xc;
+	bar->x0 = 0xa0;
+	bar->x1 = 0xa0;
+	bar->y1 = 0x16;
+
+	addPrim(current->ot, bar);
+	current->primptr += sizeof(LINE_F2);
+
+	if (PlaybackCamera->FrameCnt == 100000)
 		return;
-	}
-	iVar6 = 0;
+
+	iVar4 = 0;
+	uVar16 = 0;
+
 	do {
-		plVar8 = &(pPVar12->position).vx + iVar6 + uVar21;
-		if (*(byte *)((int)plVar8 + 0x21) < 0x3c) {
-			iVar14 = pPVar12[*(byte *)((int)plVar8 + 0x21)].FrameCnt;
+		local_v1_272 = (PLAYBACKCAMERA*)(&(PlaybackCamera->position).vx + iVar4 + uVar16);
+
+		if (local_v1_272->next < 60)
+			iVar10 = PlaybackCamera[local_v1_272->next].FrameCnt;
+		else
+			iVar10 = 200000;
+
+		iVar6 = ReplayParameterPtr->RecordingEnd + 1;
+
+		if (iVar6 < iVar10) 
+		{
+			iVar15 = 2;
+			iVar10 = iVar6;
 		}
-		else {
-			iVar14 = 200000;
+
+		uVar12 = local_v1_272->FrameCnt + 0xa0;
+
+		sVar11 = uVar12 - CameraCnt;
+		iVar6 = (uVar12 - (uVar12 & 0x1f)) - CameraCnt;
+		iVar10 = (iVar10 + 0xa0) - CameraCnt;
+		sVar9 = (short)iVar10;
+
+		if (((bVar1) && (0x1e < sVar11)) && (sVar11 < 0x122))
+		{
+			bar = (LINE_F2*)current->primptr;
+
+			setLineF2(bar);
+
+			bar->r0 = 0;
+			bar->g0 = 0;
+			bar->b0 = 0;
+			bar->x0 = sVar11;
+			bar->y0 = 0xf;
+			bar->x1 = sVar11;
+			bar->y1 = 0x13;
+
+			addPrim(current->ot, bar);
+			current->primptr += sizeof(LINE_F2);
 		}
-		iVar9 = ReplayParameterPtr->RecordingEnd + 1;
-		if (iVar9 < iVar14) {
-			iVar20 = 2;
-			iVar14 = iVar9;
-		}
-		uVar16 = plVar8[5] + 0xa0;
-		_uVar15 = uVar16 - CameraCnt;
-		uVar15 = (undefined2)_uVar15;
-		iVar9 = (uVar16 - (uVar16 & 0x1f)) - CameraCnt;
-		iVar14 = (iVar14 + 0xa0) - CameraCnt;
-		sVar13 = (short)iVar14;
-		if (((bVar2) && (0x1e < _uVar15)) && (_uVar15 < 0x122)) {
-			puVar17 = (uint *)current->primptr;
-			*(char *)((int)puVar17 + 3) = '\x03';
-			*(char *)((int)puVar17 + 7) = '@';
-			*(char *)(puVar17 + 1) = '\0';
-			*(char *)((int)puVar17 + 5) = '\0';
-			*(char *)((int)puVar17 + 6) = '\0';
-			pDVar3 = current;
-			*(undefined2 *)(puVar17 + 2) = uVar15;
-			*(undefined2 *)((int)puVar17 + 10) = 0xf;
-			*(undefined2 *)(puVar17 + 3) = uVar15;
-			*(undefined2 *)((int)puVar17 + 0xe) = 0x13;
-			*puVar17 = *puVar17 & 0xff000000 | *pDVar3->ot & 0xffffff;
-			*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)puVar17 & 0xffffff;
-			pDVar3->primptr = pDVar3->primptr + 0x10;
-		}
-		iVar11 = 0;
-		if (iVar20 != 0) {
+
+		iVar8 = 0;
+
+		if (iVar15 != 0) 
+		{
 			do {
-				if (iVar14 - 0x1fU < 0x103) {
-					puVar17 = (uint *)current->primptr;
-					*(char *)((int)puVar17 + 3) = '\x03';
-					*(char *)((int)puVar17 + 7) = '@';
-					*(char *)(puVar17 + 1) = '\0';
-					*(char *)((int)puVar17 + 5) = '\0';
-					*(char *)((int)puVar17 + 6) = '\0';
-					pDVar3 = current;
-					sVar5 = sVar13 + (short)iVar11;
-					*(short *)(puVar17 + 2) = sVar5;
-					*(undefined2 *)((int)puVar17 + 10) = 0xf;
-					*(short *)(puVar17 + 3) = sVar5;
-					*(undefined2 *)((int)puVar17 + 0xe) = 0x13;
-					*puVar17 = *puVar17 & 0xff000000 | *pDVar3->ot & 0xffffff;
-					*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)puVar17 & 0xffffff;
-					pDVar3->primptr = pDVar3->primptr + 0x10;
+				if (iVar10 - 31 < 259)
+				{
+					bar = (LINE_F2*)current->primptr;
+					setLineF2(bar);
+
+					bar->r0 = 0;
+					bar->g0 = 0;
+					bar->b0 = 0;
+
+					sVar3 = sVar9 + iVar8;
+
+					bar->x0 = sVar3;
+					bar->y0 = 0xf;
+					bar->x1 = sVar3;
+					bar->y1 = 0x13;
+
+					addPrim(current->ot, bar);
+					current->primptr += sizeof(LINE_F2);
 				}
-				iVar11 = iVar11 + 1;
-			} while (iVar11 < iVar20);
+
+				iVar8++;
+			} while (iVar8 < iVar15);
 		}
-		while (iVar9 < iVar14) {
-			if (iVar9 - 0x1fU < 0x103) {
-				puVar17 = (uint *)current->primptr;
-				*(char *)((int)puVar17 + 3) = '\x03';
-				*(char *)((int)puVar17 + 7) = '@';
-				*(char *)(puVar17 + 1) = '\0';
-				*(char *)((int)puVar17 + 5) = '\0';
-				*(char *)((int)puVar17 + 6) = '\0';
-				pDVar3 = current;
-				*(short *)(puVar17 + 2) = (short)iVar9;
-				*(undefined2 *)((int)puVar17 + 10) = 0x11;
-				*(short *)(puVar17 + 3) = (short)iVar9;
-				*(undefined2 *)((int)puVar17 + 0xe) = 0x13;
-				*puVar17 = *puVar17 & 0xff000000 | *pDVar3->ot & 0xffffff;
-				*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)puVar17 & 0xffffff;
-				pDVar3->primptr = pDVar3->primptr + 0x10;
+
+		while (iVar6 < iVar10) 
+		{
+			if (iVar6 - 0x1fU < 0x103)
+			{
+				bar = (LINE_F2*)current->primptr;
+				setLineF2(bar);
+
+				bar->r0 = 0;
+				bar->g0 = 0;
+				bar->b0 = 0;
+
+				bar->x0 = iVar6;
+				bar->y0 = 0x11;
+				bar->x1 = iVar6;
+				bar->y1 = 0x13;
+
+				addPrim(current->ot, bar);
+				current->primptr += sizeof(LINE_F2);
 			}
-			iVar9 = iVar9 + 0x20;
+			iVar6 = iVar6 + 0x20;
 		}
-		plVar8 = &(PlaybackCamera->position).vx + iVar6 + uVar21;
-		bVar1 = *(byte *)(plVar8 + 8);
-		bVar7 = bVar1 & 7;
-		if (bVar7 == 1) {
-			uVar18 = 0;
+
+		local_a0_1024 = (PLAYBACKCAMERA*)(&(PlaybackCamera->position).vx + iVar4 + uVar16);
+		bVar5 = local_a0_1024->cameraview & 7;
+
+		if (bVar5 == 1)
+		{
+			uVar13 = 0;
 		LAB_0003c030:
-			uVar19 = 0xff;
+			uVar14 = 0xff;
 		LAB_0003c034:
-			uVar22 = 0;
+			uVar17 = 0;
 		}
-		else {
-			if (bVar7 < 2) {
-				if ((bVar1 & 7) == 0) {
-					uVar18 = 0xff;
-					uVar19 = 0;
-					goto LAB_0003c034;
-				}
+		else if (bVar5 == 0)
+		{
+			uVar13 = 0xff;
+			uVar14 = 0;
+			goto LAB_0003c034;
+		}
+		else if (bVar5 == 2)
+		{
+			uVar13 = 0x46;
+
+			if ((local_a0_1024->angle).pad == 0)
+			{
+				uVar14 = 0x46;
+				uVar17 = 0xff;
 			}
-			else {
-				if (bVar7 == 2) {
-					uVar18 = 0x46;
-					if (*(short *)((int)plVar8 + 0x12) == 0) {
-						uVar19 = 0x46;
-						uVar22 = 0xff;
-					}
-					else {
-						uVar19 = 0xff;
-						uVar22 = 0xff;
-					}
-				}
-				else {
-					if (bVar7 == 5) {
-						uVar18 = 0xff;
-						goto LAB_0003c030;
-					}
-				}
+			else
+			{
+				uVar14 = 0xff;
+				uVar17 = 0xff;
 			}
 		}
-		puVar17 = (uint *)current->primptr;
-		*(char *)((int)puVar17 + 7) = '8';
-		*(char *)((int)puVar17 + 3) = '\b';
-		*(char *)(puVar17 + 3) = (char)(uVar18 >> 1);
-		*(char *)((int)puVar17 + 0xe) = (char)(uVar22 >> 1);
-		*(char *)((int)puVar17 + 0xd) = (char)(uVar19 >> 1);
-		cVar4 = (char)(uVar19 >> 2);
-		*(char *)((int)puVar17 + 0x15) = cVar4;
-		*(char *)((int)puVar17 + 0x1d) = cVar4;
-		*(char *)(puVar17 + 1) = (char)uVar18;
-		*(char *)((int)puVar17 + 5) = (char)uVar19;
-		*(char *)((int)puVar17 + 6) = (char)uVar22;
-		cVar10 = (char)(uVar18 >> 2);
-		*(char *)(puVar17 + 5) = cVar10;
-		cVar4 = (char)(uVar22 >> 2);
-		*(char *)((int)puVar17 + 0x16) = cVar4;
-		*(char *)(puVar17 + 7) = cVar10;
-		*(char *)((int)puVar17 + 0x1e) = cVar4;
-		pDVar3 = current;
-		bVar1 = (&PlaybackCamera->next)[(iVar6 + uVar21) * 4];
-		uVar21 = (uint)bVar1;
-		if (0x122 < _uVar15) {
+		else if (bVar5 == 5)
+		{
+			uVar13 = 0xff;
+			goto LAB_0003c030;
+		}
+
+		camera = (POLY_G4*)current->primptr;
+
+		setPolyG4(camera);
+
+		camera->r1 = (uVar13 >> 1);
+		camera->b1 = (uVar17 >> 1);
+		camera->g1 = (uVar14 >> 1);
+		uVar2 = (uVar14 >> 2);
+		camera->g2 = uVar2;
+		camera->g3 = uVar2;
+		camera->r0 = uVar13;
+		camera->g0 = uVar14;
+		camera->b0 = uVar17;
+		uVar7 = (uVar13 >> 2);
+		camera->r2 = uVar7;
+		uVar2 = (uVar17 >> 2);
+		camera->b2 = uVar2;
+		camera->r3 = uVar7;
+		camera->b3 = uVar2;
+
+		bVar5 = (&PlaybackCamera->next)[(iVar4 + uVar16) * 4];
+		uVar16 = (uint)bVar5;
+
+		if (0x122 < sVar11)
 			return;
+
+		if (0x122 < iVar10)
+			sVar9 = 0x122;
+
+		if (0x1d < iVar10) 
+		{
+			if (sVar11 < 0x1e)
+				sVar11 = 0x1e;
+
+			camera->x0 = sVar11;
+			camera->y0 = 0xf;
+			camera->x1 = sVar9;
+			camera->y1 = 0xf;
+			camera->x2 = sVar11;
+			camera->y2 = 0x14;
+			camera->x3 = sVar9;
+			camera->y3 = 0x14;
+
+			addPrim(current->ot, camera);
+
+			bVar1 = false;
+			current->primptr += sizeof(POLY_G4);
 		}
-		if (0x122 < iVar14) {
-			sVar13 = 0x122;
-		}
-		if (0x1d < iVar14) {
-			if (_uVar15 < 0x1e) {
-				uVar15 = 0x1e;
-			}
-			*(undefined2 *)(puVar17 + 2) = uVar15;
-			*(undefined2 *)((int)puVar17 + 10) = 0xf;
-			*(short *)(puVar17 + 4) = sVar13;
-			*(undefined2 *)((int)puVar17 + 0x12) = 0xf;
-			*(undefined2 *)(puVar17 + 6) = uVar15;
-			*(undefined2 *)((int)puVar17 + 0x1a) = 0x14;
-			*(short *)(puVar17 + 8) = sVar13;
-			*(undefined2 *)((int)puVar17 + 0x22) = 0x14;
-			*puVar17 = *puVar17 & 0xff000000 | *pDVar3->ot & 0xffffff;
-			*pDVar3->ot = *pDVar3->ot & 0xff000000 | (uint)puVar17 & 0xffffff;
-			bVar2 = false;
-			pDVar3->primptr = pDVar3->primptr + 0x24;
-		}
-		if (PlaybackCamera[uVar21].FrameCnt == 100000) {
+
+		if (PlaybackCamera[uVar16].FrameCnt == 100000)
 			return;
-		}
-		iVar6 = uVar21 << 3;
-		pPVar12 = PlaybackCamera;
-		if (0x3b < bVar1) {
+	
+		iVar4 = uVar16 << 3;
+
+		if (0x3b < bVar5)
 			return;
-		}
-	} while (true);*/
+
+	} while (true);
 }
 
 
