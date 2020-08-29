@@ -760,7 +760,7 @@ void VisibilityLists(VisType type, int i)
 			xList[count + 1] = i | 0x1000;
 			zList[count + 1] = i | 0x1000;
 
-			count++;
+			count += 2;
 		}
 	}
 	else if (type == VIS_NEXT)
@@ -1275,9 +1275,9 @@ void SetUpEvents(int full)
 							ev_00 = ev_00 + 1;
 						} while (loop < 2);
 
-						while (i = i + -1, i != -1)
+						while (i--, i != -1)
 						{
-							piVar6 = piVar6 + 1;
+							piVar6++;
 							VisibilityLists(VIS_ADD, cEvents | i * 0x100);
 							VisibilityLists(VIS_ADD, cEvents + 1U | i * 0x100);
 						}
@@ -1878,29 +1878,38 @@ void SetCamera(_EVENT *ev)
 
 		gte_stlvnl(&camera_position);
 
-		/*
-		uVar1 = matrix.m[1][0] ^ matrix.m[0][1] ^ matrix.m[1][0];
-		matrix.m[0]._0_4_ = matrix.m[0]._0_4_ & 0xffff | (uint)(ushort)(matrix.m[0][1] ^ matrix.m[1][0] ^ uVar1) << 0x10;
-		uVar4 = matrix.m[2][0] ^ matrix.m[0][2] ^ matrix.m[2][0];
-		matrix.m._4_4_ = CONCAT22(uVar1, matrix.m[0][2] ^ matrix.m[2][0] ^ uVar4);
-		uVar1 = matrix.m[2][1] ^ matrix.m[1][2] ^ matrix.m[2][1];
-		matrix.m[2]._0_4_ = CONCAT22(uVar1, uVar4);
-		matrix.m[1]._2_4_ = matrix.m[1]._2_4_ & 0xffff | (uint)(ushort)(matrix.m[1][2] ^ matrix.m[2][1] ^ uVar1) << 0x10;
-		*/
-		matrix.m[0][0] = ~matrix.m[0][0];
-		matrix.m[0][1] = ~matrix.m[0][1];
-		matrix.m[0][2] = matrix.m[0][2] ^ 0xFFFF;
-		matrix.m[1][0] = matrix.m[1][0];
-		matrix.m[1][1] = matrix.m[1][1];
-		matrix.m[1][2] = matrix.m[1][2];
-		matrix.m[2][0] = ~matrix.m[2][0];
-		matrix.m[2][1] = ~matrix.m[2][1];
-		matrix.m[2][2] = matrix.m[2][2] ^ 0xFFFF;
+		short v1, v0, a1, a2;
 
-		gte_SetRotMatrix(&inv_camera_matrix);
+		v1 = matrix.m[0][1];
+		v0 = matrix.m[1][0];
+		a1 = matrix.m[0][2];
+		a2 = matrix.m[2][0];
+		v1 = v1 ^ v0;
+		v0 = v0 ^ v1;
+		v1 = v1 ^ v0;
+		a1 = a1 ^ a2;
+		matrix.m[0][1] = v1;
+		v1 = matrix.m[1][2];
+		a2 = a2 ^ a1;
+		matrix.m[1][0] = v0;
+		v0 = matrix.m[2][1];
+		a1 = a1 ^ a2;
+		matrix.m[2][0] = a2;
+		matrix.m[0][2] = a1;
+		v1 = v1 ^ v0;
+		v0 = v0 ^ v1;
+		v1 = v1 ^ v0;
+		matrix.m[2][1] = v0;
+		matrix.m[1][2] = v1;
 
-		MulRotMatrix(&matrix);
-		inv_camera_matrix = matrix;
+		// OLD
+		//gte_SetRotMatrix(&inv_camera_matrix);
+		//MulRotMatrix(&matrix);
+		//inv_camera_matrix = matrix;
+
+		// NEW
+		gte_MulMatrix0(&inv_camera_matrix, &matrix, &inv_camera_matrix);
+
 
 		camera_position.vx += offset.vx;
 		camera_position.vy += offset.vy;
@@ -3869,7 +3878,7 @@ void DrawEvents(int camera)
 	ushort* puVar7;
 	int iVar8;
 	int iVar9;
-	ushort* puVar10;
+	ushort* _xv;
 	int* piVar11;
 	VECTOR* pVVar12;
 	_EVENT* ev;
@@ -3908,12 +3917,10 @@ void DrawEvents(int camera)
 
 	VisibilityLists(VIS_NEXT, CurrentPlayerView);
 
-	uVar4 = (uint)*xVis;
-	uVar2 = uVar4 & thisCamera;
-	puVar10 = xVis;
+	_xv = xVis;
 
 	do {
-		if (uVar2 != 0)
+		if ((*_xv & thisCamera) != 0)
 		{
 			if (camera == 0)
 			{
@@ -3922,32 +3929,33 @@ void DrawEvents(int camera)
 					add_haze(eventHaze, eventHaze, 7);
 				}
 			}
-			else 
+			else
 			{
 				ResetEventCamera();
 			}
 
 			if (camera == 0 && (CurrentPlayerView == NumPlayers - 1) && es_mobile[0] != -1)
 			{
-				if (nearestTrain == NULL) 
+				if (nearestTrain == NULL)
 				{
 					SetEnvSndVol(es_mobile[0], -10000);
 				}
-				else 
+				else
 				{
 					SetEnvSndVol(es_mobile[0], 2000);
 					SetEnvSndPos(es_mobile[0], nearestTrain->position.vx, nearestTrain->position.vz);
 				}
 			}
+
 			return;
 		}
 
-		if ((uVar4 & otherCamera) == 0) 
+		if ((*_xv & otherCamera) == 0)
 		{
-			if ((uVar4 & 0x80) == 0) 
-				ev = &event[(uVar4 & 0x7f)];
+			if ((*_xv & 0x80) == 0) 
+				ev = &event[(*_xv & 0x7f)];
 			else 
-				ev = (_EVENT*)&fixedEvent[(uVar4 & 0x7f)];
+				ev = (_EVENT*)&fixedEvent[(*_xv & 0x7f)];
 
 			uVar3 = ev->flags;
 
@@ -3958,12 +3966,12 @@ void DrawEvents(int camera)
 					if ((uVar3 & 1) != 1)
 					{
 					LAB_00049d90:
-						uVar4 = (uint)*zVis;
+						uVar4 = *zVis;
 						puVar7 = zVis;
 						if ((uVar4 & thisCamera) == 0)
 						{
 						LAB_00049db4:
-							if (((uVar4 & otherCamera) != 0) || (((uint)*puVar10 & 0xfff) != (uVar4 & 0xfff)))
+							if (((uVar4 & otherCamera) != 0) || ((*_xv & 0xfff) != (uVar4 & 0xfff)))
 								break;
 							ev->flags = uVar3 | 4;
 
@@ -4220,22 +4228,22 @@ void DrawEvents(int camera)
 					}
 				}
 				else
- {
+				{
 					if ((uVar3 & 1) != 0)
 						goto LAB_00049d90;
 				}
 			}
 		}
 	LAB_0004a58c:
-		puVar10++;
-		uVar4 = (uint)*puVar10;
-		uVar2 = uVar4 & thisCamera;
+		_xv++;
 	} while (true);
 
 	uVar4 = (uint)puVar7[1];
 	puVar7 = puVar7 + 1;
+
 	if ((uVar4 & thisCamera) != 0)
 		goto LAB_0004a58c;
+
 	goto LAB_00049db4;
 }
 
