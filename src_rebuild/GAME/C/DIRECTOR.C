@@ -21,6 +21,7 @@
 #include "../MEMCARD/MAIN.H"
 
 #include "STRINGS.H"
+#include <stdlib.h>
 
 TEXTURE_DETAILS delcam; // address 0xC0EE0
 TEXTURE_DETAILS incar; // address 0xBF950
@@ -2513,120 +2514,127 @@ switchD_0003d504_caseD_5:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+long* savemapinfo = NULL;
+static int mapstuff = 0;
+static int cammapht2 = 0;
+
+// [D]
 void DoAutoDirect(void)
 {
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	SXYPAIR *pSVar2;
-	uint uVar3;
-	int iVar4;
+	int height;
+	int tmp;
 
 	if (((((quick_replay != 0) || (AutoDirect != 0)) && (gStopPadReads == 0)) &&
-		((tracking_car = '\x01', TimeToWay == way_distance / 2 + 0xf &&
-		(PlayerWayRecordPtr->x != 0x7fff)))) && (PlayerWayRecordPtr->y != 0x7fff)) {
-		uVar3 = rand();
-		switch (uVar3 & 7) {
-		case 0:
+		((tracking_car = 1, TimeToWay == way_distance / 2 + 0xf &&
+		(PlayerWayRecordPtr->x != 0x7fff)))) && (PlayerWayRecordPtr->y != 0x7fff)) 
+	{
+		switch (rand() & 7)
+		{
+			case 0:
+				cameraview = 0;
+				gCameraAngle = rand() & 0xfff;
+				CameraPos.vy = -((rand() & 0xff) + 100);
+				gCameraDistance = (rand() & 0x7e7) + 1000;
+				gCameraMaxDistance = gCameraDistance;
+				break;
+			case 1:
+			case 2:
+				cameraview = 1;
+				break;
+			case 3:
+			case 4:
+				cameraview = 1;
+				break;
+			case 5:
+				cameraview = 2;
+				player[0].cameraCarId = player[0].playerCarId;
+				break;
+			case 6:
+			case 7:
+				cameraview = 5;
+		}
+
+		if (ReplayParameterPtr->RecordingEnd < CameraCnt + way_distance)
+		{
 			cameraview = 0;
-			uVar3 = rand();
-			gCameraAngle = uVar3 & 0xfff;
-			uVar3 = rand();
-			CameraPos.vy = -((uVar3 & 0xff) + 100);
-			uVar3 = rand();
-			gCameraDistance = (uVar3 & 0x7e7) + 1000;
-			gCameraMaxDistance = gCameraDistance;
-			break;
-		case 1:
-		case 2:
-			cameraview = 1;
-			break;
-		case 3:
-		case 4:
-			cameraview = 1;
-			break;
-		case 5:
-			cameraview = 2;
-			player.cameraCarId = player.playerCarId;
-			break;
-		case 6:
-		case 7:
-			cameraview = 5;
+			player[0].cameraCarId = -1;
+
+			if (player[0].playerType != 2)
+				player[0].cameraCarId = player[0].playerCarId;
+
 		}
-		if (ReplayParameterPtr->RecordingEnd < CameraCnt + way_distance) {
-			cameraview = 0;
-			player.cameraCarId = -1;
-			if (player.playerType != '\x02') {
-				player.cameraCarId = player.playerCarId;
-			}
+		else 
+		{
+			player[0].cameraPos.vx = PlayerWayRecordPtr->x << 10;
+			player[0].cameraPos.vz = PlayerWayRecordPtr->y << 10;
 		}
-		else {
-			player.cameraPos.vx = (int)PlayerWayRecordPtr->x << 10;
-			player.cameraPos.vz = (int)PlayerWayRecordPtr->y << 10;
+
+		player[0].cameraPos.vy = (-70 - MapHeight(&player[0].cameraPos)) - (rand() & 0x3ff);
+
+		height = MapHeight((VECTOR*)car_data[player[0].cameraCarId].hd.where.t);
+
+		if (-height < player[0].cameraPos.vy)
+		{
+			player[0].cameraPos.vy = -height - 100;
 		}
-		iVar4 = MapHeight(&player.cameraPos);
-		uVar3 = rand();
-		player.cameraPos.vy = (-0x46 - iVar4) - (uVar3 & 0x3ff);
-		iVar4 = MapHeight((VECTOR *)car_data[player.cameraCarId].hd.where.t);
-		if (-iVar4 < player.cameraPos.vy) {
-			player.cameraPos.vy = -iVar4 + -100;
-		}
-		cammapht2 = MapHeight(&player.cameraPos);
+
+		cammapht2 = MapHeight(&player[0].cameraPos);
 		cammapht2 = -cammapht2;
-		if (cammapht2 < player.cameraPos.vy) {
-			player.cameraPos.vy = cammapht2 + -100;
-		}
-		MapHeight(&player.cameraPos);
-		if (savemapinfo != (long *)0x0) {
+
+		if (cammapht2 < player[0].cameraPos.vy)
+			player[0].cameraPos.vy = cammapht2 + -100;
+
+		MapHeight(&player[0].cameraPos);
+
+		if (savemapinfo != NULL)
 			mapstuff = *savemapinfo;
-		}
-		iVar4 = valid_region((int)PlayerWayRecordPtr->x << 10, (int)PlayerWayRecordPtr->y << 10);
-		test555 = ZEXT14(iVar4 == 0);
-		if ((iVar4 == 0) ||
+
+
+		if ((valid_region(PlayerWayRecordPtr->x << 10, PlayerWayRecordPtr->y << 10) == 0) ||
 			((((cameraview != 2 && (cameraview != 0)) &&
-			((savemapinfo != (long *)0x0 && ((*savemapinfo & 0x3c000000U) == 0x3c000000)))) ||
-				(test42 = CameraCollisionCheck(), test42 != 0)))) {
-			uVar3 = rand();
-			cameraview = (byte)(uVar3 & 2);
-			if ((uVar3 & 2) == 0) {
-				uVar3 = rand();
-				gCameraAngle = uVar3 & 0xfff;
-				uVar3 = rand();
-				CameraPos.vy = -((uVar3 & 0xff) + 100);
-				uVar3 = rand();
-				gCameraDistance = (uVar3 & 0x7e7) + 1000;
+				((savemapinfo != NULL && ((*savemapinfo & 0x3c000000U) == 0x3c000000)))) ||
+				(CameraCollisionCheck() != 0))))
+		{
+			tmp = rand();
+			cameraview = (tmp & 2);
+
+			if ((tmp & 2) == 0)
+			{
+				gCameraAngle = rand() & 0xfff;
+				CameraPos.vy = -((rand() & 0xff) + 100);
+				gCameraDistance = (rand() & 0x7e7) + 1000;
 				gCameraMaxDistance = gCameraDistance;
 			}
-			player.cameraCarId = -1;
-			if (player.playerType != '\x02') {
-				player.cameraCarId = player.playerCarId;
-			}
+
+			player[0].cameraCarId = -1;
+
+			if (player[0].playerType != 2)
+				player[0].cameraCarId = player[0].playerCarId;
+
 		}
-		iVar4 = NoMoreCamerasErrorMessage();
-		if (iVar4 == 0) {
+
+		if (NoMoreCamerasErrorMessage() == 0) 
+		{
 			RecordCamera(CameraCnt);
 		}
-		else {
+		else 
+		{
 			cameraview = 0;
-			uVar3 = rand();
-			gCameraAngle = uVar3 & 0xfff;
-			uVar3 = rand();
-			CameraPos.vy = -((uVar3 & 0xff) + 100);
-			uVar3 = rand();
-			gCameraDistance = (uVar3 & 0x7e7) + 1000;
+			gCameraAngle = rand() & 0xfff;
+			CameraPos.vy = -((rand() & 0xff) + 100);
+			gCameraDistance = (rand() & 0x7e7) + 1000;
 			gCameraMaxDistance = gCameraDistance;
 		}
-		pSVar2 = PlayerWayRecordPtr;
+
 		PlayerWayRecordPtr->x = 0x7fff;
-		pSVar2->y = 0x7fff;
+		PlayerWayRecordPtr->y = 0x7fff;
 	}
-	bVar1 = TimeToWay == 0;
-	TimeToWay = TimeToWay + -1;
-	if (bVar1) {
-		PlayerWayRecordPtr = PlayerWayRecordPtr + 1;
+
+	if (TimeToWay-- == 0)
+	{
+		PlayerWayRecordPtr++;
 		TimeToWay = way_distance;
 	}
-	return;*/
 }
 
 

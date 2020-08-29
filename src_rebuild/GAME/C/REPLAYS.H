@@ -13,6 +13,10 @@ extern char *replayptr;
 extern unsigned long PingBufferPos;
 extern _PING_PACKET *PingBuffer;
 
+extern int TimeToWay;
+extern short PlayerWaypoints;
+extern int way_distance;
+extern SXYPAIR* PlayerWayRecordPtr;
 
 extern PLAYBACKCAMERA *PlaybackCamera;
 
