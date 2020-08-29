@@ -2409,7 +2409,7 @@ void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 	// End Line: 2381
 
 // [D]
-void ExplosionSound(VECTOR *pos, int type)
+void ExplosionSound(VECTOR* pos, int type)
 {
 	char id;
 	long lVar1;
@@ -2424,7 +2424,7 @@ void ExplosionSound(VECTOR *pos, int type)
 	sample = 0xff;
 	lVar1 = Random2(4);
 
-	if (gCurrentMissionNumber == 23) 
+	if (gCurrentMissionNumber == 23)
 	{
 	LAB_0004fa04:
 		id = 12;
@@ -2432,18 +2432,14 @@ void ExplosionSound(VECTOR *pos, int type)
 		id = GetMissionSound(id);
 		sample = id;
 	}
-	else 
+	else if (gCurrentMissionNumber == 13)
 	{
-		if (gCurrentMissionNumber < 24) 
-		{
-			if (gCurrentMissionNumber == 13)
-				goto LAB_0004fa04;
-		}
-		else if (gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35)
-		{
-			id = 29;
-			goto LAB_0004fa10;
-		}
+		goto LAB_0004fa04;
+	}
+	else if (gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35)
+	{
+		id = 29;
+		goto LAB_0004fa10;
 	}
 
 	if (sample == 0xff)
@@ -2455,26 +2451,25 @@ void ExplosionSound(VECTOR *pos, int type)
 		unaff_s2 = 3;
 		unaff_s1 = 1;
 	}
+	else if (type < 2)
+	{
+		unaff_s2 = 2;
+		unaff_s1 = 2;
+
+		iVar5 = iVar3 * unaff_s2;
+		if (type != 0)
+			goto LAB_0004fab8;
+
+	}
 	else
 	{
-		if (type < 2) 
-		{
-			iVar5 = iVar3 * unaff_s2;
-			if (type != 0) 
-				goto LAB_0004fab8;
-			unaff_s2 = 2;
-			unaff_s1 = 2;
-		}
-		else 
-		{
-			iVar5 = iVar3 * unaff_s2;
+		unaff_s2 = 1;
+		unaff_s1 = 3;
 
-			if (type != 0x29a) 
-				goto LAB_0004fab8;
+		iVar5 = iVar3 * unaff_s2;
 
-			unaff_s2 = 1;
-			unaff_s1 = 3;
-		}
+		if (type != 0x29a)
+			goto LAB_0004fab8;
 	}
 
 	iVar5 = iVar3 * unaff_s2;

@@ -16,8 +16,11 @@
 #include "SPOOL.H"
 #include "MAP.H"
 #include "TEXTURE.H"
+#include "CIV_AI.H"
 #include "../ASM/ASMTEST.H"
+
 #include "INLINE_C.H"
+
 
 
 int ElTrainData[83] = {
@@ -828,9 +831,9 @@ void InitTrain(_EVENT *ev, int count, int type)
 	ushort uVar1;
 	int *piVar2;
 	uint uVar3;
-	int *piVar4;
-	int unaff_s1;
-	long unaff_s2;
+	int *to;
+	int length;
+	int height;
 
 	uVar1 = *(ushort *)(ev->data + 2);
 	ev->node = ev->data + 3;
@@ -839,43 +842,41 @@ void InitTrain(_EVENT *ev, int count, int type)
 
 	if (type == 0) 
 	{
-		unaff_s2 = -1773;
-		unaff_s1 = 1600;
+		height = -1773;
+		length = 1600;
 		SetElTrainRotation(ev);
 	}
 	else if (type == 1)
 	{
-		unaff_s2 = -734;
-		unaff_s1 = 3700;
+		height = -734;
+		length = 3700;
 		ev->rotation = 0;
 	}
 
-	piVar2 = ev->node;
-	ev->position.vy = unaff_s2;
+	ev->position.vy = height;
 
-	if (piVar2[3] == -0x80000000) 
-		uVar1 = ev->flags & 0x8fff;
+	if (ev->node[3] == -0x80000000)
+		ev->flags = ev->flags & 0x8fff;
 	else
-		uVar1 = ev->flags & 0x8fffU | 0x3000;
+		ev->flags = ev->flags & 0x8fffU | 0x3000;
 
-	ev->flags = uVar1;
-	piVar4 = ev->node;
-	piVar2 = piVar4 + 2;
+	to = ev->node;
+	piVar2 = to + 2;
 
-	if (piVar4[2] == -0x7ffffffe)
-		piVar2 = piVar4 + 3;
+	if (to[2] == -0x7ffffffe)
+		piVar2 = to + 3;
 
 	if ((ev->flags & 0x8000U) == 0) 
 	{
-		uVar3 = *piVar2 - *piVar4 >> 0x1f;
-		ev->position.vx = *piVar4 + ((count * unaff_s1 ^ uVar3) - uVar3);
-		ev->position.vz = piVar4[1];
+		uVar3 = *piVar2 - to[0] >> 0x1f;
+		ev->position.vx = to[0] + ((count * length ^ uVar3) - uVar3);
+		ev->position.vz = to[1];
 	}
 	else 
 	{
-		uVar3 = *piVar2 - *piVar4 >> 0x1f;
-		ev->position.vz = *piVar4 + ((count * unaff_s1 ^ uVar3) - uVar3);
-		ev->position.vx = piVar4[1];
+		uVar3 = *piVar2 - to[0] >> 0x1f;
+		ev->position.vz = to[0] + ((count * length ^ uVar3) - uVar3);
+		ev->position.vx = to[1];
 	}
 }
 
@@ -4612,249 +4613,284 @@ void TriggerDoor(FixedEvent *door, int *stage, int sound)
 	/* end block 4 */
 	// End Line: 7119
 
-VECTOR * TriggerEvent(int i)
+// [D]
+VECTOR* TriggerEvent(int i)
 {
-	UNIMPLEMENTED();
-	return (VECTOR*)player[0].pos;
-	/*
-	ushort uVar1;
-	_EVENT *p_Var2;
-	undefined4 *puVar3;
+	static int stage[10];
+
+	short uVar1;
+	_EVENT* p_Var2;
 	int count;
-	int *piVar4;
+	int* piVar3;
+	int iVar4;
+	_EVENT* _ev;
 	int iVar5;
-	int iVar6;
-	_EVENT *p_Var7;
-	_EVENT *ev;
-	int iVar8;
-	_EVENT *ev_00;
+	_EVENT* p_Var6;
+	_EVENT* ev;
+	int iVar7;
+	_EVENT* ev_00;
 
 	p_Var2 = firstEvent;
-	p_Var7 = firstMissionEvent;
+	p_Var6 = firstMissionEvent;
 	ev = event;
-	ev_00 = (_EVENT *)0x0;
-	if (i == -1) {
+	ev_00 = NULL;
+
+	if (i == -1) // initialize
+	{
 		count = 9;
-		puVar3 = &DAT_000cde74;
+		piVar3 = stage + 9;
+
 		do {
-			*puVar3 = 0;
-			count = count + -1;
-			puVar3 = puVar3 + -1;
+			*piVar3 = 0;
+			count--;
+			piVar3--;
 		} while (-1 < count);
-		return (VECTOR *)0x0;
+
+		return NULL;
 	}
-	if (((GameLevel - 2U < 2) && (0 < i)) && (i < 4)) {
-		if (*(int *)(&stage_90 + i * 4) == 0) {
-			p_Var7 = firstMissionEvent + i + -1;
-			ev = (_EVENT *)((int)p_Var7 - (int)event);
-			p_Var7->next = firstEvent->next;
-			p_Var2->next = p_Var7;
-			VisibilityLists(VIS_ADD, (int)ev * -0x33333333 >> 3);
-			SetMSoundVar(i, (VECTOR *)0x0);
-			detonator.count = detonator.count + 1;
+
+	if(GameLevel > 1 && i > 0 && i < 4) // Vegas and Rio detonators
+	{
+		if (stage[i] == 0)
+		{
+			p_Var6 = firstMissionEvent + i - 1;
+			
+			p_Var6->next = firstEvent->next;
+			p_Var2->next = p_Var6;
+
+			VisibilityLists(VIS_ADD, p_Var6 - event);
+			SetMSoundVar(i, NULL);
+
+			detonator.count++;
 		}
+
 		goto switchD_0004afa0_caseD_1;
 	}
-	if (GameLevel == 1) {
-		if (4 < (uint)i) goto switchD_0004afa0_caseD_1;
-		count = i * 4;
-		switch (i) {
-		case 0:
-		switchD_0004ae88_caseD_0:
-			event->timer = 1;
-			break;
-		case 1:
-			(event->position).vx = INT_0009e8a0;
-			count = INT_ARRAY_0009e8a4[0];
-			ev->timer = 1;
-			ev->node = INT_ARRAY_0009e8a4;
-			ev->data = INT_ARRAY_0009e894;
-			(ev->position).vz = count;
-			break;
-		case 2:
-			TriggerDoor(&havanaFixed, (int *)(&stage_90 + count), 1);
-			break;
-		case 3:
-			PrepareSecretCar();
-			events.cameraEvent = &FixedEvent_0009e9e8;
-			TriggerDoor(&FixedEvent_0009e9e8, (int *)(&stage_90 + count), 0);
-			break;
-		case 4:
-			if (*(int *)(&stage_90 + count) != 0) {
-				SpecialCamera(SPECIAL_CAMERA_WAIT, 0);
-				event[1].node = event[1].node + 1;
-			}
-			ev = event;
-			event[1].timer = 0;
-			events.cameraEvent = (FixedEvent *)(ev + 1);
+
+	if (GameLevel == 0)
+	{
+		switch (i)
+		{
+			case 0:
+			case 1:
+				if (stage[i] == 0)
+				{
+					ev_00 = missionTrain[i].engine;
+					MakeEventTrackable(ev_00);
+					ev_00->flags = ev_00->flags | 0x180;
+					count = -0x640;
+
+					if (-1 < *missionTrain[i].node - missionTrain[i].start)
+						count = 0x640;
+
+					iVar7 = 0;
+					ev = ev_00;
+					do {
+						piVar3 = missionTrain[i].node;
+
+						if (*piVar3 == -0x7ffffffe)
+							iVar5 = piVar3[-1];
+						else
+							iVar5 = piVar3[1];
+
+						if (missionTrain[i].startDir == 0x8000)
+						{
+							uVar1 = ev->flags;
+							(ev->position).vx = iVar5;
+							ev->flags = uVar1 | 0x8000;
+							(ev->position).vz = missionTrain[i].start + iVar7 * count;
+						}
+						else
+						{
+							ev->flags = ev->flags & 0x7fff;
+							iVar4 = missionTrain[i].start;
+							(ev->position).vz = iVar5;
+							(ev->position).vx = iVar4 + iVar7 * count;
+						}
+
+						piVar3 = missionTrain[i].node;
+						ev->data = &missionTrain[i].cornerSpeed;
+						ev->timer = 0;
+						ev->node = piVar3;
+						ev->flags = ev->flags & 0x8fffU | 0x3000;
+
+						SetElTrainRotation(ev);
+
+						iVar7 = iVar7 + 1;
+					} while ((ev->next != NULL) && (ev = ev->next, (ev->flags & 0x400U) == 0));
+				}
+				else
+				{
+					ev_00 = missionTrain[i].engine;
+
+					if (ev_00->timer != 0)
+						ev_00->timer = 1;
+
+				}
+				break;
+			case 2:
+			case 3:
+			case 4:
+				if (stage[i] == 0)
+				{
+					count = 9;
+					ev = firstMissionEvent;
+					do {
+						p_Var6 = ev;
+						p_Var6->flags = p_Var6->flags | 0x100;
+
+						if (i == 4)
+							p_Var6->timer = 0xa28;
+						else
+							p_Var6->timer = 1000;
+
+						count--;
+						ev = p_Var6 + 1;
+					} while (-1 < count);
+
+					if (i == 2)
+					{
+						p_Var6[-1].timer = 0xa28;
+						p_Var6->timer = 0xa28;
+					}
+				}
+				else
+				{
+					firstMissionEvent[8].timer = 0;
+					p_Var6[9].timer = 0;
+				}
+
+				break;
+			case 5:
+				PrepareSecretCar();
+				events.cameraEvent = (_EVENT*)chicagoDoor;
+			case 6:
+				TriggerDoor((FixedEvent*)(ElTrainData + i * 0xb + 0x4a), stage + i, 1); // might be incorrect
 		}
 	}
-	else {
-		if (GameLevel < 2) {
-			if ((GameLevel == 0) && ((uint)i < 7)) {
-				count = i * 4;
-				switch (i) {
-				case 0:
-				case 1:
-					if (*(int *)(&stage_90 + count) == 0) {
-						ev_00 = (&missionTrain)[i].engine;
-						MakeEventTrackable(ev_00);
-						ev_00->flags = ev_00->flags | 0x180;
-						count = -0x640;
-						if (-1 < *(&missionTrain)[i].node - (&missionTrain)[i].start) {
-							count = 0x640;
-						}
-						iVar8 = 0;
-						ev = ev_00;
-						do {
-							piVar4 = (&missionTrain)[i].node;
-							if (*piVar4 == -0x7ffffffe) {
-								iVar6 = piVar4[-1];
-							}
-							else {
-								iVar6 = piVar4[1];
-							}
-							if ((&missionTrain)[i].startDir == 0x8000) {
-								uVar1 = ev->flags;
-								(ev->position).vx = iVar6;
-								ev->flags = uVar1 | 0x8000;
-								(ev->position).vz = (&missionTrain)[i].start + iVar8 * count;
-							}
-							else {
-								ev->flags = ev->flags & 0x7fff;
-								iVar5 = (&missionTrain)[i].start;
-								(ev->position).vz = iVar6;
-								(ev->position).vx = iVar5 + iVar8 * count;
-							}
-							piVar4 = (&missionTrain)[i].node;
-							ev->data = &(&missionTrain)[i].cornerSpeed;
-							ev->timer = 0;
-							ev->node = piVar4;
-							ev->flags = ev->flags & 0x8fffU | 0x3000;
-							SetElTrainRotation(ev);
-							iVar8 = iVar8 + 1;
-						} while ((ev->next != (_EVENT *)0x0) && (ev = ev->next, (ev->flags & 0x400U) == 0));
-					}
-					else {
-						ev_00 = (&missionTrain)[i].engine;
-						if (ev_00->timer != 0) {
-							ev_00->timer = 1;
-						}
-					}
-					break;
-				default:
-					if (*(int *)(&stage_90 + count) == 0) {
-						count = 9;
-						ev = firstMissionEvent;
-						do {
-							p_Var7 = ev;
-							p_Var7->flags = p_Var7->flags | 0x100;
-							if (i == 4) {
-								p_Var7->timer = 0xa28;
-							}
-							else {
-								p_Var7->timer = 1000;
-							}
-							count = count + -1;
-							ev = p_Var7 + 1;
-						} while (-1 < count);
-						if (i == 2) {
-							p_Var7[-1].timer = 0xa28;
-							p_Var7->timer = 0xa28;
-						}
-					}
-					else {
-						firstMissionEvent[8].timer = 0;
-						p_Var7[9].timer = 0;
-					}
-					break;
-				case 5:
-					PrepareSecretCar();
-					events.cameraEvent = &chicagoDoor;
-				case 6:
-					TriggerDoor((FixedEvent *)(INT_ARRAY_0009e724 + i * 0xb + 0x43), (int *)(&stage_90 + count)
-						, 1);
+	else if (GameLevel == 1)
+	{
+		switch (i)
+		{
+			case 0:
+				event->timer = 1;
+				break;
+			case 1:
+				(event->position).vx = HavanaFerryData[9];
+				count = HavanaFerryData[10];
+				ev->timer = 1;
+				ev->node = HavanaFerryData + 10;
+				ev->data = HavanaFerryData + 6;
+				(ev->position).vz = count;
+				break;
+			case 2:
+				TriggerDoor(havanaFixed, stage + i, 1);
+				break;
+			case 3:
+				PrepareSecretCar();
+				events.cameraEvent = (_EVENT*)havanaFixed + 2;
+				TriggerDoor(havanaFixed + 2, stage + i, 0);
+				break;
+			case 4:
+				if (stage[i] != 0) 
+				{
+					SpecialCamera(SPECIAL_CAMERA_WAIT, 0);
+					event[1].node = event[1].node + 1;
 				}
-			}
-			goto switchD_0004afa0_caseD_1;
+
+				ev = event;
+				event[1].timer = 0;
+				events.cameraEvent = ev + 1;
 		}
-		if (GameLevel == 2) {
-			switch (i) {
+	}
+	else if (GameLevel == 2)
+	{
+		switch (i)
+		{
 			case 0:
 				count = 0;
-				iVar8 = 0;
+
 				do {
-					ev = (_EVENT *)((int)&(event->position).vx + iVar8);
+					ev = &event[count];
+
 					ev->data = VegasTrainData;
 					InitTrain(ev, count, 1);
-					iVar6 = (int)&(event->position).vx + iVar8;
-					*(ushort *)(iVar6 + 0x1c) = *(ushort *)(iVar6 + 0x1c) | 0x200;
-					if (1 < count) {
+					ev->flags |= 0x200;
+
+					if (count > 1)
 						VisibilityLists(VIS_ADD, count);
-					}
+
 					ev = event;
-					count = count + 1;
-					iVar8 = iVar8 + 0x28;
+					count++;
 				} while (count < 9);
-				event->flags = event->flags | 0x500;
+
+				event->flags |= 0x500;
+
 				MakeEventTrackable(ev);
+
 				event[1].next = event + 2;
 				break;
 			case 4:
-				TriggerDoor(&FixedEvent_0009e964 + i, (int *)(&stage_90 + i * 4), 0);
+				TriggerDoor(chicagoDoor + i + 2, stage + i, 0);
 				break;
 			case 8:
-				events.cameraEvent = &FixedEvent_0009eac4;
+				events.cameraEvent = (_EVENT*)vegasDoor + 4;
 				PrepareSecretCar();
 			case 5:
 			case 6:
 			case 7:
-				TriggerDoor(&FixedEvent_0009e964 + i, (int *)(&stage_90 + i * 4), 1);
+				TriggerDoor(chicagoDoor + i + 2, stage + i, 1);
 				break;
 			case 9:
-				SetMSoundVar(5, (VECTOR *)0x0);
-			}
-			goto switchD_0004afa0_caseD_1;
-		}
-		if (GameLevel != 3) goto switchD_0004afa0_caseD_1;
-		count = i * 4;
-		switch (i) {
-		case 0:
-			goto switchD_0004ae88_caseD_0;
-		case 4:
-			TriggerDoor(&FixedEvent_0009eb48, (int *)(&stage_90 + count), 0);
-			TriggerDoor(&FixedEvent_0009eb74, (int *)(&stage_90 + count), 0);
-			events.cameraEvent = &FixedEvent_0009eb48;
-			break;
-		case 5:
-		case 6:
-			TriggerDoor(&vegasDoor + i, (int *)(&stage_90 + count), (uint)(i == 5));
-			break;
-		case 7:
-			if (*(int *)(&stage_90 + count) == 0) {
-				ev_00 = event + 1;
-			}
-			else {
-				event[1].position.vy = -0x11;
-				ev[1].position.vx = -0x3afd3;
-				ev[1].position.vz = -0x33e9e;
-				ev[1].timer = -2;
-				ev[1].model = HelicopterData.deadModel;
-			}
-			break;
-		case 8:
-			PingOutAllSpecialCivCars();
-			TriggerDoor(&FixedEvent_0009eba0, (int *)(&stage_90 + count), 0);
-			TriggerDoor(&FixedEvent_0009ebcc, (int *)(&stage_90 + count), 0);
-			events.cameraEvent = &FixedEvent_0009eba0;
+				SetMSoundVar(5, NULL);
 		}
 	}
+	else if (GameLevel == 3)
+	{
+		switch (i)
+		{
+			case 0:
+				event->timer = 1;
+				break;
+			case 4:
+				TriggerDoor(rioDoor + 2, stage + i, 0);
+				TriggerDoor(rioDoor + 3, stage + i, 0);
+
+				events.cameraEvent = (_EVENT*)rioDoor + 2;
+				break;
+			case 5:
+			case 6:
+				TriggerDoor(vegasDoor + i, stage + i, (i == 5));
+				break;
+			case 7:
+				if (stage[i] == 0)
+				{
+					ev_00 = event + 1;
+				}
+				else
+				{
+					event[1].position.vy = -0x11;
+					ev[1].position.vx = -0x3afd3;
+					ev[1].position.vz = -0x33e9e;
+					ev[1].timer = -2;
+					ev[1].model = HelicopterData.deadModel;
+				}
+
+				break;
+			case 8:
+				PingOutAllSpecialCivCars();
+				TriggerDoor(rioDoor + 4, stage + i, 0);
+				TriggerDoor(rioDoor + 5, stage + i, 0);
+				events.cameraEvent = (_EVENT*)rioDoor + 4;
+		}
+	}
+
 switchD_0004afa0_caseD_1:
-	if (i < 10) {
-		*(int *)(&stage_90 + i * 4) = *(int *)(&stage_90 + i * 4) + 1;
-	}
-	return (VECTOR *)ev_00;
-	*/
+
+	if (i < 10)
+		stage[i]++;
+
+	return (VECTOR*)&ev_00->position;
 }
 
 
