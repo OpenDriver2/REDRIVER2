@@ -441,89 +441,80 @@ static struct EventCamera eventCamera;
 	/* end block 2 */
 	// End Line: 499
 
+// [D]
 int GetVisValue(int index, int zDir)
 {
-	UNIMPLEMENTED();
-	return 0;
-
-	// WEIRD FUNCTION
-	/*
-	uint uVar1;
-	int iVar2;
-	_EVENT* local_a0_176;
-	_EVENT* local_a0_180;
+	int camera;
+	int radius;
+	_EVENT* ev;
+	_EVENT* _ev;
 	VECTOR pos;
 
 	if ((index & 0xc000U) != 0) 
 	{
-		uVar1 = ((uint)index >> 0xf ^ 1) & 1;
-		if (zDir == 0)
+		camera = (index >> 0xf ^ 1) & 1;
+
+		if (zDir == 0) 
 		{
-			pos.vx = player[uVar1].cameraPos.vx;
-			iVar2 = 16000;
+			pos.vx = player[camera].cameraPos.vx;
+			radius = 16000;
 		}
-		else
+		else 
 		{
-			pos.vx = player[uVar1].cameraPos.vz;
-			iVar2 = 16000;
+			pos.vx = player[camera].cameraPos.vz;
+			radius = 16000;
 		}
+
 		goto LAB_00045c40;
 	}
 
 	if ((index & 0x80U) == 0) 
-	{
-		iVar2 = (index & 0x7fU) * 0x28;
-		local_a0_176 = event;
-	}
+		ev = &event[index];
 	else 
-	{
-		iVar2 = (index & 0x7fU) * 0x2c;
-		local_a0_176 = (_EVENT*)fixedEvent;
-	}
+		ev = (_EVENT*)&fixedEvent[index];
 
-	local_a0_180 = (_EVENT*)((int)&(local_a0_176->position).vx + iVar2);
-
-	if ((index & 0xf00U) == 0)
+	if ((index & 0xf00U) == 0) 
 	{
 	LAB_00045bbc:
-		pos.vx = (local_a0_180->position).vx;
-		pos.vz = (local_a0_180->position).vz;
-		if ((local_a0_180->flags & 0xcc0U) == 0x80)
+		pos.vx = (ev->position).vx;
+		pos.vz = (ev->position).vz;
+
+		if ((ev->flags & 0xcc0U) == 0x80)
 		{
 			pos.vx = pos.vx - boatOffset.vx;
 			pos.vz = pos.vz - boatOffset.vz;
 		}
 
 		if (zDir != 0)
-		{
 			pos.vx = pos.vz;
-		}
+
 	}
-	else 
+	else
 	{
-		if ((local_a0_180->flags & 0x30U) == 0)
+		if ((ev->flags & 0x30U) == 0)
 		{
-			if (zDir != 0)
+			if (zDir != 0) 
 				goto LAB_00045bbc;
 		}
 		else 
 		{
-			if (zDir == 0)
+			if (zDir == 0) 
 				goto LAB_00045bbc;
 		}
 
-		pos.vx = *(int*)(((index & 0xf00U) >> 6) + (int)local_a0_180->node);
+		pos.vx = *(int*)(((index & 0xf00U) >> 6) + (int)ev->node);
 	}
-	iVar2 = (int)local_a0_180->radius;
+
+	radius = (int)ev->radius;
+
 LAB_00045c40:
 	if ((index & 0x2000U) != 0)
-		pos.vx = pos.vx - iVar2;
+		pos.vx = pos.vx - radius;
 
 	if ((index & 0x1000U) != 0)
-		pos.vx = pos.vx + iVar2;
+		pos.vx = pos.vx + radius;
 
 	return pos.vx;
-	*/
 }
 
 
@@ -629,7 +620,6 @@ void VisibilityLists(VisType type, int i)
 	_EVENT* ev;
 	int iVar6;
 	ushort* puVar7;
-	FixedEvent* _ev;
 	ushort* puVar8;
 	ushort uVar9;
 	int iVar10;
@@ -744,17 +734,11 @@ void VisibilityLists(VisType type, int i)
 	else if (type == VIS_ADD)
 	{
 		if ((i & 0x80U) == 0)
-		{
-			zDir = (i & 0x7fU) * sizeof(_EVENT);
-			_ev = (FixedEvent*)&event[i];
-		}
+			ev = &event[i];
 		else
-		{
-			zDir = (i & 0x7fU) * sizeof(FixedEvent);
-			_ev = &fixedEvent[i];
-		}
+			ev = (_EVENT*)&fixedEvent[i];
 
-		if (_ev->radius == 0)
+		if (ev->radius == 0)
 		{
 			xList[count] = i;
 			zList[count] = i;
