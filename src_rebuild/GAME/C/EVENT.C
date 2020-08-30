@@ -20,10 +20,11 @@
 #include "PEDEST.H"
 #include "SHADOW.H"
 #include "GAMESND.H"
+#include "DR2ROADS.H"
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-
+#include <stdlib.h>
 
 
 
@@ -2680,14 +2681,15 @@ int GetBridgeRotation(int timer)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+// [D]
 void StepHelicopter(_EVENT *ev)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	short sVar2;
+	static int rotating = 1;
+
+	short uVar1;
+	long lVar2;
 	int iVar3;
-	uint uVar4;
+	int uVar4;
 	int iVar5;
 	int iVar6;
 	int iVar7;
@@ -2695,13 +2697,10 @@ void StepHelicopter(_EVENT *ev)
 	int iVar9;
 	int iVar10;
 	int iVar11;
-	int *piVar12;
-	int local_38;
-	int local_34;
-	int local_30;
-	long local_2c;
-	long local_28;
-	VECTOR local_20;
+	int* piVar12;
+	XZPAIR vel;
+	VECTOR pos;
+	VECTOR drift = { 2,3,2 };
 
 	uVar1 = ev->timer;
 	iVar6 = (uint)uVar1 << 0x10;
@@ -2718,177 +2717,191 @@ void StepHelicopter(_EVENT *ev)
 	iVar7 = piVar12[1];
 	iVar9 = piVar12[5];
 	iVar8 = piVar12[7];
-	(ev->position).vx =
-		iVar11 + ((piVar12[2] - iVar11) * iVar5 + (piVar12[4] - iVar11) * iVar10 +
-		(piVar12[6] - iVar11) * iVar3 + 0x800 >> 0xc);
-	(ev->position).vz =
-		piVar12[1] +
-		((iVar6 - iVar7) * iVar5 + (iVar9 - iVar7) * iVar10 + (iVar8 - iVar7) * iVar3 + 0x800 >> 0xc)
-		;
-	uVar1 = uVar1 + (short)HelicopterData.speed;
+	(ev->position).vx = iVar11 + ((piVar12[2] - iVar11) * iVar5 + (piVar12[4] - iVar11) * iVar10 + (piVar12[6] - iVar11) * iVar3 + 0x800 >> 0xc);
+	(ev->position).vz = piVar12[1] + ((iVar6 - iVar7) * iVar5 + (iVar9 - iVar7) * iVar10 + (iVar8 - iVar7) * iVar3 + 0x800 >> 0xc);
+	uVar1 = uVar1 + HelicopterData.speed;
 	ev->timer = uVar1;
-	if ((int)((uint)uVar1 << 0x10) < 0) {
-		if ((uint)(piVar12[8] == 0) == piVar12[9]) {
+
+	if ((uVar1 << 0x10) < 0) 
+	{
+		if ((uint)(piVar12[8] == 0) == piVar12[9]) 
+		{
 			ev->timer = -1;
 		}
-		else {
+		else 
+		{
 			ev->timer = 0;
 			ev->node = piVar12 + 2;
 		}
 	}
-	if (ev->rotation == -1) {
+
+	if (ev->rotation == -1) 
+	{
 		piVar12 = ev->node;
-		local_38 = (piVar12[4] - *piVar12) / 2;
-		local_34 = (piVar12[5] - piVar12[1]) / 2;
-		sVar2 = ratan2(local_38, local_34);
-		ev->rotation = sVar2;
-		rotating_57 = 0;
+		vel.x = (piVar12[4] - *piVar12) / 2;
+		vel.z = (piVar12[5] - piVar12[1]) / 2;
+		lVar2 = ratan2(vel.x, vel.z);
+		ev->rotation = (short)lVar2;
 		HelicopterData.pitch = 0;
 		HelicopterData.roll = 0;
 		HelicopterData.dp = 0;
 		HelicopterData.dr = 0;
 	}
-	else {
-		local_38 = (ev->position).vx - HelicopterData.lastX;
-		local_34 = (ev->position).vz - HelicopterData.lastZ;
+	else 
+	{
+		vel.x = (ev->position).vx - HelicopterData.lastX;
+		vel.z = (ev->position).vz - HelicopterData.lastZ;
 	}
-	iVar3 = ratan2(local_38, local_34);
-	uVar4 = (uint)(ushort)ev->rotation & 0xfff;
-	iVar6 = local_34 * rcossin_tbl[uVar4 * 2];
-	local_34 = local_34 * rcossin_tbl[uVar4 * 2 + 1] + local_38 * rcossin_tbl[uVar4 * 2];
-	local_38 = local_38 * rcossin_tbl[uVar4 * 2 + 1] - iVar6;
-	iVar6 = local_34;
-	if (local_34 < 0) {
-		iVar6 = -local_34;
+
+	lVar2 = ratan2(vel.x, vel.z);
+	uVar4 = ev->rotation & 0xfff;
+	iVar6 = vel.z * rcossin_tbl[uVar4 * 2];
+	vel.z = vel.z * rcossin_tbl[uVar4 * 2 + 1] + vel.x * rcossin_tbl[uVar4 * 2];
+	vel.x = vel.x * rcossin_tbl[uVar4 * 2 + 1] - iVar6;
+	iVar6 = vel.z;
+
+	if (vel.z < 0)
+		iVar6 = -vel.z;
+
+	iVar3 = (int)HelicopterData.pitch;
+
+	if (iVar6 < 0xdbba1) 
+		iVar3 = -iVar3 - ((rcossin_tbl[((vel.z * 0x400) / 900000 & 0xfffU) * 2] << 0x10) >> 0x13);
+	else if (vel.z < 1)
+		iVar3 = 0x200 - iVar3;
+	else 
+		iVar3 = -0x200 - iVar3;
+
+	iVar5 = (int)HelicopterData.roll;
+	iVar6 = vel.x;
+
+	if (vel.x < 0)
+		iVar6 = -vel.x;
+
+	if (iVar6 < 0x249f1) 
+		iVar5 = ((rcossin_tbl[((vel.x * 0x400) / 150000 & 0xfffU) * 2] << 0x10) >>0x13) - iVar5;
+	else if (vel.x < 1)
+		iVar5 = -0x200 - iVar5;
+	else 
+		iVar5 = 0x200 - iVar5;
+
+
+	iVar8 = iVar3 - HelicopterData.dp;
+	iVar6 = iVar8;
+	if (iVar8 < 0)
+		iVar6 = -iVar8;
+
+	if (iVar6 < 5) 
+	{
+		HelicopterData.dp = (short)iVar3;
 	}
-	iVar5 = (int)HelicopterData.pitch;
-	if (iVar6 < 0xdbba1) {
-		iVar5 = -iVar5 - ((int)((uint)(ushort)rcossin_tbl[((local_34 * 0x400) / 900000 & 0xfffU) * 2] <<
-			0x10) >> 0x13);
-	}
-	else {
-		if (local_34 < 1) {
-			iVar5 = 0x200 - iVar5;
-		}
-		else {
-			iVar5 = -0x200 - iVar5;
-		}
-	}
-	iVar8 = (int)HelicopterData.roll;
-	iVar6 = local_38;
-	if (local_38 < 0) {
-		iVar6 = -local_38;
-	}
-	if (iVar6 < 0x249f1) {
-		iVar8 = ((int)((uint)(ushort)rcossin_tbl[((local_38 * 0x400) / 150000 & 0xfffU) * 2] << 0x10) >>
-			0x13) - iVar8;
-	}
-	else {
-		if (local_38 < 1) {
-			iVar8 = -0x200 - iVar8;
-		}
-		else {
-			iVar8 = 0x200 - iVar8;
-		}
-	}
-	iVar7 = iVar5 - HelicopterData.dp;
-	iVar6 = iVar7;
-	if (iVar7 < 0) {
-		iVar6 = -iVar7;
-	}
-	if (iVar6 < 5) {
-		HelicopterData.dp = (short)iVar5;
-	}
-	else {
-		uVar1 = (ushort)(iVar7 >> 0x1f);
+	else 
+	{
+		uVar1 = (iVar8 >> 0x1f);
 		HelicopterData.dp = HelicopterData.dp + ((uVar1 ^ 5) - uVar1);
 	}
-	iVar5 = iVar8 - HelicopterData.dr;
-	iVar6 = iVar5;
-	if (iVar5 < 0) {
-		iVar6 = -iVar5;
+
+	iVar3 = iVar5 - HelicopterData.dr;
+	iVar6 = iVar3;
+
+	if (iVar3 < 0)
+		iVar6 = -iVar3;
+
+	if (iVar6 < 5) 
+	{
+		HelicopterData.dr = iVar5;
 	}
-	if (iVar6 < 5) {
-		HelicopterData.dr = (short)iVar8;
-	}
-	else {
-		uVar1 = (ushort)(iVar5 >> 0x1f);
+	else
+	{
+		uVar1 = (iVar3 >> 0x1f);
 		HelicopterData.dr = HelicopterData.dr + ((uVar1 ^ 5) - uVar1);
 	}
+
 	HelicopterData.pitch = (HelicopterData.pitch + HelicopterData.dp + 0x800U & 0xfff) - 0x800;
 	HelicopterData.roll = (HelicopterData.roll + HelicopterData.dr + 0x800U & 0xfff) - 0x800;
-	iVar3 = ((iVar3 - ev->rotation) + 0x800U & 0xfff) - 0x800;
+	iVar3 = ((lVar2 - ev->rotation) + 0x800U & 0xfff) - 0x800;
 	iVar6 = iVar3;
-	if (iVar3 < 0) {
+
+	if (iVar3 < 0)
 		iVar6 = -iVar3;
+
+	if (iVar6 < 0x201) 
+	{
+		iVar6 = (int)((uint) * (ushort*)((int)rcossin_tbl + (iVar3 * 8 & 0x3ff8U)) << 0x10) >> 0x12;
 	}
-	if (iVar6 < 0x201) {
-		iVar6 = (int)((uint)*(ushort *)((int)rcossin_tbl + (iVar3 * 8 & 0x3ff8U)) << 0x10) >> 0x12;
-	}
-	else {
+	else 
+	{
 		iVar6 = -0x400;
-		if (0 < iVar3) {
+		if (0 < iVar3)
 			iVar6 = 0x400;
-		}
+
 	}
-	ev->rotation = ev->rotation + (short)((iVar6 * iVar6 + 0x800 >> 0xc) * iVar6 + 0x800 >> 0xc) &
-		0xfff;
-	iVar6 = GetSurfaceIndex((VECTOR *)ev);
-	if (iVar6 == -0x17) {
+
+	ev->rotation = ev->rotation + (short)((iVar6 * iVar6 + 0x800 >> 0xc) * iVar6 + 0x800 >> 0xc) & 0xfff;
+
+	if (GetSurfaceIndex((VECTOR*)ev) == -23) 
+	{
 		iVar3 = (ev->position).vy;
 		iVar6 = iVar3 + 10;
-		if (iVar3 < -0x32) {
+
+		if (iVar3 < -0x32)
+		{
 		LAB_000488b0:
 			(ev->position).vy = iVar6;
 		}
-		else {
-			local_2c = 0;
-			local_30 = (ev->position).vx;
-			local_28 = (ev->position).vz;
-			Setup_Smoke((VECTOR *)(&local_38 + 8), 100, 500, 2, 0, &dummy, 0);
+		else 
+		{
+			pos.vy = 0;
+			pos.vx = (ev->position).vx;
+			pos.vz = (ev->position).vz;
+
+			Setup_Smoke(&pos, 100, 500, 2, 0, &dummy, 0);
 		}
 	}
-	else {
+	else 
+	{
 		iVar6 = (ev->position).vy;
-		if (-1000 < iVar6) {
+
+		if (-1000 < iVar6) 
+		{
 			iVar6 = iVar6 + -10;
 			goto LAB_000488b0;
 		}
 	}
+
 	HelicopterData.lastX = (ev->position).vx;
 	HelicopterData.lastZ = (ev->position).vz;
-	SetMSoundVar((int)ev, (VECTOR *)0x0);
-	if (((ev->flags & 0x100U) != 0) && (uVar4 = Random2(0), (uVar4 & 3) == (CameraCnt & 3U))) {
-		Setup_Smoke((VECTOR *)ev, 100, 500, 1, 0, &dummy, 0);
+
+	SetMSoundVar((int)ev, NULL);
+
+	if (((ev->flags & 0x100U) != 0) && (uVar4 = Random2(0), (uVar4 & 3) == (CameraCnt & 3U)))
+	{
+		Setup_Smoke((VECTOR*)ev, 100, 500, 1, 0, &dummy, 0);
 	}
+
 LAB_00048934:
-	if (ev->model == HelicopterData.deadModel) {
-		local_20.vx = DAT_000109a0;
-		local_20.vy = DAT_000109a4;
-		local_20.vz = DAT_000109a8;
-		local_20.pad = DAT_000109ac;
-		uVar4 = rand();
-		local_34 = -200;
-		local_38 = (ev->position).vx + (uVar4 & 0xff) + -0x80;
-		uVar4 = rand();
-		local_30 = (ev->position).vz + (uVar4 & 0xff) + -0x80;
-		Setup_Smoke((VECTOR *)&local_38, 0x32, 100, 4, 0, &dummy, 0);
-		Setup_Smoke((VECTOR *)&local_38, 100, 500, 1, 0, &local_20, 0);
-		SetMSoundVar(0, (VECTOR *)0x0);
+	if (ev->model == HelicopterData.deadModel)
+	{
+		pos.vy = -200;
+		pos.vx = (ev->position).vx + (rand() & 0xff) + -0x80;
+		pos.vz = (ev->position).vz + (rand() & 0xff) + -0x80;
+
+		Setup_Smoke(&pos, 0x32, 100, 4, 0, &dummy, 0);
+		Setup_Smoke(&pos, 100, 500, 1, 0, &drift, 0);
+		SetMSoundVar(0, NULL);
 	}
-	else {
+	else
+	{
 		HelicopterData.rotorrot = HelicopterData.rotorrot + HelicopterData.rotorvel;
-		HelicopterData.rotorvel = HelicopterData.rotorvel + DAT_000aa514;
-		iVar6 = (int)HelicopterData.rotorvel;
-		if (iVar6 < 0) {
+		HelicopterData.rotorvel = HelicopterData.rotorvel + rotating;
+
+		iVar6 = HelicopterData.rotorvel;
+		if (iVar6 < 0)
 			iVar6 = -iVar6;
-		}
-		if (0x100 < iVar6) {
-			_DAT_000aa514 = -_DAT_000aa514;
-		}
+	
+		if (0x100 < iVar6)
+			rotating = -rotating;
 	}
-	return;
-	*/
 }
 
 
