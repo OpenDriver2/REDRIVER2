@@ -1672,9 +1672,6 @@ void init_spooled_models(void)
 		size = *(int *)addr;
 		model = (MODEL *)(addr + 4);
 
-		modelpointers[model_number] = model;
-		pLodModels[model_number] = model;
-
 		lod = Low2LowerDetailTable[model_number];
 
 		if (lod != 0xffff && lod != model_number)
@@ -1704,7 +1701,11 @@ void init_spooled_models(void)
 
 			InitSpooledAnimObj(parentmodel->instance_number);
 		}
+	
 		model->poly_block += (int)model;
+
+		modelpointers[model_number] = model;
+		pLodModels[model_number] = model;
 
 		addr += size + 4;
 	}
