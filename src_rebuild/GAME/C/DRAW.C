@@ -363,11 +363,12 @@ void DrawSprites(int numFound)
 
 	lightLevel = (z >> 0x12) + 0x20U & 0xff;
 
-	if (gWeather > 0)
+	if (gWeather > 0 && gTimeOfDay == 1)
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8 & 0xff;
 	}
-	else if (gTimeOfDay == 0)
+
+	if (gTimeOfDay == 0)
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}
@@ -378,7 +379,7 @@ void DrawSprites(int numFound)
 	else if (gTimeOfDay == 3)
 	{
 		if(GameLevel == 0)
-			lightLevel = lightLevel * 2;	// [A] bug fix
+			lightLevel = lightLevel * 2;	// [A] level bug - Chicago trees lit wrong
 		else
 			lightLevel = lightLevel / 3;
 	}
@@ -419,7 +420,7 @@ void DrawSprites(int numFound)
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
-		if ((pco->value & 0x3f) == 0x3f) 
+		if ((pco->value & 0x3f) == 0x3f || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
 			plotContext.colour = 0x2c808080;
 
 		plotContext.scribble[0] = pco->pos.vx;
