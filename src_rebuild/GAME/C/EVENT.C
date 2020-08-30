@@ -3145,7 +3145,7 @@ void StepEvents(void)
 										cop->yang = (evt->rotation >> 6);
 										cop->type = evt->model;
 
-										if ((*(uint*)&evt->flags & 0x12) == 2)
+										if ((*(uint*)&evt->flags & 0x12) == 2 && gCurrentMissionNumber == 22)
 											cop->pad = 1;
 										else
 											cop->pad = 0;
@@ -4909,7 +4909,7 @@ VECTOR* TriggerEvent(int i)
 				event[1].next = event + 2;
 				break;
 			case 4:
-				TriggerDoor(chicagoDoor + i + 2, stage + i, 0);
+				TriggerDoor(vegasDoor + i + 2, stage + i, 0);
 				break;
 			case 8:
 				events.cameraEvent = (_EVENT*)vegasDoor + 4;
@@ -4917,7 +4917,7 @@ VECTOR* TriggerEvent(int i)
 			case 5:
 			case 6:
 			case 7:
-				TriggerDoor(chicagoDoor + i + 2, stage + i, 1);
+				TriggerDoor(vegasDoor + i + 2, stage + i, 1);
 				break;
 			case 9:
 				SetMSoundVar(5, NULL);

@@ -1498,7 +1498,8 @@ void HandleMissionThreads(void)
 			return;
 
 	} while (true);
-#endif
+
+#else
 
 	unsigned long value;
 	int i;
@@ -1526,32 +1527,32 @@ void HandleMissionThreads(void)
 
 				switch (value & 0xff000000)
 				{
-					case 0x0:
-					case 0x2000000:
-					case 0xff000000:
-					{
-						MR_DebugPrint("MR: push %d\n", value);
-						MRPush(thread, value);
-						break;
-					}
-					case 0x1000000:
-					{
-						MR_DebugPrint("MR: command %x\n", value);
-						running = MRCommand(thread, value);
-						break;
-					}
-					case 0x3000000:
-					{
-						MR_DebugPrint("MR: operator %x\n", value);
-						running = MROperator(thread, value);
-						break;
-					}
-					case 0x4000000:
-					{
-						MR_DebugPrint("MR: function %x\n", value);
-						running = MRFunction(thread, value);
-						break;
-					}
+				case 0x0:
+				case 0x2000000:
+				case 0xff000000:
+				{
+					MR_DebugPrint("MR: push %d\n", value);
+					MRPush(thread, value);
+					break;
+				}
+				case 0x1000000:
+				{
+					MR_DebugPrint("MR: command %x\n", value);
+					running = MRCommand(thread, value);
+					break;
+				}
+				case 0x3000000:
+				{
+					MR_DebugPrint("MR: operator %x\n", value);
+					running = MROperator(thread, value);
+					break;
+				}
+				case 0x4000000:
+				{
+					MR_DebugPrint("MR: function %x\n", value);
+					running = MRFunction(thread, value);
+					break;
+				}
 				}
 
 				if (running == 0 || Mission.gameover_delay != -1 || gInGameCutsceneActive != 0)
@@ -1561,6 +1562,7 @@ void HandleMissionThreads(void)
 
 		i++;
 	} while (i < 16);
+#endif
 }
 
 
