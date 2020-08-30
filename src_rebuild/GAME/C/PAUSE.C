@@ -599,6 +599,13 @@ int ShowPauseMenu(PAUSEMODE mode)
 // [D]
 void DrawPauseMenus(void)
 {
+#if !defined(PSX) && defined(DEBUG_OPTIONS)
+	extern int g_FreeCameraEnabled;
+
+	if (g_FreeCameraEnabled)
+		return;
+#endif
+
 	if (gDrawPauseMenus != 0 && gShowMap == 0) 
 	{
 		if (gEnteringScore == 0)
