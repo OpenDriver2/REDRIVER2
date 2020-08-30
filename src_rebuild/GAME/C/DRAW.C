@@ -343,7 +343,8 @@ void DrawSprites(int numFound)
 	int z;
 	uint *puVar4;
 	uint *puVar5;
-	uint uVar6;
+	uint spriteColour;
+	unsigned char lightLevel;
 	MATRIX *pMVar7;
 	MATRIX *pMVar8;
 	uint uVar9;
@@ -360,38 +361,30 @@ void DrawSprites(int numFound)
 		FIXED(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
 		FIXED(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
 
-	uVar6 = (z >> 0x12) + 0x20U & 0xff;
+	lightLevel = (z >> 0x12) + 0x20U & 0xff;
 
-	if (gTimeOfDay == 1) 
-		goto LAB_0003f0c4;
-
-	if (gTimeOfDay < 2) 
+	if (gWeather > 0)
 	{
-		if (gTimeOfDay != 0)
-			goto LAB_0003f0c4;
-	LAB_0003f0a8:
-		uVar6 = (int)(uVar6 * 2 * NightAmbient) >> 8;
+		lightLevel = (lightLevel * 2 * NightAmbient) >> 8 & 0xff;
 	}
-	else 
+	else if (gTimeOfDay == 0)
 	{
-		if (gTimeOfDay == 2)
-			goto LAB_0003f0a8;
-
-		if (gTimeOfDay != 3)
-			goto LAB_0003f0c4;
-
-		uVar6 = uVar6 / 3;
+		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}
-
-	uVar6 = uVar6 & 0xff;
-
-LAB_0003f0c4:
-	if (gWeather - 1U < 2) 
+	else if (gTimeOfDay == 2)
 	{
-		uVar6 = (int)(uVar6 * 2 * NightAmbient) >> 8 & 0xff;
+		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
+	}
+	else if (gTimeOfDay == 3)
+	{
+		if(GameLevel == 0)
+			lightLevel = lightLevel * 2;	// [A] bug fix
+		else
+			lightLevel = lightLevel / 3;
 	}
 
-	uVar6 = uVar6 << 0x10 | uVar6 << 8 | 0x2c000000 | uVar6;
+
+	spriteColour = lightLevel << 0x10 | lightLevel << 8 | 0x2c000000 | lightLevel;
 	
 	pMVar8 = &inv_camera_matrix;
 	pMVar7 = &shadowMatrix;
@@ -412,7 +405,7 @@ LAB_0003f0c4:
 
 	local_40 = spriteList;
 
-	plotContext.colour = uVar6;
+	plotContext.colour = spriteColour;
 	plotContext.current = current;
 
 	local_2c = numFound - 1;
@@ -424,7 +417,7 @@ LAB_0003f0c4:
 		int modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
 
 		model = modelpointers[modelnumber];
-		plotContext.colour = uVar6;
+		plotContext.colour = spriteColour;
 
 		if ((pco->value & 0x3f) == 0x3f) 
 			plotContext.colour = 0x2c808080;
@@ -2512,7 +2505,7 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 	{
 		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 2] = planeColours[4] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
@@ -2646,7 +2639,7 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	{
 		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 2] = planeColours[4] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
