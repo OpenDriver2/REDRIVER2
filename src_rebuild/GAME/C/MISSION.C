@@ -1414,93 +1414,6 @@ void SetConfusedCar(int slot)
 // [D]
 void HandleMissionThreads(void)
 {
-#if 0
-	uint *puVar1;
-	_TARGET *p_Var2;
-	uint uVar3;
-	int iVar5;
-	uint fnc;
-	MR_THREAD *thread;
-	uint uVar6;
-
-	iVar5 = 0xf;
-	p_Var2 = MissionTargets;
-
-	do {
-		p_Var2->data[1] = p_Var2->data[1] & 0xfffff9ff;
-
-		p_Var2++;
-		iVar5--;
-	} while (-1 < iVar5);
-
-	iVar5 = 0;
-
-	do {
-		thread = &MissionThreads[iVar5];
-		uVar6 = thread->active;
-		iVar5++;
-
-		if (thread->active != 0 && Mission.gameover_delay == -1 && gInGameCutsceneActive == 0)
-		{
-			while (gInGameCutsceneDelay == 0)
-			{
-				fnc = *thread->pc;
-				uVar3 = fnc & 0xff000000;
-				thread->pc++;
-
-				if (uVar3 == 0x2000000)
-				{
-				LAB_00061db8:
-					MRPush(thread, fnc);
-				}
-				else 
-				{
-					if (uVar3 < 0x2000001) 
-					{
-						if (uVar3 == 0) 
-							goto LAB_00061db8;
-						if (uVar3 == 0x1000000) 
-						{
-							uVar6 = MRCommand(thread, fnc);
-						}
-					}
-					else
-					{
-						if (uVar3 == 0x4000000) 
-						{
-							uVar6 = MRFunction(thread, fnc);
-						}
-						else 
-						{
-							if (uVar3 < 0x4000001) 
-							{
-								if (uVar3 == 0x3000000) 
-								{
-									uVar6 = MROperator(thread, fnc);
-								}
-							}
-							else 
-							{
-								if (uVar3 == 0xff000000)
-									goto LAB_00061db8;
-							}
-						}
-					}
-				}
-
-				if (((uVar6 == 0) || (Mission.gameover_delay != -1)) || (gInGameCutsceneActive != 0)) 
-					break;
-			}
-		}
-
-
-		if (0xf < iVar5)
-			return;
-
-	} while (true);
-
-#else
-
 	unsigned long value;
 	int i;
 	MR_THREAD* thread;
@@ -1562,7 +1475,6 @@ void HandleMissionThreads(void)
 
 		i++;
 	} while (i < 16);
-#endif
 }
 
 
@@ -1748,41 +1660,34 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 
 		val1 = MRPop(thread);
 
-		UNIMPLEMENTED();	// [A]
-
-		/*
 		if ((val1 & 0x8000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 1;
+			AvailableCheats.cheat1 = 1;
 		}
 		if ((val1 & 0x4000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 2;
+			AvailableCheats.cheat2 = 1;
 		}
 		if ((val1 & 0x10000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 4;
+			AvailableCheats.cheat3 = 1;
 		}
 		if ((val1 & 0x20000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 8;
+			AvailableCheats.cheat4 = 1;
 		}
 		if ((val1 & 1) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 0x10;
+			AvailableCheats.cheat5 = 1;
 		}
 		if ((val1 & 0x10) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 0x40;
+			AvailableCheats.cheat6 = 1;
 		}
 		if ((val1 & 0x100) != 0) {
-			AvailableCheats._1_1_ = AvailableCheats._1_1_ | 1;
+			AvailableCheats.cheat7 = 1;
 		}
 		if ((val1 & 0x1000) != 0) {
-			AvailableCheats._1_1_ = AvailableCheats._1_1_ | 2;
+			AvailableCheats.cheat8 = 1;
 		}
 		if ((val1 & 0x2000) == 0) {
 			return 1;
 		}
-		*/
-
-		printWarning("AvailableCheats set cmd opcode: %x value: %d\n", cmd, val1);
-
-		//AvailableCheats._1_1_ = AvailableCheats._1_1_ | 4;
+		AvailableCheats.cheat11 = 1;
 
 		return 1;
 	}
