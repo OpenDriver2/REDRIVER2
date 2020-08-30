@@ -3437,79 +3437,76 @@ void StepEvents(void)
 	/* end block 3 */
 	// End Line: 5242
 
+// [D]
 void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 {
-	UNIMPLEMENTED();
-
-	/*
-	short sVar1;
-	short sVar2;
-	uint uVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
 	MODEL* model;
-	int iVar8;
-	int iVar9;
-	VECTOR spoke[2];
+	int loop;
+	int cx, sx, angle;
+	int rotation;
 	VECTOR offset;
 	VECTOR carPos;
 
 	if (chicagoDoor[2].model != -1)
 	{
-		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4);
+		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1);
 
 		if (chicagoDoor[2].model != -1)
 		{
-			RenderModel(modelpointers[chicagoDoor[2]._20_4_], (MATRIX*)0x0, (VECTOR*)0x0, 0, 0);
+			RenderModel(modelpointers[chicagoDoor[2].initialRotation], NULL, NULL, 0, 0, 1);
 		}
-
 
 		matrix->m[0][0] = -matrix->m[0][0];
-		matrix->m[1][0] = -matrix->m[1][0];;
+		matrix->m[1][0] = -matrix->m[1][0];
 		matrix->m[2][0] = -matrix->m[2][0];
-		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4);
 
-		if (chicagoDoor[2]._24_4_ != -1) 
+		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1);
+
+		if (chicagoDoor[2].minSpeed != -1) 
 		{
-			iVar9 = 0;
+			VECTOR spoke[2] = {
+				{0, 0, 2677},
+				{0, 2677, 0}
+			};
 
-			spoke[0].vx = VECTOR_000109b0.vx;
-			spoke[0].vy = VECTOR_000109b0.vy;
-			spoke[0].vz = VECTOR_000109b0.vz;
-			spoke[0].pad = VECTOR_000109b0.pad;
-			spoke[1].vx = VECTOR_000109c0.vx;
-			spoke[1].vy = VECTOR_000109c0.vy;
-			spoke[1].vz = VECTOR_000109c0.vz;
-			spoke[1].pad = VECTOR_000109c0.pad;
-			model = modelpointers[chicagoDoor[2]._24_4_];
-			iVar8 = 4;
+			rotation = 0;
+
+			model = modelpointers[chicagoDoor[2].minSpeed];
+			loop = 4;
 
 			SetRotMatrix(&inv_camera_matrix);
-			_MatrixRotate(spoke);
-			_MatrixRotate(spoke + 1);
+			_MatrixRotate(&spoke[0]);
+			_MatrixRotate(&spoke[1]);
 
 			do {
-				uVar3 = chicagoDoor[2].rotation + iVar9 & 0xfff;
-				iVar7 = (int)rcossin_tbl[uVar3 * 2];
-				iVar4 = (int)rcossin_tbl[uVar3 * 2 + 1];
-				iVar6 = spoke[0].vx * iVar7 + spoke[1].vx * iVar4 + 0x800 >> 0xc;
-				iVar5 = spoke[0].vy * iVar7 + spoke[1].vy * iVar4 + 0x800 >> 0xc;
-				iVar4 = spoke[0].vz * iVar7 + spoke[1].vz * iVar4 + 0x800 >> 0xc;
-				setCopControlWord(2, 0x2800, pos->vx + iVar6);
-				setCopControlWord(2, 0x3000, pos->vy + iVar5);
-				setCopControlWord(2, 0x3800, pos->vz + iVar4);
-				RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0);
-				setCopControlWord(2, 0x2800, pos->vx - iVar6);
-				setCopControlWord(2, 0x3000, pos->vy - iVar5);
-				setCopControlWord(2, 0x3800, pos->vz - iVar4);
-				RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0);
-				iVar8 = iVar8 + -1;
-				iVar9 = iVar9 + 0x19a;
-			} while (-1 < iVar8);
+				angle = chicagoDoor[2].rotation + rotation & 0xfff;
+
+				cx = (int)rcossin_tbl[angle * 2];
+				sx = (int)rcossin_tbl[angle * 2 + 1];
+
+				offset.vx = FIXED(spoke[0].vx * cx + spoke[1].vx * sx);
+				offset.vy = FIXED(spoke[0].vy * cx + spoke[1].vy * sx);
+				offset.vz = FIXED(spoke[0].vz * cx + spoke[1].vz * sx);
+
+				carPos.vx = pos->vx + offset.vx;
+				carPos.vy = pos->vy + offset.vy;
+				carPos.vz = pos->vz + offset.vz;
+				gte_SetTransVector(&carPos);
+
+				RenderModel(model, NULL, NULL, 0, 0, 1);
+
+				carPos.vx = pos->vx - offset.vx;
+				carPos.vy = pos->vy - offset.vy;
+				carPos.vz = pos->vz - offset.vz;
+
+				gte_SetTransVector(&carPos);
+
+				RenderModel(model, NULL, NULL, 0, 0, 1);
+				loop--;
+				rotation += 410;
+			} while (-1 < loop);
 		}
-	}*/
+	}
 }
 
 
