@@ -753,7 +753,9 @@ void DestroyPedestrian(PEDESTRIAN *pPed)
 	}
 	else 
 	{
-		pPed->pPrev->pNext = pPed->pNext;
+		if(pPed->pPrev)
+			pPed->pPrev->pNext = pPed->pNext;
+
 		if (pPed->pNext)
 			pPed->pNext->pPrev = pPed->pPrev;
 
