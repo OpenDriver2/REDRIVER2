@@ -3552,175 +3552,122 @@ void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 /* WARNING: Removing unreachable block (ram,0x00049750) */
 /* WARNING: Could not reconcile some variable overlaps */
 
+// [D]
 void DrawRotor(VECTOR pos, MATRIX *matrix)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	undefined4 in_zero;
-	undefined4 in_at;
-	ushort uVar2;
-	int iVar3;
-	uint *puVar4;
-	uint uVar5;
-	int iVar6;
-	int in_a1;
-	uint uVar7;
-	int iVar8;
-	uint uVar9;
-	int in_a2;
-	uint uVar10;
-	short sVar11;
-	uint uVar12;
-	uint *puVar13;
-	uint *puVar14;
-	uint *puVar15;
-	uint *puVar16;
-	uint *puVar17;
-	uint local_78;
-	uint local_74;
-	undefined4 local_70;
-	uint local_6c[4];
-	undefined2 uStack90;
-	undefined4 local_5c;
-	MATRIX local_50;
+	POLY_FT4* poly;
+	MATRIX localMat;
 
-	puVar14 = &local_78;
-	puVar17 = &DAT_000109d0;
-	do {
-		puVar15 = puVar17;
-		puVar13 = puVar14;
-		uVar7 = puVar15[1];
-		uVar5 = puVar15[2];
-		uVar12 = puVar15[3];
-		*puVar13 = *puVar15;
-		puVar13[1] = uVar7;
-		puVar13[2] = uVar5;
-		puVar13[3] = uVar12;
-		puVar14 = puVar13 + 4;
-		puVar17 = puVar15 + 4;
-	} while (puVar15 + 4 != (uint *)0x109f0);
-	uVar7 = puVar15[5];
-	puVar13[4] = uRam000109f0;
-	puVar13[5] = uVar7;
-	local_50.m[0][0] = 0x1000;
-	local_50.m[1][0] = 0;
-	local_50.m[2][0] = 0;
-	local_50.m[0][1] = 0;
-	local_50.m[1][1] = 0x1000;
-	local_50.m[2][1] = 0;
-	local_50.m[0][2] = 0;
-	local_50.m[1][2] = 0;
-	local_50.m[2][2] = 0x1000;
-	matrix = (MATRIX *)((int)matrix - camera_position.vx);
-	uVar7 = in_a1 - camera_position.vy;
-	uVar5 = in_a2 - camera_position.vz;
-	_RotMatrixY(&local_50, HelicopterData.rotorrot & 0xfff);
-	ApplyMatrixSV(pos.vx, &local_78, &local_78);
-	MulMatrix0(pos.vx, &local_50, &local_50);
-	ApplyMatrixSV(&local_50, &local_70, &local_70);
-	ApplyMatrixSV(&local_50, local_6c + 1, local_6c + 1);
-	uVar12 = (local_78 & 0xffff) + ((uint)matrix & 0xffff);
-	uVar10 = (local_74 & 0xffff) + (uVar5 & 0xffff);
-	uVar5 = (local_6c[1] & 0xffff) + uVar12;
-	iVar8 = (local_78 >> 0x10) + (uVar7 & 0xffff);
-	local_70._2_2_ = local_70._2_2_ + (short)iVar8;
-	iVar6 = uVar12 - uVar5;
-	sVar11 = (short)uVar12;
-	local_74 = local_74 & 0xffff0000 | uVar10 & 0xffff;
-	uVar7 = (local_6c[2] & 0xffff) + uVar10;
-	local_6c[2] = local_6c[2] & 0xffff0000 | uVar7 & 0xffff;
-	local_70 = CONCAT22(local_70._2_2_, (short)local_70 + sVar11);
-	uVar2 = (short)local_6c[0] + (short)uVar10;
-	local_6c[0] = local_6c[0] & 0xffff0000 | (uint)uVar2;
-	local_5c = CONCAT22(uStack90, (short)uVar10 * 2 - (short)uVar7);
-	iVar3 = (local_6c[1] >> 0x10) + iVar8;
-	local_6c[1] = uVar5 & 0xffff | iVar3 * 0x10000;
-	iVar3 = iVar8 * 2 - iVar3;
-	local_6c[3] = CONCAT22((short)iVar3, sVar11 + (short)iVar6);
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	setCopReg(2, in_zero, uVar12 & 0xffff | iVar8 * 0x10000);
-	setCopReg(2, in_at, local_74);
-	setCopReg(2, 0xa0000, local_70);
-	setCopReg(2, 0xa187c, local_6c[0]);
-	setCopReg(2, iVar6, local_6c[1]);
-	setCopReg(2, iVar3, local_6c[2]);
-	copFunction(2, 0x280030);
-	uVar5 = (uint)HelicopterData.rotorTexture.coords._0_2_;
-	uVar9 = (uint)HelicopterData.rotorTexture.coords._6_2_;
-	puVar14 = (uint *)current->primptr;
-	puVar14[3] = CONCAT22(HelicopterData.rotorTexture.clutid, HelicopterData.rotorTexture.coords._0_2_)
-		;
-	uVar12 = (uint)HelicopterData.rotorTexture.coords._2_2_;
-	uVar7 = (uint)HelicopterData.rotorTexture.tpageid;
-	puVar14[7] = ((uVar5 & 0xfefe) >> 1) + ((uVar9 & 0xfefe) >> 1);
-	puVar14[5] = uVar12 | (uVar7 | 0x40) << 0x10;
-	uVar7 = (uint)HelicopterData.rotorTexture.coords._6_2_;
-	*(char *)((int)puVar14 + 3) = '\t';
-	*(char *)((int)puVar14 + 7) = '.';
-	*(char *)(puVar14 + 1) = '\x7f';
-	*(char *)((int)puVar14 + 5) = '\x7f';
-	*(char *)((int)puVar14 + 6) = '\x7f';
-	puVar14[9] = uVar7;
-	copFunction(2, 0x158002d);
-	uVar7 = getCopReg(2, 0xc);
-	puVar14[6] = uVar7;
-	uVar7 = getCopReg(2, 0xd);
-	puVar14[4] = uVar7;
-	uVar7 = getCopReg(2, 0xe);
-	puVar14[2] = uVar7;
-	pDVar1 = current;
-	iVar3 = getCopReg(2, 0x13);
-	iVar3 = iVar3 + 1000 >> 3;
-	setCopReg(2, in_zero, local_6c[3]);
-	setCopReg(2, in_at, local_5c);
-	copFunction(2, 0x180001);
-	*puVar14 = *puVar14 & 0xff000000 | current->ot[iVar3] & 0xffffff;
-	pDVar1->ot[iVar3] = pDVar1->ot[iVar3] & 0xff000000 | (uint)puVar14 & 0xffffff;
-	puVar13 = (uint *)pDVar1->primptr;
-	*(uint **)&pDVar1->primptr = puVar13 + 10;
-	uVar7 = getCopReg(2, 0xe);
-	puVar14[8] = uVar7;
-	local_74._0_2_ = (short)(uVar10 & 0xffff);
-	puVar15 = (uint *)current->primptr;
-	local_5c = CONCAT22(uStack90, (short)local_74 * 2 - uVar2);
-	local_6c[3] = CONCAT22((short)iVar8 * 2 - local_70._2_2_, sVar11 * 2 - ((short)local_70 + sVar11));
-	puVar14 = puVar15;
-	puVar17 = puVar13;
-	do {
-		puVar16 = puVar17;
-		puVar4 = puVar14;
-		uVar7 = puVar16[1];
-		uVar5 = puVar16[2];
-		uVar12 = puVar16[3];
-		*puVar4 = *puVar16;
-		puVar4[1] = uVar7;
-		puVar4[2] = uVar5;
-		puVar4[3] = uVar12;
-		puVar17 = puVar16 + 4;
-		puVar14 = puVar4 + 4;
-	} while (puVar17 != puVar13 + 8);
-	uVar7 = puVar16[5];
-	puVar4[4] = *puVar17;
-	puVar4[5] = uVar7;
-	setCopReg(2, in_zero, local_6c[3]);
-	setCopReg(2, in_at, local_5c);
-	copFunction(2, 0x180001);
-	*(undefined2 *)(puVar15 + 5) = HelicopterData.rotorTexture.coords._4_2_;
-	pDVar1 = current;
-	*puVar15 = *puVar15 & 0xff000000 | current->ot[iVar3] & 0xffffff;
-	pDVar1->ot[iVar3] = pDVar1->ot[iVar3] & 0xff000000 | (uint)puVar15 & 0xffffff;
-	pDVar1->primptr = pDVar1->primptr + 0x28;
-	uVar7 = getCopReg(2, 0xe);
-	puVar15[4] = uVar7;
-	return;*/
+	int z;
+	SVECTOR v[5] = {
+		{0,-470,-120},
+		{1024,0,0 },
+		{0,0,1024 },
+		{0,0,0},
+		{0,0,0},
+	};
+
+	localMat.m[0][0] = 0x1000;
+	localMat.m[1][0] = 0;
+	localMat.m[2][0] = 0;
+	localMat.m[0][1] = 0;
+	localMat.m[1][1] = 0x1000;
+	localMat.m[2][1] = 0;
+	localMat.m[0][2] = 0;
+	localMat.m[1][2] = 0;
+	localMat.m[2][2] = 0x1000;
+
+	pos.vx -= camera_position.vx;
+	pos.vy -= camera_position.vy;
+	pos.vz -= camera_position.vz;
+
+	_RotMatrixY(&localMat, HelicopterData.rotorrot & 0xfff);
+	ApplyMatrixSV(matrix, v, v);
+	MulMatrix0(matrix, &localMat, &localMat);
+	ApplyMatrixSV(&localMat, v + 1, v + 1);
+	ApplyMatrixSV(&localMat, v + 2, v + 2);
+
+	int a0, a1, a2, a3, v0, v1;
+
+	v[0].vx += pos.vx;
+	v[0].vy +=  pos.vy;
+	v[0].vz += pos.vz;
+
+	v[1].vx += v[0].vx;
+	v[1].vy += v[0].vy;
+	v[1].vz += v[0].vz;
+
+	v[2].vx += v[0].vx;
+	v[2].vy += v[0].vy;
+	v[2].vz += v[0].vz;
+
+	v[4].vx = v[0].vx - v[2].vx;
+	v[4].vy = v[0].vy - v[2].vy;
+	v[4].vz = v[0].vz - v[2].vz;
+
+	v[3].vx = v[0].vx + v[4].vx;
+	v[3].vy = v[0].vy + v[4].vy;
+	v[3].vz = v[0].vz + v[4].vz;
+	
+
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	gte_ldv3(&v[0], &v[1], &v[2]);
+
+	docop2(0x280030);
+
+	poly = (POLY_FT4*)current->primptr;
+
+	*(ushort*)&poly->u0 = *(ushort*)&HelicopterData.rotorTexture.coords.u0;
+	*(ushort*)&poly->u1 = *(ushort*)&HelicopterData.rotorTexture.coords.u1;
+	*(ushort*)&poly->u2 = ((*(ushort*)&HelicopterData.rotorTexture.coords.u0 & 0xfefe) >> 1) + ((*(ushort*)&HelicopterData.rotorTexture.coords.u3 & 0xfefe) >> 1);
+	*(ushort*)&poly->u3 = *(ushort*)&HelicopterData.rotorTexture.coords.u3; // [A] FIXME: might be incorrect
+
+	poly->tpage = HelicopterData.rotorTexture.tpageid | 0x40;
+	poly->clut = HelicopterData.rotorTexture.clutid;
+
+	setPolyFT4(poly);
+	setSemiTrans(poly,1);
+
+	poly->r0 = 127;
+	poly->g0 = 127;
+	poly->b0 = 127;
+
+	docop2(0x158002d);
+
+	gte_stsxy3(&poly->x2, &poly->x1, &poly->x0);
+
+	gte_stsz(&z); // Z
+	z = z + 1000 >> 3;
+
+	gte_ldv0(&v[3]);
+
+	docop2(0x180001);
+
+	gte_stsxy(&poly->x3);
+
+	addPrim(current->ot + z, poly);
+
+	current->primptr += sizeof(POLY_FT4);
+
+	*(poly + 1) = *poly;
+	poly++;
+
+	v[3].vz = v[0].vz * 2 - v[1].vz;
+	v[3].vy = v[0].vy * 2 - v[1].vy;
+	v[3].vx = v[0].vx * 2 - v[1].vx;
+
+	gte_ldv0(&v[3]);
+
+	docop2(0x180001);
+
+	gte_stsxy(&poly->x1);
+	addPrim(current->ot + z, poly);
+
+	*(ushort*)&poly->u1 = *(ushort*)&HelicopterData.rotorTexture.coords.u2;
+
+	current->primptr += sizeof(POLY_FT4);
 }
 
 
