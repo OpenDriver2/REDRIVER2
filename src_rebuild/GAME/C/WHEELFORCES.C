@@ -294,18 +294,16 @@ void StepOneCar(_CAR_DATA *cp)
 	iVar12 = FIXED(_cl.vel[0]);
 	iVar4 = FIXED(_cl.vel[2]);
 
-	if (iVar12 < 0) {
+	if (iVar12 < 0)
 		iVar12 = -iVar12;
-	}
-	if (iVar4 < 0) {
+
+	if (iVar4 < 0)
 		iVar4 = -iVar4;
-	}
-	if (iVar12 < iVar4) {
+
+	if (iVar12 < iVar4)
 		iVar4 = iVar4 + iVar12 / 2;
-	}
-	else {
+	else
 		iVar4 = iVar12 + iVar4 / 2;
-	}
 
 	car_cos = cp->ap.carCos;
 	iVar12 = 0;
@@ -594,7 +592,7 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 
 	if ((cp->hd.wheel_speed < 0) && (-1 < cp->thrust) && (cp->handbrake == 0))
 	{
-		*frontFS = *frontFS + -400;
+		*frontFS = *frontFS - 400;
 	}
 
 	*rearFS = 0x780 - *frontFS;
@@ -680,53 +678,48 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 	short sVar1;
 	short sVar2;
 	short sVar3;
-	short sVar4;
-	short sVar5;
+	short twistY;
+	short twistZ;
+	int iVar4;
+	int iVar5;
 	int iVar6;
 	int iVar7;
-	int iVar8;
-	int iVar9;
-	uint uVar10;
-	int iVar11;
-	long *piVar12;
-	long *piVar13;
-	short *psVar14;
-	int iVar15;
+	int zd;
+	long* piVar9;
+	long* piVar10;
+	short* psVar11;
+	int i;
 
 	sVar1 = cp->hd.where.m[0][2];
+	iVar4 = cp->hd.aacc[0];
 	sVar2 = cp->hd.where.m[1][2];
+	iVar5 = cp->hd.aacc[1];
+	psVar11 = &cp->hd.where.m[2][2];
+	piVar9 = cp->hd.aacc + 2;
 	sVar3 = cp->hd.where.m[2][2];
-	iVar6 = cp->hd.aacc[0];
-	iVar7 = cp->hd.aacc[1];
-	iVar8 = cp->hd.aacc[2];
+	iVar6 = cp->hd.aacc[2];
 
-	uVar10 = cp->ap.model;
+	twistY = car_cosmetics[cp->ap.model].twistRateY;
+	twistZ = car_cosmetics[cp->ap.model].twistRateZ;
 
-	sVar4 = car_cosmetics[uVar10].twistRateY;
-	sVar5 = car_cosmetics[uVar10].twistRateZ;
-
-	iVar15 = 2;
-	piVar13 = &cl->avel[2];
-
-	psVar14 = &cp->hd.where.m[2][2];
-	piVar12 = cp->hd.aacc + 2;
+	i = 2;
+	piVar10 = cl->avel + 2;
 
 	do {
-		iVar11 = *piVar12 * sVar4 + FIXED(*psVar14 * (sVar5 - sVar4) * FIXED(sVar1 * iVar6 + sVar2 * iVar7 + sVar3 * iVar8) - *piVar13 * 0x80);
-		*piVar12 = iVar11;
+		zd = *piVar9 * (int)twistY + FIXED((int)*psVar11 * ((int)twistZ - (int)twistY) * FIXED(sVar1 * iVar4 + sVar2 * iVar5 + sVar3 * iVar6 ) - *piVar10 * 128);
+		*piVar9 = zd;
 
 		if (cl->extraangulardamping == 1)
 		{
-			iVar9 = *piVar13;
-			*piVar12 = iVar11 - (iVar9 >> 3);
+			iVar7 = *piVar10;
+			*piVar9 = zd - (iVar7 >> 3);
 		}
 
-		piVar13 = piVar13 + -1;
-		psVar14 = psVar14 + -3;
-		iVar15 = iVar15 + -1;
-		piVar12 = piVar12 + -1;
-
-	} while (-1 < iVar15);
+		piVar10--;
+		psVar11-= 3;
+		i--;
+		piVar9--;
+	} while (-1 < i);
 }
 
 
