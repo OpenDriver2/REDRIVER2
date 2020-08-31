@@ -1140,7 +1140,7 @@ int OK_To_Zoom(void)
 	temp.vy = -player[0].pos[1];
 	temp.vz = player[0].pos[2];
 
-	scr_z = (dist(&camera_position, &temp) >> 4) + 0x100;
+	scr_z = (dist(&camera_position, &temp) >> 4) + 256;
 
 	if (800 < scr_z)
 		scr_z = 800;

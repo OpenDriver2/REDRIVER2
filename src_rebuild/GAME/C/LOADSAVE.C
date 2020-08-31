@@ -11,9 +11,148 @@
 #include "COP_AI.H"
 #include "SCORES.H"
 
+#ifndef PSX
+#include <stdlib.h>
+#include <direct.h>
 
+void GetGameProfilePath(char* str)
+{
+	char* homepath;
 
+	homepath = getenv("USERPROFILE"); // "USERPROFILE"
 
+	if (homepath)
+	{
+		strcpy(str, homepath);
+		strcat(str, "/.driver2");
+
+		// create Driver 2 home dir
+		_mkdir(str);
+	}
+	else
+	{
+		str[0] = 0;
+	}
+}
+
+// [A] loads current game config
+void LoadCurrentProfile()
+{
+	char filePath[2048];
+	int fileSize;
+
+	GetGameProfilePath(filePath);
+
+	strcat(filePath, "/config.dat");
+
+	printMsg("Loading game configuration...\n");
+
+	// load config
+	FILE* fp = fopen(filePath, "rb");
+	if (fp)
+	{
+		fseek(fp, 0, SEEK_END);
+		fileSize = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+
+		fread(_other_buffer, 1, fileSize, fp);
+
+		fclose(fp);
+
+		if (fileSize <= CalcConfigDataSize())
+		{
+			LoadConfigData(_other_buffer);
+		}
+	}
+}
+
+// [A] saves config to file
+void SaveCurrentProfile()
+{
+	int dataSize = 0;
+	char filePath[2048];
+
+	GetGameProfilePath(filePath);
+
+	strcat(filePath, "/config.dat");
+
+	printMsg("Saving game configuration...\n");
+
+	dataSize = 0;
+	if (SaveConfigData(_other_buffer))
+		dataSize = CalcConfigDataSize();
+
+	// load config
+	FILE* fp = fopen(filePath, "wb");
+	if (fp)
+	{
+		fwrite(_other_buffer, 1, dataSize, fp);
+		fclose(fp);
+	}
+}
+
+// [A] loads current game progress
+int LoadCurrentGame()
+{
+	char filePath[2048];
+	int fileSize;
+
+	GetGameProfilePath(filePath);
+
+	strcat(filePath, "/progress.dat");
+
+	printMsg("Saving game progress...\n");
+
+	// load config
+	FILE* fp = fopen(filePath, "rb");
+	if (fp)
+	{
+		fseek(fp, 0, SEEK_END);
+		fileSize = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+
+		fread(_other_buffer, 1, fileSize, fp);
+
+		fclose(fp);
+
+		if (fileSize <= CalcGameDataSize())
+		{
+			LoadGameData(_other_buffer);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+// [A] saves current game progress
+void SaveCurrentGame()
+{
+	SaveCurrentProfile(); // profile has to be saved too
+
+	int dataSize = 0;
+	char filePath[2048];
+
+	GetGameProfilePath(filePath);
+
+	strcat(filePath, "/progress.dat");
+
+	printMsg("Saving game progress...\n");
+
+	dataSize = 0;
+	if (SaveGameData(_other_buffer))
+		dataSize = CalcGameDataSize();
+
+	// load config
+	FILE* fp = fopen(filePath, "wb");
+	if (fp)
+	{
+		fwrite(_other_buffer, 1, dataSize, fp);
+		fclose(fp);
+	}
+}
+
+#endif
 
 // decompiled code
 // original method signature: 

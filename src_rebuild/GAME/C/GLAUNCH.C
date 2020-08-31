@@ -767,7 +767,8 @@ void LaunchGame(void)
 		GameInit();
 		GameLoop();
 
-		switch (WantedGameMode) {
+		switch (WantedGameMode)
+		{
 			case GAMEMODE_NORMAL:
 			case GAMEMODE_QUIT:
 			case GAMEMODE_DEMO:

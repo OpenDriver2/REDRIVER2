@@ -59,6 +59,7 @@
 #include "LEADAI.H"
 #include "ENVIRO.H"
 #include "SEARCH.H"
+#include "LOADSAVE.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -1130,6 +1131,7 @@ int leadCarId = 0;
 
 VECTOR leadcar_pos;
 
+// [D]
 void StepSim(void)
 {
 	static unsigned long t0; // offset 0x0
@@ -1578,12 +1580,14 @@ LAB_00059c1c:
 		{
 			stream = i + 1;
 			CheckCarEffects(&car_data[stupid_logic[car]], i);
+			SwirlLeaves(&car_data[stupid_logic[car]]);
 		}
 
 		car++;
 	} while(car < 4 && (i = stream, stream < 2));
 
-	SwirlLeaves(car_data);
+	
+
 	if ((gStopPadReads == 1) && (((lead_car != 0 && (saved_counter = saved_counter + 1, 0x14 < saved_counter)) && (saved_leadcar_pos == 0)))) 
 	{
 		saved_leadcar_pos = gStopPadReads;
@@ -2599,6 +2603,8 @@ int redriver2_main(int argc, char** argv)
 #endif
 	}
 #endif // PSX
+
+	LoadCurrentProfile();
 
 	// now run the frontend
 	DoFrontEnd();

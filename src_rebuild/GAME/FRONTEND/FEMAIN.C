@@ -19,6 +19,7 @@
 #include "../C/DEBRIS.H"
 #include "../C/FMVPLAY.H"
 #include "../C/SCORES.H"
+#include "../C/LOADSAVE.H"
 
 #include "../MEMCARD/MAIN.H"
 
@@ -300,90 +301,110 @@ void SetVariable(int var)
 	int code = (var >> 8);
 	int value = (var & 0xff);
 
-	switch (var >> 8) {
-	case 1:
-		GameLevel = value;
-		break;
-	case 2:
-		GameType = (GAMETYPE)value;
+	switch (var >> 8)
+	{
+		case 1:
+			GameLevel = value;
+			break;
+		case 2:
+			GameType = (GAMETYPE)value;
 
-		if (value != GAME_COPSANDROBBERS)
-			gWantNight = 0;
+			if (value != GAME_COPSANDROBBERS)
+				gWantNight = 0;
 
-		break;
-	case 3:
-		NumPlayers = (value + 1);
-		break;
-	case 4:
-		if (value != 0)
-			gWantNight = 1;
-		break;
-	case 5:
-		gCurrentMissionNumber = 1;
-		GameType = GAME_MISSION;
-		break;
-	case 6:
-		pScreenStack[ScreenDepth] = pCurrScreen;
-		pButtonStack[ScreenDepth] = pCurrButton;
+			break;
+		case 3:
+			NumPlayers = (value + 1);
+			break;
+		case 4:
+			if (value != 0)
+				gWantNight = 1;
 
-		if (value == 1) {
-			if (CallMemoryCard(0x11, 0) == 0) {
+			break;
+		case 5:
+			gCurrentMissionNumber = 1;
+			GameType = GAME_MISSION;
+			break;
+		case 6:
+			pScreenStack[ScreenDepth] = pCurrScreen;
+			pButtonStack[ScreenDepth] = pCurrButton;
+
+			if (value == 1) 
+			{
+				if (CallMemoryCard(0x11, 0) == 0)
+				{
+					ReInitFrontend();
+				}
+				else 
+				{
+					StoredGameType = GameType;
+					GameType = GAME_LOADEDREPLAY;
+					GameStart();
+				}
+			}
+			else
+			{
+				CallMemoryCard(0x81, 0);
 				ReInitFrontend();
+				SetMasterVolume(gMasterVolume);
+				SetXMVolume(gMusicVolume);
 			}
-			else {
-				StoredGameType = GameType;
-				GameType = GAME_LOADEDREPLAY;
-				GameStart();
-			}
-		}
-		else {
-			CallMemoryCard(0x81, 0);
-			ReInitFrontend();
-			SetMasterVolume(gMasterVolume);
-			SetXMVolume(gMusicVolume);
-		}
 
-		break;
-	case 7:
-		pScreenStack[ScreenDepth] = pCurrScreen;
-		pButtonStack[ScreenDepth] = pCurrButton;
+			break;
+		case 7:
+			pScreenStack[ScreenDepth] = pCurrScreen;
+			pButtonStack[ScreenDepth] = pCurrButton;
 
-		if (value == 0) {
-			CallMemoryCard(0x80, 0);
-			ReInitFrontend();
-		}
-		else {
-			if (CallMemoryCard(0x21, 0) == 0) {
+			if (value == 0) 
+			{
+#ifdef PSX
+				CallMemoryCard(0x80, 0);
 				ReInitFrontend();
-			} else {
-				GameType = GAME_CONTINUEMISSION;
-				GameStart();
+#else
+				// [A] save configuration
+				SaveCurrentProfile();
+#endif
 			}
-		}
+			else 
+			{
+#ifdef PSX
+				if (CallMemoryCard(0x21, 0) == 0) 
+				{
+					ReInitFrontend();
+				}
+				else
+#else
+				if(LoadCurrentGame())
+#endif
+				{
+					GameType = GAME_CONTINUEMISSION;
+					GameStart();
+				}
+			}
 
-		break;
-	case 8:
-		gSubGameNumber = value;
-		break;
-	case 9:
-		gSubtitles = (value == 0) ? 0 : 1;
-		break;
-	case 10:
-		gInvincibleCar = value;
-		ActiveCheats.cheat3 = value;
-		break;
-	case 11:
-		gPlayerImmune = value;
-		ActiveCheats.cheat4 = value;
-		break;
-	case 12:
-		GameLevel = 3;
-		gSubGameNumber = (value == 0) ? 2 : 0;
-		break;
-	case 13:
-		GameType = GAME_IDLEDEMO;
-		gCurrentMissionNumber = (value + 400);
-		break;
+			break;
+		case 8:
+			gSubGameNumber = value;
+			break;
+		case 9:
+			gSubtitles = (value == 0) ? 0 : 1;
+			break;
+		case 10:
+			gInvincibleCar = value;
+			ActiveCheats.cheat3 = value;
+			break;
+		case 11:
+			gPlayerImmune = value;
+			ActiveCheats.cheat4 = value;
+			break;
+		case 12:
+			GameLevel = 3;
+			gSubGameNumber = (value == 0) ? 2 : 0;
+			break;
+		case 13:
+			GameType = GAME_IDLEDEMO;
+			gCurrentMissionNumber = (value + 400);
+			break;
 	}
 }
 

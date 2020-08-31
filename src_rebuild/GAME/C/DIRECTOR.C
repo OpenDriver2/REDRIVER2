@@ -44,7 +44,7 @@ TEXTURE_DETAILS editcam; // address 0xC1BE8
 TEXTURE_DETAILS fixedcam; // address 0xC1D70
 TEXTURE_DETAILS frameadv; // address 0xC1D80
 
-REPLAY_ICON replay_icons[23] =
+REPLAY_ICON replay_icons[] =
 {
 	{ 20, 26, &pause, "Pause", 20, 48 },
 	{ 20, 26, &playpause, "Resume", 20, 48 },
@@ -67,8 +67,8 @@ REPLAY_ICON replay_icons[23] =
 	{ 164, 74, &movecampos, "Move camera position", 164, 96 },
 	{ 164, 98, &movecampos, "Move camera position", 164, 120 },
 	{ 188, 98, &lookcar, "Look at target", 188, 120 },
-	{ 212, 98, &movecam, "Move camera", 212, 120 },
-	{ 236, 98, &lenschan, "Lens zoom", 236, 120 }
+	{ 212, 98, &movecam, "Rotate camera", 212, 120 },
+	{ 236, 98, &lenschan, "Zoom camera", 236, 120 }
 };
 
 unsigned char menu0[] = { 0, 0xFF };
@@ -567,11 +567,14 @@ int CheckCameraChange(int CameraCnt)
 
 	if (NextChange->FrameCnt != CameraCnt)
 	{
-		if (CameraCnt < NextChange->FrameCnt) {
+		if (CameraCnt < NextChange->FrameCnt) 
+		{
 			IsMovingCamera(LastChange, NextChange, CameraCnt);
 			return 0;
 		}
-		if (NextChange->next == -2) {
+
+		if (NextChange->next == -2) 
+		{
 			return 0;
 		}
 	}
@@ -749,6 +752,7 @@ int IsMovingCamera(PLAYBACKCAMERA *lastcam, PLAYBACKCAMERA *nextcam, int camerac
 		cam.angle.vz = lastcam->angle.vz + (short)(((iVar13 << 6) / iVar14) * cameracnt >> 6);
 
 		SetPlaybackCamera(&cam);
+
 		return 1;
 	}
 
@@ -1522,15 +1526,15 @@ void ShowReplayMenu(void)
 LAB_0003c6c4:
 	if (menuactive == 3) 
 	{
-		ShowIcons(menu3, CursorX + -6, MenuOffset);
+		ShowIcons(menu3, CursorX - 6, MenuOffset);
 	}
 	else if (menuactive == 4)
 	{
-		ShowIcons(menu4, CursorX + -6, MenuOffset);
+		ShowIcons(menu4, CursorX - 6, MenuOffset);
 	}
 	else if (menuactive == 5)
 	{
-		ShowIcons(menu5, CursorX + -6, MenuOffset);
+		ShowIcons(menu5, CursorX - 6, MenuOffset);
 	}
 
 	if ((AutoDirect != 0) && (pauseflag == 0))
@@ -2396,10 +2400,10 @@ void ControlReplay(void)
 					if (editing_existing_camera == 0) 
 					{
 						RecordCamera(CameraCnt);
-						iVar6 = NoMoreCamerasErrorMessage();
-						if (iVar6 != 0) {
+
+						if (NoMoreCamerasErrorMessage() != 0)
 							CursorX = 6;
-						}
+
 						break;
 					}
 					goto LAB_0003db6c;
@@ -2427,89 +2431,105 @@ void ControlReplay(void)
 					menuactive = 1;
 					EditCamera(CameraCnt);
 			}
-			if (MenuOffset == 0) {
-				if (4 < CursorY) {
+
+			if (MenuOffset == 0) 
+			{
+				if (4 < CursorY) 
+				{
 					CursorY = 4;
 					return;
 				}
 				return;
 			}
-			if (6 < CursorY) {
+
+			if (6 < CursorY) 
+			{
 				CursorY = 6;
 				return;
 			}
 			return;
 		case 3:
 			CursorY = 1;
-			if (CursorX == 5) {
+			if (CursorX == 5) 
+			{
 				menuactive = 2;
 			}
-			else {
-				if ((CursorX == 6) && (dir == 5)) {
-					iVar6 = SelectCameraCar((int)player[0].cameraCarId);
-					player[0].cameraCarId = (char)iVar6;
-				}
+			else if ((CursorX == 6) && (dir == 5))
+			{
+				iVar6 = SelectCameraCar((int)player[0].cameraCarId);
+				player[0].cameraCarId = (char)iVar6;
 			}
+
 			break;
 		case 4:
 			CursorY = 2;
-			if (CursorX == 5) {
+			if (CursorX == 5) 
+			{
 				menuactive = 2;
 			}
-			else {
-				if ((CursorX == 6) && (dir == 5)) {
-					if (EditMode == 0) {
-						EditMode = 2;
-					}
-					else {
-						EditMode = 0;
-					}
+			else if ((CursorX == 6) && (dir == 5))
+			{
+				if (EditMode == 0)
+				{
+					EditMode = 2;
+				}
+				else
+				{
+					EditMode = 0;
 				}
 			}
 			break;
 		case 5:
 			CursorY = 3;
-			switch (CursorX) {
-			case 5:
-				menuactive = 2;
-				break;
-			case 6:
-				if (dir == 5) {
-					if (EditMode == 0) {
-						EditMode = 3;
-					}
-					else {
-					LAB_0003dd5c:
-						EditMode = 0;
-					}
-				}
-				break;
-			case 7:
-				if (dir == 5) {
-					tracking_car = 1;
-				}
-				break;
-			case 8:
-				if (dir == 5) {
-					tracking_car = 0;
-					if (EditMode != 0) goto LAB_0003dd5c;
-					EditMode = 4;
-				}
-				break;
-			case 9:
-				if (tracking_car != 0) 
-				{
-					if (dir == 5)
+
+			switch (CursorX) 
+			{
+				case 5:
+					menuactive = 2;
+					break;
+				case 6:
+					if (dir == 5) 
 					{
-						if (cameraview == 1) 
-							cameraview = 5;
-						else
-							cameraview = 1;
+						if (EditMode == 0)
+						{
+							EditMode = 3;
+						}
+						else 
+						{
+						LAB_0003dd5c:
+							EditMode = 0;
+						}
 					}
 					break;
-				}
-				goto LAB_0003ddf8;
+				case 7:
+					if (dir == 5)
+					{
+						tracking_car = 1;
+					}
+					break;
+				case 8:
+					if (dir == 5) 
+					{
+						tracking_car = 0;
+						if (EditMode != 0) goto LAB_0003dd5c;
+						EditMode = 4;
+					}
+					break;
+				case 9:
+					if (tracking_car != 0) 
+					{
+						if (dir == 5)
+						{
+							if (cameraview == 1) 
+								cameraview = 5;
+							else
+								cameraview = 1;
+						}
+						break;
+					}
+					goto LAB_0003ddf8;
 			}
+
 			if (tracking_car == 0 || OK_To_Zoom() == 0) 
 			{
 			LAB_0003ddf8:
@@ -2520,11 +2540,12 @@ void ControlReplay(void)
 			}
 			else 
 			{
-				if (8 < CursorX) 
+				if (8 < CursorX)
 				{
 					CursorX = 9;
 				}
 			}
+
 		default:
 			goto switchD_0003d504_caseD_5;
 	}

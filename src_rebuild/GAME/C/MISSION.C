@@ -25,6 +25,7 @@
 #include "PEDEST.H"
 #include "OVERMAP.H"
 #include "DENTING.H"
+#include "LOADSAVE.H"
 
 #include <string.h>
 
@@ -3445,7 +3446,12 @@ int HandleGameOver(void)
 			if (Mission.message_timer[1] == 0) 
 			{
 				if (Mission.gameover_mode == PAUSEMODE_COMPLETE)
+				{
 					StoreEndData();
+#ifndef PSX
+					SaveCurrentGame();
+#endif
+				}
 
 				EnablePause(Mission.gameover_mode);
 				return 1;
