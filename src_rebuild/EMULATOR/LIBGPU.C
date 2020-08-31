@@ -230,6 +230,8 @@ void DrawAggregatedSplits();
 
 int DrawSync(int mode)
 {
+
+
 	// Update VRAM seems needed to be here
 	//Emulator_UpdateVRAM();
 
@@ -678,7 +680,15 @@ void DrawOTagEnv(u_long* p, DRAWENV* env)
 void DrawOTag(u_long* p)
 {
 	if (g_GPUDisabledState)
+	{
+		ClearVBO();
+		ResetPolyState();
+
+#ifdef PGXP
+		PGXP_ClearCache();
+#endif
 		return;
+	}
 
 	if (Emulator_BeginScene())
 	{
@@ -707,7 +717,15 @@ void DrawOTag(u_long* p)
 void DrawPrim(void* p)
 {
 	if (g_GPUDisabledState)
+	{
+		ClearVBO();
+		ResetPolyState();
+
+#ifdef PGXP
+		PGXP_ClearCache();
+#endif
 		return;
+	}
 
 	if (Emulator_BeginScene())
 	{
