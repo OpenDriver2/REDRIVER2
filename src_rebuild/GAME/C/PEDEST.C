@@ -268,9 +268,6 @@ void ProcessTannerPad(PEDESTRIAN *pPed, ulong pad, char PadSteer, char use_analo
 			tannerPad = tannerPad | 0x2000;
 	}
 
-	if (bKillTanner != 0)
-		pPed->flags |= 4;
-
 	IHaveThePower();	// process Havana easter egg near the entrance cemetery
 
 	vec.vx = pPed->position.vx;
@@ -1424,7 +1421,7 @@ void DrawAllPedestrians(void)
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
-		if (pPed->pedType - 2 < 2 &&  // ???
+		if ((uint)pPed->pedType - 2 < 2 &&  // ???
 			PositionVisible((VECTOR *)&pPed->position) != 0 &&
 			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
 		{
@@ -1444,7 +1441,8 @@ void DrawAllPedestrians(void)
 	{
 		if (pPed->pedType < OTHER_SPRITE &&
 			PositionVisible((VECTOR *)&pPed->position) != 0 &&
-			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
+			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1 &&
+			!bKillTanner)
 		{
 			DrawTanner(pPed);
 		}

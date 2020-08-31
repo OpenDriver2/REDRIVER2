@@ -1044,61 +1044,59 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 								}
 								else
 								{
-									iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
-
-									if (iVar7 != 0)
+									if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
 									{
+										if (!bKillTanner)
+											player[0].dying = 1;
+
 										bKillTanner = 1;
-										player[0].dying = 1;
+									}
+								}
+							}
+							else if (cp->controlType == 5)
+							{
+								if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
+								{
+									iVar7 = 5;
+									bbox.xsize += 100;
+									bbox.zsize += 100;
+
+									while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
+										CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
+									{
+										gCameraDistance -= boxOverlap;
+										if (gCameraDistance < iVar13)
+											gCameraDistance = iVar13;
+
+										iVar13 = gCameraDistance;
+										uVar9 = cp->hd.direction & 0xfff;
+
+										cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
+										cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
+										iVar7--;
 									}
 								}
 							}
 							else
 							{
-								if (cp->controlType == 5)
+								if (x1 < mdcount || cop->pad == 0)
 								{
-									if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
-									{
-										iVar7 = 5;
-										bbox.xsize += 100;
-										bbox.zsize += 100;
-
-										while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
-											CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
-										{
-											gCameraDistance -= boxOverlap;
-											if (gCameraDistance < iVar13)
-												gCameraDistance = iVar13;
-
-											iVar13 = gCameraDistance;
-											uVar9 = cp->hd.direction & 0xfff;
-
-											cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
-											cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
-											iVar7--;
-										}
-									}
+									if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
+										cp->ap.needsDenting = 1;
 								}
 								else
 								{
-									if (x1 < mdcount || cop->pad == 0)
+									cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
+									
+									if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? 0x2 : 0) != 0)
 									{
-										if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
-											cp->ap.needsDenting = 1;
+										cp->ap.needsDenting = 1;
 									}
-									else
-									{
-										cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
 
-										if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
-										{
-											cp->ap.needsDenting = 1;
-											//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
-										}
-
-									}
+									//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
 								}
 							}
+
 							collide++;
 						};
 					}
