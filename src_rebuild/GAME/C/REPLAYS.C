@@ -190,6 +190,7 @@ int SaveReplayToBuffer(char *buffer)
 
 	// write each stream data
 #ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
 	int numStreams = gCutsceneAsReplay ? NumReplayStreams : NumPlayers;
 
 	for (int i = 0; i < numStreams; i++)
@@ -340,7 +341,9 @@ int LoadCutsceneAsReplay(int subindex)
 
 			LoadfileSeg(filename, _other_buffer, offset, size);
 
-			return LoadReplayFromBuffer(_other_buffer);
+			int result = LoadReplayFromBuffer(_other_buffer);
+
+			return result;
 		}
 	}
 

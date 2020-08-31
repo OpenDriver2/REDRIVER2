@@ -2569,7 +2569,7 @@ int redriver2_main(int argc, char** argv)
 		{
 			if (argc-i < 3)
 			{
-				printWarning("Example: -recordcutscene <mission_number> <base_mission> <player_id>");
+				printWarning("Example: -recordcutscene <mission_number> <subindex> <base_mission>");
 				return 0;
 			}
 
@@ -2578,17 +2578,17 @@ int redriver2_main(int argc, char** argv)
 			gInFrontend = 0;
 			AttractMode = 0;
 
-			int player_id = atoi(argv[i+3]);
+			int subindx = atoi(argv[i+2]);
 
 			extern int LoadCutsceneAsReplay(int subindex);
 			extern int gCutsceneAsReplay;
 			extern int gCutsceneAsReplay_PlayerId;
 
 			gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
-			gCurrentMissionNumber = atoi(argv[i + 2]);		// acts as base mission. Some mission requires other base
-			gCutsceneAsReplay_PlayerId = atoi(argv[i + 3]);
+			gCurrentMissionNumber = atoi(argv[i + 3]);		// acts as base mission. Some mission requires other base
+			gCutsceneAsReplay_PlayerId = 0;
 
-			if (LoadCutsceneAsReplay(0))
+			if (LoadCutsceneAsReplay(subindx))
 			{
 				CurrentGameMode = GAMEMODE_REPLAY;
 				gLoadedReplay = 1;
