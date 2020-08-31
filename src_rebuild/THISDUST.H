@@ -121,8 +121,9 @@ template<int x> struct compile_time_assert_test {};
 #define PH_ONE_BIT		(1 << PH_ONE_BITS)
 
 // math constants
-#define	FIXED(a)		(int(a) / ONE)
-#define	PH_FIXED(a)		(int(a) / PH_ONE)
+#define	FIXED(a)		(int(a) + (ONE/2) >> ONE_BITS)
+#define	HFIXED(a)		(int(a) + ONE >> (ONE_BITS+1))
+#define	PH_FIXED(a)		(int(a) + (PH_ONE) >> PH_ONE_BITS)
 
 #define SetVec(_v, _x, _y, _z) \
 { \

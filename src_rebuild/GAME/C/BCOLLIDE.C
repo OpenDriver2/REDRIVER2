@@ -1363,6 +1363,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				lVar6 = collisionResult.surfNormal.vy;
 				lVar7 = collisionResult.surfNormal.vz;
 
+				
 				if (cp->controlType == 6)	// [A] temporary hack due to physics differences
 				{
 					cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
