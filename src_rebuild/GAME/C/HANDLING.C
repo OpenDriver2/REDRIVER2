@@ -964,7 +964,8 @@ void GlobalTimeStep(void)
 													Setup_Sparks((VECTOR*)collisionpoint, &velocity, 6, 0);
 
 													if (cp->controlType == 1)
-														SetPadVibration(*c1->ai.padid, 1);
+														SetPadVibration(*cp->ai.padid, 1);
+
 													if (c1->controlType == 1)
 														SetPadVibration(*c1->ai.padid, 1);
 												}

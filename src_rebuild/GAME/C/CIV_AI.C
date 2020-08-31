@@ -4021,7 +4021,7 @@ void InitCivCars(void)
 	// End Line: 4911
 
 const int EVENT_CAR_SPEED = 60;
-const int DistanceTriggerCarMoves = 5000;
+const int DistanceTriggerCarMoves = 600;
 
 // [D] [A]
 int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*stopPos)[4], unsigned char internalModel, int palette)
