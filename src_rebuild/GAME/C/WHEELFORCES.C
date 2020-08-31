@@ -242,9 +242,7 @@ void StepOneCar(_CAR_DATA *cp)
 {
 	static int frictionLimit[6] = {
 		0x3ED000, 0x13A1000,
-
 		0x75C6000, 0x13A1000, 
-
 		0x11F30, 0x11F14
 	};
 
@@ -524,31 +522,32 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 	unsigned char bVar1;
 	int iVar2;
 	int iVar3;
+	_HANDLING_TYPE* hp;
 
-	bVar1 = cp->hndType;
+	hp = &handlingType[cp->hndType];
+
 	if (cp->thrust < 0)
-	{
-		iVar2 = 0x5ad;
-	}
-	else 
-	{
-		iVar2 = 0x334;
-		if (cp->thrust < 1) 
-			iVar2 = 0x3a9;
-	}
+		*frontFS = 1453;
+	else if (cp->thrust < 1)
+		*frontFS = 937;
+	else
+		*frontFS = 820;
 
-	*frontFS = iVar2;
+	iVar2 = cp->hd.autoBrake;
 
-	if ((((cp->wheelspin == 0) && (handlingType[cp->hndType].autoBrakeOn != 0)) && (iVar2 = cp->hd.autoBrake, 0 < iVar2)) && (0 < cp->hd.wheel_speed)) 
+	if (cp->wheelspin == 0 && hp->autoBrakeOn != 0 && 0 < iVar2 && (0 < cp->hd.wheel_speed))
 	{
 		iVar3 = iVar2 << 1;
-		if (0xd < iVar2) 
+
+		if (iVar2 > 13) 
 		{
-			iVar2 = 0xd;
-			iVar3 = 0x1a;
+			iVar2 = 13;
+			iVar3 = 26;
 		}
-		*frontFS = *frontFS + (iVar3 + iVar2) * 0xf;
-		if (handlingType[cp->hndType].autoBrakeOn == 2) 
+
+		*frontFS = *frontFS + (iVar3 + iVar2) * 15;
+
+		if (hp->autoBrakeOn == 2)
 		{
 			while (FrameCnt != 0x78654321) 
 			{
@@ -576,9 +575,7 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 	if (cp->handbrake == 0) 
 	{
 		if (cp->wheelspin != 0)
-		{
 			*frontFS = *frontFS + 600;
-		}
 	}
 	else 
 	{
@@ -586,15 +583,10 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 			cp->thrust = 0;
 
 		if (cp->hd.wheel_speed < 1)
-		{
-			iVar2 = *frontFS + -0x177;
-		}
+			*frontFS = *frontFS - 375;
 		else 
-		{
-			iVar2 = *frontFS + 0x290;
-		}
+			*frontFS = *frontFS + 656;
 
-		*frontFS = iVar2;
 		cp->hd.wheel[1].locked = 1;
 		cp->hd.wheel[3].locked = 1;
 		cp->wheelspin = 0;
@@ -614,50 +606,19 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 
 	if ((cp->thrust < 0) && (0xa3d7 < cp->hd.wheel_speed) && (cl->aggressive != 0))
 	{
-		iVar2 = *frontFS * 10;
-
-		if (iVar2 < 0) 
-			iVar2 = iVar2 + 7;
-
-		*frontFS = iVar2 >> 3;
-
-		iVar2 = *rearFS * 10;
-		if (iVar2 < 0)
-			iVar2 = iVar2 + 7;
-
-		*rearFS = iVar2 >> 3;
+		*frontFS = *frontFS * 10 >> 3;
+		*rearFS = *rearFS * 10 >> 3;
 	}
 	else 
 	{
 		if (cp->hd.wheel[0].onGrass == 0) 
-		{
-			iVar3 = *frontFS;
-			iVar2 = iVar3 * 0x24;
-		}
+			*frontFS = *frontFS * 36 - *frontFS >>5;
 		else
-		{
-			iVar3 = *frontFS;
-			iVar2 = iVar3 * 0x28;
-		}
-
-		iVar2 = iVar2 - iVar3;
-		if (iVar2 < 0) 
-			iVar2 = iVar2 + 0x1f;
-
-		*frontFS = iVar2 >> 5;
+			*frontFS = *frontFS * 40 - *frontFS >> 5;
 	}
 
-	iVar2 = *frontFS * handlingType[bVar1].frictionScaleRatio;
-	if (iVar2 < 0)
-		iVar2 = iVar2 + 0x1f;
-
-	*frontFS = iVar2 >> 5;
-	iVar2 = *rearFS * handlingType[bVar1].frictionScaleRatio;
-
-	if (iVar2 < 0)
-		iVar2 = iVar2 + 0x1f;
-
-	*rearFS = iVar2 >> 5;
+	*frontFS = *frontFS * hp->frictionScaleRatio >> 5;
+	*rearFS = *rearFS * hp->frictionScaleRatio >> 5;
 
 	if ((cp->hndType == 5) && (cp->ai.l.dstate == 5))
 	{
@@ -665,12 +626,12 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 		*rearFS = (*rearFS * 3) / 2;
 	}
 
-	iVar2 = cp->ap.carCos->traction;
+	int traction = cp->ap.carCos->traction;
 
-	if (iVar2 != 0x1000) 
+	if (traction != 0x1000)
 	{
-		*frontFS = FIXED(*frontFS * iVar2);
-		*rearFS = FIXED(*rearFS * iVar2);
+		*frontFS = FIXED(*frontFS * traction);
+		*rearFS = FIXED(*rearFS * traction);
 	}
 }
 
@@ -1043,7 +1004,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 		if (newCompression > 42)
 			newCompression = 42;
 
-		if ((newCompression == 0) && (oldCompression == 0))
+		if (newCompression == 0 && oldCompression == 0)
 		{
 			wh->susCompression = 0; // not on ground
 		}
@@ -1105,19 +1066,6 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				int _pvx = pointVel[0];
 				int _pvz = pointVel[2];
 
-				/*
-				if (_pvx < 0)
-					_pvx += 0x3F;
-
-				if (_pvz < 0)
-					_pvz += 0x3F;
-
-				if (_lfx < 0)
-					_lfx += 0x3F;
-
-				if (_lfx < 0)
-					_lfx += 0x3F;*/
-
 				sidevel = (_pvx / 64) * (_lfz / 64) + (_pvz / 64) * (_lfx / 64);
 			}
 
@@ -1125,13 +1073,6 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			{
 				int _fs = frictionScale;
 				int _sv = sidevel;
-				/*
-				if (_fs < 0)
-					_fs += 0x3F;
-
-			
-				if (_sv < 0)
-					_sv += 0x3F;*/
 
 				slidevel = (_fs / 64) * (_sv / 64);
 
@@ -1178,11 +1119,19 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				}
 				else 
 				{
+					//printf("UNIMPLEMENTED code\n");
 					//sidevel = (sidevel >> 0xd) + iVar10 >> 1;
 					//iVar5 = (((-sidevel * lfz + 0x800 >> 0xc) * sdz - (-sidevel * lfx + 0x800 >> 0xc) * sdx) + 1024) / 2048;
 
 					//force.vx = iVar5 * sdz;
 					//force.vz = -iVar5 * sdx;
+
+					//sidevel = FIXED(pointVel[2]);
+
+					iVar5 = FIXED(FIXED(-sidevel * lfz) * sdz - FIXED(-sidevel * lfx) * sdx);
+
+					force.vx = iVar5 * sdz;
+					force.vz = -iVar5 * sdx;
 				}
 
 				if (cp->hd.front_vel < slidevel)
@@ -1563,7 +1512,7 @@ LAB_00082b9c:
 				}
 				else 
 				{
-					iVar10 = FIXED(iVar5) + iVar10 >> 1;
+					//iVar10 = iVar10 >> 1 + iVar10 >> 1;
 					iVar5 = FIXED(FIXED(-iVar10 * iVar11) * sdz - FIXED(-iVar10 * iVar12) * sdx);
 					force.vx = iVar5 * sdz;
 					force.vz = -iVar5 * sdx;
