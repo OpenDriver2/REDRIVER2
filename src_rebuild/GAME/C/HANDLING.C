@@ -775,9 +775,9 @@ void GlobalTimeStep(void)
 				st->n.fposition[1] += PH_FIXED(st->n.linearVelocity[1]);
 				st->n.fposition[2] += PH_FIXED(st->n.linearVelocity[2]);
 
-				AV[0] = HFIXED(st->n.angularVelocity[0]) / 2;
-				AV[1] = HFIXED(st->n.angularVelocity[1]) / 2;
-				AV[2] = HFIXED(st->n.angularVelocity[2]) / 2;
+				AV[0] = HFIXED(st->n.angularVelocity[0]);
+				AV[1] = HFIXED(st->n.angularVelocity[1]);
+				AV[2] = HFIXED(st->n.angularVelocity[2]);
 
 				delta_orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
 				delta_orientation[1] = (orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1];
