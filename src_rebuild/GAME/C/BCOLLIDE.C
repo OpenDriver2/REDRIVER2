@@ -1088,7 +1088,7 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	// End Line: 1967
 
 // [D]
-int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int mightBeABarrier)
+int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)
 {
 	static CDATA2D cd[2] = {0}; // offset 0x0
 	static CRET2D collisionResult = { 0 }; // offset 0xd0
@@ -1134,7 +1134,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	if (cp->controlType == 6)
 		cd[0].isCameraOrTanner = cd[0].isCameraOrTanner + 2;
 
-	cd[1].isCameraOrTanner = (mightBeABarrier == 0);
+	cd[1].isCameraOrTanner = (flags & 0x1) == 0;
 	iVar14 = cp->hd.oBox.location.vy + building->pos.vy;
 
 	if (iVar14 < 0)
@@ -1347,17 +1347,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
-				if (cp->controlType == 6)	// [A] temporary hack
-				{
-					cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
-					cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
-				}
-				else
-				{
-					cp->st.n.fposition[0] += (collisionResult.penetration * collisionResult.surfNormal.vx) / 1024;
-					cp->st.n.fposition[2] += (collisionResult.penetration * collisionResult.surfNormal.vz) / 1024;
-				}
-
 				iVar13 = cp->st.n.angularVelocity[0];
 				iVar18 = cp->st.n.angularVelocity[1];
 				iVar10 = cp->st.n.angularVelocity[2];
@@ -1374,7 +1363,18 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				lVar6 = collisionResult.surfNormal.vy;
 				lVar7 = collisionResult.surfNormal.vz;
 
-				if (cop->pad == 1) // [A] Vegas train velocity - added here
+				if (cp->controlType == 6)	// [A] temporary hack due to physics differences
+				{
+					cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
+					cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
+				}
+				else
+				{
+					cp->st.n.fposition[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx) << 1;
+					cp->st.n.fposition[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz) << 1;
+				}
+
+				if (flags & 0x2) // [A] Vegas train velocity - added here
 				{
 					iVar13 += 700000;
 				}

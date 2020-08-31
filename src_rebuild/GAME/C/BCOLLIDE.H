@@ -15,7 +15,7 @@ extern int DamageCar3D(struct _CAR_DATA *cp, long (*delta)[4], int strikeVel, st
 
 extern void DamageCar(struct _CAR_DATA *cp, struct CDATA2D *cd, struct CRET2D *collisionResult, int strikeVel); // 0x0001D454
 
-extern int CarBuildingCollision(struct _CAR_DATA *cp, struct BUILDING_BOX *building, struct CELL_OBJECT *cop, int mightBeABarrier); // 0x0001D68C
+extern int CarBuildingCollision(struct _CAR_DATA *cp, struct BUILDING_BOX *building, struct CELL_OBJECT *cop, int flags); // 0x0001D68C
 
 
 #endif
