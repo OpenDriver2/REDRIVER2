@@ -1145,11 +1145,11 @@ int OK_To_Zoom(void)
 	if (800 < scr_z)
 		scr_z = 800;
 
-	if (scr_z < 0x100)
-		scr_z = 0x100;
+	if (scr_z < 256)
+		scr_z = 256;
 
 	scr_z = old_z;
-	return CameraCollisionCheck();
+	return CameraCollisionCheck() == 0;
 }
 
 

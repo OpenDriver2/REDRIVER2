@@ -1787,33 +1787,42 @@ void ControlReplay(void)
 		{
 			iVar6 = 8;
 		}
-		if (EditMode == 2) {
-			if (((padd & 0x1000U) != 0) && (1000 < gCameraDistance)) {
+		if (EditMode == 2)
+		{
+			if (((padd & 0x1000U) != 0) && (1000 < gCameraDistance)) 
+			{
 				gCameraDistance = gCameraDistance + iVar6 * -0x10;
 				gCameraMaxDistance = gCameraMaxDistance + iVar6 * -0x10;
 			}
-			if (((padd & 0x4000U) != 0) && (gCameraDistance < 4000)) {
+
+			if (((padd & 0x4000U) != 0) && (gCameraDistance < 4000)) 
+			{
 				gCameraDistance = gCameraDistance + iVar6 * 0x10;
 				gCameraMaxDistance = gCameraMaxDistance + iVar6 * 0x10;
 			}
-			if (((int)padd & 0x8000U) != 0) {
+
+			if (((int)padd & 0x8000U) != 0)
 				gCameraAngle = gCameraAngle + iVar6 * 0x10;
-			}
-			if ((padd & 0x2000U) != 0) {
+
+			if ((padd & 0x2000U) != 0)
 				gCameraAngle = gCameraAngle + iVar6 * -0x10;
-			}
-			if (((padd & 4U) != 0) && (-0x348 < CameraPos.vy)) {
+
+			if (((padd & 4U) != 0) && (-0x348 < CameraPos.vy))
 				CameraPos.vy = CameraPos.vy + iVar6 * -0x10;
-			}
-			if (((padd & 1U) != 0) && (CameraPos.vy < -0x38)) {
+		
+			if (((padd & 1U) != 0) && (CameraPos.vy < -0x38))
 				CameraPos.vy = CameraPos.vy + iVar6 * 0x10;
-			}
+
 			iVar6 = MapHeight(&player[0].cameraPos);
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
-			if ((modelpointers[routeData1.type]->flags2 & 0x100) != 0) {
+
+			if ((modelpointers[routeData1.type]->flags2 & 0x100) != 0)
+			{
 				iVar6 = -0x1c2 - iVar6;
 				player[0].cameraPos.vy = CameraPos.vy - player[0].pos[1];
-				if (CameraPos.vy - player[0].pos[1] < iVar6) {
+
+				if (CameraPos.vy - player[0].pos[1] < iVar6)
+				{
 					CameraPos.vy = iVar6 + player[0].pos[1];
 					player[0].cameraPos.vy = iVar6;
 				}
@@ -1821,211 +1830,234 @@ void ControlReplay(void)
 		LAB_0003d1c4:
 			dir = 0;
 		}
-		else {
-			if (EditMode < 3) {
+		else 
+		{
+			if (EditMode < 3) 
+			{
 				dir = 0;
-				if (EditMode == 1) {
-					if (((padd & 0x2000U) != 0) && (LastChange->FrameCnt < CameraCnt)) {
+				if (EditMode == 1)
+				{
+					if (((padd & 0x2000U) != 0) && (LastChange->FrameCnt < CameraCnt)) 
+					{
 						LastChange->FrameCnt = LastChange->FrameCnt + 1;
 					}
+
 					dir = 0;
+
 					if ((((int)padd & 0x8000U) != 0) &&
-						(PlaybackCamera[LastChange->prev].FrameCnt < LastChange->FrameCnt)) {
+						(PlaybackCamera[LastChange->prev].FrameCnt < LastChange->FrameCnt)) 
+					{
 						LastChange->FrameCnt = LastChange->FrameCnt + -1;
 					}
 				}
 			}
-			else {
-				if (EditMode == 3) {
-					iVar7 = 0;
-					iVar4 = 0;
-					y = (int)player[0].cameraCarId;
-					if (y < 0) {
-						if (y == -1) {
-							basePos.vx = player[0].pos[0];
-							basePos.vz = player[0].pos[2];
-						}
-						else {
-							basePos.vx = (events.track[y * 0x3fffffff + -2]->position).vx;
-							basePos.vz = (events.track[y * 0x3fffffff + -2]->position).vz;
-						}
-					}
-					else {
-						basePos.vx = car_data[y].hd.where.t[0];
-						basePos.vz = car_data[y].hd.where.t[2];
-					}
-					x = basePos.vx - player[0].cameraPos.vx;
-					y = basePos.vz - player[0].cameraPos.vz;
-					old_camera.vx = player[0].cameraPos.vx;
-					old_camera.vz = player[0].cameraPos.vz;
-					old_camera.vy = player[0].cameraPos.vy;
-					lVar3 = SquareRoot0(x * x + y * y);
-					if (tracking_car == 0) {
-						dir = camera_angle.vy;
-					}
-					else {
-						dir = ratan2(y, x);
-					}
-					if (((padd & 0x1000U) != 0) && ((tracking_car == 0 || (500 < lVar3)))) {
-						iVar7 = iVar6 * -0x10;
-					}
-					if ((padd & 0x4000U) != 0) {
-						iVar7 = iVar6 << 4;
-					}
-					if (((padd & 0x8000U) != 0) && ((tracking_car == 0 || (500 < lVar3)))) {
-						iVar4 = iVar6 * -0x10;
-					}
-					if ((padd & 0x2000U) != 0) {
-						iVar4 = iVar6 << 4;
-					}
-					y = iVar7;
-					if (tracking_car == 0) {
-						y = -iVar4;
-						iVar4 = iVar7;
-					}
-					player[0].cameraPos.vx = (player[0].cameraPos.vx + (iVar4 * rcossin_tbl[(dir & 0xfff) * 2] >> 0xc)) - (y * rcossin_tbl[(dir & 0xfff) * 2 + 1] >> 0xc);
-					player[0].cameraPos.vz =(player[0].cameraPos.vz -(iVar4 * rcossin_tbl[(dir & 0xfff) * 2 + 1] >> 0xc)) - (y * rcossin_tbl[(dir & 0xfff) * 2] >> 0xc);
-
-					iVar4 = dist(player[0].spoolXZ, &player[0].cameraPos);
-
-					if (iVar4 < 0x4801)
+			else if (EditMode == 3)
+			{
+				iVar7 = 0;
+				iVar4 = 0;
+				y = (int)player[0].cameraCarId;
+				if (y < 0)
+				{
+					if (y == -1)
 					{
-						tmpPos.vx = player[0].cameraPos.vx;
-						tmpPos.vy = -player[0].cameraPos.vy;
-						tmpPos.vz = player[0].cameraPos.vz;
-						iVar4 = QuickBuildingCollisionCheck(&tmpPos, dir, 10, 10, 10);
-						if (iVar4 != 0) goto LAB_0003cf74;
+						basePos.vx = player[0].pos[0];
+						basePos.vz = player[0].pos[2];
 					}
-					else 
+					else
 					{
-						player[0].cameraPos.vy = old_camera.vy;
-					LAB_0003cf74:
-						player[0].cameraPos.vx = old_camera.vx;
-						player[0].cameraPos.vz = old_camera.vz;
-					}
-
-					iVar4 = MapHeight(&player[0].cameraPos);
-					iVar4 = -iVar4;
-
-					if ((padd & 4U) != 0) 
-					{
-						player[0].cameraPos.vy = player[0].cameraPos.vy + iVar6 * -0x10;
-					}
-
-					if ((padd & 1U) != 0)
-					{
-						player[0].cameraPos.vy = player[0].cameraPos.vy + iVar6 * 0x10;
-					}
-
-					if (iVar4 - MIN_TRIPOD_CAMERA_HEIGHT < player[0].cameraPos.vy) {
-						player[0].cameraPos.vy = iVar4 - MIN_TRIPOD_CAMERA_HEIGHT;
-					}
-					if (player[0].cameraPos.vy < iVar4 + -0x41a) 
-					{
-						player[0].cameraPos.vy = iVar4 + -0x41a;
-					}
-
-					ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
-
-					if (((modelpointers[routeData.type]->flags2 & 0x100) != 0) && (player[0].cameraPos.vy < iVar4 + -0x1c2)) 
-					{
-						player[0].cameraPos.vy = iVar4 + -0x1c2;
-					}
-
-					dir = 0;
-
-					if ((cameraview == 1) && (iVar6 = OK_To_Zoom(), iVar6 == 0))
-					{
-						cameraview = 5;
+						basePos.vx = (events.track[y * 0x3fffffff + -2]->position).vx;
+						basePos.vz = (events.track[y * 0x3fffffff + -2]->position).vz;
 					}
 				}
-				else 
-{
-					dir = 0;
-					if (EditMode == 4)
-					{
-						if (((padd & 0x1000U) != 0) &&
-							(iVar4 = camera_angle.vx + iVar6 * 4,
-								camera_angle.vx = (short)iVar4, (iVar4 - 300U & 0xffff) < 0x6d5)) 
-						{
-							camera_angle.vx = 300;
-						}
-						if (((padd & 0x4000U) != 0) &&
-							(iVar4 = camera_angle.vx + iVar6 * -4,
-								camera_angle.vx = (short)iVar4, (iVar4 - 0x800U & 0xffff) < 0x73d))
-						{
-							camera_angle.vx = 0xf3c;
-						}
+				else
+				{
+					basePos.vx = car_data[y].hd.where.t[0];
+					basePos.vz = car_data[y].hd.where.t[2];
+				}
 
-						if ((padd & 0x8000U) != 0)
-						{
-							camera_angle.vy = camera_angle.vy + (short)iVar6 * 4;
-						}
-						if ((padd & 0x2000U) != 0)
-						{
-							camera_angle.vy = camera_angle.vy + (short)iVar6 * -4;
-						}
-						camera_angle.vx = camera_angle.vx & 0xfff;
-						camera_angle.vy = camera_angle.vy & 0xfff;
-						camera_angle.vz = camera_angle.vz & 0xfff;
-						goto LAB_0003d1c4;
+				x = basePos.vx - player[0].cameraPos.vx;
+				y = basePos.vz - player[0].cameraPos.vz;
+				old_camera.vx = player[0].cameraPos.vx;
+				old_camera.vz = player[0].cameraPos.vz;
+				old_camera.vy = player[0].cameraPos.vy;
+				lVar3 = SquareRoot0(x * x + y * y);
+
+				if (tracking_car == 0)
+					dir = camera_angle.vy;
+				else
+					dir = ratan2(y, x);
+
+				if (((padd & 0x1000U) != 0) && ((tracking_car == 0 || (500 < lVar3))))
+					iVar7 = iVar6 * -0x10;
+
+				if ((padd & 0x4000U) != 0)
+					iVar7 = iVar6 << 4;
+
+				if (((padd & 0x8000U) != 0) && ((tracking_car == 0 || (500 < lVar3))))
+					iVar4 = iVar6 * -0x10;
+
+				if ((padd & 0x2000U) != 0)
+					iVar4 = iVar6 << 4;
+
+				y = iVar7;
+
+				if (tracking_car == 0)
+				{
+					y = -iVar4;
+					iVar4 = iVar7;
+				}
+
+				player[0].cameraPos.vx = (player[0].cameraPos.vx + (iVar4 * rcossin_tbl[(dir & 0xfff) * 2] >> 0xc)) - (y * rcossin_tbl[(dir & 0xfff) * 2 + 1] >> 0xc);
+				player[0].cameraPos.vz = (player[0].cameraPos.vz - (iVar4 * rcossin_tbl[(dir & 0xfff) * 2 + 1] >> 0xc)) - (y * rcossin_tbl[(dir & 0xfff) * 2] >> 0xc);
+
+				iVar4 = dist(player[0].spoolXZ, &player[0].cameraPos);
+
+				if (iVar4 < 0x4801)
+				{
+					tmpPos.vx = player[0].cameraPos.vx;
+					tmpPos.vy = -player[0].cameraPos.vy;
+					tmpPos.vz = player[0].cameraPos.vz;
+
+					if (QuickBuildingCollisionCheck(&tmpPos, dir, 10, 10, 10) != 0)
+						goto LAB_0003cf74;
+				}
+				else
+				{
+					player[0].cameraPos.vy = old_camera.vy;
+				LAB_0003cf74:
+					player[0].cameraPos.vx = old_camera.vx;
+					player[0].cameraPos.vz = old_camera.vz;
+				}
+
+				iVar4 = -MapHeight(&player[0].cameraPos);
+
+				if ((padd & 4U) != 0)
+				{
+					player[0].cameraPos.vy = player[0].cameraPos.vy + iVar6 * -0x10;
+				}
+
+				if ((padd & 1U) != 0)
+				{
+					player[0].cameraPos.vy = player[0].cameraPos.vy + iVar6 * 0x10;
+				}
+
+				if (iVar4 - MIN_TRIPOD_CAMERA_HEIGHT < player[0].cameraPos.vy)
+					player[0].cameraPos.vy = iVar4 - MIN_TRIPOD_CAMERA_HEIGHT;
+
+				if (player[0].cameraPos.vy < iVar4 + -0x41a)
+					player[0].cameraPos.vy = iVar4 + -0x41a;
+
+
+				ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
+
+				if (((modelpointers[routeData.type]->flags2 & 0x100) != 0) && (player[0].cameraPos.vy < iVar4 + -0x1c2))
+					player[0].cameraPos.vy = iVar4 + -0x1c2;
+
+				dir = 0;
+
+				if ((cameraview == 1) && (OK_To_Zoom() == 0))
+				{
+					cameraview = 5;
+				}
+			}
+			else
+			{
+				dir = 0;
+				if (EditMode == 4)
+				{
+					if (((padd & 0x1000U) != 0) &&
+						(iVar4 = camera_angle.vx + iVar6 * 4,
+							camera_angle.vx = (short)iVar4, (iVar4 - 300U & 0xffff) < 0x6d5))
+					{
+						camera_angle.vx = 300;
 					}
+
+					if (((padd & 0x4000U) != 0) &&
+						(iVar4 = camera_angle.vx + iVar6 * -4,
+							camera_angle.vx = (short)iVar4, (iVar4 - 0x800U & 0xffff) < 0x73d))
+					{
+						camera_angle.vx = 0xf3c;
+					}
+
+					if ((padd & 0x8000U) != 0)
+					{
+						camera_angle.vy = camera_angle.vy + (short)iVar6 * 4;
+					}
+
+					if ((padd & 0x2000U) != 0)
+					{
+						camera_angle.vy = camera_angle.vy + (short)iVar6 * -4;
+					}
+
+					camera_angle.vx = camera_angle.vx & 0xfff;
+					camera_angle.vy = camera_angle.vy & 0xfff;
+					camera_angle.vz = camera_angle.vz & 0xfff;
+					goto LAB_0003d1c4;
 				}
 			}
 		}
 	}
-	if (dir == 2) {
+
+	if (dir == 1)
+	{
+		CursorX = CursorX + 1;
+		if ((((CameraCnt < ReplayParameterPtr->RecordingEnd) || (menuactive != 1)) ||
+			(iVar6 = 7, CursorX != 5)) &&
+			(((pPVar5 = FindFreeCamera(), iVar6 = CursorX, pPVar5 == NULL &&
+				(menuactive == 1)) && (CursorX == 5))))
+		{
+			iVar6 = 6;
+		}
+
+		CursorX = iVar6;
+
+		if (((CursorX == 7) && (menuactive == 1)) && (gNoReplaySaveAllowed != 0))
+		{
+			CursorX = 8;
+		}
+	}
+	else if (dir == 2)
+	{
 		CursorX = CursorX + -1;
-		if (((CursorX == 7) && (menuactive == 1)) && (gNoReplaySaveAllowed != '\0')) {
+		if (((CursorX == 7) && (menuactive == 1)) && (gNoReplaySaveAllowed != 0)) 
+		{
 			CursorX = 6;
 		}
-		if ((((ReplayParameterPtr->RecordingEnd <= CameraCnt) && (menuactive == 1)) &&
-			(CursorX == 6)) ||
-			(((pPVar5 = FindFreeCamera(), pPVar5 == NULL && (menuactive == 1)) && (CursorX == 5)))) {
+
+		if ((((ReplayParameterPtr->RecordingEnd <= CameraCnt) && (menuactive == 1)) && (CursorX == 6)) ||
+			(((FindFreeCamera() == NULL && (menuactive == 1)) && (CursorX == 5))))
+		{
 			CursorX = 4;
 		}
 	}
-	else {
-		if (dir < 3) {
-			if (dir == 1) {
-				CursorX = CursorX + 1;
-				if ((((CameraCnt < ReplayParameterPtr->RecordingEnd) || (menuactive != 1)) ||
-					(iVar6 = 7, CursorX != 5)) &&
-					(((pPVar5 = FindFreeCamera(), iVar6 = CursorX, pPVar5 == NULL &&
-					(menuactive == 1)) && (CursorX == 5)))) {
-					iVar6 = 6;
-				}
-				CursorX = iVar6;
-				if (((CursorX == 7) && (menuactive == 1)) && (gNoReplaySaveAllowed != '\0')) {
-					CursorX = 8;
-				}
-			}
-		}
-		else {
-			if (dir == 3) {
-				CursorY = CursorY + -1;
-				iVar6 = FirstCamera();
-				if ((((iVar6 != 0) && (menuactive == 2)) && (MenuOffset != 0)) && (CursorY == 5)) {
-					CursorY = dir;
-				}
-			}
-			else {
-				if (dir == 4) {
-					CursorY = CursorY + 1;
-					iVar6 = FirstCamera();
-					if (((iVar6 != 0) && (menuactive == 2)) && ((MenuOffset != 0 && (CursorY == 4)))
-						) {
-						CursorY = 6;
-					}
-				}
-			}
+	else if (dir == 3)
+	{
+		CursorY--;
+
+		if ((((FirstCamera() != 0) && (menuactive == 2)) && (MenuOffset != 0)) && (CursorY == 5)) 
+		{
+			CursorY = dir;
 		}
 	}
-	if ((debounce == 0) && (PlayMode == 3)) {
+	else if (dir == 4)
+	{
+		CursorY++;
+
+		if (((FirstCamera() != 0) && (menuactive == 2)) && ((MenuOffset != 0 && (CursorY == 4))))
+		{
+			CursorY = 6;
+		}
+	}
+
+	if ((debounce == 0) && (PlayMode == 3)) 
+	{
 		pauseflag = 1;
 	}
-	if (pauseflag == 0) {
-		if (PlayMode == 2) {
+
+	if (pauseflag == 0) 
+	{
+		if (PlayMode == 2) 
+		{
 			first_time = 1;
 			pauseflag = 1;
 			menuactive = 0;
@@ -2035,8 +2067,11 @@ void ControlReplay(void)
 		menuactive = 0;
 		return;
 	}
-	if (first_time != 0) {
-		if ((ReplayParameterPtr->RecordingEnd <= CameraCnt) && ((CursorX < 4 || (CursorX == 5)))) {
+
+	if (first_time != 0)
+	{
+		if ((ReplayParameterPtr->RecordingEnd <= CameraCnt) && ((CursorX < 4 || (CursorX == 5))))
+		{
 			CursorX = 4;
 		}
 		menuactive = 1;
@@ -2044,404 +2079,458 @@ void ControlReplay(void)
 
 	first_time = 0;
 	ReplayContinue = 0;
-	switch (menuactive) {
-	case 1:
-		CursorY = 0;
-		if (CameraCnt < ReplayParameterPtr->RecordingEnd) {
-			if (CursorX < 0) {
-				CursorX = 8;
-			}
-			if (8 < CursorX) {
-				CursorX = 0;
-			}
-		}
-		else {
-			if (CursorX < 4) {
-				CursorX = 4;
-			}
-			if (8 < CursorX) {
-				CursorX = 4;
-			}
-		}
-		switch (CursorX) {
-		case 0:
-			if (dir != 5) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
-			}
-			if (CameraCnt < ReplayParameterPtr->RecordingEnd) {
-				first_time = 0;
-				pauseflag = 0;
-				CursorY = 0;
-				PlayMode = 0;
-				ReplayContinue = 1;
-				AutoDirect = 0;
-				vblcounter = 0;
-				return;
-			}
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
-			return;
+
+	switch (menuactive) 
+	{
 		case 1:
-			if (dir != 5) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
-			}
-			if (CameraCnt < ReplayParameterPtr->RecordingEnd) {
-				first_time = 0;
-				pauseflag = 0;
-				CursorY = 0;
-				PlayMode = 0;
-				ReplayContinue = 1;
-				AutoDirect = 1;
-				return;
-			}
-			first_time = 0;
 			CursorY = 0;
-			ReplayContinue = 0;
+			if (CameraCnt < ReplayParameterPtr->RecordingEnd)
+			{
+				if (CursorX < 0)
+					CursorX = 8;
+
+				if (8 < CursorX)
+					CursorX = 0;
+			}
+			else 
+			{
+				if (CursorX < 4)
+					CursorX = 4;
+
+				if (8 < CursorX)
+					CursorX = 4;
+
+			}
+
+			switch (CursorX)
+			{
+				case 0:
+					if (dir != 5) 
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+
+					if (CameraCnt < ReplayParameterPtr->RecordingEnd)
+					{
+						first_time = 0;
+						pauseflag = 0;
+						CursorY = 0;
+						PlayMode = 0;
+						ReplayContinue = 1;
+						AutoDirect = 0;
+						vblcounter = 0;
+						return;
+					}
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+				case 1:
+					if (dir != 5)
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+
+					if (CameraCnt < ReplayParameterPtr->RecordingEnd)
+					{
+						first_time = 0;
+						pauseflag = 0;
+						CursorY = 0;
+						PlayMode = 0;
+						ReplayContinue = 1;
+						AutoDirect = 1;
+						return;
+					}
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+				case 2:
+					if (dir != 5) 
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+
+					if (CameraCnt < ReplayParameterPtr->RecordingEnd)
+					{
+						FastForward = 1;
+						FastForwardCameraCnt = CameraCnt;
+						first_time = 0;
+						pauseflag = 0;
+						CursorY = 0;
+						PlayMode = 1;
+						ReplayContinue = 1;
+						AutoDirect = 0;
+						return;
+					}
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+				case 3:
+					if (ReplayParameterPtr->RecordingEnd <= CameraCnt)
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+
+					if (dir == 5)
+					{
+						first_time = 0;
+						pauseflag = 0;
+						CursorY = 0;
+						PlayMode = 2;
+						ReplayContinue = 0;
+						frame_advance_count = 10;
+						AutoDirect = 0;
+						return;
+					}
+
+					if ((padd & 0x40U) == 0) 
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+					if (frame_advance_count == 0)
+					{
+						first_time = 0;
+						pauseflag = 0;
+						CursorY = 0;
+						PlayMode = 3;
+						ReplayContinue = 1;
+						return;
+					}
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					frame_advance_count = frame_advance_count + -1;
+					return;
+				case 4:
+					mode = GAMEMODE_DIRECTOR;
+					if (dir != 5)
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+					break;
+				case 5:
+					if (ReplayParameterPtr->RecordingEnd <= CameraCnt)
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+
+					if (dir == 5) 
+					{
+						editing_existing_camera = 0;
+						first_time = 0;
+						MenuOffset = 0;
+						menuactive = 2;
+						CursorY = 1;
+						ReplayContinue = 0;
+						return;
+					}
+
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+				case 6:
+					if (dir == 5) 
+					{
+						editing_existing_camera = 1;
+						first_time = 0;
+						MenuOffset = 0x18;
+						menuactive = 2;
+						CursorY = 1;
+						ReplayContinue = 0;
+						return;
+					}
+
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+				case 7:
+					if (dir == 5) 
+					{
+						//SetDispMask(0); // [A]
+						SpoolSYNC();
+						CallMemoryCard(0x10, 1);
+						return;
+					}
+
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+				case 8:
+					if (dir != 5)
+					{
+						first_time = 0;
+						CursorY = 0;
+						ReplayContinue = 0;
+						return;
+					}
+
+					mode = GAMEMODE_QUIT;
+
+					if (gLoadedReplay == 0)
+					{
+						NoPlayerControl = 0;
+						EnablePause(gMissionCompletionState);
+						NoPlayerControl = 1;
+						PlayMode = 0;
+						return;
+					}
+					break;
+				default:
+					first_time = 0;
+					CursorY = 0;
+					ReplayContinue = 0;
+					return;
+			}
+			EndGame(mode);
+			PlayMode = 0;
 			return;
 		case 2:
-			if (dir != 5) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
+			CursorX = 5;
+			switch (CursorY) 
+			{
+				case 0:
+					menuactive = 1;
+					if (MenuOffset != 0)
+						CursorX = 6;
+
+					if (LastChange == NULL) 
+						setCamera(PlaybackCamera);
+					else 
+						setCamera(LastChange);
+
+					break;
+				case 1:
+					if (dir != 5) break;
+					menuactive = 3;
+					cameraview = 2;
+					goto LAB_0003d980;
+				case 2:
+					if (dir != 5) break;
+					menuactive = 4;
+					gCameraAngle = 0x800;
+					CameraPos.vx = -0x2d;
+					gCameraDistance = 0x640;
+					gCameraMaxDistance = 0x640;
+					cameraview = 0;
+					CameraPos.vy = -0xdc;
+					CameraPos.vz = -0x7d;
+				LAB_0003d980:
+					CursorX = 6;
+					break;
+				case 3:
+					if (dir == 5) 
+					{
+						if (cameraview == 2) 
+						{
+							cameraview = 0;
+							InitCamera((_PLAYER *)player);
+						}
+
+						if ((cameraview != 5) && (cameraview != 1))
+						{
+							cameraview = 1;
+						}
+						menuactive = 5;
+						CursorX = CursorX + 1;
+					}
+					break;
+				case 4:
+					if (MenuOffset != 0) 
+					{
+						if ((LastChange->prev != -1) && (dir == 5)) 
+						{
+							if (EditMode == 0)
+							{
+								EditMode = 1;
+							}
+							else
+							{
+								bVar1 = LastChange->prev;
+								pPVar5 = PlaybackCamera + bVar1;
+								if (LastChange->FrameCnt == pPVar5->FrameCnt) 
+								{
+									bVar2 = pPVar5->prev;
+									if (bVar2 != 0xff)
+									{
+										PlaybackCamera[bVar2].next = pPVar5->next;
+										LastChange->prev = bVar2;
+										PlaybackCamera[bVar1].FrameCnt = 100000;
+									}
+								}
+								EditMode = 0;
+							}
+						}
+						break;
+					}
+
+					if (dir != 5) 
+						break;
+
+					menuactive = 1;
+					if (editing_existing_camera == 0) 
+					{
+						RecordCamera(CameraCnt);
+						iVar6 = NoMoreCamerasErrorMessage();
+						if (iVar6 != 0) {
+							CursorX = 6;
+						}
+						break;
+					}
+					goto LAB_0003db6c;
+				case 5:
+					if (dir == 5) 
+					{
+						CursorX = 6;
+						DeleteCurrentCamera(CameraCnt);
+						iVar6 = FirstCamera();
+						if (iVar6 != 0) {
+							CursorY = 6;
+						}
+					}
+					break;
+				case 6:
+					if (dir != 5) break;
+					menuactive = 1;
+					CursorX = 6;
+					if (editing_existing_camera == 0)
+					{
+						RecordCamera(CameraCnt);
+						break;
+					}
+				LAB_0003db6c:
+					menuactive = 1;
+					EditCamera(CameraCnt);
+			}
+			if (MenuOffset == 0) {
+				if (4 < CursorY) {
+					CursorY = 4;
+					return;
+				}
 				return;
 			}
-			if (CameraCnt < ReplayParameterPtr->RecordingEnd) {
-				FastForward = 1;
-				FastForwardCameraCnt = CameraCnt;
-				first_time = 0;
-				pauseflag = 0;
-				CursorY = 0;
-				PlayMode = 1;
-				ReplayContinue = 1;
-				AutoDirect = 0;
+			if (6 < CursorY) {
+				CursorY = 6;
 				return;
 			}
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
 			return;
 		case 3:
-			if (ReplayParameterPtr->RecordingEnd <= CameraCnt) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
+			CursorY = 1;
+			if (CursorX == 5) {
+				menuactive = 2;
 			}
-			if (dir == 5) {
-				first_time = 0;
-				pauseflag = 0;
-				CursorY = 0;
-				PlayMode = 2;
-				ReplayContinue = 0;
-				frame_advance_count = 10;
-				AutoDirect = 0;
-				return;
+			else {
+				if ((CursorX == 6) && (dir == 5)) {
+					iVar6 = SelectCameraCar((int)player[0].cameraCarId);
+					player[0].cameraCarId = (char)iVar6;
+				}
 			}
-			if ((padd & 0x40U) == 0) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
-			}
-			if (frame_advance_count == 0) {
-				first_time = 0;
-				pauseflag = 0;
-				CursorY = 0;
-				PlayMode = 3;
-				ReplayContinue = 1;
-				return;
-			}
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
-			frame_advance_count = frame_advance_count + -1;
-			return;
+			break;
 		case 4:
-			mode = GAMEMODE_DIRECTOR;
-			if (dir != 5) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
+			CursorY = 2;
+			if (CursorX == 5) {
+				menuactive = 2;
+			}
+			else {
+				if ((CursorX == 6) && (dir == 5)) {
+					if (EditMode == 0) {
+						EditMode = 2;
+					}
+					else {
+						EditMode = 0;
+					}
+				}
 			}
 			break;
 		case 5:
-			if (ReplayParameterPtr->RecordingEnd <= CameraCnt) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
-			}
-			if (dir == 5) {
-				editing_existing_camera = 0;
-				first_time = 0;
-				MenuOffset = 0;
+			CursorY = 3;
+			switch (CursorX) {
+			case 5:
 				menuactive = 2;
-				CursorY = 1;
-				ReplayContinue = 0;
-				return;
-			}
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
-			return;
-		case 6:
-			if (dir == 5) {
-				editing_existing_camera = 1;
-				first_time = 0;
-				MenuOffset = 0x18;
-				menuactive = 2;
-				CursorY = 1;
-				ReplayContinue = 0;
-				return;
-			}
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
-			return;
-		case 7:
-			if (dir == 5) {
-				SetDispMask(0);
-				SpoolSYNC();
-				CallMemoryCard(0x10, 1);
-				return;
-			}
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
-			return;
-		case 8:
-			if (dir != 5) {
-				first_time = 0;
-				CursorY = 0;
-				ReplayContinue = 0;
-				return;
-			}
-			mode = GAMEMODE_QUIT;
-			if (gLoadedReplay == 0) {
-				NoPlayerControl = 0;
-				EnablePause(gMissionCompletionState);
-				NoPlayerControl = 1;
-				PlayMode = 0;
-				return;
-			}
-			break;
-		default:
-			first_time = 0;
-			CursorY = 0;
-			ReplayContinue = 0;
-			return;
-		}
-		EndGame(mode);
-		PlayMode = 0;
-		return;
-	case 2:
-		CursorX = 5;
-		switch (CursorY) {
-		case 0:
-			menuactive = 1;
-			if (MenuOffset != 0) {
-				CursorX = 6;
-			}
-			if (LastChange == NULL) {
-				setCamera(PlaybackCamera);
-			}
-			else {
-				setCamera(LastChange);
-			}
-			break;
-		case 1:
-			if (dir != 5) break;
-			menuactive = 3;
-			cameraview = 2;
-			goto LAB_0003d980;
-		case 2:
-			if (dir != 5) break;
-			menuactive = 4;
-			gCameraAngle = 0x800;
-			CameraPos.vx = -0x2d;
-			gCameraDistance = 0x640;
-			gCameraMaxDistance = 0x640;
-			cameraview = 0;
-			CameraPos.vy = -0xdc;
-			CameraPos.vz = -0x7d;
-		LAB_0003d980:
-			CursorX = 6;
-			break;
-		case 3:
-			if (dir == 5) {
-				if (cameraview == 2) {
-					cameraview = 0;
-					InitCamera((_PLAYER *)player);
-				}
-				if ((cameraview != 5) && (cameraview != 1)) {
-					cameraview = 1;
-				}
-				menuactive = 5;
-				CursorX = CursorX + 1;
-			}
-			break;
-		case 4:
-			if (MenuOffset != 0) {
-				if ((LastChange->prev != -1) && (dir == 5)) {
+				break;
+			case 6:
+				if (dir == 5) {
 					if (EditMode == 0) {
-						EditMode = 1;
+						EditMode = 3;
 					}
 					else {
-						bVar1 = LastChange->prev;
-						pPVar5 = PlaybackCamera + bVar1;
-						if (LastChange->FrameCnt == pPVar5->FrameCnt) {
-							bVar2 = pPVar5->prev;
-							if (bVar2 != 0xff) {
-								PlaybackCamera[bVar2].next = pPVar5->next;
-								LastChange->prev = bVar2;
-								PlaybackCamera[bVar1].FrameCnt = 100000;
-							}
-						}
+					LAB_0003dd5c:
 						EditMode = 0;
 					}
 				}
 				break;
-			}
-			if (dir != 5) break;
-			menuactive = 1;
-			if (editing_existing_camera == 0) {
-				RecordCamera(CameraCnt);
-				iVar6 = NoMoreCamerasErrorMessage();
-				if (iVar6 != 0) {
-					CursorX = 6;
-				}
-				break;
-			}
-			goto LAB_0003db6c;
-		case 5:
-			if (dir == 5) {
-				CursorX = 6;
-				DeleteCurrentCamera(CameraCnt);
-				iVar6 = FirstCamera();
-				if (iVar6 != 0) {
-					CursorY = 6;
-				}
-			}
-			break;
-		case 6:
-			if (dir != 5) break;
-			menuactive = 1;
-			CursorX = 6;
-			if (editing_existing_camera == 0) {
-				RecordCamera(CameraCnt);
-				break;
-			}
-		LAB_0003db6c:
-			menuactive = 1;
-			EditCamera(CameraCnt);
-		}
-		if (MenuOffset == 0) {
-			if (4 < CursorY) {
-				CursorY = 4;
-				return;
-			}
-			return;
-		}
-		if (6 < CursorY) {
-			CursorY = 6;
-			return;
-		}
-		return;
-	case 3:
-		CursorY = 1;
-		if (CursorX == 5) {
-			menuactive = 2;
-		}
-		else {
-			if ((CursorX == 6) && (dir == 5)) {
-				iVar6 = SelectCameraCar((int)player[0].cameraCarId);
-				player[0].cameraCarId = (char)iVar6;
-			}
-		}
-		break;
-	case 4:
-		CursorY = 2;
-		if (CursorX == 5) {
-			menuactive = 2;
-		}
-		else {
-			if ((CursorX == 6) && (dir == 5)) {
-				if (EditMode == 0) {
-					EditMode = 2;
-				}
-				else {
-					EditMode = 0;
-				}
-			}
-		}
-		break;
-	case 5:
-		CursorY = 3;
-		switch (CursorX) {
-		case 5:
-			menuactive = 2;
-			break;
-		case 6:
-			if (dir == 5) {
-				if (EditMode == 0) {
-					EditMode = 3;
-				}
-				else {
-				LAB_0003dd5c:
-					EditMode = 0;
-				}
-			}
-			break;
-		case 7:
-			if (dir == 5) {
-				tracking_car = '\x01';
-			}
-			break;
-		case 8:
-			if (dir == 5) {
-				tracking_car = '\0';
-				if (EditMode != 0) goto LAB_0003dd5c;
-				EditMode = 4;
-			}
-			break;
-		case 9:
-			if (tracking_car != '\0') {
+			case 7:
 				if (dir == 5) {
-					if (cameraview == 1) {
-						cameraview = 5;
-					}
-					else {
-						cameraview = 1;
-					}
+					tracking_car = 1;
 				}
 				break;
+			case 8:
+				if (dir == 5) {
+					tracking_car = 0;
+					if (EditMode != 0) goto LAB_0003dd5c;
+					EditMode = 4;
+				}
+				break;
+			case 9:
+				if (tracking_car != 0) 
+				{
+					if (dir == 5)
+					{
+						if (cameraview == 1) 
+							cameraview = 5;
+						else
+							cameraview = 1;
+					}
+					break;
+				}
+				goto LAB_0003ddf8;
 			}
-			goto LAB_0003ddf8;
-		}
-		if ((tracking_car == '\0') || (iVar6 = OK_To_Zoom(), iVar6 == 0)) {
-		LAB_0003ddf8:
-			if (7 < CursorX) {
-				CursorX = 8;
+			if (tracking_car == 0 || OK_To_Zoom() == 0) 
+			{
+			LAB_0003ddf8:
+				if (7 < CursorX) 
+				{
+					CursorX = 8;
+				}
 			}
-		}
-		else {
-			if (8 < CursorX) {
-				CursorX = 9;
+			else 
+			{
+				if (8 < CursorX) 
+				{
+					CursorX = 9;
+				}
 			}
-		}
-	default:
-		goto switchD_0003d504_caseD_5;
+		default:
+			goto switchD_0003d504_caseD_5;
 	}
 
-	if (6 < CursorX) {
+	if (6 < CursorX) 
+	{
 		CursorX = 6;
 	}
 switchD_0003d504_caseD_5:
@@ -3087,10 +3176,10 @@ int dist(VECTOR *pos1, VECTOR *pos2)
 	int dx;
 	int dz;
 
-	dx = pos1->vx - pos2->vx;
-	dz = pos1->vz - pos2->vz;
+	dx = (pos1->vx - pos2->vx) >> 4;
+	dz = (pos1->vz - pos2->vz) >> 4;
 
-	return SquareRoot0((dx >> 4) * (dx >> 4) + (dz >> 4) * (dz >> 4)) << 4;
+	return SquareRoot0(dx * dx + dz * dz) << 4;
 }
 
 
