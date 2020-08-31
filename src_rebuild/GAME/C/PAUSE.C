@@ -198,10 +198,10 @@ MENU_ITEM YesNoQuitItems[3] =
 };
 
 MENU_HEADER YesNoRestartHeader =
-{ "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
+{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
 
 MENU_HEADER YesNoQuitHeader =
-{ "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
+{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
 #ifdef CUTSCENE_RECORDER
 extern void NextCutsceneRecorderPlayer(int dir);
@@ -219,7 +219,7 @@ MENU_ITEM MainPauseItems[] =
 	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -231,7 +231,7 @@ MENU_ITEM MultiplayerPauseItems[7] =
 {
 	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
@@ -252,9 +252,11 @@ MENU_ITEM CutscenePauseItems[] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM MissionCompleteItems[8] =
+MENU_ITEM MissionCompleteItems[] =
 {
+#ifdef PSX
 	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
+#endif
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -289,7 +291,7 @@ MENU_ITEM TakeARideFinishedItems[] =
 
 MENU_ITEM DrivingGameFinishedItems[7] =
 {
-	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -300,7 +302,7 @@ MENU_ITEM DrivingGameFinishedItems[7] =
 
 MENU_ITEM MultiplayerFinishedItems[5] =
 {
-	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
@@ -309,7 +311,7 @@ MENU_ITEM MultiplayerFinishedItems[5] =
 
 MENU_ITEM ChaseGameFinishedItems[6] =
 {
-	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
@@ -478,14 +480,14 @@ int ShowPauseMenu(PAUSEMODE mode)
 	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry != 0) 
 	{
 		gScoreEntered = 0;
-		sprintf(EnterScoreText, "Enter scores");
-		sprintf(EnterNameText, "Your name:");
+		sprintf(EnterScoreText, "Enter Score");
+		sprintf(EnterNameText, "Enter Name:");
 	}
 	else
 	{
 		gScoreEntered = 1;
-		sprintf(EnterScoreText, "Score table");
-		sprintf(EnterNameText, "High scores");
+		sprintf(EnterScoreText, "View Table");
+		sprintf(EnterNameText, "High Scores");
 	}
 
 	passed_mode = mode;
@@ -1812,8 +1814,8 @@ void EnterScoreName(void)
 					*pcVar4 = 0;
 					strcpy(gPlayerScore.name, username);
 					AddScoreToTable(table, gScorePosition);
-					sprintf(EnterScoreText, "View scores");
-					sprintf(EnterNameText, "High scores");
+					sprintf(EnterScoreText, "View Table");
+					sprintf(EnterNameText, "High Scores");
 					gEnteringScore = 0;
 					gScoreEntered = 1;
 					return;

@@ -47,28 +47,28 @@ TEXTURE_DETAILS frameadv; // address 0xC1D80
 REPLAY_ICON replay_icons[] =
 {
 	{ 20, 26, &pause, "Pause", 20, 48 },
-	{ 20, 26, &playpause, "Resume", 20, 48 },
-	{ 44, 26, &autocam, "Auto director", 44, 48 },
-	{ 68, 26, &playcam, "Play camera", 68, 48 },
-	{ 92, 26, &frameadv, "Single frame", 92, 48 },
-	{ 116, 26, &restart, "Rewind", 116, 48 },
-	{ 140, 26, &addcam, "Add camera", 140, 48 },
-	{ 164, 26, &editcam, "Edit camera", 164, 48 },
-	{ 188, 26, &save2card, "Save replay", 188, 48 },
-	{ 212, 26, &ok, "OK", 212, 48 },
-	{ 140, 50, &incar, "Inside car", 164, 48 },
-	{ 140, 74, &chasecar, "Chase camera", 164, 72 },
-	{ 140, 98, &fixedcam, "Fixed camera", 164, 96 },
+	{ 20, 26, &playpause, "Play", 20, 48 },
+	{ 44, 26, &autocam, "Auto Director", 44, 48 },
+	{ 68, 26, &playcam, "Fast Forward", 68, 48 },
+	{ 92, 26, &frameadv, "Frame Advance", 92, 48 },
+	{ 116, 26, &restart, "Rewind to beginning", 116, 48 },
+	{ 140, 26, &addcam, "Add Camera", 140, 48 },
+	{ 164, 26, &editcam, "Edit Camera", 164, 48 },
+	{ 188, 26, &save2card, "Save Replay", 188, 48 },
+	{ 212, 26, &ok, "Exit", 212, 48 },
+	{ 140, 50, &incar, "In Car", 164, 48 },
+	{ 140, 74, &chasecar, "Chase Camera", 164, 72 },
+	{ 140, 98, &fixedcam, "Tripod Camera", 164, 96 },
 	{ 140, 122, &ok, "Accept", 164, 120 },
-	{ 140, 122, &clock, "Move camera start", 164, 120 },
-	{ 140, 146, &delcam, "Delete camera", 164, 144 },
+	{ 140, 122, &clock, "Move Camera Start", 164, 120 },
+	{ 140, 146, &delcam, "Delete Camera", 164, 144 },
 	{ 140, 170, &ok, "Accept", 164, 168 },
-	{ 164, 50, &choosecar, "Choose target vehicle", 164, 72 },
-	{ 164, 74, &movecampos, "Move camera position", 164, 96 },
-	{ 164, 98, &movecampos, "Move camera position", 164, 120 },
-	{ 188, 98, &lookcar, "Look at target", 188, 120 },
-	{ 212, 98, &movecam, "Rotate camera", 212, 120 },
-	{ 236, 98, &lenschan, "Zoom camera", 236, 120 }
+	{ 164, 50, &choosecar, "You or Pursuer", 164, 72 },
+	{ 164, 74, &movecampos, "Move Camera", 164, 96 },
+	{ 164, 98, &movecampos, "Move Camera", 164, 120 },
+	{ 188, 98, &lookcar, "Lock to Car", 188, 120 },
+	{ 212, 98, &movecam, "Rotate", 212, 120 },
+	{ 236, 98, &lenschan, "Zoom", 236, 120 }
 };
 
 unsigned char menu0[] = { 0, 0xFF };
@@ -259,7 +259,7 @@ void setCamera(PLAYBACKCAMERA *Change)
 	gCameraAngle = Change->gCameraAngle;
 	cameraview = Change->cameraview & 7;
 
-	tracking_car = (((unsigned char)Change->cameraview & 8) >> 3);
+	tracking_car = (Change->cameraview & 8) >> 3;
 
 	player[0].cameraPos.vx = Change->position.vx;
 	player[0].cameraPos.vy = Change->position.vy;
@@ -411,52 +411,52 @@ void RecordCamera(int CameraCnt)
 	char cVar1;
 	PLAYBACKCAMERA *TempChange;
 
-	if (((((((LastChange == NULL) ||
-		(LastChange->cameraview !=
-		(cameraview & 7 | tracking_car << 3))) ||
-			(player[0].cameraCarId != (LastChange->angle).pad)) ||
-		((cameraview == 1 || ((cameraview & 7) == 5)))) ||
-		((LastChange->gCameraDistance != gCameraDistance ||
-		((LastChange->gCameraMaxDistance != gCameraMaxDistance ||
-			(LastChange->gCameraAngle != gCameraAngle)))))) ||
-			(LastChange->CameraPosvy != CameraPos.vy)) &&
-		(TempChange = FindFreeCamera(), TempChange != NULL))
+	TempChange = FindFreeCamera();
+
+	if (TempChange)
 	{
-		if (CameraCnt == 0) 
+		if (LastChange == NULL ||
+			LastChange->cameraview != (cameraview & 7 | tracking_car << 3) ||
+			player[0].cameraCarId != LastChange->angle.pad ||
+			cameraview == 1 ||
+			(cameraview & 7) == 5 ||
+			LastChange->gCameraDistance != gCameraDistance ||
+			LastChange->gCameraMaxDistance != gCameraMaxDistance ||
+			LastChange->gCameraAngle != gCameraAngle ||
+			LastChange->CameraPosvy != CameraPos.vy)
 		{
-			ThisChange = PlaybackCamera;
-		}
-		else
-		{
-			if ((ThisChange == NULL) || (CameraCnt != ThisChange->FrameCnt)) 
+			if (CameraCnt == 0)
+			{
+				ThisChange = PlaybackCamera;
+			}
+			else if (ThisChange == NULL || CameraCnt != ThisChange->FrameCnt)
 			{
 				TempChange->next = LastChange->next;
 				TempChange->prev = LastChange->idx;
 				LastChange->next = TempChange->idx;
 				ThisChange = TempChange;
-				if (TempChange->next != 0xfe)
-				{
+
+				if (TempChange->next != 254)
 					PlaybackCamera[TempChange->next].prev = TempChange->idx;
-				}
 			}
+
+			LastChange = ThisChange;
+
+			ThisChange->cameraview = cameraview & 7 | tracking_car << 3;
+
+			LastChange->position.vx = player[0].cameraPos.vx;
+			LastChange->position.vy = player[0].cameraPos.vy;
+			LastChange->position.vz = player[0].cameraPos.vz;
+			LastChange->angle.vx = camera_angle.vx;
+			LastChange->angle.vy = camera_angle.vy;
+			LastChange->angle.vz = camera_angle.vz;
+			LastChange->angle.pad = player[0].cameraCarId;
+			LastChange->gCameraDistance = gCameraDistance;
+			LastChange->FrameCnt = CameraCnt;
+			LastChange->gCameraMaxDistance = gCameraMaxDistance;
+			LastChange->gCameraAngle = gCameraAngle;
+			LastChange->CameraPosvy = CameraPos.vy;
 		}
-
-		LastChange = ThisChange;
-
-		ThisChange->cameraview = cameraview & 7 | tracking_car << 3;
-		
-		LastChange->position.vx = player[0].cameraPos.vx;
-		LastChange->position.vy = player[0].cameraPos.vy;
-		LastChange->position.vz = player[0].cameraPos.vz;
-		LastChange->angle.vx = camera_angle.vx;
-		LastChange->angle.vy = camera_angle.vy;
-		LastChange->angle.vz = camera_angle.vz;
-		LastChange->angle.pad = player[0].cameraCarId;
-		LastChange->gCameraDistance = gCameraDistance;
-		LastChange->FrameCnt = CameraCnt;
-		LastChange->gCameraMaxDistance = gCameraMaxDistance;
-		LastChange->gCameraAngle = gCameraAngle;
-		LastChange->CameraPosvy = CameraPos.vy;
 	}
 
 	FindNextChange(CameraCnt);
@@ -856,7 +856,7 @@ void CameraBar(int CameraCnt)
 	uVar16 = 0;
 
 	do {
-		local_v1_272 = (PLAYBACKCAMERA*)(&(PlaybackCamera->position).vx + iVar4 + uVar16);
+		local_v1_272 = &PlaybackCamera[uVar16]; //(PLAYBACKCAMERA*)(&(PlaybackCamera->position).vx + iVar4 + uVar16);
 
 		if (local_v1_272->next < 60)
 			iVar10 = PlaybackCamera[local_v1_272->next].FrameCnt;
@@ -947,7 +947,7 @@ void CameraBar(int CameraCnt)
 			iVar6 = iVar6 + 0x20;
 		}
 
-		local_a0_1024 = (PLAYBACKCAMERA*)(&(PlaybackCamera->position).vx + iVar4 + uVar16);
+		local_a0_1024 = &PlaybackCamera[uVar16]; // (PLAYBACKCAMERA*)(&(PlaybackCamera->position).vx + iVar4 + uVar16);
 		bVar5 = local_a0_1024->cameraview & 7;
 
 		if (bVar5 == 1)
@@ -1005,7 +1005,7 @@ void CameraBar(int CameraCnt)
 		camera->r3 = uVar7;
 		camera->b3 = uVar2;
 
-		bVar5 = (&PlaybackCamera->next)[(iVar4 + uVar16) * 4];
+		bVar5 = PlaybackCamera[uVar16].next;//(&PlaybackCamera->next)[(iVar4 + uVar16) * 4];
 		uVar16 = (uint)bVar5;
 
 		if (0x122 < sVar11)
@@ -2705,10 +2705,7 @@ void DoAutoDirect(void)
 				((savemapinfo != NULL && ((*savemapinfo & 0x3c000000U) == 0x3c000000)))) ||
 				(CameraCollisionCheck() != 0))))
 		{
-			tmp = rand();
-			cameraview = (tmp & 2);
-
-			if ((tmp & 2) == 0)
+			if (cameraview == 0)
 			{
 				gCameraAngle = rand() & 0xfff;
 				CameraPos.vy = -((rand() & 0xff) + 100);
