@@ -1221,142 +1221,137 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 	/* end block 3 */
 	// End Line: 1807
 
-char nybblearray[512] = { 0 };
+unsigned char nybblearray[512] = { 0 };
 
 char* PVS_Buffers[4] = { 0 };
 int pvsSize[4] = { 0, 0, 0, 0 };
 unsigned char *PVSEncodeTable = NULL;
 
-// [A] - bugged
+// [D] [T]
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	// don't draw non-loaded regions
-	//for (int k = 0; k < pvs_square_sq; k++)
-	//	output[k] = 1;
+	unsigned char scratchPad[1024];
 
-	//UNIMPLEMENTED();
-	//return;
-	
-	char scratchPad[1024];
-
-	unsigned char bVar1;
-	int local_v0_580;
-	int iVar2;
-	char *pcVar3;
-	unsigned char *pbVar4;
-	uint uVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	char *decodebuf;
-
-	checkpad = 0;
-	checkpad2 = 0;
+	int pixelIndex;
+	unsigned char* decodebuf;
+	unsigned char* op;
+	int i, j;
+	int symIndex;
+	int size;
 
 	decodebuf = scratchPad;
-	ClearMem(decodebuf,pvs_square_sq);
+	ClearMem((char*)decodebuf,pvs_square_sq);
 
-	iVar2 = 0;
-
-	// this is correct I HOPE
-	if (sz != 0) 
+	// decode byte-swapped array
+	i = 0;
+	while (i < sz)
 	{
-		pcVar3 = nybblearray;
-		do 
+		((ushort*)nybblearray)[i] = SW_SHORT((unsigned char)celldata[i], (unsigned char)celldata[i] >> 4) & 0xf0f;
+		i++;
+	}
+
+	pixelIndex = 0;
+	symIndex = 0;
+	i = 0;
+
+	// decompress image
+	while (i < sz * 2)
+	{
+		int ni;
+		int sym;
+
+		ni = nybblearray[i];
+		i++;
+
+		if (ni < 12)
 		{
-			pbVar4 = (unsigned char *)(celldata + iVar2);
-            
-			*(ushort *)pcVar3 = SW_SHORT(*pbVar4,*pbVar4 >> 4) & 0xf0f;
-			pcVar3 += 2;
+			symIndex = ni * 2;
+		spod:
+			sym = SW_SHORT(PVSEncodeTable[symIndex], PVSEncodeTable[symIndex + 1]);
+		}
+		else
+		{
+			if (i == sz*2)
+				break;
 
-			iVar2++;
-		} while (iVar2 < sz);
-	}
+			sym = (ni & 3) * 16 + nybblearray[i];
+			i++;
 
-	iVar9 = ((uint)sz & 0x7fff) << 1;
-	iVar2 = 0;
-
-	if ((sz & 0x7fff) != 0) {
-		pcVar3 = nybblearray;
-		iVar8 = 0;
-		do {
-			bVar1 = *pcVar3;
-			iVar7 = iVar8 + 1;
-			if (bVar1 < 0xc)
+			if (sym < 60)
 			{
-				iVar8 = bVar1 * 2;
-			LAB_0005d0c8:
-				uVar5 = (ushort)SW_SHORT(PVSEncodeTable[iVar8], PVSEncodeTable[iVar8+1]);
+				symIndex = sym * 2 + 24;
+				goto spod;
 			}
-			else
-			{
-				if (iVar7 == iVar9) break;
-				uVar5 = (bVar1 & 3) * 0x10 + nybblearray[iVar8 + 1];
-				iVar7 = iVar8 + 2;
 
-				if (uVar5 < 0x3c) 
-				{
-					iVar8 = uVar5 * 2 + 0x18;
-					goto LAB_0005d0c8;
-				}
+			sym = ((sym & 3) * 16 + nybblearray[i]) * 16 + nybblearray[i+1];
+			i += 2;
+		}
 
-				iVar7 = iVar8 + 4;
-				uVar5 = ((uVar5 & 3) * 0x10 + nybblearray[iVar8 + 2]) * 0x10 + nybblearray[iVar8 + 3];
-			}
-			iVar8 = iVar2 + (uVar5 >> 1);
-			decodebuf[iVar8] = 1;
-			iVar2 = iVar8 + 1;
-			if ((uVar5 & 1) != 0) {
-				decodebuf[iVar8 + 1] = 1;
-				iVar2 = iVar8 + 2;
-			}
-			pcVar3 = nybblearray + iVar7;
-			iVar8 = iVar7;
-		} while (iVar7 < iVar9);
+		pixelIndex += (sym >> 1);
+		decodebuf[pixelIndex] = 1;
+		pixelIndex++;
+
+		if ((sym & 1) != 0)
+		{
+			decodebuf[pixelIndex] = 1;
+			pixelIndex++;
+		}
 	}
-	iVar2 = pvs_square;
 
 	if (havanaCorruptCellBodge == 0) 
 		decodebuf[pvs_square_sq-1] ^= 1;
 
-	iVar7 = iVar2-2;
-	iVar8 = iVar2-1;
-	pbVar4 = (unsigned char *)(iVar7 * iVar2 + iVar2 + decodebuf - 1);
-	iVar9 = iVar7;
-
-	while (-1 < iVar9) 
+	size = pvs_square - 2;
+	
+	op = (decodebuf - 1) + (size * pvs_square + pvs_square);
+	i = size;
+	while (i >= 0) 
 	{
-		iVar9--;
-		iVar6 = iVar2;
-
-		if (0 < iVar2)
+		i--;
+		j = pvs_square;
+		while (j > 0)
 		{
-			do {
-				*pbVar4 = *pbVar4 ^ pbVar4[iVar2];
-				pbVar4--;
-				iVar6--;
-			} while (iVar6 != 0);
+			*op = *op ^ op[pvs_square];
+			j--;
+			op--;
 		}
 	}
-	pbVar4 = (unsigned char *)(iVar8 * iVar2 + iVar2 + decodebuf - 2);
 
-	while (-1 < iVar8) 
+	size = pvs_square - 1;
+	op = (decodebuf - 2) + (size * pvs_square + pvs_square);
+	i = size;
+
+	while (i >= 0) 
 	{
-		iVar8--;
-		iVar2 = iVar7;
-
-		while (-1 < iVar2)
+		j = pvs_square-2;
+		while (j >= 0) 
 		{
-			*pbVar4 = *pbVar4 ^ pbVar4[1];
-			pbVar4--;
-
-			iVar2--;
+			*op = *op ^ op[1];
+			j--;
+			op--;
 		}
-
-		pbVar4--;
+		i--;
+		op--;
 	}
 
+#if 0
+	printf("=========================\n");
+	for (i = 0; i < pvs_square; i++)
+	{
+		char line[64];
+		memcpy(line, (char*)decodebuf + i * pvs_square, pvs_square);
+		for (j = 0; j < pvs_square; j++)
+		{
+			if (line[j] == 0)
+				line[j] = '.';
+			else
+				line[j] = 'O';
+		}
+		line[j] = 0;
+		printf("%s\n", line);
+	}
+	printf("=========================\n");
+#endif
 	memcpy(output, decodebuf, pvs_square_sq-1);	// 110*4
 }
 
@@ -1447,9 +1442,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 		PVSEncodeTable = (unsigned char *)(bp + 0x802);
 		tbp = bp + cell * 2;
 
-		
-
-		length = (ushort)SW_SHORT((unsigned char)tbp[2], (unsigned char)tbp[3]) - (ushort)SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
+		length = SW_SHORT((unsigned char)tbp[2], (unsigned char)tbp[3]) - SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
 
 		if (length == 0) 
 		{
@@ -1462,9 +1455,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 			if (regions_unpacked[source_region] == 158 && cell == 168) 
 				havanaCorruptCellBodge = (GameLevel == 1);
 
-			printInfo("cell: %d, table: %x, pvs length: %d\n", cell, PVSEncodeTable, length);
-
-			PVSDecode(output, bp + (ushort)SW_SHORT(tbp[0], tbp[1]), length, havanaCorruptCellBodge);
+			PVSDecode(output, bp + SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]), length, havanaCorruptCellBodge);
 		}
 	}
 	else 
