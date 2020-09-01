@@ -8,6 +8,8 @@ extern char phrase_top;
 extern char force_idle[8];
 extern char force_siren[8];
 
+extern SPEECH_QUEUE gSpeechQueue;
+
 extern void LoadBankFromLump(int bank, int lump); // 0x00052460
 
 extern int CarHasSiren(int index); // 0x000522EC

@@ -283,20 +283,19 @@ void SetReverbState(int on)
 	/* end block 3 */
 	// End Line: 1821
 
+// [D]
 void SetReverbInGameState(int on)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
+	long cl;
 
-	uVar1 = 0xffff;
-	gSpeechQueue.reverb = (char)on;
-	if ((on != 0) && (gSpeechQueue.is_playing != '\0')) {
-		uVar1 = ~(1 << ((uint)(byte)gSpeechQueue.chan & 0x1f)) & 0xffff;
-	}
-	SpuSetReverbVoice(on, uVar1);
-	return;
-	*/
+	cl = 0xffff;
+
+	gSpeechQueue.reverb = on;
+
+	if (on && gSpeechQueue.is_playing)
+		cl = ~SPU_KEYCH(gSpeechQueue.chan);
+
+	SpuSetReverbVoice(on, cl);
 }
 
 
@@ -325,19 +324,19 @@ void SetReverbInGameState(int on)
 	/* end block 3 */
 	// End Line: 1861
 
+// [D]
 int SetReverbChannelState(int ch, int on)
 {
-	UNIMPLEMENTED();
-	return 0;
+	long cl;
+	int prev;
 
-	/*
-	uint uVar1;
-	uint uVar2;
+	cl = SPU_KEYCH(ch);
 
-	uVar2 = 1 << (ch & 0x1fU);
-	uVar1 = SpuGetReverbVoice();
-	SpuSetReverbVoice(on, uVar2);
-	return (uint)((uVar1 & uVar2) != 0);*/
+	prev = SpuGetReverbVoice();
+
+	SpuSetReverbVoice(on, cl);
+
+	return (prev & cl) != 0;
 }
 
 
@@ -2311,29 +2310,22 @@ int CalculateVolume(int channel)
 	/* end block 2 */
 	// End Line: 3990
 
+// [D]
 void AllocateReverb(long mode, long depth)
 {
-	UNIMPLEMENTED();
+	SpuReverbAttr r_attr;
 
-	/*
-	int iVar1;
-	undefined4 local_28;
-	uint local_24;
-	undefined2 local_20;
-	undefined2 local_1e;
+	if (SpuReserveReverbWorkArea(1) == 1)
+	{
+		r_attr.mode = mode | 0x100;
+		r_attr.mask = 7;
+		r_attr.depth.left = depth;
+		r_attr.depth.right = r_attr.depth.left;
 
-	iVar1 = SpuReserveReverbWorkArea(1);
-	if (iVar1 == 1) {
-		local_24 = mode | 0x100;
-		local_28 = 7;
-		local_20 = (undefined2)depth;
-		local_1e = local_20;
-		SpuSetReverbModeParam(&local_28);
-		SpuSetReverbDepth(&local_28);
+		SpuSetReverbModeParam(&r_attr);
+		SpuSetReverbDepth(&r_attr);
 		SpuSetReverb(1);
 	}
-	return;
-	*/
 }
 
 
