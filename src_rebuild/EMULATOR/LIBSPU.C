@@ -603,11 +603,59 @@ long SpuSetReverb(long on_off)
 	return 0;
 }
 
+long SpuGetReverb(void)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
+long SpuSetReverbModeParam(SpuReverbAttr* attr)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
+void SpuGetReverbModeParam(SpuReverbAttr* attr)
+{
+	UNIMPLEMENTED();
+}
+
+long SpuSetReverbDepth(SpuReverbAttr* attr)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
+long SpuReserveReverbWorkArea(long on_off)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
+long SpuIsReverbWorkAreaReserved(long on_off)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
 unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 {
 	UNIMPLEMENTED();
 	return 0;
 }
+
+unsigned long SpuGetReverbVoice(void)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
+long SpuClearReverbWorkArea(long mode)
+{
+	UNIMPLEMENTED();
+	return 0;
+}
+
 
 void SpuSetCommonAttr(SpuCommonAttr* attr)
 {
