@@ -1120,7 +1120,6 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 	int barrel_region_x = (rx & 1);
 	int barrel_region_z = (rz & 1);
 
-	// [A] might be wrong...
 	GetPVSRegionCell2(
 		barrel_region_x + barrel_region_z * 2,
 		rx + rz * (cells_across / 32),
@@ -1232,13 +1231,12 @@ unsigned char *PVSEncodeTable = NULL;
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
 	// don't draw non-loaded regions
-	for (int k = 0; k < pvs_square_sq; k++)
-		output[k] = 1;
+	//for (int k = 0; k < pvs_square_sq; k++)
+	//	output[k] = 1;
 
-	UNIMPLEMENTED();
-	return;
+	//UNIMPLEMENTED();
+	//return;
 	
-
 	char scratchPad[1024];
 
 	unsigned char bVar1;
@@ -1252,6 +1250,9 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	int iVar8;
 	int iVar9;
 	char *decodebuf;
+
+	checkpad = 0;
+	checkpad2 = 0;
 
 	decodebuf = scratchPad;
 	ClearMem(decodebuf,pvs_square_sq);
@@ -1446,7 +1447,9 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 		PVSEncodeTable = (unsigned char *)(bp + 0x802);
 		tbp = bp + cell * 2;
 
-		length = (ushort)SW_SHORT(tbp[2], tbp[3]) - (ushort)SW_SHORT(tbp[0], tbp[1]);// & 0xffff;
+		
+
+		length = (ushort)SW_SHORT((unsigned char)tbp[2], (unsigned char)tbp[3]) - (ushort)SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
 
 		if (length == 0) 
 		{
@@ -1458,6 +1461,8 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 			havanaCorruptCellBodge = 0;
 			if (regions_unpacked[source_region] == 158 && cell == 168) 
 				havanaCorruptCellBodge = (GameLevel == 1);
+
+			printInfo("cell: %d, table: %x, pvs length: %d\n", cell, PVSEncodeTable, length);
 
 			PVSDecode(output, bp + (ushort)SW_SHORT(tbp[0], tbp[1]), length, havanaCorruptCellBodge);
 		}
