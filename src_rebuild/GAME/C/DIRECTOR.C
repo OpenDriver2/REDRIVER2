@@ -2705,6 +2705,8 @@ void DoAutoDirect(void)
 				((savemapinfo != NULL && ((*savemapinfo & 0x3c000000U) == 0x3c000000)))) ||
 				(CameraCollisionCheck() != 0))))
 		{
+			cameraview = (rand() & 2);
+
 			if (cameraview == 0)
 			{
 				gCameraAngle = rand() & 0xfff;
