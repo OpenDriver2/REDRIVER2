@@ -2926,7 +2926,6 @@ void RenderGame2(int view)
 	aspect.m[2][2] = 4096;
 
 	extern void DoFreeCamera();
-
 	DoFreeCamera();
 #else
 	FrAng = ratan2(160, scr_z);

@@ -640,7 +640,7 @@ long SpuIsReverbWorkAreaReserved(long on_off)
 
 unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 {
-	UNIMPLEMENTED();
+	//UNIMPLEMENTED();
 	return 0;
 }
 

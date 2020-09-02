@@ -707,9 +707,6 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		prims->b0 = combointensity & 0xFF;
 	}
 
-
-	current = current;
-
 	if (bDoingShadow == 0)
 	{
 		x = sz + sy >> 4;
@@ -2268,14 +2265,14 @@ void DrawTanner(PEDESTRIAN *pPed)
 			cV.b = 12;
 			cV.g = 12;
 			cV.r = 12;
-			TannerShadow(&v, moon_position + GameLevel, &cV, pPed->dir.vy);
+			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, pPed->dir.vy);
 		}
 		else 
 		{
 			cV.b = 32;
 			cV.g = 32;
 			cV.r = 32;
-			TannerShadow(&v, sun_position + GameLevel, &cV, pPed->dir.vy);
+			TannerShadow(pPed, &v, sun_position + GameLevel, &cV, pPed->dir.vy);
 		}
 	}
 	bDoingShadow = 0;
@@ -2371,14 +2368,14 @@ int DrawCharacter(PEDESTRIAN *pPed)
 			cV.b = 12;
 			cV.g = 12;
 			cV.r = 12;
-			TannerShadow(&v, moon_position + GameLevel, &cV, (pPed->dir).vy);
+			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, (pPed->dir).vy);
 		}
 		else 
 		{
 			cV.b = 32;
 			cV.g = 32;
 			cV.r = 32;
-			TannerShadow(&v, sun_position + GameLevel, &cV, (pPed->dir).vy);
+			TannerShadow(pPed, &v, sun_position + GameLevel, &cV, (pPed->dir).vy);
 		}
 
 		bDoingShadow = 0;
@@ -2487,8 +2484,8 @@ void InitTannerShadow(void)
 
 	do {
 		
-		rectTannerWindow.w = 0x40;
-		rectTannerWindow.h = 0x80;
+		rectTannerWindow.w = 64;
+		rectTannerWindow.h = 128;
 		rectTannerWindow.x = uVar1;
 		rectTannerWindow.y = uVar2;
 
@@ -2581,246 +2578,173 @@ void InitTannerShadow(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-void TannerShadow(VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle)
+// [D]
+void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	short sVar4;
-	ushort uVar5;
-	ushort uVar6;
-	undefined4 uVar7;
-	char cVar8;
-	DB *pDVar9;
-	long *plVar10;
-	undefined4 in_zero;
-	undefined4 in_at;
-	int iVar11;
-	int iVar12;
-	int iVar13;
-	int iVar14;
-	long z0;
-	long z1;
-	long z2;
-	long z3;
-	uint uVar15;
-	ulong *puVar16;
-	undefined4 *puVar17;
-	uint *puVar18;
-	undefined4 *puVar19;
-	int iVar20;
-	undefined4 local_110;
-	undefined4 local_10c;
-	undefined4 local_108;
-	undefined4 local_104;
-	undefined4 local_100;
-	undefined4 local_fc;
-	short local_f8;
-	short local_f6;
-	short local_f4;
-	undefined4 local_f0;
-	undefined4 local_ec;
-	undefined4 local_e8;
-	undefined auStack224[96];
-	long local_80;
-	long local_7c;
-	long local_78;
-	long local_74;
-	undefined4 local_70;
-	undefined4 local_6c;
-	int local_68;
-	int local_64;
-	int local_60;
-	VECTOR local_58;
-	long local_48;
-	long local_44;
-	int local_40;
-	long local_3c;
-	long *local_38;
-	long *local_34;
-	long *local_30;
-	undefined4 *local_2c;
+	char cVar9;
+	DR_ENV* dr_env;
+	SVECTOR vert[4];
+	VECTOR d;
+	DRAWENV drEnv;
+	VECTOR cp;
+	SVECTOR ca;
+	VECTOR v1;
+	VECTOR myVector;
+	int z0;
+	int z1;
+	int z2;
+	int z3;
+	SVECTOR* local_2c;
+	static int Tangle = 0;
+	int i;
+	int cn, sn;
+	int vx, vz;
 
-	memset(&local_f0, 0, 0x10);
-	memset(&local_58, 0, 0x10);
-	SetDefDrawEnv(auStack224, 0, (int)(current->draw).clip.y, 0x140, 0x100);
-	puVar18 = (uint *)current->primptr;
-	SetDrawEnv(puVar18, auStack224);
-	pDVar9 = current;
-	*puVar18 = *puVar18 & 0xff000000 | current->ot[0x107f] & 0xffffff;
-	pDVar9->ot[0x107f] = pDVar9->ot[0x107f] & 0xff000000 | (uint)puVar18 & 0xffffff;
-	iVar20 = 3;
-	pDVar9->primptr = pDVar9->primptr + 0x40;
-	Tangle = ratan2(-(int)pLightPos->vx, (int)pLightPos->vz);
-	local_38 = &local_48;
-	local_34 = &local_44;
-	local_2c = (undefined4 *)&local_f8;
-	local_30 = &local_3c;
-	puVar19 = &local_10c;
-	puVar17 = &local_110;
-	local_fc._0_2_ = 0x12;
-	local_f4 = 0x12;
-	local_100 = 0xff80;
-	local_f8 = 0x80;
-	local_f6 = 0;
-	local_110 = 0xff80;
-	local_10c._0_2_ = -0x140;
-	local_108 = 0x80;
-	local_104 = CONCAT22(local_104._2_2_, 0xfec0);
-	do {
-		iVar20 = iVar20 + -1;
-		iVar11 = rcos(Tangle);
-		iVar12 = rsin(Tangle);
-		sVar1 = *(short *)puVar17;
-		sVar2 = *(short *)puVar19;
-		iVar13 = rsin(Tangle);
-		iVar14 = rcos(Tangle);
-		sVar3 = *(short *)puVar17;
-		sVar4 = *(short *)puVar19;
-		*(short *)puVar17 =
-			(short)((uint)(((sVar1 * iVar11 >> 0xc) - (sVar2 * iVar12 >> 0xc)) * 0x10000) >> 0x10);
-		puVar17 = puVar17 + 2;
-		*(short *)puVar19 = (short)(sVar3 * iVar13 >> 0xc) + (short)(sVar4 * iVar14 >> 0xc);
-		plVar10 = local_34;
-		puVar19 = puVar19 + 2;
-	} while (-1 < iVar20);
-	uVar5 = *(ushort *)&pPedPos->vx;
-	sVar1 = *(short *)&pPedPos->vy;
-	local_100 = CONCAT22(local_100._2_2_ + sVar1, (short)local_100 + uVar5);
-	uVar6 = *(ushort *)&pPedPos->vz;
-	local_fc = CONCAT22(local_fc._2_2_, (short)local_fc + uVar6);
-	local_f8 = local_f8 + uVar5;
-	local_f6 = local_f6 + sVar1;
-	local_f4 = local_f4 + uVar6;
-	local_110 = CONCAT22(local_110._2_2_ + sVar1, (short)local_110 + uVar5);
-	local_10c = CONCAT22(local_10c._2_2_, (short)local_10c + uVar6);
-	uVar15 = (local_104 & 0xffff) + (uint)uVar6;
-	local_108 = CONCAT22(local_108._2_2_ + sVar1, (short)local_108 + uVar5);
-	local_104 = local_104 & 0xffff0000 | uVar15 & 0xffff;
-	setCopControlWord(2, 0, inv_camera_matrix.m[0]._0_4_);
-	setCopControlWord(2, 0x800, inv_camera_matrix.m._4_4_);
-	setCopControlWord(2, 0x1000, inv_camera_matrix.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, inv_camera_matrix.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, inv_camera_matrix._16_4_);
-	setCopControlWord(2, 0x2800, local_f0);
-	setCopControlWord(2, 0x3000, local_ec);
-	setCopControlWord(2, 0x3800, local_e8);
-	setCopReg(2, in_zero, local_110);
-	setCopReg(2, in_at, local_10c);
-	setCopReg(2, &local_f0, local_108);
-	setCopReg(2, uVar15, local_104);
-	setCopReg(2, (uint)uVar6, local_100);
-	setCopReg(2, (uint)uVar5, local_fc);
-	copFunction(2, 0x280030);
-	iVar20 = current->id;
-	uVar7 = getCopReg(2, 0xc);
-	*(undefined4 *)&ft4TannerShadow[iVar20].x0 = uVar7;
-	uVar7 = getCopReg(2, 0xd);
-	*(undefined4 *)&ft4TannerShadow[iVar20].x1 = uVar7;
-	uVar7 = getCopReg(2, 0xe);
-	*(undefined4 *)&ft4TannerShadow[iVar20].x2 = uVar7;
-	z0 = getCopReg(2, 0x11);
-	*local_38 = z0;
-	z0 = getCopReg(2, 0x12);
-	*plVar10 = z0;
-	local_40 = getCopReg(2, 0x13);
-	setCopReg(2, in_zero, *local_2c);
-	setCopReg(2, in_at, local_2c[1]);
-	copFunction(2, 0x180001);
-	uVar7 = getCopReg(2, 0xe);
-	*(undefined4 *)&ft4TannerShadow[current->id].x3 = uVar7;
-	z0 = getCopReg(2, 0x13);
-	*local_30 = z0;
-	if (local_48 < local_44) {
-		local_48 = (local_48 + local_44) / 2;
+	// [A] not supported by emulator
+	// proposed change: double buffering of VRAM (one used as render target, second as texture)
+	return;
+
+	memset(&d, 0, sizeof(VECTOR));
+	memset(&myVector, 0, sizeof(VECTOR));
+
+	SetDefDrawEnv(&drEnv, 0, current->draw.clip.y, 320, 256);
+
+	dr_env = (DR_ENV*)current->primptr;
+	SetDrawEnv(dr_env, &drEnv);
+	
+	addPrim(current->ot + 0x107f, dr_env);
+	current->primptr += sizeof(DR_ENV);
+
+	Tangle = ratan2(-pLightPos->vx, pLightPos->vz);
+
+	vert[0].vx = -128;
+	vert[0].vy = 0;
+	vert[0].vz = -320;
+
+	vert[1].vx = 128;
+	vert[1].vy = 0;
+	vert[1].vz = -320;
+
+	vert[2].vx = -128;
+	vert[2].vy = 0;
+	vert[2].vz = 18;
+
+	vert[3].vx = 128;
+	vert[3].vy = 0;
+	vert[3].vz = 18;
+
+	for (i = 0; i < 4; i++)
+	{
+		cn = rcos(Tangle);
+		sn = rsin(Tangle);
+
+		vx = vert[i].vx;
+		vz = vert[i].vz;
+
+		vert[i].vx = (vx * cn >> 0xc) - (vz * sn >> 0xc);
+		vert[i].vz = (vx * sn >> 0xc) + (vz * cn >> 0xc);
+
+		vert[i].vx += pPedPos->vx;
+		vert[i].vy += pPedPos->vy;
+		vert[i].vz += pPedPos->vz;
 	}
-	else {
-		local_44 = (local_48 + local_44) / 2;
-	}
-	if (local_40 < local_3c) {
-		local_40 = (local_40 + local_3c) / 2;
-	}
-	else {
-		local_3c = (local_40 + local_3c) / 2;
-	}
-	z0 = 8;
-	if (0x1c < local_48) {
-		z0 = local_48 + -0x14;
-	}
-	z1 = 8;
-	if (0x1c < local_44) {
-		z1 = local_44 + -0x14;
-	}
-	z2 = 8;
-	if (0x1c < local_40) {
-		z2 = local_40 + -0x14;
-	}
-	z3 = 8;
-	if (0x1c < local_3c) {
-		z3 = local_3c + -0x14;
-	}
-	local_48 = z0;
-	local_44 = z1;
-	local_40 = z2;
-	local_3c = z3;
+
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&d);
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	docop2(0x280030);
+
+	gte_stsxy3(&ft4TannerShadow[current->id].x0, &ft4TannerShadow[current->id].x1, &ft4TannerShadow[current->id].x2);
+
+	gte_stsz3(&z0, &z1, &z2);
+
+	gte_ldv0(&vert[3]);
+
+	docop2(0x180001);
+
+	gte_stsxy(&ft4TannerShadow[current->id].x3);
+
+	gte_stsz(&z3);
+
+	if (z0 < z1)
+		z0 = (z0 + z1) / 2;
+	else
+		z1 = (z0 + z1) / 2;
+
+	if (z2 < z3)
+		z2 = (z2 + z3) / 2;
+	else
+		z3 = (z2 + z3) / 2;
+
+	if (z0 > 28)
+		z0 = z0 - 20;
+	else
+		z0 = 8;
+
+	if (z1 > 28)
+		z1 = z1 - 20;
+	else
+		z1 = 8;
+
+	if (z2 > 28)
+		z2 = z2 - 20;
+	else
+		z2 = 8;
+
+	if (z3 > 28)
+		z3 = z3 - 20;
+	else
+		z3 = 8;
+
 	SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
-	local_68 = (int)pLightPos->vx * 0x6e >> 0xc;
-	local_7c = player.cameraPos.vy;
-	local_78 = player.cameraPos.vz;
-	local_74 = player.cameraPos.pad;
-	local_80 = player.cameraPos.vx;
-	local_70 = camera_angle._0_4_;
-	local_6c = camera_angle._4_4_;
-	local_64 = (int)pLightPos->vy * 0x6e >> 0xc;
-	local_60 = (int)pLightPos->vz * 0x6e >> 0xc;
-	camera_position.vx = (pDrawingPed->position).vx + local_68;
-	camera_position.vy = (pDrawingPed->position).vy + local_64;
-	camera_position.vz = (pDrawingPed->position).vz + local_60;
-	local_58.vx = player.pos[0];
-	local_58.vy = player.pos[1] + -0xac;
-	local_58.vz = player.pos[2];
-	player.cameraPos.vx = camera_position.vx;
-	player.cameraPos.vy = camera_position.vy;
-	player.cameraPos.vz = camera_position.vz;
-	SetBasePos(&local_58);
-	cVar8 = tracking_car;
-	setCopControlWord(2, 0xc000, 0x200000);
+
+	cp = camera_position;
+	ca = camera_angle;
+
+	camera_position.vx = pDrawingPed->position.vx + (pLightPos->vx * 110 >> 0xc);
+	camera_position.vy = pDrawingPed->position.vy + (pLightPos->vy * 110 >> 0xc);
+	camera_position.vz = pDrawingPed->position.vz + (pLightPos->vz * 110 >> 0xc);
+
+	myVector.vx = player[0].pos[0];
+	myVector.vy = player[0].pos[1] - 172;
+	myVector.vz = player[0].pos[2];
+
+	player[0].cameraPos.vx = camera_position.vx;
+	player[0].cameraPos.vy = camera_position.vy;
+	player[0].cameraPos.vz = camera_position.vz;
+
+	SetBasePos(&myVector);
+	cVar9 = tracking_car;
+
+	setCopControlWord(2, 0xc000, 0x200000); // hmmmm?
 	setCopControlWord(2, 0xc800, 0x800000);
-	tracking_car = '\x01';
-	PlaceCameraAtLocation(&player, 0);
-	tracking_car = cVar8;
-	newShowTanner();
-	pDVar9 = current;
-	camera_angle._0_4_ = local_70;
-	camera_angle._4_4_ = local_6c;
-	player.cameraPos.vx = local_80;
-	player.cameraPos.vy = local_7c;
-	player.cameraPos.vz = local_78;
-	player.cameraPos.pad = local_74;
-	camera_position.vx = local_80;
-	camera_position.vy = local_7c;
-	camera_position.vz = local_78;
-	camera_position.pad = local_74;
-	*(uint *)(&tileTannerClear + current->id * 0x10) =
-		*(uint *)(&tileTannerClear + current->id * 0x10) & 0xff000000 |
-		current->ot[0x107f] & 0xffffff;
-	puVar16 = pDVar9->ot;
-	puVar16[0x107f] =
-		puVar16[0x107f] & 0xff000000 | (uint)(&tileTannerClear + pDVar9->id * 0x10) & 0xffffff;
-	InitCamera(&player);
+
+	tracking_car = 1;
+	PlaceCameraAtLocation(&player[0], 0);
+	tracking_car = cVar9;
+
+	newShowTanner(pDrawingPed);
+
+	addPrim(current->ot + 0x107f, &tileTannerClear[current->id]);
+
+	camera_position = cp;
+	camera_angle = ca;
+	player[0].cameraPos = cp;
+
+	// restore camera
+	InitCamera(&player[0]);
+
 	setCopControlWord(2, 0xc000, 0xa00000);
 	setCopControlWord(2, 0xc800, 0x800000);
-	SetDefDrawEnv(auStack224, (int)rectTannerWindow.x, (int)rectTannerWindow.y, (int)rectTannerWindow.w,
-		(int)rectTannerWindow.h);
-	puVar18 = (uint *)current->primptr;
-	SetDrawEnv(puVar18, auStack224);
-	pDVar9 = current;
-	*puVar18 = *puVar18 & 0xff000000 | current->ot[0x107f] & 0xffffff;
-	pDVar9->ot[0x107f] = pDVar9->ot[0x107f] & 0xff000000 | (uint)puVar18 & 0xffffff;
-	pDVar9->primptr = pDVar9->primptr + 0x40;
-	return;*/
+
+	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
+	dr_env = (DR_ENV*)current->primptr;
+	SetDrawEnv(dr_env, &drEnv);
+	
+	addPrim(current->ot + 0x107f, dr_env);
+	current->primptr += sizeof(DR_ENV);
 }
 
 
@@ -2999,6 +2923,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	/* end block 2 */
 	// End Line: 6677
 
+// [A] - not needed anymore
 void DrawObject(MODEL *model, MATRIX *matrix, VECTOR *pos, int z_correct)
 {
 	UNIMPLEMENTED();
@@ -3202,6 +3127,7 @@ void DrawObject(MODEL *model, MATRIX *matrix, VECTOR *pos, int z_correct)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [A] - not needed anymore
 void wjmDraw3(void)
 {
 	UNIMPLEMENTED();

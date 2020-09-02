@@ -222,6 +222,11 @@ void InitCamera(_PLAYER *lp)
 	{
 		BuildWorldMatrix();
 	}
+
+#ifndef PSX
+	extern void BuildFreeCameraMatrix();
+	BuildFreeCameraMatrix();
+#endif
 }
 
 

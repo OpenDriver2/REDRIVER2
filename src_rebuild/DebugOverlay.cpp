@@ -172,6 +172,19 @@ extern int cursorX, cursorY, cursorOldX, cursorOldY;
 
 extern VECTOR lis_pos;
 
+void BuildFreeCameraMatrix()
+{
+	if (g_FreeCameraEnabled == 0)
+		return;
+
+	player[0].cameraPos = g_FreeCameraPosition;
+	camera_position = g_FreeCameraPosition;
+	camera_angle = g_FreeCameraRotation;
+	lis_pos = camera_position;
+
+	BuildWorldMatrix();
+}
+
 void DoFreeCamera()
 {
 	if (g_FreeCameraEnabled == 0)
@@ -184,11 +197,7 @@ void DoFreeCamera()
 		return;
 	}
 
-	camera_position = g_FreeCameraPosition;
-	camera_angle = g_FreeCameraRotation;
-	lis_pos = camera_position;
-	
-	BuildWorldMatrix();
+	BuildFreeCameraMatrix();
 
 	g_FreeCameraPosition.vx += FIXED(g_FreeCameraVelocity.vx);
 	g_FreeCameraPosition.vy += FIXED(g_FreeCameraVelocity.vy);
