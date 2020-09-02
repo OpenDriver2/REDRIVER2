@@ -11,7 +11,7 @@
 
 short distanceCache[16384];
 char omap[128][16];				// obstacle map
-long dunyet[32][2];
+long dunyet[32][2];				// scanned cell map
 int pathIterations;
 
 int pathFrames;
@@ -78,6 +78,17 @@ PATHFIND_238fake dirs[6] = {
 		256,512
 	},
 };
+
+#define OMAP_V(cx, cz)					omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
+#define OMAP_GETVALUE(cx, cz)			(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
+
+// [A] sets obstacle map bit
+inline void OMapSet(int cellX, int cellZ, int val)
+{
+	unsigned char prev = OMAP_V(cellX, cellZ);
+	int bit = (1 << (cellZ & 7));
+	OMAP_V(cellX, cellZ) = prev ^ bit & (prev ^ (val ? 0xFF : 0));
+}
 
 // decompiled code
 // original method signature: 
@@ -248,7 +259,7 @@ void WunCell(VECTOR *pbase)
 	int iVar4;
 	int iVar5;
 	int uVar6;
-	unsigned char bVar7;
+	unsigned char val;
 	int iVar8;
 	PATHFIND_237fake* pPVar9;
 	int iVar10;
@@ -281,16 +292,10 @@ void WunCell(VECTOR *pbase)
 			iVar4 = v[0].vx + v[1].vx;
 			iVar5 = v[0].vz + v[1].vz;
 
-			cVar2 = lineClear(&v[0], &v[1]);
+			OMapSet(iVar4 >> 9, iVar5 >> 9, lineClear(&v[0], &v[1]) == 0);
 
-			bVar7 = 0;
-			uVar6 = iVar5 >> 9;
-
-			if (cVar2 == 0)
-				bVar7 = 0xff;
-
-			bVar1 = omap[(iVar4 >> 9 & 0x7fU)][((uVar6 & 0x7f) >> 3)];
-			omap[(iVar4 >> 9 & 0x7fU)][((uVar6 & 0x7f) >> 3)] = bVar1 ^ (1 << (uVar6 & 7)) & (bVar1 ^ bVar7);
+			//bVar1 = omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)];
+			//omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)] = bVar1 ^ (1 << (iVar5 >> 9 & 7)) & (bVar1 ^ val);
 
 			iVar8++;
 		} while (iVar8 < 6);
@@ -663,16 +668,16 @@ int blocked(tNode *v1, tNode *v2)
 	int iVar5;
 	int iVar6;
 	int iVar7;
-	int uVar8;
+	int res;
 	int uVar9;
 	unsigned char bVar10;
 
 	if (slowWallTests == 0)
 	{
 		int x = (v1->vx + v1->vx >> 9 & 0x7f);
-		int z = (v1->vz + v2->vz >> 9 & 0x7f) >> 3;
+		int z = (v1->vz + v2->vz >> 9 & 0x7f);
 
-		uVar8 = omap[x][z] >> (v1->vz + v2->vz >> 9 & 7) & 1;
+		res = OMAP_GETVALUE(x,z); //  omap[x][z] >> (v1->vz + v2->vz >> 9 & 7) & 1;
 	}
 	else 
 	{
@@ -682,7 +687,7 @@ int blocked(tNode *v1, tNode *v2)
 		cVar3 = lineClear((VECTOR*)v1, (VECTOR*)v2);
 		bVar10 = 0;
 		bVar2 = cVar3 == 0;
-		uVar8 = (uint)bVar2;
+		res = (uint)bVar2;
 
 		if (bVar2)
 			bVar10 = 0xff;
@@ -691,7 +696,7 @@ int blocked(tNode *v1, tNode *v2)
 		omap[x][z] = bVar1 ^ (1 << ((v1->vz + v2->vz >> 9) & 7)) & (bVar1 ^ bVar10);
 	}
 
-	return uVar8;
+	return res;
 }
 
 
@@ -900,7 +905,7 @@ void iterate(void)
 			}
 			else
 			{
-				if ((int)(uint)uVar1 <= (int)((uint)itHere.dist - 0x120)) {
+				if (uVar1 <= (int)(itHere.dist - 0x120)) {
 					v2->dist = 1;
 				}
 			}
@@ -966,12 +971,15 @@ void iterate(void)
 				if (numHeapEntries != 198)
 				{
 					setDistance(tNode_ARRAY_1f800000 + iVar4 + 2, (ushort)uVar6);
+
 					uVar8 = numHeapEntries + 1;
 					uVar7 = uVar8 >> 1;
 					iVar9 = uVar8 * 0x10;
+
 					if ((uVar7 != 0) && (uVar6 < heap[uVar7].dist))
 					{
 						iVar9 = uVar8 * 0x10;
+
 						do {
 							uVar8 = uVar7;
 							*(int*)((int)&heap[0].vx + iVar9) = (&heap[0].vx)[uVar8 * 4];
@@ -979,9 +987,13 @@ void iterate(void)
 							*(int*)((int)&heap[0].vz + iVar9) = (&heap[0].vz)[uVar8 * 4];
 							uVar7 = uVar8 >> 1;
 							*(uint*)((int)&heap[0].dist + iVar9) = *(uint*)(&heap[0].dist + uVar8 * 8);
-							if (uVar7 == 0) break;
+
+							if (uVar7 == 0)
+								break;
+
 							iVar9 = uVar8 << 4; // * 16
 						} while (uVar6 < heap[uVar7].dist);
+
 						iVar9 = uVar8 << 4; // * 16
 					}
 					*(int*)((int)&heap[0].vx + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vx;
@@ -1586,41 +1598,43 @@ int getInterpolatedDistance(VECTOR *pos)
 // [D]
 void addCivs(void)
 {
-	unsigned char bVar1;
+	unsigned char bits;
 	int uVar2;
 	int iVar3;
 	int uVar4;
 	int uVar5;
+	int iVar7;
 	int iVar6;
 	int uVar7;
 	int iVar8;
 	int uVar9;
 	int iVar10;
 	int iVar11;
+	int x, z, vx, vz;
 	_CAR_DATA* cp;
 
 	cp = car_data;
 	do {
 		if (cp->controlType == 2) 
 		{
-			iVar11 = cp->hd.oBox.radii[2].vx;
-			iVar6 = cp->hd.oBox.location.vx;
+			iVar7 = cp->hd.oBox.radii[2].vx;
+			x = cp->hd.oBox.location.vx;
+			iVar6 = cp->hd.oBox.radii[2].vz;
+			z = cp->hd.oBox.location.vz;
 
-			iVar10 = cp->hd.oBox.radii[2].vz;
-			iVar8 = cp->hd.oBox.location.vz;
+			vx = x + iVar7 >> 8 & 0x7e;
+			vz = z + iVar6 >> 8;
 
-			uVar4 = iVar6 + iVar11 >> 8 & 0x7e;
-			uVar2 = iVar8 + iVar10 >> 8;
-			uVar5 = uVar2 & 0x7e;
-			iVar3 = (int)uVar5 >> 3;
-			bVar1 = (3 << (uVar2 & 6));
-			uVar7 = iVar6 - iVar11 >> 8 & 0x7e;
-			omap[uVar4][iVar3] = bVar1 ^ omap[uVar4][iVar3];
-			uVar9 = iVar8 - iVar10 >> 8;
-			omap[uVar4 + 1][iVar3] = bVar1 ^ omap[uVar4 + 1][iVar3];
-			uVar2 = uVar9 & 0x7e;
+			iVar3 = (vz & 0x7e) >> 3;
+			bits = (3 << (vz & 6));
 
-			if ((uVar4 ^ uVar5 << 8) == uVar7) 
+			uVar4 = x - iVar7 >> 8 & 0x7e;
+			omap[vx][iVar3] = bits ^ omap[vx][iVar3];
+			uVar5 = z - iVar6 >> 8;
+			omap[(vx + 1)][iVar3] = bits ^ omap[(vx + 1)][iVar3];
+			uVar2 = uVar5 & 0x7e;
+
+			if ((vx ^ (vz & 0x7e) << 8) == uVar4)
 			{
 				if (uVar2 != 0)
 					goto LAB_PATH__000e8310;
@@ -1628,9 +1642,9 @@ void addCivs(void)
 			else if (uVar2 << 8 != 1)
 			{
 			LAB_PATH__000e8310:
-				bVar1 = (3 << (uVar9 & 6));
-				omap[uVar7][uVar2 >> 3] = bVar1 ^ omap[uVar7][uVar2 >> 3];
-				omap[uVar7 + 1][uVar2 >> 3] = bVar1 ^ omap[uVar7 + 1][uVar2 >> 3];
+				bits = (3 << (uVar5 & 6));
+				omap[uVar4][(uVar2 >> 3)] = bits ^ omap[uVar4][(uVar2 >> 3)];
+				omap[(uVar4 + 1)][(uVar2 >> 3)] = bits ^ omap[(uVar4 + 1)][(uVar2 >> 3)];
 			}
 		}
 
@@ -2354,7 +2368,8 @@ void UpdateCopMap(void)
 	}
 	else
 	{
-		addCivs();
+		// add cars
+		addCivs(); 
 
 		iVar1 = cellsThisFrame << 2;
 		uVar2 = cellsThisFrame;
@@ -2383,8 +2398,10 @@ void UpdateCopMap(void)
 			iterate();
 		}
 
+		// remove cars
 		addCivs();
 	}
+
 LAB_PATH__000e8dfc:
 	piVar5 = distanceReturnedLog;
 	iVar8 = 6;
@@ -2408,6 +2425,25 @@ LAB_PATH__000e8dfc:
 	iVar8 = searchTarget.vy - player[0].pos[1] >> 4;
 	iVar1 = searchTarget.vz - player[0].pos[2] >> 4;
 	playerTargetDistanceSq = iVar7 * iVar7 + iVar8 * iVar8 + iVar1 * iVar1;
+
+#if 0
+	printf("=========================\n");
+	for (int i = 0; i < 128; i++)
+	{
+		char line[130];
+
+		for (int j = 0; j < 128; j++)
+		{
+			if (OMAP_GETVALUE(i, j))
+				line[j] = 'O';
+			else
+				line[j] = '.';
+		}
+		line[128] = 0;
+		printf("%s\n", line);
+	}
+	printf("=========================\n");
+#endif
 }
 
 
