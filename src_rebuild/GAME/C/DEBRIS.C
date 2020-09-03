@@ -5097,8 +5097,13 @@ void add_haze(int top_col, int bot_col, short ot_pos)
 		polys->b0 = top_col;
 
 		setSemiTrans(polys, 1);
-		polys->w = 320;
+#ifdef PSX
 		polys->x0 = 0;
+		polys->w = 320;
+#else
+		polys->x0 = -500;
+		polys->w = 1200;
+#endif
 		polys->y0 = 0;
 		polys->h = 256;
 		addPrim(current->ot + ot_pos, polys);
