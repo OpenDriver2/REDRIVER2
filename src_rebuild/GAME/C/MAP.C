@@ -389,8 +389,7 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
  	int cellx; // $v1
  	int cellz; // $v0
 
-	int iVar1;
-	int iVar2;
+	int ab;
 
 	dx = pos->vx + units_across_halved;
 	dz = pos->vz + units_down_halved;
@@ -399,14 +398,18 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	cellz = (dz >> 0xb) - ccz;
 
 	if (cellx < 0)
-		cellx = -cellx;
+		ab = -cellx;
+	else
+		ab = cellx;
 
-	if (cellx <= view_dist)
+	if (ab <= view_dist)
 	{
 		if (cellz < 0)
-			cellz = -cellz;
+			ab = -cellz;
+		else
+			ab = cellz;
 	
-		if (cellz <= view_dist)
+		if (ab <= view_dist)
 			return pvs[cellx + 10 + (cellz + 10) * pvs_square] != 0;
 	}
 
@@ -454,8 +457,7 @@ int PositionVisible(VECTOR *pos)
  	int cellx; // $v1
  	int cellz; // $v0
 
-	int iVar1;
-	int iVar2;
+	int ab;
 
 	dx = pos->vx + units_across_halved;
 	dz = pos->vz + units_down_halved;
@@ -464,14 +466,18 @@ int PositionVisible(VECTOR *pos)
 	cellz = (dz >> 0xb) - current_cell_z;
 
 	if (cellx < 0)
-		cellx = -cellx;
+		ab = -cellx;
+	else
+		ab = cellx;
 
-	if (cellx <= view_dist)
+	if (ab <= view_dist)
 	{
 		if (cellz < 0)
-			cellz = -cellz;
+			ab = -cellz;
+		else
+			ab = cellz;
 
-		if (cellz <= view_dist)
+		if (ab <= view_dist)
 			return CurrentPVS[cellx + 10 + (cellz + 10) * pvs_square] != 0;
 	}
 
