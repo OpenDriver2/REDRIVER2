@@ -1160,7 +1160,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		gte_ldv0(&boxDisp);
 
-		docop2(0x480012);
+		gte_rtv0tr();
 
 		gte_stlvnl(&cd[0].x);
 

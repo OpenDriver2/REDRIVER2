@@ -15,8 +15,10 @@
 #include "PLAYERS.H"
 #include "MAIN.H"
 #include "MOTION_C.H"
+#include "CONVERT.H"
 
 #include "INLINE_C.H"
+
 
 LIMBS lRoutes[5][8] = {
 	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
@@ -1713,7 +1715,7 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 			//setCopReg(2, in_zero, SVECTOR_ARRAY_1f800060[0]._0_4_);
 			//setCopReg(2, 0x1f800000, SVECTOR_ARRAY_1f800060[0]._4_4_);
 
-			docop2(0x486012);
+			gte_rtv0();
 
 			gte_stlvnl(&VECTOR_1f800070);
 
@@ -1757,7 +1759,7 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
                     do {
 						gte_ldv0(verts);
 
-                        docop2(0x486012);
+						gte_rtv0();
 
 						gte_stlvnl(&VECTOR_1f800070);
 
@@ -1975,7 +1977,7 @@ void DrawCiv(PEDESTRIAN *pPed)
 
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_ldv0(&pos);
-	docop2(0x486012); // short vector transform
+	gte_rtv0(); // short vector transform
 
 	gte_stlvnl(&pos1);
 	gte_SetTransVector(&pos1);
@@ -2654,7 +2656,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	gte_stsxy3(&ft4TannerShadow[current->id].x0, &ft4TannerShadow[current->id].x1, &ft4TannerShadow[current->id].x2);
 
@@ -2662,7 +2664,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 
 	gte_ldv0(&vert[3]);
 
-	docop2(0x180001);
+	gte_rtps();
 
 	gte_stsxy(&ft4TannerShadow[current->id].x3);
 
@@ -2734,6 +2736,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 	player[0].cameraPos = cp;
 
 	// restore camera
+	BuildWorldMatrix();
 	InitCamera(&player[0]);
 
 	setCopControlWord(2, 0xc000, 0xa00000);
@@ -2851,7 +2854,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 		gte_SetRotMatrix(&matrixtable[((pPed->dir.vy) / 64) & 0x3F]);
 
 		gte_ldv0(vert1);
-		docop2(0x486012);
+		gte_rtv0();
 
 		gte_stsv(&headpos);
 	}
@@ -2862,7 +2865,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_ldv0(&spos);
-	docop2(0x486012);
+	gte_rtv0();
 
 	gte_stlvnl(&pos);
 

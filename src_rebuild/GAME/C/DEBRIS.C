@@ -663,7 +663,7 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				do {
 					gte_ldv0(pSVar7);
 
-					docop2(0x480012);
+					gte_rtv0tr();
 
 					// FIXME: here might be 'gte_stlvnl'
 					gte_stsv(pSVar8);
@@ -1889,7 +1889,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 		gte_SetRotMatrix(&matrixtable[angle]);
 		gte_ldv0(&pos);
 
-		docop2(0x486012);
+		gte_rtv0();
 
 		gte_stsv(&pos);
 		//gte_stlvnl();
@@ -2005,7 +2005,7 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 		gte_SetRotMatrix(&matrixtable[angle]);
 		gte_ldv0(&pos);
 
-		docop2(0x486012);
+		gte_rtv0();
 
 		gte_stsv(&pos);
 		//gte_stlvnl();
@@ -2536,7 +2536,7 @@ void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 
 	gte_ldv0(svec);
 
-	docop2(0x480012);
+	gte_rtv0tr();
 
 	gte_stlvnl(vec);
 }
@@ -2716,7 +2716,7 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	poly->u0 = (texture->coords).u0;
 	poly->v0 = (texture->coords).v0;
@@ -2742,7 +2742,7 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	{
 		gte_ldv0(&vert[3]);
 
-		docop2(0x180001);
+		gte_rtps();
 
 		poly->tpage = texture->tpageid | 0x20;
 		poly->clut = texture->clutid;
@@ -3380,7 +3380,7 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	poly = (POLY_FT4*)current->primptr;
 
@@ -3411,7 +3411,7 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 
 		gte_ldv0(&vert[3]);
 
-		docop2(0x180001);
+		gte_rtps();
 
 		gte_stsxy(&poly->x3);
 
@@ -3600,7 +3600,7 @@ void DisplayWater(SMOKE *smoke)
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	setPolyFT4(poly);
 
@@ -3615,7 +3615,7 @@ void DisplayWater(SMOKE *smoke)
 
 	gte_ldv0(&vert[3]);
 
-	docop2(0x180001);
+	gte_rtps();
 
 	gte_stsxy(&poly->x3);
 
@@ -5497,7 +5497,7 @@ void AddRainDrops(void)
 		}
 
 		gte_ldv0(&v);
-		docop2(0x480012);
+		gte_rtv0tr();
 
 		gRain[RainIndex].oldposition.vx = 0;
 		gRain[RainIndex].oldposition.vy = 0;
