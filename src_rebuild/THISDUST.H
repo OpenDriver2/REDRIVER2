@@ -19102,9 +19102,13 @@ struct ACTIVE_CHEATS // hashcode: 0x2127EFE8 (dec: 556265448)
 	unsigned char cheat9 : 1; // size=1, offset=8
 	unsigned char cheat10 : 1; // size=1, offset=9
 	unsigned char cheat11 : 1; // size=1, offset=10
-	unsigned char reserved1 : 5; // size=5, offset=11
-	unsigned char reserved2; // size=0, offset=2
-	unsigned char reserved3; // size=0, offset=3
+	unsigned char cheat12 : 1; // size=1, offset=11
+	unsigned char cheat13 : 1; // size=1, offset=12
+	unsigned char cheat14 : 1; // size=1, offset=13
+	unsigned char cheat15 : 1; // size=1, offset=14
+	unsigned char cheat16 : 1; // size=1, offset=15
+	unsigned char reserved1; // size=0, offset=2
+	unsigned char reserved2; // size=0, offset=3
 };
 
 struct STREAM_SOURCE // hashcode: 0x81E93B6E (dec: -2115421330)
