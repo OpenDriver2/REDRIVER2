@@ -5948,7 +5948,7 @@ void SetUpCivCollFlags(void)
 
 				gte_ldv0(&boxDisp);
 
-				docop2(0x480012);
+				gte_rtv0tr();
 
 				gte_stlvnl(&cd[0].x);
 

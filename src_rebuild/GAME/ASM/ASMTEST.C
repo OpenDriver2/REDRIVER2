@@ -15,16 +15,13 @@ void SetCameraVector(void)
 // [D]
 void Apply_Inv_CameraMatrix(VECTOR *v)
 {
-#ifndef PSX
 	gte_ldlvl(v);
-	docop2(0x4de012);
+	gte_lcir();
 	gte_stlvl(v);
-#endif // !PSX
 }
 
 int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 {
-#ifndef PSX
 	VECTOR vfc;
 	gte_stfc(&vfc);
 
@@ -34,7 +31,7 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 	local.vz = (pos->vz - vfc.vz);// *0x10000 >> 0x10;
 	gte_ldlvl(&local);
 
-	docop2(0x4de012);
+	gte_lcir();
 
 	VECTOR vec;
 	gte_stlvl(&vec);
@@ -45,12 +42,10 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 		return vec.vz - vec.vx;
 
 	return vec.vz + vec.vx;
-#endif // !PSX
 }
 
 int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 {
-#ifndef PSX
 	VECTOR vfc;
 	gte_stfc(&vfc);
 
@@ -60,7 +55,7 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 	local.vz = (pos->vz - vfc.vz);// *0x10000 >> 0x10;
 	gte_ldlvl(&local);
 
-	docop2(0x4de012);
+	gte_lcir();
 
 	gte_SetRotMatrix(mtx);
 
@@ -73,7 +68,6 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 		return vec.vz - vec.vx;
 
 	return vec.vz + vec.vx;
-#endif // !PSX
 }
 
 extern MATRIX frustrum_matrix;
@@ -81,15 +75,14 @@ extern MATRIX frustrum_matrix;
 // [D]
 int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 {
-#ifndef PSX
 	VECTOR local;
-	local.vx = (pcop->pos.vx - camera_position.vx) *0x10000 >> 0x11;
-	local.vy = (pcop->pos.vy - camera_position.vy) *0x10000 >> 0x11;
-	local.vz = (pcop->pos.vz - camera_position.vz) *0x10000 >> 0x11;
+	local.vx = (pcop->pos.vx - camera_position.vx) * 0x10000 >> 0x11;
+	local.vy = (pcop->pos.vy - camera_position.vy) * 0x10000 >> 0x11;
+	local.vz = (pcop->pos.vz - camera_position.vz) * 0x10000 >> 0x11;
 
 	gte_ldlvl(&local);
 
-	docop2(0x4be012);
+	gte_llir();
 
 	VECTOR result;
 	gte_stlvnl(&result);
@@ -100,21 +93,19 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 		return 0;
 
 	return -1;
-#endif // !PSX
 }
 
 // [D]
 int FrustrumCheck(VECTOR *pos, int bounding_sphere)
 {
-#ifndef PSX
 	VECTOR local;
-	local.vx = (pos->vx - camera_position.vx) *0x10000 >> 0x11;
-	local.vy = (pos->vy - camera_position.vy) *0x10000 >> 0x11;
-	local.vz = (pos->vz - camera_position.vz) *0x10000 >> 0x11;
+	local.vx = (pos->vx - camera_position.vx) * 0x10000 >> 0x11;
+	local.vy = (pos->vy - camera_position.vy) * 0x10000 >> 0x11;
+	local.vz = (pos->vz - camera_position.vz) * 0x10000 >> 0x11;
 
 	gte_ldlvl(&local);
 
-	docop2(0x4be012);
+	gte_llir();
 
 	VECTOR result;
 	gte_stlvnl(&result);
@@ -125,5 +116,4 @@ int FrustrumCheck(VECTOR *pos, int bounding_sphere)
 		return 0;
 
 	return -1;
-#endif // !PSX
 }

@@ -293,32 +293,41 @@ extern int docop2(int op);
 					gte_rtir();		\
 					gte_stclmv((char*)r3+4);	}
 
-#define gte_rtir()	docop2(0x49E012)
-#define gte_rtps()	docop2(0x180001)
-#define gte_rtpt()	docop2(0x280030)
-#define gte_nclip()	docop2(0x1400006)
-#define gte_avsz3()	docop2(0x158002D)
-#define gte_avsz4()	docop2(0x168002E)
-#define gte_sqr0()	docop2(0xA00428)
-#define gte_sqr12()	docop2(0xA80428)
-#define gte_op0()	docop2(0x170000C)
-#define gte_op12()	docop2(0x178000C)
-#define gte_ncs()	docop2(0xC8041E)
-#define gte_nct()	docop2(0xD80420)
-#define gte_nccs()	docop2(0x108041B)
-#define gte_ncct()	docop2(0x118043F)
-#define gte_ncds()	docop2(0xE80413)
-#define gte_ncdt()	docop2(0xF80416)
-#define gte_cc()	docop2(0x138041C)
-#define gte_cdp()	docop2(0x1280414)
-#define gte_dcpl()	docop2(0x680029)
-#define gte_dpcs()	docop2(0x780010)
-#define gte_dpct()	docop2(0x180001)
-#define gte_intpl()	docop2(0x980011)
-#define gte_gpf0()	docop2(0x190003D)
-#define gte_gpf12()	docop2(0x198003D)
-#define gte_gpl0()	docop2(0x1A0003E)
-#define gte_gpl12()	docop2(0x1A8003E)
+// FIXME: there is lack of some macros
+// please refer to official Psy-Q PSX SDK headers
+// and this: https://github.com/ogamespec/pops-gte/blob/master/docs/gte.txt
+
+#define gte_rtv0tr()		docop2(0x480012);
+#define gte_rtv0()			docop2(0x486012);
+#define gte_lcir()			docop2(0x4DE012);
+#define gte_llir()			docop2(0x4BE012);
+
+#define gte_rtir()			docop2(0x49E012)
+#define gte_rtps()			docop2(0x180001)
+#define gte_rtpt()			docop2(0x280030)
+#define gte_nclip()			docop2(0x1400006)
+#define gte_avsz3()			docop2(0x158002D)
+#define gte_avsz4()			docop2(0x168002E)
+#define gte_sqr0()			docop2(0xA00428)
+#define gte_sqr12()			docop2(0xA80428)
+#define gte_op0()			docop2(0x170000C)
+#define gte_op12()			docop2(0x178000C)
+#define gte_ncs()			docop2(0xC8041E)
+#define gte_nct()			docop2(0xD80420)
+#define gte_nccs()			docop2(0x108041B)
+#define gte_ncct()			docop2(0x118043F)
+#define gte_ncds()			docop2(0xE80413)
+#define gte_ncdt()			docop2(0xF80416)
+#define gte_cc()			docop2(0x138041C)
+#define gte_cdp()			docop2(0x1280414)
+#define gte_dcpl()			docop2(0x680029)
+#define gte_dpcs()			docop2(0x780010)
+#define gte_dpct()			docop2(0x180001)
+#define gte_intpl()			docop2(0x980011)
+#define gte_gpf0()			docop2(0x190003D)
+#define gte_gpf12()			docop2(0x198003D)
+#define gte_gpl0()			docop2(0x1A0003E)
+#define gte_gpl12()			docop2(0x1A8003E)
 
 #define gte_mvmva(sf, mx, v, cv, lm) docop2( 0x0400012 | \
 	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )

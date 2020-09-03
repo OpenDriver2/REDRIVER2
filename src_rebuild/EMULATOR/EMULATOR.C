@@ -19,12 +19,14 @@
 #include <assert.h>
 
 #if defined(NTSC_VERSION)
-#define FIXED_TIME_STEP    16		// 16.6667	= 60 FPS
+#define FIXED_TIME_STEP		16		// 16.6667	= 60 FPS
 #else
-#define FIXED_TIME_STEP    20		// 20.0		= 50 FPS
+#define FIXED_TIME_STEP		20		// 20.0		= 50 FPS
 #endif
 
-#define SWAP_INTERVAL      1
+#define SWAP_INTERVAL		1
+
+#define PSX_SCREEN_ASPECT	(240.0f / 320.0f)			// PSX screen is mapped always to this aspect
 
 #include <stdio.h>
 #include <string.h>
@@ -60,6 +62,29 @@ int g_emulatorPaused = 0;
 int g_polygonSelected = 0;
 int g_pgxpTextureCorrection = 1;
 TextureID g_lastBoundTexture;
+
+// Remap a value in the range [A,B] to [C,D].
+#define RemapVal( val, A, B, C, D) \
+	(C + (D - C) * (val - A) / (B - A))
+
+// remaps screen coordinates to [0..1]
+// without clamping
+inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
+{
+	while (count--)
+	{
+		float psxScreenW = activeDispEnv.disp.w;
+		float psxScreenH = activeDispEnv.disp.h;
+
+		vertex[count].x = RemapVal(vertex[count].x, 0.0f, psxScreenW, 0.0f, 1.0f);
+		vertex[count].y = RemapVal(vertex[count].y, 0.0f, psxScreenH, 0.0f, 1.0f);
+		// FIXME: what about Z?
+
+		// also center
+		vertex[count].x -= 0.5f;
+		vertex[count].y -= 0.5f;
+	}
+}
 
 void Emulator_ResetDevice()
 {
@@ -452,12 +477,17 @@ void Emulator_SetCursorPosition(int x, int y)
 void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
 {
 	// swap line coordinates for left-to-right and up-to-bottom direction
-	if (p0[0] > p1[0]) {
+	// TODO: color needs to be swapped to
+	if (p0[0] > p1[0]) 
+	{
 		VERTTYPE *tmp = p0;
 		p0 = p1;
 		p1 = tmp;
-	} else if (p0[0] == p1[0]) {
-		 if (p0[1] > p1[1]) {
+	} 
+	else if (p0[0] == p1[0])
+	{
+		 if (p0[1] > p1[1])
+		 {
 			 VERTTYPE *tmp = p0;
 			p0 = p1;
 			p1 = tmp;
@@ -500,6 +530,8 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
 	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
 #endif
+
+	ScreenCoordsToEmulator(vertex, 4);
 }
 
 #ifdef PGXP
@@ -546,6 +578,8 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	PGXP_APPLY(vertex[0], p0);
 	PGXP_APPLY(vertex[1], p1);
 	PGXP_APPLY(vertex[2], p2);
+
+	ScreenCoordsToEmulator(vertex, 3);
 }
 
 void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx)
@@ -574,6 +608,8 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	PGXP_APPLY(vertex[1], p1);
 	PGXP_APPLY(vertex[2], p2);
 	PGXP_APPLY(vertex[3], p3);
+
+	ScreenCoordsToEmulator(vertex, 4);
 }
 
 void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short w, short h, ushort gteidx)
@@ -599,6 +635,8 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w = 1.0f;
 	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z = 0.0f;
 #endif
+
+	ScreenCoordsToEmulator(vertex, 4);
 }
 
 void Emulator_GenerateTexcoordArrayQuad(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, unsigned char* uv3, short page, short clut, unsigned char dither)
@@ -1340,12 +1378,25 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		rect.w < activeDispEnv.disp.w - 1 ||
 		rect.h < activeDispEnv.disp.h - 1;
 
-	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / (float)activeDispEnv.disp.w;
-	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / (float)activeDispEnv.disp.h;
-	float clipRectW = (float)(rect.w) / (float)activeDispEnv.disp.w;
-	float clipRectH = (float)(rect.h) / (float)activeDispEnv.disp.h;
+	float psxScreenW = activeDispEnv.disp.w;
+	float psxScreenH = activeDispEnv.disp.h;
 
+	// first map to 0..1
+	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / psxScreenW;
+	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / psxScreenH;
+	float clipRectW = (float)(rect.w) / psxScreenW;
+	float clipRectH = (float)(rect.h) / psxScreenH;
 
+	// then map to screen
+	{
+		clipRectX -= 0.5f;
+		float emuScreenAspect = float(windowWidth) / float(windowHeight);
+
+		clipRectX /= PSX_SCREEN_ASPECT * emuScreenAspect;
+		clipRectW /= emuScreenAspect * PSX_SCREEN_ASPECT;
+
+		clipRectX += 0.5f;
+	}
 
 #if defined(OGL) || defined(OGLES)
 	if (!enabled)
@@ -1377,7 +1428,9 @@ void Emulator_SetShader(const ShaderID &shader)
 	#error
 #endif
 
-	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
+	float emuScreenAspect = float(windowWidth) / float(windowHeight);
+
+	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)

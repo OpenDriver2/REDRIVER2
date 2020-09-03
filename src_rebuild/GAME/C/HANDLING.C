@@ -1280,7 +1280,7 @@ void SetShadowPoints(_CAR_DATA *c0)
 
 		gte_ldv0(&disp);
 
-		docop2(0x480012);
+		gte_rtv0tr();
 
 		gte_stlvnl(&pointPos);
 
@@ -1443,7 +1443,7 @@ void initOBox(_CAR_DATA *cp)
 	boxDisp.vz = -cp->ap.carCos->cog.vz;
 
 	gte_ldv0(&boxDisp);
-	docop2(0x480012);
+	gte_rtv0tr();
 
 	if (cp->controlType == 3) 
 	{

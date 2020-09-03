@@ -1110,7 +1110,7 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, in
 
 	gte_ldv0(&cog);
 
-	docop2(0x480012);
+	gte_rtv0tr();
 
 	gte_stlvnl(&modelLocation);
 
@@ -1405,7 +1405,7 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 		gte_SetRotMatrix(RearMatrix);
 		gte_ldv0(&sWheelPos);
 
-		docop2(0x486012);
+		gte_rtv0();
 
 		VECTOR newTransform;
 		gte_stlvl(&newTransform);
@@ -1784,7 +1784,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 	SetRotMatrix(&scratchPadMat);
 
 	gte_ldv0(&lightsourcevector);
-	docop2(0x486012);
+	gte_rtv0();
 
 	gte_stsv(light_matrix.m[0]);
 

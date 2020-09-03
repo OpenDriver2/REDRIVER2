@@ -2892,7 +2892,6 @@ int CurrentPlayerView = 0;
 // [D]
 void RenderGame2(int view)
 {
-	DB *pDVar1;
 	int iVar2;
 	POLY_F4 *poly;
 	uint uVar3;
@@ -2913,6 +2912,7 @@ void RenderGame2(int view)
 
 	FrAng = ratan2(160, float(scr_z) * aspectVar * 1.35f);
 
+#if 0 // old code; now relying on emulator hacks
 	aspect.m[0][0] = 5500 * aspectVar;
 	aspect.m[0][1] = 0;
 	aspect.m[0][2] = 0;
@@ -2924,6 +2924,7 @@ void RenderGame2(int view)
 	aspect.m[2][0] = 0;
 	aspect.m[2][1] = 0;
 	aspect.m[2][2] = 4096;
+#endif
 
 	extern void DoFreeCamera();
 	DoFreeCamera();
@@ -3008,19 +3009,17 @@ void RenderGame2(int view)
 		poly->r0 = uVar4;
 		poly->g0 = uVar4;
 		poly->b0 = uVar4;
-		pDVar1 = current;
-		poly->x0 = 0;
-		poly->y0 = 0;
-		poly->x1 = 0x140;
-		poly->y1 = 0;
-		poly->x2 = 0;
-		poly->y2 = 0x100;
-		poly->x3 = 0x140;
-		poly->y3 = 0x100;
-		addPrim(pDVar1->ot + 8, poly);
 
-		pDVar1->primptr += sizeof(POLY_F4);
-		POLY_FT3* null = (POLY_FT3*)pDVar1->primptr;
+#ifdef PSX
+		setXYWH(poly, 0, 0, 320, 256);
+#else
+		setXYWH(poly, -500, 0, 1200, 256);
+#endif
+
+		addPrim(current->ot + 8, poly);
+
+		current->primptr += sizeof(POLY_F4);
+		POLY_FT3* null = (POLY_FT3*)current->primptr;
 
 		setPolyFT3(null);
 		null->x0 = -1;
@@ -3031,8 +3030,8 @@ void RenderGame2(int view)
 		null->y2 = -1;
 		null->tpage = 0x40;
 
-		addPrim(pDVar1->ot + 8, null);
-		pDVar1->primptr += sizeof(POLY_FT3);
+		addPrim(current->ot + 8, null);
+		current->primptr += sizeof(POLY_FT3);
 	}
 
 	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);

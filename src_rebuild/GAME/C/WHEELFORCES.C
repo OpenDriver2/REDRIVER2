@@ -328,7 +328,7 @@ void StepOneCar(_CAR_DATA *cp)
 		do {
 			gte_ldv0(pSVar14);
 
-			docop2(0x480012);
+			gte_rtv0tr();
 
 			gte_stlvnl(pointPos);
 
@@ -908,7 +908,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 	do {
 		gte_ldv0(&car_cos->wheelDisp[i]);
 
-		docop2(0x480012);
+		gte_rtv0tr();
 		gte_stlvnl(wheelPos);
 
 		newCompression = FindSurfaceD2((VECTOR*)&wheelPos, (VECTOR*)&surfaceNormal, (VECTOR*)&surfacePoint, &SurfacePtr);

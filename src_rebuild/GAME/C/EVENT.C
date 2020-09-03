@@ -1865,7 +1865,7 @@ void SetCamera(_EVENT *ev)
 
 		gte_ldv0(&temp);
 
-		docop2(0x480012);
+		gte_rtv0tr();
 
 		gte_stlvnl(&camera_position);
 
@@ -3612,7 +3612,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 
 	gte_ldv3(&v[0], &v[1], &v[2]);
 
-	docop2(0x280030);
+	gte_rtpt();
 
 	poly = (POLY_FT4*)current->primptr;
 
@@ -3631,7 +3631,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 	poly->g0 = 127;
 	poly->b0 = 127;
 
-	docop2(0x158002d);
+	gte_avsz3();
 
 	gte_stsxy3(&poly->x2, &poly->x1, &poly->x0);
 
@@ -3640,7 +3640,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 
 	gte_ldv0(&v[3]);
 
-	docop2(0x180001);
+	gte_rtps();
 
 	gte_stsxy(&poly->x3);
 
@@ -3657,7 +3657,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 
 	gte_ldv0(&v[3]);
 
-	docop2(0x180001);
+	gte_rtps();
 
 	gte_stsxy(&poly->x1);
 	addPrim(current->ot + z, poly);

@@ -189,7 +189,12 @@ void FadeGameScreen(int flag, int speed)
 		setPolyF4(&poly);
 		setSemiTrans(&poly, 1);
 		setRGB0(&poly, val, val, val);
+
+#ifdef PSX
 		setXYWH(&poly, 0, 0, 320, 256);
+#else
+		setXYWH(&poly, -500, 0, 1200, 256);
+#endif
 
 		if (flag == 0)
 			screen_fade_value += speed;
@@ -588,7 +593,12 @@ void DrawFadePoly(void)
 
 	POLY_G4 *fl_g4 = &fade_g4[current->id];
 
+
+#ifdef PSX
 	setXYWH(fl_g4, 0, 0, 320, 256);
+#else
+	setXYWH(fl_g4, -500, 1200, 320, 256);
+#endif
 
 	setRGB0(fl_g4, fadeVal, fadeVal, fadeVal);
 	setRGB1(fl_g4, fadeVal, fadeVal, fadeVal);
