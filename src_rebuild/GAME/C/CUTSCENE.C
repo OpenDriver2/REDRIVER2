@@ -239,9 +239,16 @@ void DrawInGameCutscene(void)
 	tile->r0 = 0;
 	tile->g0 = 0;
 	tile->b0 = 0;
+
+#ifdef PSX
 	tile->x0 = 0;
-	tile->y0 = 0;
 	tile->w = 320;
+#else
+	tile->x0 = -500;
+	tile->w = 1200;
+#endif
+
+	tile->y0 = 0;
 	tile->h = BlackBorderHeight;
 
 	addPrim(current->ot, tile);
@@ -252,8 +259,14 @@ void DrawInGameCutscene(void)
 	tile->g0 = 0;
 	tile->b0 = 0;
 
+#ifdef PSX
 	tile->x0 = 0;
 	tile->w = 320;
+#else
+	tile->x0 = -500;
+	tile->w = 1200;
+#endif
+
 	tile->y0 = 256 - BlackBorderHeight;
 	tile->h = BlackBorderHeight;
 
