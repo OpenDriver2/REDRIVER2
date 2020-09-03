@@ -58,7 +58,7 @@ CELL_OBJECT** coplist;
 	/* end block 3 */
 	// End Line: 475
 
-// [D]
+// [D] [T]
 void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile)
 {
 	Getlong((char*)&pRoadMapLumpData->width, pLumpFile);
@@ -83,7 +83,7 @@ void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile
 	/* end block 2 */
 	// End Line: 1665
 
-// [D]
+// [D] [T]
 void ProcessJunctionsLump(char *lump_file, int lump_size)
 {
 	return;
@@ -105,7 +105,7 @@ void ProcessJunctionsLump(char *lump_file, int lump_size)
 	/* end block 2 */
 	// End Line: 505
 
-// [D]
+// [D] [T]
 void ProcessRoadsLump(char *lump_file, int lump_size)
 {
 	return;
@@ -122,7 +122,7 @@ void ProcessRoadsLump(char *lump_file, int lump_size)
 	/* end block 1 */
 	// End Line: 1676
 
-// [D]
+// [D] [T]
 void ProcessRoadBoundsLump(char *lump_file, int lump_size)
 {
 	return;
@@ -139,7 +139,7 @@ void ProcessRoadBoundsLump(char *lump_file, int lump_size)
 	/* end block 1 */
 	// End Line: 1678
 
-// [D]
+// [D] [T]
 void ProcessJuncBoundsLump(char *lump_file, int lump_size)
 {
 	return;
@@ -262,31 +262,25 @@ MODEL * FindModelPtrWithName(char *name)
 	/* end block 3 */
 	// End Line: 1558
 
-// [D]
+// [D] [T]
 int FindModelIdxWithName(char *name)
 {
-	char cVar1;
-	int iVar2;
-	int iVar3;
-	char *__s1;
-	int iVar4;
+	char *str;
+	int i;
 
-	iVar4 = 0;
-	__s1 = modelname_buffer;
-	if (0 < num_models_in_pack) {
-		do {
-			iVar2 = strcmp(__s1, name);
-			iVar3 = iVar4 + 1;
-			if (iVar2 == 0) {
-				return iVar4;
-			}
-			do {
-				cVar1 = *__s1;
-				__s1 = __s1 + 1;
-			} while (cVar1 != '\0');
-			iVar4 = iVar3;
-		} while (iVar3 < num_models_in_pack);
+	i = 0;
+	str = modelname_buffer;
+
+	while (i < num_models_in_pack)
+	{
+		if (!strcmp(str, name))
+			return i;
+
+		while (*str++) {} // go to next string
+
+		i++;
 	}
+
 	return -1;
 }
 
@@ -332,7 +326,7 @@ int sizeof_cell_object_computed_values;
 CELL_DATA* cells;
 int num_straddlers;		// objects between regions
 
-// [D]
+// [D] [T]
 void InitCellData(void)
 {
 	int loop;
@@ -351,7 +345,7 @@ void InitCellData(void)
 
 	MALLOC_END();
 
-	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / 8;
+	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / sizeof(PACKED_CELL_OBJECT);
 }
 
 
@@ -387,32 +381,35 @@ void InitCellData(void)
 	/* end block 4 */
 	// End Line: 1774
 
-// [D]
+// [D] [T]
 int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 {
+ 	int dx; // $a2
+ 	int dz; // $a0
+ 	int cellx; // $v1
+ 	int cellz; // $v0
+
 	int iVar1;
 	int iVar2;
 
-	iVar2 = pos->vx + units_across_halved;
-	iVar1 = pos->vz + units_down_halved;
+	dx = pos->vx + units_across_halved;
+	dz = pos->vz + units_down_halved;
 
-	ccx = (iVar2 >> 0xb) - ccx;
-	ccz = (iVar1 >> 0xb) - ccz;
-	iVar2 = ccx;
+	cellx = (dx >> 0xb) - ccx;
+	cellz = (dz >> 0xb) - ccz;
 
-	if (ccx < 0)
-		iVar2 = -ccx;
+	if (cellx < 0)
+		cellx = -cellx;
 
-	if (iVar2 <= view_dist) 
+	if (cellx <= view_dist)
 	{
-		iVar2 = ccz;
-
-		if (ccz < 0)
-			iVar2 = -ccz;
+		if (cellz < 0)
+			cellz = -cellz;
 	
-		if (iVar2 <= view_dist)
-			return pvs[ccx + 10 + (ccz + 10) * pvs_square] != 0;
+		if (cellz <= view_dist)
+			return pvs[cellx + 10 + (cellz + 10) * pvs_square] != 0;
 	}
+
 	return 0;
 }
 
@@ -449,32 +446,33 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	/* end block 4 */
 	// End Line: 1771
 
-// [D]
+// [D] [T]
 int PositionVisible(VECTOR *pos)
 {
+ 	int dx; // $a1
+ 	int dz; // $a0
+ 	int cellx; // $v1
+ 	int cellz; // $v0
+
 	int iVar1;
 	int iVar2;
-	int iVar3;
 
-	iVar2 = pos->vx + units_across_halved;
-	iVar1 = pos->vz + units_down_halved;
+	dx = pos->vx + units_across_halved;
+	dz = pos->vz + units_down_halved;
 
-	iVar3 = (iVar2 >> 0xb) - current_cell_x;
-	iVar1 = (iVar1 >> 0xb) - current_cell_z;
+	cellx = (dx >> 0xb) - current_cell_x;
+	cellz = (dz >> 0xb) - current_cell_z;
 
-	iVar2 = iVar3;
+	if (cellx < 0)
+		cellx = -cellx;
 
-	if (iVar3 < 0)
-		iVar2 = -iVar3;
-
-	if (iVar2 <= view_dist) 
+	if (cellx <= view_dist)
 	{
-		iVar2 = iVar1;
-		if (iVar1 < 0)
-			iVar2 = -iVar1;
+		if (cellz < 0)
+			cellz = -cellz;
 
-		if (iVar2 <= view_dist)
-			return CurrentPVS[iVar3 + (iVar1 + 10) * pvs_square + 10] != 0;
+		if (cellz <= view_dist)
+			return CurrentPVS[cellx + 10 + (cellz + 10) * pvs_square] != 0;
 	}
 
 	return 0;
@@ -558,198 +556,170 @@ int region_z = 0;
 int current_barrel_region_xcell = 0;
 int current_barrel_region_zcell = 0;
 
-// [D]
+// [D] [T]
 int CheckUnpackNewRegions(void)
 {
-	char bVar1;
-	ushort uVar2;
-	bool bVar3;
-	int iVar4;
-	uint uVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	ushort *puVar10;
-	ushort *puVar11;
+	ushort sort;
+	ushort *destsort;
+	ushort *srcsort;
+
+	int x, z;
+	int i, j;
+	int sortcount;
+	int leftright_unpack;
+	int topbottom_unpack;
 	int target_region;
-	int iVar12;
+	int region_to_unpack;
+	int num_regions_to_unpack;
+	int force_load_boundary;
 	AREA_LOAD_INFO regions_to_unpack[3];
 	SVECTOR sortregions[4];
 	ushort sortorder[4];
 
-	iVar8 = 0;
-	iVar9 = 0;
-	iVar12 = 0;
+	leftright_unpack = 0;
+	topbottom_unpack = 0;
+	num_regions_to_unpack = 0;
 
 	if (saved_leadcar_pos != 0) 
-	{
 		return 0;
-	}
 
-	iVar7 = 0xd;
+	force_load_boundary = 13;
 
 	if (lead_car == 0)
-	{
-		iVar7 = 0x12;
-	}
+		force_load_boundary = 18;
 
-	if (current_barrel_region_xcell < iVar7) 
+	if (current_barrel_region_xcell < force_load_boundary)
 	{
-		iVar4 = -1;
-
 		if (region_x != 0) 
 		{
-			iVar8 = 1;
-		LAB_0005c8f8:
-			iVar12 = 1;
-			regions_to_unpack[0].xoffset = iVar4;
+			leftright_unpack = 1;
+			num_regions_to_unpack = 1;
+			regions_to_unpack[0].xoffset = -1;
 			regions_to_unpack[0].zoffset = 0;
 		}
 	}
-	else if (0x20 - iVar7 < current_barrel_region_xcell) 
+	else if (0x20 - force_load_boundary < current_barrel_region_xcell)
 	{
-		iVar6 = cells_across;
-
-		if (cells_across < 0) 
+		if (region_x < cells_across >> 5)
 		{
-			iVar6 = cells_across + 0x1f;
-		}
-
-		iVar4 = 1;
-
-		if (region_x < iVar6 >> 5) 
-		{
-			iVar8 = 2;
-			goto LAB_0005c8f8;	//  I really don't like this GOTO
+			leftright_unpack = 2;
+			num_regions_to_unpack = 1;
+			regions_to_unpack[0].xoffset = 1;
+			regions_to_unpack[0].zoffset = 0;
 		}
 	}
 
-	if (current_barrel_region_zcell < iVar7)
+	if (current_barrel_region_zcell < force_load_boundary)
 	{
 		if (region_z != 0) 
 		{
-			iVar9 = 1;
-			regions_to_unpack[iVar12].xoffset = 0;
-			iVar7 = -1;
-		LAB_0005c978:
-			regions_to_unpack[iVar12].zoffset = iVar7;
-			iVar12 = iVar12 + 1;
+			topbottom_unpack = 1;
+			regions_to_unpack[num_regions_to_unpack].xoffset = 0;
+			regions_to_unpack[num_regions_to_unpack].zoffset = -1;
+			num_regions_to_unpack++;
 		}
 	}
-	else if ((32 - iVar7 < current_barrel_region_zcell) && (region_z != 0))
+	else if (32 - force_load_boundary < current_barrel_region_zcell && region_z != 0)
 	{
-		iVar9 = 2;
-		regions_to_unpack[iVar12].xoffset = 0;
-		iVar7 = 1;
-		goto LAB_0005c978;
+		topbottom_unpack = 2;
+		regions_to_unpack[num_regions_to_unpack].xoffset = 0;
+		regions_to_unpack[num_regions_to_unpack].zoffset = 1;
+		num_regions_to_unpack++;
 	}
 
-	if (iVar12 == 2) 
+	if (num_regions_to_unpack == 2)
 	{
-		if (iVar9 == 1) 
+		if (topbottom_unpack == 1)
 		{
-			iVar12 = 3;
-			if (iVar8 == 1) 
+			num_regions_to_unpack = 3;
+
+			if (leftright_unpack == 1)
 			{
 				regions_to_unpack[2].xoffset = -1;
 				regions_to_unpack[2].zoffset = -1;
-				goto LAB_0005c9dc;
 			}
-
-			regions_to_unpack[2].xoffset = 1;
-			regions_to_unpack[2].zoffset = -1;
+			else
+			{
+				regions_to_unpack[2].xoffset = 1;
+				regions_to_unpack[2].zoffset = -1;
+			}
 		}
 		else 
 		{
-			if (iVar8 == 1) 
+			if (leftright_unpack == 1)
 				regions_to_unpack[2].xoffset = -1;
 			else 
 				regions_to_unpack[2].xoffset = 1;
 
 			regions_to_unpack[2].zoffset = 1;
 		}
-		iVar12 = 3;
+		num_regions_to_unpack = 3;
 	}
 
-LAB_0005c9dc:
-	iVar9 = 0;
-	iVar8 = 0;
+	i = 0;
+	sortcount = 0;
 
-	if (iVar12 != 0) 
+	// get next region a space
+	while (i < num_regions_to_unpack)
 	{
-		iVar7 = 0;
-		do {
-			iVar4 = regions_to_unpack[iVar9].xoffset;
-			iVar6 = regions_to_unpack[iVar9].zoffset;
+		x = regions_to_unpack[i].xoffset;
+		z = regions_to_unpack[i].zoffset;
 
-			iVar7 = cells_across;
+		target_region = (region_x + x & 1U) + (region_z + z & 1U) * 2;
+		region_to_unpack = current_region + x + z * (cells_across / 32);
 
-			target_region = (region_x + iVar4 & 1U) + (region_z + iVar6 & 1U) * 2;
-			iVar7 = current_region + iVar4 + iVar6 * (iVar7 / 32);
+		if (region_to_unpack != regions_unpacked[target_region] && loading_region[target_region] == -1)
+		{
+			ClearRegion(target_region);
 
-			if ((iVar7 != regions_unpacked[target_region]) && (loading_region[target_region] == -1))
+			if (spoolinfo_offsets[region_to_unpack] == 0xffff)
 			{
-				ClearRegion(target_region);
-				if (spoolinfo_offsets[iVar7] == 0xffff) 
-				{
-					regions_unpacked[target_region] = iVar7;
-				}
-				else 
-				{
-					uVar2 = spoolinfo_offsets[iVar7];
-
-					Spool *spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[iVar7]);
-
-					if (old_region == -1 && spoolptr->super_region != 0xFF)
-						initarea = spoolptr->super_region;
-
-					sortregions[iVar8].vx = iVar7;
-					sortregions[iVar8].vy = target_region;
-					sortregions[iVar8].vz = spoolptr->offset;//  *(short *)(RegionSpoolInfo + uVar2);
-
-					sortorder[iVar8] = iVar8;
-					iVar8++;
-				}
+				regions_unpacked[target_region] = region_to_unpack;
 			}
-			iVar9++;
-			iVar7 = iVar9 * 8;
-		} while (iVar9 < iVar12);
+			else 
+			{
+				Spool *spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[region_to_unpack]);
+
+				if (old_region == -1 && spoolptr->super_region != 0xFF)
+					initarea = spoolptr->super_region;
+
+				sortregions[sortcount].vx = region_to_unpack;
+				sortregions[sortcount].vy = target_region;
+				sortregions[sortcount].vz = spoolptr->offset;
+
+				sortorder[sortcount] = sortcount;
+				sortcount++;
+			}
+		}
+		i++;
 	}
 
-	if (0 < iVar8) 
+	i = 0;
+	while (i < sortcount)
 	{
-		iVar12 = 0;
-		iVar9 = 1;
+		if (sortcount > (i + 1))
+		{
+			srcsort = sortorder + i;
+			destsort = sortorder + (i + 1);
 
-		do {
-			if (iVar9 < iVar8) 
-			{
-				puVar11 = sortorder + iVar12;
-				puVar10 = sortorder + iVar9;
-				iVar7 = iVar8 - iVar9;
+			j = sortcount - (i + 1);
 
-				do {
-					uVar2 = *puVar11;
+			do {
+				sort = *srcsort;
+				if (sortregions[*destsort].vz < sortregions[*srcsort].vz)
+				{
+					*srcsort = *destsort;
+					*destsort = sort;
+				}
 
-					if (sortregions[*puVar10].vz < sortregions[uVar2].vz)
-					{
-						*puVar11 = *puVar10;
-						*puVar10 = uVar2;
-					}
+				j--;
+				destsort++;
+			} while (j > 0);
+		}
 
-					iVar7--;
-					puVar10++;
-				} while (iVar7 != 0);
-			}
+		UnpackRegion(sortregions[sortorder[i]].vx, sortregions[sortorder[i]].vy);
 
-			uVar5 = sortorder[iVar12];
-			UnpackRegion(sortregions[uVar5].vx, sortregions[uVar5].vy);
-
-			bVar3 = iVar9 < iVar8;
-			iVar12 = iVar9;
-			iVar9 = iVar9 + 1;
-		} while (bVar3);
+		i++;
 	}
 
 	return 1;
@@ -809,7 +779,7 @@ LAB_0005c9dc:
 
 extern OUT_CELL_FILE_HEADER cell_header;
 
-// [D]
+// [D] [T]
 void ControlMap(void)
 {
 #ifdef PSX
@@ -979,76 +949,70 @@ void ControlMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitMap(void)
 {
-	int iVar1;
-	unsigned char *pbVar2;
 	int region_to_unpack;
-	int iVar3;
-	int *piVar4;
+	int barrel_region;
+	int i;
 
 	initarea = -1;
 	LoadedArea = -1;
 	current_region = -1;
 
-	if (slotsused < 19) 
-	{
-		pbVar2 = &tpageslots[slotsused];
-		iVar3 = slotsused;
-		do {
-			if (*pbVar2 != 0xff)
-				tpageloaded[*pbVar2] = 0;
+	i = slotsused;
 
-			*pbVar2++ = 0xff;
-			iVar3++;
-		} while (iVar3 < 19);
+	while (i < 19)
+	{
+		int tpage = tpageslots[i];
+
+		if (tpage != 0xff)
+			tpageloaded[tpage] = 0;
+
+		tpageslots[i] = 0xff;
+		i++;
 	}
 
 	// load regions synchronously
-	if (doSpooling == 0) 
+	if (doSpooling == 0)
 	{
 		old_region = -1;
 
-		if (multiplayerregions[1] == -1) 
+		if (multiplayerregions[1] == -1)
 		{
 			multiplayerregions[1] = multiplayerregions[0] + 1;
 			multiplayerregions[2] = multiplayerregions[0] - (cells_across >> 5);
 			multiplayerregions[3] = multiplayerregions[2] + 1;
 		}
 
-		piVar4 = multiplayerregions;
-		iVar3 = 3;
+		i = 0;
 		do {
-			region_to_unpack = *piVar4;
-			iVar1 = cells_across >> 5;
+			region_to_unpack = multiplayerregions[i];
 
-			if (spoolinfo_offsets[region_to_unpack] != 0xffff) 
+			if (spoolinfo_offsets[region_to_unpack] != 0xffff)
 			{
-				Spool *spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[region_to_unpack]);
+				Spool* spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[region_to_unpack]);
 
 				if (spoolptr->super_region != 0xff)
 					initarea = spoolptr->super_region;
 
-				UnpackRegion(region_to_unpack, (region_to_unpack % iVar1 & 1U) + (region_to_unpack / iVar1 & 1U) * 2);
+				barrel_region = (region_to_unpack % (cells_across >> 5) & 1U) + (region_to_unpack / (cells_across >> 5) & 1U) * 2;
+
+				UnpackRegion(region_to_unpack, barrel_region);
 			}
 
-			iVar3--;
-			piVar4++;
-		} while (-1 < iVar3);
+			i++;
+		} while (i < 4);
 
 		LoadInAreaTSets(initarea);
 		LoadInAreaModels(initarea);
 
-		current_cell_x = camera_position.vx + units_across_halved;
-		current_cell_x = current_cell_x >> 0xb;
-
-		current_cell_z = camera_position.vz + units_down_halved;
-		current_cell_z = current_cell_z >> 0xb;
+		current_cell_x = camera_position.vx + units_across_halved >> 0xb;
+		current_cell_z = camera_position.vz + units_down_halved >> 0xb;
 
 		StartSpooling();
 	}
-	else 
+	else
 	{
 		regions_unpacked[0] = -1;
 		regions_unpacked[1] = -1;
@@ -1099,7 +1063,7 @@ void InitMap(void)
 	/* end block 3 */
 	// End Line: 2686
 
-// [D] [A]
+// [D] [T] [A]
 void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 {
 	int cz;
@@ -1427,7 +1391,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	/* end block 5 */
 	// End Line: 2055
 
-// [D]
+// [D] [T]
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
 	int k;
