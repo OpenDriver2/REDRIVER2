@@ -6,13 +6,13 @@
 // ASM functions.
 // don't do this in PSX.
 
-// [D]
+// [D] [T]
 void SetCameraVector(void)
 {
 	gte_ldfc(&camera_position)
 }
 
-// [D]
+// [D] [T]
 void Apply_Inv_CameraMatrix(VECTOR *v)
 {
 	gte_ldlvl(v);
@@ -20,6 +20,7 @@ void Apply_Inv_CameraMatrix(VECTOR *v)
 	gte_stlvl(v);
 }
 
+// [D] [T]
 int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 {
 	VECTOR vfc;
@@ -44,6 +45,7 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD *pos)
 	return vec.vz + vec.vx;
 }
 
+// [D] [T]
 int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 {
 	VECTOR vfc;
@@ -72,7 +74,7 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD *pos, MATRIX2 *mtx)
 
 extern MATRIX frustrum_matrix;
 
-// [D]
+// [D] [T]
 int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 {
 	VECTOR local;
@@ -95,7 +97,7 @@ int FrustrumCheck16(PACKED_CELL_OBJECT *pcop, int bounding_sphere)
 	return -1;
 }
 
-// [D]
+// [D] [T]
 int FrustrumCheck(VECTOR *pos, int bounding_sphere)
 {
 	VECTOR local;
