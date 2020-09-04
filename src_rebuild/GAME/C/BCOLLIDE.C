@@ -1000,7 +1000,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	cd[0].isCameraOrTanner = (cp->controlType == 5);
 
 	if (cp->controlType == 6)
-		cd[0].isCameraOrTanner = cd[0].isCameraOrTanner + 2;
+		cd[0].isCameraOrTanner += 2;
 
 	cd[1].isCameraOrTanner = (flags & 0x1) == 0;
 	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
@@ -1089,12 +1089,13 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		{
 			collided = (bcollided2d(cd, 0) != 0);
 
+
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 			extern int gShowCollisionDebug;
 			if (gShowCollisionDebug == 1)
 			{
-				extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
-				extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+				extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+				extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
 
 				CVECTOR bbcv = { 0, 0, 250 };
 				CVECTOR rrcv = { 250, 0, 0 };
@@ -1168,6 +1169,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				}
 			}
 #endif
+
 			if (collided)
 			{
 				bFindCollisionTime(cd, &collisionResult);

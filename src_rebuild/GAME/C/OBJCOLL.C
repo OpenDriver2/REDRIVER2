@@ -1061,6 +1061,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 									bbox.xsize += 100;
 									bbox.zsize += 100;
 
+									boxOverlap = -1;
+
 									while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
 										CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
 									{

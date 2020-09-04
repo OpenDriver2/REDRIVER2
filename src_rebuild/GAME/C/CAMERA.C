@@ -25,19 +25,88 @@
 #include "LIBGTE.H"
 
 
-VECTOR CameraPos =
-{ -45, -171, -125, 0 };
+VECTOR CameraPos = { -45, -171, -125, 0 };
+VECTOR camera_position = { 0, 380, 0, 0 };
+SVECTOR camera_angle = { 0,0,0 };
 
-VECTOR camera_position =
-{ 0, 380, 0, 0 };
+MATRIX camera_matrix;
 
 MATRIX face_camera_work =
-{ { { 4096, 0, 0 }, { 0, 4096, 0 }, { 0, 0, 4096 } }, { 0, 0, 0 } };
+{
+	{ 
+		{ 4096, 0, 0 }, 
+		{ 0, 4096, 0 },
+		{ 0, 0, 4096 } 
+	},
+	{ 0, 0, 0 } 
+};
 
 char old_camera_change = 0;
 char camera_change = 0;
 
-MATRIX camera_matrix;
+unsigned short paddCamera;
+char cameraview = 0;
+int CameraCnt = 0;
+
+static long basePos[4]; // [A]
+static long baseDir = 0;
+
+char tracking_car = 0;
+
+int gCameraAngle = 0x800; // offset 0xAA104
+
+int TargetCar = 0;
+int CameraCar = 0;
+
+// [A] custom function - recalculates base camera position (separated from InitCamera)
+void CalcCameraBasePos(_PLAYER* lp)
+{
+	CAR_COSMETICS* car_cos;
+	_EVENT* event;
+	SVECTOR boxDisp = { 0 };
+
+	if (lp->cameraCarId < 0)
+	{
+		if (lp->cameraCarId < -1)
+		{
+			event = events.track[-2 - lp->cameraCarId];
+
+			basePos[0] = event->position.vx;
+			basePos[1] = -event->position.vy;
+			basePos[2] = event->position.vz;
+			baseDir = event->rotation + 0x400U & 0xfff;
+		}
+		else
+		{
+			basePos[0] = lp->pos[0];
+			basePos[1] = lp->pos[1];
+			basePos[2] = lp->pos[2];
+			baseDir = lp->dir;
+		}
+	}
+	else
+	{
+		// [A]
+		gte_SetRotMatrix(&car_data[lp->cameraCarId].hd.where);
+		gte_SetTransMatrix(&car_data[lp->cameraCarId].hd.where);
+
+		// [A]
+		car_cos = car_data[lp->cameraCarId].ap.carCos;
+		if (car_cos)
+		{
+			boxDisp.vx = -car_cos->cog.vx;
+			boxDisp.vy = -car_cos->cog.vy;
+			boxDisp.vz = -car_cos->cog.vz;
+		}
+
+		gte_ldv0(&boxDisp);
+
+		gte_rtv0tr();
+		gte_stlvnl(basePos);
+
+		baseDir = car_data[lp->cameraCarId].hd.direction;
+	}
+}
 
 // decompiled code
 // original method signature: 
@@ -82,38 +151,11 @@ MATRIX camera_matrix;
 	/* end block 2 */
 	// End Line: 845
 
-extern STREAM_SOURCE* PlayerStartInfo[8];
-
-unsigned short paddCamera;
-char cameraview = 0;
-int CameraCnt = 0;
-
-static long basePos[4]; // [A]
-static long baseDir = 0;
-
-char tracking_car = 0;
-
-int gCameraAngle = 0x800; // offset 0xAA104
-
-int TargetCar = 0;
-int CameraCar = 0;
-
-SVECTOR camera_angle = { 0,0,0 };
-
-// [D]
+// [D] [T]
 void InitCamera(_PLAYER *lp)
 {
-	CAR_COSMETICS *car_cos;
-	_EVENT *event;
-	SVECTOR boxDisp = { 0 };
-
 	if (events.cameraEvent == NULL) 
 	{
-		if (NumPlayers == 2 && (lp->cameraView == 1 || lp->cameraView > 2))			// [A]
-		{
-			lp->cameraView = 0;
-		}
-
 		paddCamera = Pads[lp->padid].mapped;
 
 		if (NoPlayerControl != 0 || gInGameCutsceneActive != 0)
@@ -121,51 +163,7 @@ void InitCamera(_PLAYER *lp)
 			lp->cameraView = cameraview;
 		}
 
-		if (lp->cameraCarId < 0)
-		{
-			if (lp->cameraCarId < -1)
-			{
-				event = events.track[-2 - lp->cameraCarId];
-				basePos[0] = event->position.vx;
-				basePos[1] = -event->position.vy;
-				basePos[2] = event->position.vz;
-				baseDir = event->rotation + 0x400U & 0xfff;
-			}
-			else 
-			{
-				basePos[0] = lp->pos[0];
-				basePos[1] = lp->pos[1];
-				basePos[2] = lp->pos[2];
-				//DAT_000aca9c = lp->pos[3]; // memcpy used?
-				baseDir = lp->dir;
-			}
-		}
-		else 
-		{
-			// [A]
-			gte_SetRotMatrix(&car_data[lp->cameraCarId].hd.where);
-			gte_SetTransMatrix(&car_data[lp->cameraCarId].hd.where);
-
-			// [A]
-			car_cos = car_data[lp->cameraCarId].ap.carCos;
-			if (car_cos)
-			{
-				boxDisp.vx = -car_cos->cog.vx;
-				boxDisp.vy = -car_cos->cog.vy;
-				boxDisp.vz = -car_cos->cog.vz;
-			}
-
-			gte_ldv0(&boxDisp);
-
-			gte_rtv0tr();
-
-
-
-			gte_stlvnl(basePos);
-
-			baseDir = car_data[lp->cameraCarId].hd.direction;
-		}
-
+		CalcCameraBasePos(lp);
 
 		if (lp->cameraView == 0)
 		{
@@ -288,23 +286,22 @@ void InitCamera(_PLAYER *lp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-char inGameCamera[4] = {
-	1,0,2,1
-};
-
-// [D] [A] - wierd addresses but must be decompiled OK
+// [D] [T]
 void ModifyCamera(void)
 {
-	ushort *puVar1;
-	unsigned char bVar2;
+	// camera types which can be chosen during game
+	static char inGameCamera[4] = {
+		1,0,2,1
+	};
+
 	_PLAYER *lp;
-	char *pCamType;
-	uint uVar5;
-	int iVar6;
+	char *pNextCameraView;
+	int angle;
+	int length;
 
 	int i;
 
-	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL);// && NumPlayers == 1)	// [A]
+	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL);// && NumPlayers == 1)	// [A] allow switching cameras in multiplayer
 	{
 		for(i = 0; i < NumPlayers; i++)
 		{
@@ -314,33 +311,30 @@ void ModifyCamera(void)
 			{
 				if (lp->viewChange != FrameCnt-1) 
 				{
-					pCamType = inGameCamera;
-					bVar2 = inGameCamera[0];
+					pNextCameraView = inGameCamera;
 
-					while (pCamType++, bVar2 != lp->cameraView)
+					while (*pNextCameraView++ != lp->cameraView)
 					{
-						if (inGameCamera + 2 < pCamType)
-							goto LAB_0001fb48;
-
-						bVar2 = *pCamType;
+						if (pNextCameraView > inGameCamera + 2)
+							break;
 					}
-
-					lp->cameraView = *pCamType;
+					lp->cameraView = *pNextCameraView;
 				}
 
-			LAB_0001fb48:
 				lp->viewChange = FrameCnt;
 
 				if (lp->cameraView == 1)
 				{
 					if (lp->cameraCarId < 1)
-						iVar6 = 360;
+						length = 360;
 					else
-						iVar6 = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
+						length = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
 
-					uVar5 = baseDir + 0x800 & 0xfff;
-					lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[uVar5 * 2] * (iVar6 - 60));
-					lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[uVar5 * 2 + 1] * (iVar6 - 60));
+					CalcCameraBasePos(lp);
+
+					angle = baseDir + 0x800 & 0xfff;
+					lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[angle * 2] * (length - 60));
+					lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[angle * 2 + 1] * (length - 60));
 				}
 			}
 		}
@@ -415,98 +409,100 @@ void ModifyCamera(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int CameraCollisionCheck(void)
 {
-	int iVar1;
+	int sphere;
 	PACKED_CELL_OBJECT *ppco;
 	CELL_OBJECT *cop;
-	uint uVar2;
 	MODEL *model;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int *piVar6;
-	int iVar7;
-	int iVar8;
+	MATRIX2* mat;
+	int zd;
+	int sizey;
+	int xd;
+	int *boxptr;
+	int sizez;
+	int sizex;
 	COLLISION_PACKET *collide;
-	int iVar9;
+	int count;
 	CELL_ITERATOR ci;
-	int local_50;
-	int local_48;
+	int box_loop;
+	int num_cb;
+	int cellx;
+	int cellz;
 
-	iVar9 = 0;
-	iVar1 = scr_z * 3 - 382;
+	count = 0;
+	sphere = scr_z * 3 - 382;
 
 	do {
-		iVar5 = camera_position.vx + (iVar9 % 3) * 0x400 + -0x400 + units_across_halved;
-		iVar3 = camera_position.vz + (iVar9 / 3) * 0x400 + -0x400 + units_down_halved;
+		cellx = camera_position.vx + (count % 3) * 1024 - 1024 + units_across_halved >> 11;
+		cellz = camera_position.vz + (count / 3) * 1024 - 1024 + units_down_halved >> 11;
 
-		if (0 < gCameraDistance)
+		if (gCameraDistance > 0)
 		{
-			ppco = GetFirstPackedCop(iVar5 >> 0xb, iVar3 >> 0xb, &ci, 0);
+			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0);
 			cop = UnpackCellObject(ppco, &ci.nearCell);
+
 			while (cop != NULL) 
 			{
 				model = modelpointers[cop->type];
-				piVar6 = (int *)model->collision_block;
-				if ((piVar6 != NULL) && ((model->flags2 & 0x800) == 0)) 
+				boxptr = (int *)model->collision_block;
+
+				if (boxptr != NULL && (model->flags2 & 0x800) == 0) 
 				{
-					iVar3 = (cop->pos).vx;
-					iVar5 = iVar3 - camera_position.vx;
-					if (iVar5 < 0)
-						iVar5 = camera_position.vx - iVar3;
+					xd = cop->pos.vx - camera_position.vx;
+					if (xd < 0)
+						xd = camera_position.vx - cop->pos.vx;
 
-					iVar4 = (cop->pos).vz;
-					iVar3 = iVar4 - camera_position.vz;
-					if (iVar3 < 0)
-						iVar3 = camera_position.vz - iVar4;
+					zd = cop->pos.vz - camera_position.vz;
+					if (zd < 0)
+						zd = camera_position.vz - cop->pos.vz;
+						
 
-					collide = (COLLISION_PACKET *)(piVar6 + 1);
-					if (iVar5 * iVar5 + iVar3 * iVar3 < model->bounding_sphere * model->bounding_sphere + iVar1 * iVar1) 
+					num_cb = *boxptr;
+					collide = (COLLISION_PACKET *)(boxptr + 1);
+					if (xd * xd + zd * zd < model->bounding_sphere * model->bounding_sphere + sphere * sphere) 
 					{
-						iVar5 = 0;
-						if (0 < *piVar6) 
+						box_loop = 0;
+
+						while (box_loop < num_cb)
 						{
-							do {
-								uVar2 = (uint)cop->yang;
-								iVar7 = camera_position.vx - (cop->pos).vx;
-								iVar4 = camera_position.vz - (cop->pos).vz;
+							VECTOR cam_vec;
+							VECTOR offset;
 
-								iVar3 = iVar7 * matrixtable[uVar2].m[0][0] + iVar4 * matrixtable[uVar2].m[2][0];
-								iVar4 = iVar7 * matrixtable[uVar2].m[0][2] + iVar4 * matrixtable[uVar2].m[2][2];
+							cam_vec.vx = camera_position.vx - cop->pos.vx;
+							cam_vec.vy = camera_position.vy - cop->pos.vy;
+							cam_vec.vz = camera_position.vz - cop->pos.vz;
 
-								iVar7 = (iVar3 >> 0xc) - (int)collide->xpos;
-								iVar3 = (camera_position.vy - (cop->pos).vy) - (int)collide->ypos;
-								local_48 = (iVar4 >> 0xc) - (int)collide->zpos;
-								iVar4 = (int)collide->yang;
-								local_50 = iVar7;
+							mat = &matrixtable[cop->yang];
 
-								if (iVar4 != 0) 
-								{
-									local_50 = iVar7 * matrixtable[iVar4].m[0][0] + local_48 * matrixtable[iVar4].m[2][0];
-									local_48 = iVar7 * matrixtable[iVar4].m[0][2] + local_48 * matrixtable[iVar4].m[2][2];
-								}
+							offset.vx = (cam_vec.vx * mat->m[0][0] + cam_vec.vz * mat->m[2][0] >> 0xc) - collide->xpos;
+							offset.vy = cam_vec.vy - collide->ypos;
+							offset.vz = (cam_vec.vx * mat->m[0][2] + cam_vec.vz * mat->m[2][2] >> 0xc) - collide->zpos;
 
-								iVar4 = collide->xsize << 0x10;
+							if (collide->yang != 0)
+							{
+								mat = &matrixtable[collide->yang];
+								offset.vx = offset.vx * mat->m[0][0] + offset.vz * mat->m[2][0];
+								offset.vz = offset.vx * mat->m[0][2] + offset.vz * mat->m[2][2];
+							}
 
-								if ((iVar4 >> 0x10 < 500) && (collide->zsize < 500)) 
-									break;
+							if (collide->xsize < 500 && collide->zsize < 500)
+								break;
 
-								iVar8 = (iVar4 >> 0x11) + iVar1;
-								iVar7 = ((int)((uint)(ushort)collide->zsize << 0x10) >> 0x11) + iVar1;
-								iVar4 = ((int)((uint)(ushort)collide->ysize << 0x10) >> 0x11) + iVar1;
+							sizex = (collide->xsize >> 1) + sphere;
+							sizey = (collide->ysize >> 1) + sphere;
+							sizez = (collide->zsize >> 1) + sphere;
 
-								if (-iVar8 < local_50 && local_50 < iVar8 &&
-									-iVar7 < local_48 && local_48 < iVar7 &&
-									-iVar4 < iVar3 && iVar3 < iVar4)
-								{
-									return 1;
-								}
+							if (-sizex < offset.vx && offset.vx < sizex &&
+								-sizez < offset.vz && offset.vz < sizez &&
+								-sizey < offset.vy && offset.vy < sizey)
+							{
+								return 1;
+							}
 
-								iVar5++;
-								collide++;
-							} while (iVar5 < *piVar6);
+							box_loop++;
+							collide++;
 						}
 					}
 				}
@@ -514,10 +510,11 @@ int CameraCollisionCheck(void)
 				cop = UnpackCellObject(ppco, &ci.nearCell);
 			}
 		}
-		iVar9 = iVar9 + 1;
-		if (8 < iVar9) {
-			return 0;
-		}
+		count++;
+
+		if (8 < count)
+			break;
+
 	} while (true);
 
 	return 0;
@@ -546,56 +543,46 @@ int CameraCollisionCheck(void)
 	/* end block 3 */
 	// End Line: 2115
 
-// [D]
+// [D] [T]
 void TurnHead(_PLAYER *lp)
 {
-	unsigned char bVar1;
-
 	if ((paddCamera & 3) == 3) 
 	{
 		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = 0;
-
-		goto LAB_00020ae8;
 	}
-
-	if ((paddCamera & 1) == 0) 
+	else if ((paddCamera & 1) == 0) 
 	{
-		if ((paddCamera & 2) == 0)
+		if ((paddCamera & 2) == 0) // look back
 		{
 			if (pPlayerPed != NULL)
 				pPlayerPed->head_rot = 0;
 
 			lp->headTimer = 0;
 			lp->headTarget = 0;
-			goto LAB_00020ae8;
 		}
-
-		if (pPlayerPed != NULL) 
-			pPlayerPed->head_rot = -0x200;
-
-		bVar1 = lp->headTimer;
-		if (1 < bVar1) 
+		else
 		{
-			lp->headTarget = -0x4000000;
-			goto LAB_00020ae8;
+			if (pPlayerPed != NULL)
+				pPlayerPed->head_rot = -512;
+
+			if (lp->headTimer > 1)
+				lp->headTarget = -0x4000000;
+			else
+				lp->headTimer++;
 		}
 	}
 	else
 	{
 		if (pPlayerPed != NULL) 
-			pPlayerPed->head_rot = 0x200;
+			pPlayerPed->head_rot = 512;
 
-		bVar1 = lp->headTimer;
-		if (1 < bVar1) 
-		{
+		if (lp->headTimer > 1)
 			lp->headTarget = 0x4000000;
-			goto LAB_00020ae8;
-		}
+		else
+			lp->headTimer++;
 	}
 
-	lp->headTimer = bVar1 + 1;
-LAB_00020ae8:
 	lp->headPos += (lp->headTarget - lp->headPos) / 2;
 }
 
@@ -648,53 +635,53 @@ short gCameraMaxDistance = 0x3e8;
 _CAR_DATA *jcam = NULL;
 int switch_detail_distance = 10000;
 
-// [D]
+// [D] [T]
 void PlaceCameraFollowCar(_PLAYER *lp)
 {
-	_CAR_DATA *p_Var1;
-	short sVar2;
-	int iVar3;
-	int iVar4;
-	CAR_COSMETICS *pCVar5;
-	uint uVar6;
-	uint uVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
+	CAR_COSMETICS *car_cos;
+	int camAngle;
+	int cdist;
+	int sdist;
+	int carheight;
+	int camExpandSpeed;
+	int angleDelta;
+	int cammapht;
+	int camPosVy;
 
-	iVar3 = lp->cameraCarId;
-
-	if (iVar3 < 0) 
+	if (lp->cameraCarId < 0)
 	{
 		maxCameraDist = 850;
-		iVar9 = -220;
-		iVar10 = 10;
+		carheight = -220;
+		camExpandSpeed = 10;
 	}
 	else 
 	{
-		pCVar5 = car_data[iVar3].ap.carCos;
+		_CAR_DATA* camCar;
+		int carSpeed;
+		camCar = &car_data[lp->cameraCarId];
 
-		if(pCVar5)
+		car_cos = camCar->ap.carCos;
+
+		if(car_cos)
 		{
-			iVar10 = pCVar5->colBox.vy;
+			carheight = car_cos->colBox.vy * -3 + 0x55;
+			maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
 
-			iVar9 = iVar10 * -3 + 0x55;
-			maxCameraDist = pCVar5->colBox.vz * 2 + iVar10 + 248;
-			iVar3 = FIXED(car_data[iVar3].hd.wheel_speed);
+			carSpeed = FIXED(camCar->hd.wheel_speed);
 
-			if (iVar3 < 0)
-				iVar3 = -iVar3;
+			if (carSpeed < 0)
+				carSpeed = -carSpeed;
 
-			iVar10 = 10;
+			camExpandSpeed = 10;
 
-			if (iVar3 > 9 && (gCameraDistance + 30 <= maxCameraDist))
-				iVar10 = 0x14;
+			if (carSpeed > 9 && (gCameraDistance + 30 <= maxCameraDist))
+				camExpandSpeed = 20;
 		}
 		else
 		{
 			maxCameraDist = 850;
-			iVar9 = -220;
-			iVar10 = 10;
+			carheight = -220;
+			camExpandSpeed = 10;
 		}
 	}
 
@@ -702,54 +689,44 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		TurnHead(lp);
 
 	camera_angle.vx = 25;
-	uVar7 = lp->cameraAngle - (lp->headPos >> 16);
+	camAngle = lp->cameraAngle - (lp->headPos >> 16) & 0xfff;
 
-	if (pauseflag == 0) 
+	if (pauseflag == 0 || EditMode == 2)
 	{
 		if ((paddCamera & 3) == 3)
 		{
-			uVar7 = baseDir & 0xfff;
-			goto LAB_000201cc;
+			camAngle = baseDir & 0xfff;
+		}
+		else
+		{
+			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 0x800U & 0xfff) - 0x800;
+			lp->cameraAngle += (angleDelta >> 3) & 0xfff;
 		}
 	}
-	else 
-	{
-		if (EditMode != 2)
-			goto LAB_000201cc;
-	}
 
-	uVar6 = ((baseDir + gCameraAngle) - lp->cameraAngle) + 0x800U & 0xfff;
-	iVar3 = uVar6 - 0x800;
-
-	lp->cameraAngle += (iVar3 >> 3) & 0xfff;
-
-LAB_000201cc:
-	uVar7 = uVar7 & 0xfff;
-	iVar8 = lp->cameraDist;
-
-	iVar3 = rcossin_tbl[uVar7 * 2] * iVar8;
-	lp->cameraPos.vx = basePos[0] + FIXED(iVar3);
-
-	iVar8 = rcossin_tbl[uVar7 * 2 + 1] * iVar8;
-	lp->cameraPos.vz = basePos[2] + FIXED(iVar8);
+	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[camAngle * 2] * lp->cameraDist);
+	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[camAngle * 2 + 1] * lp->cameraDist);
 
 	lp->cameraPos.vy = basePos[1];
-	iVar3 = MapHeight(&lp->cameraPos);
-	lp->cameraPos.vy = iVar9 - basePos[1];
+	camPosVy = MapHeight(&lp->cameraPos);
+	lp->cameraPos.vy = carheight - basePos[1];
 
-	iVar8 = (iVar9 - iVar3) -100;
-	iVar9 = MapHeight((VECTOR *)basePos);
+	cammapht = (carheight - camPosVy) -100;
 
-	if (iVar8 < lp->cameraPos.vy)
+	if (lp->cameraPos.vy > cammapht)
 	{
-		iVar4 = iVar9 - iVar3;
-		if (iVar4 < 0) 
-			iVar4 = iVar3 - iVar9;
+		int height, tmp;
+		height = MapHeight((VECTOR*)basePos);
 
-		if (iVar4 < 900)
+		tmp = height - camPosVy;
+
+		if (tmp < 0)
+			tmp = camPosVy - height;
+
+		if (tmp < 900)
 		{
-			camera_angle.vx = (lp->cameraPos.vy - iVar8 >> 1) + 25;
-			lp->cameraPos.vy = iVar8;
+			camera_angle.vx = (lp->cameraPos.vy - cammapht >> 1) + 25;
+			lp->cameraPos.vy = cammapht;
 		}
 	}
 
@@ -758,56 +735,36 @@ LAB_000201cc:
 
 	jcam->controlType = 5;
 
-	iVar3 = maxCameraDist;
-	gCameraDistance = iVar3;
+	gCameraDistance = maxCameraDist;
 
 	if (lp->cameraCarId < 0) 
 		jcam->ap.carCos = &dummyCosmetics;
 	else 
 		jcam->ap.carCos = car_data[lp->cameraCarId].ap.carCos;
 
-	jcam->hd.direction = uVar7;
+	jcam->hd.direction = camAngle;
 	
-	iVar9 = iVar3 * rcossin_tbl[uVar7 * 2] + 0x800;
-	iVar9 = basePos[0] + ((iVar9 >> 0xc) - (iVar9 >> 0x1f) >> 1);
-	jcam->hd.where.t[0] = iVar9;
-	jcam->hd.oBox.location.vx = iVar9;
-	iVar9 = -lp->cameraPos.vy;
-	jcam->hd.where.t[1] = iVar9;
+	sdist = maxCameraDist * rcossin_tbl[camAngle * 2] + 0x800;
+	cdist = maxCameraDist * rcossin_tbl[camAngle * 2 + 1] + 0x800;
 
-	jcam->hd.oBox.location.vy = iVar9;
-	iVar3 = iVar3 * rcossin_tbl[uVar7 * 2 + 1] + 0x800;
-	iVar3 = basePos[2] + ((iVar3 >> 0xc) - (iVar3 >> 0x1f) >> 1);
-	jcam->hd.where.t[2] = iVar3;
-	jcam->hd.oBox.location.vz = iVar3;
+	jcam->hd.oBox.location.vx = jcam->hd.where.t[0] = basePos[0] + ((sdist >> 0xc) - (sdist >> 0x1f) >> 1);
+	jcam->hd.oBox.location.vy = jcam->hd.where.t[1] = -lp->cameraPos.vy;
+	jcam->hd.oBox.location.vz = jcam->hd.where.t[2] = basePos[2] + ((cdist >> 0xc) - (cdist >> 0x1f) >> 1);
 
 	CheckScenaryCollisions(jcam);
 
-	iVar10 = lp->cameraDist + iVar10;
-	iVar3 = gCameraDistance;
+	lp->cameraDist += camExpandSpeed;
 
-	if (iVar10 < gCameraDistance)
-		iVar3 = iVar10;
+	if (lp->cameraDist > gCameraDistance)
+		lp->cameraDist = gCameraDistance;
 
-	lp->cameraDist = iVar3;
-	iVar3 = -jcam->hd.where.t[1];
-	jcam->hd.where.t[1] = iVar3;
-	lp->cameraPos.vy = iVar3;
+	jcam->hd.direction = jcam->hd.direction & 0xfff;
 
-	uVar7 = jcam->hd.direction & 0xfff;
-	jcam->hd.direction = uVar7;
+	lp->cameraPos.vy = -jcam->hd.where.t[1];
+	lp->cameraPos.vx = basePos[0] + FIXED(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2]);
+	lp->cameraPos.vz = basePos[2] + FIXED(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2 + 1]);
 
-	iVar3 = lp->cameraDist;
-
-	iVar10 = basePos[0] + FIXED(iVar3 * rcossin_tbl[uVar7 * 2]);
-	iVar3 = basePos[2] + FIXED(iVar3 * rcossin_tbl[(jcam->hd.direction & 0xfffU) * 2 + 1]);
-
-	lp->cameraPos.vz = iVar3;
-	lp->cameraPos.vx = iVar10;
-
-	sVar2 = ratan2(basePos[0] - iVar10, basePos[2] - iVar3);
-
-	camera_angle.vy = -sVar2 & 0xfff;
+	camera_angle.vy = -ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
 	camera_angle.vz = 0;
 
 	SetGeomScreen(0x100);
@@ -856,10 +813,9 @@ LAB_000201cc:
 	/* end block 4 */
 	// End Line: 2241
 
-// [D]
+// [D] [T]
 void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 {
-	int iVar1;
 	int d;
 	VECTOR temp;
 
@@ -867,6 +823,8 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 
 	if (tracking_car != 0) 
 	{
+		CalcCameraBasePos(lp);
+
 		temp.vx = basePos[0];
 		temp.vy = -basePos[1];
 		temp.vz = basePos[2];
@@ -881,20 +839,17 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 
 		if (zoom == 0) 
 		{
-			scr_z = iVar1 = 256;
+			scr_z = 256;
 		}
 		else 
 		{
 			scr_z = (d >> 4) + 256;
-			iVar1 = 800;
-			if (scr_z < 801) 
-				goto LAB_000209b0;
-		}
 
-		scr_z = iVar1;
+			if (scr_z > 800)
+				scr_z = 800;
+		}
 	}
 
-LAB_000209b0:
 	if (scr_z < 256)
 		scr_z = 256;
 
@@ -934,7 +889,7 @@ LAB_000209b0:
 	/* end block 4 */
 	// End Line: 2603
 
-// [D]
+// [D] [T]
 int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 {
 	VECTOR delta;
@@ -993,13 +948,11 @@ int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 
 VECTOR viewer_position;
 
-// [D]
+// [D] [T]
 void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 {
-	ushort uVar1;
-	uint uVar2;
+	int angle;
 	_CAR_DATA *cp;
-	int iVar4;
 
 	cp = NULL;
 
@@ -1013,33 +966,28 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 		viewer_position.vz = 0;
 		viewer_position.vy = viewer_position.vy + 42 + lp->pPed->head_pos;
 	}
-	else 
+	else if (cp->ap.carCos != NULL) // [A] prevent crash from happening
 	{
-		// [A] prevent crash from happening
-		if (cp->ap.carCos != NULL)
-		{
-			viewer_position.vy = 7;
-			viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
-		}
+		viewer_position.vy = 7;
+		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
 	}
 
 	if ((paddCamera & 3) == 3)
 		viewer_position.vz = 0;
 
-	uVar2 = baseDir & 0xfff;
+	angle = baseDir & 0xfff;
 
-	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[uVar2 * 2] * viewer_position.vz);
+	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[angle * 2] * viewer_position.vz);
 	lp->cameraPos.vy = viewer_position.vy - basePos[1];
-	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[uVar2 * 2 + 1] * viewer_position.vz);
+	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
 
 	TurnHead(lp);
 
 	if ((paddCamera & 3) == 3)
-		uVar1 = 0x800 - baseDir;
+		camera_angle.vy = 0x800 - baseDir & 0xfff;
 	else
-		uVar1 = (lp->headPos >> 16) - baseDir;
+		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
 
-	camera_angle.vy = uVar1 & 0xfff;
 	SetGeomScreen(256);
 	scr_z = 256;
 
@@ -1047,10 +995,10 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 	{
 		ClearMem((char *)&inv_camera_matrix, sizeof(MATRIX));
 
-		uVar2 = 0x800U - baseDir & 0xfff;
+		angle = 0x800U - baseDir & 0xfff;
 
-		inv_camera_matrix.m[0][0] = rcossin_tbl[uVar2 * 2 + 1];
-		inv_camera_matrix.m[0][2] = rcossin_tbl[uVar2 * 2];
+		inv_camera_matrix.m[0][0] = rcossin_tbl[angle * 2 + 1];
+		inv_camera_matrix.m[0][2] = rcossin_tbl[angle * 2];
 		inv_camera_matrix.m[1][1] = 0x1000;
 		inv_camera_matrix.m[2][0] = -inv_camera_matrix.m[0][2];
 		inv_camera_matrix.m[2][2] = inv_camera_matrix.m[0][0];
@@ -1135,7 +1083,7 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int OK_To_Zoom(void)
 {
 	int old_z;
@@ -1180,7 +1128,7 @@ int OK_To_Zoom(void)
 	/* end block 3 */
 	// End Line: 2953
 
-// [D]
+// [D] [T]
 void SetBasePos(VECTOR *pVec)
 {
 	basePos[0] = pVec->vx;
