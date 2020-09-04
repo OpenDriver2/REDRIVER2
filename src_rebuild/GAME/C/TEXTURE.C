@@ -136,30 +136,37 @@ void IncrementClutNum(RECT16 *clut)
 	/* end block 3 */
 	// End Line: 256
 
-// [D]
+// [D] [T]
 void IncrementTPageNum(RECT16 *tpage)
 {
-	int i;
-	i = 1;
+	int i = 0;
 
-	while (true) 
+	while (++i)
 	{
-		if (tpage->x == tpagepos[i-1].x &&	// proper tpage position
-			tpage->y == tpagepos[i-1].y || 
-			tpagepos[i].x == -1)			// or out of tpages?
+		// proper tpage position?
+		if ((tpage->x == tpagepos[i - 1].x) && (tpage->y == tpagepos[i - 1].y))
+		{
+			if (tpagepos[i].x == -1)
+			{
+				// out of tpages
+				NoTextureMemory = 100;
+			}
+			else
+			{
+				// increment the tpage
+				tpage->x = tpagepos[i].x;
+				tpage->y = tpagepos[i].y;
+			}
+
+			// bust 'outta here, real fly
 			break;
-		i++;
-	}
-
-	tpage->x = tpagepos[i].x;
-	tpage->y = tpagepos[i].y;
-
-	if (tpagepos[i].x == -1)
-	{
-		NoTextureMemory = 100;
-
-		tpage->x = tpagepos[i-1].x;
-		tpage->y = tpagepos[i-1].y;
+		}
+		else
+		{
+			// last tpage?
+			if (tpagepos[i].x == -1)
+				break;
+		}
 	}
 }
 
