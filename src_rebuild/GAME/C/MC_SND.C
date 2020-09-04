@@ -817,7 +817,7 @@ void DoMissionSound(void)
 			}
 			break;
 		case 30:
-			if (bodgevar < 4)
+			if ((bodgevar > 0) && (bodgevar < 4))
 			{
 				VECTOR Q[4] = {
 					{0xFFFFD005,0xFFFFFEED,0xCD61B},
@@ -898,7 +898,7 @@ void DoMissionSound(void)
 			}
 			break;
 		case 35:
-			if (bodgevar < 4) 
+			if ((bodgevar > 0) && (bodgevar < 4))
 			{
 				VECTOR Q[3] = {
 					{0x31330, 0xFFFFFF4F, 0x5E0E0},
