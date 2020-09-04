@@ -398,58 +398,31 @@ int Find_TexID(MODEL *model, int t_id)
 	/* end block 4 */
 	// End Line: 1491
 
-//[D]
+// [D] [T]
 TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 {
-	char *pcVar1;
-	int iVar2;
-	TEXINF *pTVar3;
-	int iVar4;
-	int iVar5;
-	TEXINF *pTVar6;
-	int iVar7;
-	int *piVar8;
-	TEXINF **ppTVar9;
+	char *nametable = texturename_buffer;
 
-	pcVar1 = texturename_buffer;
-	iVar7 = 0;
-	pTVar6 = NULL;
-
-	if (0 < tpage_amount) 
+	for (int i = 0; i < tpage_amount; i++)
 	{
-		ppTVar9 = tpage_ids;
-		piVar8 = tpage_texamts;
+		int texamt = tpage_texamts[i];
+		TEXINF *texinf = tpage_ids[i];
 
-		do {
-			iVar5 = *piVar8;
-			pTVar6 = *ppTVar9;
-			iVar4 = 0;
-			pTVar3 = pTVar6;
-
-			if (0 < iVar5) 
+		for (int j = 0; j < texamt; j++)
+		{
+			if (!strcmp(nametable + texinf->nameoffset, name))
 			{
-				do {
-					iVar2 = strcmp(pcVar1 + pTVar3->nameoffset, name);
+				*tpagenum = i;
+				*texturenum = j;
 
-					if (iVar2 == 0) 
-					{
-						*tpagenum = iVar7;
-						*texturenum = iVar4;
-						return pTVar3;
-					}
-
-					iVar4 = iVar4 + 1;
-					pTVar3 = pTVar3 + 1;
-				} while (iVar4 < iVar5);
+				return texinf;
 			}
 
-			ppTVar9 = ppTVar9 + 1;
-			iVar7 = iVar7 + 1;
-			piVar8 = piVar8 + 1;
-
-		} while (iVar7 < tpage_amount);
+			texinf++;
+		}
 	}
-	return pTVar6;
+
+	return NULL;
 }
 
 
@@ -871,6 +844,8 @@ int environmenttpage = 0;
 // [D] [T]
 void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 {
+	char *nametable = texturename_buffer;
+
 	for (int i = 0; i < tpage_amount; i++)
 	{
 		int texamt = tpage_texamts[i];
@@ -878,7 +853,7 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 
 		for (int j = 0; j < texamt; j++)
 		{
-			if (!strcmp(texturename_buffer + texinf->nameoffset, name))
+			if (!strcmp(nametable + texinf->nameoffset, name))
 			{
 				if (!texture_is_icon || (i == environmenttpage))
 				{
