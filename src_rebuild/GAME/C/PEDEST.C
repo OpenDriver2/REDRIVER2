@@ -323,8 +323,8 @@ LAB_0006e104:
 	if ((pPed->type != PED_ACTION_SIT) && (bStopTanner == 0))
 		pPed->position.vy = iVar2;
 
-	if ((gInGameCutsceneActive == 0 || gCurrentMissionNumber != 0x17) ||
-		((gInGameCutsceneID != 0 || (CameraCnt != 0x1cb || (pPed->pedType == TANNER_MODEL)))))
+	if ((gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23) ||
+		((gInGameCutsceneID != 0 || (CameraCnt != 0x1cb || ((pPed->pedType == TANNER_MODEL) || (ActiveCheats.cheat12 && (pPed->pedType == OTHER_MODEL)))))))
 	{
 		if ((tannerPad & 0x10) != 0) 
 		{
@@ -496,7 +496,7 @@ void SetTannerPosition(VECTOR *pVec)
 	pPed = pUsedPeds;
 	while(pPed)
 	{
-		if (pPed->pedType == TANNER_MODEL)
+		if ((pPed->pedType == TANNER_MODEL) || (ActiveCheats.cheat12 && (pPed->pedType == OTHER_MODEL)))
 		{
 			pPed->position.vx = pVec->vx;
 			pPed->position.vy = -pVec->vy;
@@ -632,7 +632,7 @@ void DestroyPedestrians(void)
 {
 	while (pUsedPeds)
 	{
-		if (pUsedPeds->pedType == TANNER_MODEL)
+		if ((pUsedPeds->pedType == TANNER_MODEL) || (ActiveCheats.cheat12 && (pUsedPeds->pedType == OTHER_MODEL)))
 			numTannerPeds--;
 
 		DestroyPedestrian(pUsedPeds);
@@ -2930,7 +2930,7 @@ void AnimatePed(PEDESTRIAN *pPed)
 		pPed->frame1--;
 	}
 
-	if (pPed->pedType == TANNER_MODEL && pPed->type < PED_ACTION_BACK)
+	if ((pPed->pedType == TANNER_MODEL || (ActiveCheats.cheat12 && (pPed->pedType == OTHER_MODEL))) && pPed->type < PED_ACTION_BACK)
 	{
 		iVar5 = PedSurfaceType((VECTOR *)&pPed->position);
 

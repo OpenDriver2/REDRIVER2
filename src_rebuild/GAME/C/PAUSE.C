@@ -110,6 +110,11 @@ void ToggleSecretCarFun(int direction)
 	FixCarCos(&car_cosmetics[4], 12);
 }
 
+void ToggleJerichoMode(int direction)
+{
+	ActiveCheats.cheat12 ^= 1;
+}
+
 extern void LoadSky(void);
 
 void DebugTimeOfDayDay(int direction)
@@ -174,6 +179,7 @@ MENU_ITEM DebugOptionsItems[] =
 	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
 	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
 	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
+	{ "Jericho mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_RESTART,	NULL },
 	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
 	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
