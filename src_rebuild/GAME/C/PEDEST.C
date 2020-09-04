@@ -5159,7 +5159,7 @@ void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 		pPed->head_rot = pPed->dir.vy + (short)(ratan2(v1.vy, v1.vx) + 0xc00 & 0xfff);
 	}
 
-	if ((pPed->head_rot - 897) > 2302)
+	if ((pPed->head_rot - 897) < 2302)
 		pPed->head_rot = 0;
 }
 
