@@ -745,7 +745,7 @@ void DoMissionSound(void)
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
+				cVar1 = GetMissionSound(11);
 				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
@@ -761,7 +761,7 @@ void DoMissionSound(void)
 			if (bodgevar == 1) 
 			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
+				cVar1 = GetMissionSound(11);
 				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
@@ -803,7 +803,7 @@ void DoMissionSound(void)
 		case 25:
 			if (bodgevar == 1) {
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
+				cVar1 = GetMissionSound(11);
 				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				holdall++;
 				bodgevar = 2;
@@ -827,7 +827,7 @@ void DoMissionSound(void)
 
 				VECTOR *P = &Q[bodgevar - 1];
 
-				cVar1 = GetMissionSound('\"');
+				cVar1 = GetMissionSound(34);
 				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
 
 				bodgevar += 4;
@@ -874,7 +874,7 @@ void DoMissionSound(void)
 				if (bodgevar == 1)
 				{
 					channel = GetFreeChannel();
-					cVar1 = GetMissionSound('\v');
+					cVar1 = GetMissionSound(11);
 					Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 					bodgevar = 2;
 				}
@@ -908,7 +908,7 @@ void DoMissionSound(void)
 
 				VECTOR *P = &Q[bodgevar - 1];
 
-				cVar1 = GetMissionSound('\"');
+				cVar1 = GetMissionSound(34);
 				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
 
 				bodgevar += 4;
