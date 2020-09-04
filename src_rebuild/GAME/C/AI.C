@@ -28,7 +28,7 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void StoreGameFlags(void)
 {
 	ReplayParameterPtr->weather = gWeather;
@@ -68,11 +68,11 @@ void StoreGameFlags(void)
 	/* end block 3 */
 	// End Line: 661
 
-// [D]
+// [D] [T]
 int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 {
-	int iVar1;
-	int iVar2;
+	int speed;
+	int carRange;
 
 	if ((cp->controlFlags & 1) != 0) 
 		gCopCarTheftAttempted = 1;
@@ -83,20 +83,20 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 		(cp->controlFlags & 2) == 0 && 
 		cp->hd.where.m[1][1] > 99)			// not flipped over
 	{
-		iVar1 = FIXED(cp->hd.wheel_speed);
+		speed = FIXED(cp->hd.wheel_speed);
 
-		if (iVar1 < 0) 
-			iVar1 = -iVar1;
+		if (speed < 0)
+			speed = -speed;
 
-		if (iVar1 < 3)
+		if (speed < 3)
 		{
-			iVar1 = car_cosmetics[cp->ap.model].colBox.vx * 2;
-			iVar2 = iVar1 * iVar1;
+			carRange = car_cosmetics[cp->ap.model].colBox.vx * 2;
+			carRange *= carRange;
 
-			if (5000 < iVar1)
-				iVar2 = 25000000;
+			if (5000 < carRange)
+				carRange = 25000000;
 
-			return (iVar2 < distToCarSq) ^ 1;
+			return (carRange < distToCarSq) ^ 1;
 		}
 	}
 
@@ -132,7 +132,7 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 int TannerStuckInCar(int doSpeedCheck, int player_id)
 {
 	short *psVar1;
-	int iVar2;
+	int speed;
 	int iVar3;
 
 	_CAR_DATA *cp;
@@ -160,12 +160,12 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 		{
 			if (doSpeedCheck != 0)
 			{
-				iVar2 = FIXED(cp->hd.wheel_speed);
+				speed = FIXED(cp->hd.wheel_speed);
 
-				if (iVar2 < 0)
-					iVar2 = -iVar2;
+				if (speed < 0)
+					speed = -speed;
 
-				if (2 < iVar2)
+				if (speed > 2)
 					return 1;
 			}
 
@@ -178,8 +178,3 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 
 	return 1;
 }
-
-
-
-
-
