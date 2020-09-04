@@ -184,46 +184,30 @@ void IncrementTPageNum(RECT16 *tpage)
 	/* end block 2 */
 	// End Line: 1244
 
-// [D]
+// [D] [T]
 // Originally ASM function
-char* unpackTexture(char *dest, char *src)
+char * unpackTexture(char *dest, char *src)
 {
-	bool bVar1;
-	char cVar2;
-	char *pcVar3;
-	char *pcVar4;
-	uint uVar5;
+	char *ptr = dest + 0x7fff;
 
-	pcVar4 = dest + 0x7fff;
 	do {
-		uVar5 = (*src);
-		pcVar3 = src + 1;
-		cVar2 = *pcVar3;
-		if ((uVar5 & 0x80) == 0) {
-			while (true) {
-				pcVar3 = pcVar3 + 1;
-				*pcVar4 = cVar2;
-				pcVar4 = pcVar4 + -1;
-				bVar1 = uVar5 == 0;
-				uVar5 = uVar5 - 1;
-				if (bVar1) break;
-				cVar2 = *pcVar3;
-			}
+		char pix = *src++;
+		
+		if ((pix & 0x80) != 0)
+		{
+			char p = *src++;
+
+			do (*ptr-- = p);
+			while (pix++ <= 0);
 		}
-		else {
-			pcVar3 = src + 2;
-			*pcVar4 = cVar2;
-			pcVar4 = pcVar4 + -1;
-			do {
-				*pcVar4 = cVar2;
-				pcVar4 = pcVar4 + -1;
-				bVar1 = uVar5 != 0;
-				uVar5 = uVar5 + 1;
-			} while (bVar1);
+		else
+		{
+			do (*ptr-- = *src++);
+			while (pix-- != 0);
 		}
-		src = pcVar3;
-	} while (dest <= pcVar4);
-	return pcVar3;
+	} while (ptr >= dest);
+
+	return src;
 }
 
 // [D] [A]
