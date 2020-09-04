@@ -1503,7 +1503,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		CompleteAllActiveTargets(thread->player);
 		TriggerInGameCutscene(val1);
 
-		if (gInGameCutsceneActive && gCutsceneAtEnd)
+		if (gInGameCutsceneActive || gCutsceneAtEnd)
 		{
 			RequestXA();
 			InitializeCutsceneSound(val1);
