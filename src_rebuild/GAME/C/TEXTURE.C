@@ -868,68 +868,34 @@ void ReloadIcons(void)
 
 int environmenttpage = 0;
 
-// [D]
+// [D] [T]
 void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 {
-	ushort uVar1;
-	char *pcVar2;
-	int iVar3;
-	TEXINF *pTVar4;
-	TEXINF **ppTVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	unsigned short *psVar9;
-	int *piVar10;
-
-	pcVar2 = texturename_buffer;
-	iVar7 = 0;
-
-	if (0 < tpage_amount) 
+	for (int i = 0; i < tpage_amount; i++)
 	{
-		ppTVar5 = tpage_ids;
-		piVar10 = tpage_texamts;
-		psVar9 = texture_pages;
+		int texamt = tpage_texamts[i];
+		TEXINF *texinf = tpage_ids[i];
 
-		do {
-			iVar8 = *piVar10;
-			pTVar4 = *ppTVar5;
-			iVar6 = 0;
-
-			if (0 < iVar8) 
+		for (int j = 0; j < texamt; j++)
+		{
+			if (!strcmp(texturename_buffer + texinf->nameoffset, name))
 			{
-				do {
-					iVar3 = strcmp(pcVar2 + pTVar4->nameoffset, name);
+				if (!texture_is_icon || (i == environmenttpage))
+				{
+					info->tpageid = texture_pages[i];
+					info->clutid = texture_cluts[i][j];
+					info->texture_number = (char)j;
+					info->texture_page = (char)i;
 
-					if ((iVar3 == 0) && ((texture_is_icon == 0 || (iVar7 == environmenttpage)))) 
-					{
-						info->tpageid = *psVar9;
-						uVar1 = texture_cluts[iVar7][iVar6];
-						info->texture_number = (char)iVar6;
-						info->texture_page = (char)iVar7;
-						info->clutid = uVar1;
-						(info->coords).u0 = pTVar4->x;
-						(info->coords).v0 = pTVar4->y;
-						(info->coords).u1 = pTVar4->x + pTVar4->width + -1;
-						(info->coords).v1 = pTVar4->y;
-						(info->coords).u2 = pTVar4->x;
-						(info->coords).v2 = pTVar4->y + pTVar4->height + -1;
-						(info->coords).u3 = pTVar4->x + pTVar4->width + -1;
-						(info->coords).v3 = pTVar4->y + pTVar4->height + -1;
-						return;
-					}
+					setUVWH(&info->coords, texinf->x, texinf->y, texinf->width - 1, texinf->height - 1);
 
-					iVar6 = iVar6 + 1;
-					pTVar4 = pTVar4 + 1;
-				} while (iVar6 < iVar8);
+					// bust 'outta here, real fly
+					return;
+				}
 			}
 
-			ppTVar5 = ppTVar5 + 1;
-			piVar10 = piVar10 + 1;
-			iVar7 = iVar7 + 1;
-			psVar9++;
-
-		} while (iVar7 < tpage_amount);
+			texinf++;
+		}
 	}
 
 	texture_is_icon = 0;
