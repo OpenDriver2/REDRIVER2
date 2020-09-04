@@ -612,22 +612,15 @@ const int littleBoxRange = 400;
 const int halfStrike = 0x32000;
 const int fullStrike = 0x32000;
 
-// [D]
+// [D] [T]
 void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 {
 	static int setUsed = 0;
 
-	bool isCar;
-	uint uVar3;
-	VECTOR *pos;
+	int temp;
 	int strikeVel;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
-
+	bool isCar;
+	VECTOR *pos;
 	int displacement;
 	int denom;
 	int debrisColour;
@@ -666,13 +659,13 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 			else
 				cd[0].length[1] = pE->pos.vx - pos->vx;
 
-			strikeVel = pE->pos.vz - pos->vz;
+			temp = pE->pos.vz - pos->vz;
 
-			if (strikeVel < 0)
-				strikeVel = pos->vz - pE->pos.vz;
+			if (temp < 0)
+				temp = pos->vz - pE->pos.vz;
 
-			if (cd[0].length[1] < strikeVel)
-				cd[0].length[1] = strikeVel;
+			if (cd[0].length[1] < temp)
+				cd[0].length[1] = temp;
 
 			if (cd[0].length[1] < 3000)
 			{
