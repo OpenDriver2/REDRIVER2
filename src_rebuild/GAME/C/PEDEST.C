@@ -50,11 +50,23 @@ void CopStand(PEDESTRIAN *pPed);
 void CivGetIn(PEDESTRIAN *pPed);
 
 pedFunc fpPedPersonalityFunctions[] = {
-	PedDoNothing, PedUserWalker, PedUserRunner,
-	PedGetInCar, PedGetOutCar,
+	PedDoNothing,
+	PedUserWalker,
+	PedUserRunner,
+	PedGetInCar,
+	PedGetOutCar,
 	PedCarryOutAnimation,
-	CivPedDoNothing, CivPedWalk, CivPedSit, CivPedJump,
-	PedPressButton, TannerSitDown, CopStand, CivGetIn 
+
+	CivPedDoNothing,
+	CivPedWalk,
+	CivPedSit,
+	CivPedJump,
+
+	PedPressButton,
+	TannerSitDown,
+
+	CopStand,
+	CivGetIn,
 };
 
 VECTOR tannerLookAngle = { 0, 0, 0, 0 };
@@ -63,7 +75,7 @@ int tannerTurnMax = 16;
 int tannerTurnStep = 4;
 
 long force[4] = { 0x9000, 0, 0, 0 };
-long point[4] = { 0, 0, 0x5A, 0 };
+long point[4] = { 0, 0, 90, 0 };
 
 int bKillTanner = 0;
 
@@ -74,7 +86,8 @@ static int numTannerPeds = 0;
 static int numCopPeds = 0;
 int pinginPedAngle = 0;
 
-PEDESTRIAN pedestrians[28];
+PEDESTRIAN pedestrians[MAX_PEDESTRIANS];
+
 PEDESTRIAN *pUsedPeds = NULL;	// linked list of pedestrians
 PEDESTRIAN *pFreePeds = NULL;
 PEDESTRIAN *pHold = NULL;
@@ -539,48 +552,37 @@ void SetTannerPosition(VECTOR *pVec)
 void InitPedestrians(void)
 {
 	short sVar1;
-	PEDESTRIAN *pPVar3;
-	PEDESTRIAN *pPVar5;
-	PEDESTRIAN *pPVar6;
-
-	int loop;
+	
 	SEATED_PEDESTRIANS *seatedptr;
 
 	memset(pedestrians, 0, sizeof(pedestrians));
 	DestroyPedestrians();
 
-	loop = 25;
-	pedestrians[0].pNext = &pedestrians[1];
+	PEDESTRIAN *lastPed = &pedestrians[0];
 
-	pPVar5 = pedestrians + 2;
-	pPVar3 = pedestrians;
-	pPVar6 = pedestrians;
+	lastPed->pPrev = NULL;
 
-	do {
-		
-		pPVar3->pPrev = pPVar6++;
-		pPVar3->pNext = pPVar5++;
+	for (int loop = 1; loop < MAX_PEDESTRIANS; loop++)
+	{
+		PEDESTRIAN *currPed = &pedestrians[loop];
 
-		pPVar3++;
-		loop--;
-		
-	} while (-1 < loop);
+		lastPed->pNext = currPed;
+		currPed->pPrev = lastPed++;
+	}
 
-	pedestrians[27].pNext = NULL;
-	pedestrians[27].pPrev = &pedestrians[26];
+	lastPed->pNext = NULL;
+
 	pUsedPeds = NULL;
-
 	pFreePeds = pedestrians;
+
 	seated_count = 0;
 
 	seatedptr = seated_pedestrian;
 	if (seatedptr != NULL) 
 	{
-		sVar1 = seatedptr->rotation;
-		while (sVar1 != 9999) 
+		while (seatedptr->rotation != 9999)
 		{
 			seatedptr->index = 0;
-			sVar1 = seatedptr[1].rotation;
 
 			seated_count++;
 			seatedptr++;
