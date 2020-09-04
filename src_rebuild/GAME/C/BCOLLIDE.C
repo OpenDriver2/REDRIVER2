@@ -965,34 +965,23 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	/* end block 2 */
 	// End Line: 1967
 
-// [D]
+// [D] [T]
 int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)
 {
 	static CDATA2D cd[2] = {0}; // offset 0x0
 	static CRET2D collisionResult = { 0 }; // offset 0xd0
 
-	unsigned char uVar1;
-	int iVar2;
-	int uVar3;
-	long lVar4;
-	long lVar5;
-	long lVar6;
-	long lVar7;
+	int temp;
 	int strikeVel;
-	long lVar8;
-	int iVar9;
-	int iVar10;
-	int uVar11;
-	CAR_COSMETICS *pCVar12;
-	int iVar13;
-	int iVar14;
-	SMASHABLE_OBJECT *pSVar15;
+	int boxDiffY;
+	int collided;
 	short scale;
-	int iVar16;
-	int iVar17;
-	int iVar18;
-	SMASHABLE_OBJECT *pSVar19;
-	MODEL *pMVar20;
+	int chan;
+	int player_id;
+	SMASHABLE_OBJECT *match;
+	SMASHABLE_OBJECT* sip;
+	CAR_COSMETICS* car_cos;
+	MODEL *model;
 	VECTOR tempwhere;
 	SVECTOR boxDisp;
 	VECTOR velocity;
@@ -1002,10 +991,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	VECTOR LeafPosition;
 	VECTOR lamp_velocity;
 	int debris_colour;
-	int player_id;
+	int displacement;
+	int denom;
 
-	pMVar20 = modelpointers[cop->type];
-	iVar2 = GetPlayerId(cp);
+	model = modelpointers[cop->type];
+	player_id = GetPlayerId(cp);
 
 	cd[0].isCameraOrTanner = (cp->controlType == 5);
 
@@ -1013,28 +1003,27 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		cd[0].isCameraOrTanner = cd[0].isCameraOrTanner + 2;
 
 	cd[1].isCameraOrTanner = (flags & 0x1) == 0;
-	iVar14 = cp->hd.oBox.location.vy + building->pos.vy;
+	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
 
-	if (iVar14 < 0)
-		iVar14 = -iVar14;
+	if (boxDiffY < 0)
+		boxDiffY = -boxDiffY;
 
-	strikeVel = cp->hd.oBox.length[1] << 0x10;
-	uVar3 = 0;
+	collided = 0;
 
-	pCVar12 = cp->ap.carCos;
+	car_cos = cp->ap.carCos;
 
-	if (iVar14 <= building->height / 2 + ((strikeVel >> 0x10) - (strikeVel >> 0x1f) >> 1) && (cop->pos.vx != 0xFD46FEC0) && (pMVar20->shape_flags & 0x10) == 0)
+	if (boxDiffY <= building->height / 2 + cp->hd.oBox.length[1] / 2 && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
 	{
-		lVar4 = cp->hd.where.t[0];
-		lVar8 = cp->hd.where.t[2];
+		tempwhere.vx = cp->hd.where.t[0];
+		tempwhere.vz = cp->hd.where.t[2];
 
-		iVar14 = GetDebrisColour(cp);
+		debris_colour = GetDebrisColour(cp);
 		gte_SetRotMatrix(&cp->hd.where);
 		gte_SetTransMatrix(&cp->hd.where);
 
-		boxDisp.vx = -pCVar12->cog.vx;
-		boxDisp.vy = -pCVar12->cog.vy;
-		boxDisp.vz = -pCVar12->cog.vz;
+		boxDisp.vx = -car_cos->cog.vx;
+		boxDisp.vy = -car_cos->cog.vy;
+		boxDisp.vz = -car_cos->cog.vz;
 
 		gte_ldv0(&boxDisp);
 
@@ -1094,12 +1083,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		if (cp->controlType == 5) 
 		{
-			iVar2 = bcollided2d(cd, 1);
-			uVar3 = (iVar2 != 0);
+			collided = (bcollided2d(cd, 1) != 0);
 		}
 		else 
 		{
-			strikeVel = bcollided2d(cd, 0);
+			collided = (bcollided2d(cd, 0) != 0);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 			extern int gShowCollisionDebug;
@@ -1159,7 +1147,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
 					Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
 
-					CVECTOR& collColor = strikeVel ? rrcv : yycv;
+					CVECTOR& collColor = collided ? rrcv : yycv;
 
 					// display 2D box 2
 					{
@@ -1180,11 +1168,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				}
 			}
 #endif
-			if (strikeVel == 0) 
-			{
-				uVar3 = 0;
-			}
-			else 
+			if (collided)
 			{
 				bFindCollisionTime(cd, &collisionResult);
 				bFindCollisionPoint(cd, &collisionResult);
@@ -1225,23 +1209,14 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
-				iVar13 = cp->st.n.angularVelocity[0];
-				iVar18 = cp->st.n.angularVelocity[1];
-				iVar10 = cp->st.n.angularVelocity[2];
-
-				iVar17 = collisionResult.hit.vx - cp->hd.where.t[0];
-				iVar16 = collisionResult.hit.vy - cp->hd.where.t[1];
-				iVar9 = collisionResult.hit.vz - cp->hd.where.t[2];
+				lever[0] = collisionResult.hit.vx - cp->hd.where.t[0];
+				lever[1] = collisionResult.hit.vy - cp->hd.where.t[1];
+				lever[2] = collisionResult.hit.vz - cp->hd.where.t[2];
 				
-				strikeVel = FIXED(iVar18 * iVar9 - iVar10 * iVar16) + cp->st.n.linearVelocity[0];
-				iVar10 = FIXED(iVar10 * iVar17 - iVar13 * iVar9) + cp->st.n.linearVelocity[1];
-				iVar13 = FIXED(iVar13 * iVar16 - iVar18 * iVar17) + cp->st.n.linearVelocity[2];
+				reaction[0] = FIXED(cp->st.n.angularVelocity[1] * lever[2] - cp->st.n.angularVelocity[2] * lever[1]) + cp->st.n.linearVelocity[0];
+				reaction[1] = FIXED(cp->st.n.angularVelocity[2] * lever[0] - cp->st.n.angularVelocity[0] * lever[2]) + cp->st.n.linearVelocity[1];
+				reaction[2] = FIXED(cp->st.n.angularVelocity[0] * lever[1] - cp->st.n.angularVelocity[1] * lever[0]) + cp->st.n.linearVelocity[2];
 
-				lVar5 = collisionResult.surfNormal.vx;
-				lVar6 = collisionResult.surfNormal.vy;
-				lVar7 = collisionResult.surfNormal.vz;
-
-				
 				if (cp->controlType == 6)	// [A] temporary hack due to physics differences
 				{
 					cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
@@ -1255,22 +1230,23 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				if (flags & 0x2) // [A] Vegas train velocity - added here
 				{
-					iVar13 += 700000;
+					reaction[2] += 700000;
 				}
 
-				iVar10 = (strikeVel >> 8) * (lVar5 >> 4) + (iVar10 >> 8) * (lVar6 >> 4) + (iVar13 >> 8) * (lVar7 >> 4);
-				strikeVel = -iVar10;
+				strikeVel = -((reaction[0] >> 8) * (collisionResult.surfNormal.vx >> 4) +
+							(reaction[1] >> 8) * (collisionResult.surfNormal.vy >> 4) +
+							(reaction[2] >> 8) * (collisionResult.surfNormal.vz >> 4));
 
-				if (iVar10 < 0) 
+				if (strikeVel > 0)
 				{
 					if (cp->controlType == 1) 
 					{
 						if (strikeVel < 0x20) 
-							scale = ((iVar10 << 0x17) >> 0x10);
+							scale = ((strikeVel << 0x17) >> 0x10);
 						else 
 							scale = 0x1000;
 
-						if ((pMVar20->flags2 & 0x800) == 0) 
+						if ((model->flags2 & 0x800) == 0) 
 							NoteFelony(&felonyData, 6, scale);
 						else
 							NoteFelony(&felonyData, 7, scale);
@@ -1282,48 +1258,45 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					velocity.vy = -17;
 					velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
 
-					if ((pMVar20->flags2 & 0x800) != 0)
+					if ((model->flags2 & 0x800) != 0)
 					{
+						// that's for lamps
 						damage_object(cop, &velocity);
 
-						if ((pMVar20->shape_flags & 8) == 0)
+						// smash object
+						if ((model->shape_flags & 8) == 0)
 						{
-							pSVar15 = smashable;
-							strikeVel = pSVar15->modelIdx;
-							pSVar19 = NULL;
+							sip = smashable;
+							match = sip;
 
-							if (pSVar15->name != NULL)
+							while (sip->name != NULL)
 							{
-								while ((pSVar19 = pSVar15, modelpointers[strikeVel] != pMVar20 && (pSVar19 = NULL, pSVar15[1].name != NULL)))
+								if (modelpointers[sip->modelIdx] == model)
 								{
-									strikeVel = pSVar15[1].modelIdx;
-									pSVar15 = pSVar15 + 1;
+									match = sip;
+									break;
 								}
+								sip++;
 							}
 
-							if (pSVar19 == NULL)
-								pSVar19 = smashable;
+							chan = GetFreeChannel();
 
-							uVar3 = velocity.vx ^ velocity.vz;
-							uVar11 = collisionResult.hit.vx ^ collisionResult.hit.vz;
-							strikeVel = GetFreeChannel();
+							if (NumPlayers > 1 && NoPlayerControl == 0)
+								SetPlayerOwnsChannel(chan, player_id);
 
-							if ((1 < NumPlayers) && (NoPlayerControl == 0))
-								SetPlayerOwnsChannel(strikeVel, iVar2);
-
-							Start3DSoundVolPitch(strikeVel, 1, pSVar19->sound, 
+							Start3DSoundVolPitch(chan, 1, match->sound,
 								collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, 
-								pSVar19->volume, pSVar19->pitch + ((uVar3 * uVar11 & 0x3ff) - 0x200));
+								match->volume, match->pitch + (((velocity.vx ^ velocity.vz) * (collisionResult.hit.vx ^ collisionResult.hit.vz) & 0x3ff) - 0x200));
 						}
 
-						cp->hd.where.t[0] = lVar4;
-						cp->hd.where.t[2] = lVar8;
+						cp->hd.where.t[0] = tempwhere.vx;
+						cp->hd.where.t[2] = tempwhere.vz;
 
 						collisionResult.hit.vy += 30;
 
 						Setup_Sparks(&collisionResult.hit, &velocity, 10, 0);
 						Setup_Debris(&collisionResult.hit, &velocity, 5, 0);
-						Setup_Debris(&collisionResult.hit, &velocity, 5, iVar14 << 0x10);
+						Setup_Debris(&collisionResult.hit, &velocity, 5, debris_colour << 0x10);
 
 						if (cp->controlType == 1)
 							SetPadVibration(*cp->ai.padid, 3);
@@ -1331,11 +1304,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						return 0;
 					}
 
-
-
+					// add leaves
 					if ((0x3600 < strikeVel) && (32000 < cp->hd.wheel_speed + 16000U))
 					{
-						if ((pMVar20->flags2 & 0x2000) == 0) 
+						if ((model->flags2 & 0x2000) == 0) 
 						{
 							if (gNight != 0 && (modelpointers[gLastModelCollisionCheck]->flags2 & 0x1000) != 0)
 							{
@@ -1359,93 +1331,76 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						}
 						else 
 						{
-							uVar3 = rand();
 							LeafPosition.vx = collisionResult.hit.vx;
-							LeafPosition.vy = -((uVar3 & 0xfe) + 600) - collisionResult.hit.vy;
+							LeafPosition.vy = -((rand() & 0xfe) + 600) - collisionResult.hit.vy;
 							LeafPosition.vz = collisionResult.hit.vz;
 
 							AddLeaf(&LeafPosition, 3, 1);
 						}
 
-						if ((0x1b000 < strikeVel) && (Setup_Debris(&collisionResult.hit, &velocity, 6, iVar14 << 0x10), cp->controlType == 1)) 
+						if (0x1b000 < strikeVel)
 						{
-							SetPadVibration(*cp->ai.padid, 1);
+							Setup_Debris(&collisionResult.hit, &velocity, 6, debris_colour << 0x10);
+
+							if(cp->controlType == 1)
+								SetPadVibration(*cp->ai.padid, 1);
 						}
 					}
 
 					DamageCar(cp, cd, &collisionResult, strikeVel);
 
-					iVar2 = FIXED(iVar17 * collisionResult.surfNormal.vx + iVar16 * collisionResult.surfNormal.vy + iVar9 * collisionResult.surfNormal.vz);
-					iVar2 = FIXED(((iVar17 * iVar17 + iVar9 * iVar9) - iVar2 * iVar2) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
+					displacement = FIXED(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
+					displacement = FIXED(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cos->twistRateY) + 4096;
 
 					if (strikeVel < 0x7f001) 
-					{
-						iVar14 = -(iVar10 * 4096) / iVar2;
-					}
+						denom = (strikeVel * 4096) / displacement;
 					else
-					{
-						iVar14 = (strikeVel / iVar2) * 4096;
-					}
+						denom = (strikeVel / displacement) * 4096;
 
-					iVar14 = iVar14 / 64;
-					lVar4 = collisionResult.surfNormal.vx;
+					denom /= 64;
 
-					iVar2 = iVar14 * (lVar4 / 64);
-					lVar4 = collisionResult.surfNormal.vy;
+					pointVel[0] = denom * (collisionResult.surfNormal.vx / 64);
+					pointVel[1] = denom * (collisionResult.surfNormal.vy / 64);
+					pointVel[2] = denom * (collisionResult.surfNormal.vz / 64);
 
-					strikeVel = iVar14 * (lVar4 / 64);
-					lVar4 = collisionResult.surfNormal.vz;
-
-					iVar14 = iVar14 * (lVar4 / 64);
+					cp->hd.aacc[1] += FIXED(lever[2] * pointVel[0]) - FIXED(lever[0] * pointVel[2]);
 
 					if (cp->controlType != 4)
 					{
-						iVar13 = iVar16 * iVar14;
-						iVar10 = FIXED(iVar13);
+						temp = FIXED(lever[1] * pointVel[2]);
 
 						if (cp->controlType == 3)
-							iVar10 = FIXED(iVar13) >> 1;
-						
-						iVar10 = cp->hd.aacc[0] + iVar10;
-						cp->hd.aacc[0] = iVar10;
-						iVar18 = iVar9 * strikeVel;
-						iVar13 = FIXED(iVar18);
+							temp >>= 1;
 
-						if (cp->controlType == 3) 
-							iVar13 = FIXED(iVar18) >> 1;
-						
-						cp->hd.aacc[0] = iVar10 - iVar13;
-					}
+						cp->hd.aacc[0] += temp;
 
-					cp->hd.aacc[1] += FIXED(iVar9 * iVar2) - FIXED(iVar17 * iVar14);
-
-					if (cp->controlType != 4)
-					{
-						iVar10 = iVar17 * strikeVel;
-						iVar9 = FIXED(iVar10);
+						temp = FIXED(lever[2] * pointVel[1]);
 
 						if (cp->controlType == 3)
-							iVar9 = FIXED(iVar10) >> 1;
-
-						iVar9 = cp->hd.aacc[2] + iVar9;
-						cp->hd.aacc[2] = iVar9;
-						iVar13 = iVar16 * iVar2;
-						iVar10 = FIXED(iVar13);
-
-						if (cp->controlType == 3) 
-							iVar10 = FIXED(iVar13) >> 1;
+							temp >>= 1;
 						
-						cp->hd.aacc[2] = iVar9 - iVar10;
+						cp->hd.aacc[0] -= temp;
+
+						temp = FIXED(lever[0] * pointVel[1]);
+
+						if (cp->controlType == 3)
+							temp >>= 1;
+
+						cp->hd.aacc[2] += temp;
+
+						temp = FIXED(lever[1] * pointVel[0]);
+
+						if (cp->controlType == 3)
+							temp >>= 1;
+						
+						cp->hd.aacc[2] -= temp;
+
+						cp->st.n.linearVelocity[1] += pointVel[1];
 					}
 
-					cp->st.n.linearVelocity[0] += iVar2;
-
-					if (cp->controlType != 4)
-						cp->st.n.linearVelocity[1] += strikeVel;
-
-					cp->st.n.linearVelocity[2] += iVar14;
+					cp->st.n.linearVelocity[0] += pointVel[0];
+					cp->st.n.linearVelocity[2] += pointVel[2];
 				}
-				uVar3 = 1;
 			}
 
 			cp->hd.where.t[0] -= FIXED(cp->st.n.linearVelocity[0]);
@@ -1453,7 +1408,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		}
 	}
 
-	return uVar3;
+	return collided;
 }
 
 
