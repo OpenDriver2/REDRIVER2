@@ -259,99 +259,145 @@ void ProcessTannerPad(PEDESTRIAN *pPed, ulong pad, char PadSteer, char use_analo
 	int iVar2;
 	int iVar3;
 	int iVar4;
-	_sdPlane *p_Var5;
-	short sVar7;
+	_sdPlane *SurfacePtr;
+	short surface;
 	uint uVar8;
 	VECTOR vec;
 	VECTOR normal;
 	VECTOR out;
 	VECTOR tVec;
-	_sdPlane *SurfacePtr;
+	_sdPlane *plane;
 
-	SurfacePtr = NULL;
+	plane = NULL;
 	tannerPad = pad;
 
 	if (use_analogue) 
 	{
 		tannerPad = pad;
 
-		if (PadSteer < 0)
-			tannerPad = pad | 0x8000;
-		else if (PadSteer > 0)
-			tannerPad = tannerPad | 0x2000;
+		if (PadSteer != 0)
+			tannerPad |= (PadSteer < 0) ? 0x8000 : 0x2000;
 	}
 
 	IHaveThePower();	// process Havana easter egg near the entrance cemetery
 
 	vec.vx = pPed->position.vx;
-	vec.vz = pPed->position.vz;
 	vec.vy = -pPed->position.vy;
-	iVar2 = MapHeight(&vec);
+	vec.vz = pPed->position.vz;
+
 	uVar8 = (int)pPed->dir.vy - 0x800U & 0xfff;
-	tVec.vy = vec.vy;
-	tVec.pad = vec.pad;
-	iVar2 = -0x82 - iVar2;
-	bStopTanner = 0;
+	
 	tVec.vx = vec.vx + (rcossin_tbl[uVar8 * 2] * 5 >> 9);
+	tVec.vy = vec.vy;
 	tVec.vz = vec.vz + (rcossin_tbl[uVar8 * 2 + 1] * 5 >> 9);
-	iVar3 = MapHeight(&tVec);
-	iVar4 = (-0x82 - iVar3) - iVar2;
 
-	if (iVar4 < 0)
-		iVar4 = iVar2 - (-0x82 - iVar3);
+	bStopTanner = 0;
 
-	if (iVar4 < 1011)
+	int mapheight[2];
+	
+	mapheight[0] = -130 - MapHeight(&vec);
+	mapheight[1] = -130 - MapHeight(&tVec);
+
+	int dist = mapheight[1] - mapheight[0];
+
+	if (dist < 0)
+		dist = mapheight[0] - mapheight[1];
+
+	if (dist < 1011)
 	{
-		p_Var5 = sdGetCell(&tVec);
-		sVar7 = -0x20;
+		SurfacePtr = sdGetCell(&tVec);
+		surface = -32;
 
-		if (p_Var5 != NULL) 
-			sVar7 = p_Var5->surface;
+		if (SurfacePtr != NULL)
+		{
+			surface = SurfacePtr->surface;
 
-		uVar8 = ((int)((uint)(ushort)p_Var5->b << 0x10) >> 0x12) - 0x800U & 0xfff;
-		iVar3 = uVar8 - 0x800;
+			uVar8 = ((int)((uint)(ushort)SurfacePtr->b << 0x10) >> 0x12) - 2048 & 0xfff;
+			dist = uVar8 - 2048;
 
-		if (iVar3 < 0)
-			iVar3 = 0x800 - uVar8;
+			if (dist < 0)
+				dist = 2048 - uVar8;
 
-		if ((((iVar3 < 0x44d) && (sVar7 != 6)) && (sVar7 != 9)) && (sVar7 != -0x20))
-			goto LAB_0006e104;
+			if (dist < 1101)
+			{
+				switch (surface)
+				{
+				case -32:
+				case 6:
+				case 9:
+					break;
+				default:
+					dist = -1;
+					break;
+				}
+			}
+		}
 	}
-	bStopTanner = 1;
-LAB_0006e104:
 
-	if ((pPed->type != PED_ACTION_SIT) && (bStopTanner == 0))
-		pPed->position.vy = iVar2;
+	if (dist != -1)
+		bStopTanner = 1;
+
+	if ((pPed->type != PED_ACTION_SIT) && !bStopTanner)
+		pPed->position.vy = mapheight[0];
 
 	if ((gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23) ||
 		((gInGameCutsceneID != 0 || (CameraCnt != 0x1cb || ((pPed->pedType == TANNER_MODEL) || (ActiveCheats.cheat12 && (pPed->pedType == OTHER_MODEL)))))))
 	{
 		if ((tannerPad & 0x10) != 0) 
 		{
-			if (pPed->type != PED_ACTION_GETINCAR && pPed->type != PED_ACTION_GETOUTCAR && gCantDrive == 0) 
+			if (gTannerActionNeeded)
 			{
-				DeActivatePlayerPedestrian(pPed);
+				// attempt to push a button
+				switch (pPed->type)
+				{
+				case PED_ACTION_GETINCAR:
+				case PED_ACTION_GETOUTCAR:
+					// do not attempt
+					break;
+				default:
+					// hey, wait -- TANNER!
+					SetupPressButton(pPed);
+					break;
+				}
 			}
-
-			PVar1 = pPed->type;
-
-			if ((tannerPad & 0x10) != 0 && PVar1 != PED_ACTION_GETINCAR && PVar1 != PED_ACTION_GETOUTCAR && PVar1 != PED_ACTION_SIT && FindTannerASeat(pPed) != NULL)
+			else
 			{
-				SetupTannerSitDown(pPed);
-			}
-		}
+				// attempt to get into a car
+				switch (pPed->type)
+				{
+				case PED_ACTION_GETINCAR:
+				case PED_ACTION_GETOUTCAR:
+					// do not attempt
+					break;
+				default:
+					// enter the nearest car if possible
+					if (!gCantDrive)
+						DeActivatePlayerPedestrian(pPed);
+					break;
+				}
 
-		if (gTannerActionNeeded != 0 && (tannerPad & 0x10) != 0 && pPed->type != PED_ACTION_GETINCAR && pPed->type != PED_ACTION_GETOUTCAR) 
-		{
-			SetupPressButton(pPed);
+				// attempt to sit down
+				switch (pPed->type)
+				{
+				case PED_ACTION_GETINCAR:
+				case PED_ACTION_GETOUTCAR:
+				case PED_ACTION_SIT:
+					// do not attempt
+					break;
+				default:
+					// sit his ass down
+					if (FindTannerASeat(pPed) != NULL)
+						SetupTannerSitDown(pPed);
+				}
+			}
 		}
 
 		if (pPed != NULL) 
 		{
-			if (pPed->fpAgitatedState == NULL)
-				(*pPed->fpRestState)(pPed);
-			else
+			if (pPed->fpAgitatedState != NULL)
 				(*pPed->fpAgitatedState)(pPed);
+			else
+				(*pPed->fpRestState)(pPed);
 
 			if (player[0].cameraView == 2 && pPed->type != PED_ACTION_GETINCAR) 
 			{
@@ -368,11 +414,12 @@ LAB_0006e104:
 			oldCamView = player[0].cameraView;
 			TannerCollision(pPed);
 
+			// sloped surfaces in chicago?
 			if (GameLevel == 0) 
 			{
-				FindSurfaceD2((VECTOR *)player, &normal, &out, &SurfacePtr);
+				FindSurfaceD2((VECTOR *)player, &normal, &out, &plane);
 
-				if (SurfacePtr->surface != -1 && SurfacePtr->surface < 0x20 && (SurfacePtr->surface & 0x10U) != 0)
+				if (plane->surface != -1 && plane->surface < 0x20 && (plane->surface & 0x10U) != 0)
 				{
 					pPed->position.vx += (normal.vx >> 6);
 					pPed->position.vz += (normal.vz >> 6);
@@ -388,6 +435,7 @@ LAB_0006e104:
 
 		player[iVar2].pPed = NULL;
 		player[iVar2].playerType = 0;
+
 		DestroyPedestrian(pPed);
 	}
 }
@@ -1015,7 +1063,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 		pedptr->frame1 = 0;
 		pedptr->speed = 0;
 
-		if (playerType == 2)
+		if (playerType == OTHER_SPRITE)
 		{
 			if (gCurrentMissionNumber == 9) 
 			{
@@ -1051,7 +1099,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	bKillTanner = 0;
 	bKilled = 0;
 
-	if (gCurrentMissionNumber == 23 && playerType != 0)
+	if (gCurrentMissionNumber == 23 && playerType != TANNER_MODEL)
 	{
 		pedptr->doing_turn = 16;
 		pedptr->dir.vy = (pedptr->dir.vy - (tannerTurnMax + 16) * tannerTurnStep) + 294;
@@ -1412,6 +1460,33 @@ LAB_0006f100:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int PedVisible(PEDESTRIAN *pPed, int bounding_sphere)
+{
+	VECTOR *pos = (VECTOR *)&pPed->position;
+
+	if (PositionVisible(pos) && FrustrumCheck(pos, bounding_sphere) != -1)
+		return 1;
+	
+	return 0;
+}
+
+int DrawPedestrian(PEDESTRIAN *pPed)
+{
+	switch (pPed->type)
+	{
+	case PED_ACTION_CIVWALK:
+	case PED_ACTION_CIVRUN:
+	case PED_ACTION_JUMP:
+	case PED_ACTION_CIVSIT:
+	case PED_ACTION_COPSTAND:
+	case PED_ACTION_COPCROUCH:
+		DrawCiv(pPed);
+		return 1;
+	}
+
+	return DrawCharacter(pPed);
+}
+
 // [D]
 void DrawAllPedestrians(void)
 {
@@ -1423,15 +1498,8 @@ void DrawAllPedestrians(void)
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
-		if ((uint)pPed->pedType - 2 < 2 &&  // ???
-			PositionVisible((VECTOR *)&pPed->position) != 0 &&
-			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1)
-		{
-			if ((uint)pPed->type - 8 < 6)
-				DrawCiv(pPed);
-			else 
-				DrawCharacter(pPed);
-		}
+		if (pPed->pedType > OTHER_MODEL && PedVisible(pPed, 60))
+			DrawPedestrian(pPed);
 
 		pPed = pPed->pNext;
 	}
@@ -1441,12 +1509,10 @@ void DrawAllPedestrians(void)
 	pPed = pUsedPeds;
 	while (pPed != NULL) 
 	{
-		if (pPed->pedType < OTHER_SPRITE &&
-			PositionVisible((VECTOR *)&pPed->position) != 0 &&
-			FrustrumCheck((VECTOR *)&pPed->position, 60) != -1 &&
-			!bKillTanner)
+		if (pPed->pedType < OTHER_SPRITE && PedVisible(pPed, 60))
 		{
-			DrawTanner(pPed);
+			if (!bKillTanner)
+				DrawTanner(pPed);
 		}
 
 		pPed = pPed->pNext;
