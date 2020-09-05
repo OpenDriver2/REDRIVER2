@@ -1,7 +1,7 @@
 ﻿// redriver2_psxpc.cpp
 //
 
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "GAME/C/MAIN.H"
 #include "GAME/C/SYSTEM.H"
 #include "GAME/C/GLAUNCH.H"
@@ -178,12 +178,13 @@ void printError(char *fmt, ...)
 
 int(*GPU_printf)(const char *fmt, ...);
 
+extern int gDrawDistance;
+
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 
 extern int g_texturelessMode;
 extern int g_wireframeMode;
 int gShowCollisionDebug = 0;
-extern int gDrawDistance;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
 extern int g_FreeCameraEnabled;

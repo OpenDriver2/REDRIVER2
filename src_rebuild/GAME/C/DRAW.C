@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 
 #include "INLINE_C.H"
 
@@ -99,9 +99,6 @@ int current_object_computed_value = 0;
 int combointensity;
 
 int buildingsFound = 0;
-int cell_object_index = 0;
-
-CELL_OBJECT cell_object_buffer[1024];
 CELL_OBJECT* model_object_ptrs[512];
 CELL_OBJECT* anim_obj_buffer[20];
 
@@ -496,126 +493,6 @@ void DrawSprites(int numFound)
 	}
 	current->primptr = plotContext.primptr;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// struct PACKED_CELL_OBJECT * /*$ra*/ GetNextPackedCop(struct CELL_ITERATOR *pci /*$a0*/)
- // line 813, offset 0x0003f5f0
-	/* begin block 1 */
-		// Start line: 814
-		// Start offset: 0x0003F5F0
-		// Variables:
-	// 		struct PACKED_CELL_OBJECT *ppco; // $a3
-	// 		unsigned short num; // $a1
-	/* end block 1 */
-	// End offset: 0x0003F6B0
-	// End Line: 853
-
-	/* begin block 2 */
-		// Start line: 1812
-	/* end block 2 */
-	// End Line: 1813
-
-	/* begin block 3 */
-		// Start line: 1817
-	/* end block 3 */
-	// End Line: 1818
-
-	/* begin block 4 */
-		// Start line: 1821
-	/* end block 4 */
-	// End Line: 1822
-
-// [D]
-PACKED_CELL_OBJECT * GetNextPackedCop(CELL_ITERATOR *pci)
-{
-	unsigned char bVar1;
-	ushort uVar2;
-	PACKED_CELL_OBJECT *pPVar3;
-	CELL_DATA *pCVar4;
-	uint uVar5;
-	uint uVar6;
-	PACKED_CELL_OBJECT *pPVar7;
-
-	pPVar3 = cell_objects;
-	do {
-		do {
-			pCVar4 = pci->pcd;
-			if ((pCVar4->num & 0x8000) != 0) 
-				return NULL;
-
-			pci->pcd = pCVar4 + 1;
-			uVar2 = pCVar4[1].num;
-			uVar6 = (uint)uVar2 & 0x3fff;
-
-			if ((uVar2 & 0x4000) != 0)
-				return NULL;
-
-			pPVar7 = pPVar3 + uVar6;
-		} while ((pPVar7->value == 0xffff) && (((pPVar7->pos).vy & 1) != 0));
-
-		if (pci->use_computed == 0)
-			goto LAB_0003f6a4;
-
-		bVar1 = cell_object_computed_values[uVar6 >> 3];
-		uVar5 = 1 << ((uint)uVar2 & 7) & 0xffff;
-
-	} while ((bVar1 & uVar5) != 0);
-
-	cell_object_computed_values[uVar6 >> 3] = bVar1 | (unsigned char)uVar5;
-
-LAB_0003f6a4:
-	pci->ppco = pPVar7;
-	return pPVar7;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// struct CELL_OBJECT * /*$ra*/ UnpackCellObject(struct PACKED_CELL_OBJECT *ppco /*$a3*/, struct XZPAIR *near /*$t0*/)
- // line 854, offset 0x000418e8
-	/* begin block 1 */
-		// Start line: 855
-		// Start offset: 0x000418E8
-		// Variables:
-	// 		struct CELL_OBJECT *pco; // $a2
-	/* end block 1 */
-	// End offset: 0x000419A8
-	// End Line: 870
-
-	/* begin block 2 */
-		// Start line: 4699
-	/* end block 2 */
-	// End Line: 4700
-
-	/* begin block 3 */
-		// Start line: 1708
-	/* end block 3 */
-	// End Line: 1709
-
-CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
-{
-	CELL_OBJECT *pco;
-
-	if (ppco == NULL)
-		return NULL;
-
-	pco = &cell_object_buffer[cell_object_index];
-	cell_object_index = cell_object_index + 1U & 0x3ff;
-
-	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
-	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
-
-	pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
-	pco->yang = ppco->value & 0x3f;
-	pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
-
-	return pco;
-}
-
 
 
 // decompiled code

@@ -1,9 +1,7 @@
 #ifndef PEDEST_H
 #define PEDEST_H
 
-#define MAX_PEDESTRIANS 28
-
-extern MODEL* pmTannerModels[17];;
+extern MODEL* pmTannerModels[17];
 extern MODEL* pmJerichoModels[6];
 
 extern SEATED_PEDESTRIANS *seated_pedestrian;

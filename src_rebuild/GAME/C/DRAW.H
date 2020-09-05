@@ -32,10 +32,6 @@ extern void addSubdivSpriteShadow(struct POLYFT4*src, struct SVECTOR *verts, int
 
 extern void DrawSprites(int numFound); // 0x0003EF64
 
-extern struct PACKED_CELL_OBJECT * GetNextPackedCop(struct CELL_ITERATOR *pci); // 0x0003F5F0
-
-extern struct CELL_OBJECT * UnpackCellObject(struct PACKED_CELL_OBJECT *ppco, struct XZPAIR *near); // 0x000418E8
-
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 
 extern void SetupPlaneColours(unsigned long ambient); // 0x00040218

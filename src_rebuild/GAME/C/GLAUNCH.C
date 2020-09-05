@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "GLAUNCH.H"
 
 
@@ -142,7 +142,7 @@ int gRandomChase = 0;
 int gSubGameNumber = 0;
 
 int gMissionLadderPos = 0;
-int gFurthestMission = 0x28;	//0; // [A] temporary access to all
+int gFurthestMission = 0;
 
 int gWantNight = 0;
 

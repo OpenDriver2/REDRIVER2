@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "CARS.H"
 #include "TEXTURE.H"
 #include "OVERMAP.H"
@@ -1890,9 +1890,6 @@ void buildNewCars(void)
 		// Start line: 5848
 	/* end block 2 */
 	// End Line: 5849
-
-// byte swapped int
-#define SW_INT(a,b) (((a) << 16) | (b))
 
 // [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
