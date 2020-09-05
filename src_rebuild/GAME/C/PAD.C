@@ -21,7 +21,7 @@ unsigned char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA
 
 unsigned char* shake_data[] = { High_shake_data, Med_shake_data, Low_shake_data };
 
-struct PAD Pads[2];
+PAD Pads[2];
 int numPadsConnected = 0;
 int pad_connected = 0;
 int gVibration = 0;

@@ -13,6 +13,7 @@
 #include "E3STUFF.H"
 #include "GAMESND.H"
 #include "SCORES.H"
+#include "MAIN.H"
 
 // FMV
 int gSubtitles = 0;

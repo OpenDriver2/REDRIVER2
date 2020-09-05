@@ -17,6 +17,8 @@ extern int NightAmbient;
 extern int wetness;
 extern int leadCarId;
 
+extern int scr_z;
+
 extern int DawnCount;
 
 extern int ObjectDrawnValue;

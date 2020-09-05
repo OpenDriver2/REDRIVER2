@@ -151,7 +151,7 @@ _pct plotContext;
 MVERTEX MVERTEX_ARRAY_1f800228[5][5];
 
 // [D] [A]
-void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
+void addSubdivSpriteShadow(POLYFT4*src, SVECTOR *verts, int z)
 {
 	uint puVar1;
 	uint uVar2;
@@ -484,11 +484,11 @@ void DrawSprites(int numFound)
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
-			addSubdivSpriteShadow((POLYFT4LIT *)model->poly_block, (SVECTOR *)model->vertices, z);
+			addSubdivSpriteShadow((POLYFT4*)model->poly_block, (SVECTOR *)model->vertices, z);
 
 			if (model->num_polys == 2)
 			{
-				addSubdivSpriteShadow((POLYFT4LIT *)(model->poly_block + sizeof(POLYFT4LIT)), (SVECTOR *)model->vertices, z);
+				addSubdivSpriteShadow((POLYFT4*)(model->poly_block + sizeof(POLYFT4)), (SVECTOR *)model->vertices, z);
 			}
 
 			gte_SetRotMatrix(&face_camera);

@@ -17,6 +17,7 @@
 #include "MISSION.H"
 #include "OBJCOLL.H"
 #include "WHEELFORCES.H"
+#include "PAD.H"
 
 COP_DATA gCopData = { 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
 

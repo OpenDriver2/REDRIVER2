@@ -138,6 +138,27 @@ int FrameCnt = 0;
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
+ulong* transparent_buffer;
+
+// system?
+int gameinit = 0;
+int gMusicType = 0;
+int xa_timeout = 0;
+
+int IconsLoaded = 0;
+
+// OVERLAY
+int gLoadedOverlay = 0;
+
+// MOTION_C
+int gLoadedMotionCapture = 0;
+
+// DRAWGAME.C ???
+int FrAng = 0;
+int wetness = 0;
+
+extern SPEECH_QUEUE gSpeechQueue;
+
 
 // decompiled code
 // original method signature: 
@@ -660,27 +681,6 @@ void InitModelNames(void)
 	// End Line: 6318
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-ulong* transparent_buffer;
-
-// system?
-int gameinit = 0;
-int gMusicType = 0;
-int xa_timeout = 0;
-
-int IconsLoaded = 0;
-
-// OVERLAY
-int gLoadedOverlay = 0;
-
-// MOTION_C
-int gLoadedMotionCapture = 0;
-
-// DRAWGAME.C ???
-int FrAng = 0;
-int wetness = 0;
-
-extern SPEECH_QUEUE gSpeechQueue;
 
 // [D]
 void GameInit(void)

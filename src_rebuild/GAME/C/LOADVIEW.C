@@ -601,7 +601,7 @@ void DrawFadePoly(void)
 #ifdef PSX
 	setXYWH(fl_g4, 0, 0, 320, 256);
 #else
-	setXYWH(fl_g4, -500, 1200, 320, 256);
+	setXYWH(fl_g4, -500, 0, 1200, 256);
 #endif
 
 	setRGB0(fl_g4, fadeVal, fadeVal, fadeVal);

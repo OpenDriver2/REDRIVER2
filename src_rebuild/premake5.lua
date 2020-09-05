@@ -130,4 +130,4 @@ project "REDRIVER2"
             "DEBUG_OPTIONS",
             --"COLLISION_DEBUG" 
         }
-        optimize "Size" -- code optimizations are disabled due to calculation differences for replays
+        optimize "Full"

@@ -28,7 +28,7 @@ extern int num_cars_drawn;
 
 extern char CurrentPVS[444];
 
-extern void addSubdivSpriteShadow(struct POLYFT4LIT *src, struct SVECTOR *verts, int z); // 0x0003ED7C
+extern void addSubdivSpriteShadow(struct POLYFT4*src, struct SVECTOR *verts, int z); // 0x0003ED7C
 
 extern void DrawSprites(int numFound); // 0x0003EF64
 

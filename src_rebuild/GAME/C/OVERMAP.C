@@ -14,6 +14,7 @@
 #include "PRES.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
+#include "PAD.H"
 #include "..\ASM\RNC_2.H"
 
 #include "STRINGS.H"

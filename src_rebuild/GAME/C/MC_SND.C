@@ -18,7 +18,7 @@ char missionstarts[42] = {
 	0x2E, 0x30, 0x31
 };
 
-io id_map[49] =
+__io id_map[49] =
 {
 	{0, 0},
 	{0, 1},
@@ -71,7 +71,7 @@ io id_map[49] =
 	{39, 0},
 };
 
-xa_request xa_data[26] = {
+__xa_request xa_data[26] = {
 	{0x10, 0, 0, 1, 0},
 	{0x19, 0, 1, 2, 0},
 	{0x1E, 0, 2, 3, 0},
