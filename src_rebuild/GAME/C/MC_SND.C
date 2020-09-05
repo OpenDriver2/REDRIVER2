@@ -730,7 +730,6 @@ void DoMissionSound(void)
 	int x;
 	int y_00;
 	int z_00;
-	long lVar5;
 	int x_00;
 	long lVar6;
 	long lVar7;
@@ -738,51 +737,52 @@ void DoMissionSound(void)
 	long V[3];
 	static int channel;
 
-	lVar5 = Mission.timer[0].count;
-	z_00 = bodgevar;
-
 	switch (gCurrentMissionNumber) 
 	{
-		case 0xb:
-		case 0xd:
-		case 0x14:
+		case 11:
+		case 13:
+		case 20:
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
-				z_00 = cVar1;
-				goto LAB_0005ed9c;
+				cVar1 = GetMissionSound(11);
+				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				bodgevar = 2;
 			}
-			goto LAB_0005e0d0;
-		case 0x15:
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
+				bodgevar = 4;
+			}
+			break;
+		case 21:
 			if (bodgevar == 1) 
 			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
+				cVar1 = GetMissionSound(11);
 				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
-				GetMissionSound('\v');
 				bodgevar = 2;
-				return;
 			}
-			goto LAB_0005e0d0;
-		case 0x17:
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
+				bodgevar = 4;
+			}
+			break;
+		case 23:
 			if (holdall == -1) 
 			{
-				if (MissionTargets->data[0] == 2) 
+				for (int i = 0; i < 16; i++)
 				{
-					holdall = MissionTargets->data[6];
-				}
-				else 
-				{
-					z_00 = 1;
-					do {
-						if (0xf < z_00) {
-							return;
-						}
-						p_Var4 = MissionTargets + z_00;
-						z_00 = z_00 + 1;
-					} while (p_Var4->data[0] != 2);
-					holdall = p_Var4->data[6];
+					if (MissionTargets[i].data[0] == 2)
+					{
+						holdall = MissionTargets[i].data[6];
+						break;
+					}
 				}
 			}
 			else
@@ -795,30 +795,29 @@ void DoMissionSound(void)
 						x = GetFreeChannel();
 						cVar1 = GetMissionSound(20);
 						StartSound(x, 5, cVar1, -0x5dc, 0x1000);
-						SetChannelPosition3(x, (VECTOR*)car_data[z_00].hd.where.t, car_data[z_00].st.n.linearVelocity, -0x5dc, 0x1000 - lVar5 / 0x2ee, 0);
+						SetChannelPosition3(x, (VECTOR*)car_data[z_00].hd.where.t, car_data[z_00].st.n.linearVelocity, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee, 0);
 					}
 				}
 			}
 			break;
-		case 0x19:
+		case 25:
 			if (bodgevar == 1) {
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
+				cVar1 = GetMissionSound(11);
 				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
-				holdall = holdall + 1;
+				holdall++;
 				bodgevar = 2;
-				return;
 			}
-		LAB_0005e0d0:
-			if (bodgevar != 3)
-				return;
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
 
-			StopChannel(channel);
-
-			bodgevar = 4;
+				bodgevar = 4;
+			}
 			break;
-		case 0x1e:
-			if (bodgevar - 1U < 3) 
+		case 30:
+			if ((bodgevar > 0) && (bodgevar < 4))
 			{
 				VECTOR Q[4] = {
 					{0xFFFFD005,0xFFFFFEED,0xCD61B},
@@ -826,97 +825,80 @@ void DoMissionSound(void)
 					{0xFFFFC7D4,0xFFFFFEEC,0xCD383},
 				};
 
-				z_00 = bodgevar + -1;
-				x = Q[z_00].vx;
-				y_00 = Q[z_00].vy;
-				z_00 = Q[z_00].vz;
-				cVar1 = GetMissionSound('\"');
-				Start3DSoundVolPitch(-1, 5, cVar1, x, y_00, z_00, -1000, 0x1000);
-				bodgevar = bodgevar + 4;
+				VECTOR *P = &Q[bodgevar - 1];
+
+				cVar1 = GetMissionSound(34);
+				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+
+				bodgevar += 4;
 			}
-			z_00 = Mission.timer[0].count;
-
-			if (bodgevar < 4)
-				return;
-
-			if (bodgevar == 6) 
+			else if (bodgevar == 5)
 			{
-			LAB_0005e4e8:
-				if ((z_00 / 3000) * 3000 == z_00 + -800) 
-				{
-					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
-						0x1000 - z_00 / 0x2ee);
-				}
+				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
+
+				if ((Mission.timer[0].count / 3000) * 3000 != Mission.timer[0].count + -100)
+					return;
+
+				cVar1 = GetMissionSound(29);
+
+				Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 			}
-			else 
+			else if (bodgevar < 8) // [A] capture 6 and 7
 			{
-				if (6 < bodgevar) 
+				if (bodgevar == 7)
 				{
-					if (bodgevar != 7)
-						return;
-
-					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514) 
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
 						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc,
-							0x1000 - z_00 / 0x2ee);
+							0x1000 - Mission.timer[0].count / 0x2ee);
 					}
-					goto LAB_0005e4e8;
 				}
 
-				if (bodgevar != 5) 
-					return;
+				// bodgevar 6 & 7 (is this a bug?)
+				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+				{
+					cVar1 = GetMissionSound(20);
+					Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
+						0x1000 - Mission.timer[0].count / 0x2ee);
+				}
 			}
-			x = (int)(((long long)z_00 * 0x57619f1) >> 0x20);
-
-			if ((z_00 / 3000) * 3000 != z_00 + -100)
-				return;
-
-			cVar1 = GetMissionSound(29);
-			y_00 = cVar1;
-			z = 0xcd383;
-			x_00 = -0x382c;
-			y = -0x114;
-			goto LAB_0005e990;
-
-		case 0x20:
+			break;
+		case 32:
 			if (holdall == -1)
 			{
 				holdall = 0;
-				return;
 			}
-
-			if (bodgevar == 1) 
+			else
 			{
-				channel = GetFreeChannel();
-				cVar1 = GetMissionSound('\v');
-				z_00 = cVar1;
-				goto LAB_0005ed9c;
+				if (bodgevar == 1)
+				{
+					channel = GetFreeChannel();
+					cVar1 = GetMissionSound(11);
+					Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+					bodgevar = 2;
+				}
+				else if (bodgevar == 3)
+				{
+					if (channel > -1)
+						StopChannel(channel);
+
+					if (++holdall == 2)
+						SetEnvSndVol(rio_alarm, 3000);
+
+					bodgevar = 4;
+				}
 			}
-
-			if (bodgevar != 3)
-				return;
-
-			if (-1 < channel)
-				StopChannel(channel);
-
-			holdall = holdall + 1;
-			if (holdall == 2)
-			{
-				SetEnvSndVol(rio_alarm, 3000);
-			}
-			bodgevar = 4;
 			break;
-		case 0x21:
+		case 33:
 			if (holdall == -1) 
 			{
 				StartSound(2, 2, 0, -10000, 0x81);
 				holdall = 0;
 			}
 			break;
-		case 0x23:
-			if (bodgevar - 1U < 3) 
+		case 35:
+			if ((bodgevar > 0) && (bodgevar < 4))
 			{
 				VECTOR Q[3] = {
 					{0x31330, 0xFFFFFF4F, 0x5E0E0},
@@ -924,85 +906,57 @@ void DoMissionSound(void)
 					{0x30AD0, 0xFFFFFF4F, 0x5F050}
 				};
 
-				z_00 = bodgevar + -1;
-				x = Q[z_00].vx;
-				y_00 = Q[z_00].vy;
-				z_00 = Q[z_00].vz;
-				cVar1 = GetMissionSound('\"');
-				Start3DSoundVolPitch(-1, 5, cVar1, x, y_00, z_00, -1000, 0x1000);
-				bodgevar = bodgevar + 4;
+				VECTOR *P = &Q[bodgevar - 1];
+
+				cVar1 = GetMissionSound(34);
+				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+
+				bodgevar += 4;
 			}
-			z_00 = Mission.timer[0].count;
-
-			if (bodgevar < 4)
-				return;
-
-			if (bodgevar == 6) 
+			else if (bodgevar == 5)
 			{
-			LAB_0005e894:
-				if ((z_00 / 3000) * 3000 == z_00 + -800) 
-				{
+				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
+
+				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -300) {
 					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc,
-						0x1000 - z_00 / 0x2ee);
+					Start3DSoundVolPitch(-1, 5, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 				}
 			}
-			else 
+			else if (bodgevar < 8) // [A] capture 6 and 7
 			{
-				if (6 < bodgevar)
+				if (bodgevar == 7)
 				{
-					if (bodgevar != 7)
-						return;
-
-					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514) 
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - z_00 / 0x2ee);
+						Start3DSoundVolPitch(-1, 5, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
-
-					goto LAB_0005e894;
 				}
 
-				if (bodgevar != 5) 
+				// bodgevar 6 & 7 (is this a bug?)
+				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
 				{
-					return;
+					cVar1 = GetMissionSound(20);
+					Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 				}
 			}
-			x = (int)(((long long)z_00 * 0x57619f1) >> 0x20);
-			if ((z_00 / 3000) * 3000 != z_00 + -300) {
-				return;
-			}
-			cVar1 = GetMissionSound(20);
-			y_00 = cVar1;
-			z = 0x5e0e0;
-			x_00 = 0x31330;
-			y = -0xb1;
-		LAB_0005e990:
-			Start3DSoundVolPitch(-1, 5, y_00, x_00, y, z, -0x5dc, 0x1000 - ((x >> 4) - (z_00 >> 0x1f)));
 			break;
-
-		case 0x27:
+		case 39:
 			if (holdall == -1) 
 			{
-				z_00 = 0;
-				p_Var4 = MissionTargets;
-
-				while (z_00 < 0x10)
+				for (int i = 0; i < 16; i++)
 				{
-					if (p_Var4->data[0] == 2) 
+					if (MissionTargets[i].data[0] == 2)
 					{
-						if (holdall == -1) 
+						if (holdall == -1)
 						{
-							holdall = 0x14;
+							holdall = 20;
 						}
-						else if (holdall == 0x14) 
+						else if (holdall == 20)
 						{
-							holdall = p_Var4->data[6];
-							return;
+							holdall = MissionTargets[i].data[6];
 						}
 					}
-					p_Var4 = p_Var4 + 1;
-					z_00 = z_00 + 1;
 				}
 			}
 			else if (player[0].playerCarId == holdall)
@@ -1098,8 +1052,9 @@ void DoMissionSound(void)
 				UNIMPLEMENTED();
 			}
 			break;
-		case 0x34:
-		case 0x35:
+		// Havana sounds
+		case 52:
+		case 53:
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
@@ -1113,8 +1068,10 @@ void DoMissionSound(void)
 
 				bodgevar = 4;
 			}
-		case 0x36:
-		case 0x37:
+			break;
+		// Vegas sounds
+		case 54:
+		case 55:
 			if (bodgevar == 1) 
 			{
 				channel = GetFreeChannel();
@@ -1123,35 +1080,33 @@ void DoMissionSound(void)
 			}
 			else if (bodgevar == 3)
 			{
-				if (-1 < channel)
+				if (channel > -1)
 					StopChannel(channel);
 
 				bodgevar = 4;
 			}
 			else if (bodgevar == 5)
 			{
+				// Vegas special garage door
 				Start3DSoundVolPitch(-1, 5, 0, -0x26868, -0xfa, 0x9d274, -1000, 0x1000);
 				bodgevar = 6;
 			}
+		// Rio sounds
 		case 56:
 		case 57:
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				z_00 = 0;
-			LAB_0005ed9c:
-				Start3DSoundVolPitch(channel, 5, z_00, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
-				return;
 			}
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
 
-			if (bodgevar != 3)
-				return;
-
-			if (-1 < channel)
-				StopChannel(channel);
-
-			bodgevar = 4;
+				bodgevar = 4;
+			}
 			break;
 	}
 }

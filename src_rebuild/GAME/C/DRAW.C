@@ -2614,12 +2614,8 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 // [D]
 void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv)
 {
-	int i;
-	int zbias;
-	OTTYPE* savedOT;
+	OTTYPE* savedOT = current->ot;
 
-	savedOT = current->ot;
-	
 	if (matrix != NULL)
 	{
 		MATRIX comb;
@@ -2629,14 +2625,13 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 		SetRotMatrix(&comb);
 	}
 
-	zbias = (zBias >> 3) + (model->zBias - 64);
+	zBias /= 8;
+	zBias += (model->zBias - 64);
 
-	if (zbias < 0)
-		zbias = 0;
-	
-	current->ot += (zbias * 4);
+	if (zBias > 0)
+		current->ot += (zBias * 4);
 
-	for (i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
