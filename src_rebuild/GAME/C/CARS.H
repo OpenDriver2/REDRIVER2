@@ -3,31 +3,35 @@
 
 #define CAR_INDEX(cp)  (int)(cp-car_data)
 
+// TODO: drlimits.h
+#define MAX_CARS			20
+#define MAX_CAR_MODELS		5
+
 // PHYSICS
-extern _CAR_DATA car_data[22];	// all cars
+extern _CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
 // active cars
-extern _CAR_DATA* active_car_list[20];
-extern BOUND_BOX bbox[20];
-extern unsigned char lightsOnDelay[20];
+extern _CAR_DATA* active_car_list[MAX_CARS];
+extern BOUND_BOX bbox[MAX_CARS];
+extern unsigned char lightsOnDelay[MAX_CARS];
 
-extern CAR_MODEL NewCarModel[5];
-extern CAR_MODEL NewLowCarModel[5];
+extern CAR_MODEL NewCarModel[MAX_CAR_MODELS];
+extern CAR_MODEL NewLowCarModel[MAX_CAR_MODELS];
 
 extern int whichCP;		// car poly counter
 extern int baseSpecCP;	// special car poly counter
 
-extern DENTUVS gTempHDCarUVDump[20][255];
-extern SVECTOR gTempCarVertDump[20][132];
-extern DENTUVS gTempLDCarUVDump[20][134];
+extern DENTUVS gTempHDCarUVDump[MAX_CARS][255];
+extern SVECTOR gTempCarVertDump[MAX_CARS][132];
+extern DENTUVS gTempLDCarUVDump[MAX_CARS][134];
 
 extern MODEL *gHubcapModelPtr;
 extern MODEL *gCleanWheelModelPtr;
 extern MODEL *gFastWheelModelPtr;
 extern MODEL *gDamWheelModelPtr;
 
-extern short FrontWheelRotation[20];
-extern short BackWheelRotation[20];
+extern short FrontWheelRotation[MAX_CARS];
+extern short BackWheelRotation[MAX_CARS];
 
 extern char LeftLight;
 extern char RightLight;
@@ -44,7 +48,7 @@ extern void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, pl
 
 extern void DrawCar(_CAR_DATA *cp, int view); // 0x000210B8
 
-extern void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, int palette, _CAR_DATA *cp, int detail); // 0x000233DC
+extern void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CAR_DATA *cp, int detail); // 0x000233DC
 
 extern void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip); // 0x00021AF8
 
