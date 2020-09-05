@@ -208,6 +208,10 @@ void FadeGameScreen(int flag, int speed)
 
 		DrawPrim(&p);
 		DrawPrim(&poly);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
 	}
 	else
 	{

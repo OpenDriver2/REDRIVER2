@@ -2187,7 +2187,8 @@ void DrawGame(void)
 	}
 
 #ifndef PSX
-	Emulator_EndScene();
+	if (!FadingScreen)
+		Emulator_EndScene();
 #endif
 
 	FrameCnt++;
