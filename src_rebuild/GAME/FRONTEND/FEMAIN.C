@@ -3996,24 +3996,18 @@ int CityCutOffScreen(int bSetup)
 	if (bSetup)
 	{
 		if (gFurthestMission < 20)
-		{
 			pCurrScreen->buttons[2].action = 0x300;
-		}
-		else if (gFurthestMission < 29)
-		{
+
+		if (gFurthestMission < 29)
 			pCurrScreen->buttons[3].action = 0x300;
-		}
+
 #ifndef PSX
 		LoadBackgroundFile("DATA\\CITYBACK.RAW");
 
 		if (lastCity == -1)
-		{
 			currCity = 0;
-		}
 		else
-		{
 			currCity = lastCity;
-		}
 
 		if (loaded[0] == -1)
 		{
