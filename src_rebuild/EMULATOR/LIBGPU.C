@@ -256,6 +256,18 @@ int LoadImagePSX(RECT16* rect, u_long* p)
 	return 0;
 }
 
+int LoadImage(RECT16* rect, u_long* p)
+{
+	Emulator_CopyVRAM((unsigned short*)p, 0, 0, rect->w, rect->h, rect->x, rect->y);
+	return 0;
+}
+
+int LoadImage2(RECT16* rect, u_long* p)
+{
+	Emulator_CopyVRAM((unsigned short*)p, 0, 0, rect->w, rect->h, rect->x, rect->y);
+	return 0;
+}
+
 int MargePrim(void* p0, void* p1)
 {
 #if 0

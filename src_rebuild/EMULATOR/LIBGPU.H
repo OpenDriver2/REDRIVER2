@@ -1007,6 +1007,8 @@ extern int KanjiFntOpen(int x, int y, int w, int h, int dx, int dy, int cx, int 
 extern void KanjiFntClose(void);
 extern int Krom2Tim(u_char *sjis, u_long *taddr, int dx, int dy, int cdx, int cdy, u_int fg, u_int bg);
 extern int LoadImagePSX(RECT16 *rect, u_long *p);
+extern int LoadImage(RECT16* rect, u_long* p);
+extern int LoadImage2(RECT16* rect, u_long* p);
 extern int MargePrim(void *p0, void *p1);
 extern int MoveImage(RECT16* rect, int x, int y);
 extern int OpenTIM(u_long *addr);
