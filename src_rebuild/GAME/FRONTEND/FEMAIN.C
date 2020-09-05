@@ -2251,10 +2251,10 @@ int CentreScreen(int bSetup)
 // [D]
 int CarSelectScreen(int bSetup)
 {
-	int lastVal;
+	int newSel;
 	RECT16 rect;
 
-	lastVal = carSelection;
+	newSel = carSelection;
 	rect = extraRect;
 
 	if (bSetup)
@@ -2381,34 +2381,28 @@ int CarSelectScreen(int bSetup)
 		if (currSelIndex == 0)
 		{
 			// find best-fit for previous vehicle
-			for (int i = (carSelection > 0) ? carSelection - 1 : 9; (i != lastVal); i--)
+			do
 			{
-				if (CarAvailability[GameLevel][i] != 0)
-				{
-					carSelection = i;
-					break;
-				}
+				newSel--;
+				if (newSel < 0)
+					newSel = 9;
 
-				// loop-back around and try again
-				if (i == 0)
-					i = 9;
-			}
+			} while (CarAvailability[GameLevel][newSel] == 0);
+
+			carSelection = newSel;
 		}
 		else if (currSelIndex == 2)
 		{
 			// find best-fit for next vehicle
-			for (int i = (carSelection < 9) ? carSelection + 1 : 0; (i != lastVal); i++)
+			do
 			{
-				if (CarAvailability[GameLevel][i] != 0)
-				{
-					carSelection = i;
-					break;
-				}
+				newSel++;
+				if (newSel > 9)
+					newSel = 0;
 
-				// loop-back around and try again
-				if (i == 9)
-					i = 0;
-			}
+			} while (CarAvailability[GameLevel][newSel] == 0);
+
+			carSelection = newSel;
 		}
 		else
 		{
