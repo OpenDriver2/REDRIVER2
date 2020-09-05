@@ -2278,7 +2278,7 @@ int CarSelectScreen(int bSetup)
 		}
 
 		// setup unlockable cars
-		if ((gFurthestMission == 40) && (NumPlayers == 1))
+		if (gFurthestMission == 40 && NumPlayers == 1)
 		{
 			for (int i = 4; i < 9; i++)
 			{
@@ -2295,7 +2295,7 @@ int CarSelectScreen(int bSetup)
 			for (int i = 4; i < 9; i++)
 			{
 				// unlock the cop car only
-				int unlocked = (i == 4);
+				int unlocked = (i == 4) && gFurthestMission == 40;
 
 				CarAvailability[0][i] = unlocked; 
 				CarAvailability[1][i] = unlocked;
