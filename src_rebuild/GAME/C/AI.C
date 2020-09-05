@@ -91,10 +91,11 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 		if (speed < 3)
 		{
 			carRange = car_cosmetics[cp->ap.model].colBox.vx * 2;
-			carRange *= carRange;
+			
+			if (carRange > 5000)
+				carRange = 5000;
 
-			if (5000 < carRange)
-				carRange = 25000000;
+			carRange *= carRange;
 
 			return (carRange < distToCarSq) ^ 1;
 		}
