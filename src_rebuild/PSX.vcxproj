@@ -56,7 +56,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>USE_32_BIT_ADDR;PGXP;DEBUG;NTSC_VERSION;OGL;GLEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;EMULATOR;dependencies\SDL2\include;dependencies\glew\include;dependencies\openal-soft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>EMULATOR;dependencies\SDL2\include;dependencies\glew\include;dependencies\openal-soft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -75,7 +75,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>USE_32_BIT_ADDR;PGXP;NDEBUG;NTSC_VERSION;OGL;GLEW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;EMULATOR;dependencies\SDL2\include;dependencies\glew\include;dependencies\openal-soft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>EMULATOR;dependencies\SDL2\include;dependencies\glew\include;dependencies\openal-soft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>

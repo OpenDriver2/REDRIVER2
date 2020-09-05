@@ -37,7 +37,6 @@ project "PSX"
     targetdir "bin/%{cfg.buildcfg}"
 
     includedirs { 
-        "GAME", 
         "EMULATOR"
     }
 
@@ -82,7 +81,7 @@ project "REDRIVER2"
     targetdir "bin/%{cfg.buildcfg}"
 
     includedirs { 
-        ".", 
+        "GAME", 
         "EMULATOR"
     }
 
@@ -93,8 +92,6 @@ project "REDRIVER2"
         "GAME/**.c", 
         "redriver2_psxpc.c",
         "DebugOverlay.cpp",
-        --"THISDUST.C",
-        "THISDUST.H",
     }
 
     filter "system:Windows"
@@ -127,7 +124,7 @@ project "REDRIVER2"
 
     filter "configurations:Release"
         defines { 
-            "DEBUG_OPTIONS",
+            --"DEBUG_OPTIONS",
             --"COLLISION_DEBUG" 
         }
         optimize "Full"
