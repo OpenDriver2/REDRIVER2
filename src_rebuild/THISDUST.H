@@ -9,6 +9,8 @@
 #include "LIBSPU.H"
 #include "LIBGTE.H"
 
+#include "GAME/C/DRLIMITS.H"
+
 // from redriver2_psxpc
 void printMsg(char *fmt, ...);
 void printInfo(char *fmt, ...);
@@ -111,6 +113,8 @@ template<int x> struct compile_time_assert_test {};
 #define UNIMPLEMENTED() UNIMPLEMENTED_PRINTONCE() //eprinterr("Unimplemented!\n");
 #endif // UNIMPLEMENTED
 
+
+// TODO: DRMATH.H
 #define ONE				4096
 #define PH_ONE			256
 
@@ -207,12 +211,7 @@ struct SVECTOR_NOPAD // hashcode: 0xBEBBA7F1 (dec: -1094998031)
 	short vz; // size=0, offset=4
 };
 
-struct SndVolume2 // hashcode: 0xE6064619 (dec: -435796455)
-{
-	short left; // size=0, offset=0
-	short right; // size=0, offset=2
-};
-
+// TODO: DR2TYPES
 
 struct BOX // hashcode: 0xC47BB3B2 (dec: -998526030)
 {

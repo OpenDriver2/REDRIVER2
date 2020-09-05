@@ -1,7 +1,7 @@
 #ifndef COSMETIC_H
 #define COSMETIC_H
 
-extern CAR_COSMETICS car_cosmetics[5];
+extern CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 extern CAR_COSMETICS dummyCosmetics;
 
 extern int gcar_num;

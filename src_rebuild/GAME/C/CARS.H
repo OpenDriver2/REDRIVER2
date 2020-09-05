@@ -3,10 +3,6 @@
 
 #define CAR_INDEX(cp)  (int)(cp-car_data)
 
-// TODO: drlimits.h
-#define MAX_CARS			20
-#define MAX_CAR_MODELS		5
-
 // PHYSICS
 extern _CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
