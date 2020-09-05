@@ -37,7 +37,7 @@ project "PSX"
     targetdir "bin/%{cfg.buildcfg}"
 
     includedirs { 
-        ".", 
+        "GAME", 
         "EMULATOR"
     }
 
