@@ -13,6 +13,7 @@
 
 #include "INLINE_C.H"
 #include "STRINGS.H"
+#include "MISSION.H"
 
 int gShadowTexturePage;
 int gShadowTextureNum;

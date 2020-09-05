@@ -20,6 +20,7 @@
 #include "CELL.H"
 #include "MODELS.H"
 #include "DRAW.H"
+#include "PAD.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
