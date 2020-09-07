@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "MAIN.H"
 
 #include "LIBETC.H"
@@ -57,6 +57,9 @@
 #include "MC_SND.H"
 #include "FELONY.H"
 #include "LEADAI.H"
+#include "ENVIRO.H"
+#include "SEARCH.H"
+#include "LOADSAVE.H"
 
 #include "XAPLAY.H"
 #include "SHADOW.H"
@@ -134,6 +137,27 @@ int FrameCnt = 0;
 
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
+
+ulong* transparent_buffer;
+
+// system?
+int gameinit = 0;
+int gMusicType = 0;
+int xa_timeout = 0;
+
+int IconsLoaded = 0;
+
+// OVERLAY
+int gLoadedOverlay = 0;
+
+// MOTION_C
+int gLoadedMotionCapture = 0;
+
+// DRAWGAME.C ???
+int FrAng = 0;
+int wetness = 0;
+
+extern SPEECH_QUEUE gSpeechQueue;
 
 
 // decompiled code
@@ -497,6 +521,7 @@ void LoadGameLevel(void)
 	InitDebrisNames();
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
+
 	ReportMode(1);
 }
 
@@ -656,27 +681,6 @@ void InitModelNames(void)
 	// End Line: 6318
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-ulong* transparent_buffer;
-
-// system?
-int gameinit = 0;
-int gMusicType = 0;
-int xa_timeout = 0;
-
-int IconsLoaded = 0;
-
-// OVERLAY
-int gLoadedOverlay = 0;
-
-// MOTION_C
-int gLoadedMotionCapture = 0;
-
-// DRAWGAME.C ???
-int FrAng = 0;
-int wetness = 0;
-
-extern SPEECH_QUEUE gSpeechQueue;
 
 // [D]
 void GameInit(void)
@@ -1127,6 +1131,7 @@ int leadCarId = 0;
 
 VECTOR leadcar_pos;
 
+// [D]
 void StepSim(void)
 {
 	static unsigned long t0; // offset 0x0
@@ -1575,12 +1580,14 @@ LAB_00059c1c:
 		{
 			stream = i + 1;
 			CheckCarEffects(&car_data[stupid_logic[car]], i);
+			SwirlLeaves(&car_data[stupid_logic[car]]);
 		}
 
 		car++;
 	} while(car < 4 && (i = stream, stream < 2));
 
-	SwirlLeaves(car_data);
+	
+
 	if ((gStopPadReads == 1) && (((lead_car != 0 && (saved_counter = saved_counter + 1, 0x14 < saved_counter)) && (saved_leadcar_pos == 0)))) 
 	{
 		saved_leadcar_pos = gStopPadReads;
@@ -1827,7 +1834,7 @@ void StepGame(void)
 		StartXM(0);
 	}
 
-	if (doSpooling != 0) 
+	if (doSpooling) 
 	{
 		CheckValidSpoolData();
 		ControlMap();
@@ -1862,34 +1869,7 @@ void StepGame(void)
 
 	ModifyCamera();
 
-	lis_pos.vx = camera_position.vx;
-	lis_pos.vy = camera_position.vy;
-	lis_pos.vz = camera_position.vz;
-	lis_pos.pad = camera_position.pad;
-
-#ifndef PSX
-	int screenW, screenH;
-	Emulator_GetScreenSize(screenW, screenH);
-
-	float aspectVar = float(screenH) / float(screenW);
-
-	FrAng = ratan2(160, float(scr_z) * aspectVar* 1.35f);
-	
-	aspect.m[0][0] = 5500 * aspectVar;
-	aspect.m[0][1] = 0;
-	aspect.m[0][2] = 0;
-
-	aspect.m[1][0] = 0;
-	aspect.m[1][1] = 4710;
-	aspect.m[1][2] = 0;
-
-	aspect.m[2][0] = 0;
-	aspect.m[2][1] = 0;
-	aspect.m[2][2] = 4096;
-	
-#else
-	FrAng = ratan2(160, scr_z);
-#endif
+	lis_pos = camera_position;
 
 	if ((gTimeInWater == 0) || (gSinkingTimer < 100)) 
 	{
@@ -2207,7 +2187,8 @@ void DrawGame(void)
 	}
 
 #ifndef PSX
-	Emulator_EndScene();
+	if (!FadingScreen)
+		Emulator_EndScene();
 #endif
 
 	FrameCnt++;
@@ -2459,7 +2440,13 @@ int redriver2_main(int argc, char** argv)
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
 
+#ifdef DEMO_VERSION
 		ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
+#elif NTSC_VERSION
+		ShowHiresScreens(NTSCScreenNames, 300, 0); // [A]
+#elif PAL_VERSION
+		ShowHiresScreens(PALScreenNames, 300, 0); // [A]
+#endif
 
 		PlayFMV(0);		// play intro movie
 	}
@@ -2583,7 +2570,7 @@ int redriver2_main(int argc, char** argv)
 		{
 			if (argc-i < 3)
 			{
-				printWarning("Example: -recordcutscene <mission_number> <base_mission> <player_id>");
+				printWarning("Example: -recordcutscene <mission_number> <subindex> <base_mission>");
 				return 0;
 			}
 
@@ -2592,17 +2579,17 @@ int redriver2_main(int argc, char** argv)
 			gInFrontend = 0;
 			AttractMode = 0;
 
-			int player_id = atoi(argv[i+3]);
+			int subindx = atoi(argv[i+2]);
 
 			extern int LoadCutsceneAsReplay(int subindex);
 			extern int gCutsceneAsReplay;
 			extern int gCutsceneAsReplay_PlayerId;
 
 			gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
-			gCurrentMissionNumber = atoi(argv[i + 2]);		// acts as base mission. Some mission requires other base
-			gCutsceneAsReplay_PlayerId = atoi(argv[i + 3]);
+			gCurrentMissionNumber = atoi(argv[i + 3]);		// acts as base mission. Some mission requires other base
+			gCutsceneAsReplay_PlayerId = 0;
 
-			if (LoadCutsceneAsReplay(0))
+			if (LoadCutsceneAsReplay(subindx))
 			{
 				CurrentGameMode = GAMEMODE_REPLAY;
 				gLoadedReplay = 1;
@@ -2617,6 +2604,8 @@ int redriver2_main(int argc, char** argv)
 #endif
 	}
 #endif // PSX
+
+	LoadCurrentProfile();
 
 	// now run the frontend
 	DoFrontEnd();
@@ -2904,7 +2893,6 @@ int CurrentPlayerView = 0;
 // [D]
 void RenderGame2(int view)
 {
-	DB *pDVar1;
 	int iVar2;
 	POLY_F4 *poly;
 	uint uVar3;
@@ -2912,9 +2900,38 @@ void RenderGame2(int view)
 	char *pcVar5;
 	_PLAYER *pPVar6;
 	int iVar7;
+	int notInDreaAndStevesEvilLair;
 
 	CurrentPlayerView = view;
 	InitCamera((_PLAYER *)(player + view));
+
+#ifndef PSX
+	int screenW, screenH;
+	Emulator_GetScreenSize(screenW, screenH);
+
+	float aspectVar = float(screenH) / float(screenW);
+
+	FrAng = ratan2(160, float(scr_z) * aspectVar * 1.35f);
+
+#if 0 // old code; now relying on emulator hacks
+	aspect.m[0][0] = 5500 * aspectVar;
+	aspect.m[0][1] = 0;
+	aspect.m[0][2] = 0;
+
+	aspect.m[1][0] = 0;
+	aspect.m[1][1] = 4710;
+	aspect.m[1][2] = 0;
+
+	aspect.m[2][0] = 0;
+	aspect.m[2][1] = 0;
+	aspect.m[2][2] = 4096;
+#endif
+
+	extern void DoFreeCamera();
+	DoFreeCamera();
+#else
+	FrAng = ratan2(160, scr_z);
+#endif
 
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
@@ -2993,19 +3010,17 @@ void RenderGame2(int view)
 		poly->r0 = uVar4;
 		poly->g0 = uVar4;
 		poly->b0 = uVar4;
-		pDVar1 = current;
-		poly->x0 = 0;
-		poly->y0 = 0;
-		poly->x1 = 0x140;
-		poly->y1 = 0;
-		poly->x2 = 0;
-		poly->y2 = 0x100;
-		poly->x3 = 0x140;
-		poly->y3 = 0x100;
-		addPrim(pDVar1->ot + 8, poly);
 
-		pDVar1->primptr += sizeof(POLY_F4);
-		POLY_FT3* null = (POLY_FT3*)pDVar1->primptr;
+#ifdef PSX
+		setXYWH(poly, 0, 0, 320, 256);
+#else
+		setXYWH(poly, -500, 0, 1200, 256);
+#endif
+
+		addPrim(current->ot + 8, poly);
+
+		current->primptr += sizeof(POLY_F4);
+		POLY_FT3* null = (POLY_FT3*)current->primptr;
 
 		setPolyFT3(null);
 		null->x0 = -1;
@@ -3016,20 +3031,20 @@ void RenderGame2(int view)
 		null->y2 = -1;
 		null->tpage = 0x40;
 
-		addPrim(pDVar1->ot + 8, null);
-		pDVar1->primptr += sizeof(POLY_FT3);
+		addPrim(current->ot + 8, null);
+		current->primptr += sizeof(POLY_FT3);
 	}
 
-	iVar7 = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);
+	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);
 
 	ScaleCamera();
 
-	if ((iVar7 != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))) 
+	if ((notInDreaAndStevesEvilLair != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr- PRIMTAB_SIZE))))
 	{
 		DoWeather(gWeather);
 	}
 
-	if (37000 < (int)(current->primtab + -(int)(current->primptr + -0x1e000)))
+	if (37000 < (int)(current->primtab + -(int)(current->primptr - PRIMTAB_SIZE)))
 	{
 		DrawTyreTracks();
 	}
@@ -3378,13 +3393,13 @@ void DealWithHorn(char *hr, int i)
 int Havana3DOcclusion(occlFunc func, int *param)
 {
 	bool bVar1;
-	int iVar2;
-	int unaff_s2;
+	int loop;
+	int draw;
 	int iVar3;
 	int iVar4;
-	int iVar5;
+	int outside;
 
-	iVar5 = 1;
+	outside = 1;
 
 	if ((((GameLevel != 1) || (-0x68fdc < camera_position.vx)) || (camera_position.vx < -0x75416))
 		|| ((-0x1b8ae < camera_position.vz || (camera_position.vz < -0x20cb3))))
@@ -3395,14 +3410,15 @@ int Havana3DOcclusion(occlFunc func, int *param)
 
 	if (camera_position.vy < 0x1bf) 
 	{
-		unaff_s2 = 0x10;
+		draw = 16;
 
-		if (-0x729fc < camera_position.vx) 
-			unaff_s2 = 0x11;
+		if (-469500 < camera_position.vx) 
+			draw = 17;
 	}
 	else 
 	{
-		iVar5 = 0;
+		outside = 0;
+
 		if (((camera_position.vx < -0x6e9e5) && (-0x6fa01 < camera_position.vx)) &&
 			((camera_position.vz < -0x1e201 &&
 			((-0x1f205 < camera_position.vz && (camera_position.vy < 0xf73))))))
@@ -3410,21 +3426,21 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			if (camera_position.vy < 0x4dd) 
 			{
 			LAB_0005c2b4:
-				unaff_s2 = 0xf;
+				draw = 15;
 			}
 			else 
 			{
 				bVar1 = camera_position.vy < 0xc00;
 				if (camera_position.vy < 0x7d1) 
 				{
-					unaff_s2 = 0xe;
+					draw = 14;
 				}
 				else 
 				{
 				LAB_0005c2d8:
 					if (bVar1) 
 					{
-						unaff_s2 = 0xd;
+						draw = 13;
 					}
 				}
 			}
@@ -3434,7 +3450,7 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			if (camera_position.vy < 0x6c2)
 				goto LAB_0005c2b4;
 
-			unaff_s2 = 0xe;
+			draw = 14;
 
 			if (camera_position.vy < 0x834) 
 			{
@@ -3443,58 +3459,62 @@ int Havana3DOcclusion(occlFunc func, int *param)
 			}
 
 			if ((((0xbff < camera_position.vy) && (-0x6fa01 < camera_position.vx)) ||
-				(unaff_s2 = 0xc, camera_position.vz < -0x1f9db)) &&
-				(unaff_s2 = 10, camera_position.vz < -0x1f9dc)) {
-				unaff_s2 = 0xb;
+				(draw = 12, camera_position.vz < -0x1f9db)) &&
+				(draw = 10, camera_position.vz < -0x1f9dc)) 
+			{
+				draw = 11;
 			}
 		}
 	}
 
+	if(draw > 14)
+		(*func)(param);
+
 	events.camera = 1;
 
-	iVar2 = unaff_s2 + -1;
-	if (iVar2 < 10) {
-		iVar2 = 10;
-	}
+	loop = draw-1;
+
+	if (loop < 10)
+		loop = 10;
 
 	iVar3 = 0;
 
 	while (true)
 	{
-		if (unaff_s2 + 1 < iVar2) 
+		if (draw + 1 < loop) 
 		{
 			events.camera = 0;
-			return iVar5;
+			return outside;
 		}
 
-		if (iVar2 == 0x10)
+		if (loop == 16)
 			break;
 
-		if (unaff_s2 != iVar2)
+		if (draw != loop)
 		{
 			iVar3 = 200;
 		}
 
-		events.draw = iVar2;
-		current->ot = current->ot + iVar3;
+		events.draw = loop;
+		current->ot += iVar3;
 		(*func)(param);
 
 		iVar4 = iVar3;
 		if (iVar3 != 0) 
 		{
 			iVar4 = 0;
-			current->ot = current->ot + iVar3 * 0x3fffffff;
+			current->ot -= iVar3;// *0x3fffffff;
 		}
 
-		iVar2 = iVar2 + 1;
+		loop++;
 		iVar3 = iVar4;
 	}
 
 	events.camera = 0;
-	if ((unaff_s2 == 0xf) && (-0x6fd11 < camera_position.vx)) 
+	if ((draw == 15) && (-458001 < camera_position.vx)) 
 	{
 		events.camera = 0;
-		return iVar5;
+		return outside;
 	}
 
 	return 1;

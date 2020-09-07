@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 
 #ifndef PSX
 #include <SDL.h>
@@ -113,6 +113,16 @@ unsigned short *newmodels;
 
 struct SPOOLQ spooldata[48];
 
+#ifdef _DEBUG
+#define SPOOL_INFO printInfo
+#define SPOOL_WARNING printWarning
+#define SPOOL_ERROR printError
+#else
+#define SPOOL_INFO
+#define SPOOL_WARNING
+#define SPOOL_ERROR
+#endif
+
 #if !defined(PSX) && !defined(SIMPLE_SPOOL)
 #include <assert.h>
 
@@ -175,7 +185,7 @@ void levelSpoolerPCReadyCallback(ready_callbackFn cb)
 int levelSpoolerPCFunc(void* data)
 {
 	//Print incoming data
-	printWarning("Running SPOOL thread...\n");
+	SPOOL_WARNING("Running SPOOL thread...\n");
 
 	g_spoolDoneFlag = false;
 	g_isSectorDataRead = false;
@@ -206,14 +216,14 @@ int levelSpoolerPCFunc(void* data)
 
 			if (sector == -1)
 			{
-				printInfo("SPOOL thread recieved 'CdlPause'\n", sector);
+				SPOOL_INFO("SPOOL thread recieved 'CdlPause'\n", sector);
 
 				levelSpoolerSeekCmd = 0;
 				g_spoolDoneFlag = true;
 			}
 			else
 			{
-				printInfo("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
+				SPOOL_INFO("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
 
 				// seek
 				fseek(fp, sector * 2048, SEEK_SET);
@@ -244,7 +254,7 @@ int levelSpoolerPCFunc(void* data)
 
 	} while (!g_spoolDoneFlag);
 
-	printInfo("SPOOLER thread work done.\n");
+	SPOOL_INFO("SPOOLER thread work done.\n");
 
 	fclose(fp);
 
@@ -277,7 +287,7 @@ void startReadLevSectorsPC(int sector)
 
 		if (NULL == levelSpoolerPCThread)
 		{
-			printError("SDL_CreateThread failed: %s\n", SDL_GetError());
+			SPOOL_ERROR("SDL_CreateThread failed: %s\n", SDL_GetError());
 		}
 	}
 }
@@ -313,12 +323,10 @@ void startReadLevSectorsPC(int sector)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void test_changemode(void)
 {
 #ifndef SIMPLE_SPOOL
-	char bVar1;
-
 	SPOOLQ *current = &spooldata[spoolpos_reading];
 
 	if (spoolpos_reading == spoolcounter)
@@ -336,10 +344,9 @@ void test_changemode(void)
 	else if (current_sector == current->sector)
 	{
 		target_address = current->addr;
-		bVar1 = current->type;
 		switch_spooltype = 1;
 
-		if (bVar1 == 0)
+		if (current->type == 0)
 		{
 			sectors_to_read = spool_regioninfo[spool_regionpos + 1].nsectors;
 			sectors_this_chunk = (current->nsectors);
@@ -349,21 +356,21 @@ void test_changemode(void)
 			levelSpoolerPCReadyCallback(ready_cb_regions);
 #endif // PSX
 		}
-		else if (bVar1 == 1)
+		else if (current->type == 1)
 		{
 			sectors_to_read = 17;
 			target_address += 0x4000;
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
 			ntpages = tsetcounter;
-			sectors_this_chunk = (uint)bVar1;
+			sectors_this_chunk = 1;
 #ifdef PSX
 			CdReadyCallback(ready_cb_textures);
 #else
 			levelSpoolerPCReadyCallback(ready_cb_textures);
 #endif // PSX
 		}
-		else if (bVar1 == 2)
+		else if (current->type == 2)
 		{
 			sectors_to_read = (current->nsectors);
 			send_bank = (current->data);
@@ -371,7 +378,7 @@ void test_changemode(void)
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
 			target_address = target_address + (loadbank_read & 1U) * 0x1000;
-			sectors_this_chunk = (uint)bVar1;
+			sectors_this_chunk = 2;
 
 #ifdef PSX
 			CdReadyCallback(ready_cb_soundbank);
@@ -379,7 +386,7 @@ void test_changemode(void)
 			levelSpoolerPCReadyCallback(ready_cb_soundbank);
 #endif // PSX
 		}
-		else if (bVar1 == 3)
+		else if (current->type == 3)
 		{
 			sectors_to_read = (current->nsectors);
 #ifdef PSX
@@ -418,7 +425,7 @@ void test_changemode(void)
 	/* end block 2 */
 	// End Line: 5398
 
-// [D]
+// [D] [T]
 void changemode(SPOOLQ *current)
 {
 #ifndef SIMPLE_SPOOL
@@ -509,122 +516,139 @@ void changemode(SPOOLQ *current)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int check_regions_present(void)
 {
-	AREA_LOAD_INFO *pAVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	AREA_LOAD_INFO *pAVar6;
-	AREA_LOAD_INFO region_to_unpack[3];
+	int barrel_region;
+	int x, z;
+	int region_to_unpack;
+	int num_regions_to_unpack;
+	int leftright_unpack;
+	int topbottom_unpack;
+	int retval;
+	AREA_LOAD_INFO regions_to_unpack[3];
 	char textbuf[128];
 
-	pAVar6 = region_to_unpack;
-	iVar4 = 0;
-	iVar5 = 0;
-	iVar3 = 0;
-	if (current_barrel_region_xcell < 9) {
-		region_to_unpack[0].xoffset = -1;
-		if (region_x != 0) {
-			iVar4 = 1;
-		LAB_0007b44c:
-			iVar3 = 1;
-			region_to_unpack[0].zoffset = 0;
+	leftright_unpack = 0;
+	topbottom_unpack = 0;
+	num_regions_to_unpack = 0;
+
+	if (current_barrel_region_xcell < 9) 
+	{
+		regions_to_unpack[0].xoffset = -1;
+		if (region_x != 0) 
+		{
+			leftright_unpack = 1;
+			num_regions_to_unpack = 1;
+			regions_to_unpack[0].zoffset = 0;
 		}
 	}
-	else {
-		if (0x17 < current_barrel_region_xcell) {
-			iVar2 = cells_across;
-			if (cells_across < 0) {
-				iVar2 = cells_across + 0x1f;
-			}
-			region_to_unpack[0].xoffset = 1;
-			if (region_x < iVar2 >> 5) {
-				iVar4 = 2;
-				goto LAB_0007b44c;
-			}
+	else if (current_barrel_region_xcell > 23)
+	{
+		regions_to_unpack[0].xoffset = 1;
+
+		if (region_x < (cells_across >> 5))
+		{
+			leftright_unpack = 2;
+			num_regions_to_unpack = 1;
+			regions_to_unpack[0].zoffset = 0;
 		}
 	}
-	if (current_barrel_region_zcell < 9) {
-		if (region_z == 0) goto LAB_0007b4e0;
-		iVar5 = 1;
-		region_to_unpack[iVar3].xoffset = 0;
-		iVar2 = -1;
+
+	if (current_barrel_region_zcell < 9 && region_z != 0)
+	{
+		topbottom_unpack = 1;
+
+		regions_to_unpack[num_regions_to_unpack].xoffset = 0;
+		regions_to_unpack[num_regions_to_unpack].zoffset = -1;
+		num_regions_to_unpack++;
 	}
-	else {
-		if ((current_barrel_region_zcell < 0x18) || (region_z == 0)) goto LAB_0007b4e0;
-		iVar5 = 2;
-		region_to_unpack[iVar3].xoffset = 0;
-		iVar2 = 1;
+	else if(current_barrel_region_zcell > 23 && region_z != 0)
+	{
+		topbottom_unpack = 2;
+
+		regions_to_unpack[num_regions_to_unpack].xoffset = 0;
+		regions_to_unpack[num_regions_to_unpack].zoffset = 1;
+		num_regions_to_unpack++;
 	}
-	pAVar1 = region_to_unpack + iVar3;
-	iVar3 = iVar3 + 1;
-	pAVar1->zoffset = iVar2;
-LAB_0007b4e0:
-	if (iVar3 == 2) {
-		if (iVar5 == 1) {
-			iVar3 = 3;
-			if (iVar4 == 1) {
-				region_to_unpack[2].xoffset = -1;
-				region_to_unpack[2].zoffset = -1;
+
+	if (num_regions_to_unpack == 2) 
+	{
+		num_regions_to_unpack = 3;
+
+		if (topbottom_unpack == 1) 
+		{
+			if (leftright_unpack == 1)
+			{
+				regions_to_unpack[2].xoffset = -1;
+				regions_to_unpack[2].zoffset = -1;
 			}
-			else {
-				region_to_unpack[2].xoffset = 1;
-				region_to_unpack[2].zoffset = -1;
+			else 
+			{
+				regions_to_unpack[2].xoffset = 1;
+				regions_to_unpack[2].zoffset = -1;
 			}
 		}
-		else {
-			iVar3 = 3;
-			if (iVar4 == 1) {
-				region_to_unpack[2].xoffset = -1;
-			}
-			else {
-				region_to_unpack[2].xoffset = 1;
-			}
-			region_to_unpack[2].zoffset = 1;
+		else 
+		{
+			if (leftright_unpack == 1) 
+				regions_to_unpack[2].xoffset = -1;
+			else 
+				regions_to_unpack[2].xoffset = 1;
+
+			regions_to_unpack[2].zoffset = 1;
 		}
 	}
-	iVar4 = 0;
-	while (iVar3 != 0) {
-		iVar5 = cells_across;
-		if (cells_across < 0) {
-			iVar5 = cells_across + 0x1f;
+
+	retval = 0;
+	while (num_regions_to_unpack != 0) 
+	{
+		x = regions_to_unpack[retval].xoffset;
+		z = regions_to_unpack[retval].zoffset;
+
+		region_to_unpack = current_region + x + z * (cells_across >> 5);
+
+		if (loading_region[(region_x + x & 1U) + (region_z + z & 1U) * 2] != -1 &&
+			spoolinfo_offsets[region_to_unpack] != 0xffff &&
+			loading_region[(region_x + x & 1U) + (region_z + z & 1U) * 2] == region_to_unpack)
+		{
+			retval++;
 		}
-		iVar5 = current_region + *(int *)pAVar6 + ((int *)pAVar6)[1] * (iVar5 >> 5);
-		if ((((int)loading_region[(region_x + *(int *)pAVar6 & 1U) + (region_z + ((int *)pAVar6)[1] & 1U) * 2] !=
-			-1) && (spoolinfo_offsets[iVar5] != 0xffff)) &&
-			((int)loading_region
-				[(region_x + *(int *)pAVar6 & 1U) + (region_z + ((int *)pAVar6)[1] & 1U) * 2] ==
-				iVar5)) {
-			iVar4 = iVar4 + 1;
-		}
-		iVar3 = iVar3 + -1;
-		pAVar6 = (AREA_LOAD_INFO *)((int *)pAVar6 + 2);
+		num_regions_to_unpack--;
 	}
-	if (LoadingArea != 0) {
-		if (new_area_location == 1) {
-			if (0x1a < current_barrel_region_xcell) {
-				iVar4 = iVar4 + 1;
+
+	if (LoadingArea != 0) 
+	{
+		if (new_area_location == 1)
+		{
+			if (current_barrel_region_xcell > 26)
+			{
+				retval++;
 			}
 		}
-		else {
-			if (new_area_location < 2) {
-				if ((new_area_location == 0) && (0x1a < current_barrel_region_zcell)) {
-					iVar4 = iVar4 + 1;
+		else
+		{
+			if (new_area_location < 2) 
+			{
+				if (new_area_location == 0 && current_barrel_region_zcell > 26)
+				{
+					retval++;
 				}
 			}
-			else {
-				iVar3 = current_barrel_region_zcell;
-				if (((new_area_location == 2) ||
-					(iVar3 = current_barrel_region_xcell, new_area_location == 3)) && (iVar3 < 6)) {
-					iVar4 = iVar4 + 1;
+			else
+			{
+				barrel_region = current_barrel_region_zcell;
+				if ((new_area_location == 2 ||
+					(barrel_region = current_barrel_region_xcell, new_area_location == 3)) &&
+					barrel_region < 6) 
+				{
+					retval++;
 				}
 			}
 		}
 	}
-	return iVar4;
+
+	return retval;
 }
 
 
@@ -652,7 +676,7 @@ LAB_0007b4e0:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void stopgame(void)
 {
 	StopPadVibration(0);
@@ -692,7 +716,7 @@ void stopgame(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void startgame(void)
 {
 	PutDrawEnv(&current->draw);
@@ -732,28 +756,25 @@ void startgame(void)
 extern POLY_FT4 cd_sprite;
 extern unsigned short cd_icon[288];
 
-// [D]
+// [D] [T]
 void DrawCDicon(void)
 {
-	ushort *puVar1;
-	int iVar2;
-	RECT16 local_10;
+	ushort *palette;
+	RECT16 dest;
 
 	cd_icon[23] = cd_icon[11];
-	iVar2 = 0xb;
-	puVar1 = cd_icon + 10;
-	do {
-		iVar2 = iVar2 + -1;
-		puVar1[1] = puVar1[2];
-		puVar1 = puVar1 + 1;
-	} while (-1 < iVar2);
 
-	local_10.x = 960;
-	local_10.y = 433;
-	local_10.w = 16;
-	local_10.h = 1;
+	palette = &cd_icon[10];
 
-	LoadImage(&local_10, (u_long *)(cd_icon + 10));
+	for (int i = 0; i < 12; i++)
+	{
+		palette[1] = palette[2];
+		palette++;
+	}
+
+	setRECT16(&dest, 960, 433, 16, 1);
+	LoadImage(&dest, (u_long *)palette);
+
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
 }
@@ -795,28 +816,25 @@ void DrawCDicon(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void CheckValidSpoolData(void)
 {
-	if (models_ready != 0)
+	if (models_ready)
 		init_spooled_models();
 
-	if (spoolactive != 0)
+	if (spoolactive)
 	{
-		if (check_regions_present() != 0)
+		if (check_regions_present())
 		{
 			stopgame();
 
-			while (spoolactive != 0)
+			while (spoolactive)
 			{
 				DrawCDicon();
 				VSync(0);
 			}
 
 			startgame();
-
-			PutDrawEnv(&current->draw);
-			UnPauseSFX();
 		}
 	}
 }
@@ -859,7 +877,7 @@ void CheckValidSpoolData(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void UpdateSpool(void)
 {
 #ifdef SIMPLE_SPOOL
@@ -897,7 +915,7 @@ void UpdateSpool(void)
 			break;
 		}
 
-		printWarning("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+		SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
 #endif // _DEBUG
 
 		// seek to required sector
@@ -952,18 +970,15 @@ void UpdateSpool(void)
 	
 #else
 	char bVar1;
-	int iVar3;
 	CdlLOC pos;
-
-	iVar3 = XAPrepared();
 
 	SPOOLQ *current = &spooldata[spoolpos_reading];
 
-	if (iVar3 != 1) 
+	if (!XAPrepared())
 	{
 		target_address = current->addr;
 		bVar1 = current->type;
-
+		
 		if (bVar1 == 0) // SPOOLTYPE_REGIONS
 		{
 			sectors_this_chunk = (current->nsectors);
@@ -986,7 +1001,7 @@ void UpdateSpool(void)
 			nTPchunks_writing = 0;
 			sectors_to_read = 17;
 			ntpages = tsetcounter;
-			sectors_this_chunk = (uint)bVar1;
+			sectors_this_chunk = 1;
 
 #ifdef PSX
 			CdDataCallback(data_cb_textures);
@@ -1007,7 +1022,7 @@ void UpdateSpool(void)
 			sample_chunk = 0;
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
-			sectors_this_chunk = (uint)bVar1;
+			sectors_this_chunk = 2;
 
 #ifdef PSX
 			CdDataCallback(data_cb_soundbank);
@@ -1074,7 +1089,7 @@ void UpdateSpool(void)
 	/* end block 3 */
 	// End Line: 6448
 
-// [D]
+// [D] [T]
 #ifdef _DEBUG
 void _RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func, const char* requestby, int line)
 #define RequestSpool(type, data, offset, loadsize, loadaddr, func) _RequestSpool(type, data, offset, loadsize, loadaddr, func, __FUNCTION__, __LINE__)
@@ -1143,18 +1158,14 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitSpooling(void)
 {
-	int target_region;
-
-	target_region = 0;
-
-	do {
-		loading_region[target_region] = -1;
-		ClearRegion(target_region);
-		target_region++;
-	} while (target_region < 4);
+	for (int i = 0; i < 4; i++)
+	{
+		loading_region[i] = -1;
+		ClearRegion(i);
+	}
 
 	newmodels = NULL;
 	spool_regioncounter = 0;
@@ -1222,25 +1233,26 @@ void InitSpooling(void)
 
 int tsetinfo[32];
 
-// [D]
+// [D] [T]
 void SendTPage(void)
 {
-	unsigned char bVar1;
+	unsigned char old;
 	ulong *clutptr;
-	int iVar5;
+	int slot;
 	int npalettes;
-	int iVar7;
+	int tpage2send;
+	int i;
 	RECT16 cluts;
 
-	iVar7 = tsetinfo[tsetpos * 2];
-	iVar5 = tsetinfo[tsetpos * 2 + 1];
+	tpage2send = tsetinfo[tsetpos * 2];
+	slot = tsetinfo[tsetpos * 2 + 1];
 
-	if (iVar7 == 0xFF || iVar5 == 0xFF)	// [A] bug fix
+	if (tpage2send == 0xFF || slot == 0xFF)	// [A] bug fix
 		return;
 
 	if (nTPchunks == 0) 
 	{
-		if (iVar5 != tpageloaded[iVar7]-1)
+		if (slot != tpageloaded[tpage2send]-1)
 		{
 			npalettes = *(int *)(model_spool_buffer + 0xE000);
 
@@ -1248,43 +1260,37 @@ void SendTPage(void)
 			tpage.h = 64;
 			cluts.w = 64;
 
-			tpage.x = slot_tpagepos[iVar5].vx;
-			tpage.y = slot_tpagepos[iVar5].vy;
+			tpage.x = slot_tpagepos[slot].vx;
+			tpage.y = slot_tpagepos[slot].vy;
 
-			cluts.y = slot_clutpos[iVar5].vy;
-			cluts.x = slot_clutpos[iVar5].vx;
+			cluts.y = slot_clutpos[slot].vy;
+			cluts.x = slot_clutpos[slot].vx;
 
 			cluts.h = npalettes / 4 + 1;
 
 			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xE000 + 4));
 
-			clutptr = (ulong *)(texture_cluts[iVar7]);
-			iVar5 = 0;
+			clutptr = (ulong *)(texture_cluts[tpage2send]);
+			i = 0;
 
-			if (0 < npalettes)
+			while (i < npalettes)
 			{
-				do {
-					//int test1 = (uVar3 | iVar2 + 0x10 >> 4 & 0x3fU) << 0x10 | uVar3 | (int)((uint)cluts.x << 0x10) >> 0x14 & 0x3fU;
-					//int test2 = (uVar3 | iVar2 + 0x30 >> 4 & 0x3fU) << 0x10 | uVar3 | iVar2 + 0x20 >> 4 & 0x3fU;
+				clutptr[0] = getClut(cluts.x + 16, cluts.y) << 0x10 | getClut(cluts.x, cluts.y);
+				clutptr[1] = getClut(cluts.x + 48, cluts.y) << 0x10 | getClut(cluts.x + 32, cluts.y);
 
-					clutptr[0] = getClut(cluts.x + 16, cluts.y) << 0x10 | getClut(cluts.x, cluts.y);
-					clutptr[1] = getClut(cluts.x + 48, cluts.y) << 0x10 | getClut(cluts.x + 32, cluts.y);
+				clutptr+=2;
 
-					clutptr+=2;
-					cluts.y++;
-					iVar5 += 4;;
-				} while (iVar5 < npalettes);
+				cluts.y++;
+
+				i += 4;
 			}
 
-			texture_pages[iVar7] = getTPage(0, 0, tpage.x, tpage.y);
-
-			// OLD VALUE: (short)(tpage.y & 0x100U) >> 4 | (ushort)(((uint)(ushort)tpage.x & 0x3ff) >> 6) | (ushort)(((uint)(ushort)tpage.y & 0x200) << 2);
-			// please check me if above is correct
+			texture_pages[tpage2send] = getTPage(0, 0, tpage.x, tpage.y);
 		}
 	}
 	else 
 	{
-		if (iVar5 != tpageloaded[iVar7] - 1) 
+		if (slot != tpageloaded[tpage2send] - 1) 
 		{
 			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
 			tpage.y = tpage.y + tpage.h;
@@ -1292,13 +1298,13 @@ void SendTPage(void)
 
 		if (nTPchunks == 4)
 		{
-			bVar1 = tpageslots[iVar5];
-			tpageslots[iVar5] = iVar7;
+			old = tpageslots[slot];
+			tpageslots[slot] = tpage2send;
 
-			if(bVar1 != 0xFF)	// [A] bug fix
-				tpageloaded[bVar1] = 0;
+			if(old != 0xFF)	// [A] bug fix
+				tpageloaded[old] = 0;
 
-			tpageloaded[iVar7] = iVar5 + 1;
+			tpageloaded[tpage2send] = slot + 1;
 
 			tsetpos++;
 
@@ -1334,7 +1340,7 @@ void SendTPage(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SpoolSYNC(void)
 {
 	do {
@@ -1379,15 +1385,10 @@ void SpoolSYNC(void)
 	/* end block 4 */
 	// End Line: 2661
 
-// [D]
+// [D] [T]
 void LoadInAreaTSets(int area)
 {
-	bool bVar1;
-	
-	uint uVar3;
-	int iVar4;
 	int offset;
-	int *piVar5;
 	int i;
 
 	int slot;
@@ -1407,7 +1408,6 @@ void LoadInAreaTSets(int area)
 
 	if (slotsused < 19)
 	{
-		piVar5 = availableslots;
 		slot = slotsused;
 
 		do {
@@ -1415,28 +1415,22 @@ void LoadInAreaTSets(int area)
 
 			if (tpageslots[slot] == 0xff) // [A]
 			{
-				*piVar5++ = slot;
-				navailable++;
+				availableslots[navailable++] = slot;
 			}
 			else 
 			{
-				if (ntpages_to_load != 0 && tpageslots[slot] != *tpages) // [A]
+				i = 0;
+				while (tpageslots[slot] != tpages[i])  // [A]
 				{
-					uVar3 = 1;
-					do {
-						offset = uVar3;
+					if (ntpages_to_load <= i)
+						break;
 
-						if (ntpages_to_load <= offset)
-							break;
+					i++;
+				};
 
-						uVar3 = offset + 1;
-					} while (tpageslots[slot] != tpages[offset]); // [A]
-				}
-
-				if (offset == ntpages_to_load)
+				if (i == ntpages_to_load)
 				{
-					*piVar5++ = slot;
-					navailable++;
+					availableslots[navailable++] = slot;
 				}
 			}
 
@@ -1449,23 +1443,16 @@ void LoadInAreaTSets(int area)
 
 	if (ntpages_to_load != 0) 
 	{
-		uVar3 = *tpages;
-
-		if (tpageloaded[uVar3] != 0)	// weird goto lol
+		if (tpageloaded[*tpages] != 0)	// weird goto lol
 		{
 			goto LAB_0007bc94;
 		}
 
-		bVar1 = 0 < navailable;
-		navailable--;
-
-		if (bVar1) 
+		if (navailable-- > 0)
 		{
-			iVar4 = availableslots[navailable];
-
 			while (true) 
 			{
-				tsetinfo[tsetcounter*2 + 1] = iVar4;
+				tsetinfo[tsetcounter*2 + 1] = availableslots[navailable];
 
 				while (true)
 				{
@@ -1481,21 +1468,17 @@ void LoadInAreaTSets(int area)
 					if (ntpages_to_load <= i)
 						return;
 
-					uVar3 = *tpages;
-
-					if (tpageloaded[uVar3] == 0)
+					if (tpageloaded[*tpages] == 0)
 						break;
 
 				LAB_0007bc94:
-					tsetinfo[tsetcounter * 2 + 1] = tpageloaded[uVar3] - 1;
+					tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
 				}
 
 				if (navailable < 1)
 					break;
 
 				navailable--;
-
-				iVar4 = availableslots[navailable];
 			}
 		}
 	}
@@ -1641,7 +1624,7 @@ void SendSBK(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void init_spooled_models(void)
 {
 	int nmodels;
@@ -1658,13 +1641,7 @@ void init_spooled_models(void)
 
 	nmodels = *newmodels;
 
-	printInfo("loading %d model slots\n", nmodels);
-
-	//for (i = 0; i < 1536; i++)
-	//{
-	//	if (addr <= (char*)&modelpointers[i])
-	//		modelpointers[i] = &dummyModel;
-	//}
+	SPOOL_INFO("loading %d model slots\n", nmodels);
 
 	unsigned short* new_model_numbers = newmodels + 1;
 
@@ -1674,9 +1651,6 @@ void init_spooled_models(void)
 
 		size = *(int *)addr;
 		model = (MODEL *)(addr + 4);
-
-		modelpointers[model_number] = model;
-		pLodModels[model_number] = model;
 
 		lod = Low2LowerDetailTable[model_number];
 
@@ -1707,7 +1681,11 @@ void init_spooled_models(void)
 
 			InitSpooledAnimObj(parentmodel->instance_number);
 		}
+	
 		model->poly_block += (int)model;
+
+		modelpointers[model_number] = model;
+		pLodModels[model_number] = model;
 
 		addr += size + 4;
 	}
@@ -1733,7 +1711,7 @@ void init_spooled_models(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetupModels(void)
 {
 	if (old_region == -1)
@@ -1773,7 +1751,7 @@ void SetupModels(void)
 	/* end block 4 */
 	// End Line: 7975
 
-// [D]
+// [D] [T]
 void LoadInAreaModels(int area)
 {
 	if (newmodels)
@@ -1789,7 +1767,7 @@ void LoadInAreaModels(int area)
 			modelpointers[model_number] = &dummyModel;
 		}
 
-		printInfo("freed %d model slots\n", nmodels);
+		SPOOL_INFO("freed %d model slots\n", nmodels);
 	}
 
 	int length = AreaData[area].model_size;
@@ -1832,7 +1810,7 @@ void LoadInAreaModels(int area)
 	/* end block 4 */
 	// End Line: 3523
 
-// [D]
+// [D] [T]
 void CheckLoadAreaData(int cellx, int cellz)
 {
 	int nAreas;
@@ -1960,7 +1938,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 	/* end block 4 */
 	// End Line: 7605
 
-// [D]
+// [D] [T]
 void ClearRegion(int target_region)
 {
 	long *pvsptr;
@@ -2007,7 +1985,7 @@ void ClearRegion(int target_region)
 extern bool gDemoLevel;
 extern bool gDriver1Level;
 
-// [D]
+// [D] [T]
 int LoadRegionData(int region, int target_region)
 {
 	char *cell_buffer;
@@ -2101,7 +2079,7 @@ int LoadRegionData(int region, int target_region)
 
 int RoadMapRegions[4];
 
-// [D]
+// [D] [T]
 void UnpackRegion(int region_to_unpack, int target_barrel_region)
 {
 	if (loading_region[target_barrel_region] == -1) 
@@ -2153,7 +2131,7 @@ inline int _getIntAdv(char** ptr)
 
 #define getIntAdv(ptr) _getIntAdv(&ptr)
 
-// [D]
+// [D] [T]
 void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 {
 	int i;
@@ -2263,7 +2241,7 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void WaitCloseLid(void)
 {
 #ifdef PSX
@@ -2320,19 +2298,22 @@ void WaitCloseLid(void)
 	/* end block 5 */
 	// End Line: 8769
 
-// [D]
+// [D] [T]
 void FoundError(char *name, unsigned char intr, unsigned char *result)
 {
 #ifndef SIMPLE_SPOOL
 	CdlLOC p;
 
-	if ((*result & 0x10) != 0) 
+#ifdef PSX
+	if ((*result & 0x10) != 0)
 	{
 		WaitCloseLid();
 	}
+#endif // PSX
+
 
 #ifdef _DEBUG
-	printError("FoundError: %s, intr: %d\n", name, intr);
+	SPOOL_ERROR("FoundError: %s, intr: %d\n", name, intr);
 #endif // _DEBUG
 
 	spoolerror = 0x3c;
@@ -2382,7 +2363,7 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void GotRegion(void)
 {
 	uint target_barrel_reg;
@@ -2443,7 +2424,7 @@ void GotRegion(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void data_cb_textures(void)
 {
 #ifndef SIMPLE_SPOOL
@@ -2478,7 +2459,7 @@ void data_cb_textures(void)
 
 					if (spoolpos_writing == spoolcounter)
 					{
-						printWarning("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
+						SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
 
 						spoolcounter = 0;
 						spoolpos_writing = 0;
@@ -2532,7 +2513,7 @@ void data_cb_textures(void)
 	/* end block 3 */
 	// End Line: 6774
 
-// [D]
+// [D] [T]
 void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
 #ifndef SIMPLE_SPOOL
@@ -2621,6 +2602,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 	/* end block 3 */
 	// End Line: 4181
 
+// [D] [T]
 void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
 #ifndef SIMPLE_SPOOL
@@ -2693,7 +2675,7 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void data_cb_regions(void)
 {
 #ifndef SIMPLE_SPOOL
@@ -2722,7 +2704,7 @@ void data_cb_regions(void)
 
 				if (spoolpos_writing == spoolcounter) 
 				{
-					printWarning("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
+					SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
 
 					spoolcounter = 0;
 					spoolpos_writing = 0;
@@ -2777,19 +2759,18 @@ void data_cb_regions(void)
 
 void data_cb_soundbank(void)
 {
-	UNIMPLEMENTED();
-	/*
+#ifndef SIMPLE_SPOOL
 	if (chunk_complete != 0) {
 		chunk_complete = 0;
 		SendSBK();
-		loadbank_write = loadbank_write + 1;
+		loadbank_write++;
 		if (endchunk != 0) {
-			spoolpos_writing = spoolpos_writing + 1;
+			spoolpos_writing++;
 			if (switch_spooltype == 0) {
 #ifdef PSX
 				CdDataCallback(0);
 #else
-				UNIMPLEMENTED();
+				levelSpoolerPCDataCallback(NULL);
 #endif // PSX
 				if (spoolpos_writing == spoolcounter) {
 					spoolcounter = 0;
@@ -2806,7 +2787,7 @@ void data_cb_soundbank(void)
 			}
 		}
 	}
-	return;*/
+#endif
 }
 
 
@@ -2843,12 +2824,8 @@ void data_cb_soundbank(void)
 
 void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-
-	uVar1 = (uint)intr;
-	if (intr == '\x01') {
+#ifndef SIMPLE_SPOOL
+	if (intr == 1) {
 #ifdef PSX
 		CdGetSector(target_address, 0x200);
 #else
@@ -2860,12 +2837,12 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 		current_sector++;
 		sectors_to_read--;
 		if (sectors_this_chunk == 0) {
-			loadbank_read = loadbank_read + 1;
-			nTPchunks_reading = nTPchunks_reading + 1;
-			chunk_complete = uVar1;
+			loadbank_read++;
+			nTPchunks_reading++;
+			chunk_complete = intr;
 			if (sectors_to_read == 0) {
-				spoolpos_reading = spoolpos_reading + 1;
-				endchunk = uVar1;
+				spoolpos_reading++;
+				endchunk = intr;
 				test_changemode();
 			}
 			else {
@@ -2878,9 +2855,9 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 		}
 	}
 	else {
-		FoundError(s_ready_cb_soundbank_00011d5c, intr, result);
+		FoundError("ready_cb_soundbank", intr, result);
 	}
-	return;*/
+#endif
 }
 
 
@@ -2922,7 +2899,7 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void data_cb_misc(void)
 {
 #ifndef SIMPLE_SPOOL
@@ -2935,9 +2912,7 @@ void data_cb_misc(void)
 		chunk_complete = 0;
 
 		if (current->func != NULL)
-		{
 			(*current->func)();
-		}
 
 		spoolpos_writing++;
 
@@ -2950,7 +2925,7 @@ void data_cb_misc(void)
 #endif // PSX
 			if (spoolpos_writing == spoolcounter)
 			{
-				printWarning("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+				SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
 
 				spoolcounter = 0;
 				spoolpos_writing = 0;
@@ -2986,7 +2961,7 @@ void data_cb_misc(void)
 	/* end block 2 */
 	// End Line: 6748
 
-// [D]
+// [D] [T]
 void ready_cb_misc(unsigned char intr, unsigned char *result)
 {
 #ifndef SIMPLE_SPOOL
@@ -2998,7 +2973,7 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 		getLevSectorPC(target_address, 0x200);
 #endif // PSX
 
-		target_address = target_address + 0x800;
+		target_address += 0x800;
 		sectors_to_read--;
 		current_sector++;
 
@@ -3046,25 +3021,21 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void StartSpooling(void)
 {
-	static unsigned char param[8];
-	static unsigned char result[8];
-
-	int iVar1;
-
-	if ((spoolcounter != 0) && (spoolactive == 0))
+	if (spoolcounter != 0 && !spoolactive)
 	{
-		iVar1 = XAPrepared();
-
-		if (iVar1 == 0)
+		if (!XAPrepared())
 		{
 #ifdef PSX
-			param[0] = -0x80;
-			CdControlB(0xe, param, result);
+			static unsigned char param[8];
+			static unsigned char result[8];
 
-			if ((result[0] & 0x15) != 0)
+			param[0] = CdlModeSize0 | CdlModeSize1 | CdlModeSpeed;
+			CdControlB(CdlSetmode, param, result);
+
+			if ((result[0] & (CdlStatError | CdlStatShellOpen)) != 0)
 			{
 				WaitCloseLid();
 			}
@@ -3072,10 +3043,8 @@ void StartSpooling(void)
 			spoolactive = 1;
 			UpdateSpool();
 
-			if (FastForward != 0)
-			{
+			if (FastForward)
 				SpoolSYNC();
-			}
 		}
 	}
 }
@@ -3124,69 +3093,68 @@ void StartSpooling(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A] - altered declaration
+// [D] [T] [A] - altered declaration
 void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* cell_addr)
 {
-	ushort *puVar1;
-	ushort *puVar2;
-	ushort uVar3;
+	ushort cell;
+	ushort* short_ptr;
+	ushort* source_packed_data;
 	int loop;
-	uint uVar6;
-	uint uVar7;
+	uint bitpos;
+	uint pcode;
 
 	int packtype;
 	
 	unpack_cellptr_flag = 0;
 	packtype = *(int *)(cell_addr + 4);
-	puVar1 = (ushort *)(cell_addr + 8);
+	source_packed_data = (ushort *)(cell_addr + 8);
 
 	if (packtype == 0)
 	{
-		puVar1 = cell_ptrs + target_barrel_region * 1024;
+		short_ptr = cell_ptrs + target_barrel_region * 1024;
 
 		for (loop = 0; loop < 1024; loop++)
-			*puVar1++ = 0xffff;
+			*short_ptr++ = 0xffff;
 	}
 	else if (packtype == 1)
 	{
-		puVar2 = cell_ptrs + target_barrel_region * 1024;
+		short_ptr = cell_ptrs + target_barrel_region * 1024;
 
 		for (loop = 0; loop < 1024; loop++)
 		{
-			uVar3 = *puVar1++;
+			cell = *source_packed_data++;
 
-			if (uVar3 != 0xffff)
-				uVar3 += cell_slots_add[target_barrel_region];
+			if (cell != 0xffff)
+				cell += cell_slots_add[target_barrel_region];
 
-			*puVar2++ = uVar3;
+			*short_ptr++ = cell;
 		}
 	}
 	else if (packtype == 2)
 	{
-		uVar6 = 0x8000;
-		uVar7 = (uint)*puVar1;
-
-		puVar2 = (ushort *)(cell_addr + 10);
-		puVar1 = cell_ptrs + target_barrel_region * 1024;
+		bitpos = 0x8000;
+		pcode = (uint)*source_packed_data;
+		source_packed_data++;
+		short_ptr = cell_ptrs + target_barrel_region * 1024;
 
 		for (loop = 0; loop < 1024; loop++)
 		{
-			if (uVar7 & uVar6)
+			if (pcode & bitpos)
 			{
-				uVar3 = *puVar2++;
-				uVar3 += cell_slots_add[target_barrel_region];
+				cell = *source_packed_data++;
+				cell += cell_slots_add[target_barrel_region];
 
 			}
 			else
-				uVar3 = 0xffff;
+				cell = 0xffff;
 
-			uVar6 >>= 1;
-			*puVar1++ = uVar3;
+			bitpos >>= 1;
+			*short_ptr++ = cell;
 
-			if (uVar6 == 0)
+			if (bitpos == 0)
 			{
-				uVar6 = 0x8000;
-				uVar7 = *puVar2++;
+				bitpos = 0x8000;
+				pcode = *source_packed_data++;
 			}
 		}
 	}
@@ -3232,7 +3200,7 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A] altered unpack_cellpointers
+// [D] [T] [A] altered unpack_cellpointers
 void Unpack_CellPtrs(void)
 {
 	SPL_REGIONINFO* spool = &spool_regioninfo[spool_regionpos];
@@ -3297,68 +3265,41 @@ void Unpack_CellPtrs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T] [A]
 void SpecClutsSpooled(void)
 {
-	unsigned char bVar1;
-	short sVar2;
-	short sVar3;
-	u_short uVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
-	ushort *puVar8;
-	int iVar9;
-	int iVar10;
-	char *pcVar11;
+	char *loadaddr;
 	RECT16 specCluts;
-
-	iVar9 = 0;
 
 	specCluts.x = slot_clutpos[specialSlot].vx;
 	specCluts.y = slot_clutpos[specialSlot].vy;
 	specCluts.w = 16;
 	specCluts.h = 1;
 
-	pcVar11 = specLoadBuffer;
-	do {
-		iVar5 = 7;
-		if (iVar9 == 0)
-			iVar5 = 6;
+	loadaddr = specLoadBuffer;
 
-		iVar10 = 0;
+	for (int i = 0; i < 2; i++)
+	{
+		int index = specialSlot + i;
+		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + i];
 
-		iVar6 = specialSlot + iVar9;
+		carTpages[GameLevel][i + 6] = tpageslots[index] = tpage;
+		tpageloaded[tpage] = specialSlot + i + 1;
 
-		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + iVar9];
+		slot_tpagepos[index].vx = tpagepos[index].x;
+		slot_tpagepos[index].vy = tpagepos[index].y;
 
-		carTpages[GameLevel][iVar5] = tpageslots[iVar6] = tpage;
-		tpageloaded[tpage] = specialSlot + iVar9 + 1;
-
-		slot_tpagepos[iVar6].vx = tpagepos[iVar6].x;
-		slot_tpagepos[iVar6].vy = tpagepos[iVar6].y;
-
-		texture_pages[tpage] = GetTPage(0, 0, slot_tpagepos[iVar6].vx, slot_tpagepos[iVar6].vy);
+		texture_pages[tpage] = GetTPage(0, 0, slot_tpagepos[index].vx, slot_tpagepos[index].vy);
 		
-
-		if (0 < tpage_texamts[tpage])
+		for (int j = 0; j < tpage_texamts[tpage]; j++)
 		{
-			puVar8 = texture_cluts[tpage];
+			LoadImage2(&specCluts, (u_long*)loadaddr);
+			loadaddr += 32;
 
-			do {
-				LoadImage2(&specCluts, (u_long*)pcVar11);
-				pcVar11 += 32;
-				
-
-				*puVar8++ = GetClut(specCluts.x, specCluts.y);
-				IncrementClutNum(&specCluts);
-
-				iVar10++;
-			} while (iVar10 < tpage_texamts[tpage]);
+			texture_cluts[tpage][j] = GetClut(specCluts.x, specCluts.y);
+			IncrementClutNum(&specCluts);
 		}
-
-		iVar9++;
-	} while (iVar9 < 2);
+	}
 
 	if (quickSpool != 1)
 	{
@@ -3425,34 +3366,32 @@ int specialState = 0;
 char specModelValid = 1;
 int specSpoolComplete;
 
-// [D]
+// [D] [T]
 void CleanModelSpooled(void)
 {
-	int *piVar1;
-	ushort *puVar2;
-	int iVar4;
-	int *piVar5;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar5 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
+
 	if (specBlocksToLoad == lastCleanBlock-1) 
 	{
-		piVar5 = (int *)(specLoadBuffer + 12);
+		loadaddr = (int *)(specLoadBuffer + 12);
+
 		modelMemory = (int *)specmallocptr;
-		gCarCleanModelPtr[4] = (MODEL *)specmallocptr;
+		gCarCleanModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar5 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar5++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if (specBlocksToLoad == 0 || in_a3 < modelMemory)
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
 		specBlocksToLoad = 0;
-
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarCleanModelPtr[4]->vertices += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->normals += (int)gCarCleanModelPtr[4];
@@ -3514,34 +3453,31 @@ void CleanModelSpooled(void)
 
 int damOffset;
 
-// [D]
+// [D] [T]
 void DamagedModelSpooled(void)
 {
-	MODEL *pMVar1;
-	int iVar2;
-	int *piVar3;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar3 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
 
-	if (specBlocksToLoad == lengthDamBlock + -1) 
+	if (specBlocksToLoad == lengthDamBlock-1) 
 	{
-		piVar3 = (int *)(specLoadBuffer + damOffset);
+		loadaddr = (int *)(specLoadBuffer + damOffset);
+
 		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar3 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar3++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if (specBlocksToLoad == 0 || in_a3 < modelMemory) 
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
-		piVar3 = &gCarDamModelPtr[4]->normals;
-
 		specBlocksToLoad = 0;
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarDamModelPtr[4]->vertices += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->normals += (int)gCarDamModelPtr[4];
@@ -3601,33 +3537,31 @@ void DamagedModelSpooled(void)
 
 int lowOffset;
 
-// [D]
+// [D] [T]
 void LowModelSpooled(void)
 {
-	int *piVar1;
-	ushort *puVar2;
-	int iVar4;
-	int *piVar5;
-	int *in_a3;
+	int *loadaddr;
+	int *mem;
 
-	piVar5 = (int *)specLoadBuffer;
+	loadaddr = (int *)specLoadBuffer;
 
-	if (specBlocksToLoad == lengthLowBlock + -1) 
+	if (specBlocksToLoad == lengthLowBlock - 1) 
 	{
-		piVar5 = (int *)(specLoadBuffer + lowOffset);
+		loadaddr = (int *)(specLoadBuffer + lowOffset);
+
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
 
 	// memcpy
-	while (piVar5 < (int*)(specLoadBuffer + 0x800))
-		*modelMemory++ = *piVar5++;
+	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+		*modelMemory++ = *loadaddr++;
 
-	in_a3 = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	mem = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if ((specBlocksToLoad == 0) || (in_a3 < modelMemory))
+	if ((specBlocksToLoad == 0) || (mem < modelMemory))
 	{
 		specBlocksToLoad = 0;
-		modelMemory = in_a3;
+		modelMemory = mem;
 
 		gCarLowModelPtr[4]->vertices += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->normals += (int)gCarLowModelPtr[4];
@@ -3689,37 +3623,38 @@ void LowModelSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T] [A]
 void CleanSpooled(void)
 {
-	int *piVar1;
-	char *pcVar2;
-	int iVar3;
-	int iVar4;
 	MODEL *model;
 
 	if (specBlocksToLoad == 6)
 	{
-		lastCleanBlock = *(int *)specmallocptr + 0x80b;
-		lastCleanBlock = lastCleanBlock >> 0xb;
+		// [A] for readability sake
+		int size_1 = ((int *)specmallocptr)[0];
+		int size_2 = ((int *)specmallocptr)[1];
+		int size_3 = ((int *)specmallocptr)[2];
 
-		firstLowBlock = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0xc;
-		firstLowBlock = firstLowBlock >> 0xb;
+		lastCleanBlock = size_1 + 2048 + 11;
+		lastCleanBlock >>= 11;
 
-		iVar4 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + *(int *)(specmallocptr + 8);
+		firstDamBlock = size_1 + 12;
+		firstDamBlock >>= 11;
 
-		iVar3 = iVar4 + 0x80b;
-		lengthLowBlock = (iVar3 >> 0xb) - firstLowBlock;
+		firstLowBlock = size_1 + size_2 + 12;
+		firstLowBlock >>= 11;
 
-		lowOffset = (*(int *)specmallocptr + *(int *)(specmallocptr + 4)) - (firstLowBlock * 0x800 + -12);
+		int lastDamBlock = size_1 + size_2 + 2048 + 11;
+		lastDamBlock >>= 11;
 
-		firstDamBlock = *(int *)specmallocptr + 12;
-		firstDamBlock = firstDamBlock >> 0xb;
+		lengthDamBlock = lastDamBlock - firstDamBlock;
+		damOffset = size_1 - (firstDamBlock * 2048 - 12);
 
-		iVar3 = *(int *)specmallocptr + *(int *)(specmallocptr + 4) + 0x80b;
+		int lastLowBlock = size_1 + size_2 + size_3 + 2048 + 11;
+		lastLowBlock >>= 11;
 
-		lengthDamBlock = (iVar3 >> 0xb) - firstDamBlock;
-		damOffset = *(int *)specmallocptr - (firstDamBlock * 0x800 + -12);
+		lengthLowBlock = lastLowBlock - firstLowBlock;
+		lowOffset = size_1 + size_2 - (firstLowBlock * 2048 - 12);
 	}
 
 	model = (MODEL *)(specmallocptr + 12);
@@ -3782,7 +3717,7 @@ void CleanSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void LowSpooled(void)
 {
 	MODEL *model;
@@ -3867,7 +3802,7 @@ void LowSpooled(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void Tada(void)
 {
 	int spec_tpage;
@@ -3963,7 +3898,7 @@ void Tada(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SpecialStartNextBlock(void)
 {
 	char *loadaddr;
@@ -4105,7 +4040,7 @@ void SpecialStartNextBlock(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void CheckSpecialSpool(void)
 {
 	int ret;
@@ -4182,7 +4117,7 @@ void CheckSpecialSpool(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void QuickSpoolSpecial(void)
 {
 	quickSpool = 1;
@@ -4221,7 +4156,7 @@ void QuickSpoolSpecial(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void PrepareSecretCar(void)
 {
 	allowSpecSpooling = 0;
@@ -4263,7 +4198,7 @@ void PrepareSecretCar(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitSpecSpool(void)
 {
 	switch (gCurrentMissionNumber)

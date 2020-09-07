@@ -17,6 +17,9 @@ extern int roadblockDelayDiff[3];
 extern int  requestCopCar;
 extern int cop_respawn_timer;
 
+extern int pathStraight;
+extern VECTOR lastKnownPosition;
+
 extern char last_cop_phrase;
 
 extern char first_offence;
@@ -48,5 +51,6 @@ extern void PassiveCopTasks(_CAR_DATA *cp); // 0x0002F6FC
 
 extern void ControlNumberOfCops(); // 0x0002F3CC
 
+extern int ReplayLog_Fnarr_He_Said_Log(int val);
 
 #endif

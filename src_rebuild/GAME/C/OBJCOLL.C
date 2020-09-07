@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "OBJCOLL.H"
 #include "CARS.H"
 #include "CAMERA.H"
@@ -14,7 +14,6 @@
 #include "SPOOL.H"
 #include "CELL.H"
 #include "PLAYERS.H"
-
 #include "MAIN.H"
 
 
@@ -73,78 +72,92 @@
 	/* end block 2 */
 	// End Line: 127
 
+// [D] [A] might be bugged
 char CellEmpty(VECTOR *pPosition, int radius)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT *pCVar1;
+	PACKED_CELL_OBJECT* ppco;
+	CELL_OBJECT* pCellObject;
+	MODEL* pModel;
+	int num_cb;
+	int box_loop;
+	int sphere_sq;
+	int iVar1;
 	int iVar2;
 	int iVar3;
 	uint uVar4;
 	int iVar5;
-	int *piVar6;
+	int* piVar6;
 	int iVar7;
 	int iVar8;
-	int *piVar9;
+	COLLISION_PACKET* collide;
+	int iVar9;
 	int iVar10;
 	int iVar11;
-	int iVar12;
-	CELL_ITERATOR CStack48;
+	CELL_ITERATOR ci;
 
 	iVar3 = pPosition->vx + units_across_halved;
-	if (iVar3 < 0) {
-		iVar3 = iVar3 + 0x7ff;
-	}
-	iVar2 = pPosition->vz + units_down_halved;
-	if (iVar2 < 0) {
-		iVar2 = iVar2 + 0x7ff;
-	}
-	ppco = GetFirstPackedCop(iVar3 >> 0xb, iVar2 >> 0xb, &CStack48, 0);
-	pCVar1 = UnpackCellObject(ppco, &CStack48.nearCell);
+	iVar1 = pPosition->vz + units_down_halved;
+
+	ppco = GetFirstPackedCop(iVar3 >> 0xb, iVar1 >> 0xb, &ci, 0);
+	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
+
 	do {
-		if (pCVar1 == (CELL_OBJECT *)0x0) {
-			return '\x01';
-		}
-		piVar6 = (int *)modelpointers1536[pCVar1->type]->collision_block;
-		if (piVar6 != (int *)0x0) {
-			iVar12 = (int)(((uint)*(ushort *)&(pCVar1->pos).vx - (uint)*(ushort *)&pPosition->vx) *
-				0x10000) >> 0x10;
-			iVar2 = (int)(((uint)*(ushort *)&(pCVar1->pos).vz - (uint)*(ushort *)&pPosition->vz) * 0x10000
-				) >> 0x10;
-			iVar3 = (int)modelpointers1536[pCVar1->type]->bounding_sphere + 0x244;
-			piVar9 = piVar6 + 1;
-			if (iVar12 * iVar12 + iVar2 * iVar2 < iVar3 * iVar3) {
-				iVar3 = 0;
-				if (0 < *piVar6) {
-					do {
-						iVar11 = (int)*(short *)((int)piVar9 + 0x12) * 0x800 + radius * 0x1000;
-						iVar10 = (int)*(short *)((int)piVar9 + 0xe) * 0x800 + radius * 0x1000;
-						uVar4 = ((uint)pCVar1->yang + (int)*(short *)((int)piVar9 + 10)) * 0x100 & 0x3f00;
-						iVar7 = pPosition->vy +
-							((int)(((uint)*(ushort *)&(pCVar1->pos).vy + (uint)*(ushort *)(piVar9 + 1)) *
-								0x10000) >> 0x10) + 0x50;
-						if (iVar7 < 0) {
-							iVar7 = -iVar7;
-						}
-						iVar8 = (int)*(short *)((int)rcossin_tbl + uVar4 + 2);
-						iVar5 = (int)*(short *)((int)rcossin_tbl + uVar4);
-						if (((iVar7 < (((int)((uint)*(ushort *)(piVar9 + 4) << 0x10) >> 0x10) -
-							((int)((uint)*(ushort *)(piVar9 + 4) << 0x10) >> 0x1f) >> 1) + 0x3c) &&
-							((uint)((iVar12 * iVar8 - iVar2 * iVar5) + iVar10) < (uint)(iVar10 * 2))) &&
-							((uint)(iVar2 * iVar8 + iVar12 * iVar5 + iVar11) < (uint)(iVar11 * 2))) {
-							return '\0';
-						}
-						iVar3 = iVar3 + 1;
-						piVar9 = piVar9 + 5;
-					} while (iVar3 < *piVar6);
+		if (!pCellObject) 
+			return 1;
+	
+		pModel = modelpointers[pCellObject->type];
+
+		piVar6 = (int*)pModel->collision_block;
+
+		if (piVar6 != NULL)
+		{
+			num_cb = *piVar6;
+
+			iVar11 = ((pCellObject->pos.vx - pPosition->vx) * 0x10000) >> 0x10;
+			iVar1 = ((pCellObject->pos.vz - pPosition->vz) * 0x10000) >> 0x10;
+
+			sphere_sq = pModel->bounding_sphere + 580;
+			sphere_sq = (sphere_sq * sphere_sq);
+
+			collide = (COLLISION_PACKET*)(piVar6 + 1);
+
+			if (iVar11 * iVar11 + iVar1 * iVar1 < sphere_sq)
+			{
+				box_loop = 0;
+
+				while (box_loop < num_cb)
+				{
+					iVar10 = collide->zsize * 0x800 + radius * 0x1000;
+					iVar9 = collide->xsize * 0x800 + radius * 0x1000;
+					uVar4 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
+					iVar7 = pPosition->vy + ((int)(((uint) * (ushort*)&(pCellObject->pos).vy + (uint)(ushort)collide->ypos) * 0x10000) >> 0x10) + 0x50;
+
+					if (iVar7 < 0)
+						iVar7 = -iVar7;
+
+					iVar8 = (int)*(short*)((int)rcossin_tbl + uVar4 + 2);
+					iVar5 = (int)*(short*)((int)rcossin_tbl + uVar4);
+					iVar2 = (uint)(ushort)collide->ysize << 0x10;
+
+					if (((iVar7 < ((iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1) + 0x3c) &&
+						((uint)((iVar11 * iVar8 - iVar1 * iVar5) + iVar9) < (uint)(iVar9 * 2))) &&
+						((uint)(iVar1 * iVar8 + iVar11 * iVar5 + iVar10) < (uint)(iVar10 * 2))) 
+					{
+						return 0;
+					}
+
+					box_loop++;
+					collide++;
 				}
 			}
 		}
-		ppco = GetNextPackedCop(&CStack48);
-		pCVar1 = UnpackCellObject(ppco, &CStack48.nearCell);
-	} while (true);*/
+
+		ppco = GetNextPackedCop(&ci);
+		pCellObject = UnpackCellObject(ppco, &ci.nearCell);
+
+	} while (true);
+
+	return 0;
 }
 
 
@@ -183,11 +196,9 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	/* end block 4 */
 	// End Line: 1774
 
+// [D]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	int iVar2;
 	int iVar3;
@@ -196,36 +207,25 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	int iVar6;
 
 	iVar1 = pPosition->vx + units_across_halved;
-	iVar3 = iVar1 + -0x400;
-	if (iVar3 < 0) {
-		iVar3 = iVar1 + 0x3ff;
-	}
+	iVar3 = iVar1 - 1024;
+
 	iVar1 = pPosition->vz + units_down_halved;
-	iVar2 = iVar1 + -0x400;
+	iVar2 = iVar1 - 1024;
 	iVar3 = iVar3 >> 0xb;
-	if (iVar2 < 0) {
-		iVar2 = iVar1 + 0x3ff;
-	}
+
 	iVar2 = iVar2 >> 0xb;
 	iVar1 = iVar3;
-	if (iVar3 < 0) {
-		iVar1 = iVar3 + 0x1f;
-	}
+
 	uVar5 = iVar1 >> 5;
 	iVar1 = iVar2;
-	if (iVar2 < 0) {
-		iVar1 = iVar2 + 0x1f;
-	}
+
 	uVar4 = iVar1 >> 5;
 	iVar6 = (uVar5 & 1) + (uVar4 & 1) * 2;
-	iVar1 = cells_across;
-	if (cells_across < 0) {
-		iVar1 = cells_across + 0x1f;
-	}
-	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * (iVar1 >> 5)) {
+
+	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * (cells_across >> 5))
 		return -1;
-	}
-	return (uint)cell_ptrs[(iVar2 + uVar4 * -0x20) * 0x20 + iVar6 * 0x400 + iVar3 + uVar5 * -0x20];*/
+
+	return cell_ptrs[(iVar2 - uVar4 * 32) * 32 + iVar6 * 1024 + iVar3 - uVar5 * 32];
 }
 
 
@@ -312,82 +312,66 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 {
 	int iVar1;
-	int iVar2;
+	int dir;
 	int iVar3;
-	uint uVar4;
-	int iVar5;
-	tAABB *ptVar6;
-	tRay *ptVar7;
-	int local_18;
-	int local_14;
-	int local_8;
-	int local_4;
+	int local_t0_36;
+	int i;
 
-	iVar5 = 0;
-	local_18 = 0;
-	local_14 = 0x1000;
-	ptVar6 = bbox;
-	ptVar7 = ray;
+	tRange inside;
+	tRange cabbage;
+	tRange scaledCabbage;
+
+	inside.lower = 0;
+	inside.upper = 4096;
+
+	i = 0;
 	do {
-		uVar4 = 0xffffffff;
-		iVar3 = ptVar6->slab[0].lower - ptVar7->org[0];
-		iVar2 = ray->dir[iVar5];
-		iVar1 = bbox->slab[iVar5].upper - ptVar7->org[0];
-		if (-1 < iVar2) {
-			uVar4 = (uint)(iVar2 != 0);
-		}
-		if (uVar4 == 0) {
-			if (0 < iVar3) {
+		local_t0_36 = -1;
+
+		cabbage.lower = bbox->slab[i].lower - ray->org[i];
+		cabbage.upper = bbox->slab[i].upper - ray->org[i];
+
+		dir = ray->dir[i];
+
+		if (dir > -1) 
+			local_t0_36 = (dir != 0);
+
+		if (local_t0_36 == 0) 
+		{
+			if (cabbage.lower > 0)
 				return 0;
-			}
-			if (iVar1 < 0) {
+
+			if (cabbage.upper < 0)
 				return 0;
-			}
-			local_4 = 0x3000;
-			local_8 = -0x3000;
+
+			scaledCabbage.upper = 0x3000;
+			scaledCabbage.lower = -0x3000;
 		}
-		else {
-			if ((int)uVar4 < 1) {
-				if (uVar4 == 0xffffffff) {
-					local_4 = (iVar3 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-					local_8 = (iVar1 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-				}
-			}
-			else {
-				if (uVar4 == 1) {
-					local_8 = (iVar3 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-					local_4 = (iVar1 * 0x1000) / iVar2;
-					if (iVar2 == 0) {
-						trap(7);
-					}
-				}
-			}
+		else if (local_t0_36 == -1)
+		{
+			scaledCabbage.upper = (cabbage.lower * 4096) / dir;
+			scaledCabbage.lower = (cabbage.upper * 4096) / dir;
 		}
-		if (local_18 < local_8) {
-			local_18 = local_8;
+		else if (local_t0_36 == 1)
+		{
+			scaledCabbage.lower = (cabbage.lower * 4096) / dir;
+			scaledCabbage.upper = (cabbage.upper * 4096) / dir;
 		}
-		if (local_4 < local_14) {
-			local_14 = local_4;
-		}
-		if (local_14 < local_18) {
+
+		if (inside.lower < scaledCabbage.lower)
+			inside.lower = scaledCabbage.lower;
+
+		if (scaledCabbage.upper < inside.upper)
+			inside.upper = scaledCabbage.upper;
+
+		if (inside.upper < inside.lower)
 			return 0;
-		}
-		ptVar7 = (tRay *)(ptVar7->org + 1);
-		iVar5 = iVar5 + 1;
-		ptVar6 = (tAABB *)(ptVar6->slab + 1);
-		if (2 < iVar5) {
-			return 1;
-		}
-	} while (true);
+
+		i++;
+
+	} while(i < 3);
+
+	return 1;
 }
 
 
@@ -492,139 +476,211 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 	/* end block 4 */
 	// End Line: 655
 
+int testRadius = 222;
 
+// [D]
 char lineClear(VECTOR *v1, VECTOR *v2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	int iVar1;
-	VECTOR *pVVar2;
-	PACKED_CELL_OBJECT *ppco;
+	PACKED_CELL_OBJECT* ppco;
+	CELL_OBJECT* pCellObject;
+	MATRIX2* mat;
+	int pos_z;
+	int cell_z;
+	int cell_x;
+	int local_a0_592;
+	MODEL* pModel;
+	int* piVar2;
+	int local_a3_704;
 	int iVar3;
-	CELL_OBJECT *pCVar4;
-	int iVar5;
-	int cellz;
-	int iVar6;
-	int iVar7;
-	int cellx;
-	int iVar8;
-	uint uVar9;
-	int iVar10;
-	MODEL *pMVar11;
-	int iVar12;
-	int *piVar13;
-	int iVar14;
-	uint uVar15;
-	int iVar16;
-	int iVar17;
-	int iVar18;
-	int iVar19;
-	int iVar20;
-	int iVar21;
-	int *piVar22;
-	CELL_ITERATOR CStack136;
-	tRay local_70;
-	tAABB local_50;
-	int local_38;
-	int local_30;
+	int cs;
+	int sn;
+	int iVar4;
+	COLLISION_PACKET* collide;
+	VECTOR pos;
+	VECTOR va;
+	VECTOR vb;
+	CELL_ITERATOR ci;
+	tRay ray;
+	tAABB box;
+	int we;
+	int ocz;
+	int ocx;
+	int box_loop; // $s5
+	int num_cb; // $s6
+ 	int sphere_sq; // $v0
+ 	int xd; // $a0
+ 	int zd; // $v1
 
-	iVar7 = v1->vx;
-	iVar10 = v1->vy;
-	iVar12 = v1->vz;
-	iVar16 = v2->vx;
-	local_38 = 0;
-	iVar1 = iVar16 - iVar7;
-	iVar14 = v2->vy;
-	iVar18 = v2->vz;
-	iVar5 = iVar18 - iVar12;
-	iVar3 = -1;
-	iVar6 = -1;
+	va.vx = v1->vx;
+	va.vy = v1->vy;
+	va.vz = v1->vz;
+
+	vb.vx = v2->vx;
+	vb.vy = v2->vy;
+	vb.vz = v2->vz;
+
+	pos.vx = vb.vx - va.vx;
+	pos.vz = vb.vz - va.vz;
+
+	ocx = -1;
+	ocz = -1;
+
+	we = 0;
+
 	do {
-		if (local_38 == 0) {
-			cellx = v2->vx + units_across_halved;
-			pVVar2 = v2;
-			if (cellx < 0) {
-				cellx = cellx + 0x7ff;
-			}
+		if (we == 0) 
+		{
+			cell_x = (v2->vx + units_across_halved) / 2048;
+			cell_z = (v2->vz + units_down_halved) / 2048;
 		}
-		else {
-			cellx = v1->vx + units_across_halved;
-			pVVar2 = v1;
-			if (cellx < 0) {
-				cellx = cellx + 0x7ff;
-			}
+		else 
+		{
+			cell_x = (v1->vx + units_across_halved) / 2048;
+			cell_z = (v1->vz + units_down_halved) / 2048;
 		}
-		cellz = pVVar2->vz + units_down_halved;
-		cellx = cellx >> 0xb;
-		if (cellz < 0) {
-			cellz = cellz + 0x7ff;
-		}
-		cellz = cellz >> 0xb;
-		if ((iVar3 != cellx) || (iVar6 != cellz)) {
-			ppco = GetFirstPackedCop(cellx, cellz, &CStack136, 0);
-			while (pCVar4 = UnpackCellObject(ppco, &CStack136.nearCell), pCVar4 != (CELL_OBJECT *)0x0) {
-				pMVar11 = modelpointers1536[pCVar4->type];
-				piVar13 = (int *)pMVar11->collision_block;
-				if (((piVar13 != (int *)0x0) && ((pMVar11->flags2 & 0xa00) == 0)) &&
-					(iVar8 = (int)(((uint)*(ushort *)&(pCVar4->pos).vx - ((iVar7 + iVar16) / 2 & 0xffffU)) *
-						0x10000) >> 0x10,
-						iVar6 = (int)(((uint)*(ushort *)&(pCVar4->pos).vz - ((iVar12 + iVar18) / 2 & 0xffffU)) *
-							0x10000) >> 0x10, iVar3 = (int)pMVar11->bounding_sphere + 800,
-						iVar8 * iVar8 + iVar6 * iVar6 < iVar3 * iVar3)) {
-					piVar22 = piVar13 + 1;
-					iVar6 = *piVar13;
-					iVar3 = 0;
-					if (0 < iVar6) {
-						local_30 = 0xa3812;
-						do {
-							uVar9 = -(uint)pCVar4->yang & 0x3f;
-							uVar15 = ((uint)pCVar4->yang + (int)*(short *)((int)piVar22 + 10)) * 0x100 & 0x3f00;
-							iVar19 = (int)*(short *)(uVar15 + local_30);
-							iVar21 = iVar7 - ((pCVar4->pos).vx +
-								((int)*(short *)((int)piVar22 + 2) * (int)(&matrixtable)[uVar9].m[0]
-									+ (int)*(short *)((int)piVar22 + 6) *
-									(int)(&matrixtable)[uVar9].m[6] + 0x800 >> 0xc));
-							iVar20 = (int)*(short *)((int)rcossin_tbl + uVar15);
-							iVar17 = iVar12 - ((pCVar4->pos).vz +
-								((int)*(short *)((int)piVar22 + 2) * (int)(&matrixtable)[uVar9].m[2]
-									+ (int)*(short *)((int)piVar22 + 6) *
-									(int)(&matrixtable)[uVar9].m[8] + 0x800 >> 0xc));
-							iVar8 = (uint)*(ushort *)((int)piVar22 + 0xe) << 0x10;
-							local_50.slab[0].upper = ((iVar8 >> 0x10) - (iVar8 >> 0x1f) >> 1) + testRadius;
-							local_50.slab[0].lower = -local_50.slab[0].upper;
-							local_50.slab[1].upper =
-								(((int)((uint)*(ushort *)(piVar22 + 4) << 0x10) >> 0x10) -
-								((int)((uint)*(ushort *)(piVar22 + 4) << 0x10) >> 0x1f) >> 1) + testRadius;
-							local_50.slab[1].lower = -local_50.slab[1].upper;
-							local_70.org[1] =
-								(iVar10 - ((int)((-(uint)*(ushort *)(piVar22 + 1) -
-								(uint)*(ushort *)&(pCVar4->pos).vy) * 0x10000) >> 0x10)) + 0x50;
-							iVar8 = (uint)*(ushort *)((int)piVar22 + 0x12) << 0x10;
-							local_50.slab[2].upper = ((iVar8 >> 0x10) - (iVar8 >> 0x1f) >> 1) + testRadius;
-							local_50.slab[2].lower = -local_50.slab[2].upper;
-							local_70.org[0] = (iVar19 * iVar21 - iVar20 * iVar17) + 0x800 >> 0xc;
-							local_70.org[2] = iVar19 * iVar17 + iVar20 * iVar21 + 0x800 >> 0xc;
-							local_70.dir[0] = (iVar19 * iVar1 - iVar20 * iVar5) + 0x800 >> 0xc;
-							local_70.dir[2] = iVar19 * iVar5 + iVar20 * iVar1 + 0x800 >> 0xc;
-							local_70.dir[1] = iVar14 - iVar10;
-							iVar8 = RaySlabsIntersection(&local_70, &local_50);
-							if (iVar8 != 0) {
-								return '\0';
+
+		if ((ocx != cell_x) || (ocz != cell_z))
+		{
+			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
+
+			while (pCellObject = UnpackCellObject(ppco, &ci.nearCell), pCellObject != NULL)
+			{
+				pModel = modelpointers[pCellObject->type];
+				piVar2 = (int*)pModel->collision_block;
+
+				xd = ((pCellObject->pos.vx - ((va.vx + vb.vx) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+				zd = ((pCellObject->pos.vz - ((va.vz + vb.vz) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+
+				sphere_sq = pModel->bounding_sphere + 800;
+
+				if (piVar2 != NULL && (pModel->flags2 & 0xA00) == 0 && (xd*xd + zd*zd < sphere_sq*sphere_sq))
+				{
+					collide = (COLLISION_PACKET*)(piVar2 + 1);
+
+					num_cb = *piVar2;
+					box_loop = 0;
+
+					while (box_loop < num_cb)
+					{
+						local_a0_592 = -pCellObject->yang & 0x3f;
+						local_a3_704 = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+
+						mat = &matrixtable[local_a0_592];
+
+						cs = rcossin_tbl[local_a3_704 * 2 + 1];
+						sn = rcossin_tbl[local_a3_704 * 2];
+
+						iVar4 = va.vx - (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						iVar3 = va.vz - (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						
+						box.slab[0].upper = collide->xsize / 2 +testRadius;
+						box.slab[0].lower = -box.slab[0].upper;
+					
+						box.slab[1].upper = collide->ysize / 2 +testRadius;
+						box.slab[1].lower = -box.slab[1].upper;
+						
+						box.slab[2].upper = collide->zsize / 2 +testRadius;
+						box.slab[2].lower = -box.slab[2].upper;
+
+						ray.org[0] = FIXED(cs * iVar4 - sn * iVar3);
+						ray.org[2] = FIXED(cs * iVar3 + sn * iVar4);
+						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
+
+						ray.dir[0] = FIXED(cs * pos.vx - sn * pos.vz);
+						ray.dir[2] = FIXED(cs * pos.vz + sn * pos.vx);
+						ray.dir[1] = vb.vy - va.vy;
+
+#if defined(COLLISION_DEBUG)
+						int rayResult = RaySlabsIntersection(&ray, &box);
+
+						extern int gShowCollisionDebug;
+						if (gShowCollisionDebug == 3)
+						{
+							CDATA2D cd[1];
+
+							cd[0].x.vx = (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+							cd[0].x.vz = (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+							cd[0].x.vy = va.vy;
+
+							cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+							cd[0].length[0] = collide->zsize / 2;
+							cd[0].length[1] = collide->xsize / 2;
+
+							// calc axes of box
+							int dtheta = cd[0].theta & 0xfff;
+
+							cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
+							cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+
+							cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
+							cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+
+							extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+							extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+							CVECTOR ggcv = { 0, 250, 0 };
+							CVECTOR rrcv = { 250, 0, 0 };
+							CVECTOR yycv = { 250, 250, 0 };
+
+							// show both box axes
+							{
+								VECTOR _zero = { 0 };
+								VECTOR b1p = cd[0].x;
+
+								// show position to position
+								//Debug_AddLine(b1p1, b2p1, yycv);
+
+								VECTOR b1ax[2] = { {0} , {0} };
+								b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
+								b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
+								b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
+								b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+
+								// show axis of body 1
+								Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+								Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+								// display 2D box 1
+								{
+									int h = b1ax[0].vy;
+									VECTOR box_points[4] = {
+										{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+										{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+										{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+										{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+									};
+
+									Debug_AddLineOfs(box_points[0], box_points[1], b1p, rayResult ? rrcv : ggcv);
+									Debug_AddLineOfs(box_points[1], box_points[2], b1p, rayResult ? rrcv : ggcv);
+									Debug_AddLineOfs(box_points[2], box_points[3], b1p, rayResult ? rrcv : ggcv);
+									Debug_AddLineOfs(box_points[3], box_points[0], b1p, rayResult ? rrcv : ggcv);
+								}
 							}
-							iVar3 = iVar3 + 1;
-							piVar22 = piVar22 + 5;
-						} while (iVar3 < iVar6);
+						}
+
+						if (rayResult != 0)
+							return 0;
+
+#else
+						if (RaySlabsIntersection(&ray, &box) != 0)
+							return 0;
+#endif
+						box_loop++;
+						collide++;
 					}
 				}
-				ppco = GetNextPackedCop(&CStack136);
+				ppco = GetNextPackedCop(&ci);
 			}
 		}
-		local_38 = local_38 + 1;
-		iVar3 = cellx;
-		iVar6 = cellz;
-	} while (local_38 < 2);
-	return '\x01';*/
+
+		we++;
+
+		ocx = cell_x;
+		ocz = cell_z;
+	} while (we < 2);
+
+	return 1;
 }
 
 
@@ -771,7 +827,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 				if ((cell.x / 32) + (cell.z / 32) * (cells_across / 32) == RoadMapRegions[((cell.x / 32) & 1) + ((cell.z / 32) & 1) * 2])
 				{
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
-					cop = UnpackCellObject(ppco, &ci.near);
+					cop = UnpackCellObject(ppco, &ci.nearCell);
 
 					while (cop != NULL)
 					{
@@ -780,7 +836,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 						pcoplist[*count] = ci.ppco;
 
 						ppco = GetNextPackedCop(&ci);
-						cop = UnpackCellObject(ppco, &ci.near);
+						cop = UnpackCellObject(ppco, &ci.nearCell);
 
 						*count = *count + 1;
 					}
@@ -988,62 +1044,61 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 								}
 								else
 								{
-									iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
-
-									if (iVar7 != 0)
+									if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
 									{
+										if (!bKillTanner)
+											player[0].dying = 1;
+
 										bKillTanner = 1;
-										player[0].dying = 1;
+									}
+								}
+							}
+							else if (cp->controlType == 5)
+							{
+								if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
+								{
+									iVar7 = 5;
+									bbox.xsize += 100;
+									bbox.zsize += 100;
+
+									boxOverlap = -1;
+
+									while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
+										CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
+									{
+										gCameraDistance -= boxOverlap;
+										if (gCameraDistance < iVar13)
+											gCameraDistance = iVar13;
+
+										iVar13 = gCameraDistance;
+										uVar9 = cp->hd.direction & 0xfff;
+
+										cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
+										cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
+										iVar7--;
 									}
 								}
 							}
 							else
 							{
-								if (cp->controlType == 5)
+								if (x1 < mdcount || cop->pad == 0)
 								{
-									if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
-									{
-										iVar7 = 5;
-										bbox.xsize += 100;
-										bbox.zsize += 100;
-
-										while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
-											CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
-										{
-											gCameraDistance -= boxOverlap;
-											if (gCameraDistance < iVar13)
-												gCameraDistance = iVar13;
-
-											iVar13 = gCameraDistance;
-											uVar9 = cp->hd.direction & 0xfff;
-
-											cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
-											cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
-											iVar7--;
-										}
-									}
+									if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
+										cp->ap.needsDenting = 1;
 								}
 								else
 								{
-									if (x1 < mdcount || cop->pad == 0)
+									cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
+									
+									if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? 0x2 : 0) != 0)
 									{
-										iVar7 = CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1);
-
-										if (iVar7 != 0)
-											cp->ap.needsDenting = 1;
+										cp->ap.needsDenting = 1;
 									}
-									else
-									{
-										cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
-										iVar7 = CarBuildingCollision(cp, &bbox, cop, 0);
 
-										if (iVar7 != 0)
-											cp->ap.needsDenting = 1;
-
-										cp->st.n.linearVelocity[2] -= 700000;
-									}
+									//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
 								}
 							}
+
 							collide++;
 						};
 					}
@@ -1186,8 +1241,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 						if (iVar6 < (iVar10) / 2)
 						{
-							
-
 							gLastModelCollisionCheck = cop->type;
 
 							cd[0].theta = dir;
@@ -1219,7 +1272,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 							
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 							extern int gShowCollisionDebug;
-							if (gShowCollisionDebug)
+							if (gShowCollisionDebug == 1)
 							{
 								extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 								extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
@@ -1296,8 +1349,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 								}
 							}
 #endif
-							
-
 							if(res)
 								return 1;
 						}

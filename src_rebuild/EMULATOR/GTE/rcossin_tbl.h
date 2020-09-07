@@ -1,3 +1,8 @@
+#ifdef _MSC_VER
+#pragma warning(disable: 4309)
+#pragma warning(disable: 4838)
+#endif
+
 // LUT for cos and sin
 // 8192 entries, even entry = Sin, odd entry = Cos
 // take TR angle (between 0 and 65535), shift R by 3 (to get between 0 and 8191), and with 8190 (to get between 0 and 8190)

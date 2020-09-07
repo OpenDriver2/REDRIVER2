@@ -2,7 +2,7 @@
 #define RNC_2_H
 
 
-extern void UnpackRNC() ; // 0x0001B434
+extern void UnpackRNC(char* src, char* dest) ; // 0x0001B434
 
 extern void Unpack() ; // 0x0001B488
 

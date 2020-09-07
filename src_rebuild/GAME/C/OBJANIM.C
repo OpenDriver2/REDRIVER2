@@ -1,33 +1,44 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "OBJANIM.H"
 #include "MAP.H"
 #include "MODELS.H"
 #include "TEXTURE.H"
+#include "DEBRIS.H"
+#include "CIV_AI.H"
+#include "MAIN.H"
+#include "MISSION.H"
+#include "CARS.H"
+#include "PLAYERS.H"
+#include "COP_AI.H"
+#include "SPOOL.H"
+#include "SYSTEM.H"
+#include "PAUSE.H"
+#include "STRINGS.H"
 
 CYCLE_OBJECT Lev0[2] =
 {
-  { "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },
-  { "NAVPIR34", 0, 0, 0, 6, 0, 7, 13, 0 }
+	{ "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },
+	{ "NAVPIR34", 0, 0, 0, 6, 0, 7, 13, 0 }
 };
 
 CYCLE_OBJECT Lev1[] = {
-	{ "DOOR11", 0, 0, 1, 7, 2, 8, 14, 3 } ,
+	{ "DOOR11", 0, 0, 1, 7, 2, 8, 14, 3 },
 };
 
 CYCLE_OBJECT Lev2[12] =
 {
-  { "DTSYN01", 0, 0, 0, 3, 0, 4, 14, 0 },
-  { "DTSYN02", 0, 0, 0, 15, 0, 65535, 65535, 0 },
-  { "F-MTSYN2", 0, 0, 0, 3, 0, 10, 14, 0 },
-  { "DTSYN03", 0, 0, 0, 3, 0, 65535, 65535, 0 },
-  { "SYN-CAS1", 0, 0, 0, 3, 0, 4, 14, 0 },
-  { "SYNSLOT", 0, 0, 0, 3, 0, 4, 7, 0 },
-  { "ENT1B", 0, 0, 0, 15, 0, 65535, 65535, 0 },
-  { "FLAMINGO", 0, 0, 0, 3, 0, 9, 12, 0 },
-  { "CYCLE-01", 0, 0, 0, 5, 1, 6, 11, 1 },
-  { "CYCLE-02", 0, 0, 0, 3, 3, 65535, 65535, 0 },
-  { "CYCLE-03", 0, 0, 0, 6, 7, 7, 13, 7 },
-  { "CYCLE-04", 0, 0, 0, 6, 15, 7, 13, 15 }
+	{ "DTSYN01", 0, 0, 0, 3, 0, 4, 14, 0 },
+	{ "DTSYN02", 0, 0, 0, 15, 0, -1, -1, 0 },
+	{ "F-MTSYN2", 0, 0, 0, 3, 0, 10, 14, 0 },
+	{ "DTSYN03", 0, 0, 0, 3, 0, -1, -1, 0 },
+	{ "SYN-CAS1", 0, 0, 0, 3, 0, 4, 14, 0 },
+	{ "SYNSLOT", 0, 0, 0, 3, 0, 4, 7, 0 },
+	{ "ENT1B", 0, 0, 0, 15, 0, -1, -1, 0 },
+	{ "FLAMINGO", 0, 0, 0, 3, 0, 9, 12, 0 },
+	{ "CYCLE-01", 0, 0, 0, 5, 1, 6, 11, 1 },
+	{ "CYCLE-02", 0, 0, 0, 3, 3, -1, -1, 0 },
+	{ "CYCLE-03", 0, 0, 0, 6, 7, 7, 13, 7 },
+	{ "CYCLE-04", 0, 0, 0, 6, 15, 7, 13, 15 }
 };
 
 CYCLE_OBJECT Lev3[] = {
@@ -46,41 +57,41 @@ int Num_LevCycleObjs[] = { 2, 0, 12, 0 };
 
 ANIMATED_OBJECT Lev0AnimObjects[9] =
 {
-  { 0, 0, "TLIGHT01", 0 },
-  { 1, 0, "TLIGHT02", 0 },
-  { 2, 0, "SLIGHT01", 1 },
-  { 3, 0, "LOW_SLIGHT01", 1 },
-  { 4, 0, "DLIGHT01", 1 },
-  { 5, 0, "STRUT", 0 },
-  { 6, 0, "NPLIGHT", 0 },
-  { 7, 0, "TLIGHT01_LOW", 0 },
-  { 8, 0, "TLIGHT02_LOW", 0 }
+	{ 0, 0, "TLIGHT01", 0 },
+	{ 1, 0, "TLIGHT02", 0 },
+	{ 2, 0, "SLIGHT01", 1 },
+	{ 3, 0, "LOW_SLIGHT01", 1 },
+	{ 4, 0, "DLIGHT01", 1 },
+	{ 5, 0, "STRUT", 0 },
+	{ 6, 0, "NPLIGHT", 0 },
+	{ 7, 0, "TLIGHT01_LOW", 0 },
+	{ 8, 0, "TLIGHT02_LOW", 0 }
 };
 
 ANIMATED_OBJECT Lev1AnimObjects[5] =
 {
-  { 0, 0, "TLIGHT1", 0 },
-  { 1, 0, "TLIGHT2", 0 },
-  { 2, 0, "SLIGHT1", 1 },
-  { 3, 0, "SLIGHT2", 1 },
-  { 4, 0, "DLIGHT1", 1 }
+	{ 0, 0, "TLIGHT1", 0 },
+	{ 1, 0, "TLIGHT2", 0 },
+	{ 2, 0, "SLIGHT1", 1 },
+	{ 3, 0, "SLIGHT2", 1 },
+	{ 4, 0, "DLIGHT1", 1 }
 };
 
 ANIMATED_OBJECT Lev2AnimObjects[5] =
 {
-  { 0, 0, "TLIGHT01", 0 },
-  { 1, 0, "TLIGHT02", 0 },
-  { 2, 0, "SLIGHT01", 1 },
-  { 3, 0, "DLIGHT01", 1 },
-  { 4, 0, "SLIGHT02", 1 }
+	{ 0, 0, "TLIGHT01", 0 },
+	{ 1, 0, "TLIGHT02", 0 },
+	{ 2, 0, "SLIGHT01", 1 },
+	{ 3, 0, "DLIGHT01", 1 },
+	{ 4, 0, "SLIGHT02", 1 }
 };
 
 ANIMATED_OBJECT Lev3AnimObjects[4] =
 {
-  { 0, 0, "TLIGHT01", 0 },
-  { 1, 0, "TLIGHT02", 0 },
-  { 2, 0, "SLIGHT01", 0 },
-  { 3, 0, "MLIGHT01", 0 }
+	{ 0, 0, "TLIGHT01", 0 },
+	{ 1, 0, "TLIGHT02", 0 },
+	{ 2, 0, "SLIGHT01", 0 },
+	{ 3, 0, "MLIGHT01", 0 }
 };
 
 ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = { 
@@ -146,6 +157,8 @@ int num_anim_objects = 0;
 int num_cycle_obj = 0;
 
 TEXTURE_DETAILS cycle_tex[12];
+DR_LOAD cyclecluts[12];
+
 int cycle_phase = 0;
 int cycle_timer = 0;
 
@@ -260,110 +273,91 @@ void InitCyclingPals(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void ColourCycle(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	byte bVar2;
-	undefined2 uVar3;
-	DB *pDVar4;
-	undefined2 *__dest;
-	int iVar5;
-	int iVar6;
-	uint *puVar7;
-	undefined *puVar8;
-	TEXTURE_DETAILS *pTVar9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
-	int iVar13;
-	undefined2 local_38;
-	ushort local_36;
-	undefined2 local_34;
-	undefined2 local_32;
-	int local_30;
+	ushort temp;
+	ushort* bufaddr;
+	CYCLE_OBJECT* cyc;
+	int i;
+	RECT16 vram;
 
-	if (LoadingArea == 0) {
-		if ((pauseflag == 0) && (gTimeOfDay == 3)) {
-			local_34 = 0x10;
-			local_32 = 1;
-			puVar8 = Lev_CycleObjPtrs4[GameLevel];
-			if (num_cycle_obj != 0) {
-				iVar10 = 0;
-				if (0 < num_cycle_obj) {
-					iVar11 = 0xab3b0;
-					local_30 = 0;
-					iVar13 = 0;
-					iVar12 = 0;
-					pTVar9 = &cycle_tex;
-					do {
-						bVar1 = pTVar9->texture_page;
-						bVar2 = pTVar9->texture_number;
-						if (tpageloaded[(uint)bVar1] != '\0') {
-							if (cycle_phase == 0) {
-								local_38 = (undefined2)
-									(((uint)(ushort)(&texture_cluts)[(uint)bVar1 * 0x20 + (uint)bVar2] & 0x3f
-										) << 4);
-								*(undefined2 *)(puVar8 + 4) = local_38;
-								local_36 = (ushort)(&texture_cluts)[(uint)bVar1 * 0x20 + (uint)bVar2] >> 6 & 0x1ff;
-								*(ushort *)(puVar8 + 6) = local_36;
-								StoreImage(&local_38, iVar11);
-							}
-							else {
-								if ((cycle_timer & *(ushort *)(puVar8 + 0xc)) == 0) {
-									if ((int)*(short *)(puVar8 + 8) != -1) {
-										iVar6 = iVar12 + 0xab3b0;
-										iVar5 = (int)*(short *)(puVar8 + 8) * 2;
-										__dest = (undefined2 *)(iVar5 + iVar6);
-										uVar3 = *__dest;
-										memmove(__dest, (void *)(iVar6 + iVar5 + 2),
-											((uint)*(ushort *)(puVar8 + 10) - (uint)*(ushort *)(puVar8 + 8) & 0xffff
-												) << 1);
-										*(undefined2 *)((int)*(short *)(puVar8 + 10) * 2 + iVar6) = uVar3;
-									}
-								}
-								if ((cycle_timer & *(ushort *)(puVar8 + 0x12)) == 0) {
-									if ((int)*(short *)(puVar8 + 0xe) != -1) {
-										iVar6 = iVar13 + 0xab3b0;
-										iVar5 = (int)*(short *)(puVar8 + 0xe) * 2;
-										__dest = (undefined2 *)(iVar5 + iVar6);
-										uVar3 = *__dest;
-										memmove(__dest, (void *)(iVar6 + iVar5 + 2),
-											((uint)*(ushort *)(puVar8 + 0x10) - (uint)*(ushort *)(puVar8 + 0xe) &
-												0xffff) << 1);
-										*(undefined2 *)((int)*(short *)(puVar8 + 0x10) * 2 + iVar6) = uVar3;
-									}
-								}
-								local_38 = *(undefined2 *)(puVar8 + 4);
-								puVar7 = (uint *)((int)&cyclecluts[0].tag + local_30);
-								local_36 = *(ushort *)(puVar8 + 6);
-								SetDrawLoad(puVar7, &local_38);
-								pDVar4 = current;
-								*puVar7 = *puVar7 & 0xff000000 | *current->ot & 0xffffff;
-								*pDVar4->ot = *pDVar4->ot & 0xff000000 | (uint)puVar7 & 0xffffff;
-							}
+	if (LoadingArea == 0)
+	{
+		if ((pauseflag == 0) && (gTimeOfDay == 3))
+		{
+			vram.w = 16;
+			vram.h = 1;
+			cyc = Lev_CycleObjPtrs[GameLevel];
+
+			if (num_cycle_obj != 0)
+			{
+				i = 0;
+
+				while (i < num_cycle_obj)
+				{
+					bufaddr = (unsigned short*)cyclecluts[i].p;
+
+					if (tpageloaded[cycle_tex[i].texture_page] != 0)
+					{
+						if (cycle_phase == 0)
+						{
+							// initialize
+							temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
+
+							cyc->vx = vram.x = (temp & 0x3f) << 4;
+							cyc->vy = vram.y = (temp >> 6);
+
+							StoreImage(&vram, (u_long*)bufaddr);
 						}
-						iVar11 = iVar11 + 0x44;
-						iVar13 = iVar13 + 0x44;
-						iVar12 = iVar12 + 0x44;
-						pTVar9 = pTVar9 + 1;
-						iVar10 = iVar10 + 1;
-						local_30 = local_30 + 0x44;
-						puVar8 = puVar8 + 0x14;
-					} while (iVar10 < num_cycle_obj);
+						else 
+						{
+							if ((cycle_timer & cyc->speed1) == 0) 
+							{
+								if (cyc->start1 != -1)
+								{
+									temp = bufaddr[cyc->start1];
+									memmove(bufaddr + cyc->start1, bufaddr + cyc->start1 + 1, (cyc->stop1 - cyc->start1) << 1);
+
+									bufaddr[cyc->stop1] = temp;
+								}
+							}
+
+							if ((cycle_timer & cyc->speed2) == 0) 
+							{
+								if (cyc->start2 != -1)
+								{
+									temp = bufaddr[cyc->start2];
+									memmove(bufaddr + cyc->start2, bufaddr + cyc->start2 + 1, (cyc->stop2 - cyc->start2) << 1);
+
+									bufaddr[cyc->stop2] = temp;
+								}
+							}
+
+							vram.x = cyc->vx;
+							vram.y = cyc->vy;
+
+							SetDrawLoad(&cyclecluts[i], &vram);
+
+							addPrim(current->ot, &cyclecluts[i]);
+						}
+					}
+
+					cyc++;
+					i++;
 				}
-				if (cycle_phase != 0) {
-					cycle_timer = cycle_timer + 1;
-				}
+
+				if (cycle_phase != 0) 
+					cycle_timer++;
+
 				cycle_phase = cycle_phase ^ 1;
 			}
 		}
 	}
-	else {
+	else
+	{
 		cycle_phase = 0;
 	}
-	return;*/
 }
 
 
@@ -406,18 +400,13 @@ void ColourCycle(void)
 // [D]
 void FindSmashableObjects(void)
 {
-	SMASHABLE_OBJECT *pSVar1;
-	int iVar2;
-	SMASHABLE_OBJECT *pSVar3;
+	SMASHABLE_OBJECT *sip;
 
-	pSVar3 = smashable;
-	if (smashable[0].name != NULL) {
-		do {
-			iVar2 = FindModelIdxWithName(pSVar3->name);
-			pSVar3->modelIdx = iVar2;
-			pSVar1 = pSVar3 + 1;
-			pSVar3 = pSVar3 + 1;
-		} while (pSVar1->name != NULL);
+	sip = smashable;
+	while (sip->name != NULL)
+	{
+		sip->modelIdx = FindModelIdxWithName(sip->name);
+		sip++;
 	}
 }
 
@@ -648,7 +637,7 @@ int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
 	{
 		if (type == aop->model_num)
 		{
-			animate_object(cop, type);
+			animate_object(cop, aop->internal_id);
 			break;
 		}
 		aop++;
@@ -683,163 +672,204 @@ int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
 	/* end block 3 */
 	// End Line: 1355
 
+// [D]
 void animate_object(CELL_OBJECT *cop, int type)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	char phase;
 	int colour;
 	int y;
 	int z;
 	int x;
-	int local_18;
+	int yang;
 
 	x = (uint)cop->yang * 0x40;
-	if (GameLevel == 1) {
-		switch (type) {
-		case 0:
-			bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-			if (bVar1 == 2) {
-				z = -0x1a1;
-				colour = -800;
-				local_18 = -0x1e;
-				y = 0x400;
-			}
-			else {
-				if (2 < bVar1) {
-					if (bVar1 != 3) {
+
+	if (GameLevel == 1) 
+	{
+		switch (type)
+		{
+			case 0:
+				phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+
+				if (phase == 2)
+				{
+					z = -0x1a1;
+					colour = -800;
+					yang = -0x1e;
+					y = 0x400;
+				}
+				else
+				{
+					if (2 < phase)
+					{
+						if (phase != 3) 
+						{
+							return;
+						}
+
+						z = -0x157;
+						colour = -800;
+						yang = -0x1e;
+
+						goto LAB_000145f0;
+					}
+
+					if (phase != 1) 
+					{
 						return;
 					}
-					z = -0x157;
+
+					z = -0x1ea;
 					colour = -800;
-					local_18 = -0x1e;
-					goto LAB_000145f0;
+					yang = -0x1e;
+					y = 0x200;
 				}
-				if (bVar1 != 1) {
+				break;
+			default:
+				return;
+			case 2:
+				if (gLightsOn == 0)
+				{
 					return;
 				}
-				z = -0x1ea;
-				colour = -800;
-				local_18 = -0x1e;
-				y = 0x200;
-			}
-			break;
-		default:
-			goto switchD_0001409c_caseD_1;
-		case 2:
-			if (gLightsOn == 0) {
+
+				x = 0xe6;
+				y = -0x442;
+			LAB_00014490:
+				AddSmallStreetLight(cop, x, y, 0, 0);
 				return;
-			}
-			x = 0xe6;
-			y = -0x442;
-		LAB_00014490:
-			AddSmallStreetLight(cop, x, y, 0, 0);
-			return;
-		case 3:
-			if (gLightsOn == 0) {
-				return;
-			}
-			x = -0x265;
-			y = -0x7d2;
-			goto LAB_00014644;
-		case 4:
-			if (gLightsOn == 0) {
-				return;
-			}
-			AddLightEffect(cop, -0x250, -2000, 0, 0, 3);
-			x = 0x252;
-			y = -2000;
-			goto LAB_00014418;
+			case 3:
+				if (gLightsOn == 0) 
+				{
+					return;
+				}
+				x = -0x265;
+				y = -0x7d2;
+				goto LAB_00014644;
+			case 4:
+				if (gLightsOn == 0) 
+				{
+					return;
+				}
+
+				AddLightEffect(cop, -0x250, -2000, 0, 0, 3);
+				x = 0x252;
+				y = -2000;
+				goto LAB_00014418;
 		}
 		goto LAB_000145f8;
 	}
-	if (1 < GameLevel) {
-		if (GameLevel == 2) {
-			switch (type) {
+
+	if (1 < GameLevel)
+	{
+		if (GameLevel == 2) 
+		{
+			switch (type)
+			{
 			case 0:
-				bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-				if (bVar1 == 2) {
+				phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+				if (phase == 2)
+				{
 					AddTrafficLight(cop, -0x85c, -0x3fd, -0x41, 0x400, x);
 					AddTrafficLight(cop, -0x51e, -0x3d4, -0x41, 0x400, x);
 					z = -0x208;
 					colour = -0x3ab;
-					local_18 = -0x41;
+					yang = -0x41;
 					y = 0x400;
 				}
-				else {
-					if (bVar1 < 3) {
-						if (bVar1 != 1) {
+				else 
+				{
+					if (phase < 3)
+					{
+						if (phase != 1)
+						{
 							return;
 						}
+
 						AddTrafficLight(cop, -0x857, -0x458, -0x44, 0x200, x);
 						AddTrafficLight(cop, -0x520, -0x421, -0x44, 0x200, x);
 						z = -0x202;
 						colour = -0x400;
-						local_18 = -0x44;
+						yang = -0x44;
 						y = 0x200;
 					}
-					else {
-						if (bVar1 != 3) {
+					else 
+					{
+						if (phase != 3) 
+						{
 							return;
 						}
+
 						AddTrafficLight(cop, -0x85a, -0x3a9, -0x3e, 0x800, x);
 						AddTrafficLight(cop, -0x51d, -0x381, -0x3e, 0x800, x);
 						z = -0x206;
 						colour = -0x353;
-						local_18 = -0x3e;
+						yang = -0x3e;
 						y = 0x800;
 					}
 				}
 				break;
 			case 1:
-				bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-				if (bVar1 == 2) {
+				phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+				if (phase == 2)
+				{
 					z = -4;
 					colour = -0x1d2;
-					local_18 = -0x29;
+					yang = -0x29;
 					y = 0x400;
 				}
-				else {
-					if (2 < bVar1) {
-						if (bVar1 != 3) {
+				else 
+				{
+					if (2 < phase) 
+					{
+						if (phase != 3) 
+						{
 							return;
 						}
+
 						z = -4;
 						colour = -0x18b;
-						local_18 = -0x29;
+						yang = -0x29;
 						goto LAB_000145f0;
 					}
-					if (bVar1 != 1) {
+					if (phase != 1) 
+					{
 						return;
 					}
+
 					z = -4;
 					colour = -0x219;
-					local_18 = -0x29;
+					yang = -0x29;
 					y = 0x200;
 				}
 				break;
 			case 2:
-				if (gLightsOn == 0) {
+				if (gLightsOn == 0)
+				{
 					return;
 				}
+
 				x = -0x348;
 				y = -0x7b4;
 				z = -0x3d;
 				goto LAB_00014648;
 			case 3:
-				if (gLightsOn == 0) {
+				if (gLightsOn == 0)
+				{
 					return;
 				}
+
 				AddLightEffect(cop, -0x361, -0x8c9, 0, 0, 3);
 				x = 0x361;
 				y = -0x8c9;
 				goto LAB_00014418;
 			case 4:
-				if (gLightsOn == 0) {
+				if (gLightsOn == 0) 
+				{
 					return;
 				}
-				if ((((cop->pos).vx - 0x217e6U < 0xc5ff) && (x = (cop->pos).vz, 0xae29c < x)) &&
-					(x < 0xafa9c)) {
+				if ((((cop->pos).vx - 0x217e6U < 0xc5ff) && (x = (cop->pos).vz, 0xae29c < x)) && (x < 0xafa9c))
+				{
 					x = -0x26c;
 					y = -0x652;
 					goto LAB_00014490;
@@ -848,129 +878,161 @@ void animate_object(CELL_OBJECT *cop, int type)
 				y = -0x652;
 				goto LAB_00014644;
 			default:
-				goto switchD_0001409c_caseD_1;
+				return;
 			}
 			goto LAB_000145f8;
 		}
-		if (GameLevel != 3) {
+
+		if (GameLevel != 3) 
+		{
 			return;
 		}
-		switch (type) {
+
+		switch (type)
+		{
 		case 0:
-			bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-			if (bVar1 == 2) {
+			phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+			if (phase == 2) 
+			{
 				z = -0x2cf;
 				colour = -0x345;
-				local_18 = -0x16;
+				yang = -0x16;
 				y = 0x400;
 			}
-			else {
-				if (2 < bVar1) {
-					if (bVar1 != 3) {
+			else 
+			{
+				if (2 < phase) 
+				{
+					if (phase != 3)
+					{
 						return;
 					}
+
 					z = -0x2cf;
 					colour = -0x2fa;
-					local_18 = -0x16;
+					yang = -0x16;
 					goto LAB_000145f0;
 				}
-				if (bVar1 != 1) {
+
+				if (phase != 1) 
+				{
 					return;
 				}
 				z = -0x2cf;
 				colour = -0x38a;
-				local_18 = -0x16;
+				yang = -0x16;
 				y = 0x200;
 			}
 			break;
 		case 1:
-			bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-			if (bVar1 == 2) {
+			phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+			if (phase == 2) 
+			{
 				z = 0;
 				colour = -0x242;
-				local_18 = -0x15;
+				yang = -0x15;
 				y = 0x400;
 			}
-			else {
-				if (2 < bVar1) {
-					if (bVar1 != 3) {
+			else 
+			{
+				if (2 < phase)
+				{
+					if (phase != 3) 
+					{
 						return;
 					}
 					z = 0;
 					colour = -0x1fd;
-					local_18 = -0x15;
+					yang = -0x15;
 					goto LAB_000145f0;
 				}
-				if (bVar1 != 1) {
+				if (phase != 1)
+				{
 					return;
 				}
 				z = 0;
 				colour = -0x28e;
-				local_18 = -0x15;
+				yang = -0x15;
 				y = 0x200;
 			}
 			break;
 		case 2:
-			if (gLightsOn == 0) {
+			if (gLightsOn == 0) 
+			{
 				return;
 			}
+
 			x = -0x1f1;
 			y = -0x59d;
 			goto LAB_00014644;
 		case 3:
-			if (gLightsOn == 0) {
+			if (gLightsOn == 0) 
+			{
 				return;
 			}
+
 			x = 0;
 			y = -0xaa7;
 		LAB_00014644:
 			z = 0;
 		LAB_00014648:
 			colour = 3;
-			local_18 = 0;
+			yang = 0;
 		LAB_00014650:
-			AddLightEffect(cop, x, y, z, local_18, colour);
+			AddLightEffect(cop, x, y, z, yang, colour);
 			return;
 		case 4:
-			if (gLightsOn != 0) {
+			if (gLightsOn != 0) 
+			{
 				AddSmallStreetLight(cop, 0, -0x492, 0, 1);
 			}
 		default:
-			goto switchD_0001409c_caseD_1;
+			return;
 		}
 		goto LAB_000145f8;
 	}
-	if (GameLevel != 0) {
+
+	if (GameLevel != 0)
+	{
 		return;
 	}
-	switch (type) {
+
+	switch (type) 
+	{
 	case 0:
 	case 7:
 		x = (x + 0x400) * 0x10000 >> 0x10;
-		bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-		if (bVar1 == 2) {
+		phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+		if (phase == 2)
+		{
 			z = 0;
 			colour = -0x284;
-			local_18 = -0x2d;
+			yang = -0x2d;
 			y = 0x400;
 		}
-		else {
-			if (bVar1 < 3) {
-				if (bVar1 != 1) {
+		else 
+		{
+			if (phase < 3) 
+			{
+				if (phase != 1) 
+				{
 					return;
 				}
 				z = 0;
 				colour = -0x2c4;
-				local_18 = -0x2d;
+				yang = -0x2d;
 				y = 0x200;
 			}
-			else {
-				if (bVar1 != 3) {
+			else 
+			{
+				if (phase != 3)
+				{
 					return;
 				}
+
 				z = 0;
 				colour = -0x244;
-				local_18 = -0x2d;
+				yang = -0x2d;
 			LAB_000145f0:
 				y = 0x800;
 			}
@@ -978,42 +1040,49 @@ void animate_object(CELL_OBJECT *cop, int type)
 		break;
 	case 1:
 	case 8:
-		bVar1 = (&junctionLightsPhase)[x + 0x80U >> 10 & 1];
-		if (bVar1 == 2) {
+		phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+		if (phase == 2) {
 			z = 0x196;
 			colour = -0x292;
-			local_18 = -0x2e;
+			yang = -0x2e;
 			y = 0x400;
 		}
-		else {
-			if (2 < bVar1) {
-				if (bVar1 != 3) {
+		else 
+		{
+			if (2 < phase) 
+			{
+				if (phase != 3) 
+				{
 					return;
 				}
 				z = 0x196;
 				colour = -0x252;
-				local_18 = -0x2e;
+				yang = -0x2e;
 				goto LAB_000145f0;
 			}
-			if (bVar1 != 1) {
+
+			if (phase != 1)
+			{
 				return;
 			}
 			z = 0x196;
 			colour = -0x2c4;
-			local_18 = -0x2e;
+			yang = -0x2e;
 			y = 0x200;
 		}
 		break;
 	case 2:
 	case 3:
-		if (gLightsOn == 0) {
+		if (gLightsOn == 0)
+		{
 			return;
 		}
 		x = 0x1ad;
 		y = -0x4d2;
 		goto LAB_00014644;
 	case 4:
-		if (gLightsOn == 0) {
+		if (gLightsOn == 0)
+		{
 			return;
 		}
 		AddLightEffect(cop, -0x1b0, -0x4d9, 0, 0, 3);
@@ -1021,17 +1090,19 @@ void animate_object(CELL_OBJECT *cop, int type)
 		y = -0x4d9;
 		goto LAB_00014418;
 	case 5:
-		if (gLightsOn == 0) {
+		if (gLightsOn == 0) 
+		{
 			return;
 		}
 		x = 0;
 		y = -0x50;
 		z = 0;
 		colour = 2;
-		local_18 = 2;
+		yang = 2;
 		goto LAB_00014650;
 	case 6:
-		if (gLightsOn == 0) {
+		if (gLightsOn == 0)
+		{
 			return;
 		}
 		AddLightEffect(cop, 0xea, -0x47a, 0, 0, 3);
@@ -1040,12 +1111,11 @@ void animate_object(CELL_OBJECT *cop, int type)
 	LAB_00014418:
 		AddLightEffect(cop, x, y, 0, 0, 3);
 	default:
-		goto switchD_0001409c_caseD_1;
+		return;
 	}
 LAB_000145f8:
-	AddTrafficLight(cop, z, colour, local_18, y, x);
-switchD_0001409c_caseD_1:
-	return;*/
+	AddTrafficLight(cop, z, colour, yang, y, x);
+
 }
 
 
@@ -1082,54 +1152,55 @@ switchD_0001409c_caseD_1:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void animate_garage_door(void)
 {
-	UNIMPLEMENTED();
-	/*
-	short *psVar1;
-	int iVar2;
-	int iVar3;
+	short* psVar1;
+	int dz;
+	int dx;
 
-	if (CurrentGarage.cop != (CELL_OBJECT *)0x0) {
-		if ((gCurrentMissionNumber != 0x35) && (CopsCanSeePlayer != 0)) {
-			if ((int)player.playerCarId < 0) {
-				psVar1 = &pedestrianFelony;
-			}
-			else {
-				psVar1 = &car_data[(int)player.playerCarId].felonyRating;
-			}
-			if (0x292 < *psVar1) {
-				((CurrentGarage.cop)->pos).vx = CurrentGarage.old_pos.vx;
-				((CurrentGarage.cop)->pos).vy = CurrentGarage.old_pos.vy;
-				((CurrentGarage.cop)->pos).vz = CurrentGarage.old_pos.vz;
-				CurrentGarage.cop = (CELL_OBJECT *)0x0;
-				return;
-			}
-		}
-		iVar3 = CurrentGarage.old_pos.vx - car_data[0].hd.where.t[0];
-		iVar2 = CurrentGarage.old_pos.vz - car_data[0].hd.where.t[2];
-		if (iVar3 < 0) {
-			iVar3 = -iVar3;
-		}
-		if (iVar2 < 0) {
-			iVar2 = -iVar2;
-		}
-		if ((iVar3 + iVar2 < 0x1771) && (gStopPadReads == 0)) {
-			if ((iVar3 + iVar2 < 4000) && (CurrentGarage.old_pos.vy + -400 < CurrentGarage.pos.vy)) {
-				CurrentGarage.rotation = CurrentGarage.rotation + 0x19;
-				CurrentGarage.pos.vy = CurrentGarage.pos.vy + -0xc;
-			}
-		}
-		else {
-			if (CurrentGarage.pos.vy < CurrentGarage.old_pos.vy) {
-				CurrentGarage.pos.vy = CurrentGarage.pos.vy + 0xc;
-				CurrentGarage.rotation = CurrentGarage.rotation + -0x19;
-				return;
-			}
+	if (CurrentGarage.cop == NULL)
+		return;
+
+	int playerCarId = player[0].playerCarId;
+
+	if (gCurrentMissionNumber != 53 && CopsCanSeePlayer != 0)
+	{
+		if (playerCarId < 0)
+			psVar1 = &pedestrianFelony;
+		else 
+			psVar1 = &car_data[playerCarId].felonyRating;
+
+		if (0x292 < *psVar1) 
+		{
+			CurrentGarage.cop->pos = CurrentGarage.old_pos;
+			CurrentGarage.cop = NULL;
+			return;
 		}
 	}
-	return;
-	*/
+
+	dx = CurrentGarage.old_pos.vx - car_data[playerCarId].hd.where.t[0]; // [A] bug fixe
+	dz = CurrentGarage.old_pos.vz - car_data[playerCarId].hd.where.t[2];
+
+	if (dx < 0)
+		dx = -dx;
+
+	if (dz < 0)
+		dz = -dz;
+
+	if ((dx + dz < 6001) && (gStopPadReads == 0))
+	{
+		if ((dx + dz < 4000) && (CurrentGarage.old_pos.vy - 400 < CurrentGarage.pos.vy)) 
+		{
+			CurrentGarage.rotation = CurrentGarage.rotation + 25;
+			CurrentGarage.pos.vy = CurrentGarage.pos.vy - 12;
+		}
+	}
+	else if (CurrentGarage.pos.vy < CurrentGarage.old_pos.vy) 
+	{
+		CurrentGarage.pos.vy = CurrentGarage.pos.vy + 12;
+		CurrentGarage.rotation = CurrentGarage.rotation - 25;
+	}
 }
 
 

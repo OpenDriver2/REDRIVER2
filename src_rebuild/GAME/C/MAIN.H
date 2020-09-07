@@ -1,6 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+extern int game_over;
+
 extern int xa_timeout;
 extern int FrameCnt;
 extern int CurrentPlayerView;
@@ -15,7 +17,12 @@ extern int NightAmbient;
 extern int wetness;
 extern int leadCarId;
 
+extern int scr_z;
+
 extern int DawnCount;
+
+extern int ObjectDrawnValue;
+extern int ObjectDrawnCounter;
 
 extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
 

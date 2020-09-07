@@ -1,5 +1,7 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "ENVIRO.H"
+
+#include "STRINGS.H"
 
 short gPlayerCar0ShinyFaces[38];
 
@@ -22,9 +24,11 @@ short gPlayerCar0ShinyFaces[38];
 	/* end block 2 */
 	// End Line: 93
 
+// [A] - this code is not needed
 void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
-
 {
+	UNIMPLEMENTED();
+	/*
 	short sVar1;
 	int iVar2;
 	short sVar3;
@@ -44,7 +48,7 @@ void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 		sVar1 = *shinysrc;
 		shinysrc = shinysrc + 1;
 	}
-	return;
+	return;*/
 }
 
 
@@ -85,9 +89,11 @@ void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [A] - this code is not needed
 void Init_Reflection_Mapping(void)
-
 {
+	UNIMPLEMENTED();
+	/*
 	char *pcVar1;
 	int iVar2;
 
@@ -101,6 +107,7 @@ void Init_Reflection_Mapping(void)
 	ShinyTextureNum = 0;
 	Env_MakeColourAddTable(gPlayerCar0ShinyFaces, Car0_ShinyTable, 0x100);
 	return;
+	*/
 }
 
 

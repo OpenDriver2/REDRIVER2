@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 
 #ifndef PSX
 #include <SDL.h>
@@ -202,38 +202,10 @@ void ClearMem(char *mem, int size)
 // [D]
 void setMem8(unsigned char *mem, unsigned char val, int size)
 {
-#ifndef PSX
-	memset(mem, 0, size);
-#else
-	UNIMPLEMENTED();
-	/*
-	int *puVar1;
-	int uVar2;
+	while (--size > 0)
+		*mem++ = val;
 
-	uVar2 = CONCAT22(CONCAT11(val, val), CONCAT11(val, val));
-	puVar1 = (int *)(mem + size);
-	while ((((uint)mem & 3) != 0 && (mem < puVar1))) {
-		*mem = val;
-		mem = (unsigned char *)((int)mem + 1);
-	}
-	while (mem <= puVar1 + -4) {
-		*(int *)mem = uVar2;
-		((int *)mem)[1] = uVar2;
-		((int *)mem)[2] = uVar2;
-		((int *)mem)[3] = uVar2;
-		mem = (unsigned char *)((int *)mem + 4);
-	}
-	while (mem <= puVar1 + -1) {
-		*(int *)mem = uVar2;
-		mem = (unsigned char *)((int *)mem + 1);
-	}
-	while (mem < puVar1) {
-		*mem = val;
-		mem = (unsigned char *)((int)mem + 1);
-	}
-	return;
-	*/
-#endif
+	// TODO: check alignment/bounds?
 }
 
 
@@ -264,40 +236,10 @@ void setMem8(unsigned char *mem, unsigned char val, int size)
 
 void setMem16(ushort *mem, ushort val, int size)
 {
-#ifndef PSX
-	memset(mem, 0, size);
-#else
-	UNIMPLEMENTED();
-	/*
-	bool bVar1;
-	int uVar2;
-	int *puVar3;
+	while (--size > 0)
+		*mem++ = val;
 
-	puVar3 = (int *)(mem + size);
-	uVar2 = CONCAT22(val, val);
-	if (((uint)mem & 2) != 0) {
-		bVar1 = mem < puVar3;
-		do {
-			if (!bVar1) break;
-			*mem = val;
-			mem = (ushort *)((int)mem + 2);
-			bVar1 = mem < puVar3;
-		} while (((uint)mem & 2) != 0);
-	}
-	while (mem <= puVar3 + -4) {
-		*(int *)mem = uVar2;
-		((int *)mem)[1] = uVar2;
-		((int *)mem)[2] = uVar2;
-		((int *)mem)[3] = uVar2;
-		mem = (ushort *)((int *)mem + 4);
-	}
-	while (mem < puVar3) {
-		*mem = val;
-		mem = (ushort *)((int)mem + 2);
-	}
-	return;
-	*/
-#endif
+	// TODO: check alignment/bounds?
 }
 
 
@@ -360,6 +302,7 @@ void Init_FileSystem(void)
 
 int gNumCDRetries = 0;
 
+// [D]
 void DoCDRetry(void)
 {
 	bool bVar1;
@@ -426,30 +369,26 @@ int Loadfile(char *name, char *addr)
 	
 	return numRead;
 #else // PSX
-	UNIMPLEMENTED();
-	return 0;
-
-	/*
-	int status;
-	int rstatus;
-	char filename[64];
+	int nread;
 	unsigned char res[8];
 
-	sprintf(filename, "\\DRIVER2\\%s;1", name);
+	sprintf(namebuffer, "\\DRIVER2\\%s;1", name);
+
 	do {
-		status = CdReadFile(filename, addr, 0);
-		if (status != 0) {
-			rstatus = CdReadSync(0, res);
-			if (rstatus == 0) {
-				return status;
-			}
+		nread = CdReadFile(namebuffer, (u_long*)addr, 0);
+
+		if (nread != 0)
+		{
+			if (CdReadSync(0, res) == 0)
+				return nread;
 		}
-		status = CdDiskReady(0);
-		if (status != 2) {
+
+		if (CdDiskReady(0) != 2)
 			DoCDRetry();
-		}
+
 	} while (true);
-	*/
+
+	return 0;
 #endif // PSX
 }
 
@@ -516,112 +455,109 @@ int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 
 	return numRead;
 #else // PSX
-	UNIMPLEMENTED();
+
+	int iVar1;
+	int iVar3;
+	char* pcVar4;
+	int iVar5;
+	int iVar6;
+	int uVar7;
+	unsigned char result[8];
+	char sectorbuffer[2048];
+	CdlFILE info;
+	CdlLOC pos;
 
 	sprintf(namebuffer, "\\DRIVER2\\%s;1", name);
 
-	/*
+	if (strcmp(currentfilename, namebuffer) != 0)
+	{
+		strcpy(currentfilename, namebuffer);
 
-	int iVar1;
-	CdlFILE *pCVar2;
-	int iVar3;
-	char *pcVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
-	char acStack2192[64];
-	unsigned char auStack2128[8];
-	char local_848[2072];
-	CdlLOC auStack48;
-
-	sprintf(acStack2192, "\\DRIVER2\\%s;1", name);
-	iVar1 = strcmp(currentfilename, acStack2192);
-	if (iVar1 != 0) {
-		strcpy(currentfilename, acStack2192);
-		while (pCVar2 = CdSearchFile(&currentfileinfo, acStack2192), pCVar2 == (CdlFILE *)0x0) {
+		while (CdSearchFile(&currentfileinfo, namebuffer) == NULL)
 			DoCDRetry();
-		}
 	}
-	iVar1 = offset;
-	if (offset < 0) {
-		iVar1 = offset + 0x7ff;
-	}
-	iVar3 = CdPosToInt((CdlLOC *)&currentfileinfo);
-	iVar3 = (iVar1 >> 0xb) + iVar3;
+
+	iVar3 = (offset >> 0xb) + CdPosToInt((CdlLOC*)&currentfileinfo);
 	uVar7 = offset & 0x7ff;
 	iVar1 = loadsize;
-	if (uVar7 != 0) {
-		CdIntToPos(iVar3, &auStack48);
+
+	if (uVar7 != 0)
+	{
+		CdIntToPos(iVar3, &pos);
+
 		do {
-			iVar1 = CdDiskReady(0);
-			if (iVar1 != 2) {
+			if (CdDiskReady(0) != 2)
 				DoCDRetry();
-			}
-			iVar1 = CdControlB(2, &auStack48, 0);
-		} while (((iVar1 == 0) || (iVar1 = CdRead(1, local_848, 0x80), iVar1 == 0)) ||
-			(iVar1 = CdReadSync(0, auStack2128), iVar1 != 0));
-		if (loadsize <= (int)(0x800 - uVar7)) {
+
+		} while(CdControlB(2, (u_char*)&pos, 0) == 0 ||
+				CdRead(1, (u_long*)sectorbuffer, 0x80) == 0 || 
+				CdReadSync(0, result) != 0);
+
+		if (loadsize <= (0x800 - uVar7)) 
+		{
 			iVar1 = uVar7 + loadsize;
-			while ((int)uVar7 < iVar1) {
-				pcVar4 = local_848 + uVar7;
+
+			while (uVar7 < iVar1) 
+			{
+				pcVar4 = sectorbuffer + uVar7;
 				uVar7 = uVar7 + 1;
 				*addr = *pcVar4;
 				addr = addr + 1;
 			}
 			return loadsize;
 		}
+
 		iVar1 = loadsize - (0x800 - uVar7);
 		iVar3 = iVar3 + 1;
-		if (uVar7 < 0x800) {
+		if (uVar7 < 0x800)
+		{
 			do {
-				pcVar4 = local_848 + uVar7;
+				pcVar4 = sectorbuffer + uVar7;
 				uVar7 = uVar7 + 1;
 				*addr = *pcVar4;
 				addr = addr + 1;
 			} while ((int)uVar7 < 0x800);
 		}
 	}
+
 	iVar6 = iVar1;
-	if (iVar1 < 0) {
-		iVar6 = iVar1 + 0x7ff;
-	}
+
 	iVar6 = iVar6 >> 0xb;
-	if (iVar6 != 0) {
-		CdIntToPos(iVar3, &auStack48);
+
+	if (iVar6 != 0) 
+	{
+		CdIntToPos(iVar3, &pos);
 		iVar3 = iVar3 + iVar6;
 		do {
-			iVar5 = CdDiskReady(0);
-			if (iVar5 != 2) {
+			if (CdDiskReady(0) != 2)
 				DoCDRetry();
-			}
-			iVar5 = CdControlB(2, &auStack48, 0);
-		} while (((iVar5 == 0) || (iVar5 = CdRead(iVar6, addr, 0x80), iVar5 == 0)) ||
-			(iVar5 = CdReadSync(0, auStack2128), iVar5 != 0));
-		addr = addr + iVar6 * 0x800;
-		iVar1 = iVar1 + iVar6 * -0x800;
+
+		} while(CdControlB(2, (u_char*)&pos, 0) == 0 || 
+				CdRead(iVar6, (u_long*)addr, 0x80) == 0 ||
+				CdReadSync(0, result) != 0);
+
+		addr += iVar6 * 0x800;
+		iVar1 -= iVar6 * -0x800;
 	}
-	if (0 < iVar1) {
-		CdIntToPos(iVar3, &auStack48);
+
+	if (iVar1 > 0)
+	{
+		CdIntToPos(iVar3, &pos);
 		do {
-			iVar3 = CdDiskReady(0);
-			if (iVar3 != 2) {
+			if (CdDiskReady(0) != 2)
 				DoCDRetry();
-			}
-			iVar3 = CdControlB(2, &auStack48, 0);
-		} while (((iVar3 == 0) || (iVar3 = CdRead(1, local_848, 0x80), iVar3 == 0)) ||
-			(iVar3 = CdReadSync(0, auStack2128), iVar3 != 0));
+
+		} while (CdControlB(2, (u_char*)&pos, 0) == 0 || 
+				CdRead(1, (u_long*)sectorbuffer, 0x80) == 0 ||
+				CdReadSync(0, result) != 0);
+
 		iVar3 = 0;
-		if (0 < iVar1) {
-			do {
-				pcVar4 = local_848 + iVar3;
-				iVar3 = iVar3 + 1;
-				*addr = *pcVar4;
-				addr = addr + 1;
-			} while (iVar3 < iVar1);
-		}
+
+		while (iVar3 < iVar1)
+			*addr++ = sectorbuffer[iVar3++];
+
 	}
 	return loadsize;
-	*/
 #endif // PSX
 }
 

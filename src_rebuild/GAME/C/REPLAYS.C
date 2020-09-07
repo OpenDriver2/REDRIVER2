@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "REPLAYS.H"
 #include "MAP.H"
 #include "SPOOL.H"
@@ -164,7 +164,7 @@ int SaveReplayToBuffer(char *buffer)
 	REPLAY_SAVE_HEADER *header;
 
 	if (buffer == NULL)
-		return 0;
+		return 0x3644;
 
 	char* pt = buffer;
 	header = (REPLAY_SAVE_HEADER*)pt;
@@ -190,6 +190,7 @@ int SaveReplayToBuffer(char *buffer)
 
 	// write each stream data
 #ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
 	int numStreams = gCutsceneAsReplay ? NumReplayStreams : NumPlayers;
 
 	for (int i = 0; i < numStreams; i++)
@@ -340,7 +341,9 @@ int LoadCutsceneAsReplay(int subindex)
 
 			LoadfileSeg(filename, _other_buffer, offset, size);
 
-			return LoadReplayFromBuffer(_other_buffer);
+			int result = LoadReplayFromBuffer(_other_buffer);
+
+			return result;
 		}
 	}
 
@@ -403,6 +406,7 @@ int LoadReplayFromBuffer(char *buffer)
 		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
 		destStream->length = sheader->Length;
+		destStream->playbackrun = 0;
 
 		if (sheader->Length > maxLength)
 			maxLength = sheader->Length;

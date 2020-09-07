@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "CIV_AI.H"
 #include "LIBMATH.H"
 
@@ -984,7 +984,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 		uVar29 = tmpNewRoad[newExit];
 		uVar9 = tmpNewLane[newExit];
 
-		if (cp->ai.c.ctrlState != '\a') 
+		if (cp->ai.c.ctrlState != 7) 
 		{
 			if ((((uVar29 & 0xffffe000) == 0) && ((int)(uVar29 & 0x1fff) < NumDriver2Straights)) && (-1 < (int)uVar29)) 
 			{
@@ -1397,7 +1397,7 @@ int GetNextRoadInfo(_CAR_DATA *cp, int randomExit, int *turnAngle, int *startDis
 			{
 				tmpSt = Driver2StraightsPtr + (int)(short)uVar3;
 				iVar30 = *turnAngle;
-				uVar9 = (iVar18 - tmpSt->angle) + 1024;// &0x800;// [A] temporary hack
+				uVar9 = (iVar18 - tmpSt->angle) + 1024 & 0x800;// [A] temporary hack
 
 				if (uVar9 == 0) 
 					iVar30 = -iVar30;
@@ -4021,7 +4021,7 @@ void InitCivCars(void)
 	// End Line: 4911
 
 const int EVENT_CAR_SPEED = 60;
-const int DistanceTriggerCarMoves = 5000;
+const int DistanceTriggerCarMoves = 600;
 
 // [D] [A]
 int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*stopPos)[4], unsigned char internalModel, int palette)
@@ -5207,14 +5207,17 @@ void AttemptUnPark(_CAR_DATA *cp)
 
 	bVar1 = cp->ai.c.currentLane;
 
-	cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
-
-	if (((bVar1 == cp->ai.c.currentLane) ||
-		(straight != NULL && ((straight->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) || 
-		(curve != NULL && ((curve->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) 
+	if (straight && curve)
 	{
-		cp->ai.c.thrustState = 3;
-		cp->ai.c.ctrlState = 7;
+		cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
+
+		if (((bVar1 == cp->ai.c.currentLane) ||
+			(straight != NULL && ((straight->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) ||
+			(curve != NULL && ((curve->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0)))
+		{
+			cp->ai.c.thrustState = 3;
+			cp->ai.c.ctrlState = 7;
+		}
 	}
 }
 
@@ -5945,7 +5948,7 @@ void SetUpCivCollFlags(void)
 
 				gte_ldv0(&boxDisp);
 
-				docop2(0x480012);
+				gte_rtv0tr();
 
 				gte_stlvnl(&cd[0].x);
 

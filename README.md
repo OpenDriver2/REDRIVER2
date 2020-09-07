@@ -1,16 +1,22 @@
 # REDRIVER2
 
-PC:
+PC (Windows):
+[![Build status](https://ci.appveyor.com/api/projects/status/smxrjad2rf4fg0py/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2/branch/master)
 <p align="center">
-<a href="https://streamable.com/m8d29f"><img src="https://i.ibb.co/9rTkQND/aaa.png"/><a>
+<a href="https://streamable.com/4p8rx5"><img src="https://i.ibb.co/qJ5PJXj/aaa.png"/><a>
  </p>
+
+ PSX: pending
  
 Project attempting to reverse-engineer PS1 game Driver 2;
+
+Start Date: 28 March 2019
 
 ### Goals
 - Rebuild all source code from assembly
 - Compile native version for **PC** (and for **PSX** later)
-- Make game playeble from start to finish, all game modes should function properly
+- Make game playable from start to finish, all game modes should function properly
+- Fix all reverse-engineering **bugs**
 - Fix some existing critical bugs and performance issues
 - ***OpenDriver2?*** rewrite code, implement various cool stuff, PC rendering and audio engine, get rid of hard-coded stuff
 
@@ -20,10 +26,13 @@ Project attempting to reverse-engineer PS1 game Driver 2;
 - IDB based on Spanish SYM when dealing with things Ghidra can't handle properly - manual decompilation (mostly GTE code)
 
 ### Usage
-- Assuming you have compiled the most recent code. Copy DRIVER2 folder from your **game CD** to location where compiled EXE is located.
+Assuming you have compiled the most recent code or got artifacts from Appveyor. 
+Copy DRIVER2 folder from your **game CD** to location where compiled EXE is located.
 
 ### Credits
 - Soapy - lead programmer
-- Gh0stBlade - API-level PSY-Q libraries reimplementation (aka HLE PSX Emulator)
-- Ben Lincoln - This Dust Remembers What It Once Was (*TDR*)
-- Stohrendorf - Symdump tool
+- Fireboyd78 - code refactoring and improvements
+- Krishty, someone972 - formats decoding
+- Gh0stBlade - API-level PSY-Q libraries reimplementation (HLE PSX Emulator) [(link)](https://github.com/tomb5/tomb5)
+- Ben Lincoln - [This Dust Remembers What It Once Was](https://www.beneaththewaves.net/Software/This_Dust_Remembers_What_It_Once_Was.html) (*TDR*)
+- Stohrendorf - [Symdump](https://github.com/stohrendorf/symdump) utility

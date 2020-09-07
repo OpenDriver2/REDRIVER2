@@ -7,6 +7,9 @@ extern void Emulator_Initialise(char* windowName, int screenWidth, int screenHei
 /* Returns the screen size dimensions */
 extern void Emulator_GetScreenSize(int& screenWidth, int& screenHeight);
 
+/* Sets mouse cursor position */
+extern void Emulator_SetCursorPosition(int x, int y);
+
 /* Called inside VSync / DrawSync */
 extern void Emulator_SwapDelay(int intervals);
 

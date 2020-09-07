@@ -230,6 +230,8 @@ void DrawAggregatedSplits();
 
 int DrawSync(int mode)
 {
+
+
 	// Update VRAM seems needed to be here
 	//Emulator_UpdateVRAM();
 
@@ -254,8 +256,21 @@ int LoadImagePSX(RECT16* rect, u_long* p)
 	return 0;
 }
 
+int LoadImage(RECT16* rect, u_long* p)
+{
+	Emulator_CopyVRAM((unsigned short*)p, 0, 0, rect->w, rect->h, rect->x, rect->y);
+	return 0;
+}
+
+int LoadImage2(RECT16* rect, u_long* p)
+{
+	Emulator_CopyVRAM((unsigned short*)p, 0, 0, rect->w, rect->h, rect->x, rect->y);
+	return 0;
+}
+
 int MargePrim(void* p0, void* p1)
 {
+#if 0
 	int v0 = ((unsigned char*)p0)[3];
 	int v1 = ((unsigned char*)p1)[3];
 
@@ -266,6 +281,37 @@ int MargePrim(void* p0, void* p1)
 	{
 		((char*)p0)[3] = v1;
 		((int*)p1)[0] = 0;
+		return 0;
+	}
+
+	return -1;
+#endif //0
+
+#if defined(USE_32_BIT_ADDR)
+	int v0 = ((int*)p0)[1];
+	int v1 = ((int*)p1)[1];
+#else
+	int v0 = ((unsigned char*)p0)[3];
+	int v1 = ((unsigned char*)p1)[3];
+#endif
+
+	v0 += v1;
+	v1 = v0 + 1;
+
+#if defined(USE_32_BIT_ADDR)
+	if (v1 < 0x12)
+#else
+	if (v1 < 0x11)
+#endif
+	{
+#if defined(USE_32_BIT_ADDR)
+		((int*)p0)[1] = v1;
+		((int*)p1)[1] = 0;
+#else
+		((char*)p0)[3] = v1;
+		((int*)p1)[0] = 0;
+#endif
+
 		return 0;
 	}
 
@@ -304,6 +350,12 @@ int StoreImage2(RECT16 *RECT16, u_long *p)
 	return result;
 }
 
+#ifdef USE_32_BIT_ADDR
+#	define OT_WIDTH 2	// two longs
+#else
+#	define OT_WIDTH 1	// single long
+#endif
+
 u_long* ClearOTag(u_long* ot, int n)
 {
 	//Nothing to do here.
@@ -311,11 +363,11 @@ u_long* ClearOTag(u_long* ot, int n)
 		return NULL;
 
 	//last is special terminator
-	ot[n - 1] = (unsigned long)&terminator;
+	ot[n - OT_WIDTH] = (unsigned long)&terminator;
 
-	for (int i = n - 2; i > -1; i--)
+	for (int i = n - OT_WIDTH; i > -1; i -= OT_WIDTH)
 	{
-		ot[i] = (unsigned long)&ot[i + 1];
+		ot[i] = (unsigned long)&ot[i + OT_WIDTH];
 	}
 
 	return NULL;
@@ -331,17 +383,9 @@ u_long* ClearOTagR(u_long* ot, int n)
 	setaddr(ot, &terminator);
 	setlen(ot, 0);
 
-#if defined(USE_32_BIT_ADDR)
-	for (int i = 2; i < n * 2; i += 2)
-#else
-	for (int i = 1; i < n; i++)
-#endif
+	for (int i = OT_WIDTH; i < n * OT_WIDTH; i += OT_WIDTH)
 	{
-#if defined(USE_32_BIT_ADDR)
-		setaddr(&ot[i], (unsigned long)&ot[i - 2]);
-#else
-		setaddr(&ot[i], (unsigned long)&ot[i - 1]);
-#endif
+		setaddr(&ot[i], (unsigned long)&ot[i - OT_WIDTH]);
 		setlen(&ot[i], 0);
 	}
 
@@ -478,6 +522,11 @@ void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
 
 	p->len = len;
 	p->tag = p->tag & 0xFFFFFF | 0x1000000;
+}
+
+void SetDrawLoad(DR_LOAD* p, RECT16* RECT16)
+{
+	setDrawLoad(p, RECT16);
 }
 
 u_long DrawSyncCallback(void(*func)(void))
@@ -643,7 +692,15 @@ void DrawOTagEnv(u_long* p, DRAWENV* env)
 void DrawOTag(u_long* p)
 {
 	if (g_GPUDisabledState)
+	{
+		ClearVBO();
+		ResetPolyState();
+
+#ifdef PGXP
+		PGXP_ClearCache();
+#endif
 		return;
+	}
 
 	if (Emulator_BeginScene())
 	{
@@ -672,7 +729,15 @@ void DrawOTag(u_long* p)
 void DrawPrim(void* p)
 {
 	if (g_GPUDisabledState)
+	{
+		ClearVBO();
+		ResetPolyState();
+
+#ifdef PGXP
+		PGXP_ClearCache();
+#endif
 		return;
+	}
 
 	if (Emulator_BeginScene())
 	{
@@ -1180,6 +1245,21 @@ int ParsePrimitive(uintptr_t primPtr)
 	#endif
 			break;
 		}
+		case 0xA0:  // DR_LOAD commands
+		{
+			DR_LOAD* drload = (DR_LOAD*)pTag;
+
+			RECT16 rect;
+			*(ulong*)&rect.x = *(ulong*)&drload->code[1];
+			*(ulong*)&rect.w = *(ulong*)&drload->code[2];
+
+			LoadImagePSX(&rect, drload->p);
+			//Emulator_UpdateVRAM();			// FIXME: should it be updated immediately?
+
+			// FIXME: is there othercommands?
+
+			break;
+		}
 		case 0xE0:  // DR_ENV commands
 		{
 			DR_ENV* drenv = (DR_ENV*)pTag;
@@ -1238,58 +1318,6 @@ int ParsePrimitive(uintptr_t primPtr)
 					}
 				}
 			}
-#if 0
-			switch (pTag->code)
-			{
-				case 0xE1:
-				{
-#if defined(USE_32_BIT_ADDR)
-					unsigned short tpage = ((unsigned short*)pTag)[4];
-#else
-					unsigned short tpage = ((unsigned short*)pTag)[2];
-#endif
-					//if (tpage != 0)
-					{
-						activeDrawEnv.tpage = tpage;
-						//activeDrawEnv.dtd = 
-						//activeDrawEnv.dfe
-					}
-
-#if defined(DEBUG_POLY_COUNT)
-					polygon_count++;
-#endif
-					break;
-				}
-				case 0xE3:
-				{
-					// FIXME: this is ugly
-					DR_AREA* drarea = (DR_AREA*)pTag;
-
-					RECT16 rect;
-
-					rect.x = drarea->code[0] & 0x3FF;
-					rect.y = ((drarea->code[0] >> 10) & 0x3FF);
-
-					// not W/H but x2 y2
-					rect.w = (drarea->code[1] & 0x3FF) - rect.x;
-					rect.h = ((drarea->code[1] >> 10) & 0x3FF) - rect.y;
-
-					activeDrawEnv.clip = rect;
-
-#if defined(DEBUG_POLY_COUNT)
-					polygon_count++;
-#endif
-					break;
-				}
-				// FIXME: there is multiple codes in single DR_* primitive
-				default:
-				{
-					eprinterr("Primitive type error: %x", pTag->code);
-					assert(FALSE);
-					break;
-				}
-			}
-#endif
 			break;
 		}
 		default:

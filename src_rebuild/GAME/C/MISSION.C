@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "MISSION.H"
 #include "SYSTEM.H"
 #include "MGENERIC.H"
@@ -25,6 +25,7 @@
 #include "PEDEST.H"
 #include "OVERMAP.H"
 #include "DENTING.H"
+#include "LOADSAVE.H"
 
 #include <string.h>
 
@@ -110,7 +111,7 @@ char* MissionName[37] =
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int gCopDifficultyLevel = 0;
+int gCopDifficultyLevel = 1;
 int gCopRespawnTime = 0;
 
 GAMEMODE CurrentGameMode = GAMEMODE_NORMAL;
@@ -183,6 +184,14 @@ const int TAIL_GETTINGFAR = 12900;
 const int TAIL_TOOCLOSE = 4000;
 const int TAIL_TOOFAR = 15900;
 
+#ifdef DEBUG_OPTIONS
+#define MR_DebugPrint //printInfo
+#define MR_DebugWarn printWarning
+#else
+#define MR_DebugPrint
+#define MR_DebugWarn
+#endif
+
 // [D]
 void InitialiseMissionDefaults(void)
 {
@@ -198,18 +207,18 @@ void InitialiseMissionDefaults(void)
 	}
 
 	maxPlayerCars = 1;
-	maxCivCars = 0xe;
+	maxCivCars = 14;
 	maxParkedCars = 7;
 	maxCopCars = 4;
-	gPlayerDamageFactor = 0x1000;
+	gPlayerDamageFactor = 4096;
 	requestStationaryCivCar = 0;
 	numPlayerCars = 0;
 	numCivCars = 0;
 	numParkedCars = 0;
 	numCopCars = 0;
 	gMinimumCops = 0;
-	gCopDesiredSpeedScale = 0x1000;
-	gCopMaxPowerScale = 0x1000;
+	gCopDesiredSpeedScale = 4096;
+	gCopMaxPowerScale = 4096;
 	gCurrentResidentSlot = 0;
 	CopsAllowed = 0;
 	MaxPlayerDamage[0] = 22000;
@@ -224,7 +233,7 @@ void InitialiseMissionDefaults(void)
 		MissionThreads[i].sp = NULL;
 	}
 
-	ClearMem((char *)&Mission, 0x48);
+	ClearMem((char *)&Mission, sizeof(MR_MISSION));
 
 	Mission.active = 0;
 	Mission.gameover_delay = -1;
@@ -352,7 +361,7 @@ int multiplayerregions[4];
 int gMultiplayerLevels = 0;
 
 // LEADAI
-LEAD_PARAMETERS LeadValues;
+extern LEAD_PARAMETERS LeadValues;
 
 static char NewLeadDelay = 0;
 
@@ -685,7 +694,7 @@ void LoadMission(int missionnum)
 	if (GameType == GAME_CAPTURETHEFLAG)
 		ActivateNextFlag();
 
-	MRInitialiseThread((MR_THREAD *)&MissionThreads, MissionScript, 0);
+	MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
 }
 
 
@@ -731,7 +740,7 @@ void HandleMission(void)
 			Mission.message_timer[1] = 0;
 
 			MRCommitThreadGenocide();
-			MRInitialiseThread(MissionThreads, MissionScript, 0);
+			MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
 		}
 
 		uVar2 = MissionHeader->type & 0x30;
@@ -1406,90 +1415,46 @@ void SetConfusedCar(int slot)
 // [D]
 void HandleMissionThreads(void)
 {
-	uint *puVar1;
-	_TARGET *p_Var2;
-	uint uVar3;
-	int iVar5;
-	uint fnc;
-	MR_THREAD *thread;
-	uint uVar6;
+	MR_THREAD* thread;
+	int running;
+	unsigned long value;
 
-	iVar5 = 0xf;
-	p_Var2 = MissionTargets;
+	for (int i = 0; i < 16; i++)
+		MissionTargets[i].data[1] &= ~0x600;
 
-	do {
-		p_Var2->data[1] = p_Var2->data[1] & 0xfffff9ff;
+	for (int i = 0; i < 16; i++)
+	{
+		thread = &MissionThreads[i];
+		running = thread->active;
 
-		p_Var2++;
-		iVar5--;
-	} while (-1 < iVar5);
-
-	iVar5 = 0;
-
-	do {
-		thread = &MissionThreads[iVar5];
-		uVar6 = thread->active;
-		iVar5++;
-
-		if (thread->active != 0 && Mission.gameover_delay == -1 && gInGameCutsceneActive == 0)
+		while (running && (Mission.gameover_delay == -1)
+			&& (!gInGameCutsceneActive && gInGameCutsceneDelay == 0))
 		{
-			while (gInGameCutsceneDelay == 0)
+			value = *thread->pc++;
+
+			switch (value & 0xff000000)
 			{
-				fnc = *thread->pc;
-				uVar3 = fnc & 0xff000000;
-				thread->pc++;
-
-				if (uVar3 == 0x2000000)
-				{
-				LAB_00061db8:
-					MRPush(thread, fnc);
-				}
-				else 
-				{
-					if (uVar3 < 0x2000001) 
-					{
-						if (uVar3 == 0) 
-							goto LAB_00061db8;
-						if (uVar3 == 0x1000000) 
-						{
-							uVar6 = MRCommand(thread, fnc);
-						}
-					}
-					else
-					{
-						if (uVar3 == 0x4000000) 
-						{
-							uVar6 = MRFunction(thread, fnc);
-						}
-						else 
-						{
-							if (uVar3 < 0x4000001) 
-							{
-								if (uVar3 == 0x3000000) 
-								{
-									uVar6 = MROperator(thread, fnc);
-								}
-							}
-							else 
-							{
-								if (uVar3 == 0xff000000)
-									goto LAB_00061db8;
-							}
-						}
-					}
-				}
-
-				if (((uVar6 == 0) || (Mission.gameover_delay != -1)) || (gInGameCutsceneActive != 0)) 
-					break;
+			case 0x0:
+			case 0x2000000:
+			case 0xff000000:
+				MR_DebugPrint("MR: push %d\n", value);
+				MRPush(thread, value);
+				break;
+			case 0x1000000:
+				MR_DebugPrint("MR: command %x\n", value);
+				running = MRCommand(thread, value);
+				break;
+			case 0x3000000:
+				MR_DebugPrint("MR: operator %x\n", value);
+				running = MROperator(thread, value);
+				break;
+			case 0x4000000:
+				MR_DebugPrint("MR: function %x\n", value);
+				running = MRFunction(thread, value);
+				break;
 			}
 		}
-
-
-		if (0xf < iVar5)
-			return;
-
-	} while (true);
-
+	}
 }
 
 
@@ -1529,23 +1494,27 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	long val1;
 	long val2;
 
-	if (cmd == 0x1000051)				// PlayMissionSound
+	if (cmd == 0x1000051)				// PlayCutscene
 	{
-		CompleteAllActiveTargets(thread->player);
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: PlayCutscene(%d)\n", val1);
+
+		CompleteAllActiveTargets(thread->player);
 		TriggerInGameCutscene(val1);
 
-		if ((gInGameCutsceneActive == 0) && (gCutsceneAtEnd == 0))
+		if (gInGameCutsceneActive || gCutsceneAtEnd)
 		{
-			return 1;
+			RequestXA();
+			InitializeCutsceneSound(val1);
 		}
 
-		RequestXA();
-		InitializeCutsceneSound(val1);
 		return 1;
 	}
 	else if (cmd == 0x1000021)			// CompleteAllActiveTargets
 	{
+		MR_DebugWarn("MR command: CompleteAllActiveTargets\n");
+
 		CompleteAllActiveTargets(thread->player);
 		return 1;
 	}
@@ -1553,33 +1522,48 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
+
+		MR_DebugWarn("MR command: SetVariable(%08X, %d)\n", val1, val2);
+
 		MRSetVariable(thread, val1, val2);
+
 		return 1;
 	}
 	else if (cmd == 0x1000011)			// Jump
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: Jump(%d)\n", val1);
+
 		return MRJump(thread, val1);
 	}
-	else if (cmd == 0x1000001)			// JumpIf
+	else if (cmd == 0x1000001)			// BranchIf
 	{
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
 
 		if (val2 != 0)
+		{
+			MR_DebugWarn("MR command: BranchIf(%d, %d)\n", val1, val2);
 			return 1;
+		}
 
 		return MRJump(thread, val1);
 	}
 	else if (cmd == 0x1000022)			// MultiCarEvent
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: MultiCarEvent(%d)\n", val1);
+
 		MultiCarEvent(MissionTargets + val1);
 		return 1;
 	}
 	else if (cmd == 0x1000030)			// SetPlayerFelony
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: SetPlayerFelony(%d)\n", val1);
 
 		if (player[0].playerCarId < 0)
 			pedestrianFelony = val1;
@@ -1590,6 +1574,9 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
+
+		MR_DebugWarn("MR command: ShowPlayerMessage(%d, %d)\n", val1, val2);
+
 		SetPlayerMessage(thread->player, MissionStrings + val1, 0, val2);
 
 		return 1;
@@ -1597,108 +1584,128 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	else if (cmd == 0x1000070)			// TriggerEvent
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: TriggerEvent(%d)\n", val1);
+
 		TriggerEvent(val1);
 		return 1;
 	}
 	else if (cmd == 0x1000080)			// SetDoorsLocked
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: SetDoorsLocked(%d)\n", val1);
+
 		lockAllTheDoors = val1;
 		return 1;
 	}
 	else if (cmd == 0x1000054)			// SetStealMessage
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: SetStealMessage(%d)\n", val1);
+
 		Mission.StealMessage = MissionStrings + val1;
 	}
 	else if (cmd == 0x1000055)			// ShowOutOfTimeMessage
 	{
+		MR_DebugWarn("MR command: ShowOutOfTimeMessage\n");
+
 		SetPlayerMessage(1, MissionStrings + MissionHeader->msgOutOfTime, 2, 2);
 		return 1;
 	}
 	else if (cmd == 0x1001000)			// StopThread
 	{
+		MR_DebugWarn("MR command: StopThread\n");
+
 		return MRStopThread(thread);
 	}
 	else if (cmd == 0x1001002)			// StartThreadForPlayer
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: StartThreadForPlayer(%d)\n", val1);
+
 		MRStartThread(thread, val1, thread->player);
 		return 1;
 	}
 	else if (cmd == 0x1001003)			// StartThread2
 	{
 		val1 = MRPop(thread);
+
+		MR_DebugWarn("MR command: StartThread2(%d)\n", val1);
+
 		MRStartThread(thread, val1, 1);
 		return 1;
 	}
 	else if (cmd == 0x1000100)			// SetCameraEvent
 	{
+		MR_DebugWarn("MR command: SetCameraEvent\n");
+
 		SpecialCamera(SPECIAL_CAMERA_SET, 0);
 		return 1;
 	}
 	else if (cmd == 0x1000071)			// AwardPlayerCheat
 	{
+		MR_DebugWarn("MR command: AwardPlayerCheat\n");
+
 		val1 = MRPop(thread);
 
-		UNIMPLEMENTED();	// [A]
-
-		/*
 		if ((val1 & 0x8000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 1;
+			AvailableCheats.cheat1 = 1;
 		}
 		if ((val1 & 0x4000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 2;
+			AvailableCheats.cheat2 = 1;
 		}
 		if ((val1 & 0x10000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 4;
+			AvailableCheats.cheat3 = 1;
 		}
 		if ((val1 & 0x20000) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 8;
+			AvailableCheats.cheat4 = 1;
 		}
 		if ((val1 & 1) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 0x10;
+			AvailableCheats.cheat5 = 1;
 		}
 		if ((val1 & 0x10) != 0) {
-			AvailableCheats._0_1_ = (byte)AvailableCheats | 0x40;
+			AvailableCheats.cheat6 = 1;
 		}
 		if ((val1 & 0x100) != 0) {
-			AvailableCheats._1_1_ = AvailableCheats._1_1_ | 1;
+			AvailableCheats.cheat7 = 1;
 		}
 		if ((val1 & 0x1000) != 0) {
-			AvailableCheats._1_1_ = AvailableCheats._1_1_ | 2;
+			AvailableCheats.cheat8 = 1;
 		}
-		if ((val1 & 0x2000) == 0) {
-			return 1;
+		if ((val1 & 0x2000) != 0) {
+			AvailableCheats.cheat11 = 1;
 		}
-		*/
-
-		printWarning("AvailableCheats set cmd opcode: %x value: %d\n", cmd, val1);
-
-		//AvailableCheats._1_1_ = AvailableCheats._1_1_ | 4;
 
 		return 1;
 	}
 	else if (cmd == 0x1000090)			// SetRaining
 	{
+		MR_DebugWarn("MR command: SetRaining\n");
 		gWeather = 1;
 		return 1;
 	}
 	else if (cmd == 0x1000040)
 	{
+		MR_DebugWarn("MR command: player timer flag 2 set\n");
 		Mission.timer[thread->player].flags |= 2;
 	}
 	else  if (cmd == 0x1000042)
 	{
-		MissionHeader->timerFlags = MissionHeader->timerFlags | 0x1000;
+		MR_DebugWarn("MR command: timer flag 0x1000 set\n");
+		MissionHeader->timerFlags |= 0x1000;
 	}
 	else if (cmd == 0x1000041)
 	{
-		Mission.timer[thread->player].flags = Mission.timer[thread->player].flags & 0xfd;
+		MR_DebugWarn("MR command: player timer flag 2 removed\n");
+		Mission.timer[thread->player].flags &= ~2;
 		return 1;
 	}
 	else if (cmd == 0x1001001)
 	{
+		MR_DebugWarn("MR command: SetMissionComplete\n");
 		SetMissionComplete();
 		return 1;
 	}
@@ -1737,7 +1744,7 @@ int MROperator(MR_THREAD *thread, ulong op)
 {
     long val1;
     long val2;
-    long result;
+    int result;
     
     result = 0;
 
@@ -1752,10 +1759,7 @@ int MROperator(MR_THREAD *thread, ulong op)
 			break;
 		case 0x3000004:	// OR
 			if (val1 != 0 || val2 != 0)
-			{
 				result = 1;
-				break;
-			}
 			break;
 		case 0x3000005:	// NEQ
 			if (val1 != val2)
@@ -1888,23 +1892,14 @@ void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 // [D]
 void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
 {
-	int i;
-	MR_THREAD *thread;
-
-	i = 0;
-	thread = (MR_THREAD *)&MissionThreads;
-
-	do {
-		i++;
-
-		if (thread->active == 0)
+	for (int i = 0; i < 16; i++)
+	{
+		if (!MissionThreads[i].active)
 		{
-			MRInitialiseThread(thread, callingthread->pc + addr, player);
-			return;
+			MRInitialiseThread(&MissionThreads[i], callingthread->pc + addr, player);
+			break;
 		}
-
-		thread++;
-	} while (i < 16);
+	}
 }
 
 
@@ -1965,13 +1960,8 @@ int MRStopThread(MR_THREAD *thread)
 // [D]
 void MRCommitThreadGenocide(void)
 {
-	int i;
-
-	i = 16;
-	do {
+	for (int i = 0; i < 16; i++)
 		MRStopThread(&MissionThreads[i]);
-		i--;
-	} while (-1 < i);
 }
 
 
@@ -1993,7 +1983,7 @@ void MRCommitThreadGenocide(void)
 // [D]
 int MRJump(MR_THREAD *thread, long jump)
 {
-	if (jump + 2U < 3)
+	if ((jump + 2u) < 3)
 		return MRStopThread(thread);
 
 	thread->pc += jump;
@@ -2086,28 +2076,20 @@ long MRPop(MR_THREAD *thread)
 // [D]
 long MRGetParam(MR_THREAD *thread)
 {
-	long var;
-	uint uVar1;
+	long value;
 
-	var = MRPop(thread);
-	uVar1 = var & 0xff000000;
+	value = MRPop(thread);
 
-	if (uVar1 == 0x2000000)
+	switch (value & 0xff000000)
 	{
-		var = MRGetVariable(thread, var);
+	case 0:
+	case 0xff000000:
+		return value;
+	case 0x2000000:
+		return MRGetVariable(thread, value);
 	}
-	else if (uVar1 < 0x2000001) 
-	{
-		if (uVar1 != 0)
-			return 0;
-	}
-	else 
-	{
-		if (uVar1 != 0xff000000)
-			return 0;
-	}
-
-	return var;
+	
+	return 0;
 }
 
 
@@ -2134,27 +2116,15 @@ long MRGetParam(MR_THREAD *thread)
 // [D]
 long MRGetVariable(MR_THREAD *thread, ulong var)
 {
-	if (var == 0x2000101) 
+	switch (var)
 	{
-		return gCopMaxPowerScale;
+	case 0x2000008: return Mission.timer[thread->player].count / 3000;
+	case 0x2000100: return gCopDesiredSpeedScale;
+	case 0x2000101: return gCopMaxPowerScale;
+	case 0x2000102: return gMinimumCops;
+	case 0x2000103: return maxCopCars;
 	}
-	else if (var == 0x2000008)
-	{
-		return Mission.timer[thread->player].count / 3000;
-	}
-	else if (var == 0x2000100)
-	{
-		return gCopDesiredSpeedScale;
-	}
-	else if (var == 0x2000102)
-	{
-		return gMinimumCops;
-	}
-	else if (var == 0x2000103)
-	{
-		return maxCopCars;
-	}
-
+	
 	return 0;
 }
 
@@ -2177,28 +2147,21 @@ long MRGetVariable(MR_THREAD *thread, ulong var)
 // [D]
 void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 {
-	if (var == 0x2000101) 
+	switch (var)
 	{
-		gCopMaxPowerScale = value;
-		return;
-	}
-	else if (var == 0x2000008)
-	{
+	case 0x2000008:
 		Mission.timer[thread->player].count = value * 3000;
-		return;
-	}
-	else if (var == 0x2000100)
-	{
+		break;
+	case 0x2000100:
 		gCopDesiredSpeedScale = value;
-		return;
-	}
-	else if (var == 0x2000102)
-	{
+		break;
+	case 0x2000101:
+		gCopMaxPowerScale = value;
+		break;
+	case 0x2000102:
 		gMinimumCops = value;
-		return;
-	}
-	else if (var == 0x2000103)
-	{
+		break;
+	case 0x2000103:
 		if (value == 4)
 		{
 			if (GameType == GAME_SURVIVAL)
@@ -2218,10 +2181,11 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 			gBatterPlayer = 0;
 		}
 
-		if (0 < value)
+		if (value > 0)
 			CopsAllowed = 1;
 
 		maxCopCars = value;
+		break;
 	}
 }
 
@@ -3330,15 +3294,14 @@ extern int gStopPadReads;
 // [D]
 int Handle321Go(void)
 {
-	if ((MissionHeader->type & 4U) != 0) 
+	if ((MissionHeader->type & 4) != 0) 
 	{
 		gStopPadReads = 1;
-		g321GoDelay = g321GoDelay + 1;
-
-		if (g321GoDelay == 0x60) 
+		
+		if (++g321GoDelay == 96) 
 		{
 			gStopPadReads = 0;
-			MissionHeader->type = MissionHeader->type & 0xfffffffb;
+			MissionHeader->type &= ~4;
 		}
 
 		return 1;
@@ -3429,7 +3392,12 @@ int HandleGameOver(void)
 			if (Mission.message_timer[1] == 0) 
 			{
 				if (Mission.gameover_mode == PAUSEMODE_COMPLETE)
+				{
 					StoreEndData();
+#ifndef PSX
+					SaveCurrentGame();
+#endif
+				}
 
 				EnablePause(Mission.gameover_mode);
 				return 1;
@@ -3736,17 +3704,19 @@ void SetMissionComplete(void)
 // [D]
 void SetMissionFailed(FAIL_REASON reason)
 {
-	if (reason == FAILED_CnR_LOSTHIM) 
+	switch (reason)
 	{
-		SetPlayerMessage(0, MissionStrings + MissionHeader->msgDrowned, 3, 2);
-		SetPlayerMessage(1, MissionStrings + MissionHeader->msgComplete, 3, 2);
+	case FAILED_OUTOFTIME:
+		SetMissionMessage(&MissionStrings[MissionHeader->msgOutOfTime], 3, 2);
+		break;
+	case FAILED_CnR_LOSTHIM:
+		SetPlayerMessage(0, &MissionStrings[MissionHeader->msgDrowned], 3, 2);
+		SetPlayerMessage(1, &MissionStrings[MissionHeader->msgComplete], 3, 2);
+		break;
+	case FAILED_MESSAGESET:
+		SetMissionOver(PAUSEMODE_GAMEOVER);
+		break;
 	}
-	else if ((reason < FAILED_MESSAGESET) && (reason == FAILED_OUTOFTIME))
-	{
-		SetMissionMessage(MissionStrings + MissionHeader->msgOutOfTime, 3, 2);
-	}
-
-	SetMissionOver(PAUSEMODE_GAMEOVER);
 }
 
 

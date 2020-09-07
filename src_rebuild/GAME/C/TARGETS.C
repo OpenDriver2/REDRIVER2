@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "TARGETS.H"
 #include "CAMERA.H"
 #include "MAIN.H"
@@ -7,6 +7,7 @@
 #include "SYSTEM.H"
 #include "DEBRIS.H"
 #include "DRAW.H"
+#include "DR2ROADS.H"
 
 #include "../ASM/ASMTEST.H"
 
@@ -350,129 +351,100 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 	/* end block 3 */
 	// End Line: 900
 
+// [D]
 void DrawStopZone(VECTOR *pPosition)
 {
-	UNIMPLEMENTED();
-	/*
+	int iVar4;
+	VECTOR* pVector;
+	int iVar6;
+	POLY_FT4* pPoly;
+	long* pOut;
+	SVECTOR temp;
+	long p;
+	long flag;
+	long sz;
 
-	bool bVar1;
-	DB *pDVar2;
-	ushort uVar3;
-	undefined **ppuVar4;
-	int iVar5;
-	VECTOR *pVVar6;
-	long lVar7;
-	int iVar8;
-	undefined *puVar9;
-	undefined *puVar10;
-	undefined *puVar11;
-	VECTOR *pos;
-	uint *puVar12;
-	uint *puVar13;
-	undefined *local_80;
-	undefined *local_7c;
-	undefined *local_78[14];
-	undefined2 local_40;
-	undefined2 local_3e;
-	undefined2 local_3c;
-	undefined auStack56[4];
-	undefined auStack52[12];
+	VECTOR pStopZonePt[4] = {
+		{-500, 0, 500},
+		{500, 0, 500},
+		{-500, 0, -500},
+		{500, 0, -500},
+	};
 
-	pos = (VECTOR *)&local_80;
-	ppuVar4 = (undefined **)&DAT_00011e14;
-	pVVar6 = pos;
-	do {
-		puVar9 = ppuVar4[1];
-		puVar10 = ppuVar4[2];
-		puVar11 = ppuVar4[3];
-		*(undefined **)&pVVar6->vx = *ppuVar4;
-		*(undefined **)&pVVar6->vy = puVar9;
-		*(undefined **)&pVVar6->vz = puVar10;
-		*(undefined **)&pVVar6->pad = puVar11;
-		ppuVar4 = ppuVar4 + 4;
-		pVVar6 = pVVar6 + 1;
-	} while (ppuVar4 != switchdataD_00011e54);
-	puVar12 = (uint *)current->primptr;
-	puVar13 = puVar12 + 2;
-	setCopControlWord(2, 0, norot.m[0]._0_4_);
-	setCopControlWord(2, 0x800, norot.m._4_4_);
-	setCopControlWord(2, 0x1000, norot.m[1]._2_4_);
-	setCopControlWord(2, 0x1800, norot.m[2]._0_4_);
-	setCopControlWord(2, 0x2000, norot._16_4_);
-	setCopControlWord(2, 0x2800, dummy.vx);
-	setCopControlWord(2, 0x3000, dummy.vy);
-	setCopControlWord(2, 0x3800, dummy.vz);
-	*(char *)((int)puVar12 + 3) = '\t';
-	*(char *)((int)puVar12 + 7) = ',';
-	while (pos < (VECTOR *)&local_40) {
-		iVar8 = -CameraCnt;
-		iVar5 = iVar8;
-		if (0 < CameraCnt) {
-			iVar5 = iVar8 + 0xf;
-		}
-		iVar8 = iVar8 + (iVar5 >> 4) * -0x10;
-		iVar5 = pos->vx * iVar8;
-		if (iVar5 < 0) {
-			iVar5 = iVar5 + 0xf;
-		}
-		iVar8 = pos->vz * iVar8;
-		lVar7 = pPosition->vy;
-		pos->vx = iVar5 >> 4;
-		pos->vy = lVar7;
-		if (iVar8 < 0) {
-			iVar8 = iVar8 + 0xf;
-		}
-		pos->vx = (iVar5 >> 4) + pPosition->vx;
-		pos->vz = (iVar8 >> 4) + pPosition->vz;
-		iVar8 = MapHeight(pos);
-		pos->vx = pos->vx - camera_position.vx;
-		pos->vy = -camera_position.vy - iVar8;
-		pos->vz = pos->vz - camera_position.vz;
-		Apply_Inv_CameraMatrix(pos);
-		local_40 = *(undefined2 *)&pos->vx;
-		local_3e = *(undefined2 *)&pos->vy;
-		local_3c = *(undefined2 *)&pos->vz;
-		RotTransPers((VECTOR *)&local_40, puVar13, auStack56, auStack52);
-		if (puVar13 == puVar12 + 2) {
-			puVar13 = puVar12 + 4;
-		}
-		else {
-			bVar1 = puVar13 == puVar12 + 4;
-			puVar13 = puVar12 + 8;
-			if (bVar1) {
-				puVar13 = puVar12 + 6;
-			}
-		}
-		pos = pos + 1;
+	pVector = pStopZonePt;
+
+	pPoly = (POLY_FT4*)current->primptr;
+	pOut = (long*)&pPoly->x0;
+
+	gte_SetRotMatrix(&aspect);
+	gte_SetTransVector(&dummy);
+
+	setPolyFT4(pPoly);
+	setSemiTrans(pPoly, 1);
+
+	while (pVector < &pStopZonePt[4])
+	{
+		iVar6 = -CameraCnt;
+		iVar4 = iVar6;
+
+		iVar6 = iVar6 + (iVar4 >> 4) * -0x10;
+
+		iVar4 = pVector->vx * iVar6;
+		iVar6 = pVector->vz * iVar6;
+
+		pVector->vx = iVar4 >> 4;
+		pVector->vy = pPosition->vy;
+
+		pVector->vx = (iVar4 >> 4) + pPosition->vx;
+		pVector->vz = (iVar6 >> 4) + pPosition->vz;
+		pVector->vy = -camera_position.vy - MapHeight(pVector);
+
+		pVector->vx = pVector->vx - camera_position.vx;
+		pVector->vz = pVector->vz - camera_position.vz;
+
+		Apply_Inv_CameraMatrix(pVector);
+
+		temp.vx = pVector->vx;
+		temp.vy = pVector->vy;
+		temp.vz = pVector->vz;
+
+		RotTransPers(&temp, pOut, &p, &flag);
+
+		if (pOut == (long*)&pPoly->x0) 
+			pOut = (long*)&pPoly->x1;
+		else if (pOut == (long*)&pPoly->x1)
+			pOut = (long*)&pPoly->x2;
+		else
+			pOut = (long*)&pPoly->x3;
+
+		pVector = pVector + 1;
 	}
-	iVar8 = getCopReg(2, 0x13);
-	*(char *)(puVar12 + 1) = '@';
-	*(char *)((int)puVar12 + 5) = '@';
-	*(char *)((int)puVar12 + 6) = '@';
-	*(byte *)((int)puVar12 + 7) = *(byte *)((int)puVar12 + 7) | 2;
-	*(uchar *)(puVar12 + 3) = light_texture.coords.u0;
-	*(uchar *)((int)puVar12 + 0xd) = light_texture.coords.v0;
-	*(uchar *)(puVar12 + 5) = light_texture.coords.u1;
-	*(uchar *)((int)puVar12 + 0x15) = light_texture.coords.v1;
-	*(uchar *)(puVar12 + 7) = light_texture.coords.u2;
-	*(uchar *)((int)puVar12 + 0x1d) = light_texture.coords.v2;
-	*(uchar *)(puVar12 + 9) = light_texture.coords.u3;
-	*(uchar *)((int)puVar12 + 0x25) = light_texture.coords.v3;
-	if (gTimeOfDay == 3) {
-		uVar3 = light_texture.tpageid | 0x20;
-	}
-	else {
-		uVar3 = light_texture.tpageid | 0x40;
-	}
-	*(ushort *)((int)puVar12 + 0x16) = uVar3;
-	pDVar2 = current;
-	*(ushort *)((int)puVar12 + 0xe) = light_texture.clutid;
-	*puVar12 = *puVar12 & 0xff000000 | pDVar2->ot[(iVar8 >> 4) + 0x200] & 0xffffff;
-	(pDVar2->ot + (iVar8 >> 4))[0x200] =
-		(pDVar2->ot + (iVar8 >> 4))[0x200] & 0xff000000 | (uint)puVar12 & 0xffffff;
-	pDVar2->primptr = pDVar2->primptr + 0x28;
-	return;
-	*/
+
+	gte_stsz(&sz);
+
+	pPoly->r0 = 64;
+	pPoly->g0 = 64;
+	pPoly->b0 = 64;
+
+	pPoly->u0 = light_texture.coords.u0;
+	pPoly->v0 = light_texture.coords.v0;
+	pPoly->u1 = light_texture.coords.u1;
+	pPoly->v1 = light_texture.coords.v1;
+	pPoly->u2 = light_texture.coords.u2;
+	pPoly->v2 = light_texture.coords.v2;
+	pPoly->u3 = light_texture.coords.u3;
+	pPoly->v3 = light_texture.coords.v3;
+
+	if (gTimeOfDay == 3)
+		pPoly->tpage = light_texture.tpageid | 0x20;
+	else
+		pPoly->tpage = light_texture.tpageid | 0x40;
+
+	pPoly->clut = light_texture.clutid;
+
+	addPrim(current->ot + (sz >> 4) + 0x200, pPoly);
+
+	current->primptr += sizeof(POLY_FT4);
 }
 
 

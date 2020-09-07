@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 
 #include "INLINE_C.H"
 
@@ -99,9 +99,6 @@ int current_object_computed_value = 0;
 int combointensity;
 
 int buildingsFound = 0;
-int cell_object_index = 0;
-
-CELL_OBJECT cell_object_buffer[1024];
 CELL_OBJECT* model_object_ptrs[512];
 CELL_OBJECT* anim_obj_buffer[20];
 
@@ -148,8 +145,10 @@ _pct plotContext;
 	/* end block 3 */
 	// End Line: 1306
 
+MVERTEX MVERTEX_ARRAY_1f800228[5][5];
+
 // [D] [A]
-void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
+void addSubdivSpriteShadow(POLYFT4*src, SVECTOR *verts, int z)
 {
 	uint puVar1;
 	uint uVar2;
@@ -161,15 +160,15 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 	uVar3 = *(uint *)&src->v0;
 
 	plotContext.colour = 0x2e000000;
-	//plotContext.ot = plotContext.ot + 0x1c;
 
-	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
-	plotContext.tpage = texture_pages[src->texture_set];// << 0x40;
+
+	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];// << 0x10;
+	plotContext.tpage = (texture_pages[src->texture_set]);// << 0x10;
 
 	if (3200 < z) 
 		m = 2;
 
-	// [A] this is temporary code to draw shadow sprites
+#if 1 // [A] this is temporary code to draw shadow sprites
 	{
 		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
 
@@ -212,32 +211,28 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 			plotContext.primptr += sizeof(POLY_FT4);
 		}
 	}
+#else
+	plotContext.ot += 28;
 
-#if 0
-	MVERTEX_ARRAY_1f800228[0]._0_4_ = *(undefined4 *)(verts + (uVar3 & 0xff));
-	puVar1 = (undefined4 *)((int)&verts->vx + (uVar3 >> 5 & 0x7f8));
-	MVERTEX_ARRAY_1f800228[0]._4_4_ =
-		*(uint *)&verts[uVar3 & 0xff].vz & 0xffff | (uint)(ushort)src->uv0 << 0x10;
-	uVar4 = puVar1[1];
-	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m) = *puVar1;
-	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m].vz = uVar4;
-	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m].uv = src->uv1;
-	uVar4 = *(undefined4 *)&verts[uVar3 >> 0x18].vz;
-	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m * 5) = *(undefined4 *)(verts + (uVar3 >> 0x18));
-	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m * 5].vz = uVar4;
-	puVar1 = (undefined4 *)((int)&verts->vx + (uVar3 >> 0xd & 0x7f8));
-	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m * 5].uv = src->uv3;
-	uVar4 = puVar1[1];
-	*(undefined4 *)(MVERTEX_ARRAY_1f800228 + m * 6) = *puVar1;
-	*(undefined4 *)&MVERTEX_ARRAY_1f800228[m * 6].vz = uVar4;
-	*(UV_INFO *)&MVERTEX_ARRAY_1f800228[m * 6].uv = src->uv2;
-	
-	
+	copyVector(&MVERTEX_ARRAY_1f800228[0][0], &verts[src->v0]);
+	MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&src->uv0;
+
+	copyVector(&MVERTEX_ARRAY_1f800228[0][1], &verts[src->v1]);
+	MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&src->uv1;
+
+	copyVector(&MVERTEX_ARRAY_1f800228[0][2], &verts[src->v3]);
+	MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&src->uv3;
+
+	copyVector(&MVERTEX_ARRAY_1f800228[0][3], &verts[src->v2]);
+	MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&src->uv2;
+
 	makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m);
-	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, (_pct *)&plotContext);
-#endif //0
+	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, &plotContext);
+	
+	plotContext.ot -= 28;
+#endif
 
-	//plotContext.ot = plotContext.ot + -0x1c;
+
 }
 
 
@@ -334,7 +329,7 @@ void addSubdivSpriteShadow(POLYFT4LIT *src, SVECTOR *verts, int z)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 MATRIX shadowMatrix;
-MVERTEX MVERTEX_ARRAY_1f800228[5][5];
+
 
 // [D] [A]
 void DrawSprites(int numFound)
@@ -345,7 +340,8 @@ void DrawSprites(int numFound)
 	int z;
 	uint *puVar4;
 	uint *puVar5;
-	uint uVar6;
+	uint spriteColour;
+	unsigned char lightLevel;
 	MATRIX *pMVar7;
 	MATRIX *pMVar8;
 	uint uVar9;
@@ -362,38 +358,31 @@ void DrawSprites(int numFound)
 		FIXED(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
 		FIXED(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
 
-	uVar6 = (z >> 0x12) + 0x20U & 0xff;
+	lightLevel = (z >> 0x12) + 0x20U & 0xff;
 
-	if (gTimeOfDay == 1) 
-		goto LAB_0003f0c4;
-
-	if (gTimeOfDay < 2) 
+	if (gWeather > 0 && gTimeOfDay == 1)
 	{
-		if (gTimeOfDay != 0)
-			goto LAB_0003f0c4;
-	LAB_0003f0a8:
-		uVar6 = (int)(uVar6 * 2 * NightAmbient) >> 8;
-	}
-	else 
-	{
-		if (gTimeOfDay == 2)
-			goto LAB_0003f0a8;
-
-		if (gTimeOfDay != 3)
-			goto LAB_0003f0c4;
-
-		uVar6 = uVar6 / 3;
+		lightLevel = (lightLevel * 2 * NightAmbient) >> 8 & 0xff;
 	}
 
-	uVar6 = uVar6 & 0xff;
-
-LAB_0003f0c4:
-	if (gWeather - 1U < 2) 
+	if (gTimeOfDay == 0)
 	{
-		uVar6 = (int)(uVar6 * 2 * NightAmbient) >> 8 & 0xff;
+		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
+	}
+	else if (gTimeOfDay == 2)
+	{
+		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
+	}
+	else if (gTimeOfDay == 3)
+	{
+		if(GameLevel == 0)
+			lightLevel = lightLevel * 2;	// [A] level bug - Chicago trees lit wrong
+		else
+			lightLevel = lightLevel / 3;
 	}
 
-	uVar6 = uVar6 << 0x10 | uVar6 << 8 | 0x2c000000 | uVar6;
+
+	spriteColour = lightLevel << 0x10 | lightLevel << 8 | 0x2c000000 | lightLevel;
 	
 	pMVar8 = &inv_camera_matrix;
 	pMVar7 = &shadowMatrix;
@@ -414,7 +403,7 @@ LAB_0003f0c4:
 
 	local_40 = spriteList;
 
-	plotContext.colour = uVar6;
+	plotContext.colour = spriteColour;
 	plotContext.current = current;
 
 	local_2c = numFound - 1;
@@ -426,9 +415,9 @@ LAB_0003f0c4:
 		int modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
 
 		model = modelpointers[modelnumber];
-		plotContext.colour = uVar6;
+		plotContext.colour = spriteColour;
 
-		if ((pco->value & 0x3f) == 0x3f) 
+		if ((pco->value & 0x3f) == 0x3f || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
 			plotContext.colour = 0x2c808080;
 
 		plotContext.scribble[0] = pco->pos.vx;
@@ -492,11 +481,11 @@ LAB_0003f0c4:
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
-			addSubdivSpriteShadow((POLYFT4LIT *)model->poly_block, (SVECTOR *)model->vertices, z);
+			addSubdivSpriteShadow((POLYFT4*)model->poly_block, (SVECTOR *)model->vertices, z);
 
 			if (model->num_polys == 2)
 			{
-				addSubdivSpriteShadow((POLYFT4LIT *)(model->poly_block + sizeof(POLYFT4LIT)), (SVECTOR *)model->vertices, z);
+				addSubdivSpriteShadow((POLYFT4*)(model->poly_block + sizeof(POLYFT4)), (SVECTOR *)model->vertices, z);
 			}
 
 			gte_SetRotMatrix(&face_camera);
@@ -504,126 +493,6 @@ LAB_0003f0c4:
 	}
 	current->primptr = plotContext.primptr;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// struct PACKED_CELL_OBJECT * /*$ra*/ GetNextPackedCop(struct CELL_ITERATOR *pci /*$a0*/)
- // line 813, offset 0x0003f5f0
-	/* begin block 1 */
-		// Start line: 814
-		// Start offset: 0x0003F5F0
-		// Variables:
-	// 		struct PACKED_CELL_OBJECT *ppco; // $a3
-	// 		unsigned short num; // $a1
-	/* end block 1 */
-	// End offset: 0x0003F6B0
-	// End Line: 853
-
-	/* begin block 2 */
-		// Start line: 1812
-	/* end block 2 */
-	// End Line: 1813
-
-	/* begin block 3 */
-		// Start line: 1817
-	/* end block 3 */
-	// End Line: 1818
-
-	/* begin block 4 */
-		// Start line: 1821
-	/* end block 4 */
-	// End Line: 1822
-
-// [D]
-PACKED_CELL_OBJECT * GetNextPackedCop(CELL_ITERATOR *pci)
-{
-	unsigned char bVar1;
-	ushort uVar2;
-	PACKED_CELL_OBJECT *pPVar3;
-	CELL_DATA *pCVar4;
-	uint uVar5;
-	uint uVar6;
-	PACKED_CELL_OBJECT *pPVar7;
-
-	pPVar3 = cell_objects;
-	do {
-		do {
-			pCVar4 = pci->pcd;
-			if ((pCVar4->num & 0x8000) != 0) 
-				return NULL;
-
-			pci->pcd = pCVar4 + 1;
-			uVar2 = pCVar4[1].num;
-			uVar6 = (uint)uVar2 & 0x3fff;
-
-			if ((uVar2 & 0x4000) != 0)
-				return NULL;
-
-			pPVar7 = pPVar3 + uVar6;
-		} while ((pPVar7->value == 0xffff) && (((pPVar7->pos).vy & 1) != 0));
-
-		if (pci->use_computed == 0)
-			goto LAB_0003f6a4;
-
-		bVar1 = cell_object_computed_values[uVar6 >> 3];
-		uVar5 = 1 << ((uint)uVar2 & 7) & 0xffff;
-
-	} while ((bVar1 & uVar5) != 0);
-
-	cell_object_computed_values[uVar6 >> 3] = bVar1 | (unsigned char)uVar5;
-
-LAB_0003f6a4:
-	pci->ppco = pPVar7;
-	return pPVar7;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// struct CELL_OBJECT * /*$ra*/ UnpackCellObject(struct PACKED_CELL_OBJECT *ppco /*$a3*/, struct XZPAIR *near /*$t0*/)
- // line 854, offset 0x000418e8
-	/* begin block 1 */
-		// Start line: 855
-		// Start offset: 0x000418E8
-		// Variables:
-	// 		struct CELL_OBJECT *pco; // $a2
-	/* end block 1 */
-	// End offset: 0x000419A8
-	// End Line: 870
-
-	/* begin block 2 */
-		// Start line: 4699
-	/* end block 2 */
-	// End Line: 4700
-
-	/* begin block 3 */
-		// Start line: 1708
-	/* end block 3 */
-	// End Line: 1709
-
-CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT *ppco, XZPAIR *near)
-{
-	CELL_OBJECT *pco;
-
-	if (ppco == NULL)
-		return NULL;
-
-	pco = &cell_object_buffer[cell_object_index];
-	cell_object_index = cell_object_index + 1U & 0x3ff;
-
-	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
-	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
-
-	pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
-	pco->yang = ppco->value & 0x3f;
-	pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
-
-	return pco;
-}
-
 
 
 // decompiled code
@@ -1039,7 +908,7 @@ void DrawMapPSX(int *comp_val)
 
 									if (((uVar1 & 0x480) == 0) && ((model->flags2 & 0xc000) == 0))
 									{
-										cop = UnpackCellObject(ppco, &ci.near);
+										cop = UnpackCellObject(ppco, &ci.nearCell);
 
 
 										if (((model->flags2 & 1) != 0) && (anim_objs < 20))
@@ -1054,17 +923,11 @@ void DrawMapPSX(int *comp_val)
 									{
 										if (((model->flags2 & 0x80) != 0) && (alleycount++, alleycount == 13))
 										{
-											cop = UnpackCellObject(ppco, &ci.near);
-
-											uVar9 = groundDebrisIndex & 0xf;
-											ground_debris[uVar9].pos.vx = (cop->pos).vx;
-											ground_debris[uVar9].pos.vy = (cop->pos).vy;
-											ground_debris[uVar9].pos.vz = (cop->pos).vz;
-											ground_debris[uVar9].pad = cop->pad;
+											cop = UnpackCellObject(ppco, &ci.nearCell);
+											ground_debris[groundDebrisIndex++] = *cop;
+											groundDebrisIndex = groundDebrisIndex % 16;
 
 											alleycount = 0;
-
-											groundDebrisIndex++;
 										}
 
 										if (tiles_found < 0x100)
@@ -1081,21 +944,16 @@ void DrawMapPSX(int *comp_val)
 
 									if (((model->flags2 & 1) != 0) && (anim_objs < 20))
 									{
-										cop = UnpackCellObject(ppco, &ci.near);
+										cop = UnpackCellObject(ppco, &ci.nearCell);
 
 										anim_obj_buffer[anim_objs++] = cop;
 									}
 
 									if (((model->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount++, uVar9 == 0))
 									{
-										cop = UnpackCellObject(ppco, &ci.near);
-
-										uVar9 = groundDebrisIndex & 0xf;
-										ground_debris[uVar9].pos.vx = cop->pos.vx;
-										ground_debris[uVar9].pos.vy = cop->pos.vy;
-										ground_debris[uVar9].pos.vz = cop->pos.vz;
-										ground_debris[uVar9].pad = cop->pad;
-										groundDebrisIndex++;
+										cop = UnpackCellObject(ppco, &ci.nearCell);
+										ground_debris[groundDebrisIndex++] = *cop;
+										groundDebrisIndex = groundDebrisIndex % 16;
 									}
 								}
 							}
@@ -1513,7 +1371,7 @@ void CalcObjectRotationMatrices(void)
 // [D]
 void PlotMDL_less_than_128(MODEL *model)
 {
-	RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0);
+	RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0, 0);
 }
 
 
@@ -1818,12 +1676,12 @@ void DrawAllTheCars(int view)
 
 			do {
 				// Don't exceed draw buffers
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180))) < 5800)
+				if ((int)(current->primtab + (-3000 - (int)(current->primptr- PRIMTAB_SIZE))) < 5800)
 					return;
 
 				// try reducing detail level
 				// this looks really ugly
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr-0x1a180)) + -iVar3) < 5800) 
+				if ((int)(current->primtab + (-3000 - (int)(current->primptr- PRIMTAB_SIZE)) + -iVar3) < 5800)
 					gForceLowDetailCars = 1;
 
 				if (cars_to_draw[iVar9]->controlType == 1)
@@ -1951,8 +1809,176 @@ void DrawAllTheCars(int view)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+// [D] [A] custom
 void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 {
+#if 1 // [A] new fully rewritten routine 
+	
+	// FIXME: still bugged - see tops of barrels at "Caine's Compound"
+
+	int opz;
+	int diff, minZ, maxZ;
+	int Z;
+	PL_POLYFT4* polys;
+	int i;
+	uint polyVar;
+	u_char temp;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	MVERTEX subdiVerts[5][5];
+
+	srcVerts = (SVECTOR*)model->vertices;
+	pc->ot = pc->current->ot;
+	pc->primptr = pc->current->primptr;
+
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	if ((pc->flags & 1U) != 0) 
+		combointensity |= 0x2000000;
+
+	i = model->num_polys;
+	while (i > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
+
+		if ((ptype & 1) == 0) // is FT3 triangle?
+		{
+			temp = polys->uv2.v;
+			polys->uv3.u = polys->uv2.u;
+			polys->uv3.v = temp;
+
+			polys->v3 = polys->v2;
+
+			polys->id = polys->id ^ 1;
+			ptype |= 1;
+		}
+
+		if (ptype != 11 && ptype != 21)// && ptype != 9 && ptype != 1 && ptype != 13 && ptype != 8 && ptype != 10)
+		{
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+			i--;
+			continue;
+		}
+
+		if (ptype == 21)
+		{
+			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
+		} 
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(uint*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(rot >> 3) * 4 - temp & 0x1f];
+		}
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		if ((pc->flags & 0x6) != 0)
+		{
+			if((pc->flags & 0x4) == 0)
+				opz = -opz;		// front face
+			else
+				opz = 1;		// no culling
+		}
+
+		if (opz > 0)
+		{
+			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
+
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+
+			if ((pc->flags & 0x10) == 0) // [A] custom palette flag - for pedestrian heads
+				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+
+			minZ = pc->scribble[2];
+			if (pc->scribble[1] < minZ)
+				minZ = pc->scribble[1];
+
+			if (pc->scribble[0] < minZ)
+				minZ = pc->scribble[0];
+
+			maxZ = pc->scribble[2];
+			if (maxZ < pc->scribble[1])
+				maxZ = pc->scribble[1];
+
+			diff = maxZ - minZ;
+			if (maxZ < pc->scribble[0])
+				diff = pc->scribble[0] - minZ;
+
+			if ((n == 0) || ((diff << 2) <= minZ - 350))
+			{
+				prims = (POLY_FT4*)pc->primptr;
+
+				setPolyFT4(prims);
+				*(ulong*)&prims->r0 = pc->colour;
+
+				// retrieve first three verts
+				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+				
+				// translate 4th vert and get OT Z value
+				gte_ldv0(&srcVerts[polys->v2]);
+				gte_rtps();
+				gte_avsz4();
+
+				gte_stotz(&Z);
+
+				gte_stsxy(&prims->x3);
+
+				prims->tpage = pc->tpage >> 0x10;
+				prims->clut = pc->clut >> 0x10;
+
+				*(ushort*)&prims->u0 = *(ushort*)&polys->uv0;
+				*(ushort*)&prims->u1 = *(ushort*)&polys->uv1;
+				*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
+				*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
+
+				addPrim(pc->ot + (Z >> 1), prims);
+
+				pc->primptr += sizeof(POLY_FT4);
+			}
+			else
+			{
+				copyVector(&subdiVerts[0][0], &srcVerts[polys->v0]);
+				subdiVerts[0][0].uv.val = *(ushort*)&polys->uv0;
+
+				copyVector(&subdiVerts[0][1], &srcVerts[polys->v1]);
+				subdiVerts[0][1].uv.val = *(ushort*)&polys->uv1;
+
+				copyVector(&subdiVerts[0][2], &srcVerts[polys->v3]);
+				subdiVerts[0][2].uv.val = *(ushort*)&polys->uv3;
+
+				copyVector(&subdiVerts[0][3], &srcVerts[polys->v2]);
+				subdiVerts[0][3].uv.val = *(ushort*)&polys->uv2;
+
+				makeMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot, pc);
+			}
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+		i--;
+	}
+
+	// done
+	pc->current->primptr = pc->primptr;
+
+	if ((pc->flags & 1U) != 0)
+		combointensity &= ~0x2000000;
+
+#else // decompiled routine
+
 	unsigned char uVar1;
 	UV_INFO UVar2;
 	UV_INFO UVar3;
@@ -2047,6 +2073,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		pSVar10 = verts + ((uint)vidx & 0xff);
 		local_v1_404 = (SVECTOR *)((int)&verts->vx + ((uint)vidx >> 5 & 0x7f8));
 		pSVar5 = verts + ((uint)vidx >> 0x18);
+		puVar6 = (int*)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
 
 		gte_ldv3(pSVar10, local_v1_404, pSVar5);
 		gte_rtpt();
@@ -2130,9 +2157,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 			if (Z > 0)
 			{
-				if (true) //((n == 0) || (rot << 2 <= iVar11 + -0xfa))
-				{
-					puVar6 = (int *)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
+				if ((n == 0) || (rot << 2 <= iVar11 + -0xfa))
+				{					
 					local_t2_1500 = (POLY_FT4 *)pc->primptr;
 
 					gte_ldv0(puVar6);
@@ -2189,6 +2215,26 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 				}
 				else
 				{
+					SVECTOR* v0 = pSVar10;
+					SVECTOR* v1 = local_v1_404;
+					SVECTOR* v2 = pSVar5;
+					SVECTOR* v3 = (SVECTOR*)puVar6;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][0], v0);
+					MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&polys->uv0;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][1], v1);
+					MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&polys->uv1;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][2], v2);
+					MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&polys->uv3;
+
+					copyVector(&MVERTEX_ARRAY_1f800228[0][3], v3);
+					MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&polys->uv2;
+
+					makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot);
+					drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot, pc);
+
 					/*
 					iVar13 = rot << 1;
 					rot = n;
@@ -2261,6 +2307,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			polys = polys + 1;
 		}
 	} while (true);
+#endif
 }
 
 
@@ -2321,146 +2368,74 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 // [D]
 int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 {
-	/*
-	it contains prettier yet bugged code
+	int mat;
+	int zbias;
+	int drawlimit;
+	MODEL *model;
+	OTTYPE* savedOT;
+	CELL_OBJECT *cop;
+	int i;
+	int prev_mat;
 
-	int prev_mat = -1;
+	prev_mat = -1;
 
-	for (int i = 0; i < 8; i++) {
-		plotContext.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	for (i = 0; i < 8; i++ ) 
+	{
+		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	current->ot += 8;
 
+	plotContext.current = current;
 	plotContext.ptexture_pages = &texture_pages;
 	plotContext.ptexture_cluts = &texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = 0;
-	plotContext.current = current;
 
-	if (num_buildings > 0) {
-		int model_number = GetModelNumber();
+	i = 0;
 
-		if (model_number > 55999) {
-			for (int i = 0; i < num_buildings, model_number > 55999; i++, model_number = GetModelNumber()) 
-			{
-				CELL_OBJECT *building = (CELL_OBJECT *)objects[i];
-				
-				int mat = building->yang;
+	while(i < num_buildings)
+	{
+		cop = (CELL_OBJECT *)*objects;
+		mat = cop->yang;
 
-				if (mat == prev_mat) {
-					Apply_InvCameraMatrixSetTrans(&building->pos);
-				}
-				else {
-					Apply_InvCameraMatrixAndSetMatrix(&building->pos, &CompoundMatrix[mat]);
-					prev_mat = mat;
-				}
-
-				MODEL *model = modelpointers[building->type];
-
-				OTTYPE *savedOT = current->ot;
-
-				int zBias = (model->zBias - 64);
-
-				if (zBias < 0)
-					zBias = 0;
-
-				current->ot += (zBias * 4);
-
-				PlotBuildingModelSubdivNxN(model, building->yang, &plotContext, 1);
-
-				current->ot = savedOT;
-			}
+		if (prev_mat == mat) 
+		{
+			Apply_InvCameraMatrixSetTrans(&cop->pos);
 		}
+		else 
+		{
+			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
+			prev_mat = mat;
+		}
+
+		model = modelpointers[cop->type];
+
+		savedOT = current->ot;
+
+		zbias = model->zBias - 64;
+
+		if (zbias < 0)
+			zbias = 0;
+
+		current->ot = savedOT + zbias * 4;
+		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
+		current->ot = savedOT;
+
+		drawlimit = (int)current->primptr - (int)current->primtab;
+
+		if (PRIMTAB_SIZE - drawlimit < 60000)
+			break;
+
+		i++;
+		objects++;
 	}
-	
+
 	current->ot -= 8;
 
-	return 0;
-	*/
-
-	DB *pDVar1;
-	ulong uVar2;
-	uint uVar3;
-	int iVar4;
-	char *pcVar5;
-	MODEL *model;
-	uint *puVar6;
-	ulong *puVar7;
-	OTTYPE* savedOT;
-	CELL_OBJECT *local_s0_312;
-	int iVar8;
-	uint uVar9;
-
-	uVar9 = 0xffffffff;
-	puVar6 = (uint *)(plotContext.f4colourTable + 3);
-	puVar7 = planeColours;
-	iVar8 = 7;
-	do {
-		puVar6[-3] = *puVar7 | 0x2c000000;
-		puVar6[-1] = planeColours[4] | 0x2c000000;
-		uVar2 = planeColours[0];
-		puVar7 = puVar7 + 1;
-		*puVar6 = 0x2c00f0f0;
-		puVar6[-2] = uVar2 | 0x2c000000;
-		iVar8 = iVar8 + -1;
-		*puVar6 = planeColours[0] | 0x2c000000;
-		plotContext.current = current;
-		puVar6 = puVar6 + 4;
-	} while (-1 < iVar8);
-
-	current->ot = current->ot + 8;
-
-	plotContext.ptexture_pages = &texture_pages;
-	plotContext.ptexture_cluts = &texture_cluts;
-	plotContext.polySizes = PolySizes;
-	plotContext.flags = 0;
-	iVar8 = 0;
-
-	if (0 < num_buildings) 
-	{
-		pcVar5 = (plotContext.current)->primtab + -(int)((plotContext.current)->primptr + -0x1e000);
-
-		while (55999 < (int)pcVar5) 
-		{
-			local_s0_312 = (CELL_OBJECT *)*objects;
-			uVar3 = (uint)local_s0_312->yang;
-
-			if (uVar9 == uVar3) 
-			{
-				Apply_InvCameraMatrixSetTrans(&local_s0_312->pos);
-			}
-			else 
-			{
-				Apply_InvCameraMatrixAndSetMatrix(&local_s0_312->pos, CompoundMatrix + uVar3);
-				uVar9 = uVar3;
-			}
-
-			model = modelpointers[local_s0_312->type];
-			savedOT = current->ot;
-			iVar4 = model->zBias - 64;
-			if (iVar4 < 0)
-				iVar4 = 0;
-
-			objects++;
-			current->ot = savedOT + iVar4 * 4;
-
-			PlotBuildingModelSubdivNxN(model, local_s0_312->yang, &plotContext, 1);
-
-			pDVar1 = current;
-			iVar8 = iVar8 + 1;
-			current->ot = savedOT;
-
-			if (num_buildings <= iVar8) 
-				break;
-
-			pcVar5 = pDVar1->primtab + -(int)(pDVar1->primptr + -0x1e000);
-		}
-	}
-	current->ot = current->ot + -8;
 	return 0;
 }
 
@@ -2514,10 +2489,10 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 	// End Line: 5556
 
 // [D]
-void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags)
+void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv)
 {
-	OTTYPE *savedOT = current->ot;
-	
+	OTTYPE* savedOT = current->ot;
+
 	if (matrix != NULL)
 	{
 		MATRIX comb;
@@ -2527,18 +2502,18 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 		SetRotMatrix(&comb);
 	}
 
-	int spacefree = (zBias >> 3) + (model->zBias - 64);
+	zBias /= 8;
+	zBias += (model->zBias - 64);
 
-	if (spacefree < 0)
-		spacefree = 0;
-	
-	current->ot += (spacefree * 4);
+	if (zBias > 0)
+		current->ot += (zBias * 4);
 
-	for (int i = 0; i < 8; i++) {
-		plotContext.f4colourTable[i + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	for (int i = 0; i < 8; i++)
+	{
+		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	plotContext.ptexture_pages = &texture_pages;
@@ -2547,8 +2522,8 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	plotContext.flags = flags;
 	plotContext.current = current;
 
-	if (56000 < (current->primtab-(current->primptr-0x1e000)))
-		PlotBuildingModelSubdivNxN(model, 0, &plotContext, 1);
+	if (56000 < (current->primtab-(current->primptr - PRIMTAB_SIZE)))
+		PlotBuildingModelSubdivNxN(model, 0, &plotContext, subdiv);
 
 	current->ot = savedOT;
 }

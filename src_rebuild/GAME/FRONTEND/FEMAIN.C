@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "FEMAIN.H"
 
 #include "../C/CD_ICON.H"
@@ -19,6 +19,7 @@
 #include "../C/DEBRIS.H"
 #include "../C/FMVPLAY.H"
 #include "../C/SCORES.H"
+#include "../C/LOADSAVE.H"
 
 #include "../MEMCARD/MAIN.H"
 
@@ -294,101 +295,116 @@ POLY_FT4 cd_sprite;
 SPRT extraSprt;
 POLY_FT3 extraDummy;
 
-// [D]
+// [D] [A]
 void SetVariable(int var)
 {
 	int code = (var >> 8);
 	int value = (var & 0xff);
 
-	if (0xc < (var >> 8) - 1U) 
+	switch (var >> 8)
 	{
-		return;
-	}
+		case 1:
+			GameLevel = value;
+			break;
+		case 2:
+			GameType = (GAMETYPE)value;
 
-	switch (var >> 8) {
-	case 1:
-		GameLevel = value;
-		break;
-	case 2:
-		GameType = (GAMETYPE)value;
+			if (value != GAME_COPSANDROBBERS)
+				gWantNight = 0;
 
-		if (value != GAME_COPSANDROBBERS)
-			gWantNight = 0;
+			break;
+		case 3:
+			NumPlayers = (value + 1);
+			break;
+		case 4:
+			if (value != 0)
+				gWantNight = 1;
 
-		break;
-	case 3:
-		NumPlayers = (value + 1);
-		break;
-	case 4:
-		if (value != 0)
-			gWantNight = 1;
-		break;
-	case 5:
-		gCurrentMissionNumber = 1;
-		GameType = GAME_MISSION;
-		break;
-	case 6:
-		pScreenStack[ScreenDepth] = pCurrScreen;
-		pButtonStack[ScreenDepth] = pCurrButton;
+			break;
+		case 5:
+			gCurrentMissionNumber = 1;
+			GameType = GAME_MISSION;
+			break;
+		case 6:
+			pScreenStack[ScreenDepth] = pCurrScreen;
+			pButtonStack[ScreenDepth] = pCurrButton;
 
-		if (value == 1) {
-			if (CallMemoryCard(0x11, 0) == 0) {
+			if (value == 1) 
+			{
+				if (CallMemoryCard(0x11, 0) == 0)
+				{
+					ReInitFrontend();
+				}
+				else 
+				{
+					StoredGameType = GameType;
+					GameType = GAME_LOADEDREPLAY;
+					GameStart();
+				}
+			}
+			else
+			{
+				CallMemoryCard(0x81, 0);
 				ReInitFrontend();
+				SetMasterVolume(gMasterVolume);
+				SetXMVolume(gMusicVolume);
 			}
-			else {
-				StoredGameType = GameType;
-				GameType = GAME_LOADEDREPLAY;
-				GameStart();
-			}
-		}
-		else {
-			CallMemoryCard(0x81, 0);
-			ReInitFrontend();
-			SetMasterVolume(gMasterVolume);
-			SetXMVolume(gMusicVolume);
-		}
 
-		break;
-	case 7:
-		pScreenStack[ScreenDepth] = pCurrScreen;
-		pButtonStack[ScreenDepth] = pCurrButton;
+			break;
+		case 7:
+			pScreenStack[ScreenDepth] = pCurrScreen;
+			pButtonStack[ScreenDepth] = pCurrButton;
 
-		if (value == 0) {
-			CallMemoryCard(0x80, 0);
-			ReInitFrontend();
-		}
-		else {
-			if (CallMemoryCard(0x21, 0) == 0) {
+			if (value == 0) 
+			{
+#ifdef PSX
+				CallMemoryCard(0x80, 0);
 				ReInitFrontend();
-			} else {
-				GameType = GAME_CONTINUEMISSION;
-				GameStart();
+#else
+				// [A] save configuration
+				SaveCurrentProfile();
+#endif
 			}
-		}
+			else 
+			{
+#ifdef PSX
+				if (CallMemoryCard(0x21, 0) == 0) 
+				{
+					ReInitFrontend();
+				}
+				else
+#else
+				if(LoadCurrentGame())
+#endif
+				{
+					GameType = GAME_CONTINUEMISSION;
+					GameStart();
+				}
+			}
 
-		break;
-	case 8:
-		gSubGameNumber = value;
-		break;
-	case 9:
-		gSubtitles = (value == 0) ? 0 : 1;
-		break;
-	case 10:
-		gInvincibleCar = value;
-		ActiveCheats.cheat3 = value;
-		break;
-	case 11:
-		gPlayerImmune = value;
-		ActiveCheats.cheat4 = value;
-		break;
-	case 12:
-		GameLevel = 3;
-		gSubGameNumber = (value == 0) ? 2 : 0;
-		break;
-	case 13:
-		GameType = GAME_IDLEDEMO;
-		gCurrentMissionNumber = (value + 400);
-		break;
+			break;
+		case 8:
+			gSubGameNumber = value;
+			break;
+		case 9:
+			gSubtitles = (value == 0) ? 0 : 1;
+			break;
+		case 10:
+			gInvincibleCar = value;
+			ActiveCheats.cheat3 = value;
+			break;
+		case 11:
+			gPlayerImmune = value;
+			ActiveCheats.cheat4 = value;
+			break;
+		case 12:
+			GameLevel = 3;
+			gSubGameNumber = (value == 0) ? 2 : 0;
+			break;
+		case 13:
+			GameType = GAME_IDLEDEMO;
+			gCurrentMissionNumber = (value + 400);
+			break;
 	}
 }
 
@@ -434,47 +450,31 @@ void SetVariable(int var)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void LoadFrontendScreens(void)
 {
-	unsigned char uVar1;
-	int iVar2;
-	int *local_v1_356;
-	int *piVar3;
-	char *ptr;
-	int iVar4;
-	int offset;
-	int iVar5;
 	int iNumScreens;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	short sVar9;
+	char *ptr;
 	RECT16 rect;
 
-	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 0xc);
+	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 12);
 	ShowLoading();
+
 	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
 
 	ptr = _frontend_buffer + 20; // skip header and number of screens
 	iNumScreens = (int)_frontend_buffer[16];
 
-	if (iNumScreens) 
+	for (int i = 0; i < iNumScreens; i++)
 	{
-		for (int i = 0; i < iNumScreens; i++)
-		{
-			PsxScreens[i].numButtons = *ptr++;
-			PsxScreens[i].userFunctionNum = *ptr++;
+		PsxScreens[i].numButtons = *ptr++;
+		PsxScreens[i].userFunctionNum = *ptr++;
 
-			if (PsxScreens[i].numButtons)
-			{
-				for (int j = 0; j < PsxScreens[i].numButtons; j++)
-				{
-					memcpy(&PsxScreens[i].buttons[j], ptr, sizeof(PSXBUTTON));
-					ptr += sizeof(PSXBUTTON);
-				}
-			}
-		}		
+		for (int j = 0; j < PsxScreens[i].numButtons; j++)
+		{
+			memcpy(&PsxScreens[i].buttons[j], ptr, sizeof(PSXBUTTON));
+			ptr += sizeof(PSXBUTTON);
+		}
 	}
 
 	rect.w = 64;
@@ -483,26 +483,24 @@ void LoadFrontendScreens(void)
 	ShowLoading();
 	LoadBackgroundFile("DATA\\GFX.RAW");
 
-	sVar9 = 640;
-	offset = 0x30000;
-	iVar7 = 1;
-	
-	do {
-		iVar7 = iVar7 + -1;
+	for (int i = 0; i < 2; i++)
+	{
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, offset, 0x8000);
-		rect.y = 0x100;
-		rect.x = sVar9;
+		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
+
+		rect.x = 640 + (i * 64);
+		rect.y = 256;
+
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 		DrawSync(0);
-		sVar9 = sVar9 + 64;
-		offset = offset + 0x8000;
-	} while (-1 < iVar7);
-	ShowLoading();
-	
+	}
+
+	ShowLoading();	
 	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
+
 	rect.x = 960;
 	rect.y = 256;
+
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 
@@ -538,52 +536,57 @@ void LoadFrontendScreens(void)
 	/* end block 3 */
 	// End Line: 2960
 
-// [D]
+// [D] [A]
 void LoadBackgroundFile(char *name)
 {
-	int iVar1;
-	int iVar2;
+	int iTpage;
 	int p;
-	int *piVar4;
 	RECT16 rect;
 	int pages[6];
 
-	iVar1 = 11;
+	iTpage = 11;
+
 	pages[0] = 0;
 	pages[1] = 1;
 	pages[2] = 2;
 	pages[3] = 3;
 	pages[4] = 4;
 	pages[5] = 5;
-	iVar2 = strcmp(name, "DATA\\GFX.RAW");
-	mainScreenLoaded = (iVar2 == 0);
-	piVar4 = pages;
-	iVar2 = 5;
-	rect.w = 0x40;
-	rect.h = 0x100;
-	do {
+
+	mainScreenLoaded = (strcmp(name, "DATA\\GFX.RAW") == 0);
+
+	rect.w = 64;
+	rect.h = 256;
+
+	for (int i = 0; i < 6; i++)
+	{
 		FEDrawCDicon();
-		p = *piVar4;
+		
+		p = pages[i];
+
 		LoadfileSeg(name, _overlay_buffer, p * 0x8000, 0x8000);
-		piVar4 = piVar4 + 1;
 		FEDrawCDicon();
-		iVar2 = iVar2 + -1;
+
 		rect.y = (short)(p / 6);
 		rect.x = ((short)p + rect.y * -6) * 64 + 640;
-		rect.y = rect.y * 256;
+		rect.y *= 256;
+
 		LoadImage(&rect, (u_long *)_overlay_buffer);
 		FEDrawCDicon();
-	} while (-1 < iVar2);
-	LoadfileSeg(name, _overlay_buffer, iVar1 * 0x8000, 0x800);
+	}
+
+	LoadfileSeg(name, _overlay_buffer, iTpage * 0x8000, 0x800);
 	FEDrawCDicon();
+
 	rect.h = 1;
-	rect.y = (short)(iVar1 / 6);
-	rect.x = ((short)iVar1 + rect.y * -6) * 64 + 640;
-	rect.y = rect.y * 256;
+	rect.y = (short)(iTpage / 6);
+	rect.x = ((short)iTpage + rect.y * -6) * 64 + 640;
+	rect.y *= 256;
+
 	LoadImage(&rect, (u_long *)_overlay_buffer);
 	DrawSync(0);
+
 	SetupBackgroundPolys();
-	return;
 }
 
 
@@ -624,130 +627,54 @@ void LoadBackgroundFile(char *name)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void SetupBackgroundPolys(void)
 {
 	POLY_FT4 *poly;
-	int i;
 
-	poly = BackgroundPolys;
-	i = 5;
-	do {
+	for (int i = 0; i < 6; i++)
+	{
+		poly = &BackgroundPolys[i];
+
 		setPolyFT4(poly);
 		setRGB0(poly, 128, 128, 128);
+	}
 
-		i--;
-		poly++;
-	} while (-1 < i);
+	poly = &BackgroundPolys[0];
+	setXYWH(poly, 0, 0, 256, 256);
+	setUVWH(poly, 0, 0, 255, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 640, 0);
 
-	BackgroundPolys[0].x0 = 0;
-	BackgroundPolys[0].y0 = 0;
-	BackgroundPolys[0].u0 = '\0';
-	BackgroundPolys[0].v0 = '\x01';
-	BackgroundPolys[0].clut = getClut(960, 256);
-	BackgroundPolys[0].x1 = 0x100;
-	BackgroundPolys[0].y1 = 0;
-	BackgroundPolys[0].u1 = -1;
-	BackgroundPolys[0].v1 = '\x01';
-	BackgroundPolys[0].tpage = getTPage(0, 0, 640, 0);
-	BackgroundPolys[0].x2 = 0;
-	BackgroundPolys[0].y2 = 0x100;
-	BackgroundPolys[0].u2 = '\0';
-	BackgroundPolys[0].v2 = -1;
-	BackgroundPolys[0].x3 = 0x100;
-	BackgroundPolys[0].y3 = 0x100;
-	BackgroundPolys[0].u3 = -1;
-	BackgroundPolys[0].v3 = -1;
-	BackgroundPolys[1].x0 = 0x100;
-	BackgroundPolys[1].y0 = 0;
-	BackgroundPolys[1].u0 = '\0';
-	BackgroundPolys[1].v0 = '\x01';
-	BackgroundPolys[1].clut = getClut(960, 256);
-	BackgroundPolys[1].x1 = 0x200;
-	BackgroundPolys[1].y1 = 0;
-	BackgroundPolys[1].u1 = -1;
-	BackgroundPolys[1].v1 = '\x01';
-	BackgroundPolys[1].tpage = getTPage(0, 0, 704, 0);
-	BackgroundPolys[1].x2 = 0x100;
-	BackgroundPolys[1].y2 = 0x100;
-	BackgroundPolys[1].u2 = '\0';
-	BackgroundPolys[1].v2 = -1;
-	BackgroundPolys[1].x3 = 0x200;
-	BackgroundPolys[1].y3 = 0x100;
-	BackgroundPolys[1].u3 = -1;
-	BackgroundPolys[1].v3 = -1;
-	BackgroundPolys[2].x0 = 0x200;
-	BackgroundPolys[2].y0 = 0;
-	BackgroundPolys[2].u0 = '\0';
-	BackgroundPolys[2].v0 = '\x01';
-	BackgroundPolys[2].clut = getClut(960, 256);
-	BackgroundPolys[2].x1 = 0x280;
-	BackgroundPolys[2].y1 = 0;
-	BackgroundPolys[2].u1 = -0x80;
-	BackgroundPolys[2].v1 = '\x01';
-	BackgroundPolys[2].tpage = getTPage(0, 0, 768, 0);
-	BackgroundPolys[2].x2 = 0x200;
-	BackgroundPolys[2].y2 = 0x100;
-	BackgroundPolys[2].u2 = '\0';
-	BackgroundPolys[2].v2 = -1;
-	BackgroundPolys[2].x3 = 0x280;
-	BackgroundPolys[2].y3 = 0x100;
-	BackgroundPolys[2].u3 = -0x80;
-	BackgroundPolys[2].v3 = -1;
-	BackgroundPolys[3].x0 = 0;
-	BackgroundPolys[3].y0 = 0x100;
-	BackgroundPolys[3].u0 = '\0';
-	BackgroundPolys[3].v0 = '\0';
-	BackgroundPolys[3].clut = getClut(960, 256);
-	BackgroundPolys[3].x1 = 0x100;
-	BackgroundPolys[3].y1 = 0x100;
-	BackgroundPolys[3].u1 = -1;
-	BackgroundPolys[3].v1 = '\0';
-	BackgroundPolys[3].tpage = getTPage(0, 0, 832, 0);
-	BackgroundPolys[3].x2 = 0;
-	BackgroundPolys[3].y2 = 0x200;
-	BackgroundPolys[3].u2 = '\0';
-	BackgroundPolys[3].v2 = -1;
-	BackgroundPolys[3].x3 = 0x100;
-	BackgroundPolys[3].y3 = 0x200;
-	BackgroundPolys[3].u3 = -1;
-	BackgroundPolys[3].v3 = -1;
-	BackgroundPolys[4].x0 = 0x100;
-	BackgroundPolys[4].y0 = 0x100;
-	BackgroundPolys[4].u0 = '\0';
-	BackgroundPolys[4].v0 = '\0';
-	BackgroundPolys[4].clut = getClut(960, 256);
-	BackgroundPolys[4].x1 = 0x200;
-	BackgroundPolys[4].y1 = 0x100;
-	BackgroundPolys[4].u1 = -1;
-	BackgroundPolys[4].v1 = '\0';
-	BackgroundPolys[4].tpage = getTPage(0, 0, 896, 0);
-	BackgroundPolys[4].x2 = 0x100;
-	BackgroundPolys[4].y2 = 0x200;
-	BackgroundPolys[4].u2 = '\0';
-	BackgroundPolys[4].v2 = -1;
-	BackgroundPolys[4].x3 = 0x200;
-	BackgroundPolys[4].y3 = 0x200;
-	BackgroundPolys[4].u3 = -1;
-	BackgroundPolys[4].v3 = -1;
-	BackgroundPolys[5].x0 = 0x200;
-	BackgroundPolys[5].y0 = 0x100;
-	BackgroundPolys[5].u0 = '\0';
-	BackgroundPolys[5].v0 = '\0';
-	BackgroundPolys[5].clut = getClut(960, 256);
-	BackgroundPolys[5].x1 = 0x280;
-	BackgroundPolys[5].y1 = 0x100;
-	BackgroundPolys[5].u1 = -0x80;
-	BackgroundPolys[5].v1 = '\0';
-	BackgroundPolys[5].tpage = getTPage(0, 0, 960, 0);
-	BackgroundPolys[5].x2 = 0x200;
-	BackgroundPolys[5].y2 = 0x200;
-	BackgroundPolys[5].u2 = '\0';
-	BackgroundPolys[5].v2 = -1;
-	BackgroundPolys[5].x3 = 0x280;
-	BackgroundPolys[5].y3 = 0x200;
-	BackgroundPolys[5].u3 = -0x80;
-	BackgroundPolys[5].v3 = -1;
+	poly = &BackgroundPolys[1];
+	setXYWH(poly, 256, 0, 256, 256);
+	setUVWH(poly, 0, 1, 255, 254);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 704, 0);
+
+	poly = &BackgroundPolys[2];
+	setXYWH(poly, 512, 0, 128, 256);
+	setUVWH(poly, 0, 1, 128, 254);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 768, 0);
+
+	poly = &BackgroundPolys[3];
+	setXYWH(poly, 0, 256, 256, 256);
+	setUVWH(poly, 0, 0, 255, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 832, 0);
+
+	poly = &BackgroundPolys[4];
+	setXYWH(poly, 256, 256, 256, 256);
+	setUVWH(poly, 0, 0, 255, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 896, 0);
+
+	poly = &BackgroundPolys[5];
+	setXYWH(poly, 512, 256, 128, 256);
+	setUVWH(poly, 0, 0, 128, 255);
+	setClut(poly, 960, 256);
+	setTPage(poly, 0, 0, 960, 0);
 }
 
 
@@ -791,24 +718,14 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 	setSprt(&HighlightSprt);
 	setRGB0(&HighlightSprt, 128, 128, 128);
-	HighlightSprt.x0 = 0x16c;
-	HighlightSprt.y0 = 0xc6;
-	HighlightSprt.w = 0x100;
-	HighlightSprt.u0 = '\0';
-	HighlightSprt.v0 = '\0';
-	HighlightSprt.h = 0x24;
+	setXY0(&HighlightSprt, 364, 198);
+	setUV0(&HighlightSprt, 0, 0);
+	setWH(&HighlightSprt, 256, 36);
 	setClut(&HighlightSprt, 960, 258);
 
 	setPolyFT4(&HighlightDummy);
-	//HighlightDummy.code = '$';
-	HighlightDummy.x0 = -1;
-	HighlightDummy.y0 = -1;
-	HighlightDummy.x1 = -1;
-	HighlightDummy.y1 = -1;
-	HighlightDummy.x2 = -1;
-	HighlightDummy.y2 = -1;
-	//setTPage(&HighlightDummy, 0,0, 1728, 256); // feels wrong
-	HighlightDummy.tpage = 0x1b;
+	setXY3(&HighlightDummy, -1, -1, -1, -1, -1, -1);
+	setTPage(&HighlightDummy, 0, 0, 704, 256);
 
 	pNewScreen = NULL;
 	pCurrScreen = pScr;
@@ -834,7 +751,6 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 			}
 		}
 	}
-	return;
 }
 
 
@@ -866,39 +782,14 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 
 
-// [D]
+// [D] [A]
 void DrawScreen(PSXSCREEN *pScr)
 {
-	short sVar1;
-	DB *pDVar2;
-	u_long *puVar3;
-	uint uVar4;
-	int local_68;
-	char *string;
-	POLY_FT4 *pPVar5;
-	PSXSCREEN *pPVar6;
-	int iVar7;
-	PSXBUTTON *pPVar8;
-	char *pcVar9;
-	char *pcVar10;
-	char *string_00;
-	char *pcVar11;
-	int local_64;
-	int local_60;
 	char version_info[32];
 	int numBtnsToDraw;
-	int local_34;
-	char *local_30;
 
-	pDVar2 = current;
-	pPVar5 = BackgroundPolys;
-	iVar7 = 5;
-	do {
-		addPrim(&pDVar2->ot[0xb], pPVar5);
-	
-		iVar7 = iVar7 + -1;
-		pPVar5 = pPVar5 + 1;
-	} while (-1 < iVar7);
+	for (int i = 0; i < 6; i++)
+		addPrim(current->ot + 11, &BackgroundPolys[i]);
 
 	if (pScr == NULL) {
 		EndFrame();
@@ -906,94 +797,76 @@ void DrawScreen(PSXSCREEN *pScr)
 	else {
 		GetTimeStamp(version_info);
 
-		if ((bDoingCutSelect == 0) || (0x27 < gFurthestMission)) {
-			uVar4 = (uint)pScr->numButtons;
+		if (bDoingCutSelect && (gFurthestMission < 39)) {
+			// hide the Director's Cut button
+			numBtnsToDraw = pScr->numButtons - 1;
 		}
 		else {
-			uVar4 = (uint)pScr->numButtons - 1;
+			numBtnsToDraw = pScr->numButtons;
 		}
-		iVar7 = 0;
-		if (0 < (int)uVar4) {
-			local_34 = 0;
-			pcVar9 = pScr->buttons[0].Name;
-			pPVar8 = pScr->buttons;
-			pPVar6 = pScr;
-			pcVar10 = pcVar9;
-			string_00 = pcVar9;
-			pcVar11 = pcVar9;
-			local_30 = pcVar9;
-			do {
-				local_68 = *(int *)((int)&pScr->buttons[0].action + local_34) >> 8;
-				if (local_68 != 5) {
-					if (pPVar8 == pCurrButton) {
-						string = pcVar10;
-						if (local_68 == 3) {
-						LAB_FRNT__001c16a8:
-							sVar1 = pPVar6->buttons[0].x;
-							local_68 = 0x20;
-							local_64 = 0x20;
-							local_60 = 0x20;
-						}
-						else {
-							string = pcVar11;
-							if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
-								((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-								((bInCutSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) {
-							LAB_FRNT__001c174c:
-								FEPrintString(string, (int)pPVar6->buttons[0].x * 2 +
-									(int)pPVar6->buttons[0].w,
-									(int)pPVar6->buttons[0].y, 4, 0x7c, 0x6c, 0x28);
-								goto LAB_FRNT__001c17ac;
-							}
-							sVar1 = pPVar6->buttons[0].x;
-							local_68 = 0x80;
-							local_64 = 0x80;
-							local_60 = 0x80;
-							string = pcVar9;
-						}
-						FEPrintString(string, (int)sVar1 * 2 + (int)pPVar6->buttons[0].w,
-							(int)pPVar6->buttons[0].y, 4, local_68, local_64, local_60);
+
+		for (int i = 0; i < numBtnsToDraw; i++)
+		{
+			PSXBUTTON *button = &pScr->buttons[i];
+			int status = button->action >> 8;
+
+			if (status != 5)
+			{
+				if (button == pCurrButton)
+				{
+					if (status == 3)
+					{
+						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
 					}
-					else {
-						if (local_68 == 3) {
-							string = pPVar8->Name;
-							goto LAB_FRNT__001c16a8;
+					else
+					{
+						if ((bMissionSelect && ((i == 0) || (i == 5))) ||
+							((bDoingCarSelect && ((i == 0) || (i == 2)))) ||
+							((bInCutSelect && ((i == 0) || (i == 2)))))
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
 						}
-						string = local_30;
-						if ((((bMissionSelect != 0) && ((iVar7 == 0 || (iVar7 == 5)))) ||
-							((bDoingCarSelect != 0 && ((iVar7 == 0 || (iVar7 == 2)))))) ||
-							((bInCutSelect != 0 && ((iVar7 == 0 || (iVar7 == 2))))))
-							goto LAB_FRNT__001c174c;
-						FEPrintString(string_00,
-							(int)pPVar6->buttons[0].x * 2 + (int)pPVar6->buttons[0].w,
-							(int)pPVar6->buttons[0].y, 4, 0x80, 0x80, 0x80);
+						else
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+						}
 					}
 				}
-			LAB_FRNT__001c17ac:
-				pPVar6 = (PSXSCREEN *)(pPVar6->buttons[0].Name + 0x1c);
-				string_00 = string_00 + 0x3c;
-				pcVar9 = pcVar9 + 0x3c;
-				pcVar11 = pcVar11 + 0x3c;
-				pcVar10 = pcVar10 + 0x3c;
-				pPVar8 = pPVar8 + 1;
-				iVar7 = iVar7 + 1;
-				local_34 = local_34 + 0x3c;
-				local_30 = local_30 + 0x3c;
-			} while (iVar7 < (int)uVar4);
+				else
+				{
+					if (status == 3)
+					{
+						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
+					}
+					else
+					{
+						if ((bMissionSelect && ((i == 0) || (i == 5))) ||
+							((bDoingCarSelect && ((i == 0) || (i == 2)))) ||
+							((bInCutSelect && ((i == 0) || (i == 2)))))
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
+						}
+						else
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+						}
+					}
+				}
+			}
+		}
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-			FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
-			FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
+		FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
+		FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
 #endif
-		}
-		SetTextColour(0x80, 0, 0);
+
+		SetTextColour(128, 0, 0);
 
 		DisplayOnScreenText();
-		pDVar2 = current;
-
-		if (bDrawExtra != 0) {
-			addPrim(current->ot + 2, &extraSprt);
-			addPrim(current->ot + 3, &extraDummy);
+		
+		if (bDrawExtra) {
+			addPrim(&current->ot[2], &extraSprt);
+			addPrim(&current->ot[3], &extraDummy);
 		}
 	}
 }
@@ -1067,48 +940,46 @@ char cutUnlock[] = {
 
 char* NullStr = "\0";
 
-// [D]
+// [D] [A]
 void DisplayOnScreenText(void)
 {
-	uint transparent;
-	char *__src;
-	int iVar1;
-	char **ppcVar2;
+	char *text;
 
 	sprintf(ScreenTitle, NullStr);
+
 	if (padsConnected[0] == 0) {
-		transparent = (uint)Pads[0].type;
-		if (Pads[0].type == '\0') {
-			__src = "Please insert controller into Port 1";
-				transparent = 1;
+		int transparent = 0;
+
+		if (Pads[0].type == 0) {
+			text = "Please insert controller into Port 1";
+			transparent = 1;
 		}
 		else {
-			if (Pads[0].type != '\x01') {
+			if (Pads[0].type != 1)
 				return;
-			}
-			__src = "Incompatible controller in Port 1";
+
+			text = "Incompatible controller in Port 1";
 		}
-		FEPrintStringSized(__src, 0x28, 400, 0xc00, transparent, 0x40, 0x40, 0x40);
+
+		FEPrintStringSized(text, 40, 400, 0xc00, transparent, 64, 64, 64);
 	}
 	else {
-		if ((bDoingScores == 0) && (iVar1 = 0, bDoingCarSelect == 0)) {
-			if (0 < ScreenDepth) {
-				ppcVar2 = ScreenNames;
-				do {
-					if (0 < iVar1) {
-						strcat(ScreenTitle, (char *)" - ");
-					}
-					__src = *ppcVar2;
-					ppcVar2 = ppcVar2 + 1;
-					strcat(ScreenTitle, __src);
-					iVar1 = iVar1 + 1;
-				} while (iVar1 < ScreenDepth);
+		if (!bDoingScores && !bDoingCarSelect) {
+			for (int i = 0; i < ScreenDepth; i++)
+			{
+				if (i > 0)
+					strcat(ScreenTitle, " - ");
+
+				strcat(ScreenTitle, ScreenNames[i]);
 			}
-			FEPrintStringSized(ScreenTitle, 0x28, 400, 0xc00, 1, 0x40, 0x40, 0x40);
+
+			FEPrintStringSized(ScreenTitle, 40, 400, 0xc00, 1, 64, 64, 64);
 		}
-		if (bInCutSelect != 0) {
-			FEPrintStringSized(CutSceneNames[cutSelection + CutAmountsTotal[currCity]], 100, 0xe2,
-				0xc00, 1, 0x60, 0x60, 0x60);
+
+		if (bInCutSelect) {
+			text = CutSceneNames[cutSelection + CutAmountsTotal[currCity]];
+
+			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
 		}
 	}
 }
@@ -1143,30 +1014,20 @@ void DisplayOnScreenText(void)
 	/* end block 4 */
 	// End Line: 3997
 
-// [D]
+// [D] [A]
 void SetupExtraPoly(char *fileName, int offset, int offset2)
 {
-	int iVar1;
-	int iVar2;
-	char **ppuVar3;
-	RECT16 rect;
+	RECT16 rect = extraRect;
 
-	rect = extraRect;
 	FEDrawCDicon();
 	Loadfile(fileName, _frontend_buffer + offset2);
+
 	setSprt(&extraSprt);
-	//extraSprt.tag._3_1_ = 4;
-	//extraSprt.code = 'd';
-	extraSprt.x0 = 100;
-	extraSprt.w = 255;
-	extraSprt.y0 = 226;
-	extraSprt.r0 = 128;
-	extraSprt.g0 = 128;
-	extraSprt.b0 = 128;
-	extraSprt.u0 = '\0';
-	extraSprt.v0 = '\0';
-	extraSprt.h = 219;
-	extraSprt.clut = 0x403c;
+	setXY0(&extraSprt, 100, 226);
+	setRGB0(&extraSprt, 128, 128, 128);
+	setUV0(&extraSprt, 0, 0);
+	setWH(&extraSprt, 255, 219);
+	setClut(&extraSprt, 960, 256);
 
 	rect.x = 896;
 	rect.y = 256;
@@ -1176,43 +1037,34 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
 	DrawSync(0);
 	VSync(0);
+
 	setPolyFT3(&extraDummy);
-	extraDummy.x0 = -1;
-	extraDummy.y0 = -1;
-	extraDummy.x1 = -1;
-	extraDummy.y1 = -1;
-	extraDummy.x2 = -1;
-	extraDummy.y2 = -1;
-	extraDummy.tpage = 0x1e;
+	setXY3(&extraDummy, -1, -1, -1, -1, -1, -1);
+	setTPage(&extraDummy, 0, 0, 896, 256);
+
 	bDrawExtra = 1;
-	iVar1 = strcmp(fileName, "DATA\\CITY.RAW");
-	if (iVar1 == 0) {
+
+	if (strcmp(fileName, "DATA\\CITY.RAW") == 0) {
 		loaded[0] = 1;
 		loaded[1] = -1;
 	}
-	iVar1 = 0;
-	ppuVar3 = gfxNames;
-	do {
-		iVar2 = strcmp(fileName, *ppuVar3);
-		if (iVar2 == 0) {
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (strcmp(fileName, gfxNames[i]) == 0) {
 			loaded[0] = -1;
-			loaded[1] = (char)iVar1;
+			loaded[1] = (char)i;
 			loaded[2] = -1;
 		}
-		iVar1 = iVar1 + 1;
-		ppuVar3 = ppuVar3 + 1;
-	} while (iVar1 < 4);
-	iVar1 = 0;
-	ppuVar3 = cutGfxNames;
-	do {
-		iVar2 = strcmp(fileName, *ppuVar3);
-		if (iVar2 == 0) {
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (strcmp(fileName, cutGfxNames[i]) == 0) {
 			loaded[1] = -1;
-			loaded[2] = (char)iVar1;
+			loaded[2] = (char)i;
 		}
-		iVar1 = iVar1 + 1;
-		ppuVar3 = ppuVar3 + 1;
-	} while (iVar1 < 4);
+	}
 }
 
 
@@ -1275,13 +1127,10 @@ void ReInitScreens(void)
 	missionSetup = 0;
 #endif // !PSX
 
-	if (bCdIconSetup == 0) {
+	if (!bCdIconSetup)
 		FEInitCdIcon();
-	}
-	if (bReturnToMain == 0) {
-		bReturnToMain = 1;
-	}
-	else {
+
+	if (bReturnToMain) {
 		ScreenDepth = 0;
 		NumPlayers = 1;
 		gWantNight = 0;
@@ -1294,12 +1143,16 @@ void ReInitScreens(void)
 		feVariableSave[1] = -1;
 		feVariableSave[0] = -1;
 
-		if (mainScreenLoaded == 0) 
+		if (!mainScreenLoaded)
 		{
 			bDrawExtra = 0;
 			LoadBackgroundFile("DATA\\GFX.RAW");
 		}
 	}
+	else {
+		bReturnToMain = 1;
+	}
+
 	pCurrScreen = pScreenStack[ScreenDepth];
 	pNewButton = pButtonStack[ScreenDepth];
 
@@ -1307,8 +1160,6 @@ void ReInitScreens(void)
 	SetupBackgroundPolys();
 
 	idle_timer = VSync(0xffffffff);
-
-	return;
 }
 
 
@@ -1344,92 +1195,80 @@ RECT16 storeRect = { 768, 475, 255, 36 };
 // [D]
 void NewSelection(short dir)
 {
-	PSXBUTTON *pPVar2;
-	PSXBUTTON *pPVar3;
-	uint uVar4;
+	PSXBUTTON *pNewB;
 	RECT16 rect;
 
-	pPVar2 = pCurrButton;
-	uVar4 = dir;// >> 10; //SEXT24(dir);
-	if (pCurrScreen->numButtons == 0) {
+	if (pCurrScreen->numButtons == 0) 
+	{
+#ifndef PSX
+		EndFrame(); //do not overflow draw buffers
+#endif
 		return;
 	}
-	if (uVar4 != 0) {
+
+	pNewB = pCurrButton;
+
+	// any buttons pressed?
+	if (dir != 0) {
 		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
 		addPrim(current->ot+9, &In);
 	}
-	pPVar3 = pPVar2;
-	if ((uVar4 & 0x1000) == 0)
+
+	int btn = 0;
+
+	if ((dir & 0x1000) != 0)
 	{
-		if ((uVar4 & 0x4000) == 0) 
-		{
-			if ((uVar4 & 0x8000) == 0) 
-			{
-				pPVar3 = pCurrButton;
-				if (((uVar4 & 0x2000) == 0) || (pPVar3 = pPVar2, pCurrButton->r == '\0'))
-					goto LAB_FRNT__001c1ff4;
-				FESound(3);
-				uVar4 = (uint)pCurrButton->r;
-			}
-			else 
-			{
-				if (pCurrButton->l == 0) 
-					goto LAB_FRNT__001c1ff4;
-
-				FESound(3);
-				uVar4 = (uint)pCurrButton->l;
-			}
-		}
-		else
-		{
-			if (pCurrButton->d == 0) goto LAB_FRNT__001c1ff4;
-			FESound(3);
-			uVar4 = (uint)pCurrButton->d;
-		}
+		btn = pCurrButton->u;
 	}
-	else {
-		if (pCurrButton->u == 0) goto LAB_FRNT__001c1ff4;
+	else if ((dir & 0x4000) != 0)
+	{
+		btn = pCurrButton->d;
+	}
+	else if ((dir & 0x8000) != 0)
+	{
+		btn = pCurrButton->l;
+	}
+	else if ((dir & 0x2000) != 0)
+	{
+		btn = pCurrButton->r;
+	}
+
+	if (btn != 0)
+	{
 		FESound(3);
-		uVar4 = (uint)pCurrButton->u;
+		pNewB = &pCurrScreen->buttons[btn - 1];
 	}
-	pPVar3 = (PSXBUTTON *)&pCurrScreen[-1].buttons[uVar4 + 7].w;
-LAB_FRNT__001c1ff4:
-	rect.x = pPVar3->s_x;
-	rect.y = pPVar3->s_y;
-	rect.w = 0xff;
-	rect.h = 0x24;
-	SetDrawMove(&Out, &rect, (int)storeRect.x, (int)storeRect.y);
 
-	addPrim(current->ot+8, &Out);
+	rect.x = pNewB->s_x;
+	rect.y = pNewB->s_y;
+	rect.w = 255;
+	rect.h = 36;
 
-	HighlightSprt.x0 = pPVar3->s_x;
-	HighlightSprt.y0 = pPVar3->s_y;
+	SetDrawMove(&Out, &rect, storeRect.x, storeRect.y);
+	addPrim(current->ot + 8, &Out);
 
-	addPrim(current->ot+6, &HighlightSprt);
-	pCurrButton = pPVar3;
-
+	setXY0(&HighlightSprt, rect.x, rect.y);
+	
+	addPrim(current->ot + 6, &HighlightSprt);
 	addPrim(current->ot + 7, &HighlightDummy);
 
-	if (pPVar3->action >> 8 == 3) {
-		FEPrintString(pPVar3->Name, (int)pPVar3->x * 2 + (int)pPVar3->w, (int)pPVar3->y, 4, 0x20, 0x20,
-			0x20);
+	pCurrButton = pNewB;
+
+	if ((pNewB->action >> 8) == 3) {
+		FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 32, 32, 32);
 	}
 	else {
-		if ((((bDoingCarSelect == 0) ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))) &&
-			((bMissionSelect == 0 ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 5)))))) &&
-			((bInCutSelect == 0 ||
-			((pPVar3 != pCurrScreen->buttons && (pPVar3 != pCurrScreen->buttons + 2)))))) 
+		if ((bMissionSelect && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[5]))) ||
+			((bDoingCarSelect && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[2])))) ||
+			((bInCutSelect && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[2])))))
 		{
-			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
-				(int)pCurrButton->y, 4, 0x80, 0x80, 0x80);
+			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 124, 108, 40);
 		}
 		else {
-			FEPrintString(pCurrButton->Name, (int)pCurrButton->x * 2 + (int)pCurrButton->w,
-				(int)pCurrButton->y, 4, 0x7c, 0x6c, 0x28);
+			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 128, 128, 128);
 		}
 	}
+
 	EndFrame();
 }
 
@@ -1485,48 +1324,24 @@ int HandleKeyPress(void)
 	if ((pCurrScreen == NULL) || (pCurrButton == NULL))
 		return 0;
 
-	if (pCurrScreen->userFunctionNum != 0) {
-		if ((fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0) != 0)
-			fePad = 0;
-	}
-
-	if ((fePad & 0x40U) == 0)
+	if (pCurrScreen->userFunctionNum != 0)
 	{
-		if ((fePad & 0x10U) == 0) 
+		// notify the user function first
+		if ((fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0) != 0)
 		{
-			if ((fePad & 0x5000U) == 0 && (fePad & 0x8000U) == 0 && (fePad & 0x2000U) == 0) 
-			{
-				return 1;
-			}
-			NewSelection(fePad);
-		}
-		else if (ScreenDepth > 0)
-		{
-
-			if (bDoneAllready == 0)
-				FESound(0);
-			else
-				bDoneAllready = 0;
-
-			ScreenDepth--;
-			if (ScreenDepth == 0) 
-			{
-				gWantNight = 0;
-				gSubGameNumber = 0;
-				NumPlayers = 1;
-			}
-			pNewScreen = pScreenStack[ScreenDepth];
-			pNewButton = pButtonStack[ScreenDepth];
+			// user function handled the key press
+			fePad = 0;
 		}
 	}
-	else 
+
+	if ((fePad & 0x40) != 0)
 	{
 		int action = pCurrButton->action >> 8;
 
 		if (action != 3)
 		{
 			FESound(2);
-			
+
 			if (pCurrButton->var != -1)
 				SetVariable(pCurrButton->var);
 
@@ -1538,18 +1353,19 @@ int HandleKeyPress(void)
 
 				ScreenNames[ScreenDepth] = pCurrButton->Name;
 
-				action = (ScreenDepth < 11) ? ScreenDepth + 1 : 10;
-
 				pNewScreen = &PsxScreens[pCurrButton->action & 0xFF];
-				ScreenDepth = action;
+
+				if (ScreenDepth < 10)
+					ScreenDepth++;
+
 				break;
 			case 2:
-				if (NumPlayers == 2 && bDoingCarSelect != 0 && currPlayer == 2)
+				if ((NumPlayers == 2) && (bDoingCarSelect != 0) && (currPlayer == 2))
 				{
 					(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(1);
 					bRedrawFrontend = 1;
 				}
-				else 
+				else
 				{
 					pScreenStack[ScreenDepth] = pCurrScreen;
 					pButtonStack[ScreenDepth] = pCurrButton;
@@ -1562,9 +1378,7 @@ int HandleKeyPress(void)
 			case 4:
 				if (ScreenDepth > 0)
 				{
-					ScreenDepth--;
-
-					if (ScreenDepth == 0)
+					if (--ScreenDepth == 0)
 						NumPlayers = 1;
 
 					pNewScreen = pScreenStack[ScreenDepth];
@@ -1574,7 +1388,44 @@ int HandleKeyPress(void)
 			}
 		}
 	}
+	else if ((fePad & 0x10) != 0)
+	{
+		if (ScreenDepth > 0)
+		{
+			if (!bDoneAllready) {
+				FESound(0);
+			}
+			else {
+				bDoneAllready = 0;
+			}
+
+			if (--ScreenDepth == 0)
+			{
+				gWantNight = 0;
+				gSubGameNumber = 0;
+				NumPlayers = 1;
+			}
+
+			pNewScreen = pScreenStack[ScreenDepth];
+			pNewButton = pButtonStack[ScreenDepth];
+		}
+	}
+	else
+	{
+		// any d-pad buttons pressed?
+		if ((fePad & (0x8000 | 0x4000 | 0x2000 | 0x1000)) != 0)
+		{
+			NewSelection(fePad);
+		}
+		else
+		{
+			// button pressed, but we didn't handle it
+			return 1;
+		}
+	}
+
 	idle_timer = VSync(-1);
+
 	return 1;
 }
 
@@ -1724,95 +1575,121 @@ void PadChecks(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void DoFrontEnd(void)
 {
-	UNIMPLEMENTED();
-	int iVar1;
-
 	FEInitCdIcon();
 
 	ResetGraph(1);
 	SetDispMask(0);
+
 	//PadChecks();		// [A] there is a BUG
+
 	bRedrawFrontend = 0;
 	gInFrontend = 1;
-	idle_timer = VSync(0xffffffff);
+
+	idle_timer = VSync(-1);
+
 	LoadFrontendScreens();
+
 	pCurrScreen = PsxScreens;
 	pCurrButton = PsxScreens[0].buttons;
+
 	SetupBackgroundPolys();
 	SetupScreenSprts(pCurrScreen);
+
 	SetDispMask(0);
 	ResetGraph(0);
+
 	SetFEDrawMode();
+
 	SetVideoMode(video_mode);
 	EnableDisplay();
+
 	DrawScreen(pCurrScreen);
 	EndFrame();
+
 	NewSelection(0);
+
 	EndFrame();
 	EndFrame();
 	EndFrame();
 	EndFrame();
 	EndFrame();
 	EndFrame();
+
 	SetDispMask(1);
 	
-	do {
+	do
+	{
 		PadChecks();
+
 		if (currPlayer == 2) {
 			if (Pads[1].type < 2) {
-				if ((fePad & 0x10U) == 0) {
-					fePad = 0;
-				}
-				else {
-					fePad = 0x10;
-				}
+				fePad = ((fePad & 0x10) != 0) ? 0x10 : 0;
 			}
 			else {
 				fePad = Pads[1].mapnew;
 			}
 		}
-		iVar1 = HandleKeyPress();
-		if ((iVar1 != 0) && (pNewScreen != NULL)) {
-			SetupScreenSprts(pNewScreen);
-			DrawScreen(pCurrScreen);
-			EndFrame();
-			NewSelection(0);
-		}
-		if (bRedrawFrontend != 0) {
-			DrawScreen(pCurrScreen);
-			EndFrame();
-			NewSelection(0);
-			bRedrawFrontend = 0;
-		}
 
-		iVar1 = VSync(0xffffffff);
-		if (0x708 < iVar1 - idle_timer) {
-			if (ScreenDepth == 0) {
-				GameType = GAME_IDLEDEMO;
-				gCurrentMissionNumber = gIdleReplay + 400;
-				gIdleReplay = gIdleReplay + 1;
-				if (gIdleReplay == 4) {
-					gIdleReplay = 0;
-				}
-				pScreenStack[0] = pCurrScreen;
-				pButtonStack[0] = pCurrButton;
-				ScreenNames[0] = pCurrButton->Name;
-				GameStart();
-				pCurrScreen = pScreenStack[ScreenDepth];
+		if (HandleKeyPress())
+		{
+			if (pNewScreen != NULL)
+			{
+				SetupScreenSprts(pNewScreen);
 				bRedrawFrontend = 1;
-				ScreenDepth = 0;
 			}
-			idle_timer = VSync(0xffffffff);
 		}
 
 #ifndef PSX
-		// [A] Always redraw frontend
+		if (bRedrawFrontend)
+		{
+			// flush the old screen
+			EndFrame();
+
+			bRedrawFrontend = 0;
+		}
+
 		DrawScreen(pCurrScreen);
 		NewSelection(0);
+#else
+		if (bRedrawFrontend)
+		{
+			DrawScreen(pCurrScreen);
+			EndFrame();
+
+			NewSelection(0);
+
+			bRedrawFrontend = 0;
+		}
 #endif
+
+		if ((VSync(-1) - idle_timer) > 1800)
+		{
+			if (ScreenDepth == 0)
+			{
+				GameType = GAME_IDLEDEMO;
+
+				gCurrentMissionNumber = gIdleReplay + 400;
+				
+				if (++gIdleReplay == 4)
+					gIdleReplay = 0;
+
+				pScreenStack[0] = pCurrScreen;
+				pButtonStack[0] = pCurrButton;
+				ScreenNames[0] = pCurrButton->Name;
+
+				GameStart();
+
+				pCurrScreen = pScreenStack[0];
+
+				bRedrawFrontend = 1;
+				ScreenDepth = 0; // fail-safe?
+			}
+
+			idle_timer = VSync(-1);
+		}
 	} while (true);
 }
 
@@ -1933,9 +1810,7 @@ void SetFEDrawMode(void)
 // [D]
 void EndFrame(void)
 {
-	char **ppcVar1;
-	DB *pDVar2;
-	DB *pDVar3;
+	DB *db_hold;
 
 	DrawSync(0);
 	VSync(0);
@@ -1943,15 +1818,14 @@ void EndFrame(void)
 	PutDispEnv(&current->disp);
 	PutDrawEnv(&current->draw);
 
-	pDVar3 = last;
-	pDVar2 = current;
-	ppcVar1 = &last->primtab;
+	db_hold = current;
 	current = last;
-	last = pDVar2;
-	pDVar3->primptr = *ppcVar1;
 
-	DrawOTag((u_long*)(pDVar2->ot + 0x10));
-	ClearOTagR((u_long*)(current->ot), 0x10);
+	last->primptr = last->primtab;
+	last = db_hold;
+
+	DrawOTag((u_long*)&db_hold->ot[16]);
+	ClearOTagR((u_long*)current->ot, 16);
 	VSync(0);
 
 #ifndef PSX
@@ -2017,99 +1891,84 @@ void EndFrame(void)
 // [D]
 int FEPrintString(char *string, int x, int y, int justification, int r, int g, int b)
 {
-	char bVar1;
-	char bVar2;
-	unsigned char uVar3;
-	int iVar5;
-	uint uVar6;
-	uint uVar7;
-	ulong *puVar8;
-	char *pbVar9;
-	SPRT *font;
-	POLY_FT3* null;
-	char *pbVar10;
-	int iVar11;
+	if ((current == NULL) || (string == NULL))
+		return -1;
 
-	iVar11 = 0;
-	iVar5 = -1;
-	if (current != NULL) {
-		font = (SPRT *)current->primptr;
-		bVar1 = *string;
-		uVar7 = (uint)bVar1;
-		pbVar10 = (char *)(string + 1);
-		iVar5 = x;
-		if ((justification & 4U) != 0) {
-			iVar5 = 0;
-			uVar6 = uVar7;
-			pbVar9 = pbVar10;
-			bVar2 = bVar1;
-			while (bVar2 != 0) {
-				if (uVar6 == 0x20) {
-					iVar5 = iVar5 + 4;
-				}
-				else {
-					iVar5 = iVar5 + (uint)feFont.CharInfo[uVar6].w;
-				}
-				bVar2 = *pbVar9;
-				uVar6 = (uint)bVar2;
-				pbVar9 = pbVar9 + 1;
+	FE_CHARDATA *pFontInfo;
+	SPRT *font;
+	char let;
+
+	font = (SPRT *)current->primptr;
+	
+	if ((justification & 4) != 0)
+	{
+		char *pString = string;
+		char c = 0;
+
+		int w = 0;
+
+		while ((c = *pString++) != 0) {
+			if (c == ' ') {
+				w += 4;
 			}
-			iVar5 = x - iVar5;
+			else {
+				w += feFont.CharInfo[c].w;
+			}
 		}
-		if ((bVar1 != 0) && (true)) {
-			do {
-				if (uVar7 == 0x20) {
-					iVar5 = iVar5 + 4;
-				}
-				else {
-					bVar1 = feFont.CharInfo[uVar7].w;
-					setSprt(font);
-					//font->code = 'f';
+
+		x -= w;
+	}
+
+	int counter = 0;
+
+	while ((let = *string++) != 0)
+	{
+		if (let == ' ')
+		{
+			x += 4;
+		}
+		else
+		{
+			pFontInfo = &feFont.CharInfo[let];
+
+			setSprt(font);
 #ifdef PSX
-					setSemiTrans(font, 1);
+			setSemiTrans(font, 1);
 #endif
 
-					//font->tpage = 0x1a;	// [A]
+			setRGB0(font, r, g, b);
+			setXY0(font, x, y);
+			setUV0(font, pFontInfo->u, pFontInfo->v);
+			setWH(font, pFontInfo->w, pFontInfo->h);
+			// setTPage(font, 0, 0, 640, 256); // [A]
+			setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
 
-					font->r0 = (unsigned char)r;
-					font->g0 = (unsigned char)g;
-					font->b0 = (unsigned char)b;
-					font->x0 = (short)iVar5;
-					font->y0 = (short)y;
-					font->u0 = feFont.CharInfo[uVar7].u;
-					uVar3 = feFont.CharInfo[uVar7].v;
-					font->w = (ushort)bVar1;
-					font->v0 = uVar3;
-					bVar2 = feFont.CharInfo[uVar7].h;
-					iVar5 = iVar5 + (uint)bVar1;
-					font->clut = 0x407c;
-					font->h = (ushort)bVar2;
-					addPrim(current->ot+1, font);
-					font++;
-				}
-				iVar11 = iVar11 + 1;
-				bVar1 = *pbVar10;
-				uVar7 = (uint)bVar1;
-				pbVar10 = pbVar10 + 1;
-			} while ((bVar1 != 0) && (iVar11 < 0x20));
+			addPrim(&current->ot[1], font);
+			font++;
+
+			// add space for next character
+			x += pFontInfo->w;
 		}
-		current->primptr = (char*)font;
 
-		null = (POLY_FT3*)current->primptr;
-		setPolyFT3(null);
-		setSemiTrans(null, 1);
-		null->x0 = -1;
-		null->y0 = -1;
-		null->x1 = -1;
-		null->y1 = -1;
-		null->x2 = -1;
-		null->y2 = -1;
-		null->tpage = 0x1a;
-
-		addPrim(current->ot + 1, null);
-		current->primptr += sizeof(POLY_FT3);
+		if (++counter >= 32)
+			break;
 	}
-	return iVar5;
+
+	// set tail
+	current->primptr = (char *)font;
+
+	POLY_FT3 *null = (POLY_FT3 *)current->primptr;
+	setPolyFT3(null);
+	setSemiTrans(null, 1);
+	setXY3(null, -1, -1, -1, -1, -1, -1);
+	setTPage(null, 0, 0, 640, 256);
+
+	addPrim(&current->ot[1], null);
+	null++;
+
+	current->primptr = (char *)null;
+
+	return x;
 }
 
 
@@ -2145,88 +2004,57 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 // [D]
 int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, int r, int g, int b)
 {
-	char bVar1;
-	char bVar2;
-	unsigned char uVar3;
-	short sVar4;
-	DB *pDVar5;
-	unsigned char uVar6;
-	int iVar7;
-	short sVar8;
-	uint uVar9;
-	FE_CHARDATA *pFontInfo;
+	if ((current == NULL) || (string == NULL))
+		return -1;
+
 	POLY_FT4 *font;
-	int iVar10;
+	FE_CHARDATA *pFontInfo;
+	char let;
+	int w;
+	int h;
 
-	iVar7 = -1;
-	if (current != NULL) {
-		bVar1 = *string;
-		font = (POLY_FT4 *)current->primptr;
-		iVar7 = x;
-		while (bVar1 != 0) {
-			bVar1 = *string;
-			uVar9 = (uint)bVar1;
-			string = (char *)(string + 1);
-			iVar10 = iVar7;
-			if (bVar1 != 10) {
-				if (bVar1 == 0x20) {
-					iVar10 = iVar7 + 4;
-				}
-				else {
-					pFontInfo = feFont.CharInfo + uVar9;
-					bVar1 = feFont.CharInfo[uVar9].w;
-					bVar2 = feFont.CharInfo[uVar9].h;
+	font = (POLY_FT4 *)current->primptr;
 
-					setPolyFT4(font);
-					//*(undefined *)((int)&font->tag + 3) = 9;
-					//font->code = ',';
-#ifdef PSX
-					setSemiTrans(font, transparent);
-#endif
-					font->tpage = 0x1a;
-					
-					font->r0 = 128;
-					font->g0 = 128;
-					font->b0 = 128;
-					font->u0 = pFontInfo->u;
-					font->v0 = feFont.CharInfo[uVar9].v;
-					font->u1 = feFont.CharInfo[uVar9].w + pFontInfo->u + -1;
-					font->v1 = feFont.CharInfo[uVar9].v;
-					font->u2 = pFontInfo->u;
-					font->v2 = feFont.CharInfo[uVar9].h + feFont.CharInfo[uVar9].v + -1;
-					font->u3 = feFont.CharInfo[uVar9].w + pFontInfo->u + -1;
-					uVar6 = feFont.CharInfo[uVar9].v;
-					uVar3 = feFont.CharInfo[uVar9].h;
-					iVar10 = iVar7 + ((int)((uint)bVar1 * scale) >> 0xc);
-					sVar4 = (short)y;
-					sVar8 = sVar4 + (short)((int)((uint)bVar2 * scale) >> 0xc);
-					font->x0 = (short)iVar7;
-					font->y0 = sVar4;
-					font->x1 = (short)iVar10;
-					font->y1 = sVar4;
-					font->x2 = (short)iVar7;
-					font->y2 = sVar8;
-					font->x3 = (short)iVar10;
-					font->y3 = sVar8;
-					font->clut = 0x407c;
-					font->r0 = (unsigned char)r;
-					font->v3 = uVar3 + uVar6 + -1;
-					font->g0 = (unsigned char)g;
-					font->b0 = (unsigned char)b;
-					pDVar5 = current;
-					addPrim(current->ot + 1, font);
-					//font->tag = font->tag & 0xff000000 | current->ot[1] & 0xffffff;
-					//uVar9 = (uint)font & 0xffffff;
-					font++;
-					///pDVar5->ot[1] = pDVar5->ot[1] & 0xff000000 | uVar9;
-				}
+	while ((let = *string++) != 0)
+	{
+		if (let != '\n') {
+			if (let == ' ')
+			{
+				// add space
+				x += 4;
 			}
-			bVar1 = *string;
-			iVar7 = iVar10;
+			else
+			{
+				pFontInfo = &feFont.CharInfo[let];
+
+				w = (pFontInfo->w * scale) / 4096;
+				h = (pFontInfo->h * scale) / 4096;
+
+				setPolyFT4(font);
+#ifdef PSX
+				setSemiTrans(font, transparent);
+#endif
+
+				setRGB0(font, 128, 128, 128);
+				setUVWH(font, pFontInfo->u, pFontInfo->v, pFontInfo->w - 1, pFontInfo->h - 1);
+				setXYWH(font, x, y, w, h);
+				setRGB0(font, r, g, b);
+				setTPage(font, 0, 0, 640, 256);
+				setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
+
+				addPrim(&current->ot[1], font);
+				font++;
+
+				// make room for next character
+				x += w;
+			}
 		}
-		*(POLY_FT4 **)&current->primptr = font;
 	}
-	return iVar7;
+
+	// set tail
+	current->primptr = (char *)font;
+
+	return x;
 }
 
 
@@ -2250,81 +2078,93 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 	/* end block 3 */
 	// End Line: 6679
 
+SCREEN_LIMITS screen_limits[2] = {
+	// min(x/y), max(x/y)
+	{ -27,   5, 35, 37 },
+	{ -32, -11, 32, 21 },
+};
+
+int bScreenSetup = 0;
+
+// [D] [A]
 int CentreScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	DB *pDVar1;
-	DB *pDVar2;
-	short sVar3;
-
-	pDVar2 = last;
-	pDVar1 = current;
-	if (bSetup != 0) {
+	if (bSetup)
 		return 0;
+
+#if defined(DEBUG) && !defined(PSX)
+	char text[32];
+
+	sprintf(text, "X1: %d, Y1: %d", current->disp.screen.x, current->disp.screen.y);
+	FEPrintStringSized(text, 25, 50, 0xC00, 0, 128, 0, 0);
+
+	sprintf(text, "X2: %d, Y2: %d", last->disp.screen.x, last->disp.screen.y);
+	FEPrintStringSized(text, 25, 75, 0xC00, 0, 128, 0, 0);
+#endif
+
+	if ((fePad & 0x40) != 0)
+	{
+		draw_mode_pal.framex = current->disp.screen.x >> 1;
+		draw_mode_pal.framey = current->disp.screen.y;
+		draw_mode_ntsc.framex = current->disp.screen.x >> 1;
+		draw_mode_ntsc.framey = current->disp.screen.y;
 	}
-	if (DAT_FRNT__001c6a94 == 0) {
-		DAT_FRNT__001c6a94 = 1;
+	else if ((fePad & 0x10) != 0)
+	{
+		current->disp.screen.x = draw_mode.framex << 1;
+		current->disp.screen.y = draw_mode.framey;
+		last->disp.screen.x = draw_mode.framex << 1;
+		last->disp.screen.y = draw_mode.framey;
 	}
-	if ((uRam001cc5dc & 0x2000) == 0) {
-		if ((uRam001cc5dc & 0x8000) == 0) {
-			if ((uRam001cc5dc & 0x1000) == 0) {
-				if ((uRam001cc5dc & 0x4000) == 0) {
-					if ((uRam001cc5dc & 0x40) != 0) {
-						draw_mode_pal.framex = (current->disp).screen.x >> 1;
-						draw_mode_pal.framey = (current->disp).screen.y;
-						draw_mode_ntsc.framex = (current->disp).screen.x >> 1;
-						draw_mode_ntsc.framey = (current->disp).screen.y;
-						return 0;
-					}
-					if ((uRam001cc5dc & 0x10) == 0) {
-						return 0;
-					}
-					(current->disp).screen.x = draw_mode_pal.framex << 1;
-					(pDVar1->disp).screen.y = draw_mode_pal.framey;
-					pDVar1 = last;
-					(last->disp).screen.x = draw_mode_pal.framex << 1;
-					(pDVar1->disp).screen.y = draw_mode_pal.framey;
-					return 0;
-				}
-				if ((current->disp).screen.y < DAT_FRNT__001c6992) {
-					(current->disp).screen.y = (current->disp).screen.y + 1;
-					sVar3 = (pDVar2->disp).screen.y + 1;
-					goto LAB_FRNT__001c3360;
-				}
-			}
-			else {
-				if (DAT_FRNT__001c698e < (current->disp).screen.y) {
-					(current->disp).screen.y = (current->disp).screen.y + -1;
-					sVar3 = (pDVar2->disp).screen.y + -1;
-				LAB_FRNT__001c3360:
-					(pDVar2->disp).screen.y = sVar3;
-					FESound(3);
-					return 0;
-				}
+	else
+	{
+		bool done = false;
+
+		if ((fePad & 0x1000) != 0)
+		{
+			if (current->disp.screen.y > screen_limits[0].miny)
+			{
+				current->disp.screen.y--;
+				last->disp.screen.y--;
+				done = true;
 			}
 		}
-		else {
-			if (DAT_FRNT__001c698c < (current->disp).screen.x) {
-				(current->disp).screen.x = (current->disp).screen.x + -1;
-				sVar3 = (pDVar2->disp).screen.x + -1;
-				goto LAB_FRNT__001c32c0;
+		else if ((fePad & 0x4000) != 0)
+		{
+			if (current->disp.screen.y < screen_limits[0].maxy)
+			{
+				current->disp.screen.y++;
+				last->disp.screen.y++;
+				done = true;
 			}
 		}
-	}
-	else {
-		if ((current->disp).screen.x < DAT_FRNT__001c6990) {
-			(current->disp).screen.x = (current->disp).screen.x + 1;
-			sVar3 = (pDVar2->disp).screen.x + 1;
-		LAB_FRNT__001c32c0:
-			(pDVar2->disp).screen.x = sVar3;
-			FESound(3);
+		else if ((fePad & 0x8000) != 0)
+		{
+			if (current->disp.screen.x > screen_limits[0].minx) {
+				current->disp.screen.x--;
+				last->disp.screen.x--;
+				done = true;
+			}
+		}
+		else if ((fePad & 0x2000) != 0)
+		{
+			if (current->disp.screen.x < screen_limits[0].maxx)
+			{
+				current->disp.screen.x++;
+				last->disp.screen.x++;
+				done = true;
+			}
+		}
+		else
+		{
+			// unhandled button press
 			return 0;
 		}
+
+		FESound((done) ? 3 : 1);
 	}
-	FESound(1);
-	return 0;*/
+
+	return 0;
 }
 
 
@@ -2411,176 +2251,201 @@ int CentreScreen(int bSetup)
 // [D]
 int CarSelectScreen(int bSetup)
 {
-	char bVar1;
-	DB *pDVar2;
-	int *piVar3;
-	int iVar4;
-	int iVar5;
-	uint *puVar6;
+	int newSel;
 	RECT16 rect;
 
-	iVar5 = carSelection;
+	newSel = carSelection;
 	rect = extraRect;
-	if (bSetup == 0) {
-		if ((fePad & 0x10U) == 0) {
-			if ((fePad & 0x40U) != 0) {
-				if (currSelIndex == 0) {
-					iVar4 = 9;
-					if (carSelection != 0) {
-						iVar4 = carSelection + -1;
-					}
-					while ((carSelection = iVar4,
-						CarAvailability[GameLevel][carSelection] == 0 &&
-						(carSelection != iVar5))) {
-						iVar4 = carSelection + -1;
-						if (carSelection + -1 == -1) {
-							carSelection = 9;
-							iVar4 = carSelection;
-						}
-					}
-				}
-				else {
-					if (currSelIndex != 2) {
-						if (currPlayer == 1) {
-							feVariableSave[0] = carSelection;
-							wantedCar[0] = carNumLookup[GameLevel][carSelection];
-						}
-						else {
-							wantedCar[1] = carNumLookup[GameLevel][carSelection];
-						}
-						if (NumPlayers == 2) {
-							currPlayer = currPlayer + 1;
-							return 0;
-						}
-						return 0;
-					}
-					if (carSelection == 9) {
-						carSelection = 0;
-					}
-					else {
-						carSelection = carSelection + 1;
-					}
-					while ((CarAvailability[GameLevel][carSelection] == 0 &&
-						(iVar4 = carSelection + 1, carSelection != iVar5))) {
-						carSelection = iVar4;
-						if (iVar4 == 10) {
-							carSelection = 0;
-						}
-					}
-				}
-				rect = extraRect;
-				LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
-				DrawSync(0);
-				DisplayOnScreenText();
 
-				pDVar2 = current;
-
-				addPrim(current->ot + 2, &extraSprt);
-				addPrim(current->ot + 3, &extraDummy);
-
-				EndFrame();
-				return 0;
-			}
-			if ((fePad & 0x1000U) == 0) {
-				if ((fePad & 0x4000U) == 0) {
-					return 0;
-				}
-				bVar1 = pCurrButton->d;
-			}
-			else {
-				bVar1 = pCurrButton->u;
-			}
-			currSelIndex = (uint)bVar1 - 1;
-		}
-		else {
-			FESound(0);
-			bDoneAllready = 1;
-			LoadBackgroundFile("DATA\\GFX.RAW");
-			currPlayer = 1;
-			bDrawExtra = 0;
-			bDoingCarSelect = 0;
-		}
-		return 0;
-	}
-
-	bDoingCarSelect = 1;
-
-	if (NumPlayers == 1) 
+	if (bSetup)
 	{
+		bDoingCarSelect = 1;
+
+		// setup secret cars
+		if (NumPlayers == 1)
+		{
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
-		CarAvailability[0][9] = 1;
-		CarAvailability[1][9] = 1;
-		CarAvailability[2][9] = 1;
-		CarAvailability[3][9] = 1;
+			CarAvailability[0][9] = 1;
+			CarAvailability[1][9] = 1;
+			CarAvailability[2][9] = 1;
+			CarAvailability[3][9] = 1;
 #else
-		CarAvailability[0][9] = AvailableCheats.cheat5;
-		CarAvailability[1][9] = AvailableCheats.cheat6;
-		CarAvailability[2][9] = AvailableCheats.cheat7;
-		CarAvailability[3][9] = AvailableCheats.cheat8;
+			CarAvailability[0][9] = AvailableCheats.cheat5;
+			CarAvailability[1][9] = AvailableCheats.cheat6;
+			CarAvailability[2][9] = AvailableCheats.cheat7;
+			CarAvailability[3][9] = AvailableCheats.cheat8;
 #endif
-	}
-
-	if (gFurthestMission == 40 && NumPlayers == 1) 
-	{
-		for (int i = 4; i < 9; i++)
-		{
-			if(i != 8)
-				CarAvailability[0][i] = 1;	// remove truck
-
-			CarAvailability[1][i] = 1;
-			CarAvailability[2][i] = 1;
-			CarAvailability[3][i] = 1;
 		}
-	}
-	else 
-	{
-		for (int i = 4; i < 9; i++)
-		{
-			CarAvailability[0][i] = (i == 4); // [A] make cop car only available
-			CarAvailability[1][i] = (i == 4);
-			CarAvailability[2][i] = (i == 4);
-			CarAvailability[3][i] = (i == 4);
-		}
-	}
 
-	if (currPlayer != 1) {
-		if (NumPlayers == 2) 
+		// setup unlockable cars
+		if (gFurthestMission == 40 && NumPlayers == 1)
 		{
-			FEPrintStringSized("Player 2", 400, 0x104, 0xc00, 0, 0x80, 0x80, 0x80);
+			for (int i = 4; i < 9; i++)
+			{
+				if (i != 8)
+					CarAvailability[0][i] = 1;	// remove truck
+
+				CarAvailability[1][i] = 1;
+				CarAvailability[2][i] = 1;
+				CarAvailability[3][i] = 1;
+			}
+		}
+		else
+		{
+			for (int i = 4; i < 9; i++)
+			{
+				// unlock the cop car only
+				int unlocked = (i == 4) && gFurthestMission == 40;
+
+				CarAvailability[0][i] = unlocked; 
+				CarAvailability[1][i] = unlocked;
+				CarAvailability[2][i] = unlocked;
+				CarAvailability[3][i] = unlocked;
+			}
+		}
+
+		if (currPlayer != 1) {
+			if (NumPlayers == 2)
+				FEPrintStringSized("Player 2", 400, 260, 0xc00, 0, 128, 128, 128);
+
 			return 0;
 		}
-		return 0;
+
+		LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
+
+		if (feVariableSave[0] != -1)
+		{
+			carSelection = feVariableSave[0];
+			SetupExtraPoly(gfxNames[GameLevel], carSelection, 0);
+		}
+		else
+		{
+			carSelection = 0;
+
+			if (loaded[1] == GameLevel)
+			{
+				bDrawExtra = 1;
+
+				LoadImage(&rect, (u_long*)_frontend_buffer);
+				DrawSync(0);
+			}
+			else
+			{
+				SetupExtraPoly(gfxNames[GameLevel], carSelection, 0);
+				lastCity = GameLevel;
+			}
+		}
+
+		feVariableSave[0] = -1;
+		feVariableSave[1] = -1;
+		feVariableSave[2] = -1;
+		feVariableSave[3] = -1;
+
+		lastCutCity = -1;
+		currSelIndex = 1;
+
+		pCurrButton = &pCurrScreen->buttons[1];
+
+		return 1;
 	}
 
-	if (feVariableSave[0] == -1) 
+	if ((fePad & 0x10) != 0)
 	{
-		carSelection = 0;
-		if (loaded[1] == GameLevel)
+		FESound(0);
+		bDoneAllready = 1;
+#ifdef PSX
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		bDrawExtra = 0;
+#else
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (loaded[0] == -1)
 		{
-			bDrawExtra = currPlayer;
-			LoadImage(&rect, (u_long*)_frontend_buffer);
+			SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
 		}
-		else 
+		else
 		{
-			SetupExtraPoly(gfxNames[GameLevel], 0, 0);
-			lastCity = GameLevel;
+			bDrawExtra = 1;
+
+			RECT16 rect = extraRect;
+			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
+			DrawSync(0);
 		}
-	}
-	else 
-	{
-		carSelection = feVariableSave[0];
-		SetupExtraPoly(gfxNames[GameLevel], feVariableSave[0], 0);
+#endif
+		currPlayer = 1;
+		bDoingCarSelect = 0;
 	}
 
-	LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
-	feVariableSave[0] = -1;
-	feVariableSave[1] = -1;
-	feVariableSave[2] = -1;
-	feVariableSave[3] = -1;
-	lastCutCity = -1;
-	currSelIndex = 1;
-	pCurrButton = pCurrScreen->buttons + 1;
-	return 1;
+	else if ((fePad & 0x40) != 0)
+	{
+		if (currSelIndex == 0)
+		{
+			// find best-fit for previous vehicle
+			do
+			{
+				newSel--;
+				if (newSel < 0)
+					newSel = 9;
+
+			} while (CarAvailability[GameLevel][newSel] == 0);
+
+			carSelection = newSel;
+		}
+		else if (currSelIndex == 2)
+		{
+			// find best-fit for next vehicle
+			do
+			{
+				newSel++;
+				if (newSel > 9)
+					newSel = 0;
+
+			} while (CarAvailability[GameLevel][newSel] == 0);
+
+			carSelection = newSel;
+		}
+		else
+		{
+			// select the vehicle
+			if (currPlayer == 1)
+			{
+				feVariableSave[0] = carSelection;
+				wantedCar[0] = carNumLookup[GameLevel][carSelection];
+			}
+			else {
+				wantedCar[1] = carNumLookup[GameLevel][carSelection];
+			}
+
+			// time for player 2 to select their vehicle?
+			if (NumPlayers == 2)
+				currPlayer++;
+
+			return 0;
+		}
+		
+		rect = extraRect;
+		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
+		DrawSync(0);
+
+#ifdef PSX
+		DisplayOnScreenText();
+
+		addPrim(&current->ot[2], &extraSprt);
+		addPrim(&current->ot[3], &extraDummy);
+
+		EndFrame();
+#endif
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
+	}
+
+	return 0;
 }
 
 
@@ -2606,13 +2471,29 @@ int CarSelectScreen(int bSetup)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int CopDiffLevelScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
+	if (bSetup) 
+	{
+		pCurrButton = &pCurrScreen->buttons[gCopDifficultyLevel];
+		return 1;
+	}
 
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
+	if ((fePad & 0x40) != 0)
+	{
+		gCopDifficultyLevel = currSelIndex;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
+	}
+
+	return 0;
 }
 
 
@@ -2638,14 +2519,30 @@ int CopDiffLevelScreen(int bSetup)
 
 /* WARNING: Control flow encountered bad instruction data */
 
+// [D]
 int VibroOnOffScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	if (bSetup) 
+	{
+		currSelIndex = (gVibration ^ 1);
+		pCurrButton = &pCurrScreen->buttons[currSelIndex];
+		return 1;
+	}
 
-	/* WARNING: Bad instruction - Truncating control flow here */
-	//halt_baddata();
+	if ((fePad & 0x40) != 0)
+	{
+		gVibration = (currSelIndex ^ 1);
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
+	}
+
+	return 0;
 }
 
 
@@ -2691,246 +2588,231 @@ int VibroOnOffScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 7792
 
-// [D]
+// [D] [A]
 int MissionSelectScreen(int bSetup)
 {
-	unsigned char bVar1;
-	bool bVar2;
-	bool bVar3;
-	unsigned char uVar4;
-	PSXSCREEN *pPVar5;
-	BOTCH *pBVar6;
-	int iVar7;
-	int iVar8;
+	int i;
 
-	if (bSetup == 0) 
+	if (bSetup) 
 	{
-		if ((fePad & 0x40U) == 0)
+		bMissionSelect = 1;
+
+		if (!missionSetup)
 		{
-			if ((fePad & 0x10U) == 0) 
-			{
-				if ((fePad & 0x1000U) == 0) 
-				{
-					if ((fePad & 0x4000U) == 0) 
-					{
-						return 0;
-					}
-					bVar1 = pCurrButton->d;
-				}
-				else 
-				{
-					bVar1 = pCurrButton->u;
-				}
-				currSelIndex = bVar1 - 1;
-			}
-			else
-			{
-				missionSetup = 0;
-				bMissionSelect = 0;
-			}
+			currMission = minmaxSelections[currCity][0];
+			currSelIndex = 0;
+
+			if (GameType == GAME_REPLAYMISSION)
+				LoadBackgroundFile("DATA\\CITYBACK.RAW");
 		}
-		else 
+
+		if (feVariableSave[0] != -1) {
+			currMission = feVariableSave[0];
+			currSelIndex = feVariableSave[1];
+			currCity = feVariableSave[2];
+		}
+
+		int usedB = 0;
+
+		bool done = false;
+		bool bP = false; // 'Previous' button is visible?
+		bool bN = false; // 'Next' button is visible?
+
+		for (i = 0; (i < 4) && !done; i++)
 		{
-			if (currSelIndex == 5) 
-			{
-				iVar7 = currMission + 4;
-				if ((iVar7 < minmaxSelections[currCity][1]) && (iVar7 < gFurthestMission))
-				{
-				LAB_FRNT__001c41fc:
-					currMission = iVar7;
-					FESound(3);
-					fpUserFunctions[pCurrScreen->userFunctionNum-1](1);
-					bRedrawFrontend = 1;
-					return 1;
-				}
+			if ((botch[currMission + i].missNum > gFurthestMission) ||
+				((currMission + i) > minmaxSelections[currCity][1]) ||
+				((currMission + i) > 36)) {
+				done = true;
 			}
-			else 
-			{
-				if (currSelIndex == 0)
-				{
-					if (minmaxSelections[currCity][0] < currMission)
-					{
-						iVar7 = currMission + -4;
-						goto LAB_FRNT__001c41fc;
-					}
-				}
-				else
-				{
-					bReturnToMain = 0;
-					GameType = GAME_REPLAYMISSION;
-					feVariableSave[1] = currSelIndex;
-					feVariableSave[0] = currMission;
-					feVariableSave[2] = currCity;
-					gCurrentMissionNumber = botch[currMission + currSelIndex + -1].missNum;
-				}
+			else {
+				usedB++;
 			}
 		}
-		return 0;
-	}
 
-	bMissionSelect = 1;
-	if (missionSetup == 0)
-	{
-		currMission = minmaxSelections[currCity][0];
-		currSelIndex = 0;
-
-		if (GameType == GAME_REPLAYMISSION) 
+		switch (usedB)
 		{
-			LoadBackgroundFile("DATA\\CITYBACK.RAW");
-		}
-	}
-
-	pPVar5 = pCurrScreen;
-	if (feVariableSave[0] != -1) {
-		currMission = feVariableSave[0];
-		currSelIndex = feVariableSave[1];
-		currCity = feVariableSave[2];
-	}
-	iVar8 = 0;
-	bVar2 = false;
-	bVar3 = false;
-	iVar7 = 0;
-	pBVar6 = botch + currMission;
-	do {
-		if (((gFurthestMission < pBVar6->missNum) ||
-			(minmaxSelections[currCity][1] < iVar7 + currMission)) ||
-			(0x24 < iVar7 + currMission)) {
-			bVar2 = true;
-		}
-		else {
-			iVar8 = iVar8 + 1;
-		}
-		iVar7 = iVar7 + 1;
-		pBVar6 = pBVar6 + 1;
-	} while ((iVar7 < 4) && (!bVar2));
-	uVar4 = iVar8;
-	if (iVar8 == 1) 
-	{
-		pCurrScreen->buttons[1].d = '\x02';
-		pPVar5->buttons[1].u = '\x02';
-		sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-		sprintf(pCurrScreen->buttons[2].Name, NullStr);
-		sprintf(pCurrScreen->buttons[3].Name, NullStr);
-	LAB_FRNT__001c3e3c:
-		sprintf(pCurrScreen->buttons[4].Name, NullStr);
-	}
-	else 
-	{
-		if (iVar8 == 2)
-		{
-			pCurrScreen->buttons[1].u = '\x03';
-			pCurrScreen->buttons[1].d = '\x03';
-			pCurrScreen->buttons[2].u = uVar4;
-			pCurrScreen->buttons[2].d = uVar4;
+		case 1:
+			pCurrScreen->buttons[1].u = 2;
+			pCurrScreen->buttons[1].d = 2;
+			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[2].Name, NullStr);
+			sprintf(pCurrScreen->buttons[3].Name, NullStr);
+			sprintf(pCurrScreen->buttons[4].Name, NullStr);
+			break;
+		case 2:
+			pCurrScreen->buttons[1].u = 3;
+			pCurrScreen->buttons[1].d = 3;
+			pCurrScreen->buttons[2].u = 2;
+			pCurrScreen->buttons[2].d = 2;
 			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
 			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
 			sprintf(pCurrScreen->buttons[3].Name, NullStr);
-			goto LAB_FRNT__001c3e3c;
-		}
-		if (iVar8 == 3)
-		{
-			pCurrScreen->buttons[1].u = '\x04';
-			pCurrScreen->buttons[1].d = uVar4;
-			pCurrScreen->buttons[2].u = '\x02';
-			pCurrScreen->buttons[2].d = '\x04';
-			pCurrScreen->buttons[3].u = uVar4;
-			pCurrScreen->buttons[3].d = '\x02';
+			sprintf(pCurrScreen->buttons[4].Name, NullStr);
+			break;
+		case 3:
+			pCurrScreen->buttons[1].u = 4;
+			pCurrScreen->buttons[1].d = 3;
+			pCurrScreen->buttons[2].u = 2;
+			pCurrScreen->buttons[2].d = 4;
+			pCurrScreen->buttons[3].u = 3;
+			pCurrScreen->buttons[3].d = 2;
 			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
 			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
 			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
-			goto LAB_FRNT__001c3e3c;
-		}
-		if (iVar8 == 4)
-		{
-			pCurrScreen->buttons[1].u = '\x05';
-			pCurrScreen->buttons[1].d = '\x03';
-			pCurrScreen->buttons[2].u = '\x02';
-			pCurrScreen->buttons[2].d = uVar4;
-			pCurrScreen->buttons[3].u = '\x03';
-			pCurrScreen->buttons[3].d = '\x05';
-			pCurrScreen->buttons[4].u = uVar4;
-			pCurrScreen->buttons[4].d = '\x02';
+			sprintf(pCurrScreen->buttons[4].Name, NullStr);
+			break;
+		case 4:
+			pCurrScreen->buttons[1].u = 5;
+			pCurrScreen->buttons[1].d = 3;
+			pCurrScreen->buttons[2].u = 2;
+			pCurrScreen->buttons[2].d = 4;
+			pCurrScreen->buttons[3].u = 3;
+			pCurrScreen->buttons[3].d = 5;
+			pCurrScreen->buttons[4].u = 4;
+			pCurrScreen->buttons[4].d = 2;
 			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
 			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
 			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
 			sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
+			break;
 		}
-	}
 
-	pPVar5 = pCurrScreen;
-
-	if (((iVar8 == 4) && (botch[currMission + 4].missNum <= gFurthestMission)) && (currMission + 4 != minmaxSelections[currCity][1])) 
-	{
-		bVar3 = true;
-	}
-
-	if (bVar3) 
-	{
-		if (currMission == minmaxSelections[currCity][0]) 
+		if ((usedB == 4) &&
+			(botch[currMission + 4].missNum <= gFurthestMission) &&
+			((currMission + 4) != minmaxSelections[currCity][1]))
 		{
-		LAB_FRNT__001c406c:
-			if (bVar3) 
+			bN = true;
+		}
+
+		if (bN)
+		{
+			if (currMission != minmaxSelections[currCity][0])
 			{
-				pCurrScreen->buttons[1].u = '\x06';
-				pCurrScreen->buttons[4].d = '\x06';
-				pCurrScreen->buttons[5].u = '\x05';
-				pCurrScreen->buttons[5].d = '\x02';
-				pPVar5 = pCurrScreen;
+				bP = true;
+
+				pCurrScreen->buttons[0].u = 6;
+				pCurrScreen->buttons[0].d = 2;
+				pCurrScreen->buttons[5].u = 5;
+				pCurrScreen->buttons[5].d = 1;
+				pCurrScreen->buttons[1].u = 1;
+				pCurrScreen->buttons[4].d = 6;
+				pCurrScreen->buttons[0].action = 0;
 				pCurrScreen->buttons[5].action = 0;
-				pPVar5->buttons[0].action = 0x500;
 			}
 			else
 			{
+				pCurrScreen->buttons[1].u = 6;
+				pCurrScreen->buttons[4].d = 6;
+				pCurrScreen->buttons[5].u = 5;
+				pCurrScreen->buttons[5].d = 2;
+				pCurrScreen->buttons[5].action = 0;
 				pCurrScreen->buttons[0].action = 0x500;
-				pPVar5->buttons[5].action = 0x500;
 			}
-
-			pCurrButton = pPVar5->buttons + 1;
-			currSelIndex = 1;
-			goto LAB_FRNT__001c40d8;
 		}
-		pCurrScreen->buttons[0].u = '\x06';
-		pCurrScreen->buttons[0].d = '\x02';
-		pCurrScreen->buttons[5].u = '\x05';
-		pCurrScreen->buttons[5].d = '\x01';
-		pCurrScreen->buttons[1].u = '\x01';
-		pCurrScreen->buttons[4].d = '\x06';
-		pPVar5 = pCurrScreen;
-		pCurrScreen->buttons[0].action = 0;
-		pPVar5->buttons[5].action = 0;
-	}
-	else 
-	{
-		if (currMission == minmaxSelections[currCity][0])
-			goto LAB_FRNT__001c406c;
+		else
+		{
+			if (currMission != minmaxSelections[currCity][0])
+			{
+				bP = true;
 
-		pCurrScreen->buttons[0].u = uVar4 + '\x01';
-		pCurrScreen->buttons[0].d = '\x02';
-		pCurrScreen->buttons[1].u = '\x01';
-		pCurrScreen->buttons[iVar8].d = '\x01';
-		pPVar5 = pCurrScreen;
-		pCurrScreen->buttons[0].action = 0;
-		pPVar5->buttons[5].action = 0x500;
-	}
-	pCurrButton = pPVar5->buttons;
-	currSelIndex = 0;
+				pCurrScreen->buttons[0].u = usedB + 1;
+				pCurrScreen->buttons[0].d = 2;
+				pCurrScreen->buttons[1].u = 1;
+				pCurrScreen->buttons[usedB].d = 1;
+				pCurrScreen->buttons[0].action = 0;
+				pCurrScreen->buttons[5].action = 0x500;
+			}
+			else
+			{
+				// list missions only
+				pCurrScreen->buttons[0].action = 0x500;
+				pCurrScreen->buttons[5].action = 0x500;
+			}
+		}
 
-LAB_FRNT__001c40d8:
-	if (loaded[0] == -1) 
-	{
-		SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
-	}
-	else
-	{
-		bDrawExtra = 1;
+		if (bP)
+		{
+			pCurrButton = pCurrScreen->buttons;
+			currSelIndex = 0;
+		}
+		else
+		{
+			pCurrButton = pCurrScreen->buttons + 1;
+			currSelIndex = 1;
+		}
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+		}
+
+		feVariableSave[0] = -1;
+		feVariableSave[1] = -1;
+		feVariableSave[2] = -1;
+		feVariableSave[3] = -1;
+
+		missionSetup = 1;
+
+		return 1;
 	}
 
-	feVariableSave[0] = -1;
-	feVariableSave[1] = -1;
-	feVariableSave[2] = -1;
-	feVariableSave[3] = -1;
-	missionSetup = 1;
-	return 1;
+	if ((fePad & 0x40) != 0)
+	{
+		i = currMission;
+
+		if (currSelIndex == 0)
+		{
+			i -= 4;
+
+			if (i < minmaxSelections[currCity][0])
+				return 0;
+		}
+		else if (currSelIndex == 5)
+		{
+			i += 4;
+
+			if ((i > minmaxSelections[currCity][1]) || (i > gFurthestMission))
+				return 0;
+		}
+		else
+		{
+			bReturnToMain = 0;
+			GameType = GAME_REPLAYMISSION;
+			feVariableSave[0] = currMission;
+			feVariableSave[1] = currSelIndex;
+			feVariableSave[2] = currCity;
+			gCurrentMissionNumber = botch[currMission + (currSelIndex - 1)].missNum;
+
+			return 0;
+		}
+
+		currMission = i;
+		FESound(3);
+		fpUserFunctions[pCurrScreen->userFunctionNum - 1](1);
+		bRedrawFrontend = 1;
+
+		return 1;
+	}
+	else if ((fePad & 0x10) != 0)
+	{
+		missionSetup = 0;
+		bMissionSelect = 0;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currSelIndex = pCurrButton->d - 1;
+	}
+
+	return 0;
 }
 
 
@@ -2993,106 +2875,105 @@ LAB_FRNT__001c40d8:
 	/* end block 4 */
 	// End Line: 8335
 
-// [D]
+// [D] [A]
 int MissionCityScreen(int bSetup)
 {
-	unsigned char bVar1;
-	DB *pDVar2;
-	PSXSCREEN *pPVar3;
-	int iVar4;
-	uint *puVar5;
 	RECT16 rect;
 
-	pPVar3 = pCurrScreen;
-	if (bSetup == 0)
+	if (bSetup)
 	{
-		if ((fePad & 0x10U) != 0) 
+		GameType = GAME_MISSION;
+
+		if (gFurthestMission == 0)
 		{
-			bDrawExtra = 0;
-			FESound(0);
-			bDoneAllready = 1;
-			LoadBackgroundFile("DATA\\GFX.RAW");
+			pCurrScreen->buttons[0].action = 0x300;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 10)
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 21)
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x113;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 30)
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x113;
+			pCurrScreen->buttons[2].action = 0x113;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else
+		{
+			pCurrScreen->buttons[0].action = 0x113;
+			pCurrScreen->buttons[1].action = 0x113;
+			pCurrScreen->buttons[2].action = 0x113;
+			pCurrScreen->buttons[3].action = 0x113;
+		}
+
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", 0, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+		}
+
+		return 0;
+	}
+
+	if ((fePad & 0x10) != 0)
+	{
+		// BUGFIX: unload city image
+		loaded[0] = -1;
+
+		bDrawExtra = 0;
+		FESound(0);
+		bDoneAllready = 1;
+		LoadBackgroundFile("DATA\\GFX.RAW");
+	}
+	else
+	{
+		if ((fePad & 0x1000) != 0)
+		{
+			currCity = pCurrButton->u - 1;
+		}
+		else if ((fePad & 0x4000) != 0)
+		{
+			currCity = pCurrButton->d - 1;
+		}
+		else
+		{
+			currCity = pCurrButton->u & 3;
 			return 0;
 		}
 
-		if ((fePad & 0x1000U) == 0) 
-		{
-			if ((fePad & 0x4000U) == 0) 
-			{
-				currCity = (uint)pCurrButton->u & 3;
-				return 0;
-			}
-			bVar1 = pCurrButton->d;
-		}
-		else 
-		{
-			bVar1 = pCurrButton->u;
-		}
-
 		rect = extraRect;
-		currCity = (uint)bVar1 - 1;
 		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
-
 		DrawSync(0);
+
+#ifdef PSX
 		DisplayOnScreenText();
 
-		addPrim(current->ot + 2, &extraSprt);
-		addPrim(current->ot + 2, &extraDummy);
+		addPrim(&current->ot[2], &extraSprt);
+		addPrim(&current->ot[3], &extraDummy);
 
 		EndFrame();
-		return 0;
+#endif
 	}
-	GameType = GAME_MISSION;
-	if (gFurthestMission == 0)
-	{
-		iVar4 = 0x300;
-	LAB_FRNT__001c43f4:
-		pCurrScreen->buttons[0].action = iVar4;
-		pPVar3->buttons[1].action = iVar4;
-		pPVar3->buttons[2].action = iVar4;
-	}
-	else
-	{
-		if (gFurthestMission < 10)
-		{
-			pCurrScreen->buttons[0].action = 0x113;
-			pPVar3->buttons[1].action = 0x300;
-			pPVar3->buttons[2].action = 0x300;
-			pPVar3->buttons[3].action = 0x300;
-			goto LAB_FRNT__001c4404;
-		}
-		if (gFurthestMission < 0x15)
-		{
-			pCurrScreen->buttons[0].action = 0x113;
-			pPVar3->buttons[1].action = 0x113;
-			pPVar3->buttons[2].action = 0x300;
-			pPVar3->buttons[3].action = 0x300;
-			goto LAB_FRNT__001c4404;
-		}
-		if (0x1e < gFurthestMission)
-		{
-			iVar4 = 0x113;
-			goto LAB_FRNT__001c43f4;
-		}
-		iVar4 = 0x300;
-		pCurrScreen->buttons[0].action = 0x113;
-		pPVar3->buttons[1].action = 0x113;
-		pPVar3->buttons[2].action = 0x113;
-	}
-
-	pPVar3->buttons[3].action = iVar4;
-LAB_FRNT__001c4404:
-
-	LoadBackgroundFile("DATA\\CITYBACK.RAW");
-
-	if (loaded[0] == -1)
-	{
-		SetupExtraPoly("DATA\\CITY.RAW", 0, 0);
-	}
-	else
-	{
-		bDrawExtra = 1;
-	}
+	
 	return 0;
 }
 
@@ -3423,171 +3304,157 @@ int CutSceneSelectScreen(int bSetup)
 
 int CutSceneCitySelectScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	DB *pDVar1;
-	PSXSCREEN *pPVar2;
-	PSXBUTTON *pPVar3;
-	PSXBUTTON **ppPVar4;
-	uint *puVar5;
-	int offset;
-	undefined *puVar6;
-	undefined4 local_18;
-	undefined4 local_14;
-	undefined4 local_10;
-	undefined4 local_c;
+	RECT16 rect;
 
-	offset = ScreenDepth;
-	local_18 = DAT_FRNT__001c0884;
-	local_14 = DAT_FRNT__001c0888;
-	if (bSetup != 0) {
-		LoadBackgroundFile(s_DATA_CITYBACK_RAW_FRNT__001c08b4);
-		if (feVariableSave[0] == -1) {
-			if (DAT_FRNT__001c69a4 == 0) {
-				DAT_FRNT__001c6a70 = 0;
-				DAT_FRNT__001c69a4 = 1;
+	rect = extraRect;
+
+	if (bSetup)
+	{
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (feVariableSave[0] == -1)
+		{
+			if (bDoingCutSelect == 0) {
+				currCity = 0;
+				bDoingCutSelect = 1;
 			}
 		}
-		else {
-			DAT_FRNT__001c6a70 = feVariableSave[0];
-			feVariableSave[3] = 0xffffffff;
-			feVariableSave[2] = 0xffffffff;
-			feVariableSave[1] = 0xffffffff;
+		else
+		{
+			currCity = feVariableSave[0];
+
+			feVariableSave[3] = -1;
+			feVariableSave[2] = -1;
+			feVariableSave[1] = -1;
 			feVariableSave[0] = -1;
 		}
-		pCurrScreen->buttons[3].d = '\x01';
-		pCurrScreen->buttons[0].u = '\x04';
-		pPVar2 = pCurrScreen;
-		offset = gFurthestMission;
+
+		pCurrScreen->buttons[0].u = 4;
+		pCurrScreen->buttons[3].d = 1;
+
 		if (gFurthestMission == 0) {
 			pCurrScreen->buttons[0].action = 0x300;
-			pPVar2->buttons[1].action = 0x300;
-			pPVar2->buttons[2].action = 0x300;
-			pPVar2->buttons[3].action = 0x300;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 10) {
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x300;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 21) {
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x116;
+			pCurrScreen->buttons[2].action = 0x300;
+			pCurrScreen->buttons[3].action = 0x300;
+		}
+		else if (gFurthestMission < 31) {
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x116;
+			pCurrScreen->buttons[2].action = 0x116;
+			pCurrScreen->buttons[3].action = 0x300;
 		}
 		else {
-			if (gFurthestMission < 10) {
-				pCurrScreen->buttons[0].action = 0x116;
-				pPVar2->buttons[1].action = 0x300;
-				pPVar2->buttons[2].action = 0x300;
-				pPVar2->buttons[3].action = 0x300;
+			pCurrScreen->buttons[0].action = 0x116;
+			pCurrScreen->buttons[1].action = 0x116;
+			pCurrScreen->buttons[2].action = 0x116;
+			pCurrScreen->buttons[3].action = 0x116;
+
+			if (gFurthestMission == 40) {
+				pCurrScreen->buttons[0].u = 5;
+				pCurrScreen->buttons[3].d = 5;
+			}
+		}
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", (currCity != 4) ? currCity : 0, 0);
+		}
+		else
+		{
+			bDrawExtra = 1;
+			if (currCity == 4) {
+				LoadImage(&rect, (u_long *)_frontend_buffer);
 			}
 			else {
-				if (gFurthestMission < 0x15) {
-					pCurrScreen->buttons[0].action = 0x116;
-					pPVar2->buttons[1].action = 0x116;
-					pPVar2->buttons[2].action = 0x300;
-					pPVar2->buttons[3].action = 0x300;
-				}
-				else {
-					if (gFurthestMission < 0x1f) {
-						pCurrScreen->buttons[0].action = 0x116;
-						pPVar2->buttons[1].action = 0x116;
-						pPVar2->buttons[2].action = 0x116;
-						pPVar2->buttons[3].action = 0x300;
-					}
-					else {
-						pCurrScreen->buttons[0].action = 0x116;
-						pPVar2->buttons[1].action = 0x116;
-						pPVar2->buttons[2].action = 0x116;
-						pPVar2->buttons[3].action = 0x116;
-						if (offset == 0x28) {
-							pPVar2->buttons[3].d = '\x05';
-							pCurrScreen->buttons[0].u = '\x05';
-						}
-					}
-				}
+				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
 			}
-		}
-		if (DAT_FRNT__001c6a78 == -1) {
-			offset = DAT_FRNT__001c6a70;
-			if (DAT_FRNT__001c6a70 == 4) {
-				offset = 0;
-			}
-			SetupExtraPoly(s_DATA_CITY_RAW_FRNT__001c088c, offset, 0);
-			return 0;
-		}
-		DAT_FRNT__001c6a90 = 1;
-		if (DAT_FRNT__001c6a70 == 4) {
-			LoadImage(&local_18, &DAT_0013f400);
-		}
-		else {
-			LoadImage(&local_18, &DAT_0013f400 + DAT_FRNT__001c6a70 * 0x8000);
-		}
-		DrawSync(0);
-		return 0;
-	}
-	if ((uRam001cc5dc & 0x40) != 0) {
-		DAT_FRNT__001c6a7b = 0xff;
-		DAT_FRNT__001c6a7c = (undefined)GameLevel;
-		if (GameLevel != 4) {
-			DAT_FRNT__001c6a7b = 0xff;
-			return 0;
-		}
-		bReturnToMain = 0;
-		ppPVar4 = pButtonStack10 + ScreenDepth;
-		pScreenStack10[ScreenDepth] = pCurrScreen;
-		pPVar3 = pCurrButton;
-		*ppPVar4 = pCurrButton;
-		ScreenNames12[offset] = pPVar3->Name;
-		feVariableSave[0] = DAT_FRNT__001c6a70;
-		StartRender(0x60);
-		return 0;
-	}
-	if ((uRam001cc5dc & 0x10) != 0) {
-		FESound(0);
-		DAT_FRNT__001c6aac = 1;
-		LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
-		DAT_FRNT__001c69a4 = 0;
-		DAT_FRNT__001c6a90 = 0;
-		return 0;
-	}
-	if ((uRam001cc5dc & 0x1000) == 0) {
-		if ((uRam001cc5dc & 0x4000) == 0) {
-			return 0;
-		}
-		GameLevel = (uint)pCurrButton->d - 1;
-		DAT_FRNT__001c6a70 = GameLevel;
-		if (GameLevel != 4) {
-			local_10 = DAT_FRNT__001c0884;
-			local_c = DAT_FRNT__001c0888;
-			LoadImage(&local_10, &DAT_0013f400 + GameLevel * 0x8000);
 			DrawSync(0);
-			DisplayOnScreenText();
-			pDVar1 = current;
-			DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-			*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-			DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar1->ot[3] & 0xffffff;
-			puVar5 = (uint *)pDVar1->ot[3];
-			*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
-			EndFrame();
-			return 0;
 		}
+
+		return 0;
 	}
-	else {
-		DAT_FRNT__001c6a70 = (uint)pCurrButton->u - 1;
-		if (DAT_FRNT__001c6a70 != 4) {
-			puVar6 = &DAT_0013f400 + DAT_FRNT__001c6a70 * 0x8000;
-			goto LAB_FRNT__001c4ec0;
+
+	if ((fePad & 0x40U) != 0)
+	{
+		lastCity = -1;
+		lastCutCity = GameLevel;
+
+		if (GameLevel != 4)
+		{
+			lastCity = -1;
 		}
+		else
+		{
+			bReturnToMain = 0;
+
+			pScreenStack[ScreenDepth] = pCurrScreen;
+			pButtonStack[ScreenDepth] = pCurrButton;
+
+			ScreenNames[ScreenDepth] = pCurrButton->Name;
+
+			feVariableSave[0] = currCity;
+
+			StartRender(0x60);
+		}
+
+		return 0;
 	}
-	puVar6 = &DAT_0013f400;
-LAB_FRNT__001c4ec0:
-	local_10 = DAT_FRNT__001c0884;
-	local_c = DAT_FRNT__001c0888;
-	GameLevel = DAT_FRNT__001c6a70;
-	LoadImage(&local_10, puVar6);
+	else if ((fePad & 0x10U) != 0)
+	{
+		FESound(0);
+		bDoneAllready = 1;
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		bDoingCutSelect = 0;
+		bDrawExtra = 0;
+
+		return 0;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currCity = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currCity = pCurrButton->d - 1;
+	}
+
+	GameLevel = currCity;
+
+	rect = extraRect;
+
+	if (GameLevel != 4)
+	{
+		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * 0x8000));
+	}
+	else
+	{
+		LoadImage(&rect, (u_long *)_frontend_buffer);
+	}
+
 	DrawSync(0);
+#ifdef PSX
 	DisplayOnScreenText();
-	pDVar1 = current;
-	DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-	*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-	DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar1->ot[3] & 0xffffff;
-	puVar5 = (uint *)pDVar1->ot[3];
-	*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
+
+	addPrim(&current->ot[2], &extraSprt);
+	addPrim(&current->ot[3], &extraDummy);
+
 	EndFrame();
-	return 0;*/
+#endif
+
+	return 0;
 }
 
 
@@ -3692,138 +3559,176 @@ LAB_FRNT__001c4ec0:
 	/* end block 5 */
 	// End Line: 9173
 
+// [D]
 int SetVolumeScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
+	int last;
+	int ypos[2] = { 292, 338 };
+	char text[4];
+	RECT16 rect;
 
-	char **ppcVar1;
-	byte bVar2;
-	int iVar3;
-	int iVar4;
-	DB *pDVar5;
-	DB *pDVar6;
-	char acStack48[8];
-	int local_28;
-	int local_24;
-	undefined4 local_20;
-	undefined4 local_1c;
+	static int masterVolumeHold = 0;
+	static int musicVolumeHold = 0;
 
-	iVar4 = gMasterVolume;
-	iVar3 = gMusicVolume;
-	local_28 = DAT_FRNT__001c08e0;
-	local_24 = DAT_FRNT__001c08e4;
-	local_20 = DAT_FRNT__001c0884;
-	local_1c = DAT_FRNT__001c0888;
-	if (bSetup != 0) {
-		DAT_FRNT__001c6a8c = 0;
-		DAT_FRNT__001cc260 = gMasterVolume;
-		DAT_FRNT__001cc588 = gMusicVolume;
-		LoadBackgroundFile(s_DATA_VOL_RAW_FRNT__001c08e8);
-		sprintf(acStack48, (char *)&PTR_DAT_FRNT__001c08f8, (int)(&DAT_00002710 + gMasterVolume) / 100);
-		FEPrintString(acStack48, 0x98, local_28, 2, 0x80, 0x80, 0x80);
-		sprintf(acStack48, (char *)&PTR_DAT_FRNT__001c08f8, (int)(&DAT_00002710 + gMusicVolume) / 100);
-		FEPrintString(acStack48, 0x98, local_24, 2, 0x80, 0x80, 0x80);
+	if (bSetup) 
+	{
+		currSelIndex = 0;
+
+		masterVolumeHold = gMasterVolume;
+		musicVolumeHold = gMusicVolume;
+
+		LoadBackgroundFile("DATA\\VOL.RAW");
+
+#ifdef PSX
+		sprintf(text, "%d", (int)(10000 + gMasterVolume) / 100);
+		FEPrintString(text, 152, ypos[0], 2, 128, 128, 128);
+
+		sprintf(text, "%d", (int)(10000 + gMusicVolume) / 100);
+		FEPrintString(text, 152, ypos[1], 2, 128, 128, 128);
+#endif
+
 		return 0;
 	}
-	bVar2 = pCurrButton->u;
-	DAT_FRNT__001c6a8c = (uint)bVar2 & 3;
-	if (((int)(short)uRam001cc5dc & 0x8000U) == 0) {
-		if ((uRam001cc5dc & 0x2000) == 0) {
-			if ((uRam001cc5dc & 0x10) != 0) {
-				FESound(0);
-				DAT_FRNT__001c6aac = 1;
-				gMasterVolume = DAT_FRNT__001cc260;
-				gMusicVolume = DAT_FRNT__001cc588;
-				LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
-				SetMasterVolume(gMasterVolume);
-				SetXMVolume(gMusicVolume);
-				return 0;
-			}
-			if ((uRam001cc5dc & 0x40) == 0) {
-				return 0;
-			}
-			if (DAT_FRNT__001c6a8c != 2) {
-				return 0;
-			}
-			LoadBackgroundFile(s_DATA_GFX_RAW_FRNT__001c07f4);
-			return 0;
-		}
-		if ((bVar2 & 3) != 0) {
-			if (DAT_FRNT__001c6a8c != 1) goto LAB_FRNT__001c5530;
-			gMusicVolume = gMusicVolume + 100;
-			if (gMusicVolume < 1) goto LAB_FRNT__001c5418;
-			gMusicVolume = 0;
-		LAB_FRNT__001c5408:
-			FESound(1);
-			goto LAB_FRNT__001c5424;
-		}
-		gMasterVolume = gMasterVolume + 100;
-		if (gMasterVolume < 1) goto LAB_FRNT__001c52c4;
-		gMasterVolume = 0;
-	LAB_FRNT__001c52b4:
-		FESound(1);
+
+#ifndef PSX
+	sprintf(text, "%d", (int)(10000 + gMasterVolume) / 100);
+	FEPrintString(text, 152, ypos[0], 2, 128, 128, 128);
+
+	sprintf(text, "%d", (int)(10000 + gMusicVolume) / 100);
+	FEPrintString(text, 152, ypos[1], 2, 128, 128, 128);
+#endif
+
+	// did we make any changes?
+	bool update = false;
+
+	currSelIndex = (pCurrButton->u & 3);
+
+	if ((fePad & 0x10) != 0)
+	{
+		FESound(0);
+		bDoneAllready = 1;
+
+		gMasterVolume = masterVolumeHold;
+		gMusicVolume = musicVolumeHold;
+
+		LoadBackgroundFile("DATA\\GFX.RAW");
+
+		SetMasterVolume(gMasterVolume);
+		SetXMVolume(gMusicVolume);
+
+		return 0;
 	}
-	else {
-		if ((bVar2 & 3) != 0) {
-			if (DAT_FRNT__001c6a8c != 1) goto LAB_FRNT__001c5530;
-			gMusicVolume = gMusicVolume + -100;
-			if (gMusicVolume < -10000) {
-				gMusicVolume = -10000;
-				goto LAB_FRNT__001c5408;
-			}
-		LAB_FRNT__001c5418:
-			FESound(3);
-		LAB_FRNT__001c5424:
-			sprintf(acStack48, (char *)&PTR_DAT_FRNT__001c08f8, (int)(&DAT_00002710 + gMusicVolume) / 100);
-			FEPrintString(acStack48, 0x98, local_24, 2, 0x80, 0x80, 0x80);
-			sprintf(acStack48, (char *)&PTR_DAT_FRNT__001c08f8, (int)(&DAT_00002710 + iVar3) / 100);
-			FEPrintString(acStack48, 0x98, local_24, 2, 0, 0, 0);
-			DrawSync(0);
-			VSync(0);
-			PutDispEnv(&current->disp);
-			PutDrawEnv(&current->draw);
-			pDVar6 = last;
-			pDVar5 = current;
-			ppcVar1 = &last->primtab;
-			current = last;
-			last = pDVar5;
-			pDVar6->primptr = *ppcVar1;
-			DrawOTag(pDVar5->ot + 0x10);
-			ClearOTagR(current->ot, 0x10);
-			VSync(0);
-			goto LAB_FRNT__001c5530;
-		}
-		gMasterVolume = gMasterVolume + -100;
-		if (gMasterVolume < -10000) {
-			gMasterVolume = -10000;
-			goto LAB_FRNT__001c52b4;
-		}
-	LAB_FRNT__001c52c4:
-		FESound(3);
+	else if ((fePad & 0x40) != 0)
+	{
+		if (currSelIndex == 2)
+			LoadBackgroundFile("DATA\\GFX.RAW");
+
+		return 0;
 	}
-	sprintf(acStack48, (char *)&PTR_DAT_FRNT__001c08f8, (int)(&DAT_00002710 + gMasterVolume) / 100);
-	FEPrintString(acStack48, 0x98, local_28, 2, 0x80, 0x80, 0x80);
-	sprintf(acStack48, (char *)&PTR_DAT_FRNT__001c08f8, (int)(&DAT_00002710 + iVar4) / 100);
-	FEPrintString(acStack48, 0x98, local_28, 2, 0, 0, 0);
-	DrawSync(0);
-	VSync(0);
-	PutDispEnv(&current->disp);
-	PutDrawEnv(&current->draw);
-	pDVar6 = last;
-	pDVar5 = current;
-	ppcVar1 = &last->primtab;
-	current = last;
-	last = pDVar5;
-	pDVar6->primptr = *ppcVar1;
-	DrawOTag(pDVar5->ot + 0x10);
-	ClearOTagR(current->ot, 0x10);
-	VSync(0);
-LAB_FRNT__001c5530:
-	SetMasterVolume(gMasterVolume);
-	SetXMVolume(gMusicVolume);
-	return 0;*/
+	else
+	{
+		int dir = -1; // -1: no action, 0: limit reached, 1: OK
+
+		if ((fePad & 0x8000) != 0)
+		{
+			switch (currSelIndex)
+			{
+			case 0:
+				gMasterVolume -= 100;
+
+				if (gMasterVolume < -10000)
+				{
+					gMasterVolume = -10000;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMasterVolume;
+				break;
+			case 1:
+				gMusicVolume -= 100;
+
+				if (gMusicVolume < -10000)
+				{
+					gMusicVolume = -10000;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMusicVolume;
+				break;
+			}
+		}
+		else if ((fePad & 0x2000) != 0)
+		{
+			switch (currSelIndex)
+			{
+			case 0:
+				gMasterVolume += 100;
+
+				if (gMasterVolume > 0)
+				{
+					gMasterVolume = 0;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMasterVolume;
+				break;
+			case 1:
+				gMusicVolume += 100;
+
+				if (gMusicVolume > 0)
+				{
+					gMusicVolume = 0;
+					dir = 0;
+				}
+				else
+				{
+					dir = 1;
+				}
+
+				last = gMusicVolume;
+				break;
+			}
+		}
+
+		if (dir != -1)
+		{
+			FESound((dir == 1) ? 3 : 1);
+			update = true;
+		}
+	}
+
+	if (update)
+	{
+		SetMasterVolume(gMasterVolume);
+		SetXMVolume(gMusicVolume);
+
+#ifdef PSX
+		sprintf(text, "%d", (int)(10000 + last) / 100);
+		FEPrintString(text, 152, ypos[currSelIndex], 2, 128, 128, 128);
+
+		sprintf(text, "%d", (int)(10000 + last) / 100);
+		FEPrintString(text, 152, ypos[currSelIndex], 2, 0, 0, 0);
+
+		EndFrame(); // [A] inlined
+#else
+		// don't flush the screen
+		return 1;
+#endif
+	}
+
+	return 0;
 }
 
 
@@ -3893,10 +3798,10 @@ void DisplayScoreTable(void)
 
 	OnScoreTable(&pSE);
 
-	sprintf(text, ScreenNames[ScreenDepth + -1]);
-	FEPrintString(text, 0x14, 200, 2, (uint)otherCol.r, (uint)otherCol.g, (uint)otherCol.b);
+	sprintf(text, ScreenNames[ScreenDepth - 1]);
+	FEPrintString(text, 20, 200, 2, otherCol.r, otherCol.g, otherCol.b);
 	sprintf(text, CityNames[GameLevel]);
-	FEPrintString(text, 0x118, 200, 2, (uint)otherCol.r, (uint)otherCol.g, (uint)otherCol.b);
+	FEPrintString(text, 280, 200, 2, otherCol.r, otherCol.g, otherCol.b);
 
 	iVar2 = ((uint)GameType - 4) * 8;
 
@@ -3914,23 +3819,22 @@ void DisplayScoreTable(void)
 
 	if ((GameType != GAME_PURSUIT) && (GameType != GAME_SURVIVAL)) {
 		sprintf(text, "%s", gameNames[iVar2 + GameLevel * 2 + GameNum]);
-		FEPrintStringSized(text, 0x1a4, 0xce, 0xc00, 2, (uint)otherCol.r, (uint)otherCol.g,
-			(uint)otherCol.b);
+		FEPrintStringSized(text, 420, 206, 0xc00, 2, otherCol.r, otherCol.g, otherCol.b);
 	}
 
-	y = 0xf0;
+	y = 240;
 	iVar2 = 0;
 	iVar3 = 4;
 
 	do {
 		sprintf(text, pSE->name + iVar2);
-		FEPrintString(text, 0x14, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b);
+		FEPrintString(text, 20, y, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 
 		if ((GameType == GAME_GATERACE) || (GameType == GAME_TRAILBLAZER)) 
 		{
 			if (pSE->items + iVar2 != -1) {
 				sprintf(text, "%d");
-				FEPrintString(text, 0x8c, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b)
+				FEPrintString(text, 140, y, 2, scoreCol.r, scoreCol.g, scoreCol.b)
 					;
 			}
 		}
@@ -3940,10 +3844,10 @@ void DisplayScoreTable(void)
 		if (iVar1 != -1) {
 			sprintf(text, "%d:%02d.%02d", iVar1 / 180000,
 				iVar1 / 3000 + (iVar1 / 180000) * -0x3c, (iVar1 % 3000) / 0x1e);
-			FEPrintString(text, 0x118, y, 2, (uint)scoreCol.r, (uint)scoreCol.g, (uint)scoreCol.b);
+			FEPrintString(text, 280, y, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 		}
 
-		y = y + 0x24;
+		y = y + 36;
 		iVar3 = iVar3 + -1;
 		iVar2 = iVar2 + 0xc;
 
@@ -4083,20 +3987,83 @@ int SubtitlesOnOffScreen(int bSetup)
 // [D]
 int CityCutOffScreen(int bSetup)
 {
-	PSXSCREEN *pPVar1;
-
-	pPVar1 = pCurrScreen;
-	if (bSetup != 0) {
-		if (gFurthestMission < 0x14) {
+	if (bSetup)
+	{
+		if (gFurthestMission < 20)
 			pCurrScreen->buttons[2].action = 0x300;
+
+		if (gFurthestMission < 29)
+			pCurrScreen->buttons[3].action = 0x300;
+
+#ifndef PSX
+		LoadBackgroundFile("DATA\\CITYBACK.RAW");
+
+		if (lastCity == -1)
+			currCity = 0;
+		else
+			currCity = lastCity;
+
+		if (loaded[0] == -1)
+		{
+			SetupExtraPoly("DATA\\CITY.RAW", currCity, 0);
 		}
-		else {
-			if (0x1d < gFurthestMission) {
-				return 0;
-			}
+		else
+		{
+			bDrawExtra = 1;
+
+			RECT16 rect = extraRect;
+			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+			DrawSync(0);
 		}
-		pPVar1->buttons[3].action = 0x300;
+#endif
+		return 0;
 	}
+
+#ifndef PSX
+	/*
+	if ((fePad & 0x40U) != 0)
+	{
+		lastCity = currCity;
+
+		bDrawExtra = 0;
+
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		loaded[0] = -1;
+
+		return 0;
+	}*/
+
+	if ((fePad & 0x10) != 0)
+	{
+		lastCity = -1;
+
+		bDrawExtra = 0;
+		FESound(0);
+		bDoneAllready = 1;
+
+		LoadBackgroundFile("DATA\\GFX.RAW");
+		loaded[0] = -1;
+
+		return 0;
+	}
+	else if ((fePad & 0x1000) != 0)
+	{
+		currCity = pCurrButton->u - 1;
+	}
+	else if ((fePad & 0x4000) != 0)
+	{
+		currCity = pCurrButton->d - 1;
+	}
+	else
+	{
+		currCity = pCurrButton->u & 3;
+		return 0;
+	}
+
+	RECT16 rect = extraRect;
+	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+	DrawSync(0);
+#endif
 	return 0;
 }
 
@@ -4142,13 +4109,15 @@ int ControllerScreen(int bSetup)
 			bRedrawFrontend = 1;
 		}
 	}
-	else {
+	else
+	{
 		bDoingScores = 1;
 		currSelIndex = 0;
-		pCurrScreen->numButtons = '\0';
+		pCurrScreen->numButtons = 0;
 
 		LoadBackgroundFile(contNames[currSelIndex]);
 	}
+
 	return 0;
 }
 
@@ -4403,15 +4372,15 @@ int CheatScreen(int bSetup)
 // [D]
 int ImmunityOnOffScreen(int bSetup)
 {
-	if (bSetup != 0) {
-		if (gPlayerImmune == 0) {
+	if (bSetup != 0) 
+	{
+		if (gPlayerImmune == 0)
 			pCurrButton = pCurrScreen->buttons + 1;
-		}
-		else {
+		else
 			pCurrButton = pCurrScreen->buttons;
-		}
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -4436,13 +4405,13 @@ int ImmunityOnOffScreen(int bSetup)
 // [D]
 int InvincibleOnOffScreen(int bSetup)
 {
-	if (bSetup != 0) {
-		if (gInvincibleCar == 0) {
+	if (bSetup != 0) 
+	{
+		if (gInvincibleCar == 0) 
 			pCurrButton = pCurrScreen->buttons + 1;
-		}
-		else {
+		else 
 			pCurrButton = pCurrScreen->buttons;
-		}
+
 		return 1;
 	}
 	return 0;
@@ -4467,17 +4436,11 @@ int InvincibleOnOffScreen(int bSetup)
 // [D]
 int GamePlayScreen(int bSetup)
 {
-	int iVar1;
-
-	if (bSetup != 0) {
-		if (allowVibration == 0) {
-			iVar1 = 0x300;
-		}
-		else {
-			iVar1 = 0x111;
-		}
-		pCurrScreen->buttons[2].action = iVar1;
+	if (bSetup != 0) 
+	{
+		pCurrScreen->buttons[2].action = (allowVibration == 0) ? 0x300 : 0x111;
 	}
+
 	return 0;
 }
 
@@ -4581,52 +4544,40 @@ int GameNameScreen(int bSetup)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [A]
 void FEInitCdIcon(void)
 {
-	ushort *puVar1;
-	int iVar2;
+	ushort *palette;
 	RECT16 rect;
 
-	puVar1 = cd_icon + 10;
-	iVar2 = 0xd;
-	do {
-		iVar2 = iVar2 + -1;
-		*puVar1 = *puVar1 & 0x7fff;
-		puVar1 = puVar1 + 1;
-	} while (-1 < iVar2);
+	palette = cd_icon + 10;
+
+	for (int i = 0; i < 14; i++)
+	{
+		*palette &= 0x7fff;
+		palette++;
+	}
+
 	cd_icon[10] = 0;
-	rect.x = 0x3c0;
-	rect.y = 0x1b2;
+	
+	rect.x = 960;
+	rect.y = 434;
 	rect.w = 8;
-	rect.h = 0x20;
-	cd_icon[24] = cd_icon[24] | 0x8000;
-	cd_icon[25] = cd_icon[25] | 0x8000;
+	rect.h = 32;
+	
+	cd_icon[24] |= 0x8000;
+	cd_icon[25] |= 0x8000;
+
 	LoadImage(&rect, (u_long *)(cd_icon + 0x18));
+
 	setPolyFT4(&cd_sprite);
-	cd_sprite.r0 = 128;
-	cd_sprite.g0 = 128;
-	cd_sprite.b0 = 128;
-	cd_sprite.v0 = -0x4d;
-	cd_sprite.v1 = -0x4d;
-	cd_sprite.u0 = '\0';
-	cd_sprite.u1 = ' ';
-	cd_sprite.u2 = '\0';
-	cd_sprite.v2 = -0x2d;
-	cd_sprite.u3 = ' ';
-	cd_sprite.v3 = -0x2d;
-	cd_sprite.clut = GetClut(0x3c0, 0x1b1);
-	cd_sprite.tpage = GetTPage(0, 0, 0x3c0, 0x100);
+	setRGB0(&cd_sprite, 128, 128, 128);
+	setUVWH(&cd_sprite, 0, 178, 32, 32);
+	setXYWH(&cd_sprite, 80, 38, 38, 21);
+	setClut(&cd_sprite, 960, 433);
+	setTPage(&cd_sprite, 0, 0, 960, 256);
+
 	bCdIconSetup = 1;
-	cd_sprite.x0 = 0x50;
-	cd_sprite.y0 = 0x26;
-	cd_sprite.x1 = 0x76;
-	cd_sprite.y1 = 0x26;
-	cd_sprite.x2 = 0x50;
-	cd_sprite.y2 = 0x3b;
-	cd_sprite.x3 = 0x76;
-	cd_sprite.y3 = 0x3b;
-	return;
 }
 
 

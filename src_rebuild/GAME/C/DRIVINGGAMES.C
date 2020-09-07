@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "DRIVINGGAMES.H"
 #include "SCORES.H"
 #include "MISSION.H"
@@ -866,7 +866,7 @@ void DrawCone(VECTOR *position, int cone)
 		gte_SetRotMatrix(&inv_camera_matrix);
 
 		_MatrixRotate(&pos);
-		RenderModel(gTrailblazerConeModel, &matrix, &pos, 0, 0);
+		RenderModel(gTrailblazerConeModel, &matrix, &pos, 0, 0, 0);
 	}
 }
 

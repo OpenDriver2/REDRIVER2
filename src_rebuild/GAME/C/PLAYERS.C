@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "PLAYERS.H"
 
 #include "SYSTEM.H"
@@ -391,10 +391,13 @@ void UpdatePlayers(void)
 
 			locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
 
-			locPlayer->pos[0] = car_data[carId].hd.where.t[0];
-			locPlayer->pos[1] = car_data[carId].hd.where.t[1];
-			locPlayer->pos[2] = car_data[carId].hd.where.t[2];
-			locPlayer->dir = car_data[carId].hd.direction;
+			if (carId >= 0)
+			{
+				locPlayer->pos[0] = car_data[carId].hd.where.t[0];
+				locPlayer->pos[1] = car_data[carId].hd.where.t[1];
+				locPlayer->pos[2] = car_data[carId].hd.where.t[2];
+				locPlayer->dir = car_data[carId].hd.direction;
+			}
 		}
 		else if (locPlayer->playerType == 2) 
 		{

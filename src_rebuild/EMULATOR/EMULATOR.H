@@ -162,7 +162,7 @@ enum TexFormat
 	TF_16_BIT
 };
 
-#define MAX_NUM_POLY_BUFFER_VERTICES (12040)
+#define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
 #if defined(OGLES) || defined(OGL)
@@ -184,6 +184,9 @@ typedef IDirect3DSurface9* RenderTargetID;
 
 typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
 extern GameDebugKeysHandlerFunc gameDebugKeys;
+
+typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
+extern GameDebugMouseHandlerFunc gameDebugMouse;
 
 extern int  Emulator_Initialise();
 extern void Emulator_StoreFrameBuffer(int x, int y, int w, int h);

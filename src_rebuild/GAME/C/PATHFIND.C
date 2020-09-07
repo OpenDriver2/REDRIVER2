@@ -1,6 +1,94 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "PATHFIND.H"
+#include "SYSTEM.H"
+#include "COP_AI.H"
+#include "OBJCOLL.H"
+#include "DR2ROADS.H"
+#include "PLAYERS.H"
+#include "CARS.H"
+#include "CAMERA.H"
+#include "COP_AI.H"
 
+short distanceCache[16384];
+char omap[128][16];				// obstacle map
+long dunyet[32][2];				// scanned cell map
+int pathIterations;
+
+int pathFrames;
+int DoExtraWorkForNFrames;
+
+VECTOR searchTarget;
+int playerTargetDistanceSq;
+
+int distanceReturnedLog[8];
+int distLogIndex;
+int lastDistanceFound;
+
+tNode heap[201];
+unsigned int numHeapEntries = 0;
+
+PATHFIND_237fake ends[6][2] = {
+	{
+		{0, 0},
+		{512, 0}
+	},
+
+	{
+		{0, 0},
+		{256, 512 }
+	},
+
+	{
+		{256, 512},
+		{512, 0}
+	},
+
+	{
+		{256, 512},
+		{-256, 512}
+	},
+
+	{
+		{256, 512},
+		{0, 1024}
+	},
+	{
+		{256, 512 },
+		{512, 1024}
+	}
+};
+
+PATHFIND_238fake dirs[6] = {
+	{
+		512,0
+	},
+	{
+		256,-512
+	},
+	{
+		-256,-512
+	},
+	{
+		-512,0x0
+	},
+	{
+		-256,512
+	},
+	{
+		256,512
+	},
+};
+
+#define OMAP_V(cx, cz)					omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
+#define OMAP_GETVALUE(cx, cz)			(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
+
+// [A] sets obstacle map bit
+inline void OMapSet(int cellX, int cellZ, int val)
+{
+	unsigned char prev = OMAP_V(cellX, cellZ);
+	int bit = (1 << (cellZ & 7));
+	OMAP_V(cellX, cellZ) = prev ^ bit & (prev ^ (val ? 0xFF : 0));
+}
 
 // decompiled code
 // original method signature: 
@@ -17,7 +105,7 @@
 	// 		unsigned int here; // $t5
 
 		/* begin block 1.1 */
-			// Start line: 325
+			// Start line: 325                                                                  
 			// Start offset: 0x000E7058
 			// Variables:
 		// 		unsigned int lastEntry; // $t4
@@ -62,66 +150,64 @@
 	/* end block 3 */
 	// End Line: 631
 
+// [D]
 tNode * popNode(tNode *__return_storage_ptr__)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	ushort uVar1;
-	undefined2 uVar2;
+	int iVar2;
 	int iVar3;
 	int iVar4;
-	int iVar5;
-	undefined4 uVar6;
-	ushort uVar7;
-	uint uVar8;
-	uint uVar9;
-	undefined4 uVar10;
-	undefined4 uVar11;
-	ushort uVar12;
-	uint uVar13;
+	ushort uVar6;
+	uint uVar7;
+	uint child;
+	int d3;
+	int d4;
+	int local_t1_316;
+	int local_t2_320;
+	ushort d;
+	uint here;
+	tNode res;
 
-	uVar6 = DAT_PATH__000f1b24;
-	iVar5 = DAT_PATH__000f1b20;
-	iVar4 = DAT_PATH__000f1b1c;
-	iVar3 = DAT_PATH__000f1b18;
-	if (1 < DAT_PATH__000f279c) {
-		uVar1 = (&DAT_PATH__000f1b14)[DAT_PATH__000f279c * 8];
-		uVar13 = 1;
-		while (true) {
-			uVar8 = uVar13 * 2;
-			uVar12 = (&DAT_PATH__000f1b14)[uVar13 * 0x10];
-			uVar9 = uVar8;
-			uVar7 = uVar12;
-			if ((DAT_PATH__000f279c - 2 <= uVar8) ||
-				(uVar9 = uVar8 + 1, uVar7 = (&DAT_PATH__000f1b14)[(uVar8 + 1) * 8],
-				(ushort)(&DAT_PATH__000f1b14)[(uVar8 + 1) * 8] < uVar12)) {
-				uVar12 = uVar7;
-				uVar8 = uVar9;
+	res = heap[1];
+
+	if (numHeapEntries > 1)
+	{
+		uVar1 = heap[numHeapEntries].dist;
+
+		here = 1;
+
+		while (true)
+		{
+			// [A] I don't know what fuckery happening here
+			uVar7 = here + 1;
+			d = heap[uVar7].dist;
+			child = uVar7;
+			uVar6 = d;
+
+			child = uVar7 + 1;
+			uVar6 = heap[uVar7 + 1].dist;
+
+			if (numHeapEntries - 2 <= uVar7 || heap[uVar7 + 1].dist < d)
+			{
+				d = uVar6;
+				uVar7 = child;
 			}
-			if ((DAT_PATH__000f279c - 2 < uVar8) || (uVar1 <= uVar12)) break;
-			uVar10 = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-			uVar11 = (&DAT_PATH__000f1b10)[uVar8 * 4];
-			(&DAT_PATH__000f1b08)[uVar13 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-			(&DAT_PATH__000f1b0c)[uVar13 * 4] = uVar10;
-			(&DAT_PATH__000f1b10)[uVar13 * 4] = uVar11;
-			(&DAT_PATH__000f1b14)[uVar13 * 8] = uVar12;
-			uVar13 = uVar8;
+
+			if ((numHeapEntries - 2 < uVar7) || (uVar1 <= d))
+				break;
+
+			heap[here] = heap[uVar7];
+
+			here = uVar7;
 		}
-		uVar10 = (&DAT_PATH__000f1b0c)[DAT_PATH__000f279c * 4];
-		uVar11 = (&DAT_PATH__000f1b10)[DAT_PATH__000f279c * 4];
-		uVar2 = (&DAT_PATH__000f1b14)[DAT_PATH__000f279c * 8];
-		(&DAT_PATH__000f1b08)[uVar13 * 4] = (&DAT_PATH__000f1b08)[DAT_PATH__000f279c * 4];
-		(&DAT_PATH__000f1b0c)[uVar13 * 4] = uVar10;
-		(&DAT_PATH__000f1b10)[uVar13 * 4] = uVar11;
-		(&DAT_PATH__000f1b14)[uVar13 * 8] = uVar2;
+
+		heap[here] = heap[numHeapEntries];
 	}
-	DAT_PATH__000f279c = DAT_PATH__000f279c - 1;
-	__return_storage_ptr__->vx = iVar3;
-	__return_storage_ptr__->vy = iVar4;
-	__return_storage_ptr__->vz = iVar5;
-	*(undefined4 *)&__return_storage_ptr__->dist = uVar6;
-	return __return_storage_ptr__;*/
+
+	numHeapEntries--;
+
+	*__return_storage_ptr__ = res;
+	return __return_storage_ptr__;
 }
 
 
@@ -164,65 +250,61 @@ tNode * popNode(tNode *__return_storage_ptr__)
 	/* end block 2 */
 	// End Line: 911
 
+// [D]
 void WunCell(VECTOR *pbase)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	char cVar2;
-	undefined3 extraout_var;
-	byte bVar3;
+	int iVar3;
 	int iVar4;
-	short *psVar5;
-	int iVar6;
-	int iVar7;
-	VECTOR local_58;
-	VECTOR local_48;
-	int local_38;
-	int local_34;
-	int local_30;
+	int iVar5;
+	int uVar6;
+	unsigned char val;
+	int iVar8;
+	PATHFIND_237fake* pPVar9;
+	int iVar10;
+	VECTOR v[2];
+	VECTOR pos;
 
-	pbase->vx = pbase->vx + 0x200;
-	pbase->vz = pbase->vz + 0x200;
-	local_58.vy = MapHeight(pbase);
-	local_58.vy = local_58.vy + 0x3c;
-	pbase->vx = pbase->vx + -0x200;
-	pbase->vz = pbase->vz + -0x200;
-	iVar6 = 0;
-	local_48.vy = local_58.vy;
-	local_34 = local_58.vy;
+	pbase->vx = pbase->vx + 512;
+	pbase->vz = pbase->vz + 512;
+
+	v[0].vy = MapHeight(pbase) + 60;
+
+	pbase->vx = pbase->vx - 512;
+	pbase->vz = pbase->vz - 512;
+
+	v[1].vy = v[0].vy;
+
+	iVar10 = 0;
 	do {
-		iVar4 = 0;
-		if (iVar6 != 0) {
-			pbase->vx = pbase->vx + 0x200;
-		}
-		iVar7 = iVar6 + 1;
-		psVar5 = &DAT_PATH__000e9108;
+		iVar8 = 0;
+
+		if (iVar10 != 0)
+			pbase->vx += 512;
+
 		do {
-			local_58.vx = pbase->vx + (int)*psVar5;
-			local_58.vz = pbase->vz + (int)(short)(&DAT_PATH__000e910a)[iVar4 * 4];
-			local_48.vx = pbase->vx + (int)(short)(&DAT_PATH__000e910c)[iVar4 * 4];
-			local_48.vz = pbase->vz + (int)psVar5[3];
-			local_38 = local_58.vx + local_48.vx >> 1;
-			local_30 = local_58.vz + local_48.vz >> 1;
-			cVar2 = lineClear(&local_58, &local_48);
-			bVar3 = 0;
-			if (CONCAT31(extraout_var, cVar2) == 0) {
-				bVar3 = 0xff;
-			}
-			psVar5 = psVar5 + 4;
-			iVar4 = iVar4 + 1;
-			bVar1 = (&DAT_PATH__000e91a8)
-				[((int)(local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 8 & 0x7fU) * 0x10];
-			(&DAT_PATH__000e91a8)[((int)(local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 8 & 0x7fU) * 0x10] =
-				bVar1 ^ (byte)(1 << (local_30 >> 8 & 7U)) & (bVar1 ^ bVar3);
-		} while (iVar4 < 6);
-		if (iVar6 != 0) {
-			pbase->vx = pbase->vx + -0x200;
-		}
-		iVar6 = iVar7;
-	} while (iVar7 < 2);
-	return;*/
+			v[0].vx = pbase->vx + ends[iVar8][0].dx;
+			v[0].vz = pbase->vz + ends[iVar8][0].dz;
+			v[1].vx = pbase->vx + ends[iVar8][1].dx;
+			v[1].vz = pbase->vz + ends[iVar8][1].dz;
+
+			iVar4 = v[0].vx + v[1].vx;
+			iVar5 = v[0].vz + v[1].vz;
+
+			OMapSet(iVar4 >> 9, iVar5 >> 9, lineClear(&v[0], &v[1]) == 0);
+
+			//bVar1 = omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)];
+			//omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)] = bVar1 ^ (1 << (iVar5 >> 9 & 7)) & (bVar1 ^ val);
+
+			iVar8++;
+		} while (iVar8 < 6);
+
+		if (iVar10 != 0)
+			pbase->vx -= 512;
+
+		iVar10++;
+	} while (iVar10 < 2);
 }
 
 
@@ -278,73 +360,81 @@ void WunCell(VECTOR *pbase)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InvalidateMap(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
-	int iVar4;
+	int uVar1;
+	int iVar2;
+	int uVar3;
+	int uVar4;
 	int iVar5;
 	int iVar6;
-	uint local_10;
-	uint local_8;
+	int iVar7;
+	VECTOR bPos;
 
+	iVar6 = 0;
 	iVar5 = 0;
-	iVar4 = 0;
-	uVar3 = 0;
-	iVar6 = 0x3ff;
-	local_10 = player.pos[0] & 0xfffffc00;
-	local_8 = player.pos[2] & 0xfffffc00;
+	uVar4 = 0;
+	iVar7 = 0x3ff;
+	bPos.vx = player[0].pos[0] & 0xfffffc00;
+	bPos.vz = player[0].pos[2] & 0xfffffc00;
+
 	do {
-		uVar2 = (int)local_8 >> 10;
-		uVar1 = *(uint *)(&DAT_PATH__000e99b0 + (uVar2 & 1) * 4 + ((int)local_10 >> 10 & 0x1fU) * 8);
-		*(uint *)(&DAT_PATH__000e99b0 + (uVar2 & 1) * 4 + ((int)local_10 >> 10 & 0x1fU) * 8) =
-			uVar1 ^ 3 << (uVar2 & 0x1e) &
-			(((((int)local_10 >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) ^ 3) << (uVar2 & 0x1e) ^
-				uVar1);
-		if (uVar3 == 1) {
-			iVar5 = iVar5 + 1;
-			local_8 = local_8 + 0x400;
-			if (iVar4 == iVar5) {
-				uVar3 = 2;
-			}
+		uVar3 = bPos.vz >> 10;
+
+		uVar1 = dunyet[(bPos.vx >> 10 & 0x1fU)][(uVar3 & 1)];
+		dunyet[(bPos.vx >> 10 & 0x1fU)][(uVar3 & 1)] = uVar1 ^ 3 << (uVar3 & 0x1e) & ((((bPos.vx >> 10 & 0x3fU) >> 5 | uVar3 >> 4 & 2) ^ 3) << (uVar3 & 0x1e) ^ uVar1);
+
+		if (uVar4 == 1) 
+		{
+			iVar6++;
+			bPos.vz += 1024;
+			if (iVar5 == iVar6)
+				uVar4 = 2;
+
 		}
-		else {
-			if (uVar3 < 2) {
-				uVar1 = local_10 + 0x400;
-				if (uVar3 == 0) {
-					iVar4 = iVar4 + 1;
-					local_10 = uVar1;
-					if (iVar4 + iVar5 == 1) {
-						uVar3 = 1;
-					}
-				}
-				else {
-				LAB_PATH__000e7484:
-					iVar5 = iVar5 + -1;
-					local_8 = local_8 - 0x400;
-					if (iVar4 == iVar5) {
-						uVar3 = 0;
-					}
-				}
+		else if (uVar4 < 2)
+		{
+			iVar2 = bPos.vx + 0x400;
+
+			if (uVar4 == 0)
+			{
+				iVar5++;
+				bPos.vx = iVar2;
+				if (iVar5 + iVar6 == 1)
+					uVar4 = 1;
 			}
-			else {
-				uVar1 = local_10 - 0x400;
-				if (uVar3 != 2) goto LAB_PATH__000e7484;
-				iVar4 = iVar4 + -1;
-				local_10 = uVar1;
-				if (iVar4 + iVar5 == 0) {
-					uVar3 = 3;
+			else
+			{
+			LAB_PATH__000e7484:
+				iVar6--;
+				bPos.vz -= 1024;
+				if (iVar5 == iVar6)
+				{
+					uVar4 = 0;
 				}
 			}
 		}
-		iVar6 = iVar6 + -1;
-		if (iVar6 < 0) {
+		else
+		{
+			iVar2 = bPos.vx - 1024;
+
+			if (uVar4 != 2)
+				goto LAB_PATH__000e7484;
+
+			iVar5--;
+			bPos.vx = iVar2;
+
+			if (iVar5 + iVar6 == 0)
+				uVar4 = 3;
+		}
+
+		iVar7--;
+
+		if (iVar7 < 0)
 			return;
-		}
-	} while (true);*/
+
+	} while (true);
 }
 
 
@@ -403,91 +493,107 @@ void InvalidateMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+unsigned int cellsThisFrame;
+unsigned int cellsPerFrame = 4;
+
+// [D]
 void BloodyHell(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
-	uint uVar4;
+	int uVar1;
+	int uVar2;
+	int uVar3;
+	int uVar4;
 	int iVar5;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int iVar8;
-	VECTOR local_30;
+	VECTOR bPos;
 
-	local_30.vy = &DAT_00001fed;
-	DAT_PATH__000f2798 = 0;
-	local_30.vx = player.pos[0] & 0xfffffc00;
-	local_30.vz = player.pos[2] & 0xfffffc00;
-	uVar7 = DAT_PATH__000e9138;
-	if (CameraCnt < 4) {
-		uVar7 = DAT_PATH__000e9138 + 0x14;
-	}
+	bPos.vy = 0x1fed;
+	bPos.vx = player[0].pos[0] & 0xfffffc00;
+	bPos.vz = player[0].pos[2] & 0xfffffc00;
+
+	cellsThisFrame = 0;
+	uVar7 = cellsPerFrame;
+
+	if (CameraCnt < 4)
+		uVar7 = cellsPerFrame + 20;
+
 	iVar6 = 0;
-	if (CameraCnt < 8) {
+
+	if (CameraCnt < 8)
 		uVar7 = uVar7 + 4;
-	}
+
 	iVar5 = 0;
 	uVar4 = 0;
 	iVar8 = 0;
+
 	do {
-		if (iVar8 == 200) {
-			uVar7 = uVar7 - 1;
-		}
-		uVar2 = (int)local_30.vz >> 10;
-		uVar3 = *(uint *)(&DAT_PATH__000e99b0 + (uVar2 & 1) * 4 + ((int)local_30.vx >> 10 & 0x1fU) * 8);
-		uVar1 = 3 << (uVar2 & 0x1e) &
-			((((int)local_30.vx >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) << (uVar2 & 0x1e) ^ uVar3);
-		if (uVar1 != 0) {
-			*(uint *)(&DAT_PATH__000e99b0 + (uVar2 & 1) * 4 + ((int)local_30.vx >> 10 & 0x1fU) * 8) =
-				uVar3 ^ uVar1;
-			WunCell(&local_30);
-			DAT_PATH__000f2798 = DAT_PATH__000f2798 + 1;
-			if (uVar7 <= DAT_PATH__000f2798) {
+		if (iVar8 == 200)
+			uVar7--;
+	
+		uVar2 = (int)bPos.vz >> 10;
+
+		uVar3 = dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)];
+		uVar1 = 3 << (uVar2 & 0x1e) & ((((int)bPos.vx >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) << (uVar2 & 0x1e) ^ uVar3);
+
+		if (uVar1 != 0) 
+		{
+			dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)] = uVar3 ^ uVar1;
+			WunCell(&bPos);
+
+			cellsThisFrame++;
+
+			if (uVar7 <= cellsThisFrame)
 				return;
-			}
+
 		}
-		if (uVar4 == 1) {
-			iVar6 = iVar6 + 1;
-			local_30.vz = local_30.vz + 0x400;
-			if (iVar5 == iVar6) {
+		if (uVar4 == 1) 
+		{
+			iVar6++;
+			bPos.vz = bPos.vz + 1024;
+			if (iVar5 == iVar6)
 				uVar4 = 2;
+		}
+		else if (uVar4 < 2)
+		{
+			if (uVar4 == 0)
+			{
+				iVar5++;
+				bPos.vx = bPos.vx + 1024;
+				if (iVar5 + iVar6 == 1)
+				{
+					uVar4 = 1;
+				}
+			}
+			else
+			{
+			LAB_PATH__000e7674:
+				iVar6--;
+				bPos.vz = bPos.vz - 1024;
+
+				if (iVar5 == iVar6)
+					uVar4 = 0;
 			}
 		}
-		else {
-			if (uVar4 < 2) {
-				if (uVar4 == 0) {
-					iVar5 = iVar5 + 1;
-					local_30.vx = local_30.vx + 0x400;
-					if (iVar5 + iVar6 == 1) {
-						uVar4 = 1;
-					}
-				}
-				else {
-				LAB_PATH__000e7674:
-					iVar6 = iVar6 + -1;
-					local_30.vz = local_30.vz - 0x400;
-					if (iVar5 == iVar6) {
-						uVar4 = 0;
-					}
-				}
-			}
-			else {
-				if (uVar4 != 2) goto LAB_PATH__000e7674;
-				iVar5 = iVar5 + -1;
-				local_30.vx = local_30.vx - 0x400;
-				if (iVar5 + iVar6 == 0) {
-					uVar4 = 3;
-				}
-			}
+		else
+		{
+			if (uVar4 != 2)
+				goto LAB_PATH__000e7674;
+
+			iVar5 = iVar5 + -1;
+			bPos.vx = bPos.vx - 1024;
+
+			if (iVar5 + iVar6 == 0)
+				uVar4 = 3;
 		}
-		iVar8 = iVar8 + 1;
-		if (0x348 < iVar8) {
+
+		iVar8++;
+
+		if (840 < iVar8)
 			return;
-		}
-	} while (true);*/
+
+	} while (true);
 }
 
 
@@ -550,47 +656,47 @@ void BloodyHell(void)
 	/* end block 3 */
 	// End Line: 1343
 
+int slowWallTests = 0;
+
+// [D] [A] - might be bugged
 int blocked(tNode *v1, tNode *v2)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
+	unsigned char bVar1;
 	bool bVar2;
 	char cVar3;
 	int iVar4;
 	int iVar5;
-	undefined3 extraout_var;
 	int iVar6;
 	int iVar7;
-	uint uVar8;
-	uint uVar9;
-	byte bVar10;
+	int res;
+	int uVar9;
+	unsigned char bVar10;
 
-	if (DAT_PATH__000e913c == 0) {
-		uVar8 = v1->vz + v2->vz >> 9;
-		uVar8 = (int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)(uVar8 & 0x7f) >> 3) + (v1->vx + v2->vx >> 5 & 0x7f0U)] >>
-			(uVar8 & 7) & 1;
+	if (slowWallTests == 0)
+	{
+		int x = (v1->vx + v1->vx >> 9 & 0x7f);
+		int z = (v1->vz + v2->vz >> 9 & 0x7f);
+
+		res = OMAP_GETVALUE(x,z); //  omap[x][z] >> (v1->vz + v2->vz >> 9 & 7) & 1;
 	}
-	else {
-		iVar4 = v1->vx;
-		iVar6 = v2->vx;
-		iVar5 = v1->vz;
-		iVar7 = v2->vz;
-		cVar3 = lineClear((VECTOR *)v1, (VECTOR *)v2);
+	else 
+	{
+		int x = (v1->vx + v1->vx >> 9 & 0x7f);
+		int z = (v1->vz + v2->vz >> 9 & 0x7f) >> 3;
+
+		cVar3 = lineClear((VECTOR*)v1, (VECTOR*)v2);
 		bVar10 = 0;
-		bVar2 = CONCAT31(extraout_var, cVar3) == 0;
-		uVar8 = (uint)bVar2;
-		uVar9 = iVar5 + iVar7 >> 9;
-		if (bVar2) {
+		bVar2 = cVar3 == 0;
+		res = (uint)bVar2;
+
+		if (bVar2)
 			bVar10 = 0xff;
-		}
-		bVar1 = (&DAT_PATH__000e91a8)[((int)(uVar9 & 0x7f) >> 3) + (iVar4 + iVar6 >> 9 & 0x7fU) * 0x10];
-		(&DAT_PATH__000e91a8)[((int)(uVar9 & 0x7f) >> 3) + (iVar4 + iVar6 >> 9 & 0x7fU) * 0x10] =
-			bVar1 ^ (byte)(1 << (uVar9 & 7)) & (bVar1 ^ bVar10);
+
+		bVar1 = omap[x][z];
+		omap[x][z] = bVar1 ^ (1 << ((v1->vz + v2->vz >> 9) & 7)) & (bVar1 ^ bVar10);
 	}
-	return uVar8;*/
+
+	return res;
 }
 
 
@@ -609,15 +715,11 @@ int blocked(tNode *v1, tNode *v2)
 	/* end block 2 */
 	// End Line: 1319
 
+// [D]
 void setDistance(tNode *n, ushort dist)
 {
-	UNIMPLEMENTED();
-	/*
 	n->dist = dist | 1;
-	(&DAT_PATH__000e9b00)
-		[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] =
-		dist | 1;
-	return;*/
+	distanceCache[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] = dist | 1;
 }
 
 
@@ -749,137 +851,163 @@ void setDistance(tNode *n, ushort dist)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [A] - might be bugged
 void iterate(void)
 {
-	UNIMPLEMENTED();
-	/*
-	ushort uVar1;
-	ushort uVar2;
-	int iVar3;
+	short uVar1;
+	short uVar2;
+	PATHFIND_238fake PVar3;
 	int iVar4;
-	uint uVar5;
-	uint uVar6;
-	uint uVar7;
-	tNode *v2;
-	int iVar8;
-	tNode local_30;
+	int iVar5;
+	int uVar6;
+	int uVar7;
+	int uVar8;
+	tNode* v2;
+	int iVar9;
+	tNode itHere;
 
-	if (DAT_PATH__000f279c != 0) {
-		popNode(&local_30);
-		iVar8 = 0;
-		v2 = (tNode *)&DAT_1f800020;
+	tNode tNode_ARRAY_1f800000[128]; // scratch pad
+
+	if (numHeapEntries != 0) 
+	{
+		popNode(&itHere);
+		iVar9 = 0;
+		v2 = tNode_ARRAY_1f800000 + 2;
 		do {
-			iVar3 = (&DAT_PATH__000e9140)[iVar8];
-			iVar4 = local_30.vx + (short)iVar3;
-			v2->vx = iVar4;
-			v2->vy = local_30.vy;
-			iVar3 = local_30.vz + (iVar3 >> 0x10);
-			v2->vz = iVar3;
-			uVar1 = (&DAT_PATH__000e9b00)
-				[(iVar4 >> 2 & 0x3f80U | iVar3 >> 9 & 0x7fU) ^ (local_30.vy & 1) * 0x2040 ^
-				(local_30.vy & 2) << 0xc];
+			PVar3 = dirs[iVar9];
+			iVar5 = itHere.vx + PVar3.dx;
+			v2->vx = iVar5;
+			v2->vy = itHere.vy;
+			iVar4 = itHere.vz + PVar3.dz;
+			v2->vz = iVar4;
+			uVar1 = distanceCache[(iVar5 >> 2 & 0x3f80U | iVar4 >> 9 & 0x7fU) ^ (itHere.vy & 1) * 0x2040 ^ (itHere.vy & 2) << 0xc];
 			v2->dist = uVar1;
-			if ((uVar1 & 1) == 0) {
-				iVar3 = blocked(&local_30, v2);
-				if (iVar3 == 0) {
-					iVar3 = v2->vy - local_30.vy;
-					if (iVar3 < 0) {
-						iVar3 = local_30.vy - v2->vy;
-					}
-					if (iVar3 < 0xc9) {
-						if ((uVar1 & 1) == 0) {
+
+			if ((uVar1 & 1) == 0) 
+			{
+				iVar4 = blocked(&itHere, v2);
+				if (iVar4 == 0)
+				{
+					iVar4 = v2->vy - itHere.vy;
+
+					if (iVar4 < 0) 
+						iVar4 = itHere.vy - v2->vy;
+
+					if (iVar4 < 0xc9) 
+					{
+						if ((uVar1 & 1) == 0)
 							v2->dist = 0;
-						}
+
 						goto LAB_PATH__000e797c;
 					}
 				}
 				v2->dist = 1;
 			}
-			else {
-				if ((int)(uint)uVar1 <= (int)((uint)local_30.dist - 0x120)) {
+			else
+			{
+				if (uVar1 <= (int)(itHere.dist - 0x120)) {
 					v2->dist = 1;
 				}
 			}
+
 		LAB_PATH__000e797c:
-			iVar8 = iVar8 + 1;
+			iVar9 = iVar9 + 1;
 			v2 = v2 + 1;
-		} while (iVar8 < 6);
-		iVar3 = 0;
-		iVar8 = 1;
+		} while (iVar9 < 6);
+
+		iVar4 = 0;
+		iVar9 = 1;
+
 		do {
-			if (*(short *)(&DAT_1f80002c + iVar3 * 4) == 0) {
-				uVar1 = (ushort)DAT_1f80002c;
-				if (iVar3 != 5) {
-					uVar1 = *(ushort *)(&DAT_1f80003c + iVar3 * 4);
-				}
-				uVar2 = DAT_1f80007c;
-				if (iVar3 != 0) {
-					uVar2 = *(ushort *)(&DAT_1f80001c + iVar3 * 4);
-				}
-				if (uVar2 < 2) {
-					if (uVar1 >= 2) {
-						iVar8 = (uint)uVar1 + (uint)local_30.dist;
+			if (tNode_ARRAY_1f800000[iVar4 + 2].dist == 0)
+			{
+				uVar1 = tNode_ARRAY_1f800000[2].dist;
+
+				if (iVar4 != 5)
+					uVar1 = tNode_ARRAY_1f800000[iVar4 + 3].dist;
+
+				uVar2 = tNode_ARRAY_1f800000[7].dist;
+				if (iVar4 != 0)
+					uVar2 = tNode_ARRAY_1f800000[iVar4 + 1].dist;
+
+				if (uVar2 < 2) 
+				{
+					if (uVar1 >= 2)
+					{
+						iVar9 = uVar1 + itHere.dist;
 						goto LAB_PATH__000e7a94;
 					}
-					uVar5 = (uint)local_30.dist + 0x100;
+					uVar6 = itHere.dist + 0x100;
 				}
-				else {
-					if (uVar1 < 2) {
-						iVar8 = (uint)uVar2 + (uint)local_30.dist;
+				else 
+				{
+					if (uVar1 < 2) 
+					{
+						iVar9 = uVar2 + itHere.dist;
 					LAB_PATH__000e7a94:
-						uVar5 = (iVar8 >> 1) + 0xdd;
+						uVar6 = (iVar9 >> 1) + 0xdd;
 					}
-					else {
-						iVar8 = (uint)uVar1 - (uint)uVar2;
-						uVar5 = 0x10000 - (iVar8 * iVar8) / 3;
-						if ((int)uVar5 < 0) {
-							uVar5 = 0;
+					else
+					{
+						iVar9 = uVar1 - uVar2;
+						uVar6 = 0x10000 - (iVar9 * iVar9) / 3;
+
+						if (uVar6 < 0) 
+						{
+							uVar6 = 0;
 						}
-						else {
-							uVar6 = (uVar5 >> 9) + 0x80;
-							if (uVar6 == 0) {
-								trap(7);
-							}
-							uVar5 = uVar5 / uVar6 + uVar6 >> 1;
+						else 
+						{
+							uVar7 = (uVar6 >> 9) + 0x80;
+
+							uVar6 = uVar6 / uVar7 + uVar7 >> 1;
 						}
-						uVar5 = local_30.dist + uVar5;
+
+						uVar6 = itHere.dist + uVar6;
 					}
 				}
-				uVar5 = uVar5 & 0xffff;
-				iVar8 = iVar3 + 1;
-				if (DAT_PATH__000f279c != 0xc6) {
-					setDistance((tNode *)(&DAT_1f800020 + iVar3 * 4), (ushort)uVar5);
-					uVar7 = DAT_PATH__000f279c + 1;
-					uVar6 = uVar7 >> 1;
-					iVar8 = uVar7 * 0x10;
-					if ((uVar6 != 0) && (uVar5 < (ushort)(&DAT_PATH__000f1b14)[uVar6 * 8])) {
-						iVar8 = uVar7 * 0x10;
+				uVar6 = uVar6 & 0xffff;
+				iVar9 = iVar4 + 1;
+				if (numHeapEntries != 198)
+				{
+					setDistance(tNode_ARRAY_1f800000 + iVar4 + 2, (ushort)uVar6);
+
+					uVar8 = numHeapEntries + 1;
+					uVar7 = uVar8 >> 1;
+					iVar9 = uVar8 * 0x10;
+
+					if ((uVar7 != 0) && (uVar6 < heap[uVar7].dist))
+					{
+						iVar9 = uVar8 * 0x10;
+
 						do {
-							uVar7 = uVar6;
-							*(undefined4 *)((int)&DAT_PATH__000f1b08 + iVar8) = (&DAT_PATH__000f1b08)[uVar7 * 4];
-							*(undefined4 *)((int)&DAT_PATH__000f1b0c + iVar8) = (&DAT_PATH__000f1b0c)[uVar7 * 4];
-							*(undefined4 *)((int)&DAT_PATH__000f1b10 + iVar8) = (&DAT_PATH__000f1b10)[uVar7 * 4];
-							uVar6 = uVar7 >> 1;
-							*(undefined4 *)((int)&DAT_PATH__000f1b14 + iVar8) =
-								*(undefined4 *)(&DAT_PATH__000f1b14 + uVar7 * 8);
-							if (uVar6 == 0) break;
-							iVar8 = uVar7 << 4;
-						} while (uVar5 < (ushort)(&DAT_PATH__000f1b14)[uVar6 * 8]);
-						iVar8 = uVar7 << 4;
+							uVar8 = uVar7;
+							*(int*)((int)&heap[0].vx + iVar9) = (&heap[0].vx)[uVar8 * 4];
+							*(int*)((int)&heap[0].vy + iVar9) = (&heap[0].vy)[uVar8 * 4];
+							*(int*)((int)&heap[0].vz + iVar9) = (&heap[0].vz)[uVar8 * 4];
+							uVar7 = uVar8 >> 1;
+							*(uint*)((int)&heap[0].dist + iVar9) = *(uint*)(&heap[0].dist + uVar8 * 8);
+
+							if (uVar7 == 0)
+								break;
+
+							iVar9 = uVar8 << 4; // * 16
+						} while (uVar6 < heap[uVar7].dist);
+
+						iVar9 = uVar8 << 4; // * 16
 					}
-					*(int *)((int)&DAT_PATH__000f1b08 + iVar8) = ((tNode *)(&DAT_1f800020 + iVar3 * 4))->vx;
-					*(undefined4 *)((int)&DAT_PATH__000f1b0c + iVar8) = (&DAT_1f800024)[iVar3 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b10 + iVar8) = (&DAT_1f800028)[iVar3 * 4];
-					DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-					*(undefined4 *)((int)&DAT_PATH__000f1b14 + iVar8) = (&DAT_1f80002c)[iVar3 * 4];
-					iVar8 = iVar3 + 1;
+					*(int*)((int)&heap[0].vx + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vx;
+					*(int*)((int)&heap[0].vy + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vy;
+					*(int*)((int)&heap[0].vz + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vz;
+					numHeapEntries++;
+					*(uint*)((int)&heap[0].dist + iVar9) = *(uint*)&tNode_ARRAY_1f800000[iVar4 + 2].dist;
+					iVar9 = iVar4 + 1;
 				}
 			}
-			iVar3 = iVar8;
-			iVar8 = iVar3 + 1;
-		} while (iVar3 < 6);
+			iVar4 = iVar9;
+			iVar9 = iVar4 + 1;
+		} while (iVar4 < 6);
 	}
-	return;*/
 }
 
 
@@ -923,35 +1051,32 @@ void iterate(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void InitPathFinding(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 *puVar1;
-	int iVar2;
+	int i;
 
-	setMem16(&DAT_PATH__000e9b00, 0xfffe, 0x4000);
-	ClearMem(&DAT_PATH__000e91a8, 0x800);
-	ClearMem(&DAT_PATH__000e99b0, 0x100);
+	setMem16((ushort*)distanceCache, 0xfffe, sizeof(distanceCache) / sizeof(short));
+	ClearMem((char*)omap, sizeof(omap));
+	ClearMem((char*)dunyet, sizeof(dunyet));
 	InvalidateMap();
-	iVar2 = 7;
-	DAT_PATH__000e9ac8 = &DAT_00004650;
-	puVar1 = &DAT_PATH__000f27bc;
+
+	lastDistanceFound = 18000;
+
+	i = 0;
 	do {
-		*puVar1 = 18000;
-		iVar2 = iVar2 + -1;
-		puVar1 = puVar1 + -1;
-	} while (iVar2 != -1);
-	DAT_PATH__000e99a8 = 0x50;
-	DAT_PATH__000e99ac = 6;
-	DAT_PATH__000e9ab0 = 0;
-	DAT_PATH__000e9ab8 = 0;
-	DAT_PATH__000e9abc = 0xffffcfb1;
-	DAT_PATH__000e9ac0 = 0;
-	DAT_PATH__000e9acc = 0;
-	DAT_PATH__000f1b00 = 0;
-	uRam000f27c0 = 0x81;
-	return;*/
+		distanceReturnedLog[i++] = 18000;
+	} while (i < 8);
+
+	pathFrames = 80;
+	DoExtraWorkForNFrames = 6;
+	distLogIndex = 0;
+	searchTarget.vx = 0;
+	searchTarget.vy = -12367;
+	searchTarget.vz = 0;
+	playerTargetDistanceSq = 0;
+	pathFrames = 0;
+	pathIterations = 129;
 }
 
 
@@ -1239,157 +1364,164 @@ void InitPathFinding(void)
 	/* end block 3 */
 	// End Line: 1655
 
+extern int sdLevel; // D2ROADS
+
+// [D]
 int getInterpolatedDistance(VECTOR *pos)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	bool bVar1;
 	bool bVar2;
-	uint uVar3;
-	uint uVar4;
-	int iVar5;
-	uint uVar6;
-	uint uVar7;
-	uint uVar8;
+	int uVar3;
+	int iVar4;
+	int uVar5;
+	int uVar6;
+	int uVar7;
+	int uVar8;
 	int iVar9;
 	int iVar10;
-	uint local_48;
-	uint local_44;
-	uint local_40;
-	ushort local_3c;
-	uint local_38;
-	uint local_30;
+	tNode n;
+	VECTOR sp;
 
 	uVar6 = pos->vz;
-	local_48 = ((int)(pos->vx + ((int)uVar6 >> 1 & 0x1ffU)) >> 9) * 0x200 -
-		((int)(uVar6 & 0x200) >> 1);
-	local_44 = pos->vy;
-	local_40 = ((int)uVar6 >> 9) << 9;
-	local_38 = local_48 & 0xfffffc00;
-	local_30 = local_40 & 0xfffffc00;
-	if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-		[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-		((int)local_30 >> 8 & 7U) & 1U) == 0) {
-		local_44 = 0;
+	n.vx = ((pos->vx + (uVar6 >> 1 & 0x1ffU)) >> 9) * 0x200 - ((uVar6 & 0x200) >> 1);
+	n.vy = pos->vy;
+	n.vz = (uVar6 >> 9) << 9;
+	uVar6 = (n.vz & 0xfffffc00U) >> 8;
+
+	if ((((char*)omap)[((int)(uVar6 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar6 & 7) & 1U) == 0) {
+		n.vy = 0;
 	}
-	else {
-		local_44 = MapHeight((VECTOR *)&local_48);
-		local_44 = local_44 ^ (local_44 ^ sdLevel) & 3;
+	else 
+	{
+		uVar6 = MapHeight((VECTOR*)&n);
+		n.vy = uVar6 ^ (uVar6 ^ sdLevel) & 3;
 	}
-	iVar10 = pos->vz - local_40;
-	iVar9 = (pos->vx - local_48) + (iVar10 >> 1);
-	uVar7 = local_48 + 0x100;
-	uVar3 = local_40 + 0x200;
-	local_38 = uVar7 & 0xfffffc00;
-	local_3c = (&DAT_PATH__000e9b00)
-		[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^ (local_44 & 1) * 0x2040
-		^ (local_44 & 2) << 0xc];
-	uVar6 = (uint)local_3c;
-	local_30 = uVar3 & 0xfffffc00;
-	local_48 = uVar7;
-	local_40 = uVar3;
-	if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-		[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-		((int)local_30 >> 8 & 7U) & 1U) == 0) {
-		local_44 = 0;
+
+	iVar10 = pos->vz - n.vz;
+	iVar9 = (pos->vx - n.vx) + (iVar10 >> 1);
+	uVar7 = n.vx + 0x100;
+	uVar3 = n.vz + 0x200;
+
+	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+
+	uVar6 = n.dist;
+	uVar5 = (uVar3 & 0xfffffc00) >> 8;
+	n.vx = uVar7;
+	n.vz = uVar3;
+
+	if ((((char*)omap)[((uVar5 & 0x7f) >> 3) + ((uVar7 & 0xfffffc00) >> 4 & 0x7c0)] >> (uVar5 & 7) & 1U) == 0) 
+	{
+		n.vy = 0;
 	}
-	else {
-		local_44 = MapHeight((VECTOR *)&local_48);
-		local_44 = local_44 ^ (local_44 ^ sdLevel) & 3;
+	else
+	{
+		uVar3 = MapHeight((VECTOR*)&n);
+		n.vy = uVar3 ^ (uVar3 ^ sdLevel) & 3;
 	}
-	local_3c = (&DAT_PATH__000e9b00)
-		[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^ (local_44 & 1) * 0x2040
-		^ (local_44 & 2) << 0xc];
-	uVar7 = (uint)local_3c;
-	uVar3 = uVar7;
-	if (uVar6 < uVar7) {
+
+	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+
+	uVar5 = n.dist;
+	uVar3 = uVar5;
+
+	if (uVar6 < uVar5)
 		uVar3 = uVar6;
-	}
-	if (iVar10 < iVar9) {
-		local_48 = local_48 + 0x100;
-		local_40 = local_40 - 0x200;
-		local_38 = local_48 & 0xfffffc00;
-		local_30 = local_40 & 0xfffffc00;
-		if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-			((int)local_30 >> 8 & 7U) & 1U) == 0) {
-			uVar4 = 0;
+
+	if (iVar10 < iVar9) 
+	{
+		n.vx = n.vx + 0x100;
+		n.vz = n.vz - 0x200;
+		uVar7 = (int)(n.vz & 0xfffffc00U) >> 8;
+
+		if ((((char*)omap)[((uVar7 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar7 & 7) & 1U) == 0) 
+		{
+			uVar7 = 0;
 		}
-		else {
-			uVar4 = MapHeight((VECTOR *)&local_48);
-			uVar4 = uVar4 ^ (uVar4 ^ sdLevel) & 3;
+		else
+		{
+			uVar7 = MapHeight((VECTOR*)&n);
+			uVar7 = uVar7 ^ (uVar7 ^ sdLevel) & 3;
 		}
-		uVar4 = (uint)(ushort)(&DAT_PATH__000e9b00)
-			[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^
-			(uVar4 & 1) * 0x2040 ^ (uVar4 & 2) << 0xc];
-		uVar8 = uVar4;
-		if (uVar3 < uVar4) {
+
+		uVar7 = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (uVar7 & 1) * 0x2040 ^ (uVar7 & 2) << 0xc];
+
+		uVar8 = uVar7;
+
+		if (uVar3 < uVar7)
 			uVar8 = uVar3;
-		}
+	
 		uVar8 = uVar8 + 0x155;
 		bVar1 = 0xffff < uVar8;
 		bVar2 = uVar8 < uVar6;
-		if (bVar1) {
+
+		if (bVar1)
 			uVar8 = 0xffff;
-		}
-		if (!bVar1 && bVar2) {
+
+		if (!bVar1 && bVar2)
 			uVar6 = uVar8;
-		}
-		if (uVar8 < uVar7) {
+
+		if (uVar8 < uVar5)
+			uVar5 = uVar8;
+
+		iVar4 = uVar7 - uVar6;
+
+		if (uVar8 < uVar7) 
+		{
+			iVar4 = uVar8 - uVar6;
 			uVar7 = uVar8;
 		}
-		iVar5 = uVar4 - uVar6;
-		if (uVar8 < uVar4) {
-			iVar5 = uVar8 - uVar6;
-			uVar4 = uVar8;
-		}
-		iVar5 = iVar5 * iVar9;
-		iVar10 = (uVar7 - uVar4) * iVar10;
+
+		iVar4 = iVar4 * iVar9;
+		iVar10 = (uVar5 - uVar7) * iVar10;
 	}
-	else {
-		local_48 = local_48 - 0x200;
-		local_38 = local_48 & 0xfffffc00;
-		local_30 = local_40 & 0xfffffc00;
-		if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-			((int)local_30 >> 8 & 7U) & 1U) == 0) {
-			uVar4 = 0;
+	else 
+	{
+		n.vx = n.vx - 0x200;
+		uVar7 = (int)(n.vz & 0xfffffc00U) >> 8;
+
+		if ((((char*)omap)[((uVar7 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar7 & 7) & 1U) == 0)
+		{
+			uVar7 = 0;
 		}
-		else {
-			uVar4 = MapHeight((VECTOR *)&local_48);
-			uVar4 = uVar4 ^ (uVar4 ^ sdLevel) & 3;
+		else
+		{
+			uVar7 = MapHeight((VECTOR*)&n);
+			uVar7 = uVar7 ^ (uVar7 ^ sdLevel) & 3;
 		}
-		uVar4 = (uint)(ushort)(&DAT_PATH__000e9b00)
-			[((int)local_48 >> 2 & 0x3f80U | (int)local_40 >> 9 & 0x7fU) ^
-			(uVar4 & 1) * 0x2040 ^ (uVar4 & 2) << 0xc];
-		uVar8 = uVar4;
-		if (uVar3 < uVar4) {
+
+		uVar7 = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (uVar7 & 1) * 0x2040 ^ (uVar7 & 2) << 0xc];
+
+		uVar8 = uVar7;
+
+		if (uVar3 < uVar7)
 			uVar8 = uVar3;
-		}
+	
 		uVar8 = uVar8 + 0x155;
 		bVar1 = 0xffff < uVar8;
 		bVar2 = uVar8 < uVar6;
-		if (bVar1) {
+		if (bVar1)
 			uVar8 = 0xffff;
-		}
-		if (!bVar1 && bVar2) {
+	
+		if (!bVar1 && bVar2)
 			uVar6 = uVar8;
-		}
-		if (uVar8 < uVar7) {
+	
+		if (uVar8 < uVar5)
+			uVar5 = uVar8;
+
+		iVar4 = uVar7 - uVar6;
+		if (uVar8 < uVar7) 
+		{
+			iVar4 = uVar8 - uVar6;
 			uVar7 = uVar8;
 		}
-		iVar5 = uVar4 - uVar6;
-		if (uVar8 < uVar4) {
-			iVar5 = uVar8 - uVar6;
-			uVar4 = uVar8;
-		}
-		iVar5 = iVar5 * iVar10;
-		iVar10 = (uVar7 - uVar4) * iVar9;
+		iVar4 = iVar4 * iVar10;
+		iVar10 = (uVar5 - uVar7) * iVar9;
 	}
-	uVar6 = uVar6 + (iVar5 + iVar10 >> 9);
-	DAT_PATH__000e9ac8 = uVar6 ^ (uVar6 & 1 ^ uVar6) & 1;
-	return DAT_PATH__000e9ac8;*/
+
+	uVar6 = uVar6 + (iVar4 + iVar10 >> 9);
+	lastDistanceFound = uVar6 ^ (uVar6 & 1 ^ uVar6) & 1;
+
+	return lastDistanceFound;
 }
 
 
@@ -1463,61 +1595,65 @@ int getInterpolatedDistance(VECTOR *pos)
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void addCivs(void)
 {
-	UNIMPLEMENTED();
-	/*
-	byte bVar1;
-	uint uVar2;
+	unsigned char bits;
+	int uVar2;
 	int iVar3;
-	uint uVar4;
-	uint uVar5;
+	int uVar4;
+	int uVar5;
+	int iVar7;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int iVar8;
-	uint uVar9;
+	int uVar9;
 	int iVar10;
 	int iVar11;
-	_CAR_DATA *p_Var12;
+	int x, z, vx, vz;
+	_CAR_DATA* cp;
 
-	p_Var12 = car_data;
+	cp = car_data;
 	do {
-		if (p_Var12->controlType == '\x02') {
-			iVar11 = (int)(p_Var12->hd).oBox.radii[2].vx;
-			iVar6 = (p_Var12->hd).oBox.location.vx;
-			iVar10 = (int)(p_Var12->hd).oBox.radii[2].vz;
-			iVar8 = (p_Var12->hd).oBox.location.vz;
-			uVar4 = iVar6 + iVar11 >> 8 & 0x7e;
-			uVar2 = iVar8 + iVar10 >> 8;
-			uVar5 = uVar2 & 0x7e;
-			iVar3 = (int)uVar5 >> 3;
-			bVar1 = (byte)(3 << (uVar2 & 6));
-			uVar7 = iVar6 - iVar11 >> 8 & 0x7e;
-			(&DAT_PATH__000e91a8)[iVar3 + uVar4 * 0x10] =
-				bVar1 ^ (&DAT_PATH__000e91a8)[iVar3 + uVar4 * 0x10];
-			uVar9 = iVar8 - iVar10 >> 8;
-			(&DAT_PATH__000e91a8)[iVar3 + (uVar4 + 1) * 0x10] =
-				bVar1 ^ (&DAT_PATH__000e91a8)[iVar3 + (uVar4 + 1) * 0x10];
-			uVar2 = uVar9 & 0x7e;
-			if ((uVar4 ^ uVar5 << 8) == uVar7) {
-				if (uVar2 != 0) goto LAB_PATH__000e8310;
+		if (cp->controlType == 2) 
+		{
+			iVar7 = cp->hd.oBox.radii[2].vx;
+			x = cp->hd.oBox.location.vx;
+			iVar6 = cp->hd.oBox.radii[2].vz;
+			z = cp->hd.oBox.location.vz;
+
+			vx = x + iVar7 >> 8 & 0x7e;
+			vz = z + iVar6 >> 8;
+
+			iVar3 = (vz & 0x7e) >> 3;
+			bits = (3 << (vz & 6));
+
+			uVar4 = x - iVar7 >> 8 & 0x7e;
+			omap[vx][iVar3] = bits ^ omap[vx][iVar3];
+			uVar5 = z - iVar6 >> 8;
+			omap[(vx + 1)][iVar3] = bits ^ omap[(vx + 1)][iVar3];
+			uVar2 = uVar5 & 0x7e;
+
+			if ((vx ^ (vz & 0x7e) << 8) == uVar4)
+			{
+				if (uVar2 != 0)
+					goto LAB_PATH__000e8310;
 			}
-			else {
-				if (uVar2 << 8 != 1) {
-				LAB_PATH__000e8310:
-					bVar1 = (byte)(3 << (uVar9 & 6));
-					(&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + uVar7 * 0x10] =
-						bVar1 ^ (&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + uVar7 * 0x10];
-					(&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + (uVar7 + 1) * 0x10] =
-						bVar1 ^ (&DAT_PATH__000e91a8)[((int)uVar2 >> 3) + (uVar7 + 1) * 0x10];
-				}
+			else if (uVar2 << 8 != 1)
+			{
+			LAB_PATH__000e8310:
+				bits = (3 << (uVar5 & 6));
+				omap[uVar4][(uVar2 >> 3)] = bits ^ omap[uVar4][(uVar2 >> 3)];
+				omap[(uVar4 + 1)][(uVar2 >> 3)] = bits ^ omap[(uVar4 + 1)][(uVar2 >> 3)];
 			}
 		}
-		p_Var12 = p_Var12 + 1;
-		if ((_CAR_DATA *)0xd4697 < p_Var12) {
+
+		cp++;
+
+		if (&car_data[19] < cp)
 			return;
-		}
-	} while (true);*/
+
+	} while (true);
 }
 
 
@@ -1924,298 +2060,390 @@ void addCivs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [A] - might be bugged
 void UpdateCopMap(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
-	uint uVar2;
-	ushort uVar3;
-	int *piVar4;
-	ushort *puVar5;
-	int iVar6;
+	int uVar2;
+	long lVar3;
+	short uVar4;
+	int* piVar5;
+	short* psVar6;
 	int iVar7;
-	uint uVar8;
-	uint uVar9;
-	uint uVar10;
-	uint local_48;
-	uint local_44;
-	uint local_40;
-	undefined4 local_3c;
-	uint local_38;
-	uint local_30;
+	int iVar8;
+	int uVar9;
+	int uVar10;
+	int uVar11;
+	tNode startNode;
+	tNode sp_n;
 
 	BloodyHell();
-	if ((player_position_known == 1) || (CameraCnt == 6)) {
-		DAT_PATH__000f1b00 = 0;
-		setMem16(&DAT_PATH__000e9b00, 0xfffe, 0x4000);
-		DAT_PATH__000e99ac = 3;
+
+	if ((player_position_known == 1) || (CameraCnt == 6)) 
+	{
+		pathFrames = 0;
+		setMem16((ushort*)distanceCache, 0xfffe, 0x4000);
+		DoExtraWorkForNFrames = 3;
 	}
-	if (DAT_PATH__000f1b00 == 0) {
-		if ((player.playerType == '\x01') && ((CopsCanSeePlayer != 0 || (numActiveCops == 0)))) {
-			iVar1 = (int)player.playerCarId;
-			DAT_PATH__000e9ab8 =
-				car_data[iVar1].hd.where.t[0] + (*(int *)(car_data[iVar1].st + 0x1c) + 0x800 >> 0xc) * 8;
-			DAT_PATH__000e9abc =
-				car_data[iVar1].hd.where.t[1] + (*(int *)(car_data[iVar1].st + 0x20) + 0x800 >> 0xc) * 4;
-			DAT_PATH__000e9ac0 =
-				car_data[iVar1].hd.where.t[2] + (*(int *)(car_data[iVar1].st + 0x24) + 0x800 >> 0xc) * 8;
+
+	if (pathFrames == 0) 
+	{
+		if ((player[0].playerType == 1) && ((CopsCanSeePlayer != 0 || (numActiveCops == 0)))) 
+		{
+			iVar1 = (int)player[0].playerCarId;
+
+			searchTarget.vx = car_data[iVar1].hd.where.t[0] + FIXED(car_data[iVar1].st.n.linearVelocity[0]) * 8;
+			searchTarget.vy = car_data[iVar1].hd.where.t[1] + FIXED(car_data[iVar1].st.n.linearVelocity[1]) * 4;
+			searchTarget.vz = car_data[iVar1].hd.where.t[2] + FIXED(car_data[iVar1].st.n.linearVelocity[2]) * 8;
 		}
-		else {
-			if (DAT_PATH__000e9abc == -0x304f) {
-				DAT_PATH__000e9ab8 = player.pos[0];
-				DAT_PATH__000e9abc = player.pos[1];
-				DAT_PATH__000e9ac0 = player.pos[2];
-			}
+		else if (searchTarget.vy == -0x304f) 
+		{
+			searchTarget.vx = player[0].pos[0];
+			searchTarget.vy = player[0].pos[1];
+			searchTarget.vz = player[0].pos[2];
 		}
-		puVar5 = &DAT_PATH__000e9b00;
+
+		psVar6 = distanceCache;
 		iVar1 = 0x3fff;
+
 		do {
-			uVar2 = (uint)*puVar5 + 0x2000;
-			if ((uVar2 & 1) != 0) {
+			uVar2 = (uint)(ushort)*psVar6 + 0x2000;
+			if ((uVar2 & 1) != 0)
 				uVar2 = uVar2 ^ 1;
-			}
-			uVar3 = (ushort)uVar2;
-			if (0xfffe < uVar2) {
-				uVar3 = 0xfffe;
-			}
-			*puVar5 = uVar3;
-			iVar1 = iVar1 + -1;
-			puVar5 = puVar5 + 1;
+
+			uVar4 = (ushort)uVar2;
+			if (0xfffe < uVar2)
+				uVar4 = 0xfffe;
+
+			*psVar6 = uVar4;
+			iVar1--;
+			psVar6 = (short*)((ushort*)psVar6 + 1);
 		} while (-1 < iVar1);
-		local_48 = ((int)(DAT_PATH__000e9ab8 + ((int)DAT_PATH__000e9ac0 >> 1 & 0x1ffU)) >> 9) * 0x200 -
-			((int)(DAT_PATH__000e9ac0 & 0x200) >> 1);
-		local_40 = ((int)DAT_PATH__000e9ac0 >> 9) << 9;
-		local_44 = DAT_PATH__000e9abc;
-		local_38 = local_48 & 0xfffffc00;
-		DAT_PATH__000f279c = 0;
-		local_30 = local_40 & 0xfffffc00;
-		if (((int)(uint)(byte)(&DAT_PATH__000e91a8)
-			[((int)((int)local_30 >> 8 & 0x7fU) >> 3) + (local_38 >> 4 & 0x7c0)] >>
-			((int)local_30 >> 8 & 7U) & 1U) == 0) {
-			local_44 = 0;
+
+		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 0x200 - ((searchTarget.vz & 0x200U) >> 1);
+		startNode.vz = (searchTarget.vz >> 9) << 9;
+		startNode.vy = searchTarget.vy;
+		numHeapEntries = 0;
+
+		uVar2 = (int)(startNode.vz & 0xfffffc00U) >> 8;
+
+		if ((((char*)omap)[((uVar2 & 0x7f) >> 3) + ((startNode.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar2 & 7) & 1U) == 0)
+		{
+			startNode.vy = 0;
 		}
-		else {
-			local_44 = MapHeight((VECTOR *)(tNode *)&local_48);
-			local_44 = local_44 ^ (local_44 ^ sdLevel) & 3;
+		else 
+		{
+			uVar2 = MapHeight((VECTOR*)&startNode);
+			startNode.vy = uVar2 ^ (uVar2 ^ sdLevel) & 3;
 		}
-		iVar1 = local_48 - DAT_PATH__000e9ab8;
-		if ((int)(DAT_PATH__000e9ac0 - local_40) <
-			(int)((DAT_PATH__000e9ab8 - local_48) + ((int)(DAT_PATH__000e9ac0 - local_40) >> 1))) {
-			iVar1 = SquareRoot0(iVar1 * iVar1 +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+
+		iVar1 = startNode.vx - searchTarget.vx;
+
+		if (searchTarget.vz - startNode.vz < (searchTarget.vx - startNode.vx) + (searchTarget.vz - startNode.vz >> 1))
+		{
+			lVar3 = SquareRoot0(iVar1 * iVar1 + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, (ushort)uVar2);
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+
+				if (uVar9 != 0) 
+				{
+					uVar4 = heap[uVar9].dist;
+
+					while (uVar2 < uVar4)
+					{
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + 0x100;
-			local_40 = local_40 + 0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+
+			startNode.vx = startNode.vx + 0x100;
+			startNode.vz = startNode.vz + 0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) +
+				(startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries != 0xc6) 
+			{
+				setDistance(&startNode, (ushort)uVar2);
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+				if (uVar9 != 0) 
+				{
+					uVar4 = heap[uVar9].dist;
+					while (uVar2 < uVar4)
+					{
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + 0x100;
-			local_40 = local_40 + -0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c == 0xc6) goto LAB_PATH__000e8dfc;
-			setDistance((tNode *)&local_48, (ushort)uVar2);
-			uVar8 = DAT_PATH__000f279c + 1;
-			uVar10 = uVar8 >> 1;
-			if ((uVar10 != 0) && (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8])) {
-				iVar1 = uVar8 * 0x10;
+
+			startNode.vx = startNode.vx + 0x100;
+			startNode.vz = startNode.vz + -0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries == 0xc6)
+				goto LAB_PATH__000e8dfc;
+
+			setDistance(&startNode, (ushort)uVar2);
+
+			uVar9 = numHeapEntries + 1;
+			uVar11 = uVar9 >> 1;
+
+			if ((uVar11 != 0) && (uVar2 < heap[uVar11].dist))
+			{
+				iVar1 = uVar9 * 0x10;
 				do {
-					uVar8 = uVar10;
-					*(undefined4 *)((int)&DAT_PATH__000f1b08 + iVar1) = (&DAT_PATH__000f1b08)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b0c + iVar1) = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b10 + iVar1) = (&DAT_PATH__000f1b10)[uVar8 * 4];
-					uVar10 = uVar8 >> 1;
-					*(undefined4 *)((int)&DAT_PATH__000f1b14 + iVar1) =
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-					if (uVar10 == 0) break;
-					iVar1 = uVar8 << 4;
-				} while (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8]);
+					uVar9 = uVar11;
+					*(int*)((int)&heap[0].vx + iVar1) = (&heap[0].vx)[uVar9 * 4]; // [A] I cannot understand decompiler shit code
+					*(int*)((int)&heap[0].vy + iVar1) = (&heap[0].vy)[uVar9 * 4];
+					*(int*)((int)&heap[0].vz + iVar1) = (&heap[0].vz)[uVar9 * 4];
+
+					uVar11 = uVar9 >> 1;
+					*(uint*)((int)&heap[0].dist + iVar1) = *(uint*)(&heap[0].dist + uVar9 * 8);
+
+					if (uVar11 == 0)
+						break;
+
+					iVar1 = uVar9 << 4; // * 16
+				} while (uVar2 < heap[uVar11].dist);
 			}
 		}
-		else {
-			iVar1 = SquareRoot0(iVar1 * iVar1 +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+		else 
+{
+			lVar3 = SquareRoot0(iVar1 * iVar1 + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+			if (numHeapEntries != 0xc6)
+			{
+				setDistance(&startNode, (ushort)uVar2);
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+				if (uVar9 != 0)
+				{
+					uVar4 = heap[uVar9].dist;
+					while (uVar2 < uVar4)
+					{
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + 0x100;
-			local_40 = local_40 + 0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c != 0xc6) {
-				setDistance((tNode *)&local_48, (ushort)uVar2);
-				uVar10 = DAT_PATH__000f279c + 1;
-				uVar8 = uVar10 >> 1;
-				if (uVar8 != 0) {
-					uVar3 = (&DAT_PATH__000f1b14)[uVar8 * 8];
-					while (uVar2 < uVar3) {
-						(&DAT_PATH__000f1b08)[uVar10 * 4] = (&DAT_PATH__000f1b08)[uVar8 * 4];
-						(&DAT_PATH__000f1b0c)[uVar10 * 4] = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-						(&DAT_PATH__000f1b10)[uVar10 * 4] = (&DAT_PATH__000f1b10)[uVar8 * 4];
-						uVar9 = uVar8 >> 1;
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) =
-							*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-						uVar10 = uVar8;
-						if (uVar9 == 0) break;
-						uVar3 = (&DAT_PATH__000f1b14)[uVar9 * 8];
-						uVar8 = uVar9;
+
+			startNode.vx = startNode.vx + 0x100;
+			startNode.vz = startNode.vz + 0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, (ushort)uVar2);
+
+				uVar11 = numHeapEntries + 1;
+				uVar9 = uVar11 >> 1;
+
+				if (uVar9 != 0)
+				{
+					uVar4 = heap[uVar9].dist;
+					while (uVar2 < uVar4) {
+						heap[uVar11].vx = heap[uVar9].vx;
+						heap[uVar11].vy = heap[uVar9].vy;
+						heap[uVar11].vz = heap[uVar9].vz;
+						uVar10 = uVar9 >> 1;
+						heap[uVar11].dist = heap[uVar9].dist;
+						heap[uVar11].ptoey = heap[uVar9].ptoey;
+						uVar11 = uVar9;
+
+						if (uVar10 == 0)
+							break;
+
+						uVar4 = heap[uVar10].dist;
+						uVar9 = uVar10;
 					}
 				}
-				DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-				(&DAT_PATH__000f1b08)[uVar10 * 4] = local_48;
-				(&DAT_PATH__000f1b0c)[uVar10 * 4] = local_44;
-				(&DAT_PATH__000f1b10)[uVar10 * 4] = local_40;
-				*(undefined4 *)(&DAT_PATH__000f1b14 + uVar10 * 8) = local_3c;
+
+				numHeapEntries = numHeapEntries + 1;
+				heap[uVar11].vx = startNode.vx;
+				heap[uVar11].vy = startNode.vy;
+				heap[uVar11].vz = startNode.vz;
+				heap[uVar11].dist = startNode.dist;
+				heap[uVar11].ptoey = startNode.ptoey;
 			}
-			local_48 = local_48 + -0x200;
-			iVar1 = SquareRoot0((local_48 - DAT_PATH__000e9ab8) * (local_48 - DAT_PATH__000e9ab8) +
-				(local_40 - DAT_PATH__000e9ac0) * (local_40 - DAT_PATH__000e9ac0));
-			uVar2 = iVar1 / 2 & 0xffff;
-			if (DAT_PATH__000f279c == 0xc6) goto LAB_PATH__000e8dfc;
-			setDistance((tNode *)&local_48, (ushort)uVar2);
-			uVar8 = DAT_PATH__000f279c + 1;
-			uVar10 = uVar8 >> 1;
-			if ((uVar10 != 0) && (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8])) {
-				iVar1 = uVar8 * 0x10;
+			startNode.vx = startNode.vx + -0x200;
+			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			uVar2 = lVar3 / 2 & 0xffff;
+
+			if (numHeapEntries == 0xc6)
+				goto LAB_PATH__000e8dfc;
+
+			setDistance(&startNode, (ushort)uVar2);
+			uVar9 = numHeapEntries + 1;
+			uVar11 = uVar9 >> 1;
+
+			if ((uVar11 != 0) && (uVar2 < heap[uVar11].dist)) 
+			{
+				iVar1 = uVar9 * 0x10;
 				do {
-					uVar8 = uVar10;
-					*(undefined4 *)((int)&DAT_PATH__000f1b08 + iVar1) = (&DAT_PATH__000f1b08)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b0c + iVar1) = (&DAT_PATH__000f1b0c)[uVar8 * 4];
-					*(undefined4 *)((int)&DAT_PATH__000f1b10 + iVar1) = (&DAT_PATH__000f1b10)[uVar8 * 4];
-					uVar10 = uVar8 >> 1;
-					*(undefined4 *)((int)&DAT_PATH__000f1b14 + iVar1) =
-						*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8);
-					if (uVar10 == 0) break;
-					iVar1 = uVar8 << 4;
-				} while (uVar2 < (ushort)(&DAT_PATH__000f1b14)[uVar10 * 8]);
+					uVar9 = uVar11;
+					*(int*)((int)&heap[0].vx + iVar1) = (&heap[0].vx)[uVar9 * 4];
+					*(int*)((int)&heap[0].vy + iVar1) = (&heap[0].vy)[uVar9 * 4];
+					*(int*)((int)&heap[0].vz + iVar1) = (&heap[0].vz)[uVar9 * 4];
+					uVar11 = uVar9 >> 1;
+					*(uint*)((int)&heap[0].dist + iVar1) = *(uint*)(&heap[0].dist + uVar9 * 8);
+
+					if (uVar11 == 0)
+						break;
+
+					iVar1 = uVar9 << 4; // * 16
+				} while (uVar2 < heap[uVar11].dist);
 			}
 		}
-		DAT_PATH__000f279c = DAT_PATH__000f279c + 1;
-		(&DAT_PATH__000f1b08)[uVar8 * 4] = local_48;
-		(&DAT_PATH__000f1b0c)[uVar8 * 4] = local_44;
-		(&DAT_PATH__000f1b10)[uVar8 * 4] = local_40;
-		*(undefined4 *)(&DAT_PATH__000f1b14 + uVar8 * 8) = local_3c;
+
+		numHeapEntries++;
+
+		heap[uVar9].vx = startNode.vx;
+		heap[uVar9].vy = startNode.vy;
+		heap[uVar9].vz = startNode.vz;
+		heap[uVar9].dist = startNode.dist;
+		heap[uVar9].ptoey = startNode.ptoey;
 	}
-	else {
-		addCivs();
-		iVar1 = DAT_PATH__000f2798 << 2;
-		uVar2 = DAT_PATH__000f2798;
-		if (6 < DAT_PATH__000f2798) {
+	else
+	{
+		// add cars
+		addCivs(); 
+
+		iVar1 = cellsThisFrame << 2;
+		uVar2 = cellsThisFrame;
+
+		if (6 < cellsThisFrame) 
+		{
 			uVar2 = 6;
-			iVar1 = 0x18;
+			iVar1 = 24;
 		}
-		iVar1 = iRam000f27c0 + iVar1 * -4 + uVar2 * -5;
-		if (DAT_PATH__000e99ac != 0) {
-			DAT_PATH__000e99ac = DAT_PATH__000e99ac + -1;
-			iVar1 = iVar1 + 0x3c;
+
+		iVar1 = pathIterations - iVar1 * 4 - uVar2 * 5;
+		if (DoExtraWorkForNFrames != 0) 
+		{
+			DoExtraWorkForNFrames--;
+			iVar1 += 60;
 		}
-		iVar7 = iVar1 + -1;
-		if (iVar1 < 0x24) {
-			iVar7 = 0x23;
-		}
-		while (iVar7 != -1) {
-			iVar7 = iVar7 + -1;
+
+		iVar8 = iVar1 - 1;
+
+		if (iVar1 < 36)
+			iVar8 = 35;
+	
+		while (iVar8 != -1) 
+		{
+			iVar8--;
 			iterate();
 		}
+
+		// remove cars
 		addCivs();
 	}
+
 LAB_PATH__000e8dfc:
-	piVar4 = &DAT_PATH__000f27a0;
-	iVar7 = 6;
-	DAT_PATH__000f1b00 = DAT_PATH__000f1b00 + 1;
-	iVar1 = DAT_PATH__000f27bc;
+	piVar5 = distanceReturnedLog;
+	iVar8 = 6;
+	pathFrames++;
+	iVar1 = distanceReturnedLog[7];
+
 	do {
-		if (iVar1 < *piVar4) {
-			iVar1 = *piVar4;
-		}
-		iVar7 = iVar7 + -1;
-		piVar4 = piVar4 + 1;
-	} while (-1 < iVar7);
-	if ((DAT_PATH__000e99a8 < DAT_PATH__000f1b00) ||
-		(2000 < (int)((uint)(ushort)DAT_PATH__000f1b24 - iVar1))) {
-		DAT_PATH__000f1b00 = 0;
+		if (iVar1 < *piVar5)
+			iVar1 = *piVar5;
+
+		iVar8--;
+		piVar5++;
+	} while (-1 < iVar8);
+
+	if ((32 < pathFrames) || (2000 < (heap[1].dist - iVar1)))  // [A] was (pathFrames < pathFrames)
+	{
+		pathFrames = 0;
 	}
-	iVar6 = DAT_PATH__000e9ab8 - player.pos[0] >> 4;
-	iVar7 = DAT_PATH__000e9abc - player.pos[1] >> 4;
-	iVar1 = (int)(DAT_PATH__000e9ac0 - player.pos[2]) >> 4;
-	DAT_PATH__000e9acc = iVar6 * iVar6 + iVar7 * iVar7 + iVar1 * iVar1;
-	return;*/
+
+	iVar7 = searchTarget.vx - player[0].pos[0] >> 4;
+	iVar8 = searchTarget.vy - player[0].pos[1] >> 4;
+	iVar1 = searchTarget.vz - player[0].pos[2] >> 4;
+	playerTargetDistanceSq = iVar7 * iVar7 + iVar8 * iVar8 + iVar1 * iVar1;
+
+#if 0
+	printf("=========================\n");
+	for (int i = 0; i < 128; i++)
+	{
+		char line[130];
+
+		for (int j = 0; j < 128; j++)
+		{
+			if (OMAP_GETVALUE(i, j))
+				line[j] = 'O';
+			else
+				line[j] = '.';
+		}
+		line[128] = 0;
+		printf("%s\n", line);
+	}
+	printf("=========================\n");
+#endif
 }
 
 
@@ -2296,56 +2524,63 @@ LAB_PATH__000e8dfc:
 	/* end block 5 */
 	// End Line: 2229
 
+// [D]
 int getHeadingToPlayer(int vx, int vy, int vz)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
 	int iVar1;
 	uint uVar2;
 	int iVar3;
 	int val;
+	long y;
+	long x;
 	int iVar4;
-	VECTOR local_30;
+	VECTOR pos;
 
-	iVar4 = vx - player.pos[0] >> 4;
-	iVar3 = vy - player.pos[1] >> 4;
-	iVar1 = vz - player.pos[2] >> 4;
-	val = 0xfa4;
-	if (DAT_PATH__000e9acc << 1 <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) {
-		local_30.vx = vx + -0x80;
-		local_30.vy = vy;
-		local_30.vz = vz + -0x80;
-		iVar1 = getInterpolatedDistance(&local_30);
-		local_30.vx = vx + 0x80;
-		local_30.vz = vz + -0x80;
-		iVar3 = getInterpolatedDistance(&local_30);
-		local_30.vz = vz + 0x80;
-		local_30.vx = vx;
-		iVar4 = getInterpolatedDistance(&local_30);
-		if (0xf000 < iVar4) {
+	iVar4 = vx - player[0].pos[0] >> 4;
+	iVar3 = vy - player[0].pos[1] >> 4;
+	iVar1 = vz - player[0].pos[2] >> 4;
+
+	val = 4004;
+
+	if ((playerTargetDistanceSq << 1) <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) 
+	{
+		pos.vx = vx - 0x80;
+		pos.vy = vy;
+		pos.vz = vz - 0x80;
+
+		iVar1 = getInterpolatedDistance(&pos);
+
+		pos.vx = vx + 0x80;
+		pos.vz = vz - 0x80;
+		iVar3 = getInterpolatedDistance(&pos);
+
+		pos.vz = vz + 0x80;
+		pos.vx = vx;
+		iVar4 = getInterpolatedDistance(&pos);
+
+		if (iVar4 > 0xf000)
+		{
 			ReplayLog_Fnarr_He_Said_Log(0x3e9);
-			vx = lastKnownPosition.vx - local_30.vx;
-			vz = lastKnownPosition.vz - local_30.vz;
-			goto LAB_PATH__000e9048;
+			y = lastKnownPosition.vx - pos.vx;
+			x = lastKnownPosition.vz - pos.vz;
+
+			return ratan2(y, x) + 4096;
 		}
+
 		val = 0xbbb;
-		if (0x600 < iVar4) {
+
+		if (iVar4 > 0x600)
+		{
 			ReplayLog_Fnarr_He_Said_Log(0x7d2);
-			uVar2 = ratan2((iVar1 - iVar3) * 2, iVar1 + iVar3 + iVar4 * -2);
-			return uVar2 & 0xfff;
+
+			return ratan2((iVar1 - iVar3) * 2, iVar1 + iVar3 + iVar4 * -2) & 0xfff;
 		}
 	}
+
 	ReplayLog_Fnarr_He_Said_Log(val);
-	vx = player.pos[0] - vx;
-	vz = player.pos[2] - vz;
-LAB_PATH__000e9048:
-	uVar2 = ratan2(vx, vz);
-	return uVar2 | 0x1000;
-	*/
+
+	y = player[0].pos[0] - vx;
+	x = player[0].pos[2] - vz;
+
+	return ratan2(y, x) + 4096;
 }
-
-
-
-
-

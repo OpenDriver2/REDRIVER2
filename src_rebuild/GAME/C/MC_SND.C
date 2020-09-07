@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "MC_SND.H"
 #include "GAMESND.H"
 #include "CUTSCENE.H"
@@ -8,6 +8,7 @@
 #include "CONVERT.H"
 #include "SOUND.H"
 #include "XAPLAY.H"
+#include "GLAUNCH.H"
 
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -17,7 +18,7 @@ char missionstarts[42] = {
 	0x2E, 0x30, 0x31
 };
 
-io id_map[49] =
+__io id_map[49] =
 {
 	{0, 0},
 	{0, 1},
@@ -70,7 +71,7 @@ io id_map[49] =
 	{39, 0},
 };
 
-xa_request xa_data[26] = {
+__xa_request xa_data[26] = {
 	{0x10, 0, 0, 1, 0},
 	{0x19, 0, 1, 2, 0},
 	{0x1E, 0, 2, 3, 0},
@@ -100,6 +101,8 @@ xa_request xa_data[26] = {
 };
 
 int cutscene_timer = 0;
+long pos[3];
+static int bodgevar = 0;
 
 // decompiled code
 // original method signature: 
@@ -543,87 +546,79 @@ void DoCutsceneSound(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+char es_mobile[1];
+static int holdall;
+
+// [D]
 void InitializeMissionSound(void)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	char cVar2;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
-	undefined3 extraout_var_01;
-	undefined3 extraout_var_02;
-	undefined3 extraout_var_03;
-	undefined3 extraout_var_04;
-	char *pcVar3;
+	char* pcVar3;
 	int iVar4;
 
 	iVar4 = 0;
-	pcVar3 = &es_mobile;
 	bodgevar = 0;
 	holdall = -1;
-	MissionStartData.PlayerPos._0_4_ = 0xffffffff;
-	do {
-		*pcVar3 = -1;
-		iVar1 = GameLevel;
-		iVar4 = iVar4 + -1;
-		pcVar3 = pcVar3 + -1;
-	} while (-1 < iVar4);
+	//MissionStartData.PlayerPos.vx = 0xffffffff;	// [A] something isn't quite right there
+
+	es_mobile[0] = -1;
+
 	jericho_in_back = 0;
-	if (GameLevel == 1) {
-		if (gCurrentMissionNumber - 0xfU < 2) {
-			cVar2 = GetMissionSound('\x0e');
-			iVar4 = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var, cVar2), 0, -10000, 0);
-			es_mobile = (char)iVar4;
+
+	if (GameLevel == 0)
+	{
+		es_mobile[0] = AddEnvSnd(3, 0, 4, 4, -10000, 0, 0, 0, 0);
+	}
+	else if (GameLevel == 1) 
+	{
+		if (gCurrentMissionNumber - 0xfU < 2)
+		{
+			cVar2 = GetMissionSound(14);
+			es_mobile[0] = AddEnvSnd(3, 32, 5, cVar2, 0, -10000, 0, 0, 0);
 		}
-		if (gCurrentMissionNumber == 0x14) {
-			jericho_in_back = iVar1;
+		else if (gCurrentMissionNumber == 0x14)
+		{
+			jericho_in_back = 1;
 		}
 	}
-	else {
-		if (GameLevel < 2) {
-			if (GameLevel == 0) {
-				iVar4 = AddEnvSnd(3, '\0', 4, 4, -10000, 0, 0);
-				es_mobile = (char)iVar4;
-			}
+	else if (GameLevel == 2)
+	{
+		if (gCurrentMissionNumber == 0x16) 
+		{
+			es_mobile[0] = AddEnvSnd(3, 0, 5, 0, -10000, 0, 0, 0, 0);
 		}
-		else {
-			if (GameLevel == 2) {
-				if (gCurrentMissionNumber == 0x16) {
-					iVar4 = AddEnvSnd(3, '\0', 5, 0, -10000, 0, 0);
-					es_mobile = (char)iVar4;
-				}
-				if (gCurrentMissionNumber == 0x18) {
-					cVar2 = GetMissionSound('\x1f');
-					AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_00, cVar2), 3000, -37000, 0x420a4);
-				}
-			}
-			else {
-				if (GameLevel == 3) {
-					if (gCurrentMissionNumber == 0x20) {
-						cVar2 = GetMissionSound('\x1f');
-						rio_alarm = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_01, cVar2), -10000, -0x1e1c0, -0x3e300);
-					}
-					if (gCurrentMissionNumber == 0x21) {
-						cVar2 = GetMissionSound('\x1f');
-						rio_alarm = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_02, cVar2), -10000, -0x319f2, 0x52e2c);
-					}
-					if (gCurrentMissionNumber == 0x23) {
-						cVar2 = GetMissionSound('$');
-						iVar4 = AddEnvSnd(3, ' ', 5, CONCAT31(extraout_var_03, cVar2), -10000, 0, 0);
-						es_mobile = (char)iVar4;
-					}
-					if (gCurrentMissionNumber == 0x28) {
-						cVar2 = GetMissionSound('\'');
-						holdall = Start3DSoundVolPitch(-1, 5, CONCAT31(extraout_var_04, cVar2), 0, 0, 0, -10000, 0x1000)
-							;
-						LockChannel(holdall);
-					}
-				}
-			}
+		else if (gCurrentMissionNumber == 0x18)
+		{
+			cVar2 = GetMissionSound(31);
+			AddEnvSnd(3, ' ', 5,  cVar2, 3000, -37000, 0x420a4, 0, 0);
 		}
 	}
-	return;*/
+	else if (GameLevel == 3)
+	{
+		if (gCurrentMissionNumber == 0x20) 
+		{
+			cVar2 = GetMissionSound(31);
+			rio_alarm = AddEnvSnd(3, 32, 5, cVar2, -10000, -0x1e1c0, -0x3e300, 0, 0);
+		}
+		else if (gCurrentMissionNumber == 0x21) 
+		{
+			cVar2 = GetMissionSound(31);
+			rio_alarm = AddEnvSnd(3, 32, 5, cVar2, -10000, -0x319f2, 0x52e2c, 0, 0);
+		}
+		else if (gCurrentMissionNumber == 0x23) 
+		{
+			cVar2 = GetMissionSound(36);
+			iVar4 = AddEnvSnd(3, 32, 5, cVar2, -10000, 0, 0, 0, 0);
+			es_mobile[0] = (char)iVar4;
+		}
+		else if (gCurrentMissionNumber == 0x28) 
+		{
+			cVar2 = GetMissionSound(39);
+			holdall = Start3DSoundVolPitch(-1, 5, cVar2, 0, 0, 0, -10000, 0x1000);
+			LockChannel(holdall);
+		}
+	}
 }
 
 
@@ -728,398 +723,392 @@ void InitializeMissionSound(void)
 
 void DoMissionSound(void)
 {
-	UNIMPLEMENTED();
-	/*
 	char cVar1;
-	undefined3 extraout_var;
-	undefined3 extraout_var_00;
-	undefined3 extraout_var_01;
-	undefined3 extraout_var_02;
-	int *piVar2;
-	undefined3 extraout_var_03;
-	undefined3 extraout_var_04;
-	undefined3 extraout_var_05;
-	undefined3 extraout_var_06;
-	undefined3 extraout_var_07;
-	undefined **ppuVar3;
-	undefined3 extraout_var_08;
-	undefined3 extraout_var_09;
-	undefined3 extraout_var_10;
-	undefined3 extraout_var_11;
 	int y;
-	int *piVar4;
 	int z;
-	_TARGET *p_Var5;
-	int iVar6;
-	int sample;
-	int sample_00;
-	undefined *puVar7;
+	_TARGET* p_Var4;
 	int x;
-	undefined *puVar8;
-	undefined *puVar9;
-	undefined *local_60;
-	int local_5c;
-	undefined *local_58;
-	int local_54[12];
-	int local_24;
+	int y_00;
+	int z_00;
+	int x_00;
+	long lVar6;
+	long lVar7;
+	VECTOR P;
+	long V[3];
+	static int channel;
 
-	iVar6 = DAT_000d7c2c;
-	sample_00 = bodgevar;
-	switch (gCurrentMissionNumber) {
-	case 0xb:
-	case 0xd:
-	case 0x14:
-		if (bodgevar == 1) {
-			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-			cVar1 = GetMissionSound('\v');
-			sample_00 = CONCAT31(extraout_var, cVar1);
-			goto LAB_0005ed9c;
-		}
-		goto LAB_0005e0d0;
-	case 0x15:
-		if (bodgevar == 1) {
-			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-			cVar1 = GetMissionSound('\v');
-			Start3DSoundVolPitch
-			(MissionStartData.PlayerPos._0_4_, 5, CONCAT31(extraout_var_00, cVar1), pos[0], pos[1],
-				pos[2], -1000, 0x1000);
-			GetMissionSound('\v');
-			bodgevar = 2;
-			return;
-		}
-		goto LAB_0005e0d0;
-	case 0x17:
-		if (holdall == -1) {
-			if (MissionTargets->data[0] == 2) {
-				holdall = MissionTargets->data[6];
+	switch (gCurrentMissionNumber) 
+	{
+		case 11:
+		case 13:
+		case 20:
+			if (bodgevar == 1)
+			{
+				channel = GetFreeChannel();
+				cVar1 = GetMissionSound(11);
+				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				bodgevar = 2;
 			}
-			else {
-				sample_00 = 1;
-				do {
-					if (0xf < sample_00) {
-						return;
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
+				bodgevar = 4;
+			}
+			break;
+		case 21:
+			if (bodgevar == 1) 
+			{
+				channel = GetFreeChannel();
+				cVar1 = GetMissionSound(11);
+				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				bodgevar = 2;
+			}
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
+				bodgevar = 4;
+			}
+			break;
+		case 23:
+			if (holdall == -1) 
+			{
+				for (int i = 0; i < 16; i++)
+				{
+					if (MissionTargets[i].data[0] == 2)
+					{
+						holdall = MissionTargets[i].data[6];
+						break;
 					}
-					p_Var5 = MissionTargets + sample_00;
-					sample_00 = sample_00 + 1;
-				} while (p_Var5->data[0] != 2);
-				holdall = p_Var5->data[6];
-			}
-		}
-		else {
-			sample_00 = (int)player.playerCarId;
-			if (sample_00 == holdall) {
-				if ((DAT_000d7c2c != 0) && (DAT_000d7c2c == (DAT_000d7c2c / 3000) * 3000)) {
-					sample = GetFreeChannel();
-					cVar1 = GetMissionSound('\x14');
-					StartSound(sample, 5, CONCAT31(extraout_var_01, cVar1), -0x5dc, 0x1000);
-					SetChannelPosition3(sample, (VECTOR *)car_data[sample_00].hd.where.t,
-						(long *)(car_data[sample_00].st + 0x1c), -0x5dc, 0x1000 - iVar6 / 0x2ee,
-						0);
 				}
 			}
-		}
-		break;
-	case 0x19:
-		if (bodgevar == 1) {
-			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-			cVar1 = GetMissionSound('\v');
-			Start3DSoundVolPitch
-			(MissionStartData.PlayerPos._0_4_, 5, CONCAT31(extraout_var_02, cVar1), pos[0], pos[1],
-				pos[2], -1000, 0x1000);
-			holdall = holdall + 1;
-			bodgevar = 2;
-			return;
-		}
-	LAB_0005e0d0:
-		if (bodgevar != 3) {
-			return;
-		}
-		StopChannel(MissionStartData.PlayerPos._0_4_);
-	LAB_0005edd8:
-		bodgevar = 4;
-		break;
-	case 0x1e:
-		if (bodgevar - 1U < 3) {
-			piVar2 = &DAT_00010e8c;
-			piVar4 = &local_60;
-			do {
-				sample_00 = piVar2[1];
-				iVar6 = piVar2[2];
-				sample = piVar2[3];
-				*piVar4 = *piVar2;
-				piVar4[1] = sample_00;
-				piVar4[2] = iVar6;
-				piVar4[3] = sample;
-				piVar2 = piVar2 + 4;
-				piVar4 = piVar4 + 4;
-			} while (piVar2 != &DAT_00010ebc);
-			sample_00 = bodgevar + -1;
-			local_54[9] = (&local_60)[sample_00 * 4];
-			local_54[10] = (&local_60)[sample_00 * 4 + 1];
-			local_54[11] = (&local_60)[sample_00 * 4 + 2];
-			local_24 = (&local_60)[sample_00 * 4 + 3];
-			cVar1 = GetMissionSound('\"');
-			Start3DSoundVolPitch
-			(-1, 5, CONCAT31(extraout_var_03, cVar1), local_54[9], local_54[10], local_54[11], -1000,
-				0x1000);
-			bodgevar = bodgevar + 4;
-		}
-		sample_00 = DAT_000d7c2c;
-		if (bodgevar < 4) {
-			return;
-		}
-		if (bodgevar == 6) {
-		LAB_0005e4e8:
-			if ((sample_00 / 3000) * 3000 == sample_00 + -800) {
-				cVar1 = GetMissionSound('\x14');
-				Start3DSoundVolPitch
-				(-1, 5, CONCAT31(extraout_var_05, cVar1), -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
-					0x1000 - sample_00 / 0x2ee);
-			}
-		}
-		else {
-			if (6 < bodgevar) {
-				if (bodgevar != 7) {
-					return;
-				}
-				if ((DAT_000d7c2c / 3000) * 3000 == DAT_000d7c2c + -0x514) {
-					cVar1 = GetMissionSound('\x14');
-					Start3DSoundVolPitch
-					(-1, 5, CONCAT31(extraout_var_04, cVar1), -0x2ffb, -0x113, 0xcd61b, -0x5dc,
-						0x1000 - sample_00 / 0x2ee);
-				}
-				goto LAB_0005e4e8;
-			}
-			if (bodgevar != 5) {
-				return;
-			}
-		}
-		iVar6 = (int)((ulonglong)((longlong)sample_00 * 0x57619f1) >> 0x20);
-		if ((sample_00 / 3000) * 3000 != sample_00 + -100) {
-			return;
-		}
-		cVar1 = GetMissionSound('\x14');
-		sample = CONCAT31(extraout_var_06, cVar1);
-		z = 0xcd383;
-		x = -0x382c;
-		y = -0x114;
-		goto LAB_0005e990;
-	case 0x20:
-		if (holdall == -1) {
-			holdall = 0;
-			return;
-		}
-		if (bodgevar == 1) {
-			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-			cVar1 = GetMissionSound('\v');
-			sample_00 = CONCAT31(extraout_var_07, cVar1);
-			goto LAB_0005ed9c;
-		}
-		if (bodgevar != 3) {
-			return;
-		}
-		if (-1 < MissionStartData.PlayerPos._0_4_) {
-			StopChannel(MissionStartData.PlayerPos._0_4_);
-		}
-		holdall = holdall + 1;
-		if (holdall == 2) {
-			SetEnvSndVol(rio_alarm, 3000);
-		}
-		goto LAB_0005edd8;
-	case 0x21:
-		if (holdall == -1) {
-			StartSound(2, 2, 0, -10000, 0x81);
-			holdall = 0;
-		}
-		break;
-	case 0x23:
-		if (bodgevar - 1U < 3) {
-			ppuVar3 = (undefined **)&DAT_00010ebc;
-			piVar4 = &local_60;
-			do {
-				puVar7 = ppuVar3[1];
-				puVar8 = ppuVar3[2];
-				puVar9 = ppuVar3[3];
-				*(undefined **)piVar4 = *ppuVar3;
-				*(undefined **)(piVar4 + 1) = puVar7;
-				*(undefined **)(piVar4 + 2) = puVar8;
-				*(undefined **)(piVar4 + 3) = puVar9;
-				ppuVar3 = ppuVar3 + 4;
-				piVar4 = piVar4 + 4;
-			} while (ppuVar3 != switchdataD_00010eec);
-			sample_00 = bodgevar + -1;
-			local_54[9] = (&local_60)[sample_00 * 4];
-			local_54[10] = (&local_60)[sample_00 * 4 + 1];
-			local_54[11] = (&local_60)[sample_00 * 4 + 2];
-			local_24 = (&local_60)[sample_00 * 4 + 3];
-			cVar1 = GetMissionSound('\"');
-			Start3DSoundVolPitch
-			(-1, 5, CONCAT31(extraout_var_08, cVar1), local_54[9], local_54[10], local_54[11], -1000,
-				0x1000);
-			bodgevar = bodgevar + 4;
-		}
-		sample_00 = DAT_000d7c2c;
-		if (bodgevar < 4) {
-			return;
-		}
-		if (bodgevar == 6) {
-		LAB_0005e894:
-			if ((sample_00 / 3000) * 3000 == sample_00 + -800) {
-				cVar1 = GetMissionSound('\x14');
-				Start3DSoundVolPitch
-				(-1, 5, CONCAT31(extraout_var_10, cVar1), 0x312b0, -0xb1, 0x5f050, -0x5dc,
-					0x1000 - sample_00 / 0x2ee);
-			}
-		}
-		else {
-			if (6 < bodgevar) {
-				if (bodgevar != 7) {
-					return;
-				}
-				if ((DAT_000d7c2c / 3000) * 3000 == DAT_000d7c2c + -0x514) {
-					cVar1 = GetMissionSound('\x14');
-					Start3DSoundVolPitch
-					(-1, 5, CONCAT31(extraout_var_09, cVar1), 0x30ad0, -0xb1, 0x5f050, -0x5dc,
-						0x1000 - sample_00 / 0x2ee);
-				}
-				goto LAB_0005e894;
-			}
-			if (bodgevar != 5) {
-				return;
-			}
-		}
-		iVar6 = (int)((ulonglong)((longlong)sample_00 * 0x57619f1) >> 0x20);
-		if ((sample_00 / 3000) * 3000 != sample_00 + -300) {
-			return;
-		}
-		cVar1 = GetMissionSound('\x14');
-		sample = CONCAT31(extraout_var_11, cVar1);
-		z = 0x5e0e0;
-		x = 0x31330;
-		y = -0xb1;
-	LAB_0005e990:
-		Start3DSoundVolPitch(-1, 5, sample, x, y, z, -0x5dc, 0x1000 - ((iVar6 >> 4) - (sample_00 >> 0x1f)));
-		break;
-	case 0x27:
-		if (holdall == -1) {
-			sample_00 = 0;
-			p_Var5 = MissionTargets;
-			while (sample_00 < 0x10) {
-				if (p_Var5->data[0] == 2) {
-					if (holdall == -1) {
-						holdall = 0x14;
+			else
+			{
+				z_00 = (int)player[0].playerCarId;
+				if (z_00 == holdall)
+				{
+					if ((Mission.timer[0].count != 0) && (Mission.timer[0].count == (Mission.timer[0].count / 3000) * 3000)) 
+					{
+						x = GetFreeChannel();
+						cVar1 = GetMissionSound(20);
+						StartSound(x, 5, cVar1, -0x5dc, 0x1000);
+						SetChannelPosition3(x, (VECTOR*)car_data[z_00].hd.where.t, car_data[z_00].st.n.linearVelocity, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee, 0);
 					}
-					else {
-						if (holdall == 0x14) {
-							holdall = p_Var5->data[6];
-							return;
+				}
+			}
+			break;
+		case 25:
+			if (bodgevar == 1) {
+				channel = GetFreeChannel();
+				cVar1 = GetMissionSound(11);
+				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				holdall++;
+				bodgevar = 2;
+			}
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
+				bodgevar = 4;
+			}
+			break;
+		case 30:
+			if ((bodgevar > 0) && (bodgevar < 4))
+			{
+				VECTOR Q[4] = {
+					{0xFFFFD005,0xFFFFFEED,0xCD61B},
+					{0xFFFFCB56,0xFFFFFF06,0xCD5E0},
+					{0xFFFFC7D4,0xFFFFFEEC,0xCD383},
+				};
+
+				VECTOR *P = &Q[bodgevar - 1];
+
+				cVar1 = GetMissionSound(34);
+				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+
+				bodgevar += 4;
+			}
+			else if (bodgevar == 5)
+			{
+				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
+
+				if ((Mission.timer[0].count / 3000) * 3000 != Mission.timer[0].count + -100)
+					return;
+
+				cVar1 = GetMissionSound(29);
+
+				Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
+			}
+			else if (bodgevar < 8) // [A] capture 6 and 7
+			{
+				if (bodgevar == 7)
+				{
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
+					{
+						cVar1 = GetMissionSound(20);
+						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc,
+							0x1000 - Mission.timer[0].count / 0x2ee);
+					}
+				}
+
+				// bodgevar 6 & 7 (is this a bug?)
+				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+				{
+					cVar1 = GetMissionSound(20);
+					Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
+						0x1000 - Mission.timer[0].count / 0x2ee);
+				}
+			}
+			break;
+		case 32:
+			if (holdall == -1)
+			{
+				holdall = 0;
+			}
+			else
+			{
+				if (bodgevar == 1)
+				{
+					channel = GetFreeChannel();
+					cVar1 = GetMissionSound(11);
+					Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+					bodgevar = 2;
+				}
+				else if (bodgevar == 3)
+				{
+					if (channel > -1)
+						StopChannel(channel);
+
+					if (++holdall == 2)
+						SetEnvSndVol(rio_alarm, 3000);
+
+					bodgevar = 4;
+				}
+			}
+			break;
+		case 33:
+			if (holdall == -1) 
+			{
+				StartSound(2, 2, 0, -10000, 0x81);
+				holdall = 0;
+			}
+			break;
+		case 35:
+			if ((bodgevar > 0) && (bodgevar < 4))
+			{
+				VECTOR Q[3] = {
+					{0x31330, 0xFFFFFF4F, 0x5E0E0},
+					{0x312B0, 0xFFFFFF4F, 0x5F050},
+					{0x30AD0, 0xFFFFFF4F, 0x5F050}
+				};
+
+				VECTOR *P = &Q[bodgevar - 1];
+
+				cVar1 = GetMissionSound(34);
+				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+
+				bodgevar += 4;
+			}
+			else if (bodgevar == 5)
+			{
+				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
+
+				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -300) {
+					cVar1 = GetMissionSound(20);
+					Start3DSoundVolPitch(-1, 5, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
+				}
+			}
+			else if (bodgevar < 8) // [A] capture 6 and 7
+			{
+				if (bodgevar == 7)
+				{
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
+					{
+						cVar1 = GetMissionSound(20);
+						Start3DSoundVolPitch(-1, 5, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+					}
+				}
+
+				// bodgevar 6 & 7 (is this a bug?)
+				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+				{
+					cVar1 = GetMissionSound(20);
+					Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+				}
+			}
+			break;
+		case 39:
+			if (holdall == -1) 
+			{
+				for (int i = 0; i < 16; i++)
+				{
+					if (MissionTargets[i].data[0] == 2)
+					{
+						if (holdall == -1)
+						{
+							holdall = 20;
+						}
+						else if (holdall == 20)
+						{
+							holdall = MissionTargets[i].data[6];
 						}
 					}
 				}
-				p_Var5 = p_Var5 + 1;
-				sample_00 = sample_00 + 1;
 			}
-		}
-		else {
-			if ((int)player.playerCarId == holdall) {
+			else if (player[0].playerCarId == holdall)
+			{
 				jericho_in_back = 1;
 			}
-		}
-		break;
-	case 0x28:
-		if (bodgevar == 0) {
-			if (holdall != -1) {
-				StopChannel(holdall);
-				UnlockChannel(holdall);
-				holdall = -1;
-			}
-		}
-		else {
-			iVar6 = car_data[player.playerCarId].hd.where.t[0];
-			sample = *(int *)bodgevar - iVar6;
-			iVar6 = iVar6 - *(int *)bodgevar;
-			if (-1 < sample) {
-				iVar6 = sample;
-			}
-			if (iVar6 < 0x8000) {
-				iVar6 = car_data[player.playerCarId].hd.where.t[2];
-				sample = *(int *)(bodgevar + 8) - iVar6;
-				iVar6 = iVar6 - *(int *)(bodgevar + 8);
-				if (-1 < sample) {
-					iVar6 = sample;
-				}
-				if (iVar6 < 0x8000) {
-					local_60 = pos[0] - *(int *)bodgevar;
-					local_5c = pos[1] - *(int *)(bodgevar + 4);
-					local_58 = pos[2] - *(int *)(bodgevar + 8);
-					SetChannelPosition3(holdall, (VECTOR *)bodgevar, &local_60, 0, 0x1000, 0);
-					pos[0] = *(long *)sample_00;
-					pos[1] = *(long *)(sample_00 + 4);
-					pos[2] = *(long *)(sample_00 + 8);
-					return;
+			break;
+		case 40:
+			if (bodgevar == 0)
+			{
+				if (holdall != -1) 
+				{
+					StopChannel(holdall);
+					UnlockChannel(holdall);
+					holdall = -1;
 				}
 			}
-			SpuSetVoicePitch(holdall, 0);
-		}
-		break;
-	case 0x34:
-	case 0x35:
-		if (bodgevar == 1) {
-			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-			Start3DSoundVolPitch(MissionStartData.PlayerPos._0_4_, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
-			bodgevar = 2;
-		}
-		else {
-			if (bodgevar == 3) {
-				if (-1 < MissionStartData.PlayerPos._0_4_) {
-					StopChannel(MissionStartData.PlayerPos._0_4_);
+			else 
+			{
+				long V[4];
+				long* C = (long*)bodgevar; // Ahhh, Reflections...
+
+				x = car_data[player[0].playerCarId].hd.where.t[0];
+
+				y_00 = C[0] - x;
+				x = x - C[0];
+
+				if (-1 < y_00)
+					x = y_00;
+
+				if (x < 0x8000)
+				{
+					x = car_data[player[0].playerCarId].hd.where.t[2];
+
+					y_00 = C[2] - x;
+					x = x - C[2];
+
+					if (-1 < y_00)
+						x = y_00;
+
+					if (x < 0x8000)
+					{
+						V[0] = pos[0] - C[0];
+						V[1] = pos[1] - C[1];
+						V[2] = pos[2] - C[2];
+
+						SetChannelPosition3(holdall, (VECTOR*)C, (long*)V, 0, 0x1000, 0);
+
+						pos[0] = C[0];
+						pos[1] = C[1];
+						pos[2] = C[2];
+						return;
+					}
 				}
+
+				/*
+				long V[4];
+				long* C = car_data[player[0].playerCarId].hd.where.t;
+
+				x = car_data[player[0].playerCarId].hd.where.t[0];
+
+				y_00 = bodgevar - x;
+				x = x - bodgevar;
+
+				if (-1 < y_00)
+					x = y_00;
+
+				if (x < 0x8000) 
+				{
+					x = car_data[player[0].playerCarId].hd.where.t[2];
+
+					y_00 = (bodgevar + 8) - x;
+					x = x - (bodgevar + 8);
+
+					if (-1 < y_00)
+						x = y_00;
+
+					if (x < 0x8000) 
+					{
+						V[0] = pos[0] - V[0];
+						V[1] = pos[1] - V[1];
+						V[2] = pos[2] - V[2];
+						SetChannelPosition3(holdall, (VECTOR*)bodgevar, (long*)Q, 0, 0x1000, 0);
+						pos[0] = *(long*)z_00;
+						pos[1] = *(long*)(z_00 + 4);
+						pos[2] = *(long*)(z_00 + 8);
+						return;
+					}
+				}
+				SpuSetVoicePitch(holdall, 0);
+				*/
+
+				UNIMPLEMENTED();
+			}
+			break;
+		// Havana sounds
+		case 52:
+		case 53:
+			if (bodgevar == 1)
+			{
+				channel = GetFreeChannel();
+				Start3DSoundVolPitch(channel, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
+				bodgevar = 2;
+			}
+			else if (bodgevar == 3)
+			{
+				if (-1 < channel)
+					StopChannel(channel);
+
 				bodgevar = 4;
 			}
-		}
-	case 0x36:
-	case 0x37:
-		if (bodgevar == 1) {
-			MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-			Start3DSoundVolPitch(MissionStartData.PlayerPos._0_4_, 5, 1, pos[0], pos[1], pos[2], -1000, 0x1000);
-			bodgevar = 2;
-		}
-		else {
-			if (bodgevar == 3) {
-				if (-1 < MissionStartData.PlayerPos._0_4_) {
-					StopChannel(MissionStartData.PlayerPos._0_4_);
-				}
+			break;
+		// Vegas sounds
+		case 54:
+		case 55:
+			if (bodgevar == 1) 
+			{
+				channel = GetFreeChannel();
+				Start3DSoundVolPitch(channel, 5, 1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				bodgevar = 2;
+			}
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
 				bodgevar = 4;
 			}
-			else {
-				if (bodgevar == 5) {
-					Start3DSoundVolPitch(-1, 5, 0, -0x26868, -0xfa, (int)&DAT_0009d274, -1000, 0x1000);
-					bodgevar = 6;
-				}
+			else if (bodgevar == 5)
+			{
+				// Vegas special garage door
+				Start3DSoundVolPitch(-1, 5, 0, -0x26868, -0xfa, 0x9d274, -1000, 0x1000);
+				bodgevar = 6;
 			}
-		}
-	case 0x38:
-	case 0x39:
-		goto switchD_0005e06c_caseD_38;
+		// Rio sounds
+		case 56:
+		case 57:
+			if (bodgevar == 1)
+			{
+				channel = GetFreeChannel();
+				Start3DSoundVolPitch(channel, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
+				bodgevar = 2;
+			}
+			else if (bodgevar == 3)
+			{
+				if (channel > -1)
+					StopChannel(channel);
+
+				bodgevar = 4;
+			}
+			break;
 	}
-	return;
-switchD_0005e06c_caseD_38:
-	if (bodgevar == 1) {
-		MissionStartData.PlayerPos._0_4_ = GetFreeChannel();
-		sample_00 = 0;
-	LAB_0005ed9c:
-		Start3DSoundVolPitch
-		(MissionStartData.PlayerPos._0_4_, 5, sample_00, pos[0], pos[1], pos[2], -1000, 0x1000);
-		bodgevar = 2;
-		return;
-	}
-	if (bodgevar != 3) {
-		return;
-	}
-	if (-1 < MissionStartData.PlayerPos._0_4_) {
-		StopChannel(MissionStartData.PlayerPos._0_4_);
-	}
-	goto LAB_0005edd8;*/
 }
 
 
@@ -1138,18 +1127,17 @@ switchD_0005e06c_caseD_38:
 	/* end block 2 */
 	// End Line: 1910
 
+// [D]
 void SetMSoundVar(int var, VECTOR *V)
 {
-	UNIMPLEMENTED();
-	/*
-	if (V != (VECTOR *)0x0) {
+	if (V)
+	{
 		pos[0] = V->vx;
 		pos[1] = V->vy;
 		pos[2] = V->vz;
 	}
+
 	bodgevar = var;
-	return;
-	*/
 }
 
 
@@ -1357,7 +1345,7 @@ void AdjustPlayerCarVolume(void)
 	{
 		if (gCurrentMissionNumber == 3 || gCurrentMissionNumber == 5 || gCurrentMissionNumber == 27)
 		{
-			player[0].revsvol = -0x1a5e;
+			player[0].revsvol = -6750;
 			player[0].idlevol = -10000;
 		}
 		else 

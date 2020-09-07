@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "XAPLAY.H"
 
 char* XANames[] = {
@@ -179,7 +179,7 @@ void PrepareXA(void)
 		}
 		CdInit();
 		local_10[0] = 0xe8;
-		CdControlB(0xe, local_10, 0);
+		CdControlB(CdlSetmode, local_10, 0);
 		oldreadycallback = CdReadyCallback(cbready);
 		olddatacallback = CdDataCallback(0);
 		xa_prepared = 1;
@@ -227,9 +227,9 @@ void PlayXA(int num, int index)
 		local_28 = 1;
 		iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
 		SsSetSerialVol(0, iVar1, iVar1);
-		CdControlB(0xd, &local_28, auStack24);
+		CdControlB(CdlSetfilter, &local_28, auStack24);
 		CdIntToPos(StartPos, auStack32);
-		CdControlB(0x1b, auStack32, auStack24);
+		CdControlB(CdlReadS, auStack32, auStack24);
 		AllocateReverb(3, 0x4000);
 		gPlaying = 1;
 		xa_prepared = 2;
@@ -300,7 +300,7 @@ void UnprepareXA(void)
 		CdReadyCallback(oldreadycallback);
 		CdDataCallback(olddatacallback);
 		local_10[0] = 0x80;
-		CdControlB(0xe, local_10, 0);
+		CdControlB(CdlSetmode, local_10, 0);
 		gPlaying = 0;
 		xa_prepared = 0;
 	}
@@ -424,8 +424,8 @@ void ResumeXA(void)
 		local_1f = (undefined)gChannel;
 		iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
 		SsSetSerialVol(0, iVar1, iVar1);
-		CdControlB(0xd, &local_20, auStack24);
-		CdControlB(0x1b, &pause_loc, auStack24);
+		CdControlB(CdlSetfilter, &local_20, auStack24);
+		CdControlB(CdlReadS, &pause_loc, auStack24);
 		AllocateReverb(3, 0x4000);
 		gPlaying = 1;
 	}
@@ -469,11 +469,11 @@ void PauseXA(void)
 
 	if ((xa_prepared != 0) && (gPlaying != 0)) {
 		SsSetSerialVol(0, 0, 0);
-		CdControlB(0x10, 0, &local_10);
+		CdControlB(CdlGetlocL, 0, &local_10);
 		pause_loc.minute = local_10;
 		pause_loc.second = local_f;
 		pause_loc.sector = local_e;
-		CdControlB(9, 0, 0);
+		CdControlB(CdlPause, 0, 0);
 		gPlaying = 0;
 	}
 	return;*/

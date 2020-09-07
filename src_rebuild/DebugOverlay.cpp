@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 
 #include "LIBGTE.H"
 #include "LIBGPU.H"
@@ -12,6 +12,8 @@
 #include "GAME/C/SYSTEM.H"
 #include "GAME/C/PRES.H"
 #include "GAME/C/SPOOL.H"
+#include "GAME/C/CARS.H"
+#include "GAME/C/PLAYERS.H"
 
 int gDisplayDrawStats = 0;
 
@@ -84,12 +86,12 @@ void DrawDebugOverlays()
 
 	if (gDisplayDrawStats)
 	{
-		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, 0x1a180);
-		PrintString(tempBuf, 10, 80);
+		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, PRIMTAB_SIZE);
+		PrintString(tempBuf, 10, 20);
 
 		extern volatile int spoolactive;
 		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d", doSpooling, allowSpecSpooling, spoolactive);
-		PrintString(tempBuf, 10, 90);
+		PrintString(tempBuf, 10, 30);
 
 		extern int numActiveCops;
 		extern int numCopCars;
@@ -99,10 +101,17 @@ void DrawDebugOverlays()
 		extern int maxCivCars;
 
 		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
-		PrintString(tempBuf, 10, 100);
+		PrintString(tempBuf, 10, 40);
 
 		sprintf(tempBuf, "Cops: %d - %d active - max %d", numCopCars, numActiveCops, maxCopCars);
-		PrintString(tempBuf, 10, 110);
+		PrintString(tempBuf, 10, 50);
+
+		
+		int playerCar = player[0].playerCarId;
+		int speed = car_data[playerCar].hd.speed;
+
+		sprintf(tempBuf, "Car speed: %d", speed);
+		PrintString(tempBuf, 10, 60);
 	}
 }
 
@@ -152,4 +161,72 @@ void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& colo
 
 	ld.posA.vy *= -1;
 	ld.posB.vy *= -1;
+}
+
+int g_FreeCameraControls = 0;
+int g_FreeCameraEnabled = 0;
+VECTOR g_FreeCameraPosition;
+SVECTOR g_FreeCameraRotation;
+VECTOR g_FreeCameraVelocity;
+extern int cursorX, cursorY, cursorOldX, cursorOldY;
+
+extern VECTOR lis_pos;
+
+void BuildFreeCameraMatrix()
+{
+	if (g_FreeCameraEnabled == 0)
+		return;
+
+	player[0].cameraPos = g_FreeCameraPosition;
+	camera_position = g_FreeCameraPosition;
+	camera_angle = g_FreeCameraRotation;
+	lis_pos = camera_position;
+
+	BuildWorldMatrix();
+}
+
+void DoFreeCamera()
+{
+	if (g_FreeCameraEnabled == 0)
+	{
+		g_FreeCameraPosition = camera_position;
+		g_FreeCameraRotation = camera_angle;
+		g_FreeCameraVelocity.vx = 0;
+		g_FreeCameraVelocity.vy = 0;
+		g_FreeCameraVelocity.vz = 0;
+		return;
+	}
+
+	BuildFreeCameraMatrix();
+
+	g_FreeCameraPosition.vx += FIXED(g_FreeCameraVelocity.vx);
+	g_FreeCameraPosition.vy += FIXED(g_FreeCameraVelocity.vy);
+	g_FreeCameraPosition.vz += FIXED(g_FreeCameraVelocity.vz);
+
+	// deaccel
+	g_FreeCameraVelocity.vx -= (g_FreeCameraVelocity.vx / 8);
+	g_FreeCameraVelocity.vy -= (g_FreeCameraVelocity.vy / 8);
+	g_FreeCameraVelocity.vz -= (g_FreeCameraVelocity.vz / 8);
+
+	// accel
+	if ((g_FreeCameraControls & 0x1) || (g_FreeCameraControls & 0x2)) // forward/back
+	{
+		int sign = (g_FreeCameraControls & 0x2) ? -1 : 1;
+
+		g_FreeCameraVelocity.vx += (inv_camera_matrix.m[2][0] * 32) * sign;
+		g_FreeCameraVelocity.vy += (inv_camera_matrix.m[2][1] * 32) * sign;
+		g_FreeCameraVelocity.vz += (inv_camera_matrix.m[2][2] * 32) * sign;
+	}
+
+	// side
+	if ((g_FreeCameraControls & 0x4) || (g_FreeCameraControls & 0x8)) // right/left
+	{
+		int sign = (g_FreeCameraControls & 0x8) ? 1 : -1;
+
+		g_FreeCameraVelocity.vx += (inv_camera_matrix.m[0][0] * 32) * sign;
+		g_FreeCameraVelocity.vy += (inv_camera_matrix.m[0][1] * 32) * sign;
+		g_FreeCameraVelocity.vz += (inv_camera_matrix.m[0][2] * 32) * sign;
+	}
+
+
 }

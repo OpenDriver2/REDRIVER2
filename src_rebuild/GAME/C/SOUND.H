@@ -3,8 +3,9 @@
 
 extern int gMasterVolume;
 extern int gMusicVolume;
-extern CHANNEL_DATA channels[16];
+extern int gSoundMode;
 
+extern CHANNEL_DATA channels[16];
 
 extern int Song_ID;
 extern int VABID;

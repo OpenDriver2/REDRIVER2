@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "PAUSE.H"
 #include "SYSTEM.H"
 #include "MISSION.H"
@@ -12,6 +12,10 @@
 #include "CUTSCENE.H"
 #include "REPLAYS.H"
 #include "OVERMAP.H"
+#include "HANDLING.H"
+#include "../MEMCARD/MAIN.H"
+
+#include "STRINGS.H"
 
 static int gScoreEntered = 0;
 static char EnterNameText[32] = { 0 };
@@ -30,6 +34,12 @@ static int VisibleMenu;
 static MENU_HEADER* VisibleMenus[3];
 static char SfxVolumeText[8];
 static char MusicVolumeText[8];
+
+static char ScoreTime[5][16];
+static char ScoreItems[5][16];
+static char ScoreName[5][7];
+
+static char validchars[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+!";
 
 // MISSION.C
 PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
@@ -68,6 +78,41 @@ void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
 	playerghost ^= 1;
+}
+
+int lastCar = -1;
+
+void ToggleSecretCarFun(int direction)
+{
+	extern CAR_COSMETICS car_cosmetics[5];
+	extern int wantedCar[2];
+
+	int active = (ActiveCheats.cheat10 ^= 1);
+
+	if (active)
+	{
+		if (lastCar == -1)
+			lastCar = wantedCar[0];
+
+		// make our current car the secret car
+		wantedCar[0] = 12;
+	}
+	else
+	{
+		if (lastCar != -1)
+		{
+			// restore our initial car
+			wantedCar[0] = lastCar;
+			lastCar = -1;
+		}
+	}
+
+	FixCarCos(&car_cosmetics[4], 12);
+}
+
+void ToggleJerichoMode(int direction)
+{
+	ActiveCheats.cheat12 ^= 1;
 }
 
 extern void LoadSky(void);
@@ -133,6 +178,8 @@ MENU_ITEM DebugOptionsItems[] =
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
 	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
 	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
+	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
+	{ "Jericho mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_RESTART,	NULL },
 	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
 	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
@@ -157,10 +204,10 @@ MENU_ITEM YesNoQuitItems[3] =
 };
 
 MENU_HEADER YesNoRestartHeader =
-{ "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
+{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
 
 MENU_HEADER YesNoQuitHeader =
-{ "Are you sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
+{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
 #ifdef CUTSCENE_RECORDER
 extern void NextCutsceneRecorderPlayer(int dir);
@@ -178,7 +225,7 @@ MENU_ITEM MainPauseItems[] =
 	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -190,7 +237,7 @@ MENU_ITEM MultiplayerPauseItems[7] =
 {
 	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
@@ -211,9 +258,11 @@ MENU_ITEM CutscenePauseItems[] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM MissionCompleteItems[8] =
+MENU_ITEM MissionCompleteItems[] =
 {
+#ifdef PSX
 	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
+#endif
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -248,7 +297,7 @@ MENU_ITEM TakeARideFinishedItems[] =
 
 MENU_ITEM DrivingGameFinishedItems[7] =
 {
-	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -259,7 +308,7 @@ MENU_ITEM DrivingGameFinishedItems[7] =
 
 MENU_ITEM MultiplayerFinishedItems[5] =
 {
-	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
@@ -268,7 +317,7 @@ MENU_ITEM MultiplayerFinishedItems[5] =
 
 MENU_ITEM ChaseGameFinishedItems[6] =
 {
-	{ "Try Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
@@ -437,14 +486,14 @@ int ShowPauseMenu(PAUSEMODE mode)
 	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry != 0) 
 	{
 		gScoreEntered = 0;
-		sprintf(EnterScoreText, "Enter scores");
-		sprintf(EnterNameText, "Your name:");
+		sprintf(EnterScoreText, "Enter Score");
+		sprintf(EnterNameText, "Enter Name:");
 	}
 	else
 	{
 		gScoreEntered = 1;
-		sprintf(EnterScoreText, "Score table");
-		sprintf(EnterNameText, "High scores");
+		sprintf(EnterScoreText, "View Table");
+		sprintf(EnterNameText, "High Scores");
 	}
 
 	passed_mode = mode;
@@ -558,6 +607,13 @@ int ShowPauseMenu(PAUSEMODE mode)
 // [D]
 void DrawPauseMenus(void)
 {
+#if !defined(PSX) && defined(DEBUG_OPTIONS)
+	extern int g_FreeCameraEnabled;
+
+	if (g_FreeCameraEnabled)
+		return;
+#endif
+
 	if (gDrawPauseMenus != 0 && gShowMap == 0) 
 	{
 		if (gEnteringScore == 0)
@@ -622,10 +678,7 @@ void SaveReplay(int direction)
 
 void SaveGame(int direction)
 {
-	UNIMPLEMENTED();
-	/*
 	CallMemoryCard(0x20, 1);
-	return;*/
 }
 
 
@@ -755,119 +808,130 @@ void InitaliseMenu(PAUSEMODE mode)
 
 	switch (mode) 
 	{
-	case PAUSEMODE_PAUSE:
-	case PAUSEMODE_PAUSEP1:
-	case PAUSEMODE_PAUSEP2:
-		if (NumPlayers == 1 && gMultiplayerLevels == 0) 
-		{
-			if (gInGameCutsceneActive == 0)
+		case PAUSEMODE_PAUSE:
+		case PAUSEMODE_PAUSEP1:
+		case PAUSEMODE_PAUSEP2:
+			if (NumPlayers == 1 && gMultiplayerLevels == 0) 
 			{
-				ActiveMenu = &PauseMenuHeader;
+				if (gInGameCutsceneActive == 0)
+				{
+					ActiveMenu = &PauseMenuHeader;
+				}
+				else 
+				{
+					ActiveMenu = &CutscenePauseMenuHeader;
+				}
 			}
 			else 
 			{
-				ActiveMenu = &CutscenePauseMenuHeader;
+				ActiveMenu = &MultiplayerPauseHeader;
 			}
-		}
-		else 
-		{
-			ActiveMenu = &MultiplayerPauseHeader;
-		}
-		break;
-	case PAUSEMODE_GAMEOVER:
-		switch (GameType) 
-		{
-			case GAME_PURSUIT:
-			switchD_0006c3b4_caseD_3:
-				ActiveMenu = &ChaseGameFinishedHeader;
-				gMissionCompletionState = mode;
-				goto LAB_0006c5d0;
-			case GAME_GETAWAY:
-			case GAME_CHECKPOINT:
-				if (NumPlayers == 1) {
-					ActiveMenu = &DrivingGameFinishedHeader;
-					allownameentry = 0;
-					gMissionCompletionState = mode;
-					goto LAB_0006c5d0;
-				}
-				break;
-			case GAME_GATERACE:
-			case GAME_TRAILBLAZER:
-			case GAME_SURVIVAL:
-				if (NumPlayers == 1) {
-					ActiveMenu = &DrivingGameFinishedHeader;
-					gMissionCompletionState = mode;
-					allownameentry = (uint)NumPlayers;
-					goto LAB_0006c5d0;
-				}
-				break;
-			default:
-				if (NumPlayers == 1)
-					goto switchD_0006c460_caseD_1;
-		}
-	LAB_0006c4c0:
-		ActiveMenu = &MultiplayerFinishedHeader;
-		gMissionCompletionState = mode;
-		break;
-	case PAUSEMODE_COMPLETE:
-		if (true)
-		{
+			break;
+		case PAUSEMODE_GAMEOVER:
 			switch (GameType) 
 			{
-				case GAME_MISSION:
-					ActiveMenu = &MissionCompleteHeader;
+				case GAME_PURSUIT:
+				switchD_0006c3b4_caseD_3:
+					ActiveMenu = &ChaseGameFinishedHeader;
 					gMissionCompletionState = mode;
 					goto LAB_0006c5d0;
 				case GAME_GETAWAY:
-				case GAME_GATERACE:
 				case GAME_CHECKPOINT:
-				case GAME_TRAILBLAZER:
-				case GAME_SURVIVAL:
-				case GAME_COPSANDROBBERS:
-					if (NumPlayers == 1) {
+					if (NumPlayers == 1)
+					{
 						ActiveMenu = &DrivingGameFinishedHeader;
+						allownameentry = 0;
 						gMissionCompletionState = mode;
-						allownameentry = (uint)NumPlayers;
 						goto LAB_0006c5d0;
 					}
-					goto LAB_0006c4c0;
-				case GAME_PURSUIT:
-					goto switchD_0006c3b4_caseD_3;
+					break;
+				case GAME_GATERACE:
+				case GAME_TRAILBLAZER:
+				case GAME_SURVIVAL:
+					if (NumPlayers == 1)
+					{
+						ActiveMenu = &DrivingGameFinishedHeader;
+						gMissionCompletionState = mode;
+						allownameentry = NumPlayers;
+						goto LAB_0006c5d0;
+					}
+					break;
+				default:
+					if (NumPlayers == 1)
+						goto switchD_0006c460_caseD_1;
 			}
-		}
-	switchD_0006c460_caseD_1:
-		ActiveMenu = &TakeARideFinishedHeader;
-		gMissionCompletionState = mode;
-		break;
-	case PAUSEMODE_PADERROR:
-		if (pad_connected < 0) {
-			if (NumPlayers == 1) {
-				ActiveMenu = &InvalidPadHeader;
-			}
-			else {
-				ActiveMenu = &InvalidMultiPadHeader;
-				if (Pads[0].type != '\x01') {
-					pcVar7 = "Incorrect controller in Port 2";
-						goto LAB_0006c5cc;
+		LAB_0006c4c0:
+			ActiveMenu = &MultiplayerFinishedHeader;
+			gMissionCompletionState = mode;
+			break;
+		case PAUSEMODE_COMPLETE:
+			if (true)
+			{
+				switch (GameType) 
+				{
+					case GAME_MISSION:
+						ActiveMenu = &MissionCompleteHeader;
+						gMissionCompletionState = mode;
+						goto LAB_0006c5d0;
+					case GAME_GETAWAY:
+					case GAME_GATERACE:
+					case GAME_CHECKPOINT:
+					case GAME_TRAILBLAZER:
+					case GAME_SURVIVAL:
+					case GAME_COPSANDROBBERS:
+						if (NumPlayers == 1) {
+
+							ActiveMenu = &DrivingGameFinishedHeader;
+							gMissionCompletionState = mode;
+							allownameentry = NumPlayers;
+							goto LAB_0006c5d0;
+						}
+						goto LAB_0006c4c0;
+					case GAME_PURSUIT:
+						goto switchD_0006c3b4_caseD_3;
 				}
 			}
-			pcVar7 = "Incorrect controller in Port 1";
-		}
-		else {
-			if (NumPlayers == 1) {
-				ActiveMenu = &NoPadHeader;
-			}
-			else {
-				ActiveMenu = &NoMultiPadHeader;
-				if (Pads[0].type != '\0') {
-					pcVar7 = "Please insert controller into port";
-						goto LAB_0006c5cc;
+		switchD_0006c460_caseD_1:
+			ActiveMenu = &TakeARideFinishedHeader;
+			gMissionCompletionState = mode;
+			break;
+		case PAUSEMODE_PADERROR:
+			if (pad_connected < 0) 
+			{
+				if (NumPlayers == 1) 
+				{
+					ActiveMenu = &InvalidPadHeader;
 				}
+				else
+				{
+					ActiveMenu = &InvalidMultiPadHeader;
+					if (Pads[0].type != 1) 
+					{
+						pcVar7 = "Incorrect controller in Port 2";
+							goto LAB_0006c5cc;
+					}
+				}
+				pcVar7 = "Incorrect controller in Port 1";
 			}
-			pcVar7 = "Please insert controller into port";
-		}
-	LAB_0006c5cc:
-		ActiveMenu->Title = pcVar7;
+			else 
+			{
+				if (NumPlayers == 1) 
+				{
+					ActiveMenu = &NoPadHeader;
+				}
+				else
+				{
+					ActiveMenu = &NoMultiPadHeader;
+					if (Pads[0].type != 0) 
+					{
+						pcVar7 = "Please insert controller into port";
+							goto LAB_0006c5cc;
+					}
+				}
+				pcVar7 = "Please insert controller into port";
+			}
+		LAB_0006c5cc:
+			ActiveMenu->Title = pcVar7;
 	}
 LAB_0006c5d0:
 	ActiveItem[0] = ActiveMenu->MenuItems;
@@ -889,17 +953,18 @@ LAB_0006c5d0:
 
 	ActiveMenu->NumItems = uVar9;
 	iVar10 = MaxMenuStringLength(ActiveMenu);
-	pMVar5 = ActiveMenu;
+
 	bVar2 = ActiveMenu->NumItems;
 	bVar3 = ActiveMenu->NumItems;
 	(ActiveMenu->Bound).x = (short)((0x130 - iVar10) / 2) + -4;
-	(pMVar5->Bound).w = (short)iVar10 + 0x18;
+	(ActiveMenu->Bound).w = (short)iVar10 + 0x18;
 	iVar10 = (int)(((uint)bVar2 + 1) * -0xf + 0x100) / 2;
-	(pMVar5->Bound).y = (short)iVar10;
-	(pMVar5->Bound).h = ((ushort)bVar3 + 1) * 0xf + 10;
-	if (iVar10 < 0x30) {
-		(pMVar5->Bound).y = 0x30;
-	}
+	(ActiveMenu->Bound).y = (short)iVar10;
+	(ActiveMenu->Bound).h = ((ushort)bVar3 + 1) * 0xf + 10;
+
+	if (iVar10 < 0x30)
+		(ActiveMenu->Bound).y = 0x30;
+
 }
 
 
@@ -1607,280 +1672,185 @@ void MusicVolume(int direction)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void EnterScoreName(void)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
-	ushort uVar2;
-	uint uVar3;
-	char *pcVar4;
+	short uVar2;
+	int uVar3;
+	char* pcVar4;
 	char cVar5;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int iVar8;
-	char *__src;
-	uint uVar9;
-	SCORE_ENTRY *local_28[2];
+	char* username;
+	int uVar9;
+	SCORE_ENTRY* table;
 
-	__src = (char *)0x0;
+	username = NULL;
 	iVar8 = 0;
 	gEnteringScore = 1;
 	uVar9 = 0;
-	if (gScoreEntered == 0) {
-		gScorePosition = OnScoreTable(local_28);
-		if (gScorePosition != -1) {
-			__src = &ScoreName + gScorePosition * 7;
-		}
+
+	if (gScoreEntered == 0) 
+	{
+		gScorePosition = OnScoreTable(&table);
+
+		if (gScorePosition != -1) 
+			username = ScoreName[gScorePosition];
 	}
-	else {
-		OnScoreTable(local_28);
+	else 
+	{
+		OnScoreTable(&table);
 		gScorePosition = -1;
 	}
+
 	uVar7 = 1;
 	iVar6 = 0;
-	CreateScoreNames(local_28[0], &gPlayerScore, gScorePosition);
+
+	CreateScoreNames(table, &gPlayerScore, gScorePosition);
+
 	do {
 		ReadControllers();
 		uVar2 = Pads[0].dirnew;
-		if (gScoreEntered == 0) {
-			if ((Pads[0].dirnew & 0x10) != 0) {
+
+		if (gScoreEntered == 0)
+		{
+			if ((Pads[0].dirnew & 0x10) != 0)
+			{
 				gEnteringScore = 0;
 				return;
 			}
-			if ((Pads[0].direct & 0x20) == 0) {
-				if ((Pads[0].direct & 0x8000) == 0) {
-					if ((Pads[0].direct & 0x2000) == 0) {
+
+			if ((Pads[0].direct & 0x20) == 0)
+			{
+				if ((Pads[0].direct & 0x8000) == 0) 
+				{
+					if ((Pads[0].direct & 0x2000) == 0)
+					{
 						iVar8 = 0;
 						goto LAB_0006d1e8;
 					}
+
 					bVar1 = iVar8 == 0;
 					iVar8 = iVar8 + -1;
-					if (bVar1) {
+					if (bVar1) 
+					{
 						iVar8 = 0x14;
 					LAB_0006d1c4:
 						uVar9 = 0;
 						uVar7 = uVar7 + 1;
 					}
-					else {
-						if (iVar8 < 1) {
-							iVar8 = 2;
-							goto LAB_0006d1c4;
-						}
+					else if (iVar8 < 1)
+					{
+						iVar8 = 2;
+						goto LAB_0006d1c4;
 					}
-					if (0x43 < uVar7) {
+
+					if (0x43 < uVar7)
 						uVar7 = 0;
-					}
+
 				}
-				else {
+				else 
+				{
 					bVar1 = iVar8 == 0;
 					iVar8 = iVar8 + -1;
-					if (bVar1) {
+
+					if (bVar1) 
+					{
 						iVar8 = 0x14;
 					LAB_0006d184:
 						uVar9 = 0;
 						uVar7 = uVar7 - 1;
 					}
-					else {
-						if (iVar8 < 1) {
-							iVar8 = 2;
-							goto LAB_0006d184;
-						}
+					else if (iVar8 < 1) 
+					{
+						iVar8 = 2;
+						goto LAB_0006d184;
 					}
-					if ((int)uVar7 < 0) {
+
+					if ((int)uVar7 < 0)
 						uVar7 = 0x43;
-					}
 				}
 			}
-			else {
+			else 
+			{
 				iVar8 = 1;
 				uVar9 = 0;
 				uVar7 = 0x43;
 			}
+
 		LAB_0006d1e8:
-			cVar5 = (&validchars)[uVar7];
+			cVar5 = validchars[uVar7];
 			uVar3 = uVar9 + 1;
-			if (iVar6 == 5) {
+
+			if (iVar6 == 5)
 				cVar5 = -2;
-			}
+
 			uVar9 = uVar3 & 0xff;
-			if ((uVar3 & 4) == 0) {
-				if (cVar5 == ' ') {
-					__src[iVar6] = '.';
-				}
-				else {
-					__src[iVar6] = cVar5;
-				}
+
+			if ((uVar3 & 4) == 0)
+			{
+				if (cVar5 == ' ')
+					username[iVar6] = '.';
+				else
+					username[iVar6] = cVar5;
 			}
-			else {
-				__src[iVar6] = '\0';
+			else 
+			{
+				username[iVar6] = 0;
 			}
-			pcVar4 = __src + iVar6;
-			if ((uVar2 & 0x80) != 0) {
-				if (0 < iVar6) {
-					iVar6 = iVar6 + -1;
-				}
-				pcVar4 = __src + iVar6;
-				*pcVar4 = '\0';
-				pcVar4[1] = '\0';
+
+			pcVar4 = username + iVar6;
+
+			if ((uVar2 & 0x80) != 0) 
+			{
+				if (0 < iVar6)
+					iVar6--;
+
+				pcVar4 = username + iVar6;
+				*pcVar4 = 0;
+				pcVar4[1] = 0;
 			}
-			if ((uVar2 & 0x40) != 0) {
-				if (cVar5 == -2) {
-					*pcVar4 = '\0';
-					strcpy(gPlayerScore.name, __src);
-					AddScoreToTable(local_28[0], gScorePosition);
-					sprintf(EnterScoreText, s_Vedi_tabella_00011a4c);
-					sprintf(EnterNameText, s_Alti_punteggi_00011a5c);
+
+			if ((uVar2 & 0x40) != 0) 
+			{
+				if (cVar5 == -2) 
+				{
+					*pcVar4 = 0;
+					strcpy(gPlayerScore.name, username);
+					AddScoreToTable(table, gScorePosition);
+					sprintf(EnterScoreText, "View Table");
+					sprintf(EnterNameText, "High Scores");
 					gEnteringScore = 0;
 					gScoreEntered = 1;
 					return;
 				}
-				if (cVar5 == -1) {
-					if (0 < iVar6) {
-						iVar6 = iVar6 + -1;
-					}
-					__src[iVar6] = '\0';
-					(__src + iVar6)[1] = '\0';
+
+				if (cVar5 == -1) 
+				{
+					if (0 < iVar6)
+						iVar6--;
+
+					username[iVar6] = 0;
+					username[iVar6+1] = 0;
 				}
-				else {
-					if (iVar6 < 5) {
-						iVar6 = iVar6 + 1;
-						*pcVar4 = cVar5;
-						__src[iVar6] = '\0';
-					}
+				else if (iVar6 < 5) 
+				{
+					iVar6 = iVar6 + 1;
+					*pcVar4 = cVar5;
+					username[iVar6] = 0;
 				}
 			}
 		}
-		else {
-			if ((Pads[0].dirnew & 0x50) != 0) {
-				gEnteringScore = 0;
-				return;
-			}
+		else if((Pads[0].dirnew & 0x50) != 0)
+		{
+			gEnteringScore = 0;
+			return;
 		}
+
 		DrawGame();
 	} while (true);
-	*/
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CreateScoreNames(struct SCORE_ENTRY *table /*$s0*/, struct PLAYER_SCORE *score /*stack 4*/, int position /*stack 8*/)
- // line 1943, offset 0x0006d324
-	/* begin block 1 */
-		// Start line: 1944
-		// Start offset: 0x0006D324
-		// Variables:
-	// 		char *text; // $s1
-	// 		int min; // $t1
-	// 		int frac; // $v0
-	// 		int i; // $s5
-	/* end block 1 */
-	// End offset: 0x0006D664
-	// End Line: 2012
-
-	/* begin block 2 */
-		// Start line: 4269
-	/* end block 2 */
-	// End Line: 4270
-
-	/* begin block 3 */
-		// Start line: 4272
-	/* end block 3 */
-	// End Line: 4273
-
-	/* begin block 4 */
-		// Start line: 4277
-	/* end block 4 */
-	// End Line: 4278
-
-void CreateScoreNames(SCORE_ENTRY *table, PLAYER_SCORE *score, int position)
-{
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	char *pcVar2;
-	char *__s;
-	int iVar3;
-	char *__s_00;
-	char *__s_01;
-	int iVar4;
-	int local_38;
-	int local_34;
-	char *local_30;
-	int local_2c;
-
-	switch (GameType) {
-	case GAME_PURSUIT:
-	case GAME_GETAWAY:
-	case GAME_CHECKPOINT:
-	case GAME_SURVIVAL:
-		pcVar2 = (char *)0x0;
-		break;
-	case GAME_GATERACE:
-		pcVar2 = s_Coni_barriera_00011ab8;
-		break;
-	case GAME_TRAILBLAZER:
-		pcVar2 = s_Barriere_00011ac8;
-		break;
-	default:
-		goto switchD_0006d388_caseD_6;
-	}
-	iVar3 = 0;
-	__s = ScoreTime;
-	iVar4 = 0;
-	local_38 = 0;
-	local_34 = 0;
-	local_30 = ScoreTime;
-	local_2c = 0;
-	__s_00 = __s;
-	__s_01 = __s;
-	do {
-		if (iVar3 == position) {
-			iVar1 = score->time;
-			if (iVar1 == -1) {
-				sprintf(__s_00, s_________000aa810);
-			}
-			else {
-				sprintf(__s_01, s__d__02d__02d_00011ad4, iVar1 / 180000,
-					iVar1 / 3000 + (iVar1 / 180000) * -0x3c, (iVar1 % 3000) / 0x1e);
-			}
-			ScoreItems[iVar4] = '\0';
-			if ((pcVar2 != (char *)0x0) && ((int)score->items != -1)) {
-				sprintf(ScoreItems + iVar4, s__d__s_000aa818, (int)score->items, pcVar2);
-			}
-			ClearMem(&ScoreName + local_2c, 7);
-		}
-		else {
-			iVar1 = table->time;
-			if (iVar1 == -1) {
-				sprintf(__s, s_________000aa810);
-			}
-			else {
-				sprintf(local_30, s__d__02d__02d_00011ad4, iVar1 / 180000,
-					iVar1 / 3000 + (iVar1 / 180000) * -0x3c, (iVar1 % 3000) / 0x1e);
-			}
-			ScoreItems[local_34] = '\0';
-			if ((pcVar2 != (char *)0x0) && ((int)table->items != -1)) {
-				sprintf(ScoreItems + local_34, s__d__s_000aa818, (int)table->items, pcVar2);
-			}
-			sprintf(&ScoreName + local_38, (char *)&PTR_DAT_000aa820, table->name);
-			table = table + 1;
-		}
-		__s = __s + 0x10;
-		iVar4 = iVar4 + 0x10;
-		__s_01 = __s_01 + 0x10;
-		iVar3 = iVar3 + 1;
-		local_38 = local_38 + 7;
-		local_34 = local_34 + 0x10;
-		local_30 = local_30 + 0x10;
-		local_2c = local_2c + 7;
-		__s_00 = __s_00 + 0x10;
-	} while (iVar3 < 5);
-switchD_0006d388_caseD_6:
-	return;
-	*/
 }
 
 
@@ -1909,84 +1879,160 @@ switchD_0006d388_caseD_6:
 	/* end block 2 */
 	// End Line: 4487
 
+// [D]
 void DrawHighScoreMenu(int selection)
 {
-	UNIMPLEMENTED();
-	/*
-	DB *pDVar1;
-	uint *puVar2;
-	char *pcVar3;
-	int iVar4;
-	int iVar5;
+	POLY_FT3* null;
+	POLY_F4* prim;
+	int iVar1;
+	int iVar2;
 	int b;
 	int r;
 	int y;
-	int iVar6;
-	char acStack48[8];
+	int iVar3;
+	char text[8];
 
 	OutputString(EnterNameText, 2, 0xa0, 0x46, 0, 0x80, 0x20, 0x20);
-	OutputString(&DAT_000aa824, 1, 0x28, 0x5a, 0, 0x80, 0x80, 0x20);
-	OutputString(s_Orario_000aa82c, 4, 0x118, 0x5a, 0, 0x80, 0x80, 0x20);
+	OutputString("Name", 1, 0x28, 0x5a, 0, 0x80, 0x80, 0x20);
+	OutputString("Time", 4, 0x118, 0x5a, 0, 0x80, 0x80, 0x20);
 	y = 0x6e;
-	iVar6 = 0;
-	iVar4 = 0;
+	iVar3 = 0;
+	iVar1 = 0;
+	iVar2 = 0;
 	do {
 		r = 0x80;
-		if (iVar4 == selection) {
+		if (iVar1 == selection) 
+		{
 			r = 0;
 			b = 0;
 		}
-		else {
+		else
+		{
 			b = 0x80;
 		}
-		iVar5 = iVar4 + 1;
-		sprintf(acStack48, (char *)&PTR_DAT_000aa834, iVar5);
-		OutputString(acStack48, 1, 0x28, y, 0, r, 0x80, b);
-		OutputString(&ScoreName + iVar6, 1, 0x3c, y, 0, r, 0x80, b);
-		OutputString(ScoreItems + iVar4 * 0x10, 4, 0xdc, y, 0, r, 0x80, b);
-		OutputString(ScoreTime + iVar4 * 0x10, 4, 0x118, y, 0, r, 0x80, b);
+
+		sprintf(text, "%d", iVar2);
+
+		OutputString(text, 1, 0x28, y, 0, r, 0x80, b);
+		OutputString(ScoreName[iVar2], 1, 0x3c, y, 0, r, 0x80, b);
+		OutputString(ScoreItems[iVar2], 4, 0xdc, y, 0, r, 0x80, b);
+		OutputString(ScoreTime[iVar2], 4, 0x118, y, 0, r, 0x80, b);
+
 		y = y + 0xf;
-		iVar6 = iVar6 + 7;
-		iVar4 = iVar5;
-	} while (iVar5 < 5);
-	puVar2 = (uint *)current->primptr;
-	*(char *)((int)puVar2 + 3) = '\a';
-	*(char *)((int)puVar2 + 7) = '$';
-	pDVar1 = current;
-	*(undefined2 *)(puVar2 + 2) = 0xffff;
-	*(undefined2 *)((int)puVar2 + 10) = 0xffff;
-	*(undefined2 *)(puVar2 + 4) = 0xffff;
-	*(undefined2 *)((int)puVar2 + 0x12) = 0xffff;
-	*(undefined2 *)(puVar2 + 6) = 0xffff;
-	*(undefined2 *)((int)puVar2 + 0x1a) = 0xffff;
-	*(undefined2 *)((int)puVar2 + 0x16) = 0;
-	*puVar2 = *puVar2 & 0xff000000 | *pDVar1->ot & 0xffffff;
-	*pDVar1->ot = *pDVar1->ot & 0xff000000 | (uint)puVar2 & 0xffffff;
-	pcVar3 = pDVar1->primptr;
-	pDVar1->primptr = pcVar3 + 0x20;
-	pcVar3[0x23] = '\x05';
-	*(undefined2 *)(pcVar3 + 0x2a) = 0x41;
-	*(undefined2 *)(pcVar3 + 0x2e) = 0x41;
-	*(undefined2 *)(pcVar3 + 0x32) = 0xc5;
-	*(undefined2 *)(pcVar3 + 0x36) = 0xc5;
-	*(undefined2 *)(pcVar3 + 0x28) = 0x1a;
-	*(undefined2 *)(pcVar3 + 0x2c) = 0x126;
-	*(undefined2 *)(pcVar3 + 0x30) = 0x1a;
-	*(undefined2 *)(pcVar3 + 0x34) = 0x126;
-	pcVar3[0x24] = '\x10';
-	pcVar3[0x25] = '\x10';
-	pcVar3[0x26] = '\x10';
-	pcVar3[0x27] = '+';
-	pDVar1 = current;
-	*(uint *)(pcVar3 + 0x20) =
-		*(uint *)(pcVar3 + 0x20) & 0xff000000 | *(uint *)*current->ot & 0xffffff;
-	*(uint *)*pDVar1->ot = *(uint *)*pDVar1->ot & 0xff000000 | (uint)(pcVar3 + 0x20) & 0xffffff;
-	pDVar1->primptr = pDVar1->primptr + 0x18;
-	return;
-	*/
+
+		iVar2++;
+	} while (iVar2 < 5);
+
+	null = (POLY_FT3*)current->primptr;
+
+	setPolyFT3(null);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0;
+
+	addPrim(current->ot, null);
+
+	current->primptr += sizeof(POLY_FT3);
+
+	prim = (POLY_F4*)current->primptr;
+	setPolyF4(prim);
+	setSemiTrans(prim, 1); // code is 43 '+';
+
+	prim->y0 = 0x41;
+	prim->y1 = 0x41;
+	prim->y2 = 0xc5;
+	prim->y3 = 0xc5;
+	prim->x0 = 0x1a;
+	prim->x1 = 0x126;
+	prim->x2 = 0x1a;
+	prim->x3 = 0x126;
+	prim->r0 = 16;
+	prim->g0 = 16;
+	prim->b0 = 16;
+
+	addPrim(current->ot, prim);
+	current->primptr += sizeof(POLY_F4);
 }
 
+//*Offset 0x6D324, from D : \driver2\game\C\PAUSE.C(lines 1943..2011)
+//* Stack frame base $sp, size 80
+//* Saved registers at offset - 4: s0 s1 s2 s3 s4 s5 s6 s7 fp ra
+//* /
+//void /*$ra*/ CreateScoreNames(struct SCORE_ENTRY* table /*$s0*/, struct PLAYER_SCORE* score /*stack 4*/, int position /*stack 8*/)
+//{ // line 1, offset 0x6d324
+//	char* text; // $s1
+//	int min; // $t1
+//	int frac; // $v0
+//	int i; // $s5
+//} // line 69, offset 0x6d664
 
+// [D]
+void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
+{
+	int time;
+	char* text;
+	int i;
 
+	switch (GameType) 
+	{
+		case GAME_PURSUIT:
+		case GAME_GETAWAY:
+		case GAME_CHECKPOINT:
+		case GAME_SURVIVAL:
+			text = NULL;
+			break;
+		case GAME_GATERACE:
+			text = "Gates";
+			break;
+		case GAME_TRAILBLAZER:
+			text = "Cones";
+			break;
+		default:
+			return;
+	}
 
+	i = 0;
 
+	do {
+		if (i == position)
+		{
+			time = score->time;
+			if (time == -1)
+				sprintf(ScoreTime[i], "-:--.--");
+			else
+				sprintf(ScoreTime[i], "%d:%02d.%02d", time / 180000, time / 3000 + (time / 180000) * -0x3c, (time % 3000) / 0x1e);
+
+			ScoreItems[i][0] = '\0';
+
+			if ((text != NULL) && (score->items != -1))
+				sprintf(ScoreItems[i], "%d %s", score->items, text);
+
+			ClearMem(ScoreName[i], 7);
+		}
+		else 
+		{
+			time = table->time;
+
+			if (time == -1)
+				sprintf(ScoreTime[i], "-:--.--");
+			else
+				sprintf(ScoreTime[i], "%d:%02d.%02d", time / 180000, time / 3000 + (time / 180000) * -0x3c, (time % 3000) / 0x1e);
+
+			ScoreItems[i][0] = '\0';
+
+			if ((text != NULL) && (table->items != -1))
+				sprintf(ScoreItems[i], "%d %s", table->items, text);
+
+			sprintf(ScoreName[i], "%s", table->name);
+			table = table + 1;
+		}
+
+		i++;
+	} while (i < 5);
+
+}

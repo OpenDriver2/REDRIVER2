@@ -52,7 +52,7 @@ extern void deleteCamera(int count); // 0x0003E9F8
 
 extern void DeleteAllCameras(); // 0x0003EA40
 
-extern void ShowIcons(char *menu, int selected, int x_offset); // 0x0003C1B0
+extern void ShowIcons(unsigned char *menu, int selected, int x_offset); // 0x0003C1B0
 
 extern void ShowReplayOptions(); // 0x0003EAA4
 

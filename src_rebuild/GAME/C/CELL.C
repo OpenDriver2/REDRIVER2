@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "CELL.H"
 #include "SYSTEM.H"
 #include "MAP.H"
@@ -6,6 +6,9 @@
 #include "EVENT.H"
 #include "SPOOL.H"
 #include "DRAW.H"
+
+int cell_object_index = 0;
+CELL_OBJECT cell_object_buffer[1024];
 
 // decompiled code
 // original method signature: 
@@ -30,7 +33,7 @@
 
 unsigned char cell_object_computed_values[2048];
 
-// [D]
+// [D] [T]
 void ClearCopUsage(void)
 {
 	ClearMem((char *)cell_object_computed_values, sizeof_cell_object_computed_values);
@@ -70,98 +73,199 @@ void ClearCopUsage(void)
 	/* end block 2 */
 	// End Line: 135
 
-// [D]
+// [D] [T]
 PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
 {
-	char bVar1;
-	ushort uVar2;
-	PACKED_CELL_OBJECT *pPVar3;
-	int iVar4;
-	CELL_DATA *pCVar5;
-	uint uVar6;
-	uint uVar7;
-	int iVar8;
+	PACKED_CELL_OBJECT *ppco;
+	CELL_DATA *celld;
+	uint value;
+	unsigned short index;
+	unsigned short num;
+	int cbr;
 
-	iVar8 = ((uint)cellx >> 5 & 1) + ((uint)cellz >> 5 & 1) * 2;
+	index = (cellx >> 5 & 1) + (cellz >> 5 & 1) * 2;
 
 	if (NumPlayers == 2)
 	{
-		iVar4 = cells_across;
-
-		if (cells_across < 0)
-			iVar4 = cells_across + 0x1f;
-
-		if (RoadMapRegions[iVar8] != ((uint)cellx >> 5) + ((uint)cellz >> 5) * (iVar4 >> 5))
+		if (RoadMapRegions[index] != (cellx >> 5) + (cellz >> 5) * (cells_across >> 5))
 			return NULL;
 	}
 
-	if (cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 + iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))] == 0xffff)
+	cbr = (cellz - (cellz & 0xffffffe0U)) * 32 + index * 1024 + (cellx - (cellx & 0xffffffe0U));
+
+	if (cell_ptrs[cbr] == 0xffff)
 	{
 		return NULL;
 	}
 
-	pCVar5 = cells + cell_ptrs[(cellz - (cellz & 0xffffffe0U)) * 0x20 + iVar8 * 0x400 + (cellx - (cellx & 0xffffffe0U))];
-	pci->pcd = pCVar5;
+	pci->pcd = cells + cell_ptrs[cbr];
+
+	num = pci->pcd->num;
 
 	if (events.camera == 0) 
 	{
-		if ((pCVar5->num & 0x4000) != 0) 
+		if (pci->pcd->num & 0x4000)
 		{
 			return NULL;
 		}
 	}
 	else 
 	{
-		uVar2 = pCVar5->num;
-		uVar6 = events.draw | 0x4000;
-		pci->pcd = pCVar5 + 1;
-
-		while ((uint)uVar2 != uVar6)
+		pci->pcd++;
+		while (num != (events.draw | 0x4000))
 		{
-			pCVar5 = pci->pcd;
-
-			if ((pCVar5->num & 0x8000) != 0)
+			if (pci->pcd->num & 0x8000)
 				return NULL;
 
-			uVar2 = pCVar5->num;
-			pci->pcd = pCVar5 + 1;
+			num = pci->pcd->num;
+			pci->pcd++;
 		}
 	}
 
-	iVar8 = cells_down >> 1;
-	(pci->near).x = (cellx - (cells_across >> 1)) * 0x800;
-	pPVar3 = cell_objects;
-	pCVar5 = pci->pcd;
-	(pci->near).z = (cellz - iVar8) * 0x800;
-	uVar6 = (uint)pCVar5->num;
+	pci->nearCell.x = (cellx - (cells_across >> 1)) * 0x800;
+	pci->nearCell.z = (cellz - (cells_down >> 1)) * 0x800;
 	pci->use_computed = use_computed;
-	uVar7 = uVar6 & 0x3fff;
-	pPVar3 = pPVar3 + uVar7;
 
-	if ((pPVar3->value == 0xffff) && (((pPVar3->pos).vy & 1) != 0)) 
+	num = pci->pcd->num;
+	
+	ppco = cell_objects + (num & 0x3fff);
+
+	if (ppco->value == 0xffff && (ppco->pos.vy & 1) != 0) 
 	{
-	LAB_00023d8c:
-		pPVar3 = GetNextPackedCop(pci);
+		ppco = GetNextPackedCop(pci);
 	}
-	else 
+	else if (use_computed != 0)
 	{
-		if (use_computed != 0) 
+		value = 1 << (num & 7) & 0xffff;
+
+		if (cell_object_computed_values[(num & 0x3fff) >> 3] & value) // get cached value
 		{
-			bVar1 = cell_object_computed_values[uVar7 >> 3];
-			uVar6 = 1 << (uVar6 & 7) & 0xffff;
+			ppco = GetNextPackedCop(pci);
+			pci->ppco = ppco;
 
-			if ((bVar1 & uVar6) != 0)
-				goto LAB_00023d8c;
-
-			cell_object_computed_values[uVar7 >> 3] = bVar1 | (char)uVar6;
+			return ppco;
 		}
 
-		pci->ppco = pPVar3;
+
+		cell_object_computed_values[(num & 0x3fff) >> 3] |= value;
 	}
-	return pPVar3;
+
+	pci->ppco = ppco;
+
+	return ppco;
+}
+
+
+// decompiled code
+// original method signature: 
+// struct PACKED_CELL_OBJECT * /*$ra*/ GetNextPackedCop(struct CELL_ITERATOR *pci /*$a0*/)
+ // line 813, offset 0x0003f5f0
+	/* begin block 1 */
+		// Start line: 814
+		// Start offset: 0x0003F5F0
+		// Variables:
+	// 		struct PACKED_CELL_OBJECT *ppco; // $a3
+	// 		unsigned short num; // $a1
+	/* end block 1 */
+	// End offset: 0x0003F6B0
+	// End Line: 853
+
+	/* begin block 2 */
+		// Start line: 1812
+	/* end block 2 */
+	// End Line: 1813
+
+	/* begin block 3 */
+		// Start line: 1817
+	/* end block 3 */
+	// End Line: 1818
+
+	/* begin block 4 */
+		// Start line: 1821
+	/* end block 4 */
+	// End Line: 1822
+
+// [D] [T]
+PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
+{
+	ushort num;
+	uint value;
+	PACKED_CELL_OBJECT* ppco;
+
+	do {
+		do {
+			if (pci->pcd->num & 0x8000)
+				return NULL;
+
+			pci->pcd++;
+			num = pci->pcd->num;
+
+			if ((num & 0x4000) != 0)
+				return NULL;
+
+			ppco = cell_objects + (num & 0x3fff);
+		} while (ppco->value == 0xffff && (ppco->pos.vy & 1) != 0);
+
+
+		if (!pci->use_computed)
+			break;
+
+		value = 1 << (num & 7) & 0xffff;
+
+		if ((cell_object_computed_values[(num & 0x3fff) >> 3] & value) == 0)
+		{
+			cell_object_computed_values[(num & 0x3fff) >> 3] |= value;
+			break;
+		}
+
+	} while (true);
+
+	pci->ppco = ppco;
+	return ppco;
 }
 
 
 
+// decompiled code
+// original method signature: 
+// struct CELL_OBJECT * /*$ra*/ UnpackCellObject(struct PACKED_CELL_OBJECT *ppco /*$a3*/, struct XZPAIR *near /*$t0*/)
+ // line 854, offset 0x000418e8
+	/* begin block 1 */
+		// Start line: 855
+		// Start offset: 0x000418E8
+		// Variables:
+	// 		struct CELL_OBJECT *pco; // $a2
+	/* end block 1 */
+	// End offset: 0x000419A8
+	// End Line: 870
 
+	/* begin block 2 */
+		// Start line: 4699
+	/* end block 2 */
+	// End Line: 4700
 
+	/* begin block 3 */
+		// Start line: 1708
+	/* end block 3 */
+	// End Line: 1709
+
+// [D] [T]
+CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
+{
+	CELL_OBJECT* pco;
+
+	if (ppco == NULL)
+		return NULL;
+
+	pco = &cell_object_buffer[cell_object_index];
+	cell_object_index = cell_object_index + 1U & 0x3ff;
+
+	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
+	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
+
+	pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
+	pco->yang = ppco->value & 0x3f;
+	pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+
+	return pco;
+}

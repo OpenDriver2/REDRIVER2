@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "DELETE.H"
 
 
@@ -24,10 +24,8 @@
 	// End Line: 25
 
 void FUN_MCARD__000f6588(void)
-
 {
-  erase();
-  return;
+	UNIMPLEMENTED();
 }
 
 

@@ -219,8 +219,8 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 
 #define dumpTPage(tpage)						\
 	GPU_printf("tpage: (%d,%d,%d,%d)\n",				\
-			   ((tpage)>>7)&0x003,((tpage)>>5)&0x003,	\
-			   ((tpage)<<6)&0x7c0,				\
+			   ((tpage)>>7)&0x3,((tpage)>>5)&0x3,	\
+			   ((tpage)<<6)&0x3c0,				\
 			   (((tpage)<<4)&0x100)+(((tpage)>>2)&0x200))
 
 #define dumpClut(clut) \
@@ -269,10 +269,17 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 		((u_long *)p)[1] = 0xe6000000|(pbw?0x01:0),	\
 		((u_long *)p)[2] = 0
 
+#if defined(USE_32_BIT_ADDR)
+#define setDrawMode(p, dfe, dtd, tpage, tw) 		\
+		setlen(p, 3),					\
+		((u_long *)p)[2] = _get_mode(dfe, dtd, tpage),	\
+		((u_long *)p)[3] = _get_tw((RECT16 *)tw)
+#else
 #define setDrawMode(p, dfe, dtd, tpage, tw) 		\
 		setlen(p, 2),					\
 		((u_long *)p)[1] = _get_mode(dfe, dtd, tpage),	\
 		((u_long *)p)[2] = _get_tw((RECT16 *)tw)
+#endif
 
 	
 /*	Primitive 	Lentgh		Code				*/
@@ -1000,6 +1007,8 @@ extern int KanjiFntOpen(int x, int y, int w, int h, int dx, int dy, int cx, int 
 extern void KanjiFntClose(void);
 extern int Krom2Tim(u_char *sjis, u_long *taddr, int dx, int dy, int cdx, int cdy, u_int fg, u_int bg);
 extern int LoadImagePSX(RECT16 *rect, u_long *p);
+extern int LoadImage(RECT16* rect, u_long* p);
+extern int LoadImage2(RECT16* rect, u_long* p);
 extern int MargePrim(void *p0, void *p1);
 extern int MoveImage(RECT16* rect, int x, int y);
 extern int OpenTIM(u_long *addr);

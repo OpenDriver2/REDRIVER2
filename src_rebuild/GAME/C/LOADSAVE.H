@@ -1,6 +1,10 @@
 #ifndef LOADSAVE_H
 #define LOADSAVE_H
 
+extern void LoadCurrentProfile();
+extern void SaveCurrentProfile();
+extern int LoadCurrentGame();
+extern void SaveCurrentGame();
 
 extern int CalcReplayDataSize(); // 0x00057FD4
 

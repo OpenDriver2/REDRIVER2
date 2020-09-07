@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "CONVERT.H"
 #include "DRAW.H"
 #include "CAMERA.H"
@@ -12,19 +12,20 @@
 	/* end block 1 */
 	// End Line: 299
 
+// [D] [T]
 void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 {
-	mat->m[0][0] = 0x1000;
+	mat->m[0][0] = ONE;
 	mat->m[0][1] = 0;
 	mat->m[0][2] = 0;
 
 	mat->m[1][0] = 0;
-	mat->m[1][1] = 0x1000;
+	mat->m[1][1] = ONE;
 	mat->m[1][2] = 0;
 
 	mat->m[2][0] = 0;
 	mat->m[2][1] = 0;
-	mat->m[2][2] = 0x1000;
+	mat->m[2][2] = ONE;
 
 	RotMatrixX(angles->vx, mat);
 	RotMatrixZ(angles->vz, mat);
@@ -42,7 +43,7 @@ void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 	/* end block 1 */
 	// End Line: 509
 
-// [D]
+// [D] [T]
 void _RotMatrixX(MATRIX *m, short ang)
 {
 	RotMatrixX(ang, m);
@@ -59,7 +60,7 @@ void _RotMatrixX(MATRIX *m, short ang)
 	/* end block 1 */
 	// End Line: 520
 
-// [D]
+// [D] [T]
 void _RotMatrixY(MATRIX *m, short ang)
 {
 	RotMatrixY(ang, m);
@@ -76,7 +77,7 @@ void _RotMatrixY(MATRIX *m, short ang)
 	/* end block 1 */
 	// End Line: 531
 
-// [D]
+// [D] [T]
 void _RotMatrixZ(MATRIX *m, short ang)
 {
 	RotMatrixZ(ang, m);
@@ -93,6 +94,7 @@ void _RotMatrixZ(MATRIX *m, short ang)
 	/* end block 1 */
 	// End Line: 546
 
+// [D] [T]
 void RotMatrixXYZ(MATRIX *m, SVECTOR *r)
 {
 	RotMatrix(r, m);
@@ -118,6 +120,7 @@ void RotMatrixXYZ(MATRIX *m, SVECTOR *r)
 	/* end block 2 */
 	// End Line: 559
 
+// [D] [T]
 void _MatrixRotate(VECTOR *pos)
 {
 	VECTOR temp;
@@ -150,7 +153,7 @@ void _MatrixRotate(VECTOR *pos)
 	/* end block 3 */
 	// End Line: 633
 
-// [D]
+// [D] [T]
 void InvertMatrix(MATRIX *a, MATRIX *b)
 {
 	b->m[0][0] = a->m[0][0];
@@ -196,22 +199,22 @@ void InvertMatrix(MATRIX *a, MATRIX *b)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void BuildWorldMatrix(void)
 {
 	MATRIX newmatrix;
 
-	newmatrix.m[0][0] = 0x1000;
+	newmatrix.m[0][0] = ONE;
 	newmatrix.m[1][0] = 0;
 	newmatrix.m[2][0] = 0;
 
 	newmatrix.m[0][1] = 0;
-	newmatrix.m[1][1] = 0x1000;
+	newmatrix.m[1][1] = ONE;
 	newmatrix.m[2][1] = 0;
 
 	newmatrix.m[0][2] = 0;
 	newmatrix.m[1][2] = 0;
-	newmatrix.m[2][2] = 0x1000;
+	newmatrix.m[2][2] = ONE;
 
 	_RotMatrixY(&newmatrix, camera_angle.vy);
 	_RotMatrixZ(&newmatrix, camera_angle.vz);
@@ -220,10 +223,10 @@ void BuildWorldMatrix(void)
 	MulMatrix0(&aspect, &newmatrix, &inv_camera_matrix);
 	InvertMatrix(&inv_camera_matrix, &camera_matrix);
 
-	face_camera_work.m[0][0] = 0x1000;
+	face_camera_work.m[0][0] = ONE;
 	face_camera_work.m[0][2] = 0;
 	face_camera_work.m[2][0] = 0;
-	face_camera_work.m[2][2] = 0x1000;
+	face_camera_work.m[2][2] = ONE;
 
 	RotMatrixY(-(camera_angle.vy & 0xfff), &face_camera_work);
 	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
@@ -266,7 +269,7 @@ void BuildWorldMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ScaleCamera(void)
 {
 	MATRIX temp;
@@ -285,17 +288,17 @@ void ScaleCamera(void)
 	RotMatrixYXZ(&tempang, &temp);
 	InvertMatrix(&temp, &temp2);
 
-	scale.m[0][0] = 0x1000;
+	scale.m[0][0] = ONE;
 	scale.m[0][1] = 0;
 	scale.m[0][2] = 0;
 
 	scale.m[1][0] = 0;
-	scale.m[1][1] = 0x1000;
+	scale.m[1][1] = ONE;
 	scale.m[1][2] = 0;
 
 	scale.m[2][0] = 0;
 	scale.m[2][1] = 0;
-	scale.m[2][2] = 0x1000;
+	scale.m[2][2] = ONE;
 
 	MulMatrix0(&scale, &inv_camera_matrix, &scaledcammat);
 	TransMatrix(&scaledcammat, &pos);
@@ -324,6 +327,7 @@ void ScaleCamera(void)
 	/* end block 3 */
 	// End Line: 907
 
+// [D] [T]
 void Getlong(char *dest, char *source)
 {
 	*dest = *source;
@@ -366,13 +370,13 @@ static long rseed[17]; // offset 0xBD510
 static int randomindex = 0;
 static int randomcounter = 0;
 
-// [D]
+// [D] [T]
 void RandomInit(long i1, long i2)
 {
 	int step;
 	int count;
 
-	long *plVar1;
+	long *sd;
 
 	step = 0x3b1cb49;
 	
@@ -382,14 +386,15 @@ void RandomInit(long i1, long i2)
 	rseed[1] = i2;
 
 	count = 14;
-	plVar1 = rseed + 2;
+	sd = rseed + 2;
 	do {
-		*plVar1++ = step;
+		*sd++ = step;
 		count--;
 		step += 0x1c05e5f;
 	} while (-1 < count);
 
 	step = 0;
+
 	while (step < 68)
 		Random2(step++);
 }
@@ -426,6 +431,7 @@ void RandomInit(long i1, long i2)
 
 extern int frameStart;
 
+// [D] [T]
 long Random2(int step)
 {
 	return (CameraCnt - frameStart) * (CameraCnt - frameStart) * 0x19660d + 0x3c6ef35fU >> 8 & 0xffff;

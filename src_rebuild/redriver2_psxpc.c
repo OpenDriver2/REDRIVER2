@@ -1,7 +1,7 @@
 ﻿// redriver2_psxpc.cpp
 //
 
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "GAME/C/MAIN.H"
 #include "GAME/C/SYSTEM.H"
 #include "GAME/C/GLAUNCH.H"
@@ -178,17 +178,82 @@ void printError(char *fmt, ...)
 
 int(*GPU_printf)(const char *fmt, ...);
 
+extern int gDrawDistance;
+
+#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
+
 extern int g_texturelessMode;
 extern int g_wireframeMode;
 int gShowCollisionDebug = 0;
-extern int gDrawDistance;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
+extern int g_FreeCameraEnabled;
+int gStopCivCars = 0;
 
 extern void FunkUpDaBGMTunez(int funk);
 
+int cursorX, cursorY, cursorOldX, cursorOldY;
+
+void GameDebugMouse(int x, int y)
+{
+	if (g_FreeCameraEnabled)
+	{
+		extern SVECTOR g_FreeCameraRotation;
+
+		int width, height;
+		Emulator_GetScreenSize(width, height);
+
+		cursorX = x;
+		cursorY = y;
+
+		Emulator_SetCursorPosition(width / 2, height / 2);
+
+		g_FreeCameraRotation.vy -= cursorX - cursorOldX;
+		g_FreeCameraRotation.vx += cursorY - cursorOldY;
+
+		cursorX = width / 2;
+		cursorY = height / 2;
+
+		cursorOldX = cursorX;
+		cursorOldY = cursorY;
+	}
+}
+
 void GameDebugKeys(int nKey, bool down)
 {
+	if (g_FreeCameraEnabled)
+	{
+		extern int g_FreeCameraControls;
+		if (nKey == SDL_SCANCODE_W)
+		{
+			if (down)
+				g_FreeCameraControls |= 0x1;
+			else
+				g_FreeCameraControls &= ~0x1;
+		}
+		else if (nKey == SDL_SCANCODE_S)
+		{
+			if (down)
+				g_FreeCameraControls |= 0x2;
+			else
+				g_FreeCameraControls &= ~0x2;
+		}
+		else if (nKey == SDL_SCANCODE_A)
+		{
+			if (down)
+				g_FreeCameraControls |= 0x4;
+			else
+				g_FreeCameraControls &= ~0x4;
+		}
+		else if (nKey == SDL_SCANCODE_D)
+		{
+			if (down)
+				g_FreeCameraControls |= 0x8;
+			else
+				g_FreeCameraControls &= ~0x8;
+		}
+	}
+
 	if (!down)
 		return;
 
@@ -218,8 +283,10 @@ void GameDebugKeys(int nKey, bool down)
 	}
 	else if (nKey == SDL_SCANCODE_F4)
 	{
-		gShowCollisionDebug ^= 1;
-		printf("Collision debug %s\n", gShowCollisionDebug ? "ON" : "OFF");
+		gShowCollisionDebug++;
+		if (gShowCollisionDebug > 3)
+			gShowCollisionDebug = 0;
+		printf("Collision debug: %d\n", gShowCollisionDebug);
 	}
 	else if (nKey == SDL_SCANCODE_F5)
 	{
@@ -229,12 +296,15 @@ void GameDebugKeys(int nKey, bool down)
 #ifdef _DEBUG
 	else if (nKey == SDL_SCANCODE_F6)
 	{
-		extern int gStopCivCars;
 		gStopCivCars ^= 1;
 		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
 	}
 #endif
-	
+	else if (nKey == SDL_SCANCODE_F7)
+	{
+		g_FreeCameraEnabled ^= 1;
+		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
+	}
 	else if (nKey == SDL_SCANCODE_KP_DIVIDE)
 	{
 		FunkUpDaBGMTunez(0);
@@ -244,6 +314,7 @@ void GameDebugKeys(int nKey, bool down)
 		FunkUpDaBGMTunez(1);
 	}
 }
+#endif
 
 #ifndef USE_CRT_MALLOC
 char g_Overlay_buffer[0x50000];		// 0x1C0000
@@ -252,9 +323,9 @@ char g_Other_buffer[0x50000];		// 0xF3000
 char g_Other_buffer2[0x50000];		// 0xE7000
 OTTYPE g_OT1[OTSIZE];				// 0xF3000
 OTTYPE g_OT2[OTSIZE];				// 0xF7200
-char g_PrimTab1[0x1a180];			// 0xFB400
-char g_PrimTab2[0x1a180];			// 0x119400
-char g_Replay_buffer[0x50000];		// 0x1fabbc
+char g_PrimTab1[PRIMTAB_SIZE];			// 0xFB400
+char g_PrimTab2[PRIMTAB_SIZE];			// 0x119400
+char g_Replay_buffer[0x50000];		// 0x1fABBC
 #endif
 
 int main(int argc, char** argv)
@@ -266,8 +337,8 @@ int main(int argc, char** argv)
 	_other_buffer2 = (char*)malloc(0x50000);			// 0xE7000
 	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000
 	_OT2 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF7200
-	_primTab1 = (char*)malloc(0x1a180);					// 0xFB400
-	_primTab2 = (char*)malloc(0x1a180);					// 0x119400
+	_primTab1 = (char*)malloc(PRIMTAB_SIZE);					// 0xFB400
+	_primTab2 = (char*)malloc(PRIMTAB_SIZE);					// 0x119400
 	_replay_buffer = (char*)malloc(0x50000);			// 0x1fabbc
 #else
 	_overlay_buffer = g_Overlay_buffer;		// 0x1C0000
@@ -278,17 +349,18 @@ int main(int argc, char** argv)
 	_OT2 = g_OT2;							// 0xF7200
 	_primTab1 = g_PrimTab1;					// 0xFB400
 	_primTab2 = g_PrimTab2;					// 0x119400
-	_replay_buffer = g_Replay_buffer;		// 0x1fabbc
+	_replay_buffer = g_Replay_buffer;		// 0x1fABBC
 #endif
 
-	//g_texturelessMode = 1;
-	//g_wireframeMode = 1;
+#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 	gameDebugKeys = GameDebugKeys;
+	gameDebugMouse = GameDebugMouse;
+	GPU_printf = printf;
+#endif // _DEBUG
+
 	gDrawDistance = 600;					// best distance
 
-	GPU_printf = printf;
-
-	Emulator_Initialise("REDRIVER2", 800, 600);
+	Emulator_Initialise("DRIVER2", 800, 600);
 	redriver2_main(argc, argv);
 
 	Emulator_ShutDown();

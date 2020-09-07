@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "TILE.H"
 #include "MODELS.H"
 #include "SYSTEM.H"
@@ -349,14 +349,11 @@ void DrawTILES(int tile_amount)
 		{
 			if (Low2HighDetailTable[uVar3] != 0xffff)
 				uVar3 = Low2HighDetailTable[uVar3];
-#ifdef PSX
+
 			if (iVar1 < 2000) 
-				TileNxN(modelpointers[uVar3], 4, 0x4b);
+				TileNxN(modelpointers[uVar3], 4, 75);
 			else 
-				TileNxN(modelpointers[uVar3], 2, 0x23);
-#else
-			Tile1x1(modelpointers[uVar3]);	// [A] temporary draw it as it is
-#endif
+				TileNxN(modelpointers[uVar3], 2, 35);
 		}
 		else
 		{
@@ -589,182 +586,112 @@ void DrawTILES(int tile_amount)
 	/* end block 4 */
 	// End Line: 709
 
-// [D] [A] - I don't expect this to work...
+// [A] custom implemented function
 void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 {
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
-	uint uVar4;
-	uint uVar5;
-	uint uVar6;
-	uint uVar7;
-	uint uVar8;
-	uint uVar9;
-	uint uVar10;
-	uint uVar11;
-	uint uVar12;
-	int iVar13;
 
-	//       N       0   1   2    3    4
-	//
-	//(*VSP)[n][0]   0   5   10   15   20
-	//(*VSP)[n][1]   1   6   11   16   21
-	//(*VSP)[n][2]   2   7   12   17   22
-	//(*VSP)[n][3]   3   8   13   18   23
-	//(*VSP)[n][4]   4   9   14   19   24
+	/* vertices by index in quad:
+		3---------2
+		|         |
+		|         |
+		|         |
+		0---------1
+	*/
 
-	if (n == 4) 
-	{
-		uVar3 = *(uint *)&(*VSP)[0][0].vx;
-		uVar2 = *(uint *)&(*VSP)[0][0].vz;
-		uVar5 = uVar3 ^ 0x8000;
-		uVar9 = *(uint *)&(*VSP)[0][4].vx ^ 0x8000;
-		uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-		
-		uVar6 = uVar2 ^ 0x8000;
-		uVar2 = uVar2 ^ 0x8000;
-		uVar3 = uVar3 ^ 0x8000;
+	// 0 3 2 1
 
-		uVar9 = *(uint *)&(*VSP)[0][4].vx ^ 0x8000;
-		uVar10 = *(uint *)&(*VSP)[0][4].vz ^ 0x8000;
-		uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+	// do subdivision
+	MVERTEX v1, v2, v3, v4;
+	MVERTEX e1, e2, e3, e4, e5;
+	MVERTEX p1, p2, p3, p4, p5;
 
-		*(uint *)&(*VSP)[0][2].vx = uVar5 ^ 0x8000;
-		*(uint *)&(*VSP)[0][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[0][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[0][2].vz = uVar6 ^ 0x8000;
-		*(uint *)&(*VSP)[0][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		*(uint *)&(*VSP)[0][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+	if (n < 2)
+		return;
 
-		if (m == 1) 
-		{
-			uVar2 = *(uint *)&(*VSP)[1][0].vz;
-			uVar5 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][4].vx ^ 0x8000;
-			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-			
-			uVar6 = uVar2 ^ 0x8000;
-			uVar2 = uVar2 ^ 0x8000;
-			uVar3 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][4].vx ^ 0x8000;
-			uVar10 = *(uint *)&(*VSP)[1][4].vz ^ 0x8000;
-			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+	v1 = (*VSP)[0][0];
+	v2 = (*VSP)[0][1];
+	v3 = (*VSP)[0][3];
+	v4 = (*VSP)[0][2];
 
-			*(uint *)&(*VSP)[1][2].vx = uVar5 ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][2].vz = uVar6 ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		}
-		else 
-		{
-			
-			uVar2 = *(uint *)&(*VSP)[4][0].vz;
-			uVar5 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[4][4].vx ^ 0x8000;
-			uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-			
-			uVar6 = uVar2 ^ 0x8000;
-			uVar2 = uVar2 ^ 0x8000;
+	VecSubtract(&e1, &v2, &v1); // plane[1] - plane[0];
+	e1.uv.u0 = (v2.uv.u0 - v1.uv.u0) / 2;
+	e1.uv.v0 = (v2.uv.v0 - v1.uv.v0) / 2;
 
-			uVar3 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[4][4].vx ^ 0x8000;
-			uVar10 = *(uint *)&(*VSP)[4][4].vz ^ 0x8000;
-			uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+	VecSubtract(&e2, &v3, &v4); // plane[2] - plane[3];
+	e2.uv.u0 = (v3.uv.u0 - v4.uv.u0) / 2;
+	e2.uv.v0 = (v3.uv.v0 - v4.uv.v0) / 2;
 
-			*(uint *)&(*VSP)[4][2].vx = uVar5 ^ 0x8000;
-			*(uint *)&(*VSP)[4][1].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[4][3].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[4][2].vz = uVar6 ^ 0x8000;
-			*(uint *)&(*VSP)[4][1].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[4][3].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			
-			iVar13 = 4;
-			do {
-				iVar13 = iVar13 + -1;
-				uVar3 = *(uint *)&(*VSP)[0][0].vx;
-				uVar2 = *(uint *)&(*VSP)[0][0].vz;
-				uVar5 = uVar3 ^ 0x8000;
-				uVar9 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-				uVar5 = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU);
-				
-				uVar6 = uVar2 ^ 0x8000;
-				uVar2 = uVar2 ^ 0x8000;
-				uVar3 = uVar3 ^ 0x8000;
-				uVar9 = *(uint *)&(*VSP)[4][0].vx ^ 0x8000;
-				uVar10 = *(uint *)&(*VSP)[4][0].vz ^ 0x8000;
-				uVar6 = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU);
+	VecSubtract(&e3, &v4, &v1); // plane[3] - plane[0];
+	e3.uv.u0 = (v4.uv.u0 - v1.uv.u0) / 2;
+	e3.uv.v0 = (v4.uv.v0 - v1.uv.v0) / 2;
 
-				*(uint *)&(*VSP)[2][0].vx = uVar5 ^ 0x8000;
-				*(uint *)&(*VSP)[1][0].vx = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0xffff7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[3][0].vx = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[2][0].vz = uVar6 ^ 0x8000;
-				*(uint *)&(*VSP)[1][0].vz = (uVar2 | uVar6) - ((int)(uVar2 ^ uVar6) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-				*(uint *)&(*VSP)[3][0].vz = (uVar6 | uVar10) - ((int)(uVar6 ^ uVar10) >> 1 & 0x7f7f7fffU) ^ 0x8000;
+	VecSubtract(&e4, &v3, &v2); // plane[2] - plane[1];
+	e4.uv.u0 = (v3.uv.u0 - v2.uv.u0) / 2;
+	e4.uv.v0 = (v3.uv.v0 - v2.uv.v0) / 2;
 
-				VSP++;// = (MVERTEX(*)[5][5])(*VSP + 1);
+	//-----------
 
-			} while (-1 < iVar13);
-		}
-	}
-	else 
-	{
-		uVar2 = *(uint *)&(*VSP)[0][0].vx;
-		uVar9 = *(uint *)&(*VSP)[0][2].vx;
-		uVar6 = *(uint *)&(*VSP)[0][0].vz;
+	// half them all
+	SetVec(&e1, e1.vx / 2, e1.vy / 2, e1.vz / 2);
 
-		uVar5 = uVar2 ^ 0x8000;
-		uVar3 = uVar9 ^ 0x8000;
-		uVar10 = (uVar5 | uVar3) - ((int)(uVar5 ^ uVar3) >> 1 & 0xffff7fffU);
-		uVar5 = *(uint *)&(*VSP)[0][2].vz;
-		
-		uVar3 = uVar6 ^ 0x8000;
-		uVar5 = uVar5 ^ 0x8000;
-		uVar3 = (uVar3 | uVar5) - ((int)(uVar3 ^ uVar5) >> 1 & 0x7f7f7fffU);
+	SetVec(&e2, e2.vx / 2, e2.vy / 2, e2.vz / 2);
 
-		*(uint *)&(*VSP)[0][1].vx = uVar10 ^ 0x8000;
-		*(uint *)&(*VSP)[0][1].vz = uVar3 ^ 0x8000;
+	SetVec(&e3, e3.vx / 2, e3.vy / 2, e3.vz / 2);
 
-		if (m == 1) 
-		{
-			uVar5 = *(uint *)&(*VSP)[1][0].vx ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][2].vx ^ 0x8000;
-			*(uint *)(*VSP + 6) = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0xffff7fffU) ^ 0x8000;
+	SetVec(&e4, e4.vx / 2, e4.vy / 2, e4.vz / 2);
 
-			uVar5 = *(uint *)&(*VSP)[1][0].vz ^ 0x8000;
-			uVar9 = *(uint *)&(*VSP)[1][2].vz ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vz = (uVar5 | uVar9) - ((int)(uVar5 ^ uVar9) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		}
-		else 
-		{
-			uVar2 = uVar2 ^ 0x8000;
-			uVar9 = uVar9 ^ 0x8000;
-			uVar4 = *(uint *)&(*VSP)[2][0].vz;
-			uVar7 = *(uint *)&(*VSP)[2][0].vx ^ 0x8000;
-			uVar11 = *(uint *)&(*VSP)[2][2].vx ^ 0x8000;
-			uVar11 = (uVar7 | uVar11) - ((int)(uVar7 ^ uVar11) >> 1 & 0xffff7fffU);
-			
-			uVar7 = uVar4 ^ 0x8000;
-			uVar6 = uVar6 ^ 0x8000;
-			uVar4 = uVar4 ^ 0x8000;
-			uVar1 = *(uint *)&(*VSP)[2][2].vx ^ 0x8000;
-			uVar12 = *(uint *)&(*VSP)[2][2].vz ^ 0x8000;
-			uVar8 = (uVar7 | uVar12) - ((int)(uVar7 ^ uVar12) >> 1 & 0x7f7f7fffU);
-			uVar7 = *(uint *)&(*VSP)[2][0].vx ^ 0x8000;
+	//-----------
 
-			*(uint *)&(*VSP)[2][1].vx = uVar11 ^ 0x8000;
-			*(uint *)&(*VSP)[1][0].vx =(uVar2 | uVar7) - ((int)(uVar2 ^ uVar7) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vx =(uVar10 | uVar11) - ((int)(uVar10 ^ uVar11) >> 1 & 0xffff7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][2].vx = (uVar9 | uVar1) - ((int)(uVar9 ^ uVar1) >> 1 & 0xffff7fffU) ^ 0x8000;
+	VecAdd(&p1, &e1, &v1); // e1 * 0.5f + plane[0];
+	p1.uv.u0 = e1.uv.u0 + v1.uv.u0;
+	p1.uv.v0 = e1.uv.v0 + v1.uv.v0;
 
-			*(uint *)&(*VSP)[2][1].vz = uVar8 ^ 0x8000;
-			*(uint *)&(*VSP)[1][0].vz =(uVar6 | uVar4) - ((int)(uVar6 ^ uVar4) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][1].vz = (uVar3 | uVar8) - ((int)(uVar3 ^ uVar8) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-			*(uint *)&(*VSP)[1][2].vz =(uVar5 | uVar12) - ((int)(uVar5 ^ uVar12) >> 1 & 0x7f7f7fffU) ^ 0x8000;
-		}
-	}
+	VecAdd(&p2, &e2, &v4); // e2 * 0.5f + plane[3];
+	p2.uv.u0 = e2.uv.u0 + v4.uv.u0;
+	p2.uv.v0 = e2.uv.v0 + v4.uv.v0;
+
+	VecAdd(&p3, &e3, &v1); // e3 * 0.5f + plane[0];
+	p3.uv.u0 = e3.uv.u0 + v1.uv.u0;
+	p3.uv.v0 = e3.uv.v0 + v1.uv.v0;
+
+	VecAdd(&p4, &e4, &v2); // e4 * 0.5f + plane[1];
+	p4.uv.u0 = e4.uv.u0 + v2.uv.u0;
+	p4.uv.v0 = e4.uv.v0 + v2.uv.v0;
+
+	//-----------
+
+	VecSubtract(&e5, &p2, &p1); // p2 - p1;
+	e5.uv.u0 = (p2.uv.u0 - p1.uv.u0) / 2;
+	e5.uv.v0 = (p2.uv.v0 - p1.uv.v0) / 2;
+
+	SetVec(&e5, e5.vx / 2, e5.vy / 2, e5.vz / 2);
+
+
+	VecAdd(&p5, &e5, &p1); // e5 * 0.5f + p1;
+	p5.uv.u0 = e5.uv.u0 + p1.uv.u0;
+	p5.uv.v0 = e5.uv.v0 + p1.uv.v0;
+
+	//-----------
+
+	(*VSP)[0][0] = v1; // { plane[0], p1, p5, p3 },
+	(*VSP)[0][1] = p1;
+	(*VSP)[0][2] = p3;
+	(*VSP)[0][3] = p5;
+
+	(*VSP)[1][0] = p1; // { p1, plane[1], p4, p5 },
+	(*VSP)[1][1] = v2;
+	(*VSP)[1][2] = p5;
+	(*VSP)[1][3] = p4;
+
+	(*VSP)[2][0] = p5; // { p5, p4, plane[2], p2 },
+	(*VSP)[2][1] = p4;
+	(*VSP)[2][2] = p2;
+	(*VSP)[2][3] = v3;
+
+	(*VSP)[3][0] = p3; // { p3, p5, p2, plane[3] }
+	(*VSP)[3][1] = p5;
+	(*VSP)[3][2] = v4;
+	(*VSP)[3][3] = p2;
 }
 
 
@@ -831,168 +758,60 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-
+// [A] custom implemented function
 void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	uint uVar3;
-	uint *puVar4;
-	uint *local_a0_1124;
-	int iVar5;
-	POLY_FT4 *prim;
-	MVERTEX *vertex;
-	int iVar6;
-	OTTYPE *ot;
-	MVERTEX(*VST)[5][5];
-	int iVar7;
-	int Z1;
-	int Z2;
+	POLY_FT4* prim;
+	int z;
+	int opz;
 
-	iVar7 = 0;
-	prim = (POLY_FT4 *)pc->primptr;
-	local_a0_1124 = (uint *)VSP;
+	prim = (POLY_FT4*)pc->primptr;
 
-	if (0 < n)
+	int numPolys = 4;
+
+	if (n < 2)
+		numPolys = 1;
+
+	for (int index = 0; index < numPolys; index++)
 	{
-		do {
-			iVar6 = m-1;
-			iVar5 = iVar7 + 2;
+		setPolyFT4(prim);
+		*(ulong*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
 
-			if (iVar6 != -1) 
-			{
-				VST = (MVERTEX(*)[5][5])(*VSP + iVar6 * 5);
-				do {
-					vertex = (MVERTEX*)*VST + iVar7;
-					ot = pc->ot;
+		// test
+		gte_ldv3(&(*VSP)[index][0], &(*VSP)[index][1], &(*VSP)[index][2]);
+		gte_rtpt();
+		gte_nclip();
+		gte_stopz(&opz);
 
-					gte_ldv3(&vertex[0], &vertex[1], &vertex[2]);
+		gte_avsz3();
+		
+		gte_stotz(&z);
 
-					gte_rtpt();
-					gte_avsz3();
+		if (opz > 0 && z > 5)
+		{
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
-					gte_stotz(&iVar1);
+			gte_ldv0(&(*VSP)[index][3]);
+			gte_rtps();
 
-					if (1 < iVar1) 
-					{
-						SXYPAIR DAT_1f800208 = *(SXYPAIR*)&SXY0;
-						SXYPAIR DAT_1f80020c = *(SXYPAIR*)&SXY1;
-						SXYPAIR DAT_1f800210 = *(SXYPAIR*)&SXY2;
-						gte_stsxy3(&DAT_1f800208, &DAT_1f80020c, &DAT_1f800210);
 
-						setPolyFT4(prim);
-						addPrim(ot + (iVar1 >> 1), prim);
+			gte_stsxy(&prim->x3);
 
-						*(uint *)&prim->x0 = *(uint *)&DAT_1f800208;
-						*(uint *)&prim->x1 = *(uint *)&DAT_1f80020c;
-						*(uint *)&prim->x2 = *(uint *)&DAT_1f800210;
-						*(uint *)&prim[1].x2 = *(uint *)&DAT_1f80020c;
+			*(ushort*)&prim->u0 = (*VSP)[index][0].uv.val;
+			*(ushort*)&prim->u1 = (*VSP)[index][1].uv.val;
+			*(ushort*)&prim->u2 = (*VSP)[index][2].uv.val;
+			*(ushort*)&prim->u3 = (*VSP)[index][3].uv.val;
 
-						gte_ldv3(&vertex[2], &vertex[7], &vertex[6]);
+			prim->clut = pc->clut >> 0x10;
+			prim->tpage = pc->tpage >> 0x10;
 
-						gte_rtpt();
-						gte_avsz3();
+			addPrim(pc->ot + (z >> 1), prim);
 
-						SXYPAIR DAT_1f80021c = *(SXYPAIR*)&SXY0;
-						SXYPAIR DAT_1f800220 = *(SXYPAIR*)&SXY1;
-						SXYPAIR DAT_1f800224 = *(SXYPAIR*)&SXY2;
-
-						if ((((ushort)DAT_1f80020c.x < 0x140) ||
-							((ushort)DAT_1f800208.x < 0x140)) ||
-							((ushort)DAT_1f800210.x < 0x140))
-						{
-						LAB_00042824:
-							if (((0x109 < (ushort)DAT_1f800208.y) &&
-								(0x109 < (ushort)DAT_1f80020c.y)) &&
-								((0x109 < (ushort)DAT_1f800210.y &&
-								(((DAT_1f800224.y = (short)(DAT_1f800224.x >> 0x10), 0x109 < (ushort)DAT_1f800224.y &&	// PLS HELP
-								(-1 < (int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800208.y) << 0x10))) &&
-								(DAT_1f800210.x = DAT_1f800210.y, -1 < (int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800210.y)
-								<< 0x10)))))))
-								goto LAB_00042900;
-
-							//*local_a0_1124 = (uint)prim & 0xffffff;
-
-							setPolyFT4(prim);
-							addPrim(ot + (iVar1 >> 1), prim);
-
-							gte_stsxy(&prim->x3);
-
-							*(uint *)&prim->r0 = pc->colour;
-							*(uint *)&prim->u0 = (uint)vertex->uv | pc->clut;
-							*(uint *)&prim->u1 = (uint)vertex[1].uv | pc->tpage;
-							*(uint *)&prim->u2 = (uint)vertex[5].uv;
-							*(uint *)&prim->u3 = (uint)vertex[6].uv;
-
-							prim++;
-							//pc->primptr = (char*)prim;
-							return;
-						}
-						else 
-						{
-							if ((((ushort)DAT_1f800224.x < 0x140) ||
-								((int)((uint)(ushort)(DAT_1f80020c.x ^ DAT_1f800208.x) << 0x10) < 0)) ||
-								((int)((uint)(ushort)(DAT_1f80020c.x ^ DAT_1f800210.x) << 0x10) < 0))
-								goto LAB_00042824;
-
-						LAB_00042900:
-							//local_a0_1124 = (uint *)(uint)(ushort)DAT_1f800210.x;
-							*(SXYPAIR *)&prim->x2 = DAT_1f80020c;
-						}
-
-						gte_stotz(&iVar1);
-						//puVar4 = ot + (iVar1 >> 1);
-
-						if ((((ushort)DAT_1f80021c.y < 0x10a) ||
-							((ushort)DAT_1f800220.y < 0x10a)) ||
-							((((ushort)DAT_1f800224.y < 0x10a ||
-							(((ushort)DAT_1f80020c.y < 0x10a ||
-							((int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800208.y) << 0x10) < 0)))) ||
-							((int)((uint)(ushort)(DAT_1f80020c.y ^ DAT_1f800210.y) << 0x10) < 0))))
-						{
-							if (((0x13f < (ushort)DAT_1f80020c.x) &&
-								(0x13f < (ushort)DAT_1f800220.x)) &&
-								(0x13f < (ushort)DAT_1f80021c.x))
-							{
-								if (((0x13f < (ushort)DAT_1f800224.x) &&
-									(-1 < (int)((uint)(ushort)(DAT_1f800220.x ^ DAT_1f80021c.x) << 0x10))) &&
-									(//local_a0_1124 = (uint *)(DAT_1f800224.x & 0xffff),
-									-1 < (int)((uint)(ushort)(DAT_1f800220.x ^ DAT_1f800224.x) << 0x10)))
-									goto LAB_00042ab4;
-							}
-
-							setPolyFT4(prim);
-
-							*(uint *)&prim->r0 = pc->colour;
-
-							gte_stsxy3(&prim->x0, &prim->x1, &prim->x3);
-
-							*(uint *)&prim->u0 = (uint)vertex[2].uv | pc->clut;
-							*(uint *)&prim->u1 = (uint)vertex[7].uv | pc->tpage;
-							*(uint *)&prim->u2 = (uint)vertex[1].uv;
-							*(uint *)&prim->u3 = (uint)vertex[6].uv;
-
-							prim++;
-							//local_a0_1124 = puVar4;
-
-							//pc->primptr = (char*)prim;
-							return;
-						}
-					}
-
-				LAB_00042ab4:
-					iVar6--;
-					VST = (MVERTEX(*)[5][5])(VST-1 + 20);
-
-				} while (iVar6 != -1);
-			}
-
-			iVar7 = iVar5;
-		} while (iVar5 < n);
+			prim++;
+		}
 	}
 
-	pc->primptr = (char*)prim;*/
+	pc->primptr = (char*)prim;
 }
 
 
@@ -1068,120 +887,36 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+// [A] custom implemented function
 void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 {
-	UNIMPLEMENTED_PRINTONCE();
-	/*
-	undefined4 in_zero;
-	undefined4 in_at;
-	undefined4 *puVar1;
-	int iVar2;
-	uint uVar3;
-	undefined4 *ot;
-	int iVar5;
-	undefined4 *puVar6;
-	uint uVar7;
-	undefined4 *puVar8;
-	undefined4 *puVar9;
-	undefined4 uVar10;
-	int local_18;
+	MVERTEX subdivVerts[5][5];
 
-	iVar5 = DAT_1f8000c8;
-	DAT_1f8000b4 = DAT_1f8000b4 + ofse * 4;
-	uVar3 = *(uint *)(polys + 4);
-	puVar9 = (undefined4 *)(DAT_1f8000c8 + (uVar3 & 0xff) * 8);
-	puVar6 = (undefined4 *)(DAT_1f8000c8 + (uVar3 >> 5 & 0x7f8));
-	DAT_1f800228 = *puVar9;
-	DAT_1f80022c._0_2_ = (undefined2)puVar9[1];
-	uVar10 = puVar6[1];
-	(&DAT_1f800228)[n * 2] = *puVar6;
-	(&DAT_1f80022c)[n * 2] = uVar10;
-	iVar2 = (uVar3 >> 0x18) * 8;
-	puVar8 = (undefined4 *)(iVar5 + iVar2);
-	puVar1 = &DAT_1f800228 + m * 10;
-	uVar10 = puVar8[1];
-	*puVar1 = *puVar8;
-	(&DAT_1f80022c)[m * 10] = uVar10;
-	iVar5 = DAT_1f8000c8;
-	ot = (undefined4 *)((uVar3 >> 0xd & 0x7f8) + DAT_1f8000c8);
-	uVar10 = ot[1];
-	puVar1[n * 2] = *ot;
-	(puVar1 + n * 2)[1] = uVar10;
-	setCopReg(2, in_zero, *puVar9);
-	setCopReg(2, in_at, puVar9[1]);
-	setCopReg(2, iVar5, *puVar6);
-	setCopReg(2, iVar2, puVar6[1]);
-	setCopReg(2, ot, *puVar8);
-	setCopReg(2, puVar6, puVar8[1]);
-	copFunction(2, 0x280030);
-	uVar10 = *(undefined4 *)(polys + 0xc);
-	DAT_1f80022c = CONCAT22((short)*(undefined4 *)(polys + 8), (undefined2)DAT_1f80022c);
-	*(undefined2 *)((int)&DAT_1f80022c + n * 8 + 2) =
-		(short)((uint)*(undefined4 *)(polys + 8) >> 0x10);
-	*(undefined2 *)((int)&DAT_1f80022c + m * 0x28 + 2) = (short)((uint)uVar10 >> 0x10);
-	*(undefined2 *)((int)&DAT_1f80022c + n * 8 + m * 0x28 + 2) = (short)uVar10;
-	copFunction(2, 0x1400006);
-	_DAT_1f800208 = getCopReg(2, 0xc);
-	_DAT_1f80020c = getCopReg(2, 0xd);
-	DAT_1f800210 = getCopReg(2, 0xe);
-	if (((0x13f < DAT_1f800208) && (0x13f < DAT_1f80020c)) && (0x13f < (ushort)DAT_1f800210)) {
-		if (_DAT_1f80020c << 0x10 < 0) {
-			DAT_1f800208 = DAT_1f800208 ^ 1;
-		}
-		if (DAT_1f800208 == 0) {
-			if (DAT_1f800210 << 0x10 < 0) {
-				if (DAT_1f80020c == 1) goto LAB_00042f08;
-			}
-			else {
-				if (DAT_1f80020c == 0) goto LAB_00042f08;
-			}
-		}
-	}
-	DAT_1f80020a = (ushort)((uint)_DAT_1f800208 >> 0x10);
-	if (((0x109 < DAT_1f80020a) &&
-		(DAT_1f80020e = (ushort)((uint)_DAT_1f80020c >> 0x10), 0x109 < DAT_1f80020e)) &&
-		(DAT_1f800210._2_2_ = (ushort)((uint)DAT_1f800210 >> 0x10), 0x109 < DAT_1f800210._2_2_)) {
-		iVar5 = (int)(short)DAT_1f80020a;
-		if (0x10f < ((int)(short)DAT_1f80020e - iVar5) + (int)(short)DAT_1f800210._2_2_ + 8U) {
-			if ((int)(short)DAT_1f80020e < 0) {
-				if (iVar5 == 1) {
-				LAB_00042db8:
-					if ((int)((uint)DAT_1f800210._2_2_ << 0x10) < 0) {
-						if (DAT_1f80020e == 1) goto LAB_00042f08;
-					}
-					else {
-						if (DAT_1f80020e == 0) goto LAB_00042f08;
-					}
-				}
-			}
-			else {
-				if (iVar5 == 0) goto LAB_00042db8;
-			}
-		}
-	}
-	local_18 = getCopReg(2, 0x18);
-	if (local_18 < 0) {
-		setCopReg(2, in_zero, (&DAT_1f800228)[m * 10 + n * 2]);
-		setCopReg(2, in_at, (&DAT_1f800228 + m * 10 + n * 2)[1]);
-		copFunction(2, 0x180001);
-		copFunction(2, 0x1400006);
-		local_18 = getCopReg(2, 0x18);
-		local_18 = -local_18;
-	}
-	if (0 < local_18) {
-		uVar3 = *(uint *)polys >> 8 & 0xffff;
-		uVar7 = *(uint *)polys >> 8 & 0xff;
-		if (DAT_1f8000cc != uVar3) {
-			DAT_1f8000b8 = (uint)*(ushort *)((uVar3 >> 8) * 2 + uVar7 * 0x40 + DAT_1f800028) << 0x10;
-			DAT_1f8000bc = (uint)*(ushort *)(uVar7 * 2 + DAT_1f800024) << 0x10;
-			DAT_1f8000cc = uVar3;
-		}
-		makeMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, n);
-		drawMesh((MVERTEX(*)[5][5])&DAT_1f800228, m, n, (_pct *)&DAT_1f800020);
-	}
-LAB_00042f08:
-	DAT_1f8000b4 = DAT_1f8000b4 + ofse * -4;
-	return;*/
+	SVECTOR* verts = plotContext.verts;
+
+	POLYFT4* pft4 = (POLYFT4*)polys;
+	
+	plotContext.clut = (uint)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
+	plotContext.tpage = (uint)(*plotContext.ptexture_pages)[pft4->texture_set] << 0x10;
+
+	copyVector(&subdivVerts[0][0], &verts[pft4->v0]);
+	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;
+
+	copyVector(&subdivVerts[0][1], &verts[pft4->v1]);
+	subdivVerts[0][1].uv.val = *(ushort*)&pft4->uv1;
+
+	copyVector(&subdivVerts[0][2], &verts[pft4->v3]);
+	subdivVerts[0][2].uv.val = *(ushort*)&pft4->uv3;
+
+	copyVector(&subdivVerts[0][3], &verts[pft4->v2]);
+	subdivVerts[0][3].uv.val = *(ushort*)&pft4->uv2;
+
+	plotContext.ot += ofse;
+
+	makeMesh((MVERTEX(*)[5][5])subdivVerts, m, n);
+	drawMesh((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
+
+	plotContext.ot -= ofse;
 }
 
 
@@ -1219,38 +954,57 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	uint uVar1;
 	unsigned char *polys;
 	uint uVar2;
-	int iVar3;
+	int i;
 	int ofse;
 
 	uVar1 = 0;
-	ofse = 0x85;
+	ofse = 133;
+
 	polys = (unsigned char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
+
 	uVar2 = *(uint *)(model + 1) >> 2;
-	if ((*(uint *)model & 0x40000080) != 0) {
-		ofse = 0xe5;
+
+	// 0x4000
+	// 80
+
+	if ((*(uint *)model & 0x40000080) != 0)
+	{
+		//(model->shape_flags & 0x80);
+		//(model->flags2 & 0x4000);
+
+		ofse = 229;
 	}
-	iVar3 = 0;
-	if (model->num_polys != 0) {
+
+	i = 0;
+
+	if (model->num_polys != 0) 
+	{
 		do {
-			if (true) {
-				switch (uVar1) {
-				case 0:
-				case 1:
-					SubdivNxM((char *)polys, levels, levels, ofse);
-					break;
-				case 3:
-					SubdivNxM((char *)polys, levels, 1, Dofse);
-					break;
-				case 4:
-					SubdivNxM((char *)polys, levels, levels, 0x85);
+			if (true)
+			{
+				switch (uVar1) 
+				{
+					case 0:
+					case 1:
+						SubdivNxM((char *)polys, levels, levels, ofse);
+						break;
+					case 3:
+						SubdivNxM((char *)polys, levels, 1, Dofse);
+						break;
+					case 4:
+						SubdivNxM((char *)polys, levels, levels, 133);
+						break;
 				}
 			}
+
 			uVar1 = uVar2 & 7;
 			uVar2 = uVar2 >> 3;
-			iVar3 = iVar3 + 1;
-			polys = polys + PolySizes[*polys];
-		} while (iVar3 < (int)(uint)model->num_polys);
+
+			i++;
+			polys += PolySizes[*polys];
+
+		} while (i < model->num_polys);
 	}
 }
 

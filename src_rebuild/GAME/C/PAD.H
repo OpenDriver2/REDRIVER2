@@ -9,6 +9,8 @@ extern int pad_connected;
 extern int numPadsConnected;
 extern int gVibration;
 
+extern PAD Pads[2];
+
 extern char padbuffer[2][PADBUFFER_SIZE];
 extern DUPLICATION DuplicatePadData;
 

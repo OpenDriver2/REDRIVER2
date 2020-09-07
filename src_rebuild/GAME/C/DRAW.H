@@ -28,13 +28,9 @@ extern int num_cars_drawn;
 
 extern char CurrentPVS[444];
 
-extern void addSubdivSpriteShadow(struct POLYFT4LIT *src, struct SVECTOR *verts, int z); // 0x0003ED7C
+extern void addSubdivSpriteShadow(struct POLYFT4*src, struct SVECTOR *verts, int z); // 0x0003ED7C
 
 extern void DrawSprites(int numFound); // 0x0003EF64
-
-extern struct PACKED_CELL_OBJECT * GetNextPackedCop(struct CELL_ITERATOR *pci); // 0x0003F5F0
-
-extern struct CELL_OBJECT * UnpackCellObject(struct PACKED_CELL_OBJECT *ppco, struct XZPAIR *near); // 0x000418E8
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 
@@ -60,7 +56,7 @@ extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, struct _pct *pc, i
 
 extern int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp); // 0x000411F4
 
-extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags); // 0x0004143C
+extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv); // 0x0004143C
 
 extern unsigned long normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
 

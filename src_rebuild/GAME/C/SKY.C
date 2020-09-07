@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "SKY.H"
 #include "SYSTEM.H"
 #include "MISSION.H"
@@ -1196,9 +1196,11 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 	DVECTOR *outpoints = scratchPad_skyVertices;
 #endif
 
+#ifdef PSX
 	if ((outpoints[src->v0].vy > -1 || outpoints[src->v1].vy > -1 || outpoints[src->v2].vy > -1 || outpoints[src->v3].vy > -1) && 
 		(outpoints[src->v0].vx > -1 || outpoints[src->v1].vx > -1 || outpoints[src->v2].vx > -1 || outpoints[src->v3].vx > -1) &&
 		(outpoints[src->v0].vx < 321 || outpoints[src->v1].vx < 321 || outpoints[src->v2].vx < 321 || outpoints[src->v3].vx < 321))
+#endif
 	{
 		setPolyFT4(poly);
 

@@ -1,6 +1,7 @@
 #ifndef MC_SND_H
 #define MC_SND_H
 
+extern char es_mobile[1];
 
 extern char GetMissionSound(char id); // 0x0005D814
 

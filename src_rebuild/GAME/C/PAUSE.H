@@ -2,6 +2,7 @@
 #define PAUSE_H
 
 extern int gShowMap;
+extern int gDrawPauseMenus;
 extern int pauseflag;
 extern PAUSEMODE gMissionCompletionState;
 

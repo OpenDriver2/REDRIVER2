@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "CARS.H"
 #include "TEXTURE.H"
 #include "OVERMAP.H"
@@ -34,14 +34,14 @@ MATRIX colour_matrix =
 { { { 4032, 0, 0 }, { 3936, 0, 0 }, { 3520, 0, 0 } }, { 0, 0, 0 } };
 
 // PHYSICS
-_CAR_DATA car_data[22];	// all cars
+_CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
 HUBCAP gHubcap;
 
 // active cars
-_CAR_DATA* active_car_list[20];
-BOUND_BOX bbox[20];
-unsigned char lightsOnDelay[20];
+_CAR_DATA* active_car_list[MAX_CARS];
+BOUND_BOX bbox[MAX_CARS];
+unsigned char lightsOnDelay[MAX_CARS];
 
 // decompiled code
 // original method signature: 
@@ -68,88 +68,83 @@ unsigned char lightsOnDelay[20];
 	/* end block 3 */
 	// End Line: 1671
 
-unsigned long gUnderIntensity = 0;
 struct DENTUVS *gTempCarUVPtr;
-DENTUVS gTempHDCarUVDump[20][255];
-SVECTOR gTempCarVertDump[20][132];
-DENTUVS gTempLDCarUVDump[20][134];
-CAR_MODEL NewCarModel[5];
-CAR_MODEL NewLowCarModel[5];
+DENTUVS gTempHDCarUVDump[MAX_CARS][255];
+SVECTOR gTempCarVertDump[MAX_CARS][132];
+DENTUVS gTempLDCarUVDump[MAX_CARS][134];
 
-MODEL* gCarLowModelPtr[5];
-MODEL* gCarDamModelPtr[5];
-MODEL* gCarCleanModelPtr[5];
+CAR_MODEL NewCarModel[MAX_CAR_MODELS];
+CAR_MODEL NewLowCarModel[MAX_CAR_MODELS];
+
+MODEL* gCarLowModelPtr[MAX_CAR_MODELS];
+MODEL* gCarDamModelPtr[MAX_CAR_MODELS];
+MODEL* gCarCleanModelPtr[MAX_CAR_MODELS];
 
 int whichCP = 0;
 int baseSpecCP = 0;
-
 CAR_POLY carPolyBuffer[2001];
 
-// idk if it's global or not
-SVECTOR carLightD = { 0, 0xF000, 0, 0 }; // 0xAA130 yet not defined in symbols
-
-// [D]
+// [D] [T]
 void plotNewCarModel(CAR_MODEL *car, int palette)
 {
-	//undefined4 uVar1;
-	//undefined4 uVar2;
-	//undefined4 in_zero;
-	//undefined4 in_at;
-	int iVar3;
 	plotCarGlobals _pg;
 	ulong lightlevel;
+	ulong underIntensity;
+	SVECTOR v = { 0, -4096, 0 };
 
-	//uVar2 = DAT_000aa134;
-	//uVar1 = DAT_000aa130;
 	lightlevel = combointensity | 0x3000000;
-	if (car != NULL) {
-		if (-1 < gTimeOfDay) {
-			if (gTimeOfDay < 3) {
-				lightlevel = combointensity | 0x30000000;
-			}
-			else {
-				if (gTimeOfDay == 3) {
-					lightlevel = 0x302a2a2a;
-				}
-			}
-		}
-		iVar3 = combointensity;
-		setupLightingMatrices();
 
-		gte_ldv0(&carLightD);
-		gte_ldrgb(&lightlevel);
+	if (car == NULL)
+		return;
 
-		gte_nccs();
-
-		_pg.primptr = (unsigned char*)current->primptr;
-		_pg.intensity = 0;
-		_pg.pciv_clut = (unsigned short *)&civ_clut[1];// +0xc0; // [A]
-		_pg.damageLevel = (unsigned char *)gTempCarUVPtr;
-
-		_pg.ot = (OTTYPE *)(current->ot + 0x1c);
-
-		gUnderIntensity = MFC2(22); //getCopReg(2, 0x16);
-
-		plotCarPolyB3(car->numB3, car->pB3, car->vlist, &_pg);
-		_pg.intensity = gUnderIntensity & 0xffffff;
-
-		_pg.ot = (OTTYPE *)(current->ot + 16);
-		plotCarPolyFT3(car->numFT3, car->pFT3, car->vlist, &_pg);
-		_pg.ot = (OTTYPE *)(current->ot + 4);
-
-		if (gTimeOfDay == 3)
-		{
-			_pg.intensity = (int)(combointensity & 0xfcfcf0U) >> 2;
-			plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);		}
-		else
-		{
-			_pg.intensity = combointensity & 0xffffff;
-			plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
-		}
-
-		current->primptr = (char*)_pg.primptr;
-		restoreLightingMatrices();
+	if (gTimeOfDay > -1) 
+	{
+		if (gTimeOfDay < 3)
+			lightlevel = combointensity | 0x30000000;
+		else if (gTimeOfDay == 3)
+			lightlevel = 0x302a2a2a;
 	}
+
+	setupLightingMatrices();
+
+	gte_ldv0(&v);
+	gte_ldrgb(&lightlevel);
+
+	gte_nccs();
+
+	_pg.primptr = (unsigned char*)current->primptr;
+	_pg.intensity = 0;
+	_pg.pciv_clut = (unsigned short *)&civ_clut[1];
+	_pg.damageLevel = (unsigned char *)gTempCarUVPtr;
+
+	_pg.ot = (OTTYPE *)(current->ot + 0x1c);
+
+	gte_strgb(&underIntensity);
+
+	// draw wheel arcs
+	plotCarPolyB3(car->numB3, car->pB3, car->vlist, &_pg);
+	_pg.intensity = underIntensity & 0xffffff;
+
+	// draw car bottom
+	_pg.ot = (OTTYPE *)(current->ot + 16);
+	plotCarPolyFT3(car->numFT3, car->pFT3, car->vlist, &_pg);
+
+	// draw car body
+	_pg.ot = (OTTYPE *)(current->ot + 4);
+	if (gTimeOfDay == 3)
+	{
+		_pg.intensity = (combointensity & 0xfcfcf0U) >> 2;
+		plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);	
+	}
+	else
+	{
+		_pg.intensity = combointensity & 0xffffff;
+		plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
+	}
+
+	current->primptr = (char*)_pg.primptr;
+
+	restoreLightingMatrices();
 }
 
 
@@ -189,54 +184,53 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 	/* end block 3 */
 	// End Line: 6231
 
-// [D]
+// [D] [T]
 void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg)
 {
-	int iVar1;
-	uint uVar2;
-	uint uVar3;
+	int Z;
+	int indices;
+	ulong FT3rgb;
 	SVECTOR *v2;
-	uint uVar4;
 	SVECTOR *v1;
 	SVECTOR *v0;
 	POLY_F3 *prim;
 	OTTYPE *ot;
 
 	prim = (POLY_F3 *)pg->primptr;
-	uVar4 = pg->intensity;
+	FT3rgb = pg->intensity;
 	ot = pg->ot;
-	if (0 < numTris) 
+
+	while (numTris > 0)
 	{
-		do {
-			uVar3 = src->vindices;
-			v0 = vlist + (uVar3 & 0xff);
-			v1 = (SVECTOR *)((int)&vlist->vx + ((int)uVar3 >> 5 & 0x7f8U));
-			v2 = (SVECTOR *)((int)&vlist->vx + ((int)uVar3 >> 0xd & 0x7f8U));
+		indices = src->vindices;
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
 
-			gte_ldv3(v0, v1, v2);
+		gte_ldv3(v0, v1, v2);
 
-			gte_rtpt();
+		gte_rtpt();
 
-			*(uint *)&prim->r0 = uVar4 | 0x20000000;
+		gte_nclip();
+		gte_stopz(&Z);
+		gte_avsz3();
 
-			gte_nclip();
-			gte_stopz(&iVar1);
-			gte_avsz3();
+		if (Z > -1) 
+		{
+			*(uint*)&prim->r0 = FT3rgb | 0x20000000;
 
-			if (-1 < iVar1) 
-			{
-				gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
-				gte_stotz(&iVar1);
+			gte_stotz(&Z);
 
-				setPolyF3(prim);
-				addPrim(ot + (iVar1 >> 1), prim);
+			setPolyF3(prim);
+			addPrim(ot + (Z >> 1), prim);
 
-				prim++;
-			}
-			numTris = numTris + -1;
-			src = src + 1;
-		} while (0 < numTris);
+			prim++;
+		}
+
+		numTris--;
+		src++;
 	}
 
 	pg->primptr = (unsigned char*)prim;
@@ -291,70 +285,60 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 	/* end block 3 */
 	// End Line: 6393
 
-// [D]
+// [D] [T]
 void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg)
 {
-	uint uVar1;
-	uint FT3rgbb;
-	uint uVar2;
+	int indices;
+	int ofse;
 	SVECTOR *v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
-	int iVar3;
-	int iVar4;
-	int iVar5;
+	int Z;
 	POLY_FT3 *prim;
-	CAR_POLY *pCVar6;
 	OTTYPE *ot;
 	long FT3rgb;
 	int reg;
 
 	prim = (POLY_FT3 *)pg->primptr;
-	FT3rgbb = pg->intensity | 0x24000000;
+	FT3rgb = pg->intensity | 0x24000000;
 	ot = pg->ot;
 
-	gte_ldrgb(&FT3rgbb);
+	gte_ldrgb(&FT3rgb);
 
-	pCVar6 = src;
-	if (0 < numTris) {
-		do {
-			uVar2 = pCVar6->vindices;
-			v0 = vlist + (uVar2 & 0xff);
-			v1 = (SVECTOR *)((int)&vlist->vx + ((int)uVar2 >> 5 & 0x7f8U));
-			v2 = (SVECTOR *)((int)&vlist->vx + ((int)uVar2 >> 0xd & 0x7f8U));
+	while (numTris > 0)
+	{
+		indices = src->vindices;
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
 
-			gte_ldv3(v0, v1, v2);
+		gte_ldv3(v0, v1, v2);
 
-			gte_rtpt();
+		gte_rtpt();
 
-			iVar4 = pCVar6->clut_uv0;
-			iVar5 = pCVar6->tpage_uv1;
-			iVar3 = pCVar6->uv3_uv2;
-			uVar2 = (uint)pg->damageLevel[pCVar6->originalindex];
-			*(uint *)&prim->r0 = FT3rgbb;
-			src = (CAR_POLY *)(iVar3 + uVar2);
-			*(uint *)&prim->u0 = iVar4 + uVar2;
-			*(uint *)&prim->u1 = iVar5 + uVar2;
-			*(CAR_POLY **)&prim->u2 = src;
+		gte_nclip();
+		gte_stopz(&Z);
+		gte_avsz3();
 
-			gte_nclip();
-			gte_stopz(&iVar3);
-			gte_avsz3();
+		if (Z > -1) 
+		{
+			ofse = pg->damageLevel[src->originalindex];
+			*(uint*)&prim->r0 = FT3rgb;
+			*(uint*)&prim->u0 = src->clut_uv0 + ofse;
+			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
 
-			if (-1 < iVar3) 
-			{
-				gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
-				gte_stotz(&iVar3);
+			gte_stotz(&Z);
 
-				setPolyFT3(prim);
-				addPrim(ot + (iVar3 >> 1), prim);
+			setPolyFT3(prim);
+			addPrim(ot + (Z >> 1), prim);
 
-				prim = prim + 1;
-			}
-			numTris = numTris + -1;
-			pCVar6 = pCVar6 + 1;
-		} while (0 < numTris);
+			prim++;
+		}
+		numTris--;
+		src++;
 	}
 
 	pg->primptr = (unsigned char*)prim;
@@ -415,85 +399,71 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 	/* end block 2 */
 	// End Line: 2295
 
-// [D]
+// [D] [T]
 void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, plotCarGlobals *pg, int palette)
 {
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-	SVECTOR *pSVar4;
-	ushort *puVar5;
-	SVECTOR *pSVar6;
-	uint uVar7;
-	SVECTOR *pSVar8;
-	uint uVar9;
-	int iVar10;
+	int Z;
+	int otz;	
+	SVECTOR* v2;
+	SVECTOR *v1;
+	SVECTOR *v0;
+	uint indices;
 	POLY_GT3 *prim;
-	uint uVar11;
-	uint uVar12;
-	int iVar13;
-	int iVar14;
+	uint r0,r1,r2;
+	int ofse;
 
 	prim = (POLY_GT3 *)pg->primptr;
-	puVar5 = pg->pciv_clut;
 
-	uint GT3rgb = pg->intensity | 0x34000000;
+	long GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
 
-	while (true) 
+	while (numTris > 0)
 	{
-		uVar9 = src->vindices;
-		iVar14 = src->tpage_uv1;
-		iVar13 = src->uv3_uv2;
+		indices = src->vindices;
 
-		uVar7 = (uint)pg->damageLevel[src->originalindex];
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
 
-		iVar10 = (src->clut_uv0 & 0xffffU | (uint)puVar5[palette + (src->clut_uv0 >> 0x10)] << 0x10) + uVar7;
-
-		if (numTris < 1) 
-			break;
-
-		pSVar8 = vlist + (uVar9 & 0xff);
-		pSVar6 = vlist + ((int)uVar9 >> 8 & 0xff);
-		pSVar4 = vlist + ((int)uVar9 >> 0x10 & 0xff);
-
-		gte_ldv3(pSVar8, pSVar6, pSVar4);
+		gte_ldv3(v0, v1, v2);
 
 		gte_rtpt();
 		gte_nclip();
 
-		uVar9 = src->nindices;
-		uVar12 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 5 & 0x7f8U));
-		uVar11 = (uint)*(ushort *)((int)&nlist->pad + ((int)uVar9 >> 0xd & 0x7f8U));
-
-		gte_stopz(&iVar1);
+		gte_stopz(&Z);
 
 		gte_avsz3();
-		src = src + 1;
+		
+		gte_stotz(&otz);
 
-		gte_stotz(&iVar2);
-
-		if (-1 < iVar1 && 0 < iVar2) 
+		if (Z > -1 && otz > 0)
 		{
-			*(uint *)&prim->r0 =
-				((uint)(ushort)nlist[uVar9 & 0xff].pad & 0xff) << 0x10 |
-				(uint)(ushort)nlist[uVar9 & 0xff].pad | 0x34000000;
+			indices = src->nindices;
 
-			*(uint *)&prim->r1 = (uVar12 & 0xff) << 0x10 | uVar12;
-			*(uint *)&prim->r2 = (uVar11 & 0xff) << 0x10 | uVar11;
-			*(int *)&prim->u0 = iVar10;
-			*(uint *)&prim->u1 = iVar14 + uVar7;
-			*(uint *)&prim->u2 = iVar13 + uVar7;
+			r0 = (uint)(ushort)nlist[indices & 0xff].pad;
+			r1 = (uint)(ushort)nlist[indices >> 8 & 0xff].pad;
+			r2 = (uint)(ushort)nlist[indices >> 16 & 0xff].pad;
+
+			*(uint*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
+			*(uint*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
+			*(uint*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
+
+			ofse = pg->damageLevel[src->originalindex];
+
+			*(uint*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
 			setPolyGT3(prim);
-			addPrim(pg->ot + (iVar2 >> 1), prim);
+			addPrim(pg->ot + (otz >> 1), prim);
 
-			prim = prim + 1;
+			prim++;
 		}
 
-		numTris = numTris + -1;
+		src++;
+		numTris--;
 	}
 
 	pg->primptr = (unsigned char*)prim;
@@ -549,76 +519,64 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	/* end block 3 */
 	// End Line: 7230
 
-// [D]
+// [D] [T]
 void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg, int palette)
 {
-	ushort uVar1;
-	int iVar2;
-	uint uVar3;
-	uint uVar4;
-	uint uVar5;
-	SVECTOR *local_v0_116;
-	ushort *puVar6;
-	SVECTOR *local_v1_100;
-	SVECTOR *pSVar7;
-	uint uVar8;
-	POLY_FT3 *prim;
-	int iVar9;
-	int iVar10;
-	CAR_POLY *pCVar11;
-	long local_4;
+	int Z;
+	int otz;
+	SVECTOR* v2;
+	SVECTOR* v1;
+	SVECTOR* v0;
+	uint indices;
+	POLY_FT3* prim;
+	int ofse;
 
-	prim = (POLY_FT3 *)pg->primptr;
-	uVar4 = pg->intensity | 0x24000000;
-	puVar6 = pg->pciv_clut;
+	prim = (POLY_FT3*)pg->primptr;
 
-	uint GT3rgb = pg->intensity | 0x24000000;
+	long GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
 
-	pCVar11 = src;
-	if (0 < numTris) 
+	while (numTris > 0)
 	{
-		do {
-			uVar5 = pCVar11->vindices;
-			pSVar7 = vlist + (uVar5 & 0xff);
-			local_v1_100 = (SVECTOR *)((int)&vlist->vx + ((int)uVar5 >> 5 & 0x7f8U));
-			local_v0_116 = (SVECTOR *)((int)&vlist->vx + ((int)uVar5 >> 0xd & 0x7f8U));
+		indices = src->vindices;
 
-			gte_ldv3(pSVar7, local_v1_100, local_v0_116);
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
 
-			gte_rtpt();
+		gte_ldv3(v0, v1, v2);
 
-			uVar8 = pCVar11->clut_uv0;
-			iVar9 = pCVar11->tpage_uv1;
-			iVar10 = pCVar11->uv3_uv2;
-			src = (CAR_POLY *)(int)pCVar11->originalindex;
-			uVar1 = puVar6[palette + ((int)uVar8 >> 0x10)];
-			uVar5 = (uint)pg->damageLevel[pCVar11->originalindex];
+		gte_rtpt();
+		gte_nclip();
 
-			gte_nclip();
+		gte_stopz(&Z);
 
-			gte_stopz(&iVar2);
-			gte_avsz3();
+		gte_avsz3();
 
-			gte_stotz(&local_4);
+		gte_stotz(&otz);
 
-			if (-1 < iVar2 && 0 < local_4)
-			{
-				gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+		if (Z > -1 && otz > 0)
+		{
+			indices = src->nindices;
 
-				*(uint *)&prim->u0 = (uVar8 & 0xffff | (uint)uVar1 << 0x10) + uVar5;
-				*(uint *)&prim->u1 = iVar9 + uVar5;
-				*(uint *)&prim->u2 = iVar10 + uVar5;
-				*(uint *)&prim->r0 = uVar4;
+			*(uint*)&prim->r0 = GT3rgb;
 
-				setPolyFT3(prim);
-				addPrim(pg->ot + (local_4 >> 1), prim);
-				prim++;
-			}
+			ofse = pg->damageLevel[src->originalindex];
 
-			numTris = numTris + -1;
-			pCVar11 = pCVar11 + 1;
-		} while (0 < numTris);
+			*(uint*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+			setPolyFT3(prim);
+			addPrim(pg->ot + (otz >> 1), prim);
+
+			prim++;
+		}
+
+		src++;
+		numTris--;
 	}
 
 	pg->primptr = (unsigned char*)prim;
@@ -758,29 +716,17 @@ char LeftLight = 0;
 char RightLight = 0;
 char TransparentObject = 0;
 
-// [D] [A]
+// [D] [T] [A]
 void DrawCar(_CAR_DATA *cp, int view)
 {
-	unsigned char bVar1;
-	unsigned char uVar2;
-	short sVar3;
-	short sVar4;
-	char cVar5;
-	int iVar6;
-	int vvvar;
-
-	short *psVar7;
-	MATRIX *pMVar8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
+	int maxDamage;
+	int WheelSpeed;
+	int oboxLenSq;
+	CAR_MODEL* CarModelPtr;
+	int model;
 	MATRIX *m1;
-	uint uVar12;
 	CVECTOR col;
-	MATRIX temp_mat1;
-	MATRIX temp_mat2;
 	VECTOR pos;
-	VECTOR local_c0;
 	SVECTOR temp_vec;
 	VECTOR corners[4];
 	VECTOR d;
@@ -792,8 +738,10 @@ void DrawCar(_CAR_DATA *cp, int view)
 			trap(0x400);
 		}
 	}
-	uVar12 = cp->ap.model;
 
+	model = cp->ap.model;
+
+	// draw car lights in for InCar camera
 	if (player[view].cameraView == 2 && cp->id == player[view].cameraCarId) 
 	{
 		if (cp->ap.damage[0] < 500)
@@ -824,145 +772,119 @@ void DrawCar(_CAR_DATA *cp, int view)
 	pos.vz = cp->hd.where.t[2];
 	pos.vy = -cp->hd.where.t[1];
 
-	local_c0.vx = pos.vx;
-	local_c0.vz = pos.vz;
-
 	SetFrustrumMatrix();
 
 	if (FrustrumCheck(&pos, 800) == -1)
 		return;
 
-	iVar6 = 0;
+	maxDamage = 0;
 
-	iVar11 = (int)(cp->hd).oBox.radii[0].vx;
-	iVar9 = (int)(cp->hd).oBox.radii[2].vx;
-	vvvar = pos.vx + iVar11;
-	corners[0].vx = vvvar + iVar9;
-	corners[1].vx = vvvar - iVar9;
-	iVar11 = pos.vx - iVar11;
-	corners[2].vx = iVar11 + iVar9;
-	corners[3].vx = iVar11 - iVar9;
-	iVar11 = (int)(cp->hd).oBox.radii[0].vz;
-	iVar9 = (int)(cp->hd).oBox.radii[2].vz;
-	vvvar = pos.vz + iVar11;
-	corners[0].vz = vvvar + iVar9;
-	corners[1].vz = vvvar - iVar9;
-	iVar11 = pos.vz - iVar11;
-	corners[2].vz = iVar11 + iVar9;
-	corners[3].vz = iVar11 - iVar9;
+	// corners for frustrum checking of big cars
+	corners[0].vx = corners[1].vx = pos.vx + cp->hd.oBox.radii[0].vx;
+	corners[0].vx += cp->hd.oBox.radii[2].vx;
+	corners[1].vx -= cp->hd.oBox.radii[2].vx;
+
+	corners[2].vx = corners[3].vx = pos.vx - cp->hd.oBox.radii[0].vx;
+	corners[2].vx += cp->hd.oBox.radii[2].vx;
+	corners[3].vx -= cp->hd.oBox.radii[2].vx;
+
+	corners[0].vz = corners[1].vz = pos.vz + cp->hd.oBox.radii[0].vz;
+	corners[0].vz += cp->hd.oBox.radii[2].vz;
+	corners[1].vz -= cp->hd.oBox.radii[2].vz;
+
+	corners[2].vz = corners[3].vz = pos.vz - cp->hd.oBox.radii[0].vz;
+	corners[2].vz += cp->hd.oBox.radii[2].vz;
+	corners[3].vz -= cp->hd.oBox.radii[2].vz;
+
 	corners[3].vy = pos.vy;
 	corners[2].vy = pos.vy;
 	corners[1].vy = pos.vy;
 	corners[0].vy = pos.vy;
 
-	if (FrustrumCheck(&pos, 0) == -1 && 
-		FrustrumCheck(corners, 0) == -1 &&
+	if (FrustrumCheck(corners, 0) == -1 &&
 		FrustrumCheck(corners + 1, 0) == -1 &&
 		FrustrumCheck(corners + 2, 0) == -1 &&
 		FrustrumCheck(corners + 3, 0) == -1)
 	{
-		iVar6 = -1;
+		return;
 	}
 
 	d.vx = cp->hd.oBox.location.vx - camera_position.vx;
 	d.vy = -camera_position.vy - cp->hd.oBox.location.vy;
 	d.vz = cp->hd.oBox.location.vz - camera_position.vz;
-	iVar11 = cp->hd.oBox.length[0];
+	
+	dist.vx = d.vx * cp->hd.oBox.radii[0].vx + d.vy * cp->hd.oBox.radii[0].vy + d.vz * cp->hd.oBox.radii[0].vz;
 
-	vvvar = d.vx * cp->hd.oBox.radii[0].vx + d.vy * cp->hd.oBox.radii[0].vy + d.vz * cp->hd.oBox.radii[0].vz;
+	if (dist.vx < 0)
+		dist.vx = -dist.vx;
 
-	if (vvvar < 0) 
-		vvvar = -vvvar;
+	dist.vy = d.vx * cp->hd.oBox.radii[1].vx + d.vy * cp->hd.oBox.radii[1].vy + d.vz * cp->hd.oBox.radii[1].vz;
+	if (dist.vy < 0)
+		dist.vy = -dist.vy;
 
-	iVar9 = d.vx * cp->hd.oBox.radii[1].vx + d.vy * cp->hd.oBox.radii[1].vy + d.vz * cp->hd.oBox.radii[1].vz;
-	iVar10 = d.vx * cp->hd.oBox.radii[2].vx + d.vy * cp->hd.oBox.radii[2].vy +d.vz * cp->hd.oBox.radii[2].vz;
+	dist.vz = d.vx * cp->hd.oBox.radii[2].vx + d.vy * cp->hd.oBox.radii[2].vy +d.vz * cp->hd.oBox.radii[2].vz;
+	if (dist.vz < 0)
+		dist.vz = -dist.vz;
 
-	if (vvvar < iVar11 * iVar11) 
+	oboxLenSq = cp->hd.oBox.length[0];
+
+	if (dist.vx < oboxLenSq * oboxLenSq)
 	{
-		vvvar = cp->hd.oBox.length[1];
-		if (iVar9 < 0) 
-			iVar9 = -iVar9;
+		oboxLenSq = cp->hd.oBox.length[1];
 
-
-		if (iVar9 < vvvar * vvvar)
+		if (dist.vy < oboxLenSq * oboxLenSq)
 		{
-			vvvar = cp->hd.oBox.length[2];
-			if (iVar10 < 0)
-				iVar10 = -iVar10;
+			oboxLenSq = cp->hd.oBox.length[2];
 
-			if (iVar10 < vvvar * vvvar) 
-				iVar6 = -1;
+			if (dist.vz < oboxLenSq * oboxLenSq)
+				return;
 		}
 	}
 
-	if (iVar6 == -1)
-		return;
-
-	pos.vx = pos.vx - camera_position.vx;
-	pos.vy = pos.vy - camera_position.vy;
-	pos.vz = pos.vz - camera_position.vz;
+	pos.vx -= camera_position.vx;
+	pos.vy -= camera_position.vy;
+	pos.vz -= camera_position.vz;
 
 	Apply_Inv_CameraMatrix(&pos);
 
-	m1 = &cp->hd.drawCarMat;
-	num_cars_drawn = num_cars_drawn + 1;
+	num_cars_drawn++;
 
-	/*if (cheats.MiniCars != 0)	// [A] DISABLED, NO REAL SENSE TO KEEP THIS HERE...
-	{
-		iVar6 = 8;
-		pMVar8 = m1;
-		do {
-			iVar6 = iVar6 + -1;
-			pMVar8->m[0] = pMVar8->m[0] >> 2;
-			pMVar8 = (MATRIX *)(pMVar8->m + 1);
-		} while (-1 < iVar6);
-	}*/
+	// [A] there was mini cars cheat
+	// we need full blown mini cars with physics support
 
+	// LOD switching
 	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == 1) 
 	{
-		vvvar = cp->hd.speed * 0x2000;
-		iVar6 = MaxPlayerDamage[0];
+		int blackSmoke = 0;
+
+		WheelSpeed = cp->hd.speed * 0x2000;
+		maxDamage = MaxPlayerDamage[0];
 
 		if (cp->controlType == 1)
 		{
-			iVar6 = MaxPlayerDamage[*cp->ai.padid];
+			maxDamage = MaxPlayerDamage[*cp->ai.padid];
 		}
 
-		if (cp->totalDamage < iVar6) 
+		if (cp->totalDamage >= maxDamage)
 		{
-			sVar3 = cp->ap.damage[0];
-
-			if (3000 < sVar3)
-				goto LAB_00021724;
-
-			sVar4 = (cp->ap).damage[1];
-
-			if (3000 < sVar4)
-				goto LAB_00021724;
-
-			if (((2000 < sVar3) || (2000 < sVar4)) && (vvvar + 399999U < 1199999))
-			{
-				AddSmokingEngine(cp, 0, vvvar);
-			}
-
-			AddExhaustSmoke(cp, 0, vvvar); // [A] get exhaust smoke back
-		}
-		else 
-		{
-			if (vvvar + 59999U < 119999) 
-			{
+			if (WheelSpeed + 59999U < 119999)
 				AddFlamingEngine(cp);
-			}
-		LAB_00021724:
-			if (vvvar + 399999U < 1199999) 
-			{
-				AddSmokingEngine(cp, 1, vvvar);
-			}
-
-			AddExhaustSmoke(cp, 1, vvvar);	// [A] get exhaust smoke back
 		}
 
-		gTimeInWater = 0x19;
+		if (cp->ap.damage[0] > 2000 || cp->ap.damage[1] > 2000)
+		{
+			if (cp->ap.damage[0] > 3000 || cp->ap.damage[1] > 3000)
+				blackSmoke = 1;
+			else
+				blackSmoke = 0;
+
+			if (WheelSpeed + 399999U < 1199999)
+				AddSmokingEngine(cp, blackSmoke, WheelSpeed);
+		}
+
+		AddExhaustSmoke(cp, blackSmoke, WheelSpeed);
+
+		gTimeInWater = 25;
 		gSinkingTimer = 100;
 
 		SetShadowPoints(cp);
@@ -971,20 +893,22 @@ void DrawCar(_CAR_DATA *cp, int view)
 		ComputeCarLightingLevels(cp, 1);
 
 		gTempCarUVPtr = gTempHDCarUVDump[cp->id];
-		NewCarModel[uVar12].vlist = gTempCarVertDump[cp->id];
-		NewCarModel[uVar12].nlist = gTempCarVertDump[cp->id];
+		CarModelPtr = &NewCarModel[model];
+		CarModelPtr->vlist = gTempCarVertDump[cp->id];
+		CarModelPtr->nlist = gTempCarVertDump[cp->id];
 
-		MulMatrix0(&inv_camera_matrix, m1, &workmatrix);
+		MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
 		FindCarLightFade(&workmatrix);
 
-		DrawCarObject(NewCarModel + uVar12, &workmatrix, &pos, &local_c0, cp->ap.palette,cp, 1);
+		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 1);
 
 		DrawCarWheels(cp, &workmatrix, &pos, view);
 	}
 	else 
 	{
-		
-		NewLowCarModel[uVar12].nlist = gTempCarVertDump[cp->id];
+		CarModelPtr = &NewLowCarModel[model];
+		CarModelPtr->nlist = gTempCarVertDump[cp->id];
+
 		gTempCarUVPtr = gTempLDCarUVDump[cp->id];
 
 		if (pos.vz < 8000) 
@@ -994,38 +918,28 @@ void DrawCar(_CAR_DATA *cp, int view)
 		}
 
 		ComputeCarLightingLevels(cp, 0);
-		MulMatrix0(&inv_camera_matrix, m1, &workmatrix);
+		MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
 		FindCarLightFade(&workmatrix);
 
-		DrawCarObject(NewLowCarModel + uVar12, &workmatrix, &pos, &local_c0, cp->ap.palette, cp, 0);
-		
+		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 0);
 	}
 
 	TransparentObject = 0;
 
 	if (cp->controlType == 1)
-	{
 		PlayerCarFX(cp);
-	}
 	else if (cp->controlType == 2)
-	{
 		CivCarFX(cp);
-	}
 	
 	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
 	{
 		if (cp->controlType == 2) 
 		{
 			if(cp->ai.c.thrustState != 3 || (cp->ai.c.ctrlState != 5 && cp->ai.c.ctrlState != 7 && cp->ai.c.ctrlState != 8))
-			{
-				AddNightLights(cp);
-			}
-		}
-		else
-		{
-			if (SilenceThisCar(cp->id) == 0)
 				AddNightLights(cp);
 		}
+		else if (SilenceThisCar(cp->id) == 0)
+			AddNightLights(cp);
 	}
 
 	if (cp->controlType == 3)
@@ -1043,7 +957,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	// optimzed check for hndType, controlType, controlFlags
 	//cp->hndType != 2;
 	//cp->controlType != 2;
-	if ((*(uint *)&cp->hndType & 0x2ff00) != 0x20200 && ((gInGameCutsceneActive == 0 || cp->controlType != 7) || force_siren[CAR_INDEX(cp)] == 0 ))
+	if ((*(uint *)&cp->hndType & 0x2ff00) != 0x20200 && (gInGameCutsceneActive == 0 || cp->controlType != 7 || force_siren[CAR_INDEX(cp)] == 0 ))
 	{
 		if (gCurrentMissionNumber != 26) 
 			return;
@@ -1096,8 +1010,8 @@ void DrawCar(_CAR_DATA *cp, int view)
 	/* end block 2 */
 	// End Line: 3587
 
-// [D]
-void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, int palette, _CAR_DATA *cp, int detail)
+// [D] [T]
+void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CAR_DATA *cp, int detail)
 {
 	static unsigned long savedSP;
 	VECTOR modelLocation;
@@ -1110,7 +1024,7 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, VECTOR *pos1, in
 
 	gte_ldv0(&cog);
 
-	docop2(0x480012);
+	gte_rtv0tr();
 
 	gte_stlvnl(&modelLocation);
 
@@ -1215,33 +1129,26 @@ MODEL *gCleanWheelModelPtr;
 MODEL *gFastWheelModelPtr;
 MODEL *gDamWheelModelPtr;
 
-short FrontWheelRotation[20]; // offset 0x0
-short BackWheelRotation[20]; // offset 0x30
+short FrontWheelRotation[MAX_CARS]; // offset 0x0
+short BackWheelRotation[MAX_CARS]; // offset 0x30
 
-// [D]
+// [D] [T]
 void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	int iVar4;
-	int iVar5;
-	short sVar6;
-	uint wheelnum;
-	int iVar7;
-	short sVar8;
-	short sVar9;
-	uint uVar10;
-	uint uVar11;
-	SVECTOR *VertPtr;
-	uint uVar12;
-	MODEL *model;
-	SVECTOR *pSVar13;
-	WHEEL *pWVar14;
-	uint uVar15;
-	SVECTOR *verts;
-	short *psVar16;
-	short *psVar17;
+	short wheelSize;
+	int FW1z;
+	int FW2z;
+	int BW1z;
+	int BW2z;
+	int FrontWheelIncrement;
+	int BackWheelIncrement;
+	int sizeScale;
+	int wheelnum;
+	SVECTOR* VertPtr;
+	MODEL* model;
+	SVECTOR* wheelDisp;
+	WHEEL* wheel;
+	int car_id;
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
 	VECTOR WheelPos;
@@ -1249,7 +1156,6 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	MODEL *WheelModelBack;
 	MODEL *WheelModelFront;
 
-	wheelnum = cp->ap.model;
 	if (cp < car_data) 
 	{
 		while (FrameCnt != 0x78654321) 
@@ -1258,53 +1164,60 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 		}
 	}
 
-	iVar5 = cp->hd.wheel_speed >> 8;
+	car_id = CAR_INDEX(cp);
 
-	sVar1 = car_cosmetics[cp->ap.model].wheelSize;
-	iVar7 = iVar5;
+	BackWheelIncrement = FrontWheelIncrement = cp->hd.wheel_speed >> 8;
+
 	if (cp->wheelspin != 0)
-		iVar7 = 700;
+		BackWheelIncrement = 700;
 
 	if (cp->hd.wheel[0].locked != 0)
-		iVar5 = 0;
+		FrontWheelIncrement = 0;
 
 	if (cp->hd.wheel[3].locked != 0)
-		iVar7 = 0;
+		BackWheelIncrement = 0;
 
-	if (iVar5 + 400U < 0x321)
+	if (FrontWheelIncrement + 400U < 801)
 		WheelModelFront = gCleanWheelModelPtr;
 	else
 		WheelModelFront = gFastWheelModelPtr;
 
-	if (iVar7 + 400U < 0x321)
+	if (BackWheelIncrement + 400U < 801)
 		WheelModelBack = gCleanWheelModelPtr;
 	else
 		WheelModelBack = gFastWheelModelPtr;
 
-	iVar7 = CAR_INDEX(cp);
-	iVar5 = (sVar1 * 14142) / 10000;
-	sVar3 = rcossin_tbl[(FrontWheelRotation[iVar7] & 0xfff) * 2];
-	VertPtr = (SVECTOR *)WheelModelFront->vertices;
-	sVar8 = FIXED(rcossin_tbl[(FrontWheelRotation[iVar7] & 0xfff) * 2 + 1] * iVar5);
-	VertPtr[8].vy = sVar8;
-	VertPtr[0xf].vy = sVar8;
-	sVar3 = FIXED(sVar3 * iVar5);
-	sVar6 = -sVar3;
-	VertPtr[8].vz = sVar3;
-	VertPtr[0xf].vz = sVar3;
-	VertPtr[9].vy = sVar6;
-	VertPtr[0xe].vy = sVar6;
-	VertPtr[9].vz = sVar8;
-	sVar2 = -sVar8;
-	VertPtr[0xe].vz = sVar8;
-	VertPtr[10].vy = sVar2;
-	VertPtr[0xd].vy = sVar2;
-	VertPtr[10].vz = sVar6;
-	VertPtr[0xd].vz = sVar6;
-	VertPtr[0xb].vy = sVar3;
-	VertPtr[0xc].vy = sVar3;
-	VertPtr[0xb].vz = sVar2;
-	VertPtr[0xc].vz = sVar2;
+	wheelSize = car_cosmetics[cp->ap.model].wheelSize;
+	
+	sizeScale = (wheelSize * 14142) / 10000;
+
+	// rotate wheel verts
+
+	FW1z = FIXED(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
+	FW2z = FIXED(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+
+	VertPtr = (SVECTOR*)WheelModelFront->vertices;
+
+	VertPtr[8].vz = FW1z;
+	VertPtr[15].vz = FW1z;
+	VertPtr[11].vy = FW1z;
+	VertPtr[12].vy = FW1z;
+
+	VertPtr[9].vy = -FW1z;
+	VertPtr[14].vy = -FW1z;
+	VertPtr[10].vz = -FW1z;
+	VertPtr[13].vz = -FW1z;
+
+	VertPtr[8].vy = FW2z;
+	VertPtr[15].vy = FW2z;
+	VertPtr[9].vz = FW2z;
+	VertPtr[14].vz = FW2z;
+
+	VertPtr[10].vy = -FW2z;
+	VertPtr[13].vy = -FW2z;
+	VertPtr[11].vz = -FW2z;
+	VertPtr[12].vz = -FW2z;
+
 	VertPtr[0x17].vz = 0;
 	VertPtr[0x16].vz = 0;
 	VertPtr[0x15].vy = 0;
@@ -1313,40 +1226,42 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[0x12].vy = 0;
 	VertPtr[0x11].vz = 0;
 	VertPtr[0x10].vz = 0;
-	VertPtr[0x17].vy = sVar1;
-	sVar8 = -sVar1;
-	VertPtr[0x16].vy = sVar1;
-	VertPtr[0x15].vz = sVar1;
-	VertPtr[0x14].vz = sVar1;
-	VertPtr[0x13].vz = sVar8;
-	VertPtr[0x12].vz = sVar8;
-	VertPtr[0x11].vy = sVar8;
-	VertPtr[0x10].vy = sVar8;
-	sVar3 = rcossin_tbl[(BackWheelRotation[iVar7] & 0xfff) * 2];
-	psVar17 = &car_cosmetics[cp->ap.model].wheelDisp[0].vz;
-	psVar16 = &car_cosmetics[cp->ap.model].wheelDisp[0].vy;
+
+	VertPtr[23].vy = wheelSize;
+	VertPtr[22].vy = wheelSize;
+	VertPtr[21].vz = wheelSize;
+	VertPtr[20].vz = wheelSize;
+
+	VertPtr[19].vz = -wheelSize;
+	VertPtr[18].vz = -wheelSize;
+	VertPtr[17].vy = -wheelSize;
+	VertPtr[16].vy = -wheelSize;
+
+	BW1z = FIXED(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
+	BW2z = FIXED(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
 
 	VertPtr = (SVECTOR *)WheelModelBack->vertices;
-	sVar9 = FIXED(rcossin_tbl[(BackWheelRotation[iVar7] & 0xfff) * 2 + 1] * iVar5);
-	VertPtr[8].vy = sVar9;
-	VertPtr[0xf].vy = sVar9;
-	sVar3 = FIXED(sVar3 * iVar5);
-	sVar6 = -sVar3;
-	VertPtr[8].vz = sVar3;
-	VertPtr[0xf].vz = sVar3;
-	VertPtr[9].vy = sVar6;
-	VertPtr[0xe].vy = sVar6;
-	VertPtr[9].vz = sVar9;
-	sVar2 = -sVar9;
-	VertPtr[0xe].vz = sVar9;
-	VertPtr[10].vy = sVar2;
-	VertPtr[0xd].vy = sVar2;
-	VertPtr[10].vz = sVar6;
-	VertPtr[0xd].vz = sVar6;
-	VertPtr[0xb].vy = sVar3;
-	VertPtr[0xc].vy = sVar3;
-	VertPtr[0xb].vz = sVar2;
-	VertPtr[0xc].vz = sVar2;
+	
+	VertPtr[8].vz = BW1z;
+	VertPtr[15].vz = BW1z;
+	VertPtr[11].vy = BW1z;
+	VertPtr[12].vy = BW1z;
+
+	VertPtr[9].vy = -BW1z;
+	VertPtr[14].vy = -BW1z;
+	VertPtr[10].vz = -BW1z;
+	VertPtr[13].vz = -BW1z;
+
+	VertPtr[8].vy = BW2z;
+	VertPtr[15].vy = BW2z;
+	VertPtr[9].vz = BW2z;
+	VertPtr[14].vz = BW2z;
+
+	VertPtr[10].vy = -BW2z;
+	VertPtr[13].vy = -BW2z;
+	VertPtr[11].vz = -BW2z;
+	VertPtr[12].vz = -BW2z;
+
 	VertPtr[0x17].vz = 0;
 	VertPtr[0x16].vz = 0;
 	VertPtr[0x15].vy = 0;
@@ -1355,83 +1270,78 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[0x12].vy = 0;
 	VertPtr[0x11].vz = 0;
 	VertPtr[0x10].vz = 0;
-	VertPtr[0x17].vy = sVar1;
-	VertPtr[0x16].vy = sVar1;
-	VertPtr[0x15].vz = sVar1;
-	VertPtr[0x14].vz = sVar1;
-	VertPtr[0x13].vz = sVar8;
-	VertPtr[0x12].vz = sVar8;
-	VertPtr[0x11].vy = sVar8;
-	VertPtr[0x10].vy = sVar8;
 
-	pSVar13 = car_cosmetics[cp->ap.model].wheelDisp;
+	VertPtr[23].vy = wheelSize;
+	VertPtr[22].vy = wheelSize;
+	VertPtr[21].vz = wheelSize;
+	VertPtr[20].vz = wheelSize;
 
-	wheelnum = cp->wheel_angle & 0xfff;
-	SteerMatrix.m[0][0] = rcossin_tbl[wheelnum * 2 + 1];
-	SteerMatrix.m[0][2] = rcossin_tbl[wheelnum * 2];
-	SteerMatrix.m[1][1] = 0x1000;
+	VertPtr[19].vz = -wheelSize;
+	VertPtr[18].vz = -wheelSize;
+	VertPtr[17].vy = -wheelSize;
+	VertPtr[16].vy = -wheelSize;
+
+	SteerMatrix.m[0][0] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2 + 1];
+	SteerMatrix.m[0][2] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2];
+	SteerMatrix.m[1][1] = 4096;
 	SteerMatrix.m[2][1] = 0;
 	SteerMatrix.m[1][2] = 0;
 	SteerMatrix.m[1][0] = 0;
 	SteerMatrix.m[0][1] = 0;
 	SteerMatrix.m[2][0] = -SteerMatrix.m[0][2];
 	SteerMatrix.m[2][2] = SteerMatrix.m[0][0];
+
 	MulMatrix0(RearMatrix, &SteerMatrix, &FrontMatrix);
-	pWVar14 = (cp->hd).wheel;
+
+	wheelDisp = car_cosmetics[cp->ap.model].wheelDisp;
+	wheel = cp->hd.wheel;
 	wheelnum = 0;
 
 	do {
-		model = WheelModelFront;
-
 		if ((wheelnum & 1) != 0)
 			model = WheelModelBack;
+		else
+			model = WheelModelFront;
 
-		verts = (SVECTOR *)model->vertices;
+		VertPtr = (SVECTOR*)model->vertices;
 
-		//if ((cp->controlType == 1) && (gHubcap.Present[wheelnum] == 0)) 
-
-		if(cp->ap.flags & (1 << wheelnum))
+		if (cp->ap.flags & (1 << wheelnum)) // [A] used appearance flags to store hubcap presence
+		{
 			model = gDamWheelModelPtr;
+		}
 
 		if ((wheelnum & 2) == 0) 
-			sVar3 = 0x11 - pSVar13->vx;
+			sWheelPos.vx = 17 - wheelDisp->vx;
 		else
-			sVar3 = -0x11 - pSVar13->vx;
+			sWheelPos.vx = -17 - wheelDisp->vx;
 
-		sWheelPos.vz = -*psVar17;
-		sWheelPos.vx = sVar3;
-		sWheelPos.vy = (-sVar1 - *psVar16) - pWVar14->susCompression + 14;
+		sWheelPos.vz = -wheelDisp->vz;
+		sWheelPos.vy = (-wheelSize - wheelDisp->vy) - wheel->susCompression + 14;
 
 		gte_SetRotMatrix(RearMatrix);
 		gte_ldv0(&sWheelPos);
 
-		docop2(0x486012);
+		gte_rtv0();
 
-		VECTOR newTransform;
-		gte_stlvl(&newTransform);
+		gte_stlvl(&WheelPos);
 
-		newTransform.vx += pos->vx;
-		newTransform.vy += pos->vy;
-		newTransform.vz += pos->vz;
+		WheelPos.vx += pos->vx;
+		WheelPos.vy += pos->vy;
+		WheelPos.vz += pos->vz;
 
-		gte_SetTransVector(&newTransform);
+		gte_SetTransVector(&WheelPos);
 
 		if ((wheelnum & 1) == 0) 
 		{
-			SetRotMatrix(&FrontMatrix);
+			gte_SetRotMatrix(&FrontMatrix);
 		}
 
-		psVar17 = psVar17 + 4;
-		psVar16 = psVar16 + 4;
-		pSVar13 = pSVar13 + 1;
-		pWVar14 = pWVar14 + 1;
-		uVar15 = wheelnum + 1;
+		DrawWheelObject(model, VertPtr, TransparentObject, wheelnum);
 
-		DrawWheelObject(model, verts, TransparentObject, wheelnum);
-
-		wheelnum = uVar15;
-	} while ((int)uVar15 < 4);
-	
+		wheelDisp++;
+		wheel++;
+		wheelnum++;
+	} while (wheelnum < 4);
 }
 
 
@@ -1485,108 +1395,95 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	/* end block 3 */
 	// End Line: 5089
 
-// [D]
+// [D] [T]
 void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum)
 {
-	ushort sVar1;
-	ushort uVar2;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	unsigned char bVar6;
-	SVECTOR *local_v0_320;
-	uint uVar7;
-	SVECTOR *local_v1_308;
-	uint uVar8;
-	SVECTOR *pSVar9;
+	ushort clut;
+	ushort tpage;
+	int i;
+	int Z;
+	int otZ;
+	int combo;
 	POLY_FT4 *poly;
-	POLYFT4LIT *local_t1_28;
-	uint in_t5;
-	uint in_t6;
+	POLYFT4 *src;
+	ulong dim;
+	ulong bright;
 
-	local_t1_28 = (POLYFT4LIT *)model->poly_block;
+	src = (POLYFT4*)model->poly_block;
 	poly = (POLY_FT4 *)current->primptr;
 
-	sVar1 = texture_cluts[local_t1_28->texture_set][local_t1_28->texture_id];
-	uVar2 = texture_pages[local_t1_28->texture_set];
+	clut = texture_cluts[src->texture_set][src->texture_id];
+	tpage = texture_pages[src->texture_set];
 
-	if (-1 < gTimeOfDay) 
+	if (gTimeOfDay > -1) 
 	{
 		if (gTimeOfDay < 3) 
 		{
-			in_t6 = combointensity & 0xffffffU | 0x2c000000;
-			in_t5 = (combointensity & 0xfcfcfcU) >> 2 | 0x2c000000;
+			bright = combointensity & 0xffffffU | 0x2c000000;
+			dim = (combointensity & 0xfcfcfcU) >> 2 | 0x2c000000;
 		}
-		else
+		else if (gTimeOfDay == 3)
 		{
-			if (gTimeOfDay == 3)
-			{
-				uVar7 = (combointensity & 0xffU) / 3;
-				uVar7 = uVar7 << 0x10 | uVar7 << 8 | uVar7;
-				in_t6 = uVar7 | 0x2c000000;
-				in_t5 = (uVar7 & 0xfcfcfc) >> 2 | 0x2c000000;
-			}
+			combo = (combointensity & 0xffU) / 3;
+			combo = combo << 0x10 | combo << 8 | combo;
+
+			bright = combo | 0x2c000000;
+			dim = (combo & 0xfcfcfc) >> 2 | 0x2c000000;
 		}
 	}
 
-	uVar7 = (uint)model->num_polys;
+	i = model->num_polys;
 
-	while (uVar7 = uVar7 - 1, uVar7 != 0xffffffff) 
+	while (i-- != -1)
 	{
-		uVar8 = *(uint *)&local_t1_28->v0;
-
-		pSVar9 = verts + (uVar8 & 0xff);
-		local_v1_308 = (SVECTOR *)((int)&verts->vx + ((int)uVar8 >> 5 & 0x7f8U));
-		local_v0_320 = (SVECTOR *)((int)&verts->vx + ((int)uVar8 >> 0xd & 0x7f8U));
-
-		gte_ldv3(pSVar9, local_v1_308, local_v0_320);
+		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
 
 		gte_rtpt();
 		gte_nclip();
 
-		gte_stopz(&iVar3);
+		gte_stopz(&Z);
 		gte_stsxy0(&poly->x0);
 
-		gte_ldv0((SVECTOR *)(verts + (uVar8 >> 0x18)));
+		gte_ldv0(&verts[src->v3]);
 
 		gte_rtps();
 		gte_avsz4();
 
-		gte_stotz(&iVar5);
+		gte_stotz(&otZ);
 
-		if (2 < iVar5) 
+		if (otZ > 2) 
 		{
 			setPolyFT4(poly);
-			addPrim(current->ot + (iVar5 >> 1) + 5, poly);
+			addPrim(current->ot + (otZ >> 1) + 5, poly);
 
-			if (uVar7 < 2 || iVar3 < 0)
+			if (i < 2 || Z < 0)
 				*(uint *)&poly->r0 = 0x2c000000;
-			else if (((uVar7 ^ wheelnum >> 1) & 1) == 0)
-				*(uint *)&poly->r0 = in_t5;
+			else if (((i ^ wheelnum >> 1) & 1) == 0)
+				*(uint *)&poly->r0 = dim;
 			else
-				*(uint *)&poly->r0 = in_t6;
+				*(uint *)&poly->r0 = bright;
 
 			setSemiTrans(poly, transparent);
 
 			gte_stsxy3(&poly->x1, &poly->x3, &poly->x2);
 
-			poly->u0 = local_t1_28->uv0.u;
-			poly->v0 = local_t1_28->uv0.v;
-			poly->clut = sVar1;
+			poly->u0 = src->uv0.u;
+			poly->v0 = src->uv0.v;
+			poly->clut = clut;
 
-			poly->u1 = local_t1_28->uv1.u;
-			poly->v1 = local_t1_28->uv1.v;
-			poly->tpage = uVar2 | 0x20;
+			poly->u1 = src->uv1.u;
+			poly->v1 = src->uv1.v;
+			poly->tpage = tpage | 0x20;
 
-			poly->u2 = local_t1_28->uv3.u;
-			poly->v2 = local_t1_28->uv3.v;
+			poly->u2 = src->uv3.u;
+			poly->v2 = src->uv3.v;
 
-			poly->u3 = local_t1_28->uv2.u;
-			poly->v3 = local_t1_28->uv2.v;
+			poly->u3 = src->uv2.u;
+			poly->v3 = src->uv2.v;
 
 			poly++;
 		}
-		local_t1_28++;
+		src++;
 	}
 	current->primptr = (char*)poly;
 }
@@ -1621,52 +1518,28 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 	/* end block 4 */
 	// End Line: 6921
 
-// [D]
+// [D] [T]
 void PlayerCarFX(_CAR_DATA *cp)
 {
 	int WheelSpeed;
-
 	WheelSpeed = cp->hd.wheel_speed;
 
-	if (cp < car_data) 
+	if (WheelSpeed + 199U < 0x4b0c7)
 	{
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
+		if (cp->wheel_angle < -200)
+			AddIndicatorLight(cp, 0);
+		else if (cp->wheel_angle > 200)
+			AddIndicatorLight(cp, 1);
 	}
 
-	if (WheelSpeed < 1 || cp->thrust > -1)
+	if( WheelSpeed < 0 && cp->thrust > 0 ||
+		WheelSpeed > 0 && cp->thrust < 0)
 	{
-		if (-1 < WheelSpeed)
-			goto LAB_00023598;
-
-		if (0 < cp->thrust)
-			goto LAB_0002356c;
-	}
-	else 
-	{
-	LAB_0002356c:
 		AddBrakeLight(cp);
 	}
 
-	if (WheelSpeed < 0 && cp->thrust < 0) 
+	if (WheelSpeed < 0 && cp->thrust < 0)
 		AddReverseLight(cp);
-
-LAB_00023598:
-	if (WheelSpeed + 199U < 0x4b0c7) 
-	{
-		if (cp->wheel_angle < 0xc9) 
-		{
-			if (cp->wheel_angle < -200) 
-			{
-				AddIndicatorLight(cp, 0);
-			}
-		}
-		else 
-		{
-			AddIndicatorLight(cp, 1);
-		}
-	}
 }
 
 
@@ -1731,27 +1604,19 @@ LAB_00023598:
 /* WARNING: Could not reconcile some variable overlaps */
 
 
-// [D]
+// [D] [T]
 void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 {
 	MATRIX scratchPadMat; // 0x1f800344
 
-	unsigned char bVar1;
-	bool bVar2;
-	//undefined4 in_zero;
-	//undefined4 in_at;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	MODEL **ppMVar6;
-	uint uVar7;
-	int iVar8;
-	uint uVar9;
-	int iVar10;
-	uint uVar11;
-	//undefined4 in_a2;
-	SVECTOR *pSVar12;
-	SVECTOR *local_a3_900;
+	int doLight;
+	int orW;
+	int orY;
+	MODEL *model;
+	int num_norms;
+	int count;
+	SVECTOR *ppads;
+	SVECTOR *norms;
 	SVECTOR lightsourcevector;
 	SVECTOR colour;
 	VECTOR lightValues;
@@ -1760,13 +1625,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 	CVECTOR c2;
 	long GT3rgb;
 
-	if (cp < car_data)
-	{
-		while (FrameCnt != 0x78654321)
-			trap(0x400);
-	}
-
-	if (-1 < gTimeOfDay)
+	if (gTimeOfDay > -1)
 	{
 		if (gTimeOfDay < 3)
 		{
@@ -1784,12 +1643,11 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 	SetRotMatrix(&scratchPadMat);
 
 	gte_ldv0(&lightsourcevector);
-	docop2(0x486012);
+	gte_rtv0();
 
 	gte_stsv(light_matrix.m[0]);
 
-
-	bVar2 = false;
+	doLight = 0;
 
 	colour_matrix.m[0][0] = colour.vx;
 	colour_matrix.m[1][0] = colour.vy;
@@ -1797,28 +1655,25 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 	if (gTimeOfDay != 3)
 	{
-		iVar8 = cp->ap.qy;
-		iVar3 = cp->st.n.orientation[1];
-		iVar5 = iVar3 - iVar8;
-		if (iVar5 < 1) 
-			iVar5 = iVar8 - iVar3;
+		orY = cp->st.n.orientation[1] - cp->ap.qy;
 
-		iVar10 = cp->ap.qw;
-		iVar8 = cp->st.n.orientation[3];
-		iVar3 = iVar8 - iVar10;
+		if (orY < 1) 
+			orY = cp->ap.qy - cp->st.n.orientation[1];
 
-		if (iVar3 < 1) 
-			iVar3 = iVar10 - iVar8;
+		orW = cp->st.n.orientation[3] - cp->ap.qw;
 
-		if ((200 < iVar5 + iVar3) || (cp->lowDetail != (detail | lightning)))
-			bVar2 = true;
+		if (orW < 1) 
+			orW = cp->ap.qw - cp->st.n.orientation[3];
 
-		if (((gTimeOfDay == 0) || (gTimeOfDay == 2)) && ((cp->id & 0xf) == (CameraCnt & 0xfU))) 
-			bVar2 = true;
+		if ((200 < orY + orW) || (cp->lowDetail != (detail | lightning)))
+			doLight = 1;
+
+		if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 0xf) == (CameraCnt & 0xfU)) 
+			doLight = 1;
 
 		setupLightingMatrices();
 
-		//if (bVar2) 
+		if (doLight) 
 		{
 			uint rgbval = combointensity & 0xffffffU | 0x34000000;
 			gte_ldrgb(&rgbval);
@@ -1828,53 +1683,35 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 			cp->lowDetail = detail | lightning;
 
 			if (detail == 0) 
-			{
-				bVar1 = cp->ap.model;
-				ppMVar6 = gCarLowModelPtr;
-			}
+				model = gCarLowModelPtr[cp->ap.model];
 			else 
+				model = gCarCleanModelPtr[cp->ap.model];
+
+			num_norms = model->num_point_normals / 3;
+			norms = (SVECTOR *)model->point_normals;
+
+			ppads = gTempCarVertDump[cp->id];
+			count = num_norms +1;
+
+			while (count >= 0)
 			{
-				bVar1 = cp->ap.model;
-				ppMVar6 = gCarCleanModelPtr;
-			}
+				gte_ldv3(&norms[0], &norms[1], &norms[2]);
 
-			uVar9 = ppMVar6[bVar1]->num_point_normals / 3;
-			local_a3_900 = (SVECTOR *)ppMVar6[bVar1]->point_normals;
+				gte_ncct();
 
-			uVar7 = cp->id * 0x420;
+				gte_strgb3(&c0,&c1,&c2);
 
-			pSVar12 = gTempCarVertDump[cp->id];
-			uVar4 = uVar9 + 1;
-			uVar11 = uVar4;
+				ppads[0].pad = *(short*)&c0;
+				ppads[1].pad = *(short*)&c1;
+				ppads[2].pad = *(short*)&c2;
 
-			if (0 < (int)uVar4)
-			{
-				do
-				{
-					gte_ldv3(&local_a3_900[0], &local_a3_900[1], &local_a3_900[2]);
+				count--;
+				norms += 3;
+				ppads += 3;
 
-					gte_ncct();
-
-					gte_strgb3(&c0,&c1,&c2);
-
-					//c0 = (short)uVar4;
-					//uVar4 = uVar4 & 0xffff;
-					//c1._0_2_ = (short)uVar7;
-					//uVar7 = uVar7 & 0xffff;
-					//c2._0_2_ = (short)uVar9;
-					//uVar9 = uVar9 & 0xffff;
-					
-					pSVar12[0].pad = *(short*)&c0;
-					pSVar12[1].pad = *(short*)&c1;
-					pSVar12[2].pad = *(short*)&c2;
-
-					uVar11--;
-					local_a3_900 += 3;
-					pSVar12 += 3;
-
-				} while (uVar11 != 0);
 			}
 		}
+
 		restoreLightingMatrices();
 	}
 }
@@ -1902,7 +1739,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void buildNewCars(void)
 {
 	buildNewCarFromModel(&NewCarModel[0], gCarCleanModelPtr[0], 1);
@@ -2054,36 +1891,23 @@ void buildNewCars(void)
 	/* end block 2 */
 	// End Line: 5849
 
-// byte swapped int
-#define SW_INT(a,b) (((a) << 16) | (b))
-
-// [D]
+// [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
+	unsigned char ptype;
+	unsigned char clut;
+	unsigned char *polyList;
+	CAR_POLY *cp;
 
-	unsigned char bVar1;
-	unsigned char bVar2;
-	unsigned char bVar3;
-	unsigned char bVar4;
-	ushort uVar5;
-	unsigned char cVar6;
-	//undefined3 extraout_var;
-	//undefined3 extraout_var_00;
-	uint uVar7;
-	int iVar8;
-	unsigned char *pbVar9;
-	CAR_POLY *pCVar10;
-	int iVar11;
-	int iVar12;
-	short sVar13;
-	int iVar14;
+	int newNumPolys;
+
+	int i;
 	int pass;
-	int iVar16;
 
-	if (first != 0) {
+	if (first != 0) 
 		whichCP = 0;
-	}
-	if ((model == NULL) || (0x800000 < ((uint)model->shape_flags & 0xfffffff))) 
+
+	if (model == NULL || (model->shape_flags & 0xfffffff) > 0x800000)
 	{
 		car->numGT3 = 0;
 		car->numFT3 = 0;
@@ -2097,178 +1921,149 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 		pass = 0;
 
 		do {
-			iVar11 = whichCP;
-			pbVar9 = (unsigned char *)model->poly_block;
+			
+			polyList = (unsigned char *)model->poly_block;
 
-			if (pass == 1) {
+			if (pass == 1)
 				car->pFT3 = carPolyBuffer + whichCP;
-			}
-			else if (pass == 0) {
+			else if (pass == 0)
 				car->pGT3 = carPolyBuffer + whichCP;
-			}
-			else if (pass == 2) {
+			else if (pass == 2)
 				car->pB3 = carPolyBuffer + whichCP;
-			}
 
-			iVar14 = 0;
-			iVar16 = pass + 1;
-			iVar12 = iVar11;
+			i = 0;
+			newNumPolys = whichCP;
 
-			if ((iVar11 < 2000) && (model->num_polys != 0)) 
+			while (newNumPolys < 2000 && i < model->num_polys)
 			{
-				do {
-					bVar1 = *pbVar9;
-					pCVar10 = carPolyBuffer + iVar11;
-					iVar12 = iVar11;
+				ptype = *polyList;
 
-					if (true) 
-					{
-						sVar13 = (short)iVar14;
-						switch ((uint)bVar1 & 0x1f) 
+				cp = carPolyBuffer + newNumPolys;
+
+				switch (ptype & 0x1f) 
+				{
+					case 0:
+					case 18:
+						if (pass == 2)	// F3
 						{
-							case 0:
-							case 18:
-								if (pass == 2)	// F3
-								{
-									bVar2 = pbVar9[1];
-									bVar3 = pbVar9[2];
-									bVar4 = pbVar9[3];
-									iVar12 = iVar11 + 1;
-									carPolyBuffer[iVar11].originalindex = sVar13;
-									pCVar10->vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
-								}
-								break;
-							case 1:
-							case 19:
-								if (pass == 2)	// F4
-								{
-									bVar2 = pbVar9[4];
-									bVar3 = pbVar9[5];
-									bVar4 = pbVar9[6];
-									iVar12 = iVar11 + 2;
-									carPolyBuffer[iVar11].originalindex = sVar13;
-									pCVar10->vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
-									bVar2 = pbVar9[4];
-									bVar3 = pbVar9[6];
-									bVar4 = pbVar9[7];
-									carPolyBuffer[iVar11 + 1].originalindex = sVar13;
-									carPolyBuffer[iVar11 + 1].vindices = (uint)bVar2 | ((uint)bVar3 | (uint)bVar4 << 8) << 8;
-								}
-								break;
-							case 20:
-								if (pass == 1)	// FT3
-								{
-									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
+							cp->vindices = (uint)polyList[1] | ((uint)polyList[2] | (uint)polyList[3] << 8) << 8;
+							cp->originalindex = i;
 
-									carPolyBuffer[iVar11].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
-									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
-
-									uVar7 = (uint)*(ushort *)(pbVar9 + 0xc);
-									iVar12 = iVar11 + 1;
-								LAB_00022fd4:
-									pCVar10->originalindex = sVar13;
-								LAB_00022fd8:
-									pCVar10->uv3_uv2 = uVar7;
-								}
-								break;
-							case 21:
-								if (pass == 1)	// FT4
-								{
-									pCVar10->vindices = (uint)pbVar9[4] + ((uint)pbVar9[5] + (uint)pbVar9[6] << 8) << 8;
-
-									carPolyBuffer[iVar11].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
-									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 10));
-
-									uVar5 = *(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11].originalindex = sVar13;
-									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
-									pCVar10 = carPolyBuffer + iVar11 + 1;
-									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[6] | (uint)pbVar9[7] << 8) << 8;
-
-									carPolyBuffer[iVar11 + 1].clut_uv0 = SW_INT(((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]], *(ushort *)(pbVar9 + 8));
-									carPolyBuffer[iVar11 + 1].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xc));
-
-									uVar7 = (uint)*(ushort *)(pbVar9 + 0xe);
-									iVar12 = iVar11 + 2;
-									goto LAB_00022fd4;
-								}
-								break;
-							case 22:
-								if (pass == 0) // GT3
-								{
-									iVar12 = iVar11 + 1;
-									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
-
-									civ_clut[cVar6][pbVar9[2]][0] = texture_cluts[pbVar9[1]][pbVar9[2]]; // [A]
-									//((ushort*)civ_clut)[cVar6 * 0xc0 + (uint)pbVar9[2] * 6] = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
-									
-									pCVar10->vindices = pbVar9[4] | (pbVar9[5] | pbVar9[6] << 8) << 8;
-									
-									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] | ((uint)pbVar9[9] | (uint)pbVar9[10] << 8) << 8;
-									carPolyBuffer[iVar11].clut_uv0 = ((int)(cVar6 * 0x180 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
-									
-									uVar7 = (uint)*(ushort *)(pbVar9 + 0x10);
-									carPolyBuffer[iVar11].originalindex = sVar13;
-									goto LAB_00022fd8;
-								}
-								break;
-							case 23:
-								if (pass == 0)  // GT4
-								{
-									iVar12 = iVar11 + 2;
-									cVar6 = GetCarPalIndex((uint)pbVar9[1]);
-									iVar8 = cVar6 * 0x180;
-
-									civ_clut[cVar6][pbVar9[2]][0] = texture_cluts[pbVar9[1]][pbVar9[2]]; // [A]
-
-									//*((ushort*)civ_clut[cVar6 * 0xc0 + (uint)pbVar9[2] * 6]) = ((ushort*)texture_cluts)[(uint)pbVar9[1] * 0x20 + (uint)pbVar9[2]];
-
-									pCVar10->vindices = (uint)pbVar9[4] | ((uint)pbVar9[5] | (uint)pbVar9[6] << 8) << 8;
-
-									carPolyBuffer[iVar11].nindices = (uint)pbVar9[8] | ((uint)pbVar9[9] | (uint)pbVar9[10] << 8) << 8;
-									carPolyBuffer[iVar11].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0xe));
-
-									uVar5 = *(ushort *)(pbVar9 + 0x10);
-									carPolyBuffer[iVar11].originalindex = sVar13;
-									carPolyBuffer[iVar11].uv3_uv2 = (uint)uVar5;
-
-									pCVar10 = carPolyBuffer + iVar11 + 1;
-									pCVar10->vindices = pbVar9[4] | (pbVar9[6] | pbVar9[7] << 8) << 8;
-
-									carPolyBuffer[iVar11 + 1].nindices = (uint)pbVar9[8] | ((uint)pbVar9[10] | (uint)pbVar9[0xb] << 8) << 8;
-									carPolyBuffer[iVar11 + 1].clut_uv0 = ((int)(iVar8 + (uint)pbVar9[2] * 0xc + -0x180) >> 1) << 0x10 | (uint)*(ushort *)(pbVar9 + 0xc);
-									carPolyBuffer[iVar11 + 1].tpage_uv1 = SW_INT(texture_pages[pbVar9[1]], *(ushort *)(pbVar9 + 0x10));
-
-									uVar7 = (uint)*(ushort *)(pbVar9 + 0x12);
-									goto LAB_00022fd4;
-								}
+							newNumPolys++;
 						}
-					}
+						break;
+					case 1:
+					case 19:
+						if (pass == 2)	// F4
+						{
+							cp->vindices = (uint)polyList[4] | ((uint)polyList[5] | (uint)polyList[6] << 8) << 8;
+							cp->originalindex = i;
 
-					iVar14 = iVar14 + 1;
-					pbVar9 = pbVar9 + PolySizes[(uint)bVar1 & 0x1f];
+							cp = carPolyBuffer + newNumPolys + 1;
 
-				} while ((iVar12 < 2000) && (iVar11 = iVar12, iVar14 < (int)(uint)model->num_polys));
+							cp->vindices = (uint)polyList[4] | ((uint)polyList[6] | (uint)polyList[7] << 8) << 8;
+							cp->originalindex = i;
+
+							newNumPolys += 2;
+						}
+						break;
+					case 20:
+						if (pass == 1)	// FT3
+						{
+							POLYFT3* pft3 = (POLYFT3*)polyList;
+									
+							cp->vindices = pft3->v0 | (pft3->v1 | pft3->v2 << 8) << 8;
+							cp->clut_uv0 = SW_INT(texture_cluts[pft3->texture_set][pft3->texture_id], *(ushort*)&pft3->uv0);
+							cp->tpage_uv1 = SW_INT(texture_pages[pft3->texture_set], *(ushort*)&pft3->uv1);
+							cp->uv3_uv2 = *(ushort*)&pft3->uv2;
+							cp->originalindex = i;
+
+							newNumPolys++;
+						}
+						break;
+					case 21:
+						if (pass == 1)	// FT4
+						{
+							POLYFT4* pft4 = (POLYFT4*)polyList;
+
+							cp->vindices = pft4->v0 | (pft4->v1 | pft4->v2 << 8) << 8;
+							cp->clut_uv0 = SW_INT(texture_cluts[pft4->texture_set][pft4->texture_id], *(ushort *)&pft4->uv0);
+							cp->tpage_uv1 = SW_INT(texture_pages[pft4->texture_set], *(ushort*)&pft4->uv1);
+							cp->uv3_uv2 = *(ushort*)&pft4->uv2;
+							cp->originalindex = i;
+
+							cp = carPolyBuffer + newNumPolys + 1;
+
+							cp->vindices = pft4->v0 | (pft4->v2 | pft4->v3 << 8) << 8;
+							cp->clut_uv0 = SW_INT(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
+							cp->tpage_uv1 = SW_INT(texture_pages[polyList[1]], *(ushort*)&pft4->uv2);
+							cp->uv3_uv2 = *(ushort*)&pft4->uv3;
+							cp->originalindex = i;
+
+							newNumPolys += 2;
+						}
+						break;
+					case 22:
+						if (pass == 0) // GT3
+						{
+							POLYGT3* pgt3 = (POLYGT3*)polyList;
+							
+							clut = GetCarPalIndex(pgt3->texture_set);
+							civ_clut[clut][pgt3->texture_id][0] = texture_cluts[pgt3->texture_set][pgt3->texture_id];
+						
+							cp->vindices = pgt3->v0 | (pgt3->v1 | pgt3->v2 << 8) << 8;
+							cp->nindices = pgt3->n0 | (pgt3->n1 | pgt3->n2 << 8) << 8;
+							cp->clut_uv0 = ((int)(clut * 384 + pgt3->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort *)&pgt3->uv0;
+							cp->tpage_uv1 = SW_INT(texture_pages[pgt3->texture_set], *(ushort *)&pgt3->uv1);
+							cp->uv3_uv2 = *(ushort *)&pgt3->uv2;
+							cp->originalindex = i;
+
+							newNumPolys++;
+						}
+						break;
+					case 23:
+						if (pass == 0)  // GT4
+						{
+							POLYGT4* pgt4 = (POLYGT4*)polyList;
+
+							clut = GetCarPalIndex(pgt4->texture_set);
+							civ_clut[clut][pgt4->texture_id][0] = texture_cluts[pgt4->texture_set][pgt4->texture_id];
+
+							cp->vindices = pgt4->v0 | (pgt4->v1 | pgt4->v2 << 8) << 8;
+							cp->nindices = pgt4->n0 | (pgt4->n1 | pgt4->n2 << 8) << 8;
+							cp->clut_uv0 = ((int)(clut * 384 + pgt4->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort*)&pgt4->uv0;
+							cp->tpage_uv1 = SW_INT(texture_pages[pgt4->texture_set], *(ushort*)&pgt4->uv1);
+							cp->uv3_uv2 = *(ushort*)&pgt4->uv2;
+							cp->originalindex = i;
+
+							cp = carPolyBuffer + newNumPolys + 1;
+
+							cp->vindices = pgt4->v0 | (pgt4->v2 | pgt4->v3 << 8) << 8;
+							cp->nindices = pgt4->n0 | (pgt4->n2 | pgt4->n3 << 8) << 8;
+							cp->clut_uv0 = ((int)(clut * 384 + pgt4->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort*)&pgt4->uv0;
+							cp->tpage_uv1 = SW_INT(texture_pages[pgt4->texture_set], *(ushort *)&pgt4->uv2);
+							cp->uv3_uv2 = *(ushort *)&pgt4->uv3;
+							cp->originalindex = i;
+
+							newNumPolys += 2;
+						}
+				}
+
+				polyList += PolySizes[ptype & 0x1f];
+				i++;
 			}
 
 			if (pass == 1) 
-			{
-				car->numFT3 = iVar12 - whichCP;
-			}
-			if (pass == 0)
-			{
-				car->numGT3 = iVar12 - whichCP;
-			}
+				car->numFT3 = newNumPolys - whichCP;
+			else if (pass == 0)
+				car->numGT3 = newNumPolys - whichCP;
 			else if (pass == 2) 
-			{
-				car->numB3 = iVar12 - whichCP;
-			}
+				car->numB3 = newNumPolys - whichCP;
 
-			pass = iVar16;
-			whichCP = iVar12;
-		} while (iVar16 < 3);
+			whichCP = newNumPolys;
+
+			pass++;
+		} while (pass < 3);
 	}
 }
 
@@ -2315,103 +2110,116 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void MangleWheelModels(void)
 {
-	unsigned char bVar1;
-	UV_INFO UVar2;
-	unsigned char uVar3;
-	int iVar4;
-	uint uVar5;
-	uint uVar6;
-	uint uVar7;
-	POLYFT4LIT *local_a3_608;
-	MODEL *pMVar8;
-	int iVar9;
+	UV_INFO tmpUV2;
+	unsigned char tmpUV;
+	int i;
+	uint v0;
+	uint v1;
+	uint v2;
+	POLYFT4*src;
+	MODEL *m;
+	int j;
 
-	iVar4 = 0;
+	i = 0;
 	do {
-		pMVar8 = gCleanWheelModelPtr;
-		if (((iVar4 != 1) && (pMVar8 = gFastWheelModelPtr, 1 < iVar4)) && (iVar4 == 2)) {
-			pMVar8 = gDamWheelModelPtr;
-		}
-		iVar4 = iVar4 + 1;
-		local_a3_608 = (POLYFT4LIT *)pMVar8->poly_block;
-		iVar9 = 1;
-		uVar5 = *(uint *)&local_a3_608[2].v0;
-		uVar6 = *(uint *)&local_a3_608[2].uv0;
-		uVar7 = *(uint *)&local_a3_608[2].uv2;
-		*(uint *)local_a3_608 = *(uint *)(local_a3_608 + 2);
-		*(uint *)&local_a3_608->v0 = uVar5;
-		*(uint *)&local_a3_608->uv0 = uVar6;
-		*(uint *)&local_a3_608->uv2 = uVar7;
-		local_a3_608->color = local_a3_608[2].color;
-		uVar5 = *(uint *)&local_a3_608[3].v0;
-		uVar6 = *(uint *)&local_a3_608[3].uv0;
-		uVar7 = *(uint *)&local_a3_608[3].uv2;
-		*(uint *)(local_a3_608 + 1) = *(uint *)(local_a3_608 + 3);
-		*(uint *)&local_a3_608[1].v0 = uVar5;
-		*(uint *)&local_a3_608[1].uv0 = uVar6;
-		*(uint *)&local_a3_608[1].uv2 = uVar7;
-		local_a3_608[1].color = local_a3_608[3].color;
-		uVar5 = *(uint *)&local_a3_608[4].v0;
-		uVar6 = *(uint *)&local_a3_608[4].uv0;
-		uVar7 = *(uint *)&local_a3_608[4].uv2;
-		*(uint *)(local_a3_608 + 2) = *(uint *)(local_a3_608 + 4);
-		*(uint *)&local_a3_608[2].v0 = uVar5;
-		*(uint *)&local_a3_608[2].uv0 = uVar6;
-		*(uint *)&local_a3_608[2].uv2 = uVar7;
-		local_a3_608[2].color = local_a3_608[4].color;
-		uVar5 = *(uint *)&local_a3_608[6].v0;
-		uVar6 = *(uint *)&local_a3_608[6].uv0;
-		uVar7 = *(uint *)&local_a3_608[6].uv2;
-		*(uint *)(local_a3_608 + 3) = *(uint *)(local_a3_608 + 6);
-		*(uint *)&local_a3_608[3].v0 = uVar5;
-		*(uint *)&local_a3_608[3].uv0 = uVar6;
-		*(uint *)&local_a3_608[3].uv2 = uVar7;
-		local_a3_608[3].color = local_a3_608[6].color;
-		local_a3_608[2].v0 = '\x10';
-		local_a3_608[2].v1 = '\x11';
-		local_a3_608[2].v2 = '\x17';
-		local_a3_608[2].v3 = '\x16';
-		local_a3_608[3].v0 = '\x15';
-		local_a3_608[3].v1 = '\x14';
-		local_a3_608[3].v3 = '\x12';
-		bVar1 = (local_a3_608->uv0).u;
-		local_a3_608[3].v2 = '\x13';
-		uVar3 = (bVar1 >> 1) + ((local_a3_608->uv2).u >> 1);
-		local_a3_608[3].uv3.u = uVar3;
-		local_a3_608[3].uv2.u = uVar3;
-		local_a3_608[3].uv1.u = uVar3;
-		local_a3_608[3].uv0.u = uVar3;
-		local_a3_608[2].uv3.u = uVar3;
-		local_a3_608[2].uv2.u = uVar3;
-		local_a3_608[2].uv1.u = uVar3;
-		bVar1 = (local_a3_608->uv0).v;
-		local_a3_608[2].uv0.u = uVar3;
-		uVar3 = (bVar1 >> 1) + ((local_a3_608->uv2).v >> 1);
-		local_a3_608[3].uv3.v = uVar3;
-		local_a3_608[3].uv2.v = uVar3;
-		local_a3_608[3].uv1.v = uVar3;
-		local_a3_608[3].uv0.v = uVar3;
-		local_a3_608[2].uv3.v = uVar3;
-		local_a3_608[2].uv2.v = uVar3;
-		local_a3_608[2].uv1.v = uVar3;
-		local_a3_608[2].uv0.v = uVar3;
-		pMVar8->num_polys = 4;
+
+		if (i == 1)
+			m = gFastWheelModelPtr;
+		else if (i == 2)
+			m = gDamWheelModelPtr;
+		else
+			m = gCleanWheelModelPtr;
+
+		// do some fuckery swaps
+		src = (POLYFT4*)m->poly_block;
+		
+		v0 = *(uint *)&src[2].v0;
+		v1 = *(uint *)&src[2].uv0;
+		v2 = *(uint *)&src[2].uv2;
+		*(uint *)src = *(uint *)(src + 2);
+		*(uint *)&src->v0 = v0;
+		*(uint *)&src->uv0 = v1;
+		*(uint *)&src->uv2 = v2;
+		src->color = src[2].color;
+
+		v0 = *(uint *)&src[3].v0;
+		v1 = *(uint *)&src[3].uv0;
+		v2 = *(uint *)&src[3].uv2;
+		*(uint *)(src + 1) = *(uint *)(src + 3);
+		*(uint *)&src[1].v0 = v0;
+		*(uint *)&src[1].uv0 = v1;
+		*(uint *)&src[1].uv2 = v2;
+		src[1].color = src[3].color;
+
+		v0 = *(uint *)&src[4].v0;
+		v1 = *(uint *)&src[4].uv0;
+		v2 = *(uint *)&src[4].uv2;
+		*(uint *)(src + 2) = *(uint *)(src + 4);
+		*(uint *)&src[2].v0 = v0;
+		*(uint *)&src[2].uv0 = v1;
+		*(uint *)&src[2].uv2 = v2;
+		src[2].color = src[4].color;
+
+		v0 = *(uint *)&src[6].v0;
+		v1 = *(uint *)&src[6].uv0;
+		v2 = *(uint *)&src[6].uv2;
+		*(uint *)(src + 3) = *(uint *)(src + 6);
+		*(uint *)&src[3].v0 = v0;
+		*(uint *)&src[3].uv0 = v1;
+		*(uint *)&src[3].uv2 = v2;
+		src[3].color = src[6].color;
+
+		src[2].v0 = 16;
+		src[2].v1 = 17;
+		src[2].v2 = 23;
+		src[2].v3 = 22;
+		src[3].v0 = 21;
+		src[3].v1 = 20;
+		src[3].v2 = 19;
+		src[3].v3 = 18;
+
+		tmpUV = (src->uv0.u >> 1) + (src->uv2.u >> 1);
+		src[3].uv3.u = tmpUV;
+		src[3].uv2.u = tmpUV;
+		src[3].uv1.u = tmpUV;
+		src[3].uv0.u = tmpUV;
+		src[2].uv3.u = tmpUV;
+		src[2].uv2.u = tmpUV;
+		src[2].uv1.u = tmpUV;
+		src[2].uv0.u = tmpUV;
+
+		tmpUV = (src->uv0.v >> 1) + (src->uv2.v >> 1);
+		src[3].uv3.v = tmpUV;
+		src[3].uv2.v = tmpUV;
+		src[3].uv1.v = tmpUV;
+		src[3].uv0.v = tmpUV;
+		src[2].uv3.v = tmpUV;
+		src[2].uv2.v = tmpUV;
+		src[2].uv1.v = tmpUV;
+		src[2].uv0.v = tmpUV;
+
+		m->num_polys = 4;
+
+		j = 0;
 		do {
-			UVar2 = local_a3_608->uv0;
-			iVar9 = iVar9 + -1;
-			local_a3_608->uv0 = local_a3_608->uv1;
-			local_a3_608->uv1 = local_a3_608->uv2;
-			local_a3_608->uv2 = local_a3_608->uv3;
-			local_a3_608->uv3 = UVar2;
-			local_a3_608 = local_a3_608 + 1;
-		} while (-1 < iVar9);
-	} while (iVar4 < 3);
+			tmpUV2 = src->uv0;
+			
+			src->uv0 = src->uv1;
+			src->uv1 = src->uv2;
+			src->uv2 = src->uv3;
+			src->uv3 = tmpUV2;
+
+			src++;
+		} while (++j < 2);
+
+	} while (++i < 3);
 
 	// HACK: Show clean model only in Rio.
-	if (GameLevel == 3) {
+	if (GameLevel == 3) 
+	{
 		gFastWheelModelPtr = gCleanWheelModelPtr;
 	}
 }
@@ -2442,7 +2250,7 @@ void MangleWheelModels(void)
 MATRIX save_colour_matrix;
 MATRIX save_light_matrix;
 
-// [D]
+// [D] [T]
 void setupLightingMatrices(void)
 {
 	gte_ReadColorMatrix(&save_colour_matrix);
@@ -2478,7 +2286,7 @@ void setupLightingMatrices(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void restoreLightingMatrices(void)
 {
 	gte_SetColorMatrix(&save_colour_matrix);
@@ -2515,12 +2323,15 @@ void restoreLightingMatrices(void)
 	/* end block 4 */
 	// End Line: 7077
 
-// [D]
+// [D] [T]
 char GetCarPalIndex(int tpage)
 {
-	for (int i = 0; i < 8; i++) {
+	int i;
+
+	for (i = 0; i < 8; i++) 
+	{
 		if (tpage == carTpages[GameLevel][i])
-			return (char)i;
+			return i;
 	}
 
 	return 0;

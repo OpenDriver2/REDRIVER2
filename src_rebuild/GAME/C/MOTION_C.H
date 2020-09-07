@@ -32,7 +32,7 @@ extern int DrawCharacter(PEDESTRIAN *pPed); // 0x00067D44
 
 extern void InitTannerShadow(); // 0x000681EC
 
-extern void TannerShadow(VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle); // 0x00068358
+extern void TannerShadow(PEDESTRIAN *pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle); // 0x00068358
 
 extern void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2); // 0x00068B2C
 

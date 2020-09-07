@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "OVERMAP.H"
 #include "TEXTURE.H"
 #include "CARS.H"
@@ -14,9 +14,12 @@
 #include "PRES.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
+#include "PAD.H"
+#include "..\ASM\RNC_2.H"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"
+
 
 OVERMAP overlaidmaps[4] =
 {
@@ -512,8 +515,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 // [D]
 void ProcessOverlayLump(char *lump_ptr, int lump_size)
 {
-	uint uVar1;
-	SXYPAIR *pSVar2;
+	int i;
 	TEXTURE_DETAILS info;
 
 	GetTextureDetails("OVERHEAD", &info);
@@ -521,21 +523,18 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	MapTPage = info.tpageid;
 	MapClut = GetClut(mapclutpos.x, mapclutpos.y);
 
-	uVar1 = 0;
-	pSVar2 = MapSegmentPos;
-
 	MapRect.w = 0x40;
 	MapRect.h = 0x100;
 	MapRect.x = (MapTPage & 0xf) << 6;
 	MapRect.y = (MapTPage & 0x10) << 4;
 
+	i = 0;
 	do {
-		pSVar2->x = (((uVar1 & 3) * 32 + info.coords.u0) >> 2);
-		pSVar2->y = info.coords.v0 + (uVar1 >> 2) * 32;
+		MapSegmentPos[i].x = (((i & 3) * 32 + info.coords.u0) >> 2);
+		MapSegmentPos[i].y = info.coords.v0 + (i >> 2) * 32;
 
-		uVar1++;
-		pSVar2++;
-	} while (uVar1 < 16);
+		i++;
+	} while (i < 16);
 
 	MALLOC_BEGIN()
 
@@ -680,43 +679,31 @@ ulong Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 // [D]
 void InitOverheadMap(void)
 {
-	char *pcVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
+	int d;
+	int c;
 	int tpage;
-	int iVar5;
-
-	iVar4 = 0;
 
 	if (gMultiplayerLevels == 0) 
 	{
 		SetMapPos();
+		tilehnum = overlaidmaps[GameLevel].width / 32;
 
-		tilehnum = overlaidmaps[GameLevel].width;
-		tilehnum = tilehnum >> 5;
-
-		iVar3 = 0;
+		c = 0;
+		tpage = 0;
 		do {
-			iVar2 = 0;
-			iVar5 = iVar3 + 1;
-			pcVar1 = maptile[iVar3];
-			tpage = iVar4;
+			d = 0;
 
 			do {
-				*pcVar1 = tpage;
-				iVar4 = tpage + 1;
-				pcVar1 = pcVar1 + 4;
+				maptile[d][c] = tpage;
 
-				LoadMapTile(tpage, (x_map >> 5) + iVar2, (y_map >> 5) + iVar3);
+				LoadMapTile(tpage, (x_map / 32) + d, (y_map / 32) + c);
 
-				iVar2 = iVar2 + 1;
-				tpage = iVar4;
-			} while (iVar2 < 4);
+				d++;
+				tpage++;
+			} while (d < 4);
 
-			iVar3 = iVar5;
-
-		} while (iVar5 < 4);
+			c++;
+		} while (c < 4);
 
 		old_x_mod = x_map & 0x1f;
 		old_y_mod = y_map & 0x1f;
@@ -862,8 +849,8 @@ void DrawOverheadMap(void)
 	unsigned char bVar1;
 	short sVar2;
 	short sVar3;
-	ushort uVar7;
-	ushort uVar8;
+	short uVar7;
+	short uVar8;
 	unsigned char uVar10;
 	short *psVar11;
 	TILE_1 *tile1;
@@ -874,7 +861,7 @@ void DrawOverheadMap(void)
 	int y_00;
 	short *psVar13;
 	short *puVar14;
-	POLY_F4 *local_a3_2816;
+	POLY_FT4 *local_a3_2816;
 	POLY_FT3 *null;
 	SVECTOR *pSVar15;
 	long *plVar16;
@@ -891,11 +878,11 @@ void DrawOverheadMap(void)
 	VECTOR *v1;
 	DR_AREA *drarea;
 	int r;
-	uint *puVar26;
+	int *puVar26;
 	int iVar27;
-	uint uVar28;
+	int uVar28;
 	int iVar29;
-	uint uVar30;
+	int uVar30;
 	SVECTOR MapMesh[5][5];
 	VECTOR MapMeshO[5][5];
 	MAPTEX MapTex[4];
@@ -905,17 +892,18 @@ void DrawOverheadMap(void)
 	long flag;
 
 	static int flashtimer = 0;
-	static int ptab[16] = {
+	static int ptab[] = {
 		 0xFF, 0xF0, 0xAA, 0x78,
 		 0x50, 0x37, 0x26, 0x17,
 		 0xD,  0xA,  0x0,  0x0,
 		 0x0,  0x0,  0x0,  0x0,
 	};
 
-	static int ptab2[12] = {
+	static int ptab2[] = {
 		0xFF, 0xFF, 0xF0, 0xAA,
 		0x78, 0x50, 0x37, 0x26,
-		0x17, 0xD,  0xA,  0x0
+		0x17, 0xD,  0xA,  0x0, 
+		0x0
 	};
 
 	VECTOR translate = { 280, 0, 212 };
@@ -969,18 +957,13 @@ void DrawOverheadMap(void)
 			goto LAB_00016fac;
 	}
 
+
 	flashtimer--;
-
 	r = -flashtimer;
-	x = r + 0x2f;
-	y = r + 0x30;
-	y_00 = r + 0x31;
-	iVar27 = r + 0x32;
 
-	r = ptab2[x >> 2] + ptab2[y >> 2] + ptab2[y_00 >> 2] +
-		ptab2[iVar27 >> 2];
-
+	r = ptab2[r + 47 >> 2] + ptab2[r + 48 >> 2] + ptab2[r + 49 >> 2] + ptab2[r + 50 >> 2];
 	r = r >> 2;
+
 	FlashOverheadMap(r, r, r);
 
 LAB_00016fac:
@@ -1018,104 +1001,86 @@ LAB_00016fac:
 	cp = car_data;
 	do {
 		if (cp->controlType == 3 && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
-			DrawSightCone(&copSightData, (VECTOR *)(cp->hd).where.t, cp->hd.direction);
+			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
 
 		cp++;
 	} while (cp <= &car_data[20]);
 
 	sVar2 = -uVar28;
-
-	UNIMPLEMENTED();
-
-	/*
-	if ((uVar28 < 0x10) && (0x10 < old_x_mod))
+	
+	// X axis
+	if ((uVar28 < 16) && (old_x_mod > 16))
 	{
+		// left
 		r = 0;
-		pcVar24 = maptile;
-		pbVar25 = maptile + 8;
+
 		do {
-			bVar1 = *pcVar24;
-			x = x_map >> 5;
-			y = y_map >> 5;
-			*pcVar24 = pbVar25[-4];
-			y = y + r;
-			pbVar25[-4] = *pbVar25;
-			r = r + 1;
-			*pbVar25 = pcVar24[0xc];
-			pcVar24[0xc] = bVar1;
+			bVar1 = maptile[0][r];
 
-			LoadMapTile(bVar1, x + 3, y);
+			maptile[0][r] = maptile[1][r];
+			maptile[1][r] = maptile[2][r]; 
+			maptile[2][r] = maptile[3][r];
+			maptile[3][r] = bVar1;
 
-			pcVar24++;
-			pbVar25++;
+			LoadMapTile(bVar1, x_map / 32 + 3, y_map / 32 + r);
+
+			r++;
 		} while (r < 4);
 	}
 
-	if ((0x10 < uVar28) && (old_x_mod < 0x10)) 
+	if ((uVar28 > 16) && (old_x_mod < 16)) 
 	{
+		// right
 		r = 0;
-		pcVar24 = maptile;
-		pbVar25 = maptile + 0xc;
+
 		do {
-			x = r + 4;
-			bVar1 = *pbVar25;
-			y = x_map >> 5;
-			y_00 = (y_map >> 5) + r;
-			*pbVar25 = maptile[r + 8];
-			pbVar25 = pbVar25 + 1;
-			maptile[r + 8] = maptile[x];
-			r = r + 1;
-			maptile[x] = *pcVar24;
-			*pcVar24 = bVar1;
-			LoadMapTile(bVar1, y, y_00);
-			pcVar24++;
+			bVar1 = maptile[3][r];
+
+			maptile[3][r] = maptile[2][r];
+			maptile[2][r] = maptile[1][r];
+			maptile[1][r] = maptile[0][r];
+			maptile[0][r] = bVar1;
+
+			LoadMapTile(bVar1, x_map / 32, y_map / 32 + r);
+			r++;
 		} while (r < 4);
 	}
 
-	if ((uVar30 < 0x10) && (0x10 < old_y_mod))
+	// Z axis
+	if ((uVar30 < 16) && (old_y_mod > 16))
 	{
+		// down
 		r = 0;
-		pcVar24 = maptile;
-		pbVar25 = maptile + 1;
 		do {
-			y_00 = r * 4;
-			bVar1 = *pcVar24;
-			x = (x_map >> 5) + r;
-			y = y_map >> 5;
-			*pcVar24 = *pbVar25;
-			r = r + 1;
-			*pbVar25 = maptile[y_00 + 2];
-			pbVar25 = pbVar25 + 4;
-			maptile[y_00 + 2] = pcVar24[3];
-			pcVar24[3] = bVar1;
+			bVar1 = maptile[r][0];
 
-			LoadMapTile(bVar1, x, y + 3);
-			pcVar24++;
+			maptile[r][0] = maptile[r][1];
+			maptile[r][1] = maptile[r][2];
+			maptile[r][2] = maptile[r][3];
+			maptile[r][3] = bVar1;
+
+			LoadMapTile(bVar1, x_map / 32 + r, y_map / 32 + 3);
+			r++;
 		} while (r < 4);
 	}
 
-	if ((0x10 < uVar30) && (old_y_mod < 0x10))
+	if ((uVar30 > 16) && (old_y_mod < 16))
 	{
+		// up
 		r = 0;
-		pcVar24 = maptile;
-		pbVar25 = maptile + 3;
 		do {
-			y_00 = r * 4;
-			bVar1 = *pbVar25;
-			x = (x_map >> 5) + r;
-			y = y_map >> 5;
-			*pbVar25 = maptile[y_00 + 2];
-			pbVar25 = pbVar25 + 4;
-			maptile[y_00 + 2] = maptile[y_00 + 1];
-			r = r + 1;
-			maptile[y_00 + 1] = *pcVar24;
-			*pcVar24 = bVar1;
-			LoadMapTile(bVar1, x, y);
-			pcVar24++;
+			bVar1 = maptile[r][3];
+
+			maptile[r][3] = maptile[r][2];
+			maptile[r][2] = maptile[r][1];
+			maptile[r][1] = maptile[r][0];
+			maptile[r][0] = bVar1;
+
+			LoadMapTile(bVar1, x_map / 32 + r, y_map / 32);
+			r++;
 		} while (r < 4);
 	}
-	*/
-
+	
 	old_x_mod = uVar28;
 	old_y_mod = uVar30;
 
@@ -1129,51 +1094,34 @@ LAB_00016fac:
 		x = 4;
 
 	y_00 = 0;
-	y = 0;
 
-	/*
-	pSVar21 = MapMesh;
-	v0 = MapMesh + 5;
-	pSVar15 = MapMesh + 10;
-	pSVar17 = MapMesh + 15;
-	pSVar19 = MapMesh + 20;
-
+	// make grid coordinates
 	do {
-		*(short *)((int)&MapMesh[0].vz + y) = -0x23;
-		psVar11 = (short *)((int)&MapMesh[1].vz + y);
-		psVar12 = (short *)((int)&MapMesh[2].vz + y);
-		psVar13 = (short *)((int)&MapMesh[3].vz + y);
-		puVar14 = (short *)((int)&MapMesh[4].vz + y);
+
+		MapMesh[0][y_00].vx = -35;
+		MapMesh[y_00][0].vz = -35;
+
+		MapMesh[1][y_00].vx = sVar2 - 16;
+		MapMesh[y_00][1].vz = sVar3 - 16;
+
+		MapMesh[2][y_00].vx = sVar2 + 16;
+		MapMesh[y_00][2].vz = sVar3 + 16;
+
+		MapMesh[3][y_00].vx = sVar2 + 48;
+		MapMesh[y_00][3].vz = sVar3 + 48;
+
+		MapMesh[4][y_00].vx = 35;
+		MapMesh[y_00][4].vz = 35;
 
 		y_00++;
-		
-		pSVar21->vx = -35;
-		v0->vx = sVar2 - 16;
-		pSVar15->vx = sVar2 + 16;
-		pSVar17->vx = sVar2 + 48;
-		pSVar19->vx = 35;
-
-
-		*psVar11 = sVar3 - 16;
-		*psVar12 = sVar3 + 16;
-		*psVar13 = sVar3 + 48;
-		*puVar14 = 35;
-
-		pSVar21++;
-		v0++;
-		pSVar15++;
-		pSVar17++;
-		pSVar19++;
-
-		y = y + 0x28;
-	} while (y_00 < 5);*/
+	} while (y_00 < 5);
 
 	MapTex[0].u = MapMesh[0][0].vx - MapMesh[1][0].vx;
 
 	if (MapMesh[0][0].vx - MapMesh[1][0].vx < 0) 
 		MapTex[0].u = MapMesh[1][0].vx - MapMesh[0][0].vx;
 
-	MapTex[0].u = 0x20 - MapTex[0].u;
+	MapTex[0].u = 32 - MapTex[0].u;
 	MapTex[0].w = MapMesh[0][0].vx - MapMesh[1][0].vx;
 
 	if (MapMesh[0][0].vx - MapMesh[1][0].vx < 0)
@@ -1240,86 +1188,88 @@ LAB_00016fac:
 		}
 		y++;
 	}
-	/*
+
 	y = 0;
-	if (x != 0) {
-		do {
-			y_00 = 0;
-			iVar27 = y + 1;
-			if (r != 0) {
-				pbVar25 = maptile + y;
-				iVar29 = 0;
-				plVar18 = &MapMeshO[5].vz + iVar27 * 4;
-				plVar16 = &MapMeshO[5].vz + y * 4;
-				psVar11 = &MapTex[0].w;
-				do {
-					if ((MapSegmentPos[*pbVar25].x & 0x18U) == 0x18)
-						cVar22 = (char)*psVar11 + -1;
-					else
-						cVar22 = (char)*psVar11;
+	iVar27 = 0;
+
+	while (iVar27 < x)
+	{
+		y_00 = 0;
+		iVar27 = y + 1;
+
+		pbVar25 = (char*)maptile + y;
+		plVar18 = &((VECTOR*)MapMeshO)[5].vz + iVar27 * 4;
+		plVar16 = &((VECTOR*)MapMeshO)[5].vz + y * 4;
+		psVar11 = &MapTex[0].w;
+
+		while (y_00 < r)
+		{
+			if ((MapSegmentPos[*pbVar25].x & 0x18U) == 24)
+				cVar22 = (char)MapTex[y_00].w - 1;
+			else
+				cVar22 = (char)MapTex[y_00].w;
 	
-					if ((MapSegmentPos[*pbVar25].y & 0x60U) == 0x60)
-						cVar20 = (char)MapTex[y].h + -1;
-					else
-						cVar20 = (char)MapTex[y].h;
+			if ((MapSegmentPos[*pbVar25].y & 0x60U) == 96)
+				cVar20 = (char)MapTex[y].h - 1;
+			else
+				cVar20 = (char)MapTex[y].h;
 
-					local_a3_2816 = (POLY_F4 *)current->primptr;
-					*(undefined *)((int)&local_a3_2816->tag + 3) = 9;
-					local_a3_2816->code = ',';
-					uVar10 = 'd';
-					if (gTimeOfDay == 3) {
-						uVar10 = '2';
-					}
-					local_a3_2816->r0 = uVar10;
-					local_a3_2816->g0 = uVar10;
-					local_a3_2816->b0 = uVar10;
-					local_a3_2816->code = local_a3_2816->code | 2;
-					uVar8 = MapClut;
-					local_a3_2816->x0 = *(short *)(plVar16 + -0x16);
-					local_a3_2816->y0 = *(short *)(plVar16 + -0x14);
-					local_a3_2816->x2 = *(short *)(plVar16 + -2);
-					local_a3_2816->y2 = *(short *)plVar16;
-					*(short *)&local_a3_2816[1].tag = *(short *)(plVar18 + -0x16);
-					*(short *)((int)&local_a3_2816[1].tag + 2) = *(short *)(plVar18 + -0x14);
-					uVar7 = MapTPage;
-					pcVar24 = (char *)((int)&MapTex[0].u + iVar29);
-					local_a3_2816[1].x0 = *(short *)(plVar18 + -2);
-					sVar2 = *(short *)plVar18;
-					local_a3_2816->y1 = uVar8;
-					local_a3_2816->y3 = uVar7;
+			local_a3_2816 = (POLY_FT4*)current->primptr;
 
-					local_a3_2816[1].y0 = sVar2;
-					psVar12 = &MapTex[y].v;
-					*(char *)&local_a3_2816->x1 =
-						*pcVar24 + *(char *)&MapSegmentPos[*pbVar25].x * '\x04';
-					*(char *)((int)&local_a3_2816->x1 + 1) =
-						*(char *)psVar12 + *(char *)&MapSegmentPos[*pbVar25].y;
-					*(char *)&local_a3_2816->x3 =
-						*pcVar24 + *(char *)&MapSegmentPos[*pbVar25].x * '\x04' + cVar22;
-					*(char *)((int)&local_a3_2816->x3 + 1) =
-						*(char *)psVar12 + *(char *)&MapSegmentPos[*pbVar25].y;
-					iVar29 = iVar29 + 8;
-					local_a3_2816[1].r0 = *pcVar24 + *(char *)&MapSegmentPos[*pbVar25].x * '\x04';
-					psVar11 = psVar11 + 4;
-					local_a3_2816[1].g0 =
-						*(char *)psVar12 + *(char *)&MapSegmentPos[*pbVar25].y + cVar20;
-					y_00 = y_00 + 1;
-					*(char *)&local_a3_2816[1].x1 =
-						*pcVar24 + *(char *)&MapSegmentPos[*pbVar25].x * '\x04' + cVar22;
-					plVar16 = plVar16 + 0x14;
-					*(char *)((int)&local_a3_2816[1].x1 + 1) =
-						*(char *)psVar12 + *(char *)&MapSegmentPos[*pbVar25].y + cVar20;
-					pDVar9 = current;
-					plVar18 = plVar18 + 0x14;
-					local_a3_2816->tag = local_a3_2816->tag & 0xff000000 | *current->ot & 0xffffff;
-					pbVar25 = pbVar25 + 4;
-					*pDVar9->ot = *pDVar9->ot & 0xff000000 | (uint)local_a3_2816 & 0xffffff;
-					pDVar9->primptr = pDVar9->primptr + 0x28;
-				} while (y_00 < r);
+			setPolyFT4(local_a3_2816);
+			setSemiTrans(local_a3_2816, 1);
+
+			uVar10 = 100;
+			if (gTimeOfDay == 3) 
+			{
+				uVar10 = 50;
 			}
-			y = iVar27;
-		} while (iVar27 < x);
-	}*/
+
+			local_a3_2816->r0 = uVar10;
+			local_a3_2816->g0 = uVar10;
+			local_a3_2816->b0 = uVar10;
+
+			local_a3_2816->clut = MapClut;
+			local_a3_2816->tpage = MapTPage;
+
+			local_a3_2816->x0 = *(short*)(plVar16 - 22);
+			local_a3_2816->y0 = *(short*)(plVar16 - 20);
+
+			local_a3_2816->x1 = *(short*)(plVar16 - 2);
+			local_a3_2816->y1 = *(short*)plVar16;
+
+			local_a3_2816->x2 = *(short*)(plVar18 - 22);
+			local_a3_2816->y2 = *(short*)(plVar18 - 20);
+
+			local_a3_2816->x3 = *(short*)(plVar18 - 2);
+			local_a3_2816->y3 = *(short*)plVar18;
+
+			local_a3_2816->u0 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4;
+			local_a3_2816->v0 = MapTex[y].v + MapSegmentPos[*pbVar25].y;
+
+			local_a3_2816->u1 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4 + cVar22;
+			local_a3_2816->v1 = MapTex[y].v + MapSegmentPos[*pbVar25].y;
+
+			local_a3_2816->u2 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4;
+			local_a3_2816->v2 = MapTex[y].v + MapSegmentPos[*pbVar25].y + cVar20;
+
+			local_a3_2816->u3 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4 + cVar22;
+			local_a3_2816->v3 = MapTex[y].v + MapSegmentPos[*pbVar25].y + cVar20;
+
+			psVar11 = psVar11 + 4;
+			plVar16 = plVar16 + 0x14;
+			plVar18 = plVar18 + 0x14;
+			pbVar25 = pbVar25 + 4;
+
+			addPrim(current->ot, local_a3_2816);
+
+			current->primptr += sizeof(POLY_FT4);
+
+			y_00++;
+		}
+
+		y = iVar27;
+	}
 
 	polyf4 = (POLY_F4 *)current->primptr;
 
@@ -1687,12 +1637,12 @@ LAB_00017f8c:
 				back->y3 = meshO[3].vz;
 				back->u0 = MapSegmentPos[0].x << 2;
 				back->v0 = MapSegmentPos[0].y;
-				back->u1 = MapSegmentPos[0].x * '\x04' + '\x1f';
+				back->u1 = MapSegmentPos[0].x * 4 + 31;
 				back->v1 = MapSegmentPos[0].y;
 				back->u2 = MapSegmentPos[0].x << 2;
-				back->v2 = MapSegmentPos[0].y + '\x1f';
-				back->u3 = MapSegmentPos[0].x * '\x04' + '\x1f';
-				back->v3 = MapSegmentPos[0].y + '\x1f';
+				back->v2 = MapSegmentPos[0].y + 31;
+				back->u3 = MapSegmentPos[0].x * 4 + 31;
+				back->v3 = MapSegmentPos[0].y + 31;
 				back->clut = MapClut;
 				back->tpage = MapTPage;
 
@@ -2022,12 +1972,12 @@ void DrawMultiplayerMap(void)
 		poly->y3 = local_2c;
 		poly->u0 = MapSegmentPos[0].x << 2;
 		poly->v0 = MapSegmentPos[0].y;
-		poly->u1 = MapSegmentPos[0].x * '\x04' + '?';
+		poly->u1 = MapSegmentPos[0].x * 4 + 63;
 		poly->v1 = MapSegmentPos[0].y;
 		poly->u2 = MapSegmentPos[0].x << 2;
-		poly->v2 = MapSegmentPos[0].y + '?';
-		poly->u3 = MapSegmentPos[0].x * '\x04' + '?';
-		poly->v3 = MapSegmentPos[0].y + '?';
+		poly->v2 = MapSegmentPos[0].y + 63;
+		poly->u3 = MapSegmentPos[0].x * 4 + 63;
+		poly->v3 = MapSegmentPos[0].y + 63;
 		poly->clut = MapClut;
 		poly->tpage = MapTPage;
 
@@ -2364,41 +2314,42 @@ void FlashOverheadMap(int r, int g, int b)
 	/* end block 4 */
 	// End Line: 5743
 
+// [D]
 void LoadMapTile(int tpage, int x, int y)
 {
-	UNIMPLEMENTED();
-	/*
-	char cVar1;
-	char *pcVar2;
-	int iVar3;
-	short local_10;
-	short local_e;
-	undefined2 local_c;
-	undefined2 local_a;
+	int temp; // $a0
+	int count; // $a2
+	int idx; // $a3
+	RECT16 MapSegment;
 
-	local_c = 8;
-	local_a = 0x20;
-	local_e = MapRect.y + (&MapSegmentPos)[tpage].y;
-	local_10 = MapRect.x + (&MapSegmentPos)[tpage].x;
-	iVar3 = x + y * tilehnum;
-	if ((((iVar3 < (int)(uint)(byte)overlaidmaps[GameLevel].toptile) && (-1 < iVar3)) && (-1 < x << 5)
-		) && (x << 5 < overlaidmaps[GameLevel].width)) {
-		UnpackRNC(MapBitMaps + *(ushort *)(MapBitMaps + iVar3 * 2), MapBuffer);
+	MapSegment.w = 8;
+	MapSegment.h = 0x20;
+	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
+	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
+
+	idx = x + y * tilehnum;
+	temp = x << 5;
+
+	if ((idx < overlaidmaps[GameLevel].toptile && -1 < idx) && (-1 < temp) && (temp < overlaidmaps[GameLevel].width))
+	{
+		UnpackRNC(MapBitMaps + *(ushort*)(MapBitMaps + idx * 2), MapBuffer);
 	}
-	else {
-		iVar3 = 0x1ff;
-		pcVar2 = CHAR_ARRAY_000aba47;
-		cVar1 = overlaidmaps[GameLevel].dummy;
+	else 
+	{
+		count = 0;
+
 		do {
-			*pcVar2 = cVar1;
-			iVar3 = iVar3 + -1;
-			pcVar2 = pcVar2 + -1;
-		} while (-1 < iVar3);
+			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
+		} while (count < 512);
 	}
+
 	DrawSync(0);
-	LoadImage(&local_10, MapBuffer);
+	LoadImage(&MapSegment, (u_long*)MapBuffer);
 	DrawSync(0);
-	return;*/
+
+#ifndef PSX
+	Emulator_UpdateVRAM();
+#endif
 }
 
 
@@ -2710,6 +2661,7 @@ void DrawCompass(void)
 		lineg2 = (LINE_G2 *)current->primptr;
 
 		setLineG2(lineg2);
+		setSemiTrans(lineg2, 1);
 
 		lineg2->x0 = position[1].vx;
 		lineg2->y0 = position[1].vz;
@@ -2726,7 +2678,7 @@ void DrawCompass(void)
 		lineg2->g1 = 0;
 		lineg2->b1 = 0;
 
-		setSemiTrans(lineg2, 1);
+		
 
 		addPrim(potz, lineg2);
 
@@ -2820,14 +2772,14 @@ void DrawBigCompass(VECTOR *root, int angle)
 	i = 0;
 	pPosition = position + 2;
 	do {
-		pPosition++;
+		
 		lineg2 = (LINE_G2 *)current->primptr;
 
 		setLineG2(lineg2);
 		setSemiTrans(lineg2, 1);
 
-		lineg2->x0 = position[0].vx;
-		lineg2->y0 = position[0].vy;
+		lineg2->x0 = position[1].vx;
+		lineg2->y0 = position[1].vy;
 
 		lineg2->x1 = pPosition->vx;
 		lineg2->y1 = pPosition->vy;
@@ -2841,6 +2793,9 @@ void DrawBigCompass(VECTOR *root, int angle)
 		lineg2->b1 = 0;
 
 		DrawPrim(lineg2);
+
+		pPosition++;
+		//current->primptr += sizeof(LINE_G2);
 
 		i++;
 	} while (i < 3);
@@ -2912,7 +2867,7 @@ void CopIndicator(int xpos, int strength)
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
 
-	TransparencyOn(current->ot, 0x20);
+	TransparencyOn(current->ot + 1, 0x20);
 
 	poly = (POLY_F3 *)current->primptr;
 
@@ -2932,10 +2887,10 @@ void CopIndicator(int xpos, int strength)
 	poly->y2 = 0x100;
 	poly->x1 = xpos;
 
-	addPrim(current->ot+1, poly);
+	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
 
-	TransparencyOn(current->ot, 0x40);
+	TransparencyOn(current->ot + 1, 0x40);
 }
 
 

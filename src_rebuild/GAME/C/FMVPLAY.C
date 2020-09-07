@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "FMVPLAY.H"
 
 #include "LIBETC.H"
@@ -13,6 +13,7 @@
 #include "E3STUFF.H"
 #include "GAMESND.H"
 #include "SCORES.H"
+#include "MAIN.H"
 
 // FMV
 int gSubtitles = 0;

@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "SCORES.H"
 #include "GLAUNCH.H"
 #include "MISSION.H"
@@ -175,13 +175,11 @@ void AddScoreToTable(SCORE_ENTRY *table, int entry)
 
 	i = 3;
 	table = table + 4;
-	if (entry < 4) 
+	while (entry <= i)
 	{
-		do {
-			// [A] might be incorrect - needs checking
-			*table = table[-1];
-			table--;
-		} while (entry <= i);
+		*table = table[-1];
+		table--;
+		i--;
 	}
 
 	table->time = gPlayerScore.time;

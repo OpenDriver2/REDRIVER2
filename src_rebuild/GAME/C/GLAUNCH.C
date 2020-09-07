@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "GLAUNCH.H"
 
 
@@ -142,7 +142,7 @@ int gRandomChase = 0;
 int gSubGameNumber = 0;
 
 int gMissionLadderPos = 0;
-int gFurthestMission = 0x28;	//0; // [A] temporary access to all
+int gFurthestMission = 0;
 
 int gWantNight = 0;
 
@@ -377,11 +377,10 @@ void ReInitFrontend(void)
 	SetFEDrawMode();
 	DrawSync(0);
 	EnableDisplay();
-	rect.x = 0;
-	rect.y = 0;
-	rect.w = 0x140;
-	rect.h = 0x200;
+
+	setRECT16(&rect, 0,0, 320, 512);
 	ClearImage(&rect, 0, 0, 0);
+
 	DrawSync(0);
 	LoadFrontendScreens();
 	ReInitScreens();
@@ -767,7 +766,8 @@ void LaunchGame(void)
 		GameInit();
 		GameLoop();
 
-		switch (WantedGameMode) {
+		switch (WantedGameMode)
+		{
 			case GAMEMODE_NORMAL:
 			case GAMEMODE_QUIT:
 			case GAMEMODE_DEMO:

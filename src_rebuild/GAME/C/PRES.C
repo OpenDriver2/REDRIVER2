@@ -1,4 +1,4 @@
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "PRES.H"
 #include "SYSTEM.H"
 #include "TEXTURE.H"
@@ -71,7 +71,6 @@ void SetTextColour(unsigned char Red, unsigned char Green, unsigned char Blue)
 	gFontColour.r = Red;
 	gFontColour.g = Green;
 	gFontColour.b = Blue;
-	return;
 }
 
 
@@ -803,76 +802,72 @@ int PrintStringFeature(char *string, int x, int y, int w, int h, int transparent
 	/* end block 4 */
 	// End Line: 1388
 
-// [D]
+// [D] [A]
 void PrintStringBoxed(char *string, int ix, int iy)
 {
-	char bVar1;
-	char *pbVar2;
-	unsigned char uVar3;
-	short sVar4;
-	int iVar6;
-	uint uVar7;
 	SPRT *font;
-	int iVar9;
-	int iVar10;
 	char word[32];
+	char *wpt;
+	int x;
+	int y;
+	int index;
+	int wordcount;
 
 	font = (SPRT *)current->primptr;
 
 	if (*string != 0) 
 	{
-		iVar10 = 1;
-		iVar9 = ix;
-		do {
-			string = GetNextWord(string, word);
-			iVar6 = StringWidth(word);
+		wordcount = 1;
+		
+		x = ix;
+		y = iy;
 
-			if (0x134 < iVar9 + iVar6 && (iVar10 != 1 || (*string != 0)))
+		do
+		{
+			string = GetNextWord(string, word);
+
+			if ((x + StringWidth(word)) > 308 && (wordcount != 1 || (*string != 0)))
 			{
-				iy = iy + 0xe;
-				iVar9 = ix;
+				x = ix;
+				y += 14;
 			}
 
-			pbVar2 = word;
-			bVar1 = word[0];
+			wpt = word;
 
-			while (pbVar2 = pbVar2 + 1, bVar1 != 0) 
+			char c = 0;
+			
+			while ((c = *wpt++) != 0) 
 			{
-				if (bVar1 == 32) 
+				if (c == ' ') 
 				{
-					iVar9 = iVar9 + 4;
+					x += 4;
 				}
 				else 
 				{
-					uVar7 = AsciiTable[bVar1];
+					index = AsciiTable[c];
 
-					if (uVar7 != 0xffffffff) 
+					if (index != -1) 
 					{
+						OUT_FONTINFO *pFontInfo = &fontinfo[index];
+
 						setSprt(font);
 
-						font->r0 = gFontColour.r;
-						font->g0 = gFontColour.g;
-						font->b0 = gFontColour.b;
-
-						font->x0 = iVar9;
-						font->y0 = fontinfo[uVar7].offy + iy;
-						font->u0 = fontinfo[uVar7].x;
-						font->v0 = fontinfo[uVar7].y - 46;
-
-						font->w = fontinfo[uVar7].width;
+						setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
+						setXY0(font, x, y + pFontInfo->offy);
+						setUV0(font, pFontInfo->x, pFontInfo->y - 46);
+						setWH(font, pFontInfo->width, pFontInfo->height);
+						
 						font->clut = fontclutid;
-						font->h = fontinfo[uVar7].height;;
 
 						addPrim(current->ot, font);
-
 						font++;
-						iVar9 = iVar9 + (uint)fontinfo[uVar7].width;
+
+						x += pFontInfo->width;
 					}
 				}
-
-				bVar1 = *pbVar2;
 			}
-			iVar10++;
+
+			wordcount++;
 		} while (*string != 0);
 	}
 
@@ -892,8 +887,9 @@ void PrintStringBoxed(char *string, int ix, int iy)
 	null->tpage = fonttpage;
 
 	addPrim(current->ot, null);
+	null++;
 
-	current->primptr = (char*)(null+1);
+	current->primptr = (char *)null;
 }
 
 
@@ -979,127 +975,90 @@ void InitButtonTextures(void)
 	/* end block 3 */
 	// End Line: 1597
 
-// [D]
+//
+// PrintScaledString - prints digits with specified scale
+//
+// [D] [T]
 int PrintScaledString(int y, char *string, int scale)
 {
-	unsigned char bVar1;
-	char cVar2;
-	unsigned char uVar3;
-	unsigned char uVar4;
-	DB *pDVar5;
-	short sVar6;
-	int iVar7;
-	int iVar8;
-	uint uVar9;
-	unsigned char uVar10;
-	ulong *puVar11;
-	unsigned char uVar12;
+	int y0;
+	int y1;
+	int x;
+	int x1;
+	int width;
+	char c;
 	POLY_FT4 *font;
-	short sVar13;
-	int iVar14;
-	char *pbVar15;
-	char cVar16;
-	int iVar17;
-
-	iVar7 = StringWidth(string);
-	iVar7 = iVar7 * scale;
+	int height;
+	unsigned char vOff;
 
 	font = (POLY_FT4 *)current->primptr;
 
 	if (gShowMap != 0)
 		font = (POLY_FT4 *)SetFontTPage(font);
 
-	bVar1 = *string;
-	pbVar15 = (char *)(string + 1);
-	iVar7 = 0x140 - (iVar7 >> 4) >> 1;
+	width = StringWidth(string) * scale;
+	x = (320 - (width / 16)) / 2;
 
-	uVar12 = digit_texture.coords.u0;
-	uVar10 = digit_texture.coords.v0;
-
-	while (bVar1 != 0) 
+	while (*string != 0)
 	{
-		// WTF is this?
-		//digit_texture.coords.u0 = uVar12
-		//digit_texture.coords.v0 = uVar10,
+		c = *string - '0';
 
-		uVar9 = (uint)bVar1 - 0x30;
-		if (bVar1 == 0x20) 
+		if (*string == 0x20) // space
 		{
-			iVar8 = scale;
-			if (scale < 0) {
-				iVar8 = scale + 3;
-			}
-			iVar8 = iVar7 + (iVar8 >> 2);
+			width = (scale / 4);
 		}
-		else 
+		else if (c < 10)
 		{
-			iVar8 = iVar7;
-			if ((uVar9 & 0xff) < 10) {
-				bVar1 = fontDigit[uVar9].width;
-				cVar16 = '\0';
+			FONT_DIGIT* pDigit = &fontDigit[c];
 
-				if (uVar9 < 6) 
-				{
-					iVar14 = 0x1c;
-				}
-				else 
-				{
-					cVar16 = '\x1c';
-					iVar14 = 0x1f;
-				}
+			vOff = 0;
 
-				iVar8 = (iVar14 >> 1) * scale;
-
-				iVar17 = (uint)bVar1 * scale;
-				sVar6 = (short)(iVar8 >> 4);
-				sVar13 = (short)y - sVar6;
-
-				iVar8 = iVar7 + (iVar17 >> 4);
-				cVar2 = fontDigit[uVar9].xOffset;
-
-				setPolyFT4(font);
-
-				font->r0 = gFontColour.r;
-				sVar6 = (short)y + sVar6;
-				uVar12 = uVar12 + cVar2;
-				uVar10 = cVar16 + uVar10;
-				font->g0 = gFontColour.g;
-				uVar4 = gFontColour.b;
-				font->y2 = sVar6;
-				font->y3 = sVar6;
-				uVar3 = uVar12 + bVar1;
-				font->v0 = uVar10;
-				font->v1 = uVar10;
-				uVar10 = uVar10 + (char)iVar14;
-				font->x0 = (short)iVar7;
-				font->y0 = sVar13;
-				font->x1 = (short)iVar8;
-				font->y1 = sVar13;
-				font->x2 = (short)iVar7;
-				font->x3 = (short)iVar8;
-				font->u0 = uVar12;
-				font->u1 = uVar3;
-				font->u2 = uVar12;
-				font->v2 = uVar10;
-				font->u3 = uVar3;
-				font->v3 = uVar10;
-				font->b0 = uVar4;
-				pDVar5 = current;
-				font->clut = digit_texture.clutid;
-				font->tpage = digit_texture.tpageid;
-
-				addPrim(current->ot, font);
-				font++;
+			if (c < 6)
+			{
+				height = 28;
 			}
+			else
+			{
+				vOff = 28;
+				height = 31;
+			}
+
+			y1 = (height / 2 * scale) / 16;
+			width = (pDigit->width * scale) / 16;
+
+			y0 = y - y1;
+			y1 = y + y1;
+			x1 = x + width;
+
+			setPolyFT4(font);
+
+			setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
+
+			font->x0 = x;		// [A] no suitable macro in libgpu
+			font->y0 = y0;
+			font->x1 = x1;
+			font->y1 = y0;
+			font->x2 = x;
+			font->y2 = y1;
+			font->x3 = x1;
+			font->y3 = y1;
+
+			setUVWH(font, digit_texture.coords.u0 + pDigit->xOffset, digit_texture.coords.v0 + vOff, pDigit->width, height);
+
+			font->clut = digit_texture.clutid;
+			font->tpage = digit_texture.tpageid;
+
+			addPrim(current->ot, font);
+			font++;
 		}
-		bVar1 = *pbVar15;
-		pbVar15 = pbVar15 + 1;
-		iVar7 = iVar8;
-		uVar12 = digit_texture.coords.u0;
-		uVar10 = digit_texture.coords.v0;
+
+		x += width;
+		string++;
 	}
-	*(POLY_FT4 **)&current->primptr = font;
-	return iVar7;
+
+	current->primptr = (char*)font;
+
+	return x;
 }
 
 
@@ -1135,29 +1094,22 @@ int PrintScaledString(int y, char *string, int scale)
 // [D]
 char * GetNextWord(char *string, char *word)
 {
-	char cVar1;
+	char c = *string;
 
-	cVar1 = *string;
-	do {
-		if (cVar1 == '\0')
-		{
-		LAB_00074d88:
-			*word = '\0';
-			return string;
-		}
+	while (c != 0)
+	{
+		string++;
 
-		string = string + 1;
-		if (cVar1 == ' ')
-		{
-			*word = ' ';
-			word = word + 1;
-			goto LAB_00074d88;
-		}
+		if ((*word++ = c) == ' ')
+			break;
 
-		*word = cVar1;
-		cVar1 = *string;
-		word = word + 1;
-	} while (true);
+		c = *string;
+	}
+
+	// add null-terminator
+	*word = '\0';
+
+	return string;
 }
 
 

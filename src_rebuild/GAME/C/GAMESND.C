@@ -1,6 +1,6 @@
 
 
-#include "THISDUST.H"
+#include "DRIVER2.H"
 #include "GAMESND.H"
 
 #include "LIBSPU.H"
@@ -2409,7 +2409,7 @@ void CollisionSound(char player_id, _CAR_DATA *cp, int impact, int car_car)
 	// End Line: 2381
 
 // [D]
-void ExplosionSound(VECTOR *pos, int type)
+void ExplosionSound(VECTOR* pos, int type)
 {
 	char id;
 	long lVar1;
@@ -2424,7 +2424,7 @@ void ExplosionSound(VECTOR *pos, int type)
 	sample = 0xff;
 	lVar1 = Random2(4);
 
-	if (gCurrentMissionNumber == 23) 
+	if (gCurrentMissionNumber == 23)
 	{
 	LAB_0004fa04:
 		id = 12;
@@ -2432,18 +2432,14 @@ void ExplosionSound(VECTOR *pos, int type)
 		id = GetMissionSound(id);
 		sample = id;
 	}
-	else 
+	else if (gCurrentMissionNumber == 13)
 	{
-		if (gCurrentMissionNumber < 24) 
-		{
-			if (gCurrentMissionNumber == 13)
-				goto LAB_0004fa04;
-		}
-		else if (gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35)
-		{
-			id = 29;
-			goto LAB_0004fa10;
-		}
+		goto LAB_0004fa04;
+	}
+	else if (gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35)
+	{
+		id = 29;
+		goto LAB_0004fa10;
 	}
 
 	if (sample == 0xff)
@@ -2455,26 +2451,25 @@ void ExplosionSound(VECTOR *pos, int type)
 		unaff_s2 = 3;
 		unaff_s1 = 1;
 	}
+	else if (type < 2)
+	{
+		unaff_s2 = 2;
+		unaff_s1 = 2;
+
+		iVar5 = iVar3 * unaff_s2;
+		if (type != 0)
+			goto LAB_0004fab8;
+
+	}
 	else
 	{
-		if (type < 2) 
-		{
-			iVar5 = iVar3 * unaff_s2;
-			if (type != 0) 
-				goto LAB_0004fab8;
-			unaff_s2 = 2;
-			unaff_s1 = 2;
-		}
-		else 
-		{
-			iVar5 = iVar3 * unaff_s2;
+		unaff_s2 = 1;
+		unaff_s1 = 3;
 
-			if (type != 0x29a) 
-				goto LAB_0004fab8;
+		iVar5 = iVar3 * unaff_s2;
 
-			unaff_s2 = 1;
-			unaff_s1 = 3;
-		}
+		if (type != 0x29a)
+			goto LAB_0004fab8;
 	}
 
 	iVar5 = iVar3 * unaff_s2;
@@ -2761,7 +2756,7 @@ void SoundTasks(void)
 		} while (iVar3 < NumPlayers);
 	}
 
-	if ((NumPlayers < 2) || (NoPlayerControl != 0))
+	if (NumPlayers < 2 || NoPlayerControl != 0)
 	{
 		UpdateEnvSounds[EStags.func_cnt](envsnd, ESdata, 0);
 
@@ -3436,169 +3431,169 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long
 	/* end block 3 */
 	// End Line: 3740
 
+// [D] [A] unprocessed arrays
 void IdentifyZone(__envsound *ep, __envsoundinfo *E, int pl)
 {
-	UNIMPLEMENTED();
-	// Fucking floating points...
-
-	/*
 	bool bVar1;
-	int *piVar2;
+	int* piVar2;
+	int local_v0_412;
+	int local_v0_576;
 	float uVar3;
 	float uVar4;
+	double uVar16;
+	double uVar17;
 	float fVar5;
-	int puVar6;
+	int local_v1_320;
+	int iVar6;
+	int local_v1_468;
 	int iVar7;
-	int iVar8;
+	int uVar8;
 	int iVar9;
 	long lVar10;
-	int *puVar11;
+	int local_a0_1016;
+	int local_a0_1044;
+	int* local_a0_1248;
+	int* local_a0_1304;
+	int iVar11;
+	int local_a2_308;
 	int iVar12;
-	int iVar13;
-	int puVar14;
+	float* pfVar13;
+	int iVar14;
 	int iVar15;
-	float *pfVar16;
-	int iVar17;
-	int uVar18;
-	double in_f12_13;
-	float uVar19;
-	float uVar20;
-	int temp[4];
+
+	int tmp[4];
 	float _g[4];
 	__bitfield64 zones;
-	int *puStack56;
-	int *puStack52;
-	int *puStack48;
+	int* _tmp;
+	int* piStack48;
 
-	puStack52 = temp;
-	iVar17 = 3;
-	piVar2 = temp + 3;
+	_tmp = tmp;
+	iVar14 = 3;
+	piVar2 = tmp + 3;
 	zones.l = 0;
 	zones.h = 0;
 
 	do {
 		*piVar2 = -1;
-		iVar17 = iVar17 + -1;
+		iVar14 = iVar14 + -1;
 		piVar2 = piVar2 + -1;
-	} while (-1 < iVar17);
+	} while (-1 < iVar14);
 
 	(E->cam_pos).vx = player[pl].cameraPos.vx;
 	(E->cam_pos).vy = player[pl].cameraPos.vy;
 	(E->cam_pos).vz = player[pl].cameraPos.vz;
 
-	iVar17 = 0;
-	uVar18 = 0;
-	puStack56 = E->thisS;
-	puStack48 = puStack52;
+	iVar14 = 0;
+	iVar15 = 0;
+
+	piStack48 = _tmp;
 	if (0 < EStags.envsnd_cnt)
 	{
 		do {
-			if (-1 < temp[3]) 
+			if (-1 < tmp[3])
 				break;
 
-			if ((ep->type != 0) && (-0x1d4c < ep->vol)) 
+			if ((ep->type != 0) && (-7500 < ep->vol))
 			{
 				iVar9 = (ep->pos2).vx;
-				iVar12 = (ep->pos).vx;
-				iVar13 = iVar9;
-				if (iVar12 < iVar9)
-					iVar13 = iVar12;
+				iVar11 = (ep->pos).vx;
+				iVar6 = iVar9;
+				if (iVar11 < iVar9) {
+					iVar6 = iVar11;
+				}
+				local_a2_308 = (ep->vol + 7500) * 4;
+				local_v1_320 = local_a2_308;
+				if (local_a2_308 < 0)
+					local_v1_320 = 0;
 
-				puVar14 = ((ep->vol + 7500) * 4);
-				puVar6 = puVar14;
+				if (22000 < local_v1_320)
+					local_v1_320 = 22000;
 
-				if (puVar14 < 0)
-					puVar6 = NULL;
-
-				if (22000 < puVar6)
-					puVar6 = 0x55f0;
-
-				iVar15 = (E->cam_pos).vx;
-				if (iVar13 - puVar6 < iVar15)
+				iVar12 = (E->cam_pos).vx;
+				if (iVar6 - local_v1_320 < iVar12)
 				{
-					if (iVar9 < iVar12)
-						iVar9 = iVar12;
+					if (iVar9 < iVar11)
+						iVar9 = iVar11;
 
-					puVar6 = puVar14;
+					iVar6 = local_a2_308;
+					if (local_a2_308 < 0)
+						iVar6 = 0;
 
-					if (puVar14 < 0)
-						puVar6 = NULL;
+					local_v0_412 = iVar9 + iVar6;
+					if (22000 < iVar6)
+						local_v0_412 = (22000 + iVar9);
 
-					if (22000 < puVar6)
-						puVar6 = 0x55f0;
-
-					if (iVar15 < (puVar6 + iVar9))
+					if (iVar12 < local_v0_412) 
 					{
-						iVar13 = (ep->pos2).vz;
-						iVar12 = (ep->pos).vz;
-						iVar9 = iVar13;
+						iVar6 = (ep->pos2).vz;
+						iVar11 = (ep->pos).vz;
+						iVar9 = iVar6;
+						if (iVar11 < iVar6)
+							iVar9 = iVar11;
 
-						if (iVar12 < iVar13)
-							iVar9 = iVar12;
+						local_v1_468 = local_a2_308;
+						if (local_a2_308 < 0)
+							local_v1_468 = 0;
 	
-						puVar6 = puVar14;
-						if (puVar14 < 0)
-							puVar6 = NULL;
+						if (22000 < local_a2_308)
+							local_v1_468 = 22000;
 
-						if (22000 < puVar14)
-							puVar6 = 0x55f0;
-
-						iVar15 = (E->cam_pos).vz;
-						if (iVar9 - puVar6 < iVar15)
+						iVar12 = (E->cam_pos).vz;
+						if (iVar9 - local_v1_468 < iVar12)
 						{
-							iVar9 = iVar13;
+							iVar9 = iVar6;
+							if (iVar6 < iVar11) 
+								iVar9 = iVar11;
 
-							if (iVar13 < iVar12)
-								iVar9 = iVar12;
+							iVar7 = (ep->vol + 7500) * 4;
 
-							iVar7 = (ep->vol + 0x1d4c) * 4;
-							iVar8 = iVar7;
-
+							local_v0_576 = iVar7;
 							if (iVar7 < 0)
-								iVar8 = 0;
+								local_v0_576 = 0;
 
-							puVar6 = (iVar9 + iVar8);
+							local_v0_576 = iVar9 + local_v0_576;
 							if (22000 < iVar7)
-								puVar6 = 0x55f0 + iVar9;
+								local_v0_576 = (22000 + iVar9);
 	
-							if (iVar15 < (int)puVar6) 
+							if (iVar12 < local_v0_576)
 							{
-								if (ep->type == 2 || ep->type == 4 && (ep->flags & 3) == 0)
+								if (((ep->type == 2) || (ep->type == 4)) && ((ep->flags & 3) == 0))
 								{
-									pfVar16 = _g + iVar17;
-									uVar3 = __floatsisf(iVar13 - iVar12);
+									pfVar13 = _g + iVar14;
+									uVar3 = iVar6 - iVar11;// __floatsisf(iVar6 - iVar11);
 									iVar9 = (ep->pos).vx;
-									uVar4 = __floatsisf((ep->pos2).vx - iVar9);
-									fVar5 = (float)__divsf3(uVar3, uVar4);
+									uVar4 = ep->pos2.vx - iVar9;//__floatsisf(ep->pos2.vx - iVar9);
+									fVar5 = uVar3 / uVar4;// (float)__divsf3(uVar3, uVar4);
 									lVar10 = (E->cam_pos).vx;
-									*pfVar16 = fVar5;
-									uVar3 = __floatsisf(lVar10);
-									uVar3 = __mulsf3(fVar5, uVar3);
-									uVar4 = __floatsisf(iVar9);
-									uVar4 = __mulsf3(fVar5, uVar4);
-									uVar3 = __subsf3(uVar3, uVar4);
-									uVar4 = __floatsisf(iVar15);
-									uVar3 = __subsf3(uVar3, uVar4);
-									uVar4 = __floatsisf(iVar12);
-									uVar3 = __addsf3(uVar3, uVar4);
-									uVar19 = __extendsfdf2(uVar3);
-									iVar9 = __fixunssfsi(*pfVar16);
-									iVar13 = __fixunssfsi(*pfVar16);
-									iVar9 = iVar9 * iVar13 + 1;
-									uVar20 = __floatsidf(iVar9);
+									*pfVar13 = fVar5;
+									uVar3 = lVar10; //  __floatsisf(lVar10);
+									uVar3 = fVar5 * uVar3;//__mulsf3(fVar5, uVar3);
+									uVar4 = iVar9; // __floatsisf(iVar9);
+									uVar4 = fVar5 * uVar4;// __mulsf3(fVar5, uVar4);
+									uVar3 = uVar3 - uVar4;// __subsf3(uVar3, uVar4);
+									uVar4 = iVar12; // __floatsisf(iVar12);
+									uVar3 = uVar3 - uVar4;// __subsf3(uVar3, uVar4);
+									uVar4 = iVar11; // __floatsisf(iVar11);
+									uVar3 = uVar3 + uVar4; // __addsf3(uVar3, uVar4);
+									uVar16 = uVar3; // __extendsfdf2(uVar3);
+									iVar9 = *pfVar13; // __fixunssfsi(*pfVar13); // might be incorrectly working
+									iVar6 = *pfVar13; // __fixunssfsi(*pfVar13);
+									iVar9 = iVar9 * iVar6 + 1;
+									uVar17 = iVar9; // __floatsidf(iVar9);
 
-									if (iVar9 < 0) 
+									if (iVar9 < 0)
+										uVar17 = uVar17 + 30.0f;// __adddf3((int)((ulonglong)uVar17 >> 0x20), (int)uVar17, 0, 0x41f00000);
+
+									uVar17 = sqrt(uVar17);
+
+									uVar17 = uVar16 / uVar17; // __divdf3((int)((ulonglong)uVar16 >> 0x20), (int)uVar16, (int)((ulonglong)uVar17 >> 0x20), (int)uVar17);
+									uVar3 = uVar17;// __truncdfsf2((int)((ulonglong)uVar17 >> 0x20), (int)uVar17);
+
+									if (ep->type == 2)
 									{
-										uVar20 = __adddf3((int)((ulonglong)uVar20 >> 0x20), (int)uVar20, 0, 0x41f00000);
-									}
-
-									uVar20 = __divdf3((int)((ulonglong)uVar19 >> 0x20), (int)uVar19, (int)((ulonglong)uVar20 >> 0x20), (int)uVar20);
-									uVar3 = uVar20; // __truncdfsf2((int)((ulonglong)uVar20 >> 0x20), (int)uVar20);
-
-									if (ep->type == 2) 
-									{
-										iVar9 = (uVar3 >= 0) - 1;//__gesf2(uVar3, 0);
-										if (iVar9 < 0) 
+										//iVar9 = __gesf2(uVar3, 0);
+										//if (iVar9 < 0) 
+										if(uVar3 < 0)
 										{
 										LAB_000511e8:
 											uVar3 = -uVar3;
@@ -3610,138 +3605,145 @@ void IdentifyZone(__envsound *ep, __envsoundinfo *E, int pl)
 											goto LAB_000511e8;
 									}
 
-									puVar14 = ((ep->vol + 0x1d4c) * 4);
-									puVar6 = puVar14;
+									local_a0_1016 = (ep->vol + 7500) * 4;
+									local_a0_1044 = local_a0_1016;
 
-									if (puVar14 < 0)
-										puVar6 = NULL;
+									if (local_a0_1016 < 0)
+										local_a0_1044 = 0;
 
-									if (22000 < puVar14)
-										puVar6 = 0x55f0;
+									if (22000 < local_a0_1016)
+										local_a0_1044 = 22000;
 
-									iVar9 = -(uVar3 < (float)puVar6);// __ltsf2(uVar3, uVar4);
-
-									if (iVar9 < 0) 
+									uVar4 = (local_a0_1044);
+									//iVar9 = __ltsf2(uVar3, uVar4);
+									//if (iVar9 < 0)
+									if(uVar3 < uVar4)
 									{
-										iVar17 = iVar17 + 1;
-										*puStack48 = uVar18;
-										puStack48 = puStack48 + 1;
+										iVar14 = iVar14 + 1;
+										*piStack48 = iVar15;
+										piStack48 = piStack48 + 1;
 									}
 								}
 								else 
 								{
-									iVar17 = iVar17 + 1;
-									*puStack48 = uVar18;
-									puStack48 = puStack48 + 1;
+									iVar14 = iVar14 + 1;
+									*piStack48 = iVar15;
+									piStack48 = piStack48 + 1;
 								}
 							}
 						}
 					}
 				}
 			}
-			uVar18 = uVar18 + 1;
+			iVar15 = iVar15 + 1;
 			ep = ep + 1;
-		} while (uVar18 < EStags.envsnd_cnt);
+		} while (iVar15 < EStags.envsnd_cnt);
 	}
 
-	iVar17 = 0;
-	puVar11 = puStack52;
+	iVar14 = 0;
+	local_a0_1248 = _tmp;
+
 	while (true)
 	{
-		bVar1 = iVar17 < EStags.envsnd_cnt;
+		bVar1 = iVar14 < EStags.envsnd_cnt;
 
 		if (4 < EStags.envsnd_cnt)
-			bVar1 = iVar17 < 4;
+			bVar1 = iVar14 < 4;
 
 		if (!bVar1)
 			break;
+		uVar8 = *local_a0_1248;
 
-		uVar18 = *puVar11;
-		if (-1 < uVar18) 
+		if (-1 < uVar8) 
 		{
-			if (uVar18 < 0x20)
-				zones.l = zones.l | 1 << (uVar18 & 0x1f);
+			if (uVar8 < 0x20)
+				zones.l = zones.l | 1 << (uVar8 & 0x1f);
 			else
-				zones.h = zones.h | 1 << (uVar18 - 0x20 & 0x1f);
+				zones.h = zones.h | 1 << (uVar8 - 0x20 & 0x1f);
 		}
-
-		puVar11 = puVar11 + 1;
-		iVar17 = iVar17 + 1;
+		local_a0_1248 = local_a0_1248 + 1;
+		iVar14 = iVar14 + 1;
 	}
-	iVar17 = 3;
-	puVar11 = puStack56;
+
+	iVar14 = 3;
+	local_a0_1304 = E->thisS;
 
 	do {
-		uVar18 = *puVar11;
-		if (-1 < uVar18)
+		uVar8 = *local_a0_1304;
+		if (-1 < uVar8)
 		{
-			if (uVar18 < 0x20) 
+			if (uVar8 < 0x20) 
 			{
-				if ((zones.l & 1 << (uVar18 & 0x1f)) != 0)
+				if ((zones.l & 1 << (uVar8 & 0x1f)) != 0)
 					goto LAB_00051370;
 
-				*puVar11 = 0xffffffff;
+				*local_a0_1304 = -1;
 			}
 			else 
 			{
-				if ((zones.h & 1 << (uVar18 - 0x20 & 0x1f)) == 0) 
+				if ((zones.h & 1 << (uVar8 - 0x20 & 0x1f)) == 0) 
 				{
-					*puVar11 = 0xffffffff;
+					*local_a0_1304 = -1;
 				}
-				else
+				else 
 				{
 				LAB_00051370:
+					uVar8 = *local_a0_1304;
 
-					uVar18 = *puVar11;
-
-					if (uVar18 < 0x20)
-						zones.l = zones.l & ~(1 << (uVar18 & 0x1f));
+					if (uVar8 < 0x20)
+						zones.l = zones.l & ~(1 << (uVar8 & 0x1f));
 					else
-						zones.h = zones.h & ~(1 << (uVar18 - 0x20 & 0x1f));
+						zones.h = zones.h & ~(1 << (uVar8 - 0x20 & 0x1f));
 				}
 			}
 		}
-		iVar17 = iVar17 + -1;
-		puVar11 = puVar11 + 1;
 
-		if (iVar17 < 0) {
-			iVar9 = 1;
-			iVar17 = 0;
+		iVar14 = iVar14 + -1;
+		local_a0_1304 = local_a0_1304 + 1;
+
+		if (iVar14 < 0)
+		{
+			iVar15 = 1;
+			iVar14 = 0;
+
 			do {
-				uVar18 = puStack52[iVar17];
-				iVar13 = iVar9;
-				if (-1 < uVar18)
-				{
-					if (uVar18 < 0x20)
-						uVar18 = zones.l & 1 << (uVar18 & 0x1f);
-					else
-						uVar18 = zones.h & 1 << (uVar18 - 0x20 & 0x1f);
+				uVar8 = _tmp[iVar14];
+				iVar9 = iVar15;
 
-					if (uVar18 != 0) {
-						iVar9 = 0;
-						while (iVar13 = iVar17 + 1, iVar9 < 4)
+				if (-1 < uVar8) 
+				{
+
+					if (uVar8 < 0x20)
+						uVar8 = zones.l & 1 << (uVar8 & 0x1f);
+					else
+						uVar8 = zones.h & 1 << (uVar8 - 0x20 & 0x1f);
+
+					if (uVar8 != 0) 
+					{
+						iVar15 = 0;
+						while (iVar9 = iVar14 + 1, iVar15 < 4)
 						{
-							if (puStack56[iVar9] < 0) 
+							if (E->thisS[iVar15] < 0)
 							{
-								puStack56[iVar9] = puStack52[iVar17];
-								E->g[iVar9] = _g[iVar17];
+								E->thisS[iVar15] = _tmp[iVar14];
+								E->g[iVar15] = _g[iVar14];
 								break;
 							}
 
-							iVar9 = iVar9 + 1;
+							iVar15 = iVar15 + 1;
 						}
 					}
 				}
-				iVar9 = iVar13 + 1;
-				iVar17 = iVar13;
 
-				if (3 < iVar13)
+				iVar15 = iVar9 + 1;
+				iVar14 = iVar9;
+
+				if (3 < iVar9)
 					return;
 
 			} while (true);
 		}
 	} while (true);
-	*/
 }
 
 
@@ -3770,180 +3772,218 @@ void IdentifyZone(__envsound *ep, __envsoundinfo *E, int pl)
 	/* end block 3 */
 	// End Line: 3907
 
+// [D] [A] unprocessed arrays
 void CalcEffPos(__envsound *ep, __envsoundinfo *E, int pl)
 {
-	UNIMPLEMENTED();
-	/*
 	bool bVar1;
-	VECTOR *pVVar2;
-	__envsoundinfo *p_Var3;
+	long* local_a0_52;
+	int iVar2;
+	__envsound* p_Var3;
 	int iVar4;
-	__envsound *p_Var5;
+	int* piVar5;
 	int iVar6;
-	int *piVar7;
+	int iVar7;
 	int iVar8;
+	long* local_t3_52;
 	int iVar9;
-	int iVar10;
-	__envsoundinfo *p_Var11;
-	int iVar12;
-	uint uVar13;
-	VECTOR *pVVar14;
-	VECTOR *pVVar15;
-	VECTOR *pVVar16;
-	__envsoundinfo *p_Var17;
+	uint uVar10;
+	long* local_t6_52;
+	long* local_t7_28;
+	long* plVar11;
+	long* local_t9_52;
+	long* temp_79f679ea1b7;
+	long* temp_79f9c232453;
 
-	uVar13 = 0;
-	iVar12 = 0;
-	pVVar15 = (VECTOR *)&E->eff_pos[0].vz;
-	p_Var3 = E;
-	p_Var11 = E;
-	pVVar14 = pVVar15;
-	pVVar16 = pVVar15;
-	p_Var17 = E;
+	uVar10 = 0;
+	iVar9 = 0;
+	local_t7_28 = &E->eff_pos[0].vz;
+	local_a0_52 = (long*)E;
+	local_t3_52 = (long*)E;
+	local_t6_52 = local_t7_28;
+	plVar11 = local_t7_28;
+	local_t9_52 = (long*)E;
+
 	do {
-		E->flags = E->flags & ~(1 << (uVar13 & 0x1f));
-		iVar10 = E->this[uVar13];
-		if (-1 < iVar10) {
-			p_Var5 = ep + iVar10;
-			if (p_Var5->type == '\x01') {
-				iVar4 = (p_Var5->pos2).vx;
-				iVar6 = (p_Var5->pos).vx;
-				iVar9 = iVar4;
-				if (iVar6 < iVar4) {
-					iVar9 = iVar6;
+		E->flags = E->flags & ~(1 << (uVar10 & 0x1f));
+		iVar8 = E->thisS[uVar10];
+
+		if (-1 < iVar8) 
+		{
+			p_Var3 = ep + iVar8;
+			if (p_Var3->type == 1) 
+			{
+				iVar2 = (p_Var3->pos2).vx;
+				iVar4 = (p_Var3->pos).vx;
+				iVar7 = iVar2;
+
+				if (iVar4 < iVar2)
+					iVar7 = iVar4;
+
+				iVar6 = (E->cam_pos).vx;
+				if (iVar6 < iVar7) 
+				{
+					if (iVar4 < iVar2)
+						iVar2 = iVar4;
+
+					*local_t9_52 = iVar2;
 				}
-				iVar8 = (E->cam_pos).vx;
-				if (iVar8 < iVar9) {
-					if (iVar6 < iVar4) {
-						iVar4 = iVar6;
+				else 
+				{
+					iVar7 = iVar2;
+
+					if (iVar2 < iVar4)
+						iVar7 = iVar4;
+
+					if (iVar7 < iVar6)
+					{
+						if (iVar2 < iVar4)
+							iVar2 = iVar4;
+
+						*local_a0_52 = iVar2;
 					}
-					p_Var17->eff_pos[0].vx = iVar4;
-				}
-				else {
-					iVar9 = iVar4;
-					if (iVar4 < iVar6) {
-						iVar9 = iVar6;
-					}
-					if (iVar9 < iVar8) {
-						if (iVar4 < iVar6) {
-							iVar4 = iVar6;
-						}
-						p_Var3->eff_pos[0].vx = iVar4;
-					}
-					else {
-						p_Var11->eff_pos[0].vx = iVar8;
+					else 
+					{
+						*local_t3_52 = iVar6;
 					}
 				}
-				p_Var5 = ep + iVar10;
-				iVar10 = (p_Var5->pos2).vz;
-				iVar4 = (p_Var5->pos).vz;
-				if (iVar4 < iVar10) {
-					iVar10 = iVar4;
+				p_Var3 = ep + iVar8;
+				iVar8 = (p_Var3->pos2).vz;
+				iVar2 = (p_Var3->pos).vz;
+
+				if (iVar2 < iVar8)
+					iVar8 = iVar2;
+
+				iVar7 = (E->cam_pos).vz;
+
+				if (iVar7 < iVar8) 
+				{
+					iVar8 = (p_Var3->pos2).vz;
+					if (iVar2 < iVar8)
+						iVar8 = iVar2;
+
+					*local_t6_52 = iVar8;
 				}
-				iVar9 = (E->cam_pos).vz;
-				if (iVar9 < iVar10) {
-					iVar10 = (p_Var5->pos2).vz;
-					if (iVar4 < iVar10) {
-						iVar10 = iVar4;
+				else 
+				{
+					iVar8 = (p_Var3->pos2).vz;
+
+					iVar4 = iVar8;
+					if (iVar8 < iVar2) 
+						iVar4 = iVar2;
+
+					if (iVar4 < iVar7) 
+					{
+						if (iVar8 < iVar2)
+							iVar8 = iVar2;
+
+						*plVar11 = iVar8;
 					}
-					pVVar14->vx = iVar10;
-				}
-				else {
-					iVar10 = (p_Var5->pos2).vz;
-					iVar6 = iVar10;
-					if (iVar10 < iVar4) {
-						iVar6 = iVar4;
-					}
-					if (iVar6 < iVar9) {
-						if (iVar10 < iVar4) {
-							iVar10 = iVar4;
-						}
-						pVVar16->vx = iVar10;
-					}
-					else {
-						p_Var11->eff_pos[0].vz = iVar9;
+					else 
+					{
+						local_t3_52[2] = iVar7;
 					}
 				}
 			}
-			else {
-				if (p_Var5->type != '\x02') goto LAB_0005179c;
-				if ((p_Var5->flags & 1) == 0) {
-					if ((p_Var5->flags & 2) == 0) goto LAB_0005179c;
-					p_Var11->eff_pos[0].vz = (p_Var5->pos).vz;
-					iVar10 = (p_Var5->pos2).vx;
-					iVar4 = (p_Var5->pos).vx;
-					if (iVar4 < iVar10) {
-						iVar10 = iVar4;
-					}
-					iVar9 = (E->cam_pos).vx;
-					if (iVar10 <= iVar9) {
-						iVar6 = (p_Var5->pos2).vx;
-						iVar10 = iVar6;
-						if (iVar6 < iVar4) {
-							iVar10 = iVar4;
-						}
-						if (iVar9 <= iVar10) {
-							pVVar2 = E->eff_pos;
+			else
+			{
+				if (p_Var3->type != 2) 
+					goto LAB_0005179c;
+
+				if ((p_Var3->flags & 1) == 0)
+				{
+					if ((p_Var3->flags & 2) == 0) 
+						goto LAB_0005179c;
+
+					local_t3_52[2] = (p_Var3->pos).vz;
+					iVar8 = (p_Var3->pos2).vx;
+					iVar2 = (p_Var3->pos).vx;
+
+					if (iVar2 < iVar8)
+						iVar8 = iVar2;
+
+					iVar7 = (E->cam_pos).vx;
+					if (iVar8 <= iVar7)
+					{
+						iVar4 = (p_Var3->pos2).vx;
+						iVar8 = iVar4;
+						if (iVar4 < iVar2)
+							iVar8 = iVar2;
+
+						if (iVar7 <= iVar8) 
+						{
+							temp_79f9c232453 = (long*)E->eff_pos;
 							goto LAB_00051788;
 						}
-						pVVar2 = E->eff_pos;
+
+						temp_79f679ea1b7 = (long*)E->eff_pos;
 						goto LAB_0005176c;
 					}
-					iVar6 = (p_Var5->pos2).vx;
-					piVar7 = (int *)((int)&E->eff_pos[0].vx + iVar12);
-					bVar1 = iVar4 < iVar6;
+
+					iVar4 = (p_Var3->pos2).vx;
+					piVar5 = (int*)((int)&E->eff_pos[0].vx + iVar9);
+					bVar1 = iVar2 < iVar4;
 				}
-				else {
-					p_Var11->eff_pos[0].vx = (p_Var5->pos).vx;
-					iVar10 = (p_Var5->pos2).vz;
-					iVar4 = (p_Var5->pos).vz;
-					if (iVar4 < iVar10) {
-						iVar10 = iVar4;
+				else 
+				{
+					*local_t3_52 = (p_Var3->pos).vx;
+					iVar8 = (p_Var3->pos2).vz;
+					iVar2 = (p_Var3->pos).vz;
+
+					if (iVar2 < iVar8)
+						iVar8 = iVar2;
+
+					iVar7 = (E->cam_pos).vz;
+
+					if (iVar7 < iVar8) 
+					{
+						iVar4 = (p_Var3->pos2).vz;
+						piVar5 = (int*)((int)local_t7_28 + iVar9);
+						bVar1 = iVar2 < iVar4;
 					}
-					iVar9 = (E->cam_pos).vz;
-					if (iVar9 < iVar10) {
-						iVar6 = (p_Var5->pos2).vz;
-						piVar7 = (int *)((int)&pVVar15->vx + iVar12);
-						bVar1 = iVar4 < iVar6;
-					}
-					else {
-						iVar6 = (p_Var5->pos2).vz;
-						iVar10 = iVar6;
-						if (iVar6 < iVar4) {
-							iVar10 = iVar4;
-						}
-						pVVar2 = pVVar15;
-						if (iVar9 <= iVar10) {
+					else 
+					{
+						iVar4 = (p_Var3->pos2).vz;
+						iVar8 = iVar4;
+
+						if (iVar4 < iVar2)
+							iVar8 = iVar2;
+
+						temp_79f679ea1b7 = local_t7_28;
+						temp_79f9c232453 = local_t7_28;
+
+						if (iVar7 <= iVar8) 
+						{
 						LAB_00051788:
-							*(int *)((int)&pVVar2->vx + iVar12) = iVar9;
+							*(int*)((int)temp_79f9c232453 + iVar9) = iVar7;
 							goto LAB_0005178c;
 						}
 					LAB_0005176c:
-						piVar7 = (int *)((int)&pVVar2->vx + iVar12);
-						bVar1 = iVar6 < iVar4;
+						piVar5 = (int*)((int)temp_79f679ea1b7 + iVar9);
+						bVar1 = iVar4 < iVar2;
 					}
 				}
 				if (bVar1) {
-					iVar6 = iVar4;
+					iVar4 = iVar2;
 				}
-				*piVar7 = iVar6;
+				*piVar5 = iVar4;
 			}
 		LAB_0005178c:
-			E->flags = E->flags | 1 << (uVar13 & 0x1f);
+			E->flags = E->flags | 1 << (uVar10 & 0x1f);
 		}
+
 	LAB_0005179c:
-		iVar12 = iVar12 + 0x10;
-		p_Var11 = (__envsoundinfo *)(p_Var11->eff_pos + 1);
-		pVVar16 = pVVar16 + 1;
-		pVVar14 = pVVar14 + 1;
-		p_Var3 = (__envsoundinfo *)(p_Var3->eff_pos + 1);
-		uVar13 = uVar13 + 1;
-		p_Var17 = (__envsoundinfo *)(p_Var17->eff_pos + 1);
-		if (3 < (int)uVar13) {
+		iVar9 = iVar9 + 0x10;
+		local_t3_52 = local_t3_52 + 4;
+		plVar11 = plVar11 + 4;
+		local_t6_52 = local_t6_52 + 4;
+		local_a0_52 = local_a0_52 + 4;
+		uVar10 = uVar10 + 1;
+		local_t9_52 = local_t9_52 + 4;
+
+		if (3 < (int)uVar10)
 			return;
-		}
+
 	} while (true);
-	*/
 }
 
 
@@ -3979,28 +4019,27 @@ void CalcEffPos(__envsound *ep, __envsoundinfo *E, int pl)
 	/* end block 3 */
 	// End Line: 4014
 
+// [D] [A] unprocessed arrays
 void CalcEffPos2(__envsound *ep, __envsoundinfo *E, int pl)
 {
-	UNIMPLEMENTED();
-/*
 	bool bVar1;
 	int iVar2;
-	undefined4 uVar3;
-	undefined4 uVar4;
-	__envsound *p_Var5;
+	float uVar3;
+	float uVar4;
+	__envsound* p_Var5;
 	int iVar6;
 	int iVar7;
 	long lVar8;
 	uint uVar9;
 	int iVar10;
-	float *pfVar11;
-	undefined4 *puVar12;
-	undefined4 uVar13;
-	long *plVar14;
-	int *piVar15;
-	long lVar16;
-	__envsoundinfo *p_Var17;
-	int iVar18;
+	float* pfVar11;
+	float* local_s1_176;
+	float uVar12;
+	long* plVar13;
+	int* piVar14;
+	long lVar15;
+	__envsoundinfo* p_Var16;
+	int iVar17;
 	uint local_38;
 	int local_34;
 	int local_30;
@@ -4008,240 +4047,300 @@ void CalcEffPos2(__envsound *ep, __envsoundinfo *E, int pl)
 	local_38 = 0;
 	local_34 = 0;
 	local_30 = 0;
-	p_Var17 = E;
+	p_Var16 = E;
+
 	do {
-		iVar18 = *(int *)((int)E->this + local_30);
-		if ((-1 < iVar18) && (uVar9 = 1 << (local_38 & 0x1f), (E->flags & uVar9) == 0)) {
-			p_Var5 = ep + iVar18;
-			if ((p_Var5->type == '\x02') || (p_Var5->type == '\x04')) {
+		iVar17 = *(int*)((int)E->thisS + local_30);
+
+		if ((-1 < iVar17) && (uVar9 = 1 << (local_38 & 0x1f), (E->flags & uVar9) == 0))
+		{
+			p_Var5 = ep + iVar17;
+
+			if ((p_Var5->type == 2) || (p_Var5->type == 4)) 
+			{
 				pfVar11 = E->g;
-				puVar12 = (undefined4 *)((int)pfVar11 + local_30);
-				iVar2 = __gesf2(*puVar12, 0);
-				if (iVar2 < 0) {
-					uVar3 = __negsf2(*puVar12);
-					iVar2 = __ltsf2(uVar3, 0x3f800000);
-					if (-1 < iVar2) goto LAB_000519c0;
+				local_s1_176 = (float*)((int)pfVar11 + local_30);
+
+
+				//iVar2 = __gesf2(*local_s1_176, 0);
+				//if (iVar2 < 0)
+				if(*local_s1_176 < 0)
+				{
+					uVar3 = -*local_s1_176;// __negsf2(*local_s1_176);
+
+					//iVar2 = __ltsf2(uVar3, 0x3f800000);
+					//if (-1 < iVar2) 
+					if(uVar3 >= 1.0f)
+						goto LAB_000519c0;
+
 				LAB_000518d8:
-					uVar3 = __divsf3(0x3f800000, *(undefined4 *)((int)pfVar11 + local_30));
-					uVar4 = __floatsisf((E->cam_pos).vx);
-					uVar4 = __mulsf3(uVar4, uVar3);
-					p_Var5 = ep + iVar18;
-					uVar13 = __floatsisf((p_Var5->pos).vx);
-					uVar13 = __divsf3(uVar13, uVar3);
-					uVar4 = __addsf3(uVar4, uVar13);
-					uVar13 = __floatsisf((E->cam_pos).vz);
-					uVar4 = __addsf3(uVar4, uVar13);
-					uVar13 = __floatsisf((p_Var5->pos).vz);
-					uVar4 = __subsf3(uVar4, uVar13);
-					uVar13 = __divsf3(0x3f800000, uVar3);
-					uVar13 = __addsf3(uVar13, uVar3);
-					uVar4 = __divsf3(uVar4, uVar13);
-					iVar2 = __fixsfsi(uVar4);
-					p_Var17->eff_pos[0].vx = iVar2;
-					uVar4 = __floatsisf(iVar2 - (p_Var5->pos).vx);
-					uVar3 = __divsf3(uVar4, uVar3);
+					uVar3 = 1.0f / *(float*)((int)pfVar11 + local_30); //__divsf3(0x3f800000, *(float*)((int)pfVar11 + local_30));
+					uVar4 = (E->cam_pos).vx; // __floatsisf((E->cam_pos).vx);
+					uVar4 = uVar4 * uVar3; // __mulsf3(uVar4, uVar3);
+					p_Var5 = ep + iVar17;
+					uVar12 = (p_Var5->pos).vx; // __floatsisf((p_Var5->pos).vx);
+					uVar12 = uVar12 / uVar3; // __divsf3(uVar12, uVar3);
+					uVar4 = uVar4 + uVar12; // __addsf3(uVar4, uVar12);
+					uVar12 = (E->cam_pos).vz; // __floatsisf((E->cam_pos).vz);
+					uVar4 = uVar4 + uVar12; // __addsf3(uVar4, uVar12);
+					uVar12 = (p_Var5->pos).vz; // __floatsisf((p_Var5->pos).vz);
+					uVar4 = uVar4 - uVar12; // __subsf3(uVar4, uVar12);
+					uVar12 = 1.0f / uVar3; // __divsf3(0x3f800000, uVar3);
+					uVar12 = uVar12 + uVar3; // __addsf3(uVar12, uVar3);
+					uVar4 = uVar4 / uVar12; // __divsf3(uVar4, uVar12);
+					iVar2 = uVar4; // __fixsfsi(uVar4);
+					p_Var16->eff_pos[0].vx = iVar2;
+					uVar4 = iVar2 - (p_Var5->pos).vx; // __floatsisf(iVar2 - (p_Var5->pos).vx);
+					uVar3 = uVar4 / uVar3; //__divsf3(uVar4, uVar3);
 				}
-				else {
-					iVar2 = __ltsf2(*puVar12, 0x3f800000);
-					if (iVar2 < 0) goto LAB_000518d8;
+				else 
+				{
+					//iVar2 = __ltsf2(*local_s1_176, 0x3f800000);
+					//if (iVar2 < 0) 
+					if(*local_s1_176 < 1.0f)
+						goto LAB_000518d8;
+
 				LAB_000519c0:
-					uVar3 = __floatsisf((E->cam_pos).vx);
-					uVar13 = *(undefined4 *)((int)pfVar11 + local_30);
-					uVar3 = __divsf3(uVar3, uVar13);
-					p_Var5 = ep + iVar18;
-					uVar4 = __floatsisf((p_Var5->pos).vx);
-					uVar4 = __mulsf3(uVar4, uVar13);
-					uVar3 = __addsf3(uVar3, uVar4);
-					uVar4 = __floatsisf((E->cam_pos).vz);
-					uVar3 = __addsf3(uVar3, uVar4);
-					uVar4 = __floatsisf((p_Var5->pos).vz);
-					uVar3 = __subsf3(uVar3, uVar4);
-					uVar4 = __divsf3(0x3f800000, uVar13);
-					uVar4 = __addsf3(uVar13, uVar4);
-					uVar3 = __divsf3(uVar3, uVar4);
-					iVar2 = __fixsfsi(uVar3);
-					p_Var17->eff_pos[0].vx = iVar2;
-					uVar3 = __floatsisf(iVar2 - (p_Var5->pos).vx);
-					uVar3 = __mulsf3(uVar3, *(undefined4 *)((int)pfVar11 + local_30));
+					uVar3 = (E->cam_pos).vx; // __floatsisf((E->cam_pos).vx);
+					uVar12 = *(float*)((int)pfVar11 + local_30);
+					uVar3 = uVar3 / uVar12; // __divsf3(uVar3, uVar12);
+					p_Var5 = ep + iVar17;
+					uVar4 = (p_Var5->pos).vx; // __floatsisf((p_Var5->pos).vx);
+					uVar4 = uVar4 * uVar12;// __mulsf3(uVar4, uVar12);
+					uVar3 = uVar3 + uVar4;// __addsf3(uVar3, uVar4);
+					uVar4 = (E->cam_pos).vz; //  __floatsisf((E->cam_pos).vz);
+					uVar3 = uVar3 + uVar4; //__addsf3(uVar3, uVar4);
+					uVar4 = (p_Var5->pos).vz; // __floatsisf((p_Var5->pos).vz);
+					uVar3 = uVar3 - uVar4;// __subsf3(uVar3, uVar4);
+					uVar4 = 1.0f / uVar12; //__divsf3(0x3f800000, uVar12);
+					uVar4 = uVar12 + uVar4; // __addsf3(uVar12, uVar4);
+					uVar3 = uVar3 / uVar4; // __divsf3(uVar3, uVar4);
+					iVar2 = uVar3; // __fixsfsi(uVar3);
+					p_Var16->eff_pos[0].vx = iVar2;
+					uVar3 = iVar2 - (p_Var5->pos).vx; // __floatsisf(iVar2 - (p_Var5->pos).vx);
+					uVar3 = uVar3 * *(float*)((int)pfVar11 + local_30); // __mulsf3(uVar3, *(float*)((int)pfVar11 + local_30));
 				}
-				plVar14 = &E->eff_pos[0].vz;
-				uVar4 = __floatsisf(ep[iVar18].pos.vz);
-				uVar3 = __addsf3(uVar3, uVar4);
-				uVar3 = __fixsfsi(uVar3);
-				*(undefined4 *)((int)plVar14 + local_34) = uVar3;
-				p_Var5 = ep + iVar18;
-				if (p_Var5->type == '\x02') {
+
+				plVar13 = &E->eff_pos[0].vz;
+				uVar4 = ep[iVar17].pos.vz; // __floatsisf(ep[iVar17].pos.vz);
+				uVar3 = uVar3 + uVar4;//__addsf3(uVar3, uVar4);
+				uVar3 = uVar3;// __fixsfsi(uVar3);
+				*(float*)((int)plVar13 + local_34) = uVar3;
+				p_Var5 = ep + iVar17;
+
+				if (p_Var5->type == 2) 
+				{
 					iVar2 = (p_Var5->pos2).vx;
 					iVar7 = (p_Var5->pos).vx;
 					iVar6 = iVar2;
-					if (iVar2 < iVar7) {
+
+					if (iVar2 < iVar7)
 						iVar6 = iVar7;
-					}
-					iVar10 = p_Var17->eff_pos[0].vx;
-					if (iVar6 < iVar10) {
-						if (iVar2 < iVar7) {
+
+					iVar10 = p_Var16->eff_pos[0].vx;
+
+					if (iVar6 < iVar10) 
+					{
+						if (iVar2 < iVar7)
 							iVar2 = iVar7;
-						}
-						p_Var17->eff_pos[0].vx = iVar2;
+					
+						p_Var16->eff_pos[0].vx = iVar2;
 					}
-					else {
+					else
+					{
 						iVar6 = iVar2;
-						if (iVar7 < iVar2) {
+						if (iVar7 < iVar2)
 							iVar6 = iVar7;
-						}
-						if (iVar10 < iVar6) {
-							if (iVar7 < iVar2) {
+
+						if (iVar10 < iVar6) 
+						{
+							if (iVar7 < iVar2)
 								iVar2 = iVar7;
-							}
-							p_Var17->eff_pos[0].vx = iVar2;
+
+							p_Var16->eff_pos[0].vx = iVar2;
 						}
 					}
-					p_Var5 = ep + iVar18;
-					iVar18 = (p_Var5->pos2).vz;
+					p_Var5 = ep + iVar17;
+					iVar17 = (p_Var5->pos2).vz;
 					iVar2 = (p_Var5->pos).vz;
-					piVar15 = (int *)((int)plVar14 + local_34);
-					if (iVar18 < iVar2) {
-						iVar18 = iVar2;
+					piVar14 = (int*)((int)plVar13 + local_34);
+
+					if (iVar17 < iVar2)
+						iVar17 = iVar2;
+
+					if (iVar17 < *piVar14)
+					{
+						iVar17 = (p_Var5->pos2).vz;
+
+						if (iVar17 < iVar2)
+							iVar17 = iVar2;
+
+						*piVar14 = iVar17;
 					}
-					if (iVar18 < *piVar15) {
-						iVar18 = (p_Var5->pos2).vz;
-						if (iVar18 < iVar2) {
-							iVar18 = iVar2;
-						}
-						*piVar15 = iVar18;
-					}
-					else {
-						iVar18 = (p_Var5->pos2).vz;
-						iVar6 = iVar18;
-						if (iVar2 < iVar18) {
+					else 
+					{
+						iVar17 = (p_Var5->pos2).vz;
+						iVar6 = iVar17;
+
+						if (iVar2 < iVar17)
 							iVar6 = iVar2;
-						}
-						if (*piVar15 < iVar6) {
-							if (iVar2 < iVar18) {
-								iVar18 = iVar2;
-							}
-							*piVar15 = iVar18;
+
+						if (*piVar14 < iVar6)
+						{
+							if (iVar2 < iVar17)
+								iVar17 = iVar2;
+
+							*piVar14 = iVar17;
 						}
 					}
 					E->flags = E->flags | 1 << (local_38 & 0x1f);
 				}
-				else {
-					if (p_Var5->type == '\x04') {
-						if ((p_Var5->flags & 8) == 0) {
-							iVar6 = (p_Var5->pos2).vz;
-							iVar7 = (p_Var5->pos).vz;
-							iVar2 = iVar6;
-							if (iVar6 < iVar7) {
-								iVar2 = iVar7;
-							}
-							iVar10 = (E->cam_pos).vz;
-							if (iVar2 < iVar10) {
-								iVar10 = iVar6;
-								if (iVar6 < iVar7) {
-									iVar10 = iVar7;
-								}
-							LAB_00051d80:
-								*(int *)((int)plVar14 + local_34) = iVar10;
-							}
-							else {
-								if (*(int *)((int)plVar14 + local_34) < iVar10) goto LAB_00051d80;
-							}
-							iVar2 = __ltsf2(*(undefined4 *)((int)pfVar11 + local_30), 0);
-							if (-1 < iVar2) goto LAB_00051df8;
-							p_Var5 = ep + iVar18;
-							iVar18 = (p_Var5->pos2).vx;
+				else if (p_Var5->type == 4)
+				{
+					if ((p_Var5->flags & 8) == 0) {
+						iVar6 = (p_Var5->pos2).vz;
+						iVar7 = (p_Var5->pos).vz;
+						iVar2 = iVar6;
+
+						if (iVar6 < iVar7)
+							iVar2 = iVar7;
+
+						iVar10 = (E->cam_pos).vz;
+						if (iVar2 < iVar10)
+						{
+							iVar10 = iVar6;
+
+							if (iVar6 < iVar7)
+								iVar10 = iVar7;
+
+						LAB_00051d80:
+							*(int*)((int)plVar13 + local_34) = iVar10;
+						}
+						else
+						{
+							if (*(int*)((int)plVar13 + local_34) < iVar10)
+								goto LAB_00051d80;
+						}
+
+						//iVar2 = __ltsf2(*(float*)((int)pfVar11 + local_30), 0);
+						//if (-1 < iVar2)
+						if (*(float*)((int)pfVar11 + local_30) >= 0)
+							goto LAB_00051df8;
+
+						p_Var5 = ep + iVar17;
+						iVar17 = (p_Var5->pos2).vx;
+						lVar8 = (p_Var5->pos).vx;
+						if (iVar17 < lVar8) {
+							iVar17 = lVar8;
+						}
+						iVar2 = (E->cam_pos).vx;
+						if (iVar17 < iVar2)
+						{
+							lVar15 = (p_Var5->pos2).vx;
+							bVar1 = lVar15 < lVar8;
+							goto LAB_00051e40;
+						}
+						bVar1 = p_Var16->eff_pos[0].vx < iVar2;
+					LAB_00051e60:
+						if (bVar1) {
+							p_Var16->eff_pos[0].vx = iVar2;
+						}
+					}
+					else
+					{
+						iVar6 = (p_Var5->pos2).vz;
+						iVar7 = (p_Var5->pos).vz;
+						iVar2 = iVar6;
+
+						if (iVar7 < iVar6)
+							iVar2 = iVar7;
+
+						iVar10 = (E->cam_pos).vz;
+						if (iVar10 < iVar2)
+						{
+							iVar10 = iVar6;
+							if (iVar7 < iVar6)
+								iVar10 = iVar7;
+
+						LAB_00051c98:
+							*(int*)((int)plVar13 + local_34) = iVar10;
+						}
+						else
+						{
+							if (iVar10 < *(int*)((int)plVar13 + local_34))
+								goto LAB_00051c98;
+						}
+
+						//iVar2 = __gtsf2(*(float*)((int)pfVar11 + local_30), 0);
+						//if (iVar2 < 1) {
+						if (*(float*)((int)pfVar11 + local_30) <= 0)
+						{
+						LAB_00051df8:
+							p_Var5 = ep + iVar17;
+							iVar17 = (p_Var5->pos2).vx;
 							lVar8 = (p_Var5->pos).vx;
-							if (iVar18 < lVar8) {
-								iVar18 = lVar8;
-							}
+
+							if (lVar8 < iVar17)
+								iVar17 = lVar8;
+
 							iVar2 = (E->cam_pos).vx;
-							if (iVar18 < iVar2) {
-								lVar16 = (p_Var5->pos2).vx;
-								bVar1 = lVar16 < lVar8;
-								goto LAB_00051e40;
+
+							if (iVar17 <= iVar2)
+							{
+								bVar1 = iVar2 < p_Var16->eff_pos[0].vx;
+								goto LAB_00051e60;
 							}
-							bVar1 = p_Var17->eff_pos[0].vx < iVar2;
-						LAB_00051e60:
-							if (bVar1) {
-								p_Var17->eff_pos[0].vx = iVar2;
-							}
+
+							lVar15 = (p_Var5->pos2).vx;
+							bVar1 = lVar8 < lVar15;
 						}
-						else {
-							iVar6 = (p_Var5->pos2).vz;
-							iVar7 = (p_Var5->pos).vz;
-							iVar2 = iVar6;
-							if (iVar7 < iVar6) {
-								iVar2 = iVar7;
+						else
+						{
+							p_Var5 = ep + iVar17;
+							iVar17 = (p_Var5->pos2).vx;
+							lVar8 = (p_Var5->pos).vx;
+
+							if (iVar17 < lVar8)
+								iVar17 = lVar8;
+
+							iVar2 = (E->cam_pos).vx;
+
+							if (iVar2 <= iVar17)
+							{
+								bVar1 = p_Var16->eff_pos[0].vx < iVar2;
+								goto LAB_00051e60;
 							}
-							iVar10 = (E->cam_pos).vz;
-							if (iVar10 < iVar2) {
-								iVar10 = iVar6;
-								if (iVar7 < iVar6) {
-									iVar10 = iVar7;
-								}
-							LAB_00051c98:
-								*(int *)((int)plVar14 + local_34) = iVar10;
-							}
-							else {
-								if (iVar10 < *(int *)((int)plVar14 + local_34)) goto LAB_00051c98;
-							}
-							iVar2 = __gtsf2(*(undefined4 *)((int)pfVar11 + local_30), 0);
-							if (iVar2 < 1) {
-							LAB_00051df8:
-								p_Var5 = ep + iVar18;
-								iVar18 = (p_Var5->pos2).vx;
-								lVar8 = (p_Var5->pos).vx;
-								if (lVar8 < iVar18) {
-									iVar18 = lVar8;
-								}
-								iVar2 = (E->cam_pos).vx;
-								if (iVar18 <= iVar2) {
-									bVar1 = iVar2 < p_Var17->eff_pos[0].vx;
-									goto LAB_00051e60;
-								}
-								lVar16 = (p_Var5->pos2).vx;
-								bVar1 = lVar8 < lVar16;
-							}
-							else {
-								p_Var5 = ep + iVar18;
-								iVar18 = (p_Var5->pos2).vx;
-								lVar8 = (p_Var5->pos).vx;
-								if (iVar18 < lVar8) {
-									iVar18 = lVar8;
-								}
-								iVar2 = (E->cam_pos).vx;
-								if (iVar2 <= iVar18) {
-									bVar1 = p_Var17->eff_pos[0].vx < iVar2;
-									goto LAB_00051e60;
-								}
-								lVar16 = (p_Var5->pos2).vx;
-								bVar1 = lVar16 < lVar8;
-							}
-						LAB_00051e40:
-							if (bVar1) {
-								lVar16 = lVar8;
-							}
-							p_Var17->eff_pos[0].vx = lVar16;
+
+							lVar15 = (p_Var5->pos2).vx;
+							bVar1 = lVar15 < lVar8;
 						}
+					LAB_00051e40:
+						if (bVar1)
+							lVar15 = lVar8;
+
+						p_Var16->eff_pos[0].vx = lVar15;
 					}
 				}
 			}
-			else {
-				p_Var17->eff_pos[0].vx = (p_Var5->pos).vx;
-				*(long *)((int)&E->eff_pos[0].vz + local_34) = (p_Var5->pos).vz;
+			else
+ {
+				p_Var16->eff_pos[0].vx = (p_Var5->pos).vx;
+				*(long*)((int)&E->eff_pos[0].vz + local_34) = (p_Var5->pos).vz;
 				E->flags = E->flags | uVar9;
 			}
 		}
-		p_Var17 = (__envsoundinfo *)(p_Var17->eff_pos + 1);
+
+		p_Var16 = (__envsoundinfo*)(p_Var16->eff_pos + 1);
 		local_30 = local_30 + 4;
 		local_38 = local_38 + 1;
-		*(int *)((int)&E->eff_pos[0].vy + local_34) = -(E->cam_pos).vy;
+		*(int*)((int)&E->eff_pos[0].vy + local_34) = -(E->cam_pos).vy;
 		local_34 = local_34 + 0x10;
-		if (3 < (int)local_38) {
+
+		if (3 < (int)local_38)
 			return;
-		}
+
 	} while (true);
-	*/
+
 }
 
 
@@ -4269,72 +4368,73 @@ void CalcEffPos2(__envsound *ep, __envsoundinfo *E, int pl)
 	/* end block 3 */
 	// End Line: 4446
 
+// [D] [A] unprocessed arrays
 void UpdateEnvSnd(__envsound *ep, __envsoundinfo *E, int pl)
 {
-	UNIMPLEMENTED();
-	/*
 	int iVar1;
 	int channel;
-	long *velocity;
-	int *piVar2;
-	int *piVar3;
-	int *piVar4;
+	long* velocity;
+	int* piVar2;
+	int* piVar3;
+	int* piVar4;
 	int iVar5;
-	__envsoundinfo *p_Var6;
-	__envsoundinfo *position;
-	int local_30;
+	__envsoundinfo* p_Var6;
+	__envsoundinfo* position;
+	int i;
 	int local_2c;
 
-	piVar3 = E->this;
+	piVar3 = E->thisS;
 	iVar5 = 0;
 	piVar4 = E->playing_sound;
 	local_2c = 0;
-	local_30 = 3;
+	i = 3;
 	p_Var6 = E;
 	position = E;
+
 	do {
 		channel = *piVar3;
-		if (channel < 0) {
-			if (-1 < *piVar4) {
-				piVar2 = (int *)((int)E->chan + iVar5);
+		if (channel < 0)
+		{
+			if (-1 < *piVar4) 
+			{
+				piVar2 = (int*)((int)E->chan + iVar5);
 				StopChannel(*piVar2);
 				UnlockChannel(*piVar2);
 				*piVar4 = -1;
 			}
 		}
-		else {
-			if (*piVar4 != channel) {
+		else 
+		{
+			if (*piVar4 != channel)
+			{
 				iVar1 = (int)&E->eff_pos[0].vx + local_2c;
-				channel = Start3DSoundVolPitch
-				(-1, ep[channel].bank, ep[channel].sample, p_Var6->eff_pos[0].vx,
-					*(int *)(iVar1 + 4), *(int *)(iVar1 + 8), 0, 0x1000);
-				piVar2 = (int *)((int)E->chan + iVar5);
+				channel = Start3DSoundVolPitch(-1, ep[channel].bank, ep[channel].sample, p_Var6->eff_pos[0].vx, *(int*)(iVar1 + 4), *(int*)(iVar1 + 8), 0, 0x1000);
+				piVar2 = (int*)((int)E->chan + iVar5);
 				*piVar2 = channel;
+
 				LockChannel(channel);
-				if ((1 < NumPlayers) && (NoPlayerControl == 0)) {
+
+				if (NumPlayers > 1 && NoPlayerControl == 0)
 					SetPlayerOwnsChannel(*piVar2, (char)pl);
-				}
-				*(int *)((int)E->playing_sound + iVar5) = *piVar3;
+
+				*(int*)((int)E->playing_sound + iVar5) = *piVar3;
 			}
-			if ((ep[*piVar3].flags & 0x10) == 0) {
-				velocity = (long *)0x0;
-			}
-			else {
-				velocity = (&player)[pl].camera_vel;
-			}
-			SetChannelPosition3(*(int *)((int)E->chan + iVar5), (VECTOR *)position, velocity,
-				ep[*piVar3].vol + -0x9c4, 0x1000, (uint)ep[*piVar3].flags & 0x20);
+
+			if ((ep[*piVar3].flags & 0x10) == 0) 
+				velocity = NULL;
+			else 
+				velocity = player[pl].camera_vel;
+
+			SetChannelPosition3(*(int*)((int)E->chan + iVar5), (VECTOR*)position, velocity, ep[*piVar3].vol + -2500, 0x1000, (uint)ep[*piVar3].flags & 0x20);
 		}
 		piVar3 = piVar3 + 1;
-		position = (__envsoundinfo *)(position->eff_pos + 1);
+		position = (__envsoundinfo*)(position->eff_pos + 1);
 		piVar4 = piVar4 + 1;
 		iVar5 = iVar5 + 4;
-		p_Var6 = (__envsoundinfo *)(p_Var6->eff_pos + 1);
+		p_Var6 = (__envsoundinfo*)(p_Var6->eff_pos + 1);
 		local_2c = local_2c + 0x10;
-		local_30 = local_30 + -1;
-	} while (-1 < local_30);
-	return;
-	*/
+		i = i + -1;
+	} while (-1 < i);
 }
 
 
