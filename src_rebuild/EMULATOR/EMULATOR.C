@@ -915,7 +915,7 @@ GLint u_Projection;
 
 #ifdef PGXP
 #define GTE_PERSPECTIVE_CORRECTION \
-		"	vec4 fragPosition = Projection * vec4(a_position.xy, a_z, 1.0) * a_w;\n"\
+		"	vec4 fragPosition = Projection * vec4(a_position.xy, a_zw.x, 1.0) * a_zw.y;\n"\
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION
@@ -930,8 +930,7 @@ const char* gte_shader_4 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
-	"	attribute float a_z;\n"
-	"	attribute float a_w;\n"
+	"	attribute vec2 a_zw;\n"
 	"	uniform mat4 Projection;\n"
 	"	void main() {\n"
 	"		v_texcoord = a_texcoord;\n"
@@ -973,8 +972,7 @@ const char* gte_shader_8 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
-	"	attribute float a_z;\n"
-	"	attribute float a_w;\n"
+	"	attribute vec2 a_zw;\n"
 	"	uniform mat4 Projection;\n"
 	"	void main() {\n"
 	"		v_texcoord = a_texcoord;\n"
@@ -1009,8 +1007,7 @@ const char* gte_shader_16 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
-	"	attribute float a_z;\n"
-	"	attribute float a_w;\n"
+	"	attribute vec2 a_zw;\n"
 	"	uniform mat4 Projection;\n"
 	"	void main() {\n"
 	"		vec2 page\n;"
@@ -1108,6 +1105,8 @@ ShaderID Shader_Compile(const char *source)
 #else
     const char *GLSL_HEADER_VERT =
         "#version 330\n"
+		"precision lowp  int;\n"
+		"precision highp float;\n"
         "#define VERTEX\n"
         "#define varying   out\n"
         "#define attribute in\n"
@@ -1115,6 +1114,8 @@ ShaderID Shader_Compile(const char *source)
 
     const char *GLSL_HEADER_FRAG =
         "#version 330\n"
+		"precision lowp  int;\n"
+		"precision highp float;\n"
         "#define varying     in\n"
         "#define texture2D   texture\n"
         "out vec4 fragColor;\n";
@@ -1143,9 +1144,10 @@ ShaderID Shader_Compile(const char *source)
     glBindAttribLocation(program, a_texcoord, "a_texcoord");
     glBindAttribLocation(program, a_color,    "a_color");
 
+
+
 #ifdef PGXP
-	glBindAttribLocation(program, a_z, "a_z");
-	glBindAttribLocation(program, a_w, "a_w");
+	glBindAttribLocation(program, a_zw, "a_zw");
 #endif
 
     glLinkProgram(program);
@@ -1245,27 +1247,29 @@ int Emulator_Initialise()
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glGenBuffers(1, &dynamic_vertex_buffer);
+
 	glGenVertexArrays(1, &dynamic_vertex_array);
 	glBindVertexArray(dynamic_vertex_array);
+
 	glBindBuffer(GL_ARRAY_BUFFER, dynamic_vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+
 	glEnableVertexAttribArray(a_position);
 	glEnableVertexAttribArray(a_texcoord);
-	
     glEnableVertexAttribArray(a_color);
+
 #if defined(PGXP)
 	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
+	glVertexAttribPointer(a_zw, 2,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
 
-	glVertexAttribPointer(a_z, 1,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
-	glVertexAttribPointer(a_w, 1,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->w);
-
-	glEnableVertexAttribArray(a_z);
-	glEnableVertexAttribArray(a_w);
+	glEnableVertexAttribArray(a_zw);
 #else
 	glVertexAttribPointer(a_position, 4, GL_SHORT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
 #endif
+
 	glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->u);
 	glVertexAttribPointer(a_color,    4, GL_UNSIGNED_BYTE, GL_TRUE,  sizeof(Vertex), &((Vertex*)NULL)->r);
+
 	glBindVertexArray(0);
 #elif defined(D3D9)
 	if (FAILED(d3ddev->CreateTexture(VRAM_WIDTH, VRAM_HEIGHT, 1, 0, D3DFMT_A8L8, D3DPOOL_MANAGED, &vramTexture, NULL)))

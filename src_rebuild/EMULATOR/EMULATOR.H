@@ -143,8 +143,7 @@ enum ShaderAttrib
 	a_position,
 	a_texcoord,
 	a_color,
-	a_w,
-	a_z
+	a_zw,
 };
 
 enum BlendMode
