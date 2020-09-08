@@ -133,7 +133,7 @@ struct Vertex
 	u_char r, g, b, a;
 
 #if defined(PGXP)
-	float z, w;
+	float z, w, scr_h, _pad;
 #endif
 };
 #pragma pack(pop)

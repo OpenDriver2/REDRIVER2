@@ -529,6 +529,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 #ifdef PGXP
 	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
 	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
+	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
 	ScreenCoordsToEmulator(vertex, 4);
@@ -545,9 +546,11 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 		v.y = vd.py + ofsY;\
 		v.w = vd.pz;\
 		v.z = 0.0f;\
+		v.scr_h = vd.scr_h;\
 	} else { \
 		v.w = 1.0f; \
 		v.z = 0.0f; \
+		v.scr_h = 0.0f; \
 	}\
 }
 
@@ -634,6 +637,7 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 #ifdef PGXP
 	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w = 1.0f;
 	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z = 0.0f;
+	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
 	ScreenCoordsToEmulator(vertex, 4);
@@ -924,7 +928,7 @@ ShaderID g_blit_shader;
 
 #if defined(OGLES) || defined(OGL)
 GLint u_Projection;
-
+GLint u_Projection3D;
 
 #define GTE_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
@@ -958,7 +962,7 @@ GLint u_Projection;
 
 #ifdef PGXP
 #define GTE_PERSPECTIVE_CORRECTION \
-		"	vec4 fragPosition = Projection * vec4(a_position.xy, a_zw.x, 1.0) * a_zw.y;\n"\
+		"	vec4 fragPosition = (a_zw.z != 0 ? (Projection3D * vec4(a_position.xy * vec2(1,-1) * a_zw.z, a_zw.y, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION \
@@ -973,8 +977,9 @@ const char* gte_shader_4 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
-	"	attribute vec2 a_zw;\n"
+	"	attribute vec4 a_zw;\n"
 	"	uniform mat4 Projection;\n"
+	"	uniform mat4 Projection3D;\n"
 	"	void main() {\n"
 	"		v_texcoord = a_texcoord;\n"
 	"		v_color = a_color;\n"
@@ -1015,8 +1020,9 @@ const char* gte_shader_8 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
-	"	attribute vec2 a_zw;\n"
+	"	attribute vec4 a_zw;\n"
 	"	uniform mat4 Projection;\n"
+	"	uniform mat4 Projection3D;\n"
 	"	void main() {\n"
 	"		v_texcoord = a_texcoord;\n"
 	"		v_color = a_color;\n"
@@ -1050,8 +1056,9 @@ const char* gte_shader_16 =
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
 	"	attribute vec4 a_color;\n"
-	"	attribute vec2 a_zw;\n"
+	"	attribute vec4 a_zw;\n"
 	"	uniform mat4 Projection;\n"
+	"	uniform mat4 Projection3D;\n"
 	"	void main() {\n"
 	"		vec2 page\n;"
 	"		page.x = fract(a_position.z / 16.0) * 1024.0\n;"
@@ -1244,6 +1251,7 @@ void Emulator_CreateGlobalShaders()
 
 #if defined(OGL) || defined(OGLES)
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
+	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
 #endif
 }
 
@@ -1303,7 +1311,7 @@ int Emulator_Initialise()
 
 #if defined(PGXP)
 	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
-	glVertexAttribPointer(a_zw, 2,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+	glVertexAttribPointer(a_zw, 4,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
 
 	glEnableVertexAttribArray(a_zw);
 #else
@@ -1375,6 +1383,29 @@ void Emulator_Ortho2D(float left, float right, float bottom, float top, float zn
 #endif
 }
 
+void Emulator_Perspective3D(const float fov, const float width, const float height, const float zNear, const float zFar)
+{
+	float sinF, cosF;
+	sinF = sinf(0.5f * fov);
+	cosF = cosf(0.5f * fov);
+
+	float h = cosF / sinF;
+	float w = (h * height) / width;
+
+	float persp[16] = {
+		w, 0, 0, 0,
+		0, h, 0, 0,
+		0, 0, (zFar + zNear) / (zFar - zNear), -(2 * zFar * zNear) / (zFar - zNear),
+		0, 0, 1, 0
+	};
+
+#if defined(OGL) || defined(OGLES)
+	glUniformMatrix4fv(u_Projection3D, 1, GL_TRUE, persp);
+#elif defined(D3D9)
+	d3ddev->SetVertexShaderConstantF(u_Projection3D, persp, 4);
+#endif
+}
+
 void Emulator_SetupClipMode(const RECT16& rect)
 {
 	bool enabled = rect.x - activeDispEnv.disp.x > 0 ||
@@ -1435,6 +1466,8 @@ void Emulator_SetShader(const ShaderID &shader)
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 
 	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
+
+	Emulator_Perspective3D(0.9f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 0.1f, 10000.0f);
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)

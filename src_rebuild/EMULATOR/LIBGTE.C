@@ -13,8 +13,9 @@
 #include "GTE/ratan_tbl.h"
 #include "GTE/sqrt_tbl.h"
 
+#define	FIX_BIT	12
 #define ONE					4096
-#define	FIXED(a)			((a) / ONE)
+#define	FIXED(a)			((a)>>FIX_BIT)
 
 GTERegisters gteRegs;
 
@@ -494,6 +495,7 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 		out.px = 0.0f;
 		out.py = 0.0f;
 		out.pz = 1.0f;
+		out.scr_h = 0.0f;
 		return false;
 	}
 
@@ -506,7 +508,7 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 			out.px = g_pgxpCache[i].px;
 			out.py = g_pgxpCache[i].py;
 			out.pz = g_pgxpCache[i].pz;
-
+			out.scr_h = g_pgxpCache[i].scr_h;
 			return true;
 		}
 	}
@@ -514,6 +516,7 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	out.px = 0.0f;
 	out.py = 0.0f;
 	out.pz = 1.0f;
+	out.scr_h = 0.0f;
 
 	return false;
 }
@@ -557,6 +560,12 @@ int docop2(int op) {
 
 #if defined(PGXP)
 		{
+			double fMAC1 = (/*int44*/(double)((float)C2_TRX * 4096.0f) + ((float)C2_R11 * (float)C2_VX0) + ((float)C2_R12 * (float)C2_VY0) + ((float)C2_R13 * (float)C2_VZ0));
+			double fMAC2 = (/*int44*/(double)((float)C2_TRY * 4096.0f) + ((float)C2_R21 * (float)C2_VX0) + ((float)C2_R22 * (float)C2_VY0) + ((float)C2_R23 * (float)C2_VZ0));
+			double fMAC3 = (/*int44*/(double)((float)C2_TRZ * 4096.0f) + ((float)C2_R31 * (float)C2_VX0) + ((float)C2_R32 * (float)C2_VY0) + ((float)C2_R33 * (float)C2_VZ0));
+
+			double one_by_v = 1.0 / (512.0 * 1024.0);
+
 			g_FP_SXYZ0 = g_FP_SXYZ1;
 			g_FP_SXYZ1 = g_FP_SXYZ2;
 
@@ -571,9 +580,10 @@ int docop2(int op) {
 
 			PGXPVData vdata;
 			vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
-			vdata.px = g_FP_SXYZ2.px;
-			vdata.py = g_FP_SXYZ2.py;
-			vdata.pz = g_FP_SXYZ2.pz;
+			vdata.px = double(C2_OFX) / float(1 << 16) + fMAC1 * one_by_v;
+			vdata.py = double(C2_OFY) / float(1 << 16) + fMAC2 * one_by_v;
+			vdata.pz = fMAC3 * one_by_v;
+			vdata.scr_h = float(C2_H);// / float(1 << 16);
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 			g_pgxpTransformed = true;
@@ -988,6 +998,12 @@ int docop2(int op) {
 			C2_SY2 = Lm_G2(F((long long)C2_OFY + ((long long)C2_IR2 * h_over_sz3)) >> 16);
 
 #if defined(PGXP)
+			double fMAC1 = (/*int44*/(double)((float)C2_TRX * 4096.0f) + ((float)C2_R11 * (float)VX(v)) + ((float)C2_R12 * (float)VY(v)) + ((float)C2_R13 * (float)VZ(v)));
+			double fMAC2 = (/*int44*/(double)((float)C2_TRY * 4096.0f) + ((float)C2_R21 * (float)VX(v)) + ((float)C2_R22 * (float)VY(v)) + ((float)C2_R23 * (float)VZ(v)));
+			double fMAC3 = (/*int44*/(double)((float)C2_TRZ * 4096.0f) + ((float)C2_R31 * (float)VX(v)) + ((float)C2_R32 * (float)VY(v)) + ((float)C2_R33 * (float)VZ(v)));
+
+			double one_by_v = 1.0 / (512.0 * 1024.0);
+
 			g_FP_SXYZ0 = g_FP_SXYZ1;
 			g_FP_SXYZ1 = g_FP_SXYZ2;
 
@@ -1002,9 +1018,10 @@ int docop2(int op) {
 
 			PGXPVData vdata;
 			vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
-			vdata.px = g_FP_SXYZ2.px;
-			vdata.py = g_FP_SXYZ2.py;
-			vdata.pz = g_FP_SXYZ2.pz;
+			vdata.px = double(C2_OFX) / float(1 << 16) + fMAC1 * one_by_v;
+			vdata.py = double(C2_OFY) / float(1 << 16) + fMAC2 * one_by_v;
+			vdata.pz = fMAC3 * one_by_v;
+			vdata.scr_h = float(C2_H);// / float(1 << 16);
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 			g_pgxpTransformed = true;
