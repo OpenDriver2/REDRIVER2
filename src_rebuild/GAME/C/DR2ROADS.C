@@ -517,20 +517,14 @@ int RoadInCell(VECTOR *pos)
 					plane = FindRoadInBSP((_sdNode *)((int)buffer + (*check & 0x3fff) * sizeof(_sdNode) + buffer[3]), (_sdPlane *)((int)buffer + buffer[1]));
 
 					if (plane != NULL)
-					{
-						pos->vy = sdHeightOnPlane(pos, plane) + 256;
-						return plane->surface - 32;
-					}
+						break;
 				}
 				else
 				{
 					plane = (_sdPlane *)((int)buffer + buffer[1]) + *check;
 
 					if (plane->surface > 31)
-					{
-						pos->vy = sdHeightOnPlane(pos, plane) + 256;
-						return plane->surface - 32;
-					}
+						break;
 				}
 
 				check += 2;
