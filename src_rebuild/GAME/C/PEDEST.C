@@ -5125,42 +5125,50 @@ int basic_car_interest;
 // [D]
 void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 {
+	_CAR_DATA *pCar;
+	int carId;
+	int interest;
 	VECTOR v1;
 	VECTOR v2;
 
-	int carId = (int)player[0].playerCarId;
+	carId = player[0].playerCarId;
 
 	if (carId == -1) // [A] ASan bug fix
 		return;
 
-	_CAR_DATA *pCar = &car_data[carId];
+	pCar = &car_data[carId];
 
-	basic_car_interest = (pCar->hd.wheel_speed >> 10) + (int)pCar->totalDamage;
+	basic_car_interest = (pCar->hd.wheel_speed >> 10) + pCar->totalDamage;
 
 	v1.vx = pPed->position.vx - pCar->hd.where.t[0];
-	v1.vy = pPed->position.vz - pCar->hd.where.t[2];
+	v1.vz = pPed->position.vz - pCar->hd.where.t[2];
 
 	v2.vx = (v1.vx < 0) ? -v1.vx : v1.vx;
-	v2.vy = (v1.vy < 0) ? -v1.vy : v1.vy;
+	v2.vz = (v1.vz < 0) ? -v1.vz : v1.vz;
 
-	int interest = basic_car_interest;
-	int dist = (int)(v2.vx + v2.vy);
+	int dist = (v2.vx + v2.vz);
 
-	if (dist < 6001)
-		interest += (int)(6000 - dist);
+	if (dist < 6001) 
+		interest = 6000 - dist;
+	else 
+		interest = 0;
 
 	if (pPed->type == PED_ACTION_JUMP) 
 	{
-		pPed->head_rot = pPed->dir.vy + (short)(ratan2(v1.vy, v1.vx) + 0xc00 & 0xfff);
-	}
-	else if (interest > 2999) 
-	{
-		pPed->interest = (short)interest;
-		pPed->head_rot = pPed->dir.vy + (short)(ratan2(v1.vy, v1.vx) + 0xc00 & 0xfff);
+		pPed->head_rot = pPed->dir.vy + ratan2(v1.vz, v1.vx) + 3072 & 0xfff;
+		return;
 	}
 
-	if ((pPed->head_rot - 897) < 2302)
-		pPed->head_rot = 0;
+	if (interest + basic_car_interest > 2999)
+	{
+		pPed->interest = interest + basic_car_interest;
+		pPed->head_rot = pPed->dir.vy + ratan2(v1.vz, v1.vx) + 3072 & 0xfff;
+
+		if (pPed->head_rot - 897U > 2302)
+			return;
+	}
+
+	pPed->head_rot = 0;
 }
 
 
