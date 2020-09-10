@@ -621,75 +621,70 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^cells_down >> 5 & 2U];
 
 	plane = NULL;
 
 	if (*buffer == 2) 
 	{
 		surface = buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4;
+		
+		if (*surface != -1)
+		{
+			//buffer[1] = planes offset
+			//buffer[2] = heights (levels) offset
+			//buffer[3] = BSP nodes offset
 
-		if (*surface == -1) 
-		{
-			plane = &sea;
-		}
-		else 
-		{
 			if ((*surface & 0x6000) == 0x2000) 
 			{
-				// traverse heights
-				BSPSurface = (short *)((int)buffer + (*surface & 0x1fff) * sizeof(short) + buffer[2]);
-
-				do 
-				{
-					if (-256 - pos->vy <= *BSPSurface)
+				surface = (short *)((int)buffer + (*surface & 0x1fff) * sizeof(short) + buffer[2]);
+				do {
+					if (-256 - pos->vy <= *surface)
 						break;
 
-					BSPSurface += 2;
+					surface += 2;
 					sdLevel++;
-				} while (*BSPSurface != -0x8000);
-
-				surface = BSPSurface + 1;
+				} while (*surface != -0x8000);
+				surface += 1;
 			}
 
-			BSPSurface = surface;
-
-			do 
-			{
+			do {
 				nextLevel = 0;
-
-				if ((*BSPSurface & 0x4000U) != 0)
+				BSPSurface = surface;
+				if ((*surface & 0x4000U) != 0)
 				{
 					cellPos.x = cellPos.x & 0x3ff;
 					cellPos.y = cellPos.y & 0x3ff;
+					BSPSurface = sdGetBSP((_sdNode *) ((int)buffer +(*surface & 0x3fff) * sizeof(_sdNode) + buffer[3]), &cellPos);
 
-					BSPSurface = sdGetBSP((_sdNode *)((int)buffer + (*BSPSurface & 0x3fff) * sizeof(_sdNode) + buffer[3]), &cellPos);
-
-					if (*BSPSurface == 0x7fff) 
+					if (*BSPSurface == 0x7fff)
 					{
 						sdLevel++;
 						nextLevel = 1;
-						BSPSurface += 2;
+						BSPSurface = surface + 2;
 					}
 				}
+
+				surface = BSPSurface;
 			} while (nextLevel);
 
 			plane = (_sdPlane *)((int)buffer + *BSPSurface * sizeof(_sdPlane) + buffer[1]);
 
 			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) 
 			{
-				if (plane->surface - 16U < 16) 
-				{
+				if (plane->surface - 16U < 16)
 					plane = EventSurface(pos, plane);
-				}
 			}
-			else
+			else 
 			{
 				plane = &sea;
 			}
 		}
+		else
+		{
+			plane = &sea;
+		}
 	}
-
 	return plane;
 }
 
