@@ -1562,7 +1562,7 @@ int TannerActionHappening(void)
 	PEDESTRIAN *pPed = player[0].pPed;
 
 	if (pPed && pPed->type == PED_ACTION_PRESSBUTTON)
-		return pPed->frame1 != 14;
+		return pPed->frame1 == 14;
 
 	return 0;
 }

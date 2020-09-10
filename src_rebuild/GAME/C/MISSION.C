@@ -1544,7 +1544,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 
 		if (val2 != 0)
 		{
-			MR_DebugWarn("MR command: BranchIf(%d, %d)\n", val1, val2);
+			MR_DebugWarn("MR command: Goto(%d)\n", val1);
 			return 1;
 		}
 
@@ -1892,7 +1892,8 @@ void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 // [D]
 void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
 {
-	for (int i = 0; i < 16; i++)
+	int i;
+	for (i = 0; i < 16; i++)
 	{
 		if (!MissionThreads[i].active)
 		{
@@ -1960,7 +1961,8 @@ int MRStopThread(MR_THREAD *thread)
 // [D]
 void MRCommitThreadGenocide(void)
 {
-	for (int i = 0; i < 16; i++)
+	int i;
+	for (i = 0; i < 16; i++)
 		MRStopThread(&MissionThreads[i]);
 }
 
@@ -1983,11 +1985,11 @@ void MRCommitThreadGenocide(void)
 // [D]
 int MRJump(MR_THREAD *thread, long jump)
 {
-	if ((jump + 2u) < 3)
+	if ((jump + 2U) < 3)
 		return MRStopThread(thread);
 
 	thread->pc += jump;
-	return ~jump >> 0x1f;
+	return ~jump >> 31;
 }
 
 
@@ -3569,30 +3571,30 @@ LAB_00063ee4:
 // [D]
 void CompleteAllActiveTargets(int player)
 {
-	_TARGET *p_Var1;
-	int iVar2;
-	uint uVar3;
-	uint uVar4;
+	_TARGET *pTarget;
+	int i;
+	int flag2;
+	int flag1;
 
-	uVar4 = 0x800;
+	flag1 = 0x800;
 
 	if (player == 0) 
 	{
-		uVar4 = 1;
-		uVar3 = 2;
+		flag1 = 1;
+		flag2 = 2;
 	}
-	else 
-		uVar3 = 256;
+	else
+		flag2 = 0x100;
 
-	iVar2 = 15;
-	p_Var1 = MissionTargets;
+	pTarget = MissionTargets;
+	i = 0;
 	do {
-		if ((p_Var1->data[0] < 4) && (0 < p_Var1->data[0]) && (p_Var1->data[1] & uVar4) != 0) 
-			p_Var1->data[1] |= uVar3;
+		if (pTarget->data[0] < 4 && pTarget->data[0] > 0 && (pTarget->data[1] & flag1) != 0)
+			pTarget->data[1] |= flag2;
 
-		iVar2--;
-		p_Var1++;
-	} while (-1 < iVar2);
+		i++;
+		pTarget++;
+	} while (i < 16);
 }
 
 
