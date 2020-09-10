@@ -658,7 +658,7 @@ _sdPlane * sdGetCell(VECTOR *pos)
 			{
 				nextLevel = 0;
 
-				if ((*surface & 0x4000U) != 0) 
+				if ((*BSPSurface & 0x4000U) != 0)
 				{
 					cellPos.x = cellPos.x & 0x3ff;
 					cellPos.y = cellPos.y & 0x3ff;
