@@ -277,18 +277,20 @@ void StepOneCar(_CAR_DATA *cp)
 	if (cp->controlType == 0)
 		return;
 
-	iVar12 = 2;
+	
 
 	SurfacePtr = NULL;
 	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
 	_cl.extraangulardamping = 0;
 
-	_cl.vel[0] = cp->st.n.linearVelocity[0];
-	_cl.vel[1] = cp->st.n.linearVelocity[1];
-	_cl.vel[2] = cp->st.n.linearVelocity[2];
-	_cl.avel[0] = cp->st.n.angularVelocity[0];
-	_cl.avel[1] = cp->st.n.angularVelocity[1];
-	_cl.avel[2] = cp->st.n.angularVelocity[2];
+	iVar12 = 0;
+	do {
+		_cl.vel[iVar12] = cp->st.n.linearVelocity[iVar12];
+		_cl.avel[iVar12] = cp->st.n.angularVelocity[iVar12];
+		cp->st.n.fposition[iVar12] = (cp->st.n.fposition[iVar12] & 0xF) + cp->hd.where.t[iVar12] * 16;
+
+		iVar12++;
+	} while (iVar12 < 3);
 
 	cp->hd.acc[0] = 0;
 	cp->hd.acc[1] = -7456; // apply gravity
@@ -318,59 +320,56 @@ void StepOneCar(_CAR_DATA *cp)
 
 	iVar4 = 12;
 
-	if ((0x800 < cp->hd.where.m[1][1]) && (iVar4 = 4, cp->controlType == 2)) 
+	if (cp->hd.where.m[1][1] > 0x800 && (iVar4 = 4, cp->controlType == 2))
 	{
 		iVar4 = (cp->totalDamage != 0) << 2;
 	}
 
-	iVar13 = iVar4-1;
-	if (iVar4 != 0) 
+	iVar13 = iVar4 - 1;
+	pSVar14 = car_cos->cPoints + iVar13;
+	while (iVar13 >= 0)
 	{
-		pSVar14 = car_cos->cPoints + iVar13;
+		gte_ldv0(pSVar14);
 
-		do {
-			gte_ldv0(pSVar14);
+		gte_rtv0tr();
 
-			gte_rtv0tr();
+		gte_stlvnl(pointPos);
 
-			gte_stlvnl(pointPos);
+		lever[0] = pointPos[0] - cp->hd.where.t[0];
+		lever[1] = pointPos[1] - cp->hd.where.t[1];
+		lever[2] = pointPos[2] - cp->hd.where.t[2];
 
-			lever[0] = pointPos[0] - cp->hd.where.t[0];
-			lever[1] = pointPos[1] - cp->hd.where.t[1];
-			lever[2] = pointPos[2] - cp->hd.where.t[2];
+		FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
 
-			FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
+		if((surfacePoint[1] - pointPos[1]) - 1 < 799)
+		{
+			iVar4 = FIXED((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
 
-			if((surfacePoint[1] - pointPos[1]) - 1 < 799)
+			if (iVar12 < iVar4)
 			{
-				iVar4 = FIXED((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
+				friToUse = 0;
 
-				if (iVar12 < iVar4)
-				{
-					friToUse = 0;
+				deepestNormal[0] = surfaceNormal[0];
+				deepestNormal[1] = surfaceNormal[1];
+				deepestNormal[2] = surfaceNormal[2];
 
-					deepestNormal[0] = surfaceNormal[0];
-					deepestNormal[1] = surfaceNormal[1];
-					deepestNormal[2] = surfaceNormal[2];
+				deepestLever[0] = lever[0];
+				deepestLever[1] = lever[1];
+				deepestLever[2] = lever[2];
 
-					deepestLever[0] = lever[0];
-					deepestLever[1] = lever[1];
-					deepestLever[2] = lever[2];
+				deepestPoint[0] = surfacePoint[0];
+				deepestPoint[1] = surfacePoint[1];
+				deepestPoint[2] = surfacePoint[2];
 
-					deepestPoint[0] = surfacePoint[0];
-					deepestPoint[1] = surfacePoint[1];
-					deepestPoint[2] = surfacePoint[2];
+				iVar12 = iVar4;
 
-					iVar12 = iVar4;
-
-					if (iVar13 > 3)
-						friToUse = 3;
-				}
+				if (iVar13 > 3)
+					friToUse = 3;
 			}
+		}
 
-			iVar13--;
-			pSVar14--;
-		} while (iVar13 != -1);
+		iVar13--;
+		pSVar14--;
 	}
 
 	if (iVar12 != 0)
@@ -383,7 +382,7 @@ void StepOneCar(_CAR_DATA *cp)
 		iVar4 = FIXED(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
 
 		iVar13 = 2;
-		impulse = (((reaction[0] / 64) * (deepestNormal[0] / 64) + (reaction[1] / 64) * (deepestNormal[1] / 64) + (reaction[2] / 64) * (deepestNormal[2] / 64)) / iVar4) * -2048;
+		impulse = (((reaction[0] >> 6) * (deepestNormal[0] >> 6) + (reaction[1] >> 6) * (deepestNormal[1] >> 6) + (reaction[2] >> 6) * (deepestNormal[2] >> 6)) / iVar4) * -2048;
 
 		piVar11 = (long*)&direction.vz;
 		piVar10 = deepestNormal + 2;
