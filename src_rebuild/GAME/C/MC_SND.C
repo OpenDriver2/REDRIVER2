@@ -817,9 +817,9 @@ void DoMissionSound(void)
 			}
 			break;
 		case 30:
-			if ((bodgevar > 0) && (bodgevar < 4))
+			if (bodgevar > 0 && bodgevar < 4)
 			{
-				VECTOR Q[4] = {
+				VECTOR Q[3] = {
 					{0xFFFFD005,0xFFFFFEED,0xCD61B},
 					{0xFFFFCB56,0xFFFFFF06,0xCD5E0},
 					{0xFFFFC7D4,0xFFFFFEEC,0xCD383},
@@ -836,11 +836,10 @@ void DoMissionSound(void)
 			{
 				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
 
-				if ((Mission.timer[0].count / 3000) * 3000 != Mission.timer[0].count + -100)
+				if ((Mission.timer[0].count / 3000) * 3000 != Mission.timer[0].count + 100)
 					return;
 
 				cVar1 = GetMissionSound(29);
-
 				Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 			}
 			else if (bodgevar < 8) // [A] capture 6 and 7
@@ -850,18 +849,18 @@ void DoMissionSound(void)
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc,
-							0x1000 - Mission.timer[0].count / 0x2ee);
+						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+					}
+
+					// bodgevar 6 & 7 (is this a bug?)
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+					{
+						cVar1 = GetMissionSound(20);
+						Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
 
-				// bodgevar 6 & 7 (is this a bug?)
-				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
-				{
-					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
-						0x1000 - Mission.timer[0].count / 0x2ee);
-				}
+
 			}
 			break;
 		case 32:
