@@ -90,13 +90,9 @@ void StepCars(void)
 	// step active cars
 	while (ppCar < end)
 	{
-		StepOneCar(*ppCar++);
-	}
-
-	ppCar = active_car_list;
-
-	while (ppCar < end)
+		StepOneCar(*ppCar);
 		ControlCarRevs(*ppCar++);
+	}
 }
 
 
@@ -677,51 +673,27 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 // [D]
 void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	short twistY;
-	short twistZ;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int twistY;
+	int twistZ;
 	int zd;
-	long* piVar9;
-	long* piVar10;
-	short* psVar11;
 	int i;
-
-	sVar1 = cp->hd.where.m[0][2];
-	iVar4 = cp->hd.aacc[0];
-	sVar2 = cp->hd.where.m[1][2];
-	iVar5 = cp->hd.aacc[1];
-	psVar11 = &cp->hd.where.m[2][2];
-	piVar9 = cp->hd.aacc + 2;
-	sVar3 = cp->hd.where.m[2][2];
-	iVar6 = cp->hd.aacc[2];
 
 	twistY = car_cosmetics[cp->ap.model].twistRateY;
 	twistZ = car_cosmetics[cp->ap.model].twistRateZ;
 
-	i = 2;
-	piVar10 = cl->avel + 2;
+	i = 0;
+
+	zd = FIXED(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
 
 	do {
-		zd = *piVar9 * (int)twistY + FIXED((int)*psVar11 * ((int)twistZ - (int)twistY) * FIXED(sVar1 * iVar4 + sVar2 * iVar5 + sVar3 * iVar6 ) - *piVar10 * 128);
-		*piVar9 = zd;
+
+		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXED(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
-		{
-			iVar7 = *piVar10;
-			*piVar9 = zd - (iVar7 >> 3);
-		}
+			cp->hd.aacc[i] -= (cl->avel[i] >> 3);
 
-		piVar10--;
-		psVar11-= 3;
-		i--;
-		piVar9--;
-	} while (-1 < i);
+		i++;
+	} while (i < 3);
 }
 
 
@@ -881,9 +853,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 	oldSpeed = cp->hd.speed * 3 >> 1;
 
 	if (oldSpeed < 0x20)
-		oldSpeed = oldSpeed * -0x48 + 0xe70;
+		oldSpeed = oldSpeed * -72 + 3696;
 	else
-		oldSpeed = 0x590 - oldSpeed;
+		oldSpeed = 1424 - oldSpeed;
 
 	uVar3 = cp->hd.direction;
 	SurfacePtr = NULL;
@@ -1007,8 +979,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 			force.vz = 0;
 			force.vx = 0;
-			chan = FIXED(cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + cl->vel[0];
-			iVar9 = FIXED(cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + cl->vel[2];
+
+			pointVel[0] = FIXED(cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + cl->vel[0];
+			pointVel[2] = FIXED(cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + cl->vel[2];
 
 			susForce = newCompression * 230 - oldCompression * 100;
 
@@ -1027,17 +1000,17 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			}
 			else 
 			{
-				uVar3 = ratan2(chan >> 6, iVar9 >> 6);
+				uVar3 = ratan2(pointVel[0] >> 6, pointVel[2] >> 6);
 
 				lfz = (int)rcossin_tbl[(uVar3 & 0xfff) * 2 + 1];
 
-				iVar4 = chan;
-				if (chan < 0)
-					iVar4 = -chan;
+				iVar4 = pointVel[0];
+				if (pointVel[0] < 0)
+					iVar4 = -pointVel[0];
 
-				iVar5 = iVar9;
-				if (iVar9 < 0)
-					iVar5 = -iVar9;
+				iVar5 = pointVel[2];
+				if (pointVel[2] < 0)
+					iVar5 = -pointVel[2];
 
 				lfx = (int)rcossin_tbl[(uVar3 & 0xfff) * 2];
 
@@ -1049,12 +1022,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				}
 			}
 
-			iVar4 = lfx;
-			iVar5 = lfz;
-			iVar9 = (chan >> 6) * (iVar4 >> 6) + (iVar9 >> 6) * (iVar5 >> 6);
-			chan = oldSpeed;
-			iVar4 = iVar9;
-			slidevel = (chan >> 6) * (iVar4 >> 6);
+			iVar9 = (ALZBS(pointVel[0], 6) >> 6) * (ALZBS(lfx, 6) >> 6) + (ALZBS(pointVel[2], 6) >> 6) * (ALZBS(lfz, 6) >> 6);
+
+			slidevel = (ALZBS(oldSpeed, 6) >> 6) * (ALZBS(iVar9, 6) >> 6);
 
 			if (slidevel < 0)
 				slidevel = -slidevel;
@@ -1064,15 +1034,15 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				if (iVar9 < -50000)
 				{
 				LAB_00082604:
-					local_t0_1700 = -0x30d4;
+					local_t0_1700 = -12500;
 				}
 				else 
 				{
 					local_t0_1700 = FIXED(oldSpeed * iVar9);
-					if (0x30d4 < local_t0_1700)
+					if (12500 < local_t0_1700)
 						goto LAB_000825f4;
 
-					if (local_t0_1700 < -0x30d4)
+					if (local_t0_1700 < -12500)
 						goto LAB_00082604;
 				}
 			}
@@ -1198,7 +1168,6 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 LAB_00082b9c:
 	cp->hd.wheel_speed = uVar3;
-	return;
 }
 
 

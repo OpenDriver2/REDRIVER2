@@ -22,9 +22,11 @@
 
 #else
 
-#define	FIXED(a)		(int(a) + (ONE/2) >> ONE_BITS)
-#define	HFIXED(a)		(int(a) + ONE >> (ONE_BITS+1))
-#define	PH_FIXED(a)		(int(a) + (PH_ONE) >> PH_ONE_BITS)
+#define	FIXED(a)		(a + (ONE/2) >> ONE_BITS)
+#define	HFIXED(a)		(a + ONE >> (ONE_BITS+1))
+#define	PH_FIXED(a)		(a >> PH_ONE_BITS)
+
+#define ALZBS(val, bits) ((val) < 0 ? ((val) + ((1 << bits)-1)) : (val))		// AddIfLessThanZeroBeforeShift pls correct name
 
 #endif
 
