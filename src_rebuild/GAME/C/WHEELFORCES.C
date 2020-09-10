@@ -274,6 +274,9 @@ void StepOneCar(_CAR_DATA *cp)
 	VECTOR partdir;
 	_sdPlane *SurfacePtr;
 
+	if (cp->controlType == 0)
+		return;
+
 	iVar12 = 2;
 
 	SurfacePtr = NULL;
