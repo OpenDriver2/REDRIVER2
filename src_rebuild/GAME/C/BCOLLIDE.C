@@ -1065,7 +1065,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			if (handlingType[cp->hndType].fourWheelDrive == 1 || cp->hndType == 5)
 			{
 				cd[0].length[1] *= 13;
-				cd[0].length[1] >>= 4;
+				cd[0].length[1] = FixFloorSigned(cd[0].length[1], 4);
 			}
 		}
 
@@ -1235,9 +1235,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					reaction[2] += 700000;
 				}
 
-				strikeVel = -((reaction[0] >> 8) * (collisionResult.surfNormal.vx >> 4) +
-							(reaction[1] >> 8) * (collisionResult.surfNormal.vy >> 4) +
-							(reaction[2] >> 8) * (collisionResult.surfNormal.vz >> 4));
+				strikeVel = -(FixFloorSigned(reaction[0], 8) * FixFloorSigned(collisionResult.surfNormal.vx, 4) +
+								FixFloorSigned(reaction[1], 8) * FixFloorSigned(collisionResult.surfNormal.vy, 4) +
+								FixFloorSigned(reaction[2], 8) * FixFloorSigned(collisionResult.surfNormal.vz, 4));
 
 				if (strikeVel > 0)
 				{

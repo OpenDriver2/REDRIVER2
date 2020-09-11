@@ -3279,7 +3279,7 @@ void PingInPedestrians(void)
 				lVar7 = lVar5;
 
 				pinginPedAngle = pinginPedAngle + 0x51;
-				iVar8 = lVar5 + (lVar7 >> 7) * -0x80 + 0x600;
+				iVar8 = lVar5 - FixFloorSigned(lVar7, 7) * 128 + 0x600;
 				randomLoc.vy = baseLoc.vy;
 				randomLoc.vx = baseLoc.vx + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
 				randomLoc.vz = baseLoc.vz + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
@@ -3723,7 +3723,7 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 				iVar4 = iVar1;
 				iVar6 = iVar3;
 
-				iVar5 = (iVar7 >> 8) * (iVar4 >> 4) + (iVar5 >> 8) * (iVar6 >> 4);
+				iVar5 = FixFloorSigned(iVar7, 8) * FixFloorSigned(iVar4, 4) + FixFloorSigned(iVar5, 8) * FixFloorSigned(iVar6, 4);
 
 				if (iVar5 < 0)
 				{
@@ -3737,16 +3737,10 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 
 					iVar7 = iVar1;
 
-					if (0 < collisionResult.surfNormal.vx)
-						iVar7 = iVar1 + 0x3f;
-
-					iVar4 = (iVar5 >> 6) * (iVar7 >> 6);
+					iVar4 = FixFloorSigned(iVar5, 6) * FixFloorSigned(iVar7, 6);
 					iVar7 = iVar3;
 
-					if (0 < collisionResult.surfNormal.vz) 
-						iVar7 = iVar3 + 0x3f;
-
-					iVar5 = (iVar5 >> 6) * (iVar7 >> 6);
+					iVar5 = FixFloorSigned(iVar5, 6) * FixFloorSigned(iVar7, 6);
 					pcdTanner->st.n.linearVelocity[0] = pcdTanner->st.n.linearVelocity[0] + iVar4;
 					pcdTanner->st.n.linearVelocity[2] = pcdTanner->st.n.linearVelocity[2] + iVar5;
 

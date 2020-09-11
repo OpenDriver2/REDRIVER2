@@ -771,13 +771,13 @@ void GlobalTimeStep(void)
 			{
 				long* orient = st->n.orientation;
 
-				st->n.fposition[0] += PH_FIXED(st->n.linearVelocity[0]);
-				st->n.fposition[1] += PH_FIXED(st->n.linearVelocity[1]);
-				st->n.fposition[2] += PH_FIXED(st->n.linearVelocity[2]);
+				st->n.fposition[0] += st->n.linearVelocity[0] >> 8;
+				st->n.fposition[1] += st->n.linearVelocity[1] >> 8;
+				st->n.fposition[2] += st->n.linearVelocity[2] >> 8;
 
-				AV[0] = HFIXED(st->n.angularVelocity[0]);
-				AV[1] = HFIXED(st->n.angularVelocity[1]);
-				AV[2] = HFIXED(st->n.angularVelocity[2]);
+				AV[0] = FixHalfRound(st->n.angularVelocity[0], 13);
+				AV[1] = FixHalfRound(st->n.angularVelocity[1], 13);
+				AV[2] = FixHalfRound(st->n.angularVelocity[2], 13);
 
 				delta_orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
 				delta_orientation[1] = (orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1];
@@ -841,9 +841,9 @@ void GlobalTimeStep(void)
 					local_a3_1288->n.fposition[1] = st->n.linearVelocity[1] >> 8;
 					local_a3_1288->n.fposition[2] = st->n.linearVelocity[2] >> 8;
 
-					AV[0] = HFIXED(st->n.angularVelocity[0]);
-					AV[1] = HFIXED(st->n.angularVelocity[1]);
-					AV[2] = HFIXED(st->n.angularVelocity[2]);
+					AV[0] = FixHalfRound(st->n.angularVelocity[0], 13);
+					AV[1] = FixHalfRound(st->n.angularVelocity[1], 13);
+					AV[2] = FixHalfRound(st->n.angularVelocity[2], 13);
 
 					local_a3_1288->n.orientation[0] = FIXED(-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
 					local_a3_1288->n.orientation[1] = FIXED((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]);
@@ -916,7 +916,7 @@ void GlobalTimeStep(void)
 									lVar7 = normal[1];
 									lVar8 = normal[2];
 
-									howHard = (howHard >> 8) * (lVar10 >> 5) + (iVar19 >> 8) * (lVar7 >> 5) + (iVar9 >> 8) * (lVar8 >> 5);
+									howHard = FixFloorSigned(howHard, 8) * FixFloorSigned(lVar10, 5) + FixFloorSigned(iVar19, 8) * FixFloorSigned(lVar7, 5) + FixFloorSigned(iVar9, 8) * FixFloorSigned(lVar8, 5);
 
 									if (0 < howHard && -1 < RKstep)
 									{

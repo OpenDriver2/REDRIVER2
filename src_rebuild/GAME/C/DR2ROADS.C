@@ -319,7 +319,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
 			angle = ratan2(curve->Midz - pos->vz, curve->Midx - pos->vx);
 
-			return FIXED(curve->gradient * (angle + 2048 & 0xfff)) - curve->height;
+			return FixFloorSigned(curve->gradient * (angle + 2048 & 0xfff), ONE_BITS) - curve->height;
 		}
 
 		i = plane->b;
