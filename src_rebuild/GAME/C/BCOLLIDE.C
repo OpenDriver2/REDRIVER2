@@ -1071,8 +1071,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		cd[0].avel = FIXEDH(cp->st.n.angularVelocity[1]) * 5 >> 5;
 
-		cd[1].x.vx = cp->hd.where.t[0] + (((building->pos.vx - cp->hd.where.t[0]) << 0x10) >> 0x10);
-		cd[1].x.vz = cp->hd.where.t[2] + (((building->pos.vz - cp->hd.where.t[2]) << 0x10) >> 0x10);
+		cd[1].x.vx = cp->hd.where.t[0] + (building->pos.vx - cp->hd.where.t[0]);
+		cd[1].x.vz = cp->hd.where.t[2] + (building->pos.vz - cp->hd.where.t[2]);
 
 		cd[1].theta = building->theta;
 		cd[1].length[0] = building->xsize;
@@ -1211,6 +1211,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
+				// perform error correction
+				cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
+				cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
+
 				lever[0] = collisionResult.hit.vx - cp->hd.where.t[0];
 				lever[1] = collisionResult.hit.vy - cp->hd.where.t[1];
 				lever[2] = collisionResult.hit.vz - cp->hd.where.t[2];
@@ -1218,17 +1222,6 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				reaction[0] = FIXEDH(cp->st.n.angularVelocity[1] * lever[2] - cp->st.n.angularVelocity[2] * lever[1]) + cp->st.n.linearVelocity[0];
 				reaction[1] = FIXEDH(cp->st.n.angularVelocity[2] * lever[0] - cp->st.n.angularVelocity[0] * lever[2]) + cp->st.n.linearVelocity[1];
 				reaction[2] = FIXEDH(cp->st.n.angularVelocity[0] * lever[1] - cp->st.n.angularVelocity[1] * lever[0]) + cp->st.n.linearVelocity[2];
-
-				if (cp->controlType == 6)	// [A] temporary hack due to physics differences
-				{
-					cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
-					cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
-				}
-				else
-				{
-					cp->st.n.fposition[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx) << 1;
-					cp->st.n.fposition[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz) << 1;
-				}
 
 				if (flags & 0x2) // [A] Vegas train velocity - added here
 				{
@@ -1359,7 +1352,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					else
 						denom = (strikeVel / displacement) * 4096;
 
-					denom /= 64;
+					denom = FixFloorSigned(denom, 6);
 
 					pointVel[0] = denom * FixFloorSigned(collisionResult.surfNormal.vx, 6);
 					pointVel[1] = denom * FixFloorSigned(collisionResult.surfNormal.vy, 6);

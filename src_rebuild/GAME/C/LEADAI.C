@@ -940,9 +940,6 @@ void FakeMotion(_CAR_DATA *cp)
 
 			(cp->hd).where.t[0] = FIXEDH(c * d) + straight->Midx;
 			(cp->hd).where.t[2] = FIXEDH(s * d) + straight->Midz;
-
-			cp->st.n.fposition[0] = cp->hd.where.t[0] << 4;
-			cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
 			return;
 		}
 
