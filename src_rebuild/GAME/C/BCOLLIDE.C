@@ -1221,8 +1221,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				if (cp->controlType == 6)	// [A] temporary hack due to physics differences
 				{
-					cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx) << 1;
-					cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz) << 1;
+					cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
+					cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
 				}
 				else
 				{
