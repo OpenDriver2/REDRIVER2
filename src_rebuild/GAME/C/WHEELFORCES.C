@@ -378,7 +378,7 @@ void StepOneCar(_CAR_DATA *cp)
 		iVar4 = FIXEDH(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
 
 		iVar13 = 2;
-		impulse = ((FixFloorSigned(reaction[0], 6) * FixFloorSigned(deepestNormal[0], 6) + FixFloorSigned(reaction[1], 6) * FixFloorSigned(deepestNormal[1], 6) + FixFloorSigned(reaction[2], 6) * FixFloorSigned(deepestNormal[2], 6)) / iVar4) * -2048;
+		impulse = (((reaction[0] >> 6) * (deepestNormal[0] >> 6) + (reaction[1] >> 6) * (deepestNormal[1] >> 6) + (reaction[2] >> 6) * (deepestNormal[2] >> 6)) / iVar4) * -2048;
 
 		piVar11 = (long*)&direction.vz;
 		piVar10 = deepestNormal + 2;
@@ -1130,9 +1130,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			if (cp->controlType == 3) 
 			{
 				if (gCopDifficultyLevel == 2)
-					wheelPos[1] = wheelPos[1] * 12 >> 5;
+					wheelPos[1] = FixFloorSigned(wheelPos[1] * 12, 5);
 				else
-					wheelPos[1] = wheelPos[1] * 19 >> 5;
+					wheelPos[1] = FixFloorSigned(wheelPos[1] * 19, 5);
 			}
 
 			cp->hd.acc[0] += force.vx;

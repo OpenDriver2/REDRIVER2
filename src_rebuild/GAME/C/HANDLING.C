@@ -903,20 +903,18 @@ void GlobalTimeStep(void)
 									lever1[1] = iVar9 + iVar28;
 									iVar28 = depth * 0xc000;
 
-									howHard = (FIXEDH(st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) + st->n.linearVelocity[0]) -
+									pointVel0[0] = (FIXEDH(st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) + st->n.linearVelocity[0]) -
 												(FIXEDH(p_Var25->n.angularVelocity[1] * lever1[2] - p_Var25->n.angularVelocity[2] * lever1[1]) + p_Var25->n.linearVelocity[0]);
 										
-									iVar19 = (FIXEDH(st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) + st->n.linearVelocity[1]) -
+									pointVel0[1] = (FIXEDH(st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) + st->n.linearVelocity[1]) -
 												(FIXEDH(p_Var25->n.angularVelocity[2] * lever1[0] - p_Var25->n.angularVelocity[0] * lever1[2]) + p_Var25->n.linearVelocity[1]);
 										
-									iVar9 = (FIXEDH(st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) + st->n.linearVelocity[2]) -
+									pointVel0[2] = (FIXEDH(st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) + st->n.linearVelocity[2]) -
 											(FIXEDH(p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) +p_Var25->n.linearVelocity[2]);
 										
-									lVar10 = normal[0];
-									lVar7 = normal[1];
-									lVar8 = normal[2];
-
-									howHard = FixFloorSigned(howHard, 8) * FixFloorSigned(lVar10, 5) + FixFloorSigned(iVar19, 8) * FixFloorSigned(lVar7, 5) + FixFloorSigned(iVar9, 8) * FixFloorSigned(lVar8, 5);
+									howHard =	FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
+												FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
+												FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
 
 									if (0 < howHard && -1 < RKstep)
 									{
@@ -981,7 +979,7 @@ void GlobalTimeStep(void)
 									}
 
 									iVar9 = howHard * 9;
-									iVar28 = iVar28 + (iVar9 >> 2);
+									iVar28 = iVar28 + FixFloorSigned(iVar9, 2);
 
 									if (0x69000 < iVar28)
 										iVar28 = 0x69000;
@@ -1004,18 +1002,16 @@ void GlobalTimeStep(void)
 
 									if (uVar1 != 7 && iVar19 != 0x7fff)
 									{
-										if (((uVar1 == 3) && (uVar2 != 4)) && (c1->hndType != 0)) 
+										if (uVar1 == 3 && uVar2 != 4 && c1->hndType != 0) 
 										{
-											iVar11 = iVar28 * (7 - gCopDifficultyLevel);
-											iVar19 = iVar11 >> 3;
+											iVar19 = FixFloorSigned(iVar28 * (7 - gCopDifficultyLevel), 3);
 										}
 										else 
 										{
 											iVar19 = iVar28;
-											if ((uVar1 == 4) && (c1->hndType != 0)) 
+											if (uVar1 == 4 && c1->hndType != 0) 
 											{
-												iVar11 = iVar28 * 5;
-												iVar19 = iVar11 >> 3;
+												iVar19 = FixFloorSigned(iVar28 * 5, 3);
 											}
 										}
 
@@ -1051,18 +1047,16 @@ void GlobalTimeStep(void)
 									{
 										sVar3 = car_cosmetics[c1->ap.model].twistRateY;
 
-										if ((cp->controlType == 3 || c1->controlType != 3) || c1->hndType == 0) 
+										if (cp->controlType == 3 || c1->controlType != 3 || c1->hndType == 0) 
 										{
 											if (c1->controlType == 4 && cp->hndType != 0)
 											{
-												iVar9 = iVar28 * 5;
-												iVar28 = FixFloorSigned(iVar9, 3);
+												iVar28 = FixFloorSigned(iVar28 * 5, 3);
 											}
 										}
 										else
 										{
-											iVar9 = iVar28 * (7 - gCopDifficultyLevel);
-											iVar28 = FixFloorSigned(iVar9, 3);
+											iVar28 = FixFloorSigned(iVar28 * (7 - gCopDifficultyLevel), 3);
 										}
 
 										iVar28 = FIXEDH(iVar28) * iVar21 >> 3;
@@ -1607,7 +1601,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 	// [A] update wheel rotation - MP fix
 	car_id = CAR_INDEX(cp);
 
-	frontWheelSpeed = cp->hd.wheel_speed >> 8;
+	frontWheelSpeed = FixFloorSigned(cp->hd.wheel_speed, 8);
 
 	if (cp->hd.wheel[0].locked == 0)
 	{
@@ -1777,16 +1771,16 @@ void CheckCarToCarCollisions(void)
 
 		iVar4 = cp->hd.where.t[2];
 		iVar2 = iVar4 - iVar6;
-		bb2->x0 = iVar5 >> 4;
+		bb2->x0 = FixFloorSigned(iVar5, 4);
 
-		bb2->z0 = iVar2 >> 4;
+		bb2->z0 = FixFloorSigned(iVar2, 4);
 		iVar10 = iVar10 + iVar9;
 
 		iVar4 = iVar4 + iVar6;
-		bb2->x1 = iVar10 >> 4;
+		bb2->x1 = FixFloorSigned(iVar10, 4);
 
 		iVar2 = cp->st.n.linearVelocity[0];
-		bb2->z1 = iVar4 >> 4;
+		bb2->z1 = FixFloorSigned(iVar4, 4);
 
 		if (iVar2 < 0) 
 		{
@@ -1816,10 +1810,10 @@ void CheckCarToCarCollisions(void)
 
 		// [A] 2400 for box size - bye bye collision check performance under bridges
 		iVar2 = iVar6 - colBox->vy * 2;// -2400;
-		bb2->y0 = iVar2 >> 4;
+		bb2->y0 = FixFloorSigned(iVar2, 4);
 
 		iVar2 = iVar6 + colBox->vy * 4;// +2400;
-		bb2->y1 = iVar2 >> 4;
+		bb2->y1 = FixFloorSigned(iVar2, 4);
 
 		if (cp->hndType == 0)
 			cp->hd.mayBeColliding = 1;
