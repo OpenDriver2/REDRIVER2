@@ -72,7 +72,7 @@ static int CutsceneCameraOffset = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitInGameCutsceneVariables(void)
 {
 	CutsceneStreamIndex = 0;
@@ -134,21 +134,19 @@ void InitInGameCutsceneVariables(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void HandleInGameCutscene(void)
 {
-	int iVar1;
-
 	if (gInGameCutsceneDelay != 0) 
 	{
 		BlackBorderHeight = gInGameCutsceneDelay;
 		gInGameCutsceneDelay++;
 
-		if (27 < gInGameCutsceneDelay)
+		if (gInGameCutsceneDelay > 27)
 		{
 			TriggerInGameCutscene(gInGameCutsceneID);
 			gInGameCutsceneDelay = 0;
-			BlackBorderHeight = 0x1c;
+			BlackBorderHeight = 28;
 		}
 	}
 
@@ -164,22 +162,15 @@ void HandleInGameCutscene(void)
 
 	if (CutsceneLength-28 < CutsceneFrameCnt) 
 	{
-		iVar1 = BlackBorderHeight - 1;
-
-		if (BlackBorderHeight < 1)
-			goto LAB_000326f4;
+		if (BlackBorderHeight > 0)
+			BlackBorderHeight--;
 	}
 	else 
 	{
-		iVar1 = BlackBorderHeight + 1;
-
-		if (27 < BlackBorderHeight)
-			goto LAB_000326f4;
+		if (BlackBorderHeight < 28)
+			BlackBorderHeight++;
 	}
 
-	BlackBorderHeight = iVar1;
-
-LAB_000326f4:
 	CutsceneFrameCnt++;
 
 	if (CutsceneFrameCnt == CutsceneLength) 
@@ -226,7 +217,7 @@ LAB_000326f4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawInGameCutscene(void)
 {
 	TILE *tile;
@@ -309,7 +300,7 @@ void DrawInGameCutscene(void)
 	/* end block 3 */
 	// End Line: 1389
 
-// [D]
+// [D] [T]
 void TriggerChase(int *car, int cutscene)
 {
 	int *inform;
@@ -392,7 +383,7 @@ static VECTOR *SavedSpoolXZ = NULL;
 static int SavedCameraCarId = 0;
 static int SavedCameraAngle = 0;
 
-// [D]
+// [D] [T]
 void TriggerInGameCutscene(int cutscene)
 {
 	if (IsCutsceneResident(cutscene) == 0)
@@ -464,7 +455,7 @@ void TriggerInGameCutscene(int cutscene)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int CalcInGameCutsceneSize(void)
 {
 	CUTSCENE_HEADER header;
@@ -523,10 +514,10 @@ int CalcInGameCutsceneSize(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A] might be incorrect
+// [D] [T]
 void ReleaseInGameCutscene(void)
 {
-	int plr;
+	int i;
 
 	if (gInGameChaseActive != 0 && Mission.ChaseTarget != NULL) 
 	{
@@ -538,42 +529,36 @@ void ReleaseInGameCutscene(void)
 		PingOutAllCivCarsAndCopCars();
 		InitCivCars();
 
-		if (CutsceneStreamIndex < NumReplayStreams)
+		for (i = CutsceneStreamIndex; i < NumReplayStreams; i++)
 		{
-			plr = CutsceneStreamIndex;
+			if (PlayerStartInfo[i]->flags & 4)
+			{
+				memcpy(&player[0], &player[i], sizeof(_PLAYER));
 
-			do {
-				if ((PlayerStartInfo[plr]->flags & 4) == 0)
+				if (player[0].playerType == 2)
 				{
-					DestroyPlayer(plr, 1);
+					player[0].pPed->padId = 0;
+					SavedWorldCentreCarId = -1;
+					SavedSpoolXZ = (VECTOR *)&player[0].pPed->position;
 				}
-				else 
+				else
 				{
-					memcpy(&player[0], &player[plr], sizeof(_PLAYER));
+					Swap2Cars(player[0].playerCarId, 0);
+					SavedWorldCentreCarId = player[0].playerCarId;
 
-					if (player[0].playerType == 2) 
-					{
-						player[0].pPed->padId = 0;
-						SavedWorldCentreCarId = -1;
-						SavedSpoolXZ = (VECTOR *)&player[0].pPed->position;
-					}
-					else 
-					{
-						Swap2Cars(player[0].playerCarId, 0);
-						SavedWorldCentreCarId = player[0].playerCarId;
+					SavedSpoolXZ = (VECTOR *)car_data[SavedWorldCentreCarId].hd.where.t;
 
-						SavedSpoolXZ = (VECTOR *)car_data[SavedWorldCentreCarId].hd.where.t;
-
-						car_data[SavedWorldCentreCarId].ai.padid = &player[0].padid;
-					}
-
-					SavedCameraCarId = SavedWorldCentreCarId;
-
-					DestroyPlayer(plr, 0);
+					car_data[SavedWorldCentreCarId].ai.padid = &player[0].padid;
 				}
 
-				plr++;
-			} while (plr < NumReplayStreams);
+				SavedCameraCarId = SavedWorldCentreCarId;
+
+				DestroyPlayer(i, 0);
+			}
+			else 
+			{
+				DestroyPlayer(i, 1);
+			}
 		}
 
 		gThePlayerCar = -1;
@@ -582,17 +567,17 @@ void ReleaseInGameCutscene(void)
 		DestroyCivPedestrians();
 		AdjustPlayerCarVolume();
 
-		plr = player[0].playerCarId;
+		i = player[0].playerCarId;
 
 		player[0].padid = 0;
 		player[0].worldCentreCarId = SavedWorldCentreCarId;
 		player[0].spoolXZ = SavedSpoolXZ;
 		player[0].cameraCarId = SavedCameraCarId;
 
-		if (plr != -1) 
+		if (i != -1) 
 		{
-			car_data[plr].ai.padid = &player[0].padid;
-			car_data[plr].controlType = 1;
+			car_data[i].ai.padid = &player[0].padid;
+			car_data[i].controlType = 1;
 		}
 
 		cameraview = SavedCameraView;
@@ -650,7 +635,7 @@ void ReleaseInGameCutscene(void)
 	/* end block 3 */
 	// End Line: 3178
 
-// [D]
+// [D] [T]
 int PreLoadInGameCutscene(int chase)
 {
 	return LoadInGameCutscene(chase) != 0;
@@ -672,7 +657,7 @@ int PreLoadInGameCutscene(int chase)
 	/* end block 2 */
 	// End Line: 3213
 
-// [D]
+// [D] [T]
 int CutsceneCameraChange(int cameracnt)
 {
 	cameracnt -= CutsceneCameraOffset;
@@ -730,7 +715,7 @@ int CutsceneCameraChange(int cameracnt)
 	/* end block 3 */
 	// End Line: 3302
 
-// [D]
+// [D] [T]
 int LoadInGameCutscene(int subindex)
 {
 	if (CutsceneInReplayBuffer)
@@ -815,7 +800,7 @@ int LoadInGameCutscene(int subindex)
 	/* end block 4 */
 	// End Line: 2210
 
-// [D] [A] might be bugged
+// [D] [T]
 int TriggerInGameCutsceneSystem(int cutscene)
 {
 	static char padid[8];
@@ -987,7 +972,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 	/* end block 4 */
 	// End Line: 2641
 
-// [D]
+// [D] [T]
 void SetNullPlayer(int plr)
 {
 	int carId = player[plr].playerCarId;
@@ -1032,7 +1017,7 @@ void SetNullPlayer(int plr)
 	/* end block 4 */
 	// End Line: 2688
 
-// [D]
+// [D] [T]
 void SetNullPlayerDontKill(int plr)
 {
 	int carId = player[plr].playerCarId;
@@ -1065,6 +1050,7 @@ void SetNullPlayerDontKill(int plr)
 	/* end block 2 */
 	// End Line: 2734
 
+// [D] [T]
 void DestroyPlayer(int plr, int fully)
 {
 	if (PlayerStartInfo[plr]->flags & 2)
@@ -1119,33 +1105,28 @@ void DestroyPlayer(int plr, int fully)
 	/* end block 4 */
 	// End Line: 3831
 
-// [D]
+// [D] [T]
 void FindNextCutChange(int cameracnt)
 {
 	bool found;
-	int iVar2;
-	PLAYBACKCAMERA *pPVar3;
 	int nextframe;
-	int iVar5;
+	int count;
 
 	found = false;
 	nextframe = 100001;
-	iVar5 = 59;
-	pPVar3 = CutsceneCamera;
+	count = 0;
 
 	do {
-		iVar2 = pPVar3->FrameCnt;
-
-		if (cameracnt <= iVar2 && iVar2 < nextframe) 
+		if (cameracnt <= CutsceneCamera[count].FrameCnt && 
+			CutsceneCamera[count].FrameCnt < nextframe)
 		{
 			found = true;
-			nextframe = iVar2;
-			CutNextChange = pPVar3;
+			nextframe = CutsceneCamera[count].FrameCnt;
+			CutNextChange = &CutsceneCamera[count];
 		}
 
-		iVar5--;
-		pPVar3++;
-	} while (-1 < iVar5);
+		count++;
+	} while (count < 60);
 
 	if (!found)
 		CutNextChange->next = -2;
@@ -1186,7 +1167,7 @@ void FindNextCutChange(int cameracnt)
 	/* end block 4 */
 	// End Line: 2853
 
-// [D]
+// [D] [T]
 int LoadCutsceneToReplayBuffer(int residentCutscene)
 {
 	REPLAY_SAVE_HEADER *rheader;
@@ -1287,7 +1268,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	/* end block 4 */
 	// End Line: 3091
 
-// [D]
+// [D] [T]
 int LoadCutsceneToBuffer(int subindex)
 {
 	int offset;
@@ -1422,7 +1403,7 @@ void ShowCutsceneError(void)
 	/* end block 4 */
 	// End Line: 4233
 
-// [D]
+// [D] [T]
 int LoadCutsceneInformation(int cutscene)
 {
 	int i;
@@ -1488,10 +1469,11 @@ int LoadCutsceneInformation(int cutscene)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void FreeCutsceneBuffer(void)
 {
 	int i;
+
 	for (i = 0; i < 4; i++)
 	{
 		CutsceneBuffer.residentCutscenes[i] = -1;
@@ -1535,7 +1517,7 @@ void FreeCutsceneBuffer(void)
 	/* end block 4 */
 	// End Line: 4356
 
-// [D]
+// [D] [T]
 int IsCutsceneResident(int cutscene)
 {
 	int i;

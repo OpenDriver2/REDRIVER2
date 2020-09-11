@@ -3216,7 +3216,7 @@ void StepEvents(void)
 						ev->rotation = *(ushort*)ppiVar9;
 						ev->timer = 0;
 
-						if (gCurrentMissionNumber != 0x1e)
+						if (gCurrentMissionNumber != 30)
 							SetMSoundVar(3, NULL);
 
 						if (ev == events.cameraEvent)
@@ -4844,7 +4844,7 @@ VECTOR* TriggerEvent(int i)
 				PrepareSecretCar();
 				events.cameraEvent = (_EVENT*)chicagoDoor;
 			case 6:
-				TriggerDoor((FixedEvent*)(ElTrainData + i * 0xb + 0x4a), stage + i, 1); // might be incorrect
+				TriggerDoor(chicagoDoor + i-5, stage + i, 1); // might be incorrect
 		}
 	}
 	else if (GameLevel == 1)
@@ -4867,7 +4867,7 @@ VECTOR* TriggerEvent(int i)
 				break;
 			case 3:
 				PrepareSecretCar();
-				events.cameraEvent = (_EVENT*)havanaFixed + 2;
+				events.cameraEvent = (_EVENT*)(havanaFixed + 2);
 				TriggerDoor(havanaFixed + 2, stage + i, 0);
 				break;
 			case 4:
@@ -4909,15 +4909,15 @@ VECTOR* TriggerEvent(int i)
 				event[1].next = event + 2;
 				break;
 			case 4:
-				TriggerDoor(vegasDoor + i + 2, stage + i, 0);
+				TriggerDoor(vegasDoor + i - 4, stage + i, 0);
 				break;
 			case 8:
-				events.cameraEvent = (_EVENT*)vegasDoor + 4;
+				events.cameraEvent = (_EVENT*)(vegasDoor + 4);
 				PrepareSecretCar();
 			case 5:
 			case 6:
 			case 7:
-				TriggerDoor(vegasDoor + i + 2, stage + i, 1);
+				TriggerDoor(vegasDoor + i - 4, stage + i, 1);
 				break;
 			case 9:
 				SetMSoundVar(5, NULL);
@@ -4934,11 +4934,11 @@ VECTOR* TriggerEvent(int i)
 				TriggerDoor(rioDoor + 2, stage + i, 0);
 				TriggerDoor(rioDoor + 3, stage + i, 0);
 
-				events.cameraEvent = (_EVENT*)rioDoor + 2;
+				events.cameraEvent = (_EVENT*)(rioDoor + 2);
 				break;
 			case 5:
 			case 6:
-				TriggerDoor(vegasDoor + i, stage + i, (i == 5));
+				TriggerDoor(rioDoor + i - 5, stage + i, (i == 5));
 				break;
 			case 7:
 				if (stage[i] == 0)
@@ -4959,7 +4959,7 @@ VECTOR* TriggerEvent(int i)
 				PingOutAllSpecialCivCars();
 				TriggerDoor(rioDoor + 4, stage + i, 0);
 				TriggerDoor(rioDoor + 5, stage + i, 0);
-				events.cameraEvent = (_EVENT*)rioDoor + 4;
+				events.cameraEvent = (_EVENT*)(rioDoor + 4);
 		}
 	}
 

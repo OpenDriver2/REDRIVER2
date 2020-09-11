@@ -9,8 +9,6 @@
 #include "LIBSPU.H"
 #include "LIBGTE.H"
 
-#include "REVERSING.H"
-
 // from redriver2_psxpc
 void printMsg(char *fmt, ...);
 void printInfo(char *fmt, ...);
@@ -40,6 +38,8 @@ typedef unsigned long OTTYPE;
 #endif // USE_32_BIT_ADDR
 
 #endif // PSX
+
+#include "REVERSING.H"
 
 #include "VERSION.H"
 #include "DR2MATH.H"

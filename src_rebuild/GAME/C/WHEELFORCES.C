@@ -90,13 +90,9 @@ void StepCars(void)
 	// step active cars
 	while (ppCar < end)
 	{
-		StepOneCar(*ppCar++);
-	}
-
-	ppCar = active_car_list;
-
-	while (ppCar < end)
+		StepOneCar(*ppCar);
 		ControlCarRevs(*ppCar++);
+	}
 }
 
 
@@ -274,18 +270,23 @@ void StepOneCar(_CAR_DATA *cp)
 	VECTOR partdir;
 	_sdPlane *SurfacePtr;
 
-	iVar12 = 2;
+	if (cp->controlType == 0)
+		return;
+
+	
 
 	SurfacePtr = NULL;
 	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
 	_cl.extraangulardamping = 0;
 
-	_cl.vel[0] = cp->st.n.linearVelocity[0];
-	_cl.vel[1] = cp->st.n.linearVelocity[1];
-	_cl.vel[2] = cp->st.n.linearVelocity[2];
-	_cl.avel[0] = cp->st.n.angularVelocity[0];
-	_cl.avel[1] = cp->st.n.angularVelocity[1];
-	_cl.avel[2] = cp->st.n.angularVelocity[2];
+	iVar12 = 0;
+	do {
+		_cl.vel[iVar12] = cp->st.n.linearVelocity[iVar12];
+		_cl.avel[iVar12] = cp->st.n.angularVelocity[iVar12];
+		cp->st.n.fposition[iVar12] = (cp->st.n.fposition[iVar12] & 0xF) + cp->hd.where.t[iVar12] * 16;
+
+		iVar12++;
+	} while (iVar12 < 3);
 
 	cp->hd.acc[0] = 0;
 	cp->hd.acc[1] = -7456; // apply gravity
@@ -315,59 +316,56 @@ void StepOneCar(_CAR_DATA *cp)
 
 	iVar4 = 12;
 
-	if ((0x800 < cp->hd.where.m[1][1]) && (iVar4 = 4, cp->controlType == 2)) 
+	if (cp->hd.where.m[1][1] > 0x800 && (iVar4 = 4, cp->controlType == 2))
 	{
 		iVar4 = (cp->totalDamage != 0) << 2;
 	}
 
-	iVar13 = iVar4-1;
-	if (iVar4 != 0) 
+	iVar13 = iVar4 - 1;
+	pSVar14 = car_cos->cPoints + iVar13;
+	while (iVar13 >= 0)
 	{
-		pSVar14 = car_cos->cPoints + iVar13;
+		gte_ldv0(pSVar14);
 
-		do {
-			gte_ldv0(pSVar14);
+		gte_rtv0tr();
 
-			gte_rtv0tr();
+		gte_stlvnl(pointPos);
 
-			gte_stlvnl(pointPos);
+		lever[0] = pointPos[0] - cp->hd.where.t[0];
+		lever[1] = pointPos[1] - cp->hd.where.t[1];
+		lever[2] = pointPos[2] - cp->hd.where.t[2];
 
-			lever[0] = pointPos[0] - cp->hd.where.t[0];
-			lever[1] = pointPos[1] - cp->hd.where.t[1];
-			lever[2] = pointPos[2] - cp->hd.where.t[2];
+		FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
 
-			FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
+		if((surfacePoint[1] - pointPos[1]) - 1 < 799)
+		{
+			iVar4 = FIXED((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
 
-			if((surfacePoint[1] - pointPos[1]) - 1 < 799)
+			if (iVar12 < iVar4)
 			{
-				iVar4 = FIXED((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
+				friToUse = 0;
 
-				if (iVar12 < iVar4)
-				{
-					friToUse = 0;
+				deepestNormal[0] = surfaceNormal[0];
+				deepestNormal[1] = surfaceNormal[1];
+				deepestNormal[2] = surfaceNormal[2];
 
-					deepestNormal[0] = surfaceNormal[0];
-					deepestNormal[1] = surfaceNormal[1];
-					deepestNormal[2] = surfaceNormal[2];
+				deepestLever[0] = lever[0];
+				deepestLever[1] = lever[1];
+				deepestLever[2] = lever[2];
 
-					deepestLever[0] = lever[0];
-					deepestLever[1] = lever[1];
-					deepestLever[2] = lever[2];
+				deepestPoint[0] = surfacePoint[0];
+				deepestPoint[1] = surfacePoint[1];
+				deepestPoint[2] = surfacePoint[2];
 
-					deepestPoint[0] = surfacePoint[0];
-					deepestPoint[1] = surfacePoint[1];
-					deepestPoint[2] = surfacePoint[2];
+				iVar12 = iVar4;
 
-					iVar12 = iVar4;
-
-					if (iVar13 > 3)
-						friToUse = 3;
-				}
+				if (iVar13 > 3)
+					friToUse = 3;
 			}
+		}
 
-			iVar13--;
-			pSVar14--;
-		} while (iVar13 != -1);
+		iVar13--;
+		pSVar14--;
 	}
 
 	if (iVar12 != 0)
@@ -380,7 +378,7 @@ void StepOneCar(_CAR_DATA *cp)
 		iVar4 = FIXED(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
 
 		iVar13 = 2;
-		impulse = (((reaction[0] / 64) * (deepestNormal[0] / 64) + (reaction[1] / 64) * (deepestNormal[1] / 64) + (reaction[2] / 64) * (deepestNormal[2] / 64)) / iVar4) * -2048;
+		impulse = ((FixFloorSigned(reaction[0], 6) * FixFloorSigned(deepestNormal[0], 6) + FixFloorSigned(reaction[1], 6) * FixFloorSigned(deepestNormal[1], 6) + FixFloorSigned(reaction[2], 6) * FixFloorSigned(deepestNormal[2], 6)) / iVar4) * -2048;
 
 		piVar11 = (long*)&direction.vz;
 		piVar10 = deepestNormal + 2;
@@ -604,19 +602,19 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 
 	if ((cp->thrust < 0) && (0xa3d7 < cp->hd.wheel_speed) && (cl->aggressive != 0))
 	{
-		*frontFS = *frontFS * 10 >> 3;
-		*rearFS = *rearFS * 10 >> 3;
+		*frontFS = FixFloorSigned(*frontFS * 10, 3);
+		*rearFS = FixFloorSigned(*rearFS * 10, 3);
 	}
 	else 
 	{
 		if (cp->hd.wheel[0].onGrass == 0) 
-			*frontFS = *frontFS * 36 - *frontFS >>5;
+			*frontFS = FixFloorSigned(*frontFS * 36 - *frontFS, 5);
 		else
-			*frontFS = *frontFS * 40 - *frontFS >> 5;
+			*frontFS = FixFloorSigned(*frontFS * 40 - *frontFS, 5);
 	}
 
-	*frontFS = *frontFS * hp->frictionScaleRatio >> 5;
-	*rearFS = *rearFS * hp->frictionScaleRatio >> 5;
+	*frontFS = FixFloorSigned(*frontFS * hp->frictionScaleRatio, 5);
+	*rearFS = FixFloorSigned(*rearFS * hp->frictionScaleRatio, 5);
 
 	if ((cp->hndType == 5) && (cp->ai.l.dstate == 5))
 	{
@@ -675,51 +673,27 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 // [D]
 void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	short twistY;
-	short twistZ;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int twistY;
+	int twistZ;
 	int zd;
-	long* piVar9;
-	long* piVar10;
-	short* psVar11;
 	int i;
-
-	sVar1 = cp->hd.where.m[0][2];
-	iVar4 = cp->hd.aacc[0];
-	sVar2 = cp->hd.where.m[1][2];
-	iVar5 = cp->hd.aacc[1];
-	psVar11 = &cp->hd.where.m[2][2];
-	piVar9 = cp->hd.aacc + 2;
-	sVar3 = cp->hd.where.m[2][2];
-	iVar6 = cp->hd.aacc[2];
 
 	twistY = car_cosmetics[cp->ap.model].twistRateY;
 	twistZ = car_cosmetics[cp->ap.model].twistRateZ;
 
-	i = 2;
-	piVar10 = cl->avel + 2;
+	i = 0;
+
+	zd = FIXED(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
 
 	do {
-		zd = *piVar9 * (int)twistY + FIXED((int)*psVar11 * ((int)twistZ - (int)twistY) * FIXED(sVar1 * iVar4 + sVar2 * iVar5 + sVar3 * iVar6 ) - *piVar10 * 128);
-		*piVar9 = zd;
+
+		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXED(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
-		{
-			iVar7 = *piVar10;
-			*piVar9 = zd - (iVar7 >> 3);
-		}
+			cp->hd.aacc[i] -= FixFloorSigned(cl->avel[i], 3);
 
-		piVar10--;
-		psVar11-= 3;
-		i--;
-		piVar9--;
-	} while (-1 < i);
+		i++;
+	} while (i < 3);
 }
 
 
@@ -879,9 +853,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 	oldSpeed = cp->hd.speed * 3 >> 1;
 
 	if (oldSpeed < 0x20)
-		oldSpeed = oldSpeed * -0x48 + 0xe70;
+		oldSpeed = oldSpeed * -72 + 3696;
 	else
-		oldSpeed = 0x590 - oldSpeed;
+		oldSpeed = 1424 - oldSpeed;
 
 	uVar3 = cp->hd.direction;
 	SurfacePtr = NULL;
@@ -991,7 +965,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 		}
 
 		if (newCompression > 42)
-			newCompression = 0x2a;
+			newCompression = 42;
 
 		if (newCompression == 0 && oldCompression == 0) 
 		{
@@ -1005,8 +979,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 			force.vz = 0;
 			force.vx = 0;
-			chan = FIXED(cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + cl->vel[0];
-			iVar9 = FIXED(cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + cl->vel[2];
+
+			pointVel[0] = FIXED(cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + cl->vel[0];
+			pointVel[2] = FIXED(cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + cl->vel[2];
 
 			susForce = newCompression * 230 - oldCompression * 100;
 
@@ -1025,17 +1000,17 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			}
 			else 
 			{
-				uVar3 = ratan2(chan >> 6, iVar9 >> 6);
+				uVar3 = ratan2(pointVel[0] >> 6, pointVel[2] >> 6);
 
 				lfz = (int)rcossin_tbl[(uVar3 & 0xfff) * 2 + 1];
 
-				iVar4 = chan;
-				if (chan < 0)
-					iVar4 = -chan;
+				iVar4 = pointVel[0];
+				if (pointVel[0] < 0)
+					iVar4 = -pointVel[0];
 
-				iVar5 = iVar9;
-				if (iVar9 < 0)
-					iVar5 = -iVar9;
+				iVar5 = pointVel[2];
+				if (pointVel[2] < 0)
+					iVar5 = -pointVel[2];
 
 				lfx = (int)rcossin_tbl[(uVar3 & 0xfff) * 2];
 
@@ -1047,12 +1022,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				}
 			}
 
-			iVar4 = lfx;
-			iVar5 = lfz;
-			iVar9 = (chan >> 6) * (iVar4 >> 6) + (iVar9 >> 6) * (iVar5 >> 6);
-			chan = oldSpeed;
-			iVar4 = iVar9;
-			slidevel = (chan >> 6) * (iVar4 >> 6);
+			iVar9 = FixFloorSigned(pointVel[0], 6) * FixFloorSigned(lfx, 6) + FixFloorSigned(pointVel[2], 6) * FixFloorSigned(lfz, 6);
+
+			slidevel = FixFloorSigned(oldSpeed, 6) * FixFloorSigned(iVar9, 6);
 
 			if (slidevel < 0)
 				slidevel = -slidevel;
@@ -1062,15 +1034,15 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				if (iVar9 < -50000)
 				{
 				LAB_00082604:
-					local_t0_1700 = -0x30d4;
+					local_t0_1700 = -12500;
 				}
 				else 
 				{
 					local_t0_1700 = FIXED(oldSpeed * iVar9);
-					if (0x30d4 < local_t0_1700)
+					if (12500 < local_t0_1700)
 						goto LAB_000825f4;
 
-					if (local_t0_1700 < -0x30d4)
+					if (local_t0_1700 < -12500)
 						goto LAB_00082604;
 				}
 			}
@@ -1095,7 +1067,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				else 
 				{
 					sidevel = (local_v0_1748 >> 0xd) + sidevel >> 1;
-					local_v0_1852 = (FIXED(-sidevel * lfx) * sdz - FIXED(-sidevel * lfz) * sdx) + 0x400 >> 0xb;
+					local_v0_1852 = FixFloorSigned(FIXED(-sidevel * lfx) * sdz - FIXED(-sidevel * lfz) * sdx, 11);
 					force.vx = local_v0_1852 * sdz;
 					force.vz = -local_v0_1852 * sdx;
 				}
@@ -1118,7 +1090,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				}
 				else 
 				{
-					sidevel = frontFS * local_t0_1700 + 0x2000 >> 0xe;
+					sidevel = FixHalfRound(frontFS * local_t0_1700, 14);
 				}
 
 				if (cp->hd.rear_vel < slidevel)
@@ -1191,12 +1163,11 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 	}
 	else 
 	{
-		uVar3 = (cl->vel[0] >> 6) * (cdx >> 6) + (cl->vel[2] >> 6) * (cdz >> 6);
+		uVar3 = FixFloorSigned(cl->vel[0], 6) * FixFloorSigned(cdx,  6) + FixFloorSigned(cl->vel[2], 6) * FixFloorSigned(cdz, 6);
 	}
 
 LAB_00082b9c:
 	cp->hd.wheel_speed = uVar3;
-	return;
 }
 
 

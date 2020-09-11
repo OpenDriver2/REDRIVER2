@@ -48,6 +48,7 @@ DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 	/* end block 3 */
 	// End Line: 129
 
+// [D] [T]
 void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 {
 	Getlong((char *)&NumDriver2Straights, lump_file);
@@ -77,7 +78,7 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	/* end block 3 */
 	// End Line: 694
 
-// [D]
+// [D] [T]
 void ProcessCurvesDriver2Lump(char *lump_file, int lump_size)
 {
 	Getlong((char *)&NumDriver2Curves, lump_file);
@@ -129,7 +130,7 @@ void ProcessCurvesDriver2Lump(char *lump_file, int lump_size)
 
 int NumDriver2Junctions = 0;
 
-// [D]
+// [D] [T]
 void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 {
 	int loop;
@@ -142,7 +143,7 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 	p = (DRIVER2_JUNCTION *)(lump_file + 4);
 	Driver2JunctionsPtr = p;
 
-	if (fix)
+	if (fix)	// this allows to load Alpha 1.6 LEV found in D2 demo
 	{
 		loop = 0;
 		old = (OLD_DRIVER2_JUNCTION *)(lump_file + 4);
@@ -185,7 +186,7 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 	/* end block 3 */
 	// End Line: 841
 
-// [D]
+// [D] [T]
 int MapHeight(VECTOR *pos)
 {
 	_sdPlane *plane;
@@ -209,21 +210,15 @@ int MapHeight(VECTOR *pos)
 	/* end block 1 */
 	// End Line: 329
 
-// [D]
+// [D] [T]
 int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 {
-	_sdPlane *p_Var1;
-	int iVar2;
-
-	p_Var1 = sdGetCell(pos);
-	*plane = p_Var1;
+	*plane = sdGetCell(pos);
 	out->vx = pos->vx;
 	out->vz = pos->vz;
-	iVar2 = sdHeightOnPlane(pos, *plane);
-	out->vy = iVar2;
-	p_Var1 = *plane;
+	out->vy = sdHeightOnPlane(pos, *plane);
 
-	if ((p_Var1 == NULL) || (p_Var1->b == 0))
+	if (*plane == NULL || (*plane)->b == 0)
 	{
 		normal->vx = 0;
 		normal->vy = 0x1000;
@@ -231,42 +226,27 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 	}
 	else 
 	{
-		normal->vx = (int)((uint)(ushort)p_Var1->a << 0x10) >> 0x12;
-		normal->vy = (int)((uint)(ushort)(*plane)->b << 0x10) >> 0x12;
-		normal->vz = (int)((uint)(ushort)(*plane)->c << 0x10) >> 0x12;
+		normal->vx = (int)(*plane)->a >> 2; // [A] was (int)((uint)(ushort)(*plane)->a << 0x10) >> 0x12;
+		normal->vy = (int)(*plane)->b >> 2;
+		normal->vz = (int)(*plane)->c >> 2;
 	}
 
 	if (*plane == NULL)
 	{
-		iVar2 = 0x1000;
+		return 0x1000;
 	}
-	else 
+	else if ((*plane)->surface == 4)
 	{
-		iVar2 = 0x1000;
+		// [A] was "if(gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0) "
+		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
+			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
+		else
+			out->vy += (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
 
-		if ((*plane)->surface == 4) 
-		{
-			if (((gInGameCutsceneActive == 0) || (gCurrentMissionNumber != 0x17)) || (gInGameCutsceneID != 0)) 
-			{
-				iVar2 = out->vy + ((((int)((uint)*(ushort *)
-					((int)rcossin_tbl +
-					((pos->vx + pos->vz) * 8 & 0x3ff8U)) << 0x10) >>
-					0x18) / 3) * 0x10000 >> 0x10);
-			}
-			else
-			{
-				iVar2 = out->vy + ((int)((uint)*(ushort *)
-					((int)rcossin_tbl +
-					((pos->vx + pos->vz) * 8 & 0x3ff8U)) << 0x10) >>
-					0x19);
-			}
-
-			out->vy = iVar2;
-			iVar2 = 0x800;
-		}
+		return 0x800;
 	}
 
-	return iVar2;
+	return 0x1000;
 }
 
 
@@ -317,40 +297,42 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, _sdPlane **plane)
 	/* end block 2 */
 	// End Line: 411
 
-// [D]
+// [D] [T]
 int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 {
-	long lVar1;
-	int uVar2;
-	DRIVER2_CURVE *pDVar3;
-	int iVar4;
+	long angle;
+	int i, d;
+	DRIVER2_CURVE *curve;
+	int lx;
+	int ly;
 
-	if (plane != NULL) 
+	if (plane != NULL)
 	{
-		uVar2 = plane->d;
+		d = plane->d;
 
-		if ((((int)uVar2 >> 1 ^ uVar2) & 0x40000000) != 0) {
-			return uVar2 ^ 0x40000000;
+		if ((d >> 1 ^ d) & 0x40000000) 
+			return d ^ 0x40000000;
+
+		if ((plane->surface & 0xe000U) == 0x4000 && plane->b == 0)
+		{
+			// calculate curve point
+			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
+			angle = ratan2(curve->Midz - pos->vz, curve->Midx - pos->vx);
+
+			return FixFloorSigned(curve->gradient * (angle + 2048 & 0xfff), ONE_BITS) - curve->height;
 		}
 
-		if (((plane->surface & 0xe000U) == 0x4000) && (plane->b == 0)) 
+		i = plane->b;
+
+		if (i != 0)
 		{
-			pDVar3 = Driver2CurvesPtr + (((uint)(ushort)plane->surface & 0x1fff) - 0x20);
-			lVar1 = ratan2(pDVar3->Midz - pos->vz, pDVar3->Midx - pos->vx);
-			iVar4 = (int)pDVar3->gradient * (lVar1 + 0x800U & 0xfff);
+			if (i == 0x4000)
+				return -d;
 
-			return FIXED(iVar4) - pDVar3->height;
-		}
+			lx = (int)plane->a * ((pos->vx - 512 & 0xffff) + 512);
+			ly = (int)plane->c * ((pos->vz - 512 & 0xffff) + 512);
 
-		iVar4 = (int)plane->b;
-
-		if (iVar4 != 0)
-		{
-			if (iVar4 == 0x4000) 
-				return -uVar2;
-
-			return -uVar2 - (int)((int)plane->a * ((pos->vx - 0x200U & 0xffff) + 0x200) +
-				(int)plane->c * ((pos->vz - 0x200U & 0xffff) + 0x200)) / iVar4;
+			return -d - (lx + ly) / i;
 		}
 	}
 
@@ -392,7 +374,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 	/* end block 5 */
 	// End Line: 1052
 
-// [D]
+// [D] [T]
 int GetSurfaceIndex(VECTOR *pos)
 {
 	_sdPlane *plane = sdGetCell(pos);
@@ -428,30 +410,9 @@ int GetSurfaceIndex(VECTOR *pos)
 	/* end block 3 */
 	// End Line: 1464
 
-// [D]
+// [D] [T]
 _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 {
-#if 0
-	_sdPlane *plane;
-
-	while (true) 
-	{
-		if (node->value > -1) 
-		{
-			base += node->value;
-			return (base->surface < 32) ? NULL : base;
-		}
-
-		plane = FindRoadInBSP(node+1, base);
-
-		if (plane != NULL) 
-			break;
-
-		node += ((node->value << 1) >> 0x18);	// offset
-	}
-
-	return plane;
-#else
 	_sdPlane *plane;
 
 	while (true)
@@ -467,11 +428,10 @@ _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 		if (plane != NULL)
 			break;
 
-		node += node->n.offset;	// offset
+		node += node->n.offset;
 	}
 
 	return plane;
-#endif
 }
 
 
@@ -519,86 +479,70 @@ _sdPlane * FindRoadInBSP(_sdNode *node, _sdPlane *base)
 	/* end block 4 */
 	// End Line: 599
 
-// [D]
+// [D] [T]
 int RoadInCell(VECTOR *pos)
 {
-	bool bVar1;
+	int moreLevels;
 	short sVar2;
-	ushort uVar3;
 	_sdPlane *plane;
-	int iVar4;
-	int iVar5;
-	int local_a2_200;
-	ushort *puVar6;
-	short *psVar7;
+	short *check;
+	short *buffer;
+	struct XYPAIR cellPos;
 
-	iVar4 = pos->vx - 0x200;
-	iVar5 = pos->vz - 0x200;
-	psVar7 = RoadMapDataRegions[iVar4 >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (iVar5 >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+	cellPos.x = pos->vx - 512;
+	cellPos.y = pos->vz - 512;
+	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
 
-	if (*psVar7 == 2) 
+	if (*buffer == 2) 
 	{
-		puVar6 = (ushort *)(psVar7 + (iVar4 >> 10 & 0x3fU) + (iVar5 >> 10 & 0x3fU) * 0x40 + 4);
+		check = (short *)(buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4);
 
-		local_a2_200 = (int)(short)*puVar6;
-		uVar3 = *puVar6;
-
-		if (local_a2_200 == -1)
+		if (*check == -1)
 			return -1;
 
-		if ((uVar3 & 0xe000) == 0) 
+		if (*check & 0x8000)
 		{
-			plane = (_sdPlane *)((int)psVar7 + local_a2_200 * sizeof(_sdPlane) + (int)psVar7[1]);
+			moreLevels = (*check & 0x6000) == 0x2000;
+
+			if (moreLevels)
+				check = (short *)((int)buffer + (*check & 0x1fff) * sizeof(short) + buffer[2] + 2);
+
+			do
+			{
+				if (moreLevels && check[-1] == 0x8000)
+					moreLevels = 0;
+
+				if (*check & 0x4000)
+				{
+					plane = FindRoadInBSP((_sdNode *)((int)buffer + (*check & 0x3fff) * sizeof(_sdNode) + buffer[3]), (_sdPlane *)((int)buffer + buffer[1]));
+
+					if (plane != NULL)
+						break;
+				}
+				else
+				{
+					plane = (_sdPlane *)((int)buffer + buffer[1]) + *check;
+
+					if (plane->surface > 31)
+						break;
+				}
+
+				check += 2;
+			} while (true);
+		}
+		else if ((*check & 0xE000) == 0)
+		{
+			plane = (_sdPlane *)((int)buffer + *check * sizeof(_sdPlane) + buffer[1]);
 		}
 		else
-		{
-			if ((local_a2_200 & 0x8000U) != 0)
-			{
-				sVar2 = psVar7[1];
-				bVar1 = ((uint)uVar3 & 0x6000) == 0x2000;
-				if (bVar1) 
-				{
-					puVar6 = (ushort *)((int)psVar7 + ((uint)uVar3 & 0x1fff) * 2 + (int)psVar7[2] + 2);
-					goto LAB_0001335c;
-				}
-
-			LAB_00013370:
-				uVar3 = *puVar6;
-				if ((uVar3 & 0x4000) == 0) 
-				{
-					plane = (_sdPlane *)((int)psVar7 + (int)sVar2) + (short)uVar3;
-					if (0x1f < plane->surface) goto LAB_0001340c;
-				}
-				else 
-				{
-					plane = FindRoadInBSP((_sdNode *) ((int)psVar7 + ((uint)uVar3 & 0x3fff) * sizeof(_sdNode) + (int)psVar7[3]), (_sdPlane *)((int)psVar7 + (int)sVar2));
-
-					if (plane != NULL) 
-						goto LAB_00013414;
-				}
-
-				puVar6 = puVar6 + 2;
-				if (!bVar1)
-					goto LAB_0001340c;
-
-			LAB_0001335c:
-				if (puVar6[-1] == 0x8000)
-				{
-					bVar1 = false;
-				}
-				goto LAB_00013370;
-			}
 			plane = NULL;
-		}
-	LAB_0001340c:
+
 		if (plane == NULL)
 			return -1;
 
-	LAB_00013414:
-		if (0x1f < plane->surface) 
+		if (plane->surface > 31) 
 		{
-			iVar4 = sdHeightOnPlane(pos, plane);
-			pos->vy = iVar4 + 0x100;
+			pos->vy = sdHeightOnPlane(pos, plane) + 256;
 			return plane->surface - 32;
 		}
 	}
@@ -661,14 +605,13 @@ int RoadInCell(VECTOR *pos)
 
 int sdLevel = 0; // pathfinding value
 
-// [D]
+// [D] [T]
 _sdPlane * sdGetCell(VECTOR *pos)
 {
-	bool bVar1;
+	int nextLevel;
 	_sdPlane *plane;
-	short *psVar2;
 	short *surface;
-	short *surface1;
+	short *BSPSurface;
 	short *buffer;
 	XYPAIR cell;
 	XYPAIR cellPos;
@@ -678,71 +621,68 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^cells_down >> 5 & 2U];
 
 	plane = NULL;
 
 	if (*buffer == 2) 
 	{
-		surface = buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 0x40 + 4;
+		surface = buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4;
+		
+		if (*surface != -1)
+		{
+			//buffer[1] = planes offset
+			//buffer[2] = heights (levels) offset
+			//buffer[3] = BSP nodes offset
 
-		if (*surface == -1) 
-		{
-			plane = &sea;
-		}
-		else 
-		{
-			if (((uint)(ushort)*surface & 0x6000) == 0x2000) 
+			if ((*surface & 0x6000) == 0x2000) 
 			{
-				psVar2 = (short *)((int)buffer +((uint)(ushort)*surface & 0x1fff) * 2 + (int)buffer[2]);
-
-				do 
-				{
-					if (-256 - pos->vy <= (int)*psVar2)
+				surface = (short *)((int)buffer + (*surface & 0x1fff) * sizeof(short) + buffer[2]);
+				do {
+					if (-256 - pos->vy <= *surface)
 						break;
 
-					psVar2 = psVar2 + 2;
+					surface += 2;
 					sdLevel++;
-				} while (*psVar2 != -0x8000);
-
-				surface = psVar2 + 1;
+				} while (*surface != -0x8000);
+				surface += 1;
 			}
 
-			do 
-			{
-				bVar1 = false;
-				surface1 = surface;
-
-				if ((*surface & 0x4000U) != 0) 
+			do {
+				nextLevel = 0;
+				BSPSurface = surface;
+				if ((*surface & 0x4000U) != 0)
 				{
 					cellPos.x = cellPos.x & 0x3ff;
 					cellPos.y = cellPos.y & 0x3ff;
+					BSPSurface = sdGetBSP((_sdNode *) ((int)buffer +(*surface & 0x3fff) * sizeof(_sdNode) + buffer[3]), &cellPos);
 
-					surface1 = sdGetBSP((_sdNode *)((int)buffer + ((uint)(ushort)*surface & 0x3fff) * 4 + (int)buffer[3]), &cellPos);
-
-					if (*surface1 == 0x7fff) 
+					if (*BSPSurface == 0x7fff)
 					{
 						sdLevel++;
-						bVar1 = true;
-						surface1 = surface + 2;
+						nextLevel = 1;
+						BSPSurface = surface + 2;
 					}
 				}
-				surface = surface1;
-			} while (bVar1);
 
-			plane = (_sdPlane *)((int)buffer + (int)*surface1 * 0xc + (int)buffer[1]);
+				surface = BSPSurface;
+			} while (nextLevel);
+
+			plane = (_sdPlane *)((int)buffer + *BSPSurface * sizeof(_sdPlane) + buffer[1]);
 
 			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) 
 			{
-				if ((uint)(ushort)plane->surface - 0x10 < 0x10) 
-				{
+				if (plane->surface - 16U < 16)
 					plane = EventSurface(pos, plane);
-				}
 			}
-			else
+			else 
 			{
 				plane = &sea;
 			}
+		}
+		else
+		{
+			plane = &sea;
 		}
 	}
 	return plane;
@@ -775,31 +715,9 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	/* end block 2 */
 	// End Line: 1561
 
-// [D]
+// [D] [T]
 short* sdGetBSP(_sdNode *node, XYPAIR *pos)
 {
-#if 0
-	int local_v1_48;
-	int local_a2_4;
-
-	local_a2_4 = node->value;
-	if (local_a2_4 < 0) {
-		do {
-			local_v1_48 = (local_a2_4 << 0x15) >> 0x13 & 0x3ffc;
-			if (pos->y * (int)*(short *)((int)rcossin_tbl + local_v1_48 + 2) -
-				pos->x * (int)*(short *)((int)rcossin_tbl + local_v1_48) <
-				((local_a2_4 << 9) >> 0x14) << 0xc) {
-				node = node + 1;
-			}
-			else {
-				node = node + ((local_a2_4 << 1) >> 0x18);
-			}
-			local_a2_4 = node->value;
-		} while ((local_a2_4 & 0x80000000U) != 0);
-	}
-	return (short *)node;
-#else
-	// new
 	if (node->value < 0)
 	{
 		do
@@ -811,11 +729,10 @@ short* sdGetBSP(_sdNode *node, XYPAIR *pos)
 				node++;
 			else
 				node += node->n.offset;
-		} while ((node->value & 0x80000000U) != 0);
+		} while (node->value & 0x80000000U);
 	}
 
 	return (short *)node;
-#endif
 }
 
 

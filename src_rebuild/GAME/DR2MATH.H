@@ -4,13 +4,10 @@
 // Driver 2 math definitions
 
 #define ONE				4096
-#define PH_ONE			256
-
 #define ONE_BITS		12
-#define ONE_BIT			(1 << ONE_BITS)
 
+#define PH_ONE			256
 #define PH_ONE_BITS		8
-#define PH_ONE_BIT		(1 << PH_ONE_BITS)
 
 // math constants
 #if 0
@@ -22,9 +19,10 @@
 
 #else
 
-#define	FIXED(a)		(int(a) + (ONE/2) >> ONE_BITS)
-#define	HFIXED(a)		(int(a) + ONE >> (ONE_BITS+1))
-#define	PH_FIXED(a)		(int(a) + (PH_ONE) >> PH_ONE_BITS)
+#define FixHalfRound(x, bits)		(int(x) + (1 << (bits-1)) >> bits)
+#define FixFloorSigned(x, bits)		((int(x) < 0 ? int(x) + (1 << bits)-1 : int(x)) >> bits)
+
+#define	FIXED(a)		FixHalfRound(a, ONE_BITS)
 
 #endif
 

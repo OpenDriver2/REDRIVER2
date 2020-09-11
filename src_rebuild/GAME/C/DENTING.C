@@ -42,7 +42,7 @@ unsigned char gHDCarDamageLevels[5][255];
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitialiseDenting(void)
 {
 	LoadDenting(GameLevel);
@@ -94,166 +94,129 @@ void InitialiseDenting(void)
 	/* end block 3 */
 	// End Line: 580
 
-// [D]
+// [D] [T]
 void DentCar(_CAR_DATA *cp)
 {
-	short *psVar1;
-	short *psVar2;
-	unsigned char bVar3;
-	short sVar4;
-	ushort uVar5;
-	short sVar6;
-	int iVar7;
-	uint uVar8;
-	int iVar9;
-	short *puVar10;
-	short *psVar11;
-	DENTUVS *pDVar12;
+	int Zone;
+	int Damage;
+	int MaxDamage;
+	DENTUVS *dentptr;
 	SVECTOR *CleanVertPtr;
-	int iVar13;
-	int iVar14;
-	unsigned char *pbVar15;
-	unsigned char* DamPtr;
+	int VertNo;
+	unsigned char *DamPtr;
 	SVECTOR *DamVertPtr;
-	int iVar16;
-	SVECTOR *pSVar17;
-	short *psVar18;
-	DENTUVS *pDVar19;
-	MODEL *pMVar20;
-	uint uVar21;
-	int iVar22;
+	MODEL *pCleanModel;
+	int model;
+	int Poly;
 
 	short tempDamage[512];
 	memset(tempDamage, 0, sizeof(tempDamage));
 
-	iVar22 = 0;
-	psVar18 = tempDamage;
-	uVar21 = cp->ap.model;
+
+	MaxDamage = 0;
+	model = cp->ap.model;
 	cp->lowDetail = -1;
-	(cp->ap).qy = 0;
-	(cp->ap).qw = 0;
+	cp->ap.qy = 0;
+	cp->ap.qw = 0;
 
-	pMVar20 = gCarCleanModelPtr[uVar21];
-	if (pMVar20 != NULL) 
+	pCleanModel = gCarCleanModelPtr[model];
+
+	// collect vertices from zones
+	if (pCleanModel != NULL) 
 	{
-		iVar13 = 0;
+		VertNo = 0;
+		while (VertNo < pCleanModel->num_vertices)
+			tempDamage[VertNo++] = 0;
 
-		if (pMVar20->num_vertices != 0) 
-		{
-			puVar10 = tempDamage;
-			do {
-				*puVar10++ = 0;
-				iVar13++;
-			} while (iVar13 < pMVar20->num_vertices);
-		}
-
-		iVar7 = 0;
-		iVar13 = 0;
-
+		Zone = 0;
 		do {
-			iVar9 = cp->ap.damage[iVar7];
+			Damage = cp->ap.damage[Zone];
 
-			if (iVar22 < iVar9) 
-				iVar22 = iVar9; // MaxDamage?
+			if (Damage > MaxDamage)
+				MaxDamage = Damage;
 
-			iVar14 = 0;
-			iVar16 = iVar13 + 1;
+			DamPtr = gCarDamageZoneVerts[cp->ap.model][Zone];
 
-			DamPtr = gCarDamageZoneVerts[cp->ap.model][iVar7];
-
-			while (iVar14 < 50 && *DamPtr != 0xff)
+			VertNo = 0;
+			while (VertNo < 50 && *DamPtr != 0xff)
 			{
-				psVar11 = (short *)(tempDamage + *DamPtr);
-
-				if (*psVar11 == 0)
-					*psVar11 += iVar9;
+				if (tempDamage[*DamPtr] == 0)
+					tempDamage[*DamPtr] += Damage;
 				else 
-					*psVar11 += iVar9 / 2;
+					tempDamage[*DamPtr] += Damage / 2;
 
-				iVar14++;
 				DamPtr++;
+
+				VertNo++;
 			}
 
-			iVar7 = iVar16;
-			iVar13 = iVar16;
-		} while (iVar16 < 6);
+			Zone++;
+		} while (Zone < 6);
 	}
 
-	iVar22 = 0;
-	if ((gCarCleanModelPtr[uVar21] != NULL && gCarDamModelPtr[uVar21] != NULL) && pMVar20->num_vertices != 0) 
+	// update vertices positon
+	if (gCarCleanModelPtr[model] != NULL && gCarDamModelPtr[model] != NULL) 
 	{
-		pSVar17 = gTempCarVertDump[cp->id];
-		DamVertPtr = (SVECTOR *)gCarDamModelPtr[uVar21]->vertices;
-		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[uVar21]->vertices;
+		DamVertPtr = (SVECTOR *)gCarDamModelPtr[model]->vertices;
+		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[model]->vertices;
 
-		do {
-			pSVar17->vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * *psVar18 / 2);
-			pSVar17->vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * *psVar18 / 2);
-			pSVar17->vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * *psVar18 / 2);
+		VertNo = 0;
+		while (VertNo < pCleanModel->num_vertices)
+		{
+			gTempCarVertDump[cp->id][VertNo].vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * tempDamage[VertNo] / 2);
 
-			iVar22++;
-			psVar18++;
 			DamVertPtr++;
 			CleanVertPtr++;
 
-			pSVar17++;
-		} while (iVar22 < pMVar20->num_vertices);
+			VertNo++;
+		}
 	}
 
-	pDVar19 = gTempHDCarUVDump[cp->id];
-	
-	if (pMVar20 != NULL) 
+	// update polygon UVs
+	if (pCleanModel != NULL) 
 	{
-		iVar22 = 0;
-		pDVar12 = pDVar19;
-		if (pMVar20->num_polys != 0) 
+		dentptr = gTempHDCarUVDump[cp->id];
+
+		Poly = 0;
+		while (Poly < pCleanModel->num_polys)
 		{
-			do {
-				pDVar12->u3 = 0;
-				iVar22++;
-				pDVar12++;
-			} while (iVar22 < pMVar20->num_polys);
+			dentptr->u3 = 0;
+			Poly++;
+			dentptr++;
 		}
 
-		iVar13 = 0;
-		iVar22 = 0;
-
+		Zone = 0;
 		do {
-			uVar5 = *(ushort *)(cp->ap.damage + iVar13);
+			Damage = cp->ap.damage[Zone];
 
-			iVar13 = 0;
-			iVar7 = iVar22 + 1;
-
-			while (iVar13 < 70 && gHDCarDamageZonePolys[cp->ap.model][iVar22][iVar13] != 0xFF)
+			Poly = 0;
+			while (Poly < 70 && gHDCarDamageZonePolys[cp->ap.model][Zone][Poly] != 0xFF)
 			{
-				pDVar12 = pDVar19 + gHDCarDamageZonePolys[cp->ap.model][iVar22][iVar13];
+				dentptr = gTempHDCarUVDump[cp->id] + gHDCarDamageZonePolys[cp->ap.model][Zone][Poly];
+				dentptr->u3 += ((uint)Damage << 0x10) >> 0x1a;
 
-				uVar8 = pDVar12->u3 + ((int)((uint)uVar5 << 0x10) >> 0x1a);
-				pDVar12->u3 = uVar8;
+				if (dentptr->u3 > 2)
+					dentptr->u3 = 2;
 
-				if (2 < (uVar8 & 0xff))
-					pDVar12->u3 = 2;
-
-				iVar13 = iVar13 + 1;
+				Poly++;
 			}
 
-			iVar13 = iVar7;
-			iVar22 = iVar7;
-		} while (iVar7 < 6);
+			Zone++;
+		} while (Zone < 6);
 
-		pbVar15 = gHDCarDamageLevels[uVar21];
-		iVar22 = 0;
+		Poly = 0;
 
-		if (pMVar20->num_polys != 0) 
+		DamPtr = gHDCarDamageLevels[model];
+		dentptr = gTempHDCarUVDump[cp->id];
+
+		while (Poly < pCleanModel->num_polys)
 		{
-			do {
-				bVar3 = *pbVar15;
-				pbVar15 = pbVar15 + 1;
-				iVar22 = iVar22 + 1;
-				pDVar19->u3 = ((bVar3 ^ 1 ^ (bVar3 ^ 1 | pDVar19->u3))
-					<< 6);
-				pDVar19 = pDVar19 + 1;
-			} while (iVar22 < pMVar20->num_polys);
+			dentptr->u3 = ((*DamPtr ^ 1 ^ (*DamPtr ^ 1 | dentptr->u3)) << 6);
+			dentptr++;
+			DamPtr++;
+			Poly++;
 		}
 	}
 }
@@ -313,7 +276,7 @@ void DentCar(_CAR_DATA *cp)
 	/* end block 4 */
 	// End Line: 1139
 
-// [D]
+// [D] [T]
 void CreateDentableCar(_CAR_DATA *cp)
 {
 	MODEL *srcModel;
@@ -402,7 +365,7 @@ void CreateDentableCar(_CAR_DATA *cp)
 extern HUBCAP gHubcap;
 long gHubcapTime = 0;
 
-// [D]
+// [D] [T]
 void InitHubcap(void)
 {
 	gHubcapTime = Random2(1) & 0x7ff;
@@ -507,7 +470,7 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 
 			Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
 
-			if (Hubcap < 2)
+			if (Hubcap > 1)
 			{
 				gHubcap.Orientation.m[0][0] = -gHubcap.Orientation.m[0][0];
 				gHubcap.Orientation.m[1][0] = -gHubcap.Orientation.m[1][0];
@@ -586,7 +549,7 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void MoveHubcap(int playerId)
 {
 	int savecombo;
@@ -651,7 +614,7 @@ void MoveHubcap(int playerId)
 				if (-60 - CurrentMapHeight <= gHubcap.Position.vy)
 				{
 					gHubcap.Direction.vy = -(gHubcap.Direction.vy / 2);
-					gHubcap.Position.vy = -0x3c - CurrentMapHeight;
+					gHubcap.Position.vy = -60 - CurrentMapHeight;
 				}
 			}
 
@@ -681,7 +644,7 @@ void MoveHubcap(int playerId)
 
 			combointensity = savecombo;
 
-			RoundShadow(&ShadowPos, &col, 0x41);
+			RoundShadow(&ShadowPos, &col, 65);
 		}
 	}
 }
@@ -714,7 +677,7 @@ void MoveHubcap(int playerId)
 	/* end block 4 */
 	// End Line: 2611
 
-// [D]
+// [D] [T]
 void LoadDenting(int level)
 {
 	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 0x31b7);
@@ -743,7 +706,7 @@ void LoadDenting(int level)
 	/* end block 2 */
 	// End Line: 2048
 
-// [D]
+// [D] [T]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
 	int model;
@@ -815,7 +778,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 	/* end block 4 */
 	// End Line: 2740
 
-// [D]
+// [D] [T]
 void SetupSpecDenting(char *loadbuffer)
 {
 	// [A] this is better

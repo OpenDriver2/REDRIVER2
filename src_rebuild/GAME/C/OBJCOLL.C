@@ -98,7 +98,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	iVar3 = pPosition->vx + units_across_halved;
 	iVar1 = pPosition->vz + units_down_halved;
 
-	ppco = GetFirstPackedCop(iVar3 >> 0xb, iVar1 >> 0xb, &ci, 0);
+	ppco = GetFirstPackedCop(FixFloorSigned(iVar3, 11), FixFloorSigned(iVar1, 11), &ci, 0);
 	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
 
 	do {
@@ -211,18 +211,18 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 
 	iVar1 = pPosition->vz + units_down_halved;
 	iVar2 = iVar1 - 1024;
-	iVar3 = iVar3 >> 0xb;
+	iVar3 = FixFloorSigned(iVar3, 0xb);
 
-	iVar2 = iVar2 >> 0xb;
+	iVar2 = FixFloorSigned(iVar2, 0xb);
 	iVar1 = iVar3;
 
-	uVar5 = iVar1 >> 5;
+	uVar5 = FixFloorSigned(iVar1, 5);
 	iVar1 = iVar2;
 
-	uVar4 = iVar1 >> 5;
+	uVar4 = FixFloorSigned(iVar1, 5);
 	iVar6 = (uVar5 & 1) + (uVar4 & 1) * 2;
 
-	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * (cells_across >> 5))
+	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * FixFloorSigned(cells_across, 5))
 		return -1;
 
 	return cell_ptrs[(iVar2 - uVar4 * 32) * 32 + iVar6 * 1024 + iVar3 - uVar5 * 32];

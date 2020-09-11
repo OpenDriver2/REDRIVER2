@@ -1017,6 +1017,7 @@ void DisplayOnScreenText(void)
 // [D] [A]
 void SetupExtraPoly(char *fileName, int offset, int offset2)
 {
+	int i;
 	RECT16 rect = extraRect;
 
 	FEDrawCDicon();
@@ -1049,7 +1050,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 		loaded[1] = -1;
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		if (strcmp(fileName, gfxNames[i]) == 0) {
 			loaded[0] = -1;
@@ -1058,7 +1059,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 		}
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		if (strcmp(fileName, cutGfxNames[i]) == 0) {
 			loaded[1] = -1;
@@ -3080,132 +3081,142 @@ int MissionCityScreen(int bSetup)
 	/* end block 5 */
 	// End Line: 8535
 
+// [D]
 int CutSceneSelectScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
-	DB *pDVar2;
-	PSXBUTTON *pPVar3;
-	int iVar4;
-	uint *puVar5;
-	PSXBUTTON **ppPVar6;
-	undefined *puVar7;
-	undefined4 local_18;
-	undefined4 local_14;
-	undefined4 local_10;
-	undefined4 local_c;
+	int bVar1;
+	uint *puVar3;
+	u_long *buff;
 
-	iVar4 = ScreenDepth;
-	local_18 = DAT_FRNT__001c0884;
-	local_14 = DAT_FRNT__001c0888;
-	if (bSetup == 0) {
-		if ((uRam001cc5dc & 0x10) == 0) {
-			if ((uRam001cc5dc & 0x40) != 0) {
-				if (DAT_FRNT__001c6a8c == 0) {
-					if (DAT_FRNT__001c69a0 == 0) {
-						DAT_FRNT__001c69a0 = *(int *)(&DAT_FRNT__001c69b8 + (DAT_FRNT__001c6a70 + 1) * 4) - 1U;
-						if ((int)(uint)(byte)(&DAT_FRNT__001c69e0)[gFurthestMission] <
-							(int)((*(int *)(&DAT_FRNT__001c69b8 + (DAT_FRNT__001c6a70 + 1) * 4) - 1U) +
-								*(int *)(&DAT_FRNT__001c69cc + DAT_FRNT__001c6a70 * 4) + 1)) {
-							DAT_FRNT__001c69a0 = (uint)(byte)(&DAT_FRNT__001c69e0)[gFurthestMission];
-						}
-						puVar7 = &DAT_0015f400 + DAT_FRNT__001c69a0 * 0x8000;
-					}
-					else {
-						DAT_FRNT__001c69a0 = DAT_FRNT__001c69a0 - 1;
-						puVar7 = &DAT_0015f400 + DAT_FRNT__001c69a0 * 0x8000;
-					}
-				}
-				else {
-					if (DAT_FRNT__001c6a8c != 2) {
-						bReturnToMain = 0;
-						ppPVar6 = pButtonStack10 + ScreenDepth;
-						pScreenStack10[ScreenDepth] = pCurrScreen;
-						pPVar3 = pCurrButton;
-						feVariableSave[1] = DAT_FRNT__001c6a70;
-						feVariableSave[0] = DAT_FRNT__001c69a0;
-						*ppPVar6 = pCurrButton;
-						ScreenNames12[iVar4] = pPVar3->Name;
-						StartRender(feVariableSave[0] +
-							*(int *)(&DAT_FRNT__001c69cc + feVariableSave[1] * 4) + 1);
-						return 0;
-					}
-					if ((DAT_FRNT__001c69a0 ==
-						*(int *)(&DAT_FRNT__001c69b8 + (DAT_FRNT__001c6a70 + 1) * 4) + -1) ||
-						((int)(uint)(byte)(&DAT_FRNT__001c69e0)[gFurthestMission] <=
-						(int)(DAT_FRNT__001c69a0 + *(int *)(&DAT_FRNT__001c69cc + DAT_FRNT__001c6a70 * 4) + 1)
-							)) {
-						puVar7 = &DAT_0015f400;
-						DAT_FRNT__001c69a0 = 0;
-					}
-					else {
-						DAT_FRNT__001c69a0 = DAT_FRNT__001c69a0 + 1;
-						puVar7 = &DAT_0015f400 + DAT_FRNT__001c69a0 * 0x8000;
-					}
-				}
-				local_c = DAT_FRNT__001c0888;
-				local_10 = DAT_FRNT__001c0884;
-				LoadImage(&local_10, puVar7);
-				DrawSync(0);
-				DisplayOnScreenText();
-				pDVar2 = current;
-				DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-				*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-				DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar2->ot[3] & 0xffffff;
-				puVar5 = (uint *)pDVar2->ot[3];
-				*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
-				EndFrame();
-				return 0;
-			}
-			if ((uRam001cc5dc & 0x1000) == 0) {
-				if ((uRam001cc5dc & 0x4000) == 0) {
-					return 0;
-				}
-				bVar1 = pCurrButton->d;
-			}
-			else {
-				bVar1 = pCurrButton->u;
-			}
-			DAT_FRNT__001c6a8c = (uint)bVar1 - 1;
+	RECT16 rect;
+
+	rect = extraRect;
+
+	if (bSetup)
+	{
+		LoadBackgroundFile("DATA\\CUTS\\CUTBACK.RAW");
+		currCity = feVariableSave[1];
+
+		if (feVariableSave[0] == -1)
+		{
+			cutSelection = 0;
+			currCity = GameLevel;
 		}
-		else {
-			DAT_FRNT__001c6a90 = 0;
-			DAT_FRNT__001c6a80 = 0;
-		}
-		iVar4 = 0;
-	}
-	else {
-		LoadBackgroundFile(s_DATA_CUTS_CUTBACK_RAW_FRNT__001c08c8);
-		DAT_FRNT__001c6a70 = feVariableSave[1];
-		if (feVariableSave[0] == -1) {
-			DAT_FRNT__001c69a0 = 0;
-			DAT_FRNT__001c6a70 = GameLevel;
-		}
-		else {
-			DAT_FRNT__001c69a0 = feVariableSave[0];
-			feVariableSave[3] = 0xffffffff;
-			feVariableSave[2] = 0xffffffff;
+		else
+		{
+			cutSelection = feVariableSave[0];
+			feVariableSave[3] = -1;
+			feVariableSave[2] = -1;
 			feVariableSave[1] = -1;
 			feVariableSave[0] = -1;
 		}
-		if ((int)DAT_FRNT__001c6a7a == GameLevel) {
-			DAT_FRNT__001c6a90 = 1;
-			LoadImage(&local_18, &DAT_0015f400);
+
+		if (loaded[2] == GameLevel)
+		{
+			bDrawExtra = 1;
+			LoadImage(&rect, (u_long*)_frontend_buffer + 0x20000);
 			DrawSync(0);
 		}
-		else {
-			SetupExtraPoly((&PTR_s_DATA_CUTS_CCUTS_RAW_FRNT__001c073c_FRNT__001c69a8)[GameLevel],
-				DAT_FRNT__001c69a0, 0x20000);
+		else
+		{
+			SetupExtraPoly(cutGfxNames[GameLevel], cutSelection, 0x20000);
 		}
-		iVar4 = 1;
-		DAT_FRNT__001c6a80 = 1;
-		DAT_FRNT__001c6a8c = 1;
-		DAT_FRNT__001c69a4 = 1;
+
+
+		bInCutSelect = 1;
+		currSelIndex = 1;
+		bDoingCutSelect = 1;
 		pCurrButton = pCurrScreen->buttons + 1;
+
+		return 1;
 	}
-	return iVar4;*/
+
+	if ((fePad & 0x10U) == 0) 
+	{
+		if ((fePad & 0x40U) != 0)
+		{
+			if (currSelIndex == 0) 
+			{
+				if (cutSelection == 0) 
+				{
+					cutSelection = CutAmounts[currCity + 1] -1;
+
+					if (cutUnlock[gFurthestMission] < CutAmounts[currCity + 1]-1 + CutAmountsTotal[currCity] + 1) 
+						cutSelection = cutUnlock[gFurthestMission];
+				}
+				else 
+				{
+					cutSelection--;
+				}
+			}
+			else
+			{
+				if (currSelIndex != 2)
+				{
+					bReturnToMain = 0;
+					pCurrButton = pButtonStack[ScreenDepth];
+					pScreenStack[ScreenDepth] = pCurrScreen;
+
+					feVariableSave[1] = currCity;
+					feVariableSave[0] = cutSelection;
+
+					ScreenNames[ScreenDepth] = pCurrButton->Name;
+					StartRender(feVariableSave[0] + CutAmountsTotal[feVariableSave[1]] + 1);
+
+					return 0;
+				}
+
+				if ((cutSelection == CutAmounts[currCity + 1]-1) || (cutUnlock[gFurthestMission] <= cutSelection + CutAmountsTotal[currCity] + 1)) 
+				{
+					cutSelection = 0;
+				}
+				else 
+				{
+					cutSelection++;
+				}
+			}
+
+			rect = extraRect;
+			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
+			DrawSync(0);
+			DisplayOnScreenText();
+
+#ifdef PSX
+			DisplayOnScreenText();
+
+			addPrim(&current->ot[2], &extraSprt);
+			addPrim(&current->ot[3], &extraDummy);
+
+			EndFrame();
+#endif
+
+			return 0;
+		}
+
+		if ((fePad & 0x1000U) == 0) 
+		{
+			if ((fePad & 0x4000U) == 0) 
+			{
+				return 0;
+			}
+
+			bVar1 = pCurrButton->d;
+		}
+		else 
+		{
+			bVar1 = pCurrButton->u;
+		}
+
+		currSelIndex = (uint)bVar1 - 1;
+	}
+	else 
+	{
+		bDrawExtra = 0;
+		bInCutSelect = 0;
+		bDoingCutSelect = 0;
+	}
+
+	return 0;
 }
 
 
@@ -3302,6 +3313,7 @@ int CutSceneSelectScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 8838
 
+// [D]
 int CutSceneCitySelectScreen(int bSetup)
 {
 	RECT16 rect;

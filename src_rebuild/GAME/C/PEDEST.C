@@ -1562,7 +1562,7 @@ int TannerActionHappening(void)
 	PEDESTRIAN *pPed = player[0].pPed;
 
 	if (pPed && pPed->type == PED_ACTION_PRESSBUTTON)
-		return pPed->frame1 != 14;
+		return pPed->frame1 == 14;
 
 	return 0;
 }
@@ -3279,7 +3279,7 @@ void PingInPedestrians(void)
 				lVar7 = lVar5;
 
 				pinginPedAngle = pinginPedAngle + 0x51;
-				iVar8 = lVar5 + (lVar7 >> 7) * -0x80 + 0x600;
+				iVar8 = lVar5 - FixFloorSigned(lVar7, 7) * 128 + 0x600;
 				randomLoc.vy = baseLoc.vy;
 				randomLoc.vx = baseLoc.vx + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
 				randomLoc.vz = baseLoc.vz + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
@@ -3723,7 +3723,7 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 				iVar4 = iVar1;
 				iVar6 = iVar3;
 
-				iVar5 = (iVar7 >> 8) * (iVar4 >> 4) + (iVar5 >> 8) * (iVar6 >> 4);
+				iVar5 = FixFloorSigned(iVar7, 8) * FixFloorSigned(iVar4, 4) + FixFloorSigned(iVar5, 8) * FixFloorSigned(iVar6, 4);
 
 				if (iVar5 < 0)
 				{
@@ -3737,16 +3737,10 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 
 					iVar7 = iVar1;
 
-					if (0 < collisionResult.surfNormal.vx)
-						iVar7 = iVar1 + 0x3f;
-
-					iVar4 = (iVar5 >> 6) * (iVar7 >> 6);
+					iVar4 = FixFloorSigned(iVar5, 6) * FixFloorSigned(iVar7, 6);
 					iVar7 = iVar3;
 
-					if (0 < collisionResult.surfNormal.vz) 
-						iVar7 = iVar3 + 0x3f;
-
-					iVar5 = (iVar5 >> 6) * (iVar7 >> 6);
+					iVar5 = FixFloorSigned(iVar5, 6) * FixFloorSigned(iVar7, 6);
 					pcdTanner->st.n.linearVelocity[0] = pcdTanner->st.n.linearVelocity[0] + iVar4;
 					pcdTanner->st.n.linearVelocity[2] = pcdTanner->st.n.linearVelocity[2] + iVar5;
 
@@ -5125,42 +5119,50 @@ int basic_car_interest;
 // [D]
 void CalculatePedestrianInterest(PEDESTRIAN *pPed)
 {
+	_CAR_DATA *pCar;
+	int carId;
+	int interest;
 	VECTOR v1;
 	VECTOR v2;
 
-	int carId = (int)player[0].playerCarId;
+	carId = player[0].playerCarId;
 
 	if (carId == -1) // [A] ASan bug fix
 		return;
 
-	_CAR_DATA *pCar = &car_data[carId];
+	pCar = &car_data[carId];
 
-	basic_car_interest = (pCar->hd.wheel_speed >> 10) + (int)pCar->totalDamage;
+	basic_car_interest = (pCar->hd.wheel_speed >> 10) + pCar->totalDamage;
 
 	v1.vx = pPed->position.vx - pCar->hd.where.t[0];
-	v1.vy = pPed->position.vz - pCar->hd.where.t[2];
+	v1.vz = pPed->position.vz - pCar->hd.where.t[2];
 
 	v2.vx = (v1.vx < 0) ? -v1.vx : v1.vx;
-	v2.vy = (v1.vy < 0) ? -v1.vy : v1.vy;
+	v2.vz = (v1.vz < 0) ? -v1.vz : v1.vz;
 
-	int interest = basic_car_interest;
-	int dist = (int)(v2.vx + v2.vy);
+	int dist = (v2.vx + v2.vz);
 
-	if (dist < 6001)
-		interest += (int)(6000 - dist);
+	if (dist < 6001) 
+		interest = 6000 - dist;
+	else 
+		interest = 0;
 
 	if (pPed->type == PED_ACTION_JUMP) 
 	{
-		pPed->head_rot = pPed->dir.vy + (short)(ratan2(v1.vy, v1.vx) + 0xc00 & 0xfff);
-	}
-	else if (interest > 2999) 
-	{
-		pPed->interest = (short)interest;
-		pPed->head_rot = pPed->dir.vy + (short)(ratan2(v1.vy, v1.vx) + 0xc00 & 0xfff);
+		pPed->head_rot = pPed->dir.vy + ratan2(v1.vz, v1.vx) + 3072 & 0xfff;
+		return;
 	}
 
-	if ((pPed->head_rot - 897) < 2302)
-		pPed->head_rot = 0;
+	if (interest + basic_car_interest > 2999)
+	{
+		pPed->interest = interest + basic_car_interest;
+		pPed->head_rot = pPed->dir.vy + ratan2(v1.vz, v1.vx) + 3072 & 0xfff;
+
+		if (pPed->head_rot - 897U > 2302)
+			return;
+	}
+
+	pPed->head_rot = 0;
 }
 
 
