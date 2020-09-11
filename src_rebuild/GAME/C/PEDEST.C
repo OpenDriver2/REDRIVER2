@@ -186,9 +186,9 @@ void IHaveThePower(void)
 					cp->hd.acc[1] += force[1];
 					cp->hd.acc[2] += force[2];
 
-					cp->hd.aacc[0] += FIXED(point[1] * force[2] - point[2] * force[1]);
-					cp->hd.aacc[1] += FIXED(point[2] * force[0] - point[0] * force[2]);
-					cp->hd.aacc[2] += FIXED(point[0] * force[1] - point[1] * force[0]);
+					cp->hd.aacc[0] += FIXEDH(point[1] * force[2] - point[2] * force[1]);
+					cp->hd.aacc[1] += FIXEDH(point[2] * force[0] - point[0] * force[2]);
+					cp->hd.aacc[2] += FIXEDH(point[0] * force[1] - point[1] * force[0]);
 				}
 
 				cp++;
@@ -3281,8 +3281,8 @@ void PingInPedestrians(void)
 				pinginPedAngle = pinginPedAngle + 0x51;
 				iVar8 = lVar5 - FixFloorSigned(lVar7, 7) * 128 + 0x600;
 				randomLoc.vy = baseLoc.vy;
-				randomLoc.vx = baseLoc.vx + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
-				randomLoc.vz = baseLoc.vz + iVar8 * FIXED((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
+				randomLoc.vx = baseLoc.vx + iVar8 * FIXEDH((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
+				randomLoc.vz = baseLoc.vz + iVar8 * FIXEDH((int)rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
 				iVar8 = MapHeight(&randomLoc);
 				randomLoc.vy = -iVar8;
 
@@ -3703,22 +3703,22 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 				if (bQuick != 0)
 					return 1;
 
-				if (50 < FIXED(cp1->hd.wheel_speed))
+				if (50 < FIXEDH(cp1->hd.wheel_speed))
 					return 1;
 
 				bFindCollisionPoint(cd, &collisionResult);
 				iVar3 = -collisionResult.surfNormal.vz;
 				iVar1 = -collisionResult.surfNormal.vx;
-				iVar10 = pcdTanner->hd.where.t[2] + FIXED(collisionResult.penetration * iVar3);
+				iVar10 = pcdTanner->hd.where.t[2] + FIXEDH(collisionResult.penetration * iVar3);
 				iVar12 = collisionResult.hit.vz - iVar10;
 				collisionResult.hit.vy = pcdTanner->hd.where.t[1] + 0x3c;
 				iVar9 = collisionResult.hit.vy - pcdTanner->hd.where.t[1];
-				iVar8 = pcdTanner->hd.where.t[0] + FIXED(collisionResult.penetration * iVar1);
+				iVar8 = pcdTanner->hd.where.t[0] + FIXEDH(collisionResult.penetration * iVar1);
 				iVar11 = collisionResult.hit.vx - iVar8;
 				collisionResult.surfNormal.vy = 0;
 
-				iVar7 = FIXED(pcdTanner->st.n.angularVelocity[1] * iVar12 - pcdTanner->st.n.angularVelocity[2] * iVar9) + pcdTanner->st.n.linearVelocity[0];
-				iVar5 = FIXED(pcdTanner->st.n.angularVelocity[0] * iVar9 - pcdTanner->st.n.angularVelocity[1] * iVar11) + pcdTanner->st.n.linearVelocity[2];
+				iVar7 = FIXEDH(pcdTanner->st.n.angularVelocity[1] * iVar12 - pcdTanner->st.n.angularVelocity[2] * iVar9) + pcdTanner->st.n.linearVelocity[0];
+				iVar5 = FIXEDH(pcdTanner->st.n.angularVelocity[0] * iVar9 - pcdTanner->st.n.angularVelocity[1] * iVar11) + pcdTanner->st.n.linearVelocity[2];
 
 				iVar4 = iVar1;
 				iVar6 = iVar3;
@@ -3727,8 +3727,8 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 
 				if (iVar5 < 0)
 				{
-					iVar7 = FIXED(iVar11 * iVar1 + iVar12 * iVar3);
-					iVar7 = FIXED(((iVar11 * iVar11 + iVar12 * iVar12) - iVar7 * iVar7) * car_cosmetics[pcdTanner->ap.model].twistRateY) + 0x1000;
+					iVar7 = FIXEDH(iVar11 * iVar1 + iVar12 * iVar3);
+					iVar7 = FIXEDH(((iVar11 * iVar11 + iVar12 * iVar12) - iVar7 * iVar7) * car_cosmetics[pcdTanner->ap.model].twistRateY) + 0x1000;
 
 					if (-iVar5 < 0x7f001)
 						iVar5 = (iVar5 * -0x1000) / iVar7;
@@ -3744,16 +3744,16 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 					pcdTanner->st.n.linearVelocity[0] = pcdTanner->st.n.linearVelocity[0] + iVar4;
 					pcdTanner->st.n.linearVelocity[2] = pcdTanner->st.n.linearVelocity[2] + iVar5;
 
-					pcdTanner->hd.aacc[2] = pcdTanner->hd.aacc[2] - FIXED(iVar9 * iVar4);
-					pcdTanner->hd.aacc[0] = pcdTanner->hd.aacc[0] + FIXED(iVar9 * iVar5);
+					pcdTanner->hd.aacc[2] = pcdTanner->hd.aacc[2] - FIXEDH(iVar9 * iVar4);
+					pcdTanner->hd.aacc[0] = pcdTanner->hd.aacc[0] + FIXEDH(iVar9 * iVar5);
 
-					pcdTanner->hd.aacc[1] = (pcdTanner->hd.aacc[1] + FIXED(iVar12 * iVar4)) - FIXED(iVar11 * iVar5);
+					pcdTanner->hd.aacc[1] = (pcdTanner->hd.aacc[1] + FIXEDH(iVar12 * iVar4)) - FIXEDH(iVar11 * iVar5);
 
 					collisionResult.hit.vy = -collisionResult.hit.vy;
 				}
 
-				pcdTanner->hd.where.t[0] = iVar8 - FIXED(pcdTanner->st.n.linearVelocity[0]);
-				pcdTanner->hd.where.t[2] = iVar10 - FIXED(pcdTanner->st.n.linearVelocity[2]);
+				pcdTanner->hd.where.t[0] = iVar8 - FIXEDH(pcdTanner->st.n.linearVelocity[0]);
+				pcdTanner->hd.where.t[2] = iVar10 - FIXEDH(pcdTanner->st.n.linearVelocity[2]);
 
 				collisionResult.surfNormal.vx = iVar1;
 				collisionResult.surfNormal.vz = iVar3;
@@ -4504,29 +4504,17 @@ int IsPavement(int x, int y, int z, PEDESTRIAN *pPed)
 // [D]
 void SetPedestrianTurn(PEDESTRIAN *pedestrian, int turn)
 {
-	char cVar1;
-	short sVar2;
-	short sVar3;
-	int iVar4;
-	int iVar5;
-	uint uVar6;
+	int uVar6;
 
-	iVar4 = (pedestrian->position).vx;
-	sVar2 = (pedestrian->velocity).vz;
-	iVar5 = (pedestrian->position).vz;
-
-	uVar6 = (pedestrian->dir).vy + turn & 0xfff;
-	(pedestrian->dir).vy = (short)uVar6;
+	pedestrian->dir.vy = pedestrian->dir.vy + turn & 0xfff;
 
 	uVar6 = uVar6 + 0x800 & 0xfff;
-	sVar3 = (pedestrian->velocity).vx;
 
-	(pedestrian->position).vz = iVar5 - sVar2;
+	pedestrian->position.vz = pedestrian->position.vz - pedestrian->velocity.vz;
+	pedestrian->position.vx = pedestrian->position.vx - pedestrian->velocity.vx;
 
-	cVar1 = pedestrian->speed;
-	(pedestrian->position).vx = iVar4 - sVar3;
-	(pedestrian->velocity).vx = FIXED(cVar1 * rcossin_tbl[uVar6 * 2]);
-	(pedestrian->velocity).vz = FIXED(cVar1 * rcossin_tbl[uVar6 * 2 + 1]);
+	pedestrian->velocity.vx = FIXED(pedestrian->speed * rcossin_tbl[uVar6 * 2]);
+	pedestrian->velocity.vz = FIXED(pedestrian->speed * rcossin_tbl[uVar6 * 2 + 1]);
 }
 
 

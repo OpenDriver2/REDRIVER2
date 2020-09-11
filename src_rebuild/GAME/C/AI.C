@@ -83,7 +83,7 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 		(cp->controlFlags & 2) == 0 && 
 		cp->hd.where.m[1][1] > 99)			// not flipped over
 	{
-		speed = FIXED(cp->hd.wheel_speed);
+		speed = FIXEDH(cp->hd.wheel_speed);
 
 		if (speed < 0)
 			speed = -speed;
@@ -161,7 +161,7 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 		{
 			if (doSpeedCheck != 0)
 			{
-				speed = FIXED(cp->hd.wheel_speed);
+				speed = FIXEDH(cp->hd.wheel_speed);
 
 				if (speed < 0)
 					speed = -speed;

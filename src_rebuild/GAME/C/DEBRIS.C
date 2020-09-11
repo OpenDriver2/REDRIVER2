@@ -593,9 +593,9 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 		iVar14++;
 	}
 
-	iVar16 = FIXED(s[0].vx * s[1].vy - s[0].vy * s[1].vx) *	s[2].vz;
-	iVar5 =  FIXED(s[0].vy * s[1].vz - s[0].vz * s[1].vy) * s[2].vx +
-			 FIXED(s[0].vz * s[1].vx - s[0].vx * s[1].vz) * s[2].vy + iVar16;
+	iVar16 = FIXEDH(s[0].vx * s[1].vy - s[0].vy * s[1].vx) *	s[2].vz;
+	iVar5 =  FIXEDH(s[0].vy * s[1].vz - s[0].vz * s[1].vy) * s[2].vx +
+			 FIXEDH(s[0].vz * s[1].vx - s[0].vx * s[1].vz) * s[2].vy + iVar16;
 
 	if (-1 < iVar5)
 	{
@@ -2398,8 +2398,8 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 
 	uVar3 = yang & 0xfff;
 	v1.vy = (cop->pos.vy - camera_position.vy) + y;
-	v1.vx = (cop->pos.vx - camera_position.vx) + FIXED(rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z);
-	v1.vz = (cop->pos.vz - camera_position.vz) + FIXED(rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x);
+	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z);
+	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x);
 
 	if ((flag & 0x200U) == 0) 
 	{
@@ -3824,8 +3824,8 @@ void GetSmokeDrift(VECTOR *Wind)
 	}
 
 	Wind->vy = 0;
-	Wind->vx = FIXED(WindMagnitude * CosX);
-	Wind->vz = FIXED(-WindMagnitude * SinX);
+	Wind->vx = FIXEDH(WindMagnitude * CosX);
+	Wind->vz = FIXEDH(-WindMagnitude * SinX);
 }
 
 
@@ -5583,7 +5583,7 @@ void DisplaySplashes(void)
 	if (0x1e < gRainCount >> 2)
 		uVar3 = 0x1e;
 
-	iVar4 = FIXED(uVar3 * FrAng * 3);
+	iVar4 = FIXEDH(uVar3 * FrAng * 3);
 
 	gte_SetRotMatrix(&aspect); // [A] norot
 
@@ -5612,9 +5612,9 @@ void DisplaySplashes(void)
 		uVar2 = uVar3 >> 4 & 0xfff;
 		rand = uVar3 * 0x19660d + 0x3c6ef35f;
 		uVar3 = rand >> 0xe & 0xfff;
-		Position.vx = FIXED(Gnd1.vx * uVar2 + Gnd2.vx * uVar3);
-		Position.vy = FIXED(Gnd1.vy * uVar2 + Gnd2.vy * uVar3) + CamGnd.vy;
-		Position.vz = FIXED(Gnd1.vz * uVar2 + Gnd2.vz * uVar3);
+		Position.vx = FIXEDH(Gnd1.vx * uVar2 + Gnd2.vx * uVar3);
+		Position.vy = FIXEDH(Gnd1.vy * uVar2 + Gnd2.vy * uVar3) + CamGnd.vy;
+		Position.vz = FIXEDH(Gnd1.vz * uVar2 + Gnd2.vz * uVar3);
 
 		ShowLight(&Position, &col, 12, &drop_texture);
 	}

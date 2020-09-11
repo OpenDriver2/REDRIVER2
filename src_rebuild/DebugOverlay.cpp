@@ -199,9 +199,9 @@ void DoFreeCamera()
 
 	BuildFreeCameraMatrix();
 
-	g_FreeCameraPosition.vx += FIXED(g_FreeCameraVelocity.vx);
-	g_FreeCameraPosition.vy += FIXED(g_FreeCameraVelocity.vy);
-	g_FreeCameraPosition.vz += FIXED(g_FreeCameraVelocity.vz);
+	g_FreeCameraPosition.vx += FIXEDH(g_FreeCameraVelocity.vx);
+	g_FreeCameraPosition.vy += FIXEDH(g_FreeCameraVelocity.vy);
+	g_FreeCameraPosition.vz += FIXEDH(g_FreeCameraVelocity.vz);
 
 	// deaccel
 	g_FreeCameraVelocity.vx -= (g_FreeCameraVelocity.vx / 8);

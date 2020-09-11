@@ -2152,7 +2152,7 @@ void StepFromToEvent(_EVENT *ev)
 		iVar4 = (*ev->data + -1) * (int)*(short*)((int)rcossin_tbl + ((uVar3 - (uVar3 >> 0x1f)) * 2 & 0x3ffc));
 	}
 
-	uVar3 = FIXED(iVar4) + 1U ^ uVar2;
+	uVar3 = FIXEDH(iVar4) + 1U ^ uVar2;
 LAB_00047b78:
 
 	*local_t0_132 = iVar6 + (uVar3 - uVar2);
@@ -2480,7 +2480,7 @@ void StepPathEvent(_EVENT *ev)
 			{
 				speed = ev->data[1] * (0x1000 - CameraCnt) + ev->data[2] * CameraCnt;
 
-				speed = FIXED(speed);
+				speed = FIXEDH(speed);
 			}
 			else 
 			{
@@ -2507,7 +2507,7 @@ void StepPathEvent(_EVENT *ev)
 			speed = (iVar9 >> 0x1f ^ 5U) - (iVar9 >> 0x1f);
 		}
 
-		speed = speed + FIXED(iVar4);
+		speed = speed + FIXEDH(iVar4);
 	}
 LAB_00048238:
 	iVar4 = *curr + speed * iVar13;
@@ -3484,9 +3484,9 @@ void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 				cx = (int)rcossin_tbl[angle * 2];
 				sx = (int)rcossin_tbl[angle * 2 + 1];
 
-				offset.vx = FIXED(spoke[0].vx * cx + spoke[1].vx * sx);
-				offset.vy = FIXED(spoke[0].vy * cx + spoke[1].vy * sx);
-				offset.vz = FIXED(spoke[0].vz * cx + spoke[1].vz * sx);
+				offset.vx = FIXEDH(spoke[0].vx * cx + spoke[1].vx * sx);
+				offset.vy = FIXEDH(spoke[0].vy * cx + spoke[1].vy * sx);
+				offset.vz = FIXEDH(spoke[0].vz * cx + spoke[1].vz * sx);
 
 				carPos.vx = pos->vx + offset.vx;
 				carPos.vy = pos->vy + offset.vy;
@@ -3978,7 +3978,7 @@ void DrawEvents(int camera)
 												_RotMatrixY(&matrix, ev->rotation);
 												pos.vx = pos.vx - boatOffset.vx;
 												pos.vz = pos.vz - boatOffset.vz;
-												pos.vy = (pos.vy - boatOffset.vy) + FIXED((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
+												pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
 											}
 											else if (uVar3 != 0xc0)
 											{
@@ -4395,7 +4395,7 @@ _sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 						return &sea;
 					}
 
-					uVar6 = (iVar8 - (FIXED(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXED(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
+					uVar6 = (iVar8 - (FIXEDH(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXEDH(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
 					iVar5 = rcossin_tbl[uVar3 * 2];
 					goto LAB_0004a9f8;
 				}

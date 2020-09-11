@@ -650,7 +650,7 @@ void CheckPlayerMiscFelonies(void)
 		st = GET_STRAIGHT(surfInd); // Driver2StraightsPtr + surfInd;
 		uVar6 = st->angle & 0xfff;
 		uVar4 = st->NumLanes & 0xf;
-		uVar6 = uVar4 - (FIXED((carPos->vx - st->Midx) * rcossin_tbl[uVar6 * 2 + 1] - (carPos->vz - st->Midz) * rcossin_tbl[uVar6 * 2]) + 0x200 >> 9);
+		uVar6 = uVar4 - (FIXEDH((carPos->vx - st->Midx) * rcossin_tbl[uVar6 * 2 + 1] - (carPos->vz - st->Midz) * rcossin_tbl[uVar6 * 2]) + 0x200 >> 9);
 		iVar5 = uVar4 * 2;
 
 		if (uVar6 < 0)
@@ -753,7 +753,7 @@ void CheckPlayerMiscFelonies(void)
 	else 
 		limit = (maxSpeed * 3) >> 1;
 
-	if (FIXED(cp->hd.wheel_speed) > limit)
+	if (FIXEDH(cp->hd.wheel_speed) > limit)
 		NoteFelony(&felonyData, 2, 0x1000);
 }
 

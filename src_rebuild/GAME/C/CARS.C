@@ -1193,8 +1193,8 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 	// rotate wheel verts
 
-	FW1z = FIXED(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
-	FW2z = FIXED(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+	FW1z = FIXEDH(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
+	FW2z = FIXEDH(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
 
 	VertPtr = (SVECTOR*)WheelModelFront->vertices;
 
@@ -1237,8 +1237,8 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[17].vy = -wheelSize;
 	VertPtr[16].vy = -wheelSize;
 
-	BW1z = FIXED(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
-	BW2z = FIXED(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+	BW1z = FIXEDH(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
+	BW2z = FIXEDH(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
 
 	VertPtr = (SVECTOR *)WheelModelBack->vertices;
 	

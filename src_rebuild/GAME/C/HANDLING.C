@@ -82,9 +82,9 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	cp->hd.autoBrake = 0;
 
-	cp->st.n.orientation[0] = FIXED(-rcossin_tbl[(direction & 0xffeU) + 1] * iVar2);
+	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[(direction & 0xffeU) + 1] * iVar2);
 	cp->st.n.orientation[1] = rcossin_tbl[direction & 0xffeU];
-	cp->st.n.orientation[2] = FIXED(rcossin_tbl[direction & 0xffeU] * iVar2);
+	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[direction & 0xffeU] * iVar2);
 	cp->st.n.orientation[3] = rcossin_tbl[(direction & 0xffeU) + 1];
 
 	cp->st.n.fposition[0] = (*startpos)[0] << 4;
@@ -117,7 +117,7 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
 	cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
 	
-	cVar3 = (iVar5 >> 5);
+	cVar3 = FixFloorSigned(iVar5, 5);
 	cVar1 = 14 - cVar3;
 	
 	cVar3 = cVar3 + 14;
@@ -182,9 +182,9 @@ void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 	}
 
 	uVar3 = cp->hd.direction & 0xffe;
-	cp->st.n.orientation[0] = FIXED(-rcossin_tbl[uVar3 + 1] * iVar1);
+	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[uVar3 + 1] * iVar1);
 	cp->st.n.orientation[1] = rcossin_tbl[uVar3];
-	cp->st.n.orientation[2] = FIXED(rcossin_tbl[uVar3] * iVar1);
+	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[uVar3] * iVar1);
 	cp->st.n.orientation[3] = rcossin_tbl[uVar3 + 1];
 
 	RebuildCarMatrix(&cp->st, cp);
@@ -719,7 +719,7 @@ void GlobalTimeStep(void)
 			cp->hd.aacc[2] = 0;
 
 			if (200000 < st->n.linearVelocity[1]) // reduce vertical velocity
-				st->n.linearVelocity[1] = st->n.linearVelocity[1] * 3 >> 2;
+				st->n.linearVelocity[1] = FixFloorSigned(st->n.linearVelocity[1] * 3, 2);
 
 			if (cp->hd.speed == 0)
 			{
@@ -784,10 +784,10 @@ void GlobalTimeStep(void)
 				delta_orientation[2] = (-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]);
 				delta_orientation[3] = (-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2];
 
-				orient[0] += FIXED(delta_orientation[0]);
-				orient[1] += FIXED(delta_orientation[1]);
-				orient[2] += FIXED(delta_orientation[2]);
-				orient[3] += FIXED(delta_orientation[3]);
+				orient[0] += FIXEDH(delta_orientation[0]);
+				orient[1] += FIXEDH(delta_orientation[1]);
+				orient[2] += FIXEDH(delta_orientation[2]);
+				orient[3] += FIXEDH(delta_orientation[3]);
 
 				RebuildCarMatrix((RigidBodyState*)st, cp);
 			}
@@ -845,10 +845,10 @@ void GlobalTimeStep(void)
 					AV[1] = FixHalfRound(st->n.angularVelocity[1], 13);
 					AV[2] = FixHalfRound(st->n.angularVelocity[2], 13);
 
-					local_a3_1288->n.orientation[0] = FIXED(-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
-					local_a3_1288->n.orientation[1] = FIXED((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]);
-					local_a3_1288->n.orientation[2] = FIXED(-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]);
-					local_a3_1288->n.orientation[3] = FIXED((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]);
+					local_a3_1288->n.orientation[0] = FIXEDH(-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
+					local_a3_1288->n.orientation[1] = FIXEDH((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]);
+					local_a3_1288->n.orientation[2] = FIXEDH(-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]);
+					local_a3_1288->n.orientation[3] = FIXEDH((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]);
 
 					local_a3_1288->n.linearVelocity[0] = 0;
 					local_a3_1288->n.linearVelocity[1] = 0;
@@ -903,14 +903,14 @@ void GlobalTimeStep(void)
 									lever1[1] = iVar9 + iVar28;
 									iVar28 = depth * 0xc000;
 
-									howHard = (FIXED(st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) + st->n.linearVelocity[0]) -
-												(FIXED(p_Var25->n.angularVelocity[1] * lever1[2] - p_Var25->n.angularVelocity[2] * lever1[1]) + p_Var25->n.linearVelocity[0]);
+									howHard = (FIXEDH(st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) + st->n.linearVelocity[0]) -
+												(FIXEDH(p_Var25->n.angularVelocity[1] * lever1[2] - p_Var25->n.angularVelocity[2] * lever1[1]) + p_Var25->n.linearVelocity[0]);
 										
-									iVar19 = (FIXED(st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) + st->n.linearVelocity[1]) -
-												(FIXED(p_Var25->n.angularVelocity[2] * lever1[0] - p_Var25->n.angularVelocity[0] * lever1[2]) + p_Var25->n.linearVelocity[1]);
+									iVar19 = (FIXEDH(st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) + st->n.linearVelocity[1]) -
+												(FIXEDH(p_Var25->n.angularVelocity[2] * lever1[0] - p_Var25->n.angularVelocity[0] * lever1[2]) + p_Var25->n.linearVelocity[1]);
 										
-									iVar9 = (FIXED(st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) + st->n.linearVelocity[2]) -
-											(FIXED(p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) +p_Var25->n.linearVelocity[2]);
+									iVar9 = (FIXEDH(st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) + st->n.linearVelocity[2]) -
+											(FIXEDH(p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) +p_Var25->n.linearVelocity[2]);
 										
 									lVar10 = normal[0];
 									lVar7 = normal[1];
@@ -953,8 +953,8 @@ void GlobalTimeStep(void)
 										if (0x1b00 < howHard) 
 										{
 											velocity.vy = -0x11;
-											velocity.vx = (cp->st.n.linearVelocity[0]) >> 0xc;
-											velocity.vz = (cp->st.n.linearVelocity[2]) >> 0xc;
+											velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
+											velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
 
 											collisionpoint[1] = -collisionpoint[1];
 
@@ -1019,7 +1019,7 @@ void GlobalTimeStep(void)
 											}
 										}
 
-										iVar19 = FIXED(iVar19) * iVar24 >> 3;
+										iVar19 = FIXEDH(iVar19) * iVar24 >> 3;
 										velocity.vx = (normal[0] >> 3) * iVar19 >> 6;
 										velocity.vz = (normal[2] >> 3) * iVar19 >> 6;
 										velocity.vy = (normal[1] >> 3) * iVar19 >> 6;
@@ -1032,9 +1032,9 @@ void GlobalTimeStep(void)
 
 										iVar19 = car_cosmetics[cp->ap.model].twistRateY / 2;
 
-										torque[0] = FIXED(velocity.vy * lever0[2] - velocity.vz * lever0[1]) * iVar19;
-										torque[1] = FIXED(velocity.vz * lever0[0] - velocity.vx * lever0[2]) * iVar19;
-										torque[2] = FIXED(velocity.vx * lever0[1] - velocity.vy * lever0[0]) * iVar19;
+										torque[0] = FIXEDH(velocity.vy * lever0[2] - velocity.vz * lever0[1]) * iVar19;
+										torque[1] = FIXEDH(velocity.vz * lever0[0] - velocity.vx * lever0[2]) * iVar19;
+										torque[2] = FIXEDH(velocity.vx * lever0[1] - velocity.vy * lever0[0]) * iVar19;
 
 										if (c1->controlType == 4)
 										{
@@ -1056,16 +1056,16 @@ void GlobalTimeStep(void)
 											if (c1->controlType == 4 && cp->hndType != 0)
 											{
 												iVar9 = iVar28 * 5;
-												iVar28 = iVar9 >> 3;
+												iVar28 = FixFloorSigned(iVar9, 3);
 											}
 										}
 										else
 										{
 											iVar9 = iVar28 * (7 - gCopDifficultyLevel);
-											iVar28 = iVar9 >> 3;
+											iVar28 = FixFloorSigned(iVar9, 3);
 										}
 
-										iVar28 = FIXED(iVar28) * iVar21 >> 3;
+										iVar28 = FIXEDH(iVar28) * iVar21 >> 3;
 										velocity.vx = (normal[0] >> 3) * iVar28 >> 6;
 										velocity.vy = (normal[1] >> 3) * iVar28 >> 6;
 										velocity.vz = (normal[2] >> 3) * iVar28 >> 6;
@@ -1075,9 +1075,9 @@ void GlobalTimeStep(void)
 										p_Var27->n.linearVelocity[2] = p_Var27->n.linearVelocity[2] + velocity.vz;
 										iVar28 = car_cosmetics[c1->ap.model].twistRateY / 2;
 
-										torque[0] = FIXED(lever1[1] * velocity.vz - lever1[2] * velocity.vy) * iVar28;
-										torque[1] = FIXED(lever1[2] * velocity.vx - lever1[0] * velocity.vz) * iVar28;
-										torque[2] = FIXED(lever1[0] * velocity.vy - lever1[1] * velocity.vx) * iVar28;
+										torque[0] = FIXEDH(lever1[1] * velocity.vz - lever1[2] * velocity.vy) * iVar28;
+										torque[1] = FIXEDH(lever1[2] * velocity.vx - lever1[0] * velocity.vz) * iVar28;
+										torque[2] = FIXEDH(lever1[0] * velocity.vy - lever1[1] * velocity.vx) * iVar28;
 
 										if (c1->controlType == 4)
 										{
@@ -1357,28 +1357,28 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	iVar8 = (*qua)[2];
 	iVar7 = (*qua)[3];
 
-	sVar1 = (iVar5 * iVar5) + 0x400 >> 0xb;
-	sVar2 = (iVar8 * iVar8) + 0x400 >> 0xb;
-	sVar3 = (iVar6 * iVar6) + 0x400 >> 0xb;
+	sVar1 = FixHalfRound(iVar5 * iVar5, 11);
+	sVar2 = FixHalfRound(iVar8 * iVar8, 11);
+	sVar3 = FixHalfRound(iVar6 * iVar6, 11);
 
 	m->m[0][0] = 4096 - (sVar1 + sVar2);
 	m->m[1][1] = 4096 - (sVar3 + sVar2);
 	m->m[2][2] = 4096 - (sVar3 + sVar1);
 
-	sVar2 = (iVar8 * iVar7) + 0x400 >> 0xb;
-	sVar1 = (iVar6 * iVar5) + 0x400 >> 0xb;
+	sVar2 = FixHalfRound(iVar8 * iVar7, 11);
+	sVar1 = FixHalfRound(iVar6 * iVar5, 11);
 
 	m->m[0][1] = sVar1 - sVar2;
 
-	sVar3 = (iVar6 * iVar8) + 0x400 >> 0xb;
-	sVar4 = (iVar5 * iVar7) + 0x400 >> 0xb;
+	sVar3 = FixHalfRound(iVar6 * iVar8, 11);
+	sVar4 = FixHalfRound(iVar5 * iVar7, 11);
 
 	m->m[0][2] = sVar3 + sVar4;
 	m->m[1][0] = sVar1 + sVar2;
 	m->m[2][0] = sVar3 - sVar4;
 
-	sVar2 = (iVar6 * iVar7) + 0x400 >> 0xb;
-	sVar1 = (iVar5 * iVar8) + 0x400 >> 0xb;
+	sVar2 = FixHalfRound(iVar6 * iVar7, 11);
+	sVar1 = FixHalfRound(iVar5 * iVar8, 11);
 
 	m->m[1][2] = sVar1 - sVar2;
 	m->m[2][1] = sVar1 + sVar2;
@@ -1441,7 +1441,7 @@ void initOBox(_CAR_DATA *cp)
 	{
 		iVar3 = cp->ap.carCos->colBox.vx * 14;
 
-		sVar2 = (iVar3 >> 4);
+		sVar2 = FixFloorSigned(iVar3, 4);
 		cp->hd.oBox.length[0] = sVar2;
 	}
 	else 
@@ -1540,11 +1540,11 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	{
 		sm = 6144 - (osm >> 13);
 
-		st->n.orientation[0] = FIXED(sm * iVar6);
-		st->n.orientation[1] = FIXED(sm * iVar5);
-		st->n.orientation[2] = FIXED(sm * iVar4);
+		st->n.orientation[0] = FIXEDH(sm * iVar6);
+		st->n.orientation[1] = FIXEDH(sm * iVar5);
+		st->n.orientation[2] = FIXEDH(sm * iVar4);
 
-		sm = FIXED(sm * iVar3);
+		sm = FIXEDH(sm * iVar3);
 	}
 	st->n.orientation[3] = sm;
 	
@@ -1749,31 +1749,31 @@ void CheckCarToCarCollisions(void)
 		iVar6 = colBox->vy;
 		iVar2 = colBox->vz * 9;
 
-		iVar9 = cp->hd.where.m[0][2] * (iVar2 >> 3);
+		iVar9 = cp->hd.where.m[0][2] * FixFloorSigned(iVar2, 3);
 		iVar4 = colBox->vx * 9;
 
 		if (iVar9 < 0)
 			iVar9 = -iVar9;
 	
-		iVar10 = cp->hd.where.m[0][0] * (iVar4 >> 3);
+		iVar10 = cp->hd.where.m[0][0] * FixFloorSigned(iVar4, 3);
 
 		if (iVar10 < 0)
 			iVar10 = -iVar10;
 	
-		iVar9 = FIXED(iVar9 + iVar10) + iVar6;
-		iVar2 = cp->hd.where.m[2][2] * (iVar2 >> 3);
+		iVar9 = FIXEDH(iVar9 + iVar10) + iVar6;
+		iVar2 = cp->hd.where.m[2][2] * FixFloorSigned(iVar2, 3);
 
 		if (iVar2 < 0)
 			iVar2 = -iVar2;
 	
-		iVar4 = cp->hd.where.m[2][0] * (iVar4 >> 3);
+		iVar4 = cp->hd.where.m[2][0] * FixFloorSigned(iVar4, 3);
 		iVar10 = cp->hd.where.t[0];
 		iVar5 = iVar10 - iVar9;
 
 		if (iVar4 < 0)
 			iVar4 = -iVar4;
 	
-		iVar6 = FIXED(iVar2 + iVar4) + iVar6;
+		iVar6 = FIXEDH(iVar2 + iVar4) + iVar6;
 
 		iVar4 = cp->hd.where.t[2];
 		iVar2 = iVar4 - iVar6;
@@ -1790,26 +1790,26 @@ void CheckCarToCarCollisions(void)
 
 		if (iVar2 < 0) 
 		{
-			iVar2 = FIXED(iVar2);
-			bb2->x0 = (iVar5 >> 4) + (iVar2 >> 3);
+			iVar2 = FIXEDH(iVar2);
+			bb2->x0 = FixFloorSigned(iVar5, 4) + FixFloorSigned(iVar2, 3);
 		}
 		else
 		{
-			iVar2 = FIXED(iVar2);
-			bb2->x1 = (iVar10 >> 4) + (iVar2 >> 3);
+			iVar2 = FIXEDH(iVar2);
+			bb2->x1 = FixFloorSigned(iVar10, 4) + FixFloorSigned(iVar2, 3);
 		}
 
 		iVar2 = cp->st.n.linearVelocity[2];
 
 		if (iVar2 < 0)
 		{
-			iVar2 = FIXED(iVar2);
-			bb2->z0 = bb2->z0 + (iVar2 >> 3);
+			iVar2 = FIXEDH(iVar2);
+			bb2->z0 = bb2->z0 + FixFloorSigned(iVar2, 3);
 		}
 		else
 		{
-			iVar2 = FIXED(iVar2);
-			bb2->z1 = bb2->z1 + (iVar2 >> 3);
+			iVar2 = FIXEDH(iVar2);
+			bb2->z1 = bb2->z1 + FixFloorSigned(iVar2, 3);
 		}
 
 		iVar6 = cp->hd.where.t[1];
@@ -2202,20 +2202,20 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if ((pad & 0x80) != 0) 
 		{
 			iVar3 = cp->hd.wheel_speed * 1500;
-			iVar3 = FIXED(iVar3 >> 10);
+			iVar3 = FIXEDH(FixFloorSigned(iVar3, 10));
 
 			if (-iVar3 < 0x17) 
 				sVar2 = -5000;
 			else
-				sVar2 = ((iVar3 + 0x116) * -0x12aa) >> 8;
+				sVar2 = ((iVar3 + 278) * -4778) >> 8;
 
 			cp->thrust = sVar2;
-			cp->thrust = FIXED(cp->thrust * cp->ap.carCos->powerRatio);
+			cp->thrust = FIXEDH(cp->thrust * cp->ap.carCos->powerRatio);
 		}
 		else if ((pad & 0x40) != 0)
 		{
 			cp->thrust = 0x1333;
-			cp->thrust = FIXED(cp->ap.carCos->powerRatio * 0x1333);
+			cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 0x1333);
 
 			if (cp->hndType == 5)
 			{
@@ -2254,7 +2254,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				if (iVar3 != -1) 
 				{
 					if (3050 < cp->ap.carCos->powerRatio) 
-						cp->thrust = FIXED(car_data[iVar3].ap.carCos->powerRatio * 0x1333);
+						cp->thrust = FIXEDH(car_data[iVar3].ap.carCos->powerRatio * 0x1333);
 
 					iVar7 = cp->hd.where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
 					iVar3 = cp->hd.where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;

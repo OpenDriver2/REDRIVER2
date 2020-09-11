@@ -758,9 +758,9 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 		srcPos = ch->srcposition;
 		srcVel = ch->srcvelocity;
 
-		iVar6 = (srcPos->vx - pl->cameraPos.vx) + FIXED(srcVel[0] - pl->camera_vel[0]);
-		iVar4 = (srcPos->vy + pl->cameraPos.vy) + FIXED(srcVel[1] - pl->camera_vel[1]);
-		iVar1 = (srcPos->vz - pl->cameraPos.vz) + FIXED(srcVel[2] - pl->camera_vel[2]);
+		iVar6 = (srcPos->vx - pl->cameraPos.vx) + FIXEDH(srcVel[0] - pl->camera_vel[0]);
+		iVar4 = (srcPos->vy + pl->cameraPos.vy) + FIXEDH(srcVel[1] - pl->camera_vel[1]);
+		iVar1 = (srcPos->vz - pl->cameraPos.vz) + FIXEDH(srcVel[2] - pl->camera_vel[2]);
 
 		lVar3 = jsqrt(iVar6 * iVar6 + iVar4 * iVar4 + iVar1 * iVar1);
 

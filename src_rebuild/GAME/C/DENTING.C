@@ -163,9 +163,9 @@ void DentCar(_CAR_DATA *cp)
 		VertNo = 0;
 		while (VertNo < pCleanModel->num_vertices)
 		{
-			gTempCarVertDump[cp->id][VertNo].vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * tempDamage[VertNo] / 2);
-			gTempCarVertDump[cp->id][VertNo].vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * tempDamage[VertNo] / 2);
-			gTempCarVertDump[cp->id][VertNo].vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vx = CleanVertPtr->vx + FIXEDH((DamVertPtr->vx - CleanVertPtr->vx) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vy = CleanVertPtr->vy + FIXEDH((DamVertPtr->vy - CleanVertPtr->vy) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vz = CleanVertPtr->vz + FIXEDH((DamVertPtr->vz - CleanVertPtr->vz) * tempDamage[VertNo] / 2);
 
 			DamVertPtr++;
 			CleanVertPtr++;
@@ -483,9 +483,9 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 			}
 
 			gHubcap.Duration = 100;
-			gHubcap.Direction.vx = FIXED(FIXED(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXED(cp->st.n.linearVelocity[0]);
-			gHubcap.Direction.vy = FIXED(cp->st.n.linearVelocity[1]);
-			gHubcap.Direction.vz = FIXED(-FIXED(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXED(cp->st.n.linearVelocity[2]);
+			gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXEDH(cp->st.n.linearVelocity[0]);
+			gHubcap.Direction.vy = FIXEDH(cp->st.n.linearVelocity[1]);
+			gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
 		}
 	}
 }

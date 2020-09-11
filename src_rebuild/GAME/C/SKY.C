@@ -1033,11 +1033,11 @@ void TunnelSkyFade(void)
 	{
 		if (pVVar5 != NULL) 
 		{
-			iVar1 = FIXED(pVVar6->vx - player[0].pos[0]);
-			iVar3 = FIXED(pVVar6->vz - player[0].pos[2]);
+			iVar1 = FIXEDH(pVVar6->vx - player[0].pos[0]);
+			iVar3 = FIXEDH(pVVar6->vz - player[0].pos[2]);
 
-			iVar2 = FIXED(pVVar5->vx - player[0].pos[0]);
-			iVar4 = FIXED(pVVar5->vz - player[0].pos[2]);
+			iVar2 = FIXEDH(pVVar5->vx - player[0].pos[0]);
+			iVar4 = FIXEDH(pVVar5->vz - player[0].pos[2]);
 
 			iVar3 = iVar1 * iVar1 + iVar3 * iVar3;
 			iVar4 = iVar2 * iVar2 + iVar4 * iVar4;
@@ -1052,8 +1052,8 @@ void TunnelSkyFade(void)
 		iVar3 = pVVar6->vz;
 	}
 
-	iVar4 = FIXED(iVar4 - player[0].pos[0]);
-	iVar3 = FIXED(iVar3 - player[0].pos[2]);
+	iVar4 = FIXEDH(iVar4 - player[0].pos[0]);
+	iVar3 = FIXEDH(iVar3 - player[0].pos[2]);
 
 	iVar3 = iVar4 * iVar4 + iVar3 * iVar3;
 

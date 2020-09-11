@@ -570,8 +570,8 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						cs = rcossin_tbl[local_a3_704 * 2 + 1];
 						sn = rcossin_tbl[local_a3_704 * 2];
 
-						iVar4 = va.vx - (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-						iVar3 = va.vz - (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						iVar4 = va.vx - (pCellObject->pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						iVar3 = va.vz - (pCellObject->pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						
 						box.slab[0].upper = collide->xsize / 2 +testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
@@ -582,12 +582,12 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						box.slab[2].upper = collide->zsize / 2 +testRadius;
 						box.slab[2].lower = -box.slab[2].upper;
 
-						ray.org[0] = FIXED(cs * iVar4 - sn * iVar3);
-						ray.org[2] = FIXED(cs * iVar3 + sn * iVar4);
+						ray.org[0] = FIXEDH(cs * iVar4 - sn * iVar3);
+						ray.org[2] = FIXEDH(cs * iVar3 + sn * iVar4);
 						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
 
-						ray.dir[0] = FIXED(cs * pos.vx - sn * pos.vz);
-						ray.dir[2] = FIXED(cs * pos.vz + sn * pos.vx);
+						ray.dir[0] = FIXEDH(cs * pos.vx - sn * pos.vz);
+						ray.dir[2] = FIXEDH(cs * pos.vz + sn * pos.vx);
 						ray.dir[1] = vb.vy - va.vy;
 
 #if defined(COLLISION_DEBUG)
@@ -598,8 +598,8 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						{
 							CDATA2D cd[1];
 
-							cd[0].x.vx = (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-							cd[0].x.vz = (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+							cd[0].x.vx = (pCellObject->pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+							cd[0].x.vz = (pCellObject->pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 							cd[0].x.vy = va.vy;
 
 							cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
@@ -631,10 +631,10 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 								//Debug_AddLine(b1p1, b2p1, yycv);
 
 								VECTOR b1ax[2] = { {0} , {0} };
-								b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
-								b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
-								b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
-								b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+								b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+								b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+								b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+								b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
 
 								// show axis of body 1
 								Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
@@ -1019,9 +1019,9 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							// box 'rotated' by matrix
 							// [A] FIXME: replace add+shift by division
-							bbox.pos.vx = cop->pos.vx + FIXED(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
+							bbox.pos.vx = cop->pos.vx + FIXEDH(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
 							bbox.pos.vy = cop->pos.vy + collide->ypos;
-							bbox.pos.vz = cop->pos.vz + FIXED(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
+							bbox.pos.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
 
 							bbox.pos.pad = (model->flags2 >> 10) & 1;
 
@@ -1073,8 +1073,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 										iVar13 = gCameraDistance;
 										uVar9 = cp->hd.direction & 0xfff;
 
-										cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
-										cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
+										cp->hd.where.t[0] = lVar1 + FIXEDH((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
+										cp->hd.where.t[2] = lVar2 + FIXEDH((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
 										iVar7--;
 									}
 								}
@@ -1253,8 +1253,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 							cd[0].vel.vx = 0;
 							cd[0].vel.vz = 0;
 
-							offset.vx = cop->pos.vx + FIXED(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
-							offset.vz = cop->pos.vz + FIXED(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
+							offset.vx = cop->pos.vx + FIXEDH(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
+							offset.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
 
 							cd[1].theta = (cop->yang + collide->yang) * 64 & 0xfff;
 
@@ -1292,10 +1292,10 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 									//Debug_AddLine(b1p1, b2p1, yycv);
 
 									VECTOR b1ax[2] = { {0} , {0} };
-									b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
-									b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
-									b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
-									b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+									b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+									b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+									b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+									b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
 
 									// show axis of body 1
 									Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
@@ -1319,10 +1319,10 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 									}
 
 									VECTOR b2ax[2] = { {0} , {0} };
-									b2ax[0].vx += FIXED(cd[1].axis[0].vx * cd[1].length[0]);
-									b2ax[0].vz += FIXED(cd[1].axis[0].vz * cd[1].length[0]);
-									b2ax[1].vx += FIXED(cd[1].axis[1].vx * cd[1].length[1]);
-									b2ax[1].vz += FIXED(cd[1].axis[1].vz * cd[1].length[1]);
+									b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
+									b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
+									b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
+									b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
 
 									// show axis of body 2
 									Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);

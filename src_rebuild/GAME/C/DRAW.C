@@ -354,9 +354,9 @@ void DrawSprites(int numFound)
 	int local_38;
 	int local_2c;
 
-	z = FIXED(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
-		FIXED(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
-		FIXED(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
+	z = FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
+		FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
+		FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
 
 	lightLevel = (z >> 0x12) + 0x20U & 0xff;
 
