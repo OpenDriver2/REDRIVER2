@@ -887,7 +887,7 @@ void DestroyPedestrian(PEDESTRIAN *pPed)
 /* WARNING: Type propagation algorithm not settling */
 
 // [D]
-int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*position)[4], int playerType)
+int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*position)[4], PED_MODEL_TYPES playerType)
 {
 	int iVar3;
 	int side;
@@ -1037,7 +1037,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 
 	pPlayerPed = pedptr;
 	lp->headTimer = 0;
-	pedptr->pedType = (PED_MODEL_TYPES)playerType;
+	pedptr->pedType = playerType;
 	SetupPedestrian(pedptr);
 
 	if (pCar == NULL) 

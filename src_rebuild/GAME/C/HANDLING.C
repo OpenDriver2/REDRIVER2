@@ -2047,6 +2047,9 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	int player_id;
 	int int_steer;
 	int analog_angle;
+	PED_MODEL_TYPES whoExit;
+
+	whoExit = TANNER_MODEL;
 
 	int_steer = PadSteer;
 	player_id = GetPlayerId(cp);
@@ -2062,13 +2065,9 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				{
 					// [A] play as jericho
 					if (ActiveCheats.cheat12 && (GameLevel == 1 || GameLevel == 2))
-					{
-						ActivatePlayerPedestrian(cp, NULL, 0, NULL, OTHER_MODEL);
-					}
-					else
-					{
-						ActivatePlayerPedestrian(cp, NULL, 0, NULL, TANNER_MODEL);
-					}
+						whoExit = OTHER_MODEL;
+
+					ActivatePlayerPedestrian(cp, NULL, 0, NULL, whoExit);
 				}
 			}
 			else if (lockAllTheDoors != 0)
@@ -2171,12 +2170,12 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		if ((pad & 4) == 0) 
 		{
 			int_steer *= ((int_steer * int_steer) / 80);
-			analog_angle = ((long long)int_steer * 0x66666667) >> 32;
+			analog_angle = ((long long)int_steer * 0x66666667) >> 32;	// (int_steer * 0.6) = int_steer * 2457 + 2048 >> 12 (2457 is 4096 * 0.6)
 		}
 		else 
 		{
 			int_steer *= ((int_steer * int_steer) / 60);
-			analog_angle = ((long long)int_steer * 0x88888889) >> 32;
+			analog_angle = ((long long)int_steer * 0x88888889) >> 32;	// (int_steer * 0.4) = int_steer * 1638 + 2048 >> 12 (2457 is 4096 * 0.6)
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
