@@ -2059,7 +2059,17 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			if (!TannerStuckInCar(1, player_id))
 			{
 				if (player[player_id].dying == 0)
-					ActivatePlayerPedestrian(cp, NULL, 0, NULL, TANNER_MODEL);
+				{
+					// [A] play as jericho
+					if (ActiveCheats.cheat12 && (GameLevel == 1 || GameLevel == 2))
+					{
+						ActivatePlayerPedestrian(cp, NULL, 0, NULL, OTHER_MODEL);
+					}
+					else
+					{
+						ActivatePlayerPedestrian(cp, NULL, 0, NULL, TANNER_MODEL);
+					}
+				}
 			}
 			else if (lockAllTheDoors != 0)
 			{
