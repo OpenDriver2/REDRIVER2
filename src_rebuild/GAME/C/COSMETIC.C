@@ -991,8 +991,8 @@ void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		Drift.vx /= 2;
 		Drift.vz /= 2;
 
-		Drift.vx -= FIXED(smokedir.vx) / 2;
-		Drift.vz -= FIXED(smokedir.vz) / 2;
+		Drift.vx -= FIXEDH(smokedir.vx) / 2;
+		Drift.vz -= FIXEDH(smokedir.vz) / 2;
 
 		if (black_smoke == 0)
 			Setup_Smoke(&SmokePos, 10, 40, 2, WheelSpeed, &Drift, 1);

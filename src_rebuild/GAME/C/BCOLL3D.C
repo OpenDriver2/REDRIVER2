@@ -57,7 +57,7 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 	diff.vy = point.vy - cp0->hd.oBox.location.vy;
 	diff.vz = point.vz - cp0->hd.oBox.location.vz;
 
-	depth = FIXED(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
+	depth = FIXEDH(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
 
 	if (depth < 0) 
 	{
@@ -80,7 +80,7 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 		diff.vy = radii->vy;
 		diff.vz = radii->vz;
 
-		partialDepth = FIXED(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
+		partialDepth = FIXEDH(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
 
 		if (partialDepth < 0) 
 		{

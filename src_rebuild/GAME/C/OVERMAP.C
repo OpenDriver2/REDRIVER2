@@ -456,13 +456,13 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 	opos[2].vz = vec.vz;
 
 	opos[0].vx = opos[2].vx + (iVar2 * -3 + 0x800 >> 0xc);
-	opos[0].vz = opos[2].vz + FIXED(iVar3 * -3);
+	opos[0].vz = opos[2].vz + FIXEDH(iVar3 * -3);
 
-	opos[1].vx = opos[2].vx + FIXED(iVar2 * 3 + iVar3 * -2);
-	opos[1].vz = opos[2].vz + FIXED(iVar3 * 3 + iVar2 * 2);
+	opos[1].vx = opos[2].vx + FIXEDH(iVar2 * 3 + iVar3 * -2);
+	opos[1].vz = opos[2].vz + FIXEDH(iVar3 * 3 + iVar2 * 2);
 
-	opos[2].vx = opos[2].vx + FIXED(iVar3 * 2 + iVar2 * 3);
-	opos[2].vz = opos[2].vz + FIXED(iVar2 * -2 + iVar3 * 3);
+	opos[2].vx = opos[2].vx + FIXEDH(iVar3 * 2 + iVar2 * 3);
+	opos[2].vz = opos[2].vz + FIXEDH(iVar2 * -2 + iVar3 * 3);
 
 	poly = (POLY_F3 *)current->primptr;
 	setPolyF3(poly);
@@ -1779,10 +1779,10 @@ void DrawCopIndicators(void)
 			iVar6 = cp->hd.where.t[0] - player[0].pos[0];
 			iVar4 = cp->hd.where.t[2] - player[0].pos[2];
 
-			iVar5 = FIXED(iVar6 * sVar1 - iVar4 * sVar2) * 3;
+			iVar5 = FIXEDH(iVar6 * sVar1 - iVar4 * sVar2) * 3;
 
 			iVar5 = iVar5 >> 2;
-			iVar3 = FIXED(iVar6 * sVar2 + iVar4 * sVar1);
+			iVar3 = FIXEDH(iVar6 * sVar2 + iVar4 * sVar1);
 
 			iVar4 = -iVar3;
 			iVar6 = iVar5;
@@ -3002,8 +3002,8 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		uVar7 = iVar9 + direction & 0xfff;
 
 		iVar9 = iVar9 + 0x200;
-		pVertex->vx = vertex[0].vx + FIXED(rcossin_tbl[uVar7 * 2] * sVar4);
-		pVertex->vz = vertex[0].vz + FIXED(rcossin_tbl[uVar7 * 2 + 1] * sVar4);
+		pVertex->vx = vertex[0].vx + FIXEDH(rcossin_tbl[uVar7 * 2] * sVar4);
+		pVertex->vz = vertex[0].vz + FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * sVar4);
 		pVertex = pVertex + 1;
 	} while (iVar9 < 0x1000);
 

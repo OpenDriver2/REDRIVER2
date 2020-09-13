@@ -107,8 +107,8 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 	do {
 		j = 1;
 		do {
-			body[i].dist[j] = FIXED(body[i].axis[j].vx * delta.vx + body[i].axis[j].vz * delta.vz);
-			body[i].limit[j] = body[i].length[j] + FIXED(body[k].length[j] * ac + body[k].length[1-j] * as);
+			body[i].dist[j] = FIXEDH(body[i].axis[j].vx * delta.vx + body[i].axis[j].vz * delta.vz);
+			body[i].limit[j] = body[i].length[j] + FIXEDH(body[k].length[j] * ac + body[k].length[1-j] * as);
 
 			if (body[i].limit[j] < body[i].dist[j])
 				return 0;
@@ -140,7 +140,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 				if (FE < 0)
 					FE = abslim - absdist;
 
-				tmp2 = FIXED(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
+				tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
 				if (tmp2 < 0)
 					tmp2 = -tmp2;
 
@@ -163,7 +163,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 				if (FE < 0)
 					FE = abslim - absdist;
 
-				tmp2 = FIXED(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
+				tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
 
 				if (tmp2 < 0)
 					tmp2 = -tmp2;
@@ -341,8 +341,8 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 
 	collisionResult->penetration = smallest;
 
-	collisionResult->hit.vx = cd->x.vx + FIXED(cd->axis[0].vx * cd->length[0] * sign0 + cd->axis[1].vx * cd->length[1] * sign1);
-	collisionResult->hit.vz = cd->x.vz + FIXED(cd->axis[0].vz * cd->length[0] * sign0 + cd->axis[1].vz * cd->length[1] * sign1);
+	collisionResult->hit.vx = cd->x.vx + FIXEDH(cd->axis[0].vx * cd->length[0] * sign0 + cd->axis[1].vx * cd->length[1] * sign1);
+	collisionResult->hit.vz = cd->x.vz + FIXEDH(cd->axis[0].vz * cd->length[0] * sign0 + cd->axis[1].vz * cd->length[1] * sign1);
 
 	if (besti != 0)
 		sign = -sign;
@@ -533,7 +533,7 @@ void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
 	pRegion = (cp->ap.damage + region);
 
 	if (cp->controlType == 1 || cp->controlType == 4)
-		value = value * FIXED(gPlayerDamageFactor);
+		value = value * FIXEDH(gPlayerDamageFactor);
 	else 
 		value = value << 1;
 
@@ -662,8 +662,8 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		return 0;
 	}
 
-	nose = FIXED(cp->hd.where.m[0][2] * (*delta)[0] + cp->hd.where.m[1][2] * (*delta)[1] + cp->hd.where.m[2][2] * (*delta)[2]);
-	door = FIXED(cp->hd.where.m[0][0] * (*delta)[0] + cp->hd.where.m[1][0] * (*delta)[1] + cp->hd.where.m[2][0] * (*delta)[2]);
+	nose = FIXEDH(cp->hd.where.m[0][2] * (*delta)[0] + cp->hd.where.m[1][2] * (*delta)[1] + cp->hd.where.m[2][2] * (*delta)[2]);
+	door = FIXEDH(cp->hd.where.m[0][0] * (*delta)[0] + cp->hd.where.m[1][0] * (*delta)[1] + cp->hd.where.m[2][0] * (*delta)[2]);
 
 	if (door < 1)
 	{
@@ -799,8 +799,8 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 		dx = collisionResult->hit.vx - cd->x.vx;
 		dz = collisionResult->hit.vz - cd->x.vz;
 
-		nose = FIXED(cd->axis[0].vx * dx + cd->axis[0].vz * dz);
-		door = FIXED(cd->axis[1].vx * dx + cd->axis[1].vz * dz);
+		nose = FIXEDH(cd->axis[0].vx * dx + cd->axis[0].vz * dz);
+		door = FIXEDH(cd->axis[1].vx * dx + cd->axis[1].vz * dz);
 
 		if (door < 1)
 		{
@@ -1035,8 +1035,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		if (cp->controlType == 6)
 		{
-			cd[0].vel.vx = FIXED(cp->st.n.linearVelocity[0]);
-			cd[0].vel.vz = FIXED(cp->st.n.linearVelocity[2]);
+			cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
+			cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
@@ -1053,8 +1053,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		}
 		else
 		{
-			cd[0].vel.vx = FIXED(cp->st.n.linearVelocity[0]);
-			cd[0].vel.vz = FIXED(cp->st.n.linearVelocity[2]);
+			cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
+			cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
@@ -1069,10 +1069,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			}
 		}
 
-		cd[0].avel = FIXED(cp->st.n.angularVelocity[1]) * 5 >> 5;
+		cd[0].avel = FIXEDH(cp->st.n.angularVelocity[1]) * 5 >> 5;
 
-		cd[1].x.vx = cp->hd.where.t[0] + (((building->pos.vx - cp->hd.where.t[0]) << 0x10) >> 0x10);
-		cd[1].x.vz = cp->hd.where.t[2] + (((building->pos.vz - cp->hd.where.t[2]) << 0x10) >> 0x10);
+		cd[1].x.vx = cp->hd.where.t[0] + (building->pos.vx - cp->hd.where.t[0]);
+		cd[1].x.vz = cp->hd.where.t[2] + (building->pos.vz - cp->hd.where.t[2]);
 
 		cd[1].theta = building->theta;
 		cd[1].length[0] = building->xsize;
@@ -1112,10 +1112,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					//Debug_AddLine(b1p1, b2p1, yycv);
 
 					VECTOR b1ax[2] = { {0} , {0} };
-					b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
-					b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
-					b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
-					b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+					b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+					b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+					b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+					b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
 
 					// show axis of body 1
 					Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
@@ -1139,10 +1139,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					}
 
 					VECTOR b2ax[2] = { {0} , {0} };
-					b2ax[0].vx += FIXED(cd[1].axis[0].vx * cd[1].length[0]);
-					b2ax[0].vz += FIXED(cd[1].axis[0].vz * cd[1].length[0]);
-					b2ax[1].vx += FIXED(cd[1].axis[1].vx * cd[1].length[1]);
-					b2ax[1].vz += FIXED(cd[1].axis[1].vz * cd[1].length[1]);
+					b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
+					b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
+					b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
+					b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
 
 					// show axis of body 2
 					Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
@@ -1211,24 +1211,17 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
+				// perform error correction
+				cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
+				cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
+
 				lever[0] = collisionResult.hit.vx - cp->hd.where.t[0];
 				lever[1] = collisionResult.hit.vy - cp->hd.where.t[1];
 				lever[2] = collisionResult.hit.vz - cp->hd.where.t[2];
 				
-				reaction[0] = FIXED(cp->st.n.angularVelocity[1] * lever[2] - cp->st.n.angularVelocity[2] * lever[1]) + cp->st.n.linearVelocity[0];
-				reaction[1] = FIXED(cp->st.n.angularVelocity[2] * lever[0] - cp->st.n.angularVelocity[0] * lever[2]) + cp->st.n.linearVelocity[1];
-				reaction[2] = FIXED(cp->st.n.angularVelocity[0] * lever[1] - cp->st.n.angularVelocity[1] * lever[0]) + cp->st.n.linearVelocity[2];
-
-				if (cp->controlType == 6)	// [A] temporary hack due to physics differences
-				{
-					cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
-					cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
-				}
-				else
-				{
-					cp->st.n.fposition[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx) << 1;
-					cp->st.n.fposition[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz) << 1;
-				}
+				reaction[0] = FIXEDH(cp->st.n.angularVelocity[1] * lever[2] - cp->st.n.angularVelocity[2] * lever[1]) + cp->st.n.linearVelocity[0];
+				reaction[1] = FIXEDH(cp->st.n.angularVelocity[2] * lever[0] - cp->st.n.angularVelocity[0] * lever[2]) + cp->st.n.linearVelocity[1];
+				reaction[2] = FIXEDH(cp->st.n.angularVelocity[0] * lever[1] - cp->st.n.angularVelocity[1] * lever[0]) + cp->st.n.linearVelocity[2];
 
 				if (flags & 0x2) // [A] Vegas train velocity - added here
 				{
@@ -1256,9 +1249,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 					collisionResult.hit.vy = -collisionResult.hit.vy;
 
-					velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
+					velocity.vx = FixFloorSigned(cp->st.n.linearVelocity[0], ONE_BITS);
 					velocity.vy = -17;
-					velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
+					velocity.vz = FixFloorSigned(cp->st.n.linearVelocity[2], ONE_BITS);
 
 					if ((model->flags2 & 0x800) != 0)
 					{
@@ -1351,46 +1344,46 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 					DamageCar(cp, cd, &collisionResult, strikeVel);
 
-					displacement = FIXED(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
-					displacement = FIXED(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cos->twistRateY) + 4096;
+					displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
+					displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cos->twistRateY) + 4096;
 
 					if (strikeVel < 0x7f001) 
 						denom = (strikeVel * 4096) / displacement;
 					else
 						denom = (strikeVel / displacement) * 4096;
 
-					denom /= 64;
+					denom = FixFloorSigned(denom, 6);
 
-					pointVel[0] = denom * (collisionResult.surfNormal.vx / 64);
-					pointVel[1] = denom * (collisionResult.surfNormal.vy / 64);
-					pointVel[2] = denom * (collisionResult.surfNormal.vz / 64);
+					pointVel[0] = denom * FixFloorSigned(collisionResult.surfNormal.vx, 6);
+					pointVel[1] = denom * FixFloorSigned(collisionResult.surfNormal.vy, 6);
+					pointVel[2] = denom * FixFloorSigned(collisionResult.surfNormal.vz, 6);
 
-					cp->hd.aacc[1] += FIXED(lever[2] * pointVel[0]) - FIXED(lever[0] * pointVel[2]);
+					cp->hd.aacc[1] += FIXEDH(lever[2] * pointVel[0]) - FIXEDH(lever[0] * pointVel[2]);
 
 					if (cp->controlType != 4)
 					{
-						temp = FIXED(lever[1] * pointVel[2]);
+						temp = FIXEDH(lever[1] * pointVel[2]);
 
 						if (cp->controlType == 3)
 							temp >>= 1;
 
 						cp->hd.aacc[0] += temp;
 
-						temp = FIXED(lever[2] * pointVel[1]);
+						temp = FIXEDH(lever[2] * pointVel[1]);
 
 						if (cp->controlType == 3)
 							temp >>= 1;
 						
 						cp->hd.aacc[0] -= temp;
 
-						temp = FIXED(lever[0] * pointVel[1]);
+						temp = FIXEDH(lever[0] * pointVel[1]);
 
 						if (cp->controlType == 3)
 							temp >>= 1;
 
 						cp->hd.aacc[2] += temp;
 
-						temp = FIXED(lever[1] * pointVel[0]);
+						temp = FIXEDH(lever[1] * pointVel[0]);
 
 						if (cp->controlType == 3)
 							temp >>= 1;
@@ -1405,8 +1398,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				}
 			}
 
-			cp->hd.where.t[0] -= FIXED(cp->st.n.linearVelocity[0]);
-			cp->hd.where.t[2] -= FIXED(cp->st.n.linearVelocity[2]);
+			cp->hd.where.t[0] -= FIXEDH(cp->st.n.linearVelocity[0]);
+			cp->hd.where.t[2] -= FIXEDH(cp->st.n.linearVelocity[2]);
 		}
 	}
 

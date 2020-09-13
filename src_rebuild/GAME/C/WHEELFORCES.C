@@ -292,8 +292,8 @@ void StepOneCar(_CAR_DATA *cp)
 	cp->hd.acc[1] = -7456; // apply gravity
 	cp->hd.acc[2] = 0;
 
-	iVar12 = FIXED(_cl.vel[0]);
-	iVar4 = FIXED(_cl.vel[2]);
+	iVar12 = FIXEDH(_cl.vel[0]);
+	iVar4 = FIXEDH(_cl.vel[2]);
 
 	if (iVar12 < 0)
 		iVar12 = -iVar12;
@@ -339,7 +339,7 @@ void StepOneCar(_CAR_DATA *cp)
 
 		if((surfacePoint[1] - pointPos[1]) - 1 < 799)
 		{
-			iVar4 = FIXED((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
+			iVar4 = FIXEDH((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
 
 			if (iVar12 < iVar4)
 			{
@@ -370,12 +370,12 @@ void StepOneCar(_CAR_DATA *cp)
 
 	if (iVar12 != 0)
 	{
-		reaction[0] = FIXED(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
-		reaction[1] = FIXED(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
-		reaction[2] = FIXED(_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + _cl.vel[2];
+		reaction[0] = FIXEDH(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
+		reaction[1] = FIXEDH(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
+		reaction[2] = FIXEDH(_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + _cl.vel[2];
 
-		iVar4 = FIXED(deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]);
-		iVar4 = FIXED(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
+		iVar4 = FIXEDH(deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]);
+		iVar4 = FIXEDH(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
 
 		iVar13 = 2;
 		impulse = ((FixFloorSigned(reaction[0], 6) * FixFloorSigned(deepestNormal[0], 6) + FixFloorSigned(reaction[1], 6) * FixFloorSigned(deepestNormal[1], 6) + FixFloorSigned(reaction[2], 6) * FixFloorSigned(deepestNormal[2], 6)) / iVar4) * -2048;
@@ -399,7 +399,7 @@ void StepOneCar(_CAR_DATA *cp)
 					iVar6 = iVar1;
 			}
 
-			*piVar11-- = FIXED(impulse * *piVar10 - iVar6);
+			*piVar11-- = FIXEDH(impulse * *piVar10 - iVar6);
 			piVar10--;
 			piVar9--;
 			piVar8++;	// [A] ASan bug fix
@@ -436,15 +436,15 @@ void StepOneCar(_CAR_DATA *cp)
 		cp->hd.acc[1] += direction.vy;
 		cp->hd.acc[2] += direction.vz;
 
-		cp->hd.aacc[0] += FIXED(deepestLever[1] * direction.vz - deepestLever[2] * direction.vy);
-		cp->hd.aacc[1] += FIXED(deepestLever[2] * direction.vx - deepestLever[0] * direction.vz);
-		cp->hd.aacc[2] += FIXED(deepestLever[0] * direction.vy - deepestLever[1] * direction.vx);
+		cp->hd.aacc[0] += FIXEDH(deepestLever[1] * direction.vz - deepestLever[2] * direction.vy);
+		cp->hd.aacc[1] += FIXEDH(deepestLever[2] * direction.vx - deepestLever[0] * direction.vz);
+		cp->hd.aacc[2] += FIXEDH(deepestLever[0] * direction.vy - deepestLever[1] * direction.vx);
 
 		if (iVar12 != 0) 
 		{
-			reaction[0] = FIXED(iVar12 * deepestNormal[0]);
-			reaction[1] = FIXED(iVar12 * deepestNormal[1]);
-			reaction[2] = FIXED(iVar12 * deepestNormal[2]);
+			reaction[0] = FIXEDH(iVar12 * deepestNormal[0]);
+			reaction[1] = FIXEDH(iVar12 * deepestNormal[1]);
+			reaction[2] = FIXEDH(iVar12 * deepestNormal[2]);
 
 			cp->hd.where.t[0] += reaction[0];
 			cp->hd.where.t[1] += reaction[1];
@@ -626,8 +626,8 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 
 	if (traction != 0x1000)
 	{
-		*frontFS = FIXED(*frontFS * traction);
-		*rearFS = FIXED(*rearFS * traction);
+		*frontFS = FIXEDH(*frontFS * traction);
+		*rearFS = FIXEDH(*rearFS * traction);
 	}
 }
 
@@ -683,11 +683,11 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 	i = 0;
 
-	zd = FIXED(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
+	zd = FIXEDH(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
 
 	do {
 
-		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXED(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
+		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
 			cp->hd.aacc[i] -= FixFloorSigned(cl->avel[i], 3);
@@ -928,7 +928,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 		}
 
 		oldCompression = wheel->susCompression;
-		newCompression = FIXED((surfacePoint[1] - wheelPos[1]) * surfaceNormal[1]) + 14;
+		newCompression = FIXEDH((surfacePoint[1] - wheelPos[1]) * surfaceNormal[1]) + 14;
 
 		if (newCompression < 0)
 			newCompression = 0;
@@ -980,8 +980,8 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			force.vz = 0;
 			force.vx = 0;
 
-			pointVel[0] = FIXED(cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + cl->vel[0];
-			pointVel[2] = FIXED(cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + cl->vel[2];
+			pointVel[0] = FIXEDH(cl->avel[1] * wheelPos[2] - cl->avel[2] * wheelPos[1]) + cl->vel[0];
+			pointVel[2] = FIXEDH(cl->avel[0] * wheelPos[1] - cl->avel[1] * wheelPos[0]) + cl->vel[2];
 
 			susForce = newCompression * 230 - oldCompression * 100;
 
@@ -1038,7 +1038,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				}
 				else 
 				{
-					local_t0_1700 = FIXED(oldSpeed * iVar9);
+					local_t0_1700 = FIXEDH(oldSpeed * iVar9);
 					if (12500 < local_t0_1700)
 						goto LAB_000825f4;
 
@@ -1067,7 +1067,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				else 
 				{
 					sidevel = (local_v0_1748 >> 0xd) + sidevel >> 1;
-					local_v0_1852 = FixFloorSigned(FIXED(-sidevel * lfx) * sdz - FIXED(-sidevel * lfz) * sdx, 11);
+					local_v0_1852 = FixFloorSigned(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
 					force.vx = local_v0_1852 * sdz;
 					force.vz = -local_v0_1852 * sdx;
 				}
@@ -1080,7 +1080,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			{
 				if (wheel->locked == 0)
 				{
-					sidevel = FIXED(rearFS * local_t0_1700);
+					sidevel = FIXEDH(rearFS * local_t0_1700);
 
 					if (handlingType[cp->hndType].autoBrakeOn != 0 && 0 < sidevel * cp->wheel_angle) 
 						cp->hd.autoBrake = -1;
@@ -1113,19 +1113,19 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				angle = 0x1000 - angle;
 
 				if (angle < 0x1001)
-					_angle = 0x1000 - FIXED(angle * angle);
+					_angle = 0x1000 - FIXEDH(angle * angle);
 				else
 					_angle = 0;
 
-				friction_coef = FIXED(friction_coef * _angle);
+				friction_coef = FIXEDH(friction_coef * _angle);
 			}
 
 			if (surfaceNormal[1] < 0xccc)
 				friction_coef = friction_coef * surfaceNormal[1] * 5 >> 0xe;
 
-			force.vy = FIXED(susForce * surfaceNormal[1] - cl->vel[1] * 12);
-			force.vx = FIXED(force.vx) * friction_coef >> 0xc;
-			force.vz = FIXED(force.vz) * friction_coef >> 0xc;
+			force.vy = FIXEDH(susForce * surfaceNormal[1] - cl->vel[1] * 12);
+			force.vx = FIXEDH(force.vx) * friction_coef >> 0xc;
+			force.vz = FIXEDH(force.vz) * friction_coef >> 0xc;
 
 			if (cp->controlType == 3) 
 			{
@@ -1138,9 +1138,9 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			cp->hd.acc[0] += force.vx;
 			cp->hd.acc[1] += force.vy;
 			cp->hd.acc[2] += force.vz;
-			cp->hd.aacc[0] += FIXED(wheelPos[1] * force.vz - wheelPos[2] * force.vy);
-			cp->hd.aacc[1] += FIXED(wheelPos[2] * force.vx - wheelPos[0] * force.vz);
-			cp->hd.aacc[2] += FIXED(wheelPos[0] * force.vy - wheelPos[1] * force.vx);
+			cp->hd.aacc[0] += FIXEDH(wheelPos[1] * force.vz - wheelPos[2] * force.vy);
+			cp->hd.aacc[1] += FIXEDH(wheelPos[2] * force.vx - wheelPos[0] * force.vz);
+			cp->hd.aacc[2] += FIXEDH(wheelPos[0] * force.vy - wheelPos[1] * force.vx);
 
 			wheel->susCompression = newCompression;
 		}

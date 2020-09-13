@@ -162,9 +162,9 @@ void HandleThrownBombs(void)
 		bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
 		bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
 
-		velocity.vx = FIXED(gBombTargetVehicle->st.n.linearVelocity[0]);
+		velocity.vx = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[0]);
 		velocity.vy = 0;
-		velocity.vz = FIXED(gBombTargetVehicle->st.n.linearVelocity[2]);
+		velocity.vz = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[2]);
 
 		bomb->velocity.vx = velocity.vx >> 10;
 		bomb->velocity.vz = velocity.vz >> 10;
@@ -215,7 +215,7 @@ void HandleThrownBombs(void)
 					dx = (bomb->position.vx - player[0].pos[0]);
 					dz = (bomb->position.vz - player[0].pos[2]);
 
-					if (FIXED(dx * dx + dz * dz) < 1024)
+					if (FIXEDH(dx * dx + dz * dz) < 1024)
 						SetPadVibration(player[0].padid, 3);		// [A] bug fix
 				}
 			}
@@ -707,8 +707,8 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 		{
 			bFindCollisionPoint(cd, &collisionResult);
 
-			cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
-			cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
+			cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
+			cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
 
 			lever[0] = collisionResult.hit.vx - cp->hd.where.t[0];
 			lever[1] = 60;
@@ -755,8 +755,8 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 
 				DamageCar(cp, cd, &collisionResult, strikeVel);
 
-				displacement = FIXED(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
-				displacement = FIXED(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;
+				displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
+				displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;
 
 				if (strikeVel < 0x7f001)
 					denom = (strikeVel * 4096) / displacement;
@@ -773,9 +773,9 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 				cp->st.n.linearVelocity[1] = cp->st.n.linearVelocity[1] + pointVel[1];
 				cp->st.n.linearVelocity[2] = cp->st.n.linearVelocity[2] + pointVel[2];
 
-				cp->hd.aacc[0] = (cp->hd.aacc[0] + FIXED(lever[1] * pointVel[2])) - FIXED(lever[2] * pointVel[1]);
-				cp->hd.aacc[1] = (cp->hd.aacc[1] + FIXED(lever[2] * pointVel[0])) - FIXED(lever[0] * pointVel[2]);
-				cp->hd.aacc[2] = (cp->hd.aacc[2] + FIXED(lever[0] * pointVel[1])) - FIXED(lever[1] * pointVel[0]);
+				cp->hd.aacc[0] = (cp->hd.aacc[0] + FIXEDH(lever[1] * pointVel[2])) - FIXEDH(lever[2] * pointVel[1]);
+				cp->hd.aacc[1] = (cp->hd.aacc[1] + FIXEDH(lever[2] * pointVel[0])) - FIXEDH(lever[0] * pointVel[2]);
+				cp->hd.aacc[2] = (cp->hd.aacc[2] + FIXEDH(lever[0] * pointVel[1])) - FIXEDH(lever[1] * pointVel[0]);
 			}
 		}
 

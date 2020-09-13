@@ -994,13 +994,13 @@ void GetConePos(int cone, VECTOR *pos, int side)
 
 		if (side == 0) 
 		{
-			pos->vx = pTVar2->x - FIXED(iVar6);
+			pos->vx = pTVar2->x - FIXEDH(iVar6);
 			pos->vy = pTVar2->y;
 			iVar4 = -iVar4;
 		}
 		else 
 		{
-			pos->vx = pTVar2->x + FIXED(iVar6);
+			pos->vx = pTVar2->x + FIXEDH(iVar6);
 			pos->vy = pTVar2->y;
 		}
 

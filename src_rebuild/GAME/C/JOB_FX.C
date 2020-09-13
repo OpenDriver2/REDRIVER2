@@ -349,11 +349,11 @@ void initExplosion(void)
 		pSVar4->vy = 5;
 		pSVar4[1].vy = -0x109;
 
-		pSVar4->vx = FIXED(rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1] * 0x200);
-		pSVar4->vz = FIXED(rcossin_tbl[(uVar9 & 0xf) * 0x200] * 0x200);
+		pSVar4->vx = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1] * 0x200);
+		pSVar4->vz = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 0x200] * 0x200);
 
-		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 0x1ea);
-		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 0x1ea);
+		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 0x1ea);
+		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 0x1ea);
 
 		pSVar4 = pSVar4 + 2;
 		uVar9 = uVar5;
@@ -373,11 +373,11 @@ void initExplosion(void)
 		pSVar4->vy = -0x109;
 		pSVar4[1].vy = -0x1f9;
 
-		pSVar4->vx = FIXED(rcossin_tbl[uVar7 * 2 + 1] * 0x1ea);
-		pSVar4->vz = FIXED(rcossin_tbl[uVar7 * 2] * 0x1ea);
+		pSVar4->vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 0x1ea);
+		pSVar4->vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 0x1ea);
 
-		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 0x14a);
-		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 0x14a);
+		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 0x14a);
+		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 0x14a);
 
 		pSVar4 = pSVar4 + 2;
 	} while (-1 < iVar6);
@@ -396,11 +396,11 @@ void initExplosion(void)
 		pSVar4->vy = -0x1f9;
 		pSVar4[1].vy = -0x269;
 
-		pSVar4->vx = FIXED(rcossin_tbl[uVar7 * 2 + 1] * 0x14a);
-		pSVar4->vz = FIXED(rcossin_tbl[uVar7 * 2] * 0x14a);
+		pSVar4->vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 0x14a);
+		pSVar4->vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 0x14a);
 
-		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 100);
-		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 100);
+		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 100);
+		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 100);
 
 		pSVar4 = pSVar4 + 2;
 	} while (-1 < iVar6);

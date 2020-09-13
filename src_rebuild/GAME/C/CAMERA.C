@@ -334,8 +334,8 @@ void ModifyCamera(void)
 					CalcCameraBasePos(lp);
 
 					angle = baseDir + 0x800 & 0xfff;
-					lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[angle * 2] * (length - 60));
-					lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[angle * 2 + 1] * (length - 60));
+					lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
+					lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
 				}
 			}
 		}
@@ -668,7 +668,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 			carheight = car_cos->colBox.vy * -3 + 0x55;
 			maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
 
-			carSpeed = FIXED(camCar->hd.wheel_speed);
+			carSpeed = FIXEDH(camCar->hd.wheel_speed);
 
 			if (carSpeed < 0)
 				carSpeed = -carSpeed;
@@ -705,8 +705,8 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		}
 	}
 
-	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[camAngle * 2] * lp->cameraDist);
-	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[camAngle * 2 + 1] * lp->cameraDist);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[camAngle * 2] * lp->cameraDist);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[camAngle * 2 + 1] * lp->cameraDist);
 
 	lp->cameraPos.vy = basePos[1];
 	camPosVy = MapHeight(&lp->cameraPos);
@@ -762,8 +762,8 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	jcam->hd.direction = jcam->hd.direction & 0xfff;
 
 	lp->cameraPos.vy = -jcam->hd.where.t[1];
-	lp->cameraPos.vx = basePos[0] + FIXED(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2]);
-	lp->cameraPos.vz = basePos[2] + FIXED(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2 + 1]);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2]);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2 + 1]);
 
 	camera_angle.vy = -ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
 	camera_angle.vz = 0;
@@ -978,9 +978,9 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 
 	angle = baseDir & 0xfff;
 
-	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[angle * 2] * viewer_position.vz);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * viewer_position.vz);
 	lp->cameraPos.vy = viewer_position.vy - basePos[1];
-	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
 
 	TurnHead(lp);
 

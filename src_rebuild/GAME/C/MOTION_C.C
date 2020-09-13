@@ -578,8 +578,8 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		width = MainPed[bone].cWidth;
 	}
 
-	iVar5 = FIXED(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * 2 * (width & 0x3f));
-	iVar7 = FIXED(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 2 * (width & 0x3f));
+	iVar5 = FIXEDH(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * 2 * (width & 0x3f));
+	iVar7 = FIXEDH(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 2 * (width & 0x3f));
 
 	bVar3 = MainPed[bone].cAdj & 0xf;
 	iVar9 = y >> bVar3;
@@ -600,17 +600,17 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims = (POLY_FT4 *)current->primptr;
 	setPolyFT4(prims);
 
-	prims->x0 = v1[0] + FIXED(iVar5) + iVar8;
-	prims->y0 = v1[1] + FIXED(iVar7) + iVar9;
+	prims->x0 = v1[0] + FIXEDH(iVar5) + iVar8;
+	prims->y0 = v1[1] + FIXEDH(iVar7) + iVar9;
 
-	prims->x1 = (v1[0] - FIXED(iVar5)) + iVar8;
-	prims->y1 = (v1[1] - FIXED(iVar7)) + iVar9;
+	prims->x1 = (v1[0] - FIXEDH(iVar5)) + iVar8;
+	prims->y1 = (v1[1] - FIXEDH(iVar7)) + iVar9;
 
-	prims->x2 = (v2[0] + FIXED(iVar5)) - x;
-	prims->y2 = (v2[1] + FIXED(iVar7)) - y;
+	prims->x2 = (v2[0] + FIXEDH(iVar5)) - x;
+	prims->y2 = (v2[1] + FIXEDH(iVar7)) - y;
 
-	prims->x3 = (v2[0] - FIXED(iVar5)) - x;
-	prims->y3 = (v2[1] - FIXED(iVar7)) - y;
+	prims->x3 = (v2[0] - FIXEDH(iVar5)) - x;
+	prims->y3 = (v2[1] - FIXEDH(iVar7)) - y;
 
 	if (bDoingShadow == 0)
 	{
@@ -1639,12 +1639,12 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 		iVar12 = (int)rcossin_tbl[uVar11 * 2];
 		iVar13 = (int)rcossin_tbl[uVar10 * 2];
 
-		uVar10 = FIXED(iVar14 * iVar13) + FIXED(FIXED(iVar6 * iVar12) * iVar17);
-		uVar16 = FIXED(iVar6 * iVar15);
+		uVar10 = FIXEDH(iVar14 * iVar13) + FIXEDH(FIXEDH(iVar6 * iVar12) * iVar17);
+		uVar16 = FIXEDH(iVar6 * iVar15);
 		iVar7 = uVar16;
-		uVar9 = -FIXED(iVar15 * iVar12);
-		uVar11 = FIXED(iVar14 * iVar15);
-		iVar6 = FIXED(-iVar14 * FIXED(iVar6 * iVar17)) + FIXED(iVar12 * iVar13);
+		uVar9 = -FIXEDH(iVar15 * iVar12);
+		uVar11 = FIXEDH(iVar14 * iVar15);
+		iVar6 = FIXEDH(-iVar14 * FIXEDH(iVar6 * iVar17)) + FIXEDH(iVar12 * iVar13);
 
 		MATRIX_1f800020.m[0][0] = uVar16;
 		MATRIX_1f800020.m[0][1] = iVar6;
@@ -1654,9 +1654,9 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 		MATRIX_1f800020.m[1][1] = uVar11;
 		MATRIX_1f800020.m[1][2] = uVar9;
 
-		MATRIX_1f800020.m[2][0] = -FIXED(iVar13 * iVar15);
-		MATRIX_1f800020.m[2][1] = FIXED(uVar10 * iVar17) - FIXED(iVar7 * uVar9);
-		MATRIX_1f800020.m[2][2] = FIXED(iVar7 * uVar11) - FIXED(iVar6 * iVar17);
+		MATRIX_1f800020.m[2][0] = -FIXEDH(iVar13 * iVar15);
+		MATRIX_1f800020.m[2][1] = FIXEDH(uVar10 * iVar17) - FIXEDH(iVar7 * uVar9);
+		MATRIX_1f800020.m[2][2] = FIXEDH(iVar7 * uVar11) - FIXEDH(iVar6 * iVar17);
 	}
 
 	SVECTOR_ARRAY_1f800060[0].vx = Skel[0].vOffset.vx;
@@ -1998,12 +1998,12 @@ void DrawCiv(PEDESTRIAN *pPed)
 		iVar12 = (int)rcossin_tbl[uVar11 * 2];
 		iVar13 = (int)rcossin_tbl[uVar10 * 2];
 
-		uVar10 = FIXED(iVar14 * iVar13) + FIXED(FIXED(iVar6 * iVar12) * iVar17);
-		uVar16 = FIXED(iVar6 * iVar15);
+		uVar10 = FIXEDH(iVar14 * iVar13) + FIXEDH(FIXEDH(iVar6 * iVar12) * iVar17);
+		uVar16 = FIXEDH(iVar6 * iVar15);
 		iVar7 = uVar16;
-		uVar9 = -FIXED(iVar15 * iVar12);
-		uVar11 = FIXED(iVar14 * iVar15);
-		iVar6 = FIXED(-iVar14 * FIXED(iVar6 * iVar17)) + FIXED(iVar12 * iVar13);
+		uVar9 = -FIXEDH(iVar15 * iVar12);
+		uVar11 = FIXEDH(iVar14 * iVar15);
+		iVar6 = FIXEDH(-iVar14 * FIXEDH(iVar6 * iVar17)) + FIXEDH(iVar12 * iVar13);
 
 		workmatrix.m[0][0] = uVar16;
 		workmatrix.m[0][1] = iVar6;
@@ -2013,9 +2013,9 @@ void DrawCiv(PEDESTRIAN *pPed)
 		workmatrix.m[1][1] = uVar11;
 		workmatrix.m[1][2] = uVar9;
 
-		workmatrix.m[2][0] = -FIXED(iVar13 * iVar15);
-		workmatrix.m[2][1] = FIXED(uVar10 * iVar17) - FIXED(iVar7 * uVar9);
-		workmatrix.m[2][2] = FIXED(iVar7 * uVar11) - FIXED(iVar6 * iVar17);
+		workmatrix.m[2][0] = -FIXEDH(iVar13 * iVar15);
+		workmatrix.m[2][1] = FIXEDH(uVar10 * iVar17) - FIXEDH(iVar7 * uVar9);
+		workmatrix.m[2][2] = FIXEDH(iVar7 * uVar11) - FIXEDH(iVar6 * iVar17);
 	}
 
 	gte_MulMatrix0(&inv_camera_matrix, &workmatrix, &workmatrix);
