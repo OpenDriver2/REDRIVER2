@@ -2219,14 +2219,10 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			else
 				sVar2 = ((iVar3 + 278) * -4778) >> 8;
 
-			cp->thrust = sVar2;
-			cp->thrust = FIXEDH(cp->thrust * cp->ap.carCos->powerRatio);
+			cp->thrust = FIXEDH(sVar2 * cp->ap.carCos->powerRatio);
 		}
 		else if ((pad & 0x40) != 0)
 		{
-			cp->thrust = 0x1333;
-			cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 0x1333);
-
 			if (cp->hndType == 5)
 			{
 				iVar7 = car_data[player[0].playerCarId].hd.where.t[0] - cp->hd.where.t[0] >> 10;
@@ -2248,6 +2244,10 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 					sVar2 = 3000;
 
 				cp->thrust = sVar2;
+			}
+			else
+			{
+				cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 0x1333);
 			}
 
 			if (cp->controlType == 1) 
