@@ -75,7 +75,7 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 	}
 	else 
 	{
-		ActivatePlayerPedestrian(NULL, padid, direction, startPos, playerType);
+		ActivatePlayerPedestrian(NULL, padid, direction, startPos, (PED_MODEL_TYPES)playerType);
 
 		locPlayer->playerType = 2;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;

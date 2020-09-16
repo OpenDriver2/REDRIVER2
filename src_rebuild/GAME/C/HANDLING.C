@@ -2083,7 +2083,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			if (0x9000 < cp->hd.wheel_speed)
 				pad = 0x80;
 
-			analog_angle = 0;
+			int_steer = 0;
 			use_analogue = 1;
 		}
 
@@ -2175,14 +2175,14 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		else 
 		{
 			int_steer *= ((int_steer * int_steer) / 60);
-			analog_angle = ((long long)int_steer * 0x88888889) >> 32;	// (int_steer * 0.4) = int_steer * 1638 + 2048 >> 12 (2457 is 4096 * 0.6)
+			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;	// (int_steer * 0.4) = int_steer * 1638 + 2048 >> 12 (1638 is 4096 * 0.4)
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
 
 		cp->wheel_angle = analog_angle & 0xfffc;
 
-		if (analog_angle + 270 < 541)
+		if (analog_angle + 270U < 541)
 			cp->hd.autoBrake = 0;
 		else
 			cp->hd.autoBrake++;
@@ -2204,8 +2204,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	{
 		if ((pad & 0x80) != 0) 
 		{
-			iVar3 = cp->hd.wheel_speed * 1500;
-			iVar3 = FIXEDH(FixFloorSigned(iVar3, 10));
+			iVar3 = FIXEDH(FixFloorSigned(cp->hd.wheel_speed * 1500, 10));
 
 			if (-iVar3 < 0x17) 
 				sVar2 = -5000;
@@ -2222,25 +2221,25 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				iVar3 = car_data[player[0].playerCarId].hd.where.t[2] - cp->hd.where.t[2] >> 10;
 
 				iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
-				if (iVar3 < 0x29)
+
+				if (iVar3 < 41)
 				{
-					if (iVar3 < 0x15) 
+					if (iVar3 < 21) 
 					{
-						sVar2 = 6000;
-						if (9 < iVar3) 
-							sVar2 = 0x1324;
+						if (iVar3 > 9) 
+							cp->thrust = 4900;
+						else
+							cp->thrust = 6000;
 					}
 					else
-						sVar2 = 4000;
+						cp->thrust = 4000;
 				}
 				else
-					sVar2 = 3000;
-
-				cp->thrust = sVar2;
+					cp->thrust = 3000;
 			}
 			else
 			{
-				cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 0x1333);
+				cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 4915);
 			}
 
 			if (cp->controlType == 1) 
@@ -2257,7 +2256,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				if (iVar3 != -1) 
 				{
 					if (3050 < cp->ap.carCos->powerRatio) 
-						cp->thrust = FIXEDH(car_data[iVar3].ap.carCos->powerRatio * 0x1333);
+						cp->thrust = FIXEDH(car_data[iVar3].ap.carCos->powerRatio * 4915);
 
 					iVar7 = cp->hd.where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
 					iVar3 = cp->hd.where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;
