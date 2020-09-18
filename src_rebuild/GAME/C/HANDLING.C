@@ -106,16 +106,16 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->hd.acc[2] = 0;
 
 	RebuildCarMatrix(&cp->st, cp);
-	
+
 	cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
 	cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
-	cp->hd.drawCarMat.m[0][2] = cp->hd.where.m[0][2] ^ 0xFFFF;
+	cp->hd.drawCarMat.m[0][2] = ~cp->hd.where.m[0][2];
 	cp->hd.drawCarMat.m[1][0] = cp->hd.where.m[1][0];
 	cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
 	cp->hd.drawCarMat.m[1][2] = cp->hd.where.m[1][2];
 	cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
 	cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
-	cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
+	cp->hd.drawCarMat.m[2][2] = ~cp->hd.where.m[2][2];
 	
 	cVar3 = FixFloorSigned(iVar5, 5);
 	cVar1 = 14 - cVar3;
@@ -652,21 +652,21 @@ void GlobalTimeStep(void)
 	int* piVar18;
 	int iVar19;
 	int iVar20;
-	RigidBodyState* local_a3_1288;
+	RigidBodyState* thisState_i;
+	RigidBodyState* thisState_j;
+	RigidBodyState* thisDelta;
+	BOUND_BOX *bb1;
+	BOUND_BOX *bb2;
 	int iVar21;
 	int iVar22;
 	long* plVar23;
 	int iVar24;
 	_CAR_DATA* cp;
-	RigidBodyState* local_t2_3948;
-	RigidBodyState* p_Var25;
-	_CAR_DATA** pp_Var26;
 	_CAR_DATA* c1;
-	RigidBodyState* st; // $t2
-	RigidBodyState* tp; // $a0
-	RigidBodyState* d0; // $a2
-	RigidBodyState* d1; // $v1
-	RigidBodyState* p_Var27;
+	RigidBodyState* st;
+	RigidBodyState* tp;
+	RigidBodyState* d0;
+	RigidBodyState* d1;
 	int iVar28;
 	long AV[4];
 	long delta_orientation[4];
@@ -681,136 +681,132 @@ void GlobalTimeStep(void)
 	int depth;
 	int RKstep;
 	int subframe;
-	RigidBodyState* thisDelta;
 	int j;
 	int strikeVel;
-	int local_40;
-	int local_34;
-	int local_30;
+	int i;
+	int do1;
+	int do2;
+	int m1;
+	int m2;
 
 	StepCars();
 	CheckCarToCarCollisions();
 
-	iVar28 = 0;
+	i = 0;
 
 	// step car forces
-	if (0 < num_active_cars) 
+	while (i < num_active_cars)
 	{
-		do {
-			cp = active_car_list[iVar28];
+		cp = active_car_list[i];
 
-			st = &cp->st;
+		st = &cp->st;
 
-			if (cp->controlType == 1 && playerghost != 0 && playerhitcopsanyway == 0) // [A]
-				cp->hd.mayBeColliding = 0;
+		if (cp->controlType == 1 && playerghost != 0 && playerhitcopsanyway == 0) // [A]
+			cp->hd.mayBeColliding = 0;
 
-			// too many reads and writes, you know how to optimize it
+		// too many reads and writes, you know how to optimize it
 
-			st->n.linearVelocity[0] += cp->hd.acc[0];
-			st->n.linearVelocity[1] += cp->hd.acc[1];
-			st->n.linearVelocity[2] += cp->hd.acc[2];
+		st->n.linearVelocity[0] += cp->hd.acc[0];
+		st->n.linearVelocity[1] += cp->hd.acc[1];
+		st->n.linearVelocity[2] += cp->hd.acc[2];
 
-			st->n.angularVelocity[0] += cp->hd.aacc[0];
-			st->n.angularVelocity[1] += cp->hd.aacc[1];
-			st->n.angularVelocity[2] += cp->hd.aacc[2];
+		st->n.angularVelocity[0] += cp->hd.aacc[0];
+		st->n.angularVelocity[1] += cp->hd.aacc[1];
+		st->n.angularVelocity[2] += cp->hd.aacc[2];
 
-			cp->hd.aacc[0] = 0;
-			cp->hd.aacc[1] = 0;
-			cp->hd.aacc[2] = 0;
+		cp->hd.aacc[0] = 0;
+		cp->hd.aacc[1] = 0;
+		cp->hd.aacc[2] = 0;
 
-			if (200000 < st->n.linearVelocity[1]) // reduce vertical velocity
-				st->n.linearVelocity[1] = FixFloorSigned(st->n.linearVelocity[1] * 3, 2);
+		if (200000 < st->n.linearVelocity[1]) // reduce vertical velocity
+			st->n.linearVelocity[1] = FixFloorSigned(st->n.linearVelocity[1] * 3, 2);
 
-			if (cp->hd.speed == 0)
-			{
-				iVar15 = st->n.linearVelocity[0];
-				iVar5 = st->n.linearVelocity[1];
-				howHard = st->n.linearVelocity[2];
+		if (cp->hd.speed == 0)
+		{
+			iVar15 = st->n.linearVelocity[0];
+			iVar5 = st->n.linearVelocity[1];
+			howHard = st->n.linearVelocity[2];
 
-				if (iVar15 < 0)
-					iVar15 = -iVar15;
+			if (iVar15 < 0)
+				iVar15 = -iVar15;
 	
-				if (iVar5 < 0)
-					iVar5 = -iVar5;
+			if (iVar5 < 0)
+				iVar5 = -iVar5;
 
-				if (howHard < 0)
-					howHard = -howHard;
+			if (howHard < 0)
+				howHard = -howHard;
 
-				if (iVar15 + iVar5 + howHard < 1000)
-				{
-					st->n.linearVelocity[0] = 0;
-					st->n.linearVelocity[1] = 0;
-					st->n.linearVelocity[2] = 0;
-					st->n.angularVelocity[0] = 0;
-					st->n.angularVelocity[1] = 0;
-					st->n.angularVelocity[2] = 0;
-				}
-				else
-				{
-					cp->hd.speed = 1;
-				}
-			}
-
-			// limit angular velocity
-			iVar15 = st->n.angularVelocity[0];
-			lVar10 = 0x800000;
-			if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000))
-				st->n.angularVelocity[0] = lVar10;
-
-			iVar15 = st->n.angularVelocity[1];
-			lVar10 = 0x800000;
-			if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000))
-				st->n.angularVelocity[1] = lVar10;
-
-			iVar15 = st->n.angularVelocity[2];
-			lVar10 = 0x800000;
-			if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000)) 
-				st->n.angularVelocity[2] = lVar10;
-
-			if (cp->hd.mayBeColliding == 0) 
+			if (iVar15 + iVar5 + howHard < 1000)
 			{
-				long* orient = st->n.orientation;
-
-				st->n.fposition[0] += st->n.linearVelocity[0] >> 8;
-				st->n.fposition[1] += st->n.linearVelocity[1] >> 8;
-				st->n.fposition[2] += st->n.linearVelocity[2] >> 8;
-
-				AV[0] = FixHalfRound(st->n.angularVelocity[0], 13);
-				AV[1] = FixHalfRound(st->n.angularVelocity[1], 13);
-				AV[2] = FixHalfRound(st->n.angularVelocity[2], 13);
-
-				delta_orientation[0] = (-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
-				delta_orientation[1] = (orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1];
-				delta_orientation[2] = (-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]);
-				delta_orientation[3] = (-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2];
-
-				orient[0] += FIXEDH(delta_orientation[0]);
-				orient[1] += FIXEDH(delta_orientation[1]);
-				orient[2] += FIXEDH(delta_orientation[2]);
-				orient[3] += FIXEDH(delta_orientation[3]);
-
-				RebuildCarMatrix((RigidBodyState*)st, cp);
+				st->n.linearVelocity[0] = 0;
+				st->n.linearVelocity[1] = 0;
+				st->n.linearVelocity[2] = 0;
+				st->n.angularVelocity[0] = 0;
+				st->n.angularVelocity[1] = 0;
+				st->n.angularVelocity[2] = 0;
 			}
+			else
+			{
+				cp->hd.speed = 1;
+			}
+		}
 
-			iVar28++;
-		} while (iVar28 < num_active_cars);
+		// limit angular velocity
+		iVar15 = st->n.angularVelocity[0];
+		lVar10 = 0x800000;
+		if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000))
+			st->n.angularVelocity[0] = lVar10;
+
+		iVar15 = st->n.angularVelocity[1];
+		lVar10 = 0x800000;
+		if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000))
+			st->n.angularVelocity[1] = lVar10;
+
+		iVar15 = st->n.angularVelocity[2];
+		lVar10 = 0x800000;
+		if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000)) 
+			st->n.angularVelocity[2] = lVar10;
+
+		if (cp->hd.mayBeColliding == 0) 
+		{
+			long* orient = st->n.orientation;
+
+			st->n.fposition[0] += st->n.linearVelocity[0] >> 8;
+			st->n.fposition[1] += st->n.linearVelocity[1] >> 8;
+			st->n.fposition[2] += st->n.linearVelocity[2] >> 8;
+
+			AV[0] = FixHalfRound(st->n.angularVelocity[0], 13);
+			AV[1] = FixHalfRound(st->n.angularVelocity[1], 13);
+			AV[2] = FixHalfRound(st->n.angularVelocity[2], 13);
+
+			delta_orientation[0] = -orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0];
+			delta_orientation[1] = orient[0] * AV[2] - orient[2] * AV[0] + orient[3] * AV[1];
+			delta_orientation[2] = -orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2];
+			delta_orientation[3] = -orient[0] * AV[0] - orient[1] * AV[1] - orient[2] * AV[2];
+
+			orient[0] += FIXEDH(delta_orientation[0]);
+			orient[1] += FIXEDH(delta_orientation[1]);
+			orient[2] += FIXEDH(delta_orientation[2]);
+			orient[3] += FIXEDH(delta_orientation[3]);
+
+			RebuildCarMatrix(st, cp);
+		}
+
+		i++;
 	}
 
 	subframe = 0;
-	iVar28 = num_active_cars;
 
 	// do collision interactions
 	do {
 		RKstep = 0;
 
 		do {
-			local_40 = 0;
+			i = 0;
 
-			howHard = 0;
-
-			while (local_40 < num_active_cars)
+			while (i < num_active_cars)
 			{
-				cp = active_car_list[local_40];
+				cp = active_car_list[i];
 
 				if (RKstep != 0 && (subframe & 1U) != 0 && cp->controlType == 1)
 				{
@@ -819,332 +815,302 @@ void GlobalTimeStep(void)
 
 				if (cp->hd.mayBeColliding != 0) 
 				{
-					local_34 = local_40 * 2;
-
 					if (RKstep == 0) 
 					{
-						st = &cp->st;
-						local_34 = local_40 << 1;
+						thisState_i = &cp->st;
 						thisDelta = _d0;
 					}
 					else 
 					{
-						st = _tp + local_40;
+						thisState_i = &_tp[i];
 						thisDelta = _d1;
 					}
 
-					local_a3_1288 = (RigidBodyState*)(thisDelta->n.fposition + local_40 * 5 + local_34 * 4);
+					long* orient = thisState_i->n.orientation;
 
-					long* orient = st->n.orientation;
+					thisDelta[i].n.fposition[0] = thisState_i->n.linearVelocity[0] >> 8;
+					thisDelta[i].n.fposition[1] = thisState_i->n.linearVelocity[1] >> 8;
+					thisDelta[i].n.fposition[2] = thisState_i->n.linearVelocity[2] >> 8;
 
-					local_a3_1288->n.fposition[0] = st->n.linearVelocity[0] >> 8;
-					local_a3_1288->n.fposition[1] = st->n.linearVelocity[1] >> 8;
-					local_a3_1288->n.fposition[2] = st->n.linearVelocity[2] >> 8;
+					AV[0] = FixHalfRound(thisState_i->n.angularVelocity[0], 13);
+					AV[1] = FixHalfRound(thisState_i->n.angularVelocity[1], 13);
+					AV[2] = FixHalfRound(thisState_i->n.angularVelocity[2], 13);
 
-					AV[0] = FixHalfRound(st->n.angularVelocity[0], 13);
-					AV[1] = FixHalfRound(st->n.angularVelocity[1], 13);
-					AV[2] = FixHalfRound(st->n.angularVelocity[2], 13);
+					thisDelta[i].n.orientation[0] = FIXEDH(-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
+					thisDelta[i].n.orientation[1] = FIXEDH(orient[0] * AV[2] - orient[2] * AV[0] + orient[3] * AV[1]);
+					thisDelta[i].n.orientation[2] = FIXEDH(-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]);
+					thisDelta[i].n.orientation[3] = FIXEDH(-orient[0] * AV[0] - orient[1] * AV[1] - orient[2] * AV[2]);
 
-					local_a3_1288->n.orientation[0] = FIXEDH(-orient[1] * AV[2] + orient[2] * AV[1] + orient[3] * AV[0]);
-					local_a3_1288->n.orientation[1] = FIXEDH((orient[0] * AV[2] - orient[2] * AV[0]) + orient[3] * AV[1]);
-					local_a3_1288->n.orientation[2] = FIXEDH(-orient[0] * AV[1] + orient[1] * AV[0] + orient[3] * AV[2]);
-					local_a3_1288->n.orientation[3] = FIXEDH((-orient[0] * AV[0] - orient[1] * AV[1]) - orient[2] * AV[2]);
-
-					local_a3_1288->n.linearVelocity[0] = 0;
-					local_a3_1288->n.linearVelocity[1] = 0;
-					local_a3_1288->n.linearVelocity[2] = 0;
-					local_a3_1288->n.angularVelocity[0] = 0;
-					local_a3_1288->n.angularVelocity[1] = 0;
-					local_a3_1288->n.angularVelocity[2] = 0;
+					thisDelta[i].n.linearVelocity[0] = 0;
+					thisDelta[i].n.linearVelocity[1] = 0;
+					thisDelta[i].n.linearVelocity[2] = 0;
+					thisDelta[i].n.angularVelocity[0] = 0;
+					thisDelta[i].n.angularVelocity[1] = 0;
+					thisDelta[i].n.angularVelocity[2] = 0;
 
 					j = 0;
-					if (0 < local_40) 
+
+					while (j < i)
 					{
-						local_30 = 0;
-						p_Var27 = thisDelta;
-						do {
-							c1 = active_car_list[j];
-							p_Var25 = &c1->st;
+						c1 = active_car_list[j];
 
-							if (0 < RKstep) 
+						if (RKstep > 0)
+							thisState_j = &_tp[j];
+						else
+							thisState_j = &c1->st;
+
+						if (c1->hd.mayBeColliding != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						{
+							bb1 = &bbox[cp->id];
+							bb2 = &bbox[c1->id];
+
+							uVar6 = cp->id;
+							uVar14 = c1->id;
+
+							if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
+								bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
+								CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
-								p_Var25 = (RigidBodyState*)((int)_tp[0].n.fposition + local_30);
-							}
+								collisionpoint[1] -= 0;
 
-							if (c1->hd.mayBeColliding != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
-							{
-								iVar28 = cp->hd.where.t[0];
-								iVar19 = cp->hd.where.t[1];
-								howHard = cp->hd.where.t[2];
-								iVar21 = c1->hd.where.t[0];
-								iVar9 = c1->hd.where.t[1];
-								iVar24 = c1->hd.where.t[2];
-								uVar6 = cp->id;
-								uVar14 = c1->id;
+								lever0[0] = collisionpoint[0] - cp->hd.where.t[0];
+								lever0[2] = collisionpoint[2] - cp->hd.where.t[2];
+								lever1[0] = collisionpoint[0] - c1->hd.where.t[0];
+								lever1[2] = collisionpoint[2] - c1->hd.where.t[2];
 
-								if ((bbox[uVar14].x0 < bbox[uVar6].x1) &&
-									(((bbox[uVar14].z0 < bbox[uVar6].z1 && (bbox[uVar6].x0 < bbox[uVar14].x1)) &&
-										((bbox[uVar6].z0 < bbox[uVar14].z1 &&
-											(((bbox[uVar14].y0 < bbox[uVar6].y1 && (bbox[uVar6].y0 < bbox[uVar14].y1)) &&
-												(CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal) != 0))))))))
+								iVar19 = collisionpoint[1] - cp->hd.where.t[1];
+								iVar9 = collisionpoint[1] - c1->hd.where.t[1];
+
+								iVar28 = 0x2f - (iVar19 + iVar9) / 2;
+								lever0[1] = iVar19 + iVar28;
+								lever1[1] = iVar9 + iVar28;
+
+								strikeVel = depth * 0xc000;
+
+								pointVel0[0] = (FIXEDH(thisState_i->n.angularVelocity[1] * lever0[2] - thisState_i->n.angularVelocity[2] * lever0[1]) + thisState_i->n.linearVelocity[0]) -
+												(FIXEDH(thisState_j->n.angularVelocity[1] * lever1[2] - thisState_j->n.angularVelocity[2] * lever1[1]) + thisState_j->n.linearVelocity[0]);
+										
+								pointVel0[1] = (FIXEDH(thisState_i->n.angularVelocity[2] * lever0[0] - thisState_i->n.angularVelocity[0] * lever0[2]) + thisState_i->n.linearVelocity[1]) -
+												(FIXEDH(thisState_j->n.angularVelocity[2] * lever1[0] - thisState_j->n.angularVelocity[0] * lever1[2]) + thisState_j->n.linearVelocity[1]);
+										
+								pointVel0[2] = (FIXEDH(thisState_i->n.angularVelocity[0] * lever0[1] - thisState_i->n.angularVelocity[1] * lever0[0]) + thisState_i->n.linearVelocity[2]) -
+												(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
+										
+								howHard =	FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
+											FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
+											FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
+
+								if (howHard > 0 && RKstep > -1)
 								{
-									collisionpoint[1] = collisionpoint[1] - 60;
+									if (DamageCar3D(c1, (long(*)[4])lever1, howHard >> 1, cp))
+										c1->ap.needsDenting = 1;
 
-									lever0[0] = collisionpoint[0] - cp->hd.where.t[0];
-									lever0[2] = collisionpoint[2] - cp->hd.where.t[2];
-									lever1[0] = collisionpoint[0] - c1->hd.where.t[0];
-									lever1[2] = collisionpoint[2] - c1->hd.where.t[2];
+									if (DamageCar3D(cp, (long(*)[4])lever0, howHard >> 1, c1))
+										cp->ap.needsDenting = 1;
 
-									iVar19 = collisionpoint[1] - cp->hd.where.t[1];
-									iVar9 = collisionpoint[1] - c1->hd.where.t[1];
-
-									iVar28 = 0x2f - (iVar19 + iVar9) / 2;
-									lever0[1] = iVar19 + iVar28;
-									lever1[1] = iVar9 + iVar28;
-									iVar28 = depth * 0xc000;
-
-									pointVel0[0] = (FIXEDH(st->n.angularVelocity[1] * lever0[2] - st->n.angularVelocity[2] * lever0[1]) + st->n.linearVelocity[0]) -
-												(FIXEDH(p_Var25->n.angularVelocity[1] * lever1[2] - p_Var25->n.angularVelocity[2] * lever1[1]) + p_Var25->n.linearVelocity[0]);
-										
-									pointVel0[1] = (FIXEDH(st->n.angularVelocity[2] * lever0[0] - st->n.angularVelocity[0] * lever0[2]) + st->n.linearVelocity[1]) -
-												(FIXEDH(p_Var25->n.angularVelocity[2] * lever1[0] - p_Var25->n.angularVelocity[0] * lever1[2]) + p_Var25->n.linearVelocity[1]);
-										
-									pointVel0[2] = (FIXEDH(st->n.angularVelocity[0] * lever0[1] - st->n.angularVelocity[1] * lever0[0]) + st->n.linearVelocity[2]) -
-											(FIXEDH(p_Var25->n.angularVelocity[0] * lever1[1] - p_Var25->n.angularVelocity[1] * lever1[0]) +p_Var25->n.linearVelocity[2]);
-										
-									howHard =	FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
-												FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
-												FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
-
-									if (0 < howHard && -1 < RKstep)
+									if (0x32000 < howHard)
 									{
-										if (DamageCar3D(c1, (long(*)[4])lever1, howHard >> 1, cp))
-											c1->ap.needsDenting = 1;
+										if (cp->controlType == 2)
+											cp->ai.c.carMustDie = 1;
 
-										if (DamageCar3D(cp, (long(*)[4])lever0, howHard >> 1, c1))
-											cp->ap.needsDenting = 1;
+										if (c1->controlType == 2)
+											c1->ai.c.carMustDie = 1;
+									}
 
-										if (0x32000 < howHard)
+									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY)
+									{
+										if (cp->controlType == 1 && ((*(uint*)&c1->hndType & 0x2ff00) == 0x20200)) 
 										{
-											if (cp->controlType == 2)
-												cp->ai.c.carMustDie = 1;
-
-											if (c1->controlType == 2)
-												c1->ai.c.carMustDie = 1;
+											InitCopState(c1, NULL);
+											c1->ai.p.justPinged = 0;
 										}
 
-										if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY)
+										if (c1->controlType == 1 && ((*(uint*)&cp->hndType & 0x2ff00) == 0x20200))
 										{
-											if (cp->controlType == 1 && ((*(uint*)&c1->hndType & 0x2ff00) == 0x20200)) 
-											{
-												InitCopState(c1, NULL);
-												c1->ai.p.justPinged = 0;
-											}
-
-											if (c1->controlType == 1 && ((*(uint*)&cp->hndType & 0x2ff00) == 0x20200))
-											{
-												InitCopState(cp, NULL);
-												c1->ai.p.justPinged = 0;
-											}
-										}
-
-										if (0x1b00 < howHard) 
-										{
-											velocity.vy = -0x11;
-											velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
-											velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
-
-											collisionpoint[1] = -collisionpoint[1];
-
-											if (cp->controlType == 1 || c1->controlType == 1)
-											{
-												Setup_Sparks((VECTOR*)collisionpoint, &velocity, 6, 0);
-
-												if (cp->controlType == 1)
-													SetPadVibration(*cp->ai.padid, 1);
-
-												if (c1->controlType == 1)
-													SetPadVibration(*c1->ai.padid, 1);
-											}
-
-											if (0x2400 < howHard) 
-											{
-												iVar9 = GetDebrisColour(cp);
-												iVar19 = GetDebrisColour(c1);
-												Setup_Debris((VECTOR*)collisionpoint, &velocity, 3, 0);
-												Setup_Debris((VECTOR*)collisionpoint, &velocity, 6, iVar9 << 0x10);
-												Setup_Debris((VECTOR*)collisionpoint, &velocity, 2, iVar19 << 0x10);
-											}
+											InitCopState(cp, NULL);
+											c1->ai.p.justPinged = 0;
 										}
 									}
 
-									iVar9 = howHard * 9;
-									iVar28 = iVar28 + FixFloorSigned(iVar9, 2);
-
-									if (0x69000 < iVar28)
-										iVar28 = 0x69000;
-
-									iVar19 = (int)cp->ap.carCos->mass;
-									iVar9 = (int)c1->ap.carCos->mass;
-									uVar1 = cp->controlType;
-									uVar2 = c1->controlType;
-
-									if (iVar9 < iVar19) 
+									if (0x1b00 < howHard) 
 									{
-										iVar24 = (iVar9 << 0xc) / iVar19;
-										iVar21 = 0x1000;
+										velocity.vy = -0x11;
+										velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
+										velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
+
+										collisionpoint[1] = -collisionpoint[1];
+
+										if (cp->controlType == 1 || c1->controlType == 1)
+										{
+											Setup_Sparks((VECTOR*)collisionpoint, &velocity, 6, 0);
+
+											if (cp->controlType == 1)
+												SetPadVibration(*cp->ai.padid, 1);
+
+											if (c1->controlType == 1)
+												SetPadVibration(*c1->ai.padid, 1);
+										}
+
+										if (0x2400 < howHard) 
+										{
+											iVar9 = GetDebrisColour(cp);
+											iVar19 = GetDebrisColour(c1);
+											Setup_Debris((VECTOR*)collisionpoint, &velocity, 3, 0);
+											Setup_Debris((VECTOR*)collisionpoint, &velocity, 6, iVar9 << 0x10);
+											Setup_Debris((VECTOR*)collisionpoint, &velocity, 2, iVar19 << 0x10);
+										}
 									}
-									else
-									{
-										iVar21 = (iVar19 << 0xc) / iVar9;
-										iVar24 = 0x1000;
-									}
-
-									if (uVar1 != 7 && iVar19 != 0x7fff)
-									{
-										if (uVar1 == 3 && uVar2 != 4 && c1->hndType != 0) 
-										{
-											iVar19 = FixFloorSigned(iVar28 * (7 - gCopDifficultyLevel), 3);
-										}
-										else 
-										{
-											iVar19 = iVar28;
-											if (uVar1 == 4 && c1->hndType != 0) 
-											{
-												iVar19 = FixFloorSigned(iVar28 * 5, 3);
-											}
-										}
-
-										iVar19 = FIXEDH(iVar19) * iVar24 >> 3;
-										velocity.vx = (normal[0] >> 3) * iVar19 >> 6;
-										velocity.vz = (normal[2] >> 3) * iVar19 >> 6;
-										velocity.vy = (normal[1] >> 3) * iVar19 >> 6;
-
-										local_t2_3948 = (RigidBodyState*)(thisDelta->n.fposition + local_40 * 5 + local_34 * 4);
-
-										local_t2_3948->n.linearVelocity[0] = local_t2_3948->n.linearVelocity[0] - velocity.vx;
-										local_t2_3948->n.linearVelocity[1] = local_t2_3948->n.linearVelocity[1] - velocity.vy;
-										local_t2_3948->n.linearVelocity[2] = local_t2_3948->n.linearVelocity[2] - velocity.vz;
-
-										iVar19 = car_cosmetics[cp->ap.model].twistRateY / 2;
-
-										torque[0] = FIXEDH(velocity.vy * lever0[2] - velocity.vz * lever0[1]) * iVar19;
-										torque[1] = FIXEDH(velocity.vz * lever0[0] - velocity.vx * lever0[2]) * iVar19;
-										torque[2] = FIXEDH(velocity.vx * lever0[1] - velocity.vy * lever0[0]) * iVar19;
-
-										if (c1->controlType == 4)
-										{
-											torque[0] = 0;
-											torque[2] = 0;
-										}
-
-										local_t2_3948->n.angularVelocity[0] = local_t2_3948->n.angularVelocity[0] + torque[0];
-										local_t2_3948->n.angularVelocity[1] = local_t2_3948->n.angularVelocity[1] + torque[1];
-										local_t2_3948->n.angularVelocity[2] = local_t2_3948->n.angularVelocity[2] + torque[2];
-									}
-
-									if (uVar2 != 7 && iVar9 != 0x7fff) 
-									{
-										sVar3 = car_cosmetics[c1->ap.model].twistRateY;
-
-										if (cp->controlType == 3 || c1->controlType != 3 || c1->hndType == 0) 
-										{
-											if (c1->controlType == 4 && cp->hndType != 0)
-											{
-												iVar28 = FixFloorSigned(iVar28 * 5, 3);
-											}
-										}
-										else
-										{
-											iVar28 = FixFloorSigned(iVar28 * (7 - gCopDifficultyLevel), 3);
-										}
-
-										iVar28 = FIXEDH(iVar28) * iVar21 >> 3;
-										velocity.vx = (normal[0] >> 3) * iVar28 >> 6;
-										velocity.vy = (normal[1] >> 3) * iVar28 >> 6;
-										velocity.vz = (normal[2] >> 3) * iVar28 >> 6;
-
-										p_Var27->n.linearVelocity[0] = p_Var27->n.linearVelocity[0] + velocity.vx;
-										p_Var27->n.linearVelocity[1] = p_Var27->n.linearVelocity[1] + velocity.vy;
-										p_Var27->n.linearVelocity[2] = p_Var27->n.linearVelocity[2] + velocity.vz;
-										iVar28 = car_cosmetics[c1->ap.model].twistRateY / 2;
-
-										torque[0] = FIXEDH(lever1[1] * velocity.vz - lever1[2] * velocity.vy) * iVar28;
-										torque[1] = FIXEDH(lever1[2] * velocity.vx - lever1[0] * velocity.vz) * iVar28;
-										torque[2] = FIXEDH(lever1[0] * velocity.vy - lever1[1] * velocity.vx) * iVar28;
-
-										if (c1->controlType == 4)
-										{
-											torque[0] = 0;
-											torque[2] = 0;
-										}
-
-										p_Var27->n.angularVelocity[0] += torque[0];
-										p_Var27->n.angularVelocity[1] += torque[1];
-										p_Var27->n.angularVelocity[2] += torque[2];
-									}
-
-									if (cp->id == player[0].playerCarId || c1->id == player[0].playerCarId)
-										RegisterChaseHit(cp->id, c1->id);
-
-									if (cp->id == player[0].playerCarId)
-										CarHitByPlayer(c1, howHard);
-
-									if (c1->id == player[0].playerCarId)
-										CarHitByPlayer(cp, howHard);
 								}
+
+								strikeVel += FixFloorSigned(howHard * 9, 2);
+
+								if (strikeVel > 0x69000)
+									strikeVel = 0x69000;
+
+								m1 = cp->ap.carCos->mass;
+								m2 = c1->ap.carCos->mass;
+
+								if (m2 < m1)
+								{
+									do1 = (m2 << 0xc) / m1;
+									do2 = 0x1000;
+								}
+								else
+								{
+									do2 = (m1 << 0xc) / m2;
+									do1 = 0x1000;
+								}
+
+								if (cp->controlType != 7 && m1 != 0x7fff)
+								{
+									int twistY, strength1;
+
+									if (cp->controlType == 3 && c1->controlType != 4 && c1->hndType != 0)
+										strength1 = FixFloorSigned(strikeVel * (7 - gCopDifficultyLevel), 3);
+									else if (cp->controlType == 4 && c1->hndType != 0)
+										strength1 = FixFloorSigned(strikeVel * 5, 3);
+									else
+										strength1 = strikeVel;
+
+									strength1 = FIXEDH(strength1) * do1 >> 3;
+
+									velocity.vx = (normal[0] >> 3) * strength1 >> 6;
+									velocity.vz = (normal[2] >> 3) * strength1 >> 6;
+									velocity.vy = (normal[1] >> 3) * strength1 >> 6;
+
+									thisDelta[i].n.linearVelocity[0] -= velocity.vx;
+									thisDelta[i].n.linearVelocity[1] -= velocity.vy;
+									thisDelta[i].n.linearVelocity[2] -= velocity.vz;
+
+									twistY = car_cosmetics[cp->ap.model].twistRateY / 2;
+
+									torque[0] = FIXEDH(velocity.vy * lever0[2] - velocity.vz * lever0[1]) * twistY;
+									torque[1] = FIXEDH(velocity.vz * lever0[0] - velocity.vx * lever0[2]) * twistY;
+									torque[2] = FIXEDH(velocity.vx * lever0[1] - velocity.vy * lever0[0]) * twistY;
+
+									if (c1->controlType == 4)
+									{
+										torque[0] = 0;
+										torque[2] = 0;
+									}
+
+									thisDelta[i].n.angularVelocity[0] += torque[0];
+									thisDelta[i].n.angularVelocity[1] += torque[1];
+									thisDelta[i].n.angularVelocity[2] += torque[2];
+								}
+
+								if (c1->controlType != 7 && m2 != 0x7fff)
+								{
+									int twistY, strength2;
+
+									if (cp->controlType == 3 && c1->controlType != 4 && c1->hndType != 0)
+										strength2 = FixFloorSigned(strikeVel * (7 - gCopDifficultyLevel), 3);
+									else if (c1->controlType == 4 && cp->hndType != 0)
+										strength2 = FixFloorSigned(strikeVel * 5, 3);
+									else
+										strength2 = strikeVel;
+
+									strength2 = FIXEDH(strength2) * do2 >> 3;
+
+									velocity.vx = (normal[0] >> 3) * strength2 >> 6;
+									velocity.vy = (normal[1] >> 3) * strength2 >> 6;
+									velocity.vz = (normal[2] >> 3) * strength2 >> 6;
+
+									thisDelta[j].n.linearVelocity[0] += velocity.vx;
+									thisDelta[j].n.linearVelocity[1] += velocity.vy;
+									thisDelta[j].n.linearVelocity[2] += velocity.vz;
+
+									twistY = car_cosmetics[c1->ap.model].twistRateY / 2;
+
+									torque[0] = FIXEDH(lever1[1] * velocity.vz - lever1[2] * velocity.vy) * twistY;
+									torque[1] = FIXEDH(lever1[2] * velocity.vx - lever1[0] * velocity.vz) * twistY;
+									torque[2] = FIXEDH(lever1[0] * velocity.vy - lever1[1] * velocity.vx) * twistY;
+
+									if (c1->controlType == 4)
+									{
+										torque[0] = 0;
+										torque[2] = 0;
+									}
+
+									thisDelta[j].n.angularVelocity[0] += torque[0];
+									thisDelta[j].n.angularVelocity[1] += torque[1];
+									thisDelta[j].n.angularVelocity[2] += torque[2];
+								}
+
+								if (cp->id == player[0].playerCarId || c1->id == player[0].playerCarId)
+									RegisterChaseHit(cp->id, c1->id);
+
+								if (cp->id == player[0].playerCarId)
+									CarHitByPlayer(c1, howHard);
+
+								if (c1->id == player[0].playerCarId)
+									CarHitByPlayer(cp, howHard);
 							}
+						}
 
-							p_Var27++;
-							local_30 = local_30 + 0x34;
-
-							j++;
-
-						} while (j < local_40);
+						j++;
 					}
 				}
 
-				local_40 = local_40 + 1;
-				howHard = local_40 * 4;
-
+				i++;
 			}
 
-			iVar19 = 0;
+			i = 0;
 
-			while (iVar19 < num_active_cars)
+			while (i < num_active_cars)
 			{
-				cp = active_car_list[iVar19];
+				cp = active_car_list[i];
 
 				if (cp->hd.mayBeColliding != 0)
 				{
 					st = &cp->st;
-					tp = &_tp[iVar19];
-					d0 = &_d0[iVar19];
-					d1 = &_d1[iVar19];
+					tp = &_tp[i];
+					d0 = &_d0[i];
+					d1 = &_d1[i];
 
 					if (RKstep == 0)
 					{
-						iVar28 = 0;
+						j = 0;
 						do {
-							tp->v[iVar28] = st->v[iVar28] + (d0->v[iVar28] >> 2);
-							iVar28++;
-						} while (iVar28 < 13);
+							tp->v[j] = st->v[j] + (d0->v[j] >> 2);
+							j++;
+						} while (j < 13);
 
 						RebuildCarMatrix(tp, cp);
 					}
 					else if (RKstep == 1)
 					{
-						iVar28 = 0;
+						j = 0;
 						do {
-							st->v[iVar28] += d0->v[iVar28] + d1->v[iVar28] >> 3;
-							iVar28++;
-						} while (iVar28 < 13);
+							st->v[j] += d0->v[j] + d1->v[j] >> 3;
+							j++;
+						} while (j < 13);
 
 						RebuildCarMatrix(st, cp);
 					}
 				}
 
-				iVar19++;
+				i++;
 			}
 
 			RKstep++;
@@ -1157,23 +1123,23 @@ void GlobalTimeStep(void)
 
 	// second sub frame passed, update matrices and physics direction
 	// dent cars - no more than 5 cars in per frame
-	iVar15 = 0;
+	i = 0;
 
-	while (iVar15 < num_active_cars)
+	while (i < num_active_cars)
 	{
-		cp = active_car_list[iVar15];
+		cp = active_car_list[i];
 
 		cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
 		cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
-		cp->hd.drawCarMat.m[0][2] = cp->hd.where.m[0][2] ^ 0xFFFF;
+		cp->hd.drawCarMat.m[0][2] = ~cp->hd.where.m[0][2];
 		cp->hd.drawCarMat.m[1][0] = cp->hd.where.m[1][0];
 		cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
 		cp->hd.drawCarMat.m[1][2] = cp->hd.where.m[1][2];
 		cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
 		cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
-		cp->hd.drawCarMat.m[2][2] = cp->hd.where.m[2][2] ^ 0xFFFF;
+		cp->hd.drawCarMat.m[2][2] = ~cp->hd.where.m[2][2];
 
-		if (cp->ap.needsDenting != 0 && ((CameraCnt + iVar15 & 3U) == 0 || iVar5 < 5))
+		if (cp->ap.needsDenting != 0 && ((CameraCnt + i & 3U) == 0 || iVar5 < 5))
 		{
 			DentCar(cp);
 
@@ -1181,7 +1147,7 @@ void GlobalTimeStep(void)
 			iVar5++;
 		}
 
-		iVar15++;
+		i++;
 		cp->hd.direction = ratan2(cp->hd.where.m[0][2], cp->hd.where.m[2][2]);
 	}
 }
@@ -1532,7 +1498,7 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	}
 	else 
 	{
-		sm = 6144 - (osm >> 13);
+		sm = 0x1800 - (osm >> 13);
 
 		st->n.orientation[0] = FIXEDH(sm * iVar6);
 		st->n.orientation[1] = FIXEDH(sm * iVar5);
