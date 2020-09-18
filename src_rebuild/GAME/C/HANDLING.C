@@ -68,23 +68,21 @@
 // [D]
 void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 {
-	char cVar1;
-	int iVar2;
-	char cVar3;
-	uint uVar4;
-	int iVar5;
+	int ty;
+	int odz;
+	int dz;
 
-	uVar4 = cp->ap.model;
-	iVar5 = car_cosmetics[uVar4].wheelDisp[0].vz + car_cosmetics[uVar4].wheelDisp[1].vz;
-	iVar2 = iVar5 / 5;
+	dz = car_cosmetics[cp->ap.model].wheelDisp[0].vz + car_cosmetics[cp->ap.model].wheelDisp[1].vz;
+	ty = dz / 5;
+	odz = FixFloorSigned(dz, 5);
 
 	cp->hd.direction = direction;
 
 	cp->hd.autoBrake = 0;
 
-	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[(direction & 0xffeU) + 1] * iVar2);
+	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[(direction & 0xffeU) + 1] * ty);
 	cp->st.n.orientation[1] = rcossin_tbl[direction & 0xffeU];
-	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[direction & 0xffeU] * iVar2);
+	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[direction & 0xffeU] * ty);
 	cp->st.n.orientation[3] = rcossin_tbl[(direction & 0xffeU) + 1];
 
 	cp->st.n.fposition[0] = (*startpos)[0] << 4;
@@ -116,16 +114,11 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
 	cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
 	cp->hd.drawCarMat.m[2][2] = ~cp->hd.where.m[2][2];
-	
-	cVar3 = FixFloorSigned(iVar5, 5);
-	cVar1 = 14 - cVar3;
-	
-	cVar3 = cVar3 + 14;
 
-	cp->hd.wheel[0].susCompression = cVar1;
-	cp->hd.wheel[1].susCompression = cVar3;
-	cp->hd.wheel[2].susCompression = cVar1;
-	cp->hd.wheel[3].susCompression = cVar3;
+	cp->hd.wheel[0].susCompression = 14 - odz;
+	cp->hd.wheel[1].susCompression = odz + 14;
+	cp->hd.wheel[2].susCompression = 14 - odz;
+	cp->hd.wheel[3].susCompression = odz + 14;
 	
 	cp->thrust = 0;
 	cp->wheel_angle = 0;
@@ -166,13 +159,10 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 // [D]
 void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 {
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-	int iVar4;
+	int dz;
+	int ang;
 
-	uVar3 = cp->ap.model;
-	iVar1 = (car_cosmetics[uVar3].wheelDisp[0].vz + car_cosmetics[uVar3].wheelDisp[1].vz) / 5;
+	dz = (car_cosmetics[cp->ap.model].wheelDisp[0].vz + car_cosmetics[cp->ap.model].wheelDisp[1].vz) / 5;
 
 	if (init == 1) 
 	{
@@ -181,11 +171,12 @@ void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 		cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
 	}
 
-	uVar3 = cp->hd.direction & 0xffe;
-	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[uVar3 + 1] * iVar1);
-	cp->st.n.orientation[1] = rcossin_tbl[uVar3];
-	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[uVar3] * iVar1);
-	cp->st.n.orientation[3] = rcossin_tbl[uVar3 + 1];
+	ang = cp->hd.direction & 0xffe;
+
+	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[ang + 1] * dz);
+	cp->st.n.orientation[1] = rcossin_tbl[ang];
+	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[ang] * dz);
+	cp->st.n.orientation[3] = rcossin_tbl[ang + 1];
 
 	RebuildCarMatrix(&cp->st, cp);
 	SetShadowPoints(cp);
@@ -236,32 +227,32 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 	groundCollPoints = carCos->cPoints;
 	wheelPoints = carCos->wheelDisp;
 
-	i = 11;
+	i = 0;
 
 	do {
-		groundCollPoints->vx = groundCollPoints->vx + delta.vx;
-		groundCollPoints->vy = groundCollPoints->vy - delta.vy;
-		groundCollPoints->vz = groundCollPoints->vz + delta.vz;
+		groundCollPoints->vx += delta.vx;
+		groundCollPoints->vy -= delta.vy;
+		groundCollPoints->vz += delta.vz;
 		groundCollPoints++;
-		i--;
-	} while (-1 < i);
+		i++;
+	} while (i < 12);
 
-	if (doWheels != 0) 
+	if (doWheels) 
 	{
-		i = 3;
+		i = 0;
 
 		do {
-			wheelPoints->vx = wheelPoints->vx + delta.vx;
-			wheelPoints->vy = wheelPoints->vy - delta.vy;
-			wheelPoints->vz = wheelPoints->vz + delta.vz;
+			wheelPoints->vx += delta.vx;
+			wheelPoints->vy -= delta.vy;
+			wheelPoints->vz += delta.vz;
 			wheelPoints++;
-			i--;
-		} while (-1 < i);
+			i++;
+		} while (i < 4);
 	}
 
-	carCos->cog.vx = carCos->cog.vx + delta.vx;
-	carCos->cog.vy = carCos->cog.vy + delta.vy;
-	carCos->cog.vz = carCos->cog.vz - delta.vz;
+	carCos->cog.vx += delta.vx;
+	carCos->cog.vy += delta.vy;
+	carCos->cog.vz -= delta.vz;
 
 	delta.vx = 0;
 	delta.vy = 0;
@@ -303,9 +294,9 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 {
 	delta.vx = 0;
 	delta.vy = 0;
+	delta.vz = -(carCos->wheelDisp[0].vz + carCos->wheelDisp[1].vz - 14) / 2;
 
 	doWheels = 1;
-	delta.vz = -(carCos->wheelDisp[0].vz + carCos->wheelDisp[1].vz-14) / 2;
 
 	UpdateCarPoints(carCos);
 
@@ -321,6 +312,7 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 		}
 	}
 
+	// Caine's compound heavy Vans
 	if (carCos == &car_cosmetics[2] && gCurrentMissionNumber == 7) 
 	{
 		car_cosmetics[2].mass *= 3;
@@ -627,40 +619,17 @@ int playerhitcopsanyway = 0;
 // [D]
 void GlobalTimeStep(void)
 {
-	static union RigidBodyState _tp[20]; // offset 0x0
-	static union RigidBodyState _d0[20]; // offset 0x410
-	static union RigidBodyState _d1[20]; // offset 0x820
+	static union RigidBodyState _tp[MAX_CARS]; // offset 0x0
+	static union RigidBodyState _d0[MAX_CARS]; // offset 0x410
+	static union RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
-	unsigned char uVar1;
-	unsigned char uVar2;
-	short sVar3;
-	bool bVar4;
-	int iVar5;
-	int uVar6;
-	long lVar7;
-	long lVar8;
 	int howHard;
-	int iVar9;
-	long lVar10;
-	int iVar11;
-	int iVar12;
-	int iVar13;
-	int uVar14;
-	int iVar15;
-	int iVar16;
-	long* plVar17;
-	int* piVar18;
-	int iVar19;
-	int iVar20;
+	long tmp;
 	RigidBodyState* thisState_i;
 	RigidBodyState* thisState_j;
 	RigidBodyState* thisDelta;
 	BOUND_BOX *bb1;
 	BOUND_BOX *bb2;
-	int iVar21;
-	int iVar22;
-	long* plVar23;
-	int iVar24;
 	_CAR_DATA* cp;
 	_CAR_DATA* c1;
 	RigidBodyState* st;
@@ -688,13 +657,15 @@ void GlobalTimeStep(void)
 	int do2;
 	int m1;
 	int m2;
+	int strength;
+	int carsDentedThisFrame;
 
 	StepCars();
 	CheckCarToCarCollisions();
 
 	i = 0;
 
-	// step car forces
+	// step car forces (when no collisions with them)
 	while (i < num_active_cars)
 	{
 		cp = active_car_list[i];
@@ -718,25 +689,12 @@ void GlobalTimeStep(void)
 		cp->hd.aacc[1] = 0;
 		cp->hd.aacc[2] = 0;
 
-		if (200000 < st->n.linearVelocity[1]) // reduce vertical velocity
+		if (st->n.linearVelocity[1] > 200000) // reduce vertical velocity
 			st->n.linearVelocity[1] = FixFloorSigned(st->n.linearVelocity[1] * 3, 2);
 
 		if (cp->hd.speed == 0)
 		{
-			iVar15 = st->n.linearVelocity[0];
-			iVar5 = st->n.linearVelocity[1];
-			howHard = st->n.linearVelocity[2];
-
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-	
-			if (iVar5 < 0)
-				iVar5 = -iVar5;
-
-			if (howHard < 0)
-				howHard = -howHard;
-
-			if (iVar15 + iVar5 + howHard < 1000)
+			if (ABS(st->n.linearVelocity[0]) + ABS(st->n.linearVelocity[1]) + ABS(st->n.linearVelocity[2]) < 1000)
 			{
 				st->n.linearVelocity[0] = 0;
 				st->n.linearVelocity[1] = 0;
@@ -752,20 +710,17 @@ void GlobalTimeStep(void)
 		}
 
 		// limit angular velocity
-		iVar15 = st->n.angularVelocity[0];
-		lVar10 = 0x800000;
-		if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000))
-			st->n.angularVelocity[0] = lVar10;
+		tmp = 0x800000;
+		if ((tmp < st->n.angularVelocity[0]) || (tmp = -tmp, st->n.angularVelocity[0] < tmp))
+			st->n.angularVelocity[0] = tmp;
 
-		iVar15 = st->n.angularVelocity[1];
-		lVar10 = 0x800000;
-		if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000))
-			st->n.angularVelocity[1] = lVar10;
+		tmp = 0x800000;
+		if ((tmp < st->n.angularVelocity[1]) || (tmp = -tmp, st->n.angularVelocity[1] < tmp))
+			st->n.angularVelocity[1] = tmp;
 
-		iVar15 = st->n.angularVelocity[2];
-		lVar10 = 0x800000;
-		if ((0x800000 < iVar15) || (lVar10 = -0x800000, iVar15 < -0x800000)) 
-			st->n.angularVelocity[2] = lVar10;
+		tmp = 0x800000;
+		if ((tmp < st->n.angularVelocity[2]) || (tmp = -tmp, st->n.angularVelocity[2] < tmp))
+			st->n.angularVelocity[2] = tmp;
 
 		if (cp->hd.mayBeColliding == 0) 
 		{
@@ -808,11 +763,13 @@ void GlobalTimeStep(void)
 			{
 				cp = active_car_list[i];
 
+				// check collisions with buildings
 				if (RKstep != 0 && (subframe & 1U) != 0 && cp->controlType == 1)
 				{
 					CheckScenaryCollisions(cp);
 				}
 
+				// check collisions with vehicles
 				if (cp->hd.mayBeColliding != 0) 
 				{
 					if (RKstep == 0) 
@@ -864,9 +821,6 @@ void GlobalTimeStep(void)
 							bb1 = &bbox[cp->id];
 							bb2 = &bbox[c1->id];
 
-							uVar6 = cp->id;
-							uVar14 = c1->id;
-
 							if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
 								bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
 								CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
@@ -874,16 +828,17 @@ void GlobalTimeStep(void)
 								collisionpoint[1] -= 0;
 
 								lever0[0] = collisionpoint[0] - cp->hd.where.t[0];
+								lever0[1] = collisionpoint[1] - cp->hd.where.t[1];
 								lever0[2] = collisionpoint[2] - cp->hd.where.t[2];
+
 								lever1[0] = collisionpoint[0] - c1->hd.where.t[0];
+								lever1[1] = collisionpoint[1] - c1->hd.where.t[1];
 								lever1[2] = collisionpoint[2] - c1->hd.where.t[2];
 
-								iVar19 = collisionpoint[1] - cp->hd.where.t[1];
-								iVar9 = collisionpoint[1] - c1->hd.where.t[1];
+								strength = 47 - (lever0[1] + lever1[1]) / 2;
 
-								iVar28 = 0x2f - (iVar19 + iVar9) / 2;
-								lever0[1] = iVar19 + iVar28;
-								lever1[1] = iVar9 + iVar28;
+								lever0[1] += strength;
+								lever1[1] += strength;
 
 								strikeVel = depth * 0xc000;
 
@@ -908,7 +863,7 @@ void GlobalTimeStep(void)
 									if (DamageCar3D(cp, (long(*)[4])lever0, howHard >> 1, c1))
 										cp->ap.needsDenting = 1;
 
-									if (0x32000 < howHard)
+									if (howHard > 0x32000)
 									{
 										if (cp->controlType == 2)
 											cp->ai.c.carMustDie = 1;
@@ -917,6 +872,7 @@ void GlobalTimeStep(void)
 											c1->ai.c.carMustDie = 1;
 									}
 
+									// wake up cops if they've ben touched
 									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY)
 									{
 										if (cp->controlType == 1 && ((*(uint*)&c1->hndType & 0x2ff00) == 0x20200)) 
@@ -932,9 +888,9 @@ void GlobalTimeStep(void)
 										}
 									}
 
-									if (0x1b00 < howHard) 
+									if (howHard > 0x1b00)
 									{
-										velocity.vy = -0x11;
+										velocity.vy = -17;
 										velocity.vx = FIXED(cp->st.n.linearVelocity[0]);
 										velocity.vz = FIXED(cp->st.n.linearVelocity[2]);
 
@@ -951,13 +907,17 @@ void GlobalTimeStep(void)
 												SetPadVibration(*c1->ai.padid, 1);
 										}
 
-										if (0x2400 < howHard) 
+										if (howHard > 0x2400)
 										{
-											iVar9 = GetDebrisColour(cp);
-											iVar19 = GetDebrisColour(c1);
+											int debris1;
+											int debris2;
+
+											debris1 = GetDebrisColour(cp);
+											debris2 = GetDebrisColour(c1);
+
 											Setup_Debris((VECTOR*)collisionpoint, &velocity, 3, 0);
-											Setup_Debris((VECTOR*)collisionpoint, &velocity, 6, iVar9 << 0x10);
-											Setup_Debris((VECTOR*)collisionpoint, &velocity, 2, iVar19 << 0x10);
+											Setup_Debris((VECTOR*)collisionpoint, &velocity, 6, debris1 << 0x10);
+											Setup_Debris((VECTOR*)collisionpoint, &velocity, 2, debris2 << 0x10);
 										}
 									}
 								}
@@ -981,6 +941,7 @@ void GlobalTimeStep(void)
 									do1 = 0x1000;
 								}
 
+								// apply force to car 0
 								if (cp->controlType != 7 && m1 != 0x7fff)
 								{
 									int twistY, strength1;
@@ -1019,6 +980,7 @@ void GlobalTimeStep(void)
 									thisDelta[i].n.angularVelocity[2] += torque[2];
 								}
 
+								// apply force to car 1
 								if (c1->controlType != 7 && m2 != 0x7fff)
 								{
 									int twistY, strength2;
@@ -1075,6 +1037,7 @@ void GlobalTimeStep(void)
 				i++;
 			}
 
+			// update forces and rebuild matrix of the cars
 			i = 0;
 
 			while (i < num_active_cars)
@@ -1117,13 +1080,15 @@ void GlobalTimeStep(void)
 
 		} while (RKstep < 2);
 
-		iVar5 = 0;
 		subframe++;
 	} while (subframe < 4);
+
+
 
 	// second sub frame passed, update matrices and physics direction
 	// dent cars - no more than 5 cars in per frame
 	i = 0;
+	carsDentedThisFrame = 0;
 
 	while (i < num_active_cars)
 	{
@@ -1139,12 +1104,12 @@ void GlobalTimeStep(void)
 		cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
 		cp->hd.drawCarMat.m[2][2] = ~cp->hd.where.m[2][2];
 
-		if (cp->ap.needsDenting != 0 && ((CameraCnt + i & 3U) == 0 || iVar5 < 5))
+		if (cp->ap.needsDenting != 0 && ((CameraCnt + i & 3U) == 0 || carsDentedThisFrame < 5))
 		{
 			DentCar(cp);
 
 			cp->ap.needsDenting = 0;
-			iVar5++;
+			carsDentedThisFrame++;
 		}
 
 		i++;
@@ -1201,15 +1166,12 @@ void GlobalTimeStep(void)
 // [D]
 void SetShadowPoints(_CAR_DATA *c0)
 {
-	bool bVar1;
-	uint uVar2;
-	uint puVar3;
-	SVECTOR *pSVar5;
-	int iVar6;
+	int i;
 	SVECTOR disp;
 	VECTOR pointPos;
 	VECTOR surfaceNormal;
 	VECTOR surfacePoint;
+	CAR_COSMETICS* car_cos;
 
 	_sdPlane *surfacePtr;
 	surfacePtr = NULL;
@@ -1217,11 +1179,11 @@ void SetShadowPoints(_CAR_DATA *c0)
 	gte_SetRotMatrix(&c0->hd.where);
 	gte_SetTransMatrix(&c0->hd.where);
 
-	iVar6 = 0;
-	pSVar5 = car_cosmetics[c0->ap.model].cPoints;
+	i = 0;
+	car_cos = &car_cosmetics[c0->ap.model];
 
 	do {
-		disp = *pSVar5;
+		disp = car_cos->cPoints[i];
 
 		/* // [A] No point to keep this cheat
 		if (cheats.MiniCars != 0) 
@@ -1236,30 +1198,20 @@ void SetShadowPoints(_CAR_DATA *c0)
 
 		gte_stlvnl(&pointPos);
 
-		static int hSubShad = 0;
-
-		hSubShad = 0;
+		//static int hSubShad = 0;
+		//hSubShad = 0;
 
 		FindSurfaceD2(&pointPos, &surfaceNormal, &surfacePoint, &surfacePtr);
 
-		c0->hd.shadowPoints[iVar6].vx = surfacePoint.vx;
-		c0->hd.shadowPoints[iVar6].vy = surfacePoint.vy;
-		c0->hd.shadowPoints[iVar6].vz = surfacePoint.vz;
+		c0->hd.shadowPoints[i].vx = surfacePoint.vx;
+		c0->hd.shadowPoints[i].vy = surfacePoint.vy;
+		c0->hd.shadowPoints[i].vz = surfacePoint.vz;
 
-		puVar3 = c0->hd.shadowPoints[iVar6].vy;
-		uVar2 = puVar3;
+		//if (hSubShad != 0)
+		//	c0->hd.shadowPoints[i].vy += 1;
 
-		bVar1 = hSubShad != 0;
-
-		c0->hd.shadowPoints[iVar6].vy = uVar2 & 0xfffffffe;
-
-		if (bVar1)
-			c0->hd.shadowPoints[iVar6].vy = uVar2 & 0xfffffffe | 1;
-
-		iVar6 = iVar6 + 1;
-		pSVar5 = pSVar5 + 1;
-
-	} while (iVar6 < 4);
+		i++;
+	} while (i < 4);
 }
 
 
@@ -1303,45 +1255,45 @@ void SetShadowPoints(_CAR_DATA *c0)
 // [D]
 void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	short sVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
+	int xx;
+	int xy;
+	int xz;
+	int xw;
+	int yy;
+	int yz;
+	int yw;
+	int zz;
+	int zw;
 
-	iVar6 = (*qua)[0];
-	iVar5 = (*qua)[1];
-	iVar8 = (*qua)[2];
-	iVar7 = (*qua)[3];
+	int qy;
+	int qx;
+	int qw;
+	int qz;
 
-	sVar1 = FixHalfRound(iVar5 * iVar5, 11);
-	sVar2 = FixHalfRound(iVar8 * iVar8, 11);
-	sVar3 = FixHalfRound(iVar6 * iVar6, 11);
+	qx = (*qua)[0];
+	qy = (*qua)[1];
+	qz = (*qua)[2];
+	qw = (*qua)[3];
 
-	m->m[0][0] = 4096 - (sVar1 + sVar2);
-	m->m[1][1] = 4096 - (sVar3 + sVar2);
-	m->m[2][2] = 4096 - (sVar3 + sVar1);
+	yy = FixHalfRound(qy * qy, 11);
+	zz = FixHalfRound(qz * qz, 11);
+	xx = FixHalfRound(qx * qx, 11);
+	zw = FixHalfRound(qz * qw, 11);
+	xy = FixHalfRound(qx * qy, 11);
+	xz = FixHalfRound(qx * qz, 11);
+	yw = FixHalfRound(qy * qw, 11);
+	xw = FixHalfRound(qx * qw, 11);
+	yz = FixHalfRound(qy * qz, 11);
 
-	sVar2 = FixHalfRound(iVar8 * iVar7, 11);
-	sVar1 = FixHalfRound(iVar6 * iVar5, 11);
-
-	m->m[0][1] = sVar1 - sVar2;
-
-	sVar3 = FixHalfRound(iVar6 * iVar8, 11);
-	sVar4 = FixHalfRound(iVar5 * iVar7, 11);
-
-	m->m[0][2] = sVar3 + sVar4;
-	m->m[1][0] = sVar1 + sVar2;
-	m->m[2][0] = sVar3 - sVar4;
-
-	sVar2 = FixHalfRound(iVar6 * iVar7, 11);
-	sVar1 = FixHalfRound(iVar5 * iVar8, 11);
-
-	m->m[1][2] = sVar1 - sVar2;
-	m->m[2][1] = sVar1 + sVar2;
+	m->m[0][0] = 4096 - (yy + zz);
+	m->m[1][1] = 4096 - (xx + zz);
+	m->m[2][2] = 4096 - (xx + yy);
+	m->m[0][1] = xy - zw;
+	m->m[0][2] = xz + yw;
+	m->m[1][0] = xy + zw;
+	m->m[2][0] = xz - yw;
+	m->m[1][2] = yz - xw;
+	m->m[2][1] = yz + xw;
 }
 
 
@@ -1383,9 +1335,7 @@ void initOBox(_CAR_DATA *cp)
 {
 	SVECTOR boxDisp;
 
-	short sVar2;
-	int iVar3;
-
+	short length;
 
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
@@ -1399,20 +1349,18 @@ void initOBox(_CAR_DATA *cp)
 
 	if (cp->controlType == 3) 
 	{
-		iVar3 = cp->ap.carCos->colBox.vx * 14;
-
-		sVar2 = FixFloorSigned(iVar3, 4);
-		cp->hd.oBox.length[0] = sVar2;
+		length = FixFloorSigned(cp->ap.carCos->colBox.vx * 14, 4);
+		cp->hd.oBox.length[0] = length;
 	}
 	else 
 	{
-		sVar2 = cp->ap.carCos->colBox.vx;
-		cp->hd.oBox.length[0] = sVar2;
+		length = cp->ap.carCos->colBox.vx;
+		cp->hd.oBox.length[0] = length;
 	}
 
 	gte_stlvnl(&cp->hd.oBox.location);
 
-	VECTOR svx = { sVar2, 0 ,0 };
+	VECTOR svx = { length, 0 ,0 };
 	VECTOR svy = { 0, cp->ap.carCos->colBox.vy ,0 };
 	VECTOR svz = { 0, 0 ,cp->ap.carCos->colBox.vz };
 
@@ -1473,21 +1421,21 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 {
 	int sm;
 	int osm;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
+	int qw;
+	int qz;
+	int qy;
+	int qx;
 
 	cp->hd.where.t[0] = st->n.fposition[0] >> 4;
 	cp->hd.where.t[1] = st->n.fposition[1] >> 4;
 	cp->hd.where.t[2] = st->n.fposition[2] >> 4;
 	
-	iVar6 = st->n.orientation[0];
-	iVar5 = st->n.orientation[1];
-	iVar4 = st->n.orientation[2];
-	iVar3 = st->n.orientation[3];
+	qx = st->n.orientation[0];
+	qy = st->n.orientation[1];
+	qz = st->n.orientation[2];
+	qw = st->n.orientation[3];
 
-	osm = iVar6 * iVar6 + iVar5 * iVar5 + iVar4 * iVar4 + iVar3 * iVar3;
+	osm = qx * qx + qy * qy + qz * qz + qw * qw;
 	sm = 4096;
 
 	if (osm < 1024)
@@ -1500,15 +1448,15 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	{
 		sm = 0x1800 - (osm >> 13);
 
-		st->n.orientation[0] = FIXEDH(sm * iVar6);
-		st->n.orientation[1] = FIXEDH(sm * iVar5);
-		st->n.orientation[2] = FIXEDH(sm * iVar4);
+		st->n.orientation[0] = FIXEDH(sm * qx);
+		st->n.orientation[1] = FIXEDH(sm * qy);
+		st->n.orientation[2] = FIXEDH(sm * qz);
 
-		sm = FIXEDH(sm * iVar3);
+		sm = FIXEDH(sm * qw);
 	}
 	st->n.orientation[3] = sm;
 	
-	LongQuaternion2Matrix((long(*)[4])st->n.orientation, (MATRIX *)cp);
+	LongQuaternion2Matrix((long(*)[4])st->n.orientation, &cp->hd.where);
 
 	initOBox(cp);
 }
@@ -1564,7 +1512,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 	num_active_cars++;
 #endif
 
-	// [A] update wheel rotation - MP fix
+	// [A] update wheel rotation - fix for multiplayer outside cameras
 	car_id = CAR_INDEX(cp);
 
 	frontWheelSpeed = FixFloorSigned(cp->hd.wheel_speed, 8);
@@ -1671,19 +1619,20 @@ void InitialiseCarHandling(void)
 // [D]
 void CheckCarToCarCollisions(void)
 {
-	int iVar2;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	char *pcVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
+	int fz;
+	int fx;
+	int sz;
+	int sx;
 
 	int loop1, loop2;
+	int lbod;
+	int wbod;
+	int hbod;
+	int xx, zz;
 
-	BOUND_BOX *bb1;
+	BOUND_BOX* bb;
 	BOUND_BOX *bb2;
+	BOUND_BOX *bb1;
 	_CAR_DATA *cp;
 	SVECTOR *colBox;
 
@@ -1692,148 +1641,99 @@ void CheckCarToCarCollisions(void)
 	if (ghost_mode == 1)
 		return;
 
-	bb2 = bbox;
-	iVar8 = 19;
+	bb = bbox;
+	loop1 = 0;
 
+	// build boxes
 	do {
 		if (cp->controlType == 0) // [A] required as game crashing
 		{
 			cp++;
-			bb2++;
-			iVar8--;
+			bb++;
+			loop1--;
 			continue;
 		}
 
 		colBox = &cp->ap.carCos->colBox;
 
-		iVar6 = colBox->vy;
-		iVar2 = colBox->vz * 9;
+		hbod = colBox->vy;
+		lbod = colBox->vz * 9;
+		wbod = colBox->vx * 9;
 
-		iVar9 = cp->hd.where.m[0][2] * FixFloorSigned(iVar2, 3);
-		iVar4 = colBox->vx * 9;
+		sx = cp->hd.where.m[0][0] * FixFloorSigned(wbod, 3);
+		sz = cp->hd.where.m[0][2] * FixFloorSigned(lbod, 3);
 
-		if (iVar9 < 0)
-			iVar9 = -iVar9;
-	
-		iVar10 = cp->hd.where.m[0][0] * FixFloorSigned(iVar4, 3);
+		fx = cp->hd.where.m[2][0] * FixFloorSigned(wbod, 3);
+		fz = cp->hd.where.m[2][2] * FixFloorSigned(lbod, 3);
 
-		if (iVar10 < 0)
-			iVar10 = -iVar10;
-	
-		iVar9 = FIXEDH(iVar9 + iVar10) + iVar6;
-		iVar2 = cp->hd.where.m[2][2] * FixFloorSigned(iVar2, 3);
+		xx = FIXEDH(ABS(sz) + ABS(sx)) + hbod;
+		zz = FIXEDH(ABS(fz) + ABS(fx)) + hbod;
 
-		if (iVar2 < 0)
-			iVar2 = -iVar2;
-	
-		iVar4 = cp->hd.where.m[2][0] * FixFloorSigned(iVar4, 3);
-		iVar10 = cp->hd.where.t[0];
-		iVar5 = iVar10 - iVar9;
+		bb->x0 = FixFloorSigned(cp->hd.where.t[0] - xx, 4);
+		bb->z0 = FixFloorSigned(cp->hd.where.t[2] - zz, 4);
+		bb->x1 = FixFloorSigned(cp->hd.where.t[0] + xx, 4);
+		bb->z1 = FixFloorSigned(cp->hd.where.t[2] + zz, 4);
 
-		if (iVar4 < 0)
-			iVar4 = -iVar4;
-	
-		iVar6 = FIXEDH(iVar2 + iVar4) + iVar6;
-
-		iVar4 = cp->hd.where.t[2];
-		iVar2 = iVar4 - iVar6;
-		bb2->x0 = FixFloorSigned(iVar5, 4);
-
-		bb2->z0 = FixFloorSigned(iVar2, 4);
-		iVar10 = iVar10 + iVar9;
-
-		iVar4 = iVar4 + iVar6;
-		bb2->x1 = FixFloorSigned(iVar10, 4);
-
-		iVar2 = cp->st.n.linearVelocity[0];
-		bb2->z1 = FixFloorSigned(iVar4, 4);
-
-		if (iVar2 < 0) 
-		{
-			iVar2 = FIXEDH(iVar2);
-			bb2->x0 = FixFloorSigned(iVar5, 4) + FixFloorSigned(iVar2, 3);
-		}
+		if (cp->st.n.linearVelocity[0] < 0)
+			bb->x0 = FixFloorSigned(cp->hd.where.t[0] - xx, 4) + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[0]), 3);
 		else
-		{
-			iVar2 = FIXEDH(iVar2);
-			bb2->x1 = FixFloorSigned(iVar10, 4) + FixFloorSigned(iVar2, 3);
-		}
+			bb->x1 = FixFloorSigned(cp->hd.where.t[0] + xx, 4) + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[0]), 3);
 
-		iVar2 = cp->st.n.linearVelocity[2];
-
-		if (iVar2 < 0)
-		{
-			iVar2 = FIXEDH(iVar2);
-			bb2->z0 = bb2->z0 + FixFloorSigned(iVar2, 3);
-		}
+		if (cp->st.n.linearVelocity[2] < 0)
+			bb->z0 = bb->z0 + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[2]), 3);
 		else
-		{
-			iVar2 = FIXEDH(iVar2);
-			bb2->z1 = bb2->z1 + FixFloorSigned(iVar2, 3);
-		}
-
-		iVar6 = cp->hd.where.t[1];
+			bb->z1 = bb->z1 + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[2]), 3);
 
 		// [A] 2400 for box size - bye bye collision check performance under bridges
-		iVar2 = iVar6 - colBox->vy * 2;// -2400;
-		bb2->y0 = FixFloorSigned(iVar2, 4);
-
-		iVar2 = iVar6 + colBox->vy * 4;// +2400;
-		bb2->y1 = FixFloorSigned(iVar2, 4);
+		bb->y0 = FixFloorSigned(cp->hd.where.t[1] - colBox->vy * 2 /* - 2400*/, 4);
+		bb->y1 = FixFloorSigned(cp->hd.where.t[1] + colBox->vy * 4 /* + 2400*/, 4);
 
 		if (cp->hndType == 0)
 			cp->hd.mayBeColliding = 1;
 
-		iVar8--;
-		bb2++;
+		loop1++;
+		bb++;
 		cp++;
-	} while (-1 < iVar8);
+	} while (loop1 < MAX_CARS);
 
-	bb2 = bbox;
-	iVar8 = 0;
+	bb1 = bbox;
+	loop1 = 0;
 
+	// check boxes intersection with each other
 	do {
+		bb2 = bb1 + 1;
+		loop2 = loop1 + 1;
 
-		iVar2 = iVar8 + 1;
-		bool mayBeColliding = false;
-
-		if (iVar2 < 20) 
+		while (loop2 < MAX_CARS)
 		{
-			bb1 = bb2 + 1;
-			iVar6 = iVar2;
+			if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
+				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
+				(loop1 == 0 || car_data[loop1].controlType != 0) && car_data[loop2].controlType != 0)
+			{
+				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 1;
+			}
 
-			do {
-
-				if (bb1->x0 < bb2->x1 && bb1->z0 < bb2->z1 && bb2->x0 < bb1->x1 &&
-					bb2->z0 < bb1->z1 && bb1->y0 < bb2->y1 && bb2->y0 < bb1->y1 &&
-					(iVar8 == 0 || car_data[iVar8].controlType != 0) && car_data[iVar6].controlType != 0)
-				{
-					car_data[iVar8].hd.mayBeColliding = car_data[iVar6].hd.mayBeColliding = 1;
-					mayBeColliding = true;
-				}
-
-				iVar6++;
-				bb1++;
-			} while (iVar6 < 20);
-		}
+			loop2++;
+			bb2++;
+		};
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
-		if (gShowCollisionDebug == 2 && car_data[iVar8].controlType != 0)
+		if (gShowCollisionDebug == 2 && car_data[loop1].controlType != 0)
 		{
-			extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 
 			CVECTOR bbcv = { 0, 0, 250 };
 			CVECTOR rrcv = { 250, 0, 0 };
 			CVECTOR yycv = { 250, 250, 0 };
 
-			CVECTOR bbcol = mayBeColliding ? rrcv : yycv;
+			CVECTOR bbcol = car_data[loop1].hd.mayBeColliding ? rrcv : yycv;
 
 			VECTOR box_pointsy0[4] = {
-				{bb2->x0 * 16, bb2->y0 * 16, bb2->z0 * 16, 0},	// front left
-				{bb2->x1 * 16, bb2->y0 * 16, bb2->z0 * 16, 0},	// front right
-				{bb2->x1 * 16, bb2->y0 * 16, bb2->z1 * 16, 0},	// back right
-				{bb2->x0 * 16, bb2->y0 * 16, bb2->z1 * 16, 0},	// back left
+				{bb1->x0 * 16, bb1->y0 * 16, bb1->z0 * 16, 0},	// front left
+				{bb1->x1 * 16, bb1->y0 * 16, bb1->z0 * 16, 0},	// front right
+				{bb1->x1 * 16, bb1->y0 * 16, bb1->z1 * 16, 0},	// back right
+				{bb1->x0 * 16, bb1->y0 * 16, bb1->z1 * 16, 0},	// back left
 			};
 
 			Debug_AddLine(box_pointsy0[0], box_pointsy0[1], bbcol);
@@ -1842,10 +1742,10 @@ void CheckCarToCarCollisions(void)
 			Debug_AddLine(box_pointsy0[3], box_pointsy0[0], bbcol);
 
 			VECTOR box_pointsy1[4] = {
-				{bb2->x0 * 16, bb2->y1 * 16, bb2->z0 * 16, 0},	// front left
-				{bb2->x1 * 16, bb2->y1 * 16, bb2->z0 * 16, 0},	// front right
-				{bb2->x1 * 16, bb2->y1 * 16, bb2->z1 * 16, 0},	// back right
-				{bb2->x0 * 16, bb2->y1 * 16, bb2->z1 * 16, 0},	// back left
+				{bb1->x0 * 16, bb1->y1 * 16, bb1->z0 * 16, 0},	// front left
+				{bb1->x1 * 16, bb1->y1 * 16, bb1->z0 * 16, 0},	// front right
+				{bb1->x1 * 16, bb1->y1 * 16, bb1->z1 * 16, 0},	// back right
+				{bb1->x0 * 16, bb1->y1 * 16, bb1->z1 * 16, 0},	// back left
 			};
 
 			Debug_AddLine(box_pointsy1[0], box_pointsy1[1], bbcol);
@@ -1860,10 +1760,10 @@ void CheckCarToCarCollisions(void)
 		}
 #endif
 
-		bb2 = bb2 + 1;
-		iVar8 = iVar2;
+		bb1++;
+		loop1++;
 
-	} while (iVar2 < 20);
+	} while (loop1 < MAX_CARS);
 }
 
 
@@ -2232,12 +2132,12 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 					if (iVar3 < 21) 
 					{
 						if (iVar3 < 7) 
-							cp->thrust = ((cp->thrust * 6700) / 7000);
+							cp->thrust = (cp->thrust * 6700) / 7000;
 						else 
-							cp->thrust = ((cp->thrust * 7400) / 7000);
+							cp->thrust = (cp->thrust * 7400) / 7000;
 					}
 					else
-						cp->thrust = ((cp->thrust * 8000) / 7000);
+						cp->thrust = (cp->thrust * 8000) / 7000;
 				}
 			}
 
@@ -2320,7 +2220,8 @@ void TerminateSkidding(int player_id)
 	if (player_id < 2) 
 	{
 		channel = player[player_id].skidding.chan;
-		if (-1 < channel) 
+
+		if (channel > -1) 
 		{
 			StopChannel(channel);
 			UnlockChannel(player[player_id].skidding.chan);
@@ -2331,7 +2232,7 @@ void TerminateSkidding(int player_id)
 
 		channel = player[player_id].wheelnoise.chan;
 
-		if (-1 < channel) 
+		if (channel > -1) 
 		{
 			StopChannel(channel);
 			UnlockChannel(player[player_id].wheelnoise.chan);
@@ -2435,14 +2336,15 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	}
 
 	jump_debris(cp);
+
 	pWVar5 = cp->hd.wheel;
 	sample = 3;
 	do {
 		if (pWVar5->susCompression != 0)
 			bVar2 = true;
 
-		sample = sample + -1;
-		pWVar5 = pWVar5 + 1;
+		sample--;
+		pWVar5++;
 	} while (-1 < sample);
 
 	sample = 0;
@@ -2649,9 +2551,6 @@ char DebrisTimer = 0;
 // [D]
 void jump_debris(_CAR_DATA *cp)
 {
-	char cVar1;
-	unsigned char bVar2;
-
 	WHEEL *wheel;
 	int count;
 	VECTOR position;
@@ -2677,12 +2576,11 @@ void jump_debris(_CAR_DATA *cp)
 	{
 		cp->wasOnGround = 0;
 		DebrisTimer = 80;
+
 		nose_down(cp);
 	}
 
-	cVar1 = DebrisTimer-1;
-
-	if ((DebrisTimer != 0) && (bVar2 = DebrisTimer - 1, DebrisTimer = cVar1, bVar2 < 0x4b))
+	if (DebrisTimer != 0 && --DebrisTimer < 75)
 	{
 		memset(&velocity, 0, sizeof(velocity));
 
