@@ -3084,7 +3084,7 @@ void DeActivatePlayerPedestrian(PEDESTRIAN *pPed)
 		return;
 
 	if (cp->ap.model == 4) 
-		iVar2 = FindPointOfCollision(cp, (VECTOR *)&pPed->position);
+		iVar2 = FindPointOfCollision(cp, pPed);
 	else if (cp && TannerCanEnterCar(cp, distToCarSq))
 		iVar2 = 1;
 
@@ -3484,7 +3484,7 @@ void TannerCollision(PEDESTRIAN *pPed)
 	// End Line: 8378
 
 // [D]
-int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
+int FindPointOfCollision(_CAR_DATA *pCar, PEDESTRIAN* pPed)
 {
 	int iVar1;
 	uint uVar2;
@@ -3499,9 +3499,9 @@ int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos)
 	cd[0].length[0] = 120;
 	cd[0].length[1] = 12;
 
-	cd[0].x.vx = pPos->vx;
-	cd[0].x.vz = pPos->vz;
-	cd[0].theta = ((player[0].pPed)->dir).vy - 0x800U & 0xfff;
+	cd[0].x.vx = pPed->position.vx;
+	cd[0].x.vz = pPed->position.vz;
+	cd[0].theta = pPed->dir.vy - 0x800U & 0xfff;
 
 	cd[1].length[0] = car_cosmetics[pCar->ap.model].colBox.vz;
 	cd[1].length[1] = car_cosmetics[pCar->ap.model].colBox.vx;

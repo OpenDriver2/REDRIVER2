@@ -90,7 +90,7 @@ extern void PingInPedestrians(); // 0x0007047C
 
 extern void TannerCollision(PEDESTRIAN *pPed); // 0x00072EE4
 
-extern int FindPointOfCollision(_CAR_DATA *pCar, VECTOR *pPos); // 0x00070878
+extern int FindPointOfCollision(_CAR_DATA *pCar, PEDESTRIAN* pPed); // 0x00070878
 
 extern int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick); // 0x00070A9C
 
