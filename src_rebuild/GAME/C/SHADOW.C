@@ -1259,99 +1259,94 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+static int numcv;
+static int lastcv;
+static SVECTOR cv[12];
+
+// [D]
 int clipAgainstZ(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	SVECTOR *pSVar1;
-	SVECTOR *pSVar2;
-	undefined4 uVar3;
-	int iVar4;
-	int iVar5;
-	SVECTOR *pSVar6;
-	int iVar7;
-	SVECTOR *pSVar8;
-	uint uVar9;
-	int iVar10;
-	int iVar11;
+	SVECTOR *_curr;
+	SVECTOR *prev;
+	int _tmp;
+	int temp;
+	int iVar1;
+	int iVar2;
+	SVECTOR *dst;
+	int iVar3;
+	SVECTOR *curr;
+	uint flags;
+	int srccount;
+	int dstcount;
 
-	iVar11 = 0;
-	pSVar8 = &cv + lastcv;
-	pSVar6 = SVECTOR_ARRAY_000da940 + lastcv;
-	iVar10 = numcv + -1;
-	uVar9 = (uint)(0 < (pSVar8 + numcv * 0x1fffffff)[1].vz) << 1;
-	pSVar2 = pSVar8 + numcv * 0x1fffffff + 1;
+	dstcount = 0;
+
+	curr = cv + lastcv;
+	dst = cv + lastcv + 2;
+	srccount = numcv-1;
+
+	flags = (uint)(0 < (curr + numcv * 0x1fffffff)[1].vz) << 1;
+	prev = curr + numcv * 0x1fffffff + 1;
 	do {
-		pSVar1 = pSVar8;
-		if (iVar10 < 0) {
-			numcv = iVar11;
+		_curr = curr;
+		if (srccount < 0) 
+		{
+			numcv = dstcount;
 			lastcv = lastcv + 2;
 			return 0;
 		}
-		iVar7 = (int)pSVar1->vz;
-		uVar9 = (int)uVar9 >> 1;
-		if (0 < iVar7) {
-			uVar9 = uVar9 | 2;
-		}
-		if (uVar9 == 1) {
-			iVar5 = (int)pSVar2->vz;
-			iVar4 = iVar5 - iVar7;
-			if (iVar4 == 0) {
-				trap(7);
-			}
-			pSVar6->vx = (short)((pSVar1->vx * iVar5 - pSVar2->vx * iVar7) / iVar4);
-			if (iVar4 == 0) {
-				trap(7);
-			}
-			pSVar6->vy = (short)((pSVar1->vy * iVar5 - pSVar2->vy * iVar7) / iVar4);
-			if (iVar4 == 0) {
-				trap(7);
-			}
-			pSVar6->pad = (short)((pSVar1->pad * iVar5 - pSVar2->pad * iVar7) / iVar4);
-			pSVar6->vz = 0;
+
+		iVar3 = _curr->vz;
+		flags = flags >> 1;
+
+		if (0 < iVar3)
+			flags |= 2;
+
+		if (flags == 1) 
+		{
+			iVar2 = (int)prev->vz;
+			iVar1 = iVar2 - iVar3;
+			dst->vx = (short)((_curr->vx * iVar2 - prev->vx * iVar3) / iVar1);
+			dst->vy = (short)((_curr->vy * iVar2 - prev->vy * iVar3) / iVar1);
+			dst->pad = (short)((_curr->pad * iVar2 - prev->pad * iVar3) / iVar1);
+			dst->vz = 0;
 		LAB_00076ca4:
-			pSVar6 = pSVar6 + -1;
-			iVar11 = iVar11 + 1;
+			dst--;
+			dstcount++;
 		}
-		else {
-			if (uVar9 < 2) {
-				if (uVar9 != 0) {
-				LAB_00076c84:
-					uVar3 = *(undefined4 *)&pSVar1->vz;
-					*(undefined4 *)pSVar6 = *(undefined4 *)pSVar1;
-					*(undefined4 *)&pSVar6->vz = uVar3;
-					goto LAB_00076ca4;
-				}
-			}
-			else {
-				if (uVar9 != 2) goto LAB_00076c84;
-				iVar5 = (int)pSVar2->vz;
-				iVar4 = iVar5 - iVar7;
-				if (iVar4 == 0) {
-					trap(7);
-				}
-				pSVar6->vx = (short)((pSVar1->vx * iVar5 - pSVar2->vx * iVar7) / iVar4);
-				if (iVar4 == 0) {
-					trap(7);
-				}
-				pSVar6->vy = (short)((pSVar1->vy * iVar5 - pSVar2->vy * iVar7) / iVar4);
-				if (iVar4 == 0) {
-					trap(7);
-				}
-				pSVar6->pad = (short)((pSVar1->pad * iVar5 - pSVar2->pad * iVar7) / iVar4);
-				pSVar6->vz = 0;
-				uVar3 = *(undefined4 *)&pSVar1->vz;
-				*(undefined4 *)(pSVar6 + -1) = *(undefined4 *)pSVar1;
-				*(undefined4 *)&pSVar6[-1].vz = uVar3;
-				pSVar6 = pSVar6 + -2;
-				iVar11 = iVar11 + 2;
+		else if (flags < 2)
+		{
+			if (flags != 0)
+			{
+			LAB_00076c84:
+				temp = *(int *)&_curr->vz;
+				dst->vx = prev->vx;
+				*(int *)&dst->vz = temp;
+				goto LAB_00076ca4;
 			}
 		}
-		iVar10 = iVar10 + -1;
-		pSVar8 = pSVar1 + -1;
-		pSVar2 = pSVar1;
-	} while (true);*/
+		else
+		{
+			if (flags != 2)
+				goto LAB_00076c84;
+
+			iVar2 = (int)prev->vz;
+			iVar1 = iVar2 - iVar3;
+
+			dst->vx = (short)((_curr->vx * iVar2 - prev->vx * iVar3) / iVar1);
+			dst->vy = (short)((_curr->vy * iVar2 - prev->vy * iVar3) / iVar1);
+			dst->pad = (short)((_curr->pad * iVar2 - prev->pad * iVar3) / iVar1);
+			dst->vz = 0;
+			_tmp = *(int *)&_curr->vz;
+			(dst - 1)->vx = prev->vx;
+			*(int *)&dst[-1].vz = _tmp;
+			dst -= 2;
+			dstcount += 2;
+		}
+
+		srccount--;
+		prev = curr--;
+	} while (true);
 }
 
 
@@ -1572,10 +1567,6 @@ void clippedPoly(void)
 		// Start line: 3251
 	/* end block 2 */
 	// End Line: 3252
-
-static int numcv;
-static int lastcv;
-static SVECTOR cv[12];
 
 // [D]
 void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, int LightSortCorrect)

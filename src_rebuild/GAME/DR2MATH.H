@@ -1,6 +1,8 @@
 #ifndef DR2MATH_H
 #define DR2MATH_H
 
+#include "ABS.H"
+
 // Driver 2 math definitions
 
 #define ONE				4096
