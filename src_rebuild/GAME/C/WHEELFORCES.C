@@ -338,7 +338,7 @@ void StepOneCar(_CAR_DATA *cp)
 
 		FindSurfaceD2((VECTOR *)pointPos, (VECTOR *)surfaceNormal, (VECTOR *)&surfacePoint, &SurfacePtr);
 
-		if((surfacePoint[1] - pointPos[1]) - 1 < 799)
+		if((surfacePoint[1] - pointPos[1]) - 1U < 799)
 		{
 			iVar4 = FIXEDH((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
 
@@ -598,7 +598,7 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 
 	if (cp->wheelspin !=  0)
 	{
-		cp->thrust = FIXED(cp->ap.carCos->powerRatio * 5000);
+		cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 5000);
 	}
 
 	if ((cp->thrust < 0) && (0xa3d7 < cp->hd.wheel_speed) && (cl->aggressive != 0))
@@ -1158,9 +1158,10 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			if (-1 < cp->thrust)
 				goto LAB_00082b9c;
 
-			uVar3 = 0xffed0000;
+			uVar3 = -1245184;
 		}
-		uVar3 = uVar3 | 0x4000;
+
+		uVar3 += 0x4000;
 	}
 	else 
 	{
