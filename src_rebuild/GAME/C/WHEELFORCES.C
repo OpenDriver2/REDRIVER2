@@ -808,7 +808,7 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA *cp, CAR_LOCALS *cl)
 	// End Line: 1173
 
 // [D]
-void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
+void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 {
 	int oldCompression;
 	short sVar1;
@@ -853,7 +853,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 	oldSpeed = cp->hd.speed * 3 >> 1;
 
-	if (oldSpeed < 0x20)
+	if (oldSpeed < 32)
 		oldSpeed = oldSpeed * -72 + 3696;
 	else
 		oldSpeed = 1424 - oldSpeed;
@@ -893,7 +893,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 		if (SurfacePtr != NULL)
 			wheel->onGrass = SurfacePtr->surface == 4;
 		else
-			wheel->onGrass = false;
+			wheel->onGrass = 0;
 
 		if (SurfacePtr)
 		{
@@ -907,10 +907,10 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 					break;
 				default:
 					wheel->surface = 0;
-			}
+				}
 
-			switch (SurfacePtr->surface)
-			{
+				switch (SurfacePtr->surface)
+				{
 				case 8:
 					wheel->surface |= 2;
 					break;
@@ -933,11 +933,11 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 		if (newCompression < 0)
 			newCompression = 0;
-	
+
 		if (newCompression > 800)
 			newCompression = 12;
 
-		if (cp->controlType == 1) 
+		if (cp->controlType == 1)
 		{
 			chan = newCompression - oldCompression;
 
@@ -947,7 +947,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			if (chan > 12 && (i & 1U) != 0)
 			{
 				chan = GetFreeChannel();
-				if (NumPlayers > 1 && NoPlayerControl == 0) 
+				if (NumPlayers > 1 && NoPlayerControl == 0)
 					SetPlayerOwnsChannel(chan, player_id);
 
 				Start3DSoundVolPitch(chan, 1, 5, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2500, 400);
@@ -956,10 +956,10 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 			if (newCompression < 85)
 			{
-				if (newCompression > 48) 
+				if (newCompression > 48)
 					SetPadVibration(*cp->ai.padid, 3);
 			}
-			else 
+			else
 			{
 				SetPadVibration(*cp->ai.padid, 2);
 			}
@@ -968,7 +968,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 		if (newCompression > 42)
 			newCompression = 42;
 
-		if (newCompression == 0 && oldCompression == 0) 
+		if (newCompression == 0 && oldCompression == 0)
 		{
 			wheel->susCompression = 0;
 		}
@@ -986,20 +986,20 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 			susForce = newCompression * 230 - oldCompression * 100;
 
-			if (wheel->locked == 0) 
+			if (wheel->locked == 0)
 			{
-				if ((i & 1U) == 0) 
+				if ((i & 1U) == 0)
 				{
 					lfz = -sdx;
 					lfx = sdz;
 				}
-				else 
+				else
 				{
 					lfz = -cdx;
 					lfx = cdz;
 				}
 			}
-			else 
+			else
 			{
 				uVar3 = ratan2(pointVel[0] >> 6, pointVel[2] >> 6);
 
@@ -1015,7 +1015,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 				lfx = (int)rcossin_tbl[(uVar3 & 0xfff) * 2];
 
-				if (iVar4 + iVar5 < 8000) 
+				if (iVar4 + iVar5 < 8000)
 				{
 					surfaceNormal[0] = 0;
 					surfaceNormal[1] = 0x1000;
@@ -1030,14 +1030,14 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			if (slidevel < 0)
 				slidevel = -slidevel;
 
-			if (iVar9 < 0xc351) 
+			if (iVar9 < 0xc351)
 			{
 				if (iVar9 < -50000)
 				{
 				LAB_00082604:
 					local_t0_1700 = -12500;
 				}
-				else 
+				else
 				{
 					local_t0_1700 = FIXEDH(oldSpeed * iVar9);
 					if (12500 < local_t0_1700)
@@ -1047,10 +1047,10 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 						goto LAB_00082604;
 				}
 			}
-			else 
+			else
 			{
 			LAB_000825f4:
-				local_t0_1700 = 0x30d4;
+				local_t0_1700 = 12500;
 			}
 
 			if ((i & 1U) == 0)
@@ -1065,10 +1065,10 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 						force.vz = sdz * cp->thrust;
 					}
 				}
-				else 
+				else
 				{
 					sidevel = (local_v0_1748 >> 0xd) + sidevel >> 1;
-					local_v0_1852 = FixFloorSigned(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
+					local_v0_1852 = FixHalfRound(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
 					force.vx = local_v0_1852 * sdz;
 					force.vz = -local_v0_1852 * sdx;
 				}
@@ -1083,13 +1083,13 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 				{
 					sidevel = FIXEDH(rearFS * local_t0_1700);
 
-					if (handlingType[cp->hndType].autoBrakeOn != 0 && 0 < sidevel * cp->wheel_angle) 
+					if (handlingType[cp->hndType].autoBrakeOn != 0 && 0 < sidevel * cp->wheel_angle)
 						cp->hd.autoBrake = -1;
 
 					force.vx = -lfz * cp->thrust;
 					force.vz = lfx * cp->thrust;
 				}
-				else 
+				else
 				{
 					sidevel = FixHalfRound(frontFS * local_t0_1700, 14);
 				}
@@ -1101,7 +1101,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			force.vx = force.vx + (susForce * surfaceNormal[0] - sidevel * lfx) - cl->vel[0] * 12;
 			force.vz = force.vz + (susForce * surfaceNormal[2] - sidevel * lfz) - cl->vel[2] * 12;
 
-			if ((wheel->surface & 7) == 1) 
+			if ((wheel->surface & 7) == 1)
 			{
 				force.vx = force.vx - cl->vel[0] * 75;
 				force.vz = force.vz - cl->vel[2] * 75;
@@ -1128,7 +1128,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 			force.vx = FIXEDH(force.vx) * friction_coef >> 0xc;
 			force.vz = FIXEDH(force.vz) * friction_coef >> 0xc;
 
-			if (cp->controlType == 3) 
+			if (cp->controlType == 3)
 			{
 				if (gCopDifficultyLevel == 2)
 					wheelPos[1] = FixFloorSigned(wheelPos[1] * 12, 5);
@@ -1152,7 +1152,7 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 	if (cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0)
 	{
 		uVar3 = 0x1a0000;
-		if (cp->thrust < 1) 
+		if (cp->thrust < 1)
 		{
 			uVar3 = 0;
 			if (-1 < cp->thrust)
@@ -1163,16 +1163,14 @@ void AddWheelForcesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl)
 
 		uVar3 += 0x4000;
 	}
-	else 
+	else
 	{
-		uVar3 = FixFloorSigned(cl->vel[0], 6) * FixFloorSigned(cdx,  6) + FixFloorSigned(cl->vel[2], 6) * FixFloorSigned(cdz, 6);
+		uVar3 = FixFloorSigned(cl->vel[0], 6) * FixFloorSigned(cdx, 6) + FixFloorSigned(cl->vel[2], 6) * FixFloorSigned(cdz, 6);
 	}
 
 LAB_00082b9c:
 	cp->hd.wheel_speed = uVar3;
 }
-
-
 
 
 
