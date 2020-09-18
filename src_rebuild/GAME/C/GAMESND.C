@@ -916,9 +916,7 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 	if (iVar8 < 1) 
 	{
-		iVar9 = -iVar8;
-
-		sVar7 = FixFloorSigned(iVar9, 11);
+		sVar7 = FixFloorSigned(-iVar8, 11);
 		uVar6 = 0;
 		iVar9 = uVar10 * 4;
 
@@ -1013,8 +1011,9 @@ int maxrevrise = 1600;
 // [D]
 void ControlCarRevs(_CAR_DATA *cp)
 {
-	int player_id, acc, spin, oldvol;
-	int oldRevs, newRevs, desiredRevs;
+	char spin;
+	int player_id, acc, oldvol;
+	short oldRevs, newRevs, desiredRevs;
 
 	acc = cp->thrust;
 	spin = cp->wheelspin;
@@ -1026,8 +1025,6 @@ void ControlCarRevs(_CAR_DATA *cp)
 	if (spin == 0 && (cp->hd.wheel[1].susCompression || cp->hd.wheel[3].susCompression || acc == 0))
 	{
 		desiredRevs = GetEngineRevs(cp);
-		if (desiredRevs > 32767)
-			desiredRevs = 32767;
 	}
 	else
 	{
@@ -1070,7 +1067,7 @@ void ControlCarRevs(_CAR_DATA *cp)
 			player[player_id].idlevol += 200;
 			player[player_id].revsvol = acc - 200;
 
-			if (-6000 < player[player_id].idlevol)
+			if (player[player_id].idlevol > -6000)
 				player[player_id].idlevol = -6000;
 
 			if (player[player_id].revsvol < -10000)
@@ -1078,9 +1075,9 @@ void ControlCarRevs(_CAR_DATA *cp)
 		}
 		else
 		{
-			int sVar4 = -6750;
+			int revsmax = -6750;
 			if (acc != 0)
-				sVar4 = -5500;
+				revsmax = -5500;
 
 			if (spin == 0)
 				acc = -64;
@@ -1099,8 +1096,8 @@ void ControlCarRevs(_CAR_DATA *cp)
 			if (player[player_id].idlevol < -10000)
 				player[player_id].idlevol = -10000;
 
-			if (sVar4 < player[player_id].revsvol)
-				player[player_id].revsvol = sVar4;
+			if (player[player_id].revsvol > revsmax)
+				player[player_id].revsvol = revsmax;
 		}
 	}
 }
