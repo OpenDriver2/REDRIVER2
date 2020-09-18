@@ -24,6 +24,7 @@
 #include "GLAUNCH.H"
 #include "SHADOW.H"
 #include "PLAYERS.H"
+#include "DR2ROADS.H"
 
 #include "INLINE_C.H"
 #include "STRINGS.H"
@@ -65,7 +66,7 @@
 	// End Line: 2001
 
 
-// [D]
+// [D] [T]
 void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 {
 	int ty;
@@ -156,7 +157,7 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	/* end block 4 */
 	// End Line: 2179
 
-// [D]
+// [D] [T]
 void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 {
 	int dz;
@@ -217,7 +218,7 @@ void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 SVECTOR delta = { 0 };
 int doWheels = 1;
 
-// [D]
+// [D] [T]
 void UpdateCarPoints(CAR_COSMETICS *carCos)
 {
 	SVECTOR *groundCollPoints;
@@ -289,7 +290,7 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 	/* end block 4 */
 	// End Line: 5978
 
-// [D]
+// [D] [T]
 void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 {
 	delta.vx = 0;
@@ -616,7 +617,7 @@ int ghost_mode = 0;
 int playerghost = 0;
 int playerhitcopsanyway = 0;
 
-// [D]
+// [D] [T]
 void GlobalTimeStep(void)
 {
 	static union RigidBodyState _tp[MAX_CARS]; // offset 0x0
@@ -1163,7 +1164,7 @@ void GlobalTimeStep(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void SetShadowPoints(_CAR_DATA *c0)
 {
 	int i;
@@ -1252,7 +1253,7 @@ void SetShadowPoints(_CAR_DATA *c0)
 	/* end block 4 */
 	// End Line: 4834
 
-// [D]
+// [D] [T]
 void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 {
 	int xx;
@@ -1330,7 +1331,7 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	/* end block 3 */
 	// End Line: 5020
 
-// [D]
+// [D] [T]
 void initOBox(_CAR_DATA *cp)
 {
 	SVECTOR boxDisp;
@@ -1416,7 +1417,7 @@ void initOBox(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 3709
 
-// [D]
+// [D] [T]
 void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 {
 	int sm;
@@ -1481,7 +1482,7 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 3751
 
-// [D]
+// [D] [T]
 void StepCarPhysics(_CAR_DATA *cp)
 {
 	_HANDLING_TYPE *hp;
@@ -1553,7 +1554,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitialiseCarHandling(void)
 {
 	return;
@@ -1616,7 +1617,7 @@ void InitialiseCarHandling(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 
-// [D]
+// [D] [T]
 void CheckCarToCarCollisions(void)
 {
 	int fz;
@@ -1650,7 +1651,7 @@ void CheckCarToCarCollisions(void)
 		{
 			cp++;
 			bb++;
-			loop1--;
+			loop1++;
 			continue;
 		}
 
@@ -1847,63 +1848,9 @@ void CheckCarToCarCollisions(void)
 	/* end block 2 */
 	// End Line: 5532
 
-#include "DR2ROADS.H"
-
+// [D] [T]
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-#if 0
-	extern int gInGameCutsceneActive;
-	if (gInGameCutsceneActive == 0 && cp->controlType == 1)
-	{
-		extern MATRIX camera_matrix;
-
-		// [A]
-		if ((pad & 4) == 0) {
-
-			if ((pad & 0x2000) != 0)
-			{
-				//RotMatrixY(3200, &cp->hd.where);
-				//cp->hd.direction -= 30;
-				//cp->st.n.angularVelocity[1] += 5000;
-			}
-
-			if ((pad & 0x8000) != 0)
-			{
-				//cp->hd.direction += 30;
-				//RotMatrixY(-3200, &cp->hd.where);
-				//cp->st.n.angularVelocity[1] -= 5000;
-			}
-
-			if ((pad & 0x40) != 0)
-			{
-				//cp->st.n.angularVelocity
-				//cp->st.n.linearVelocity[1] += 12150;
-			}
-
-			if ((pad & 0x80) != 0)
-			{
-				//cp->st.n.linearVelocity[1] -= 12150;
-			}
-
-			if ((pad & 0x1000) != 0)
-			{
-				cp->st.n.linearVelocity[1] += 10000;
-
-				//cp->st.n.linearVelocity[0] += camera_matrix.m[0][2];
-				//cp->st.n.linearVelocity[2] += camera_matrix.m[2][2];
-				//cp->hd.where.t[0] += camera_matrix.m[0][2] / 30;
-				//cp->hd.where.t[2] += camera_matrix.m[2][2] / 30;
-			}
-
-			if ((pad & 0x4000) != 0)
-			{
-				//cp->hd.where.t[0] -= camera_matrix.m[0][2] / 30;
-				//cp->hd.where.t[2] -= camera_matrix.m[2][2] / 30;
-			}
-		}
-
-	}
-#endif
 	char cVar1;
 	short sVar2;
 	int iVar3;
@@ -1920,17 +1867,17 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	int_steer = PadSteer;
 	player_id = GetPlayerId(cp);
 
-	// control player
+	// Handle player car controls...
 	if (cp->controlType == 1) 
 	{
+		// handle car leaving
 		if ((pad & 0x1010) == 0x1010 && player_id > -1)
 		{
 			if (!TannerStuckInCar(1, player_id))
 			{
 				if (player[player_id].dying == 0)
 				{
-					// [A] play as jericho
-					if (ActiveCheats.cheat12 && (GameLevel == 1 || GameLevel == 2))
+					if (ActiveCheats.cheat12 && (GameLevel == 1 || GameLevel == 2))		// [A] play as Jericho cheat
 						whoExit = OTHER_MODEL;
 
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, whoExit);
@@ -1938,21 +1885,25 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			}
 			else if (lockAllTheDoors != 0)
 			{
+				// this is to show message
 				gLockPickingAttempted = 1;
 			}
 		}
 
+		// Lock car if it has mission lock or fully damaged
 		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0) 
 		{
 			pad = 0x10;
 
-			if (0x9000 < cp->hd.wheel_speed)
+			// apply brakes
+			if (cp->hd.wheel_speed > 0x9000)
 				pad = 0x80;
 
 			int_steer = 0;
 			use_analogue = 1;
 		}
 
+		// turn of horning
 		if (player_id > -1)
 		{
 			if (CarHasSiren(cp->ap.model) == 0)
@@ -1965,6 +1916,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	if (cp->hd.autoBrake > 90)
 		cp->hd.autoBrake = 90;
 
+	// handle burnouts or handbrake
 	if ((pad & 0x10) == 0)
 	{
 		cp->handbrake = 0;
@@ -1974,6 +1926,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		else 
 			cp->wheelspin = 1;
 
+		// continue without burnout
 		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 0x6e958)
 		{
 			cp->wheelspin = 0;
@@ -1985,6 +1938,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		cp->handbrake = 1;
 	}
 
+	// handle steering
 	if (use_analogue == 0)
 	{
 		if ((pad & 4) == 0)
@@ -2054,6 +2008,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			cp->hd.autoBrake++;
 	}
 
+	// center steering
 	if ((pad & 0xa000) == 0)
 	{
 		if (cp->wheel_angle < -64) 
@@ -2070,29 +2025,36 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	{
 		if ((pad & 0x80) != 0) 
 		{
-			iVar3 = FIXEDH(FixFloorSigned(cp->hd.wheel_speed * 1500, 10));
+			int rws;
 
-			if (-iVar3 < 0x17) 
-				sVar2 = -5000;
+			// brakes
+			rws = FIXEDH(FixFloorSigned(cp->hd.wheel_speed * 1500, 10));
+
+			if (-rws < 23)
+				rws = -5000;
 			else
-				sVar2 = ((iVar3 + 278) * -4778) >> 8;
+				rws = ((rws + 278) * -4778) >> 8;
 
-			cp->thrust = FIXEDH(sVar2 * cp->ap.carCos->powerRatio);
+			cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * rws);
 		}
 		else if ((pad & 0x40) != 0)
 		{
 			if (cp->hndType == 5)
 			{
-				iVar7 = car_data[player[0].playerCarId].hd.where.t[0] - cp->hd.where.t[0] >> 10;
-				iVar3 = car_data[player[0].playerCarId].hd.where.t[2] - cp->hd.where.t[2] >> 10;
+				// rubber band freeroamer.
+				// accelerate faster if closer to player
+				int dx, dz, dist;
 
-				iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
+				dx = car_data[player[0].playerCarId].hd.where.t[0] - cp->hd.where.t[0] >> 10;
+				dz = car_data[player[0].playerCarId].hd.where.t[2] - cp->hd.where.t[2] >> 10;
 
-				if (iVar3 < 41)
+				dist = dx * dx + dz * dz;
+
+				if (dist < 41)
 				{
-					if (iVar3 < 21) 
+					if (dist < 21)
 					{
-						if (iVar3 > 9) 
+						if (dist > 9)
 							cp->thrust = 4900;
 						else
 							cp->thrust = 6000;
@@ -2110,28 +2072,34 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 			if (cp->controlType == 1) 
 			{
-				iVar3 = -1;
+				_CAR_DATA* tp;
+				int targetCarId, cx, cz, chase_square_dist;
+
+				targetCarId = -1;
 
 				if (player[0].playerCarId == cp->id)
-					iVar3 = player[0].targetCarId;
+					targetCarId = player[0].targetCarId;
 				else if (player[1].playerCarId == cp->id)
-					iVar3 = player[1].targetCarId;
+					targetCarId = player[1].targetCarId;
 				else
-					iVar3 = -1;
+					targetCarId = -1;
 
-				if (iVar3 != -1) 
+				// apply rubber banding to player car depending on distance from target car
+				if (targetCarId != -1)
 				{
+					tp = &car_data[targetCarId];
+
 					if (3050 < cp->ap.carCos->powerRatio) 
-						cp->thrust = FIXEDH(car_data[iVar3].ap.carCos->powerRatio * 4915);
+						cp->thrust = FIXEDH(tp->ap.carCos->powerRatio * 4915);
 
-					iVar7 = cp->hd.where.t[0] - car_data[iVar3].hd.where.t[0] >> 10;
-					iVar3 = cp->hd.where.t[2] - car_data[iVar3].hd.where.t[2] >> 10;
+					cx = cp->hd.where.t[0] - tp->hd.where.t[0] >> 10;
+					cz = cp->hd.where.t[2] - tp->hd.where.t[2] >> 10;
 
-					iVar3 = iVar7 * iVar7 + iVar3 * iVar3;
+					chase_square_dist = cx * cx + cz * cz;
 
-					if (iVar3 < 21) 
+					if (chase_square_dist < 21)
 					{
-						if (iVar3 < 7) 
+						if (chase_square_dist < 7)
 							cp->thrust = (cp->thrust * 6700) / 7000;
 						else 
 							cp->thrust = (cp->thrust * 7400) / 7000;
@@ -2181,7 +2149,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitSkidding(void)
 {
 	int i;
@@ -2212,7 +2180,7 @@ void InitSkidding(void)
 	/* end block 2 */
 	// End Line: 6289
 
-// [D]
+// [D] [T]
 void TerminateSkidding(int player_id)
 {
 	int channel;
@@ -2311,190 +2279,185 @@ char rear_only = 0;
 char continuous_track = 0;
 int last_track_state = -1;
 
-// [D]
+// [D] [T]
 void CheckCarEffects(_CAR_DATA *cp, int player_id)
 {
-	unsigned char uVar1;
-	bool bVar2;
-	bool bVar3;
 	int channel;
-	int uVar4;
-	WHEEL *pWVar5;
-	int iVar6;
-	int uVar7;
 	int sample;
-	char cVar8;
 
-	bVar2 = false;
-	bVar3 = false;
-	uVar1 = cp->controlType;
+	int skidsound;
+	int cnt;
+	int wheels_on_ground;
+	char lay_down_tracks;
+	char desired_skid;
+	char desired_wheel;
 
-	if (uVar1 != 1 && uVar1 != 4 && uVar1 != 7) 
+	wheels_on_ground = 0;
+	lay_down_tracks = 0;
+
+	if (cp->controlType != 1 && cp->controlType != 4 && cp->controlType != 7)
 	{
 		TerminateSkidding(player_id);
 		return;
 	}
 
+	// PHYSICS! jumping effects, also make car nose down
 	jump_debris(cp);
 
-	pWVar5 = cp->hd.wheel;
-	sample = 3;
+	cnt = 0;
 	do {
-		if (pWVar5->susCompression != 0)
-			bVar2 = true;
+		if (cp->hd.wheel[cnt].susCompression != 0)
+			wheels_on_ground = 1;
 
-		sample--;
-		pWVar5++;
-	} while (-1 < sample);
+		cnt++;
+	} while (cnt < 4);
 
-	sample = 0;
-	if (bVar2) 
+	skidsound = 0;
+
+	// make tyre tracks and skid sound if needed
+	if (wheels_on_ground) 
 	{
-		if (cp->wheelspin == 0) 
+		if (ABS(cp->hd.rear_vel) > 11100 || cp->wheelspin)
 		{
-			channel = cp->hd.rear_vel;
-			if (channel < 0)
-				channel = -channel;
+			rear_only = 1;
+			lay_down_tracks = true;
 
-			if (channel < 11101) 
-				goto LAB_00056474;
+			if (cp->wheelspin == 0)
+				skidsound = (ABS(cp->hd.rear_vel) - 11100) / 2 + 1;
+			else
+				skidsound = 13000;
+
+			if (skidsound > 13000)
+				skidsound = 13000;
 		}
-
-		rear_only = 1;
-
-		bVar3 = true;
-		if (cp->wheelspin == 0) 
+		else if (ABS(cp->hd.front_vel) > 11100)
 		{
-			sample = cp->hd.rear_vel;
-			if (sample < 0)
-				sample = -sample;
-
-			sample = (sample-11100) / 2 + 1;
-
-			if (sample < 13001) 
-				goto LAB_00056474;
-		}
-
-		sample = 13000;
-	}
-
-LAB_00056474:
-	channel = cp->hd.front_vel;
-
-	if (channel < 0)
-		channel = -channel;
-
-	if (11100 < channel)
-	{
-		rear_only = 0;
-		bVar3 = true;
-	}
-
-	cVar8 = -1;
-
-	if (((sample != 0) && (((cp->hd.wheel[1].surface & 0x80) == 0 || ((cp->hd.wheel[3].surface & 0x80) == 0)))) && (cVar8 = 11, gWeather - 1U < 2))
-	{
-		cVar8 = -1;
-	}
-
-	if (cVar8 == player[player_id].skidding.sound) 
-	{
-	LAB_000565b4:
-		if ((-1 < player[player_id].skidding.sound) && (channel = (int)player[player_id].skidding.chan, -1 < channel)) 
-		{
-			iVar6 = (sample + -10000) * 3;
-			//if (iVar6 < 0)
-			//	iVar6 = iVar6 + 3;
-
-			SetChannelPosition3(channel, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, (iVar6 / 4) - 5000, (sample * 1024) / 13000 + 3072 + player_id * 8, 0);
+			rear_only = 0;
+			lay_down_tracks = true;
 		}
 	}
-	else 
-	{
-		channel = (int)player[player_id].skidding.chan;
-		player[player_id].skidding.sound = cVar8;
 
-		if (-1 < channel) 
+	desired_skid = -1;
+
+	// should be on asphalt
+	if (skidsound != 0 && ((cp->hd.wheel[1].surface & 0x80) == 0 || (cp->hd.wheel[3].surface & 0x80) == 0))
+	{
+		if (gWeather - 1U < 2)
+			desired_skid = -1;
+		else
+			desired_skid = 11;
+	}
+
+	// play skid sound
+	if (desired_skid != player[player_id].skidding.sound)
+	{
+		player[player_id].skidding.sound = desired_skid;
+
+		if (player[player_id].skidding.chan > -1)
 		{
-			StopChannel(channel);
+			StopChannel(player[player_id].skidding.chan);
 			UnlockChannel(player[player_id].skidding.chan);
+
 			player[player_id].skidding.chan = -1;
 		}
 
-		channel = player[player_id].skidding.sound;
-		if (-1 < channel) 
+		if (player[player_id].skidding.sound > -1)
 		{
-			channel = StartSound(-1, 1, channel, sample-10000, 0x1000);
+			channel = StartSound(-1, 1, player[player_id].skidding.sound, skidsound - 10000, 0x1000);
+
 			player[player_id].skidding.chan = channel;
 			LockChannel(channel);
 
-			if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
-				SetPlayerOwnsChannel((int)player[player_id].skidding.chan, (char)player_id);
-			goto LAB_000565b4;
+			if (NumPlayers > 1 && NoPlayerControl == 0) 
+				SetPlayerOwnsChannel(player[player_id].skidding.chan, player_id);
 		}
 	}
-	sample = -1;
-	if (bVar2 && (10 < cp->hd.speed))
+
+	// update skidding sound
+	if (player[player_id].skidding.sound > -1 && player[player_id].skidding.chan > -1)
 	{
-		uVar4 = cp->hd.wheel[3].surface & 7;
-		uVar7 = cp->hd.wheel[1].surface & 7;
-
-		if (uVar4 < uVar7)
-			uVar4 = uVar7;
-
-		sample = 0xd;
-
-		if ((1 < gWeather - 1U) && (sample = -1, uVar4 != 0))
-			sample = uVar4 + 12;
+		SetChannelPosition3(player[player_id].skidding.chan,
+			(VECTOR*)cp->hd.where.t,
+			cp->st.n.linearVelocity,
+			(((skidsound - 10000) * 3) / 4) - 5000,
+			(skidsound * 1024) / 13000 + 3072 + player_id * 8, 0);
 	}
 
-	if (sample != player[player_id].wheelnoise.sound)
-	{
-		channel = player[player_id].wheelnoise.chan;
-		player[player_id].wheelnoise.sound = sample;
+	// pick best wheel
+	desired_wheel = -1;
 
-		if (-1 < channel)
+	if (wheels_on_ground && cp->hd.speed > 10)
+	{
+		int wnse, wheel2;
+
+		wnse = cp->hd.wheel[3].surface & 7;
+		wheel2 = cp->hd.wheel[1].surface & 7;
+
+		if (wheel2 > wnse)
+			wnse = wheel2;
+
+		if (gWeather - 1U > 1)
 		{
-			StopChannel(channel);
+			if (wnse != 0)
+				desired_wheel = wnse + 12;
+			else
+				desired_wheel = -1;
+		}
+		else
+			desired_wheel = 13;
+	}
+
+	// play noise sound
+	if (desired_wheel != player[player_id].wheelnoise.sound)
+	{
+		player[player_id].wheelnoise.sound = desired_wheel;
+
+		if (player[player_id].wheelnoise.chan > -1)
+		{
+			StopChannel(player[player_id].wheelnoise.chan);
 			UnlockChannel(player[player_id].wheelnoise.chan);
 
 			player[player_id].wheelnoise.chan = -1;
 		}
 
-		sample = player[player_id].wheelnoise.sound;
+		if (player[player_id].wheelnoise.sound > -1)
+		{
+			channel = StartSound(-1, 1, player[player_id].wheelnoise.sound, -200, 4096);
 
-		if (sample < 0)
-			goto LAB_00056814;
+			player[player_id].wheelnoise.chan = channel;
+			LockChannel(channel);
 
-		sample = StartSound(-1, 1, sample, -200, 4096);
-
-		player[player_id].wheelnoise.chan = sample;
-		LockChannel(sample);
-
-		if ((1 < NumPlayers) && (NoPlayerControl == 0)) 
-			SetPlayerOwnsChannel(player[player_id].wheelnoise.chan, player_id);
+			if (NumPlayers > 1 && NoPlayerControl == 0)
+				SetPlayerOwnsChannel(player[player_id].wheelnoise.chan, player_id);
+		}
 	}
-	if ((-1 < player[player_id].wheelnoise.sound) && (sample = player[player_id].wheelnoise.chan, -1 < sample))
+
+	// update wheel noise
+	if (player[player_id].wheelnoise.sound > -1 && player[player_id].wheelnoise.chan > -1)
 	{
-		iVar6 = cp->hd.speed;
+		int pitch, spd;
 
-		channel = iVar6 * 27;
+		spd = cp->hd.speed;
+		if (spd > 100)
+			spd = 100;
 
-		if (3584 < channel)
-			channel = 3584;
+		pitch = spd * 27;
 
-		if (100 < iVar6)
-			iVar6 = 100;
+		if (pitch > 3584)
+			pitch = 3584;
 
-		SetChannelPosition3(sample, (VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, iVar6 * 50-10000, channel + player_id * 8, 0);
+		SetChannelPosition3(player[player_id].wheelnoise.chan, 
+							(VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, 
+							spd * 50-10000,
+							pitch + player_id * 8, 0);
 	}
 
-LAB_00056814:
 	player[player_id].onGrass = 0;
 
 	GetTyreTrackPositions(cp, player_id);
 
-	if (bVar3) 
+	// make tyre tracks
+	if (lay_down_tracks) 
 	{
 		continuous_track = last_track_state == rear_only;
 
@@ -2548,7 +2511,7 @@ LAB_00056814:
 
 char DebrisTimer = 0;
 
-// [D]
+// [D] [T]
 void jump_debris(_CAR_DATA *cp)
 {
 	WHEEL *wheel;
@@ -2615,7 +2578,7 @@ void jump_debris(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 7462
 
-// [D]
+// [D] [T]
 void nose_down(_CAR_DATA *cp)
 {
 	cp->st.n.angularVelocity[0] += cp->hd.where.m[0][0] * 50;
@@ -2649,7 +2612,7 @@ void nose_down(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 9346
 
-// [D]
+// [D] [T]
 int GetPlayerId(_CAR_DATA *cp)
 {
 	int i;
