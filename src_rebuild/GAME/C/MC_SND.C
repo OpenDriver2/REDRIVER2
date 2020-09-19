@@ -187,28 +187,29 @@ char GetMissionSound(char id)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void RequestXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	__xa_request *p_Var1;
-	__xa_request *p_Var2;
+	__xa_request *pXA;
 
-	xa._0_4_ = CONCAT22(xa._2_2_, 0xffff);
-	xa._4_2_ = xa._4_2_ & 0xff00;
-	p_Var2 = xa_data;
-	if (-1 < xa_data[0].mission) {
-		do {
-			if (((int)p_Var2->mission == gCurrentMissionNumber) &&
-				((int)p_Var2->cutscene == gInGameCutsceneID)) {
-				xa._0_4_ = *(undefined4 *)p_Var2;
-				xa._4_2_ = *(ushort *)&p_Var2->mission;
-			}
-			p_Var1 = p_Var2 + 1;
-			p_Var2 = p_Var2 + 1;
-		} while (-1 < p_Var1->mission);
+	xa.delay = 0xFFFF;
+	xa.bank = 0;
+	xa.track = 0;
+	xa.mission = -1;
+	xa.cutscene = 0;
+
+	pXA = xa_data;
+
+	while (pXA->mission > -1)
+	{
+		if (pXA->mission == gCurrentMissionNumber && pXA->cutscene == gInGameCutsceneID) 
+		{
+			xa = *pXA;
+			break;
+		}
+
+		pXA++;
 	}
-	return;*/
 }
 
 
@@ -241,21 +242,22 @@ void RequestXA(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+__xa_request xa;
+
+// [D]
 void HandleRequestedXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((xa.cutscene == '\0') && (xa.mission != '\0')) {
+	if (xa.cutscene == 0 && xa.mission != 0) 
+	{
 		PrepareXA();
-		xa.mission = '\0';
+		xa.mission = 0;
 	}
-	if (xa.delay == 0) {
-		PlayXA((int)xa.bank, (int)xa.track);
-	}
-	if (-1 < xa.delay) {
-		xa.delay = xa.delay + -1;
-	}
-	return;*/
+
+	if (xa.delay == 0) 
+		PlayXA(xa.bank, xa.track);
+
+	if (xa.delay > -1) 
+		xa.delay--;
 }
 
 
@@ -1010,45 +1012,6 @@ void DoMissionSound(void)
 						return;
 					}
 				}
-
-				/*
-				long V[4];
-				long* C = car_data[player[0].playerCarId].hd.where.t;
-
-				x = car_data[player[0].playerCarId].hd.where.t[0];
-
-				y_00 = bodgevar - x;
-				x = x - bodgevar;
-
-				if (-1 < y_00)
-					x = y_00;
-
-				if (x < 0x8000) 
-				{
-					x = car_data[player[0].playerCarId].hd.where.t[2];
-
-					y_00 = (bodgevar + 8) - x;
-					x = x - (bodgevar + 8);
-
-					if (-1 < y_00)
-						x = y_00;
-
-					if (x < 0x8000) 
-					{
-						V[0] = pos[0] - V[0];
-						V[1] = pos[1] - V[1];
-						V[2] = pos[2] - V[2];
-						SetChannelPosition3(holdall, (VECTOR*)bodgevar, (long*)Q, 0, 0x1000, 0);
-						pos[0] = *(long*)z_00;
-						pos[1] = *(long*)(z_00 + 4);
-						pos[2] = *(long*)(z_00 + 8);
-						return;
-					}
-				}
-				SpuSetVoicePitch(holdall, 0);
-				*/
-
-				UNIMPLEMENTED();
 			}
 			break;
 		// Havana sounds
