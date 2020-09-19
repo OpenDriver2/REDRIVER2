@@ -4528,10 +4528,7 @@ void HandleDebris(void)
 	iVar17 = 0;
 	GetSmokeDrift(&Drift);
 
-	MoveHubcap(0);
-
-	if(NumPlayers > 1)
-		MoveHubcap(1);
+	MoveHubcap();
 
 	SetRotMatrix(&inv_camera_matrix);
 

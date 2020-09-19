@@ -2304,6 +2304,9 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	// PHYSICS! jumping effects, also make car nose down
 	jump_debris(cp);
 
+	// [A] do hubcaps here
+	HandlePlayerHubcaps(player_id);
+
 	cnt = 0;
 	do {
 		if (cp->hd.wheel[cnt].susCompression != 0)
