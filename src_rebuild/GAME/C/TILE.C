@@ -1031,6 +1031,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 
 void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 {
+	// Driver 1 leftover...
 	UNIMPLEMENTED();
 	/*
 	SubDivisionArrays = lump_ptr;
