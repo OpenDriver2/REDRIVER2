@@ -787,6 +787,14 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 		
 		gte_stotz(&z);
 
+		if (pc->flags & 0x6)
+		{
+			if (pc->flags & 0x4)
+				opz = 1;		// no culling
+			else
+				opz = -opz;		// front face
+		}
+
 		if (opz > 0 && z > 5)
 		{
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
