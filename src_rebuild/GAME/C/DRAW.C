@@ -1950,6 +1950,17 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			}
 			else
 			{
+				int r;
+
+				r = n;
+				if (n == 1)
+				{
+					if (minZ - 150 < (diff << 1))
+						r = 4;
+					else
+						r = 2;
+				}
+
 				copyVector(&subdiVerts[0][0], &srcVerts[polys->v0]);
 				subdiVerts[0][0].uv.val = *(ushort*)&polys->uv0;
 
@@ -1962,8 +1973,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 				copyVector(&subdiVerts[0][3], &srcVerts[polys->v2]);
 				subdiVerts[0][3].uv.val = *(ushort*)&polys->uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot, pc);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts, r, r);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts, r, r, pc);
 			}
 		}
 
