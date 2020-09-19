@@ -238,26 +238,16 @@ int impulse;
 void StepOneCar(_CAR_DATA *cp)
 {
 	static int frictionLimit[6] = {
+		0x3ED000, 0x178E000, 
 		0x3ED000, 0x13A1000,
-		0x75C6000, 0x13A1000, 
-		0x11F30, 0x11F14
+		0x75C6000,0x13A1000
 	};
 
-	int iVar1;
 	CAR_COSMETICS *car_cos;
-	uint uVar3;
-	int iVar4;
-	long *puVar5;
-	int iVar6;
-	long *puVar7;
-	long *piVar8;
-	long *piVar9;
-	long *piVar10;
-	long *piVar11;
-	int iVar12;
-	int iVar13;
-	SVECTOR *pSVar14;
 	int friToUse;
+	int lift;
+	int a, b, speed;
+	int count, i;
 	CAR_LOCALS _cl;
 	long deepestNormal[4];
 	long deepestLever[4];
@@ -268,65 +258,64 @@ void StepOneCar(_CAR_DATA *cp)
 	long lever[4];
 	long reaction[4];
 	VECTOR direction;
-	VECTOR partdir;
 	_sdPlane *SurfacePtr;
 
 	if (cp->controlType == 0)
 		return;
 
-	
-
 	SurfacePtr = NULL;
 	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
 	_cl.extraangulardamping = 0;
 
-	iVar12 = 0;
+	i = 0;
 	do {
-		_cl.vel[iVar12] = cp->st.n.linearVelocity[iVar12];
-		_cl.avel[iVar12] = cp->st.n.angularVelocity[iVar12];
-		cp->st.n.fposition[iVar12] = (cp->st.n.fposition[iVar12] & 0xF) + cp->hd.where.t[iVar12] * 16;
+		_cl.vel[i] = cp->st.n.linearVelocity[i];
+		_cl.avel[i] = cp->st.n.angularVelocity[i];
+		cp->st.n.fposition[i] = (cp->st.n.fposition[i] & 0xF) + cp->hd.where.t[i] * 16;
 
-		iVar12++;
-	} while (iVar12 < 3);
+		i++;
+	} while (i < 3);
 
 	cp->hd.acc[0] = 0;
 	cp->hd.acc[1] = -7456; // apply gravity
 	cp->hd.acc[2] = 0;
 
-	iVar12 = FIXEDH(_cl.vel[0]);
-	iVar4 = FIXEDH(_cl.vel[2]);
+	// calculate car speed
+	a = FIXEDH(_cl.vel[0]);
+	b = FIXEDH(_cl.vel[2]);
 
-	if (iVar12 < 0)
-		iVar12 = -iVar12;
+	if (a < 0)
+		a = -a;
 
-	if (iVar4 < 0)
-		iVar4 = -iVar4;
+	if (b < 0)
+		b = -b;
 
-	if (iVar12 < iVar4)
-		iVar4 = iVar4 + iVar12 / 2;
+	if (a < b)
+		speed = b + a / 2;
 	else
-		iVar4 = iVar12 + iVar4 / 2;
+		speed = a + b / 2;
 
 	car_cos = cp->ap.carCos;
-	iVar12 = 0;
+	lift = 0;
 
-	cp->hd.speed = iVar4;
+	cp->hd.speed = speed;
 
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
 
-	iVar4 = 12;
+	count = 12;
 
-	if (cp->hd.where.m[1][1] > 0x800 && (iVar4 = 4, cp->controlType == 2))
+	if (cp->hd.where.m[1][1] > 0x800 && (count = 4, cp->controlType == 2))
 	{
-		iVar4 = (cp->totalDamage != 0) << 2;
+		count = (cp->totalDamage != 0) << 2;
 	}
 
-	iVar13 = iVar4 - 1;
-	pSVar14 = car_cos->cPoints + iVar13;
-	while (iVar13 >= 0)
+	count--;
+
+	// calculate lifting factor
+	while (count >= 0)
 	{
-		gte_ldv0(pSVar14);
+		gte_ldv0(&car_cos->cPoints[count]);
 
 		gte_rtv0tr();
 
@@ -340,9 +329,11 @@ void StepOneCar(_CAR_DATA *cp)
 
 		if((surfacePoint[1] - pointPos[1]) - 1U < 799)
 		{
-			iVar4 = FIXEDH((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
+			int newLift;
 
-			if (iVar12 < iVar4)
+			newLift = FIXEDH((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
+
+			if (lift < newLift)
 			{
 				friToUse = 0;
 
@@ -358,108 +349,112 @@ void StepOneCar(_CAR_DATA *cp)
 				deepestPoint[1] = surfacePoint[1];
 				deepestPoint[2] = surfacePoint[2];
 
-				iVar12 = iVar4;
+				lift = newLift;
 
-				if (iVar13 > 3)
+				if (count > 3)
 					friToUse = 3;
 			}
 		}
 
-		iVar13--;
-		pSVar14--;
+		count--;
 	}
 
-	if (iVar12 != 0)
+	// do lifting
+	if (lift != 0)
 	{
-		reaction[0] = FIXEDH(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
-		reaction[1] = FIXEDH(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
-		reaction[2] = FIXEDH(_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + _cl.vel[2];
+ 		int strikeVel; // $a2
+ 		int componant; // $t3
 
-		iVar4 = FIXEDH(deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]);
-		iVar4 = FIXEDH(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - iVar4 * iVar4) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
+ 		int lever_dot_n; // $v1
+ 		int twistY; // $v0
+ 		int displacementsquared; // $a0
+ 		int denom; // $a0
 
-		iVar13 = 2;
-		impulse = (((reaction[0] >> 6) * (deepestNormal[0] >> 6) + (reaction[1] >> 6) * (deepestNormal[1] >> 6) + (reaction[2] >> 6) * (deepestNormal[2] >> 6)) / iVar4) * -2048;
+		lever[0] = FIXEDH(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
+		lever[1] = FIXEDH(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
+		lever[2] = FIXEDH(_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + _cl.vel[2];
 
-		piVar11 = (long*)&direction.vz;
-		piVar10 = deepestNormal + 2;
-		piVar9 = reaction + 2;
+		twistY = car_cos->twistRateY;
 
-		piVar8 = (long*)frictionLimit + friToUse;
+		lever_dot_n = FIXEDH(deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]);
+		displacementsquared = FIXEDH(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - lever_dot_n * lever_dot_n) * twistY) + 4096;
 
+		strikeVel = (lever[0] >> 6) * (deepestNormal[0] >> 6) + (lever[1] >> 6) * (deepestNormal[1] >> 6) + (lever[2] >> 6) * (deepestNormal[2] >> 6);
+		impulse = (strikeVel / displacementsquared) * -2048;
+
+		// apply friction
+		componant = 2;
 		do {
-			iVar6 = *piVar8;
-			iVar4 = *piVar9 * 67;
-			iVar1 = -*piVar8;
+			int loss;
+			int limit;
 
-			if (iVar4 <= iVar6)
+			limit = frictionLimit[friToUse + 2 - componant];
+			loss = lever[componant] * 67;
+
+			if (loss <= limit)
 			{
-				iVar6 = iVar4;
-
-				if(iVar4 < iVar1)
-					iVar6 = iVar1;
+				if(loss < -limit)
+					limit = -limit;
+				else
+					limit = loss;
 			}
 
-			*piVar11-- = FIXEDH(impulse * *piVar10 - iVar6);
-			piVar10--;
-			piVar9--;
-			piVar8++;	// [A] ASan bug fix
-			iVar13--;
-		} while (-1 < iVar13);
+			reaction[componant] = FIXEDH(impulse * deepestNormal[componant] - limit);
+			componant--;
+		} while (componant >= 0);
 		
-		if (20000 < impulse) 
+		if (impulse > 20000)
 		{
 			if (gNight == 1)
 			{
-				partdir.vx = 0;
-				partdir.vy = 0x32;
-				partdir.vz = 0;
+				direction.vx = 0;
+				direction.vy = 50;
+				direction.vz = 0;
 
-				Setup_Sparks((VECTOR *)&deepestPoint, &partdir, 15, 1);
+				Setup_Sparks((VECTOR *)&deepestPoint, &direction, 15, 1);
 			}
 			else
 			{
-				partdir.vx = 0;
-				partdir.vy = 0x28;
-				partdir.vz = 0;
+				direction.vx = 0;
+				direction.vy = 40;
+				direction.vz = 0;
 
-				Setup_Debris((VECTOR *)&deepestPoint, &partdir, 10, 0);
+				Setup_Debris((VECTOR *)&deepestPoint, &direction, 10, 0);
 			}
 
 			if (SurfacePtr && (SurfacePtr->surface != 9) && (SurfacePtr->surface != 6))
 			{
-				iVar4 = GetPlayerId(cp);
-				CollisionSound((char)iVar4, cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
+				CollisionSound(GetPlayerId(cp), cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
 			}
 		}
 
-		cp->hd.acc[0] += direction.vx;
-		cp->hd.acc[1] += direction.vy;
-		cp->hd.acc[2] += direction.vz;
+		cp->hd.acc[0] += reaction[0];
+		cp->hd.acc[1] += reaction[1];
+		cp->hd.acc[2] += reaction[2];
 
-		cp->hd.aacc[0] += FIXEDH(deepestLever[1] * direction.vz - deepestLever[2] * direction.vy);
-		cp->hd.aacc[1] += FIXEDH(deepestLever[2] * direction.vx - deepestLever[0] * direction.vz);
-		cp->hd.aacc[2] += FIXEDH(deepestLever[0] * direction.vy - deepestLever[1] * direction.vx);
+		cp->hd.aacc[0] += FIXEDH(deepestLever[1] * reaction[2] - deepestLever[2] * reaction[1]);
+		cp->hd.aacc[1] += FIXEDH(deepestLever[2] * reaction[0] - deepestLever[0] * reaction[2]);
+		cp->hd.aacc[2] += FIXEDH(deepestLever[0] * reaction[1] - deepestLever[1] * reaction[0]);
 
-		if (iVar12 != 0) 
+		if (lift != 0)
 		{
-			reaction[0] = FIXEDH(iVar12 * deepestNormal[0]);
-			reaction[1] = FIXEDH(iVar12 * deepestNormal[1]);
-			reaction[2] = FIXEDH(iVar12 * deepestNormal[2]);
+			lever[0] = FIXEDH(lift * deepestNormal[0]);
+			lever[1] = FIXEDH(lift * deepestNormal[1]);
+			lever[2] = FIXEDH(lift * deepestNormal[2]);
 
-			cp->hd.where.t[0] += reaction[0];
-			cp->hd.where.t[1] += reaction[1];
-			cp->hd.where.t[2] += reaction[2];
+			cp->hd.where.t[0] += lever[0];
+			cp->hd.where.t[1] += lever[1];
+			cp->hd.where.t[2] += lever[2];
 
-			cp->st.n.fposition[0] += reaction[0] * 16;
-			cp->st.n.fposition[1] += reaction[1] * 16;
-			cp->st.n.fposition[2] += reaction[2] * 16;
+			cp->st.n.fposition[0] += lever[0] * 16;
+			cp->st.n.fposition[1] += lever[1] * 16;
+			cp->st.n.fposition[2] += lever[2] * 16;
 
 			gte_SetTransMatrix(&cp->hd.where);
 
 			_cl.extraangulardamping = 1;
 
-			if (120 < iVar12) 
+			if (lift > 120)
 				cp->st.n.linearVelocity[1] = 0;
 		}
 	}
@@ -517,8 +512,8 @@ void StepOneCar(_CAR_DATA *cp)
 void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *rearFS)
 {
 	unsigned char bVar1;
-	int iVar2;
-	int iVar3;
+	int autoBrake;
+	int q;
 	_HANDLING_TYPE* hp;
 
 	hp = &handlingType[cp->hndType];
@@ -530,19 +525,19 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 	else
 		*frontFS = 820;
 
-	iVar2 = cp->hd.autoBrake;
+	autoBrake = cp->hd.autoBrake;
 
-	if (cp->wheelspin == 0 && hp->autoBrakeOn != 0 && 0 < iVar2 && (0 < cp->hd.wheel_speed))
+	if (cp->wheelspin == 0 && hp->autoBrakeOn != 0 && 0 < autoBrake && cp->hd.wheel_speed > 0)
 	{
-		iVar3 = iVar2 << 1;
+		q = autoBrake << 1;
 
-		if (iVar2 > 13) 
+		if (autoBrake > 13) 
 		{
-			iVar2 = 13;
-			iVar3 = 26;
+			autoBrake = 13;
+			q = 26;
 		}
 
-		*frontFS = *frontFS + (iVar3 + iVar2) * 15;
+		*frontFS = *frontFS + (q + autoBrake) * 15;
 
 		if (hp->autoBrakeOn == 2)
 		{
@@ -553,8 +548,8 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 		}
 	}
 
-	if ((((cp->thrust < 0) && (0xa3d7 < cp->hd.wheel_speed)) && (cp->hndType == 0)) ||
-		(((cp->controlType == 2 && (cp->ai.c.thrustState == 3)) && (cp->ai.c.ctrlState != 9))))
+	if ((cp->thrust < 0 && cp->hd.wheel_speed > 41943 && cp->hndType == 0) ||
+		(cp->controlType == 2 && cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState != 9))
 	{
 		cp->hd.wheel[3].locked = 1;
 		cp->hd.wheel[2].locked = 1;
