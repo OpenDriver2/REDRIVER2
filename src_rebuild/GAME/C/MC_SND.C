@@ -187,6 +187,8 @@ char GetMissionSound(char id)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+__xa_request xa;
+
 // [D]
 void RequestXA(void)
 {
@@ -241,8 +243,6 @@ void RequestXA(void)
 	// End Line: 967
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
-
-__xa_request xa;
 
 // [D]
 void HandleRequestedXA(void)

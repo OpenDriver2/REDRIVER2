@@ -2779,7 +2779,7 @@ void SoundTasks(void)
 	if (gInGameChaseActive != 0)
 		LeadHorn(&car_data[player[0].targetCarId]); //LeadHorn(&car_data[1]);
 
-	if ((force_idle[8] != 0) && (((gCurrentMissionNumber - 0x14U < 2 || (gCurrentMissionNumber == 0x19)) || (gCurrentMissionNumber == 0x27)))) 
+	if (jericho_in_back != 0 && (gCurrentMissionNumber == 20 || gCurrentMissionNumber == 25 || gCurrentMissionNumber == 39))
 	{
 		JerichoSpeak();
 	}
