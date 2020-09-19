@@ -10,7 +10,9 @@ extern void CreateDentableCar(struct _CAR_DATA *cp); // 0x0003A6E4
 
 extern void InitHubcap(); // 0x0003A874
 
-extern void MoveHubcap(int playerId); // 0x0003AB4C
+extern void HandlePlayerHubcaps(int playerId);
+
+extern void MoveHubcap(); // 0x0003AB4C
 
 extern void LoadDenting(int level); // 0x0003B1F0
 
