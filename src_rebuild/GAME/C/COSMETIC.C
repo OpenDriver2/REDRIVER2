@@ -129,7 +129,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		}
 
 		i++;
-	} while (i < 5);
+	} while (i < MAX_CAR_MODELS);
 }
 
 

@@ -22,9 +22,9 @@ char* DentingFiles[] =
 	"LEVELS\\RIO.DEN",
 };
 
-unsigned char gCarDamageZoneVerts[5][6][50];
-unsigned char gHDCarDamageZonePolys[5][6][70];
-unsigned char gHDCarDamageLevels[5][255];
+unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][6][50];
+unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][6][70];
+unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][255];
 
 // decompiled code
 // original method signature: 
@@ -436,7 +436,7 @@ void InitHubcap(void)
 	/* end block 4 */
 	// End Line: 1472
 
-// [D]
+// [D] [T]
 void LoseHubcap(int car, int Hubcap, int Velocity)
 {
 	int iVar1;
@@ -722,7 +722,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 
 	i = 0;
 
-	while (i < 5)
+	while (i < MAX_CAR_MODELS)
 	{
 		model = MissionHeader->residentModels[i];
 
@@ -744,8 +744,8 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		{
 			offset = *(int *)(lump_ptr + model * 4);
 
-			memcpy(*gCarDamageZoneVerts[i], lump_ptr+offset, 300);
-			memcpy(*gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
+			memcpy(gCarDamageZoneVerts[i], lump_ptr+offset, 300);
+			memcpy(gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
 			memcpy(gHDCarDamageLevels[i], lump_ptr + offset + 300 + 420, 255);
 		}
 
@@ -789,8 +789,8 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 void SetupSpecDenting(char *loadbuffer)
 {
 	// [A] this is better
-	memcpy(*gCarDamageZoneVerts[4], loadbuffer, 300);
-	memcpy(*gHDCarDamageZonePolys[4], loadbuffer + 300, 420);
+	memcpy(gCarDamageZoneVerts[4], loadbuffer, 300);
+	memcpy(gHDCarDamageZonePolys[4], loadbuffer + 300, 420);
 	memcpy(gHDCarDamageLevels[4], loadbuffer + 300 + 420, 255);
 }
 
