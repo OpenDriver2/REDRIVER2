@@ -65,11 +65,13 @@ ReadAVI::ReadAVI(const char* filename)
 	data_buf = NULL;
 	stream_format_vid.palette = NULL;
 	data_buf_size = 0;
-	inFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	//inFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	inFile.open(filename, ios_base::ate | ios_base::in | ios_base::binary);
+
 	fileSize = inFile.tellg();
 	inFile.close();
 	inFile.open(filename, ios_base::in | ios_base::binary);
+
 
 	try {
 		parse_riff();
