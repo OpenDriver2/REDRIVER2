@@ -611,7 +611,7 @@ void ReleaseInGameCutscene(void)
 	gInGameCutsceneDelay = 0;
 	gStopPadReads = 0;
 
-	xa_timeout = 70;
+	xa_timeout = 120;
 }
 
 
