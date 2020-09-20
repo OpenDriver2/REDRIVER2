@@ -1845,7 +1845,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		// with skipping
 		ptype = polys->id & 0x1f;
 
-		if ((ptype & 1) == 0) // is FT3 triangle?
+		if ((ptype & 1) == 0 && ptype != 8) // is FT3 triangle?
 		{
 			temp = polys->uv2.v;
 			polys->uv3.u = polys->uv2.u;
