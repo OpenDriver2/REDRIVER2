@@ -240,6 +240,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int frame_size;
 	int queue_counter = 0;
 
+	int fade_out = 0;
+
 	while (true)
 	{
 		if (SDL_GetTicks() <= nextTime) // wait for frame
@@ -254,6 +256,15 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		// done, no frames
 		if (frame_size < 0)
 			break;
+
+		if (fade_out > 0)
+		{
+			fade_out -= 18;
+			if (fade_out < 0)
+				break;
+
+			alSourcef(audioStreamSource, AL_GAIN, float(fade_out) / 255.0);
+		}
 
 		if (frame_size > 0)
 		{
@@ -311,8 +322,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 		ReadControllers();
 
-		if (Pads[0].mapnew > 0)
-			break;
+		if (fade_out == 0 && Pads[0].mapnew > 0)
+			fade_out = 255;
 	}
 
 	alDeleteSources(1, &audioStreamSource);
