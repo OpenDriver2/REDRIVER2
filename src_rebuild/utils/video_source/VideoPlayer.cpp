@@ -22,6 +22,8 @@ extern "C"
 
 #include "DRIVER2.H"
 #include "C\PAD.H"
+#include "C\SYSTEM.H"
+#include "C\E3STUFF.H"
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
 {
@@ -39,14 +41,6 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	for (u_char* curr_scanline = dst_buf; cinfo.output_scanline < cinfo.output_height; curr_scanline += cinfo.output_width * cinfo.num_components)
 	{
 		jpeg_read_scanlines(&cinfo, &curr_scanline, 1);
-
-		for (int s = 0; s < cinfo.output_width * cinfo.num_components; s += cinfo.num_components)
-		{
-			// flip RGB
-			u_char tmp = curr_scanline[s];
-			curr_scanline[s] = curr_scanline[s+2];
-			curr_scanline[s+2] = tmp;
-		}
 	}
 
 	jpeg_finish_decompress(&cinfo);
@@ -58,7 +52,7 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 // emulator window TODO: interface
 extern SDL_Window* g_window;
 
-void GetMovieRectangle(SDL_Rect& rect, ReadAVI::stream_format_t& strFmt)
+void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
@@ -66,6 +60,7 @@ void GetMovieRectangle(SDL_Rect& rect, ReadAVI::stream_format_t& strFmt)
 	float psxScreenW = 320.0f;
 	float psxScreenH = 240.0f;
 
+	RECT16 rect;
 	rect.x = 0;
 	rect.y = (psxScreenH - strFmt.image_height) / 2;
 	rect.w = strFmt.image_width;
@@ -74,26 +69,41 @@ void GetMovieRectangle(SDL_Rect& rect, ReadAVI::stream_format_t& strFmt)
 	const float video_aspect = float(strFmt.image_width) / float(strFmt.image_height + 48);
 	float emuScreenAspect = float(windowHeight) / float(windowWidth);
 
+	// first map to 0..1
+	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / psxScreenW;
+	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / psxScreenH;
+	float clipRectW = (float)(rect.w) / psxScreenW;
+	float clipRectH = (float)(rect.h) / psxScreenH;
+
+	// then map to screen
+	clipRectY -= 1.0f;
+	clipRectX -= 1.0f;
+
+	clipRectY /= video_aspect * emuScreenAspect;
+	clipRectH /= emuScreenAspect * video_aspect;
+
+	clipRectW *= 2.0f;
+	clipRectH *= 2.0f;
+
+	clipRectY += 0.10f;
+
+	u_char l = 0;
+	u_char t = 0;
+	u_char r = 1;
+	u_char b = 1;
+
+	Vertex blit_vertices[] =
 	{
-		// first map to 0..1
-		float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / psxScreenW;
-		float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / psxScreenH;
-		float clipRectW = (float)(rect.w) / psxScreenW;
-		float clipRectH = (float)(rect.h) / psxScreenH;
+		{ clipRectX+ clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,    0, 0, 0, 0 },
+		{ clipRectX, clipRectY,    0, 0,    l, b,    0, 0,    0, 0, 0, 0 },
+		{ clipRectX, clipRectY + clipRectH,    0, 0,    l, t,    0, 0,    0, 0, 0, 0 },
 
-		// then map to screen
-		clipRectY -= 0.5f;
+		{ clipRectX + clipRectW, clipRectY,    0, 0,    r, b,    0, 0,    0, 0, 0, 0 },
+		{ clipRectX, clipRectY,    0, 0,    l, b,    0, 0,    0, 0, 0, 0 },
+		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,    0, 0, 0, 0 },
+	};
 
-		clipRectY /= video_aspect * emuScreenAspect;
-		clipRectH /= emuScreenAspect * video_aspect;
-
-		clipRectY += 0.5f;
-
-		rect.x = clipRectX * windowWidth;
-		rect.y = clipRectY * windowHeight;
-		rect.w = clipRectW * windowWidth;
-		rect.h = clipRectH * windowHeight;
-	}
+	Emulator_UpdateVertexBuffer(blit_vertices, 6);
 }
 
 // send audio buffer
@@ -113,6 +123,76 @@ void QueueAudioBuffer(ALuint buffer, ALuint source, ReadAVI::frame_entry_t& fram
 
 	// queue after uploading
 	alSourceQueueBuffers(source, 1, &buffer);
+}
+
+const char* fmv_shader =
+	"varying vec4 v_texcoord;\n"
+	"#ifdef VERTEX\n"
+	"	attribute vec4 a_position;\n"
+	"	attribute vec4 a_texcoord;\n"
+	"	void main() {\n"
+	"		v_texcoord = a_texcoord;\n"
+	"		gl_Position = vec4(a_position.xy, 0.0, 1.0);\n"
+	"	}\n"
+	"#else\n"
+	"	uniform sampler2D s_texture;\n"
+	"	void main() {\n"
+	"		fragColor = texture2D(s_texture, v_texcoord.xy);\n"
+	"	}\n"
+	"#endif\n";
+
+TextureID g_FMVTexture = 0;
+ShaderID g_FMVShader = 0;
+
+extern void Shader_CheckShaderStatus(GLuint shader);
+extern void Shader_CheckProgramStatus(GLuint program);
+extern ShaderID Shader_Compile(const char* source);
+extern void Emulator_SetShader(const ShaderID& shader);
+
+void FMVPlayerInitGL()
+{
+#if defined(OGL) || defined(OGLES)
+	glGenTextures(1, &g_FMVTexture);
+
+	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 320, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	if(!g_FMVShader)
+		g_FMVShader = Shader_Compile(fmv_shader);
+#endif
+}
+
+void FMVPlayerShutdownGL()
+{
+	Emulator_DestroyTexture(g_FMVTexture);
+}
+
+void DrawFrame(ReadAVI::stream_format_t& stream_format)
+{
+	int windowWidth, windowHeight;
+	Emulator_GetScreenSize(windowWidth, windowHeight);
+
+	Emulator_BeginScene();
+
+	Emulator_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
+
+	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, stream_format.image_width, stream_format.image_height, 0, GL_RGB, GL_UNSIGNED_BYTE, _frontend_buffer);
+	
+	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
+	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
+	Emulator_SetShader(g_FMVShader);
+
+	SetupMovieRectangle(stream_format);
+
+	Emulator_SetBlendMode(BM_NONE);
+	Emulator_DrawTriangles(0, 2);
+
+	Emulator_EndScene();
 }
 
 void DoPlayFMV(RENDER_ARG* arg, int subtitles)
@@ -179,27 +259,13 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		{
 			if (frame_entry.type == ReadAVI::ctype_compressed_video_frame)
 			{
-				// Update video frame
-				SDL_Surface* MainSurface = SDL_GetWindowSurface(g_window);
 
-				SDL_LockSurface(BufSurface);
-
-				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)BufSurface->pixels);
-				SDL_UnlockSurface(BufSurface);
-
+				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
 				if (ret == 0)
-				{
-					SDL_Rect rect;
-					GetMovieRectangle(rect, stream_format);
-
-					SDL_UpperBlitScaled(BufSurface, NULL, MainSurface, &rect);
-					SDL_UpdateWindowSurface(g_window);
-				}
-
-				SDL_FreeSurface(MainSurface);
+					DrawFrame(stream_format);
 
 				// set next step time
-				nextTime = SDL_GetTicks() + (avi_header.TimeBetweenFrames - 9000) / 1000;
+				nextTime = SDL_GetTicks() + (avi_header.TimeBetweenFrames-10000) / 1000;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
 			{
@@ -247,8 +313,6 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 		if (Pads[0].mapnew > 0)
 			break;
-
-		Emulator_EndScene();
 	}
 
 	alDeleteSources(1, &audioStreamSource);
@@ -258,10 +322,14 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 // FMV main function
 int FMV_main(RENDER_ARGS* args)
 {
+	FMVPlayerInitGL();
+
 	for (int i = 0; i < args->nRenders; i++)
 	{
 		DoPlayFMV(&args->Args[i], args->subtitle);
 	}
+
+	FMVPlayerShutdownGL();
 
 	return 0;
 }
