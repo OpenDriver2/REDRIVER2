@@ -636,7 +636,7 @@ void CheckPlayerMiscFelonies(void)
 	{
 		st = GET_STRAIGHT(surfInd); // Driver2StraightsPtr + surfInd;
 		uVar6 = st->angle & 0xfff;
-		uVar4 = (uint)(u_char)st->NumLanes & 0xf;
+		uVar4 = (u_char)st->NumLanes & 0xf;
 		uVar6 = uVar4 - (FIXEDH((carPos->vx - st->Midx) * rcossin_tbl[uVar6 * 2 + 1] - (carPos->vz - st->Midz) * rcossin_tbl[uVar6 * 2]) + 0x200 >> 9);
 		iVar5 = uVar4 * 2;
 
@@ -646,13 +646,13 @@ void CheckPlayerMiscFelonies(void)
 		if (iVar5 <= uVar6)
 			uVar6 = iVar5 - 1;
 	
-		if (((uint)(u_char)st->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
+		if (((u_char)st->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
 		{
 			uVar4 = (st->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
 
 			if ((*(uint *)(st->ConnectIdx + 3) & 0xffff0000) != 0xff010000) 
 			{
-				uVar6 = (uint)(u_char)st->LaneDirs >> (uVar6 / 2 & 0x1fU);
+				uVar6 = (u_char)st->LaneDirs >> (uVar6 / 2 & 0x1fU);
 			}
 
 			if ((uVar6 & 1) == 0) 
@@ -677,15 +677,15 @@ void CheckPlayerMiscFelonies(void)
 		if (uVar6 < 0)
 			uVar6 = 0;
 
-		iVar5 = ((uint)(u_char)cv->NumLanes & 0xf) * 2;
+		iVar5 = ((u_char)cv->NumLanes & 0xf) * 2;
 
 		if (iVar5 <= uVar6)
 			uVar6 = iVar5 - 1;
 
-		if ((cv->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
+		if (((u_char)cv->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
 		{
 			if (*(short *)&cv->NumLanes != -0xff)
-				uVar6 = (uint)(u_char)cv->LaneDirs >> (uVar6 / 2 & 0x1fU);
+				uVar6 = (u_char)cv->LaneDirs >> (uVar6 / 2 & 0x1fU);
 
 			if ((uVar6 & 1) == 0)
 			{
@@ -729,9 +729,9 @@ void CheckPlayerMiscFelonies(void)
 
 	// check the speed limit
 	if (st != NULL)
-		maxSpeed = speedLimits[(st->NumLanes >> 4) & 3];
+		maxSpeed = speedLimits[((u_char)st->NumLanes >> 4) & 3];
 	else if (cv != NULL)
-		maxSpeed = speedLimits[(cv->NumLanes >> 4) & 3];
+		maxSpeed = speedLimits[((u_char)cv->NumLanes >> 4) & 3];
 	else
 		maxSpeed = speedLimits[2];
 

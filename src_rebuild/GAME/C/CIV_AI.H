@@ -2,7 +2,7 @@
 #define CIV_AI_H
 
 extern unsigned char speedLimits[3];
-extern unsigned char reservedSlots[20];
+extern unsigned char reservedSlots[MAX_CARS];
 extern int frameStart;
 
 extern int distFurthestCivCarSq;

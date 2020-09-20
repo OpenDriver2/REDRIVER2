@@ -32,7 +32,7 @@ unsigned char speedLimits[3] = { 56, 97, 138 };
 
 CIV_AI_234fake civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
-unsigned char reservedSlots[20] = { 0 };
+unsigned char reservedSlots[MAX_CARS] = { 0 };
 
 int distFurthestCivCarSq = 0;
 char furthestCivID = 0;
@@ -4021,13 +4021,13 @@ void InitCivCars(void)
 	// End Line: 4911
 
 const int EVENT_CAR_SPEED = 60;
-const int DistanceTriggerCarMoves = 600;
+const int DistanceTriggerCarMoves = 700; // 5000;
 
 // [D] [A]
 int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*stopPos)[4], unsigned char internalModel, int palette)
 {
-	unsigned char *puVar3;
-	_CAR_DATA *p_Var5;
+	unsigned char *slot;
+	_CAR_DATA *carCnt;
 	_CAR_DATA *pNewCar;
 	CIV_ROUTE_ENTRY *stopNode; // $a0
 	CIV_ROUTE_ENTRY *spareNode; // $a1
@@ -4035,20 +4035,21 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	_EXTRA_CIV_DATA civDat;
 	ClearMem((char *)&civDat, sizeof(civDat));
 
-	p_Var5 = car_data;
-	puVar3 = reservedSlots;
+	carCnt = car_data;
+	slot = reservedSlots;
 	pNewCar = NULL;
 
+	// find free slot
 	do {
-		if (p_Var5->controlType == 0 && *puVar3 == 0)
+		if (carCnt->controlType == 0 && *slot == 0)
 		{
-			pNewCar = p_Var5;
+			pNewCar = carCnt;
 			break;
 		}
 
-		p_Var5++;
-		puVar3++;
-	} while (p_Var5 < car_data + 19);
+		carCnt++;
+		slot++;
+	} while (carCnt < car_data + MAX_TRAFFIC_CARS);
 
 	if (pNewCar == NULL)
 		return -1;
@@ -4068,7 +4069,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	pNewCar->st.n.linearVelocity[0] = EVENT_CAR_SPEED * rcossin_tbl[(direction & 0xfffU) * 2];
 	pNewCar->st.n.linearVelocity[2] = EVENT_CAR_SPEED * rcossin_tbl[(direction & 0xfffU) * 2 + 1];
 
-	pNewCar->ai.c.velRatio = FIXEDH(EVENT_CAR_SPEED) / (DistanceTriggerCarMoves - pNewCar->ap.carCos->colBox.vz * 3);
+	pNewCar->ai.c.velRatio = (EVENT_CAR_SPEED * ONE) / (DistanceTriggerCarMoves - pNewCar->ap.carCos->colBox.vz * 3);
 	pNewCar->ai.c.targetRoute[0].x = (*startPos)[0];
 	pNewCar->ai.c.targetRoute[0].z = (*startPos)[2];
 
@@ -4190,7 +4191,7 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*star
 
 				carCnt++;
 				puVar1++;
-			} while (carCnt < car_data + 19);
+			} while (carCnt < car_data + MAX_TRAFFIC_CARS);
 		}
 
 		if (cp != NULL) 
@@ -4535,7 +4536,7 @@ int PingInCivCar(int minPingInDist)
 
 		p_Var13++;
 		puVar15++;
-	} while (p_Var13 < car_data + 19);
+	} while (p_Var13 < car_data + MAX_TRAFFIC_CARS);
 
 	if (cp == NULL)
 	{
