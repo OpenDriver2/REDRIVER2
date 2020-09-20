@@ -226,6 +226,7 @@ void PrepareXA(void)
 	if (xa_prepared == 0)
 	{
 		alGenSources(1, &g_XASource);
+		alSourcei(g_XASource, AL_LOOPING, 0);
 
 		if (g_XAWave)
 		{
