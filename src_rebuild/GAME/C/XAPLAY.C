@@ -331,6 +331,14 @@ void PlayXA(int num, int index)
 // [D] [T]
 int XAPrepared(void)
 {
+#ifndef PSX
+	ALint sourceState;
+	alGetSourcei(g_XASource, AL_SOURCE_STATE, &sourceState);
+
+	if (sourceState == AL_STOPPED)
+		UnprepareXA();
+
+#endif
 	return xa_prepared;
 }
 
@@ -433,7 +441,7 @@ void StopXA(void)
 		SsSetSerialVol(0, 0, 0);
 		CdControlF(9, 0);
 #else
-		alSourceStop(g_XASource);
+		alSourcePause(g_XASource);
 #endif
 		gPlaying = 0;
 	}
@@ -535,14 +543,12 @@ void ResumeXA(void)
 		gPlaying = 1;
 	}
 #else
-	if (xa_prepared && gPlaying != 1)
+	if (xa_prepared && gPlaying)
 	{
 		vol = (10000 + gMasterVolume) / 79;
 		alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
 
 		alSourcePlay(g_XASource);
-
-		gPlaying = 1;
 	}
 #endif
 }
@@ -596,7 +602,6 @@ void PauseXA(void)
 	if (xa_prepared && gPlaying)
 	{
 		alSourcePause(g_XASource);
-		gPlaying = 0;
 	}
 #endif
 }
