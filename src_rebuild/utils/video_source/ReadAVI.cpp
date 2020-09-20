@@ -46,7 +46,7 @@
 using namespace std;
 
 #define VERBOSE
-#define DBG_LVL_DEF 2
+#define DBG_LVL_DEF 0
 
 #ifdef VERBOSE
 #define MSG_DBG(dl, format, ...) {if(dl <= DBG_LVL_DEF ) fprintf(stdout, format ,##__VA_ARGS__);}

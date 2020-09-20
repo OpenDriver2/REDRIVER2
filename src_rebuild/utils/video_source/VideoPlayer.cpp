@@ -242,7 +242,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 	while (true)
 	{
-		if (SDL_GetTicks() < nextTime) // wait for frame
+		if (SDL_GetTicks() <= nextTime) // wait for frame
 		{
 			Emulator_EndScene();
 			continue;
@@ -259,13 +259,13 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		{
 			if (frame_entry.type == ReadAVI::ctype_compressed_video_frame)
 			{
-
 				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
+				
 				if (ret == 0)
 					DrawFrame(stream_format);
 
 				// set next step time
-				nextTime = SDL_GetTicks() + (avi_header.TimeBetweenFrames-10000) / 1000;
+				nextTime += avi_header.TimeBetweenFrames / 1000;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
 			{
