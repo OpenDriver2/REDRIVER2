@@ -323,6 +323,7 @@ void DrawTILES(int tile_amount)
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.lastTexInfo = 0x18273472;
+	plotContext.flags = 0;
 	ppuVar6 = (ushort **)tile_overflow_buffer;
 
 	while (tile_amount != -1) 
