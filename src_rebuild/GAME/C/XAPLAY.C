@@ -4,12 +4,28 @@
 #include "SOUND.H"
 #include "SPOOL.H"
 
+#ifndef PSX
+
+#include "../utils/riff.h"
+#include "../utils/audio_source/snd_al_source.h"
+#include "../utils/audio_source/snd_wav_cache.h"
+
+#include "AL/al.h"
+
+const char* XANameFormat = "DRIVER2\\XA\\XABNK0%d.XA[%d].wav";
+ALuint g_XASource = AL_NONE;
+CSoundSource_OpenALCache* g_XAWave = NULL;
+
+#else
+
 char* XANames[] = {
 	"\\DRIVER2\\XA\\XABNK01.XA;1",
 	"\\DRIVER2\\XA\\XABNK02.XA;1",
 	"\\DRIVER2\\XA\\XABNK03.XA;1",
 	"\\DRIVER2\\XA\\XABNK04.XA;1",
 };
+
+#endif
 
 static unsigned long finished_count = 0;
 static int gPlaying = 0;
@@ -44,10 +60,12 @@ XA_TRACK XAMissionMessages[4];
 // [D] [T]
 void GetMissionXAData(int number)
 {
+#ifdef PSX
 	CdlFILE fp;
 
 	CdSearchFile(&fp, XANames[number]);
 	XAMissionMessages[number].start = CdPosToInt((CdlLOC *)&fp);
+#endif
 }
 
 
@@ -131,7 +149,9 @@ void SetXAVolume(int volume)
 	if (vol == -1)
 		vol = 0;
 
+#ifdef PSX
 	SsSetSerialVol(0, vol, vol);
+#endif
 }
 
 
@@ -177,6 +197,7 @@ void* olddatacallback;
 // [D] [T]
 void PrepareXA(void)
 {
+#ifdef PSX
 	u_char param[4];
 
 	finished_count = 0;
@@ -198,6 +219,23 @@ void PrepareXA(void)
 		xa_prepared = 1;
 		AllocateReverb(3, 0x4000);
 	}
+#else
+	finished_count = 0;
+	gPlaying = 0;
+
+	if (xa_prepared == 0)
+	{
+		alGenSources(1, &g_XASource);
+
+		if (g_XAWave)
+		{
+			delete g_XAWave;
+			g_XAWave = NULL;
+		}
+
+		xa_prepared = 1;
+	}
+#endif
 }
 
 
@@ -226,6 +264,8 @@ void PrepareXA(void)
 void PlayXA(int num, int index)
 {
 	short vol;
+
+#ifdef PSX
 	CdlFILTER filt;
 	CdlLOC loc;
 	u_char res[8];
@@ -236,8 +276,8 @@ void PlayXA(int num, int index)
 		StartPos = XAMissionMessages[num].start;
 		gChannel = index;
 		filt.file = 1;
-		vol = (10000 + gMasterVolume) / 79;
 
+		vol = (10000 + gMasterVolume) / 79;
 		SsSetSerialVol(0, vol, vol);
 
 		CdControlB(0xd, (u_char*)&filt, res);
@@ -250,6 +290,28 @@ void PlayXA(int num, int index)
 		gPlaying = 1;
 		xa_prepared = 2;
 	}
+#else
+	if (xa_prepared && gPlaying != 1)
+	{
+		char fileName[250];
+		sprintf(fileName, XANameFormat, num+1, index);
+
+		CSoundSource_WaveCache wavData;
+		wavData.Load(fileName);
+
+		g_XAWave = new CSoundSource_OpenALCache(&wavData);
+
+		alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);
+
+		vol = (10000 + gMasterVolume) / 79;
+		alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
+
+		alSourcePlay(g_XASource);
+
+		gPlaying = 1;
+		xa_prepared = 2;
+	}
+#endif
 }
 
 
@@ -306,6 +368,7 @@ int XAPrepared(void)
 // [D] [T]
 void UnprepareXA(void)
 {
+#ifdef PSX
 	u_char param[4];
 
 	if (xa_prepared != 0)
@@ -319,6 +382,22 @@ void UnprepareXA(void)
 		gPlaying = 0;
 		xa_prepared = 0;
 	}
+#else
+	if (xa_prepared)
+	{
+		alSourceStop(g_XASource);
+		alDeleteSources(1, &g_XASource);
+
+		if (g_XAWave)
+		{
+			delete g_XAWave;
+			g_XAWave = NULL;
+		}
+
+		gPlaying = 0;
+		xa_prepared = 0;
+	}
+#endif
 }
 
 
@@ -349,8 +428,12 @@ void StopXA(void)
 {
 	if (gPlaying && xa_prepared)
 	{
+#ifdef PSX
 		SsSetSerialVol(0, 0, 0);
 		CdControlF(9, 0);
+#else
+		alSourceStop(g_XASource);
+#endif
 		gPlaying = 0;
 	}
 }
@@ -430,7 +513,9 @@ void cbready(int intr, unsigned char *result)
 // [D] [T]
 void ResumeXA(void)
 {
-	short voll;
+	short vol;
+
+#ifdef PSX
 	CdlFILTER filt;
 	u_char res[8];
 
@@ -439,14 +524,26 @@ void ResumeXA(void)
 		filt.file = 1;
 		filt.chan = gChannel;
 
-		voll = (10000 + gMasterVolume) / 79;
-		SsSetSerialVol(0, voll, voll);
+		vol = (10000 + gMasterVolume) / 79;
+		SsSetSerialVol(0, vol, vol);
+
 		CdControlB(0xd, (u_char*)&filt, res);
 		CdControlB(0x1b, (u_char*)&pause_loc, res);
 		AllocateReverb(3, 0x4000);
 
 		gPlaying = 1;
 	}
+#else
+	if (xa_prepared && gPlaying != 1)
+	{
+		vol = (10000 + gMasterVolume) / 79;
+		alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
+
+		alSourcePlay(g_XASource);
+
+		gPlaying = 1;
+	}
+#endif
 }
 
 
@@ -479,6 +576,7 @@ void ResumeXA(void)
 // [D] [T]
 void PauseXA(void)
 {
+#ifdef PSX
 	u_char res[8];
 
 	if (xa_prepared && gPlaying)
@@ -493,6 +591,13 @@ void PauseXA(void)
 		CdControlB(9, 0, 0);
 		gPlaying = 0;
 	}
+#else
+	if (xa_prepared && gPlaying)
+	{
+		alSourcePause(g_XASource);
+		gPlaying = 0;
+	}
+#endif
 }
 
 
