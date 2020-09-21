@@ -69,12 +69,12 @@ void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
 	rect.w = strFmt.image_width;
 	rect.h = strFmt.image_height;
 
-	const float video_aspect = float(strFmt.image_width) / float(strFmt.image_height + 48);
+	const float video_aspect = float(strFmt.image_width) / 256; //float(strFmt.image_height);
 	float emuScreenAspect = float(windowHeight) / float(windowWidth);
 
 	// first map to 0..1
-	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / psxScreenW;
-	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / psxScreenH;
+	float clipRectX = (float)(rect.x) / psxScreenW;
+	float clipRectY = (float)(rect.y) / psxScreenH;
 	float clipRectW = (float)(rect.w) / psxScreenW;
 	float clipRectH = (float)(rect.h) / psxScreenH;
 
@@ -88,7 +88,7 @@ void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
 	clipRectW *= 2.0f;
 	clipRectH *= 2.0f;
 
-	clipRectY += 0.10f;
+	clipRectY += 0.15f;
 
 	u_char l = 0;
 	u_char t = 0;
@@ -160,6 +160,8 @@ void FMVPlayerInitGL()
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 320, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -291,7 +293,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	ALuint audioStreamBuffers[4];
 
 	alGenSources(1, &audioStreamSource);
-	alGenBuffers(2, audioStreamBuffers);
+	alGenBuffers(4, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
 	int nextTime = SDL_GetTicks();
@@ -388,7 +390,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 						// restart
 						queue_counter = 0;
 					}
-					else if(numProcessed && queue_counter > 1)
+					else if(numProcessed && queue_counter > 3)
 					{
 						// dequeue one buffer
 						alSourceUnqueueBuffers(audioStreamSource, 1, &qbuffer);
@@ -397,7 +399,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				}
 
 				// for starting only
-				if (queue_counter < 2)
+				if (queue_counter < 4)
 					QueueAudioBuffer(audioStreamBuffers[queue_counter++], audioStreamSource, frame_entry, audio_format, 0, frame_size);
 
 				if(queue_counter > 0 && state != AL_PLAYING)
