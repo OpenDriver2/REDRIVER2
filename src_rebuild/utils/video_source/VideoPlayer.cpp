@@ -425,7 +425,7 @@ int FMV_main(RENDER_ARGS* args)
 	DRAWENV draw;
 
 	FMVPlayerInitGL();
-	SetPleaseWait(NULL);
+	LoadFont(NULL);
 
 	SetupDefDrawEnv(&draw, 0, 0, 600, 250);
 	SetupDefDispEnv(&disp, 0, 0, 600, 250);
