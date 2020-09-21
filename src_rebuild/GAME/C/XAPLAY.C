@@ -298,16 +298,17 @@ void PlayXA(int num, int index)
 		sprintf(fileName, XANameFormat, num+1, index);
 
 		CSoundSource_WaveCache wavData;
-		wavData.Load(fileName);
+		if (wavData.Load(fileName))
+		{
+			g_XAWave = new CSoundSource_OpenALCache(&wavData);
 
-		g_XAWave = new CSoundSource_OpenALCache(&wavData);
+			alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);
 
-		alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);
+			vol = (10000 + gMasterVolume) / 79;
+			alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
 
-		vol = (10000 + gMasterVolume) / 79;
-		alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
-
-		alSourcePlay(g_XASource);
+			alSourcePlay(g_XASource);
+		}
 
 		gPlaying = 1;
 		xa_prepared = 2;
