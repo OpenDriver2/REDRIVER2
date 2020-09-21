@@ -291,10 +291,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	ALuint audioStreamBuffers[4];
 
 	alGenSources(1, &audioStreamSource);
-	alGenBuffers(4, audioStreamBuffers);
+	alGenBuffers(2, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
 	int nextTime = SDL_GetTicks();
+	int oldTime = nextTime;
 
 	int frame_size;
 	int queue_counter = 0;
@@ -305,7 +306,17 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	// main loop
 	while (true)
 	{
-		if (SDL_GetTicks() <= nextTime) // wait for frame
+		int curTime = SDL_GetTicks();
+		int deltaTime = curTime - oldTime;
+
+		if (deltaTime > 1000)
+		{
+			nextTime += deltaTime;
+			oldTime = curTime;
+		}
+
+
+		if (curTime <= nextTime) // wait for frame
 		{
 			Emulator_EndScene();
 			continue;
@@ -344,9 +355,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 				// set next step time
 				if (g_swapInterval == 0)
-					nextTime = SDL_GetTicks();
+					nextTime = curTime;
 				else
 					nextTime += avi_header.TimeBetweenFrames / 1000;
+
+				oldTime = curTime;
 
 				done_frames++;
 			}
@@ -375,7 +388,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 						// restart
 						queue_counter = 0;
 					}
-					else if(numProcessed && queue_counter >= 4)
+					else if(numProcessed && queue_counter > 1)
 					{
 						// dequeue one buffer
 						alSourceUnqueueBuffers(audioStreamSource, 1, &qbuffer);
@@ -384,7 +397,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				}
 
 				// for starting only
-				if (queue_counter < 4)
+				if (queue_counter < 2)
 					QueueAudioBuffer(audioStreamBuffers[queue_counter++], audioStreamSource, frame_entry, audio_format, 0, frame_size);
 
 				if(queue_counter > 0 && state != AL_PLAYING)
@@ -400,7 +413,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	}
 
 	alDeleteSources(1, &audioStreamSource);
-	alDeleteBuffers(4, audioStreamBuffers);
+	alDeleteBuffers(2, audioStreamBuffers);
 }
 
 // FMV main function
