@@ -269,7 +269,13 @@ _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 // [D]
 int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE *cv)
 {
-	return ((((dir - ratan2(x - cv->Midx, z - cv->Midz)) + 0x800U & 0xfff) - 0x800) < 1) << 0xb;
+	int curveDir;
+	int cvDiff;
+
+	curveDir = ratan2(x - cv->Midx, z - cv->Midz);
+	cvDiff = ((dir - curveDir) + 0x800U & 0xfff) - 0x800U;
+
+	return (cvDiff < 1) << 0xb;
 }
 
 // decompiled code
