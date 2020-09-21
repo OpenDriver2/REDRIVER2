@@ -13,6 +13,16 @@
 
 #define IS_SINGLE_LANE(rdcv)				((*(uint*)&(rdcv)->NumLanes & 0xFFFF) == 0xFF01)
 
+// those macros can be applied to straights and junctions
+#define ROAD_LANES_COUNT(rd)				((u_char)rd->NumLanes & 0xF)				// lane count
+#define ROAD_WIDTH_IN_LANES(rd)				(ROAD_LANES_COUNT(rd) * 2)					// width in lanes
+#define ROAD_AI_LANE(rd, lane)				((u_char)rd->AILanes >> (lane / 2) & 1U)	// lane AI driveable flag
+#define ROAD_IS_FLAG1(rd)					((rd->NumLanes & 0x40) > 0)					// flag 1 - parking allowed?
+#define ROAD_IS_FLAG2(rd)					((rd->NumLanes & 0x80) > 0)					// flag 2 - spawning allowed?
+#define ROAD_LANE_DIR(rd, lane)				((u_char)rd->LaneDirs >> (lane / 2) & 1U)	// direction bit
+#define ROAD_SPEED_LIMIT(rd)				(((u_char)rd->NumLanes >> 4) & 3)			// speed limit id
+
+
 extern ROAD_MAP_LUMP_DATA roadMapLumpData;
 
 extern int NumTempJunctions;
