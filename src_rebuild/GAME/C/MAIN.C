@@ -3350,7 +3350,8 @@ void DealWithHorn(char *hr, int i)
 		SetChannelPosition3(channel, (VECTOR *)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 0x1000, 0);
 	}
 
-	*hr = (*hr+1) % 28;	// [A]
+	int horn = *hr + 1 & 0xff;
+	*hr = (u_char)horn - (((u_char)((long long)horn * 0xaaaaaaab >> 0x20) & 0xfe) + (horn / 3));
 }
 
 
@@ -3407,6 +3408,8 @@ int Havana3DOcclusion(occlFunc func, int *param)
 		(*func)(param);
 		return 1;
 	}
+
+	draw = 0;
 
 	if (camera_position.vy < 0x1bf) 
 	{

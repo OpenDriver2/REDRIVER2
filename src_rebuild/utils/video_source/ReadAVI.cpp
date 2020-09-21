@@ -45,7 +45,7 @@
 
 using namespace std;
 
-#define VERBOSE
+// #define VERBOSE
 #define DBG_LVL_DEF 0
 
 #ifdef VERBOSE

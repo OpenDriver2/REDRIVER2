@@ -1989,13 +1989,13 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	{
 		if ((pad & 4) == 0) 
 		{
-			int_steer *= ((int_steer * int_steer) / 80);
-			analog_angle = ((long long)int_steer * 0x66666667) >> 32;	// (int_steer * 0.6) = int_steer * 2457 + 2048 >> 12 (2457 is 4096 * 0.6)
+			int_steer *= (int_steer * int_steer) / 80;
+			analog_angle = ((long long)int_steer * 0x66666667) >> 32;		// int_steer * 0.4
 		}
 		else 
 		{
-			int_steer *= ((int_steer * int_steer) / 60);
-			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;	// (int_steer * 0.4) = int_steer * 1638 + 2048 >> 12 (1638 is 4096 * 0.4)
+			int_steer *= (int_steer * int_steer) / 60;
+			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;		// int_steer * 0.6
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
