@@ -77,7 +77,7 @@ ReadAVI::ReadAVI(const char* filename)
 		parse_riff();
 	}
 	catch (std::system_error& e) { //file corrupted?
-		std::cerr << e.code().message() << "\n";
+		std::cerr << e.code().message().c_str() << "\n";
 		if (index_entries.size() == 0) {
 			free();
 			throw;

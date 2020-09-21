@@ -24,6 +24,8 @@ extern "C"
 #include "C\PAD.H"
 #include "C\SYSTEM.H"
 #include "C\E3STUFF.H"
+#include "C\PRES.H"
+#include "C\PAUSE.H"
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
 {
@@ -51,6 +53,7 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 
 // emulator window TODO: interface
 extern SDL_Window* g_window;
+extern int g_swapInterval;
 
 void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
 {
@@ -171,7 +174,56 @@ void FMVPlayerShutdownGL()
 	Emulator_DestroyTexture(g_FMVTexture);
 }
 
-void DrawFrame(ReadAVI::stream_format_t& stream_format)
+struct SUBTITLE
+{
+	ushort startframe;
+	ushort endframe;
+	ushort x;
+	ushort y;
+	ushort unk3;
+	ushort unk4;
+	char text[32];
+};
+
+SUBTITLE g_Subtitles[512];
+int g_NumSubtitles = 0;
+
+void InitSubtitles(const char* filename)
+{
+	g_NumSubtitles = 0;
+	FILE* subFile = fopen(filename, "rb");
+	if (subFile)
+	{
+		fread(&g_NumSubtitles, sizeof(int), 1, subFile);
+		printInfo("Subtitle text count: %d\n", g_NumSubtitles);
+
+		fread(g_Subtitles, sizeof(g_Subtitles), g_NumSubtitles, subFile);
+
+		fclose(subFile);
+	}
+}
+
+void PrintSubtitleText(SUBTITLE* sub)
+{
+	gShowMap = 1;
+
+	SetTextColour(128, 128, 128);
+	PrintString(sub->text, (600 - StringWidth(sub->text)) * 0x8000 >> 0x10, sub->y);
+
+	gShowMap = 0;
+}
+
+void DisplaySubtitles(int frame_number)
+{
+	// draw subtitie text
+	for (int i = 0; i < g_NumSubtitles; i++)
+	{
+		if(frame_number >= g_Subtitles[i].startframe && frame_number <= g_Subtitles[i].endframe)
+			PrintSubtitleText(&g_Subtitles[i]);
+	}
+}
+
+void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
@@ -192,6 +244,8 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format)
 	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
 
+	DisplaySubtitles(frame_number);
+
 	Emulator_EndScene();
 }
 
@@ -206,17 +260,22 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 	ReadAVI readAVI(filename);
 
-	int indexes = readAVI.GetIndexCnt();
-	printf("indexes:%d\n", indexes);
+	// also load subtitle file
+	if (subtitles)
+	{
+		sprintf(filename, "DRIVER2\\FMV\\%d\\RENDER%d.SBN", fd, arg->render);
+		InitSubtitles(filename);
+	}
+	else
+	{
+		g_NumSubtitles = 0;
+	}
 
 	ReadAVI::avi_header_t avi_header = readAVI.GetAviHeader();
 
 	ReadAVI::stream_format_t stream_format = readAVI.GetVideoFormat();
 	ReadAVI::stream_format_auds_t audio_format = readAVI.GetAudioFormat();
 
-	printf("video stream compression: %s\n", stream_format.compression_type);
-	printf("audio stream format: %d\n", audio_format.format);
-	
 	if (strcmp(stream_format.compression_type, "MJPG")) {
 		printf("Only MJPG supported\n");
 		return;
@@ -241,7 +300,9 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int queue_counter = 0;
 
 	int fade_out = 0;
+	int done_frames = 0;
 
+	// main loop
 	while (true)
 	{
 		if (SDL_GetTicks() <= nextTime) // wait for frame
@@ -257,6 +318,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		if (frame_size < 0)
 			break;
 
+		// handle recap
+		if(arg->recap && done_frames > arg->recap)
+			break;
+
+		// fade out sound and stop playback
 		if (fade_out > 0)
 		{
 			fade_out -= 18;
@@ -270,13 +336,19 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		{
 			if (frame_entry.type == ReadAVI::ctype_compressed_video_frame)
 			{
+				// Do video frame
 				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
-				
+
 				if (ret == 0)
-					DrawFrame(stream_format);
+					DrawFrame(stream_format, done_frames);
 
 				// set next step time
-				nextTime += avi_header.TimeBetweenFrames / 1000;
+				if (g_swapInterval == 0)
+					nextTime = SDL_GetTicks();
+				else
+					nextTime += avi_header.TimeBetweenFrames / 1000;
+
+				done_frames++;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
 			{
@@ -322,6 +394,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 		ReadControllers();
 
+		// exit
 		if (fade_out == 0 && Pads[0].mapnew > 0)
 			fade_out = 255;
 	}
@@ -333,7 +406,17 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 // FMV main function
 int FMV_main(RENDER_ARGS* args)
 {
+	DISPENV disp;
+	DRAWENV draw;
+
 	FMVPlayerInitGL();
+	SetPleaseWait(NULL);
+
+	SetupDefDrawEnv(&draw, 0, 0, 600, 250);
+	SetupDefDispEnv(&disp, 0, 0, 600, 250);
+	draw.dfe = 1;
+	PutDrawEnv(&draw);
+	PutDispEnv(&disp);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{
