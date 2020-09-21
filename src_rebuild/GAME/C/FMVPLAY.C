@@ -155,10 +155,11 @@ void PlayFMV(unsigned char render)
 	/* end block 3 */
 	// End Line: 223
 
+extern int FMV_main(RENDER_ARGS* args);
+
 // [D] [A]
 void PlayRender(RENDER_ARGS *args)
 {
-#ifdef PSX
 	static unsigned long oldsp;
 
 	StopAllChannels();
@@ -169,7 +170,7 @@ void PlayRender(RENDER_ARGS *args)
 	args->screenx = draw_mode_pal.framex;
 	args->screeny = draw_mode_pal.framey;
 	args->subtitle = gSubtitles;
-
+#ifdef PSX
 	if (Loadfile("FMV\\FMV.EXE", &DAT_800ff800) != 0)
 	{
 		oldsp = GetSp();
@@ -179,11 +180,11 @@ void PlayRender(RENDER_ARGS *args)
 		Exec(&DAT_800ff810, 1, args);
 		SetSp(oldsp);
 	}
-
-	ReInitSystem();
 #else
-	// TODO: use jpsx?
+	FMV_main(args);
 #endif
+	ReInitSystem();
+
 }
 
 

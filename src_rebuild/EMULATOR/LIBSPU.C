@@ -380,6 +380,11 @@ void SpuInit(void)
 	_SpuInit(0);
 }
 
+void SpuQuit(void)
+{
+	// do nothing!
+}
+
 void UpdateVoiceSample(SPUVoice& voice)
 {
 	//if (!voice.sampledirty)

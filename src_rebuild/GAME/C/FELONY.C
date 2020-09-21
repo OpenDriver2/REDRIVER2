@@ -66,21 +66,21 @@ int FelonyDecreaseTimer = 0;
 	/* end block 3 */
 	// End Line: 1335
 
-// [D]
+// [D] [T]
 void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count)
 {
-	FELONY_DELAY *pFVar1;
+	FELONY_DELAY *pCurrent;
 
-	pFVar1 = pFelonyDelay + count;
+	pCurrent = pFelonyDelay + count;
 
-	if (pFelonyDelay < pFVar1)
+	if (pFelonyDelay < pCurrent)
 	{
 		do {
 			pFelonyDelay->current = 0;
 			pFelonyDelay->maximum = *pMaximum++;
 
 			pFelonyDelay++;
-		} while (pFelonyDelay < pFVar1);
+		} while (pFelonyDelay < pCurrent);
 	}
 	return;
 }
@@ -119,12 +119,9 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 	/* end block 3 */
 	// End Line: 1374
 
-// [D]
+// [D] [T]
 void InitFelonyData(FELONY_DATA *pFelonyData)
 {
-	FELONY_VALUE *pFVar1;
-	FELONY_VALUE *pFVar2;
-
 	InitFelonyDelayArray(pFelonyData->occurrenceDelay, initialOccurrenceDelay, 12);
 	InitFelonyDelayArray(pFelonyData->reoccurrenceDelay, initialReccurrenceDelay, 12);
 
@@ -157,7 +154,7 @@ void InitFelonyData(FELONY_DATA *pFelonyData)
 	/* end block 4 */
 	// End Line: 1416
 
-// [D]
+// [D] [T]
 int GetCarHeading(int direction)
 {
 	return (direction + 0x200U & 0xfff) >> 10;
@@ -183,19 +180,17 @@ int GetCarHeading(int direction)
 	/* end block 2 */
 	// End Line: 1423
 
-// [D]
+// [D] [T]
 char GetCarDirectionOfTravel(_CAR_DATA *cp)
 {
-	unsigned char bVar1;
-	int iVar2;
+	int direction;
 
-	iVar2 = GetCarHeading((cp->hd).direction);
-	bVar1 = iVar2;
+	direction = GetCarHeading(cp->hd.direction);;
 
 	if (cp->hd.wheel_speed < 0) 
-		bVar1 = bVar1 + 2 & 3;
+		direction = direction + 2 & 3;
 
-	return (char)bVar1;
+	return direction;
 }
 
 
@@ -249,22 +244,21 @@ char GetCarDirectionOfTravel(_CAR_DATA *cp)
 // [D]
 void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 {
-	short sVar1;
-	char cVar2;
-	uint uVar4;
+	int felonyTooLowForRoadblocks;
+	char rnd; // $s1
+	int dir; // $a3
 	short *felony;
-	uint uVar6;
 	int phrase;
-	uint uVar7;
+	int additionalFelonyPoints;
 
-	uVar6 = type;
 	if (player[0].playerCarId < 0)
 		felony = &pedestrianFelony;
 	else
 		felony = &car_data[player[0].playerCarId].felonyRating;
 
-	sVar1 = *felony;
-	if (pFelonyData->occurrenceDelay[uVar6].current < pFelonyData->occurrenceDelay[uVar6].maximum)
+	felonyTooLowForRoadblocks = *felony;
+
+	if (pFelonyData->occurrenceDelay[type].current < pFelonyData->occurrenceDelay[type].maximum)
 		return;
 
 #ifdef FELONY_DEBUG
@@ -306,17 +300,17 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 	if (CopsCanSeePlayer == 0 && (type != 11))
 		return;
 
-	if (pFelonyData->reoccurrenceDelay[uVar6].current != 0) 
+	if (pFelonyData->reoccurrenceDelay[type].current != 0)
 		return;
 
-	pFelonyData->reoccurrenceDelay[uVar6].current = pFelonyData->reoccurrenceDelay[uVar6].maximum;
+	pFelonyData->reoccurrenceDelay[type].current = pFelonyData->reoccurrenceDelay[type].maximum;
 
 	if (*felony < 0x293)
-		phrase = (pFelonyData->occurrenceDelay + uVar6)[0x18].current;
+		additionalFelonyPoints = pFelonyData->value[type].placid;
 	else
-		phrase = (pFelonyData->occurrenceDelay + uVar6)[0x18].maximum * pFelonyData->pursuitFelonyScale >> 0xc;
+		additionalFelonyPoints = pFelonyData->value[type].angry * pFelonyData->pursuitFelonyScale >> 0xc;
 
-	*felony += (phrase * scale >> 0xc);
+	*felony += (additionalFelonyPoints * scale >> 12);
 
 	if (player[0].playerCarId < 0)
 		felony = &pedestrianFelony;
@@ -326,71 +320,64 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 	if (0x1000 < *felony) 
 		*felony = 0x1000;
 
-	// KILL PEDESTRIA FELONY HERE
+	// KILL PEDESTRIAN FELONY HERE
 	if (player[0].playerType == 2)
 		*felony = 0;
 
-	if (numActiveCops == 0) 
-		goto switchD_0004c6a8_caseD_1;
-
-	uVar4 = Random2(1);
-	uVar7 = uVar4 & 0xff;
-	cVar2 = GetCarDirectionOfTravel(&car_data[player[0].playerCarId]);
-
-	if (first_offence != 0)
-		goto switchD_0004c6a8_caseD_1;
-
-	switch (uVar6) 
+	if (first_offence == 0 && numActiveCops)
 	{
-		case 1:
-		case 5:
-		case 6:
-		case 7:
-		case 0xb:
-			goto switchD_0004c6a8_caseD_1;
-		default:
-			if ((uVar7 - (((uint)((long long)uVar7 * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + uVar7 / 0x11) & 0xff) == 0) 
-			{
-				phrase = MaxPlayerDamage[0] * 3;
+		// say something..
+		rnd = Random2(1) & 0xff;
+		dir = GetCarDirectionOfTravel(&car_data[player[0].playerCarId]);
 
-				if (phrase >> 2 < car_data[player[0].playerCarId].totalDamage)
-					uVar4 = uVar4 & 3;
-				else 
-					uVar4 = uVar7 - (((uint)((long long)uVar7 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar7 / 3) & 0xff;
-
-				if (last_cop_phrase != uVar4 && 0 < TimeSinceLastSpeech) 
-				{
-					if (uVar4 < 3)
-						CopSay(uVar4 + 0xf, cVar2);
-					else
-						CopSay(6, 0);
-
-					last_cop_phrase = uVar4;
-				}
-			}
-			goto switchD_0004c6a8_caseD_1;
-		case 3:
-			phrase = 5;
-
-			if ((uVar4 & 3) != 0) 
-				goto switchD_0004c6a8_caseD_1;
-
-			break;
-		case 4:
-			if ((uVar7 - (((uint)((long long)uVar7 * 0xaaaaaaab >> 0x20) & 0xfffffffe) + uVar7 / 3) & 0xff) != 0) 
-				goto switchD_0004c6a8_caseD_1;
-
-			phrase = (uVar4 & 1) + 7;
-	}
-	CopSay(phrase, 0);
-switchD_0004c6a8_caseD_1:
-
-	if (sVar1 < 0x527)
-	{
-		if (0x526 < *felony) 
+		switch (type)
 		{
-			uVar6 = Random2(0);
-			roadblockCount = roadblockDelayDiff[gCopDifficultyLevel] + (uVar6 & 0xff);
+			case 1:
+			case 5:
+			case 6:
+			case 7:
+			case 11:
+				break;
+			case 3:
+				if ((rnd & 3) != 0)
+					break;
+
+				CopSay(5, 0);
+				break;
+			case 4:
+				if ((rnd - (((uint)((long long)rnd * 0xaaaaaaab >> 0x20) & 0xfffffffe) + rnd / 3) & 0xff) != 0)
+					break;
+
+				CopSay((rnd & 1) + 7, 0);
+
+				break;
+			default:
+				if ((rnd - (((uint)((long long)rnd * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + rnd / 0x11) & 0xff) == 0)
+				{
+					if (MaxPlayerDamage[0] * 3 >> 2 < car_data[player[0].playerCarId].totalDamage)
+						phrase = rnd & 3;
+					else
+						phrase = rnd - (((uint)((long long)rnd * 0xaaaaaaab >> 0x20) & 0xfffffffe) + rnd / 3) & 0xff;
+
+					if (last_cop_phrase != phrase && 0 < TimeSinceLastSpeech)
+					{
+						if (phrase < 3)
+							CopSay(phrase + 15, dir);
+						else
+							CopSay(6, 0);
+
+						last_cop_phrase = phrase;
+					}
+				}
+				break;
+		}
+	}
+
+	if (felonyTooLowForRoadblocks < 0x527) 
+	{
+		if (*felony > 0x526)
+		{
+			roadblockCount = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 		}
 	}
 }
@@ -427,7 +414,7 @@ switchD_0004c6a8_caseD_1:
 	/* end block 3 */
 	// End Line: 1243
 
-// [D]
+// [D] [T]
 void AdjustFelony(FELONY_DATA *pFelonyData)
 {
 	bool bVar1;
@@ -649,7 +636,7 @@ void CheckPlayerMiscFelonies(void)
 	{
 		st = GET_STRAIGHT(surfInd); // Driver2StraightsPtr + surfInd;
 		uVar6 = st->angle & 0xfff;
-		uVar4 = st->NumLanes & 0xf;
+		uVar4 = (u_char)st->NumLanes & 0xf;
 		uVar6 = uVar4 - (FIXEDH((carPos->vx - st->Midx) * rcossin_tbl[uVar6 * 2 + 1] - (carPos->vz - st->Midz) * rcossin_tbl[uVar6 * 2]) + 0x200 >> 9);
 		iVar5 = uVar4 * 2;
 
@@ -659,13 +646,13 @@ void CheckPlayerMiscFelonies(void)
 		if (iVar5 <= uVar6)
 			uVar6 = iVar5 - 1;
 	
-		if ((st->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0) 
+		if (((u_char)st->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
 		{
 			uVar4 = (st->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
 
 			if ((*(uint *)(st->ConnectIdx + 3) & 0xffff0000) != 0xff010000) 
 			{
-				uVar6 = st->LaneDirs >> (uVar6 / 2 & 0x1fU);
+				uVar6 = (u_char)st->LaneDirs >> (uVar6 / 2 & 0x1fU);
 			}
 
 			if ((uVar6 & 1) == 0) 
@@ -690,15 +677,15 @@ void CheckPlayerMiscFelonies(void)
 		if (uVar6 < 0)
 			uVar6 = 0;
 
-		iVar5 = (cv->NumLanes & 0xf) * 2;
+		iVar5 = ((u_char)cv->NumLanes & 0xf) * 2;
 
 		if (iVar5 <= uVar6)
 			uVar6 = iVar5 - 1;
 
-		if ((cv->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
+		if (((u_char)cv->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
 		{
 			if (*(short *)&cv->NumLanes != -0xff)
-				uVar6 = cv->LaneDirs >> (uVar6 / 2 & 0x1fU);
+				uVar6 = (u_char)cv->LaneDirs >> (uVar6 / 2 & 0x1fU);
 
 			if ((uVar6 & 1) == 0)
 			{
@@ -742,9 +729,9 @@ void CheckPlayerMiscFelonies(void)
 
 	// check the speed limit
 	if (st != NULL)
-		maxSpeed = speedLimits[(st->NumLanes >> 4) & 3];
+		maxSpeed = speedLimits[((u_char)st->NumLanes >> 4) & 3];
 	else if (cv != NULL)
-		maxSpeed = speedLimits[(cv->NumLanes >> 4) & 3];
+		maxSpeed = speedLimits[((u_char)cv->NumLanes >> 4) & 3];
 	else
 		maxSpeed = speedLimits[2];
 
@@ -775,11 +762,11 @@ void CheckPlayerMiscFelonies(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitFelonySystem(void)
 {
-	FelonyIncreaseTime = 0x1f;
-	FelonyDecreaseTime = 0x1f;
+	FelonyIncreaseTime = 31;
+	FelonyDecreaseTime = 31;
 	FelonyIncreaseTimer = 0;
 	FelonyDecreaseTimer = 0;
 
@@ -797,7 +784,7 @@ void InitFelonySystem(void)
 	/* end block 1 */
 	// End Line: 1715
 
-// [D]
+// [D] [T]
 void CarHitByPlayer(_CAR_DATA *victim, int howHard)
 {
 	char type;

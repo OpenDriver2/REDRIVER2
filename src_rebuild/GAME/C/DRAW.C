@@ -1821,6 +1821,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 	int Z;
 	PL_POLYFT4* polys;
 	int i;
+	int r;
 	uint polyVar;
 	u_char temp;
 	u_char ptype;
@@ -1844,7 +1845,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		// with skipping
 		ptype = polys->id & 0x1f;
 
-		if ((ptype & 1) == 0) // is FT3 triangle?
+		if ((ptype & 1) == 0 && ptype != 8) // is FT3 triangle?
 		{
 			temp = polys->uv2.v;
 			polys->uv3.u = polys->uv2.u;
@@ -1863,20 +1864,6 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			continue;
 		}
 
-		if (ptype == 21)
-		{
-			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
-		} 
-		else
-		{
-			temp = polys->th;
-
-			if ((polys->th & 0x80) == 0) // cache normal index if it were not
-				temp = polys->th = normalIndex(srcVerts, *(uint*)&polys->v0);
-
-			pc->colour = pc->f4colourTable[(rot >> 3) * 4 - temp & 0x1f];
-		}
-
 		// perform transform
 		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
 		gte_rtpt();
@@ -1885,12 +1872,31 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 		gte_nclip();
 		gte_stopz(&opz);
 
-		if ((pc->flags & 0x6) != 0)
+		r = rot;
+
+		if(pc->flags & 0x6)
 		{
-			if((pc->flags & 0x4) == 0)
-				opz = -opz;		// front face
-			else
+			if (opz < 0)
+				r = rot + 32 & 63;
+
+			if(pc->flags & 0x4)
 				opz = 1;		// no culling
+			else
+				opz = -opz;		// front face
+		}
+
+		if (ptype == 21)
+		{
+			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
+		}
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(uint*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
 		}
 
 		if (opz > 0)
@@ -1950,6 +1956,15 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 			}
 			else
 			{
+				r = n;
+				if (n == 1)
+				{
+					if (minZ - 150 < (diff << 1))
+						r = 4;
+					else
+						r = 2;
+				}
+
 				copyVector(&subdiVerts[0][0], &srcVerts[polys->v0]);
 				subdiVerts[0][0].uv.val = *(ushort*)&polys->uv0;
 
@@ -1962,8 +1977,8 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 				copyVector(&subdiVerts[0][3], &srcVerts[polys->v2]);
 				subdiVerts[0][3].uv.val = *(ushort*)&polys->uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts, rot, rot, pc);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts, r, r);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts, r, r, pc);
 			}
 		}
 

@@ -7,5 +7,6 @@
 #define MAX_CARS			20
 #define MAX_CAR_MODELS		5
 #define MAX_PEDESTRIANS		28
+#define MAX_TRAFFIC_CARS	19
 
 #endif // DRLIMITS_H

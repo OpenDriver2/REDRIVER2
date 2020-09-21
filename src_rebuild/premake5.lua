@@ -1,10 +1,12 @@
 -- premake5.lua
 
 -- you can redefine dependencies
-local SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
-local GLEW_DIR = os.getenv("GLEW_DIR") or "dependencies/glew"
-local OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
-local GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
+SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
+GLEW_DIR = os.getenv("GLEW_DIR") or "dependencies/glew"
+OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
+JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
+
+GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 
 if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
     error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
@@ -28,6 +30,8 @@ workspace "REDRIVER2"
         defines {
             "NDEBUG",
         }
+		
+	dofile("premake_libjpeg.lua")
 
 -- EMULATOR layer
 project "PSX"
@@ -90,6 +94,8 @@ project "REDRIVER2"
     files { 
         "GAME/**.h", 
         "GAME/**.c", 
+		"utils/**.h", 
+        "utils/**.cpp", 
         "redriver2_psxpc.c",
         "DebugOverlay.cpp",
     }
@@ -108,9 +114,10 @@ project "REDRIVER2"
             SDL2_DIR.."/include",
             GLEW_DIR.."/include",
             OPENAL_DIR.."/include",
+			JPEG_DIR.."/",
         }
 
-        links { "PSX" } -- only need to link emulator
+        links { "PSX", "jpeg" } -- only need to link emulator
     
         linkoptions {
 			"/SAFESEH:NO", -- Image Has Safe Exception Handers: No. Because of openal-soft

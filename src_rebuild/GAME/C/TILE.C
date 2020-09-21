@@ -323,6 +323,7 @@ void DrawTILES(int tile_amount)
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.lastTexInfo = 0x18273472;
+	plotContext.flags = 0;
 	ppuVar6 = (ushort **)tile_overflow_buffer;
 
 	while (tile_amount != -1) 
@@ -787,6 +788,14 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 		
 		gte_stotz(&z);
 
+		if (pc->flags & 0x6)
+		{
+			if (pc->flags & 0x4)
+				opz = 1;		// no culling
+			else
+				opz = -opz;		// front face
+		}
+
 		if (opz > 0 && z > 5)
 		{
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
@@ -1031,6 +1040,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 
 void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 {
+	// Driver 1 leftover...
 	UNIMPLEMENTED();
 	/*
 	SubDivisionArrays = lump_ptr;
