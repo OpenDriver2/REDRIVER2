@@ -806,7 +806,10 @@ void GlobalTimeStep(void)
 					thisDelta[i].n.angularVelocity[1] = 0;
 					thisDelta[i].n.angularVelocity[2] = 0;
 
-					j = 0;
+					if (cp->hd.mayBeColliding & 0x2) // [A] a litle skip for bbox checking
+						j = 0;
+					else
+						j = 512;
 
 					while (j < i)
 					{
@@ -817,7 +820,7 @@ void GlobalTimeStep(void)
 						else
 							thisState_j = &c1->st;
 
-						if (c1->hd.mayBeColliding != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						if ((c1->hd.mayBeColliding & 0x2) && (c1->hd.speed != 0 || cp->hd.speed != 0))
 						{
 							bb1 = &bbox[cp->id];
 							bb2 = &bbox[c1->id];
@@ -844,17 +847,17 @@ void GlobalTimeStep(void)
 								strikeVel = depth * 0xc000;
 
 								pointVel0[0] = (FIXEDH(thisState_i->n.angularVelocity[1] * lever0[2] - thisState_i->n.angularVelocity[2] * lever0[1]) + thisState_i->n.linearVelocity[0]) -
-												(FIXEDH(thisState_j->n.angularVelocity[1] * lever1[2] - thisState_j->n.angularVelocity[2] * lever1[1]) + thisState_j->n.linearVelocity[0]);
-										
+									(FIXEDH(thisState_j->n.angularVelocity[1] * lever1[2] - thisState_j->n.angularVelocity[2] * lever1[1]) + thisState_j->n.linearVelocity[0]);
+
 								pointVel0[1] = (FIXEDH(thisState_i->n.angularVelocity[2] * lever0[0] - thisState_i->n.angularVelocity[0] * lever0[2]) + thisState_i->n.linearVelocity[1]) -
-												(FIXEDH(thisState_j->n.angularVelocity[2] * lever1[0] - thisState_j->n.angularVelocity[0] * lever1[2]) + thisState_j->n.linearVelocity[1]);
-										
+									(FIXEDH(thisState_j->n.angularVelocity[2] * lever1[0] - thisState_j->n.angularVelocity[0] * lever1[2]) + thisState_j->n.linearVelocity[1]);
+
 								pointVel0[2] = (FIXEDH(thisState_i->n.angularVelocity[0] * lever0[1] - thisState_i->n.angularVelocity[1] * lever0[0]) + thisState_i->n.linearVelocity[2]) -
-												(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
-										
-								howHard =	FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
-											FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
-											FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
+									(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
+
+								howHard = FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
+									FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
+									FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
 
 								if (howHard > 0 && RKstep > -1)
 								{
@@ -876,7 +879,7 @@ void GlobalTimeStep(void)
 									// wake up cops if they've ben touched
 									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY)
 									{
-										if (cp->controlType == 1 && ((*(uint*)&c1->hndType & 0x2ff00) == 0x20200)) 
+										if (cp->controlType == 1 && ((*(uint*)&c1->hndType & 0x2ff00) == 0x20200))
 										{
 											InitCopState(c1, NULL);
 											c1->ai.p.justPinged = 0;
@@ -1690,7 +1693,7 @@ void CheckCarToCarCollisions(void)
 		bb->y1 = FixFloorSigned(cp->hd.where.t[1] + colBox->vy * 4 /* + 2400*/, 4);
 
 		if (cp->hndType == 0)
-			cp->hd.mayBeColliding = 1;
+			cp->hd.mayBeColliding = 0x1;
 
 		loop1++;
 		bb++;
@@ -1711,7 +1714,7 @@ void CheckCarToCarCollisions(void)
 				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
 				(loop1 == 0 || car_data[loop1].controlType != 0) && car_data[loop2].controlType != 0)
 			{
-				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 1;
+				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 0x2;
 			}
 
 			loop2++;

@@ -1142,7 +1142,7 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 		}
 		wheel--;
 		i--;
-	} while (-1 < i);
+	} while (i >= 0);
 
 	if (cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0)
 	{
