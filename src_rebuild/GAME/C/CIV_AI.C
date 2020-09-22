@@ -73,7 +73,7 @@ int test555 = 0;
 	/* end block 2 */
 	// End Line: 1435
 
-// [D] [A]
+// [D] [T]
 int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char control, int model, int palette, char *extraData)
 {
 	VECTOR tmpStart;
@@ -180,57 +180,43 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	/* end block 3 */
 	// End Line: 6498
 
-// [D]
+// [D] [T]
 _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 {
-	int iVar1;
-	uint uVar2;
-	int iVar3;
-	int iVar4;
+	uint distSq;
 	_CAR_DATA *lcp;
 	uint retDistSq;
 	_CAR_DATA *retCar;
+	int dx; // $a0
+	int dz; // $v1
 
 	retCar = NULL;
 	retDistSq = 0x7fffffff; // INT_MAX
 	lcp = car_data;
 
 	do {
+
 		if (lcp->controlType != 0)
 		{
-			iVar3 = lcp->hd.where.t[1];
-
-			iVar1 = y - iVar3;
-
-			if (iVar1 < 0) 
-				iVar1 = iVar3 - y;
-
-			if (iVar1 < 800) 
+			if (ABS(y - lcp->hd.where.t[1]) < 800)
 			{
-				iVar3 = x - lcp->hd.where.t[0];
-				iVar1 = iVar3;
+				dx = x - lcp->hd.where.t[0];
+				dz = z - lcp->hd.where.t[2];
 
-				if (iVar3 < 0)
-					iVar1 = -iVar3;
-
-				if (iVar1 < 0x1000) 
+				if (ABS(dx) < 4096 && ABS(dz) < 4096)
 				{
-					iVar4 = z - lcp->hd.where.t[2];
-					iVar1 = iVar4;
+					distSq = dx * dx + dz * dz;
 
-					if (iVar4 < 0)
-						iVar1 = -iVar4;
-
-					if ((iVar1 < 0x1000) && (uVar2 = iVar3 * iVar3 + iVar4 * iVar4, uVar2 < retDistSq)) 
+					if (distSq < retDistSq)
 					{
-						retDistSq = uVar2;
+						retDistSq = distSq;
 						retCar = lcp;
 					}
 				}
 			}
 		}
 		lcp++;
-	} while (lcp < &car_data[20]);
+	} while (lcp < &car_data[MAX_CARS]);
 
 	if (distToCarSq) 
 		*distToCarSq = retDistSq;
@@ -266,7 +252,7 @@ _CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
 	/* end block 4 */
 	// End Line: 7770
 
-// [D]
+// [D] [T]
 int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE *cv)
 {
 	int curveDir;
@@ -287,7 +273,7 @@ int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE *cv)
 	/* end block 1 */
 	// End Line: 1861
 
-// [D]
+// [D] [T]
 void CivCarFX(_CAR_DATA *cp)
 {
 	if (cp->ai.c.thrustState != 3)
@@ -5197,7 +5183,7 @@ LAB_0002a430:
 // [D]
 void AttemptUnPark(_CAR_DATA *cp)
 {
-	unsigned char bVar1;
+	unsigned char oldLane;
 	int curRoad;
 	DRIVER2_STRAIGHT *straight;
 	DRIVER2_CURVE *curve;
@@ -5207,21 +5193,22 @@ void AttemptUnPark(_CAR_DATA *cp)
 	InitCivState(cp, NULL);
 	curRoad = cp->ai.c.currentRoad;
 
-	if ((curRoad & 0xffffe000) == 0 && (curRoad & 0x1fff) < NumDriver2Straights && curRoad > -1) 
-		straight = Driver2StraightsPtr + curRoad;
-	else 
-		curve = Driver2CurvesPtr + curRoad - 0x4000;
+	if (IS_STRAIGHT_SURFACE(curRoad))
+		straight = GET_STRAIGHT(curRoad);
+	else // actually there might be a bug - it might need additional IS_CURVED_SURFACE check
+		curve = GET_CURVE(curRoad);
 
-	bVar1 = cp->ai.c.currentLane;
+	oldLane = cp->ai.c.currentLane;
 
 	if (straight && curve)
 	{
 		cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
 
-		if (((bVar1 == cp->ai.c.currentLane) ||
-			(straight != NULL && ((straight->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0))) ||
-			(curve != NULL && ((curve->AILanes >> ((cp->ai.c.currentLane >> 1) & 0x1f) & 1U) == 0)))
+		if (oldLane == cp->ai.c.currentLane ||
+			(straight != NULL && ROAD_IS_AI_LANE(straight, cp->ai.c.currentLane) == 0) ||
+			(curve != NULL && ROAD_IS_AI_LANE(curve, cp->ai.c.currentLane) == 0))
 		{
+			// shut off. Unknown intention
 			cp->ai.c.thrustState = 3;
 			cp->ai.c.ctrlState = 7;
 		}
