@@ -104,6 +104,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 	k = 0;
 	i = 1;
 
+	// do SAT tests for each axis
 	do {
 		j = 1;
 		do {
@@ -122,72 +123,44 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		k = i & 1;
 
 		i--;
+	} while (i >= 0);
 
-		if (i == -1)
+	// calc overlap if needed
+	if (needOverlap)
+	{
+		FE = ABS(body[1].dist[0]) - ABS(body[1].limit[0]);
+		FE = ABS(FE);
+
+		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
+		tmp2 = ABS(tmp2);
+
+		if (tmp2 < 11)
+			xover = -1;
+		else
+			xover = (FE << 0xc) / tmp2;
+
+		FE = ABS(body[1].dist[1]) - ABS(body[1].limit[1]);
+		FE = ABS(FE);
+
+		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
+		tmp2 = ABS(tmp2);
+
+		zover = xover;
+		if (tmp2 > 10)
+			zover = (FE << 0xc) / tmp2;
+
+		if (xover > -1)
 		{
-			if (needOverlap != 0)
-			{
-				absdist = body[1].dist[0];
-
-				if (absdist < 0)
-					absdist = -absdist;
-
-				abslim = body[1].limit[0];
-				if (abslim < 0)
-					abslim = -abslim;
-
-				FE = absdist - abslim;
-				if (FE < 0)
-					FE = abslim - absdist;
-
-				tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
-				if (tmp2 < 0)
-					tmp2 = -tmp2;
-
-				if (tmp2 < 11)
-					xover = -1;
-				else 
-					xover = (FE << 0xc) / tmp2;
-
-				absdist = body[1].dist[1];
-				
-				if (absdist < 0)
-					absdist = -absdist;
-
-				abslim = body[1].limit[1];
-				if (abslim < 0)
-					abslim = -abslim;
-
-				FE = absdist - abslim;
-
-				if (FE < 0)
-					FE = abslim - absdist;
-
-				tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
-
-				if (tmp2 < 0)
-					tmp2 = -tmp2;
-
-				zover = xover;
-				if (10 < tmp2)
-					zover = (FE << 0xc) / tmp2;
-
-				if (xover > -1)
-				{
-					if (zover < xover)
-						boxOverlap = zover;
-					else
-						boxOverlap = xover;
-				}
-				else
-					boxOverlap = zover;
-			}
-			return 1;
+			if (zover < xover)
+				boxOverlap = zover;
+			else
+				boxOverlap = xover;
 		}
+		else
+			boxOverlap = zover;
+	}
 
-	} while (true);
-
-	return 0;
+	return 1;
 }
 
 
@@ -255,11 +228,10 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	bool carBarrierCollision;
 	int lower;
 	int upper;
-	int sign1;
 	int k;
-	int _k;
-	int sign0;
 	int sign;
+	int sign0;
+	int sign1;
 	int smallest;
 	int besti;
 	int bestk;
@@ -273,7 +245,7 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 
 	smallest = body->limit[0] + 1;
 
-	if ((body->isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0) && 
+	if ((body[0].isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0) && 
 		(body[1].length[0] << 3 <= body[1].length[1]) || (body[1].length[1] << 3 <= body[1].length[0]))
 	{
 		carBarrierCollision = true;
@@ -286,14 +258,22 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 			upper = body[i].limit[k] - body[i].dist[k];
 			lower = body[i].dist[k] + body[i].limit[k];
 
-			if (upper < smallest && (sign = -1, smallest = upper, besti = i, bestk = k, i == 1)) 
+			if (smallest > upper)
 			{
-				sign = 1;
+				sign = (i == 1) ? 1 : -1;
+
+				smallest = upper;
+				besti = i;
+				bestk = k;
 			}
 
-			if (lower < smallest && (sign = 1, smallest = lower, besti = i, bestk = k, i == 1)) 
+			if (smallest > lower)
 			{
-				sign = -1;
+				sign = (i == 1) ? -1 : 1;
+
+				smallest = lower;
+				besti = i;
+				bestk = k;
 			}
 
 			k--;
@@ -303,6 +283,7 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 		i--;
 	} while (i != -1);
 
+	// calc push
 	if (carBarrierCollision)
 	{
 		k = 1;
@@ -331,12 +312,13 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	cd = &body[(besti ^ 1)];
 
 	sign0 = sign;
-	if (-1 < cd->axis[0].vx * body[besti].axis[bestk].vx + cd->axis[0].vz * body[besti].axis[bestk].vz + 0x800)
+
+	if (cd->axis[0].vx * body[besti].axis[bestk].vx + cd->axis[0].vz * body[besti].axis[bestk].vz + 0x800 > -1)
 		sign0 = -sign;
 
 	sign1 = sign;
 
-	if (-1 < cd->axis[1].vx * body[besti].axis[bestk].vx + cd->axis[1].vz * body[besti].axis[bestk].vz + 0x800)
+	if (cd->axis[1].vx * body[besti].axis[bestk].vx + cd->axis[1].vz * body[besti].axis[bestk].vz + 0x800 > -1)
 		sign1 = -sign;
 
 	collisionResult->penetration = smallest;
@@ -472,7 +454,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 
 			coll--;
 			i--;
-		} while (i != -1);
+		} while (i >= 0);
 
 		bcollided2d(cd, 0);
 		time += step;
@@ -490,7 +472,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 
 			coll--;
 			i--;
-		} while (i != -1);
+		} while (i >= 0);
 
 		time = 0x1000;
 	}
@@ -1012,7 +994,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 	car_cos = cp->ap.carCos;
 
-	if (boxDiffY <= building->height / 2 + cp->hd.oBox.length[1] / 2 && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
+	if (boxDiffY <= (building->height >> 1) + (cp->hd.oBox.length[1] > 1) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
 	{
 		tempwhere.vx = cp->hd.where.t[0];
 		tempwhere.vz = cp->hd.where.t[2];
@@ -1041,8 +1023,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
 
-			cd[0].length[0] = 90;
-			cd[0].length[1] = 90;
+			cd[0].length[0] = 80;
+			cd[0].length[1] = 80;
 		}
 		else if (cp->controlType == 5)
 		{
@@ -1071,8 +1053,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		cd[0].avel = FIXEDH(cp->st.n.angularVelocity[1]) * 5 >> 5;
 
-		cd[1].x.vx = cp->hd.where.t[0] + (building->pos.vx - cp->hd.where.t[0]);
-		cd[1].x.vz = cp->hd.where.t[2] + (building->pos.vz - cp->hd.where.t[2]);
+		cd[1].x.vx = cp->hd.where.t[0] + (((building->pos.vx - cp->hd.where.t[0]) << 0x10) >> 0x10);
+		cd[1].x.vz = cp->hd.where.t[2] + (((building->pos.vz - cp->hd.where.t[2]) << 0x10) >> 0x10);
 
 		cd[1].theta = building->theta;
 		cd[1].length[0] = building->xsize;
@@ -1236,7 +1218,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 				{
 					if (cp->controlType == 1) 
 					{
-						if (strikeVel < 0x20) 
+						if (strikeVel < 32) 
 							scale = ((strikeVel << 0x17) >> 0x10);
 						else 
 							scale = 0x1000;
@@ -1300,7 +1282,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					}
 
 					// add leaves
-					if ((0x3600 < strikeVel) && (32000 < cp->hd.wheel_speed + 16000U))
+					if (strikeVel > 0x3600 && cp->hd.wheel_speed + 16000U > 32000)
 					{
 						if ((model->flags2 & 0x2000) == 0) 
 						{
@@ -1333,7 +1315,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 							AddLeaf(&LeafPosition, 3, 1);
 						}
 
-						if (0x1b000 < strikeVel)
+						if (strikeVel > 0x1b000)
 						{
 							Setup_Debris(&collisionResult.hit, &velocity, 6, debris_colour << 0x10);
 

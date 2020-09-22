@@ -1025,11 +1025,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							bbox.pos.pad = (model->flags2 >> 10) & 1;
 
-							//iVar7 = collide->zsize << 0x10;
-							bbox.xsize = collide->zsize / 2; // (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
-
-							//iVar7 = collide->xsize << 0x10;
-							bbox.zsize = collide->xsize / 2;// //;(iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
+							bbox.xsize = collide->zsize >> 1;
+							bbox.zsize = collide->xsize >> 1;
 
 							bbox.height = collide->ysize;
 							bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
@@ -1038,19 +1035,16 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							if (CAR_INDEX(cp) == 21)
 							{
-								if (x1 < mdcount || (cop->pad == 0))
+								if (x1 < mdcount || cop->pad == 0)
 								{
 									CarBuildingCollision(cp, &bbox, cop, 0);
 								}
-								else
+								else if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
 								{
-									if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
-									{
-										if (!bKillTanner)
-											player[0].dying = 1;
+									if (!bKillTanner)
+										player[0].dying = 1;
 
-										bKillTanner = 1;
-									}
+									bKillTanner = 1;
 								}
 							}
 							else if (cp->controlType == 5)
@@ -1074,7 +1068,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 										uVar9 = cp->hd.direction & 0xfff;
 
 										cp->hd.where.t[0] = lVar1 + FIXEDH((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
-										cp->hd.where.t[2] = lVar2 + FIXEDH((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
+										cp->hd.where.t[2] = lVar2 + FIXEDH((gCameraDistance * rcossin_tbl[uVar9 * 2 + 1]) / 2);
 										iVar7--;
 									}
 								}

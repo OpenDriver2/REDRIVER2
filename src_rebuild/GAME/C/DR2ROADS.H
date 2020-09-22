@@ -11,10 +11,10 @@
 #define GET_CURVE(surfid)					(Driver2CurvesPtr + (surfid & 0x1FFF))
 #define GET_JUNCTION(surfid)				(Driver2JunctionsPtr + (surfid & 0x1FFF))
 
-#define IS_SINGLE_LANE(rdcv)				((*(uint*)&(rdcv)->NumLanes & 0xFFFF) == 0xFF01)
+#define IS_SINGLE_LANE(rd)					((*(ushort*)&(rd)->NumLanes & 0xFFFF) == 0xFF01)
 
 // those macros can be applied to straights and junctions
-#define ROAD_LANES_COUNT(rd)				((u_char)rd->NumLanes & 0xF)				// lane count
+#define ROAD_LANES_COUNT(rd)				((uint)rd->NumLanes & 0xF)				// lane count
 #define ROAD_WIDTH_IN_LANES(rd)				(ROAD_LANES_COUNT(rd) * 2)					// width in lanes
 #define ROAD_AI_LANE(rd, lane)				((u_char)rd->AILanes >> (lane / 2) & 1U)	// lane AI driveable flag
 #define ROAD_IS_FLAG1(rd)					((rd->NumLanes & 0x40) > 0)					// flag 1 - parking allowed?
