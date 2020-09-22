@@ -626,7 +626,7 @@ void CheckPlayerMiscFelonies(void)
 		dx = carPos->vx - st->Midx;
 		dz = carPos->vz - st->Midz;
 
-		lane = ROAD_LANES_COUNT(st) - FixHalfRound(FIXEDH(dx * rcossin_tbl[(st->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(st->angle & 0xfff) * 2]), 9);
+		lane = ROAD_LANES_COUNT(st) - (FIXEDH(dx * rcossin_tbl[(st->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(st->angle & 0xfff) * 2]) + 512 >> 9);
 
 		lane_count = ROAD_WIDTH_IN_LANES(st);
 
@@ -637,34 +637,28 @@ void CheckPlayerMiscFelonies(void)
 			lane = lane_count - 1;
 	
 		// check if on correct lane
-		if (ROAD_AI_LANE(st, lane))
+		if (ROAD_IS_AI_LANE(st, lane))
 		{
 			int crd;
 			crd = (st->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
 
-			if ((*(uint *)(st->ConnectIdx + 3) & 0xffff0000) != 0xff010000) 
+			if (ROAD_LANE_DIR(st, lane) == 0)
 			{
-				if (ROAD_LANE_DIR(st, lane) == 0)
-				{
-					if (crd == 1)
-						goingWrongWay = true;
-				}
-				else
-				{
-					if (crd == 0)
-						goingWrongWay = true;
-				}
+				if (crd == 1)
+					goingWrongWay = true;
 			}
 			else
 			{
-				printInfo("BAD\n");
+				if (crd == 0)
+					goingWrongWay = true;
 			}
 		}
 
 #if 0
-		printInfo("str lane: %d / %d. AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
+		printInfo("str lane: %d / %d (%d). AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			lane + 1,
 			((u_char)st->NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
+			IS_NARROW_ROAD(st),
 			((u_char)st->AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
 			(st->NumLanes & 0x40) > 0,					// flag 1 - parking allowed?
 			(st->NumLanes & 0x80) > 0,					// flag 2 - spawning allowed?
@@ -694,31 +688,29 @@ void CheckPlayerMiscFelonies(void)
 			lane = lane_count - 1;
 
 		// check if on correct lane
-		if (ROAD_AI_LANE(cv, lane))
+		if (ROAD_IS_AI_LANE(cv, lane))
 		{
 			int crd;
 
 			crd = NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, cv);
 
-			if (*(short*)&cv->NumLanes != 0xff)
+			if (ROAD_LANE_DIR(cv, lane) == 0)
 			{
-				if (ROAD_LANE_DIR(cv, lane) == 0)
-				{
-					if (crd != 0)
-						goingWrongWay = true;
-				}
-				else
-				{
-					if (crd == 0)
-						goingWrongWay = true;
-				}
+				if (crd != 0)
+					goingWrongWay = true;
+			}
+			else
+			{
+				if (crd == 0)
+					goingWrongWay = true;
 			}
 		}
 
 #if 0
-		printInfo("crv lane: %d / %d. AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
+		printInfo("crv lane: %d / %d, (%d). AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			lane + 1,
 			((u_char)cv->NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
+			IS_NARROW_ROAD(cv),
 			((u_char)cv->AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
 			(cv->NumLanes & 0x40) > 0,					// flag 1 - parking allowed?
 			(cv->NumLanes & 0x80) > 0,					// flag 2 - spawning allowed?

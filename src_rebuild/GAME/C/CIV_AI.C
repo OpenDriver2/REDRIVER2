@@ -2302,7 +2302,7 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 		uVar5 = y >> 9;
 		cp->ai.c.currentLane = uVar5;
 		
-		if (!IS_SINGLE_LANE(straight))
+		if (!IS_NARROW_ROAD(straight))
 			uVar5 = (u_char)straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
 		if ((uVar5 & 1) == 0) 
 			cr->dir = straight->angle;
@@ -2578,12 +2578,12 @@ int CheckChangeLanes(DRIVER2_STRAIGHT *straight, DRIVER2_CURVE *curve, int distA
 				{
 					unaff_s5 = uVar10;
 
-					if (!IS_SINGLE_LANE(straight))
+					if (!IS_NARROW_ROAD(straight))
 						unaff_s5 = ((u_char)straight->LaneDirs >> ((bVar1 >> 1) & 0x1f) ^ 1U) & 1;
 
 					uVar8 = uVar13;
 
-					if (!IS_SINGLE_LANE(straight))
+					if (!IS_NARROW_ROAD(straight))
 						uVar8 = (u_char)straight->LaneDirs >> (uVar13 >> 1 & 0x1f);
 
 					if (((uVar8 ^ 1) & 1) != unaff_s5) 
@@ -2594,12 +2594,12 @@ int CheckChangeLanes(DRIVER2_STRAIGHT *straight, DRIVER2_CURVE *curve, int distA
 				{
 					unaff_s5 = uVar10;
 
-					if (!IS_SINGLE_LANE(curve))
+					if (!IS_NARROW_ROAD(curve))
 						unaff_s5 = ((u_char)curve->LaneDirs >> ((bVar1 >> 1) & 0x1f) ^ 1U) & 1;
 
 					uVar8 = uVar13;
 
-					if (!IS_SINGLE_LANE(curve))
+					if (!IS_NARROW_ROAD(curve))
 						uVar8 = (u_char)curve->LaneDirs >> (uVar13 >> 1 & 0x1f);
 
 					if (((uVar8 ^ 1) & 1) != unaff_s5) 
@@ -4950,7 +4950,7 @@ int PingInCivCar(int minPingInDist)
 				civDat.distAlongSegment = uVar3 - uVar17;
 			}
 		}
-		if (IS_SINGLE_LANE(straight))
+		if (IS_NARROW_ROAD(straight))
 			uVar17 = cp->ai.c.currentLane;
 		else
 			uVar17 = (u_char)straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
