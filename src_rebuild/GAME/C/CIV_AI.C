@@ -55,6 +55,13 @@ int test42 = 0;
 int test123 = 0;
 int test555 = 0;
 
+// check path node validty in cars
+#define IS_NODE_VALID(n) \
+	((char*)(n) > (char*)car_data && (char*)(n) <= (char*)&car_data[MAX_CARS])
+
+#define CIV_STATE_SET_CONFUSED(cp) \
+		cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ InitCar(struct _CAR_DATA *cp /*$s0*/, int direction /*$s6*/, long (*startPos)[4] /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)
@@ -98,11 +105,12 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	tmpStart.vy = MapHeight(&tmpStart);
 	tmpStart.vy = tmpStart.vy - cp->ap.carCos->wheelDisp[0].vy;
 
+	// not valid request
 	if (control == 0) 
 		return 1;
 
 	InitCarPhysics(cp, (long(*)[4])&tmpStart, direction);
-	cp->ap.palette = (char)palette;
+	cp->ap.palette = palette;
 
 	cp->controlType = control;
 
@@ -110,6 +118,7 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	{
 		case 1:
 		case 7:
+			// player car or cutscene car
 			cp->ai.padid = extraData;
 
 			player[cp->id].worldCentreCarId = cp->id;
@@ -138,6 +147,7 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 			numCopCars++;
 			break;
 		case 4:
+			// free roamer lead car
 			InitLead(cp);
 			leadCarId = cp->id;
 			cp->hndType = 5;
@@ -529,8 +539,6 @@ int laneFit[2];
 DRIVER2_STRAIGHT* tmpStr[2];
 DRIVER2_CURVE* tmpCrv[2];
 short validExitIdx[4];
-
-#define IS_NODE_VALID(n) ((char*)(n) > (char*)car_data && (char*)(n) < (char*)&car_data[21])
 
 // [D] [A]
 // BUGS:
@@ -2244,6 +2252,7 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 
 	int y;
 	int x;
+	int i;
 
 	DRIVER2_CURVE *curve;
 	DRIVER2_STRAIGHT *straight;
@@ -2252,7 +2261,7 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 	CIV_ROUTE_ENTRY* cr;
 	cr = cp->ai.c.targetRoute;
 
-	for(int i = 0; i < 13; i++)
+	for(i = 0; i < 13; i++)
 	{
 		cr->pathType = 127;
 		cr->x = 0;
@@ -2362,84 +2371,83 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 	/* end block 3 */
 	// End Line: 3172
 
-int angle = 0;
-int distFromCentre = 0;
-int sideShift = 0;
-int radius = 0;
 
-// [D]
+
+// [D] [T]
 int GetNodePos(DRIVER2_STRAIGHT *straight, DRIVER2_JUNCTION *junction, DRIVER2_CURVE *curve, int distAlongPath, _CAR_DATA *cp, int *x, int *z, int laneNo)
 {
-	uint uVar1;
-	uint uVar2;
-	uint uVar3;
+	unsigned char oldLane;
+	unsigned char changeLaneCount;
+	int angle;
+	int distFromCentre;
+	int sideShift;
+	int radius;
 
-	if (cp == NULL)
+	if (cp)
 	{
-		uVar2 = 0;
-		uVar3 = 0;
-	LAB_00026d04:
-		if (curve == NULL) 
+		oldLane = cp->ai.c.oldLane;
+		changeLaneCount = cp->ai.c.changeLaneCount;
+	}
+	else
+	{
+		oldLane = 0;
+		changeLaneCount = 0;
+	}
+
+	if (straight)
+	{
+		angle = straight->angle;
+		distFromCentre = distAlongPath - (straight->length >> 1);
+
+		if (angle < 2048)
 		{
-			if ((cp != NULL) && (straight == NULL)) 
-			{
-			LAB_00026ce8:
-				cp->ai.c.thrustState = 3;
-				cp->ai.c.ctrlState = 7;
-				return 0;
-			}
+			if (laneNo <= oldLane)
+				test42 = -changeLaneCount * 128;
+			else
+				test42 = changeLaneCount * 128;
 
-			angle = straight->angle;
-			distFromCentre = distAlongPath - (straight->length >> 1);
+			sideShift = (ROAD_LANES_COUNT(straight) * 512 - (laneNo * 512 + 256)) + test42;
 
-			if ((cp != NULL) && (0x7ff < angle))
-				goto LAB_00026ce8;
-
-			uVar1 = uVar3;
-			if (laneNo <= uVar2)
-				uVar1 = -uVar3;
-
-			test42 = uVar1 * 0x80;
-			sideShift = ((straight->NumLanes & 0xf) * 0x200 - (laneNo * 0x200 + 0x100)) + test42;
-
-			*x = straight->Midx +
-				FIXEDH(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2]) +
+			*x = straight->Midx + FIXEDH(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2]) +
 				FIXEDH(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
 
-			*z = (straight->Midz +
-				FIXEDH(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) -
+			*z = straight->Midz + FIXEDH(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2 + 1]) -
 				FIXEDH(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
-
-			goto LAB_00026f00;
+		}
+		else if (cp)
+		{
+			CIV_STATE_SET_CONFUSED(cp);
+			return 0;
 		}
 	}
-	else {
-		uVar2 = cp->ai.c.oldLane;
-		uVar3 = cp->ai.c.changeLaneCount;
-
-		if ((straight != NULL) || (junction != NULL)) 
-			goto LAB_00026d04;
-
-		if (curve == NULL) 
-			goto LAB_00026ce8;
-	}
-
-	angle = distAlongPath + curve->start;
-	uVar1 = uVar3;
-
-	if (uVar2 < laneNo) 
-		uVar1 = -uVar3;
-
-	test42 = uVar1 * 0x80;
-	radius = curve->inside * 0x400 + laneNo * 0x200 + 0x100 + test42;
-
-	*x = curve->Midx + FIXEDH(radius * rcossin_tbl[(angle & 0xfffU) * 2]);
-	*z = curve->Midz + FIXEDH(radius * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
-LAB_00026f00:
-	if (uVar3 != 0) 
+	else if (curve)
 	{
-		cp->ai.c.changeLaneCount--;
+		angle = distAlongPath + curve->start;
+
+		if (oldLane < laneNo)
+			test42 = -changeLaneCount * 128;
+		else
+			test42 = changeLaneCount * 128;
+
+		radius = curve->inside * 1024 + laneNo * 512 + 256 + test42;
+
+		*x = curve->Midx + FIXEDH(radius * rcossin_tbl[(angle & 0xfffU) * 2]);
+		*z = curve->Midz + FIXEDH(radius * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
 	}
+	else if (junction)
+	{
+		// do nothing really
+	}
+	else if (cp)
+	{
+		CIV_STATE_SET_CONFUSED(cp);
+		return 0;
+	}
+	
+	if (cp && changeLaneCount > 0)
+		cp->ai.c.changeLaneCount--;
+
+	return 0;
 }
 
 
@@ -3408,8 +3416,8 @@ int CreateNewNode(_CAR_DATA *cp)
 			}
 		}
 	}
-	cp->ai.c.thrustState = 3;
-	cp->ai.c.ctrlState = 7;
+
+	CIV_STATE_SET_CONFUSED(cp);
 	return 0;
 }
 
@@ -3438,7 +3446,7 @@ int CreateNewNode(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 4218
 
-// [D]
+// [D] [T]
 int InitCivState(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 {
 	int uVar1;
@@ -3454,62 +3462,59 @@ int InitCivState(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 	else
 		cp->ai.c.thrustState = extraData->thrustState;
 
-	if (cp->ai.c.thrustState == 3) 
+	// not moving in that state
+	if (cp->ai.c.thrustState == 3)
 	{
-	LAB_000282b4:
 		if (extraData == NULL)
 			cp->ai.c.ctrlState = 0;
 		else
 			cp->ai.c.ctrlState = extraData->ctrlState;
 
-		iVar3 = 1;
+		return 1;
 	}
-	else 
+
+	if (extraData == NULL)
+		cs->currentRoad = GetSurfaceIndex((VECTOR*)(cp->hd).where.t);
+	else
+		cs->currentRoad = extraData->surfInd;
+
+	// init road and nodes
+	if (cs->currentRoad > -1)
 	{
-		if (extraData == NULL) 
-			cs->currentRoad = GetSurfaceIndex((VECTOR *)(cp->hd).where.t);
-		else 
-			cs->currentRoad = extraData->surfInd;
+		DRIVER2_CURVE* crv;
+		DRIVER2_STRAIGHT* str;
 
-		uVar1 = cs->currentRoad;
+		cp->ai.c.currentNode = 0;
+		cp->ai.c.pnode = NULL;
+		cp->ai.c.ctrlNode = NULL;
+		cp->ai.c.turnNode = -1;
 
-		if (uVar1 > -1) 
+		if (IS_CURVED_SURFACE(cs->currentRoad) || IS_STRAIGHT_SURFACE(cs->currentRoad))
 		{
-			cp->ai.c.currentNode = 0;
-			cp->ai.c.pnode = NULL;
-			cp->ai.c.ctrlNode = NULL;
-			cp->ai.c.turnNode = -1;
-
-			if (((((uVar1 & 0xffffe000) == 0) && ((uVar1 & 0x1fff) < NumDriver2Straights)) ||
-				(((uVar1 & 0xffffe000) == 0x4000 && ((uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-				(uVar1 = cs->currentRoad, -1 < uVar1))
+			if (IS_STRAIGHT_SURFACE(cs->currentRoad))
 			{
-				if (cp->ai.c.thrustState != 3) 
-				{
-					if (((uVar1 & 0xffffe000) == 0) && ((uVar1 & 0x1fff) < NumDriver2Straights))
-						cp->ai.c.maxSpeed = speedLimits[((u_char)Driver2StraightsPtr[uVar1].NumLanes >> 4) & 3];
-					else
-						cp->ai.c.maxSpeed = speedLimits[((u_char)Driver2CurvesPtr[uVar1 - 0x4000].NumLanes >> 4)& 3];
-	
-					InitNodeList(cp, extraData);
-
-					cp->ai.c.pnode = &cp->ai.c.targetRoute[0];
-					cp->hd.where.t[0] = cp->ai.c.pnode->x;
-					cp->hd.where.t[2] = cp->ai.c.pnode->z;
-
-					if (cp->ai.c.thrustState != 3)
-						return 1;
-
-				}
-				goto LAB_000282b4;
+				str = GET_STRAIGHT(cs->currentRoad);
+				cp->ai.c.maxSpeed = speedLimits[ROAD_SPEED_LIMIT(str)];
 			}
-		}
+			else
+			{
+				crv = GET_CURVE(cs->currentRoad);
+				cp->ai.c.maxSpeed = speedLimits[ROAD_SPEED_LIMIT(crv)];
+			}
 
-		iVar3 = 0;
-		cp->ai.c.thrustState = 3;
-		cp->ai.c.ctrlState = 7;
+			InitNodeList(cp, extraData);
+
+			cp->ai.c.pnode = &cp->ai.c.targetRoute[0];
+			cp->hd.where.t[0] = cp->ai.c.pnode->x;
+			cp->hd.where.t[2] = cp->ai.c.pnode->z;
+
+			return 1;
+		}
 	}
-	return iVar3;
+
+	CIV_STATE_SET_CONFUSED(cp);
+
+	return 0;
 }
 
 
@@ -3533,35 +3538,34 @@ int InitCivState(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 	/* end block 3 */
 	// End Line: 7536
 
-// [D]
+// [D] [T]
 int PingOutCar(_CAR_DATA *cp)
 {
-    int iVar1;
-    uint *puVar2;
-    
-    testNumPingedOut = testNumPingedOut + 1;
-    if (cp->controlType == 2) {
-        if ((cp->controlFlags & 1) != 0) 
-		{
-            numCopCars = numCopCars + -1;
-        }
+    testNumPingedOut++;
 
-        numCivCars = numCivCars + -1;
-        if ((cp->ai.c.thrustState == 3) && (cp->ai.c.ctrlState == 5)) 
-            numParkedCars = numParkedCars + -1;
+    if (cp->controlType == 2) 
+	{
+        if (cp->controlFlags & 1) // TODO: named flags
+            numCopCars--;
+
+        numCivCars--;
+
+        if (cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState == 5) 
+            numParkedCars--;
     }
-    else {
-        if ((PingOutCivsOnly != 0) &&
-           (iVar1 = valid_region((cp->hd).where.t[0],(cp->hd).where.t[2]), iVar1 != 0)) {
-            return 0;
-        }
-    }
-    puVar2 = (uint *)cp->inform;
-    if (puVar2 != NULL) {
-        *puVar2 = *puVar2 ^ 0x40000000;
-    }
-    ClearMem((char *)cp,sizeof(_CAR_DATA));
+    else if(PingOutCivsOnly != 0 && valid_region(cp->hd.where.t[0], cp->hd.where.t[2])) 
+	{
+		return 0;
+	}
+
+    if (cp->inform)
+        *cp->inform ^= 0x40000000;
+
+    ClearMem((char *)cp, sizeof(_CAR_DATA));
+
     cp->controlType = 0;
+
+	return 1;
 }
 
 
@@ -3610,35 +3614,21 @@ int PingOutCar(_CAR_DATA *cp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
+// used when secret car is requested
 int PingOutAllSpecialCivCars(void)
 {
 	_CAR_DATA *lcp;
 
 	lcp = car_data;
 
-	while (lcp < &car_data[20])
 	{
 		if (lcp->controlType == 2 && MissionHeader->residentModels[lcp->ap.model] > 4)
-		{
-			testNumPingedOut++;
-			numCivCars--;
-
-			if (lcp->controlFlags & 1) 
-				numCopCars--;
-
-			if (lcp->ai.c.thrustState == 3 && lcp->ai.c.ctrlState == 5)
-				numParkedCars--;
-
-			if (lcp->inform != NULL)
-				*lcp->inform ^= 0x40000000;
-
-			ClearMem((char *)lcp, sizeof(_CAR_DATA));
-			lcp->controlType = 0;
-		}
+			PingOutCar(lcp);
 
 		lcp++;
-	} 
+	}
+	while (lcp < &car_data[MAX_CARS])
 
 	return 1;
 }
@@ -3689,7 +3679,8 @@ int PingOutAllSpecialCivCars(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
+// used by cutscenes
 int PingOutAllCivCarsAndCopCars(void)
 {
 	_CAR_DATA *cp;
@@ -3698,36 +3689,9 @@ int PingOutAllCivCarsAndCopCars(void)
 
 	do {
 
-		if ((uint)cp->controlType - 2 < 2) 
-		{
-			testNumPingedOut++;
+		if (cp->controlType - 2U < 2) // include only CIVS and COPS
+			PingOutCar(cp);
 
-			if (cp->controlType == 2) 
-			{
-				if ((cp->controlFlags & 1) != 0) 
-				{
-					numCopCars--;
-				}
-				numCivCars--;
-				if (cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState == 5) 
-				{
-					numParkedCars = numParkedCars + -1;
-				}
-			}
-			else
-			{
-				if (PingOutCivsOnly != 0 && valid_region(cp->hd.where.t[0], cp->hd.where.t[2]))
-					goto LAB_0002852c;
-			}
-
-			if (cp->inform != NULL)
-				*cp->inform ^= 0x40000000;
-
-			ClearMem((char *)cp, sizeof(_CAR_DATA));
-			cp->controlType = 0;
-		}
-
-	LAB_0002852c:
 		cp++;
 	} while (cp < &car_data[20]);
 
@@ -3775,57 +3739,28 @@ int PingOutAllCivCarsAndCopCars(void)
 	/* end block 4 */
 	// End Line: 4657
 
-// [D]
+// [D] [T]
+// called by civ car.
+// checks distance from player and removes car if too far
 int CheckPingOut(_CAR_DATA *cp)
 {
-	int iVar1;
-	int iVar2;
-	uint *puVar3;
-	int z;
-	int x;
+	int dz;
+	int dx;
+	int dist;
 
-	x = (cp->hd).where.t[0];
-	iVar2 = (player[0].spoolXZ)->vx - x;
-	z = (cp->hd).where.t[2];
-	iVar1 = (player[0].spoolXZ)->vz - z;
-	iVar1 = iVar2 * iVar2 + iVar1 * iVar1;
+	dx = player[0].spoolXZ->vx - cp->hd.where.t[0];
+	dz = player[0].spoolXZ->vz - cp->hd.where.t[2];
+	dist = dx * dx + dz * dz;
 
-	if (24000 * 24000 < iVar1)
+	if (dist > 24000 * 24000 && PingOutCar(cp))
+		return 1;
+
+	if (requestStationaryCivCar == 1 && distFurthestCivCarSq < dist) 
 	{
-		testNumPingedOut = testNumPingedOut + 1;
-		if (cp->controlType == 2)
-		{
-			if ((cp->controlFlags & 1) != 0) 
-			{
-				numCopCars = numCopCars + -1;
-			}
-			numCivCars = numCivCars + -1;
-
-			if ((cp->ai.c.thrustState == 3) && (cp->ai.c.ctrlState == 5)) 
-			{
-				numParkedCars = numParkedCars + -1;
-			}
-		}
-		else 
-		{
-			if (PingOutCivsOnly != 0 && (iVar2 = valid_region(x, z), iVar2 != 0))
-				goto LAB_00028694;
-		}
-
-		puVar3 = (uint *)cp->inform;
-
-		if (puVar3 != NULL) 
-			*puVar3 = *puVar3 ^ 0x40000000;
-
-		ClearMem((char *)cp, sizeof(_CAR_DATA));
-		cp->controlType = 0;
-	}
-
-LAB_00028694:
-	if ((requestStationaryCivCar == 1) && (distFurthestCivCarSq < iVar1)) {
 		furthestCivID = cp->id;
-		distFurthestCivCarSq = iVar1;
+		distFurthestCivCarSq = dist;
 	}
+
 	return 1;
 }
 
@@ -3852,7 +3787,7 @@ LAB_00028694:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetUpTrafficLightPhase(void)
 {
 	junctionLightsPhase[0] = TrafficLightCycle(0);
@@ -3884,39 +3819,29 @@ void SetUpTrafficLightPhase(void)
 	/* end block 3 */
 	// End Line: 7648
 
-// [D]
+// [D] [T]
 int TrafficLightCycle(int exit)
 {
-	bool bVar1;
-	int iVar2;
-	int uVar3;
+	int timeCnt;
 
-	uVar3 = CameraCnt - frameStart & 0x1ff;
+	timeCnt = CameraCnt - frameStart & 0x1ff;
 
-	if (exit == 0 || exit == 2)
+	if (exit == 0 || exit == 2) 
 	{
-		bVar1 = uVar3 < 0x100;
-		uVar3 = uVar3 - 0x100;
-
-		if (bVar1)
+		if (timeCnt < 256)
 			return 1;
 
-		bVar1 = uVar3 < 0x96;
+		timeCnt -= 256;
 	}
-	else 
-	{
-		bVar1 = uVar3 < 0x96;
-
-		if (0xff < uVar3)
-			return 1;
-	}
-
-	iVar2 = 3;
-
-	if ((!bVar1) && (iVar2 = 2, 199 < uVar3))
+	else if (timeCnt > 255)
 		return 1;
 
-	return iVar2;
+	if (timeCnt < 150)
+		return 3;
+	else if (timeCnt > 199)
+		return 1;
+
+	return 2;
 }
 
 
@@ -3954,7 +3879,7 @@ int TrafficLightCycle(int exit)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitCivCars(void)
 {
 	PingBufferPos = 0;
@@ -4507,11 +4432,12 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	//if (1 < NumPlayers)		// [A]
-	//{
-	//	PingOutCivsOnly = 1;
-	//	return 0;
-	//}
+
+	/*if (NumPlayers > 1)		// [A]
+	{
+		PingOutCivsOnly = 1;
+		return 0;
+	}*/
 
 	p_Var13 = car_data;
 	puVar15 = reservedSlots;
@@ -5180,7 +5106,7 @@ LAB_0002a430:
 	/* end block 4 */
 	// End Line: 6116
 
-// [D]
+// [D] [T]
 void AttemptUnPark(_CAR_DATA *cp)
 {
 	unsigned char oldLane;
@@ -5209,8 +5135,7 @@ void AttemptUnPark(_CAR_DATA *cp)
 			(curve != NULL && ROAD_IS_AI_LANE(curve, cp->ai.c.currentLane) == 0))
 		{
 			// shut off. Unknown intention
-			cp->ai.c.thrustState = 3;
-			cp->ai.c.ctrlState = 7;
+			CIV_STATE_SET_CONFUSED(cp);
 		}
 	}
 }
@@ -5252,14 +5177,9 @@ void AttemptUnPark(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 8190
 
-// [D]
+// [D] [T]
 int CivControl(_CAR_DATA *cp)
 {
-	//return 1; // [A] disabled - buggy
-
-	long lVar2;
-	int iVar3;
-
 	CheckPingOut(cp);
 
 	if (cp->controlType == 2) 
@@ -7198,6 +7118,7 @@ void CreateRoadblock(void)
 	int numLanes;
 	int externalCopModel;
 	int noMoreCars;
+	int angle;
 
 	crv = NULL;
 	distAlongSegment = -5;
