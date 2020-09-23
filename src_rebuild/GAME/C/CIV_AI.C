@@ -60,7 +60,7 @@ int test555 = 0;
 	((char*)(n) > (char*)car_data && (char*)(n) <= (char*)&car_data[MAX_CARS])
 
 #define CIV_STATE_SET_CONFUSED(cp) \
-		cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 
 // decompiled code
 // original method signature: 
@@ -191,7 +191,7 @@ int InitCar(_CAR_DATA *cp, int direction, long(*startPos)[4], unsigned char cont
 	// End Line: 6498
 
 // [D] [T]
-_CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq)
+_CAR_DATA* FindClosestCar(int x, int y, int z, int *distToCarSq)
 {
 	uint distSq;
 	_CAR_DATA *lcp;
@@ -2238,15 +2238,97 @@ LAB_00026928:
 	/* end block 3 */
 	// End Line: 2989
 
-// [D]
+// [D] [T]
 void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 {
+#if 0
+	int dx; // $s1
+	int dz; // $s2
+	int i;
+	DRIVER2_CURVE *curve;
+	DRIVER2_STRAIGHT *straight;
+	int surfInd;
+
+	CIV_ROUTE_ENTRY* cr;
+	cr = cp->ai.c.targetRoute;
+
+	for(i = 0; i < 13; i++)
+	{
+		cr->pathType = 127;
+		cr->x = 0;
+		cr->z = 0;
+		cr++;
+	}
+
+	cr = &cp->ai.c.targetRoute[0];
+
+	cr->pathType = 1;
+	cr->x = cp->hd.where.t[0];
+	cr->z = cp->hd.where.t[2];
+
+	surfInd = cp->ai.c.currentRoad;
+
+	if (IS_STRAIGHT_SURFACE(surfInd))
+	{
+		int theta; // $s0
+		int laneDist; // $s1
+
+		straight = GET_STRAIGHT(surfInd);
+
+		dx = cp->hd.where.t[0] - straight->Midx;
+		dz = cp->hd.where.t[2] - straight->Midz;
+
+		theta = (straight->angle - ratan2(dx, dz) & 0xfffU);
+		cr->distAlongSegment = (straight->length / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+
+		laneDist = ROAD_LANES_COUNT(straight) * 512 + FIXEDH(-dx * rcossin_tbl[(straight->angle & 0xfff) * 2 + 1] + dz * rcossin_tbl[(straight->angle & 0xfff) * 2]);
+		cp->ai.c.currentLane = laneDist / 8192;
+		
+		// calc all dirs
+		if (ROAD_LANE_DIR(straight, cp->ai.c.currentLane) == 0)
+			cr->dir = straight->angle;
+		else
+			cr->dir = straight->angle + 0x800U & 0xfff;
+	}
+	else if (IS_CURVED_SURFACE(surfInd))
+	{
+		if (extraData == NULL) 
+		{
+			curve = GET_CURVE(surfInd);
+
+			cr->distAlongSegment = (ratan2(cr->x - curve->Midx, cr->z - curve->Midz) & 0xfff) - curve->start;
+
+			if (curve->inside > 9)
+			{
+				if(curve->inside < 20)
+					cr->distAlongSegment &= 0xfc0;
+				else
+					cr->distAlongSegment &= 0xfe0;
+			}
+			else
+				cr->distAlongSegment &= 0xf80;
+
+			if (ROAD_LANE_DIR(curve, cp->ai.c.currentLane) == 0)
+				cr->dir = (cr->distAlongSegment + curve->start) + 1024;
+			else
+				cr->dir = (cr->distAlongSegment + curve->start) - 1024;
+		}
+		else 
+		{
+			cr->distAlongSegment = extraData->distAlongSegment;
+			cr->dir = extraData->angle;
+		}
+	}
+
+	if (extraData != NULL) 
+		cr->distAlongSegment = extraData->distAlongSegment;
+#else
 	short sVar1;
 	short uVar2;
-	char *pPathType;
+	char* pPathType;
 	long lVar3;
 	long lVar4;
-	
+
 	int uVar5;
 	int uVar6;
 
@@ -2254,14 +2336,14 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 	int x;
 	int i;
 
-	DRIVER2_CURVE *curve;
-	DRIVER2_STRAIGHT *straight;
+	DRIVER2_CURVE* curve;
+	DRIVER2_STRAIGHT* straight;
 	int curRoad;
 
 	CIV_ROUTE_ENTRY* cr;
 	cr = cp->ai.c.targetRoute;
 
-	for(i = 0; i < 13; i++)
+	for (i = 0; i < 13; i++)
 	{
 		cr->pathType = 127;
 		cr->x = 0;
@@ -2296,22 +2378,22 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 
 		uVar5 = y >> 9;
 		cp->ai.c.currentLane = uVar5;
-		
+
 		if (!IS_NARROW_ROAD(straight))
 			uVar5 = (u_char)straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
-		if ((uVar5 & 1) == 0) 
+		if ((uVar5 & 1) == 0)
 			cr->dir = straight->angle;
 		else
 			cr->dir = straight->angle + 0x800U & 0xfff;
 	}
 
-	if ((((curRoad & 0xffffe000U) == 0x4000) && (curRoad & 0x1fffU) < NumDriver2Curves) && curRoad > -1) 
+	if ((((curRoad & 0xffffe000U) == 0x4000) && (curRoad & 0x1fffU) < NumDriver2Curves) && curRoad > -1)
 	{
-		if (extraData == NULL) 
+		if (extraData == NULL)
 		{
 			curve = Driver2CurvesPtr + curRoad - 0x4000;
 
-			uVar5 = ratan2(cr->x- curve->Midx, cr->z - curve->Midz);
+			uVar5 = ratan2(cr->x - curve->Midx, cr->z - curve->Midz);
 
 			uVar6 = (uVar5 & 0xfff) - curve->start;
 			uVar5 = uVar6 & 0xf80;
@@ -2319,12 +2401,12 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 			if ((9 < curve->inside) && (uVar5 = uVar6 & 0xfe0, curve->inside < 0x14))
 				uVar5 = uVar6 & 0xfc0;
 
-			cr->distAlongSegment = uVar5; 
+			cr->distAlongSegment = uVar5;
 			sVar1 = uVar5 + curve->start;
 
-			if (curve->NumLanes == -1) 
+			if (curve->NumLanes == -1)
 				uVar5 = cp->ai.c.currentLane;
-			else 
+			else
 				uVar5 = (u_char)curve->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
 
 			uVar2 = sVar1 - 0x400;
@@ -2334,15 +2416,17 @@ void InitNodeList(_CAR_DATA *cp, EXTRA_CIV_DATA *extraData)
 
 			cr->dir = uVar2;
 		}
-		else 
+		else
 		{
 			cr->distAlongSegment = extraData->distAlongSegment;
 			cr->dir = extraData->angle;
 		}
 	}
 
-	if (extraData != NULL) 
+	if (extraData != NULL)
 		cr->distAlongSegment = extraData->distAlongSegment;
+
+#endif
 }
 
 
@@ -5197,7 +5281,7 @@ int CivControl(_CAR_DATA *cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 0
+#if 1
 		{
 			//maxCivCars = 2;
 			//maxCopCars = 0;
@@ -6859,56 +6943,59 @@ int CivFindStation(_CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 7705
 
-// [D]
+// [D] [T]
 int CivFindPointOnPath(_CAR_DATA *cp, int station, VECTOR *ppoint)
 {
 	int stepSize;
-	CIV_ROUTE_ENTRY *pCVar2;
-	CIV_ROUTE_ENTRY *pCVar3;
+	CIV_ROUTE_ENTRY* start;
+	CIV_ROUTE_ENTRY* currentNode;
+	CIV_ROUTE_ENTRY* retNode;
 	int dx;
 	int dz;
 	int sx;
 	int sz;
 
-	if (cp->ai.c.pnode != NULL)
+	start = cp->ai.c.pnode;
+
+	if (start != NULL) 
 	{
-		pCVar2 = cp->ai.c.pnode;
+		currentNode = start;
 
 		do {
-			pCVar3 = pCVar2 + 1;
+			retNode = currentNode + 1;
 
-			if (cp->ai.c.targetRoute + 13 <= pCVar3) 
-				pCVar3 = pCVar2-12;
+			if (cp->ai.c.targetRoute + 13 <= retNode)	// [A] there was reflections bug?
+				retNode = currentNode - 12;
 
-			if (pCVar3 == NULL || pCVar3->pathType == 127)
+			if (retNode == NULL || retNode && retNode->pathType == 127)
 			{
-				ppoint->vx = pCVar2->x;
-				ppoint->vz = pCVar2->z;
+				ppoint->vx = currentNode->x;
+				ppoint->vz = currentNode->z;
 
 				return 1;
 			}
 
-			sx = pCVar2->x;
-			sz = pCVar2->z;
+			sx = currentNode->x;
+			sz = currentNode->z;
 
-			dx = pCVar3->x - sx;
-			dz = pCVar3->z - sz;
-
+			dx = retNode->x - sx;
+			dz = retNode->z - sz;
 			stepSize = SquareRoot0(dx * dx + dz * dz);
 
-			if (station < stepSize) 
+			// advance
+			if (station < stepSize)
 			{
 				if (station < 0)
 					station = 0;
-			
-				if (stepSize < 0x1000) 
+
+				if (stepSize < 4096) 
 				{
 					ppoint->vx = sx + (dx * station) / stepSize;
 					ppoint->vz = sz + (dz * station) / stepSize;
 				}
 				else 
 				{
-					stepSize >>= 4;
+					stepSize /= 16;
 
 					ppoint->vx = sx + FIXEDH(((dx * 256) / stepSize) * station);
 					ppoint->vz = sz + FIXEDH(((dz * 256) / stepSize) * station);
@@ -6918,12 +7005,12 @@ int CivFindPointOnPath(_CAR_DATA *cp, int station, VECTOR *ppoint)
 			}
 
 			station -= stepSize;
-			pCVar2 = pCVar3;
-		} while (pCVar3 != cp->ai.c.pnode);
+			currentNode = retNode;
+
+		} while (retNode != start);
 	}
 
-	cp->ai.c.thrustState = 3;
-	cp->ai.c.ctrlState = 7;
+	CIV_STATE_SET_CONFUSED(cp);
 
 	return 0;
 }
@@ -7499,8 +7586,7 @@ LAB_0002c33c:
 		}
 	}
 	requestRoadblock = 0;
-	uVar8 = Random2(0);
-	roadblockDelay = roadblockDelayDiff[gCopDifficultyLevel] + (uVar8 & 0xff);
+	roadblockDelay = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 	roadblockCount = roadblockDelay;
 
 	PlaceRoadBlockCops();
