@@ -199,8 +199,8 @@ extern void Emulator_ShutDown();
 extern void Emulator_SwapWindow();
 extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_SetPolygonOffset(float ofs);
-extern void Emulator_CounterLoop();
 
+extern void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1);
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);
 extern void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx);
 extern void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx);

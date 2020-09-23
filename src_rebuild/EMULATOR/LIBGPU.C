@@ -992,9 +992,15 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			AddSplit(semi_transparent, activeDrawEnv.tpage, whiteTexture);
 
-			Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, gte_index);
+			VERTTYPE* p0 = &poly->x0;
+			VERTTYPE* p1 = &poly->x1;
+			unsigned char* c0 = &poly->r0;
+			unsigned char* c1 = c0;
+
+			Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+			Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 			Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-			Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+			Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 			TriangulateQuad();
 
@@ -1012,9 +1018,15 @@ int ParsePrimitive(uintptr_t primPtr)
 			AddSplit(semi_transparent, activeDrawEnv.tpage, whiteTexture);
 
 			{
-				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, gte_index);
+				VERTTYPE* p0 = &poly->x0;
+				VERTTYPE* p1 = &poly->x1;
+				unsigned char* c0 = &poly->r0;
+				unsigned char* c1 = c0;
+
+				Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 				TriangulateQuad();
 
@@ -1025,9 +1037,15 @@ int ParsePrimitive(uintptr_t primPtr)
 			}
 
 			{
-				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x1, &poly->x2, gte_index);
+				VERTTYPE* p0 = &poly->x1;
+				VERTTYPE* p1 = &poly->x2;
+				unsigned char* c0 = &poly->r0;
+				unsigned char* c1 = c0;
+
+				Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 				TriangulateQuad();
 
@@ -1041,14 +1059,21 @@ int ParsePrimitive(uintptr_t primPtr)
 		}
 		case 0x4c:
 		{
+			int i;
 			LINE_F4* poly = (LINE_F4*)pTag;
 
 			AddSplit(semi_transparent, activeDrawEnv.tpage, whiteTexture);
 
 			{
-				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, gte_index);
+				VERTTYPE* p0 = &poly->x0;
+				VERTTYPE* p1 = &poly->x1;
+				unsigned char* c0 = &poly->r0;
+				unsigned char* c1 = c0;
+
+				Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 				TriangulateQuad();
 
@@ -1059,9 +1084,15 @@ int ParsePrimitive(uintptr_t primPtr)
 			}
 
 			{
-				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x1, &poly->x2, gte_index);
+				VERTTYPE* p0 = &poly->x1;
+				VERTTYPE* p1 = &poly->x2;
+				unsigned char* c0 = &poly->r0;
+				unsigned char* c1 = c0;
+
+				Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 				TriangulateQuad();
 
@@ -1072,9 +1103,15 @@ int ParsePrimitive(uintptr_t primPtr)
 			}
 
 			{
-				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x2, &poly->x3, gte_index);
+				VERTTYPE* p0 = &poly->x2;
+				VERTTYPE* p1 = &poly->x3;
+				unsigned char* c0 = &poly->r0;
+				unsigned char* c1 = c0;
+
+				Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+				Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 				Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0);
+				Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 				TriangulateQuad();
 
@@ -1083,12 +1120,6 @@ int ParsePrimitive(uintptr_t primPtr)
 				polygon_count++;
 #endif
 			}
-
-#if defined(DEBUG_POLY_COUNT)
-			polygon_count++;
-#endif
-
-			// TODO: unsupported
 
 			break;
 		}
@@ -1098,9 +1129,15 @@ int ParsePrimitive(uintptr_t primPtr)
 
 			AddSplit(semi_transparent, activeDrawEnv.tpage, whiteTexture);
 
-			Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, gte_index);
+			VERTTYPE* p0 = &poly->x0;
+			VERTTYPE* p1 = &poly->x1;
+			unsigned char* c0 = &poly->r0;
+			unsigned char* c1 = &poly->r1;
+
+			Emulator_LineSwapSourceVerts(p0, p1, c0, c1);
+			Emulator_GenerateLineArray(&g_vertexBuffer[g_vertexIndex], p0, p1, gte_index);
 			Emulator_GenerateTexcoordArrayLineZero(&g_vertexBuffer[g_vertexIndex], 0);
-			Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r1);
+			Emulator_GenerateColourArrayLine(&g_vertexBuffer[g_vertexIndex], c0, c1);
 
 			TriangulateQuad();
 
@@ -1262,10 +1299,11 @@ int ParsePrimitive(uintptr_t primPtr)
 		}
 		case 0xE0:  // DR_ENV commands
 		{
+			int i;
 			DR_ENV* drenv = (DR_ENV*)pTag;
 
 			// parse each code of the command
-			for (int i = 0; i < pTag->len; i++)
+			for (i = 0; i < pTag->len; i++)
 			{
 				u_long code = drenv->code[i];
 				u_char drcode = code >> 24 & 0xFF;
