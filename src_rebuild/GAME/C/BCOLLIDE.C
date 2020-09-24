@@ -976,16 +976,15 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		cd[0].isCameraOrTanner += 2;
 
 	cd[1].isCameraOrTanner = (flags & 0x1) == 0;
-	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
 
-	if (boxDiffY < 0)
-		boxDiffY = -boxDiffY;
+	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
+	boxDiffY = ABS(boxDiffY);
 
 	collided = 0;
 
 	car_cos = cp->ap.carCos;
 
-	if (boxDiffY <= (building->height >> 1) + (cp->hd.oBox.length[1] > 1) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
+	if (boxDiffY <= (building->height >> 1) + (cp->hd.oBox.length[1] >> 1) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
 	{
 		tempwhere.vx = cp->hd.where.t[0];
 		tempwhere.vz = cp->hd.where.t[2];
