@@ -2839,7 +2839,7 @@ void InitMusic(int musicnum)
 
 	copmusic = 0;
 	puts("NewLevel in InitMusic()\n");
-	AllocateReverb(3, 0x4000);
+	AllocateReverb(3, 16384);
 
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char *)musicpos, musicnum * 8, sizeof(musicpos));

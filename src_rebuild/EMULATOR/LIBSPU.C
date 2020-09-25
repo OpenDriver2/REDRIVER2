@@ -127,9 +127,9 @@ void InitOpenAlEffects()
 	alGenEffects(1, &g_nAlReverbEffect);
 	alEffecti(g_nAlReverbEffect, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
 
-	alEffectf(g_nAlReverbEffect, AL_REVERB_GAIN, 0.35f);
+	// setup defaults of effect
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAIN, 0.45f);
 	alEffectf(g_nAlReverbEffect, AL_REVERB_GAINHF, 0.25f);
-
 	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_TIME, 2.0f);
 	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_HFRATIO, 0.9f);
 	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_DELAY, 0.08f);
@@ -693,6 +693,19 @@ long SpuGetReverb(void)
 
 long SpuSetReverbModeParam(SpuReverbAttr* attr)
 {
+	// TODO: setup next params
+	/*
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAIN, 0.45f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAINHF, 0.25f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_TIME, 2.0f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_HFRATIO, 0.9f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_DELAY, 0.08f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_GAIN, 0.2f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DIFFUSION, 0.9f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DENSITY, 0.1f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_AIR_ABSORPTION_GAINHF, 0.1f);
+	*/
+
 	UNIMPLEMENTED();
 	return 0;
 }
