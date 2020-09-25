@@ -1347,7 +1347,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 		do {
 			iVar26 = iVar22;
 			iVar23 = -1;
-			if (3 < iVar26) break;
+			if (3 < iVar26)
+				break;
 			iVar22 = iVar26 + 1;
 			iVar23 = iVar26;
 		} while ((int)jn->ExitIdx[iVar26] != currentRoadId);
@@ -1647,24 +1648,21 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 	if ((iVar23 < 0) || (numExits < 1))
 		goto LAB_00026928;
 
-	if ((leftLane != rightLane) && (numExits != 1))
+	if (leftLane != rightLane && numExits != 1)
 	{
-		uVar9 = (uint)cp->ai.c.currentLane;
+		uVar9 = cp->ai.c.currentLane;
 		if (uVar9 == leftLane)
 		{
 			validExitIdx[2] = 42;
 		}
-		else
+		else if (uVar9 == rightLane)
 		{
-			if (uVar9 == rightLane)
-			{
-				validExitIdx[0] = 42;
-			}
-			else if (validExitIdx[1] != 42)
-			{
-				validExitIdx[2] = 42;
-				validExitIdx[0] = 42;
-			}
+			validExitIdx[0] = 42;
+		}
+		else if (validExitIdx[1] != 42)
+		{
+			validExitIdx[2] = 42;
+			validExitIdx[0] = 42;
 		}
 	}
 	lVar9 = Random2(0);
@@ -3216,12 +3214,12 @@ int CreateNewNode(_CAR_DATA* cp)
 							tryToPark = (Random2(0) & 2U) != 0;
 
 						// apply our Caine's Cash logic
-						if(gCurrentMissionNumber == 33 && cp->ap.model == 4)
+						if(gCurrentMissionNumber == 33 && cp->ap.model == 4 && limoId == cp->id) // [A] limoId was skipped, bringing it back.
 						{
 							tryToPark = (makeLimoPullOver != 0);
 						}
 
-						newLane = CheckChangeLanes(straight, curve, newNode->distAlongSegment, (_CAR_DATA*)cp, tryToPark);
+						newLane = CheckChangeLanes(straight, curve, newNode->distAlongSegment, cp, tryToPark);
 
 						// try change lanes or park
 						if (newLane != cp->ai.c.currentLane)
@@ -4279,49 +4277,39 @@ int dz = 0; // offset 0xAAB48
 // TODO: store pings
 int PingInCivCar(int minPingInDist)
 {
-	unsigned char bVar1;
-	short sVar2;
-	ushort uVar3;
-	bool bVar4;
-	char cVar5;
-	int iVar6;
-	uint model;
-	int iVar7;
-	long lVar8;
-	long lVar9;
-	uint uVar10;
-	int iVar11;
-	int iVar12;
-	_CAR_DATA* p_Var13;
-	uint* puVar14;
-	unsigned char* puVar15;
-	unsigned char bVar16;
-	_CAR_DATA* cp;
-	uint uVar17;
+	int model;
+	_CAR_DATA* carCnt;
+	_CAR_DATA* newCar;
 	DRIVER2_CURVE* curve;
 	DRIVER2_STRAIGHT* straight;
-	int uVar18;
 	_EXTRA_CIV_DATA civDat;
 	unsigned char possibleLanes[12];
-	unsigned char carDistLanes[15];
+	// carDistLanes removed as it's unused
 	long pos[4];
 	int distSq;
-	uint local_34;
-	int local_30;
-	int local_2c;
+	int dir;
+	int curveLength;
+	int tryPingInParkedCars;
+	int count;
+	int lbody;
+	int lane;
+	int i;
+	int oldCookieCount;
+	uint retDistSq;
 
 	civDat.distAlongSegment = -5;
-	uVar18 = -1;
+	lane = -1;
 	straight = NULL;
 	curve = NULL;
-	local_34 = 0xffffff;
-	local_2c = 0;
+	dir = 0xffffff;
+
+	tryPingInParkedCars = 0;
 
 	PingOutCivsOnly = 1;
 
-	if (((requestCopCar == 0) && (numParkedCars < maxParkedCars)) && ((gCurrentMissionNumber != 0x21 || (numCivCars != 0))))
+	if (requestCopCar == 0 && numParkedCars < maxParkedCars && (gCurrentMissionNumber != 33 || numCivCars != 0))
 	{
-		local_2c = 1;
+		tryPingInParkedCars = 1;
 	}
 
 	playerNum = 0;
@@ -4347,647 +4335,553 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-
-	/*if (NumPlayers > 1)		// [A]
+	/*if (NumPlayers > 1)		// [A] allow pinging in cars in multiplayer game such as Cops and Robbers
 	{
 		PingOutCivsOnly = 1;
 		return 0;
 	}*/
 
-	p_Var13 = car_data;
-	puVar15 = reservedSlots;
-
-	// find a free slot
-	cp = NULL;
-
-	do {
-		if (p_Var13->controlType == 0 && *puVar15 == 0)
-		{
-			cp = p_Var13;
-			break;
-		}
-
-		p_Var13++;
-		puVar15++;
-	} while (p_Var13 < car_data + MAX_TRAFFIC_CARS);
-
-	if (cp == NULL)
-	{
-		PingOutCivsOnly = 1;
-		return 0;
-	}
+	newCar = NULL;
 
 	ClearMem((char*)&civDat, sizeof(civDat));
+
 	baseLoc.vx = player[playerNum].spoolXZ->vx;
 	baseLoc.vz = player[playerNum].spoolXZ->vz;
 
-	if (requestCopCar == 0 && cookieCount > 43)
-	{
-		cookieCount -= 25;
-	}
-
-	cVar5 = cookieCount;
-
 	if (useStoredPings == 0 || gInGameChaseActive == 0)
 	{
+		// randomized pings
+		int angle;
+		int dx, dz;
+		unsigned char* slot;
+
+		const int maxCookies = requestCopCar ? 55 : 43;
+
+		if (requestCopCar == 0 && cookieCount > 43)
+			cookieCount -= 25;
+
+		// find a free slot
+		carCnt = car_data;
+		slot = reservedSlots;
+
 		do {
-			if (requestCopCar == 0)
+			if (carCnt->controlType == 0 && *slot == 0)
 			{
-				if (cookieCount < 43)
-					goto LAB_000294b0;
-
-				cookieCount = 0;
+				newCar = carCnt;
+				break;
 			}
+
+			carCnt++;
+			slot++;
+		} while (carCnt < car_data + MAX_TRAFFIC_CARS);
+
+		if (newCar == NULL)
+		{
+			PingOutCivsOnly = 1;
+			return 0;
+		}
+
+		oldCookieCount = cookieCount;
+
+		do {
+			if (cookieCount < maxCookies)
+				cookieCount++;
 			else
-			{
-				if (cookieCount < 55)
-				{
-				LAB_000294b0:
-					cookieCount++;
-				}
-				else
-					cookieCount = 0;
-			}
+				cookieCount = 0;
 
-			if (cookieCount == cVar5)
+			if (cookieCount == oldCookieCount)
 				break;
 
 			if (requestCopCar == 0)
-				model = (cookieCount * 0x1000) / 0x2c;
+			{
+				angle = (cookieCount * ONE) / 44 & 0xfff;
+				dx = rcossin_tbl[(angle & 0xfff) * 2] << 3;
+				dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] << 3;
+			}
 			else
-				model = (cookieCount * 0x1000) / 0x38;
+			{
+				angle = (cookieCount * ONE) / 56 & 0xfff;
+				dx = rcossin_tbl[(angle & 0xfff) * 2] * 10;
+				dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
+			}
 
-			if (requestCopCar == 0)
-				iVar6 = rcossin_tbl[(model & 0xfff) * 2] << 3;
-			else
-				iVar6 = rcossin_tbl[(model & 0xfff) * 2] * 10;
+			randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+			randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
 
-			randomLoc.vx = baseLoc.vx + FIXEDH(iVar6) * 0x800;
-
-			if (requestCopCar == 0)
-				model = (cookieCount * 0x1000) / 0x2c;
-			else
-				model = (cookieCount * 0x1000) / 0x38;
-
-			if (requestCopCar == 0)
-				iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] << 3;
-			else
-				iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
-
-			randomLoc.vz = baseLoc.vz + FIXEDH(iVar6) * 0x800;
 			roadSeg = RoadInCell(&randomLoc);
 
-		} while (((((roadSeg & 0xffffe000U) != 0) ||
-			(NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
-			(((roadSeg & 0xffffe000U) != 0x4000 ||
-				(NumDriver2Curves <= (int)(roadSeg & 0x1fffU))))) || (roadSeg < 0));
+		} while (!IS_STRAIGHT_SURFACE(roadSeg) && !IS_CURVED_SURFACE(roadSeg));
 	}
 	else
 	{
-		iVar6 = GetPingInfo(&cookieCount);
+		// rely on pings provided by cutscenes/chases
+		int angle;
+		int dx, dz;
+		int newCarId;
+		newCarId = GetPingInfo(&cookieCount);
 
-		if (iVar6 == -1)
+		if (newCarId == -1)
 			return 0;
 
-		if (19 < iVar6)
+		if (newCarId > MAX_CARS-1)
 			return 0;
 
-		cp = car_data + iVar6;
+		newCar = &car_data[newCarId];
 
-		// free slot
-		if (car_data[iVar6].controlType != 0)
+		// ping out old car
+		if (newCar->controlType != 0)
 		{
-			testNumPingedOut++;
-
-			if (car_data[iVar6].controlType == 2)
-			{
-				if ((car_data[iVar6].controlFlags & 1) != 0)
-					numCopCars--;
-
-				numCivCars--;
-
-				if (car_data[iVar6].ai.c.thrustState == 3 && car_data[iVar6].ai.c.ctrlState == 5)
-					numParkedCars--;
-
-			LAB_0002910c:
-				puVar14 = (uint*)car_data[iVar6].inform;
-				if (puVar14 != NULL)
-					*puVar14 = *puVar14 ^ 0x40000000;
-
-				ClearMem((char*)cp, sizeof(_CAR_DATA));
-				car_data[iVar6].controlType = 0;
-
-				bVar4 = true;
-			}
-			else
-			{
-				if (PingOutCivsOnly == 0)
-					goto LAB_0002910c;
-
-				bVar4 = false;
-
-				if (valid_region(car_data[iVar6].hd.where.t[0], car_data[iVar6].hd.where.t[2]) == 0)
-					goto LAB_0002910c;
-			}
-
-			if (!bVar4)
+			if (PingOutCar(newCar) == 0)
 				return 0;
 		}
 
 		if (requestCopCar == 0)
-			model = (cookieCount * 0x1000) / 0x2c;
+		{
+			angle = (cookieCount * ONE) / 44 & 0xfff;
+			dx = rcossin_tbl[(angle & 0xfff) * 2] << 3;
+			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] << 3;
+		}
 		else
-			model = (cookieCount * 0x1000) / 0x38;
+		{
+			angle = (cookieCount * ONE) / 56 & 0xfff;
+			dx = rcossin_tbl[(angle & 0xfff) * 2] * 10;
+			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
+		}
 
-		if (requestCopCar == 0)
-			iVar6 = rcossin_tbl[(model & 0xfff) * 2] << 3;
-		else
-			iVar6 = rcossin_tbl[(model & 0xfff) * 2] * 10;
+		randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+		randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
 
-		randomLoc.vx = baseLoc.vx + FIXEDH(iVar6) * 0x800;
-
-		if (requestCopCar == 0)
-			model = (cookieCount * 0x1000) / 0x2c;
-		else
-			model = (cookieCount * 0x1000) / 0x38;
-
-		if (requestCopCar == 0)
-			iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] << 3;
-		else
-			iVar6 = rcossin_tbl[(model & 0xfff) * 2 + 1] * 10;
-
-		randomLoc.vz = baseLoc.vz + FIXEDH(iVar6) * 0x800;
 		roadSeg = RoadInCell(&randomLoc);
 	}
 
-	if (((((roadSeg & 0xffffe000U) != 0) || (NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
-		(((roadSeg & 0xffffe000U) != 0x4000 || (NumDriver2Curves <= (int)(roadSeg & 0x1fffU))))) ||
-		(roadSeg < 0))
+	// wtf there were before? car wasn't set to 'confused' state
+	if (!IS_STRAIGHT_SURFACE(roadSeg) && !IS_CURVED_SURFACE(roadSeg))
 	{
 		civPingTest.OffRoad++;
+		CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
-	if (((((roadSeg & 0xffffe000U) != 0) || (NumDriver2Straights <= (int)(roadSeg & 0x1fffU))) &&
-		(((roadSeg & 0xffffe000U) != 0x4000 || (NumDriver2Curves <= (int)(roadSeg & 0x1fffU))))) ||
-		(roadSeg < 0))
-		goto LAB_0002a368;
-
-	ClearMem((char*)carDistLanes, sizeof(carDistLanes));
-
-	if ((((roadSeg & 0xffffe000U) == 0) && ((int)(roadSeg & 0x1fffU) < NumDriver2Straights)) && (-1 < roadSeg))
+	// I wonder if next code was sort of a BIG-BIG inline or MACRO also used in other functions
+	if (IS_STRAIGHT_SURFACE(roadSeg))
 	{
-		straight = Driver2StraightsPtr + roadSeg;
-		if ((straight->NumLanes & 0xfU) == 0) goto LAB_0002a368;
-		if ((gCurrentMissionNumber == 0x21) && (minPingInDist == 666)) {
-			uVar18 = 1;
-		}
-		else {
-			uVar18 = 0;
-			model = (straight->NumLanes & 0xf) * 2;
-			uVar17 = 0;
-			if ((straight->NumLanes & 0xfU) != 0)
-			{
-				do {
-					if (((((uVar18 == 0) || (model - 1 == uVar18)) && (local_2c != 0)) &&
-						(((uVar18 == 0 && ((straight->NumLanes & 0x40U) != 0)) ||
-							(((straight->NumLanes & 0xffffff0f) * 2 - 1 == uVar18 &&
-								((straight->NumLanes & 0x80U) != 0)))))) ||
-						((((straight->AILanes >> (uVar18 >> 1 & 0x1f) & 1U) != 0 &&
-							((uVar18 != 0 || ((straight->NumLanes & 0x40U) == 0)))) &&
-							(((straight->NumLanes & 0xffffff0f) * 2 - 1 != uVar18 ||
-								((straight->NumLanes & 0x80U) == 0))))))
-					{
-						possibleLanes[uVar17] = uVar18;
-						uVar17 = uVar17 + 1 & 0xff;
-					}
+		int numPossibleLanes;
+		int numLanes;
+		int allowedToPark;
 
-					uVar18 = uVar18 + 1 & 0xff;
-				} while (uVar18 < model);
+		straight = GET_STRAIGHT(roadSeg);
+
+		if (ROAD_LANES_COUNT(straight) == 0) // BAD ROAD
+		{
+			CIV_STATE_SET_CONFUSED(newCar);
+			return 0;
+		}
+
+		numLanes = ROAD_WIDTH_IN_LANES(straight);
+
+		numPossibleLanes = 0;
+
+		// Caine's Cash limo spawned always on lane 1. Don't allow it parked!
+		if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+		{
+			lane = 1;
+		}
+		else
+		{
+			i = 0;
+			while (i < numLanes)
+			{
+				// collect the lanes.
+				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(straight, i);
+
+				// this is closest to OG decompiled. Works different!
+				//if ((
+				//	((tryPingInParkedCars && allowedToPark))) ||
+				//	((ROAD_IS_AI_LANE(straight, i) && (((i != 0 || ((straight->NumLanes & 0x40U) == 0)) && (((straight->NumLanes & 0xffffff0f) * 2 - 1 != i || ((straight->NumLanes & 0x80U) == 0))))))))
+
+				// pick only non-parkable driveable lanes if parked cars not requested
+				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(straight, i) && !allowedToPark)
+					possibleLanes[numPossibleLanes++] = i;
+
+				i++;
 			}
 
-			if (uVar17 == 0)
+			if (numPossibleLanes == 0)
 				return 0;
 
-			lVar8 = Random2(0);
-
-			uVar18 = possibleLanes[(lVar8 >> 8) % uVar17];
-			cp->ai.c.currentLane = possibleLanes[(lVar8 >> 8) % uVar17];
+			lane = possibleLanes[(Random2(0) >> 8) % numPossibleLanes];
 		}
-		if (((uVar18 == 0) && ((straight->NumLanes & 0x40U) != 0)) ||
-			(((straight->NumLanes & 0xf) * 2 - 1 == uVar18 &&
-				((straight->NumLanes & 0x80U) != 0))))
+
+		// check if need to make a parked car
+		if (ROAD_IS_PARKING_ALLOWED_AT(straight, lane))
 		{
 			civDat.thrustState = 3;
 			civDat.ctrlState = 7;
 
-			if ((straight->AILanes >> (uVar18 / 2 & 0x1fU) & 1U) != 0)
-			{
+			// set to drive off
+			if (ROAD_IS_AI_LANE(straight, lane))
 				civDat.ctrlState = 5;
-			}
 		}
 		else
 		{
-			if ((straight->AILanes >> (uVar18 / 2 & 0x1fU) & 1U) == 0)
+			// Car is not active. Permanently parked
+			if (ROAD_IS_AI_LANE(straight, lane) == 0)
 			{
-			LAB_00029a28:
-				civPingTest.NotDrivable = civPingTest.NotDrivable + 1;
+				civPingTest.NotDrivable++;
 				return 0;
 			}
+
 			civDat.thrustState = 0;
 			civDat.ctrlState = 0;
 		}
 	}
-	else
+	else if(IS_CURVED_SURFACE(roadSeg))
 	{
-		if ((((roadSeg & 0xffffe000U) == 0x4000) && ((int)(roadSeg & 0x1fffU) < NumDriver2Curves)) && (-1 < roadSeg))
+		int numPossibleLanes;
+		int numLanes;
+		int allowedToPark;
+
+		curve = GET_CURVE(roadSeg);
+
+		if (ROAD_LANES_COUNT(curve) == 0) // BAD ROAD
 		{
-			curve = Driver2CurvesPtr + roadSeg - 0x4000;
-			bVar16 = curve->NumLanes;
-			uVar18 = 0;
+			CIV_STATE_SET_CONFUSED(newCar);
+			return 0;
+		}
 
-			if ((bVar16 & 0xf) == 0)
-				goto LAB_0002a368;
+		numLanes = ROAD_WIDTH_IN_LANES(curve);
 
-			model = ((uint)bVar16 & 0xf) * 2;
-			uVar17 = 0;
-			if ((bVar16 & 0xf) != 0) {
-				do {
-					if ((((uVar18 == 0) || (model - 1 == uVar18)) &&
-						((local_2c != 0 &&
-							(((uVar18 == 0 && ((curve->NumLanes & 0x40U) != 0)) ||
-								(((curve->NumLanes & 0xffffff0f) * 2 - 1 == uVar18 &&
-									((curve->NumLanes & 0x80U) != 0)))))))) ||
-						(((curve->AILanes >> (uVar18 >> 1 & 0x1f) & 1U) != 0 &&
-							(((uVar18 != 0 || ((curve->NumLanes & 0x40U) == 0)) &&
-								(((curve->NumLanes & 0xffffff0f) * 2 - 1 != uVar18 ||
-									((curve->NumLanes & 0x80U) == 0))))))))
-					{
-						possibleLanes[uVar17] = uVar18;
-						uVar17 = uVar17 + 1 & 0xff;
-					}
-					uVar18 = uVar18 + 1 & 0xff;
-				} while (uVar18 < model);
-			}
+		numPossibleLanes = 0;
 
-			if (uVar17 == 0)
+		i = 0;
+		while (i < numLanes)
+		{
+			// collect the lanes.
+			allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(curve, i);
+
+			// this is closest to OG decompiled. Works different!
+			//if ((
+			//	((tryPingInParkedCars && allowedToPark))) ||
+			//	((ROAD_IS_AI_LANE(curve, i) && (((i != 0 || ((curve->NumLanes & 0x40U) == 0)) && (((curve->NumLanes & 0xffffff0f) * 2 - 1 != i || ((curve->NumLanes & 0x80U) == 0))))))))
+
+			// pick only non-parkable driveable lanes if parked cars not requested
+			if(tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(curve, i) && !allowedToPark)
+				possibleLanes[numPossibleLanes++] = i;
+
+			i++;
+		}
+
+		if (numPossibleLanes == 0)
+			return 0;
+
+		lane = possibleLanes[(Random2(0) >> 8) % numPossibleLanes];
+
+		if (lane > ROAD_WIDTH_IN_LANES(curve))
+		{
+			CIV_STATE_SET_CONFUSED(newCar);
+			return 0;
+		}
+
+		// check if need to make a parked car
+		if (ROAD_IS_PARKING_ALLOWED_AT(curve, lane))
+		{
+			civDat.thrustState = 3;
+			civDat.ctrlState = 7;
+
+			// set to drive off
+			if (ROAD_IS_AI_LANE(curve, lane))
+				civDat.ctrlState = 5;
+		}
+		else
+		{
+			// Car is not active. Permanently parked
+			if (ROAD_IS_AI_LANE(curve, lane) == 0)
+			{
+				civPingTest.NotDrivable++;
 				return 0;
-
-			lVar8 = Random2(0);
-
-			if (uVar17 == 0)
-				trap(7);
-
-			bVar16 = possibleLanes[(lVar8 >> 8) % uVar17];
-			uVar18 = bVar16;
-			cp->ai.c.currentLane = bVar16;
-			bVar1 = curve->NumLanes;
-			model = (bVar1 & 0xf) * 2;
-			if (model < uVar18) goto LAB_0002a368;
-			if (((bVar16 == 0) && ((bVar1 & 0x40) != 0)) ||
-				((model - 1 == uVar18 && ((bVar1 & 0x80) != 0)))) {
-				civDat.thrustState = 3;
-				civDat.ctrlState = 7;
-				if ((curve->AILanes >> ((int)uVar18 / 2 & 0x1fU) & 1U) != 0) {
-					civDat.ctrlState = 5;
-				}
 			}
-			else {
-				if (((int)(u_char)curve->AILanes >> ((int)uVar18 / 2 & 0x1fU) & 1U) == 0)
-					goto LAB_00029a28;
-				civDat.thrustState = 0;
-				civDat.ctrlState = 0;
-			}
-			local_30 = (int)(((int)curve->end - (int)curve->start & 0xfffU) *
-				(uint)curve->inside * 0xb) / 7;
+
+			civDat.thrustState = 0;
+			civDat.ctrlState = 0;
 		}
 	}
 
-	if ((civDat.thrustState != 3) ||
-		(((cVar5 = 0, gInGameCutsceneActive == 0 && (gInGameChaseActive == 0)) &&
-			(((Random2(0) & 0x40) == 0 || (cVar5 = 3, gCurrentMissionNumber == 0x20))))))
+	// [A] what's model is this?
+	if(gInGameCutsceneActive == 0 && gInGameChaseActive == 0 && (Random2(0) & 0x40) == 0)
 	{
-		cVar5 = 0;
+		modelRandomList[12] = 3;
 	}
 
-	modelRandomList[12] = cVar5;
-	if (((specModelValid == 0) || (allowSpecSpooling == 0)) ||
-		(MissionHeader->residentModels[4] == 0xc))
+	// seems like this mission check (Get a cop car) is a bug fix
+	// choose to spawn parked cops
+	if (gCurrentMissionNumber == 32 || civDat.thrustState != 3)
+	{
+		modelRandomList[12] = 0;
+	}
+
+	// check if special car is loaded and add it to random list
+	if (specModelValid == 0 || allowSpecSpooling == 0 || MissionHeader->residentModels[4] == 12)
 	{
 		modelRandomList[15] = 0;
 		modelRandomList[14] = 1;
 	}
-	else {
+	else
+	{
 		modelRandomList[15] = 4;
-		model = Random2(0);
 		modelRandomList[14] = 1;
 
-		if ((model & 0x100) != 0)
+		if ((Random2(0) & 0x100) != 0)
 			modelRandomList[14] = 4;
 	}
-	if ((gCurrentMissionNumber == 7) || (gCurrentMissionNumber == 0x21)) {
+
+	// another change for Caine's compound
+	if (gCurrentMissionNumber == 7 || gCurrentMissionNumber == 33) 
+	{
 		modelRandomList[9] = 0;
 		modelRandomList[8] = 0;
 		modelRandomList[11] = 1;
 		modelRandomList[10] = 1;
 	}
-	else {
+	else 
+	{
 		modelRandomList[11] = 2;
 		modelRandomList[10] = 2;
 		modelRandomList[9] = 2;
 		modelRandomList[8] = 2;
 	}
+
 	civDat.controlFlags = 0;
 
-	if (requestCopCar == 0)
+	if (requestCopCar)
 	{
-		model = Random2(0);
-		model = modelRandomList[model & 0xf];
+		model = 3;
+		civDat.controlFlags = 1;
 	}
 	else
 	{
-		model = 3;
+		model = modelRandomList[Random2(0) & 0xf];
 	}
 
-	if ((gCurrentMissionNumber == 0x21) && (minPingInDist == 666))
+	// force spawn limo nearby in Caine's Cash
+	if (gCurrentMissionNumber == 33 && minPingInDist == 666)
 		model = 4;
 
-	if (requestCopCar != 0)
-		civDat.controlFlags = 1;
-
-	if ((MissionHeader->residentModels[model] == 0) || (4 < MissionHeader->residentModels[model]))
+	// select car color palette
+	if (MissionHeader->residentModels[model] == 0 || MissionHeader->residentModels[model] > 4)
 	{
 		civDat.palette = 0;
 	}
+	else if (player[0].playerType == 1 && car_data[player[0].playerCarId].ap.model == model)
+	{
+		int rnd;
+		rnd = Random2(0);
+
+		civDat.palette = rnd - (rnd / 4) * 4 & 0xff;
+
+		if (car_data[player[0].playerCarId].ap.palette <= civDat.palette)
+			civDat.palette++;
+	}
 	else
 	{
-		if (player[0].playerType == 1 && car_data[player[0].playerCarId].ap.model == model)
-		{
-			lVar9 = Random2(0);
-			lVar8 = lVar9;
-			if (lVar9 < 0) {
-				lVar8 = lVar9 + 3;
-			}
-			uVar17 = lVar9 + (lVar8 >> 2) * -4 & 0xff;
-			civDat.palette = uVar17;
+		int rnd;
+		rnd = Random2(0);
 
-			if (car_data[player[0].playerCarId].ap.palette <= uVar17)
-				civDat.palette = civDat.palette + 1;
-
-		}
-		else {
-			lVar8 = Random2(0);
-			civDat.palette = (char)lVar8 + (char)(lVar8 / 5) * -5;
-		}
+		civDat.palette = rnd - (rnd / 5) * 5 & 0xff;
 	}
-	iVar6 = car_cosmetics[model].colBox.vz;
-	if ((((roadSeg & 0xffffe000U) == 0) && ((int)(roadSeg & 0x1fffU) < NumDriver2Straights)) && (-1 < roadSeg))
+
+	lbody = car_cosmetics[model].colBox.vz;
+
+	// check bounds
+	if ( IS_STRAIGHT_SURFACE(roadSeg) )
 	{
-		uVar17 = 0;
+		int theta;
+		int minDistAlong;
+		int scDist;
+
 		if (requestCopCar == 0)
 		{
-			iVar7 = iVar6 * 2;
-			uVar17 = iVar6 * 3;
+			scDist = lbody * 2;
+			minDistAlong = lbody * 3;
 		}
 		else
 		{
-			iVar7 = iVar6 << 1;
+			scDist = lbody / 2;
+			minDistAlong = 0;
 		}
 
-		if (straight->length <= (iVar7 + iVar6) * 2)
+		if (straight->length <= (scDist + lbody) * 2) // don't spawn outside straight
 			return 0;
 
 		dx = randomLoc.vx - straight->Midx;
 		dz = randomLoc.vz - straight->Midz;
 
-		lVar8 = ratan2(dx, dz);
-		sVar2 = straight->angle;
-		lVar9 = SquareRoot0(dx * dx + dz * dz);
-		uVar3 = straight->length;
+		theta = (straight->angle - ratan2(dx, dz) & 0xfffU);
 
-		civDat.distAlongSegment = (uVar3 >> 1) + FIXEDH(rcossin_tbl[(sVar2 - lVar8 & 0xfffU) * 2 + 1] * lVar9);
+		civDat.distAlongSegment = (straight->length / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
 
 		if (requestCopCar == 0)
 		{
-			if (civDat.distAlongSegment < uVar17)
-			{
-				civDat.distAlongSegment = uVar17;
-			}
-			if ((uVar3 - civDat.distAlongSegment) < uVar17) {
-				civDat.distAlongSegment = uVar3 - uVar17;
-			}
-		}
-		if (IS_NARROW_ROAD(straight))
-			uVar17 = cp->ai.c.currentLane;
-		else
-			uVar17 = (u_char)straight->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
+			if (civDat.distAlongSegment < minDistAlong)
+				civDat.distAlongSegment = minDistAlong;
 
-		if ((uVar17 & 1) == 0)
-			local_34 = straight->angle;
+			if (straight->length - civDat.distAlongSegment < minDistAlong)
+				civDat.distAlongSegment = straight->length - minDistAlong;
+		}
+
+		if (ROAD_LANE_DIR(straight, lane) == 0)
+			dir = straight->angle;
 		else
-			local_34 = straight->angle + 0x800U & 0xfff;
+			dir = straight->angle + 0x800U & 0xfff;
 	}
-	else
+	else if (IS_CURVED_SURFACE(roadSeg))
 	{
-		if ((((roadSeg & 0xffffe000U) == 0x4000) && ((roadSeg & 0x1fffU) < NumDriver2Curves)) && (-1 < roadSeg))
+		int minDistAlong;
+		int segmentLen;
+
+		currentAngle = ratan2(randomLoc.vx - curve->Midx, randomLoc.vz - curve->Midz);
+		minDistAlong = 0;
+
+		if (requestCopCar == 0)
 		{
-			currentAngle = ratan2(randomLoc.vx - curve->Midx, randomLoc.vz - curve->Midz);
-			uVar17 = 0;
-			if (requestCopCar == 0)
-			{
-				bVar16 = curve->inside;
-				uVar17 = 0x80;
-				if ((9 < bVar16) && (uVar17 = 0x20, bVar16 < 0x14))
-				{
-					uVar17 = 0x40;
-				}
-			}
+			if (curve->inside > 9)
+				minDistAlong = 32;
+			else if (curve->inside < 20)
+				minDistAlong = 64;
 			else
-			{
-				bVar16 = curve->inside;
-			}
-
-			uVar10 = (currentAngle & 0xfffU) - (int)curve->start;
-			civDat.distAlongSegment = uVar10 & 0xf80;
-
-			if ((9 < bVar16) && (civDat.distAlongSegment = uVar10 & 0xfe0, bVar16 < 0x14))
-			{
-				civDat.distAlongSegment = uVar10 & 0xfc0;
-			}
-
-			if (civDat.distAlongSegment <= uVar17)
-				civDat.distAlongSegment = uVar17;
-
-			uVar17 = (curve->end - curve->start) - uVar17 & 0xfff;
-			if (uVar17 <= civDat.distAlongSegment)
-				civDat.distAlongSegment = uVar17;
-
-			iVar7 = civDat.distAlongSegment + (int)curve->start;
-
-			if (curve->NumLanes == -1)
-				uVar17 = cp->ai.c.currentLane;
-			else
-				uVar17 = (u_char)curve->LaneDirs >> ((cp->ai.c.currentLane >> 1) & 0x1f);
-
-			if ((uVar17 & 1) == 0)
-				local_34 = iVar7 + 0x400;
-			else
-				local_34 = iVar7 - 0x400;
-
-			if (local_30 < iVar6 * 6) {
-				return 0;
-			}
+				minDistAlong = 128;
 		}
+
+		if (curve->inside > 9)
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - curve->start & 0xfe0;
+		else if (curve->inside < 20)
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - curve->start & 0xfc0;
+		else
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - curve->start & 0xf80;
+
+		if (civDat.distAlongSegment <= minDistAlong)
+			civDat.distAlongSegment = minDistAlong;
+
+		segmentLen = (curve->end - curve->start) - segmentLen & 0xfff;
+
+		if (civDat.distAlongSegment >= segmentLen)
+			civDat.distAlongSegment = segmentLen;
+
+		if (ROAD_LANE_DIR(curve, lane) == 0)
+			dir = civDat.distAlongSegment + curve->start + 0x400;
+		else
+			dir = civDat.distAlongSegment + curve->start - 0x400;
+
+		curveLength = ((curve->end - curve->start & 0xfffU) * curve->inside * 11) / 7;
+
+		if (lbody * 6 > curveLength) // don't spawn outside curve
+			return 0;
 	}
 
-	if (civDat.thrustState == 3 && civDat.ctrlState == 5 && maxParkedCars <= numParkedCars)
+	// too much parked cars?
+	if (civDat.thrustState == 3 && civDat.ctrlState == 5 && numParkedCars >= maxParkedCars)
 	{
 		return 0;
 	}
 
-	if (((local_34 == 0xffffff) || ((int)uVar18 < 0)) || (civDat.distAlongSegment < 0))
+	if (dir == 0xffffff || lane < 0 || civDat.distAlongSegment < 0)
 	{
-	LAB_0002a368:
-		cp->ai.c.thrustState = 3;
-		cp->ai.c.ctrlState = 7;
+		CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
-	GetNodePos(straight, NULL, curve, civDat.distAlongSegment, cp, &cp->ai.c.targetRoute[0].x, &cp->ai.c.targetRoute[0].z, cp->ai.c.currentLane);
+	GetNodePos(straight, NULL, curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
-	uVar17 = 0x7fffffff;
-	p_Var13 = car_data;
-	pos[0] = cp->ai.c.targetRoute[0].x;
-	pos[2] = cp->ai.c.targetRoute[0].z;
+	retDistSq = 0x7fffffff; // INT_MAX
+	pos[0] = newCar->ai.c.targetRoute[0].x;
+	pos[2] = newCar->ai.c.targetRoute[0].z;
 	pos[1] = randomLoc.vy;
 
-	if (true)
+	count = 0;
+
+	carCnt = car_data;
+	while (carCnt < car_data + MAX_CARS)
 	{
-		do {
-			if (p_Var13->controlType != 0)
+		if (carCnt->controlType != 0)
+		{
+			int dx, dy, dz;
+			int sqDist;
+
+			dy = randomLoc.vy - carCnt->hd.where.t[1];
+			dy = ABS(dy);
+
+			if (dy < 800)
 			{
-				iVar11 = (p_Var13->hd).where.t[1];
-				iVar7 = randomLoc.vy - iVar11;
-				if (iVar7 < 0)
+				dx = pos[0] - carCnt->hd.where.t[0];
+				dz = pos[2] - carCnt->hd.where.t[2];
+
+				sqDist = (dx * dx + dz * dz);
+
+				if (ABS(dx) < 0x1000 && ABS(dz) < 0x1000 && sqDist < retDistSq)
 				{
-					iVar7 = iVar11 - randomLoc.vy;
+					retDistSq = sqDist;
 				}
 
-				if (iVar7 < 800)
+				// check if this car's route is too close to others
+				if (ABS(dx) < 0x7000 && ABS(dz) < 0x7000 && sqDist < 9000000)
 				{
-					iVar11 = pos[0] - (p_Var13->hd).where.t[0];
-					iVar7 = iVar11;
+					count++;
 
-					if (iVar11 < 0)
-					{
-						iVar7 = -iVar11;
-					}
-
-					if (iVar7 < 0x1000)
-					{
-						iVar12 = pos[2] - (p_Var13->hd).where.t[2];
-						iVar7 = iVar12;
-
-						if (iVar12 < 0)
-						{
-							iVar7 = -iVar12;
-						}
-
-						if ((iVar7 < 0x1000) && (uVar10 = iVar11 * iVar11 + iVar12 * iVar12, uVar10 < uVar17))
-						{
-							uVar17 = uVar10;
-						}
-					}
+					if (count > closeEncounter)
+						return 0;
 				}
 			}
-			p_Var13 = p_Var13 + 1;
-		} while (p_Var13 < car_data + 20);
+		}
+		carCnt++;
 	}
 
-	if (uVar17 != 56)	// [A] This was decompiled wrong
-	{
-		distSq = uVar17;
-	}
+	if (retDistSq != 56)	// [A] This was decompiled wrong. Can't get the meaning for it
+		distSq = retDistSq;
 
-	if (distSq < (iVar6 * iVar6 * 8 * 8))
-		return 0;
-
-	p_Var13 = car_data;
-	iVar6 = 0;
-	if (true)
-	{
-		do {
-			if (p_Var13->controlType != 0)
-			{
-				iVar11 = (p_Var13->hd).where.t[1];
-				iVar7 = randomLoc.vy - iVar11;
-				if (iVar7 < 0) {
-					iVar7 = iVar11 - randomLoc.vy;
-				}
-				if (iVar7 < 800) {
-					iVar11 = pos[0] - (p_Var13->hd).where.t[0];
-					iVar7 = iVar11;
-					if (iVar11 < 0) {
-						iVar7 = -iVar11;
-					}
-					if (iVar7 < 0x7000) {
-						iVar12 = pos[2] - (p_Var13->hd).where.t[2];
-						iVar7 = iVar12;
-						if (iVar12 < 0) {
-							iVar7 = -iVar12;
-						}
-						if (iVar7 < 0x7000 && (iVar11 * iVar11 + iVar12 * iVar12) < 9000000)
-						{
-							iVar6 = iVar6 + 1;
-						}
-					}
-				}
-			}
-			p_Var13 = p_Var13 + 1;
-		} while (p_Var13 < car_data + 20);
-	}
-
-	if (closeEncounter < iVar6)
+	if (distSq < (lbody * lbody * 8 * 8))
 		return 0;
 
 	civDat.surfInd = roadSeg;
 
 	if (roadSeg < 0)
-		goto LAB_0002a368;
-
-	civDat.angle = local_34;
-	InitCar(cp, local_34, &pos, 2, model, 0, (char*)&civDat);
-
-	cp->ai.c.currentLane = uVar18;
-
-	if ((gCurrentMissionNumber == 33) && (minPingInDist == 666))
-		limoId = cp->id;
-
-	if (cp->ai.c.thrustState == 3)
 	{
-		if (cp->ai.c.ctrlState != 5)
-			goto LAB_0002a430;
-
-		cp->controlFlags |= 4;
+		CIV_STATE_SET_CONFUSED(newCar);
+		return 0;
 	}
 
-	if (cp->ai.c.ctrlState == 5)
+	civDat.angle = dir;
+	InitCar(newCar, dir, &pos, 2, model, 0, (char*)&civDat);
+
+	// set the lane
+	newCar->ai.c.currentLane = lane;
+
+	if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+		limoId = newCar->id;
+
+	if (newCar->ai.c.ctrlState == 5)
+	{
 		numParkedCars++;
 
-LAB_0002a430:
-	if ((cp->controlFlags & 1) != 0)
+		// parked car is going to unpark
+		if(newCar->ai.c.thrustState == 3)
+			newCar->controlFlags |= 4;
+	}
+
+	// cop car request done
+	if (newCar->controlFlags & 1)
 	{
 		requestCopCar = 0;
 		numCopCars++;
 	}
+
 	numCivCars++;
 
-	if ((cp->controlFlags & 1) != 0)
-		PassiveCopTasks(cp);
+	// init Cop
+	if (newCar->controlFlags & 1)
+		PassiveCopTasks(newCar);
 
 	PingOutCivsOnly = 0;
 
-	return cp->id + 1;
+	return newCar->id + 1;
 }
 
 
@@ -5886,7 +5780,7 @@ void SetUpCivCollFlags(void)
 
 							bVar3 = p_Var16 + -1 < car_data;
 							if ((local_2c->ai.c.thrustState != 3) &&
-								((p_Var16->controlType == 1 ||
+								((p_Var16->controlType == 1 || p_Var16->controlType == 7 ||
 									(bVar3 = p_Var16 - 1 < car_data, CAR_INDEX(p_Var16) == 20))))
 							{
 								lVar7 = Random2(0);
