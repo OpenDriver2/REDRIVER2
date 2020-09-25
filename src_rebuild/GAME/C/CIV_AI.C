@@ -5138,7 +5138,7 @@ int CivControl(_CAR_DATA* cp)
 			/*
 			if (cp->ai.c.currentRoad != -1)
 			{
-				DRIVER2_STRAIGHT* straight = Driver2StraightsPtr + cp->ai.c.currentRoad;
+				DRIVER2_STRAIGHT* straight = GET_STRAIGHT(cp->ai.c.currentRoad);
 
 				int angle = straight->angle;
 				int distFromCentreA = -straight->length / 2;
@@ -5158,9 +5158,7 @@ int CivControl(_CAR_DATA* cp)
 				VECTOR roadB = { straightX2, cp->hd.where.t[1], straightZ2 };
 
 				Debug_AddLine(roadA, roadB, rrcv);
-			}
-			*/
-
+			}*/
 
 			CIV_ROUTE_ENTRY* pn = cp->ai.c.pnode;
 			if (pn)
@@ -5189,7 +5187,7 @@ int CivControl(_CAR_DATA* cp)
 			}
 
 			// current node - YELLOW
-			if (cp->ai.c.currentNode != -1)
+			if (cp->ai.c.currentNode > -1 && cp->ai.c.currentNode < 13)
 			{
 				CIV_ROUTE_ENTRY& currentNode = cp->ai.c.targetRoute[cp->ai.c.currentNode];
 
@@ -5199,7 +5197,7 @@ int CivControl(_CAR_DATA* cp)
 			}
 
 			// turn node - RED
-			if (cp->ai.c.turnNode != -1)
+			if (cp->ai.c.turnNode > -1 && cp->ai.c.turnNode < 13)
 			{
 				CIV_ROUTE_ENTRY& turnNode = cp->ai.c.targetRoute[cp->ai.c.turnNode];
 
