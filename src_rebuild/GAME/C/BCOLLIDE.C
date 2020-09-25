@@ -136,7 +136,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		if (tmp2 < 11)
 			xover = -1;
 		else
-			xover = (FE << 0xc) / tmp2;
+			xover = (FE * ONE) / tmp2;
 
 		FE = ABS(body[1].dist[1]) - ABS(body[1].limit[1]);
 		FE = ABS(FE);
@@ -146,7 +146,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 
 		zover = xover;
 		if (tmp2 > 10)
-			zover = (FE << 0xc) / tmp2;
+			zover = (FE * ONE) / tmp2;
 
 		if (xover > -1)
 		{
@@ -382,18 +382,8 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	
 	i = 1;
 	do {
-		original[i].dist[0] = cd[i].dist[0];
-		original[i].limit[0] = cd[i].limit[0];
-		original[i].dist[1] = cd[i].dist[1];
-		original[i].limit[1] = cd[i].limit[1];
-		original[i].axis[0] = cd[i].axis[0];
-		original[i].axis[1] = cd[i].axis[1];
-
-		original[i].x = cd[i].x;
-		original[i].theta = cd[i].theta;
-
+		original[i] = cd[i];
 		i--;
-
 	} while (i >= 0);
 
 	i = 7;
@@ -451,15 +441,14 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 		} while (i >= 0);
 
 		bcollided2d(cd, 0);
+
 		time += step;
 	}
 	else if (neverfree != 0)
 	{
-		i = 0;
+		i = 1;
 		do {
-			cd[i].x.vx = original[i].x.vx;
-			cd[i].x.vz = original[i].x.vz;
-			cd[i].theta = original[i].theta;
+			cd[i] = original[i];
 
 			bcollided2d(cd, 0);
 			i--;
@@ -1031,14 +1020,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
 
-			cd[0].length[0] = cp->ap.carCos->colBox.vz + 15;
-			cd[0].length[1] = cp->ap.carCos->colBox.vx + 15;
+			cd[0].length[0] = car_cos->colBox.vz + 15;
+			cd[0].length[1] = car_cos->colBox.vx + 15;
 
 			if (handlingType[cp->hndType].fourWheelDrive == 1 || cp->hndType == 5)
-			{
-				cd[0].length[1] *= 13;
-				cd[0].length[1] = FixFloorSigned(cd[0].length[1], 4);
-			}
+				cd[0].length[1] = FixFloorSigned(cd[0].length[1] * 13, 4);
 		}
 
 		cd[0].avel = FIXEDH(cp->st.n.angularVelocity[1]) * 5 >> 5;

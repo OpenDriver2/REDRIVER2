@@ -1025,8 +1025,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							bbox.pos.pad = (model->flags2 >> 10) & 1;
 
-							bbox.xsize = collide->zsize >> 1;
-							bbox.zsize = collide->xsize >> 1;
+							bbox.xsize = (collide->zsize >> 1);// &0xFFFE;
+							bbox.zsize = (collide->xsize >> 1);// &0xFFFE;
 
 							bbox.height = collide->ysize;
 							bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
