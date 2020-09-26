@@ -116,6 +116,8 @@ extern void EnableDisplay(); // 0x0007F984
 
 extern void DisableDisplay(); // 0x0007F9F0
 
+extern void ClearCurrentDrawBuffers();
+
 extern void SwapDrawBuffers(); // 0x0007F6FC
 
 extern void SwapDrawBuffers2(int player); // 0x0007ECF0

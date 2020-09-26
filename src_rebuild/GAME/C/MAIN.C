@@ -1706,7 +1706,7 @@ void GameLoop(void)
 	while (game_over == 0) 
 	{
 		StepGame();
-
+		
 		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7) 
 		{
 			DrawGame();
@@ -2155,12 +2155,19 @@ int ObjectDrawnCounter = 0;
 
 void DrawGame(void)
 {
+	if(gSkipInGameCutscene)
+	{
+		ClearCurrentDrawBuffers();
+		return;
+	}
+	
 	static unsigned long frame = 0;
 
 	if ((NumPlayers == 1) || (NoPlayerControl != 0)) 
 	{
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
+		
 		RenderGame2(0);
 
 		ObjectDrawnCounter++;

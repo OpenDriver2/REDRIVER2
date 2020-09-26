@@ -22,6 +22,9 @@
 
 #include "LIBETC.H"
 #include "STRINGS.H"
+#include "XAPLAY.H"
+
+int gSkipInGameCutscene = 0;
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
@@ -94,6 +97,8 @@ void InitInGameCutsceneVariables(void)
 	gCutsceneAtEnd = 0;
 	JustReturnedFromCutscene = 0;
 
+	gSkipInGameCutscene = 0;
+
 	FreeCutsceneBuffer();
 }
 
@@ -156,7 +161,6 @@ void HandleInGameCutscene(void)
 	if (pauseflag != 0)
 		return;
 
-
 	if (CameraCnt < 2)
 		BlackBorderHeight = 28;
 
@@ -173,8 +177,21 @@ void HandleInGameCutscene(void)
 
 	CutsceneFrameCnt++;
 
+	if (gSkipInGameCutscene)
+	{
+		FastForward = 1;
+		StopXA();
+		UnprepareXA();
+	}
+
 	if (CutsceneFrameCnt == CutsceneLength) 
 	{
+		if (gSkipInGameCutscene)
+		{
+			FastForward = 0;
+		}
+
+		gSkipInGameCutscene = 0;
 		gHaveInGameCutscene = 0;
 
 		if (gInGameCutsceneActive != 0)

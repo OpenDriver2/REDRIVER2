@@ -38,5 +38,4 @@ extern void CreateScoreNames(struct SCORE_ENTRY *table, struct PLAYER_SCORE *sco
 
 extern void DrawHighScoreMenu(int selection); // 0x0006D694
 
-
 #endif

@@ -3,6 +3,7 @@
 
 extern CUTSCENE_BUFFER CutsceneBuffer;
 
+extern int gSkipInGameCutscene;
 extern int gInGameCutsceneID;
 extern int gInGameCutsceneActive;
 extern int gInGameCutsceneDelay;

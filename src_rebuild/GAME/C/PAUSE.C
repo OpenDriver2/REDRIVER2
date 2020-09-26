@@ -263,10 +263,17 @@ MENU_ITEM MultiplayerPauseItems[7] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
+void SkipCutscene(int dir)
+{
+	gSkipInGameCutscene = 1;
+}
 
 MENU_ITEM CutscenePauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+	{ "Skip Cutscene", 3u, 2u, (pauseFunc)&SkipCutscene, MENU_QUIT_CONTINUE, NULL },
+#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
