@@ -1,7 +1,12 @@
 #ifndef EMULATOR_GLOBALS_H
 #define EMULATOR_GLOBALS_H
 
+#if defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
 #include <SDL_gamecontroller.h>
+#elif defined(__APPLE__) || defined(__linux__) || defined(__EMSCRIPTEN__)
+#include <SDL2/SDL_gamecontroller.h>
+#endif
+
 #include <EMULATOR.H>
 
 #if defined(D3D9)

@@ -7,7 +7,13 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#if defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
 #include <SDL.h>
+#elif defined(__APPLE__) || defined(__linux__) || defined(__EMSCRIPTEN__)
+#include <SDL2/SDL.h>
+#endif
+
 #include <AL/al.h>
 
 extern "C"
@@ -21,11 +27,11 @@ extern "C"
 #include "ReadAVI.h"
 
 #include "DRIVER2.H"
-#include "C\PAD.H"
-#include "C\SYSTEM.H"
-#include "C\E3STUFF.H"
-#include "C\PRES.H"
-#include "C\PAUSE.H"
+#include "C/PAD.H"
+#include "C/SYSTEM.H"
+#include "C/E3STUFF.H"
+#include "C/PRES.H"
+#include "C/PAUSE.H"
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
 {

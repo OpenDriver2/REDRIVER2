@@ -13,7 +13,13 @@
 
 #ifndef PSX
 #include <stdlib.h>
+
+#ifdef _WINDOWS
 #include <direct.h>
+#elif defined (__unix__)
+#include <sys/stat.h>
+#define _mkdir(str) mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+#endif
 
 void GetGameProfilePath(char* str)
 {

@@ -30,7 +30,12 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#if defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
 #include <SDL.h>
+#elif defined(__APPLE__) || defined(__linux__) || defined(__EMSCRIPTEN__)
+#include <SDL2/SDL.h>
+#endif
 
 SDL_Window* g_window = NULL;
 TextureID vramTexture;

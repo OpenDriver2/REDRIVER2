@@ -16,9 +16,7 @@ workspace "REDRIVER2"
     configurations { "Debug", "Release" }
 
     defines { VERSION } 
-
-    filter "system:Windows"
-        defines { "USE_32_BIT_ADDR", "PGXP" }
+    defines { "USE_32_BIT_ADDR", "PGXP" }
 
     filter "configurations:Debug"
         defines { 
@@ -30,8 +28,10 @@ workspace "REDRIVER2"
         defines {
             "NDEBUG",
         }
-		
-	dofile("premake_libjpeg.lua")
+        
+    if _TARGET_OS == "Windows" then
+        dofile("premake_libjpeg.lua")
+    end
 
 -- EMULATOR layer
 project "PSX"
@@ -46,21 +46,24 @@ project "PSX"
 
     defines { GAME_REGION }
 
-    files { 
+    files {
         "EMULATOR/**.h", 
+        "EMULATOR/**.H", 
         "EMULATOR/**.c", 
+        "EMULATOR/**.C", 
         "EMULATOR/**.cpp",
+        "EMULATOR/**.CPP",
     }
 
     defines { "OGL", "GLEW" }
 
-    includedirs { 
-        SDL2_DIR.."/include",
-        GLEW_DIR.."/include",
-        OPENAL_DIR.."/include",
-    }
-
     filter "system:Windows"
+        includedirs { 
+            SDL2_DIR.."/include",
+            GLEW_DIR.."/include",
+            OPENAL_DIR.."/include",
+        }
+        
         links { 
             "opengl32",
             "glew32", 
@@ -72,6 +75,18 @@ project "PSX"
             SDL2_DIR.."/lib/x86",
             GLEW_DIR.."/lib/Release/Win32",
             OPENAL_DIR.."/libs/Win32",
+        }
+
+    filter "system:linux"
+        buildoptions {
+            "-Wno-narrowing"
+        }
+
+        links {
+            "GL",
+            "GLEW",
+            "openal",
+            "SDL2",
         }
 
     filter "configurations:Release"
@@ -90,15 +105,18 @@ project "REDRIVER2"
     }
 
     defines { GAME_REGION }
+    defines { "OGL", "GLEW" }
 
-    files { 
-        "GAME/**.h", 
-        "GAME/**.c", 
-		"utils/**.h", 
-        "utils/**.cpp", 
-        "redriver2_psxpc.c",
+    files {
+        "GAME/**.H",
+        "GAME/**.C",
+        "utils/**.h",
+        "utils/**.cpp",
+        "redriver2_psxpc.cpp",
         "DebugOverlay.cpp",
     }
+
+    links { "PSX", "jpeg" }
 
     filter "system:Windows"
         dependson { "PSX" }
@@ -107,8 +125,6 @@ project "REDRIVER2"
             "Windows/Resource.rc", 
             "Windows/main.ico" 
         }
-
-        defines { "OGL", "GLEW" }
     
         includedirs { 
             SDL2_DIR.."/include",
@@ -116,12 +132,24 @@ project "REDRIVER2"
             OPENAL_DIR.."/include",
 			JPEG_DIR.."/",
         }
-
-        links { "PSX", "jpeg" } -- only need to link emulator
     
         linkoptions {
 			"/SAFESEH:NO", -- Image Has Safe Exception Handers: No. Because of openal-soft
-		}
+        }
+        
+    filter "system:linux"
+        buildoptions { "-Wno-narrowing", "-fpermissive" }
+
+        cppdialect "C++11"
+
+        links {
+            "GL",
+            "GLEW",
+            "openal",
+            "SDL2",
+        }
+
+        linkoptions { "-z muldefs" }
 
     filter "configurations:Debug"
         defines { 

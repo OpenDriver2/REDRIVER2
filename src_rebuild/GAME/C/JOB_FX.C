@@ -8,7 +8,7 @@
 #include "DRAW.H"
 #include "DEBRIS.H"
 #include "SYSTEM.H"
-#include "..\ASM\ASMTEST.H"
+#include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
 

@@ -12,7 +12,9 @@
 #include <AL/alc.h>
 #include <AL/alext.h>
 
+#ifdef _WINDOWS
 #include <minmax.h>
+#endif
 
 // TODO: implement XA, implement ADSR
 

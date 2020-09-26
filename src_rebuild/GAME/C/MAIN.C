@@ -69,6 +69,10 @@
 #include <stdlib.h>
 #include "STRINGS.H"
 
+#ifdef __GNUC__
+#define _stricmp(s1, s2) strcasecmp(s1, s2)
+#endif
+
 #include "../FRONTEND/FEMAIN.H"
 
 int scr_z = 0;
