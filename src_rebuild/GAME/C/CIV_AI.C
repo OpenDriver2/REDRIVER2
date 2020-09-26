@@ -5974,8 +5974,6 @@ int CivAccel(_CAR_DATA* cp)
 		// brake in front of obstacles
 		if (collDat != 0)
 		{
-			printInfo("collDat: %d\n", collDat);
-
 			int sf, c1, c2;
 			sf = lbody - (lbd2 >> 0x1f) >> 1;
 
@@ -6220,25 +6218,16 @@ int CivAccel(_CAR_DATA* cp)
 const int checkFrames = 20;
 const int maxSteer = 512;
 
-// [D]
+// [D] [T] [A] - removed copying of car. Still works okay
 int CivSteerAngle(_CAR_DATA* cp)
 {
 	CIV_ROUTE_ENTRY* startNode;
-	_CAR_DATA currentCar;
-
 	short lbody;
-	int iVar3;
-	int iVar4;
-	long lVar5;
-	_CAR_DATA* p_Var6;
-	_CAR_DATA* p_Var7;
-	CIV_ROUTE_ENTRY* pCVar8;
-	_CAR_DATA* p_Var9;
-	CIV_ROUTE_ENTRY* pCVar10;
-	long lVar12;
-	_CAR_DATA* p_Var15;
+	CIV_ROUTE_ENTRY* retNode;
+	CIV_ROUTE_ENTRY* crLoc;
 	VECTOR locPath;
 	VECTOR pathPoint;
+	int i;
 
 	pathPoint.vx = 0;
 	pathPoint.vy = 0;
@@ -6247,80 +6236,42 @@ int CivSteerAngle(_CAR_DATA* cp)
 	startNode = cp->ai.c.pnode;
 
 	lbody = cp->ap.carCos->colBox.vz;
-	pCVar8 = startNode + 1;
 
-	if (cp->ai.c.targetRoute + 13 <= pCVar8)
-		pCVar8 = startNode - 12;
-
-	pCVar10 = startNode + 2;
-
-	if (pCVar8->pathType == 127)
+	// we need 3 nodes, try making them in each different frame
+	i = 0;
+	
+	do
 	{
-	LAB_0002b600:
-		if (CreateNewNode(cp) == 0)
+		if (GET_NEXT_NODE(cp, startNode + i)->pathType == 127)
 		{
-			CIV_STATE_SET_CONFUSED(cp);
-			return 0;
+			if (CreateNewNode(cp) == 0)
+			{
+				CIV_STATE_SET_CONFUSED(cp);
+				return 0;
+			}
 		}
-	}
-	else
+		i++;
+	}while (i < 4);
+
+	if (startNode->pathType != 127)
 	{
-		if (cp->ai.c.targetRoute + 13 <= pCVar10)
-			pCVar10 = startNode - 11;
+		retNode = GET_NEXT_NODE(cp, cp->ai.c.pnode);
 
-		pCVar8 = startNode + 3;
-
-		if (pCVar10->pathType == 127)
-		{
-			goto LAB_0002b600;
-		}
-
-		if (cp->ai.c.targetRoute + 13 <= pCVar8)
-			pCVar8 = startNode - 10;
-
-		pCVar10 = startNode + 4;
-
-		if (pCVar8->pathType == 127)
-		{
-			goto LAB_0002b600;
-		}
-
-		if (cp->ai.c.targetRoute + 13 <= pCVar10)
-			pCVar10 = startNode - 9;
-
-		if (pCVar10->pathType == 127)
-		{
-			goto LAB_0002b600;
-		}
-	}
-
-	/* copy car */
-	//memcpy(&currentCar, cp, sizeof(_CAR_DATA));
-
-	pCVar8 = cp->ai.c.pnode + 1;
-
-	if (cp->ai.c.pnode->pathType != 127)
-	{
-		if (cp->ai.c.targetRoute + 13 <= pCVar8)
-			pCVar8 = cp->ai.c.pnode - 12;
-
-		if (pCVar8->pathType != 127)
+		if (retNode->pathType != 127)
 		{
 			int station;
 			station = CivFindStation(cp);
 
-			/* memcpy all targetRoute */
-			//memcpy(&currentCar.ai.c.targetRoute, cp->ai.c.targetRoute, sizeof(cp->ai.c.targetRoute));
+			crLoc = cp->ai.c.pnode;
 
-			pCVar8 = cp->ai.c.pnode + 1;
-
-			if (cp->ai.c.pnode->pathType != 127)
+			if (crLoc->pathType != 127)
 			{
-				if (cp->ai.c.targetRoute + 13 <= pCVar8)
-					pCVar8 = cp->ai.c.pnode - 12;
+				retNode = GET_NEXT_NODE(cp, cp->ai.c.pnode);
 
-				if (pCVar8->pathType != 127)
+				if (retNode->pathType != 127)
 				{
+					CIV_ROUTE_ENTRY* cr;
+
 					int ret;
 					int dx, dz;
 					CivFindPointOnPath(cp, station + FIXEDH(cp->hd.wheel_speed) * checkFrames + lbody, &pathPoint);
@@ -6335,28 +6286,18 @@ int CivSteerAngle(_CAR_DATA* cp)
 					else if(ret > maxSteer)
 						ret = maxSteer;
 
-					pCVar8 = startNode;
-
-					if (startNode == cp->ai.c.pnode)
+					// invalidate old nodes
+					cr = startNode;
+					while (cr != cp->ai.c.pnode)
 					{
-						return ret;
-					}
+						cr->pathType = 127;
 
-					do
-					{
-						pCVar8->pathType = 127;
-						pCVar10 = pCVar8 + 1;
-
-						if (cp->ai.c.turnNode == (pCVar8 - cp->ai.c.targetRoute))
-						{
+						// invalidate current turn node
+						if (cp->ai.c.turnNode == GET_NODE_ID(cp, cr))
 							cp->ai.c.turnNode = -1;
-						}
 
-						if (cp->ai.c.targetRoute + 13 <= pCVar10)
-							pCVar10 = pCVar8 - 12;
-
-						pCVar8 = pCVar10;
-					} while (pCVar10 != cp->ai.c.pnode);
+						cr = GET_NEXT_NODE(cp, cr);
+					}
 
 					return ret;
 				}
