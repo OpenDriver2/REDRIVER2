@@ -1,6 +1,9 @@
 #include "DRIVER2.H"
 #include "MAIN.H"
 
+#include <algorithm>
+
+
 #include "LIBETC.H"
 #include "LIBSPU.H"
 #include "LIBGPU.H"
@@ -2383,6 +2386,24 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+#ifndef PSX
+#include <SDL_messagebox.h>
+void PrintCommandLineArguments()
+{
+	const char* argumentsMessage =
+		"Example: REDRIVER2 <command> [arguments]\n\n"\
+		"  -players <count> : Set player count (1 or 2)\n"\
+		"  -playercar <number>, -player2car <number> : set player wanted car\n"\
+		"  -mission <number> : starts specified mission\n"\
+		"  -replay <filename> : starts replay from file\n"\
+		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"\
+		"  -nointro : disable intro screens\n"\
+		"  -nofmv : disable all FMVs\n";
+	
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "REDRIVER 2 command line arguments", argumentsMessage, NULL);
+}
+#endif
+
 // [D]
 #ifdef PSX
 int main(void)
@@ -2468,8 +2489,8 @@ int redriver2_main(int argc, char** argv)
 
 	InitialiseScoreTables();
 
-#ifndef PSX
-	for (int i = 0; i < argc; i++)
+#ifndef PSX	
+	for (int i = 1; i < argc; i++)
 	{
 		if (!_stricmp(argv[i], "-playercar"))
 		{
@@ -2478,27 +2499,27 @@ int redriver2_main(int argc, char** argv)
 				printError("-playercar missing number argument!");
 				return -1;
 			}
-
+			i++;
 			wantedCar[0] = atoi(argv[i + 1]);
 		}
-		if (!_stricmp(argv[i], "-player2car"))
+		else if (!_stricmp(argv[i], "-player2car"))
 		{
 			if (argc - i < 2)
 			{
 				printError("-player2car missing number argument!");
 				return -1;
 			}
-
+			i++;
 			wantedCar[1] = atoi(argv[i + 1]);
 		}
-		if (!_stricmp(argv[i], "-players"))
+		else if (!_stricmp(argv[i], "-players"))
 		{
 			if (argc - i < 2)
 			{
 				printError("-players missing number argument!");
 				return -1;
 			}
-
+			i++;
 			NumPlayers = atoi(argv[i + 1]);
 		}
 		else if (!_stricmp(argv[i], "-mission"))
@@ -2515,8 +2536,16 @@ int redriver2_main(int argc, char** argv)
 			AttractMode = 0;
 
 			gCurrentMissionNumber = atoi(argv[i + 1]);
-
+			i++;
 			LaunchGame();
+		}
+		else if (!_stricmp(argv[i], "-nofmv"))
+		{
+			gNoFMV = 1;
+		}
+		else if (!_stricmp(argv[i], "-nointro"))
+		{
+			// do nothing. All command line features use it
 		}
 		else if (!_stricmp(argv[i], "-replay"))
 		{
@@ -2532,7 +2561,7 @@ int redriver2_main(int argc, char** argv)
 			AttractMode = 0;
 
 			char nameStr[512];
-			sprintf(nameStr, "%s.d2rp", argv[i+1]);
+			sprintf(nameStr, "%s", argv[i+1]);
 
 			FILE* fp = fopen(nameStr, "rb");
 			if (fp)
@@ -2564,9 +2593,10 @@ int redriver2_main(int argc, char** argv)
 				printError("Cannot open replay '%s'!\n", nameStr);
 				return -1;
 			}
+			i++;
 		}
 #ifdef CUTSCENE_RECORDER
-		if (!_stricmp(argv[i], "-recordcutscene"))
+		else if (!_stricmp(argv[i], "-recordcutscene"))
 		{
 			if (argc-i < 3)
 			{
@@ -2602,6 +2632,10 @@ int redriver2_main(int argc, char** argv)
 			return 1;
 		}
 #endif
+		else
+		{
+			PrintCommandLineArguments();
+		}
 	}
 #endif // PSX
 
