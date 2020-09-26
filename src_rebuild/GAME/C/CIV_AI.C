@@ -3884,7 +3884,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	if (pNewCar == NULL)
 		return -1;
 
-	civDat.thrustState = 0;
+	civDat.thrustState = 3;
 	civDat.ctrlState = 8;
 	civDat.controlFlags = 0;
 	civDat.palette = palette;
@@ -4273,7 +4273,7 @@ int dx = 0; // offset 0xAAB40
 int dy = 0; // offset 0xAAB44
 int dz = 0; // offset 0xAAB48
 
-// [D] [A] - some register is not properly decompiled
+// [D] [T] [A] - some register is not properly decompiled
 // TODO: store pings
 int PingInCivCar(int minPingInDist)
 {
@@ -4996,7 +4996,8 @@ int CivControl(_CAR_DATA* cp)
 		if (cp->ai.c.changeLaneIndicateCount != 0)
 			cp->ai.c.changeLaneIndicateCount--;
 
-		if (cp->ai.c.ctrlState == 5 && cp->ai.c.thrustState == 3 && cp->totalDamage < 4 && (cp->ap.model != 3 && (Random2(0) + (0x19 - cp->id) * 0x10 & 0xff8) == 0xf00))
+		if (cp->ai.c.ctrlState == 5 && cp->ai.c.thrustState == 3 && 
+			cp->totalDamage < 4 && (cp->ap.model != 3 && (Random2(0) + (25 - cp->id) * 16 & 0xff8) == 0xf00))
 		{
 			AttemptUnPark(cp);
 		}
@@ -5119,6 +5120,7 @@ int CivControl(_CAR_DATA* cp)
 #endif
 	}
 
+	// watch for the player
 	if (cp->controlFlags & 1)
 		PassiveCopTasks(cp);
 
@@ -5257,22 +5259,19 @@ int collDat = 0;
 int carnum = 0;
 int newAccel = 2000;
 
+// [D] [T]
 int CivAccelTrafficRules(_CAR_DATA* cp, int* distToNode)
 {
-	short sVar1;
-	unsigned char bVar2;
-	CAR_COSMETICS* pCVar3;
-	uint uVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	_CAR_DATA* p_Var8;
-	int iVar9;
-	int iVar10;
+	CAR_COSMETICS* car_cos;
+	_CAR_DATA* lcp;
+	int tangent;
+	int normal;
+	int lbody;
+	int wbody;
 
-	pCVar3 = cp->ap.carCos;
-	iVar10 = (pCVar3->colBox).vz;
-	sVar1 = (pCVar3->colBox).vx;
+	car_cos = cp->ap.carCos;
+	lbody = car_cos->colBox.vz;
+	wbody = car_cos->colBox.vx;
 
 	if (cp->id == 1 && (cp->ai.c.carMustDie == 1))
 	{
@@ -5283,196 +5282,216 @@ int CivAccelTrafficRules(_CAR_DATA* cp, int* distToNode)
 
 	switch (cp->ai.c.thrustState)
 	{
-	case 0:
-		cp->ai.c.brakeLight = 0;
-
-		if (cp->ai.c.ctrlNode == NULL)
-			goto LAB_0002a800;
-
-		iVar5 = (cp->hd).wheel_speed;
-		iVar9 = (iVar5 * FIXEDH(iVar5)) / (newAccel << 1);
-
-		if (iVar9 < 0)
-			iVar9 = -iVar9;
-
-		if (!IS_NODE_VALID(cp, cp->ai.c.ctrlNode))		// [A] Weird.
-			goto LAB_0002a670;
-
-		iVar6 = *distToNode;
-		if (iVar9 <= iVar6) goto LAB_0002a800;
-		iVar5 = iVar5 + -120000;
-		iVar9 = iVar6 - iVar10 * 3;
-		if (iVar9 < 0)
+		case 0:
 		{
-			if (2 < iVar10 * 3 - iVar6)
-				goto LAB_0002a7d4;
-		LAB_0002a7f8:
-			cp->ai.c.velRatio = iVar5;
-		}
-		else
-		{
-			if (2 < iVar9)
-			{
-			LAB_0002a7d4:
-				iVar6 = iVar6 + iVar10 * -3;
-				iVar5 = iVar5 / iVar6;
-				goto LAB_0002a7f8;
-			}
-			cp->ai.c.velRatio = iVar5;
-		}
-		cp->ai.c.thrustState = 1;
-	LAB_0002a800:
-		if (FIXEDH(cp->hd.wheel_speed) > cp->ai.c.maxSpeed)
-		{
-			iVar10 = newAccel;
-			return iVar10 >> 2;
-		}
-		return newAccel;
-	case 1:
-		if (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 8)
-			iVar10 = 100;
-		else
-			iVar10 = iVar10 * 3;
+			cp->ai.c.brakeLight = 0;
 
-		cp->ai.c.brakeLight = 1;
-
-		if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 127)
-		{
-			bVar2 = cp->ai.c.ctrlState;
-			if ((bVar2 == 1) && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+			if (cp->ai.c.ctrlNode)
 			{
-			LAB_0002a8b4:
-				cp->ai.c.thrustState = 0;
-				cp->ai.c.ctrlNode = NULL;
-				iVar10 = newAccel;
-				return iVar10;
-			}
-			iVar9 = *distToNode;
-			if (iVar9 < iVar10)
-			{
-				if (bVar2 == 6)
-					goto LAB_0002a8b4;
+				int properVel;
+				int brakeDist;
 
-				iVar9 = (cp->hd).wheel_speed;
-				iVar10 = -iVar9;
-				iVar10 = iVar10 >> 2;
-
-				cp->ai.c.thrustState = 3;
-			}
-			else
-			{
-				if (bVar2 == 6)
+				if (!IS_NODE_VALID(cp, cp->ai.c.ctrlNode))
 				{
-					iVar10 = (iVar9 - iVar10) * cp->ai.c.velRatio + 70000;
+					CIV_STATE_SET_CONFUSED(cp);
+					return 0;
 				}
-				else if (iVar10 < iVar9)
+
+				properVel = cp->hd.wheel_speed;
+				brakeDist = (properVel * FIXEDH(properVel)) / (newAccel * 2);
+
+				if (ABS(brakeDist) > *distToNode)
 				{
-					iVar10 = cp->ai.c.velRatio * ((iVar9 - iVar10) + 100);
+					properVel -= 120000;
+					brakeDist = *distToNode - lbody * 3;
+
+					if (brakeDist < 0)
+					{
+						if (lbody * 3 - *distToNode > 2)
+						{
+							properVel /= *distToNode - lbody * 3;
+						}
+					}
+					else if (brakeDist > 2)
+					{
+						properVel /= *distToNode - lbody * 3;
+					}
+
+					cp->ai.c.velRatio = properVel;
+					cp->ai.c.thrustState = 1;
+				}
+			}
+
+			if (FIXEDH(cp->hd.wheel_speed) > cp->ai.c.maxSpeed)
+				return newAccel >> 2;
+
+			return newAccel;
+		}
+		case 1:
+		{
+			int properVel;
+			int distToEnd;
+			int accelRatio;
+
+			if (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 8)
+				distToEnd = 100;
+			else
+				distToEnd = lbody * 3;
+
+			cp->ai.c.brakeLight = 1;
+
+			if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 127)
+			{
+				if (cp->ai.c.ctrlState == 1 && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+				{
+					cp->ai.c.thrustState = 0;
+					cp->ai.c.ctrlNode = NULL;
+
+					return newAccel;
+				}
+
+				if (*distToNode < distToEnd)
+				{
+					if (cp->ai.c.ctrlState == 6)
+					{
+						cp->ai.c.thrustState = 0;
+						cp->ai.c.ctrlNode = NULL;
+
+						return newAccel;
+					}
+
+					accelRatio = (-cp->hd.wheel_speed) / 4;
+
+					cp->ai.c.thrustState = 3;
 				}
 				else
 				{
-					iVar10 = 0;
+					if (cp->ai.c.ctrlState == 6)
+					{
+						properVel = (*distToNode - distToEnd) * cp->ai.c.velRatio + 70000;
+					}
+					else if (distToEnd < *distToNode)
+					{
+						properVel = cp->ai.c.velRatio * ((*distToNode - distToEnd) + 100);
+					}
+					else
+					{
+						properVel = 0;
+					}
+
+					accelRatio = ((properVel - cp->hd.wheel_speed) * newAccel) / 15;
 				}
 
-				iVar10 = ((iVar10 - (cp->hd).wheel_speed) * newAccel) / 0xf;
-			}
-
-			if (IS_NODE_VALID(cp, cp->ai.c.ctrlNode))	// [A] Weird.
-			{
-				iVar9 = newAccel;
-
-				if ((iVar10 <= newAccel) && (iVar9 = iVar10, iVar10 < newAccel * -2))
-					iVar9 = newAccel * -2;
-
-				return iVar9;
-			}
-		}
-	default:
-	LAB_0002a670:
-		cp->ai.c.thrustState = 3;
-		cp->ai.c.ctrlState = 7;
-		return 0;
-	case 3:
-		break;
-	case 5:
-	case 6:
-		cp->ai.c.brakeLight = 1;
-		iVar10 = 0x200;
-
-		if (cp->ai.c.ctrlState == 4)
-			iVar10 = 0x800;
-
-		p_Var8 = car_data + 19;
-		uVar4 = cp->hd.direction & 0xfff;
-
-		iVar9 = 0x7fffff;
-
-		if (true)
-		{
-			do {
-				if (((p_Var8->ai.c.thrustState != 3) && (p_Var8 != cp)) && (p_Var8->controlType != 0))
+				if (IS_NODE_VALID(cp, cp->ai.c.ctrlNode))	// [A] Weird.
 				{
-					iVar7 = (p_Var8->hd).where.t[0] - (cp->hd).where.t[0];
-					iVar6 = (p_Var8->hd).where.t[2] - (cp->hd).where.t[2];
-
-					iVar5 = FIXEDH(iVar7 * rcossin_tbl[uVar4 * 2] + iVar6 * rcossin_tbl[uVar4 * 2 + 1]);
-
-					if (0 < iVar5)
+					if (accelRatio <= newAccel)
 					{
-						iVar6 = FIXEDH(iVar7 * rcossin_tbl[uVar4 * 2 + 1] - iVar6 * rcossin_tbl[uVar4 * 2]);
-						if (iVar6 < 0)
-							iVar6 = -iVar6;
+						if (accelRatio < newAccel * -2)
+							return newAccel * -2;
+						else
+							return accelRatio;
+					}
 
-						if ((iVar6 < sVar1 * sideMul * 6) && (iVar5 < iVar9))
-							iVar9 = iVar5;
+					return newAccel;
+				}
+			}
+
+			CIV_STATE_SET_CONFUSED(cp);
+			return 0;
+		}
+		case 3:
+		{
+			break;
+		}
+		case 5:
+		case 6:
+		{
+			int distToObstacle;
+			int checkObstDist;
+			int carDir;
+			int dx, dz;
+
+			cp->ai.c.brakeLight = 1;
+
+			if (cp->ai.c.ctrlState == 4)
+				checkObstDist = 2048;
+			else
+				checkObstDist = 512;
+
+			carDir = cp->hd.direction & 0xfff;
+			distToObstacle = 0x7fffff;
+
+			lcp = car_data + 19;
+			while (lcp >= car_data)
+			{
+				if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != 0)
+				{
+					dx = lcp->hd.where.t[0] - cp->hd.where.t[0];
+					dz = lcp->hd.where.t[2] - cp->hd.where.t[2];
+
+					tangent = FIXEDH(dx * rcossin_tbl[carDir * 2] + dz * rcossin_tbl[carDir * 2 + 1]);
+					normal = FIXEDH(dx * rcossin_tbl[carDir * 2 + 1] - dz * rcossin_tbl[carDir * 2]);
+
+					if (tangent > 0) 
+					{
+						if (ABS(normal) < wbody * sideMul * 6 && tangent < distToObstacle)
+						{
+							distToObstacle = tangent;
+						}
 					}
 				}
-				p_Var8--;
-			} while (p_Var8 >= car_data);
-		}
-
-		if (iVar9 <= iVar10)
-		{
-			iVar9 = cp->hd.wheel_speed;
-			iVar10 = -iVar9;
-
-			iVar10 = iVar10 >> 2;
-			iVar9 = newAccel;
-
-			if ((iVar10 <= newAccel) && (iVar9 = iVar10, iVar10 < newAccel * -2))
-			{
-				iVar9 = newAccel * -2;
+				lcp--;
 			}
 
-			return iVar9;
+			if (distToObstacle <= checkObstDist)
+			{
+				int speed;
+				speed = (-cp->hd.wheel_speed) / 4; // is that a brake dist?
+
+				if (speed <= newAccel)
+				{
+					if (speed < newAccel * -2)
+						return newAccel * -2;
+					else
+						return speed;
+				}
+
+				return newAccel;
+			}
+
+			cp->ai.c.ctrlState = 0;
+			cp->ai.c.thrustState = 0;
+			cp->ai.c.ctrlNode = 0;
+
+			return newAccel;
 		}
-		cp->ai.c.ctrlState = 0;
-		cp->ai.c.thrustState = 0;
-		iVar10 = newAccel;
-		cp->ai.c.ctrlNode = 0;
-		return iVar10;
+		default:
+		{
+			CIV_STATE_SET_CONFUSED(cp);
+			return 0;
+		}
 	}
 
+	// switch lights
 	switch (cp->ai.c.ctrlState)
 	{
-	case 1:
-		if (junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
-			cp->ai.c.thrustState = 0;
-
-		cp->ai.c.brakeLight = 1;
-	case 2:
-		cp->ai.c.brakeLight = 1;
-		return 0;
-	case 3:
-		cp->ai.c.thrustState = 5;
-		cp->ai.c.brakeLight = 1;
-		break;
-	case 4:
-		cp->ai.c.thrustState = 6;
-		cp->ai.c.brakeLight = 1;
-		break;
-	default:
-		cp->ai.c.brakeLight = 0;
+		case 1:
+			if (junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+				cp->ai.c.thrustState = 0;
+		case 2:
+			cp->ai.c.brakeLight = 1;
+			return 0;
+		case 3:
+			cp->ai.c.thrustState = 5;
+			cp->ai.c.brakeLight = 1;
+			break;
+		case 4:
+			cp->ai.c.thrustState = 6;
+			cp->ai.c.brakeLight = 1;
+			break;
+		default:
+			cp->ai.c.brakeLight = 0;
+			break;
 	}
 
 	return 0;
@@ -5925,17 +5944,12 @@ void SetUpCivCollFlags(void)
 	/* end block 5 */
 	// End Line: 7085
 
-// [D]
+// [D] [T]
 int CivAccel(_CAR_DATA* cp)
 {
-	int iVar1;
-	uint uVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
 	CIV_ROUTE_ENTRY* node;
-	uint uVar6;
 	int distToNode;
+	int ret;
 
 	node = cp->ai.c.ctrlNode;
 	carnum = CAR_INDEX(cp);
@@ -5946,10 +5960,11 @@ int CivAccel(_CAR_DATA* cp)
 	}
 	else
 	{
-		iVar3 = cp->hd.where.t[0] - node->x;
-		iVar4 = cp->hd.where.t[2] - node->z;
+		int dx, dz;
+		dx = cp->hd.where.t[0] - node->x;
+		dz = cp->hd.where.t[2] - node->z;
 
-		distToNode = SquareRoot0(iVar3 * iVar3 + iVar4 * iVar4);
+		distToNode = SquareRoot0(dx * dx + dz * dz);
 	}
 
 	if (cp->ai.c.thrustState != 3 && node && node->pathType == 127)
@@ -5957,72 +5972,78 @@ int CivAccel(_CAR_DATA* cp)
 		distToNode = -distToNode;
 	}
 
-	iVar3 = CivAccelTrafficRules(cp, &distToNode);
+	ret = CivAccelTrafficRules(cp, &distToNode);
 
 	if (cp->ai.c.thrustState != 3)
 	{
+		int lbd2;
+		int lbody;
+		int tmpret;
+		int brakeDist;
+
 		collDat = brakeLength[cp->id];
-		iVar4 = cp->ap.carCos->colBox.vz << 0x10;
-		iVar5 = iVar4 >> 0x10;
+
+		lbd2 = cp->ap.carCos->colBox.vz << 0x10;	// FIXME: do something with it
+		lbody = lbd2 >> 0x10;
+
+		// brake in front of obstacles
 		if (collDat != 0)
 		{
-			iVar1 = iVar5;
+			int sf, c1, c2;
+			sf = lbody - (lbd2 >> 0x1f) >> 1;
 
-			uVar6 = iVar5 - (iVar4 >> 0x1f) >> 1;
-
-			if (collDat < (iVar5 * 2))
+			if (collDat < (lbody * 2))
 			{
-				if (((iVar5 * 2) < collDat) && (uVar6 <= collDat))
+				if ((lbody * 2) < collDat && sf <= collDat)
 				{
-					uVar6 = uVar6 + iVar5 * -2;
-					iVar4 = ((collDat + iVar5 * -2) * -100) / uVar6 + 100;
+					c1 = sf + lbody * -2;
+					tmpret = ((collDat + lbody * -2) * -100) / c1 + 100;
 				}
-				else if ((uVar6 < collDat) && ((iVar1 >> 2) <= collDat))
+				else if (sf < collDat && (lbody / 4) <= collDat)
 				{
-					uVar2 = (iVar1 >> 2) - uVar6;
-					iVar4 = ((collDat - uVar6) * -300) / uVar2 + 400;
+					c2 = (lbody / 4) - sf;
+					tmpret = ((collDat - sf) * -300) / c2 + 400;
 				}
 				else
 				{
-					iVar4 = 100;
+					tmpret = 100;
 				}
 			}
 			else
 			{
-				iVar4 = 0;
+				tmpret = 0;
 			}
 
-			iVar1 = (cp->hd).wheel_speed;
-			iVar5 = -iVar1;
-			iVar4 = (newAccel * iVar4) / 100;
-			iVar5 = iVar5 >> 2;
+			tmpret = (newAccel * tmpret) / 100;
+			brakeDist = (-cp->hd.wheel_speed) / 4;
 
-			if ((iVar5 <= iVar4) && (iVar1 = iVar4 * -2, iVar4 = iVar5, iVar5 < iVar1))
+			if (brakeDist <= tmpret)
 			{
-				iVar4 = iVar1;
+				if (brakeDist < tmpret * -2)
+					tmpret = tmpret * -2;
+				else
+					tmpret = brakeDist;
 			}
 
-			if (iVar4 < iVar3)
-				iVar3 = iVar4;
+			if (ret > tmpret)
+				ret = tmpret;
 		}
 
+		// stop car if interrupted by pedestrian Tanner
 		if (cp->ai.c.carPauseCnt > 0 && collDat == 0)
 		{
-			iVar5 = cp->hd.wheel_speed;
-			iVar4 = FIXEDH(iVar5);
-			if (iVar4 < 0)
-				iVar4 = -iVar4;
+			int spd;
+			spd = cp->hd.wheel_speed;
 
-			iVar1 = -iVar5;
-			if (iVar4 < 3)
+			if (ABS(FIXEDH(spd)) < 3)
 			{
-				iVar3 = iVar1 >> 2;
+				ret = (-spd) / 4;
 				cp->ai.c.carPauseCnt -= 1;
 			}
 		}
 	}
 
-	return iVar3;
+	return ret;
 }
 
 
