@@ -41,9 +41,6 @@ static char ScoreName[5][7];
 
 static char validchars[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+!";
 
-// MISSION.C
-PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
-
 void PauseMap(int direction);
 void SfxVolume(int direction);
 void MusicVolume(int direction);

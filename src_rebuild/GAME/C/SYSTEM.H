@@ -46,15 +46,15 @@ extern int pathAILoaded;
 
 extern char* LoadingScreenNames[];
 
-typedef struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
+struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
 {
-	char *primptr; // size=0, offset=0
-	OTTYPE *ot; // size=0, offset=4
-	char *primtab; // size=0, offset=8
+	char* primptr; // size=0, offset=0
+	OTTYPE* ot; // size=0, offset=4
+	char* primtab; // size=0, offset=8
 	int id; // size=0, offset=12
 	DRAWENV draw; // size=92, offset=16
 	DISPENV disp; // size=20, offset=108
-} DB;
+};
 
 extern DRAW_MODE draw_mode_pal;
 extern DRAW_MODE draw_mode_ntsc;

@@ -828,7 +828,7 @@ void DrawMapPSX(int *comp_val)
 					if (other_models_found != 0)
 					{
 						SetupPlaneColours(combointensity);
-						DrawAllBuildings(model_object_ptrs, other_models_found, current);
+						DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found, current);
 					}
 
 					while (anim_objs > 0)
@@ -1325,25 +1325,25 @@ void Set_Inv_CameraMatrix(void)
 // [D] [A]
 void CalcObjectRotationMatrices(void)
 {
-	SVECTOR ang;
+	int i;
 	MATRIX mat;
+	int angle;
+	MATRIX* m;
 
-	ang.vz = 0;
-	ang.vy = 0;
-	ang.vx = 0;
+	angle = 0;
 
-	for (int i = 0; i < 64; i++)
+	for (i = 0; i < 64; i++)
 	{
-		RotMatrix(&ang, &mat);
+		// simpler and faster method
+		m = (MATRIX*)&matrixtable[i];
 
-		for (int j = 0; j < 3; j++)
-		{
-			matrixtable[i].m[j][0] = mat.m[j][0];
-			matrixtable[i].m[j][1] = mat.m[j][1];
-			matrixtable[i].m[j][2] = mat.m[j][2];
-		}
+		m->m[0][0] = ONE; m->m[0][1] = 0;   m->m[0][2] = 0;
+		m->m[1][0] = 0;   m->m[1][1] = ONE; m->m[1][2] = 0;
+		m->m[2][0] = 0;   m->m[2][1] = 0;   m->m[2][2] = ONE;
 
-		ang.vy = ang.vy + 64;
+		RotMatrixY(angle, m);
+
+		angle += 64;
 	}
 }
 

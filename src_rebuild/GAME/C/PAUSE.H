@@ -4,7 +4,7 @@
 extern int gShowMap;
 extern int gDrawPauseMenus;
 extern int pauseflag;
-extern PAUSEMODE gMissionCompletionState;
+extern int gMissionCompletionState;
 
 extern int ShowPauseMenu(enum PAUSEMODE mode); // 0x0006BF50
 

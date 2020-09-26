@@ -1736,7 +1736,7 @@ void ControlReplay(void)
 			ReleaseInGameCutscene();
 
 			if (AttractMode == 0) 
-				EnablePause(gMissionCompletionState);
+				EnablePause((PAUSEMODE)gMissionCompletionState);
 			else
 				EndGame(GAMEMODE_QUIT);
 
@@ -2299,7 +2299,7 @@ void ControlReplay(void)
 					if (gLoadedReplay == 0)
 					{
 						NoPlayerControl = 0;
-						EnablePause(gMissionCompletionState);
+						EnablePause((PAUSEMODE)gMissionCompletionState);
 						NoPlayerControl = 1;
 						PlayMode = 0;
 						return;
