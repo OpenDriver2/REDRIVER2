@@ -5969,34 +5969,33 @@ int CivAccel(_CAR_DATA* cp)
 
 		collDat = brakeLength[cp->id];
 
-		lbd2 = cp->ap.carCos->colBox.vz << 0x10;	// FIXME: do something with it
-		lbody = lbd2 >> 0x10;
+		lbody = cp->ap.carCos->colBox.vz;
 
 		// brake in front of obstacles
 		if (collDat != 0)
 		{
 			int sf, c1, c2;
-			sf = lbody - (lbd2 >> 0x1f) >> 1;
+			sf = lbody / 2;
 
-			if (collDat < (lbody * 2))
+
+			if (collDat < lbody * 2) 
 			{
-				if ((lbody * 2) < collDat && sf <= collDat)
+				if (/*lbody * 2 < collDat && */sf <= collDat)	// [A] ancient bug fix
 				{
-					c1 = sf + lbody * -2;
-					tmpret = ((collDat + lbody * -2) * -100) / c1 + 100;
+					sf = sf + lbody * -2;
+					tmpret = ((collDat + lbody * -2) * -100) / sf + 100;
 				}
-				else if (sf < collDat && (lbody / 4) <= collDat)
+				else if (sf < collDat && ((lbody / 4) <= collDat)) 
 				{
 					c2 = (lbody / 4) - sf;
 					tmpret = ((collDat - sf) * -300) / c2 + 400;
 				}
-				else
+				else 
 				{
 					tmpret = 100;
 				}
 			}
-			else
-			{
+			else {
 				tmpret = 0;
 			}
 
