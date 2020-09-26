@@ -111,6 +111,21 @@ struct ARC_ENTRY // hashcode: 0x4C376F3B (dec: 1278701371)
 	short length; // size=0, offset=2
 };
 
+struct DRIVER2_CURVE // hashcode: 0xB805ADA3 (dec: -1207587421)
+{
+	int Midx; // size=0, offset=0
+	int Midz; // size=0, offset=4
+	short start; // size=0, offset=8
+	short end; // size=0, offset=10
+	short ConnectIdx[4]; // size=8, offset=12
+	short gradient; // size=0, offset=20
+	short height; // size=0, offset=22
+	char NumLanes; // size=0, offset=24
+	char LaneDirs; // size=0, offset=25
+	char inside; // size=0, offset=26
+	char AILanes; // size=0, offset=27
+};
+
 struct DRIVER2_STRAIGHT // hashcode: 0xCF738039 (dec: -814514119)
 {
 	int Midx; // size=0, offset=0
@@ -140,21 +155,6 @@ struct DRIVER2_JUNCTION // hashcode: 0x7C27C3D0 (dec: 2082980816)
 {
 	short ExitIdx[4]; // size=8, offset=0
 	unsigned long flags; // size=0, offset=8
-};
-
-struct DRIVER2_CURVE // hashcode: 0xB805ADA3 (dec: -1207587421)
-{
-	int Midx; // size=0, offset=0
-	int Midz; // size=0, offset=4
-	short start; // size=0, offset=8
-	short end; // size=0, offset=10
-	short ConnectIdx[4]; // size=8, offset=12
-	short gradient; // size=0, offset=20
-	short height; // size=0, offset=22
-	char NumLanes; // size=0, offset=24
-	char LaneDirs; // size=0, offset=25
-	char inside; // size=0, offset=26
-	char AILanes; // size=0, offset=27
 };
 
 struct _sdPlane // hashcode: 0x873C357E (dec: -2026097282)

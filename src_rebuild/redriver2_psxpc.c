@@ -312,6 +312,8 @@ void GameDebugKeys(int nKey, bool down)
 	else if (nKey == SDL_SCANCODE_KP_MULTIPLY)
 	{
 		FunkUpDaBGMTunez(1);
+		extern void CreateRoadblock();
+		CreateRoadblock();
 	}
 }
 #endif
