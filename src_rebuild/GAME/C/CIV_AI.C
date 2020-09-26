@@ -5627,252 +5627,232 @@ int CAR_PAUSE_START = 100;
 static _CAR_DATA(*horncarflag[2]) = { 0 };
 static unsigned char hornchanflag[2] = { 0 };
 
-// [D]
+// [D] [T]
 void SetUpCivCollFlags(void)
 {
-	unsigned char bVar1;
-	ushort uVar2;
-	bool bVar3;
-	int iVar4;
-	int iVar5;
-	uint uVar6;
-	long lVar7;
-	int iVar8;
 	_CAR_DATA** pp_Var9;
-	int y;
-	int iVar10;
-	_CAR_DATA** pp_Var11;
-	CAR_COSMETICS* pCVar12;
-	_CAR_DATA* p_Var13;
-	uint uVar14;
-	unsigned char* puVar15;
-	_CAR_DATA* p_Var16;
+	CAR_COSMETICS* car_cos;
+	_CAR_DATA* cp1;
 	SVECTOR boxDisp;
-	int carLength[2];
-	int dNewLBODY[2];
-	long local_30;
-	_CAR_DATA* local_2c;
+	_CAR_DATA* cp0;
+	int i;
+	int brake;
+	int sphere;
+	int extraLength;
 
 	CDATA2D cd[2];
 
 	ClearMem((char*)brakeLength, sizeof(brakeLength));
 
-	local_2c = car_data + 19;
-	if (true) {
-		do {
-			if (local_2c->controlType == 2)
-			{
-				y = FIXEDH(local_2c->hd.wheel_speed);
+	cp0 = car_data + MAX_CARS - 1;
 
-				if (local_2c->wheel_angle < 0x3d)
-					y = y * 0xd;
-				else
-					y = y << 2;
-
-				pCVar12 = local_2c->ap.carCos;
-				iVar4 = pCVar12->colBox.vz;
-				cd[0].length[0] = y;
-
-				if (y < 0)
-					cd[0].length[0] = -y;
-
-				cd[0].length[0] = iVar4 + 0x5d + cd[0].length[0];
-				cd[0].length[1] = (int)(pCVar12->colBox).vx;
-
-				gte_SetRotMatrix(&local_2c->hd.where.m);
-				gte_SetTransMatrix(&local_2c->hd.where.m);
-
-				boxDisp.vx = -pCVar12->cog.vx;
-				boxDisp.vy = -pCVar12->cog.vy;
-				boxDisp.vz = (y - pCVar12->cog.vz) + 0x5d;
-
-				gte_ldv0(&boxDisp);
-
-				gte_rtv0tr();
-
-				gte_stlvnl(&cd[0].x);
-
-				p_Var16 = car_data + 20;
-				cd[0].theta = local_2c->hd.direction;
-				if (true) {
-					do {
-						if (p_Var16->controlType == 0 || p_Var16 == local_2c)
-						{
-						LAB_0002b1a4:
-							bVar3 = p_Var16 - 1 < car_data;
-						}
-						else
-						{
-							if (CAR_INDEX(p_Var16) == 20)
-							{
-								if (player[0].playerType != 2)
-									goto LAB_0002b1a4;
-
-								cd[1].length[0] = 0x3c;
-								cd[1].length[1] = 0x3c;
-								cd[1].x.vx = player[0].pos[0];
-								cd[1].x.vz = player[0].pos[2];
-								cd[1].theta = player[0].dir;
-							}
-							else
-							{
-								pCVar12 = (p_Var16->ap).carCos;
-								cd[1].length[0] = pCVar12->colBox.vz;
-								cd[1].length[1] = pCVar12->colBox.vx;
-								cd[1].x.vx = (p_Var16->hd).oBox.location.vx;
-								cd[1].x.vy = (p_Var16->hd).oBox.location.vy;
-								cd[1].x.vz = (p_Var16->hd).oBox.location.vz;
-								cd[1].theta = (p_Var16->hd).direction;
-							}
-
-							y = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
-							if (cd[0].x.vx - cd[1].x.vx < 0)
-							{
-								if (cd[1].x.vx - cd[0].x.vx < y)
-									goto LAB_0002ae74;
-
-								goto LAB_0002b1a4;
-							}
-
-							if (y <= cd[0].x.vx - cd[1].x.vx)
-								goto LAB_0002b1a4;
-
-						LAB_0002ae74:
-							if (cd[0].x.vz - cd[1].x.vz < 0)
-							{
-								if (cd[1].x.vz - cd[0].x.vz < y)
-									goto LAB_0002aeb0;
-
-								goto LAB_0002b1a4;
-							}
-
-							if (y <= cd[0].x.vz - cd[1].x.vz)
-								goto LAB_0002b1a4;
-
-						LAB_0002aeb0:
-							iVar10 = (local_2c->hd).where.t[1];
-
-							if (CAR_INDEX(p_Var16) == 20)
-							{
-							LAB_0002af10:
-								iVar5 = player[0].pos[1] - iVar10;
-								if (iVar5 < 0)
-									iVar5 = iVar10 - player[0].pos[1];
-
-								if (499 < iVar5)
-									goto LAB_0002b1a4;
-							}
-							else
-							{
-								iVar8 = (p_Var16->hd).where.t[1];
-								iVar5 = iVar8 - iVar10;
-								if (iVar5 < 0) {
-									iVar5 = iVar10 - iVar8;
-								}
-								if (499 < iVar5) {
-									if (CAR_INDEX(p_Var16) != 20)
-										goto LAB_0002b1a4;
-
-									goto LAB_0002af10;
-								}
-							}
-
-							if (bcollided2d(cd, 1) == 0)
-								goto LAB_0002b1a4;
-
-							//ratan2(y, local_30);
-							uVar14 = (cd[0].length[0] - iVar4) - boxOverlap;
-
-							if (uVar14 < 1)
-								uVar14 = 1;
-
-							uVar6 = brakeLength[local_2c->id];
-
-							if ((uVar6 == 0) || (uVar14 < uVar6))
-								brakeLength[local_2c->id] = uVar14;
-
-							if (local_2c->ai.c.thrustState == 3)
-								goto LAB_0002b1a4;
-
-							if (CAR_INDEX(p_Var16) == 20)
-								local_2c->ai.c.carPauseCnt = CAR_PAUSE_START;
-
-							bVar3 = p_Var16 + -1 < car_data;
-							if ((local_2c->ai.c.thrustState != 3) &&
-								((p_Var16->controlType == 1 || p_Var16->controlType == 7 ||
-									(bVar3 = p_Var16 - 1 < car_data, CAR_INDEX(p_Var16) == 20))))
-							{
-								lVar7 = Random2(0);
-								p_Var13 = local_2c;
-
-								bVar3 = false;
-								pp_Var11 = horncarflag;
-								y = 1;
-								pp_Var9 = pp_Var11;
-								do {
-									if (*pp_Var9 == p_Var13) {
-										bVar3 = true;
-									}
-									y = y + -1;
-									pp_Var9 = pp_Var9 + 1;
-								} while (-1 < y);
-								y = 0;
-								puVar15 = hornchanflag;
-								do {
-									if ((!bVar3) && (*puVar15 == 0)) {
-										uVar14 = GetFreeChannel();
-										*puVar15 = uVar14;
-										SpuSetVoiceAR(uVar14 & 0xff, 0x1b);
-										bVar1 = (p_Var13->ap).model;
-
-										if (bVar1 == 4)
-										{
-											uVar14 = ResidentModelsBodge();
-										}
-										else if (bVar1 < 3)
-										{
-											uVar14 = (p_Var13->ap).model;
-										}
-										else
-										{
-											uVar14 = (p_Var13->ap).model - 1;
-										}
-
-										Start3DSoundVolPitch(*puVar15, 3, uVar14 * 3 + 2, (p_Var13->hd).where.t[0], (p_Var13->hd).where.t[1], (p_Var13->hd).where.t[2], -2000, 0x1000);
-										bVar1 = *puVar15;
-										uVar2 = channels[bVar1].time;
-										*pp_Var11 = p_Var13;
-
-										channels[bVar1].time = uVar2 + lVar7 + (lVar7 / 0x1e) * -0x1e;
-										break;
-									}
-									pp_Var11 = pp_Var11 + 1;
-									y = y + 1;
-									puVar15 = puVar15 + 1;
-								} while (y < 2);
-								goto LAB_0002b1a4;
-							}
-						}
-						p_Var16 = p_Var16 + -1;
-					} while (!bVar3);
-				}
-			}
-			local_2c = local_2c + -1;
-		} while (local_2c >= car_data);
-	}
-	uVar14 = 0;
-	do {
-		bVar1 = hornchanflag[uVar14];
-
-		if ((bVar1 != 0) && (channels[bVar1].time == 0))
+	while (cp0 >= car_data)
+	{
+		if (cp0->controlType == 2)
 		{
-			horncarflag[uVar14] = NULL;
-			hornchanflag[uVar14] = 0;
-			SpuSetVoiceAR(0, 0x23);
-		}
-		uVar14 = uVar14 + 1 & 0xff;
+			extraLength = FIXEDH(cp0->hd.wheel_speed);
 
-	} while (uVar14 < 2);
+			if (cp0->wheel_angle < 61)
+				extraLength *= 13;
+			else
+				extraLength *= 4;
+
+			car_cos = cp0->ap.carCos;
+
+			cd[0].length[0] = car_cos->colBox.vz + 93 + ABS(extraLength);
+			cd[0].length[1] = car_cos->colBox.vx;
+			cd[0].theta = cp0->hd.direction;
+
+			gte_SetRotMatrix(&cp0->hd.where.m);
+			gte_SetTransMatrix(&cp0->hd.where.m);
+
+			boxDisp.vx = -car_cos->cog.vx;
+			boxDisp.vy = -car_cos->cog.vy;
+			boxDisp.vz = (extraLength - car_cos->cog.vz) + 93;
+
+			gte_ldv0(&boxDisp);
+			gte_rtv0tr();
+			gte_stlvnl(&cd[0].x);
+
+			cp1 = car_data + MAX_CARS;
+			
+			while (cp1 >= car_data)
+			{
+				if(cp1->controlType != 0 && cp1 != cp0)
+				{
+					if (CAR_INDEX(cp1) == 20)
+					{
+						if (player[0].playerType != 2)
+						{
+							cp1--;
+							continue;
+						}
+
+						cd[1].length[0] = 60;
+						cd[1].length[1] = 60;
+						cd[1].x.vx = player[0].pos[0];
+						cd[1].x.vz = player[0].pos[2];
+						cd[1].theta = player[0].dir;
+					}
+					else
+					{
+						car_cos = cp1->ap.carCos;
+
+						cd[1].length[0] = car_cos->colBox.vz;
+						cd[1].length[1] = car_cos->colBox.vx;
+						cd[1].x.vx = cp1->hd.oBox.location.vx;
+						cd[1].x.vy = cp1->hd.oBox.location.vy;
+						cd[1].x.vz = cp1->hd.oBox.location.vz;
+						cd[1].theta = cp1->hd.direction;
+					}
+
+					sphere = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
+
+					if (cd[0].x.vx - cd[1].x.vx < 0)
+					{
+						if (cd[1].x.vx - cd[0].x.vx >= sphere)
+						{
+							cp1--;
+							continue;
+						}
+
+					}
+					else if (sphere <= cd[0].x.vx - cd[1].x.vx)
+					{
+						cp1--;
+						continue;
+					}
+
+					if (cd[0].x.vz - cd[1].x.vz < 0)
+					{
+						if (cd[1].x.vz - cd[0].x.vz >= sphere)
+						{
+							cp1--;
+							continue;
+						}
+					}
+					else if (extraLength <= cd[0].x.vz - cd[1].x.vz)
+					{
+						cp1--;
+						continue;
+					}
+
+					// check height difference
+					if (CAR_INDEX(cp1) == 20)
+					{
+						if (ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
+						{
+							cp1--;
+							continue;
+						}
+					}
+					else if (ABS(cp1->hd.where.t[1] - cp0->hd.where.t[1]) >= 500 && ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
+					{
+						cp1--;
+						continue;
+					}
+
+					if (bcollided2d(cd, 1) == 0)
+					{
+						cp1--;
+						continue;
+					}
+
+					brake = (cd[0].length[0] - car_cos->colBox.vz) - boxOverlap;
+
+					if (brake < 1)
+						brake = 1;
+
+					if (brakeLength[cp0->id] == 0 || brakeLength[cp0->id] > brake)
+						brakeLength[cp0->id] = brake;
+
+					// don't do anything further when it tries to park
+					if (cp0->ai.c.thrustState == 3)
+					{
+						cp1--;
+						continue;
+					}
+
+					if (CAR_INDEX(cp1) == 20)
+						cp0->ai.c.carPauseCnt = CAR_PAUSE_START;
+
+					// do horns
+					// horn to player and chased cars (except Steal the Ambulance)
+					if (cp0->ai.c.thrustState != 3 && 
+						(cp1->controlType == 1 || (cp1->controlType == 7 && gCurrentMissionNumber != 26) ||
+						CAR_INDEX(cp1) == 20))
+					{
+						int dont;
+						int rnd;
+						rnd = Random2(0);
+
+						dont = 0;
+
+						i = 0;
+						do {
+							if (horncarflag[i] == cp0)
+							{
+								dont = 1;
+								break;
+							}
+
+							i++;
+						} while (i < 2);
+
+						if (dont)
+						{
+							cp1--;
+							continue;
+						}
+
+						i = 0;
+						do {
+							if (hornchanflag[i] == 0)
+							{
+								int sample;
+
+								hornchanflag[i] = GetFreeChannel();
+								SpuSetVoiceAR(hornchanflag[i], 0x1b);
+
+								if (cp0->ap.model == 4)
+									sample = ResidentModelsBodge();
+								else if (cp0->ap.model < 3)
+									sample = cp0->ap.model;
+								else
+									sample = cp0->ap.model - 1;
+
+								Start3DSoundVolPitch(hornchanflag[i], 3, sample * 3 + 2, cp0->hd.where.t[0], cp0->hd.where.t[1], cp0->hd.where.t[2], -2000, 0x1000);
+								horncarflag[i] = cp0;
+
+								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
+								break;
+							}
+
+							i++;
+						} while (i < 2);
+					}
+				}
+
+				cp1--;
+			}
+		}
+		cp0--;
+	}
+
+	// clear on timeout
+	i = 0;
+	do {
+		if (hornchanflag[i] != 0 && channels[hornchanflag[i]].time == 0)
+		{
+			horncarflag[i] = NULL;
+			hornchanflag[i] = 0;
+
+			SpuSetVoiceAR(0, 35);
+		}
+
+		i++;
+
+	} while (i < 2);
 }
 
 
