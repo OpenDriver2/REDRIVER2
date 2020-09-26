@@ -2744,10 +2744,10 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 			if (uVar5 != 0x30) 
 				goto LAB_00063664;
 
-			if (gCurrentMissionNumber == 0xb || 
-				gCurrentMissionNumber == 0xe || 
-				gCurrentMissionNumber == 0x13 || 
-				gCurrentMissionNumber == 0x1c || 
+			if (gCurrentMissionNumber == 11 || 
+				gCurrentMissionNumber == 14 || 
+				gCurrentMissionNumber == 19 || 
+				gCurrentMissionNumber == 28 || 
 				car_data[slot].totalDamage < MaxPlayerDamage[0]) 
 			{
 				if (player[0].playerCarId == slot) 
