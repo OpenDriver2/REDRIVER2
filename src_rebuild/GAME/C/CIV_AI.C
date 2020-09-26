@@ -5635,9 +5635,10 @@ void SetUpCivCollFlags(void)
 	_CAR_DATA* cp1;
 	SVECTOR boxDisp;
 	_CAR_DATA* cp0;
+	int carLength[2];
 	int i;
 	int brake;
-	int sphere;
+	int dx;
 	int extraLength;
 
 	CDATA2D cd[2];
@@ -5657,9 +5658,12 @@ void SetUpCivCollFlags(void)
 			else
 				extraLength *= 4;
 
-			car_cos = cp0->ap.carCos;
+			extraLength = ABS(extraLength);
 
-			cd[0].length[0] = car_cos->colBox.vz + 93 + ABS(extraLength);
+			car_cos = cp0->ap.carCos;
+			carLength[0] = car_cos->colBox.vz;
+
+			cd[0].length[0] = carLength[0] + 93 + extraLength;
 			cd[0].length[1] = car_cos->colBox.vx;
 			cd[0].theta = cp0->hd.direction;
 
@@ -5680,6 +5684,8 @@ void SetUpCivCollFlags(void)
 			{
 				if(cp1->controlType != 0 && cp1 != cp0)
 				{
+					car_cos = cp1->ap.carCos;
+
 					if (CAR_INDEX(cp1) == 20)
 					{
 						if (player[0].playerType != 2)
@@ -5696,8 +5702,6 @@ void SetUpCivCollFlags(void)
 					}
 					else
 					{
-						car_cos = cp1->ap.carCos;
-
 						cd[1].length[0] = car_cos->colBox.vz;
 						cd[1].length[1] = car_cos->colBox.vx;
 						cd[1].x.vx = cp1->hd.oBox.location.vx;
@@ -5706,18 +5710,18 @@ void SetUpCivCollFlags(void)
 						cd[1].theta = cp1->hd.direction;
 					}
 
-					sphere = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
+					dx = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
 
 					if (cd[0].x.vx - cd[1].x.vx < 0)
 					{
-						if (cd[1].x.vx - cd[0].x.vx >= sphere)
+						if (cd[1].x.vx - cd[0].x.vx >= dx)
 						{
 							cp1--;
 							continue;
 						}
 
 					}
-					else if (sphere <= cd[0].x.vx - cd[1].x.vx)
+					else if (dx <= cd[0].x.vx - cd[1].x.vx)
 					{
 						cp1--;
 						continue;
@@ -5725,13 +5729,13 @@ void SetUpCivCollFlags(void)
 
 					if (cd[0].x.vz - cd[1].x.vz < 0)
 					{
-						if (cd[1].x.vz - cd[0].x.vz >= sphere)
+						if (cd[1].x.vz - cd[0].x.vz >= dx)
 						{
 							cp1--;
 							continue;
 						}
 					}
-					else if (extraLength <= cd[0].x.vz - cd[1].x.vz)
+					else if (dx <= cd[0].x.vz - cd[1].x.vz)
 					{
 						cp1--;
 						continue;
@@ -5752,18 +5756,19 @@ void SetUpCivCollFlags(void)
 						continue;
 					}
 
+					// do overlap test between boxes
 					if (bcollided2d(cd, 1) == 0)
 					{
 						cp1--;
 						continue;
 					}
 
-					brake = (cd[0].length[0] - car_cos->colBox.vz) - boxOverlap;
+					brake = (cd[0].length[0] - carLength[0]) - boxOverlap;
 
 					if (brake < 1)
 						brake = 1;
 
-					if (brakeLength[cp0->id] == 0 || brakeLength[cp0->id] > brake)
+					if (brakeLength[cp0->id] == 0 || brake < brakeLength[cp0->id])
 						brakeLength[cp0->id] = brake;
 
 					// don't do anything further when it tries to park
@@ -5969,6 +5974,8 @@ int CivAccel(_CAR_DATA* cp)
 		// brake in front of obstacles
 		if (collDat != 0)
 		{
+			printInfo("collDat: %d\n", collDat);
+
 			int sf, c1, c2;
 			sf = lbody - (lbd2 >> 0x1f) >> 1;
 
@@ -6219,7 +6226,7 @@ int CivSteerAngle(_CAR_DATA* cp)
 	CIV_ROUTE_ENTRY* startNode;
 	_CAR_DATA currentCar;
 
-	short sVar2;
+	short lbody;
 	int iVar3;
 	int iVar4;
 	long lVar5;
@@ -6239,7 +6246,7 @@ int CivSteerAngle(_CAR_DATA* cp)
 
 	startNode = cp->ai.c.pnode;
 
-	sVar2 = cp->ap.carCos->colBox.vz;
+	lbody = cp->ap.carCos->colBox.vz;
 	pCVar8 = startNode + 1;
 
 	if (cp->ai.c.targetRoute + 13 <= pCVar8)
@@ -6251,7 +6258,10 @@ int CivSteerAngle(_CAR_DATA* cp)
 	{
 	LAB_0002b600:
 		if (CreateNewNode(cp) == 0)
-			goto LAB_0002b76c;
+		{
+			CIV_STATE_SET_CONFUSED(cp);
+			return 0;
+		}
 	}
 	else
 	{
@@ -6261,7 +6271,9 @@ int CivSteerAngle(_CAR_DATA* cp)
 		pCVar8 = startNode + 3;
 
 		if (pCVar10->pathType == 127)
+		{
 			goto LAB_0002b600;
+		}
 
 		if (cp->ai.c.targetRoute + 13 <= pCVar8)
 			pCVar8 = startNode - 10;
@@ -6269,21 +6281,23 @@ int CivSteerAngle(_CAR_DATA* cp)
 		pCVar10 = startNode + 4;
 
 		if (pCVar8->pathType == 127)
+		{
 			goto LAB_0002b600;
+		}
 
 		if (cp->ai.c.targetRoute + 13 <= pCVar10)
 			pCVar10 = startNode - 9;
 
 		if (pCVar10->pathType == 127)
+		{
 			goto LAB_0002b600;
+		}
 	}
 
 	/* copy car */
 	//memcpy(&currentCar, cp, sizeof(_CAR_DATA));
 
 	pCVar8 = cp->ai.c.pnode + 1;
-
-	iVar3 = cp->hd.wheel_speed;
 
 	if (cp->ai.c.pnode->pathType != 127)
 	{
@@ -6292,7 +6306,8 @@ int CivSteerAngle(_CAR_DATA* cp)
 
 		if (pCVar8->pathType != 127)
 		{
-			iVar4 = CivFindStation(cp);
+			int station;
+			station = CivFindStation(cp);
 
 			/* memcpy all targetRoute */
 			//memcpy(&currentCar.ai.c.targetRoute, cp->ai.c.targetRoute, sizeof(cp->ai.c.targetRoute));
@@ -6306,26 +6321,25 @@ int CivSteerAngle(_CAR_DATA* cp)
 
 				if (pCVar8->pathType != 127)
 				{
-					CivFindPointOnPath(cp, iVar4 + FIXEDH(iVar3) * checkFrames + sVar2, &pathPoint);
+					int ret;
+					int dx, dz;
+					CivFindPointOnPath(cp, station + FIXEDH(cp->hd.wheel_speed) * checkFrames + lbody, &pathPoint);
 
-					lVar5 = ratan2(pathPoint.vx - cp->hd.where.t[0], pathPoint.vz - cp->hd.where.t[2]);
+					dx = pathPoint.vx - cp->hd.where.t[0];
+					dz = pathPoint.vz - cp->hd.where.t[2];
 
-					iVar4 = ((lVar5 - cp->hd.direction) + 0x800U & 0xfff) - 0x800;
-					iVar3 = maxSteer;
+					ret = ((ratan2(dx, dz) - cp->hd.direction) + 0x800U & 0xfff) - 2048;
 
-					if ((iVar4 <= maxSteer) && (iVar3 = iVar4, iVar4 < -maxSteer))
-					{
-						iVar3 = -maxSteer;
-					}
-
-					/* copy car data */
-					//memcpy(cp, &currentCar, sizeof(_CAR_DATA));
+					if (ret < -maxSteer)
+						ret = -maxSteer;
+					else if(ret > maxSteer)
+						ret = maxSteer;
 
 					pCVar8 = startNode;
 
 					if (startNode == cp->ai.c.pnode)
 					{
-						return iVar3;
+						return ret;
 					}
 
 					do
@@ -6344,16 +6358,13 @@ int CivSteerAngle(_CAR_DATA* cp)
 						pCVar8 = pCVar10;
 					} while (pCVar10 != cp->ai.c.pnode);
 
-					return iVar3;
+					return ret;
 				}
 			}
 		}
 	}
 
-LAB_0002b76c:
-	cp->ai.c.thrustState = 3;
-	cp->ai.c.ctrlState = 7;
-
+	CIV_STATE_SET_CONFUSED(cp);
 	return 0;
 }
 
