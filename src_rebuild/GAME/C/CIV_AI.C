@@ -59,7 +59,8 @@ int test555 = 0;
 #define IS_NODE_VALID(cp, node) \
 	((node) >= cp->ai.c.targetRoute && (node) <= cp->ai.c.targetRoute+12)
 
-#define GET_NEXT_NODE(cp, relNode) (relNode + 1 > cp->ai.c.targetRoute+12 ? relNode - 12 : relNode + 1)
+#define GET_NEXT_NODE(cp, relNode)\
+	(relNode + 1 > cp->ai.c.targetRoute+12 ? relNode - 12 : relNode + 1)
 
 #define GET_NODE_ID(cp, node)	int((node) - cp->ai.c.targetRoute)
 
@@ -6239,7 +6240,6 @@ int CivSteerAngle(_CAR_DATA* cp)
 
 	// we need 3 nodes, try making them in each different frame
 	i = 0;
-	
 	do
 	{
 		if (GET_NEXT_NODE(cp, startNode + i)->pathType == 127)
@@ -6453,110 +6453,82 @@ int CivSteerAngle(_CAR_DATA* cp)
 	/* end block 3 */
 	// End Line: 7499
 
-// [D]
+// [D] [T]
 int CivFindStation(_CAR_DATA* cp)
 {
-	long lVar1;
-	int iVar2;
-	CIV_ROUTE_ENTRY* pCVar3;
-	CIV_ROUTE_ENTRY* pCVar4;
-	CIV_ROUTE_ENTRY* pCVar5;
-	int a;
-	CIV_ROUTE_ENTRY* pCVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
+	
+	int loop;
+	int square;
+	CIV_ROUTE_ENTRY* currentNode;
+	CIV_ROUTE_ENTRY* retNode;
+	CIV_ROUTE_ENTRY* rep;
+	int dz;
+	int dx;
 
-	iVar2 = (cp->hd).where.t[0];
-	iVar11 = (cp->hd).where.t[2];
+	int sz;
+	int sx;
+	
+	int cx;
+	int cz;
+	int stepsize;
+	int i;
 
-	pCVar3 = cp->ai.c.targetRoute;
+	cx = cp->hd.where.t[0];
+	cz = cp->hd.where.t[2];
 
-	a = cp->ai.c.currentNode - 1;
-	if (a != -1)
+	loop = cp->ai.c.currentNode - 1;
+	
+	currentNode = cp->ai.c.targetRoute;
+	rep = currentNode;
+	while (loop >= 0)
 	{
-		pCVar6 = pCVar3;
-		do {
-			pCVar3 = pCVar6 + 1;
-
-			if (cp->ai.c.targetRoute + 13 <= pCVar3)
-				pCVar3 = pCVar6 - 12;
-
-			a = a + -1;
-			pCVar6 = pCVar3;
-		} while (a != -1);
+		currentNode = rep = GET_NEXT_NODE(cp, rep);
+		loop--;
 	}
 
 	do {
-		pCVar6 = pCVar3 + 1;
+		retNode = GET_NEXT_NODE(cp, currentNode);
 
-		if (cp->ai.c.targetRoute + 13 <= pCVar6)
-			pCVar6 = pCVar3 - 12;
-
-		if (pCVar6 == NULL)
+		if (retNode == NULL)
 			break;
 
-		iVar10 = pCVar3->x;
-		iVar8 = pCVar6->x - iVar10;
-		iVar9 = pCVar3->z;
-		iVar7 = pCVar6->z - iVar9;
-		a = iVar8 * iVar8 + iVar7 * iVar7;
+		sx = currentNode->x;
+		sz = currentNode->z;
 
-		if (a < 0)
+		dx = retNode->x - sx;
+		dz = retNode->z - sz;
+
+		square = dx * dx + dz * dz;
+
+		if (square < 0)
 			break;
 
-		lVar1 = SquareRoot0(a);
-
-		if (0 < lVar1)
+		square = SquareRoot0(square);
+		if (square > 0)
 		{
-			a = ((iVar2 - iVar10) * iVar8 + (iVar11 - iVar9) * iVar7) / lVar1;
+			stepsize = ((cx - sx) * dx + (cz - sz) * dz) / square;
 
-			if (a < lVar1)
+			if (stepsize < square)
 			{
-				cp->ai.c.pnode = pCVar3;
-				return a;
+				cp->ai.c.pnode = currentNode;
+				return stepsize;
 			}
 		}
 
-		pCVar5 = pCVar6 + 1;
+		currentNode = retNode;
+		cp->ai.c.currentNode = GET_NODE_ID(cp, currentNode);
 
-		cp->ai.c.currentNode++;
-
-		if (cp->ai.c.currentNode > 12)
-			cp->ai.c.currentNode = 0;
-
-		if (cp->ai.c.targetRoute + 13 <= pCVar5)
-			pCVar5 = pCVar6 - 12;
-
-		pCVar4 = pCVar6 + 2;
-		pCVar3 = pCVar6;
-
-		if (pCVar5->pathType == 127)
-			goto LAB_0002ba88;
-
-		if (cp->ai.c.targetRoute + 13 <= pCVar4)
-			pCVar4 = pCVar6 - 11;
-
-		pCVar5 = pCVar6 + 3;
-
-		if (pCVar4->pathType == 127)
-			goto LAB_0002ba88;
-
-		if (cp->ai.c.targetRoute + 13 <= pCVar5)
-			pCVar5 = pCVar6 - 10;
-
-		if (pCVar5->pathType == 127)
+		i = 1;
+		do
 		{
-		LAB_0002ba88:
-			CreateNewNode(cp);
-		}
+			if (GET_NEXT_NODE(cp, retNode + i)->pathType == 127)
+				CreateNewNode(cp);
 
+			i++;
+		} while (i < 4);
 	} while (true);
 
-	cp->ai.c.thrustState = 3;
-	cp->ai.c.ctrlState = 7;
+	CIV_STATE_SET_CONFUSED(cp);
 
 	return 0;
 }
