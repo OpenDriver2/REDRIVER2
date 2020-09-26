@@ -55,10 +55,13 @@ _PERCENTAGE_BAR DamageBar;
 _PERCENTAGE_BAR FelonyBar;
 _PERCENTAGE_BAR ProxyBar;
 
+int gDoOverlays = 1;
+
 // [D]
 void InitOverlays(void)
 {
 	bool bVar1;
+	gDoOverlays = 1;
 
 	InitPercentageBar(&PlayerDamageBar, MaxPlayerDamage[0], playerDamageColour, "Damage");
 
@@ -123,11 +126,11 @@ void InitOverlays(void)
 // [D]
 void DisplayOverlays(void)
 {
-	short *psVar1;
+	short *felony;
 
-	if (((NoPlayerControl == 0) && (gInGameCutsceneActive == 0)) && (gInGameCutsceneDelay == 0))
+	if (NoPlayerControl == 0 && gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 	{
-		if (1 < NumPlayers) 
+		if (NumPlayers > 1) 
 		{
 			if (CurrentPlayerView == 0)
 				return;
@@ -139,24 +142,27 @@ void DisplayOverlays(void)
 
 		if (gShowMap == 0)
 		{
+			FastForward = 0;
+
+			if (!gDoOverlays)
+				return;
+
 			DrawPercentageBar(&PlayerDamageBar);
 			DrawPercentageBar(&Player2DamageBar);
 			DrawPercentageBar(&DamageBar);
 			DrawPercentageBar(&FelonyBar);
 
-			DrawDrivingGameOverlays();
-
-			FastForward = 0;
+			DrawDrivingGameOverlays();			
 			DrawOverheadMap();
 
 			if (CopsCanSeePlayer != 0)
 			{
 				if (player[0].playerCarId < 0)
-					psVar1 = &pedestrianFelony;
+					felony = &pedestrianFelony;
 				else 
-					psVar1 = &car_data[player[0].playerCarId].felonyRating;
+					felony = &car_data[player[0].playerCarId].felonyRating;
 
-				if (658 < *psVar1) 
+				if (658 < *felony) 
 					DrawCopIndicators();
 			}
 		}

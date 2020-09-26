@@ -59,13 +59,13 @@ void SetRightWayUp(int direction)
 	PauseReturnValue = MENU_QUIT_CONTINUE;
 }
 
-void ToggleInvincible(int direction)
+void ToggleInvincibility(int direction)
 {
 	extern int gInvincibleCar;
 	gInvincibleCar ^= 1;
 }
 
-void ToggleImmune(int direction)
+void ToggleImmunity(int direction)
 {
 	extern int gPlayerImmune;
 	gPlayerImmune ^= 1;
@@ -75,6 +75,12 @@ void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
 	playerghost ^= 1;
+}
+
+void ToggleOverlays(int direction)
+{
+	extern int gDoOverlays;
+	gDoOverlays ^= 1;
 }
 
 int lastCar = -1;
@@ -110,6 +116,11 @@ void ToggleSecretCarFun(int direction)
 void ToggleJerichoMode(int direction)
 {
 	ActiveCheats.cheat12 ^= 1;
+}
+
+void TogglePuppyDogCops(int direction)
+{
+	gPuppyDogCop ^= 1;
 }
 
 extern void LoadSky(void);
@@ -169,16 +180,27 @@ MENU_ITEM DebugTimeOfDayItems[] =
 MENU_HEADER DebugTimeOfDayHeader =
 { "Time Of Day", { 0, 0, 0, 0 }, 0u, DebugTimeOfDayItems };
 
+MENU_ITEM DebugJustForFunItems[] =
+{
+	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
+	{ "Jericho Mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_NONE,		NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER DebugJustForFunHeader =
+{ "Just for fun", { 0, 0, 0, 0 }, 0u, DebugJustForFunItems };
+
 MENU_ITEM DebugOptionsItems[] =
 {
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
-	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
-	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
-	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
-	{ "Jericho mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_RESTART,	NULL },
-	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
-	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
+	{ "Fun cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
+	{ "Invincibility", 	3, 	2,  ToggleInvincibility,MENU_QUIT_NONE,		NULL},
+	{ "Immunity", 		3, 	2,  ToggleImmunity,		MENU_QUIT_NONE,		NULL},
+	{ "Puppy Dog Cops",	3,	2,  TogglePuppyDogCops,	MENU_QUIT_NONE,		NULL },
+	{ "Toggle Overlay",	3,	2,  ToggleOverlays,		MENU_QUIT_NONE,		NULL },
+	{ "Player Ghost", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
+	{ "Next Mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
@@ -215,9 +237,6 @@ MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
-#endif
 #ifdef CUTSCENE_RECORDER
 	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 #endif
@@ -226,6 +245,9 @@ MENU_ITEM MainPauseItems[] =
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -245,12 +267,12 @@ MENU_ITEM MultiplayerPauseItems[7] =
 MENU_ITEM CutscenePauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
-#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
