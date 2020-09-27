@@ -17,6 +17,7 @@
 
 // FMV
 int gSubtitles = 0;
+int gNoFMV = 0;
 
 // decompiled code
 // original method signature: 
@@ -103,8 +104,8 @@ void ReInitSystem(void)
 void PlayFMV(unsigned char render)
 {
 	RENDER_ARGS args;
-
-	if ((render - 0x10 < 0xd) || (render == 97))
+	
+	if ((render - 16 < 13) || (render == 97))
 	{
 		CheckForCorrectDisc(1);
 	}
@@ -117,6 +118,7 @@ void PlayFMV(unsigned char render)
 	args.Args[0].credits = render == 28;
 	args.Args[0].recap = 0;
 	args.Args[0].render = render;
+
 	PlayRender(&args);
 
 	if ((render - 1 & 0xff) < 0x62)
@@ -181,6 +183,10 @@ void PlayRender(RENDER_ARGS *args)
 		SetSp(oldsp);
 	}
 #else
+
+	if (gNoFMV == 1)
+		return;
+	
 	FMV_main(args);
 #endif
 	ReInitSystem();

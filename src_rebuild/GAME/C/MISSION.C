@@ -1226,7 +1226,7 @@ int Swap2Cars(int curslot, int newslot)
 
 	// hold cur slot nodes
 	cp = &car_data[curslot];
-	if (cp->controlType == 2)
+	if (cp->controlType == CONTROL_TYPE_CIV_AI)
 	{
 		if (cp->ai.c.ctrlNode == NULL)
 			ctrlNodeCurId = -1;
@@ -1245,7 +1245,7 @@ int Swap2Cars(int curslot, int newslot)
 
 	// hold new slot nodes
 	cp = &car_data[newslot];
-	if (cp->controlType == 2)
+	if (cp->controlType == CONTROL_TYPE_CIV_AI)
 	{
 		if (cp->ai.c.ctrlNode == NULL)
 			ctrlNodeNewId = -1;
@@ -1366,7 +1366,7 @@ int Swap2Cars(int curslot, int newslot)
 // [D]
 void SetConfusedCar(int slot)
 {
-	car_data[slot].controlType = 2;
+	car_data[slot].controlType = CONTROL_TYPE_CIV_AI;
 	car_data[slot].ai.c.thrustState = 3;
 	car_data[slot].ai.c.ctrlState = 7;
 	car_data[slot].ai.c.ctrlNode = NULL;
@@ -2744,10 +2744,10 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 			if (uVar5 != 0x30) 
 				goto LAB_00063664;
 
-			if (gCurrentMissionNumber == 0xb || 
-				gCurrentMissionNumber == 0xe || 
-				gCurrentMissionNumber == 0x13 || 
-				gCurrentMissionNumber == 0x1c || 
+			if (gCurrentMissionNumber == 11 || 
+				gCurrentMissionNumber == 14 || 
+				gCurrentMissionNumber == 19 || 
+				gCurrentMissionNumber == 28 || 
 				car_data[slot].totalDamage < MaxPlayerDamage[0]) 
 			{
 				if (player[0].playerCarId == slot) 
@@ -3215,7 +3215,7 @@ void PreProcessTargets(void)
 			ReplayStreams[1].SourceType.type = 1;
 			ReplayStreams[1].SourceType.model = target->data[7];
 			ReplayStreams[1].SourceType.palette = target->data[8];
-			ReplayStreams[1].SourceType.controlType = 1;
+			ReplayStreams[1].SourceType.controlType = CONTROL_TYPE_PLAYER;
 			ReplayStreams[1].SourceType.flags = 0;
 			ReplayStreams[1].SourceType.rotation = target->data[5];
 			ReplayStreams[1].SourceType.position.vx = target->data[3];

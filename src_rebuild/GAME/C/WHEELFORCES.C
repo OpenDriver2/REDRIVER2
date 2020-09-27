@@ -260,7 +260,7 @@ void StepOneCar(_CAR_DATA *cp)
 	VECTOR direction;
 	_sdPlane *SurfacePtr;
 
-	if (cp->controlType == 0)
+	if (cp->controlType == CONTROL_TYPE_NONE)
 		return;
 
 	SurfacePtr = NULL;
@@ -305,7 +305,7 @@ void StepOneCar(_CAR_DATA *cp)
 
 	count = 12;
 
-	if (cp->hd.where.m[1][1] > 0x800 && (count = 4, cp->controlType == 2))
+	if (cp->hd.where.m[1][1] > 0x800 && (count = 4, cp->controlType == CONTROL_TYPE_CIV_AI))
 	{
 		count = (cp->totalDamage != 0) << 2;
 	}
@@ -549,7 +549,7 @@ void GetFrictionScalesDriver1(_CAR_DATA *cp, CAR_LOCALS *cl, int *frontFS, int *
 	}
 
 	if ((cp->thrust < 0 && cp->hd.wheel_speed > 41943 && cp->hndType == 0) ||
-		(cp->controlType == 2 && cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState != 9))
+		(cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState != 9))
 	{
 		cp->hd.wheel[3].locked = 1;
 		cp->hd.wheel[2].locked = 1;
@@ -932,7 +932,7 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 		if (newCompression > 800)
 			newCompression = 12;
 
-		if (cp->controlType == 1)
+		if (cp->controlType == CONTROL_TYPE_PLAYER)
 		{
 			chan = newCompression - oldCompression;
 
@@ -1054,7 +1054,7 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 				sidevel = local_v0_1748 >> 0xc;
 				if (wheel->locked == 0)
 				{
-					if (cp->controlType == 3)
+					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 					{
 						force.vx = sdx * cp->thrust;
 						force.vz = sdz * cp->thrust;
@@ -1123,7 +1123,7 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 			force.vx = FIXEDH(force.vx) * friction_coef >> 0xc;
 			force.vz = FIXEDH(force.vz) * friction_coef >> 0xc;
 
-			if (cp->controlType == 3)
+			if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 			{
 				if (gCopDifficultyLevel == 2)
 					wheelPos[1] = FixFloorSigned(wheelPos[1] * 12, 5);
@@ -1142,7 +1142,7 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 		}
 		wheel--;
 		i--;
-	} while (-1 < i);
+	} while (i >= 0);
 
 	if (cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0)
 	{

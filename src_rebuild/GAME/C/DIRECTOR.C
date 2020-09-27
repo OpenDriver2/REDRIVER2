@@ -1736,7 +1736,7 @@ void ControlReplay(void)
 			ReleaseInGameCutscene();
 
 			if (AttractMode == 0) 
-				EnablePause(gMissionCompletionState);
+				EnablePause((PAUSEMODE)gMissionCompletionState);
 			else
 				EndGame(GAMEMODE_QUIT);
 
@@ -2299,7 +2299,7 @@ void ControlReplay(void)
 					if (gLoadedReplay == 0)
 					{
 						NoPlayerControl = 0;
-						EnablePause(gMissionCompletionState);
+						EnablePause((PAUSEMODE)gMissionCompletionState);
 						NoPlayerControl = 1;
 						PlayMode = 0;
 						return;
@@ -2821,14 +2821,14 @@ int SelectCameraCar(int current)
 				{
 					car = &car_data[count];
 
-					if (car->controlType == 3)
+					if (car->controlType == CONTROL_TYPE_PURSUER_AI)
 					{
 						pos.x = car->hd.where.t[0];
 						pos.z = car->hd.where.t[2];
 					}
 					else 
 					{
-						if (car->controlType == 1)
+						if (car->controlType == CONTROL_TYPE_PLAYER)
 						{
 							if (player[1].playerCarId == car->id)
 								return player[1].playerCarId;
@@ -3008,7 +3008,7 @@ int InvalidCamera(int car_num)
 		bVar1 = false;
 
 		if (-1 < car_num)
-			bVar1 = car_data[car_num].controlType == 0;
+			bVar1 = car_data[car_num].controlType == CONTROL_TYPE_NONE;
 
 		if (car_num == -1 && player[0].playerType != 2) 
 			bVar1 = true;

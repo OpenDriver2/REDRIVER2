@@ -558,17 +558,10 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 
 short playerLastRoad = 0;
 
-// [D]
+// [D] [T]
 void CheckPlayerMiscFelonies(void)
 {
-	unsigned char bVar1;
-	long lVar3;
-	int uVar4;
-	int iVar5;
-	int uVar6;
-	int iVar7;
-	int iVar8;
-
+	int i;
 	bool goingWrongWay;
 	int surfInd;
 	int maxSpeed;
@@ -593,38 +586,27 @@ void CheckPlayerMiscFelonies(void)
 	surfInd = GetSurfaceIndex(carPos);
 
 	// check junctions
-	if (IS_JUNCTION_SURFACE(surfInd)) // (((surfInd & 0xffffe000U) == 0x2000) && ((int)(surfInd & 0x1fffU) < NumDriver2Junctions)) && (-1 < surfInd))
+	if (IS_JUNCTION_SURFACE(surfInd))
 	{
 		jn = GET_JUNCTION(surfInd);
 
-		//if (((((playerLastRoad & 0xe000U) == 0x4000) && ((int)((uint)(ushort)playerLastRoad & 0x1fff) < NumDriver2Curves)) || 
-		//	(((playerLastRoad & 0xe000U) == 0 && ((int)((uint)(ushort)playerLastRoad & 0x1fff) < NumDriver2Straights)))) &&
-		//	((-1 < playerLastRoad && (jn = Driver2JunctionsPtr + surfInd + -0x2000, (jn->flags & 1) != 0)))) 
 		if(	(IS_CURVED_SURFACE(playerLastRoad) || IS_STRAIGHT_SURFACE(playerLastRoad)) && (jn->flags & 0x1))
 		{
-			if (jn->ExitIdx[0] == playerLastRoad) 
+			exitId = 0;
+			i = 0;
+			while (i < 4)
 			{
-				_exitId = 0;
-			}
-			else 
-			{
-				uVar6 = 1;
-				do {
-					uVar4 = uVar6 & 0xff;
-					_exitId = uVar4;
-
-					if (3 < uVar4)
-						break;
-
-					uVar6 = uVar4 + 1;
-					_exitId = uVar4;
-				} while (jn->ExitIdx[uVar4] != playerLastRoad);
+				if (jn->ExitIdx[i] == playerLastRoad)
+				{
+					exitId = i;
+					break;
+				}
+				i++;
 			}
 
-			if (junctionLightsPhase[_exitId & 1] == 1) 
-			{
+			// Run a red light!
+			if (junctionLightsPhase[exitId & 1] == 1)
 				NoteFelony(&felonyData, 3, 0x1000);
-			}
 		}
 	}
 
@@ -632,71 +614,110 @@ void CheckPlayerMiscFelonies(void)
 	goingWrongWay = false;
 
 	// straight or curve
-	if (IS_STRAIGHT_SURFACE(surfInd)) //(((surfInd & 0xffffe000U) == 0) && ((int)(surfInd & 0x1fffU) < NumDriver2Straights)) && (-1 < surfInd)) 
+	if (IS_STRAIGHT_SURFACE(surfInd))
 	{
-		st = GET_STRAIGHT(surfInd); // Driver2StraightsPtr + surfInd;
-		uVar6 = st->angle & 0xfff;
-		uVar4 = (u_char)st->NumLanes & 0xf;
-		uVar6 = uVar4 - (FIXEDH((carPos->vx - st->Midx) * rcossin_tbl[uVar6 * 2 + 1] - (carPos->vz - st->Midz) * rcossin_tbl[uVar6 * 2]) + 0x200 >> 9);
-		iVar5 = uVar4 * 2;
+		int lane_count;
+		int lane; // $s0
+		int dx; // $v1
+		int dz; // $a0
 
-		if (uVar6 < 0)
-			uVar6 = 0;
+		st = GET_STRAIGHT(surfInd);
+
+		dx = carPos->vx - st->Midx;
+		dz = carPos->vz - st->Midz;
+
+		lane = ROAD_LANES_COUNT(st) - (FIXEDH(dx * rcossin_tbl[(st->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(st->angle & 0xfff) * 2]) + 512 >> 9);
+
+		lane_count = ROAD_WIDTH_IN_LANES(st);
+
+		if (lane < 0)
+			lane = 0;
 	
-		if (iVar5 <= uVar6)
-			uVar6 = iVar5 - 1;
+		if (lane_count <= lane)
+			lane = lane_count - 1;
 	
-		if (((u_char)st->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
+		// check if on correct lane
+		if (ROAD_IS_AI_LANE(st, lane))
 		{
-			uVar4 = (st->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
+			int crd;
+			crd = (st->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
 
-			if ((*(uint *)(st->ConnectIdx + 3) & 0xffff0000) != 0xff010000) 
+			if (ROAD_LANE_DIR(st, lane) == 0)
 			{
-				uVar6 = (u_char)st->LaneDirs >> (uVar6 / 2 & 0x1fU);
-			}
-
-			if ((uVar6 & 1) == 0) 
-			{
-				if (uVar4 == 1)
-				{
+				if (crd == 1)
 					goingWrongWay = true;
-				}
 			}
-			else if (uVar4 == 0)
-				goingWrongWay = true;
+			else
+			{
+				if (crd == 0)
+					goingWrongWay = true;
+			}
 		}
+
+#if 0
+		printInfo("str lane: %d / %d (%d). AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
+			lane + 1,
+			((u_char)st->NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
+			IS_NARROW_ROAD(st),
+			((u_char)st->AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
+			(st->NumLanes & 0x40) > 0,					// flag 1 - parking allowed?
+			(st->NumLanes & 0x80) > 0,					// flag 2 - spawning allowed?
+			((u_char)st->LaneDirs >> (lane / 2) & 1U),	// direction bit
+			((u_char)st->NumLanes >> 4) & 3,			// speed limit id
+			goingWrongWay);
+#endif
 	}
-	else if(IS_CURVED_SURFACE(surfInd)) //(((surfInd & 0xffffe000U) == 0x4000) && ((int)(surfInd & 0x1fffU) < NumDriver2Curves)) && (-1 < surfInd))
+	else if(IS_CURVED_SURFACE(surfInd))
 	{
-		cv = GET_CURVE(surfInd); // Driver2CurvesPtr + surfInd + -0x4000;
-		iVar5 = carPos->vx - cv->Midx;
-		iVar7 = carPos->vz - cv->Midz;
-		lVar3 = SquareRoot0(iVar5 * iVar5 + iVar7 * iVar7);
+		int lane_count;
+		int lane; // $s0
+		int dx; // $v1
+		int dz; // $a0
 
-		uVar6 = (lVar3 >> 9) - cv->inside * 2;
-		if (uVar6 < 0)
-			uVar6 = 0;
+		cv = GET_CURVE(surfInd);
+		dx = carPos->vx - cv->Midx;
+		dz = carPos->vz - cv->Midz;
 
-		iVar5 = ((u_char)cv->NumLanes & 0xf) * 2;
+		lane = (SquareRoot0(dx * dx + dz * dz) >> 9) - cv->inside * 2;
+		if (lane < 0)
+			lane = 0;
 
-		if (iVar5 <= uVar6)
-			uVar6 = iVar5 - 1;
+		lane_count = ROAD_WIDTH_IN_LANES(cv);
 
-		if (((u_char)cv->AILanes >> (uVar6 / 2 & 0x1fU) & 1U) != 0)
+		if (lane >= lane_count)
+			lane = lane_count - 1;
+
+		// check if on correct lane
+		if (ROAD_IS_AI_LANE(cv, lane))
 		{
-			if (*(short *)&cv->NumLanes != -0xff)
-				uVar6 = (u_char)cv->LaneDirs >> (uVar6 / 2 & 0x1fU);
+			int crd;
 
-			if ((uVar6 & 1) == 0)
+			crd = NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, cv);
+
+			if (ROAD_LANE_DIR(cv, lane) == 0)
 			{
-				if (NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, cv))
+				if (crd != 0)
 					goingWrongWay = true;
 			}
-			else if (iVar5 == 0)
+			else
 			{
-				goingWrongWay = true;
+				if (crd == 0)
+					goingWrongWay = true;
 			}
 		}
+
+#if 0
+		printInfo("crv lane: %d / %d, (%d). AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
+			lane + 1,
+			((u_char)cv->NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
+			IS_NARROW_ROAD(cv),
+			((u_char)cv->AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
+			(cv->NumLanes & 0x40) > 0,					// flag 1 - parking allowed?
+			(cv->NumLanes & 0x80) > 0,					// flag 2 - spawning allowed?
+			((u_char)cv->LaneDirs >> (lane / 2) & 1U),	// direction bit
+			((u_char)cv->NumLanes >> 4) & 3,			// speed limit id
+			goingWrongWay);
+#endif
 	}
 
 	// wrong way
@@ -729,9 +750,9 @@ void CheckPlayerMiscFelonies(void)
 
 	// check the speed limit
 	if (st != NULL)
-		maxSpeed = speedLimits[((u_char)st->NumLanes >> 4) & 3];
+		maxSpeed = speedLimits[ROAD_SPEED_LIMIT(st)];
 	else if (cv != NULL)
-		maxSpeed = speedLimits[((u_char)cv->NumLanes >> 4) & 3];
+		maxSpeed = speedLimits[ROAD_SPEED_LIMIT(cv)];
 	else
 		maxSpeed = speedLimits[2];
 
@@ -789,7 +810,7 @@ void CarHitByPlayer(_CAR_DATA *victim, int howHard)
 {
 	char type;
 
-	if ((0 < howHard) && (victim->controlType != 3)) 
+	if ((0 < howHard) && (victim->controlType != CONTROL_TYPE_PURSUER_AI)) 
 	{
 		if ((victim->controlFlags & 1) == 0)
 		{

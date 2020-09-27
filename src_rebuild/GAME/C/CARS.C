@@ -853,14 +853,14 @@ void DrawCar(_CAR_DATA *cp, int view)
 	// we need full blown mini cars with physics support
 
 	// LOD switching
-	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == 1) 
+	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
 		int blackSmoke = 0;
 
 		WheelSpeed = cp->hd.speed * 0x2000;
 		maxDamage = MaxPlayerDamage[0];
 
-		if (cp->controlType == 1)
+		if (cp->controlType == CONTROL_TYPE_PLAYER)
 		{
 			maxDamage = MaxPlayerDamage[*cp->ai.padid];
 		}
@@ -926,14 +926,14 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	TransparentObject = 0;
 
-	if (cp->controlType == 1)
+	if (cp->controlType == CONTROL_TYPE_PLAYER)
 		PlayerCarFX(cp);
-	else if (cp->controlType == 2)
+	else if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		CivCarFX(cp);
 	
 	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
 	{
-		if (cp->controlType == 2) 
+		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
 			if(cp->ai.c.thrustState != 3 || (cp->ai.c.ctrlState != 5 && cp->ai.c.ctrlState != 7 && cp->ai.c.ctrlState != 8))
 				AddNightLights(cp);
@@ -942,7 +942,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 			AddNightLights(cp);
 	}
 
-	if (cp->controlType == 3)
+	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
 		if (MissionHeader->residentModels[3] == 0)
 		{
@@ -952,20 +952,11 @@ void DrawCar(_CAR_DATA *cp, int view)
 			return;
 		}
 	}
-
-
+	
 	// optimzed check for hndType, controlType, controlFlags
-	//cp->hndType != 2;
-	//cp->controlType != 2;
-	if ((*(uint *)&cp->hndType & 0x2ff00) != 0x20200 && (gInGameCutsceneActive == 0 || cp->controlType != 7 || force_siren[CAR_INDEX(cp)] == 0 ))
+	if (!IS_ROADBLOCK_CAR(cp) && (gInGameCutsceneActive == 0 || cp->controlType != CONTROL_TYPE_CUTSCENE || force_siren[CAR_INDEX(cp)] == 0 ))
 	{
-		if (gCurrentMissionNumber != 26) 
-			return;
-
-		if (cp->ap.model != 4) 
-			return;
-
-		if (cp->controlType != 7)
+		if (gCurrentMissionNumber != 26 || cp->ap.model != 4 || cp->controlType != CONTROL_TYPE_CUTSCENE)
 			return;
 	}
 

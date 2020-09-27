@@ -483,13 +483,18 @@ void SetPleaseWait(char *buffer)
 	ClearImage(&rect,0,0,0);
 	DrawSync(0);
 
+#ifndef PSX
+	Emulator_BeginScene();
+	SetDispMask(1);
+#endif
+
 	gShowMap = 1;
 	SetTextColour(128, 128, 128);
 	PrintStringCentred("Please wait...",128);
 	gShowMap = 0;
 
 	VSync(0);
-	SetDispMask(1);
+	
 
 #ifdef PSX
 	if (lastrequesteddisc == 0)

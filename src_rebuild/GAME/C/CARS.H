@@ -3,6 +3,8 @@
 
 #define CAR_INDEX(cp)  (int)(cp-car_data)
 
+#define IS_ROADBLOCK_CAR(cp) (cp->controlType == CONTROL_TYPE_CIV_AI && (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING))
+
 // PHYSICS
 extern _CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 

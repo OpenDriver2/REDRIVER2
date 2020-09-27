@@ -22,6 +22,9 @@
 
 #include "LIBETC.H"
 #include "STRINGS.H"
+#include "XAPLAY.H"
+
+int gSkipInGameCutscene = 0;
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
@@ -94,6 +97,8 @@ void InitInGameCutsceneVariables(void)
 	gCutsceneAtEnd = 0;
 	JustReturnedFromCutscene = 0;
 
+	gSkipInGameCutscene = 0;
+
 	FreeCutsceneBuffer();
 }
 
@@ -156,12 +161,18 @@ void HandleInGameCutscene(void)
 	if (pauseflag != 0)
 		return;
 
-
 	if (CameraCnt < 2)
 		BlackBorderHeight = 28;
 
 	if (CutsceneLength-28 < CutsceneFrameCnt) 
 	{
+		// disable cutscene skip when it's about to end
+		if (gSkipInGameCutscene)
+		{
+			FastForward = 0;
+			gSkipInGameCutscene = 0;
+		}
+		
 		if (BlackBorderHeight > 0)
 			BlackBorderHeight--;
 	}
@@ -173,8 +184,17 @@ void HandleInGameCutscene(void)
 
 	CutsceneFrameCnt++;
 
+	if (gSkipInGameCutscene)
+	{
+		// fast forward and stop XA
+		FastForward = 1;
+		StopXA();
+		UnprepareXA();
+	}
+
 	if (CutsceneFrameCnt == CutsceneLength) 
 	{
+		gSkipInGameCutscene = 0;
 		gHaveInGameCutscene = 0;
 
 		if (gInGameCutsceneActive != 0)
@@ -577,7 +597,7 @@ void ReleaseInGameCutscene(void)
 		if (i != -1) 
 		{
 			car_data[i].ai.padid = &player[0].padid;
-			car_data[i].controlType = 1;
+			car_data[i].controlType = CONTROL_TYPE_PLAYER;
 		}
 
 		cameraview = SavedCameraView;
@@ -979,7 +999,7 @@ void SetNullPlayer(int plr)
 
 	if (carId != -1) 
 	{
-		car_data[carId].controlType = 2;
+		car_data[carId].controlType = CONTROL_TYPE_CIV_AI;
 		car_data[carId].ai.c.thrustState = 3;
 		car_data[carId].ai.c.ctrlState = 7;
 		car_data[carId].ai.c.ctrlNode = NULL;
@@ -1024,7 +1044,7 @@ void SetNullPlayerDontKill(int plr)
 
 	if (carId != -1)
 	{
-		car_data[carId].controlType = 7;
+		car_data[carId].controlType = CONTROL_TYPE_CUTSCENE;
 		car_data[carId].ai.c.thrustState = 3;
 		car_data[carId].ai.c.ctrlState = 7;
 		car_data[carId].ai.c.ctrlNode = NULL;

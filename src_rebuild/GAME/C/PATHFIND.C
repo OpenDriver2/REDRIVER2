@@ -1615,7 +1615,7 @@ void addCivs(void)
 
 	cp = car_data;
 	do {
-		if (cp->controlType == 2) 
+		if (cp->controlType == CONTROL_TYPE_CIV_AI) 
 		{
 			iVar7 = cp->hd.oBox.radii[2].vx;
 			x = cp->hd.oBox.location.vx;

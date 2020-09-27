@@ -673,7 +673,7 @@ void GlobalTimeStep(void)
 
 		st = &cp->st;
 
-		if (cp->controlType == 1 && playerghost != 0 && playerhitcopsanyway == 0) // [A]
+		if (cp->controlType == CONTROL_TYPE_PLAYER && playerghost != 0 && playerhitcopsanyway == 0) // [A]
 			cp->hd.mayBeColliding = 0;
 
 		// too many reads and writes, you know how to optimize it
@@ -765,7 +765,7 @@ void GlobalTimeStep(void)
 				cp = active_car_list[i];
 
 				// check collisions with buildings
-				if (RKstep != 0 && (subframe & 1U) != 0 && cp->controlType == 1)
+				if (RKstep != 0 && (subframe & 1U) != 0 && cp->controlType == CONTROL_TYPE_PLAYER)
 				{
 					CheckScenaryCollisions(cp);
 				}
@@ -806,7 +806,10 @@ void GlobalTimeStep(void)
 					thisDelta[i].n.angularVelocity[1] = 0;
 					thisDelta[i].n.angularVelocity[2] = 0;
 
-					j = 0;
+					if (cp->hd.mayBeColliding & 0x2) // [A] a litle skip for bbox checking
+						j = 0;
+					else
+						j = 512;
 
 					while (j < i)
 					{
@@ -817,7 +820,7 @@ void GlobalTimeStep(void)
 						else
 							thisState_j = &c1->st;
 
-						if (c1->hd.mayBeColliding != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						if ((c1->hd.mayBeColliding & 0x2) && (c1->hd.speed != 0 || cp->hd.speed != 0))
 						{
 							bb1 = &bbox[cp->id];
 							bb2 = &bbox[c1->id];
@@ -844,17 +847,17 @@ void GlobalTimeStep(void)
 								strikeVel = depth * 0xc000;
 
 								pointVel0[0] = (FIXEDH(thisState_i->n.angularVelocity[1] * lever0[2] - thisState_i->n.angularVelocity[2] * lever0[1]) + thisState_i->n.linearVelocity[0]) -
-												(FIXEDH(thisState_j->n.angularVelocity[1] * lever1[2] - thisState_j->n.angularVelocity[2] * lever1[1]) + thisState_j->n.linearVelocity[0]);
-										
+									(FIXEDH(thisState_j->n.angularVelocity[1] * lever1[2] - thisState_j->n.angularVelocity[2] * lever1[1]) + thisState_j->n.linearVelocity[0]);
+
 								pointVel0[1] = (FIXEDH(thisState_i->n.angularVelocity[2] * lever0[0] - thisState_i->n.angularVelocity[0] * lever0[2]) + thisState_i->n.linearVelocity[1]) -
-												(FIXEDH(thisState_j->n.angularVelocity[2] * lever1[0] - thisState_j->n.angularVelocity[0] * lever1[2]) + thisState_j->n.linearVelocity[1]);
-										
+									(FIXEDH(thisState_j->n.angularVelocity[2] * lever1[0] - thisState_j->n.angularVelocity[0] * lever1[2]) + thisState_j->n.linearVelocity[1]);
+
 								pointVel0[2] = (FIXEDH(thisState_i->n.angularVelocity[0] * lever0[1] - thisState_i->n.angularVelocity[1] * lever0[0]) + thisState_i->n.linearVelocity[2]) -
-												(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
-										
-								howHard =	FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
-											FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
-											FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
+									(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
+
+								howHard = FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
+									FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
+									FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
 
 								if (howHard > 0 && RKstep > -1)
 								{
@@ -866,23 +869,23 @@ void GlobalTimeStep(void)
 
 									if (howHard > 0x32000)
 									{
-										if (cp->controlType == 2)
+										if (cp->controlType == CONTROL_TYPE_CIV_AI)
 											cp->ai.c.carMustDie = 1;
 
-										if (c1->controlType == 2)
+										if (c1->controlType == CONTROL_TYPE_CIV_AI)
 											c1->ai.c.carMustDie = 1;
 									}
 
 									// wake up cops if they've ben touched
 									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY)
 									{
-										if (cp->controlType == 1 && ((*(uint*)&c1->hndType & 0x2ff00) == 0x20200)) 
+										if (cp->controlType == CONTROL_TYPE_PLAYER && IS_ROADBLOCK_CAR(c1))
 										{
 											InitCopState(c1, NULL);
 											c1->ai.p.justPinged = 0;
 										}
 
-										if (c1->controlType == 1 && ((*(uint*)&cp->hndType & 0x2ff00) == 0x20200))
+										if (c1->controlType == CONTROL_TYPE_PLAYER && IS_ROADBLOCK_CAR(cp))
 										{
 											InitCopState(cp, NULL);
 											c1->ai.p.justPinged = 0;
@@ -897,14 +900,14 @@ void GlobalTimeStep(void)
 
 										collisionpoint[1] = -collisionpoint[1];
 
-										if (cp->controlType == 1 || c1->controlType == 1)
+										if (cp->controlType == CONTROL_TYPE_PLAYER || c1->controlType == CONTROL_TYPE_PLAYER)
 										{
 											Setup_Sparks((VECTOR*)collisionpoint, &velocity, 6, 0);
 
-											if (cp->controlType == 1)
+											if (cp->controlType == CONTROL_TYPE_PLAYER)
 												SetPadVibration(*cp->ai.padid, 1);
 
-											if (c1->controlType == 1)
+											if (c1->controlType == CONTROL_TYPE_PLAYER)
 												SetPadVibration(*c1->ai.padid, 1);
 										}
 
@@ -943,13 +946,13 @@ void GlobalTimeStep(void)
 								}
 
 								// apply force to car 0
-								if (cp->controlType != 7 && m1 != 0x7fff)
+								if (cp->controlType != CONTROL_TYPE_CUTSCENE && m1 != 0x7fff)
 								{
 									int twistY, strength1;
 
-									if (cp->controlType == 3 && c1->controlType != 4 && c1->hndType != 0)
+									if (cp->controlType == CONTROL_TYPE_PURSUER_AI && c1->controlType != CONTROL_TYPE_LEAD_AI && c1->hndType != 0)
 										strength1 = FixFloorSigned(strikeVel * (7 - gCopDifficultyLevel), 3);
-									else if (cp->controlType == 4 && c1->hndType != 0)
+									else if (cp->controlType == CONTROL_TYPE_LEAD_AI && c1->hndType != 0)
 										strength1 = FixFloorSigned(strikeVel * 5, 3);
 									else
 										strength1 = strikeVel;
@@ -970,7 +973,7 @@ void GlobalTimeStep(void)
 									torque[1] = FIXEDH(velocity.vz * lever0[0] - velocity.vx * lever0[2]) * twistY;
 									torque[2] = FIXEDH(velocity.vx * lever0[1] - velocity.vy * lever0[0]) * twistY;
 
-									if (c1->controlType == 4)
+									if (c1->controlType == CONTROL_TYPE_LEAD_AI)
 									{
 										torque[0] = 0;
 										torque[2] = 0;
@@ -982,13 +985,13 @@ void GlobalTimeStep(void)
 								}
 
 								// apply force to car 1
-								if (c1->controlType != 7 && m2 != 0x7fff)
+								if (c1->controlType != CONTROL_TYPE_CUTSCENE && m2 != 0x7fff)
 								{
 									int twistY, strength2;
 
-									if (cp->controlType == 3 && c1->controlType != 4 && c1->hndType != 0)
+									if (cp->controlType == CONTROL_TYPE_PURSUER_AI && c1->controlType != CONTROL_TYPE_LEAD_AI && c1->hndType != 0)
 										strength2 = FixFloorSigned(strikeVel * (7 - gCopDifficultyLevel), 3);
-									else if (c1->controlType == 4 && cp->hndType != 0)
+									else if (c1->controlType == CONTROL_TYPE_LEAD_AI && cp->hndType != 0)
 										strength2 = FixFloorSigned(strikeVel * 5, 3);
 									else
 										strength2 = strikeVel;
@@ -1009,7 +1012,7 @@ void GlobalTimeStep(void)
 									torque[1] = FIXEDH(lever1[2] * velocity.vx - lever1[0] * velocity.vz) * twistY;
 									torque[2] = FIXEDH(lever1[0] * velocity.vy - lever1[1] * velocity.vx) * twistY;
 
-									if (c1->controlType == 4)
+									if (c1->controlType == CONTROL_TYPE_LEAD_AI)
 									{
 										torque[0] = 0;
 										torque[2] = 0;
@@ -1348,7 +1351,7 @@ void initOBox(_CAR_DATA *cp)
 	gte_ldv0(&boxDisp);
 	gte_rtv0tr();
 
-	if (cp->controlType == 3) 
+	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
 		length = FixFloorSigned(cp->ap.carCos->colBox.vx * 14, 4);
 		cp->hd.oBox.length[0] = length;
@@ -1491,7 +1494,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 	int frontWheelSpeed;
 	int backWheelSpeed;
 
-	if (cp->controlType == 0)
+	if (cp->controlType == CONTROL_TYPE_NONE)
 		return;
 
 	hp = &handlingType[cp->hndType];
@@ -1503,7 +1506,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 
 #ifdef _DEBUG
 	extern int gStopCivCars;
-	if (!(gStopCivCars && cp->controlType == 2))
+	if (!(gStopCivCars && cp->controlType == CONTROL_TYPE_CIV_AI))
 	{
 		active_car_list[num_active_cars] = cp;
 		num_active_cars++;
@@ -1647,7 +1650,7 @@ void CheckCarToCarCollisions(void)
 
 	// build boxes
 	do {
-		if (cp->controlType == 0) // [A] required as game crashing
+		if (cp->controlType == CONTROL_TYPE_NONE) // [A] required as game crashing
 		{
 			cp++;
 			bb++;
@@ -1690,7 +1693,7 @@ void CheckCarToCarCollisions(void)
 		bb->y1 = FixFloorSigned(cp->hd.where.t[1] + colBox->vy * 4 /* + 2400*/, 4);
 
 		if (cp->hndType == 0)
-			cp->hd.mayBeColliding = 1;
+			cp->hd.mayBeColliding = 0x1;
 
 		loop1++;
 		bb++;
@@ -1709,9 +1712,9 @@ void CheckCarToCarCollisions(void)
 		{
 			if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
 				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
-				(loop1 == 0 || car_data[loop1].controlType != 0) && car_data[loop2].controlType != 0)
+				(loop1 == 0 || car_data[loop1].controlType != CONTROL_TYPE_NONE) && car_data[loop2].controlType != CONTROL_TYPE_NONE)
 			{
-				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 1;
+				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 0x2;
 			}
 
 			loop2++;
@@ -1720,7 +1723,7 @@ void CheckCarToCarCollisions(void)
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
-		if (gShowCollisionDebug == 2 && car_data[loop1].controlType != 0)
+		if (gShowCollisionDebug == 2 && car_data[loop1].controlType != CONTROL_TYPE_NONE)
 		{
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 
@@ -1868,7 +1871,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	player_id = GetPlayerId(cp);
 
 	// Handle player car controls...
-	if (cp->controlType == 1) 
+	if (cp->controlType == CONTROL_TYPE_PLAYER)
 	{
 		// handle car leaving
 		if ((pad & 0x1010) == 0x1010 && player_id > -1)
@@ -1989,13 +1992,13 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	{
 		if ((pad & 4) == 0) 
 		{
-			int_steer *= ((int_steer * int_steer) / 80);
-			analog_angle = ((long long)int_steer * 0x66666667) >> 32;	// (int_steer * 0.6) = int_steer * 2457 + 2048 >> 12 (2457 is 4096 * 0.6)
+			int_steer *= (int_steer * int_steer) / 80;
+			analog_angle = ((long long)int_steer * 0x66666667) >> 32;		// int_steer * 0.4
 		}
 		else 
 		{
-			int_steer *= ((int_steer * int_steer) / 60);
-			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;	// (int_steer * 0.4) = int_steer * 1638 + 2048 >> 12 (1638 is 4096 * 0.4)
+			int_steer *= (int_steer * int_steer) / 60;
+			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;		// int_steer * 0.6
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
@@ -2070,7 +2073,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * 4915);
 			}
 
-			if (cp->controlType == 1) 
+			if (cp->controlType == CONTROL_TYPE_PLAYER)
 			{
 				_CAR_DATA* tp;
 				int targetCarId, cx, cz, chase_square_dist;
@@ -2295,7 +2298,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	wheels_on_ground = 0;
 	lay_down_tracks = 0;
 
-	if (cp->controlType != 1 && cp->controlType != 4 && cp->controlType != 7)
+	if (cp->controlType != CONTROL_TYPE_PLAYER && cp->controlType != CONTROL_TYPE_LEAD_AI && cp->controlType != CONTROL_TYPE_CUTSCENE)
 	{
 		TerminateSkidding(player_id);
 		return;

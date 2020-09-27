@@ -277,7 +277,7 @@ void AddIndicatorLight(_CAR_DATA *cp, int Type)
 	SVECTOR vfrnt;
 	SVECTOR vback;
 
-	//if (cp->controlType != 2)		// [A] weird way to disable it here
+	//if (cp->controlType != CONTROL_TYPE_CIV_AI)		// [A] weird way to disable it here
 	//	return;
 
 	life = &cp->ap.life;
@@ -808,7 +808,7 @@ void AddNightLights(_CAR_DATA *cp)
 			lightFlag = 2 << (loop & 0x1f);
 			damIndex = (4 - loop);
 
-			if (cp->controlType == 1)
+			if (cp->controlType == CONTROL_TYPE_PLAYER)
 				col.r = 56;
 			else
 				col.r = 255;
@@ -961,7 +961,7 @@ void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		}
 	}
 
-	if (cp->controlType == 2 && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
+	if (cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
 		return;
 
 	if (WheelSpeed > 512 * 64)

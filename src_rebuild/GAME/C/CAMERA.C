@@ -734,7 +734,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	jcam = &car_data[20];
 	ClearMem((char *)jcam, sizeof(_CAR_DATA));
 
-	jcam->controlType = 5;
+	jcam->controlType = CONTROL_TYPE_CAMERACOLLIDER;
 
 	gCameraDistance = maxCameraDist;
 
