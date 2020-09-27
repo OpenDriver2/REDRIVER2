@@ -7004,14 +7004,14 @@ LAB_0002c33c:
 						*puVar9 = *puVar9 ^ 0x40000000;
 
 					ClearMem((char*)(car_data + z_00), sizeof(_CAR_DATA));
-					car_data[z_00].controlType = 0;
+					car_data[z_00].controlType = CONTROL_TYPE_NONE;
 				}
 			LAB_0002c678:
 				cp = car_data + 19;
 				if (true)
 				{
 					do {
-						if ((cp->controlType != 0) && ((*(uint*)&cp->hndType & 0x2ff00) != 0x20200))
+						if ((cp->controlType != CONTROL_TYPE_NONE) && ((*(uint*)&cp->hndType & 0x2ff00) != 0x20200))
 						{
 							x = (cp->hd).where.t[0];
 							dx = x - currentPos.vx;
@@ -7041,7 +7041,7 @@ LAB_0002c33c:
 									*puVar9 = *puVar9 ^ 0x40000000;
 
 								ClearMem((char*)cp, sizeof(_CAR_DATA));
-								cp->controlType = 0;
+								cp->controlType = CONTROL_TYPE_NONE;
 							}
 						}
 					LAB_0002c7e4:
@@ -7134,7 +7134,7 @@ LAB_0002c33c:
 							*puVar9 = *puVar9 ^ 0x40000000;
 
 						ClearMem((char*)(car_data + z), sizeof(_CAR_DATA));
-						car_data[z].controlType = 0;
+						car_data[z].controlType = CONTROL_TYPE_NONE;
 					}
 
 				LAB_0002cbac:
@@ -7143,7 +7143,7 @@ LAB_0002c33c:
 					if (true)
 					{
 						do {
-							if ((cp->controlType != 0) && ((*(uint*)&cp->hndType & 0x2ff00) != 0x20200))
+							if ((cp->controlType != CONTROL_TYPE_NONE) && ((*(uint*)&cp->hndType & 0x2ff00) != 0x20200))
 							{
 								x_00 = (cp->hd).where.t[0];
 								dx = x_00 - currentPos.vx;
@@ -7171,7 +7171,7 @@ LAB_0002c33c:
 										*puVar9 = *puVar9 ^ 0x40000000;
 
 									ClearMem((char*)cp, sizeof(_CAR_DATA));
-									cp->controlType = 0;
+									cp->controlType = CONTROL_TYPE_NONE;
 								}
 							}
 						LAB_0002cd18:
@@ -7224,16 +7224,20 @@ LAB_0002c33c:
 	_CAR_DATA* newCar;
 
 	crv = NULL;
-	distAlongSegment = -5;
-	laneNo = player[0].playerCarId;
 	str = NULL;
-	noMoreCars = false;
+
+	noMoreCars = 0;
+	distAlongSegment = -5;
 	lbody = car_cosmetics[3].colBox.vz;
-	dir = car_data[laneNo].hd.direction;
 	externalCopModel = MissionHeader->residentModels[3];
-	baseLoc.vx = car_data[laneNo].hd.where.t[0];
-	baseLoc.vz = car_data[laneNo].hd.where.t[2];
-	
+
+	dir = player[0].dir; // car_data[laneNo].hd.direction;
+
+	baseLoc.vx = player[0].pos[0]; //car_data[laneNo].hd.where.t[0];
+	baseLoc.vy = player[0].pos[1];
+	baseLoc.vz = player[0].pos[2]; //car_data[laneNo].hd.where.t[2];
+	currentPos.vy = baseLoc.vy;
+
 	angle = 0;
 
 	// scan angle

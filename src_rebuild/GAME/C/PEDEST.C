@@ -180,7 +180,7 @@ void IHaveThePower(void)
 			cp = car_data;
 
 			do {
-				if (cp->controlType != 0)
+				if (cp->controlType != CONTROL_TYPE_NONE)
 				{
 					cp->hd.acc[0] += force[0];
 					cp->hd.acc[1] += force[1];
@@ -1274,7 +1274,7 @@ void PlaceRoadBlockCops(void)
 				iVar3 = rcos(a);
 
 				disp[0] = pCar->hd.where.t[0] - player[0].pos[0];
-				disp[1] = 0;
+				disp[1] = player[0].pos[1] - pCar->hd.where.t[1];
 				disp[2] = pCar->hd.where.t[2] - player[0].pos[2];
 
 
@@ -1303,7 +1303,7 @@ void PlaceRoadBlockCops(void)
 				disp[2] = pCar->hd.where.t[2] + FIXED(a * iVar2) + FIXED(-iVar8 * iVar3);
 
 				if (CreatePedAtLocation((long(*)[4])disp, 13) != 0)
-					numCopPeds = numCopPeds + 1;
+					numCopPeds++;
 
 				iVar9++;
 				a = iVar9 * 4;
@@ -1387,13 +1387,12 @@ LAB_0006f100:
 
 	if (pPed->type == PED_ACTION_COPSTAND) 
 	{
+		pPed->position.vy = -(*pPos)[1];
 		pPed->position.vy = -98 - MapHeight((VECTOR *)&pPed->position);
 	}
-	else 
+	else  if (pPed->type == PED_ACTION_COPCROUCH)
 	{
-		if (pPed->type != PED_ACTION_COPCROUCH)
-			return 1;
-
+		pPed->position.vy = -(*pPos)[1];
 		pPed->position.vy = -62 - MapHeight((VECTOR *)&pPed->position);
 	}
 
@@ -3690,7 +3689,7 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 		cd[1].theta = cp1->hd.direction;
 		cd[1].x.vz = cp1->hd.where.t[2];
 
-		if (cp1->controlType != 0) 
+		if (cp1->controlType != CONTROL_TYPE_NONE) 
 		{
 			iVar3 = cp1->hd.where.t[1] + pPos->vy;
 
@@ -4901,7 +4900,7 @@ void BuildCarCollisionBox(void)
 		do {
 			iVar4 = index;
 
-			if (cp != &car_data[player[0].playerCarId] && cp->controlType != 0) 
+			if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE) 
 			{
 				iVar4 = index + 1;
 				set_coll_box(index, cp, 8);
