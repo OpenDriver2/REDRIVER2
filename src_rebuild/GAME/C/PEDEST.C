@@ -1259,7 +1259,7 @@ void PlaceRoadBlockCops(void)
 				iVar10++;
 			}
 			p_Var6++;
-		} while (p_Var6 < car_data + 20);
+		} while (p_Var6 < car_data + MAX_CARS);
 
 		if (iVar10 != 0 && 0 < iVar10) 
 		{
@@ -2499,7 +2499,7 @@ void SetupGetInCar(PEDESTRIAN *pPed)
 
 	if ((carToGetIn->controlFlags & 4) == 0)
 	{
-		if (carToGetIn->controlType == 2 && carToGetIn->ai.c.thrustState == 3 && carToGetIn->ai.c.ctrlState == 5) 
+		if (carToGetIn->controlType == CONTROL_TYPE_CIV_AI && carToGetIn->ai.c.thrustState == 3 && carToGetIn->ai.c.ctrlState == 5) 
 		{
 			carToGetIn->controlFlags |= 4;
 		}
@@ -4659,7 +4659,7 @@ SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed)
 			if (iVar2 < 0)
 				iVar2 = pPed->position.vz - seatedptr->z;
 
-			if (((iVar1 < 200) && (iVar2 < 200)) &&
+			if (((iVar1 < 900) && (iVar2 < 900)) &&
 				(iVar1 = FIXED(iVar1 * iVar1 + iVar2 * iVar2), iVar1 < iVar5)) 
 			{
 				theOne = seatedptr;

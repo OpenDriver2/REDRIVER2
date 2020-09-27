@@ -941,7 +941,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	int lbody;
 	int extraDist;
 
-	if (cp->controlType == 5 && cp->ap.carCos == NULL)
+	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER && cp->ap.carCos == NULL)
 		lbody = 360;
 	else
 		lbody = cp->ap.carCos->colBox.vz;
@@ -952,7 +952,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 			trap(0x400);
 	}
 
-	if (ghost_mode == 0 && (cp->controlType != 1 || playerghost == 0))
+	if (ghost_mode == 0 && (cp->controlType != CONTROL_TYPE_PLAYER || playerghost == 0))
 	{
 		EventCollisions(cp, 0);
 
@@ -1047,7 +1047,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 									bKillTanner = 1;
 								}
 							}
-							else if (cp->controlType == 5)
+							else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 							{
 								if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
 								{
@@ -1408,7 +1408,7 @@ void DoScenaryCollisions(void)
 		if (cp->controlType != 0)
 		{
 			// civ AI and dead cop cars perform less collision detection frames
-			if (cp->controlType == 2 || cp->controlType == 3 && cp->ai.p.dying > 85)
+			if (cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)
 			{
 				if (cp->totalDamage != 0 && (10 < cp->hd.speed || (cp->id + CameraCnt & 3) == 0))
 				{

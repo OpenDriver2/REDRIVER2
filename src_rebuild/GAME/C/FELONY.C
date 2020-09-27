@@ -810,7 +810,7 @@ void CarHitByPlayer(_CAR_DATA *victim, int howHard)
 {
 	char type;
 
-	if ((0 < howHard) && (victim->controlType != 3)) 
+	if ((0 < howHard) && (victim->controlType != CONTROL_TYPE_PURSUER_AI)) 
 	{
 		if ((victim->controlFlags & 1) == 0)
 		{

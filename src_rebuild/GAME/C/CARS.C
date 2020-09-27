@@ -853,14 +853,14 @@ void DrawCar(_CAR_DATA *cp, int view)
 	// we need full blown mini cars with physics support
 
 	// LOD switching
-	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == 1) 
+	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
 		int blackSmoke = 0;
 
 		WheelSpeed = cp->hd.speed * 0x2000;
 		maxDamage = MaxPlayerDamage[0];
 
-		if (cp->controlType == 1)
+		if (cp->controlType == CONTROL_TYPE_PLAYER)
 		{
 			maxDamage = MaxPlayerDamage[*cp->ai.padid];
 		}

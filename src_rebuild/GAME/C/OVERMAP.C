@@ -1000,7 +1000,7 @@ LAB_00016fac:
 
 	cp = car_data;
 	do {
-		if (cp->controlType == 3 && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
+		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
 			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
 
 		cp++;
@@ -1774,7 +1774,7 @@ void DrawCopIndicators(void)
 
 	cp = car_data;
 	do {
-		if ((cp->controlType == 3) && (cp->ai.p.dying == 0))
+		if ((cp->controlType == CONTROL_TYPE_PURSUER_AI) && (cp->ai.p.dying == 0))
 		{
 			iVar6 = cp->hd.where.t[0] - player[0].pos[0];
 			iVar4 = cp->hd.where.t[2] - player[0].pos[2];

@@ -1012,7 +1012,7 @@ void GlobalTimeStep(void)
 									torque[1] = FIXEDH(lever1[2] * velocity.vx - lever1[0] * velocity.vz) * twistY;
 									torque[2] = FIXEDH(lever1[0] * velocity.vy - lever1[1] * velocity.vx) * twistY;
 
-									if (c1->controlType == 4)
+									if (c1->controlType == CONTROL_TYPE_LEAD_AI)
 									{
 										torque[0] = 0;
 										torque[2] = 0;

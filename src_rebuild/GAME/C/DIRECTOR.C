@@ -2821,14 +2821,14 @@ int SelectCameraCar(int current)
 				{
 					car = &car_data[count];
 
-					if (car->controlType == 3)
+					if (car->controlType == CONTROL_TYPE_PURSUER_AI)
 					{
 						pos.x = car->hd.where.t[0];
 						pos.z = car->hd.where.t[2];
 					}
 					else 
 					{
-						if (car->controlType == 1)
+						if (car->controlType == CONTROL_TYPE_PLAYER)
 						{
 							if (player[1].playerCarId == car->id)
 								return player[1].playerCarId;

@@ -208,7 +208,7 @@ _CAR_DATA* FindClosestCar(int x, int y, int z, int* distToCarSq)
 
 	do {
 
-		if (lcp->controlType != 0)
+		if (lcp->controlType != CONTROL_TYPE_NONE)
 		{
 			if (ABS(y - lcp->hd.where.t[1]) < 800)
 			{
@@ -2598,7 +2598,7 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 
 				while (lcp >= car_data)
 				{
-					if (lcp != cp && lcp->controlType != 0)
+					if (lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
 					{
 						car_cos = lcp->ap.carCos;
 
@@ -3323,7 +3323,7 @@ int InitCivState(_CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 
 	CIV_STATE* cs = &cp->ai.c;
 
-	cp->controlType = 2;
+	cp->controlType = CONTROL_TYPE_CIV_AI;
 
 	if (extraData == NULL)
 		cp->ai.c.thrustState = 0;
@@ -3411,9 +3411,9 @@ int PingOutCar(_CAR_DATA * cp)
 {
 	testNumPingedOut++;
 
-	if (cp->controlType == 2)
+	if (cp->controlType == CONTROL_TYPE_CIV_AI)
 	{
-		if (cp->controlFlags & 1) // TODO: named flags
+		if (cp->controlFlags & CONTROL_FLAG_COP)
 			numCopCars--;
 
 		numCivCars--;
@@ -3431,7 +3431,7 @@ int PingOutCar(_CAR_DATA * cp)
 
 	ClearMem((char*)cp, sizeof(_CAR_DATA));
 
-	cp->controlType = 0;
+	cp->controlType = CONTROL_TYPE_NONE;
 
 	return 1;
 }
@@ -3491,7 +3491,7 @@ int PingOutAllSpecialCivCars(void)
 	lcp = car_data;
 
 	{
-		if (lcp->controlType == 2 && MissionHeader->residentModels[lcp->ap.model] > 4)
+		if (lcp->controlType == CONTROL_TYPE_CIV_AI && MissionHeader->residentModels[lcp->ap.model] > 4)
 			PingOutCar(lcp);
 
 		lcp++;
@@ -3557,7 +3557,7 @@ int PingOutAllCivCarsAndCopCars(void)
 
 	do {
 
-		if (cp->controlType - 2U < 2) // include only CIVS and COPS
+		if (cp->controlType == CONTROL_TYPE_CIV_AI && cp->controlType == CONTROL_TYPE_PURSUER_AI)
 			PingOutCar(cp);
 
 		cp++;
@@ -3826,7 +3826,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 
 	// find free slot
 	do {
-		if (carCnt->controlType == 0 && *slot == 0)
+		if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
 		{
 			pNewCar = carCnt;
 			break;
@@ -3964,7 +3964,7 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*star
 		if (true)
 		{
 			do {
-				if (carCnt->controlType == 0 && *slot == 0)
+				if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
 				{
 					newCar = carCnt;
 					break;
@@ -3982,17 +3982,17 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*star
 			civDat.thrustState = 3;
 			civDat.ctrlState = 7;
 
-			if ((controlFlags & 1U) != 0)
+			if (controlFlags & CONTROL_FLAG_COP)
 			{
 				requestCopCar = 0;
 				numCopCars++;
 				cop_respawn_timer = gCopRespawnTime;
 			}
 
-			civDat.controlFlags = controlFlags | 4;
+			civDat.controlFlags = controlFlags | CONTROL_FLAG_WAS_PARKED;
 
 			if (gCurrentMissionNumber != 32 && externalModel == 0)
-				civDat.controlFlags = controlFlags | 6;
+				civDat.controlFlags |= CONTROL_FLAG_COP_SLEEPING;
 
 			civDat.palette = palette;
 			civDat.angle = direction;
@@ -4316,7 +4316,7 @@ int PingInCivCar(int minPingInDist)
 		slot = reservedSlots;
 
 		do {
-			if (carCnt->controlType == 0 && *slot == 0)
+			if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
 			{
 				newCar = carCnt;
 				break;
@@ -4380,7 +4380,7 @@ int PingInCivCar(int minPingInDist)
 		newCar = &car_data[newCarId];
 
 		// ping out old car
-		if (newCar->controlType != 0)
+		if (newCar->controlType != CONTROL_TYPE_NONE)
 		{
 			if (PingOutCar(newCar) == 0)
 				return 0;
@@ -4606,7 +4606,7 @@ int PingInCivCar(int minPingInDist)
 	if (requestCopCar)
 	{
 		model = 3;
-		civDat.controlFlags = 1;
+		civDat.controlFlags = CONTROL_FLAG_COP;
 	}
 	else
 	{
@@ -4752,7 +4752,7 @@ int PingInCivCar(int minPingInDist)
 	carCnt = car_data;
 	while (carCnt < car_data + MAX_CARS)
 	{
-		if (carCnt->controlType != 0)
+		if (carCnt->controlType != CONTROL_TYPE_NONE)
 		{
 			int dx, dy, dz;
 			int sqDist;
@@ -4814,7 +4814,7 @@ int PingInCivCar(int minPingInDist)
 
 		// parked car is going to unpark
 		if (newCar->ai.c.thrustState == 3)
-			newCar->controlFlags |= 4;
+			newCar->controlFlags |= CONTROL_FLAG_WAS_PARKED;
 	}
 
 	// cop car request done
@@ -4827,7 +4827,7 @@ int PingInCivCar(int minPingInDist)
 	numCivCars++;
 
 	// init Cop
-	if (newCar->controlFlags & 1)
+	if (newCar->controlFlags & CONTROL_FLAG_COP)
 		PassiveCopTasks(newCar);
 
 	PingOutCivsOnly = 0;
@@ -4942,7 +4942,7 @@ int CivControl(_CAR_DATA * cp)
 {
 	CheckPingOut(cp);
 
-	if (cp->controlType == 2)
+	if (cp->controlType == CONTROL_TYPE_CIV_AI)
 	{
 		if (cp->ai.c.changeLaneIndicateCount != 0)
 			cp->ai.c.changeLaneIndicateCount--;
@@ -5072,7 +5072,7 @@ int CivControl(_CAR_DATA * cp)
 	}
 
 	// watch for the player
-	if (cp->controlFlags & 1)
+	if (cp->controlFlags & CONTROL_FLAG_COP)
 		PassiveCopTasks(cp);
 
 	return 1;
@@ -5375,7 +5375,7 @@ int CivAccelTrafficRules(_CAR_DATA * cp, int* distToNode)
 		lcp = car_data + 19;
 		while (lcp >= car_data)
 		{
-			if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != 0)
+			if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
 			{
 				dx = lcp->hd.where.t[0] - cp->hd.where.t[0];
 				dz = lcp->hd.where.t[2] - cp->hd.where.t[2];
@@ -5600,7 +5600,7 @@ void SetUpCivCollFlags(void)
 
 	while (cp0 >= car_data)
 	{
-		if (cp0->controlType == 2)
+		if (cp0->controlType == CONTROL_TYPE_CIV_AI)
 		{
 			extraLength = FIXEDH(cp0->hd.wheel_speed);
 
@@ -5633,7 +5633,7 @@ void SetUpCivCollFlags(void)
 
 			while (cp1 >= car_data)
 			{
-				if (cp1->controlType != 0 && cp1 != cp0)
+				if (cp1->controlType != CONTROL_TYPE_NONE && cp1 != cp0)
 				{
 					car_cos = cp1->ap.carCos;
 
@@ -5735,7 +5735,7 @@ void SetUpCivCollFlags(void)
 					// do horns
 					// horn to player and chased cars (except Steal the Ambulance)
 					if (cp0->ai.c.thrustState != 3 &&
-						(cp1->controlType == 1 || (cp1->controlType == 7 && gCurrentMissionNumber != 26) ||
+						(cp1->controlType == CONTROL_TYPE_PLAYER || (cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26) ||
 							CAR_INDEX(cp1) == 20))
 					{
 						int dont;
@@ -6985,7 +6985,7 @@ LAB_0002c33c:
 				if (QuickBuildingCollisionCheck((VECTOR*)car_data[z_00].hd.where.t, car_data[z_00].hd.direction, (int)(car_cos->colBox).vz, (int)(car_cos->colBox).vx, 0x14) != 0)
 				{
 					testNumPingedOut++;
-					if (car_data[z_00].controlType == 2)
+					if (car_data[z_00].controlType == CONTROL_TYPE_CIV_AI)
 					{
 						if ((car_data[z_00].controlFlags & 1) != 0)
 							numCopCars--;
@@ -7022,7 +7022,7 @@ LAB_0002c33c:
 							{
 								testNumPingedOut++;
 
-								if (cp->controlType == 2)
+								if (cp->controlType == CONTROL_TYPE_CIV_AI)
 								{
 									if ((cp->controlFlags & 1) != 0)
 										numCopCars--;
@@ -7115,7 +7115,7 @@ LAB_0002c33c:
 					if (QuickBuildingCollisionCheck((VECTOR*)car_data[z].hd.where.t, car_data[z].hd.direction, (int)(car_cos->colBox).vz, (int)(car_cos->colBox).vx, 0x14) != 0)
 					{
 						testNumPingedOut++;
-						if (car_data[z].controlType == 2)
+						if (car_data[z].controlType == CONTROL_TYPE_CIV_AI)
 						{
 							if ((car_data[z].controlFlags & 1) != 0)
 								numCopCars--;
@@ -7153,7 +7153,7 @@ LAB_0002c33c:
 								if (dx * dx + dz * dz < 360000)
 								{
 									testNumPingedOut++;
-									if (cp->controlType == 2)
+									if (cp->controlType == CONTROL_TYPE_CIV_AI)
 									{
 										if ((cp->controlFlags & 1) != 0)
 											numCopCars = numCopCars + -1;
@@ -7308,42 +7308,43 @@ LAB_0002c33c:
 		if ((segmentLen - distAlongSegment) < lbody * 3)
 			distAlongSegment = segmentLen - lbody * 3;
 
-		bVar2 = str->NumLanes;
+		numLanes = ROAD_WIDTH_IN_LANES(str);
 	}
 	else if(IS_CURVED_SURFACE(roadSeg))
 	{
-		crv = Driver2CurvesPtr + roadSeg + -0x4000;
+		int theta;
+		int segmentLen;
+		crv = GET_CURVE(roadSeg);
 
-		if ((int)(((int)crv->end - (int)crv->start & 0xfffU) * crv->inside * 0xb) / 7 < lbody * 6)
+		// check if not outside the curve
+		if (((crv->end - crv->start & 0xfffU) * crv->inside * 11) / 7 < lbody * 6)
 			return;
 
 		currentAngle = ratan2(roadblockLoc.vx - crv->Midx, roadblockLoc.vz - crv->Midz);
-		uVar8 = 0x80;
+		
+		if(crv->inside < 10)
+			segmentLen = 128;
+		else if (crv->inside < 20)
+			segmentLen = 64;
+		else
+			segmentLen = 32;
 
-		if ((9 < crv->inside) && (uVar8 = 0x20, crv->inside < 0x14))
-		{
-			uVar8 = 0x40;
-		}
+		theta = (currentAngle & 0xfffU) - crv->start;
+		
+		if(crv->inside < 10)
+			distAlongSegment = theta & 0xf80;
+		else if (crv->inside < 20)
+			distAlongSegment = theta & 0xfc0;
+		else
+			distAlongSegment = theta & 0xfe0;
+		
+		segmentLen = (crv->end - crv->start) - segmentLen & 0xfff;
 
-		uVar10 = (currentAngle & 0xfffU) - (int)crv->start;
-		distAlongSegment = uVar10 & 0xf80;
+		if (distAlongSegment >= segmentLen)
+			distAlongSegment = segmentLen;
 
-		if ((9 < crv->inside) && (distAlongSegment = uVar10 & 0xfe0, crv->inside < 0x14))
-		{
-			distAlongSegment = uVar10 & 0xfc0;
-		}
-
-		if (distAlongSegment <= uVar8)
-			distAlongSegment = uVar8;
-
-		uVar8 = ((int)crv->end - (int)crv->start) - uVar8 & 0xfff;
-
-		if (uVar8 <= (uint)distAlongSegment)
-			distAlongSegment = uVar8;
-
-		bVar2 = crv->NumLanes;
+		numLanes = ROAD_WIDTH_IN_LANES(crv);
 	}
-	numLanes = ((u_char)bVar2 & 0xf) << 1;
 
 	GetNodePos(str, NULL, crv, distAlongSegment, NULL, (int*)&startPos.vx, (int*)&startPos.vz, 0);
 
@@ -7389,7 +7390,7 @@ LAB_0002c33c:
 
 				cp = car_data + MAX_CARS - 1;
 				do {
-					if (cp->controlType != 0 && (*(uint*)&cp->hndType & 0x2ff00) != 0x20200)
+					if (cp->controlType != CONTROL_TYPE_NONE && !IS_ROADBLOCK_CAR(cp))
 					{
 						dx = cp->hd.where.t[0] - currentPos.vx;
 						dz = cp->hd.where.t[2] - currentPos.vz;
@@ -7421,10 +7422,10 @@ LAB_0002c33c:
 	if (!noMoreCars && gCopDifficultyLevel != 0)
 	{
 		lVar6 = ratan2(baseLoc.vx - startPos.vx, baseLoc.vz - startPos.vz);
-		laneNo = 0x400;
+		laneNo = 1024;
 
-		if ((((lVar6 - uVar8) + 0x800 & 0xfff) - 0x800 & 0xfff) < 0x800)
-			laneNo = -0x400;
+		if ((((lVar6 - uVar8) + 2048 & 0xfff) - 2048 & 0xfff) < 2048)
+			laneNo = -1024;
 
 		uVar10 = uVar8;
 
@@ -7432,8 +7433,8 @@ LAB_0002c33c:
 			uVar10 = uVar8 - laneNo;
 
 		uVar11 = uVar8 + laneNo & 0xfff;
-		laneNo = startPos.vx + FIXEDH((int)rcossin_tbl[uVar11 * 2] * 0x5dc);
-		iVar12 = startPos.vz + FIXEDH((int)rcossin_tbl[uVar11 * 2 + 1] * 0x5dc);
+		laneNo = startPos.vx + FIXEDH(rcossin_tbl[uVar11 * 2] * 1500);
+		iVar12 = startPos.vz + FIXEDH(rcossin_tbl[uVar11 * 2 + 1] * 1500);
 		z_00 = (maxCivCars - numCivCars) + 2;
 		x = numLanes / 2 - 1;
 
@@ -7472,7 +7473,7 @@ LAB_0002c33c:
 
 				cp = car_data + MAX_CARS - 1;
 				do {
-					if (cp->controlType != 0 && (*(uint*)&cp->hndType & 0x2ff00) != 0x20200)
+					if (cp->controlType != CONTROL_TYPE_NONE && !IS_ROADBLOCK_CAR(cp))
 					{
 						dx = cp->hd.where.t[0] - currentPos.vx;
 						dz = cp->hd.where.t[2] - currentPos.vz;

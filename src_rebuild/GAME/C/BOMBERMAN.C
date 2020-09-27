@@ -748,7 +748,7 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 						debrisColour = GetDebrisColour(cp);
 						Setup_Debris(&collisionResult.hit, &velocity, 6, debrisColour << 0x10);
 
-						if (cp->controlType == 1)
+						if (cp->controlType == CONTROL_TYPE_PLAYER)
 							SetPadVibration(*cp->ai.padid, 1);
 					}
 				}

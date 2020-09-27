@@ -494,12 +494,12 @@ void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
 
 	pRegion = (cp->ap.damage + region);
 
-	if (cp->controlType == 1 || cp->controlType == 4)
+	if (cp->controlType == CONTROL_TYPE_PLAYER || cp->controlType == CONTROL_TYPE_LEAD_AI)
 		value = value * FIXEDH(gPlayerDamageFactor);
 	else 
 		value = value << 1;
 
-	if (cp->controlType == 3)
+	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
 		if (gCopDifficultyLevel == 1) 
 		{
@@ -642,7 +642,7 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 			region = 2;
 	}
 
-	if (cp->controlType == 1) 
+	if (cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
 		value = (strikeVel / 350 + 0x200) * 3;
 
@@ -651,9 +651,9 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 			value = 0x477;
 		
 	}
-	else if (cp->controlType == 4)
+	else if (cp->controlType == CONTROL_TYPE_LEAD_AI)
 	{
-		if (pOtherCar->controlType == 1)
+		if (pOtherCar->controlType == CONTROL_TYPE_PLAYER)
 		{
 			value = (strikeVel / 350 + 0x200) * 3;
 
@@ -681,7 +681,7 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		value = ((strikeVel / 400 + 0x400) * 7) >> 3;
 	}
 
-	fakeDamage = cp->controlType == 3 && pOtherCar->controlType == 3;
+	fakeDamage = cp->controlType == CONTROL_TYPE_PURSUER_AI && pOtherCar->controlType == CONTROL_TYPE_PURSUER_AI;
 
 	ApplyDamage(cp, region, value, fakeDamage);
 
@@ -692,11 +692,11 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 
 	kludge = GetPlayerId(cp);
 
-	if (kludge != 0 || (kludge = 2, pOtherCar->controlType != 2))
+	if (kludge != 0 || (kludge = 2, pOtherCar->controlType != CONTROL_TYPE_CIV_AI))
 	{
 		kludge = 1;
 
-		if (GetPlayerId(pOtherCar) == 0 && cp->controlType == 2)
+		if (GetPlayerId(pOtherCar) == 0 && cp->controlType == CONTROL_TYPE_CIV_AI)
 			kludge = 2;
 	}
 
@@ -786,7 +786,7 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	
 		value -= (value * cp->ap.damage[region] >> 0xd);
 
-		if (cp->controlType == 4)
+		if (cp->controlType == CONTROL_TYPE_LEAD_AI)
 		{
 			if (cp->ai.l.takeDamage == 0)
 				value = 0;
@@ -959,7 +959,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 	model = modelpointers[cop->type];
 	player_id = GetPlayerId(cp);
 
-	cd[0].isCameraOrTanner = (cp->controlType == 5);
+	cd[0].isCameraOrTanner = (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER);
 
 	if (cp->controlType == 6)
 		cd[0].isCameraOrTanner += 2;
@@ -1005,7 +1005,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			cd[0].length[0] = 80;
 			cd[0].length[1] = 80;
 		}
-		else if (cp->controlType == 5)
+		else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 		{
 			cd[0].vel.vx = 0;
 			cd[0].vel.vz = 0;
@@ -1039,7 +1039,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		cd[1].vel.vz = 0;
 		cd[1].avel = 0;
 
-		if (cp->controlType == 5) 
+		if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER) 
 		{
 			collided = (bcollided2d(cd, 1) != 0);
 		}
@@ -1192,7 +1192,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 				if (strikeVel > 0)
 				{
-					if (cp->controlType == 1) 
+					if (cp->controlType == CONTROL_TYPE_PLAYER) 
 					{
 						if (strikeVel < 32) 
 							scale = ((strikeVel << 0x17) >> 0x10);
@@ -1251,7 +1251,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						Setup_Debris(&collisionResult.hit, &velocity, 5, 0);
 						Setup_Debris(&collisionResult.hit, &velocity, 5, debris_colour << 0x10);
 
-						if (cp->controlType == 1)
+						if (cp->controlType == CONTROL_TYPE_PLAYER)
 							SetPadVibration(*cp->ai.padid, 3);
 
 						return 0;
@@ -1295,7 +1295,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 						{
 							Setup_Debris(&collisionResult.hit, &velocity, 6, debris_colour << 0x10);
 
-							if(cp->controlType == 1)
+							if(cp->controlType == CONTROL_TYPE_PLAYER)
 								SetPadVibration(*cp->ai.padid, 1);
 						}
 					}
@@ -1318,32 +1318,32 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 					cp->hd.aacc[1] += FIXEDH(lever[2] * reaction[0]) - FIXEDH(lever[0] * reaction[2]);
 
-					if (cp->controlType != 4)
+					if (cp->controlType != CONTROL_TYPE_LEAD_AI)
 					{
 						temp = FIXEDH(lever[1] * reaction[2]);
 
-						if (cp->controlType == 3)
+						if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 							temp >>= 1;
 
 						cp->hd.aacc[0] += temp;
 
 						temp = FIXEDH(lever[2] * reaction[1]);
 
-						if (cp->controlType == 3)
+						if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 							temp >>= 1;
 						
 						cp->hd.aacc[0] -= temp;
 
 						temp = FIXEDH(lever[0] * reaction[1]);
 
-						if (cp->controlType == 3)
+						if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 							temp >>= 1;
 
 						cp->hd.aacc[2] += temp;
 
 						temp = FIXEDH(lever[1] * reaction[0]);
 
-						if (cp->controlType == 3)
+						if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 							temp >>= 1;
 						
 						cp->hd.aacc[2] -= temp;

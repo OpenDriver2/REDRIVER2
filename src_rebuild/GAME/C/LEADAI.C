@@ -100,7 +100,7 @@ void InitLead(_CAR_DATA *cp)
 	z = cp->hd.where.t[2];
 
 	cp->hndType = 5;
-	cp->controlType = 4;
+	cp->controlType = CONTROL_TYPE_LEAD_AI;
 	cp->ai.l.roadPosition = 512;
 	cp->ai.l.dstate = 3;
 	cp->ai.l.recoverTime = 40;

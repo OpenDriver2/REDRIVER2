@@ -330,6 +330,25 @@ struct LEAD_CAR // hashcode: 0x44C76F5F (dec: 1153920863)
 	char takeDamage; // size=0, offset=100
 };
 
+enum ECarControlType
+{
+	CONTROL_TYPE_NONE = 0,	// car is not in the world
+	CONTROL_TYPE_PLAYER = 1,	// controlled by player pads
+	CONTROL_TYPE_CIV_AI = 2,	// Civilian car. May be a passive cop car with CONTROL_FLAG_COP flag.
+	CONTROL_TYPE_PURSUER_AI = 3,	// Police pursuer car. Always chases player
+	CONTROL_TYPE_LEAD_AI = 4,	// really don't know wtf this type is
+
+	CONTROL_TYPE_CAMERACOLLIDER = 5,	// Used as a camera collider
+	CONTROL_TYPE_TANNERCOLLIDER = 6,	// Used as collision box for tanner
+	CONTROL_TYPE_CUTSCENE = 7,	// Pretty same as player car but controllled by cutscene. Can be a chase car.
+};
+
+enum ECarControlFlags
+{
+	CONTROL_FLAG_COP = (1 << 0),		// civ car is a cop car
+	CONTROL_FLAG_COP_SLEEPING = (1 << 1),		// passive cop flag (roadblocks). Hitting car with that flag results it's activation
+	CONTROL_FLAG_WAS_PARKED = (1 << 2)		// car pinged in as parked. Really nothing to do with it
+};
 
 typedef struct _CAR_DATA // hashcode: 0x8D78CB99 (dec: -1921463399)
 {

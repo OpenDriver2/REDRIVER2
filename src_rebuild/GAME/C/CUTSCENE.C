@@ -597,7 +597,7 @@ void ReleaseInGameCutscene(void)
 		if (i != -1) 
 		{
 			car_data[i].ai.padid = &player[0].padid;
-			car_data[i].controlType = 1;
+			car_data[i].controlType = CONTROL_TYPE_PLAYER;
 		}
 
 		cameraview = SavedCameraView;
@@ -999,7 +999,7 @@ void SetNullPlayer(int plr)
 
 	if (carId != -1) 
 	{
-		car_data[carId].controlType = 2;
+		car_data[carId].controlType = CONTROL_TYPE_CIV_AI;
 		car_data[carId].ai.c.thrustState = 3;
 		car_data[carId].ai.c.ctrlState = 7;
 		car_data[carId].ai.c.ctrlNode = NULL;
@@ -1044,7 +1044,7 @@ void SetNullPlayerDontKill(int plr)
 
 	if (carId != -1)
 	{
-		car_data[carId].controlType = 7;
+		car_data[carId].controlType = CONTROL_TYPE_CUTSCENE;
 		car_data[carId].ai.c.thrustState = 3;
 		car_data[carId].ai.c.ctrlState = 7;
 		car_data[carId].ai.c.ctrlNode = NULL;

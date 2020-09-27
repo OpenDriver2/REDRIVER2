@@ -3247,7 +3247,7 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->type = 1;
 		PlayerStartInfo[0]->model = defaultPlayerModel[0];
 		PlayerStartInfo[0]->palette = defaultPlayerPalette;
-		PlayerStartInfo[0]->controlType = 1;
+		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
 		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
@@ -3265,7 +3265,7 @@ void InitGameVariables(void)
 			PlayerStartInfo[1]->type = 1;
 			PlayerStartInfo[1]->model = defaultPlayerModel[1];
 			PlayerStartInfo[1]->palette = defaultPlayerPalette;
-			PlayerStartInfo[1]->controlType = 1;
+			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
 			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
 			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
