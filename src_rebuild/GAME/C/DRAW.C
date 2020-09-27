@@ -1593,7 +1593,7 @@ void DrawAllTheCars(int view)
 	do {
 		iVar11 = iVar9;
 
-		if ((p_Var8->controlType != 0) && PositionVisible((VECTOR *)p_Var8->hd.where.t))
+		if ((p_Var8->controlType != CONTROL_TYPE_NONE) && PositionVisible((VECTOR *)p_Var8->hd.where.t))
 		{
 			// XZ distance estimation
 			iVar3 = p_Var8->hd.where.t[0];

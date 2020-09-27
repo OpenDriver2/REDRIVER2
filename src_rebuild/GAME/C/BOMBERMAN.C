@@ -223,7 +223,7 @@ void HandleThrownBombs(void)
 			cp = car_data;
 			while (cp < car_data + 20)
 			{
-				if (cp != gBombTargetVehicle && cp->controlType != 0 && BombCollisionCheck(cp, &bomb->position) != 0)
+				if (cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE && BombCollisionCheck(cp, &bomb->position) != 0)
 				{
 					bomb->flags = 0;
 

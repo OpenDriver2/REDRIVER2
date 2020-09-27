@@ -1405,7 +1405,7 @@ void DoScenaryCollisions(void)
 	cp = car_data + 19;
 
 	do {
-		if (cp->controlType != 0)
+		if (cp->controlType != CONTROL_TYPE_NONE)
 		{
 			// civ AI and dead cop cars perform less collision detection frames
 			if (cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)

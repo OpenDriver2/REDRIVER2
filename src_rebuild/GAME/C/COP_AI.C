@@ -576,7 +576,7 @@ void CopControl(_CAR_DATA *cp)
 
 	CheckPingOut(cp);
 
-	if (cp->ai.p.dying == 0 && cp->controlType == 0)
+	if (cp->ai.p.dying == 0 && cp->controlType == CONTROL_TYPE_NONE)
 	{
 		numActiveCops--;
 		numCopCars--;
@@ -1693,7 +1693,7 @@ void ControlCopDetection(void)
 				// make cop lose target if target is hidden
 				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && cp->ai.p.hiddenTimer++ > 0x32)
 				{
-					cp->controlType = 0;
+					cp->controlType = CONTROL_TYPE_NONE;
 					cp->ai.p.hiddenTimer = 0;
 					cp->thrust = 0;
 					numCopCars--;

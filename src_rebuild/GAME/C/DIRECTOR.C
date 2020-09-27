@@ -3008,7 +3008,7 @@ int InvalidCamera(int car_num)
 		bVar1 = false;
 
 		if (-1 < car_num)
-			bVar1 = car_data[car_num].controlType == 0;
+			bVar1 = car_data[car_num].controlType == CONTROL_TYPE_NONE;
 
 		if (car_num == -1 && player[0].playerType != 2) 
 			bVar1 = true;

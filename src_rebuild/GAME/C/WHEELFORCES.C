@@ -260,7 +260,7 @@ void StepOneCar(_CAR_DATA *cp)
 	VECTOR direction;
 	_sdPlane *SurfacePtr;
 
-	if (cp->controlType == 0)
+	if (cp->controlType == CONTROL_TYPE_NONE)
 		return;
 
 	SurfacePtr = NULL;

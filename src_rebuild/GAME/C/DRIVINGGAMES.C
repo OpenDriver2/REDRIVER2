@@ -542,7 +542,7 @@ int CarConeCollision(VECTOR *pPos, int car)
 	cd[0].length[1] = 0x28;
 	cd[0].theta = 0;
 
-	if (car_data[car].controlType == 0) 
+	if (car_data[car].controlType == CONTROL_TYPE_NONE) 
 		return 0;
 
 	model = car_data[car].ap.model;

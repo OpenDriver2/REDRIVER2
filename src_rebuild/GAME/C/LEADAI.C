@@ -2506,7 +2506,7 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 
 	while (car_data < lcp)
 	{
-		if ((lcp != cp) && (lcp->controlType != 0))
+		if ((lcp != cp) && (lcp->controlType != CONTROL_TYPE_NONE))
 		{
 			car_cos = (lcp->ap).carCos;
 			iVar16 = (uint)(ushort)(car_cos->colBox).vz << 0x10;
