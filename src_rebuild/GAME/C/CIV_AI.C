@@ -3557,7 +3557,7 @@ int PingOutAllCivCarsAndCopCars(void)
 
 	do {
 
-		if (cp->controlType == CONTROL_TYPE_CIV_AI && cp->controlType == CONTROL_TYPE_PURSUER_AI)
+		if (cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_PURSUER_AI)
 			PingOutCar(cp);
 
 		cp++;
@@ -4958,7 +4958,7 @@ int CivControl(_CAR_DATA * cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 1
+#if 0
 		{
 			//maxCivCars = 2;
 			//maxCopCars = 0;
