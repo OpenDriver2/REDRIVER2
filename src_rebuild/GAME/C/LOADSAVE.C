@@ -64,6 +64,8 @@ void LoadCurrentProfile()
 			LoadConfigData(_other_buffer);
 		}
 	}
+
+	SetMasterVolume(gMasterVolume);
 }
 
 // [A] saves config to file
