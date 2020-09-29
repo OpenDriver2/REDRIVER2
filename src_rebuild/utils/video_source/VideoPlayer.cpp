@@ -69,18 +69,23 @@ void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
 	float psxScreenW = 320.0f;
 	float psxScreenH = 240.0f;
 
+	int ideal_image_height = strFmt.image_height; // strFmt.image_height;
+
+	if (ideal_image_height < 220)
+		ideal_image_height = 220;
+
 	RECT16 rect;
 	rect.x = 0;
-	rect.y = (psxScreenH - strFmt.image_height) / 2;
+	rect.y = (psxScreenH - ideal_image_height);// / 2;
 	rect.w = strFmt.image_width;
-	rect.h = strFmt.image_height;
+	rect.h = ideal_image_height;
 
-	const float video_aspect = float(strFmt.image_width) / float(strFmt.image_height + 48);
+	const float video_aspect = float(strFmt.image_width) / float(ideal_image_height);
 	float emuScreenAspect = float(windowHeight) / float(windowWidth);
 
 	// first map to 0..1
-	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / psxScreenW;
-	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / psxScreenH;
+	float clipRectX = (float)(rect.x) / psxScreenW;
+	float clipRectY = (float)(rect.y) / psxScreenH;
 	float clipRectW = (float)(rect.w) / psxScreenW;
 	float clipRectH = (float)(rect.h) / psxScreenH;
 
@@ -93,8 +98,6 @@ void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
 
 	clipRectW *= 2.0f;
 	clipRectH *= 2.0f;
-
-	clipRectY += 0.10f;
 
 	u_char l = 0;
 	u_char t = 0;
@@ -166,6 +169,8 @@ void FMVPlayerInitGL()
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 320, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -213,8 +218,15 @@ void PrintSubtitleText(SUBTITLE* sub)
 {
 	gShowMap = 1;
 
+	char* str = sub->text;
+
+	// skip some trailing spaces
+	while (isspace(*str)) {
+		str++;
+	}
+
 	SetTextColour(128, 128, 128);
-	PrintString(sub->text, (600 - StringWidth(sub->text)) * 0x8000 >> 0x10, sub->y);
+	PrintString(str, (600 - StringWidth(str)) * 0x8000 >> 0x10, sub->y - 25);
 
 	gShowMap = 0;
 }
@@ -228,6 +240,8 @@ void DisplaySubtitles(int frame_number)
 			PrintSubtitleText(&g_Subtitles[i]);
 	}
 }
+
+extern void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
 void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number)
 {
@@ -301,6 +315,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
 	int nextTime = SDL_GetTicks();
+	int oldTime = nextTime;
 
 	int frame_size;
 	int queue_counter = 0;
@@ -311,7 +326,17 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	// main loop
 	while (true)
 	{
-		if (SDL_GetTicks() <= nextTime) // wait for frame
+		int curTime = SDL_GetTicks();
+		int deltaTime = curTime - oldTime;
+
+		if (deltaTime > 1000)
+		{
+			nextTime += deltaTime;
+			oldTime = curTime;
+		}
+
+
+		if (curTime <= nextTime) // wait for frame
 		{
 			Emulator_EndScene();
 			continue;
@@ -350,9 +375,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 				// set next step time
 				if (g_swapInterval == 0)
-					nextTime = SDL_GetTicks();
+					nextTime = curTime;
 				else
 					nextTime += avi_header.TimeBetweenFrames / 1000;
+
+				oldTime = curTime;
 
 				done_frames++;
 			}
@@ -381,7 +408,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 						// restart
 						queue_counter = 0;
 					}
-					else if(numProcessed && queue_counter >= 4)
+					else if(numProcessed && queue_counter > 3)
 					{
 						// dequeue one buffer
 						alSourceUnqueueBuffers(audioStreamSource, 1, &qbuffer);
@@ -406,7 +433,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	}
 
 	alDeleteSources(1, &audioStreamSource);
-	alDeleteBuffers(4, audioStreamBuffers);
+	alDeleteBuffers(2, audioStreamBuffers);
 }
 
 // FMV main function
@@ -416,7 +443,7 @@ int FMV_main(RENDER_ARGS* args)
 	DRAWENV draw;
 
 	FMVPlayerInitGL();
-	SetPleaseWait(NULL);
+	LoadFont(NULL);
 
 	SetupDefDrawEnv(&draw, 0, 0, 600, 250);
 	SetupDefDispEnv(&disp, 0, 0, 600, 250);

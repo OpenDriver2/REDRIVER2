@@ -902,6 +902,12 @@ int DoNotSwap = 0;
 DB* MPlast[2];
 DB* MPcurrent[2];
 
+void ClearCurrentDrawBuffers()
+{
+	ClearOTagR((u_long*)current->ot, 0x1080);
+	current->primptr = current->primtab;
+}
+
 // [D]
 void SwapDrawBuffers(void)
 {
@@ -928,8 +934,7 @@ void SwapDrawBuffers(void)
 		last = &MPBuff[0][1];
 	}
 
-	ClearOTagR((u_long*)current->ot, 0x1080);
-	current->primptr = current->primtab;
+	ClearCurrentDrawBuffers();
 }
 
 

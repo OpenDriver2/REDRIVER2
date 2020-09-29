@@ -696,7 +696,7 @@ void InitOverheadMap(void)
 			do {
 				maptile[d][c] = tpage;
 
-				LoadMapTile(tpage, (x_map / 32) + d, (y_map / 32) + c);
+				LoadMapTile(tpage, (x_map >> 5) + d, (y_map >> 5) + c);
 
 				d++;
 				tpage++;
@@ -1000,7 +1000,7 @@ LAB_00016fac:
 
 	cp = car_data;
 	do {
-		if (cp->controlType == 3 && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
+		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
 			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
 
 		cp++;
@@ -1774,7 +1774,7 @@ void DrawCopIndicators(void)
 
 	cp = car_data;
 	do {
-		if ((cp->controlType == 3) && (cp->ai.p.dying == 0))
+		if ((cp->controlType == CONTROL_TYPE_PURSUER_AI) && (cp->ai.p.dying == 0))
 		{
 			iVar6 = cp->hd.where.t[0] - player[0].pos[0];
 			iVar4 = cp->hd.where.t[2] - player[0].pos[2];
@@ -2323,16 +2323,17 @@ void LoadMapTile(int tpage, int x, int y)
 	RECT16 MapSegment;
 
 	MapSegment.w = 8;
-	MapSegment.h = 0x20;
+	MapSegment.h = 32;
 	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
 	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
 
 	idx = x + y * tilehnum;
 	temp = x << 5;
 
-	if ((idx < overlaidmaps[GameLevel].toptile && -1 < idx) && (-1 < temp) && (temp < overlaidmaps[GameLevel].width))
+	if (idx > -1 && idx < overlaidmaps[GameLevel].toptile &&
+		temp > -1 && (temp < overlaidmaps[GameLevel].width))
 	{
-		UnpackRNC(MapBitMaps + *(ushort*)(MapBitMaps + idx * 2), MapBuffer);
+		UnpackRNC(MapBitMaps + *((ushort*)MapBitMaps + idx), MapBuffer);
 	}
 	else 
 	{
@@ -2350,6 +2351,7 @@ void LoadMapTile(int tpage, int x, int y)
 #ifndef PSX
 	Emulator_UpdateVRAM();
 #endif
+
 }
 
 

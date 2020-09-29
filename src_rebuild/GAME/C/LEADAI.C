@@ -100,7 +100,7 @@ void InitLead(_CAR_DATA *cp)
 	z = cp->hd.where.t[2];
 
 	cp->hndType = 5;
-	cp->controlType = 4;
+	cp->controlType = CONTROL_TYPE_LEAD_AI;
 	cp->ai.l.roadPosition = 512;
 	cp->ai.l.dstate = 3;
 	cp->ai.l.recoverTime = 40;
@@ -2506,7 +2506,7 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 
 	while (car_data < lcp)
 	{
-		if ((lcp != cp) && (lcp->controlType != 0))
+		if ((lcp != cp) && (lcp->controlType != CONTROL_TYPE_NONE))
 		{
 			car_cos = (lcp->ap).carCos;
 			iVar16 = (uint)(ushort)(car_cos->colBox).vz << 0x10;

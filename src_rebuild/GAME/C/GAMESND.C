@@ -912,7 +912,7 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	iVar8 = cp->hd.wheel_speed;
 	sVar2 = cp->thrust;
 
-	uVar10 = (cp->controlType == 2);
+	uVar10 = (cp->controlType == CONTROL_TYPE_CIV_AI);
 
 	if (iVar8 < 1) 
 	{
@@ -1682,7 +1682,7 @@ void DoDopplerSFX(void)
 					if (2 < car_ptr->controlType)
 						goto LAB_0004e930;
 
-					if (car_ptr->controlType != 2 || car_ptr->ai.c.ctrlState == 5 || car_ptr->ai.c.ctrlState == 7)
+					if (car_ptr->controlType != CONTROL_TYPE_CIV_AI || car_ptr->ai.c.ctrlState == 5 || car_ptr->ai.c.ctrlState == 7)
 						goto LAB_0004e984;
 
 					vvar3 = car_ptr->hd.where.t[0] - camera_position.vx;
@@ -1695,7 +1695,7 @@ void DoDopplerSFX(void)
 				}
 				else 
 				{
-					if (car_ptr->controlType != 7 || SilenceThisCar(car) != 0)
+					if (car_ptr->controlType != CONTROL_TYPE_CUTSCENE || SilenceThisCar(car) != 0)
 						goto LAB_0004e984;
 
 				LAB_0004e930:
@@ -1760,25 +1760,25 @@ void DoDopplerSFX(void)
 			car_ptr = &car_data[uVar10];
 
 			if (handlingType[car_ptr->hndType].fourWheelDrive == 1 &&
-				car_ptr->controlType == 3 && car_ptr->ai.p.dying < 75 &&
+				car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying < 75 &&
 				CarHasSiren(car_ptr->ap.model) != 0)
 				goto LAB_0004eba8;
 
 			if (gCurrentMissionNumber == 0x1a) 
 			{
-				if ((car_ptr->ap.model == 4) && (car_ptr->controlType == 7))
+				if ((car_ptr->ap.model == 4) && (car_ptr->controlType == CONTROL_TYPE_CUTSCENE))
 				{
 				LAB_0004eba8:
 					uVar3 = *puVar7;
 					goto LAB_0004ebac;
 				}
 			LAB_0004eb68:
-				if (gInGameCutsceneActive != 0 && car_ptr->controlType == 7 && force_siren[*puVar7] != 0) // [A] WTF?
+				if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && force_siren[*puVar7] != 0) // [A] WTF?
 					goto LAB_0004eba8;
 			}
 			else 
 			{
-				if (gCurrentMissionNumber == 7 || car_ptr->controlType != 2 || car_ptr->ap.model > 2 || (uVar3 = *puVar7, uVar3 != 1))
+				if (gCurrentMissionNumber == 7 || car_ptr->controlType != CONTROL_TYPE_CIV_AI || car_ptr->ap.model > 2 || (uVar3 = *puVar7, uVar3 != 1))
 					goto LAB_0004eb68;
 
 			LAB_0004ebac:
@@ -1842,7 +1842,7 @@ void DoDopplerSFX(void)
 						vvar3 = p_Var9->car;
 						uVar8 = 0;
 
-						if (car_data[vvar3].controlType == 3)
+						if (car_data[vvar3].controlType == CONTROL_TYPE_PURSUER_AI)
 							uVar8 = car_data[vvar3].ai.p.dying;
 
 						SetChannelPosition3(p_Var9->chan, (VECTOR *)car_data[vvar3].hd.where.t, car_data[vvar3].st.n.linearVelocity, uVar8 * -0x1e + -3000, vvar4 * 4 - (uVar8 * 0x30 + -0x1000), 0);
@@ -1868,7 +1868,7 @@ void DoDopplerSFX(void)
 
 					uVar6 = indexlist[vvar4];
 
-					if (car_data[uVar6].controlType != 3 || car_data[uVar6].ai.p.dying == 0)
+					if (car_data[uVar6].controlType != CONTROL_TYPE_PURSUER_AI || car_data[uVar6].ai.p.dying == 0)
 						uVar8 = uVar8 | 1 << (uVar6 & 0x1f);
 
 					vvar4++;
@@ -1980,7 +1980,7 @@ void DoDopplerSFX(void)
 									}
 
 									sample = -6250;
-									if (car_data[vvar3].controlType == 2) 
+									if (car_data[vvar3].controlType == CONTROL_TYPE_CIV_AI) 
 										sample = -7000;
 
 									iVar14 = (car_data[vvar3].hd.revs << 0x10) >> 0x12;
@@ -2119,7 +2119,7 @@ void DoDopplerSFX(void)
 				p_Var9->stopped = 0;
 				p_Var9->car = *puVar7;
 
-				if (gCurrentMissionNumber == 0x1a || car_data[p_Var9->car].controlType != 2)
+				if (gCurrentMissionNumber == 0x1a || car_data[p_Var9->car].controlType != CONTROL_TYPE_CIV_AI)
 				{
 					uVar6 = CarHasSiren(car_data[p_Var9->car].ap.model);
 					p_Var9->chan = Start3DTrackingSound(-1, (uVar6 & 0xff00) >> 8, uVar6 & 0xff, (VECTOR *)car_data[p_Var9->car].hd.where.t, car_data[p_Var9->car].st.n.linearVelocity);
@@ -2206,7 +2206,7 @@ void DoPoliceLoudhailer(int cars, ushort *indexlist, ulong *dist)
 				if (0x6000 < uVar3) 
 					dist[uVar2] = uVar3 - 0x6000;
 
-				if (car_data[uVar2].controlType == 3 && car_data[uVar2].ai.p.dying == 0 && iVar5 < loudhail_time && lVar1 == (lVar1 / 31) * 31) 
+				if (car_data[uVar2].controlType == CONTROL_TYPE_PURSUER_AI && car_data[uVar2].ai.p.dying == 0 && iVar5 < loudhail_time && lVar1 == (lVar1 / 31) * 31) 
 				{
 					Start3DTrackingSound(-1, 2, lVar1 % 2 + 13, (VECTOR *)car_data[uVar2].hd.where.t, car_data[uVar2].st.n.linearVelocity);
 					loudhail_time = 0;
@@ -2839,7 +2839,7 @@ void InitMusic(int musicnum)
 
 	copmusic = 0;
 	puts("NewLevel in InitMusic()\n");
-	AllocateReverb(3, 0x4000);
+	AllocateReverb(3, 16384);
 
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char *)musicpos, musicnum * 8, sizeof(musicpos));

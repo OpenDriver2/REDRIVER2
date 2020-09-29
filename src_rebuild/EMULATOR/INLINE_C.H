@@ -272,6 +272,11 @@ extern int docop2(int op);
 	*(uint*)((char*)r0 + 4) = CFC2(22);\
 	*(uint*)((char*)r0 + 8) = CFC2(23);
 
+// ctc2 24,25
+#define gte_SetGeomOffset( r0, r1 )\
+	CTC2(r0 << 16, 24); \
+	CTC2(r1 << 16, 25); \
+
 // TODO: GTEMAC
 #define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
 				{	gte_ldv3(r1,r2,r3);	\

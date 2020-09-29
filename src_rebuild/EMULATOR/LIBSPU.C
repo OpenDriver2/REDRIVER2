@@ -11,6 +11,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
+#include <AL/efx.h>
 
 #ifdef _WINDOWS
 #include <minmax.h>
@@ -85,14 +86,70 @@ struct SPUVoice
 	int sampledirty;
 };
 
-SPUVoice s_SpuVoices[SPU_VOICES];
+SPUVoice	g_SpuVoices[SPU_VOICES];
+ALCdevice*	g_ALCdevice = NULL;
+ALCcontext* g_ALCcontext = NULL;
+int			g_SPUMuted = 0;
+ALuint		g_ALEffectSlots[2];
+int			g_currEffectSlotIdx = 0;
+ALuint		g_nAlReverbEffect = 0;
+int			g_enableSPUReverb = 0;
+int			g_ALEffectsSupported = 0;
 
-ALCdevice* s_ALCdevice = NULL;
-ALCcontext* s_ALCcontext = NULL;
+LPALGENEFFECTS alGenEffects = NULL;
+LPALEFFECTI alEffecti = NULL;
+LPALEFFECTF alEffectf = NULL;
+LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots = NULL;
+LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti = NULL;
+
+void InitOpenAlEffects()
+{
+	g_ALEffectsSupported = 0;
+
+	if (!alcIsExtensionPresent(g_ALCdevice, ALC_EXT_EFX_NAME))
+	{
+		eprintf("PSX SPU effects are NOT supported!\n");
+		return;
+	}
+
+	alGenEffects = (LPALGENEFFECTS)alGetProcAddress("alGenEffects");
+	alEffecti = (LPALEFFECTI)alGetProcAddress("alEffecti");
+	alEffectf = (LPALEFFECTF)alGetProcAddress("alEffectf");
+	alGenAuxiliaryEffectSlots = (LPALGENAUXILIARYEFFECTSLOTS)alGetProcAddress("alGenAuxiliaryEffectSlots");
+	alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI)alGetProcAddress("alAuxiliaryEffectSloti");
+
+	int max_sends = 0;
+	alcGetIntegerv(g_ALCdevice, ALC_MAX_AUXILIARY_SENDS, 1, &max_sends);
+
+	// make reverb effect slot
+	g_currEffectSlotIdx = 0;
+	alGenAuxiliaryEffectSlots(1, g_ALEffectSlots);
+
+	// make reverb effect
+	alGenEffects(1, &g_nAlReverbEffect);
+	alEffecti(g_nAlReverbEffect, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
+
+	// setup defaults of effect
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAIN, 0.45f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAINHF, 0.25f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_TIME, 2.0f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_HFRATIO, 0.9f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_DELAY, 0.08f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_GAIN, 0.2f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DIFFUSION, 0.9f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DENSITY, 0.1f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_AIR_ABSORPTION_GAINHF, 0.1f);
+
+	g_ALEffectsSupported = 1;
+
+	eprintf("PSX SPU effects are supported and initialized\n");
+
+	alAuxiliaryEffectSloti(g_ALEffectSlots[g_currEffectSlotIdx], AL_EFFECTSLOT_EFFECT, g_nAlReverbEffect);
+}
 
 bool Emulator_InitSound()
 {
-	if (s_ALCdevice)
+	if (g_ALCdevice)
 		return true;
 
 	// Init openAL
@@ -106,11 +163,11 @@ bool Emulator_InitSound()
 		devices += strlen(devices) + 1;
 	}
 
-	s_ALCdevice = alcOpenDevice(NULL);
+	g_ALCdevice = alcOpenDevice(NULL);
 
 	int alErr = AL_NO_ERROR;
 
-	if (!s_ALCdevice)
+	if (!g_ALCdevice)
 	{
 		alErr = alcGetError(nullptr);
 		printf("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
@@ -121,21 +178,22 @@ bool Emulator_InitSound()
 	int al_context_params[] =
 	{
 		ALC_FREQUENCY, 44100,
+		ALC_MAX_AUXILIARY_SENDS, 2,
 		0
 	};
 
-	s_ALCcontext = alcCreateContext(s_ALCdevice, al_context_params);
+	g_ALCcontext = alcCreateContext(g_ALCdevice, al_context_params);
 
-	alErr = alcGetError(s_ALCdevice);
+	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
 	{
 		printf("alcCreateContext error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
-	alcMakeContextCurrent(s_ALCcontext);
+	alcMakeContextCurrent(g_ALCcontext);
 
-	alErr = alcGetError(s_ALCdevice);
+	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
 	{
 		printf("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
@@ -149,7 +207,7 @@ bool Emulator_InitSound()
 	// create channels
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		SPUVoice& voice = s_SpuVoices[i];
+		SPUVoice& voice = g_SpuVoices[i];
 		memset(&voice, 0, sizeof(SPUVoice));
 
 		alGenSources(1, &voice.alSource);
@@ -160,6 +218,8 @@ bool Emulator_InitSound()
 	}
 
 	memset(&s_SpuMemory, 0, sizeof(s_SpuMemory));
+
+	InitOpenAlEffects();
 
 	return true;
 }
@@ -467,7 +527,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		if (!(arg->voice & SPU_VOICECH(i)))
 			continue;
 
-		SPUVoice& voice = s_SpuVoices[i];
+		SPUVoice& voice = g_SpuVoices[i];
 
 		ALuint alSource = voice.alSource;
 
@@ -538,11 +598,11 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 	{
 		if (voice_bit & SPU_VOICECH(i))
 		{
-			SPUVoice& voice = s_SpuVoices[i];
+			SPUVoice& voice = g_SpuVoices[i];
 
 			ALuint alSource = voice.alSource;
 
-			if (on_off)
+			if (on_off && !g_SPUMuted)
 			{
 				alSourceStop(alSource);
 				UpdateVoiceSample(voice);
@@ -566,7 +626,7 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 		if (voice_bit != SPU_VOICECH(i))
 			continue;
 
-		SPUVoice& voice = s_SpuVoices[i];
+		SPUVoice& voice = g_SpuVoices[i];
 
 		ALuint alSource = voice.alSource;
 
@@ -581,7 +641,7 @@ void SpuGetAllKeysStatus(char* status)
 {
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		SPUVoice& voice = s_SpuVoices[i];
+		SPUVoice& voice = g_SpuVoices[i];
 
 		ALuint alSource = voice.alSource;
 
@@ -600,24 +660,54 @@ void SpuSetKeyOnWithAttr(SpuVoiceAttr* attr)
 
 long SpuSetMute(long on_off)
 {
-	UNIMPLEMENTED();
-	return 0;
+	long old_state = g_SPUMuted;
+	g_SPUMuted = on_off;
+	return old_state;
 }
 
 long SpuSetReverb(long on_off)
 {
-	UNIMPLEMENTED();
-	return 0;
+	long old_state = g_enableSPUReverb;
+	g_enableSPUReverb = on_off;
+
+	// switch if needed
+	if (g_ALEffectsSupported && old_state != g_enableSPUReverb)
+	{
+		if (g_enableSPUReverb)
+		{
+			alAuxiliaryEffectSloti(g_ALEffectSlots[g_currEffectSlotIdx], AL_EFFECTSLOT_EFFECT, g_nAlReverbEffect);
+		}
+		else
+		{
+			g_currEffectSlotIdx = 0;
+			alAuxiliaryEffectSloti(g_ALEffectSlots[0], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
+			alAuxiliaryEffectSloti(g_ALEffectSlots[1], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
+		}
+	}
+
+	return old_state;
 }
 
 long SpuGetReverb(void)
 {
-	UNIMPLEMENTED();
-	return 0;
+	return g_enableSPUReverb;
 }
 
 long SpuSetReverbModeParam(SpuReverbAttr* attr)
 {
+	// TODO: setup next params
+	/*
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAIN, 0.45f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_GAINHF, 0.25f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_TIME, 2.0f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DECAY_HFRATIO, 0.9f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_DELAY, 0.08f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_REFLECTIONS_GAIN, 0.2f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DIFFUSION, 0.9f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_DENSITY, 0.1f);
+	alEffectf(g_nAlReverbEffect, AL_REVERB_AIR_ABSORPTION_GAINHF, 0.1f);
+	*/
+
 	UNIMPLEMENTED();
 	return 0;
 }
@@ -635,8 +725,7 @@ long SpuSetReverbDepth(SpuReverbAttr* attr)
 
 long SpuReserveReverbWorkArea(long on_off)
 {
-	UNIMPLEMENTED();
-	return 0;
+	return 1;
 }
 
 long SpuIsReverbWorkAreaReserved(long on_off)
@@ -647,7 +736,28 @@ long SpuIsReverbWorkAreaReserved(long on_off)
 
 unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 {
-	//UNIMPLEMENTED();
+	if(!g_ALEffectsSupported)
+		return 0;
+
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		if (voice_bit & SPU_VOICECH(i))
+		{
+			SPUVoice& voice = g_SpuVoices[i];
+
+			ALuint alSource = voice.alSource;
+
+			if (on_off)
+			{
+				alSource3i(alSource, AL_AUXILIARY_SEND_FILTER, g_ALEffectSlots[g_currEffectSlotIdx], 0, AL_FILTER_NULL);
+			}
+			else
+			{
+				alSource3i(alSource, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -745,15 +855,15 @@ void SpuSetVoicePitch(int vNum, unsigned short pitch)
 void SpuGetVoiceVolume(int vNum, short *volL, short *volR)
 {
 	if(volL)
-		*volL = s_SpuVoices[vNum].attr.volume.left;
+		*volL = g_SpuVoices[vNum].attr.volume.left;
 
 	if(volR)
-		*volR = s_SpuVoices[vNum].attr.volume.right;
+		*volR = g_SpuVoices[vNum].attr.volume.right;
 }
 
 void SpuGetVoicePitch(int vNum, unsigned short *pitch)
 {
-	*pitch = s_SpuVoices[vNum].attr.pitch;
+	*pitch = g_SpuVoices[vNum].attr.pitch;
 }
 
 void SpuSetVoiceAR(int vNum, unsigned short AR)

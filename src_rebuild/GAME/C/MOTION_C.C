@@ -2604,7 +2604,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 
 	// [A] not supported by emulator
 	// proposed change: double buffering of VRAM (one used as render target, second as texture)
-	return;
+#ifdef PSX
 
 	memset(&d, 0, sizeof(VECTOR));
 	memset(&myVector, 0, sizeof(VECTOR));
@@ -2720,8 +2720,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 	SetBasePos(&myVector);
 	cVar9 = tracking_car;
 
-	setCopControlWord(2, 0xc000, 0x200000); // hmmmm?
-	setCopControlWord(2, 0xc800, 0x800000);
+	gte_SetGeomOffset(32, 128);
 
 	tracking_car = 1;
 	PlaceCameraAtLocation(&player[0], 0);
@@ -2739,8 +2738,8 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 	BuildWorldMatrix();
 	InitCamera(&player[0]);
 
-	setCopControlWord(2, 0xc000, 0xa00000);
-	setCopControlWord(2, 0xc800, 0x800000);
+	gte_SetGeomOffset(160, 128);
+	
 
 	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
 	dr_env = (DR_ENV*)current->primptr;
@@ -2748,6 +2747,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 	
 	addPrim(current->ot + 0x107f, dr_env);
 	current->primptr += sizeof(DR_ENV);
+#endif
 }
 
 

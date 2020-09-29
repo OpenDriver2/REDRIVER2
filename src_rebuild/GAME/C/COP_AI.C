@@ -88,7 +88,7 @@ void InitCopState(_CAR_DATA *cp, char *extraData)
 {
 	ClearMem((char *)&cp->ai.p, sizeof(COP));
 
-	cp->controlType = 3;
+	cp->controlType = CONTROL_TYPE_PURSUER_AI;
 	cp->controlFlags = 0;
 	cp->ai.p.justPinged = 1;
 
@@ -576,7 +576,7 @@ void CopControl(_CAR_DATA *cp)
 
 	CheckPingOut(cp);
 
-	if (cp->ai.p.dying == 0 && cp->controlType == 0)
+	if (cp->ai.p.dying == 0 && cp->controlType == CONTROL_TYPE_NONE)
 	{
 		numActiveCops--;
 		numCopCars--;
@@ -1685,7 +1685,7 @@ void ControlCopDetection(void)
 		cp = &car_data[19];
 
 		do {
-			if (cp->controlType == 3)
+			if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 			{
 				vec.vx = cp->hd.where.t[0];
 				vec.vz = cp->hd.where.t[2];
@@ -1693,7 +1693,7 @@ void ControlCopDetection(void)
 				// make cop lose target if target is hidden
 				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && cp->ai.p.hiddenTimer++ > 0x32)
 				{
-					cp->controlType = 0;
+					cp->controlType = CONTROL_TYPE_NONE;
 					cp->ai.p.hiddenTimer = 0;
 					cp->thrust = 0;
 					numCopCars--;
@@ -1786,7 +1786,7 @@ void PassiveCopTasks(_CAR_DATA *cp)
 
 	ClearMem((char *)&cp->ai.p, sizeof(COP));
 
-	cp->controlType = 3;
+	cp->controlType = CONTROL_TYPE_PURSUER_AI;
 	cp->controlFlags = 0;
 
 	cp->ai.p.justPinged = 1;
@@ -1973,7 +1973,7 @@ void ControlNumberOfCops(void)
 
 		if (true) {
 			do {
-				if (p_Var5->controlType == 3) 
+				if (p_Var5->controlType == CONTROL_TYPE_PURSUER_AI) 
 				{
 					uVar4 = p_Var5->ai.p.DistanceToPlayer;
 					if ((uVar4 < gCopData.cutOffDistance) && (iVar6 = iVar6 + 1, uVar7 < uVar4))

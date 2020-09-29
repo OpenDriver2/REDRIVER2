@@ -3280,7 +3280,7 @@ void StepEvents(void)
 				carsOnBoat = 0;
 				do {
 
-					if (cp->controlType != 0 && OnBoat((VECTOR*)cp->hd.where.t, ev, &dist) != 0)
+					if (cp->controlType != CONTROL_TYPE_NONE && OnBoat((VECTOR*)cp->hd.where.t, ev, &dist) != 0)
 					{
 						carsOnBoat |= 1 << i;
 					}

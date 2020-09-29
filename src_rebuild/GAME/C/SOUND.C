@@ -293,7 +293,7 @@ void SetReverbInGameState(int on)
 	gSpeechQueue.reverb = on;
 
 	if (on && gSpeechQueue.is_playing)
-		cl = ~SPU_KEYCH(gSpeechQueue.chan);
+		cl &= ~SPU_KEYCH(gSpeechQueue.chan);
 
 	SpuSetReverbVoice(on, cl);
 }

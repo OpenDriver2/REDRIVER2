@@ -145,7 +145,7 @@ void ChangeCarPlayerToPed(int playerID)
 		player[playerID].spoolXZ = (VECTOR *)&pPlayerPed->position;
 	}
 
-	lcp->controlType = 2;
+	lcp->controlType = CONTROL_TYPE_CIV_AI;
 	lcp->wheel_angle = 0;
 	lcp->ai.c.thrustState = 3;
 	lcp->ai.c.ctrlState = 7;
@@ -221,7 +221,7 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 	bVar4 = false;
 	uVar5 = CarHasSiren(newCar->ap.model);
 
-	if (((newCar->controlType != 2 && newCar->controlType != 7) || newCar->ai.c.thrustState != 3) || (newCar->ai.c.ctrlState != 7 && newCar->ai.c.ctrlState != 5))
+	if (((newCar->controlType != CONTROL_TYPE_CIV_AI && newCar->controlType != CONTROL_TYPE_CUTSCENE) || newCar->ai.c.thrustState != 3) || (newCar->ai.c.ctrlState != 7 && newCar->ai.c.ctrlState != 5))
 	{
 		bVar4 = true;
 	}
@@ -254,7 +254,7 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 
 	
 	{
-		newCar->controlType = 1;
+		newCar->controlType = CONTROL_TYPE_PLAYER;
 		newCar->ai.padid = &lPlayer->padid;
 		newCar->hndType = 0;
 

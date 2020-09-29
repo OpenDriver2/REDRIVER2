@@ -193,7 +193,7 @@ void HandleExplosion(void)
 			cp = car_data;
 
 			do {
-				if (cp == &car_data[20] || cp != gBombTargetVehicle && cp->controlType != 0)
+				if (cp == &car_data[20] || cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE)
 					ExplosionCollisionCheck(cp, &explosion[i]);
 
 				cp++;

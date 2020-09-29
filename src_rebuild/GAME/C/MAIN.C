@@ -1,6 +1,9 @@
 #include "DRIVER2.H"
 #include "MAIN.H"
 
+#include <algorithm>
+
+
 #include "LIBETC.H"
 #include "LIBSPU.H"
 #include "LIBGPU.H"
@@ -1707,7 +1710,7 @@ void GameLoop(void)
 	while (game_over == 0) 
 	{
 		StepGame();
-
+		
 		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7) 
 		{
 			DrawGame();
@@ -2156,12 +2159,19 @@ int ObjectDrawnCounter = 0;
 
 void DrawGame(void)
 {
+	if(gSkipInGameCutscene)
+	{
+		ClearCurrentDrawBuffers();
+		return;
+	}
+	
 	static unsigned long frame = 0;
 
 	if ((NumPlayers == 1) || (NoPlayerControl != 0)) 
 	{
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
+		
 		RenderGame2(0);
 
 		ObjectDrawnCounter++;
@@ -2387,6 +2397,24 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+#ifndef PSX
+#include <SDL_messagebox.h>
+void PrintCommandLineArguments()
+{
+	const char* argumentsMessage =
+		"Example: REDRIVER2 <command> [arguments]\n\n"\
+		"  -players <count> : Set player count (1 or 2)\n"\
+		"  -playercar <number>, -player2car <number> : set player wanted car\n"\
+		"  -mission <number> : starts specified mission\n"\
+		"  -replay <filename> : starts replay from file\n"\
+		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"\
+		"  -nointro : disable intro screens\n"\
+		"  -nofmv : disable all FMVs\n";
+	
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "REDRIVER 2 command line arguments", argumentsMessage, NULL);
+}
+#endif
+
 // [D]
 #ifdef PSX
 int main(void)
@@ -2472,8 +2500,10 @@ int redriver2_main(int argc, char** argv)
 
 	InitialiseScoreTables();
 
-#ifndef PSX
-	for (int i = 0; i < argc; i++)
+	LoadCurrentProfile();
+
+#ifndef PSX	
+	for (int i = 1; i < argc; i++)
 	{
 		if (!_stricmp(argv[i], "-playercar"))
 		{
@@ -2482,27 +2512,27 @@ int redriver2_main(int argc, char** argv)
 				printError("-playercar missing number argument!");
 				return -1;
 			}
-
+			i++;
 			wantedCar[0] = atoi(argv[i + 1]);
 		}
-		if (!_stricmp(argv[i], "-player2car"))
+		else if (!_stricmp(argv[i], "-player2car"))
 		{
 			if (argc - i < 2)
 			{
 				printError("-player2car missing number argument!");
 				return -1;
 			}
-
+			i++;
 			wantedCar[1] = atoi(argv[i + 1]);
 		}
-		if (!_stricmp(argv[i], "-players"))
+		else if (!_stricmp(argv[i], "-players"))
 		{
 			if (argc - i < 2)
 			{
 				printError("-players missing number argument!");
 				return -1;
 			}
-
+			i++;
 			NumPlayers = atoi(argv[i + 1]);
 		}
 		else if (!_stricmp(argv[i], "-mission"))
@@ -2519,8 +2549,16 @@ int redriver2_main(int argc, char** argv)
 			AttractMode = 0;
 
 			gCurrentMissionNumber = atoi(argv[i + 1]);
-
+			i++;
 			LaunchGame();
+		}
+		else if (!_stricmp(argv[i], "-nofmv"))
+		{
+			gNoFMV = 1;
+		}
+		else if (!_stricmp(argv[i], "-nointro"))
+		{
+			// do nothing. All command line features use it
 		}
 		else if (!_stricmp(argv[i], "-replay"))
 		{
@@ -2536,7 +2574,7 @@ int redriver2_main(int argc, char** argv)
 			AttractMode = 0;
 
 			char nameStr[512];
-			sprintf(nameStr, "%s.d2rp", argv[i+1]);
+			sprintf(nameStr, "%s", argv[i+1]);
 
 			FILE* fp = fopen(nameStr, "rb");
 			if (fp)
@@ -2568,9 +2606,10 @@ int redriver2_main(int argc, char** argv)
 				printError("Cannot open replay '%s'!\n", nameStr);
 				return -1;
 			}
+			i++;
 		}
 #ifdef CUTSCENE_RECORDER
-		if (!_stricmp(argv[i], "-recordcutscene"))
+		else if (!_stricmp(argv[i], "-recordcutscene"))
 		{
 			if (argc-i < 3)
 			{
@@ -2606,10 +2645,12 @@ int redriver2_main(int argc, char** argv)
 			return 1;
 		}
 #endif
+		else
+		{
+			PrintCommandLineArguments();
+		}
 	}
 #endif // PSX
-
-	LoadCurrentProfile();
 
 	// now run the frontend
 	DoFrontEnd();
@@ -3210,7 +3251,7 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->type = 1;
 		PlayerStartInfo[0]->model = defaultPlayerModel[0];
 		PlayerStartInfo[0]->palette = defaultPlayerPalette;
-		PlayerStartInfo[0]->controlType = 1;
+		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
 		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
@@ -3228,7 +3269,7 @@ void InitGameVariables(void)
 			PlayerStartInfo[1]->type = 1;
 			PlayerStartInfo[1]->model = defaultPlayerModel[1];
 			PlayerStartInfo[1]->palette = defaultPlayerPalette;
-			PlayerStartInfo[1]->controlType = 1;
+			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
 			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
 			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
@@ -3354,7 +3395,8 @@ void DealWithHorn(char *hr, int i)
 		SetChannelPosition3(channel, (VECTOR *)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 0x1000, 0);
 	}
 
-	*hr = (*hr+1) % 28;	// [A]
+	int horn = *hr + 1 & 0xff;
+	*hr = (u_char)horn - (((u_char)((long long)horn * 0xaaaaaaab >> 0x20) & 0xfe) + (horn / 3));
 }
 
 
@@ -3411,6 +3453,8 @@ int Havana3DOcclusion(occlFunc func, int *param)
 		(*func)(param);
 		return 1;
 	}
+
+	draw = 0;
 
 	if (camera_position.vy < 0x1bf) 
 	{

@@ -1130,7 +1130,7 @@ char SilenceThisCar(int car)
 	{
 		bVar2 = false;
 
-		if (car_data[car].controlType == 7) 
+		if (car_data[car].controlType == CONTROL_TYPE_CUTSCENE) 
 		{
 			bVar2 = car_data[car].ai.c.ctrlState == 7;
 		}

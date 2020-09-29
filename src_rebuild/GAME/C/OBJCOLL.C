@@ -941,7 +941,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	int lbody;
 	int extraDist;
 
-	if (cp->controlType == 5 && cp->ap.carCos == NULL)
+	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER && cp->ap.carCos == NULL)
 		lbody = 360;
 	else
 		lbody = cp->ap.carCos->colBox.vz;
@@ -952,7 +952,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 			trap(0x400);
 	}
 
-	if (ghost_mode == 0 && (cp->controlType != 1 || playerghost == 0))
+	if (ghost_mode == 0 && (cp->controlType != CONTROL_TYPE_PLAYER || playerghost == 0))
 	{
 		EventCollisions(cp, 0);
 
@@ -1025,11 +1025,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							bbox.pos.pad = (model->flags2 >> 10) & 1;
 
-							//iVar7 = collide->zsize << 0x10;
-							bbox.xsize = collide->zsize / 2; // (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
-
-							//iVar7 = collide->xsize << 0x10;
-							bbox.zsize = collide->xsize / 2;// //;(iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
+							bbox.xsize = (collide->zsize >> 1);// &0xFFFE;
+							bbox.zsize = (collide->xsize >> 1);// &0xFFFE;
 
 							bbox.height = collide->ysize;
 							bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
@@ -1038,22 +1035,19 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 							if (CAR_INDEX(cp) == 21)
 							{
-								if (x1 < mdcount || (cop->pad == 0))
+								if (x1 < mdcount || cop->pad == 0)
 								{
 									CarBuildingCollision(cp, &bbox, cop, 0);
 								}
-								else
+								else if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
 								{
-									if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
-									{
-										if (!bKillTanner)
-											player[0].dying = 1;
+									if (!bKillTanner)
+										player[0].dying = 1;
 
-										bKillTanner = 1;
-									}
+									bKillTanner = 1;
 								}
 							}
-							else if (cp->controlType == 5)
+							else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 							{
 								if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
 								{
@@ -1074,7 +1068,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 										uVar9 = cp->hd.direction & 0xfff;
 
 										cp->hd.where.t[0] = lVar1 + FIXEDH((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
-										cp->hd.where.t[2] = lVar2 + FIXEDH((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
+										cp->hd.where.t[2] = lVar2 + FIXEDH((gCameraDistance * rcossin_tbl[uVar9 * 2 + 1]) / 2);
 										iVar7--;
 									}
 								}
@@ -1411,9 +1405,10 @@ void DoScenaryCollisions(void)
 	cp = car_data + 19;
 
 	do {
-		if (cp->controlType != 0)
+		if (cp->controlType != CONTROL_TYPE_NONE)
 		{
-			if (cp->controlType == 2)
+			// civ AI and dead cop cars perform less collision detection frames
+			if (cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)
 			{
 				if (cp->totalDamage != 0 && (10 < cp->hd.speed || (cp->id + CameraCnt & 3) == 0))
 				{

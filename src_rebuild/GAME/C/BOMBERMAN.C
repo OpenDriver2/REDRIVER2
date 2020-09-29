@@ -223,7 +223,7 @@ void HandleThrownBombs(void)
 			cp = car_data;
 			while (cp < car_data + 20)
 			{
-				if (cp != gBombTargetVehicle && cp->controlType != 0 && BombCollisionCheck(cp, &bomb->position) != 0)
+				if (cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE && BombCollisionCheck(cp, &bomb->position) != 0)
 				{
 					bomb->flags = 0;
 
@@ -748,7 +748,7 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 						debrisColour = GetDebrisColour(cp);
 						Setup_Debris(&collisionResult.hit, &velocity, 6, debrisColour << 0x10);
 
-						if (cp->controlType == 1)
+						if (cp->controlType == CONTROL_TYPE_PLAYER)
 							SetPadVibration(*cp->ai.padid, 1);
 					}
 				}

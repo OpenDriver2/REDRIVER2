@@ -78,7 +78,7 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 		gCopCarTheftAttempted = 1;
 
 
-	if ((cp->controlType == 2 || cp->controlType == 7) && 
+	if ((cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_CUTSCENE) && 
 		(cp->controlFlags & 1) == 0 && 
 		(cp->controlFlags & 2) == 0 && 
 		cp->hd.where.m[1][1] > 99)			// not flipped over
