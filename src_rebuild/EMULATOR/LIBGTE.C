@@ -1687,10 +1687,9 @@ long ratan2(long y, long x)
 
 long SquareRoot0(long a)
 {
-#if 1
+#if 0
 	return sqrtl(a);
 #else
-	// working but bugged
 	int idx;
 	int lzcs;
 	lzcs = gte_leadingzerocount(a);
@@ -1705,6 +1704,6 @@ long SquareRoot0(long a)
 	else
 		idx = a << (lzcs - 24);
 
-	return (SQRT[idx - 64] << ((31 - lzcs) >> 1)) >> 12;
+	return SQRT[idx - 64] << (31 - lzcs >> 1) >> 12;
 #endif
 }
