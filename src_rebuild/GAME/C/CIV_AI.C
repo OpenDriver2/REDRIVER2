@@ -671,7 +671,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 				if ((int)uVar9 < 0)
 				{
-					goto LAB_00024288;
+					goto LAB_00024288_break;
 				}
 
 			} while (((int)(u_char)_st->AILanes >> ((int)uVar9 / 2 & 0x1fU) & 1U) == 0 ||
@@ -692,7 +692,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 			
 		} while (uVar7 == 0);
 
-	LAB_00024288:
+	LAB_00024288_break:
 
 		if (uVar7 == 0)
 			leftLane = uVar29 & 0xff;
@@ -795,7 +795,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 				if ((int)uVar29 < 0)
 				{
-					goto LAB_000245c0;
+					goto LAB_000245c0_break;
 				}
 
 			} while (((int)(u_char)____cv->AILanes >> ((int)uVar29 / 2 & 0x1fU) & 1U) == 0 ||
@@ -813,7 +813,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 			test42 = (uVar16 ^ 1) & 1;
 			uVar16 = uVar29;
 		} while (uVar9 == 0);
-	LAB_000245c0:
+	LAB_000245c0_break:
 
 		if (uVar9 == 0)
 			leftLane = uVar16 & 0xff;
@@ -1016,7 +1016,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 								if ((int)uVar29 < 0)
 								{
-									goto LAB_00024be8;
+									goto LAB_00024be8_break;
 								}
 
 							} while (((int)(u_char)tmpSt->AILanes >>
@@ -1036,7 +1036,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						} while (uVar9 == 0);
 					}
 
-				LAB_00024be8:
+				LAB_00024be8_break:
 					if (newLane > -1)
 					{
 						uVar9 = (u_char)tmpSt->NumLanes;
@@ -1139,7 +1139,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 								if ((int)uVar9 < 0)
 								{
-									goto LAB_00024f78;
+									goto LAB_00024f78_break;
 								}
 
 							} while (((int)(u_char)tmpCv->AILanes >>
@@ -1158,7 +1158,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						} while (!bVar4);
 					}
 
-				LAB_00024f78:
+				LAB_00024f78_break:
 					if (newLane > -1)
 					{
 						uVar9 = (u_char)tmpCv->NumLanes;
@@ -1480,7 +1480,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 								if ((int)uVar16 < 0)
 								{
-									goto LAB_0002564c;
+									goto LAB_0002564c_break;
 								}
 
 							} while (((int)(u_char)_st->AILanes >> ((int)uVar16 / 2 & 0x1fU) & 1U) == 0 || uVar16 == 0 && (_st->NumLanes & 0x40U) != 0 ||
@@ -1500,7 +1500,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				}
 			}
 
-		LAB_0002564c:
+		LAB_0002564c_break:
 			uVar9 = newLane; // there was always -1?
 			if (*turnAngle != 0)
 			{
@@ -1558,14 +1558,6 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 		}
 		else if (IS_CURVED_SURFACE(uVar29))
 		{
-			/*
-			uVar9 = newLane;
-			if ((uVar29 & 0xffffe000) != 0x4000 || (NumDriver2Curves <= (int)(uVar29 & 0x1fff) || (int)uVar29 < 0))
-			{
-				goto LAB_000267a4;
-			}
-			*/
-
 			_cv = Driver2CurvesPtr + (uVar29 - 0x4000);
 			lVar17 = ratan2(oldNode->x - _cv->Midx, oldNode->z - _cv->Midz);
 			bVar3 = (int)(((iVar11 - lVar17) + 0x800U & 0xfff) - 0x800) < 1;
@@ -1680,7 +1672,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						newLane = uVar9;
 						if ((int)uVar25 < 0)
 						{
-							goto LAB_00025a8c;
+							goto LAB_00025a8c_break;
 						}
 					} while (((int)(u_char)_cv->AILanes >> ((int)uVar25 / 2 & 0x1fU) & 1U) == 0 || uVar25 == 0 && (_cv->NumLanes & 0x40U) != 0 ||
 						((u_char)_cv->NumLanes & 0xffffff0f) * 2 - 1 == uVar25 && (_cv->NumLanes & 0x80U) != 0);
@@ -1697,7 +1689,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				} while (!bVar3);
 			}
 
-		LAB_00025a8c:	// 4 refs
+		LAB_00025a8c_break:
 			uVar9 = newLane;
 
 			if (*turnAngle != 0)
@@ -1799,7 +1791,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 							if ((int)uVar9 < 0)
 							{
-								goto LAB_00025e00; // break
+								goto LAB_00025e00_break; // break
 							}
 
 						} while (((int)(u_char)___st->AILanes >> ((int)uVar9 / 2 & 0x1fU) & 1U) == 0 || uVar9 == 0 && (___st->NumLanes & 0x40U) != 0 ||
@@ -1816,14 +1808,14 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						uVar25 = uVar9;
 					} while ((((int)oldNode->dir - (int)___st->angle) + 0x400U & 0x800) == 0);
 
-				LAB_00025e00:
+				LAB_00025e00_break:
 					if (uVar25 == 0)	// [A] temporary dirty hack
 						uVar25++;
 
 					if ((uVar25 == 0) || (unaff_s8 <= (int)uVar25))
 					{
 						laneFit[iVar22] = 666;
-						goto LAB_00025f34; // continue
+						goto LAB_00025f34_continue; // continue
 					}
 				}
 				else
@@ -1856,7 +1848,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					*piVar25 = 0;
 
 			}
-		LAB_00025f34:
+		LAB_00025f34_continue:
 			iVar22 = iVar22 + 1;
 		} while (iVar22 < 2);
 
@@ -1892,25 +1884,36 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				{
 					if ((uVar9 & 1) == 0)
 					{
-						goto LAB_00026064;
+						if (uVar25 == 0)
+						{
+							goto LAB_00026318;
+						}
 					}
-				LAB_00026074:
-					if (uVar25 != 0)
+					else
 					{
-						goto LAB_00026318;
+						if (uVar25 != 0)
+						{
+							goto LAB_00026318;
+						}
 					}
 				}
 				else
 				{
 					if (((int)(u_char)__st->LaneDirs >> ((int)uVar9 / 2 & 0x1fU) & 1U) != 0)
 					{
-						goto LAB_00026074;
+						if (uVar25 != 0)
+						{
+							goto LAB_00026318;
+						}
 					}
-				LAB_00026064:
-					if (uVar25 == 0)
+					else
 					{
-						goto LAB_00026318;
+						if (uVar25 == 0)
+						{
+							goto LAB_00026318;
+						}
 					}
+
 				}
 
 				uVar16 = (u_char)__st->NumLanes;
@@ -1924,7 +1927,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 							uVar20 = uVar20 - 1;
 							if ((int)uVar20 < 0)
 							{
-								goto LAB_0002616c;
+								goto LAB_0002616c_break;
 							}
 						} while (((int)(u_char)__st->AILanes >> ((int)uVar20 / 2 & 0x1fU) & 1U) == 0 || uVar20 == 0 && (__st->NumLanes & 0x40U) != 0 ||
 							(uVar16 & 0xffffff0f) * 2 - 1 == uVar20 && (uVar16 & 0x80) != 0);
@@ -1943,7 +1946,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 						if (uVar25 == 0)
 						{
-							goto LAB_00026154;
+							goto LAB_00026154_break;
 						}
 
 						uVar16 = (u_char)__st->NumLanes;
@@ -1951,10 +1954,10 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					uVar16 = (u_char)__st->NumLanes;
 				} while (uVar25 == 0);
 
-			LAB_00026154:
+			LAB_00026154_break:
 				uVar16 = (u_char)__st->NumLanes;
 				uVar27 = uVar20;
-			LAB_0002616c:
+			LAB_0002616c_break:
 
 				if ((int)uVar27 < 0)
 					uVar27 = 42;
@@ -2000,7 +2003,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 				iVar23 = uVar27 - uVar9;
 
-				if ((uVar27 == 42) && (uVar20 == 42))
+				if (uVar27 == 42 && uVar20 == 42)
 				{
 					CIV_STATE_SET_CONFUSED(cp);
 					return 0;
@@ -2027,7 +2030,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				*puVar15 = uVar20;
 				uVar25 = unaff_s8 - 1;
 
-				if (-1 < (int)uVar20)
+				if ((int)uVar20 > -1)
 				{
 					if ((int)uVar25 < (int)uVar20)
 					{
@@ -2046,7 +2049,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				if ((int)uVar9 < 0)
 					uVar9 = 0;
 			}
-		LAB_00026318:
+		LAB_00026318: // 4 refs
 			if (IS_CURVED_SURFACE(uVar29))
 			{
 				sVar1 = oldNode->dir;
@@ -2058,25 +2061,34 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				{
 					if ((uVar9 & 1) == 0)
 					{
-						goto LAB_000263fc;
+						if (!bVar3)
+						{
+							goto LAB_0002669c;
+						}
 					}
-
-				LAB_0002640c:
-					if (bVar3)
+					else
 					{
-						goto LAB_0002669c;
+						if (bVar3)
+						{
+							goto LAB_0002669c;
+						}
 					}
 				}
 				else
 				{
 					if (((int)(u_char)__cv->LaneDirs >> ((int)uVar9 / 2 & 0x1fU) & 1U) != 0)
 					{
-						goto LAB_0002640c;
+						if (bVar3)
+						{
+							goto LAB_0002669c;
+						}
 					}
-				LAB_000263fc:
-					if (!bVar3)
+					else
 					{
-						goto LAB_0002669c;
+						if (!bVar3)
+						{
+							goto LAB_0002669c;
+						}
 					}
 				}
 
@@ -2092,7 +2104,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 							if ((int)uVar16 < 0)
 							{
-								goto LAB_000264fc;
+								goto LAB_000264fc_break;
 							}
 
 						} while (((int)(u_char)__cv->AILanes >> ((int)uVar16 / 2 & 0x1fU) & 1U) == 0 || uVar16 == 0 && (__cv->NumLanes & 0x40U) != 0 ||
@@ -2111,7 +2123,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 						if (!bVar3)
 						{
-							goto LAB_000264e4;
+							goto LAB_000264e4_break;
 						}
 
 						uVar25 = (u_char)__cv->NumLanes;
@@ -2119,11 +2131,11 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					uVar25 = (u_char)__cv->NumLanes;
 				} while (!bVar3);
 
-			LAB_000264e4:
+			LAB_000264e4_break:
 				uVar25 = (u_char)__cv->NumLanes;
 				uVar20 = uVar16;
 
-			LAB_000264fc:
+			LAB_000264fc_break:
 				if ((int)uVar20 < 0)
 					uVar20 = 42;
 
@@ -2220,7 +2232,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					uVar9 = 0;
 
 			}
-		LAB_0002669c:
+		LAB_0002669c: // 4 refs
 			if (laneFit[newExit] != 0)
 			{
 				iVar22 = GET_NODE_ID(cp, oldNode) + 1;
@@ -2261,7 +2273,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 		}
 	}
 
-LAB_000267a4: // 4 refs
+LAB_000267a4: // 2 refs
 	if ((int)uVar9 < 0)
 	{
 		CIV_STATE_SET_CONFUSED(cp);
