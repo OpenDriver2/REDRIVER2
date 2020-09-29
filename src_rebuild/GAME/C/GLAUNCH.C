@@ -643,21 +643,20 @@ void GetRandomChase(void)
 // [D]
 int FindPrevMissionFromLadderPos(int pos)
 {
-	if (pos-- > 0)
+	MISSION_STEP *step = &MissionLadder[pos];
+	while (pos-- > 0)
 	{
-		MISSION_STEP *step = &MissionLadder[pos];
-		do {
-			if (step->flags == 2) {
-				int mission = step->data;
+		if (step->flags == 2)
+		{
+			int mission = step->data;
 
-				if (gFurthestMission < mission)
-					gFurthestMission = mission;
+			if (gFurthestMission < mission)
+				gFurthestMission = mission;
 
-				return 1;
-			}
+			return 1;
+		}
 			
-			step--;
-		} while (pos-- > 0);
+		step--;
 	}
 
 	return 0;

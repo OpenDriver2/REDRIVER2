@@ -2496,6 +2496,8 @@ int redriver2_main(int argc, char** argv)
 
 	InitialiseScoreTables();
 
+	LoadCurrentProfile();
+
 #ifndef PSX	
 	for (int i = 1; i < argc; i++)
 	{
@@ -2645,8 +2647,6 @@ int redriver2_main(int argc, char** argv)
 		}
 	}
 #endif // PSX
-
-	LoadCurrentProfile();
 
 	// now run the frontend
 	DoFrontEnd();

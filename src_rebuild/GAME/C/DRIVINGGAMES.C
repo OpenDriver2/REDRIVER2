@@ -540,7 +540,7 @@ int CarConeCollision(VECTOR *pPos, int car)
 	cd[0].x.vz = pPos->vz;
 	cd[0].length[0] = 0x28;
 	cd[0].length[1] = 0x28;
-	cd[0].theta = 0;
+	cd[0].theta = pPos->pad;
 
 	if (car_data[car].controlType == CONTROL_TYPE_NONE) 
 		return 0;
@@ -979,6 +979,7 @@ void GetConePos(int cone, VECTOR *pos, int side)
 		pos->vx = pTVar2->x;
 		pos->vy = pTVar2->y;
 		pos->vz = pTVar2->z;
+		pos->pad = pTVar2->rot;	// [A] store cone rotation
 	}
 	else 
 	{
@@ -1005,6 +1006,7 @@ void GetConePos(int cone, VECTOR *pos, int side)
 		}
 
 		pos->vz = pTVar2->z + iVar4;
+		pos->pad = pTVar2->rot;
 	}
 }
 
