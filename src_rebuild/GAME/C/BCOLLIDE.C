@@ -65,8 +65,6 @@ int boxOverlap = 0;
 int bcollided2d(CDATA2D *body, int needOverlap)
 {
 	int dtheta;
-	int absdist;
-	int abslim;
 	short ac;
 	short as;
 	int i; // $t7
@@ -366,7 +364,6 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 // [D] [T]
 int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 {
-	CDATA2D* coll;
 	int hit;
 	int q;
 	int time;
@@ -604,17 +601,17 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 	char region;
 	int value;
 	bool fakeDamage;
+	int lbody;
 
 	int player_id;
 	int kludge;
 	int door, nose;
 
-	strikeVel = strikeVel * 0x177;
+	strikeVel *= 375;
 
-	value = cp->ap.carCos->colBox.vz << 0x10;
-	value = (value >> 0x10) - (value >> 0x1f) >> 1;
+	lbody = cp->ap.carCos->colBox.vz / 2;
 
-	strikeVel = strikeVel >> 8;
+	strikeVel >>= 8;
 
 	if (strikeVel < 0xa000) 
 	{
@@ -629,25 +626,29 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 
 	if (door < 1)
 	{
-		region = 0;
-
-		if ((nose <= value) && (region = 4, -value < nose)) 
+		if(nose > lbody)
+			region = 0;
+		else if (-lbody < nose)
 			region = 5;
+		else
+			region = 4;
 	}
 	else 
 	{
-		region = 1;
-
-		if ((nose <= value) && (region = 3, -value < nose))
+		if(nose > lbody)
+			region = 1;
+		else if (-lbody < nose)
 			region = 2;
+		else
+			region = 3;
 	}
 
 	if (cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
 		value = (strikeVel / 350 + 0x200) * 3;
 
-		value = value >> 3;
-		if (0x477 < value)
+		value >>= 3;
+		if (value > 0x477)
 			value = 0x477;
 		
 	}
@@ -657,9 +658,9 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		{
 			value = (strikeVel / 350 + 0x200) * 3;
 
-			value = value >> 3;
+			value >>= 3;
 
-			if (0x477 < value)
+			if (value > 0x477)
 				value = 0x477;
 
 			cp->ai.l.takeDamage = 0x32;
@@ -668,8 +669,8 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		{
 			value = strikeVel / 350 + 0x200;
 
-			value = value >> 2;
-			if (0x2fa < value)
+			value >>= 3;
+			if (value > 0x2fa)
 				value = 0x2fa;
 
 			if (cp->ai.l.takeDamage == 0)
@@ -681,7 +682,7 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		value = ((strikeVel / 400 + 0x400) * 7) >> 3;
 	}
 
-	fakeDamage = cp->controlType == CONTROL_TYPE_PURSUER_AI && pOtherCar->controlType == CONTROL_TYPE_PURSUER_AI;
+	fakeDamage = (cp->controlType == CONTROL_TYPE_PURSUER_AI && pOtherCar->controlType == CONTROL_TYPE_PURSUER_AI);
 
 	ApplyDamage(cp, region, value, fakeDamage);
 
@@ -748,15 +749,14 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	int region;
 	int dz;
 	int dx;
+	int lbody;
 
 	player_id = GetPlayerId(cp);
 
-	value = cp->ap.carCos->colBox.vz << 0x10;
+	lbody = cp->ap.carCos->colBox.vz / 2;
 	impact = strikeVel / 600;
 
-	value = (value >> 0x10) - (value >> 0x1f) >> 1;
-
-	if (0x4fff < strikeVel && 9 < cp->hd.speed) 
+	if (strikeVel > 0x4fff && cp->hd.speed > 9) 
 	{
 		dx = collisionResult->hit.vx - cd->x.vx;
 		dz = collisionResult->hit.vz - cd->x.vz;
@@ -766,21 +766,27 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 
 		if (door < 1)
 		{
-			region = 0;
-			if ((nose <= value) && (region = 4, -value < nose))
+			if (nose > lbody)
+				region = 0;
+			else if (-lbody < nose)
 				region = 5;
+			else
+				region = 4;
 		}
-		else 
+		else
 		{
-			region = 1;
-
-			if ((nose <= value) && (region = 3, -value < nose))
+			if (nose > lbody)
+				region = 1;
+			else if (-lbody < nose)
 				region = 2;
+			else
+				region = 3;
 		}
+		
 		if (0x1f4000 < strikeVel) 
 			strikeVel = 0x1f4000;
 
-		value = ((strikeVel / 300) * 0x400) / 0x5dc;
+		value = ((strikeVel / 300) * 1024) / 1500;
 		if (0x800 < value)
 			value = 0x800;
 	

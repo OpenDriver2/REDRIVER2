@@ -21,7 +21,7 @@
 
 #else
 
-#define FixHalfRound(x, bits)		((x) + (1 << (bits-1)) >> bits)
+#define FixHalfRound(x, bits)		(((x) + (1 << (bits-1))) >> bits)
 #define FixFloorSigned(x, bits)		((x) / (1 << bits)) // in disassembly: ((int(x) < 0 ? int(x) + (1 << bits)-1 : int(x)) >> bits)
 
 #define	FIXEDH(a)		FixHalfRound(a, ONE_BITS)		// Fixed Half Round number

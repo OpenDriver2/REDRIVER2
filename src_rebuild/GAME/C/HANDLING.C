@@ -3,7 +3,6 @@
 #include "COSMETIC.H"
 #include "MISSION.H"
 #include "DR2ROADS.H"
-#include "TEXTURE.H"
 #include "CARS.H"
 #include "MAIN.H"
 #include "WHEELFORCES.H"
@@ -11,7 +10,6 @@
 #include "DENTING.H"
 #include "CAMERA.H"
 #include "FELONY.H"
-#include "MISSION.H"
 #include "DEBRIS.H"
 #include "PAD.H"
 #include "COP_AI.H"
@@ -24,12 +22,10 @@
 #include "GLAUNCH.H"
 #include "SHADOW.H"
 #include "PLAYERS.H"
-#include "DR2ROADS.H"
-
 #include "INLINE_C.H"
 #include "STRINGS.H"
 
-#include <stdlib.h>
+#include "RAND.H"
 
 // decompiled code
 // original method signature: 
@@ -637,7 +633,6 @@ void GlobalTimeStep(void)
 	RigidBodyState* tp;
 	RigidBodyState* d0;
 	RigidBodyState* d1;
-	int iVar28;
 	long AV[4];
 	long delta_orientation[4];
 	long normal[4];
@@ -646,7 +641,6 @@ void GlobalTimeStep(void)
 	long lever1[4];
 	long torque[4];
 	long pointVel0[4];
-	long pointVel1[4];
 	VECTOR velocity;
 	int depth;
 	int RKstep;
@@ -1854,12 +1848,6 @@ void CheckCarToCarCollisions(void)
 // [D] [T]
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-	char cVar1;
-	short sVar2;
-	int iVar3;
-	int iVar4;
-	int iVar7;
-
 	int player_id;
 	int int_steer;
 	int analog_angle;
