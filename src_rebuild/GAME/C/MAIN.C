@@ -72,6 +72,8 @@
 #include <stdlib.h>
 #include "STRINGS.H"
 
+#include <PLATFORM.H>
+
 #include "../FRONTEND/FEMAIN.H"
 
 int scr_z = 0;

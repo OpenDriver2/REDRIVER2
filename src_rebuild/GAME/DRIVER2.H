@@ -22,6 +22,8 @@ void printError(char *fmt, ...);
 
 #if _MSC_VER >= 1400
 #define trap(ode) {printError("EXCEPTION code: %x\n", ode); __debugbreak();}
+#elif defined(__GNUC__)
+#define trap(ode) {__asm__("int3");}
 #else
 #define trap(ode) {_asm int 0x03}
 #endif
