@@ -655,13 +655,14 @@ void CheckPlayerMiscFelonies(void)
 		}
 
 #if 0
-		printInfo("str lane: %d / %d (%d). AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
+		printInfo("str lane: %d / %d (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			lane + 1,
 			((u_char)st->NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
 			IS_NARROW_ROAD(st),
 			((u_char)st->AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
-			(st->NumLanes & 0x40) > 0,					// flag 1 - parking allowed?
-			(st->NumLanes & 0x80) > 0,					// flag 2 - spawning allowed?
+			(st->NumLanes & 0x20) > 0,					// flag 0 - first lane?
+			(st->NumLanes & 0x40) > 0,					// flag 1 - leftmost park
+			(st->NumLanes & 0x80) > 0,					// flag 2 - rightmost park
 			((u_char)st->LaneDirs >> (lane / 2) & 1U),	// direction bit
 			((u_char)st->NumLanes >> 4) & 3,			// speed limit id
 			goingWrongWay);
@@ -707,13 +708,14 @@ void CheckPlayerMiscFelonies(void)
 		}
 
 #if 0
-		printInfo("crv lane: %d / %d, (%d). AI drive: %d, flg: %d%d, dir: %d, spd: %d (wrong way: %d)\n",
+		printInfo("crv lane: %d / %d, (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			lane + 1,
 			((u_char)cv->NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
 			IS_NARROW_ROAD(cv),
 			((u_char)cv->AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
-			(cv->NumLanes & 0x40) > 0,					// flag 1 - parking allowed?
-			(cv->NumLanes & 0x80) > 0,					// flag 2 - spawning allowed?
+			(cv->NumLanes & 0x20) > 0,					// flag 0 - first lane?
+			(cv->NumLanes & 0x40) > 0,					// flag 1 - leftmost park
+			(cv->NumLanes & 0x80) > 0,					// flag 2 - rightmost park
 			((u_char)cv->LaneDirs >> (lane / 2) & 1U),	// direction bit
 			((u_char)cv->NumLanes >> 4) & 3,			// speed limit id
 			goingWrongWay);
