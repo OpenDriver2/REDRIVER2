@@ -72,9 +72,7 @@
 #include <stdlib.h>
 #include "STRINGS.H"
 
-#ifdef __GNUC__
-#define _stricmp(s1, s2) strcasecmp(s1, s2)
-#endif
+#include <PLATFORM.H>
 
 #include "../FRONTEND/FEMAIN.H"
 

@@ -13,7 +13,7 @@
 #include <AL/alext.h>
 #include <AL/efx.h>
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #include <minmax.h>
 #endif
 

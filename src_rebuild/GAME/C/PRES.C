@@ -3,7 +3,7 @@
 #include "SYSTEM.H"
 #include "TEXTURE.H"
 
-#include <string.h>
+#include <STRINGS.H>
 
 extern TEXTURE_DETAILS digit_texture;
 

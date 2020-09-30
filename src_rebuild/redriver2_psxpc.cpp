@@ -10,11 +10,7 @@
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
 
-#if defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
 #include <SDL_scancode.h>
-#elif defined(__APPLE__) || defined(__linux__) || defined(__EMSCRIPTEN__)
-#include <SDL2/SDL_scancode.h>
-#endif
 
 // eq engine console output
 typedef enum

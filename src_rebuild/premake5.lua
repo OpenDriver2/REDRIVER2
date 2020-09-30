@@ -16,7 +16,9 @@ workspace "REDRIVER2"
     configurations { "Debug", "Release" }
 
     defines { VERSION } 
-    defines { "USE_32_BIT_ADDR", "PGXP" }
+
+    filter "system:Windows or linux"
+        defines { "USE_32_BIT_ADDR", "PGXP" }
 
     filter "configurations:Debug"
         defines { 
@@ -29,7 +31,7 @@ workspace "REDRIVER2"
             "NDEBUG",
         }
         
-    if _TARGET_OS == "Windows" then
+    if _TARGET_OS == "windows" then
         dofile("premake_libjpeg.lua")
     end
 
@@ -57,13 +59,13 @@ project "PSX"
 
     defines { "OGL", "GLEW" }
 
+    includedirs { 
+        SDL2_DIR.."/include",
+        GLEW_DIR.."/include",
+        OPENAL_DIR.."/include",
+    }
+
     filter "system:Windows"
-        includedirs { 
-            SDL2_DIR.."/include",
-            GLEW_DIR.."/include",
-            OPENAL_DIR.."/include",
-        }
-        
         links { 
             "opengl32",
             "glew32", 
@@ -80,6 +82,10 @@ project "PSX"
     filter "system:linux"
         buildoptions {
             "-Wno-narrowing"
+        }
+
+        includedirs {
+            "/usr/include/SDL2"
         }
 
         links {
@@ -105,7 +111,6 @@ project "REDRIVER2"
     }
 
     defines { GAME_REGION }
-    defines { "OGL", "GLEW" }
 
     files {
         "GAME/**.H",
@@ -116,10 +121,12 @@ project "REDRIVER2"
         "DebugOverlay.cpp",
     }
 
-    links { "PSX", "jpeg" }
+    filter "system:Windows or linux"
+        defines { "OGL", "GLEW" }
+        dependson { "PSX" }
+        links { "PSX", "jpeg" }
 
     filter "system:Windows"
-        dependson { "PSX" }
         files { 
             "Windows/resource.h", 
             "Windows/Resource.rc", 
@@ -139,8 +146,11 @@ project "REDRIVER2"
         
     filter "system:linux"
         buildoptions { "-Wno-narrowing", "-fpermissive" }
-
         cppdialect "C++11"
+
+        includedirs {
+            "/usr/include/SDL2"
+        }
 
         links {
             "GL",

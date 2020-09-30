@@ -7,11 +7,7 @@
 #include <d3d9.h>
 #endif
 
-#if defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
 #include <SDL_timer.h>
-#elif defined(__APPLE__) || defined(__linux__) || defined(__EMSCRIPTEN__)
-#include <SDL2/SDL_timer.h>
-#endif
 
 void(*vsync_callback)(void) = NULL;
 

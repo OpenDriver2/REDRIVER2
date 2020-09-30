@@ -59,18 +59,16 @@
 #if defined(__APPLE__)
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
-#elif defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
-#include <SDL.h>
-#elif defined(__linux__) || defined(__EMSCRIPTEN__)
+#elif defined(__EMSCRIPTEN__)
 #include <SDL2/SDL.h>
+#elif (defined(_WINDOWS) || defined(__MINGW32__) || defined(__linux__)) && !defined(__ANDROID__)
+#include <SDL.h>
+#elif defined (__ANDROID__)
+#include <SDL.h>
 #endif
 
 #if defined (OGL)
-#if defined(_WINDOWS) || defined(__MINGW32__) || defined (__ANDROID__)
-#include <SDL_opengl.h>
-#elif defined(__APPLE__) || defined(__linux__) || defined(__EMSCRIPTEN__)
-#include <SDL2/SDL_opengl.h>
-#endif
+#include <SDL_opengl.h>///@FIXME see mac!
 #elif defined (OGLES)
 #include <SDL_syswm.h>
 #if OGLES_VERSION == 2
