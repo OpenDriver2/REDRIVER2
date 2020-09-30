@@ -3,6 +3,7 @@
 #ifndef PSX
 #include <SDL.h>
 #endif // !PSX
+
 #include <STRINGS.H>
 
 #include "LIBETC.H"

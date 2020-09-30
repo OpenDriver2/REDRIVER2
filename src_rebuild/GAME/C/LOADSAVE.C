@@ -18,7 +18,8 @@
 
 #ifndef PSX
 #include <stdlib.h>
-#include <direct.h>
+
+#include <PLATFORM.H>
 
 // [A]
 void ShowSavingWaitMessage(char *message, int height)

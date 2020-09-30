@@ -19,7 +19,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
+#include "RAND.H"
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[6];

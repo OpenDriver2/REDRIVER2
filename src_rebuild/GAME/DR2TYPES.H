@@ -650,7 +650,7 @@ typedef unsigned short ushort;
 
 typedef struct _physadr* physadr;
 
-typedef long daddr_t;
+// typedef long daddr_t;
 
 typedef char* caddr_t;
 
@@ -658,13 +658,15 @@ typedef long* qaddr_t;
 
 typedef long swblk_t;
 
-typedef unsigned int size_t;
+// typedef unsigned int size_t;
 
 typedef long off_t;
 
+#ifndef __GNUC__
 typedef unsigned short uid_t;
 
 typedef unsigned short gid_t;
+#endif
 
 typedef void (*SsMarkCallbackProc)();
 
@@ -830,6 +832,34 @@ struct MR_TIMER // hashcode: 0xEA39F36E (dec: -365300882)
 	long count; // size=0, offset=8
 };
 
+enum PED_ACTION_TYPE : char // Hashcode: 0x3531DCAF (dec: 892460207)
+{
+	PED_ACTION_WALK = 0,
+	PED_ACTION_RUN = 1,
+	PED_ACTION_BACK = 2,
+	PED_ACTION_GETINCAR = 3,
+	PED_ACTION_GETOUTCAR = 4,
+	PED_ACTION_TIME = 5,
+	PED_ACTION_PRESSBUTTON = 6,
+	PED_ACTION_SIT = 7,
+	PED_ACTION_CIVWALK = 8,
+	PED_ACTION_CIVRUN = 9,
+	PED_ACTION_JUMP = 10,
+	PED_ACTION_CIVSIT = 11,
+	PED_ACTION_COPSTAND = 12,
+	PED_ACTION_COPCROUCH = 13,
+	PED_ACTION_TALK = 14,
+	PED_ACTION_STOPPING = 15,
+};
+
+enum PED_MODEL_TYPES : char // Hashcode: 0x2858A7E3 (dec: 676898787)
+{
+	TANNER_MODEL = 0,
+	OTHER_MODEL = 1,
+	OTHER_SPRITE = 2,
+	CIVILIAN = 3,
+};
+
 struct PEDESTRIAN;
 typedef void(*pedFunc)(PEDESTRIAN* pPed);
 
@@ -859,34 +889,6 @@ struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
 	char seat_index; // size=0, offset=87
 	unsigned char pallet; // size=0, offset=88
 	enum PED_ACTION_TYPE type; // size=1, offset=89
-};
-
-enum PED_ACTION_TYPE : char // Hashcode: 0x3531DCAF (dec: 892460207)
-{
-	PED_ACTION_WALK = 0,
-	PED_ACTION_RUN = 1,
-	PED_ACTION_BACK = 2,
-	PED_ACTION_GETINCAR = 3,
-	PED_ACTION_GETOUTCAR = 4,
-	PED_ACTION_TIME = 5,
-	PED_ACTION_PRESSBUTTON = 6,
-	PED_ACTION_SIT = 7,
-	PED_ACTION_CIVWALK = 8,
-	PED_ACTION_CIVRUN = 9,
-	PED_ACTION_JUMP = 10,
-	PED_ACTION_CIVSIT = 11,
-	PED_ACTION_COPSTAND = 12,
-	PED_ACTION_COPCROUCH = 13,
-	PED_ACTION_TALK = 14,
-	PED_ACTION_STOPPING = 15,
-};
-
-enum PED_MODEL_TYPES : char // Hashcode: 0x2858A7E3 (dec: 676898787)
-{
-	TANNER_MODEL = 0,
-	OTHER_MODEL = 1,
-	OTHER_SPRITE = 2,
-	CIVILIAN = 3,
 };
 
 struct __skidinfo // hashcode: 0x807ED49D (dec: -2139171683)
@@ -2305,19 +2307,6 @@ struct POLYGT3
 	struct RGB color; // size=4, offset=20
 };
 
-struct BONE // hashcode: 0xC453A1B7 (dec: -1001152073)
-{
-	enum LIMBS id; // size=1, offset=0
-	struct BONE* pParent; // size=68, offset=4
-	char numChildren; // size=0, offset=8
-	BONE(*pChildren[3]); // size=12, offset=12
-	SVECTOR_NOPAD* pvOrigPos; // size=6, offset=24
-	SVECTOR* pvRotation; // size=8, offset=28
-	VECTOR vOffset; // size=16, offset=32
-	VECTOR vCurrPos; // size=16, offset=48
-	MODEL** pModel; // size=36, offset=64
-};
-
 enum LIMBS // Hashcode: 0x200BA5A5 (dec: 537634213)
 {
 	ROOT = 0,
@@ -2343,6 +2332,19 @@ enum LIMBS // Hashcode: 0x200BA5A5 (dec: 537634213)
 	RFOOT = 20,
 	RTOE = 21,
 	JOINT = 22,
+};
+
+struct BONE // hashcode: 0xC453A1B7 (dec: -1001152073)
+{
+	enum LIMBS id; // size=1, offset=0
+	struct BONE* pParent; // size=68, offset=4
+	char numChildren; // size=0, offset=8
+	BONE(*pChildren[3]); // size=12, offset=12
+	SVECTOR_NOPAD* pvOrigPos; // size=6, offset=24
+	SVECTOR* pvRotation; // size=8, offset=28
+	VECTOR vOffset; // size=16, offset=32
+	VECTOR vCurrPos; // size=16, offset=48
+	MODEL** pModel; // size=36, offset=64
 };
 
 enum TEXTURE_PALS // Hashcode: 0x7EFDB21D (dec: 2130555421)
