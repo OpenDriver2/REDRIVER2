@@ -621,6 +621,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 	{
 		int currentLaneDir;
 		int widthInLanes;
+		int laneNo;
+		int count;
 		
 		_st = GET_STRAIGHT(currentRoadId);
 
@@ -636,34 +638,34 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 		else
 			tmpNewRoad[1] = _st->ConnectIdx[1];
 
-		uVar9 = widthInLanes;		// counter
-		uVar29 = widthInLanes;		// bestLane
+		count = widthInLanes;		// counter
+		laneNo = widthInLanes;		// bestLane
 
 		do
 		{
-			uVar9--;
-			if(ROAD_IS_AI_LANE(_st, uVar9) && !ROAD_IS_PARKING_ALLOWED_AT(_st, uVar9))
+			count--;
+			if(ROAD_IS_AI_LANE(_st, count) && !ROAD_IS_PARKING_ALLOWED_AT(_st, count))
 			{
-				test42 = ROAD_LANE_DIR(_st, uVar9);
-				uVar29 = uVar9;
+				test42 = ROAD_LANE_DIR(_st, count);
+				laneNo = count;
 			}
-		} while (uVar9 >= 0);
+		} while (count >= 0);
 
 		if (currentLaneDir == 0)
-			leftLane = uVar29 & 0xff;
+			leftLane = laneNo & 0xff;
 		else
-			rightLane = uVar29 & 0xff;
+			rightLane = laneNo & 0xff;
 
-		
-		uVar17 = ROAD_HAS_FAST_LANES(_st);  // counter
-		uVar29 = widthInLanes;				// bestLane
+		// if speed lane, use other first lane. WTF idk why
+		count = ROAD_HAS_FAST_LANES(_st);  // counter
+		laneNo = widthInLanes;				// bestLane
 
-		while (uVar17 < widthInLanes)
+		while (count < widthInLanes)
 		{
-			if(ROAD_IS_AI_LANE(_st, uVar17) && !ROAD_IS_PARKING_ALLOWED_AT(_st, uVar17))
+			if(ROAD_IS_AI_LANE(_st, count) && !ROAD_IS_PARKING_ALLOWED_AT(_st, count))
 			{
-				test555 = ROAD_LANE_DIR(_st, uVar17) ^ 1;
-				uVar29 = uVar17;
+				test555 = ROAD_LANE_DIR(_st, count) ^ 1;
+				laneNo = count;
 
 				if (test555 == 0)
 				{
@@ -676,133 +678,84 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						break;
 				}
 			}
-			uVar29 = widthInLanes;
-			uVar17++;
+			laneNo = widthInLanes;
+			count++;
 		}
 
 		if (currentLaneDir != 0)
-			leftLane = uVar29 & 0xff;
+			leftLane = laneNo & 0xff;
 		else
-			rightLane = uVar29 & 0xff;
+			rightLane = laneNo & 0xff;
 	}
 	else if(IS_CURVED_SURFACE(currentRoadId))
 	{
+		int currentLaneDir;
+		int widthInLanes;
+		int laneNo;
+		int count;
+		
 		____cv = GET_CURVE(currentRoadId);
 
-		if (*(short*)&____cv->NumLanes == -0xff)
-		{
-			uVar9 = (uint)cp->ai.c.currentLane;
-		}
+		widthInLanes = ROAD_WIDTH_IN_LANES(____cv);
+
+		currentLaneDir = ROAD_LANE_DIR(____cv, cp->ai.c.currentLane);
+		oldOppDir = currentLaneDir << 0xb;
+
+		tmpNewRoad[0] = ____cv->ConnectIdx[currentLaneDir * 2];
+
+		if (currentLaneDir != 0)
+			tmpNewRoad[1] = ____cv->ConnectIdx[3];
 		else
+			tmpNewRoad[1] = ____cv->ConnectIdx[1];
+
+		count = widthInLanes;		// counter
+		laneNo = widthInLanes;		// bestLane
+
+		do
 		{
-			uVar9 = (int)(u_char)____cv->LaneDirs >> ((uint)(cp->ai.c.currentLane >> 1) & 0x1f);
-		}
-
-		uVar9 = uVar9 & 1;
-		oldOppDir = uVar9 << 0xb;
-
-		if (*(short*)&____cv->NumLanes == -0xff)
-		{
-			uVar29 = (uint)cp->ai.c.currentLane;
-		}
-		else
-		{
-			uVar29 = (int)(u_char)____cv->LaneDirs >> ((uint)(cp->ai.c.currentLane >> 1) & 0x1f);
-		}
-
-		tmpNewRoad[0] = (int)____cv->ConnectIdx[(uVar29 & 1) * 2];
-
-		if (*(short*)&____cv->NumLanes == -0xff)
-		{
-			uVar29 = (uint)cp->ai.c.currentLane;
-		}
-		else
-		{
-			uVar29 = (int)(u_char)____cv->LaneDirs >> ((uint)(cp->ai.c.currentLane >> 1) & 0x1f);
-		}
-
-		iVar22 = 2;
-
-		if ((uVar29 & 1) != 0)
-			iVar22 = 6;
-
-		tmpNewRoad[1] = (int)*(short*)((int)____cv->ConnectIdx + iVar22);
-		uVar25 = ((u_char)____cv->NumLanes & 0xf) * 2;
-		uVar29 = uVar25;
-
-		do {
-			do {
-				uVar29 = uVar29 - 1;
-				uVar16 = uVar25;
-
-				if ((int)uVar29 < 0)
-				{
-					goto LAB_000245c0_break;
-				}
-
-			} while (((int)(u_char)____cv->AILanes >> ((int)uVar29 / 2 & 0x1fU) & 1U) == 0 ||
-				uVar29 == 0 && (____cv->NumLanes & 0x40U) != 0 ||
-				((u_char)____cv->NumLanes & 0xffffff0f) * 2 - 1 == uVar29 &&
-				(____cv->NumLanes & 0x80U) != 0);
-
-			uVar16 = uVar29;
-
-			if (*(short*)&____cv->NumLanes != -0xff)
+			count--;
+			if(ROAD_IS_AI_LANE(____cv, count) && !ROAD_IS_PARKING_ALLOWED_AT(____cv, count))
 			{
-				uVar16 = (int)(u_char)____cv->LaneDirs >> ((int)uVar29 / 2 & 0x1fU);
+				test42 = ROAD_LANE_DIR(____cv, count);
+				laneNo = count;
 			}
+		} while (count >= 0);
 
-			test42 = (uVar16 ^ 1) & 1;
-			uVar16 = uVar29;
-		} while (uVar9 == 0);
-	LAB_000245c0_break:
-
-		if (uVar9 == 0)
-			leftLane = uVar16 & 0xff;
+		if (currentLaneDir == 0)
+			leftLane = laneNo & 0xff;
 		else
-			rightLane = uVar16 & 0xff;
+			rightLane = laneNo & 0xff;
 
-		uVar25 = (u_char)____cv->NumLanes;
-		uVar20 = (uVar25 & 0xf) << 1;
-		uVar16 = (u_char)(____cv->NumLanes >> 6) & 1;
-		uVar29 = uVar20;
+		// if speed lane, use other first lane. WTF idk why
+		count = ROAD_HAS_FAST_LANES(____cv);  // counter
+		laneNo = widthInLanes;				// bestLane
 
-		if (uVar16 < uVar20)
+		while (count < widthInLanes)
 		{
-			do {
-				if (((int)(u_char)____cv->AILanes >> ((int)uVar16 / 2 & 0x1fU) & 1U) != 0 && (uVar16 != 0 || (____cv->NumLanes & 0x40U) == 0) &&
-					((uVar25 & 0xffffff0f) * 2 - 1 != uVar16 || (uVar25 & 0x80) == 0))
+			if(ROAD_IS_AI_LANE(____cv, count) && !ROAD_IS_PARKING_ALLOWED_AT(____cv, count))
+			{
+				test555 = ROAD_LANE_DIR(____cv, count) ^ 1;
+				laneNo = count;
+
+				if (test555 == 0)
 				{
-					uVar29 = uVar16;
-
-					if (*(short*)&____cv->NumLanes != -0xff)
-					{
-						uVar29 = (int)(u_char)____cv->LaneDirs >> ((int)uVar16 / 2 & 0x1fU);
-					}
-
-					test555 = (uVar29 ^ 1) & 1;
-					uVar29 = uVar16;
-					if (test555 == 0)
-					{
-						if (uVar9 != 0)
-							break;
-					}
-					else
-					{
-						if (uVar9 == 0)
-							break;
-					}
+					if (currentLaneDir != 0)
+						break;
 				}
-				uVar25 = (u_char)____cv->NumLanes;
-				uVar16 = uVar16 + 1;
-				uVar29 = uVar20;
-			} while ((int)uVar16 < (int)((uVar25 & 0xffffff0f) << 1));
+				else
+				{
+					if (currentLaneDir == 0)
+						break;
+				}
+			}
+			laneNo = widthInLanes;
+			count++;
 		}
 
-		if (uVar9 == 0)
-			rightLane = uVar29 & 0xff;
+		if (currentLaneDir != 0)
+			leftLane = laneNo & 0xff;
 		else
-			leftLane = uVar29 & 0xff;
+			rightLane = laneNo & 0xff;
 	}
 
 	iVar22 = tmpNewRoad[0];
@@ -3430,10 +3383,6 @@ int CreateNewNode(_CAR_DATA * cp)
 // [D] [T]
 int InitCivState(_CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 {
-	int uVar1;
-	long lVar2;
-	int iVar3;
-
 	CIV_STATE* cs = &cp->ai.c;
 
 	cp->controlType = CONTROL_TYPE_CIV_AI;
@@ -3462,27 +3411,17 @@ int InitCivState(_CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 	// init road and nodes
 	if (cs->currentRoad > -1)
 	{
-		DRIVER2_CURVE* crv;
-		DRIVER2_STRAIGHT* str;
+		DRIVER2_ROAD_INFO roadInfo;
 
 		cp->ai.c.currentNode = 0;
 		cp->ai.c.pnode = NULL;
 		cp->ai.c.ctrlNode = NULL;
 		cp->ai.c.turnNode = -1;
 
-		if (IS_CURVED_SURFACE(cs->currentRoad) || IS_STRAIGHT_SURFACE(cs->currentRoad))
+		if(GetSurfaceRoadInfo(&roadInfo, cs->currentRoad))
 		{
-			if (IS_STRAIGHT_SURFACE(cs->currentRoad))
-			{
-				str = GET_STRAIGHT(cs->currentRoad);
-				cp->ai.c.maxSpeed = speedLimits[ROAD_SPEED_LIMIT(str)];
-			}
-			else
-			{
-				crv = GET_CURVE(cs->currentRoad);
-				cp->ai.c.maxSpeed = speedLimits[ROAD_SPEED_LIMIT(crv)];
-			}
-
+			cp->ai.c.maxSpeed = speedLimits[ROAD_SPEED_LIMIT(&roadInfo)];
+			
 			InitNodeList(cp, extraData);
 
 			cp->ai.c.pnode = &cp->ai.c.targetRoute[0];
@@ -4344,8 +4283,12 @@ int PingInCivCar(int minPingInDist)
 	int model;
 	_CAR_DATA* carCnt;
 	_CAR_DATA* newCar;
-	DRIVER2_CURVE* curve;
-	DRIVER2_STRAIGHT* straight;
+	
+	//DRIVER2_CURVE* curve;
+	//DRIVER2_STRAIGHT* straight;
+
+	DRIVER2_ROAD_INFO roadInfo;
+	
 	_EXTRA_CIV_DATA civDat;
 	unsigned char possibleLanes[12];
 	// carDistLanes removed as it's unused
@@ -4361,10 +4304,11 @@ int PingInCivCar(int minPingInDist)
 	int oldCookieCount;
 	uint retDistSq;
 
+	//straight = NULL;
+	//curve = NULL;
+	
 	civDat.distAlongSegment = -5;
 	lane = -1;
-	straight = NULL;
-	curve = NULL;
 	dir = 0xffffff;
 
 	tryPingInParkedCars = 0;
@@ -4517,31 +4461,27 @@ int PingInCivCar(int minPingInDist)
 
 		roadSeg = RoadInCell(&randomLoc);
 	}
-
+	
 	// wtf there were before? car wasn't set to 'confused' state
-	if (!IS_STRAIGHT_SURFACE(roadSeg) && !IS_CURVED_SURFACE(roadSeg))
+	if (!GetSurfaceRoadInfo(&roadInfo, roadSeg))
 	{
 		civPingTest.OffRoad++;
 		CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
-	// I wonder if next code was sort of a BIG-BIG inline or MACRO also used in other functions
-	if (IS_STRAIGHT_SURFACE(roadSeg))
 	{
 		int numPossibleLanes;
 		int numLanes;
 		int allowedToPark;
-
-		straight = GET_STRAIGHT(roadSeg);
-
-		if (ROAD_LANES_COUNT(straight) == 0) // BAD ROAD
+		
+		if (ROAD_LANES_COUNT(&roadInfo) == 0) // BAD ROAD
 		{
 			CIV_STATE_SET_CONFUSED(newCar);
 			return 0;
 		}
 
-		numLanes = ROAD_WIDTH_IN_LANES(straight);
+		numLanes = ROAD_WIDTH_IN_LANES(&roadInfo);
 
 		numPossibleLanes = 0;
 
@@ -4556,7 +4496,7 @@ int PingInCivCar(int minPingInDist)
 			while (i < numLanes)
 			{
 				// collect the lanes.
-				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(straight, i);
+				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i);
 
 				// this is closest to OG decompiled. Works different!
 				//if ((
@@ -4564,7 +4504,7 @@ int PingInCivCar(int minPingInDist)
 				//	((ROAD_IS_AI_LANE(straight, i) && (((i != 0 || ((straight->NumLanes & 0x40U) == 0)) && (((straight->NumLanes & 0xffffff0f) * 2 - 1 != i || ((straight->NumLanes & 0x80U) == 0))))))))
 
 				// pick only non-parkable driveable lanes if parked cars not requested
-				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(straight, i) && !allowedToPark)
+				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
 					possibleLanes[numPossibleLanes++] = i;
 
 				i++;
@@ -4577,89 +4517,19 @@ int PingInCivCar(int minPingInDist)
 		}
 
 		// check if need to make a parked car
-		if (ROAD_IS_PARKING_ALLOWED_AT(straight, lane))
+		if (ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, lane))
 		{
 			civDat.thrustState = 3;
 			civDat.ctrlState = 7;
 
 			// set to drive off
-			if (ROAD_IS_AI_LANE(straight, lane))
+			if (ROAD_IS_AI_LANE(&roadInfo, lane))
 				civDat.ctrlState = 5;
 		}
 		else
 		{
 			// Car is not active. Permanently parked
-			if (ROAD_IS_AI_LANE(straight, lane) == 0)
-			{
-				civPingTest.NotDrivable++;
-				return 0;
-			}
-
-			civDat.thrustState = 0;
-			civDat.ctrlState = 0;
-		}
-	}
-	else if (IS_CURVED_SURFACE(roadSeg))
-	{
-		int numPossibleLanes;
-		int numLanes;
-		int allowedToPark;
-
-		curve = GET_CURVE(roadSeg);
-
-		if (ROAD_LANES_COUNT(curve) == 0) // BAD ROAD
-		{
-			CIV_STATE_SET_CONFUSED(newCar);
-			return 0;
-		}
-
-		numLanes = ROAD_WIDTH_IN_LANES(curve);
-
-		numPossibleLanes = 0;
-
-		i = 0;
-		while (i < numLanes)
-		{
-			// collect the lanes.
-			allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(curve, i);
-
-			// this is closest to OG decompiled. Works different!
-			//if ((
-			//	((tryPingInParkedCars && allowedToPark))) ||
-			//	((ROAD_IS_AI_LANE(curve, i) && (((i != 0 || ((curve->NumLanes & 0x40U) == 0)) && (((curve->NumLanes & 0xffffff0f) * 2 - 1 != i || ((curve->NumLanes & 0x80U) == 0))))))))
-
-			// pick only non-parkable driveable lanes if parked cars not requested
-			if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(curve, i) && !allowedToPark)
-				possibleLanes[numPossibleLanes++] = i;
-
-			i++;
-		}
-
-		if (numPossibleLanes == 0)
-			return 0;
-
-		lane = possibleLanes[(Random2(0) >> 8) % numPossibleLanes];
-
-		if (lane > ROAD_WIDTH_IN_LANES(curve))
-		{
-			CIV_STATE_SET_CONFUSED(newCar);
-			return 0;
-		}
-
-		// check if need to make a parked car
-		if (ROAD_IS_PARKING_ALLOWED_AT(curve, lane))
-		{
-			civDat.thrustState = 3;
-			civDat.ctrlState = 7;
-
-			// set to drive off
-			if (ROAD_IS_AI_LANE(curve, lane))
-				civDat.ctrlState = 5;
-		}
-		else
-		{
-			// Car is not active. Permanently parked
-			if (ROAD_IS_AI_LANE(curve, lane) == 0)
+			if (ROAD_IS_AI_LANE(&roadInfo, lane) == 0)
 			{
 				civPingTest.NotDrivable++;
 				return 0;
@@ -4773,69 +4643,69 @@ int PingInCivCar(int minPingInDist)
 			minDistAlong = 0;
 		}
 
-		if (straight->length <= (scDist + lbody) * 2) // don't spawn outside straight
+		if (roadInfo.straight->length <= (scDist + lbody) * 2) // don't spawn outside straight
 			return 0;
 
-		dx = randomLoc.vx - straight->Midx;
-		dz = randomLoc.vz - straight->Midz;
+		dx = randomLoc.vx - roadInfo.straight->Midx;
+		dz = randomLoc.vz - roadInfo.straight->Midz;
 
-		theta = (straight->angle - ratan2(dx, dz) & 0xfffU);
+		theta = (roadInfo.straight->angle - ratan2(dx, dz) & 0xfffU);
 
-		civDat.distAlongSegment = (straight->length / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+		civDat.distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
 
 		if (requestCopCar == 0)
 		{
 			if (civDat.distAlongSegment < minDistAlong)
 				civDat.distAlongSegment = minDistAlong;
 
-			if (straight->length - civDat.distAlongSegment < minDistAlong)
-				civDat.distAlongSegment = straight->length - minDistAlong;
+			if (roadInfo.straight->length - civDat.distAlongSegment < minDistAlong)
+				civDat.distAlongSegment = roadInfo.straight->length - minDistAlong;
 		}
 
-		if (ROAD_LANE_DIR(straight, lane) == 0)
-			dir = straight->angle;
+		if (ROAD_LANE_DIR(roadInfo.straight, lane) == 0)
+			dir = roadInfo.straight->angle;
 		else
-			dir = straight->angle + 0x800U & 0xfff;
+			dir = roadInfo.straight->angle + 0x800U & 0xfff;
 	}
 	else if (IS_CURVED_SURFACE(roadSeg))
 	{
 		int minDistAlong;
 		int segmentLen;
 
-		currentAngle = ratan2(randomLoc.vx - curve->Midx, randomLoc.vz - curve->Midz);
+		currentAngle = ratan2(randomLoc.vx - roadInfo.curve->Midx, randomLoc.vz - roadInfo.curve->Midz);
 		minDistAlong = 0;
 
 		if (requestCopCar == 0)
 		{
-			if (curve->inside > 9)
+			if (roadInfo.curve->inside > 9)
 				minDistAlong = 32;
-			else if (curve->inside < 20)
+			else if (roadInfo.curve->inside < 20)
 				minDistAlong = 64;
 			else
 				minDistAlong = 128;
 		}
 
-		if (curve->inside > 9)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - curve->start & 0xfe0;
-		else if (curve->inside < 20)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - curve->start & 0xfc0;
+		if (roadInfo.curve->inside > 9)
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfe0;
+		else if (roadInfo.curve->inside < 20)
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfc0;
 		else
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - curve->start & 0xf80;
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xf80;
 
 		if (civDat.distAlongSegment <= minDistAlong)
 			civDat.distAlongSegment = minDistAlong;
 
-		segmentLen = (curve->end - curve->start) - segmentLen & 0xfff;
+		segmentLen = (roadInfo.curve->end - roadInfo.curve->start) - segmentLen & 0xfff;
 
 		if (civDat.distAlongSegment >= segmentLen)
 			civDat.distAlongSegment = segmentLen;
 
-		if (ROAD_LANE_DIR(curve, lane) == 0)
-			dir = civDat.distAlongSegment + curve->start + 0x400;
+		if (ROAD_LANE_DIR(roadInfo.curve, lane) == 0)
+			dir = civDat.distAlongSegment + roadInfo.curve->start + 0x400;
 		else
-			dir = civDat.distAlongSegment + curve->start - 0x400;
+			dir = civDat.distAlongSegment + roadInfo.curve->start - 0x400;
 
-		curveLength = ((curve->end - curve->start & 0xfffU) * curve->inside * 11) / 7;
+		curveLength = ((roadInfo.curve->end - roadInfo.curve->start & 0xfffU) * roadInfo.curve->inside * 11) / 7;
 
 		if (lbody * 6 > curveLength) // don't spawn outside curve
 			return 0;
@@ -4853,7 +4723,7 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	GetNodePos(straight, NULL, curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
+	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
 	retDistSq = 0x7fffffff; // INT_MAX
 	pos[0] = newCar->ai.c.targetRoute[0].x;
@@ -4983,29 +4853,17 @@ int PingInCivCar(int minPingInDist)
 void AttemptUnPark(_CAR_DATA * cp)
 {
 	unsigned char oldLane;
-	int curRoad;
-	DRIVER2_STRAIGHT* straight;
-	DRIVER2_CURVE* curve;
+	DRIVER2_ROAD_INFO roadInfo;
 
-	straight = NULL;
-	curve = NULL;
 	InitCivState(cp, NULL);
-	curRoad = cp->ai.c.currentRoad;
-
-	if (IS_STRAIGHT_SURFACE(curRoad))
-		straight = GET_STRAIGHT(curRoad);
-	else // actually there might be a bug - it might need additional IS_CURVED_SURFACE check
-		curve = GET_CURVE(curRoad);
 
 	oldLane = cp->ai.c.currentLane;
-
-	if (straight && curve)
+	
+	if(GetSurfaceRoadInfo(&roadInfo, cp->ai.c.currentRoad))
 	{
-		cp->ai.c.currentLane = CheckChangeLanes(straight, curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
+		cp->ai.c.currentLane = CheckChangeLanes(roadInfo.straight, roadInfo.curve, cp->ai.c.targetRoute[0].distAlongSegment, cp, 0);
 
-		if (oldLane == cp->ai.c.currentLane ||
-			(straight != NULL && ROAD_IS_AI_LANE(straight, cp->ai.c.currentLane) == 0) ||
-			(curve != NULL && ROAD_IS_AI_LANE(curve, cp->ai.c.currentLane) == 0))
+		if (oldLane == cp->ai.c.currentLane || ROAD_IS_AI_LANE(&roadInfo, cp->ai.c.currentLane) == 0)
 		{
 			// shut off. Unknown intention
 			CIV_STATE_SET_CONFUSED(cp);
@@ -6890,10 +6748,13 @@ void CreateRoadblock(void)
 	CAR_COSMETICS* car_cos;
 	_CAR_DATA* cp;
 	int distAlongSegment;
+	
 	DRIVER2_CURVE* crv;
+	DRIVER2_STRAIGHT* str;
+
 	VECTOR startPos;
 	VECTOR endPos;
-	DRIVER2_STRAIGHT* str;
+	
 	VECTOR currentPos;
 	int numLanes;
 	int externalCopModel;

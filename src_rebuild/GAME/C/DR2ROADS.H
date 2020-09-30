@@ -28,7 +28,7 @@
 
 
 #define ROAD_LANE_DIR(rd, lane) \
-	(((u_char)rd->LaneDirs == 0xFF && rd->NumLanes == 1) ? (lane & 1) : ROAD_LANE_DIRECTION_BIT(rd, lane))
+	(((u_char)(rd)->LaneDirs == 0xFF && (rd)->NumLanes == 1) ? ((lane) & 1) : ROAD_LANE_DIRECTION_BIT(rd, lane))
 
 #define ROAD_IS_PARKING_ALLOWED_AT(rd, lane)\
 	((ROAD_IS_LEFTMOST_LANE_PARKING(rd) && (lane) == 0) || (ROAD_IS_RIGHTMOST_LANE_PARKING(rd) && (lane) == ROAD_WIDTH_IN_LANES(rd) - 1))
