@@ -26,9 +26,8 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
+#include "RAND.H"
 #include "STRINGS.H"
-
-#include <stdlib.h>
 
 TEXTURE_DETAILS digit_texture;
 

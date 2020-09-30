@@ -17,9 +17,9 @@
 #include "CAMERA.H"
 #include "OBJANIM.H"
 
+#include "RAND.H"
 #include "STRINGS.H"
 #include "INLINE_C.H"
-#include <stdlib.h>
 
 // decompiled code
 // original method signature: 

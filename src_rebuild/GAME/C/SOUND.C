@@ -15,8 +15,8 @@
 #include "XAPLAY.H"
 #include "PLAYERS.H"
 
-#include <string.h>
-#include <stdlib.h>
+#include "RAND.H"
+#include "STRINGS.H"
 
 long dummylong[4] = { 0, 0, 0, 0 };
 

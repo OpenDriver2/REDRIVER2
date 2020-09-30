@@ -69,7 +69,7 @@
 
 #include "PAUSE.H"
 
-#include <stdlib.h>
+#include "RAND.H"
 #include "STRINGS.H"
 
 #include <PLATFORM.H>
