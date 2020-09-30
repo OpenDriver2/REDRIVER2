@@ -3038,11 +3038,9 @@ int CreateNewNode(_CAR_DATA * cp)
 	CIV_ROUTE_ENTRY* start;
 	CIV_ROUTE_ENTRY* newNode;
 	CIV_ROUTE_ENTRY* retNode;
-	//CIV_ROUTE_ENTRY* end;
 	int oldRoad;
 	int cr;
-	DRIVER2_CURVE* curve;
-	DRIVER2_STRAIGHT* straight;
+	DRIVER2_ROAD_INFO roadInfo;
 	CIV_ROUTE_ENTRY tempNode;
 	int turnAngle;
 	int startDist;
@@ -3051,7 +3049,6 @@ int CreateNewNode(_CAR_DATA * cp)
 	int cornerAngle;
 
 	start = cp->ai.c.pnode;
-	//end = cp->ai.c.targetRoute + 13;
 	turnAngle = 0;
 
 	// validate two next nodes
@@ -3072,103 +3069,67 @@ int CreateNewNode(_CAR_DATA * cp)
 				}
 
 				// stop, dammmm
-				if (!IS_STRAIGHT_SURFACE(oldRoad) && !IS_CURVED_SURFACE(oldRoad))
+				if (!GetSurfaceRoadInfo(&roadInfo, oldRoad))
 					break;
 
-				if (IS_STRAIGHT_SURFACE(oldRoad))
+				if (ROAD_LANE_DIR(&roadInfo, cp->ai.c.currentLane) == 0)
+					travelDir = 1;
+				else
+					travelDir = -1;
+				
+				if (roadInfo.straight)
 				{
-					straight = GET_STRAIGHT(oldRoad);
-
-					if (ROAD_LANE_DIR(straight, cp->ai.c.currentLane) == 0)
-						travelDir = 1;
-					else
-						travelDir = -1;
-
-					segmentEnd = straight->length;
+					segmentEnd = roadInfo.straight->length;
 
 					newNode->distAlongSegment = start->distAlongSegment + travelDir * 1024;
 					newNode->dir = start->dir;
-
-					// check travelling direction and position on segment
-					// advance road if needed
-					if ((travelDir > 0 && segmentEnd < newNode->distAlongSegment) || (travelDir < 0 && newNode->distAlongSegment < 0))
-					{
-						if ((travelDir < 1 || start->distAlongSegment < segmentEnd) && (travelDir > -1 || start->distAlongSegment > 0))
-						{
-							if (travelDir < 1)
-								newNode->distAlongSegment = 0;
-							else
-								newNode->distAlongSegment = segmentEnd;
-						}
-						else
-						{
-							cp->ai.c.currentRoad = GetNextRoadInfo(cp, 1, &turnAngle, &startDist, start);
-							newNode->dir = start->dir + turnAngle & 0xfff;
-							newNode->distAlongSegment = startDist;
-
-							if (cp->ai.c.currentRoad == -1)
-								break;
-						}
-					}
 				}
-				else if (IS_CURVED_SURFACE(oldRoad))
+				else
 				{
 					int dist;
-					curve = GET_CURVE(oldRoad);
 
-					if (ROAD_LANE_DIR(curve, cp->ai.c.currentLane) == 0)
-						travelDir = 1;
-					else
-						travelDir = -1;
+					segmentEnd = roadInfo.curve->end - roadInfo.curve->start & 0xfff;
 
-					segmentEnd = curve->end - curve->start & 0xfff;
-
-					if (curve->inside < 10)
+					if (roadInfo.curve->inside < 10)
 						dist = travelDir << 7;
-					else if (curve->inside > 19)
+					else if (roadInfo.curve->inside > 19)
 						dist = travelDir << 5;
 					else
 						dist = travelDir << 6;
 
 					newNode->distAlongSegment = start->distAlongSegment + dist;
-					newNode->dir = newNode->distAlongSegment + curve->start + travelDir * 1024 & 0xfff;
+					newNode->dir = newNode->distAlongSegment + roadInfo.curve->start + travelDir * 1024 & 0xfff;
+				}
 
-					// check travelling direction and position on segment
-					// advance road if needed
-					if ((travelDir > 0 && segmentEnd < newNode->distAlongSegment) || (travelDir < 0 && newNode->distAlongSegment < 0))
+				// check travelling direction and position on segment
+				// advance road if needed
+				if ((travelDir > 0 && segmentEnd < newNode->distAlongSegment) ||
+					(travelDir < 0 && newNode->distAlongSegment < 0))
+				{
+					if ((travelDir > 0 && segmentEnd <= start->distAlongSegment) ||
+						(travelDir < 0 && start->distAlongSegment < 1))
 					{
-						if ((travelDir > 0 && segmentEnd <= start->distAlongSegment) ||
-							(travelDir < 0 && start->distAlongSegment < 1))
-						{
-							cp->ai.c.currentRoad = GetNextRoadInfo(cp, 1, &turnAngle, &startDist, start);
-							newNode->dir = start->dir + turnAngle & 0xfff;
-							newNode->distAlongSegment = startDist;
+						cp->ai.c.currentRoad = GetNextRoadInfo(cp, 1, &turnAngle, &startDist, start);
+						newNode->dir = start->dir + turnAngle & 0xfff;
+						newNode->distAlongSegment = startDist;
 
-							if (cp->ai.c.currentRoad == -1)
-								break;
-						}
+						if (cp->ai.c.currentRoad == -1)
+							break;
+					}
+					else
+					{
+						if (travelDir < 1)
+							newNode->distAlongSegment = 0;
 						else
-						{
-							if (travelDir < 1)
-								newNode->distAlongSegment = 0;
-							else
-								newNode->distAlongSegment = segmentEnd;
-						}
+							newNode->distAlongSegment = segmentEnd;
 					}
 				}
 
 				cr = cp->ai.c.currentRoad;
-
-				if (cr > -1)
+				
+				if (GetSurfaceRoadInfo(&roadInfo, cr))
 				{
-					curve = NULL;
-					straight = NULL;
-
-					if (IS_CURVED_SURFACE(cr))
-						curve = GET_CURVE(cr);
-					else
-						straight = GET_STRAIGHT(cr);
-
+					// this node is unused
 					tempNode.dir = newNode->dir;
 					tempNode.pathType = newNode->pathType;
 					tempNode.distAlongSegment = newNode->distAlongSegment;
@@ -3177,18 +3138,18 @@ int CreateNewNode(_CAR_DATA * cp)
 
 					if (oldRoad != cr && turnAngle == 0)
 					{
-						if (curve)
+						if (ROAD_LANE_DIR(&roadInfo, cp->ai.c.currentLane) == 0)
+							travelDir = 1;
+						else
+							travelDir = -1;
+						
+						if (roadInfo.curve)
 						{
 							int dist;
-
-							if (ROAD_LANE_DIR(curve, cp->ai.c.currentLane) == 0)
-								travelDir = 1;
-							else
-								travelDir = -1;
-
-							if (curve->inside > 9)
+							
+							if (roadInfo.curve->inside > 9)
 								dist = travelDir << 6;
-							else if (curve->inside > 19)
+							else if (roadInfo.curve->inside > 19)
 								dist = travelDir << 5;
 							else
 								dist = travelDir << 7;
@@ -3197,11 +3158,6 @@ int CreateNewNode(_CAR_DATA * cp)
 						}
 						else
 						{
-							if (ROAD_LANE_DIR(straight, cp->ai.c.currentLane) == 0)
-								travelDir = 1;
-							else
-								travelDir = -1;
-
 							newNode->distAlongSegment = newNode->distAlongSegment + travelDir * 1024;
 						}
 					}
@@ -3240,7 +3196,7 @@ int CreateNewNode(_CAR_DATA * cp)
 							tryToPark = (makeLimoPullOver != 0);
 						}
 
-						newLane = CheckChangeLanes(straight, curve, newNode->distAlongSegment, cp, tryToPark);
+						newLane = CheckChangeLanes(roadInfo.straight, roadInfo.curve, newNode->distAlongSegment, cp, tryToPark);
 
 						// try change lanes or park
 						if (newLane != cp->ai.c.currentLane)
@@ -3249,10 +3205,7 @@ int CreateNewNode(_CAR_DATA * cp)
 
 							if (tryToPark)
 							{
-								if (makeLimoPullOver ||
-									(cp->ai.c.ctrlState == 0 &&
-										(straight && ROAD_IS_PARKING_ALLOWED_AT(straight, newLane) ||
-											curve && ROAD_IS_PARKING_ALLOWED_AT(curve, newLane))))
+								if (makeLimoPullOver || cp->ai.c.ctrlState == 0 && ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane))
 								{
 									makeNextNodeCtrlNode = cp->id;
 
@@ -3270,7 +3223,7 @@ int CreateNewNode(_CAR_DATA * cp)
 					tempNode.x = newNode->x;
 					tempNode.z = newNode->z;
 
-					GetNodePos(straight, NULL, curve, newNode->distAlongSegment, cp, &tempNode.x, &tempNode.z, cp->ai.c.currentLane);
+					GetNodePos(roadInfo.straight, NULL, roadInfo.curve, newNode->distAlongSegment, cp, &tempNode.x, &tempNode.z, cp->ai.c.currentLane);
 
 					if (turnAngle == -1024)
 					{
@@ -3340,6 +3293,7 @@ int CreateNewNode(_CAR_DATA * cp)
 						}
 					}
 				}
+				
 				break;
 			}
 
