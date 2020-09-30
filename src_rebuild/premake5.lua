@@ -91,7 +91,7 @@ project "PSX"
         links {
             "GL",
             "GLEW",
-            "openal",
+            "openal", -- FIXME: is linux using openal-soft?
             "SDL2",
         }
 
@@ -107,7 +107,6 @@ project "REDRIVER2"
 
     includedirs { 
         "GAME", 
-        "EMULATOR"
     }
 
     defines { GAME_REGION }
@@ -115,16 +114,23 @@ project "REDRIVER2"
     files {
         "GAME/**.H",
         "GAME/**.C",
-        "utils/**.h",
-        "utils/**.cpp",
-        "redriver2_psxpc.cpp",
-        "DebugOverlay.cpp",
     }
 
     filter "system:Windows or linux"
         defines { "OGL", "GLEW" }
         dependson { "PSX" }
         links { "PSX", "jpeg" }
+		
+		includedirs { 
+			"EMULATOR"
+		}
+		
+		files {
+			"utils/**.h",
+			"utils/**.cpp",
+			"redriver2_psxpc.cpp",
+			"DebugOverlay.cpp",
+		}
 
     filter "system:Windows"
         files { 
