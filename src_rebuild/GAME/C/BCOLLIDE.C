@@ -145,15 +145,12 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		else
 			zover = xover;
 
-		if (xover > -1)
-		{
-			if (zover < xover)
-				boxOverlap = zover;
-			else
-				boxOverlap = xover;
-		}
-		else
+		if (xover <= -1)
 			boxOverlap = zover;
+		else if (zover < xover)
+			boxOverlap = zover;
+		else
+			boxOverlap = xover;
 	}
 
 	return 1;
@@ -239,10 +236,10 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	sign = 0;
 	carBarrierCollision = false;
 
-	smallest = body[0].limit[0] + 1; // [A] I doubt in this line
-
+	smallest = body[0].limit[0] + 1;
+	
 	if (!body[0].isCameraOrTanner && !body[1].isCameraOrTanner &&
-		(body[1].length[1] >= body[1].length[0] / 8 || body[1].length[0] >= body[1].length[1] / 8))
+		(body[1].length[1] >= body[1].length[0] * 4 || body[1].length[0] >= body[1].length[1] * 4))
 	{
 		carBarrierCollision = true;
 	}
@@ -306,15 +303,15 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 
 	cd = &body[(besti ^ 1)];
 
-	sign0 = sign;
-
-	if (cd->axis[0].vx * body[besti].axis[bestk].vx + cd->axis[0].vz * body[besti].axis[bestk].vz + 0x800 > -1)
+	if (cd->axis[0].vx * body[besti].axis[bestk].vx + cd->axis[0].vz * body[besti].axis[bestk].vz + 2048 > -1)
 		sign0 = -sign;
+	else
+		sign0 = sign;
 
-	sign1 = sign;
-
-	if (cd->axis[1].vx * body[besti].axis[bestk].vx + cd->axis[1].vz * body[besti].axis[bestk].vz + 0x800 > -1)
+	if (cd->axis[1].vx * body[besti].axis[bestk].vx + cd->axis[1].vz * body[besti].axis[bestk].vz + 2048 > -1)
 		sign1 = -sign;
+	else
+		sign1 = sign;
 
 	collisionResult->penetration = smallest;
 
@@ -373,8 +370,8 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 
 	hit = 1;
 	neverfree = 1;
-	time = 0x1000;
-	step = 0x800;
+	time = 4096;
+	step = 2048;
 	
 	i = 1;
 	do {
@@ -999,7 +996,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		cd[0].theta = cp->hd.direction;
 
-		if (cp->controlType == 6)
+		if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER)
 		{
 			cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 			cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
@@ -1046,11 +1043,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER) 
 		{
-			collided = (bcollided2d(cd, 1) != 0);
+			collided = bcollided2d(cd, 1);
 		}
 		else 
 		{
-			collided = (bcollided2d(cd, 0) != 0);
+			collided = bcollided2d(cd, 0);
 
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
