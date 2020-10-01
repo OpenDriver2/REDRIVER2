@@ -1,19 +1,23 @@
 -- premake5.lua
 
+require "premake_modules/psx"
+
 -- you can redefine dependencies
 SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
 GLEW_DIR = os.getenv("GLEW_DIR") or "dependencies/glew"
 OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
 
+PSYQ_DIR = os.getenv("PSYQ_DIR") or "PSY-Q"
+
 GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 
 if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
     error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
 end
-
+	
 workspace "REDRIVER2"
-    configurations { "Debug", "Release" }
+    configurations { "Debug", "Release", "Release Dev" }
 
     defines { VERSION } 
 
@@ -31,72 +35,15 @@ workspace "REDRIVER2"
             "NDEBUG",
         }
         
-    if _TARGET_OS == "windows" then
-        dofile("premake_libjpeg.lua")
-    end
-
--- EMULATOR layer
-project "PSX"
-    kind "StaticLib"
-    language "C++"
-    compileas "C++"
-    targetdir "bin/%{cfg.buildcfg}"
-
-    includedirs { 
-        "EMULATOR"
-    }
-
-    defines { GAME_REGION }
-
-    files {
-        "EMULATOR/**.h", 
-        "EMULATOR/**.H", 
-        "EMULATOR/**.c", 
-        "EMULATOR/**.C", 
-        "EMULATOR/**.cpp",
-        "EMULATOR/**.CPP",
-    }
-
-    defines { "OGL", "GLEW" }
-
-    includedirs { 
-        SDL2_DIR.."/include",
-        GLEW_DIR.."/include",
-        OPENAL_DIR.."/include",
-    }
-
-    filter "system:Windows"
-        links { 
-            "opengl32",
-            "glew32", 
-            "SDL2", 
-            "OpenAL32"
-        }
-    
-        libdirs { 
-            SDL2_DIR.."/lib/x86",
-            GLEW_DIR.."/lib/Release/Win32",
-            OPENAL_DIR.."/libs/Win32",
-        }
-
-    filter "system:linux"
-        buildoptions {
-            "-Wno-narrowing"
-        }
-
-        includedirs {
-            "/usr/include/SDL2"
-        }
-
-        links {
-            "GL",
-            "GLEW",
-            "openal", -- FIXME: is linux using openal-soft?
-            "SDL2",
-        }
-
-    filter "configurations:Release"
-        optimize "Full"
+	if os.target() == "windows" then
+		dofile("premake_libjpeg.lua")
+	end
+	
+	if os.target() ~= "psx" then
+		dofile("premake_emulator.lua")
+	end
+	
+-- TODO: overlays
 
 -- game iteslf
 project "REDRIVER2"
@@ -115,9 +62,21 @@ project "REDRIVER2"
         "GAME/**.H",
         "GAME/**.C",
     }
+	
+	-- exclude sources which belong to overlays
+	if os.target() == "psx" then
+		excludes {
+			"GAME/MEMCARD/**.C",
+			"GAME/MEMCARD/**.H",
+			"GAME/FRONTEND/**.C",
+			"GAME/FRONTEND/**.H",
+			"GAME/C/LEADAI.C",
+			"GAME/C/PATHFIND.C",
+		}
+	end
 
     filter "system:Windows or linux"
-        defines { "OGL", "GLEW" }
+        defines { "OGL", "GLEW", "SIMPLE_SPOOL" }
         dependson { "PSX" }
         links { "PSX", "jpeg" }
 		
@@ -133,6 +92,7 @@ project "REDRIVER2"
 		}
 
     filter "system:Windows"
+		
         files { 
             "Windows/resource.h", 
             "Windows/Resource.rc", 
@@ -166,16 +126,36 @@ project "REDRIVER2"
         }
 
         linkoptions { "-z muldefs" }
+		
+	filter "system:psx"
+		defines { "PSX" }
+		includedirs {
+            PSYQ_DIR.."/include"
+        }
+		links {
+			PSYQ_DIR.."/LIBETC",
+			PSYQ_DIR.."/LIBPAD",
+			PSYQ_DIR.."/LIBGTE",
+			PSYQ_DIR.."/LIBMCRD",
+			PSYQ_DIR.."/LIBCD",
+			PSYQ_DIR.."/LIBSN",
+			PSYQ_DIR.."/LIBSPU",
+			PSYQ_DIR.."/LIBAPI"
+        }
 
     filter "configurations:Debug"
         defines { 
             "DEBUG_OPTIONS",
             "COLLISION_DEBUG" 
          }
+		 symbols "On"
 
     filter "configurations:Release"
+        optimize "Full"
+		
+	filter "configurations:Release Dev"
         defines { 
-            --"DEBUG_OPTIONS",
-            --"COLLISION_DEBUG" 
+            "DEBUG_OPTIONS",
+            "COLLISION_DEBUG" 
         }
         optimize "Full"
