@@ -2404,6 +2404,7 @@ void PrintCommandLineArguments()
 		"  -players <count> : Set player count (1 or 2)\n"\
 		"  -playercar <number>, -player2car <number> : set player wanted car\n"\
 		"  -mission <number> : starts specified mission\n"\
+		"  -chase <number> : using specified chase number for mission\n"\
 		"  -replay <filename> : starts replay from file\n"\
 		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"\
 		"  -nointro : disable intro screens\n"\
@@ -2532,6 +2533,17 @@ int redriver2_main(int argc, char** argv)
 			}
 			i++;
 			NumPlayers = atoi(argv[i + 1]);
+		}
+		else if (!_stricmp(argv[i], "-chase"))
+		{
+			if (argc - i < 2)
+			{
+				printError("-chase missing number argument!");
+				return -1;
+			}
+
+			gChaseNumber = atoi(argv[i + 1]);
+			i++;
 		}
 		else if (!_stricmp(argv[i], "-mission"))
 		{
