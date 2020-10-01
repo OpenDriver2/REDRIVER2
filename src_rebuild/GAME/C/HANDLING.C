@@ -764,6 +764,7 @@ void GlobalTimeStep(void)
 					CheckScenaryCollisions(cp);
 				}
 
+
 				// check collisions with vehicles
 				if (cp->hd.mayBeColliding != 0) 
 				{

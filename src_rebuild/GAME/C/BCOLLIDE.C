@@ -93,8 +93,8 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		i--;
 	} while (i != -1);
 
-	ac = rcossin_tbl[(dtheta + 0x400 & 0x7ff) * 2];
 	as = rcossin_tbl[(dtheta & 0x7ff) * 2];
+	ac = rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
 
 	delta.vx = body[0].x.vx - body[1].x.vx;
 	delta.vz = body[0].x.vz - body[1].x.vz;
@@ -109,14 +109,12 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 			body[i].dist[j] = FIXEDH(body[i].axis[j].vx * delta.vx + body[i].axis[j].vz * delta.vz);
 			body[i].limit[j] = body[i].length[j] + FIXEDH(body[k].length[j] * ac + body[k].length[1-j] * as);
 
-			if (body[i].limit[j] < body[i].dist[j])
-				return 0;
-
-			if (body[i].dist[j] < -body[i].limit[j])
+			if (body[i].dist[j] < -body[i].limit[j] ||
+				body[i].dist[j] > body[i].limit[j])
 				return 0;
 
 			j--;
-		} while (j != -1);
+		} while (j >= 0);
 
 		k++;
 		i--;
@@ -131,10 +129,10 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
 		tmp2 = ABS(tmp2);
 
-		if (tmp2 < 11)
-			xover = -1;
-		else
+		if (tmp2 > 10)
 			xover = (FE * ONE) / tmp2;
+		else
+			xover = -1;
 
 		FE = ABS(body[1].dist[1]) - ABS(body[1].limit[1]);
 		FE = ABS(FE);
@@ -142,9 +140,10 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
 		tmp2 = ABS(tmp2);
 
-		zover = xover;
 		if (tmp2 > 10)
 			zover = (FE * ONE) / tmp2;
+		else
+			zover = xover;
 
 		if (xover > -1)
 		{
@@ -240,10 +239,10 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	sign = 0;
 	carBarrierCollision = false;
 
-	smallest = body->limit[0] + 1;
+	smallest = body[0].limit[0] + 1; // [A] I doubt in this line
 
-	if ((body[0].isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0) && 
-		(body[1].length[0] << 3 <= body[1].length[1]) || (body[1].length[1] << 3 <= body[1].length[0]))
+	if (!body[0].isCameraOrTanner && !body[1].isCameraOrTanner &&
+		(body[1].length[1] >= body[1].length[0] / 8 || body[1].length[0] >= body[1].length[1] / 8))
 	{
 		carBarrierCollision = true;
 	}
@@ -287,14 +286,14 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 			upper = body[1].limit[k] - body[1].dist[k];
 			lower = body[1].dist[k] + body[1].limit[k];
 
-			if (upper < lower && (body[1].length[k] < body[1].length[1-k] << 2))
+			if (upper < lower && (body[1].length[k] < body[1].length[1-k] * 4))
 			{
 				besti = 1;
 				sign = 1;
 				bestk = k;
 			}
 
-			if (lower < upper && (body[1].length[k] < body[1].length[1 - k] << 2))
+			if (lower < upper && (body[1].length[k] < body[1].length[1 - k] * 4))
 			{
 				besti = 1;
 				sign = -1;
