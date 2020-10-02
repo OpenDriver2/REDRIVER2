@@ -1389,102 +1389,6 @@ void SpoolSYNC(void)
 // [D] [T]
 void LoadInAreaTSets(int area)
 {
-#if 0
-	int offset;
-	int i;
-
-	int slot;
-
-	unsigned char *tpages;
-	int ntpages_to_load;
-	int navailable;
-
-	char *loadaddr;
-	int availableslots[16];
-
-	tpages = AreaTPages + area * 16;
-	ntpages_to_load = AreaData[area].num_tpages;
-
-	loadaddr = model_spool_buffer + 0xA000;
-	navailable = 0;
-
-	if (slotsused < 19)
-	{
-		slot = slotsused;
-
-		do {
-			offset = 0;
-
-			if (tpageslots[slot] == 0xff) // [A]
-			{
-				availableslots[navailable++] = slot;
-			}
-			else 
-			{
-				i = 0;
-				while (tpageslots[slot] != tpages[i])  // [A]
-				{
-					if (ntpages_to_load <= i)
-						break;
-
-					i++;
-				};
-
-				if (i == ntpages_to_load)
-				{
-					availableslots[navailable++] = slot;
-				}
-			}
-
-			slot++;
-		} while (slot < 19);
-	}
-
-	offset = AreaData[area].gfx_offset;
-	i = 0;
-
-	if (ntpages_to_load != 0) 
-	{
-		if (tpageloaded[*tpages] != 0)	// weird goto lol
-		{
-			goto LAB_0007bc94;
-		}
-
-		if (navailable-- > 0)
-		{
-			while (true) 
-			{
-				tsetinfo[tsetcounter*2 + 1] = availableslots[navailable];
-
-				while (true)
-				{
-					RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
-					offset += 17;
-
-					i++;
-					tsetinfo[tsetcounter * 2] = *tpages;
-
-					tsetcounter++;
-					tpages++;
-
-					if (ntpages_to_load <= i)
-						return;
-
-					if (tpageloaded[*tpages] == 0)
-						break;
-
-				LAB_0007bc94:
-					tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
-				}
-
-				if (navailable < 1)
-					break;
-
-				navailable--;
-			}
-		}
-	}
-#else
 	int offset;
 	int i;
 
@@ -1539,11 +1443,11 @@ void LoadInAreaTSets(int area)
 	if (!ntpages_to_load)
 		return;
 
+	i = 0;
 	while (--navailable >= 0)
 	{
 		tsetinfo[tsetcounter * 2 + 1] = availableslots[navailable];
 
-		i = 0;
 		while (i < ntpages_to_load)
 		{
 			RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
@@ -1561,7 +1465,6 @@ void LoadInAreaTSets(int area)
 			tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
 		}
 	}
-#endif
 }
 
 
