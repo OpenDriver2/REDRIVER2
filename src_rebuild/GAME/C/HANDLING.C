@@ -824,6 +824,9 @@ void GlobalTimeStep(void)
 								bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
 								CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
+								int c1InfiniteMass;
+								int c2InfiniteMass;
+
 								collisionpoint[1] -= 0;
 
 								lever0[0] = collisionpoint[0] - cp->hd.where.t[0];
@@ -931,17 +934,25 @@ void GlobalTimeStep(void)
 
 								if (m2 < m1)
 								{
-									do1 = (m2 << 0xc) / m1;
-									do2 = 0x1000;
+									do1 = (m2 * 4096) / m1;
+									do2 = 4096;
 								}
 								else
 								{
-									do2 = (m1 << 0xc) / m2;
-									do1 = 0x1000;
+									do2 = (m1 * 4096) / m2;
+									do1 = 4096;
 								}
 
+								c1InfiniteMass = cp->controlType == CONTROL_TYPE_CUTSCENE || m1 == 0x7fff;
+								c2InfiniteMass = c1->controlType == CONTROL_TYPE_CUTSCENE || m2 == 0x7fff;
+
+								// [A] if any checked cars has infinite mass, reduce bouncing
+								// TODO: very easy difficulty
+								if (c1InfiniteMass ||c2InfiniteMass)
+									strikeVel = strikeVel * 10 >> 2;
+
 								// apply force to car 0
-								if (cp->controlType != CONTROL_TYPE_CUTSCENE && m1 != 0x7fff)
+								if (!c1InfiniteMass)
 								{
 									int twistY, strength1;
 
@@ -980,7 +991,7 @@ void GlobalTimeStep(void)
 								}
 
 								// apply force to car 1
-								if (c1->controlType != CONTROL_TYPE_CUTSCENE && m2 != 0x7fff)
+								if (!c2InfiniteMass)
 								{
 									int twistY, strength2;
 
