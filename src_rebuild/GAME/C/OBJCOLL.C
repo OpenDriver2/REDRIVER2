@@ -1416,7 +1416,7 @@ void DoScenaryCollisions(void)
 					CheckScenaryCollisions(cp);
 				}
 			}
-			else if(cp->controlType != CONTROL_TYPE_PLAYER)
+			else
 			{
 				CheckScenaryCollisions(cp);
 			}
