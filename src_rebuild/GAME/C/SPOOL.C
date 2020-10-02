@@ -1389,6 +1389,7 @@ void SpoolSYNC(void)
 // [D] [T]
 void LoadInAreaTSets(int area)
 {
+#if 0
 	int offset;
 	int i;
 
@@ -1483,6 +1484,84 @@ void LoadInAreaTSets(int area)
 			}
 		}
 	}
+#else
+	int offset;
+	int i;
+
+	int slot;
+
+	unsigned char *tpages;
+	int ntpages_to_load;
+	int navailable;
+
+	char *loadaddr;
+	int availableslots[16];
+
+	tpages = AreaTPages + area * 16;
+	ntpages_to_load = AreaData[area].num_tpages;
+
+	loadaddr = model_spool_buffer + 0xA000;
+	navailable = 0;
+
+	slot = slotsused;
+
+	while (slot < 19)
+	{
+		offset = 0;
+
+		if (tpageslots[slot] == 0xff) // [A]
+		{
+			availableslots[navailable++] = slot;
+		}
+		else
+		{
+			i = 0;
+			while (tpageslots[slot] != tpages[i])  // [A]
+			{
+				if (ntpages_to_load <= i)
+					break;
+
+				i++;
+			};
+
+			if (i == ntpages_to_load)
+			{
+				availableslots[navailable++] = slot;
+			}
+		}
+
+		slot++;
+	}
+
+	offset = AreaData[area].gfx_offset;
+
+
+	if (!ntpages_to_load)
+		return;
+
+	while (--navailable >= 0)
+	{
+		tsetinfo[tsetcounter * 2 + 1] = availableslots[navailable];
+
+		i = 0;
+		while (i < ntpages_to_load)
+		{
+			RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
+			offset += 17;
+
+			i++;
+			tsetinfo[tsetcounter * 2] = *tpages;
+
+			tsetcounter++;
+			tpages++;
+
+			if (tpageloaded[*tpages] == 0)
+				break;
+
+			tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
+		}
+	}
+#endif
 }
 
 
