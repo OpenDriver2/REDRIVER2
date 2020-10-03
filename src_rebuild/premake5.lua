@@ -80,9 +80,7 @@ project "PSX"
         }
 
     filter "system:linux"
-        buildoptions {
-            "-Wno-narrowing"
-        }
+        buildoptions { "-Wno-narrowing", "-m32" }
 
         includedirs {
             "/usr/include/SDL2"
@@ -94,6 +92,8 @@ project "PSX"
             "openal",
             "SDL2",
         }
+
+        linkoptions { "-m32" }
 
     filter "configurations:Release"
         optimize "Full"
@@ -145,7 +145,7 @@ project "REDRIVER2"
         }
         
     filter "system:linux"
-        buildoptions { "-Wno-narrowing", "-fpermissive" }
+        buildoptions { "-Wno-narrowing", "-fpermissive", "-m32" }
         cppdialect "C++11"
 
         includedirs {
@@ -159,7 +159,7 @@ project "REDRIVER2"
             "SDL2",
         }
 
-        linkoptions { "-z muldefs" }
+        linkoptions { "-z muldefs", "-m32" }
 
     filter "configurations:Debug"
         defines { 
