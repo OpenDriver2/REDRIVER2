@@ -6,6 +6,15 @@
 #elif defined (__unix__)
 #include <sys/stat.h>
 #define _mkdir(str) mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+
+inline void fixslashes(char* pathbuff)
+{
+    while (*pathbuff)
+    {
+        if (*pathbuff == '\\') *pathbuff = '/';
+        pathbuff++;
+    }
+}
 #endif
 
 #ifdef __GNUC__
