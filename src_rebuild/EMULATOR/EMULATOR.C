@@ -498,7 +498,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
 	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-	if (dx > abs(dy)) { // horizontal
+	if (dx > abs((short)dy)) { // horizontal
 		vertex[0].x = p0[0] + ofsX;
 		vertex[0].y = p0[1] + ofsY;
 
