@@ -37,7 +37,7 @@ extern void sys_freeall();
 		char* _oldmalloc = mallocptr;
 
 #define MALLOC_END() \
-	if(mallocptr > _oldmalloc) printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", __FUNCTION__, mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
+	if(mallocptr > _oldmalloc) printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
 }
 
 extern int leadAIRequired;
