@@ -235,6 +235,8 @@ int SaveReplayToBuffer(char *buffer)
 	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * 60);
 	pt += sizeof(PLAYBACKCAMERA) * 60;
 
+	printInfo("ping buffer offset: %d\n", pt - buffer);
+	
 	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * 400);
 	pt += sizeof(_PING_PACKET) * 400;
 
@@ -339,6 +341,8 @@ int LoadCutsceneAsReplay(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
+			printWarning("cutscene size: %d\n", size);
+			
 			LoadfileSeg(filename, _other_buffer, offset, size);
 
 			int result = LoadReplayFromBuffer(_other_buffer);
@@ -397,27 +401,40 @@ int LoadReplayFromBuffer(char *buffer)
 		pt += sizeof(REPLAY_STREAM_HEADER);
 
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
-
+		
 		// copy source type
 		memcpy(&destStream->SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
 
+		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
+		
 		// init buffers
-		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
-		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
-		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+#ifdef CUTSCENE_RECORDER
+		if (gCutsceneAsReplay)
+		{
+			AllocateReplayStream(destStream, 4000);
+			
+			// copy pad data and advance buffer
+			memcpy(destStream->PadRecordBuffer, pt, size);
+		}
+		else
+#endif
+		{
+			destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
+			destStream->PadRecordBuffer = (PADRECORD*)replayptr;
+			destStream->PadRecordBufferEnd = (PADRECORD*)(replayptr + sheader->Size);
+			destStream->playbackrun = 0;
+
+			// copy pad data and advance buffer
+			memcpy(replayptr, pt, size);
+			replayptr += size;
+		}
+
+		pt += size;
+
 		destStream->length = sheader->Length;
-		destStream->playbackrun = 0;
 
 		if (sheader->Length > maxLength)
 			maxLength = sheader->Length;
-
-		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
-
-		// copy pad data and advance buffer
-		memcpy(replayptr, pt, size);
-		replayptr += size;
-
-		pt += size;
 	}
 
 	ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)replayptr;
@@ -453,6 +470,8 @@ int LoadReplayFromBuffer(char *buffer)
 	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * 60);
 	pt += sizeof(PLAYBACKCAMERA) * 60;
 
+	printInfo("ping buffer offset: %d\n", pt-buffer);
+	
 	PingBufferPos = 0;
 	PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
 	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);

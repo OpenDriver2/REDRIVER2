@@ -1296,6 +1296,7 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
+	char customFilename[64];
 
 	if (gCurrentMissionNumber < 21) 
 		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
@@ -1313,6 +1314,9 @@ int LoadCutsceneToBuffer(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
+			// [A] REDRIVER2 - custom cutcenes or chases
+			sprintf(customFilename, "REPLAYS\\CUT%d\\%d.D2RP", gCurrentMissionNumber, subindex);
+
 			if (CutsceneBuffer.bytesFree < size) 
 			{
 				// load into lead/path AI buffer
@@ -1322,11 +1326,23 @@ int LoadCutsceneToBuffer(int subindex)
 				CutsceneBuffer.currentPointer = _other_buffer2;
 				CutsceneBuffer.bytesFree = 0xc000;
 
-				LoadfileSeg(filename, _other_buffer2, offset, size);
+				if (FileExists(customFilename))
+				{
+					printInfo("Custom cutscene replay file loaded\n");
+					LoadfileSeg(customFilename, _other_buffer2, 0, size);
+				}
+				else
+					LoadfileSeg(filename, _other_buffer2, offset, size);				
 			}
 			else 
 			{
-				LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
+				if (FileExists(customFilename))
+				{
+					printInfo("Custom cutscene replay file loaded\n");
+					LoadfileSeg(customFilename, _other_buffer2, 0, size);
+				}
+				else
+					LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 			}
 
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;

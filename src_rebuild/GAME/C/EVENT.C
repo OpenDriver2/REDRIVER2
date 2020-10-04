@@ -2574,6 +2574,14 @@ int GetBridgeRotation(int timer)
 	if (debugRotation != -1)
 		return debugRotation;
 
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay != 0)
+	{
+		return 0;
+	}
+#endif
+
 	if (2600 < timer) 
 	{
 		return 0;

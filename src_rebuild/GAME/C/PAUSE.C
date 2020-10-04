@@ -190,8 +190,16 @@ MENU_ITEM DebugJustForFunItems[] =
 MENU_HEADER DebugJustForFunHeader =
 { "Just for fun", { 0, 0, 0, 0 }, 0u, DebugJustForFunItems };
 
+#ifdef CUTSCENE_RECORDER
+extern void NextCutsceneRecorderPlayer(int dir);
+extern char gCutsceneRecorderPauseText[64];
+#endif
+
 MENU_ITEM DebugOptionsItems[] =
 {
+#ifdef CUTSCENE_RECORDER
+	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
+#endif
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
 	{ "Fun cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
@@ -228,18 +236,10 @@ MENU_HEADER YesNoRestartHeader =
 MENU_HEADER YesNoQuitHeader =
 { "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
-#ifdef CUTSCENE_RECORDER
-extern void NextCutsceneRecorderPlayer(int dir);
-extern char gCutsceneRecorderPauseText[64];
-#endif
-
 MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-#ifdef CUTSCENE_RECORDER
-	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
-#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
@@ -680,7 +680,7 @@ void SaveReplay(int direction)
 	FILE* fp = fopen("chase.d2rp", "wb");
 	if (fp)
 	{
-		fwrite(_other_buffer, size, 1, fp);
+		fwrite(_other_buffer, 1, size, fp);
 		fclose(fp);
 	}
 #endif
