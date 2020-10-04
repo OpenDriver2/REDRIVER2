@@ -3397,7 +3397,8 @@ int HandleGameOver(void)
 				{
 					StoreEndData();
 #ifndef PSX
-					SaveCurrentGame();
+					if(GameType == GAME_MISSION)
+						SaveCurrentGame();
 #endif
 				}
 
