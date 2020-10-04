@@ -2292,11 +2292,11 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 	int iVar3;
 	int iVar4;
 	int direction;
-	uint uVar5;
-	ulong uVar6;
+	int uVar5;
+	long uVar6;
 	unsigned long puVar7;
 	VECTOR *pVVar8;
-	uint uVar9;
+	int uVar9;
 	char *message;
 	int *piVar10;
 	int iVar11;
@@ -2393,7 +2393,8 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 				if (-1 < uVar9)
 					uVar5 = uVar9;
 
-				if (target->data[7] < uVar5) goto LAB_00062684;
+				if (target->data[7] < uVar5)
+					goto LAB_00062684;
 			}
 
 			uVar5 = target->data[1] & 0x3000000;
