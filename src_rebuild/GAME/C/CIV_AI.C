@@ -543,17 +543,12 @@ DRIVER2_STRAIGHT* tmpStr[2];
 DRIVER2_CURVE* tmpCrv[2];
 short validExitIdx[4];
 
-// [D] [A]
-// BUGS:
-//		- cannot continue to new straight from curve - unable to determine best lane
+// [D] [T]
+// BUGS: sometimes not getting right lane when road direction switched
 int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist, CIV_ROUTE_ENTRY* oldNode)
 {
 	unsigned long junctionFlags;
 	DRIVER2_JUNCTION* jn;
-	//DRIVER2_STRAIGHT* tmpSt;
-	//DRIVER2_CURVE* tmpCv;
-	//DRIVER2_CURVE* curve;
-	//DRIVER2_STRAIGHT* straight;
 
 	DRIVER2_ROAD_INFO roadInfo;
 
@@ -1237,6 +1232,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				if (laneDirCorrect && oppDir == 0 || !laneDirCorrect && oppDir != 0)
 				{
 					laneFromLeft = numLanes;
+					laneFromRight = 0;
+					
 					count = numLanes;
 
 					do
@@ -1258,11 +1255,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						count--;
 					} while (count >= 0);
 
-					if (laneFromLeft < 0)
-						laneFromLeft = 42;
-
 					count = ROAD_HAS_FAST_LANES(&roadInfo);
-					laneFromRight = numLanes;
 
 					while (count < numLanes)
 					{
@@ -1287,7 +1280,10 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						laneFromRight = numLanes;
 					}
 
-					if (numLanes <= laneFromRight)
+					if (laneFromLeft < 0)
+						laneFromLeft = 42;
+					
+					if (laneFromRight >= numLanes)
 						laneFromRight = 42;
 
 					if (laneFromLeft == 42 && laneFromRight == 42)
@@ -1296,22 +1292,11 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						return 0;
 					}
 
+
 					// [A] this is bugged still
-					
-					if (laneFromRight - newLane < 0)
-					{
-						if (newLane - laneFromRight >= ABS(laneFromLeft - newLane))
-						{
-							laneFromRight = laneFromLeft;
-						}
-					}
-					else
-					{
-						if (laneFromRight - newLane >= ABS(laneFromLeft - newLane))
-						{
-							laneFromRight = laneFromLeft;
-						}
-					}
+					if (ABS(laneFromRight - newLane) < ABS(laneFromLeft - newLane))
+						laneFromRight = laneFromLeft;
+
 
 					laneFit[newExit] = laneFromRight;
 
@@ -1323,11 +1308,12 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 							laneFit[newExit] = 0;
 					}
 
-					//printWarning("Fitting lane\n");
-
-					newLane = laneFromRight;
+					int oldLane = newLane;
+					
 					if (laneFromRight >= numLanes - 1)
 						newLane = numLanes - 1;
+					//else
+					//	newLane = laneFromRight;
 
 					if (newLane < 0)
 						newLane = 0;
@@ -1340,11 +1326,11 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 				if (IS_STRAIGHT_SURFACE(newRoad))
 				{
-					cp->ai.c.turnDir = ROAD_LANE_DIR(tmpStr[newExit], laneFit[newExit]);
+					cp->ai.c.turnDir = (ROAD_LANE_DIR(tmpStr[newExit], laneFit[newExit]) ^ 1) & 1;
 				}
 				else
 				{
-					cp->ai.c.turnDir = ROAD_LANE_DIR(tmpCrv[newExit], laneFit[newExit]);
+					cp->ai.c.turnDir = (ROAD_LANE_DIR(tmpCrv[newExit], laneFit[newExit]) ^ 1) & 1;
 				}
 
 				//printWarning("new turn dir: %d\n", cp->ai.c.turnDir);
@@ -4024,7 +4010,7 @@ int CivControl(_CAR_DATA * cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 1
+#if 0
 		{
 			//maxCivCars = 2;
 			//maxCopCars = 0;
