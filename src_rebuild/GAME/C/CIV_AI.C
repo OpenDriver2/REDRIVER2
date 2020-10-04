@@ -700,8 +700,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 			if (exitSurfId != -1)
 			{
 				int exitDir;
-				exitDir = ((exitIdx + 4) - exitFrom);// % 4;
-				exitDir = exitDir - (exitDir / 4) * 4;
+				exitDir = ((exitIdx + 4) - exitFrom) % 4;
+				//exitDir = exitDir - (exitDir / 4) * 4;
 
 				if (exitDir == 1)
 					*turnAngle = -1024;
@@ -728,7 +728,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 					if(roadInfo.straight)
 					{
-						oppDir = (turnDir - roadInfo.straight->angle) + 1024 & 0x800;
+						oppDir = (turnDir - roadInfo.straight->angle) + 1024U & 0x800;
 					}
 					else
 					{
@@ -748,7 +748,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					{
 						if (oppDir != oldOppDir) // next road is flipped
 						{
-							newLane = ROAD_WIDTH_IN_LANES(&roadInfo) - cp->ai.c.currentLane + 1;
+							newLane = ROAD_WIDTH_IN_LANES(&roadInfo) - (cp->ai.c.currentLane + 1);
 
 							//if (newLane == 0) // [A] temporary hack
 							//	newLane++;
@@ -800,8 +800,6 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					{
 						int count;
 
-						//printInfo("check right\n");
-
 						count = laneCount;		// lane counter
 						newLane = laneCount;
 
@@ -822,6 +820,9 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
 						//printInfo("Valid exit: %d, dir: %d vs %d, turnDir: %d, oppDir: %d (%d), turnAng: %d\n", exitIdx, tmpSt->angle, oldNode->dir, turnDir, oppDir, (turnDir - tmpSt->angle) + 1024, turnAng);
 					}
+
+					//printInfo("car %d check %s, valid: %d\n", cp->id, (turnAng == 1024) ? "right" : (turnAng == -1024 ? "left" : "forward"), valid);
+
 				}
 			}
 
@@ -888,8 +889,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 		if (turnAngle != NULL)
 		{
 			int invExit;
-			invExit = (bestExit + 4 - exitFrom);// % 4;
-			invExit = invExit - (invExit / 4) * 4;
+			invExit = (bestExit + 4 - exitFrom) % 4;
+			//invExit = invExit - (invExit / 4) * 4;
 
 			if (invExit == 1)
 				*turnAngle = -1024;
@@ -987,7 +988,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 
 			if (turnAng == 0)
 			{
-				//printWarning("check forward lane\n");
+				//printWarning("car %d check forward lane\n", cp->id);
 				
 				if (oppDir == oldOppDir)
 				{
@@ -1046,7 +1047,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					newLane = numLanes;
 				}
 
-				//printWarning("check left lane, chosen %d\n", newLane);
+				//printWarning("car %d check left lane, chosen %d\n", cp->id, newLane);
 			}
 			else if (turnAng == 1024)
 			{
@@ -1076,7 +1077,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					count--;
 				} while (count >= 0);
 
-				//printWarning("check right lane, chosen %d\n", newLane);
+				//printWarning("car %d check right lane, chosen %d\n", cp->id, newLane);
 			}
 
 			if (*turnAngle != 0)
@@ -1143,6 +1144,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						tmpNewLane[roadCnt] = test42;
 
 						count = numLanes;
+						laneNo = numLanes;
 						do
 						{
 							if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
@@ -1153,10 +1155,10 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 							count--;
 						} while (count >= 0);
 
-						if (laneNo == 0)	// [A] temporary dirty hack. Still needed here, idk why
-							laneNo++;
+						//if (laneNo == 0)	// [A] temporary dirty hack. Still needed here, idk why
+						//	laneNo++;
 
-						if (laneNo == 0 || laneNo >= numLanes) // [A] and here. Was laneNo > numLanes
+						if (laneNo < 0 || laneNo >= numLanes) // [A] and here. Was laneNo > numLanes
 						{
 							laneFit[roadCnt] = 666;
 							continue;
@@ -2237,6 +2239,7 @@ int CreateNewNode(_CAR_DATA * cp)
 						(travelDir < 0 && start->distAlongSegment < 1))
 					{
 						cp->ai.c.currentRoad = GetNextRoadInfo(cp, 1, &turnAngle, &startDist, start);
+						
 						newNode->dir = start->dir + turnAngle & 0xfff;
 						newNode->distAlongSegment = startDist;
 
@@ -3396,6 +3399,15 @@ int PingInCivCar(int minPingInDist)
 
 	PingOutCivsOnly = 1;
 
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay != 0)
+	{
+		requestCopCar = 0;
+		allowSpecSpooling = 0;
+	}
+#endif
+	
 	if (requestCopCar == 0 && numParkedCars < maxParkedCars && (gCurrentMissionNumber != 33 || numCivCars != 0))
 	{
 		tryPingInParkedCars = 1;
@@ -3896,6 +3908,23 @@ int PingInCivCar(int minPingInDist)
 
 	PingOutCivsOnly = 0;
 
+#ifdef CUTSCENE_RECORDER
+	//
+	// store pings
+	//
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay != 0 && CurrentGameMode != GAMEMODE_REPLAY)
+	{
+		_PING_PACKET packet;
+
+		packet.frame = (CameraCnt - frameStart & 0xffffU);
+		packet.carId = newCar->id;
+		packet.cookieCount = cookieCount;
+
+		PingBuffer[PingBufferPos++] = packet;
+	}
+#endif // CUTSCENE_RECORDER
+	
 	return newCar->id + 1;
 }
 
