@@ -156,7 +156,6 @@ void InitPadRecording(void)
 		// Start line: 1348
 	/* end block 3 */
 	// End Line: 1349
-
 // [D]
 int SaveReplayToBuffer(char *buffer)
 {
@@ -205,7 +204,7 @@ int SaveReplayToBuffer(char *buffer)
 
 		// copy source type
 		memcpy(&sheader->SourceType, &srcStream->SourceType, sizeof(STREAM_SOURCE));
-		sheader->Size = srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
+		sheader->Size = srcStream->padCount; // srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
 		sheader->Length = srcStream->length;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
@@ -235,8 +234,6 @@ int SaveReplayToBuffer(char *buffer)
 	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * 60);
 	pt += sizeof(PLAYBACKCAMERA) * 60;
 
-	printInfo("ping buffer offset: %d\n", pt - buffer);
-	
 	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * 400);
 	pt += sizeof(_PING_PACKET) * 400;
 
@@ -247,7 +244,11 @@ int SaveReplayToBuffer(char *buffer)
 		memcpy(pt, &MissionStartData, sizeof(MISSION_DATA));
 	}
 
+#ifdef PSX
 	return 0x3644;		// size?
+#else
+	return pt - buffer;
+#endif
 }
 
 
@@ -423,6 +424,7 @@ int LoadReplayFromBuffer(char *buffer)
 			destStream->PadRecordBuffer = (PADRECORD*)replayptr;
 			destStream->PadRecordBufferEnd = (PADRECORD*)(replayptr + sheader->Size);
 			destStream->playbackrun = 0;
+			destStream->padCount = sheader->Size;
 
 			// copy pad data and advance buffer
 			memcpy(replayptr, pt, size);
@@ -470,8 +472,6 @@ int LoadReplayFromBuffer(char *buffer)
 	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * 60);
 	pt += sizeof(PLAYBACKCAMERA) * 60;
 
-	printInfo("ping buffer offset: %d\n", pt-buffer);
-	
 	PingBufferPos = 0;
 	PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
 	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);
@@ -847,6 +847,9 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 	stream->playbackrun = 0;
 	stream->length = 0;
 
+	if(CurrentGameMode != GAMEMODE_DIRECTOR && CurrentGameMode != GAMEMODE_REPLAY)
+	stream->padCount = 0;
+
 	stream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 	stream->PadRecordBuffer = (PADRECORD*)replayptr;
 
@@ -991,7 +994,8 @@ int Put(int stream, ulong *pt0)
 		padbuf->run = 0;
 
 		rstream->PadRecordBuffer = padbuf;
-
+		rstream->padCount++;
+		
 		return 1;
 	}
 

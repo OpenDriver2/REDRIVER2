@@ -664,7 +664,7 @@ void CheckPlayerMiscFelonies(void)
 			}
 		}
 
-#if 1
+#if 0
 		printInfo("ROAD lane: %d / %d, (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			lane + 1,
 			((u_char)roadInfo.NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric

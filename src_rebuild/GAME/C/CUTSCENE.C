@@ -1225,6 +1225,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+		destStream->padCount = sheader->Size;
 		destStream->length = sheader->Length;
 		destStream->playbackrun = 0;
 

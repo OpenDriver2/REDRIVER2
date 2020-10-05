@@ -2501,7 +2501,10 @@ int redriver2_main(int argc, char** argv)
 
 	LoadCurrentProfile();
 
-#ifndef PSX	
+#ifndef PSX
+	int commandLinePropsShown;
+	commandLinePropsShown = 0;
+
 	for (int i = 1; i < argc; i++)
 	{
 		if (!_stricmp(argv[i], "-playercar"))
@@ -2657,7 +2660,9 @@ int redriver2_main(int argc, char** argv)
 #endif
 		else
 		{
-			PrintCommandLineArguments();
+			if(!commandLinePropsShown)
+				PrintCommandLineArguments();
+			commandLinePropsShown = 1;
 		}
 	}
 #endif // PSX

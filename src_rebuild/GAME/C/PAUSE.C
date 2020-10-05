@@ -197,7 +197,7 @@ extern char gCutsceneRecorderPauseText[64];
 
 MENU_ITEM DebugOptionsItems[] =
 {
-#ifdef CUTSCENE_RECORDER
+#if 0 // TODO: enable
 	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
@@ -310,9 +310,6 @@ MENU_ITEM MissionFailedItems[6] =
 
 MENU_ITEM TakeARideFinishedItems[] =
 {
-#ifdef CUTSCENE_RECORDER
-	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
-#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
