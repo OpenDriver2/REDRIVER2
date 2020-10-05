@@ -911,7 +911,9 @@ void DrawCar(_CAR_DATA *cp, int view)
 		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 1);
 
 		if (ActiveCheats.cheat13 != 0)
+		{
 			MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+		}
 		
 		DrawCarWheels(cp, &workmatrix, &pos, view);
 	}
