@@ -1315,9 +1315,10 @@ int LoadCutsceneToBuffer(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
-			// [A] REDRIVER2 - custom cutcenes or chases
+#ifndef PSX
+			// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
 			sprintf(customFilename, "REPLAYS\\CUT%d\\%d.D2RP", gCurrentMissionNumber, subindex);
-
+#endif
 			if (CutsceneBuffer.bytesFree < size) 
 			{
 				// load into lead/path AI buffer
@@ -1327,22 +1328,26 @@ int LoadCutsceneToBuffer(int subindex)
 				CutsceneBuffer.currentPointer = _other_buffer2;
 				CutsceneBuffer.bytesFree = 0xc000;
 
+#ifndef PSX
 				if (FileExists(customFilename))
 				{
 					printInfo("Custom cutscene replay file loaded\n");
 					LoadfileSeg(customFilename, _other_buffer2, 0, size);
 				}
 				else
+#endif
 					LoadfileSeg(filename, _other_buffer2, offset, size);				
 			}
 			else 
 			{
+#ifndef PSX
 				if (FileExists(customFilename))
 				{
 					printInfo("Custom cutscene replay file loaded\n");
 					LoadfileSeg(customFilename, _other_buffer2, 0, size);
 				}
 				else
+#endif
 					LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 			}
 

@@ -173,6 +173,38 @@ int bStopTanner = 0;
 int tannerDeathTimer = 0;
 STOPCOPS gStopCops;
 
+_MISSION* MissionLoadAddress;
+_MISSION* MissionHeader;
+STREAM_SOURCE* PlayerStartInfo[8];
+int numPlayersToCreate = 0;
+int gStartOnFoot = 0;
+int gSinkingTimer = 100;
+int gTimeInWater = 0x19;
+char InWater = 0;
+int gBobIndex = 0;
+int gWeather = 0;
+int gTimeOfDay = 0;
+int gShowPlayerDamage = 0;
+int gDontPingInCops = 0;
+int gBatterPlayer = 1;
+
+int wantedCar[2] = { -1, -1 };
+
+_TARGET* MissionTargets;
+unsigned long* MissionScript;
+char* MissionStrings;
+char* gMissionTitle = NULL;
+
+int multiplayerregions[4];
+int gMultiplayerLevels = 0;
+
+// LEADAI
+extern LEAD_PARAMETERS LeadValues;
+
+static char NewLeadDelay = 0;
+
+#define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
+
 MR_MISSION Mission;
 u_long MissionStack[16][16];
 MR_THREAD MissionThreads[16];
@@ -192,19 +224,15 @@ const int TAIL_TOOFAR = 15900;
 #define MR_DebugWarn
 #endif
 
-// [D]
+// [D] [T]
 void InitialiseMissionDefaults(void)
 {
 	int i;
 
 	if (NumPlayers == 2 || GameType > GAME_TAKEADRIVE)
-	{
 		lockAllTheDoors = 1;
-	}
 	else
-	{
 		lockAllTheDoors = 0;
-	}
 
 	maxPlayerCars = 1;
 	maxCivCars = 14;
@@ -258,8 +286,8 @@ void InitialiseMissionDefaults(void)
 
 	ClearMem((char *)reservedSlots, sizeof(reservedSlots));
 	cop_adjust = 0;
-	playercollected[0] = '\0';
-	playercollected[1] = '\0';
+	playercollected[0] = 0;
+	playercollected[1] = 0;
 	lastsay = -1;
 	g321GoDelay = 0;
 
@@ -335,69 +363,43 @@ void InitialiseMissionDefaults(void)
 	/* end block 3 */
 	// End Line: 2953
 
-_MISSION* MissionLoadAddress;
-_MISSION *MissionHeader;
-STREAM_SOURCE* PlayerStartInfo[8];
-int numPlayersToCreate = 0;
-int gStartOnFoot = 0;
-int gSinkingTimer = 100;
-int gTimeInWater = 0x19;
-char InWater = 0;
-int gBobIndex = 0;
-int gWeather = 0;
-int gTimeOfDay = 0;
-int gShowPlayerDamage = 0;
-int gDontPingInCops = 0;
-int gBatterPlayer = 1;
 
-int wantedCar[2] = { -1, -1 };
-
-_TARGET *MissionTargets;
-unsigned long *MissionScript;
-char *MissionStrings;
-char* gMissionTitle = NULL;
-
-int multiplayerregions[4];
-int gMultiplayerLevels = 0;
-
-// LEADAI
-extern LEAD_PARAMETERS LeadValues;
-
-static char NewLeadDelay = 0;
-
-#define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
-
-// [D]
+// [D] [T]
 void LoadMission(int missionnum)
 {
-	bool bVar1;
-	short sVar2;
-	_MISSION *p_Var3;
-	int iVar4;
-	LEAD_PARAMETERS *pLVar5;
-	int *piVar6;
-	char bVar7;
-	int iVar8;
-	long *plVar9;
-	int iVar10;
-	int *piVar11;
+	int missionSize;
+	int *routedata;
 	uint loadsize;
 	char filename[32];
 	unsigned long header;
+	unsigned long length;
+	unsigned long offset;
 
 	InitialiseMissionDefaults();
 
-	MALLOC_BEGIN();
+#ifndef PSX
+	// [A] try loading mission file alone (in case if developer has modified one)
+	sprintf(filename, "MISSIONS\\M%d.D2MS", missionnum);
 
-	if (NewLevel != 0) 
-		MissionLoadAddress = (_MISSION *)mallocptr;
+	if (FileExists(filename))
+	{
+		offset = 0;
+		length = 0x7ffff;	// load full file
+		header = 1;			// [A] hack
+	}
+	else
+#endif
+	{
+		// load from BLK
+		sprintf(filename, "MISSIONS\\MISSIONS.BLK");
 
-	sprintf(filename, "MISSIONS\\MISSIONS.BLK");
+		if (FileExists(filename) == 0)
+			return;
 
-	if (FileExists(filename) == 0)
-		return;
-
-	LoadfileSeg(filename, (char*)&header, missionnum * 4, 4);
+		LoadfileSeg(filename, (char*)&header, missionnum * 4, sizeof(long));
+		offset = header & 0x7ffff;
+		length = header >> 19;
+	}
 
 	if (header == 0) 
 	{
@@ -409,21 +411,29 @@ void LoadMission(int missionnum)
 		return;
 	}
 
-	loadsize = header >> 0x13;
-	LoadfileSeg(filename, (char *)MissionLoadAddress, header & 0x7ffff, sizeof(_MISSION));
+	// begin memory allocation
+	MALLOC_BEGIN();
+
+	if (NewLevel != 0)
+	{
+		MissionLoadAddress = (_MISSION*)mallocptr;
+	}
+	
+	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(_MISSION));
 
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (_TARGET *)((int)&MissionLoadAddress->id + MissionLoadAddress->size);
-	MissionScript = (ulong *)(MissionTargets + 0x10);
+	MissionScript = (ulong *)(MissionTargets + 16);
 	MissionStrings = (char *)(((_TARGET *)MissionScript)->data + MissionLoadAddress->strings);
 
-	if ((MissionLoadAddress->route != 0) && (NewLevel == 0))
-	{
+	if (MissionLoadAddress->route && !NewLevel)
 		loadsize = (int)MissionStrings + (MissionLoadAddress->route - (int)MissionLoadAddress);
-	}
+	else
+		loadsize = length;
 
-	iVar4 = LoadfileSeg(filename, (char *)MissionLoadAddress, header & 0x7ffff, loadsize);
+	missionSize = LoadfileSeg(filename, (char *)MissionLoadAddress, offset, loadsize);
 
+	// check if mission header itself valid
 	if (MissionHeader->id != MISSIOH_IDENT) 
 	{
 #ifndef PSX
@@ -436,9 +446,9 @@ void LoadMission(int missionnum)
 		return;
 	}
 
-
 	MissionHeader->id = 0;
 
+	// load specific multiplayerrr regions
 	if (MissionHeader->region != 0)
 	{
 		multiplayerregions[1] = -1;
@@ -464,12 +474,12 @@ void LoadMission(int missionnum)
 
 		_MISSION missionTempHeader;
 
-		loadsize = header >> 0x13;
 		LoadfileSeg(filename, (char *)&missionTempHeader, header & 0x7ffff, sizeof(_MISSION));
 
 		memcpy(MissionHeader->residentModels, missionTempHeader.residentModels, sizeof(missionTempHeader.residentModels));
 		MissionHeader->time = missionTempHeader.time;
 		MissionHeader->weather = missionTempHeader.weather;
+		MissionHeader->cops = missionTempHeader.cops;
 	}
 	
 	if (gCutsceneAsReplay == 0)
@@ -488,18 +498,16 @@ void LoadMission(int missionnum)
 		MaxPlayerDamage[0] = MissionHeader->maxDamage;
 	}
 
+	// setup weather and time of day
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
 
 	if (gTimeOfDay == 1 || gTimeOfDay < 2 || gTimeOfDay == 2 || gTimeOfDay != 3) 
-	{
 		gNight = 0;
-	}
 	else 
-	{
 		gNight = 1;
-	}
 
+	// setup weather
 	if (MissionHeader->weather == 1) 
 	{
 		gRainCount = 30;
@@ -522,24 +530,26 @@ void LoadMission(int missionnum)
 
 	if (MissionHeader->timer != 0 || (MissionHeader->timerFlags & 0x8000U) != 0)
 	{
-		bVar7 = 1;
+		int flag;
+		flag = 1;
 
 		if ((MissionHeader->timerFlags & 0x8000U) != 0)
-			bVar7 = 3;
+			flag = 3;
 	
 		if ((MissionHeader->timerFlags & 0x4000U) != 0)
-			bVar7 = bVar7 | 8;
+			flag = flag | 8;
 
 		if ((MissionHeader->timerFlags & 0x2000U) != 0)
-			bVar7 = bVar7 | 0x10;
+			flag = flag | 0x10;
 
 		for (int i = 0; i < NumPlayers; i++)
 		{
-			Mission.timer[i].flags = bVar7;
+			Mission.timer[i].flags = flag;
 			Mission.timer[i].count = MissionHeader->timer * 3000;
 		}
 	}
 
+	// setup cops
 	gMinimumCops = MissionHeader->cops.min;
 	maxCopCars = MissionHeader->cops.max;
 
@@ -586,78 +596,77 @@ void LoadMission(int missionnum)
 		gCopData.immortal = 0;
 	}
 
-	if ((MissionHeader->type & 2U) == 0) 
-	{
-		PlayerStartInfo[0]->type = 1;
-	}
-	else
+	// start on foot?
+	if (MissionHeader->type & 2) 
 	{
 		PlayerStartInfo[0]->type = 2;
 		PlayerStartInfo[0]->model = 0;
 	}
+	else
+	{
+		PlayerStartInfo[0]->type = 1;
+	}
 
+	// load specific AI for mission
 	if (NewLevel != 0) 
 	{
 		if (MissionHeader->route == 0)
 		{
-			mallocptr = mallocptr + (iVar4 + 3U & 0xfffffffc);
+			mallocptr += (missionSize + 3U & 0xfffffffc);
 #ifdef PSX
-			Loadfile("PATH.BIN", (char *)popNode);
+			Loadfile("PATH.BIN", 0xE7000);
 #endif // PSX
 			leadAILoaded = 0;
 			pathAILoaded = 1;
 		}
 		else 
 		{
-			piVar11 = (int *)(MissionStrings + MissionHeader->route);
-			NumTempJunctions = *piVar11;
-			memcpy(Driver2TempJunctionsPtr, piVar11 + 1, NumTempJunctions << 2);
+			routedata = (int *)(MissionStrings + MissionHeader->route);
+			
+			NumTempJunctions = *routedata;
+			memcpy(Driver2TempJunctionsPtr, routedata + 1, NumTempJunctions << 2);
+
 			mallocptr = MissionStrings + MissionHeader->route;
 #ifdef PSX
-			Loadfile("LEAD.BIN", (char *)popNode);
+			Loadfile("LEAD.BIN", 0xE7000);
 #endif // PSX
+			memcpy(&LeadValues, routedata + 1001, sizeof(LEAD_PARAMETERS));
 
-			// I think it's wrong...
-			pLVar5 = &LeadValues;
-			piVar6 = piVar11 + 0x3e9;
 			leadAILoaded = 1;
 			pathAILoaded = 0;
-
-			do {
-				pLVar5->tEnd = piVar6[0];
-				pLVar5->tAvelLimit = piVar6[1];
-				pLVar5->tDist = piVar6[2];
-				pLVar5->tDistMul = piVar6[3];
-				piVar6 = piVar6 + 4;
-				pLVar5 = (LEAD_PARAMETERS *)&pLVar5->tWidth;
-			} while (piVar6 != piVar11 + 0x3f9);
 			CopsAllowed = 0;
 		}
 	}
 
 	MALLOC_END();
 
+	// load helicopter path if exists
 	sprintf(filename, "MISSIONS\\PATH%d.%d", gCurrentMissionNumber, 0);
 
 	if (FileExists(filename))
-		LoadfileSeg(filename, (char *)(MissionTargets + 4), 0, 0x280);
+	{
+		LoadfileSeg(filename, (char*)(MissionTargets + 4), 0, 640);
+	}
 
-	if ((MissionHeader->type & 1U) != 0) 
+	// check if start data is required
+	if (MissionHeader->type & 1) 
 		RestoreStartData();
 
 	PreProcessTargets();
 
-	if (gCurrentMissionNumber - 1U < 0x28)
+	// assign story mission title
+	if (gCurrentMissionNumber - 1U < 40)
 	{
 		loadsize = gCurrentMissionNumber;
 
-		if (0x24 < gCurrentMissionNumber) 
+		if (gCurrentMissionNumber > 36) 
 			loadsize = gCurrentMissionNumber - 1U;
 
-		if (0xb < loadsize) 
-			loadsize = loadsize - 1;
-		if (7 < loadsize) 
-			loadsize = loadsize - 1;
+		if (loadsize > 11) 
+			loadsize--;
+		
+		if (loadsize > 7) 
+			loadsize--;
 
 		gMissionTitle = MissionName[loadsize - 1];
 	}
@@ -670,11 +679,11 @@ void LoadMission(int missionnum)
 	{
 		PlayerStartInfo[0]->model = wantedCar[0];
 
-		if ((wantedCar[0] == 0) || (4 < wantedCar[0])) 
+		if (wantedCar[0] == 0 || wantedCar[0] > 4) 
 		{
 			PlayerStartInfo[0]->palette = 0;
 
-			if (3 < wantedCar[0])
+			if (wantedCar[0] > 3)
 				MissionHeader->residentModels[4] = wantedCar[0];
 		}
 		else 
@@ -685,7 +694,7 @@ void LoadMission(int missionnum)
 	{
 		PlayerStartInfo[1]->model = wantedCar[1];
 
-		if ((wantedCar[1] == 0) || (4 < wantedCar[1]))
+		if (wantedCar[1] == 0 || wantedCar[1] > 4)
 			PlayerStartInfo[1]->palette = 0;
 		else
 			MissionHeader->residentModels[1] = wantedCar[1];
@@ -715,7 +724,7 @@ void LoadMission(int missionnum)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void HandleMission(void)
 {
 	int iVar1;
@@ -733,9 +742,10 @@ void HandleMission(void)
 	// init frame
 	if (CameraCnt == 0)
 	{
-		if ((MissionHeader->type & 4U) != 0)
+		if (MissionHeader->type & 4)
 		{
 			HandleMissionThreads();
+
 			Mission.message_timer[0] = 0;
 			Mission.message_timer[1] = 0;
 
@@ -743,29 +753,17 @@ void HandleMission(void)
 			MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
 		}
 
-		uVar2 = MissionHeader->type & 0x30;
-
-		FelonyBar.active = 0;
-
-		if (uVar2 != 0x10)
+		switch(MissionHeader->type & 0x30)
 		{
-			if (uVar2 < 0x11)
-			{
-				if (uVar2 == 0)
-				{
-					FelonyBar.active = 1;
-				}
-				else
-				{
-					FelonyBar.active = 0;
-				}
-			}
-
-			if (uVar2 == 0x20)
-			{
-				FelonyBar.active = 1;
+			case 0x20:
 				FelonyBar.flags |= 2;
-			}
+			case 0:
+				FelonyBar.active = 1;
+				break;
+			case 0x10:
+				FelonyBar.active = 0;
+			default:
+				FelonyBar.active = 0;
 		}
 	}
 

@@ -342,12 +342,13 @@ int MapCarIndexToBank(int index)
 		{8, 7, 13, 9, 2, 17, 17, 11, 16},
 	};
 
+	
 	int iVar1;
 	int iVar2;
 
 	iVar1 = MissionHeader->residentModels[index];
 
-	if (gCurrentMissionNumber - 39 < 2 && iVar1 == 13) 
+	if (gCurrentMissionNumber - 39 < 2 && MissionHeader->residentModels[index] == 13)
 	{
 		iVar2 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 		iVar1 = iVar2;
@@ -446,14 +447,13 @@ void LoadLevelSFX(int missionNum)
 
 	LoadBankFromLump(2, uVar1 + 69);
 
-	if (((((3 < missionNum - 1U) && (missionNum != 6)) && (missionNum != 7)) &&
-		(((missionNum != 9 && (missionNum != 10)) &&
-		((missionNum != 0xb && ((missionNum != 0xd && (missionNum != 0xe)))))))) &&
-		(((missionNum != 0x12 &&
-		((((missionNum != 0x13 && (missionNum != 0x14)) && (missionNum != 0x16)) &&
-		((missionNum != 0x1a && (missionNum != 0x1c)))))) &&
-		((((missionNum != 0x1f && ((missionNum != 0x21 && (missionNum != 0x22)))) &&
-		(missionNum != 0x26)) && (missionNum != 0x28)))))) 
+	if (missionNum - 1U > 3 && missionNum != 6 && missionNum != 7 &&
+		missionNum != 9 && missionNum != 10 && missionNum != 0xb && 
+		missionNum != 0xd && missionNum != 0xe && missionNum != 0x12 && 
+		missionNum != 0x13 && missionNum != 0x14 && missionNum != 0x16 &&
+		missionNum != 0x1a && missionNum != 0x1c && missionNum != 0x1f && 
+		missionNum != 0x21 && missionNum != 0x22 && missionNum != 0x26 && 
+		missionNum != 0x28) 
 	{
 		if ((GameLevel & 2U) == 0) 
 		{
