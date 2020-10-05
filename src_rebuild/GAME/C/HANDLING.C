@@ -288,24 +288,94 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 
 // [D] [T]
 void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
-{
+{	
 	delta.vx = 0;
 	delta.vy = 0;
 	delta.vz = -(carCos->wheelDisp[0].vz + carCos->wheelDisp[1].vz - 14) / 2;
-
+	
 	doWheels = 1;
 
 	UpdateCarPoints(carCos);
 
 	if (ActiveCheats.cheat10) // [A] cheat for secret car - Fireboyd78
 	{
-		if ((carCos == &car_cosmetics[4]) && (externalModelNumber == 12))
+		if (carCos == &car_cosmetics[4] && externalModelNumber == 12)
 		{
 			carCos->powerRatio += (carCos->powerRatio / 2);
 			carCos->mass *= 3;
 			carCos->traction *= 2;
 			carCos->wheelSize += (carCos->wheelSize / 4);
 			carCos->cog.vy -= 20;
+		}
+	}
+
+	// Super mini cars
+	if (ActiveCheats.cheat13)
+	{
+		int i;
+		carCos->wheelSize >>= 1;
+		carCos->headLight.vx >>= 1;
+		carCos->headLight.vy >>= 1;
+		carCos->headLight.vz >>= 1;
+
+		carCos->colBox.vx >>= 1;
+		carCos->colBox.vy >>= 1;
+		carCos->colBox.vz >>= 1;
+
+		carCos->cog.vx >>= 1;
+		carCos->cog.vy >>= 1;
+		carCos->cog.vz >>= 1;
+
+		carCos->brakeLight.vx >>= 1;
+		carCos->brakeLight.vy >>= 1;
+		carCos->brakeLight.vz >>= 1;
+
+		carCos->revLight.vx >>= 1;
+		carCos->revLight.vy >>= 1;
+		carCos->revLight.vz >>= 1;
+
+		carCos->backInd.vx >>= 1;
+		carCos->backInd.vy >>= 1;
+		carCos->backInd.vz >>= 1;
+
+		carCos->frontInd.vx >>= 1;
+		carCos->frontInd.vy >>= 1;
+		carCos->frontInd.vz >>= 1;
+
+		carCos->policeLight.vx >>= 1;
+		carCos->policeLight.vy >>= 1;
+		carCos->policeLight.vz >>= 1;
+
+		carCos->exhaust.vx >>= 1;
+		carCos->exhaust.vy >>= 1;
+		carCos->exhaust.vz >>= 1;
+
+		carCos->smoke.vx >>= 1;
+		carCos->smoke.vy >>= 1;
+		carCos->smoke.vz >>= 1;
+
+		carCos->fire.vx >>= 1;
+		carCos->fire.vy >>= 1;
+		carCos->fire.vz >>= 1;
+
+		carCos->twistRateX <<= 1;
+		carCos->twistRateY <<= 1;
+		carCos->twistRateZ <<= 1;
+
+		for (i = 0; i < 4; i++)
+		{
+			carCos->wheelDisp[i].vx >>= 1;
+			carCos->wheelDisp[i].vy >>= 1;
+			carCos->wheelDisp[i].vz >>= 1;
+
+			carCos->wheelDisp[i].vy -= 10;
+		}
+
+		for (i = 0; i < 12; i++)
+		{
+			carCos->cPoints[i].vx >>= 1;
+			carCos->cPoints[i].vy >>= 1;
+			carCos->cPoints[i].vz >>= 1;
 		}
 	}
 
