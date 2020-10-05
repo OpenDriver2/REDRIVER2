@@ -133,20 +133,22 @@ project "REDRIVER2"
             PSYQ_DIR.."/include"
         }
 		links {
-			PSYQ_DIR.."/LIBETC",
-			PSYQ_DIR.."/LIBPAD",
-			PSYQ_DIR.."/LIBGTE",
-			PSYQ_DIR.."/LIBMCRD",
-			PSYQ_DIR.."/LIBCD",
-			PSYQ_DIR.."/LIBSN",
-			PSYQ_DIR.."/LIBSPU",
-			PSYQ_DIR.."/LIBAPI"
+			PSYQ_DIR.."/lib/LIBETC",
+			PSYQ_DIR.."/lib/LIBPAD",
+			PSYQ_DIR.."/lib/LIBGTE",
+			PSYQ_DIR.."/lib/LIBMCRD",
+			PSYQ_DIR.."/lib/LIBCD",
+			PSYQ_DIR.."/lib/LIBSN",
+			PSYQ_DIR.."/lib/LIBSPU",
+			PSYQ_DIR.."/lib/LIBAPI"
         }
 
     filter "configurations:Debug"
+		targetsuffix "_dbg"
         defines { 
             "DEBUG_OPTIONS",
-            "COLLISION_DEBUG" 
+            "COLLISION_DEBUG",
+			"CUTSCENE_RECORDER"
          }
 		 symbols "On"
 
@@ -154,8 +156,10 @@ project "REDRIVER2"
         optimize "Full"
 		
 	filter "configurations:Release Dev"
+		targetsuffix "_dev"
         defines { 
             "DEBUG_OPTIONS",
-            "COLLISION_DEBUG" 
+            "COLLISION_DEBUG",
+			"CUTSCENE_RECORDER"
         }
         optimize "Full"
