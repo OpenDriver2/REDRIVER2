@@ -3135,16 +3135,16 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*star
 
 			InitCar(newCar, direction, startPos, 2, model, 0, (char*)&civDat);
 			
-			dx = rcossin_tbl[(orientZ & 0xfff) * 2];
-			dz = rcossin_tbl[(orientZ & 0xfff) * 2 + 1];
+			dx = rcossin_tbl[((orientZ / 2) & 0xfff) * 2];
+			dz = rcossin_tbl[((orientZ / 2) & 0xfff) * 2 + 1];
 
 			tmpQ[0] = FIXEDH(newCar->st.n.orientation[1] * dx + newCar->st.n.orientation[0] * dz);
 			tmpQ[1] = FIXEDH(newCar->st.n.orientation[1] * dz - newCar->st.n.orientation[0] * dx);
 			tmpQ[2] = FIXEDH(newCar->st.n.orientation[3] * dx + newCar->st.n.orientation[2] * dz);
 			tmpQ[3] = FIXEDH(newCar->st.n.orientation[3] * dz - newCar->st.n.orientation[2] * dx);
 
-			dx = rcossin_tbl[(orientX & 0xfff) * 2];
-			dz = rcossin_tbl[(orientX & 0xfff) * 2 + 1];
+			dx = rcossin_tbl[((orientX / 2) & 0xfff) * 2];
+			dz = rcossin_tbl[((orientX / 2) & 0xfff) * 2 + 1];
 
 			newCar->st.n.orientation[0] = FIXEDH(tmpQ[3] * dx + tmpQ[0] * dz);
 			newCar->st.n.orientation[1] = FIXEDH(tmpQ[2] * dx + tmpQ[1] * dz);
