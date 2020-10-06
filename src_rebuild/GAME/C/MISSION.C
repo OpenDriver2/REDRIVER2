@@ -907,7 +907,7 @@ void RegisterChaseHit(int car1, int car2)
 		{
 			if (car1 == Mission.ChaseTarget->data[6] || car2 == Mission.ChaseTarget->data[6]) 
 			{
-				Mission.ChaseTarget->data[0xd]--;
+				Mission.ChaseTarget->data[13]--;
 				Mission.ChaseHitDelay = 20;
 				DamageBar.position++;
 			}
@@ -2275,23 +2275,20 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 // [D]
 int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 {
-	bool bVar1;
-	unsigned char bVar2;
 	int iVar3;
 	int iVar4;
 	int phrase;
 	int uVar5;
-	long uVar6;
 	unsigned long dist;
 	int uVar9;
 	char *message;
-	int iVar11;
+	int ret;
 	VECTOR tv;
 	VECTOR pv;
 	long pos[4];
 	int slot;
 
-	iVar11 = 0;
+	ret = 0;
 
 	if (TargetComplete(target, thread->player) != 0) 
 		return 1;
@@ -2306,622 +2303,639 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 	pv.vy = player[uVar5].pos[1];
 	pv.vz = player[uVar5].pos[2];
 
-	if (target->data[0] == 2)
+	switch(target->data[0])
 	{
-		tv.vx = target->data[3];
-		tv.vz = target->data[4];
-		tv.vy = 0;
-		dist = Long2DDistance(&tv, &pv);
-		slot = target->data[6];
-
-		if (slot == -1)
+		case 1:
 		{
-			if (dist < 15900 || target->data[9] == 3 && (target->data[10] & 1U) == 0)
+			if (target->data[1] & 0x100000)		// Is boat?
 			{
-				MRRequestCar(target);
+				tv.vx = target->data[10];
+				tv.vz = target->data[11];
+
+				OffsetTarget(&tv);
+
+				target->data[3] = tv.vx;
+				target->data[4] = tv.vz;
+			}
+			else if (target->data[1] & 0x200000)	// set stop cops
+			{
+				target->data[1] &= ~0x200000;
+
+				gStopCops.radius = target->data[5];
+				gStopCops.pos.vx = target->data[3];
+				gStopCops.pos.vy = 0;
+				gStopCops.pos.vz = target->data[4];
 			}
 			else
 			{
-				MRCancelCarRequest(target);
+				tv.vx = target->data[3];
+				tv.vz = target->data[4];
+				tv.vy = 0;
 			}
 
-			goto LAB_00063664;
-		}
-
-		if (target->data[1] & 0x40000000U)
-		{
-			if (target->data[9] == 1)
+			if (Long2DDistance(&tv, &pv) <= target->data[5])
 			{
-				if (target->data[12] != 0 && dist < target->data[12])
+				if (target->data[7] != 0) // if target is at height (Train pursuit)
 				{
-					int direction, model, palette;
-					int *inform;
-
-					direction = car_data[slot].hd.direction;
-					model = car_data[slot].ap.model;
-					palette = car_data[slot].ap.palette;
-					inform = car_data[slot].inform;
-
-					pos[0] = car_data[slot].hd.where.t[0];
-					pos[1] = car_data[slot].hd.where.t[1];
-					pos[2] = car_data[slot].hd.where.t[2];
-
-					car_data[slot].inform = NULL;
-
-					PingOutCar(car_data + slot);
-					slot = CreateCivCarWotDrivesABitThenStops(direction, (long(*)[4])pos, NULL, model, palette);
-
-					car_data[slot].inform = inform;
-
-					target->data[6] = slot;
-					target->data[12] = 0;
+					if (target->data[7] < ABS(target->data[6] + pv.vy))
+						target->data[9] &= ~0xFFF0;
 				}
-			}
 
-			if (target->data[9] == 3)
-			{
-				if ((target->data[1] & 0x20U) == 0 && (target->data[10] & 1U) != 0)
+				// mini game stuff
+				switch(target->data[1] & 0x3000000)
 				{
-					if (target->data[11] == -1)
+					case 0x1000000:
 					{
-						if (gInGameChaseActive == 0)
-						{
-							Mission.ChaseTarget = NULL;
-							player[0].targetCarId = -1;
-							gBombTargetVehicle = NULL;
-
-							if ((target->data[10] & 0xf0U) != 0x20)
-							{
-								if (target->data[10] & 0x10000U)
-									SetCarToBeStolen(target, (uint)thread->player);
-								else
-									iVar11 = 1;
-
-								goto LAB_00062dd0;
-							}
-						}
+						playercollected[thread->player] |= 2;
+						return 0;
 					}
-					else
+					case 0x2000000:
 					{
-						if (dist < target->data[0xc] && (MissionHeader->type & 4) == 0)
+						playercollected[thread->player] |= 4;
+						return 0;
+					}
+					case 0x3000000:
+					{
+						if (playercollected[thread->player] != 7)
+							return 0;
+
+						playercollected[thread->player] = 0;
+
+						if (thread->player == 0)
 						{
-							TriggerChase(&slot, target->data[0xb]);
+							gLapTimes[thread->player][gPlayerScore.items] = CalcLapTime(0, Mission.timer[0].count, gPlayerScore.items);
+							gPlayerScore.items++;
 
-							target->data[0xb] = -1;
-							target->data[6] = slot;
-
-							player[0].targetCarId = slot;
-							Mission.ChaseTarget = target;
+							if (gPlayerScore.items == gNumRaceTrackLaps)
+							{
+								SetMissionComplete();
+							}
 						}
 						else
 						{
-							goto LAB_00062dd0;
+							gLapTimes[thread->player][gPlayerScore.P2items] = CalcLapTime(1, Mission.timer[1].count, gPlayerScore.P2items);
+							gPlayerScore.P2items++;
+
+							if (gPlayerScore.P2items == gNumRaceTrackLaps)
+							{
+								SetMissionComplete();
+							}
+						}
+
+						return 0;
+					}
+					case 0:
+					{
+						if (GameType == GAME_SECRET)
+						{
+							playercollected[thread->player] |= 1;
+							return 0;
+						}
+						break;
+					}
+				}
+
+				switch (target->data[1] & 0x30000)
+				{
+					case 0:
+					{
+						int data9;
+						data9 = target->data[9];
+
+						if (data9 == 0)
+						{
+							if (target->data[8] == -1 || copsAreInPursuit == 0)
+							{
+								ret = 1;
+								prevCopsInPursuit = 0;
+							}
+							else if (Mission.message_timer[0] == 0 && prevCopsInPursuit == 0)
+							{
+								SetPlayerMessage(thread->player, MissionStrings + target->data[8], 2, 2);
+								prevCopsInPursuit = copsAreInPursuit;
+							}
+						}
+						else
+						{
+							uVar9 = ((data9 & 0xfff0) >> 4) + 1;
+
+							if ((data9 & 0xf) <= uVar9 / 30)
+							{
+								message = MissionStrings + (data9 >> 0x10);
+								SetPlayerMessage(thread->player, message, 2, 0);
+							}
+
+
+							target->data[9] = (data9 >> 0x10) << 0x10 | uVar9 * 0x10 | data9 & 0xf;
+							gTannerActionNeeded = 1;
+
+							if (TannerActionHappening())
+							{
+								ret = 1;
+							}
+						}
+
+						if (ret == 0)
+							return 0;
+
+						if (target->data[1] & 0x400000U)
+							return 1;
+
+						if ((target->data[1] & 0x800000U) && player[thread->player].playerType != 1)
+							ret = 0;
+
+						break;
+					}
+					case 0x10000:
+					case 0x20000:
+					{
+						if (gPlayerWithTheFlag == thread->player)
+						{
+							if (thread->player == 0)
+								gPlayerScore.items++;
+							else if (thread->player == 1)
+								gPlayerScore.P2items++;
+
+							gPlayerWithTheFlag = -1;
+							SetPlayerMessage(thread->player, "Flag delivered!", 2, 1);
+
+							player[0].targetCarId = -1;
+							player[1].targetCarId = -1;
+
+							ActivateNextFlag();
+						}
+						break;
+					}
+					case 0x30000:
+					{
+						if (gPlayerWithTheFlag == -1)
+						{
+							Mission.ChaseTarget = MissionTargets;
+							gPlayerWithTheFlag = thread->player;
+
+							SetPlayerMessage(thread->player, "You got the flag!", 2, 1);
+
+							player[1 - gPlayerWithTheFlag].targetCarId = gPlayerWithTheFlag;
+						}
+						break;
+					}
+
+				}
+			}
+			else
+			{
+				target->data[9] &= ~0xFFF0;
+			}
+
+			break;
+		}
+		case 2:
+		{
+			tv.vx = target->data[3];
+			tv.vz = target->data[4];
+			tv.vy = 0;
+	
+			dist = Long2DDistance(&tv, &pv);
+			slot = target->data[6];
+
+			if (slot == -1)
+			{
+				if (dist < 15900 || 
+					target->data[9] == 3 && (target->data[10] & 1U) == 0)
+					MRRequestCar(target);
+				else
+					MRCancelCarRequest(target);
+				
+				break;
+			}
+
+			if (target->data[1] & 0x40000000U)
+			{
+				target->data[3] = car_data[slot].hd.where.t[0];
+				target->data[4] = car_data[slot].hd.where.t[2];
+				
+				if (target->data[9] == 1)
+				{
+					if (target->data[12] != 0 && dist < target->data[12])
+					{
+						int direction, model, palette;
+						int *inform;
+
+						direction = car_data[slot].hd.direction;
+						model = car_data[slot].ap.model;
+						palette = car_data[slot].ap.palette;
+						inform = car_data[slot].inform;
+
+						pos[0] = car_data[slot].hd.where.t[0];
+						pos[1] = car_data[slot].hd.where.t[1];
+						pos[2] = car_data[slot].hd.where.t[2];
+
+						car_data[slot].inform = NULL;
+
+						PingOutCar(car_data + slot);
+						slot = CreateCivCarWotDrivesABitThenStops(direction, (long(*)[4])pos, NULL, model, palette);
+
+						car_data[slot].inform = inform;
+
+						target->data[6] = slot;
+						target->data[12] = 0;
+					}
+				}
+				
+				if (target->data[9] == 3)
+				{
+					if(target->data[1] & 0x20)
+					{
+						if (car_data[slot].totalDamage >= target->data[13])
+						{
+							if (NewLeadDelay != 1)
+							{
+								if (target->data[10] & 0x10000U)
+								{
+									DamageBar.position = target->data[16];
+
+									car_data[slot].totalDamage = MaxPlayerDamage[0];
+
+									SetConfusedCar(slot);
+									SetCarToBeStolen(target, thread->player);
+
+									NewLeadDelay = 1;
+								}
+								else
+								{
+									ret = 0;
+
+									DamageBar.position = target->data[13];
+
+									car_data[slot].totalDamage = MaxPlayerDamage[0] - 1;
+									SetConfusedCar(slot);
+
+									NewLeadDelay = 1;
+								}
+
+								break;
+							}
+
+							ret = 1;
+						}
+						
+						break;
+					}
+
+					if (target->data[10] & 4)
+					{
+						gBombTargetVehicle = &car_data[slot];
+					}
+					
+					if(target->data[10] & 1)
+					{
+						if (target->data[11] == -1)
+						{
+							if (gInGameChaseActive == 0)
+							{
+								Mission.ChaseTarget = NULL;
+								player[0].targetCarId = -1;
+								gBombTargetVehicle = NULL;
+
+								if ((target->data[10] & 0xf0U) != 0x20)
+								{
+									if (target->data[10] & 0x10000U)
+										SetCarToBeStolen(target, (uint)thread->player);
+									else
+										ret = 1;
+								}
+							}
+						}
+						else
+						{
+							if (dist < target->data[12] && (MissionHeader->type & 4) == 0)
+							{
+								TriggerChase(&slot, target->data[11]);
+
+								target->data[11] = -1;
+								target->data[6] = slot;
+
+								player[0].targetCarId = slot;
+								Mission.ChaseTarget = target;
+							}
 						}
 					}
 				}
 
-				if (target->data[10] & 4)
+				switch(target->data[10] & 0xf0)
 				{
-					gBombTargetVehicle = &car_data[slot];
-				}
-			}
-
-		LAB_00062dd0:
-			target->data[3] = car_data[slot].hd.where.t[0];
-			target->data[4] = car_data[slot].hd.where.t[2];
-
-			if (target->data[9] == 3)
-			{
-				if((target->data[1] & 0x20U) == 0 && (target->data[10] & 1U) == 0)
-				{
-					if (car_data[slot].totalDamage >= target->data[0xd])
-					{
-						if (NewLeadDelay != 1)
+					case 0:
+					{				
+						if (DamageBar.active)
 						{
-							if (target->data[10] & 0x10000U)
+						LAB_00062fd0:
+							if (target->data[13] < 1)
 							{
-								DamageBar.position = target->data[0xd];
+								goto LAB_00062fe0;
+							}
+						}
+						else
+						{
+							if (target->data[13] != 0)
+							{
+								if (gCurrentMissionNumber != 2 && gCurrentMissionNumber != 6)
+								{
+									EnablePercentageBar(&DamageBar, target->data[13]);
+								}
 
-								car_data[slot].totalDamage = MaxPlayerDamage[0];
+								if (gCurrentMissionNumber == 11 || gCurrentMissionNumber == 13 || gCurrentMissionNumber == 26)
+								{
+									target->data[13] = (target->data[13] * 3) / 4;
+								}
 
-								SetConfusedCar(slot);
+								goto LAB_00062fd0;
+							}
+
+						LAB_00062fe0:
+							ReleaseInGameCutscene();
+
+							Mission.ChaseTarget = NULL;
+							player[0].targetCarId = -1;
+
+							gBombTargetVehicle = NULL;
+
+							SetConfusedCar(slot);
+
+							if (target->data[10] & 0x100000)
+							{
+								car_data[slot].controlFlags &= ~CONTROL_FLAG_WAS_PARKED;
+
+								pos[0] = car_data[slot].hd.where.t[0];
+								pos[2] = car_data[slot].hd.where.t[2];
+								pos[1] = -car_data[slot].hd.where.t[1];
+
+								CreatePedAtLocation(&pos, 8);
+							}
+
+							if (target->data[10] & 0x10000)
+							{
 								SetCarToBeStolen(target, thread->player);
 
-								NewLeadDelay = 1;
+								if (gCurrentMissionNumber == 11 || gCurrentMissionNumber == 13 || gCurrentMissionNumber == 26)
+								{
+									car_data[slot].totalDamage = (MaxPlayerDamage[0] * 3) / 4;
+								}
+								else
+								{
+									car_data[slot].totalDamage = MaxPlayerDamage[0];
+								}
+
+								DamageBar.active = 0;
 							}
 							else
 							{
-								iVar11 = 0;
-								DamageBar.position = target->data[0xd];
-								car_data[slot].totalDamage = MaxPlayerDamage[0] - 1;
-								SetConfusedCar(slot);
-								NewLeadDelay = 1;
+								ret = 1;
 							}
-
-							goto LAB_00063664;
 						}
 
-						iVar11 = 1;
-						goto LAB_00063664;
+						if (dist > TAIL_TOOFAR)
+						{
+							message = MissionStrings + target->data[14];
+
+							SetPlayerMessage(thread->player, message, 2, 2);
+							SetMissionFailed(FAILED_MESSAGESET);
+
+							break;
+						}
+
+						if (dist > TAIL_GETTINGFAR)
+						{
+							iVar3 = lastsay;
+							iVar4 = TAIL_GETTINGFAR;
+
+							if (target->data[15] != 0xff && iVar4 != iVar3)
+							{
+								MissionSay(target->data[15]);
+								lastsay = TAIL_GETTINGFAR;
+							}
+
+							break;
+						}
+
+						if (dist < TAIL_GETTINGFAR - 500)
+						{
+							lastsay = -1;
+						}
+						
+						break;
 					}
-					goto LAB_00063664;
-				}
-
-			}
-
-			uVar5 = target->data[10] & 0xf0;
-
-			if (uVar5 == 32)
-			{
-				goto LAB_00063664;
-			}
-
-			if (uVar5 > 32)
-			{
-				if (uVar5 == 64)
-				{
-					if (copsAreInPursuit != 0)
+					case 16:
 					{
-						iVar11 = 1;
-					}
-					
-					goto LAB_00063664;
-				}
+						ProxyBar.active = 1;
+						ProxyBar.position = dist;
 
-				if (uVar5 > 64)
-				{
-					if (uVar5 == 80)
+						if (dist < TAIL_TOOCLOSE)
+						{
+							uVar5 = target->data[13] >> 0xc & 0xfff;
+
+							if (uVar5 != 0xfff)
+							{
+								message = MissionStrings + uVar5;
+								SetPlayerMessage(thread->player, message, 2, 1);
+							}
+
+							SetMissionFailed(FAILED_MESSAGESET);
+
+							break;
+						}
+
+						if (dist < TAIL_GETTINGCLOSE)
+						{
+							uVar5 = target->data[13] & 0xfff;
+
+							if (uVar5 != 0xfff)
+							{
+								message = MissionStrings + uVar5;
+								SetPlayerMessage(thread->player, message, 2, 1);
+							}
+
+							phrase = target->data[13] >> 24 & 0xFF;
+
+							if (phrase != 0xff && lastsay != TAIL_GETTINGCLOSE)
+							{
+								MissionSay(phrase);
+								lastsay = TAIL_GETTINGCLOSE;
+							}
+
+							break;
+						}
+
+						if (dist > TAIL_TOOFAR)
+						{
+							uVar5 = target->data[14] >> 0xc & 0xfff;
+
+							if (uVar5 != 0xfff)
+							{
+								message = MissionStrings + uVar5;
+								SetPlayerMessage(thread->player, message, 2, 1);
+							}
+
+							SetMissionFailed(FAILED_MESSAGESET);
+
+							break;
+						}
+
+						if (dist > TAIL_GETTINGFAR)
+						{
+							uVar5 = target->data[14] & 0xfff;
+
+							if (uVar5 != 0xfff)
+							{
+								message = MissionStrings + uVar5;
+								SetPlayerMessage(thread->player, message, 2, 1);
+							}
+
+							phrase = target->data[14] >> 24 & 0xFF;
+
+							iVar3 = TAIL_GETTINGFAR;
+							iVar4 = lastsay;
+
+							if (phrase != 0xff && iVar4 != iVar3)
+							{
+								MissionSay(phrase);
+								lastsay = TAIL_GETTINGFAR;
+							}
+
+							break;
+						}
+
+						if (dist <= TAIL_GETTINGCLOSE + 500)
+						{
+							break;
+						}
+
+						if (dist < TAIL_GETTINGFAR - 500)
+						{
+							lastsay = -1;
+						}
+						
+						break;
+					}
+					case 32:
+					{
+						break;
+					}
+					case 48:
+					{
+						if (gCurrentMissionNumber == 11 ||
+							gCurrentMissionNumber == 14 ||
+							gCurrentMissionNumber == 19 ||
+							gCurrentMissionNumber == 28 ||
+							car_data[slot].totalDamage < MaxPlayerDamage[0])
+						{
+							if (player[0].playerCarId == slot)
+							{
+								car_data[player[0].playerCarId].inform = NULL;
+
+								if (gCurrentMissionNumber == 14 || gCurrentMissionNumber == 28)
+									car_data[slot].totalDamage = MaxPlayerDamage[0];
+
+								ret = 1;
+
+								if (MaxPlayerDamage[0] <= car_data[slot].totalDamage)
+									gGotInStolenCar = 1;
+							}
+
+							break;
+						}
+
+						message = MissionStrings + MissionHeader->msgCarWrecked;
+
+						SetPlayerMessage(thread->player, message, 2, 1);
+						SetMissionFailed(FAILED_MESSAGESET);
+						break;
+					}
+					case 64:
+					{
+						if (copsAreInPursuit != 0)
+							ret = 1;
+
+						break;
+					}
+					case 80:
 					{
 						if(target->data[1] & 0x20U)
 						{
-							MaxPlayerDamage[1] = target->data[0xd];
+							MaxPlayerDamage[1] = target->data[13];
 
 							if (dist > TAIL_TOOFAR)
 							{
 								if (GameType == GAME_COPSANDROBBERS)
 								{
 									SetMissionFailed(FAILED_CnR_LOSTHIM);
-									goto LAB_00063664;
+									break;
 								}
 
-								SetPlayerMessage(thread->player, MissionStrings + target->data[0xe], 2, 2);
+								message = MissionStrings + target->data[14];
+
+								SetPlayerMessage(thread->player, message, 2, 2);
 								SetMissionFailed(FAILED_MESSAGESET);
-								goto LAB_00063664;
+								break;
 							}
 						}
 
-						if (car_data[slot].totalDamage < target->data[0xd] || (iVar11 = 1, (target->data[1] & 0x20U) != 0))
+						if (car_data[slot].totalDamage < target->data[13] || (ret = 1, (target->data[1] & 0x20U) != 0))
 						{
-							goto LAB_00063664;
+							break;
 						}
 
 						SetConfusedCar(slot);
 
-						iVar11 = 1;
-						goto LAB_00063664;
+						ret = 1;
+						break;
 					}
-
-					goto LAB_00063664;
-				}
-
-				if (uVar5 == 48)
-				{
-					if (gCurrentMissionNumber == 11 ||
-						gCurrentMissionNumber == 14 ||
-						gCurrentMissionNumber == 19 ||
-						gCurrentMissionNumber == 28 ||
-						car_data[slot].totalDamage < MaxPlayerDamage[0])
-					{
-						if (player[0].playerCarId == slot)
-						{
-							car_data[player[0].playerCarId].inform = NULL;
-
-							if (gCurrentMissionNumber == 14 || gCurrentMissionNumber == 28)
-								car_data[slot].totalDamage = (ushort)MaxPlayerDamage[0];
-
-							iVar11 = 1;
-
-							if (MaxPlayerDamage[0] <= car_data[slot].totalDamage)
-								gGotInStolenCar = 1;
-						}
-
-						goto LAB_00063664;
-					}
-
-					SetPlayerMessage(thread->player, MissionStrings + MissionHeader->msgCarWrecked, 2, 1);
-					SetMissionFailed(FAILED_MESSAGESET);
-				}
-
-				goto LAB_00063664;
-			}
-
-			if (uVar5 == 0)
-			{				
-				if (DamageBar.active)
-				{
-				LAB_00062fd0:
-					if (target->data[0xd] < 1)
-					{
-						goto LAB_00062fe0;
-					}
-				}
-				else
-				{
-					if (target->data[0xd] != 0)
-					{
-						if (gCurrentMissionNumber != 2 && gCurrentMissionNumber != 6)
-						{
-							EnablePercentageBar(&DamageBar, target->data[0xd]);
-						}
-
-						if (gCurrentMissionNumber == 11 || gCurrentMissionNumber == 13 || gCurrentMissionNumber == 26)
-						{
-							target->data[0xd] = (target->data[0xd] * 3) / 4;
-						}
-
-						goto LAB_00062fd0;
-					}
-
-				LAB_00062fe0:
-					ReleaseInGameCutscene();
-
-					Mission.ChaseTarget = NULL;
-					player[0].targetCarId = -1;
-
-					gBombTargetVehicle = NULL;
-
-					SetConfusedCar(slot);
-
-					if (target->data[10] & 0x100000)
-					{
-						car_data[slot].controlFlags &= ~CONTROL_FLAG_WAS_PARKED;
-						
-						pos[0] = car_data[slot].hd.where.t[0];
-						pos[2] = car_data[slot].hd.where.t[2];
-						pos[1] = -car_data[slot].hd.where.t[1];
-
-						CreatePedAtLocation(&pos, 8);
-					}
-
-					if (target->data[10] & 0x10000)
-					{
-						SetCarToBeStolen(target, thread->player);
-
-						if (gCurrentMissionNumber == 11 || gCurrentMissionNumber == 13 || gCurrentMissionNumber == 26)
-						{
-							car_data[slot].totalDamage = (MaxPlayerDamage[0] * 3) / 4;
-						}
-						else
-						{
-							car_data[slot].totalDamage = MaxPlayerDamage[0];
-						}
-
-						DamageBar.active = 0;
-					}
-					else
-					{
-						iVar11 = 1;
-					}
-				}
-
-				if (dist > TAIL_TOOFAR)
-				{
-					SetPlayerMessage(thread->player, MissionStrings + target->data[0xe], 2, 2);
-					SetMissionFailed(FAILED_MESSAGESET);
-					goto LAB_00063664;
-				}
-
-				if (dist > TAIL_GETTINGFAR)
-				{
-					iVar3 = lastsay;
-					iVar4 = TAIL_GETTINGFAR;
-
-					if (target->data[0xf] != 0xff && iVar4 != iVar3)
-					{
-						MissionSay(target->data[0xf]);
-						lastsay = TAIL_GETTINGFAR;
-					}
-
-					goto LAB_00063664;
-				}
-
-				if (dist < TAIL_GETTINGFAR - 500)
-				{
-					lastsay = -1;
-				}
-			}
-			else if (uVar5 == 0x10)
-			{
-				ProxyBar.active = 1;
-				ProxyBar.position = dist;
-
-				if (dist < TAIL_TOOCLOSE)
-				{
-					uVar5 = target->data[0xd] >> 0xc & 0xfff;
-
-					if (uVar5 != 0xfff)
-						SetPlayerMessage(thread->player, MissionStrings + uVar5, 2, 1);
-
-					SetMissionFailed(FAILED_MESSAGESET);
-					goto LAB_00063664;
-				}
-
-				if (dist < TAIL_GETTINGCLOSE)
-				{
-					uVar5 = target->data[0xd] & 0xfff;
-					if (uVar5 != 0xfff)
-						SetPlayerMessage(thread->player, MissionStrings + uVar5, 2, 1);
-
-					phrase = target->data[13] >> 24 & 0xFF;
-
-					if (phrase != 0xff && lastsay != TAIL_GETTINGCLOSE)
-					{
-						MissionSay(phrase);
-						lastsay = TAIL_GETTINGCLOSE;
-					}
-
-					goto LAB_00063664;
-				}
-
-				if (dist > TAIL_TOOFAR)
-				{
-					uVar5 = target->data[14] >> 0xc & 0xfff;
-
-					if (uVar5 != 0xfff)
-						SetPlayerMessage(thread->player, MissionStrings + uVar5, 2, 1);
-
-					SetMissionFailed(FAILED_MESSAGESET);
-					
-					goto LAB_00063664;
-				}
-
-				if (dist > TAIL_GETTINGFAR)
-				{
-					uVar5 = target->data[14] & 0xfff;
-
-					if (uVar5 != 0xfff)
-						SetPlayerMessage(thread->player, MissionStrings + uVar5, 2, 1);
-
-					phrase = target->data[14] >> 24 & 0xFF;
-
-					iVar3 = TAIL_GETTINGFAR;
-					iVar4 = lastsay;
-
-					if (phrase != 0xff && iVar4 != iVar3)
-					{
-						MissionSay(phrase);
-						lastsay = TAIL_GETTINGFAR;
-					}
-
-					goto LAB_00063664;
-				}
-
-				if (dist <= TAIL_GETTINGCLOSE + 500)
-				{
-					goto LAB_00063664;
-				}
-				
-				if (dist < TAIL_GETTINGFAR - 500)
-				{
-					lastsay = -1;
 				}
 			}
 			else
 			{
-				goto LAB_00063664;
+				target->data[6] = -1;
+
+				if (gCarWithABerm == slot)
+					gCarWithABerm = -1;
+
+				if (target->data[9] != 1)
+				{
+					message = MissionStrings + target->data[14];
+					SetPlayerMessage(thread->player, message, 2, 2);
+					SetMissionFailed(FAILED_MESSAGESET);
+				}
 			}
+			
+			break;
 		}
-		else
+		case 3:
 		{
-			target->data[6] = -1;
-
-			if (gCarWithABerm == slot)
-				gCarWithABerm = -1;
-
-			if (target->data[9] != 1)
+			if (target->data[1] & 0x1000)
 			{
-				SetPlayerMessage(thread->player, MissionStrings + target->data[0xe], 2, 2);
-				SetMissionFailed(FAILED_MESSAGESET);
-
-				// to LAB_00063664
+				// [A] Ahhhh, 32 bit pointers... for future full-scale refactoring
+				if (target->data[14] != -1 && Long2DDistance((VECTOR*)target->data[4], &pv) > 30000)
+				{
+					message = MissionStrings + target->data[14];
+					SetPlayerMessage(thread->player, message, 2, 2);
+					SetMissionFailed(FAILED_MESSAGESET);
+				}
 			}
-		}
-	}
-
-	if (target->data[0] > 2)
-	{
-		if (target->data[0] == 3)
-		{
-			if ((target->data[1] & 0x1000U) == 0) 
+			else
 			{
+				// [A] Ahhhh, 32 bit pointers... for future full-scale refactoring
 				target->data[4] = (int)TriggerEvent(target->data[3]);
-				target->data[1] = target->data[1] | 0x1000;
+				target->data[1] |= 0x1000;
 			}
-			else if (target->data[0xe] != -1 && Long2DDistance((VECTOR*)target->data[4], &pv) > 30000)
-			{
-				SetPlayerMessage(thread->player, MissionStrings + target->data[0xe], 2, 2);
-				SetMissionFailed(FAILED_MESSAGESET);
-			}
-		}
 
-		goto LAB_00063664;
+			break;
+		}
 	}
 
-	if (target->data[0] == 1)
+	if (ret != 0)
 	{
-		if (target->data[1] & 0x100000)
-		{
-			tv.vx = target->data[10];
-			tv.vz = target->data[0xb];
-			OffsetTarget(&tv);
-			target->data[3] = tv.vx;
-			target->data[4] = tv.vz;
-		}
-		else if (target->data[1] & 0x200000)
-		{
-			target->data[1] &= ~0x200000;
-
-			gStopCops.radius = target->data[5];
-			gStopCops.pos.vx = target->data[3];
-			gStopCops.pos.vy = 0;
-			gStopCops.pos.vz = target->data[4];
-		}
-		else
-		{
-			tv.vx = target->data[3];
-			tv.vz = target->data[4];
-			tv.vy = 0;
-		}
-
-		if (Long2DDistance(&tv, &pv) > target->data[5])
-		{
-			target->data[9] &= ~0xFFF0;
-		}
-		else
-		{
-			if (target->data[7] != 0)
-			{
-				if (target->data[7] < ABS(target->data[6] + pv.vy))
-					target->data[9] &= ~0xFFF0;
-			}
-
-			switch(target->data[1] & 0x3000000)
-			{
-				case 0x1000000:
-				{
-					playercollected[thread->player] |= 2;
-					return 0;
-				}
-				case 0x2000000:
-				{
-					playercollected[thread->player] |= 4;
-					return 0;
-				}
-				case 0x3000000:
-				{
-					if (playercollected[thread->player] != 7)
-						return 0;
-
-					playercollected[thread->player] = 0;
-
-					if (thread->player == 0)
-					{
-						gLapTimes[thread->player][gPlayerScore.items] = CalcLapTime(0, Mission.timer[0].count, gPlayerScore.items);
-						gPlayerScore.items++;
-
-						if (gPlayerScore.items == gNumRaceTrackLaps)
-						{
-							SetMissionComplete();
-						}
-					}
-					else
-					{
-						gLapTimes[thread->player][gPlayerScore.P2items] = CalcLapTime(1, Mission.timer[1].count, gPlayerScore.P2items);
-						gPlayerScore.P2items++;
-
-						if (gPlayerScore.P2items == gNumRaceTrackLaps)
-						{
-							SetMissionComplete();
-						}
-					}
-
-					return 0;
-				}
-				case 0:
-				{
-					if (GameType == GAME_SECRET)
-					{
-						playercollected[thread->player] |= 1;
-						return 0;
-					}
-				}
-			}
-
-			switch(target->data[1] & 0x30000)
-			{
-				case 0:
-				{
-					int data9;
-					data9 = target->data[9];
-
-					if (data9 == 0)
-					{
-						if (target->data[8] == -1 || copsAreInPursuit == 0)
-						{
-							iVar11 = 1;
-							prevCopsInPursuit = 0;
-						}
-						else if (Mission.message_timer[0] == 0 && prevCopsInPursuit == 0)
-						{
-							SetPlayerMessage(thread->player, MissionStrings + target->data[8], 2, 2);
-							prevCopsInPursuit = copsAreInPursuit;
-						}
-					}
-					else
-					{
-						uVar9 = ((data9 & 0xfff0) >> 4) + 1;
-
-						if ((data9 & 0xf) <= uVar9 / 30)
-							SetPlayerMessage(thread->player, MissionStrings + (data9 >> 0x10), 2, 0);
-
-						target->data[9] = (data9 >> 0x10) << 0x10 | uVar9 * 0x10 | data9 & 0xf;
-						gTannerActionNeeded = 1;
-
-						if (TannerActionHappening())
-						{
-							iVar11 = 1;
-						}
-					}
-
-					if (iVar11 == 0)
-						return 0;
-
-					if (target->data[1] & 0x400000U)
-						return 1;
-
-					if ((target->data[1] & 0x800000U) && player[thread->player].playerType != 1)
-						iVar11 = 0;
-						
-					break;
-				}
-				case 0x10000:
-				case 0x20000:
-					if (gPlayerWithTheFlag == thread->player)
-					{
-						if (thread->player == 0)
-							gPlayerScore.items++;
-						else if (thread->player == 1)
-							gPlayerScore.P2items++;
-
-						gPlayerWithTheFlag = -1;
-						SetPlayerMessage(thread->player, "Flag delivered!", 2, 1);
-
-						player[0].targetCarId = -1;
-						player[1].targetCarId = -1;
-
-						ActivateNextFlag();
-					}
-					break;
-				case 0x30000:
-					if (gPlayerWithTheFlag == -1)
-					{
-						Mission.ChaseTarget = MissionTargets;
-						gPlayerWithTheFlag = thread->player;
-
-						SetPlayerMessage(thread->player, "You got the flag!", 2, 1);
-
-						player[1 - gPlayerWithTheFlag].targetCarId = gPlayerWithTheFlag;
-					}
-					break;
-			}
-		}
-
-	}
-LAB_00063664: // 24 refs
-	if (iVar11 != 0)
-	{
+		// processed flag?
 		if (thread->player == 0)
-			target->data[1] = target->data[1] & 0x102U | 2;
+			target->data[1] = target->data[1] & 0x102U | 0x2;		// probably there was SETFLAG / UNSETFLAG macros
 		else
 			target->data[1] = target->data[1] & 0x102U | 0x100;
 
@@ -2934,7 +2948,7 @@ LAB_00063664: // 24 refs
 		}
 	}
 
-	return iVar11;
+	return ret;
 }
 
 
@@ -3071,7 +3085,7 @@ int MRCreateCar(_TARGET *target)
 
 		InitPlayer((_PLAYER *)(player + 1), car_data + curslot, 4, target->data[5], (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
 
-		EnablePercentageBar(&DamageBar, target->data[0xd]);
+		EnablePercentageBar(&DamageBar, target->data[13]);
 		NewLeadDelay = 0;
 	}
 
@@ -3650,19 +3664,17 @@ void SetMissionComplete(void)
 // [D] [T]
 void SetMissionFailed(FAIL_REASON reason)
 {
-	switch (reason)
+	if (reason == FAILED_CnR_LOSTHIM) 
 	{
-		case FAILED_OUTOFTIME:
-			SetMissionMessage(&MissionStrings[MissionHeader->msgOutOfTime], 3, 2);
-			break;
-		case FAILED_CnR_LOSTHIM:
-			SetPlayerMessage(0, &MissionStrings[MissionHeader->msgDrowned], 3, 2);
-			SetPlayerMessage(1, &MissionStrings[MissionHeader->msgComplete], 3, 2);
-			break;
-		case FAILED_MESSAGESET:
-			SetMissionOver(PAUSEMODE_GAMEOVER);
-			break;
+		SetPlayerMessage(0,MissionStrings + MissionHeader->msgDrowned,3,2);
+		SetPlayerMessage(1,MissionStrings + MissionHeader->msgComplete,3,2);
 	}
+	else if(reason == FAILED_OUTOFTIME) 
+	{
+		SetMissionMessage(MissionStrings + MissionHeader->msgOutOfTime,3,2);
+	}
+
+	SetMissionOver(PAUSEMODE_GAMEOVER);
 }
 
 
