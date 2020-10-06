@@ -3669,35 +3669,45 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 	long pointVel[4];
 	long reaction[4];
 	long lever[4];
+	SVECTOR boxDisp;
+	CAR_COSMETICS* car_cos;
 
-	static struct CRET2D collisionResult; // offset 0x30
+	CRET2D collisionResult; // offset 0x30
 	CDATA2D cd[2];
 
 	cd[0].length[0] = 0x3c;
 	cd[0].length[1] = 0x3c;
 	cd[0].x.vx = pPos->vx;
 	cd[0].x.vz = pPos->vz;
-	cp1 = car_data + 0x13;
 	cd[0].theta = dir;
 
-	do {
-		uVar2 = cp1->ap.model;
+	cp1 = car_data + MAX_CARS - 1;
 
-		cd[1].x.vx = cp1->hd.where.t[0];
-		cd[1].length[0] = car_cosmetics[uVar2].colBox.vz;
-		cd[1].length[1] = car_cosmetics[uVar2].colBox.vx;
+	do {
+		car_cos = &car_cosmetics[cp1->ap.model];
+
+		cd[1].length[0] = car_cos->colBox.vz;
+		cd[1].length[1] = car_cos->colBox.vx;
 		cd[1].theta = cp1->hd.direction;
-		cd[1].x.vz = cp1->hd.where.t[2];
+
+		// [A] fix bug with offset box collision
+		gte_SetRotMatrix(&cp1->hd.where);
+		gte_SetTransMatrix(&cp1->hd.where);
+
+		boxDisp.vx = -car_cos->cog.vx;
+		boxDisp.vy = -car_cos->cog.vy;
+		boxDisp.vz = -car_cos->cog.vz;
+
+		gte_ldv0(&boxDisp);
+
+		gte_rtv0tr();
+
+		gte_stlvnl(&cd[1].x);
 
 		if (cp1->controlType != CONTROL_TYPE_NONE) 
 		{
-			iVar3 = cp1->hd.where.t[1] + pPos->vy;
-
-			if (iVar3 < 0) {
-				iVar3 = -iVar3;
-			}
-
-			if (iVar3 < 500 && bcollided2d(cd, 1) != 0)
+			if (ABS(cp1->hd.where.t[1] + pPos->vy) < 500 && 
+				bcollided2d(cd, 1))
 			{
 				if (bQuick != 0)
 					return 1;
@@ -3706,14 +3716,17 @@ int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick)
 					return 1;
 
 				bFindCollisionPoint(cd, &collisionResult);
+				
 				iVar3 = -collisionResult.surfNormal.vz;
 				iVar1 = -collisionResult.surfNormal.vx;
+				
 				iVar10 = pcdTanner->hd.where.t[2] + FIXEDH(collisionResult.penetration * iVar3);
 				iVar12 = collisionResult.hit.vz - iVar10;
 				collisionResult.hit.vy = pcdTanner->hd.where.t[1] + 0x3c;
 				iVar9 = collisionResult.hit.vy - pcdTanner->hd.where.t[1];
 				iVar8 = pcdTanner->hd.where.t[0] + FIXEDH(collisionResult.penetration * iVar1);
 				iVar11 = collisionResult.hit.vx - iVar8;
+				
 				collisionResult.surfNormal.vy = 0;
 
 				iVar7 = FIXEDH(pcdTanner->st.n.angularVelocity[1] * iVar12 - pcdTanner->st.n.angularVelocity[2] * iVar9) + pcdTanner->st.n.linearVelocity[0];

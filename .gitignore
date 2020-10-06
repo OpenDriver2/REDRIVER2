@@ -27,7 +27,6 @@ TDR/*
 xmplayer/*
 game_rebuild/*
 src_rebuild/dependencies/*
-# src_rebuild/EMULATOR/*
 src_rebuild/.vs/*
 src_rebuild/bin/*
 src_rebuild/obj/*

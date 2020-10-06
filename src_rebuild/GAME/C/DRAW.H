@@ -7,6 +7,7 @@ extern SVECTOR day_colours[4];
 extern SVECTOR night_colours[4];
 
 extern MATRIX aspect;
+extern MATRIX identity;
 extern MATRIX inv_camera_matrix;
 extern MATRIX face_camera;
 

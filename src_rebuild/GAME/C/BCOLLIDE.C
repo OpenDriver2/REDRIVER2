@@ -17,9 +17,9 @@
 #include "CAMERA.H"
 #include "OBJANIM.H"
 
+#include "RAND.H"
 #include "STRINGS.H"
 #include "INLINE_C.H"
-#include <stdlib.h>
 
 // decompiled code
 // original method signature: 
@@ -65,8 +65,6 @@ int boxOverlap = 0;
 int bcollided2d(CDATA2D *body, int needOverlap)
 {
 	int dtheta;
-	int absdist;
-	int abslim;
 	short ac;
 	short as;
 	int i; // $t7
@@ -95,8 +93,8 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		i--;
 	} while (i != -1);
 
-	ac = rcossin_tbl[(dtheta + 0x400 & 0x7ff) * 2];
 	as = rcossin_tbl[(dtheta & 0x7ff) * 2];
+	ac = rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
 
 	delta.vx = body[0].x.vx - body[1].x.vx;
 	delta.vz = body[0].x.vz - body[1].x.vz;
@@ -111,14 +109,12 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 			body[i].dist[j] = FIXEDH(body[i].axis[j].vx * delta.vx + body[i].axis[j].vz * delta.vz);
 			body[i].limit[j] = body[i].length[j] + FIXEDH(body[k].length[j] * ac + body[k].length[1-j] * as);
 
-			if (body[i].limit[j] < body[i].dist[j])
-				return 0;
-
-			if (body[i].dist[j] < -body[i].limit[j])
+			if (body[i].dist[j] < -body[i].limit[j] ||
+				body[i].dist[j] > body[i].limit[j])
 				return 0;
 
 			j--;
-		} while (j != -1);
+		} while (j >= 0);
 
 		k++;
 		i--;
@@ -133,10 +129,10 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
 		tmp2 = ABS(tmp2);
 
-		if (tmp2 < 11)
-			xover = -1;
-		else
+		if (tmp2 > 10)
 			xover = (FE * ONE) / tmp2;
+		else
+			xover = -1;
 
 		FE = ABS(body[1].dist[1]) - ABS(body[1].limit[1]);
 		FE = ABS(FE);
@@ -144,19 +140,17 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
 		tmp2 = ABS(tmp2);
 
-		zover = xover;
 		if (tmp2 > 10)
 			zover = (FE * ONE) / tmp2;
-
-		if (xover > -1)
-		{
-			if (zover < xover)
-				boxOverlap = zover;
-			else
-				boxOverlap = xover;
-		}
 		else
+			zover = xover;
+
+		if (xover <= -1)
 			boxOverlap = zover;
+		else if (zover < xover)
+			boxOverlap = zover;
+		else
+			boxOverlap = xover;
 	}
 
 	return 1;
@@ -242,10 +236,10 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	sign = 0;
 	carBarrierCollision = false;
 
-	smallest = body->limit[0] + 1;
-
-	if ((body[0].isCameraOrTanner == 0) && (body[1].isCameraOrTanner == 0) && 
-		(body[1].length[0] << 3 <= body[1].length[1]) || (body[1].length[1] << 3 <= body[1].length[0]))
+	smallest = body[0].limit[0] + 1;
+	
+	if (!body[0].isCameraOrTanner && !body[1].isCameraOrTanner &&
+		(body[1].length[1] >= body[1].length[0] * 4 || body[1].length[0] >= body[1].length[1] * 4))
 	{
 		carBarrierCollision = true;
 	}
@@ -289,14 +283,14 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 			upper = body[1].limit[k] - body[1].dist[k];
 			lower = body[1].dist[k] + body[1].limit[k];
 
-			if (upper < lower && (body[1].length[k] < body[1].length[1-k] << 2))
+			if (upper < lower && (body[1].length[k] < body[1].length[1-k] * 4))
 			{
 				besti = 1;
 				sign = 1;
 				bestk = k;
 			}
 
-			if (lower < upper && (body[1].length[k] < body[1].length[1 - k] << 2))
+			if (lower < upper && (body[1].length[k] < body[1].length[1 - k] * 4))
 			{
 				besti = 1;
 				sign = -1;
@@ -309,15 +303,15 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 
 	cd = &body[(besti ^ 1)];
 
-	sign0 = sign;
-
-	if (cd->axis[0].vx * body[besti].axis[bestk].vx + cd->axis[0].vz * body[besti].axis[bestk].vz + 0x800 > -1)
+	if (cd->axis[0].vx * body[besti].axis[bestk].vx + cd->axis[0].vz * body[besti].axis[bestk].vz + 2048 > -1)
 		sign0 = -sign;
+	else
+		sign0 = sign;
 
-	sign1 = sign;
-
-	if (cd->axis[1].vx * body[besti].axis[bestk].vx + cd->axis[1].vz * body[besti].axis[bestk].vz + 0x800 > -1)
+	if (cd->axis[1].vx * body[besti].axis[bestk].vx + cd->axis[1].vz * body[besti].axis[bestk].vz + 2048 > -1)
 		sign1 = -sign;
+	else
+		sign1 = sign;
 
 	collisionResult->penetration = smallest;
 
@@ -366,7 +360,6 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 // [D] [T]
 int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 {
-	CDATA2D* coll;
 	int hit;
 	int q;
 	int time;
@@ -377,8 +370,8 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 
 	hit = 1;
 	neverfree = 1;
-	time = 0x1000;
-	step = 0x800;
+	time = 4096;
+	step = 2048;
 	
 	i = 1;
 	do {
@@ -604,17 +597,17 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 	char region;
 	int value;
 	bool fakeDamage;
+	int lbody;
 
 	int player_id;
 	int kludge;
 	int door, nose;
 
-	strikeVel = strikeVel * 0x177;
+	strikeVel *= 375;
 
-	value = cp->ap.carCos->colBox.vz << 0x10;
-	value = (value >> 0x10) - (value >> 0x1f) >> 1;
+	lbody = cp->ap.carCos->colBox.vz / 2;
 
-	strikeVel = strikeVel >> 8;
+	strikeVel >>= 8;
 
 	if (strikeVel < 0xa000) 
 	{
@@ -629,25 +622,29 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 
 	if (door < 1)
 	{
-		region = 0;
-
-		if ((nose <= value) && (region = 4, -value < nose)) 
+		if(nose > lbody)
+			region = 0;
+		else if (-lbody < nose)
 			region = 5;
+		else
+			region = 4;
 	}
 	else 
 	{
-		region = 1;
-
-		if ((nose <= value) && (region = 3, -value < nose))
+		if(nose > lbody)
+			region = 1;
+		else if (-lbody < nose)
 			region = 2;
+		else
+			region = 3;
 	}
 
 	if (cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
 		value = (strikeVel / 350 + 0x200) * 3;
 
-		value = value >> 3;
-		if (0x477 < value)
+		value >>= 3;
+		if (value > 0x477)
 			value = 0x477;
 		
 	}
@@ -657,9 +654,9 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		{
 			value = (strikeVel / 350 + 0x200) * 3;
 
-			value = value >> 3;
+			value >>= 3;
 
-			if (0x477 < value)
+			if (value > 0x477)
 				value = 0x477;
 
 			cp->ai.l.takeDamage = 0x32;
@@ -668,8 +665,8 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		{
 			value = strikeVel / 350 + 0x200;
 
-			value = value >> 2;
-			if (0x2fa < value)
+			value >>= 3;
+			if (value > 0x2fa)
 				value = 0x2fa;
 
 			if (cp->ai.l.takeDamage == 0)
@@ -681,7 +678,7 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 		value = ((strikeVel / 400 + 0x400) * 7) >> 3;
 	}
 
-	fakeDamage = cp->controlType == CONTROL_TYPE_PURSUER_AI && pOtherCar->controlType == CONTROL_TYPE_PURSUER_AI;
+	fakeDamage = (cp->controlType == CONTROL_TYPE_PURSUER_AI && pOtherCar->controlType == CONTROL_TYPE_PURSUER_AI);
 
 	ApplyDamage(cp, region, value, fakeDamage);
 
@@ -748,15 +745,14 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	int region;
 	int dz;
 	int dx;
+	int lbody;
 
 	player_id = GetPlayerId(cp);
 
-	value = cp->ap.carCos->colBox.vz << 0x10;
+	lbody = cp->ap.carCos->colBox.vz / 2;
 	impact = strikeVel / 600;
 
-	value = (value >> 0x10) - (value >> 0x1f) >> 1;
-
-	if (0x4fff < strikeVel && 9 < cp->hd.speed) 
+	if (strikeVel > 0x4fff && cp->hd.speed > 9) 
 	{
 		dx = collisionResult->hit.vx - cd->x.vx;
 		dz = collisionResult->hit.vz - cd->x.vz;
@@ -766,21 +762,27 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 
 		if (door < 1)
 		{
-			region = 0;
-			if ((nose <= value) && (region = 4, -value < nose))
+			if (nose > lbody)
+				region = 0;
+			else if (-lbody < nose)
 				region = 5;
+			else
+				region = 4;
 		}
-		else 
+		else
 		{
-			region = 1;
-
-			if ((nose <= value) && (region = 3, -value < nose))
+			if (nose > lbody)
+				region = 1;
+			else if (-lbody < nose)
 				region = 2;
+			else
+				region = 3;
 		}
+		
 		if (0x1f4000 < strikeVel) 
 			strikeVel = 0x1f4000;
 
-		value = ((strikeVel / 300) * 0x400) / 0x5dc;
+		value = ((strikeVel / 300) * 1024) / 1500;
 		if (0x800 < value)
 			value = 0x800;
 	
@@ -994,7 +996,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		cd[0].theta = cp->hd.direction;
 
-		if (cp->controlType == 6)
+		if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER)
 		{
 			cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 			cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
@@ -1041,11 +1043,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 		if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER) 
 		{
-			collided = (bcollided2d(cd, 1) != 0);
+			collided = bcollided2d(cd, 1);
 		}
 		else 
 		{
-			collided = (bcollided2d(cd, 0) != 0);
+			collided = bcollided2d(cd, 0);
 
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)

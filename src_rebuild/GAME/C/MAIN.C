@@ -69,7 +69,7 @@
 
 #include "PAUSE.H"
 
-#include <stdlib.h>
+#include "RAND.H"
 #include "STRINGS.H"
 
 #include <PLATFORM.H>
@@ -303,39 +303,36 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_JUNCTIONS2_NEW)
 		{
+			int cnt;
+			
 			printf("LUMP_JUNCTIONS2_NEW: size: %d\n", size);
 			ProcessJunctionsDriver2Lump((char *)ptr, size, 0);
-			lump_type = NumTempJunctions;
-			pDVar8 = Driver2JunctionsPtr;
-			puVar9 = Driver2TempJunctionsPtr;
 
-			if (0 < NumTempJunctions)
+			// put junction flags if any
+			cnt = 0;
+			
+			while (cnt < NumTempJunctions)
 			{
-				do {
-					lump_type = lump_type + -1;
-					pDVar8->flags = *puVar9;
-					pDVar8 = pDVar8 + 1;
-					puVar9 = puVar9 + 1;
-				} while (lump_type != 0);
+				Driver2JunctionsPtr[cnt].flags = Driver2TempJunctionsPtr[cnt];
+				cnt++;
 			}
 
 			gDemoLevel = false; // [A]
 		}
 		else if (lump_type == LUMP_JUNCTIONS2)
 		{
+			int cnt;
+			
 			printf("LUMP_JUNCTIONS2: size: %d\n", size);
 			ProcessJunctionsDriver2Lump((char *)ptr, size, 1);
-			lump_type = NumTempJunctions;
-			pDVar8 = Driver2JunctionsPtr;
-			puVar9 = Driver2TempJunctionsPtr;
+			
+			// put junction flags if any
+			cnt = 0;
 
-			if (0 < NumTempJunctions) {
-				do {
-					lump_type = lump_type + -1;
-					pDVar8->flags = *puVar9;
-					pDVar8 = pDVar8 + 1;
-					puVar9 = puVar9 + 1;
-				} while (lump_type != 0);
+			while (cnt < NumTempJunctions)
+			{
+				Driver2JunctionsPtr[cnt].flags = Driver2TempJunctionsPtr[cnt];
+				cnt++;
 			}
 
 			gDemoLevel = true; // [A]
@@ -2400,13 +2397,16 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 void PrintCommandLineArguments()
 {
 	const char* argumentsMessage =
-		"Example: REDRIVER2 <command> [arguments]\n\n"\
-		"  -players <count> : Set player count (1 or 2)\n"\
-		"  -playercar <number>, -player2car <number> : set player wanted car\n"\
-		"  -mission <number> : starts specified mission\n"\
-		"  -replay <filename> : starts replay from file\n"\
-		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"\
-		"  -nointro : disable intro screens\n"\
+		"Example: REDRIVER2 <command> [arguments]\n\n"
+		"  -players <count> : Set player count (1 or 2)\n"
+		"  -playercar <number>, -player2car <number> : set player wanted car\n"
+		"  -mission <number> : starts specified mission\n"
+		"  -chase <number> : using specified chase number for mission\n"
+		"  -replay <filename> : starts replay from file\n"
+#ifdef CUTSCENE_RECORDER
+		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"
+#endif
+		"  -nointro : disable intro screens\n"
 		"  -nofmv : disable all FMVs\n";
 	
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "REDRIVER 2 command line arguments", argumentsMessage, NULL);
@@ -2500,7 +2500,10 @@ int redriver2_main(int argc, char** argv)
 
 	LoadCurrentProfile();
 
-#ifndef PSX	
+#ifndef PSX
+	int commandLinePropsShown;
+	commandLinePropsShown = 0;
+
 	for (int i = 1; i < argc; i++)
 	{
 		if (!_stricmp(argv[i], "-playercar"))
@@ -2532,6 +2535,17 @@ int redriver2_main(int argc, char** argv)
 			}
 			i++;
 			NumPlayers = atoi(argv[i + 1]);
+		}
+		else if (!_stricmp(argv[i], "-chase"))
+		{
+			if (argc - i < 2)
+			{
+				printError("-chase missing number argument!");
+				return -1;
+			}
+
+			gChaseNumber = atoi(argv[i + 1]);
+			i++;
 		}
 		else if (!_stricmp(argv[i], "-mission"))
 		{
@@ -2645,7 +2659,9 @@ int redriver2_main(int argc, char** argv)
 #endif
 		else
 		{
-			PrintCommandLineArguments();
+			if(!commandLinePropsShown)
+				PrintCommandLineArguments();
+			commandLinePropsShown = 1;
 		}
 	}
 #endif // PSX

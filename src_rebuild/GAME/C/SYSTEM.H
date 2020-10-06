@@ -34,11 +34,19 @@ extern void sys_freeall();
 
 #define MALLOC_BEGIN() \
 	{ \
-		char* _oldmalloc = mallocptr;
+		const char* _oldmalloc = mallocptr;
 
+#ifdef __GNUC__
 #define MALLOC_END() \
-	if(mallocptr > _oldmalloc) printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", __FUNCTION__, mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
-}
+		if(mallocptr > _oldmalloc)\
+			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
+	} // MALLOC_BEGIN block
+#else
+#define MALLOC_END() \
+		if(mallocptr > _oldmalloc)\
+			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
+	} // MALLOC_BEGIN block
+#endif
 
 extern int leadAIRequired;
 extern int leadAILoaded;

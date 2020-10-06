@@ -834,36 +834,35 @@ void DoMissionSound(void)
 
 				bodgevar += 4;
 			}
-			else if (bodgevar == 5)
+			else if (bodgevar >= 4)
 			{
 				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
 
-				if ((Mission.timer[0].count / 3000) * 3000 != Mission.timer[0].count + 100)
-					return;
+				if (Mission.timer[0].count / 3000 * 3000 == Mission.timer[0].count + 100)
+				{
+					cVar1 = GetMissionSound(29);
+					Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
+				}
 
-				cVar1 = GetMissionSound(29);
-				Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
-			}
-			else if (bodgevar < 8) // [A] capture 6 and 7
-			{
-				if (bodgevar == 7)
+				if (bodgevar >= 5)
 				{
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
 						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
+				}
 
-					// bodgevar 6 & 7 (is this a bug?)
+				if (bodgevar >= 6)
+				{
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
 					{
 						cVar1 = GetMissionSound(20);
 						Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
-
-
 			}
+
 			break;
 		case 32:
 			if (holdall == -1)
@@ -914,7 +913,7 @@ void DoMissionSound(void)
 
 				bodgevar += 4;
 			}
-			else if (bodgevar == 5)
+			else if (bodgevar >= 5)
 			{
 				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
 
@@ -922,23 +921,23 @@ void DoMissionSound(void)
 					cVar1 = GetMissionSound(20);
 					Start3DSoundVolPitch(-1, 5, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 				}
-			}
-			else if (bodgevar < 8) // [A] capture 6 and 7
-			{
-				if (bodgevar == 7)
+
+				if (bodgevar >= 6)
+				{
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+					{
+						cVar1 = GetMissionSound(20);
+						Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+					}
+				}
+
+				if (bodgevar >= 7)
 				{
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
 						Start3DSoundVolPitch(-1, 5, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
-				}
-
-				// bodgevar 6 & 7 (is this a bug?)
-				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
-				{
-					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 				}
 			}
 			break;

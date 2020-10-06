@@ -1165,7 +1165,7 @@ LAB_00016fac:
 	direction.vy = player[0].dir & 0xfff;
 
 	RotMatrixXYZ(&map_matrix, &direction);
-	MulMatrix0(&aspect, &map_matrix, &map_matrix);
+	MulMatrix0(&identity, &map_matrix, &map_matrix);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
@@ -3196,7 +3196,7 @@ void SetFullscreenMapMatrix(void)
 	direction.vz = 0;
 
 	RotMatrixXYZ(&map_matrix, &direction);		// Why, Reflections? Why? You could have used RotMatrixY
-	MulMatrix0(&aspect, &map_matrix, &map_matrix);
+	MulMatrix0(&identity, &map_matrix, &map_matrix);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);

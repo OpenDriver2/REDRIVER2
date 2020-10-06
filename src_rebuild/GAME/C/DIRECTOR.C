@@ -20,8 +20,8 @@
 #include "SYSTEM.H"
 #include "../MEMCARD/MAIN.H"
 
+#include "RAND.H"
 #include "STRINGS.H"
-#include <stdlib.h>
 
 TEXTURE_DETAILS delcam; // address 0xC0EE0
 TEXTURE_DETAILS incar; // address 0xBF950

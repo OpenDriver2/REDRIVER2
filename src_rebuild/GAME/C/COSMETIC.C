@@ -12,8 +12,8 @@
 
 #include "INLINE_C.H"
 
-#include <string.h>
-#include <stdlib.h>
+#include "RAND.H"
+#include "STRINGS.H"
 
 char* CosmeticFiles[] = {
 	"LEVELS\\CHICAGO.LCF",

@@ -8,24 +8,21 @@
 #include "DEBRIS.H"
 #include "MAIN.H"
 #include "CAMERA.H"
-#include "DRAW.H"
 #include "HANDLING.H"
 #include "COSMETIC.H"
-#include "DENTING.H"
 #include "SHADOW.H"
 #include "CIV_AI.H"
-#include "COP_AI.H"
 #include "MC_SND.H"
 #include "GAMESND.H"
 #include "PLAYERS.H"
 #include "CUTSCENE.H"
 #include "CONVERT.H"
-#include "PAUSE.H"
-#include "PLAYERS.H"
+#include "GLAUNCH.H"
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
 #include "LIBAPI.H"
+
 
 MATRIX light_matrix =
 { { { 4096, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, { 0, 0, 0 } };
@@ -849,9 +846,21 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	num_cars_drawn++;
 
+	MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+	
 	// [A] there was mini cars cheat
 	// we need full blown mini cars with physics support
-
+	if (ActiveCheats.cheat13 != 0)
+	{
+		int i;
+		for (i = 0; i < 3; i++)
+		{
+			workmatrix.m[i][0] >>= 1;
+			workmatrix.m[i][1] >>= 1;
+			workmatrix.m[i][2] >>= 1;
+		}
+	}
+	
 	// LOD switching
 	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
@@ -897,11 +906,15 @@ void DrawCar(_CAR_DATA *cp, int view)
 		CarModelPtr->vlist = gTempCarVertDump[cp->id];
 		CarModelPtr->nlist = gTempCarVertDump[cp->id];
 
-		MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
 		FindCarLightFade(&workmatrix);
 
 		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 1);
 
+		if (ActiveCheats.cheat13 != 0)
+		{
+			MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+		}
+		
 		DrawCarWheels(cp, &workmatrix, &pos, view);
 	}
 	else 
@@ -918,7 +931,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		}
 
 		ComputeCarLightingLevels(cp, 0);
-		MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+		
 		FindCarLightFade(&workmatrix);
 
 		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 0);

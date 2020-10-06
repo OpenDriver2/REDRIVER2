@@ -1556,80 +1556,76 @@ void ControlCopDetection(void)
 
 			while (car_data <= cp)
 			{
-				uVar1 = cp->controlType;
+				if (cp->controlType == 3 && cp->ai.p.dying == 0 || cp->controlFlags & CONTROL_FLAG_COP)
+				{
+					vec.vx = cp->hd.where.t[0];
+					vec.vz = cp->hd.where.t[2];
+					y = cp->hd.where.t[0];
+					x = y - player[0].pos[0];
 
-				if (uVar1 == 3) 
-				{
-					if (cp->ai.p.dying == 0) 
-						goto LAB_0002eed0;
-				}
-				else 
-				{
-					if ((cp->controlFlags & 1) != 0)
+					if (x < 0)
+						x = player[0].pos[0] - y;
+
+					iVar7 = cp->hd.where.t[2];
+					y = iVar7 - player[0].pos[2];
+
+					if (y < 0) 
+						y = player[0].pos[2] - iVar7;
+
+					lVar6 = SquareRoot0(x * x + y * y);
+					
+
+					if (cp->controlType == 3)
 					{
-					LAB_0002eed0:
-						vec.vx = cp->hd.where.t[0];
-						vec.vz = cp->hd.where.t[2];
-						y = cp->hd.where.t[0];
-						x = y - player[0].pos[0];
-
-						if (x < 0)
-							x = player[0].pos[0] - y;
-
-						iVar7 = cp->hd.where.t[2];
-						y = iVar7 - player[0].pos[2];
-
-						if (y < 0) 
-							y = player[0].pos[2] - iVar7;
-
-						lVar6 = SquareRoot0(x * x + y * y);
 						cp->ai.p.DistanceToPlayer = lVar6;
 
-						if ((uVar1 == 3) && cp->ai.p.close_pursuit != 0)
+						if(cp->ai.p.close_pursuit != 0)
 						{
-						LAB_0002f040:
 							CopsCanSeePlayer = 1;
 							break;
 						}
+					}
 
-						if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) != 0)
+					if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) != 0)
+					{
+						if (lVar6 < copSightData.surroundViewDistance) 
 						{
-							if (lVar6 < copSightData.surroundViewDistance) 
+						LAB_0002f030:
+							bVar2 = true;
+						}
+						else 
+						{
+							bVar2 = false;
+							if (lVar6 < copSightData.frontViewDistance)
 							{
-							LAB_0002f030:
-								bVar2 = true;
-							}
-							else 
-							{
-								bVar2 = false;
-								if (lVar6 < copSightData.frontViewDistance)
+								y = targetVehicle->hd.where.t[0] - cp->hd.where.t[0];
+								x = targetVehicle->hd.where.t[2] - cp->hd.where.t[2];
+
+								lVar6 = ratan2(y, x);
+
+								if (lVar6 - cp->hd.direction < 0)
 								{
-									y = targetVehicle->hd.where.t[0] - cp->hd.where.t[0];
-									x = targetVehicle->hd.where.t[2] - cp->hd.where.t[2];
-
 									lVar6 = ratan2(y, x);
-
-									if (lVar6 - cp->hd.direction < 0)
-									{
-										lVar6 = ratan2(y, x);
-										x = cp->hd.direction - lVar6;
-									}
-									else
-									{
-										lVar6 = ratan2(y, x);
-										x = lVar6 - cp->hd.direction;
-									}
-
-									if ((x < copSightData.frontViewAngle) || (bVar2 = false, x < copSightData.frontViewAngle + 0x200)) 
-										goto LAB_0002f030;
+									x = cp->hd.direction - lVar6;
 								}
+								else
+								{
+									lVar6 = ratan2(y, x);
+									x = lVar6 - cp->hd.direction;
+								}
+
+								if ((x < copSightData.frontViewAngle) || (bVar2 = false, x < copSightData.frontViewAngle + 0x200)) 
+									goto LAB_0002f030;
 							}
-							if (bVar2) 
-								goto LAB_0002f040;
+						}
+						if (bVar2) 
+						{
+							CopsCanSeePlayer = 1;
+							break;
 						}
 					}
 				}
-				cp = cp + -1;
+				cp--;
 			}
 		}
 	}

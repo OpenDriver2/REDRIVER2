@@ -3,7 +3,6 @@
 #include "COSMETIC.H"
 #include "MISSION.H"
 #include "DR2ROADS.H"
-#include "TEXTURE.H"
 #include "CARS.H"
 #include "MAIN.H"
 #include "WHEELFORCES.H"
@@ -11,7 +10,6 @@
 #include "DENTING.H"
 #include "CAMERA.H"
 #include "FELONY.H"
-#include "MISSION.H"
 #include "DEBRIS.H"
 #include "PAD.H"
 #include "COP_AI.H"
@@ -24,12 +22,10 @@
 #include "GLAUNCH.H"
 #include "SHADOW.H"
 #include "PLAYERS.H"
-#include "DR2ROADS.H"
-
 #include "INLINE_C.H"
 #include "STRINGS.H"
 
-#include <stdlib.h>
+#include "RAND.H"
 
 // decompiled code
 // original method signature: 
@@ -292,24 +288,94 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 
 // [D] [T]
 void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
-{
+{	
 	delta.vx = 0;
 	delta.vy = 0;
 	delta.vz = -(carCos->wheelDisp[0].vz + carCos->wheelDisp[1].vz - 14) / 2;
-
+	
 	doWheels = 1;
 
 	UpdateCarPoints(carCos);
 
 	if (ActiveCheats.cheat10) // [A] cheat for secret car - Fireboyd78
 	{
-		if ((carCos == &car_cosmetics[4]) && (externalModelNumber == 12))
+		if (carCos == &car_cosmetics[4] && externalModelNumber == 12)
 		{
 			carCos->powerRatio += (carCos->powerRatio / 2);
 			carCos->mass *= 3;
 			carCos->traction *= 2;
 			carCos->wheelSize += (carCos->wheelSize / 4);
 			carCos->cog.vy -= 20;
+		}
+	}
+
+	// Super mini cars
+	if (ActiveCheats.cheat13)
+	{
+		int i;
+		carCos->wheelSize >>= 1;
+		carCos->headLight.vx >>= 1;
+		carCos->headLight.vy >>= 1;
+		carCos->headLight.vz >>= 1;
+
+		carCos->colBox.vx >>= 1;
+		carCos->colBox.vy >>= 1;
+		carCos->colBox.vz >>= 1;
+
+		carCos->cog.vx >>= 1;
+		carCos->cog.vy >>= 1;
+		carCos->cog.vz >>= 1;
+
+		carCos->brakeLight.vx >>= 1;
+		carCos->brakeLight.vy >>= 1;
+		carCos->brakeLight.vz >>= 1;
+
+		carCos->revLight.vx >>= 1;
+		carCos->revLight.vy >>= 1;
+		carCos->revLight.vz >>= 1;
+
+		carCos->backInd.vx >>= 1;
+		carCos->backInd.vy >>= 1;
+		carCos->backInd.vz >>= 1;
+
+		carCos->frontInd.vx >>= 1;
+		carCos->frontInd.vy >>= 1;
+		carCos->frontInd.vz >>= 1;
+
+		carCos->policeLight.vx >>= 1;
+		carCos->policeLight.vy >>= 1;
+		carCos->policeLight.vz >>= 1;
+
+		carCos->exhaust.vx >>= 1;
+		carCos->exhaust.vy >>= 1;
+		carCos->exhaust.vz >>= 1;
+
+		carCos->smoke.vx >>= 1;
+		carCos->smoke.vy >>= 1;
+		carCos->smoke.vz >>= 1;
+
+		carCos->fire.vx >>= 1;
+		carCos->fire.vy >>= 1;
+		carCos->fire.vz >>= 1;
+
+		carCos->twistRateX <<= 1;
+		carCos->twistRateY <<= 1;
+		carCos->twistRateZ <<= 1;
+
+		for (i = 0; i < 4; i++)
+		{
+			carCos->wheelDisp[i].vx >>= 1;
+			carCos->wheelDisp[i].vy >>= 1;
+			carCos->wheelDisp[i].vz >>= 1;
+
+			carCos->wheelDisp[i].vy -= 10;
+		}
+
+		for (i = 0; i < 12; i++)
+		{
+			carCos->cPoints[i].vx >>= 1;
+			carCos->cPoints[i].vy >>= 1;
+			carCos->cPoints[i].vz >>= 1;
 		}
 	}
 
@@ -637,7 +703,6 @@ void GlobalTimeStep(void)
 	RigidBodyState* tp;
 	RigidBodyState* d0;
 	RigidBodyState* d1;
-	int iVar28;
 	long AV[4];
 	long delta_orientation[4];
 	long normal[4];
@@ -646,7 +711,6 @@ void GlobalTimeStep(void)
 	long lever1[4];
 	long torque[4];
 	long pointVel0[4];
-	long pointVel1[4];
 	VECTOR velocity;
 	int depth;
 	int RKstep;
@@ -770,6 +834,7 @@ void GlobalTimeStep(void)
 					CheckScenaryCollisions(cp);
 				}
 
+
 				// check collisions with vehicles
 				if (cp->hd.mayBeColliding != 0) 
 				{
@@ -829,6 +894,9 @@ void GlobalTimeStep(void)
 								bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
 								CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
+								int c1InfiniteMass;
+								int c2InfiniteMass;
+
 								collisionpoint[1] -= 0;
 
 								lever0[0] = collisionpoint[0] - cp->hd.where.t[0];
@@ -936,17 +1004,25 @@ void GlobalTimeStep(void)
 
 								if (m2 < m1)
 								{
-									do1 = (m2 << 0xc) / m1;
-									do2 = 0x1000;
+									do1 = (m2 * 4096) / m1;
+									do2 = 4096;
 								}
 								else
 								{
-									do2 = (m1 << 0xc) / m2;
-									do1 = 0x1000;
+									do2 = (m1 * 4096) / m2;
+									do1 = 4096;
 								}
 
+								c1InfiniteMass = cp->controlType == CONTROL_TYPE_CUTSCENE || m1 == 0x7fff;
+								c2InfiniteMass = c1->controlType == CONTROL_TYPE_CUTSCENE || m2 == 0x7fff;
+
+								// [A] if any checked cars has infinite mass, reduce bouncing
+								// TODO: very easy difficulty
+								if (c1InfiniteMass ||c2InfiniteMass)
+									strikeVel = strikeVel * 10 >> 2;
+
 								// apply force to car 0
-								if (cp->controlType != CONTROL_TYPE_CUTSCENE && m1 != 0x7fff)
+								if (!c1InfiniteMass)
 								{
 									int twistY, strength1;
 
@@ -985,7 +1061,7 @@ void GlobalTimeStep(void)
 								}
 
 								// apply force to car 1
-								if (c1->controlType != CONTROL_TYPE_CUTSCENE && m2 != 0x7fff)
+								if (!c2InfiniteMass)
 								{
 									int twistY, strength2;
 
@@ -1854,12 +1930,6 @@ void CheckCarToCarCollisions(void)
 // [D] [T]
 void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 {
-	char cVar1;
-	short sVar2;
-	int iVar3;
-	int iVar4;
-	int iVar7;
-
 	int player_id;
 	int int_steer;
 	int analog_angle;

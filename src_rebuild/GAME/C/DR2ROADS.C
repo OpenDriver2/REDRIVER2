@@ -27,6 +27,37 @@ int NumDriver2Curves = 0;
 int NumDriver2Straights = 0;
 DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 
+// [A] custom function for working with roads in very optimized way
+int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
+{
+	DRIVER2_CURVE* curve;
+	DRIVER2_STRAIGHT* straight;
+
+	ClearMem((char*)outRoadInfo, sizeof(DRIVER2_ROAD_INFO));
+	outRoadInfo->surfId = surfId;
+
+	if(IS_CURVED_SURFACE(surfId))
+	{
+		outRoadInfo->curve = curve = GET_CURVE(surfId);
+		outRoadInfo->ConnectIdx = (short(*)[4])curve->ConnectIdx;
+		outRoadInfo->NumLanes = curve->NumLanes;
+		outRoadInfo->LaneDirs = curve->LaneDirs;
+		outRoadInfo->AILanes = curve->AILanes;
+		return 1;
+	}
+	else if (IS_STRAIGHT_SURFACE(surfId))
+	{
+		outRoadInfo->straight = straight = GET_STRAIGHT(surfId);
+		outRoadInfo->ConnectIdx = (short(*)[4])straight->ConnectIdx;
+		outRoadInfo->NumLanes = straight->NumLanes;
+		outRoadInfo->LaneDirs = straight->LaneDirs;
+		outRoadInfo->AILanes = straight->AILanes;
+		return 1;
+	}
+
+	return 0;
+}
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessStraightsDriver2Lump(char *lump_file /*$s0*/, int lump_size /*$a1*/)

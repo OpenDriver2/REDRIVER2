@@ -1225,6 +1225,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+		destStream->padCount = sheader->Size;
 		destStream->length = sheader->Length;
 		destStream->playbackrun = 0;
 
@@ -1296,6 +1297,7 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
+	char customFilename[64];
 
 	if (gCurrentMissionNumber < 21) 
 		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
@@ -1313,6 +1315,10 @@ int LoadCutsceneToBuffer(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
+#ifndef PSX
+			// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
+			sprintf(customFilename, "REPLAYS\\CUT%d\\%d.D2RP", gCurrentMissionNumber, subindex);
+#endif
 			if (CutsceneBuffer.bytesFree < size) 
 			{
 				// load into lead/path AI buffer
@@ -1322,11 +1328,27 @@ int LoadCutsceneToBuffer(int subindex)
 				CutsceneBuffer.currentPointer = _other_buffer2;
 				CutsceneBuffer.bytesFree = 0xc000;
 
-				LoadfileSeg(filename, _other_buffer2, offset, size);
+#ifndef PSX
+				if (FileExists(customFilename))
+				{
+					printInfo("Custom cutscene replay file loaded\n");
+					LoadfileSeg(customFilename, _other_buffer2, 0, size);
+				}
+				else
+#endif
+					LoadfileSeg(filename, _other_buffer2, offset, size);				
 			}
 			else 
 			{
-				LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
+#ifndef PSX
+				if (FileExists(customFilename))
+				{
+					printInfo("Custom cutscene replay file loaded\n");
+					LoadfileSeg(customFilename, _other_buffer2, 0, size);
+				}
+				else
+#endif
+					LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 			}
 
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;

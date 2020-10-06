@@ -1139,6 +1139,7 @@ struct REPLAY_STREAM // hashcode: 0xC894D541 (dec: -929770175)
 	struct PADRECORD* PadRecordBufferEnd; // size=3, offset=56
 	unsigned char playbackrun; // size=0, offset=60
 	int length; // size=0, offset=64
+	int padCount;
 };
 
 struct _PING_PACKET // hashcode: 0x9E8E7C27 (dec: -1634829273)

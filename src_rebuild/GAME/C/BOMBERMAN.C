@@ -20,7 +20,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
+#include "RAND.H"
 
 MODEL* gBombModel;
 _ExOBJECT explosion[5];
