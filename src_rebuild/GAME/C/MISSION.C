@@ -35,49 +35,49 @@
 char* MissionName[37] =
 {
 	// Chicago
-	"Surveillance Tip Off",
-	"Chase the Witness",
-	"Train Pursuit",
-	"Tailing the Drop",
-	"Escape to the Safe House",
-	"Chase the Intruder",
-	"Caine's Compound",
+	"Surveillance tip off",
+	"Chase the witness",
+	"Train pursuit",
+	"Tailing the drop",
+	"Escape to the safe house",
+	"Chase the intruder",
+	"Caine's compound",
 	"Leaving Chicago",
 
 	// Havana
-	"Follow Up the Lead",
-	"Hijack the Truck",
-	"Stop the Truck",
-	"Find the Clue",
-	"Escape to Ferry",
-	"To the Docks",
+	"Follow up the lead",
+	"Hijack the truck",
+	"Stop the truck",
+	"Find the clue",
+	"Escape to ferry",
+	"To the docks",
 	"Back to Jones",
 	"Tail Jericho",
 	"Pursue Jericho",
 	"Escape the Brazilians",
 
 	// Vegas
-	"Casino Getaway",
-	"Beat the Train",
-	"Car Bomb",
-	"Car Bomb Getaway",
-	"Bank Job",
-	"Steal the Ambulance",
+	"Casino getaway",
+	"Beat the train",
+	"Car bomb",
+	"Car bomb getaway",
+	"Bank job",
+	"Steal the ambulance",
 	"Stake Out",
-	"Steal the Keys",
-	"C4 Deal",
-	"Destroy the Yard",
+	"Steal the keys",
+	"C4 deal",
+	"Destroy the yard",
 
 	// Rio
-	"Bus Crash",
-	"Steal the Cop Car",
-	"Caine's Cash",
+	"Bus crash",
+	"Steal the cop car",
+	"Caine's cash",
 	"Save Jones",
-	"Boat Jump",
-	"Jones in Trouble",
-	"Chase the Gunman",
-	"Lenny Escaping",
-	"Pink Lenny Gets Caught",
+	"Boat jump",
+	"Jones in trouble",
+	"Chase the Gun Man",
+	"Lenny escaping",
+	"Lenny gets caught",
 };
 
 // decompiled code
@@ -921,7 +921,7 @@ void RegisterChaseHit(int car1, int car2)
 			Mission.ChaseHitDelay = 20;
 			player[1 - player_id].targetCarId = gPlayerWithTheFlag;
 
-			SetPlayerMessage(player_id, "You got the flag!",2,1);
+			SetPlayerMessage(player_id, "You've got the flag!",2,1);
 		}
 	}
 }
