@@ -42,7 +42,6 @@
 #include "CIV_AI.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
-#include "EVENT.H"
 #include "OVERLAY.H"
 #include "DEBRIS.H"
 #include "JOB_FX.H"
@@ -54,14 +53,10 @@
 #include "DR2ROADS.H"
 #include "MODELS.H"
 #include "CARS.H"
-#include "COP_AI.H"
-#include "GLAUNCH.H"
 #include "OBJCOLL.H"
 #include "MC_SND.H"
 #include "FELONY.H"
 #include "LEADAI.H"
-#include "ENVIRO.H"
-#include "SEARCH.H"
 #include "LOADSAVE.H"
 
 #include "XAPLAY.H"
@@ -88,6 +83,8 @@ int levelstartpos[8][4] = {
 	{ 0xFFFFD6FC, 0xFFFFE7ED, 0xFFFFA980, 0},
 	{ 0xFFFFDCDD, 0xFFFFE7ED, 0xF8A7, 0},
 };
+
+XZPAIR gStartPos = { 0 };
 
 enum LevLumpType
 {
@@ -217,6 +214,7 @@ extern SPEECH_QUEUE gSpeechQueue;
 bool gDriver1Level = false;
 bool gDemoLevel = false;
 
+// [D]
 void ProcessLumps(char *lump_ptr, int lump_size)
 {
 	int quit;
@@ -2398,10 +2396,13 @@ void PrintCommandLineArguments()
 {
 	const char* argumentsMessage =
 		"Example: REDRIVER2 <command> [arguments]\n\n"
+#ifdef DEBUG_OPTIONS
+		"  -startpos <x> <z>: Set player start position\n"
 		"  -players <count> : Set player count (1 or 2)\n"
 		"  -playercar <number>, -player2car <number> : set player wanted car\n"
-		"  -mission <number> : starts specified mission\n"
 		"  -chase <number> : using specified chase number for mission\n"
+		"  -mission <number> : starts specified mission\n"
+#endif // DEBUG_OPTIONS
 		"  -replay <filename> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
 		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"
@@ -2506,7 +2507,21 @@ int redriver2_main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (!_stricmp(argv[i], "-playercar"))
+#ifdef DEBUG_OPTIONS
+		if (!_stricmp(argv[i], "-startpos"))
+		{
+			if (argc - i < 3)
+			{
+				printError("-startpos missing two number argument!");
+				return -1;
+			}
+
+			gStartPos.x = atoi(argv[i+1]);
+			gStartPos.z = atoi(argv[i+2]);
+
+			i+=2;
+		}
+		else if (!_stricmp(argv[i], "-playercar"))
 		{
 			if (argc - i < 2)
 			{
@@ -2564,6 +2579,7 @@ int redriver2_main(int argc, char** argv)
 			i++;
 			LaunchGame();
 		}
+#endif // _DEBUG_OPTIONS
 		else if (!_stricmp(argv[i], "-nofmv"))
 		{
 			gNoFMV = 1;
@@ -3269,8 +3285,9 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->flags = 0;
 
 		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
-		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
+
 		PlayerStartInfo[0]->position.vy = 0;
+		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
 		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
 
 		numPlayersToCreate = 1;
@@ -3285,9 +3302,11 @@ void InitGameVariables(void)
 			PlayerStartInfo[1]->palette = defaultPlayerPalette;
 			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
+	
 			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
-			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
+
 			PlayerStartInfo[1]->position.vy = 0;
+			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
 			PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
 
 			numPlayersToCreate = NumPlayers;
@@ -3308,9 +3327,7 @@ void InitGameVariables(void)
 	}
 #endif // CUTSCENE_RECORDER
 
-
 	InitCivCars();
-	return;
 }
 
 

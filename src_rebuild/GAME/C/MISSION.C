@@ -484,9 +484,20 @@ void LoadMission(int missionnum)
 	if (gCutsceneAsReplay == 0)
 #endif
 	{
-		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
+
+		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
 		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
+	
+#ifdef DEBUG_OPTIONS
+		if(gStartPos.x != 0 && gStartPos.z != 0)
+		{
+			PlayerStartInfo[0]->rotation = 0;
+			PlayerStartInfo[0]->position.vx = gStartPos.x;
+			PlayerStartInfo[0]->position.vz = gStartPos.z;
+		}
+#endif
+	
 		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
 		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
 	}
