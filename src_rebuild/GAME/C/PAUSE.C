@@ -188,7 +188,7 @@ MENU_HEADER DebugTimeOfDayHeader =
 MENU_ITEM DebugJustForFunItems[] =
 {
 	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
-	{ "Mini cars", 3,	2,  ToggleMiniCars, MENU_QUIT_NONE,	NULL },
+	{ "Mini Cars", 3,	2,  ToggleMiniCars, MENU_QUIT_NONE,	NULL },
 	{ "Jericho Mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_NONE,		NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -208,7 +208,7 @@ MENU_ITEM DebugOptionsItems[] =
 #endif
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
-	{ "Fun cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
+	{ "Fun Cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
 	{ "Invincibility", 	3, 	2,  ToggleInvincibility,MENU_QUIT_NONE,		NULL},
 	{ "Immunity", 		3, 	2,  ToggleImmunity,		MENU_QUIT_NONE,		NULL},
 	{ "Puppy Dog Cops",	3,	2,  TogglePuppyDogCops,	MENU_QUIT_NONE,		NULL },
@@ -406,7 +406,7 @@ MENU_HEADER ChaseGameFinishedHeader =
 
 MENU_HEADER NoPadHeader =
 {
-	"Insert controller in slot 1",
+	"Insert a Controller in port 1",
 	{ 0, 0, 0, 0 },
 	0u,
 	NoPadItems
@@ -414,7 +414,7 @@ MENU_HEADER NoPadHeader =
 
 MENU_HEADER NoMultiPadHeader =
 {
-	"Insert controller in slot 1",
+	"Insert a Controller in port 2",
 	{ 0, 0, 0, 0 },
 	0u,
 	NoMultiPadItems
@@ -422,7 +422,7 @@ MENU_HEADER NoMultiPadHeader =
 
 MENU_HEADER InvalidPadHeader =
 {
-	"Incompatible controller in port 1",
+	"Unsupported controller in port 1",
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidPadItems
@@ -430,7 +430,7 @@ MENU_HEADER InvalidPadHeader =
 
 MENU_HEADER InvalidMultiPadHeader =
 {
-	"Incompatible controller in port 1",
+	"Unsupported controller in port 2",
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidMultiPadItems
