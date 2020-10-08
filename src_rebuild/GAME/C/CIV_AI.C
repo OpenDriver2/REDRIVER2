@@ -64,6 +64,7 @@ int test555 = 0;
 #define CIV_STATE_SET_CONFUSED(cp) \
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 
+
 // decompiled code
 // original method signature: 
 // int /*$ra*/ InitCar(struct _CAR_DATA *cp /*$s0*/, int direction /*$s6*/, long (*startPos)[4] /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)
@@ -590,7 +591,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 			dx = oldNode->x - currentRoadInfo.curve->Midx;
 			dz = oldNode->z - currentRoadInfo.curve->Midz;
 
-			oldOppDir = (((oldNode->dir - ratan2(dx, dz)) + 0x800U & 0xfff) - 0x800) < 1;
+			oldOppDir = (((oldNode->dir - ratan2(dx, dz)) + 0x800U & 0xfff) - 0x800);
+			oldOppDir = (oldOppDir < 1) << 0xb;
 		}
 
 		// first road is picked from road direction
@@ -984,7 +986,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				}
 				else
 				{
-					newLane = numLanes - cp->ai.c.currentLane + 1;
+					newLane = numLanes - (cp->ai.c.currentLane + 1);
 
 					//if (newLane == 0)// [A] temporary hack
 					//	newLane++;
@@ -1132,7 +1134,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						tmpNewLane[roadCnt] = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2]) + 512 >> 9);
 
 						// [A] I don't think that is needed
-					#if 0
+
 						count = numLanes;
 						laneNo = numLanes;
 						do
@@ -1150,7 +1152,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 							laneFit[roadCnt] = 666;
 							continue;
 						}
-					#endif
+
 					}
 					else
 					{
@@ -1226,10 +1228,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 				}
 
 				// road width might be changed too, so we have to clamp it
-				if (laneDirCorrect != oppDir)
+				if (laneDirCorrect != oppDir) //  && ROAD_WIDTH_IN_LANES(&currentRoadInfo) != numLanes)
 				{
-					//&& ROAD_WIDTH_IN_LANES(&currentRoadInfo) != numLanes
-
 					// find drivable leftmost and rightmost lane
 					laneFromLeft = numLanes;
 					laneFromRight = -1;
@@ -1293,13 +1293,13 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					}
 
 					// swap
-					if (ABS(laneFromRight - newLane) < ABS(laneFromLeft - newLane))
+					if (ABS(laneFromRight - newLane) >= ABS(laneFromLeft - newLane))
 					{
 						int tmp = laneFromRight;
 						laneFromRight = laneFromLeft;
 						laneFromLeft = tmp;
 					}
-
+					/*
 					// it doesn't work well
 					laneFit[newExit] = laneFromRight;
 
@@ -1312,7 +1312,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					}
 
 					// [A] IDK... this is bugged. Might get back to it any time
-					/*
+
 					int oldLane = newLane;
 
 					if (laneFromRight >= numLanes - 1)
@@ -1323,6 +1323,7 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 					if (newLane < 0)
 						newLane = 0;
 					*/
+					
 				}
 			}
 
@@ -4029,7 +4030,7 @@ int CivControl(_CAR_DATA * cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 0
+#if 1
 		{
 			//maxCivCars = 2;
 			//maxCopCars = 0;
