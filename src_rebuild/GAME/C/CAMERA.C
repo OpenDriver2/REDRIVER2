@@ -753,7 +753,11 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	lp->cameraPos.vx = basePos[0] + FIXEDH(lp->cameraDist * rcossin_tbl[(jcam->hd.direction & 0xfff) * 2]);
 	lp->cameraPos.vz = basePos[2] + FIXEDH(lp->cameraDist * rcossin_tbl[(jcam->hd.direction & 0xfff) * 2 + 1]);
 
-	camera_angle.vy = -(jcam->hd.direction + 2048);//-ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
+	if (lp->cameraCarId < 0)
+		camera_angle.vy = -(jcam->hd.direction + 2048);
+	else
+		camera_angle.vy = -ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
+	
 	camera_angle.vz = 0;
 
 	SetGeomScreen(256);
