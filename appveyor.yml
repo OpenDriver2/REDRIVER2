@@ -39,7 +39,7 @@ install:
   - set GLEW_URL="https://netix.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip"
   - appveyor DownloadFile %GLEW_URL% -FileName GLEW.zip
   - 7z x GLEW.zip -o%dependency_folder%
-  - set OPENAL_URL="https://kcat.strangesoft.net/openal-binaries/openal-soft-1.20.1-bin.zip"
+  - set OPENAL_URL="https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip"
   - appveyor DownloadFile %OPENAL_URL% -FileName OPENAL.zip
   - 7z x OPENAL.zip -o%dependency_folder%
   - set JPEG_URL="http://www.ijg.org/files/jpegsr9d.zip"
