@@ -26,9 +26,8 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
+#include "RAND.H"
 #include "STRINGS.H"
-
-#include <stdlib.h>
 
 TEXTURE_DETAILS digit_texture;
 
@@ -1614,11 +1613,6 @@ void DrawSmashable_sprites(void)
 
 			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
 
-			// [A]
-#ifndef PSX
-			MulMatrix0(&aspect, &object_matrix, &object_matrix);
-#endif
-
 			pos.vx = dam->vx - camera_position.vx;
 			pos.vy = dam->cop.pos.vy - camera_position.vy;
 			pos.vz = dam->cop.pos.vz - camera_position.vz;
@@ -2066,7 +2060,7 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 	Apply_Inv_CameraMatrix(&v1);
 
-	gte_SetRotMatrix(&aspect);
+	gte_SetRotMatrix(&identity);
 	gte_SetTransVector(&v1);
 
 	ShowLight1(&v1, &col, size, &light_texture);
@@ -2882,7 +2876,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 	Apply_Inv_CameraMatrix(v1);
 
-	gte_SetRotMatrix(&aspect);
+	gte_SetRotMatrix(&identity);
 	gte_SetTransVector(v1);
 
 	vert[0].vz = 0;
@@ -3462,9 +3456,6 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 	direction.vz = rotation;
 
 	RotMatrixXYZ(&temp_matrix, &direction);
-#ifndef PSX
-	MulMatrix0(&aspect, &temp_matrix, &temp_matrix);
-#endif
 
 	gte_SetRotMatrix(&temp_matrix);
 
@@ -4881,7 +4872,7 @@ void DisplaySmoke(SMOKE *smoke)
 		Apply_Inv_CameraMatrix(&v);
 
 		gte_SetTransVector(&v);
-		gte_SetRotMatrix(&aspect);
+		gte_SetRotMatrix(&identity);
 
 		smokemesh[0].vx = -smoke->start_w;
 		smokemesh[0].vy = -smoke->start_w;
@@ -5582,7 +5573,7 @@ void DisplaySplashes(void)
 
 	iVar4 = FIXEDH(uVar3 * FrAng * 3);
 
-	gte_SetRotMatrix(&aspect); // [A] norot
+	gte_SetRotMatrix(&identity); // [A] norot
 
 	CamGnd.vx = camera_position.vx;
 	CamGnd.vz = camera_position.vz;

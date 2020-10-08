@@ -24,9 +24,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
-
-
+#include "RAND.H"
 
 int ElTrainData[83] = {
 	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
@@ -2575,6 +2573,14 @@ int GetBridgeRotation(int timer)
 
 	if (debugRotation != -1)
 		return debugRotation;
+
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay != 0)
+	{
+		return 0;
+	}
+#endif
 
 	if (2600 < timer) 
 	{

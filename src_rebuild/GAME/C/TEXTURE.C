@@ -100,12 +100,13 @@ short specialSlot;
 	/* end block 3 */
 	// End Line: 1165
 
-// [D]
+// [D] [T]
 void IncrementClutNum(RECT16 *clut)
 {
 	clut->x += 16;
 
-	if (clut->x == 1024) {
+	if (clut->x == 1024) 
+	{
 		clut->x = 960;
 		clut->y += 1;
 	}
@@ -144,7 +145,8 @@ void IncrementTPageNum(RECT16 *tpage)
 	while (++i)
 	{
 		// proper tpage position?
-		if ((tpage->x == tpagepos[i - 1].x) && (tpage->y == tpagepos[i - 1].y))
+		if ((tpage->x == tpagepos[i - 1].x) && 
+			(tpage->y == tpagepos[i - 1].y))
 		{
 			if (tpagepos[i].x == -1)
 			{
@@ -193,7 +195,7 @@ void IncrementTPageNum(RECT16 *tpage)
 
 // [D] [T]
 // Originally ASM function
-char * unpackTexture(char *dest, char *src)
+char* unpackTexture(char *dest, char *src)
 {
 	char *ptr = dest + 0x7fff;
 
@@ -217,13 +219,17 @@ char * unpackTexture(char *dest, char *src)
 	return src;
 }
 
-// [D] [A]
+// [D] [T]
 int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpageaddress)
 {
-	int npalettes = *(int *)tpageaddress;
+	int npalettes;
+	int i;
+	RECT16 temptpage;
+
+	npalettes = *(int *)tpageaddress;
 	tpageaddress += 4;
 
-	for (int i = 0; i < npalettes; i++)
+	for (i = 0; i < npalettes; i++)
 	{
 		LoadImage(cluts, (u_long *)tpageaddress);
 		tpageaddress += 32;
@@ -231,8 +237,6 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 		texture_cluts[tpage2send][i] = GetClut(cluts->x, cluts->y);
 		IncrementClutNum(cluts);
 	}
-
-	RECT16 temptpage;
 
 	temptpage.x = tpage->x;
 	temptpage.y = tpage->y;
@@ -330,23 +334,26 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	/* end block 3 */
 	// End Line: 396
 
+// UNUSED
 int Find_TexID(MODEL *model, int t_id)
 {
-	char *polylist = (char *)model->poly_block;
+	char *polylist;
+	polylist = (char *)model->poly_block;
 
 	for (int i = 0; i < model->num_polys; i++)
 	{
-		switch (*polylist & 0x1F) {
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-		case 20:
-		case 21:
-		case 22:
-		case 23:
-			if (polylist[2] == t_id)
-				return 1;
+		switch (*polylist & 0x1F)
+		{
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 20:
+			case 21:
+			case 22:
+			case 23:
+				if (polylist[2] == t_id)
+					return 1;
 		}
 
 		polylist += PolySizes[*polylist];
@@ -390,16 +397,18 @@ int Find_TexID(MODEL *model, int t_id)
 	// End Line: 1491
 
 // [D] [T]
-TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
+TEXINF* GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 {
-	char *nametable = texturename_buffer;
+	char *nametable;
+	int i, j;
+	nametable = texturename_buffer;
 
-	for (int i = 0; i < tpage_amount; i++)
+	for (i = 0; i < tpage_amount; i++)
 	{
 		int texamt = tpage_texamts[i];
 		TEXINF *texinf = tpage_ids[i];
 
-		for (int j = 0; j < texamt; j++)
+		for (j = 0; j < texamt; j++)
 		{
 			if (!strcmp(nametable + texinf->nameoffset, name))
 			{
@@ -437,8 +446,8 @@ TEXINF * GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 	/* end block 2 */
 	// End Line: 581
 
-// [D]
-TEXINF * GetTextureInfoName(char *name, TPAN *result)
+// [D] [T]
+TEXINF* GetTextureInfoName(char *name, TPAN *result)
 {
 	TEXINF *tex;
 	int tpagenum;
@@ -473,7 +482,7 @@ TEXINF * GetTextureInfoName(char *name, TPAN *result)
 	/* end block 3 */
 	// End Line: 1656
 
-// [D]
+// [D] [T]
 void update_slotinfo(int tpage, int slot, RECT16 *pos)
 {
 	tpageslots[slot] = tpage;
@@ -502,26 +511,26 @@ void update_slotinfo(int tpage, int slot, RECT16 *pos)
 	/* end block 2 */
 	// End Line: 1687
 
-// [D]
+// [D] [T]
 void ProcessTextureInfo(char *lump_ptr)
 {
+	int i;
+	char* ptr;
 	tpage_amount =  *(int *)lump_ptr;
 	texamount = *(int *)(lump_ptr + 4);
 	tpage_position = (TP *)(lump_ptr + 8);
 
-	char *ptr = (char *)&tpage_position[tpage_amount + 1];
+	ptr = (char *)&tpage_position[tpage_amount + 1];
 
-	if (tpage_amount > 0) {
-		for (int i = 0; i < tpage_amount; i++)
-		{
-			texamount = *(int *)ptr;
-			ptr += 4;
+	for (i = 0; i < tpage_amount; i++)
+	{
+		texamount = *(int *)ptr;
+		ptr += 4;
 
-			tpage_ids[i] = (TEXINF *)ptr;
-			ptr += (texamount * sizeof(TEXINF));
+		tpage_ids[i] = (TEXINF *)ptr;
+		ptr += (texamount * sizeof(TEXINF));
 
-			tpage_texamts[i] = texamount;
-		}
+		tpage_texamts[i] = texamount;
 	}
 
 	nperms = *(int *)ptr;
@@ -593,16 +602,19 @@ void LoadPermanentTPages(int *sector)
 {
 	int nsectors;
 	char *tpagebuffer;
+	int tloop, tset, i;
+	int specmodel;
+	int page1, page2;
 
 	// init tpage and cluts
 	MaxSpecCluts = 0;
 
-	for (int tloop = 0; tloop < 128; tloop++)
+	for (tloop = 0; tloop < 128; tloop++)
 		texture_pages[tloop] = GetTPage(0, 0, 960, 0);
 
-	for (int tloop = 0; tloop < 128; tloop++)
+	for (tloop = 0; tloop < 128; tloop++)
 	{
-		for (int tset = 0; tset < 32; tset++)
+		for (tset = 0; tset < 32; tset++)
 			texture_cluts[tloop][tset] = GetClut(960, 16);
 	}
 
@@ -635,7 +647,7 @@ void LoadPermanentTPages(int *sector)
 	tpagebuffer = mallocptr;
 	nsectors = 0;
 
-	for (int i = 0; i < nperms; i++)
+	for (i = 0; i < nperms; i++)
 		nsectors += (permlist[i].y + 2047) / CDSECTOR_SIZE;
 
 #ifdef PSX
@@ -646,7 +658,7 @@ void LoadPermanentTPages(int *sector)
 
 	*sector += nsectors;
 
-	for (int i = 0; i < nperms; i++)
+	for (i = 0; i < nperms; i++)
 	{
 		int tp = permlist[i].x;
 
@@ -663,23 +675,27 @@ void LoadPermanentTPages(int *sector)
 	slot_clutpos[slotsused].vx = clutpos.x;
 	slot_clutpos[slotsused].vy = clutpos.y;
 
-	int specmodel = (MissionHeader->residentModels[4] - 8) * 2;
+	// init special slot texture
+	specmodel = (MissionHeader->residentModels[4] - 8) * 2;
 	specialSlot = (short)slotsused;
 
-	int page1 = specTpages[GameLevel][specmodel];
-	int page2 = specTpages[GameLevel][specmodel + 1];
+	// get special slot tpage
+	page1 = specTpages[GameLevel][specmodel];
+	page2 = specTpages[GameLevel][specmodel + 1];
 
 	carTpages[GameLevel][6] = page1;
 	carTpages[GameLevel][7] = page2;
 
 	if (nspecpages != 0)
 	{
-		int temp = 0;
-		int clutsloaded = 0;
+		int temp, clutsloaded;
+		
+		temp = 0;
+		clutsloaded = 0;
 
 		nsectors = 0;
 
-		for (int i = 0; i < nspecpages; i++)
+		for (i = 0; i < nspecpages; i++)
 			nsectors += (speclist[i].y + 2047) / CDSECTOR_SIZE;
 
 #ifdef PSX
@@ -691,9 +707,10 @@ void LoadPermanentTPages(int *sector)
 
 		*sector += nsectors;
 		
-		for (int i = 0; i < nspecpages; i++)
+		for (i = 0; i < nspecpages; i++)
 		{
-			int npalettes = *(int *)tpagebuffer;
+			int tp, npalettes;
+			npalettes = *(int *)tpagebuffer;
 
 			temp += npalettes;
 
@@ -705,7 +722,7 @@ void LoadPermanentTPages(int *sector)
 				temp = 0;
 			}
 
-			int tp = speclist[i].x;
+			tp = speclist[i].x;
 
 			// find a special car TPAGEs
 			if (page1 == tp || page2 == tp)
@@ -733,7 +750,8 @@ void LoadPermanentTPages(int *sector)
 		clutpos.y++;
 	}
 
-	for (int i = slotsused; i < 19; i++)
+	// init all slots
+	for (i = slotsused; i < 19; i++)
 	{
 		tpageslots[i] = 0xFF;
 
@@ -789,7 +807,7 @@ void LoadPermanentTPages(int *sector)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ReloadIcons(void)
 {
 	ReportMode(0);
@@ -835,29 +853,32 @@ int environmenttpage = 0;
 // [D] [T]
 void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 {
-	char *nametable = texturename_buffer;
+	int i, j;
+	int texamt;
+	char *nametable;
+	TEXINF *texinf;
+	
+	nametable = texturename_buffer;
 
-	for (int i = 0; i < tpage_amount; i++)
+	for (i = 0; i < tpage_amount; i++)
 	{
-		int texamt = tpage_texamts[i];
-		TEXINF *texinf = tpage_ids[i];
+		texamt = tpage_texamts[i];
+		texinf = tpage_ids[i];
 
-		for (int j = 0; j < texamt; j++)
+		for (j = 0; j < texamt; j++)
 		{
-			if (!strcmp(nametable + texinf->nameoffset, name))
+			if (!strcmp(nametable + texinf->nameoffset, name) &&
+				(!texture_is_icon || i == environmenttpage))
 			{
-				if (!texture_is_icon || (i == environmenttpage))
-				{
-					info->tpageid = texture_pages[i];
-					info->clutid = texture_cluts[i][j];
-					info->texture_number = (char)j;
-					info->texture_page = (char)i;
+				info->tpageid = texture_pages[i];
+				info->clutid = texture_cluts[i][j];
+				info->texture_number = j;
+				info->texture_page = i;
 
-					setUVWH(&info->coords, texinf->x, texinf->y, texinf->width - 1, texinf->height - 1);
+				setUVWH(&info->coords, texinf->x, texinf->y, texinf->width - 1, texinf->height - 1);
 
-					// bust 'outta here, real fly
-					return;
-				}
+				// bust 'outta here, real fly
+				return;
 			}
 
 			texinf++;

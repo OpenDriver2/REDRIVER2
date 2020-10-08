@@ -19,7 +19,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
+#include "RAND.H"
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[6];
@@ -914,11 +914,6 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 	pos.vx = wpos->vx - camera_position.vx;
 	pos.vy = wpos->vy - camera_position.vy;
 	pos.vz = wpos->vz - camera_position.vz;
-
-	// [A]
-#ifndef PSX
-	MulMatrix0(&aspect, &object_matrix, &object_matrix);
-#endif
 
 	Apply_Inv_CameraMatrix(&pos);
 	SetRotMatrix(&object_matrix);

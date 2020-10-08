@@ -86,5 +86,6 @@ extern void FEDrawCDicon(); // 0x001C62F8
 
 extern int CheatNumlayerSelect(int bSetup); // 0x001C6724
 
+extern int BonusGalleryScreen(int bSetup);
 
 #endif

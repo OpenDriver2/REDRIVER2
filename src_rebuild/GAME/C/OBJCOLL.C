@@ -1402,15 +1402,16 @@ void DoScenaryCollisions(void)
 {
 	_CAR_DATA *cp;
 
-	cp = car_data + 19;
+	cp = car_data + MAX_CARS - 1;
 
 	do {
 		if (cp->controlType != CONTROL_TYPE_NONE)
 		{
 			// civ AI and dead cop cars perform less collision detection frames
-			if (cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)
+			if (cp->controlType == CONTROL_TYPE_CIV_AI || 
+				cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)
 			{
-				if (cp->totalDamage != 0 && (10 < cp->hd.speed || (cp->id + CameraCnt & 3) == 0))
+				if (cp->totalDamage != 0 && (cp->hd.speed > 10 || (cp->id + CameraCnt & 3) == 0))
 				{
 					CheckScenaryCollisions(cp);
 				}

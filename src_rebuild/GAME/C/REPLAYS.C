@@ -156,7 +156,6 @@ void InitPadRecording(void)
 		// Start line: 1348
 	/* end block 3 */
 	// End Line: 1349
-
 // [D]
 int SaveReplayToBuffer(char *buffer)
 {
@@ -205,7 +204,7 @@ int SaveReplayToBuffer(char *buffer)
 
 		// copy source type
 		memcpy(&sheader->SourceType, &srcStream->SourceType, sizeof(STREAM_SOURCE));
-		sheader->Size = srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
+		sheader->Size = srcStream->padCount; // srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
 		sheader->Length = srcStream->length;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
@@ -245,7 +244,11 @@ int SaveReplayToBuffer(char *buffer)
 		memcpy(pt, &MissionStartData, sizeof(MISSION_DATA));
 	}
 
+#ifdef PSX
 	return 0x3644;		// size?
+#else
+	return pt - buffer;
+#endif
 }
 
 
@@ -339,6 +342,8 @@ int LoadCutsceneAsReplay(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
+			printWarning("cutscene size: %d\n", size);
+			
 			LoadfileSeg(filename, _other_buffer, offset, size);
 
 			int result = LoadReplayFromBuffer(_other_buffer);
@@ -397,27 +402,41 @@ int LoadReplayFromBuffer(char *buffer)
 		pt += sizeof(REPLAY_STREAM_HEADER);
 
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
-
+		
 		// copy source type
 		memcpy(&destStream->SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
 
+		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
+		
 		// init buffers
-		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
-		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
-		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+#ifdef CUTSCENE_RECORDER
+		if (gCutsceneAsReplay)
+		{
+			AllocateReplayStream(destStream, 4000);
+			
+			// copy pad data and advance buffer
+			memcpy(destStream->PadRecordBuffer, pt, size);
+		}
+		else
+#endif
+		{
+			destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
+			destStream->PadRecordBuffer = (PADRECORD*)replayptr;
+			destStream->PadRecordBufferEnd = (PADRECORD*)(replayptr + sheader->Size);
+			destStream->playbackrun = 0;
+			destStream->padCount = sheader->Size;
+
+			// copy pad data and advance buffer
+			memcpy(replayptr, pt, size);
+			replayptr += size;
+		}
+
+		pt += size;
+
 		destStream->length = sheader->Length;
-		destStream->playbackrun = 0;
 
 		if (sheader->Length > maxLength)
 			maxLength = sheader->Length;
-
-		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
-
-		// copy pad data and advance buffer
-		memcpy(replayptr, pt, size);
-		replayptr += size;
-
-		pt += size;
 	}
 
 	ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)replayptr;
@@ -828,6 +847,9 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 	stream->playbackrun = 0;
 	stream->length = 0;
 
+	if(CurrentGameMode != GAMEMODE_DIRECTOR && CurrentGameMode != GAMEMODE_REPLAY)
+	stream->padCount = 0;
+
 	stream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 	stream->PadRecordBuffer = (PADRECORD*)replayptr;
 
@@ -972,7 +994,8 @@ int Put(int stream, ulong *pt0)
 		padbuf->run = 0;
 
 		rstream->PadRecordBuffer = padbuf;
-
+		rstream->padCount++;
+		
 		return 1;
 	}
 
