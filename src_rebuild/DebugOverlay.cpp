@@ -3,17 +3,17 @@
 #include "LIBGTE.H"
 #include "LIBGPU.H"
 #include "INLINE_C.H"
-#include "GTEREG.H"
+#include "C/MISSION.H"
 
-#include "GAME/ASM/ASMTEST.H"
-#include "GAME/C/CONVERT.H"
-#include "GAME/C/CAMERA.H"
-#include "GAME/C/DRAW.H"
-#include "GAME/C/SYSTEM.H"
-#include "GAME/C/PRES.H"
-#include "GAME/C/SPOOL.H"
-#include "GAME/C/CARS.H"
-#include "GAME/C/PLAYERS.H"
+#include "C/CONVERT.H"
+#include "C/CAMERA.H"
+#include "C/DRAW.H"
+#include "C/SYSTEM.H"
+#include "C/PRES.H"
+#include "C/SPOOL.H"
+#include "C/CARS.H"
+#include "C/PLAYERS.H"
+#include "C/GLAUNCH.H"
 
 int gDisplayDrawStats = 0;
 
@@ -112,6 +112,9 @@ void DrawDebugOverlays()
 
 		sprintf(tempBuf, "Car speed: %d", speed);
 		PrintString(tempBuf, 10, 60);
+
+		sprintf(tempBuf, "Mission %d Chase: %d", gCurrentMissionNumber, gRandomChase);
+		PrintString(tempBuf, 10, 70);
 	}
 }
 

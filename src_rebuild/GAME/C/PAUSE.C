@@ -679,7 +679,7 @@ void SaveReplay(int direction)
 	CallMemoryCard(0x10, 1);
 #else
 	int size = SaveReplayToBuffer(_other_buffer);
-
+	
 	FILE* fp = fopen("chase.d2rp", "wb");
 	if (fp)
 	{
