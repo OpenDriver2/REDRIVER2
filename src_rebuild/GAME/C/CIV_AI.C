@@ -62,6 +62,7 @@ int test555 = 0;
 #define GET_NODE_ID(cp, node)	int((node) - cp->ai.c.targetRoute)
 
 #define CIV_STATE_SET_CONFUSED(cp) \
+	printInfo("CIV confused: at %s, %d\n", __FUNCTION__, __LINE__);\
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 
 
@@ -1101,8 +1102,6 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 		*turnAngle = 0;
 		newExit = -1;
 
-		roadCnt = 0;
-		
 		// check the connections
 		// determine new lanes on possible new roads based on the old node position
 		for (roadCnt = 0; roadCnt < 2; roadCnt++)
@@ -1141,7 +1140,8 @@ int GetNextRoadInfo(_CAR_DATA* cp, int randomExit, int* turnAngle, int* startDis
 						{
 							if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
 							{
-								//test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
+								// this line below needed because fucking compiler seem to be omitting it completely
+								test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
 								laneNo = count;
 							}
 							count--;
@@ -3852,7 +3852,7 @@ int PingInCivCar(int minPingInDist)
 		carCnt++;
 	}
 
-	if (retDistSq != 56)	// [A] This was decompiled wrong. Can't get the meaning for it
+	//if (retDistSq != 56)	// [A] This was decompiled wrong. Can't get the meaning for it
 		distSq = retDistSq;
 
 	if (distSq < (lbody * lbody * 8 * 8))
@@ -4030,7 +4030,7 @@ int CivControl(_CAR_DATA * cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 1
+#if 0
 		{
 			//maxCivCars = 2;
 			//maxCopCars = 0;

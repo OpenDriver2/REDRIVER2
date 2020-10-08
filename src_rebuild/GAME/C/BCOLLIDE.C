@@ -1226,7 +1226,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 							while (sip->name != NULL)
 							{
-								if (modelpointers[sip->modelIdx] == model)
+								if (sip->modelIdx == cop->type)
 								{
 									match = sip;
 									break;
