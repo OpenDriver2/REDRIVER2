@@ -70,8 +70,8 @@ pedFunc fpPedPersonalityFunctions[] = {
 
 VECTOR tannerLookAngle = { 0, 0, 0, 0 };
 
-int tannerTurnMax = 16;
-int tannerTurnStep = 4;
+const int tannerTurnMax = 16;
+const int tannerTurnStep = 4;
 
 long force[4] = { 0x9000, 0, 0, 0 };
 long point[4] = { 0, 0, 90, 0 };
@@ -1094,6 +1094,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	}
 
 	pedptr->doing_turn = 0;
+
 	gGotInStolenCar = 0;
 	bKillTanner = 0;
 	bKilled = 0;
@@ -1101,6 +1102,7 @@ int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long(*
 	if (gCurrentMissionNumber == 23 && playerType != TANNER_MODEL)
 	{
 		pedptr->doing_turn = 16;
+	
 		pedptr->dir.vy = (pedptr->dir.vy - (tannerTurnMax + 16) * tannerTurnStep) + 294;
 	}
 
@@ -1701,7 +1703,7 @@ void SetupDoNowt(PEDESTRIAN *pPed)
 {
 	pPed->speed = 0;
 	pPed->dir.vz = 0;
-	pPed->doing_turn = 0;
+	//pPed->doing_turn = 0;
 	pPed->type = PED_ACTION_BACK;
 
 	SetupPedMotionData(pPed);
@@ -1895,109 +1897,101 @@ void CopStand(PEDESTRIAN *pPed)
 
 int iAllowWatch = 0;
 
+//int tannerTurn = 0;
+
 // [D]
 void PedDoNothing(PEDESTRIAN *pPed)
 {
 	pPed->speed = 0;
 
-	if ((pPed->flags & 0x10U) == 0) 
+	if ((pPed->flags & 0x10U) == 0)
 	{
 		SetupDoNowt(pPed);
-		pPed->flags = pPed->flags | 0x10;
+		pPed->flags |= 0x10;
 	}
 
-	if ((tannerPad & 0x1040) != 0)
+	if (tannerPad & 0x1040)
 	{
 		pPed->interest = 0;
 		pPed->flags &= ~0x10;
-		pPed->fpAgitatedState = PedUserRunner;
+		pPed->fpAgitatedState = fpPedPersonalityFunctions[2];
+		
 		SetupRunner(pPed);
 
-		goto LAB_0006f530;
 	}
-
-	if ((tannerPad & 0x4080) != 0)
+	else if (tannerPad & 0x4080) 
 	{
 		pPed->interest = 0;
 		pPed->flags &= ~0x10;
-		pPed->fpAgitatedState = PedUserWalker;
+		pPed->fpAgitatedState = fpPedPersonalityFunctions[1];
+		
 		SetupBack(pPed);
-
-		goto LAB_0006f530;
 	}
-
-	if ((tannerPad & 0x2000) == 0) 
-	{
-		if ((tannerPad & 0x8000) == 0) 
-		{
-			pPed->frame1 = 0;
-
-			pPed->interest++; // idle timer is this now
-
-			if (pPed->doing_turn < 0)
-			{
-				pPed->doing_turn += 2;
-
-				if (0 < pPed->doing_turn)
-				{
-					pPed->doing_turn = 0;
-					goto LAB_0006f4a8;
-				}
-			}
-			else 
-			{
-			LAB_0006f4a8:
-				if (0 < pPed->doing_turn)
-				{
-					pPed->doing_turn -= 2;
-
-					if(pPed->doing_turn < 0)
-						pPed->doing_turn = 0;
-				}
-			}
-
-			if (pPed->doing_turn != 0)
-			{
-				if (pPed->doing_turn < 0)
-					pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
-				else
-					pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
-			}
-
-			goto LAB_0006f530;
-		}
-
-		pPed->interest = 0;
-		pPed->doing_turn += 2;
-
-		if (tannerTurnMax < pPed->doing_turn)
-			pPed->doing_turn = tannerTurnMax;
-	
-		pPed->frame1++;
-		pPed->dir.vy += -64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
-
-		if (pPed->frame1 > 15)
-			pPed->frame1 = 0;
-	}
-	else 
+	else if (tannerPad & 0x2000)
 	{
 		pPed->interest = 0;
+		
 		pPed->doing_turn -= 2;
-
+		
 		if (pPed->doing_turn < -tannerTurnMax)
 			pPed->doing_turn = -tannerTurnMax;
 
-		pPed->dir.vy += 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
-
+		pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
+	
 		if (pPed->frame1 == 0)
 			pPed->frame1 = 15;
 		else
 			pPed->frame1--;
-	}
-	pPed->head_rot = 0;
 
-LAB_0006f530:
-	if (pPed->interest > 119)
+		pPed->head_rot = 0;
+	}
+	else if (tannerPad & 0x8000)
+	{
+		pPed->interest = 0;
+
+		pPed->doing_turn += 2;
+
+		if (pPed->doing_turn > tannerTurnMax)
+			pPed->doing_turn = tannerTurnMax;
+
+		pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
+
+		if (pPed->frame1 > 16) 
+			pPed->frame1 = 0;
+
+		pPed->head_rot = 0;
+	}
+	else
+	{
+		pPed->frame1 = 0;
+		pPed->interest += 1;
+
+		if (pPed->doing_turn < 0) 
+		{
+			pPed->doing_turn += 2;
+
+			if (pPed->doing_turn > 0)
+				pPed->doing_turn = 0;
+		}
+
+		if (pPed->doing_turn > 0)
+		{
+			pPed->doing_turn -= 2;
+
+			if(pPed->doing_turn < 0)
+				pPed->doing_turn = 0;
+		}
+
+		if (pPed->doing_turn != 0)
+		{
+			if (pPed->doing_turn < 0) 
+				pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
+			else 
+				pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
+		}
+	}
+	
+	if (pPed->interest > 119) 
 	{
 		pPed->frame1 = 0;
 		pPed->type = PED_ACTION_TIME;
@@ -2005,15 +1999,15 @@ LAB_0006f530:
 		SetupPedMotionData(pPed);
 
 		pPed->flags |= 0x10;
-		pPed->fpAgitatedState = PedCarryOutAnimation;
-
+		pPed->fpAgitatedState = fpPedPersonalityFunctions[5];
 		pPed->interest = -2;
-
+		
 		if (pPed->type == PED_ACTION_TIME)
 			iAllowWatch = 3;
 
 		if (iAllowWatch != 0)
 			iAllowWatch--;
+
 	}
 }
 
@@ -2038,90 +2032,78 @@ LAB_0006f530:
 // [D]
 void PedUserRunner(PEDESTRIAN *pPed)
 {
-
 	if ((pPed->flags & 0x10U) == 0)
 	{
 		SetupRunner(pPed);
 	}
 
-	if ((tannerPad & 0x1040) == 0)
+	if (tannerPad & 0x1040) 
+	{
+		if (bStopTanner == 0) 
+			pPed->speed = 40 - (tannerDeathTimer >> 1);
+		else
+			pPed->speed = 0;
+	}
+	else
 	{
 		pPed->dir.vz = 0;
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
 		pPed->flags &= ~0x10;
 	}
-	else
+	
+	if (tannerPad & 0x2000) 
 	{
-		if (bStopTanner == 0)
-			pPed->speed = 40 - (tannerDeathTimer >> 1);
-		else
-			pPed->speed = 0;
-	}
-
-	if ((tannerPad & 0x2000) != 0)
-	{
+		if (pPed->dir.vz > -80) 
+			pPed->dir.vz -= 20;
+	
 		pPed->doing_turn -= 2;
-
+		
 		if (pPed->doing_turn < -tannerTurnMax)
 			pPed->doing_turn = -tannerTurnMax;
 
 		pPed->head_rot = 0;
-
-		if (pPed->dir.vz > -80)
-			pPed->dir.vz -= 20;
-
 		pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
-
-		AnimatePed(pPed);
-		return;
 	}
-
-	if ((tannerPad & 0x8000) != 0)
+	else if (tannerPad & 0x8000) 
 	{
-		pPed->doing_turn += 2;
-
-		if (tannerTurnMax < pPed->doing_turn)
-			pPed->doing_turn = tannerTurnMax;
-
-		pPed->head_rot = 0;
-
 		if (pPed->dir.vz < 80)
 			pPed->dir.vz += 20;
 
-		pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
-
-		AnimatePed(pPed);
-		return;
-	}
-
-	if (pPed->dir.vz < 0)
-		pPed->dir.vz += 20;
-	else if (pPed->dir.vz > 0)
-		pPed->dir.vz -= 20;
-
-	if (pPed->doing_turn < 0)
-	{
 		pPed->doing_turn += 2;
-		if (pPed->doing_turn > 0)
-		{
-			pPed->doing_turn = 0;
-			goto code_r0x0006f79c;
-		}
+
+		if (pPed->doing_turn > tannerTurnMax)
+			pPed->doing_turn = tannerTurnMax;
+
+		pPed->head_rot = 0;
+		pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 	}
 	else
 	{
-	code_r0x0006f79c:
-		if (pPed->doing_turn > 0)
+		if (pPed->dir.vz < 0) 
+			pPed->dir.vz += 40;
+
+		if (pPed->dir.vz > 0)
+			pPed->dir.vz -= 40;
+
+		if (pPed->doing_turn < 0) 
+		{
+			pPed->doing_turn += 2;
+			if (pPed->doing_turn > 0) 
+				pPed->doing_turn = 0;
+		}
+
+		if(pPed->doing_turn > 0)
 		{
 			pPed->doing_turn -= 2;
 
 			if (pPed->doing_turn < 0)
 				pPed->doing_turn = 0;
 		}
+
+		pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 	}
 
-	pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 	AnimatePed(pPed);
 }
 
