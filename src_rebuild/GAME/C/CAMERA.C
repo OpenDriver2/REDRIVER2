@@ -728,9 +728,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 
 	gCameraDistance = maxCameraDist;
 
-	if (lp->cameraCarId < 0) 
-		jcam->ap.carCos = &dummyCosmetics;
-	else 
+	if (lp->cameraCarId >= 0) 
 		jcam->ap.carCos = car_data[lp->cameraCarId].ap.carCos;
 
 	jcam->hd.direction = camAngle;

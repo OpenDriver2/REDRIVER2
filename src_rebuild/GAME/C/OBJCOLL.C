@@ -1044,7 +1044,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	int lbody;
 	int extraDist;
 
-	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER && cp->ap.carCos == NULL)
+	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER || cp->ap.carCos == NULL)
 		lbody = 360;
 	else
 		lbody = cp->ap.carCos->colBox.vz;

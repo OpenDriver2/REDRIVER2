@@ -3403,7 +3403,6 @@ void TannerCollision(PEDESTRIAN *pPed)
 
 	pcdTanner->id = 21;
 	pcdTanner->controlType = 6;
-	pcdTanner->ap.carCos = &dummyCosmetics;
 
 	pcdTanner->hd.direction = pPed->dir.vy - 0x800U & 0xfff;
 
