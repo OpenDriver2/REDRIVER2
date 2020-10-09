@@ -137,7 +137,7 @@ int gLoadedReplay = 0;
 int gHaveStoredData = 0;
 
 int gLastChase = 0;
-int gChaseNumber = -1;
+int gChaseNumber = 0;
 int gRandomChase = 0;
 int gSubGameNumber = 0;
 
@@ -595,7 +595,7 @@ void RunMissionLadder(int newgame)
 void GetRandomChase(void)
 {
 	// [A] debug
-	if (gChaseNumber != -1)
+	if (gChaseNumber != 0)
 	{
 		gRandomChase = gChaseNumber;
 		return;
@@ -610,7 +610,7 @@ void GetRandomChase(void)
 		if (gRandomChase == gLastChase)
 		{
 			do {
-				gRandomChase = (VSync(-1) + bump) % 0xd + 2;
+				gRandomChase = (VSync(-1) + bump) % 13 + 2;
 				bump++;
 			} while (gRandomChase == gLastChase);
 		}

@@ -199,12 +199,16 @@ MENU_HEADER DebugJustForFunHeader =
 #ifdef CUTSCENE_RECORDER
 extern void NextCutsceneRecorderPlayer(int dir);
 extern char gCutsceneRecorderPauseText[64];
+
+extern void NextChase(int dir);
+extern char gCurrentChasePauseText[64];
 #endif
 
 MENU_ITEM DebugOptionsItems[] =
 {
-#if 0 // TODO: enable
-	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
+#ifdef CUTSCENE_RECORDER
+	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
+	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&NextChase, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },

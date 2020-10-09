@@ -294,6 +294,23 @@ int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
 char gCutsceneRecorderPauseText[64] = { 0 };
+char gCurrentChasePauseText[64] = { 0 };
+
+void NextChase(int dir)
+{
+	if(dir > 0)
+		gChaseNumber++;
+	else if(dir < 0)
+		gChaseNumber--;
+
+	if (gChaseNumber < 0)
+		gChaseNumber = 0;
+
+	if (gChaseNumber > 15)
+		gChaseNumber = 15;
+	
+	sprintf(gCurrentChasePauseText, "Chase ID: %d", gChaseNumber);
+}
 
 void NextCutsceneRecorderPlayer(int dir)
 {
