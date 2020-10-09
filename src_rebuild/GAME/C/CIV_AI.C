@@ -61,9 +61,14 @@ int test555 = 0;
 
 #define GET_NODE_ID(cp, node)	int((node) - cp->ai.c.targetRoute)
 
+#ifdef _DEBUG
 #define CIV_STATE_SET_CONFUSED(cp) \
 	printInfo("CIV confused: at %s, %d\n", __FUNCTION__, __LINE__);\
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+#else
+#define CIV_STATE_SET_CONFUSED(cp) \
+	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+#endif
 
 
 // decompiled code

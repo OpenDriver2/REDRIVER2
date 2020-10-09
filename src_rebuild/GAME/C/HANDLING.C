@@ -1414,45 +1414,48 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 void initOBox(_CAR_DATA *cp)
 {
 	SVECTOR boxDisp;
+	CAR_COSMETICS* car_cos;
 
 	short length;
 
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
 
-	boxDisp.vx = -cp->ap.carCos->cog.vx;
-	boxDisp.vy = -cp->ap.carCos->cog.vy;
-	boxDisp.vz = -cp->ap.carCos->cog.vz;
+	car_cos = &car_cosmetics[cp->ap.model];
+
+	boxDisp.vx = -car_cos->cog.vx;
+	boxDisp.vy = -car_cos->cog.vy;
+	boxDisp.vz = -car_cos->cog.vz;
 
 	gte_ldv0(&boxDisp);
 	gte_rtv0tr();
 
 	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
-		length = FixFloorSigned(cp->ap.carCos->colBox.vx * 14, 4);
+		length = FixFloorSigned(car_cos->colBox.vx * 14, 4);
 		cp->hd.oBox.length[0] = length;
 	}
 	else 
 	{
-		length = cp->ap.carCos->colBox.vx;
+		length = car_cos->colBox.vx;
 		cp->hd.oBox.length[0] = length;
 	}
 
 	gte_stlvnl(&cp->hd.oBox.location);
 
 	VECTOR svx = { length, 0 ,0 };
-	VECTOR svy = { 0, cp->ap.carCos->colBox.vy ,0 };
-	VECTOR svz = { 0, 0 ,cp->ap.carCos->colBox.vz };
+	VECTOR svy = { 0, car_cos->colBox.vy ,0 };
+	VECTOR svz = { 0, 0 ,car_cos->colBox.vz };
 
 	gte_ldlvl(&svx);
 
 	gte_rtir();
-	cp->hd.oBox.length[1] = cp->ap.carCos->colBox.vy;
+	cp->hd.oBox.length[1] = car_cos->colBox.vy;
 	gte_stsv(&cp->hd.oBox.radii[0]);
 
 	gte_ldlvl(&svy);
 	gte_rtir();
-	cp->hd.oBox.length[2] = cp->ap.carCos->colBox.vz;
+	cp->hd.oBox.length[2] = car_cos->colBox.vz;
 	gte_stsv(&cp->hd.oBox.radii[1]);
 
 	gte_ldlvl(&svz);
