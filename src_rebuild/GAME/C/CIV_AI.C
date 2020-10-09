@@ -4097,10 +4097,7 @@ int CivControl(_CAR_DATA * cp)
 						Debug_AddLineOfs(_zero, ofs, b1p, rrcv);
 					}
 
-					pn++;
-
-					if (pn > cp->ai.c.targetRoute + 13)
-						pn -= 12;
+					pn = GET_NEXT_NODE(cp, pn);
 				}
 			}
 
