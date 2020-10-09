@@ -396,7 +396,7 @@ void ControlCops(void)
 	int direction;
 	int iVar5;
 
-#if defined(COLLISION_DEBUG) // [A] lineClear debugging code - pls remove after fixing bugs
+#if 0 // [A] lineClear debugging code - pls remove after fixing bugs
 	extern int gShowCollisionDebug;
 	if (gShowCollisionDebug == 3)
 	{
@@ -798,6 +798,8 @@ void CopControl1(_CAR_DATA *cp)
 		cp->ai.p.frontLClear = CellAtPositionEmpty(&pos, 80);
 
 #ifdef COLLISION_DEBUG
+		extern int gShowCollisionDebug;
+		if (gShowCollisionDebug == 3)
 		{
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
@@ -819,6 +821,8 @@ void CopControl1(_CAR_DATA *cp)
 		cp->ai.p.frontRClear = CellAtPositionEmpty(&pos, 80);
 
 #ifdef COLLISION_DEBUG
+		extern int gShowCollisionDebug;
+		if (gShowCollisionDebug == 3)
 		{
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);

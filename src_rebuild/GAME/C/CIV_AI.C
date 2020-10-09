@@ -24,6 +24,7 @@
 #include "OBJCOLL.H"
 
 #include "INLINE_C.H"
+#include "OVERLAY.H"
 
 unsigned char speedLimits[3] = { 56, 97, 138 };
 
@@ -4809,8 +4810,8 @@ void SetUpCivCollFlags(void)
 					// do horns
 					// horn to player and chased cars (except Steal the Ambulance)
 					if (cp0->ai.c.thrustState != 3 &&
-						(cp1->controlType == CONTROL_TYPE_PLAYER || (cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26) ||
-							CAR_INDEX(cp1) == 20))
+						(cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0 || 
+						CAR_INDEX(cp1) == 20))
 					{
 						int dont;
 						int rnd;
