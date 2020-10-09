@@ -4,6 +4,7 @@
 
 #include "CAMERA.H"
 #include "FMVPLAY.H"
+#include "PAUSE.H"
 #include "SOUND.H"
 #include "PRES.H"
 
@@ -48,10 +49,11 @@ XA_TRACK XAMissionMessages[4];
 
 #ifndef PSX
 int gXASubtitleTime = 0;
+int gXASubtitlePauseTime = 0;
 
 void PrintXASubtitles()
 {
-	if (gSubtitles == 0)
+	if (gSubtitles == 0 || pauseflag)
 		return;
 	
 	if (gPlaying == 0 || g_wavData == NULL)
@@ -70,7 +72,7 @@ void PrintXASubtitles()
 		if(curTime >= subStartFrame && curTime <= subEndFrame)
 		{
 			SetTextColour(120, 120, 120);
-			PrintStringCentred(sub->text, 230);
+			PrintStringCentred(sub->text, 200);
 		}
 	}
 }
@@ -353,6 +355,7 @@ void PlayXA(int num, int index)
 
 		gPlaying = 1;
 		xa_prepared = 2;
+
 		gXASubtitleTime = VSync(-1);
 	}
 #endif
@@ -595,6 +598,8 @@ void ResumeXA(void)
 		alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
 
 		alSourcePlay(g_XASource);
+
+		gXASubtitleTime += VSync(-1) - gXASubtitlePauseTime;
 	}
 #endif
 }
@@ -648,6 +653,7 @@ void PauseXA(void)
 	if (xa_prepared && gPlaying)
 	{
 		alSourcePause(g_XASource);
+		gXASubtitlePauseTime = VSync(-1);
 	}
 #endif
 }
