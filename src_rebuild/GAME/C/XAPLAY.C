@@ -1,8 +1,11 @@
 #include "DRIVER2.H"
 #include "XAPLAY.H"
-#include "MAIN.H"
+
+
+#include "CAMERA.H"
+#include "FMVPLAY.H"
 #include "SOUND.H"
-#include "SPOOL.H"
+#include "PRES.H"
 
 #ifndef PSX
 
@@ -11,9 +14,13 @@
 #include "../utils/audio_source/snd_wav_cache.h"
 
 #include "AL/al.h"
+#include "AL/alext.h"
+
+#include "LIBETC.H"
 
 const char* XANameFormat = "DRIVER2\\XA\\XABNK0%d.XA[%d].wav";
 ALuint g_XASource = AL_NONE;
+CSoundSource_WaveCache* g_wavData = NULL;
 CSoundSource_OpenALCache* g_XAWave = NULL;
 
 #else
@@ -38,6 +45,37 @@ static int StartPos;
 static CdlLOC pause_loc;
 static unsigned long buffer[8];
 XA_TRACK XAMissionMessages[4];
+
+#ifndef PSX
+int gXASubtitleTime = 0;
+
+void PrintXASubtitles()
+{
+	if (gSubtitles == 0)
+		return;
+	
+	if (gPlaying == 0 || g_wavData == NULL)
+		return;
+
+	int curTime = (VSync(-1) - gXASubtitleTime) * 17;
+
+	// find subtitles
+	for(int i = 0; i < g_wavData->m_numSubtitles; i++)
+	{
+		CUESubtitle_t* sub = &g_wavData->m_subtitles[i];
+
+		int subStartFrame = sub->sampleStart;
+		int subEndFrame = sub->sampleStart + sub->sampleLength;
+
+		if(curTime >= subStartFrame && curTime <= subEndFrame)
+		{
+			SetTextColour(120, 120, 120);
+			PrintStringCentred(sub->text, 230);
+		}
+	}
+}
+#endif
+
 
 // decompiled code
 // original method signature: 
@@ -227,6 +265,8 @@ void PrepareXA(void)
 	{
 		alGenSources(1, &g_XASource);
 		alSourcei(g_XASource, AL_LOOPING, 0);
+		alSourcei(g_XASource, AL_SOURCE_RESAMPLER_SOFT, 2);	// Use cubic resampler
+		alSourcei(g_XASource, AL_SOURCE_RELATIVE, AL_TRUE);
 
 		if (g_XAWave)
 		{
@@ -297,10 +337,11 @@ void PlayXA(int num, int index)
 		char fileName[250];
 		sprintf(fileName, XANameFormat, num+1, index);
 
-		CSoundSource_WaveCache wavData;
-		if (wavData.Load(fileName))
+		g_wavData = new CSoundSource_WaveCache();
+
+		if (g_wavData->Load(fileName))
 		{
-			g_XAWave = new CSoundSource_OpenALCache(&wavData);
+			g_XAWave = new CSoundSource_OpenALCache(g_wavData);
 
 			alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);
 
@@ -312,6 +353,7 @@ void PlayXA(int num, int index)
 
 		gPlaying = 1;
 		xa_prepared = 2;
+		gXASubtitleTime = VSync(-1);
 	}
 #endif
 }
@@ -400,6 +442,9 @@ void UnprepareXA(void)
 
 		if (g_XAWave)
 		{
+			delete g_wavData;
+			g_wavData = NULL;
+			
 			delete g_XAWave;
 			g_XAWave = NULL;
 		}

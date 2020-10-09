@@ -246,6 +246,10 @@ void DrawInGameCutscene(void)
 {
 	TILE *tile;
 
+#ifndef PSX
+	PrintXASubtitles();
+#endif
+	
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 		return;
 

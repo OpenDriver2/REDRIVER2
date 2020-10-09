@@ -1,6 +1,7 @@
 #ifndef XAPLAY_H
 #define XAPLAY_H
 
+extern void PrintXASubtitles();
 
 extern void GetMissionXAData(int number); // 0x00082EC0
 
