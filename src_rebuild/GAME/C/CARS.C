@@ -23,6 +23,11 @@
 #include "INLINE_C.H"
 #include "LIBAPI.H"
 
+#ifndef PSX
+const int CAR_LOD_SWITCH_DISTANCE = 12500;
+#else
+const int CAR_LOD_SWITCH_DISTANCE = 5500;
+#endif
 
 MATRIX light_matrix =
 { { { 4096, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, { 0, 0, 0 } };
@@ -862,7 +867,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	}
 	
 	// LOD switching
-	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
+	if (pos.vz <= CAR_LOD_SWITCH_DISTANCE && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
 		int blackSmoke = 0;
 
