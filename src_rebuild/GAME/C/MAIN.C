@@ -2579,8 +2579,9 @@ int redriver2_main(int argc, char** argv)
 			i++;
 			LaunchGame();
 		}
+		else
 #endif // _DEBUG_OPTIONS
-		else if (!_stricmp(argv[i], "-nofmv"))
+		if (!_stricmp(argv[i], "-nofmv"))
 		{
 			gNoFMV = 1;
 		}
