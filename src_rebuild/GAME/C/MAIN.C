@@ -89,41 +89,41 @@ XZPAIR gStartPos = { 0 };
 enum LevLumpType
 {
 	// known lumps indexes
-	LUMP_MODELS				= 1,		// level models
-	LUMP_MAP				= 2,		// map info
+	LUMP_MODELS = 1,		// level models
+	LUMP_MAP = 2,		// map info
 
-	LUMP_TEXTURENAMES		= 5,		// texture name strings
+	LUMP_TEXTURENAMES = 5,		// texture name strings
 
-	LUMP_ROADMAP			= 7,		// unused lump in Driver 2
-	LUMP_ROADS				= 8,		// unused lump in Driver 2
-	LUMP_JUNCTIONS			= 9,		// unused lump in Driver 2
-	LUMP_ROADSURF			= 10,		// unused lump in Driver 2
+	LUMP_ROADMAP = 7,		// unused lump in Driver 2
+	LUMP_ROADS = 8,		// unused lump in Driver 2
+	LUMP_JUNCTIONS = 9,		// unused lump in Driver 2
+	LUMP_ROADSURF = 10,		// unused lump in Driver 2
 
-	LUMP_MODELNAMES			= 12,		// model name strings
+	LUMP_MODELNAMES = 12,		// model name strings
 
-	LUMP_ROADBOUNDS			= 16,		// unused lump in Driver 2
-	LUMP_JUNCBOUNDS			= 17,		// unused lump in Driver 2
+	LUMP_ROADBOUNDS = 16,		// unused lump in Driver 2
+	LUMP_JUNCBOUNDS = 17,		// unused lump in Driver 2
 
-	LUMP_SUBDIVISION		= 20,		
-	LUMP_LOWDETAILTABLE		= 21,		// LOD tables for models
-	LUMP_MOTIONCAPTURE		= 22,		// motion capture/animation data for peds and Tanner
-	LUMP_OVERLAYMAP			= 24,		// overlay map
-	LUMP_PALLET				= 25,		// car palettes
-	LUMP_SPOOLINFO			= 26,		// level region spooling
-	LUMP_CAR_MODELS			= 28,		// car models
+	LUMP_SUBDIVISION = 20,
+	LUMP_LOWDETAILTABLE = 21,		// LOD tables for models
+	LUMP_MOTIONCAPTURE = 22,		// motion capture/animation data for peds and Tanner
+	LUMP_OVERLAYMAP = 24,		// overlay map
+	LUMP_PALLET = 25,		// car palettes
+	LUMP_SPOOLINFO = 26,		// level region spooling
+	LUMP_CAR_MODELS = 28,		// car models
 
-	LUMP_CHAIR				= 33,
-	LUMP_TEXTUREINFO		= 34,		// texture page info and details (atlases)
+	LUMP_CHAIR = 33,
+	LUMP_TEXTUREINFO = 34,		// texture page info and details (atlases)
 
-	LUMP_LEVELDESC			= 35,
-	LUMP_LEVELDATA			= 36,
-	LUMP_LUMPDESC			= 37,
+	LUMP_LEVELDESC = 35,
+	LUMP_LEVELDATA = 36,
+	LUMP_LUMPDESC = 37,
 
-	LUMP_STRAIGHTS2			= 40,		// road straights (AI)
-	LUMP_CURVES2			= 41,
+	LUMP_STRAIGHTS2 = 40,		// road straights (AI)
+	LUMP_CURVES2 = 41,
 
-	LUMP_JUNCTIONS2			= 42,		// previously LUMP_JUNCTIONS2
-	LUMP_JUNCTIONS2_NEW		= 43,		// Only appear in release Driver2
+	LUMP_JUNCTIONS2 = 42,		// previously LUMP_JUNCTIONS2
+	LUMP_JUNCTIONS2_NEW = 43,		// Only appear in release Driver2
 };
 
 int HitLeadCar = 0;
@@ -214,56 +214,54 @@ extern SPEECH_QUEUE gSpeechQueue;
 bool gDriver1Level = false;
 bool gDemoLevel = false;
 
-// [D]
-void ProcessLumps(char *lump_ptr, int lump_size)
+// [D] [T]
+void ProcessLumps(char* lump_ptr, int lump_size)
 {
 	int quit;
 
 	int lump_type;
-	DRIVER2_JUNCTION *pDVar8;
-	ulong *puVar9;
-	int size;
-	int *ptr;
+	int seg_size;
+	int* ptr;
 
 	int numLumps = -1;
 	gDriver1Level = false;
 
 	quit = false;
 	do {
-		lump_type = *(int *)lump_ptr;
-		size = *(int *)(lump_ptr + 4);
-		ptr = (int *)(lump_ptr + 8);
+		lump_type = *(int*)lump_ptr;
+		seg_size = *(int*)(lump_ptr + 4);
+		ptr = (int*)(lump_ptr + 8);
 
-		if (lump_type == LUMP_LOWDETAILTABLE) 
+		if (lump_type == LUMP_LOWDETAILTABLE)
 		{
-			printf("LUMP_LOWDETAILTABLE: size: %d\n", size);
-			ProcessLowDetailTable((char *)ptr, size);
+			printf("LUMP_LOWDETAILTABLE: size: %d\n", seg_size);
+			ProcessLowDetailTable((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_CHAIR)
 		{
-			printf("LUMP_CHAIR: size: %d\n", size);
-			ProcessChairLump((char *)ptr, size);
+			printf("LUMP_CHAIR: size: %d\n", seg_size);
+			ProcessChairLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_MOTIONCAPTURE)
 		{
-			printf("LUMP_MOTIONCAPTURE: size: %d\n", size);
-			ProcessMotionLump((char *)ptr, size);
+			printf("LUMP_MOTIONCAPTURE: size: %d\n", seg_size);
+			ProcessMotionLump((char*)ptr, seg_size);
 			gLoadedMotionCapture = 1;
 		}
 		else if (lump_type == LUMP_OVERLAYMAP)
 		{
-			printf("LUMP_OVERLAYMAP: size: %d\n", size);
-			ProcessOverlayLump((char *)ptr, size);
+			printf("LUMP_OVERLAYMAP: size: %d\n", seg_size);
+			ProcessOverlayLump((char*)ptr, seg_size);
 			gLoadedOverlay = 1;
 		}
 		else if (lump_type == LUMP_MAP)
 		{
-			map_lump = (char *)ptr;
+			map_lump = (char*)ptr;
 		}
 		else if (lump_type == LUMP_SPOOLINFO)
 		{
-			printf("LUMP_SPOOLINFO: size: %d\n", size);
-			ProcessSpoolInfoLump((char *)ptr, lump_size);
+			printf("LUMP_SPOOLINFO: size: %d\n", seg_size);
+			ProcessSpoolInfoLump((char*)ptr, lump_size);
 			ProcessMapLump(map_lump, 0);
 
 			// [A] I don't think it's used anymore
@@ -274,41 +272,41 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			//	sdSelfModifyingCode ^
 			//	(sdSelfModifyingCode ^ region_buffer_xor) & 0xc;
 		}
-		else if (lump_type == LUMP_CURVES2) 
+		else if (lump_type == LUMP_CURVES2)
 		{
-			printf("LUMP_CURVES2: size: %d\n", size);
-			ProcessCurvesDriver2Lump((char *)ptr, size);
+			printf("LUMP_CURVES2: size: %d\n", seg_size);
+			ProcessCurvesDriver2Lump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_TEXTURENAMES)
 		{
-			printf("LUMP_TEXTURENAMES: size: %d\n", size);
+			printf("LUMP_TEXTURENAMES: size: %d\n", seg_size);
 			texturename_buffer = (char*)ptr;
 		}
 		else if (lump_type == LUMP_PALLET)
 		{
-			printf("LUMP_PALLET: size: %d\n", size);
+			printf("LUMP_PALLET: size: %d\n", seg_size);
 			palette_lump = (char*)ptr;
 		}
-		else if (lump_type == LUMP_TEXTUREINFO) 
+		else if (lump_type == LUMP_TEXTUREINFO)
 		{
-			printf("LUMP_TEXTUREINFO: size: %d\n", size);
-			ProcessTextureInfo((char *)ptr);
+			printf("LUMP_TEXTUREINFO: size: %d\n", seg_size);
+			ProcessTextureInfo((char*)ptr);
 		}
-		else if (lump_type == LUMP_STRAIGHTS2) 
+		else if (lump_type == LUMP_STRAIGHTS2)
 		{
-			printf("LUMP_STRAIGHTS2: size: %d\n", size);
-			ProcessStraightsDriver2Lump((char *)ptr, size);
+			printf("LUMP_STRAIGHTS2: size: %d\n", seg_size);
+			ProcessStraightsDriver2Lump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_JUNCTIONS2_NEW)
 		{
 			int cnt;
-			
-			printf("LUMP_JUNCTIONS2_NEW: size: %d\n", size);
-			ProcessJunctionsDriver2Lump((char *)ptr, size, 0);
+
+			printf("LUMP_JUNCTIONS2_NEW: size: %d\n", seg_size);
+			ProcessJunctionsDriver2Lump((char*)ptr, seg_size, 0);
 
 			// put junction flags if any
 			cnt = 0;
-			
+
 			while (cnt < NumTempJunctions)
 			{
 				Driver2JunctionsPtr[cnt].flags = Driver2TempJunctionsPtr[cnt];
@@ -320,10 +318,10 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 		else if (lump_type == LUMP_JUNCTIONS2)
 		{
 			int cnt;
-			
-			printf("LUMP_JUNCTIONS2: size: %d\n", size);
-			ProcessJunctionsDriver2Lump((char *)ptr, size, 1);
-			
+
+			printf("LUMP_JUNCTIONS2: size: %d\n", seg_size);
+			ProcessJunctionsDriver2Lump((char*)ptr, seg_size, 1);
+
 			// put junction flags if any
 			cnt = 0;
 
@@ -337,55 +335,55 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_JUNCTIONS)
 		{
-			printf("LUMP_JUNCTIONS: size: %d\n", size);
-			ProcessJunctionsLump((char *)ptr, size);
+			printf("LUMP_JUNCTIONS: size: %d\n", seg_size);
+			ProcessJunctionsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_CAR_MODELS)
 		{
-			printf("LUMP_CAR_MODELS: size: %d\n", size);
+			printf("LUMP_CAR_MODELS: size: %d\n", seg_size);
 			car_models_lump = (char*)ptr;
 		}
 		else if (lump_type == LUMP_MODELS)
 		{
-			printf("LUMP_MODELS: size: %d\n", size);
-			ProcessMDSLump((char *)ptr, size);
+			printf("LUMP_MODELS: size: %d\n", seg_size);
+			ProcessMDSLump((char*)ptr, seg_size);
 			ProcessCarModelLump(car_models_lump, 0);
 			InitModelNames();
 			SetUpEvents(1);
 		}
 		else if (lump_type == LUMP_ROADMAP)
 		{
-			printf("LUMP_ROADMAP: size: %d\n", size);
-			NewProcessRoadMapLump(&roadMapLumpData, (char *)ptr);
+			printf("LUMP_ROADMAP: size: %d\n", seg_size);
+			NewProcessRoadMapLump(&roadMapLumpData, (char*)ptr);
 		}
 		else if (lump_type == LUMP_ROADS)
 		{
-			printf("LUMP_ROADS: size: %d\n", size);
-			ProcessRoadsLump((char *)ptr, size);
+			printf("LUMP_ROADS: size: %d\n", seg_size);
+			ProcessRoadsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_ROADBOUNDS)
 		{
-			printf("LUMP_ROADBOUNDS: size: %d\n", size);
-			ProcessRoadBoundsLump((char *)ptr, size);
+			printf("LUMP_ROADBOUNDS: size: %d\n", seg_size);
+			ProcessRoadBoundsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_JUNCBOUNDS)
 		{
-			printf("LUMP_JUNCBOUNDS: size: %d\n", size);
-			ProcessJuncBoundsLump((char *)ptr, size);
+			printf("LUMP_JUNCBOUNDS: size: %d\n", seg_size);
+			ProcessJuncBoundsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_SUBDIVISION)
 		{
-			printf("LUMP_SUBDIVISION: size: %d\n", size);
-			ProcessSubDivisionLump((char *)ptr, size);
+			printf("LUMP_SUBDIVISION: size: %d\n", seg_size);
+			ProcessSubDivisionLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_ROADSURF)
 		{
-			printf("LUMP_ROADSURF: size: %d\n", size);
+			printf("LUMP_ROADSURF: size: %d\n", seg_size);
 		}
 		else if (lump_type == LUMP_MODELNAMES)
 		{
-			printf("LUMP_MODELNAMES: size: %d\n", size);
-			modelname_buffer = (char *)ptr;
+			printf("LUMP_MODELNAMES: size: %d\n", seg_size);
+			modelname_buffer = (char*)ptr;
 		}
 		else if (lump_type == 0xff)
 		{
@@ -401,11 +399,11 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 			continue;
 		}
 
-		lump_size = size + 3;
-		lump_ptr = (char*)ptr + (lump_size & ~0x3); // aligned to 4-byte boundary
+		lump_ptr = (char*)ptr + ((seg_size + 3) & ~0x3); // aligned to 4-byte boundary
 
-		if (quit) 
+		if (quit)
 			return;
+
 		numLumps--;
 	} while (numLumps != 0);
 }
@@ -452,10 +450,10 @@ void ProcessLumps(char *lump_ptr, int lump_size)
 
 int SpoolLumpOffset;
 
-// [D]
+// [D] [T]
 void LoadGameLevel(void)
 {
-	char *malloc_lump;
+	char* malloc_lump;
 	int nsectors;
 	int sector;
 
@@ -466,10 +464,10 @@ void LoadGameLevel(void)
 	{
 		if (gTimeOfDay == 3)
 			SetCityType(CITYTYPE_NIGHT);
-		else 
+		else
 			SetCityType(CITYTYPE_DAY);
 	}
-	else 
+	else
 	{
 		if (gTimeOfDay == 3)
 			SetCityType(CITYTYPE_MULTI_NIGHT);
@@ -492,7 +490,7 @@ void LoadGameLevel(void)
 	sector += nsectors;
 
 	// CITYLUMP_DATA1 - load-time lump
-	ProcessLumps(_frontend_buffer+8, nsectors * CDSECTOR_SIZE);
+	ProcessLumps(_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
 
 	// CITYLUMP_TPAGE is right next after DATA1
 	LoadPermanentTPages(&sector);
@@ -559,7 +557,7 @@ void LoadGameLevel(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitModelNames(void)
 {
 	gHubcapModelPtr = FindModelPtrWithName("HUBCAP1");
@@ -682,22 +680,24 @@ void InitModelNames(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void GameInit(void)
 {
 	long lVar1;
-	_PLAYER *p_Var2;
-	STREAM_SOURCE *pSVar3;
+	_PLAYER* p_Var2;
+	STREAM_SOURCE* pSVar3;
 	int i;
 	int iVar5;
 	int iVar6;
 	char padid;
 	short totaldam;
 
-	if (NewLevel == 0) {
+	if (NewLevel == 0)
+	{
 		SetPleaseWait(NULL);
 	}
-	else {
+	else
+	{
 #ifdef PSX
 		mallocptr = 0x137400;
 #else
@@ -717,12 +717,14 @@ void GameInit(void)
 	}
 
 	gameinit = 1;
+
 	InitGameVariables();
 	InitEvents();
 	InitPadRecording();
 	InitSpeechQueue(&gSpeechQueue);
 
-	if (NewLevel != 0) {
+	if (NewLevel != 0)
+	{
 		leadAIRequired = 0;
 		leadAILoaded = 0;
 		pathAILoaded = 0;
@@ -730,16 +732,16 @@ void GameInit(void)
 
 	LoadMission(gCurrentMissionNumber);
 
-	if (gCurrentMissionNumber == 38) 
+	if (gCurrentMissionNumber == 38)
 		MissionHeader->residentModels[4] = 9;
 
-	if (GameType == GAME_MISSION) 
+	if (GameType == GAME_MISSION)
 		SetupFadePolys();
-	
+
 	if (NewLevel != 0)
 		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 36);
 
-	if (AttractMode != 0) 
+	if (AttractMode != 0)
 	{
 		TriggerInGameCutscene(0);
 		NoPlayerControl = 1;
@@ -767,11 +769,11 @@ void GameInit(void)
 	PauseSound();
 	ThisMotion = 0;
 
-	if (GameLevel == 1) 
+	if (GameLevel == 1)
 	{
 		gMusicType = 1;
 
-		if ((gCurrentMissionNumber & 1U) != 0) 
+		if ((gCurrentMissionNumber & 1U) != 0)
 			gMusicType = 5;
 	}
 	else if (GameLevel == 0)
@@ -785,37 +787,38 @@ void GameInit(void)
 	{
 		gMusicType = 0;
 
-		if ((gCurrentMissionNumber & 1U) == 0) 
+		if ((gCurrentMissionNumber & 1U) == 0)
 			gMusicType = 3;
 	}
-	else if(GameLevel == 3)
+	else if (GameLevel == 3)
 	{
 		gMusicType = 4;
 
-		if((gCurrentMissionNumber & 1U) != 0)
+		if ((gCurrentMissionNumber & 1U) != 0)
 			gMusicType = 7;
 	}
 
 	InitMusic(gMusicType);
 
-	if (NewLevel == 0) 
+	if (NewLevel == 0)
 	{
-		if (IconsLoaded == 0) 
+		if (IconsLoaded == 0)
 			ReloadIcons();
 
 		IconsLoaded = 1;
 		SetUpEvents(0);
 	}
-	else {
+	else
+	{
 		LoadGameLevel();
 		IconsLoaded = 1;
 		LoadSky();
 		LoadFont(NULL);
 	}
 
-	ClearMem((char *)car_data, sizeof(car_data));
+	ClearMem((char*)car_data, sizeof(car_data));
 
-	player[0].spoolXZ = (VECTOR *)car_data[0].hd.where.t;
+	player[0].spoolXZ = (VECTOR*)car_data[0].hd.where.t;
 	car_data[0].hd.where.t[0] = PlayerStartInfo[0]->position.vx;
 	car_data[0].hd.where.t[2] = PlayerStartInfo[0]->position.vz;
 
@@ -840,42 +843,40 @@ void GameInit(void)
 	SpoolSYNC();
 
 	InitialiseCarHandling();
-	ClearMem((char *)player, sizeof(player));
+	ClearMem((char*)player, sizeof(player));
 
 	InitDrivingGames();
 	InitThrownBombs();
 
 	i = 0;
-	if (0 < numPlayersToCreate) 
+	while (i < numPlayersToCreate)
 	{
-		do {
-			pSVar3 = PlayerStartInfo[i];
-			padid = -i;
+		pSVar3 = PlayerStartInfo[i];
+		padid = -i;
 
-			if (i < NumPlayers) 
-				padid = i;
+		if (i < NumPlayers)
+			padid = i;
 
-			gStartOnFoot = (pSVar3->type == 2);
+		gStartOnFoot = (pSVar3->type == 2);
 
-			InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (long(*)[4])&pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
+		InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (long(*)[4]) & pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
 
-			if (gStartOnFoot == 0) 
-			{
-				car_data[i].ap.damage[0] = pSVar3->damage[0];
-				car_data[i].ap.damage[1] = pSVar3->damage[1];
-				car_data[i].ap.damage[2] = pSVar3->damage[2];
-				car_data[i].ap.damage[3] = pSVar3->damage[3];
-				car_data[i].ap.damage[4] = pSVar3->damage[4];
-				car_data[i].ap.damage[5] = pSVar3->damage[5];
+		if (gStartOnFoot == 0)
+		{
+			car_data[i].ap.damage[0] = pSVar3->damage[0];
+			car_data[i].ap.damage[1] = pSVar3->damage[1];
+			car_data[i].ap.damage[2] = pSVar3->damage[2];
+			car_data[i].ap.damage[3] = pSVar3->damage[3];
+			car_data[i].ap.damage[4] = pSVar3->damage[4];
+			car_data[i].ap.damage[5] = pSVar3->damage[5];
 
-				car_data[i].totalDamage = pSVar3->totaldamage;
+			car_data[i].totalDamage = pSVar3->totaldamage;
 
-				car_data[i].ap.needsDenting = 1;
-			}
+			car_data[i].ap.needsDenting = 1;
+		}
 
-			i++;
-		} while (i < numPlayersToCreate);
-	}
+		i++;
+	};
 
 #ifdef CUTSCENE_RECORDER
 	extern int gCutsceneAsReplay;
@@ -888,52 +889,57 @@ void GameInit(void)
 #endif
 
 	if (pathAILoaded != 0)
+	{
 		InitCops();
+	}
 
 	InitCamera(&player[0]);
 
-	if (gLoadedOverlay != 0 && NoPlayerControl == 0) {
+	if (gLoadedOverlay != 0 && NoPlayerControl == 0)
+	{
 		InitOverlays();
 		IconsLoaded = 0;
 	}
 
 	gSinkingTimer = 100;
-	gTimeInWater = 0x19;
+	gTimeInWater = 25;
+
 	InWater = 0;
+
 	gBobIndex = 0;
 	SetupRain();
 	InitExObjects();
 
-	if (NewLevel != 0) 
+	if (NewLevel != 0)
 	{
 		MALLOC_BEGIN();
 		char* mem = D_MALLOC(1024);
-		tile_overflow_buffer = (ulong *)mem;
-		coplist = (CELL_OBJECT **)mem;
+		tile_overflow_buffer = (ulong*)mem;
+		coplist = (CELL_OBJECT**)mem;
 
-		pcoplist = (PACKED_CELL_OBJECT **)D_MALLOC(1024 + 256);
+		pcoplist = (PACKED_CELL_OBJECT**)D_MALLOC(1024 + 256);
 		//transparent_buffer = D_MALLOC(256);		// [A] unused
 		MALLOC_END();
 	}
 
-	if (NoPlayerControl == 0) 
+	if (NoPlayerControl == 0)
 	{
 #ifdef CUTSCENE_RECORDER
 		extern int gCutsceneAsReplay;
-		if(gCutsceneAsReplay == 0)
+		if (gCutsceneAsReplay == 0)
 #endif
-		DeleteAllCameras();
+			DeleteAllCameras();
 	}
-	else 
+	else
 	{
 		FindNextChange(CameraCnt);
 	}
 
 	FrAng = 0x200;
 
-	if (gWeather == 1) 
+	if (gWeather == 1)
 		wetness = 7000;
-	else 
+	else
 		wetness = 0;
 
 	if (gTimeOfDay == 2)
@@ -952,7 +958,7 @@ void GameInit(void)
 
 	SetReverbState(0);
 
-	for(i = 0; i < 2; i++)
+	for (i = 0; i < 2; i++)
 	{
 		player[i].horn.request = 0;
 		player[i].horn.time = 0;
@@ -964,7 +970,7 @@ void GameInit(void)
 	GetXAData(-1);
 	SetXAVolume(0);
 
-	switch (gCurrentMissionNumber) 
+	switch (gCurrentMissionNumber)
 	{
 		case 2:
 		case 3:
@@ -1139,22 +1145,19 @@ void StepSim(void)
 	static char t2; // offset 0x5
 	static int oldsp; // offset 0x8
 
-	char cVar1;
-	ushort uVar2;
-	short *psVar3;
-	int *piVar4;
-	//undefined3 extraout_var;
+	char padSteer;
+	short* playerFelony;
 	int stream;
-	uint uVar5;
-	int *piVar6;
-	_CAR_DATA *cp;
-	_PLAYER *pl;
-	int i;
+	_CAR_DATA* cp;
+	_PLAYER* pl;
+	int i, j;
 	int car;
 
-	if ((gTimeOfDay == 0) || (gTimeOfDay == 2)) {
-		DawnCount = DawnCount + 1;
+	if (gTimeOfDay == 0 || gTimeOfDay == 2)
+	{
+		DawnCount++;
 	}
+
 	SetUpTrafficLightPhase();
 	MoveSmashable_object();
 	animate_garage_door();
@@ -1165,7 +1168,7 @@ void StepSim(void)
 
 	num_active_cars = 0;
 
-	if ((NoPlayerControl != 0) && (ReplayParameterPtr->RecordingEnd + -2 < CameraCnt)) 
+	if (NoPlayerControl != 0 && ReplayParameterPtr->RecordingEnd + -2 < CameraCnt)
 	{
 		ReleaseInGameCutscene();
 		pauseflag = 1;
@@ -1175,46 +1178,41 @@ void StepSim(void)
 
 	lead_pad = (ulong)controller_bits;
 
-	if ((int)player[0].playerCarId < 0)
-	{
-		psVar3 = &pedestrianFelony;
-	}
-	else 
-	{
-		psVar3 = &car_data[(int)player[0].playerCarId].felonyRating;
-	}
+	if (player[0].playerCarId < 0)
+		playerFelony = &pedestrianFelony;
+	else
+		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 	// control cop roadblocks
-	if ((*psVar3 < 0x527) || (numRoadblockCars != 0)) 
+	if (*playerFelony < 0x527 || numRoadblockCars != 0)
 	{
-	LAB_00059c00:
-		if (roadblockCount == 0) 
-			goto LAB_00059c1c;
-	}
-	else 
-	{
-		if (roadblockCount == 0)
+		if (roadblockCount != 0)
 		{
-			if (((copsAreInPursuit != 0) && (MissionHeader->residentModels[3] == 0)) && (gCurrentMissionNumber != 0x1a)) 
+			roadblockCount--;
+		}
+	}
+	else
+	{
+		if (roadblockCount != 0)
+		{
+			roadblockCount--;
+		}
+		else
+		{
+			if (copsAreInPursuit != 0 && MissionHeader->residentModels[3] == 0 && gCurrentMissionNumber != 26)
 				requestRoadblock = 1;
 
-			goto LAB_00059c00;
+			if (roadblockCount != 0)
+				roadblockCount--;
 		}
 	}
 
-	roadblockCount = roadblockCount + -1;
-
-LAB_00059c1c:
 	// control civcars pingin/pingout
-	if ((requestStationaryCivCar == 1) || (requestRoadblock != 0)) 
+	if (requestStationaryCivCar != 1 && requestRoadblock == 0)
 	{
-		distFurthestCivCarSq = 0;
-	}
-	else 
-	{
-		if (gInGameChaseActive == 0) 
+		if (gInGameChaseActive == 0)
 		{
-			if(numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
+			if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
 			{
 				// make 5 tries
 				for (i = 0; i < 5; i++)
@@ -1224,7 +1222,7 @@ LAB_00059c1c:
 				}
 			}
 		}
-		else 
+		else
 		{
 			// ping buffer used to spawn civ cars
 			i = 0;
@@ -1237,6 +1235,10 @@ LAB_00059c1c:
 
 		SetUpCivCollFlags();
 	}
+	else
+	{
+		distFurthestCivCarSq = 0;
+	}
 
 	numRoadblockCars = 0;
 	numInactiveCars = 0;
@@ -1245,158 +1247,146 @@ LAB_00059c1c:
 	numCopCars = 0;
 	numCivCars = 0;
 
-	if (true) 
+	cp = car_data;
+
+	// count cars
+	while (cp < &car_data[MAX_CARS])
 	{
-		cp = car_data;
+		if (cp->controlType == CONTROL_TYPE_CIV_AI)
+		{
+			numCivCars++;
 
-		do {
-			cVar1 = cp->controlType;
-
-			if (cVar1 == 2) 
-			{
-				numCivCars++;
-
-				if ((cp->controlFlags & 1) != 0) 
-				{
-					numCopCars++;
-				}
-
-				if (((cp->controlFlags & 2) != 0) && (cp->ai.c.thrustState == 3))
-				{
-					if (cp->ai.c.ctrlState == 5)
-					{
-						numParkedCars++;
-					}
-
-					if ((cp->controlFlags & 2) != 0) 
-					{
-						numRoadblockCars++;
-					}
-				}
-			}
-			else if (cVar1 == 3)
-			{
+			if (cp->controlFlags & CONTROL_FLAG_COP)
 				numCopCars++;
 
-				if (cp->ai.p.dying == 0)
-				{
-					numActiveCops++;
-				}
-			}
-			else if (cVar1 == 0)
-			{
-				numInactiveCars++;
-			}
+			if (cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState == 5)
+				numParkedCars++;
 
-			cp++;
-		} while (cp <= &car_data[21]);
+			if (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING)
+				numRoadblockCars++;
+		}
+		else if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
+		{
+			numCopCars++;
+
+			if (cp->ai.p.dying == 0)
+			{
+				numActiveCops++;
+			}
+		}
+		else if (cp->controlType == CONTROL_TYPE_NONE)
+		{
+			numInactiveCars++;
+		}
+
+		cp++;
 	}
 
 	if (numRoadblockCars != 0)
 		roadblockCount = roadblockDelay;
 
-	if (requestStationaryCivCar == 0 && requestRoadblock != 0 && numRoadblockCars == 0 && maxCivCars - numCivCars > 4) 
+	if (requestStationaryCivCar == 0 && requestRoadblock != 0 && numRoadblockCars == 0 && maxCivCars - numCivCars > 4)
 	{
 		CreateRoadblock();
 	}
 
-	
-
-	if (gInGameCutsceneActive == 0) 
+	if (gInGameCutsceneActive == 0)
 	{
 		CheckSpecialSpool();
 	}
 
+	// update cars
 	cp = car_data;
-	while (cp < &car_data[20])
+	while (cp < &car_data[MAX_CARS])
 	{
-		switch (cp->controlType) 
+		switch (cp->controlType)
 		{
-		case 1:
-			t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
-			t1 = Pads[*cp->ai.padid].mapanalog[2];
-			t2 = Pads[*cp->ai.padid].type & 4;
+			case 1:
+				t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
+				t1 = Pads[*cp->ai.padid].mapanalog[2];
+				t2 = Pads[*cp->ai.padid].type & 4;
 
-			if (NoPlayerControl == 0) 
-			{
-				if (gStopPadReads != 0) 
+				if (NoPlayerControl == 0)
 				{
-					t0 = 0x80;
+					if (gStopPadReads != 0)
+					{
+						t0 = 0x80;
 
-					if (cp->hd.wheel_speed < 0x9001)
-						t0 = 0x10;
+						if (cp->hd.wheel_speed < 0x9001)
+							t0 = 0x10;
 
-					t1 = 0;
-					t2 = 1;
+						t1 = 0;
+						t2 = 1;
+					}
+
+					cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
+				}
+				else
+				{
+					cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
 				}
 
-				cjpRecord(*cp->ai.padid, &t0, &t1, &t2);
-			}
-			else 
-			{
-				cjpPlay(*cp->ai.padid, &t0, &t1, &t2);
-			}
-
-			ProcessCarPad(cp, t0, t1, t2);
-			break;
-		case 2:
-			CivControl(cp);
-			break;
-		case 3:
-			CopControl(cp);
-			break;
-		case 4:
-			t2 = 0;
-			t1 = 0;
-			t0 = 0;
-
-			t0 = FreeRoamer(cp);
-
-			if (t0 == 0)
-			{
-				cp->handbrake = 1;
-				cp->wheel_angle = 0;
-			}
-			else 
-			{
 				ProcessCarPad(cp, t0, t1, t2);
-			}
+				break;
+			case 2:
+				CivControl(cp);
+				break;
+			case 3:
+				CopControl(cp);
+				break;
+			case 4:
+				t2 = 0;
+				t1 = 0;
+				t0 = 0;
 
-			break;
-		case 7:
-#ifdef CUTSCENE_RECORDER
-			extern int gCutsceneAsReplay;
-			extern int gCutsceneAsReplay_PlayerId;
+				t0 = FreeRoamer(cp);
 
-			if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
-			{
-				t0 = Pads[0].mapped;	// [A] padid might be wrong
-				t1 = Pads[0].mapanalog[2];
-				t2 = Pads[0].type & 4;
-
-				if (gStopPadReads != 0)
+				if (t0 == 0)
 				{
-					t0 = 0x80;
-
-					if (cp->hd.wheel_speed < 0x9001)
-						t0 = 0x10;
-
-					t1 = 0;
-					t2 = 1;
+					cp->handbrake = 1;
+					cp->wheel_angle = 0;
+				}
+				else
+				{
+					ProcessCarPad(cp, t0, t1, t2);
 				}
 
-				cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
-			}
-			else
+				break;
+			case 7:
+#ifdef CUTSCENE_RECORDER
+				extern int gCutsceneAsReplay;
+				extern int gCutsceneAsReplay_PlayerId;
+
+				if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
+				{
+					t0 = Pads[0].mapped;	// [A] padid might be wrong
+					t1 = Pads[0].mapanalog[2];
+					t2 = Pads[0].type & 4;
+
+					if (gStopPadReads != 0)
+					{
+						t0 = 0x80;
+
+						if (cp->hd.wheel_speed <= 0x9000)
+							t0 = 0x10;
+
+						t1 = 0;
+						t2 = 1;
+					}
+
+					cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
+				}
+				else
 #endif
-			cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
-			ProcessCarPad(cp, t0, t1, t2);
+					cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
+				ProcessCarPad(cp, t0, t1, t2);
 		}
 
 		StepCarPhysics(cp);
 		cp++;
 	}
 
+	// Update players
 	for (i = 0; i < 8; i++)
 	{
 		pl = &player[i];
@@ -1408,30 +1398,28 @@ LAB_00059c1c:
 
 		if (stream < 0)
 		{
-			stream = cjpPlay(-stream, &t0, &t1, &t2);
-
-			if (stream != 0)
+			if (cjpPlay(-stream, &t0, &t1, &t2) != 0)
 				ProcessTannerPad(pl->pPed, t0, t1, t2);
 		}
 		else
 		{
 			if (Pads[stream].type == 4)
 			{
-				cVar1 = Pads[stream].mapanalog[3];
+				padSteer = Pads[stream].mapanalog[3];
 
-				if ((cVar1 < -64) && (-100 < cVar1))
+				if (padSteer < -64 && padSteer > -100)
 				{
-					Pads[stream].mapped = Pads[stream].mapped | 0x1008;
+					Pads[stream].mapped |= 0x1008;
 				}
-				else if ((cVar1 < -100) && (127 < cVar1))
+				else if (padSteer < -100 && padSteer > 127)
 				{
 					stream = pl->padid;
-					Pads[stream].mapped = Pads[stream].mapped | 0x1000;
+					Pads[stream].mapped |= 0x1000;
 				}
-				else if (cVar1 > 32)
+				else if (padSteer > 32)
 				{
 					stream = pl->padid;
-					Pads[stream].mapped = Pads[stream].mapped | 0x4000;
+					Pads[stream].mapped |= 0x4000;
 				}
 			}
 
@@ -1462,7 +1450,7 @@ LAB_00059c1c:
 		}
 	}
 
-	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars))) 
+	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))
 	{
 		requestStationaryCivCar = 0;
 	}
@@ -1471,11 +1459,9 @@ LAB_00059c1c:
 	{
 		ControlCops();
 
-		if(gLoadedMotionCapture)
+		if (gLoadedMotionCapture)
 			HandlePedestrians();
 	}
-
-	i = 0;
 
 	GlobalTimeStep();
 	UpdatePlayers();
@@ -1486,41 +1472,42 @@ LAB_00059c1c:
 
 	CameraCnt++;
 	gBobIndex = gBobIndex + 0x3cU & 0xfff;
-	if (NumPlayers != 0)
+
+	i = 0;
+	pl = player;
+
+	// deal with car horns
+	while (i < NumPlayers)
 	{
-		car = 0;
-		pl = player;
-		do {
-			if (pl->horn.on == 0) 
+		int playerCarId;
+
+		playerCarId = pl->playerCarId;
+
+		if (playerCarId >= 0)
+		{
+			if (pl->horn.on == 0)
 			{
-			LAB_0005a5b8:
-				stream = CarHasSiren(car_data[player[car].playerCarId].ap.model);
-
-				if (stream == 0 && pl->pPed == NULL) 
+				if (CarHasSiren(car_data[playerCarId].ap.model) == 0 && pl->pPed == NULL)
 				{
-					stream = 2;
-					if (i != 0) 
-						stream = 5;
-
+					stream = i != 0 ? 5 : 2;
 					StopChannel(stream);
-					player[car].horn.request = 0;
-					player[car].horn.time = 0;
+
+					pl->horn.request = 0;
+					pl->horn.time = 0;
 				}
 			}
-			else 
+			else
 			{
-				uVar5 = 4;
+				int spuKeys;
 
-				if (i != 0) 
-					uVar5 = 0x20;
+				if (i != 0)
+					spuKeys = 0x20;
+				else
+					spuKeys = 0x4;
 
-				stream = SpuGetKeyStatus(uVar5);
-
-				if (stream == 0) 
+				if (SpuGetKeyStatus(spuKeys) == 0)
 				{
-					stream = CarHasSiren(car_data[pl->playerCarId].ap.model);
-
-					if (stream == 0 && pl->pPed == NULL && pl->horn.request == 0)
+					if (CarHasSiren(car_data[pl->playerCarId].ap.model) == 0 && pl->pPed == NULL && pl->horn.request == 0)
 						pl->horn.request = 1;
 
 					pl->horn.time = 11;
@@ -1528,81 +1515,81 @@ LAB_00059c1c:
 
 			}
 
-			DealWithHorn(&player[car].horn.request, i);
+			DealWithHorn(&pl->horn.request, i);
+		}
 
-			car++;
-			i++;
-			pl++;
-		} while (i < NumPlayers);
+		i++;
+		pl++;
 	}
 
 	SoundTasks();
 
 	static int stupid_logic[4];
 
-	if (gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0) 
+	if (gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0)
 		stupid_logic[0] = player[0].playerCarId;
 	else
 		stupid_logic[0] = 2;
 
-
 	i = 0;
-	piVar4 = stupid_logic;
 
 	stupid_logic[1] = player[1].playerCarId;
 	stupid_logic[2] = gThePlayerCar;
 	stupid_logic[3] = leadCarId;
 
-	do {
-		car = i + 1;
-		if (car < 4)
+	while (i < 3)
+	{
+		j = i + 1;
+		while (j < 4)
 		{
-			piVar6 = stupid_logic + car;
-			do {
-				if (*piVar4 == *piVar6)
-					*piVar6 = -1;
+			if (stupid_logic[i] == stupid_logic[j])
+				stupid_logic[j] = -1;
 
-				car++;
-				piVar6++;
-			} while (car < 4);
+			j++;
 		}
-		i = i + 1;
-		piVar4 = piVar4 + 1;
-	} while (i < 3);
+		i++;
+	}
 
 	car = 0;
 	i = 0;
 
 	do {
-		stream = i;
-
-		if ((stupid_logic[car] != -1) && SilenceThisCar(car) == 0)
+		if (stupid_logic[car] != -1 && SilenceThisCar(car) == 0)
 		{
-			stream = i + 1;
 			CheckCarEffects(&car_data[stupid_logic[car]], i);
 			SwirlLeaves(&car_data[stupid_logic[car]]);
+			i++;
 		}
 
 		car++;
-	} while(car < 4 && (i = stream, stream < 2));
+	} while (car < 4 && i < 2);
 
-	
-
-	if ((gStopPadReads == 1) && (((lead_car != 0 && (saved_counter = saved_counter + 1, 0x14 < saved_counter)) && (saved_leadcar_pos == 0)))) 
+	// save car positions
+	if (gStopPadReads == 1 && lead_car != 0)
 	{
-		saved_leadcar_pos = gStopPadReads;
-		leadcar_pos.vx = car_data[lead_car].hd.where.t[0];
-		leadcar_pos.vy = car_data[lead_car].hd.where.t[1];
-		leadcar_pos.vz = car_data[lead_car].hd.where.t[2];
+		saved_counter++;
+
+		if (saved_counter > 20 && saved_leadcar_pos == 0)
+		{
+			leadcar_pos.vx = car_data[lead_car].hd.where.t[0];
+			leadcar_pos.vy = car_data[lead_car].hd.where.t[1];
+			leadcar_pos.vz = car_data[lead_car].hd.where.t[2];
+
+			saved_leadcar_pos = 1;
+		}
 	}
 
-	if (gInGameCutsceneActive == 0 &&
-		(((i = xa_timeout, XAPrepared() != 0 && (i = xa_timeout + -1, xa_timeout == 0)) ||
-		(xa_timeout = i, xa_timeout == 0))))
+	// XA playback timeout
+	if (gInGameCutsceneActive == 0 && XAPrepared())
 	{
-		StopXA();
-		UnprepareXA();
-		StartSpooling();
+		xa_timeout--;
+
+		if (xa_timeout == 0)
+		{
+			StopXA();
+			UnprepareXA();
+			StartSpooling();
+		}
 	}
 }
 
@@ -1654,13 +1641,12 @@ LAB_00059c1c:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void GameLoop(void)
 {
-	uint uVar1;
-	int iVar2;
+	int i;
 	static POLY_FT3 buffer[2];
-	static POLY_FT3 *null;
+	static POLY_FT3* null;
 
 	if (NewLevel != 0)
 	{
@@ -1682,11 +1668,10 @@ void GameLoop(void)
 	NoTextureMemory = 0;
 
 	SpoolSYNC();
-	if (CurrentGameMode != GAMEMODE_DIRECTOR) {
-		UnPauseSound();
-	}
 
-	iVar2 = 4;
+	if (CurrentGameMode != GAMEMODE_DIRECTOR)
+		UnPauseSound();
+
 	StartGameSounds();
 	SetMasterVolume(gMasterVolume);
 	SetXMVolume(gMusicVolume);
@@ -1694,17 +1679,19 @@ void GameLoop(void)
 	InitControllers();
 	VSync(0);
 
+	i = 4;
 	do {
-		iVar2 = iVar2 + -1;
+
 		ReadControllers();
 		VSync(0);
-	} while (-1 < iVar2);
+		i--;
+	} while (i >= 0);
 
-	while (game_over == 0) 
+	while (game_over == 0)
 	{
 		StepGame();
-		
-		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7) 
+
+		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7)
 		{
 			DrawGame();
 		}
@@ -1729,7 +1716,7 @@ void GameLoop(void)
 		CheckForPause();
 	}
 
-	if (NoPlayerControl == 0) 
+	if (NoPlayerControl == 0)
 	{
 		ReplayParameterPtr->RecordingEnd = CameraCnt;
 	}
@@ -1739,7 +1726,7 @@ void GameLoop(void)
 	StopAllChannels();
 	FreeXM();
 
-	if (XAPrepared() != 0) 
+	if (XAPrepared() != 0)
 	{
 		StopXA();
 		UnprepareXA();
@@ -1820,58 +1807,57 @@ void GameLoop(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void StepGame(void)
 {
-	char cVar1;
 	int iVar2;
-	uint uVar3;
-	unsigned char *puVar4;
-	_PLAYER *pPVar5;
+	int i;
+	unsigned char* puVar4;
+	_PLAYER* pl;
 
-	if (CameraCnt == 3) 
+	if (CameraCnt == 3)
 	{
 		StartXM(0);
 	}
 
-	if (doSpooling) 
+	if (doSpooling)
 	{
 		CheckValidSpoolData();
 		ControlMap();
 	}
 
-	if (gTimeOfDay == 3) 
+	if (gTimeOfDay == 3)
 		PreLampStreak();
 
 	UpdatePadData();
-	if (FrameCnt == 5) 
+	if (FrameCnt == 5)
 		SetDispMask(1);
 
-	if ((padd & 0x2000U) != 0 && (padd & 0x8000U) != 0) 
-		padd = padd & 0x5fff;
+	if ((padd & 0x2000U) && (padd & 0x8000U))
+		padd &= ~0xA000;
 
-	uVar3 = NumPlayers;
+	i = NumPlayers;
 	controller_bits = padd;
 
-	if (NumPlayers != 0)
+	pl = player;
+	while (i >= 0)
 	{
-		pPVar5 = player;
-		do {
-			if (pPVar5->horn.time == 0 || pPVar5->horn.on == 0)
-				pPVar5->horn.time = 0;
-			else 
-				pPVar5->horn.time--;
+		if (pl->horn.time == 0 || pl->horn.on == 0)
+			pl->horn.time = 0;
+		else
+			pl->horn.time--;
 
-			uVar3--;
-			pPVar5++;
-		} while (uVar3 != 0);
+		i--;
+		pl++;
 	}
 
 	ModifyCamera();
 
 	lis_pos = camera_position;
 
-	if ((gTimeInWater == 0) || (gSinkingTimer < 100)) 
+	// pause state update
+	// DRIVER 1 leftover
+	/*if (gTimeInWater == 0 || gSinkingTimer < 100)
 	{
 		gStopPadReads = 1;
 		TargetCar = 0;
@@ -1879,92 +1865,69 @@ void StepGame(void)
 		gSinkingTimer--;
 		gCameraAngle = gCameraAngle - 0x16U & 0xfff;
 
-		if (gCameraDistance < 1000) 
+		if (gCameraDistance < 1000)
 		{
-			gCameraMaxDistance = gCameraMaxDistance + 8;
-			gCameraDistance = gCameraDistance + 8;
+			gCameraMaxDistance += 8;
+			gCameraDistance += 8;
 		}
 
-		if (-1000 < CameraPos.vy) {
-			CameraPos.vy = CameraPos.vy + -8;
-		}
+		if (CameraPos.vy > -1000)
+			CameraPos.vy -= 8;
 
-		if (gSinkingTimer < 0) {
+		if (gSinkingTimer < 0)
 			EnablePause(PAUSEMODE_GAMEOVER);
-		}
-	}
+	}*/
 
-	if (gTimeOfDay == 1)
+	// update colours of ambience
+	if (gTimeOfDay == 0)
+	{
+		NightAmbient = (DawnCount >> 7) + 26;
+		gLightsOn = (DawnCount < 4000);
+
+		if (NightAmbient > 96)
+			NightAmbient = 96;
+	}
+	else if (gTimeOfDay == 1)
 	{
 		gLightsOn = 0;
-		iVar2 = 0x4e;
 
-		if (1 < gWeather - 1U) 
-			iVar2 = 0x80;
-
-		goto LAB_0005aea0;
+		if (gWeather - 1U > 1)
+			NightAmbient = 128;
+		else
+			NightAmbient = 78;
 	}
-
-	if (gTimeOfDay < 2)
+	else if (gTimeOfDay == 2)
 	{
-		if (gTimeOfDay == 0)
+		if (DawnCount < 3000)
 		{
-			NightAmbient = (DawnCount >> 7) + 0x1a;
-			gLightsOn = (DawnCount < 4000);
-			iVar2 = 0x60;
-			if (0x60 < NightAmbient) goto LAB_0005aea0;
+			gLightsOn = 0;
 		}
+		else
+		{
+			gLightsOn = 1;
+
+			for (i = 0; i < MAX_CARS; i++)
+			{
+				if (lightsOnDelay[i] > 0)
+					lightsOnDelay[i]--;
+			}
+		}
+
+		if (gWeather - 1U < 2)
+			NightAmbient = 78 - (DawnCount >> 7);
+		else
+			NightAmbient = 96 - (DawnCount >> 5);
+
+		if (NightAmbient < 45)
+			NightAmbient = 45;
 	}
-	else 
+	else if (gTimeOfDay == 3)
 	{
-		if (gTimeOfDay == 2) 
-		{
-			if (DawnCount < 3000) 
-			{
-				gLightsOn = 0;
-			}
-			else
-			{
-				gLightsOn = 1;
-				puVar4 = lightsOnDelay;
-				do {
-					if (*puVar4 != 0)
-						*puVar4 = *puVar4 - 1;
-
-					puVar4++;
-				} while (puVar4 < lightsOnDelay + sizeof(lightsOnDelay));
-			}
-
-			NightAmbient = 0x4e;
-
-			if (gWeather - 1U < 2)
-			{
-				iVar2 = DawnCount >> 7;
-			}
-			else
-			{
-				NightAmbient = 0x60;
-				iVar2 = DawnCount >> 5;
-			}
-
-			NightAmbient = NightAmbient - iVar2;
-			iVar2 = 0x2d;
-
-			if (NightAmbient < 0x2d)
-				goto LAB_0005aea0;
-		}
-		else 
-		{
-			if (gTimeOfDay == 3) 
-			{
-				gLightsOn = 1;
-				iVar2 = 0x80;
-			LAB_0005aea0:
-				NightAmbient = iVar2;
-			}
-		}
+		gLightsOn = 1;
+		NightAmbient = 128;
 	}
-	if ((gWeather != 0) && (gWeather == 1)) 
+
+	if (gWeather != 0 && gWeather == 1)
 	{
 		DoLightning();
 		DoThunder();
@@ -1977,119 +1940,114 @@ void StepGame(void)
 
 	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
 
-	if ((NoPlayerControl != 0) && (AttractMode == 0))
+	if (NoPlayerControl != 0 && AttractMode == 0)
 		ShowReplayOptions();
-	
-	if ((FastForward != 0) && (uVar3 = CameraCnt & 0x1f, CameraCnt < ReplayParameterPtr->RecordingEnd-1))
-	{
-		if (0xf < uVar3)
-			uVar3 = 0x20 - uVar3;
 
-		SetTextColour((uVar3 & 0x1f) << 3, 0, 0);
+	// process fast forward
+	if (FastForward != 0 && CameraCnt < ReplayParameterPtr->RecordingEnd - 1)
+	{
+		int color;
+		color = CameraCnt & 0x1f;
+
+		if (color > 15)
+			color = 32 - color;
+
+		SetTextColour((color & 0x1f) << 3, 0, 0);
 		PrintStringFeature("Fast forward", 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
-	if (AttractMode == 0 && pauseflag == 0) 
+	// check for pause mode
+	if (AttractMode == 0 && pauseflag == 0)
 	{
-		//if (NoPlayerControl == 0) 
+		if (FrameCnt > 2)
 		{
-			if (2 < FrameCnt)
+			if (NumPlayers == 1)
 			{
-				if (NumPlayers == 1) 
+				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
 				{
-					if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
-					{
-						EnablePause(PAUSEMODE_PAUSE);
-					}
-				}
-				else if (paddp == 0x800)
-				{
-					EnablePause(PAUSEMODE_PAUSEP1);
-				}
-				else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800) != 0)
-				{
-					EnablePause(PAUSEMODE_PAUSEP2);
+					EnablePause(PAUSEMODE_PAUSE);
 				}
 			}
-			goto LAB_0005b0a8;
+			else if (paddp == 0x800)
+			{
+				EnablePause(PAUSEMODE_PAUSEP1);
+			}
+			else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800) != 0)
+			{
+				EnablePause(PAUSEMODE_PAUSEP2);
+			}
 		}
 	}
-	else 
-	{
-	LAB_0005b0a8:
-		if (NoPlayerControl == 0)
-		{
-			if (pad_connected < 1 && FrameCnt > 2 && bMissionTitleFade == 0 && gInGameCutsceneActive == 0)
-			{
-				pauseflag = 1;
-				PauseSound();
-			}
 
-			if (NoPlayerControl == 0 && NoTextureMemory != 0)
-				NoTextureMemory--;
+	if (NoPlayerControl == 0)
+	{
+		if (pad_connected < 1 && FrameCnt > 2 && bMissionTitleFade == 0 && gInGameCutsceneActive == 0)
+		{
+			pauseflag = 1;
+			PauseSound();
 		}
+
+		if (NoPlayerControl == 0 && NoTextureMemory != 0)
+			NoTextureMemory--;
 	}
 
 	CameraChanged = 0;
 	old_camera_change = camera_change;
 
-	if (pauseflag == 0 && NoPlayerControl != 0) 
+	// do camera changes
+	if (pauseflag == 0 && NoPlayerControl != 0)
 	{
-		if (gInGameCutsceneActive == 0) 
-		{
+		if (gInGameCutsceneActive != 0)
+			camera_change = CutsceneCameraChange(CameraCnt);
+		else
 			camera_change = CheckCameraChange(CameraCnt);
-			goto LAB_0005b1e0;
-		}
 	}
-	else {
-		if (gInGameCutsceneActive == 0) 
-		{
+	else
+	{
+		if (gInGameCutsceneActive != 0)
+			camera_change = CutsceneCameraChange(CameraCnt);
+		else
 			camera_change = 0;
-			goto LAB_0005b1e0;
-		}
 	}
 
-	camera_change = CutsceneCameraChange(CameraCnt);
-LAB_0005b1e0:
-
-
-	if (pauseflag == 0) 
+	// step physics engine
+	if (pauseflag == 0)
 	{
 		StepSim();
 
 		if (gDieWithFade != 0)
-		{
-			gDieWithFade = gDieWithFade + 1;
-		}
-		if (paused != 0) 
+			gDieWithFade++;
+
+		if (paused != 0)
 		{
 			CamerasSaved = 1;
 			paused = 0;
 		}
 	}
-	else 
+	else
 	{
-		if (NoPlayerControl == 0 && AttractMode == 0 && game_over == 0) 
+		if (NoPlayerControl == 0 && AttractMode == 0 && game_over == 0)
 		{
 			if (pad_connected < 1)
 				EnablePause(PAUSEMODE_PADERROR);
-			else 
+			else
 				EnablePause(PAUSEMODE_PAUSE);
 		}
 
 		paused = 1;
 	}
 
-	if (NoPlayerControl != 0 && AttractMode == 0) 
+	if (NoPlayerControl != 0 && AttractMode == 0)
 		ControlReplay();
-	
-	if (gRightWayUp != 0) 
+
+	// player flip cheat
+	if (gRightWayUp != 0)
 	{
 		TempBuildHandlingMatrix(car_data + player[0].playerCarId, 0);
 		gRightWayUp = 0;
 	}
 
-	if (AttractMode != 0 && (paddp != 0 || ReplayParameterPtr->RecordingEnd <= CameraCnt)) 
+	if (AttractMode != 0 && (paddp != 0 || ReplayParameterPtr->RecordingEnd <= CameraCnt))
 		EndGame(GAMEMODE_QUIT);
 
 	UpdatePlayerInformation();
@@ -2150,21 +2108,22 @@ LAB_0005b1e0:
 int ObjectDrawnValue = 0;
 int ObjectDrawnCounter = 0;
 
+// [D] [T]
 void DrawGame(void)
 {
-	if(gSkipInGameCutscene)
+	if (gSkipInGameCutscene)
 	{
 		ClearCurrentDrawBuffers();
 		return;
 	}
-	
+
 	static unsigned long frame = 0;
 
-	if ((NumPlayers == 1) || (NoPlayerControl != 0)) 
+	if (NumPlayers == 1 || NoPlayerControl != 0)
 	{
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
-		
+
 		RenderGame2(0);
 
 		ObjectDrawnCounter++;
@@ -2174,7 +2133,7 @@ void DrawGame(void)
 
 		SwapDrawBuffers();
 	}
-	else 
+	else
 	{
 		ObjectDrawnValue = FrameCnt;
 		RenderGame2(0);
@@ -2225,7 +2184,7 @@ void DrawGame(void)
 static int WantPause = 0;
 static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 
-// [D]
+// [D] [T]
 void EndGame(GAMEMODE mode)
 {
 	WantedGameMode = mode;
@@ -2291,10 +2250,10 @@ void EnablePause(PAUSEMODE mode)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void CheckForPause(void)
 {
-	if (gDieWithFade > 15 && (quick_replay != 0 || NoPlayerControl == 0)) 
+	if (gDieWithFade > 15 && (quick_replay != 0 || NoPlayerControl == 0))
 	{
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;
@@ -2315,7 +2274,7 @@ void CheckForPause(void)
 	}
 }
 
-// [D]
+// [D] [T] This is really a Psy-Q function
 void SsSetSerialVol(short s_num, short voll, short volr)
 {
 	SpuCommonAttr attr;
@@ -2409,33 +2368,33 @@ void PrintCommandLineArguments()
 #endif
 		"  -nointro : disable intro screens\n"
 		"  -nofmv : disable all FMVs\n";
-	
+
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "REDRIVER 2 command line arguments", argumentsMessage, NULL);
 }
 #endif
 
-// [D]
+// [D] [T]
 #ifdef PSX
 int main(void)
 #else
 int redriver2_main(int argc, char** argv)
 #endif // PSX
 {
-	char *PALScreenNames[4] = {		// [A] don't show publisher logo
+	char* PALScreenNames[4] = {		// [A] don't show publisher logo
 	//	"GFX\\SPLASH2.TIM",
 	//	"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1P.TIM",
 		NULL
 	};
 
-	char *NTSCScreenNames[4] = {		// [A] don't show publisher logo
+	char* NTSCScreenNames[4] = {		// [A] don't show publisher logo
 	//	"GFX\\SPLASH2.TIM",
 	//	"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1N.TIM",
 		NULL
 	};
 
-	char *OPMScreenNames[4] = {		// [A] don't show publisher logo
+	char* OPMScreenNames[4] = {		// [A] don't show publisher logo
 		//"GFX\\OPM1.TIM",
 		"GFX\\OPM2.TIM",
 		"GFX\\OPM3.TIM",
@@ -2466,7 +2425,7 @@ int redriver2_main(int argc, char** argv)
 	InitSound();
 
 #ifndef PSX
-	if(argc <= 1)
+	if (argc <= 1)
 #endif
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
@@ -2516,10 +2475,10 @@ int redriver2_main(int argc, char** argv)
 				return -1;
 			}
 
-			gStartPos.x = atoi(argv[i+1]);
-			gStartPos.z = atoi(argv[i+2]);
+			gStartPos.x = atoi(argv[i + 1]);
+			gStartPos.z = atoi(argv[i + 2]);
 
-			i+=2;
+			i += 2;
 		}
 		else if (!_stricmp(argv[i], "-playercar"))
 		{
@@ -2581,42 +2540,87 @@ int redriver2_main(int argc, char** argv)
 		}
 		else
 #endif // _DEBUG_OPTIONS
-		if (!_stricmp(argv[i], "-nofmv"))
-		{
-			gNoFMV = 1;
-		}
-		else if (!_stricmp(argv[i], "-nointro"))
-		{
-			// do nothing. All command line features use it
-		}
-		else if (!_stricmp(argv[i], "-replay"))
-		{
-			if (argc-i < 2)
+			if (!_stricmp(argv[i], "-nofmv"))
 			{
-				printError("-replay missing argument!");
-				return -1;
+				gNoFMV = 1;
 			}
-
-			SetFEDrawMode();
-
-			gInFrontend = 0;
-			AttractMode = 0;
-
-			char nameStr[512];
-			sprintf(nameStr, "%s", argv[i+1]);
-
-			FILE* fp = fopen(nameStr, "rb");
-			if (fp)
+			else if (!_stricmp(argv[i], "-nointro"))
 			{
-				int replay_size = 0;
-				fseek(fp, 0, SEEK_END);
-				replay_size = ftell(fp);
-				fseek(fp, 0, SEEK_SET);
+				// do nothing. All command line features use it
+			}
+			else if (!_stricmp(argv[i], "-replay"))
+			{
+				if (argc - i < 2)
+				{
+					printError("-replay missing argument!");
+					return -1;
+				}
 
-				fread(_other_buffer, replay_size, 1, fp);
-				fclose(fp);
+				SetFEDrawMode();
 
-				if (LoadReplayFromBuffer(_other_buffer))
+				gInFrontend = 0;
+				AttractMode = 0;
+
+				char nameStr[512];
+				sprintf(nameStr, "%s", argv[i + 1]);
+
+				FILE* fp = fopen(nameStr, "rb");
+				if (fp)
+				{
+					int replay_size = 0;
+					fseek(fp, 0, SEEK_END);
+					replay_size = ftell(fp);
+					fseek(fp, 0, SEEK_SET);
+
+					fread(_other_buffer, replay_size, 1, fp);
+					fclose(fp);
+
+					if (LoadReplayFromBuffer(_other_buffer))
+					{
+						CurrentGameMode = GAMEMODE_REPLAY;
+						gLoadedReplay = 1;
+
+						LaunchGame();
+
+						gLoadedReplay = 0;
+					}
+					else
+					{
+						printError("Error loading replay file '%s'!\n", nameStr);
+					}
+				}
+				else
+				{
+					printError("Cannot open replay '%s'!\n", nameStr);
+					return -1;
+				}
+				i++;
+			}
+#ifdef CUTSCENE_RECORDER
+			else if (!_stricmp(argv[i], "-recordcutscene"))
+			{
+				if (argc - i < 3)
+				{
+					printWarning("Example: -recordcutscene <mission_number> <subindex> <base_mission>");
+					return 0;
+				}
+
+				SetFEDrawMode();
+
+				gInFrontend = 0;
+				AttractMode = 0;
+
+				int subindx = atoi(argv[i + 2]);
+
+				extern int LoadCutsceneAsReplay(int subindex);
+				extern int gCutsceneAsReplay;
+				extern int gCutsceneAsReplay_PlayerId;
+
+				gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
+				gCurrentMissionNumber = atoi(argv[i + 3]);		// acts as base mission. Some mission requires other base
+				gCutsceneAsReplay_PlayerId = 0;
+
+				if (LoadCutsceneAsReplay(subindx))
 				{
 					CurrentGameMode = GAMEMODE_REPLAY;
 					gLoadedReplay = 1;
@@ -2625,61 +2629,16 @@ int redriver2_main(int argc, char** argv)
 
 					gLoadedReplay = 0;
 				}
-				else
-				{
-					printError("Error loading replay file '%s'!\n", nameStr);
-				}
+				gCutsceneAsReplay = 0;
+				return 1;
 			}
+#endif
 			else
 			{
-				printError("Cannot open replay '%s'!\n", nameStr);
-				return -1;
+				if (!commandLinePropsShown)
+					PrintCommandLineArguments();
+				commandLinePropsShown = 1;
 			}
-			i++;
-		}
-#ifdef CUTSCENE_RECORDER
-		else if (!_stricmp(argv[i], "-recordcutscene"))
-		{
-			if (argc-i < 3)
-			{
-				printWarning("Example: -recordcutscene <mission_number> <subindex> <base_mission>");
-				return 0;
-			}
-
-			SetFEDrawMode();
-
-			gInFrontend = 0;
-			AttractMode = 0;
-
-			int subindx = atoi(argv[i+2]);
-
-			extern int LoadCutsceneAsReplay(int subindex);
-			extern int gCutsceneAsReplay;
-			extern int gCutsceneAsReplay_PlayerId;
-
-			gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
-			gCurrentMissionNumber = atoi(argv[i + 3]);		// acts as base mission. Some mission requires other base
-			gCutsceneAsReplay_PlayerId = 0;
-
-			if (LoadCutsceneAsReplay(subindx))
-			{
-				CurrentGameMode = GAMEMODE_REPLAY;
-				gLoadedReplay = 1;
-
-				LaunchGame();
-
-				gLoadedReplay = 0;	
-			}
-			gCutsceneAsReplay = 0;
-			return 1;
-		}
-#endif
-		else
-		{
-			if(!commandLinePropsShown)
-				PrintCommandLineArguments();
-			commandLinePropsShown = 1;
-		}
 	}
 #endif // PSX
 
@@ -2712,7 +2671,7 @@ int redriver2_main(int argc, char** argv)
 	/* end block 3 */
 	// End Line: 11398
 
-// [D]
+// [D] [T]
 void FadeScreen(int end_value)
 {
 	int tmp2 = pauseflag;
@@ -2767,142 +2726,97 @@ void FadeScreen(int end_value)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void UpdatePlayerInformation(void)
 {
-	short *psVar1;
-	int iVar2;
-	unsigned char *pbVar3;
-	WHEEL *pWVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	_CAR_DATA *cp;
+	short* playerFelony;
+	WHEEL* wheel;
+	int i, j;
+	int wheelsInWater;
+	_CAR_DATA* cp;
 
 	cp = NULL;
+
 	PlayerDamageBar.max = MaxPlayerDamage[0];
 	Player2DamageBar.max = MaxPlayerDamage[1];
 
 	if (player[0].playerCarId < 0)
-		psVar1 = &pedestrianFelony;
+		playerFelony = &pedestrianFelony;
 	else
-		psVar1 = &car_data[player[0].playerCarId].felonyRating;
+		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (gPlayerImmune != 0) 
-		*psVar1 = 0;
+	if (gPlayerImmune != 0)
+		*playerFelony = 0;
 
-	FelonyBar.position = *psVar1;
-	if (NumPlayers != 0) 
+	FelonyBar.position = *playerFelony;
+
+	i = 0;
+	while (i < NumPlayers)
 	{
-		iVar2 = 0;
-		iVar8 = 0;
-		do {
+		if (player[i].playerType == 1)
+		{
+			cp = &car_data[player[i].playerCarId];
 
-			if (player[iVar8].playerType == 1)
+			if (gInvincibleCar != 0)
 			{
-				iVar2 = player[iVar8].playerCarId;
-				cp = &car_data[iVar2];
+				cp->totalDamage = 0;
+				ClearMem((char*)cp->ap.damage, sizeof(cp->ap.damage));
+			}
 
-				if (gInvincibleCar != 0)
+			wheelsInWater = 0;
+
+			j = 0;
+			wheel = cp->hd.wheel;
+
+			do {
+				if ((wheel->surface & 0x7) == 1)
 				{
-					cp->totalDamage = 0;
-					ClearMem((char *)cp->ap.damage, 0xc);
-				}
-
-				iVar6 = 0;
-				iVar7 = iVar8 + 1;
-				pWVar4 = cp->hd.wheel;
-				iVar5 = 3;
-
-				do {
-					if ((pWVar4->surface & 7) == 1)
+					if (wheel->susCompression == 0)
 					{
-						if (pWVar4->susCompression == 0) 
+						if (cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
 						{
-							if (cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
-							{
-								gDieWithFade = pWVar4->surface & 7;
-							}
-						}
-						else 
-						{
-							iVar6++;
+							gDieWithFade = wheel->surface & 7;
 						}
 					}
-
-					pWVar4++;
-					iVar5--;
-				} while (-1 < iVar5);
-
-				if (iVar6 == 4) // apply water damage
-					cp->totalDamage += MaxPlayerDamage[iVar8] / 80;
-
-				if (MaxPlayerDamage[iVar8] < cp->totalDamage)
-					cp->totalDamage = MaxPlayerDamage[iVar8];
-
-				if (iVar8 == 0)
-					PlayerDamageBar.position = cp->totalDamage;
-				else
-					Player2DamageBar.position = cp->totalDamage;
-			}
-			else 
-			{
-				iVar7 = iVar8 + 1;
-				if (iVar8 == 0)
-				{
-					PlayerDamageBar.position = 0;
-					iVar7 = 1;
+					else
+					{
+						wheelsInWater++;
+					}
 				}
-				else
-				{
-					Player2DamageBar.position = 0;
-				}
-			}
 
-			if (((0x1df < gCurrentMissionNumber) &&
-				(((gCurrentMissionNumber < 0x1e2 ||
-				((gCurrentMissionNumber < 0x1e6 && (0x1e3 < gCurrentMissionNumber)))) &&
-				(cp->hd.where.t[1] < -750)))) && (gDieWithFade == 0))
-			{
-				gDieWithFade = 1;
-			}
+				wheel++;
+				j++;
+			} while (j < 4);
 
-			iVar2 = iVar7 << 3;
-			iVar8 = iVar7;
-		} while (iVar7 < NumPlayers);
+			if (wheelsInWater == 4) // apply water damage
+				cp->totalDamage += MaxPlayerDamage[i] / 80;
+
+			if (cp->totalDamage > MaxPlayerDamage[i])
+				cp->totalDamage = MaxPlayerDamage[i];
+
+			if (i == 0)
+				PlayerDamageBar.position = cp->totalDamage;
+			else
+				Player2DamageBar.position = cp->totalDamage;
+		}
+		else
+		{
+			if (i == 0)
+				PlayerDamageBar.position = 0;
+			else
+				Player2DamageBar.position = 0;
+		}
+
+		// die with fade on mountain race track
+		if ((gCurrentMissionNumber > 479 && gCurrentMissionNumber < 482 ||
+			gCurrentMissionNumber > 483 && gCurrentMissionNumber < 486) &&
+			cp->hd.where.t[1] < -750 && gDieWithFade == 0)
+		{
+			gDieWithFade = 1;
+		}
+
+		i++;
 	}
-
-
-	// [A] - test
-	/*
-	int surface_index = GetSurfaceIndex((VECTOR*)player[0].pos);
-
-	if (IS_ROAD_SURFACE(surface_index))
-		printWarning("------- road idx: %d\n", (surface_index & 0x1fffU));
-
-	if (IS_CURVED_SURFACE(surface_index))
-	{
-		DRIVER2_CURVE* crv = GET_CURVE(surface_index);
-
-		printWarning("CURVE\nlanes: %d\n", crv->NumLanes, crv->NumLanes);
-	}
-	else if (IS_STRAIGHT_SURFACE(surface_index))
-	{
-		DRIVER2_STRAIGHT* str = GET_STRAIGHT(surface_index);
-
-		printWarning("STRAIGHT\nlanes: %d (s: %d s2: %d, ail: %d), conn: %d %d %d %d, lanedirs: %d, ailanes: %d\n", 
-			str->NumLanes & 0xF, str->NumLanes & 0x40, str->NumLanes & 0x80, str->AILanes, str->ConnectIdx[0], str->ConnectIdx[1], str->ConnectIdx[2], str->ConnectIdx[3], str->LaneDirs);
-		str->NumLanes |= 0x80;
-		
-	}
-	else if (IS_JUNCTION_SURFACE(surface_index))
-	{
-		DRIVER2_JUNCTION* junc = GET_JUNCTION(surface_index);
-
-		printWarning("JUNCTION\nexits: %d %d %d %d, flags: %d\n", junc->ExitIdx[0], junc->ExitIdx[1], junc->ExitIdx[2], junc->ExitIdx[3], junc->flags);
-	}
-	*/
 }
 
 // decompiled code
@@ -2966,20 +2880,16 @@ void UpdatePlayerInformation(void)
 
 int CurrentPlayerView = 0;
 
-// [D]
+// [D] [T]
 void RenderGame2(int view)
 {
-	int iVar2;
-	POLY_F4 *poly;
-	uint uVar3;
-	unsigned char uVar4;
-	char *pcVar5;
-	_PLAYER *pPVar6;
-	int iVar7;
+	POLY_F4* poly;
+	int fadeColour;
+	int i;
 	int notInDreaAndStevesEvilLair;
 
 	CurrentPlayerView = view;
-	InitCamera((_PLAYER *)(player + view));
+	InitCamera((_PLAYER*)(player + view));
 
 #ifndef PSX
 	int screenW, screenH;
@@ -3014,54 +2924,56 @@ void RenderGame2(int view)
 
 	SetupDrawMapPSX();
 
-	if (gLoadedMotionCapture != 0) 
+	if (gLoadedMotionCapture != 0)
 		DrawAllPedestrians();
 
+	// do a lot of stuff
 	DisplayMissionTitle();
 	DrawInGameCutscene();
+
 	DrawEvents(1);
+
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
 	SetupDrawMapPSX();
 	DrawDrivingGames();
 	DrawThrownBombs();
 	AddGroundDebris();
+
 	DrawEvents(0);
 
-	current->ot = current->ot + 10;
+	current->ot += 10;
 
 	DrawSmashable_sprites();
 	HandleDebris();
 
-	current->ot = current->ot + -10;
+	current->ot -= 10;
 
 	DrawAllExplosions();
 
-	if (AttractMode != 0) 
+	if (AttractMode != 0)
 	{
-		uVar3 = CameraCnt & 0x1f;
+		int colour;
+		colour = CameraCnt & 0x1f;
 
-		if (0xf < uVar3)
-			uVar3 = 0x20 - uVar3;
+		if (colour > 15)
+			colour = 32 - colour;
 
-		SetTextColour((uVar3 & 0x1f) << 3, 0, 0);
-		PrintString("DEMO", 0x23, 0xf);
+		SetTextColour((colour & 0x1f) << 3, 0, 0);
+		PrintString("DEMO", 32, 15);
 	}
 
-	pPVar6 = player;
-	iVar7 = 2;
-
+	i = 0;
 	do {
-		if (pPVar6->playerCarId != -1 &&
-			CarHasSiren(car_data[pPVar6->playerCarId].ap.model) != 0 &&
-			pPVar6->horn.on != 0)
+		if (player[i].playerCarId >= 0 &&
+			CarHasSiren(car_data[player[i].playerCarId].ap.model) != 0 &&
+			player[i].horn.on != 0)
 		{
-			AddCopCarLight(car_data + pPVar6->playerCarId);
+			AddCopCarLight(&car_data[player[i].playerCarId]);
 		}
-	
-		iVar7--;
-		pPVar6++;
-	} while (-1 < iVar7);
+
+		i++;
+	} while (i < 2);
 
 	if (gLoadedOverlay != 0)
 		DisplayOverlays();
@@ -3071,21 +2983,22 @@ void RenderGame2(int view)
 	if (FastForward == 0 && NumPlayers == 1)
 		DrawLensFlare();
 
-	uVar4 = (unsigned char)(gDieWithFade << 4);
-
-	if (gDieWithFade != 0) 
+	// Retro calls this BSOD...
+	if (gDieWithFade != 0)
 	{
-		if (0xff < gDieWithFade << 4) 
-			uVar4 = -1;
+		fadeColour = (gDieWithFade << 4);
 
-		poly = (POLY_F4 *)current->primptr;
+		if (gDieWithFade << 4 > 255)
+			fadeColour = 255;
+
+		poly = (POLY_F4*)current->primptr;
 
 		setPolyF4(poly);
 		setSemiTrans(poly, 1);
 
-		poly->r0 = uVar4;
-		poly->g0 = uVar4;
-		poly->b0 = uVar4;
+		poly->r0 = fadeColour;
+		poly->g0 = fadeColour;
+		poly->b0 = fadeColour;
 
 #ifdef PSX
 		setXYWH(poly, 0, 0, 320, 256);
@@ -3111,16 +3024,21 @@ void RenderGame2(int view)
 		current->primptr += sizeof(POLY_FT3);
 	}
 
-	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int *)&ObjectDrawnValue);
+	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int*)&ObjectDrawnValue);
 
 	ScaleCamera();
 
-	if ((notInDreaAndStevesEvilLair != 0) && (DrawSkyDome(), 40000 < (int)(current->primtab + -(int)(current->primptr- PRIMTAB_SIZE))))
+	if (notInDreaAndStevesEvilLair != 0)
 	{
-		DoWeather(gWeather);
+		DrawSkyDome();
+
+		if (current->primtab - (current->primptr - PRIMTAB_SIZE) > 40000)
+		{
+			DoWeather(gWeather);
+		}
 	}
 
-	if (37000 < (int)(current->primtab + -(int)(current->primptr - PRIMTAB_SIZE)))
+	if (current->primtab - (current->primptr - PRIMTAB_SIZE) > 37000)
 	{
 		DrawTyreTracks();
 	}
@@ -3194,7 +3112,7 @@ void RenderGame2(int view)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void RenderGame(void)
 {
 	UpdatePadData();
@@ -3232,14 +3150,14 @@ void RenderGame(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitGameVariables(void)
 {
 	InitDebris();
 	InitTyreTracks();
 	TargetCar = 0;
 
-	if (NewLevel != 0) 
+	if (NewLevel != 0)
 	{
 		gLoadedOverlay = 0;
 		gLoadedMotionCapture = 0;
@@ -3268,7 +3186,7 @@ void InitGameVariables(void)
 	FrameCnt = 0;
 	CameraCnt = 0;
 
-	ClearMem((char *)&lightsOnDelay, sizeof(lightsOnDelay));
+	ClearMem((char*)&lightsOnDelay, sizeof(lightsOnDelay));
 
 	PlayerStartInfo[0] = &ReplayStreams[0].SourceType;
 
@@ -3277,7 +3195,7 @@ void InitGameVariables(void)
 	if (gCutsceneAsReplay == 0)
 	{
 #endif
-		ClearMem((char *)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
+		ClearMem((char*)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[0]->type = 1;
 		PlayerStartInfo[0]->model = defaultPlayerModel[0];
@@ -3296,14 +3214,14 @@ void InitGameVariables(void)
 		if (NumPlayers == 2)
 		{
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
-			ClearMem((char *)PlayerStartInfo[1], sizeof(STREAM_SOURCE));
+			ClearMem((char*)PlayerStartInfo[1], sizeof(STREAM_SOURCE));
 
 			PlayerStartInfo[1]->type = 1;
 			PlayerStartInfo[1]->model = defaultPlayerModel[1];
 			PlayerStartInfo[1]->palette = defaultPlayerPalette;
 			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
-	
+
 			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
 
 			PlayerStartInfo[1]->position.vy = 0;
@@ -3363,23 +3281,22 @@ void InitGameVariables(void)
 	/* end block 3 */
 	// End Line: 11383
 
-void DealWithHorn(char *hr, int i)
+// [D] [T]
+void DealWithHorn(char* hr, int i)
 {
 	unsigned char bVar1;
 	int channel;
 	int modelId;
 	_CAR_DATA* car;
+	int horn;
 
-	channel = player[i].playerCarId;
 	car = &car_data[player[i].playerCarId];
 
-	bVar1 = *hr;
-
-	if (bVar1 == 0)
+	if (*hr == 0)
 	{
 		return;
 	}
-	else if (bVar1 == 1) 
+	else if (*hr == 1)
 	{
 		channel = 2;
 
@@ -3388,21 +3305,16 @@ void DealWithHorn(char *hr, int i)
 
 		StopChannel(channel);
 	}
-	else if (bVar1 == 2)
+	else if (*hr == 2)
 	{
-		bVar1 = car->ap.model;
-
-		if (bVar1 == 4)
+		if (car->ap.model == 4)
 			modelId = ResidentModelsBodge();
-		else if (bVar1 < 3)
+		else if (car->ap.model < 3)
 			modelId = car->ap.model;
 		else
 			modelId = car->ap.model - 1;
 
-		channel = 2;
-
-		if (i != 0)
-			channel = 5;
+		channel = i != 0 ? 5 : 2;
 
 		Start3DSoundVolPitch(channel, 3, modelId * 3 + 2,
 			car->hd.where.t[0],
@@ -3410,25 +3322,22 @@ void DealWithHorn(char *hr, int i)
 			car->hd.where.t[2], -10000,
 			0x1000);
 
-		if ((1 < NumPlayers) && (NoPlayerControl == 0))
+		if (NumPlayers > 1 && NoPlayerControl == 0)
 		{
 			channel = 2;
 
 			if (i != 0)
 				channel = 5;
 
-			SetPlayerOwnsChannel(channel, (char)i);
+			SetPlayerOwnsChannel(channel, i);
 		}
 
-		channel = 2;
-		if (i != 0)
-			channel = 5;
+		channel = i != 0 ? 5 : 2;
 
-		SetChannelPosition3(channel, (VECTOR *)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 0x1000, 0);
+		SetChannelPosition3(channel, (VECTOR*)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 0x1000, 0);
 	}
 
-	int horn = *hr + 1 & 0xff;
-	*hr = (u_char)horn - (((u_char)((long long)horn * 0xaaaaaaab >> 0x20) & 0xfe) + (horn / 3));
+	*hr = (*hr + 1) % 3;
 }
 
 
@@ -3467,136 +3376,129 @@ void DealWithHorn(char *hr, int i)
 	/* end block 3 */
 	// End Line: 11431
 
-// [D]
-int Havana3DOcclusion(occlFunc func, int *param)
+// [D] [T] [A] Has bugs - some rooms not drawn properly
+int Havana3DOcclusion(occlFunc func, int* param)
 {
-	bool bVar1;
 	int loop;
 	int draw;
-	int iVar3;
-	int iVar4;
+	int otAltered;
 	int outside;
 
 	outside = 1;
 
-	if ((((GameLevel != 1) || (-0x68fdc < camera_position.vx)) || (camera_position.vx < -0x75416))
-		|| ((-0x1b8ae < camera_position.vz || (camera_position.vz < -0x20cb3))))
+	if (GameLevel == 1 && 
+		camera_position.vx <= -0x68fdc && camera_position.vx >= -0x75416 && 
+		camera_position.vz <= -0x1b8ae && camera_position.vz >= -0x20cb3)
 	{
-		(*func)(param);
-		return 1;
-	}
-
-	draw = 0;
-
-	if (camera_position.vy < 0x1bf) 
-	{
-		draw = 16;
-
-		if (-469500 < camera_position.vx) 
-			draw = 17;
-	}
-	else 
-	{
-		outside = 0;
-
-		if (((camera_position.vx < -0x6e9e5) && (-0x6fa01 < camera_position.vx)) &&
-			((camera_position.vz < -0x1e201 &&
-			((-0x1f205 < camera_position.vz && (camera_position.vy < 0xf73))))))
+		draw = 10;
+		
+		if (camera_position.vy < 0x1bf)
 		{
-			if (camera_position.vy < 0x4dd) 
+			if (camera_position.vx > -0x729fc)
+				draw = 17;
+			else
+				draw = 16;
+		}
+		else
+		{
+			outside = 0;
+			
+			if (camera_position.vx < -0x6e9e5 && camera_position.vx > -0x6fa01 &&
+				camera_position.vz < -0x1e201 && camera_position.vz > -0x1f205 && 
+				camera_position.vy < 0xf73)
 			{
-			LAB_0005c2b4:
-				draw = 15;
-			}
-			else 
-			{
-				bVar1 = camera_position.vy < 0xc00;
-				if (camera_position.vy < 0x7d1) 
+				if (camera_position.vy < 0x4dd)
+				{
+					draw = 15;
+				}
+				else if (camera_position.vy < 0x7d1)
 				{
 					draw = 14;
 				}
-				else 
+				else if (camera_position.vy < 0xc00)
 				{
-				LAB_0005c2d8:
-					if (bVar1) 
+					draw = 13;
+				}
+			}
+			else
+			{
+				if (camera_position.vy < 0x6c2)
+				{
+					draw = 15;
+				}
+				else
+				{
+					draw = 14;
+
+					if (camera_position.vy < 0x834 && camera_position.vx < -0x73609)
 					{
 						draw = 13;
+					}
+					else
+					{
+						if ((camera_position.vy > 0xbff && camera_position.vx > -0x6fa01 ||
+							(draw = 12, camera_position.vz < -0x1f9db)) &&
+							(draw = 10, camera_position.vz < -0x1f9dc))
+						{
+							draw = 11;
+						}
 					}
 				}
 			}
 		}
-		else 
+
+		events.camera = 1;
+		
+		loop = draw - 1;
+
+		if (loop < 10)
+			loop = 10;
+
+		otAltered = 0;
+
+		while (true)
 		{
-			if (camera_position.vy < 0x6c2)
-				goto LAB_0005c2b4;
-
-			draw = 14;
-
-			if (camera_position.vy < 0x834) 
+			if (draw + 1 < loop)
 			{
-				bVar1 = camera_position.vx < -0x73609;
-				goto LAB_0005c2d8;
+				events.camera = 0;
+				return outside;
 			}
-
-			if ((((0xbff < camera_position.vy) && (-0x6fa01 < camera_position.vx)) ||
-				(draw = 12, camera_position.vz < -0x1f9db)) &&
-				(draw = 10, camera_position.vz < -0x1f9dc)) 
+			
+			if (loop == 0x10) 
+				break;
+			
+			if (draw != loop)
 			{
-				draw = 11;
+				otAltered = 200;
 			}
+			
+			events.draw = loop;
+			current->ot += otAltered;
+			
+			(*func)(param);
+
+			if (otAltered != 0)
+			{
+				current->ot -= otAltered;
+				otAltered = 0;
+			}
+			loop++;
+
 		}
-	}
 
-	if(draw > 14)
-		(*func)(param);
-
-	events.camera = 1;
-
-	loop = draw-1;
-
-	if (loop < 10)
-		loop = 10;
-
-	iVar3 = 0;
-
-	while (true)
-	{
-		if (draw + 1 < loop) 
+		events.camera = 0;
+	
+		if (draw == 0xf && camera_position.vx > -0x6fd11)
 		{
 			events.camera = 0;
 			return outside;
 		}
-
-		if (loop == 16)
-			break;
-
-		if (draw != loop)
-		{
-			iVar3 = 200;
-		}
-
-		events.draw = loop;
-		current->ot += iVar3;
+	
 		(*func)(param);
-
-		iVar4 = iVar3;
-		if (iVar3 != 0) 
-		{
-			iVar4 = 0;
-			current->ot -= iVar3;// *0x3fffffff;
-		}
-
-		loop++;
-		iVar3 = iVar4;
+		return 1;
 	}
 
-	events.camera = 0;
-	if ((draw == 15) && (-458001 < camera_position.vx)) 
-	{
-		events.camera = 0;
-		return outside;
-	}
-
+	(*func)(param);
 	return 1;
 }
 
