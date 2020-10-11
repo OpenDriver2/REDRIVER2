@@ -272,7 +272,7 @@ void ProcessTannerPad(PEDESTRIAN* pPed, ulong pad, char PadSteer, char use_analo
 	lcp = &player[padId];
 
 	// don't move dead Tanner
-	if(lcp->dying != 0)
+	if (lcp->dying != 0)
 		tannerPad = 0;
 	else
 		tannerPad = pad;
@@ -321,7 +321,7 @@ void ProcessTannerPad(PEDESTRIAN* pPed, ulong pad, char PadSteer, char use_analo
 				{
 					case -32:
 						break;
-					//case 6:	// water. We allow to walk on water in Rio a little bit. Then he drowns
+						//case 6:	// water. We allow to walk on water in Rio a little bit. Then he drowns
 					case 9:		// water with fade out
 					default:
 						dist = -1;
@@ -1057,7 +1057,7 @@ int ActivatePlayerPedestrian(_CAR_DATA* pCar, char* padId, int direction, long(*
 			else
 			{
 				pedptr->pallet = ((Random2(0) % 3) + (Random2(0) % 3)) * 16;
-				
+
 				//rnd1 = Random2(0);
 				//rnd2 = Random2(0);
 				//pedptr->pallet = rnd1 - (rnd1 / 3) * 3 + (rnd2 - (rnd2 / 3) * 3) * 16;
@@ -1232,7 +1232,7 @@ void PlaceRoadBlockCops(void)
 		return;
 
 	numCops = 0;
-	
+
 	cp = car_data;
 	do {
 		if (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING)
@@ -1248,14 +1248,14 @@ void PlaceRoadBlockCops(void)
 
 	do {
 		pCar = pCopCars[i];
-		
+
 		sn = rsin(pCar->hd.direction);
 		cs = rcos(pCar->hd.direction);
 
 		disp[0] = pCar->hd.where.t[0] - player[0].pos[0];
 		disp[1] = player[0].pos[1] - pCar->hd.where.t[1];
 		disp[2] = pCar->hd.where.t[2] - player[0].pos[2];
-		
+
 		lbody = car_cosmetics[pCar->ap.model].colBox.vz - 120;
 		wbody = car_cosmetics[pCar->ap.model].colBox.vx + 400;
 
@@ -1330,7 +1330,7 @@ int CreatePedAtLocation(long(*pPos)[4], int pedType)
 	pPed->flags = 0;
 
 	pPed->fpRestState = fpPedPersonalityFunctions[12];
-	
+
 	if (pedType == 8)
 	{
 		pPed->flags = 0;
@@ -1430,15 +1430,15 @@ void DrawAllPedestrians(void)
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
-		if (PositionVisible((VECTOR*)&pPed->position) && 
+		if (PositionVisible((VECTOR*)&pPed->position) &&
 			FrustrumCheck((VECTOR*)&pPed->position, 60) != -1)
 		{
-			if(pPed->pedType <= OTHER_MODEL)
+			if (pPed->pedType <= OTHER_MODEL)
 			{
 				if (!bKillTanner)
 					DrawTanner(pPed);
 			}
-			else if(pPed->pedType == OTHER_SPRITE)
+			else if (pPed->pedType == OTHER_SPRITE)
 			{
 				DrawCharacter(pPed);
 			}
@@ -1454,7 +1454,7 @@ void DrawAllPedestrians(void)
 	/*
 	// THIS IS OLD AND PROBABLY NOT NEEDED
 	gte_SetRotMatrix(&mStore);
-	
+
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
@@ -2274,7 +2274,6 @@ int lastCarCameraView = 0;
 void SetupGetOutCar(PEDESTRIAN* pPed, _CAR_DATA* pCar, int side)
 {
 	bool entrySide;
-	short pedDir;
 	int sn, cs;
 	uint carDir;
 	int xOfs;
@@ -2393,7 +2392,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 	cs = rcos(carToGetIn->hd.direction);
 
 	entrySide = cs * (carToGetIn->hd.where.t[0] - pPed->position.vx) - FIXED(sn * 0x1000) * (carToGetIn->hd.where.t[2] - pPed->position.vz) + 0x800 < 0;
-	
+
 	if (entrySide)
 		pPed->dir.vy = carToGetIn->hd.direction + 0x400;
 	else
@@ -2617,7 +2616,7 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 	padid = pPed->padId;
 
 	lcp = &player[padid];
-	
+
 	camera_position.vy = pPed->head_pos - 28 - lcp->pos[1];
 
 	if (Pads[padid].type == 4)
@@ -2630,7 +2629,7 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 				value = -padSteer;
 			else
 				value = padSteer;
-			
+
 			if (padSteer < 0)
 				tannerLookAngle.vy = (value - 32) * -9;
 			else
@@ -2709,11 +2708,9 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 	/* end block 3 */
 	// End Line: 7119
 
-// [D]
+// [D] [T]
 void TannerSitDown(PEDESTRIAN* pPed)
 {
-	int iVar2;
-
 	if (oldCamView != 2 && player[pPed->padId].cameraView == 2)
 	{
 		camAngle.vx = camera_angle.vx;
@@ -2723,7 +2720,7 @@ void TannerSitDown(PEDESTRIAN* pPed)
 
 	// if sit down/standup animation playing
 	if (pPed->flags & 4)
-	{		
+	{
 		if (pPed->frame1 == 0)
 		{
 			pPed->frame1 = 0;
@@ -2834,7 +2831,7 @@ void AnimatePed(PEDESTRIAN* pPed)
 	vec.vz = pPed->position.vz;
 	vec.vy = -pPed->position.vy;
 
-	if(pPed->type != PED_ACTION_SIT)
+	if (pPed->type != PED_ACTION_SIT)
 	{
 		if (pPed->pedType == CIVILIAN && (pPed->flags & 0x8000U) != 0)
 			pPed->position.vy = -60 - MapHeight(&vec);
@@ -2855,8 +2852,8 @@ void AnimatePed(PEDESTRIAN* pPed)
 		pPed->position.vz += FIXED(pPed->speed * rcossin_tbl[dir * 2 + 1]);
 	}
 
-	if (pPed->type != PED_ACTION_SIT && 
-		pPed->type != PED_ACTION_COPCROUCH && 
+	if (pPed->type != PED_ACTION_SIT &&
+		pPed->type != PED_ACTION_COPCROUCH &&
 		pPed->type != PED_ACTION_COPSTAND)
 	{
 		pPed->velocity.vy = 10;
@@ -3124,7 +3121,7 @@ void SetupCivPedRouteData(VECTOR* pPos)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void PingInPedestrians(void)
 {
 	int bFound;
@@ -3146,20 +3143,20 @@ void PingInPedestrians(void)
 	if (gWeather == 0 && FindSeated() != NULL)
 		return;
 
-	for(i = 0; i < 50; i++)
+	for (i = 0; i < 50; i++)
 	{
 		pinginPedAngle += 81;
-				
+
 		pingInDist = Random2(0) % 128 + 1536;
-				
+
 		randomLoc.vy = baseLoc.vy;
 		randomLoc.vx = baseLoc.vx + pingInDist * FIXEDH(rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
 		randomLoc.vz = baseLoc.vz + pingInDist * FIXEDH(rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
 
 		randomLoc.vy = -MapHeight(&randomLoc);
 
-		if (baseLoc.vy - 512 <= -randomLoc.vy && 
-			baseLoc.vy + 512 >= -randomLoc.vy && 
+		if (baseLoc.vy - 512 <= -randomLoc.vy &&
+			baseLoc.vy + 512 >= -randomLoc.vy &&
 			IsPavement(randomLoc.vx, randomLoc.vy, randomLoc.vz, NULL))
 		{
 			if (pUsedPeds != NULL)
@@ -3171,7 +3168,7 @@ void PingInPedestrians(void)
 
 				bFound = 0;
 
-				while (dx*dx + dz*dz > 15999999)
+				while (dx * dx + dz * dz > 15999999)
 				{
 					pPed = pPed->pNext;
 
@@ -3197,7 +3194,7 @@ void PingInPedestrians(void)
 				return;
 
 			pPed = CreatePedestrian();
-	
+
 			pPed->flags = 0;
 			pPed->position.vx = randomLoc.vx;
 			pPed->position.vy = randomLoc.vy;
@@ -3206,7 +3203,7 @@ void PingInPedestrians(void)
 			pPed->dir.vx = 0;
 			pPed->dir.vy = 0;
 			pPed->position.vz = randomLoc.vz;
-	
+
 			baseLoc.vx = randomLoc.vx;
 			baseLoc.vy = pPed->position.vy;
 			baseLoc.vz = pPed->position.vz;
@@ -3230,11 +3227,11 @@ void PingInPedestrians(void)
 			pPed->pallet = (Random2(-28) % 5) + (Random2(-28) % 5) * 16;
 
 			SetupPedMotionData(pPed);
-			
+
 			pPed->fpAgitatedState = NULL;
 			pPed->dir.vy = 0;
 			pPed->fpRestState = fpPedPersonalityFunctions[7];
-					
+
 			rnd = Random2(0);
 
 			if ((rnd / 6) * 6 != rnd - 3)
@@ -3349,15 +3346,14 @@ void TannerCollision(PEDESTRIAN* pPed)
 	/* end block 3 */
 	// End Line: 8378
 
-// [D]
+// [D] [T]
 int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
 {
-	int iVar1;
-	uint uVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
+	int dx, dz;
+	int minZ;
+	int maxZ;
+	int minX;
+	int maxX;
 
 	CDATA2D cd[2];
 	static CRET2D collisionResult;
@@ -3379,52 +3375,50 @@ int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
 	cd[1].x.vz = pCar->hd.where.t[2];
 	cd[1].theta = pCar->hd.direction;
 
-	iVar1 = bcollided2d(cd, 1);
-	if (iVar1 != 0)
-	{
-		bFindCollisionPoint(cd, &collisionResult);
+	if (!bcollided2d(cd, 1))
+		return 0;
+
+	bFindCollisionPoint(cd, &collisionResult);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
-		extern int gShowCollisionDebug;
-		if (gShowCollisionDebug)
-		{
-			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
-			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+	extern int gShowCollisionDebug;
+	if (gShowCollisionDebug)
+	{
+		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
 
-			CVECTOR bbcv = { 0, 0, 250 };
-			CVECTOR rrcv = { 250, 0, 0 };
-			CVECTOR yycv = { 250, 250, 0 };
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+		CVECTOR yycv = { 250, 250, 0 };
 
-			VECTOR _zero = { 0, 100, 0 };
-			VECTOR up = { 0, 200, 0 };
+		VECTOR _zero = { 0, 100, 0 };
+		VECTOR up = { 0, 200, 0 };
 
-			Debug_AddLineOfs(_zero, up, cd[0].x, rrcv);
+		Debug_AddLineOfs(_zero, up, cd[0].x, rrcv);
 
-			Debug_AddLineOfs(_zero, up, cd[1].x, yycv);
+		Debug_AddLineOfs(_zero, up, cd[1].x, yycv);
 
-			Debug_AddLineOfs(_zero, up, collisionResult.hit, bbcv);
-		}
+		Debug_AddLineOfs(_zero, up, collisionResult.hit, bbcv);
+	}
 #endif
 
 
-		iVar4 = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) -
-				FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]);
+	dx = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) -
+		FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]);
 
-		iVar1 = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) +
-				FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]);
+	dz = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) +
+		FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]);
 
-		iVar5 = car_cos->colBox.vx + 96;
-		iVar3 = car_cos->colBox.vz;
-		iVar6 = car_cos->colBox.vx - 96;
+	minX = car_cos->colBox.vx + 96;
+	maxX = car_cos->colBox.vx - 96;
 
-		if ((iVar3 - 480 < iVar1) && (iVar1 < iVar3 - 200))
-		{
-			if ((iVar6 < iVar4) && (iVar4 < iVar5))
-				return 1;
+	minZ = car_cos->colBox.vz - 480;
+	maxZ = car_cos->colBox.vz - 200;
 
-			if ((iVar4 < -iVar6) && (-iVar5 < iVar4))
-				return 1;
-		}
+	if (dz > minZ && dz < maxZ &&
+		(dx > maxX && dx < minX || dx < -maxX && dx > -minX))
+	{
+		return 1;
 	}
 
 	return 0;
@@ -3514,35 +3508,21 @@ int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
 /* WARNING: Removing unreachable block (ram,0x00070ec8) */
 /* WARNING: Type propagation algorithm not settling */
 
-// [D]
+// [D] [T]
 int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 {
-	int iVar1;
-	uint uVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
 	_CAR_DATA* cp1;
-	int carLength;
-	int dNewLBODY[2];
-	VECTOR velocity;
 	long pointVel[4];
 	long reaction[4];
 	long lever[4];
+	int strikeVel;
 	SVECTOR boxDisp;
 	CAR_COSMETICS* car_cos;
 	_CAR_DATA* pcdTanner;
 
 	CRET2D collisionResult; // offset 0x30
 	CDATA2D cd[2];
-	
+
 	pcdTanner = &car_data[21];
 
 	cd[0].length[0] = 0x3c;
@@ -3574,72 +3554,65 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 		gte_stlvnl(&cd[1].x);
 
-		if (cp1->controlType != CONTROL_TYPE_NONE)
+		if (cp1->controlType != CONTROL_TYPE_NONE &&
+			ABS(cp1->hd.where.t[1] + pPos->vy) < 500 &&
+			bcollided2d(cd, 1))
 		{
-			if (ABS(cp1->hd.where.t[1] + pPos->vy) < 500 &&
-				bcollided2d(cd, 1))
+			if (bQuick != 0)
+				return 1;
+
+			if (FIXEDH(cp1->hd.wheel_speed) > 50)
+				return 1;
+
+			bFindCollisionPoint(cd, &collisionResult);
+
+			collisionResult.surfNormal.vy = 0;
+			collisionResult.hit.vy = pcdTanner->hd.where.t[1] + 60;
+
+			pcdTanner->hd.where.t[0] += FIXEDH(collisionResult.penetration * -collisionResult.surfNormal.vx);
+			pcdTanner->hd.where.t[2] += FIXEDH(collisionResult.penetration * -collisionResult.surfNormal.vz);
+
+			lever[0] = collisionResult.hit.vx - pcdTanner->hd.where.t[0];
+			lever[1] = collisionResult.hit.vy - pcdTanner->hd.where.t[1];
+			lever[2] = collisionResult.hit.vz - pcdTanner->hd.where.t[2];
+
+			pointVel[0] = FIXEDH(pcdTanner->st.n.angularVelocity[1] * lever[2] - pcdTanner->st.n.angularVelocity[2] * lever[1]) + pcdTanner->st.n.linearVelocity[0];
+			pointVel[2] = FIXEDH(pcdTanner->st.n.angularVelocity[0] * lever[1] - pcdTanner->st.n.angularVelocity[1] * lever[0]) + pcdTanner->st.n.linearVelocity[2];
+
+			strikeVel = FixFloorSigned(pointVel[0], 8) * FixFloorSigned(-collisionResult.surfNormal.vx, 4) + FixFloorSigned(pointVel[2], 8) * FixFloorSigned(-collisionResult.surfNormal.vz, 4);
+
+			if (strikeVel < 0)
 			{
-				if (bQuick != 0)
-					return 1;
+				int lever_dot_n; // $a0
+				int displacementsquared; // $a1
+				int denom; // $a0
+				int twistRateY;
 
-				if (50 < FIXEDH(cp1->hd.wheel_speed))
-					return 1;
+				twistRateY = car_cos->twistRateY;
+				
+				lever_dot_n = FIXEDH(lever[0] * -collisionResult.surfNormal.vx + lever[2] * -collisionResult.surfNormal.vz);
+				displacementsquared = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - lever_dot_n * lever_dot_n) * twistRateY) + 0x1000;
 
-				bFindCollisionPoint(cd, &collisionResult);
+				if (-strikeVel < 0x7f001)
+					denom = (strikeVel * -0x1000) / displacementsquared;
+				else
+					denom = -strikeVel / displacementsquared << 0xc;
 
-				iVar3 = -collisionResult.surfNormal.vz;
-				iVar1 = -collisionResult.surfNormal.vx;
+				denom = FixFloorSigned(denom, 6);
+				
+				reaction[0] = denom * FixFloorSigned(-collisionResult.surfNormal.vx, 6);
+				reaction[2] = denom * FixFloorSigned(-collisionResult.surfNormal.vz, 6);
+				
+				pcdTanner->st.n.linearVelocity[0] += pcdTanner->st.n.linearVelocity[0] + reaction[0];
+				pcdTanner->st.n.linearVelocity[2] += pcdTanner->st.n.linearVelocity[2] + reaction[2];
 
-				iVar10 = pcdTanner->hd.where.t[2] + FIXEDH(collisionResult.penetration * iVar3);
-				iVar12 = collisionResult.hit.vz - iVar10;
-				collisionResult.hit.vy = pcdTanner->hd.where.t[1] + 0x3c;
-				iVar9 = collisionResult.hit.vy - pcdTanner->hd.where.t[1];
-				iVar8 = pcdTanner->hd.where.t[0] + FIXEDH(collisionResult.penetration * iVar1);
-				iVar11 = collisionResult.hit.vx - iVar8;
-
-				collisionResult.surfNormal.vy = 0;
-
-				iVar7 = FIXEDH(pcdTanner->st.n.angularVelocity[1] * iVar12 - pcdTanner->st.n.angularVelocity[2] * iVar9) + pcdTanner->st.n.linearVelocity[0];
-				iVar5 = FIXEDH(pcdTanner->st.n.angularVelocity[0] * iVar9 - pcdTanner->st.n.angularVelocity[1] * iVar11) + pcdTanner->st.n.linearVelocity[2];
-
-				iVar4 = iVar1;
-				iVar6 = iVar3;
-
-				iVar5 = FixFloorSigned(iVar7, 8) * FixFloorSigned(iVar4, 4) + FixFloorSigned(iVar5, 8) * FixFloorSigned(iVar6, 4);
-
-				if (iVar5 < 0)
-				{
-					iVar7 = FIXEDH(iVar11 * iVar1 + iVar12 * iVar3);
-					iVar7 = FIXEDH(((iVar11 * iVar11 + iVar12 * iVar12) - iVar7 * iVar7) * car_cosmetics[pcdTanner->ap.model].twistRateY) + 0x1000;
-
-					if (-iVar5 < 0x7f001)
-						iVar5 = (iVar5 * -0x1000) / iVar7;
-					else
-						iVar5 = -iVar5 / iVar7 << 0xc;
-
-					iVar7 = iVar1;
-
-					iVar4 = FixFloorSigned(iVar5, 6) * FixFloorSigned(iVar7, 6);
-					iVar7 = iVar3;
-
-					iVar5 = FixFloorSigned(iVar5, 6) * FixFloorSigned(iVar7, 6);
-					pcdTanner->st.n.linearVelocity[0] = pcdTanner->st.n.linearVelocity[0] + iVar4;
-					pcdTanner->st.n.linearVelocity[2] = pcdTanner->st.n.linearVelocity[2] + iVar5;
-
-					pcdTanner->hd.aacc[2] = pcdTanner->hd.aacc[2] - FIXEDH(iVar9 * iVar4);
-					pcdTanner->hd.aacc[0] = pcdTanner->hd.aacc[0] + FIXEDH(iVar9 * iVar5);
-
-					pcdTanner->hd.aacc[1] = (pcdTanner->hd.aacc[1] + FIXEDH(iVar12 * iVar4)) - FIXEDH(iVar11 * iVar5);
-
-					collisionResult.hit.vy = -collisionResult.hit.vy;
-				}
-
-				pcdTanner->hd.where.t[0] = iVar8 - FIXEDH(pcdTanner->st.n.linearVelocity[0]);
-				pcdTanner->hd.where.t[2] = iVar10 - FIXEDH(pcdTanner->st.n.linearVelocity[2]);
-
-				collisionResult.surfNormal.vx = iVar1;
-				collisionResult.surfNormal.vz = iVar3;
+				pcdTanner->hd.aacc[2] -= FIXEDH(lever[1] * reaction[0]);
+				pcdTanner->hd.aacc[0] += FIXEDH(lever[1] * reaction[2]);
+				pcdTanner->hd.aacc[1] += FIXEDH(lever[2] * reaction[0]) - FIXEDH(lever[0] * reaction[2]);
 			}
+
+			pcdTanner->hd.where.t[0] -= FIXEDH(pcdTanner->st.n.linearVelocity[0]);
+			pcdTanner->hd.where.t[2] -= FIXEDH(pcdTanner->st.n.linearVelocity[2]);
 		}
 		cp1--;
 	} while (cp1 >= car_data);
@@ -3652,37 +3625,37 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 // decompiled code
 // original method signature: 
 // int /*$ra*/ PingOutPed(struct PEDESTRIAN *pPed /*$a2*/)
- // line 3915, offset 0x000731f8
-	/* begin block 1 */
-		// Start line: 3916
-		// Start offset: 0x000731F8
-		// Variables:
-	// 		int px; // $a0
-	// 		int pz; // $v1
-	// 		int ps; // $a0
-	/* end block 1 */
-	// End offset: 0x00073270
-	// End Line: 3938
+// line 3915, offset 0x000731f8
+/* begin block 1 */
+// Start line: 3916
+// Start offset: 0x000731F8
+// Variables:
+// 		int px; // $a0
+// 		int pz; // $v1
+// 		int ps; // $a0
+/* end block 1 */
+// End offset: 0x00073270
+// End Line: 3938
 
-	/* begin block 2 */
-		// Start line: 23590
-	/* end block 2 */
-	// End Line: 23591
+/* begin block 2 */
+// Start line: 23590
+/* end block 2 */
+// End Line: 23591
 
-	/* begin block 3 */
-		// Start line: 24071
-	/* end block 3 */
-	// End Line: 24072
+/* begin block 3 */
+// Start line: 24071
+/* end block 3 */
+// End Line: 24072
 
-// [D]
+// [D] [T]
 int PingOutPed(PEDESTRIAN* pPed)
 {
 	int pz;
 	int px;
 	int ps;
 
-	px = (pPed->position).vx - player[0].pos[0];
-	pz = (pPed->position).vz - player[0].pos[2];
+	px = pPed->position.vx - player[0].pos[0];
+	pz = pPed->position.vz - player[0].pos[2];
 
 	ps = px * px + pz * pz;
 
@@ -3697,54 +3670,52 @@ int PingOutPed(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ SetupCivJump(struct PEDESTRIAN *pPed /*$s1*/, struct _CAR_DATA *cp /*$s0*/)
- // line 3946, offset 0x00071054
-	/* begin block 1 */
-		// Start line: 3947
-		// Start offset: 0x00071054
-		// Variables:
-	// 		long disp[4]; // stack offset -48
-	// 		long dir[4]; // stack offset -32
-	// 		int angle; // $s0
+// line 3946, offset 0x00071054
+/* begin block 1 */
+// Start line: 3947
+// Start offset: 0x00071054
+// Variables:
+// 		long disp[4]; // stack offset -48
+// 		long dir[4]; // stack offset -32
+// 		int angle; // $s0
 
-		/* begin block 1.1 */
-			// Start line: 3960
-			// Start offset: 0x000710C0
-			// Variables:
-		// 		short scale; // $a2
-		/* end block 1.1 */
-		// End offset: 0x000710E4
-		// End Line: 3967
+/* begin block 1.1 */
+// Start line: 3960
+// Start offset: 0x000710C0
+// Variables:
+// 		short scale; // $a2
+/* end block 1.1 */
+// End offset: 0x000710E4
+// End Line: 3967
 
-		/* begin block 1.2 */
-			// Start line: 4008
-			// Start offset: 0x000711E8
-		/* end block 1.2 */
-		// End offset: 0x000712AC
-		// End Line: 4027
-	/* end block 1 */
-	// End offset: 0x00071324
-	// End Line: 4040
+/* begin block 1.2 */
+// Start line: 4008
+// Start offset: 0x000711E8
+/* end block 1.2 */
+// End offset: 0x000712AC
+// End Line: 4027
+/* end block 1 */
+// End offset: 0x00071324
+// End Line: 4040
 
-	/* begin block 2 */
-		// Start line: 9290
-	/* end block 2 */
-	// End Line: 9291
+/* begin block 2 */
+// Start line: 9290
+/* end block 2 */
+// End Line: 9291
 
-	/* begin block 3 */
-		// Start line: 9330
-	/* end block 3 */
-	// End Line: 9331
+/* begin block 3 */
+// Start line: 9330
+/* end block 3 */
+// End Line: 9331
 
-// [D]
+// [D] [T]
 void SetupCivJump(PEDESTRIAN* pPed, _CAR_DATA* cp)
 {
-	int iVar1;
-	long lVar2;
-	int y;
-	int iVar3;
+	int dz;
 	short scale;
-	int x;
-	ushort uVar4;
+	int dx;
+	short angle;
+	long dir[4];
 
 	if (pPed->type != PED_ACTION_JUMP)
 	{
@@ -3753,63 +3724,63 @@ void SetupCivJump(PEDESTRIAN* pPed, _CAR_DATA* cp)
 
 		if (cp == &car_data[player[0].playerCarId])
 		{
-			scale = 0x1000;
-
 			if (player[0].horn.on != 0)
 				scale = 0x800;
+			else
+				scale = 0x1000;
 
 			NoteFelony(&felonyData, 1, scale);
 		}
 	}
 
 	pPed->type = PED_ACTION_JUMP;
-	pPed->flags = pPed->flags | 0x10;
+	pPed->flags |= 0x10;
 	pPed->fpAgitatedState = CivPedJump;
+
 	SetupPedMotionData(pPed);
 
 	if (cp == NULL)
 	{
 		if (bAvoidTanner == 0)
 		{
-			lVar2 = ratan2(pPed->position.vx - explosion[bAvoidBomb].pos.vx, pPed->position.vz - explosion[bAvoidBomb].pos.vz);
-			uVar4 = lVar2 - 0x800;
+			angle = ratan2(pPed->position.vx - explosion[bAvoidBomb].pos.vx, pPed->position.vz - explosion[bAvoidBomb].pos.vz) - 2048;
 		}
 		else
 		{
-			scale = 0x400;
+			dx = player[0].pPed->position.vx - pPed->position.vx;
+			dz = player[0].pPed->position.vz - pPed->position.vz;
 
+			dir[0] = player[0].pPed->speed * rcossin_tbl[(player[0].pPed->dir.vy - 0x800U & 0xfff) * 2 + 1];
+			dir[2] = player[0].pPed->speed * rcossin_tbl[(player[0].pPed->dir.vy - 0x800U & 0xfff) * 2];
+			
 			// [A] fuck....
-			if (FIXED(-((int)(player[0].pPed)->speed * (int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2 + 1])) *
-				(((player[0].pPed)->position).vx - (pPed->position).vx) +
-				FIXED((int)(player[0].pPed)->speed * (int)rcossin_tbl[((int)((player[0].pPed)->dir).vy - 0x800U & 0xfff) * 2]) *
-				(((player[0].pPed)->position).vz - (pPed->position).vz) + 0x800 < 0)
-			{
-				scale = -0x400;
-			}
+			if (FIXED(-dir[0]) * dx + FIXED(dir[2]) * dz + 0x800 < 0)
+				angle = -1024;
+			else
+				angle = 1024;
 
-			uVar4 = scale + ((player[0].pPed)->dir).vy;
+			angle += player[0].pPed->dir.vy;
 		}
 	}
 	else
 	{
-		x = (cp->hd).where.t[0] - (pPed->position).vx;
-		iVar3 = (cp->st).n.linearVelocity[2];
-		y = (cp->hd).where.t[2] - (pPed->position).vz;
-		iVar1 = -(cp->st).n.linearVelocity[0];
+		dx = cp->hd.where.t[0] - pPed->position.vx;
+		dz = cp->hd.where.t[2] - pPed->position.vz;
 
-		if ((iVar3 == 0) && (iVar1 == 0))
+		if (cp->st.n.linearVelocity[2] != 0 || cp->st.n.linearVelocity[0] != 0)
 		{
-			lVar2 = ratan2(y, x);
-			uVar4 = lVar2;
+			int carVelDisp;
+			carVelDisp = (cp->st.n.linearVelocity[2] * dx - cp->st.n.linearVelocity[0] * dz + 2048);
+			
+			angle = ((short)~(ushort)(carVelDisp >> 0x1c) >> 0xf & 0x800U) - ratan2(cp->st.n.linearVelocity[2], cp->st.n.linearVelocity[0]);
 		}
 		else
 		{
-			lVar2 = ratan2((cp->st).n.linearVelocity[2], (cp->st).n.linearVelocity[0]);
-			uVar4 = ((short)~(ushort)(iVar3 * x + iVar1 * y + 0x800 >> 0x1c) >> 0xf & 0x800U) - lVar2;
+			angle = ratan2(dz, dx);;
 		}
 	}
 
-	pPed->dir.vy = uVar4 & 0xfff;
+	pPed->dir.vy = angle & 0xfff;
 }
 
 
@@ -3817,31 +3788,31 @@ void SetupCivJump(PEDESTRIAN* pPed, _CAR_DATA* cp)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ CivPedJump(struct PEDESTRIAN *pPed /*$s0*/)
- // line 4047, offset 0x00072cf0
-	/* begin block 1 */
-		// Start line: 4048
-		// Start offset: 0x00072CF0
-	/* end block 1 */
-	// End offset: 0x00072DA0
-	// End Line: 4073
+// line 4047, offset 0x00072cf0
+/* begin block 1 */
+// Start line: 4048
+// Start offset: 0x00072CF0
+/* end block 1 */
+// End offset: 0x00072DA0
+// End Line: 4073
 
-	/* begin block 2 */
-		// Start line: 20349
-	/* end block 2 */
-	// End Line: 20350
+/* begin block 2 */
+// Start line: 20349
+/* end block 2 */
+// End Line: 20350
 
-	/* begin block 3 */
-		// Start line: 8094
-	/* end block 3 */
-	// End Line: 8095
+/* begin block 3 */
+// Start line: 8094
+/* end block 3 */
+// End Line: 8095
 
-// [D]
+// [D] [T]
 void CivPedJump(PEDESTRIAN* pPed)
 {
 	if (pPed->frame1 == 2)
-		pPed->speed = pPed->speed << 1;
+		pPed->speed *= 2;
 	else if (pPed->frame1 == 14)
-		pPed->speed = pPed->speed >> 1;
+		pPed->speed /= 2;
 
 	AnimatePed(pPed);
 
@@ -3863,18 +3834,18 @@ void CivPedJump(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ SetupCivPedWalk(struct PEDESTRIAN *pPed /*$s0*/)
- // line 4080, offset 0x00073270
-	/* begin block 1 */
-		// Start line: 24276
-	/* end block 1 */
-	// End Line: 24277
+// line 4080, offset 0x00073270
+/* begin block 1 */
+// Start line: 24276
+/* end block 1 */
+// End Line: 24277
 
-	/* begin block 2 */
-		// Start line: 24419
-	/* end block 2 */
-	// End Line: 24420
+/* begin block 2 */
+// Start line: 24419
+/* end block 2 */
+// End Line: 24420
 
-// [D]
+// [D] [T]
 void SetupCivPedWalk(PEDESTRIAN* pPed)
 {
 	pPed->flags |= 0x10;
@@ -3885,6 +3856,7 @@ void SetupCivPedWalk(PEDESTRIAN* pPed)
 		pPed->speed = 10;
 
 	SetupPedMotionData(pPed);
+
 	pPed->frame1 = 0;
 }
 
@@ -3893,80 +3865,68 @@ void SetupCivPedWalk(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ CivPedWalk(struct PEDESTRIAN *pPed /*$s0*/)
- // line 4101, offset 0x00071324
-	/* begin block 1 */
-		// Start line: 4102
-		// Start offset: 0x00071324
-		// Variables:
-	// 		int turn; // $a1
-	// 		int offset1; // $t0
-	// 		int offset2; // $v1
-	// 		int lookahead; // $s3
-	// 		int speed; // $s1
-	/* end block 1 */
-	// End offset: 0x000715FC
-	// End Line: 4182
+// line 4101, offset 0x00071324
+/* begin block 1 */
+// Start line: 4102
+// Start offset: 0x00071324
+// Variables:
+// 		int turn; // $a1
+// 		int offset1; // $t0
+// 		int offset2; // $v1
+// 		int lookahead; // $s3
+// 		int speed; // $s1
+/* end block 1 */
+// End offset: 0x000715FC
+// End Line: 4182
 
-	/* begin block 2 */
-		// Start line: 9615
-	/* end block 2 */
-	// End Line: 9616
+/* begin block 2 */
+// Start line: 9615
+/* end block 2 */
+// End Line: 9616
 
-	/* begin block 3 */
-		// Start line: 9677
-	/* end block 3 */
-	// End Line: 9678
+/* begin block 3 */
+// Start line: 9677
+/* end block 3 */
+// End Line: 9678
 
-// [D]
+// [D] [T]
 void CivPedWalk(PEDESTRIAN* pPed)
 {
-	short sVar2;
-	ushort uVar3;
-	uint uVar4;
+	int dir;
 	int turn;
-	int iVar5;
 
 	if ((pPed->flags & 0x10U) == 0)
 		SetupCivPedWalk(pPed);
 
-	iVar5 = pPed->speed;
+	if (pPed->finished_turn == 9)
+		dir = pPed->dir.vy + 2048;
+	else
+		dir = pPed->dir.vy + 1850;
 
-	if ((*(uint*)&pPed->speed & 0xffff00) == 0x90000)
-	{
-		sVar2 = pPed->dir.vy;
-		uVar4 = pPed->dir.vy + 2048;
-	}
-	else {
-		sVar2 = pPed->dir.vy;
-		uVar4 = pPed->dir.vy + 1850;
-	}
 	if ((pPed->flags & 2U) == 0)
 	{
-		turn = IsPavement((pPed->position).vx + ((int)rcossin_tbl[(uVar4 & 0xfff) * 2] >> 5),
-			(pPed->position).vy,
-			(pPed->position).vz + ((int)rcossin_tbl[(uVar4 & 0xfff) * 2 + 1] >> 5), pPed);
-
-		if (turn == 0)
+		if (IsPavement(pPed->position.vx + (rcossin_tbl[(dir & 0xfff) * 2] >> 5),
+			pPed->position.vy,
+			pPed->position.vz + (rcossin_tbl[(dir & 0xfff) * 2 + 1] >> 5), pPed) == 0)
 		{
-			if ((*(uint*)&pPed->speed & 0xffff00) == 0x90000)
+			if (pPed->finished_turn == 9)
 			{
-				uVar4 = (int)pPed->dir.vy + 0xa00U & 0xfff;
-				turn = IsPavement(
-					(pPed->position).vx + FIXED(rcossin_tbl[uVar4 * 2] * 0x80),
-					(pPed->position).vy,
-					(pPed->position).vz + FIXED(rcossin_tbl[uVar4 * 2 + 1] * 0x80),
-					(PEDESTRIAN*)0x0);
+				dir = pPed->dir.vy + 0xa00U & 0xfff;
 
-				if (turn == 0)
+				if (IsPavement(
+					pPed->position.vx + FIXED(rcossin_tbl[dir * 2] * 0x80),
+					pPed->position.vy,
+					pPed->position.vz + FIXED(rcossin_tbl[dir * 2 + 1] * 0x80), NULL) == 0)
+
 					pPed->flags &= ~0x2000;
 				else
 					pPed->flags |= 0x2000;
 			}
 
-			turn = -128;
-
-			if ((pPed->flags & 0x2000U) != 0)
+			if (pPed->flags & 0x2000)
 				turn = 128;
+			else
+				turn = -128;
 
 			if (pPed->doing_turn < 32)
 			{
@@ -3975,9 +3935,10 @@ void CivPedWalk(PEDESTRIAN* pPed)
 			}
 			else
 			{
-				uVar4 = pPed->dir.vy + 0x800U & 0xfff;
-				pPed->velocity.vx = FIXED(iVar5 * rcossin_tbl[uVar4 * 2]);
-				pPed->velocity.vz = FIXED(iVar5 * rcossin_tbl[uVar4 * 2 + 1]);
+				dir = pPed->dir.vy + 0x800U & 0xfff;
+
+				pPed->velocity.vx = FIXED(pPed->speed * rcossin_tbl[dir * 2]);
+				pPed->velocity.vz = FIXED(pPed->speed * rcossin_tbl[dir * 2 + 1]);
 			}
 			pPed->finished_turn = 0;
 		}
@@ -3987,20 +3948,21 @@ void CivPedWalk(PEDESTRIAN* pPed)
 
 			if (pPed->finished_turn++ > 8)
 			{
-				uVar3 = pPed->dir.vy + 0x200U & 0xfc00;
-				pPed->dir.vy = uVar3;
-				uVar4 = uVar3 + 0x800U & 0xfff;
-				pPed->velocity.vx = FIXED(iVar5 * rcossin_tbl[uVar4 * 2]);
-				sVar2 = rcossin_tbl[uVar4 * 2 + 1];
+				pPed->dir.vy += 0x200U & 0xfc00;
+
+				dir = pPed->dir.vy + 0x800U & 0xfff;
+
+				pPed->velocity.vx = FIXED(pPed->speed * rcossin_tbl[dir * 2]);
+				pPed->velocity.vz = FIXED(pPed->speed * rcossin_tbl[dir * 2 + 1]);
+
 				pPed->finished_turn = 9;
-				pPed->velocity.vz = FIXED(iVar5 * sVar2);
 			}
 		}
 	}
 	else
 	{
 		pPed->speed = 0;
-		pPed->dir.vy = sVar2 + pPed->head_rot;
+		pPed->dir.vy += pPed->head_rot;
 	}
 
 	AnimatePed(pPed);
@@ -4011,30 +3973,30 @@ void CivPedWalk(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ CivPedSit(struct PEDESTRIAN *pPed /*$a0*/)
- // line 4190, offset 0x00072ce8
-	/* begin block 1 */
-		// Start line: 4192
-		// Start offset: 0x00072CE8
-	/* end block 1 */
-	// End offset: 0x00072CF0
-	// End Line: 4208
+// line 4190, offset 0x00072ce8
+/* begin block 1 */
+// Start line: 4192
+// Start offset: 0x00072CE8
+/* end block 1 */
+// End offset: 0x00072CF0
+// End Line: 4208
 
-	/* begin block 2 */
-		// Start line: 20475
-	/* end block 2 */
-	// End Line: 20476
+/* begin block 2 */
+// Start line: 20475
+/* end block 2 */
+// End Line: 20476
 
-	/* begin block 3 */
-		// Start line: 20476
-	/* end block 3 */
-	// End Line: 20477
+/* begin block 3 */
+// Start line: 20476
+/* end block 3 */
+// End Line: 20477
 
-	/* begin block 4 */
-		// Start line: 20480
-	/* end block 4 */
-	// End Line: 20481
+/* begin block 4 */
+// Start line: 20480
+/* end block 4 */
+// End Line: 20481
 
-// [D]
+// [D] [T]
 void CivPedSit(PEDESTRIAN* pPed)
 {
 	pPed->frame1 = 0;
@@ -4045,39 +4007,40 @@ void CivPedSit(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ HandlePedestrians()
- // line 4221, offset 0x0007211c
-	/* begin block 1 */
-		// Start line: 4223
-		// Start offset: 0x0007211C
-	/* end block 1 */
-	// End offset: 0x0007215C
-	// End Line: 4457
+// line 4221, offset 0x0007211c
+/* begin block 1 */
+// Start line: 4223
+// Start offset: 0x0007211C
+/* end block 1 */
+// End offset: 0x0007215C
+// End Line: 4457
 
-	/* begin block 2 */
-		// Start line: 13906
-	/* end block 2 */
-	// End Line: 13907
+/* begin block 2 */
+// Start line: 13906
+/* end block 2 */
+// End Line: 13907
 
-	/* begin block 3 */
-		// Start line: 13907
-	/* end block 3 */
-	// End Line: 13908
+/* begin block 3 */
+// Start line: 13907
+/* end block 3 */
+// End Line: 13908
 
-	/* begin block 4 */
-		// Start line: 13925
-	/* end block 4 */
-	// End Line: 13926
+/* begin block 4 */
+// Start line: 13925
+/* end block 4 */
+// End Line: 13926
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void HandlePedestrians(void)
 {
-	if (gInGameCutsceneActive == 0 && NumPlayers == 1)
-	{
-		BuildCarCollisionBox();
-		ControlPedestrians();
-		PingInPedestrians();
-	}
+	if (gInGameCutsceneActive != 0 || NumPlayers != 1)
+		return;
+
+	BuildCarCollisionBox();
+	ControlPedestrians();
+	PingInPedestrians();
 }
 
 
@@ -4085,47 +4048,47 @@ void HandlePedestrians(void)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ PedestrianActionInit_WalkToTarget(struct PEDESTRIAN *pPed /*$s0*/)
- // line 4465, offset 0x0007283c
-	/* begin block 1 */
-		// Start line: 4466
-		// Start offset: 0x0007283C
-		// Variables:
-	// 		int dir; // $v1
-	/* end block 1 */
-	// End offset: 0x000728B8
-	// End Line: 4496
+// line 4465, offset 0x0007283c
+/* begin block 1 */
+// Start line: 4466
+// Start offset: 0x0007283C
+// Variables:
+// 		int dir; // $v1
+/* end block 1 */
+// End offset: 0x000728B8
+// End Line: 4496
 
-	/* begin block 2 */
-		// Start line: 18892
-	/* end block 2 */
-	// End Line: 18893
+/* begin block 2 */
+// Start line: 18892
+/* end block 2 */
+// End Line: 18893
 
-	/* begin block 3 */
-		// Start line: 8930
-	/* end block 3 */
-	// End Line: 8931
+/* begin block 3 */
+// Start line: 8930
+/* end block 3 */
+// End Line: 8931
 
-// [D]
+// [D] [T]
 void PedestrianActionInit_WalkToTarget(PEDESTRIAN* pPed)
 {
 	int dir;
 	dir = CalcPedestrianDirection(0, (pPed->position).vx, (pPed->position).vz, &pPed->target);
 
-	if (dir != 0)
-	{
-		pPed->last_dir = dir;
+	if (dir == 0)
+		return;
 
-		if (dir == 1)
-			pPed->dir.vy = 0x400;
-		else if (dir == 2)
-			pPed->dir.vy = 0xc00;
-		else if (dir == 4)
-			pPed->dir.vy = 0;
-		else if (dir == 8)
-			pPed->dir.vy = 0x800;
+	pPed->last_dir = dir;
 
-		CorrectPathPosition(pPed, (VECTOR*)&pPed->position);
-	}
+	if (dir == 1)
+		pPed->dir.vy = 1024;
+	else if (dir == 2)
+		pPed->dir.vy = 3072;
+	else if (dir == 4)
+		pPed->dir.vy = 0;
+	else if (dir == 8)
+		pPed->dir.vy = 2048;
+
+	CorrectPathPosition(pPed, (VECTOR*)&pPed->position);
 }
 
 
@@ -4133,40 +4096,39 @@ void PedestrianActionInit_WalkToTarget(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ CorrectPathPosition(struct PEDESTRIAN *pedestrian /*$a0*/, struct VECTOR *position /*$a1*/)
- // line 4508, offset 0x000715fc
-	/* begin block 1 */
-		// Start line: 4510
-		// Start offset: 0x000715FC
-		// Variables:
-	// 		struct VECTOR vec; // stack offset -16
-	/* end block 1 */
-	// End offset: 0x000715FC
-	// End Line: 4610
+// line 4508, offset 0x000715fc
+/* begin block 1 */
+// Start line: 4510
+// Start offset: 0x000715FC
+// Variables:
+// 		struct VECTOR vec; // stack offset -16
+/* end block 1 */
+// End offset: 0x000715FC
+// End Line: 4610
 
-	/* begin block 2 */
-		// Start line: 10180
-	/* end block 2 */
-	// End Line: 10181
+/* begin block 2 */
+// Start line: 10180
+/* end block 2 */
+// End Line: 10181
 
-	/* begin block 3 */
-		// Start line: 10507
-	/* end block 3 */
-	// End Line: 10508
+/* begin block 3 */
+// Start line: 10507
+/* end block 3 */
+// End Line: 10508
 
-	/* begin block 4 */
-		// Start line: 10508
-	/* end block 4 */
-	// End Line: 10509
+/* begin block 4 */
+// Start line: 10508
+/* end block 4 */
+// End Line: 10509
 
-	/* begin block 5 */
-		// Start line: 10608
-	/* end block 5 */
-	// End Line: 10609
+/* begin block 5 */
+// Start line: 10608
+/* end block 5 */
+// End Line: 10609
 
-// [D]
+// [D] [T]
 void CorrectPathPosition(PEDESTRIAN* pedestrian, VECTOR* position)
 {
-	return;
 }
 
 
@@ -4174,125 +4136,121 @@ void CorrectPathPosition(PEDESTRIAN* pedestrian, VECTOR* position)
 // decompiled code
 // original method signature: 
 // int /*$ra*/ CalcPedestrianDirection(int last_dir /*$a0*/, int wx /*$s5*/, int wz /*$s6*/, struct VECTOR *target /*$s3*/)
- // line 4619, offset 0x00071608
-	/* begin block 1 */
-		// Start line: 4620
-		// Start offset: 0x00071608
-		// Variables:
-	// 		int dir; // $s2
-	// 		int num; // $s1
-	// 		int rx; // $v1
-	// 		int rz; // $a0
-	// 		int mask; // $s0
+// line 4619, offset 0x00071608
+/* begin block 1 */
+// Start line: 4620
+// Start offset: 0x00071608
+// Variables:
+// 		int dir; // $s2
+// 		int num; // $s1
+// 		int rx; // $v1
+// 		int rz; // $a0
+// 		int mask; // $s0
 
-		/* begin block 1.1 */
-			// Start line: 4669
-			// Start offset: 0x000716C0
-		/* end block 1.1 */
-		// End offset: 0x0007170C
-		// End Line: 4681
-	/* end block 1 */
-	// End offset: 0x000717AC
-	// End Line: 4734
+/* begin block 1.1 */
+// Start line: 4669
+// Start offset: 0x000716C0
+/* end block 1.1 */
+// End offset: 0x0007170C
+// End Line: 4681
+/* end block 1 */
+// End offset: 0x000717AC
+// End Line: 4734
 
-	/* begin block 2 */
-		// Start line: 10729
-	/* end block 2 */
-	// End Line: 10730
+/* begin block 2 */
+// Start line: 10729
+/* end block 2 */
+// End Line: 10730
 
-	/* begin block 3 */
-		// Start line: 10737
-	/* end block 3 */
-	// End Line: 10738
+/* begin block 3 */
+// Start line: 10737
+/* end block 3 */
+// End Line: 10738
 
-// [D]
+// [D] [T]
 int CalcPedestrianDirection(int last_dir, int wx, int wz, VECTOR* target)
 {
-	long lVar1;
-	int iVar2;
-	uint uVar3;
-	uint uVar4;
-	uint uVar5;
-
-	uVar5 = pedestrian_roads.west == -20;
-	uVar4 = pedestrian_roads.west == -20;
+	int num;
+	int rx;
+	int rz;
+	int dir;
+	int mask;
+	int cnt;
+	
+	mask = pedestrian_roads.west == -20;
+	dir = mask;
 
 	if (pedestrian_roads.east == -20)
 	{
-		uVar5 = uVar5 | 2;
-		uVar4++;
+		mask |= 2;
+		dir++;
 	}
 
 	if (pedestrian_roads.north == -20)
 	{
-		uVar5 = uVar5 | 4;
-		uVar4++;
+		mask |= 4;
+		dir++;
 	}
 
 	if (pedestrian_roads.south == -20)
 	{
-		uVar5 = uVar5 | 8;
-		uVar4++;
+		mask |= 8;
+		dir++;
 	}
 
-	uVar3 = uVar5 & last_dir;
+	num = mask & last_dir;
 
-	if ((uVar3 == 0) && (uVar3 = uVar5, 1 < uVar4))
+	if (num == 0)
 	{
-		lVar1 = Random2(0);
-		uVar3 = 0x10;
-
-		if (uVar4 == 0)
-			trap(7);
-
-		iVar2 = lVar1 % uVar4 + 1;
-
-		while (iVar2 != 0)
+		if(dir > 1)
 		{
-			uVar3 = (int)uVar3 >> 1;
-			if ((uVar5 & uVar3) != 0)
-				iVar2--;
-		}
+			num = 16;
 
-		uVar3 = uVar5 & uVar3;
-	}
+			cnt = Random2(0) % dir + 1;
 
-	uVar4 = wx & 0xfffffc00;
-	uVar5 = wz & 0xfffffc00;
-
-	if (uVar3 == 2)
-	{
-		iVar2 = uVar4 + 0x600;
-	}
-	else
-	{
-		if (2 < uVar3)
-		{
-			if (uVar3 == 4)
+			while (cnt != 0)
 			{
-				iVar2 = uVar5 + 0x600;
-			}
-			else
-			{
-				iVar2 = uVar5 - 0x200;
-				if (uVar3 != 8)
-					goto LAB_0007177c;
+				num >>= 1;
+
+				if (mask & num)
+					cnt--;
 			}
 
-			target->vx = uVar4 + 0x200;
-			target->vz = iVar2;
-
-			goto LAB_0007177c;
+			num = mask & num;
 		}
-		iVar2 = uVar4 - 0x200;
-		if (uVar3 != 1)
-			goto LAB_0007177c;
+		else
+		{
+			num = mask;
+		}
 	}
-	target->vx = iVar2;
-	target->vz = uVar5 + 0x200;
-LAB_0007177c:
+
+	rx = wx & 0xfffffc00;
+	rz = wz & 0xfffffc00;
+
+	if (num == 1)
+	{
+		target->vx = rx - 512;
+		target->vz = rz + 512;
+	}
+	else if (num == 2)
+	{
+		target->vx = rx + 1536;
+		target->vz = rz + 512;
+	}
+	else if (num == 4)
+	{
+		target->vx = rx + 512;
+		target->vz = rz + 1536;
+	}
+	else if (num == 8)
+	{
+		target->vx = rx + 512;
+		target->vz = rz - 512;
+	}
+
 	target->vy = 0;
-	return uVar3;
+
+	return num;
 }
 
 
@@ -4300,33 +4258,33 @@ LAB_0007177c:
 // decompiled code
 // original method signature: 
 // int /*$ra*/ IsPavement(int x /*$a0*/, int y /*$a1*/, int z /*$a2*/, struct PEDESTRIAN *pPed /*$s0*/)
- // line 4845, offset 0x000725b8
-	/* begin block 1 */
-		// Start line: 4846
-		// Start offset: 0x000725B8
-		// Variables:
-	// 		struct VECTOR vec; // stack offset -24
-	// 		int r; // $v1
-	/* end block 1 */
-	// End offset: 0x00072644
-	// End Line: 4917
+// line 4845, offset 0x000725b8
+/* begin block 1 */
+// Start line: 4846
+// Start offset: 0x000725B8
+// Variables:
+// 		struct VECTOR vec; // stack offset -24
+// 		int r; // $v1
+/* end block 1 */
+// End offset: 0x00072644
+// End Line: 4917
 
-	/* begin block 2 */
-		// Start line: 18844
-	/* end block 2 */
-	// End Line: 18845
+/* begin block 2 */
+// Start line: 18844
+/* end block 2 */
+// End Line: 18845
 
-	/* begin block 3 */
-		// Start line: 9690
-	/* end block 3 */
-	// End Line: 9691
+/* begin block 3 */
+// Start line: 9690
+/* end block 3 */
+// End Line: 9691
 
-	/* begin block 4 */
-		// Start line: 18854
-	/* end block 4 */
-	// End Line: 18855
+/* begin block 4 */
+// Start line: 18854
+/* end block 4 */
+// End Line: 18855
 
-// [D] [A] might be incorrect
+// [D] [T]
 int IsPavement(int x, int y, int z, PEDESTRIAN* pPed)
 {
 	int r;
@@ -4338,10 +4296,9 @@ int IsPavement(int x, int y, int z, PEDESTRIAN* pPed)
 	r = GetSurfaceIndex(&v);
 
 	if (r == -20)
-	{
 		return (RoadInCell(&v) != 0);
-	}
-	else if (pPed)
+
+	if (pPed)
 	{
 		if (r != -26 && r != -23 && r != -32)
 			return 0;
@@ -4357,46 +4314,51 @@ int IsPavement(int x, int y, int z, PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ SetPedestrianTurn(struct PEDESTRIAN *pedestrian /*$a0*/, int turn /*$a1*/)
- // line 4924, offset 0x00072500
-	/* begin block 1 */
-		// Start line: 4925
-		// Start offset: 0x00072500
-		// Variables:
-	// 		int dir; // $a2
-	// 		int speed; // $v1
-	/* end block 1 */
-	// End offset: 0x00072584
-	// End Line: 4935
+// line 4924, offset 0x00072500
+/* begin block 1 */
+// Start line: 4925
+// Start offset: 0x00072500
+// Variables:
+// 		int dir; // $a2
+// 		int speed; // $v1
+/* end block 1 */
+// End offset: 0x00072584
+// End Line: 4935
 
-	/* begin block 2 */
-		// Start line: 15021
-	/* end block 2 */
-	// End Line: 15022
+/* begin block 2 */
+// Start line: 15021
+/* end block 2 */
+// End Line: 15022
 
-	/* begin block 3 */
-		// Start line: 18487
-	/* end block 3 */
-	// End Line: 18488
+/* begin block 3 */
+// Start line: 18487
+/* end block 3 */
+// End Line: 18488
 
-	/* begin block 4 */
-		// Start line: 18488
-	/* end block 4 */
-	// End Line: 18489
+/* begin block 4 */
+// Start line: 18488
+/* end block 4 */
+// End Line: 18489
 
-// [D]
+// [D] [T]
 void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
 {
-	int uVar6;
+	int speed;
+	int dir;
 
-	pedestrian->dir.vy = pedestrian->dir.vy + turn & 0xfff;
+	dir = pedestrian->dir.vy + turn & 0xfff;
 
-	uVar6 = uVar6 + 0x800 & 0xfff;
+	pedestrian->dir.vy = dir;
 
-	pedestrian->position.vz = pedestrian->position.vz - pedestrian->velocity.vz;
-	pedestrian->position.vx = pedestrian->position.vx - pedestrian->velocity.vx;
+	dir += 0x800 & 0xfff;
 
-	pedestrian->velocity.vx = FIXED(pedestrian->speed * rcossin_tbl[uVar6 * 2]);
-	pedestrian->velocity.vz = FIXED(pedestrian->speed * rcossin_tbl[uVar6 * 2 + 1]);
+	pedestrian->position.vz -= pedestrian->velocity.vz;
+	pedestrian->position.vx -= pedestrian->velocity.vx;
+
+	speed = pedestrian->speed;
+	
+	pedestrian->velocity.vx = FIXEDH(speed * rcossin_tbl[dir * 2]);
+	pedestrian->velocity.vz = FIXEDH(speed * rcossin_tbl[dir * 2 + 1]);
 }
 
 
@@ -4404,80 +4366,88 @@ void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
 // decompiled code
 // original method signature: 
 // struct SEATED_PEDESTRIANS * /*$ra*/ FindSeated()
- // line 4943, offset 0x00072644
-	/* begin block 1 */
-		// Start line: 4945
-		// Start offset: 0x00072644
-		// Variables:
-	// 		struct SEATED_PEDESTRIANS *seatedptr; // $s0
+// line 4943, offset 0x00072644
+/* begin block 1 */
+// Start line: 4945
+// Start offset: 0x00072644
+// Variables:
+// 		struct SEATED_PEDESTRIANS *seatedptr; // $s0
 
-		/* begin block 1.1 */
-			// Start line: 4950
-			// Start offset: 0x0007266C
-			// Variables:
-		// 		int dx; // $v1
-		// 		int dz; // $v0
-		// 		int distsqr; // $v1
-		// 		int count1; // $a2
-		/* end block 1.1 */
-		// End offset: 0x00072724
-		// End Line: 4975
-	/* end block 1 */
-	// End offset: 0x00072738
-	// End Line: 4977
+/* begin block 1.1 */
+// Start line: 4950
+// Start offset: 0x0007266C
+// Variables:
+// 		int dx; // $v1
+// 		int dz; // $v0
+// 		int distsqr; // $v1
+// 		int count1; // $a2
+/* end block 1.1 */
+// End offset: 0x00072724
+// End Line: 4975
+/* end block 1 */
+// End offset: 0x00072738
+// End Line: 4977
 
-	/* begin block 2 */
-		// Start line: 19027
-	/* end block 2 */
-	// End Line: 19028
+/* begin block 2 */
+// Start line: 19027
+/* end block 2 */
+// End Line: 19028
 
-	/* begin block 3 */
-		// Start line: 19054
-	/* end block 3 */
-	// End Line: 19055
+/* begin block 3 */
+// Start line: 19054
+/* end block 3 */
+// End Line: 19055
 
-	/* begin block 4 */
-		// Start line: 19055
-	/* end block 4 */
-	// End Line: 19056
+/* begin block 4 */
+// Start line: 19055
+/* end block 4 */
+// End Line: 19056
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 SEATED_PEDESTRIANS* FindSeated(void)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
+	int dz;
+	int dx;
+	int count1;
 	SEATED_PEDESTRIANS* seatedptr;
 
-	if (seated_pedestrian)
+	if (!seated_pedestrian)
+		return NULL;
+
+	if (seated_pedestrian->rotation == 9999)
+		return NULL;
+
+	count1 = 3;
+
+	do
 	{
-		if (seated_pedestrian->rotation == 9999)
-			return NULL;
+		seatedptr = seated_pedestrian + seated_count;
+		seated_count++;
 
-		iVar3 = 3;
+		if (seatedptr->rotation == 9999)
+		{
+			seated_count = 0;
+			seatedptr = seated_pedestrian;
+		}
 
-		do {
-			seatedptr = seated_pedestrian + seated_count;
-			seated_count++;
+		dx = FIXED(seatedptr->x - player[0].pos[0]);
+		dz = FIXED(seatedptr->z - player[0].pos[2]);
 
-			if (seatedptr->rotation == 9999)
-			{
-				seated_count = 0;
-				seatedptr = seated_pedestrian;
-			}
-
-			if (seatedptr->index == 0 &&
-				(iVar2 = FIXED(seatedptr->x - player[0].pos[0]), iVar1 = FIXED(seatedptr->z - player[0].pos[2]),
-					iVar3 = iVar3 + -1, (iVar2 * iVar2 + iVar1 * iVar1) - 0xbU < 0x1d))
+		if (seatedptr->index == 0)
+		{
+			count1--;
+		
+			if((dx * dx + dz * dz) - 11U < 29)
 			{
 				add_seated(seatedptr, seated_count);
 				return seatedptr;
 			}
+		}
 
-		} while (iVar3 != 0);
-	}
+	} while (count1 != 0);
+
 	return NULL;
 }
 
@@ -4486,73 +4456,72 @@ SEATED_PEDESTRIANS* FindSeated(void)
 // decompiled code
 // original method signature: 
 // struct SEATED_PEDESTRIANS * /*$ra*/ FindTannerASeat(struct PEDESTRIAN *pPed /*$t4*/)
- // line 4984, offset 0x000717ac
-	/* begin block 1 */
-		// Start line: 4985
-		// Start offset: 0x000717AC
-		// Variables:
-	// 		struct SEATED_PEDESTRIANS *seatedptr; // $a2
-	// 		struct SEATED_PEDESTRIANS *theOne; // $t1
-	// 		int dx; // $a0
-	// 		int dz; // $v1
-	// 		int distsqr; // $v0
-	// 		int bestSqr; // $t2
-	/* end block 1 */
-	// End offset: 0x000718C8
-	// End Line: 5023
+// line 4984, offset 0x000717ac
+/* begin block 1 */
+// Start line: 4985
+// Start offset: 0x000717AC
+// Variables:
+// 		struct SEATED_PEDESTRIANS *seatedptr; // $a2
+// 		struct SEATED_PEDESTRIANS *theOne; // $t1
+// 		int dx; // $a0
+// 		int dz; // $v1
+// 		int distsqr; // $v0
+// 		int bestSqr; // $t2
+/* end block 1 */
+// End offset: 0x000718C8
+// End Line: 5023
 
-	/* begin block 2 */
-		// Start line: 11491
-	/* end block 2 */
-	// End Line: 11492
+/* begin block 2 */
+// Start line: 11491
+/* end block 2 */
+// End Line: 11492
 
-	/* begin block 3 */
-		// Start line: 11493
-	/* end block 3 */
-	// End Line: 11494
+/* begin block 3 */
+// Start line: 11493
+/* end block 3 */
+// End Line: 11494
 
-// [D]
+// [D] [T]
 SEATED_PEDESTRIANS* FindTannerASeat(PEDESTRIAN* pPed)
 {
-	int iVar1;
-	int iVar2;
+	int dx, dz;
+	int distSqr;
+	int bestSqr;
 	SEATED_PEDESTRIANS* seatedptr;
 	SEATED_PEDESTRIANS* theOne;
-	int iVar5;
-
+	
 	theOne = NULL;
-	iVar5 = 0x1000;
+	bestSqr = 4096;
 	seated_count = 0;
 
 	if (seated_pedestrian->rotation != 9999)
 	{
 		seatedptr = seated_pedestrian;
 		seated_count = 0;
-		iVar1 = 0;
-		do {
-			iVar1 = seatedptr->x - pPed->position.vx;
+
+		do
+		{
+			dx = ABS(seatedptr->x - pPed->position.vx);
+			dz = ABS(seatedptr->z - pPed->position.vz);
+			
 			seated_count++;
 
-			if (iVar1 < 0)
-				iVar1 = pPed->position.vx - seatedptr->x;
-
-			iVar2 = seatedptr->z - pPed->position.vz;
-
-			if (iVar2 < 0)
-				iVar2 = pPed->position.vz - seatedptr->z;
-
-			if (((iVar1 < 900) && (iVar2 < 900)) &&
-				(iVar1 = FIXED(iVar1 * iVar1 + iVar2 * iVar2), iVar1 < iVar5))
+			if (dx < 900 && dz < 900)
 			{
-				theOne = seatedptr;
-				iVar5 = iVar1;
+				distSqr = FIXED(dx * dx + dz * dz);
+	
+				if(distSqr < bestSqr)
+				{
+					theOne = seatedptr;
+					bestSqr = distSqr;
+				}
 			}
 
 			seatedptr++;
 		} while (seatedptr->rotation != 9999);
 	}
 
-	if (iVar5 < 6 && theOne)
+	if (bestSqr < 6 && theOne)
 	{
 		pPed->dir.vy = theOne->rotation;
 		pPed->position.vx = theOne->x;
@@ -4569,38 +4538,37 @@ SEATED_PEDESTRIANS* FindTannerASeat(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ add_seated(struct SEATED_PEDESTRIANS *seatedptr /*$s0*/, int seat_index /*$s2*/)
- // line 5031, offset 0x000718c8
-	/* begin block 1 */
-		// Start line: 5032
-		// Start offset: 0x000718C8
-		// Variables:
-	// 		struct PEDESTRIAN *pedestrian; // $s1
-	// 		int index; // $v0
-	/* end block 1 */
-	// End offset: 0x00071A44
-	// End Line: 5076
+// line 5031, offset 0x000718c8
+/* begin block 1 */
+// Start line: 5032
+// Start offset: 0x000718C8
+// Variables:
+// 		struct PEDESTRIAN *pedestrian; // $s1
+// 		int index; // $v0
+/* end block 1 */
+// End offset: 0x00071A44
+// End Line: 5076
 
-	/* begin block 2 */
-		// Start line: 11581
-	/* end block 2 */
-	// End Line: 11582
+/* begin block 2 */
+// Start line: 11581
+/* end block 2 */
+// End Line: 11582
 
-	/* begin block 3 */
-		// Start line: 11590
-	/* end block 3 */
-	// End Line: 11591
+/* begin block 3 */
+// Start line: 11590
+/* end block 3 */
+// End Line: 11591
 
-	/* begin block 4 */
-		// Start line: 11596
-	/* end block 4 */
-	// End Line: 11597
+/* begin block 4 */
+// Start line: 11596
+/* end block 4 */
+// End Line: 11597
 
-// [D]
+// [D] [T]
 void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 {
 	PEDESTRIAN* pedptr;
-	long lVar3;
-	long lVar4;
+	long rnd;
 
 	if (num_pedestrians < 20)
 	{
@@ -4610,6 +4578,7 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 			return;
 
 		seatedptr->index = 2;
+	
 		pedptr->type = PED_ACTION_CIVSIT;
 		pedptr->speed = 0;
 		pedptr->velocity.vx = 0;
@@ -4619,21 +4588,22 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 		pedptr->position.vx = seatedptr->x;
 		pedptr->position.vz = seatedptr->z;
 		pedptr->position.vy = player[0].pos[1];
+		
 		pedptr->position.vy = -75 - MapHeight((VECTOR*)&pedptr->position);
+
 		pedptr->index = 1;
-		pedptr->seat_index = (char)seat_index;
+		pedptr->seat_index = seat_index;
 		pedptr->pedType = CIVILIAN;
+	
 		SetupPedestrian(pedptr);
 
 		pedptr->fpAgitatedState = NULL;
 		pedptr->fpRestState = CivPedSit;
 
-		lVar3 = Random2(0);
-		lVar4 = Random2(0);
-		pedptr->pallet = lVar3 + (lVar3 / 5) * -5 + (lVar4 + (lVar4 / 5) * -5) * 16;
-		lVar3 = Random2(0);
+		pedptr->pallet = (Random2(0) % 5) + (Random2(0) % 5) * 16;
+		rnd = Random2(0);
 
-		if ((lVar3 / 6) * 6 == lVar3 - 3)
+		if ((rnd / 6) * 6 == rnd - 3)
 			pedptr->flags |= 0x4000;
 	}
 }
@@ -4643,21 +4613,21 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ set_coll_box(int index /*$t2*/, struct _CAR_DATA *cp /*$t0*/, int offset /*$t3*/)
- // line 5084, offset 0x00071a5c
-	/* begin block 1 */
-		// Start line: 5085
-		// Start offset: 0x00071A5C
-		// Variables:
-	// 		struct VECTOR BoxCentre; // stack offset -16
-	// 		int boxsize; // $t1
-	/* end block 1 */
-	// End offset: 0x00071B74
-	// End Line: 5110
+// line 5084, offset 0x00071a5c
+/* begin block 1 */
+// Start line: 5085
+// Start offset: 0x00071A5C
+// Variables:
+// 		struct VECTOR BoxCentre; // stack offset -16
+// 		int boxsize; // $t1
+/* end block 1 */
+// End offset: 0x00071B74
+// End Line: 5110
 
-	/* begin block 2 */
-		// Start line: 11714
-	/* end block 2 */
-	// End Line: 11715
+/* begin block 2 */
+// Start line: 11714
+/* end block 2 */
+// End Line: 11715
 
 CAR_COLLISION_BOX collision_box[8];
 _CAR_DATA* collision_car_ptr[8];
@@ -4665,45 +4635,38 @@ _CAR_DATA* collision_car_ptr[8];
 // [D]
 void set_coll_box(int index, _CAR_DATA* cp, int offset)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
+	int isPlayerCar;
+	int boxSize;
+
 	VECTOR BoxCentre;
 
-	if (8 < index)
+	if (index >= 8)
 		return;
 
-	iVar5 = 400;
+	boxSize = 400;
 
-	if (player[0].horn.on != 0)
+	isPlayerCar = (cp == &car_data[player[0].playerCarId]);
+	
+	if (player[0].horn.on)
 	{
-		iVar5 = 260;
-
-		if (cp != &car_data[player[0].playerCarId])
-			goto LAB_00071b00;
-
-		iVar5 = 1200;
+		if (isPlayerCar)
+			boxSize = 1200;
+		else
+			boxSize = 260;
 	}
 
-	if (cp != car_data + player[0].playerCarId)
-		iVar5 = iVar5 - 140;
-
-LAB_00071b00:
-	iVar1 = cp->st.n.linearVelocity[0];
-	iVar2 = cp->hd.where.t[0];
-	iVar4 = cp->st.n.linearVelocity[2];
-	iVar3 = cp->hd.where.t[2];
+	if (!isPlayerCar)
+		boxSize -= 140;
 
 	collision_car_ptr[index] = cp;
-	iVar2 = iVar2 + (iVar1 >> (offset & 0x1fU));
-	iVar3 = iVar3 + (iVar4 >> (offset & 0x1fU));
 
-	collision_box[index].min_x = iVar2 - iVar5;
-	collision_box[index].min_z = iVar3 - iVar5;
-	collision_box[index].max_x = iVar2 + iVar5;
-	collision_box[index].max_z = iVar3 + iVar5;
+	BoxCentre.vx = cp->hd.where.t[0] + (cp->st.n.linearVelocity[0] >> (offset & 0x1fU));
+	BoxCentre.vz = cp->hd.where.t[2] + (cp->st.n.linearVelocity[2] >> (offset & 0x1fU));
+
+	collision_box[index].min_x = BoxCentre.vx - boxSize;
+	collision_box[index].min_z = BoxCentre.vz - boxSize;
+	collision_box[index].max_x = BoxCentre.vx + boxSize;
+	collision_box[index].max_z = BoxCentre.vz + boxSize;
 }
 
 
@@ -4711,42 +4674,42 @@ LAB_00071b00:
 // decompiled code
 // original method signature: 
 // void /*$ra*/ BuildCarCollisionBox()
- // line 5118, offset 0x00071b7c
-	/* begin block 1 */
-		// Start line: 5120
-		// Start offset: 0x00071B7C
-		// Variables:
-	// 		struct _CAR_DATA *cp; // $s3
-	// 		int count1; // $s4
-	// 		int i; // $t1
+// line 5118, offset 0x00071b7c
+/* begin block 1 */
+// Start line: 5120
+// Start offset: 0x00071B7C
+// Variables:
+// 		struct _CAR_DATA *cp; // $s3
+// 		int count1; // $s4
+// 		int i; // $t1
 
-		/* begin block 1.1 */
-			// Start line: 5146
-			// Start offset: 0x00071CBC
-			// Variables:
-		// 		int x; // $a0
-		// 		int z; // $a2
-		/* end block 1.1 */
-		// End offset: 0x00071D58
-		// End Line: 5155
-	/* end block 1 */
-	// End offset: 0x00071E0C
-	// End Line: 5171
+/* begin block 1.1 */
+// Start line: 5146
+// Start offset: 0x00071CBC
+// Variables:
+// 		int x; // $a0
+// 		int z; // $a2
+/* end block 1.1 */
+// End offset: 0x00071D58
+// End Line: 5155
+/* end block 1 */
+// End offset: 0x00071E0C
+// End Line: 5171
 
-	/* begin block 2 */
-		// Start line: 11805
-	/* end block 2 */
-	// End Line: 11806
+/* begin block 2 */
+// Start line: 11805
+/* end block 2 */
+// End Line: 11806
 
-	/* begin block 3 */
-		// Start line: 11806
-	/* end block 3 */
-	// End Line: 11807
+/* begin block 3 */
+// Start line: 11806
+/* end block 3 */
+// End Line: 11807
 
-	/* begin block 4 */
-		// Start line: 11808
-	/* end block 4 */
-	// End Line: 11809
+/* begin block 4 */
+// Start line: 11808
+/* end block 4 */
+// End Line: 11809
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
@@ -4755,77 +4718,72 @@ CAR_COLLISION_BOX tanner_collision_box;
 int num_extra_boxes_set;
 int collision_boxes_set;
 
-// [D]
+// [D] [T]
 void BuildCarCollisionBox(void)
 {
-	CAR_COLLISION_BOX* pCVar1;
-	CAR_COLLISION_BOX* pCVar2;
-	uint uVar3;
-	int iVar4;
+	CAR_COLLISION_BOX* cbox;
+	int dir;
+	int vx, vz;
 	int index;
-	_ExOBJECT* p_Var5;
+	_ExOBJECT* expl;
 	_CAR_DATA* cp;
 
-	iVar4 = (int)player[0].playerCarId;
-
-	if (iVar4 != -1) // [A] ASan bug fix
+	if (player[0].playerCarId != -1) // [A] ASan bug fix
 	{
-		set_coll_box(0, car_data + iVar4, 8);
-		set_coll_box(1, car_data + iVar4, 9);
+		set_coll_box(0, &car_data[player[0].playerCarId], 8);
+		set_coll_box(1, &car_data[player[0].playerCarId], 9);
 	}
 
-	iVar4 = 2;
 	cp = car_data + (CameraCnt & 3);
-	index = iVar4;
 
-	if (cp < car_data + 20)
+	collision_boxes_set = 2;
+
+	while (cp < car_data + MAX_CARS)
 	{
-		do {
-			iVar4 = index;
+		if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
+		{
+			set_coll_box(collision_boxes_set, cp, 8);
+			collision_boxes_set++;
+		}
 
-			if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
-			{
-				iVar4 = index + 1;
-				set_coll_box(index, cp, 8);
-			}
-
-			cp = cp + 4; // [A] WTF?
-			index = iVar4;
-		} while (cp < car_data + 20);
+		cp += 4; // [A] WTF?
 	}
 
 	if (player[0].playerType == 2)
 	{
-		uVar3 = (int)player[0].pPed->dir.vy - 0x800U & 0xfff;
+		dir = player[0].pPed->dir.vy - 0x800U & 0xfff;
 
-		index = FIXED(player[0].pPed->speed * (int)rcossin_tbl[uVar3 * 2] * 4);
-		tanner_collision_box.min_x = ((player[0].pPed)->position).vx + index + -148;
-		tanner_collision_box.max_x = ((player[0].pPed)->position).vx + index + 148;
-
-		index = FIXED(player[0].pPed->speed * (int)rcossin_tbl[uVar3 * 2 + 1] * 4);
-		tanner_collision_box.min_z = ((player[0].pPed)->position).vz + index + -148;
-		tanner_collision_box.max_z = ((player[0].pPed)->position).vz + index + 148;
+		vx = FIXED(player[0].pPed->speed * rcossin_tbl[dir * 2] * 4);
+		vz = FIXED(player[0].pPed->speed * rcossin_tbl[dir * 2 + 1] * 4);
+		
+		tanner_collision_box.min_x = player[0].pPed->position.vx + vx - 148;
+		tanner_collision_box.max_x = player[0].pPed->position.vx + vx + 148;
+		tanner_collision_box.min_z = player[0].pPed->position.vz + vz - 148;
+		tanner_collision_box.max_z = player[0].pPed->position.vz + vz + 148;
 	}
 
 	num_extra_boxes_set = 0;
-	p_Var5 = explosion;
+	expl = explosion;
+	
 	index = 4;
-	collision_boxes_set = iVar4;
-	do {
-		if (0x7ff < p_Var5->time) {
-			iVar4 = (p_Var5->pos).vx;
-			extra_collision_boxes[num_extra_boxes_set].min_x = iVar4 - 1952;
-			extra_collision_boxes[num_extra_boxes_set].max_x = iVar4 + 1952;
-			pCVar1 = extra_collision_boxes + num_extra_boxes_set;
-			pCVar2 = extra_collision_boxes + num_extra_boxes_set;
-			iVar4 = (p_Var5->pos).vz;
-			num_extra_boxes_set = num_extra_boxes_set + 1;
-			pCVar1->min_z = iVar4 - 1952;
-			pCVar2->max_z = iVar4 + 1952;
+	do
+	{
+		if (expl->time >= 2048)
+		{
+			cbox = extra_collision_boxes + num_extra_boxes_set;
+			
+			cbox->min_x = expl->pos.vx - 1952;
+			cbox->max_x = expl->pos.vx + 1952;
+
+			cbox->min_z = expl->pos.vz - 1952;
+			cbox->max_z = expl->pos.vz + 1952;
+
+			num_extra_boxes_set++;
 		}
-		index = index + -1;
-		p_Var5 = p_Var5 + 1;
-	} while (-1 < index);
+
+		index--;
+		expl++;
+	} while (index > -1);
 }
 
 
@@ -4833,84 +4791,79 @@ void BuildCarCollisionBox(void)
 // decompiled code
 // original method signature: 
 // struct _CAR_DATA * /*$ra*/ CheckForCar(struct PEDESTRIAN *pedestrian /*$s3*/)
- // line 5178, offset 0x00072738
-	/* begin block 1 */
-		// Start line: 5179
-		// Start offset: 0x00072738
-		// Variables:
-	// 		int count; // $s0
+// line 5178, offset 0x00072738
+/* begin block 1 */
+// Start line: 5179
+// Start offset: 0x00072738
+// Variables:
+// 		int count; // $s0
 
-		/* begin block 1.1 */
-			// Start line: 5183
-			// Start offset: 0x00072770
-		/* end block 1.1 */
-		// End offset: 0x00072790
-		// End Line: 5204
+/* begin block 1.1 */
+// Start line: 5183
+// Start offset: 0x00072770
+/* end block 1.1 */
+// End offset: 0x00072790
+// End Line: 5204
 
-		/* begin block 1.2 */
-			// Start line: 5206
-			// Start offset: 0x000727B4
-		/* end block 1.2 */
-		// End offset: 0x000727B4
-		// End Line: 5213
+/* begin block 1.2 */
+// Start line: 5206
+// Start offset: 0x000727B4
+/* end block 1.2 */
+// End offset: 0x000727B4
+// End Line: 5213
 
-		/* begin block 1.3 */
-			// Start line: 5217
-			// Start offset: 0x00072800
-		/* end block 1.3 */
-		// End offset: 0x0007281C
-		// End Line: 5221
-	/* end block 1 */
-	// End offset: 0x0007283C
-	// End Line: 5223
+/* begin block 1.3 */
+// Start line: 5217
+// Start offset: 0x00072800
+/* end block 1.3 */
+// End offset: 0x0007281C
+// End Line: 5221
+/* end block 1 */
+// End offset: 0x0007283C
+// End Line: 5223
 
-	/* begin block 2 */
-		// Start line: 19327
-	/* end block 2 */
-	// End Line: 19328
+/* begin block 2 */
+// Start line: 19327
+/* end block 2 */
+// End Line: 19328
 
-	/* begin block 3 */
-		// Start line: 19529
-	/* end block 3 */
-	// End Line: 19530
+/* begin block 3 */
+// Start line: 19529
+/* end block 3 */
+// End Line: 19530
 
-	/* begin block 4 */
-		// Start line: 19531
-	/* end block 4 */
-	// End Line: 19532
+/* begin block 4 */
+// Start line: 19531
+/* end block 4 */
+// End Line: 19532
 
-// [D]
+// [D] [T]
 _CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
 {
-	int iVar1;
-	int iVar3;
-	CAR_COLLISION_BOX* cb;
-	_CAR_DATA** pp_Var4;
+	int count;
 
-	iVar3 = 0;
-	if (0 < collision_boxes_set)
+	count = 0;
+
+	while (count < collision_boxes_set)
 	{
-		pp_Var4 = collision_car_ptr;
-		cb = collision_box;
-		do {
-			iVar3++;
+		if (CheckForPlayerCar(pedestrian, &collision_box[count]) != 0)
+			return collision_car_ptr[count];
 
-			if (CheckForPlayerCar(pedestrian, cb) != 0)
-				return *pp_Var4;
-
-			pp_Var4++;
-			cb++;
-		} while (iVar3 < collision_boxes_set);
-	}
-	iVar3 = 0;
-
-	while ((iVar1 = bAvoidBomb, iVar3 < num_extra_boxes_set &&
-		(iVar1 = iVar3, CheckForPlayerCar(pedestrian, extra_collision_boxes + iVar3) == 0)))
-	{
-		iVar3++;
+		count++;
 	}
 
-	bAvoidBomb = iVar1;
+	count = 0;
+	while (count < num_extra_boxes_set)
+	{
+		if (CheckForPlayerCar(pedestrian, &extra_collision_boxes[count]))
+		{
+			bAvoidBomb = count;
+			break;
+		}
+
+		count++;
+	}
+
 
 	if (player[0].playerType == 2 && CheckForPlayerCar(pedestrian, &tanner_collision_box) != 0)
 		bAvoidTanner = 1;
@@ -4923,30 +4876,28 @@ _CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
 // decompiled code
 // original method signature: 
 // int /*$ra*/ CheckForPlayerCar(struct PEDESTRIAN *pedestrian /*$a0*/, struct CAR_COLLISION_BOX *collision_box /*$a1*/)
- // line 5231, offset 0x000732c0
-	/* begin block 1 */
-		// Start line: 26722
-	/* end block 1 */
-	// End Line: 26723
+// line 5231, offset 0x000732c0
+/* begin block 1 */
+// Start line: 26722
+/* end block 1 */
+// End Line: 26723
 
-	/* begin block 2 */
-		// Start line: 26723
-	/* end block 2 */
-	// End Line: 26724
+/* begin block 2 */
+// Start line: 26723
+/* end block 2 */
+// End Line: 26724
 
-// [D]
+// [D] [T]
 int CheckForPlayerCar(PEDESTRIAN* pedestrian, CAR_COLLISION_BOX* collision_box)
 {
-	int iVar1;
-
-	iVar1 = (pedestrian->position).vx;
-	if ((collision_box->min_x <= iVar1) && (iVar1 <= collision_box->max_x)) {
-		iVar1 = (pedestrian->position).vz;
-		if (collision_box->min_z <= iVar1) {
-			return (uint)(collision_box->max_z < iVar1) ^ 1;
-		}
-		return 0;
+	if (pedestrian->position.vx >= collision_box->min_x && 
+		pedestrian->position.vx <= collision_box->max_x &&
+		pedestrian->position.vz >= collision_box->min_z && 
+		pedestrian->position.vz <= collision_box->max_z)
+	{
+		return 1;
 	}
+
 	return 0;
 }
 
@@ -4955,38 +4906,38 @@ int CheckForPlayerCar(PEDESTRIAN* pedestrian, CAR_COLLISION_BOX* collision_box)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ CalculatePedestrianInterest(struct PEDESTRIAN *pPed /*$s0*/)
- // line 5249, offset 0x00071e0c
-	/* begin block 1 */
-		// Start line: 5250
-		// Start offset: 0x00071E0C
-		// Variables:
-	// 		int interest; // $a2
-	// 		int dist; // $v1
-	// 		struct _CAR_DATA *pCar; // $a2
-	// 		struct VECTOR v1; // stack offset -40
-	// 		struct VECTOR v2; // stack offset -24
-	/* end block 1 */
-	// End offset: 0x00071F44
-	// End Line: 5318
+// line 5249, offset 0x00071e0c
+/* begin block 1 */
+// Start line: 5250
+// Start offset: 0x00071E0C
+// Variables:
+// 		int interest; // $a2
+// 		int dist; // $v1
+// 		struct _CAR_DATA *pCar; // $a2
+// 		struct VECTOR v1; // stack offset -40
+// 		struct VECTOR v2; // stack offset -24
+/* end block 1 */
+// End offset: 0x00071F44
+// End Line: 5318
 
-	/* begin block 2 */
-		// Start line: 12043
-	/* end block 2 */
-	// End Line: 12044
+/* begin block 2 */
+// Start line: 12043
+/* end block 2 */
+// End Line: 12044
 
-	/* begin block 3 */
-		// Start line: 12122
-	/* end block 3 */
-	// End Line: 12123
+/* begin block 3 */
+// Start line: 12122
+/* end block 3 */
+// End Line: 12123
 
-	/* begin block 4 */
-		// Start line: 12128
-	/* end block 4 */
-	// End Line: 12129
+/* begin block 4 */
+// Start line: 12128
+/* end block 4 */
+// End Line: 12129
 
 int basic_car_interest;
 
-// [D]
+// [D] [T]
 void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 {
 	_CAR_DATA* pCar;
@@ -5040,31 +4991,32 @@ void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 // decompiled code
 // original method signature: 
 // int /*$ra*/ PedSurfaceType(struct VECTOR *ped_pos /*$a0*/)
- // line 5325, offset 0x00072584
-	/* begin block 1 */
-		// Start line: 5330
-		// Start offset: 0x00072584
-		// Variables:
-	// 		struct _sdPlane *sfc_ptr; // $v0
-	/* end block 1 */
-	// End offset: 0x000725B8
-	// End Line: 5335
+// line 5325, offset 0x00072584
+/* begin block 1 */
+// Start line: 5330
+// Start offset: 0x00072584
+// Variables:
+// 		struct _sdPlane *sfc_ptr; // $v0
+/* end block 1 */
+// End offset: 0x000725B8
+// End Line: 5335
 
-	/* begin block 2 */
-		// Start line: 18922
-	/* end block 2 */
-	// End Line: 18923
+/* begin block 2 */
+// Start line: 18922
+/* end block 2 */
+// End Line: 18923
 
-	/* begin block 3 */
-		// Start line: 19313
-	/* end block 3 */
-	// End Line: 19314
+/* begin block 3 */
+// Start line: 19313
+/* end block 3 */
+// End Line: 19314
 
-	/* begin block 4 */
-		// Start line: 19317
-	/* end block 4 */
-	// End Line: 19318
+/* begin block 4 */
+// Start line: 19317
+/* end block 4 */
+// End Line: 19318
 
+// [D] [T]
 int PedSurfaceType(VECTOR* ped_pos)
 {
 	_sdPlane* sfc_ptr;
@@ -5081,22 +5033,23 @@ int PedSurfaceType(VECTOR* ped_pos)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessChairLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
- // line 5344, offset 0x00073328
-	/* begin block 1 */
-		// Start line: 26847
-	/* end block 1 */
-	// End Line: 26848
+// line 5344, offset 0x00073328
+/* begin block 1 */
+// Start line: 26847
+/* end block 1 */
+// End Line: 26848
 
-	/* begin block 2 */
-		// Start line: 26951
-	/* end block 2 */
-	// End Line: 26952
+/* begin block 2 */
+// Start line: 26951
+/* end block 2 */
+// End Line: 26952
 
-	/* begin block 3 */
-		// Start line: 26952
-	/* end block 3 */
-	// End Line: 26953
+/* begin block 3 */
+// Start line: 26952
+/* end block 3 */
+// End Line: 26953
 
+// [D] [T]
 void ProcessChairLump(char* lump_file, int lump_size)
 {
 	seated_pedestrian = (SEATED_PEDESTRIANS*)lump_file;
