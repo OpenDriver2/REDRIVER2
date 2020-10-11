@@ -1226,7 +1226,7 @@ long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2
 
 MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 {
-#if 0
+#if 1
 	gte_MulMatrix0(m0, m1, m2);
 #else
 	/* ‚±‚ê‚Å‚àm0==m2‚Ìƒ„ƒoƒC */
@@ -1311,42 +1311,75 @@ void SetFarColor(long rfc, long gfc, long bfc)
 
 VECTOR* ApplyMatrix(MATRIX* m, SVECTOR* v0, VECTOR* v1)
 {
-	APPLYMATRIX(m, v0, v1)
-		return v1;
+#if 0
+	gte_SetRotMatrix(m);
+	gte_ldv0(v0);
+	gte_rtv0();
+	gte_stlvl(v1);
+#else
+	APPLYMATRIX(m, v0, v1);
+#endif
+	return v1;
 }
 
 VECTOR* ApplyRotMatrix(SVECTOR* v0, VECTOR* v1)
 {
+#if 0
+	gte_ldv0(v0);
+	gte_rtv0();
+	gte_stsv(v1);
+#else
 	MATRIX temp;
 	gte_ReadRotMatrix(&temp);
 
 	MATRIX* m = &temp;
 
 	APPLYMATRIX(m, v0, v1);
+#endif
 	return v1;
 }
 
 VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 {
+#if 0
+	gte_ldv0(v0);
+	gte_rtv0();
+	gte_stlvl(v1);
+#else
 	MATRIX temp;
 	gte_ReadRotMatrix(&temp);
 
 	MATRIX* m = &temp;
 
 	APPLYMATRIX(m, v0, v1);
+#endif
 	return v1;
 }
 
 SVECTOR* ApplyMatrixSV(MATRIX* m, SVECTOR* v0, SVECTOR* v1)
 {
-	APPLYMATRIX(m, v0, v1)
-		return v1;
+#if 0
+	gte_SetRotMatrix(m);
+	gte_ldv0(v0);
+	gte_rtv0();
+	gte_stsv(v1);
+#else
+	APPLYMATRIX(m, v0, v1);
+#endif
+	return v1;
 }
 
 VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 {
-	APPLYMATRIX(m, v0, v1)
-		return v1;
+#if 0
+	gte_SetRotMatrix(m);
+	gte_ldv0(v0);
+	gte_rtv0();
+	gte_stlvl(v1);
+#else
+	APPLYMATRIX(m, v0, v1);
+#endif
+	return v1;
 }
 
 MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
@@ -1523,6 +1556,9 @@ MATRIX* RotMatrixZ(long r, MATRIX* m)
 
 MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX* m)
 {
+#if 0
+	// by disassembly there is two gte_LoadAverage12 calls
+#else
 	// FIXME: make a proper function
 	m->m[0][0] = 0x1000;
 	m->m[0][1] = 0;
@@ -1539,6 +1575,7 @@ MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX* m)
 	RotMatrixX(r->vx, m);
 	RotMatrixY(r->vy, m);
 	RotMatrixZ(r->vz, m);
+#endif
 	return m;
 }
 
