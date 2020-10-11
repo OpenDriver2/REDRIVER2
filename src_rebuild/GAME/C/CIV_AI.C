@@ -6002,15 +6002,14 @@ void CreateRoadblock(void)
 
 	GetNodePos(str, NULL, crv, distAlongSegment, NULL, (int*)&startPos.vx, (int*)&startPos.vz, 0);
 
-	laneNo = numLanes - 1;
-	GetNodePos(str, NULL, crv, distAlongSegment, NULL, (int*)&endPos, (int*)&endPos.vz, laneNo);
+	GetNodePos(str, NULL, crv, distAlongSegment, NULL, (int*)&endPos, (int*)&endPos.vz, numLanes - 1);
 
 	dir2NextRow = ratan2(endPos.vx - startPos.vx, endPos.vz - startPos.vz);
 
 	delta = 256;
-	while (delta < (numLanes-1) * 512)
+	while (delta < numLanes * 512)
 	{
-		laneNo = (delta >> 10);
+		laneNo = (delta >> 9);
 		
 		currentPos.vx = startPos.vx + FIXEDH(delta * rcossin_tbl[(dir2NextRow & 0xfff) * 2]);
 		currentPos.vz = startPos.vz + FIXEDH(delta * rcossin_tbl[(dir2NextRow & 0xfff) * 2 + 1]);
@@ -6018,7 +6017,7 @@ void CreateRoadblock(void)
 		if((str && ROAD_IS_AI_LANE(str, laneNo) || crv && ROAD_IS_AI_LANE(crv, laneNo)) && 
 			CellEmpty(&currentPos, lbody))
 		{
-			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (delta >> 9 & 0x1fU) & 0x3ffU) - 512, 0, 0, (long(*)[4]) & currentPos, externalCopModel, 0, 2);
+			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (laneNo) & 0x3ffU) - 512, 0, 0, (long(*)[4]) & currentPos, externalCopModel, 0, 2);
 
 			if (newSlot == -1)
 				break;
