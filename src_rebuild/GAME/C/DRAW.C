@@ -20,13 +20,13 @@
 #include <string.h>
 
 MATRIX aspect =
-{ 
-	{ 
-		{ 6553, 0, 0 }, 
-		{ 0, 4096, 0 }, 
-		{ 0, 0, 4096 } 
-	}, 
-	{ 0, 0, 0 } 
+{
+	{
+		{ 6553, 0, 0 },
+		{ 0, 4096, 0 },
+		{ 0, 0, 4096 }
+	},
+	{ 0, 0, 0 }
 };
 
 MATRIX identity =
@@ -94,8 +94,7 @@ MATRIX inv_camera_matrix;
 MATRIX face_camera;
 MATRIX2 CompoundMatrix[64];
 
-
-uint farClip2Player = 0x8ca0;
+uint farClip2Player = 36000;
 
 static int treecount = 0;
 int numSpritesFound = 0;
@@ -112,9 +111,9 @@ int buildingsFound = 0;
 CELL_OBJECT* model_object_ptrs[512];
 CELL_OBJECT* anim_obj_buffer[20];
 
-unsigned long *tile_overflow_buffer;
+unsigned long* tile_overflow_buffer;
 
-PACKED_CELL_OBJECT *spriteList[75];
+PACKED_CELL_OBJECT* spriteList[75];
 
 #ifndef PSX
 OUT_CELL_FILE_HEADER cell_header;
@@ -158,70 +157,20 @@ _pct plotContext;
 MVERTEX MVERTEX_ARRAY_1f800228[5][5];
 
 // [D] [A]
-void addSubdivSpriteShadow(POLYFT4*src, SVECTOR *verts, int z)
+void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 {
-	uint puVar1;
-	uint uVar2;
-	uint uVar3;
-	uint uVar4;
 	int m;
 
 	m = 4;
-	uVar3 = *(uint *)&src->v0;
 
 	plotContext.colour = 0x2e000000;
+	plotContext.flags = 0x2;
+	plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
+	plotContext.tpage = texture_pages[src->texture_set] << 0x10;
 
+	if (z > 3200)
+		m = 1; //2;
 
-	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];// << 0x10;
-	plotContext.tpage = (texture_pages[src->texture_set]);// << 0x10;
-
-	if (3200 < z) 
-		m = 2;
-
-#if 1 // [A] this is temporary code to draw shadow sprites
-	{
-		gte_ldv3(&verts[src->v0], &verts[src->v1], &verts[src->v2]);
-
-		gte_rtpt();
-
-		int ZZ;
-		gte_stopz(&ZZ);
-
-		gte_avsz3();
-
-		int Z;
-		gte_stotz(&Z);
-
-		if (0 < Z && ZZ < 0)
-		{
-			POLY_FT4* poly = (POLY_FT4*)plotContext.primptr;
-
-			*(uint*)&poly->r0 = plotContext.colour;
-
-			setPolyFT4(poly);
-			setSemiTrans(poly, 1);
-
-			poly->clut = plotContext.clut;
-			poly->tpage = plotContext.tpage;
-
-			gte_stsxy3(&poly->x0, &poly->x1, &poly->x3);
-
-			gte_ldv0(&verts[src->v3]);
-			gte_rtps();
-
-			gte_stsxy(&poly->x2);
-
-			*(u_short*)&poly->u0 = *(u_short*)&src->uv1;
-			*(u_short*)&poly->u1 = *(u_short*)&src->uv0;
-			*(u_short*)&poly->u2 = *(u_short*)&src->uv2;
-			*(u_short*)&poly->u3 = *(u_short*)&src->uv3;
-
-			addPrim(plotContext.ot + (Z >> 1) , poly);
-
-			plotContext.primptr += sizeof(POLY_FT4);
-		}
-	}
-#else
 	plotContext.ot += 28;
 
 	copyVector(&MVERTEX_ARRAY_1f800228[0][0], &verts[src->v0]);
@@ -238,11 +187,8 @@ void addSubdivSpriteShadow(POLYFT4*src, SVECTOR *verts, int z)
 
 	makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m);
 	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, &plotContext);
-	
+
 	plotContext.ot -= 28;
-#endif
-
-
 }
 
 
@@ -340,35 +286,25 @@ void addSubdivSpriteShadow(POLYFT4*src, SVECTOR *verts, int z)
 
 MATRIX shadowMatrix;
 
-
-// [D] [A]
+// [D] [T] [A]
 void DrawSprites(int numFound)
 {
-	ushort *puVar1;
-	short sVar2;
-	short *psVar3;
+	int i;
 	int z;
-	uint *puVar4;
-	uint *puVar5;
 	uint spriteColour;
+	uint lightdd;
 	unsigned char lightLevel;
-	MATRIX *pMVar7;
-	MATRIX *pMVar8;
-	uint uVar9;
-	int iVar10;
-	uint uVar11;
-	int iVar12;
-	MODEL *model;
-	PACKED_CELL_OBJECT *pco;
-	PACKED_CELL_OBJECT **local_40;
-	int local_38;
-	int local_2c;
+	MODEL* model;
+	PACKED_CELL_OBJECT* pco;
+	PACKED_CELL_OBJECT** list;
+	int numShadows;
+	int count;
 
-	z = FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
+	lightdd = FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
 		FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
 		FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
 
-	lightLevel = (z >> 0x12) + 0x20U & 0xff;
+	lightLevel = (lightdd >> 0x12) + 0x20U & 0xff;
 
 	if (gWeather > 0 && gTimeOfDay == 1)
 	{
@@ -385,97 +321,93 @@ void DrawSprites(int numFound)
 	}
 	else if (gTimeOfDay == 3)
 	{
-		if(GameLevel == 0)
-			lightLevel = lightLevel * 2;	// [A] level bug - Chicago trees lit wrong
+		if (GameLevel == 0)
+			lightLevel *= 2;	// [A] level bug - Chicago trees lit wrong
 		else
-			lightLevel = lightLevel / 3;
+			lightLevel /= 3;
 	}
 
-
 	spriteColour = lightLevel << 0x10 | lightLevel << 8 | 0x2c000000 | lightLevel;
-	
-	pMVar8 = &inv_camera_matrix;
-	pMVar7 = &shadowMatrix;
-	z = 2;
 
+	i = 2;
 	do {
-		shadowMatrix.m[z][0] = inv_camera_matrix.m[z][2];
-		shadowMatrix.m[z][1] = -inv_camera_matrix.m[z][0];
-		shadowMatrix.m[z][2] = inv_camera_matrix.m[z][0];
-		z--;
-	} while (-1 < z);
+		shadowMatrix.m[i][0] = inv_camera_matrix.m[i][2];
+		shadowMatrix.m[i][1] = -inv_camera_matrix.m[i][0];
+		shadowMatrix.m[i][2] = inv_camera_matrix.m[i][0];
+		i--;
+	} while (i >= 0);
 
-	local_38 = 0;
+
 	plotContext.primptr = current->primptr;
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.ot = current->ot;
 
-	local_40 = spriteList;
+	list = spriteList;
 
 	plotContext.colour = spriteColour;
 	plotContext.current = current;
 
-	local_2c = numFound - 1;
-	while (local_2c != -1)
+	numShadows = 0;
+	count = numFound - 1;
+
+	while (count != -1)
 	{
-		pco = *local_40;
-		local_40++;
+		pco = *list;
+		list++;
 
 		int modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
 
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
-		if ((pco->value & 0x3f) == 0x3f || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
+		if ((pco->value & 0x3f) == 63 || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
 			plotContext.colour = 0x2c808080;
 
 		plotContext.scribble[0] = pco->pos.vx;
 		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
 		plotContext.scribble[2] = pco->pos.vz;
 
-		z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)plotContext.scribble, (MATRIX2 *)&face_camera);
-#if 0
-		if(z < 1001)
-		{
-			uVar11 = (uint)model->num_polys;
-			iVar10 = model->poly_block;
-			iVar12 = model->vertices;
+		z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD*)plotContext.scribble, (MATRIX2*)&face_camera);
 
-			while (uVar11 = uVar11 - 1, uVar11 != 0xffffffff) 
+		if (z < 1000)
+		{
+			POLYFT4* src;
+			SVECTOR* verts;
+			int numPolys;
+
+			numPolys = (uint)model->num_polys;
+			src = (POLYFT4*)model->poly_block;
+			verts = (SVECTOR*)model->vertices;
+
+			plotContext.flags |= 4;
+
+			while (numPolys--, numPolys >= 0)
 			{
-				UNIMPLEMENTED();
-				/*
-				uVar9 = *(uint *)(iVar10 + 4);
-				plotContext.clut =(uint)(ushort)texture_cluts[(uint)*(unsigned char *)(iVar10 + 1) * 0x20 + (uint)*(unsigned char *)(iVar10 + 2)] << 0x10;
-				puVar4 = (uint *)((uVar9 & 0xff) * 8 + iVar12);
-				plotContext.tpage = (uint)(ushort)texture_pages[(uint)*(unsigned char *)(iVar10 + 1)] << 0x10;
-				MVERTEX_ARRAY_1f800228[0]_0_4_ = *puVar4;
-				puVar5 = (uint *)((uVar9 >> 5 & 0x7f8) + iVar12);
-				MVERTEX_ARRAY_1f800228[0]._4_4_ =
-					puVar4[1] & 0xffff | (uint)*(ushort *)(iVar10 + 8) << 0x10;
-				MVERTEX_ARRAY_1f800228[4]._0_4_ = *puVar5;
-				puVar4 = (uint *)((uVar9 >> 0x18) * 8 + iVar12);
-				MVERTEX_ARRAY_1f800228[4]._4_4_ =
-					puVar5[1] & 0xffff | (uint)*(ushort *)(iVar10 + 10) << 0x10;
-				MVERTEX_ARRAY_1f800228[20]._0_4_ = *puVar4;
-				puVar5 = (uint *)((uVar9 >> 0xd & 0x7f8) + iVar12);
-				MVERTEX_ARRAY_1f800228[20]._4_4_ =
-					puVar4[1] & 0xffff | (uint)*(ushort *)(iVar10 + 0xe) << 0x10;
-				MVERTEX_ARRAY_1f800228[24]._0_4_ = *puVar5;
-				puVar1 = (ushort *)(iVar10 + 0xc);
-				iVar10 = iVar10 + 0x14;
-				MVERTEX_ARRAY_1f800228[24]._4_4_ = puVar5[1] & 0xffff | (uint)*puVar1 << 0x10;
+				plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
+				plotContext.tpage = texture_pages[src->texture_set] << 0x10;
+
+				copyVector(&MVERTEX_ARRAY_1f800228[0][0], &verts[src->v0]);
+				MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&src->uv0;
+
+				copyVector(&MVERTEX_ARRAY_1f800228[0][1], &verts[src->v1]);
+				MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&src->uv1;
+
+				copyVector(&MVERTEX_ARRAY_1f800228[0][2], &verts[src->v3]);
+				MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&src->uv3;
+
+				copyVector(&MVERTEX_ARRAY_1f800228[0][3], &verts[src->v2]);
+				MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&src->uv2;
 
 				makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4);
-				drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4, (_pct *)&plotContext);
-				*/
+				drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4, &plotContext);
+
+				src++;
 			}
+
+			plotContext.flags &= ~4;
 		}
-		else 
-#else
-		if (z > 0)
-#endif
+		else
 		{
 			plotContext.ot -= 133;
 
@@ -484,21 +416,20 @@ void DrawSprites(int numFound)
 			plotContext.ot += 133;
 		}
 
-		local_2c--;
+		count--;
 
-		if ((((wetness == 0) && (gTimeOfDay != 3)) && ((pco->value & 0x20) == 0)) &&
-			((z < 7000 && (local_38 = local_38 + 1, local_38 < 0x28)))) 
+		if (wetness == 0 && gTimeOfDay != 3 && (pco->value & 0x20) == 0 && z < 7000 && numShadows < 40)
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
-			addSubdivSpriteShadow((POLYFT4*)model->poly_block, (SVECTOR *)model->vertices, z);
+			addSubdivSpriteShadow((POLYFT4*)model->poly_block, (SVECTOR*)model->vertices, z);
 
 			if (model->num_polys == 2)
-			{
-				addSubdivSpriteShadow((POLYFT4*)(model->poly_block + sizeof(POLYFT4)), (SVECTOR *)model->vertices, z);
-			}
+				addSubdivSpriteShadow((POLYFT4*)(model->poly_block + sizeof(POLYFT4)), (SVECTOR*)model->vertices, z);
 
 			gte_SetRotMatrix(&face_camera);
+
+			numShadows++;
 		}
 	}
 	current->primptr = plotContext.primptr;
@@ -717,27 +648,17 @@ void DrawSprites(int numFound)
 	// End Line: 1981
 
 // [D]
-void DrawMapPSX(int *comp_val)
+void DrawMapPSX(int* comp_val)
 {
 	ushort uVar1;
-	CELL_OBJECT *pCVar2;
-
 	uint uVar4;
-	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT **ppCVar6;
+	PACKED_CELL_OBJECT* ppco;
 	int iVar7;
-	PACKED_CELL_OBJECT **ppPVar8;
 	uint uVar9;
 	int cellx;
 	int cellz;
-	CELL_OBJECT *cop;
-	//undefined4 uVar10;
-	long lVar11;
-	//undefined4 uVar12;
-	long lVar13;
-	//undefined4 uVar14;
-	long lVar15;
-	MODEL *model;
+	CELL_OBJECT* cop;
+	MODEL* model;
 	int iVar19;
 	int iVar20;
 	uint backPlane;
@@ -746,7 +667,7 @@ void DrawMapPSX(int *comp_val)
 	VECTOR newpos;
 	int camx;
 	int camz;
-	char *PVS_ptr;
+	char* PVS_ptr;
 	int tiles_found;
 	int other_models_found;
 	int rightcos;
@@ -757,30 +678,33 @@ void DrawMapPSX(int *comp_val)
 	int backsin;
 	int rightPlane;
 	int leftPlane;
-	uint farClipLimit;
-
+	int farClipLimit;
+	int backAng;
+	int leftAng;
+	int rightAng;
+	
 	int local_34;
 	int anim_objs;
 
-	backPlane = 0x1800;	// backPlane
-	rightPlane = -0x1800;
-	leftPlane = 0x1800;
+	backPlane = 6144;
+	rightPlane = -6144;
+	leftPlane = 6144;
 
-	iVar7 = (int)camera_angle.vy;
 	farClipLimit = 80000;
 
-	uVar9 = iVar7 - FrAng & 0xfff;
-	uVar4 = iVar7 + FrAng & 0xfff;
-	rightcos = (int)rcossin_tbl[uVar9 * 2 + 1];
-	rightsin = (int)rcossin_tbl[uVar9 * 2];
+	rightAng = camera_angle.vy - FrAng & 0xfff;
+	leftAng = camera_angle.vy + FrAng & 0xfff;
+	backAng = camera_angle.vy + 0x400U & 0xfff;
 
-	uVar9 = iVar7 + 0x400U & 0xfff;
-	leftcos = (int)rcossin_tbl[uVar4 * 2 + 1];
-	leftsin = (int)rcossin_tbl[uVar4 * 2];
-	backcos = (int)rcossin_tbl[uVar9 * 2 + 1];
-	backsin = (int)rcossin_tbl[uVar9 * 2];
+	rightcos = rcossin_tbl[rightAng * 2 + 1];
+	rightsin = rcossin_tbl[rightAng * 2];
 
-	if (NumPlayers == 2) 
+	leftcos = rcossin_tbl[leftAng * 2 + 1];
+	leftsin = rcossin_tbl[leftAng * 2];
+	backcos = rcossin_tbl[backAng * 2 + 1];
+	backsin = rcossin_tbl[backAng * 2];
+
+	if (NumPlayers == 2)
 	{
 		farClipLimit = farClip2Player;
 	}
@@ -805,32 +729,33 @@ void DrawMapPSX(int *comp_val)
 
 	ClearCopUsage();
 
+	PVS_ptr = CurrentPVS + 220;
+	
 	iVar20 = 0;
 	iVar19 = 0;
-	PVS_ptr = CurrentPVS + 220;
 	uVar4 = 0;
 
-	if (NumPlayers == 2) 
+	if (NumPlayers == 2)
 		uVar9 = goFaster & 31 | 1;
 	else
 		uVar9 = goFaster & 31;
 
 	local_34 = (gDrawDistance >> uVar9) - 1;		// [A]
 
-	do 
+	do
 	{
 		while (true)
 		{
 			while (true)
 			{
-				if (local_34 == -1) 
+				if (local_34 == -1)
 				{
 					if (numSpritesFound != 0)
 					{
 						DrawSprites(numSpritesFound);
 					}
 
-					if (tiles_found != 0) 
+					if (tiles_found != 0)
 					{
 						DrawTILES(tiles_found);
 					}
@@ -866,18 +791,18 @@ void DrawMapPSX(int *comp_val)
 
 				cellz = iVar20;
 
-				if (iVar20 < 0) 
+				if (iVar20 < 0)
 					cellz = -iVar20;
 
 				local_34--;
 
-				if (cellx + cellz < 16) // < 16)
+				if (cellx + cellz < 16)
 				{
 					cellx = camx + iVar19;
 					cellz = camz + iVar20;
 
-					if( rightPlane < 0 && 
-						leftPlane > 0 && 
+					if (rightPlane < 0 &&
+						leftPlane > 0 &&
 						backPlane < farClipLimit &&  // check planes
 						cellx > -1 && cellx < cells_across &&							// check cell ranges
 						cellz > -1 && cellz < cells_down &&
@@ -887,72 +812,16 @@ void DrawMapPSX(int *comp_val)
 
 						while (ppco != NULL)
 						{
-							model = modelpointers[(ppco->value >> 6) | ((uint)(ppco->pos).vy & 1) << 10];
+							model = modelpointers[(ppco->value >> 6) | ((ppco->pos).vy & 1) << 10];
 
 							if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
 							{
-								uVar1 = model->shape_flags;
-
-								if ((uVar1 & 0x4000) == 0)
-								{
-									uVar9 = (uint)ppco->value & 0x3f;
-
-									if ((ppco->value & 0xf) != 0)
-									{
-										if ((int)CompoundMatrix[uVar9].computed != current_object_computed_value)
-										{
-											CompoundMatrix[uVar9].computed = (short)current_object_computed_value;
-
-											gte_ReadRotMatrix(&mRotStore);
-
-											gte_sttr(mRotStore.t);
-
-											MulMatrix0(&inv_camera_matrix, (MATRIX *)(matrixtable + uVar9), (MATRIX *)(CompoundMatrix + uVar9));
-
-											gte_SetRotMatrix(&mRotStore);
-											//TRX = pMVar3->t[0];
-											//TRY = pMVar3->t[1]; ??
-											//TRZ = pMVar3->t[2];
-										}
-									}
-
-									if (((uVar1 & 0x480) == 0) && ((model->flags2 & 0xc000) == 0))
-									{
-										cop = UnpackCellObject(ppco, &ci.nearCell);
-
-
-										if (((model->flags2 & 1) != 0) && (anim_objs < 20))
-										{
-											anim_obj_buffer[anim_objs++] = cop;
-										}
-
-										if (other_models_found < 192)
-											model_object_ptrs[other_models_found++] = cop;
-									}
-									else
-									{
-										if (((model->flags2 & 0x80) != 0) && (alleycount++, alleycount == 13))
-										{
-											cop = UnpackCellObject(ppco, &ci.nearCell);
-											ground_debris[groundDebrisIndex++] = *cop;
-											groundDebrisIndex = groundDebrisIndex % 16;
-
-											alleycount = 0;
-										}
-
-										if (tiles_found < 0x100)
-										{
-											*(PACKED_CELL_OBJECT **)(tile_overflow_buffer + tiles_found) = ppco;
-											tiles_found++;
-										}
-									}
-								}
-								else
+								if (model->shape_flags & 0x4000)
 								{
 									if (numSpritesFound < 75)
 										spriteList[numSpritesFound++] = ppco;
 
-									if (((model->flags2 & 1) != 0) && (anim_objs < 20))
+									if ((model->flags2 & 1) && anim_objs < 20)
 									{
 										cop = UnpackCellObject(ppco, &ci.nearCell);
 
@@ -962,8 +831,64 @@ void DrawMapPSX(int *comp_val)
 									if (((model->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount++, uVar9 == 0))
 									{
 										cop = UnpackCellObject(ppco, &ci.nearCell);
+										
 										ground_debris[groundDebrisIndex++] = *cop;
 										groundDebrisIndex = groundDebrisIndex % 16;
+									}
+								}
+								else
+								{
+									uVar9 = ppco->value & 0x3f;
+
+									if ((ppco->value & 0xf) != 0)
+									{
+										if (CompoundMatrix[uVar9].computed != current_object_computed_value)
+										{
+											CompoundMatrix[uVar9].computed = current_object_computed_value;
+
+											gte_ReadRotMatrix(&mRotStore);
+
+											gte_sttr(mRotStore.t);
+
+											MulMatrix0(&inv_camera_matrix, (MATRIX*)(matrixtable + uVar9), (MATRIX*)(CompoundMatrix + uVar9));
+
+											gte_SetRotMatrix(&mRotStore);
+										}
+									}
+
+									if ((model->shape_flags & 0x480) || (model->flags2 & 0xc000))
+									{
+										if(model->flags2 & 0x80)
+										{
+											alleycount++;
+											
+											if (alleycount == 13)
+											{
+												cop = UnpackCellObject(ppco, &ci.nearCell);
+												ground_debris[groundDebrisIndex++] = *cop;
+												groundDebrisIndex = groundDebrisIndex % 16;
+
+												alleycount = 0;
+											}
+										}
+										
+										if (tiles_found < 256)
+										{
+											*(PACKED_CELL_OBJECT**)(tile_overflow_buffer + tiles_found) = ppco;
+											tiles_found++;
+										}
+									}
+									else
+									{
+										cop = UnpackCellObject(ppco, &ci.nearCell);
+
+										if ((model->flags2 & 1) && (anim_objs < 20))
+										{
+											anim_obj_buffer[anim_objs++] = cop;
+										}
+
+										if (other_models_found < 192)
+											model_object_ptrs[other_models_found++] = cop;
 									}
 								}
 							}
@@ -973,7 +898,7 @@ void DrawMapPSX(int *comp_val)
 					}
 				}
 
-				if (uVar4 != 1) 
+				if (uVar4 != 1)
 					break;
 
 				leftPlane += leftsin;
@@ -997,8 +922,8 @@ void DrawMapPSX(int *comp_val)
 				rightPlane += rightcos;
 
 				iVar19++;
-				
-				if (iVar19 + iVar20 == 1) 
+
+				if (iVar19 + iVar20 == 1)
 					uVar4 = 1;
 			}
 			else
@@ -1023,7 +948,7 @@ void DrawMapPSX(int *comp_val)
 		backPlane -= backcos;
 		rightPlane -= rightcos;
 
-		if (iVar19 + iVar20 == 0) 
+		if (iVar19 + iVar20 == 0)
 			uVar4 = 3;
 	} while (true);
 }
@@ -1065,20 +990,21 @@ void DrawMapPSX(int *comp_val)
 	/* end block 4 */
 	// End Line: 2710
 
-// [D]
+// [D] [T]
 void SetupPlaneColours(ulong ambient)
 {
 	unsigned long r;
 	unsigned long g;
 	unsigned long b;
 
-	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2) 
+	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2)
 	{
-		if (gTimeOfDay == 1) 
+		if (gTimeOfDay == 1)
 		{
 			b = ambient & 0xff;
 			g = ambient >> 8 & 0xff;
 			r = ambient >> 0x10 & 0xff;
+
 			planeColours[1] = (r * 0x78 >> 7) << 0x10 | (g * 0x78 >> 7) << 8 | b * 0x78 >> 7;
 			planeColours[2] = (r * 0x67 >> 7) << 0x10 | (g * 0x67 >> 7) << 8 | b * 0x67 >> 7;
 			planeColours[3] = (r * 0xd >> 5) << 0x10 | (g * 0xd >> 5) << 8 | b * 0xd >> 5;
@@ -1162,10 +1088,10 @@ void SetupPlaneColours(ulong ambient)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetupDrawMapPSX(void)
 {
-	int region_x1; 
+	int region_x1;
 	int region_z1;
 	int current_barrel_region_x1;
 	int current_barrel_region_z1;
@@ -1184,7 +1110,7 @@ void SetupDrawMapPSX(void)
 	GetPVSRegionCell2(
 		current_barrel_region_x1 + current_barrel_region_z1 * 2,
 		region_x1 + region_z1 * cells_across / 32,
-		(current_cell_z % 32) * 32 + (current_cell_x % 32), 
+		(current_cell_z % 32) * 32 + (current_cell_x % 32),
 		CurrentPVS);
 
 	for (theta = 0; theta < 64; theta++)
@@ -1221,27 +1147,30 @@ void SetupDrawMapPSX(void)
 
 MATRIX frustrum_matrix;
 
-// [D]
+// [D] [T]
 void InitFrustrumMatrix(void)
 {
-    int iVar1;
-    uint a;
-    
-    frustrum_matrix.m[0][1] = 0;
-    frustrum_matrix.m[0][0] = rcossin_tbl[(-(int)camera_angle.vy & 0xfffU) * 2];
-    iVar1 = rcos(-(int)camera_angle.vy);
-    frustrum_matrix.m[0][2] = (short)iVar1;
-    frustrum_matrix.m[1][1] = 0;
-    a = (FrAng + -0x400) - (int)camera_angle.vy;
-    frustrum_matrix.m[1][0] = rcossin_tbl[(a & 0xfff) * 2];
-    iVar1 = rcos(a);
-    frustrum_matrix.m[1][2] = (short)iVar1;
-    frustrum_matrix.m[2][1] = 0;
-    a = -(FrAng + -0x400) - (int)camera_angle.vy;
-    frustrum_matrix.m[2][0] = rcossin_tbl[(a & 0xfff) * 2];
-    iVar1 = rcos(a);
-    frustrum_matrix.m[2][2] = (short)iVar1;
-    frustrum_matrix.t[0] = -0x50;
+	int iVar1;
+	int a;
+
+	a = -camera_angle.vy;
+
+	frustrum_matrix.m[0][1] = 0;
+	frustrum_matrix.m[0][0] = rcossin_tbl[(a & 0xfffU) * 2];
+	frustrum_matrix.m[0][2] = rcossin_tbl[(a & 0xfffU) * 2 + 1];
+
+	a = (FrAng - 1024) - camera_angle.vy;
+
+	frustrum_matrix.m[1][1] = 0;
+	frustrum_matrix.m[1][0] = rcossin_tbl[(a & 0xfff) * 2];
+	frustrum_matrix.m[1][2] = rcossin_tbl[(a & 0xfff) * 2 + 1];
+
+	a = -(FrAng - 1024) - camera_angle.vy;
+
+	frustrum_matrix.m[2][1] = 0;
+	frustrum_matrix.m[2][0] = rcossin_tbl[(a & 0xfff) * 2];
+	frustrum_matrix.m[2][2] = rcossin_tbl[(a & 0xfff) * 2 + 1];
+	frustrum_matrix.t[0] = -80;
 }
 
 
@@ -1267,9 +1196,7 @@ void InitFrustrumMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// TODO: INLINE_C or GTEMAC
-
-// [D]
+// [D] [T]
 void SetFrustrumMatrix(void)
 {
 	gte_SetLightMatrix(&frustrum_matrix);
@@ -1291,7 +1218,7 @@ void SetFrustrumMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void Set_Inv_CameraMatrix(void)
 {
 	gte_SetColorMatrix(&inv_camera_matrix);
@@ -1332,11 +1259,10 @@ void Set_Inv_CameraMatrix(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A]
+// [D] [T] [A]
 void CalcObjectRotationMatrices(void)
 {
 	int i;
-	MATRIX mat;
 	int angle;
 	MATRIX* m;
 
@@ -1378,10 +1304,10 @@ void CalcObjectRotationMatrices(void)
 	/* end block 3 */
 	// End Line: 5024
 
-// [D]
-void PlotMDL_less_than_128(MODEL *model)
+// [D] [T]
+void PlotMDL_less_than_128(MODEL* model)
 {
-	RenderModel(model, (MATRIX *)0x0, (VECTOR *)0x0, 0, 0, 0);
+	RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0, 0);
 }
 
 
@@ -1412,17 +1338,17 @@ void PlotMDL_less_than_128(MODEL *model)
 	// End Line: 3358
 
 
-// [D]
-void ProcessMapLump(char *lump_ptr, int lump_size)
+// [D] [T]
+void ProcessMapLump(char* lump_ptr, int lump_size)
 {
 #ifdef PSX
-	cells_across = *(int *)lump_ptr;
-	cells_down = *(int *)(lump_ptr + 4);
-	num_regions = *(int *)(lump_ptr + 0xc);
+	cells_across = *(int*)lump_ptr;
+	cells_down = *(int*)(lump_ptr + 4);
+	num_regions = *(int*)(lump_ptr + 0xc);
 	view_dist = 10;
 
 	pvs_square = 21;
-	pvs_square_sq = 21*21;
+	pvs_square_sq = 21 * 21;
 
 	units_across_halved = cells_across / 2 << 0xb;
 	units_down_halved = cells_down / 2 << 0xb;
@@ -1442,13 +1368,13 @@ void ProcessMapLump(char *lump_ptr, int lump_size)
 			trap(0x400);
 		}
 	}
-	num_straddlers = *(int *)(lump_ptr + 0x2c);
-	if (*(int *)(lump_ptr + 8) != 0x800) {
+	num_straddlers = *(int*)(lump_ptr + 0x2c);
+	if (*(int*)(lump_ptr + 8) != 0x800) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
-	if (*(int *)(lump_ptr + 0x10) != 0x20) {
+	if (*(int*)(lump_ptr + 0x10) != 0x20) {
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
@@ -1572,137 +1498,98 @@ void ProcessMapLump(char *lump_ptr, int lump_size)
 int gForceLowDetailCars = 0;
 int num_cars_drawn = 0;
 
-// [A]
+// [D] [T]
 void DrawAllTheCars(int view)
 {
 	static int car_distance[20]; // offset 0x0
-	static int temp; // offset 0x0
+	int dx, dz;
+	int dist;
+	int i, j;
+	_CAR_DATA* cp;
+	int num_cars_to_draw;
+	int spacefree;
+	_CAR_DATA* cars_to_draw[20];
 
-	long lVar1;
-	long lVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int *puVar6;
-	_CAR_DATA **pp_Var7;
-	_CAR_DATA *p_Var8;
-	int iVar9;
-	int *piVar10;
-	int iVar11;
-	_CAR_DATA *cars_to_draw[20];
-
-	lVar2 = camera_position.vz;
-	lVar1 = camera_position.vx;
-	p_Var8 = car_data + 18;
 	num_cars_drawn = 0;
-	iVar11 = 0;
+	num_cars_to_draw = 0;
 
-
-	piVar10 = car_distance;
-	iVar9 = iVar11;
+	cp = car_data + MAX_CARS - 1;
 	do {
-		iVar11 = iVar9;
-
-		if ((p_Var8->controlType != CONTROL_TYPE_NONE) && PositionVisible((VECTOR *)p_Var8->hd.where.t))
+		if (cp->controlType != CONTROL_TYPE_NONE && 
+			PositionVisible((VECTOR*)cp->hd.where.t))
 		{
 			// XZ distance estimation
-			iVar3 = p_Var8->hd.where.t[0];
-			iVar5 = lVar1 - iVar3;
+			dx = ABS(camera_position.vx - cp->hd.where.t[0]);
+			dz = ABS(camera_position.vz - cp->hd.where.t[2]);
 
-			if (iVar5 < 0) 
-				iVar5 = iVar3 - lVar1;
-
-			iVar3 = p_Var8->hd.where.t[2];
-			iVar4 = lVar2 - iVar3;
-
-			if (iVar4 < 0) 
-				iVar4 = iVar3 - lVar2;
-
-			if (iVar5 < iVar4) 
-				iVar3 = iVar4 + iVar5 / 2;
+			if (dx < dz)
+				dist = dz + dx / 2;
 			else
-				iVar3 = iVar5 + iVar4 / 2;
+				dist = dx + dz / 2;
 
-			if (iVar3 < 16000) 
+			if (dist < 16000)
 			{
-				*piVar10 = iVar5 + iVar4;
-				piVar10 = piVar10 + 1;
-				iVar11 = iVar9 + 1;
-				cars_to_draw[iVar9] = p_Var8;
+				car_distance[num_cars_to_draw] = dx + dz;
+				cars_to_draw[num_cars_to_draw] = cp;
+				num_cars_to_draw++;
 			}
 		}
 
-		p_Var8 = p_Var8 + -1;
-		iVar9 = iVar11;
+		cp--;
+	} while (cp >= car_data);
 
-	} while (p_Var8 >= car_data);
-
-	if (iVar11 != 0) 
+	if (num_cars_to_draw != 0)
 	{
 		gForceLowDetailCars = 0;
 
-		if (1 < iVar11) 
+		// sort cars by distance
+		if (num_cars_to_draw > 1)
 		{
-			iVar9 = 1;
+			i = 1;
 			do {
-				p_Var8 = cars_to_draw[iVar9];
-				iVar3 = car_distance[iVar9];
+				cp = cars_to_draw[i];
+				dist = car_distance[i];
 
-				iVar5 = iVar9 + 1;
+				j = i - 1;
 
-				if (iVar9 != 0) 
+				while (dist < car_distance[j])
 				{
-					if (iVar3 < car_distance[iVar9 + -1])
-					{
-						pp_Var7 = cars_to_draw + iVar9;
-						puVar6 = &car_distance[iVar9];
-						iVar4 = iVar9 + -1;
+					car_distance[i] = car_distance[j];
+					cars_to_draw[i] = cars_to_draw[j];
 
-						do {
-							iVar9 = iVar4;
-							*puVar6 = puVar6[-1];
-							*pp_Var7 = pp_Var7[-1];
-							pp_Var7 = pp_Var7 + -1;
-							if (iVar9 == 0) break;
-							piVar10 = puVar6 + -2;
-							puVar6 = puVar6 + -1;
-							iVar4 = iVar9 + -1;
-						} while (iVar3 < *piVar10);
-					}
+					if (j == 0)
+						break;
+					
+					j--;
 				}
+				
+				cars_to_draw[i] = cp;
+				car_distance[i] = dist;
 
-				cars_to_draw[iVar9] = p_Var8;
-				car_distance[iVar9] = iVar3;
-				iVar9 = iVar5;
-
-			} while (iVar5 < iVar11);
+				i++;
+			} while (i < num_cars_to_draw);
 		}
 
-		iVar9 = 0;
+		i = 0;
+		spacefree = (num_cars_to_draw - 1) * 2000;
 
-		if (0 < iVar11)
+		while (i < num_cars_to_draw)
 		{
-			iVar3 = (iVar11 + -1) * 2000;
+			// Don't exceed draw buffers
+			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE))) < 5800)
+				return;
 
-			do {
-				// Don't exceed draw buffers
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr- PRIMTAB_SIZE))) < 5800)
-					return;
+			// make cars look uglier
+			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE)) - spacefree) < 5800)
+				gForceLowDetailCars = 1;
 
-				// try reducing detail level
-				// this looks really ugly
-				if ((int)(current->primtab + (-3000 - (int)(current->primptr- PRIMTAB_SIZE)) + -iVar3) < 5800)
-					gForceLowDetailCars = 1;
+			if (cars_to_draw[i]->controlType == CONTROL_TYPE_PLAYER)
+				gForceLowDetailCars = 0;
 
-				if (cars_to_draw[iVar9]->controlType == CONTROL_TYPE_PLAYER)
-					gForceLowDetailCars = 0;
-
-				DrawCar(cars_to_draw[iVar9], view);
-
-				iVar9 = iVar9 + 1;
-				iVar3 = iVar3 + -2000;
-
-			} while (iVar9 < iVar11);
+			DrawCar(cars_to_draw[i], view);
+			
+			spacefree -= 2000;
+			i++;
 		}
 	}
 }
@@ -1819,11 +1706,9 @@ void DrawAllTheCars(int view)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-// [D] [A] custom
-void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
+// [D] [T] [A] custom
+void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 {
-#if 1 // [A] new fully rewritten routine 
-	
 	// FIXME: still bugged - see tops of barrels at "Caine's Compound"
 
 	int opz;
@@ -1832,7 +1717,6 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 	PL_POLYFT4* polys;
 	int i;
 	int r;
-	uint polyVar;
 	u_char temp;
 	u_char ptype;
 	POLY_FT4* prims;
@@ -1845,7 +1729,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 	polys = (PL_POLYFT4*)model->poly_block;
 
-	if ((pc->flags & 1U) != 0) 
+	if ((pc->flags & 1U) != 0)
 		combointensity |= 0x2000000;
 
 	i = model->num_polys;
@@ -1884,12 +1768,12 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 		r = rot;
 
-		if(pc->flags & 0x6)
+		if (pc->flags & 0x6)
 		{
 			if (opz < 0)
 				r = rot + 32 & 63;
 
-			if(pc->flags & 0x4)
+			if (pc->flags & 0x4)
 				opz = 1;		// no culling
 			else
 				opz = -opz;		// front face
@@ -1942,7 +1826,7 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 				// retrieve first three verts
 				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
-				
+
 				// translate 4th vert and get OT Z value
 				gte_ldv0(&srcVerts[polys->v2]);
 				gte_rtps();
@@ -2001,338 +1885,6 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 
 	if ((pc->flags & 1U) != 0)
 		combointensity &= ~0x2000000;
-
-#else // decompiled routine
-
-	unsigned char uVar1;
-	UV_INFO UVar2;
-	UV_INFO UVar3;
-	int in_zero;
-	int in_at;
-	int iVar4;
-	SVECTOR *pSVar5;
-	int *puVar6;
-	uint uVar7;
-	ulong uVar8;
-	SVECTOR *local_v1_404;
-	int iVar9;
-	SVECTOR *pSVar10;
-	int iVar11;
-	int iVar12;
-	int iVar13;
-	uint uVar14;
-	uint uVar15;
-	uint uVar16;
-	int uVar17;
-	POLY_FT4 *local_t2_1500;
-	uint uVar18;
-	PL_POLYFT4 *polys;
-	ushort *vidx;
-	SVECTOR *verts;
-	uint uVar19;
-	uint uVar20;
-	int Z;
-
-	verts = (SVECTOR *)model->vertices;
-	uVar20 = 0xffffffff;
-	pc->ot = pc->current->ot;
-	pc->primptr = pc->current->primptr;
-
-	if ((pc->flags & 1U) != 0) {
-		combointensity = combointensity | 0x2000000;
-		in_at = 0xb0000;
-	}
-
-	iVar4 = rot >> 3;
-	uVar19 = (uint)model->num_polys;
-	polys = (PL_POLYFT4 *)model->poly_block;
-	do {
-		while (true)
-		{
-			uVar19 = uVar19 - 1;
-			if (uVar19 == 0xffffffff)
-			{
-				pc->current->primptr = pc->primptr;
-				if ((pc->flags & 1U) != 0)
-					combointensity = combointensity & 0xfdffffff;
-
-				return;
-			}
-			uVar18 = *(uint *)polys;
-
-			if ((uVar18 & 1) == 0) {
-				uVar1 = (polys->uv2).v;
-				(polys->uv3).u = (polys->uv2).u;
-				(polys->uv3).v = uVar1;
-				polys->id = polys->id ^ 1;
-				uVar18 = *(uint *)polys;
-				polys->v3 = polys->v2;
-			}
-
-			uVar7 = uVar18 & 0x1f;
-
-			if ((uVar7 == 0xb) || (uVar7 == 0x15))
-				break;
-
-			polys = (PL_POLYFT4 *)(&polys->id + pc->polySizes[uVar7]);
-		}
-		vidx = *(ushort **)&polys->v0;
-		uVar8 = uVar18 >> 0x18;
-
-		if (uVar7 == 0x15)
-		{
-			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
-		}
-		else
-		{
-			if ((uVar8 & 0x80) == 0)
-			{
-				rot = (int)vidx;
-				uVar8 = normalIndex(verts, (uint)vidx);
-				polys->th = (unsigned char)uVar8;
-			}
-
-			pc->colour = pc->f4colourTable[iVar4 * 4 - uVar8 & 0x1f];
-		}
-
-		pSVar10 = verts + ((uint)vidx & 0xff);
-		local_v1_404 = (SVECTOR *)((int)&verts->vx + ((uint)vidx >> 5 & 0x7f8));
-		pSVar5 = verts + ((uint)vidx >> 0x18);
-		puVar6 = (int*)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
-
-		gte_ldv3(pSVar10, local_v1_404, pSVar5);
-		gte_rtpt();
-
-		if (((uVar20 ^ uVar18) & 0xffff00) != 0)
-		{
-			uVar20 = uVar18 >> 8 & 0xff;
-			rot = (int)(*pc->ptexture_pages + uVar20);
-
-			pc->tpage = (uint)*(ushort *)rot << 0x10;
-
-			if ((pc->flags & 16U) == 0) // [A] custom palette flag
-				pc->clut = (uint)*(ushort *)((int)*pc->ptexture_cluts + (uVar18 >> 0xf & 0x1fe) + uVar20 * 0x40) << 0x10;
-
-			uVar20 = uVar18;
-		}
-
-		gte_nclip();
-
-		uint DAT_1f800208;
-		uint DAT_1f80020c;
-		uint DAT_1f800210;
-
-		gte_stsxy3(&DAT_1f800208, &DAT_1f80020c, &DAT_1f800210);
-
-		//if (((0x13f < DAT_1f800208) && (0x13f < DAT_1f80020c)) && (0x13f < DAT_1f800210))
-		//{
-		//	if (DAT_1f80020c << 0x10 < 0)
-		//	{
-		//		DAT_1f800208 = DAT_1f800208 ^ 1;
-		//	}
-		//	if (DAT_1f800208 != 0)
-		//		goto LAB_00040d6c;
-
-		//	if (DAT_1f800210 << 0x10 < 0)
-		//	{
-		//		if (DAT_1f80020c != 1)
-		//			goto LAB_00040d6c;
-		//	}
-		//	else
-		//	{
-		//		if (DAT_1f80020c != 0)
-		//			goto LAB_00040d6c;
-		//	}
-
-		//	goto LAB_00041140;
-		//}
-
-	LAB_00040d6c:
-		ushort DAT_1f80020a = (ushort)((uint)DAT_1f800208 >> 0x10);
-		ushort DAT_1f80020e;
-
-		//if((DAT_1f80020a < 0x100) || (DAT_1f80020e = (ushort)((uint)DAT_1f80020c >> 0x10), DAT_1f80020e < 0x100)) 
-		{
-		LAB_00040e34:
-
-			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
-
-			iVar13 = pc->scribble[1];
-			iVar11 = pc->scribble[2];
-			if (iVar13 < pc->scribble[2])
-				iVar11 = iVar13;
-
-			iVar12 = pc->scribble[0];
-			if (iVar12 < iVar11)
-				iVar11 = iVar12;
-
-			iVar9 = pc->scribble[2];
-			if (pc->scribble[2] < iVar13)
-				iVar9 = iVar13;
-
-			rot = iVar9 - iVar11;
-			if (iVar9 < iVar12)
-				rot = iVar12 - iVar11;
-
-			gte_stopz(&iVar13);
-			Z = iVar13;
-
-			if (((pc->flags & 6U) != 0) && (Z = 1, (pc->flags & 4U) == 0))
-				Z = -iVar13;
-
-			if (Z > 0)
-			{
-				if ((n == 0) || (rot << 2 <= iVar11 + -0xfa))
-				{					
-					local_t2_1500 = (POLY_FT4 *)pc->primptr;
-
-					gte_ldv0(puVar6);
-
-					gte_rtps();
-					gte_avsz4();
-
-					UVar2 = polys->uv3;
-
-					gte_stotz(&iVar11);
-
-					rot = 0xff0000;
-					if (0 < iVar11)
-					{
-						rot = 0xffffff;
-						UVar3 = polys->uv2;
-						uVar14 = *(uint *)&polys->uv0;
-						uVar15 = pc->clut;
-						uVar16 = pc->tpage;
-						uVar18 = pc->ot[iVar11 >> 1];
-
-						setPolyFT4(local_t2_1500);
-						addPrim(pc->ot + (iVar11 >> 1), local_t2_1500);
-
-						//pc->ot[iVar11 >> 1] = (uint)local_t2_1500 & 0xffffff;
-
-						//local_t2_1500->tag = uVar18 & 0xffffff | 0x9000000;
-
-						uVar17 = DAT_1f800208;
-						*(uint *)&local_t2_1500->u0 = uVar14 & 0xffff | uVar15;
-						*(uint *)&local_t2_1500->x0 = uVar17;
-
-						gte_stsxy3(&local_t2_1500->x1, &local_t2_1500->x2, &local_t2_1500->x3);
-						*(uint *)&local_t2_1500->u1 = uVar14 >> 0x10 | uVar16;
-						*(uint *)&local_t2_1500->u2 = (uint)(ushort)&UVar2;
-						*(uint *)&local_t2_1500->u3 = (uint)(ushort)&UVar3;
-
-						local_t2_1500->u0 = polys->uv0.u;
-						local_t2_1500->v0 = polys->uv0.v;
-
-						local_t2_1500->u1 = polys->uv1.u;
-						local_t2_1500->v1 = polys->uv1.v;
-
-						local_t2_1500->u2 = polys->uv3.u;
-						local_t2_1500->v2 = polys->uv3.v;
-
-						local_t2_1500->u3 = polys->uv2.u;
-						local_t2_1500->v3 = polys->uv2.v;
-
-						*(ulong *)&local_t2_1500->r0 = pc->colour;
-
-						pc->primptr = (char*)(local_t2_1500 + 1);
-					}
-				}
-				else
-				{
-					SVECTOR* v0 = pSVar10;
-					SVECTOR* v1 = local_v1_404;
-					SVECTOR* v2 = pSVar5;
-					SVECTOR* v3 = (SVECTOR*)puVar6;
-
-					copyVector(&MVERTEX_ARRAY_1f800228[0][0], v0);
-					MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&polys->uv0;
-
-					copyVector(&MVERTEX_ARRAY_1f800228[0][1], v1);
-					MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&polys->uv1;
-
-					copyVector(&MVERTEX_ARRAY_1f800228[0][2], v2);
-					MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&polys->uv3;
-
-					copyVector(&MVERTEX_ARRAY_1f800228[0][3], v3);
-					MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&polys->uv2;
-
-					makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot);
-					drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot, pc);
-
-					/*
-					iVar13 = rot << 1;
-					rot = n;
-					if ((n == 1) && (rot = (int)(ushort *)0x2, iVar11 + -0x96 < iVar13))
-						rot = 0x4;
-					MVERTEX_ARRAY_1f800228[0]._0_4_ = *(undefined4 *)(verts + ((uint)vidx & 0xff));
-					MVERTEX_ARRAY_1f800228[0]._4_4_ =
-						*(uint *)&verts[(uint)vidx & 0xff].vz & 0xffff |
-						(uint)(ushort)local_s1_1728->uv0 << 0x10;
-					uVar17 = *(undefined4 *)&verts[(uint)vidx >> 8 & 0xff].vz;
-					*(undefined4 *)(MVERTEX_ARRAY_1f800228 + rot) =
-						*(undefined4 *)(verts + ((uint)vidx >> 8 & 0xff));
-					*(undefined4 *)&MVERTEX_ARRAY_1f800228[rot].vz = uVar17;
-					*(UV_INFO *)&MVERTEX_ARRAY_1f800228[rot].uv = local_s1_1728->uv1;
-					uVar17 = *(undefined4 *)&verts[(uint)vidx >> 0x18].vz;
-					*(undefined4 *)(MVERTEX_ARRAY_1f800228 + rot * 5) =
-						*(undefined4 *)(verts + ((uint)vidx >> 0x18));
-					*(undefined4 *)&MVERTEX_ARRAY_1f800228[rot * 5].vz = uVar17;
-					puVar6 = (undefined4 *)((int)&verts->vx + ((uint)vidx >> 0xd & 0x7f8));
-					*(UV_INFO *)&MVERTEX_ARRAY_1f800228[rot * 5].uv = local_s1_1728->uv3;
-					uVar17 = puVar6[1];
-					*(undefined4 *)(MVERTEX_ARRAY_1f800228 + rot * 6) = *puVar6;
-					*(undefined4 *)&MVERTEX_ARRAY_1f800228[rot * 6].vz = uVar17;
-					*(UV_INFO *)&MVERTEX_ARRAY_1f800228[rot * 6].uv = local_s1_1728->uv2;
-					makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot);
-					drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, rot, rot, pc);
-					*/
-				}
-			}
-		}
-		/*	else
-		{
-
-				DAT_1f800210._2_2_ = (ushort)((uint)DAT_1f800210 >> 0x10);
-				rot = (DAT_1f800210._2_2_);
-				if (DAT_1f800210._2_2_ < 0x100) goto LAB_00040e34;
-				iVar11 = (int)(short)DAT_1f80020a;
-				if (((int)(short)DAT_1f80020e - iVar11) + (int)(short)DAT_1f800210._2_2_ + 8U < 0x110)
-					goto LAB_00040e34;
-				if (-1 < (int)(short)DAT_1f80020e)
-				{
-					if (iVar11 == 0)
-						goto LAB_00040dfc;
-					goto LAB_00040e34;
-				}
-				if (iVar11 != 1)
-					goto LAB_00040e34;*/
-					/*	LAB_00040dfc:
-
-						if ((int)((uint)DAT_1f800210._2_2_ << 0x10) < 0)
-						{
-							if (DAT_1f80020e != 1)
-								goto LAB_00040e34;
-						}
-						else
-						{
-							if (DAT_1f80020e != 0)
-								goto LAB_00040e34;
-						}
-						
-		}*/
-
-	LAB_00041140:
-		if (uVar7 == 0x15)
-		{
-			polys = (PL_POLYFT4 *)&polys[1].v0; // 0x14
-		}
-		else
-		{
-			polys = polys + 1;
-		}
-	} while (true);
-#endif
 }
 
 
@@ -2390,21 +1942,21 @@ void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n)
 	/* end block 3 */
 	// End Line: 5026
 
-// [D]
-int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
+// [D] [T]
+int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 {
 	int mat;
 	int zbias;
 	int drawlimit;
-	MODEL *model;
+	MODEL* model;
 	OTTYPE* savedOT;
-	CELL_OBJECT *cop;
+	CELL_OBJECT* cop;
 	int i;
 	int prev_mat;
 
 	prev_mat = -1;
 
-	for (i = 0; i < 8; i++ ) 
+	for (i = 0; i < 8; i++)
 	{
 		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
@@ -2422,16 +1974,16 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 
 	i = 0;
 
-	while(i < num_buildings)
+	while (i < num_buildings)
 	{
-		cop = (CELL_OBJECT *)*objects;
+		cop = (CELL_OBJECT*)*objects;
 		mat = cop->yang;
 
-		if (prev_mat == mat) 
+		if (prev_mat == mat)
 		{
 			Apply_InvCameraMatrixSetTrans(&cop->pos);
 		}
-		else 
+		else
 		{
 			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
 			prev_mat = mat;
@@ -2513,8 +2065,8 @@ int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp)
 	/* end block 4 */
 	// End Line: 5556
 
-// [D]
-void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv)
+// [D] [T]
+void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv)
 {
 	OTTYPE* savedOT = current->ot;
 
@@ -2547,7 +2099,7 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	plotContext.flags = flags;
 	plotContext.current = current;
 
-	if (56000 < (current->primtab-(current->primptr - PRIMTAB_SIZE)))
+	if (56000 < (current->primtab - (current->primptr - PRIMTAB_SIZE)))
 		PlotBuildingModelSubdivNxN(model, 0, &plotContext, subdiv);
 
 	current->ot = savedOT;
@@ -2598,84 +2150,74 @@ void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags
 	/* end block 4 */
 	// End Line: 5772
 
-// [D]
-ulong normalIndex(SVECTOR *verts, uint vidx)
+// [D] [T]
+ulong normalIndex(SVECTOR* verts, uint vidx)
 {
-	int iVar1;
-	uint uVar2;
-	uint uVar3;
-	SVECTOR *v0;
-	int iVar4;
-	int iVar5;
-	SVECTOR *v2;
-	int iVar6;
-	SVECTOR *v1;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
-
+	SVECTOR* v0;
+	SVECTOR* v1;
+	SVECTOR* v2;
+	int ny;
+	int y;
+	int th23;
+	int x;
+	
+	int nz;
+	int nx;
 	SVECTOR p;
 	SVECTOR q;
 
-	v1 = (SVECTOR *)((int)&verts->vx + (vidx >> 5 & 0x7f8));
 	v0 = verts + (vidx & 0xff);
-	v2 = (SVECTOR *)((int)&verts->vx + (vidx >> 0xd & 0x7f8));
+	v1 = verts + (vidx >> 8 & 0xff);
+	v2 = verts + (vidx >> 16 & 0xff);
 
-	iVar10 = (uint)(ushort)v2->vz - (uint)(ushort)v0->vz;
-	iVar8 = (int)(((uint)(ushort)v1->vy - (uint)(ushort)v0->vy) * 0x10000) >> 0x10;
-	iVar7 = (uint)(ushort)v1->vz - (uint)(ushort)v0->vz;
-	iVar1 = (int)(((uint)(ushort)v2->vy - (uint)(ushort)v0->vy) * 0x10000) >> 0x10;
-	iVar5 = (uint)(ushort)v1->vx - (uint)(ushort)v0->vx;
-	iVar4 = (uint)(ushort)v2->vx - (uint)(ushort)v0->vx;
+	p.vz = v1->vz - v0->vz;
+	q.vz = v2->vz - v0->vz;
+	
+	p.vy = v1->vy - v0->vy;
+	q.vy = v2->vy - v0->vy;
 
-	iVar9 = iVar8 * (iVar10 * 0x10000 >> 0x10) - (iVar7 * 0x10000 >> 0x10) * iVar1;
-	iVar1 = (iVar5 * 0x10000 >> 0x10) * iVar1 - iVar8 * (iVar4 * 0x10000 >> 0x10);
-	iVar6 = iVar9 + (iVar1 >> 3);
-	iVar8 = iVar1 - (iVar6 >> 2);
-	iVar6 = iVar6 + (iVar8 >> 3);
+	p.vx = v1->vx - v0->vx;
+	q.vx = v2->vx - v0->vx;
 
-	if (iVar6 < iVar8) 
+	nx = p.vy * q.vz - p.vz * q.vy;
+	nz = p.vx * q.vy - p.vy * q.vx;
+
+	x = nx + (nz >> 3);
+	y = nz - (x >> 2);
+
+	x += (y >> 3);
+
+	if (x < y)
 	{
-		if (iVar6 + iVar8 < 1) 
-		{
-			uVar2 = 4;
-
-			if (iVar8 < 0)
-				uVar2 = 5;
-		}
-		else 
-		{
-			uVar2 = 2;
-			if (iVar6 < 0)
-				uVar2 = 3;
-		}
+		if (x + y < 1) 
+			th23 = y < 0 ? 5 : 4;
+		else
+			th23 = x < 0 ? 3 : 2;
 	}
 	else 
 	{
-		uVar2 = (0 < iVar8);
-
-		if ((iVar6 + iVar8 < 1) && (uVar2 = 7, iVar6 < 0))
-			uVar2 = 6;
+		if (x + y < 1)
+			th23 = x < 0 ? 6 : 7;
+		else
+			th23 = 0 < y ? 1 : 0;
 	}
+	
+	th23 *= 4;
 
-	uVar2 = uVar2 * 4;
-	iVar4 = (int)(short)iVar7 * (int)(short)iVar4 - (int)(short)iVar5 * (int)(short)iVar10;
+	ny = p.vz * q.vx - p.vx * q.vz;
 
-	if (iVar9 < 0)
-		iVar9 = -iVar9;
+	nx = ABS(nx);
+	nz = ABS(nz);
+	
+	if (nx + nz < ny)
+		th23 += 1;
 
-	if (iVar1 < 0)
-		iVar1 = -iVar1;
+	if (nx + nz < -ny)
+		th23 = th23 & 0x1f | 2;
+	else
+		th23 = th23 & 0x1f;
 
-	if (iVar9 + iVar1 < iVar4)
-		uVar2 = uVar2 + 1;
-
-	uVar3 = uVar2 & 0x1f;
-	if (iVar9 + iVar1 < -iVar4)
-		uVar3 = uVar2 & 0x1f | 2;
-
-	return uVar3 | 0x80;
+	return th23 | 0x80;
 }
 
 
