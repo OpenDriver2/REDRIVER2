@@ -1315,7 +1315,7 @@ VECTOR* ApplyMatrix(MATRIX* m, SVECTOR* v0, VECTOR* v1)
 	gte_SetRotMatrix(m);
 	gte_ldv0(v0);
 	gte_rtv0();
-	gte_stlvl(v1);
+	gte_stlvnl(v1);
 #else
 	APPLYMATRIX(m, v0, v1);
 #endif
@@ -1341,10 +1341,76 @@ VECTOR* ApplyRotMatrix(SVECTOR* v0, VECTOR* v1)
 
 VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 {
-#if 0
-	gte_ldv0(v0);
-	gte_rtv0();
-	gte_stlvl(v1);
+#if 1
+	// correct Psy-Q implementation
+	VECTOR tmpHI;
+	VECTOR tmpLO;
+
+	tmpHI.vx = v0->vx;
+	tmpHI.vy = v0->vy;
+	tmpHI.vz = v0->vz;
+
+	if (tmpHI.vx < 0)
+	{
+		tmpLO.vx = -(-tmpHI.vx >> 0xf);
+		tmpHI.vx = -(-tmpHI.vx & 0x7fff);
+	}
+	else 
+	{
+		tmpLO.vx = tmpHI.vx >> 0xf;
+		tmpHI.vx = tmpHI.vx & 0x7fff;
+	}
+
+	if (tmpHI.vy < 0) 
+	{
+		tmpLO.vy = -(-tmpHI.vy >> 0xf);
+		tmpHI.vy = -(-tmpHI.vy & 0x7fff);
+	}
+	else
+	{
+		tmpLO.vy = tmpHI.vy >> 0xf;
+		tmpHI.vy = tmpHI.vy & 0x7fff;
+	}
+
+	if (tmpHI.vz < 0) 
+	{
+		tmpLO.vz = -(-tmpHI.vz >> 0xf);
+		tmpHI.vz = -(-tmpHI.vz & 0x7fff);
+	}
+	else 
+	{
+		tmpLO.vz = tmpHI.vz >> 0xf;
+		tmpHI.vz = tmpHI.vz & 0x7fff;
+	}
+
+	gte_ldlvl(&tmpLO);
+	docop2(0x41E012);	// gte_rtir_sf0 ?
+
+	gte_stlvnl(&tmpLO);
+	gte_ldlvl(&tmpHI);
+	gte_rtir();
+
+	if (tmpLO.vx < 0)
+		tmpLO.vx = tmpLO.vx * 8;
+	else
+		tmpLO.vx = tmpLO.vx << 3;
+
+	if (tmpLO.vy < 0)
+		tmpLO.vy = tmpLO.vy * 8;
+	else
+		tmpLO.vy = tmpLO.vy << 3;
+
+	if (tmpLO.vz < 0)
+		tmpLO.vz = tmpLO.vz * 8;
+	else
+		tmpLO.vz = tmpLO.vz << 3;
+
+	gte_stlvnl(&tmpHI);
+
+	v1->vx = tmpHI.vx + tmpLO.vx;
+	v1->vy = tmpHI.vy + tmpLO.vy;
+	v1->vz = tmpHI.vz + tmpLO.vz;
+
 #else
 	MATRIX temp;
 	gte_ReadRotMatrix(&temp);
@@ -1358,7 +1424,8 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 
 SVECTOR* ApplyMatrixSV(MATRIX* m, SVECTOR* v0, SVECTOR* v1)
 {
-#if 0
+#if 1
+	// correct Psy-Q implementation
 	gte_SetRotMatrix(m);
 	gte_ldv0(v0);
 	gte_rtv0();
@@ -1375,7 +1442,7 @@ VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 	gte_SetRotMatrix(m);
 	gte_ldv0(v0);
 	gte_rtv0();
-	gte_stlvl(v1);
+	gte_stlvnl(v1);
 #else
 	APPLYMATRIX(m, v0, v1);
 #endif
@@ -1422,7 +1489,7 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 	int iVar1;
 	int iVar2;
 	short sVar3;
-	uint uVar4;
+	int uVar4;
 	int iVar5;
 	int iVar6;
 	int iVar7;
@@ -1430,31 +1497,31 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 
 	uVar4 = (r->vx);
 
-	if ((int)uVar4 < 0)
+	if (uVar4 < 0)
 	{
 		iVar6 = *(int*)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
-		sVar3 = (short)iVar6;
-		iVar5 = -(int)sVar3;
+		sVar3 = iVar6;
+		iVar5 = -sVar3;
 	}
 	else
 	{
 		iVar6 = *(int*)(rcossin_tbl + (uVar4 & 0xfff) * 2);
-		iVar5 = (int)(short)iVar6;
-		sVar3 = -(short)iVar6;
+		iVar5 = iVar6;
+		sVar3 = -iVar6;
 	}
 
 	iVar6 = iVar6 >> 0x10;
 	uVar4 = (r->vy);
 
-	if ((int)uVar4 < 0)
+	if (uVar4 < 0)
 	{
 		iVar7 = *(int*)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
-		iVar1 = -(int)(short)iVar7;
+		iVar1 = -iVar7;
 	}
 	else
 	{
 		iVar7 = *(int*)(rcossin_tbl + (uVar4 & 0xfff) * 2);
-		iVar1 = (int)(short)iVar7;
+		iVar1 = iVar7;
 	}
 
 	iVar7 = iVar7 >> 0x10;
@@ -1464,17 +1531,17 @@ MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 	m->m[0][2] = FIXED(iVar1 * iVar6);
 	sVar3 = FIXED(iVar7 * iVar6);
 
-	if ((int)uVar4 < 0)
+	if (uVar4 < 0)
 	{
 		m->m[2][2] = sVar3;
 		iVar8 = *(int*)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
-		iVar2 = -(int)(short)iVar8;
+		iVar2 = -iVar8;
 	}
 	else
 	{
 		m->m[2][2] = sVar3;
 		iVar8 = *(int*)(rcossin_tbl + (uVar4 & 0xfff) * 2);
-		iVar2 = (int)(short)iVar8;
+		iVar2 = iVar8;
 	}
 
 	iVar8 = iVar8 >> 0x10;
@@ -1557,7 +1624,7 @@ MATRIX* RotMatrixZ(long r, MATRIX* m)
 MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX* m)
 {
 #if 0
-	// by disassembly there is two gte_LoadAverage12 calls
+	// TODO:...
 #else
 	// FIXME: make a proper function
 	m->m[0][0] = 0x1000;
@@ -1621,52 +1688,20 @@ void SetFogNear(long a, long h)
 	SetDQB(20971520);
 }
 
-int isin(int x)
-{
-
-#define qN	10
-#define qA	12
-#define B	19900
-#define	C	3516
-
-	int c, x2, y;
-
-	c = x << (30 - qN);				// Semi-circle info into carry.
-	x -= 1 << qN;					// sine -> cosine calc
-
-	x = x << (31 - qN);				// Mask with PI
-	x = x >> (31 - qN);				// Note: SIGNED shift! (to qN)
-
-	x = x * x >> (2 * qN - 14);		// x=x^2 To Q14
-
-	y = B - (x * C >> 14);			// B - x^2*C
-	y = (1 << qA) - (x * y >> 16);	// A - x^2*(B-x^2*C)
-
-	return c >= 0 ? y : -y;
-}
-
 int rsin(int a)
 {
-#if 0
-	return isin(a);
-#else
 	if (a < 0)
 		return -rcossin_tbl[(-a & 0xfffU) * 2];
 
 	return rcossin_tbl[(a & 0xfffU) * 2];
-#endif
 }
 
 int rcos(int a)
 {
-#if 0
-	return isin(a + 1024);
-#else
 	if (a < 0)
 		return rcossin_tbl[(-a & 0xfffU) * 2 + 1];
 
 	return rcossin_tbl[(a & 0xfffU) * 2 + 1];
-#endif
 }
 
 long ratan2(long y, long x)
