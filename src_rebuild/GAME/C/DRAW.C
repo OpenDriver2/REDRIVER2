@@ -154,14 +154,14 @@ _pct plotContext;
 	/* end block 3 */
 	// End Line: 1306
 
-MVERTEX MVERTEX_ARRAY_1f800228[5][5];
-
-// [D] [A]
+// [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 {
 	int m;
 
 	m = 4;
+
+	MVERTEX subdiVerts[5][5];
 
 	plotContext.colour = 0x2e000000;
 	plotContext.flags = 0x2;
@@ -173,20 +173,20 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	plotContext.ot += 28;
 
-	copyVector(&MVERTEX_ARRAY_1f800228[0][0], &verts[src->v0]);
-	MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&src->uv0;
+	copyVector(&subdiVerts[0][0], &verts[src->v0]);
+	subdiVerts[0][0].uv.val = *(ushort*)&src->uv0;
 
-	copyVector(&MVERTEX_ARRAY_1f800228[0][1], &verts[src->v1]);
-	MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&src->uv1;
+	copyVector(&subdiVerts[0][1], &verts[src->v1]);
+	subdiVerts[0][1].uv.val = *(ushort*)&src->uv1;
 
-	copyVector(&MVERTEX_ARRAY_1f800228[0][2], &verts[src->v3]);
-	MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&src->uv3;
+	copyVector(&subdiVerts[0][2], &verts[src->v3]);
+	subdiVerts[0][2].uv.val = *(ushort*)&src->uv3;
 
-	copyVector(&MVERTEX_ARRAY_1f800228[0][3], &verts[src->v2]);
-	MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&src->uv2;
+	copyVector(&subdiVerts[0][3], &verts[src->v2]);
+	subdiVerts[0][3].uv.val = *(ushort*)&src->uv2;
 
-	makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m);
-	drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, m, m, &plotContext);
+	makeMesh((MVERTEX(*)[5][5])subdiVerts, m, m);
+	drawMesh((MVERTEX(*)[5][5])subdiVerts, m, m, &plotContext);
 
 	plotContext.ot -= 28;
 }
@@ -300,6 +300,8 @@ void DrawSprites(int numFound)
 	int numShadows;
 	int count;
 
+	MVERTEX subdiVerts[5][5];
+
 	lightdd = FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
 		FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
 		FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
@@ -387,20 +389,20 @@ void DrawSprites(int numFound)
 				plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
 				plotContext.tpage = texture_pages[src->texture_set] << 0x10;
 
-				copyVector(&MVERTEX_ARRAY_1f800228[0][0], &verts[src->v0]);
-				MVERTEX_ARRAY_1f800228[0][0].uv.val = *(ushort*)&src->uv0;
+				copyVector(&subdiVerts[0][0], &verts[src->v0]);
+				subdiVerts[0][0].uv.val = *(ushort*)&src->uv0;
 
-				copyVector(&MVERTEX_ARRAY_1f800228[0][1], &verts[src->v1]);
-				MVERTEX_ARRAY_1f800228[0][1].uv.val = *(ushort*)&src->uv1;
+				copyVector(&subdiVerts[0][1], &verts[src->v1]);
+				subdiVerts[0][1].uv.val = *(ushort*)&src->uv1;
 
-				copyVector(&MVERTEX_ARRAY_1f800228[0][2], &verts[src->v3]);
-				MVERTEX_ARRAY_1f800228[0][2].uv.val = *(ushort*)&src->uv3;
+				copyVector(&subdiVerts[0][2], &verts[src->v3]);
+				subdiVerts[0][2].uv.val = *(ushort*)&src->uv3;
 
-				copyVector(&MVERTEX_ARRAY_1f800228[0][3], &verts[src->v2]);
-				MVERTEX_ARRAY_1f800228[0][3].uv.val = *(ushort*)&src->uv2;
+				copyVector(&subdiVerts[0][3], &verts[src->v2]);
+				subdiVerts[0][3].uv.val = *(ushort*)&src->uv2;
 
-				makeMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4);
-				drawMesh((MVERTEX(*)[5][5])MVERTEX_ARRAY_1f800228, 4, 4, &plotContext);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts, 4, 4);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts, 4, 4, &plotContext);
 
 				src++;
 			}
@@ -647,26 +649,24 @@ void DrawSprites(int numFound)
 	/* end block 4 */
 	// End Line: 1981
 
-// [D]
+// [D] [T]
 void DrawMapPSX(int* comp_val)
 {
-	ushort uVar1;
-	uint uVar4;
+	int dir;
 	PACKED_CELL_OBJECT* ppco;
-	int iVar7;
-	uint uVar9;
+	int distScale;
 	int cellx;
 	int cellz;
 	CELL_OBJECT* cop;
 	MODEL* model;
-	int iVar19;
-	int iVar20;
-	uint backPlane;
+	int hloop;
+	int vloop;
+	int backPlane;
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
 	VECTOR newpos;
-	int camx;
-	int camz;
+	int cellxpos;
+	int cellzpos;
 	char* PVS_ptr;
 	int tiles_found;
 	int other_models_found;
@@ -682,8 +682,7 @@ void DrawMapPSX(int* comp_val)
 	int backAng;
 	int leftAng;
 	int rightAng;
-	
-	int local_34;
+	int i;
 	int anim_objs;
 
 	backPlane = 6144;
@@ -692,6 +691,7 @@ void DrawMapPSX(int* comp_val)
 
 	farClipLimit = 80000;
 
+	// setup planes
 	rightAng = camera_angle.vy - FrAng & 0xfff;
 	leftAng = camera_angle.vy + FrAng & 0xfff;
 	backAng = camera_angle.vy + 0x400U & 0xfff;
@@ -724,233 +724,216 @@ void DrawMapPSX(int* comp_val)
 		setupYet = 0;
 	}
 
-	camz = current_cell_z;
-	camx = current_cell_x;
+	cellzpos = current_cell_z;
+	cellxpos = current_cell_x;
 
+	// clean cell cache
 	ClearCopUsage();
 
 	PVS_ptr = CurrentPVS + 220;
 	
-	iVar20 = 0;
-	iVar19 = 0;
-	uVar4 = 0;
+	vloop = 0;
+	hloop = 0;
+	dir = 0;
 
 	if (NumPlayers == 2)
-		uVar9 = goFaster & 31 | 1;
+		distScale = goFaster & 31 | 1;
 	else
-		uVar9 = goFaster & 31;
+		distScale = goFaster & 31;
 
-	local_34 = (gDrawDistance >> uVar9) - 1;		// [A]
+	i = (gDrawDistance >> distScale) - 1;		// [A]
 
-	do
-	{
-		while (true)
+	// walk through all cells
+	while (i >= 0)
+	{				
+		if (ABS(hloop) + ABS(vloop) < 16)
 		{
-			while (true)
+			cellx = cellxpos + hloop;
+			cellz = cellzpos + vloop;
+
+			if (rightPlane < 0 &&
+				leftPlane > 0 &&
+				backPlane < farClipLimit &&  // check planes
+				cellx > -1 && cellx < cells_across &&							// check cell ranges
+				cellz > -1 && cellz < cells_down &&
+				PVS_ptr[hloop]) // check PVS table		// [A] please enable after PVSDecode will work properly
 			{
-				if (local_34 == -1)
+				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
+
+				// walk each cell object in cell
+				while (ppco != NULL)
 				{
-					if (numSpritesFound != 0)
+					model = modelpointers[(ppco->value >> 6) | ((ppco->pos).vy & 1) << 10];
+
+					if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
 					{
-						DrawSprites(numSpritesFound);
-					}
-
-					if (tiles_found != 0)
-					{
-						DrawTILES(tiles_found);
-					}
-
-					if (other_models_found != 0)
-					{
-						SetupPlaneColours(combointensity);
-						DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found, current);
-					}
-
-					while (anim_objs > 0)
-					{
-						anim_objs--;
-						cop = anim_obj_buffer[anim_objs];
-
-						newpos.vx = cop->pos.vx - camera_position.vx;
-						newpos.vy = cop->pos.vy - camera_position.vy;
-						newpos.vz = cop->pos.vz - camera_position.vz;
-						Apply_Inv_CameraMatrix(&newpos);
-
-						gte_SetRotMatrix(&matrixtable[cop->yang]);
-						DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
-					}
-
-					buildingsFound = other_models_found;
-
-					return;
-				}
-
-				cellx = iVar19;
-				if (iVar19 < 0)
-					cellx = -iVar19;
-
-				cellz = iVar20;
-
-				if (iVar20 < 0)
-					cellz = -iVar20;
-
-				local_34--;
-
-				if (cellx + cellz < 16)
-				{
-					cellx = camx + iVar19;
-					cellz = camz + iVar20;
-
-					if (rightPlane < 0 &&
-						leftPlane > 0 &&
-						backPlane < farClipLimit &&  // check planes
-						cellx > -1 && cellx < cells_across &&							// check cell ranges
-						cellz > -1 && cellz < cells_down &&
-						PVS_ptr[iVar19]) // check PVS table		// [A] please enable after PVSDecode will work properly
-					{
-						ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
-
-						while (ppco != NULL)
+						if (model->shape_flags & 0x4000)
 						{
-							model = modelpointers[(ppco->value >> 6) | ((ppco->pos).vy & 1) << 10];
+							if (numSpritesFound < 75)
+								spriteList[numSpritesFound++] = ppco;
 
-							if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
+							if ((model->flags2 & 1) && anim_objs < 20)
 							{
-								if (model->shape_flags & 0x4000)
+								cop = UnpackCellObject(ppco, &ci.nearCell);
+
+								anim_obj_buffer[anim_objs++] = cop;
+							}
+
+							if(model->flags2 & 0x2000)
+							{
+								if (treecount == 0)
 								{
-									if (numSpritesFound < 75)
-										spriteList[numSpritesFound++] = ppco;
+									cop = UnpackCellObject(ppco, &ci.nearCell);
 
-									if ((model->flags2 & 1) && anim_objs < 20)
-									{
-										cop = UnpackCellObject(ppco, &ci.nearCell);
-
-										anim_obj_buffer[anim_objs++] = cop;
-									}
-
-									if (((model->flags2 & 0x2000) != 0) && (uVar9 = treecount & 0xf, treecount++, uVar9 == 0))
-									{
-										cop = UnpackCellObject(ppco, &ci.nearCell);
-										
-										ground_debris[groundDebrisIndex++] = *cop;
-										groundDebrisIndex = groundDebrisIndex % 16;
-									}
+									ground_debris[groundDebrisIndex++] = *cop;
+									groundDebrisIndex = groundDebrisIndex % 16;
 								}
-								else
+								
+								treecount = (treecount+1) & 0xf;
+							}
+						}
+						else
+						{
+							int modelNumber;
+							modelNumber = ppco->value & 0x3f;
+
+							if (modelNumber > 0)
+							{
+								MATRIX2* cmat;
+								cmat = &CompoundMatrix[modelNumber];
+								
+								if (cmat->computed != current_object_computed_value)
 								{
-									uVar9 = ppco->value & 0x3f;
+									cmat->computed = current_object_computed_value;
 
-									if ((ppco->value & 0xf) != 0)
-									{
-										if (CompoundMatrix[uVar9].computed != current_object_computed_value)
-										{
-											CompoundMatrix[uVar9].computed = current_object_computed_value;
+									gte_ReadRotMatrix(&mRotStore);
 
-											gte_ReadRotMatrix(&mRotStore);
+									gte_sttr(mRotStore.t);
 
-											gte_sttr(mRotStore.t);
+									MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[modelNumber], (MATRIX*)cmat);
 
-											MulMatrix0(&inv_camera_matrix, (MATRIX*)(matrixtable + uVar9), (MATRIX*)(CompoundMatrix + uVar9));
-
-											gte_SetRotMatrix(&mRotStore);
-										}
-									}
-
-									if ((model->shape_flags & 0x480) || (model->flags2 & 0xc000))
-									{
-										if(model->flags2 & 0x80)
-										{
-											alleycount++;
-											
-											if (alleycount == 13)
-											{
-												cop = UnpackCellObject(ppco, &ci.nearCell);
-												ground_debris[groundDebrisIndex++] = *cop;
-												groundDebrisIndex = groundDebrisIndex % 16;
-
-												alleycount = 0;
-											}
-										}
-										
-										if (tiles_found < 256)
-										{
-											*(PACKED_CELL_OBJECT**)(tile_overflow_buffer + tiles_found) = ppco;
-											tiles_found++;
-										}
-									}
-									else
-									{
-										cop = UnpackCellObject(ppco, &ci.nearCell);
-
-										if ((model->flags2 & 1) && (anim_objs < 20))
-										{
-											anim_obj_buffer[anim_objs++] = cop;
-										}
-
-										if (other_models_found < 192)
-											model_object_ptrs[other_models_found++] = cop;
-									}
+									gte_SetRotMatrix(&mRotStore);
 								}
 							}
 
-							ppco = GetNextPackedCop(&ci);
+							if ((model->shape_flags & 0x480) || (model->flags2 & 0xc000))
+							{
+								if(model->flags2 & 0x80)
+								{
+									alleycount++;
+									
+									if (alleycount == 13)
+									{
+										cop = UnpackCellObject(ppco, &ci.nearCell);
+										ground_debris[groundDebrisIndex++] = *cop;
+										groundDebrisIndex = groundDebrisIndex % 16;
+
+										alleycount = 0;
+									}
+								}
+								
+								if (tiles_found < 256)
+								{
+									*(PACKED_CELL_OBJECT**)(tile_overflow_buffer + tiles_found) = ppco;
+									tiles_found++;
+								}
+							}
+							else
+							{
+								cop = UnpackCellObject(ppco, &ci.nearCell);
+
+								if ((model->flags2 & 1) && anim_objs < 20)
+								{
+									anim_obj_buffer[anim_objs++] = cop;
+								}
+
+								if (other_models_found < 192)
+									model_object_ptrs[other_models_found++] = cop;
+							}
 						}
 					}
+
+					ppco = GetNextPackedCop(&ci);
 				}
-
-				if (uVar4 != 1)
-					break;
-
-				leftPlane += leftsin;
-				backPlane += backsin;
-				rightPlane += rightsin;
-				iVar20++;
-
-				PVS_ptr += pvs_square;
-
-				if (iVar19 == iVar20)
-					uVar4 = 2;
-			}
-
-			if (1 < uVar4)
-				break;
-
-			if (uVar4 == 0)
-			{
-				leftPlane += leftcos;
-				backPlane += backcos;
-				rightPlane += rightcos;
-
-				iVar19++;
-
-				if (iVar19 + iVar20 == 1)
-					uVar4 = 1;
-			}
-			else
-			{
-			LAB_0004004c:
-				leftPlane -= leftsin;
-				backPlane -= backsin;
-				rightPlane -= rightsin;
-				iVar20--;
-				PVS_ptr -= pvs_square;
-
-				if (iVar19 == iVar20)
-					uVar4 = 0;
 			}
 		}
 
-		if (uVar4 != 2)
-			goto LAB_0004004c;
+		if (dir == 0)
+		{
+			leftPlane += leftcos;
+			backPlane += backcos;
+			rightPlane += rightcos;
 
-		iVar19--;
-		leftPlane -= leftcos;
-		backPlane -= backcos;
-		rightPlane -= rightcos;
+			hloop++;
 
-		if (iVar19 + iVar20 == 0)
-			uVar4 = 3;
-	} while (true);
+			if (hloop + vloop == 1)
+				dir = 1;
+		}
+		else if (dir == 1)
+		{
+			leftPlane += leftsin;
+			backPlane += backsin;
+			rightPlane += rightsin;
+			vloop++;
+
+			PVS_ptr += pvs_square;
+
+			if (hloop == vloop)
+				dir = 2;
+		}
+		else if (dir == 2)
+		{
+			hloop--;
+			leftPlane -= leftcos;
+			backPlane -= backcos;
+			rightPlane -= rightcos;
+
+			if (hloop + vloop == 0)
+				dir = 3;
+		}
+		else
+		{
+			leftPlane -= leftsin;
+			backPlane -= backsin;
+			rightPlane -= rightsin;
+			vloop--;
+			
+			PVS_ptr -= pvs_square;
+
+			if (hloop == vloop)
+				dir = 0;
+		}
+
+		i--;
+	}
+
+	if (numSpritesFound != 0)
+		DrawSprites(numSpritesFound);
+
+	if (tiles_found != 0)
+		DrawTILES(tiles_found);
+
+	if (other_models_found != 0)
+	{
+		SetupPlaneColours(combointensity);
+		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found, current);
+	}
+
+	while (anim_objs > 0)
+	{
+		anim_objs--;
+		cop = anim_obj_buffer[anim_objs];
+
+		newpos.vx = cop->pos.vx - camera_position.vx;
+		newpos.vy = cop->pos.vy - camera_position.vy;
+		newpos.vz = cop->pos.vz - camera_position.vz;
+		Apply_Inv_CameraMatrix(&newpos);
+
+		gte_SetRotMatrix(&matrixtable[cop->yang]);
+		DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
+	}
+
+	buildingsFound = other_models_found;
 }
 
 // decompiled code
@@ -1150,7 +1133,6 @@ MATRIX frustrum_matrix;
 // [D] [T]
 void InitFrustrumMatrix(void)
 {
-	int iVar1;
 	int a;
 
 	a = -camera_angle.vy;
