@@ -58,12 +58,12 @@ before_build:
   - cmd: premake5 vs2019
   - cmd: ren "%JPEG_DIR%\jconfig.vc" "jconfig.h"
   
-#artifacts:
-#   - path: src_rebuild\bin\%configuration%\*.zip
-#     name: Binaries
+artifacts:
+   - path: src_rebuild\bin\%configuration%\*.zip
+     name: Binaries
   
-#after_build:
-#  - cmd: cd %project_folder%\bin\%configuration%
-#  - 7z a REDRIVER2.zip ".\*"
+after_build:
+  - cmd: cd %project_folder%\bin\%configuration%
+  - 7z a REDRIVER2.zip ".\*"
   
 #build: off
