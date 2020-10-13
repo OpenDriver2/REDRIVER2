@@ -39,7 +39,7 @@
 SCORE_TABLES ScoreTables;
 PLAYER_SCORE gPlayerScore;
 
-// [D]
+// [D] [T]
 void InitialiseScoreTables(void)
 {
 	int i, j;
@@ -100,7 +100,7 @@ void InitialiseScoreTables(void)
 	/* end block 4 */
 	// End Line: 204
 
-// [D]
+// [D] [T]
 int OnScoreTable(SCORE_ENTRY **tablept)
 {
 	int position;
@@ -168,7 +168,7 @@ int OnScoreTable(SCORE_ENTRY **tablept)
 	/* end block 4 */
 	// End Line: 302
 
-// [D]
+// [D] [T]
 void AddScoreToTable(SCORE_ENTRY *table, int entry)
 {
 	int i;
@@ -218,7 +218,7 @@ void AddScoreToTable(SCORE_ENTRY *table, int entry)
 	/* end block 4 */
 	// End Line: 365
 
-// [D]
+// [D] [T]
 int CheckGetawayPlacing(SCORE_ENTRY *table)
 {
 	int i;
@@ -266,7 +266,7 @@ int CheckGetawayPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 422
 
-// [D]
+// [D] [T]
 int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 {
 	int i;
@@ -286,7 +286,7 @@ int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 
 			}
 		}
-		else if ((table->items == -1) || (table->items < gPlayerScore.items))
+		else if (table->items == -1 || table->items < gPlayerScore.items)
 		{
 			return i;
 		}
@@ -330,7 +330,7 @@ int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 491
 
-// [D]
+// [D] [T]
 int CheckCheckpointPlacing(SCORE_ENTRY *table)
 {
 	int i;
@@ -377,7 +377,7 @@ int CheckCheckpointPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 546
 
-// [D]
+// [D] [T]
 int CheckSurvivalPlacing(SCORE_ENTRY *table)
 {
 	int i;
@@ -423,7 +423,7 @@ int CheckSurvivalPlacing(SCORE_ENTRY *table)
 	/* end block 4 */
 	// End Line: 587
 
-// [D]
+// [D] [T]
 void ResetTable(SCORE_ENTRY *table)
 {
 	int i;
