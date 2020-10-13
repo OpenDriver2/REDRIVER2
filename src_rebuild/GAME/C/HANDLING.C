@@ -956,7 +956,7 @@ void GlobalTimeStep(void)
 										if (c1->controlType == CONTROL_TYPE_PLAYER && IS_ROADBLOCK_CAR(cp))
 										{
 											InitCopState(cp, NULL);
-											c1->ai.p.justPinged = 0;
+											cp->ai.p.justPinged = 0;
 										}
 									}
 
@@ -1993,14 +1993,18 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		cp->hd.autoBrake = 90;
 
 	// handle burnouts or handbrake
-	if ((pad & 0x10) == 0)
+	if (pad & 0x10)
+	{
+		cp->handbrake = 1;
+	}
+	else 
 	{
 		cp->handbrake = 0;
 
-		if ((pad & 0x20) == 0)
-			cp->wheelspin = 0;
-		else 
+		if (pad & 0x20)
 			cp->wheelspin = 1;
+		else 
+			cp->wheelspin = 0;
 
 		// continue without burnout
 		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 0x6e958)
@@ -2009,37 +2013,14 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			pad |= 0x40;
 		}
 	}
-	else 
-	{
-		cp->handbrake = 1;
-	}
 
 	// handle steering
 	if (use_analogue == 0)
 	{
-		if ((pad & 4) == 0)
-		{
-			// regular steer
-			if((pad & 0x2000) != 0)
-			{
-				cp->wheel_angle += 32;
-
-				if (cp->wheel_angle > 352)
-					cp->wheel_angle = 352;
-			}
-			
-			if ((pad & 0x8000) != 0)
-			{
-				cp->wheel_angle -= 32;
-
-				if (cp->wheel_angle < -352)
-					cp->wheel_angle = -352;
-			}
-		}
-		else
+		if (pad & 0x4)
 		{
 			// fast steer
-			if ((pad & 0x2000) != 0)
+			if (pad & 0x2000)
 			{
 				cp->wheel_angle += 64;
 
@@ -2047,7 +2028,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 					cp->wheel_angle = 511;
 			}
 
-			if ((pad & 0x8000) != 0)
+			if (pad & 0x8000)
 			{
 				cp->wheel_angle -= 64;
 
@@ -2055,23 +2036,42 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 					cp->wheel_angle = -511;
 			}
 		}
+		else
+		{
+			// regular steer
+			if(pad & 0x2000)
+			{
+				cp->wheel_angle += 32;
 
-		if ((pad & 0xa000) != 0) 
+				if (cp->wheel_angle > 352)
+					cp->wheel_angle = 352;
+			}
+			
+			if (pad & 0x8000)
+			{
+				cp->wheel_angle -= 32;
+
+				if (cp->wheel_angle < -352)
+					cp->wheel_angle = -352;
+			}
+		}
+
+		if (pad & 0xa000) 
 			cp->hd.autoBrake++;
 		else
 			cp->hd.autoBrake = 0;
 	}
 	else 
 	{
-		if ((pad & 4) == 0) 
-		{
-			int_steer *= (int_steer * int_steer) / 80;
-			analog_angle = ((long long)int_steer * 0x66666667) >> 32;		// int_steer * 0.4
-		}
-		else 
+		if (pad & 0x4) 
 		{
 			int_steer *= (int_steer * int_steer) / 60;
 			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;		// int_steer * 0.6
+		}
+		else 
+		{
+			int_steer *= (int_steer * int_steer) / 80;
+			analog_angle = ((long long)int_steer * 0x66666667) >> 32;		// int_steer * 0.4
 		}
 
 		analog_angle = (analog_angle >> 5) - (int_steer >> 0x1f);
@@ -2099,7 +2099,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 	if (gTimeInWater != 0)
 	{
-		if ((pad & 0x80) != 0) 
+		if (pad & 0x80) 
 		{
 			int rws;
 
@@ -2113,7 +2113,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 			cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * rws);
 		}
-		else if ((pad & 0x40) != 0)
+		else if (pad & 0x40)
 		{
 			if (cp->hndType == 5)
 			{
@@ -2150,8 +2150,6 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			{
 				_CAR_DATA* tp;
 				int targetCarId, cx, cz, chase_square_dist;
-
-				targetCarId = -1;
 
 				if (player[0].playerCarId == cp->id)
 					targetCarId = player[0].targetCarId;
