@@ -1898,8 +1898,10 @@ void PedDoNothing(PEDESTRIAN* pPed)
 
 		pPed->dir.vy = pPed->dir.vy - 64 + (tannerTurnMax - pPed->doing_turn) * tannerTurnStep;
 
-		if (pPed->frame1 > 16)
+		if (pPed->frame1 > 14)
 			pPed->frame1 = 0;
+		else
+			pPed->frame1++;
 
 		pPed->head_rot = 0;
 	}

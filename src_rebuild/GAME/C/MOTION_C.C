@@ -711,6 +711,10 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		prims->b0 = combointensity & 0xFF;
 	}
 
+#ifndef PSX
+	prims->pgxp_index = 0xFFFF;
+#endif
+	
 	if (bDoingShadow == 0)
 	{
 		x = sz + sy >> 4;
