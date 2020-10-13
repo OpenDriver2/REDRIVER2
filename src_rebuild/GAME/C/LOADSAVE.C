@@ -106,6 +106,17 @@ void LoadCurrentProfile()
 	SetTextColour(128, 128, 64);
 	ShowSavingWaitMessage("Loading configuration...", 0);
 
+	{
+		RECT16 rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.w = 320;
+		rect.h = 512;
+
+		ClearImage(&rect, 0, 0, 0);
+		DrawSync(0);
+	}
+
 	error = 1;
 
 	// load config
@@ -125,6 +136,10 @@ void LoadCurrentProfile()
 			LoadConfigData(_other_buffer);
 			error = 0;
 		}
+	}
+	else
+	{
+		ShowSavingWaitMessage("No saved data", 0);
 	}
 
 	if (error)

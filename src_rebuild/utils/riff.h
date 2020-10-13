@@ -13,6 +13,10 @@
 #define CHUNK_CUE			((' ' << 24) | ('e' << 16) | ('u' << 8) | 'c' )
 #define CHUNK_DATA			(('a' << 24) | ('t' << 16) | ('a' << 8) | 'd' )
 #define CHUNK_SAMPLE		(('l' << 24) | ('p' << 16) | ('m' << 8) | 's' )
+#define CHUNK_LTXT			(('t' << 24) | ('x' << 16) | ('t' << 8) | 'l' )
+#define CHUNK_LABEL			(('l' << 24) | ('b' << 16) | ('a' << 8) | 'l' )
+#define CHUNK_LIST			(('T' << 24) | ('S' << 16) | ('I' << 8) | 'L' )
+#define CHUNK_ADTLLIST		(('l' << 24) | ('t' << 16) | ('d' << 8) | 'a' )
 
 // RIFF WAVE FILE HEADERS
 typedef struct

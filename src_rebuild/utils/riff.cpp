@@ -94,12 +94,15 @@ int CRIFF_Parser::ReadChunk( void* pOutput, int maxLen )
 
 	int readCount = ReadData( pOutput, numToRead);
 
+	numToRead -= readCount;
+	/*
 	if (numToRead < m_curChunk.Size)
 	{
 		m_pos += m_curChunk.Size - numToRead;
+
 		if (m_riff)
 			fseek(m_riff, m_curChunk.Size - numToRead, SEEK_CUR);
-	}
+	}*/
 
 	return readCount;
 }

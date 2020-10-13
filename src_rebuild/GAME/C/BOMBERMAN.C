@@ -23,8 +23,9 @@
 #include "RAND.H"
 
 MODEL* gBombModel;
-_ExOBJECT explosion[5];
-static BOMB ThrownBombs[5];
+
+static BOMB ThrownBombs[MAX_THROWN_BOMBS];
+
 static int ThrownBombDelay = 0;
 static int CurrentBomb = 0;
 static int gWantFlash = 0;
@@ -71,7 +72,7 @@ void InitThrownBombs(void)
 {
 	int i;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_THROWN_BOMBS; i++)
 		ThrownBombs[i].flags = 0;
 
 	ThrownBombDelay = Random2(0) % 45 + 8;
@@ -153,7 +154,7 @@ void HandleThrownBombs(void)
 		ThrownBombDelay = Random2(0) % 45 + 8;
 
 		bomb = &ThrownBombs[CurrentBomb++];
-		CurrentBomb = CurrentBomb % 5;
+		CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 		bomb->flags = 1;
 		bomb->active = 1;
@@ -182,7 +183,7 @@ void HandleThrownBombs(void)
 	bomb = ThrownBombs;
 
 	i = 0;
-	while (i < 5)
+	while (i < MAX_THROWN_BOMBS)
 	{
 		if ((bomb->flags & 1) != 0) 
 		{
@@ -303,7 +304,7 @@ void DrawThrownBombs(void)
 
 	bomb = ThrownBombs;
 	i = 0;
-	while (i < 5)
+	while (i < MAX_THROWN_BOMBS)
 	{
 		if ((bomb->flags & 1) != 0) 
 		{
@@ -406,7 +407,7 @@ void BombThePlayerToHellAndBack(int car)
 	gBombTargetVehicle = &car_data[(car + 1) % maxCivCars];
 
 	bomb = &ThrownBombs[CurrentBomb++];
-	CurrentBomb = CurrentBomb % 5;
+	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 	bomb->flags = 1;
 	bomb->active = 1;
@@ -420,7 +421,7 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vz = 0;
 		
 	bomb = &ThrownBombs[CurrentBomb++];
-	CurrentBomb = CurrentBomb % 5;
+	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 	bomb->flags = 1;
 	bomb->active = 1;
@@ -434,7 +435,7 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vz = 0;
 		
 	bomb = &ThrownBombs[CurrentBomb++];
-	CurrentBomb = CurrentBomb % 5;
+	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 	bomb->flags = 1;
 	bomb->active = 1;
@@ -769,13 +770,13 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 				pointVel[1] = denom * (collisionResult.surfNormal.vy >> 6);
 				pointVel[2] = denom * (collisionResult.surfNormal.vz >> 6);
 
-				cp->st.n.linearVelocity[0] = cp->st.n.linearVelocity[0] + pointVel[0];
-				cp->st.n.linearVelocity[1] = cp->st.n.linearVelocity[1] + pointVel[1];
-				cp->st.n.linearVelocity[2] = cp->st.n.linearVelocity[2] + pointVel[2];
+				cp->st.n.linearVelocity[0] += pointVel[0];
+				cp->st.n.linearVelocity[1] += pointVel[1];
+				cp->st.n.linearVelocity[2] += pointVel[2];
 
-				cp->hd.aacc[0] = (cp->hd.aacc[0] + FIXEDH(lever[1] * pointVel[2])) - FIXEDH(lever[2] * pointVel[1]);
-				cp->hd.aacc[1] = (cp->hd.aacc[1] + FIXEDH(lever[2] * pointVel[0])) - FIXEDH(lever[0] * pointVel[2]);
-				cp->hd.aacc[2] = (cp->hd.aacc[2] + FIXEDH(lever[0] * pointVel[1])) - FIXEDH(lever[1] * pointVel[0]);
+				cp->hd.aacc[0] += FIXEDH(lever[1] * pointVel[2]) - FIXEDH(lever[2] * pointVel[1]);
+				cp->hd.aacc[1] += FIXEDH(lever[2] * pointVel[0]) - FIXEDH(lever[0] * pointVel[2]);
+				cp->hd.aacc[2] += FIXEDH(lever[0] * pointVel[1]) - FIXEDH(lever[1] * pointVel[0]);
 			}
 		}
 

@@ -54,6 +54,10 @@ PLAYBACKCAMERA *CutsceneCamera = NULL;
 
 static int CutsceneCameraOffset = 0;
 
+#ifndef PSX
+char* gCustomCutsceneBuffer;
+#endif
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitInGameCutsceneVariables()
@@ -242,6 +246,10 @@ void DrawInGameCutscene(void)
 {
 	TILE *tile;
 
+#ifndef PSX
+	PrintXASubtitles();
+#endif
+	
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 		return;
 
@@ -1318,6 +1326,20 @@ int LoadCutsceneToBuffer(int subindex)
 #ifndef PSX
 			// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
 			sprintf(customFilename, "REPLAYS\\CUT%d\\%d.D2RP", gCurrentMissionNumber, subindex);
+
+			if (FileExists(customFilename))
+			{
+				printInfo("Custom cutscene replay file loaded\n");
+				size = LoadfileSeg(customFilename, gCustomCutsceneBuffer, 0, 0xffff);
+
+				// load into custom buffer
+				CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
+				CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = gCustomCutsceneBuffer;
+				CutsceneBuffer.numResident++;
+
+				gCustomCutsceneBuffer += size;
+				return 1;
+			}
 #endif
 			if (CutsceneBuffer.bytesFree < size) 
 			{
@@ -1328,27 +1350,11 @@ int LoadCutsceneToBuffer(int subindex)
 				CutsceneBuffer.currentPointer = _other_buffer2;
 				CutsceneBuffer.bytesFree = 0xc000;
 
-#ifndef PSX
-				if (FileExists(customFilename))
-				{
-					printInfo("Custom cutscene replay file loaded\n");
-					LoadfileSeg(customFilename, _other_buffer2, 0, size);
-				}
-				else
-#endif
-					LoadfileSeg(filename, _other_buffer2, offset, size);				
+				LoadfileSeg(filename, _other_buffer2, offset, size);				
 			}
 			else 
 			{
-#ifndef PSX
-				if (FileExists(customFilename))
-				{
-					printInfo("Custom cutscene replay file loaded\n");
-					LoadfileSeg(customFilename, _other_buffer2, 0, size);
-				}
-				else
-#endif
-					LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
+				LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 			}
 
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
@@ -1527,6 +1533,10 @@ void FreeCutsceneBuffer(void)
 
 	CutsceneBuffer.bytesFree = sizeof(CutsceneBuffer.buffer);
 	ClearMem(CutsceneBuffer.buffer, sizeof(CutsceneBuffer.buffer));
+
+#ifndef PSX
+	gCustomCutsceneBuffer = _other_buffer2;
+#endif
 }
 
 

@@ -12,6 +12,8 @@
 
 #include "INLINE_C.H"
 
+_ExOBJECT explosion[MAX_EXPLOSION_OBJECTS];
+
 MATRIX SS = { 0 };
 
 // decompiled code
@@ -54,7 +56,7 @@ void InitExObjects(void)
 {
 	int i;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_EXPLOSION_OBJECTS; i++)
 		explosion[i].time = -1;
 
 	initExplosion();
@@ -186,7 +188,7 @@ void HandleExplosion(void)
 	i = 0;
 	exp = explosion;
 
-	while (i < 5)
+	while (i < MAX_EXPLOSION_OBJECTS)
 	{
 		if (exp->time != -1 && exp->type != BANG_USED) 
 		{
@@ -207,7 +209,7 @@ void HandleExplosion(void)
 	
 	i = 0;
 	exp = explosion;
-	while (i < 5)
+	while (i < MAX_EXPLOSION_OBJECTS)
 	{
 		if (exp->time != -1)
 		{
@@ -277,7 +279,7 @@ void DrawAllExplosions(void)
 {
 	int i;
 	i = 0;
-	while (i < 5)
+	while (i < MAX_EXPLOSION_OBJECTS)
 	{
 		if (explosion[i].time != -1)
 			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);

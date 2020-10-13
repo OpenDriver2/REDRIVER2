@@ -81,30 +81,29 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	int num_cb;
 	int box_loop;
 	int sphere_sq;
-	int iVar1;
+	int zd;
 	int iVar2;
 	int iVar3;
-	uint uVar4;
-	int iVar5;
+	uint theta;
+	int sn;
 	int* piVar6;
-	int iVar7;
-	int iVar8;
+	int ypos;
+	int cs;
 	COLLISION_PACKET* collide;
-	int iVar9;
-	int iVar10;
-	int iVar11;
+	int xs;
+	int zs;
+	int xd;
+	int cell_x, cell_z;
 	CELL_ITERATOR ci;
 
-	iVar3 = pPosition->vx + units_across_halved;
-	iVar1 = pPosition->vz + units_down_halved;
+	cell_x = (pPosition->vx + units_across_halved) / 2048;
+	cell_z = (pPosition->vz + units_down_halved) / 2048;
 
-	ppco = GetFirstPackedCop(FixFloorSigned(iVar3, 11), FixFloorSigned(iVar1, 11), &ci, 0);
+	ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
 	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
 
-	do {
-		if (!pCellObject) 
-			return 1;
-	
+	while(pCellObject)
+	{
 		pModel = modelpointers[pCellObject->type];
 
 		piVar6 = (int*)pModel->collision_block;
@@ -113,38 +112,143 @@ char CellEmpty(VECTOR *pPosition, int radius)
 		{
 			num_cb = *piVar6;
 
-			iVar11 = ((pCellObject->pos.vx - pPosition->vx) * 0x10000) >> 0x10;
-			iVar1 = ((pCellObject->pos.vz - pPosition->vz) * 0x10000) >> 0x10;
+			xd = (pCellObject->pos.vx - pPosition->vx);
+			zd = (pCellObject->pos.vz - pPosition->vz);
 
 			sphere_sq = pModel->bounding_sphere + 580;
 			sphere_sq = (sphere_sq * sphere_sq);
 
 			collide = (COLLISION_PACKET*)(piVar6 + 1);
 
-			if (iVar11 * iVar11 + iVar1 * iVar1 < sphere_sq)
+			if (xd * xd + zd * zd < sphere_sq)
 			{
 				box_loop = 0;
 
 				while (box_loop < num_cb)
 				{
-					iVar10 = collide->zsize * 0x800 + radius * 0x1000;
-					iVar9 = collide->xsize * 0x800 + radius * 0x1000;
-					uVar4 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
-					iVar7 = pPosition->vy + ((int)(((uint) * (ushort*)&(pCellObject->pos).vy + (uint)(ushort)collide->ypos) * 0x10000) >> 0x10) + 0x50;
+					// ORIGINAL
+					/*
+					zs = collide->zsize * 0x800 + radius * 0x1000;
+					xs = collide->xsize * 0x800 + radius * 0x1000;
 
-					if (iVar7 < 0)
-						iVar7 = -iVar7;
+					theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
 
-					iVar8 = (int)*(short*)((int)rcossin_tbl + uVar4 + 2);
-					iVar5 = (int)*(short*)((int)rcossin_tbl + uVar4);
-					iVar2 = (uint)(ushort)collide->ysize << 0x10;
+					cs = rcossin_tbl[theta * 2 + 1];
+					sn = rcossin_tbl[theta * 2];
+					*/
 
-					if (((iVar7 < ((iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1) + 0x3c) &&
-						((uint)((iVar11 * iVar8 - iVar1 * iVar5) + iVar9) < (uint)(iVar9 * 2))) &&
-						((uint)(iVar1 * iVar8 + iVar11 * iVar5 + iVar10) < (uint)(iVar10 * 2))) 
+					// NEW
+					int xxd, zzd;
+					int yang;
+					int theta;
+					MATRIX2* mat;
+
+					yang = -pCellObject->yang & 0x3f;
+					theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+
+					mat = &matrixtable[yang];
+
+					cs = rcossin_tbl[theta * 2 + 1];
+					sn = rcossin_tbl[theta * 2];
+
+					xxd = FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]);
+					zzd = FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]);
+
+					xd = (pCellObject->pos.vx - pPosition->vx) + xxd;
+					zd = (pCellObject->pos.vz - pPosition->vz) + zzd;
+
+					zs = (collide->zsize * 2048 + radius * 4096);
+					xs = (collide->xsize * 2048 + radius * 4096);
+
+					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
+					
+#ifdef COLLISION_DEBUG
+					int result = 0;
+
+					if (collide->ysize / 2 + 60 > ABS(ypos) &&
+						xs * 2 > ABS(xd * cs - zd * sn) + xs &&
+						zs * 2 > ABS(zd * cs + xd * sn) + zs)
+					{
+						result = 1;
+					}
+
+					extern int gShowCollisionDebug;
+					if (gShowCollisionDebug == 3)
+					{
+						CDATA2D cd[1];
+
+						cd[0].x.vx = (pCellObject->pos.vx + xxd);//FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						cd[0].x.vz = (pCellObject->pos.vz + zzd);//FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						cd[0].x.vy = pPosition->vy;
+
+						cd[0].theta = theta; // (pCellObject->yang + collide->yang) * 64 & 0xfff;
+						cd[0].length[0] = collide->zsize / 2;
+						cd[0].length[1] = collide->xsize / 2;
+
+						// calc axes of box
+						int dtheta = cd[0].theta & 0xfff;
+
+						cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
+						cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+
+						cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
+						cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+
+						extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+						extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+						CVECTOR ggcv = { 0, 250, 0 };
+						CVECTOR rrcv = { 250, 0, 0 };
+						CVECTOR yycv = { 250, 250, 0 };
+
+						// show both box axes
+						{
+							VECTOR _zero = { 0 };
+							VECTOR b1p = cd[0].x;
+
+							// show position to position
+							//Debug_AddLine(b1p1, b2p1, yycv);
+
+							VECTOR b1ax[2] = { {0} , {0} };
+							b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+							b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+							b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+							b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+
+							// show axis of body 1
+							Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+							Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+							// display 2D box 1
+							{
+								int h = b1ax[0].vy;
+								VECTOR box_points[4] = {
+									{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+									{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+									{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+									{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+								};
+
+								Debug_AddLineOfs(box_points[0], box_points[1], b1p, result ? rrcv : ggcv);
+								Debug_AddLineOfs(box_points[1], box_points[2], b1p, result ? rrcv : ggcv);
+								Debug_AddLineOfs(box_points[2], box_points[3], b1p, result ? rrcv : ggcv);
+								Debug_AddLineOfs(box_points[3], box_points[0], b1p, result ? rrcv : ggcv);
+							}
+						}
+					}
+
+					if (result)
+						return 0;
+#else
+					if (collide->ysize / 2 + 60 > ABS(ypos) &&
+						xs * 2 > ABS(xd * cs - zd * sn) + xs &&
+						zs * 2 > ABS(zd * cs + xd * sn) + zs)
 					{
 						return 0;
 					}
+#endif
 
 					box_loop++;
 					collide++;
@@ -154,10 +258,9 @@ char CellEmpty(VECTOR *pPosition, int radius)
 
 		ppco = GetNextPackedCop(&ci);
 		pCellObject = UnpackCellObject(ppco, &ci.nearCell);
+	}
 
-	} while (true);
-
-	return 0;
+	return 1;
 }
 
 
@@ -941,7 +1044,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	int lbody;
 	int extraDist;
 
-	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER && cp->ap.carCos == NULL)
+	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER || cp->ap.carCos == NULL)
 		lbody = 360;
 	else
 		lbody = cp->ap.carCos->colBox.vz;

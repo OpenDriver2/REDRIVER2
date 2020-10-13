@@ -3,6 +3,8 @@
 
 extern int game_over;
 
+extern XZPAIR gStartPos;
+
 extern int xa_timeout;
 extern int FrameCnt;
 extern int CurrentPlayerView;

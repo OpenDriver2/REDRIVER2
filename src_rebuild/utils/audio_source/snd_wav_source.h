@@ -7,14 +7,26 @@
 
 //---------------------------------------------------------------------
 
+struct CUESubtitle_t
+{
+	int sampleStart;
+	int sampleLength;
+
+	char* text;
+};
+
 class CSoundSource_Wave : public ISoundSource
 {
 public:
 	CSoundSource_Wave();
+	virtual ~CSoundSource_Wave();
 
 	virtual soundFormat_t*	GetFormat()						{ return &m_format; }
 	virtual float			GetLoopPosition(float flPosition);
 	virtual int				GetSampleCount() const			{ return m_numSamples; }
+	
+	CUESubtitle_t			m_subtitles[128];
+	int						m_numSubtitles;
 
 protected:
 	void					ParseChunk(CRIFF_Parser &chunk);
@@ -22,6 +34,7 @@ protected:
 	virtual void			ParseFormat(CRIFF_Parser &chunk);
 	virtual void			ParseCue(CRIFF_Parser &chunk);
 	virtual void			ParseSample(CRIFF_Parser &chunk);
+	virtual void			ParseList(CRIFF_Parser &chunk);
 	virtual void			ParseData(CRIFF_Parser &chunk) = 0;
 
 	soundFormat_t			m_format;

@@ -981,23 +981,15 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		tempwhere.vz = cp->hd.where.t[2];
 
 		debris_colour = GetDebrisColour(cp);
-		gte_SetRotMatrix(&cp->hd.where);
-		gte_SetTransMatrix(&cp->hd.where);
-
-		boxDisp.vx = -car_cos->cog.vx;
-		boxDisp.vy = -car_cos->cog.vy;
-		boxDisp.vz = -car_cos->cog.vz;
-
-		gte_ldv0(&boxDisp);
-
-		gte_rtv0tr();
-
-		gte_stlvnl(&cd[0].x);
 
 		cd[0].theta = cp->hd.direction;
 
 		if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER)
 		{
+			cd[0].x.vx = cp->hd.where.t[0];
+			cd[0].x.vy = cp->hd.where.t[1];
+			cd[0].x.vz = cp->hd.where.t[2];
+			
 			cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 			cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
@@ -1009,6 +1001,10 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		}
 		else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 		{
+			cd[0].x.vx = cp->hd.where.t[0];
+			cd[0].x.vy = cp->hd.where.t[1];
+			cd[0].x.vz = cp->hd.where.t[2];
+			
 			cd[0].vel.vx = 0;
 			cd[0].vel.vz = 0;
 			cd[0].length[1] = 5;
@@ -1016,6 +1012,19 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 		}
 		else
 		{
+			gte_SetRotMatrix(&cp->hd.where);
+			gte_SetTransMatrix(&cp->hd.where);
+
+			boxDisp.vx = -car_cos->cog.vx;
+			boxDisp.vy = -car_cos->cog.vy;
+			boxDisp.vz = -car_cos->cog.vz;
+
+			gte_ldv0(&boxDisp);
+
+			gte_rtv0tr();
+
+			gte_stlvnl(&cd[0].x);
+			
 			cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 			cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
@@ -1226,7 +1235,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 							while (sip->name != NULL)
 							{
-								if (modelpointers[sip->modelIdx] == model)
+								if (sip->modelIdx == cop->type)
 								{
 									match = sip;
 									break;

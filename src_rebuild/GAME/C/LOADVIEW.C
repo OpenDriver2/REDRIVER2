@@ -56,7 +56,8 @@ void ShowLoading(void)
 {
 	POLY_G4 poly;
 
-	if ((NewLevel != 0) || (gInFrontend != 0)) {
+	if (NewLevel != 0 || gInFrontend != 0) 
+	{
 		int col = (VERTTYPE)(++loading_bar_pos * load_steps);
 		
 		if (col > 120)
