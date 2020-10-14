@@ -737,6 +737,8 @@ void LoadMission(int missionnum)
 				}
 				case 0x1000000:
 				{
+					printInfo("ADDR %.3d ", script - MissionScript);
+
 					switch (*value)
 					{
 						case 0x1000051:				// PlayCutscene
@@ -861,7 +863,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: StartThreadForPlayer(%d)\n", val1);
+							printWarning("MR command: StartThreadForPlayer(%d)\n", (value - MissionScript) + val1 + 1);
 
 							break;
 						}
@@ -869,7 +871,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: StartThread2(%d)\n", val1);
+							printWarning("MR command: StartThread2(%d)\n", (value - MissionScript) + val1 + 1);
 
 							break;
 						}
@@ -915,6 +917,8 @@ void LoadMission(int missionnum)
 				}
 				case 0x3000000:
 				{
+					printInfo("ADDR %.3d ", script - MissionScript);
+
 					char opValue1[32] = { 0 };
 					char opValue2[32] = { 0 };
 
@@ -1025,6 +1029,8 @@ void LoadMission(int missionnum)
 				}
 				case 0x4000000:
 				{
+					printInfo("ADDR %.3d ", script - MissionScript);
+
 					if (*value == 0x4000020)
 					{
 						val1 = *--value;
@@ -1821,7 +1827,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: PlayCutscene(%d)\n", val1);
+		MR_DebugWarn("MR %d command: PlayCutscene(%d)\n", thread-MissionThreads, val1);
 
 		CompleteAllActiveTargets(thread->player);
 		TriggerInGameCutscene(val1);
@@ -1836,7 +1842,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000021)			// CompleteAllActiveTargets
 	{
-		MR_DebugWarn("MR command: CompleteAllActiveTargets\n");
+		MR_DebugWarn("MR %d command: CompleteAllActiveTargets\n", thread - MissionThreads);
 
 		CompleteAllActiveTargets(thread->player);
 		return 1;
@@ -1846,7 +1852,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
 
-		MR_DebugWarn("MR command: SetVariable(%08X, %d)\n", val1, val2);
+		MR_DebugWarn("MR %d command: SetVariable(%08X, %d)\n", thread - MissionThreads, val1, val2);
 
 		MRSetVariable(thread, val1, val2);
 
@@ -1856,7 +1862,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: Jump(%d)\n", val1);
+		MR_DebugWarn("MR %d command: Jump(%d)\n", thread - MissionThreads, val1);
 
 		return MRJump(thread, val1);
 	}
@@ -1867,7 +1873,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 
 		if (val2 != 0)
 		{
-			MR_DebugWarn("MR command: Goto(%d)\n", val1);
+			MR_DebugWarn("MR %d command: Goto(%d)\n", thread - MissionThreads, val1);
 			return 1;
 		}
 
@@ -1877,7 +1883,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: MultiCarEvent(%d)\n", val1);
+		MR_DebugWarn("MR %d command: MultiCarEvent(%d)\n", thread - MissionThreads, val1);
 
 		MultiCarEvent(MissionTargets + val1);
 		return 1;
@@ -1886,7 +1892,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: SetPlayerFelony(%d)\n", val1);
+		MR_DebugWarn("MR %d command: SetPlayerFelony(%d)\n", thread - MissionThreads, val1);
 
 		if (player[0].playerCarId < 0)
 			pedestrianFelony = val1;
@@ -1898,7 +1904,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
 
-		MR_DebugWarn("MR command: ShowPlayerMessage(%d, %d)\n", val1, val2);
+		MR_DebugWarn("MR %d command: ShowPlayerMessage(%d, %d)\n", thread - MissionThreads, val1, val2);
 
 		SetPlayerMessage(thread->player, MissionStrings + val1, 0, val2);
 
@@ -1908,7 +1914,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: TriggerEvent(%d)\n", val1);
+		MR_DebugWarn("MR %d command: TriggerEvent(%d)\n", thread - MissionThreads, val1);
 
 		TriggerEvent(val1);
 		return 1;
@@ -1917,7 +1923,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: SetDoorsLocked(%d)\n", val1);
+		MR_DebugWarn("MR %d command: SetDoorsLocked(%d)\n", thread - MissionThreads, val1);
 
 		lockAllTheDoors = val1;
 		return 1;
@@ -1926,20 +1932,20 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: SetStealMessage(%d)\n", val1);
+		MR_DebugWarn("MR %d command: SetStealMessage(%d)\n", thread - MissionThreads, val1);
 
 		Mission.StealMessage = MissionStrings + val1;
 	}
 	else if (cmd == 0x1000055)			// ShowOutOfTimeMessage
 	{
-		MR_DebugWarn("MR command: ShowOutOfTimeMessage\n");
+		MR_DebugWarn("MR %d command: ShowOutOfTimeMessage\n", thread - MissionThreads);
 
 		SetPlayerMessage(1, MissionStrings + MissionHeader->msgOutOfTime, 2, 2);
 		return 1;
 	}
 	else if (cmd == 0x1001000)			// StopThread
 	{
-		MR_DebugWarn("MR command: StopThread\n");
+		MR_DebugWarn("MR %d command: StopThread\n", thread - MissionThreads);
 
 		return MRStopThread(thread);
 	}
@@ -1947,7 +1953,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: StartThreadForPlayer(%d)\n", val1);
+		MR_DebugWarn("MR %d command: StartThreadForPlayer(%d)\n", thread - MissionThreads, val1);
 
 		MRStartThread(thread, val1, thread->player);
 		return 1;
@@ -1956,21 +1962,21 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		val1 = MRPop(thread);
 
-		MR_DebugWarn("MR command: StartThread2(%d)\n", val1);
+		MR_DebugWarn("MR %d command: StartThread2(%d)\n", thread - MissionThreads, val1);
 
 		MRStartThread(thread, val1, 1);
 		return 1;
 	}
 	else if (cmd == 0x1000100)			// SetCameraEvent
 	{
-		MR_DebugWarn("MR command: SetCameraEvent\n");
+		MR_DebugWarn("MR %d command: SetCameraEvent\n", thread - MissionThreads);
 
 		SpecialCamera(SPECIAL_CAMERA_SET, 0);
 		return 1;
 	}
 	else if (cmd == 0x1000071)			// AwardPlayerCheat
 	{
-		MR_DebugWarn("MR command: AwardPlayerCheat\n");
+		MR_DebugWarn("MR %d command: AwardPlayerCheat\n", thread - MissionThreads);
 
 		val1 = MRPop(thread);
 
@@ -2006,29 +2012,29 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	}
 	else if (cmd == 0x1000090)			// SetRaining
 	{
-		MR_DebugWarn("MR command: SetRaining\n");
+		MR_DebugWarn("MR %d command: SetRaining\n", thread - MissionThreads);
 		gWeather = 1;
 		return 1;
 	}
 	else if (cmd == 0x1000040)
 	{
-		MR_DebugWarn("MR command: player timer flag 2 set\n");
+		MR_DebugWarn("MR %d command: player timer flag 2 set\n", thread - MissionThreads);
 		Mission.timer[thread->player].flags |= 2;
 	}
 	else  if (cmd == 0x1000042)
 	{
-		MR_DebugWarn("MR command: timer flag 0x1000 set\n");
+		MR_DebugWarn("MR %d command: timer flag 0x1000 set\n", thread - MissionThreads);
 		MissionHeader->timerFlags |= 0x1000;
 	}
 	else if (cmd == 0x1000041)
 	{
-		MR_DebugWarn("MR command: player timer flag 2 removed\n");
+		MR_DebugWarn("MR %d command: player timer flag 2 removed\n", thread - MissionThreads);
 		Mission.timer[thread->player].flags &= ~2;
 		return 1;
 	}
 	else if (cmd == 0x1001001)
 	{
-		MR_DebugWarn("MR command: SetMissionComplete\n");
+		MR_DebugWarn("MR %d command: SetMissionComplete\n", thread - MissionThreads);
 		SetMissionComplete();
 		return 1;
 	}
