@@ -713,6 +713,335 @@ void LoadMission(int missionnum)
 	if (GameType == GAME_CAPTURETHEFLAG)
 		ActivateNextFlag();
 
+#if 0
+	{
+		// MISSION SCRIPT DUMP
+		u_long* script = MissionScript;
+
+		while (true)
+		{
+			u_long* value = script;
+
+			long val1, val2;
+			val1 = 0;
+			val2 = 0;
+
+			switch (*value & 0xff000000)
+			{
+				case 0x0:
+				case 0x2000000:
+				case 0xff000000:
+				{
+					//printInfo("MR: push %d\n", *value);
+					break;
+				}
+				case 0x1000000:
+				{
+					switch (*value)
+					{
+						case 0x1000051:				// PlayCutscene
+						{
+							val1 = *--value;
+
+							printWarning("MR command: PlayCutscene(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000021:			// CompleteAllActiveTargets
+						{
+							printWarning("MR command: CompleteAllActiveTargets\n");
+
+							break;
+						}
+						case 0x1000010:			// SetVariable
+						{
+							val1 = *--value;
+							val2 = *--value;
+
+							switch (val1)
+							{
+								case 0x2000008:
+									printWarning("MR command: SetVariable(Timer, %d)\n", val2);
+									break;
+								case 0x2000100:
+									printWarning("MR command: SetVariable(gCopDesiredSpeedScale, %d)\n", val2);
+									break;
+								case 0x2000101:
+									printWarning("MR command: SetVariable(gCopMaxPowerScale, %d)\n", val2);
+									break;
+								case 0x2000102:
+									printWarning("MR command: SetVariable(gMinimumCops, %d)\n", val2);
+									break;
+								case 0x2000103:
+									printWarning("MR command: SetVariable(maxCopCars, %d)\n", val2);
+									break;
+							}
+
+							break;
+						}
+						case 0x1000011:			// Jump
+						{
+							val1 = *--value;
+
+							printWarning("MR command: Jump(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000001:			// BranchIf
+						{
+							val1 = *--value;
+							val2 = *--value;
+
+							printWarning("MR command: BranchIf result != 0 TO %d\n", val1, val2);
+
+							break;
+						}
+						case 0x1000022:			// MultiCarEvent
+						{
+							val1 = *--value;
+
+							printWarning("MR command: MultiCarEvent(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000030:			// SetPlayerFelony
+						{
+							val1 = *--value;
+
+							printWarning("MR command: SetPlayerFelony(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000050:			// ShowPlayerMessage
+						{
+							val1 = *--value;
+							val2 = *--value;
+
+							printWarning("MR command: ShowPlayerMessage(%d, %d)\n", val1, val2);
+
+							break;
+						}
+						case 0x1000070:			// TriggerEvent
+						{
+							val1 = *--value;
+
+							printWarning("MR command: TriggerEvent(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000080:			// SetDoorsLocked
+						{
+							val1 = *--value;
+
+							printWarning("MR command: SetDoorsLocked(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000054:			// SetStealMessage
+						{
+							val1 = *--value;
+
+							printWarning("MR command: SetStealMessage(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000055:			// ShowOutOfTimeMessage
+						{
+							printWarning("MR command: ShowOutOfTimeMessage\n");
+
+							break;
+						}
+						case 0x1001000:			// StopThread
+						{
+							printWarning("MR command: StopThread\n");
+
+							break;
+						}
+						case 0x1001002:			// StartThreadForPlayer
+						{
+							val1 = *--value;
+
+							printWarning("MR command: StartThreadForPlayer(%d)\n", val1);
+
+							break;
+						}
+						case 0x1001003:			// StartThread2
+						{
+							val1 = *--value;
+
+							printWarning("MR command: StartThread2(%d)\n", val1);
+
+							break;
+						}
+						case 0x1000100:			// SetCameraEvent
+						{
+							printWarning("MR command: SetCameraEvent\n");
+							break;
+						}
+						case 0x1000071:			// AwardPlayerCheat
+						{
+							val1 = *--value;
+							printWarning("MR command: AwardPlayerCheat %d\n", val1);
+
+							break;
+						}
+						case 0x1000090:			// SetRaining
+						{
+							printWarning("MR command: SetRaining\n");
+							break;
+						}
+						case 0x1000040:
+						{
+							printWarning("MR command: player timer flag 2 set\n");
+							break;
+						}
+						case 0x1000042:
+						{
+							printWarning("MR command: timer flag 0x1000 set\n");
+							break;
+						}
+						case 0x1000041:
+						{
+							printWarning("MR command: player timer flag 2 removed\n");
+							break;
+						}
+						case 0x1001001:
+						{
+							printWarning("MR command: SetMissionComplete\n");
+							break;
+						}
+					}
+					break;
+				}
+				case 0x3000000:
+				{
+					char opValue1[32] = { 0 };
+					char opValue2[32] = { 0 };
+
+					val1 = *--value;
+
+					// MRGetParam
+					switch (val1 & 0xff000000)
+					{
+						case 0:
+						case 0xff000000:
+						{
+							sprintf(opValue1, "%d", val1);
+							break;
+						}
+						case 0x2000000:
+						{
+							// MRGetVariable
+							switch (val1)
+							{
+								case 0x2000008:
+									sprintf(opValue1, "Timer");
+									break;
+								case 0x2000100:
+									sprintf(opValue1, "gCopDesiredSpeedScale");
+									break;
+								case 0x2000101:
+									sprintf(opValue1, "gCopMaxPowerScale");
+									break;
+								case 0x2000102:
+									sprintf(opValue1, "gMinimumCops");
+									break;
+								case 0x2000103:
+									sprintf(opValue1, "maxCopCars");
+									break;
+							}
+						}
+						default:
+							sprintf(opValue1, "result");
+					}
+
+					val2 = *--value;
+
+					// MRGetParam
+					switch (val2 & 0xff000000)
+					{
+						case 0:
+						case 0xff000000:
+						{
+							sprintf(opValue2, "%d", val2);
+							break;
+						}
+						case 0x2000000:
+						{
+							// MRGetVariable
+							switch (val2)
+							{
+								case 0x2000008:
+									sprintf(opValue2, "Timer");
+									break;
+								case 0x2000100:
+									sprintf(opValue2, "gCopDesiredSpeedScale");
+									break;
+								case 0x2000101:
+									sprintf(opValue2, "gCopMaxPowerScale");
+									break;
+								case 0x2000102:
+									sprintf(opValue2, "gMinimumCops");
+									break;
+								case 0x2000103:
+									sprintf(opValue2, "maxCopCars");
+									break;
+							}
+						}
+						default:
+							sprintf(opValue2, "result");
+					}
+
+					value += 2;
+
+					switch (*value)
+					{
+						case 0x3000003: // AND
+							printWarning("MR: operator %s && %s\n", opValue1, opValue2);
+							break;
+						case 0x3000004:	// OR
+							printWarning("MR: operator %s || %s\n", opValue1, opValue2);
+							break;
+						case 0x3000005:	// NEQ
+							printWarning("MR: operator %s != %s\n", opValue1, opValue2);
+							break;
+						case 0x3000006:	// EQ
+							printWarning("MR: operator %s == %s\n", opValue1, opValue2);
+							break;
+						case 0x3000007: // GT
+							printWarning("MR: operator %s > %s\n", opValue1, opValue2);
+							break;
+						case 0x3000008:	// LT
+							printWarning("MR: operator %s < %s\n", opValue1, opValue2);
+							break;
+						case 0x3000009: // ADD
+							printWarning("MR: operator %s + %s\n", opValue1, opValue2);
+							break;
+						default:
+							printWarning("MR: operator INVALID\n");
+					}
+
+					break;
+				}
+				case 0x4000000:
+				{
+					if (*value == 0x4000020)
+					{
+						val1 = *--value;
+						printWarning("MR: function MRProcessTarget %d\n", val1);
+					}
+
+					
+					break;
+				}
+			}
+
+			script++;
+		}
+	}
+#endif
+	
+
 	MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
 }
 
