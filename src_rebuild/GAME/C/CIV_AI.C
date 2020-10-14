@@ -1490,15 +1490,12 @@ void InitNodeList(_CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 
 			cr->distAlongSegment = (ratan2(cr->x - curve->Midx, cr->z - curve->Midz) & 0xfff) - curve->start;
 
-			if (curve->inside > 9)
-			{
-				if (curve->inside < 20)
-					cr->distAlongSegment &= 0xfc0;
-				else
-					cr->distAlongSegment &= 0xfe0;
-			}
-			else
+			if (curve->inside < 10)
 				cr->distAlongSegment &= 0xf80;
+			else if (curve->inside < 20)
+				cr->distAlongSegment &= 0xfc0;
+			else
+				cr->distAlongSegment &= 0xfe0;
 
 			if (ROAD_LANE_DIR(curve, cp->ai.c.currentLane) == 0)
 				cr->dir = (cr->distAlongSegment + curve->start) + 1024;
@@ -2218,10 +2215,10 @@ int CreateNewNode(_CAR_DATA * cp)
 
 					if (roadInfo.curve->inside < 10)
 						dist = travelDir << 7;
-					else if (roadInfo.curve->inside > 19)
-						dist = travelDir << 5;
-					else
+					else if (roadInfo.curve->inside < 20)
 						dist = travelDir << 6;
+					else
+						dist = travelDir << 5;
 
 					newNode->distAlongSegment = start->distAlongSegment + dist;
 					newNode->dir = newNode->distAlongSegment + roadInfo.curve->start + travelDir * 1024 & 0xfff;
@@ -2273,13 +2270,13 @@ int CreateNewNode(_CAR_DATA * cp)
 						if (roadInfo.curve)
 						{
 							int dist;
-							
-							if (roadInfo.curve->inside > 9)
-								dist = travelDir << 6;
-							else if (roadInfo.curve->inside > 19)
-								dist = travelDir << 5;
-							else
+
+							if (roadInfo.curve->inside < 10)
 								dist = travelDir << 7;
+							else if (roadInfo.curve->inside < 20)
+								dist = travelDir << 6;
+							else
+								dist = travelDir << 5;
 
 							newNode->distAlongSegment = newNode->distAlongSegment + dist;
 						}
@@ -3767,25 +3764,25 @@ int PingInCivCar(int minPingInDist)
 
 		if (requestCopCar == 0)
 		{
-			if (roadInfo.curve->inside > 9)
-				minDistAlong = 32;
+			if (roadInfo.curve->inside < 10)
+				minDistAlong = 128;
 			else if (roadInfo.curve->inside < 20)
 				minDistAlong = 64;
 			else
-				minDistAlong = 128;
+				minDistAlong = 32;
 		}
 
-		if (roadInfo.curve->inside > 9)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfe0;
+		segmentLen = (roadInfo.curve->end - roadInfo.curve->start) - minDistAlong & 0xfff;
+
+		if (roadInfo.curve->inside < 10)
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xf80;
 		else if (roadInfo.curve->inside < 20)
 			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfc0;
 		else
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xf80;
-
+			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfe0;
+		
 		if (civDat.distAlongSegment <= minDistAlong)
 			civDat.distAlongSegment = minDistAlong;
-
-		segmentLen = (roadInfo.curve->end - roadInfo.curve->start) - segmentLen & 0xfff;
 
 		if (civDat.distAlongSegment >= segmentLen)
 			civDat.distAlongSegment = segmentLen;
@@ -5968,6 +5965,7 @@ void CreateRoadblock(void)
 	{
 		int theta;
 		int segmentLen;
+		int minDistAlong;
 		crv = GET_CURVE(roadSeg);
 
 		// check if not outside the curve
@@ -5977,11 +5975,11 @@ void CreateRoadblock(void)
 		currentAngle = ratan2(roadblockLoc.vx - crv->Midx, roadblockLoc.vz - crv->Midz);
 		
 		if(crv->inside < 10)
-			segmentLen = 128;
+			minDistAlong = 128;
 		else if (crv->inside < 20)
-			segmentLen = 64;
+			minDistAlong = 64;
 		else
-			segmentLen = 32;
+			minDistAlong = 32;
 
 		theta = (currentAngle & 0xfffU) - crv->start;
 		
@@ -5992,7 +5990,7 @@ void CreateRoadblock(void)
 		else
 			distAlongSegment = theta & 0xfe0;
 		
-		segmentLen = (crv->end - crv->start) - segmentLen & 0xfff;
+		segmentLen = (crv->end - crv->start) - minDistAlong & 0xfff;
 
 		if (distAlongSegment >= segmentLen)
 			distAlongSegment = segmentLen;
