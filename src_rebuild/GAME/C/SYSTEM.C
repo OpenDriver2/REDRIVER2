@@ -18,6 +18,8 @@
 
 #include <string.h>
 
+#include <PLATFORM.H>
+
 // Initialized in redriver2_main
 char*	_overlay_buffer = NULL;		// 0x1C0000
 char*	_frontend_buffer = NULL;	// 0xFB400
@@ -348,6 +350,10 @@ int Loadfile(char *name, char *addr)
 
 	sprintf(namebuffer, "DRIVER2\\%s", name);
 
+#ifdef __unix__
+	fixslashes(namebuffer);
+#endif
+
 	FILE* fptr = fopen(namebuffer, "rb");
 	if (!fptr)
 	{
@@ -430,6 +436,10 @@ int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 	int fileSize = 0;
 
 	sprintf(namebuffer, "DRIVER2\\%s", name);
+
+#ifdef __unix__
+	fixslashes(namebuffer);
+#endif
 
 	FILE* fptr = fopen(namebuffer, "rb");
 	if (!fptr)
@@ -762,12 +772,20 @@ void loadsectors(char *addr, int sector, int nsectors)
 // It has to be this way
 void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 {
-	FILE* fp = fopen(filename, "rb");
+#ifdef __unix__
+	char namebuffer[64];
+	strcpy(namebuffer, filename);
+	fixslashes(namebuffer);
+#else
+	char* namebuffer = filename;
+#endif
+
+	FILE* fp = fopen(namebuffer, "rb");
 
 	if (!fp)
 	{
 		char errPrint[512];
-		sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", filename);
+		sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
 		return;
 	}
@@ -1358,6 +1376,10 @@ void SetCityType(CITYTYPE type)
 
 	sprintf(filename, format, LevelFiles[GameLevel]);
 
+#ifdef __unix__
+	fixslashes(filename);
+#endif
+
 	FILE* levFp = fopen(filename, "rb");
 
 	if (!levFp)
@@ -1483,6 +1505,10 @@ int FileExists(char *filename)
 	char namebuffer[128];
 
 	sprintf(namebuffer, "DRIVER2\\%s", filename);
+
+#ifdef __unix__
+	fixslashes(namebuffer);
+#endif
 
 	FILE* fp = fopen(namebuffer, "rb");
 	if (fp)

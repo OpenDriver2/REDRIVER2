@@ -62,7 +62,7 @@ void GetGameProfilePath(char* str)
 {
 	char* homepath;
 
-	homepath = getenv("USERPROFILE"); // "USERPROFILE"
+	homepath = getenv(HOME_ENV); // "USERPROFILE"
 
 	if (homepath)
 	{
