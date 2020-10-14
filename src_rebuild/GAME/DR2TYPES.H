@@ -816,9 +816,86 @@ struct FELONY_VALUE // hashcode: 0x8F078047 (dec: -1895333817)
 	short angry; // size=0, offset=2
 };
 
-struct _TARGET // hashcode: 0xB3C67F7D (dec: -1278836867)
+enum TARGET_TYPE
 {
-	int data[16]; // size=64, offset=0
+	Target_Point = 1,
+	Target_Car = 2,
+	Target_Event = 3
+};
+
+struct MS_TARGET_BASE
+{
+	int type;			// data 0
+	int target_flags;	// data 1
+	int display_flags;	// data 2
+	int posX;			// data 3
+	int posZ;			// data 4
+};
+
+struct MS_TARGET_CAR_TAILING
+{
+	int closeMessages;		// data 13
+	int farMessages;		// data 14
+};
+
+struct MS_TARGET_CAR_CHASING
+{
+	int maxDamage;			// data 13
+	int tooFarMessage;		// data 14
+	int gettingFarMessage;	// data 15
+};
+
+struct MS_TARGET_CAR
+{
+	MS_TARGET_BASE base;
+	int rotation;		// data 5
+	int slot;			// data 6
+	int model;			// data 7
+	int palette;		// data 8
+	int type;			// data 9
+	int flags;			// data 10
+	int cutscene;		// data 11
+	int maxDistance;	// data 12
+	union
+	{
+		MS_TARGET_CAR_TAILING tail;
+		MS_TARGET_CAR_CHASING chasing;
+	};
+};
+
+struct MS_TARGET_POINT
+{
+	MS_TARGET_BASE base;
+	int radius;			// data 5
+	int posY;			// data 6
+	int height;			// data 7
+	int _unused;
+	int actionFlag;		// data 9
+	int boatX;			// data 10
+	int boatZ;			// data 11
+};
+
+struct MS_TARGET_EVENT
+{
+	int type;			// data 0
+	int target_flags;	// data 1
+	int display_flags;	// data 2
+	int _unused;
+	VECTOR* eventPos;	// data 4
+	int _unused2[10];
+	int loseMessage;	// data 14
+};
+
+struct _TARGET// hashcode: 0xB3C67F7D (dec: -1278836867)
+{
+	union
+	{
+		int data[16]; // size=64, offset=0
+		MS_TARGET_BASE base;
+		MS_TARGET_POINT point;
+		MS_TARGET_CAR car;
+		MS_TARGET_EVENT event;
+	};
 };
 
 struct MR_TIMER // hashcode: 0xEA39F36E (dec: -365300882)
@@ -2241,8 +2318,8 @@ struct MR_MISSION // hashcode: 0xF240F754 (dec: -230623404)
 	short message_priority[2]; // size=4, offset=14
 	char(*message_string[2]); // size=8, offset=20
 	struct MR_TIMER timer[2]; // size=24, offset=28
-	struct _TARGET* CarTarget; // size=64, offset=52
-	struct _TARGET* ChaseTarget; // size=64, offset=56
+	_TARGET* CarTarget; // size=64, offset=52
+	_TARGET* ChaseTarget; // size=64, offset=56
 	int PhantomCarId; // size=0, offset=60
 	int ChaseHitDelay; // size=0, offset=64
 	char* StealMessage; // size=0, offset=68
