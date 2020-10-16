@@ -2487,8 +2487,8 @@ int redriver2_main(int argc, char** argv)
 				printError("-playercar missing number argument!");
 				return -1;
 			}
-			i++;
 			wantedCar[0] = atoi(argv[i + 1]);
+			i++;
 		}
 		else if (!_stricmp(argv[i], "-player2car"))
 		{
@@ -2497,8 +2497,8 @@ int redriver2_main(int argc, char** argv)
 				printError("-player2car missing number argument!");
 				return -1;
 			}
-			i++;
 			wantedCar[1] = atoi(argv[i + 1]);
+			i++;
 		}
 		else if (!_stricmp(argv[i], "-players"))
 		{
@@ -2507,8 +2507,8 @@ int redriver2_main(int argc, char** argv)
 				printError("-players missing number argument!");
 				return -1;
 			}
-			i++;
 			NumPlayers = atoi(argv[i + 1]);
+			i++;
 		}
 		else if (!_stricmp(argv[i], "-chase"))
 		{
@@ -3284,25 +3284,18 @@ void InitGameVariables(void)
 // [D] [T]
 void DealWithHorn(char* hr, int i)
 {
-	unsigned char bVar1;
 	int channel;
 	int modelId;
 	_CAR_DATA* car;
-	int horn;
 
 	car = &car_data[player[i].playerCarId];
 
 	if (*hr == 0)
-	{
 		return;
-	}
-	else if (*hr == 1)
+
+	if (*hr == 1)
 	{
-		channel = 2;
-
-		if (i != 0)
-			channel = 5;
-
+		channel = i != 0 ? 5 : 2;
 		StopChannel(channel);
 	}
 	else if (*hr == 2)
@@ -3324,10 +3317,7 @@ void DealWithHorn(char* hr, int i)
 
 		if (NumPlayers > 1 && NoPlayerControl == 0)
 		{
-			channel = 2;
-
-			if (i != 0)
-				channel = 5;
+			channel = i != 0 ? 5 : 2;
 
 			SetPlayerOwnsChannel(channel, i);
 		}
@@ -3387,42 +3377,35 @@ int Havana3DOcclusion(occlFunc func, int* param)
 	outside = 1;
 
 	if (GameLevel == 1 && 
-		camera_position.vx <= -0x68fdc && camera_position.vx >= -0x75416 && 
-		camera_position.vz <= -0x1b8ae && camera_position.vz >= -0x20cb3)
+		camera_position.vx <= -430044 && camera_position.vx >= -480278 && 
+		camera_position.vz <= -112814 && camera_position.vz >= -134323)
 	{
 		draw = 10;
 		
-		if (camera_position.vy < 0x1bf)
-		{
-			if (camera_position.vx > -0x729fc)
-				draw = 17;
-			else
-				draw = 16;
-		}
-		else
+		if (camera_position.vy >= 447)
 		{
 			outside = 0;
 			
-			if (camera_position.vx < -0x6e9e5 && camera_position.vx > -0x6fa01 &&
-				camera_position.vz < -0x1e201 && camera_position.vz > -0x1f205 && 
-				camera_position.vy < 0xf73)
+			if (camera_position.vx < -453093 && camera_position.vx > -457217 &&
+				camera_position.vz < -123393 && camera_position.vz > -127493 && 
+				camera_position.vy < 3955)
 			{
-				if (camera_position.vy < 0x4dd)
+				if (camera_position.vy < 1245)
 				{
 					draw = 15;
 				}
-				else if (camera_position.vy < 0x7d1)
+				else if (camera_position.vy < 2001)
 				{
 					draw = 14;
 				}
-				else if (camera_position.vy < 0xc00)
+				else if (camera_position.vy < 3071)
 				{
 					draw = 13;
 				}
 			}
 			else
 			{
-				if (camera_position.vy < 0x6c2)
+				if (camera_position.vy < 1730)
 				{
 					draw = 15;
 				}
@@ -3430,21 +3413,28 @@ int Havana3DOcclusion(occlFunc func, int* param)
 				{
 					draw = 14;
 
-					if (camera_position.vy < 0x834 && camera_position.vx < -0x73609)
+					if (camera_position.vy < 2100 && camera_position.vx < -472585)
 					{
 						draw = 13;
 					}
 					else
 					{
-						if ((camera_position.vy > 0xbff && camera_position.vx > -0x6fa01 ||
-							(draw = 12, camera_position.vz < -0x1f9db)) &&
-							(draw = 10, camera_position.vz < -0x1f9dc))
+						if ((camera_position.vy > 3071 && camera_position.vx > -457217 ||
+							(draw = 12, camera_position.vz < -129499)) &&
+							(draw = 10, camera_position.vz < -129500))
 						{
 							draw = 11;
 						}
 					}
 				}
 			}
+		}
+		else
+		{
+			if (camera_position.vx > -469500)
+				draw = 17;
+			else
+				draw = 16;
 		}
 
 		events.camera = 1;
@@ -3482,13 +3472,13 @@ int Havana3DOcclusion(occlFunc func, int* param)
 				current->ot -= otAltered;
 				otAltered = 0;
 			}
+			
 			loop++;
-
 		}
 
 		events.camera = 0;
 	
-		if (draw == 0xf && camera_position.vx > -0x6fd11)
+		if (draw == 15 && camera_position.vx > -458001)
 		{
 			events.camera = 0;
 			return outside;
