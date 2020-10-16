@@ -26,7 +26,7 @@
 #include "LIBGTE.H"
 
 
-VECTOR CameraPos = { -45, -171, -125, 0 };
+VECTOR CameraPos = { 0};
 VECTOR camera_position = { 0, 380, 0, 0 };
 SVECTOR camera_angle = { 0,0,0 };
 
@@ -105,6 +105,8 @@ void CalcCameraBasePos(_PLAYER* lp)
 		gte_rtv0tr();
 		gte_stlvnl(basePos);
 
+		basePos[1] -= CameraPos.vy;
+
 		baseDir = car_data[lp->cameraCarId].hd.direction;
 	}
 }
@@ -173,9 +175,9 @@ void InitCamera(_PLAYER *lp)
 				lp->cameraDist = 1000;
 
 				gCameraAngle = 2048;
-				CameraPos.vx = -45;
-				CameraPos.vy = -171;
-				CameraPos.vz = -125;
+				CameraPos.vx = 0;
+				CameraPos.vy = 0;
+				CameraPos.vz = 0;
 			}
 			else
 			{
@@ -629,9 +631,8 @@ void TurnHead(_PLAYER *lp)
 	/* end block 3 */
 	// End Line: 1744
 
-int maxCameraDist;
 short gCameraDistance = 1000;
-short gCameraMaxDistance = 1000;
+short gCameraMaxDistance = 0;
 
 _CAR_DATA *jcam = NULL;
 int switch_detail_distance = 10000;
@@ -648,6 +649,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	int angleDelta;
 	int cammapht;
 	int camPosVy;
+	int maxCameraDist;
 
 	maxCameraDist = 850;
 	carheight = -220;
@@ -664,14 +666,15 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		if(car_cos)
 		{
 			carheight = car_cos->colBox.vy * -3 + 85;
-			maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
+
+			if (gCameraMaxDistance == 0)
+				maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
+			else
+				maxCameraDist = gCameraMaxDistance;
 
 			carSpeed = FIXEDH(camCar->hd.wheel_speed);
 
-			if (carSpeed < 0)
-				carSpeed = -carSpeed;
-
-			if (carSpeed > 9 && (gCameraDistance + 30 <= maxCameraDist))
+			if (ABS(carSpeed) > 9 && (gCameraDistance + 30 <= maxCameraDist))
 				camExpandSpeed = 20;
 		}
 	}
@@ -822,7 +825,7 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 
 		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
 
-		if (16000 < d)
+		if (d > 16000)
 		{
 			lp->cameraView = 0;
 			return;
