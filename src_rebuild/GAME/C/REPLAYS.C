@@ -203,7 +203,7 @@ int SaveReplayToBuffer(char *buffer)
 
 		// copy source type
 		memcpy(&sheader->SourceType, &srcStream->SourceType, sizeof(STREAM_SOURCE));
-		sheader->Size = srcStream->padCount; // srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
+		sheader->Size = srcStream->padCount * sizeof(PADRECORD); // srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
 		sheader->Length = srcStream->length;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
@@ -438,9 +438,9 @@ int LoadReplayFromBuffer(char *buffer)
 		{
 			destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 			destStream->PadRecordBuffer = (PADRECORD*)replayptr;
-			destStream->PadRecordBufferEnd = (PADRECORD*)(replayptr + sheader->Size);
+			destStream->PadRecordBufferEnd = (PADRECORD*)(replayptr + size);
 			destStream->playbackrun = 0;
-			destStream->padCount = sheader->Size;
+			destStream->padCount = sheader->Size / sizeof(PADRECORD);
 
 			// copy pad data and advance buffer
 			memcpy(replayptr, pt, size);
