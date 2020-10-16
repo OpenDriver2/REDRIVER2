@@ -175,6 +175,7 @@ void InitCamera(_PLAYER *lp)
 				lp->cameraDist = 1000;
 
 				gCameraAngle = 2048;
+				gCameraMaxDistance = 0;
 				CameraPos.vx = 0;
 				CameraPos.vy = 0;
 				CameraPos.vz = 0;
