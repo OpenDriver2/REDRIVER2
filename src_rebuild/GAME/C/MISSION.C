@@ -140,8 +140,8 @@ int numParkedCars = 0;
 int numCopCars = 0;
 
 int gMinimumCops = 0;
-int gCopDesiredSpeedScale = 0x1000;
-int gCopMaxPowerScale = 0x1000;
+int gCopDesiredSpeedScale = 4096;
+int gCopMaxPowerScale = 4096;
 int gCurrentResidentSlot = 0;
 int gPuppyDogCop = 0;		// Driver 1 leftover
 int CopsAllowed = 0;
@@ -178,7 +178,7 @@ STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;
 int gSinkingTimer = 100;
-int gTimeInWater = 0x19;
+int gTimeInWater = 25;
 char InWater = 0;
 int gBobIndex = 0;
 int gWeather = 0;
@@ -1072,9 +1072,6 @@ void LoadMission(int missionnum)
 // [D] [T]
 void HandleMission(void)
 {
-	int iVar1;
-	uint uVar2;
-
 	if (!Mission.active)
 		return;
 
@@ -1180,7 +1177,7 @@ void HandleTimer(MR_TIMER *timer)
 
 		if (timer->count < 1)
 		{
-			if (!(MissionHeader->timerFlags & 0x1000U) || !DetonatorTimer())
+			if (!(MissionHeader->timerFlags & 0x1000) || !DetonatorTimer())
 			{
 				// do expolosions
 				if ((timer->flags & 8) == 0)
@@ -1208,7 +1205,7 @@ void HandleTimer(MR_TIMER *timer)
 				MissionHeader->timerFlags &= ~0x1000;
 
 				timer->count = 9000;
-				timer->flags = timer->flags | 0x28;
+				timer->flags |= 0x28;
 			}
 		}
 	}
@@ -1980,18 +1977,6 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 
 		val1 = MRPop(thread);
 
-		if ((val1 & 0x8000) != 0) {
-			AvailableCheats.cheat1 = 1;
-		}
-		if ((val1 & 0x4000) != 0) {
-			AvailableCheats.cheat2 = 1;
-		}
-		if ((val1 & 0x10000) != 0) {
-			AvailableCheats.cheat3 = 1;
-		}
-		if ((val1 & 0x20000) != 0) {
-			AvailableCheats.cheat4 = 1;
-		}
 		if ((val1 & 1) != 0) {
 			AvailableCheats.cheat5 = 1;
 		}
@@ -2004,8 +1989,20 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 		if ((val1 & 0x1000) != 0) {
 			AvailableCheats.cheat8 = 1;
 		}
+		if ((val1 & 0x4000) != 0) {
+			AvailableCheats.cheat2 = 1;
+		}
 		if ((val1 & 0x2000) != 0) {
 			AvailableCheats.cheat11 = 1;
+		}
+		if ((val1 & 0x8000) != 0) {
+			AvailableCheats.cheat1 = 1;
+		}
+		if ((val1 & 0x10000) != 0) {
+			AvailableCheats.cheat3 = 1;
+		}
+		if ((val1 & 0x20000) != 0) {
+			AvailableCheats.cheat4 = 1;
 		}
 
 		return 1;
@@ -2154,7 +2151,7 @@ int MRFunction(MR_THREAD *thread, ulong fnc)
 	if (fnc == 0x4000020) 
 	{
 		value = MRPop(thread);
-		value = MRProcessTarget(thread, MissionTargets + value);
+		value = MRProcessTarget(thread, &MissionTargets[value]);
 
 		MRPush(thread, value);
 
@@ -2648,8 +2645,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 
 	switch(target->data[0])
 	{
-		// radius trigger
-		case 1:
+		case 1: // point target
 		{
 			if (target->data[1] & 0x100000)		// Is boat?
 			{
@@ -2836,8 +2832,9 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 
 			break;
 		}
-		case 2:
+		case 2: // car target
 		{
+			
 			_CAR_DATA* cp;
 			tv.vx = target->data[3];
 			tv.vz = target->data[4];
@@ -2848,8 +2845,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 
 			if (slot == -1)
 			{
-				if (dist < 15900 || 
-					target->data[9] == 3 && (target->data[10] & 1U) == 0)
+				if (dist < 15900 || target->data[9] == 3 && (target->data[10] & 1U) == 0)
 					MRRequestCar(target);
 				else
 					MRCancelCarRequest(target);
@@ -2909,8 +2905,8 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 
 									if ((target->data[10] & 0xf0U) != 0x20)
 									{
-										if (target->data[10] & 0x10000U)
-											SetCarToBeStolen(target, (uint)thread->player);
+										if (target->data[10] & 0x10000)
+											SetCarToBeStolen(target, thread->player);
 										else
 											ret = 1;
 									}
@@ -2936,9 +2932,9 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 							{
 								if (NewLeadDelay != 1)
 								{
-									if (target->data[10] & 0x10000U)
+									if (target->data[10] & 0x10000)
 									{
-										DamageBar.position = target->data[16];
+										DamageBar.position = target->data[13];
 
 										cp->totalDamage = MaxPlayerDamage[0];
 
@@ -3250,7 +3246,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 			
 			break;
 		}
-		case 3:
+		case 3: // event target
 		{
 			if (target->data[1] & 0x1000)
 			{
@@ -3397,12 +3393,7 @@ int MRCreateCar(_TARGET *target)
 	}
 	else
 	{
-		curslot = CreateStationaryCivCar(target->data[5], 
-			0, ((target->data[10] & 0x40000) != 0) << 10,		// make flipped? 
-			(long(*)[4])pos, 
-			target->data[7], 
-			target->data[8], 
-			(target->data[10] & 8) != 0);
+		curslot = CreateStationaryCivCar(target->data[5], 0, ((target->data[10] & 0x40000) != 0) << 10, (long(*)[4])pos, target->data[7], target->data[8], (target->data[10] & 8) != 0);
 	}
 
 	if (curslot < 0)
@@ -3521,7 +3512,6 @@ void MRCancelCarRequest(_TARGET *target)
 // [D] [T]
 void PreProcessTargets(void)
 {
-	int iVar1;
 	_TARGET *target;
 	int i;
 
@@ -3539,14 +3529,14 @@ void PreProcessTargets(void)
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
 
 			ReplayStreams[1].SourceType.type = 1;
+			ReplayStreams[1].SourceType.position.vx = target->data[3];
+			ReplayStreams[1].SourceType.position.vy = 0;
+			ReplayStreams[1].SourceType.position.vz = target->data[4];
+			ReplayStreams[1].SourceType.rotation = target->data[5];
 			ReplayStreams[1].SourceType.model = target->data[7];
 			ReplayStreams[1].SourceType.palette = target->data[8];
 			ReplayStreams[1].SourceType.controlType = CONTROL_TYPE_PLAYER;
 			ReplayStreams[1].SourceType.flags = 0;
-			ReplayStreams[1].SourceType.rotation = target->data[5];
-			ReplayStreams[1].SourceType.position.vx = target->data[3];
-			ReplayStreams[1].SourceType.position.vy = 0;
-			ReplayStreams[1].SourceType.position.vz = target->data[4];
 
 			if (target->data[9] & 3)
 				target->data[11] = -1;
@@ -3554,17 +3544,8 @@ void PreProcessTargets(void)
 			target->data[6] = 1;
 			target->data[1] |= 0x40000000;
 		}
-		else if (target->data[0] == 2)
-		{
-			if (!(target->data[1] & 0x20))
-			{
-				if (target->data[9] == 3 && (target->data[10] & 1))
-				{
-					PreLoadInGameCutscene(gRandomChase);
-				}
-			}
-		}
-		else if (target->data[0] == 1)
+
+		if (target->data[0] == 1)
 		{
 			if ((target->data[1] & 0x30000) == 0x30000)
 			{
@@ -3575,6 +3556,16 @@ void PreProcessTargets(void)
 			{
 				target->data[10] = target->data[3];
 				target->data[11] = target->data[4];
+			}
+		}
+		else if (target->data[0] == 2)
+		{
+			if (!(target->data[1] & 0x20))
+			{
+				if (target->data[9] == 3 && (target->data[10] & 1))
+				{
+					PreLoadInGameCutscene(gRandomChase);
+				}
 			}
 		}
 
@@ -3895,7 +3886,7 @@ void CompleteAllActiveTargets(int player)
 	pTarget = MissionTargets;
 	i = 0;
 	do {
-		if (pTarget->data[0] < 4 && pTarget->data[0] > 0 && (pTarget->data[1] & flag1) != 0)
+		if (pTarget->data[0] > 0 && pTarget->data[0] < 4&& (pTarget->data[1] & flag1) != 0)
 			pTarget->data[1] |= flag2;
 
 		i++;
