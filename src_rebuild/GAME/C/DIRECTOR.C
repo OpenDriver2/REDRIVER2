@@ -2085,7 +2085,7 @@ void ControlReplay(void)
 			else
 			{
 				if (CursorX < 4)
-					CursorX = 4;
+					CursorX = 8;
 
 				if (CursorX > 8)
 					CursorX = 4;
@@ -2274,7 +2274,8 @@ void ControlReplay(void)
 					{
 						//SetDispMask(0); // [A]
 						SpoolSYNC();
-						CallMemoryCard(0x10, 1);
+						//CallMemoryCard(0x10, 1);
+						SaveReplay(0);
 						break;
 					}
 
