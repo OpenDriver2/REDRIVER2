@@ -39,12 +39,12 @@ extern void sys_freeall();
 #ifdef __GNUC__
 #define MALLOC_END() \
 		if(mallocptr > _oldmalloc)\
-			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
+			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
 	} // MALLOC_BEGIN block
 #else
 #define MALLOC_END() \
 		if(mallocptr > _oldmalloc)\
-			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
+			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
 	} // MALLOC_BEGIN block
 #endif
 

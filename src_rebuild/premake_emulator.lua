@@ -47,7 +47,8 @@ project "PSX"
 
     filter "system:linux"
         buildoptions {
-            "-Wno-narrowing"
+            "-Wno-narrowing",
+            "-m32",
         }
 
         includedirs {
@@ -57,8 +58,12 @@ project "PSX"
         links {
             "GL",
             "GLEW",
-            "openal", -- FIXME: is linux using openal-soft?
+            "openal",
             "SDL2",
+        }
+
+        linkoptions {
+            "-m32"
         }
 
     filter "configurations:Release"

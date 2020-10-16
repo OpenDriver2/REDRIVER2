@@ -111,7 +111,12 @@ project "REDRIVER2"
         }
         
     filter "system:linux"
-        buildoptions { "-Wno-narrowing", "-fpermissive" }
+        buildoptions {
+            "-Wno-narrowing",
+            "-fpermissive",
+            "-m32"
+        }
+        
         cppdialect "C++11"
 
         includedirs {
@@ -125,7 +130,10 @@ project "REDRIVER2"
             "SDL2",
         }
 
-        linkoptions { "-z muldefs" }
+        linkoptions {
+            "-z muldefs",
+            "-m32"
+        }
 		
 	filter "system:psx"
 		defines { "PSX" }
