@@ -64,6 +64,9 @@ artifacts:
   
 after_build:
   - cmd: cd %project_folder%\bin\%configuration%
+  - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
+  - cmd: copy %GLEW_DIR\bin\Release\Win32\glew32.dll glew32.dll /Y
+  - cmd: copy %OPENAL_DIR\bin\Win32\soft_oal.dll OpenAL32.dll /Y
   - 7z a REDRIVER2.zip ".\*"
   
 #build: off
