@@ -499,7 +499,7 @@ void ControlCops(void)
 			else
 				playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-			if (*playerFelony > 0x292)
+			if (*playerFelony > FELONY_MIN_VALUE)
 				copsWereInPursuit = 1;
 		}
 
@@ -1258,17 +1258,17 @@ void UpdateCopSightData(void)
 	else
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*playerFelony < 0x293)
+	if (*playerFelony > FELONY_MIN_VALUE)
 	{
-		copSightData.surroundViewDistance = 0xaa0;
-		copSightData.frontViewDistance = 0x1e8c;
-		copSightData.frontViewAngle = 0x200;
+		copSightData.surroundViewDistance = 5440;
+		copSightData.frontViewDistance = 16320;
+		copSightData.frontViewAngle = 1024;
 		return;
 	}
 
-	copSightData.surroundViewDistance = 0x1540;
-	copSightData.frontViewDistance = 0x3fc0;
-	copSightData.frontViewAngle = 0x400;
+	copSightData.surroundViewDistance = 2720;
+	copSightData.frontViewDistance = 7820;
+	copSightData.frontViewAngle = 512;
 }
 
 
@@ -1454,7 +1454,7 @@ void ControlCopDetection(void)
 	else 
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*playerFelony > 0x292)
+	if (*playerFelony > FELONY_MIN_VALUE)
 	{
 		copSightData.surroundViewDistance = 5440;
 		copSightData.frontViewDistance = 16320;
@@ -1570,7 +1570,7 @@ void ControlCopDetection(void)
 			else
 				playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-			if (*playerFelony > 0x292 && first_offence == 0)
+			if (*playerFelony > FELONY_MIN_VALUE && first_offence == 0)
 			{
 				CopSay(12, 0);
 				FunkUpDaBGMTunez(0);
@@ -1682,7 +1682,7 @@ void PassiveCopTasks(_CAR_DATA *cp)
 	else 
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*playerFelony < 0x293)
+	if (*playerFelony <= FELONY_MIN_VALUE)
 		return;
 
 	if (player_position_known < 1)

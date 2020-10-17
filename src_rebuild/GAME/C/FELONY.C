@@ -305,20 +305,15 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 
 	pFelonyData->reoccurrenceDelay[type].current = pFelonyData->reoccurrenceDelay[type].maximum;
 
-	if (*felony < 0x293)
+	if (*felony <= FELONY_MIN_VALUE)
 		additionalFelonyPoints = pFelonyData->value[type].placid;
 	else
 		additionalFelonyPoints = pFelonyData->value[type].angry * pFelonyData->pursuitFelonyScale >> 0xc;
 
 	*felony += (additionalFelonyPoints * scale >> 12);
 
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (0x1000 < *felony) 
-		*felony = 0x1000;
+	if (*felony > FELONY_MAX_VALUE) 
+		*felony = FELONY_MAX_VALUE;
 
 	// KILL PEDESTRIAN FELONY HERE
 	if (player[0].playerType == 2)
@@ -417,8 +412,6 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 // [D] [T]
 void AdjustFelony(FELONY_DATA *pFelonyData)
 {
-	bool bVar1;
-	short *psVar2;
 	FELONY_DELAY *pFelonyDelay;
 	short *felony;
 
@@ -427,23 +420,23 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 	else
 		felony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*felony != 0 && *felony < 0x293)
+	if (*felony != 0 && *felony <= FELONY_MIN_VALUE)
 	{
 		if (FelonyDecreaseTimer++ == FelonyDecreaseTime)
 		{
-			*felony--;
+			(*felony)--;
 
 			FelonyDecreaseTimer = 0;
 		}
 	}
 	else if (CopsCanSeePlayer) 
 	{
-		if (*felony > 0x292 && FelonyIncreaseTimer++ == FelonyIncreaseTime)
+		if (*felony > FELONY_MIN_VALUE && FelonyIncreaseTimer++ == FelonyIncreaseTime)
 		{
-			*felony++;
+			(*felony)++;
 
-			if (*felony > 0x1000)
-				*felony = 0x1000;
+			if (*felony > FELONY_MAX_VALUE)
+				*felony = FELONY_MAX_VALUE;
 
 			FelonyIncreaseTimer = 0;
 		}
@@ -573,7 +566,9 @@ void CheckPlayerMiscFelonies(void)
 	DRIVER2_JUNCTION *jn;
 	_CAR_DATA* cp;
 
-	if (player[0].playerType == 2 || player[0].playerCarId < 0 || FelonyBar.active == 0)
+	if (player[0].playerType == 2 || 
+		player[0].playerCarId < 0 || 
+		FelonyBar.active == 0)
 		return;
 
 	cp = &car_data[player[0].playerCarId];
@@ -602,7 +597,7 @@ void CheckPlayerMiscFelonies(void)
 
 			// Run a red light!
 			if (junctionLightsPhase[exitId & 1] == 1)
-				NoteFelony(&felonyData, 3, 0x1000);
+				NoteFelony(&felonyData, 3, 4096);
 		}
 	}
 
@@ -692,11 +687,11 @@ void CheckPlayerMiscFelonies(void)
 	else
 		felonyData.occurrenceDelay[8].current = 0;
 
-	NoteFelony(&felonyData, 8, 0x1000);
+	NoteFelony(&felonyData, 8, 4096);
 
 	// if lights are off (broken)
 	if (gTimeOfDay == 3 && cp->ap.damage[0] > 1000 && cp->ap.damage[1] > 1000)
-		NoteFelony(&felonyData, 9, 0x1000);
+		NoteFelony(&felonyData, 9, 4096);
 
 	// reckless driving.
 	// for that checking if rear wheels are sliding
@@ -712,7 +707,7 @@ void CheckPlayerMiscFelonies(void)
 		felonyData.occurrenceDelay[10].current++;
 	}
 
-	NoteFelony(&felonyData, 10, 0x1000);
+	NoteFelony(&felonyData, 10, 4096);
 
 	// check the speed limit
 	if (speedLimits[2] == maxSpeed)
@@ -721,7 +716,7 @@ void CheckPlayerMiscFelonies(void)
 		limit = (maxSpeed * 3) >> 1;
 
 	if (FIXEDH(cp->hd.wheel_speed) > limit)
-		NoteFelony(&felonyData, 2, 0x1000);
+		NoteFelony(&felonyData, 2, 4096);
 }
 
 
@@ -769,28 +764,30 @@ void CarHitByPlayer(_CAR_DATA *victim, int howHard)
 {
 	char type;
 
-	if ((0 < howHard) && (victim->controlType != CONTROL_TYPE_PURSUER_AI)) 
+	if (howHard > 0 && victim->controlType != CONTROL_TYPE_PURSUER_AI) 
 	{
 		if ((victim->controlFlags & 1) == 0)
 		{
-			if (howHard < 0x20) 
+			if (howHard < 32) 
 			{
 				NoteFelony(&felonyData, 4, (howHard << 0x17) >> 0x10);
 				return;
 			}
+			
 			type = 4;
 		}
 		else
 		{
-			if (howHard < 0x10)
+			if (howHard < 16)
 			{
 				NoteFelony(&felonyData, 5, (howHard << 0x18) >> 0x10);
 				return;
 			}
+			
 			type = 5;
 		}
 
-		NoteFelony(&felonyData, type, 0x1000);
+		NoteFelony(&felonyData, type, 4096);
 	}
 }
 
