@@ -3553,7 +3553,7 @@ int PingInCivCar(int minPingInDist)
 	if (!GetSurfaceRoadInfo(&roadInfo, roadSeg))
 	{
 		civPingTest.OffRoad++;
-		CIV_STATE_SET_CONFUSED(newCar);
+		//CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
@@ -3564,7 +3564,7 @@ int PingInCivCar(int minPingInDist)
 		
 		if (ROAD_LANES_COUNT(&roadInfo) == 0) // BAD ROAD
 		{
-			CIV_STATE_SET_CONFUSED(newCar);
+			//CIV_STATE_SET_CONFUSED(newCar);
 			return 0;
 		}
 
@@ -3806,7 +3806,7 @@ int PingInCivCar(int minPingInDist)
 
 	if (dir == 0xffffff || lane < 0 || civDat.distAlongSegment < 0)
 	{
-		CIV_STATE_SET_CONFUSED(newCar);
+		//CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
@@ -3865,10 +3865,11 @@ int PingInCivCar(int minPingInDist)
 
 	if (roadSeg < 0)
 	{
-		CIV_STATE_SET_CONFUSED(newCar);
+		//CIV_STATE_SET_CONFUSED(newCar); // [A] not needed really before InitCar happens
 		return 0;
 	}
 
+	
 	civDat.angle = dir;
 	InitCar(newCar, dir, &pos, 2, model, 0, (char*)&civDat);
 
@@ -3909,13 +3910,7 @@ int PingInCivCar(int minPingInDist)
 	extern int gCutsceneAsReplay;
 	if (gCutsceneAsReplay != 0 && CurrentGameMode != GAMEMODE_REPLAY)
 	{
-		_PING_PACKET packet;
-
-		packet.frame = (CameraCnt - frameStart & 0xffffU);
-		packet.carId = newCar->id;
-		packet.cookieCount = cookieCount;
-
-		PingBuffer[PingBufferPos++] = packet;
+		StorePingInfo(cookieCount, newCar->id);
 	}
 #endif // CUTSCENE_RECORDER
 	

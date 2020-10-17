@@ -14,6 +14,7 @@
 #include "PRES.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
+#include "FELONY.H"
 #include "PAD.H"
 #include "../ASM/RNC_2.H"
 
@@ -928,7 +929,7 @@ void DrawOverheadMap(void)
 		else 
 			psVar11 = &car_data[player[0].playerCarId].felonyRating;
 
-		if (0x292 < *psVar11)
+		if (*psVar11 > FELONY_MIN_VALUE)
 		{
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
 			goto LAB_00016fac;
@@ -944,8 +945,8 @@ void DrawOverheadMap(void)
 			else
 				psVar11 = &car_data[player[0].playerCarId].felonyRating;
 
-			if (0x292 < *psVar11)
-				flashtimer = 0x30;
+			if (*psVar11 > FELONY_MIN_VALUE)
+				flashtimer = 48;
 
 			goto LAB_00016ee8;
 		}

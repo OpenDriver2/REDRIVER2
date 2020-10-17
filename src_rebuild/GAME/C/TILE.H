@@ -3,7 +3,7 @@
 
 extern void Tile1x1(struct MODEL *model); // 0x00041B10
 
-extern void DrawTILES(int tile_amount); // 0x00041D7C
+extern void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount); // 0x00041D7C
 
 extern void makeMesh(struct MVERTEX (*VSP)[5][5], int m, int n); // 0x000420B0
 

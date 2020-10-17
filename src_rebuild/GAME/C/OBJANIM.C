@@ -10,6 +10,7 @@
 #include "CARS.H"
 #include "PLAYERS.H"
 #include "COP_AI.H"
+#include "FELONY.H"
 #include "SPOOL.H"
 #include "SYSTEM.H"
 #include "PAUSE.H"
@@ -1171,7 +1172,7 @@ void animate_garage_door(void)
 		else 
 			psVar1 = &car_data[playerCarId].felonyRating;
 
-		if (0x292 < *psVar1) 
+		if (*psVar1 > FELONY_MIN_VALUE) 
 		{
 			CurrentGarage.cop->pos = CurrentGarage.old_pos;
 			CurrentGarage.cop = NULL;

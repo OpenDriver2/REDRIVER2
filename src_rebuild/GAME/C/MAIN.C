@@ -912,14 +912,10 @@ void GameInit(void)
 
 	if (NewLevel != 0)
 	{
-		MALLOC_BEGIN();
-		char* mem = D_MALLOC(1024);
-		tile_overflow_buffer = (ulong*)mem;
-		coplist = (CELL_OBJECT**)mem;
-
-		pcoplist = (PACKED_CELL_OBJECT**)D_MALLOC(1024 + 256);
-		//transparent_buffer = D_MALLOC(256);		// [A] unused
-		MALLOC_END();
+		// alloc pointer list
+		// [A] use model_tile_ptrs for this since it is only used for drawing purposes
+		coplist = (CELL_OBJECT**)(model_tile_ptrs);
+		pcoplist = (PACKED_CELL_OBJECT**)(model_tile_ptrs + 160);
 	}
 
 	if (NoPlayerControl == 0)
@@ -1871,8 +1867,8 @@ void StepGame(void)
 			gCameraDistance += 8;
 		}
 
-		if (CameraPos.vy > -1000)
-			CameraPos.vy -= 8;
+		if (gCameraOffset.vy > -1000)
+			gCameraOffset.vy -= 8;
 
 		if (gSinkingTimer < 0)
 			EnablePause(PAUSEMODE_GAMEOVER);

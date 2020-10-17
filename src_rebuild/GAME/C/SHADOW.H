@@ -19,7 +19,7 @@ extern void InitShadow(); // 0x00075F34
 
 extern void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps); // 0x00076108
 
-extern void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip); // 0x000766CC
+extern void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag); // 0x000766CC
 
 extern int clipAgainstZ(); // 0x00076A40
 

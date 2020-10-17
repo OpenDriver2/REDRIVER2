@@ -13,6 +13,7 @@
 #include "PRES.H"
 #include "PLAYERS.H"
 #include "CAMERA.H"
+#include "FELONY.H"
 #include "SCORES.H"
 
 COLOUR_BAND felonyColour[3] =
@@ -162,7 +163,7 @@ void DisplayOverlays(void)
 				else 
 					felony = &car_data[player[0].playerCarId].felonyRating;
 
-				if (658 < *felony) 
+				if (*felony > FELONY_MIN_VALUE) 
 					DrawCopIndicators();
 			}
 		}

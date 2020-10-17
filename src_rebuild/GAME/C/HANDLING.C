@@ -176,7 +176,6 @@ void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
 	cp->st.n.orientation[3] = rcossin_tbl[ang + 1];
 
 	RebuildCarMatrix(&cp->st, cp);
-	SetShadowPoints(cp);
 }
 
 
@@ -1244,13 +1243,12 @@ void GlobalTimeStep(void)
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
-void SetShadowPoints(_CAR_DATA *c0)
+void SetShadowPoints(_CAR_DATA *c0, VECTOR* outpoints)
 {
 	int i;
 	SVECTOR disp;
 	VECTOR pointPos;
 	VECTOR surfaceNormal;
-	VECTOR surfacePoint;
 	CAR_COSMETICS* car_cos;
 
 	_sdPlane *surfacePtr;
@@ -1265,30 +1263,13 @@ void SetShadowPoints(_CAR_DATA *c0)
 	do {
 		disp = car_cos->cPoints[i];
 
-		/* // [A] No point to keep this cheat
-		if (cheats.MiniCars != 0) 
-		{
-			disp._0_4_ = CONCAT22((short)((int)disp._0_4_ >> 0x12), disp.vx >> 2);
-			disp._4_4_ = disp._4_4_ & 0xffff0000 | (uint)(ushort)(disp.vz >> 2);
-		}*/
-
 		gte_ldv0(&disp);
 
 		gte_rtv0tr();
 
 		gte_stlvnl(&pointPos);
 
-		//static int hSubShad = 0;
-		//hSubShad = 0;
-
-		FindSurfaceD2(&pointPos, &surfaceNormal, &surfacePoint, &surfacePtr);
-
-		c0->hd.shadowPoints[i].vx = surfacePoint.vx;
-		c0->hd.shadowPoints[i].vy = surfacePoint.vy;
-		c0->hd.shadowPoints[i].vz = surfacePoint.vz;
-
-		//if (hSubShad != 0)
-		//	c0->hd.shadowPoints[i].vy += 1;
+		FindSurfaceD2(&pointPos, &surfaceNormal, &outpoints[i], &surfacePtr);
 
 		i++;
 	} while (i < 4);

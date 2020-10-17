@@ -27,6 +27,8 @@
 
 #include <math.h>
 
+#include "FELONY.H"
+
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(struct __envsound *ep, struct __envsoundinfo *E, int pl);
@@ -2003,7 +2005,7 @@ void DoDopplerSFX(void)
 								else
 									psVar7 = &car_data[player[0].playerCarId].felonyRating;
 
-								if (0x292 < *psVar7)
+								if (*psVar7 > FELONY_MIN_VALUE)
 									DoPoliceLoudhailer(cars, indexlist, car_dist);
 							}
 
@@ -2525,7 +2527,7 @@ void JerichoSpeak(void)
 		else
 			psVar3 = &car_data[player[0].playerCarId].felonyRating;
 
-		if (((0x292 < *psVar3) && (rnd == (rnd / 5) * 5)))
+		if (((*psVar3 > FELONY_MIN_VALUE) && (rnd == (rnd / 5) * 5)))
 		{
 			if (j_said > 60)
 			{
