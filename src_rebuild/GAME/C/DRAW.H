@@ -21,7 +21,7 @@ extern int pvs_square;
 extern int pvs_square_sq;
 extern int PolySizes[56];
 
-extern void* model_object_ptrs[192];
+extern void* model_tile_ptrs[320];
 
 extern int combointensity;
 

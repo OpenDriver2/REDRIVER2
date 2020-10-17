@@ -1089,8 +1089,6 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 		mdcount = 0;
 		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
-
-		printInfo("Coll: %d\n", mdcount);
 		
 		x1 = 0;
 		if (mdcount + event_models_active > 0)
@@ -1298,8 +1296,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 	Havana3DOcclusion(BuildCollisionCopList, &mdcount);
 	iVar4 = 0;
-
-	printInfo("Coll: %d\n", mdcount);
 
 	if (0 < mdcount + event_models_active)
 	{

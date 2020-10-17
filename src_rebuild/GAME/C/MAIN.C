@@ -913,9 +913,9 @@ void GameInit(void)
 	if (NewLevel != 0)
 	{
 		// alloc pointer list
-		// [A] use model_object_ptrs for this since it is only used for drawing purposes
-		coplist = (CELL_OBJECT**)(model_object_ptrs);
-		pcoplist = (PACKED_CELL_OBJECT**)(model_object_ptrs + 96);
+		// [A] use model_tile_ptrs for this since it is only used for drawing purposes
+		coplist = (CELL_OBJECT**)(model_tile_ptrs);
+		pcoplist = (PACKED_CELL_OBJECT**)(model_tile_ptrs + 160);
 	}
 
 	if (NoPlayerControl == 0)
