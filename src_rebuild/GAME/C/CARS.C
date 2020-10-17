@@ -721,6 +721,7 @@ char TransparentObject = 0;
 // [D] [T] [A]
 void DrawCar(_CAR_DATA *cp, int view)
 {
+	int yVal;
 	int maxDamage;
 	int WheelSpeed;
 	int oboxLenSq;
@@ -776,8 +777,6 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (FrustrumCheck(&pos, 800) == -1)
 		return;
-
-	maxDamage = 0;
 
 	// corners for frustrum checking of big cars
 	corners[0].vx = corners[1].vx = pos.vx + cp->hd.oBox.radii[0].vx;
@@ -863,11 +862,14 @@ void DrawCar(_CAR_DATA *cp, int view)
 			workmatrix.m[i][2] >>= 1;
 		}
 	}
+
+	// to check if car is flipped
+	yVal = cp->hd.where.m[1][1];
 	
 	// LOD switching
 	if (pos.vz <= CAR_LOD_SWITCH_DISTANCE && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
-		int blackSmoke = 0;
+		int doSmoke = 0;
 
 		WheelSpeed = cp->hd.speed * 0x2000;
 		maxDamage = MaxPlayerDamage[0];
@@ -881,26 +883,32 @@ void DrawCar(_CAR_DATA *cp, int view)
 		{
 			if (WheelSpeed + 59999U < 119999)
 				AddFlamingEngine(cp);
-		}
 
-		if (cp->ap.damage[0] > 2000 || cp->ap.damage[1] > 2000)
+			doSmoke = 2;
+		}
+		else
 		{
-			if (cp->ap.damage[0] > 3000 || cp->ap.damage[1] > 3000)
-				blackSmoke = 1;
-			else
-				blackSmoke = 0;
-
-			if (WheelSpeed + 399999U < 1199999)
-				AddSmokingEngine(cp, blackSmoke, WheelSpeed);
+			if (cp->ap.damage[0] > 2000 || cp->ap.damage[1] > 2000)
+			{
+				if (cp->ap.damage[0] > 3000 || cp->ap.damage[1] > 3000)
+					doSmoke = 2;
+				else
+					doSmoke = 1;
+			}
 		}
 
-		AddExhaustSmoke(cp, blackSmoke, WheelSpeed);
+		if (doSmoke && WheelSpeed + 399999U < 1199999)
+		{
+			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
+			AddExhaustSmoke(cp, doSmoke - 1, WheelSpeed);
+		}
+
 
 		gTimeInWater = 25;
 		gSinkingTimer = 100;
 
 		SetShadowPoints(cp, corners);
-		PlaceShadowForCar(corners, 4, 10, 2);
+		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
 
 		ComputeCarLightingLevels(cp, 1);
 
@@ -930,7 +938,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 		if (pos.vz < 8000) 
 		{
 			SetShadowPoints(cp, corners);
-			PlaceShadowForCar(corners, 0, 0, 2);
+			PlaceShadowForCar(corners, 0, 0, yVal < 0 ? 0 : 2);
 		}
 
 		ComputeCarLightingLevels(cp, 0);
