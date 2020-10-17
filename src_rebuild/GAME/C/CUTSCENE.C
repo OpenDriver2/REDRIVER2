@@ -1159,7 +1159,7 @@ void FindNextCutChange(int cameracnt)
 		}
 
 		count++;
-	} while (count < 60);
+	} while (count < MAX_REPLAY_CAMERAS);
 
 	if (!found)
 		CutNextChange->next = -2;
@@ -1256,12 +1256,12 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	// copy cutscene cameras and pings
 	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
 
-	memcpy(CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * 60);		// MAX_CUTSCENE_CAMERAS
-	replayptr += sizeof(PLAYBACKCAMERA) * 60;
+	memcpy(CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	pt += sizeof(PLAYBACKCAMERA) * 60;
+	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);				// MAX_REPLAY_PINGS
+	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
 
 	PingBufferPos = 0;
 

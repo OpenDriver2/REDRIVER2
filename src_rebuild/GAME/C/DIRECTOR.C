@@ -376,7 +376,7 @@ void EditCamera(int CameraCnt)
 		}
 
 		count++;
-	} while (count < 60);
+	} while (count < MAX_REPLAY_CAMERAS);
 }
 
 
@@ -518,7 +518,7 @@ void FindNextChange(int CameraCnt)
 		}
 
 		count++;
-	} while (count < 60);
+	} while (count < MAX_REPLAY_CAMERAS);
 
 	if (!found)
 	{
@@ -833,7 +833,7 @@ void CameraBar(int CameraCnt)
 	idx = 0;
 
 	do {
-		if (PlaybackCamera[idx].next < 60)
+		if (PlaybackCamera[idx].next < MAX_REPLAY_CAMERAS)
 			max_x = PlaybackCamera[PlaybackCamera[idx].next].FrameCnt;
 		else
 			max_x = 200000;
@@ -979,7 +979,6 @@ void CameraBar(int CameraCnt)
 		camera->g3 = (green >> 2);
 		camera->b3 = (blue >> 2);
 		
-
 		idx = PlaybackCamera[idx].next;
 
 		if (min_x > 290)
@@ -1011,10 +1010,7 @@ void CameraBar(int CameraCnt)
 		if (PlaybackCamera[idx].FrameCnt == 100000)
 			return;
 
-		if (idx > 59)
-			return;
-
-	} while (true);
+	} while (idx < MAX_REPLAY_CAMERAS);
 }
 
 
@@ -1066,7 +1062,7 @@ PLAYBACKCAMERA* FindFreeCamera(void)
 			return &PlaybackCamera[count];
 
 		count++;
-	} while (count < 60);
+	} while (count < MAX_REPLAY_CAMERAS);
 
 	return NULL;
 }
@@ -1143,7 +1139,7 @@ void DeleteAllCameras(void)
 	do {
 		deleteCamera(count);
 		count++;
-	} while (count < 60);
+	} while (count < MAX_REPLAY_CAMERAS);
 
 	LastChange = NULL;
 
@@ -1779,14 +1775,14 @@ void ControlReplay(void)
 		else if (EditMode == 2)
 		{
 			// Chase camera angle
-			if ((padd & 0x1000U) != 0 && gCameraDistance > 500)
+			if ((padd & 0x1000) != 0 && gCameraDistance > 500)
 			{
 				gCameraDistance -= speed * 16;		// [A] restore
 				gCameraMaxDistance -= speed * 16;
 				player[0].cameraDist = gCameraDistance;
 			}
 
-			if ((padd & 0x4000U) != 0 && gCameraDistance < 2750)
+			if ((padd & 0x4000) != 0 && gCameraDistance < 2750)
 			{
 				gCameraDistance += speed * 16;		// [A] restore
 				gCameraMaxDistance += speed * 16;
@@ -3236,7 +3232,7 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	count = 0;
 	next = PlaybackCamera;
 
-	while (NextChange = next, count < 60 && (NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
+	while (NextChange = next, count < MAX_REPLAY_CAMERAS && (NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
 		NextChange->next != -2 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
 	{
 		count++;

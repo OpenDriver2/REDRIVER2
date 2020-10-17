@@ -91,12 +91,12 @@ void InitPadRecording(void)
 
 		PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
 
-		PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + 150);
+		PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
 
-		PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
-		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * 400);
+		PingBuffer = (_PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
 
-		replayptr = (char*)(PingBuffer + 400);
+		replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
 		// FIXME: is that correct?
 		bufferEnd = replayptr-13380;
@@ -226,15 +226,15 @@ int SaveReplayToBuffer(char *buffer)
 	if (gCutsceneAsReplay == 0)
 #endif
 	{
-		memcpy(pt, PlayerWayRecordPtr, sizeof(SXYPAIR) * 150);
-		pt += sizeof(SXYPAIR) * 150;
+		memcpy(pt, PlayerWayRecordPtr, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+		pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
 	}
 
-	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * 60);
-	pt += sizeof(PLAYBACKCAMERA) * 60;
+	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * 400);
-	pt += sizeof(_PING_PACKET) * 400;
+	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(_PING_PACKET) * MAX_REPLAY_PINGS;
 
 	// [A] is that ever valid?
 	if (gHaveStoredData)
@@ -474,26 +474,26 @@ int LoadReplayFromBuffer(char *buffer)
 #ifdef CUTSCENE_RECORDER
 	if (gCutsceneAsReplay != 0)
 	{
-		memset(PlayerWayRecordPtr, 0, sizeof(SXYPAIR) * 150);
+		memset(PlayerWayRecordPtr, 0, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
 	}
 	else
 #endif
 	{
-		memcpy(PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * 150);
-		pt += sizeof(SXYPAIR) * 150;
+		memcpy(PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+		pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
 	}
 		
 
-	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + 150);
-	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * 60);
-	pt += sizeof(PLAYBACKCAMERA) * 60;
+	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
+	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
 	PingBufferPos = 0;
-	PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);
-	pt += sizeof(_PING_PACKET) * 400;
+	PingBuffer = (_PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(_PING_PACKET) * MAX_REPLAY_PINGS;
 
-	replayptr = (char*)(PingBuffer + 400);
+	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
 	if (header->HaveStoredData == 0x91827364)	// -0x6e7d8c9c
 	{
@@ -581,7 +581,7 @@ char GetPingInfo(char *cookieCount)
 
 	pp = PingBuffer + PingBufferPos;
 
-	if (PingBuffer != NULL && PingBufferPos < 400)
+	if (PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		if (pp->frame != 0xffff) 
 		{
@@ -600,7 +600,24 @@ char GetPingInfo(char *cookieCount)
 	return -1;
 }
 
+// [A] Stores ping info into replay buffer
+int StorePingInfo(int cookieCount, int carId)
+{
+	_PING_PACKET packet;
 
+	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
+	{
+		packet.frame = (CameraCnt - frameStart & 0xffffU);
+		packet.carId = carId;
+		packet.cookieCount = cookieCount;
+
+		PingBuffer[PingBufferPos++] = packet;
+
+		return 1;
+	}
+
+	return 0;
+}
 
 // decompiled code
 // original method signature: 
@@ -1046,7 +1063,7 @@ void RecordWaypoint(void)
 		return;
 	}
 
-	if (PlayerWaypoints < 150)
+	if (PlayerWaypoints < MAX_REPLAY_WAYPOINTS)
 	{
 		TimeToWay = way_distance;
 

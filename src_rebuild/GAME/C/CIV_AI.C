@@ -3909,13 +3909,7 @@ int PingInCivCar(int minPingInDist)
 	extern int gCutsceneAsReplay;
 	if (gCutsceneAsReplay != 0 && CurrentGameMode != GAMEMODE_REPLAY)
 	{
-		_PING_PACKET packet;
-
-		packet.frame = (CameraCnt - frameStart & 0xffffU);
-		packet.carId = newCar->id;
-		packet.cookieCount = cookieCount;
-
-		PingBuffer[PingBufferPos++] = packet;
+		StorePingInfo(cookieCount, newCar->id);
 	}
 #endif // CUTSCENE_RECORDER
 	

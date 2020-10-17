@@ -78,5 +78,6 @@
 	(vecLeft)->vz *= (vecRight)->vz; \
 }
 
+#define numberOf(sexToys)					(sizeof(sexToys) / sizeof(sexToys[0]))
 
 #endif // DR2MATH_H

@@ -12,4 +12,11 @@
 #define MAX_EXPLOSION_OBJECTS	5
 #define MAX_THROWN_BOMBS		5
 
+// replay definitions.
+// DO NOT EDIT, breaks compatibility!
+#define MAX_REPLAY_CAMERAS		60
+#define MAX_REPLAY_WAYPOINTS	150
+#define MAX_REPLAY_PINGS		400
+
+
 #endif // DRLIMITS_H

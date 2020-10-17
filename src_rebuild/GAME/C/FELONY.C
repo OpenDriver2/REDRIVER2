@@ -15,8 +15,8 @@
 
 #include "ABS.H"
 
-short initialOccurrenceDelay[12] = { 0x18, 0, 0, 0, 0, 0, 0, 0, 0x18, 0, 0x18, 0 };
-short initialReccurrenceDelay[12] = { 0x80, 0, 0x80, 0x40, 0x40, 0x20, 0x20, 0, 0x80, 0x100 };
+short initialOccurrenceDelay[12] = { 24, 0, 0, 0, 0, 0, 0, 0, 24, 0, 24, 0 };
+short initialReccurrenceDelay[12] = { 128, 0, 128, 64, 64, 32, 32, 0, 128, 256 };
 
 FELONY_VALUE initialFelonyValue[12] =
 {
@@ -73,16 +73,13 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 
 	pCurrent = pFelonyDelay + count;
 
-	if (pFelonyDelay < pCurrent)
+	while (pFelonyDelay < pCurrent)
 	{
-		do {
-			pFelonyDelay->current = 0;
-			pFelonyDelay->maximum = *pMaximum++;
+		pFelonyDelay->current = 0;
+		pFelonyDelay->maximum = *pMaximum++;
 
-			pFelonyDelay++;
-		} while (pFelonyDelay < pCurrent);
+		pFelonyDelay++;
 	}
-	return;
 }
 
 
@@ -121,9 +118,9 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 
 // [D] [T]
 void InitFelonyData(FELONY_DATA *pFelonyData)
-{
-	InitFelonyDelayArray(pFelonyData->occurrenceDelay, initialOccurrenceDelay, 12);
-	InitFelonyDelayArray(pFelonyData->reoccurrenceDelay, initialReccurrenceDelay, 12);
+{	
+	InitFelonyDelayArray(pFelonyData->occurrenceDelay, initialOccurrenceDelay, numberOf(initialOccurrenceDelay));
+	InitFelonyDelayArray(pFelonyData->reoccurrenceDelay, initialReccurrenceDelay, numberOf(initialOccurrenceDelay));
 
 	memcpy(&pFelonyData->value, &initialFelonyValue, sizeof(initialFelonyValue));
 }
@@ -294,6 +291,9 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 		case 10:
 			SetPlayerMessage(0, "Reckless driving", 0, 1);
 			break;
+		case 11:
+			SetPlayerMessage(0, "Stealing cop car", 0, 1);
+			break;
 	}
 #endif
 
@@ -347,7 +347,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 
 				break;
 			default:
-				if ((rnd - (((uint)((long long)rnd * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + rnd / 0x11) & 0xff) == 0)
+				if ((rnd - (((uint)((long long)rnd * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + rnd / 17) & 0xff) == 0)
 				{
 					if (MaxPlayerDamage[0] * 3 >> 2 < car_data[player[0].playerCarId].totalDamage)
 						phrase = rnd & 3;
@@ -566,6 +566,7 @@ void CheckPlayerMiscFelonies(void)
 	DRIVER2_JUNCTION *jn;
 	_CAR_DATA* cp;
 
+	// Do not register felony if player does not have a car
 	if (player[0].playerType == 2 || 
 		player[0].playerCarId < 0 || 
 		FelonyBar.active == 0)

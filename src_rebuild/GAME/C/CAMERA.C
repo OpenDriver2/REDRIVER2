@@ -14,13 +14,9 @@
 #include "OBJCOLL.H"
 #include "PAD.H"
 #include "PLAYERS.H"
-#include "PEDEST.H"
 #include "DRAW.H"
-#include "COSMETIC.H"
 #include "CELL.H"
 #include "MODELS.H"
-#include "DRAW.H"
-#include "PAD.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
