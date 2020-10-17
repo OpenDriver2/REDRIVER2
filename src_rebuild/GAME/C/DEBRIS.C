@@ -179,36 +179,46 @@ CVECTOR debris_colour[4][31] =
 };
 
 unsigned char grassColour[4][3] = {
-	{0x6E, 0x73, 0x43},
-	{0x40, 0x37, 0x31},
-	{0x5B, 0x68, 0x38},
-	{0x76, 0x6C, 0x59}
+	{110, 115, 67},
+	{64, 55, 49},
+	{91, 104, 56},
+	{118, 108, 89}
 };
 
 
 TRI_POINT_LONG debris1_vert =
 {
-	{-0xf,0xf,0x0},{0x0,-0xf,0x0},{0xf,0xf,0x0}
+	{-16,0,0},
+	{0,-16,0},
+	{16,16,0}
 };
 
 TRI_POINT_LONG debris2_vert =
 {
-	{-0x4,0x4,0x0},{0x0,-0x4,0x0},{0x4,0x4,0x0}
+	{-4,4,0},
+	{0,-4,0},
+	{4,4,0}
 };
 
 TRI_POINT_LONG debris3_vert =
 {
-	{-0x50,0x0,0xf},{0x0, 0x0,0xf},{0x50,0x0,-0xf}
+	{-80,0,15},
+	{0, 0,15},
+	{80,0,-15}
 };
 
 TRI_POINT_LONG leaf_vert =
 {
-	{-0x1e,0x5,0x7},{0x0,0x0,0xa},{0x0,0x0,-0x7}
+	{-30,5,7},
+	{0,0,10},
+	{0,0,-7}
 };
 
 TRI_POINT_LONG litter_vert =
 {
-	{-0x19,0x0,0x19},{0x19,0x0,0x19},{-0x19,0x0,-0x19}
+	{-25,0,25},
+	{25,0,25},
+	{-25,0,-25}
 };
 
 TRI_POINT_LONG* debris_data[5] = {
@@ -227,21 +237,21 @@ int gEffectsTimer = 41;
 
 int NextDamagedPmeter = 0;
 int SmashablesHit = 0;
-DAMAGED_OBJECT damaged_object[9];
+DAMAGED_OBJECT damaged_object[MAX_SMASHED_OBJECTS];
 
 int next_debris = 0;
-short debris_alloc[60];
+short debris_alloc[MAX_DEBRIS];
 
 int next_leaf = 0;
-short leaf_alloc[50];
+short leaf_alloc[MAX_LEAVES];
 
 int next_smoke = 0;
-short smoke_alloc[80];
+short smoke_alloc[MAX_SMOKE];
 
 int gNextRainDrop = 0;
-short gRainAlloc[180];
+short gRainAlloc[MAX_RAIN_DROPS];
 
-RAIN_TYPE gRain[180];
+RAIN_TYPE gRain[MAX_RAIN_DROPS];
 
 char PoolPrimData[16] = {
 
@@ -275,8 +285,8 @@ TEXTURE_DETAILS tannerShadow_texture;
 TEXTURE_DETAILS lightref_texture;
 TEXTURE_DETAILS light_pool_texture;
 
-LAMP_STREAK Known_Lamps[21];
-int NewLamp[21];
+LAMP_STREAK Known_Lamps[MAX_LAMP_STREAKS];
+int NewLamp[MAX_LAMP_STREAKS];
 int LightIndex = 0;
 
 int variable_weather = 0;
@@ -284,22 +294,22 @@ int variable_weather = 0;
 int gDoLeaves = 1;
 
 SMOKE* smoke_table;
-SMOKE smoke[80];
+SMOKE smoke[MAX_SMOKE];
 
 SVECTOR leaf_rotvec;
-LEAF leaf[50];
+LEAF leaf[MAX_LEAVES];
 
 SVECTOR debris_rotvec;
-DEBRIS debris[60];
+DEBRIS debris[MAX_DEBRIS];
 
 int StreakCount1 = 0;
 int main_cop_light_pos = 0;
 int NextDamagedLamp = 0;
 
-CELL_OBJECT ground_debris[16];
+CELL_OBJECT ground_debris[MAX_GROUND_DEBRIS];
 int groundDebrisIndex = 0;
 
-DAMAGED_LAMP damaged_lamp[5];
+DAMAGED_LAMP damaged_lamp[MAX_DAMAGED_LAMPS];
 
 MATRIX debris_mat;
 MATRIX leaf_mat;
@@ -652,87 +662,84 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				current->primptr += sizeof(POLY_FT4);
 			}
 		}
-		else
+		else if (iVar15 == 3)
 		{
-			if (iVar15 == 3)
-			{
-				iVar15 = 11;
-				pSVar8 = sout;
+			iVar15 = 11;
+			pSVar8 = sout;
 
-				do {
-					gte_ldv0(pSVar7);
+			do {
+				gte_ldv0(pSVar7);
 
-					gte_rtv0tr();
+				gte_rtv0tr();
 
-					// FIXME: here might be 'gte_stlvnl'
-					gte_stsv(pSVar8);
+				// FIXME: here might be 'gte_stlvnl'
+				gte_stsv(pSVar8);
 
-					//uVar10 = getCopReg(2, 0x4800);
-					//uVar11 = getCopReg(2, 0x5000);
-					//uVar12 = getCopReg(2, 0x5800);
-					//pSVar8->vx = (short)uVar10;
-					//pSVar8->vy = (short)uVar11;
-					//pSVar8->vz = (short)uVar12;
+				//uVar10 = getCopReg(2, 0x4800);
+				//uVar11 = getCopReg(2, 0x5000);
+				//uVar12 = getCopReg(2, 0x5800);
+				//pSVar8->vx = (short)uVar10;
+				//pSVar8->vy = (short)uVar11;
+				//pSVar8->vz = (short)uVar12;
 
-					pSVar8++;
-					iVar15--;
-					pSVar7++;
-				} while (-1 < iVar15);
+				pSVar8++;
+				iVar15--;
+				pSVar7++;
+			} while (-1 < iVar15);
 
-				uVar13 = 0;
+			uVar13 = 0;
 
-				do {
-					iVar15 = uVar13 * 4;
+			do {
+				iVar15 = uVar13 * 4;
 
-					MATRIX tempmatrix;
+				MATRIX tempmatrix;
 
+				{
+					tempmatrix.m[0][0] = 0x1000;
+					tempmatrix.m[1][0] = 0;
+					tempmatrix.m[2][0] = 0;
+
+					tempmatrix.m[0][1] = 0;
+					tempmatrix.m[1][1] = 0x1000;
+					tempmatrix.m[2][1] = 0;
+
+					tempmatrix.m[0][2] = 0;
+					tempmatrix.m[1][2] = 0;
+					tempmatrix.m[2][2] = 0x1000;
+				}
+
+				//spolys = current->primptr;	// I'm getting rid of this...
+				gte_SetRotMatrix(&tempmatrix);
+				gte_SetTransVector(&dummy);
+
+				bVar1 = RightLight;
+
+				if ((uVar13 & 2) != 0)
+					bVar1 = LeftLight;
+
+				sVar9 = bVar1 * 4 + bVar1;
+
+				if (sVar9 != 0)
+				{
+					if ((uVar13 & 1) == 0) 
 					{
-						tempmatrix.m[0][0] = 0x1000;
-						tempmatrix.m[1][0] = 0;
-						tempmatrix.m[2][0] = 0;
-
-						tempmatrix.m[0][1] = 0;
-						tempmatrix.m[1][1] = 0x1000;
-						tempmatrix.m[2][1] = 0;
-
-						tempmatrix.m[0][2] = 0;
-						tempmatrix.m[1][2] = 0;
-						tempmatrix.m[2][2] = 0x1000;
+						sQuad(sout + PoolPrimData[iVar15 + 1],
+							sout + PoolPrimData[iVar15 + 3],
+							sout + PoolPrimData[iVar15 + 2],
+							sout + PoolPrimData[iVar15], sVar9 * 12, LightSortCorrect);
+					}
+					else
+					{
+						sQuad(sout + PoolPrimData[iVar15],
+							sout + PoolPrimData[iVar15 + 2],
+							sout + PoolPrimData[iVar15 + 3],
+							sout + PoolPrimData[iVar15 + 1], sVar9 * 12, LightSortCorrect);
 					}
 
-					//spolys = current->primptr;	// I'm getting rid of this...
-					gte_SetRotMatrix(&tempmatrix);
-					gte_SetTransVector(&dummy);
-
-					bVar1 = RightLight;
-
-					if ((uVar13 & 2) != 0)
-						bVar1 = LeftLight;
-
-					sVar9 = bVar1 * 4 + bVar1;
-
-					if (sVar9 != 0)
-					{
-						if ((uVar13 & 1) == 0) 
-						{
-							sQuad(sout + PoolPrimData[iVar15 + 1],
-								  sout + PoolPrimData[iVar15 + 3],
-								  sout + PoolPrimData[iVar15 + 2],
-								  sout + PoolPrimData[iVar15], sVar9 * 12, LightSortCorrect);
-						}
-						else
-						{
-							sQuad(sout + PoolPrimData[iVar15],
-								  sout + PoolPrimData[iVar15 + 2],
-								  sout + PoolPrimData[iVar15 + 3],
-								  sout + PoolPrimData[iVar15 + 1], sVar9 * 12, LightSortCorrect);
-						}
-
-						//current->primptr = spolys;
-					}
-					uVar13++;
-				} while (uVar13 < 4);
-			}
+					//current->primptr = spolys;
+				}
+				uVar13++;
+			} while (uVar13 < 4);
 		}
 
 		LightSortCorrect = -10;
@@ -762,13 +769,13 @@ void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int AllocateLeaf(void)
 {
-	if (next_leaf > 49)
-		return -1;
+	if (next_leaf < MAX_LEAVES)
+		return leaf_alloc[next_leaf++];
 
-	return leaf_alloc[next_leaf++];
+	return -1;
 }
 
 
@@ -787,7 +794,7 @@ int AllocateLeaf(void)
 	/* end block 2 */
 	// End Line: 12097
 
-// [D]
+// [D] [T]
 void ReleaseLeaf(short num)
 {
 	next_leaf--;
@@ -874,11 +881,12 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	iVar9 = 0;
 	while (iVar9 < num_leaves)
 	{
-		uVar4 = rand();
-
 		iVar3 = AllocateLeaf();
+		
 		if (iVar3 < 0)
 			return;
+
+		uVar4 = rand();
 
 		LEAF* myleaf = &leaf[iVar3];
 
@@ -1014,7 +1022,7 @@ void SwirlLeaves(_CAR_DATA *cp)
 
 	lpLeaf = leaf;
 
-	if ((0x1d4be < cp->hd.wheel_speed + 39999U) && gDoLeaves != 0 && pauseflag == 0)
+	if (cp->hd.wheel_speed + 39999U > 0x1d4be && gDoLeaves != 0 && pauseflag == 0)
 	{
 		count = 49;
 		do {
@@ -1023,7 +1031,7 @@ void SwirlLeaves(_CAR_DATA *cp)
 
 			if ((lpLeaf->flags & 2) != 0 && 
 				(lpLeaf->position.vy + cp->hd.where.t[1]) > -180 &&
-				-360 < XDiff && XDiff < 360 && -360 < ZDiff && ZDiff < 360)
+				XDiff > -360 && XDiff < 360 && ZDiff > -360 && ZDiff < 360)
 			{
 				lpLeaf->direction.vy = -25 - (rand() & 0x1f);
 				lpLeaf->position.vy--;
@@ -1177,7 +1185,7 @@ void InitDebrisNames(void)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 
-// [D]
+// [D] [T]
 void InitDebris(void)
 {
 	int i, j;
@@ -1193,26 +1201,27 @@ void InitDebris(void)
 
 	main_cop_light_pos = rand() % 7;
 
-	i = 19;
-	
-	do {
+	for (i = 0; i < MAX_LAMP_STREAKS; i++)
+	{
 		Known_Lamps[i].set = 0;
 		i++;
-	} while (i < 21);
+	}
 
-	do {
+	for (i = 0; i < MAX_DEBRIS; i++)
+	{
 		debris_alloc[i] = i;
 
 		debris[i].pos = 0;
 		debris[i].num = i;
 
 		i++;
-	} while (i < 60);
+	}
 
+	i = 0;
 	do {
 		ground_debris[i].type = 0xffff;
 		i++;
-	} while (i < 16);
+	} while (i < MAX_GROUND_DEBRIS);
 
 	groundDebrisIndex = 0;
 
@@ -1261,7 +1270,7 @@ void InitDebris(void)
 		}
 	}
 
-	for (i = 0; i < 80; i++)
+	for (i = 0; i < MAX_SMOKE; i++)
 	{
 		smoke_alloc[i] = i;
 		
@@ -1270,7 +1279,7 @@ void InitDebris(void)
 		smoke[i].num = i;
 	}
 
-	for (i = 0; i < 50; i++)
+	for (i = 0; i < MAX_LEAVES; i++)
 	{
 		leaf_alloc[i] = i;
 
@@ -1278,10 +1287,10 @@ void InitDebris(void)
 		leaf[i].num = i;
 	}
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_DAMAGED_LAMPS; i++)
 		damaged_lamp[i].cop = 0;
 
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < MAX_SMASHED_OBJECTS; i++)
 		damaged_object[i].active = 0;
 
 	LightSortCorrect = -10;
@@ -1311,13 +1320,13 @@ void InitDebris(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int AllocateDebris(void)
 {
-	if (next_debris > 59)
-		return -1;
+	if (next_debris < MAX_DEBRIS)
+		return debris_alloc[next_debris++];
 
-	return debris_alloc[next_debris++];
+	return -1;
 }
 
 
@@ -1341,7 +1350,7 @@ int AllocateDebris(void)
 	/* end block 3 */
 	// End Line: 12487
 
-// [D]
+// [D] [T]
 void ReleaseDebris(short num)
 {
 	next_debris--;
@@ -1371,13 +1380,13 @@ void ReleaseDebris(short num)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int AllocateSmoke(void)
 {
-	if (next_smoke > 79)
-		return -1;
+	if (next_smoke < MAX_SMOKE)
+		return smoke_alloc[next_smoke++];
 
-	return smoke_alloc[next_smoke++];
+	return -1;
 }
 
 
@@ -1396,7 +1405,7 @@ int AllocateSmoke(void)
 	/* end block 2 */
 	// End Line: 15399
 
-// [D]
+// [D] [T]
 void ReleaseSmoke(short num)
 {
 	next_smoke--;
@@ -1455,7 +1464,7 @@ void ReleaseSmoke(short num)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void AddGroundDebris(void)
 {
 	int seed;
@@ -1468,7 +1477,7 @@ void AddGroundDebris(void)
 	int count;
 	VECTOR Position;
 
-	if (0x30d3e < car_data[0].hd.wheel_speed + 99999U)
+	if (car_data[0].hd.wheel_speed + 99999U > 0x30d3e)
 	{
 		count = 0;
 		cop = ground_debris;
@@ -1478,18 +1487,12 @@ void AddGroundDebris(void)
 			{
 				model = modelpointers[cop->type];
 
-				xbound = cop->pos.vx - camera_position.vx;
-				zbound = cop->pos.vz - camera_position.vz;
+				xbound = ABS(cop->pos.vx - camera_position.vx);
+				zbound = ABS(cop->pos.vz - camera_position.vz);
 
-				if (xbound < 0)
-					xbound = -xbound;
-
-				if (zbound < 0)
-					zbound = -zbound;
-
-				if ((xbound < 9001) && (zbound < 9001) && ((7000 < xbound || (7000 < zbound))))
+				if (xbound < 9001 && zbound < 9001 && (xbound > 7000 || zbound > 7000))
 				{
-					if (39 < next_leaf)
+					if (next_leaf > 39)
 						return;
 
 					seed = rand();
@@ -1516,7 +1519,7 @@ void AddGroundDebris(void)
 
 			count++;
 			cop++;
-		} while (count < 16);
+		} while (count < MAX_GROUND_DEBRIS);
 	}
 }
 
@@ -1590,7 +1593,7 @@ void DrawSmashable_sprites(void)
 	MATRIX spritematrix;
 
 	dam = damaged_object;
-	count = 7;
+	count = 0;
 	do {
 		if (dam->active != 0)
 		{
@@ -1638,7 +1641,7 @@ void DrawSmashable_sprites(void)
 				{
 					UNIMPLEMENTED();
 
-					if ((gWeather - 1U < 2) || (gTimeOfDay == 3))
+					if (gWeather - 1U < 2 || gTimeOfDay == 3)
 					{
 						plotContext.colour = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
 					}
@@ -1653,9 +1656,9 @@ void DrawSmashable_sprites(void)
 				}
 			}
 		}
-		count--;
+		count++;
 		dam++;
-	} while (-1 < count);
+	} while (count < MAX_SMASHED_OBJECTS);
 }
 
 
@@ -1703,43 +1706,34 @@ void DrawSmashable_sprites(void)
 // [D]
 int MoveSmashable_object(void)
 {
-	char cVar1;
-	short sVar2;
-	short sVar3;
-	int iVar4;
-	DAMAGED_OBJECT *pDVar5;
-	int iVar6;
-	int iVar7;
+	DAMAGED_OBJECT *dam;
+	int count;
 
-	pDVar5 = damaged_object;
-	iVar7 = 7;
+	dam = damaged_object;
+	count = 0;
 
 	do {
-		if (pDVar5->active != 0) 
+		if (dam->active != 0) 
 		{
-			iVar6 = pDVar5->cop.pos.vy;
-
-			if (iVar6 < 50 - player[0].pos[1]) 
+			if (dam->cop.pos.vy < 50 - player[0].pos[1]) 
 			{
-				iVar4 = pDVar5->cop.pos.vz;
-				pDVar5->vx = pDVar5->vx + pDVar5->velocity.vx;
-				sVar2 = (pDVar5->velocity).vz;
-				cVar1 = pDVar5->damage;
-				pDVar5->cop.pos.vy = iVar6 + pDVar5->velocity.vy;
-				sVar3 = (pDVar5->velocity).vy;
-				pDVar5->cop.pos.vz = iVar4 + sVar2;
-				pDVar5->damage = cVar1 + 1;
-				pDVar5->velocity.vy = sVar3 + 10;
+				dam->vx += dam->velocity.vx;
+	
+				dam->cop.pos.vy += dam->velocity.vy;
+				dam->cop.pos.vz += dam->velocity.vz;
+				dam->damage++;
+				dam->velocity.vy += 10;
 			}
 			else 
 			{
-				pDVar5->active = 0;
+				dam->active = 0;
 			}
 
 		}
-		iVar7--;
-		pDVar5++;
-	} while (-1 < iVar7);
+		count++;
+		dam++;
+	} while (count < MAX_SMASHED_OBJECTS);
+
 	return 0;
 }
 
@@ -1809,20 +1803,20 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 	CVECTOR col1;
 
 	dam = damaged_lamp;
-	col = {0x8c, 0x8c, 0x8c};
-	col1 = {0x2d, 0x2d, 0x2d};
+	col = {140, 140, 140};
+	col1 = {45, 45, 45};
 
 	angle = cop->yang;
 
 	if (type == 0) 
 	{
-		halo_size = 0x19;
-		size = 0x96;
+		halo_size = 25;
+		size = 150;
 	}
 	else if (type == 1)
 	{
-		halo_size = 0x32;
-		size = 0x96;
+		halo_size = 50;
+		size = 150;
 	}
 	else
 	{
@@ -1838,7 +1832,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 				return;
 
 			col.r = col.g = col.b = (rand() & 0x3f) - (dam->damage * 32 - 90);
-			col1.r = col1.g = col1.b = col.r >> 1;
+			col1.r = col1.g = col1.b = col.r / 2;
 
 			break;
 		}
@@ -1847,9 +1841,26 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 		dam++;
 	} while (count < 4);
 
-	if ((angle & 0xf) == 0)
+	if (angle & 0xf)
 	{
-		angle = angle >> 4;
+		pos.vx = x;
+		pos.vy = y;
+		pos.vz = z;
+
+		gte_SetRotMatrix(&matrixtable[angle]);
+		gte_ldv0(&pos);
+
+		gte_rtv0();
+
+		gte_stsv(&pos);
+
+		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
+		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
+		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
+	}
+	else
+	{
+		angle >>= 4;
 
 		if (angle == 0)
 		{
@@ -1874,30 +1885,12 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 		v1.vy = (cop->pos.vy - camera_position.vy) + y;
 	}
-	else
-	{
-		pos.vx = x;
-		pos.vy = y;
-		pos.vz = z;
-
-		gte_SetRotMatrix(&matrixtable[angle]);
-		gte_ldv0(&pos);
-
-		gte_rtv0();
-
-		gte_stsv(&pos);
-		//gte_stlvnl();
-
-		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
-		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
-		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
-	}
 
 	v2.vx = v1.vx;
 	v2.vz = v1.vz;
 	v2.vy = -camera_position.vy - MapHeight(&v1);
 
-	LightSortCorrect = -0x1e;
+	LightSortCorrect = -30;
 	col.cd = 0;
 
 	v3 = v1;
@@ -1905,14 +1898,12 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 	LightIndex = find_lamp_streak((int)&cop->pos.vx + x); // wtf?
 
 	if (LightIndex > -1)
-	{
-		col.cd = 0x60;
-	}
+		col.cd = 96;
 
 	ShowLight(&v3, &col, halo_size, &light_texture);
 	ShowLight1(&v3, &col1, size, &light_texture);
 
-	DisplayLightReflections(&v2, &col1, (halo_size << 1), &lightref_texture);
+	DisplayLightReflections(&v2, &col1, halo_size * 2, &lightref_texture);
 
 	LightSortCorrect = -10;
 }
@@ -1963,9 +1954,26 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 	yang = cop->yang;
 	angle = yang;
 
-	if ((yang & 0xf) == 0) 
+	if (yang & 0xf) 
 	{
-		yang = yang >> 4;
+		pos.vx = x;
+		pos.vy = y;
+		pos.vz = z;
+
+		gte_SetRotMatrix(&matrixtable[angle]);
+		gte_ldv0(&pos);
+
+		gte_rtv0();
+
+		gte_stsv(&pos);
+
+		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
+		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
+		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
+	}
+	else
+	{
+		yang >>= 4;
 
 		if (yang == 0)
 		{
@@ -1989,24 +1997,6 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 		}
 
 		v1.vy = (cop->pos.vy - camera_position.vy) + y;
-	}
-	else
-	{
-		pos.vx = x;
-		pos.vy = y;
-		pos.vz = z;
-
-		gte_SetRotMatrix(&matrixtable[angle]);
-		gte_ldv0(&pos);
-
-		gte_rtv0();
-
-		gte_stsv(&pos);
-		//gte_stlvnl();
-
-		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
-		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
-		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
 	}
 
 	if (colour == 0)
@@ -2048,7 +2038,7 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 	}
 	else if (type == 3)
 	{
-		size = 0x96;
+		size = 150;
 	}
 
 	v2.vx = v1.vx;
@@ -2104,12 +2094,12 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void PreLampStreak(void)
 {
 	int count;
 
-	for (count = 0; count < 21 && StreakCount1 != 0; count++)
+	for (count = 0; count < MAX_LAMP_STREAKS && StreakCount1 != 0; count++)
 	{
 		if (Known_Lamps[count].set == 0)
 		{
@@ -2119,7 +2109,7 @@ void PreLampStreak(void)
 		}
 	}
 
-	for (count = 0; count < 21; count++)
+	for (count = 0; count < MAX_LAMP_STREAKS; count++)
 	{
 		Known_Lamps[count].set = 0;
 		NewLamp[count] = 0;
@@ -2158,12 +2148,12 @@ void PreLampStreak(void)
 	/* end block 4 */
 	// End Line: 10535
 
-// [D]
+// [D] [T]
 int find_lamp_streak(int LampId)
 {
 	int count;
 
-	for (count = 0; count < 21; count++)
+	for (count = 0; count < MAX_LAMP_STREAKS; count++)
 	{
 		if (Known_Lamps[0].id == LampId)
 		{
@@ -2173,7 +2163,7 @@ int find_lamp_streak(int LampId)
 	}
 
 	// allocate new streak
-	if (StreakCount1 < 21)
+	if (StreakCount1 < MAX_LAMP_STREAKS)
 		NewLamp[StreakCount1++] = LampId;
 
 	return -1;
@@ -2205,12 +2195,11 @@ int find_lamp_streak(int LampId)
 	/* end block 3 */
 	// End Line: 5591
 
-// [D]
+// [D] [T]
 int damage_lamp(CELL_OBJECT *cop)
 {
 	int old_damage;
 	int count;
-	uint uVar3;
 	DAMAGED_LAMP *dam;
 
 	count = 0;
@@ -2221,7 +2210,6 @@ int damage_lamp(CELL_OBJECT *cop)
 		if (cop == dam->cop) 
 		{
 			old_damage = dam->damage;
-			uVar3 = 0;
 			dam->damage++;
 
 			if (old_damage < 3) 
@@ -2230,13 +2218,13 @@ int damage_lamp(CELL_OBJECT *cop)
 			return 0;
 		}
 		dam++;
-	} while (count < 4);
+	} while (count < MAX_DAMAGED_LAMPS);
 
 	// store new cell object
 	damaged_lamp[NextDamagedLamp].damage = 0;
 	damaged_lamp[NextDamagedLamp].cop = cop;
 
-	if (++NextDamagedLamp > 4)
+	if (++NextDamagedLamp > MAX_DAMAGED_LAMPS)
 		NextDamagedLamp = 0;
 
 	return 0;
@@ -2281,7 +2269,7 @@ int damage_lamp(CELL_OBJECT *cop)
 	/* end block 4 */
 	// End Line: 5654
 
-// [D]
+// [D] [T]
 int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 {
 	DAMAGED_OBJECT *dam;
@@ -2325,7 +2313,7 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	if (dam->velocity.vy < -67)
 		dam->velocity.vy = -67;
 
-	if (7 < NextDamagedPmeter)
+	if (NextDamagedPmeter > MAX_SMASHED_OBJECTS)
 		NextDamagedPmeter = 0;
 
 	cop->pos.vx = 0xFD46FEC0;
@@ -2409,16 +2397,16 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 		if ((flag & 0x800U) == 0) 
 			goto LAB_00035098;
 
-		a.r = 0x19;
+		a.r = 25;
 		a.g = 255;
 	}
 	else 
 	{
 		a.r = 255;
-		a.g = 0x19;
+		a.g = 25;
 	}
 
-	a.b = 0x19;
+	a.b = 25;
 
 LAB_00035098:
 	a.cd = 0;
@@ -2514,7 +2502,7 @@ LAB_00035098:
 	/* end block 4 */
 	// End Line: 13203
 
-// [D]
+// [D] [T]
 void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 {
 	SVECTOR svectmp;
@@ -2563,11 +2551,13 @@ void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 int CarLightFadeBack = 0;
 int CarLightFadeFront = 0;
 
-// [D]
+// [D] [T]
 void FindCarLightFade(MATRIX *carToCamera)
 {
 	int zz;
-	zz = carToCamera->m[2][2] / 4; //(carToCamera->m[2][2] << 0x10) >> 0x12;
+
+	zz = carToCamera->m[2][2] / 4;
+	
 	CarLightFadeFront = zz - 124;
 	CarLightFadeBack = -124 - zz;
 }
@@ -2596,9 +2586,10 @@ void FindCarLightFade(MATRIX *carToCamera)
 	/* end block 2 */
 	// End Line: 6202
 
+// [D] [T
 void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
 {
-	int iVar1;
+	int CarLightFade;
 	VECTOR v1t;
 	VECTOR v1l;
 	CVECTOR flareCol;
@@ -2610,23 +2601,24 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 		}
 	}
 
-	iVar1 = 255;
+	CarLightFade = 255;
 
-	if (flag == 0xFF)
-		flag = 0;
-	else
+	if (flag != 0xFF)
 	{
-		iVar1 = CarLightFadeBack;
+		CarLightFade = CarLightFadeBack;
 
-		if ((flag & 1U) != 0) 
-			iVar1 = CarLightFadeFront;
+		if ((flag & 1U) != 0)
+			CarLightFade = CarLightFadeFront;
 
-		if (iVar1 < 0) 
+		if (CarLightFade < 0)
 			return;
 	}
-	col->r = ((col->r * iVar1) >> 10);
-	col->b = ((col->b * iVar1) >> 10);
-	col->g = ((col->g * iVar1) >> 10);
+	else
+		flag = 0;
+
+	col->r = ((col->r * CarLightFade) >> 10);
+	col->b = ((col->b * CarLightFade) >> 10);
+	col->g = ((col->g * CarLightFade) >> 10);
 
 	gte_SetRotMatrix(&cp->hd.drawCarMat);
 
@@ -2651,11 +2643,11 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 
 	ShowLight(&v1l, col, size, texture);
 
-	flareCol.r = col->r >> 1;
-	flareCol.g = col->g >> 1;
-	flareCol.b = col->b >> 1;
+	flareCol.r = col->r / 2;
+	flareCol.g = col->g / 2;
+	flareCol.b = col->b / 2;
 
-	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz >> 2) + (cp->hd.direction - camera_angle.vy) * 2);
+	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
 
 	DisplayLightReflections(&v1t, col, size, &lightref_texture);
 }
@@ -2682,7 +2674,7 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 	/* end block 2 */
 	// End Line: 6362
 
-// [D]
+// [D] [T]
 void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
 	POLY_FT4* poly;
@@ -3251,7 +3243,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	/* end block 2 */
 	// End Line: 7137
 
-// [D]
+// [D] [T]
 void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 {
 	POLY_FT4 *poly;
@@ -3341,7 +3333,7 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 	/* end block 2 */
 	// End Line: 7287
 
-// [D]
+// [D] [T]
 void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 {
 	POLY_FT4* poly;
@@ -3440,7 +3432,7 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 {
 	POLY_FT4 *poly;
@@ -3499,7 +3491,7 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 
 	gte_stsz(&z);
 
-	if (39 < z >> 3) 
+	if (z >> 3 > 39) 
 	{
 		z = (z >> 3) + LightSortCorrect;
 
@@ -3554,7 +3546,7 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 	/* end block 3 */
 	// End Line: 7704
 
-// [D]
+// [D] [T weird and unused]
 void DisplayWater(SMOKE *smoke)
 {
 	POLY_FT4* poly;
@@ -3571,21 +3563,23 @@ void DisplayWater(SMOKE *smoke)
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
 
-	vert[0].vx = (smoke->position.vx - smoke->start_w) - camera_position.vx;
+	size = smoke->start_w;
+
+	vert[0].vx = (smoke->position.vx - size) - camera_position.vx;
 	vert[0].vy = 50 - camera_position.vy;
-	vert[0].vz = (smoke->position.vz + smoke->start_w) - camera_position.vz;
+	vert[0].vz = (smoke->position.vz + size) - camera_position.vz;
 
-	vert[1].vx = (smoke->position.vx + smoke->start_w) - camera_position.vx;
+	vert[1].vx = (smoke->position.vx + size) - camera_position.vx;
 	vert[1].vy = 50 - camera_position.vy;
-	vert[1].vz = (smoke->position.vz + smoke->start_w) - camera_position.vz;
+	vert[1].vz = (smoke->position.vz + size) - camera_position.vz;
 
-	vert[2].vx = (smoke->position.vx - smoke->start_w) - camera_position.vx;
+	vert[2].vx = (smoke->position.vx - size) - camera_position.vx;
 	vert[2].vy = 50 - camera_position.vy;
-	vert[2].vz = (smoke->position.vz - smoke->start_w) - camera_position.vz;
+	vert[2].vz = (smoke->position.vz - size) - camera_position.vz;
 
-	vert[3].vx = (smoke->position.vx + smoke->start_w) - camera_position.vx;
+	vert[3].vx = (smoke->position.vx + size) - camera_position.vx;
 	vert[3].vy = 50 - camera_position.vy;
-	vert[3].vz = (smoke->position.vz - smoke->start_w) - camera_position.vz;
+	vert[3].vz = (smoke->position.vz - size) - camera_position.vz;
 
 	poly = (POLY_FT4*)current->primptr;
 
@@ -3669,29 +3663,33 @@ void DisplayWater(SMOKE *smoke)
 	/* end block 3 */
 	// End Line: 7882
 
-// [D]
+// [D] [T]
 void DisplaySpark(SMOKE *spark)
 {
-	int iVar7;
+	int colorind;
 	POLY_G3 *poly;
 	SVECTOR v[3];
 	SVECTOR TrailPos;
 	int z;
 
+	TrailPos.vx = spark->position.vx - camera_position.vx;
+	TrailPos.vy = spark->position.vy - camera_position.vy;
+	TrailPos.vz = spark->position.vz - camera_position.vz;
+
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
+
+	v[0].vx = TrailPos.vx;
+	v[0].vy = TrailPos.vy;
+	v[0].vz = TrailPos.vz;
+
+	v[1].vx = TrailPos.vx + 5;
+	v[1].vy = TrailPos.vy;
+	v[1].vz = TrailPos.vz + 5;
 
 	v[2].vx = spark->final_tail_pos.vx - camera_position.vx;
 	v[2].vy = spark->final_tail_pos.vy - camera_position.vy;
 	v[2].vz = spark->final_tail_pos.vz - camera_position.vz;
-
-	v[0].vx = spark->position.vx - camera_position.vx;
-	v[0].vy = spark->position.vy - camera_position.vy;
-	v[0].vz = spark->position.vz - camera_position.vz;
-
-	v[1].vx = spark->position.vx - camera_position.vx + 5;
-	v[1].vy = spark->position.vy - camera_position.vy;
-	v[1].vz = spark->position.vz - camera_position.vz + 5;
 
 	poly = (POLY_G3 *)current->primptr;
 
@@ -3702,22 +3700,22 @@ void DisplaySpark(SMOKE *spark)
 
 	if (spark->start_w == 2) 
 	{
-		iVar7 = spark->drift.vy * 3 & 3;
+		colorind = spark->drift.vy * 3 & 3;
 
 		if (gTimeOfDay == 1)
 		{
-			poly->r0 = grassColour[iVar7][0];
-			poly->g0 = grassColour[iVar7][1];
-			poly->b0 = grassColour[iVar7][2];
+			poly->r0 = grassColour[colorind][0];
+			poly->g0 = grassColour[colorind][1];
+			poly->b0 = grassColour[colorind][2];
 
-			poly->r1 = grassColour[iVar7][0];
-			poly->g1 = grassColour[iVar7][1];
-			poly->b1 = grassColour[iVar7][2];
+			poly->r1 = grassColour[colorind][0];
+			poly->g1 = grassColour[colorind][1];
+			poly->b1 = grassColour[colorind][2];
 
-			iVar7 = (spark->drift.vy + 2U) * 3 & 3;
-			poly->r2 = grassColour[iVar7][0];
-			poly->g2 = grassColour[iVar7][1];
-			poly->b2 = grassColour[iVar7][2];
+			colorind = (spark->drift.vy + 2U) * 3 & 3;
+			poly->r2 = grassColour[colorind][0];
+			poly->g2 = grassColour[colorind][1];
+			poly->b2 = grassColour[colorind][2];
 		}
 		else 
 		{
@@ -3747,7 +3745,7 @@ void DisplaySpark(SMOKE *spark)
 
 	gte_stsz(&z);
 
-	if (50 < z)
+	if (z > 50)
 	{
 		if (z >> 3 < 9)
 			z = 72;
@@ -3791,7 +3789,7 @@ void DisplaySpark(SMOKE *spark)
 
 int SmokeCnt = 0;
 
-// [D]
+// [D] [T]
 void GetSmokeDrift(VECTOR *Wind)
 {
 	static int SinTabIndex1 = 10;
@@ -3932,7 +3930,7 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 		mydebris->direction.vx = (short)(iVar10 >> 0xc);
 		mydebris->direction.vz = (short)(iVar8 >> 0xc);
 
-		mydebris->life = 0x80;
+		mydebris->life = 128;
 		mydebris->flags = 2;
 		mydebris->pos = uVar4 & 0x1f;
 	};
@@ -3989,23 +3987,17 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 
 /* WARNING: Removing unreachable block (ram,0x0003778c) */
 
-// [D]
+// [D] [T]
 void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelSpeed, VECTOR *Drift, int Exhaust)
 {
-	char cVar1;
-	unsigned char bVar2;
-	short sVar3;
-	short sVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
+	int num;
 	SMOKE *mysmoke;
 
-	iVar5 = AllocateSmoke();
-	if (iVar5 == -1)
+	num = AllocateSmoke();
+	if (num == -1)
 		return;
 
-	mysmoke = &smoke[iVar5];
+	mysmoke = &smoke[num];
 
 	if (SmokeType == 4) 
 	{
@@ -4035,11 +4027,10 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vz = ipos->vz;
 
 			if (WheelSpeed < 0x30d41)
-				sVar4 = 0xff;
+				mysmoke->transparency = 255;
 			else
-				sVar4 = (800000 - WheelSpeed >> 0xb);
-
-			mysmoke->transparency = sVar4;
+				mysmoke->transparency = (800000 - WheelSpeed >> 0xb);
+			
 			mysmoke->t_step = ((end_w - start_w) >> 5);
 			mysmoke->step = (((end_w - start_w) >> 7) << 2);
 		}
@@ -4049,7 +4040,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vy = ipos->vy;
 			mysmoke->position.vz = ipos->vz + (rand() & 9);
 			mysmoke->flags = 0x2006;
-			mysmoke->transparency = 0x8c;
+			mysmoke->transparency = 140;
 			mysmoke->t_step = 5;
 			mysmoke->step = 1;
 		}
@@ -4059,7 +4050,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		
 		mysmoke->flags = 0x2006;
 		mysmoke->life = 40;
-		mysmoke->halflife = 0x14;
+		mysmoke->halflife = 20;
 	}
 	else
 	{
@@ -4070,7 +4061,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 				mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 				mysmoke->position.vy = ipos->vy;
 				mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
-				mysmoke->flags = 0x16;
+				mysmoke->flags = 22;
 
 				if (SmokeType == 5)
 				{
@@ -4082,7 +4073,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 				else
 				{
 					mysmoke->life = 128;
-					mysmoke->step = ((end_w - start_w) / 0x80 << 3);
+					mysmoke->step = ((end_w - start_w) / 128 << 3);
 					mysmoke->t_step = (end_w - start_w >> 6);
 					mysmoke->transparency = 80;
 				}
@@ -4111,7 +4102,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 				mysmoke->position.vy = ipos->vy;
 				mysmoke->position.vz = ipos->vz;
 				mysmoke->flags = 0x46;
-				mysmoke->transparency = 0xa0;
+				mysmoke->transparency = 160;
 				mysmoke->step = 20;
 				mysmoke->t_step = 5;
 				mysmoke->start_w = start_w;
@@ -4125,7 +4116,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 			mysmoke->position.vy = ipos->vy;
 			mysmoke->flags = 0x26;
-			mysmoke->transparency = 0x3c;
+			mysmoke->transparency = 60;
 			mysmoke->t_step = 5;
 			mysmoke->start_w = start_w;
 			mysmoke->final_w = end_w;
@@ -4145,7 +4136,7 @@ LAB_00037884:
 		mysmoke->drift.vy = 0;
 		mysmoke->drift.vz = 0;
 
-		if ((mysmoke->life < 0x28) || (SmokeType == 4))
+		if (mysmoke->life < 40 || SmokeType == 4)
 		{
 			mysmoke->drift_change.vx = 0;
 			mysmoke->drift_change.vy = 1;
@@ -4319,7 +4310,7 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 	/* end block 2 */
 	// End Line: 9291
 
-// [D]
+// [D] [T]
 void DisplayDebris(DEBRIS *debris, char type)
 {
 	int uVar3;
@@ -4334,11 +4325,7 @@ void DisplayDebris(DEBRIS *debris, char type)
 	debrisvec.vy = debris->position.vy - camera_position.vy;
 	debrisvec.vz = debris->position.vz - camera_position.vz;
 
-	if (debrisvec.vx < -10000 || debrisvec.vz < -10000 || 10000 < debrisvec.vx || 10000 < debrisvec.vz)
-	{
-		debris->life = 1;
-	}
-	else
+	if (debrisvec.vx >= -10000 && debrisvec.vz >= -10000 && 10000 >= debrisvec.vx && 10000 >= debrisvec.vz)
 	{
 		tv = debris_rot_table[debris->type] + (debris->pos >> 3 & 0x1fU);
 
@@ -4423,6 +4410,10 @@ void DisplayDebris(DEBRIS *debris, char type)
 				current->primptr += sizeof(POLY_FT3);
 			}
 		}
+	}
+	else
+	{
+		debris->life = 1;
 	}
 }
 
@@ -4784,8 +4775,8 @@ void HandleDebris(void)
 		if (weather_level < 1)
 			gRainCount = (-weather_level >> 8);
 
-		if (gRainCount > 180)
-			gRainCount = 180;
+		if (gRainCount > MAX_RAIN_DROPS)
+			gRainCount = MAX_RAIN_DROPS;
 	}
 }
 
@@ -5068,13 +5059,12 @@ void DisplaySmoke(SMOKE *smoke)
 	/* end block 2 */
 	// End Line: 10703
 
-// [D]
+// [D] [T]
 void add_haze(int top_col, int bot_col, short ot_pos)
 {
-	unsigned char uVar2;
 	TILE *polys;
 
-	if ((9 < top_col) && (FastForward == 0))
+	if (top_col > 9 && FastForward == 0)
 	{
 		polys = (TILE *)current->primptr;
 
@@ -5144,7 +5134,7 @@ void add_haze(int top_col, int bot_col, short ot_pos)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetupRain(void)
 {
 	gNextRainDrop = 0;
@@ -5155,7 +5145,7 @@ void SetupRain(void)
 		gRain[gNextRainDrop].oldposition.pad = gNextRainDrop;
 
 		gNextRainDrop++;
-	} while (gNextRainDrop < 180);
+	} while (gNextRainDrop < MAX_RAIN_DROPS);
 
 	gNextRainDrop = 0;
 }
@@ -5183,15 +5173,13 @@ void SetupRain(void)
  
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int AllocateRainDrop(void)
 {
-	short *psVar1;
+	if (gNextRainDrop < MAX_RAIN_DROPS)
+		return gRainAlloc[gNextRainDrop++];
 
-	if (gNextRainDrop > 179)
-		return -1;
-
-	return gRainAlloc[gNextRainDrop++];
+	return -1;
 }
 
 
@@ -5266,18 +5254,15 @@ void ReleaseRainDrop(int RainIndex)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawRainDrops(void)
 {
 	int z;
-	DB *pDVar3;
-	ushort uVar4;
-	uint uVar5;
-	uint iVar6;
+	int Count;
 	POLY_GT3 *poly;
 	RAIN_TYPE *RainPtr;
-	int iVar7;
 	int col;
+	int bright;
 	SVECTOR v;
 	VECTOR drift;
 
@@ -5289,16 +5274,16 @@ void DrawRainDrops(void)
 	//if (cameraview == 1)
 	//	iVar7 = 70;
 	//else
-	iVar7 = 70;// -car_data[0].hd.wheel_speed;
+	bright = 70;// -car_data[0].hd.wheel_speed;	// [A] WTF
 
-	if (iVar7 < 50)
-		iVar7 = 50;
+	if (bright < 50)
+		bright = 50;
 
 	if (gNight != 0)
-		iVar7 -= -15;
+		bright -= -15;
 
-	col = iVar7 >> 1 | (iVar7 >> 1) << 8;
-	col = col | col << 0x10;
+	col = bright >> 1 | (bright >> 1) << 8;
+	col |= col | col << 0x10;
 
 	DisplaySplashes();
 
@@ -5306,9 +5291,9 @@ void DrawRainDrops(void)
 	gte_SetTransVector(&dummy);
 
 	RainPtr = gRain;
-	iVar7 = gNextRainDrop-1;
+	Count = gNextRainDrop-1;
 
-	while (iVar7 >= 0) 
+	while (Count >= 0) 
 	{
 		if (pauseflag == 0) 
 		{
@@ -5320,8 +5305,6 @@ void DrawRainDrops(void)
 		v.vx = RainPtr->position.vx - camera_position.vx;
 		v.vy = RainPtr->position.vy - camera_position.vy;
 		v.vz = RainPtr->position.vz - camera_position.vz;
-
-		iVar6 = *(uint *)&RainPtr->oldposition;
 
 		poly = (POLY_GT3 *)current->primptr;
 
@@ -5341,9 +5324,7 @@ void DrawRainDrops(void)
 
 		if (z - 0x97U < 0x352 && -0x65 < poly->x2 && poly->x2 < 0x1a5 && -0x33 < poly->y2 && poly->y2 < 0x101) 
 		{
-			*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
-
-			if (iVar6 != 0) 
+			if (*(uint *)&RainPtr->oldposition.vx != 0) 
 			{
 				poly->x1 = poly->x2 - ((z >> 10) - 1);
 				poly->x2 = poly->x2 + ((z >> 10) - 1);
@@ -5359,6 +5340,8 @@ void DrawRainDrops(void)
 				addPrim(current->ot + (z >> 3), poly);
 				current->primptr += sizeof(POLY_GT3);
 			}
+
+			*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
 		}
 		else 
 		{
@@ -5366,7 +5349,7 @@ void DrawRainDrops(void)
 		}
 
 		RainPtr++;
-		iVar7--;
+		Count--;
 	}
 }
 
@@ -5749,41 +5732,36 @@ int LightningTimer = 10;
 int ThunderTimer = 0;
 static int ThunderDistance = 0;
 
-// [D]
+// [D] [T]
 void DoLightning(void)
 {
-	uint uVar1;
+	if (pauseflag != 0)
+		return;
 
-	if (pauseflag == 0) 
-	{
-		if (LightningTimer < -10) 
-		{
-			uVar1 = rand();
-			LightningTimer = uVar1 & 0xff;
-		}
-		else 
-			LightningTimer = LightningTimer - 1;
+	if (LightningTimer < -10) 
+		LightningTimer =  rand() & 0xff;
+	else 
+		LightningTimer--;
 	
-		if ((LightningTimer < 0) && (uVar1 = rand(), (uVar1 & 1) == 0))
+	if (LightningTimer < 0 && (rand() & 1) == 0)
+	{
+		RequestThunder();
+
+		if ((rand() & 1) == 0) 
 		{
-			RequestThunder();
-			uVar1 = rand();
+			NightAmbient = NightAmbient << 1;
 
-			if ((uVar1 & 1) == 0) 
-			{
-				NightAmbient = NightAmbient << 1;
-				if (0x80 < NightAmbient) 
-					NightAmbient = 0x80;
+			if (NightAmbient > 128) 
+				NightAmbient = 128;
 
-				lightning = 2;
-				return;
-			}
-
-			add_haze(0x32, 0, 0x107e);
+			lightning = 2;
+			return;
 		}
 
-		lightning = 0;
+		add_haze(50, 0, 4222);
 	}
+
+	lightning = 0;
 }
 
 
@@ -5806,7 +5784,7 @@ void DoLightning(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitThunder(void)
 {
 	ThunderTimer = -1;
@@ -5826,7 +5804,7 @@ void InitThunder(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void RequestThunder(void)
 {
 	ThunderTimer = ThunderDistance >> 8;
@@ -5860,36 +5838,26 @@ void RequestThunder(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DoThunder(void)
 {
-	int iVar1;
-	int iVar2;
-
 	if (pauseflag)
 		return;
 
-	iVar1 = rand();
 	ThunderDistance = (ThunderDistance + 40) - rand() % 80;
 
 	if (ThunderDistance < 250)
 		ThunderDistance = 250;
 
-	if (5000 < ThunderDistance) 
+	if (ThunderDistance > 5000) 
 		ThunderDistance = 5000;
 
-	iVar1 = ThunderTimer-1;
-
-	if (ThunderTimer > -1 && (ThunderTimer = iVar1, iVar1 == 0)) 
+	if (ThunderTimer > -1)
 	{
-		iVar2 = rand();
-
-		iVar1 = iVar2;
-
-		if (iVar2 < 0)
-			iVar1 = iVar2 + 0x7ff;
-
-		StartSound(-1, 1, 12, -ThunderDistance, iVar2 - (iVar1 >> 0xb) * 2048 + 3072);
+		ThunderTimer--;
+		
+		if(ThunderTimer == 0) 
+			StartSound(-1, 1, 12, -ThunderDistance, (rand() % 2048) + 3072);
 	}
 }
 
@@ -5914,12 +5882,12 @@ void DoThunder(void)
 	/* end block 3 */
 	// End Line: 24076
 
-// [D]
+// [D] [T]
 void DoWeather(int weather)
 {
 	if (weather == 1 && pauseflag == 0) 
 	{
-		if (gEffectsTimer < 0x29) 
+		if (gEffectsTimer < 41) 
 		{
 			if ((FrameCnt & 7U) == 0) 
 				gEffectsTimer++;
@@ -5930,7 +5898,7 @@ void DoWeather(int weather)
 			DrawRainDrops();
 
 			if ((FrameCnt & 7U) == 0)
-				gRainCount = gRainCount + 1;
+				gRainCount++;
 
 			if (gRainCount > 35)
 				gRainCount = 35;
@@ -5964,7 +5932,7 @@ void DoWeather(int weather)
 	/* end block 3 */
 	// End Line: 24131
 
-// [D]
+// [D] [T]
 int GetDebrisColour(_CAR_DATA *cp)
 {
 	int car_model;

@@ -786,7 +786,7 @@ void DrawMapPSX(int* comp_val)
 									cop = UnpackCellObject(ppco, &ci.nearCell);
 
 									ground_debris[groundDebrisIndex++] = *cop;
-									groundDebrisIndex = groundDebrisIndex % 16;
+									groundDebrisIndex = groundDebrisIndex % MAX_GROUND_DEBRIS;
 								}
 								
 								treecount = (treecount+1) & 0xf;
