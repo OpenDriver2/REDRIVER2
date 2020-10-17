@@ -1305,7 +1305,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 						if (uVar4 == 2)
 							vvar1 = 1;
 
-						RenderModel(*pBone->pModel, NULL, &v, vvar1, 0, 0);
+						RenderModel(*pBone->pModel, NULL, &v, vvar1, 0, 0, 0);
 					}
 				}
 				else
@@ -2890,7 +2890,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	if (gNight != 0)
 		combointensity = 0x404040;
 
-	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags, 0);
+	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags, 0, 0);
 
 	combointensity = oldcombointensity;
 }

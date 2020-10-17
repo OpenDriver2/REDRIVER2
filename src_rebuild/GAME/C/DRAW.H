@@ -54,7 +54,7 @@ extern void DrawAllTheCars(int view); // 0x000407D8
 
 extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, struct _pct *pc, int n); // 0x00040A90
 
-extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv); // 0x0004143C
+extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv, int nrot); // 0x0004143C
 
 extern unsigned long normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
 

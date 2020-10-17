@@ -1439,7 +1439,7 @@ void CalcObjectRotationMatrices(void)
 // [D] [T]
 void PlotMDL_less_than_128(MODEL* model)
 {
-	RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0, 0);
+	RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0, 0, 0);
 }
 
 
@@ -1675,31 +1675,29 @@ void DrawAllTheCars(int view)
 		gForceLowDetailCars = 0;
 
 		// sort cars by distance
-		if (num_cars_to_draw > 1)
+		i = 1;
+		while (i < num_cars_to_draw)
 		{
-			i = 1;
-			do {
-				cp = cars_to_draw[i];
-				dist = car_distance[i];
+			cp = cars_to_draw[i];
+			dist = car_distance[i];
 
-				j = i - 1;
+			j = i - 1;
 
-				while (dist < car_distance[j])
-				{
-					car_distance[i] = car_distance[j];
-					cars_to_draw[i] = cars_to_draw[j];
+			while (dist < car_distance[j])
+			{
+				car_distance[i] = car_distance[j];
+				cars_to_draw[i] = cars_to_draw[j];
 
-					if (j == 0)
-						break;
-					
-					j--;
-				}
+				if (j == 0)
+					break;
 				
-				cars_to_draw[i] = cp;
-				car_distance[i] = dist;
+				j--;
+			}
+			
+			cars_to_draw[i] = cp;
+			car_distance[i] = dist;
 
-				i++;
-			} while (i < num_cars_to_draw);
+			i++;
 		}
 
 		i = 0;
@@ -2068,7 +2066,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	// End Line: 5556
 
 // [D] [T]
-void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv)
+void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
 {
 	OTTYPE* savedOT = current->ot;
 
@@ -2102,7 +2100,7 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	plotContext.current = current;
 
 	if (56000 < (current->primtab - (current->primptr - PRIMTAB_SIZE)))
-		PlotBuildingModelSubdivNxN(model, 0, &plotContext, subdiv);
+		PlotBuildingModelSubdivNxN(model, nrot, &plotContext, subdiv);
 
 	current->ot = savedOT;
 }
