@@ -86,6 +86,8 @@ void DrawDebugOverlays()
 
 	if (gDisplayDrawStats)
 	{
+		SetTextColour(255, 255, 0);
+		
 		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, PRIMTAB_SIZE);
 		PrintString(tempBuf, 10, 20);
 

@@ -914,7 +914,6 @@ void GameInit(void)
 	{
 		MALLOC_BEGIN();
 		char* mem = D_MALLOC(1024);
-		tile_overflow_buffer = (ulong*)mem;
 		coplist = (CELL_OBJECT**)mem;
 
 		pcoplist = (PACKED_CELL_OBJECT**)D_MALLOC(1024 + 256);

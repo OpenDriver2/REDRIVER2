@@ -283,91 +283,91 @@ void Tile1x1(MODEL *model)
 	// End Line: 464
 
 // [D]
-void DrawTILES(int tile_amount)
+void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 {
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-	ushort *puVar4;
-	uint uVar5;
-	ushort **ppuVar6;
-	uint uVar7;
+	PACKED_CELL_OBJECT *ppco;
+	int yang;
+	int model_number;
+	PACKED_CELL_OBJECT **tilePointers;
+	int previous_matrix;
+	int Z;
 
-	if (-1 < gTimeOfDay) 
+	if (gTimeOfDay > -1) 
 	{
 		if (gTimeOfDay < 3)
 		{
 			plotContext.colour = combointensity & 0xffffffU | 0x2c000000;
 		}
-		else 
+		else if (gTimeOfDay == 3) 
 		{
-			if (gTimeOfDay == 3) 
-			{
-				plotContext.colour = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
-					((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
-					(int)(combointensity & 0xffU) / 3 | 0x2c000000U;
-			}
+			plotContext.colour = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
+				((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
+				(int)(combointensity & 0xffU) / 3 | 0x2c000000U;
 		}
 	}
-	uVar7 = 0xffffffff;
+
+	previous_matrix = -1;
 
 	if (gWeather - 1U < 2)
 	{
-		uVar3 = plotContext.colour >> 2 & 0x3f;
-		plotContext.colour = uVar3 * 0x30000 | uVar3 * 0x300 | uVar3 * 3 | 0x2c000000;
+		ulong col;
+		col = plotContext.colour >> 2 & 0x3f;
+		plotContext.colour = col * 0x30000 | col * 0x300 | col * 3 | 0x2c000000;
 	}
 
-	tile_amount = tile_amount + -1;
+	tile_amount--;
+
 	plotContext.ot = current->ot;
 	plotContext.primptr = current->primptr;
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.lastTexInfo = 0x18273472;
 	plotContext.flags = 0;
-	ppuVar6 = (ushort **)tile_overflow_buffer;
+
+	tilePointers = (PACKED_CELL_OBJECT **)tiles;
 
 	while (tile_amount != -1) 
 	{
-		puVar4 = *ppuVar6;
-		plotContext.f4colourTable[6] = (*puVar4);
-		plotContext.f4colourTable[7] = (int)((uint)puVar4[1] << 0x10) >> 0x11;
-		plotContext.f4colourTable[8] = (puVar4[2]);
-		ppuVar6 = ppuVar6 + 1;
-		uVar5 = (uint)puVar4[3] & 0x3f;
-		uVar3 = (uint)(puVar4[3] >> 6) | ((uint)puVar4[1] & 1) << 10;
+		ppco = *tilePointers;
+		
+		plotContext.f4colourTable[6] = ppco->pos.vx;
+		plotContext.f4colourTable[7] = (ppco->pos.vy << 0x10) >> 0x11;
+		plotContext.f4colourTable[8] = ppco->pos.vz;
+	
+		tilePointers++;
+	
+		yang = ppco->value & 0x3f;
+		model_number = (ppco->value >> 6) | (ppco->pos.vy & 1) << 10;
 
-		if (uVar7 == uVar5)
+		if (previous_matrix == yang)
 		{
-			iVar1 = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)(plotContext.f4colourTable + 6));
+			Z = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)(plotContext.f4colourTable + 6));
 		}
 		else
 		{
-			iVar1 = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[uVar5]);
-			uVar7 = uVar5;
+			Z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[yang]);
+			previous_matrix = yang;
 		}
 
-		if (iVar1 < 7001)
+		if (Z < 7001)
 		{
-			if (Low2HighDetailTable[uVar3] != 0xffff)
-				uVar3 = Low2HighDetailTable[uVar3];
+			if (Low2HighDetailTable[model_number] != 0xffff)
+				model_number = Low2HighDetailTable[model_number];
 
-			if (iVar1 < 2000) 
-				TileNxN(modelpointers[uVar3], 4, 75);
+			if (Z < 2000) 
+				TileNxN(modelpointers[model_number], 4, 75);
 			else 
-				TileNxN(modelpointers[uVar3], 2, 35);
+				TileNxN(modelpointers[model_number], 2, 35);
 		}
 		else
 		{
-			iVar2 = uVar3;// << 2;
-			
-			if (9000 < iVar1) 
+			if (Z > 9000) 
 			{
-				iVar2 = uVar3;// << 2;
-				if (Low2LowerDetailTable[uVar3] != 0xffff)
-					iVar2 = Low2LowerDetailTable[uVar3];// << 2;
+				if (Low2LowerDetailTable[model_number] != 0xffff)
+					model_number = Low2LowerDetailTable[model_number];
 			}
 			
-			Tile1x1(modelpointers[iVar2]);
+			Tile1x1(modelpointers[model_number]);
 		}
 
 		tile_amount--;

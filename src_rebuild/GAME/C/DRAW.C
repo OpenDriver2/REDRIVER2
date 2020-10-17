@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+#include "PRES.H"
+
 MATRIX aspect =
 {
 	{
@@ -96,10 +98,6 @@ MATRIX2 CompoundMatrix[64];
 
 uint farClip2Player = 36000;
 
-static int treecount = 0;
-int numSpritesFound = 0;
-static int alleycount = 0;
-
 int goFaster = 1;
 int fasterToggle = 0;
 
@@ -107,13 +105,10 @@ int current_object_computed_value = 0;
 
 int combointensity;
 
-int buildingsFound = 0;
-CELL_OBJECT* model_object_ptrs[512];
-CELL_OBJECT* anim_obj_buffer[20];
-
-unsigned long* tile_overflow_buffer;
-
-PACKED_CELL_OBJECT* spriteList[75];
+void* model_object_ptrs[192];
+void* model_tile_ptrs[320];
+void* anim_obj_buffer[20];
+void* spriteList[75];
 
 #ifndef PSX
 OUT_CELL_FILE_HEADER cell_header;
@@ -287,7 +282,7 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 MATRIX shadowMatrix;
 
 // [D] [T] [A]
-void DrawSprites(int numFound)
+void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 {
 	int i;
 	int z;
@@ -345,7 +340,7 @@ void DrawSprites(int numFound)
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.ot = current->ot;
 
-	list = spriteList;
+	list = sprites;
 
 	plotContext.colour = spriteColour;
 	plotContext.current = current;
@@ -437,6 +432,134 @@ void DrawSprites(int numFound)
 	current->primptr = plotContext.primptr;
 }
 
+// decompiled code
+// original method signature: 
+// int /*$ra*/ DrawAllBuildings(unsigned long *objects /*$t3*/, int num_buildings /*$s5*/, struct DB *disp /*$a2*/)
+// line 2053, offset 0x000411f4
+/* begin block 1 */
+// Start line: 2054
+// Start offset: 0x000411F4
+// Variables:
+// 		int i; // $s3
+// 		int model_number; // $v0
+// 		int prev_mat; // $s4
+// 		struct MODEL *model; // $a0
+// 		struct CELL_OBJECT *building; // $s0
+
+/* begin block 1.1 */
+// Start line: 2091
+// Start offset: 0x0004132C
+// Variables:
+// 		int spacefree; // $a0
+
+/* begin block 1.1.1 */
+// Start line: 2134
+// Start offset: 0x0004135C
+/* end block 1.1.1 */
+// End offset: 0x00041364
+// End Line: 2135
+
+/* begin block 1.1.2 */
+// Start line: 2138
+// Start offset: 0x00041364
+// Variables:
+// 		int zBias; // $v0
+// 		unsigned long *savedOT; // $s1
+/* end block 1.1.2 */
+// End offset: 0x00041398
+// End Line: 2150
+/* end block 1.1 */
+// End offset: 0x00041398
+// End Line: 2150
+/* end block 1 */
+// End offset: 0x0004143C
+// End Line: 2179
+
+/* begin block 2 */
+// Start line: 5011
+/* end block 2 */
+// End Line: 5012
+
+/* begin block 3 */
+// Start line: 5025
+/* end block 3 */
+// End Line: 5026
+
+// [D] [T]
+int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
+{
+	int mat;
+	int zbias;
+	int drawlimit;
+	MODEL* model;
+	OTTYPE* savedOT;
+	CELL_OBJECT* cop;
+	int i;
+	int prev_mat;
+
+	prev_mat = -1;
+
+	SetupPlaneColours(combointensity);
+
+	for (i = 0; i < 8; i++)
+	{
+		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	}
+
+	current->ot += 8;
+
+	plotContext.current = current;
+	plotContext.ptexture_pages = &texture_pages;
+	plotContext.ptexture_cluts = &texture_cluts;
+	plotContext.polySizes = PolySizes;
+	plotContext.flags = 0;
+
+	i = 0;
+
+	while (i < num_buildings)
+	{
+		cop = (CELL_OBJECT*)*objects;
+		mat = cop->yang;
+
+		if (prev_mat == mat)
+		{
+			Apply_InvCameraMatrixSetTrans(&cop->pos);
+		}
+		else
+		{
+			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
+			prev_mat = mat;
+		}
+
+		model = modelpointers[cop->type];
+
+		savedOT = current->ot;
+
+		zbias = model->zBias - 64;
+
+		if (zbias < 0)
+			zbias = 0;
+
+		current->ot = savedOT + zbias * 4;
+		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
+		current->ot = savedOT;
+
+		drawlimit = (int)current->primptr - (int)current->primtab;
+
+		if (PRIMTAB_SIZE - drawlimit < 60000)
+			break;
+
+		i++;
+		objects++;
+	}
+
+	current->ot -= 8;
+
+	return 0;
+}
 
 // decompiled code
 // original method signature: 
@@ -459,7 +582,7 @@ void DrawSprites(int numFound)
 	// 		char *PVS_ptr; // stack offset -104
 	// 		int tiles_found; // stack offset -100
 	// 		int other_models_found; // stack offset -96
-	// 		int anim_objs; // $s6
+	// 		int anim_objs_found; // $s6
 	// 		struct MATRIX mRotStore; // stack offset -160
 	// 		int rightcos; // stack offset -92
 	// 		int rightsin; // stack offset -88
@@ -668,8 +791,15 @@ void DrawMapPSX(int* comp_val)
 	int cellxpos;
 	int cellzpos;
 	char* PVS_ptr;
+
 	int tiles_found;
 	int other_models_found;
+	int sprites_found;
+	int anim_objs_found;
+
+	static int treecount = 0;
+	static int alleycount = 0;
+	
 	int rightcos;
 	int rightsin;
 	int leftcos;
@@ -683,7 +813,7 @@ void DrawMapPSX(int* comp_val)
 	int leftAng;
 	int rightAng;
 	int i;
-	int anim_objs;
+	
 
 	backPlane = 6144;
 	rightPlane = -6144;
@@ -710,13 +840,12 @@ void DrawMapPSX(int* comp_val)
 	}
 
 	tiles_found = 0;
-	treecount = 0;
-	numSpritesFound = 0;
+	sprites_found = 0;
 	goFaster = goFaster ^ fasterToggle;
 	current_object_computed_value = *comp_val;
 	other_models_found = 0;
 
-	anim_objs = 0;
+	anim_objs_found = 0;
 
 	if (setupYet == 0)
 	{
@@ -767,16 +896,16 @@ void DrawMapPSX(int* comp_val)
 
 					if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
 					{
+						// sprity type
 						if (model->shape_flags & 0x4000)
 						{
-							if (numSpritesFound < 75)
-								spriteList[numSpritesFound++] = ppco;
+							if (sprites_found < 75)
+								spriteList[sprites_found++] = ppco;
 
-							if ((model->flags2 & 1) && anim_objs < 20)
+							if ((model->flags2 & 1) && anim_objs_found < 20)
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
-
-								anim_obj_buffer[anim_objs++] = cop;
+								anim_obj_buffer[anim_objs_found++] = cop;
 							}
 
 							if(model->flags2 & 0x2000)
@@ -785,11 +914,17 @@ void DrawMapPSX(int* comp_val)
 								{
 									cop = UnpackCellObject(ppco, &ci.nearCell);
 
-									ground_debris[groundDebrisIndex++] = *cop;
-									groundDebrisIndex = groundDebrisIndex % MAX_GROUND_DEBRIS;
+									ground_debris[groundDebrisIndex] = *cop;
+									if (groundDebrisIndex < MAX_GROUND_DEBRIS-1)
+										groundDebrisIndex++;
+									else
+										groundDebrisIndex = 0;
 								}
-								
-								treecount = (treecount+1) & 0xf;
+
+								if(treecount < 15)
+									treecount++;
+								else
+									treecount = 0;
 							}
 						}
 						else
@@ -825,30 +960,29 @@ void DrawMapPSX(int* comp_val)
 									if (alleycount == 13)
 									{
 										cop = UnpackCellObject(ppco, &ci.nearCell);
-										ground_debris[groundDebrisIndex++] = *cop;
-										groundDebrisIndex = groundDebrisIndex % 16;
+										ground_debris[groundDebrisIndex] = *cop;
+										
+										if (groundDebrisIndex < MAX_GROUND_DEBRIS-1)
+											groundDebrisIndex++;
+										else
+											groundDebrisIndex = 0;
 
 										alleycount = 0;
 									}
 								}
 								
-								if (tiles_found < 256)
-								{
-									*(PACKED_CELL_OBJECT**)(tile_overflow_buffer + tiles_found) = ppco;
-									tiles_found++;
-								}
+								if (tiles_found < 320)
+									model_tile_ptrs[tiles_found++] = ppco;
 							}
 							else
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
 
-								if ((model->flags2 & 1) && anim_objs < 20)
-								{
-									anim_obj_buffer[anim_objs++] = cop;
-								}
-
 								if (other_models_found < 192)
 									model_object_ptrs[other_models_found++] = cop;
+								
+								if ((model->flags2 & 1) && anim_objs_found < 20)
+									anim_obj_buffer[anim_objs_found++] = cop;
 							}
 						}
 					}
@@ -907,22 +1041,40 @@ void DrawMapPSX(int* comp_val)
 		i--;
 	}
 
-	if (numSpritesFound != 0)
-		DrawSprites(numSpritesFound);
+#if 0
+	char tempBuf[512];
 
-	if (tiles_found != 0)
-		DrawTILES(tiles_found);
+	SetTextColour(255, 255, 0);
 
-	if (other_models_found != 0)
-	{
-		SetupPlaneColours(combointensity);
+	sprintf(tempBuf, "Buildings: %d", other_models_found);
+	PrintString(tempBuf, 10, 60);
+
+	sprintf(tempBuf, "Sprites: %d", sprites_found);
+	PrintString(tempBuf, 10, 75);
+
+	sprintf(tempBuf, "Tiles: %d", tiles_found);
+	PrintString(tempBuf, 10, 90);
+
+	sprintf(tempBuf, "Anims: %d", anim_objs_found);
+	PrintString(tempBuf, 10, 105);
+
+	sprintf(tempBuf, "TOTAL: %d", other_models_found + sprites_found + tiles_found + anim_objs_found );
+	PrintString(tempBuf, 10, 120);
+#endif
+
+	if (sprites_found)
+		DrawSprites((PACKED_CELL_OBJECT**)spriteList, sprites_found);
+
+	if (tiles_found)
+		DrawTILES((PACKED_CELL_OBJECT**)model_tile_ptrs, tiles_found);
+
+	if (other_models_found)
 		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found, current);
-	}
 
-	while (anim_objs > 0)
+	while (anim_objs_found > 0)
 	{
-		anim_objs--;
-		cop = anim_obj_buffer[anim_objs];
+		anim_objs_found--;
+		cop = (CELL_OBJECT*)anim_obj_buffer[anim_objs_found];
 
 		newpos.vx = cop->pos.vx - camera_position.vx;
 		newpos.vy = cop->pos.vy - camera_position.vy;
@@ -932,8 +1084,6 @@ void DrawMapPSX(int* comp_val)
 		gte_SetRotMatrix(&matrixtable[cop->yang]);
 		DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
 	}
-
-	buildingsFound = other_models_found;
 }
 
 // decompiled code
@@ -1868,136 +2018,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	if ((pc->flags & 1U) != 0)
 		combointensity &= ~0x2000000;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ DrawAllBuildings(unsigned long *objects /*$t3*/, int num_buildings /*$s5*/, struct DB *disp /*$a2*/)
- // line 2053, offset 0x000411f4
-	/* begin block 1 */
-		// Start line: 2054
-		// Start offset: 0x000411F4
-		// Variables:
-	// 		int i; // $s3
-	// 		int model_number; // $v0
-	// 		int prev_mat; // $s4
-	// 		struct MODEL *model; // $a0
-	// 		struct CELL_OBJECT *building; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2091
-			// Start offset: 0x0004132C
-			// Variables:
-		// 		int spacefree; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 2134
-				// Start offset: 0x0004135C
-			/* end block 1.1.1 */
-			// End offset: 0x00041364
-			// End Line: 2135
-
-			/* begin block 1.1.2 */
-				// Start line: 2138
-				// Start offset: 0x00041364
-				// Variables:
-			// 		int zBias; // $v0
-			// 		unsigned long *savedOT; // $s1
-			/* end block 1.1.2 */
-			// End offset: 0x00041398
-			// End Line: 2150
-		/* end block 1.1 */
-		// End offset: 0x00041398
-		// End Line: 2150
-	/* end block 1 */
-	// End offset: 0x0004143C
-	// End Line: 2179
-
-	/* begin block 2 */
-		// Start line: 5011
-	/* end block 2 */
-	// End Line: 5012
-
-	/* begin block 3 */
-		// Start line: 5025
-	/* end block 3 */
-	// End Line: 5026
-
-// [D] [T]
-int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
-{
-	int mat;
-	int zbias;
-	int drawlimit;
-	MODEL* model;
-	OTTYPE* savedOT;
-	CELL_OBJECT* cop;
-	int i;
-	int prev_mat;
-
-	prev_mat = -1;
-
-	for (i = 0; i < 8; i++)
-	{
-		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
-	}
-
-	current->ot += 8;
-
-	plotContext.current = current;
-	plotContext.ptexture_pages = &texture_pages;
-	plotContext.ptexture_cluts = &texture_cluts;
-	plotContext.polySizes = PolySizes;
-	plotContext.flags = 0;
-
-	i = 0;
-
-	while (i < num_buildings)
-	{
-		cop = (CELL_OBJECT*)*objects;
-		mat = cop->yang;
-
-		if (prev_mat == mat)
-		{
-			Apply_InvCameraMatrixSetTrans(&cop->pos);
-		}
-		else
-		{
-			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
-			prev_mat = mat;
-		}
-
-		model = modelpointers[cop->type];
-
-		savedOT = current->ot;
-
-		zbias = model->zBias - 64;
-
-		if (zbias < 0)
-			zbias = 0;
-
-		current->ot = savedOT + zbias * 4;
-		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
-		current->ot = savedOT;
-
-		drawlimit = (int)current->primptr - (int)current->primtab;
-
-		if (PRIMTAB_SIZE - drawlimit < 60000)
-			break;
-
-		i++;
-		objects++;
-	}
-
-	current->ot -= 8;
-
-	return 0;
-}
-
 
 
 // decompiled code

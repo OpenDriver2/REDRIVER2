@@ -2277,7 +2277,11 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 
 	dam = &damaged_object[NextDamagedPmeter];
 	SmashablesHit++;
-	NextDamagedPmeter++;
+	
+	if (NextDamagedPmeter < MAX_SMASHED_OBJECTS-1)
+		NextDamagedPmeter++;
+	else
+		NextDamagedPmeter = 0;
 
 	dam->active = 1;
 	dam->damage = 0;
@@ -2312,9 +2316,6 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 
 	if (dam->velocity.vy < -67)
 		dam->velocity.vy = -67;
-
-	if (NextDamagedPmeter > MAX_SMASHED_OBJECTS)
-		NextDamagedPmeter = 0;
 
 	cop->pos.vx = 0xFD46FEC0;
 
