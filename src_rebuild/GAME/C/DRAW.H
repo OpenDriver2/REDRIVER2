@@ -21,6 +21,8 @@ extern int pvs_square;
 extern int pvs_square_sq;
 extern int PolySizes[56];
 
+extern void* model_object_ptrs[192];
+
 extern int combointensity;
 
 extern int gForceLowDetailCars;

@@ -920,12 +920,9 @@ void CollisionCopList(XZPAIR *pos, int *count)
 		do {
 			j = 0;
 
-			i++;
 			cell.z = initial.z;
 
 			do {
-				j++;
-
 				// [A] FIXME: replace with 'cell_header.region_size'
 				if ((cell.x / 32) + (cell.z / 32) * (cells_across / 32) == RoadMapRegions[((cell.x / 32) & 1) + ((cell.z / 32) & 1) * 2])
 				{
@@ -934,21 +931,24 @@ void CollisionCopList(XZPAIR *pos, int *count)
 
 					while (cop != NULL)
 					{
+						cop->pad = *count;
+						
 						coplist[*count] = cop;
-						cop->pad = *(unsigned char *)count;
 						pcoplist[*count] = ci.ppco;
 
 						ppco = GetNextPackedCop(&ci);
 						cop = UnpackCellObject(ppco, &ci.nearCell);
 
-						*count = *count + 1;
+						(*count)++;
 					}
 				}
 
 				cell.z++;
+				j++;
 			} while (j < 2);
 
 			cell.x++;
+			i++;
 		} while (i < 2);
 	}
 	else
@@ -1090,8 +1090,10 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 		mdcount = 0;
 		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
 
+		printInfo("Coll: %d\n", mdcount);
+		
 		x1 = 0;
-		if (0 < mdcount + event_models_active)
+		if (mdcount + event_models_active > 0)
 		{
 			do {
 				if (x1 < mdcount)
@@ -1296,6 +1298,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 	Havana3DOcclusion(BuildCollisionCopList, &mdcount);
 	iVar4 = 0;
+
+	printInfo("Coll: %d\n", mdcount);
 
 	if (0 < mdcount + event_models_active)
 	{

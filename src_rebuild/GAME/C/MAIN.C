@@ -912,13 +912,10 @@ void GameInit(void)
 
 	if (NewLevel != 0)
 	{
-		MALLOC_BEGIN();
-		char* mem = D_MALLOC(1024);
-		coplist = (CELL_OBJECT**)mem;
-
-		pcoplist = (PACKED_CELL_OBJECT**)D_MALLOC(1024 + 256);
-		//transparent_buffer = D_MALLOC(256);		// [A] unused
-		MALLOC_END();
+		// alloc pointer list
+		// [A] use model_object_ptrs for this since it is only used for drawing purposes
+		coplist = (CELL_OBJECT**)(model_object_ptrs);
+		pcoplist = (PACKED_CELL_OBJECT**)(model_object_ptrs + 96);
 	}
 
 	if (NoPlayerControl == 0)
