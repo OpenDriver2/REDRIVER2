@@ -639,6 +639,11 @@ void ReleaseInGameCutscene(void)
 	gInGameCutsceneDelay = 0;
 	gStopPadReads = 0;
 
+	gCameraOffset.vx = 0;
+	gCameraOffset.vy = 0;
+	gCameraOffset.vz = 0;
+	gCameraMaxDistance = 0;
+
 	xa_timeout = 120;
 }
 
