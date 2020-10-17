@@ -3233,6 +3233,7 @@ void PingInPedestrians(void)
 			pPed->fpAgitatedState = NULL;
 			pPed->dir.vy = 0;
 			pPed->fpRestState = fpPedPersonalityFunctions[7];
+			pPed->speed = 0;
 
 			rnd = Random2(0);
 
@@ -4352,7 +4353,7 @@ void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
 
 	pedestrian->dir.vy = dir;
 
-	dir += 0x800 & 0xfff;
+	dir = dir + 0x800 & 0xfff;
 
 	pedestrian->position.vz -= pedestrian->velocity.vz;
 	pedestrian->position.vx -= pedestrian->velocity.vx;
