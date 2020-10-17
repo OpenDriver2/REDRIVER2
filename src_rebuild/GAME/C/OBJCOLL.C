@@ -1164,10 +1164,10 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 										CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
 									{
 										gCameraDistance -= boxOverlap;
+										
 										if (gCameraDistance < iVar13)
 											gCameraDistance = iVar13;
 
-										iVar13 = gCameraDistance;
 										uVar9 = cp->hd.direction & 0xfff;
 
 										cp->hd.where.t[0] = lVar1 + FIXEDH((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);

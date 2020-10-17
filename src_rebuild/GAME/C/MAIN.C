@@ -1871,8 +1871,8 @@ void StepGame(void)
 			gCameraDistance += 8;
 		}
 
-		if (CameraPos.vy > -1000)
-			CameraPos.vy -= 8;
+		if (gCameraOffset.vy > -1000)
+			gCameraOffset.vy -= 8;
 
 		if (gSinkingTimer < 0)
 			EnablePause(PAUSEMODE_GAMEOVER);

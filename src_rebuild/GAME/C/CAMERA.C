@@ -26,7 +26,7 @@
 #include "LIBGTE.H"
 
 
-VECTOR CameraPos = { 0};
+VECTOR gCameraOffset = { 0};
 VECTOR camera_position = { 0, 380, 0, 0 };
 SVECTOR camera_angle = { 0,0,0 };
 
@@ -105,7 +105,7 @@ void CalcCameraBasePos(_PLAYER* lp)
 		gte_rtv0tr();
 		gte_stlvnl(basePos);
 
-		basePos[1] -= CameraPos.vy;
+		basePos[1] -= gCameraOffset.vy;
 
 		baseDir = car_data[lp->cameraCarId].hd.direction;
 	}
@@ -176,9 +176,9 @@ void InitCamera(_PLAYER *lp)
 
 				gCameraAngle = 2048;
 				gCameraMaxDistance = 0;
-				CameraPos.vx = 0;
-				CameraPos.vy = 0;
-				CameraPos.vz = 0;
+				gCameraOffset.vx = 0;
+				gCameraOffset.vy = 0;
+				gCameraOffset.vz = 0;
 			}
 			else
 			{

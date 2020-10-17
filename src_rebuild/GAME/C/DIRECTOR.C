@@ -165,9 +165,9 @@ void InitDirectorVariables(void)
 	AutoDirect = 0;
 	CursorX = 0;
 
-	CameraPos.vx = 0;
-	CameraPos.vy = 0;
-	CameraPos.vz = 0;
+	gCameraOffset.vx = 0;
+	gCameraOffset.vy = 0;
+	gCameraOffset.vz = 0;
 
 	count = 23;
 	do {
@@ -252,7 +252,7 @@ void DeleteCurrentCamera(int CameraCnt)
 // [D] [T]
 void setCamera(PLAYBACKCAMERA* Change)
 {
-	CameraPos.vy = Change->CameraPosvy;
+	gCameraOffset.vy = Change->CameraPosvy;
 
 	camera_angle.vx = Change->angle.vx;
 	camera_angle.vy = Change->angle.vy;
@@ -337,7 +337,7 @@ void EditCamera(int CameraCnt)
 	ThisChange->gCameraAngle = gCameraAngle;
 	ThisChange->gCameraMaxDistance = gCameraMaxDistance;
 
-	ThisChange->CameraPosvy = CameraPos.vy;
+	ThisChange->CameraPosvy = gCameraOffset.vy;
 
 	count = 0;
 
@@ -427,7 +427,7 @@ void RecordCamera(int CameraCnt)
 			LastChange->gCameraDistance != gCameraDistance ||
 			LastChange->gCameraMaxDistance != gCameraMaxDistance ||
 			LastChange->gCameraAngle != gCameraAngle ||
-			LastChange->CameraPosvy != CameraPos.vy)
+			LastChange->CameraPosvy != gCameraOffset.vy)
 		{
 			if (CameraCnt == 0)
 			{
@@ -459,7 +459,7 @@ void RecordCamera(int CameraCnt)
 			LastChange->FrameCnt = CameraCnt;
 			LastChange->gCameraMaxDistance = gCameraMaxDistance;
 			LastChange->gCameraAngle = gCameraAngle;
-			LastChange->CameraPosvy = CameraPos.vy;
+			LastChange->CameraPosvy = gCameraOffset.vy;
 		}
 	}
 
@@ -625,7 +625,7 @@ int CheckCameraChange(int CameraCnt)
 // [D] [T]
 void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 {
-	CameraPos.vy = camera->CameraPosvy;
+	gCameraOffset.vy = camera->CameraPosvy;
 	camera_angle.vx = (camera->angle).vx;
 	camera_angle.vy = (camera->angle).vy;
 	camera_angle.vz = (camera->angle).vz;
@@ -1799,11 +1799,11 @@ void ControlReplay(void)
 			if ((padd & 0x2000) != 0)
 				gCameraAngle = gCameraAngle - speed * 16;
 
-			if ((padd & 4) && -840 < CameraPos.vy)
-				CameraPos.vy -= speed * 16;
+			if ((padd & 4) && -840 < gCameraOffset.vy)
+				gCameraOffset.vy -= speed * 16;
 
-			if ((padd & 1) && CameraPos.vy < 50)
-				CameraPos.vy += speed * 16;
+			if ((padd & 1) && gCameraOffset.vy < 50)
+				gCameraOffset.vy += speed * 16;
 
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
 
@@ -1812,11 +1812,11 @@ void ControlReplay(void)
 				int road_height;
 				road_height = -450 - MapHeight(&player[0].cameraPos);
 
-				player[0].cameraPos.vy = CameraPos.vy - player[0].pos[1];
+				player[0].cameraPos.vy = gCameraOffset.vy - player[0].pos[1];
 
-				if (road_height > CameraPos.vy - player[0].pos[1])
+				if (road_height > gCameraOffset.vy - player[0].pos[1])
 				{
-					CameraPos.vy = road_height + player[0].pos[1];
+					gCameraOffset.vy = road_height + player[0].pos[1];
 					player[0].cameraPos.vy = road_height;
 				}
 			}
@@ -1871,11 +1871,11 @@ void ControlReplay(void)
 
 			if (padd & 2)
 			{
-				if ((padd & 0x1000U) && CameraPos.vy > -150)
-					CameraPos.vy -= speed * 16;
+				if ((padd & 0x1000U) && gCameraOffset.vy > -150)
+					gCameraOffset.vy -= speed * 16;
 
-				if ((padd & 0x4000) && CameraPos.vy < 150)
-					CameraPos.vy += speed * 16;
+				if ((padd & 0x4000) && gCameraOffset.vy < 150)
+					gCameraOffset.vy += speed * 16;
 			}
 			else
 			{
@@ -2338,7 +2338,7 @@ void ControlReplay(void)
 					if (move == 5)
 					{
 						DirectorMenuActive = 3;
-						CameraPos.vy = 0;
+						gCameraOffset.vy = 0;
 						cameraview = 2;
 						CursorX = 6;
 					}
@@ -2355,9 +2355,9 @@ void ControlReplay(void)
 						gCameraMaxDistance = 1600;
 						cameraview = 0;
 						
-						CameraPos.vx = 0;
-						CameraPos.vy = 0;
-						CameraPos.vz = 0;
+						gCameraOffset.vx = 0;
+						gCameraOffset.vy = 0;
+						gCameraOffset.vz = 0;
 						CursorX = 6;
 					}
 					break;
@@ -2654,7 +2654,7 @@ void DoAutoDirect(void)
 				case 0:
 					cameraview = 0;
 					gCameraAngle = rand() & 0xfff;
-					CameraPos.vy = -((rand() & 0xff) + 100);
+					gCameraOffset.vy = -((rand() & 0xff) + 100);
 					gCameraDistance = (rand() & 0x7e7) + 500;
 					gCameraMaxDistance = gCameraDistance;
 					break;
@@ -2664,11 +2664,11 @@ void DoAutoDirect(void)
 					break;
 				case 3:
 				case 4:
-					CameraPos.vy = 0;
+					gCameraOffset.vy = 0;
 					cameraview = 1;
 					break;
 				case 5:
-					CameraPos.vy = 0;
+					gCameraOffset.vy = 0;
 					cameraview = 2;
 					player[0].cameraCarId = player[0].playerCarId;
 					break;
@@ -2726,14 +2726,14 @@ void DoAutoDirect(void)
 					gCameraDistance = (rand() & 0x7e7) + 500;
 					gCameraMaxDistance = gCameraDistance;
 
-					CameraPos.vy = -((rand() & 0xff) + 100);
+					gCameraOffset.vy = -((rand() & 0xff) + 100);
 				}
 				else if (cameraview == 1 || cameraview == 5)
 				{
-					CameraPos.vy = -((rand() & 0xff) + 100);
+					gCameraOffset.vy = -((rand() & 0xff) + 100);
 				}
 				else
-					CameraPos.vy = 0;
+					gCameraOffset.vy = 0;
 
 				if (player[0].playerType == 2)
 					player[0].cameraCarId = -1;
@@ -2749,7 +2749,7 @@ void DoAutoDirect(void)
 			{
 				cameraview = 0;
 				gCameraAngle = rand() & 0xfff;
-				CameraPos.vy = -((rand() & 0xff) + 100);
+				gCameraOffset.vy = -((rand() & 0xff) + 100);
 				gCameraDistance = (rand() & 0x7e7) + 1000;
 				gCameraMaxDistance = gCameraDistance;
 			}
@@ -2982,7 +2982,7 @@ int InvalidCamera(int car_num)
 				else
 					player[0].cameraCarId = player[0].playerCarId;
 
-				CameraPos.vy = 0;
+				gCameraOffset.vy = 0;
 				cameraview = 0;
 				return 1;
 			}
@@ -2997,7 +2997,7 @@ int InvalidCamera(int car_num)
 
 			// change it to the default view
 			cameraview = 2;
-			CameraPos.vy = 0;
+			gCameraOffset.vy = 0;
 			return 1;
 		}
 
@@ -3049,7 +3049,7 @@ int InvalidCamera(int car_num)
 			else
 				player[0].cameraCarId = player[0].playerCarId;
 
-			CameraPos.vy = 0;
+			gCameraOffset.vy = 0;
 			return 1;
 		}
 	}
