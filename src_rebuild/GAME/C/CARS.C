@@ -726,10 +726,8 @@ void DrawCar(_CAR_DATA *cp, int view)
 	int oboxLenSq;
 	CAR_MODEL* CarModelPtr;
 	int model;
-	MATRIX *m1;
 	CVECTOR col;
 	VECTOR pos;
-	SVECTOR temp_vec;
 	VECTOR corners[4];
 	VECTOR d;
 	VECTOR dist;
@@ -901,8 +899,8 @@ void DrawCar(_CAR_DATA *cp, int view)
 		gTimeInWater = 25;
 		gSinkingTimer = 100;
 
-		SetShadowPoints(cp);
-		PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
+		SetShadowPoints(cp, corners);
+		PlaceShadowForCar(corners, 4, 10, 2);
 
 		ComputeCarLightingLevels(cp, 1);
 
@@ -931,8 +929,8 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		if (pos.vz < 8000) 
 		{
-			SetShadowPoints(cp);
-			PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
+			SetShadowPoints(cp, corners);
+			PlaceShadowForCar(corners, 0, 0, 2);
 		}
 
 		ComputeCarLightingLevels(cp, 0);

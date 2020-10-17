@@ -3988,7 +3988,7 @@ void DrawEvents(int camera)
 												uVar4++;
 											} while (uVar4 < 4);
 
-											PlaceShadowForCar(shadow, 12, NULL, 0);
+											PlaceShadowForCar(shadow, 0, 35, 4);
 
 										LAB_0004a118:
 											_RotMatrixY(&matrix, ev->rotation);

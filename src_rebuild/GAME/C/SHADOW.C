@@ -14,13 +14,12 @@
 #include "INLINE_C.H"
 #include "STRINGS.H"
 #include "MISSION.H"
+#include "TILE.H"
 
 int gShadowTexturePage;
 int gShadowTextureNum;
 
 UV shadowuv;
-POLY_FT4 shadowPolys[2][20];
-
 VECTOR tyre_new_positions[4];
 VECTOR tyre_save_positions[4];
 int tyre_track_offset[4];
@@ -693,21 +692,7 @@ void DrawTyreTracks(void)
 // [D]
 void InitShadow(void)
 {
-	unsigned char uVar1;
-	ushort uVar2;
-	ushort uVar3;
-	unsigned char uVar4;
-	unsigned char uVar5;
-	unsigned char uVar6;
-	unsigned char uVar7;
-	unsigned char uVar8;
-	unsigned char uVar9;
-
 	TEXINF *texinf;
-	unsigned char uVar10;
-	POLY_FT4 *pPVar11;
-	int iVar12;
-	int iVar13;
 	TPAN pos;
 
 	texinf = GetTextureInfoName("CARSHAD", &pos);
@@ -715,69 +700,20 @@ void InitShadow(void)
 	gShadowTexturePage = pos.texture_page;
 	gShadowTextureNum = pos.texture_number;
 
-	uVar1 = texinf->x;
-	uVar10 = texinf->x + texinf->width + -1;
+	shadowuv.u0 = texinf->x;
+	shadowuv.u1 = texinf->x + texinf->width - 1;
 	shadowuv.v1 = texinf->y;
 	shadowuv.u2 = texinf->x;
-	shadowuv.v2 = texinf->y + texinf->height + -1;
-	shadowuv.u3 = texinf->x + texinf->width + -1;
-	shadowuv.v3 = texinf->y + texinf->height + -1;
+	shadowuv.v2 = texinf->y + texinf->height - 1;
+	shadowuv.u3 = texinf->x + texinf->width - 1;
+	shadowuv.v3 = texinf->y + texinf->height - 1;
 	shadowuv.v0 = texinf->y;
 
 	if (GameLevel == 3) 
 	{
-		shadowuv.v1 = shadowuv.v1 + 1;
-		shadowuv.v0 = texinf->y + 1;
+		shadowuv.v1 += 1;
+		shadowuv.v0 += 1;
 	}
-
-	uVar5 = shadowuv.v1;
-	uVar4 = shadowuv.v0;
-
-	uVar2 = texture_pages[gShadowTexturePage];
-	uVar3 = texture_cluts[gShadowTexturePage][gShadowTextureNum];
-
-	iVar12 = 0;
-	shadowuv.u0 = uVar1;
-	shadowuv.u1 = uVar10;
-
-	do {
-		iVar13 = iVar12 + 1;
-
-		pPVar11 = shadowPolys[iVar12];
-
-		iVar12 = 0x13;
-
-		do {
-			uVar9 = shadowuv.v3;
-			uVar8 = shadowuv.u3;
-			uVar7 = shadowuv.v2;
-			uVar6 = shadowuv.u2;
-
-			setPolyFT4(pPVar11);
-
-			pPVar11->r0 = 'P';
-			pPVar11->g0 = 'P';
-			pPVar11->b0 = 'P';
-
-			pPVar11->tpage = uVar2 | 0x40;
-			pPVar11->clut = uVar3;
-			setSemiTrans(pPVar11, 1);
-
-			pPVar11->u0 = uVar1;
-			pPVar11->v0 = uVar4;
-			pPVar11->u1 = uVar10;
-			pPVar11->v1 = uVar5;
-			pPVar11->u2 = uVar6;
-			pPVar11->v2 = uVar7;
-			pPVar11->u3 = uVar8;
-			pPVar11->v3 = uVar9;
-
-			pPVar11 ++;
-			iVar12--;
-		} while (-1 < iVar12);
-
-		iVar12 = iVar13;
-	} while (iVar13 < 2);
 }
 
 
@@ -1109,27 +1045,33 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 extern VECTOR dummy;
 
 // [D]
-void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip)
-{
-
-	uint uVar1;
-	long z0_00;
-	long z1_00;
-	long z2_00;
-	long z3_00;
-	POLY_FT4 *sps;
+void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
+{	
+	MVERTEX subdivVerts[5][5];
 	SVECTOR points[4];
-	long z0;
-	long z1;
-	long z2;
-	long z3;
+	POLYFT4 fake;
+	_pct plotContext;
 
-	if (slot < 0) {
-		while (FrameCnt != 0x78654321) 
-		{
-			trap(0x400);
-		}
-	}
+	fake.id = 4;
+	fake.texture_set = gShadowTexturePage;
+	fake.texture_id = gShadowTextureNum;
+
+	fake.v0 = 0;
+	fake.v1 = 1;
+	fake.v2 = 2;
+	fake.v3 = 3;
+
+	fake.uv0.u = shadowuv.u0;
+	fake.uv0.v = shadowuv.v0;
+
+	fake.uv1.u = shadowuv.u1;
+	fake.uv1.v = shadowuv.v1;
+
+	fake.uv2.u = shadowuv.u3;
+	fake.uv2.v = shadowuv.v3;
+
+	fake.uv3.u = shadowuv.u2;
+	fake.uv3.v = shadowuv.v2;
 
 	points[0].vx = shadowPoints[0].vx - camera_position.vx;
 	points[0].vy = -shadowPoints[0].vy - camera_position.vy;
@@ -1143,60 +1085,42 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int slot, VECTOR *CarPos, int zclip
 	points[2].vy = -shadowPoints[3].vy - camera_position.vy;
 	points[2].vz = shadowPoints[3].vz - camera_position.vz;
 
-	gte_SetTransVector(&dummy);
-	gte_SetRotMatrix(&inv_camera_matrix);
-
-	sps = &shadowPolys[current->id][slot];
-
-	gte_ldv3(&points[0], &points[1], &points[2]);
-
-	gte_rtpt();
-
 	points[3].vx = shadowPoints[2].vx - camera_position.vx;
 	points[3].vy = -shadowPoints[2].vy - camera_position.vy;
 	points[3].vz = shadowPoints[2].vz - camera_position.vz;
 
-	gte_stsxy3(&sps->x0, &sps->x1, &sps->x3);
+	gte_SetTransVector(&dummy);
+	gte_SetRotMatrix(&inv_camera_matrix);
 
-	gte_stsz3(&z0,&z1,&z2);
+	plotContext.primptr = current->primptr;
+	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
+	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+	plotContext.ot = current->ot + 10 + zOfs;
+	plotContext.flags = flag;
+	plotContext.colour = 80 | (80 << 8) | (80 << 16) | 0x2e000000;
+	plotContext.current = current;
 
-	gte_ldv0(&points[3]);
+	POLYFT4* pft4 = &fake;
 
-	gte_rtps();
+	plotContext.clut = (uint)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
+	plotContext.tpage = ((uint)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40) << 0x10;
 
-	gte_stsz(&z3);
-	gte_stsxy(&sps->x2);
+	copyVector(&subdivVerts[0][0], &points[pft4->v0]);
+	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;
 
-	if (z0 < z1) {
-		z0 = (z0 + z1) / 2;
-	}
-	else {
-		z1 = (z0 + z1) / 2;
-	}
-	if (z2 < z3) {
-		z2 = (z2 + z3) / 2;
-	}
-	else {
-		z3 = (z2 + z3) / 2;
-	}
-	z0_00 = 8;
-	if (0x1c < z0) {
-		z0_00 = z0 + -0x14;
-	}
-	z1_00 = 8;
-	if (0x1c < z1) {
-		z1_00 = z1 + -0x14;
-	}
-	z2_00 = 8;
-	if (0x1c < z2) {
-		z2_00 = z2 + -0x14;
-	}
-	z3_00 = 8;
-	if (0x1c < z3) {
-		z3_00 = z3 + -0x14;
-	}
+	copyVector(&subdivVerts[0][1], &points[pft4->v1]);
+	subdivVerts[0][1].uv.val = *(ushort*)&pft4->uv1;
 
-	SubdivShadow(z0_00, z1_00, z2_00, z3_00, sps);
+	copyVector(&subdivVerts[0][2], &points[pft4->v3]);
+	subdivVerts[0][2].uv.val = *(ushort*)&pft4->uv3;
+
+	copyVector(&subdivVerts[0][3], &points[pft4->v2]);
+	subdivVerts[0][3].uv.val = *(ushort*)&pft4->uv2;
+
+	makeMesh((MVERTEX(*)[5][5])subdivVerts, subdiv, subdiv);
+	drawMesh((MVERTEX(*)[5][5])subdivVerts, subdiv, subdiv, &plotContext);
+
+	current->primptr = plotContext.primptr;
 }
 
 
