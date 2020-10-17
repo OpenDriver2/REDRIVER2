@@ -3,13 +3,11 @@
 #include "CARS.H"
 #include "CAMERA.H"
 #include "BCOLLIDE.H"
-#include "BCOLL3D.H"
 #include "EVENT.H"
 #include "MAP.H"
 #include "DRAW.H"
 #include "HANDLING.H"
 #include "MODELS.H"
-#include "MISSION.H"
 #include "PEDEST.H"
 #include "SPOOL.H"
 #include "CELL.H"
@@ -900,8 +898,11 @@ void CollisionCopList(XZPAIR *pos, int *count)
 			cell.z = initial.z;
 
 			do {
+				cbr.x = cell.x / 32;
+				cbr.z = cell.z / 32;
+				
 				// [A] FIXME: replace with 'cell_header.region_size'
-				if ((cell.x / 32) + (cell.z / 32) * (cells_across / 32) == RoadMapRegions[((cell.x / 32) & 1) + ((cell.z / 32) & 1) * 2])
+				if (cbr.x + cbr.z * (cells_across / 32) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
 					cop = UnpackCellObject(ppco, &ci.nearCell);
