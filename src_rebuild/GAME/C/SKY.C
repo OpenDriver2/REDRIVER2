@@ -15,17 +15,17 @@
 int sky_y_offset[4] = { 14, 14, 14, 14 };
 
 unsigned char HorizonLookup[4][4] = {
-	{0, 0, 0x14, 0x14},
-	{0x14, 0x14, 0, 0},
-	{0, 0, 0x14, 0x14},
-	{0, 0, 0x14, 0x14},
+	{0, 0, 20, 20},
+	{20, 20, 0, 0},
+	{0, 0, 20, 20},
+	{0, 0, 20, 20},
 };
 
 unsigned char HorizonTextures[40] = {
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB,
-	0xC, 0xD, 0xE, 0xF, 0x10, 0x11, 0x12, 0x13,
-	0, 1, 2, 3, 4, 5, 6, 7, 0x14, 0x15, 0x16, 0x17,
-	0x18, 0x19, 0x1A, 0x1B, 0x10, 0x11, 0x12, 0x13
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	20, 21, 22, 23, 24, 25, 26, 27,
+	16, 17, 18, 19
 };
 
 
@@ -54,36 +54,36 @@ SVECTOR moon_shadow_position[4] =
 FLAREREC flare_info[8] =
 {
 	{
-		{0x0,0x0,0x5a},0x10, 0x30
+		{0,0,90},16, 48
 	},
 	{
-		{0x50,0x28,0x4},0x30,0x48
+		{80,40,4},48,72
 	},
 	{
-		{0x5a,0x0,0x0},0x30,0x60
+		{90,0,0},48,96
 	},
 	{
-		{0x0,0x5a,0x0},0x10,0x90
+		{0,90,0},16,144
 	},
 	{
-		{0x0,0x0,0x5a,},0x40,0xa0
+		{0,0,90},64,160
 	},
 	{
-		{0x5a,0x5a,0x0},0x20,0xb8
+		{90,90,0},32,184
 	},
 	{
-		{0x5a,0x0,0x0},0x20,0xd0
+		{90,0,0},32,208
 	},
 	{
-		{0x0,0x0,0x5a},0x30,0xf
+		{0,0,90},48,15
 	}
 };
 
 VECTOR tunnelPos[3][2] =
 {
 	{
-		{ 4294568646, 0, 4294806296, 0 },
-		{ 4294626996, 2000, 4294864296, 0 }
+		{ -398650, 0, -161000, 0 },
+		{ -340300, 2000, -103000, 0 }
 	},
 	{
 		{ 272800, 0, 41200, 0 },
@@ -91,8 +91,8 @@ VECTOR tunnelPos[3][2] =
 	},
 
 	{
-		{ 4294852196, 0, 4294774096, 0 },
-		{ 4294853996, 4294966896, 4294834796, 0 }
+		{ -115100, 0, -193200, 0 },
+		{ -113300, -400, -1325001, 0 }
 	}
 };
 
@@ -150,190 +150,177 @@ UV skytexuv[28] = { 0 };
 short skyclut[28];
 short skytpage[28];
 
-// [D]
+// [D] [T]
 void LoadSky(void)
 {
-	bool bVar1;
-	bool bVar2;
-	unsigned char uVar3;
-	unsigned char uVar4;
-	u_short uVar5;
-	unsigned char uVar6;
-	uint uVar7;
-	int iVar8;
-	int uVar9;
-	int iVar10;
-	UV *uv;
-	unsigned char *puVar12;
-	unsigned char uVar13;
-	int iVar14;
-	uint uVar15;
-	int x;
+	int skyNum;
 	RECT16 rect;
 	char name[16];
 	int offset;
 
-	iVar10 = 0;
-	uVar7 = 0;
+	int flipped;
+	int single;
+
+	int v;
+	int u;
+	int y;
+	int x;
+	int ry;
+	int i;
+
+	int tp_x;
+	int clut_x;
+
+	i = 0;
+	y = 0;
 	offset = 0;
-	bVar1 = true;
+	flipped = 1;
+
 	do {
-		if (!bVar1) {
-		switchD_00077628_caseD_0:
-			iVar8 = 0;
-			bVar1 = false;
-			bVar2 = true;
-			goto LAB_00077680;
+		if (flipped) 
+		{
+			switch(y)
+			{
+				default:
+					ry = 0;
+					flipped = 0;
+					single = 1;
+					break;
+				case 1:
+					ry = 0;
+					flipped = 0;
+					single = 0;
+					break;
+				case 2:
+					ry = 1;
+					flipped = 0;
+					single = 0;
+					break;
+				case 3:
+					ry = 1;
+					flipped = 1;
+					single = 0;
+					break;
+				case 4:
+					ry = 0;
+					flipped = 1;
+					single = 0;
+					break;
+				case 5:
+					ry = 2;
+					flipped = 0;
+					single = 0;
+					break;
+				case 6:
+					ry = 2;
+					flipped = 1;
+					single = 0;
+					break;
+			}
 		}
-		switch (uVar7) {
-		default:
-			goto switchD_00077628_caseD_0;
-		case 1:
-			iVar8 = 0;
-			bVar1 = false;
-			break;
-		case 2:
-			iVar8 = 1;
-			bVar1 = false;
-			break;
-		case 3:
-			iVar8 = 1;
-			goto LAB_00077678;
-		case 4:
-			iVar8 = 0;
-			goto LAB_00077678;
-		case 5:
-			iVar8 = 2;
-			bVar1 = false;
-			break;
-		case 6:
-			iVar8 = 2;
-		LAB_00077678:
-			bVar1 = true;
+		else
+		{
+			ry = 0;
+			flipped = 0;
+			single = 1;
 		}
-		bVar2 = false;
-	LAB_00077680:
-		iVar14 = 0;
-		uVar7 = uVar7 + 1;
-		x = 0x140;
-		uVar15 = 0x140;
-		uv = skytexuv + iVar10;
-		uVar3 = (unsigned char)(iVar8 * 0x54);
-		uVar13 = uVar3 + 'S';
-		puVar12 = &skytexuv[0].u0 + (iVar10 * 8 | 6);
+
+		x = 0;
+		y++;
+
+		clut_x = 320;
+		tp_x = 320;
+
+		v = ry * 84;
+
 		do {
-			uVar6 = (char)iVar14 * -0x80;
-			if (bVar2) {
-				uv->u0 = uVar6;
-				uv->v0 = uVar3;
-				uv->u1 = uVar6;
-				uv->v1 = uVar3;
-				uv->u2 = uVar6;
-				puVar12[-1] = uVar3;
-				*puVar12 = uVar6;
-			LAB_00077748:
-				uv->v3 = uVar3;
+			u = x * 128;
+		
+			if (single)
+			{
+				skytexuv[i].u0 = u;
+				skytexuv[i].v0 = v;
+				skytexuv[i].u1 = u;
+				skytexuv[i].v1 = v;
+				skytexuv[i].u2 = u;
+				skytexuv[i].v2 = v;
+				skytexuv[i].u3 = u;
+				skytexuv[i].v3 = v;
 			}
-			else {
-				uVar4 = uVar6 + '\x7f';
-				if (bVar1) 
-				{
-					uv->u0 = uVar6;
-					uv->v0 = uVar13;
-					uv->u1 = uVar4;
-					uv->v1 = uVar13;
-					uv->u2 = uVar6;
-					puVar12[-1] = uVar3;
-					*puVar12 = uVar4;
-					goto LAB_00077748;
-				}
-				uv->u0 = uVar6;
-				uv->v0 = uVar3;
-				uv->u1 = uVar4;
-				uv->v1 = uVar3;
-				uv->u2 = uVar6;
-				puVar12[-1] = uVar13;
-				*puVar12 = uVar4;
-				uv->v3 = uVar13;
+			else if (flipped) 
+			{
+				skytexuv[i].u0 = u;
+				skytexuv[i].v0 = v + 83;
+				skytexuv[i].u1 = u + 127;
+				skytexuv[i].v1 = v + 83;
+				skytexuv[i].u2 = u;
+				skytexuv[i].v2 = v;
+				skytexuv[i].u3 = u + 127;
+				skytexuv[i].v3 = v;
 			}
-			uVar5 = GetTPage(0, 0, uVar15 & 0xffffffc0, iVar8 * 0x54 & 0x300);
-			skytpage[iVar10] = uVar5;
-			uVar5 = GetClut(x, iVar8 + 0xfc);
-			uv = uv + 1;
-			puVar12 = puVar12 + 8;
-			x = x + 0x10;
-			uVar15 = uVar15 + 0x20;
-			iVar14 = iVar14 + 1;
-			skyclut[iVar10] = uVar5;
-			iVar10 = iVar10 + 1;
-		} while (iVar14 < 4);
-		bVar1 = uVar7 < 7;
-	} while ((int)uVar7 < 7);
+			else
+			{
+				skytexuv[i].u0 = u;
+				skytexuv[i].v0 = v;
+				skytexuv[i].u1 = u + 127;
+				skytexuv[i].v1 = v;
+				skytexuv[i].u2 = u;
+				skytexuv[i].v2 = v + 83;
+				skytexuv[i].u3 = u + 127;
+				skytexuv[i].v3 = v + 83;
+			}
+	
+			skytpage[i] = GetTPage(0,0,tp_x & 0xffffffc0,ry * 84 & 768);
+			skyclut[i] = GetClut(clut_x,ry + 252);
 
-	if (GameLevel == 1) 
-		uVar9 = 1;
+			tp_x += 32;
+			clut_x += 16;
+
+			x++;
+			i++;
+		} while (x < 4);
+	
+		flipped = (y < 7);
+		
+	} while (y < 7);
+
+	if (GameLevel == 1)
+		skyNum = 1;
 	else if (GameLevel == 2)
-		uVar9 = 2;
+		skyNum = 2;
 	else if (GameLevel == 3)
-		uVar9 = 3;
+		skyNum = 3;
 	else
-		uVar9 = 0;
+		skyNum = 0;
 
-	if (gWeather - 1U < 2) 
+	if (gWeather - 1U < 2)
 	{
-		offset = 0x20000;
-		iVar10 = offset;
 		if (gTimeOfDay == 3)
-		{
 			offset = 0x10000;
-			iVar10 = offset;
-		}
+		else
+			offset = 0x20000;
 	}
-	else 
+	else
 	{
-		if (gTimeOfDay == 1) 
-		{
+		if (gTimeOfDay == 0)
+			offset = 0x30000;
+		else if (gTimeOfDay == 1)
 			offset = 0;
-			iVar10 = offset;
-		}
-		else 
-		{
-			if (gTimeOfDay < 2) 
-			{
-				if (gTimeOfDay != 0)
-					goto LAB_000778d4;
-
-				offset = 0x30000;
-				iVar10 = offset;
-			}
-			else 
-			{
-				if (gTimeOfDay == 2)
-				{
-					iVar10 = 0x40000;
-				}
-				else 
-				{
-					iVar10 = 0x10000;
-
-					if (gTimeOfDay != 3)
-						goto LAB_000778d4;
-				}
-			}
-		}
+		else if (gTimeOfDay == 2)
+			offset = 0x40000;
+		else if (gTimeOfDay == 3)
+			offset = 0x10000;
 	}
-	offset = iVar10;
-LAB_000778d4:
 
-	sprintf(name, "DATA\\SKY%d.RAW", uVar9);
+	sprintf(name, "DATA\\SKY%d.RAW", skyNum);
 	LoadfileSeg(name, _frontend_buffer, offset, 0x10000);
 
-	rect.x = 0x140;
+	rect.x = 320;
 	rect.y = 0;
-	rect.w = 0x80;
-	rect.h = 0x100;
+	rect.w = 128;
+	rect.h = 256;
 
-	LoadImage(&rect, (u_long *)_frontend_buffer);
+	LoadImage(&rect, (u_long*)_frontend_buffer);
 
 	DrawSync(0);
 }
@@ -361,24 +348,23 @@ LAB_000778d4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawSkyDome(void)
 {
 	calc_sky_brightness();
 
-	// [A] temporarily disabled angle checks
+	if (((camera_angle.vy - 1450U) & 0xFFF) > 2250)
+		PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
 
-	//if ((camera_angle.vy - 1450 < 2251))
-		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
+	if (((camera_angle.vy - 651U) & 0xFFF) < 1799)
+		PlotHorizonMDL(modelpointers[2],HorizonLookup[GameLevel][1]);
 
-	//if (!(camera_angle.vy - 651 < 1799))
-		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
+	if (((camera_angle.vy - 1701U) & 0xFFF) < 1749)
+		PlotHorizonMDL(modelpointers[3],HorizonLookup[GameLevel][2]);
 
-	//if (!(camera_angle.vy - 1701 < 1749))
-		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
+	if (((camera_angle.vy - 400U) & 0xFFF) > 2300)
+		PlotHorizonMDL(modelpointers[1],HorizonLookup[GameLevel][3]);
 
-	//if ((camera_angle.vy - 400 < 2301))
-		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
 }
 
 
@@ -410,34 +396,34 @@ void DrawSkyDome(void)
 	/* end block 3 */
 	// End Line: 1453
 
-// [D]
+// [D] [T]
 #ifdef PGXP
-void DisplaySun(DVECTORF *pos, CVECTOR *col, int flare_col)
+void DisplaySun(DVECTORF* pos, CVECTOR* col, int flare_col)
 #else
-void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col)
+void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 #endif
 {
-	short sVar1;
-	short sVar2;
-	int iVar3;
+	short cs;
+	short sn;
+	int sz;
 
-	POLY_FT4 *polys;
-	POLY_FT3 *null;
+	POLY_FT4* polys;
+	POLY_FT3* null;
 
-	int uVar5;
-	int uVar6;
-	int uVar7;
-	int uVar8;
+	int u1;
+	int v2;
+	int u0;
+	int v0;
 
-	short local_20;
-	short local_1c;
+	short width;
+	short height;
 
-	uVar5 = sun_texture.coords.u1;
-	uVar7 = sun_texture.coords.u0;
-	uVar6 = sun_texture.coords.v2;
-	uVar8 = sun_texture.coords.v0;
+	u0 = sun_texture.coords.u0;
+	u1 = sun_texture.coords.u1;
+	v0 = sun_texture.coords.v0;
+	v2 = sun_texture.coords.v2;
 
-	null = (POLY_FT3 *)current->primptr;
+	null = (POLY_FT3*)current->primptr;
 	setPolyFT3(null);
 
 	null->x0 = -1;
@@ -451,25 +437,26 @@ void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col)
 	addPrim(current->ot + 0x1079, null);
 	current->primptr += sizeof(POLY_FT3);
 
-	polys = (POLY_FT4 *)current->primptr;
+	polys = (POLY_FT4*)current->primptr;
 	setPolyFT4(polys);
 	setSemiTrans(polys, 1);
 
 	polys->r0 = col->r;
 	polys->g0 = col->g;
 	polys->b0 = col->b;
-	
-	sVar1 = (((uVar5 - (uVar7 - 1)) / 2) * 3 >> 2);
-	sVar2 = (((uVar6 - (uVar8 - 1)) / 2) * 3 >> 2);
 
-	polys->x0 = pos->vx - sVar1;
-	polys->y0 = pos->vy - sVar2;
-	polys->x1 = pos->vx + sVar1;
-	polys->y1 = pos->vy - sVar2;
-	polys->x2 = pos->vx - sVar1;
-	polys->y2 = pos->vy + sVar2;
-	polys->x3 = pos->vx + sVar1;
-	polys->y3 = pos->vy + sVar2;
+	width = (((u1 - (u0 - 1)) / 2) * 3) / 4;
+	height = (((v2 - (v0 - 1)) / 2) * 3) / 4;
+
+	polys->x0 = pos->vx - width;
+	polys->y0 = pos->vy - height;
+	polys->x1 = pos->vx + width;
+	polys->y1 = pos->vy - height;
+	polys->x2 = pos->vx - width;
+	polys->y2 = pos->vy + height;
+	polys->x3 = pos->vx + width;
+	polys->y3 = pos->vy + height;
+
 	polys->u0 = sun_texture.coords.u0;
 	polys->v0 = sun_texture.coords.v0;
 	polys->u1 = sun_texture.coords.u1;
@@ -484,29 +471,30 @@ void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col)
 	addPrim(current->ot + 0x1079, polys);
 	current->primptr += sizeof(POLY_FT4);
 
-	sVar1 = rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
-	sVar2 = rcossin_tbl[camera_angle.vy & 0x1ffe];
-	iVar3 = -(((flare_texture.coords.u1 - (flare_texture.coords.u0 - 1)) / 2) * 3 >> 2);
+	cs = rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
+	sn = rcossin_tbl[camera_angle.vy & 0x1ffe];
 
-	polys = (POLY_FT4 *)current->primptr;
+	sz = -(((flare_texture.coords.u1 - (flare_texture.coords.u0 - 1)) / 2) * 3) / 4;
+
+	polys = (POLY_FT4*)current->primptr;
 	setPolyFT4(polys);
 	setSemiTrans(polys, 1);
 
-	polys->r0 = (flare_col >> 1);
-	polys->g0 = (flare_col >> 1);
-	polys->b0 = (flare_col >> 2);
+	polys->r0 = (flare_col / 2);
+	polys->g0 = (flare_col / 2);
+	polys->b0 = (flare_col / 2);
 
-	local_20 = ((sVar1 - sVar2) * iVar3 >> 0xc);
-	local_1c = ((sVar2 + sVar1) * iVar3 >> 0xc);
+	width = (cs - sn) * sz >> 0xc;
+	height = (sn + cs) * sz >> 0xc;
 
-	polys->x0 = pos->vx + local_20;
-	polys->y0 = pos->vy + local_1c;
-	polys->x1 = pos->vx - local_1c;
-	polys->y1 = pos->vy + local_20;
-	polys->x2 = pos->vx + local_1c;
-	polys->y2 = pos->vy - local_20;
-	polys->x3 = pos->vx - local_20;
-	polys->y3 = pos->vy - local_1c;
+	polys->x0 = pos->vx + width;
+	polys->y0 = pos->vy + height;
+	polys->x1 = pos->vx - height;
+	polys->y1 = pos->vy + width;
+	polys->x2 = pos->vx + height;
+	polys->y2 = pos->vy - width;
+	polys->x3 = pos->vx - width;
+	polys->y3 = pos->vy - height;
 	polys->u0 = flare_texture.coords.u0;
 	polys->v0 = flare_texture.coords.v0;
 	polys->u1 = flare_texture.coords.u1;
@@ -555,28 +543,20 @@ void DisplaySun(DVECTOR *pos, CVECTOR *col, int flare_col)
 	/* end block 4 */
 	// End Line: 1793
 
-// [D]
+// [D] [T]
 #ifdef PGXP
-void DisplayMoon(DVECTORF *pos, CVECTOR *col, int flip)
+void DisplayMoon(DVECTORF* pos, CVECTOR* col, int flip)
 #else
-void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip)
+void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 #endif
 {
-	short sVar2;
-	int uVar4;
-	int uVar5;
-	POLY_FT3 *null;
-	POLY_FT4 *polys;
-	short sVar6;
-
-	sVar6 = (moon_texture.coords.v2 - (moon_texture.coords.v0 - 1)) / 2;
-	uVar5 = moon_texture.coords.u0;
-	uVar4 = moon_texture.coords.u1;
-
-	if (flip != 0)
-		sVar6 = -sVar6;
-
-	null = (POLY_FT3 *)current->primptr;
+	short width;
+	short height;
+	
+	POLY_FT3* null;
+	POLY_FT4* polys;
+	
+	null = (POLY_FT3*)current->primptr;
 	setPolyFT3(null);
 
 	null->x0 = -1;
@@ -600,16 +580,20 @@ void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip)
 	polys->g0 = col->g;
 	polys->b0 = col->b;
 
-	sVar2 = (uVar4 - (uVar5 - 1)) / 2;
+	width = (moon_texture.coords.u1 - (moon_texture.coords.u0 - 1)) / 2;
+	height = (moon_texture.coords.v2 - (moon_texture.coords.v0 - 1)) / 2;
 
-	polys->x0 = pos->vx - sVar2;
-	polys->y0 = pos->vy - sVar6;
-	polys->x1 = pos->vx + sVar2;
-	polys->y1 = pos->vy - sVar6;
-	polys->x2 = pos->vx - sVar2;
-	polys->y2 = pos->vy + sVar6;
-	polys->x3 = pos->vx + sVar2;
-	polys->y3 = pos->vy + sVar6;
+	if (flip != 0)
+		height = -height;
+
+	polys->x0 = pos->vx - width;
+	polys->y0 = pos->vy - height;
+	polys->x1 = pos->vx + width;
+	polys->y1 = pos->vy - height;
+	polys->x2 = pos->vx - width;
+	polys->y2 = pos->vy + height;
+	polys->x3 = pos->vx + width;
+	polys->y3 = pos->vy + height;
 
 	polys->u0 = moon_texture.coords.u0;
 	polys->v0 = moon_texture.coords.v0;
@@ -706,213 +690,208 @@ void DisplayMoon(DVECTOR *pos, CVECTOR *col, int flip)
 
 extern VECTOR dummy;
 
-// [D]
+// [D] [T]
 void DrawLensFlare(void)
 {
 	static char last_attempt_failed; // offset 0x0
 	static short buffer[160];
 
-	unsigned char bVar1;
-	short sVar2;
-	short sVar3;
-	short sVar4;
-	short sVar5;
-	long lVar6;
-	int iVar7;
-	int iVar8;
+	int flarez;
+	long distance_to_sun;
+	int bufferY;
+	int bufferX;
 	POLY_FT4 *poly;
 	FLAREREC *pFlareInfo;
-	short *puVar9;
-	short *psVar10;
-	DR_MOVE *sample_sun;
+	int shade;
+	short *pwBuffer;
+	DR_MOVE* sample_sun;
+	int ygap;
+	int xgap;
 	int flare_col;
-	int iVar11;
-	short sVar13;
-	int iVar12;
+	int flaresize;
+	
+	int haze_col;
 
 #ifdef PGXP
 	DVECTORF sun_pers_conv_position;
 #else
 	DVECTOR sun_pers_conv_position;
 #endif
+	
+	RECT16 source;
 	CVECTOR col;
-	int flarez;
 
-	RECT16 source = {
+	source = {
 		1008,
 		456,
 		16,
 		10
 	};
 
-	if (gTimeOfDay != 0 && gTimeOfDay != 2)
+	if (gWeather - 1U <= 1 || gTimeOfDay == 0 || gTimeOfDay == 2)
+		return;
+	
+	if (gTimeOfDay == 3)
+		col.r = 128;
+	else
+		col.r = 254;
+
+	flare_col = 0;
+
+	col.g = col.r;
+	col.b = col.r;
+
+	// get the sun brightness from framebuffer copy
+	if (gTimeOfDay != 3 && last_attempt_failed == 0)
 	{
-		col.r = -1;
-
-		if (gTimeOfDay == 3)
-			col.r = -0x80;
-
-		flare_col = 0;
-
-		col.g = col.r;
-		col.b = col.r;
-
-		if (gTimeOfDay != 3 && last_attempt_failed == 0)
+		pwBuffer = buffer;
+		StoreImage(&source, (u_long*)buffer);
+		bufferY = 0;
+		do
 		{
-			puVar9 = buffer;
-			StoreImage(&source, (u_long*)buffer);
-			iVar7 = 0;
+			bufferY++;
+			bufferX = 0;
 
-			do {
-				iVar7 = iVar7 + 1;
-				iVar8 = 0xb;
-
-				do {
-					psVar10 = puVar9;
-
-					if ((*psVar10 == -1) || (*psVar10 == 0x7fff))
-						flare_col++;
-
-					iVar8--;
-					puVar9 = psVar10 + 1;
-				} while (-1 < iVar8);
-
-				puVar9 = psVar10 + 5;
-			} while (iVar7 < 10);
-		}
-
-		gte_SetRotMatrix(&inv_camera_matrix);
-		gte_SetTransVector(&dummy);
-
-		if (gTimeOfDay == 3)
-		{
-			gte_ldv0(&moon_position[GameLevel]);
-		}
-		else
-		{
-			gte_ldv0(&sun_position[GameLevel]);
-		}
-
-		gte_rtps();
-
-		gte_stsxy(&sun_pers_conv_position);
-
-		gte_stszotz(&iVar7);
-
-
-		iVar11 = sun_pers_conv_position.vx - 160;
-		iVar8 = sun_pers_conv_position.vy - 128;
-		lVar6 = SquareRoot0(iVar11 * iVar11 + iVar8 * iVar8);
-
-		if (gTimeOfDay == 3)
-		{
-			if (lVar6 < 500)
+			do
 			{
-				DisplayMoon(&sun_pers_conv_position, &col, 0);
 
-				col.r = 64;
-				col.b = 64;
-				col.g = 64;
+				if (*pwBuffer == -1 || *pwBuffer == 0x7fff)
+					flare_col++;
 
-				gte_ldv0(&moon_shadow_position[GameLevel]);
-
-				gte_rtps();
-
-				gte_stsxy(&sun_pers_conv_position);
-
-				DisplayMoon(&sun_pers_conv_position, &col, 1);
+				bufferX++;
+				pwBuffer++;
 			}
+			while (bufferX < 12);
+
+			pwBuffer += 5;
 		}
-		else
+		while (bufferY < 10);
+	}
+
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+
+	if (gTimeOfDay == 3)
+	{
+		gte_ldv0(&moon_position[GameLevel]);
+	}
+	else
+	{
+		gte_ldv0(&sun_position[GameLevel]);
+	}
+
+	gte_rtps();
+
+	gte_stsxy(&sun_pers_conv_position);
+
+	gte_stszotz(&flarez);
+	
+	xgap = sun_pers_conv_position.vx - 160;
+	ygap = sun_pers_conv_position.vy - 128;
+
+	//sun_pers_conv_position.vy = (short)((uint)sun_pers_conv_position >> 0x10);
+	
+	distance_to_sun = SquareRoot0(xgap * xgap + ygap * ygap);
+
+	if (gTimeOfDay == 3)
+	{
+		if (distance_to_sun < 500)
 		{
-			if ((0 < iVar7) && (lVar6 < 500))
+			DisplayMoon(&sun_pers_conv_position, &col, 0);
+			col.r = 64;
+			col.b = 64;
+			col.g = 64;
+			
+			gte_ldv0(&moon_shadow_position[GameLevel]);
+			gte_rtps();
+			gte_stsxy(&sun_pers_conv_position);
+
+			DisplayMoon(&sun_pers_conv_position, &col, 1);
+		}
+	}
+	else
+	{
+		if (flarez > 0 && distance_to_sun < 500)
+		{
+			DisplaySun(&sun_pers_conv_position, &col, flare_col);
+			
+			haze_col = (60 - (distance_to_sun / 2)) * flare_col;
+			
+			add_haze((haze_col / 6 + (haze_col >> 0x1f) >> 3) - (haze_col >> 0x1f), haze_col >> 6, 7);
+			shade = flare_col / 3 - (distance_to_sun * 80) / 500;
+	
+			if (shade > -1 && flare_col != 0)
 			{
-				DisplaySun(&sun_pers_conv_position, &col, flare_col);
-
-				iVar7 = (0x3c - (lVar6 >> 1)) * flare_col;
-
-				add_haze((iVar7 / 6 + (iVar7 >> 0x1f) >> 3) - (iVar7 >> 0x1f), iVar7 >> 6, 7);
-
-				iVar7 = flare_col / 3 - (lVar6 * 0x50) / 500;
-
-				if (iVar7 > -1 && flare_col != 0)
+				pFlareInfo = flare_info;
+				
+				do
 				{
-					pFlareInfo = flare_info;
+					int xpos, ypos, gapmod;
+					
+					gapmod = (128 - pFlareInfo->gapmod) * 2;
+					flaresize = (pFlareInfo->size / 2);
+					
+					xpos = (xgap * gapmod) / 256;
+					ypos = (ygap * gapmod) / 256;
 
-					do {
-						flare_col = (128 - pFlareInfo->gapmod) * 2;
-						iVar12 = iVar11 * flare_col;
+					poly = (POLY_FT4*)current->primptr;
+					setPolyFT4(poly);
+					setSemiTrans(poly, 1);
 
-						flare_col = iVar8 * flare_col;
+					poly->x0 = poly->x2 = (xpos + 160) - flaresize;
+					poly->y0 = poly->y1 = (ypos + 128) - flaresize;
 
-						poly = (POLY_FT4 *)current->primptr;
-						setPolyFT4(poly);
-						setSemiTrans(poly, 1);
+					poly->x1 = poly->x3 = poly->x0 + pFlareInfo->size;
+					poly->y2 = poly->y3 = poly->y0 + pFlareInfo->size;
 
-						bVar1 = pFlareInfo->size;
+					poly->r0 = (pFlareInfo->transparency.r * shade >> 6);
+					poly->g0 = (pFlareInfo->transparency.g * shade >> 6);
+					poly->b0 = (pFlareInfo->transparency.b * shade >> 6);
+					
+					poly->u0 = lensflare_texture.coords.u0;
+					poly->v0 = lensflare_texture.coords.v0;
+					poly->u1 = lensflare_texture.coords.u1;
+					poly->v1 = lensflare_texture.coords.v1;
+					poly->u2 = lensflare_texture.coords.u2;
+					poly->v2 = lensflare_texture.coords.v2 - 4;
+					poly->u3 = lensflare_texture.coords.u3;
+					poly->v3 = lensflare_texture.coords.v3 - 4;
+					
+					poly->clut = lensflare_texture.clutid;
+					poly->tpage = lensflare_texture.tpageid | 0x20;
 
-						sVar5 = (bVar1 >> 1);
-						sVar4 = ((iVar12 >> 8) + 0xa0) - sVar5;
-						sVar5 = ((flare_col >> 8) + 0x80) - sVar5;
+					addPrim(current->ot + 10, poly);
+					current->primptr += sizeof(POLY_FT4);
 
-						poly->y0 = sVar5;
-						poly->y1 = sVar5;
-						poly->x0 = sVar4;
-						poly->x1 = sVar4 + bVar1;
-						poly->x2 = sVar4;
-						poly->y2 = sVar5 + bVar1;
-						poly->x3 = sVar4 + bVar1;
-						poly->y3 = sVar5 + bVar1;
-
-						poly->r0 = (pFlareInfo->transparency.r * iVar7 >> 6);
-						poly->g0 = (pFlareInfo->transparency.g * iVar7 >> 6);
-						poly->b0 = (pFlareInfo->transparency.b * iVar7 >> 6);
-
-						poly->u0 = lensflare_texture.coords.u0;
-						poly->v0 = lensflare_texture.coords.v0;
-						poly->u1 = lensflare_texture.coords.u1;
-						poly->v1 = lensflare_texture.coords.v1;
-						poly->u2 = lensflare_texture.coords.u2;
-						poly->v2 = lensflare_texture.coords.v2 - 4;
-						poly->u3 = lensflare_texture.coords.u3;
-						poly->v3 = lensflare_texture.coords.v3 - 4;
-						poly->clut = lensflare_texture.clutid;
-
-						poly->tpage = lensflare_texture.tpageid | 0x20;
-
-						addPrim(current->ot + 10, poly);
-						current->primptr += sizeof(POLY_FT4);
-
-						pFlareInfo++;
-
-					} while (pFlareInfo < flare_info + 8);
+					pFlareInfo++;
 				}
+				while (pFlareInfo < flare_info + 8);
 			}
-			sun_pers_conv_position.vx = sun_pers_conv_position.vx - 8;
-			sun_pers_conv_position.vy = sun_pers_conv_position.vy - 4;
+		}
+		sun_pers_conv_position.vx = sun_pers_conv_position.vx + -8;
+		sun_pers_conv_position.vy = sun_pers_conv_position.vy + -4;
 
-			if (-1 < sun_pers_conv_position.vx)
-			{
-				if (((-1 < sun_pers_conv_position.vy) &&
-					(sun_pers_conv_position.vx + 0x10 < 0x141)) &&
-					(sun_pers_conv_position.vy + 10 < 0x101))
-				{
-					last_attempt_failed = 0;
-
-					source.x = sun_pers_conv_position.vx;
-					source.y = sun_pers_conv_position.vy + last->disp.disp.y;
-
-					sample_sun = (DR_MOVE *)current->primptr;
-					SetDrawMove(sample_sun, &source, 1008, 456);
-
-					addPrim(current->ot + 0x20, sample_sun);
-					current->primptr += sizeof(DR_MOVE);
-
-					return;
-				}
-			}
-
+		// store framebuffer image of sun separately in VRAM
+		if (sun_pers_conv_position.vx > -1 && 
+			sun_pers_conv_position.vy > -1 &&
+			sun_pers_conv_position.vx + 16 < 321 &&
+			sun_pers_conv_position.vy + 10 < 257)
+		{
 			last_attempt_failed = 0;
+
+
+			source.x = sun_pers_conv_position.vx;
+			source.y = sun_pers_conv_position.vy + last->disp.disp.y;
+
+			sample_sun = (DR_MOVE*)current->primptr;
+			SetDrawMove(sample_sun, &source, 1008, 456);
+
+			addPrim(current->ot + 0x20, sample_sun);
+			current->primptr += sizeof(DR_MOVE);
+		}
+		else
+		{
+			last_attempt_failed = 1;
 		}
 	}
 }
@@ -979,93 +958,88 @@ void DrawLensFlare(void)
 
 int gTunnelNum = -1;
 int skyFade;
-static long skyred = 0x80;
-static long skygreen = 0x80;
-static long skyblue = 0x80;
+static long skyred = 128;
+static long skygreen = 128;
+static long skyblue = 128;
 
-int tunnelDir[3][2]=
+int tunnelDir[3][2] =
 {
-	{0x7D0, 0xBF8},
-	{0x800, 0x0},
-	{0x800, 0xFFF}
+	{2000, 3064},
+	{2048, 0},
+	{2048, 4095}
 };
 
-// [D]
+// [D] [T]
 void TunnelSkyFade(void)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	VECTOR *pVVar5;
-	VECTOR *pVVar6;
-
-	iVar3 = 2;
+	int dZ;
+	int diffZ;
+	int dX;
+	int diffX;
+	int l2;
+	int len;
+	VECTOR* v2;
+	VECTOR* v1;
+	int tun;
 
 	if (GameLevel != 3)
-		iVar3 = gTunnelNum;
-
-	pVVar5 = NULL;
+		tun = gTunnelNum;
+	else
+		tun = 2;
 
 	if (gTunnelNum == -1)
 		return;
 
-	pVVar6 = NULL;
+	v1 = NULL;
+	v2 = NULL;
 
-	if (((tunnelDir[iVar3][0] - camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf)
-		pVVar6 = &tunnelPos[iVar3][0];
+	if (((tunnelDir[tun][0] - camera_angle.vy) + 0x800U & 0xfff) - 801 < 2495)
+		v1 = &tunnelPos[tun][0];
 
-	if (((tunnelDir[iVar3][1] - camera_angle.vy) + 0x800U & 0xfff) - 0x321 < 0x9bf)
-		pVVar5 = &tunnelPos[iVar3][1];
+	if (((tunnelDir[tun][1] - camera_angle.vy) + 0x800U & 0xfff) - 801 < 2495)
+		v2 = &tunnelPos[tun][1];
 
-	if (pVVar6 == NULL) 
+	if(v1 && v2)
 	{
-		if (pVVar5 == NULL) 
-		{
-			skyFade = 0;
-			return;
-		}
+		dX = (v1->vx - player[0].pos[0]) >> 5;		// [A] smooth sky fade
+		dZ = (v1->vz - player[0].pos[2]) >> 5;
 
-		iVar4 = pVVar5->vx;
-		iVar3 = pVVar5->vz;
+		diffX = (v2->vx - player[0].pos[0]) >> 5;
+		diffZ = (v2->vz - player[0].pos[2]) >> 5;
+
+		len = (dX * dX + dZ * dZ);
+		l2 = (diffX * diffX + diffZ * diffZ);
+
+		if (l2 <= len)
+			len = l2;
+	}
+	else if(v2)
+	{
+		diffX = (v2->vx - player[0].pos[0]) >> 5;
+		diffZ = (v2->vz - player[0].pos[2]) >> 5;
+
+		len = (diffX * diffX + diffZ * diffZ);
+	}
+	else if(v1)
+	{
+		diffX = (v1->vx - player[0].pos[0]) >> 5;
+		diffZ = (v1->vz - player[0].pos[2]) >> 5;
+
+		len = (diffX * diffX + diffZ * diffZ);
 	}
 	else
-	{
-		if (pVVar5 != NULL) 
-		{
-			iVar1 = FIXEDH(pVVar6->vx - player[0].pos[0]);
-			iVar3 = FIXEDH(pVVar6->vz - player[0].pos[2]);
-
-			iVar2 = FIXEDH(pVVar5->vx - player[0].pos[0]);
-			iVar4 = FIXEDH(pVVar5->vz - player[0].pos[2]);
-
-			iVar3 = iVar1 * iVar1 + iVar3 * iVar3;
-			iVar4 = iVar2 * iVar2 + iVar4 * iVar4;
-
-			if (iVar4 <= iVar3)
-				iVar3 = iVar4;
-
-			goto LAB_00078940;
-		}
-
-		iVar4 = pVVar6->vx;
-		iVar3 = pVVar6->vz;
-	}
-
-	iVar4 = FIXEDH(iVar4 - player[0].pos[0]);
-	iVar3 = FIXEDH(iVar3 - player[0].pos[2]);
-
-	iVar3 = iVar4 * iVar4 + iVar3 * iVar3;
-
-LAB_00078940:
-
-	if (0x80 < iVar3 * 4) 
 	{
 		skyFade = 0;
 		return;
 	}
 
-	skyFade = iVar3 * -4 + 128;
+	// [A] smooth sky fade
+	len >>= 12;
+
+	if (len <= 128)
+		skyFade = -len + 128;
+	else
+		skyFade = 0;
 }
 
 
@@ -1086,59 +1060,61 @@ LAB_00078940:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void calc_sky_brightness(void)
 {
-	int iVar1;
-	long lVar2;
+	int dawn;
+	dawn = DawnCount >> 5;
 
-	iVar1 = DawnCount >> 5;
-	if (gTimeOfDay == 0) {
-		skyred = iVar1 + 0x29;
-		skyblue = iVar1 + 0x1c;
-	}
-	else 
+	if(gTimeOfDay == 0 || gTimeOfDay == 2)
 	{
-		if (gTimeOfDay != 2) {
-			skyblue = 0x80;
-			skygreen = 0x80;
-			skyred = 0x80;
-			goto LAB_00078a68;
+		if (gTimeOfDay == 0)
+		{
+			skyred = dawn + 41;
+			skyblue = dawn + 28;
 		}
-		skyred = 0x8f - iVar1;
-		skyblue = 0x80 - iVar1;
-	}
-	lVar2 = 0x1a;
-	if ((skyred < 0x1a) || (lVar2 = 0x80, 0x80 < skyred)) {
-		skyred = lVar2;
-	}
-	lVar2 = 0x1a;
+		else if (gTimeOfDay == 2)
+		{
+			skyred = 143 - dawn;
+			skyblue = 128 - dawn;
+		}
 
-	if ((skyblue < 0x1a) || (lVar2 = 0x80, skygreen = skyblue, 0x80 < skyblue)) {
-		skygreen = lVar2;
+		if (skyred < 26)
+			skyred = 26;
+		else if (skyred > 128)
+			skyred = 128;
+
+		if (skyblue < 26)
+			skyblue = 26;
+		else if (skyblue > 128)
+			skyblue = 128;
+
+		skygreen = skyblue;
 	}
-
-	if (skyblue < 0x1a)
-		skyblue = 0x1a;
-	else if (0x80 < skyblue)
-		skyblue = 0x80;
-
-LAB_00078a68:
-	if ((((gTunnelNum != -1) && (GameLevel != 0)) && (GameLevel != 2)) &&
-		(((GameLevel != 3 || (gTunnelNum == 1)) && ((GameLevel != 1 || (gTunnelNum != 2)))))) 
+	else
 	{
-		TunnelSkyFade();
-		if (skyFade < skyred)
-			skyred = skyFade;
-	
-		if (skyFade < skygreen)
-			skygreen = skyFade;
-	
-		if (skyFade < skyblue)
-			skyblue = skyFade;
-	
+		skyblue = 128;
+		skygreen = 128;
+		skyred = 128;
 	}
+	
+	if (gTunnelNum == -1 || 
+		GameLevel == 0 ||
+		GameLevel == 1 && gTunnelNum == 2 ||
+		GameLevel == 2 ||
+		GameLevel == 3 && gTunnelNum != 1)
+		return;
 
+	TunnelSkyFade();
+
+	if (skyred > skyFade)
+		skyred = skyFade;
+
+	if (skygreen > skyFade)
+		skygreen = skyFade;
+
+	if (skyblue > skyFade)
+		skyblue = skyFade;
 }
 
 
@@ -1181,23 +1157,23 @@ DVECTOR scratchPad_skyVertices[256];	// 1f800044
 
 short scratchPad_zbuff[256];
 
-// [D]
+// [D] [T]
 void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
-	POLYFT4 *src;
-	POLY_FT4 *poly;
+	POLYFT4* src;
+	POLY_FT4* poly;
 
 	src = scratchPad_skyPolygonsPtr;
-	poly = (POLY_FT4 *)current->primptr;
+	poly = (POLY_FT4*)current->primptr;
 
 #ifdef PGXP
-	DVECTORF *outpoints = scratchPad_skyVertices;
+	DVECTORF* outpoints = scratchPad_skyVertices;
 #else
-	DVECTOR *outpoints = scratchPad_skyVertices;
+	DVECTOR* outpoints = scratchPad_skyVertices;
 #endif
 
 #ifdef PSX
-	if ((outpoints[src->v0].vy > -1 || outpoints[src->v1].vy > -1 || outpoints[src->v2].vy > -1 || outpoints[src->v3].vy > -1) && 
+	if ((outpoints[src->v0].vy > -1 || outpoints[src->v1].vy > -1 || outpoints[src->v2].vy > -1 || outpoints[src->v3].vy > -1) &&
 		(outpoints[src->v0].vx > -1 || outpoints[src->v1].vx > -1 || outpoints[src->v2].vx > -1 || outpoints[src->v3].vx > -1) &&
 		(outpoints[src->v0].vx < 321 || outpoints[src->v1].vx < 321 || outpoints[src->v2].vx < 321 || outpoints[src->v3].vx < 321))
 #endif
@@ -1208,24 +1184,16 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		poly->g0 = g;
 		poly->b0 = b;
 
-
-		poly->x0 = outpoints[src->v0].vx;
-		poly->y0 = outpoints[src->v0].vy;
-		poly->x1 = outpoints[src->v1].vx;
-		poly->y1 = outpoints[src->v1].vy;
-		poly->x2 = outpoints[src->v3].vx;
-		poly->y2 = outpoints[src->v3].vy;
-		poly->x3 = outpoints[src->v2].vx;
-		poly->y3 = outpoints[src->v2].vy;
-
-		poly->u0 = skytexuv[skytexnum].u2;
-		poly->v0 = skytexuv[skytexnum].v2;
-		poly->u1 = skytexuv[skytexnum].u3;
-		poly->v1 = skytexuv[skytexnum].v3;
-		poly->u2 = skytexuv[skytexnum].u0;
-		poly->v2 = skytexuv[skytexnum].v0;
-		poly->u3 = skytexuv[skytexnum].u1;
-		poly->v3 = skytexuv[skytexnum].v1;
+		*(uint*)&poly->x0 = *(uint*)&outpoints[src->v0].vx;
+		*(uint*)&poly->x1 = *(uint*)&outpoints[src->v1].vx;
+		*(uint*)&poly->x2 = *(uint*)&outpoints[src->v3].vx;
+		*(uint*)&poly->x3 = *(uint*)&outpoints[src->v2].vx;
+	
+		*(ushort*)&poly->u0 = *(ushort*)&skytexuv[skytexnum].u2;
+		*(ushort*)&poly->u1 = *(ushort*)&skytexuv[skytexnum].u3;
+		*(ushort*)&poly->u2 = *(ushort*)&skytexuv[skytexnum].u0;
+		*(ushort*)&poly->u3 = *(ushort*)&skytexuv[skytexnum].u1;
+		
 		poly->clut = skyclut[skytexnum];
 		poly->tpage = skytpage[skytexnum];
 
@@ -1235,7 +1203,7 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		poly->pgxp_index = 0xFFFF;
 #endif 
 
-		current->primptr = current->primptr + sizeof(POLY_FT4);
+		current->primptr += sizeof(POLY_FT4);
 	}
 }
 
@@ -1273,46 +1241,42 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 	/* end block 3 */
 	// End Line: 2521
 
-// [D] [A] WTF
-void PlotHorizonMDL(MODEL *model, int horizontaboffset)
+// [D] [T]
+void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 {
-	unsigned char bVar1;
+	SVECTOR* verts;
 
-	uint uVar4;
-
-	SVECTOR *pSVar6;
-	
 #ifdef PGXP
-	DVECTORF *dv0;
-	DVECTORF *dv1;
-	DVECTORF *dv2;
+	DVECTORF* dv0;
+	DVECTORF* dv1;
+	DVECTORF* dv2;
 #else
-	DVECTOR *dv0;
-	DVECTOR *dv1;
-	DVECTOR *dv2;
+	DVECTOR* dv0;
+	DVECTOR* dv1;
+	DVECTOR* dv2;
 #endif
 
-	SVECTOR *v0;
-	SVECTOR *v1;
-	SVECTOR *v2;
+	SVECTOR* v0;
+	SVECTOR* v1;
+	SVECTOR* v2;
 
-	int iVar13;
-	unsigned char *pbVar14;
-	unsigned char *pbVar15;
-	uint uVar16;
-	uint uVar17;
+	int count;
 
-	short *zbuff;
-	int p;
-	int flag;
+	unsigned char* polys;
+
+	int green;
+	int red;
+	int blue;
+
+	short* zbuff;
 	int z;
 
-	pSVar6 = (SVECTOR *)model->vertices;
-	uVar4 = (uint)model->num_vertices + 3;
+	verts = (SVECTOR*)model->vertices;
+	blue = (uint)model->num_vertices + 3;
 
-	iVar13 = 0;
+	count = 0;
 
-	if (uVar4 != 0) 
+	if (blue != 0)
 	{
 		zbuff = scratchPad_zbuff;
 
@@ -1320,9 +1284,9 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 		dv1 = scratchPad_skyVertices + 1;
 		dv2 = scratchPad_skyVertices + 2;
 
-		v0 = pSVar6;
-		v1 = pSVar6 + 1;
-		v2 = pSVar6 + 2;
+		v0 = verts;
+		v1 = verts + 1;
+		v2 = verts + 2;
 
 		do {
 			SVECTOR sv0 = *v0;
@@ -1347,47 +1311,41 @@ void PlotHorizonMDL(MODEL *model, int horizontaboffset)
 			v1 += 3;
 			v0 += 3;
 
-			iVar13 += 3;
+			count += 3;
 
 			zbuff[2] = z;
 			zbuff[1] = z;
 			zbuff[0] = z;
 
 			zbuff += 3;
-		} while (iVar13 < model->num_vertices + 3);
+		} while (count < model->num_vertices + 3);
 	}
 
-	if (0 < scratchPad_zbuff[16])
+	if (scratchPad_zbuff[16] > 0)
 	{
-		pbVar14 = (unsigned char *)model->poly_block;
-		uVar17 = skyred;
-		uVar16 = skygreen;
+		polys = (unsigned char*)model->poly_block;
 
-		//DAT_1f80001c = SHORT_ARRAY_1f800240;
-		uVar4 = skyblue;
-		iVar13 = 0;
-		//DAT_1f800018 = model;
+		red = skyred;
+		green = skygreen;
+		blue = skyblue;
+		
+		count = 0;
 
-		if (model->num_polys != 0) 
+		while (count < model->num_polys)
 		{
-			pbVar15 = HorizonTextures + horizontaboffset;
-			do {
-				if (iVar13 == 0xc) {
-					uVar17 = uVar17 >> 1;
-					uVar16 = uVar16 >> 1;
-					uVar4 = uVar4 >> 1;
-				}
-				bVar1 = *pbVar15;
-				pbVar15 = pbVar15 + 1;
+			if (count == 12)
+			{
+				red /= 2;
+				green /= 2;
+				blue /= 2;
+			}
+			
+			scratchPad_skyPolygonsPtr = (POLYFT4*)polys;
 
+			PlotSkyPoly(HorizonTextures[horizontaboffset + count], red, green, blue, 0);
 
-				scratchPad_skyPolygonsPtr = (POLYFT4*)pbVar14; //_DAT_1f80003c = pbVar14;
-
-				PlotSkyPoly(bVar1, uVar17, uVar16, uVar4, 0);
-
-				iVar13 = iVar13 + 1;
-				pbVar14 = pbVar14 + PolySizes[*pbVar14];
-			} while (iVar13 < model->num_polys);
+			polys += PolySizes[*polys];
+			count++;
 		}
 	}
 }
