@@ -49,6 +49,7 @@ screenFunc fpUserFunctions[] = {
 	GamePlayScreen,
 	GameNameScreen,
 	CheatNumlayerSelect,
+	BonusGalleryScreen
 };
 
 char* gfxNames[4] = {
@@ -75,34 +76,37 @@ int CutAmountsTotal[5] = {
 
 char* CutSceneNames[28] =
 {
-	"Il fiume rosso",
-	"L'obitorio",
-	"Il testimone",
-	"L'appartamento di Lenny",
-	"La setta cubana",
-	"L'intruso",
-	"L'incontro con Caine",
-	"Partenza dalla citt",
-	"In cerca di indizi",
-	"Partenza",
-	"Osservando l'autocarro",
-	"L'indizio nella Rosanna Soto",
-	"Il cantiere navale",
-	"Il colpo",
-	"L'arresto di Jericho",
-	"Vasquez in Las Vegas",
-	"Lo scambio di Jericho",
-	"Rapina nella banca",
-	"La sala da biliardo",
-	"Il sentiero di guerra di Caine",
-	"Caine a Rio",
-	"Avviso a Jones",
-	"La sparatoria",
-	"La fuga di Lenny",
-	"Lenny takedown",
-	"Back to chicago",
-	"Vasquez and Caine",
-	"Credits"
+	"Red River",
+	"The morgue",
+	"The Witness",
+	"Lenny's apartment",
+	"The Cuba Connection",
+	"The Intruder",
+	"Meeting Caine",
+	"Leaving Town",
+
+	"Looking for a lead",
+	"Moving out",
+	"Watching the truck",
+	"Rosanna Soto Clue",
+	"The Dockyard",
+	"The Hit",
+	"Seizing Jericho",
+
+	"Vasquez in Vegas",
+	"Trading Jericho",
+	"Bank job",
+	"The Pool Hall",
+	"Caine's Warpath",
+
+	"Caine in Rio",
+	"Warning Jones",
+	"The Shootout",
+	"Lenny's getaway",
+	"Lenny gets it",
+	"Back in Chicago",
+	"Vasquez meets Caine",
+	"Credits",
 };
 
 
@@ -501,6 +505,7 @@ void LoadFrontendScreens(void)
 	rect.x = 960;
 	rect.y = 256;
 
+	// load font
 	LoadImage(&rect, (u_long *)_frontend_buffer);
 	DrawSync(0);
 
@@ -1017,6 +1022,7 @@ void DisplayOnScreenText(void)
 // [D] [A]
 void SetupExtraPoly(char *fileName, int offset, int offset2)
 {
+	int i;
 	RECT16 rect = extraRect;
 
 	FEDrawCDicon();
@@ -1049,7 +1055,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 		loaded[1] = -1;
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		if (strcmp(fileName, gfxNames[i]) == 0) {
 			loaded[0] = -1;
@@ -1058,7 +1064,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 		}
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		if (strcmp(fileName, cutGfxNames[i]) == 0) {
 			loaded[1] = -1;
@@ -3080,132 +3086,142 @@ int MissionCityScreen(int bSetup)
 	/* end block 5 */
 	// End Line: 8535
 
+// [D]
 int CutSceneSelectScreen(int bSetup)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	byte bVar1;
-	DB *pDVar2;
-	PSXBUTTON *pPVar3;
-	int iVar4;
-	uint *puVar5;
-	PSXBUTTON **ppPVar6;
-	undefined *puVar7;
-	undefined4 local_18;
-	undefined4 local_14;
-	undefined4 local_10;
-	undefined4 local_c;
+	int bVar1;
+	uint *puVar3;
+	u_long *buff;
 
-	iVar4 = ScreenDepth;
-	local_18 = DAT_FRNT__001c0884;
-	local_14 = DAT_FRNT__001c0888;
-	if (bSetup == 0) {
-		if ((uRam001cc5dc & 0x10) == 0) {
-			if ((uRam001cc5dc & 0x40) != 0) {
-				if (DAT_FRNT__001c6a8c == 0) {
-					if (DAT_FRNT__001c69a0 == 0) {
-						DAT_FRNT__001c69a0 = *(int *)(&DAT_FRNT__001c69b8 + (DAT_FRNT__001c6a70 + 1) * 4) - 1U;
-						if ((int)(uint)(byte)(&DAT_FRNT__001c69e0)[gFurthestMission] <
-							(int)((*(int *)(&DAT_FRNT__001c69b8 + (DAT_FRNT__001c6a70 + 1) * 4) - 1U) +
-								*(int *)(&DAT_FRNT__001c69cc + DAT_FRNT__001c6a70 * 4) + 1)) {
-							DAT_FRNT__001c69a0 = (uint)(byte)(&DAT_FRNT__001c69e0)[gFurthestMission];
-						}
-						puVar7 = &DAT_0015f400 + DAT_FRNT__001c69a0 * 0x8000;
-					}
-					else {
-						DAT_FRNT__001c69a0 = DAT_FRNT__001c69a0 - 1;
-						puVar7 = &DAT_0015f400 + DAT_FRNT__001c69a0 * 0x8000;
-					}
-				}
-				else {
-					if (DAT_FRNT__001c6a8c != 2) {
-						bReturnToMain = 0;
-						ppPVar6 = pButtonStack10 + ScreenDepth;
-						pScreenStack10[ScreenDepth] = pCurrScreen;
-						pPVar3 = pCurrButton;
-						feVariableSave[1] = DAT_FRNT__001c6a70;
-						feVariableSave[0] = DAT_FRNT__001c69a0;
-						*ppPVar6 = pCurrButton;
-						ScreenNames12[iVar4] = pPVar3->Name;
-						StartRender(feVariableSave[0] +
-							*(int *)(&DAT_FRNT__001c69cc + feVariableSave[1] * 4) + 1);
-						return 0;
-					}
-					if ((DAT_FRNT__001c69a0 ==
-						*(int *)(&DAT_FRNT__001c69b8 + (DAT_FRNT__001c6a70 + 1) * 4) + -1) ||
-						((int)(uint)(byte)(&DAT_FRNT__001c69e0)[gFurthestMission] <=
-						(int)(DAT_FRNT__001c69a0 + *(int *)(&DAT_FRNT__001c69cc + DAT_FRNT__001c6a70 * 4) + 1)
-							)) {
-						puVar7 = &DAT_0015f400;
-						DAT_FRNT__001c69a0 = 0;
-					}
-					else {
-						DAT_FRNT__001c69a0 = DAT_FRNT__001c69a0 + 1;
-						puVar7 = &DAT_0015f400 + DAT_FRNT__001c69a0 * 0x8000;
-					}
-				}
-				local_c = DAT_FRNT__001c0888;
-				local_10 = DAT_FRNT__001c0884;
-				LoadImage(&local_10, puVar7);
-				DrawSync(0);
-				DisplayOnScreenText();
-				pDVar2 = current;
-				DAT_FRNT__001cc5c8 = DAT_FRNT__001cc5c8 & 0xff000000 | *(uint *)current->ot[2] & 0xffffff;
-				*(uint *)current->ot[2] = *(uint *)current->ot[2] & 0xff000000 | 0x1cc5c8;
-				DAT_FRNT__001cbdb8 = DAT_FRNT__001cbdb8 & 0xff000000 | *(uint *)pDVar2->ot[3] & 0xffffff;
-				puVar5 = (uint *)pDVar2->ot[3];
-				*puVar5 = *puVar5 & 0xff000000 | 0x1cbdb8;
-				EndFrame();
-				return 0;
-			}
-			if ((uRam001cc5dc & 0x1000) == 0) {
-				if ((uRam001cc5dc & 0x4000) == 0) {
-					return 0;
-				}
-				bVar1 = pCurrButton->d;
-			}
-			else {
-				bVar1 = pCurrButton->u;
-			}
-			DAT_FRNT__001c6a8c = (uint)bVar1 - 1;
+	RECT16 rect;
+
+	rect = extraRect;
+
+	if (bSetup)
+	{
+		LoadBackgroundFile("DATA\\CUTS\\CUTBACK.RAW");
+		currCity = feVariableSave[1];
+
+		if (feVariableSave[0] == -1)
+		{
+			cutSelection = 0;
+			currCity = GameLevel;
 		}
-		else {
-			DAT_FRNT__001c6a90 = 0;
-			DAT_FRNT__001c6a80 = 0;
-		}
-		iVar4 = 0;
-	}
-	else {
-		LoadBackgroundFile(s_DATA_CUTS_CUTBACK_RAW_FRNT__001c08c8);
-		DAT_FRNT__001c6a70 = feVariableSave[1];
-		if (feVariableSave[0] == -1) {
-			DAT_FRNT__001c69a0 = 0;
-			DAT_FRNT__001c6a70 = GameLevel;
-		}
-		else {
-			DAT_FRNT__001c69a0 = feVariableSave[0];
-			feVariableSave[3] = 0xffffffff;
-			feVariableSave[2] = 0xffffffff;
+		else
+		{
+			cutSelection = feVariableSave[0];
+			feVariableSave[3] = -1;
+			feVariableSave[2] = -1;
 			feVariableSave[1] = -1;
 			feVariableSave[0] = -1;
 		}
-		if ((int)DAT_FRNT__001c6a7a == GameLevel) {
-			DAT_FRNT__001c6a90 = 1;
-			LoadImage(&local_18, &DAT_0015f400);
+
+		if (loaded[2] == GameLevel)
+		{
+			bDrawExtra = 1;
+			LoadImage(&rect, (u_long*)_frontend_buffer + 0x20000);
 			DrawSync(0);
 		}
-		else {
-			SetupExtraPoly((&PTR_s_DATA_CUTS_CCUTS_RAW_FRNT__001c073c_FRNT__001c69a8)[GameLevel],
-				DAT_FRNT__001c69a0, 0x20000);
+		else
+		{
+			SetupExtraPoly(cutGfxNames[GameLevel], cutSelection, 0x20000);
 		}
-		iVar4 = 1;
-		DAT_FRNT__001c6a80 = 1;
-		DAT_FRNT__001c6a8c = 1;
-		DAT_FRNT__001c69a4 = 1;
+
+
+		bInCutSelect = 1;
+		currSelIndex = 1;
+		bDoingCutSelect = 1;
 		pCurrButton = pCurrScreen->buttons + 1;
+
+		return 1;
 	}
-	return iVar4;*/
+
+	if ((fePad & 0x10U) == 0) 
+	{
+		if ((fePad & 0x40U) != 0)
+		{
+			if (currSelIndex == 0) 
+			{
+				if (cutSelection == 0) 
+				{
+					cutSelection = CutAmounts[currCity + 1] -1;
+
+					if (cutUnlock[gFurthestMission] < CutAmounts[currCity + 1]-1 + CutAmountsTotal[currCity] + 1) 
+						cutSelection = cutUnlock[gFurthestMission];
+				}
+				else 
+				{
+					cutSelection--;
+				}
+			}
+			else
+			{
+				if (currSelIndex != 2)
+				{
+					bReturnToMain = 0;
+					pCurrButton = pButtonStack[ScreenDepth];
+					pScreenStack[ScreenDepth] = pCurrScreen;
+
+					feVariableSave[1] = currCity;
+					feVariableSave[0] = cutSelection;
+
+					ScreenNames[ScreenDepth] = pCurrButton->Name;
+					StartRender(feVariableSave[0] + CutAmountsTotal[feVariableSave[1]] + 1);
+
+					return 0;
+				}
+
+				if ((cutSelection == CutAmounts[currCity + 1]-1) || (cutUnlock[gFurthestMission] <= cutSelection + CutAmountsTotal[currCity] + 1)) 
+				{
+					cutSelection = 0;
+				}
+				else 
+				{
+					cutSelection++;
+				}
+			}
+
+			rect = extraRect;
+			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
+			DrawSync(0);
+			DisplayOnScreenText();
+
+#ifdef PSX
+			DisplayOnScreenText();
+
+			addPrim(&current->ot[2], &extraSprt);
+			addPrim(&current->ot[3], &extraDummy);
+
+			EndFrame();
+#endif
+
+			return 0;
+		}
+
+		if ((fePad & 0x1000U) == 0) 
+		{
+			if ((fePad & 0x4000U) == 0) 
+			{
+				return 0;
+			}
+
+			bVar1 = pCurrButton->d;
+		}
+		else 
+		{
+			bVar1 = pCurrButton->u;
+		}
+
+		currSelIndex = (uint)bVar1 - 1;
+	}
+	else 
+	{
+		bDrawExtra = 0;
+		bInCutSelect = 0;
+		bDoingCutSelect = 0;
+	}
+
+	return 0;
 }
 
 
@@ -3302,6 +3318,7 @@ int CutSceneSelectScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 8838
 
+// [D]
 int CutSceneCitySelectScreen(int bSetup)
 {
 	RECT16 rect;
@@ -4196,161 +4213,255 @@ int MainScreen(int bSetup)
 	/* end block 4 */
 	// End Line: 10088
 
-static char* cheatText[5] =
+static char* cheatText[] =
 {
 	"Sorry, no secrets",
 	"Mountain track",
 	"Circuit",
 	"Invincibility",
-	"Immunity"
+	"Immunity",
+	"Bonus Gallery"
 };
 
+// [D] [T] [A] adding bonus gallery
 int CheatScreen(int bSetup)
 {
-	PSXSCREEN *pPVar1;
-	PSXSCREEN *pPVar2;
-	int iVar3;
-	int iVar4;
-	int *piVar5;
-	int iVar6;
-	unsigned char bVar7;
-	int iVar8;
-	int iVar9;
+	int i;
+	int numOpen;
+	int k;
 	unsigned char cheatOn[12];
-	int evilRuss[4];
+	int evilRuss[5];
 
-	int hackLookup1[4] = {
-		0x121, 0x121, 0x11E, 0x11F
+	int hackLookup1[5] = {
+		0x121,
+		0x121,
+		0x11E,
+		0x11F,
+		(40 & 0xFF) | (1 << 8)
 	};
 
-	int hackLookup2[4] = {
-		0xC01, 0xC00, -1, -1
+	int hackLookup2[5] = {
+		0xC01, 0xC00, -1, -1, -1
 	};
 
-	if (bSetup == 0) {
+	if (bSetup == 0)
 		return 0;
-	}
-	if (gFurthestMission == 0x28) 
-	{
-		bVar7 = 4;
-	}
-	else 
-	{
-		bVar7 = AvailableCheats.cheat1 + AvailableCheats.cheat2 + AvailableCheats.cheat3 + AvailableCheats.cheat4;
-	}
 
-	if (bVar7 == 0)
+	if (gFurthestMission == 40) 
+		numOpen = 5;
+	else 
+		numOpen = AvailableCheats.cheat1 + AvailableCheats.cheat2 + AvailableCheats.cheat3 + AvailableCheats.cheat4;
+
+	// "Sorry no secrets"
+	if (numOpen == 0)
 	{
+		pCurrScreen->numButtons = 1;
+		
 		pCurrScreen->buttons[0].u = 1;
 		pCurrScreen->buttons[0].d = 1;
-		pCurrScreen->numButtons = 1;
-		pPVar1 = pCurrScreen;
 		pCurrScreen->buttons[0].action = 0x400;
 
-		sprintf(pPVar1->buttons[0].Name, cheatText[0]);
+		sprintf(pCurrScreen->buttons[0].Name, cheatText[0]);
 
 		return 0;
 	}
 
-	piVar5 = evilRuss;
-	iVar4 = 0;
-	pCurrScreen->numButtons = bVar7;
+	pCurrScreen->numButtons = numOpen;
 
 	evilRuss[0] = AvailableCheats.cheat1;
 	evilRuss[1] = AvailableCheats.cheat2;
 	evilRuss[2] = AvailableCheats.cheat3;
 	evilRuss[3] = AvailableCheats.cheat4;
 
-	iVar3 = 4;
-	iVar8 = 0;
+	if (numOpen >= 5)
+		pCurrScreen->buttons[4] = pCurrScreen->buttons[3];
+
+	k = 0;
+	i = 0;
 
 	do {
-		if ((*piVar5 == 1) || (iVar6 = iVar3, iVar9 = iVar8, gFurthestMission == 0x28)) {
-			iVar6 = iVar3 + 0x3c;
-			sprintf((char *)((int)&pCurrScreen->buttons[0].var + iVar3), cheatText[iVar4 + 1]);
-			iVar9 = iVar8 + 1;
-			cheatOn[iVar8] = (unsigned char)iVar4;
+		if (evilRuss[i] || gFurthestMission == 40)
+		{
+			sprintf(pCurrScreen->buttons[i].Name, cheatText[i + 1]);
+			cheatOn[k++] = i;
 		}
-		pPVar1 = pCurrScreen;
-		iVar4 = iVar4 + 1;
-		piVar5 = piVar5 + 1;
-		iVar3 = iVar6;
-		iVar8 = iVar9;
-	} while (iVar4 < 4);
+		i++;
+	} while (i < 5);
 
-	if (bVar7 == 2) {
+	if (numOpen == 2) 
+	{
 		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
-		pPVar1->buttons[1].action = hackLookup1[cheatOn[1]];
-		pPVar1->buttons[0].var = hackLookup2[cheatOn[0]];
-		iVar3 = hackLookup2[cheatOn[1]];
-		pPVar1->buttons[0].d = '\x02';
-		pPVar2 = pCurrScreen;
-		pPVar1->buttons[1].var = iVar3;
-		pPVar2->buttons[0].u = '\x02';
-		pCurrScreen->buttons[1].d = '\x01';
-		pCurrScreen->buttons[1].u = '\x01';
+		pCurrScreen->buttons[1].action = hackLookup1[cheatOn[1]];
+	
+		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
+		pCurrScreen->buttons[1].var = hackLookup2[cheatOn[1]];
+		
+		pCurrScreen->buttons[0].d = 2;
+		pCurrScreen->buttons[0].u = 2;
+		
+		pCurrScreen->buttons[1].d = 1;
+		pCurrScreen->buttons[1].u = 1;
+		
+		currSelIndex = 0;
+	
+		return 0;
+	}
+
+	if (numOpen == 1)
+	{
+		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
+		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
+		pCurrScreen->buttons[0].d = 1;
+		pCurrScreen->buttons[0].u = 1;
+		
+		currSelIndex = 0;
+	
+		return 0;
+	}
+
+	if (numOpen == 3) 
+	{
+		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
+		pCurrScreen->buttons[1].action = hackLookup1[cheatOn[1]];
+		pCurrScreen->buttons[2].action = hackLookup1[cheatOn[2]];
+		
+		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
+		pCurrScreen->buttons[1].var = hackLookup2[cheatOn[1]];
+		pCurrScreen->buttons[2].var = hackLookup2[cheatOn[2]];
+		
+		pCurrScreen->buttons[0].d = 2;
+		pCurrScreen->buttons[0].u = 3;
+		
+		pCurrScreen->buttons[1].d = 3;
+		pCurrScreen->buttons[1].u = 1;
+		
+		pCurrScreen->buttons[2].d = 1;
+		pCurrScreen->buttons[2].u = 2;
+		
 		currSelIndex = 0;
 		return 0;
 	}
 
-	if (bVar7 == 1) {
+	if (numOpen >= 4) 
+	{
 		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
-		iVar3 = hackLookup2[cheatOn[0]];
-		pPVar1->buttons[0].d = '\x01';
-		pPVar2 = pCurrScreen;
-		pPVar1->buttons[0].var = iVar3;
-		pPVar2->buttons[0].u = '\x01';
+		pCurrScreen->buttons[1].action = hackLookup1[cheatOn[1]];
+		pCurrScreen->buttons[2].action = hackLookup1[cheatOn[2]];
+		pCurrScreen->buttons[3].action = hackLookup1[cheatOn[3]];
+
+		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
+		pCurrScreen->buttons[1].var = hackLookup2[cheatOn[1]];
+		pCurrScreen->buttons[2].var = hackLookup2[cheatOn[2]];
+		pCurrScreen->buttons[3].var = hackLookup2[cheatOn[3]];
+		
+		pCurrScreen->buttons[0].d = 2;
+		pCurrScreen->buttons[0].u = 4;
+		
+		pCurrScreen->buttons[1].d = 3;
+		pCurrScreen->buttons[1].u = 1;
+		
+		pCurrScreen->buttons[2].d = 4;
+		pCurrScreen->buttons[2].u = 2;
+		
+		pCurrScreen->buttons[3].d = 1;
+		pCurrScreen->buttons[3].u = 3;
+
+		if(numOpen >= 5)
+		{
+			pCurrScreen->buttons[4].action = hackLookup1[cheatOn[4]];
+			pCurrScreen->buttons[4].var = hackLookup2[cheatOn[4]];
+			pCurrScreen->buttons[4].y += 40;
+			pCurrScreen->buttons[4].s_y += 40;
+
+			PsxScreens[40].userFunctionNum = 21;
+
+			pCurrScreen->buttons[0].u = 5;
+			pCurrScreen->buttons[3].d = 5;
+			
+			pCurrScreen->buttons[4].d = 1;
+			pCurrScreen->buttons[4].u = 4;
+		}
+
 		currSelIndex = 0;
 		return 0;
 	}
 
-	if (bVar7 == 3) {
-		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
-		pPVar1->buttons[1].action = hackLookup1[cheatOn[1]];
-		pPVar1->buttons[2].action = hackLookup1[cheatOn[2]];
-		pPVar1->buttons[0].var = hackLookup2[cheatOn[0]];
-		pPVar1->buttons[1].var = hackLookup2[cheatOn[1]];
-		iVar3 = hackLookup2[cheatOn[2]];
-		pPVar1->buttons[0].d = '\x02';
-		pPVar2 = pCurrScreen;
-		pPVar1->buttons[2].var = iVar3;
-		pPVar2->buttons[0].u = '\x03';
-		pCurrScreen->buttons[1].d = '\x03';
-		pCurrScreen->buttons[1].u = '\x01';
-		pCurrScreen->buttons[2].d = '\x01';
-		pCurrScreen->buttons[2].u = '\x02';
-		currSelIndex = 0;
-		return 0;
-	}
-
-	if (bVar7 == 4) {
-		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
-		pPVar1->buttons[1].action = hackLookup1[cheatOn[1]];
-		pPVar1->buttons[2].action = hackLookup1[cheatOn[2]];
-		pPVar1->buttons[3].action = hackLookup1[cheatOn[3]];
-		pPVar1->buttons[0].var = hackLookup2[cheatOn[0]];
-		pPVar1->buttons[1].var = hackLookup2[cheatOn[1]];
-		pPVar1->buttons[2].var = hackLookup2[cheatOn[2]];
-		iVar3 = hackLookup2[cheatOn[3]];
-		pPVar1->buttons[0].d = '\x02';
-		pPVar2 = pCurrScreen;
-		pPVar1->buttons[3].var = iVar3;
-		pPVar2->buttons[0].u = '\x04';
-		pCurrScreen->buttons[1].d = '\x03';
-		pCurrScreen->buttons[1].u = '\x01';
-		pCurrScreen->buttons[2].d = '\x04';
-		pCurrScreen->buttons[2].u = '\x02';
-		pCurrScreen->buttons[3].d = '\x01';
-		pCurrScreen->buttons[3].u = '\x03';
-		currSelIndex = 0;
-		return 0;
-	}
-
-	pCurrScreen->numButtons = '\0';
+	pCurrScreen->numButtons = 0;
 	currSelIndex = 0;
+
 	return 0;
 }
 
+int g_GalleryImage = 0;
+
+char* GalleryImageNames[] = {
+	"GFX\\GAL\\IMG1.TIM",
+	"GFX\\GAL\\IMG2.TIM",
+	"GFX\\GAL\\IMG3.TIM"
+};
+
+// [A]
+int BonusGalleryScreen(int bSetup)
+{
+	char tmpStr[64];
+	int imageChanged;
+	RECT16 rect;
+
+	imageChanged = 0;
+	
+	if(bSetup)
+	{
+		bDoingScores = 1;
+		g_GalleryImage = 0;
+		imageChanged = 1;
+	}
+
+	if (fePad & 0x10)
+	{
+		// goint back
+		bDoingScores = 0;
+		LoadFrontendScreens();
+		//LoadBackgroundFile("DATA\\GFX.RAW");
+	}
+	else if(fePad & 0x8000)
+	{
+		imageChanged = 1;
+		g_GalleryImage--;
+		if (g_GalleryImage < 0)
+			g_GalleryImage = 2;
+
+		FESound(3);
+	}
+	else if(fePad & 0x2000)
+	{
+		imageChanged = 1;
+		g_GalleryImage++;
+
+		if (g_GalleryImage > 2)
+			g_GalleryImage = 0;
+
+		FESound(3);
+	}
+
+	if(imageChanged)
+	{
+		FEDrawCDicon();
+		LoadfileSeg(GalleryImageNames[g_GalleryImage], _overlay_buffer, 20, 0x4ff80);
+		LoadClut((u_long*)_overlay_buffer, 640, 511);
+
+		DrawSync(0);
+		setRECT16(&rect, 640, 0, 320, 511);
+
+		LoadImage(&rect, (u_long*)&_overlay_buffer[512]);
+
+		DrawSync(0);
+	}
+
+	//sprintf(tmpStr, "Gallery %d of %d", g_GalleryImage + 1, 3);
+	//FEPrintStringSized(tmpStr, 10, 10, 4, 0, 128, 64, 0 );
+	
+	return 0;
+}
 
 
 // decompiled code

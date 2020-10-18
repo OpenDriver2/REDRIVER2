@@ -27,6 +27,8 @@
 
 #include <math.h>
 
+#include "FELONY.H"
+
 typedef void(*envsoundfunc)(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(struct __envsound *ep, struct __envsoundinfo *E, int pl);
@@ -342,12 +344,13 @@ int MapCarIndexToBank(int index)
 		{8, 7, 13, 9, 2, 17, 17, 11, 16},
 	};
 
+	
 	int iVar1;
 	int iVar2;
 
 	iVar1 = MissionHeader->residentModels[index];
 
-	if (gCurrentMissionNumber - 39 < 2 && iVar1 == 13) 
+	if (gCurrentMissionNumber - 39 < 2 && MissionHeader->residentModels[index] == 13)
 	{
 		iVar2 = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 		iVar1 = iVar2;
@@ -446,14 +449,13 @@ void LoadLevelSFX(int missionNum)
 
 	LoadBankFromLump(2, uVar1 + 69);
 
-	if (((((3 < missionNum - 1U) && (missionNum != 6)) && (missionNum != 7)) &&
-		(((missionNum != 9 && (missionNum != 10)) &&
-		((missionNum != 0xb && ((missionNum != 0xd && (missionNum != 0xe)))))))) &&
-		(((missionNum != 0x12 &&
-		((((missionNum != 0x13 && (missionNum != 0x14)) && (missionNum != 0x16)) &&
-		((missionNum != 0x1a && (missionNum != 0x1c)))))) &&
-		((((missionNum != 0x1f && ((missionNum != 0x21 && (missionNum != 0x22)))) &&
-		(missionNum != 0x26)) && (missionNum != 0x28)))))) 
+	if (missionNum - 1U > 3 && missionNum != 6 && missionNum != 7 &&
+		missionNum != 9 && missionNum != 10 && missionNum != 0xb && 
+		missionNum != 0xd && missionNum != 0xe && missionNum != 0x12 && 
+		missionNum != 0x13 && missionNum != 0x14 && missionNum != 0x16 &&
+		missionNum != 0x1a && missionNum != 0x1c && missionNum != 0x1f && 
+		missionNum != 0x21 && missionNum != 0x22 && missionNum != 0x26 && 
+		missionNum != 0x28) 
 	{
 		if ((GameLevel & 2U) == 0) 
 		{
@@ -912,13 +914,11 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	iVar8 = cp->hd.wheel_speed;
 	sVar2 = cp->thrust;
 
-	uVar10 = (cp->controlType == 2);
+	uVar10 = (cp->controlType == CONTROL_TYPE_CIV_AI);
 
 	if (iVar8 < 1) 
 	{
-		iVar9 = -iVar8;
-
-		sVar7 = iVar9 / 2048;
+		sVar7 = FixFloorSigned(-iVar8, 11);
 		uVar6 = 0;
 		iVar9 = uVar10 * 4;
 
@@ -926,7 +926,7 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 	}
 	else 
 	{
-		iVar8 = iVar8 / 2048;
+		iVar8 = iVar8 >> 11;
 		sVar7 = iVar8;
 
 		if (3 < uVar5) 
@@ -1013,8 +1013,9 @@ int maxrevrise = 1600;
 // [D]
 void ControlCarRevs(_CAR_DATA *cp)
 {
-	int player_id, acc, spin, oldvol;
-	int oldRevs, newRevs, desiredRevs;
+	char spin;
+	int player_id, acc, oldvol;
+	short oldRevs, newRevs, desiredRevs;
 
 	acc = cp->thrust;
 	spin = cp->wheelspin;
@@ -1026,8 +1027,6 @@ void ControlCarRevs(_CAR_DATA *cp)
 	if (spin == 0 && (cp->hd.wheel[1].susCompression || cp->hd.wheel[3].susCompression || acc == 0))
 	{
 		desiredRevs = GetEngineRevs(cp);
-		if (desiredRevs > 32767)
-			desiredRevs = 32767;
 	}
 	else
 	{
@@ -1070,7 +1069,7 @@ void ControlCarRevs(_CAR_DATA *cp)
 			player[player_id].idlevol += 200;
 			player[player_id].revsvol = acc - 200;
 
-			if (-6000 < player[player_id].idlevol)
+			if (player[player_id].idlevol > -6000)
 				player[player_id].idlevol = -6000;
 
 			if (player[player_id].revsvol < -10000)
@@ -1078,9 +1077,9 @@ void ControlCarRevs(_CAR_DATA *cp)
 		}
 		else
 		{
-			int sVar4 = -6750;
+			int revsmax = -6750;
 			if (acc != 0)
-				sVar4 = -5500;
+				revsmax = -5500;
 
 			if (spin == 0)
 				acc = -64;
@@ -1099,8 +1098,8 @@ void ControlCarRevs(_CAR_DATA *cp)
 			if (player[player_id].idlevol < -10000)
 				player[player_id].idlevol = -10000;
 
-			if (sVar4 < player[player_id].revsvol)
-				player[player_id].revsvol = sVar4;
+			if (player[player_id].revsvol > revsmax)
+				player[player_id].revsvol = revsmax;
 		}
 	}
 }
@@ -1685,7 +1684,7 @@ void DoDopplerSFX(void)
 					if (2 < car_ptr->controlType)
 						goto LAB_0004e930;
 
-					if (car_ptr->controlType != 2 || car_ptr->ai.c.ctrlState == 5 || car_ptr->ai.c.ctrlState == 7)
+					if (car_ptr->controlType != CONTROL_TYPE_CIV_AI || car_ptr->ai.c.ctrlState == 5 || car_ptr->ai.c.ctrlState == 7)
 						goto LAB_0004e984;
 
 					vvar3 = car_ptr->hd.where.t[0] - camera_position.vx;
@@ -1698,7 +1697,7 @@ void DoDopplerSFX(void)
 				}
 				else 
 				{
-					if (car_ptr->controlType != 7 || SilenceThisCar(car) != 0)
+					if (car_ptr->controlType != CONTROL_TYPE_CUTSCENE || SilenceThisCar(car) != 0)
 						goto LAB_0004e984;
 
 				LAB_0004e930:
@@ -1763,25 +1762,25 @@ void DoDopplerSFX(void)
 			car_ptr = &car_data[uVar10];
 
 			if (handlingType[car_ptr->hndType].fourWheelDrive == 1 &&
-				car_ptr->controlType == 3 && car_ptr->ai.p.dying < 75 &&
+				car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying < 75 &&
 				CarHasSiren(car_ptr->ap.model) != 0)
 				goto LAB_0004eba8;
 
 			if (gCurrentMissionNumber == 0x1a) 
 			{
-				if ((car_ptr->ap.model == 4) && (car_ptr->controlType == 7))
+				if ((car_ptr->ap.model == 4) && (car_ptr->controlType == CONTROL_TYPE_CUTSCENE))
 				{
 				LAB_0004eba8:
 					uVar3 = *puVar7;
 					goto LAB_0004ebac;
 				}
 			LAB_0004eb68:
-				if (gInGameCutsceneActive != 0 && car_ptr->controlType == 7 && force_siren[*puVar7] != 0) // [A] WTF?
+				if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && force_siren[*puVar7] != 0) // [A] WTF?
 					goto LAB_0004eba8;
 			}
 			else 
 			{
-				if (gCurrentMissionNumber == 7 || car_ptr->controlType != 2 || car_ptr->ap.model > 2 || (uVar3 = *puVar7, uVar3 != 1))
+				if (gCurrentMissionNumber == 7 || car_ptr->controlType != CONTROL_TYPE_CIV_AI || car_ptr->ap.model > 2 || (uVar3 = *puVar7, uVar3 != 1))
 					goto LAB_0004eb68;
 
 			LAB_0004ebac:
@@ -1845,7 +1844,7 @@ void DoDopplerSFX(void)
 						vvar3 = p_Var9->car;
 						uVar8 = 0;
 
-						if (car_data[vvar3].controlType == 3)
+						if (car_data[vvar3].controlType == CONTROL_TYPE_PURSUER_AI)
 							uVar8 = car_data[vvar3].ai.p.dying;
 
 						SetChannelPosition3(p_Var9->chan, (VECTOR *)car_data[vvar3].hd.where.t, car_data[vvar3].st.n.linearVelocity, uVar8 * -0x1e + -3000, vvar4 * 4 - (uVar8 * 0x30 + -0x1000), 0);
@@ -1871,7 +1870,7 @@ void DoDopplerSFX(void)
 
 					uVar6 = indexlist[vvar4];
 
-					if (car_data[uVar6].controlType != 3 || car_data[uVar6].ai.p.dying == 0)
+					if (car_data[uVar6].controlType != CONTROL_TYPE_PURSUER_AI || car_data[uVar6].ai.p.dying == 0)
 						uVar8 = uVar8 | 1 << (uVar6 & 0x1f);
 
 					vvar4++;
@@ -1983,7 +1982,7 @@ void DoDopplerSFX(void)
 									}
 
 									sample = -6250;
-									if (car_data[vvar3].controlType == 2) 
+									if (car_data[vvar3].controlType == CONTROL_TYPE_CIV_AI) 
 										sample = -7000;
 
 									iVar14 = (car_data[vvar3].hd.revs << 0x10) >> 0x12;
@@ -2006,7 +2005,7 @@ void DoDopplerSFX(void)
 								else
 									psVar7 = &car_data[player[0].playerCarId].felonyRating;
 
-								if (0x292 < *psVar7)
+								if (*psVar7 > FELONY_MIN_VALUE)
 									DoPoliceLoudhailer(cars, indexlist, car_dist);
 							}
 
@@ -2122,7 +2121,7 @@ void DoDopplerSFX(void)
 				p_Var9->stopped = 0;
 				p_Var9->car = *puVar7;
 
-				if (gCurrentMissionNumber == 0x1a || car_data[p_Var9->car].controlType != 2)
+				if (gCurrentMissionNumber == 0x1a || car_data[p_Var9->car].controlType != CONTROL_TYPE_CIV_AI)
 				{
 					uVar6 = CarHasSiren(car_data[p_Var9->car].ap.model);
 					p_Var9->chan = Start3DTrackingSound(-1, (uVar6 & 0xff00) >> 8, uVar6 & 0xff, (VECTOR *)car_data[p_Var9->car].hd.where.t, car_data[p_Var9->car].st.n.linearVelocity);
@@ -2209,7 +2208,7 @@ void DoPoliceLoudhailer(int cars, ushort *indexlist, ulong *dist)
 				if (0x6000 < uVar3) 
 					dist[uVar2] = uVar3 - 0x6000;
 
-				if (car_data[uVar2].controlType == 3 && car_data[uVar2].ai.p.dying == 0 && iVar5 < loudhail_time && lVar1 == (lVar1 / 31) * 31) 
+				if (car_data[uVar2].controlType == CONTROL_TYPE_PURSUER_AI && car_data[uVar2].ai.p.dying == 0 && iVar5 < loudhail_time && lVar1 == (lVar1 / 31) * 31) 
 				{
 					Start3DTrackingSound(-1, 2, lVar1 % 2 + 13, (VECTOR *)car_data[uVar2].hd.where.t, car_data[uVar2].st.n.linearVelocity);
 					loudhail_time = 0;
@@ -2528,7 +2527,7 @@ void JerichoSpeak(void)
 		else
 			psVar3 = &car_data[player[0].playerCarId].felonyRating;
 
-		if (((0x292 < *psVar3) && (rnd == (rnd / 5) * 5)))
+		if (((*psVar3 > FELONY_MIN_VALUE) && (rnd == (rnd / 5) * 5)))
 		{
 			if (j_said > 60)
 			{
@@ -2782,7 +2781,7 @@ void SoundTasks(void)
 	if (gInGameChaseActive != 0)
 		LeadHorn(&car_data[player[0].targetCarId]); //LeadHorn(&car_data[1]);
 
-	if ((force_idle[8] != 0) && (((gCurrentMissionNumber - 0x14U < 2 || (gCurrentMissionNumber == 0x19)) || (gCurrentMissionNumber == 0x27)))) 
+	if (jericho_in_back != 0 && (gCurrentMissionNumber == 20 || gCurrentMissionNumber == 25 || gCurrentMissionNumber == 39))
 	{
 		JerichoSpeak();
 	}
@@ -2842,7 +2841,7 @@ void InitMusic(int musicnum)
 
 	copmusic = 0;
 	puts("NewLevel in InitMusic()\n");
-	AllocateReverb(3, 0x4000);
+	AllocateReverb(3, 16384);
 
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char *)musicpos, musicnum * 8, sizeof(musicpos));
@@ -3088,93 +3087,66 @@ void Tunnels(__tunnelinfo *T)
 // [D]
 void AddTunnels(int level)
 {
-	long z2;
-	long x1;
-	long z1;
-	long x2;
-	long local_18;
+	if (level == 0)
+	{
+		InitTunnels(29);
 
-	if (level == 1) 
+		AddTunnel(-0x13178, 0, -0x1e848, -0xab18, -500, -0x26f0c);
+		AddTunnel(-65000, 0, -0x1df4c, -68000, -500, -0x1e848);
+		AddTunnel(-0xbdd8, 0, -0x39dc8, -0xc4ae, -500, -0x3997c);
+		AddTunnel(-0x35af7, 0, 0xa4cfb, -0x32f07, -2000, 0xa3507);
+		AddTunnel(-0x47ef4, 0, 0x4e1e5, -0x466fc, -500, 0x4d5f5);
+		AddTunnel(-0x44df9, 0, 0x4e8ee, -0x43611, -500, 0x4d0f6);
+		AddTunnel(-0x418f6, 0, 0x4e2f4, -0x4010a, -500, 0x4cb40);
+		AddTunnel(-0x47bfe, 0, 0x4b5f8, -0x46c0e, -500, 0x4a9f8);
+		AddTunnel(-0x43f02, 0, 0x4b5f8, -0x43afe, -500, 0x4aa00);
+		AddTunnel(-0x48cfe, 0, 0x49a00, -0x468fa, -500, 0x48e00);
+		AddTunnel(-0x47506, 0, 0x48e00, -0x468fa, -500, 0x481f8);
+		AddTunnel(-0x452fa, 0, 0x489f4, -0x446fa, -500, 0x47dfc);
+		AddTunnel(-0x452fe, 0, 0x47dfc, -0x42f06, -500, 0x47200);
+		AddTunnel(-0x46e8b, 0, 0x43eec, -0x44e7f, -500, 0x432f8);
+		AddTunnel(-0x44afa, 0, 0x439f0, -0x43ede, -500, 0x42e00);
+		AddTunnel(-0x466f6, 0, 0x41af8, -0x45afa, -500, 0x40f00);
+		AddTunnel(-0x46a83, 0, 0x3f6e6, -0x4668b, -500, 0x3eafa);
+		AddTunnel(-0x488fa, 0, 0x3dafa, -0x47112, -500, 0x3cef6);
+		AddTunnel(-0x456fe, 0, 0x3dafa, -0x43f0e, -500, 0x3cef6);
+		AddTunnel(-0x418fa, 0, 0x3dafa, -0x400fe, -500, 0x3cef6);
+		AddTunnel(-0x48e02, 0, 0x3acf9, -0x46e06, -500, 0x3a101);
+		AddTunnel(-0x410fa, 0, 0x3b5f5, -0x3f906, -500, 0x3aa05);
+		AddTunnel(-0x44cf6, 0, 0x390f7, -0x448fe, -500, 0x384ff);
+		AddTunnel(-0x448fe, 0, 0x384ff, -0x43102, -500, 0x37903);
+		AddTunnel(-0x45afe, 0, 0x329f9, -0x45706, -500, 0x31dfd);
+		AddTunnel(-0x47701, 0, 0x30df8, -0x42f05, -500, 0x2f604);
+		AddTunnel(-0x41501, 0, 0x305f8, -0x40905, -500, 0x2ee00);
+		AddTunnel(-0x418fe, 0, 0x2ee00, -0x40d05, -500, 0x2d608);
+		AddTunnel(-0x351f1, 0, -0x55f12, -0x30a1d, -500, -0x57702);
+	}
+	else if (level == 1) 
 	{
 		InitTunnels(4);
+		
 		AddTunnel(-0x6153a, 0, -0x274e8, -0x5314c, 2000, -0x19258);
 		AddTunnel(0x429a0, 0, 0xa0f0, 0x3e418, 2000, 0x29298);
 		AddTunnel(-0x749a0, 0, -0x1b83c, -0x60ec8, 0x1f40, -0x206c0);
-
-		z2 = -0xae38;
-		x1 = -0x2d613;
-		z1 = -0xa1ea;
-		x2 = -0x2bdc2;
-		local_18 = -1000;
+		AddTunnel(-0x2d613, 0, -0xa1ea, -0x2bdc2, -1000, -0xae38);
 	}
-	else 
+	else if (level == 2)
 	{
-		if (level < 2) 
-		{
-			if (level != 0)
-				return;
-
-			InitTunnels(29);
-			AddTunnel(-0x13178, 0, -0x1e848, -0xab18, -500, -0x26f0c);
-			AddTunnel(-65000, 0, -0x1df4c, -68000, -500, -0x1e848);
-			AddTunnel(-0xbdd8, 0, -0x39dc8, -0xc4ae, -500, -0x3997c);
-			AddTunnel(-0x35af7, 0, 0xa4cfb, -0x32f07, -2000, 0xa3507);
-			AddTunnel(-0x47ef4, 0, 0x4e1e5, -0x466fc, -500, 0x4d5f5);
-			AddTunnel(-0x44df9, 0, 0x4e8ee, -0x43611, -500, 0x4d0f6);
-			AddTunnel(-0x418f6, 0, 0x4e2f4, -0x4010a, -500, 0x4cb40);
-			AddTunnel(-0x47bfe, 0, 0x4b5f8, -0x46c0e, -500, 0x4a9f8);
-			AddTunnel(-0x43f02, 0, 0x4b5f8, -0x43afe, -500, 0x4aa00);
-			AddTunnel(-0x48cfe, 0, 0x49a00, -0x468fa, -500, 0x48e00);
-			AddTunnel(-0x47506, 0, 0x48e00, -0x468fa, -500, 0x481f8);
-			AddTunnel(-0x452fa, 0, 0x489f4, -0x446fa, -500, 0x47dfc);
-			AddTunnel(-0x452fe, 0, 0x47dfc, -0x42f06, -500, 0x47200);
-			AddTunnel(-0x46e8b, 0, 0x43eec, -0x44e7f, -500, 0x432f8);
-			AddTunnel(-0x44afa, 0, 0x439f0, -0x43ede, -500, 0x42e00);
-			AddTunnel(-0x466f6, 0, 0x41af8, -0x45afa, -500, 0x40f00);
-			AddTunnel(-0x46a83, 0, 0x3f6e6, -0x4668b, -500, 0x3eafa);
-			AddTunnel(-0x488fa, 0, 0x3dafa, -0x47112, -500, 0x3cef6);
-			AddTunnel(-0x456fe, 0, 0x3dafa, -0x43f0e, -500, 0x3cef6);
-			AddTunnel(-0x418fa, 0, 0x3dafa, -0x400fe, -500, 0x3cef6);
-			AddTunnel(-0x48e02, 0, 0x3acf9, -0x46e06, -500, 0x3a101);
-			AddTunnel(-0x410fa, 0, 0x3b5f5, -0x3f906, -500, 0x3aa05);
-			AddTunnel(-0x44cf6, 0, 0x390f7, -0x448fe, -500, 0x384ff);
-			AddTunnel(-0x448fe, 0, 0x384ff, -0x43102, -500, 0x37903);
-			AddTunnel(-0x45afe, 0, 0x329f9, -0x45706, -500, 0x31dfd);
-			AddTunnel(-0x47701, 0, 0x30df8, -0x42f05, -500, 0x2f604);
-			AddTunnel(-0x41501, 0, 0x305f8, -0x40905, -500, 0x2ee00);
-			AddTunnel(-0x418fe, 0, 0x2ee00, -0x40d05, -500, 0x2d608);
-			z2 = -0x57702;
-			x1 = -0x351f1;
-			z1 = -0x55f12;
-			x2 = -0x30a1d;
-			local_18 = -500;
-		}
-		else 
-		{
-			if (level != 2)
-			{
-				if (level != 3)
-					return;
-
-				InitTunnels(5);
-				AddTunnel(0x24f68, 0, -0x3d374, 0x25cb0, -400, -0x398e6);
-				AddTunnel(-0x1c19c, 0, -0x2f2b0, -0x1ba94, -400, -0x20594);
-				AddTunnel(-0x118dc, 0, -0x3f7a, -0x11fb2, -400, -0x6f54);
-				AddTunnel(0x131dc, 0, -0x28fdc, 0x14212, -500, -0x297de);
-				AddTunnel(0x2a5ee, 0, 0x3c668, 0x2b624, -500, 0x3be34);
-				return;
-			}
-			InitTunnels(2);
-			AddTunnel(0x2678a, 0, 0xb4b9a, 0x2918a, -2000, 0xb139b);
-			z2 = 0xb06da;
-			x1 = 0x28550;
-			z1 = 0xb139b;
-			x2 = 0x2918a;
-			local_18 = -2000;
-		}
+		InitTunnels(2);
+		
+		AddTunnel(0x2678a, 0, 0xb4b9a, 0x2918a, -2000, 0xb139b);
+		AddTunnel(0x28550, 0, 0xb139b, 0x2918a, -2000, 0xb06da);
 	}
-
-	AddTunnel(x1, 0, z1, x2, local_18, z2);
+	else if (level == 3)
+	{
+		InitTunnels(5);
+		
+		AddTunnel(0x24f68, 0, -0x3d374, 0x25cb0, -400, -0x398e6);
+		AddTunnel(-0x1c19c, 0, -0x2f2b0, -0x1ba94, -400, -0x20594);
+		AddTunnel(-0x118dc, 0, -0x3f7a, -0x11fb2, -400, -0x6f54);
+		AddTunnel(0x131dc, 0, -0x28fdc, 0x14212, -500, -0x297de);
+		AddTunnel(0x2a5ee, 0, 0x3c668, 0x2b624, -500, 0x3be34);
+	}
 }
 
 

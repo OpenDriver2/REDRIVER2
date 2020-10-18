@@ -3,13 +3,11 @@
 #include "CARS.H"
 #include "CAMERA.H"
 #include "BCOLLIDE.H"
-#include "BCOLL3D.H"
 #include "EVENT.H"
 #include "MAP.H"
 #include "DRAW.H"
 #include "HANDLING.H"
 #include "MODELS.H"
-#include "MISSION.H"
 #include "PEDEST.H"
 #include "SPOOL.H"
 #include "CELL.H"
@@ -72,7 +70,7 @@
 	/* end block 2 */
 	// End Line: 127
 
-// [D] [A] might be bugged
+// [D] [T]
 char CellEmpty(VECTOR *pPosition, int radius)
 {
 	PACKED_CELL_OBJECT* ppco;
@@ -81,70 +79,168 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	int num_cb;
 	int box_loop;
 	int sphere_sq;
-	int iVar1;
-	int iVar2;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	int* piVar6;
-	int iVar7;
-	int iVar8;
+	int zd;
+	int sn;
+	int ypos;
+	int cs;
 	COLLISION_PACKET* collide;
-	int iVar9;
-	int iVar10;
-	int iVar11;
+	int xs;
+	int zs;
+	int xd;
+	int cell_x, cell_z;
 	CELL_ITERATOR ci;
 
-	iVar3 = pPosition->vx + units_across_halved;
-	iVar1 = pPosition->vz + units_down_halved;
+	cell_x = (pPosition->vx + units_across_halved) / 2048;
+	cell_z = (pPosition->vz + units_down_halved) / 2048;
 
-	ppco = GetFirstPackedCop(iVar3 >> 0xb, iVar1 >> 0xb, &ci, 0);
+	ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
 	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
 
-	do {
-		if (!pCellObject) 
-			return 1;
-	
+	while(pCellObject)
+	{
 		pModel = modelpointers[pCellObject->type];
 
-		piVar6 = (int*)pModel->collision_block;
-
-		if (piVar6 != NULL)
+		if (pModel->collision_block > 0)
 		{
-			num_cb = *piVar6;
+			num_cb = *(int*)pModel->collision_block;
 
-			iVar11 = ((pCellObject->pos.vx - pPosition->vx) * 0x10000) >> 0x10;
-			iVar1 = ((pCellObject->pos.vz - pPosition->vz) * 0x10000) >> 0x10;
+			xd = (pCellObject->pos.vx - pPosition->vx);
+			zd = (pCellObject->pos.vz - pPosition->vz);
 
 			sphere_sq = pModel->bounding_sphere + 580;
 			sphere_sq = (sphere_sq * sphere_sq);
 
-			collide = (COLLISION_PACKET*)(piVar6 + 1);
+			collide = (COLLISION_PACKET*)(pModel->collision_block + sizeof(int));
 
-			if (iVar11 * iVar11 + iVar1 * iVar1 < sphere_sq)
+			if (xd * xd + zd * zd < sphere_sq)
 			{
 				box_loop = 0;
 
 				while (box_loop < num_cb)
 				{
-					iVar10 = collide->zsize * 0x800 + radius * 0x1000;
-					iVar9 = collide->xsize * 0x800 + radius * 0x1000;
-					uVar4 = (pCellObject->yang + collide->yang) * 0x100 & 0x3f00;
-					iVar7 = pPosition->vy + ((int)(((uint) * (ushort*)&(pCellObject->pos).vy + (uint)(ushort)collide->ypos) * 0x10000) >> 0x10) + 0x50;
+					// [A] ORIGINAL
+					/*
+					zs = collide->zsize * 0x800 + radius * 0x1000;
+					xs = collide->xsize * 0x800 + radius * 0x1000;
 
-					if (iVar7 < 0)
-						iVar7 = -iVar7;
+					theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
 
-					iVar8 = (int)*(short*)((int)rcossin_tbl + uVar4 + 2);
-					iVar5 = (int)*(short*)((int)rcossin_tbl + uVar4);
-					iVar2 = (uint)(ushort)collide->ysize << 0x10;
+					cs = rcossin_tbl[theta * 2 + 1];
+					sn = rcossin_tbl[theta * 2];
+					*/
 
-					if (((iVar7 < ((iVar2 >> 0x10) - (iVar2 >> 0x1f) >> 1) + 0x3c) &&
-						((uint)((iVar11 * iVar8 - iVar1 * iVar5) + iVar9) < (uint)(iVar9 * 2))) &&
-						((uint)(iVar1 * iVar8 + iVar11 * iVar5 + iVar10) < (uint)(iVar10 * 2))) 
+					// [A] NEW
+					int xxd, zzd;
+					int yang;
+					int theta;
+					MATRIX2* mat;
+
+					yang = -pCellObject->yang & 0x3f;
+					theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+
+					mat = &matrixtable[yang];
+
+					cs = rcossin_tbl[theta * 2 + 1];
+					sn = rcossin_tbl[theta * 2];
+
+					xxd = FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]);
+					zzd = FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]);
+
+					xd = (pCellObject->pos.vx - pPosition->vx) + xxd;
+					zd = (pCellObject->pos.vz - pPosition->vz) + zzd;
+
+					zs = (collide->zsize * 2048 + radius * 4096);
+					xs = (collide->xsize * 2048 + radius * 4096);
+
+					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
+					
+#ifdef COLLISION_DEBUG
+					int result = 0;
+
+					if (collide->ysize / 2 + 60 > ABS(ypos) &&
+						xs * 2 > ABS(xd * cs - zd * sn) + xs &&
+						zs * 2 > ABS(zd * cs + xd * sn) + zs)
+					{
+						result = 1;
+					}
+
+					extern int gShowCollisionDebug;
+					if (gShowCollisionDebug == 3)
+					{
+						CDATA2D cd[1];
+
+						cd[0].x.vx = (pCellObject->pos.vx + xxd);//FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						cd[0].x.vz = (pCellObject->pos.vz + zzd);//FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						cd[0].x.vy = pPosition->vy;
+
+						cd[0].theta = theta; // (pCellObject->yang + collide->yang) * 64 & 0xfff;
+						cd[0].length[0] = collide->zsize / 2;
+						cd[0].length[1] = collide->xsize / 2;
+
+						// calc axes of box
+						int dtheta = cd[0].theta & 0xfff;
+
+						cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
+						cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+
+						cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
+						cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+
+						extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+						extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+						CVECTOR ggcv = { 0, 250, 0 };
+						CVECTOR rrcv = { 250, 0, 0 };
+						CVECTOR yycv = { 250, 250, 0 };
+
+						// show both box axes
+						{
+							VECTOR _zero = { 0 };
+							VECTOR b1p = cd[0].x;
+
+							// show position to position
+							//Debug_AddLine(b1p1, b2p1, yycv);
+
+							VECTOR b1ax[2] = { {0} , {0} };
+							b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+							b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+							b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+							b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+
+							// show axis of body 1
+							Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+							Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+							// display 2D box 1
+							{
+								int h = b1ax[0].vy;
+								VECTOR box_points[4] = {
+									{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+									{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+									{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+									{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+								};
+
+								Debug_AddLineOfs(box_points[0], box_points[1], b1p, result ? rrcv : ggcv);
+								Debug_AddLineOfs(box_points[1], box_points[2], b1p, result ? rrcv : ggcv);
+								Debug_AddLineOfs(box_points[2], box_points[3], b1p, result ? rrcv : ggcv);
+								Debug_AddLineOfs(box_points[3], box_points[0], b1p, result ? rrcv : ggcv);
+							}
+						}
+					}
+
+					if (result)
+						return 0;
+#else
+					if (collide->ysize / 2 + 60 > ABS(ypos) &&
+						xs * 2 > ABS(xd * cs - zd * sn) + xs &&
+						zs * 2 > ABS(zd * cs + xd * sn) + zs)
 					{
 						return 0;
 					}
+#endif
 
 					box_loop++;
 					collide++;
@@ -154,10 +250,9 @@ char CellEmpty(VECTOR *pPosition, int radius)
 
 		ppco = GetNextPackedCop(&ci);
 		pCellObject = UnpackCellObject(ppco, &ci.nearCell);
+	}
 
-	} while (true);
-
-	return 0;
+	return 1;
 }
 
 
@@ -196,36 +291,27 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	/* end block 4 */
 	// End Line: 1774
 
-// [D]
+// [D] [T]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
-	uint uVar4;
-	uint uVar5;
-	int iVar6;
+	int cellZ;
+	int cellX;
+	int cbrZ;
+	int cbrX;
+	int cbr;
 
-	iVar1 = pPosition->vx + units_across_halved;
-	iVar3 = iVar1 - 1024;
+	cellX = (pPosition->vx + units_across_halved - 1024) / 2048;
+	cellZ = (pPosition->vz + units_down_halved - 1024) / 2048;
+	
+	cbrX = cellX / 32;
+	cbrZ = cellZ / 32;
 
-	iVar1 = pPosition->vz + units_down_halved;
-	iVar2 = iVar1 - 1024;
-	iVar3 = iVar3 >> 0xb;
+	cbr = (cbrX & 1) + (cbrZ & 1) * 2;
 
-	iVar2 = iVar2 >> 0xb;
-	iVar1 = iVar3;
-
-	uVar5 = iVar1 >> 5;
-	iVar1 = iVar2;
-
-	uVar4 = iVar1 >> 5;
-	iVar6 = (uVar5 & 1) + (uVar4 & 1) * 2;
-
-	if (RoadMapRegions[iVar6] != uVar5 + uVar4 * (cells_across >> 5))
+	if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / 32)) 
 		return -1;
 
-	return cell_ptrs[(iVar2 - uVar4 * 32) * 32 + iVar6 * 1024 + iVar3 - uVar5 * 32];
+	return cell_ptrs[(cellZ - cbrZ * 32) * 32 + cbr * 1024 + cellX - cbrX * 32];
 }
 
 
@@ -251,19 +337,13 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	/* end block 3 */
 	// End Line: 1836
 
-// [D]
+// [D] [T]
 char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 {
-	char cVar1;
-	int iVar2;
+	if (GlobalPositionToCellNumber(pPosition) == -1)
+		return 1;
 
-	iVar2 = GlobalPositionToCellNumber(pPosition);
-	if (iVar2 == -1)
-		cVar1 = 1;
-	else
-		cVar1 = CellEmpty(pPosition, radius);
-
-	return cVar1;
+	return CellEmpty(pPosition, radius);
 }
 
 
@@ -308,13 +388,11 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 	/* end block 4 */
 	// End Line: 507
 
-// [D]
+// [D] [T]
 int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 {
-	int iVar1;
 	int dir;
-	int iVar3;
-	int local_t0_36;
+	int d;
 	int i;
 
 	tRange inside;
@@ -326,7 +404,7 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 
 	i = 0;
 	do {
-		local_t0_36 = -1;
+		d = -1;
 
 		cabbage.lower = bbox->slab[i].lower - ray->org[i];
 		cabbage.upper = bbox->slab[i].upper - ray->org[i];
@@ -334,9 +412,9 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 		dir = ray->dir[i];
 
 		if (dir > -1) 
-			local_t0_36 = (dir != 0);
+			d = (dir != 0);
 
-		if (local_t0_36 == 0) 
+		if (d == 0) 
 		{
 			if (cabbage.lower > 0)
 				return 0;
@@ -347,12 +425,12 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 			scaledCabbage.upper = 0x3000;
 			scaledCabbage.lower = -0x3000;
 		}
-		else if (local_t0_36 == -1)
+		else if (d == -1)
 		{
 			scaledCabbage.upper = (cabbage.lower * 4096) / dir;
 			scaledCabbage.lower = (cabbage.upper * 4096) / dir;
 		}
-		else if (local_t0_36 == 1)
+		else if (d == 1)
 		{
 			scaledCabbage.lower = (cabbage.lower * 4096) / dir;
 			scaledCabbage.upper = (cabbage.upper * 4096) / dir;
@@ -478,23 +556,23 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 
 int testRadius = 222;
 
-// [D]
+// [D] [T]
 char lineClear(VECTOR *v1, VECTOR *v2)
 {
 	PACKED_CELL_OBJECT* ppco;
 	CELL_OBJECT* pCellObject;
 	MATRIX2* mat;
-	int pos_z;
 	int cell_z;
 	int cell_x;
-	int local_a0_592;
+	int yang;
 	MODEL* pModel;
-	int* piVar2;
-	int local_a3_704;
-	int iVar3;
+	int theta;
+	
+	int dx,dz;
+
 	int cs;
 	int sn;
-	int iVar4;
+
 	COLLISION_PACKET* collide;
 	VECTOR pos;
 	VECTOR va;
@@ -546,32 +624,31 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 			while (pCellObject = UnpackCellObject(ppco, &ci.nearCell), pCellObject != NULL)
 			{
 				pModel = modelpointers[pCellObject->type];
-				piVar2 = (int*)pModel->collision_block;
 
 				xd = ((pCellObject->pos.vx - ((va.vx + vb.vx) / 2 & 0xffffU)) * 0x10000) >> 0x10;
 				zd = ((pCellObject->pos.vz - ((va.vz + vb.vz) / 2 & 0xffffU)) * 0x10000) >> 0x10;
 
 				sphere_sq = pModel->bounding_sphere + 800;
 
-				if (piVar2 != NULL && (pModel->flags2 & 0xA00) == 0 && (xd*xd + zd*zd < sphere_sq*sphere_sq))
+				if (pModel->collision_block > 0 && (pModel->flags2 & 0xA00) == 0 && (xd*xd + zd*zd < sphere_sq*sphere_sq))
 				{
-					collide = (COLLISION_PACKET*)(piVar2 + 1);
-
-					num_cb = *piVar2;
+					num_cb = *(int*)pModel->collision_block;
 					box_loop = 0;
+
+					collide = (COLLISION_PACKET*)(pModel->collision_block + sizeof(int));
 
 					while (box_loop < num_cb)
 					{
-						local_a0_592 = -pCellObject->yang & 0x3f;
-						local_a3_704 = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+						yang = -pCellObject->yang & 0x3f;
+						theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
 
-						mat = &matrixtable[local_a0_592];
+						mat = &matrixtable[yang];
 
-						cs = rcossin_tbl[local_a3_704 * 2 + 1];
-						sn = rcossin_tbl[local_a3_704 * 2];
+						cs = rcossin_tbl[theta * 2 + 1];
+						sn = rcossin_tbl[theta * 2];
 
-						iVar4 = va.vx - (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-						iVar3 = va.vz - (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						dx = va.vx - (pCellObject->pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						dz = va.vz - (pCellObject->pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						
 						box.slab[0].upper = collide->xsize / 2 +testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
@@ -582,12 +659,12 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						box.slab[2].upper = collide->zsize / 2 +testRadius;
 						box.slab[2].lower = -box.slab[2].upper;
 
-						ray.org[0] = FIXED(cs * iVar4 - sn * iVar3);
-						ray.org[2] = FIXED(cs * iVar3 + sn * iVar4);
+						ray.org[0] = FIXEDH(cs * dx - sn * dz);
+						ray.org[2] = FIXEDH(cs * dz + sn * dx);
 						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
 
-						ray.dir[0] = FIXED(cs * pos.vx - sn * pos.vz);
-						ray.dir[2] = FIXED(cs * pos.vz + sn * pos.vx);
+						ray.dir[0] = FIXEDH(cs * pos.vx - sn * pos.vz);
+						ray.dir[2] = FIXEDH(cs * pos.vz + sn * pos.vx);
 						ray.dir[1] = vb.vy - va.vy;
 
 #if defined(COLLISION_DEBUG)
@@ -598,8 +675,8 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						{
 							CDATA2D cd[1];
 
-							cd[0].x.vx = (pCellObject->pos.vx + FIXED(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-							cd[0].x.vz = (pCellObject->pos.vz + FIXED(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+							cd[0].x.vx = (pCellObject->pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+							cd[0].x.vz = (pCellObject->pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 							cd[0].x.vy = va.vy;
 
 							cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
@@ -631,10 +708,10 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 								//Debug_AddLine(b1p1, b2p1, yycv);
 
 								VECTOR b1ax[2] = { {0} , {0} };
-								b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
-								b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
-								b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
-								b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+								b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+								b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+								b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+								b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
 
 								// show axis of body 1
 								Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
@@ -718,7 +795,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	/* end block 5 */
 	// End Line: 2230
 
-// [D]
+// [D] [T]
 void SetCopListCell(int x, int z)
 {
 	XZPAIR cell;
@@ -744,7 +821,7 @@ void SetCopListCell(int x, int z)
 	/* end block 2 */
 	// End Line: 2249
 
-// [D]
+// [D] [T]
 void BuildCollisionCopList(int *count)
 {
 	CollisionCopList(NULL, count);
@@ -796,7 +873,7 @@ void BuildCollisionCopList(int *count)
 	/* end block 3 */
 	// End Line: 1240
 
-// [D]
+// [D] [T]
 void CollisionCopList(XZPAIR *pos, int *count)
 {
 	static XZPAIR initial;
@@ -808,6 +885,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 	XZPAIR cell;
 	CELL_ITERATOR ci;
 	XZPAIR cbr;
+	MODEL* model;
 
 	if (pos == NULL)
 	{
@@ -817,35 +895,46 @@ void CollisionCopList(XZPAIR *pos, int *count)
 		do {
 			j = 0;
 
-			i++;
 			cell.z = initial.z;
 
 			do {
-				j++;
-
+				cbr.x = cell.x / 32;
+				cbr.z = cell.z / 32;
+				
 				// [A] FIXME: replace with 'cell_header.region_size'
-				if ((cell.x / 32) + (cell.z / 32) * (cells_across / 32) == RoadMapRegions[((cell.x / 32) & 1) + ((cell.z / 32) & 1) * 2])
+				if (cbr.x + cbr.z * (cells_across / 32) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
 					cop = UnpackCellObject(ppco, &ci.nearCell);
 
 					while (cop != NULL)
 					{
-						coplist[*count] = cop;
-						cop->pad = *(unsigned char *)count;
-						pcoplist[*count] = ci.ppco;
+						cop->pad = *count;
+
+						model = modelpointers[cop->type];
+						
+						if (model->collision_block > 0 &&
+							model->num_vertices-3 < 300 && 
+							model->num_point_normals < 300 &&
+							model->num_polys < 300 &&
+							*(int *)model->collision_block > 0)
+						{
+							coplist[*count] = cop;
+							pcoplist[*count] = ci.ppco;
+							(*count)++;
+						}
 
 						ppco = GetNextPackedCop(&ci);
 						cop = UnpackCellObject(ppco, &ci.nearCell);
-
-						*count = *count + 1;
 					}
 				}
 
 				cell.z++;
+				j++;
 			} while (j < 2);
 
 			cell.x++;
+			i++;
 		} while (i < 2);
 	}
 	else
@@ -913,35 +1002,27 @@ extern int boxOverlap;
 ushort gLastModelCollisionCheck;
 int ExBoxDamage = 0;
 
-// [D]
+// [D] [T]
 void CheckScenaryCollisions(_CAR_DATA *cp)
 {
-	long lVar1;
-	long lVar2;
-	int iVar3;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int uVar9;
-	int iVar10;
-	int *piVar11;
-	int iVar12;
-	int iVar13;
+	int count;
+	int num_cb;
+	int coll_test_count;
+	int yang;
+	int minDist;
 	COLLISION_PACKET *collide;
 	CELL_OBJECT *cop;
 	VECTOR player_pos;
 	BUILDING_BOX bbox;
-	XZPAIR box;
-	VECTOR offset;
+	XZPAIR cell;
 	int mdcount;
 	MODEL *model;
-	int num_cb;
-	int x1;
 	int lbody;
 	int extraDist;
-
-	if (cp->controlType == 5 && cp->ap.carCos == NULL)
+	int sphereSq;
+	int dx, dz;
+	
+	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER || cp->ap.carCos == NULL)
 		lbody = 360;
 	else
 		lbody = cp->ap.carCos->colBox.vz;
@@ -952,164 +1033,150 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 			trap(0x400);
 	}
 
-	if (ghost_mode == 0 && (cp->controlType != 1 || playerghost == 0))
-	{
-		EventCollisions(cp, 0);
+	if (ghost_mode != 0 || cp->controlType == CONTROL_TYPE_PLAYER && playerghost != 0)
+		return;
 
-		lVar2 = car_data[0].hd.where.t[2];
-		lVar1 = car_data[0].hd.where.t[0];
+	EventCollisions(cp, 0);
 
+	player_pos.vx = cp->hd.where.t[0];
+	player_pos.vz = cp->hd.where.t[2];
+
+	boxOverlap = -1;
+
+	if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER)
+		extraDist = 100;
+	else
 		extraDist = 580;
 
-		iVar10 = cp->hd.where.t[0];
-		iVar12 = cp->hd.where.t[2];
+	// [A] FIXME: replace with 'cell_header.cell_size'
+	cell.x = (player_pos.vx + units_across_halved - 1024) / 2048;
+	cell.z = (player_pos.vz + units_down_halved - 1024) / 2048;
 
-		boxOverlap = -1;
+	SetCopListCell(cell.x, cell.z);
 
-		if (cp->controlType == 6)
-			extraDist = 100;
+	mdcount = 0;
+	Havana3DOcclusion(BuildCollisionCopList, &mdcount);
+		
+	count = 0;
+	while (count < mdcount + event_models_active)
+	{
+		if (count < mdcount)
+			cop = coplist[count];
+		else
+			cop = &EventCop[count - mdcount];
 
-		iVar3 = iVar10 + units_across_halved;
-		iVar6 = iVar3 - 1024;
+		model = modelpointers[cop->type];
 
-		//if (iVar6 < 0)
-		//	iVar6 = iVar3 + 1023;
-
-		iVar3 = iVar12 + units_down_halved;
-		iVar8 = iVar3 - 1024;
-
-		//if (iVar8 < 0)
-		//	iVar8 = iVar3 + 1023;
-
-		// [A] FIXME: replace with 'cell_header.cell_size'
-		SetCopListCell(iVar6 / 2048, iVar8 / 2048);
-
-		mdcount = 0;
-		Havana3DOcclusion(BuildCollisionCopList, &mdcount);
-
-		x1 = 0;
-		if (0 < mdcount + event_models_active)
+		if (model->collision_block > 0 &&
+			model->num_vertices-3 < 300 && 
+			model->num_point_normals < 300 &&
+			model->num_polys < 300)
 		{
-			do {
-				if (x1 < mdcount)
-					cop = coplist[x1];
-				else
-					cop = &EventCop[x1 - mdcount];
 
-				model = modelpointers[cop->type];
-				iVar3 = x1 + 1;
+			dx = cop->pos.vx - player_pos.vx;
+			dz = cop->pos.vz - player_pos.vz;
+					
+			sphereSq = model->bounding_sphere + extraDist + cp->hd.speed;
 
-				if (model->collision_block > 0 &&
-					model->num_vertices-3 < 300 && 
-					model->num_point_normals < 300 &&
-					model->num_polys < 300)
+			if (dx * dx + dz * dz < sphereSq * sphereSq)
+			{
+				num_cb = *(int *)model->collision_block;	// box count
+				collide = (COLLISION_PACKET*)(model->collision_block + sizeof(int));
+
+				while(num_cb--)
 				{
-					iVar8 = cop->pos.vx - iVar10;
-					iVar7 = cop->pos.vz - iVar12;
-					iVar6 = model->bounding_sphere + extraDist + cp->hd.speed;
+					yang = -cop->yang & 0x3f;
 
-					if (iVar8 * iVar8 + iVar7 * iVar7 < iVar6 * iVar6)
+					// box 'rotated' by matrix
+					// [A] FIXME: replace add+shift by division
+					bbox.pos.vx = cop->pos.vx + FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]);
+					bbox.pos.vy = cop->pos.vy + collide->ypos;
+					bbox.pos.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]);
+
+					bbox.pos.pad = (model->flags2 >> 10) & 1;
+
+					bbox.xsize = (collide->zsize >> 1);
+					bbox.zsize = (collide->xsize >> 1);
+
+					bbox.height = collide->ysize;
+					bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
+
+					gLastModelCollisionCheck = cop->type;
+
+					if (CAR_INDEX(cp) == 21)
 					{
-						iVar6 = *(int *)model->collision_block;	// box count
-						collide = (COLLISION_PACKET*)(model->collision_block + 4);
-
-						for (int i = 0; i < iVar6; i++)
+						if (count >= mdcount && cop->pad != 0)
 						{
-							uVar9 = -cop->yang & 0x3f;
-
-							// box 'rotated' by matrix
-							// [A] FIXME: replace add+shift by division
-							bbox.pos.vx = cop->pos.vx + FIXED(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
-							bbox.pos.vy = cop->pos.vy + collide->ypos;
-							bbox.pos.vz = cop->pos.vz + FIXED(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
-
-							bbox.pos.pad = (model->flags2 >> 10) & 1;
-
-							//iVar7 = collide->zsize << 0x10;
-							bbox.xsize = collide->zsize / 2; // (iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
-
-							//iVar7 = collide->xsize << 0x10;
-							bbox.zsize = collide->xsize / 2;// //;(iVar7 >> 0x10) - (iVar7 >> 0x1f) >> 1;
-
-							bbox.height = collide->ysize;
-							bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
-
-							gLastModelCollisionCheck = cop->type;
-
-							if (CAR_INDEX(cp) == 21)
+							if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
 							{
-								if (x1 < mdcount || (cop->pad == 0))
-								{
-									CarBuildingCollision(cp, &bbox, cop, 0);
-								}
-								else
-								{
-									if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
-									{
-										if (!bKillTanner)
-											player[0].dying = 1;
+								if (!bKillTanner)
+									player[0].dying = 1;
 
-										bKillTanner = 1;
-									}
-								}
+								bKillTanner = 1;
 							}
-							else if (cp->controlType == 5)
-							{
-								if ((model->flags2 & 0xa00) == 0 && (100 < bbox.xsize || (100 < bbox.zsize)))
-								{
-									iVar7 = 5;
-									bbox.xsize += 100;
-									bbox.zsize += 100;
-
-									boxOverlap = -1;
-
-									while ((iVar13 = lbody / 2, iVar13 <= gCameraDistance &&
-										CarBuildingCollision(cp, &bbox, cop, 0) && 0 < iVar7))
-									{
-										gCameraDistance -= boxOverlap;
-										if (gCameraDistance < iVar13)
-											gCameraDistance = iVar13;
-
-										iVar13 = gCameraDistance;
-										uVar9 = cp->hd.direction & 0xfff;
-
-										cp->hd.where.t[0] = lVar1 + FIXED((gCameraDistance * rcossin_tbl[uVar9 * 2]) / 2);
-										cp->hd.where.t[2] = lVar2 + FIXED((iVar13 * rcossin_tbl[uVar9 * 2 + 1]) / 2);
-										iVar7--;
-									}
-								}
-							}
-							else
-							{
-								if (x1 < mdcount || cop->pad == 0)
-								{
-									if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
-										cp->ap.needsDenting = 1;
-								}
-								else
-								{
-									cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
-									
-									if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? 0x2 : 0) != 0)
-									{
-										cp->ap.needsDenting = 1;
-									}
-
-									//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
-								}
-							}
-
-							collide++;
-						};
+						}
+						else
+						{
+							CarBuildingCollision(cp, &bbox, cop, 0);
+						}
 					}
+					else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
+					{
+						if ((model->flags2 & 0xa00) == 0 && (bbox.xsize > 100 || (bbox.zsize > 100)))
+						{
+							coll_test_count = 5;
+							
+							bbox.xsize += 100;
+							bbox.zsize += 100;
+
+							boxOverlap = -1;
+
+							minDist = lbody / 2;
+							
+							while (coll_test_count > 0 && minDist <= gCameraDistance && CarBuildingCollision(cp, &bbox, cop, 0))
+							{
+								gCameraDistance -= boxOverlap;
+										
+								if (gCameraDistance < minDist)
+									gCameraDistance = minDist;
+
+								yang = cp->hd.direction & 0xfff;
+
+								cp->hd.where.t[0] = car_data[0].hd.where.t[0] + FIXEDH((gCameraDistance * rcossin_tbl[yang * 2]) / 2);
+								cp->hd.where.t[2] = car_data[0].hd.where.t[2] + FIXEDH((gCameraDistance * rcossin_tbl[yang * 2 + 1]) / 2);
+								
+								coll_test_count--;
+							}
+						}
+					}
+					else
+					{
+						if (count >= mdcount && cop->pad != 0)
+						{
+							cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
+									
+							if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? 0x2 : 0) != 0)
+							{
+								cp->ap.needsDenting = 1;
+							}
+
+							//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
+						}
+						else
+						{
+							if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
+								cp->ap.needsDenting = 1;
+						}
+					}
+
+					collide++;
 				}
-
-				x1 = iVar3;
-			} while (iVar3 < mdcount + event_models_active);
+			}
 		}
-
-		EventCollisions(cp, 1);
+		count++;
 	}
+
+	EventCollisions(cp, 1);
 }
 
 
@@ -1162,206 +1229,190 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 1892
 
-// [D]
+// [D] [T]
 int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 {
 	CDATA2D cd[2] = { 0 };
-	bool bVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int count;
+	int num_cb;
 	MODEL *model;
-	uint uVar9;
-	int iVar10;
-	int *piVar11;
-	int iVar12;
-	int iVar13;
+	uint yang;
+	int sphereSq;
 	COLLISION_PACKET *collide;
 	CELL_OBJECT *cop;
+	XZPAIR cell;
 	VECTOR player_pos;
 	BUILDING_BOX bbox;
 	VECTOR offset;
 	int mdcount;
+	int dx, dz;
 
-	iVar5 = pPos->vx;
 	boxOverlap = -1;
-	iVar12 = pPos->vz;
-	iVar13 = iVar5 + units_across_halved;
-	iVar4 = iVar13 - 0x400;
-	iVar13 = iVar12 + units_down_halved;
-	iVar7 = iVar13 - 0x400;
 
-	SetCopListCell(iVar4 / 2048, iVar7 / 2048);
+	player_pos.vx = pPos->vx;
+	player_pos.vz = pPos->vz;
+
+	cell.x = (player_pos.vx + units_across_halved - 1024) / 2048;
+	cell.z = (player_pos.vz + units_down_halved - 1024) / 2048;
+	
+	SetCopListCell(cell.x, cell.z);
 	mdcount = 0;
 
 	Havana3DOcclusion(BuildCollisionCopList, &mdcount);
-	iVar4 = 0;
 
-	if (0 < mdcount + event_models_active)
+	count = 0;
+
+	while (count < mdcount + event_models_active)
 	{
-		bVar1 = 0 < mdcount;
-		do {
-			if (bVar1)
-				cop = coplist[iVar4];
-			else
-				cop = EventCop + (iVar4 - mdcount);
+		if (count < mdcount)
+			cop = coplist[count];
+		else
+			cop = EventCop + (count - mdcount);
 
-			model = modelpointers[cop->type];
+		count++;
 
-			if (model->collision_block > 0 &&
-				model->num_vertices - 3 < 300 && 
-				model->num_point_normals < 300 && 
-				model->num_polys < 300)
+		model = modelpointers[cop->type];
+
+		if (model->collision_block > 0 &&
+			model->num_vertices - 3 < 300 && 
+			model->num_point_normals < 300 && 
+			model->num_polys < 300)
+		{
+			sphereSq = model->bounding_sphere + extra;
+			
+			dx = cop->pos.vx - player_pos.vx;
+			dz = cop->pos.vz - player_pos.vz;
+
+			if (dx * dx + dz * dz < sphereSq * sphereSq)
 			{
-				piVar11 = (int *)model->collision_block;
+				num_cb = *(int *)model->collision_block;
+				collide = (COLLISION_PACKET*)(model->collision_block + sizeof(int));
 
-				iVar13 = model->bounding_sphere + extra;
-				iVar7 = cop->pos.vx - iVar5;
-				iVar6 = cop->pos.vz - iVar12;
-
-				if (iVar7 * iVar7 + iVar6 * iVar6 < iVar13 * iVar13)
+				while(num_cb--)
 				{
-					iVar7 = *(int *)model->collision_block;
-					collide = (COLLISION_PACKET*)(model->collision_block + 4);
+					yang = -cop->yang & 0x3f;
+					
+					bbox.pos.vy = cop->pos.vy + collide->ypos;
 
-					for (int i = 0; i < iVar7; i++)
+					if (ABS(pPos->vy + bbox.pos.vy) < collide->ysize / 2)
 					{
-						uVar9 = -cop->yang & 0x3f;
-						bbox.pos.vy = cop->pos.vy + collide->ypos;
-						iVar2 = collide->zsize;
-						iVar3 = collide->xsize;
-						iVar10 = collide->ysize;
-						iVar6 = pPos->vy + bbox.pos.vy;
+						gLastModelCollisionCheck = cop->type;
 
-						if (iVar6 < 0)
-							iVar6 = -iVar6;
+						cd[0].theta = dir;
+						cd[0].length[0] = l;
+						cd[0].length[1] = w;
 
-						if (iVar6 < (iVar10) / 2)
-						{
-							gLastModelCollisionCheck = cop->type;
+						cd[0].x.vx = pPos->vx;
+						cd[0].x.vz = pPos->vz;
 
-							cd[0].theta = dir;
-							cd[0].length[0] = l;
-							cd[0].length[1] = w;
+						cd[0].vel.vx = 0;
+						cd[0].vel.vz = 0;
 
-							cd[0].x.vx = pPos->vx;
-							cd[0].x.vz = pPos->vz;
+						offset.vx = cop->pos.vx + FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]);
+						offset.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]);
 
-							cd[0].vel.vx = 0;
-							cd[0].vel.vz = 0;
+						cd[1].theta = (cop->yang + collide->yang) * 64 & 0xfff;
 
-							offset.vx = cop->pos.vx + FIXED(collide->xpos * matrixtable[uVar9].m[0][0] + collide->zpos * matrixtable[uVar9].m[2][0]);
-							offset.vz = cop->pos.vz + FIXED(collide->xpos * matrixtable[uVar9].m[0][2] + collide->zpos * matrixtable[uVar9].m[2][2]);
+						cd[1].length[0] = collide->zsize / 2 + 100;
+						cd[1].length[1] = collide->xsize / 2 + 100;
 
-							cd[1].theta = (cop->yang + collide->yang) * 64 & 0xfff;
+						cd[1].x.vx = pPos->vx + (((offset.vx - pPos->vx) << 0x10) >> 0x10);
+						cd[1].x.vz = pPos->vz + (((offset.vz - pPos->vz) << 0x10) >> 0x10);
 
-							cd[1].length[0] = collide->zsize / 2 + 100;
-							cd[1].length[1] = collide->xsize / 2 + 100;
+						cd[1].vel.vx = 0;
+						cd[1].vel.vz = 0;
+						cd[1].avel = 0;
 
-							cd[1].x.vx = pPos->vx + (((offset.vx - pPos->vx) << 0x10) >> 0x10);
-							cd[1].x.vz = pPos->vz + (((offset.vz - pPos->vz) << 0x10) >> 0x10);
-
-							cd[1].vel.vx = 0;
-							cd[1].vel.vz = 0;
-							cd[1].avel = 0;
-
-							int res = bcollided2d(cd, 1);
+						int res = bcollided2d(cd, 1);
 							
 #if defined(COLLISION_DEBUG) && !defined(PSX)
-							extern int gShowCollisionDebug;
-							if (gShowCollisionDebug == 1)
+						extern int gShowCollisionDebug;
+						if (gShowCollisionDebug == 1)
+						{
+							extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
+							extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+
+							CVECTOR bbcv = { 0, 0, 250 };
+							CVECTOR rrcv = { 250, 0, 0 };
+							CVECTOR yycv = { 250, 250, 0 };
+
+							// show both box axes
 							{
-								extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
-								extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+								VECTOR _zero = { 0 };
+								VECTOR b1p = cd[0].x;
+								VECTOR b2p = cd[1].x;
+								b2p.vy = b1p.vy;
 
-								CVECTOR bbcv = { 0, 0, 250 };
-								CVECTOR rrcv = { 250, 0, 0 };
-								CVECTOR yycv = { 250, 250, 0 };
+								// show position to position
+								//Debug_AddLine(b1p1, b2p1, yycv);
 
-								// show both box axes
+								VECTOR b1ax[2] = { {0} , {0} };
+								b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+								b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+								b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+								b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+
+								// show axis of body 1
+								Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+								Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+								// display 2D box 1
 								{
-									VECTOR _zero = { 0 };
-									VECTOR b1p = cd[0].x;
-									VECTOR b2p = cd[1].x;
-									b2p.vy = b1p.vy;
+									int h = b1ax[0].vy;
+									VECTOR box_points[4] = {
+										{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+										{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
 
-									// show position to position
-									//Debug_AddLine(b1p1, b2p1, yycv);
+										{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+										{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+									};
 
-									VECTOR b1ax[2] = { {0} , {0} };
-									b1ax[0].vx = FIXED(cd[0].axis[0].vx * cd[0].length[0]);
-									b1ax[0].vz = FIXED(cd[0].axis[0].vz * cd[0].length[0]);
-									b1ax[1].vx = FIXED(cd[0].axis[1].vx * cd[0].length[1]);
-									b1ax[1].vz = FIXED(cd[0].axis[1].vz * cd[0].length[1]);
+									Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+									Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+									Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+									Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+								}
 
-									// show axis of body 1
-									Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
-									Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+								VECTOR b2ax[2] = { {0} , {0} };
+								b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
+								b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
+								b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
+								b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
 
-									// display 2D box 1
-									{
-										int h = b1ax[0].vy;
-										VECTOR box_points[4] = {
-											{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
-											{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+								// show axis of body 2
+								Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
+								Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
 
-											{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
-											{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
-										};
+								CVECTOR& collColor = res ? rrcv : yycv;
 
-										Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
-										Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
-										Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
-										Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
-									}
+								// display 2D box 2
+								{
+									int h = b2ax[0].vy;
+									VECTOR box_points[4] = {
+										{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
+										{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
 
-									VECTOR b2ax[2] = { {0} , {0} };
-									b2ax[0].vx += FIXED(cd[1].axis[0].vx * cd[1].length[0]);
-									b2ax[0].vz += FIXED(cd[1].axis[0].vz * cd[1].length[0]);
-									b2ax[1].vx += FIXED(cd[1].axis[1].vx * cd[1].length[1]);
-									b2ax[1].vz += FIXED(cd[1].axis[1].vz * cd[1].length[1]);
+										{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
+										{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
+									};
 
-									// show axis of body 2
-									Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
-									Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
-
-									CVECTOR& collColor = res ? rrcv : yycv;
-
-									// display 2D box 2
-									{
-										int h = b2ax[0].vy;
-										VECTOR box_points[4] = {
-											{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
-											{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
-
-											{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
-											{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
-										};
-
-										Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
-										Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
-										Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
-										Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
-									}
+									Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
+									Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
+									Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
+									Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
 								}
 							}
-#endif
-							if(res)
-								return 1;
 						}
-
-						collide++;
-
+#endif
+						if(res)
+							return 1;
 					}
+
+					collide++;
+
 				}
 			}
-
-			iVar4++;
-			bVar1 = iVar4 < mdcount;
-		} while (iVar4 < mdcount + event_models_active);
+		}
 	}
 	return 0;
 }
@@ -1403,19 +1454,21 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DoScenaryCollisions(void)
 {
 	_CAR_DATA *cp;
 
-	cp = car_data + 19;
+	cp = car_data + MAX_CARS - 1;
 
 	do {
-		if (cp->controlType != 0)
+		if (cp->controlType != CONTROL_TYPE_NONE)
 		{
-			if (cp->controlType == 2)
+			// civ AI and dead cop cars perform less collision detection frames
+			if (cp->controlType == CONTROL_TYPE_CIV_AI || 
+				cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)
 			{
-				if (cp->totalDamage != 0 && (10 < cp->hd.speed || (cp->id + CameraCnt & 3) == 0))
+				if (cp->totalDamage != 0 && (cp->hd.speed > 10 || (cp->id + CameraCnt & 3) == 0))
 				{
 					CheckScenaryCollisions(cp);
 				}

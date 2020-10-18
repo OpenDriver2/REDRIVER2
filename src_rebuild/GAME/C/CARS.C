@@ -8,24 +8,26 @@
 #include "DEBRIS.H"
 #include "MAIN.H"
 #include "CAMERA.H"
-#include "DRAW.H"
 #include "HANDLING.H"
 #include "COSMETIC.H"
-#include "DENTING.H"
 #include "SHADOW.H"
 #include "CIV_AI.H"
-#include "COP_AI.H"
 #include "MC_SND.H"
 #include "GAMESND.H"
 #include "PLAYERS.H"
 #include "CUTSCENE.H"
 #include "CONVERT.H"
-#include "PAUSE.H"
-#include "PLAYERS.H"
+#include "GLAUNCH.H"
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
 #include "LIBAPI.H"
+
+#ifndef PSX
+const int CAR_LOD_SWITCH_DISTANCE = 12500;
+#else
+const int CAR_LOD_SWITCH_DISTANCE = 5500;
+#endif
 
 MATRIX light_matrix =
 { { { 4096, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, { 0, 0, 0 } };
@@ -719,15 +721,14 @@ char TransparentObject = 0;
 // [D] [T] [A]
 void DrawCar(_CAR_DATA *cp, int view)
 {
+	int yVal;
 	int maxDamage;
 	int WheelSpeed;
 	int oboxLenSq;
 	CAR_MODEL* CarModelPtr;
 	int model;
-	MATRIX *m1;
 	CVECTOR col;
 	VECTOR pos;
-	SVECTOR temp_vec;
 	VECTOR corners[4];
 	VECTOR d;
 	VECTOR dist;
@@ -776,8 +777,6 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	if (FrustrumCheck(&pos, 800) == -1)
 		return;
-
-	maxDamage = 0;
 
 	// corners for frustrum checking of big cars
 	corners[0].vx = corners[1].vx = pos.vx + cp->hd.oBox.radii[0].vx;
@@ -849,18 +848,33 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	num_cars_drawn++;
 
+	MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+	
 	// [A] there was mini cars cheat
 	// we need full blown mini cars with physics support
-
-	// LOD switching
-	if (pos.vz < 5501 && gForceLowDetailCars == 0 || cp->controlType == 1) 
+	if (ActiveCheats.cheat13 != 0)
 	{
-		int blackSmoke = 0;
+		int i;
+		for (i = 0; i < 3; i++)
+		{
+			workmatrix.m[i][0] >>= 1;
+			workmatrix.m[i][1] >>= 1;
+			workmatrix.m[i][2] >>= 1;
+		}
+	}
+
+	// to check if car is flipped
+	yVal = cp->hd.where.m[1][1];
+	
+	// LOD switching
+	if (pos.vz <= CAR_LOD_SWITCH_DISTANCE && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER) 
+	{
+		int doSmoke = 0;
 
 		WheelSpeed = cp->hd.speed * 0x2000;
 		maxDamage = MaxPlayerDamage[0];
 
-		if (cp->controlType == 1)
+		if (cp->controlType == CONTROL_TYPE_PLAYER)
 		{
 			maxDamage = MaxPlayerDamage[*cp->ai.padid];
 		}
@@ -869,26 +883,30 @@ void DrawCar(_CAR_DATA *cp, int view)
 		{
 			if (WheelSpeed + 59999U < 119999)
 				AddFlamingEngine(cp);
-		}
 
-		if (cp->ap.damage[0] > 2000 || cp->ap.damage[1] > 2000)
+			doSmoke = 2;
+		}
+		else
 		{
-			if (cp->ap.damage[0] > 3000 || cp->ap.damage[1] > 3000)
-				blackSmoke = 1;
-			else
-				blackSmoke = 0;
-
-			if (WheelSpeed + 399999U < 1199999)
-				AddSmokingEngine(cp, blackSmoke, WheelSpeed);
+			if (cp->ap.damage[0] > 2000 || cp->ap.damage[1] > 2000)
+			{
+				if (cp->ap.damage[0] > 3000 || cp->ap.damage[1] > 3000)
+					doSmoke = 2;
+				else
+					doSmoke = 1;
+			}
 		}
 
-		AddExhaustSmoke(cp, blackSmoke, WheelSpeed);
+		if (doSmoke && WheelSpeed + 399999U < 1199999)
+			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
 
-		gTimeInWater = 25;
-		gSinkingTimer = 100;
+		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
 
-		SetShadowPoints(cp);
-		PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
+		//gTimeInWater = 25;
+		//gSinkingTimer = 100;
+
+		SetShadowPoints(cp, corners);
+		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
 
 		ComputeCarLightingLevels(cp, 1);
 
@@ -897,11 +915,15 @@ void DrawCar(_CAR_DATA *cp, int view)
 		CarModelPtr->vlist = gTempCarVertDump[cp->id];
 		CarModelPtr->nlist = gTempCarVertDump[cp->id];
 
-		MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
 		FindCarLightFade(&workmatrix);
 
 		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 1);
 
+		if (ActiveCheats.cheat13 != 0)
+		{
+			MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+		}
+		
 		DrawCarWheels(cp, &workmatrix, &pos, view);
 	}
 	else 
@@ -913,12 +935,12 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 		if (pos.vz < 8000) 
 		{
-			SetShadowPoints(cp);
-			PlaceShadowForCar(cp->hd.shadowPoints, cp->id, &pos, 0);
+			SetShadowPoints(cp, corners);
+			PlaceShadowForCar(corners, 0, 0, yVal < 0 ? 0 : 2);
 		}
 
 		ComputeCarLightingLevels(cp, 0);
-		MulMatrix0(&inv_camera_matrix, &cp->hd.drawCarMat, &workmatrix);
+		
 		FindCarLightFade(&workmatrix);
 
 		DrawCarObject(CarModelPtr, &workmatrix, &pos, cp->ap.palette, cp, 0);
@@ -926,14 +948,14 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 	TransparentObject = 0;
 
-	if (cp->controlType == 1)
+	if (cp->controlType == CONTROL_TYPE_PLAYER)
 		PlayerCarFX(cp);
-	else if (cp->controlType == 2)
+	else if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		CivCarFX(cp);
 	
 	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
 	{
-		if (cp->controlType == 2) 
+		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
 			if(cp->ai.c.thrustState != 3 || (cp->ai.c.ctrlState != 5 && cp->ai.c.ctrlState != 7 && cp->ai.c.ctrlState != 8))
 				AddNightLights(cp);
@@ -942,7 +964,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 			AddNightLights(cp);
 	}
 
-	if (cp->controlType == 3)
+	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
 		if (MissionHeader->residentModels[3] == 0)
 		{
@@ -952,20 +974,11 @@ void DrawCar(_CAR_DATA *cp, int view)
 			return;
 		}
 	}
-
-
+	
 	// optimzed check for hndType, controlType, controlFlags
-	//cp->hndType != 2;
-	//cp->controlType != 2;
-	if ((*(uint *)&cp->hndType & 0x2ff00) != 0x20200 && (gInGameCutsceneActive == 0 || cp->controlType != 7 || force_siren[CAR_INDEX(cp)] == 0 ))
+	if (!IS_ROADBLOCK_CAR(cp) && (gInGameCutsceneActive == 0 || cp->controlType != CONTROL_TYPE_CUTSCENE || force_siren[CAR_INDEX(cp)] == 0 ))
 	{
-		if (gCurrentMissionNumber != 26) 
-			return;
-
-		if (cp->ap.model != 4) 
-			return;
-
-		if (cp->controlType != 7)
+		if (gCurrentMissionNumber != 26 || cp->ap.model != 4 || cp->controlType != CONTROL_TYPE_CUTSCENE)
 			return;
 	}
 
@@ -1193,8 +1206,8 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 	// rotate wheel verts
 
-	FW1z = FIXED(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
-	FW2z = FIXED(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+	FW1z = FIXEDH(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
+	FW2z = FIXEDH(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
 
 	VertPtr = (SVECTOR*)WheelModelFront->vertices;
 
@@ -1237,8 +1250,8 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[17].vy = -wheelSize;
 	VertPtr[16].vy = -wheelSize;
 
-	BW1z = FIXED(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
-	BW2z = FIXED(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+	BW1z = FIXEDH(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
+	BW2z = FIXEDH(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
 
 	VertPtr = (SVECTOR *)WheelModelBack->vertices;
 	

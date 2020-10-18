@@ -7,6 +7,7 @@ extern SVECTOR day_colours[4];
 extern SVECTOR night_colours[4];
 
 extern MATRIX aspect;
+extern MATRIX identity;
 extern MATRIX inv_camera_matrix;
 extern MATRIX face_camera;
 
@@ -19,7 +20,8 @@ extern int units_down_halved;
 extern int pvs_square;
 extern int pvs_square_sq;
 extern int PolySizes[56];
-extern ulong* tile_overflow_buffer;
+
+extern void* model_tile_ptrs[320];
 
 extern int combointensity;
 
@@ -29,8 +31,6 @@ extern int num_cars_drawn;
 extern char CurrentPVS[444];
 
 extern void addSubdivSpriteShadow(struct POLYFT4*src, struct SVECTOR *verts, int z); // 0x0003ED7C
-
-extern void DrawSprites(int numFound); // 0x0003EF64
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 
@@ -54,9 +54,7 @@ extern void DrawAllTheCars(int view); // 0x000407D8
 
 extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, struct _pct *pc, int n); // 0x00040A90
 
-extern int DrawAllBuildings(CELL_OBJECT **objects, int num_buildings, DB *disp); // 0x000411F4
-
-extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv); // 0x0004143C
+extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv, int nrot); // 0x0004143C
 
 extern unsigned long normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
 

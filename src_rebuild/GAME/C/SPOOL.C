@@ -3,6 +3,7 @@
 #ifndef PSX
 #include <SDL.h>
 #endif // !PSX
+
 #include <STRINGS.H>
 
 #include "LIBETC.H"
@@ -1406,80 +1407,62 @@ void LoadInAreaTSets(int area)
 	loadaddr = model_spool_buffer + 0xA000;
 	navailable = 0;
 
-	if (slotsused < 19)
+	slot = slotsused;
+
+	while (slot < 19)
 	{
-		slot = slotsused;
+		offset = 0;
 
-		do {
-			offset = 0;
+		if (tpageslots[slot] == 0xff) // [A]
+		{
+			availableslots[navailable++] = slot;
+		}
+		else
+		{
+			i = 0;
+			while (tpageslots[slot] != tpages[i])  // [A]
+			{
+				if (ntpages_to_load <= i)
+					break;
 
-			if (tpageslots[slot] == 0xff) // [A]
+				i++;
+			};
+
+			if (i == ntpages_to_load)
 			{
 				availableslots[navailable++] = slot;
 			}
-			else 
-			{
-				i = 0;
-				while (tpageslots[slot] != tpages[i])  // [A]
-				{
-					if (ntpages_to_load <= i)
-						break;
+		}
 
-					i++;
-				};
-
-				if (i == ntpages_to_load)
-				{
-					availableslots[navailable++] = slot;
-				}
-			}
-
-			slot++;
-		} while (slot < 19);
+		slot++;
 	}
 
 	offset = AreaData[area].gfx_offset;
+
+
+	if (!ntpages_to_load)
+		return;
+
 	i = 0;
-
-	if (ntpages_to_load != 0) 
+	while (--navailable >= 0)
 	{
-		if (tpageloaded[*tpages] != 0)	// weird goto lol
+		tsetinfo[tsetcounter * 2 + 1] = availableslots[navailable];
+
+		while (i < ntpages_to_load)
 		{
-			goto LAB_0007bc94;
-		}
+			RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
+			offset += 17;
 
-		if (navailable-- > 0)
-		{
-			while (true) 
-			{
-				tsetinfo[tsetcounter*2 + 1] = availableslots[navailable];
+			i++;
+			tsetinfo[tsetcounter * 2] = *tpages;
 
-				while (true)
-				{
-					RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
-					offset += 17;
+			tsetcounter++;
+			tpages++;
 
-					i++;
-					tsetinfo[tsetcounter * 2] = *tpages;
+			if (tpageloaded[*tpages] == 0)
+				break;
 
-					tsetcounter++;
-					tpages++;
-
-					if (ntpages_to_load <= i)
-						return;
-
-					if (tpageloaded[*tpages] == 0)
-						break;
-
-				LAB_0007bc94:
-					tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
-				}
-
-				if (navailable < 1)
-					break;
-
-				navailable--;
-			}
+			tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
 		}
 	}
 }

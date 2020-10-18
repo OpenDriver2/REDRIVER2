@@ -24,9 +24,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
-
-
+#include "RAND.H"
 
 int ElTrainData[83] = {
 	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
@@ -44,10 +42,8 @@ int ElTrainData[83] = {
 	-18216, -80683, -2147483647
 };
 
-const int t = 2147483648;
-
 int VegasTrainData[7] = {
-	0, 123, 0x8000, 0xEFBF0, 0xFFFEF309, 0xBA35D, 0x80000000
+	0, 123, 32768, 982000, -68855, 762717, 0x80000000
 };
 
 int VegasParkedTrains[3] = {
@@ -67,9 +63,9 @@ int HavanaMiniData[4] = {
 };
 
 int LiftingBridges[55] = {
-	8, -182784, -175616, -168448, 
-	7, -227328, -162304, -141824, -121344, -100864, -80384, -59904, 
-	256, -312832, -305664, -298496, 
+	8, -182784, -175616, -168448,
+	7, -227328, -162304, -141824, -121344, -100864, -80384, -59904,
+	256, -312832, -305664, -298496,
 	1, 324096, -311808, -304640, -297472,
 	1, 247296, -256512, -249344, -242176, 1, 247296,
 	-262656, -255488, -248320, 1, 324096, 32768, 170496,
@@ -84,15 +80,15 @@ int ChicagoCameraHack[3] = {
 };
 
 int HavanaCameraHack[9] = {
-	-491431, 3568, -139048, 
+	-491431, 3568, -139048,
 	-453981, 409, -128009,
 	-453975, 429, -127175
 };
 
 int VegasCameraHack[16] = {
 	124092, 3988, 3494,
-	-11285, 1559, 843824, 
-	-38801, 2681, 273148, 
+	-11285, 1559, 843824,
+	-38801, 2681, 273148,
 	-36925, 2048, 269647, 273935,
 	-65503, 1617, 796775
 };
@@ -105,13 +101,13 @@ int RioCameraHack[6] = {
 MissionTrain missionTrain[2] =
 {
 	{ 0, ElTrainData + 4, 100, 150, 200, 289051, 32768 },
-	{ 0, ElTrainData + 7, 125, 145, 215, 4294762796, 0 }
+	{ 0, ElTrainData + 7, 125, 145, 215, -204500, 0 }
 };
 
 FixedEvent chicagoDoor[3] =
 {
   {
-	{ 4294759680, 0, 659706, 0 },
+	{ -207616, 0, 659706, 0 },
 	0,
 	0,
 	800u,
@@ -125,7 +121,7 @@ FixedEvent chicagoDoor[3] =
 	"WRGFLDDOOR"
   },
   {
-	{ 4294758144, 4294966784, 668928, 0 },
+	{ -209152, -512, 668928, 0 },
 	0,
 	0,
 	2496u,
@@ -139,7 +135,7 @@ FixedEvent chicagoDoor[3] =
 	"DOOR01"
   },
   {
-	{ 195264, 4294963568, 74752, 0 },
+	{ 195264, -3728, 74752, 0 },
 	0,
 	0,
 	0u,
@@ -157,13 +153,13 @@ FixedEvent chicagoDoor[3] =
 FixedEvent havanaFixed[3] =
 {
   {
-	{ 4294784000, 4294967023, 4294925576, 0 },
+	{ -183296, -273, -41720, 0 },
 	0,
 	0,
-	800u,
-	0u,
-	25u,
-	50u,
+	800,
+	0,
+	25,
+	50,
 	64,
 	0,
 	0,
@@ -171,7 +167,7 @@ FixedEvent havanaFixed[3] =
 	"DOOR"
   },
   {
-	{ 4294512128, 1529, 4294841856, 0 },
+	{ -455168, 1529, -125440, 0 },
 	0,
 	0,
 	0u,
@@ -185,7 +181,7 @@ FixedEvent havanaFixed[3] =
 	"LIFT_SHAFT"
   },
   {
-	{ 4294479360, 0, 4294830607, 0 },
+	{ -487936, 0, -136689, 0 },
 	0,
 	0,
 	1152u,
@@ -203,7 +199,7 @@ FixedEvent havanaFixed[3] =
 FixedEvent vegasDoor[5] =
 {
   {
-	{ 4294955445, 0, 844163, 0 },
+	{ -11851, 0, 844163, 0 },
 	0,
 	0,
 	1700u,
@@ -217,7 +213,7 @@ FixedEvent vegasDoor[5] =
 	"DOOR"
   },
   {
-	{ 4294861054, 4294967057, 4294750336, 0 },
+	{ -106242, -239, -216960, 0 },
 	0,
 	0,
 	800u,
@@ -231,7 +227,7 @@ FixedEvent vegasDoor[5] =
 	"DOOR01"
   },
   {
-	{ 63058, 4294967065, 501184, 0 },
+	{ 63058, -231, 501184, 0 },
 	0,
 	0,
 	3200u,
@@ -245,7 +241,7 @@ FixedEvent vegasDoor[5] =
 	"DOOR02"
   },
   {
-	{ 4294807940, 4294967120, 647024, 0 },
+	{ -159356, -176, 647024, 0 },
 	0,
 	0,
 	3200u,
@@ -259,7 +255,7 @@ FixedEvent vegasDoor[5] =
 	"DOOR03"
   },
   {
-	{ 123936, 4294967126, 4928, 0 },
+	{ 123936, -170, 4928, 0 },
 	0,
 	0,
 	3200u,
@@ -274,10 +270,11 @@ FixedEvent vegasDoor[5] =
   }
 };
 
+
 FixedEvent rioDoor[6] =
 {
   {
-	{ 4294843968, 4294967119, 4294712576, 0 },
+	{ -123328, -177, -254720, 0 },
 	0,
 	0,
 	3200u,
@@ -291,7 +288,7 @@ FixedEvent rioDoor[6] =
 	"DOOR1"
   },
   {
-	{ 4294842048, 4294967279, 4294711088, 0 },
+	{ -125248, -17, -256208, 0 },
 	0,
 	0,
 	1600u,
@@ -305,7 +302,7 @@ FixedEvent rioDoor[6] =
 	"DOOR2"
   },
   {
-	{ 4294693296, 4294967279, 4294645888, 0 },
+	{ -274000, -17, -321408, 0 },
 	0,
 	0,
 	1748u,
@@ -319,7 +316,7 @@ FixedEvent rioDoor[6] =
 	"GATE01"
   },
   {
-	{ 4294693296, 4294967279, 4294644864, 0 },
+	{ -274000, -17, -322432, 0 },
 	0,
 	0,
 	2348u,
@@ -333,7 +330,7 @@ FixedEvent rioDoor[6] =
 	"GATE01"
   },
   {
-	{ 4294926864, 4294967279, 383328, 0 },
+	{ -40432, -17, 383328, 0 },
 	0,
 	0,
 	700u,
@@ -347,7 +344,7 @@ FixedEvent rioDoor[6] =
 	"GATE03"
   },
   {
-	{ 4294927872, 4294967279, 383328, 0 },
+	{ -39424, -17, 383328, 0 },
 	0,
 	0,
 	900u,
@@ -371,7 +368,7 @@ Helicopter HelicopterData =
   0,
   0,
   0,
-  { { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u, '\0', '\0' },
+  { { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u, 0, 0 },
   0,
   0,
   0,
@@ -382,7 +379,7 @@ static Foam foam;
 
 EventGlobal events;
 
-CELL_OBJECT *EventCop;
+CELL_OBJECT* EventCop;
 int event_models_active = 0;
 
 static struct _EVENT(*trackingEvent[2]);
@@ -394,12 +391,12 @@ static int eventHaze = 0;
 static int carsOnBoat = 0;
 static int doneFirstHavanaCameraHack = 0;
 static SVECTOR boatOffset;
-static struct FixedEvent *fixedEvent = NULL;
+static struct FixedEvent* fixedEvent = NULL;
 
 static MultiCar multiCar;
-struct _EVENT *firstEvent;
+struct _EVENT* firstEvent;
 static _EVENT* firstMissionEvent;
-struct _EVENT *event;
+struct _EVENT* event;
 
 static struct EventCamera eventCamera;
 
@@ -418,7 +415,7 @@ static struct EventCamera eventCamera;
 			// Start line: 256
 			// Start offset: 0x00045AC8
 			// Variables:
-		// 		int camera; // $a0
+		// 		int num; // $a0
 		/* end block 1.1 */
 		// End offset: 0x00045B28
 		// End Line: 259
@@ -450,78 +447,77 @@ static struct EventCamera eventCamera;
 	/* end block 2 */
 	// End Line: 499
 
-// [D]
+// [D] [T]
 int GetVisValue(int index, int zDir)
 {
 	int camera;
 	int radius;
 	_EVENT* ev;
-	_EVENT* _ev;
 	VECTOR pos;
 
-	if ((index & 0xc000U) != 0) 
+	if (index & 0xC000)
 	{
 		camera = (index >> 0xf ^ 1) & 1;
 
-		if (zDir == 0) 
+		if (zDir == 0)
 		{
 			pos.vx = player[camera].cameraPos.vx;
 			radius = 16000;
 		}
-		else 
+		else
 		{
 			pos.vx = player[camera].cameraPos.vz;
 			radius = 16000;
 		}
-
-		goto LAB_00045c40;
-	}
-
-	if ((index & 0x80U) == 0) 
-		ev = &event[index & 0x7f];
-	else 
-		ev = (_EVENT*)&fixedEvent[index & 0x7f];
-
-	if ((index & 0xf00U) == 0) 
-	{
-	LAB_00045bbc:
-		pos.vx = (ev->position).vx;
-		pos.vz = (ev->position).vz;
-
-		if ((ev->flags & 0xcc0U) == 0x80)
-		{
-			pos.vx = pos.vx - boatOffset.vx;
-			pos.vz = pos.vz - boatOffset.vz;
-		}
-
-		if (zDir != 0)
-			pos.vx = pos.vz;
-
 	}
 	else
 	{
-		if ((ev->flags & 0x30U) == 0)
+		int multiple;
+
+		if (index & 0x80)
+			ev = (_EVENT*)&fixedEvent[index & 0x7f];
+		else
+			ev = &event[index & 0x7f];
+
+		if (index & 0xf00)
 		{
-			if (zDir != 0) 
-				goto LAB_00045bbc;
+			if ((ev->flags & 0x30) && zDir == 0 || !(ev->flags & 0x30) && zDir != 0)
+				multiple = 1;
+			else
+				multiple = 0;
 		}
-		else 
+		else
 		{
-			if (zDir == 0) 
-				goto LAB_00045bbc;
+			multiple = 1;
 		}
 
-		pos.vx = *(int*)(((index & 0xf00U) >> 6) + (int)ev->node);
+		if (multiple)
+		{
+			pos.vx = ev->position.vx;
+			pos.vz = ev->position.vz;
+
+			if ((ev->flags & 0xCC0U) == 0x80)
+			{
+				pos.vx -= boatOffset.vx;
+				pos.vz -= boatOffset.vz;
+			}
+
+			if (zDir != 0)
+				pos.vx = pos.vz;
+		}
+		else
+		{
+			pos.vx = ev->node[(index & 0xf00U) >> 8];
+		}
+
+		radius = ev->radius;
 	}
 
-	radius = (int)ev->radius;
+	if (index & 0x2000)
+		pos.vx -= radius;
 
-LAB_00045c40:
-	if ((index & 0x2000U) != 0)
-		pos.vx = pos.vx - radius;
-
-	if ((index & 0x1000U) != 0)
-		pos.vx = pos.vx + radius;
+	if (index & 0x1000)
+		pos.vx += radius;
 
 	return pos.vx;
 }
@@ -567,7 +563,7 @@ LAB_00045c40:
 			// Start line: 355
 			// Start offset: 0x00045F14
 			// Variables:
-		// 		int camera; // $a1
+		// 		int num; // $a1
 		/* end block 1.2 */
 		// End offset: 0x00045F78
 		// End Line: 361
@@ -612,112 +608,81 @@ static unsigned short* zVis;
 void VisibilityLists(VisType type, int i)
 {
 	static unsigned short xList[128]; // offset 0x0
- 	static unsigned short zList[128]; // offset 0x100
- 	static unsigned short (*firstX[2]); // offset 0x0
- 	static unsigned short (*firstZ[2]); // offset 0x8
- 	static int count; // offset 0x10
+	static unsigned short zList[128]; // offset 0x100
+	static unsigned short(*firstX[2]); // offset 0x0
+	static unsigned short(*firstZ[2]); // offset 0x8
+	static int count; // offset 0x10
 
 	static unsigned short(*list[2]) = {
 		xList, zList
 	};
 
-	ushort uVar1;
-	int iVar2;
-	uint uVar3;
-	int iVar4;
-	int* piVar5;
+	int k;
 	_EVENT* ev;
-	int iVar6;
-	ushort* puVar7;
-	ushort* puVar8;
-	ushort uVar9;
-	int iVar10;
-	int iVar11;
-	int* piVar12;
+	int tempList;
+	int num;
+	int n;
+	int j;
 	int camera;
-	int iVar13;
-	ushort** ppuVar14;
-	int iVar15;
 	int table[128];
 
 	//debugCount = &count.10;
 	if (type == VIS_SORT)
 	{
-		camera = 0;
+		num = 0;
 		do {
-			if (0 < count) 
+			j = 0;
+
+			while (j < count)
 			{
-				iVar13 = 0;
+				table[j] = GetVisValue(list[num][j], num);
 
-				do {
-					iVar4 = GetVisValue(list[camera][iVar13], camera);
+				// add sorted
+				// code is similar to sorting code in DrawAllTheCars
+				if (j != 0 && (table[j] < table[j - 1]))
+				{
+					tempList = list[num][j];
 
+					k = j - 1;
+					do {
+						n = k;
 
-					table[iVar13] = iVar4;
+						table[k + 1] = table[k];
+						list[num][k + 1] = list[num][k];
 
-					iVar6 = iVar13 * 4;
-					iVar15 = iVar13 + 1;
+						if (k == 0)
+							break;
 
-					if (iVar13 != 0 && (iVar4 < table[iVar13 - 1])) 
-					{
-						uVar9 = list[camera][iVar13];
+						k--;
+					} while (table[j] < table[k]);
 
-						if (iVar13 > 0) 
-						{
-							piVar12 = table + iVar13;
-							iVar10 = iVar6 + -8;
-							iVar11 = iVar13;
-							iVar2 = iVar13 + -1;
-							do {
-								iVar13 = iVar2;
-								iVar6 = iVar6 + -4;
-								puVar7 = list[camera];
-								*piVar12 = *(int*)((int)table + iVar6); // pointer fuckery. PLS fix
-								piVar12 = piVar12 + -1;
-								puVar7[iVar11] = (puVar7 + iVar11)[-1];
+					table[n] = table[j];
+					list[num][n] = tempList;
+				}
 
-								if (iVar13 < 1) 
-									break;
-
-								piVar5 = (int*)((int)table + iVar10);
-								iVar10 = iVar10 + -4;
-								iVar11 = iVar13;
-								iVar2 = iVar13 + -1;
-							} while (iVar4 < *piVar5);
-						}
-
-						table[iVar13] = iVar4;
-						list[camera][iVar13] = uVar9;
-					}
-
-					iVar13 = iVar15;
-				} while (iVar15 < count);
+				j++;
 			}
-			camera++;
-		} while (camera < 2);
+			num++;
+		} while (num < 2);
 
-		camera = 0;
-
-		while (camera < NumPlayers)
+		num = 0;
+		while (num < NumPlayers)
 		{
-			uVar9 = 0x8000;
-			if (camera != 0)
-				uVar9 = 0x4000;
+			if (num != 0)
+				camera = 0x4000;
+			else
+				camera = 0x8000;
 
-			firstX[camera] = xList;
-			do {
-				puVar7 = firstX[camera];
-				uVar1 = *puVar7;
-				firstX[camera] = puVar7 + 1;
-			} while ((uVar1 & uVar9) == 0);
+			firstX[num] = xList;
+			firstZ[num] = zList;
 
-			firstZ[camera] = zList;
 			do {
-				puVar7 = firstZ[camera];
-				uVar1 = *puVar7;
-				firstZ[camera] = puVar7 + 1;
-			} while ((uVar1 & uVar9) == 0);
-			camera++;
+			} while ((*(firstX[num]++) & camera) == 0);
+
+			do {
+			} while ((*(firstZ[num]++) & camera) == 0);
+
+			num++;
 		}
 	}
 	else if (type == VIS_INIT)
@@ -726,6 +691,7 @@ void VisibilityLists(VisType type, int i)
 		xList[0] = -0x6000;
 		zList[1] = -0x7000;
 		xList[1] = -0x7000;
+
 		count = 2;
 
 		if (NumPlayers == 2)
@@ -734,25 +700,24 @@ void VisibilityLists(VisType type, int i)
 			xList[2] = 0x6000;
 			zList[3] = 0x5000;
 			xList[3] = 0x5000;
+
 			count = 4;
 		}
 
-		camera = 0;
-		while (camera < NumPlayers)
+		num = 0;
+		while (num < NumPlayers)
 		{
-			firstX[camera] = xList;
-			firstZ[camera] = zList;
-			camera++;
+			firstX[num] = xList;
+			firstZ[num] = zList;
+			num++;
 		}
 	}
 	else if (type == VIS_ADD)
 	{
-		printInfo("VIS_ADD: %d (type=%d)\n", i & 0x7f, (i & 0x80U));
-
-		if ((i & 0x80U) == 0)
-			ev = &event[i & 0x7f];
-		else
+		if (i & 0x80)
 			ev = (_EVENT*)&fixedEvent[i & 0x7f];
+		else
+			ev = &event[i & 0x7f];
 
 		if (ev->radius == 0)
 		{
@@ -798,15 +763,15 @@ void VisibilityLists(VisType type, int i)
 	/* end block 1 */
 	// End Line: 805
 
-// [D]
-void SetElTrainRotation(_EVENT *ev)
+// [D] [T]
+void SetElTrainRotation(_EVENT* ev)
 {
-	if ((ev->flags & 0x8000U) == 0) 
-		ev->rotation = 0;
-	else 
+	if (ev->flags & 0x8000)
 		ev->rotation = 0x400;
+	else
+		ev->rotation = 0;
 
-	if (*ev->node < ev->node[2])
+	if (ev->node[0] < ev->node[2])
 		ev->rotation += 0x800;
 }
 
@@ -837,58 +802,58 @@ void SetElTrainRotation(_EVENT *ev)
 	/* end block 3 */
 	// End Line: 942
 
-// [D]
-void InitTrain(_EVENT *ev, int count, int type)
+// [D] [T]
+void InitTrain(_EVENT* ev, int count, int type)
 {
 	ushort uVar1;
-	int *piVar2;
-	uint uVar3;
-	int *to;
+	uint mv;
+	int* to;
 	int length;
 	int height;
 
-	uVar1 = *(ushort *)(ev->data + 2);
-	ev->node = ev->data + 3;
-	ev->timer = 0;
-	ev->flags = uVar1 | 2;
+	ev->node = &ev->data[3];
 
-	if (type == 0) 
+	ev->timer = 0;
+	ev->flags = ev->data[2] | 0x2;
+
+	if (type == 0)
 	{
 		height = -1773;
 		length = 1600;
+
 		SetElTrainRotation(ev);
 	}
 	else if (type == 1)
 	{
 		height = -734;
 		length = 3700;
+
 		ev->rotation = 0;
 	}
 
 	ev->position.vy = height;
 
-	if (ev->node[3] == -0x80000000)
-		ev->flags = ev->flags & 0x8fff;
-	else
-		ev->flags = ev->flags & 0x8fffU | 0x3000;
+	ev->flags &= ~0x7000;
+
+	if (ev->node[3] != -0x80000000)
+		ev->flags |= 0x3000;
 
 	to = ev->node;
-	piVar2 = to + 2;
 
 	if (to[2] == -0x7ffffffe)
-		piVar2 = to + 3;
+		mv = to[3] - to[0] >> 0x1f;
+	else
+		mv = to[2] - to[0] >> 0x1f;
 
-	if ((ev->flags & 0x8000U) == 0) 
+	if (ev->flags & 0x8000)
 	{
-		uVar3 = *piVar2 - to[0] >> 0x1f;
-		ev->position.vx = to[0] + ((count * length ^ uVar3) - uVar3);
-		ev->position.vz = to[1];
-	}
-	else 
-	{
-		uVar3 = *piVar2 - to[0] >> 0x1f;
-		ev->position.vz = to[0] + ((count * length ^ uVar3) - uVar3);
+		ev->position.vz = to[0] + ((count * length ^ mv) - mv);
 		ev->position.vx = to[1];
+	}
+	else
+	{
+		ev->position.vx = to[0] + ((count * length ^ mv) - mv);
+		ev->position.vz = to[1];
 	}
 }
 
@@ -908,14 +873,14 @@ void InitTrain(_EVENT *ev, int count, int type)
 	/* end block 2 */
 	// End Line: 8353
 
-// [D]
-void InitDoor(FixedEvent *ev, _EVENT ***e, int *cEvents)
+// [D] [T]
+void InitDoor(FixedEvent* ev, _EVENT*** e, int* cEvents)
 {
 	ev->active = 0;
 	ev->rotation = ev->finalRotation;
 	ev->flags |= 0x200;
 
-	*(FixedEvent **)*e = ev;	// [A] is that gonna work?
+	*(FixedEvent**)*e = ev;	// [A] is that gonna work?
 	*e = &(**e)->next;
 
 	VisibilityLists(VIS_ADD, (ev - fixedEvent) | 0x80);
@@ -944,7 +909,7 @@ void InitDoor(FixedEvent *ev, _EVENT ***e, int *cEvents)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitEvents(void)
 {
 	events.camera = 0;
@@ -959,7 +924,7 @@ void InitEvents(void)
 
 	cameraEventsActive = 0;
 	event_models_active = 0;
-	
+
 	cameraDelay.delay = 0;
 	eventHaze = 0;
 	carsOnBoat = 0;
@@ -1149,12 +1114,12 @@ void SetUpEvents(int full)
 
 	MALLOC_BEGIN()
 
-	if (full) 
-	{
-		EventCop = (CELL_OBJECT*)mallocptr;
-		event = (_EVENT*)(mallocptr + 0x100);
-		mallocptr = (char*)event;
-	}
+		if (full)
+		{
+			EventCop = (CELL_OBJECT*)mallocptr;
+			event = (_EVENT*)(mallocptr + 256);
+			mallocptr = (char*)event;
+		}
 
 	ev_00 = event;
 	cEvents = 0;
@@ -1327,7 +1292,7 @@ void SetUpEvents(int full)
 				ev_00->model = carModel;
 
 			ev_00->radius = 0;
-			ev_00->next = ev_00+1;
+			ev_00->next = ev_00 + 1;
 
 			ev_00++;
 			iVar4++;
@@ -1335,7 +1300,7 @@ void SetUpEvents(int full)
 
 		cEvents = cEvents + 7;
 	}
-	else if (GameLevel == 1) 
+	else if (GameLevel == 1)
 	{
 		cameraEventsActive = 1;
 
@@ -1378,7 +1343,7 @@ void SetUpEvents(int full)
 		e = &(*e)->next;
 		cEvents = 2;
 
-		if (full != 0) 
+		if (full != 0)
 		{
 			event->model = FindModelIdxWithName("FERRY");
 			event[1].model = FindModelIdxWithName("LIFT");
@@ -1436,7 +1401,7 @@ void SetUpEvents(int full)
 		ev_00 = event;
 		ev = vegasDoor;
 		i = 4;
-		
+
 		fixedEvent = vegasDoor;
 		cEvents = iVar5;
 
@@ -1650,8 +1615,6 @@ LAB_000474bc:
 		mallocptr += cEvents * sizeof(_EVENT);
 
 	MALLOC_END();
-
-	return;
 }
 
 
@@ -1672,7 +1635,7 @@ LAB_000474bc:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitEventCamera(void)
 {
 	eventCamera.position = camera_position;
@@ -1705,7 +1668,7 @@ void InitEventCamera(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ResetEventCamera(void)
 {
 	camera_position = eventCamera.position;
@@ -1764,7 +1727,7 @@ void ResetEventCamera(void)
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D]
-void SetCamera(_EVENT *ev)
+void SetCamera(_EVENT* ev)
 {
 	ushort uVar1;
 	short ang;
@@ -1786,13 +1749,13 @@ void SetCamera(_EVENT *ev)
 
 	pivot.vy = 0;
 
-	if ((ev->flags & 0x800U) == 0) 
+	if ((ev->flags & 0x800U) == 0)
 	{
 		uVar4 = ev->flags & 0x30;
 		iVar5 = (int)ev->rotation;
 		lVar3 = *ev->data;
 	}
-	else 
+	else
 	{
 		lVar3 = (ev->position).vz;
 		iVar5 = ev->data[1];
@@ -1805,26 +1768,26 @@ void SetCamera(_EVENT *ev)
 		uVar4 = 0;
 	}
 
-	if (uVar4 == 0) 
+	if (uVar4 == 0)
 	{
 		iVar5 = -iVar5;
 		pivot.vx = camera_position.vx;
 		pivot.vz = lVar3;
 	}
-	else 
+	else
 	{
 		pivot.vz = camera_position.vz;
 		pivot.vx = lVar3;
 	}
 
-	if (iVar5 == 0) 
+	if (iVar5 == 0)
 	{
 		camera_position.vx = eventCamera.position.vx + offset.vx;
 		camera_position.vy = eventCamera.position.vy + offset.vy;
 		camera_position.vz = eventCamera.position.vz + offset.vz;
 		camera_angle.vy = eventCamera.yAng;
 	}
-	else 
+	else
 	{
 		camera_position = eventCamera.position;
 
@@ -1842,7 +1805,7 @@ void SetCamera(_EVENT *ev)
 
 		ang = (short)iVar5;
 
-		if (uVar4 == 0x10) 
+		if (uVar4 == 0x10)
 		{
 			camera_angle.vy = camera_angle.vy - ang;
 			_RotMatrixY(&matrix, ang);
@@ -1909,7 +1872,7 @@ void SetCamera(_EVENT *ev)
 
 	SetCameraVector();
 
-	if ((iVar5 != 0) || (eventCamera.rotate != 0)) 
+	if ((iVar5 != 0) || (eventCamera.rotate != 0))
 	{
 		Set_Inv_CameraMatrix();
 		SetCameraVector();
@@ -1918,7 +1881,7 @@ void SetCamera(_EVENT *ev)
 
 	eventCamera.rotate = iVar5;
 
-	if ((ev->flags & 0x800U) == 0) 
+	if ((ev->flags & 0x800U) == 0)
 	{
 		events.draw = ev->model;
 	}
@@ -1954,27 +1917,29 @@ void SetCamera(_EVENT *ev)
 	/* end block 3 */
 	// End Line: 6985
 
-// [D]
-void EventCollisions(_CAR_DATA *cp, int type)
+// [D] [T]
+void EventCollisions(_CAR_DATA* cp, int type)
 {
 	if (carsOnBoat >> CAR_INDEX(cp) == 0)
 		return;
 
-	if (type != 0) 
+	if (type == 0)
 	{
-		cp->hd.where.t[0] -= boatOffset.vx;
-		cp->hd.where.t[1] -= boatOffset.vy;
-		cp->hd.where.t[2] -= boatOffset.vz;
-		events.camera = 0;
+		events.draw = 0;
+		events.camera = 1;
+
+		cp->hd.where.t[0] += boatOffset.vx;
+		cp->hd.where.t[1] += boatOffset.vy;
+		cp->hd.where.t[2] += boatOffset.vz;
+
 		return;
 	}
 
-	events.draw = 0;
-	events.camera = 1;
+	cp->hd.where.t[0] -= boatOffset.vx;
+	cp->hd.where.t[1] -= boatOffset.vy;
+	cp->hd.where.t[2] -= boatOffset.vz;
 
-	cp->hd.where.t[0] += boatOffset.vx;
-	cp->hd.where.t[1] += boatOffset.vy;
-	cp->hd.where.t[2] += boatOffset.vz;
+	events.camera = 0;
 }
 
 
@@ -1998,33 +1963,32 @@ void EventCollisions(_CAR_DATA *cp, int type)
 	/* end block 3 */
 	// End Line: 9688
 
-// [D]
-void NextNode(_EVENT *ev)
+// [D] [T]
+void NextNode(_EVENT* ev)
 {
-	int *piVar1;
-
-	piVar1 = ev->node;
-	if (piVar1[2] == -0x7ffffffe)
+	if (ev->node[2] == -0x7ffffffe)
 	{
-		ev->node = piVar1 + 2;
+		ev->node = &ev->node[2];
 	}
 	else
 	{
-		ev->node = piVar1 + 1;
-		ev->flags = ev->flags ^ 0x8000;
+		ev->node = &ev->node[1];
+		ev->flags ^= 0x8000;
 	}
 
-	if (*ev->node == -0x7fffffff) 
+	if (*ev->node == -0x7fffffff)
 	{
-		ev->node = ev->data + 3;
+		ev->node = &ev->data[3];
 	}
-	else if (ev->node[3] == -0x80000000) 
+	else if (ev->node[3] == -0x80000000)
 	{
-		ev->flags = ev->flags & 0x8fff;
+		ev->flags &= ~0x7000;
 		return;
 	}
 
-	ev->flags = ev->flags & 0x8fffU | 0x3000;
+	ev->flags &= ~0x7000;
+	ev->flags |= 0x3000;
+
 	SetElTrainRotation(ev);
 }
 
@@ -2065,7 +2029,7 @@ void NextNode(_EVENT *ev)
 	// End Line: 3012
 
 // [D]
-void StepFromToEvent(_EVENT *ev)
+void StepFromToEvent(_EVENT* ev)
 {
 	int uVar1;
 	int uVar2;
@@ -2077,7 +2041,7 @@ void StepFromToEvent(_EVENT *ev)
 	int uVar7;
 	int* piVar8;
 
-	if (ev->timer > 0) 
+	if (ev->timer > 0)
 	{
 		ev->timer--;
 		return;
@@ -2089,7 +2053,7 @@ void StepFromToEvent(_EVENT *ev)
 	uVar2 = ev->flags & 0xc000;
 	piVar8 = ev->node + 1;
 
-	if (uVar2 == 0x4000) 
+	if (uVar2 == 0x4000)
 	{
 		local_t0_132 = &(ev->position).vy;
 	}
@@ -2121,17 +2085,17 @@ void StepFromToEvent(_EVENT *ev)
 	if (uVar7 < 0)
 		uVar1 = -uVar7;
 
-	if (uVar1 < uVar2) 
+	if (uVar1 < uVar2)
 		uVar3 = uVar7;
 
 	uVar2 = iVar4 - iVar5 >> 0x1f;
 
 	if ((ev->flags & 0xc000U) == 0x4000)
 	{
-		if (uVar3 < 0) 
+		if (uVar3 < 0)
 			uVar3 = -uVar3;
 
-		if (0x400 < (int)uVar3) 
+		if (0x400 < (int)uVar3)
 		{
 			uVar3 = *ev->data ^ uVar2;
 			goto LAB_00047b78;
@@ -2152,13 +2116,13 @@ void StepFromToEvent(_EVENT *ev)
 		iVar4 = (*ev->data + -1) * (int)*(short*)((int)rcossin_tbl + ((uVar3 - (uVar3 >> 0x1f)) * 2 & 0x3ffc));
 	}
 
-	uVar3 = FIXED(iVar4) + 1U ^ uVar2;
+	uVar3 = FIXEDH(iVar4) + 1U ^ uVar2;
 LAB_00047b78:
 
 	*local_t0_132 = iVar6 + (uVar3 - uVar2);
 	iVar4 = *piVar8;
 
-	if ((uVar7 ^ iVar4 - *local_t0_132) < 0) 
+	if ((uVar7 ^ iVar4 - *local_t0_132) < 0)
 	{
 		*local_t0_132 = iVar4;
 
@@ -2242,7 +2206,7 @@ LAB_00047b78:
 	// End Line: 3138
 
 // [D]
-void StepPathEvent(_EVENT *ev)
+void StepPathEvent(_EVENT* ev)
 {
 	static int speed;
 
@@ -2269,7 +2233,7 @@ void StepPathEvent(_EVENT *ev)
 
 	sVar2 = ev->timer;
 
-	if (ev->timer != 0) 
+	if (ev->timer != 0)
 	{
 		ev->timer = sVar2 + -1;
 
@@ -2285,7 +2249,7 @@ void StepPathEvent(_EVENT *ev)
 				}
 			} while (ev->flags == (*puVar1 & 0xfbff));
 		}
-		else if ((ev->flags & 0x100U) != 0) 
+		else if ((ev->flags & 0x100U) != 0)
 		{
 			ev->timer = sVar2;
 		}
@@ -2302,21 +2266,21 @@ void StepPathEvent(_EVENT *ev)
 	from = ev->node;
 	to = from + 2;
 
-	if (*from == -0x7ffffffe) 
+	if (*from == -0x7ffffffe)
 	{
 		iVar12 = 2;
 		i = from + 1;
 	}
-	else 
+	else
 	{
 		iVar12 = 1;
 		i = from;
 
-		if (from[2] == -0x7ffffffe) 
+		if (from[2] == -0x7ffffffe)
 		{
 			to = from + 3;
 		}
-		else 
+		else
 		{
 			iVar12 = 0;
 
@@ -2338,11 +2302,11 @@ void StepPathEvent(_EVENT *ev)
 			iVar12 = 1;
 			uVar11 = 0;
 		}
-		else 
+		else
 		{
 			uVar11 = 3;
 		}
-		if (*from == -0x7ffffffe) 
+		if (*from == -0x7ffffffe)
 			i = from + -2;
 
 
@@ -2353,9 +2317,9 @@ void StepPathEvent(_EVENT *ev)
 
 				if (*i == -0x7fffffff)
 					i = ev->data + 3;
-				else if(*i == -0x7ffffffe)
+				else if (*i == -0x7ffffffe)
 					i = i + 2;
-					
+
 				uVar11 = uVar11 + iVar12;
 				iVar4 = *i;
 				i = i + 1;
@@ -2366,7 +2330,7 @@ void StepPathEvent(_EVENT *ev)
 
 		iVar4 = turn[2] + -0x800;
 
-		if (-1 < turn[0] - turn[2]) 
+		if (-1 < turn[0] - turn[2])
 			iVar4 = turn[2] + 0x800;
 
 		iVar10 = turn[1] - 0x800;
@@ -2398,7 +2362,7 @@ void StepPathEvent(_EVENT *ev)
 		{
 			iVar10 = (ev->position).vz - iVar10;
 
-			if (turn[3] - turn[1] < 0) 
+			if (turn[3] - turn[1] < 0)
 			{
 				if (-1 < iVar10)
 					return;
@@ -2418,7 +2382,7 @@ void StepPathEvent(_EVENT *ev)
 				return;
 
 		}
-		else if (iVar4 < 1) 
+		else if (iVar4 < 1)
 			return;
 
 		(ev->position).vz = turn[1];
@@ -2446,7 +2410,7 @@ void StepPathEvent(_EVENT *ev)
 	if (iVar9 < 0)
 		iVar9 = -iVar9;
 
-	if (iVar4 < iVar9) 
+	if (iVar4 < iVar9)
 	{
 		iVar7 = 2;
 		iVar9 = iVar4;
@@ -2464,7 +2428,7 @@ void StepPathEvent(_EVENT *ev)
 	if (iVar4 < 0)
 		iVar4 = iVar6 - iVar10;
 
-	if (iVar4 <= iVar9) 
+	if (iVar4 <= iVar9)
 	{
 		iVar9 = *curr - iVar6;
 		if (iVar9 < 0)
@@ -2472,17 +2436,17 @@ void StepPathEvent(_EVENT *ev)
 
 	}
 
-	if ((uVar3 & 0x400) != 0) 
+	if ((uVar3 & 0x400) != 0)
 	{
-		if ((uVar3 & 0x80) != 0) 
+		if ((uVar3 & 0x80) != 0)
 		{
 			if (CameraCnt < 0x1000)
 			{
 				speed = ev->data[1] * (0x1000 - CameraCnt) + ev->data[2] * CameraCnt;
 
-				speed = FIXED(speed);
+				speed = FIXEDH(speed);
 			}
-			else 
+			else
 			{
 				speed = ev->data[2];
 			}
@@ -2491,7 +2455,7 @@ void StepPathEvent(_EVENT *ev)
 		speed = ev->data[1];
 	}
 
-	if (((iVar9 < 6000) || ((iVar12 == 0 && (iVar9 < 0x1f70)))) && ((ev->flags & 0x400U) != 0)) 
+	if (((iVar9 < 6000) || ((iVar12 == 0 && (iVar9 < 0x1f70)))) && ((ev->flags & 0x400U) != 0))
 	{
 		if (iVar12 == 0)
 		{
@@ -2507,7 +2471,7 @@ void StepPathEvent(_EVENT *ev)
 			speed = (iVar9 >> 0x1f ^ 5U) - (iVar9 >> 0x1f);
 		}
 
-		speed = speed + FIXED(iVar4);
+		speed = speed + FIXEDH(iVar4);
 	}
 LAB_00048238:
 	iVar4 = *curr + speed * iVar13;
@@ -2566,36 +2530,24 @@ LAB_00048238:
 	/* end block 3 */
 	// End Line: 10340
 
-// [D]
+// [D] [T]
 int GetBridgeRotation(int timer)
 {
-	static int debugRotation = -1;
-
-	int iVar1;
-
-	if (debugRotation != -1)
-		return debugRotation;
-
-	if (2600 < timer) 
-	{
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay != 0)
 		return 0;
-	}
+#endif
 
-	if (timer < 1601)
-	{
-		if (1000 < timer) 
-		{
-			timer = 1000;
-		}
-	}
-	else 
-	{
+	if (timer > 2600)
+		return 0;
+
+	if (timer > 1600)
 		timer = 2600 - timer;
-	}
+	else if (timer > 1000)
+		timer = 1000;
 
-	iVar1 = (0x1000 - rcossin_tbl[((timer << 0xb) / 1000 & 0xfffU) * 2 + 1]) * 800;
-
-	return iVar1 >> 0xd;
+	return (4096 - rcossin_tbl[((timer << 0xb) / 1000 & 0xfffU) * 2 + 1]) * 800 >> 0xd;
 }
 
 
@@ -2682,7 +2634,7 @@ int GetBridgeRotation(int timer)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 // [D]
-void StepHelicopter(_EVENT *ev)
+void StepHelicopter(_EVENT* ev)
 {
 	static int rotating = 1;
 
@@ -2722,20 +2674,20 @@ void StepHelicopter(_EVENT *ev)
 	uVar1 = uVar1 + HelicopterData.speed;
 	ev->timer = uVar1;
 
-	if ((uVar1 << 0x10) < 0) 
+	if ((uVar1 << 0x10) < 0)
 	{
-		if ((uint)(piVar12[8] == 0) == piVar12[9]) 
+		if ((uint)(piVar12[8] == 0) == piVar12[9])
 		{
 			ev->timer = -1;
 		}
-		else 
+		else
 		{
 			ev->timer = 0;
 			ev->node = piVar12 + 2;
 		}
 	}
 
-	if (ev->rotation == -1) 
+	if (ev->rotation == -1)
 	{
 		piVar12 = ev->node;
 		vel.x = (piVar12[4] - *piVar12) / 2;
@@ -2747,7 +2699,7 @@ void StepHelicopter(_EVENT *ev)
 		HelicopterData.dp = 0;
 		HelicopterData.dr = 0;
 	}
-	else 
+	else
 	{
 		vel.x = (ev->position).vx - HelicopterData.lastX;
 		vel.z = (ev->position).vz - HelicopterData.lastZ;
@@ -2765,11 +2717,11 @@ void StepHelicopter(_EVENT *ev)
 
 	iVar3 = (int)HelicopterData.pitch;
 
-	if (iVar6 < 0xdbba1) 
+	if (iVar6 < 0xdbba1)
 		iVar3 = -iVar3 - ((rcossin_tbl[((vel.z * 0x400) / 900000 & 0xfffU) * 2] << 0x10) >> 0x13);
 	else if (vel.z < 1)
 		iVar3 = 0x200 - iVar3;
-	else 
+	else
 		iVar3 = -0x200 - iVar3;
 
 	iVar5 = (int)HelicopterData.roll;
@@ -2778,11 +2730,11 @@ void StepHelicopter(_EVENT *ev)
 	if (vel.x < 0)
 		iVar6 = -vel.x;
 
-	if (iVar6 < 0x249f1) 
-		iVar5 = ((rcossin_tbl[((vel.x * 0x400) / 150000 & 0xfffU) * 2] << 0x10) >>0x13) - iVar5;
+	if (iVar6 < 0x249f1)
+		iVar5 = ((rcossin_tbl[((vel.x * 0x400) / 150000 & 0xfffU) * 2] << 0x10) >> 0x13) - iVar5;
 	else if (vel.x < 1)
 		iVar5 = -0x200 - iVar5;
-	else 
+	else
 		iVar5 = 0x200 - iVar5;
 
 
@@ -2791,11 +2743,11 @@ void StepHelicopter(_EVENT *ev)
 	if (iVar8 < 0)
 		iVar6 = -iVar8;
 
-	if (iVar6 < 5) 
+	if (iVar6 < 5)
 	{
 		HelicopterData.dp = (short)iVar3;
 	}
-	else 
+	else
 	{
 		uVar1 = (iVar8 >> 0x1f);
 		HelicopterData.dp = HelicopterData.dp + ((uVar1 ^ 5) - uVar1);
@@ -2807,7 +2759,7 @@ void StepHelicopter(_EVENT *ev)
 	if (iVar3 < 0)
 		iVar6 = -iVar3;
 
-	if (iVar6 < 5) 
+	if (iVar6 < 5)
 	{
 		HelicopterData.dr = iVar5;
 	}
@@ -2825,11 +2777,11 @@ void StepHelicopter(_EVENT *ev)
 	if (iVar3 < 0)
 		iVar6 = -iVar3;
 
-	if (iVar6 < 0x201) 
+	if (iVar6 < 0x201)
 	{
 		iVar6 = (int)((uint) * (ushort*)((int)rcossin_tbl + (iVar3 * 8 & 0x3ff8U)) << 0x10) >> 0x12;
 	}
-	else 
+	else
 	{
 		iVar6 = -0x400;
 		if (0 < iVar3)
@@ -2839,7 +2791,7 @@ void StepHelicopter(_EVENT *ev)
 
 	ev->rotation = ev->rotation + (short)((iVar6 * iVar6 + 0x800 >> 0xc) * iVar6 + 0x800 >> 0xc) & 0xfff;
 
-	if (GetSurfaceIndex((VECTOR*)ev) == -23) 
+	if (GetSurfaceIndex((VECTOR*)ev) == -23)
 	{
 		iVar3 = (ev->position).vy;
 		iVar6 = iVar3 + 10;
@@ -2849,7 +2801,7 @@ void StepHelicopter(_EVENT *ev)
 		LAB_000488b0:
 			(ev->position).vy = iVar6;
 		}
-		else 
+		else
 		{
 			pos.vy = 0;
 			pos.vx = (ev->position).vx;
@@ -2858,11 +2810,11 @@ void StepHelicopter(_EVENT *ev)
 			Setup_Smoke(&pos, 100, 500, 2, 0, &dummy, 0);
 		}
 	}
-	else 
+	else
 	{
 		iVar6 = (ev->position).vy;
 
-		if (-1000 < iVar6) 
+		if (-1000 < iVar6)
 		{
 			iVar6 = iVar6 + -10;
 			goto LAB_000488b0;
@@ -2898,7 +2850,7 @@ LAB_00048934:
 		iVar6 = HelicopterData.rotorvel;
 		if (iVar6 < 0)
 			iVar6 = -iVar6;
-	
+
 		if (0x100 < iVar6)
 			rotating = -rotating;
 	}
@@ -3089,7 +3041,7 @@ void StepEvents(void)
 
 	do {
 		carsOnBoat = uVar8;
-		if (ev == NULL) 
+		if (ev == NULL)
 		{
 			VisibilityLists(VIS_SORT, 0);
 
@@ -3098,7 +3050,7 @@ void StepEvents(void)
 				event_models_active = 0;
 				i = 0;
 
-				while (i < NumPlayers) 
+				while (i < NumPlayers)
 				{
 					uVar8 = 0x4000;
 
@@ -3119,23 +3071,23 @@ void StepEvents(void)
 
 					i++;
 
-					while (uVar3 = uVar2, (uVar3 & uVar8) == 0)
+					while (uVar3 = uVar2, (uVar3& uVar8) == 0)
 					{
 						if ((uVar3 & uVar12) == 0)
 						{
-							if ((uVar2 & 0x80) == 0) 
+							if ((uVar2 & 0x80) == 0)
 								evt = &event[uVar3 & 0x7f];
 							else
 								evt = (_EVENT*)&fixedEvent[uVar3 & 0x7f];
 
-							if ((*(uint*)&evt->flags & 0x204) == 0x200) 
+							if ((*(uint*)&evt->flags & 0x204) == 0x200)
 							{
 								uVar2 = *zVis;
 								puVar10 = zVis;
 
 								while (uVar3 = uVar2, (uVar3& uVar8) == 0)
 								{
-									if (((uVar3 & uVar12) == 0) && ((*puVar11 & 0xfff) == (uVar3 & 0xfff))) 
+									if (((uVar3 & uVar12) == 0) && ((*puVar11 & 0xfff) == (uVar3 & 0xfff)))
 									{
 										cop = EventCop + event_models_active;
 
@@ -3164,9 +3116,9 @@ void StepEvents(void)
 				}
 			}
 
-			i = cameraDelay.delay -1;
+			i = cameraDelay.delay - 1;
 
-			if ((cameraDelay.delay != 0) && (cameraDelay.delay = i, i == 0)) 
+			if ((cameraDelay.delay != 0) && (cameraDelay.delay = i, i == 0))
 			{
 				SpecialCamera((enum SpecialCamera)cameraDelay.type, 1);
 			}
@@ -3180,7 +3132,7 @@ void StepEvents(void)
 		{
 			uVar5 = uVar2 & 0xcc0;
 
-			if (uVar5 == 0x40) 
+			if (uVar5 == 0x40)
 			{
 				if (ev->timer != 0)
 				{
@@ -3200,23 +3152,23 @@ void StepEvents(void)
 					iVar6 = uVar12 - uVar8;
 					iVar13 = uVar8 - uVar12;
 
-					if (iVar6 < 0) 
+					if (iVar6 < 0)
 						iVar6 = iVar13;
 
 					uVar8 = (int)((uint)uVar2 - iVar4) >> 0x1f;
 					i = ev->rotation +
-						(((uint)*(ushort*)&ev->node +
-						((int)((int)rcossin_tbl[((i * 0x800) / iVar6 & 0xfffU) * 2] *
-						((uint) * (ushort*)((int)&ev->node + 2) - (uint) * (ushort*)&ev->node)) >> 0xc) ^ uVar8) - uVar8);
+						(((uint) * (ushort*)&ev->node +
+							((int)((int)rcossin_tbl[((i * 0x800) / iVar6 & 0xfffU) * 2] *
+								((uint) * (ushort*)((int)&ev->node + 2) - (uint) * (ushort*)&ev->node)) >> 0xc) ^ uVar8) - uVar8);
 
 					ev->rotation = i;
 
-					if ((int)((uint)uVar2 - iVar4 ^ (uint) * (ushort*)ppiVar9 - (i * 0x10000 >> 0x10)) < 0) 
+					if ((int)((uint)uVar2 - iVar4 ^ (uint) * (ushort*)ppiVar9 - (i * 0x10000 >> 0x10)) < 0)
 					{
 						ev->rotation = *(ushort*)ppiVar9;
 						ev->timer = 0;
 
-						if (gCurrentMissionNumber != 0x1e)
+						if (gCurrentMissionNumber != 30)
 							SetMSoundVar(3, NULL);
 
 						if (ev == events.cameraEvent)
@@ -3272,7 +3224,7 @@ void StepEvents(void)
 		}
 		else
 		{
-			if ((uVar2 & 0x40) != 0) 
+			if ((uVar2 & 0x40) != 0)
 			{
 				i = 0;
 				cp = car_data;
@@ -3280,7 +3232,7 @@ void StepEvents(void)
 				carsOnBoat = 0;
 				do {
 
-					if (cp->controlType != 0 && OnBoat((VECTOR*)cp->hd.where.t, ev, &dist) != 0)
+					if (cp->controlType != CONTROL_TYPE_NONE && OnBoat((VECTOR*)cp->hd.where.t, ev, &dist) != 0)
 					{
 						carsOnBoat |= 1 << i;
 					}
@@ -3308,7 +3260,7 @@ void StepEvents(void)
 
 			uVar8 = foam.rotate;
 
-			if ((ev->flags & 0x800U) != 0) 
+			if ((ev->flags & 0x800U) != 0)
 			{
 				uVar8 = CameraCnt & 0xff;
 				ev->data[1] = (int)((uint)(ushort)rcossin_tbl[(CameraCnt & 0x7fU) * 0x40] << 0x10) >> 0x19 & 0xfff;
@@ -3331,7 +3283,7 @@ void StepEvents(void)
 			}
 
 			foam.rotate = uVar8;
-			if ((ev->flags & 0x40U) != 0 && (carsOnBoat != 0 || onBoatLastFrame != 0)) 
+			if ((ev->flags & 0x40U) != 0 && (carsOnBoat != 0 || onBoatLastFrame != 0))
 			{
 				iVar13 = 0;
 
@@ -3343,17 +3295,17 @@ void StepEvents(void)
 				do {
 					pos = (VECTOR*)car_data[i].hd.where.t;
 
-					if (i == 20) 
+					if (i == 20)
 					{
 						pos = (VECTOR*)player[0].pos;
 						vel = NULL;
 					}
-					else 
+					else
 					{
 						vel = (VECTOR*)car_data[i].st.n.linearVelocity;
 					}
 
-					if ((carsOnBoat & uVar8) == 0) 
+					if ((carsOnBoat & uVar8) == 0)
 					{
 						if ((vel != NULL) && ((onBoatLastFrame & uVar8) != 0))
 						{
@@ -3361,7 +3313,7 @@ void StepEvents(void)
 							vel->vz += iVar4 * 0x1000;
 						}
 					}
-					else 
+					else
 					{
 						pos->vx += iVar6;
 						pos->vz += iVar4;
@@ -3371,7 +3323,7 @@ void StepEvents(void)
 							SetTannerPosition((VECTOR*)pos);
 							carsOnBoat = carsOnBoat & 0xffefffff;
 						}
-						else if((onBoatLastFrame & uVar8) == 0)
+						else if ((onBoatLastFrame & uVar8) == 0)
 						{
 							vel->vx += iVar6 * -0x1000;
 							vel->vz += iVar4 * -0x1000;
@@ -3437,8 +3389,8 @@ void StepEvents(void)
 	/* end block 3 */
 	// End Line: 5242
 
-// [D]
-void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
+// [D] [T]
+void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 {
 	MODEL* model;
 	int loop;
@@ -3449,20 +3401,20 @@ void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 
 	if (chicagoDoor[2].model != -1)
 	{
-		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1);
+		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
 
 		if (chicagoDoor[2].model != -1)
 		{
-			RenderModel(modelpointers[chicagoDoor[2].initialRotation], NULL, NULL, 0, 0, 1);
+			RenderModel(modelpointers[chicagoDoor[2].initialRotation], NULL, NULL, 0, 0, 1, 0);
 		}
 
 		matrix->m[0][0] = -matrix->m[0][0];
 		matrix->m[1][0] = -matrix->m[1][0];
 		matrix->m[2][0] = -matrix->m[2][0];
 
-		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1);
+		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
 
-		if (chicagoDoor[2].minSpeed != -1) 
+		if (chicagoDoor[2].minSpeed != -1)
 		{
 			VECTOR spoke[2] = {
 				{0, 0, 2677},
@@ -3481,19 +3433,19 @@ void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 			do {
 				angle = chicagoDoor[2].rotation + rotation & 0xfff;
 
-				cx = (int)rcossin_tbl[angle * 2];
-				sx = (int)rcossin_tbl[angle * 2 + 1];
+				cx = rcossin_tbl[angle * 2];
+				sx = rcossin_tbl[angle * 2 + 1];
 
-				offset.vx = FIXED(spoke[0].vx * cx + spoke[1].vx * sx);
-				offset.vy = FIXED(spoke[0].vy * cx + spoke[1].vy * sx);
-				offset.vz = FIXED(spoke[0].vz * cx + spoke[1].vz * sx);
+				offset.vx = FIXEDH(spoke[0].vx * cx + spoke[1].vx * sx);
+				offset.vy = FIXEDH(spoke[0].vy * cx + spoke[1].vy * sx);
+				offset.vz = FIXEDH(spoke[0].vz * cx + spoke[1].vz * sx);
 
 				carPos.vx = pos->vx + offset.vx;
 				carPos.vy = pos->vy + offset.vy;
 				carPos.vz = pos->vz + offset.vz;
 				gte_SetTransVector(&carPos);
 
-				RenderModel(model, NULL, NULL, 0, 0, 1);
+				RenderModel(model, NULL, NULL, 0, 0, 1, 0);
 
 				carPos.vx = pos->vx - offset.vx;
 				carPos.vy = pos->vy - offset.vy;
@@ -3501,7 +3453,7 @@ void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 
 				gte_SetTransVector(&carPos);
 
-				RenderModel(model, NULL, NULL, 0, 0, 1);
+				RenderModel(model, NULL, NULL, 0, 0, 1, 0);
 				loop--;
 				rotation += 410;
 			} while (-1 < loop);
@@ -3549,8 +3501,8 @@ void DrawFerrisWheel(MATRIX *matrix, VECTOR *pos)
 /* WARNING: Removing unreachable block (ram,0x00049750) */
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
-void DrawRotor(VECTOR pos, MATRIX *matrix)
+// [D] [T]
+void DrawRotor(VECTOR pos, MATRIX* matrix)
 {
 	POLY_FT4* poly;
 	MATRIX localMat;
@@ -3584,10 +3536,8 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 	ApplyMatrixSV(&localMat, v + 1, v + 1);
 	ApplyMatrixSV(&localMat, v + 2, v + 2);
 
-	int a0, a1, a2, a3, v0, v1;
-
 	v[0].vx += pos.vx;
-	v[0].vy +=  pos.vy;
+	v[0].vy += pos.vy;
 	v[0].vz += pos.vz;
 
 	v[1].vx += v[0].vx;
@@ -3605,7 +3555,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 	v[3].vx = v[0].vx + v[4].vx;
 	v[3].vy = v[0].vy + v[4].vy;
 	v[3].vz = v[0].vz + v[4].vz;
-	
+
 
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
@@ -3625,7 +3575,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 	poly->clut = HelicopterData.rotorTexture.clutid;
 
 	setPolyFT4(poly);
-	setSemiTrans(poly,1);
+	setSemiTrans(poly, 1);
 
 	poly->r0 = 127;
 	poly->g0 = 127;
@@ -3635,7 +3585,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 
 	gte_stsxy3(&poly->x2, &poly->x1, &poly->x0);
 
-	gte_stsz(&z); // Z
+	gte_stsz(&z);
 	z = z + 1000 >> 3;
 
 	gte_ldv0(&v[3]);
@@ -3671,7 +3621,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawEvents(int camera /*stack 0*/)
+// void /*$ra*/ DrawEvents(int num /*stack 0*/)
  // line 2240, offset 0x00049c38
 	/* begin block 1 */
 		// Start line: 2241
@@ -3814,7 +3764,7 @@ void DrawRotor(VECTOR pos, MATRIX *matrix)
 // [D]
 void DrawEvents(int camera)
 {
-	static struct _EVENT *nearestTrain; // offset 0x28
+	static struct _EVENT* nearestTrain; // offset 0x28
 	static int distanceFromNearestTrain; // offset 0x2c
 
 	bool bVar1;
@@ -3839,13 +3789,13 @@ void DrawEvents(int camera)
 	int otherCamera;
 	int temp;
 
-	if (CurrentPlayerView == 0) 
+	if (CurrentPlayerView == 0)
 	{
 		nearestTrain = NULL;
 		thisCamera = 0x8000;
 		otherCamera = 0x4000;
 	}
-	else 
+	else
 	{
 		thisCamera = 0x4000;
 		otherCamera = 0x8000;
@@ -3855,7 +3805,7 @@ void DrawEvents(int camera)
 	{
 		SetFrustrumMatrix();
 	}
-	else 
+	else
 	{
 		if (cameraEventsActive == 0)
 			return;
@@ -3900,9 +3850,9 @@ void DrawEvents(int camera)
 
 		if ((*_xv & otherCamera) == 0)
 		{
-			if ((*_xv & 0x80) == 0) 
+			if ((*_xv & 0x80) == 0)
 				ev = &event[(*_xv & 0x7f)];
-			else 
+			else
 				ev = (_EVENT*)&fixedEvent[(*_xv & 0x7f)];
 
 			uVar3 = ev->flags;
@@ -3923,9 +3873,9 @@ void DrawEvents(int camera)
 								break;
 							ev->flags = uVar3 | 4;
 
-							if (camera == 0) 
+							if (camera == 0)
 							{
-								if ((es_mobile[0] != -1) && ((uVar3 & 2) != 0)) 
+								if ((es_mobile[0] != -1) && ((uVar3 & 2) != 0))
 								{
 									local_d8 = (ev->position).vx;
 									iVar9 = local_d8 - camera_position.vx;
@@ -3939,7 +3889,7 @@ void DrawEvents(int camera)
 										local_d8 = camera_position.vz - iVar8;
 
 									if ((nearestTrain == NULL) ||
-										((uint)(iVar9 + local_d8) < distanceFromNearestTrain)) 
+										((uint)(iVar9 + local_d8) < distanceFromNearestTrain))
 									{
 										nearestTrain = ev;
 										distanceFromNearestTrain = iVar9 + local_d8;
@@ -3964,21 +3914,21 @@ void DrawEvents(int camera)
 									pos.vz = (ev->position).vz - camera_position.vz;
 									bVar1 = false;
 
-									if ((ev->flags & 2U) == 0) 
+									if ((ev->flags & 2U) == 0)
 									{
 										uVar3 = ev->flags & 0xcc0;
 
 										if (uVar3 == 0x400)
 											goto LAB_0004a118;
 
-										if (uVar3 < 0x401) 
+										if (uVar3 < 0x401)
 										{
 											if (uVar3 == 0x80)
 											{
 												_RotMatrixY(&matrix, ev->rotation);
 												pos.vx = pos.vx - boatOffset.vx;
 												pos.vz = pos.vz - boatOffset.vz;
-												pos.vy = (pos.vy - boatOffset.vy) + FIXED((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
+												pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
 											}
 											else if (uVar3 != 0xc0)
 											{
@@ -4008,9 +3958,9 @@ void DrawEvents(int camera)
 										{
 											uVar4 = 0;
 
-											if (uVar3 != 0x480) 
+											if (uVar3 != 0x480)
 												goto LAB_0004a140;
-	
+
 											do {
 												if ((uVar4 & 1) == 0)
 													offset.x = -201;
@@ -4038,7 +3988,7 @@ void DrawEvents(int camera)
 												uVar4++;
 											} while (uVar4 < 4);
 
-											PlaceShadowForCar(shadow, 12, NULL, 0);
+											PlaceShadowForCar(shadow, 0, 35, 4);
 
 										LAB_0004a118:
 											_RotMatrixY(&matrix, ev->rotation);
@@ -4053,11 +4003,11 @@ void DrawEvents(int camera)
 
 									_MatrixRotate(&pos);
 
-									if ((ev->flags & 0xcc0U) == 0xc0) 
+									if ((ev->flags & 0xcc0U) == 0xc0)
 									{
 										pMVar5 = &matrix;
 
-										if (ev->model == HelicopterData.cleanModel) 
+										if (ev->model == HelicopterData.cleanModel)
 										{
 											_RotMatrixZ(&matrix, HelicopterData.roll & 0xfff);
 											_RotMatrixX(&matrix, HelicopterData.pitch & 0xfff);
@@ -4065,7 +4015,7 @@ void DrawEvents(int camera)
 
 											DrawRotor(ev->position, &matrix);
 
-											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1);
+											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, 0);
 											pos.vx = (ev->position).vx - camera_position.vx;
 											pos.vy = -camera_position.vy - (ev->position).vy;
 											pos.vz = (ev->position).vz - camera_position.vz;
@@ -4086,11 +4036,11 @@ void DrawEvents(int camera)
 											} while (-1 < local_d8); // rotation???
 
 											_RotMatrixY(&matrix, 0xafd);
-											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1);
+											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, 0);
 										}
 									}
 
-									if ((ev->flags & 0x800U) != 0) 
+									if ((ev->flags & 0x800U) != 0)
 									{
 										_RotMatrixX(&matrix, (short)ev->data[1]);
 
@@ -4101,7 +4051,7 @@ void DrawEvents(int camera)
 										if ((ev->flags & 0x20U) == 0)
 										{
 											ev->flags = ev->flags | 1;
-											if (local_d8 != 3) 
+											if (local_d8 != 3)
 											{
 												bVar1 = true;
 											}
@@ -4112,7 +4062,7 @@ void DrawEvents(int camera)
 										}
 									}
 
-									if (bVar1) 
+									if (bVar1)
 									{
 										matrix.m[1][0] = -matrix.m[1][0];
 										matrix.m[1][1] = -matrix.m[1][1];
@@ -4120,14 +4070,14 @@ void DrawEvents(int camera)
 
 										SetupPlaneColours(0x00464a40);
 
-										RenderModel(modelpointers[ev->model], &matrix, &pos, 400, 2, 1);
+										RenderModel(modelpointers[ev->model], &matrix, &pos, 400, 2, 1, ev->rotation >> 6);
 									}
-									else 
+									else
 									{
-										if ((ev->flags & 0xcc0U) == 0x440) 
+										if ((ev->flags & 0xcc0U) == 0x440)
 											DrawFerrisWheel(&matrix, &pos);
-										else 
-											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1);
+										else
+											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, ev->rotation >> 6);
 									}
 
 									if ((ev->flags & 0x800U) != 0) {
@@ -4143,11 +4093,11 @@ void DrawEvents(int camera)
 
 										pos.vy = pos.vy + ev->data[2];
 
-										if ((foam.rotate & 0x8000U) == 0) 
+										if ((foam.rotate & 0x8000U) == 0)
 										{
 											matrix.m[0][2] = -0x1000;
 										}
-										else 
+										else
 										{
 											matrix.m[0][2] = 0x1000;
 										}
@@ -4162,12 +4112,12 @@ void DrawEvents(int camera)
 										else
 											local_d8 = 3;
 
-										RenderModel(foam.model, &matrix, &pos, 200, local_d8, 1);
+										RenderModel(foam.model, &matrix, &pos, 200, local_d8, 1, 0);
 										SetupPlaneColours(combointensity);
 									}
 								}
 							}
-							else 
+							else
 							{
 								SetCamera(ev);
 								DrawMapPSX((int*)&ObjectDrawnValue);
@@ -4216,12 +4166,12 @@ void DrawEvents(int camera)
 	/* end block 3 */
 	// End Line: 10329
 
-// [D]
-void BoatOffset(SVECTOR *offset, _EVENT *ev)
+// [D] [T]
+void BoatOffset(SVECTOR* offset, _EVENT* ev)
 {
 	offset->vx = 0;
-	offset->vy = -*(short *)(ev->data + 2);
-	offset->vz = *(short *)(ev->data + 4) - *(short *)&(ev->position).vz;
+	offset->vy = -ev->data[2];
+	offset->vz = ev->data[4] - ev->position.vz;
 }
 
 
@@ -4255,34 +4205,37 @@ void BoatOffset(SVECTOR *offset, _EVENT *ev)
 	/* end block 4 */
 	// End Line: 10309
 
-// [D]
-int OnBoat(VECTOR *pos, _EVENT *ev, int *dist)
+// [D] [T]
+int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
+	int halfBoatLength;
+	int halfBoatWidth;
 
-	if (GameLevel == 1) {
-		iVar3 = 0x355;
-		iVar2 = 0x97f;
+	if (GameLevel == 1)
+	{
+		halfBoatWidth = 853;
+		halfBoatLength = 2431;
 	}
-	else {
-		iVar3 = 0x640;
-		iVar2 = 0x1500;
+	else
+	{
+		halfBoatWidth = 1600;
+		halfBoatLength = 5376;
 	}
-	iVar1 = (ev->position).vx;
-	if (iVar1 - iVar3 < pos->vx) {
-		if (iVar1 + iVar3 <= pos->vx) {
-			return 0;
-		}
-		iVar3 = pos->vz - (ev->position).vz;
-		*dist = iVar3;
-		if ((-iVar2 < iVar3) && (iVar3 < iVar2)) {
+
+
+	if (ev->position.vx - halfBoatWidth < pos->vx && 
+		ev->position.vx + halfBoatWidth > pos->vx)
+	{
+		*dist = pos->vz - ev->position.vz;
+			
+		if (*dist > -halfBoatLength && *dist < halfBoatLength)
+		{
 			return 1;
 		}
 	}
+
 	return 0;
-	
+
 }
 
 
@@ -4342,7 +4295,7 @@ extern _sdPlane sea;
 int debugOffset = 0;
 
 // [D]
-_sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
+_sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 {
 	short uVar1;
 	int* piVar2;
@@ -4380,22 +4333,22 @@ _sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 			iVar5 = rcossin_tbl[uVar6 * 2];
 			iVar9 = rcossin_tbl[uVar6 * 2 + 1];
 
-			if (GameLevel == 3) 
+			if (GameLevel == 3)
 			{
 				iVar7 = dist * -4096 - iVar9 * 3328;
 
-				if (0 < iVar7) 
+				if (0 < iVar7)
 				{
 					uVar3 = 0xa0U - ev->data[1] & 0xfff;
 					iVar9 = (int)rcossin_tbl[uVar3 * 2 + 1];
 
-					if (iVar9 << 0xb < iVar7) 
+					if (iVar9 << 0xb < iVar7)
 					{
 						debugOffset = iVar7;
 						return &sea;
 					}
 
-					uVar6 = (iVar8 - (FIXED(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXED(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
+					uVar6 = (iVar8 - (FIXEDH(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXEDH(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
 					iVar5 = rcossin_tbl[uVar3 * 2];
 					goto LAB_0004a9f8;
 				}
@@ -4413,15 +4366,15 @@ _sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 
 		uVar6 = -(ev->position).vy;
 
-		if (pos->vy < (int)(uVar6 - 100)) 
+		if (pos->vy < (int)(uVar6 - 100))
 		{
 			uVar6 = 0xbfffee02;
 			goto LAB_0004aa50;
 		}
 	}
-	else 
+	else
 	{
-		if (1 < GameLevel) 
+		if (1 < GameLevel)
 		{
 			if (GameLevel != 3)
 			{
@@ -4433,14 +4386,14 @@ _sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 		if (GameLevel != 0)
 			return &sea;
 
-		if ((ev->flags & 0x30U) == 0) 
+		if ((ev->flags & 0x30U) == 0)
 			iVar8 = pos->vz;
-		else 
+		else
 			iVar8 = pos->vx;
 
 		if ((uVar6 & 1) == 0)
 			iVar5 = ev->data[1];
-		else 
+		else
 			iVar5 = ev->data[-1]; // [A] WTF?
 
 		uVar6 = ev->rotation & 0xfff;
@@ -4461,7 +4414,7 @@ _sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 
 		sVar4 = (short)(iVar7 << 2);
 
-		if (iVar8 > 1024) 
+		if (iVar8 > 1024)
 		{
 			if (pos->vy + 200 < (int)uVar6)
 				goto LAB_0004aa60;
@@ -4471,14 +4424,14 @@ _sdPlane* EventSurface(VECTOR *pos, _sdPlane *plane)
 
 		plane->b = sVar4;
 
-		if ((ev->flags & 0x30U) == 0) 
+		if ((ev->flags & 0x30U) == 0)
 		{
 			plane->a = 0;
 			uVar1 = rcossin_tbl[(ev->rotation & 0xfff) * 2];
 			plane->c = uVar1 * -4;
 			plane->d = (uVar1 * -0x40000) >> 0x10;
 		}
-		else 
+		else
 		{
 			sVar4 = rcossin_tbl[(ev->rotation & 0xfff) * 2];
 			plane->c = 0;
@@ -4516,8 +4469,8 @@ LAB_0004aa50:
 	/* end block 3 */
 	// End Line: 10455
 
-// [D]
-void MakeEventTrackable(_EVENT *ev)
+// [D] [T]
+void MakeEventTrackable(_EVENT* ev)
 {
 	_EVENT** p;
 
@@ -4526,7 +4479,7 @@ void MakeEventTrackable(_EVENT *ev)
 		p++;
 
 	*p = ev;
-	p[1] = NULL; // [A] is there a bug huh? I cannot understand...
+	p[1] = NULL;	// WTF?
 }
 
 
@@ -4545,17 +4498,17 @@ void MakeEventTrackable(_EVENT *ev)
 	/* end block 2 */
 	// End Line: 12826
 
-// [D]
-void TriggerDoor(FixedEvent *door, int *stage, int sound)
+// [D] [T]
+void TriggerDoor(FixedEvent* door, int* stage, int sound)
 {
 	if (*stage == 0)
 	{
-		if ((door->flags & 0x30U) != 0x10) 
+		if ((door->flags & 0x30) != 0x10)
 			door->flags &= ~0x200;
 
 		door->active = 2;
 	}
-	else 
+	else
 	{
 		door->active = 1;
 		door->flags |= 0x200;
@@ -4728,12 +4681,12 @@ VECTOR* TriggerEvent(int i)
 		return NULL;
 	}
 
-	if(GameLevel > 1 && i > 0 && i < 4) // Vegas and Rio detonators
+	if (GameLevel > 1 && i > 0 && i < 4) // Vegas and Rio detonators
 	{
 		if (stage[i] == 0)
 		{
 			p_Var6 = firstMissionEvent + i - 1;
-			
+
 			p_Var6->next = firstEvent->next;
 			p_Var2->next = p_Var6;
 
@@ -4844,7 +4797,7 @@ VECTOR* TriggerEvent(int i)
 				PrepareSecretCar();
 				events.cameraEvent = (_EVENT*)chicagoDoor;
 			case 6:
-				TriggerDoor((FixedEvent*)(ElTrainData + i * 0xb + 0x4a), stage + i, 1); // might be incorrect
+				TriggerDoor(chicagoDoor + i - 5, stage + i, 1); // might be incorrect
 		}
 	}
 	else if (GameLevel == 1)
@@ -4867,11 +4820,11 @@ VECTOR* TriggerEvent(int i)
 				break;
 			case 3:
 				PrepareSecretCar();
-				events.cameraEvent = (_EVENT*)havanaFixed + 2;
+				events.cameraEvent = (_EVENT*)(havanaFixed + 2);
 				TriggerDoor(havanaFixed + 2, stage + i, 0);
 				break;
 			case 4:
-				if (stage[i] != 0) 
+				if (stage[i] != 0)
 				{
 					SpecialCamera(SPECIAL_CAMERA_WAIT, 0);
 					event[1].node = event[1].node + 1;
@@ -4909,15 +4862,15 @@ VECTOR* TriggerEvent(int i)
 				event[1].next = event + 2;
 				break;
 			case 4:
-				TriggerDoor(vegasDoor + i + 2, stage + i, 0);
+				TriggerDoor(vegasDoor + i - 4, stage + i, 0);
 				break;
 			case 8:
-				events.cameraEvent = (_EVENT*)vegasDoor + 4;
+				events.cameraEvent = (_EVENT*)(vegasDoor + 4);
 				PrepareSecretCar();
 			case 5:
 			case 6:
 			case 7:
-				TriggerDoor(vegasDoor + i + 2, stage + i, 1);
+				TriggerDoor(vegasDoor + i - 4, stage + i, 1);
 				break;
 			case 9:
 				SetMSoundVar(5, NULL);
@@ -4934,11 +4887,11 @@ VECTOR* TriggerEvent(int i)
 				TriggerDoor(rioDoor + 2, stage + i, 0);
 				TriggerDoor(rioDoor + 3, stage + i, 0);
 
-				events.cameraEvent = (_EVENT*)rioDoor + 2;
+				events.cameraEvent = (_EVENT*)(rioDoor + 2);
 				break;
 			case 5:
 			case 6:
-				TriggerDoor(vegasDoor + i, stage + i, (i == 5));
+				TriggerDoor(rioDoor + i - 5, stage + i, (i == 5));
 				break;
 			case 7:
 				if (stage[i] == 0)
@@ -4959,7 +4912,7 @@ VECTOR* TriggerEvent(int i)
 				PingOutAllSpecialCivCars();
 				TriggerDoor(rioDoor + 4, stage + i, 0);
 				TriggerDoor(rioDoor + 5, stage + i, 0);
-				events.cameraEvent = (_EVENT*)rioDoor + 4;
+				events.cameraEvent = (_EVENT*)(rioDoor + 4);
 		}
 	}
 
@@ -4992,8 +4945,8 @@ switchD_0004afa0_caseD_1:
 	/* end block 3 */
 	// End Line: 10762
 
-// [D]
-void OffsetTarget(VECTOR *target)
+// [D] [T]
+void OffsetTarget(VECTOR* target)
 {
 	target->vx -= boatOffset.vx;
 	target->vy -= boatOffset.vy;
@@ -5050,7 +5003,7 @@ void SpecialCamera(enum SpecialCamera type, int change)
 	int* hackCamera;
 	short* boat;
 
-	if ((change == 0) && (type != SPECIAL_CAMERA_WAIT)) 
+	if ((change == 0) && (type != SPECIAL_CAMERA_WAIT))
 	{
 		cameraDelay.delay = 1;
 		cameraDelay.type = (uint)type;
@@ -5074,7 +5027,7 @@ void SpecialCamera(enum SpecialCamera type, int change)
 		goto LAB_0004b5b8;
 	}
 
-	if (SPECIAL_CAMERA_RESET < type) 
+	if (SPECIAL_CAMERA_RESET < type)
 	{
 		if (type == SPECIAL_CAMERA_WAIT)
 		{
@@ -5090,15 +5043,15 @@ void SpecialCamera(enum SpecialCamera type, int change)
 	rememberCamera[1] = camera_angle.vy;
 	rememberCamera[2] = camera_position.vz;
 
-	if (GameLevel == 1) 
+	if (GameLevel == 1)
 	{
-		if (gCurrentMissionNumber == 15) 
+		if (gCurrentMissionNumber == 15)
 		{
 			boat = boatCamera;
 		LAB_0004b418:
 			events.cameraEvent = (_EVENT*)0x1;
 		}
-		else 
+		else
 		{
 			hackCamera = HavanaCameraHack;
 
@@ -5118,9 +5071,9 @@ void SpecialCamera(enum SpecialCamera type, int change)
 			}
 		}
 	}
-	else 
+	else
 	{
-		if (GameLevel == 0) 
+		if (GameLevel == 0)
 		{
 			hackCamera = ChicagoCameraHack;
 		}
@@ -5129,7 +5082,7 @@ void SpecialCamera(enum SpecialCamera type, int change)
 			hackCamera = VegasCameraHack;
 			if (gCurrentMissionNumber == 0x17)
 			{
-				if (type != SPECIAL_CAMERA_SET2) 
+				if (type != SPECIAL_CAMERA_SET2)
 				{
 					hackCamera = VegasCameraHack + 6;
 					goto LAB_0004b418;
@@ -5166,13 +5119,13 @@ void SpecialCamera(enum SpecialCamera type, int change)
 		}
 	}
 
-	if (boat == NULL) 
+	if (boat == NULL)
 	{
 		camera_position.vx = hackCamera[0];
 		camera_angle.vy = hackCamera[1];
 		camera_position.vz = hackCamera[2];
 	}
-	else 
+	else
 	{
 		camera_position.vx = (event->position).vx + boat[0];
 		camera_angle.vy = boat[1];
@@ -5181,13 +5134,13 @@ void SpecialCamera(enum SpecialCamera type, int change)
 
 	player[0].cameraPos = camera_position;
 
-	if (events.cameraEvent != NULL) 
+	if (events.cameraEvent != NULL)
 	{
 		gStopPadReads = 1;
 	}
 
 LAB_0004b5b8:
-	if (type != SPECIAL_CAMERA_WAIT) 
+	if (type != SPECIAL_CAMERA_WAIT)
 	{
 		camera_change = 1;
 		VisibilityLists(VIS_SORT, 0);
@@ -5217,15 +5170,15 @@ LAB_0004b5b8:
 	/* end block 3 */
 	// End Line: 13725
 
-// [D]
-void ScreenShake(int count, SVECTOR *ang)
+// [D] [T]
+void ScreenShake(int count, SVECTOR* ang)
 {
-	eventHaze = count << 2;
+	eventHaze = count * 4;
 
-	camera_angle.vx = (ang->vx + (Random2(0) % (eventHaze << 1))) - eventHaze;
+	camera_angle.vx = (ang->vx + (Random2(0) % (eventHaze / 2))) - eventHaze;
 	camera_angle.vy = (ang->vy + (Random2(0) % (eventHaze * 2))) - eventHaze;
 
-	eventHaze = eventHaze * 3;
+	eventHaze *= 3;
 }
 
 
@@ -5332,15 +5285,15 @@ int DetonatorTimer(void)
 
 	_ev = firstMissionEvent;
 	ev = event;
-	if (gCurrentMissionNumber == 23) 
+	if (gCurrentMissionNumber == 23)
 	{
-		if (detonator.timer - 3U < 0x11) 
+		if (detonator.timer - 3U < 0x11)
 		{
 			cnt = detonator.timer + -2;
 		}
-		else 
+		else
 		{
-			if (8 < detonator.timer - 0x1fU)
+			if (detonator.timer - 0x1fU > 8)
 			{
 				if (detonator.timer == 0x15)
 				{
@@ -5364,7 +5317,7 @@ int DetonatorTimer(void)
 						Mission.timer[0].flags = Mission.timer[0].flags & 0xef;
 						SetMissionComplete();
 					}
-					else 
+					else
 					{
 						detonator.timer = detonator.timer + 1;
 					}
@@ -5398,7 +5351,7 @@ int DetonatorTimer(void)
 		goto LAB_0004ba8c;
 	}
 
-	if (detonator.timer - 0x8dU < 0x13) 
+	if (detonator.timer - 0x8dU < 0x13)
 	{
 		ScreenShake(detonator.timer + -0x8c, &rememberCameraAngle);
 		Setup_Smoke(&_ev->position, 100, 500, 1, 0, &dummy, 0);
@@ -5411,7 +5364,7 @@ int DetonatorTimer(void)
 	LAB_0004ba0c:
 		ev = ev + 1;
 	}
-	else 
+	else
 	{
 		if (detonator.timer < 168)
 		{
@@ -5421,7 +5374,7 @@ int DetonatorTimer(void)
 				ev = firstMissionEvent;
 				if (detonator.count < 3)
 				{
-					while (detonator.count = cnt, detonator.count != -1) 
+					while (detonator.count = cnt, detonator.count != -1)
 					{
 						AddExplosion(ev->position, BIG_BANG);
 						cnt = detonator.count + -1;
@@ -5453,7 +5406,7 @@ int DetonatorTimer(void)
 		}
 
 		ev = firstMissionEvent;
-		if (detonator.timer == 180) 
+		if (detonator.timer == 180)
 			goto LAB_0004ba0c;
 
 		if (detonator.timer != 190)
@@ -5464,7 +5417,7 @@ int DetonatorTimer(void)
 	pos.vy = (ev->position).vy;
 	pos.vz = (ev->position).vz;
 
-	if (GameLevel == 3) 
+	if (GameLevel == 3)
 	{
 		pos.vx = pos.vx - boatOffset.vx;
 		pos.vy = pos.vy - boatOffset.vy;
@@ -5495,7 +5448,7 @@ LAB_0004ba8c:
 			// Start line: 3301
 			// Start offset: 0x0004BAF8
 			// Variables:
-		// 		int n; // $a1
+		// 		int num; // $a1
 		/* end block 1.1 */
 		// End offset: 0x0004BAF8
 		// End Line: 3303
@@ -5518,31 +5471,31 @@ LAB_0004ba8c:
 	/* end block 4 */
 	// End Line: 8399
 
-// [D]
-void MultiCarEvent(_TARGET *target)
+// [D] [T]
+void MultiCarEvent(_TARGET* target)
 {
-	_EVENT *first;
+	_EVENT* first;
 	int n;
-	_EVENT *ev;
-	MULTICAR_DATA *data;
+	_EVENT* ev;
+	MULTICAR_DATA* data;
 	int i;
 
 	first = firstEvent;
 
-	data = (MULTICAR_DATA *)(target->data + 1);
-	
+	data = (MULTICAR_DATA*)(target->data + 1);
+
 	firstEvent = multiCar.event + multiCar.count;
 	n = target->data[1];
-	
+
 	i = 0;
-	while (n != -0x80000000) 
+	while (n != -0x80000000)
 	{
 		n = (multiCar.event - event) + multiCar.count;
 
 		ev = event + n;
 
 		ev->position.vx = data->x;
-		ev->position.vy = -0x138;
+		ev->position.vy = -312;
 		ev->position.vz = data->z;
 		ev->rotation = data->rot;
 
@@ -5552,12 +5505,12 @@ void MultiCarEvent(_TARGET *target)
 		data++;
 		i++;
 
-		if (i > 4) 
+		if (i > 4)
 			break;
 
 		n = data->x;
 	}
-	
+
 	//firstEvent->next = first; // [A] bug fix
 	multiCar.event[multiCar.count - 1].next = first;
 }

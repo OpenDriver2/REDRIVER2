@@ -19,7 +19,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
+#include "RAND.H"
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[6];
@@ -540,9 +540,9 @@ int CarConeCollision(VECTOR *pPos, int car)
 	cd[0].x.vz = pPos->vz;
 	cd[0].length[0] = 0x28;
 	cd[0].length[1] = 0x28;
-	cd[0].theta = 0;
+	cd[0].theta = pPos->pad;
 
-	if (car_data[car].controlType == 0) 
+	if (car_data[car].controlType == CONTROL_TYPE_NONE) 
 		return 0;
 
 	model = car_data[car].ap.model;
@@ -866,7 +866,7 @@ void DrawCone(VECTOR *position, int cone)
 		gte_SetRotMatrix(&inv_camera_matrix);
 
 		_MatrixRotate(&pos);
-		RenderModel(gTrailblazerConeModel, &matrix, &pos, 0, 0, 0);
+		RenderModel(gTrailblazerConeModel, &matrix, &pos, 0, 0, 0, 0);
 	}
 }
 
@@ -914,11 +914,6 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 	pos.vx = wpos->vx - camera_position.vx;
 	pos.vy = wpos->vy - camera_position.vy;
 	pos.vz = wpos->vz - camera_position.vz;
-
-	// [A]
-#ifndef PSX
-	MulMatrix0(&aspect, &object_matrix, &object_matrix);
-#endif
 
 	Apply_Inv_CameraMatrix(&pos);
 	SetRotMatrix(&object_matrix);
@@ -979,6 +974,7 @@ void GetConePos(int cone, VECTOR *pos, int side)
 		pos->vx = pTVar2->x;
 		pos->vy = pTVar2->y;
 		pos->vz = pTVar2->z;
+		pos->pad = pTVar2->rot;	// [A] store cone rotation
 	}
 	else 
 	{
@@ -994,17 +990,18 @@ void GetConePos(int cone, VECTOR *pos, int side)
 
 		if (side == 0) 
 		{
-			pos->vx = pTVar2->x - FIXED(iVar6);
+			pos->vx = pTVar2->x - FIXEDH(iVar6);
 			pos->vy = pTVar2->y;
 			iVar4 = -iVar4;
 		}
 		else 
 		{
-			pos->vx = pTVar2->x + FIXED(iVar6);
+			pos->vx = pTVar2->x + FIXEDH(iVar6);
 			pos->vy = pTVar2->y;
 		}
 
 		pos->vz = pTVar2->z + iVar4;
+		pos->pad = pTVar2->rot;
 	}
 }
 

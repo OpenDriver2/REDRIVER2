@@ -4,6 +4,7 @@
 #include "COSMETIC.H"
 #include "COP_AI.H"
 #include "CARS.H"
+#include "FELONY.H"
 #include "PLAYERS.H"
 #include "REPLAYS.H"
 
@@ -71,33 +72,24 @@ void StoreGameFlags(void)
 // [D] [T]
 int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 {
-	int speed;
 	int carRange;
 
-	if ((cp->controlFlags & 1) != 0) 
+	if (cp->controlFlags & CONTROL_FLAG_COP) 
 		gCopCarTheftAttempted = 1;
 
-
-	if ((cp->controlType == 2 || cp->controlType == 7) && 
-		(cp->controlFlags & 1) == 0 && 
-		(cp->controlFlags & 2) == 0 && 
+	if ((cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_CUTSCENE) && 
+		(cp->controlFlags & CONTROL_FLAG_COP) == 0 && 
+		(cp->controlFlags & CONTROL_FLAG_COP_SLEEPING) == 0 && 
 		cp->hd.where.m[1][1] > 99)			// not flipped over
 	{
-		speed = FIXED(cp->hd.wheel_speed);
-
-		if (speed < 0)
-			speed = -speed;
-
-		if (speed < 3)
+		if (ABS(FIXEDH(cp->hd.wheel_speed)) < 3)
 		{
 			carRange = car_cosmetics[cp->ap.model].colBox.vx * 2;
 			
 			if (carRange > 5000)
 				carRange = 5000;
 
-			carRange *= carRange;
-
-			return (carRange < distToCarSq) ^ 1;
+			return (carRange*carRange < distToCarSq) ^ 1;
 		}
 	}
 
@@ -132,9 +124,8 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 // [D]
 int TannerStuckInCar(int doSpeedCheck, int player_id)
 {
-	short *psVar1;
+	short *playerFelony;
 	int speed;
-	int iVar3;
 
 	_CAR_DATA *cp;
 	_PLAYER* lp;
@@ -146,22 +137,22 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 	{
 		if (lp->playerCarId < 0)
 		{
-			psVar1 = &pedestrianFelony;
+			playerFelony = &pedestrianFelony;
 		}
 		else 
 		{
 			cp = &car_data[lp->playerCarId];
-			psVar1 = &cp->felonyRating;
+			playerFelony = &cp->felonyRating;
 		}
 
-		if ((*psVar1 < 0x293 || player_position_known < 1) &&
+		if ((*playerFelony <= FELONY_MIN_VALUE || player_position_known < 1) &&
 			cp &&
 			(cp->hd.wheel[1].surface & 7) != 1 &&
 			(cp->hd.wheel[3].surface & 7) != 1)
 		{
 			if (doSpeedCheck != 0)
 			{
-				speed = FIXED(cp->hd.wheel_speed);
+				speed = FIXEDH(cp->hd.wheel_speed);
 
 				if (speed < 0)
 					speed = -speed;

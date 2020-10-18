@@ -142,6 +142,10 @@ extern int docop2(int op);
 #define gte_ldrgb( r0 ) \
 	MTC2(*(uint*)((char*)r0), 6);
 
+// mtc2 8
+#define gte_lddp( r0 )	\
+	MTC2(*(uint*)r0, 8);
+
 #if defined(PGXP)
 
 // swc2 14
@@ -272,6 +276,11 @@ extern int docop2(int op);
 	*(uint*)((char*)r0 + 4) = CFC2(22);\
 	*(uint*)((char*)r0 + 8) = CFC2(23);
 
+// ctc2 24,25
+#define gte_SetGeomOffset( r0, r1 )\
+	CTC2(r0 << 16, 24); \
+	CTC2(r1 << 16, 25); \
+
 // TODO: GTEMAC
 #define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
 				{	gte_ldv3(r1,r2,r3);	\
@@ -292,6 +301,15 @@ extern int docop2(int op);
 					gte_ldclmv((char*)r2+4);\
 					gte_rtir();		\
 					gte_stclmv((char*)r3+4);	}
+
+#define gte_LoadAverage12(r1,r2,r3,r4,r5)			\
+				{	gte_lddp(r3);		\
+					gte_ldlvl(r1);		\
+					gte_gpf12();		\
+					gte_lddp(r4);		\
+					gte_ldlvl(r2);		\
+					gte_gpl12();		\
+					gte_stlvl(r5);	}
 
 // FIXME: there is lack of some macros
 // please refer to official Psy-Q PSX SDK headers

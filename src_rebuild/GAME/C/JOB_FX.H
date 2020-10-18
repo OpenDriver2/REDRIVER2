@@ -1,6 +1,7 @@
 #ifndef JOB_FX_H
 #define JOB_FX_H
 
+extern _ExOBJECT explosion[MAX_EXPLOSION_OBJECTS];
 
 extern void InitExObjects(); // 0x00057B0C
 

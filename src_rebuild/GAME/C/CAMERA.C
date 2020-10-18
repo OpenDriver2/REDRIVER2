@@ -14,19 +14,15 @@
 #include "OBJCOLL.H"
 #include "PAD.H"
 #include "PLAYERS.H"
-#include "PEDEST.H"
 #include "DRAW.H"
-#include "COSMETIC.H"
 #include "CELL.H"
 #include "MODELS.H"
-#include "DRAW.H"
-#include "PAD.H"
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
 
 
-VECTOR CameraPos = { -45, -171, -125, 0 };
+VECTOR gCameraOffset = { 0};
 VECTOR camera_position = { 0, 380, 0, 0 };
 SVECTOR camera_angle = { 0,0,0 };
 
@@ -105,6 +101,8 @@ void CalcCameraBasePos(_PLAYER* lp)
 		gte_rtv0tr();
 		gte_stlvnl(basePos);
 
+		basePos[1] -= gCameraOffset.vy;
+
 		baseDir = car_data[lp->cameraCarId].hd.direction;
 	}
 }
@@ -173,9 +171,10 @@ void InitCamera(_PLAYER *lp)
 				lp->cameraDist = 1000;
 
 				gCameraAngle = 2048;
-				CameraPos.vx = -45;
-				CameraPos.vy = -171;
-				CameraPos.vz = -125;
+				gCameraMaxDistance = 0;
+				gCameraOffset.vx = 0;
+				gCameraOffset.vy = 0;
+				gCameraOffset.vz = 0;
 			}
 			else
 			{
@@ -333,9 +332,9 @@ void ModifyCamera(void)
 
 					CalcCameraBasePos(lp);
 
-					angle = baseDir + 0x800 & 0xfff;
-					lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[angle * 2] * (length - 60));
-					lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[angle * 2 + 1] * (length - 60));
+					angle = baseDir + 2048 & 0xfff;
+					lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
+					lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
 				}
 			}
 		}
@@ -451,14 +450,8 @@ int CameraCollisionCheck(void)
 
 				if (boxptr != NULL && (model->flags2 & 0x800) == 0) 
 				{
-					xd = cop->pos.vx - camera_position.vx;
-					if (xd < 0)
-						xd = camera_position.vx - cop->pos.vx;
-
-					zd = cop->pos.vz - camera_position.vz;
-					if (zd < 0)
-						zd = camera_position.vz - cop->pos.vz;
-						
+					xd = ABS(cop->pos.vx - camera_position.vx);
+					zd = ABS(cop->pos.vz - camera_position.vz);
 
 					num_cb = *boxptr;
 					collide = (COLLISION_PACKET *)(boxptr + 1);
@@ -477,9 +470,9 @@ int CameraCollisionCheck(void)
 
 							mat = &matrixtable[cop->yang];
 
-							offset.vx = (cam_vec.vx * mat->m[0][0] + cam_vec.vz * mat->m[2][0] >> 0xc) - collide->xpos;
+							offset.vx = FIXED(cam_vec.vx * mat->m[0][0] + cam_vec.vz * mat->m[2][0]) - collide->xpos;
 							offset.vy = cam_vec.vy - collide->ypos;
-							offset.vz = (cam_vec.vx * mat->m[0][2] + cam_vec.vz * mat->m[2][2] >> 0xc) - collide->zpos;
+							offset.vz = FIXED(cam_vec.vx * mat->m[0][2] + cam_vec.vz * mat->m[2][2]) - collide->zpos;
 
 							if (collide->yang != 0)
 							{
@@ -491,9 +484,9 @@ int CameraCollisionCheck(void)
 							if (collide->xsize < 500 && collide->zsize < 500)
 								break;
 
-							sizex = (collide->xsize >> 1) + sphere;
-							sizey = (collide->ysize >> 1) + sphere;
-							sizez = (collide->zsize >> 1) + sphere;
+							sizex = (collide->xsize / 2) + sphere;
+							sizey = (collide->ysize / 2) + sphere;
+							sizez = (collide->zsize / 2) + sphere;
 
 							if (-sizex < offset.vx && offset.vx < sizex &&
 								-sizez < offset.vz && offset.vz < sizez &&
@@ -629,9 +622,8 @@ void TurnHead(_PLAYER *lp)
 	/* end block 3 */
 	// End Line: 1744
 
-int maxCameraDist;
-short gCameraDistance = 0x3e8;
-short gCameraMaxDistance = 0x3e8;
+short gCameraDistance = 1000;
+short gCameraMaxDistance = 0;
 
 _CAR_DATA *jcam = NULL;
 int switch_detail_distance = 10000;
@@ -648,14 +640,13 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	int angleDelta;
 	int cammapht;
 	int camPosVy;
+	int maxCameraDist;
 
-	if (lp->cameraCarId < 0)
-	{
-		maxCameraDist = 850;
-		carheight = -220;
-		camExpandSpeed = 10;
-	}
-	else 
+	maxCameraDist = 850;
+	carheight = -220;
+	camExpandSpeed = 10;
+	
+	if (lp->cameraCarId >= 0)
 	{
 		_CAR_DATA* camCar;
 		int carSpeed;
@@ -665,24 +656,17 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 
 		if(car_cos)
 		{
-			carheight = car_cos->colBox.vy * -3 + 0x55;
-			maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
+			carheight = car_cos->colBox.vy * -3 + 85;
 
-			carSpeed = FIXED(camCar->hd.wheel_speed);
+			if (gCameraMaxDistance == 0)
+				maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
+			else
+				maxCameraDist = gCameraMaxDistance;
 
-			if (carSpeed < 0)
-				carSpeed = -carSpeed;
+			carSpeed = FIXEDH(camCar->hd.wheel_speed);
 
-			camExpandSpeed = 10;
-
-			if (carSpeed > 9 && (gCameraDistance + 30 <= maxCameraDist))
+			if (ABS(carSpeed) > 9 && (gCameraDistance + 30 <= maxCameraDist))
 				camExpandSpeed = 20;
-		}
-		else
-		{
-			maxCameraDist = 850;
-			carheight = -220;
-			camExpandSpeed = 10;
 		}
 	}
 
@@ -700,13 +684,13 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		}
 		else
 		{
-			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 0x800U & 0xfff) - 0x800;
+			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
 			lp->cameraAngle += (angleDelta >> 3) & 0xfff;
 		}
 	}
 
-	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[camAngle * 2] * lp->cameraDist);
-	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[camAngle * 2 + 1] * lp->cameraDist);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[camAngle * 2] * lp->cameraDist);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[camAngle * 2 + 1] * lp->cameraDist);
 
 	lp->cameraPos.vy = basePos[1];
 	camPosVy = MapHeight(&lp->cameraPos);
@@ -716,15 +700,10 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 
 	if (lp->cameraPos.vy > cammapht)
 	{
-		int height, tmp;
+		int height;
 		height = MapHeight((VECTOR*)basePos);
 
-		tmp = height - camPosVy;
-
-		if (tmp < 0)
-			tmp = camPosVy - height;
-
-		if (tmp < 900)
+		if (ABS(height - camPosVy) < 900)
 		{
 			camera_angle.vx = (lp->cameraPos.vy - cammapht >> 1) + 25;
 			lp->cameraPos.vy = cammapht;
@@ -734,13 +713,11 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	jcam = &car_data[20];
 	ClearMem((char *)jcam, sizeof(_CAR_DATA));
 
-	jcam->controlType = 5;
+	jcam->controlType = CONTROL_TYPE_CAMERACOLLIDER;
 
 	gCameraDistance = maxCameraDist;
 
-	if (lp->cameraCarId < 0) 
-		jcam->ap.carCos = &dummyCosmetics;
-	else 
+	if (lp->cameraCarId >= 0) 
 		jcam->ap.carCos = car_data[lp->cameraCarId].ap.carCos;
 
 	jcam->hd.direction = camAngle;
@@ -748,9 +725,9 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	sdist = maxCameraDist * rcossin_tbl[camAngle * 2] + 0x800;
 	cdist = maxCameraDist * rcossin_tbl[camAngle * 2 + 1] + 0x800;
 
-	jcam->hd.oBox.location.vx = jcam->hd.where.t[0] = basePos[0] + ((sdist >> 0xc) - (sdist >> 0x1f) >> 1);
+	jcam->hd.oBox.location.vx = jcam->hd.where.t[0] = basePos[0] + (sdist >> 13);
 	jcam->hd.oBox.location.vy = jcam->hd.where.t[1] = -lp->cameraPos.vy;
-	jcam->hd.oBox.location.vz = jcam->hd.where.t[2] = basePos[2] + ((cdist >> 0xc) - (cdist >> 0x1f) >> 1);
+	jcam->hd.oBox.location.vz = jcam->hd.where.t[2] = basePos[2] + (cdist >> 13);
 
 	CheckScenaryCollisions(jcam);
 
@@ -759,17 +736,19 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	if (lp->cameraDist > gCameraDistance)
 		lp->cameraDist = gCameraDistance;
 
-	jcam->hd.direction = jcam->hd.direction & 0xfff;
-
 	lp->cameraPos.vy = -jcam->hd.where.t[1];
-	lp->cameraPos.vx = basePos[0] + FIXED(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2]);
-	lp->cameraPos.vz = basePos[2] + FIXED(lp->cameraDist * rcossin_tbl[jcam->hd.direction * 2 + 1]);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(lp->cameraDist * rcossin_tbl[(jcam->hd.direction & 0xfff) * 2]);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(lp->cameraDist * rcossin_tbl[(jcam->hd.direction & 0xfff) * 2 + 1]);
 
-	camera_angle.vy = -ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
+	if (lp->cameraCarId < 0)
+		camera_angle.vy = -(jcam->hd.direction + 2048);
+	else
+		camera_angle.vy = -ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
+	
 	camera_angle.vz = 0;
 
-	SetGeomScreen(0x100);
-	scr_z = 0x100;
+	SetGeomScreen(256);
+	scr_z = 256;
 	switch_detail_distance = 10000;
 
 	BuildWorldMatrix();
@@ -832,7 +811,7 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 
 		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
 
-		if (16000 < d)
+		if (d > 16000)
 		{
 			lp->cameraView = 0;
 			return;
@@ -978,14 +957,14 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 
 	angle = baseDir & 0xfff;
 
-	lp->cameraPos.vx = basePos[0] + FIXED(rcossin_tbl[angle * 2] * viewer_position.vz);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * viewer_position.vz);
 	lp->cameraPos.vy = viewer_position.vy - basePos[1];
-	lp->cameraPos.vz = basePos[2] + FIXED(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
 
 	TurnHead(lp);
 
 	if ((paddCamera & 3) == 3)
-		camera_angle.vy = 0x800 - baseDir & 0xfff;
+		camera_angle.vy = 2048 - baseDir & 0xfff;
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
 
@@ -996,11 +975,11 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 	{
 		ClearMem((char *)&inv_camera_matrix, sizeof(MATRIX));
 
-		angle = 0x800U - baseDir & 0xfff;
+		angle = 2048U - baseDir & 0xfff;
 
 		inv_camera_matrix.m[0][0] = rcossin_tbl[angle * 2 + 1];
 		inv_camera_matrix.m[0][2] = rcossin_tbl[angle * 2];
-		inv_camera_matrix.m[1][1] = 0x1000;
+		inv_camera_matrix.m[1][1] = 4096;
 		inv_camera_matrix.m[2][0] = -inv_camera_matrix.m[0][2];
 		inv_camera_matrix.m[2][2] = inv_camera_matrix.m[0][0];
 	}
@@ -1026,10 +1005,10 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 	MulMatrix0(&aspect, &inv_camera_matrix, &inv_camera_matrix);
 	InvertMatrix(&inv_camera_matrix, &camera_matrix);
 
-	face_camera_work.m[0][0] = 0x1000;
+	face_camera_work.m[0][0] = 4096;
 	face_camera_work.m[0][2] = 0;
 	face_camera_work.m[2][0] = 0;
-	face_camera_work.m[2][2] = 0x1000;
+	face_camera_work.m[2][2] = 4096;
 
 	RotMatrixY(-camera_angle.vy & 0xfff, &face_camera_work);
 	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);

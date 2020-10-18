@@ -19,7 +19,7 @@ extern SVECTOR camera_angle;
 extern int gCameraAngle;
 extern short gCameraDistance;
 extern short gCameraMaxDistance;
-extern VECTOR CameraPos;
+extern VECTOR gCameraOffset;
 
 extern int switch_detail_distance;
 

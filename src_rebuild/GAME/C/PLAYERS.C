@@ -37,7 +37,7 @@
 PEDESTRIAN *pPlayerPed = NULL;
 _PLAYER player[8];
 
-// [D]
+// [D] [T]
 void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int direction, long(*startPos)[4], int externModel, int palette, char *padid)
 {
 	int model;
@@ -63,7 +63,8 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 
 		InitCar(cp, direction, startPos, carCtrlType, model, palette & 0xff, &locPlayer->padid);
 
-		cp->controlFlags |= 4;
+		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED;
+		
 		locPlayer->worldCentreCarId = cp->id;
 		locPlayer->cameraView = 0;// (NumPlayers == 2) << 1; // [A]
 		locPlayer->playerCarId = cp->id;
@@ -71,17 +72,19 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 		locPlayer->spoolXZ = (VECTOR *)cp->hd.where.t;
 		locPlayer->cameraCarId = cp->id;
 		locPlayer->car_is_sounding = 0;
+		
 		locPlayer->pos[1] = cp->hd.where.t[1];
 	}
 	else 
 	{
-		ActivatePlayerPedestrian(NULL, padid, direction, startPos, playerType);
+		ActivatePlayerPedestrian(NULL, padid, direction, startPos, (PED_MODEL_TYPES)playerType);
 
 		locPlayer->playerType = 2;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
 		locPlayer->playerCarId = -1;
 		locPlayer->car_is_sounding = 2;
 		locPlayer->cameraView = 0;
+		
 		locPlayer->pos[1] = -pPlayerPed->position.vy;
 	}
 
@@ -122,7 +125,7 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 	/* end block 2 */
 	// End Line: 261
 
-// [D]
+// [D] [T]
 void ChangeCarPlayerToPed(int playerID)
 {
 	_CAR_DATA *lcp = &car_data[player[playerID].playerCarId];
@@ -145,7 +148,7 @@ void ChangeCarPlayerToPed(int playerID)
 		player[playerID].spoolXZ = (VECTOR *)&pPlayerPed->position;
 	}
 
-	lcp->controlType = 2;
+	lcp->controlType = CONTROL_TYPE_CIV_AI;
 	lcp->wheel_angle = 0;
 	lcp->ai.c.thrustState = 3;
 	lcp->ai.c.ctrlState = 7;
@@ -205,25 +208,29 @@ void ChangeCarPlayerToPed(int playerID)
 
 extern int lastCarCameraView;
 
+// [D] [T]
 void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 {
-	bool bVar1;
-	char cVar2;
-	char bVar3;
-	bool bVar4;
-	uint uVar5;
+	int carParked;
+	int siren;
 	int channel;
-	uint uVar6;
-	int channel_00;
+	int carSampleId;
 
-	_PLAYER *lPlayer = &player[playerID];
+	_PLAYER* lPlayer;
 
-	bVar4 = false;
-	uVar5 = CarHasSiren(newCar->ap.model);
+	lPlayer = &player[playerID];
 
-	if (((newCar->controlType != 2 && newCar->controlType != 7) || newCar->ai.c.thrustState != 3) || (newCar->ai.c.ctrlState != 7 && newCar->ai.c.ctrlState != 5))
+	siren = CarHasSiren(newCar->ap.model);
+
+	if (newCar->controlType == CONTROL_TYPE_CIV_AI && 
+		newCar->ai.c.thrustState == 3 && (newCar->ai.c.ctrlState == 7 || newCar->ai.c.ctrlState == 5) || 
+		newCar->controlType == CONTROL_TYPE_CUTSCENE)
 	{
-		bVar4 = true;
+		carParked = 1;
+	}
+	else
+	{
+		carParked = 0;
 	}
 
 	lPlayer->playerType = 1;
@@ -232,38 +239,32 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 
 	if (gInGameCutsceneActive == 0 && gInGameChaseActive == 0)
 	{
-		cVar2 = newCar->id;
 		lPlayer->spoolXZ = (VECTOR *)newCar->hd.where.t;
-		lPlayer->worldCentreCarId = cVar2;
+		lPlayer->worldCentreCarId = newCar->id;
 	}
 
 	lPlayer->cameraView = lastCarCameraView;
-	channel = 0x1000;
 
-	if (NoPlayerControl == 0) 
-	{
-		channel = newCar->hd.direction + 0x600;
-	}
+	if (NoPlayerControl == 0)
+		lPlayer->cameraAngle = newCar->hd.direction + 1536;
+	else
+		lPlayer->cameraAngle = 4096;
 
-	lPlayer->cameraAngle = channel;
 	lPlayer->headPos = 0;
 	lPlayer->headTarget = 0;
 	lPlayer->headTimer = 0;
-	//lPlayer->padid = 0;
 	lPlayer->pPed = NULL;
 
-	
-	{
-		newCar->controlType = 1;
-		newCar->ai.padid = &lPlayer->padid;
-		newCar->hndType = 0;
 
-		if (playerID == 0)
+	newCar->controlType = CONTROL_TYPE_PLAYER;
+	newCar->ai.padid = &lPlayer->padid;
+	newCar->hndType = 0;
+
+	if (playerID == 0)
+	{
+		if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
 		{
-			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
-			{
-				NoteFelony(&felonyData, 11, 4096);
-			}
+			NoteFelony(&felonyData, 11, 4096);
 		}
 	}
 
@@ -274,61 +275,32 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 
 	// door close sound
 	Start3DSoundVolPitch(-1, 6, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
-	bVar3 = newCar->ap.model;
 
-	if (bVar3 == 4)
-		uVar6 = ResidentModelsBodge();
-	else if (bVar3 < 3)
-		uVar6 = newCar->ap.model;
+	if (newCar->ap.model == 4)
+		carSampleId = ResidentModelsBodge();
+	else if (newCar->ap.model < 3)
+		carSampleId = newCar->ap.model;
 	else
-		uVar6 = newCar->ap.model - 1;
+		carSampleId = newCar->ap.model - 1;
 
-	channel = 1;
-	if (playerID != 0) 
-		channel = 4;
+	// start idle sound
+	channel = playerID == 0 ? 1 : 4;	
+	Start3DSoundVolPitch(channel, 3, carSampleId * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
 
-	// idle sound
-	Start3DSoundVolPitch(channel, 3, uVar6 * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
-	bVar3 = newCar->ap.model;
+	// rev sound
+	channel = playerID == 0 ? 0 : 3;	
+	Start3DSoundVolPitch(channel, 3, carSampleId * 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
 
-	if (bVar3 == 4) 
+	if (siren != 0) 
 	{
-		channel_00 = ResidentModelsBodge();
-		channel = channel_00 << 1;
-	}
-	else {
-		if (bVar3 < 3) 
-		{
-			channel = newCar->ap.model * 3;
-			goto LAB_000737d4;
-		}
-
-		channel_00 = newCar->ap.model - 1;
-		channel = channel_00 * 2;
+		channel = playerID == 0 ? 2 : 5;
+		Start3DSoundVolPitch(channel, (siren & 0xff00) >> 8, siren & 0xff, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 129);
 	}
 
-	channel = channel + channel_00;
-
-LAB_000737d4:
-	channel_00 = 0;
-	if (playerID != 0)
-		channel_00 = 3;
-
-	Start3DSoundVolPitch(channel_00, 3, channel, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
-	if (uVar5 != 0) 
-	{
-		channel = 2;
-
-		if (playerID != 0) 
-			channel = 5;
-
-		Start3DSoundVolPitch(channel, (uVar5 & 0xff00) >> 8, uVar5 & 0xff, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x81);
-	}
-
-	if (bVar4)
-		HaveCarSoundStraightAway(playerID);
-	else
+	if (carParked)
 		RequestSlightPauseBeforeCarSoundStarts(playerID);
+	else
+		HaveCarSoundStraightAway(playerID);
 }
 
 
@@ -369,18 +341,18 @@ LAB_000737d4:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void UpdatePlayers(void)
 {
 	int carId;
 	PEDESTRIAN *ped;
 	_PLAYER *locPlayer;
+	_CAR_DATA* cp;
 
 	pedestrianFelony = 0;
 
 	locPlayer = player;
 
-	// [A] cycle might be wrong
 	do {
 		if (gInGameCutsceneActive == 0)
 			locPlayer->playerType = (locPlayer->pPed != NULL) ? 2 : 1;
@@ -389,19 +361,23 @@ void UpdatePlayers(void)
 		{
 			carId = locPlayer->playerCarId;
 
-			locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
+			if(locPlayer->worldCentreCarId >= 0)
+				locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
 
 			if (carId >= 0)
 			{
-				locPlayer->pos[0] = car_data[carId].hd.where.t[0];
-				locPlayer->pos[1] = car_data[carId].hd.where.t[1];
-				locPlayer->pos[2] = car_data[carId].hd.where.t[2];
-				locPlayer->dir = car_data[carId].hd.direction;
+				cp = &car_data[carId];
+				
+				locPlayer->pos[0] = cp->hd.where.t[0];
+				locPlayer->pos[1] = cp->hd.where.t[1];
+				locPlayer->pos[2] = cp->hd.where.t[2];
+				locPlayer->dir = cp->hd.direction;
 			}
 		}
 		else if (locPlayer->playerType == 2) 
 		{
 			ped = locPlayer->pPed;
+			
 			locPlayer->pos[0] = ped->position.vx;
 			locPlayer->pos[1] = -ped->position.vy;
 			locPlayer->pos[2] = ped->position.vz;
@@ -428,7 +404,7 @@ void UpdatePlayers(void)
 	/* end block 2 */
 	// End Line: 944
 
-// [D]
+// [D] [T]
 void RequestSlightPauseBeforeCarSoundStarts(char player_id)
 {
 	player[player_id].car_is_sounding = 2;
@@ -448,7 +424,7 @@ void RequestSlightPauseBeforeCarSoundStarts(char player_id)
 	/* end block 1 */
 	// End Line: 961
 
-// [D]
+// [D] [T]
 void HaveCarSoundStraightAway(char player_id)
 {
 	player[player_id].car_is_sounding = 0;
@@ -466,7 +442,7 @@ void HaveCarSoundStraightAway(char player_id)
 	/* end block 1 */
 	// End Line: 972
 
-// [D]
+// [D] [T]
 void MakeTheCarShutUp(char player_id)
 {
 	player[player_id].car_is_sounding = 1;

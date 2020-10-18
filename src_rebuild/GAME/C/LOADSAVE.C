@@ -10,16 +10,59 @@
 #include "MISSION.H"
 #include "COP_AI.H"
 #include "SCORES.H"
+#include "LIBGPU.H"
+#include "LIBETC.H"
+#include "E3STUFF.H"
+#include "PRES.H"
+#include "PAUSE.H"
 
 #ifndef PSX
 #include <stdlib.h>
-#include <direct.h>
+
+#include <PLATFORM.H>
+
+// [A]
+void ShowSavingWaitMessage(char *message, int height)
+{
+	char *filename;
+	DISPENV disp;
+	DRAWENV draw;
+
+	DrawSync(0);
+	VSync(0);
+	SetDispMask(0);
+	SetupDefDrawEnv(&draw, 0, 0, 320, 256);
+	SetupDefDispEnv(&disp, 0, 0, 320, 256);
+
+	draw.dfe = 1;
+
+	PutDrawEnv(&draw);
+	PutDispEnv(&disp);
+
+	LoadFont(NULL);
+
+#ifndef PSX
+	Emulator_BeginScene();
+	SetDispMask(1);
+#endif
+
+	gShowMap = 1;
+	PrintStringCentred(message, 128 + height);
+	gShowMap = 0;
+
+	VSync(0);
+
+#ifndef PSX
+	Emulator_EndScene();
+	Emulator_WaitForTimestep(40);
+#endif // PSX
+}
 
 void GetGameProfilePath(char* str)
 {
 	char* homepath;
 
-	homepath = getenv("USERPROFILE"); // "USERPROFILE"
+	homepath = getenv(HOME_ENV); // "USERPROFILE"
 
 	if (homepath)
 	{
@@ -40,12 +83,41 @@ void LoadCurrentProfile()
 {
 	char filePath[2048];
 	int fileSize;
+	int error;
 
 	GetGameProfilePath(filePath);
 
 	strcat(filePath, "/config.dat");
 
-	printMsg("Loading game configuration...\n");
+	{
+		RECT16 rect;
+
+		SetupDrawBuffers();
+
+		rect.x = 0;
+		rect.y = 0;
+		rect.w = 320;
+		rect.h = 512;
+
+		ClearImage(&rect, 0, 0, 0);
+		DrawSync(0);
+	}
+
+	SetTextColour(128, 128, 64);
+	ShowSavingWaitMessage("Loading configuration...", 0);
+
+	{
+		RECT16 rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.w = 320;
+		rect.h = 512;
+
+		ClearImage(&rect, 0, 0, 0);
+		DrawSync(0);
+	}
+
+	error = 1;
 
 	// load config
 	FILE* fp = fopen(filePath, "rb");
@@ -62,25 +134,46 @@ void LoadCurrentProfile()
 		if (fileSize <= CalcConfigDataSize())
 		{
 			LoadConfigData(_other_buffer);
+			error = 0;
 		}
 	}
+	else
+	{
+		ShowSavingWaitMessage("No saved data", 0);
+	}
+
+	if (error)
+	{
+		SetTextColour(128, 0, 0);
+		ShowSavingWaitMessage("Loading error", 0);
+	}
+	else
+	{
+		ShowSavingWaitMessage("OK", 0);
+	}
+
+	SetMasterVolume(gMasterVolume);
 }
 
 // [A] saves config to file
 void SaveCurrentProfile()
 {
-	int dataSize = 0;
+	int dataSize;
 	char filePath[2048];
+	int error;
 
 	GetGameProfilePath(filePath);
 
 	strcat(filePath, "/config.dat");
 
-	printMsg("Saving game configuration...\n");
+	SetTextColour(128, 128, 64);
+	ShowSavingWaitMessage("Saving configuration...", 0);
 
 	dataSize = 0;
 	if (SaveConfigData(_other_buffer))
 		dataSize = CalcConfigDataSize();
+
+	error = 1;
 
 	// load config
 	FILE* fp = fopen(filePath, "wb");
@@ -88,6 +181,18 @@ void SaveCurrentProfile()
 	{
 		fwrite(_other_buffer, 1, dataSize, fp);
 		fclose(fp);
+
+		error = 0;
+	}
+
+	if (error)
+	{
+		SetTextColour(128, 0, 0);
+		ShowSavingWaitMessage("Saving error", 0);
+	}
+	else
+	{
+		ShowSavingWaitMessage("OK", 0);
 	}
 }
 
@@ -101,7 +206,8 @@ int LoadCurrentGame()
 
 	strcat(filePath, "/progress.dat");
 
-	printMsg("Saving game progress...\n");
+	SetTextColour(128, 128, 64);
+	ShowSavingWaitMessage("Loading progress...", 0);
 
 	// load config
 	FILE* fp = fopen(filePath, "rb");
@@ -128,8 +234,6 @@ int LoadCurrentGame()
 // [A] saves current game progress
 void SaveCurrentGame()
 {
-	SaveCurrentProfile(); // profile has to be saved too
-
 	int dataSize = 0;
 	char filePath[2048];
 
@@ -137,7 +241,8 @@ void SaveCurrentGame()
 
 	strcat(filePath, "/progress.dat");
 
-	printMsg("Saving game progress...\n");
+	SetTextColour(128, 128, 64);
+	ShowSavingWaitMessage("Saving progress...", 0);
 
 	dataSize = 0;
 	if (SaveGameData(_other_buffer))

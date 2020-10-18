@@ -187,28 +187,31 @@ char GetMissionSound(char id)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+__xa_request xa;
+
+// [D]
 void RequestXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	__xa_request *p_Var1;
-	__xa_request *p_Var2;
+	__xa_request *pXA;
 
-	xa._0_4_ = CONCAT22(xa._2_2_, 0xffff);
-	xa._4_2_ = xa._4_2_ & 0xff00;
-	p_Var2 = xa_data;
-	if (-1 < xa_data[0].mission) {
-		do {
-			if (((int)p_Var2->mission == gCurrentMissionNumber) &&
-				((int)p_Var2->cutscene == gInGameCutsceneID)) {
-				xa._0_4_ = *(undefined4 *)p_Var2;
-				xa._4_2_ = *(ushort *)&p_Var2->mission;
-			}
-			p_Var1 = p_Var2 + 1;
-			p_Var2 = p_Var2 + 1;
-		} while (-1 < p_Var1->mission);
+	xa.delay = 0xFFFF;
+	xa.bank = 0;
+	xa.track = 0;
+	xa.mission = -1;
+	xa.cutscene = 0;
+
+	pXA = xa_data;
+
+	while (pXA->mission > -1)
+	{
+		if (pXA->mission == gCurrentMissionNumber && pXA->cutscene == gInGameCutsceneID) 
+		{
+			xa = *pXA;
+			break;
+		}
+
+		pXA++;
 	}
-	return;*/
 }
 
 
@@ -241,21 +244,20 @@ void RequestXA(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D]
 void HandleRequestedXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((xa.cutscene == '\0') && (xa.mission != '\0')) {
+	if (xa.cutscene == 0 && xa.mission != 0) 
+	{
 		PrepareXA();
-		xa.mission = '\0';
+		xa.mission = 0;
 	}
-	if (xa.delay == 0) {
-		PlayXA((int)xa.bank, (int)xa.track);
-	}
-	if (-1 < xa.delay) {
-		xa.delay = xa.delay + -1;
-	}
-	return;*/
+
+	if (xa.delay == 0) 
+		PlayXA(xa.bank, xa.track);
+
+	if (xa.delay > -1) 
+		xa.delay--;
 }
 
 
@@ -817,9 +819,9 @@ void DoMissionSound(void)
 			}
 			break;
 		case 30:
-			if ((bodgevar > 0) && (bodgevar < 4))
+			if (bodgevar > 0 && bodgevar < 4)
 			{
-				VECTOR Q[4] = {
+				VECTOR Q[3] = {
 					{0xFFFFD005,0xFFFFFEED,0xCD61B},
 					{0xFFFFCB56,0xFFFFFF06,0xCD5E0},
 					{0xFFFFC7D4,0xFFFFFEEC,0xCD383},
@@ -832,37 +834,35 @@ void DoMissionSound(void)
 
 				bodgevar += 4;
 			}
-			else if (bodgevar == 5)
+			else if (bodgevar >= 4)
 			{
 				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
 
-				if ((Mission.timer[0].count / 3000) * 3000 != Mission.timer[0].count + -100)
-					return;
+				if (Mission.timer[0].count / 3000 * 3000 == Mission.timer[0].count + 100)
+				{
+					cVar1 = GetMissionSound(29);
+					Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
+				}
 
-				cVar1 = GetMissionSound(29);
-
-				Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
-			}
-			else if (bodgevar < 8) // [A] capture 6 and 7
-			{
-				if (bodgevar == 7)
+				if (bodgevar >= 5)
 				{
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc,
-							0x1000 - Mission.timer[0].count / 0x2ee);
+						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
 
-				// bodgevar 6 & 7 (is this a bug?)
-				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+				if (bodgevar >= 6)
 				{
-					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc,
-						0x1000 - Mission.timer[0].count / 0x2ee);
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+					{
+						cVar1 = GetMissionSound(20);
+						Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+					}
 				}
 			}
+
 			break;
 		case 32:
 			if (holdall == -1)
@@ -913,7 +913,7 @@ void DoMissionSound(void)
 
 				bodgevar += 4;
 			}
-			else if (bodgevar == 5)
+			else if (bodgevar >= 5)
 			{
 				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
 
@@ -921,23 +921,23 @@ void DoMissionSound(void)
 					cVar1 = GetMissionSound(20);
 					Start3DSoundVolPitch(-1, 5, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 				}
-			}
-			else if (bodgevar < 8) // [A] capture 6 and 7
-			{
-				if (bodgevar == 7)
+
+				if (bodgevar >= 6)
+				{
+					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+					{
+						cVar1 = GetMissionSound(20);
+						Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+					}
+				}
+
+				if (bodgevar >= 7)
 				{
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
 						Start3DSoundVolPitch(-1, 5, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
-				}
-
-				// bodgevar 6 & 7 (is this a bug?)
-				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
-				{
-					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 				}
 			}
 			break;
@@ -1011,45 +1011,6 @@ void DoMissionSound(void)
 						return;
 					}
 				}
-
-				/*
-				long V[4];
-				long* C = car_data[player[0].playerCarId].hd.where.t;
-
-				x = car_data[player[0].playerCarId].hd.where.t[0];
-
-				y_00 = bodgevar - x;
-				x = x - bodgevar;
-
-				if (-1 < y_00)
-					x = y_00;
-
-				if (x < 0x8000) 
-				{
-					x = car_data[player[0].playerCarId].hd.where.t[2];
-
-					y_00 = (bodgevar + 8) - x;
-					x = x - (bodgevar + 8);
-
-					if (-1 < y_00)
-						x = y_00;
-
-					if (x < 0x8000) 
-					{
-						V[0] = pos[0] - V[0];
-						V[1] = pos[1] - V[1];
-						V[2] = pos[2] - V[2];
-						SetChannelPosition3(holdall, (VECTOR*)bodgevar, (long*)Q, 0, 0x1000, 0);
-						pos[0] = *(long*)z_00;
-						pos[1] = *(long*)(z_00 + 4);
-						pos[2] = *(long*)(z_00 + 8);
-						return;
-					}
-				}
-				SpuSetVoicePitch(holdall, 0);
-				*/
-
-				UNIMPLEMENTED();
 			}
 			break;
 		// Havana sounds
@@ -1168,7 +1129,7 @@ char SilenceThisCar(int car)
 	{
 		bVar2 = false;
 
-		if (car_data[car].controlType == 7) 
+		if (car_data[car].controlType == CONTROL_TYPE_CUTSCENE) 
 		{
 			bVar2 = car_data[car].ai.c.ctrlState == 7;
 		}

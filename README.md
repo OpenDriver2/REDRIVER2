@@ -3,7 +3,7 @@
 PC (Windows):
 [![Build status](https://ci.appveyor.com/api/projects/status/smxrjad2rf4fg0py/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2/branch/master)
 <p align="center">
-<a href="https://streamable.com/4p8rx5"><img src="https://i.ibb.co/qJ5PJXj/aaa.png"/><a>
+<a href="https://streamable.com/rtjpoa"><img src="https://i.ibb.co/MG8qwqx/aaa.png"/><a>
  </p>
 
  PSX: pending

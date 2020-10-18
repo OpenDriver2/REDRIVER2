@@ -72,14 +72,13 @@ int way_distance = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitPadRecording(void)
 {
-	char *pcVar1;
-	char *pcVar2;
+	char *bufferEnd;
 
+	int remain;
 	int i;
-	REPLAY_STREAM *stream;
 
 	gOutOfTape = 0;
 
@@ -92,21 +91,20 @@ void InitPadRecording(void)
 
 		PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
 
-		PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + 150);
+		PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
 
-		PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
-		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * 400);
+		PingBuffer = (_PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
 
-		replayptr = (char*)(PingBuffer + 400);
+		replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
-		pcVar1 = ReplayStart;
-		pcVar2 = replayptr-0x3444;
-
-		int cutsceneSize = CalcInGameCutsceneSize();
+		// FIXME: is that correct?
+		bufferEnd = replayptr-13380;
+		remain = (uint)ReplayStart - (uint)bufferEnd - CalcInGameCutsceneSize();
 
 		for (i = 0; i < NumPlayers; i++)
 		{
-			AllocateReplayStream(&ReplayStreams[i], ((int)(pcVar1 + (-cutsceneSize - (int)pcVar2)) / sizeof(PADRECORD)) / NumPlayers);
+			AllocateReplayStream(&ReplayStreams[i], remain / sizeof(PADRECORD) / NumPlayers);
 			NumReplayStreams++;
 		}
 
@@ -157,7 +155,7 @@ void InitPadRecording(void)
 	/* end block 3 */
 	// End Line: 1349
 
-// [D]
+// [D] [T]
 int SaveReplayToBuffer(char *buffer)
 {
 	REPLAY_STREAM_HEADER *sheader;
@@ -205,7 +203,7 @@ int SaveReplayToBuffer(char *buffer)
 
 		// copy source type
 		memcpy(&sheader->SourceType, &srcStream->SourceType, sizeof(STREAM_SOURCE));
-		sheader->Size = srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
+		sheader->Size = srcStream->padCount * sizeof(PADRECORD); // srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
 		sheader->Length = srcStream->length;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
@@ -228,15 +226,15 @@ int SaveReplayToBuffer(char *buffer)
 	if (gCutsceneAsReplay == 0)
 #endif
 	{
-		memcpy(pt, PlayerWayRecordPtr, sizeof(SXYPAIR) * 150);
-		pt += sizeof(SXYPAIR) * 150;
+		memcpy(pt, PlayerWayRecordPtr, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+		pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
 	}
 
-	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * 60);
-	pt += sizeof(PLAYBACKCAMERA) * 60;
+	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * 400);
-	pt += sizeof(_PING_PACKET) * 400;
+	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(_PING_PACKET) * MAX_REPLAY_PINGS;
 
 	// [A] is that ever valid?
 	if (gHaveStoredData)
@@ -245,7 +243,11 @@ int SaveReplayToBuffer(char *buffer)
 		memcpy(pt, &MissionStartData, sizeof(MISSION_DATA));
 	}
 
+#ifdef PSX
 	return 0x3644;		// size?
+#else
+	return pt - buffer;
+#endif
 }
 
 
@@ -291,6 +293,23 @@ int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
 char gCutsceneRecorderPauseText[64] = { 0 };
+char gCurrentChasePauseText[64] = { 0 };
+
+void NextChase(int dir)
+{
+	if(dir > 0)
+		gChaseNumber++;
+	else if(dir < 0)
+		gChaseNumber--;
+
+	if (gChaseNumber < 0)
+		gChaseNumber = 0;
+
+	if (gChaseNumber > 15)
+		gChaseNumber = 15;
+	
+	sprintf(gCurrentChasePauseText, "Chase ID: %d", gChaseNumber);
+}
 
 void NextCutsceneRecorderPlayer(int dir)
 {
@@ -339,6 +358,8 @@ int LoadCutsceneAsReplay(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
+			printWarning("cutscene size: %d\n", size);
+			
 			LoadfileSeg(filename, _other_buffer, offset, size);
 
 			int result = LoadReplayFromBuffer(_other_buffer);
@@ -353,7 +374,7 @@ int LoadCutsceneAsReplay(int subindex)
 }
 #endif // CUTSCENE_RECORDER
 
-// [D]
+// [D] [T]
 int LoadReplayFromBuffer(char *buffer)
 {
 	REPLAY_SAVE_HEADER *header;
@@ -397,27 +418,41 @@ int LoadReplayFromBuffer(char *buffer)
 		pt += sizeof(REPLAY_STREAM_HEADER);
 
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
-
+		
 		// copy source type
 		memcpy(&destStream->SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
 
+		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
+		
 		// init buffers
-		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
-		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
-		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+#ifdef CUTSCENE_RECORDER
+		if (gCutsceneAsReplay)
+		{
+			AllocateReplayStream(destStream, 4000);
+			
+			// copy pad data and advance buffer
+			memcpy(destStream->PadRecordBuffer, pt, size);
+		}
+		else
+#endif
+		{
+			destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
+			destStream->PadRecordBuffer = (PADRECORD*)replayptr;
+			destStream->PadRecordBufferEnd = (PADRECORD*)(replayptr + size);
+			destStream->playbackrun = 0;
+			destStream->padCount = sheader->Size / sizeof(PADRECORD);
+
+			// copy pad data and advance buffer
+			memcpy(replayptr, pt, size);
+			replayptr += size;
+		}
+
+		pt += size;
+
 		destStream->length = sheader->Length;
-		destStream->playbackrun = 0;
 
 		if (sheader->Length > maxLength)
 			maxLength = sheader->Length;
-
-		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
-
-		// copy pad data and advance buffer
-		memcpy(replayptr, pt, size);
-		replayptr += size;
-
-		pt += size;
 	}
 
 	ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)replayptr;
@@ -439,26 +474,26 @@ int LoadReplayFromBuffer(char *buffer)
 #ifdef CUTSCENE_RECORDER
 	if (gCutsceneAsReplay != 0)
 	{
-		memset(PlayerWayRecordPtr, 0, sizeof(SXYPAIR) * 150);
+		memset(PlayerWayRecordPtr, 0, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
 	}
 	else
 #endif
 	{
-		memcpy(PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * 150);
-		pt += sizeof(SXYPAIR) * 150;
+		memcpy(PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+		pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
 	}
 		
 
-	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + 150);
-	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * 60);
-	pt += sizeof(PLAYBACKCAMERA) * 60;
+	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
+	memcpy(PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
 	PingBufferPos = 0;
-	PingBuffer = (_PING_PACKET *)(PlaybackCamera + 60);
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);
-	pt += sizeof(_PING_PACKET) * 400;
+	PingBuffer = (_PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(_PING_PACKET) * MAX_REPLAY_PINGS;
 
-	replayptr = (char*)(PingBuffer + 400);
+	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
 	if (header->HaveStoredData == 0x91827364)	// -0x6e7d8c9c
 	{
@@ -494,7 +529,7 @@ int LoadReplayFromBuffer(char *buffer)
 	/* end block 3 */
 	// End Line: 2119
 
-// [D]
+// [D] [T]
 int LoadAttractReplay(int mission)
 {
 	char filename[32];
@@ -536,7 +571,7 @@ int LoadAttractReplay(int mission)
 	/* end block 3 */
 	// End Line: 2365
 
-// [D]
+// [D] [T]
 char GetPingInfo(char *cookieCount)
 {
 	char retCarId;
@@ -546,7 +581,7 @@ char GetPingInfo(char *cookieCount)
 
 	pp = PingBuffer + PingBufferPos;
 
-	if (PingBuffer != NULL && PingBufferPos < 400)
+	if (PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		if (pp->frame != 0xffff) 
 		{
@@ -565,7 +600,24 @@ char GetPingInfo(char *cookieCount)
 	return -1;
 }
 
+// [A] Stores ping info into replay buffer
+int StorePingInfo(int cookieCount, int carId)
+{
+	_PING_PACKET packet;
 
+	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
+	{
+		packet.frame = (CameraCnt - frameStart & 0xffffU);
+		packet.carId = carId;
+		packet.cookieCount = cookieCount;
+
+		PingBuffer[PingBufferPos++] = packet;
+
+		return 1;
+	}
+
+	return 0;
+}
 
 // decompiled code
 // original method signature: 
@@ -601,41 +653,36 @@ char GetPingInfo(char *cookieCount)
 	/* end block 5 */
 	// End Line: 2833
 
-// [D]
+// [D] [T]
 int valid_region(int x, int z)
 {
-	int iVar1;
-	int iVar2;
+	XYPAIR region_coords;
 
-	iVar1 = (x >> 0x10) + regions_across / 2;
-	iVar2 = (z >> 0x10) + regions_down / 2;
+	int region;
 
-	if (-1 < iVar1) {
-		if (regions_across < iVar1)
-			return 0;
+	region_coords.x = (x >> 16) + regions_across / 2;
+	region_coords.y = (z >> 16) + regions_down / 2;
 
-		if (-1 < iVar2) 
+	if (region_coords.x >= 0 && region_coords.x <= regions_across && 
+		region_coords.y >= 0 && region_coords.y <= regions_down) 
+	{
+		region = region_coords.x + region_coords.y * regions_across;
+
+		if (region != regions_unpacked[0])
 		{
-			if (regions_down < iVar2)
+			if (region == regions_unpacked[1])
+				return region + 1;
+
+			if (region == regions_unpacked[2])
+				return region + 1;
+
+			if (region != regions_unpacked[3])
 				return 0;
-
-			iVar1 = iVar1 + iVar2 * regions_across;
-
-			if (iVar1 != regions_unpacked[0])
-			{
-				if (iVar1 == regions_unpacked[1])
-					return iVar1 + 1;
-	
-				if (iVar1 == regions_unpacked[2])
-					return iVar1 + 1;
-
-				if (iVar1 != regions_unpacked[3]) 
-					return 0;
-			}
-
-			return iVar1 + 1;
 		}
+
+		return region + 1;
 	}
+
 	return 0;
 }
 
@@ -666,7 +713,7 @@ int valid_region(int x, int z)
 	/* end block 3 */
 	// End Line: 2932
 
-// [D]
+// [D] [T]
 int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 {
 	int ret;
@@ -726,18 +773,15 @@ int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 
 char ReplayMode = 0;
 
-// [D]
+// [D] [T]
 void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 {
-	int iVar2;
-	int iVar3;
+	int tmp;
 	int t1;
 	ulong t0;
 
 	if (stream > -1 && stream < NumReplayStreams) 
 	{
-		iVar3 = (int)*psteer;
-
 		RecordWaypoint();
 
 		if ((*ptype & 4U) == 0) 
@@ -746,19 +790,19 @@ void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 		}
 		else 
 		{
-			if (iVar3 < -45) 
+			if (*psteer < -45) 
 			{
-				iVar2 = -45 - iVar3 >> 0x1f;
-				t1 = (((-45 - iVar3) / 6 + iVar2 >> 1) - iVar2) + 1;
+				tmp = -45 - *psteer >> 0x1f;	// [A] still need to figure out this
+				t1 = (((-45 - *psteer) / 6 + tmp >> 1) - tmp) + 1;
 			}
-			else if (iVar3 < 46)
+			else if (*psteer < 46)
 			{
 				t1 = 8;
 			}
 			else
 			{
-				iVar2 = iVar3 - 45 >> 0x1f;
-				t1 = (((iVar3 - 45) / 6 + iVar2 >> 1) - iVar2) + 9;
+				tmp = *psteer - 45 >> 0x1f;	// [A] still need to figure out this
+				t1 = (((*psteer - 45) / 6 + tmp >> 1) - tmp) + 9;
 			}
 		}
 
@@ -822,11 +866,14 @@ void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 	/* end block 4 */
 	// End Line: 3418
 
-// [D]
+// [D] [T]
 void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 {
 	stream->playbackrun = 0;
 	stream->length = 0;
+
+	if(CurrentGameMode != GAMEMODE_DIRECTOR && CurrentGameMode != GAMEMODE_REPLAY)
+		stream->padCount = 0;
 
 	stream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 	stream->PadRecordBuffer = (PADRECORD*)replayptr;
@@ -870,7 +917,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 	/* end block 3 */
 	// End Line: 3467
 
-// [D]
+// [D] [T]
 int Get(int stream, ulong *pt0)
 {
 	REPLAY_STREAM* rstream;
@@ -940,7 +987,7 @@ int Get(int stream, ulong *pt0)
 	/* end block 5 */
 	// End Line: 3545
 
-// [D]
+// [D] [T]
 int Put(int stream, ulong *pt0)
 {
 	REPLAY_STREAM *rstream;
@@ -972,7 +1019,8 @@ int Put(int stream, ulong *pt0)
 		padbuf->run = 0;
 
 		rstream->PadRecordBuffer = padbuf;
-
+		rstream->padCount++;
+		
 		return 1;
 	}
 
@@ -1006,25 +1054,23 @@ int Put(int stream, ulong *pt0)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void RecordWaypoint(void)
 {
-	if (TimeToWay == 0)
+	if (TimeToWay > 0)
 	{
-		if (PlayerWaypoints < 150)
-		{
-			PlayerWaypoints++;
-
-			TimeToWay = way_distance;
-
-			PlayerWayRecordPtr->x = (player[0].pos[0] >> 10);
-			PlayerWayRecordPtr->y = (player[0].pos[2] >> 10);
-
-			PlayerWayRecordPtr++;
-		}
-
+		TimeToWay--;
 		return;
 	}
 
-	TimeToWay--;
+	if (PlayerWaypoints < MAX_REPLAY_WAYPOINTS)
+	{
+		TimeToWay = way_distance;
+
+		PlayerWayRecordPtr->x = (player[0].pos[0] >> 10);
+		PlayerWayRecordPtr->y = (player[0].pos[2] >> 10);
+
+		PlayerWayRecordPtr++;
+		PlayerWaypoints++;
+	}
 }

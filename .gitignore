@@ -13,6 +13,8 @@
 *.suo
 *.exe
 *.ilk
+*.code-workspace
+.vscode/*
 _OLD/
 d1_xm_fix/*
 dump_music/*
@@ -25,5 +27,8 @@ TDR/*
 xmplayer/*
 game_rebuild/*
 src_rebuild/dependencies/*
-# src_rebuild/EMULATOR/*
 src_rebuild/.vs/*
+src_rebuild/bin/*
+src_rebuild/obj/*
+src_rebuild/*.make
+src_rebuild/Makefile

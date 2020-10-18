@@ -39,19 +39,24 @@ install:
   - set GLEW_URL="https://netix.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip"
   - appveyor DownloadFile %GLEW_URL% -FileName GLEW.zip
   - 7z x GLEW.zip -o%dependency_folder%
-  - set OPENAL_URL="https://kcat.strangesoft.net/openal-binaries/openal-soft-1.20.1-bin.zip"
+  - set OPENAL_URL="https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip"
   - appveyor DownloadFile %OPENAL_URL% -FileName OPENAL.zip
   - 7z x OPENAL.zip -o%dependency_folder%
+  - set JPEG_URL="http://www.ijg.org/files/jpegsr9d.zip"
+  - appveyor DownloadFile %JPEG_URL% -FileName JPEG.zip
+  - 7z x JPEG.zip -o%dependency_folder%
   - set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip"
   - appveyor DownloadFile %PREMAKE_URL% -FileName premake5.zip
   - 7z x premake5.zip -o%project_folder%
   - set SDL2_DIR=%dependency_folder%\SDL2-2.0.12
   - set GLEW_DIR=%dependency_folder%\glew-2.1.0
   - set OPENAL_DIR=%dependency_folder%\openal-soft-1.20.1-bin
+  - set JPEG_DIR=%dependency_folder%\jpeg-9d
 
 before_build:
   - cmd: cd %project_folder%
   - cmd: premake5 vs2019
+  - cmd: ren "%JPEG_DIR%\jconfig.vc" "jconfig.h"
   
 artifacts:
    - path: src_rebuild\bin\%configuration%\*.zip
@@ -59,6 +64,9 @@ artifacts:
   
 after_build:
   - cmd: cd %project_folder%\bin\%configuration%
+  - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
+  - cmd: copy %GLEW_DIR%\bin\Release\Win32\glew32.dll glew32.dll /Y
+  - cmd: copy %OPENAL_DIR%\bin\Win32\soft_oal.dll OpenAL32.dll /Y
   - 7z a REDRIVER2.zip ".\*"
   
 #build: off

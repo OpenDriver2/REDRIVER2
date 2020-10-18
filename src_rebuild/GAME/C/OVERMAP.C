@@ -14,8 +14,9 @@
 #include "PRES.H"
 #include "COP_AI.H"
 #include "CAMERA.H"
+#include "FELONY.H"
 #include "PAD.H"
-#include "..\ASM\RNC_2.H"
+#include "../ASM/RNC_2.H"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"
@@ -456,13 +457,13 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 	opos[2].vz = vec.vz;
 
 	opos[0].vx = opos[2].vx + (iVar2 * -3 + 0x800 >> 0xc);
-	opos[0].vz = opos[2].vz + FIXED(iVar3 * -3);
+	opos[0].vz = opos[2].vz + FIXEDH(iVar3 * -3);
 
-	opos[1].vx = opos[2].vx + FIXED(iVar2 * 3 + iVar3 * -2);
-	opos[1].vz = opos[2].vz + FIXED(iVar3 * 3 + iVar2 * 2);
+	opos[1].vx = opos[2].vx + FIXEDH(iVar2 * 3 + iVar3 * -2);
+	opos[1].vz = opos[2].vz + FIXEDH(iVar3 * 3 + iVar2 * 2);
 
-	opos[2].vx = opos[2].vx + FIXED(iVar3 * 2 + iVar2 * 3);
-	opos[2].vz = opos[2].vz + FIXED(iVar2 * -2 + iVar3 * 3);
+	opos[2].vx = opos[2].vx + FIXEDH(iVar3 * 2 + iVar2 * 3);
+	opos[2].vz = opos[2].vz + FIXEDH(iVar2 * -2 + iVar3 * 3);
 
 	poly = (POLY_F3 *)current->primptr;
 	setPolyF3(poly);
@@ -696,7 +697,7 @@ void InitOverheadMap(void)
 			do {
 				maptile[d][c] = tpage;
 
-				LoadMapTile(tpage, (x_map / 32) + d, (y_map / 32) + c);
+				LoadMapTile(tpage, (x_map >> 5) + d, (y_map >> 5) + c);
 
 				d++;
 				tpage++;
@@ -928,7 +929,7 @@ void DrawOverheadMap(void)
 		else 
 			psVar11 = &car_data[player[0].playerCarId].felonyRating;
 
-		if (0x292 < *psVar11)
+		if (*psVar11 > FELONY_MIN_VALUE)
 		{
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
 			goto LAB_00016fac;
@@ -944,8 +945,8 @@ void DrawOverheadMap(void)
 			else
 				psVar11 = &car_data[player[0].playerCarId].felonyRating;
 
-			if (0x292 < *psVar11)
-				flashtimer = 0x30;
+			if (*psVar11 > FELONY_MIN_VALUE)
+				flashtimer = 48;
 
 			goto LAB_00016ee8;
 		}
@@ -1000,7 +1001,7 @@ LAB_00016fac:
 
 	cp = car_data;
 	do {
-		if (cp->controlType == 3 && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
+		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || (cp->controlFlags & 1) != 0)
 			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
 
 		cp++;
@@ -1165,7 +1166,7 @@ LAB_00016fac:
 	direction.vy = player[0].dir & 0xfff;
 
 	RotMatrixXYZ(&map_matrix, &direction);
-	MulMatrix0(&aspect, &map_matrix, &map_matrix);
+	MulMatrix0(&identity, &map_matrix, &map_matrix);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
@@ -1774,15 +1775,15 @@ void DrawCopIndicators(void)
 
 	cp = car_data;
 	do {
-		if ((cp->controlType == 3) && (cp->ai.p.dying == 0))
+		if ((cp->controlType == CONTROL_TYPE_PURSUER_AI) && (cp->ai.p.dying == 0))
 		{
 			iVar6 = cp->hd.where.t[0] - player[0].pos[0];
 			iVar4 = cp->hd.where.t[2] - player[0].pos[2];
 
-			iVar5 = FIXED(iVar6 * sVar1 - iVar4 * sVar2) * 3;
+			iVar5 = FIXEDH(iVar6 * sVar1 - iVar4 * sVar2) * 3;
 
 			iVar5 = iVar5 >> 2;
-			iVar3 = FIXED(iVar6 * sVar2 + iVar4 * sVar1);
+			iVar3 = FIXEDH(iVar6 * sVar2 + iVar4 * sVar1);
 
 			iVar4 = -iVar3;
 			iVar6 = iVar5;
@@ -2323,16 +2324,17 @@ void LoadMapTile(int tpage, int x, int y)
 	RECT16 MapSegment;
 
 	MapSegment.w = 8;
-	MapSegment.h = 0x20;
+	MapSegment.h = 32;
 	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
 	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
 
 	idx = x + y * tilehnum;
 	temp = x << 5;
 
-	if ((idx < overlaidmaps[GameLevel].toptile && -1 < idx) && (-1 < temp) && (temp < overlaidmaps[GameLevel].width))
+	if (idx > -1 && idx < overlaidmaps[GameLevel].toptile &&
+		temp > -1 && (temp < overlaidmaps[GameLevel].width))
 	{
-		UnpackRNC(MapBitMaps + *(ushort*)(MapBitMaps + idx * 2), MapBuffer);
+		UnpackRNC(MapBitMaps + *((ushort*)MapBitMaps + idx), MapBuffer);
 	}
 	else 
 	{
@@ -2350,6 +2352,7 @@ void LoadMapTile(int tpage, int x, int y)
 #ifndef PSX
 	Emulator_UpdateVRAM();
 #endif
+
 }
 
 
@@ -3002,8 +3005,8 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		uVar7 = iVar9 + direction & 0xfff;
 
 		iVar9 = iVar9 + 0x200;
-		pVertex->vx = vertex[0].vx + FIXED(rcossin_tbl[uVar7 * 2] * sVar4);
-		pVertex->vz = vertex[0].vz + FIXED(rcossin_tbl[uVar7 * 2 + 1] * sVar4);
+		pVertex->vx = vertex[0].vx + FIXEDH(rcossin_tbl[uVar7 * 2] * sVar4);
+		pVertex->vz = vertex[0].vz + FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * sVar4);
 		pVertex = pVertex + 1;
 	} while (iVar9 < 0x1000);
 
@@ -3194,7 +3197,7 @@ void SetFullscreenMapMatrix(void)
 	direction.vz = 0;
 
 	RotMatrixXYZ(&map_matrix, &direction);		// Why, Reflections? Why? You could have used RotMatrixY
-	MulMatrix0(&aspect, &map_matrix, &map_matrix);
+	MulMatrix0(&identity, &map_matrix, &map_matrix);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);

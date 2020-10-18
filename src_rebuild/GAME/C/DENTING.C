@@ -12,7 +12,7 @@
 #include "DR2ROADS.H"
 #include "DEBRIS.H"
 #include "PLAYERS.H"
-
+#include "MAIN.H"
 
 char* DentingFiles[] =
 {
@@ -22,9 +22,9 @@ char* DentingFiles[] =
 	"LEVELS\\RIO.DEN",
 };
 
-unsigned char gCarDamageZoneVerts[5][6][50];
-unsigned char gHDCarDamageZonePolys[5][6][70];
-unsigned char gHDCarDamageLevels[5][255];
+unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][6][50];
+unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][6][70];
+unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][255];
 
 // decompiled code
 // original method signature: 
@@ -163,9 +163,9 @@ void DentCar(_CAR_DATA *cp)
 		VertNo = 0;
 		while (VertNo < pCleanModel->num_vertices)
 		{
-			gTempCarVertDump[cp->id][VertNo].vx = CleanVertPtr->vx + FIXED((DamVertPtr->vx - CleanVertPtr->vx) * tempDamage[VertNo] / 2);
-			gTempCarVertDump[cp->id][VertNo].vy = CleanVertPtr->vy + FIXED((DamVertPtr->vy - CleanVertPtr->vy) * tempDamage[VertNo] / 2);
-			gTempCarVertDump[cp->id][VertNo].vz = CleanVertPtr->vz + FIXED((DamVertPtr->vz - CleanVertPtr->vz) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vx = CleanVertPtr->vx + FIXEDH((DamVertPtr->vx - CleanVertPtr->vx) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vy = CleanVertPtr->vy + FIXEDH((DamVertPtr->vy - CleanVertPtr->vy) * tempDamage[VertNo] / 2);
+			gTempCarVertDump[cp->id][VertNo].vz = CleanVertPtr->vz + FIXEDH((DamVertPtr->vz - CleanVertPtr->vz) * tempDamage[VertNo] / 2);
 
 			DamVertPtr++;
 			CleanVertPtr++;
@@ -436,7 +436,7 @@ void InitHubcap(void)
 	/* end block 4 */
 	// End Line: 1472
 
-// [D]
+// [D] [T]
 void LoseHubcap(int car, int Hubcap, int Velocity)
 {
 	int iVar1;
@@ -483,9 +483,9 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 			}
 
 			gHubcap.Duration = 100;
-			gHubcap.Direction.vx = FIXED(FIXED(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXED(cp->st.n.linearVelocity[0]);
-			gHubcap.Direction.vy = FIXED(cp->st.n.linearVelocity[1]);
-			gHubcap.Direction.vz = FIXED(-FIXED(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXED(cp->st.n.linearVelocity[2]);
+			gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXEDH(cp->st.n.linearVelocity[0]);
+			gHubcap.Direction.vy = FIXEDH(cp->st.n.linearVelocity[1]);
+			gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
 		}
 	}
 }
@@ -549,35 +549,25 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [T]
-void MoveHubcap(int playerId)
+// [A]
+void HandlePlayerHubcaps(int playerId)
 {
-	int savecombo;
-	int cmb;
-	int CurrentMapHeight;
 	int VelocityMagnitude;
-	VECTOR ShadowPos;
-	VECTOR Position;
-	MATRIX Orientation;
-	CVECTOR col = {72,72,72};
 	_CAR_DATA* cp;
 	int playerCarId;
-
-	if (pauseflag == 0 && gHubcapTime > 0 && playerId == 0)
-		gHubcapTime--;
 
 	playerCarId = player[playerId].playerCarId;
 
 	if (playerCarId < 0)
 		return;
-	
+
 	cp = &car_data[playerCarId];
 
-	if (gHubcap.Duration < 1 && (gHubcapTime == 0))
+	if (gHubcap.Duration < 1 && gHubcapTime == 0)
 	{
 		VelocityMagnitude = cp->st.n.angularVelocity[0] + cp->st.n.angularVelocity[1] + cp->st.n.angularVelocity[2];
 
-		if (VelocityMagnitude < -1000000) 
+		if (VelocityMagnitude < -1000000)
 		{
 			LoseHubcap(playerCarId, Random2(2) & 1, VelocityMagnitude);
 			VelocityMagnitude = 3;
@@ -592,60 +582,77 @@ void MoveHubcap(int playerId)
 
 		gHubcapTime = Random2(VelocityMagnitude) & 0x417;
 	}
-	else if(playerId == 0)
+}
+
+// [D] [T]
+void MoveHubcap()
+{
+	int CurrentMapHeight;
+	int savecombo;
+	int cmb;
+	VECTOR ShadowPos;
+	VECTOR Position;
+	MATRIX Orientation;
+	CVECTOR col = {72,72,72};
+
+	if (pauseflag == 0)
 	{
-		if (pauseflag == 0) 
+		if(gHubcapTime > 0)
+			gHubcapTime--;
+	}
+
+	// draw current hubcap
+	if (gHubcap.Duration > 0) 
+	{
+		if (pauseflag == 0 && CurrentPlayerView == 0)
+		{
 			gHubcap.Duration--;
 
-		if (0 < gHubcap.Duration) 
-		{
-			if (pauseflag == 0)
+			// move hubcap
+			gHubcap.Position.vx += gHubcap.Direction.vx;
+			gHubcap.Position.vy += gHubcap.Direction.vy;
+			gHubcap.Position.vz += gHubcap.Direction.vz;
+
+			_RotMatrixX(&gHubcap.LocalOrientation, -220);
+
+			gHubcap.Direction.vy += 5;
+
+			CurrentMapHeight = MapHeight(&gHubcap.Position);
+
+			if (-60 - CurrentMapHeight <= gHubcap.Position.vy)
 			{
-				gHubcap.Position.vx += gHubcap.Direction.vx;
-				gHubcap.Position.vy += gHubcap.Direction.vy;
-				gHubcap.Position.vz += gHubcap.Direction.vz;
-
-				_RotMatrixX(&gHubcap.LocalOrientation, -220);
-
-				gHubcap.Direction.vy += 5;
-
-				CurrentMapHeight = MapHeight(&gHubcap.Position);
-
-				if (-60 - CurrentMapHeight <= gHubcap.Position.vy)
-				{
-					gHubcap.Direction.vy = -(gHubcap.Direction.vy / 2);
-					gHubcap.Position.vy = -60 - CurrentMapHeight;
-				}
+				gHubcap.Direction.vy = -(gHubcap.Direction.vy / 2);
+				gHubcap.Position.vy = -60 - CurrentMapHeight;
 			}
-
-			MulMatrix0(&gHubcap.Orientation, &gHubcap.LocalOrientation, &Orientation);
-
-			ShadowPos.vx = gHubcap.Position.vx - camera_position.vx;
-			ShadowPos.vy = -MapHeight(&gHubcap.Position);
-			ShadowPos.vz = gHubcap.Position.vz - camera_position.vz;
-
-			Position.vx = ShadowPos.vx;
-			Position.vy = gHubcap.Position.vy - camera_position.vy;
-			Position.vz = ShadowPos.vz;
-
-			SetRotMatrix(&inv_camera_matrix);
-
-			_MatrixRotate(&Position);
-			savecombo = combointensity;
-
-			if (gTimeOfDay == 3)
-			{
-				cmb = (combointensity & 0xffU) / 3;
-				combointensity = cmb << 0x10 | cmb << 8 | cmb;
-			}
-
-			RenderModel(gHubcapModelPtr, &Orientation, &Position, 0, 0, 0);
-			ShadowPos.vy -= camera_position.vy;
-
-			combointensity = savecombo;
-
-			RoundShadow(&ShadowPos, &col, 65);
 		}
+
+		MulMatrix0(&gHubcap.Orientation, &gHubcap.LocalOrientation, &Orientation);
+
+		ShadowPos.vx = gHubcap.Position.vx - camera_position.vx;
+		ShadowPos.vy = -MapHeight(&gHubcap.Position);
+		ShadowPos.vz = gHubcap.Position.vz - camera_position.vz;
+
+		Position.vx = ShadowPos.vx;
+		Position.vy = gHubcap.Position.vy - camera_position.vy;
+		Position.vz = ShadowPos.vz;
+
+		SetRotMatrix(&inv_camera_matrix);
+
+		_MatrixRotate(&Position);
+		savecombo = combointensity;
+
+		if (gTimeOfDay == 3)
+		{
+			cmb = (combointensity & 0xffU) / 3;
+			combointensity = cmb << 0x10 | cmb << 8 | cmb;
+		}
+
+		RenderModel(gHubcapModelPtr, &Orientation, &Position, 0, 0, 0, 0);
+		ShadowPos.vy -= camera_position.vy;
+
+		combointensity = savecombo;
+
+		RoundShadow(&ShadowPos, &col, 65);
 	}
 }
 
@@ -715,7 +722,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 
 	i = 0;
 
-	while (i < 5)
+	while (i < MAX_CAR_MODELS)
 	{
 		model = MissionHeader->residentModels[i];
 
@@ -737,8 +744,8 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		{
 			offset = *(int *)(lump_ptr + model * 4);
 
-			memcpy(*gCarDamageZoneVerts[i], lump_ptr+offset, 300);
-			memcpy(*gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
+			memcpy(gCarDamageZoneVerts[i], lump_ptr+offset, 300);
+			memcpy(gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
 			memcpy(gHDCarDamageLevels[i], lump_ptr + offset + 300 + 420, 255);
 		}
 
@@ -782,8 +789,8 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 void SetupSpecDenting(char *loadbuffer)
 {
 	// [A] this is better
-	memcpy(*gCarDamageZoneVerts[4], loadbuffer, 300);
-	memcpy(*gHDCarDamageZonePolys[4], loadbuffer + 300, 420);
+	memcpy(gCarDamageZoneVerts[4], loadbuffer, 300);
+	memcpy(gHDCarDamageZonePolys[4], loadbuffer + 300, 420);
 	memcpy(gHDCarDamageLevels[4], loadbuffer + 300 + 420, 255);
 }
 

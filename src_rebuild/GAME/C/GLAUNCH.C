@@ -594,6 +594,13 @@ void RunMissionLadder(int newgame)
 // [D]
 void GetRandomChase(void)
 {
+	// [A] debug
+	if (gChaseNumber != 0)
+	{
+		gRandomChase = gChaseNumber;
+		return;
+	}
+
 	int bump = 0;
 
 	if (gLoadedReplay == 0)
@@ -603,7 +610,7 @@ void GetRandomChase(void)
 		if (gRandomChase == gLastChase)
 		{
 			do {
-				gRandomChase = (VSync(-1) + bump) % 0xd + 2;
+				gRandomChase = (VSync(-1) + bump) % 13 + 2;
 				bump++;
 			} while (gRandomChase == gLastChase);
 		}
@@ -643,21 +650,20 @@ void GetRandomChase(void)
 // [D]
 int FindPrevMissionFromLadderPos(int pos)
 {
-	if (pos-- > 0)
+	MISSION_STEP *step = &MissionLadder[pos];
+	while (pos-- > 0)
 	{
-		MISSION_STEP *step = &MissionLadder[pos];
-		do {
-			if (step->flags == 2) {
-				int mission = step->data;
+		if (step->flags == 2)
+		{
+			int mission = step->data;
 
-				if (gFurthestMission < mission)
-					gFurthestMission = mission;
+			if (gFurthestMission < mission)
+				gFurthestMission = mission;
 
-				return 1;
-			}
+			return 1;
+		}
 			
-			step--;
-		} while (pos-- > 0);
+		step--;
 	}
 
 	return 0;

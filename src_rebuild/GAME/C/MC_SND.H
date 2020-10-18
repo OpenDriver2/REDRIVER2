@@ -2,6 +2,7 @@
 #define MC_SND_H
 
 extern char es_mobile[1];
+extern int jericho_in_back;
 
 extern char GetMissionSound(char id); // 0x0005D814
 

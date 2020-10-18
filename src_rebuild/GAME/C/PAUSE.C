@@ -41,9 +41,6 @@ static char ScoreName[5][7];
 
 static char validchars[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+!";
 
-// MISSION.C
-PAUSEMODE gMissionCompletionState = PAUSEMODE_GAMEOVER;
-
 void PauseMap(int direction);
 void SfxVolume(int direction);
 void MusicVolume(int direction);
@@ -62,13 +59,13 @@ void SetRightWayUp(int direction)
 	PauseReturnValue = MENU_QUIT_CONTINUE;
 }
 
-void ToggleInvincible(int direction)
+void ToggleInvincibility(int direction)
 {
 	extern int gInvincibleCar;
 	gInvincibleCar ^= 1;
 }
 
-void ToggleImmune(int direction)
+void ToggleImmunity(int direction)
 {
 	extern int gPlayerImmune;
 	gPlayerImmune ^= 1;
@@ -78,6 +75,12 @@ void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
 	playerghost ^= 1;
+}
+
+void ToggleOverlays(int direction)
+{
+	extern int gDoOverlays;
+	gDoOverlays ^= 1;
 }
 
 int lastCar = -1;
@@ -110,9 +113,19 @@ void ToggleSecretCarFun(int direction)
 	FixCarCos(&car_cosmetics[4], 12);
 }
 
+void ToggleMiniCars(int direction)
+{
+	ActiveCheats.cheat13 ^= 1;
+}
+
 void ToggleJerichoMode(int direction)
 {
 	ActiveCheats.cheat12 ^= 1;
+}
+
+void TogglePuppyDogCops(int direction)
+{
+	gPuppyDogCop ^= 1;
 }
 
 extern void LoadSky(void);
@@ -172,16 +185,40 @@ MENU_ITEM DebugTimeOfDayItems[] =
 MENU_HEADER DebugTimeOfDayHeader =
 { "Time Of Day", { 0, 0, 0, 0 }, 0u, DebugTimeOfDayItems };
 
+MENU_ITEM DebugJustForFunItems[] =
+{
+	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
+	{ "Mini Cars", 3,	2,  ToggleMiniCars, MENU_QUIT_NONE,	NULL },
+	{ "Jericho Mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_NONE,		NULL },
+	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER DebugJustForFunHeader =
+{ "Just for fun", { 0, 0, 0, 0 }, 0u, DebugJustForFunItems };
+
+#ifdef CUTSCENE_RECORDER
+extern void NextCutsceneRecorderPlayer(int dir);
+extern char gCutsceneRecorderPauseText[64];
+
+extern void NextChase(int dir);
+extern char gCurrentChasePauseText[64];
+#endif
+
 MENU_ITEM DebugOptionsItems[] =
 {
+#ifdef CUTSCENE_RECORDER
+	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
+	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&NextChase, MENU_QUIT_NONE, NULL },
+#endif
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
-	{ "Invincible", 	3, 	2,  ToggleInvincible, 	MENU_QUIT_NONE,		NULL},
-	{ "Immunity", 		3, 	2,  ToggleImmune,		MENU_QUIT_NONE,		NULL },
-	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
-	{ "Jericho mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_RESTART,	NULL },
-	{ "Ghost mode", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
-	{ "Next mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
+	{ "Fun Cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
+	{ "Invincibility", 	3, 	2,  ToggleInvincibility,MENU_QUIT_NONE,		NULL},
+	{ "Immunity", 		3, 	2,  ToggleImmunity,		MENU_QUIT_NONE,		NULL},
+	{ "Puppy Dog Cops",	3,	2,  TogglePuppyDogCops,	MENU_QUIT_NONE,		NULL },
+	{ "Toggle Overlay",	3,	2,  ToggleOverlays,		MENU_QUIT_NONE,		NULL },
+	{ "Player Ghost", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
+	{ "Next Mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
@@ -209,26 +246,18 @@ MENU_HEADER YesNoRestartHeader =
 MENU_HEADER YesNoQuitHeader =
 { "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
-#ifdef CUTSCENE_RECORDER
-extern void NextCutsceneRecorderPlayer(int dir);
-extern char gCutsceneRecorderPauseText[64];
-#endif
-
 MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
-#endif
-#ifdef CUTSCENE_RECORDER
-	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
-#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -244,16 +273,23 @@ MENU_ITEM MultiplayerPauseItems[7] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
+void SkipCutscene(int dir)
+{
+	gSkipInGameCutscene = 1;
+}
 
 MENU_ITEM CutscenePauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+	{ "Skip Cutscene", 3u, 2u, (pauseFunc)&SkipCutscene, MENU_QUIT_CONTINUE, NULL },
 #endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Effects Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+#endif
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
@@ -284,9 +320,6 @@ MENU_ITEM MissionFailedItems[6] =
 
 MENU_ITEM TakeARideFinishedItems[] =
 {
-#ifdef CUTSCENE_RECORDER
-	{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
-#endif
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
@@ -377,7 +410,7 @@ MENU_HEADER ChaseGameFinishedHeader =
 
 MENU_HEADER NoPadHeader =
 {
-	"Insert controller in slot 1",
+	"Insert a Controller in port 1",
 	{ 0, 0, 0, 0 },
 	0u,
 	NoPadItems
@@ -385,7 +418,7 @@ MENU_HEADER NoPadHeader =
 
 MENU_HEADER NoMultiPadHeader =
 {
-	"Insert controller in slot 1",
+	"Insert a Controller in port 2",
 	{ 0, 0, 0, 0 },
 	0u,
 	NoMultiPadItems
@@ -393,7 +426,7 @@ MENU_HEADER NoMultiPadHeader =
 
 MENU_HEADER InvalidPadHeader =
 {
-	"Incompatible controller in port 1",
+	"Unsupported controller in port 1",
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidPadItems
@@ -401,7 +434,7 @@ MENU_HEADER InvalidPadHeader =
 
 MENU_HEADER InvalidMultiPadHeader =
 {
-	"Incompatible controller in port 1",
+	"Unsupported controller in port 2",
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidMultiPadItems
@@ -650,11 +683,11 @@ void SaveReplay(int direction)
 	CallMemoryCard(0x10, 1);
 #else
 	int size = SaveReplayToBuffer(_other_buffer);
-
+	
 	FILE* fp = fopen("chase.d2rp", "wb");
 	if (fp)
 	{
-		fwrite(_other_buffer, size, 1, fp);
+		fwrite(_other_buffer, 1, size, fp);
 		fclose(fp);
 	}
 #endif

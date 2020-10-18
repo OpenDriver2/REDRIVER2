@@ -2,6 +2,7 @@
 #define FELONY_H
 
 #define FELONY_MIN_VALUE		(658)
+#define FELONY_MAX_VALUE		(4096)
 
 extern FELONY_DATA felonyData;
 

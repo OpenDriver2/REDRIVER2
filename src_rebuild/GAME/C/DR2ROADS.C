@@ -27,6 +27,37 @@ int NumDriver2Curves = 0;
 int NumDriver2Straights = 0;
 DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 
+// [A] custom function for working with roads in very optimized way
+int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
+{
+	DRIVER2_CURVE* curve;
+	DRIVER2_STRAIGHT* straight;
+
+	ClearMem((char*)outRoadInfo, sizeof(DRIVER2_ROAD_INFO));
+	outRoadInfo->surfId = surfId;
+
+	if(IS_CURVED_SURFACE(surfId))
+	{
+		outRoadInfo->curve = curve = GET_CURVE(surfId);
+		outRoadInfo->ConnectIdx = (short(*)[4])curve->ConnectIdx;
+		outRoadInfo->NumLanes = curve->NumLanes;
+		outRoadInfo->LaneDirs = curve->LaneDirs;
+		outRoadInfo->AILanes = curve->AILanes;
+		return 1;
+	}
+	else if (IS_STRAIGHT_SURFACE(surfId))
+	{
+		outRoadInfo->straight = straight = GET_STRAIGHT(surfId);
+		outRoadInfo->ConnectIdx = (short(*)[4])straight->ConnectIdx;
+		outRoadInfo->NumLanes = straight->NumLanes;
+		outRoadInfo->LaneDirs = straight->LaneDirs;
+		outRoadInfo->AILanes = straight->AILanes;
+		return 1;
+	}
+
+	return 0;
+}
+
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessStraightsDriver2Lump(char *lump_file /*$s0*/, int lump_size /*$a1*/)
@@ -319,7 +350,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
 			angle = ratan2(curve->Midz - pos->vz, curve->Midx - pos->vx);
 
-			return FIXED(curve->gradient * (angle + 2048 & 0xfff)) - curve->height;
+			return FixFloorSigned(curve->gradient * (angle + 2048 & 0xfff), ONE_BITS) - curve->height;
 		}
 
 		i = plane->b;
@@ -621,75 +652,70 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^cells_down >> 5 & 2U];
 
 	plane = NULL;
 
 	if (*buffer == 2) 
 	{
 		surface = buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4;
+		
+		if (*surface != -1)
+		{
+			//buffer[1] = planes offset
+			//buffer[2] = heights (levels) offset
+			//buffer[3] = BSP nodes offset
 
-		if (*surface == -1) 
-		{
-			plane = &sea;
-		}
-		else 
-		{
 			if ((*surface & 0x6000) == 0x2000) 
 			{
-				// traverse heights
-				BSPSurface = (short *)((int)buffer + (*surface & 0x1fff) * sizeof(short) + buffer[2]);
-
-				do 
-				{
-					if (-256 - pos->vy <= *BSPSurface)
+				surface = (short *)((int)buffer + (*surface & 0x1fff) * sizeof(short) + buffer[2]);
+				do {
+					if (-256 - pos->vy <= *surface)
 						break;
 
-					BSPSurface += 2;
+					surface += 2;
 					sdLevel++;
-				} while (*BSPSurface != -0x8000);
-
-				surface = BSPSurface + 1;
+				} while (*surface != -0x8000);
+				surface += 1;
 			}
 
-			BSPSurface = surface;
-
-			do 
-			{
+			do {
 				nextLevel = 0;
-
-				if ((*surface & 0x4000U) != 0) 
+				BSPSurface = surface;
+				if ((*surface & 0x4000U) != 0)
 				{
 					cellPos.x = cellPos.x & 0x3ff;
 					cellPos.y = cellPos.y & 0x3ff;
+					BSPSurface = sdGetBSP((_sdNode *) ((int)buffer +(*surface & 0x3fff) * sizeof(_sdNode) + buffer[3]), &cellPos);
 
-					BSPSurface = sdGetBSP((_sdNode *)((int)buffer + (*BSPSurface & 0x3fff) * sizeof(_sdNode) + buffer[3]), &cellPos);
-
-					if (*BSPSurface == 0x7fff) 
+					if (*BSPSurface == 0x7fff)
 					{
 						sdLevel++;
 						nextLevel = 1;
-						BSPSurface += 2;
+						BSPSurface = surface + 2;
 					}
 				}
+
+				surface = BSPSurface;
 			} while (nextLevel);
 
 			plane = (_sdPlane *)((int)buffer + *BSPSurface * sizeof(_sdPlane) + buffer[1]);
 
 			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) 
 			{
-				if (plane->surface - 16U < 16) 
-				{
+				if (plane->surface - 16U < 16)
 					plane = EventSurface(pos, plane);
-				}
 			}
-			else
+			else 
 			{
 				plane = &sea;
 			}
 		}
+		else
+		{
+			plane = &sea;
+		}
 	}
-
 	return plane;
 }
 

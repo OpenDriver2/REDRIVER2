@@ -20,11 +20,12 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
-#include <stdlib.h>
+#include "RAND.H"
 
 MODEL* gBombModel;
-_ExOBJECT explosion[5];
-static BOMB ThrownBombs[5];
+
+static BOMB ThrownBombs[MAX_THROWN_BOMBS];
+
 static int ThrownBombDelay = 0;
 static int CurrentBomb = 0;
 static int gWantFlash = 0;
@@ -71,7 +72,7 @@ void InitThrownBombs(void)
 {
 	int i;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_THROWN_BOMBS; i++)
 		ThrownBombs[i].flags = 0;
 
 	ThrownBombDelay = Random2(0) % 45 + 8;
@@ -153,7 +154,7 @@ void HandleThrownBombs(void)
 		ThrownBombDelay = Random2(0) % 45 + 8;
 
 		bomb = &ThrownBombs[CurrentBomb++];
-		CurrentBomb = CurrentBomb % 5;
+		CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 		bomb->flags = 1;
 		bomb->active = 1;
@@ -162,9 +163,9 @@ void HandleThrownBombs(void)
 		bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
 		bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
 
-		velocity.vx = FIXED(gBombTargetVehicle->st.n.linearVelocity[0]);
+		velocity.vx = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[0]);
 		velocity.vy = 0;
-		velocity.vz = FIXED(gBombTargetVehicle->st.n.linearVelocity[2]);
+		velocity.vz = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[2]);
 
 		bomb->velocity.vx = velocity.vx >> 10;
 		bomb->velocity.vz = velocity.vz >> 10;
@@ -182,7 +183,7 @@ void HandleThrownBombs(void)
 	bomb = ThrownBombs;
 
 	i = 0;
-	while (i < 5)
+	while (i < MAX_THROWN_BOMBS)
 	{
 		if ((bomb->flags & 1) != 0) 
 		{
@@ -215,7 +216,7 @@ void HandleThrownBombs(void)
 					dx = (bomb->position.vx - player[0].pos[0]);
 					dz = (bomb->position.vz - player[0].pos[2]);
 
-					if (FIXED(dx * dx + dz * dz) < 1024)
+					if (FIXEDH(dx * dx + dz * dz) < 1024)
 						SetPadVibration(player[0].padid, 3);		// [A] bug fix
 				}
 			}
@@ -223,7 +224,7 @@ void HandleThrownBombs(void)
 			cp = car_data;
 			while (cp < car_data + 20)
 			{
-				if (cp != gBombTargetVehicle && cp->controlType != 0 && BombCollisionCheck(cp, &bomb->position) != 0)
+				if (cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE && BombCollisionCheck(cp, &bomb->position) != 0)
 				{
 					bomb->flags = 0;
 
@@ -303,7 +304,7 @@ void DrawThrownBombs(void)
 
 	bomb = ThrownBombs;
 	i = 0;
-	while (i < 5)
+	while (i < MAX_THROWN_BOMBS)
 	{
 		if ((bomb->flags & 1) != 0) 
 		{
@@ -406,7 +407,7 @@ void BombThePlayerToHellAndBack(int car)
 	gBombTargetVehicle = &car_data[(car + 1) % maxCivCars];
 
 	bomb = &ThrownBombs[CurrentBomb++];
-	CurrentBomb = CurrentBomb % 5;
+	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 	bomb->flags = 1;
 	bomb->active = 1;
@@ -420,7 +421,7 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vz = 0;
 		
 	bomb = &ThrownBombs[CurrentBomb++];
-	CurrentBomb = CurrentBomb % 5;
+	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 	bomb->flags = 1;
 	bomb->active = 1;
@@ -434,7 +435,7 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vz = 0;
 		
 	bomb = &ThrownBombs[CurrentBomb++];
-	CurrentBomb = CurrentBomb % 5;
+	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
 	bomb->flags = 1;
 	bomb->active = 1;
@@ -707,8 +708,8 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 		{
 			bFindCollisionPoint(cd, &collisionResult);
 
-			cp->hd.where.t[2] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vz);
-			cp->hd.where.t[0] += FIXED(collisionResult.penetration * collisionResult.surfNormal.vx);
+			cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
+			cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
 
 			lever[0] = collisionResult.hit.vx - cp->hd.where.t[0];
 			lever[1] = 60;
@@ -748,15 +749,15 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 						debrisColour = GetDebrisColour(cp);
 						Setup_Debris(&collisionResult.hit, &velocity, 6, debrisColour << 0x10);
 
-						if (cp->controlType == 1)
+						if (cp->controlType == CONTROL_TYPE_PLAYER)
 							SetPadVibration(*cp->ai.padid, 1);
 					}
 				}
 
 				DamageCar(cp, cd, &collisionResult, strikeVel);
 
-				displacement = FIXED(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
-				displacement = FIXED(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;
+				displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
+				displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;
 
 				if (strikeVel < 0x7f001)
 					denom = (strikeVel * 4096) / displacement;
@@ -769,13 +770,13 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 				pointVel[1] = denom * (collisionResult.surfNormal.vy >> 6);
 				pointVel[2] = denom * (collisionResult.surfNormal.vz >> 6);
 
-				cp->st.n.linearVelocity[0] = cp->st.n.linearVelocity[0] + pointVel[0];
-				cp->st.n.linearVelocity[1] = cp->st.n.linearVelocity[1] + pointVel[1];
-				cp->st.n.linearVelocity[2] = cp->st.n.linearVelocity[2] + pointVel[2];
+				cp->st.n.linearVelocity[0] += pointVel[0];
+				cp->st.n.linearVelocity[1] += pointVel[1];
+				cp->st.n.linearVelocity[2] += pointVel[2];
 
-				cp->hd.aacc[0] = (cp->hd.aacc[0] + FIXED(lever[1] * pointVel[2])) - FIXED(lever[2] * pointVel[1]);
-				cp->hd.aacc[1] = (cp->hd.aacc[1] + FIXED(lever[2] * pointVel[0])) - FIXED(lever[0] * pointVel[2]);
-				cp->hd.aacc[2] = (cp->hd.aacc[2] + FIXED(lever[0] * pointVel[1])) - FIXED(lever[1] * pointVel[0]);
+				cp->hd.aacc[0] += FIXEDH(lever[1] * pointVel[2]) - FIXEDH(lever[2] * pointVel[1]);
+				cp->hd.aacc[1] += FIXEDH(lever[2] * pointVel[0]) - FIXEDH(lever[0] * pointVel[2]);
+				cp->hd.aacc[2] += FIXEDH(lever[0] * pointVel[1]) - FIXEDH(lever[1] * pointVel[0]);
 			}
 		}
 

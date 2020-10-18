@@ -5,7 +5,7 @@
 #include "GAME/C/MAIN.H"
 #include "GAME/C/SYSTEM.H"
 #include "GAME/C/GLAUNCH.H"
-
+#include "GAME/C/PLAYERS.H"
 
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
@@ -305,6 +305,29 @@ void GameDebugKeys(int nKey, bool down)
 		g_FreeCameraEnabled ^= 1;
 		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
 	}
+	else if (nKey == SDL_SCANCODE_BACKSPACE)
+	{
+		extern int FastForward;
+		FastForward = 1;
+	}
+	else if (nKey == SDL_SCANCODE_PAGEUP)
+	{
+		player[0].cameraCarId++;
+
+		if (player[0].cameraCarId > MAX_CARS - 1)
+			player[0].cameraCarId = MAX_CARS - 1;
+
+		printf("Car on camera: %d\n", player[0].cameraCarId);
+	}
+	else if (nKey == SDL_SCANCODE_PAGEDOWN)
+	{
+		player[0].cameraCarId--;
+
+		if (player[0].cameraCarId < 0)
+			player[0].cameraCarId = 0;
+
+		printf("Car on camera: %d\n", player[0].cameraCarId);
+	}
 	else if (nKey == SDL_SCANCODE_KP_DIVIDE)
 	{
 		FunkUpDaBGMTunez(0);
@@ -312,6 +335,8 @@ void GameDebugKeys(int nKey, bool down)
 	else if (nKey == SDL_SCANCODE_KP_MULTIPLY)
 	{
 		FunkUpDaBGMTunez(1);
+		extern void CreateRoadblock();
+		CreateRoadblock();
 	}
 }
 #endif

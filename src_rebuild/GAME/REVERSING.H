@@ -2,28 +2,6 @@
 #define REVERSING_H
 
 // reverse engineering stuff
-
-// Ghidra stuff
-#define _CopReg0 gteRegs.CP0
-#define _CopReg2 gteRegs.CP2D
-
-#define copReg(n, reg) _CopReg##n.p[reg]
-
-#define getCopReg(n, reg) copReg(n, reg).d
-#define setCopReg(n, reg, value) (copReg(n, reg).d = value)
-
-#define _CopControlWord2 gteRegs.CP2C
-
-#define copControlWord(n, reg) _CopControlWord##n.p[reg]
-
-#define getCopControlWord(n, reg) copControlWord(n, reg).d
-#define setCopControlWord(n, reg, value) (copControlWord(n, reg).d = value)
-
-#define _CopFunc2 docop2
-
-#define copFunction(n, op) _CopFunc##n(op)
-
-
 //----------------------------------------
 
 // byte swapped short

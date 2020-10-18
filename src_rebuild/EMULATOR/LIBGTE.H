@@ -66,6 +66,7 @@ typedef struct {		/* 2D short vector */
 #ifdef PGXP
 typedef struct {		/* 2D short vector */
 	half vx, vy;
+	ushort pgxp_index;
 } DVECTORF;
 #endif
 

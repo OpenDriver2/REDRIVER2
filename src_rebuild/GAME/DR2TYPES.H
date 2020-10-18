@@ -111,6 +111,21 @@ struct ARC_ENTRY // hashcode: 0x4C376F3B (dec: 1278701371)
 	short length; // size=0, offset=2
 };
 
+struct DRIVER2_CURVE // hashcode: 0xB805ADA3 (dec: -1207587421)
+{
+	int Midx; // size=0, offset=0
+	int Midz; // size=0, offset=4
+	short start; // size=0, offset=8
+	short end; // size=0, offset=10
+	short ConnectIdx[4]; // size=8, offset=12
+	short gradient; // size=0, offset=20
+	short height; // size=0, offset=22
+	char NumLanes; // size=0, offset=24
+	char LaneDirs; // size=0, offset=25
+	char inside; // size=0, offset=26
+	char AILanes; // size=0, offset=27
+};
+
 struct DRIVER2_STRAIGHT // hashcode: 0xCF738039 (dec: -814514119)
 {
 	int Midx; // size=0, offset=0
@@ -140,21 +155,6 @@ struct DRIVER2_JUNCTION // hashcode: 0x7C27C3D0 (dec: 2082980816)
 {
 	short ExitIdx[4]; // size=8, offset=0
 	unsigned long flags; // size=0, offset=8
-};
-
-struct DRIVER2_CURVE // hashcode: 0xB805ADA3 (dec: -1207587421)
-{
-	int Midx; // size=0, offset=0
-	int Midz; // size=0, offset=4
-	short start; // size=0, offset=8
-	short end; // size=0, offset=10
-	short ConnectIdx[4]; // size=8, offset=12
-	short gradient; // size=0, offset=20
-	short height; // size=0, offset=22
-	char NumLanes; // size=0, offset=24
-	char LaneDirs; // size=0, offset=25
-	char inside; // size=0, offset=26
-	char AILanes; // size=0, offset=27
 };
 
 struct _sdPlane // hashcode: 0x873C357E (dec: -2026097282)
@@ -330,6 +330,25 @@ struct LEAD_CAR // hashcode: 0x44C76F5F (dec: 1153920863)
 	char takeDamage; // size=0, offset=100
 };
 
+enum ECarControlType
+{
+	CONTROL_TYPE_NONE = 0,	// car is not in the world
+	CONTROL_TYPE_PLAYER = 1,	// controlled by player pads
+	CONTROL_TYPE_CIV_AI = 2,	// Civilian car. May be a passive cop car with CONTROL_FLAG_COP flag.
+	CONTROL_TYPE_PURSUER_AI = 3,	// Police pursuer car. Always chases player
+	CONTROL_TYPE_LEAD_AI = 4,	// really don't know wtf this type is
+
+	CONTROL_TYPE_CAMERACOLLIDER = 5,	// Used as a camera collider
+	CONTROL_TYPE_TANNERCOLLIDER = 6,	// Used as collision box for tanner
+	CONTROL_TYPE_CUTSCENE = 7,	// Pretty same as player car but controllled by cutscene. Can be a chase car.
+};
+
+enum ECarControlFlags
+{
+	CONTROL_FLAG_COP = (1 << 0),		// civ car is a cop car
+	CONTROL_FLAG_COP_SLEEPING = (1 << 1),		// passive cop flag (roadblocks). Hitting car with that flag results it's activation
+	CONTROL_FLAG_WAS_PARKED = (1 << 2)		// car pinged in as parked. Really nothing to do with it
+};
 
 typedef struct _CAR_DATA // hashcode: 0x8D78CB99 (dec: -1921463399)
 {
@@ -631,7 +650,7 @@ typedef unsigned short ushort;
 
 typedef struct _physadr* physadr;
 
-typedef long daddr_t;
+// typedef long daddr_t;
 
 typedef char* caddr_t;
 
@@ -639,13 +658,15 @@ typedef long* qaddr_t;
 
 typedef long swblk_t;
 
-typedef unsigned int size_t;
+// typedef unsigned int size_t;
 
 typedef long off_t;
 
+#ifndef __GNUC__
 typedef unsigned short uid_t;
 
 typedef unsigned short gid_t;
+#endif
 
 typedef void (*SsMarkCallbackProc)();
 
@@ -795,9 +816,86 @@ struct FELONY_VALUE // hashcode: 0x8F078047 (dec: -1895333817)
 	short angry; // size=0, offset=2
 };
 
-struct _TARGET // hashcode: 0xB3C67F7D (dec: -1278836867)
+enum TARGET_TYPE
 {
-	int data[16]; // size=64, offset=0
+	Target_Point = 1,
+	Target_Car = 2,
+	Target_Event = 3
+};
+
+struct MS_TARGET_BASE
+{
+	int type;			// data 0
+	int target_flags;	// data 1
+	int display_flags;	// data 2
+	int posX;			// data 3
+	int posZ;			// data 4
+};
+
+struct MS_TARGET_CAR_TAILING
+{
+	int closeMessages;		// data 13
+	int farMessages;		// data 14
+};
+
+struct MS_TARGET_CAR_CHASING
+{
+	int maxDamage;			// data 13
+	int tooFarMessage;		// data 14
+	int gettingFarMessage;	// data 15
+};
+
+struct MS_TARGET_CAR
+{
+	MS_TARGET_BASE base;
+	int rotation;		// data 5
+	int slot;			// data 6
+	int model;			// data 7
+	int palette;		// data 8
+	int type;			// data 9
+	int flags;			// data 10
+	int cutscene;		// data 11
+	int maxDistance;	// data 12
+	union
+	{
+		MS_TARGET_CAR_TAILING tail;
+		MS_TARGET_CAR_CHASING chasing;
+	};
+};
+
+struct MS_TARGET_POINT
+{
+	MS_TARGET_BASE base;
+	int radius;			// data 5
+	int posY;			// data 6
+	int height;			// data 7
+	int _unused;
+	int actionFlag;		// data 9
+	int boatX;			// data 10
+	int boatZ;			// data 11
+};
+
+struct MS_TARGET_EVENT
+{
+	int type;			// data 0
+	int target_flags;	// data 1
+	int display_flags;	// data 2
+	int _unused;
+	VECTOR* eventPos;	// data 4
+	int _unused2[10];
+	int loseMessage;	// data 14
+};
+
+struct _TARGET// hashcode: 0xB3C67F7D (dec: -1278836867)
+{
+	union
+	{
+		int data[16]; // size=64, offset=0
+		MS_TARGET_BASE base;
+		MS_TARGET_POINT point;
+		MS_TARGET_CAR car;
+		MS_TARGET_EVENT event;
+	};
 };
 
 struct MR_TIMER // hashcode: 0xEA39F36E (dec: -365300882)
@@ -809,6 +907,34 @@ struct MR_TIMER // hashcode: 0xEA39F36E (dec: -365300882)
 	unsigned char sec; // size=0, offset=6
 	unsigned char frac; // size=0, offset=7
 	long count; // size=0, offset=8
+};
+
+enum PED_ACTION_TYPE : char // Hashcode: 0x3531DCAF (dec: 892460207)
+{
+	PED_ACTION_WALK = 0,
+	PED_ACTION_RUN = 1,
+	PED_ACTION_BACK = 2,
+	PED_ACTION_GETINCAR = 3,
+	PED_ACTION_GETOUTCAR = 4,
+	PED_ACTION_TIME = 5,
+	PED_ACTION_PRESSBUTTON = 6,
+	PED_ACTION_SIT = 7,
+	PED_ACTION_CIVWALK = 8,
+	PED_ACTION_CIVRUN = 9,
+	PED_ACTION_JUMP = 10,
+	PED_ACTION_CIVSIT = 11,
+	PED_ACTION_COPSTAND = 12,
+	PED_ACTION_COPCROUCH = 13,
+	PED_ACTION_TALK = 14,
+	PED_ACTION_STOPPING = 15,
+};
+
+enum PED_MODEL_TYPES : char // Hashcode: 0x2858A7E3 (dec: 676898787)
+{
+	TANNER_MODEL = 0,
+	OTHER_MODEL = 1,
+	OTHER_SPRITE = 2,
+	CIVILIAN = 3,
 };
 
 struct PEDESTRIAN;
@@ -840,34 +966,6 @@ struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
 	char seat_index; // size=0, offset=87
 	unsigned char pallet; // size=0, offset=88
 	enum PED_ACTION_TYPE type; // size=1, offset=89
-};
-
-enum PED_ACTION_TYPE : char // Hashcode: 0x3531DCAF (dec: 892460207)
-{
-	PED_ACTION_WALK = 0,
-	PED_ACTION_RUN = 1,
-	PED_ACTION_BACK = 2,
-	PED_ACTION_GETINCAR = 3,
-	PED_ACTION_GETOUTCAR = 4,
-	PED_ACTION_TIME = 5,
-	PED_ACTION_PRESSBUTTON = 6,
-	PED_ACTION_SIT = 7,
-	PED_ACTION_CIVWALK = 8,
-	PED_ACTION_CIVRUN = 9,
-	PED_ACTION_JUMP = 10,
-	PED_ACTION_CIVSIT = 11,
-	PED_ACTION_COPSTAND = 12,
-	PED_ACTION_COPCROUCH = 13,
-	PED_ACTION_TALK = 14,
-	PED_ACTION_STOPPING = 15,
-};
-
-enum PED_MODEL_TYPES : char // Hashcode: 0x2858A7E3 (dec: 676898787)
-{
-	TANNER_MODEL = 0,
-	OTHER_MODEL = 1,
-	OTHER_SPRITE = 2,
-	CIVILIAN = 3,
 };
 
 struct __skidinfo // hashcode: 0x807ED49D (dec: -2139171683)
@@ -1118,6 +1216,7 @@ struct REPLAY_STREAM // hashcode: 0xC894D541 (dec: -929770175)
 	struct PADRECORD* PadRecordBufferEnd; // size=3, offset=56
 	unsigned char playbackrun; // size=0, offset=60
 	int length; // size=0, offset=64
+	int padCount;
 };
 
 struct _PING_PACKET // hashcode: 0x9E8E7C27 (dec: -1634829273)
@@ -1449,7 +1548,7 @@ struct PLAYBACKCAMERA // hashcode: 0xF83C80A8 (dec: -130252632)
 	struct SVECTOR angle; // size=8, offset=12
 	int FrameCnt; // size=0, offset=20
 	short CameraPosvy; // size=0, offset=24
-	short gCameraDistance; // size=0, offset=26
+	short scr_z; // size=0, offset=26
 	short gCameraMaxDistance; // size=0, offset=28
 	short gCameraAngle; // size=0, offset=30
 	unsigned char cameraview; // size=0, offset=32
@@ -2219,8 +2318,8 @@ struct MR_MISSION // hashcode: 0xF240F754 (dec: -230623404)
 	short message_priority[2]; // size=4, offset=14
 	char(*message_string[2]); // size=8, offset=20
 	struct MR_TIMER timer[2]; // size=24, offset=28
-	struct _TARGET* CarTarget; // size=64, offset=52
-	struct _TARGET* ChaseTarget; // size=64, offset=56
+	_TARGET* CarTarget; // size=64, offset=52
+	_TARGET* ChaseTarget; // size=64, offset=56
 	int PhantomCarId; // size=0, offset=60
 	int ChaseHitDelay; // size=0, offset=64
 	char* StealMessage; // size=0, offset=68
@@ -2286,19 +2385,6 @@ struct POLYGT3
 	struct RGB color; // size=4, offset=20
 };
 
-struct BONE // hashcode: 0xC453A1B7 (dec: -1001152073)
-{
-	enum LIMBS id; // size=1, offset=0
-	struct BONE* pParent; // size=68, offset=4
-	char numChildren; // size=0, offset=8
-	BONE(*pChildren[3]); // size=12, offset=12
-	SVECTOR_NOPAD* pvOrigPos; // size=6, offset=24
-	SVECTOR* pvRotation; // size=8, offset=28
-	VECTOR vOffset; // size=16, offset=32
-	VECTOR vCurrPos; // size=16, offset=48
-	MODEL** pModel; // size=36, offset=64
-};
-
 enum LIMBS // Hashcode: 0x200BA5A5 (dec: 537634213)
 {
 	ROOT = 0,
@@ -2324,6 +2410,19 @@ enum LIMBS // Hashcode: 0x200BA5A5 (dec: 537634213)
 	RFOOT = 20,
 	RTOE = 21,
 	JOINT = 22,
+};
+
+struct BONE // hashcode: 0xC453A1B7 (dec: -1001152073)
+{
+	enum LIMBS id; // size=1, offset=0
+	struct BONE* pParent; // size=68, offset=4
+	char numChildren; // size=0, offset=8
+	BONE(*pChildren[3]); // size=12, offset=12
+	SVECTOR_NOPAD* pvOrigPos; // size=6, offset=24
+	SVECTOR* pvRotation; // size=8, offset=28
+	VECTOR vOffset; // size=16, offset=32
+	VECTOR vCurrPos; // size=16, offset=48
+	MODEL** pModel; // size=36, offset=64
 };
 
 enum TEXTURE_PALS // Hashcode: 0x7EFDB21D (dec: 2130555421)

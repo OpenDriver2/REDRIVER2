@@ -4,6 +4,15 @@
 #include "PAUSE.H"
 #include "GAMESND.H"
 #include "CARS.H"
+#include "CAMERA.H"
+#include "DRAW.H"
+#include "DEBRIS.H"
+#include "SYSTEM.H"
+#include "../ASM/ASMTEST.H"
+
+#include "INLINE_C.H"
+
+_ExOBJECT explosion[MAX_EXPLOSION_OBJECTS];
 
 MATRIX SS = { 0 };
 
@@ -47,7 +56,7 @@ void InitExObjects(void)
 {
 	int i;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_EXPLOSION_OBJECTS; i++)
 		explosion[i].time = -1;
 
 	initExplosion();
@@ -179,14 +188,14 @@ void HandleExplosion(void)
 	i = 0;
 	exp = explosion;
 
-	while (i < 5)
+	while (i < MAX_EXPLOSION_OBJECTS)
 	{
 		if (exp->time != -1 && exp->type != BANG_USED) 
 		{
 			cp = car_data;
 
 			do {
-				if (cp == &car_data[20] || cp != gBombTargetVehicle && cp->controlType != 0)
+				if (cp == &car_data[20] || cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE)
 					ExplosionCollisionCheck(cp, &explosion[i]);
 
 				cp++;
@@ -200,7 +209,7 @@ void HandleExplosion(void)
 	
 	i = 0;
 	exp = explosion;
-	while (i < 5)
+	while (i < MAX_EXPLOSION_OBJECTS)
 	{
 		if (exp->time != -1)
 		{
@@ -270,7 +279,7 @@ void DrawAllExplosions(void)
 {
 	int i;
 	i = 0;
-	while (i < 5)
+	while (i < MAX_EXPLOSION_OBJECTS)
 	{
 		if (explosion[i].time != -1)
 			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
@@ -342,11 +351,11 @@ void initExplosion(void)
 		pSVar4->vy = 5;
 		pSVar4[1].vy = -0x109;
 
-		pSVar4->vx = FIXED(rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1] * 0x200);
-		pSVar4->vz = FIXED(rcossin_tbl[(uVar9 & 0xf) * 0x200] * 0x200);
+		pSVar4->vx = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1] * 0x200);
+		pSVar4->vz = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 0x200] * 0x200);
 
-		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 0x1ea);
-		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 0x1ea);
+		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 0x1ea);
+		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 0x1ea);
 
 		pSVar4 = pSVar4 + 2;
 		uVar9 = uVar5;
@@ -366,11 +375,11 @@ void initExplosion(void)
 		pSVar4->vy = -0x109;
 		pSVar4[1].vy = -0x1f9;
 
-		pSVar4->vx = FIXED(rcossin_tbl[uVar7 * 2 + 1] * 0x1ea);
-		pSVar4->vz = FIXED(rcossin_tbl[uVar7 * 2] * 0x1ea);
+		pSVar4->vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 0x1ea);
+		pSVar4->vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 0x1ea);
 
-		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 0x14a);
-		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 0x14a);
+		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 0x14a);
+		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 0x14a);
 
 		pSVar4 = pSVar4 + 2;
 	} while (-1 < iVar6);
@@ -389,11 +398,11 @@ void initExplosion(void)
 		pSVar4->vy = -0x1f9;
 		pSVar4[1].vy = -0x269;
 
-		pSVar4->vx = FIXED(rcossin_tbl[uVar7 * 2 + 1] * 0x14a);
-		pSVar4->vz = FIXED(rcossin_tbl[uVar7 * 2] * 0x14a);
+		pSVar4->vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 0x14a);
+		pSVar4->vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 0x14a);
 
-		pSVar4[1].vx = FIXED(rcossin_tbl[uVar3 * 2 + 1] * 100);
-		pSVar4[1].vz = FIXED(rcossin_tbl[uVar3 * 2] * 100);
+		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 100);
+		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 100);
 
 		pSVar4 = pSVar4 + 2;
 	} while (-1 < iVar6);
@@ -483,274 +492,197 @@ void initExplosion(void)
 	/* end block 3 */
 	// End Line: 1279
 
+// [D]
 void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 {
-	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-	undefined4 uVar2;
-	ulong *puVar3;
-	undefined4 in_zero;
-	undefined4 in_at;
-	int iVar4;
-	uint uVar5;
-	char *pcVar6;
-	MATRIX *pMVar7;
-	DB *pDVar8;
-	DB *pDVar9;
-	DB *pDVar10;
-	MATRIX *pMVar11;
-	uint *puVar12;
-	int in_a3;
-	SVECTOR *pSVar13;
-	uint uVar14;
-	uint uVar15;
-	uint uVar16;
-	int iVar17;
-	uint uVar18;
-	uint uVar19;
-	int iVar20;
-	int iVar21;
-	int local_88;
-	int local_84;
-	int local_80;
-	undefined4 local_78;
-	undefined4 local_74;
-	undefined4 local_70;
-	undefined4 local_6c;
-	undefined4 local_68;
-	ulong auStack88[8];
-	char *local_38;
-	ulong *local_34;
-	DB *local_30;
+	int iVar3;
+	int i;
+	POLY_FT4 *poly;
+	SVECTOR *src;
+	int uVar6;
+	uint uVar7;
+	uint uVar8;
+	int iVar9;
+	int iVar10;
+	int iVar11;
+	int iVar12;
+	int iVar13;
+	VECTOR v;
+	MATRIX workmatrix;
+	int z;
 
-	uVar14 = 0xff - (time >> 4);
-	uVar16 = (uint)smoke_texture.coords._0_2_ + 0x200 | (uint)smoke_texture.clutid << 0x10;
-	uVar15 = (uint)smoke_texture.coords._2_2_ + 0x200 | ((uint)smoke_texture.tpageid | 0x20) << 0x10;
-	local_88 = hscale - camera_position.vx;
-	local_84 = rscale - camera_position.vy;
-	local_80 = in_a3 - camera_position.vz;
-	uVar14 = (((int)(uVar14 * uVar14) >> 10) << 8 |
-		(int)((0xff - uVar14) * ((int)uVar14 >> 2) + uVar14 * ((int)uVar14 >> 1)) >> 8) << 8 |
-		uVar14 | 0x2e000000;
-	uVar19 = (uint)smoke_texture.coords._4_2_ - 0x800;
-	uVar18 = (uint)smoke_texture.coords._6_2_ - 0x800;
-	Apply_Inv_CameraMatrix(&local_88);
-	setCopControlWord(2, 0x2800, local_88);
-	setCopControlWord(2, 0x3000, local_84);
-	setCopControlWord(2, 0x3800, local_80);
-	local_30 = (DB *)&local_38;
-	local_34 = auStack88;
-	iVar20 = 0;
-	iVar17 = 1;
+	uVar8 = *(ushort*)&smoke_texture.coords.u0 + 0x200 | *(ushort*)&smoke_texture.clutid << 0x10;
+	uVar7 = *(ushort*)&smoke_texture.coords.u1 + 0x200 | (*(ushort*)&smoke_texture.tpageid | 0x20) << 0x10;
+	iVar11 = *(ushort*)&smoke_texture.coords.u2 - 0x800;
+	iVar10 = *(ushort*)&smoke_texture.coords.u3 - 0x800;
+
+	v.vx = position.vx - camera_position.vx;
+	v.vy = position.vy - camera_position.vy;
+	v.vz = position.vz - camera_position.vz;
+
+	uVar6 = 255 - (time >> 4);
+	uVar6 = (((uVar6 * uVar6) >> 10) << 8 | ((255 - uVar6) * (uVar6 >> 2) + uVar6 * (uVar6 >> 1)) >> 8) << 8 | uVar6 | 0x2e000000;
+
+
+	Apply_Inv_CameraMatrix(&v);
+	gte_SetTransVector(&v);
+
+	iVar12 = 0;
+	iVar9 = 1;
+
 	do {
-		iVar4 = (time * (0x37a0 - time) + 0x800 >> 0xc) + 0xc;
-		iVar21 = iVar4 * position.vy;
-		if (iVar21 < 0) {
-			iVar21 = iVar21 + 0xfff;
-		}
-		iVar4 = iVar4 * position.vz;
-		if (iVar4 < 0) {
-			iVar4 = iVar4 + 0xfff;
-		}
-		uVar5 = CameraCnt * (0x40 - iVar20) & 0xfff;
-		SS.m[1][1] = (short)(iVar21 >> 0xc);
-		SS.m[0][0] = (short)((iVar4 >> 0xc) * (int)rcossin_tbl[uVar5 * 2 + 1] + 0x800 >> 0xc);
-		SS.m[2][0] = (short)((iVar4 >> 0xc) * (int)rcossin_tbl[uVar5 * 2] + 0x800 >> 0xc);
+		iVar3 = (time * (0x37a0 - time) + 0x800 >> 0xc) + 0xc;
+
+		i = CameraCnt * (0x40 - iVar12) & 0xfff;
+		SS.m[1][1] = (short)(iVar3 * hscale >> 0xc);
+		SS.m[0][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2 + 1] + 0x800 >> 0xc);
+		SS.m[2][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2] + 0x800 >> 0xc);
 		SS.m[0][2] = -SS.m[2][0];
-		pDVar9 = (DB *)&SS;
 		SS.m[2][2] = SS.m[0][0];
-		MulMatrix0(&inv_camera_matrix, &SS, &local_78);
-		setCopControlWord(2, 0, local_78);
-		setCopControlWord(2, 0x800, local_74);
-		setCopControlWord(2, 0x1000, local_70);
-		setCopControlWord(2, 0x1800, local_6c);
-		setCopControlWord(2, 0x2000, local_68);
-		pcVar6 = CHAR_ARRAY_000d0000;
-		pSVar13 = globemesh;
-		uVar5 = 0;
-		pDVar8 = (DB *)time;
+
+		MulMatrix0(&inv_camera_matrix, &SS, &workmatrix);
+
+		gte_SetRotMatrix(&workmatrix);
+
+		src = globemesh;
+		i = 0;
+
 		do {
-			pDVar10 = local_30;
-			puVar12 = (uint *)current->primptr;
-			setCopReg(2, in_zero, *(undefined4 *)pSVar13);
-			setCopReg(2, in_at, *(undefined4 *)&pSVar13->vz);
-			setCopReg(2, current, *(undefined4 *)(pSVar13 + 1));
-			setCopReg(2, pcVar6, *(undefined4 *)&pSVar13[1].vz);
-			setCopReg(2, pDVar8, *(undefined4 *)(pSVar13 + 2));
-			setCopReg(2, pDVar9, *(undefined4 *)&pSVar13[2].vz);
-			copFunction(2, 0x280030);
-			pDVar8 = (DB *)(puVar12 + 4);
-			puVar12[0xb] = uVar14;
-			puVar12[1] = uVar14;
-			uVar1 = getCopReg(2, 0xc);
-			puVar12[2] = uVar1;
-			pcVar6 = (char *)getCopReg(2, 0xd);
-			pDVar8->primptr = pcVar6;
-			uVar1 = getCopReg(2, 0xe);
-			puVar12[6] = uVar1;
-			uVar1 = getCopReg(2, 0xe);
-			puVar12[0xc] = uVar1;
-			pcVar6 = (char *)getCopReg(2, 0x13);
-			local_30->primptr = pcVar6;
-			puVar3 = local_34;
-			setCopReg(2, in_zero, *(undefined4 *)(pSVar13 + 3));
-			setCopReg(2, in_at, *(undefined4 *)&pSVar13[3].vz);
-			setCopReg(2, puVar12 + 6, *(undefined4 *)(pSVar13 + 4));
-			setCopReg(2, puVar12 + 0xc, *(undefined4 *)&pSVar13[4].vz);
-			setCopReg(2, pDVar8, *(undefined4 *)(pSVar13 + 5));
-			setCopReg(2, pDVar10, *(undefined4 *)&pSVar13[5].vz);
-			iVar4 = 0x20;
-			copFunction(2, 0x280030);
-			pcVar6 = (char *)(uVar5 & 3);
-			if ((uint *)pcVar6 == (uint *)0x3) {
-				iVar4 = 0x30;
+			poly = (POLY_FT4 *)current->primptr;
+
+			gte_ldv3(&src[0], &src[1], &src[2]);
+			gte_rtpt();
+
+			*(uint *)&poly[0].r0 = uVar6;
+			*(uint *)&poly[1].r0 = uVar6;
+
+			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
+
+			gte_stsxy2(&poly[1].x0);
+
+			gte_stsz(&z);
+
+			iVar3 = 32; // 4 verts step?
+
+			if (z > 32)
+			{
+				gte_ldv3(&src[3], &src[4], &src[5]);
+				gte_rtpt();
+
+				*(uint *)&poly[0].u0 = uVar8;
+				*(uint *)&poly[0].u1 = uVar7;
+				*(uint *)&poly[0].u2 = iVar11;
+				*(uint *)&poly[0].u3 = iVar10;
+				*(uint *)&poly[1].u0 = uVar8;
+				*(uint *)&poly[1].u1 = uVar7;
+				*(uint *)&poly[1].u2 = iVar11;
+				*(uint *)&poly[1].u3 = iVar10;
+
+				setPolyFT4(poly);
+				setSemiTrans(poly, 1);
+
+				setPolyFT4(&poly[1]);
+				setSemiTrans(&poly[1], 1);
+
+				gte_stsxy3(&poly[1].x1, &poly[1].x2, &poly[1].x3);
+
+				gte_stsxy0(&poly[0].x3);
+
+				addPrim(current->ot + (z >> 3), &poly[0]);
+				addPrim(current->ot + (z >> 3), &poly[1]);
+
+				current->primptr += sizeof(POLY_FT4) * 2;
 			}
-			pSVar13 = (SVECTOR *)((int)&pSVar13->vx + iVar4);
-			if (0x20 < (int)local_38) {
-				puVar12[3] = uVar16;
-				puVar12[5] = uVar15;
-				puVar12[7] = uVar19;
-				puVar12[9] = uVar18;
-				puVar12[0xd] = uVar16;
-				puVar12[0xf] = uVar15;
-				puVar12[0x11] = uVar19;
-				puVar12[0x13] = uVar18;
-				*(char *)((int)puVar12 + 3) = '\t';
-				pDVar8 = current;
-				iVar4 = (int)local_38 >> 3;
-				*puVar12 = *puVar12 & 0xff000000 | current->ot[iVar4] & 0xffffff;
-				pDVar8->ot[iVar4] = pDVar8->ot[iVar4] & 0xff000000 | (uint)puVar12 & 0xffffff;
-				*(char *)((int)puVar12 + 0x2b) = '\t';
-				pDVar8 = current;
-				puVar12[10] = puVar12[10] & 0xff000000 | current->ot[iVar4] & 0xffffff;
-				pDVar10 = (DB *)(puVar12 + 0xe);
-				pDVar8->ot[iVar4] = pDVar8->ot[iVar4] & 0xff000000 | (uint)(puVar12 + 10) & 0xffffff;
-				pcVar6 = (char *)getCopReg(2, 0xc);
-				pDVar10->primptr = pcVar6;
-				uVar1 = getCopReg(2, 0xd);
-				puVar12[0x10] = uVar1;
-				uVar1 = getCopReg(2, 0xe);
-				puVar12[0x12] = uVar1;
-				pcVar6 = (char *)(puVar12 + 8);
-				uVar1 = getCopReg(2, 0xc);
-				*(uint *)pcVar6 = uVar1;
-				pDVar8 = current;
-				current->primptr = current->primptr + 0x50;
-			}
-			uVar5 = uVar5 + 1;
-			pDVar9 = pDVar10;
-		} while ((int)uVar5 < 0xc);
-		iVar17 = iVar17 + -1;
-		iVar20 = iVar20 + 0x5a;
-	} while (-1 < iVar17);
-	iVar17 = 0xff - (time >> 4);
-	uVar14 = iVar17 >> 1;
-	iVar20 = 0;
-	uVar14 = (((int)(uVar14 + (iVar17 * iVar17 >> 10)) >> 1) << 8 |
-		(int)(uVar14 + ((int)((0xff - iVar17) * (iVar17 >> 2) + iVar17 * uVar14) >> 8)) >> 1) <<
-		8 | uVar14 | 0x2e000000;
+
+			if ((i & 3) == 3)
+				iVar3 = 48;  // 6 verts step?
+
+			src = (SVECTOR *)((int)&src->vx + iVar3);
+
+			i++;
+		} while (i < 12);
+
+		iVar9--;
+		iVar12 += 90;
+	} while (-1 < iVar9);
+
+	iVar9 = 255 - (time >> 4);
+	uVar6 = iVar9 >> 1;
+	iVar12 = 0;
+	uVar6 = (((uVar6 + (iVar9 * iVar9 >> 10)) >> 1) << 8 | (uVar6 + (((255 - iVar9) * (iVar9 >> 2) + iVar9 * uVar6) >> 8)) >> 1) << 8 | uVar6 | 0x2e000000;
+
 	do {
-		iVar17 = (time * (0x3930 - time) + 0x800 >> 0xc) + 0xc;
-		iVar4 = iVar17 * position.vy;
-		if (iVar4 < 0) {
-			iVar4 = iVar4 + 0xfff;
-		}
-		iVar17 = iVar17 * position.vz;
-		if (iVar17 < 0) {
-			iVar17 = iVar17 + 0xfff;
-		}
-		uVar5 = CameraCnt * (iVar20 * -0x5a + 0x40) & 0xfff;
-		SS.m[1][1] = (short)(iVar4 >> 0xc);
-		pMVar7 = &inv_camera_matrix;
-		SS.m[0][0] = (short)((iVar17 >> 0xc) * (int)rcossin_tbl[uVar5 * 2 + 1] + 0x800 >> 0xc);
-		SS.m[2][0] = (short)((iVar17 >> 0xc) * (int)rcossin_tbl[uVar5 * 2] + 0x800 >> 0xc);
+		iVar3 = (time * (0x3930 - time) + 0x800 >> 0xc) + 0xc;
+		i = CameraCnt * (iVar12 * -0x5a + 0x40) & 0xfff;
+		SS.m[1][1] = (short)(iVar3 * hscale >> 0xc);
+		SS.m[0][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2 + 1] + 0x800 >> 0xc);
+		SS.m[2][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2] + 0x800 >> 0xc);
 		SS.m[0][2] = -SS.m[2][0];
-		pMVar11 = &SS;
 		SS.m[2][2] = SS.m[0][0];
-		MulMatrix0(&inv_camera_matrix, &SS, puVar3);
-		setCopControlWord(2, 0, *puVar3);
-		setCopControlWord(2, 0x800, puVar3[1]);
-		setCopControlWord(2, 0x1000, puVar3[2]);
-		setCopControlWord(2, 0x1800, puVar3[3]);
-		setCopControlWord(2, 0x2000, puVar3[4]);
-		pcVar6 = CHAR_ARRAY_000d0000;
-		pSVar13 = globemesh;
-		uVar5 = 0;
-		iVar20 = iVar20 + 1;
+
+		MulMatrix0(&inv_camera_matrix, &SS, &workmatrix);
+		gte_SetRotMatrix(&workmatrix);
+
+		src = globemesh;
+		i = 0;
+		iVar12 = iVar12 + 1;
+
 		do {
-			pDVar8 = local_30;
-			puVar12 = (uint *)current->primptr;
-			setCopReg(2, in_zero, *(undefined4 *)pSVar13);
-			setCopReg(2, in_at, *(undefined4 *)&pSVar13->vz);
-			setCopReg(2, current, *(undefined4 *)(pSVar13 + 1));
-			setCopReg(2, pcVar6, *(undefined4 *)&pSVar13[1].vz);
-			setCopReg(2, pMVar7, *(undefined4 *)(pSVar13 + 2));
-			setCopReg(2, pMVar11, *(undefined4 *)&pSVar13[2].vz);
-			copFunction(2, 0x280030);
-			pMVar11 = (MATRIX *)(puVar12 + 2);
-			puVar12[0xb] = uVar14;
-			puVar12[1] = uVar14;
-			uVar2 = getCopReg(2, 0xc);
-			*(undefined4 *)pMVar11->m = uVar2;
-			uVar1 = getCopReg(2, 0xd);
-			puVar12[4] = uVar1;
-			uVar1 = getCopReg(2, 0xe);
-			puVar12[6] = uVar1;
-			uVar1 = getCopReg(2, 0xe);
-			puVar12[0xc] = uVar1;
-			pcVar6 = (char *)getCopReg(2, 0x13);
-			local_30->primptr = pcVar6;
-			setCopReg(2, in_zero, *(undefined4 *)(pSVar13 + 3));
-			setCopReg(2, in_at, *(undefined4 *)&pSVar13[3].vz);
-			setCopReg(2, puVar12 + 6, *(undefined4 *)(pSVar13 + 4));
-			setCopReg(2, puVar12 + 0xc, *(undefined4 *)&pSVar13[4].vz);
-			setCopReg(2, pDVar8, *(undefined4 *)(pSVar13 + 5));
-			setCopReg(2, pMVar11, *(undefined4 *)&pSVar13[5].vz);
-			iVar17 = 0x20;
-			copFunction(2, 0x280030);
-			pcVar6 = (char *)(uVar5 & 3);
-			if ((uint *)pcVar6 == (uint *)0x3) {
-				iVar17 = 0x30;
+			poly = (POLY_FT4 *)current->primptr;
+
+			gte_ldv3(&src[0], &src[1], &src[2]);
+
+			gte_rtpt();
+
+			*(uint *)&poly[1].r0 = uVar6;
+			*(uint *)&poly->r0 = uVar6;
+
+			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
+
+			gte_stsxy2(&poly[1].x0);
+
+			gte_stsz(&z);
+
+			if (z > 32)
+			{
+				gte_ldv3(&src[3], &src[4], &src[5]);
+				gte_rtpt();
+
+				*(uint *)&poly->u0 = uVar8;
+				*(uint *)&poly->u1 = uVar7;
+				*(uint *)&poly->u2 = iVar11;
+				*(uint *)&poly->u3 = iVar10;
+				*(uint *)&poly[1].u0 = uVar8;
+				*(uint *)&poly[1].u1 = uVar7;
+				*(uint *)&poly[1].u2 = iVar11;
+				*(uint *)&poly[1].u3 = iVar10;
+
+				setPolyFT4(poly);
+				setSemiTrans(poly, 1);
+
+				setPolyFT4(&poly[1]);
+				setSemiTrans(&poly[1], 1);
+
+				gte_stsxy3(&poly[1].x1, &poly[1].x2, &poly[1].x3);
+
+				gte_stsxy0(&poly[0].x3);
+
+				addPrim(current->ot + (z >> 3), &poly[0]);
+				addPrim(current->ot + (z >> 3), &poly[1]);
+
+				current->primptr += sizeof(POLY_FT4) * 2;
 			}
-			pSVar13 = (SVECTOR *)((int)&pSVar13->vx + iVar17);
-			if (0x20 < (int)local_38) {
-				puVar12[3] = uVar16;
-				puVar12[5] = uVar15;
-				puVar12[7] = uVar19;
-				puVar12[9] = uVar18;
-				puVar12[0xd] = uVar16;
-				puVar12[0xf] = uVar15;
-				puVar12[0x11] = uVar19;
-				puVar12[0x13] = uVar18;
-				*(char *)((int)puVar12 + 3) = '\t';
-				pDVar8 = current;
-				iVar17 = (int)local_38 >> 3;
-				*puVar12 = *puVar12 & 0xff000000 | current->ot[iVar17] & 0xffffff;
-				pDVar8->ot[iVar17] = pDVar8->ot[iVar17] & 0xff000000 | (uint)puVar12 & 0xffffff;
-				*(char *)((int)puVar12 + 0x2b) = '\t';
-				pDVar8 = current;
-				puVar12[10] = puVar12[10] & 0xff000000 | current->ot[iVar17] & 0xffffff;
-				pMVar11 = (MATRIX *)(puVar12 + 0xe);
-				pDVar8->ot[iVar17] = pDVar8->ot[iVar17] & 0xff000000 | (uint)(puVar12 + 10) & 0xffffff;
-				uVar2 = getCopReg(2, 0xc);
-				*(undefined4 *)pMVar11->m = uVar2;
-				uVar1 = getCopReg(2, 0xd);
-				puVar12[0x10] = uVar1;
-				uVar1 = getCopReg(2, 0xe);
-				puVar12[0x12] = uVar1;
-				pcVar6 = (char *)(puVar12 + 8);
-				uVar1 = getCopReg(2, 0xc);
-				*(uint *)pcVar6 = uVar1;
-				pDVar8 = current;
-				current->primptr = current->primptr + 0x50;
-			}
-			uVar5 = uVar5 + 1;
-			pMVar7 = (MATRIX *)pDVar8;
-		} while ((int)uVar5 < 8);
-	} while (iVar20 < 2);
-	return;
-	*/
+
+			iVar9 = 0x20;
+
+			if (i & 3 == 3)
+				iVar9 = 0x30;
+
+			src = (SVECTOR *)((int)&src->vx + iVar9);
+
+			i++;
+		} while (i < 8);
+	} while (iVar12 < 2);
 }
 
 

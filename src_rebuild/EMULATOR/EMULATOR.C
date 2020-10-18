@@ -474,33 +474,31 @@ void Emulator_SetCursorPosition(int x, int y)
 	SDL_WarpMouseInWindow(g_window, x, y);
 }
 
-void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
+void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1)
 {
 	// swap line coordinates for left-to-right and up-to-bottom direction
-	// TODO: color needs to be swapped to
-	if (p0[0] > p1[0]) 
+	if ((p0[0] > p1[0]) || 
+		(p0[1] > p1[1] && p0[0] == p1[0]))
 	{
 		VERTTYPE *tmp = p0;
 		p0 = p1;
 		p1 = tmp;
-	} 
-	else if (p0[0] == p1[0])
-	{
-		 if (p0[1] > p1[1])
-		 {
-			 VERTTYPE *tmp = p0;
-			p0 = p1;
-			p1 = tmp;
-		 }
-	}
 
+		unsigned char* tmpCol = c0;
+		c0 = c1;
+		c1 = tmpCol;
+	}
+}
+
+void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
+{
 	VERTTYPE dx = p1[0] - p0[0];
 	VERTTYPE dy = p1[1] - p0[1];
 
 	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
 	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-	if (dx > abs(dy)) { // horizontal
+	if (dx > abs((short)dy)) { // horizontal
 		vertex[0].x = p0[0] + ofsX;
 		vertex[0].y = p0[1] + ofsY;
 

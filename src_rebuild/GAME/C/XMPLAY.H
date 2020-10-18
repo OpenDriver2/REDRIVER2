@@ -90,7 +90,7 @@ typedef struct _XMCHANNEL {
 	u_char dat;
 	u_char datold;
 	u_char eff;
-	u_char not;
+	u_char not_;
 	u_char oldvslide;
 	u_char oldfvslide;
 	u_char oldfslide;

@@ -12,8 +12,8 @@
 
 #include "INLINE_C.H"
 
-#include <string.h>
-#include <stdlib.h>
+#include "RAND.H"
+#include "STRINGS.H"
 
 char* CosmeticFiles[] = {
 	"LEVELS\\CHICAGO.LCF",
@@ -23,7 +23,9 @@ char* CosmeticFiles[] = {
 };
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
-CAR_COSMETICS dummyCosmetics = { 0 };
+
+// [A] temporary hardcoded bug fix
+CAR_COSMETICS gVegasLimoCosmetic;
 
 // decompiled code
 // original method signature: 
@@ -129,7 +131,18 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		}
 
 		i++;
-	} while (i < 5);
+	} while (i < MAX_CAR_MODELS);
+
+	// [A] fix vegas limo cosmetic bug in advance
+	if(GameLevel == 2)
+	{
+		offset = *(int*)(lump_ptr + 8 * 4);
+
+		ptr = (lump_ptr + offset);
+		memcpy(&gVegasLimoCosmetic, ptr, sizeof(CAR_COSMETICS));
+		
+		FixCarCos(&gVegasLimoCosmetic, model);
+	}
 }
 
 
@@ -229,6 +242,12 @@ void AddReverseLight(_CAR_DATA *cp)
 void SetupSpecCosmetics(char *loadbuffer)
 {
 	// [A] this is better
+	if(GameLevel == 2 && MissionHeader->residentModels[4] == 8)
+	{
+		memcpy(&car_cosmetics[4], &gVegasLimoCosmetic, sizeof(CAR_COSMETICS));
+		return;
+	}
+
 	memcpy(&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 }
 
@@ -277,7 +296,7 @@ void AddIndicatorLight(_CAR_DATA *cp, int Type)
 	SVECTOR vfrnt;
 	SVECTOR vback;
 
-	//if (cp->controlType != 2)		// [A] weird way to disable it here
+	//if (cp->controlType != CONTROL_TYPE_CIV_AI)		// [A] weird way to disable it here
 	//	return;
 
 	life = &cp->ap.life;
@@ -808,7 +827,7 @@ void AddNightLights(_CAR_DATA *cp)
 			lightFlag = 2 << (loop & 0x1f);
 			damIndex = (4 - loop);
 
-			if (cp->controlType == 1)
+			if (cp->controlType == CONTROL_TYPE_PLAYER)
 				col.r = 56;
 			else
 				col.r = 255;
@@ -961,7 +980,7 @@ void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		}
 	}
 
-	if (cp->controlType == 2 && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
+	if (cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
 		return;
 
 	if (WheelSpeed > 512 * 64)
@@ -991,8 +1010,8 @@ void AddExhaustSmoke(_CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		Drift.vx /= 2;
 		Drift.vz /= 2;
 
-		Drift.vx -= FIXED(smokedir.vx) / 2;
-		Drift.vz -= FIXED(smokedir.vz) / 2;
+		Drift.vx -= FIXEDH(smokedir.vx) / 2;
+		Drift.vz -= FIXEDH(smokedir.vz) / 2;
 
 		if (black_smoke == 0)
 			Setup_Smoke(&SmokePos, 10, 40, 2, WheelSpeed, &Drift, 1);

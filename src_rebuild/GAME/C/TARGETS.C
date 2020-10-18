@@ -236,7 +236,7 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 			pSVar10 = pTargetArrowModel->pVerts;
 			WorldToCameraPositions(pPosition, cameraPos, 1);
 
-			gte_SetRotMatrix(&aspect);
+			gte_SetRotMatrix(&identity);
 			gte_SetTransVector(&tempVec);
 
 			pVVar7 = &tempVec;
@@ -376,7 +376,7 @@ void DrawStopZone(VECTOR *pPosition)
 	pPoly = (POLY_FT4*)current->primptr;
 	pOut = (long*)&pPoly->x0;
 
-	gte_SetRotMatrix(&aspect);
+	gte_SetRotMatrix(&identity);
 	gte_SetTransVector(&dummy);
 
 	setPolyFT4(pPoly);

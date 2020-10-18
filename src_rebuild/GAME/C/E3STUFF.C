@@ -38,7 +38,7 @@ POLYCOORD polycoords[6] =
 	/* end block 2 */
 	// End Line: 279
 
-// [D]
+// [D] [T]
 void ShowHiresScreens(char **names, int delay, int wait)
 {
 	int timedelay;
@@ -102,7 +102,7 @@ void ShowHiresScreens(char **names, int delay, int wait)
 	/* end block 3 */
 	// End Line: 343
 
-// [D]
+// [D] [T]
 void FadeInHiresScreen(char *filename)
 {
 	int col;
@@ -149,7 +149,6 @@ void FadeInHiresScreen(char *filename)
 		setWH(prim, pc->w, pc->h);
 
 		// set poly
-		// FIXME: this is some hacky way to display textured SPRT. OLD SDK?
 		setPolyFT3(poly);
 		setXY3(poly, -1,-1,-1,-1,-1,-1);
 
@@ -263,7 +262,7 @@ void FadeInHiresScreen(char *filename)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void FadeOutHiresScreen(void)
 {
 	int col;
@@ -368,15 +367,13 @@ void FadeOutHiresScreen(void)
 	/* end block 1 */
 	// End Line: 651
 
+// [D] [T]
 void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 {
-	if (h < 257) {
+	if (h < 257)
 		SetDefDrawEnv(env, x, y, w, 256);
-	}
-	else {
+	else
 		SetDefDrawEnv(env, x, y, w, 512);
-	}
-	return;
 }
 
 
@@ -395,28 +392,31 @@ void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 	/* end block 2 */
 	// End Line: 1401
 
-
+// [D] [T]
 void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 {
 	short framey;
 
-	if (h < 0x101) {
+	if (h < 257) 
+	{
 		SetDefDispEnv(env, x, y, w, 256);
+
 		env->screen.x = draw_mode.framex;
-		framey = draw_mode.framey;
+		env->screen.y = draw_mode.framey;
 		env->screen.h = 255;
 		env->isinter = 0;
 	}
-	else {
+	else
+	{
 		SetDefDispEnv(env, x, y, w, 512);
+
 		env->screen.x = draw_mode.framex;
-		framey = draw_mode.framey;
+		env->screen.y = draw_mode.framey;
 		env->screen.h = 255;
 		env->isinter = 1;
 	}
-	env->screen.y = framey;
+
 	env->isrgb24 = 0;
-	return;
 }
 
 
@@ -449,11 +449,9 @@ void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 
 int lastrequesteddisc = 0;
 
-// [D]
+// [D] [T]
 void SetPleaseWait(char *buffer)
 {
-	CDTYPE CVar1;
-	//undefined3 extraout_var;
 	char *filename;
 	DISPENV disp;
 	DRAWENV draw;
@@ -464,39 +462,49 @@ void SetPleaseWait(char *buffer)
 	SetDispMask(0);
 	SetupDefDrawEnv(&draw,0,0,320,256);
 	SetupDefDispEnv(&disp,0,0, 320, 256);
-	draw.dfe = '\x01';
+
+	draw.dfe = 1;
+
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
+
 	LoadFont(buffer);
-	if (buffer == NULL) {
+
+	if (buffer == NULL)
 		SetupDrawBuffers();
-	}
-	else {
+	else
 		current->primptr = buffer;
-	}
+
 	rect.x = 0;
 	rect.y = 0;
 	rect.w = 320;
 	rect.h = 512;
+
 	ClearImage(&rect,0,0,0);
 	DrawSync(0);
+
+#ifndef PSX
+	Emulator_BeginScene();
+	SetDispMask(1);
+#endif
+
 	gShowMap = 1;
 	SetTextColour(128, 128, 128);
 	PrintStringCentred("Please wait...",128);
 	gShowMap = 0;
+
 	VSync(0);
-	SetDispMask(1);
+	
+
 #ifdef PSX
-	if (lastrequesteddisc == 0) {
+	if (lastrequesteddisc == 0)
 		filename = "\\SLES_029.96;1";
-	}
-	else {
+	else
 		filename = "\\SLES_029.96;1";
-	}
-	CVar1 = DiscSwapped(filename);
-	if (CVar1 != 4) {
+
+	if (DiscSwapped(filename) != 4)
 		ResetCityType();
-	}
+
 #else
 	ResetCityType();
 
@@ -549,7 +557,7 @@ void SetPleaseWait(char *buffer)
 	/* end block 4 */
 	// End Line: 1179
 
-// [D]
+// [D] [T]
 void CheckForCorrectDisc(int disc)
 {
 	CDTYPE ret;

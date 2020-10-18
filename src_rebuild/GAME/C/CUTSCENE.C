@@ -22,6 +22,9 @@
 
 #include "LIBETC.H"
 #include "STRINGS.H"
+#include "XAPLAY.H"
+
+int gSkipInGameCutscene = 0;
 
 int gInGameCutsceneActive = 0;
 int gInGameCutsceneDelay = 0;
@@ -50,6 +53,10 @@ static PLAYBACKCAMERA *CutNextChange;
 PLAYBACKCAMERA *CutsceneCamera = NULL;
 
 static int CutsceneCameraOffset = 0;
+
+#ifndef PSX
+char* gCustomCutsceneBuffer;
+#endif
 
 // decompiled code
 // original method signature: 
@@ -83,8 +90,8 @@ void InitInGameCutsceneVariables(void)
 	gInGameCutsceneActive = 0;
 	gCSDestroyPlayer = 0;
 	PreLoadedCutscene = -1;
-	CutsceneReplayStart = (char *)0x0;
-	CutsceneCamera = (PLAYBACKCAMERA *)0x0;
+	CutsceneReplayStart = NULL;
+	CutsceneCamera = NULL;
 	CutsceneInReplayBuffer = 0;
 	CutsceneEventTrigger = 0;
 	CutsceneLength = 0;
@@ -93,6 +100,8 @@ void InitInGameCutsceneVariables(void)
 	gInGameCutsceneID = -1;
 	gCutsceneAtEnd = 0;
 	JustReturnedFromCutscene = 0;
+
+	gSkipInGameCutscene = 0;
 
 	FreeCutsceneBuffer();
 }
@@ -156,12 +165,22 @@ void HandleInGameCutscene(void)
 	if (pauseflag != 0)
 		return;
 
-
 	if (CameraCnt < 2)
 		BlackBorderHeight = 28;
 
+	gCameraOffset.vx = 0;
+	gCameraOffset.vy = 0;
+	gCameraOffset.vz = 0;
+
 	if (CutsceneLength-28 < CutsceneFrameCnt) 
 	{
+		// disable cutscene skip when it's about to end
+		if (gSkipInGameCutscene)
+		{
+			FastForward = 0;
+			gSkipInGameCutscene = 0;
+		}
+		
 		if (BlackBorderHeight > 0)
 			BlackBorderHeight--;
 	}
@@ -173,8 +192,17 @@ void HandleInGameCutscene(void)
 
 	CutsceneFrameCnt++;
 
+	if (gSkipInGameCutscene)
+	{
+		// fast forward and stop XA
+		FastForward = 1;
+		StopXA();
+		UnprepareXA();
+	}
+
 	if (CutsceneFrameCnt == CutsceneLength) 
 	{
+		gSkipInGameCutscene = 0;
 		gHaveInGameCutscene = 0;
 
 		if (gInGameCutsceneActive != 0)
@@ -222,6 +250,10 @@ void DrawInGameCutscene(void)
 {
 	TILE *tile;
 
+#ifndef PSX
+	PrintXASubtitles();
+#endif
+	
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 		return;
 
@@ -391,7 +423,7 @@ void TriggerInGameCutscene(int cutscene)
 
 	gInGameCutsceneID = cutscene;
 
-	if (CameraCnt < 3 || 27 < gInGameCutsceneDelay)
+	if (CameraCnt < 3 || gInGameCutsceneDelay > 27)
 	{
 		SavedCameraCarId = player[0].cameraCarId;
 		SavedCameraView = cameraview;
@@ -407,7 +439,7 @@ void TriggerInGameCutscene(int cutscene)
 			TerminateSkidding(1);
 
 			gStopPadReads = 1;
-			scr_z = 0x100;
+			scr_z = 256;
 
 			if (gCSDestroyPlayer) 
 			{
@@ -577,7 +609,7 @@ void ReleaseInGameCutscene(void)
 		if (i != -1) 
 		{
 			car_data[i].ai.padid = &player[0].padid;
-			car_data[i].controlType = 1;
+			car_data[i].controlType = CONTROL_TYPE_PLAYER;
 		}
 
 		cameraview = SavedCameraView;
@@ -611,7 +643,12 @@ void ReleaseInGameCutscene(void)
 	gInGameCutsceneDelay = 0;
 	gStopPadReads = 0;
 
-	xa_timeout = 70;
+	gCameraOffset.vx = 0;
+	gCameraOffset.vy = 0;
+	gCameraOffset.vz = 0;
+	gCameraMaxDistance = 0;
+
+	xa_timeout = 120;
 }
 
 
@@ -664,7 +701,7 @@ int CutsceneCameraChange(int cameracnt)
 
 	if (CutNextChange->FrameCnt != cameracnt) 
 	{
-		if (cameracnt < CutNextChange->FrameCnt) 
+		if (CutNextChange->FrameCnt > cameracnt) 
 		{
 			IsMovingCamera(CutLastChange, CutNextChange, cameracnt);
 			return 0;
@@ -674,12 +711,12 @@ int CutsceneCameraChange(int cameracnt)
 			return 0;
 	}
 
-	if (CutLastChange != CutNextChange && -1 < CutNextChange->angle.pad)
+	if (CutLastChange != CutNextChange && CutNextChange->angle.pad > -1)
 		CutNextChange->angle.pad += CutsceneStreamIndex;
 
 	SetPlaybackCamera(CutNextChange);
 
-	if (-1 < cameracnt) 
+	if (cameracnt > -1) 
 	{
 		InvalidCamera(player[0].cameraCarId);
 
@@ -805,7 +842,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 {
 	static char padid[8];
 
-	int iVar4;
+	int slot;
 	_CAR_DATA *cp;
 	REPLAY_STREAM *stream;
 	int player_id;
@@ -813,132 +850,139 @@ int TriggerInGameCutsceneSystem(int cutscene)
 
 	bDamageOverride = 0;
 
-	if (cutscene > -1 && (gHaveInGameCutscene = LoadCutsceneInformation(cutscene), gHaveInGameCutscene != 0)) 
+	if(cutscene > -1)
 	{
-		PingOutAllCivCarsAndCopCars();
-		InitCivCars();
-		DestroyCivPedestrians();
+		gHaveInGameCutscene = LoadCutsceneInformation(cutscene);
 
-		if (CutsceneStreamIndex <= player[0].playerCarId)
+		if (gHaveInGameCutscene != 0) 
 		{
-			Swap2Cars(player[0].playerCarId, 0);
-			SavedCameraCarId = player[0].cameraCarId;
-			SavedWorldCentreCarId = player[0].playerCarId;
-			SavedSpoolXZ = player[0].spoolXZ;
-		}
+			PingOutAllCivCarsAndCopCars();
+			InitCivCars();
+			DestroyCivPedestrians();
 
-		if (CutsceneEventTrigger != 0) 
-		{
-			TriggerEvent(CutsceneEventTrigger);
-		}
+			if (CutsceneStreamIndex <= player[0].playerCarId)
+			{
+				Swap2Cars(player[0].playerCarId, 0);
+				SavedCameraCarId = player[0].cameraCarId;
+				SavedWorldCentreCarId = player[0].playerCarId;
+				SavedSpoolXZ = player[0].spoolXZ;
+			}
 
-		gThePlayerCar = -1;
+			if (CutsceneEventTrigger != 0) 
+			{
+				TriggerEvent(CutsceneEventTrigger);
+			}
 
-		if (CutsceneStreamIndex < NumReplayStreams)
-		{
-			stream = ReplayStreams + CutsceneStreamIndex;
-			player_id = CutsceneStreamIndex;
+			gThePlayerCar = -1;
 
-			do {
-				PlayerStartInfo[player_id] = &stream->SourceType;
+			if (CutsceneStreamIndex < NumReplayStreams)
+			{
+				stream = ReplayStreams + CutsceneStreamIndex;
+				player_id = CutsceneStreamIndex;
 
-				if ((stream->SourceType.flags & 4) != 0)
-				{
-					gCSDestroyPlayer = 1;
+				do {
+					PlayerStartInfo[player_id] = &stream->SourceType;
 
-					if (stream->SourceType.type == 1)
+					if ((stream->SourceType.flags & 4) != 0)
 					{
-						gThePlayerCar = player_id;
+						gCSDestroyPlayer = 1;
 
-						if (gCutsceneAtEnd != 0 && player[0].playerType == 1)
+						if (stream->SourceType.type == 1)
 						{
-							stream->SourceType.palette = car_data[player[0].playerCarId].ap.palette;
-							stream->SourceType.model = MissionHeader->residentModels[car_data[player[0].playerCarId].ap.model];
+							gThePlayerCar = player_id;
 
-							bDamageOverride = 1;
-							gCutsceneAtEnd = 0;
+							if (gCutsceneAtEnd != 0 && player[0].playerType == 1)
+							{
+								stream->SourceType.palette = car_data[player[0].playerCarId].ap.palette;
+								stream->SourceType.model = MissionHeader->residentModels[car_data[player[0].playerCarId].ap.model];
+
+								bDamageOverride = 1;
+								gCutsceneAtEnd = 0;
+							}
 						}
 					}
-				}
 
-				padid[player_id] = -player_id;
-				gStartOnFoot = stream->SourceType.type == 2;
+					padid[player_id] = -player_id;
+					gStartOnFoot = stream->SourceType.type == 2;
 
-				if (gStartOnFoot || (stream->SourceType.flags & 1) == 0)
-				{
-					TerminateSkidding(player_id);
-
-					cp = &car_data[player_id];
-
-					InitPlayer(&player[player_id], cp,
-						stream->SourceType.controlType, 
-						stream->SourceType.rotation,
-						(long(*)[4])&stream->SourceType.position,
-						stream->SourceType.model,
-						stream->SourceType.palette,
-						&padid[player_id]);
-
-					if (bDamageOverride != 0) 
+					if (gStartOnFoot || (stream->SourceType.flags & 1) == 0)
 					{
-						iVar4 = player[0].playerCarId;
+						TerminateSkidding(player_id);
 
-						cp->ap.needsDenting = 1;
-						cp->ap.damage[0] = car_data[iVar4].ap.damage[0];
-						cp->ap.damage[1] = car_data[iVar4].ap.damage[1];
-						cp->ap.damage[2] = car_data[iVar4].ap.damage[2];
-						cp->ap.damage[3] = car_data[iVar4].ap.damage[3];
-						cp->ap.damage[4] = car_data[iVar4].ap.damage[4];
-						cp->ap.damage[5] = car_data[iVar4].ap.damage[5];
+						cp = &car_data[player_id];
 
-						bDamageOverride = 0;
+						InitPlayer(&player[player_id], cp,
+							stream->SourceType.controlType, 
+							stream->SourceType.rotation,
+							(long(*)[4])&stream->SourceType.position,
+							stream->SourceType.model,
+							stream->SourceType.palette,
+							&padid[player_id]);
 
-						cp->totalDamage = car_data[iVar4].totalDamage;
-						DentCar(cp);
-					}
-				}
-				else 
-				{
-					iVar4 = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024, 
-						(long(*)[4])&stream->SourceType.position,
-						stream->SourceType.model, 
-						stream->SourceType.palette, 0);
+						if (bDamageOverride != 0) 
+						{
+							slot = player[0].playerCarId;
 
-					if (iVar4 != -1) 
-					{
-						player[player_id].playerCarId = iVar4;
-						SetNullPlayer(player_id);
-					}
-				}
+							cp->ap.needsDenting = 1;
+							cp->ap.damage[0] = car_data[slot].ap.damage[0];
+							cp->ap.damage[1] = car_data[slot].ap.damage[1];
+							cp->ap.damage[2] = car_data[slot].ap.damage[2];
+							cp->ap.damage[3] = car_data[slot].ap.damage[3];
+							cp->ap.damage[4] = car_data[slot].ap.damage[4];
+							cp->ap.damage[5] = car_data[slot].ap.damage[5];
 
-				if (player_id == CutsceneStreamIndex)
-				{
-					if (gStartOnFoot == 0) 
-					{
-						player[0].spoolXZ = (VECTOR *)car_data[player_id].hd.where.t;
-						player[0].worldCentreCarId = CutsceneStreamIndex;
+							bDamageOverride = 0;
+
+							cp->totalDamage = car_data[slot].totalDamage;
+							DentCar(cp);
+						}
 					}
 					else 
 					{
-						player[0].worldCentreCarId = -1;
-						player[0].spoolXZ = (VECTOR *)&player[player_id].pPed->position;
+						slot = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024, 
+							(long(*)[4])&stream->SourceType.position,
+							stream->SourceType.model, 
+							stream->SourceType.palette, 0);
+
+						if (slot != -1) 
+						{
+							player[player_id].playerCarId = slot;
+							SetNullPlayer(player_id);
+						}
 					}
-				}
 
-				if (CutsceneLength < stream->length)
-					CutsceneLength = stream->length;
+					if (player_id == CutsceneStreamIndex)
+					{
+						if (gStartOnFoot == 0) 
+						{
+							player[0].spoolXZ = (VECTOR *)car_data[player_id].hd.where.t;
+							player[0].worldCentreCarId = CutsceneStreamIndex;
+						}
+						else 
+						{
+							player[0].worldCentreCarId = -1;
+							player[0].spoolXZ = (VECTOR *)&player[player_id].pPed->position;
+						}
+					}
 
-				stream++;
-				player_id++;
+					if (CutsceneLength < stream->length)
+						CutsceneLength = stream->length;
 
-			} while (player_id < NumReplayStreams);
+					stream++;
+					player_id++;
+
+				} while (player_id < NumReplayStreams);
+			}
+
+			CutsceneCameraOffset = CameraCnt + 1;
+			CutNextChange = CutsceneCamera;
+			CutLastChange = NULL;
+
+			return 1;
 		}
-
-		CutsceneCameraOffset = CameraCnt + 1;
-		CutNextChange = CutsceneCamera;
-		CutLastChange = NULL;
-
-		return 1;
 	}
+
+
 
 	ShowCutsceneError();
 	return 0;
@@ -979,10 +1023,11 @@ void SetNullPlayer(int plr)
 
 	if (carId != -1) 
 	{
-		car_data[carId].controlType = 2;
+		car_data[carId].controlType = CONTROL_TYPE_CIV_AI;
 		car_data[carId].ai.c.thrustState = 3;
 		car_data[carId].ai.c.ctrlState = 7;
 		car_data[carId].ai.c.ctrlNode = NULL;
+
 		player[plr].playerCarId = -1;
 	}
 
@@ -1024,10 +1069,11 @@ void SetNullPlayerDontKill(int plr)
 
 	if (carId != -1)
 	{
-		car_data[carId].controlType = 7;
+		car_data[carId].controlType = CONTROL_TYPE_CUTSCENE;
 		car_data[carId].ai.c.thrustState = 3;
 		car_data[carId].ai.c.ctrlState = 7;
 		car_data[carId].ai.c.ctrlNode = NULL;
+
 		player[plr].playerCarId = -1;
 	}
 
@@ -1126,7 +1172,7 @@ void FindNextCutChange(int cameracnt)
 		}
 
 		count++;
-	} while (count < 60);
+	} while (count < MAX_REPLAY_CAMERAS);
 
 	if (!found)
 		CutNextChange->next = -2;
@@ -1205,6 +1251,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBufferEnd = (PADRECORD *)(replayptr + sheader->Size);
+		destStream->padCount = sheader->Size;
 		destStream->length = sheader->Length;
 		destStream->playbackrun = 0;
 
@@ -1222,12 +1269,12 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	// copy cutscene cameras and pings
 	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
 
-	memcpy(CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * 60);		// MAX_CUTSCENE_CAMERAS
-	replayptr += sizeof(PLAYBACKCAMERA) * 60;
+	memcpy(CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	pt += sizeof(PLAYBACKCAMERA) * 60;
+	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * 400);				// MAX_REPLAY_PINGS
+	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
 
 	PingBufferPos = 0;
 
@@ -1276,6 +1323,7 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
+	char customFilename[64];
 
 	if (gCurrentMissionNumber < 21) 
 		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
@@ -1293,6 +1341,24 @@ int LoadCutsceneToBuffer(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 
+#ifndef PSX
+			// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
+			sprintf(customFilename, "REPLAYS\\CUT%d\\%d.D2RP", gCurrentMissionNumber, subindex);
+
+			if (FileExists(customFilename))
+			{
+				printInfo("Custom cutscene replay file loaded\n");
+				size = LoadfileSeg(customFilename, gCustomCutsceneBuffer, 0, 0xffff);
+
+				// load into custom buffer
+				CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
+				CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = gCustomCutsceneBuffer;
+				CutsceneBuffer.numResident++;
+
+				gCustomCutsceneBuffer += size;
+				return 1;
+			}
+#endif
 			if (CutsceneBuffer.bytesFree < size) 
 			{
 				// load into lead/path AI buffer
@@ -1302,7 +1368,7 @@ int LoadCutsceneToBuffer(int subindex)
 				CutsceneBuffer.currentPointer = _other_buffer2;
 				CutsceneBuffer.bytesFree = 0xc000;
 
-				LoadfileSeg(filename, _other_buffer2, offset, size);
+				LoadfileSeg(filename, _other_buffer2, offset, size);				
 			}
 			else 
 			{
@@ -1485,6 +1551,10 @@ void FreeCutsceneBuffer(void)
 
 	CutsceneBuffer.bytesFree = sizeof(CutsceneBuffer.buffer);
 	ClearMem(CutsceneBuffer.buffer, sizeof(CutsceneBuffer.buffer));
+
+#ifndef PSX
+	gCustomCutsceneBuffer = _other_buffer2;
+#endif
 }
 
 

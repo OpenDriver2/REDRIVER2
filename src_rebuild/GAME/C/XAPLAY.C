@@ -1,12 +1,82 @@
 #include "DRIVER2.H"
 #include "XAPLAY.H"
 
+
+#include "CAMERA.H"
+#include "FMVPLAY.H"
+#include "PAUSE.H"
+#include "SOUND.H"
+#include "PRES.H"
+
+#ifndef PSX
+
+#include "../utils/riff.h"
+#include "../utils/audio_source/snd_al_source.h"
+#include "../utils/audio_source/snd_wav_cache.h"
+
+#include "AL/al.h"
+#include "AL/alext.h"
+
+#include "LIBETC.H"
+
+const char* XANameFormat = "DRIVER2\\XA\\XABNK0%d.XA[%d].wav";
+ALuint g_XASource = AL_NONE;
+CSoundSource_WaveCache* g_wavData = NULL;
+CSoundSource_OpenALCache* g_XAWave = NULL;
+
+#else
+
 char* XANames[] = {
 	"\\DRIVER2\\XA\\XABNK01.XA;1",
 	"\\DRIVER2\\XA\\XABNK02.XA;1",
 	"\\DRIVER2\\XA\\XABNK03.XA;1",
 	"\\DRIVER2\\XA\\XABNK04.XA;1",
 };
+
+#endif
+
+static unsigned long finished_count = 0;
+static int gPlaying = 0;
+unsigned short gChannel = 0;
+static int xa_prepared = 0;
+
+static unsigned short CurrentChannel;
+static unsigned short ID;
+static int StartPos;
+static CdlLOC pause_loc;
+static unsigned long buffer[8];
+XA_TRACK XAMissionMessages[4];
+
+#ifndef PSX
+int gXASubtitleTime = 0;
+int gXASubtitlePauseTime = 0;
+
+void PrintXASubtitles()
+{
+	if (gSubtitles == 0 || pauseflag)
+		return;
+	
+	if (gPlaying == 0 || g_wavData == NULL)
+		return;
+
+	int curTime = (VSync(-1) - gXASubtitleTime) * 17;
+
+	// find subtitles
+	for(int i = 0; i < g_wavData->m_numSubtitles; i++)
+	{
+		CUESubtitle_t* sub = &g_wavData->m_subtitles[i];
+
+		int subStartFrame = sub->sampleStart;
+		int subEndFrame = sub->sampleStart + sub->sampleLength;
+
+		if(curTime >= subStartFrame && curTime <= subEndFrame)
+		{
+			SetTextColour(120, 120, 120);
+			PrintStringCentred(sub->text, 200);
+		}
+	}
+}
+#endif
 
 
 // decompiled code
@@ -27,17 +97,15 @@ char* XANames[] = {
 	/* end block 2 */
 	// End Line: 257
 
+// [D] [T]
 void GetMissionXAData(int number)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	CdlFILE CStack32;
+#ifdef PSX
+	CdlFILE fp;
 
-	CdSearchFile(&CStack32, XANames4[number]);
-	iVar1 = CdPosToInt((CdlLOC *)&CStack32);
-	XAMissionMessages[number].start = iVar1;
-	return;*/
+	CdSearchFile(&fp, XANames[number]);
+	XAMissionMessages[number].start = CdPosToInt((CdlLOC *)&fp);
+#endif
 }
 
 
@@ -66,23 +134,22 @@ void GetMissionXAData(int number)
 	/* end block 3 */
 	// End Line: 471
 
+// [D] [T]
 void GetXAData(int number)
 {
-	UNIMPLEMENTED();
-	/*
-	int number_00;
+	int i;
 
-	if (number < 0) {
-		number_00 = 0;
+	if (number < 0)
+	{
+		i = 0;
 		do {
-			GetMissionXAData(number_00);
-			number_00 = number_00 + 1;
-		} while (number_00 < 4);
+			GetMissionXAData(i++);
+		} while (i < 4);
 	}
-	else {
+	else 
+	{
 		GetMissionXAData(number);
 	}
-	return;*/
 }
 
 
@@ -113,19 +180,18 @@ void GetXAData(int number)
 	/* end block 4 */
 	// End Line: 747
 
+// [D] [T]
 void SetXAVolume(int volume)
 {
-	UNIMPLEMENTED();
-	/*
-	short sVar1;
+	short vol;
 
-	_sVar1 = volume / 0x4e + 0x7f;
-	sVar1 = (short)_sVar1;
-	if (_sVar1 == -1) {
-		sVar1 = 0;
-	}
-	SsSetSerialVol(0, (int)sVar1, (int)sVar1);
-	return;*/
+	vol = volume / 78 + 127;
+	if (vol == -1)
+		vol = 0;
+
+#ifdef PSX
+	SsSetSerialVol(0, vol, vol);
+#endif
 }
 
 
@@ -165,27 +231,54 @@ void SetXAVolume(int volume)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+CdlCB oldreadycallback;
+void* olddatacallback;
+
+// [D] [T]
 void PrepareXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined local_10[8];
+#ifdef PSX
+	u_char param[4];
 
 	finished_count = 0;
 	gPlaying = 0;
-	if (xa_prepared == 0) {
-		if ((spoolactive != 0) && (chunk_complete != 0)) {
-			spoolpos_reading = spoolpos_reading + -1;
-		}
+
+	if (xa_prepared == 0)
+	{
+		if (spoolactive && chunk_complete)
+			spoolpos_reading--;
+
 		CdInit();
-		local_10[0] = 0xe8;
-		CdControlB(CdlSetmode, local_10, 0);
-		oldreadycallback = CdReadyCallback(cbready);
+
+		param[0] = 0xE8;
+		CdControlB(CdlSetmode, param, 0);
+
+		oldreadycallback = CdReadyCallback((CdlCB)cbready);
 		olddatacallback = CdDataCallback(0);
+
 		xa_prepared = 1;
 		AllocateReverb(3, 0x4000);
 	}
-	return;*/
+#else
+	finished_count = 0;
+	gPlaying = 0;
+
+	if (xa_prepared == 0)
+	{
+		alGenSources(1, &g_XASource);
+		alSourcei(g_XASource, AL_LOOPING, 0);
+		alSourcei(g_XASource, AL_SOURCE_RESAMPLER_SOFT, 2);	// Use cubic resampler
+		alSourcei(g_XASource, AL_SOURCE_RELATIVE, AL_TRUE);
+
+		if (g_XAWave)
+		{
+			delete g_XAWave;
+			g_XAWave = NULL;
+		}
+
+		xa_prepared = 1;
+	}
+#endif
 }
 
 
@@ -210,31 +303,62 @@ void PrepareXA(void)
 	/* end block 2 */
 	// End Line: 531
 
+// [D] [T]
 void PlayXA(int num, int index)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	undefined local_28;
-	undefined local_27;
-	undefined auStack32[8];
-	undefined auStack24[8];
+	short vol;
 
-	if ((xa_prepared != 0) && (gPlaying != 1)) {
-		local_27 = (undefined)index;
+#ifdef PSX
+	CdlFILTER filt;
+	CdlLOC loc;
+	u_char res[8];
+
+	if (xa_prepared && gPlaying != 1) 
+	{
+		filt.chan = index;
 		StartPos = XAMissionMessages[num].start;
-		gChannel = (ushort)index & 0xff;
-		local_28 = 1;
-		iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
-		SsSetSerialVol(0, iVar1, iVar1);
-		CdControlB(CdlSetfilter, &local_28, auStack24);
-		CdIntToPos(StartPos, auStack32);
-		CdControlB(CdlReadS, auStack32, auStack24);
+		gChannel = index;
+		filt.file = 1;
+
+		vol = (10000 + gMasterVolume) / 79;
+		SsSetSerialVol(0, vol, vol);
+
+		CdControlB(0xd, (u_char*)&filt, res);
+
+		CdIntToPos(StartPos, &loc);
+		CdControlB(0x1b, (u_char*)&loc, res);
+
 		AllocateReverb(3, 0x4000);
+
 		gPlaying = 1;
 		xa_prepared = 2;
 	}
-	return;*/
+#else
+	if (xa_prepared && gPlaying != 1)
+	{
+		char fileName[250];
+		sprintf(fileName, XANameFormat, num+1, index);
+
+		g_wavData = new CSoundSource_WaveCache();
+
+		if (g_wavData->Load(fileName))
+		{
+			g_XAWave = new CSoundSource_OpenALCache(g_wavData);
+
+			alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);
+
+			vol = (10000 + gMasterVolume) / 79;
+			alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
+
+			alSourcePlay(g_XASource);
+		}
+
+		gPlaying = 1;
+		xa_prepared = 2;
+
+		gXASubtitleTime = VSync(-1);
+	}
+#endif
 }
 
 
@@ -250,12 +374,18 @@ void PlayXA(int num, int index)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 int XAPrepared(void)
 {
-	UNIMPLEMENTED();
-	return 0;
-	/*
-	return xa_prepared;*/
+#ifndef PSX
+	ALint sourceState;
+	alGetSourcei(g_XASource, AL_SOURCE_STATE, &sourceState);
+
+	if (sourceState == AL_STOPPED)
+		UnprepareXA();
+
+#endif
+	return xa_prepared;
 }
 
 
@@ -290,21 +420,42 @@ int XAPrepared(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void UnprepareXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined local_10[8];
+#ifdef PSX
+	u_char param[4];
 
-	if (xa_prepared != 0) {
+	if (xa_prepared != 0)
+	{
 		CdReadyCallback(oldreadycallback);
-		CdDataCallback(olddatacallback);
-		local_10[0] = 0x80;
-		CdControlB(CdlSetmode, local_10, 0);
+		CdDataCallback((void (*)())olddatacallback);
+
+		param[0] = 0x80;
+		CdControlB(CdlSetmode, param, 0);
+
 		gPlaying = 0;
 		xa_prepared = 0;
 	}
-	return;*/
+#else
+	if (xa_prepared)
+	{
+		alSourceStop(g_XASource);
+		alDeleteSources(1, &g_XASource);
+
+		if (g_XAWave)
+		{
+			delete g_wavData;
+			g_wavData = NULL;
+			
+			delete g_XAWave;
+			g_XAWave = NULL;
+		}
+
+		gPlaying = 0;
+		xa_prepared = 0;
+	}
+#endif
 }
 
 
@@ -330,16 +481,19 @@ void UnprepareXA(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void StopXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	if ((gPlaying != 0) && (xa_prepared != 0)) {
+	if (gPlaying && xa_prepared)
+	{
+#ifdef PSX
 		SsSetSerialVol(0, 0, 0);
 		CdControlF(9, 0);
+#else
+		alSourcePause(g_XASource);
+#endif
 		gPlaying = 0;
 	}
-	return;*/
 }
 
 
@@ -353,20 +507,24 @@ void StopXA(void)
 	/* end block 1 */
 	// End Line: 1218
 
+// [D]
 void cbready(int intr, unsigned char *result)
 {
 	UNIMPLEMENTED();
-	/*
-	uint uVar1;
-
-	if (intr == 1) {
+#if 0
+	if (intr == 1) 
+	{
 		CdGetSector(buffer, 8);
-		uVar1 = ((uint)ULONG_ARRAY_000e11b4[0]._2_2_ & 0x7c00) >> 10;
-		ID = (ushort)ULONG_ARRAY_000e11b4[0];
-		CurrentChannel = (ushort)uVar1;
-		if ((ushort)ULONG_ARRAY_000e11b4[0] == 0x160) {
-			finished_count = finished_count | 1 << (uVar1 + 1 & 0x1f);
-			if ((uVar1 == (uint)gChannel) || (finished_count == 0xff)) {
+		ID = buffer[3];
+
+		CurrentChannel = ((uint)buffer[3] & 0x7c00) >> 10; // there is buffer[3]+2 bytes
+
+		if (buffer[3] == 0x160) 
+		{
+			finished_count = finished_count | 1 << (CurrentChannel + 1 & 0x1f);
+
+			if (CurrentChannel == gChannel || finished_count == 0xff)
+			{
 				SsSetSerialVol(0, 0, 0);
 				CdControlF(9, 0);
 				gPlaying = 0;
@@ -374,7 +532,7 @@ void cbready(int intr, unsigned char *result)
 			}
 		}
 	}
-	return;*/
+#endif
 }
 
 
@@ -410,26 +568,40 @@ void cbready(int intr, unsigned char *result)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void ResumeXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	int iVar1;
-	undefined local_20;
-	undefined local_1f;
-	undefined auStack24[8];
+	short vol;
 
-	if ((xa_prepared != 0) && (gPlaying != 1)) {
-		local_20 = 1;
-		local_1f = (undefined)gChannel;
-		iVar1 = ((int)(&DAT_00002710 + gMasterVolume) / 0x4f) * 0x10000 >> 0x10;
-		SsSetSerialVol(0, iVar1, iVar1);
-		CdControlB(CdlSetfilter, &local_20, auStack24);
-		CdControlB(CdlReadS, &pause_loc, auStack24);
+#ifdef PSX
+	CdlFILTER filt;
+	u_char res[8];
+
+	if (xa_prepared && gPlaying != 1)
+	{
+		filt.file = 1;
+		filt.chan = gChannel;
+
+		vol = (10000 + gMasterVolume) / 79;
+		SsSetSerialVol(0, vol, vol);
+
+		CdControlB(0xd, (u_char*)&filt, res);
+		CdControlB(0x1b, (u_char*)&pause_loc, res);
 		AllocateReverb(3, 0x4000);
+
 		gPlaying = 1;
 	}
-	return;*/
+#else
+	if (xa_prepared && gPlaying)
+	{
+		vol = (10000 + gMasterVolume) / 79;
+		alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
+
+		alSourcePlay(g_XASource);
+
+		gXASubtitleTime += VSync(-1) - gXASubtitlePauseTime;
+	}
+#endif
 }
 
 
@@ -459,24 +631,31 @@ void ResumeXA(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void PauseXA(void)
 {
-	UNIMPLEMENTED();
-	/*
-	uchar local_10;
-	uchar local_f;
-	uchar local_e;
+#ifdef PSX
+	u_char res[8];
 
-	if ((xa_prepared != 0) && (gPlaying != 0)) {
+	if (xa_prepared && gPlaying)
+	{
 		SsSetSerialVol(0, 0, 0);
-		CdControlB(CdlGetlocL, 0, &local_10);
-		pause_loc.minute = local_10;
-		pause_loc.second = local_f;
-		pause_loc.sector = local_e;
-		CdControlB(CdlPause, 0, 0);
+		CdControlB(0x10, 0, res);
+
+		pause_loc.minute = res[0];
+		pause_loc.second = res[1];
+		pause_loc.sector = res[2];
+
+		CdControlB(9, 0, 0);
 		gPlaying = 0;
 	}
-	return;*/
+#else
+	if (xa_prepared && gPlaying)
+	{
+		alSourcePause(g_XASource);
+		gXASubtitlePauseTime = VSync(-1);
+	}
+#endif
 }
 
 

@@ -1615,7 +1615,7 @@ void addCivs(void)
 
 	cp = car_data;
 	do {
-		if (cp->controlType == 2) 
+		if (cp->controlType == CONTROL_TYPE_CIV_AI) 
 		{
 			iVar7 = cp->hd.oBox.radii[2].vx;
 			x = cp->hd.oBox.location.vx;
@@ -2092,9 +2092,9 @@ void UpdateCopMap(void)
 		{
 			iVar1 = (int)player[0].playerCarId;
 
-			searchTarget.vx = car_data[iVar1].hd.where.t[0] + FIXED(car_data[iVar1].st.n.linearVelocity[0]) * 8;
-			searchTarget.vy = car_data[iVar1].hd.where.t[1] + FIXED(car_data[iVar1].st.n.linearVelocity[1]) * 4;
-			searchTarget.vz = car_data[iVar1].hd.where.t[2] + FIXED(car_data[iVar1].st.n.linearVelocity[2]) * 8;
+			searchTarget.vx = car_data[iVar1].hd.where.t[0] + FIXEDH(car_data[iVar1].st.n.linearVelocity[0]) * 8;
+			searchTarget.vy = car_data[iVar1].hd.where.t[1] + FIXEDH(car_data[iVar1].st.n.linearVelocity[1]) * 4;
+			searchTarget.vz = car_data[iVar1].hd.where.t[2] + FIXEDH(car_data[iVar1].st.n.linearVelocity[2]) * 8;
 		}
 		else if (searchTarget.vy == -0x304f) 
 		{

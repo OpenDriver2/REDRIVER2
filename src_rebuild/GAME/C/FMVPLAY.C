@@ -17,6 +17,7 @@
 
 // FMV
 int gSubtitles = 0;
+int gNoFMV = 0;
 
 // decompiled code
 // original method signature: 
@@ -103,8 +104,8 @@ void ReInitSystem(void)
 void PlayFMV(unsigned char render)
 {
 	RENDER_ARGS args;
-
-	if ((render - 0x10 < 0xd) || (render == 97))
+	
+	if ((render - 16 < 13) || (render == 97))
 	{
 		CheckForCorrectDisc(1);
 	}
@@ -117,6 +118,7 @@ void PlayFMV(unsigned char render)
 	args.Args[0].credits = render == 28;
 	args.Args[0].recap = 0;
 	args.Args[0].render = render;
+
 	PlayRender(&args);
 
 	if ((render - 1 & 0xff) < 0x62)
@@ -155,10 +157,11 @@ void PlayFMV(unsigned char render)
 	/* end block 3 */
 	// End Line: 223
 
+extern int FMV_main(RENDER_ARGS* args);
+
 // [D] [A]
 void PlayRender(RENDER_ARGS *args)
 {
-#ifdef PSX
 	static unsigned long oldsp;
 
 	StopAllChannels();
@@ -169,7 +172,7 @@ void PlayRender(RENDER_ARGS *args)
 	args->screenx = draw_mode_pal.framex;
 	args->screeny = draw_mode_pal.framey;
 	args->subtitle = gSubtitles;
-
+#ifdef PSX
 	if (Loadfile("FMV\\FMV.EXE", &DAT_800ff800) != 0)
 	{
 		oldsp = GetSp();
@@ -179,11 +182,15 @@ void PlayRender(RENDER_ARGS *args)
 		Exec(&DAT_800ff810, 1, args);
 		SetSp(oldsp);
 	}
-
-	ReInitSystem();
 #else
-	// TODO: use jpsx?
+
+	if (gNoFMV == 1)
+		return;
+	
+	FMV_main(args);
 #endif
+	ReInitSystem();
+
 }
 
 

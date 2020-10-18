@@ -34,11 +34,19 @@ extern void sys_freeall();
 
 #define MALLOC_BEGIN() \
 	{ \
-		char* _oldmalloc = mallocptr;
+		const char* _oldmalloc = mallocptr;
 
+#ifdef __GNUC__
 #define MALLOC_END() \
-	if(mallocptr > _oldmalloc) printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
-}
+		if(mallocptr > _oldmalloc)\
+			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
+	} // MALLOC_BEGIN block
+#else
+#define MALLOC_END() \
+		if(mallocptr > _oldmalloc)\
+			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
+	} // MALLOC_BEGIN block
+#endif
 
 extern int leadAIRequired;
 extern int leadAILoaded;
@@ -46,15 +54,15 @@ extern int pathAILoaded;
 
 extern char* LoadingScreenNames[];
 
-typedef struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
+struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
 {
-	char *primptr; // size=0, offset=0
-	OTTYPE *ot; // size=0, offset=4
-	char *primtab; // size=0, offset=8
+	char* primptr; // size=0, offset=0
+	OTTYPE* ot; // size=0, offset=4
+	char* primtab; // size=0, offset=8
 	int id; // size=0, offset=12
 	DRAWENV draw; // size=92, offset=16
 	DISPENV disp; // size=20, offset=108
-} DB;
+};
 
 extern DRAW_MODE draw_mode_pal;
 extern DRAW_MODE draw_mode_ntsc;
@@ -115,6 +123,8 @@ extern void loadsectorsPC(char* filename, char *addr, int sector, int nsectors);
 extern void EnableDisplay(); // 0x0007F984
 
 extern void DisableDisplay(); // 0x0007F9F0
+
+extern void ClearCurrentDrawBuffers();
 
 extern void SwapDrawBuffers(); // 0x0007F6FC
 
