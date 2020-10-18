@@ -1548,7 +1548,7 @@ struct PLAYBACKCAMERA // hashcode: 0xF83C80A8 (dec: -130252632)
 	struct SVECTOR angle; // size=8, offset=12
 	int FrameCnt; // size=0, offset=20
 	short CameraPosvy; // size=0, offset=24
-	short gCameraDistance; // size=0, offset=26
+	short scr_z; // size=0, offset=26
 	short gCameraMaxDistance; // size=0, offset=28
 	short gCameraAngle; // size=0, offset=30
 	unsigned char cameraview; // size=0, offset=32
