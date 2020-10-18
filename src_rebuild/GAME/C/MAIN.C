@@ -58,7 +58,7 @@
 #include "FELONY.H"
 #include "LEADAI.H"
 #include "LOADSAVE.H"
-
+#include "../FRONTEND/FEMAIN.H"
 #include "XAPLAY.H"
 #include "SHADOW.H"
 
@@ -68,8 +68,9 @@
 #include "STRINGS.H"
 
 #include <PLATFORM.H>
+#include "INLINE_C.H"
 
-#include "../FRONTEND/FEMAIN.H"
+
 
 int scr_z = 0;
 

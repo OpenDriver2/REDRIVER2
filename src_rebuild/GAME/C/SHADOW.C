@@ -1004,13 +1004,13 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 	// End Line: 2536
 
 extern VECTOR dummy;
+extern _pct plotContext; // scratchpad addr: 0x1F8000C0
 
 // [D] [T] [A] better shadow code
 void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
 {	
 	MVERTEX subdivVerts[5][5];
 	SVECTOR points[4];
-	_pct plotContext;
 
 	points[0].vx = shadowPoints[0].vx - camera_position.vx;
 	points[0].vy = -shadowPoints[0].vy - camera_position.vy;

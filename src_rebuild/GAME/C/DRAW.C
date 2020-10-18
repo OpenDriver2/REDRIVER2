@@ -338,6 +338,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	plotContext.primptr = current->primptr;
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+	plotContext.polySizes = PolySizes;
 	plotContext.ot = current->ot;
 
 	list = sprites;
@@ -1839,8 +1840,6 @@ void DrawAllTheCars(int view)
 // [D] [T] [A] custom
 void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 {
-	// FIXME: still bugged - see tops of barrels at "Caine's Compound"
-
 	int opz;
 	int diff, minZ, maxZ;
 	int Z;
