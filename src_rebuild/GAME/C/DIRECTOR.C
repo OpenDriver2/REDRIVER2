@@ -1011,7 +1011,7 @@ void CameraBar(int CameraCnt)
 			first = 0;
 		}
 
-		if (PlaybackCamera[idx].FrameCnt == 100000)
+		if (PlaybackCamera[idx].FrameCnt == 100000 || idx == 0)
 			return;
 
 	} while (idx < MAX_REPLAY_CAMERAS);
@@ -3179,7 +3179,7 @@ int NoMoreCamerasErrorMessage(void)
 // [D] [T]
 int FirstCamera(void)
 {
-	if (LastChange && LastChange->prev != -1)
+	if (LastChange && LastChange->prev != 255)
 		return 0;
 
 	return 1;
