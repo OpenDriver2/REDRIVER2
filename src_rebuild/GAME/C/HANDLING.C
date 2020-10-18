@@ -2078,7 +2078,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 	cp->thrust = 0;
 
-	if (gTimeInWater != 0)
+	//if (gTimeInWater != 0)
 	{
 		if (pad & 0x80) 
 		{

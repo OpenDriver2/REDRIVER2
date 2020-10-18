@@ -901,8 +901,8 @@ void GameInit(void)
 		IconsLoaded = 0;
 	}
 
-	gSinkingTimer = 100;
-	gTimeInWater = 25;
+	//gSinkingTimer = 100;
+	//gTimeInWater = 25;
 
 	InWater = 0;
 
