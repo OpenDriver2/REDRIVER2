@@ -1147,23 +1147,21 @@ void calc_sky_brightness(void)
 // offset: 0x1f800020
 extern _pct plotContext;
 
-POLYFT4* scratchPad_skyPolygonsPtr;		// 1f80003c
-
 #ifdef PGXP
-DVECTORF scratchPad_skyVertices[256];	// 1f800044
+DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
-DVECTOR scratchPad_skyVertices[256];	// 1f800044
+DVECTOR scratchPad_skyVertices[35];	// 1f800044
 #endif
 
 short scratchPad_zbuff[256];
 
 // [D] [T]
-void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
+void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
 {
 	POLYFT4* src;
 	POLY_FT4* poly;
 
-	src = scratchPad_skyPolygonsPtr;
+	src = polys;
 	poly = (POLY_FT4*)current->primptr;
 
 #ifdef PGXP
@@ -1200,7 +1198,7 @@ void PlotSkyPoly(int skytexnum, unsigned char r, unsigned char g, unsigned char 
 		addPrim(current->ot + 0x107f, poly);
 
 #ifdef PGXP
-		poly->pgxp_index = 0xFFFF;
+		poly->pgxp_index = outpoints[src->v0].pgxp_index;
 #endif 
 
 		current->primptr += sizeof(POLY_FT4);
@@ -1268,60 +1266,67 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	int red;
 	int blue;
 
-	short* zbuff;
 	int z;
 
 	verts = (SVECTOR*)model->vertices;
-	blue = (uint)model->num_vertices + 3;
-
 	count = 0;
 
-	if (blue != 0)
+	dv0 = scratchPad_skyVertices;
+	dv1 = scratchPad_skyVertices + 1;
+	dv2 = scratchPad_skyVertices + 2;
+
+	v0 = verts;
+	v1 = verts + 1;
+	v2 = verts + 2;
+
+	while (count < model->num_vertices)
 	{
-		zbuff = scratchPad_zbuff;
+		SVECTOR sv0 = *v0;
+		SVECTOR sv1 = *v1;
+		SVECTOR sv2 = *v2;
 
-		dv0 = scratchPad_skyVertices;
-		dv1 = scratchPad_skyVertices + 1;
-		dv2 = scratchPad_skyVertices + 2;
+		sv0.vy -= sky_y_offset[GameLevel];
+		sv1.vy -= sky_y_offset[GameLevel];
+		sv2.vy -= sky_y_offset[GameLevel];
 
-		v0 = verts;
-		v1 = verts + 1;
-		v2 = verts + 2;
+#ifndef PSX
+		// scale sky to get rid of vobbling
+		sv0.vx *= 10;
+		sv0.vy *= 10;
+		sv0.vz *= 10;
+		sv1.vx *= 10;
+		sv1.vy *= 10;
+		sv1.vz *= 10;
+		sv2.vx *= 10;
+		sv2.vy *= 10;
+		sv2.vz *= 10;
+#endif
 
-		do {
-			SVECTOR sv0 = *v0;
-			SVECTOR sv1 = *v1;
-			SVECTOR sv2 = *v2;
+		gte_ldv3(&sv0, &sv1, &sv2);
+		gte_rtpt();
+		gte_stsxy3(dv0, dv1, dv2);
 
-			sv0.vy -= sky_y_offset[GameLevel];
-			sv1.vy -= sky_y_offset[GameLevel];
-			sv2.vy -= sky_y_offset[GameLevel];
-
-			gte_ldv3(&sv0, &sv1, &sv2);
-			gte_rtpt();
-			gte_stsxy3(dv0, dv1, dv2);
-
+		if(count == 15)
 			gte_stszotz(&z);
 
-			dv2 += 3;
-			dv1 += 3;
-			dv0 += 3;
+#ifdef PGXP
+		// store PGXP index
+		// HACK: -1 is needed here for some reason
+		dv0->pgxp_index = dv1->pgxp_index = dv2->pgxp_index = PGXP_GetIndex() - 1;
+#endif
 
-			v2 += 3;
-			v1 += 3;
-			v0 += 3;
+		dv2 += 3;
+		dv1 += 3;
+		dv0 += 3;
 
-			count += 3;
+		v2 += 3;
+		v1 += 3;
+		v0 += 3;
 
-			zbuff[2] = z;
-			zbuff[1] = z;
-			zbuff[0] = z;
-
-			zbuff += 3;
-		} while (count < model->num_vertices + 3);
+		count += 3;
 	}
 
-	if (scratchPad_zbuff[16] > 0)
+	if (z > 0)
 	{
 		polys = (unsigned char*)model->poly_block;
 
@@ -1339,10 +1344,8 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 				green /= 2;
 				blue /= 2;
 			}
-			
-			scratchPad_skyPolygonsPtr = (POLYFT4*)polys;
 
-			PlotSkyPoly(HorizonTextures[horizontaboffset + count], red, green, blue, 0);
+			PlotSkyPoly((POLYFT4*)polys, HorizonTextures[horizontaboffset + count], red, green, blue, 0);
 
 			polys += PolySizes[*polys];
 			count++;
