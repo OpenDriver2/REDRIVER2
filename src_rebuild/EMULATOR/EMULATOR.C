@@ -1465,7 +1465,7 @@ void Emulator_SetShader(const ShaderID &shader)
 
 	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
 
-	Emulator_Perspective3D(0.9f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 0.1f, 10000.0f);
+	Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
@@ -2139,22 +2139,27 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 	{
 		case BM_NONE:
 			glDisable(GL_BLEND);
+			glDepthMask(GL_TRUE);
 			break;
 		case BM_AVERAGE:
 			glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
 			glBlendEquation(GL_FUNC_ADD);
+			glDepthMask(GL_FALSE);
 			break;
 		case BM_ADD:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
+			glDepthMask(GL_FALSE);
 			break;
 		case BM_SUBTRACT:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+			glDepthMask(GL_FALSE);
 			break;
 		case BM_ADD_QUATER_SOURCE:
 			glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
+			glDepthMask(GL_FALSE);
 			break;
 	}
 #elif defined(D3D9)
