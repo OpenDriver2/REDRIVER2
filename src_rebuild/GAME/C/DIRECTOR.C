@@ -258,8 +258,9 @@ void setCamera(PLAYBACKCAMERA* Change)
 	camera_angle.vy = Change->angle.vy;
 	camera_angle.vz = Change->angle.vz;
 
-	gCameraDistance = Change->gCameraDistance;
+	scr_z = Change->scr_z;
 	gCameraMaxDistance = Change->gCameraMaxDistance;
+	
 	gCameraAngle = Change->gCameraAngle;
 	cameraview = Change->cameraview & 7;
 
@@ -332,7 +333,7 @@ void EditCamera(int CameraCnt)
 	ThisChange->angle.vy = camera_angle.vy;
 	ThisChange->angle.vz = camera_angle.vz;
 	ThisChange->angle.pad = player[0].cameraCarId;
-	ThisChange->gCameraDistance = gCameraDistance;
+	ThisChange->scr_z = scr_z;
 
 	ThisChange->gCameraAngle = gCameraAngle;
 	ThisChange->gCameraMaxDistance = gCameraMaxDistance;
@@ -424,7 +425,7 @@ void RecordCamera(int CameraCnt)
 			player[0].cameraCarId != LastChange->angle.pad ||
 			cameraview == 1 ||
 			(cameraview & 7) == 5 ||
-			LastChange->gCameraDistance != gCameraDistance ||
+			LastChange->scr_z != scr_z ||
 			LastChange->gCameraMaxDistance != gCameraMaxDistance ||
 			LastChange->gCameraAngle != gCameraAngle ||
 			LastChange->CameraPosvy != gCameraOffset.vy)
@@ -455,7 +456,7 @@ void RecordCamera(int CameraCnt)
 			LastChange->angle.vy = camera_angle.vy;
 			LastChange->angle.vz = camera_angle.vz;
 			LastChange->angle.pad = player[0].cameraCarId;
-			LastChange->gCameraDistance = gCameraDistance;
+			LastChange->scr_z = scr_z;
 			LastChange->FrameCnt = CameraCnt;
 			LastChange->gCameraMaxDistance = gCameraMaxDistance;
 			LastChange->gCameraAngle = gCameraAngle;
@@ -626,10 +627,13 @@ int CheckCameraChange(int CameraCnt)
 void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 {
 	gCameraOffset.vy = camera->CameraPosvy;
-	camera_angle.vx = (camera->angle).vx;
-	camera_angle.vy = (camera->angle).vy;
-	camera_angle.vz = (camera->angle).vz;
-	gCameraDistance = camera->gCameraDistance;
+	camera_angle.vx = camera->angle.vx;
+	camera_angle.vy = camera->angle.vy;
+	camera_angle.vz = camera->angle.vz;
+
+	if(gInGameCutsceneActive == 0) // [A] previously it was gCameraDistance so we don't change it in cutscenes
+		scr_z = camera->scr_z;
+	
 	gCameraMaxDistance = camera->gCameraMaxDistance;
 	gCameraAngle = camera->gCameraAngle;
 	cameraview = camera->cameraview & 7;
@@ -638,9 +642,9 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 
 	CameraChanged = 1;
 
-	player[0].cameraPos.vx = (camera->position).vx;
-	player[0].cameraPos.vy = (camera->position).vy;
-	player[0].cameraPos.vz = (camera->position).vz;
+	player[0].cameraPos.vx = camera->position.vx;
+	player[0].cameraPos.vy = camera->position.vy;
+	player[0].cameraPos.vz = camera->position.vz;
 	player[0].cameraCarId = camera->angle.pad;
 }
 
@@ -1007,7 +1011,7 @@ void CameraBar(int CameraCnt)
 			first = 0;
 		}
 
-		if (PlaybackCamera[idx].FrameCnt == 100000)
+		if (PlaybackCamera[idx].FrameCnt == 100000 || idx == 0)
 			return;
 
 	} while (idx < MAX_REPLAY_CAMERAS);
@@ -1249,7 +1253,7 @@ void ShowIcons(unsigned char* menu, int selected, int x_offset)
 
 	GreyIcons[8] = gNoReplaySaveAllowed != 0;
 
-	if (tracking_car == 0 || OK_To_Zoom() == 0)
+	if (tracking_car == 1 && !OK_To_Zoom())
 		GreyIcons[22] = 1;
 	else
 		GreyIcons[22] = 0;
@@ -1795,7 +1799,7 @@ void ControlReplay(void)
 			if ((padd & 0x2000) != 0)
 				gCameraAngle = gCameraAngle - speed * 16;
 
-			if ((padd & 4) && -840 < gCameraOffset.vy)
+			if ((padd & 4) && gCameraOffset.vy > -840)
 				gCameraOffset.vy -= speed * 16;
 
 			if ((padd & 1) && gCameraOffset.vy < 50)
@@ -1975,6 +1979,24 @@ void ControlReplay(void)
 			camera_angle.vx = camera_angle.vx & 0xfff;
 			camera_angle.vy = camera_angle.vy & 0xfff;
 			camera_angle.vz = camera_angle.vz & 0xfff;
+		}
+		else if (EditMode == 5)
+		{
+			if(padd & 0x1000)
+			{
+				scr_z += speed * 4;
+
+				if (scr_z > 1000)
+					scr_z = 1000;
+			}
+
+			if (padd & 0x4000)
+			{
+				scr_z -= speed * 4;
+				
+				if (scr_z < 256)
+					scr_z = 256;
+			}
 		}
 	}
 
@@ -2537,17 +2559,31 @@ void ControlReplay(void)
 					}
 					break;
 				case 9:
-					if (tracking_car != 0 && move == 5)
+					if (tracking_car != 0)
 					{
-						if (cameraview == 1)
-							cameraview = 5;
-						else
-							cameraview = 1;
+						if(move == 5)
+						{
+							if (cameraview == 1)
+								cameraview = 5;
+							else
+								cameraview = 1;
+						}
 					}
+					else
+					{
+						if(move == 5)
+						{
+							if (EditMode != 0)
+								EditMode = 0;
+							else
+								EditMode = 5;
+						}
+					}
+				
 					break;
 			}
 
-			if (tracking_car == 0 || OK_To_Zoom() == 0)
+			if (tracking_car == 1 && !OK_To_Zoom())
 			{
 				if (CursorX > 7)
 					CursorX = 8;
@@ -3143,7 +3179,7 @@ int NoMoreCamerasErrorMessage(void)
 // [D] [T]
 int FirstCamera(void)
 {
-	if (LastChange && LastChange->prev != -1)
+	if (LastChange && LastChange->prev != 255)
 		return 0;
 
 	return 1;

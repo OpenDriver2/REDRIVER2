@@ -923,8 +923,8 @@ void CopControl1(_CAR_DATA *cp)
 		cp->ai.p.recoveryTimer--;
 	}
 
-	if (gTimeInWater == 0) 
-		targetFound = 0;
+	//if (gTimeInWater == 0) 
+	//	targetFound = 0;
 
 	if (targetFound) 
 	{

@@ -2078,7 +2078,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 	cp->thrust = 0;
 
-	if (gTimeInWater != 0)
+	//if (gTimeInWater != 0)
 	{
 		if (pad & 0x80) 
 		{
@@ -2506,7 +2506,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 
 		SetChannelPosition3(player[player_id].wheelnoise.chan, 
 							(VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, 
-							spd * 50-10000,
+							spd * 50 - 10000,
 							pitch + player_id * 8, 0);
 	}
 
@@ -2517,7 +2517,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	// make tyre tracks
 	if (lay_down_tracks) 
 	{
-		continuous_track = last_track_state == rear_only;
+		continuous_track = (last_track_state == rear_only);
 
 		AddTyreTrack(player_id * 2, (player_id < 2), player_id);
 		AddTyreTrack(player_id * 2 + 1, (player_id < 2), player_id);

@@ -898,14 +898,12 @@ void DrawCar(_CAR_DATA *cp, int view)
 		}
 
 		if (doSmoke && WheelSpeed + 399999U < 1199999)
-		{
 			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
-			AddExhaustSmoke(cp, doSmoke - 1, WheelSpeed);
-		}
 
+		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
 
-		gTimeInWater = 25;
-		gSinkingTimer = 100;
+		//gTimeInWater = 25;
+		//gSinkingTimer = 100;
 
 		SetShadowPoints(cp, corners);
 		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);

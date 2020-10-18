@@ -58,7 +58,7 @@
 #include "FELONY.H"
 #include "LEADAI.H"
 #include "LOADSAVE.H"
-
+#include "../FRONTEND/FEMAIN.H"
 #include "XAPLAY.H"
 #include "SHADOW.H"
 
@@ -68,8 +68,9 @@
 #include "STRINGS.H"
 
 #include <PLATFORM.H>
+#include "INLINE_C.H"
 
-#include "../FRONTEND/FEMAIN.H"
+
 
 int scr_z = 0;
 
@@ -901,8 +902,8 @@ void GameInit(void)
 		IconsLoaded = 0;
 	}
 
-	gSinkingTimer = 100;
-	gTimeInWater = 25;
+	//gSinkingTimer = 100;
+	//gTimeInWater = 25;
 
 	InWater = 0;
 

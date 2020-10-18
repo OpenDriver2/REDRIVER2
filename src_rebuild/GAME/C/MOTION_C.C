@@ -34,7 +34,7 @@ PED_DATA MainPed[23] =
 	{ 1, 68u, &chest1_texture, CHEST_PAL },
 	{ 17, 36u, &chest1_texture, CHEST_PAL },
 	{ 6, 68u, &forearm1_texture, ARM_PAL },
-	{ 8, 68u, &head1_texture, NO_PAL },
+	{ 8, 48u, &head1_texture, NO_PAL },
 	{ 6, 68u, &arm1_texture, CHEST_PAL },
 	{ 8, 36u, &arm1_texture, CHEST_PAL },
 	{ 7, 68u, &forearm1_texture, ARM_PAL },
@@ -638,7 +638,7 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 	if (bDoingShadow == 0)
 	{
-		if (bone == 4)
+		if (bone == HEAD)
 		{
 			x = (camera_angle.vy + pDrawingPed->dir.vy & 0xfffU) >> 7;
 
@@ -656,46 +656,25 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		}
 		else if (bone == 2)
 		{
-			prims->u0 = body_texture->coords.u0;
-			prims->v0 = body_texture->coords.v0;
-
-			prims->u1 = body_texture->coords.u1;
-			prims->v1 = body_texture->coords.v1;
-
-			prims->u2 = body_texture->coords.u2;
-			prims->v2 = body_texture->coords.v2;
-
-			prims->u3 = body_texture->coords.u3;
-			prims->v3 = body_texture->coords.v3;
+			*(ushort*)&prims->u0 = *(ushort*)&body_texture->coords.u0;
+			*(ushort*)&prims->u1 = *(ushort*)&body_texture->coords.u1;
+			*(ushort*)&prims->u2 = *(ushort*)&body_texture->coords.u2;
+			*(ushort*)&prims->u3 = *(ushort*)&body_texture->coords.u3;
 		}
 		else
 		{
-			prims->u0 = body_texture->coords.u2;
-			prims->v0 = body_texture->coords.v2;
-
-			prims->u1 = body_texture->coords.u3;
-			prims->v1 = body_texture->coords.v3;
-
-			prims->u2 = body_texture->coords.u0;
-			prims->v2 = body_texture->coords.v0;
-
-			prims->u3 = body_texture->coords.u1;
-			prims->v3 = body_texture->coords.v1;
+			*(ushort*)&prims->u0 = *(ushort*)&body_texture->coords.u2;
+			*(ushort*)&prims->u1 = *(ushort*)&body_texture->coords.u3;
+			*(ushort*)&prims->u2 = *(ushort*)&body_texture->coords.u0;
+			*(ushort*)&prims->u3 = *(ushort*)&body_texture->coords.u1;
 		}
 	}
 	else
 	{
-		prims->u0 = shadowuv.u0;
-		prims->v0 = shadowuv.v0;
-
-		prims->u1 = shadowuv.u1;
-		prims->v1 = shadowuv.v1;
-
-		prims->u2 = shadowuv.u2;
-		prims->v2 = shadowuv.v2;
-
-		prims->u3 = shadowuv.u3;
-		prims->v3 = shadowuv.v3;
+		*(ushort*)&prims->u0 = *(ushort*)&shadowuv.u0;
+		*(ushort*)&prims->u1 = *(ushort*)&shadowuv.u1;
+		*(ushort*)&prims->u2 = *(ushort*)&shadowuv.u2;
+		*(ushort*)&prims->u3 = *(ushort*)&shadowuv.u3;
 	}
 
 	if (gNight == 1)
@@ -2706,7 +2685,8 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 	else
 		z3 = 8;
 
-	SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
+	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &ft4TannerShadow[current->id]);
+	//SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
 
 	cp = camera_position;
 	ca = camera_angle;
