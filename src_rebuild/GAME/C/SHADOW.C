@@ -24,11 +24,12 @@ POLYFT4 shadowpoly;
 
 VECTOR tyre_new_positions[4];
 VECTOR tyre_save_positions[4];
+
 int tyre_track_offset[4];
 int num_tyre_tracks[4];
+
 TYRE_TRACK track_buffer[4][64];
 int smoke_count[4];
-
 
 // decompiled code
 // original method signature: 
@@ -255,33 +256,24 @@ void SetTyreTrackOldPositions(int player_id)
 	/* end block 3 */
 	// End Line: 713
 
-// [D]
+// [D] [T]
 void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 {
 	static int Cont[4] = { 0, 0, 0, 0 };
 
-	short sVar1;
-	short sVar2;
+	short x;
+	short z;
 	_sdPlane *SurfaceDataPtr;
-	long lVar3;
-	int *piVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
-	int iVar8;
 	char trackSurface;
 	TYRE_TRACK *tt_p;
 	VECTOR *newtp;
 	VECTOR *oldtp;
-	VECTOR unk;
 	VECTOR New1;
 	VECTOR New2;
 	VECTOR New3;
 	VECTOR New4;
-	VECTOR psxoffset;
 	VECTOR SmokeDrift;
 	VECTOR SmokePosition;
-	ROUTE_DATA routeData;
 	VECTOR grass_vector;
 
 	newtp = &tyre_new_positions[wheel];
@@ -296,52 +288,51 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 	{
 		SurfaceDataPtr = sdGetCell(newtp);
 		trackSurface = 1;
+
 		if (SurfaceDataPtr->surface == 6)
 			return;
-
-		iVar5 = wheel / 4;
 
 		if (SurfaceDataPtr->surface == 4)
 			trackSurface = 2;
 	}
 	else
 	{
-		iVar5 = wheel * 4;
-
-		uVar7 = tyre_track_offset[wheel] + num_tyre_tracks[wheel] & 0x3f;
 		oldtp = &tyre_save_positions[wheel];
 
-		tt_p = track_buffer[wheel] + uVar7;
+		tt_p = track_buffer[wheel] + (tyre_track_offset[wheel] + num_tyre_tracks[wheel] & 0x3f);
+
 		SurfaceDataPtr = sdGetCell(newtp);
 
-		if (SurfaceDataPtr == NULL) 
-		{
-		LAB_00075698:
-			tt_p->surface = 1;
-		}
-		else 
+		// check surface type
+		if (SurfaceDataPtr != NULL) 
 		{
 			if (SurfaceDataPtr->surface == 6) 
 				return;
 
-			if (SurfaceDataPtr->surface != 4) 
-				goto LAB_00075698;
-
-			tt_p->surface = 2;
-			player[padid].onGrass = 1;
+			if (SurfaceDataPtr->surface == 4)
+			{
+				tt_p->surface = 2;
+				player[padid].onGrass = 1;
+			}
+			else
+			{
+				tt_p->surface = 1;
+			}
+		}
+		else 
+		{
+			tt_p->surface = 1;
 		}
 
 		trackSurface = tt_p->surface;
 	}
-
-	uVar7 = *(uint *)((int)smoke_count + iVar5);
-	*(uint *)((int)smoke_count + iVar5) = uVar7 + 1;
-
-	psxoffset.vx = newtp->vx;
-	psxoffset.vz = newtp->vz;
-	psxoffset.vy = -50 - newtp->vy;
 	
-	if ((uVar7 & 3) == 1) 
+	SmokePosition.vx = newtp->vx;
+	SmokePosition.vz = newtp->vz;
+	SmokePosition.vy = -50 - newtp->vy;
+
+	// make smoke
+	if ((smoke_count[wheel]++ & 3) == 1) 
 	{
 		GetSmokeDrift(&SmokeDrift);
 
@@ -352,63 +343,55 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 			grass_vector.vz = 0;
 			grass_vector.pad = 0;
 
-			Setup_Smoke(&psxoffset, 100, 500, 3, 0, &SmokeDrift, 0);
-			Setup_Sparks(&psxoffset, &grass_vector, 5, 2);
+			Setup_Smoke(&SmokePosition, 100, 500, 3, 0, &SmokeDrift, 0);
+			Setup_Sparks(&SmokePosition, &grass_vector, 5, 2);
 		}
 		else if (wetness == 0) 
 		{
-			Setup_Smoke(&psxoffset, 100, 500, 2, 0, &SmokeDrift, 0);
+			Setup_Smoke(&SmokePosition, 100, 500, 2, 0, &SmokeDrift, 0);
 		}
 	}
 
+	// lay down tracks to buffer
 	if (tracksAndSmoke != 0)
 	{
-		lVar3 = ratan2(oldtp->vz - newtp->vz, oldtp->vx - newtp->vx);
+		int dir;
+		dir = ratan2(oldtp->vz - newtp->vz, oldtp->vx - newtp->vx);
 
-		iVar6 = rcossin_tbl[(-lVar3 & 0xfffU) * 2 + 1] * 0x23;
-		iVar8 = rcossin_tbl[(-lVar3 & 0xfffU) * 2] * 0x23;
-
+		x = FixHalfRound(rcossin_tbl[(-dir & 0xfffU) * 2] * 35, 13);
+		z = FixHalfRound(rcossin_tbl[(-dir & 0xfffU) * 2 + 1] * 35, 13);
+		
 		New1.vy = oldtp->vy + 10;
 		New3.vy = newtp->vy + 10;
 		New2.vx = oldtp->vx;
-		sVar1 = (iVar8 >> 0xd);
-		New1.vx = New2.vx + sVar1;
+		New1.vx = New2.vx + x;
 		New2.vz = oldtp->vz;
-		sVar2 = (iVar6 >> 0xd);
-		New1.vz = New2.vz + sVar2;
-		New2.vx = New2.vx - sVar1;
-		New2.vz = New2.vz - sVar2;
+		New1.vz = New2.vz + z;
+		New2.vx = New2.vx - x;
+		New2.vz = New2.vz - z;
 		New4.vx = newtp->vx;
-		New3.vx = New4.vx + sVar1;
+		New3.vx = New4.vx + x;
 		New4.vz = newtp->vz;
-		New3.vz = New4.vz + sVar2;
-		New4.vx = New4.vx - sVar1;
-		New4.vz = New4.vz - sVar2;
+		New3.vz = New4.vz + z;
+		New4.vx = New4.vx - x;
+		New4.vz = New4.vz - z;
 
-		iVar6 = *(int *)((int)&num_tyre_tracks + iVar5);
-
-		if (iVar6 == 0x40)
+		if (num_tyre_tracks[wheel] == 64)
 		{
-			piVar4 = (int *)((int)&tyre_track_offset + iVar5);
-			iVar8 = *piVar4;
-			iVar6 = iVar8 + 1;
-			*piVar4 = iVar6;
-
-			if (iVar6 > 63) 
-				*piVar4 = iVar8 - 63;
-
+			tyre_track_offset[wheel]++;
+			tyre_track_offset[wheel] &= 63;
 		}
 		else 
 		{
-			*(int *)((int)&num_tyre_tracks + iVar5) = iVar6 + 1;
+			num_tyre_tracks[wheel]++;
 		}
 
-		if ((*(int *)((int)Cont + iVar5) == 1) && (continuous_track == 1))
+		if (Cont[wheel] == 1 && continuous_track == 1)
 			tt_p->type = 1;
 		else
 			tt_p->type = 0;
 
-		*(int *)((int)Cont + iVar5) = 1;
+		Cont[wheel] = 1;
 
 		tt_p->p1.vx = New1.vx;
 		tt_p->p1.vy = New1.vy;
@@ -470,17 +453,15 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawTyreTracks(void)
 {
-	bool bVar2;
-	bool bVar3;
-	unsigned char col;
+	char last_duff;
 	POLY_FT4 *poly;
 	TYRE_TRACK *tt_p;
-	int iVar11;
-	int iVar13;
-	int iVar14;
+	int index;
+	int loop;
+	int wheel_loop;
 	POLY_FT4 *lasttyre;
 	SVECTOR ps[4];
 	int z;
@@ -488,147 +469,124 @@ void DrawTyreTracks(void)
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
 
-	iVar14 = 0;
+	wheel_loop = 0;
 
 	do {
-		if (num_tyre_tracks[iVar14] != 0)
+		lasttyre = NULL;
+		last_duff = 1;
+		index = tyre_track_offset[wheel_loop];
+
+		for (loop = 0; loop < num_tyre_tracks[wheel_loop]; loop++) 
 		{
-			lasttyre = NULL;
-			bVar2 = true;
-			iVar11 = tyre_track_offset[iVar14];
-			iVar13 = 0;
+			tt_p = track_buffer[wheel_loop] + index;
 
-			if (0 < num_tyre_tracks[iVar14])
+			index++;
+
+			if (index == 64) 
+				index = 0;
+
+			if (tt_p->type == 2)
+				continue;
+			
+			ps[0].vx = tt_p->p1.vx - camera_position.vx;
+			ps[0].vy = -camera_position.vy - tt_p->p1.vy;
+			ps[0].vz = tt_p->p1.vz - camera_position.vz;
+
+			ps[1].vx = tt_p->p2.vx - camera_position.vx;
+			ps[1].vy = -camera_position.vy - tt_p->p2.vy;
+			ps[1].vz = tt_p->p2.vz - camera_position.vz;
+
+			ps[2].vx = tt_p->p3.vx - camera_position.vx;
+			ps[2].vy = -camera_position.vy - tt_p->p3.vy;
+			ps[2].vz = tt_p->p3.vz - camera_position.vz;
+
+			ps[3].vx = tt_p->p4.vx - camera_position.vx;
+			ps[3].vy = -camera_position.vy - tt_p->p4.vy;
+			ps[3].vz = tt_p->p4.vz - camera_position.vz;
+
+			poly = (POLY_FT4 *)current->primptr;
+
+			z = 0;
+
+			if (lasttyre != NULL && tt_p->type != 0 && !last_duff)
 			{
-				do {
-					tt_p = track_buffer[iVar14] + iVar11;
+				last_duff = 1;
 
-					iVar11++;
+				if (ps[2].vx + 9000 <= 18000 && ps[2].vz + 9000 <= 18000)
+				{
+					gte_ldv0(&ps[2]);
+					gte_rtps();
 
-					if (iVar11 == 64) 
-						iVar11 = 0;
+					gte_stsxy(&poly->x2);
 
-					if (tt_p->type != 2)
-					{
-						ps[0].vx = tt_p->p1.vx - camera_position.vx;
-						ps[0].vy = -camera_position.vy - tt_p->p1.vy;
-						ps[0].vz = tt_p->p1.vz - camera_position.vz;
+					gte_stsz(&z);
 
-						ps[1].vx = tt_p->p2.vx - camera_position.vx;
-						ps[1].vy = -camera_position.vy - tt_p->p2.vy;
-						ps[1].vz = tt_p->p2.vz - camera_position.vz;
+					gte_ldv0(&ps[3]);
+					gte_rtps();
 
-						ps[2].vx = tt_p->p3.vx - camera_position.vx;
-						ps[2].vy = -camera_position.vy - tt_p->p3.vy;
-						ps[2].vz = tt_p->p3.vz - camera_position.vz;
+					*(uint *)&poly->x0 = *(uint *)&lasttyre->x2;
+					*(uint *)&poly->x1 = *(uint *)&lasttyre->x3;
 
-						ps[3].vx = tt_p->p4.vx - camera_position.vx;
-						ps[3].vy = -camera_position.vy - tt_p->p4.vy;
-						ps[3].vz = tt_p->p4.vz - camera_position.vz;
+					gte_stsxy(&poly->x3);
+				}
+			}
+			else
+			{
+				last_duff = 1;
 
-						if ((lasttyre == NULL || tt_p->type == 0) || (bVar3 = true, bVar2))
-						{
-							bVar2 = true;
+				if (ps[0].vx + 0x5000 <= 0xa000 && ps[0].vz + 0x5000 <= 0xa000)
+				{
+					gte_ldv3(&ps[0], &ps[1], &ps[2]);
+					gte_rtpt();
 
-							if (0x5000 + ps[0].vx < 0xa001)
-							{
-								if (0x5000 + ps[0].vz < 0xa001)
-								{
-									poly = (POLY_FT4 *)current->primptr;
+					gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
-									gte_ldv3(&ps[0], &ps[1], &ps[2]);
-									gte_rtpt();
+					gte_stsz(&z);
 
-									gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+					gte_ldv0(&ps[3]);
+					gte_rtps();
 
-									gte_stsz(&z);
+					gte_stsxy(&poly->x3);
+				}
+				else
+				{
+					tt_p->type = 2;
+				}
+			}
 
-									gte_ldv0(&ps[3]);
-									gte_rtps();
+			if (z > 50)
+			{
+				setPolyFT4(poly);
+				setSemiTrans(poly, 1);
 
-									gte_stsxy(&poly->x3);
+				if (tt_p->surface == 1)
+				{
+					poly->r0 = poly->g0 = poly->b0 = 26;
+				}
+				else
+				{
+					poly->r0 = 17;
+					poly->g0 = poly->b0 = 35;
+				}
 
-									if (0x32 < z)
-										goto LAB_00075dbc;
+				*(ushort *)&poly->u0 = *(ushort *)&gTyreTexture.coords.u0;
+				*(ushort *)&poly->u1 = *(ushort *)&gTyreTexture.coords.u1;
+				*(ushort *)&poly->u2 = *(ushort *)&gTyreTexture.coords.u2;
+				*(ushort *)&poly->u3 = *(ushort *)&gTyreTexture.coords.u3;
 
-									goto LAB_00075eec;
-								}
-							}
+				poly->tpage = gTyreTexture.tpageid | 0x40;
+				poly->clut = gTyreTexture.clutid;
 
-							tt_p->type = 2;
-						}
-						else
-						{
-							poly = (POLY_FT4 *)current->primptr;
-							bVar2 = bVar3;
+				addPrim(current->ot + (z >> 3), poly);
+				current->primptr += sizeof(POLY_FT4);
 
-							if (0x2328 + ps[2].vx <= 0x4650)
-							{
-								if (0x2328 + ps[2].vz < 0x4651)
-								{
-									gte_ldv0(&ps[2]);
-									gte_rtps();
-
-									gte_stsxy(&poly->x2);
-
-									gte_stsz(&z);
-
-									gte_ldv0(&ps[3]);
-									gte_rtps();
-
-									if (50 < z)
-									{
-										*(uint *)&poly->x0 = *(uint *)&lasttyre->x2;
-										*(uint *)&poly->x1 = *(uint *)&lasttyre->x3;
-
-										gte_stsxy(&poly->x3);
-
-									LAB_00075dbc:
-										setPolyFT4(poly);
-										setSemiTrans(poly, 1);
-
-										if (tt_p->surface == 1)
-										{
-											col = 0x1a;
-											poly->r0 = 0x1a;
-										}
-										else
-										{
-											col = 35;
-											poly->r0 = 0x11;
-										}
-
-										poly->g0 = col;
-										poly->b0 = col;
-
-										poly->u0 = gTyreTexture.coords.u0;
-										poly->v0 = gTyreTexture.coords.v0;
-										poly->u1 = gTyreTexture.coords.u1;
-										poly->v1 = gTyreTexture.coords.v1;
-										poly->u2 = gTyreTexture.coords.u2;
-										poly->v2 = gTyreTexture.coords.v2;
-										poly->u3 = gTyreTexture.coords.u3;
-										poly->v3 = gTyreTexture.coords.v3;
-										poly->tpage = gTyreTexture.tpageid | 0x40;
-										poly->clut = gTyreTexture.clutid;
-
-										addPrim(current->ot + (z >> 3), poly);
-										current->primptr += sizeof(POLY_FT4);
-
-										lasttyre = poly;
-										bVar2 = false;
-									}
-								}
-							}
-						}
-					}
-				LAB_00075eec:
-					iVar13++;
-				} while (iVar13 < num_tyre_tracks[iVar14]);
+				lasttyre = poly;
+				last_duff = 0;
 			}
 		}
-		iVar14++;
-	} while (iVar14 < 4);
+
+		wheel_loop++;
+	} while (wheel_loop < 4);
 }
 
 
@@ -1168,17 +1126,16 @@ static int numcv;
 static int lastcv;
 static SVECTOR cv[12];
 
-// [D]
+// [D] - refactored - NOT TESTED YET
 int clipAgainstZ(void)
 {
-	SVECTOR *_curr;
+	SVECTOR *curr;
 	SVECTOR *prev;
 	int _tmp;
 	int temp;
-	int iVar1;
+	int d;
 	SVECTOR *dst;
-	SVECTOR *curr;
-	uint flags;
+	int flags;
 	int srccount;
 	int dstcount;
 
@@ -1188,11 +1145,11 @@ int clipAgainstZ(void)
 	dst = cv + lastcv + 2;
 	srccount = numcv-1;
 
-	flags = (uint)((curr + numcv * 0x1fffffff)[1].vz > 0) << 1;
+	flags = ((curr + numcv * 0x1fffffff)[1].vz > 0) << 1;
 	prev = curr + numcv * 0x1fffffff + 1;
 
 	do {
-		_curr = curr;
+
 		if (srccount < 0) 
 		{
 			numcv = dstcount;
@@ -1202,16 +1159,16 @@ int clipAgainstZ(void)
 
 		flags >>= 1;
 
-		if (_curr->vz > 0)
+		if (curr->vz > 0)
 			flags |= 2;
 
 		if (flags == 1) 
 		{
-			iVar1 = prev->vz - _curr->vz;
+			d = prev->vz - curr->vz;
 			
-			dst->vx = (_curr->vx * prev->vz - prev->vx * _curr->vz) / iVar1;
-			dst->vy = (_curr->vy * prev->vz - prev->vy * _curr->vz) / iVar1;
-			dst->pad = (_curr->pad * prev->vz - prev->pad * _curr->vz) / iVar1;
+			dst->vx = (curr->vx * prev->vz - prev->vx * curr->vz) / d;
+			dst->vy = (curr->vy * prev->vz - prev->vy * curr->vz) / d;
+			dst->pad = (curr->pad * prev->vz - prev->pad * curr->vz) / d;
 			dst->vz = 0;
 		LAB_00076ca4:
 			dst--;
@@ -1222,7 +1179,7 @@ int clipAgainstZ(void)
 			if (flags != 0)
 			{
 			LAB_00076c84:
-				temp = _curr->vz;
+				temp = curr->vz;
 				dst->vx = prev->vx;
 				dst->vz = temp;
 				goto LAB_00076ca4;
@@ -1235,13 +1192,13 @@ int clipAgainstZ(void)
 				goto LAB_00076c84;
 			}
 
-			iVar1 = prev->vz - _curr->vz;
+			d = prev->vz - curr->vz;
 
-			dst->vx = (short)((_curr->vx * prev->vz - prev->vx * _curr->vz) / iVar1);
-			dst->vy = (short)((_curr->vy * prev->vz - prev->vy * _curr->vz) / iVar1);
-			dst->pad = (short)((_curr->pad * prev->vz - prev->pad * _curr->vz) / iVar1);
+			dst->vx = (curr->vx * prev->vz - prev->vx * curr->vz) / d;
+			dst->vy = (curr->vy * prev->vz - prev->vy * curr->vz) / d;
+			dst->pad = (curr->pad * prev->vz - prev->pad * curr->vz) / d;
 			dst->vz = 0;
-			_tmp = _curr->vz;
+			_tmp = curr->vz;
 			dst[-1].vx = prev->vx;
 			dst[-1].vz = _tmp;
 			dst -= 2;
@@ -1472,7 +1429,7 @@ void clippedPoly(void)
 	/* end block 2 */
 	// End Line: 3252
 
-// [D]
+// [D] [T]
 void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, int LightSortCorrect)
 {
 	int z1;
