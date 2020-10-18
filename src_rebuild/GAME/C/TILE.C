@@ -3,7 +3,6 @@
 #include "MODELS.H"
 #include "SYSTEM.H"
 #include "MISSION.H"
-#include "MODELS.H"
 #include "DRAW.H"
 #include "TEXTURE.H"
 #include "../ASM/ASMTEST.H"
@@ -81,131 +80,73 @@
 
 extern _pct plotContext; // scratchpad addr: 0x1F8000C0
 
-// [D]
+// [D] [T] [A]
 void Tile1x1(MODEL *model)
 {
-	ushort uVar1;
-	int iVar2;
-	uint uVar3;
-	OTTYPE *ot;
-	ulong uVar5;
-	//undefined4 in_zero;
-	//undefined4 in_at;
-	SVECTOR *sv2;
-	SVECTOR *sv3;
-	SVECTOR *sv1;
-	uint uVar8;
-	SVECTOR *sv0;
-	uint in_a1;
-	uint uVar10;
-	char *polys;
-	SVECTOR *verts;
-	uint uVar11;
+	int opz;
+	int Z;
+	PL_POLYFT4* polys;
 	int i;
-	uint uVar12;
-	int local_10;
+	u_char ptype;
 	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
 
 	i = model->num_polys;
-	polys = (char *)model->poly_block;
-	verts = (SVECTOR *)model->vertices;
+	while (i > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
 
-	ot = plotContext.ot;
-
-	prims = (POLY_FT4*)plotContext.primptr;
-
-	do {
-		i--;
-		if (i == -1) 
-		{
-			plotContext.ot = ot;
-			return;
-		}
-
-		POLYFT4* poly = (POLYFT4*)polys;
-
-		uVar10 = ((uint *)polys)[1]; // v0
-		uVar11 = *(uint *)polys;
-
-		//printf("v0: %d, v1: %d, v2: %d, v3: %d\n", (uVar10 & 0xff), (uVar10 >> 5 & 0x7f8), (uVar10 >> 0x18), (uVar10 >> 0xd & 0x7f8));
-
-		sv0 = verts + (uVar10 & 0xff);
-		sv1 = (SVECTOR*)((int)&verts->vx + (uVar10 >> 5 & 0x7f8));
-		sv2 = verts + (uVar10 >> 0x18);
-
-		gte_ldv3(sv0, sv1, sv2);
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
 		gte_rtpt();
 
-		uVar8 = uVar11 >> 8 & 0xff;
-		uVar1 = *(ushort *)((int)*plotContext.ptexture_cluts + (uVar11 >> 0xf & 0x1fe) + uVar8 * 0x40);
-		in_a1 = (uint)(*plotContext.ptexture_pages)[uVar8] << 0x10;
-
+		// get culling value
 		gte_nclip();
+		gte_stopz(&opz);
 
-		uVar8 = ((uint *)polys)[2]; // uv0
-		uVar12 = ((uint *)polys)[3]; // uv2
-
-		gte_stopz(&iVar2);
-		gte_avsz3();
-
-		plotContext.ot = ot;
-
-		if (iVar2 < 0) 
+		if (opz > 0)
 		{
-			gte_stsxy0(&prims->x0);
-			sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
+			prims = (POLY_FT4*)plotContext.primptr;
 
-			gte_ldv0(sv3);
+			setPolyFT4(prims);
+			*(ulong*)&prims->r0 = plotContext.colour;
 
+			// retrieve first three verts
+			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+
+			// translate 4th vert and get OT Z value
+			gte_ldv0(&srcVerts[polys->v2]);
 			gte_rtps();
-			gte_nclip();
+			gte_avsz4();
 
-			gte_stopz(&iVar2);
+			gte_stotz(&Z);
 
-			gte_stotz(&local_10);
+			gte_stsxy(&prims->x3);
 
-			if (iVar2 < 0 && 1 < local_10)
-			{
-			LAB_00041cc4:
+			prims->tpage = (*plotContext.ptexture_pages)[polys->texture_set];
+			prims->clut = (*plotContext.ptexture_cluts)[polys->texture_set][polys->texture_id];
 
-				setPolyFT4(prims);
-				addPrim(ot + (local_10 >> 1) + 0x85, prims);
+			*(ushort*)&prims->u0 = *(ushort*)&polys->uv0;
+			*(ushort*)&prims->u1 = *(ushort*)&polys->uv1;
+			*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
+			*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
 
-				//uVar10 = ot[(local_10 >> 1) + 0x85];
-				//ot[(local_10 >> 1) + 0x85] = (uint)plotContext.field_0x90 & 0xffffff;
-				//(plotContext.field_0x90)->tag = uVar10 & 0xffffff | 0x9000000;
+			addPrim(plotContext.ot + (Z >> 1) + 133, prims);
 
-				gte_stsxy3(&prims->x1, &prims->x2, &prims->x3);
-				*(uint *)&(prims->u0) = uVar8 & 0xffff | (uint)uVar1 << 0x10;
-				*(uint *)&(prims->u1) = uVar8 >> 0x10 | in_a1;
-				*(uint *)&(prims->u2) = uVar12 >> 0x10;
-				*(uint *)&(prims->u3) = uVar12 & 0xffff;
-				*(ulong *)&(prims->r0) = plotContext.colour;
-
-				plotContext.primptr += sizeof(POLY_FT4);
-				prims = (POLY_FT4*)plotContext.primptr;
-			}
-		}
-		else 
-		{
-			gte_stotz(&local_10);
-
-			if (1 < local_10)
-			{
-				gte_stsxy0(&prims->x0);
-				sv3 = (SVECTOR *)((int)&verts->vx + (uVar10 >> 0xd & 0x7f8));
-
-				gte_ldv0(sv3);
-				gte_rtps();
-
-				goto LAB_00041cc4;
-			}
+			plotContext.primptr += sizeof(POLY_FT4);
 		}
 
-		polys = (char *)(polys + PolySizes[poly->id]);
-		ot = plotContext.ot;
+		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
+		i--;
+	}
 
-	} while (true);
+	// done
+	plotContext.current->primptr = plotContext.primptr;
 }
 
 
@@ -960,25 +901,25 @@ void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 // [D]
 void TileNxN(MODEL *model, int levels, int Dofse)
 {
-	uint uVar1;
+	uint ttype;
 	unsigned char *polys;
-	uint uVar2;
+	uint tileTypes;
 	int i;
 	int ofse;
 
-	uVar1 = 0;
+	ttype = 0;
 	ofse = 133;
 
 	polys = (unsigned char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
+	plotContext.polySizes = PolySizes;
 
-	uVar2 = *(uint *)(model + 1) >> 2;
+	tileTypes = *(uint *)(model + 1) >> 2;
 
-	// 0x4000
-	// 80
-
+	// [A]
 	if ((*(uint *)model & 0x40000080) != 0)
 	{
+		// probably these are checked
 		//(model->shape_flags & 0x80);
 		//(model->flags2 & 0x4000);
 
@@ -987,33 +928,27 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 
 	i = 0;
 
-	if (model->num_polys != 0) 
+	while (i < model->num_polys)
 	{
-		do {
-			if (true)
-			{
-				switch (uVar1) 
-				{
-					case 0:
-					case 1:
-						SubdivNxM((char *)polys, levels, levels, ofse);
-						break;
-					case 3:
-						SubdivNxM((char *)polys, levels, 1, Dofse);
-						break;
-					case 4:
-						SubdivNxM((char *)polys, levels, levels, 133);
-						break;
-				}
-			}
+		switch (ttype) 
+		{
+			case 0:
+			case 1:
+				SubdivNxM((char *)polys, levels, levels, ofse);
+				break;
+			case 3:
+				SubdivNxM((char *)polys, levels, 1, Dofse);
+				break;
+			case 4:
+				SubdivNxM((char *)polys, levels, levels, 133);
+				break;
+		}
 
-			uVar1 = uVar2 & 7;
-			uVar2 = uVar2 >> 3;
+		ttype = tileTypes & 7;
+		tileTypes >>= 3;
 
-			i++;
-			polys += PolySizes[*polys];
-
-		} while (i < model->num_polys);
+		polys += plotContext.polySizes[*polys];
+		i++;
 	}
 }
 
@@ -1077,7 +1012,7 @@ void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 	/* end block 4 */
 	// End Line: 1807
 
-// [D]
+// [D] [T]
 void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 {
 	int i;
