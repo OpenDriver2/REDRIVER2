@@ -493,7 +493,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 	int zbias;
 	int drawlimit;
 	MODEL* model;
-	OTTYPE* savedOT;
+	OTTYPE* ot;
 	CELL_OBJECT* cop;
 	int i;
 	int prev_mat;
@@ -510,13 +510,14 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
-	current->ot += 8;
-
 	plotContext.current = current;
 	plotContext.ptexture_pages = &texture_pages;
 	plotContext.ptexture_cluts = &texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = 0;
+	plotContext.primptr = plotContext.current->primptr;
+
+	ot = plotContext.current->ot + 8;
 
 	i = 0;
 
@@ -537,16 +538,13 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 
 		model = modelpointers[cop->type];
 
-		savedOT = current->ot;
-
 		zbias = model->zBias - 64;
 
 		if (zbias < 0)
 			zbias = 0;
 
-		current->ot = savedOT + zbias * 4;
+		plotContext.ot = ot + zbias * 4;
 		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
-		current->ot = savedOT;
 
 		drawlimit = (int)current->primptr - (int)current->primtab;
 
@@ -557,7 +555,8 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 		objects++;
 	}
 
-	current->ot -= 8;
+	// advance primitive buffer
+	current->primptr = plotContext.primptr;
 
 	return 0;
 }
@@ -1851,15 +1850,15 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 	MVERTEX subdiVerts[5][5];
+	int combo;
 
 	srcVerts = (SVECTOR*)model->vertices;
-	pc->ot = pc->current->ot;
-	pc->primptr = pc->current->primptr;
-
 	polys = (PL_POLYFT4*)model->poly_block;
 
+	combo = combointensity;
+
 	if ((pc->flags & 1U) != 0)
-		combointensity |= 0x2000000;
+		combo |= 0x2000000;
 
 	i = model->num_polys;
 	while (i > 0)
@@ -1876,7 +1875,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 			polys->v3 = polys->v2;
 
-			polys->id = polys->id ^ 1;
+			polys->id |= 1;
 			ptype |= 1;
 		}
 
@@ -1910,7 +1909,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 		if (ptype == 21)
 		{
-			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
+			pc->colour = combo & 0x2ffffffU | 0x2c000000;
 		}
 		else
 		{
@@ -2009,11 +2008,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		i--;
 	}
 
-	// done
-	pc->current->primptr = pc->primptr;
-
 	if ((pc->flags & 1U) != 0)
-		combointensity &= ~0x2000000;
+		combo &= ~0x2000000;
 }
 
 
@@ -2067,8 +2063,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 // [D] [T]
 void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
 {
-	OTTYPE* savedOT = current->ot;
-
 	if (matrix != NULL)
 	{
 		MATRIX comb;
@@ -2081,8 +2075,10 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	zBias /= 8;
 	zBias += (model->zBias - 64);
 
+	plotContext.ot = current->ot;
+
 	if (zBias > 0)
-		current->ot += (zBias * 4);
+		plotContext.ot += (zBias * 4);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -2097,11 +2093,14 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = flags;
 	plotContext.current = current;
+	
+	plotContext.primptr = plotContext.current->primptr;
 
-	if (56000 < (current->primtab - (current->primptr - PRIMTAB_SIZE)))
+	if ((current->primtab - (current->primptr - PRIMTAB_SIZE)) > 56000)
 		PlotBuildingModelSubdivNxN(model, nrot, &plotContext, subdiv);
 
-	current->ot = savedOT;
+	// advance primitive buffer
+	current->primptr = plotContext.primptr;
 }
 
 
