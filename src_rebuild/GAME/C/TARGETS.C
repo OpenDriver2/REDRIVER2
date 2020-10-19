@@ -14,52 +14,52 @@
 #include "INLINE_C.H"
 
 
-SVECTOR targetArrowVerts[43] =
+SVECTOR targetArrowVerts[] = 
 {
-	{ 65491, 65266, 0, 0 },
-	{ 45, 65266, 0, 0 },
-	{ 45, 65446, 0, 0 },
-	{ 90, 65446, 0, 0 },
-	{ 0, 0, 0, 0 },
-	{ 65446, 65446, 0, 0 },
-	{ 65491, 65446, 0, 0 },
-	{ 65440, 64768, 0, 0 },
-	{ 96, 64768, 0, 0 },
-	{ 96, 65320, 0, 0 },
-	{ 65440, 65320, 0, 0 },
-	{ 88, 65476, 0, 0 },
-	{ 36, 65528, 0, 0 },
-	{ 65500, 65528, 0, 0 },
-	{ 65448, 65476, 0, 0 },
-	{ 65448, 65404, 0, 0 },
-	{ 65500, 65352, 0, 0 },
-	{ 36, 65352, 0, 0 },
-	{ 88, 65404, 0, 0 },
-	{ 177, 65417, 0, 0 },
-	{ 73, 65521, 0, 0 },
-	{ 65463, 65521, 0, 0 },
-	{ 65359, 65417, 0, 0 },
-	{ 65359, 65271, 0, 0 },
-	{ 65463, 65167, 0, 0 },
-	{ 73, 65167, 0, 0 },
-	{ 177, 65271, 0, 0 },
-	{ 65488, 65152, 0, 0 },
-	{ 65488, 65104, 0, 0 },
-	{ 65440, 65104, 0, 0 },
-	{ 65440, 65056, 0, 0 },
-	{ 96, 65056, 0, 0 },
-	{ 96, 65104, 0, 0 },
-	{ 48, 65104, 0, 0 },
-	{ 48, 65152, 0, 0 },
-	{ 221, 65387, 0, 0 },
-	{ 91, 65517, 0, 0 },
-	{ 65445, 65517, 0, 0 },
-	{ 65315, 65387, 0, 0 },
-	{ 65315, 65205, 0, 0 },
-	{ 65445, 65075, 0, 0 },
-	{ 91, 65075, 0, 0 },
-	{ 221, 65205, 0, 0 }
-};
+	{  -0x2d, -0x10e,  0x0,  0x0 },
+	{  0x2d,  -0x10e,  0x0,  0x0 },
+	{  0x2d,  -0x5a,  0x0,  0x0 },
+	{  0x5a,  -0x5a,  0x0,  0x0 },
+	{  0x0,  0x0,  0x0,  0x0 },
+	{  -0x5a,  -0x5a,  0x0,  0x0 },
+	{  -0x2d,  -0x5a,  0x0,  0x0 },
+	{  -0x60,  -0x300,  0x0,  0x0 },
+	{  0x60,  -0x300,  0x0,  0x0 },
+	{  0x60,  -0xd8,  0x0,  0x0 },
+	{  -0x60,  -0xd8,  0x0,  0x0 },
+	{  0x58,  -0x3c,  0x0,  0x0 },
+	{  0x24,  -0x8,  0x0,  0x0 },
+	{  -0x24,  -0x8,  0x0,  0x0 },
+	{  -0x58,  -0x3c,  0x0,  0x0 },
+	{  -0x58,  -0x84,  0x0,  0x0 },
+	{  -0x24,  -0xb8,  0x0,  0x0 },
+	{  0x24,  -0xb8,  0x0,  0x0 },
+	{  0x58,  -0x84,  0x0,  0x0 },
+	{  0xb1,  -0x77,  0x0,  0x0 },
+	{  0x49,  -0xf,  0x0,  0x0 },
+	{  -0x49,  -0xf,  0x0,  0x0 },
+	{  -0xb1,  -0x77,  0x0,  0x0 },
+	{  -0xb1,  -0x109,  0x0,  0x0 },
+	{  -0x49,  -0x171,  0x0,  0x0 },
+	{  0x49,  -0x171,  0x0,  0x0 },
+	{  0xb1,  -0x109,  0x0,  0x0 },
+	{  -0x30,  -0x180,  0x0,  0x0 },
+	{  -0x30,  -0x1b0,  0x0,  0x0 },
+	{  -0x60,  -0x1b0,  0x0,  0x0 },
+	{  -0x60,  -0x1e0,  0x0,  0x0 },
+	{  0x60,  -0x1e0,  0x0,  0x0 },
+	{  0x60,  -0x1b0,  0x0,  0x0 },
+	{  0x30,  -0x1b0,  0x0,  0x0 },
+	{  0x30,  -0x180,  0x0,  0x0 },
+	{  0xdd,  -0x95,  0x0,  0x0 },
+	{  0x5b,  -0x13,  0x0,  0x0 },
+	{  -0x5b,  -0x13,  0x0,  0x0 },
+	{  -0xdd,  -0x95,  0x0,  0x0 },
+	{  -0xdd,  -0x14b,  0x0,  0x0 },
+	{  -0x5b,  -0x1cd,  0x0,  0x0 },
+	{  0x5b,  -0x1cd,  0x0,  0x0 },
+	{  0xdd,  -0x14b,  0x0,  0x0 }
+};;
 
 char normalTargetArrowTris[] = { 0, 1, 2, 0, 2, 6, 5, 3, 4 };
 
@@ -107,60 +107,73 @@ int gDraw3DArrowBlue = 0;
 	/* end block 2 */
 	// End Line: 427
 
-// [D]
+// [D] [T]
 void Draw3DTarget(VECTOR *position, int flags)
 {
-	uint shadow;
-	VECTOR local_20;
+	int shadow;
+	VECTOR pos;
 
-	shadow = (uint)((flags & 2U) != 0);
+	shadow = (flags & 2U) != 0;
+
+	// arrow
 	if ((flags & 1U) != 0)
 	{
-		local_20.vx = position->vx;
-		local_20.vz = position->vz;
-		local_20.pad = position->pad;
-		local_20.vy = position->vy + -300 + (CameraCnt & 0xfU) * 0x10;
-		if ((CurrentPlayerView != 1) || (GameType != GAME_COPSANDROBBERS)) 
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy  - 300 + (CameraCnt & 0xfU) * 16;
+	
+		if (CurrentPlayerView != 1 || GameType != GAME_COPSANDROBBERS) 
 		{
-			DrawTargetArrowModel(&targetArrowModel[0], &local_20, shadow, 0);
+			DrawTargetArrowModel(&targetArrowModel[0], &pos, shadow, 0);
 		}
 	}
-	else if ((flags & 0x20U) != 0)
+
+	// flipped carrow
+	if ((flags & 0x20) != 0)
 	{
-		local_20.vx = position->vx;
-		local_20.vz = position->vz;
-		local_20.pad = position->pad;
-		local_20.vy = position->vy + 900 + (CameraCnt & 0xfU) * -0x10;
-		if ((CurrentPlayerView != 1) || (GameType != GAME_COPSANDROBBERS)) 
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy + 900 - (CameraCnt & 0xfU) * 16;
+	
+		if (CurrentPlayerView != 1 || GameType != GAME_COPSANDROBBERS) 
 		{
-			DrawTargetArrowModel(&targetArrowModel[0], &local_20, shadow, 1);
+			DrawTargetArrowModel(&targetArrowModel[0], &pos, shadow, 1);
 		}
 	}
-	else if ((flags & 4U) != 0)
+
+	// exclamation mark
+	if ((flags & 4) != 0)
 	{
-		local_20.vx = position->vx;
-		local_20.vz = position->vz;
-		local_20.pad = position->pad;
-		local_20.vy = position->vy + -300;
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300;
 
-		DrawTargetArrowModel(&targetArrowModel[1], &local_20, shadow, 0);
+		DrawTargetArrowModel(&targetArrowModel[1], &pos, shadow, 0);
 	}
-	else if ((flags & 8U) != 0)
+
+	// timer
+	if ((flags & 8) != 0)
 	{
-		local_20.vx = position->vx;
-		local_20.vz = position->vz;
-		local_20.pad = position->pad;
-		local_20.vy = position->vy + -300;
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300;
 
-		DrawTargetArrowModel(&targetArrowModel[2], &local_20, shadow, 0);
+		DrawTargetArrowModel(&targetArrowModel[2], &pos, shadow, 0);
 	}
-	else  if ((flags & 0x10U) != 0) {
-		local_20.vx = position->vx;
-		local_20.vz = position->vz;
-		local_20.pad = position->pad;
-		local_20.vy = position->vy + -300;
 
-		DrawTargetArrowModel(&targetArrowModel[3], &local_20, shadow, 0);
+	// stop zone
+	if ((flags & 0x10) != 0)
+	{
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300;
+
+		DrawTargetArrowModel(&targetArrowModel[3], &pos, shadow, 0);
 	}
 }
 
@@ -209,106 +222,98 @@ void Draw3DTarget(VECTOR *position, int flags)
 	/* end block 3 */
 	// End Line: 562
 
-// [D]
+// [D] [T]
 void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPosition, int shadow, int invert)
 {
-	ushort uVar1;
-	uint uVar3;
-	int iVar5;
-	SVECTOR *pSVar6;
-	VECTOR *pVVar7;
 	uint numTris;
 	VECTOR *cameraPos;
 
 	char *tri_indices;
 	POLY_F3 *poly;
-	SVECTOR *pSVar10;
+	SVECTOR *pVerts;
 	VECTOR tempVec;
 	SVECTOR temp;
 	int z;
 
-	if (PositionVisible(pPosition) != 0)
+	if (PositionVisible(pPosition) == 0)
+		return;
+
+	cameraPos = &tempVec;
+
+	if (FrustrumCheck(pPosition, 800) == -1)
+		return;
+
+	pVerts = pTargetArrowModel->pVerts;
+	WorldToCameraPositions(pPosition, cameraPos, 1);
+
+	gte_SetRotMatrix(&identity);
+	gte_SetTransVector(&tempVec);
+
+	numTris = pTargetArrowModel->numTris;
+	tri_indices = pTargetArrowModel->pTris;
+
+	while (tri_indices < pTargetArrowModel->pTris + numTris*3)
 	{
-		cameraPos = &tempVec;
+		poly = (POLY_F3 *)current->primptr;
 
-		if (FrustrumCheck(pPosition, 800) != -1)
+		if (invert == 0) 
 		{
-			pSVar10 = pTargetArrowModel->pVerts;
-			WorldToCameraPositions(pPosition, cameraPos, 1);
-
-			gte_SetRotMatrix(&identity);
-			gte_SetTransVector(&tempVec);
-
-			pVVar7 = &tempVec;
-
-			numTris = pTargetArrowModel->numTris;
-			tri_indices = pTargetArrowModel->pTris;
-
-			if (tri_indices < tri_indices + numTris * 3) 
-			{
-				do {
-					poly = (POLY_F3 *)current->primptr;
-
-					if (invert == 0) 
-					{
-						gte_ldv3(&pSVar10[tri_indices[0]], &pSVar10[tri_indices[1]], &pSVar10[tri_indices[2]]);
-					}
-					else
-					{
-						temp.vx = pSVar10[*tri_indices].vx;
-						temp.vy = -pSVar10[*tri_indices].vy;
-						temp.vz = pSVar10[*tri_indices].vz;
-
-						gte_ldv0(&temp);
-
-						temp.vx = pSVar10[*tri_indices + 1].vx;
-						temp.vy = -pSVar10[*tri_indices + 1].vy;
-						temp.vz = pSVar10[*tri_indices + 1].vz;
-
-						gte_ldv1(&temp);
-
-						temp.vx = pSVar10[*tri_indices + 2].vx;
-						temp.vy = -pSVar10[*tri_indices + 2].vy;
-						temp.vz = pSVar10[*tri_indices + 2].vz;
-
-						gte_ldv2(&temp);
-					}
-
-					tri_indices += 3;
-					gte_rtpt();
-
-					setPolyF3(poly);
-
-					if (gDraw3DArrowBlue == 0) 
-					{
-						poly->r0 = 255;
-						poly->g0 = 0;
-					}
-					else {
-						poly->r0 = 0;
-						poly->g0 = 255;
-					}
-
-					poly->b0 = 0;
-
-					gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
-					gte_stszotz(&z);
-
-					z = z >> 1;
-
-					if (z < 9)
-						z = 9;
-
-					addPrim(current->ot + z, poly);
-
-					current->primptr += sizeof(POLY_F3);
-				} while (tri_indices < pTargetArrowModel->pTris + numTris*3);
-			}
-
-			if (shadow != 0) 
-				DrawStopZone(pPosition);
+			gte_ldv3(&pVerts[tri_indices[0]], &pVerts[tri_indices[1]], &pVerts[tri_indices[2]]);
 		}
+		else
+		{
+			temp.vx = pVerts[tri_indices[0]].vx;
+			temp.vy = -pVerts[tri_indices[0]].vy;
+			temp.vz = pVerts[tri_indices[0]].vz;
+
+			gte_ldv0(&temp);
+
+			temp.vx = pVerts[tri_indices[1]].vx;
+			temp.vy = -pVerts[tri_indices[1]].vy;
+			temp.vz = pVerts[tri_indices[1]].vz;
+
+			gte_ldv1(&temp);
+
+			temp.vx = pVerts[tri_indices[2]].vx;
+			temp.vy = -pVerts[tri_indices[2]].vy;
+			temp.vz = pVerts[tri_indices[2]].vz;
+
+			gte_ldv2(&temp);
+		}
+
+		tri_indices += 3;
+		gte_rtpt();
+
+		setPolyF3(poly);
+
+		if (gDraw3DArrowBlue == 0) 
+		{
+			poly->r0 = 255;
+			poly->g0 = 0;
+		}
+		else
+		{
+			poly->r0 = 0;
+			poly->g0 = 255;
+		}
+
+		poly->b0 = 0;
+
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+		gte_stszotz(&z);
+
+		z = z >> 1;
+
+		if (z < 9)
+			z = 9;
+
+		addPrim(current->ot + z, poly);
+
+		current->primptr += sizeof(POLY_F3);
 	}
+
+	if (shadow != 0) 
+		DrawStopZone(pPosition);
 }
 
 
@@ -351,18 +356,17 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 	/* end block 3 */
 	// End Line: 900
 
-// [D]
+// [D] [T]
 void DrawStopZone(VECTOR *pPosition)
 {
-	int iVar4;
 	VECTOR* pVector;
-	int iVar6;
 	POLY_FT4* pPoly;
 	long* pOut;
 	SVECTOR temp;
 	long p;
 	long flag;
 	long sz;
+	int flash;
 
 	VECTOR pStopZonePt[4] = {
 		{-500, 0, 500},
@@ -370,6 +374,8 @@ void DrawStopZone(VECTOR *pPosition)
 		{-500, 0, -500},
 		{500, 0, -500},
 	};
+
+	flash = -CameraCnt % 16;
 
 	pVector = pStopZonePt;
 
@@ -384,19 +390,10 @@ void DrawStopZone(VECTOR *pPosition)
 
 	while (pVector < &pStopZonePt[4])
 	{
-		iVar6 = -CameraCnt;
-		iVar4 = iVar6;
-
-		iVar6 = iVar6 + (iVar4 >> 4) * -0x10;
-
-		iVar4 = pVector->vx * iVar6;
-		iVar6 = pVector->vz * iVar6;
-
-		pVector->vx = iVar4 >> 4;
 		pVector->vy = pPosition->vy;
 
-		pVector->vx = (iVar4 >> 4) + pPosition->vx;
-		pVector->vz = (iVar6 >> 4) + pPosition->vz;
+		pVector->vx = (pVector->vx * flash >> 4) + pPosition->vx;
+		pVector->vz = (pVector->vz * flash >> 4) + pPosition->vz;
 		pVector->vy = -camera_position.vy - MapHeight(pVector);
 
 		pVector->vx = pVector->vx - camera_position.vx;
@@ -417,7 +414,7 @@ void DrawStopZone(VECTOR *pPosition)
 		else
 			pOut = (long*)&pPoly->x3;
 
-		pVector = pVector + 1;
+		pVector++;
 	}
 
 	gte_stsz(&sz);
@@ -442,7 +439,7 @@ void DrawStopZone(VECTOR *pPosition)
 
 	pPoly->clut = light_texture.clutid;
 
-	addPrim(current->ot + (sz >> 4) + 0x200, pPoly);
+	addPrim(current->ot + (sz >> 4) + 128, pPoly);
 
 	current->primptr += sizeof(POLY_FT4);
 }
@@ -479,7 +476,7 @@ void DrawStopZone(VECTOR *pPosition)
 	/* end block 3 */
 	// End Line: 1153
 
-// [D]
+// [D] [T]
 void WorldToCameraPositions(VECTOR *pGlobalPositionIn, VECTOR *pCameraPositionOut, int count)
 {
 	while (count)
