@@ -971,6 +971,7 @@ const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
 	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
 	"#ifdef VERTEX\n"
 	"	attribute vec4 a_position;\n"
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
@@ -987,6 +988,7 @@ const char* gte_shader_4 =
 	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
 	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
 	GTE_PERSPECTIVE_CORRECTION
+	"		v_z = (gl_Position.z - 40) * 0.005;\n"
 	"	}\n"
 	"#else\n"
 	GTE_FETCH_VRAM_FUNC
@@ -1007,6 +1009,7 @@ const char* gte_shader_4 =
 	GTE_DISCARD
 	GTE_DECODE_RG
 	GTE_DITHERING
+	"fragColor.xyz = mix(fragColor.xyz, vec3(0.22, 0.20, 0.25), clamp(v_z, 0.0, 1.0));\n"
 	"	}\n"
 	"#endif\n";
 
@@ -2139,27 +2142,32 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 	{
 		case BM_NONE:
 			glDisable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
 			glDepthMask(GL_TRUE);
 			break;
 		case BM_AVERAGE:
 			glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
 			glBlendEquation(GL_FUNC_ADD);
-			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			//glDepthMask(GL_FALSE);
 			break;
 		case BM_ADD:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
-			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			//glDepthMask(GL_FALSE);
 			break;
 		case BM_SUBTRACT:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			//glDepthMask(GL_FALSE);
 			break;
 		case BM_ADD_QUATER_SOURCE:
 			glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
-			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			//glDepthMask(GL_FALSE);
 			break;
 	}
 #elif defined(D3D9)
