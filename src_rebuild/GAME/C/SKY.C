@@ -1291,15 +1291,15 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 
 #ifndef PSX
 		// scale sky to get rid of vobbling
-		sv0.vx *= 10;
-		sv0.vy *= 10;
-		sv0.vz *= 10;
-		sv1.vx *= 10;
-		sv1.vy *= 10;
-		sv1.vz *= 10;
-		sv2.vx *= 10;
-		sv2.vy *= 10;
-		sv2.vz *= 10;
+		sv0.vx *= 100;
+		sv0.vy *= 100;
+		sv0.vz *= 100;
+		sv1.vx *= 100;
+		sv1.vy *= 100;
+		sv1.vz *= 100;
+		sv2.vx *= 100;
+		sv2.vy *= 100;
+		sv2.vz *= 100;
 #endif
 
 		gte_ldv3(&sv0, &sv1, &sv2);
