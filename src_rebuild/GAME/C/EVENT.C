@@ -3239,7 +3239,7 @@ void StepEvents(void)
 
 					i++;
 					cp++;
-				} while (i < 20);
+				} while (i < MAX_CARS && i < 32);
 
 				// make Tanner on boat also
 				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist) != 0)
@@ -3295,7 +3295,7 @@ void StepEvents(void)
 				do {
 					pos = (VECTOR*)car_data[i].hd.where.t;
 
-					if (i == 20)
+					if (i == TANNER_COLLIDER_CARID)
 					{
 						pos = (VECTOR*)player[0].pos;
 						vel = NULL;
@@ -3318,7 +3318,7 @@ void StepEvents(void)
 						pos->vx += iVar6;
 						pos->vz += iVar4;
 
-						if (i == 20)
+						if (i == TANNER_COLLIDER_CARID)
 						{
 							SetTannerPosition((VECTOR*)pos);
 							carsOnBoat = carsOnBoat & 0xffefffff;
@@ -4120,7 +4120,7 @@ void DrawEvents(int camera)
 							else
 							{
 								SetCamera(ev);
-								DrawMapPSX((int*)&ObjectDrawnValue);
+								DrawMapPSX(&ObjectDrawnValue);
 							}
 						}
 					}

@@ -1,6 +1,8 @@
 #ifndef PEDEST_H
 #define PEDEST_H
 
+#define TANNER_COLLIDER_CARID (MAX_CARS)
+
 extern MODEL* pmTannerModels[17];
 extern MODEL* pmJerichoModels[6];
 

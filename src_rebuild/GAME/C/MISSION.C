@@ -2879,7 +2879,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 
 						cp->inform = NULL;
 
-						PingOutCar(car_data + slot);
+						PingOutCar(&car_data[slot]);
 						slot = CreateCivCarWotDrivesABitThenStops(direction, (long(*)[4])pos, NULL, model, palette);
 
 						cp->inform = inform;
@@ -3416,7 +3416,7 @@ int MRCreateCar(_TARGET *target)
 	{
 		playerid = 0xff;
 
-		InitPlayer((_PLAYER *)(player + 1), car_data + curslot, 4, target->data[5], (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
+		InitPlayer((_PLAYER *)(player + 1), &car_data[curslot], 4, target->data[5], (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
 
 		EnablePercentageBar(&DamageBar, target->data[13]);
 		NewLeadDelay = 0;

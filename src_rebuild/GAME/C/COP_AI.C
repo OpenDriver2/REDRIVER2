@@ -421,7 +421,7 @@ void ControlCops(void)
 	else 
 	{
 		if (player[0].playerCarId > -1) 
-			targetVehicle = car_data + player[0].playerCarId;
+			targetVehicle = &car_data[player[0].playerCarId];
 
 		if (player_position_known > 0)
 		{
@@ -1872,7 +1872,7 @@ void ControlNumberOfCops(void)
 				}
 			}
 			lcp++;
-		} while (lcp < car_data + MAX_CARS);
+		} while (lcp < &car_data[MAX_CARS]);
 
 		gCopData.cutOffDistance = cutOffDistance;
 	} while (numWantedCops < num_closer);

@@ -2502,7 +2502,7 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 
 	} while (iVar16 < 0xb);
 
-	lcp = (car_data + 0x13);
+	lcp = &car_data[MAX_CARS - 1];
 
 	while (car_data < lcp)
 	{

@@ -710,7 +710,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		}
 	}
 
-	jcam = &car_data[20];
+	jcam = &car_data[CAMERA_COLLIDER_CARID];
 	ClearMem((char *)jcam, sizeof(_CAR_DATA));
 
 	jcam->controlType = CONTROL_TYPE_CAMERACOLLIDER;
@@ -937,7 +937,7 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 	cp = NULL;
 
 	if (lp->cameraCarId > -1)
-		cp = car_data + lp->cameraCarId;
+		cp = &car_data[lp->cameraCarId];
 
 	viewer_position.vx = 0;
 

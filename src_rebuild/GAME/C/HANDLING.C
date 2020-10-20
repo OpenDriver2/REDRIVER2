@@ -63,7 +63,7 @@
 
 
 // [D] [T]
-void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
+void InitCarPhysics(_CAR_DATA* cp, long(*startpos)[4], int direction)
 {
 	int ty;
 	int odz;
@@ -71,7 +71,7 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	dz = car_cosmetics[cp->ap.model].wheelDisp[0].vz + car_cosmetics[cp->ap.model].wheelDisp[1].vz;
 	ty = dz / 5;
-	odz = FixFloorSigned(dz, 5);
+	odz = dz / 32;
 
 	cp->hd.direction = direction;
 
@@ -102,21 +102,21 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 
 	RebuildCarMatrix(&cp->st, cp);
 
-	cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
-	cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
-	cp->hd.drawCarMat.m[0][2] = ~cp->hd.where.m[0][2];
+	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
+	cp->hd.drawCarMat.m[0][1] = -cp->hd.where.m[0][1];
+	cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
 	cp->hd.drawCarMat.m[1][0] = cp->hd.where.m[1][0];
 	cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
 	cp->hd.drawCarMat.m[1][2] = cp->hd.where.m[1][2];
-	cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
-	cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
-	cp->hd.drawCarMat.m[2][2] = ~cp->hd.where.m[2][2];
+	cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
+	cp->hd.drawCarMat.m[2][1] = -cp->hd.where.m[2][1];
+	cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
 
 	cp->hd.wheel[0].susCompression = 14 - odz;
 	cp->hd.wheel[1].susCompression = odz + 14;
 	cp->hd.wheel[2].susCompression = 14 - odz;
 	cp->hd.wheel[3].susCompression = odz + 14;
-	
+
 	cp->thrust = 0;
 	cp->wheel_angle = 0;
 	cp->hd.wheel_speed = 0;
@@ -154,14 +154,14 @@ void InitCarPhysics(_CAR_DATA *cp, long(*startpos)[4], int direction)
 	// End Line: 2179
 
 // [D] [T]
-void TempBuildHandlingMatrix(_CAR_DATA *cp, int init)
+void TempBuildHandlingMatrix(_CAR_DATA* cp, int init)
 {
 	int dz;
 	int ang;
 
 	dz = (car_cosmetics[cp->ap.model].wheelDisp[0].vz + car_cosmetics[cp->ap.model].wheelDisp[1].vz) / 5;
 
-	if (init == 1) 
+	if (init == 1)
 	{
 		cp->st.n.fposition[0] = cp->hd.where.t[0] << 4;
 		cp->st.n.fposition[1] = cp->hd.where.t[1] << 4;
@@ -214,10 +214,10 @@ SVECTOR delta = { 0 };
 int doWheels = 1;
 
 // [D] [T]
-void UpdateCarPoints(CAR_COSMETICS *carCos)
+void UpdateCarPoints(CAR_COSMETICS* carCos)
 {
-	SVECTOR *groundCollPoints;
-	SVECTOR *wheelPoints;
+	SVECTOR* groundCollPoints;
+	SVECTOR* wheelPoints;
 	int i;
 
 	groundCollPoints = carCos->cPoints;
@@ -233,7 +233,7 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 		i++;
 	} while (i < 12);
 
-	if (doWheels) 
+	if (doWheels)
 	{
 		i = 0;
 
@@ -286,12 +286,12 @@ void UpdateCarPoints(CAR_COSMETICS *carCos)
 	// End Line: 5978
 
 // [D] [T]
-void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
-{	
+void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
+{
 	delta.vx = 0;
 	delta.vy = 0;
 	delta.vz = -(carCos->wheelDisp[0].vz + carCos->wheelDisp[1].vz - 14) / 2;
-	
+
 	doWheels = 1;
 
 	UpdateCarPoints(carCos);
@@ -379,7 +379,7 @@ void FixCarCos(CAR_COSMETICS *carCos, int externalModelNumber)
 	}
 
 	// Caine's compound heavy Vans
-	if (carCos == &car_cosmetics[2] && gCurrentMissionNumber == 7) 
+	if (carCos == &car_cosmetics[2] && gCurrentMissionNumber == 7)
 	{
 		car_cosmetics[2].mass *= 3;
 	}
@@ -694,8 +694,8 @@ void GlobalTimeStep(void)
 	RigidBodyState* thisState_i;
 	RigidBodyState* thisState_j;
 	RigidBodyState* thisDelta;
-	BOUND_BOX *bb1;
-	BOUND_BOX *bb2;
+	BOUND_BOX* bb1;
+	BOUND_BOX* bb2;
 	_CAR_DATA* cp;
 	_CAR_DATA* c1;
 	RigidBodyState* st;
@@ -754,7 +754,7 @@ void GlobalTimeStep(void)
 		cp->hd.aacc[2] = 0;
 
 		if (st->n.linearVelocity[1] > 200000) // reduce vertical velocity
-			st->n.linearVelocity[1] = FixFloorSigned(st->n.linearVelocity[1] * 3, 2);
+			st->n.linearVelocity[1] = (st->n.linearVelocity[1] * 3) / 4;
 
 		if (cp->hd.speed == 0)
 		{
@@ -786,7 +786,7 @@ void GlobalTimeStep(void)
 		if ((tmp < st->n.angularVelocity[2]) || (tmp = -tmp, st->n.angularVelocity[2] < tmp))
 			st->n.angularVelocity[2] = tmp;
 
-		if (cp->hd.mayBeColliding == 0) 
+		if (cp->hd.mayBeColliding == 0)
 		{
 			long* orient = st->n.orientation;
 
@@ -835,14 +835,14 @@ void GlobalTimeStep(void)
 
 
 				// check collisions with vehicles
-				if (cp->hd.mayBeColliding != 0) 
+				if (cp->hd.mayBeColliding != 0)
 				{
-					if (RKstep == 0) 
+					if (RKstep == 0)
 					{
 						thisState_i = &cp->st;
 						thisDelta = _d0;
 					}
-					else 
+					else
 					{
 						thisState_i = &_tp[i];
 						thisDelta = _d1;
@@ -922,9 +922,9 @@ void GlobalTimeStep(void)
 								pointVel0[2] = (FIXEDH(thisState_i->n.angularVelocity[0] * lever0[1] - thisState_i->n.angularVelocity[1] * lever0[0]) + thisState_i->n.linearVelocity[2]) -
 									(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
 
-								howHard = FixFloorSigned(pointVel0[0], 8) * FixFloorSigned(normal[0], 5) +
-									FixFloorSigned(pointVel0[1], 8) * FixFloorSigned(normal[1], 5) +
-									FixFloorSigned(pointVel0[2], 8) * FixFloorSigned(normal[2], 5);
+								howHard = (pointVel0[0] / 256) * (normal[0] / 32) +
+									(pointVel0[1] / 256) * (normal[1] / 32) +
+									(pointVel0[2] / 256) * (normal[2] / 32);
 
 								if (howHard > 0 && RKstep > -1)
 								{
@@ -993,7 +993,7 @@ void GlobalTimeStep(void)
 									}
 								}
 
-								strikeVel += FixFloorSigned(howHard * 9, 2);
+								strikeVel += (howHard * 9) / 4;
 
 								if (strikeVel > 0x69000)
 									strikeVel = 0x69000;
@@ -1017,7 +1017,7 @@ void GlobalTimeStep(void)
 
 								// [A] if any checked cars has infinite mass, reduce bouncing
 								// TODO: very easy difficulty
-								if (c1InfiniteMass ||c2InfiniteMass)
+								if (c1InfiniteMass || c2InfiniteMass)
 									strikeVel = strikeVel * 10 >> 2;
 
 								// apply force to car 0
@@ -1026,9 +1026,9 @@ void GlobalTimeStep(void)
 									int twistY, strength1;
 
 									if (cp->controlType == CONTROL_TYPE_PURSUER_AI && c1->controlType != CONTROL_TYPE_LEAD_AI && c1->hndType != 0)
-										strength1 = FixFloorSigned(strikeVel * (7 - gCopDifficultyLevel), 3);
+										strength1 = (strikeVel * (7 - gCopDifficultyLevel)) / 8;
 									else if (cp->controlType == CONTROL_TYPE_LEAD_AI && c1->hndType != 0)
-										strength1 = FixFloorSigned(strikeVel * 5, 3);
+										strength1 = (strikeVel * 5) / 8;
 									else
 										strength1 = strikeVel;
 
@@ -1065,9 +1065,9 @@ void GlobalTimeStep(void)
 									int twistY, strength2;
 
 									if (cp->controlType == CONTROL_TYPE_PURSUER_AI && c1->controlType != CONTROL_TYPE_LEAD_AI && c1->hndType != 0)
-										strength2 = FixFloorSigned(strikeVel * (7 - gCopDifficultyLevel), 3);
+										strength2 = (strikeVel * (7 - gCopDifficultyLevel)) / 8;
 									else if (c1->controlType == CONTROL_TYPE_LEAD_AI && cp->hndType != 0)
-										strength2 = FixFloorSigned(strikeVel * 5, 3);
+										strength2 = (strikeVel * 5) / 8;
 									else
 										strength2 = strikeVel;
 
@@ -1173,15 +1173,15 @@ void GlobalTimeStep(void)
 	{
 		cp = active_car_list[i];
 
-		cp->hd.drawCarMat.m[0][0] = ~cp->hd.where.m[0][0];
-		cp->hd.drawCarMat.m[0][1] = ~cp->hd.where.m[0][1];
-		cp->hd.drawCarMat.m[0][2] = ~cp->hd.where.m[0][2];
+		cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];
+		cp->hd.drawCarMat.m[0][1] = -cp->hd.where.m[0][1];
+		cp->hd.drawCarMat.m[0][2] = -cp->hd.where.m[0][2];
 		cp->hd.drawCarMat.m[1][0] = cp->hd.where.m[1][0];
 		cp->hd.drawCarMat.m[1][1] = cp->hd.where.m[1][1];
 		cp->hd.drawCarMat.m[1][2] = cp->hd.where.m[1][2];
-		cp->hd.drawCarMat.m[2][0] = ~cp->hd.where.m[2][0];
-		cp->hd.drawCarMat.m[2][1] = ~cp->hd.where.m[2][1];
-		cp->hd.drawCarMat.m[2][2] = ~cp->hd.where.m[2][2];
+		cp->hd.drawCarMat.m[2][0] = -cp->hd.where.m[2][0];
+		cp->hd.drawCarMat.m[2][1] = -cp->hd.where.m[2][1];
+		cp->hd.drawCarMat.m[2][2] = -cp->hd.where.m[2][2];
 
 		if (cp->ap.needsDenting != 0 && ((CameraCnt + i & 3U) == 0 || carsDentedThisFrame < 5))
 		{
@@ -1243,7 +1243,7 @@ void GlobalTimeStep(void)
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
-void SetShadowPoints(_CAR_DATA *c0, VECTOR* outpoints)
+void SetShadowPoints(_CAR_DATA* c0, VECTOR* outpoints)
 {
 	int i;
 	SVECTOR disp;
@@ -1251,7 +1251,7 @@ void SetShadowPoints(_CAR_DATA *c0, VECTOR* outpoints)
 	VECTOR surfaceNormal;
 	CAR_COSMETICS* car_cos;
 
-	_sdPlane *surfacePtr;
+	_sdPlane* surfacePtr;
 	surfacePtr = NULL;
 
 	gte_SetRotMatrix(&c0->hd.where);
@@ -1314,7 +1314,7 @@ void SetShadowPoints(_CAR_DATA *c0, VECTOR* outpoints)
 	// End Line: 4834
 
 // [D] [T]
-void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
+void LongQuaternion2Matrix(long(*qua)[4], MATRIX* m)
 {
 	int xx;
 	int xy;
@@ -1392,7 +1392,7 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX *m)
 	// End Line: 5020
 
 // [D] [T]
-void initOBox(_CAR_DATA *cp)
+void initOBox(_CAR_DATA* cp)
 {
 	SVECTOR boxDisp;
 	CAR_COSMETICS* car_cos;
@@ -1413,10 +1413,10 @@ void initOBox(_CAR_DATA *cp)
 
 	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
-		length = FixFloorSigned(car_cos->colBox.vx * 14, 4);
+		length = (car_cos->colBox.vx * 14) / 16;
 		cp->hd.oBox.length[0] = length;
 	}
-	else 
+	else
 	{
 		length = car_cos->colBox.vx;
 		cp->hd.oBox.length[0] = length;
@@ -1481,7 +1481,7 @@ void initOBox(_CAR_DATA *cp)
 	// End Line: 3709
 
 // [D] [T]
-void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
+void RebuildCarMatrix(RigidBodyState* st, _CAR_DATA* cp)
 {
 	int sm;
 	int osm;
@@ -1493,7 +1493,7 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	cp->hd.where.t[0] = st->n.fposition[0] >> 4;
 	cp->hd.where.t[1] = st->n.fposition[1] >> 4;
 	cp->hd.where.t[2] = st->n.fposition[2] >> 4;
-	
+
 	qx = st->n.orientation[0];
 	qy = st->n.orientation[1];
 	qz = st->n.orientation[2];
@@ -1508,7 +1508,7 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 		st->n.orientation[1] = 0;
 		st->n.orientation[0] = 0;
 	}
-	else 
+	else
 	{
 		sm = 0x1800 - (osm >> 13);
 
@@ -1519,7 +1519,7 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 		sm = FIXEDH(sm * qw);
 	}
 	st->n.orientation[3] = sm;
-	
+
 	LongQuaternion2Matrix((long(*)[4])st->n.orientation, &cp->hd.where);
 
 	initOBox(cp);
@@ -1546,9 +1546,9 @@ void RebuildCarMatrix(RigidBodyState *st, _CAR_DATA *cp)
 	// End Line: 3751
 
 // [D] [T]
-void StepCarPhysics(_CAR_DATA *cp)
+void StepCarPhysics(_CAR_DATA* cp)
 {
-	_HANDLING_TYPE *hp;
+	_HANDLING_TYPE* hp;
 	int car_id;
 
 	int frontWheelSpeed;
@@ -1561,7 +1561,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 
 	if (cp->hndType == 1)
 		hp->aggressiveBraking = 0;
-	else 
+	else
 		hp->aggressiveBraking = 1;
 
 #ifdef _DEBUG
@@ -1579,7 +1579,7 @@ void StepCarPhysics(_CAR_DATA *cp)
 	// [A] update wheel rotation - fix for multiplayer outside cameras
 	car_id = CAR_INDEX(cp);
 
-	frontWheelSpeed = FixFloorSigned(cp->hd.wheel_speed, 8);
+	frontWheelSpeed = cp->hd.wheel_speed / 256;
 
 	if (cp->hd.wheel[0].locked == 0)
 	{
@@ -1695,10 +1695,10 @@ void CheckCarToCarCollisions(void)
 	int xx, zz;
 
 	BOUND_BOX* bb;
-	BOUND_BOX *bb2;
-	BOUND_BOX *bb1;
-	_CAR_DATA *cp;
-	SVECTOR *colBox;
+	BOUND_BOX* bb2;
+	BOUND_BOX* bb1;
+	_CAR_DATA* cp;
+	SVECTOR* colBox;
 
 	cp = car_data;
 
@@ -1724,33 +1724,33 @@ void CheckCarToCarCollisions(void)
 		lbod = colBox->vz * 9;
 		wbod = colBox->vx * 9;
 
-		sx = cp->hd.where.m[0][0] * FixFloorSigned(wbod, 3);
-		sz = cp->hd.where.m[0][2] * FixFloorSigned(lbod, 3);
+		sx = cp->hd.where.m[0][0] * wbod / 8;
+		sz = cp->hd.where.m[0][2] * lbod / 8;
 
-		fx = cp->hd.where.m[2][0] * FixFloorSigned(wbod, 3);
-		fz = cp->hd.where.m[2][2] * FixFloorSigned(lbod, 3);
+		fx = cp->hd.where.m[2][0] * wbod / 8;
+		fz = cp->hd.where.m[2][2] * lbod / 8;
 
 		xx = FIXEDH(ABS(sz) + ABS(sx)) + hbod;
 		zz = FIXEDH(ABS(fz) + ABS(fx)) + hbod;
 
-		bb->x0 = FixFloorSigned(cp->hd.where.t[0] - xx, 4);
-		bb->z0 = FixFloorSigned(cp->hd.where.t[2] - zz, 4);
-		bb->x1 = FixFloorSigned(cp->hd.where.t[0] + xx, 4);
-		bb->z1 = FixFloorSigned(cp->hd.where.t[2] + zz, 4);
+		bb->x0 = (cp->hd.where.t[0] - xx) / 16;
+		bb->z0 = (cp->hd.where.t[2] - zz) / 16;
+		bb->x1 = (cp->hd.where.t[0] + xx) / 16;
+		bb->z1 = (cp->hd.where.t[2] + zz) / 16;
 
 		if (cp->st.n.linearVelocity[0] < 0)
-			bb->x0 = FixFloorSigned(cp->hd.where.t[0] - xx, 4) + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[0]), 3);
+			bb->x0 = (cp->hd.where.t[0] - xx) / 16 + FIXEDH(cp->st.n.linearVelocity[0]) / 8;
 		else
-			bb->x1 = FixFloorSigned(cp->hd.where.t[0] + xx, 4) + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[0]), 3);
+			bb->x1 = (cp->hd.where.t[0] + xx) / 16 + FIXEDH(cp->st.n.linearVelocity[0]) / 8;
 
 		if (cp->st.n.linearVelocity[2] < 0)
-			bb->z0 = bb->z0 + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[2]), 3);
+			bb->z0 = bb->z0 + (FIXEDH(cp->st.n.linearVelocity[2]) / 8);
 		else
-			bb->z1 = bb->z1 + FixFloorSigned(FIXEDH(cp->st.n.linearVelocity[2]), 3);
+			bb->z1 = bb->z1 + (FIXEDH(cp->st.n.linearVelocity[2]) / 8);
 
 		// [A] 2400 for box size - bye bye collision check performance under bridges
-		bb->y0 = FixFloorSigned(cp->hd.where.t[1] - colBox->vy * 2 /* - 2400*/, 4);
-		bb->y1 = FixFloorSigned(cp->hd.where.t[1] + colBox->vy * 4 /* + 2400*/, 4);
+		bb->y0 = (cp->hd.where.t[1] - colBox->vy * 2) / 16;
+		bb->y1 = (cp->hd.where.t[1] + colBox->vy * 4) / 16;
 
 		if (cp->hndType == 0)
 			cp->hd.mayBeColliding = 0x1;
@@ -1764,7 +1764,8 @@ void CheckCarToCarCollisions(void)
 	loop1 = 0;
 
 	// check boxes intersection with each other
-	do {
+	do
+	{
 		bb2 = bb1 + 1;
 		loop2 = loop1 + 1;
 
@@ -1835,84 +1836,84 @@ void CheckCarToCarCollisions(void)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessCarPad(struct _CAR_DATA *cp /*$s0*/, unsigned long pad /*$s3*/, char PadSteer /*$s4*/, char use_analogue /*$s5*/)
- // line 2027, offset 0x00055a9c
-	/* begin block 1 */
-		// Start line: 2028
-		// Start offset: 0x00055A9C
-		// Variables:
-	// 		int player_id; // $s1
+// line 2027, offset 0x00055a9c
+/* begin block 1 */
+// Start line: 2028
+// Start offset: 0x00055A9C
+// Variables:
+// 		int player_id; // $s1
 
-		/* begin block 1.1 */
-			// Start line: 2158
-			// Start offset: 0x00055CD8
-			// Variables:
-		// 		int int_steer; // $v0
-		// 		int analog_angle; // $v1
-		/* end block 1.1 */
-		// End offset: 0x00055D90
-		// End Line: 2180
+/* begin block 1.1 */
+// Start line: 2158
+// Start offset: 0x00055CD8
+// Variables:
+// 		int int_steer; // $v0
+// 		int analog_angle; // $v1
+/* end block 1.1 */
+// End offset: 0x00055D90
+// End Line: 2180
 
-		/* begin block 1.2 */
-			// Start line: 2260
-			// Start offset: 0x00055EF0
-			// Variables:
-		// 		int rws; // $v0
-		/* end block 1.2 */
-		// End offset: 0x00055F80
-		// End Line: 2270
+/* begin block 1.2 */
+// Start line: 2260
+// Start offset: 0x00055EF0
+// Variables:
+// 		int rws; // $v0
+/* end block 1.2 */
+// End offset: 0x00055F80
+// End Line: 2270
 
-		/* begin block 1.3 */
-			// Start line: 2282
-			// Start offset: 0x00055FE4
-			// Variables:
-		// 		int playerCar; // $v0
-		// 		int dist; // $a0
-		// 		int dx; // $a0
-		// 		int dz; // $v0
-		/* end block 1.3 */
-		// End offset: 0x00056080
-		// End Line: 2299
+/* begin block 1.3 */
+// Start line: 2282
+// Start offset: 0x00055FE4
+// Variables:
+// 		int playerCar; // $v0
+// 		int dist; // $a0
+// 		int dx; // $a0
+// 		int dz; // $v0
+/* end block 1.3 */
+// End offset: 0x00056080
+// End Line: 2299
 
-		/* begin block 1.4 */
-			// Start line: 2303
-			// Start offset: 0x00056090
-			// Variables:
-		// 		int targetCarId; // $v1
+/* begin block 1.4 */
+// Start line: 2303
+// Start offset: 0x00056090
+// Variables:
+// 		int targetCarId; // $v1
 
-			/* begin block 1.4.1 */
-				// Start line: 2320
-				// Start offset: 0x000560D4
-				// Variables:
-			// 		struct _CAR_DATA *tp; // $a1
-			// 		int cx; // $v1
-			// 		int cz; // $v0
-			// 		int chase_square_dist; // $v0
+/* begin block 1.4.1 */
+// Start line: 2320
+// Start offset: 0x000560D4
+// Variables:
+// 		struct _CAR_DATA *tp; // $a1
+// 		int cx; // $v1
+// 		int cz; // $v0
+// 		int chase_square_dist; // $v0
 
-				/* begin block 1.4.1.1 */
-					// Start line: 2327
-					// Start offset: 0x0005610C
-					// Variables:
-				// 		int averagePower; // $a0
-				/* end block 1.4.1.1 */
-				// End offset: 0x00056148
-				// End Line: 2329
-			/* end block 1.4.1 */
-			// End offset: 0x00056258
-			// End Line: 2340
-		/* end block 1.4 */
-		// End offset: 0x00056258
-		// End Line: 2342
-	/* end block 1 */
-	// End offset: 0x000562AC
-	// End Line: 2375
+/* begin block 1.4.1.1 */
+// Start line: 2327
+// Start offset: 0x0005610C
+// Variables:
+// 		int averagePower; // $a0
+/* end block 1.4.1.1 */
+// End offset: 0x00056148
+// End Line: 2329
+/* end block 1.4.1 */
+// End offset: 0x00056258
+// End Line: 2340
+/* end block 1.4 */
+// End offset: 0x00056258
+// End Line: 2342
+/* end block 1 */
+// End offset: 0x000562AC
+// End Line: 2375
 
-	/* begin block 2 */
-		// Start line: 5531
-	/* end block 2 */
-	// End Line: 5532
+/* begin block 2 */
+// Start line: 5531
+/* end block 2 */
+// End Line: 5532
 
 // [D] [T]
-void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
+void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 {
 	int player_id;
 	int int_steer;
@@ -1928,7 +1929,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	if (cp->controlType == CONTROL_TYPE_PLAYER)
 	{
 		// handle car leaving
-		if ((pad & 0x1010) == 0x1010 && player_id > -1)
+		if ((pad & CAR_PAD_LEAVECAR) == CAR_PAD_LEAVECAR && player_id > -1)
 		{
 			if (!TannerStuckInCar(1, player_id))
 			{
@@ -1948,13 +1949,13 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		}
 
 		// Lock car if it has mission lock or fully damaged
-		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0) 
+		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0)
 		{
-			pad = 0x10;
+			pad = CAR_PAD_HANDBRAKE;
 
 			// apply brakes
-			if (cp->hd.wheel_speed > 0x9000)
-				pad = 0x80;
+			if (cp->hd.wheel_speed > 36864)
+				pad = CAR_PAD_BRAKE;
 
 			int_steer = 0;
 			use_analogue = 1;
@@ -1965,7 +1966,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		{
 			if (CarHasSiren(cp->ap.model) == 0)
 				player[player_id].horn.on = (pad >> 3) & 1;
-			else if((cp->lastPad & 8U) == 0 && (pad & 8) != 0)
+			else if ((cp->lastPad & 8U) == 0 && (pad & 8) != 0)
 				player[player_id].horn.on ^= 8;
 		}
 	}
@@ -1974,34 +1975,34 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		cp->hd.autoBrake = 90;
 
 	// handle burnouts or handbrake
-	if (pad & 0x10)
+	if (pad & CAR_PAD_HANDBRAKE)
 	{
 		cp->handbrake = 1;
 	}
-	else 
+	else
 	{
 		cp->handbrake = 0;
 
-		if (pad & 0x20)
+		if (pad & CAR_PAD_WHEELSPIN)
 			cp->wheelspin = 1;
-		else 
+		else
 			cp->wheelspin = 0;
 
 		// continue without burnout
-		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 0x6e958)
+		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 452952)
 		{
 			cp->wheelspin = 0;
-			pad |= 0x40;
+			pad |= CAR_PAD_ACCEL;
 		}
 	}
 
 	// handle steering
 	if (use_analogue == 0)
 	{
-		if (pad & 0x4)
+		if (pad & CAR_PAD_FASTSTEER)
 		{
 			// fast steer
-			if (pad & 0x2000)
+			if (pad & CAR_PAD_RIGHT)
 			{
 				cp->wheel_angle += 64;
 
@@ -2009,7 +2010,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 					cp->wheel_angle = 511;
 			}
 
-			if (pad & 0x8000)
+			if (pad & CAR_PAD_LEFT)
 			{
 				cp->wheel_angle -= 64;
 
@@ -2020,15 +2021,15 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 		else
 		{
 			// regular steer
-			if(pad & 0x2000)
+			if (pad & CAR_PAD_RIGHT)
 			{
 				cp->wheel_angle += 32;
 
 				if (cp->wheel_angle > 352)
 					cp->wheel_angle = 352;
 			}
-			
-			if (pad & 0x8000)
+
+			if (pad & CAR_PAD_LEFT)
 			{
 				cp->wheel_angle -= 32;
 
@@ -2037,19 +2038,19 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 			}
 		}
 
-		if (pad & 0xa000) 
+		if (pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT))
 			cp->hd.autoBrake++;
 		else
 			cp->hd.autoBrake = 0;
 	}
-	else 
+	else
 	{
-		if (pad & 0x4) 
+		if (pad & CAR_PAD_FASTSTEER)
 		{
 			int_steer *= (int_steer * int_steer) / 60;
-			analog_angle =  ((long long)int_steer * 0x88888889) >> 32;		// int_steer * 0.6
+			analog_angle = ((long long)int_steer * 0x88888889) >> 32;		// int_steer * 0.6
 		}
-		else 
+		else
 		{
 			int_steer *= (int_steer * int_steer) / 80;
 			analog_angle = ((long long)int_steer * 0x66666667) >> 32;		// int_steer * 0.4
@@ -2066,9 +2067,9 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 	}
 
 	// center steering
-	if ((pad & 0xa000) == 0)
+	if ((pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT)) == 0)
 	{
-		if (cp->wheel_angle < -64) 
+		if (cp->wheel_angle < -64)
 			cp->wheel_angle += 64;
 		else if (cp->wheel_angle < 65)
 			cp->wheel_angle = 0;
@@ -2080,12 +2081,12 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 	//if (gTimeInWater != 0)
 	{
-		if (pad & 0x80) 
+		if (pad & CAR_PAD_BRAKE)
 		{
 			int rws;
 
 			// brakes
-			rws = FIXEDH(FixFloorSigned(cp->hd.wheel_speed * 1500, 10));
+			rws = FIXEDH(cp->hd.wheel_speed * 1500 / 1024);
 
 			if (-rws < 23)
 				rws = -5000;
@@ -2094,7 +2095,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 			cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * rws);
 		}
-		else if (pad & 0x40)
+		else if (pad & CAR_PAD_ACCEL)
 		{
 			if (cp->hndType == 5)
 			{
@@ -2107,20 +2108,14 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 				dist = dx * dx + dz * dz;
 
-				if (dist < 41)
-				{
-					if (dist < 21)
-					{
-						if (dist > 9)
-							cp->thrust = 4900;
-						else
-							cp->thrust = 6000;
-					}
-					else
-						cp->thrust = 4000;
-				}
-				else
+				if (dist > 40)
 					cp->thrust = 3000;
+				else if (dist > 20)
+					cp->thrust = 4000;
+				else if (dist > 9)
+					cp->thrust = 4900;
+				else
+					cp->thrust = 6000;
 			}
 			else
 			{
@@ -2144,7 +2139,7 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 				{
 					tp = &car_data[targetCarId];
 
-					if (3050 < cp->ap.carCos->powerRatio) 
+					if (3050 < cp->ap.carCos->powerRatio)
 						cp->thrust = FIXEDH(tp->ap.carCos->powerRatio * 4915);
 
 					cx = cp->hd.where.t[0] - tp->hd.where.t[0] >> 10;
@@ -2152,15 +2147,12 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 
 					chase_square_dist = cx * cx + cz * cz;
 
-					if (chase_square_dist < 21)
-					{
-						if (chase_square_dist < 7)
-							cp->thrust = (cp->thrust * 6700) / 7000;
-						else 
-							cp->thrust = (cp->thrust * 7400) / 7000;
-					}
-					else
+					if (chase_square_dist > 20)
 						cp->thrust = (cp->thrust * 8000) / 7000;
+					else if (chase_square_dist > 6)
+						cp->thrust = (cp->thrust * 7400) / 7000;
+					else
+						cp->thrust = (cp->thrust * 6700) / 7000;
 				}
 			}
 
@@ -2177,30 +2169,30 @@ void ProcessCarPad(_CAR_DATA *cp, ulong pad, char PadSteer, char use_analogue)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitSkidding()
- // line 2389, offset 0x00056cb8
-	/* begin block 1 */
-		// Start line: 2390
-		// Start offset: 0x00056CB8
-		// Variables:
-	// 		int i; // $a0
-	/* end block 1 */
-	// End offset: 0x00056CEC
-	// End Line: 2395
+// line 2389, offset 0x00056cb8
+/* begin block 1 */
+// Start line: 2390
+// Start offset: 0x00056CB8
+// Variables:
+// 		int i; // $a0
+/* end block 1 */
+// End offset: 0x00056CEC
+// End Line: 2395
 
-	/* begin block 2 */
-		// Start line: 8794
-	/* end block 2 */
-	// End Line: 8795
+/* begin block 2 */
+// Start line: 8794
+/* end block 2 */
+// End Line: 8795
 
-	/* begin block 3 */
-		// Start line: 4778
-	/* end block 3 */
-	// End Line: 4779
+/* begin block 3 */
+// Start line: 4778
+/* end block 3 */
+// End Line: 4779
 
-	/* begin block 4 */
-		// Start line: 8796
-	/* end block 4 */
-	// End Line: 8797
+/* begin block 4 */
+// Start line: 8796
+/* end block 4 */
+// End Line: 8797
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
@@ -2210,7 +2202,8 @@ void InitSkidding(void)
 	int i;
 
 	i = 2;
-	do {
+	do
+	{
 		player[i].wheelnoise.sound = -1;
 		player[i].wheelnoise.chan = -1;
 		player[i].skidding.sound = -1;
@@ -2224,27 +2217,27 @@ void InitSkidding(void)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ TerminateSkidding(int player_id /*$a0*/)
- // line 2397, offset 0x000562ac
-	/* begin block 1 */
-		// Start line: 6265
-	/* end block 1 */
-	// End Line: 6266
+// line 2397, offset 0x000562ac
+/* begin block 1 */
+// Start line: 6265
+/* end block 1 */
+// End Line: 6266
 
-	/* begin block 2 */
-		// Start line: 6288
-	/* end block 2 */
-	// End Line: 6289
+/* begin block 2 */
+// Start line: 6288
+/* end block 2 */
+// End Line: 6289
 
 // [D] [T]
 void TerminateSkidding(int player_id)
 {
 	int channel;
 
-	if (player_id < 2) 
+	if (player_id < 2)
 	{
 		channel = player[player_id].skidding.chan;
 
-		if (channel > -1) 
+		if (channel > -1)
 		{
 			StopChannel(channel);
 			UnlockChannel(player[player_id].skidding.chan);
@@ -2255,7 +2248,7 @@ void TerminateSkidding(int player_id)
 
 		channel = player[player_id].wheelnoise.chan;
 
-		if (channel > -1) 
+		if (channel > -1)
 		{
 			StopChannel(channel);
 			UnlockChannel(player[player_id].wheelnoise.chan);
@@ -2271,71 +2264,71 @@ void TerminateSkidding(int player_id)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ CheckCarEffects(struct _CAR_DATA *cp /*$s2*/, int player_id /*$s3*/)
- // line 2414, offset 0x00056350
-	/* begin block 1 */
-		// Start line: 2415
-		// Start offset: 0x00056350
-		// Variables:
-	// 		int skidsound; // $s1
-	// 		int cnt; // $a0
-	// 		int wheels_on_ground; // $s5
-	// 		char lay_down_tracks; // $s7
-	// 		char desired_skid; // $a1
-	// 		char desired_wheel; // $a1
+// line 2414, offset 0x00056350
+/* begin block 1 */
+// Start line: 2415
+// Start offset: 0x00056350
+// Variables:
+// 		int skidsound; // $s1
+// 		int cnt; // $a0
+// 		int wheels_on_ground; // $s5
+// 		char lay_down_tracks; // $s7
+// 		char desired_skid; // $a1
+// 		char desired_wheel; // $a1
 
-		/* begin block 1.1 */
-			// Start line: 2500
-			// Start offset: 0x000565E8
-			// Variables:
-		// 		int pitch; // $v0
-		/* end block 1.1 */
-		// End offset: 0x00056644
-		// End Line: 2504
+/* begin block 1.1 */
+// Start line: 2500
+// Start offset: 0x000565E8
+// Variables:
+// 		int pitch; // $v0
+/* end block 1.1 */
+// End offset: 0x00056644
+// End Line: 2504
 
-		/* begin block 1.2 */
-			// Start line: 2507
-			// Start offset: 0x00056660
-			// Variables:
-		// 		int wnse; // $a0
-		/* end block 1.2 */
-		// End offset: 0x000566A8
-		// End Line: 2510
+/* begin block 1.2 */
+// Start line: 2507
+// Start offset: 0x00056660
+// Variables:
+// 		int wnse; // $a0
+/* end block 1.2 */
+// End offset: 0x000566A8
+// End Line: 2510
 
-		/* begin block 1.3 */
-			// Start line: 2533
-			// Start offset: 0x000567A8
-			// Variables:
-		// 		int pitch; // $t0
-		/* end block 1.3 */
-		// End offset: 0x00056810
-		// End Line: 2537
+/* begin block 1.3 */
+// Start line: 2533
+// Start offset: 0x000567A8
+// Variables:
+// 		int pitch; // $t0
+/* end block 1.3 */
+// End offset: 0x00056810
+// End Line: 2537
 
-		/* begin block 1.4 */
-			// Start line: 2546
-			// Start offset: 0x00056840
-		/* end block 1.4 */
-		// End offset: 0x00056868
-		// End Line: 2550
-	/* end block 1 */
-	// End offset: 0x000568AC
-	// End Line: 2560
+/* begin block 1.4 */
+// Start line: 2546
+// Start offset: 0x00056840
+/* end block 1.4 */
+// End offset: 0x00056868
+// End Line: 2550
+/* end block 1 */
+// End offset: 0x000568AC
+// End Line: 2560
 
-	/* begin block 2 */
-		// Start line: 6322
-	/* end block 2 */
-	// End Line: 6323
+/* begin block 2 */
+// Start line: 6322
+/* end block 2 */
+// End Line: 6323
 
-	/* begin block 3 */
-		// Start line: 6325
-	/* end block 3 */
-	// End Line: 6326
+/* begin block 3 */
+// Start line: 6325
+/* end block 3 */
+// End Line: 6326
 
 char rear_only = 0;
 char continuous_track = 0;
 int last_track_state = -1;
 
 // [D] [T]
-void CheckCarEffects(_CAR_DATA *cp, int player_id)
+void CheckCarEffects(_CAR_DATA* cp, int player_id)
 {
 	int channel;
 	int sample;
@@ -2363,7 +2356,8 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	HandlePlayerHubcaps(player_id);
 
 	cnt = 0;
-	do {
+	do
+	{
 		if (cp->hd.wheel[cnt].susCompression != 0)
 			wheels_on_ground = 1;
 
@@ -2373,7 +2367,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	skidsound = 0;
 
 	// make tyre tracks and skid sound if needed
-	if (wheels_on_ground) 
+	if (wheels_on_ground)
 	{
 		if (ABS(cp->hd.rear_vel) > 11100 || cp->wheelspin)
 		{
@@ -2426,7 +2420,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 			player[player_id].skidding.chan = channel;
 			LockChannel(channel);
 
-			if (NumPlayers > 1 && NoPlayerControl == 0) 
+			if (NumPlayers > 1 && NoPlayerControl == 0)
 				SetPlayerOwnsChannel(player[player_id].skidding.chan, player_id);
 		}
 	}
@@ -2504,10 +2498,10 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 		if (pitch > 3584)
 			pitch = 3584;
 
-		SetChannelPosition3(player[player_id].wheelnoise.chan, 
-							(VECTOR *)cp->hd.where.t, cp->st.n.linearVelocity, 
-							spd * 50 - 10000,
-							pitch + player_id * 8, 0);
+		SetChannelPosition3(player[player_id].wheelnoise.chan,
+			(VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity,
+			spd * 50 - 10000,
+			pitch + player_id * 8, 0);
 	}
 
 	player[player_id].onGrass = 0;
@@ -2515,7 +2509,7 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 	GetTyreTrackPositions(cp, player_id);
 
 	// make tyre tracks
-	if (lay_down_tracks) 
+	if (lay_down_tracks)
 	{
 		continuous_track = (last_track_state == rear_only);
 
@@ -2537,42 +2531,42 @@ void CheckCarEffects(_CAR_DATA *cp, int player_id)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ jump_debris(struct _CAR_DATA *cp /*$s1*/)
- // line 2575, offset 0x000568d8
-	/* begin block 1 */
-		// Start line: 2576
-		// Start offset: 0x000568D8
-		// Variables:
-	// 		int count; // $a1
+// line 2575, offset 0x000568d8
+/* begin block 1 */
+// Start line: 2576
+// Start offset: 0x000568D8
+// Variables:
+// 		int count; // $a1
 
-		/* begin block 1.1 */
-			// Start line: 2599
-			// Start offset: 0x00056964
-			// Variables:
-		// 		struct VECTOR position; // stack offset -48
-		// 		struct VECTOR velocity; // stack offset -32
-		/* end block 1.1 */
-		// End offset: 0x000569F8
-		// End Line: 2603
-	/* end block 1 */
-	// End offset: 0x000569F8
-	// End Line: 2604
+/* begin block 1.1 */
+// Start line: 2599
+// Start offset: 0x00056964
+// Variables:
+// 		struct VECTOR position; // stack offset -48
+// 		struct VECTOR velocity; // stack offset -32
+/* end block 1.1 */
+// End offset: 0x000569F8
+// End Line: 2603
+/* end block 1 */
+// End offset: 0x000569F8
+// End Line: 2604
 
-	/* begin block 2 */
-		// Start line: 6655
-	/* end block 2 */
-	// End Line: 6656
+/* begin block 2 */
+// Start line: 6655
+/* end block 2 */
+// End Line: 6656
 
-	/* begin block 3 */
-		// Start line: 6657
-	/* end block 3 */
-	// End Line: 6658
+/* begin block 3 */
+// Start line: 6657
+/* end block 3 */
+// End Line: 6658
 
 char DebrisTimer = 0;
 
 // [D] [T]
-void jump_debris(_CAR_DATA *cp)
+void jump_debris(_CAR_DATA* cp)
 {
-	WHEEL *wheel;
+	WHEEL* wheel;
 	int count;
 	VECTOR position;
 	VECTOR velocity;
@@ -2580,9 +2574,10 @@ void jump_debris(_CAR_DATA *cp)
 	count = 0;
 	wheel = cp->hd.wheel;
 
-	do {
-		
-		if (wheel->susCompression != 0) 
+	do
+	{
+
+		if (wheel->susCompression != 0)
 		{
 			DebrisTimer = 0;
 			cp->wasOnGround = 1;
@@ -2593,7 +2588,7 @@ void jump_debris(_CAR_DATA *cp)
 		count++;
 	} while (count < 4);
 
-	if (cp->wasOnGround == 1) 
+	if (cp->wasOnGround == 1)
 	{
 		cp->wasOnGround = 0;
 		DebrisTimer = 80;
@@ -2625,19 +2620,19 @@ void jump_debris(_CAR_DATA *cp)
 // decompiled code
 // original method signature: 
 // void /*$ra*/ nose_down(struct _CAR_DATA *cp /*$a0*/)
- // line 2607, offset 0x00056a74
-	/* begin block 1 */
-		// Start line: 7459
-	/* end block 1 */
-	// End Line: 7460
+// line 2607, offset 0x00056a74
+/* begin block 1 */
+// Start line: 7459
+/* end block 1 */
+// End Line: 7460
 
-	/* begin block 2 */
-		// Start line: 7461
-	/* end block 2 */
-	// End Line: 7462
+/* begin block 2 */
+// Start line: 7461
+/* end block 2 */
+// End Line: 7462
 
 // [D] [T]
-void nose_down(_CAR_DATA *cp)
+void nose_down(_CAR_DATA* cp)
 {
 	cp->st.n.angularVelocity[0] += cp->hd.where.m[0][0] * 50;
 	cp->st.n.angularVelocity[1] += cp->hd.where.m[1][0] * 50;
@@ -2649,29 +2644,29 @@ void nose_down(_CAR_DATA *cp)
 // decompiled code
 // original method signature: 
 // int /*$ra*/ GetPlayerId(struct _CAR_DATA *cp /*$a0*/)
- // line 2664, offset 0x00056cec
-	/* begin block 1 */
-		// Start line: 2665
-		// Start offset: 0x00056CEC
-		// Variables:
-	// 		int i; // $a1
-	// 		int p_id; // $a3
-	/* end block 1 */
-	// End offset: 0x00056D54
-	// End Line: 2669
+// line 2664, offset 0x00056cec
+/* begin block 1 */
+// Start line: 2665
+// Start offset: 0x00056CEC
+// Variables:
+// 		int i; // $a1
+// 		int p_id; // $a3
+/* end block 1 */
+// End offset: 0x00056D54
+// End Line: 2669
 
-	/* begin block 2 */
-		// Start line: 9334
-	/* end block 2 */
-	// End Line: 9335
+/* begin block 2 */
+// Start line: 9334
+/* end block 2 */
+// End Line: 9335
 
-	/* begin block 3 */
-		// Start line: 9345
-	/* end block 3 */
-	// End Line: 9346
+/* begin block 3 */
+// Start line: 9345
+/* end block 3 */
+// End Line: 9346
 
 // [D] [T]
-int GetPlayerId(_CAR_DATA *cp)
+int GetPlayerId(_CAR_DATA* cp)
 {
 	int i;
 	int p_id;

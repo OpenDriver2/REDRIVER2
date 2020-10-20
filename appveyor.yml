@@ -1,4 +1,4 @@
-version: 0.5.{build}
+version: 2.6.{build}
 
 branches:
   only:
@@ -12,6 +12,7 @@ image: Visual Studio 2019
 configuration:
 - Debug
 - Release
+- 'Release Dev'
 
 clone_folder: 'c:\projects\REDRIVER2'
 #lib_folder: %clone_folder%\EXTERNAL

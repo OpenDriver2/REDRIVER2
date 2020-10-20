@@ -32,6 +32,8 @@ extern char GetPingInfo(char *cookieCount); // 0x0001B090
 
 extern int StorePingInfo(int cookieCount, int carId);
 
+extern int IsPingInfoAvailable();
+
 extern int valid_region(int x, int z); // 0x0001AF34
 
 extern int cjpPlay(int stream, unsigned long *ppad, char *psteer, char *ptype); // 0x0001AFFC

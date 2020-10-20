@@ -1035,7 +1035,7 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 			cd[0].length[1] = car_cos->colBox.vx + 15;
 
 			if (handlingType[cp->hndType].fourWheelDrive == 1 || cp->hndType == 5)
-				cd[0].length[1] = FixFloorSigned(cd[0].length[1] * 13, 4);
+				cd[0].length[1] = (cd[0].length[1] * 13) / 16;
 		}
 
 		cd[0].avel = FIXEDH(cp->st.n.angularVelocity[1]) * 5 >> 5;
@@ -1197,16 +1197,16 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					pointVel[2] += 700000;
 				}
 
-				strikeVel = -(FixFloorSigned(pointVel[0], 8) * FixFloorSigned(collisionResult.surfNormal.vx, 4) +
-								FixFloorSigned(pointVel[1], 8) * FixFloorSigned(collisionResult.surfNormal.vy, 4) +
-								FixFloorSigned(pointVel[2], 8) * FixFloorSigned(collisionResult.surfNormal.vz, 4));
+				strikeVel = -((pointVel[0] / 256) * (collisionResult.surfNormal.vx / 16) +
+							  (pointVel[1] / 256) * (collisionResult.surfNormal.vy / 16) +
+							  (pointVel[2] / 256) * (collisionResult.surfNormal.vz / 16));
 
 				if (strikeVel > 0)
 				{
 					if (cp->controlType == CONTROL_TYPE_PLAYER) 
 					{
 						if (strikeVel < 32) 
-							scale = ((strikeVel << 0x17) >> 0x10);
+							scale = ((strikeVel << 23) >> 16);
 						else 
 							scale = 0x1000;
 
@@ -1218,9 +1218,9 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 
 					collisionResult.hit.vy = -collisionResult.hit.vy;
 
-					velocity.vx = FixFloorSigned(cp->st.n.linearVelocity[0], ONE_BITS);
+					velocity.vx = cp->st.n.linearVelocity[0] / ONE;
 					velocity.vy = -17;
-					velocity.vz = FixFloorSigned(cp->st.n.linearVelocity[2], ONE_BITS);
+					velocity.vz = cp->st.n.linearVelocity[2] / ONE;
 
 					if ((model->flags2 & 0x800) != 0)
 					{
@@ -1321,11 +1321,11 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					else
 						denom = (strikeVel / displacement) * 4096;
 
-					denom = FixFloorSigned(denom, 6);
+					denom = denom / 64;
 
-					reaction[0] = denom * FixFloorSigned(collisionResult.surfNormal.vx, 6);
-					reaction[1] = denom * FixFloorSigned(collisionResult.surfNormal.vy, 6);
-					reaction[2] = denom * FixFloorSigned(collisionResult.surfNormal.vz, 6);
+					reaction[0] = denom * (collisionResult.surfNormal.vx / 64);
+					reaction[1] = denom * (collisionResult.surfNormal.vy / 64);
+					reaction[2] = denom * (collisionResult.surfNormal.vz / 64);
 
 					cp->hd.aacc[1] += FIXEDH(lever[2] * reaction[0]) - FIXEDH(lever[0] * reaction[2]);
 

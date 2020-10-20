@@ -1103,7 +1103,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 					gLastModelCollisionCheck = cop->type;
 
-					if (CAR_INDEX(cp) == 21)
+					if (CAR_INDEX(cp) == TANNER_COLLIDER_CARID)
 					{
 						if (count >= mdcount && cop->pad != 0)
 						{
@@ -1459,7 +1459,7 @@ void DoScenaryCollisions(void)
 {
 	_CAR_DATA *cp;
 
-	cp = car_data + MAX_CARS - 1;
+	cp = &car_data[MAX_CARS - 1];
 
 	do {
 		if (cp->controlType != CONTROL_TYPE_NONE)

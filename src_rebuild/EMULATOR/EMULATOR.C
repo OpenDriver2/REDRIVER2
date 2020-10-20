@@ -1903,8 +1903,6 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 				
 		}
 	}
-
-
 }
 
 void Emulator_UpdateInput()
@@ -1912,68 +1910,7 @@ void Emulator_UpdateInput()
 	// also poll events here
 	Emulator_DoPollEvent();
 
-	unsigned short kbInputs = UpdateKeyboardInput();
-
-	//Update pad
-	if (SDL_NumJoysticks() > 0)
-	{
-		for (int i = 0; i < MAX_CONTROLLERS; i++)
-		{
-			if (padHandle[i] != NULL)
-			{
-				unsigned short controllerInputs = UpdateGameControllerInput(padHandle[i]);
-
-				PADRAW* pad = (PADRAW*)padData[i];
-				pad->status = 0;	// PadStateStable?
-				pad->id = 0x41;
-				*(unsigned short*)pad->buttons = controllerInputs;
-				pad->analog[0] = 128;
-				pad->analog[1] = 128;
-				pad->analog[2] = 128;
-				pad->analog[3] = 128;
-
-				if (activeControllers & 0x1)
-				{
-					*(unsigned short*)pad->buttons &= kbInputs;
-				}
-			}
-		}
-	}
-	else
-	{
-		//Update keyboard
-		if (padData[0] != NULL && activeControllers & 0x1)
-		{
-			PADRAW* pad = (PADRAW*)padData[0];
-
-			pad->status = 0;	// PadStateStable?
-			pad->id = 0x41;
-			*(unsigned short*)pad->buttons = kbInputs;
-			pad->analog[0] = 128;
-			pad->analog[1] = 128;
-			pad->analog[2] = 128;
-			pad->analog[3] = 128;
-		}
-	}
-
-	//Update keyboard
-	if (padData[1] != NULL && activeControllers & 0x2)
-	{
-		PADRAW* pad = (PADRAW*)padData[1];
-
-		pad->status = 0;	// PadStateStable?
-		pad->id = 0x41;
-		*(unsigned short*)pad->buttons = kbInputs;
-		pad->analog[0] = 128;
-		pad->analog[1] = 128;
-		pad->analog[2] = 128;
-		pad->analog[3] = 128;
-	}
-
-#if defined(__ANDROID__)
-    ///@TODO SDL_NumJoysticks always reports > 0 for some reason on Android.
-    ((unsigned short*)padData[0])[1] = UpdateKeyboardInput();
-#endif
+	InternalPadUpdates();
 }
 
 unsigned int Emulator_GetFPS()

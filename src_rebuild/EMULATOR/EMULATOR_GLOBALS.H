@@ -21,8 +21,7 @@ extern int assetsLoaded;
 extern int g_emulatorPaused;
 extern int g_polygonSelected;
 
-extern unsigned short UpdateGameControllerInput(SDL_GameController* pad);
-extern unsigned short UpdateKeyboardInput();
+extern void InternalPadUpdates();
 
 extern SDL_GameController* padHandle[];
 extern unsigned char* padData[];

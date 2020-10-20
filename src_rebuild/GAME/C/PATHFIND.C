@@ -1650,7 +1650,7 @@ void addCivs(void)
 
 		cp++;
 
-		if (&car_data[19] < cp)
+		if (&car_data[MAX_CARS-1] < cp)
 			return;
 
 	} while (true);
