@@ -1664,6 +1664,7 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 	if (gTimeOfDay != 3)
 	{
+#if PSX
 		orY = cp->st.n.orientation[1] - cp->ap.qy;
 
 		if (orY < 1) 
@@ -1679,6 +1680,10 @@ void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
 
 		if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 0xf) == (CameraCnt & 0xfU)) 
 			doLight = 1;
+#else
+		if (CameraCnt & 0x3)
+			doLight = 1;
+#endif
 
 		setupLightingMatrices();
 

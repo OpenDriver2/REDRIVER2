@@ -1533,6 +1533,26 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	regions_across = cells_across / cell_header.region_size;
 	regions_down = cells_down / cell_header.region_size;
 
+#if 0
+	// pointless :)
+
+	long lx = cell_header.light_source.vx;
+	long ly = cell_header.light_source.vy;
+	long lz = cell_header.light_source.vz;
+
+	long ls = SquareRoot0(lx * lx + ly * ly + lz * lz);
+	long ll = ONE / (((ls + cell_header.ambient_light_level) >> 1) - ls);
+
+	SVECTOR light_source = { lx * ll, ly * ll, lz * ll };
+
+	printInfo("light source: %d, %d, %d (s:%d,l:%d)\n", light_source.vx, light_source.vy, light_source.vz, ls, ll);
+
+	if (gTimeOfDay == 1)
+		day_vectors[GameLevel] = light_source;
+	else if (gTimeOfDay == 3)
+		night_vectors[GameLevel] = light_source;
+#endif
+
 	lump_ptr += sizeof(OUT_CELL_FILE_HEADER);
 
 	num_straddlers = *(int*)lump_ptr;

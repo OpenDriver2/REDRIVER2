@@ -1064,10 +1064,15 @@ void TunnelSkyFade(void)
 void calc_sky_brightness(void)
 {
 	int dawn;
-	dawn = DawnCount >> 5;
-
+	
+#ifdef PSX
 	if(gTimeOfDay == 0 || gTimeOfDay == 2)
+#else
+	if (DawnCount != 0)
+#endif
 	{
+		dawn = DawnCount >> 5;
+
 		if (gTimeOfDay == 0)
 		{
 			skyred = dawn + 41;
@@ -1078,7 +1083,21 @@ void calc_sky_brightness(void)
 			skyred = 143 - dawn;
 			skyblue = 128 - dawn;
 		}
-
+#if !defined(PSX)
+		else if (gTimeOfDay == 1)
+		{
+			if (day_vectors[GameLevel].vx < 0)
+			{
+				skyred = dawn + 41;
+				skyblue = dawn + 28;
+			}
+			else
+			{
+				if (skyred > 26)
+					skyred -= dawn;
+			}
+		}
+#endif
 		if (skyred < 26)
 			skyred = 26;
 		else if (skyred > 128)

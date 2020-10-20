@@ -6,9 +6,11 @@
 
 #include "LIBETC.H"
 #include "LIBSPU.H"
+#include "LIBGTE.H"
 #include "LIBGPU.H"
 #include "LIBAPI.H"
 #include "LIBMCRD.H"
+#include "INLINE_C.H"
 
 #include "../ASM/ASMTEST.H"
 #include "SYSTEM.H"
@@ -1153,7 +1155,7 @@ void StepSim(void)
 	{
 		DawnCount++;
 	}
-
+	
 	SetUpTrafficLightPhase();
 	MoveSmashable_object();
 	animate_garage_door();
@@ -1803,6 +1805,8 @@ void GameLoop(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+int day_cycle_back = 0;
+
 // [D] [T]
 void StepGame(void)
 {
@@ -1885,12 +1889,72 @@ void StepGame(void)
 	}
 	else if (gTimeOfDay == 1)
 	{
+#if 0
 		gLightsOn = 0;
 
 		if (gWeather - 1U > 1)
 			NightAmbient = 128;
 		else
 			NightAmbient = 78;
+#else
+		if (CameraCnt & 3)
+		{
+			if (!day_cycle_back)
+			{
+				day_vectors[GameLevel].vx += Random2(1) % 96;
+
+				if (day_vectors[GameLevel].vy > -4096)
+					day_vectors[GameLevel].vy -= Random2(1) % 64;
+				if (day_vectors[GameLevel].vz > -3200)
+					day_vectors[GameLevel].vz -= Random2(1) % 72;
+				
+				if (day_vectors[GameLevel].vx > 3072)
+					day_cycle_back = 1;
+			}
+			else
+			{
+				day_vectors[GameLevel].vx -= Random2(1) % 96;
+				
+				if (day_vectors[GameLevel].vy < 4096)
+					day_vectors[GameLevel].vy += Random2(1) % 64;
+				if (day_vectors[GameLevel].vz < 3200)
+					day_vectors[GameLevel].vz += Random2(1) % 72;
+
+				if (day_vectors[GameLevel].vx < -3072)
+					day_cycle_back = 0;
+			}
+
+			DawnCount = ABS(day_vectors[GameLevel].vx);
+
+			if (day_vectors[GameLevel].vx < 0)
+				NightAmbient = (DawnCount >> 5) + 31;
+
+			if (NightAmbient < 45)
+				NightAmbient = 45;
+	
+			int lights = gLightsOn;
+
+			gLightsOn = (NightAmbient < 72);
+			gNight = gLightsOn;
+#if 0
+			static MATRIX light_matrix =
+			{ { { 4096, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, { 0, 0, 0 } };
+
+			gte_ldv0(&day_vectors[GameLevel]);
+			gte_rtv0();
+
+			gte_stsv(light_matrix.m[0]);
+
+			gte_SetLightMatrix(&light_matrix);
+			gte_ldbkdir(0x8c0, 0x8c0, 0x8c0);
+#endif
+		}
+
+		char buffer[128] = { NULL };
+		sprintf(buffer, "day vector: %d, %d, %d : %d", day_vectors[GameLevel].vx, day_vectors[GameLevel].vy, day_vectors[GameLevel].vz, NightAmbient);
+
+		PrintStringFeature(buffer, 100, 0x1e, 0x1000, 0x1000, 0);
+#endif
 	}
 	else if (gTimeOfDay == 2)
 	{
