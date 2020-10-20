@@ -281,14 +281,8 @@ void StepOneCar(_CAR_DATA* cp)
 	cp->hd.acc[2] = 0;
 
 	// calculate car speed
-	a = FIXEDH(_cl.vel[0]);
-	b = FIXEDH(_cl.vel[2]);
-
-	if (a < 0)
-		a = -a;
-
-	if (b < 0)
-		b = -b;
+	a = ABS(FIXEDH(_cl.vel[0]));
+	b = ABS(FIXEDH(_cl.vel[2]));
 
 	if (a < b)
 		speed = b + a / 2;
@@ -686,7 +680,7 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
 		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
-			cp->hd.aacc[i] -= FixFloorSigned(cl->avel[i], 3);
+			cp->hd.aacc[i] -= cl->avel[i] / 8;
 
 		i++;
 	} while (i < 3);
@@ -1125,7 +1119,7 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 	}
 	else
 	{
-		cp->hd.wheel_speed = FixFloorSigned(cl->vel[0], 6) * FixFloorSigned(cdx, 6) + FixFloorSigned(cl->vel[2], 6) * FixFloorSigned(cdz, 6);
+		cp->hd.wheel_speed = cdz / 64 * (cl->vel[2] / 64) + cdx / 64 * (cl->vel[0] / 64);
 	}
 }
 

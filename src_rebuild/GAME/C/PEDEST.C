@@ -3582,7 +3582,8 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 			pointVel[0] = FIXEDH(pcdTanner->st.n.angularVelocity[1] * lever[2] - pcdTanner->st.n.angularVelocity[2] * lever[1]) + pcdTanner->st.n.linearVelocity[0];
 			pointVel[2] = FIXEDH(pcdTanner->st.n.angularVelocity[0] * lever[1] - pcdTanner->st.n.angularVelocity[1] * lever[0]) + pcdTanner->st.n.linearVelocity[2];
 
-			strikeVel = FixFloorSigned(pointVel[0], 8) * FixFloorSigned(-collisionResult.surfNormal.vx, 4) + FixFloorSigned(pointVel[2], 8) * FixFloorSigned(-collisionResult.surfNormal.vz, 4);
+			strikeVel = (pointVel[0] / 256) * (-collisionResult.surfNormal.vx / 16) + 
+				        (pointVel[2] / 256) * (-collisionResult.surfNormal.vz / 16);
 
 			if (strikeVel < 0)
 			{
@@ -3594,17 +3595,17 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 				twistRateY = car_cos->twistRateY;
 				
 				lever_dot_n = FIXEDH(lever[0] * -collisionResult.surfNormal.vx + lever[2] * -collisionResult.surfNormal.vz);
-				displacementsquared = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - lever_dot_n * lever_dot_n) * twistRateY) + 0x1000;
+				displacementsquared = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - lever_dot_n * lever_dot_n) * twistRateY) + ONE;
 
-				if (-strikeVel < 0x7f001)
-					denom = (strikeVel * -0x1000) / displacementsquared;
+				if (-strikeVel < 520193)
+					denom = (strikeVel * -ONE) / displacementsquared;
 				else
-					denom = -strikeVel / displacementsquared << 0xc;
+					denom = -strikeVel / displacementsquared * ONE;
 
-				denom = FixFloorSigned(denom, 6);
+				denom /= 64;
 				
-				reaction[0] = denom * FixFloorSigned(-collisionResult.surfNormal.vx, 6);
-				reaction[2] = denom * FixFloorSigned(-collisionResult.surfNormal.vz, 6);
+				reaction[0] = denom * (-collisionResult.surfNormal.vx / 64);
+				reaction[2] = denom * (-collisionResult.surfNormal.vz / 64);
 				
 				pcdTanner->st.n.linearVelocity[0] += pcdTanner->st.n.linearVelocity[0] + reaction[0];
 				pcdTanner->st.n.linearVelocity[2] += pcdTanner->st.n.linearVelocity[2] + reaction[2];

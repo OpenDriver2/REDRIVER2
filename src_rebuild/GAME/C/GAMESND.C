@@ -918,7 +918,7 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 	if (iVar8 < 1) 
 	{
-		sVar7 = FixFloorSigned(-iVar8, 11);
+		sVar7 = -iVar8 / 2048;
 		uVar6 = 0;
 		iVar9 = uVar10 * 4;
 
