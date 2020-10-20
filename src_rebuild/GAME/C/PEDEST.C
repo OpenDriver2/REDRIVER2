@@ -3284,7 +3284,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 	if (pPed->type == PED_ACTION_SIT)
 		return;
 
-	pcdTanner = &car_data[21];
+	pcdTanner = &car_data[TANNER_COLLIDER_CARID];
 
 	ClearMem((char*)pcdTanner, sizeof(_CAR_DATA));
 
@@ -3526,15 +3526,15 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 	CRET2D collisionResult; // offset 0x30
 	CDATA2D cd[2];
 
-	pcdTanner = &car_data[21];
+	pcdTanner = &car_data[TANNER_COLLIDER_CARID];
 
-	cd[0].length[0] = 0x3c;
-	cd[0].length[1] = 0x3c;
+	cd[0].length[0] = 60;
+	cd[0].length[1] = 60;
 	cd[0].x.vx = pPos->vx;
 	cd[0].x.vz = pPos->vz;
 	cd[0].theta = dir;
 
-	cp1 = car_data + MAX_CARS - 1;
+	cp1 = &car_data[MAX_CARS - 1];
 
 	do {
 		car_cos = &car_cosmetics[cp1->ap.model];
@@ -4574,7 +4574,7 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 	PEDESTRIAN* pedptr;
 	long rnd;
 
-	if (num_pedestrians < 20)
+	if (num_pedestrians < MAX_SEATED_PEDS)
 	{
 		pedptr = CreatePedestrian();
 
@@ -4738,11 +4738,11 @@ void BuildCarCollisionBox(void)
 		set_coll_box(1, &car_data[player[0].playerCarId], 9);
 	}
 
-	cp = car_data + (CameraCnt & 3);
+	cp = &car_data[(CameraCnt & 3)];
 
 	collision_boxes_set = 2;
 
-	while (cp < car_data + MAX_CARS)
+	while (cp < &car_data[MAX_CARS])
 	{
 		if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
 		{

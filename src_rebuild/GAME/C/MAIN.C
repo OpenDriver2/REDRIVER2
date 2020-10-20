@@ -945,7 +945,7 @@ void GameInit(void)
 		do {
 			lightsOnDelay[i] = Random2(0);
 			i++;
-		} while (i < 20);
+		} while (i < MAX_CARS);
 	}
 
 	tracking_car = 1;
@@ -1447,7 +1447,7 @@ void StepSim(void)
 		}
 	}
 
-	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))
+	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(&car_data[furthestCivID]), numCivCars < maxCivCars)))
 	{
 		requestStationaryCivCar = 0;
 	}
@@ -2040,7 +2040,7 @@ void StepGame(void)
 	// player flip cheat
 	if (gRightWayUp != 0)
 	{
-		TempBuildHandlingMatrix(car_data + player[0].playerCarId, 0);
+		TempBuildHandlingMatrix(&car_data[player[0].playerCarId], 0);
 		gRightWayUp = 0;
 	}
 

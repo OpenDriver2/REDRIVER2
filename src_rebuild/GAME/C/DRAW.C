@@ -1633,19 +1633,21 @@ int num_cars_drawn = 0;
 // [D] [T]
 void DrawAllTheCars(int view)
 {
-	static int car_distance[20]; // offset 0x0
+	static int car_distance[MAX_CARS]; // offset 0x0
+	_CAR_DATA* cars_to_draw[MAX_CARS];
+
 	int dx, dz;
 	int dist;
 	int i, j;
 	_CAR_DATA* cp;
 	int num_cars_to_draw;
 	int spacefree;
-	_CAR_DATA* cars_to_draw[20];
+	
 
 	num_cars_drawn = 0;
 	num_cars_to_draw = 0;
 
-	cp = car_data + MAX_CARS - 1;
+	cp = &car_data[MAX_CARS - 1];
 	do {
 		if (cp->controlType != CONTROL_TYPE_NONE && 
 			PositionVisible((VECTOR*)cp->hd.where.t))
