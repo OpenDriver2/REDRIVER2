@@ -1929,7 +1929,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 	if (cp->controlType == CONTROL_TYPE_PLAYER)
 	{
 		// handle car leaving
-		if ((pad & 0x1010) == 0x1010 && player_id > -1)
+		if ((pad & CAR_PAD_LEAVECAR) == CAR_PAD_LEAVECAR && player_id > -1)
 		{
 			if (!TannerStuckInCar(1, player_id))
 			{
@@ -1951,11 +1951,11 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 		// Lock car if it has mission lock or fully damaged
 		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0)
 		{
-			pad = 0x10;
+			pad = CAR_PAD_HANDBRAKE;
 
 			// apply brakes
-			if (cp->hd.wheel_speed > 0x9000)
-				pad = 0x80;
+			if (cp->hd.wheel_speed > 36864)
+				pad = CAR_PAD_BRAKE;
 
 			int_steer = 0;
 			use_analogue = 1;
@@ -1975,7 +1975,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 		cp->hd.autoBrake = 90;
 
 	// handle burnouts or handbrake
-	if (pad & 0x10)
+	if (pad & CAR_PAD_HANDBRAKE)
 	{
 		cp->handbrake = 1;
 	}
@@ -1983,26 +1983,26 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 	{
 		cp->handbrake = 0;
 
-		if (pad & 0x20)
+		if (pad & CAR_PAD_WHEELSPIN)
 			cp->wheelspin = 1;
 		else
 			cp->wheelspin = 0;
 
 		// continue without burnout
-		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 0x6e958)
+		if (cp->wheelspin != 0 && cp->hd.wheel_speed > 452952)
 		{
 			cp->wheelspin = 0;
-			pad |= 0x40;
+			pad |= CAR_PAD_ACCEL;
 		}
 	}
 
 	// handle steering
 	if (use_analogue == 0)
 	{
-		if (pad & 0x4)
+		if (pad & CAR_PAD_FASTSTEER)
 		{
 			// fast steer
-			if (pad & 0x2000)
+			if (pad & CAR_PAD_RIGHT)
 			{
 				cp->wheel_angle += 64;
 
@@ -2010,7 +2010,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 					cp->wheel_angle = 511;
 			}
 
-			if (pad & 0x8000)
+			if (pad & CAR_PAD_LEFT)
 			{
 				cp->wheel_angle -= 64;
 
@@ -2021,7 +2021,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 		else
 		{
 			// regular steer
-			if (pad & 0x2000)
+			if (pad & CAR_PAD_RIGHT)
 			{
 				cp->wheel_angle += 32;
 
@@ -2029,7 +2029,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 					cp->wheel_angle = 352;
 			}
 
-			if (pad & 0x8000)
+			if (pad & CAR_PAD_LEFT)
 			{
 				cp->wheel_angle -= 32;
 
@@ -2038,14 +2038,14 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 			}
 		}
 
-		if (pad & 0xa000)
+		if (pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT))
 			cp->hd.autoBrake++;
 		else
 			cp->hd.autoBrake = 0;
 	}
 	else
 	{
-		if (pad & 0x4)
+		if (pad & CAR_PAD_FASTSTEER)
 		{
 			int_steer *= (int_steer * int_steer) / 60;
 			analog_angle = ((long long)int_steer * 0x88888889) >> 32;		// int_steer * 0.6
@@ -2067,7 +2067,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 	}
 
 	// center steering
-	if ((pad & 0xa000) == 0)
+	if ((pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT)) == 0)
 	{
 		if (cp->wheel_angle < -64)
 			cp->wheel_angle += 64;
@@ -2081,7 +2081,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 
 	//if (gTimeInWater != 0)
 	{
-		if (pad & 0x80)
+		if (pad & CAR_PAD_BRAKE)
 		{
 			int rws;
 
@@ -2095,7 +2095,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 
 			cp->thrust = FIXEDH(cp->ap.carCos->powerRatio * rws);
 		}
-		else if (pad & 0x40)
+		else if (pad & CAR_PAD_ACCEL)
 		{
 			if (cp->hndType == 5)
 			{
@@ -2108,20 +2108,14 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 
 				dist = dx * dx + dz * dz;
 
-				if (dist < 41)
-				{
-					if (dist < 21)
-					{
-						if (dist > 9)
-							cp->thrust = 4900;
-						else
-							cp->thrust = 6000;
-					}
-					else
-						cp->thrust = 4000;
-				}
-				else
+				if (dist > 40)
 					cp->thrust = 3000;
+				else if (dist > 20)
+					cp->thrust = 4000;
+				else if (dist > 9)
+					cp->thrust = 4900;
+				else
+					cp->thrust = 6000;
 			}
 			else
 			{
@@ -2153,15 +2147,12 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 
 					chase_square_dist = cx * cx + cz * cz;
 
-					if (chase_square_dist < 21)
-					{
-						if (chase_square_dist < 7)
-							cp->thrust = (cp->thrust * 6700) / 7000;
-						else
-							cp->thrust = (cp->thrust * 7400) / 7000;
-					}
-					else
+					if (chase_square_dist > 20)
 						cp->thrust = (cp->thrust * 8000) / 7000;
+					else if (chase_square_dist > 6)
+						cp->thrust = (cp->thrust * 7400) / 7000;
+					else
+						cp->thrust = (cp->thrust * 6700) / 7000;
 				}
 			}
 
