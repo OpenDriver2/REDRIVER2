@@ -4954,7 +4954,10 @@ void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 	carId = player[0].playerCarId;
 
 	if (carId == -1) // [A] ASan bug fix
+	{
+		pPed->head_rot = 0;
 		return;
+	}
 
 	pCar = &car_data[carId];
 
