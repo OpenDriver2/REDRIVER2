@@ -487,7 +487,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 // End Line: 5026
 
 // [D] [T]
-int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
+int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 {
 	int mat;
 	int zbias;
@@ -499,8 +499,6 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 	int prev_mat;
 
 	prev_mat = -1;
-
-	SetupPlaneColours(combointensity);
 
 	for (i = 0; i < 8; i++)
 	{
@@ -787,7 +785,6 @@ void DrawMapPSX(int* comp_val)
 	int backPlane;
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
-	VECTOR newpos;
 	int cellxpos;
 	int cellzpos;
 	char* PVS_ptr;
@@ -942,7 +939,6 @@ void DrawMapPSX(int* comp_val)
 									cmat->computed = current_object_computed_value;
 
 									gte_ReadRotMatrix(&mRotStore);
-
 									gte_sttr(mRotStore.t);
 
 									MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[modelNumber], (MATRIX*)cmat);
@@ -1062,6 +1058,8 @@ void DrawMapPSX(int* comp_val)
 	PrintString(tempBuf, 10, 120);
 #endif
 
+	SetupPlaneColours(combointensity);
+
 	if (sprites_found)
 		DrawSprites((PACKED_CELL_OBJECT**)spriteList, sprites_found);
 
@@ -1069,21 +1067,10 @@ void DrawMapPSX(int* comp_val)
 		DrawTILES((PACKED_CELL_OBJECT**)model_tile_ptrs, tiles_found);
 
 	if (other_models_found)
-		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found, current);
+		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found);
 
-	while (anim_objs_found > 0)
-	{
-		anim_objs_found--;
-		cop = (CELL_OBJECT*)anim_obj_buffer[anim_objs_found];
-
-		newpos.vx = cop->pos.vx - camera_position.vx;
-		newpos.vy = cop->pos.vy - camera_position.vy;
-		newpos.vz = cop->pos.vz - camera_position.vz;
-		Apply_Inv_CameraMatrix(&newpos);
-
-		gte_SetRotMatrix(&matrixtable[cop->yang]);
-		DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
-	}
+	if (anim_objs_found)
+		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, anim_objs_found);
 }
 
 // decompiled code
