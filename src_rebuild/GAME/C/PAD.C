@@ -60,9 +60,10 @@ int gVibration = 0;
 char padbuffer[2][PADBUFFER_SIZE];	// [A] was static
 DUPLICATION DuplicatePadData;		// [A]
 
-// [D]
+// [D] [T]
 void InitControllers(void)
 {
+	int i, j;
 	struct PAD* pad;
 
 	DuplicatePadData.buffer = NULL;
@@ -71,7 +72,7 @@ void InitControllers(void)
 	PadInitDirect((unsigned char*)padbuffer[0], (unsigned char*)padbuffer[1]);
 	PadStartCom();
 
-	for (int i = 0; i < 2; i++)
+	for (i = 0; i < 2; i++)
 	{
 		pad = &Pads[i];
 
@@ -89,8 +90,10 @@ void InitControllers(void)
 		pad->delay = 6;
 		pad->dsactive = 0;
 
-		for (int j = 0; j < 16; j++)
+		for (j = 0; j < 16; j++)
+		{
 			pad->mappings.button_lookup[j] = 1 << (j & 0x1f);
+		}
 
 		pad->mappings.swap_analog = 0;
 	}
@@ -126,7 +129,7 @@ void InitControllers(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void CloseControllers(void)
 {
 	int i;
@@ -179,30 +182,25 @@ void CloseControllers(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ReadControllers(void)
 {
 #ifndef PSX
 	Emulator_UpdateInput();
 #endif
 
-	char *pData;
 	int pad;
-	int iVar2;
-
-	pad = 0;
 
 	if (DuplicatePadData.buffer)
 		memcpy(DuplicatePadData.buffer, &padbuffer, DuplicatePadData.size);
 
-	pData = padbuffer[0];
-	iVar2 = 1;
+	pad = 0;
 	do {
-		PADRAW* padRaw = (PADRAW*)pData;
+		PADRAW* padRaw = (PADRAW*)padbuffer[pad];
 
-		if (padRaw->status == '\0')
+		if (padRaw->status == 0)
 		{
-			if ((padRaw->id == 65) || (padRaw->id == 115))
+			if (padRaw->id == 65 || padRaw->id == 115)
 			{
 				MapPad(pad, padRaw);
 			}
@@ -212,15 +210,14 @@ void ReadControllers(void)
 				ClearPad(pad);
 			}
 		}
-		else {
+		else 
+		{
 			Pads[pad].type = 0;
 			ClearPad(pad);
 		}
 
-		pad = pad + 1;
-		iVar2 = iVar2 + -1;
-		pData += PADBUFFER_SIZE;
-	} while (-1 < iVar2);
+		pad++;
+	} while (pad < 2);
 
 	HandleDualShock();
 	pad_connected = (Pads[0].type != 0);
@@ -228,7 +225,7 @@ void ReadControllers(void)
 	if (Pads[0].type == 1)
 		pad_connected = -1;
 
-	if (1 < NumPlayers) 
+	if (NumPlayers > 1) 
 	{
 		if (Pads[1].type == 0)
 			pad_connected = 0;
@@ -254,22 +251,22 @@ void ReadControllers(void)
 	/* end block 2 */
 	// End Line: 996
 
-// [D]
+// [D] [T]
 void SetPadVibration(int pad, unsigned char type)
 {
-	if (pad >= 0)
-	{
-		if(Pads[pad].dualshock != 0 && gInGameCutsceneActive == 0) 
-		{
-			Pads[pad].shake_type = type;
-			Pads[pad].vibrate = 6;
-			return;
-		}
+	if (pad < 0)
+		return;
 
-		Pads[pad].shakeptr = NULL;
-		Pads[pad].shake_type = 0;
-		Pads[pad].vibrate = 0;
+	if(Pads[pad].dualshock != 0 && gInGameCutsceneActive == 0) 
+	{
+		Pads[pad].shake_type = type;
+		Pads[pad].vibrate = 6;
+		return;
 	}
+
+	Pads[pad].shakeptr = NULL;
+	Pads[pad].shake_type = 0;
+	Pads[pad].vibrate = 0;
 }
 
 
@@ -288,7 +285,7 @@ void SetPadVibration(int pad, unsigned char type)
 	/* end block 2 */
 	// End Line: 1035
 
-// [D]
+// [D] [T]
 void StopPadVibration(int pad)
 {
 	Pads[pad].motors[0] = 0;
@@ -317,7 +314,7 @@ void StopPadVibration(int pad)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void StopDualShockMotors(void)
 {
 	return;
@@ -339,10 +336,10 @@ void StopDualShockMotors(void)
 	/* end block 2 */
 	// End Line: 1083
 
-// [D]
+// [D] [T]
 void SetDuplicatePadData(char *buffer, int size)
 {
-	if (size - 1U < 34) 
+	if (size - 1U < PADBUFFER_SIZE) 
 	{
 		DuplicatePadData.buffer = buffer;
 		DuplicatePadData.size = size;
@@ -380,11 +377,10 @@ void SetDuplicatePadData(char *buffer, int size)
 	/* end block 3 */
 	// End Line: 602
 
-// [D]
+// [D] [T]
 void MapPad(int pad, PADRAW *pData)
 {
 	unsigned char uVar1;
-	uint uVar5;
 
 	ushort i;
 	ushort buttons;
@@ -396,13 +392,11 @@ void MapPad(int pad, PADRAW *pData)
 		return;
 	}
 
-	uVar1 = pData->id >> 4;
-
-	if (uVar1 == 4)
+	if (pData->id >> 4 == 4)
 	{
 		Pads[pad].type = 2;
 	}
-	else if(uVar1 == 7)
+	else if(pData->id >> 4 == 7)
 	{
 		Pads[pad].type = 4;
 	}
@@ -428,16 +422,13 @@ void MapPad(int pad, PADRAW *pData)
 		mapped = 0;
 		i = 0;
 
-		uVar5 = buttons;
-
 		do {
-			if ((uVar5 & 1) != 0)
+			if (((buttons >> i) & 1) != 0)
 			{
 				mapped |= Pads[pad].mappings.button_lookup[i];
 			}
 
 			i++;
-			uVar5 = buttons >> (i & 0x1f);
 		} while (i < 16);
 
 
@@ -478,7 +469,7 @@ void MapPad(int pad, PADRAW *pData)
 	/* end block 2 */
 	// End Line: 1265
 
-// [D]
+// [D] [T]
 void ClearPad(int pad)
 {
 	Pads[pad].direct = 0;
@@ -533,9 +524,7 @@ void HandleDualShock(void)
 		0, 0
 	};
 
-	int uVar1;
 	int state;
-	int iVar3;
 	int port;
 	int pad;
 	int dsload;
@@ -570,17 +559,21 @@ void HandleDualShock(void)
 					Pads[pad].dsactive = 0;
 					Pads[pad].state = 0;
 					Pads[pad].delay = 6;
-				LAB_0006ba78:
 					Pads[pad].motors[0] = 0;
 					Pads[pad].motors[1] = 0;
 					Pads[pad].vibrate = 0;
 				}
 				break;
 			case 2:
-				if (Pads[pad].state == 6) 
+				if (Pads[pad].state != 6)
+				{
+					Pads[pad].state = 6;
+				}
+				else
+				{
 					goto LAB_0006ba8c;
-
-				Pads[pad].state = 6;
+				}
+				
 				break;
 			default:
 			LAB_0006ba8c:
@@ -591,7 +584,7 @@ void HandleDualShock(void)
 				}
 				else 
 				{
-					if ((Pads[pad].vibrate == 6) || (Pads[pad].alarmShakeCounter != 0))
+					if (Pads[pad].vibrate == 6 || Pads[pad].alarmShakeCounter != 0)
 					{
 						if (gVibration == 0) 
 						{
@@ -614,34 +607,44 @@ void HandleDualShock(void)
 				}
 				break;
 			case 6:
-				if (Pads[pad].state == 6)
-					goto LAB_0006ba8c;
-
-				if (PadInfoMode(port, 4, 1) != 7)
+				if (Pads[pad].state != 6)
 				{
-					Pads[pad].dualshock = 0;
-				LAB_0006ba60:
-					Pads[pad].state = 6;
-
-					goto LAB_0006ba78;
-				}
-
-				Pads[pad].dualshock = 1;
-
-				if (Pads[pad].delay == 6)
-				{
-					if (PadSetActAlign(port, align) != 0)
+					if (PadInfoMode(port, 4, 1) != 7)
 					{
-						Pads[pad].dsactive = 1;
-						goto LAB_0006ba60;
+						Pads[pad].dualshock = 0;
+						Pads[pad].state = 6;
+						Pads[pad].motors[0] = 0;
+						Pads[pad].motors[1] = 0;
+						Pads[pad].vibrate = 0;
+						break;
 					}
 
-					Pads[pad].delay = 0;
+					Pads[pad].dualshock = 1;
+
+					if (Pads[pad].delay == 6)
+					{
+						if (PadSetActAlign(port, align) != 0)
+						{
+							Pads[pad].dsactive = 1;
+							Pads[pad].state = 6;
+							Pads[pad].motors[0] = 0;
+							Pads[pad].motors[1] = 0;
+							Pads[pad].vibrate = 0;
+							break;
+						}
+
+						Pads[pad].delay = 0;
+					}
+					else 
+					{
+						Pads[pad].delay++;
+					}
 				}
-				else 
+				else
 				{
-					Pads[pad].delay++;
+					goto LAB_0006ba8c;
 				}
+				break;
 		}
 		pad++;
 
@@ -684,15 +687,11 @@ int gDualShockMax = 255;
 // [D]
 void HandlePadVibration(int pad)
 {
-	unsigned char bVar1;
-	unsigned char uVar2;
-	unsigned char* pbVar3;
-	int iVar4;
-	unsigned char** ppbVar5;
-	int iVar6;
+	int speed;
 
-	iVar6 = 0;
-	if ((((NoPlayerControl != 0) || (gDualShockMax == 0)) || (gDrawPauseMenus != 0)) || ((game_over != 0 || (gInGameCutsceneActive != 0))))
+	speed = 0;
+
+	if (NoPlayerControl != 0 || gDualShockMax == 0 || gDrawPauseMenus != 0 || (game_over != 0 || gInGameCutsceneActive != 0))
 	{
 		StopPadVibration(pad);
 		return;
@@ -700,57 +699,38 @@ void HandlePadVibration(int pad)
 
 	if (player[pad].onGrass != 0) 
 	{
-		iVar6 = car_data[player[pad].playerCarId].st.n.angularVelocity[1] >> 0xf;
+		speed = ABS(car_data[player[pad].playerCarId].st.n.angularVelocity[1] >> 0xf);
+		speed += car_data[player[pad].playerCarId].hd.speed;
 
-		if (iVar6 < 0)
-			iVar6 = -iVar6;
-	
-		iVar6 = iVar6 + car_data[player[pad].playerCarId].hd.speed;
-
-		if (0x3c < iVar6)
-			iVar6 = 0x3c;
+		if (speed > 60)
+			speed = 60;
 	
 		Pads[pad].vibrate = 6;
 	}
 
-	if (Pads[pad].shake_type == 0)
-	{
-	LAB_0006bd30:
-		if (Pads[pad].shakeptr == NULL) 
-			goto LAB_0006bd84;
-	}
-	else 
+	if (Pads[pad].shake_type != 0)
 	{
 		if (Pads[pad].shakeptr == NULL) 
-		{
 			Pads[pad].shakeptr = shake_data[Pads[pad].shake_type - 1];
-			goto LAB_0006bd30;
-		}
 	}
 
-	ppbVar5 = &Pads[pad].shakeptr;
-	bVar1 = **ppbVar5;
-	pbVar3 = *ppbVar5 + 1;
-	*ppbVar5 = pbVar3;
-	iVar6 = iVar6 + bVar1;
+	if (Pads[pad].shakeptr)
+	{
+		speed += *Pads[pad].shakeptr;
 
-	if (*pbVar3 == 0) 
-		*ppbVar5 = NULL;
+		if (++Pads[pad].shakeptr == 0) 
+			Pads[pad].shakeptr = NULL;
+	}
 
-LAB_0006bd84:
-	if (0xff < iVar6)
-		iVar6 = 0xff;
-
-	iVar4 = gDualShockMax + 0x100;
-	uVar2 = Pads[pad].alarmShakeCounter;
+	if (speed > 255)
+		speed = 255;
 
 	Pads[pad].shake_type = 0;
-	Pads[pad].motors[1] = (iVar6 * iVar4 >> 9);
+	Pads[pad].motors[1] = (speed * (gDualShockMax + 256) >> 9);
 
-	if (uVar2 != 0) 
+	if (Pads[pad].alarmShakeCounter != 0) 
 	{
-		Pads[pad].alarmShakeCounter = uVar2 - 1;
-		if (uVar2 == 1)
+		if (Pads[pad].alarmShakeCounter-- == 1)
 			Pads[pad].motors[0] = 0;
 		else
 			Pads[pad].motors[0] = 1;

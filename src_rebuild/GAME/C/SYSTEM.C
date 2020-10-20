@@ -1161,10 +1161,6 @@ void SetupDrawBuffers(void)
 // [D]
 void SetupDrawBufferData(int num_players)
 {
-	bool bVar1;
-	int iVar2;
-	char *pcVar3;
-	OTTYPE *puVar4;
 	int i;
 	int j;
 	int x[2];
