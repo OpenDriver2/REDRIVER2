@@ -710,7 +710,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		}
 	}
 
-	jcam = &car_data[20];
+	jcam = &car_data[MAX_CARS];
 	ClearMem((char *)jcam, sizeof(_CAR_DATA));
 
 	jcam->controlType = CONTROL_TYPE_CAMERACOLLIDER;

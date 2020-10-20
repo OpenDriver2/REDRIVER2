@@ -3284,11 +3284,11 @@ void TannerCollision(PEDESTRIAN* pPed)
 	if (pPed->type == PED_ACTION_SIT)
 		return;
 
-	pcdTanner = &car_data[21];
+	pcdTanner = &car_data[MAX_CARS+1];
 
 	ClearMem((char*)pcdTanner, sizeof(_CAR_DATA));
 
-	pcdTanner->id = 21;
+	pcdTanner->id = MAX_CARS+1;
 	pcdTanner->controlType = 6;
 
 	pcdTanner->hd.direction = pPed->dir.vy - 0x800U & 0xfff;
@@ -3526,7 +3526,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 	CRET2D collisionResult; // offset 0x30
 	CDATA2D cd[2];
 
-	pcdTanner = &car_data[21];
+	pcdTanner = &car_data[MAX_CARS+1];
 
 	cd[0].length[0] = 0x3c;
 	cd[0].length[1] = 0x3c;

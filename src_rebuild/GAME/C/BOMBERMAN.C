@@ -222,7 +222,7 @@ void HandleThrownBombs(void)
 			}
 
 			cp = car_data;
-			while (cp < car_data + 20)
+			while (cp < car_data + MAX_CARS)
 			{
 				if (cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE && BombCollisionCheck(cp, &bomb->position) != 0)
 				{
@@ -633,7 +633,7 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 	long reaction[4];
 	long lever[4];
 
-	isCar = (cp != car_data + 20);
+	isCar = (cp != car_data + MAX_CARS);
 
 	if (player[0].playerType == 2 || isCar)
 	{

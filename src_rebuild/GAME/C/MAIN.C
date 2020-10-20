@@ -951,7 +951,7 @@ void GameInit(void)
 		do {
 			lightsOnDelay[i] = Random2(0);
 			i++;
-		} while (i < 20);
+		} while (i < MAX_CARS);
 	}
 
 	tracking_car = 1;

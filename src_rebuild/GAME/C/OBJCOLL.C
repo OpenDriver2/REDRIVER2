@@ -1103,7 +1103,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 					gLastModelCollisionCheck = cop->type;
 
-					if (CAR_INDEX(cp) == 21)
+					if (CAR_INDEX(cp) == MAX_CARS+1)
 					{
 						if (count >= mdcount && cop->pad != 0)
 						{

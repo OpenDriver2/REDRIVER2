@@ -1647,13 +1647,7 @@ void addCivs(void)
 				omap[(uVar4 + 1)][(uVar2 >> 3)] = bits ^ omap[(uVar4 + 1)][(uVar2 >> 3)];
 			}
 		}
-
-		cp++;
-
-		if (&car_data[19] < cp)
-			return;
-
-	} while (true);
+	} while (++cp < &car_data[MAX_CARS]);
 }
 
 

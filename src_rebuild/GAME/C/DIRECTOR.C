@@ -2824,7 +2824,7 @@ int SelectCameraCar(int current)
 		return 0;
 
 	if (current < -1)
-		current = 18 - current;
+		current = MAX_CARS-2 - current;
 
 	count = current + 1;
 
@@ -2860,7 +2860,7 @@ int SelectCameraCar(int current)
 		}
 		else
 		{
-			event = events.track[count - 20];
+			event = events.track[count - MAX_CARS];
 
 			if (event == NULL)
 			{
@@ -2887,7 +2887,7 @@ int SelectCameraCar(int current)
 				if (car != NULL)
 					return car->id;
 
-				return 18 - count;
+				return MAX_CARS-2 - count;
 			}
 		}
 

@@ -3239,7 +3239,7 @@ void StepEvents(void)
 
 					i++;
 					cp++;
-				} while (i < 20);
+				} while (i < MAX_CARS);
 
 				// make Tanner on boat also
 				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist) != 0)
@@ -3295,7 +3295,7 @@ void StepEvents(void)
 				do {
 					pos = (VECTOR*)car_data[i].hd.where.t;
 
-					if (i == 20)
+					if (i == MAX_CARS)
 					{
 						pos = (VECTOR*)player[0].pos;
 						vel = NULL;
@@ -3318,7 +3318,7 @@ void StepEvents(void)
 						pos->vx += iVar6;
 						pos->vz += iVar4;
 
-						if (i == 20)
+						if (i == MAX_CARS)
 						{
 							SetTannerPosition((VECTOR*)pos);
 							carsOnBoat = carsOnBoat & 0xffefffff;
@@ -3336,7 +3336,7 @@ void StepEvents(void)
 					uVar8 = uVar8 << 1;
 
 					i++;
-				} while (i < 21);
+				} while (i < MAX_CARS+1);
 			}
 		}
 		uVar8 = carsOnBoat;

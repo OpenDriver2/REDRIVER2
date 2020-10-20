@@ -2964,7 +2964,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 
 		carCnt++;
 		slot++;
-	} while (carCnt < car_data + MAX_TRAFFIC_CARS);
+	} while (carCnt < car_data + MAX_CARS-1);
 
 	if (pNewCar == NULL)
 		return -1;
@@ -3102,7 +3102,7 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*star
 
 				carCnt++;
 				slot++;
-			} while (carCnt < car_data + MAX_TRAFFIC_CARS);
+			} while (carCnt < car_data + MAX_CARS-1);
 		}
 
 		if (newCar)
@@ -3468,7 +3468,7 @@ int PingInCivCar(int minPingInDist)
 
 			carCnt++;
 			slot++;
-		} while (carCnt < car_data + MAX_TRAFFIC_CARS);
+		} while (carCnt < car_data + MAX_CARS-1);
 
 		if (newCar == NULL)
 		{
@@ -4439,7 +4439,7 @@ int CivAccelTrafficRules(_CAR_DATA * cp, int* distToNode)
 		carDir = cp->hd.direction & 0xfff;
 		distToObstacle = 0x7fffff;
 
-		lcp = car_data + 19;
+		lcp = car_data + MAX_CARS-1;
 		while (lcp >= car_data)
 		{
 			if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
@@ -4704,7 +4704,7 @@ void SetUpCivCollFlags(void)
 				{
 					car_cos = cp1->ap.carCos;
 
-					if (CAR_INDEX(cp1) == 20)
+					if (CAR_INDEX(cp1) == MAX_CARS)
 					{
 						if (player[0].playerType != 2)
 						{
@@ -4760,7 +4760,7 @@ void SetUpCivCollFlags(void)
 					}
 
 					// check height difference
-					if (CAR_INDEX(cp1) == 20)
+					if (CAR_INDEX(cp1) == MAX_CARS)
 					{
 						if (ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
 						{
@@ -4796,14 +4796,14 @@ void SetUpCivCollFlags(void)
 						continue;
 					}
 
-					if (CAR_INDEX(cp1) == 20)
+					if (CAR_INDEX(cp1) == MAX_CARS)
 						cp0->ai.c.carPauseCnt = CAR_PAUSE_START;
 
 					// do horns
 					// horn to player and chased cars (except Steal the Ambulance)
 					if (cp0->ai.c.thrustState != 3 &&
 						(cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0 || 
-						CAR_INDEX(cp1) == 20))
+						CAR_INDEX(cp1) == MAX_CARS))
 					{
 						int dont;
 						int rnd;

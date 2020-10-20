@@ -1648,8 +1648,8 @@ void DoDopplerSFX(void)
 	uint uVar18;
 	int *piVar10;
 	int cars;
-	ulong car_dist[20];
-	ushort indexlist[20];
+	ulong car_dist[MAX_CARS];
+	ushort indexlist[MAX_CARS];
 	char sirens;
 	uint local_34;
 	uint local_30;
@@ -1716,7 +1716,7 @@ void DoDopplerSFX(void)
 
 	LAB_0004e984:
 		car++;
-	} while (car < 20);
+	} while (car < MAX_CARS);
 
 	local_34 = (cars < 3);
 	local_30 = (cars < 5);
@@ -1818,7 +1818,7 @@ void DoDopplerSFX(void)
 			UnlockChannel(p_Var9->chan);
 
 			p_Var9->chan = -1;
-			p_Var9->car = 20;
+			p_Var9->car = MAX_CARS;
 			p_Var9->stopped = 1;
 		}
 		vvar4++;
@@ -1897,7 +1897,7 @@ void DoDopplerSFX(void)
 						UnlockChannel(p_Var9->chan);
 
 						p_Var9->chan = -1;
-						p_Var9->car = 20;
+						p_Var9->car = MAX_CARS;
 						p_Var9->stopped = 1;
 					}
 					vvar4++;

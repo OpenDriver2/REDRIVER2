@@ -1653,14 +1653,14 @@ int num_cars_drawn = 0;
 // [D] [T]
 void DrawAllTheCars(int view)
 {
-	static int car_distance[20]; // offset 0x0
+	static int car_distance[MAX_CARS]; // offset 0x0
 	int dx, dz;
 	int dist;
 	int i, j;
 	_CAR_DATA* cp;
 	int num_cars_to_draw;
 	int spacefree;
-	_CAR_DATA* cars_to_draw[20];
+	_CAR_DATA* cars_to_draw[MAX_CARS];
 
 	num_cars_drawn = 0;
 	num_cars_to_draw = 0;

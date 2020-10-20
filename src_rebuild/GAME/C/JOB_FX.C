@@ -195,11 +195,11 @@ void HandleExplosion(void)
 			cp = car_data;
 
 			do {
-				if (cp == &car_data[20] || cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE)
+				if (cp == &car_data[MAX_CARS] || cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE)
 					ExplosionCollisionCheck(cp, &explosion[i]);
 
 				cp++;
-			} while (cp < &car_data[20]);
+			} while (cp < &car_data[MAX_CARS]);
 		}
 
 		i++;

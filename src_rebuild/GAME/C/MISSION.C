@@ -234,8 +234,8 @@ void InitialiseMissionDefaults(void)
 		lockAllTheDoors = 0;
 
 	maxPlayerCars = 1;
-	maxCivCars = 14;
-	maxParkedCars = 7;
+	maxCivCars = MAX_TRAFFIC_CARS;
+	maxParkedCars = MAX_PARKED_CARS;
 	maxCopCars = 4;
 	gPlayerDamageFactor = 4096;
 	requestStationaryCivCar = 0;
@@ -598,8 +598,8 @@ void LoadMission(int missionnum)
 	}
 	else if (GameType == GAME_SECRET)
 	{
-		maxCivCars = 10;
-		maxParkedCars = 5;
+		maxCivCars = MAX_TRAFFIC_CARS_SECRET;
+		maxParkedCars = MAX_PARKED_CARS_SECRET;
 	}
 	else
 	{

@@ -1005,7 +1005,7 @@ LAB_00016fac:
 			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
 
 		cp++;
-	} while (cp <= &car_data[20]);
+	} while (cp <= &car_data[MAX_CARS]);
 
 	sVar2 = -uVar28;
 	
@@ -1800,7 +1800,7 @@ void DrawCopIndicators(void)
 			}
 		}
 		cp++;
-	} while (cp <= &car_data[20]);
+	} while (cp <= &car_data[MAX_CARS]);
 }
 
 

@@ -4,13 +4,25 @@
 // DRIVER 2 game engine limits
 // please populate this file only with engine limits during refactoring
 
-#define MAX_CARS				20
 #define MAX_CAR_MODELS			5
 #define MAX_PEDESTRIANS			28
 #define MAX_PLACED_PEDS			15
-#define MAX_TRAFFIC_CARS		19
 #define MAX_EXPLOSION_OBJECTS	5
 #define MAX_THROWN_BOMBS		5
+
+#ifdef PSX
+#define MAX_CARS				20
+#define MAX_TRAFFIC_CARS		14
+#define MAX_TRAFFIC_CARS_SECRET	10
+#define MAX_PARKED_CARS			7
+#define MAX_PARKED_CARS_SECRET	5
+#else
+#define MAX_CARS				26
+#define MAX_TRAFFIC_CARS		MAX_CARS-6 // - MAX_COPS - 2?
+#define MAX_TRAFFIC_CARS_SECRET	MAX_TRAFFIC_CARS-4
+#define MAX_PARKED_CARS			MAX_CARS/2
+#define MAX_PARKED_CARS_SECRET	MAX_PARKED_CARS-2
+#endif
 
 // replay definitions.
 // DO NOT EDIT, breaks compatibility!
