@@ -18,6 +18,7 @@
 #include "GAMESND.H"
 #include "SOUND.H"
 #include "BCOLLIDE.H"
+#include "GLAUNCH.H"
 #include "LEADAI.H"
 #include "MAIN.H"
 #include "PEDEST.H"
@@ -41,7 +42,6 @@ char limoId = 0;	// Seems to be unused
 char playerNum = 0;
 char PingOutCivsOnly = 0;
 char cookieCount = 0;
-int useStoredPings = 1;
 int roadSeg = 0;
 int testNumPingedOut = 0;
 int currentAngle = 0;
@@ -3443,7 +3443,49 @@ int PingInCivCar(int minPingInDist)
 	baseLoc.vx = player[playerNum].spoolXZ->vx;
 	baseLoc.vz = player[playerNum].spoolXZ->vz;
 
-	if (useStoredPings == 0 || gInGameChaseActive == 0)
+	// allow to use ping buffer sometimes
+	if (IsPingInfoAvailable())
+	{
+		// rely on pings provided by cutscenes/chases
+		int angle;
+		int dx, dz;
+		int newCarId;
+		newCarId = GetPingInfo(&cookieCount);
+
+		if (newCarId == -1)
+			return 0;
+
+		if (newCarId > MAX_CARS - 1)
+			return 0;
+
+		newCar = &car_data[newCarId];
+
+		// ping out old car
+		if (newCar->controlType != CONTROL_TYPE_NONE)
+		{
+			if (PingOutCar(newCar) == 0)
+				return 0;
+		}
+
+		if (requestCopCar == 0)
+		{
+			angle = (cookieCount * ONE) / 44 & 0xfff;
+			dx = rcossin_tbl[(angle & 0xfff) * 2] << 3;
+			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] << 3;
+		}
+		else
+		{
+			angle = (cookieCount * ONE) / 56 & 0xfff;
+			dx = rcossin_tbl[(angle & 0xfff) * 2] * 10;
+			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
+		}
+
+		randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+		randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
+
+		roadSeg = RoadInCell(&randomLoc);
+	}
+	else
 	{
 		// randomized pings
 		int angle;
@@ -3506,47 +3548,6 @@ int PingInCivCar(int minPingInDist)
 			roadSeg = RoadInCell(&randomLoc);
 
 		} while (!IS_STRAIGHT_SURFACE(roadSeg) && !IS_CURVED_SURFACE(roadSeg));
-	}
-	else
-	{
-		// rely on pings provided by cutscenes/chases
-		int angle;
-		int dx, dz;
-		int newCarId;
-		newCarId = GetPingInfo(&cookieCount);
-
-		if (newCarId == -1)
-			return 0;
-
-		if (newCarId > MAX_CARS - 1)
-			return 0;
-
-		newCar = &car_data[newCarId];
-
-		// ping out old car
-		if (newCar->controlType != CONTROL_TYPE_NONE)
-		{
-			if (PingOutCar(newCar) == 0)
-				return 0;
-		}
-
-		if (requestCopCar == 0)
-		{
-			angle = (cookieCount * ONE) / 44 & 0xfff;
-			dx = rcossin_tbl[(angle & 0xfff) * 2] << 3;
-			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] << 3;
-		}
-		else
-		{
-			angle = (cookieCount * ONE) / 56 & 0xfff;
-			dx = rcossin_tbl[(angle & 0xfff) * 2] * 10;
-			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
-		}
-
-		randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
-		randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
-
-		roadSeg = RoadInCell(&randomLoc);
 	}
 	
 	// wtf there were before? car wasn't set to 'confused' state
@@ -3903,17 +3904,9 @@ int PingInCivCar(int minPingInDist)
 
 	PingOutCivsOnly = 0;
 
-#ifdef CUTSCENE_RECORDER
-	//
-	// store pings
-	//
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay != 0 && CurrentGameMode != GAMEMODE_REPLAY)
-	{
-		StorePingInfo(cookieCount, newCar->id);
-	}
-#endif // CUTSCENE_RECORDER
-	
+	// [A] REDRIVER2 always stores pings
+	StorePingInfo(cookieCount, newCar->id);
+
 	return newCar->id + 1;
 }
 

@@ -38,6 +38,7 @@ PLAYBACKCAMERA *PlaybackCamera = NULL;
 int TimeToWay = 0;
 short PlayerWaypoints = 0;
 int way_distance = 0;
+int gUseStoredPings = 1;
 
 #define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('R' << 8) | 'P' )
 
@@ -605,6 +606,9 @@ int StorePingInfo(int cookieCount, int carId)
 {
 	_PING_PACKET packet;
 
+	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
+		return 0;
+
 	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		packet.frame = (CameraCnt - frameStart & 0xffffU);
@@ -617,6 +621,15 @@ int StorePingInfo(int cookieCount, int carId)
 	}
 
 	return 0;
+}
+
+// [A] returns 1 if can use ping buffer
+int IsPingInfoAvailable()
+{
+	if (gUseStoredPings == 0 || gInGameChaseActive == 0 && gLoadedReplay == 0)
+		return 0;
+	
+	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
 }
 
 // decompiled code
