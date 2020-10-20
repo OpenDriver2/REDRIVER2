@@ -2209,9 +2209,8 @@ int damage_lamp(CELL_OBJECT *cop)
 		count++;
 		if (cop == dam->cop) 
 		{
-			old_damage = dam->damage;
-			dam->damage++;
-
+			old_damage = dam->damage++;
+			
 			if (old_damage < 3) 
 				return ((old_damage + 1) < 3) ^ 1;
 
@@ -2221,7 +2220,8 @@ int damage_lamp(CELL_OBJECT *cop)
 	} while (count < MAX_DAMAGED_LAMPS);
 
 	// store new cell object
-	damaged_lamp[NextDamagedLamp].damage = 0;
+	// BUG: cop changes every time we hit a lamp! destroy it instantly :D
+	damaged_lamp[NextDamagedLamp].damage = 2;
 	damaged_lamp[NextDamagedLamp].cop = cop;
 
 	if (++NextDamagedLamp > MAX_DAMAGED_LAMPS)

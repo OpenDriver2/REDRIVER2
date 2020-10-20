@@ -513,6 +513,34 @@ void InitAnimatingObjects(void)
 #endif
 	}
 
+#if 1
+	char *streetLamps[] = {
+		"SLIGHT01",
+		NULL,
+	};
+
+	int lamp = 0;
+	while (streetLamps[lamp] != NULL)
+	{
+		int model_idx = FindModelIdxWithName(streetLamps[lamp]);
+
+		if (model_idx != -1 && modelpointers[model_idx] != &dummyModel)
+		{
+			modelPtr = modelpointers[model_idx];
+			modelPtr->flags2 |= 0x1000;
+
+			if (modelPtr->instance_number != -1 &&
+				modelpointers[modelPtr->instance_number] != &dummyModel)
+			{
+				modelPtr = modelpointers[modelPtr->instance_number];
+				modelPtr->flags2 |= 0x1000;
+			}
+		}
+
+		lamp++;
+	}
+#endif
+
 	FindSmashableObjects();
 	InitCyclingPals();
 }
@@ -1080,7 +1108,8 @@ void animate_object(CELL_OBJECT *cop, int type)
 		}
 		x = 0x1ad;
 		y = -0x4d2;
-		goto LAB_00014644;
+		AddSmallStreetLight(cop, x, y, 0, 1);
+		return;
 	case 4:
 		if (gLightsOn == 0)
 		{
