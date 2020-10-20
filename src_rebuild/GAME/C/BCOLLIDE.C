@@ -1487,8 +1487,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					reaction[2] = denom * FixFloorSigned(collisionResult.surfNormal.vz, 6);
 
 #ifdef LIKE_DRIVER1
-					cp->hd.where.t[0] -= (((cp->st.n.linearVelocity[0] + 2048) >> 12) * (4096 - collisionTime) + 2048) >> 12;
-					cp->hd.where.t[2] -= (((cp->st.n.linearVelocity[2] + 2048) >> 12) * (4096 - collisionTime) + 2048) >> 12;
+					cp->hd.where.t[0] -= FIXEDH(cp->st.n.linearVelocity[0]) * FIXEDH(4096 - collisionTime);
+					cp->hd.where.t[2] -= FIXEDH(cp->st.n.linearVelocity[2]) * FIXEDH(4096 - collisionTime);
 
 					cp->hd.aacc[0] += FIXEDH(reaction[2] * lever[1]);
 					cp->hd.aacc[0] -= FIXEDH(reaction[1] * lever[2]);
@@ -1503,8 +1503,8 @@ int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop
 					cp->st.n.linearVelocity[1] += reaction[1];
 					cp->st.n.linearVelocity[2] += reaction[2];
 
-					cp->hd.where.t[0] += FIXEDH(cp->st.n.linearVelocity[0] + 2048) * FIXEDH(4096 - collisionTime);
-					cp->hd.where.t[2] += FIXEDH(cp->st.n.linearVelocity[2] + 2048) * FIXEDH(4096 - collisionTime);
+					cp->hd.where.t[0] += FIXEDH(cp->st.n.linearVelocity[0]) * FIXEDH(4096 - collisionTime);
+					cp->hd.where.t[2] += FIXEDH(cp->st.n.linearVelocity[2]) * FIXEDH(4096 - collisionTime);
 #else
 					cp->hd.aacc[1] += FIXEDH(lever[2] * reaction[0]) - FIXEDH(lever[0] * reaction[2]);
 
