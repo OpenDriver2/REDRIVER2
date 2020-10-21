@@ -24,7 +24,7 @@
 #include "LIBAPI.H"
 
 #ifndef PSX
-#define CAR_LOD_SWITCH_DISTANCE switch_detail_distance;
+#define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
 #else
 #define CAR_LOD_SWITCH_DISTANCE 5500
 #endif
