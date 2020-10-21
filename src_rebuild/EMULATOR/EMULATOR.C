@@ -111,9 +111,16 @@ void Emulator_ResetDevice()
 }
 
 #if defined(D3D9)
-static int Emulator_InitialiseD3D9Context(char* windowName)
+static int Emulator_InitialiseD3D9Context(char* windowName, int fullscreen)
 {
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_RESIZABLE);
+	int windowFlags = SDL_WINDOW_RESIZABLE;
+
+	if (fullscreen)
+	{
+		windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
+	
+	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
 	if (g_window == NULL)
 	{
 		eprinterr("Failed to initialise SDL window!\n");
@@ -152,9 +159,16 @@ static int Emulator_InitialiseD3D9Context(char* windowName)
 }
 #endif
 
-static int Emulator_InitialiseGLContext(char* windowName)
+static int Emulator_InitialiseGLContext(char* windowName, int fullscreen)
 {
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	int windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+	if(fullscreen)
+	{
+		windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
+	
+	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
 
 #if defined(OGL)
 	SDL_GL_CreateContext(g_window);
@@ -196,7 +210,7 @@ const EGLint config16bpp[] =
 		EGL_NONE
 };
 
-static int Emulator_InitialiseGLESContext(char* windowName)
+static int Emulator_InitialiseGLESContext(char* windowName, int fullscreen)
 {
 	unsigned int windowFlags = SDL_WINDOW_OPENGL;
 
@@ -261,7 +275,7 @@ static int Emulator_InitialiseGLESContext(char* windowName)
 
 #endif
 
-static int Emulator_InitialiseSDL(char* windowName, int width, int height)
+static int Emulator_InitialiseSDL(char* windowName, int width, int height, int fullscreen)
 {
 	windowWidth  = width;
 	windowHeight = height;
@@ -303,19 +317,19 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height)
 	}
 
 #if defined(OGL)
-	if (Emulator_InitialiseGLContext(windowName) == FALSE)
+	if (Emulator_InitialiseGLContext(windowName, fullscreen) == FALSE)
 	{
 		eprinterr("Failed to Initialise GL Context!\n");
 		return FALSE;
 	}
 #elif defined(OGLES)
-	if (Emulator_InitialiseGLESContext(windowName) == FALSE)
+	if (Emulator_InitialiseGLESContext(windowName, fullscreen) == FALSE)
 	{
 		eprinterr("Failed to Initialise GLES Context!\n");
 		return FALSE;
 	}
 #elif defined(D3D9)
-	if (Emulator_InitialiseD3D9Context(windowName) == FALSE)
+	if (Emulator_InitialiseD3D9Context(windowName, fullscreen) == FALSE)
 	{
 		eprinterr("Failed to Initialise D3D9 Context!\n");
 		return FALSE;
@@ -429,13 +443,13 @@ static int Emulator_InitialiseCore()
 	return TRUE;
 }
 
-void Emulator_Initialise(char* windowName, int width, int height)
+void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
 	eprintf("Initialising Emulator.\n");
 	eprintf("VERSION: %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
 	eprintf("Compile Date: %s Time: %s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
 
-	if (Emulator_InitialiseSDL(windowName, width, height) == FALSE)
+	if (Emulator_InitialiseSDL(windowName, width, height, fullscreen) == FALSE)
 	{
 		eprinterr("Failed to Intialise SDL\n");
 		Emulator_ShutDown();
@@ -1857,6 +1871,7 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 	{
 		switch (nKey)
 		{
+#ifdef _DEBUG
 			case SDL_SCANCODE_1:
 				g_wireframeMode ^= 1;
 				eprintf("wireframe mode: %d\n", g_wireframeMode);
@@ -1876,7 +1891,7 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 				if (g_emulatorPaused)
 					g_polygonSelected += (nKey == SDL_SCANCODE_UP) ? 3 : -3;
 				break;
-
+#endif
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 			case SDL_SCANCODE_4:
 				eprintf("saving screenshot\n");
@@ -1900,7 +1915,6 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 			case SDL_SCANCODE_7:
 				g_pgxpTextureCorrection ^= 1;
 				break;
-				
 		}
 	}
 }

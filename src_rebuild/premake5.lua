@@ -87,6 +87,7 @@ project "REDRIVER2"
 		files {
 			"utils/**.h",
 			"utils/**.cpp",
+			"utils/**.c",
 			"redriver2_psxpc.cpp",
 			"DebugOverlay.cpp",
 		}

@@ -2,7 +2,7 @@
 #define EMULATOR_PRIVATE_H
 
 /* Usually called at the beginning of main function */
-extern void Emulator_Initialise(char* windowName, int screenWidth, int screenHeight);
+extern void Emulator_Initialise(char* windowName, int screenWidth, int screenHeight, int fullscreen);
 
 /* Returns the screen size dimensions */
 extern void Emulator_GetScreenSize(int& screenWidth, int& screenHeight);

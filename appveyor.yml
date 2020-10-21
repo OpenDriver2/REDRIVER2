@@ -18,6 +18,7 @@ clone_folder: 'c:\projects\REDRIVER2'
 #lib_folder: %clone_folder%\EXTERNAL
 
 environment:
+  data_folder: 'c:\projects\REDRIVER2\data'
   project_folder: 'c:\projects\REDRIVER2\src_rebuild'
   dependency_folder: '%project_folder%\dependencies'
 
@@ -68,6 +69,7 @@ after_build:
   - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
   - cmd: copy %GLEW_DIR%\bin\Release\Win32\glew32.dll glew32.dll /Y
   - cmd: copy %OPENAL_DIR%\bin\Win32\soft_oal.dll OpenAL32.dll /Y
+  - cmd: copy %data_folder%\config.ini config.ini /Y
   - 7z a REDRIVER2.zip ".\*"
   
 #build: off

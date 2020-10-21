@@ -469,7 +469,7 @@ PGXPVector3D g_FP_SXYZ2;
 
 PGXPVData g_pgxpCache[65535];
 int g_pgxpVertexIndex = 0;
-bool g_pgxpTransformed = false;
+int g_pgxpTransformed = 0;
 
 void PGXP_ClearCache()
 {
@@ -480,7 +480,7 @@ ushort PGXP_GetIndex()
 {
 	if (g_pgxpTransformed)
 	{
-		g_pgxpTransformed = false;
+		g_pgxpTransformed = 0;
 		return g_pgxpVertexIndex;
 	}
 
@@ -577,7 +577,7 @@ int docop2(int op) {
 			vdata.pz = g_FP_SXYZ2.pz;
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
-			g_pgxpTransformed = true;
+			g_pgxpTransformed = 1;
 		}
 #endif
 		C2_MAC0 = int(F((long long)C2_DQB + ((long long)C2_DQA * h_over_sz3)));
@@ -1008,7 +1008,7 @@ int docop2(int op) {
 			vdata.pz = g_FP_SXYZ2.pz;
 
 			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
-			g_pgxpTransformed = true;
+			g_pgxpTransformed = 1;
 #endif
 		}
 
