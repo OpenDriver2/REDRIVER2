@@ -834,7 +834,7 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 		scr_z = 256;
 
 	SetGeomScreen(scr_z);
-	switch_detail_distance = 10000 + d * 4;
+	switch_detail_distance = 10000 + (d >> 1);
 	BuildWorldMatrix();
 }
 
