@@ -100,7 +100,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	{
 		pModel = modelpointers[pCellObject->type];
 
-		if (pModel->collision_block > 0)
+		if (pModel->collision_block > 0 && (pModel->flags2 & 0xA00) == 0)
 		{
 			num_cb = *(int*)pModel->collision_block;
 
