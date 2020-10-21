@@ -1846,7 +1846,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 	combo = combointensity;
 
-	if ((pc->flags & 1U) != 0)
+	// transparent object flag
+	if (pc->flags & 1)
 		combo |= 0x2000000;
 
 	i = model->num_polys;
@@ -1868,7 +1869,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			ptype |= 1;
 		}
 
-		if (ptype != 11 && ptype != 21)// && ptype != 9 && ptype != 1 && ptype != 13 && ptype != 8 && ptype != 10)
+		if (ptype != 11 && ptype != 21)
 		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
 			i--;
@@ -1996,9 +1997,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
 		i--;
 	}
-
-	if ((pc->flags & 1U) != 0)
-		combo &= ~0x2000000;
 }
 
 
