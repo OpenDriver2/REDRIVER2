@@ -15,11 +15,12 @@ extern void InitSpooledAnimObj(int model_number); // 0x00014828
 
 extern void int_garage_door(); // 0x000149A8
 
-extern int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos); // 0x000148A0
+extern void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated);
+
+extern int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop); // 0x000148A0
 
 extern void animate_object(CELL_OBJECT *cop, int type); // 0x00013DF8
 
 extern void animate_garage_door(); // 0x000146A4
-
 
 #endif

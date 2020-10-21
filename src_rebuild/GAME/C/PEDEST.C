@@ -162,7 +162,7 @@ void IHaveThePower(void)
 		return;
 	}
 
-	if (tannerPad & 0x20)
+	if (tannerPad & TANNER_PAD_POWER)
 	{
 		if (bPower == 0)
 		{
@@ -282,7 +282,7 @@ void ProcessTannerPad(PEDESTRIAN* pPed, ulong pad, char PadSteer, char use_analo
 		tannerPad = pad;
 
 		if (PadSteer != 0)
-			tannerPad |= (PadSteer < 0) ? 0x8000 : 0x2000;
+			tannerPad |= (PadSteer < 0) ? TANNER_PAD_TURNLEFT : TANNER_PAD_TURNRIGHT;
 	}
 
 	IHaveThePower();	// process Havana easter egg near the entrance cemetery
@@ -351,7 +351,7 @@ void ProcessTannerPad(PEDESTRIAN* pPed, ulong pad, char PadSteer, char use_analo
 	}
 
 	// do actions
-	if (tannerPad & 0x10)
+	if (tannerPad & TANNER_PAD_ACTION)
 	{
 		if (gTannerActionNeeded)
 		{
@@ -1851,7 +1851,7 @@ void PedDoNothing(PEDESTRIAN* pPed)
 		pPed->flags |= 0x10;
 	}
 
-	if (tannerPad & 0x1040)
+	if (tannerPad & TANNER_PAD_GOFORWARD)
 	{
 		// run forward
 		pPed->interest = 0;
@@ -1860,7 +1860,7 @@ void PedDoNothing(PEDESTRIAN* pPed)
 
 		SetupRunner(pPed);
 	}
-	else if (tannerPad & 0x4080)
+	else if (tannerPad & TANNER_PAD_GOBACK)
 	{
 		// walk back
 		pPed->interest = 0;
@@ -1869,7 +1869,7 @@ void PedDoNothing(PEDESTRIAN* pPed)
 
 		SetupBack(pPed);
 	}
-	else if (tannerPad & 0x2000)
+	else if (tannerPad & TANNER_PAD_TURNRIGHT)
 	{
 		pPed->interest = 0;
 
@@ -1887,7 +1887,7 @@ void PedDoNothing(PEDESTRIAN* pPed)
 
 		pPed->head_rot = 0;
 	}
-	else if (tannerPad & 0x8000)
+	else if (tannerPad & TANNER_PAD_TURNLEFT)
 	{
 		pPed->interest = 0;
 
@@ -1980,7 +1980,7 @@ void PedUserRunner(PEDESTRIAN* pPed)
 		SetupRunner(pPed);
 	}
 
-	if (tannerPad & 0x1040)
+	if (tannerPad & TANNER_PAD_GOFORWARD)
 	{
 		if (bStopTanner == 0)
 			pPed->speed = 40 - (tannerDeathTimer >> 1);
@@ -1995,7 +1995,7 @@ void PedUserRunner(PEDESTRIAN* pPed)
 		pPed->flags &= ~0x10;
 	}
 
-	if (tannerPad & 0x2000)
+	if (tannerPad & TANNER_PAD_TURNRIGHT)
 	{
 		if (pPed->dir.vz > -80)
 			pPed->dir.vz -= 20;
@@ -2008,7 +2008,7 @@ void PedUserRunner(PEDESTRIAN* pPed)
 		pPed->head_rot = 0;
 		pPed->dir.vy = pPed->dir.vy + 64 - (pPed->doing_turn + tannerTurnMax) * tannerTurnStep;
 	}
-	else if (tannerPad & 0x8000)
+	else if (tannerPad & TANNER_PAD_TURNLEFT)
 	{
 		if (pPed->dir.vz < 80)
 			pPed->dir.vz += 20;
@@ -2083,7 +2083,7 @@ void PedUserWalker(PEDESTRIAN* pPed)
 		SetupWalker(pPed);
 	}
 
-	if (tannerPad & 0x4080)
+	if (tannerPad & TANNER_PAD_GOBACK)
 	{
 		pPed->speed = -10;
 	}
@@ -2096,13 +2096,13 @@ void PedUserWalker(PEDESTRIAN* pPed)
 		pPed->flags &= ~0x10;
 	}
 
-	if (tannerPad & 0x2000)
+	if (tannerPad & TANNER_PAD_TURNRIGHT)
 	{
 		pPed->head_rot = 0;
 		pPed->dir.vy += 20;
 	}
 
-	if (tannerPad & 0x8000)
+	if (tannerPad & TANNER_PAD_TURNLEFT)
 	{
 		pPed->head_rot = 0;
 		pPed->dir.vy -= 20;
@@ -2135,6 +2135,7 @@ int allreadydone = 0;
 void PedCarryOutAnimation(PEDESTRIAN* pPed)
 {
 	pPed->speed = 0;
+
 	if (tannerPad != 0)
 	{
 		pPed->frame1 = 0;
@@ -2747,7 +2748,7 @@ void TannerSitDown(PEDESTRIAN* pPed)
 			oldCamView = player[pPed->padId].cameraView;
 			bFreezeAnimation = 1;
 
-			if (tannerPad & 0x10)
+			if (tannerPad & TANNER_PAD_ACTION)
 			{
 				tracking_car = 1;
 				pPed->flags |= 4; // new reverse animation flag
@@ -4953,7 +4954,10 @@ void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 	carId = player[0].playerCarId;
 
 	if (carId == -1) // [A] ASan bug fix
+	{
+		pPed->head_rot = 0;
 		return;
+	}
 
 	pCar = &car_data[carId];
 

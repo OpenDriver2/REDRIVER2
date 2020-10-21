@@ -1827,6 +1827,7 @@ void StepGame(void)
 		PreLampStreak();
 
 	UpdatePadData();
+
 	if (FrameCnt == 5)
 		SetDispMask(1);
 

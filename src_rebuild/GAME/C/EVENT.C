@@ -4120,7 +4120,7 @@ void DrawEvents(int camera)
 							else
 							{
 								SetCamera(ev);
-								DrawMapPSX((int*)&ObjectDrawnValue);
+								DrawMapPSX(&ObjectDrawnValue);
 							}
 						}
 					}
