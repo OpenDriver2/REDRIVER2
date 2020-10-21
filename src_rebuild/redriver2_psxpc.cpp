@@ -181,19 +181,8 @@ int(*GPU_printf)(const char *fmt, ...);
 
 extern int gDrawDistance;
 
-#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
-
-extern int g_texturelessMode;
-extern int g_wireframeMode;
-int gShowCollisionDebug = 0;
-extern int gDisplayPosition;
-extern int gDisplayDrawStats;
-extern int g_FreeCameraEnabled;
-int gStopCivCars = 0;
-
-extern void FunkUpDaBGMTunez(int funk);
-
 int cursorX, cursorY, cursorOldX, cursorOldY;
+extern int g_FreeCameraEnabled;
 
 void FreeCameraMouseHandler(int x, int y)
 {
@@ -254,7 +243,27 @@ void FreeCameraKeyboardHandler(int nKey, bool down)
 				g_FreeCameraControls &= ~0x8;
 		}
 	}
+
+	if(!down)
+		return;
+
+	if (nKey == SDL_SCANCODE_F7)
+	{
+		g_FreeCameraEnabled ^= 1;
+		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
+	}
 }
+
+#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
+
+extern int g_texturelessMode;
+extern int g_wireframeMode;
+int gShowCollisionDebug = 0;
+extern int gDisplayPosition;
+extern int gDisplayDrawStats;
+int gStopCivCars = 0;
+
+extern void FunkUpDaBGMTunez(int funk);
 
 void GameDebugKeys(int nKey, bool down)
 {
@@ -306,11 +315,6 @@ void GameDebugKeys(int nKey, bool down)
 		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
 	}
 #endif
-	else if (nKey == SDL_SCANCODE_F7)
-	{
-		g_FreeCameraEnabled ^= 1;
-		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
-	}
 	else if (nKey == SDL_SCANCODE_BACKSPACE)
 	{
 		extern int FastForward;
