@@ -335,7 +335,11 @@ void SetVariable(int var)
 
 			if (value == 1) 
 			{
+#ifdef PSX
 				if (CallMemoryCard(0x11, 0) == 0)
+#else
+				if(LoadReplayFromFile("chase.d2rp") == 0)		// [A] temporary
+#endif
 				{
 					ReInitFrontend();
 				}
