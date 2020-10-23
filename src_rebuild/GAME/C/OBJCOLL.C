@@ -150,8 +150,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					xd = (pCellObject->pos.vx - pPosition->vx) + xxd;
 					zd = (pCellObject->pos.vz - pPosition->vz) + zzd;
 
-					zs = (collide->zsize * 2048 + radius * 4096);
-					xs = (collide->xsize * 2048 + radius * 4096);
+					zs = ((collide->zsize + 10) * 2048 + radius * 4096);
+					xs = ((collide->xsize + 10) * 2048 + radius * 4096);
 
 					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
 					

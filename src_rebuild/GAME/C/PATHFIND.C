@@ -7,8 +7,6 @@
 #include "PLAYERS.H"
 #include "CARS.H"
 #include "CAMERA.H"
-#include "COP_AI.H"
-#include "PRES.H"
 
 #include "SDL.h"
 
@@ -83,8 +81,15 @@ PATHFIND_238fake dirs[6] = {
 	},
 };
 
-#define OMAP_V(cx, cz)					omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
-#define OMAP_GETVALUE(cx, cz)			(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
+// cx, cz in range of 0..128
+#define OMAP_V(cx, cz)						omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
+#define OMAP_GETVALUE(cx, cz)				(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
+
+// cx, cz in range of 0...128
+// FIXME: really bad
+#define DONEMAP_V(cx, cz)					dunyet[(cx & 0x1fU)][(cz & 1)]
+#define DONEMAP_GETVALUE(cx, cz, x, i)		(3 << (cz & 0x1e) & ((((cx & 0x3fU) >> 5 | cz & 2) ^ i) << (cz & 0x1e) ^ x))
+
 
 // [A] sets obstacle map bit
 inline void OMapSet(int cellX, int cellZ, int val)
@@ -247,41 +252,34 @@ tNode* popNode(tNode* __return_storage_ptr__)
 	/* end block 2 */
 	// End Line: 911
 
-#define NEIGHBOR_OFFS_XDX(x, f)	{x-f, x,   x+f, x,   x-f, x+f, x+f, x-f}		// neighbours
-#define NEIGHBOR_OFFS_YDY(y, f)	{y,   y-f, y,   y+f, y-f, y-f, y+f, y+f}
-
-// [D]
+// [D] [T]
 void WunCell(VECTOR* pbase)
 {
-	unsigned char bVar1;
-	char cVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int uVar6;
-	unsigned char val;
-	int iVar8;
-	PATHFIND_237fake* pPVar9;
-	int iVar10;
 	VECTOR v[2];
-	VECTOR pos;
+	int height1;
+	int i, j;
 
+	// [A] hack with height map (fixes some bits in Havana)
+	height1 = MapHeight(pbase) + 60;
+	
 	pbase->vx += 512;
 	pbase->vz += 512;
 
-	v[0].vy = MapHeight(pbase) +60;
+	v[0].vy = MapHeight(pbase) + 60;
 
 	pbase->vx -= 512;
 	pbase->vz -= 512;
 
-	int dirMapX[8] = NEIGHBOR_OFFS_XDX(0, 2);
-	int dirMapY[8] = NEIGHBOR_OFFS_YDY(0, 2);
+	if (height1 - v[0].vy > 100)
+		v[0].vy = height1;
 
 	v[1].vy = v[0].vy;
 
-	for (int i = 0; i < 4; i++)
+	// [A] definitely better code
+	// new 16 vs old 12 passes but map is not leaky at all#
+	for (i = 0; i < 4; i++)
 	{
-		for (int j = 0; j < 4; j++)
+		for (j = 0; j < 4; j++)
 		{
 			v[0].vx = pbase->vx + i * 256 + 128;
 			v[0].vz = pbase->vz + j * 256 + 128;
@@ -290,7 +288,7 @@ void WunCell(VECTOR* pbase)
 		}
 	}
 
-	/*
+#if 0
 	iVar10 = 0;
 	do {
 		iVar8 = 0;
@@ -300,8 +298,6 @@ void WunCell(VECTOR* pbase)
 
 		v[0].vx = pbase->vx;
 		v[0].vz = pbase->vz;
-
-		//OMapSet(v[0].vx >> 8, v[0].vz >> 8, CellAtPositionEmpty(&v[0], 512) == 0);
 
 		do {
 
@@ -316,11 +312,6 @@ void WunCell(VECTOR* pbase)
 
 			OMapSet(iVar4 >> 8, iVar5 >> 8, lineClear(&v[0], &v[1]) == 0);
 
-			//val = lineClear(&v[0], &v[1]) ? 0 : 0xFF;// == 0;
-
-			//bVar1 = omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)];
-			//omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)] = bVar1 ^ (1 << (iVar5 >> 9 & 7)) & (bVar1 ^ val);
-
 			iVar8++;
 		} while (iVar8 < 6);
 
@@ -329,7 +320,7 @@ void WunCell(VECTOR* pbase)
 
 		iVar10++;
 	} while (iVar10 < 2);
-	*/
+#endif
 }
 
 
@@ -385,81 +376,97 @@ void WunCell(VECTOR* pbase)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [A] function that invalidates map at ends
+// fixes bug with not being able to update navigation cells
+void InvalidateMapEnds()
+{
+	int x, z;
+	long tile;
+	int i;
+	XZPAIR pos;
+	pos.x = (player[0].pos[0] & 0xfffffc00) >> 10;
+	pos.z = (player[0].pos[2] & 0xfffffc00) >> 10;
+
+	for(i = 0; i < 32; i++)
+	{
+		x = pos.x + 15 + i;
+		z = pos.z + 16;
+		
+		tile = DONEMAP_V(x, z);
+		DONEMAP_V(x, z) = tile ^ DONEMAP_GETVALUE(x, z, tile, 3);
+
+		x = pos.x + 16;
+		z = pos.z + 15 + i;
+
+		tile = DONEMAP_V(x, z);
+		DONEMAP_V(x, z) = tile ^ DONEMAP_GETVALUE(x, z, tile, 3);
+	}
+}
+
+// [D] [T]
 void InvalidateMap(void)
 {
-	int uVar1;
-	int iVar2;
-	int uVar3;
-	int uVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int dir;
+	int p;
+	int q;
+	int count;
+	int px, pz;
 	VECTOR bPos;
+	long tile, i;
 
-	iVar6 = 0;
-	iVar5 = 0;
-	uVar4 = 0;
-	iVar7 = 0x3ff;
+	q = 0;
+	p = 0;
+	dir = 0;
+
 	bPos.vx = player[0].pos[0] & 0xfffffc00;
 	bPos.vz = player[0].pos[2] & 0xfffffc00;
 
-	do {
-		uVar3 = bPos.vz >> 10;
+	count = 0;
+	do
+	{
+		px = bPos.vx >> 10;
+		pz = bPos.vz >> 10;
+	
+		tile = DONEMAP_V(px, pz);
+		i = DONEMAP_GETVALUE(px, pz, tile, 3);
 
-		uVar1 = dunyet[(bPos.vx >> 10 & 0x1fU)][(uVar3 & 1)];
-		dunyet[(bPos.vx >> 10 & 0x1fU)][(uVar3 & 1)] = uVar1 ^ 3 << (uVar3 & 0x1e) & ((((bPos.vx >> 10 & 0x3fU) >> 5 | uVar3 >> 4 & 2) ^ 3) << (uVar3 & 0x1e) ^ uVar1);
-
-		if (uVar4 == 1)
+		DONEMAP_V(px, pz) = tile ^ i;
+		
+		if (dir == 0)
 		{
-			iVar6++;
-			bPos.vz += 1024;
-			if (iVar5 == iVar6)
-				uVar4 = 2;
+			p++;
+			bPos.vx += 1024;
 
+			if (p + q == 1)
+				dir = 1;
 		}
-		else if (uVar4 < 2)
+		else if (dir == 1)
 		{
-			iVar2 = bPos.vx + 0x400;
+			q++;
+			bPos.vz += 1024;
 
-			if (uVar4 == 0)
-			{
-				iVar5++;
-				bPos.vx = iVar2;
-				if (iVar5 + iVar6 == 1)
-					uVar4 = 1;
-			}
-			else
-			{
-			LAB_PATH__000e7484:
-				iVar6--;
-				bPos.vz -= 1024;
-				if (iVar5 == iVar6)
-				{
-					uVar4 = 0;
-				}
-			}
+			if (p == q)
+				dir = 2;
+		}
+		else if (dir == 2)
+		{
+			p--;
+			bPos.vx -= 1024;
+
+			if (p + q == 0)
+				dir = 3;
 		}
 		else
 		{
-			iVar2 = bPos.vx - 1024;
-
-			if (uVar4 != 2)
-				goto LAB_PATH__000e7484;
-
-			iVar5--;
-			bPos.vx = iVar2;
-
-			if (iVar5 + iVar6 == 0)
-				uVar4 = 3;
+			q--;
+			bPos.vz -= 1024;
+	
+			if (p == q)
+				dir = 0;
 		}
 
-		iVar7--;
-
-		if (iVar7 < 0)
-			return;
-
-	} while (true);
+		count++;
+	}while (count < 1024);
 }
 
 
@@ -521,105 +528,97 @@ void InvalidateMap(void)
 unsigned int cellsThisFrame;
 unsigned int cellsPerFrame = 4;
 
-// [D]
+// [D] [T]
 void BloodyHell(void)
 {
-	int uVar1;
-	int uVar2;
-	int uVar3;
-	int uVar4;
-	int iVar5;
-	int iVar6;
-	int uVar7;
-	int iVar8;
+	int dir;
+	int p;
+	int q;
+	int px, pz;
+	uint howMany;
+	int count;
 	VECTOR bPos;
+	long tile, i;
 
-	bPos.vy = 0x1fed;
+	cellsThisFrame = 0;
+	
+	bPos.vy = 8173;
+
 	bPos.vx = player[0].pos[0] & 0xfffffc00;
 	bPos.vz = player[0].pos[2] & 0xfffffc00;
 
-	cellsThisFrame = 0;
-	uVar7 = cellsPerFrame;
+	howMany = cellsPerFrame;
 
 	if (CameraCnt < 4)
-		uVar7 = cellsPerFrame + 20;
+		howMany = cellsPerFrame + 20;
 
-	iVar6 = 0;
-
+	q = 0;
+	
 	if (CameraCnt < 8)
-		uVar7 = uVar7 + 4;
+		howMany += 4;
 
-	iVar5 = 0;
-	uVar4 = 0;
-	iVar8 = 0;
+	p = 0;
+	dir = 0;
+	count = 0;
 
 	do {
-		if (iVar8 == 200)
-			uVar7--;
+		if (count == 200)
+			howMany--;
 
-		uVar2 = (int)bPos.vz >> 10;
+		px = bPos.vx >> 10;
+		pz = bPos.vz >> 10;
 
-		uVar3 = dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)];
-		uVar1 = 3 << (uVar2 & 0x1e) & ((((int)bPos.vx >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) << (uVar2 & 0x1e) ^ uVar3);
+		tile = DONEMAP_V(px, pz);
+		i = DONEMAP_GETVALUE(px, pz, tile, 0);
 
-		if (uVar1 != 0)
+		if (i != 0)
 		{
-			dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)] = uVar3 ^ uVar1;
+			DONEMAP_V(px, pz) = tile ^ i;
+
 			WunCell(&bPos);
 
 			cellsThisFrame++;
 
-			if (uVar7 <= cellsThisFrame)
+			if (howMany <= cellsThisFrame)
 				return;
-
 		}
-		if (uVar4 == 1)
+
+		if (dir == 0)
 		{
-			iVar6++;
+			p++;
+			bPos.vx += 1024;
+
+			if (p + q == 1)
+				dir = 1;
+		}
+		else if (dir == 1) 
+		{
+			q++;
 			bPos.vz += 1024;
-
-			if (iVar5 == iVar6)
-				uVar4 = 2;
+			
+			if (p == q)
+				dir = 2;
 		}
-		else if (uVar4 < 2)
+		else if (dir == 2)
 		{
-			if (uVar4 == 0)
-			{
-				iVar5++;
-				bPos.vx += 1024;
-				if (iVar5 + iVar6 == 1)
-				{
-					uVar4 = 1;
-				}
-			}
-			else
-			{
-			LAB_PATH__000e7674:
-				iVar6--;
-				bPos.vz -= 1024;
+			p--;
 
-				if (iVar5 == iVar6)
-					uVar4 = 0;
-			}
-		}
-		else
-		{
-			if (uVar4 != 2)
-				goto LAB_PATH__000e7674;
-
-			iVar5 = iVar5 + -1;
 			bPos.vx -= 1024;
 
-			if (iVar5 + iVar6 == 0)
-				uVar4 = 3;
+			if (p + q == 0)
+				dir = 3;
+		}
+		else 
+		{
+			q--;
+			bPos.vz -= 1024;
+
+			if (p == q)
+				dir = 0;
 		}
 
-		iVar8++;
-
-		if (840 < iVar8)
-			return;
-
-	} while (true);
+		count++;
+	} while( count < 840 );
 }
 
 
@@ -2093,6 +2092,7 @@ void UpdateCopMap(void)
 	tNode startNode;
 	tNode sp_n;
 
+	InvalidateMapEnds();
 	BloodyHell();
 
 	if ((player_position_known == 1) || (CameraCnt == 6))
@@ -2473,7 +2473,10 @@ LAB_PATH__000e8dfc:
 
 		for (int j = 0; j < 128; j++)
 		{
-			if (OMAP_GETVALUE(pos_x + i - 64, pos_z + j - 64))
+			int px = pos_x + i - 64;
+			int pz = pos_z + j - 64;
+			
+			if (OMAP_GETVALUE(px,pz))
 			{
 				rgbLine[j * 3] = 128;
 				rgbLine[j * 3 + 1] = 128;
@@ -2486,14 +2489,26 @@ LAB_PATH__000e8dfc:
 				rgbLine[j * 3 + 2] = 0;
 			}
 
-			n.vx = (pos_x + i - 64) << 8;
-			n.vz = (pos_z + j - 64) << 8;
+			//local_v0_152 = dunyet[(bPos.vx >> 10 & 0x1fU)][((bPos.vz >> 10) & 1)];
+
+			// NEW METHOD
+			// long val = dunyet[px >> 2 & 0x1f][pz >> 6 & 1]; // dunyet[px >> 2 & 0x1f][pz >> 2 & 1];
+			// val = val >> (pz >> 2 & 0x1f) & 1;
+			
+			n.vx = px << 8;
+			n.vz = pz << 8;
 			n.vy = MapHeight((VECTOR*)&n);
 
 			int dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];// distanceCache[((pos_x+i & 127) * 128) + (j + pos_z & 127)];
 
-			if (rgbLine[j * 3] == 0 && rgbLine[j * 3 + 2] == 0)
-				rgbLine[j * 3 + 1] = dist / 64;
+			long prev = DONEMAP_V(px >> 2, pz >> 2);
+			int val = DONEMAP_GETVALUE(px >> 2, pz >> 2, prev, 0);
+			
+			if (val != 0)
+				rgbLine[j * 3] = 128;
+			
+			//if (rgbLine[j * 3] == 0 && rgbLine[j * 3 + 2] == 0)
+			//	rgbLine[j * 3 + 1] = dist / 64;
 		}
 	}
 
