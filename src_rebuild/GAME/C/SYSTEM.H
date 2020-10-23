@@ -71,11 +71,11 @@ extern DB MPBuff[2][2];
 extern DB* last;
 extern DB* current;
 
-#define OTLEN	13
+#define OTLEN	21
 #define	OTSIZE	(1<<OTLEN)		/* ordering table size */
 
 #ifdef USE_32_BIT_ADDR
-#	define PRIMTAB_SIZE 0x50000
+#	define PRIMTAB_SIZE 0x800000
 #else
 #	define PRIMTAB_SIZE 0x1e000
 #endif
