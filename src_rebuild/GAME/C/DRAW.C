@@ -1218,20 +1218,21 @@ void SetupDrawMapPSX(void)
 
 	int theta;
 
-	current_cell_x = (camera_position.vx + units_across_halved) / 2048;// cell_header.cell_size
-	current_cell_z = (camera_position.vz + units_down_halved) / 2048;
+	current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
+	current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
 
-	region_x1 = current_cell_x / 32; // cell_header.region_size;
-	region_z1 = current_cell_z / 32; // cell_header.region_size;
+	region_x1 = current_cell_x / MAP_REGION_SIZE;
+	region_z1 = current_cell_z / MAP_REGION_SIZE;
 
 	current_barrel_region_x1 = (region_x1 & 1);
 	current_barrel_region_z1 = (region_z1 & 1);
 
 	GetPVSRegionCell2(
 		current_barrel_region_x1 + current_barrel_region_z1 * 2,
-		region_x1 + region_z1 * cells_across / 32,
-		(current_cell_z % 32) * 32 + (current_cell_x % 32),
+		region_x1 + region_z1 * cells_across / MAP_REGION_SIZE,
+		(current_cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (current_cell_x % MAP_REGION_SIZE),
 		CurrentPVS);
+
 
 	for (theta = 0; theta < 64; theta++)
 		MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[theta], (MATRIX*)&CompoundMatrix[theta]);
@@ -1514,11 +1515,11 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	pvs_square = 21;
 	pvs_square_sq = 21 * 21;
 
-	units_across_halved = cells_across / 2 * cell_header.cell_size;
-	units_down_halved = cells_down / 2 * cell_header.cell_size;
+	units_across_halved = cells_across / 2 * MAP_CELL_SIZE;
+	units_down_halved = cells_down / 2 * MAP_CELL_SIZE;
 
-	regions_across = cells_across / cell_header.region_size;
-	regions_down = cells_down / cell_header.region_size;
+	regions_across = cells_across / MAP_REGION_SIZE;
+	regions_down = cells_down / MAP_REGION_SIZE;
 
 	lump_ptr += sizeof(OUT_CELL_FILE_HEADER);
 

@@ -16,6 +16,7 @@
 #include "CAMERA.H"
 #include "FELONY.H"
 #include "PAD.H"
+#include "MAIN.H"
 #include "../ASM/RNC_2.H"
 
 #include "STRINGS.H"
@@ -2129,7 +2130,6 @@ unsigned short civ_clut[8][32][6];
 // [D]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
-	extern bool gDriver1Level;
 	if (gDriver1Level)
 		return;
 
