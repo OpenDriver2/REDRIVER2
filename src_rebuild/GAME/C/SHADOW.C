@@ -19,7 +19,7 @@ int gShadowTexturePage;
 int gShadowTextureNum;
 
 UV shadowuv;
-POLY_FT4 shadowPolys[2][20];
+POLY_FT4 shadowPolys[2][MAX_CARS];
 
 VECTOR tyre_new_positions[4];
 VECTOR tyre_save_positions[4];
@@ -745,7 +745,7 @@ void InitShadow(void)
 
 		pPVar11 = shadowPolys[iVar12];
 
-		iVar12 = 0x13;
+		iVar12 = MAX_CARS-1;
 
 		do {
 			uVar9 = shadowuv.v3;

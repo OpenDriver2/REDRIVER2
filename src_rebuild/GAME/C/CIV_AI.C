@@ -4639,7 +4639,7 @@ int CivAccelTrafficRules(_CAR_DATA * cp, int* distToNode)
 /* WARNING: Removing unreachable block (ram,0x0002b034) */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int brakeLength[20];
+int brakeLength[MAX_CARS];
 
 int CAR_PAUSE_START = 100;
 static _CAR_DATA(*horncarflag[2]) = { 0 };

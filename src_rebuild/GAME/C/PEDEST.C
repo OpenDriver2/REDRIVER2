@@ -4737,11 +4737,15 @@ void BuildCarCollisionBox(void)
 		set_coll_box(1, &car_data[player[0].playerCarId], 9);
 	}
 
-	cp = car_data + (CameraCnt & 3);
+#ifdef PSX
+	cp = &car_data[CameraCnt & 3];
+#else
+	cp = car_data;
+#endif
 
 	collision_boxes_set = 2;
 
-	while (cp < car_data + MAX_CARS)
+	while (cp < &car_data[MAX_CARS])
 	{
 		if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
 		{
@@ -4749,7 +4753,11 @@ void BuildCarCollisionBox(void)
 			collision_boxes_set++;
 		}
 
+#ifdef PSX
 		cp += 4; // [A] WTF?
+#else
+		cp++;
+#endif
 	}
 
 	if (player[0].playerType == 2)
