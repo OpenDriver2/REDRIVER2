@@ -1965,8 +1965,6 @@ void ClearRegion(int target_region)
 	/* end block 2 */
 	// End Line: 3837
 
-extern bool gDemoLevel;
-extern bool gDriver1Level;
 
 // [D] [T]
 int LoadRegionData(int region, int target_region)
@@ -2010,6 +2008,16 @@ int LoadRegionData(int region, int target_region)
 	else if (gDriver1Level)
 	{
 		// TODO: ....
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[0];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], (char *)(cells + cell_slots_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[1];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], packed_cell_pointers, GotRegion);
+		offset += spoolptr->cell_data_size[2];
+
 	}
 	else
 #endif
@@ -3143,14 +3151,13 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	}
 	else 
 	{
-		if (FrameCnt != 0x78654321)
-		{
-			do {
-				trap(0x400);
-			} while (FrameCnt != 0x78654321);
+		printError("BAD PACKED CELL POINTER DATA, region = %d\n", region_to_unpack);
 
-			unpack_cellptr_flag = 0;
-		}
+		do {
+			trap(0x400);
+		} while (FrameCnt != 0x78654321);
+
+		unpack_cellptr_flag = 0;
 	}
 }
 
