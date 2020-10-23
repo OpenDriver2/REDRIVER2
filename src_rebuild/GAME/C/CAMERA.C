@@ -696,7 +696,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	camPosVy = MapHeight(&lp->cameraPos);
 	lp->cameraPos.vy = carheight - basePos[1];
 
-	cammapht = (carheight - camPosVy) -100;
+	cammapht = (carheight - camPosVy) - 100 + gCameraOffset.vy;
 
 	if (lp->cameraPos.vy > cammapht)
 	{
