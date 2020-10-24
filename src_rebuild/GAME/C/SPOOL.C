@@ -3015,10 +3015,12 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 // [D] [T]
 void StartSpooling(void)
 {
-	if (spoolcounter != 0 && !spoolactive)
-	{
-		if (!XAPrepared())
-		{
+	if (spoolcounter == 0 || spoolactive)
+		return;
+
+	if (XAPrepared())
+		return;
+
 #ifdef PSX
 			static unsigned char param[8];
 			static unsigned char result[8];
@@ -3031,13 +3033,11 @@ void StartSpooling(void)
 				WaitCloseLid();
 			}
 #endif // PSX
-			spoolactive = 1;
-			UpdateSpool();
+	spoolactive = 1;
+	UpdateSpool();
 
-			if (FastForward)
-				SpoolSYNC();
-		}
-	}
+	if (FastForward)
+		SpoolSYNC();
 }
 
 
