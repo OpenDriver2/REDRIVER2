@@ -78,7 +78,7 @@ void ClearCopUsage(void)
 PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
 {
 	PACKED_CELL_OBJECT *ppco;
-	CELL_DATA *celld;
+
 	uint value;
 	unsigned short index;
 	unsigned short num;

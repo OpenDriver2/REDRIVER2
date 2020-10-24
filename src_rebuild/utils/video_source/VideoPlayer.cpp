@@ -1,5 +1,5 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
-
+#include <EMULATOR.H>
 #include "DRIVER2.H"
 
 #include "C/PAD.H"
@@ -13,6 +13,7 @@
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
+
 
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)

@@ -2349,10 +2349,6 @@ void LoadMapTile(int tpage, int x, int y)
 	LoadImage(&MapSegment, (u_long*)MapBuffer);
 	DrawSync(0);
 
-#ifndef PSX
-	Emulator_UpdateVRAM();
-#endif
-
 }
 
 
