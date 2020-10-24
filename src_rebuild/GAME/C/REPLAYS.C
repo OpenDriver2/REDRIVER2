@@ -627,7 +627,9 @@ int StorePingInfo(int cookieCount, int carId)
 // [A] returns 1 if can use ping buffer
 int IsPingInfoAvailable()
 {
-	if (gUseStoredPings == 0 || gInGameChaseActive == 0 && gLoadedReplay == 0)
+	// [A] loaded replays pings temporarily disabled...
+	
+	if (gUseStoredPings == 0 || gInGameChaseActive == 0)// && gLoadedReplay == 0)
 		return 0;
 	
 	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
