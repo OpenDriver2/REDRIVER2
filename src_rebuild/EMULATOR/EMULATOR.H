@@ -2,10 +2,15 @@
 #define EMULATOR_H
 
 #include "EMULATOR_PLATFORM_SETUP.H"
+#include "TYPES.H"
+#include "PGXP_DEFS.H"
+#include "LIBGTE.H"
 #include "LIBGPU.H"
 
 #include <stdio.h>
 #include <stddef.h>
+
+
 
 #ifndef TRUE
 #define TRUE		1
@@ -189,14 +194,17 @@ typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
 extern GameDebugMouseHandlerFunc gameDebugMouse;
 
 extern int  Emulator_Initialise();
+extern void Emulator_ShutDown();
+
+extern void Emulator_SwapWindow();
+
 extern void Emulator_StoreFrameBuffer(int x, int y, int w, int h);
 extern void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
 extern void Emulator_CopyVRAM(unsigned short* src, int x, int y, int w, int h, int dst_x, int dst_y);
 extern void Emulator_ReadVRAM(unsigned short* dst, int x, int y, int dst_w, int dst_h);
 extern void Emulator_UpdateVRAM();
 extern void Emulator_BlitVRAM();
-extern void Emulator_ShutDown();
-extern void Emulator_SwapWindow();
+
 extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_SetPolygonOffset(float ofs);
 

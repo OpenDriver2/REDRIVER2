@@ -5,7 +5,6 @@
 #include "EMULATOR_PRIVATE.H"
 #include "CRASHHANDLER.H"
 
-#include "LIBGPU.H"
 #include "LIBETC.H"
 #include "LIBPAD.H"
 

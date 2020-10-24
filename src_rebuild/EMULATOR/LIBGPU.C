@@ -1,4 +1,6 @@
+#include "LIBGTE.H"
 #include "LIBGPU.H"
+
 
 #include "EMULATOR.H"
 #include "EMULATOR_GLOBALS.H"
