@@ -7,7 +7,8 @@
 #include "PLAYERS.H"
 #include "CARS.H"
 #include "CAMERA.H"
-#include "COP_AI.H"
+
+#include "SDL.h"
 
 short distanceCache[16384];
 char omap[128][16];				// obstacle map
@@ -69,7 +70,7 @@ PATHFIND_238fake dirs[6] = {
 		-256,-512
 	},
 	{
-		-512,0x0
+		-512,0
 	},
 	{
 		-256,512
@@ -79,8 +80,16 @@ PATHFIND_238fake dirs[6] = {
 	},
 };
 
-#define OMAP_V(cx, cz)					omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
-#define OMAP_GETVALUE(cx, cz)			(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
+// cx, cz in range of 0..128
+#define OMAP_V(cx, cz)						omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
+#define OMAP_GETVALUE(cx, cz)				(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
+
+// cx, cz in range of 0...128
+// FIXME: really bad
+#define DONEMAP_V(cx, cz)					dunyet[(cx & 0x1fU)][(cz & 1)]
+#define DONEMAP_GETVALUE(cx, cz, x, i)		(3 << (cz & 0x1e) & ((((cx & 0x3fU) >> 5 | cz & 2) ^ i) << (cz & 0x1e) ^ x))
+
+#define DISTMAP_V(px, py, pz)				distanceCache[(px >> 2 & 0x3f80U | pz >> 9 & 0x7fU) ^ (py & 1) * 0x2040 ^ (py & 2) << 0xc]
 
 // [A] sets obstacle map bit
 inline void OMapSet(int cellX, int cellZ, int val)
@@ -88,6 +97,95 @@ inline void OMapSet(int cellX, int cellZ, int val)
 	unsigned char prev = OMAP_V(cellX, cellZ);
 	int bit = (1 << (cellZ & 7));
 	OMAP_V(cellX, cellZ) = prev ^ bit & (prev ^ (val ? 0xFF : 0));
+}
+
+// [A] debug obstacle map display with new debug window
+void DebugDisplayObstacleMap()
+{
+#if defined(_DEBUG) && 0
+	static SDL_Window* occlusionWindow;
+	static SDL_Surface* occlSurface;
+	static SDL_Texture* occlTexture;
+	static SDL_Surface* windowSurf;
+
+	if (!occlusionWindow)
+	{
+		occlusionWindow = SDL_CreateWindow("Data Graphics View", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 512, 512, SDL_WINDOW_TOOLTIP);
+		occlSurface = SDL_CreateRGBSurface(0, 128, 128, 24, 0xFF, 0xFF, 0xFF, 0);
+	}
+
+	SDL_LockSurface(occlSurface);
+
+	int pos_x = player[0].pos[0] >> 8;
+	int pos_z = player[0].pos[2] >> 8;
+	int pos_y = player[0].pos[1];
+
+	tNode n;
+	n.vx = player[0].pos[0];
+	n.vz = player[0].pos[2];
+	n.vy = pos_y;
+	n.vy = MapHeight((VECTOR*)&n);
+
+	for (int i = 0; i < 128; i++)
+	{
+		unsigned char* rgbLine = (unsigned char*)occlSurface->pixels + 128 * i * 3;
+
+		for (int j = 0; j < 128; j++)
+		{
+			int px = pos_x + i - 64;
+			int pz = pos_z + j - 64;
+
+			if (OMAP_GETVALUE(px,pz))
+			{
+				rgbLine[j * 3] = 128;
+				rgbLine[j * 3 + 1] = 128;
+				rgbLine[j * 3 + 2] = 32;
+			}
+			else
+			{
+				rgbLine[j * 3] = 0;
+				rgbLine[j * 3 + 1] = 0;
+				rgbLine[j * 3 + 2] = 0;
+			}
+
+			//local_v0_152 = dunyet[(bPos.vx >> 10 & 0x1fU)][((bPos.vz >> 10) & 1)];
+
+			// NEW METHOD
+			// long val = dunyet[px >> 2 & 0x1f][pz >> 6 & 1]; // dunyet[px >> 2 & 0x1f][pz >> 2 & 1];
+			// val = val >> (pz >> 2 & 0x1f) & 1;
+
+			n.vx = px << 8;
+			n.vz = pz << 8;
+			n.vy = MapHeight((VECTOR*)&n);
+
+			int dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];// distanceCache[((pos_x+i & 127) * 128) + (j + pos_z & 127)];
+
+			long prev = DONEMAP_V(px >> 2, pz >> 2);
+			int val = DONEMAP_GETVALUE(px >> 2, pz >> 2, prev, 0);
+
+			if (val != 0)
+				rgbLine[j * 3] = 128;
+
+			if (rgbLine[j * 3] == 0 && rgbLine[j * 3 + 2] == 0)
+				rgbLine[j * 3 + 1] = dist / 64;
+		}
+	}
+
+	SDL_UnlockSurface(occlSurface);
+
+	windowSurf = SDL_GetWindowSurface(occlusionWindow);
+
+	SDL_Rect rect;
+	rect.x = 1;
+	rect.y = 1;
+	rect.w = 511;
+	rect.h = 511;
+
+	SDL_BlitScaled(occlSurface, NULL, windowSurf, &rect);
+	SDL_UpdateWindowSurface(occlusionWindow);
+
+	SDL_FreeSurface(windowSurf);
+#endif
 }
 
 // decompiled code
@@ -150,20 +248,10 @@ inline void OMapSet(int cellX, int cellZ, int val)
 	/* end block 3 */
 	// End Line: 631
 
-// [D]
-tNode * popNode(tNode *__return_storage_ptr__)
+// [D] [T]
+tNode* popNode(tNode* __return_storage_ptr__)
 {
-	ushort uVar1;
-	int iVar2;
-	int iVar3;
-	int iVar4;
-	ushort uVar6;
-	uint uVar7;
 	uint child;
-	int d3;
-	int d4;
-	int local_t1_316;
-	int local_t2_320;
 	ushort d;
 	uint here;
 	tNode res;
@@ -172,33 +260,26 @@ tNode * popNode(tNode *__return_storage_ptr__)
 
 	if (numHeapEntries > 1)
 	{
-		uVar1 = heap[numHeapEntries].dist;
-
 		here = 1;
 
 		while (true)
 		{
-			// [A] I don't know what fuckery happening here
-			uVar7 = here + 1;
-			d = heap[uVar7].dist;
-			child = uVar7;
-			uVar6 = d;
+			child = here + 1;
 
-			child = uVar7 + 1;
-			uVar6 = heap[uVar7 + 1].dist;
+			d = heap[child].dist;
 
-			if (numHeapEntries - 2 <= uVar7 || heap[uVar7 + 1].dist < d)
+			if (child >= numHeapEntries - 2 || d > heap[child + 1].dist)
 			{
-				d = uVar6;
-				uVar7 = child;
+				d = heap[child + 1].dist;
+				child = child + 1;
 			}
 
-			if ((numHeapEntries - 2 < uVar7) || (uVar1 <= d))
+			if (child > numHeapEntries - 2 || d >= heap[numHeapEntries].dist)
 				break;
 
-			heap[here] = heap[uVar7];
+			heap[here] = heap[child];
 
-			here = uVar7;
+			here = child;
 		}
 
 		heap[here] = heap[numHeapEntries];
@@ -250,32 +331,43 @@ tNode * popNode(tNode *__return_storage_ptr__)
 	/* end block 2 */
 	// End Line: 911
 
-// [D]
-void WunCell(VECTOR *pbase)
+// [D] [T]
+void WunCell(VECTOR* pbase)
 {
-	unsigned char bVar1;
-	char cVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int uVar6;
-	unsigned char val;
-	int iVar8;
-	PATHFIND_237fake* pPVar9;
-	int iVar10;
 	VECTOR v[2];
-	VECTOR pos;
+	int height1;
+	int i, j;
 
-	pbase->vx = pbase->vx + 512;
-	pbase->vz = pbase->vz + 512;
+	// [A] hack with height map (fixes some bits in Havana)
+	height1 = MapHeight(pbase) + 60;
+	
+	pbase->vx += 512;
+	pbase->vz += 512;
 
 	v[0].vy = MapHeight(pbase) + 60;
 
-	pbase->vx = pbase->vx - 512;
-	pbase->vz = pbase->vz - 512;
+	pbase->vx -= 512;
+	pbase->vz -= 512;
+
+	if (height1 - v[0].vy > 100)
+		v[0].vy = height1;
 
 	v[1].vy = v[0].vy;
 
+	// [A] definitely better code
+	// new 16 vs old 12 passes but map is not leaky at all#
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 4; j++)
+		{
+			v[0].vx = pbase->vx + i * 256 + 128;
+			v[0].vz = pbase->vz + j * 256 + 128;
+
+			OMapSet(v[0].vx >> 8, v[0].vz >> 8, CellAtPositionEmpty(&v[0], 128) == 0);
+		}
+	}
+
+#if 0
 	iVar10 = 0;
 	do {
 		iVar8 = 0;
@@ -283,19 +375,21 @@ void WunCell(VECTOR *pbase)
 		if (iVar10 != 0)
 			pbase->vx += 512;
 
+		v[0].vx = pbase->vx;
+		v[0].vz = pbase->vz;
+
 		do {
+
 			v[0].vx = pbase->vx + ends[iVar8][0].dx;
 			v[0].vz = pbase->vz + ends[iVar8][0].dz;
+
 			v[1].vx = pbase->vx + ends[iVar8][1].dx;
 			v[1].vz = pbase->vz + ends[iVar8][1].dz;
 
-			iVar4 = v[0].vx + v[1].vx;
-			iVar5 = v[0].vz + v[1].vz;
+			iVar4 = v[0].vx + v[1].vx >> 1;
+			iVar5 = v[0].vz + v[1].vz >> 1;
 
-			OMapSet(iVar4 >> 9, iVar5 >> 9, lineClear(&v[0], &v[1]) == 0);
-
-			//bVar1 = omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)];
-			//omap[(iVar4 >> 9 & 0x7fU)][((iVar5 >> 9 & 0x7f) >> 3)] = bVar1 ^ (1 << (iVar5 >> 9 & 7)) & (bVar1 ^ val);
+			OMapSet(iVar4 >> 8, iVar5 >> 8, lineClear(&v[0], &v[1]) == 0);
 
 			iVar8++;
 		} while (iVar8 < 6);
@@ -305,6 +399,7 @@ void WunCell(VECTOR *pbase)
 
 		iVar10++;
 	} while (iVar10 < 2);
+#endif
 }
 
 
@@ -360,81 +455,97 @@ void WunCell(VECTOR *pbase)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [A] function that invalidates map at ends
+// fixes bug with not being able to update navigation cells
+void InvalidateMapEnds()
+{
+	int x, z;
+	long tile;
+	int i;
+	XZPAIR pos;
+	pos.x = (player[0].pos[0] & 0xfffffc00) >> 10;
+	pos.z = (player[0].pos[2] & 0xfffffc00) >> 10;
+
+	for(i = 0; i < 32; i++)
+	{
+		x = pos.x + 15 + i;
+		z = pos.z + 16;
+		
+		tile = DONEMAP_V(x, z);
+		DONEMAP_V(x, z) = tile ^ DONEMAP_GETVALUE(x, z, tile, 3);
+
+		x = pos.x + 16;
+		z = pos.z + 15 + i;
+
+		tile = DONEMAP_V(x, z);
+		DONEMAP_V(x, z) = tile ^ DONEMAP_GETVALUE(x, z, tile, 3);
+	}
+}
+
+// [D] [T]
 void InvalidateMap(void)
 {
-	int uVar1;
-	int iVar2;
-	int uVar3;
-	int uVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int dir;
+	int p;
+	int q;
+	int count;
+	int px, pz;
 	VECTOR bPos;
+	long tile, i;
 
-	iVar6 = 0;
-	iVar5 = 0;
-	uVar4 = 0;
-	iVar7 = 0x3ff;
+	q = 0;
+	p = 0;
+	dir = 0;
+
 	bPos.vx = player[0].pos[0] & 0xfffffc00;
 	bPos.vz = player[0].pos[2] & 0xfffffc00;
 
-	do {
-		uVar3 = bPos.vz >> 10;
+	count = 0;
+	do
+	{
+		px = bPos.vx >> 10;
+		pz = bPos.vz >> 10;
+	
+		tile = DONEMAP_V(px, pz);
+		i = DONEMAP_GETVALUE(px, pz, tile, 3);
 
-		uVar1 = dunyet[(bPos.vx >> 10 & 0x1fU)][(uVar3 & 1)];
-		dunyet[(bPos.vx >> 10 & 0x1fU)][(uVar3 & 1)] = uVar1 ^ 3 << (uVar3 & 0x1e) & ((((bPos.vx >> 10 & 0x3fU) >> 5 | uVar3 >> 4 & 2) ^ 3) << (uVar3 & 0x1e) ^ uVar1);
-
-		if (uVar4 == 1) 
+		DONEMAP_V(px, pz) = tile ^ i;
+		
+		if (dir == 0)
 		{
-			iVar6++;
-			bPos.vz += 1024;
-			if (iVar5 == iVar6)
-				uVar4 = 2;
+			p++;
+			bPos.vx += 1024;
 
+			if (p + q == 1)
+				dir = 1;
 		}
-		else if (uVar4 < 2)
+		else if (dir == 1)
 		{
-			iVar2 = bPos.vx + 0x400;
+			q++;
+			bPos.vz += 1024;
 
-			if (uVar4 == 0)
-			{
-				iVar5++;
-				bPos.vx = iVar2;
-				if (iVar5 + iVar6 == 1)
-					uVar4 = 1;
-			}
-			else
-			{
-			LAB_PATH__000e7484:
-				iVar6--;
-				bPos.vz -= 1024;
-				if (iVar5 == iVar6)
-				{
-					uVar4 = 0;
-				}
-			}
+			if (p == q)
+				dir = 2;
+		}
+		else if (dir == 2)
+		{
+			p--;
+			bPos.vx -= 1024;
+
+			if (p + q == 0)
+				dir = 3;
 		}
 		else
 		{
-			iVar2 = bPos.vx - 1024;
-
-			if (uVar4 != 2)
-				goto LAB_PATH__000e7484;
-
-			iVar5--;
-			bPos.vx = iVar2;
-
-			if (iVar5 + iVar6 == 0)
-				uVar4 = 3;
+			q--;
+			bPos.vz -= 1024;
+	
+			if (p == q)
+				dir = 0;
 		}
 
-		iVar7--;
-
-		if (iVar7 < 0)
-			return;
-
-	} while (true);
+		count++;
+	}while (count < 1024);
 }
 
 
@@ -496,104 +607,99 @@ void InvalidateMap(void)
 unsigned int cellsThisFrame;
 unsigned int cellsPerFrame = 4;
 
-// [D]
+// [D] [T]
 void BloodyHell(void)
 {
-	int uVar1;
-	int uVar2;
-	int uVar3;
-	int uVar4;
-	int iVar5;
-	int iVar6;
-	int uVar7;
-	int iVar8;
+	int dir;
+	int p;
+	int q;
+	int px, pz;
+	uint howMany;
+	int count;
 	VECTOR bPos;
+	long tile, i;
 
-	bPos.vy = 0x1fed;
+	cellsThisFrame = 0;
+	
+	bPos.vy = 8173;
+
 	bPos.vx = player[0].pos[0] & 0xfffffc00;
 	bPos.vz = player[0].pos[2] & 0xfffffc00;
 
-	cellsThisFrame = 0;
-	uVar7 = cellsPerFrame;
+	howMany = cellsPerFrame;
 
 	if (CameraCnt < 4)
-		uVar7 = cellsPerFrame + 20;
+		howMany = cellsPerFrame + 20;
 
-	iVar6 = 0;
-
+	q = 0;
+	
 	if (CameraCnt < 8)
-		uVar7 = uVar7 + 4;
+		howMany += 4;
 
-	iVar5 = 0;
-	uVar4 = 0;
-	iVar8 = 0;
+	p = 0;
+	dir = 0;
+	count = 0;
+
+	InvalidateMapEnds();
 
 	do {
-		if (iVar8 == 200)
-			uVar7--;
-	
-		uVar2 = (int)bPos.vz >> 10;
+		if (count == 200)
+			howMany--;
 
-		uVar3 = dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)];
-		uVar1 = 3 << (uVar2 & 0x1e) & ((((int)bPos.vx >> 10 & 0x3fU) >> 5 | uVar2 >> 4 & 2) << (uVar2 & 0x1e) ^ uVar3);
+		px = bPos.vx >> 10;
+		pz = bPos.vz >> 10;
 
-		if (uVar1 != 0) 
+		tile = DONEMAP_V(px, pz);
+		i = DONEMAP_GETVALUE(px, pz, tile, 0);
+
+		if (i != 0)
 		{
-			dunyet[((int)bPos.vx >> 10 & 0x1fU)][(uVar2 & 1)] = uVar3 ^ uVar1;
+			DONEMAP_V(px, pz) = tile ^ i;
+
 			WunCell(&bPos);
 
 			cellsThisFrame++;
 
-			if (uVar7 <= cellsThisFrame)
+			if (howMany <= cellsThisFrame)
 				return;
-
 		}
-		if (uVar4 == 1) 
+
+		if (dir == 0)
 		{
-			iVar6++;
-			bPos.vz = bPos.vz + 1024;
-			if (iVar5 == iVar6)
-				uVar4 = 2;
+			p++;
+			bPos.vx += 1024;
+
+			if (p + q == 1)
+				dir = 1;
 		}
-		else if (uVar4 < 2)
+		else if (dir == 1) 
 		{
-			if (uVar4 == 0)
-			{
-				iVar5++;
-				bPos.vx = bPos.vx + 1024;
-				if (iVar5 + iVar6 == 1)
-				{
-					uVar4 = 1;
-				}
-			}
-			else
-			{
-			LAB_PATH__000e7674:
-				iVar6--;
-				bPos.vz = bPos.vz - 1024;
-
-				if (iVar5 == iVar6)
-					uVar4 = 0;
-			}
+			q++;
+			bPos.vz += 1024;
+			
+			if (p == q)
+				dir = 2;
 		}
-		else
+		else if (dir == 2)
 		{
-			if (uVar4 != 2)
-				goto LAB_PATH__000e7674;
+			p--;
 
-			iVar5 = iVar5 + -1;
-			bPos.vx = bPos.vx - 1024;
+			bPos.vx -= 1024;
 
-			if (iVar5 + iVar6 == 0)
-				uVar4 = 3;
+			if (p + q == 0)
+				dir = 3;
+		}
+		else 
+		{
+			q--;
+			bPos.vz -= 1024;
+
+			if (p == q)
+				dir = 0;
 		}
 
-		iVar8++;
-
-		if (840 < iVar8)
-			return;
-
-	} while (true);
+		count++;
+	} while( count < 840 );
 }
 
 
@@ -658,45 +764,18 @@ void BloodyHell(void)
 
 int slowWallTests = 0;
 
-// [D] [A] - might be bugged
-int blocked(tNode *v1, tNode *v2)
+// [D] [T]
+int blocked(tNode* v1, tNode* v2)
 {
-	unsigned char bVar1;
-	bool bVar2;
-	char cVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int res;
-	int uVar9;
-	unsigned char bVar10;
+	int x, z, dmtile;
 
-	if (slowWallTests == 0)
-	{
-		int x = (v1->vx + v1->vx >> 9 & 0x7f);
-		int z = (v1->vz + v2->vz >> 9 & 0x7f);
+	if (slowWallTests != 0)
+		return lineClear((VECTOR*)v1, (VECTOR*)v2) == 0;
 
-		res = OMAP_GETVALUE(x,z); //  omap[x][z] >> (v1->vz + v2->vz >> 9 & 7) & 1;
-	}
-	else 
-	{
-		int x = (v1->vx + v1->vx >> 9 & 0x7f);
-		int z = (v1->vz + v2->vz >> 9 & 0x7f) >> 3;
+	x = v1->vx + v1->vx >> 9;
+	z = v1->vz + v2->vz >> 9;
 
-		cVar3 = lineClear((VECTOR*)v1, (VECTOR*)v2);
-		bVar10 = 0;
-		bVar2 = cVar3 == 0;
-		res = (uint)bVar2;
-
-		if (bVar2)
-			bVar10 = 0xff;
-
-		bVar1 = omap[x][z];
-		omap[x][z] = bVar1 ^ (1 << ((v1->vz + v2->vz >> 9) & 7)) & (bVar1 ^ bVar10);
-	}
-
-	return res;
+	return OMAP_GETVALUE(x, z);
 }
 
 
@@ -715,10 +794,11 @@ int blocked(tNode *v1, tNode *v2)
 	/* end block 2 */
 	// End Line: 1319
 
-// [D]
-void setDistance(tNode *n, ushort dist)
+// [D] [T]
+void setDistance(tNode* n, ushort dist)
 {
-	n->dist = dist | 1;
+	n->dist = dist | 1;	// valid bit for this frame
+
 	distanceCache[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] = dist | 1;
 }
 
@@ -851,162 +931,139 @@ void setDistance(tNode *n, ushort dist)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A] - might be bugged
+// [D] [T]
 void iterate(void)
 {
-	short uVar1;
-	short uVar2;
-	PATHFIND_238fake PVar3;
-	int iVar4;
-	int iVar5;
-	int uVar6;
-	int uVar7;
-	int uVar8;
-	tNode* v2;
-	int iVar9;
+	tNode pathNodes[250];
+
+	int dist;
+	tNode* nbr;
+	int dir;
 	tNode itHere;
 
-	tNode tNode_ARRAY_1f800000[128]; // scratch pad
+	ushort nr;
+	ushort nl;
+	int a;
+	uint pnode;
+	uint parent;
+	uint i;
+	int r;
 
-	if (numHeapEntries != 0) 
+	if (numHeapEntries == 0)
+		return;
+
+	popNode(&itHere);
+	nbr = pathNodes;
+
+	// check directions
+	for(dir = 0; dir < 6; dir++)
 	{
-		popNode(&itHere);
-		iVar9 = 0;
-		v2 = tNode_ARRAY_1f800000 + 2;
-		do {
-			PVar3 = dirs[iVar9];
-			iVar5 = itHere.vx + PVar3.dx;
-			v2->vx = iVar5;
-			v2->vy = itHere.vy;
-			iVar4 = itHere.vz + PVar3.dz;
-			v2->vz = iVar4;
-			uVar1 = distanceCache[(iVar5 >> 2 & 0x3f80U | iVar4 >> 9 & 0x7fU) ^ (itHere.vy & 1) * 0x2040 ^ (itHere.vy & 2) << 0xc];
-			v2->dist = uVar1;
+		nbr++;
 
-			if ((uVar1 & 1) == 0) 
+		nbr->vx = itHere.vx + dirs[dir].dx;
+		nbr->vy = itHere.vy;
+		nbr->vz = itHere.vz + dirs[dir].dz;
+
+		dist = DISTMAP_V(nbr->vx, nbr->vy, nbr->vz);
+
+		nbr->dist = dist;
+
+		if ((dist & 1) == 0)
+		{
+			if (blocked(&itHere, nbr) == 0)
 			{
-				iVar4 = blocked(&itHere, v2);
-				if (iVar4 == 0)
+				if (ABS(nbr->vy - itHere.vy) < 201)
 				{
-					iVar4 = v2->vy - itHere.vy;
+					if ((dist & 1) == 0)
+						nbr->dist = 0;
 
-					if (iVar4 < 0) 
-						iVar4 = itHere.vy - v2->vy;
-
-					if (iVar4 < 0xc9) 
-					{
-						if ((uVar1 & 1) == 0)
-							v2->dist = 0;
-
-						goto LAB_PATH__000e797c;
-					}
+					continue;
 				}
-				v2->dist = 1;
+			}
+	
+			nbr->dist = 1;
+		}
+		else
+		{
+			if (dist <= itHere.dist - 288)
+			{
+				nbr->dist = 1;
+			}
+		}
+	}
+
+	// now we have distance let's compute the rest of the map
+	for(dir = 0; dir < 6; dir++)
+	{
+		if (pathNodes[dir + 1].dist != 0)
+			continue;
+
+		if (dir != 5)
+			nr = pathNodes[dir + 2].dist;
+		else
+			nr = pathNodes[1].dist;
+
+		if (dir != 0)
+			nl = pathNodes[dir].dist;
+		else
+			nl = pathNodes[6].dist;
+
+		// uhhmm... distance function selection?
+		if (nl < 2)
+		{
+			if (nr < 2)
+				dist = itHere.dist + 256;
+			else
+				dist = (nr + itHere.dist >> 1) + 221;
+		}
+		else
+		{
+			if (nr < 2)
+			{
+				dist = (nl + itHere.dist >> 1) + 221;
 			}
 			else
 			{
-				if (uVar1 <= (int)(itHere.dist - 0x120)) {
-					v2->dist = 1;
+				r = nr - nl;
+				dist = 0x10000 - (r * r) / 3;
+					
+				if (dist < 0)
+				{
+					dist = 0;
 				}
+				else
+				{
+					a = (dist >> 9) + 128;
+					dist = dist / a + a >> 1;
+				}
+					
+				dist += itHere.dist;
 			}
+		}
 
-		LAB_PATH__000e797c:
-			iVar9 = iVar9 + 1;
-			v2 = v2 + 1;
-		} while (iVar9 < 6);
+		dist &= 0xffff;
 
-		iVar4 = 0;
-		iVar9 = 1;
+		// store distance and get to the next lesser node
+		if (numHeapEntries != 198)
+		{
+			setDistance(pathNodes + dir + 1, dist);
+				
+			i = numHeapEntries + 1;
 
-		do {
-			if (tNode_ARRAY_1f800000[iVar4 + 2].dist == 0)
+			pnode = i;
+			parent = i >> 1;
+			
+			while (parent != 0 && dist < heap[parent].dist)
 			{
-				uVar1 = tNode_ARRAY_1f800000[2].dist;
+				heap[i] = heap[parent];
 
-				if (iVar4 != 5)
-					uVar1 = tNode_ARRAY_1f800000[iVar4 + 3].dist;
-
-				uVar2 = tNode_ARRAY_1f800000[7].dist;
-				if (iVar4 != 0)
-					uVar2 = tNode_ARRAY_1f800000[iVar4 + 1].dist;
-
-				if (uVar2 < 2) 
-				{
-					if (uVar1 >= 2)
-					{
-						iVar9 = uVar1 + itHere.dist;
-						goto LAB_PATH__000e7a94;
-					}
-					uVar6 = itHere.dist + 0x100;
-				}
-				else 
-				{
-					if (uVar1 < 2) 
-					{
-						iVar9 = uVar2 + itHere.dist;
-					LAB_PATH__000e7a94:
-						uVar6 = (iVar9 >> 1) + 0xdd;
-					}
-					else
-					{
-						iVar9 = uVar1 - uVar2;
-						uVar6 = 0x10000 - (iVar9 * iVar9) / 3;
-
-						if (uVar6 < 0) 
-						{
-							uVar6 = 0;
-						}
-						else 
-						{
-							uVar7 = (uVar6 >> 9) + 0x80;
-
-							uVar6 = uVar6 / uVar7 + uVar7 >> 1;
-						}
-
-						uVar6 = itHere.dist + uVar6;
-					}
-				}
-				uVar6 = uVar6 & 0xffff;
-				iVar9 = iVar4 + 1;
-				if (numHeapEntries != 198)
-				{
-					setDistance(tNode_ARRAY_1f800000 + iVar4 + 2, (ushort)uVar6);
-
-					uVar8 = numHeapEntries + 1;
-					uVar7 = uVar8 >> 1;
-					iVar9 = uVar8 * 0x10;
-
-					if ((uVar7 != 0) && (uVar6 < heap[uVar7].dist))
-					{
-						iVar9 = uVar8 * 0x10;
-
-						do {
-							uVar8 = uVar7;
-							*(int*)((int)&heap[0].vx + iVar9) = (&heap[0].vx)[uVar8 * 4];
-							*(int*)((int)&heap[0].vy + iVar9) = (&heap[0].vy)[uVar8 * 4];
-							*(int*)((int)&heap[0].vz + iVar9) = (&heap[0].vz)[uVar8 * 4];
-							uVar7 = uVar8 >> 1;
-							*(uint*)((int)&heap[0].dist + iVar9) = *(uint*)(&heap[0].dist + uVar8 * 8);
-
-							if (uVar7 == 0)
-								break;
-
-							iVar9 = uVar8 << 4; // * 16
-						} while (uVar6 < heap[uVar7].dist);
-
-						iVar9 = uVar8 << 4; // * 16
-					}
-					*(int*)((int)&heap[0].vx + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vx;
-					*(int*)((int)&heap[0].vy + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vy;
-					*(int*)((int)&heap[0].vz + iVar9) = tNode_ARRAY_1f800000[iVar4 + 2].vz;
-					numHeapEntries++;
-					*(uint*)((int)&heap[0].dist + iVar9) = *(uint*)&tNode_ARRAY_1f800000[iVar4 + 2].dist;
-					iVar9 = iVar4 + 1;
-				}
+				pnode = parent;
+				parent >>= 1;
 			}
-			iVar4 = iVar9;
-			iVar9 = iVar4 + 1;
-		} while (iVar4 < 6);
+
+			heap[pnode] = pathNodes[dir + 1];
+			numHeapEntries++;
+		}
 	}
 }
 
@@ -1051,7 +1108,7 @@ void iterate(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitPathFinding(void)
 {
 	int i;
@@ -1366,160 +1423,154 @@ void InitPathFinding(void)
 
 extern int sdLevel; // D2ROADS
 
-// [D]
-int getInterpolatedDistance(VECTOR *pos)
+// [D] [T]
+int getInterpolatedDistance(VECTOR* pos)
 {
-	bool bVar1;
-	bool bVar2;
-	int uVar3;
-	int iVar4;
-	int uVar5;
-	int uVar6;
-	int uVar7;
-	int uVar8;
-	int iVar9;
-	int iVar10;
+	int res;
+	int x;
+	int dist;
+	int min;
+	int a,b,c;
+	int fx;
+	int fz;
 	tNode n;
 	VECTOR sp;
 
-	uVar6 = pos->vz;
-	n.vx = ((pos->vx + (uVar6 >> 1 & 0x1ffU)) >> 9) * 0x200 - ((uVar6 & 0x200) >> 1);
+	// WHY?
+	n.vx = ((pos->vx + (pos->vz >> 1 & 0x1ffU)) >> 9) * 512 - ((pos->vz & 0x200) >> 1);
 	n.vy = pos->vy;
-	n.vz = (uVar6 >> 9) << 9;
-	uVar6 = (n.vz & 0xfffffc00U) >> 8;
+	n.vz = (pos->vz >> 9) << 9;
 
-	if ((((char*)omap)[((int)(uVar6 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar6 & 7) & 1U) == 0) {
-		n.vy = 0;
-	}
-	else 
+	if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 	{
-		uVar6 = MapHeight((VECTOR*)&n);
-		n.vy = uVar6 ^ (uVar6 ^ sdLevel) & 3;
-	}
-
-	iVar10 = pos->vz - n.vz;
-	iVar9 = (pos->vx - n.vx) + (iVar10 >> 1);
-	uVar7 = n.vx + 0x100;
-	uVar3 = n.vz + 0x200;
-
-	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
-
-	uVar6 = n.dist;
-	uVar5 = (uVar3 & 0xfffffc00) >> 8;
-	n.vx = uVar7;
-	n.vz = uVar3;
-
-	if ((((char*)omap)[((uVar5 & 0x7f) >> 3) + ((uVar7 & 0xfffffc00) >> 4 & 0x7c0)] >> (uVar5 & 7) & 1U) == 0) 
-	{
-		n.vy = 0;
+		res = MapHeight((VECTOR*)&n);
+		n.vy = res ^ (res ^ sdLevel) & 3;
 	}
 	else
 	{
-		uVar3 = MapHeight((VECTOR*)&n);
-		n.vy = uVar3 ^ (uVar3 ^ sdLevel) & 3;
+		n.vy = 0;
+	}
+
+	fz = pos->vz - n.vz;
+	fx = (pos->vx - n.vx) + (fz >> 1);
+
+	sp.vx = n.vx + 256;
+	sp.vz = n.vz + 512;
+
+	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+	a = n.dist;
+
+	n.vx = sp.vx;
+	n.vz = sp.vz;
+
+	if (OMAP_GETVALUE(sp.vx >> 8, sp.vz >> 8) != 0)
+	{
+		res = MapHeight((VECTOR*)&n);
+		n.vy = res ^ (res ^ sdLevel) & 3;
+	}
+	else
+	{
+		n.vy = 0;
 	}
 
 	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+	b = n.dist;
+	
+	if (a < b)
+		min = a;
+	else
+		min = b;
 
-	uVar5 = n.dist;
-	uVar3 = uVar5;
-
-	if (uVar6 < uVar5)
-		uVar3 = uVar6;
-
-	if (iVar10 < iVar9) 
+	if (fz < fx)
 	{
-		n.vx = n.vx + 0x100;
-		n.vz = n.vz - 0x200;
-		uVar7 = (int)(n.vz & 0xfffffc00U) >> 8;
-
-		if ((((char*)omap)[((uVar7 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar7 & 7) & 1U) == 0) 
+		n.vx = sp.vx + 256;
+		n.vz = sp.vz - 512;
+		
+		if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 		{
-			uVar7 = 0;
+			res = MapHeight((VECTOR*)&n);
+			res = res ^ (res ^ sdLevel) & 3;
 		}
 		else
 		{
-			uVar7 = MapHeight((VECTOR*)&n);
-			uVar7 = uVar7 ^ (uVar7 ^ sdLevel) & 3;
+			res = 0;
 		}
-
-		uVar7 = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (uVar7 & 1) * 0x2040 ^ (uVar7 & 2) << 0xc];
-
-		uVar8 = uVar7;
-
-		if (uVar3 < uVar7)
-			uVar8 = uVar3;
 	
-		uVar8 = uVar8 + 0x155;
-		bVar1 = 0xffff < uVar8;
-		bVar2 = uVar8 < uVar6;
+		dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (res & 1) * 0x2040 ^ (res & 2) << 0xc];
+		
+		if (min < dist)
+			c = min;
+		else
+			c = dist;
+	
+		c += 341;
+		
+		if (c > 0xffff)
+			c = 0xffff;
+		else if (a > c)
+			a = c;
 
-		if (bVar1)
-			uVar8 = 0xffff;
+		if (b > c)
+			b = c;
 
-		if (!bVar1 && bVar2)
-			uVar6 = uVar8;
-
-		if (uVar8 < uVar5)
-			uVar5 = uVar8;
-
-		iVar4 = uVar7 - uVar6;
-
-		if (uVar8 < uVar7) 
+		x = dist - a;
+	
+		if (c < dist)
 		{
-			iVar4 = uVar8 - uVar6;
-			uVar7 = uVar8;
+			x = c - a;
+			dist = c;
 		}
-
-		iVar4 = iVar4 * iVar9;
-		iVar10 = (uVar5 - uVar7) * iVar10;
+		
+		x = x * fx;
+		res = (b - dist) * fz;
 	}
-	else 
+	else
 	{
-		n.vx = n.vx - 0x200;
-		uVar7 = (int)(n.vz & 0xfffffc00U) >> 8;
+		n.vx = sp.vx - 512;
+		n.vz = sp.vz;
 
-		if ((((char*)omap)[((uVar7 & 0x7f) >> 3) + ((n.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar7 & 7) & 1U) == 0)
+		if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 		{
-			uVar7 = 0;
+			res = MapHeight((VECTOR*)&n);
+			res = res ^ (res ^ sdLevel) & 3;
 		}
 		else
 		{
-			uVar7 = MapHeight((VECTOR*)&n);
-			uVar7 = uVar7 ^ (uVar7 ^ sdLevel) & 3;
+			res = 0;
 		}
 
-		uVar7 = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (uVar7 & 1) * 0x2040 ^ (uVar7 & 2) << 0xc];
+		dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (res & 1) * 0x2040 ^ (res & 2) << 0xc];
+		
+		if (min < dist)
+			c = min;
+		else
+			c = dist;
 
-		uVar8 = uVar7;
+		c += 341;
 
-		if (uVar3 < uVar7)
-			uVar8 = uVar3;
-	
-		uVar8 = uVar8 + 0x155;
-		bVar1 = 0xffff < uVar8;
-		bVar2 = uVar8 < uVar6;
-		if (bVar1)
-			uVar8 = 0xffff;
-	
-		if (!bVar1 && bVar2)
-			uVar6 = uVar8;
-	
-		if (uVar8 < uVar5)
-			uVar5 = uVar8;
+		if (c > 0xffff)
+			c = 0xffff;
+		else if (a > c)
+			a = c;
 
-		iVar4 = uVar7 - uVar6;
-		if (uVar8 < uVar7) 
+		if (c < b)
+			b = c;
+
+		x = dist - a;
+	
+		if (c < dist)
 		{
-			iVar4 = uVar8 - uVar6;
-			uVar7 = uVar8;
+			x = c - a;
+			dist = c;
 		}
-		iVar4 = iVar4 * iVar10;
-		iVar10 = (uVar5 - uVar7) * iVar9;
+		
+		x = x * fz;
+		res = (b - dist) * fx;
 	}
 
-	uVar6 = uVar6 + (iVar4 + iVar10 >> 9);
-	lastDistanceFound = uVar6 ^ (uVar6 & 1 ^ uVar6) & 1;
+	a = a + (x + res >> 9);
+	
+	lastDistanceFound = a ^ (a & 1 ^ a) & 1;
 
 	return lastDistanceFound;
 }
@@ -1595,68 +1646,49 @@ int getInterpolatedDistance(VECTOR *pos)
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void addCivs(void)
 {
 	unsigned char bits;
-	int uVar2;
-	int iVar3;
-	int uVar4;
-	int uVar5;
-	int iVar7;
-	int iVar6;
-	int uVar7;
-	int iVar8;
-	int uVar9;
-	int iVar10;
-	int iVar11;
+	int rx, rz;
 	int x, z, vx, vz;
+	int vx2, vz2;
 	_CAR_DATA* cp;
 
 	cp = car_data;
 	do {
-		if (cp->controlType == CONTROL_TYPE_CIV_AI) 
+		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
-			iVar7 = cp->hd.oBox.radii[2].vx;
+			rx = cp->hd.oBox.radii[2].vx;
+			rz = cp->hd.oBox.radii[2].vz;
+			
 			x = cp->hd.oBox.location.vx;
-			iVar6 = cp->hd.oBox.radii[2].vz;
 			z = cp->hd.oBox.location.vz;
+	
+			vx = x + rx >> 8;
+			vz = z + rz >> 8;
 
-			vx = x + iVar7 >> 8 & 0x7e;
-			vz = z + iVar6 >> 8;
+			bits = 3 << (vz & 6);
 
-			iVar3 = (vz & 0x7e) >> 3;
-			bits = (3 << (vz & 6));
+			OMAP_V(vx, vz) ^= bits;
+			OMAP_V(vx+1, vz) ^= bits;
 
-			uVar4 = x - iVar7 >> 8 & 0x7e;
-			omap[vx][iVar3] = bits ^ omap[vx][iVar3];
-			uVar5 = z - iVar6 >> 8;
-			omap[(vx + 1)][iVar3] = bits ^ omap[(vx + 1)][iVar3];
-			uVar2 = uVar5 & 0x7e;
-
-			if ((vx ^ (vz & 0x7e) << 8) == uVar4)
+			vx2 = x - rx >> 8;
+			vz2 = z - rz >> 8;
+			
+			if ((vx ^ (vz & 0x7e) << 8) == vx2 && vz2 & 0x7e != 0 || 
+				vz2 & 0x7e << 8 != 1)
 			{
-				if (uVar2 != 0)
-					goto LAB_PATH__000e8310;
-			}
-			else if (uVar2 << 8 != 1)
-			{
-			LAB_PATH__000e8310:
-				bits = (3 << (uVar5 & 6));
-				omap[uVar4][(uVar2 >> 3)] = bits ^ omap[uVar4][(uVar2 >> 3)];
-				omap[(uVar4 + 1)][(uVar2 >> 3)] = bits ^ omap[(uVar4 + 1)][(uVar2 >> 3)];
+				bits = 3 << (vz2 & 6);
+
+				OMAP_V(vx2, vz2) ^= bits;
+				OMAP_V(vx2+1, vz2) ^= bits;
 			}
 		}
 
 		cp++;
-
-		if (&car_data[MAX_CARS-1] < cp)
-			return;
-
-	} while (true);
+	} while (cp < &car_data[MAX_CARS - 1]);
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -2060,390 +2092,309 @@ void addCivs(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A] - might be bugged
+// [D] [T]
 void UpdateCopMap(void)
 {
-	int iVar1;
-	int uVar2;
-	long lVar3;
-	short uVar4;
-	int* piVar5;
-	short* psVar6;
-	int iVar7;
-	int iVar8;
-	int uVar9;
-	int uVar10;
-	int uVar11;
+	int d;
+	long dist;
+	int dx, dy, dz;
+	int i, maxret;
+	int res;
 	tNode startNode;
-	tNode sp_n;
+	uint pnode;
+	uint parent;
 
 	BloodyHell();
 
-	if ((player_position_known == 1) || (CameraCnt == 6)) 
+	// quickly invalidate and do extra
+	if (player_position_known == 1 || CameraCnt == 6)
 	{
 		pathFrames = 0;
 		setMem16((ushort*)distanceCache, 0xfffe, 0x4000);
 		DoExtraWorkForNFrames = 3;
 	}
 
-	if (pathFrames == 0) 
+	
+	if (pathFrames != 0)
 	{
-		if ((player[0].playerType == 1) && ((CopsCanSeePlayer != 0 || (numActiveCops == 0)))) 
-		{
-			iVar1 = (int)player[0].playerCarId;
+		int iterations;
+		
+		// add cars
+		addCivs();
 
-			searchTarget.vx = car_data[iVar1].hd.where.t[0] + FIXEDH(car_data[iVar1].st.n.linearVelocity[0]) * 8;
-			searchTarget.vy = car_data[iVar1].hd.where.t[1] + FIXEDH(car_data[iVar1].st.n.linearVelocity[1]) * 4;
-			searchTarget.vz = car_data[iVar1].hd.where.t[2] + FIXEDH(car_data[iVar1].st.n.linearVelocity[2]) * 8;
+		iterations = cellsThisFrame;
+
+		if (cellsThisFrame > 6)
+			iterations = 6;
+
+		i = pathIterations - (iterations * 4) * 4 - iterations * 5;
+
+		if (DoExtraWorkForNFrames != 0)
+		{
+			DoExtraWorkForNFrames--;
+			i += 60;
 		}
-		else if (searchTarget.vy == -0x304f) 
+
+		if (i < 36)
+			i = 36;
+
+		i -= 1;
+
+		while (i-- >= 0)
+		{
+			iterate();
+		}
+
+		DebugDisplayObstacleMap();
+		
+		// remove cars
+		addCivs();
+	}
+	else
+	{
+		// restart from new search target position
+		if (player[0].playerType == 1 && (CopsCanSeePlayer != 0 || numActiveCops == 0))
+		{
+			_CAR_DATA* cp;
+			cp = &car_data[player[0].playerCarId];
+
+			searchTarget.vx = cp->hd.where.t[0] + FIXEDH(cp->st.n.linearVelocity[0]) * 8;
+			searchTarget.vy = cp->hd.where.t[1] + FIXEDH(cp->st.n.linearVelocity[1]) * 4;
+			searchTarget.vz = cp->hd.where.t[2] + FIXEDH(cp->st.n.linearVelocity[2]) * 8;
+		}
+		else if (searchTarget.vy == -0x304f)
 		{
 			searchTarget.vx = player[0].pos[0];
 			searchTarget.vy = player[0].pos[1];
 			searchTarget.vz = player[0].pos[2];
 		}
 
-		psVar6 = distanceCache;
-		iVar1 = 0x3fff;
+		i = 0;
 
+		// step up distance frame (and invalidate by setting bit 1)
 		do {
-			uVar2 = (uint)(ushort)*psVar6 + 0x2000;
-			if ((uVar2 & 1) != 0)
-				uVar2 = uVar2 ^ 1;
+			d = distanceCache[i] + 8192;
 
-			uVar4 = (ushort)uVar2;
-			if (0xfffe < uVar2)
-				uVar4 = 0xfffe;
+			if ((d & 1) != 0)
+				d = d ^ 1;
 
-			*psVar6 = uVar4;
-			iVar1--;
-			psVar6 = (short*)((ushort*)psVar6 + 1);
-		} while (-1 < iVar1);
+			if (d > 0xfffe)
+				d = 0xfffe;
 
-		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 0x200 - ((searchTarget.vz & 0x200U) >> 1);
+			distanceCache[i] = d;
+			i++;
+		} while (i < 16384);
+
+		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 512 - ((searchTarget.vz & 0x200U) >> 1);
 		startNode.vz = (searchTarget.vz >> 9) << 9;
 		startNode.vy = searchTarget.vy;
+		
 		numHeapEntries = 0;
 
-		uVar2 = (int)(startNode.vz & 0xfffffc00U) >> 8;
-
-		if ((((char*)omap)[((uVar2 & 0x7f) >> 3) + ((startNode.vx & 0xfffffc00U) >> 4 & 0x7c0)] >> (uVar2 & 7) & 1U) == 0)
+		// pick the height
+		if(OMAP_GETVALUE(startNode.vx >> 8, startNode.vz >> 8) != 0)
+		{
+			res = MapHeight((VECTOR*)&startNode);
+			startNode.vy = res ^ (res ^ sdLevel) & 3;
+		}
+		else
 		{
 			startNode.vy = 0;
 		}
-		else 
-		{
-			uVar2 = MapHeight((VECTOR*)&startNode);
-			startNode.vy = uVar2 ^ (uVar2 ^ sdLevel) & 3;
-		}
 
-		iVar1 = startNode.vx - searchTarget.vx;
+		dx = searchTarget.vx - startNode.vx;
+		dz = searchTarget.vz - startNode.vz;
 
-		if (searchTarget.vz - startNode.vz < (searchTarget.vx - startNode.vx) + (searchTarget.vz - startNode.vz >> 1))
+		if (dz < dx + dz / 2)
 		{
-			lVar3 = SquareRoot0(iVar1 * iVar1 + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			uVar2 = lVar3 / 2 & 0xffff;
+			dx = startNode.vx - searchTarget.vx;
+			dz = startNode.vz - searchTarget.vz;
+			
+			dist = SquareRoot0(dx * dx + (dz) * (dz));
+			dist = dist / 2 & 0xffff;
 
 			if (numHeapEntries != 198)
 			{
-				setDistance(&startNode, (ushort)uVar2);
-				uVar11 = numHeapEntries + 1;
-				uVar9 = uVar11 >> 1;
+				setDistance(&startNode, dist);
 
-				if (uVar9 != 0) 
+				i = numHeapEntries + 1;
+
+				pnode = i;
+				parent = i >> 1;
+
+				while (parent != 0 && dist < heap[parent].dist)
 				{
-					uVar4 = heap[uVar9].dist;
+					heap[i] = heap[parent];
 
-					while (uVar2 < uVar4)
-					{
-						heap[uVar11].vx = heap[uVar9].vx;
-						heap[uVar11].vy = heap[uVar9].vy;
-						heap[uVar11].vz = heap[uVar9].vz;
-						uVar10 = uVar9 >> 1;
-						heap[uVar11].dist = heap[uVar9].dist;
-						heap[uVar11].ptoey = heap[uVar9].ptoey;
-
-						uVar11 = uVar9;
-
-						if (uVar10 == 0)
-							break;
-
-						uVar4 = heap[uVar10].dist;
-						uVar9 = uVar10;
-					}
+					pnode = parent;
+					parent >>= 1;
 				}
 
-				numHeapEntries = numHeapEntries + 1;
-				heap[uVar11].vx = startNode.vx;
-				heap[uVar11].vy = startNode.vy;
-				heap[uVar11].vz = startNode.vz;
-				heap[uVar11].dist = startNode.dist;
-				heap[uVar11].ptoey = startNode.ptoey;
+				heap[pnode] = startNode;
+				numHeapEntries++;
 			}
 
-			startNode.vx = startNode.vx + 0x100;
-			startNode.vz = startNode.vz + 0x200;
-			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) +
-				(startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			uVar2 = lVar3 / 2 & 0xffff;
-
-			if (numHeapEntries != 0xc6) 
-			{
-				setDistance(&startNode, (ushort)uVar2);
-				uVar11 = numHeapEntries + 1;
-				uVar9 = uVar11 >> 1;
-				if (uVar9 != 0) 
-				{
-					uVar4 = heap[uVar9].dist;
-					while (uVar2 < uVar4)
-					{
-						heap[uVar11].vx = heap[uVar9].vx;
-						heap[uVar11].vy = heap[uVar9].vy;
-						heap[uVar11].vz = heap[uVar9].vz;
-						uVar10 = uVar9 >> 1;
-						heap[uVar11].dist = heap[uVar9].dist;
-						heap[uVar11].ptoey = heap[uVar9].ptoey;
-						uVar11 = uVar9;
-
-						if (uVar10 == 0)
-							break;
-
-						uVar4 = heap[uVar10].dist;
-						uVar9 = uVar10;
-					}
-				}
-				numHeapEntries = numHeapEntries + 1;
-				heap[uVar11].vx = startNode.vx;
-				heap[uVar11].vy = startNode.vy;
-				heap[uVar11].vz = startNode.vz;
-				heap[uVar11].dist = startNode.dist;
-				heap[uVar11].ptoey = startNode.ptoey;
-			}
-
-			startNode.vx = startNode.vx + 0x100;
-			startNode.vz = startNode.vz + -0x200;
-			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			uVar2 = lVar3 / 2 & 0xffff;
-
-			if (numHeapEntries == 0xc6)
-				goto LAB_PATH__000e8dfc;
-
-			setDistance(&startNode, (ushort)uVar2);
-
-			uVar9 = numHeapEntries + 1;
-			uVar11 = uVar9 >> 1;
-
-			if ((uVar11 != 0) && (uVar2 < heap[uVar11].dist))
-			{
-				iVar1 = uVar9 * 0x10;
-				do {
-					uVar9 = uVar11;
-					*(int*)((int)&heap[0].vx + iVar1) = (&heap[0].vx)[uVar9 * 4]; // [A] I cannot understand decompiler shit code
-					*(int*)((int)&heap[0].vy + iVar1) = (&heap[0].vy)[uVar9 * 4];
-					*(int*)((int)&heap[0].vz + iVar1) = (&heap[0].vz)[uVar9 * 4];
-
-					uVar11 = uVar9 >> 1;
-					*(uint*)((int)&heap[0].dist + iVar1) = *(uint*)(&heap[0].dist + uVar9 * 8);
-
-					if (uVar11 == 0)
-						break;
-
-					iVar1 = uVar9 << 4; // * 16
-				} while (uVar2 < heap[uVar11].dist);
-			}
-		}
-		else 
-{
-			lVar3 = SquareRoot0(iVar1 * iVar1 + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			uVar2 = lVar3 / 2 & 0xffff;
-			if (numHeapEntries != 0xc6)
-			{
-				setDistance(&startNode, (ushort)uVar2);
-				uVar11 = numHeapEntries + 1;
-				uVar9 = uVar11 >> 1;
-				if (uVar9 != 0)
-				{
-					uVar4 = heap[uVar9].dist;
-					while (uVar2 < uVar4)
-					{
-						heap[uVar11].vx = heap[uVar9].vx;
-						heap[uVar11].vy = heap[uVar9].vy;
-						heap[uVar11].vz = heap[uVar9].vz;
-						uVar10 = uVar9 >> 1;
-						heap[uVar11].dist = heap[uVar9].dist;
-						heap[uVar11].ptoey = heap[uVar9].ptoey;
-						uVar11 = uVar9;
-
-						if (uVar10 == 0)
-							break;
-
-						uVar4 = heap[uVar10].dist;
-						uVar9 = uVar10;
-					}
-				}
-				numHeapEntries = numHeapEntries + 1;
-				heap[uVar11].vx = startNode.vx;
-				heap[uVar11].vy = startNode.vy;
-				heap[uVar11].vz = startNode.vz;
-				heap[uVar11].dist = startNode.dist;
-				heap[uVar11].ptoey = startNode.ptoey;
-			}
-
-			startNode.vx = startNode.vx + 0x100;
-			startNode.vz = startNode.vz + 0x200;
-			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			uVar2 = lVar3 / 2 & 0xffff;
+			startNode.vx += 256;
+			startNode.vz += 512;
+			
+			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			dist = dist / 2 & 0xffff;
 
 			if (numHeapEntries != 198)
 			{
-				setDistance(&startNode, (ushort)uVar2);
+				setDistance(&startNode, dist);
 
-				uVar11 = numHeapEntries + 1;
-				uVar9 = uVar11 >> 1;
+				i = numHeapEntries + 1;
 
-				if (uVar9 != 0)
+				pnode = i;
+				parent = i >> 1;
+
+				while (parent != 0 && dist < heap[parent].dist)
 				{
-					uVar4 = heap[uVar9].dist;
-					while (uVar2 < uVar4) {
-						heap[uVar11].vx = heap[uVar9].vx;
-						heap[uVar11].vy = heap[uVar9].vy;
-						heap[uVar11].vz = heap[uVar9].vz;
-						uVar10 = uVar9 >> 1;
-						heap[uVar11].dist = heap[uVar9].dist;
-						heap[uVar11].ptoey = heap[uVar9].ptoey;
-						uVar11 = uVar9;
+					heap[i] = heap[parent];
 
-						if (uVar10 == 0)
-							break;
-
-						uVar4 = heap[uVar10].dist;
-						uVar9 = uVar10;
-					}
+					pnode = parent;
+					parent >>= 1;
 				}
 
-				numHeapEntries = numHeapEntries + 1;
-				heap[uVar11].vx = startNode.vx;
-				heap[uVar11].vy = startNode.vy;
-				heap[uVar11].vz = startNode.vz;
-				heap[uVar11].dist = startNode.dist;
-				heap[uVar11].ptoey = startNode.ptoey;
+				heap[pnode] = startNode;
+				numHeapEntries++;
 			}
-			startNode.vx = startNode.vx + -0x200;
-			lVar3 = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			uVar2 = lVar3 / 2 & 0xffff;
 
-			if (numHeapEntries == 0xc6)
-				goto LAB_PATH__000e8dfc;
+			startNode.vx += 256;
+			startNode.vz -= 512;
+			
+			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			dist = dist / 2 & 0xffff;
 
-			setDistance(&startNode, (ushort)uVar2);
-			uVar9 = numHeapEntries + 1;
-			uVar11 = uVar9 >> 1;
-
-			if ((uVar11 != 0) && (uVar2 < heap[uVar11].dist)) 
+			if (numHeapEntries != 198)
 			{
-				iVar1 = uVar9 * 0x10;
-				do {
-					uVar9 = uVar11;
-					*(int*)((int)&heap[0].vx + iVar1) = (&heap[0].vx)[uVar9 * 4];
-					*(int*)((int)&heap[0].vy + iVar1) = (&heap[0].vy)[uVar9 * 4];
-					*(int*)((int)&heap[0].vz + iVar1) = (&heap[0].vz)[uVar9 * 4];
-					uVar11 = uVar9 >> 1;
-					*(uint*)((int)&heap[0].dist + iVar1) = *(uint*)(&heap[0].dist + uVar9 * 8);
+				setDistance(&startNode, dist);
 
-					if (uVar11 == 0)
-						break;
+				i = numHeapEntries + 1;
 
-					iVar1 = uVar9 << 4; // * 16
-				} while (uVar2 < heap[uVar11].dist);
+				pnode = i;
+				parent = i >> 1;
+
+				while (parent != 0 && dist < heap[parent].dist)
+				{
+					heap[i] = heap[parent];
+
+					pnode = parent;
+					parent >>= 1;
+				}
+
+				heap[pnode] = startNode;
+				numHeapEntries++;
 			}
 		}
-
-		numHeapEntries++;
-
-		heap[uVar9].vx = startNode.vx;
-		heap[uVar9].vy = startNode.vy;
-		heap[uVar9].vz = startNode.vz;
-		heap[uVar9].dist = startNode.dist;
-		heap[uVar9].ptoey = startNode.ptoey;
-	}
-	else
-	{
-		// add cars
-		addCivs(); 
-
-		iVar1 = cellsThisFrame << 2;
-		uVar2 = cellsThisFrame;
-
-		if (6 < cellsThisFrame) 
+		else
 		{
-			uVar2 = 6;
-			iVar1 = 24;
-		}
+			dx = startNode.vx - searchTarget.vx;
+			dz = startNode.vz - searchTarget.vz;
+			
+			dist = SquareRoot0(dx * dx + dz * dz);
+			dist = dist / 2 & 0xffff;
+			
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, dist);
 
-		iVar1 = pathIterations - iVar1 * 4 - uVar2 * 5;
-		if (DoExtraWorkForNFrames != 0) 
-		{
-			DoExtraWorkForNFrames--;
-			iVar1 += 60;
-		}
+				i = numHeapEntries + 1;
 
-		iVar8 = iVar1 - 1;
+				pnode = i;
+				parent = i >> 1;
 
-		if (iVar1 < 36)
-			iVar8 = 35;
+				while (parent != 0 && dist < heap[parent].dist)
+				{
+					heap[i] = heap[parent];
+
+					pnode = parent;
+					parent >>= 1;
+				}
+
+				heap[pnode] = startNode;
+				numHeapEntries++;
+			}
+
+			startNode.vx += 256;
+			startNode.vz += 512;
 	
-		while (iVar8 != -1) 
-		{
-			iVar8--;
-			iterate();
-		}
+			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			dist = dist / 2 & 0xffff;
 
-		// remove cars
-		addCivs();
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, dist);
+
+				i = numHeapEntries + 1;
+
+				pnode = i;
+				parent = i >> 1;
+
+				while (parent != 0 && dist < heap[parent].dist)
+				{
+					heap[i] = heap[parent];
+
+					pnode = parent;
+					parent >>= 1;
+				}
+
+				heap[pnode] = startNode;
+				numHeapEntries++;
+			}
+
+			startNode.vx -= 512;
+			
+			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
+			dist = dist / 2 & 0xffff;
+
+			if (numHeapEntries != 198)
+			{
+				setDistance(&startNode, dist);
+
+				i = numHeapEntries + 1;
+
+				pnode = i;
+				parent = i >> 1;
+
+				while (parent != 0 && dist < heap[parent].dist)
+				{
+					heap[i] = heap[parent];
+
+					pnode = parent;
+					parent >>= 1;
+				}
+
+				heap[pnode] = startNode;
+				numHeapEntries++;
+			}
+		}
 	}
 
-LAB_PATH__000e8dfc:
-	piVar5 = distanceReturnedLog;
-	iVar8 = 6;
 	pathFrames++;
-	iVar1 = distanceReturnedLog[7];
 
+	maxret = distanceReturnedLog[7];
+	
+	i = 6;
 	do {
-		if (iVar1 < *piVar5)
-			iVar1 = *piVar5;
+		
+		if (maxret < distanceReturnedLog[i])
+			maxret = distanceReturnedLog[i];
 
-		iVar8--;
-		piVar5++;
-	} while (-1 < iVar8);
+		i--;
+	} while (i >= 0);
 
-	if ((32 < pathFrames) || (2000 < (heap[1].dist - iVar1)))  // [A] was (pathFrames < pathFrames)
+	if (pathFrames > 250 || heap[1].dist - maxret > 3000)  // [A] was (pathFrames < pathFrames)
 	{
 		pathFrames = 0;
 	}
 
-	iVar7 = searchTarget.vx - player[0].pos[0] >> 4;
-	iVar8 = searchTarget.vy - player[0].pos[1] >> 4;
-	iVar1 = searchTarget.vz - player[0].pos[2] >> 4;
-	playerTargetDistanceSq = iVar7 * iVar7 + iVar8 * iVar8 + iVar1 * iVar1;
+	dx = searchTarget.vx - player[0].pos[0] >> 4;
+	dy = searchTarget.vy - player[0].pos[1] >> 4;
+	dz = searchTarget.vz - player[0].pos[2] >> 4;
 
-#if 0
-	printf("=========================\n");
-	for (int i = 0; i < 128; i++)
-	{
-		char line[130];
-
-		for (int j = 0; j < 128; j++)
-		{
-			if (OMAP_GETVALUE(i, j))
-				line[j] = 'O';
-			else
-				line[j] = '.';
-		}
-		line[128] = 0;
-		printf("%s\n", line);
-	}
-	printf("=========================\n");
-#endif
+	playerTargetDistanceSq = dx * dx + dy * dy + dz * dz;
 }
 
 
@@ -2524,63 +2475,64 @@ LAB_PATH__000e8dfc:
 	/* end block 5 */
 	// End Line: 2229
 
-// [D]
+// [D] [T]
 int getHeadingToPlayer(int vx, int vy, int vz)
 {
-	int iVar1;
-	uint uVar2;
-	int iVar3;
+	int d1, d2, d3;
+	int playerHereDistSq;
+	int dx, dy, dz;
 	int val;
-	long y;
-	long x;
-	int iVar4;
 	VECTOR pos;
 
-	iVar4 = vx - player[0].pos[0] >> 4;
-	iVar3 = vy - player[0].pos[1] >> 4;
-	iVar1 = vz - player[0].pos[2] >> 4;
+	dx = vx - player[0].pos[0] >> 4;
+	dy = vy - player[0].pos[1] >> 4;
+	dz = vz - player[0].pos[2] >> 4;
 
 	val = 4004;
 
-	if ((playerTargetDistanceSq << 1) <= (iVar4 * iVar4 + iVar3 * iVar3 + iVar1 * iVar1) * 3) 
+	playerHereDistSq = (dx * dx + dy * dy + dz * dz);
+
+	if (playerTargetDistanceSq * 2 <= playerHereDistSq * 3)
 	{
-		pos.vx = vx - 0x80;
 		pos.vy = vy;
-		pos.vz = vz - 0x80;
 
-		iVar1 = getInterpolatedDistance(&pos);
+		pos.vx = vx - 128;
+		pos.vz = vz - 128;
 
-		pos.vx = vx + 0x80;
-		pos.vz = vz - 0x80;
-		iVar3 = getInterpolatedDistance(&pos);
+		d1 = getInterpolatedDistance(&pos);
 
-		pos.vz = vz + 0x80;
+		pos.vx = vx + 128;
+		pos.vz = vz - 128;
+		d2 = getInterpolatedDistance(&pos);
+
+		pos.vz = vz + 128;
 		pos.vx = vx;
-		iVar4 = getInterpolatedDistance(&pos);
+		d3 = getInterpolatedDistance(&pos);
 
-		if (iVar4 > 0xf000)
+		if (d3 > 61440)
 		{
 			ReplayLog_Fnarr_He_Said_Log(0x3e9);
-			y = lastKnownPosition.vx - pos.vx;
-			x = lastKnownPosition.vz - pos.vz;
 
-			return ratan2(y, x) + 4096;
+			dx = lastKnownPosition.vx - pos.vx;
+			dz = lastKnownPosition.vz - pos.vz;
+
+			return ratan2(dx, dz) + 4096;
 		}
 
 		val = 0xbbb;
 
-		if (iVar4 > 0x600)
+		if (d3 > 1536)
 		{
 			ReplayLog_Fnarr_He_Said_Log(0x7d2);
 
-			return ratan2((iVar1 - iVar3) * 2, iVar1 + iVar3 + iVar4 * -2) & 0xfff;
+			return ratan2((d1 - d2) * 2, d1 + d2 - d3 * 2) & 0xfff;
 		}
 	}
 
 	ReplayLog_Fnarr_He_Said_Log(val);
 
-	y = player[0].pos[0] - vx;
-	x = player[0].pos[2] - vz;
+	dx = player[0].pos[0] - vx;
+	dz = player[0].pos[2] - vz;
 
-	return ratan2(y, x) + 4096;
+	return ratan2(dx, dz) + 4096;
 }

@@ -365,7 +365,7 @@ char g_Replay_buffer[0x50000];		// 0x1fABBC
 
 int main(int argc, char** argv)
 {
-	ini_t *config;
+	ini_t* config;
 
 #ifdef USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
@@ -394,7 +394,7 @@ int main(int argc, char** argv)
 #endif // _DEBUG
 
 	config = ini_load("config.ini");
-	
+
 
 	// best distance
 	gDrawDistance = 600;
@@ -404,33 +404,37 @@ int main(int argc, char** argv)
 	int fullScreen = 0;
 	int enableFreecamera = 0;
 	extern int g_pgxpTextureCorrection;
-	
-	ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
-	ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
-	ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
-	ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
-	ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
-	ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
-	
-#if defined(DEBUG_OPTIONS)
-	int unlockAll = 0;
-	ini_sget(config, "game", "unlockAll", "%d", &unlockAll);
 
-	if(unlockAll)
+	if (config)
 	{
-		gFurthestMission = 40;
-		AvailableCheats.cheat5 = 1;
-		AvailableCheats.cheat6 = 1;
-		AvailableCheats.cheat7 = 1;
-		AvailableCheats.cheat8 = 1;
-		AvailableCheats.cheat2 = 1;
-		AvailableCheats.cheat11 = 1;
-		AvailableCheats.cheat1 = 1;
-		AvailableCheats.cheat3 = 1;
-		AvailableCheats.cheat4 = 1;
-	}
-#endif
+		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
+		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
+		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
+		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
+		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 
+#if defined(DEBUG_OPTIONS)
+		int unlockAll = 0;
+		ini_sget(config, "game", "unlockAll", "%d", &unlockAll);
+
+		if (unlockAll)
+		{
+			gFurthestMission = 40;
+			AvailableCheats.cheat5 = 1;
+			AvailableCheats.cheat6 = 1;
+			AvailableCheats.cheat7 = 1;
+			AvailableCheats.cheat8 = 1;
+			AvailableCheats.cheat2 = 1;
+			AvailableCheats.cheat11 = 1;
+			AvailableCheats.cheat1 = 1;
+			AvailableCheats.cheat3 = 1;
+			AvailableCheats.cheat4 = 1;
+		}
+#endif
+	
+		ini_free(config);
+	}
 #ifndef _DEBUG
 	if(enableFreecamera)
 	{
@@ -444,7 +448,7 @@ int main(int argc, char** argv)
 	
 #endif
 
-	ini_free(config);
+	
 
 	Emulator_Initialise("DRIVER2", windowWidth, windowHeight, fullScreen);
 	redriver2_main(argc, argv);

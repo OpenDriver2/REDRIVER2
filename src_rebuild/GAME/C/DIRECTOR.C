@@ -266,9 +266,12 @@ void setCamera(PLAYBACKCAMERA* Change)
 
 	tracking_car = (Change->cameraview & 8) >> 3;
 
-	player[0].cameraPos.vx = Change->position.vx;
-	player[0].cameraPos.vy = Change->position.vy;
-	player[0].cameraPos.vz = Change->position.vz;
+	if(cameraview != 0 && cameraview != 2)
+	{
+		player[0].cameraPos.vx = Change->position.vx;
+		player[0].cameraPos.vy = Change->position.vy;
+		player[0].cameraPos.vz = Change->position.vz;
+	}
 	player[0].cameraCarId = Change->angle.pad;
 }
 
@@ -642,9 +645,13 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 
 	CameraChanged = 1;
 
-	player[0].cameraPos.vx = camera->position.vx;
-	player[0].cameraPos.vy = camera->position.vy;
-	player[0].cameraPos.vz = camera->position.vz;
+	if(cameraview != 0 && cameraview != 2)
+	{
+		player[0].cameraPos.vx = camera->position.vx;
+		player[0].cameraPos.vy = camera->position.vy;
+		player[0].cameraPos.vz = camera->position.vz;
+	}
+
 	player[0].cameraCarId = camera->angle.pad;
 }
 
@@ -2493,6 +2500,7 @@ void ControlReplay(void)
 		case 3:
 		{
 			CursorY = 1;
+	
 			if (CursorX == 5)
 				DirectorMenuActive = 2;
 			else if (CursorX == 6 && move == 5)
@@ -3002,79 +3010,10 @@ int InvalidCamera(int car_num)
 	int dz;
 	int numEventModels;
 
-	if (cameraview != 0)
+	// check if camera is not too far
+	if (cameraview != 2)
 	{
-		// check if camera is not too far
-		if (cameraview != 2)
-		{
-			if (Long2DDistance(player[0].spoolXZ, &player[0].cameraPos) > 11000)
-			{
-				if (player[0].playerType == 2)
-					player[0].cameraCarId = -1;
-				else
-					player[0].cameraCarId = player[0].playerCarId;
-
-				gCameraOffset.vy = 0;
-				cameraview = 0;
-				return 1;
-			}
-
-			if (valid_region(player[0].cameraPos.vx, player[0].cameraPos.vz) != 0)
-				return 0;
-
-			player[0].cameraCarId = -1;
-
-			if (player[0].playerType != 2)
-				player[0].cameraCarId = player[0].playerCarId;
-
-			// change it to the default view
-			cameraview = 2;
-			gCameraOffset.vy = 0;
-			return 1;
-		}
-
-		invalidCamera = false;
-
-		// check for invalid car
-		if (car_num > -1)
-			invalidCamera = (car_data[car_num].controlType == CONTROL_TYPE_NONE);
-
-		// check if player is incorrect (pedestrian)
-		if (car_num == -1 && player[0].playerType != 2)
-			invalidCamera = true;
-
-		// check events
-		if (car_num < -1)
-		{
-			_EVENT* event;
-			XZPAIR pos;
-
-			numEventModels = 0;
-
-			if (*events.track != NULL)
-			{
-				do {
-				} while (events.track[numEventModels++] != NULL);
-			}
-
-			if (-2 - car_num > numEventModels)
-				invalidCamera = true;
-
-			event = events.track[-2 - car_num];
-			pos.x = event->position.vx;
-			pos.z = event->position.vx;
-
-			dx = ABS(player[0].pos[0] - pos.x);
-			dz = ABS(player[0].pos[2] - pos.z);
-
-			if (dx < 15000 && dz < 15000 &&
-				dx * dx + dz * dz < 225000000)
-			{
-				invalidCamera = true;
-			}
-		}
-
-		if (invalidCamera)
+		if (Long2DDistance(player[0].spoolXZ, &player[0].cameraPos) > 20000)
 		{
 			if (player[0].playerType == 2)
 				player[0].cameraCarId = -1;
@@ -3082,8 +3021,74 @@ int InvalidCamera(int car_num)
 				player[0].cameraCarId = player[0].playerCarId;
 
 			gCameraOffset.vy = 0;
+			cameraview = 0;
 			return 1;
 		}
+
+		if (valid_region(player[0].cameraPos.vx, player[0].cameraPos.vz) != 0)
+			return 0;
+
+		player[0].cameraCarId = -1;
+
+		if (player[0].playerType != 2)
+			player[0].cameraCarId = player[0].playerCarId;
+
+		// change it to the default view
+		cameraview = 2;
+		gCameraOffset.vy = 0;
+		return 1;
+	}
+
+	invalidCamera = false;
+
+	// check for invalid car
+	if (car_num > -1)
+		invalidCamera = (car_data[car_num].controlType == CONTROL_TYPE_NONE);
+
+	// check if player is incorrect (pedestrian)
+	if (car_num == -1 && player[0].playerType != 2)
+		invalidCamera = true;
+
+	// check events
+	if (car_num < -1)
+	{
+		_EVENT* event;
+		XZPAIR pos;
+
+		numEventModels = 0;
+
+		if (*events.track != NULL)
+		{
+			do {
+			} while (events.track[numEventModels++] != NULL);
+		}
+
+		if (-2 - car_num > numEventModels)
+			invalidCamera = true;
+
+		event = events.track[-2 - car_num];
+		pos.x = event->position.vx;
+		pos.z = event->position.vx;
+
+		dx = ABS(player[0].pos[0] - pos.x);
+		dz = ABS(player[0].pos[2] - pos.z);
+
+		if (dx < 15000 && dz < 15000 &&
+			dx * dx + dz * dz < 225000000)
+		{
+			invalidCamera = true;
+		}
+	}
+
+	if (invalidCamera)
+	{
+		if (player[0].playerType == 2)
+			player[0].cameraCarId = -1;
+		else
+			player[0].cameraCarId = player[0].playerCarId;
+
+		gCameraOffset.vy = 0;
+		return 1;
 	}
 
 	return 0;

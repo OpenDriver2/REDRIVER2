@@ -10,6 +10,7 @@
 #include "GLAUNCH.H"
 #include "MODELS.H"
 #include "PLAYERS.H"
+#include "MAIN.H"
 
 #include "STRINGS.H"
 
@@ -394,8 +395,8 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	dx = pos->vx + units_across_halved;
 	dz = pos->vz + units_down_halved;
 
-	cellx = (dx >> 0xb) - ccx;
-	cellz = (dz >> 0xb) - ccz;
+	cellx = (dx / MAP_CELL_SIZE) - ccx;
+	cellz = (dz / MAP_CELL_SIZE) - ccz;
 
 	if (cellx < 0)
 		ab = -cellx;
@@ -462,8 +463,8 @@ int PositionVisible(VECTOR *pos)
 	dx = pos->vx + units_across_halved;
 	dz = pos->vz + units_down_halved;
 
-	cellx = (dx >> 0xb) - current_cell_x;
-	cellz = (dz >> 0xb) - current_cell_z;
+	cellx = (dx / MAP_CELL_SIZE) - current_cell_x;
+	cellz = (dz / MAP_CELL_SIZE) - current_cell_z;
 
 	if (cellx < 0)
 		ab = -cellx;
@@ -788,48 +789,20 @@ extern OUT_CELL_FILE_HEADER cell_header;
 // [D] [T]
 void ControlMap(void)
 {
-#ifdef PSX
 	int region_to_unpack;
 
-	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / 2048;
-	current_cell_z = (player[0].spoolXZ->vz + units_down_halved) / 2048;
+	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / MAP_CELL_SIZE;
+	current_cell_z = (player[0].spoolXZ->vz + units_down_halved) / MAP_CELL_SIZE;
 
-	region_x = current_cell_x / 32;
-	region_z = current_cell_z / 32;
+	region_x = current_cell_x / MAP_REGION_SIZE;
+	region_z = current_cell_z / MAP_REGION_SIZE;
 
 	old_region = current_region;
 
-	current_barrel_region_xcell = current_cell_x - region_x * 32;
-	current_barrel_region_zcell = current_cell_z - region_z * 32;
+	current_barrel_region_xcell = current_cell_x - region_x * MAP_REGION_SIZE;
+	current_barrel_region_zcell = current_cell_z - region_z * MAP_REGION_SIZE;
 
-	region_to_unpack = region_x + region_z * (cells_across / 32);
-	
-	if (current_region == -1)
-		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
-
-	current_region = region_to_unpack;
-	CheckUnpackNewRegions();
-
-	if (old_region == current_region || old_region == -1) 
-		CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
-
-	current_cell_x = (camera_position.vx + units_across_halved) / 2048;
-	current_cell_z = (camera_position.vz + units_down_halved) / 2048;
-#else
-	int region_to_unpack;
-
-	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / cell_header.cell_size;
-	current_cell_z = (player[0].spoolXZ->vz + units_down_halved) / cell_header.cell_size;
-
-	region_x = current_cell_x / cell_header.region_size;
-	region_z = current_cell_z / cell_header.region_size;
-
-	old_region = current_region;
-
-	current_barrel_region_xcell = current_cell_x - region_x * cell_header.region_size;
-	current_barrel_region_zcell = current_cell_z - region_z * cell_header.region_size;
-
-	region_to_unpack = region_x + region_z * (cells_across / cell_header.region_size);
+	region_to_unpack = region_x + region_z * (cells_across / MAP_REGION_SIZE);
 
 	if (current_region == -1)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
@@ -839,49 +812,10 @@ void ControlMap(void)
 
 	CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
 
-	current_cell_x = (camera_position.vx + units_across_halved) / cell_header.cell_size;
-	current_cell_z = (camera_position.vz + units_down_halved) / cell_header.cell_size;
-#endif
+	current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
+	current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
 
 	StartSpooling();
-
-#if 0 // [A] region test view
-	{
-		extern OUT_CELL_FILE_HEADER cell_header;
-
-		int dim_x = cell_header.cells_across / cell_header.region_size;
-		int dim_z = cell_header.cells_down / cell_header.region_size;
-		int numRegions = dim_x * dim_z;
-
-		int counter = 0;
-
-		printInfo("\n\n");
-
-		char regionAcrossDisplay[128] = { 0 };
-
-		// print region map to console
-		for (int i = 0; i < numRegions; i++, counter++)
-		{
-			int curRegIdx = region_z * dim_x + region_x;
-
-			// Debug information: Print the map to the console.
-			regionAcrossDisplay[counter] = (spoolinfo_offsets[i] == 0xFFFF) ? '.' : 'O';
-
-			if (curRegIdx == i)
-			{
-				regionAcrossDisplay[counter] = 'X';
-			}
-
-			if (counter == dim_x - 1)
-			{
-				printInfo("%s\n", regionAcrossDisplay);
-				memset(regionAcrossDisplay, 0, sizeof(regionAcrossDisplay));
-				counter = -1;
-			}
-		}
-		printInfo("\n\n");
-	}
-#endif
 }
 
 
@@ -1013,8 +947,8 @@ void InitMap(void)
 		LoadInAreaTSets(initarea);
 		LoadInAreaModels(initarea);
 
-		current_cell_x = camera_position.vx + units_across_halved >> 0xb;
-		current_cell_z = camera_position.vz + units_down_halved >> 0xb;
+		current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
+		current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
 
 		StartSpooling();
 	}
@@ -1078,22 +1012,22 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 	int rz;
 	int rx;
 
-	cx = (pos->vx + units_across_halved) / 2048;
-	cz = (pos->vz + units_down_halved) / 2048;
+	cx = (pos->vx + units_across_halved) / MAP_CELL_SIZE;
+	cz = (pos->vz + units_down_halved) / MAP_CELL_SIZE;
 
 	*ccx = cx;
 	*ccz = cz;
 
-	rx = cx / 32;
-	rz = cz / 32;
+	rx = cx / MAP_REGION_SIZE;
+	rz = cz / MAP_REGION_SIZE;
 
 	int barrel_region_x = (rx & 1);
 	int barrel_region_z = (rz & 1);
 
 	GetPVSRegionCell2(
 		barrel_region_x + barrel_region_z * 2,
-		rx + rz * (cells_across / 32),
-		(cz - rz * 32) * 32 + cx - rx * 32, 
+		rx + rz * (cells_across / MAP_REGION_SIZE),
+		(cz - rz * MAP_REGION_SIZE) * MAP_REGION_SIZE + cx - rx * MAP_REGION_SIZE,
 		tgt);
 }
 
@@ -1405,6 +1339,15 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 	char *tbp;
 	char *bp;
 	ushort length;
+
+	if (gDriver1Level)
+	{
+		// don't draw non-loaded regions
+		for (k = 0; k < pvs_square_sq; k++)
+			output[k] = 1;
+
+		return;
+	}
 
 	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1) 
 	{

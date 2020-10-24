@@ -3,6 +3,9 @@
 
 extern int game_over;
 
+extern int gDriver1Level;
+extern int gDemoLevel;
+
 extern XZPAIR gStartPos;
 
 extern int xa_timeout;

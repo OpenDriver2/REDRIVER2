@@ -24,9 +24,9 @@
 #include "LIBAPI.H"
 
 #ifndef PSX
-const int CAR_LOD_SWITCH_DISTANCE = 12500;
+#define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
 #else
-const int CAR_LOD_SWITCH_DISTANCE = 5500;
+#define CAR_LOD_SWITCH_DISTANCE 5500
 #endif
 
 MATRIX light_matrix =

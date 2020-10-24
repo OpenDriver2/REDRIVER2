@@ -1,6 +1,27 @@
 #ifndef MAP_H
 #define MAP_H
 
+#ifdef PSX
+
+// original Driver 2 definition
+
+#define MAP_REGION_SIZE		32
+#define MAP_CELL_SIZE		2048
+
+#else
+
+extern OUT_CELL_FILE_HEADER cell_header;
+
+// universal definition
+
+// size in cells
+#define MAP_REGION_SIZE			cell_header.region_size
+
+// cell size
+#define MAP_CELL_SIZE			cell_header.cell_size
+
+#endif
+
 extern int cells_across; // offset 0xAA67C
 extern int cells_down; // offset 0xAA680
 
