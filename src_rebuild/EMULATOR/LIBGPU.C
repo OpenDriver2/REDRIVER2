@@ -232,10 +232,8 @@ void DrawAggregatedSplits();
 
 int DrawSync(int mode)
 {
-
-
 	// Update VRAM seems needed to be here
-	//Emulator_UpdateVRAM();
+	Emulator_UpdateVRAM();
 
 	if (g_splitIndex > 0) // don't do flips if nothing to draw.
 	{
