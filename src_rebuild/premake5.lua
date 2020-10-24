@@ -33,6 +33,11 @@ workspace "REDRIVER2"
         defines {
             "NDEBUG",
         }
+		
+	filter "configurations:Release Dev"
+        defines {
+            "NDEBUG",
+        }
         
 	if os.target() == "windows" then
 		dofile("premake_libjpeg.lua")

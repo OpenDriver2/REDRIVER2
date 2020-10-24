@@ -65,3 +65,6 @@ project "PSX"
 
     filter "configurations:Release"
         optimize "Full"
+		
+	filter "configurations:Release Dev"
+        optimize "Full"
