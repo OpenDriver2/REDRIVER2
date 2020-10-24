@@ -102,7 +102,7 @@ inline void OMapSet(int cellX, int cellZ, int val)
 // [A] debug obstacle map display with new debug window
 void DebugDisplayObstacleMap()
 {
-#if defined(_DEBUG) && 1
+#if defined(_DEBUG) && 0
 	static SDL_Window* occlusionWindow;
 	static SDL_Surface* occlSurface;
 	static SDL_Texture* occlTexture;
