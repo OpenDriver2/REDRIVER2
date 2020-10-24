@@ -407,6 +407,8 @@ int main(int argc, char** argv)
 
 	if (config)
 	{
+		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
+		
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
@@ -414,6 +416,18 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 
+		if (dataFolderStr)
+		{
+			strcpy(gDataFolder, dataFolderStr);
+	
+			int len = strlen(gDataFolder);
+			if (gDataFolder[len - 1] != '\\')
+			{
+				gDataFolder[len] = '\\';
+				gDataFolder[len + 1] = '\0';
+			}
+		}
+		
 #if defined(DEBUG_OPTIONS)
 		int unlockAll = 0;
 		ini_sget(config, "game", "unlockAll", "%d", &unlockAll);

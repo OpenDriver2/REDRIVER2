@@ -270,14 +270,14 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		fd /= 10;
 
 	char filename[250];
-	sprintf(filename, "DRIVER2\\FMV\\%d\\RENDER%d.STR[0].AVI", fd, arg->render);
+	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
 
 	ReadAVI readAVI(filename);
 
 	// also load subtitle file
 	if (subtitles)
 	{
-		sprintf(filename, "DRIVER2\\FMV\\%d\\RENDER%d.SBN", fd, arg->render);
+		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
 		InitSubtitles(filename);
 	}
 	else
