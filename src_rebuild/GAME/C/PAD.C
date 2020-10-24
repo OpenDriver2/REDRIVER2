@@ -516,6 +516,8 @@ void ClearPad(int pad)
 void HandleDualShock(void)
 {
 #ifdef PSX
+	PAD* pPad;
+
 	static unsigned char align[6] = {
 		0, 1, 255, 255, 255, 255
 	};
@@ -530,17 +532,19 @@ void HandleDualShock(void)
 	int dsload;
 
 	dsload = 0;
-	pad = 0;
 
-	do {
-		port = Pads[pad].port;
+	for (pad = 0; pad < 2; pad++)
+	{
+		pPad = &Pads[pad];
+		
+		port = pPad->port;
 		HandlePadVibration(pad);
 
-		if (Pads[pad].active == 0) 
+		if (pPad->active == 0) 
 		{
-			Pads[pad].motors[0] = 0;
-			Pads[pad].motors[1] = 0;
-			Pads[pad].vibrate = 0;
+			pPad->motors[0] = 0;
+			pPad->motors[1] = 0;
+			pPad->vibrate = 0;
 		}
 
 		state = PadGetState(port);
@@ -551,104 +555,95 @@ void HandleDualShock(void)
 			case 4:
 				break;
 			case 1:
-				Pads[pad].state = 1;
+				pPad->state = 1;
 
-				if (Pads[pad].dsactive != 0)
+				if (pPad->dsactive != 0)
 				{
-					Pads[pad].dualshock = 0;
-					Pads[pad].dsactive = 0;
-					Pads[pad].state = 0;
-					Pads[pad].delay = 6;
-					Pads[pad].motors[0] = 0;
-					Pads[pad].motors[1] = 0;
-					Pads[pad].vibrate = 0;
+					pPad->dualshock = 0;
+					pPad->dsactive = 0;
+					pPad->state = 0;
+					pPad->delay = 6;
+					pPad->motors[0] = 0;
+					pPad->motors[1] = 0;
+					pPad->vibrate = 0;
 				}
 				break;
 			case 2:
-				if (Pads[pad].state != 6)
-				{
-					Pads[pad].state = 6;
-				}
-				else
-				{
-					goto LAB_0006ba8c;
-				}
-				
-				break;
-			default:
-			LAB_0006ba8c:
-				if (Pads[pad].dsactive == 0 || (Pads[pad].vibrate == 0 && Pads[pad].alarmShakeCounter == 0 || 50 < dsload))
-				{
-					Pads[pad].motors[0] = 0;
-					Pads[pad].motors[1] = 0;
-				}
-				else 
-				{
-					if (Pads[pad].vibrate == 6 || Pads[pad].alarmShakeCounter != 0)
-					{
-						if (gVibration == 0) 
-						{
-							PadSetAct(port, dummymotors, 2);
-						}
-						else
-						{
-							if (Pads[pad].motors[0] != 0) 
-								dsload += 10;
+				if (pPad->state != 6)
+					pPad->state = 6;
 
-							if (Pads[pad].motors[1] != 0)
-								dsload += 20;
-
-							PadSetAct(port, Pads[pad].motors, 2);
-						}
-					}
-
-					if (Pads[pad].vibrate != 0) 
-						Pads[pad].vibrate--;
-				}
 				break;
 			case 6:
-				if (Pads[pad].state != 6)
+				if (pPad->state != 6)
 				{
 					if (PadInfoMode(port, 4, 1) != 7)
 					{
-						Pads[pad].dualshock = 0;
-						Pads[pad].state = 6;
-						Pads[pad].motors[0] = 0;
-						Pads[pad].motors[1] = 0;
-						Pads[pad].vibrate = 0;
+						pPad->dualshock = 0;
+						pPad->state = 6;
+						pPad->motors[0] = 0;
+						pPad->motors[1] = 0;
+						pPad->vibrate = 0;
 						break;
 					}
 
-					Pads[pad].dualshock = 1;
+					pPad->dualshock = 1;
 
-					if (Pads[pad].delay == 6)
+					if (pPad->delay == 6)
 					{
 						if (PadSetActAlign(port, align) != 0)
 						{
-							Pads[pad].dsactive = 1;
-							Pads[pad].state = 6;
-							Pads[pad].motors[0] = 0;
-							Pads[pad].motors[1] = 0;
-							Pads[pad].vibrate = 0;
+							pPad->dsactive = 1;
+							pPad->state = 6;
+							pPad->motors[0] = 0;
+							pPad->motors[1] = 0;
+							pPad->vibrate = 0;
 							break;
 						}
 
-						Pads[pad].delay = 0;
+						pPad->delay = 0;
 					}
 					else 
 					{
-						Pads[pad].delay++;
+						pPad->delay++;
 					}
-				}
-				else
-				{
-					goto LAB_0006ba8c;
 				}
 				break;
 		}
-		pad++;
 
-	} while (pad < 2);
+		if (pPad->state == 6)
+		{
+			if (pPad->dsactive == 0 || (pPad->vibrate == 0 && pPad->alarmShakeCounter == 0 || 50 < dsload))
+			{
+				pPad->motors[0] = 0;
+				pPad->motors[1] = 0;
+			}
+			else 
+			{
+				if (pPad->vibrate == 6 || pPad->alarmShakeCounter != 0)
+				{
+					if (gVibration == 0) 
+					{
+						PadSetAct(port, dummymotors, 2);
+					}
+					else
+					{
+						if (pPad->motors[0] != 0) 
+							dsload += 10;
+
+						if (pPad->motors[1] != 0)
+							dsload += 20;
+
+						PadSetAct(port, pPad->motors, 2);
+					}
+				}
+
+				if (pPad->vibrate != 0) 
+					pPad->vibrate--;
+			}
+		}
+
+
+	}
 #endif
 }
 
@@ -688,7 +683,9 @@ int gDualShockMax = 255;
 void HandlePadVibration(int pad)
 {
 	int speed;
-
+	PAD* pPad;
+	
+	pPad = &Pads[pad];
 	speed = 0;
 
 	if (NoPlayerControl != 0 || gDualShockMax == 0 || gDrawPauseMenus != 0 || (game_over != 0 || gInGameCutsceneActive != 0))
@@ -705,35 +702,35 @@ void HandlePadVibration(int pad)
 		if (speed > 60)
 			speed = 60;
 	
-		Pads[pad].vibrate = 6;
+		pPad->vibrate = 6;
 	}
 
-	if (Pads[pad].shake_type != 0)
+	if (pPad->shake_type != 0)
 	{
-		if (Pads[pad].shakeptr == NULL) 
-			Pads[pad].shakeptr = shake_data[Pads[pad].shake_type - 1];
+		if (pPad->shakeptr == NULL) 
+			pPad->shakeptr = shake_data[pPad->shake_type - 1];
 	}
 
-	if (Pads[pad].shakeptr)
+	if (pPad->shakeptr)
 	{
-		speed += *Pads[pad].shakeptr;
+		speed += *pPad->shakeptr;
 
-		if (++Pads[pad].shakeptr == 0) 
-			Pads[pad].shakeptr = NULL;
+		if (++pPad->shakeptr == 0) 
+			pPad->shakeptr = NULL;
 	}
 
 	if (speed > 255)
 		speed = 255;
 
-	Pads[pad].shake_type = 0;
-	Pads[pad].motors[1] = (speed * (gDualShockMax + 256) >> 9);
+	pPad->shake_type = 0;
+	pPad->motors[1] = (speed * (gDualShockMax + 256) >> 9);
 
-	if (Pads[pad].alarmShakeCounter != 0) 
+	if (pPad->alarmShakeCounter != 0) 
 	{
-		if (Pads[pad].alarmShakeCounter-- == 1)
-			Pads[pad].motors[0] = 0;
+		if (pPad->alarmShakeCounter-- == 1)
+			pPad->motors[0] = 0;
 		else
-			Pads[pad].motors[0] = 1;
+			pPad->motors[0] = 1;
 	}
 }
 

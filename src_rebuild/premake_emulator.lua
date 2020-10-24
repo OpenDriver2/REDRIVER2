@@ -22,26 +22,24 @@ project "PSX"
         "EMULATOR/**.CPP",
     }
 
-    defines { "OGL", "GLEW" }
+    defines {  }
 
     includedirs { 
         SDL2_DIR.."/include",
-        GLEW_DIR.."/include",
         OPENAL_DIR.."/include",
+		OPENAL_DIR.."/include",
     }
 
     filter "system:Windows"
 		defines { "_WINDOWS" }
         links { 
             "opengl32",
-            "glew32", 
             "SDL2", 
             "OpenAL32"
         }
     
         libdirs { 
             SDL2_DIR.."/lib/x86",
-            GLEW_DIR.."/lib/Release/Win32",
             OPENAL_DIR.."/libs/Win32",
         }
 
@@ -57,7 +55,6 @@ project "PSX"
 
         links {
             "GL",
-            "GLEW",
             "openal",
             "SDL2",
         }

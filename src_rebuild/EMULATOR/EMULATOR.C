@@ -5,8 +5,6 @@
 #include "EMULATOR_PRIVATE.H"
 #include "CRASHHANDLER.H"
 
-#include "EMULATOR_PLATFORM_SETUP.H"
-
 #include "LIBGPU.H"
 #include "LIBETC.H"
 #include "LIBPAD.H"
@@ -342,11 +340,9 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 static int Emulator_InitialiseGLEW()
 {
 #if defined(GLEW)
-	glewExperimental = GL_TRUE;
+	GLenum err = gladLoadGL();
 
-	GLenum err = glewInit();
-
-	if (err != GLEW_OK)
+	if (err == 0)
 	{
 		return FALSE;
 	}

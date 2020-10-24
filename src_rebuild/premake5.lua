@@ -4,7 +4,6 @@ require "premake_modules/psx"
 
 -- you can redefine dependencies
 SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
-GLEW_DIR = os.getenv("GLEW_DIR") or "dependencies/glew"
 OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
 
@@ -76,7 +75,7 @@ project "REDRIVER2"
 	end
 
     filter "system:Windows or linux"
-        defines { "OGL", "GLEW", "SIMPLE_SPOOL" }
+        defines { "OGL", "SIMPLE_SPOOL" }
         dependson { "PSX" }
         links { "PSX", "jpeg" }
 		
@@ -102,7 +101,6 @@ project "REDRIVER2"
     
         includedirs { 
             SDL2_DIR.."/include",
-            GLEW_DIR.."/include",
             OPENAL_DIR.."/include",
 			JPEG_DIR.."/",
         }
@@ -126,7 +124,6 @@ project "REDRIVER2"
 
         links {
             "GL",
-            "GLEW",
             "openal",
             "SDL2",
         }
