@@ -254,11 +254,12 @@ void FreeCameraKeyboardHandler(int nKey, bool down)
 	}
 }
 
+int gShowCollisionDebug = 0;
+
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 
 extern int g_texturelessMode;
 extern int g_wireframeMode;
-int gShowCollisionDebug = 0;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
 int gStopCivCars = 0;
