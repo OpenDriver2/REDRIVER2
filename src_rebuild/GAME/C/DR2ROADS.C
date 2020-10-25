@@ -7,12 +7,20 @@
 #include "CONVERT.H"
 #include "CUTSCENE.H"
 #include "MISSION.H"
+#include "HANDLING.H"
 
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-sdPlane sea = { 0, 0, 0, 0, 2048 };
+sdPlane default_plane = { 0, 0, 0, 0, 2048 };
+
+sdPlane sea_plane = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
+
+sdPlane* GetSeaPlane()
+{
+#ifdef DEBUG_OPTIONS
+	return playerghost ? &default_plane : &sea_plane;
 #else
-sdPlane sea = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
+	return &sea_plane;
 #endif
+}
 
 ROAD_MAP_LUMP_DATA roadMapLumpData;
 short* RoadMapDataRegions[4];
@@ -350,7 +358,7 @@ int sdHeightOnPlane(VECTOR *pos, _sdPlane *plane)
 			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
 			angle = ratan2(curve->Midz - pos->vz, curve->Midx - pos->vx);
 
-			return FixFloorSigned(curve->gradient * (angle + 2048 & 0xfff), ONE_BITS) - curve->height;
+			return ((curve->gradient * (angle + 2048 & 0xfff)) / ONE) - curve->height;
 		}
 
 		i = plane->b;
@@ -708,12 +716,12 @@ _sdPlane * sdGetCell(VECTOR *pos)
 			}
 			else 
 			{
-				plane = &sea;
+				plane = GetSeaPlane();
 			}
 		}
 		else
 		{
-			plane = &sea;
+			plane = GetSeaPlane();
 		}
 	}
 	return plane;

@@ -5,6 +5,7 @@ extern void LoadCurrentProfile();
 extern void SaveCurrentProfile();
 extern int LoadCurrentGame();
 extern void SaveCurrentGame();
+extern int LoadReplayFromFile(char* fileName);
 
 extern int CalcReplayDataSize(); // 0x00057FD4
 

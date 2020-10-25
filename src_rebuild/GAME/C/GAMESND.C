@@ -918,7 +918,7 @@ ushort GetEngineRevs(_CAR_DATA *cp)
 
 	if (iVar8 < 1) 
 	{
-		sVar7 = FixFloorSigned(-iVar8, 11);
+		sVar7 = -iVar8 / 2048;
 		uVar6 = 0;
 		iVar9 = uVar10 * 4;
 
@@ -1648,8 +1648,8 @@ void DoDopplerSFX(void)
 	uint uVar18;
 	int *piVar10;
 	int cars;
-	ulong car_dist[20];
-	ushort indexlist[20];
+	ulong car_dist[MAX_CARS];
+	ushort indexlist[MAX_CARS];
 	char sirens;
 	uint local_34;
 	uint local_30;
@@ -1716,7 +1716,7 @@ void DoDopplerSFX(void)
 
 	LAB_0004e984:
 		car++;
-	} while (car < 20);
+	} while (car < MAX_CARS);
 
 	local_34 = (cars < 3);
 	local_30 = (cars < 5);

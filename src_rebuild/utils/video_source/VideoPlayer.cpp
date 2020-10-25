@@ -1,31 +1,20 @@
-/*
- * player.h
- *
- *  Created on: 8 мая 2018 г.
- *      Author: olegvedi@gmail.com
- */
-
-#include <stdio.h>
-#include <string.h>
-#include <SDL.h>
-#include <AL/al.h>
-
-extern "C"
-{
-#include <jpeglib.h>
-}
-
-
-#include "EMULATOR_PRIVATE.H"
-
-#include "ReadAVI.h"
-
+#include "ReadAVI.h"	// WTF, ostream/fstream
+#include <EMULATOR.H>
 #include "DRIVER2.H"
+
 #include "C/PAD.H"
 #include "C/SYSTEM.H"
 #include "C/E3STUFF.H"
 #include "C/PRES.H"
 #include "C/PAUSE.H"
+
+#include "STRINGS.H"
+
+#include <SDL_timer.h>
+#include <AL/al.h>
+#include <jpeglib.h>
+
+
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
 {
@@ -52,7 +41,6 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 }
 
 // emulator window TODO: interface
-extern SDL_Window* g_window;
 extern int g_swapInterval;
 
 void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
@@ -270,14 +258,14 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		fd /= 10;
 
 	char filename[250];
-	sprintf(filename, "DRIVER2\\FMV\\%d\\RENDER%d.STR[0].AVI", fd, arg->render);
+	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
 
 	ReadAVI readAVI(filename);
 
 	// also load subtitle file
 	if (subtitles)
 	{
-		sprintf(filename, "DRIVER2\\FMV\\%d\\RENDER%d.SBN", fd, arg->render);
+		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
 		InitSubtitles(filename);
 	}
 	else
@@ -294,8 +282,6 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		printf("Only MJPG supported\n");
 		return;
 	}
-
-	SDL_Surface* BufSurface = SDL_CreateRGBSurface(0, stream_format.image_width, stream_format.image_height, stream_format.bits_per_pixel, 0, 0, 0, 0);
 
 	ReadAVI::frame_entry_t frame_entry;
 	frame_entry.type = (ReadAVI::chunk_type_t)(ReadAVI::ctype_video_data | ReadAVI::ctype_audio_data);

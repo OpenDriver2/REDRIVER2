@@ -90,8 +90,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	int cell_x, cell_z;
 	CELL_ITERATOR ci;
 
-	cell_x = (pPosition->vx + units_across_halved) / 2048;
-	cell_z = (pPosition->vz + units_down_halved) / 2048;
+	cell_x = (pPosition->vx + units_across_halved) / MAP_CELL_SIZE;
+	cell_z = (pPosition->vz + units_down_halved) / MAP_CELL_SIZE;
 
 	ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
 	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
@@ -100,7 +100,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	{
 		pModel = modelpointers[pCellObject->type];
 
-		if (pModel->collision_block > 0)
+		if (pModel->collision_block > 0 && (pModel->flags2 & 0xA00) == 0)
 		{
 			num_cb = *(int*)pModel->collision_block;
 
@@ -150,8 +150,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					xd = (pCellObject->pos.vx - pPosition->vx) + xxd;
 					zd = (pCellObject->pos.vz - pPosition->vz) + zzd;
 
-					zs = (collide->zsize * 2048 + radius * 4096);
-					xs = (collide->xsize * 2048 + radius * 4096);
+					zs = ((collide->zsize + 10) * 2048 + radius * 4096);
+					xs = ((collide->xsize + 10) * 2048 + radius * 4096);
 
 					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
 					
@@ -300,18 +300,18 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	int cbrX;
 	int cbr;
 
-	cellX = (pPosition->vx + units_across_halved - 1024) / 2048;
-	cellZ = (pPosition->vz + units_down_halved - 1024) / 2048;
+	cellX = (pPosition->vx + units_across_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
+	cellZ = (pPosition->vz + units_down_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
 	
-	cbrX = cellX / 32;
-	cbrZ = cellZ / 32;
+	cbrX = cellX / MAP_REGION_SIZE;
+	cbrZ = cellZ / MAP_REGION_SIZE;
 
 	cbr = (cbrX & 1) + (cbrZ & 1) * 2;
 
-	if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / 32)) 
+	if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
 		return -1;
 
-	return cell_ptrs[(cellZ - cbrZ * 32) * 32 + cbr * 1024 + cellX - cbrX * 32];
+	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_CELL_SIZE / 2) + cellX - cbrX * MAP_REGION_SIZE];
 }
 
 
@@ -608,13 +608,13 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	do {
 		if (we == 0) 
 		{
-			cell_x = (v2->vx + units_across_halved) / 2048;
-			cell_z = (v2->vz + units_down_halved) / 2048;
+			cell_x = (v2->vx + units_across_halved) / MAP_CELL_SIZE;
+			cell_z = (v2->vz + units_down_halved) / MAP_CELL_SIZE;
 		}
 		else 
 		{
-			cell_x = (v1->vx + units_across_halved) / 2048;
-			cell_z = (v1->vz + units_down_halved) / 2048;
+			cell_x = (v1->vx + units_across_halved) / MAP_CELL_SIZE;
+			cell_z = (v1->vz + units_down_halved) / MAP_CELL_SIZE;
 		}
 
 		if ((ocx != cell_x) || (ocz != cell_z))
@@ -898,11 +898,11 @@ void CollisionCopList(XZPAIR *pos, int *count)
 			cell.z = initial.z;
 
 			do {
-				cbr.x = cell.x / 32;
-				cbr.z = cell.z / 32;
+				cbr.x = cell.x / MAP_REGION_SIZE;
+				cbr.z = cell.z / MAP_REGION_SIZE;
 				
 				// [A] FIXME: replace with 'cell_header.region_size'
-				if (cbr.x + cbr.z * (cells_across / 32) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
+				if (cbr.x + cbr.z * (cells_across / MAP_REGION_SIZE) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
 					cop = UnpackCellObject(ppco, &ci.nearCell);
@@ -1049,8 +1049,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 		extraDist = 580;
 
 	// [A] FIXME: replace with 'cell_header.cell_size'
-	cell.x = (player_pos.vx + units_across_halved - 1024) / 2048;
-	cell.z = (player_pos.vz + units_down_halved - 1024) / 2048;
+	cell.x = (player_pos.vx + units_across_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
+	cell.z = (player_pos.vz + units_down_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
 
 	SetCopListCell(cell.x, cell.z);
 
@@ -1103,7 +1103,7 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 
 					gLastModelCollisionCheck = cop->type;
 
-					if (CAR_INDEX(cp) == 21)
+					if (CAR_INDEX(cp) == TANNER_COLLIDER_CARID)
 					{
 						if (count >= mdcount && cop->pad != 0)
 						{
@@ -1252,8 +1252,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	player_pos.vx = pPos->vx;
 	player_pos.vz = pPos->vz;
 
-	cell.x = (player_pos.vx + units_across_halved - 1024) / 2048;
-	cell.z = (player_pos.vz + units_down_halved - 1024) / 2048;
+	cell.x = (player_pos.vx + units_across_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
+	cell.z = (player_pos.vz + units_down_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
 	
 	SetCopListCell(cell.x, cell.z);
 	mdcount = 0;
@@ -1459,7 +1459,7 @@ void DoScenaryCollisions(void)
 {
 	_CAR_DATA *cp;
 
-	cp = car_data + MAX_CARS - 1;
+	cp = &car_data[MAX_CARS - 1];
 
 	do {
 		if (cp->controlType != CONTROL_TYPE_NONE)

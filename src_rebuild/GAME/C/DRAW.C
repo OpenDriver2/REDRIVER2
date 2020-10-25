@@ -487,20 +487,18 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 // End Line: 5026
 
 // [D] [T]
-int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
+int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 {
 	int mat;
 	int zbias;
 	int drawlimit;
 	MODEL* model;
-	OTTYPE* savedOT;
+	OTTYPE* ot;
 	CELL_OBJECT* cop;
 	int i;
 	int prev_mat;
 
 	prev_mat = -1;
-
-	SetupPlaneColours(combointensity);
 
 	for (i = 0; i < 8; i++)
 	{
@@ -510,13 +508,14 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
-	current->ot += 8;
-
 	plotContext.current = current;
 	plotContext.ptexture_pages = &texture_pages;
 	plotContext.ptexture_cluts = &texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = 0;
+	plotContext.primptr = plotContext.current->primptr;
+
+	ot = plotContext.current->ot + 8;
 
 	i = 0;
 
@@ -537,16 +536,13 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 
 		model = modelpointers[cop->type];
 
-		savedOT = current->ot;
-
 		zbias = model->zBias - 64;
 
 		if (zbias < 0)
 			zbias = 0;
 
-		current->ot = savedOT + zbias * 4;
+		plotContext.ot = ot + zbias * 4;
 		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
-		current->ot = savedOT;
 
 		drawlimit = (int)current->primptr - (int)current->primtab;
 
@@ -557,7 +553,8 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings, DB* disp)
 		objects++;
 	}
 
-	current->ot -= 8;
+	// advance primitive buffer
+	current->primptr = plotContext.primptr;
 
 	return 0;
 }
@@ -788,7 +785,6 @@ void DrawMapPSX(int* comp_val)
 	int backPlane;
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
-	VECTOR newpos;
 	int cellxpos;
 	int cellzpos;
 	char* PVS_ptr;
@@ -943,7 +939,6 @@ void DrawMapPSX(int* comp_val)
 									cmat->computed = current_object_computed_value;
 
 									gte_ReadRotMatrix(&mRotStore);
-
 									gte_sttr(mRotStore.t);
 
 									MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[modelNumber], (MATRIX*)cmat);
@@ -1063,6 +1058,8 @@ void DrawMapPSX(int* comp_val)
 	PrintString(tempBuf, 10, 120);
 #endif
 
+	SetupPlaneColours(combointensity);
+
 	if (sprites_found)
 		DrawSprites((PACKED_CELL_OBJECT**)spriteList, sprites_found);
 
@@ -1070,21 +1067,10 @@ void DrawMapPSX(int* comp_val)
 		DrawTILES((PACKED_CELL_OBJECT**)model_tile_ptrs, tiles_found);
 
 	if (other_models_found)
-		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found, current);
+		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found);
 
-	while (anim_objs_found > 0)
-	{
-		anim_objs_found--;
-		cop = (CELL_OBJECT*)anim_obj_buffer[anim_objs_found];
-
-		newpos.vx = cop->pos.vx - camera_position.vx;
-		newpos.vy = cop->pos.vy - camera_position.vy;
-		newpos.vz = cop->pos.vz - camera_position.vz;
-		Apply_Inv_CameraMatrix(&newpos);
-
-		gte_SetRotMatrix(&matrixtable[cop->yang]);
-		DrawAnimatingObject(modelpointers[cop->type], cop, &newpos);
-	}
+	if (anim_objs_found)
+		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, anim_objs_found);
 }
 
 // decompiled code
@@ -1232,20 +1218,21 @@ void SetupDrawMapPSX(void)
 
 	int theta;
 
-	current_cell_x = (camera_position.vx + units_across_halved) / 2048;// cell_header.cell_size
-	current_cell_z = (camera_position.vz + units_down_halved) / 2048;
+	current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
+	current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
 
-	region_x1 = current_cell_x / 32; // cell_header.region_size;
-	region_z1 = current_cell_z / 32; // cell_header.region_size;
+	region_x1 = current_cell_x / MAP_REGION_SIZE;
+	region_z1 = current_cell_z / MAP_REGION_SIZE;
 
 	current_barrel_region_x1 = (region_x1 & 1);
 	current_barrel_region_z1 = (region_z1 & 1);
 
 	GetPVSRegionCell2(
 		current_barrel_region_x1 + current_barrel_region_z1 * 2,
-		region_x1 + region_z1 * cells_across / 32,
-		(current_cell_z % 32) * 32 + (current_cell_x % 32),
+		region_x1 + region_z1 * cells_across / MAP_REGION_SIZE,
+		(current_cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (current_cell_x % MAP_REGION_SIZE),
 		CurrentPVS);
+
 
 	for (theta = 0; theta < 64; theta++)
 		MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[theta], (MATRIX*)&CompoundMatrix[theta]);
@@ -1528,11 +1515,11 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	pvs_square = 21;
 	pvs_square_sq = 21 * 21;
 
-	units_across_halved = cells_across / 2 * cell_header.cell_size;
-	units_down_halved = cells_down / 2 * cell_header.cell_size;
+	units_across_halved = cells_across / 2 * MAP_CELL_SIZE;
+	units_down_halved = cells_down / 2 * MAP_CELL_SIZE;
 
-	regions_across = cells_across / cell_header.region_size;
-	regions_down = cells_down / cell_header.region_size;
+	regions_across = cells_across / MAP_REGION_SIZE;
+	regions_down = cells_down / MAP_REGION_SIZE;
 
 	lump_ptr += sizeof(OUT_CELL_FILE_HEADER);
 
@@ -1634,19 +1621,21 @@ int num_cars_drawn = 0;
 // [D] [T]
 void DrawAllTheCars(int view)
 {
-	static int car_distance[20]; // offset 0x0
+	static int car_distance[MAX_CARS]; // offset 0x0
+	_CAR_DATA* cars_to_draw[MAX_CARS];
+
 	int dx, dz;
 	int dist;
 	int i, j;
 	_CAR_DATA* cp;
 	int num_cars_to_draw;
 	int spacefree;
-	_CAR_DATA* cars_to_draw[20];
+	
 
 	num_cars_drawn = 0;
 	num_cars_to_draw = 0;
 
-	cp = car_data + MAX_CARS - 1;
+	cp = &car_data[MAX_CARS - 1];
 	do {
 		if (cp->controlType != CONTROL_TYPE_NONE && 
 			PositionVisible((VECTOR*)cp->hd.where.t))
@@ -1851,15 +1840,16 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 	MVERTEX subdiVerts[5][5];
+	int combo;
 
 	srcVerts = (SVECTOR*)model->vertices;
-	pc->ot = pc->current->ot;
-	pc->primptr = pc->current->primptr;
-
 	polys = (PL_POLYFT4*)model->poly_block;
 
-	if ((pc->flags & 1U) != 0)
-		combointensity |= 0x2000000;
+	combo = combointensity;
+
+	// transparent object flag
+	if (pc->flags & 1)
+		combo |= 0x2000000;
 
 	i = model->num_polys;
 	while (i > 0)
@@ -1876,11 +1866,11 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 			polys->v3 = polys->v2;
 
-			polys->id = polys->id ^ 1;
+			polys->id |= 1;
 			ptype |= 1;
 		}
 
-		if (ptype != 11 && ptype != 21)// && ptype != 9 && ptype != 1 && ptype != 13 && ptype != 8 && ptype != 10)
+		if (ptype != 11 && ptype != 21)
 		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
 			i--;
@@ -1910,7 +1900,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 		if (ptype == 21)
 		{
-			pc->colour = combointensity & 0x2ffffffU | 0x2c000000;
+			pc->colour = combo & 0x2ffffffU | 0x2c000000;
 		}
 		else
 		{
@@ -2008,12 +1998,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
 		i--;
 	}
-
-	// done
-	pc->current->primptr = pc->primptr;
-
-	if ((pc->flags & 1U) != 0)
-		combointensity &= ~0x2000000;
 }
 
 
@@ -2067,8 +2051,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 // [D] [T]
 void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
 {
-	OTTYPE* savedOT = current->ot;
-
 	if (matrix != NULL)
 	{
 		MATRIX comb;
@@ -2081,8 +2063,10 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	zBias /= 8;
 	zBias += (model->zBias - 64);
 
+	plotContext.ot = current->ot;
+
 	if (zBias > 0)
-		current->ot += (zBias * 4);
+		plotContext.ot += (zBias * 4);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -2097,11 +2081,14 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = flags;
 	plotContext.current = current;
+	
+	plotContext.primptr = plotContext.current->primptr;
 
-	if (56000 < (current->primtab - (current->primptr - PRIMTAB_SIZE)))
+	if ((current->primtab - (current->primptr - PRIMTAB_SIZE)) > 56000)
 		PlotBuildingModelSubdivNxN(model, nrot, &plotContext, subdiv);
 
-	current->ot = savedOT;
+	// advance primitive buffer
+	current->primptr = plotContext.primptr;
 }
 
 

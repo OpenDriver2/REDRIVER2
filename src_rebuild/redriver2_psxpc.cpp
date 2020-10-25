@@ -9,6 +9,7 @@
 
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
+#include "utils/ini.h"
 
 #include <SDL_scancode.h>
 
@@ -180,21 +181,10 @@ int(*GPU_printf)(const char *fmt, ...);
 
 extern int gDrawDistance;
 
-#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
-
-extern int g_texturelessMode;
-extern int g_wireframeMode;
-int gShowCollisionDebug = 0;
-extern int gDisplayPosition;
-extern int gDisplayDrawStats;
-extern int g_FreeCameraEnabled;
-int gStopCivCars = 0;
-
-extern void FunkUpDaBGMTunez(int funk);
-
 int cursorX, cursorY, cursorOldX, cursorOldY;
+extern int g_FreeCameraEnabled;
 
-void GameDebugMouse(int x, int y)
+void FreeCameraMouseHandler(int x, int y)
 {
 	if (g_FreeCameraEnabled)
 	{
@@ -219,7 +209,7 @@ void GameDebugMouse(int x, int y)
 	}
 }
 
-void GameDebugKeys(int nKey, bool down)
+void FreeCameraKeyboardHandler(int nKey, bool down)
 {
 	if (g_FreeCameraEnabled)
 	{
@@ -253,6 +243,32 @@ void GameDebugKeys(int nKey, bool down)
 				g_FreeCameraControls &= ~0x8;
 		}
 	}
+
+	if(!down)
+		return;
+
+	if (nKey == SDL_SCANCODE_F7)
+	{
+		g_FreeCameraEnabled ^= 1;
+		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
+	}
+}
+
+int gShowCollisionDebug = 0;
+
+#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
+
+extern int g_texturelessMode;
+extern int g_wireframeMode;
+extern int gDisplayPosition;
+extern int gDisplayDrawStats;
+int gStopCivCars = 0;
+
+extern void FunkUpDaBGMTunez(int funk);
+
+void GameDebugKeys(int nKey, bool down)
+{
+	FreeCameraKeyboardHandler(nKey, down);
 
 	if (!down)
 		return;
@@ -300,11 +316,6 @@ void GameDebugKeys(int nKey, bool down)
 		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
 	}
 #endif
-	else if (nKey == SDL_SCANCODE_F7)
-	{
-		g_FreeCameraEnabled ^= 1;
-		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
-	}
 	else if (nKey == SDL_SCANCODE_BACKSPACE)
 	{
 		extern int FastForward;
@@ -355,6 +366,8 @@ char g_Replay_buffer[0x50000];		// 0x1fABBC
 
 int main(int argc, char** argv)
 {
+	ini_t* config;
+
 #ifdef USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
 	_frontend_buffer = (char*)malloc(0x50000);			// 0xFB400
@@ -378,15 +391,83 @@ int main(int argc, char** argv)
 #endif
 
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
-	gameDebugKeys = GameDebugKeys;
-	gameDebugMouse = GameDebugMouse;
 	GPU_printf = printf;
 #endif // _DEBUG
 
-	gDrawDistance = 600;					// best distance
+	config = ini_load("config.ini");
 
-	Emulator_Initialise("DRIVER2", 800, 600);
+
+	// best distance
+	gDrawDistance = 600;
+
+	int windowWidth = 800;
+	int windowHeight = 600;
+	int fullScreen = 0;
+	int enableFreecamera = 0;
+	extern int g_pgxpTextureCorrection;
+
+	if (config)
+	{
+		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
+		
+		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
+		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
+		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
+		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
+		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
+
+		if (dataFolderStr)
+		{
+			strcpy(gDataFolder, dataFolderStr);
+	
+			int len = strlen(gDataFolder);
+			if (gDataFolder[len - 1] != '\\')
+			{
+				gDataFolder[len] = '\\';
+				gDataFolder[len + 1] = '\0';
+			}
+		}
+		
+#if defined(DEBUG_OPTIONS)
+		int unlockAll = 0;
+		ini_sget(config, "game", "unlockAll", "%d", &unlockAll);
+
+		if (unlockAll)
+		{
+			gFurthestMission = 40;
+			AvailableCheats.cheat5 = 1;
+			AvailableCheats.cheat6 = 1;
+			AvailableCheats.cheat7 = 1;
+			AvailableCheats.cheat8 = 1;
+			AvailableCheats.cheat2 = 1;
+			AvailableCheats.cheat11 = 1;
+			AvailableCheats.cheat1 = 1;
+			AvailableCheats.cheat3 = 1;
+			AvailableCheats.cheat4 = 1;
+		}
+#endif
+	
+		ini_free(config);
+	}
+#ifndef _DEBUG
+	if(enableFreecamera)
+	{
+		gameDebugKeys = FreeCameraKeyboardHandler;
+		gameDebugMouse = FreeCameraMouseHandler;
+	}
+#else
+
+	gameDebugKeys = GameDebugKeys;
+	gameDebugMouse = FreeCameraMouseHandler;
+	
+#endif
+
+	
+
+	Emulator_Initialise("DRIVER2", windowWidth, windowHeight, fullScreen);
 	redriver2_main(argc, argv);
 
 	Emulator_ShutDown();
+	
 }

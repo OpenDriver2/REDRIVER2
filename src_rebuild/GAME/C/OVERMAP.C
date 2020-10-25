@@ -16,6 +16,7 @@
 #include "CAMERA.H"
 #include "FELONY.H"
 #include "PAD.H"
+#include "MAIN.H"
 #include "../ASM/RNC_2.H"
 
 #include "STRINGS.H"
@@ -1005,7 +1006,7 @@ LAB_00016fac:
 			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
 
 		cp++;
-	} while (cp <= &car_data[20]);
+	} while (cp <= &car_data[MAX_CARS]);
 
 	sVar2 = -uVar28;
 	
@@ -1800,7 +1801,7 @@ void DrawCopIndicators(void)
 			}
 		}
 		cp++;
-	} while (cp <= &car_data[20]);
+	} while (cp <= &car_data[MAX_CARS]);
 }
 
 
@@ -2129,7 +2130,6 @@ unsigned short civ_clut[8][32][6];
 // [D]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
-	extern bool gDriver1Level;
 	if (gDriver1Level)
 		return;
 
@@ -2348,10 +2348,6 @@ void LoadMapTile(int tpage, int x, int y)
 	DrawSync(0);
 	LoadImage(&MapSegment, (u_long*)MapBuffer);
 	DrawSync(0);
-
-#ifndef PSX
-	Emulator_UpdateVRAM();
-#endif
 
 }
 

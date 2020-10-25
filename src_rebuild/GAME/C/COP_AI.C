@@ -19,7 +19,17 @@
 #include "WHEELFORCES.H"
 #include "PAD.H"
 
-COP_DATA gCopData = { 0, 0, 0, 2048, 0, 4096, 2048, 3000000, { 0, 0, 0, 0, 0 } };
+COP_DATA gCopData = {
+	0,
+	0,
+	0,
+	2048,
+	0,
+	4096,
+	2048,
+	3000000,
+	{ 0, 0, 0, 0, 0 }
+};
 
 int speed1[] = { 203, 210, 217 };
 int speed2[] = { 238, 266, 294 };
@@ -421,7 +431,7 @@ void ControlCops(void)
 	else 
 	{
 		if (player[0].playerCarId > -1) 
-			targetVehicle = car_data + player[0].playerCarId;
+			targetVehicle = &car_data[player[0].playerCarId];
 
 		if (player_position_known > 0)
 		{
@@ -431,9 +441,12 @@ void ControlCops(void)
 			lastKnownPosition.pad = player[0].pos[3];
 		}
 
+		// update pathfinding
 		UpdateCopMap();
+
 		heading = LastHeading;
 
+		// play the phrases about direction
 		if (first_offence == 0 && CopsCanSeePlayer != 0 && numActiveCops != 0) 
 		{
 			if (player[0].playerCarId < 0) 
@@ -1011,7 +1024,7 @@ void CopControl1(_CAR_DATA *cp)
 		{
 			cp->ai.p.desiredSpeed = 110;
 
-			if (cp->ai.p.frontLClear == 0 || cp->ai.p.frontRClear == 0)
+			if (cp->ai.p.frontLClear == 0 && cp->ai.p.frontRClear == 0)
 			{
 				cp->ai.p.desiredSpeed = -120;
 			}
@@ -1143,8 +1156,8 @@ int FindCost(int x, int z, int dvx, int dvz)
 	int tx, tz, dx, dz;
 	int d;
 
-	tx = (targetVehicle->hd.where.t[0] + (dvx / 256));
-	tz = (targetVehicle->hd.where.t[2] + (dvz / 256));
+	tx = targetVehicle->hd.where.t[0] + dvx / 256;
+	tz = targetVehicle->hd.where.t[2] + dvz / 256;
 
 	dx = ABS(x - tx);
 	dz = ABS(z - tz);
@@ -1158,10 +1171,10 @@ int FindCost(int x, int z, int dvx, int dvz)
 		dz = d;
 	}
 
-	if (dx != 0) 
-		return (dx * sqtbl[(dz * 64) / dx]) / 128;
+	if (dx == 0)
+		return 0;
 
-	return 0;
+	return (dx * sqtbl[(dz * 64) / dx]) / 128;
 }
 
 
@@ -1429,7 +1442,7 @@ void UpdateCopSightData(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ControlCopDetection(void)
 {
 	bool spotted;
@@ -1440,7 +1453,6 @@ void ControlCopDetection(void)
 	int dx;
 	_CAR_DATA *cp;
 	VECTOR vec;
-	VECTOR delta;
 	int ccx;
 	int ccz;
 
@@ -1483,7 +1495,7 @@ void ControlCopDetection(void)
 			dx = ABS(roadblockLoc.vx - vec.vx);
 			dz = ABS(roadblockLoc.vz - vec.vz);
 
-			if (((dx >> 8) * (dx >> 8) + (dz >> 8) * (dz >> 8) < 0x668) &&
+			if (((dx >> 8) * (dx >> 8) + (dz >> 8) * (dz >> 8) < 1640) &&
 				newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
 				CopsCanSeePlayer = 1;
 		}
@@ -1872,7 +1884,7 @@ void ControlNumberOfCops(void)
 				}
 			}
 			lcp++;
-		} while (lcp < car_data + MAX_CARS);
+		} while (lcp < &car_data[MAX_CARS]);
 
 		gCopData.cutOffDistance = cutOffDistance;
 	} while (numWantedCops < num_closer);

@@ -3239,7 +3239,7 @@ void StepEvents(void)
 
 					i++;
 					cp++;
-				} while (i < 20);
+				} while (i < MAX_CARS && i < 32);
 
 				// make Tanner on boat also
 				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist) != 0)
@@ -3295,7 +3295,7 @@ void StepEvents(void)
 				do {
 					pos = (VECTOR*)car_data[i].hd.where.t;
 
-					if (i == 20)
+					if (i == TANNER_COLLIDER_CARID)
 					{
 						pos = (VECTOR*)player[0].pos;
 						vel = NULL;
@@ -3318,7 +3318,7 @@ void StepEvents(void)
 						pos->vx += iVar6;
 						pos->vz += iVar4;
 
-						if (i == 20)
+						if (i == TANNER_COLLIDER_CARID)
 						{
 							SetTannerPosition((VECTOR*)pos);
 							carsOnBoat = carsOnBoat & 0xffefffff;
@@ -4120,7 +4120,7 @@ void DrawEvents(int camera)
 							else
 							{
 								SetCamera(ev);
-								DrawMapPSX((int*)&ObjectDrawnValue);
+								DrawMapPSX(&ObjectDrawnValue);
 							}
 						}
 					}
@@ -4291,7 +4291,6 @@ int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
 	/* end block 2 */
 	// End Line: 6773
 
-extern _sdPlane sea;
 int debugOffset = 0;
 
 // [D]
@@ -4320,7 +4319,7 @@ _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 			if (OnBoat(pos, ev, &dist) == 0)
 			{
 			LAB_0004aa60:
-				return &sea;
+				return GetSeaPlane();
 			}
 
 			iVar8 = 200;
@@ -4345,7 +4344,7 @@ _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 					if (iVar9 << 0xb < iVar7)
 					{
 						debugOffset = iVar7;
-						return &sea;
+						return GetSeaPlane();
 					}
 
 					uVar6 = (iVar8 - (FIXEDH(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXEDH(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
@@ -4378,13 +4377,13 @@ _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 		{
 			if (GameLevel != 3)
 			{
-				return &sea;
+				return GetSeaPlane();
 			}
 			goto LAB_0004a880;
 		}
 
 		if (GameLevel != 0)
-			return &sea;
+			return GetSeaPlane();
 
 		if ((ev->flags & 0x30U) == 0)
 			iVar8 = pos->vz;

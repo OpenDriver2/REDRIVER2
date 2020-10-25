@@ -95,17 +95,17 @@ ANIMATED_OBJECT Lev3AnimObjects[4] =
 	{ 3, 0, "MLIGHT01", 0 }
 };
 
-ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = { 
-	Lev0AnimObjects, 
-	Lev1AnimObjects, 
-	Lev2AnimObjects, 
-	Lev3AnimObjects 
+ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = {
+	Lev0AnimObjects,
+	Lev1AnimObjects,
+	Lev2AnimObjects,
+	Lev3AnimObjects
 };
 
-int Level_NumAnimatedObjects[] = { 
-	9, 
-	5, 
-	5, 
+int Level_NumAnimatedObjects[] = {
+	9,
+	5,
+	5,
 	4
 };
 
@@ -196,13 +196,13 @@ int cycle_timer = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitCyclingPals(void)
 {
 	int i;
 
 	num_cycle_obj = Num_LevCycleObjs[GameLevel];
-	CYCLE_OBJECT *cyc = Lev_CycleObjPtrs[GameLevel];
+	CYCLE_OBJECT* cyc = Lev_CycleObjPtrs[GameLevel];
 
 	for (i = 0; i < num_cycle_obj; i++)
 	{
@@ -274,7 +274,7 @@ void InitCyclingPals(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ColourCycle(void)
 {
 	ushort temp;
@@ -283,81 +283,80 @@ void ColourCycle(void)
 	int i;
 	RECT16 vram;
 
-	if (LoadingArea == 0)
+	if (LoadingArea != 0)
 	{
-		if ((pauseflag == 0) && (gTimeOfDay == 3))
+		cycle_phase = 0;
+		return;
+	}
+
+	if (pauseflag != 0 || gTimeOfDay != 3)
+		return;
+
+	vram.w = 16;
+	vram.h = 1;
+	cyc = Lev_CycleObjPtrs[GameLevel];
+
+	if (num_cycle_obj != 0)
+	{
+		i = 0;
+
+		while (i < num_cycle_obj)
 		{
-			vram.w = 16;
-			vram.h = 1;
-			cyc = Lev_CycleObjPtrs[GameLevel];
+			bufaddr = (unsigned short*)cyclecluts[i].p;
 
-			if (num_cycle_obj != 0)
+			if (tpageloaded[cycle_tex[i].texture_page] != 0)
 			{
-				i = 0;
-
-				while (i < num_cycle_obj)
+				if (cycle_phase == 0)
 				{
-					bufaddr = (unsigned short*)cyclecluts[i].p;
+					// initialize
+					temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
 
-					if (tpageloaded[cycle_tex[i].texture_page] != 0)
+					cyc->vx = vram.x = (temp & 0x3f) << 4;
+					cyc->vy = vram.y = (temp >> 6);
+
+					StoreImage(&vram, (u_long*)bufaddr);
+				}
+				else
+				{
+					if ((cycle_timer & cyc->speed1) == 0)
 					{
-						if (cycle_phase == 0)
+						if (cyc->start1 != -1)
 						{
-							// initialize
-							temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
+							temp = bufaddr[cyc->start1];
+							memmove(bufaddr + cyc->start1, bufaddr + cyc->start1 + 1, (cyc->stop1 - cyc->start1) << 1);
 
-							cyc->vx = vram.x = (temp & 0x3f) << 4;
-							cyc->vy = vram.y = (temp >> 6);
-
-							StoreImage(&vram, (u_long*)bufaddr);
-						}
-						else 
-						{
-							if ((cycle_timer & cyc->speed1) == 0) 
-							{
-								if (cyc->start1 != -1)
-								{
-									temp = bufaddr[cyc->start1];
-									memmove(bufaddr + cyc->start1, bufaddr + cyc->start1 + 1, (cyc->stop1 - cyc->start1) << 1);
-
-									bufaddr[cyc->stop1] = temp;
-								}
-							}
-
-							if ((cycle_timer & cyc->speed2) == 0) 
-							{
-								if (cyc->start2 != -1)
-								{
-									temp = bufaddr[cyc->start2];
-									memmove(bufaddr + cyc->start2, bufaddr + cyc->start2 + 1, (cyc->stop2 - cyc->start2) << 1);
-
-									bufaddr[cyc->stop2] = temp;
-								}
-							}
-
-							vram.x = cyc->vx;
-							vram.y = cyc->vy;
-
-							SetDrawLoad(&cyclecluts[i], &vram);
-
-							addPrim(current->ot, &cyclecluts[i]);
+							bufaddr[cyc->stop1] = temp;
 						}
 					}
 
-					cyc++;
-					i++;
+					if ((cycle_timer & cyc->speed2) == 0)
+					{
+						if (cyc->start2 != -1)
+						{
+							temp = bufaddr[cyc->start2];
+							memmove(bufaddr + cyc->start2, bufaddr + cyc->start2 + 1, (cyc->stop2 - cyc->start2) << 1);
+
+							bufaddr[cyc->stop2] = temp;
+						}
+					}
+
+					vram.x = cyc->vx;
+					vram.y = cyc->vy;
+
+					SetDrawLoad(&cyclecluts[i], &vram);
+
+					addPrim(current->ot, &cyclecluts[i]);
 				}
-
-				if (cycle_phase != 0) 
-					cycle_timer++;
-
-				cycle_phase = cycle_phase ^ 1;
 			}
+
+			cyc++;
+			i++;
 		}
-	}
-	else
-	{
-		cycle_phase = 0;
+
+		if (cycle_phase != 0)
+			cycle_timer++;
+
+		cycle_phase = cycle_phase ^ 1;
 	}
 }
 
@@ -398,10 +397,10 @@ void ColourCycle(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void FindSmashableObjects(void)
 {
-	SMASHABLE_OBJECT *sip;
+	SMASHABLE_OBJECT* sip;
 
 	sip = smashable;
 	while (sip->name != NULL)
@@ -450,45 +449,18 @@ void FindSmashableObjects(void)
 // [D]
 void InitAnimatingObjects(void)
 {
-	ANIMATED_OBJECT *aop;
+	ANIMATED_OBJECT* aop;
 
 	int loop;
 	int count1;
 	int count;
-	MODEL *modelPtr;
+	MODEL* modelPtr;
 
 	num_anim_objects = Level_NumAnimatedObjects[GameLevel];
 	aop = Level_AnimatingObjectPtrs[GameLevel];
 
 	for (loop = 0; loop < num_anim_objects; loop++)
 	{
-#if 0
-		// Reflections way
-		modelPtr = FindModelPtrWithName(aop->name);
-
-		if (modelPtr == NULL)
-		{
-			aop->model_num = -1;
-		}
-		else
-		{
-			// find model number in model pointers
-			count = 0;
-			while (modelPtr != modelpointers[count])
-				count++;
-
-			aop->model_num = count;
-			modelPtr->flags2 |= 1;
-
-			for (count1 = num_models_in_pack; count1 != 0; count1--)
-			{
-				if (modelpointers[count1]->instance_number == count)
-					modelpointers[count1]->flags2 |= 1;
-			}
-		}
-
-		aop++;
-#else
 		// My way
 		int model_idx = FindModelIdxWithName(aop->name);
 
@@ -510,7 +482,6 @@ void InitAnimatingObjects(void)
 			aop->model_num = -1;
 
 		aop++;
-#endif
 	}
 
 	FindSmashableObjects();
@@ -543,11 +514,11 @@ void InitAnimatingObjects(void)
 	/* end block 3 */
 	// End Line: 1640
 
-// [D]
+// [D] [T]
 void InitSpooledAnimObj(int model_number)
 {
 	int i;
-	ANIMATED_OBJECT *aop;
+	ANIMATED_OBJECT* aop;
 
 	if (model_number == -1)
 		return;
@@ -591,13 +562,11 @@ void InitSpooledAnimObj(int model_number)
 
 GARAGE_DOOR CurrentGarage;
 
-// [D]
+// [D] [T]
 void int_garage_door(void)
 {
 	CurrentGarage.cop = NULL;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -624,30 +593,37 @@ void int_garage_door(void)
 	/* end block 3 */
 	// End Line: 1735
 
-// [D]
-int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
+// [A] [T]
+void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 {
-	int loop;
+	ANIMATED_OBJECT* aop;
+	CELL_OBJECT* cop;
+	MODEL* model;
+	int i, j;
 	int type;
-	ANIMATED_OBJECT *aop;
 
 	aop = Level_AnimatingObjectPtrs[GameLevel];
-	type = model->instance_number == -1 ? cop->type : model->instance_number;
 
-	for (loop = 0; loop < num_anim_objects; loop++)
+	for (i = 0; i < num_animated; i++)
 	{
-		if (type == aop->model_num)
+		cop = objects[i];
+		type = cop->type;
+		model = modelpointers[type];
+		type = model->instance_number == -1 ? type : model->instance_number;
+
+		for (j = 0; j < num_anim_objects; j++)
 		{
-			animate_object(cop, aop->internal_id);
-			break;
+			if (type == aop->model_num)
+			{
+				animate_object(cop, aop->internal_id);
+				aop -= j;
+				break;
+			}
+
+			aop++;
 		}
-		aop++;
 	}
-
-	return 0;
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -673,450 +649,250 @@ int DrawAnimatingObject(MODEL *model, CELL_OBJECT *cop, VECTOR *pos)
 	/* end block 3 */
 	// End Line: 1355
 
-// [D]
-void animate_object(CELL_OBJECT *cop, int type)
+// [D] [T]
+void animate_object(CELL_OBJECT* cop, int type)
 {
 	char phase;
-	int colour;
-	int y;
-	int z;
-	int x;
 	int yang;
 
-	x = (uint)cop->yang * 0x40;
+	yang = cop->yang * 64;
 
-	if (GameLevel == 1) 
+	if (GameLevel == 0)
 	{
 		switch (type)
 		{
 			case 0:
-				phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+			case 7:
+				yang += 1024;
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
 
-				if (phase == 2)
+				if (phase == 1)
 				{
-					z = -0x1a1;
-					colour = -800;
-					yang = -0x1e;
-					y = 0x400;
+					AddTrafficLight(cop, 0, -0x2c4, -0x2d, 0x200, yang);
 				}
-				else
+				else if (phase == 2)
 				{
-					if (2 < phase)
-					{
-						if (phase != 3) 
-						{
-							return;
-						}
-
-						z = -0x157;
-						colour = -800;
-						yang = -0x1e;
-
-						goto LAB_000145f0;
-					}
-
-					if (phase != 1) 
-					{
-						return;
-					}
-
-					z = -0x1ea;
-					colour = -800;
-					yang = -0x1e;
-					y = 0x200;
+					AddTrafficLight(cop, 0,  -0x284, -0x2d, 0x400, yang);
 				}
-				break;
-			default:
-				return;
-			case 2:
-				if (gLightsOn == 0)
+				else if (phase == 3)
 				{
-					return;
-				}
-
-				x = 0xe6;
-				y = -0x442;
-			LAB_00014490:
-				AddSmallStreetLight(cop, x, y, 0, 0);
-				return;
-			case 3:
-				if (gLightsOn == 0) 
-				{
-					return;
-				}
-				x = -0x265;
-				y = -0x7d2;
-				goto LAB_00014644;
-			case 4:
-				if (gLightsOn == 0) 
-				{
-					return;
-				}
-
-				AddLightEffect(cop, -0x250, -2000, 0, 0, 3);
-				x = 0x252;
-				y = -2000;
-				goto LAB_00014418;
-		}
-		goto LAB_000145f8;
-	}
-
-	if (1 < GameLevel)
-	{
-		if (GameLevel == 2) 
-		{
-			switch (type)
-			{
-			case 0:
-				phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
-				if (phase == 2)
-				{
-					AddTrafficLight(cop, -0x85c, -0x3fd, -0x41, 0x400, x);
-					AddTrafficLight(cop, -0x51e, -0x3d4, -0x41, 0x400, x);
-					z = -0x208;
-					colour = -0x3ab;
-					yang = -0x41;
-					y = 0x400;
-				}
-				else 
-				{
-					if (phase < 3)
-					{
-						if (phase != 1)
-						{
-							return;
-						}
-
-						AddTrafficLight(cop, -0x857, -0x458, -0x44, 0x200, x);
-						AddTrafficLight(cop, -0x520, -0x421, -0x44, 0x200, x);
-						z = -0x202;
-						colour = -0x400;
-						yang = -0x44;
-						y = 0x200;
-					}
-					else 
-					{
-						if (phase != 3) 
-						{
-							return;
-						}
-
-						AddTrafficLight(cop, -0x85a, -0x3a9, -0x3e, 0x800, x);
-						AddTrafficLight(cop, -0x51d, -0x381, -0x3e, 0x800, x);
-						z = -0x206;
-						colour = -0x353;
-						yang = -0x3e;
-						y = 0x800;
-					}
+					AddTrafficLight(cop, 0, -0x244, -0x2d, 0x800, yang);
 				}
 				break;
 			case 1:
-				phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
+			case 8:
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
+
+				if (phase == 1)
+				{
+					AddTrafficLight(cop, 0x196, -0x2c4, -0x2e, 0x200, yang);
+				}
+				else if (phase == 2)
+				{
+					AddTrafficLight(cop, 0x196, -0x292, -0x2e, 0x400, yang);
+				}
+				else if (phase == 3)
+				{
+					AddTrafficLight(cop,  0x196, -0x252, -0x2e, 0x800, yang);
+				}
+				break;
+			case 2:
+			case 3:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, 0x1ad, -0x4d2, 0, 0, 3);
+				break;
+			case 4:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, -0x1b0, -0x4d9, 0, 0, 3);
+				AddLightEffect(cop, 0x1b0, -0x4d9, 0, 0, 3);
+				break;
+			case 5:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, 0, -0x50, 0, 2, 2);
+				break;
+			case 6:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, 0xea, -0x47a, 0, 0, 3);
+				AddLightEffect(cop,  -0xea, -0x47a, 0, 0, 3);
+		}
+	}
+	else if (GameLevel == 1)
+	{
+		switch (type)
+		{
+			case 0:
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
+
 				if (phase == 2)
 				{
-					z = -4;
-					colour = -0x1d2;
-					yang = -0x29;
-					y = 0x400;
+					AddTrafficLight(cop, -0x1a1, -800, -0x1e, 0x400, yang);
 				}
-				else 
+				else if (phase == 1)
 				{
-					if (2 < phase) 
-					{
-						if (phase != 3) 
-						{
-							return;
-						}
+					AddTrafficLight(cop, -0x1ea, -800, -0x1e, 0x200, yang);
+				}
+				else if (phase == 3)
+				{
+					AddTrafficLight(cop, -0x157, -800, -0x1e, 0x800, yang);
+				}
 
-						z = -4;
-						colour = -0x18b;
-						yang = -0x29;
-						goto LAB_000145f0;
-					}
-					if (phase != 1) 
-					{
-						return;
-					}
+				break;
+			case 2:
+				if (gLightsOn == 0)
+					break;
 
-					z = -4;
-					colour = -0x219;
-					yang = -0x29;
-					y = 0x200;
+				AddSmallStreetLight(cop, 0xe6, -0x442, 0, 0);
+				break;
+			case 3:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, -0x265, -0x7d2, 0, 0, 3);
+				break;
+			case 4:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, -0x250, -2000, 0, 0, 3);
+				AddLightEffect(cop, 0x252, -2000, 0, 0, 3);
+				break;
+		}
+	}
+	else if (GameLevel == 2)
+	{
+		switch (type)
+		{
+			case 0:
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
+			
+				if (phase == 1)
+				{
+					AddTrafficLight(cop, -0x857, -0x458, -0x44, 0x200, yang);
+					AddTrafficLight(cop, -0x520, -0x421, -0x44, 0x200, yang);
+					AddTrafficLight(cop, -0x202, -0x400, -0x44, 0x200, yang);
+				}
+				else if (phase == 2)
+				{
+					AddTrafficLight(cop, -0x85c, -0x3fd, -0x41, 0x400, yang);
+					AddTrafficLight(cop, -0x51e, -0x3d4, -0x41, 0x400, yang);
+					AddTrafficLight(cop, -0x208, -0x3ab, -0x41, 0x400, yang);
+				}
+				else if (phase == 3)
+				{
+					AddTrafficLight(cop, -0x85a, -0x3a9, -0x3e, 0x800, yang);
+					AddTrafficLight(cop, -0x51d, -0x381, -0x3e, 0x800, yang);
+					AddTrafficLight(cop, -0x206, -0x353, -0x3e, 0x800, yang);
+				}
+				break;
+			case 1:
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
+
+				if (phase == 1)
+				{
+					AddTrafficLight(cop, -4, -0x219, -0x29, 0x200, yang);
+				}
+				else if (phase == 2)
+				{
+					AddTrafficLight(cop, -4, -0x1d2, -0x29, 0x400, yang);
+				}
+				else if (phase == 3)
+				{
+					AddTrafficLight(cop, -4, -0x18b, -0x29, 0x800, yang);
 				}
 				break;
 			case 2:
 				if (gLightsOn == 0)
-				{
-					return;
-				}
+					break;
 
-				x = -0x348;
-				y = -0x7b4;
-				z = -0x3d;
-				goto LAB_00014648;
+				AddLightEffect(cop, -0x348, -0x7b4, -0x3d, 0, 3);
+				break;
 			case 3:
 				if (gLightsOn == 0)
-				{
-					return;
-				}
+					break;
 
 				AddLightEffect(cop, -0x361, -0x8c9, 0, 0, 3);
-				x = 0x361;
-				y = -0x8c9;
-				goto LAB_00014418;
+				AddLightEffect(cop, 0x361, -0x8c9, 0, 0, 3);
+				break;
 			case 4:
-				if (gLightsOn == 0) 
-				{
-					return;
-				}
-				if ((((cop->pos).vx - 0x217e6U < 0xc5ff) && (x = (cop->pos).vz, 0xae29c < x)) && (x < 0xafa9c))
-				{
-					x = -0x26c;
-					y = -0x652;
-					goto LAB_00014490;
-				}
-				x = -0x26c;
-				y = -0x652;
-				goto LAB_00014644;
-			default:
-				return;
-			}
-			goto LAB_000145f8;
-		}
+				if (gLightsOn == 0)
+					break;
 
-		if (GameLevel != 3) 
-		{
-			return;
+				if (cop->pos.vx - 0x217e6U < 0xc5ff && cop->pos.vz > 0xae29c && cop->pos.vz < 0xafa9c)
+				{
+					AddSmallStreetLight(cop, -0x26c, -0x65, 0, 0);
+					break;
+				}
+			
+				AddLightEffect(cop, -0x26c, -0x652, 0, 0, 3);
+				break;
 		}
-
+	}
+	else if (GameLevel == 3)
+	{
 		switch (type)
 		{
-		case 0:
-			phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
-			if (phase == 2) 
-			{
-				z = -0x2cf;
-				colour = -0x345;
-				yang = -0x16;
-				y = 0x400;
-			}
-			else 
-			{
-				if (2 < phase) 
+			case 0:
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
+			
+				if (phase == 1)
 				{
-					if (phase != 3)
-					{
-						return;
-					}
-
-					z = -0x2cf;
-					colour = -0x2fa;
-					yang = -0x16;
-					goto LAB_000145f0;
+					AddTrafficLight(cop, -0x2cf, -0x38a, -0x16, 0x200, yang);
 				}
-
-				if (phase != 1) 
+				else if (phase == 2)
 				{
-					return;
+					AddTrafficLight(cop, -0x2cf, -0x345, -0x16, 0x400, yang);
 				}
-				z = -0x2cf;
-				colour = -0x38a;
-				yang = -0x16;
-				y = 0x200;
-			}
-			break;
-		case 1:
-			phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
-			if (phase == 2) 
-			{
-				z = 0;
-				colour = -0x242;
-				yang = -0x15;
-				y = 0x400;
-			}
-			else 
-			{
-				if (2 < phase)
+				else if (phase == 3)
 				{
-					if (phase != 3) 
-					{
-						return;
-					}
-					z = 0;
-					colour = -0x1fd;
-					yang = -0x15;
-					goto LAB_000145f0;
+					AddTrafficLight(cop, -0x2cf, -0x2fa, -0x16, 0x800, yang);
 				}
-				if (phase != 1)
+				break;
+			case 1:
+				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
+
+				if (phase == 1)
 				{
-					return;
+					AddTrafficLight(cop, 0, -0x28e, -0x15, 0x200, yang);
 				}
-				z = 0;
-				colour = -0x28e;
-				yang = -0x15;
-				y = 0x200;
-			}
-			break;
-		case 2:
-			if (gLightsOn == 0) 
-			{
-				return;
-			}
+				else if (phase == 2)
+				{
+					AddTrafficLight(cop, 0, -0x242, -0x15, 0x400, yang);
+				}
+				else if (phase == 3)
+				{
+					AddTrafficLight(cop, 0, -0x1fd, -0x15, 0x800, yang);
+				}
+				break;
+			case 2:
+				if (gLightsOn == 0)
+					break;
 
-			x = -0x1f1;
-			y = -0x59d;
-			goto LAB_00014644;
-		case 3:
-			if (gLightsOn == 0) 
-			{
-				return;
-			}
+				AddLightEffect(cop, -0x1f1, -0x59d, 0, 0, 3);
 
-			x = 0;
-			y = -0xaa7;
-		LAB_00014644:
-			z = 0;
-		LAB_00014648:
-			colour = 3;
-			yang = 0;
-		LAB_00014650:
-			AddLightEffect(cop, x, y, z, yang, colour);
-			return;
-		case 4:
-			if (gLightsOn != 0) 
-			{
+				break;
+			case 3:
+				if (gLightsOn == 0)
+					break;
+
+				AddLightEffect(cop, 0,  -0xaa7, 0, 0, 3);
+			
+				break;
+			case 4:
+				if (gLightsOn == 0)
+					break;
+
 				AddSmallStreetLight(cop, 0, -0x492, 0, 1);
-			}
-		default:
-			return;
+				break;
 		}
-		goto LAB_000145f8;
 	}
-
-	if (GameLevel != 0)
-	{
-		return;
-	}
-
-	switch (type) 
-	{
-	case 0:
-	case 7:
-		x = (x + 0x400) * 0x10000 >> 0x10;
-		phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
-		if (phase == 2)
-		{
-			z = 0;
-			colour = -0x284;
-			yang = -0x2d;
-			y = 0x400;
-		}
-		else 
-		{
-			if (phase < 3) 
-			{
-				if (phase != 1) 
-				{
-					return;
-				}
-				z = 0;
-				colour = -0x2c4;
-				yang = -0x2d;
-				y = 0x200;
-			}
-			else 
-			{
-				if (phase != 3)
-				{
-					return;
-				}
-
-				z = 0;
-				colour = -0x244;
-				yang = -0x2d;
-			LAB_000145f0:
-				y = 0x800;
-			}
-		}
-		break;
-	case 1:
-	case 8:
-		phase = junctionLightsPhase[x + 0x80U >> 10 & 1];
-		if (phase == 2) {
-			z = 0x196;
-			colour = -0x292;
-			yang = -0x2e;
-			y = 0x400;
-		}
-		else 
-		{
-			if (2 < phase) 
-			{
-				if (phase != 3) 
-				{
-					return;
-				}
-				z = 0x196;
-				colour = -0x252;
-				yang = -0x2e;
-				goto LAB_000145f0;
-			}
-
-			if (phase != 1)
-			{
-				return;
-			}
-			z = 0x196;
-			colour = -0x2c4;
-			yang = -0x2e;
-			y = 0x200;
-		}
-		break;
-	case 2:
-	case 3:
-		if (gLightsOn == 0)
-		{
-			return;
-		}
-		x = 0x1ad;
-		y = -0x4d2;
-		goto LAB_00014644;
-	case 4:
-		if (gLightsOn == 0)
-		{
-			return;
-		}
-		AddLightEffect(cop, -0x1b0, -0x4d9, 0, 0, 3);
-		x = 0x1b0;
-		y = -0x4d9;
-		goto LAB_00014418;
-	case 5:
-		if (gLightsOn == 0) 
-		{
-			return;
-		}
-		x = 0;
-		y = -0x50;
-		z = 0;
-		colour = 2;
-		yang = 2;
-		goto LAB_00014650;
-	case 6:
-		if (gLightsOn == 0)
-		{
-			return;
-		}
-		AddLightEffect(cop, 0xea, -0x47a, 0, 0, 3);
-		x = -0xea;
-		y = -0x47a;
-	LAB_00014418:
-		AddLightEffect(cop, x, y, 0, 0, 3);
-	default:
-		return;
-	}
-LAB_000145f8:
-	AddTrafficLight(cop, z, colour, yang, y, x);
-
 }
 
 
@@ -1153,10 +929,10 @@ LAB_000145f8:
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void animate_garage_door(void)
 {
-	short* psVar1;
+	short* felony;
 	int dz;
 	int dx;
 
@@ -1168,11 +944,11 @@ void animate_garage_door(void)
 	if (gCurrentMissionNumber != 53 && CopsCanSeePlayer != 0)
 	{
 		if (playerCarId < 0)
-			psVar1 = &pedestrianFelony;
-		else 
-			psVar1 = &car_data[playerCarId].felonyRating;
+			felony = &pedestrianFelony;
+		else
+			felony = &car_data[playerCarId].felonyRating;
 
-		if (*psVar1 > FELONY_MIN_VALUE) 
+		if (*felony > FELONY_MIN_VALUE)
 		{
 			CurrentGarage.cop->pos = CurrentGarage.old_pos;
 			CurrentGarage.cop = NULL;
@@ -1180,27 +956,24 @@ void animate_garage_door(void)
 		}
 	}
 
-	dx = CurrentGarage.old_pos.vx - car_data[playerCarId].hd.where.t[0]; // [A] bug fixe
-	dz = CurrentGarage.old_pos.vz - car_data[playerCarId].hd.where.t[2];
+	dx = ABS(CurrentGarage.old_pos.vx - car_data[playerCarId].hd.where.t[0]); // [A] bug fix
+	dz = ABS(CurrentGarage.old_pos.vz - car_data[playerCarId].hd.where.t[2]);
 
-	if (dx < 0)
-		dx = -dx;
-
-	if (dz < 0)
-		dz = -dz;
-
-	if ((dx + dz < 6001) && (gStopPadReads == 0))
+	if (dx + dz > 6000 || gStopPadReads != 0)
 	{
-		if ((dx + dz < 4000) && (CurrentGarage.old_pos.vy - 400 < CurrentGarage.pos.vy)) 
+		if (CurrentGarage.pos.vy < CurrentGarage.old_pos.vy)
 		{
-			CurrentGarage.rotation = CurrentGarage.rotation + 25;
-			CurrentGarage.pos.vy = CurrentGarage.pos.vy - 12;
+			CurrentGarage.rotation -= 25;
+			CurrentGarage.pos.vy += 12;
 		}
 	}
-	else if (CurrentGarage.pos.vy < CurrentGarage.old_pos.vy) 
+	else
 	{
-		CurrentGarage.pos.vy = CurrentGarage.pos.vy + 12;
-		CurrentGarage.rotation = CurrentGarage.rotation - 25;
+		if (dx + dz < 4000 && CurrentGarage.pos.vy > CurrentGarage.old_pos.vy - 400)
+		{
+			CurrentGarage.rotation += 25;
+			CurrentGarage.pos.vy -= 12;
+		}
 	}
 }
 

@@ -1,6 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#define CAMERA_COLLIDER_CARID (MAX_CARS+1)
+
 extern VECTOR camera_position;
 extern char old_camera_change;
 extern char camera_change;

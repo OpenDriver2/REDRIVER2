@@ -38,6 +38,7 @@ PLAYBACKCAMERA *PlaybackCamera = NULL;
 int TimeToWay = 0;
 short PlayerWaypoints = 0;
 int way_distance = 0;
+int gUseStoredPings = 1;
 
 #define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('R' << 8) | 'P' )
 
@@ -82,7 +83,9 @@ void InitPadRecording(void)
 
 	gOutOfTape = 0;
 
-	if (gLoadedReplay == 0)
+	if (gLoadedReplay == 0 && 
+		CurrentGameMode != GAMEMODE_REPLAY &&
+		CurrentGameMode != GAMEMODE_DIRECTOR)
 	{
 		NumReplayStreams = 0;
 
@@ -603,20 +606,33 @@ char GetPingInfo(char *cookieCount)
 // [A] Stores ping info into replay buffer
 int StorePingInfo(int cookieCount, int carId)
 {
-	_PING_PACKET packet;
+	_PING_PACKET* packet;
+
+	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
+		return 0;
 
 	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
-		packet.frame = (CameraCnt - frameStart & 0xffffU);
-		packet.carId = carId;
-		packet.cookieCount = cookieCount;
-
-		PingBuffer[PingBufferPos++] = packet;
+		packet = &PingBuffer[PingBufferPos++];
+		packet->frame = (CameraCnt - frameStart & 0xffffU);
+		packet->carId = carId;
+		packet->cookieCount = cookieCount;
 
 		return 1;
 	}
 
 	return 0;
+}
+
+// [A] returns 1 if can use ping buffer
+int IsPingInfoAvailable()
+{
+	// [A] loaded replays pings temporarily disabled...
+	
+	if (gUseStoredPings == 0 || gInGameChaseActive == 0)// && gLoadedReplay == 0)
+		return 0;
+	
+	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
 }
 
 // decompiled code
@@ -871,9 +887,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 {
 	stream->playbackrun = 0;
 	stream->length = 0;
-
-	if(CurrentGameMode != GAMEMODE_DIRECTOR && CurrentGameMode != GAMEMODE_REPLAY)
-		stream->padCount = 0;
+	stream->padCount = 0;
 
 	stream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 	stream->PadRecordBuffer = (PADRECORD*)replayptr;

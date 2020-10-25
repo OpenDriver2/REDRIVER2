@@ -162,6 +162,8 @@ int wetness = 0;
 
 extern SPEECH_QUEUE gSpeechQueue;
 
+int gDriver1Level = 0;
+int gDemoLevel = 0;
 
 // decompiled code
 // original method signature: 
@@ -212,9 +214,6 @@ extern SPEECH_QUEUE gSpeechQueue;
 	/* end block 2 */
 	// End Line: 5345
 
-bool gDriver1Level = false;
-bool gDemoLevel = false;
-
 // [D] [T]
 void ProcessLumps(char* lump_ptr, int lump_size)
 {
@@ -225,9 +224,9 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	int* ptr;
 
 	int numLumps = -1;
-	gDriver1Level = false;
+	gDriver1Level = 0;
 
-	quit = false;
+	quit = 0;
 	do {
 		lump_type = *(int*)lump_ptr;
 		seg_size = *(int*)(lump_ptr + 4);
@@ -332,7 +331,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 				cnt++;
 			}
 
-			gDemoLevel = true; // [A]
+			gDemoLevel = 1; // [A]
 		}
 		else if (lump_type == LUMP_JUNCTIONS)
 		{
@@ -393,7 +392,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		else
 		{
 			printf("ERROR - unknown lump type %d... assuming it's Driver 1 level\n", lump_type);
-			gDriver1Level = true;
+			gDriver1Level = 1;
 			numLumps = lump_type;
 
 			lump_ptr += 4;
@@ -945,7 +944,7 @@ void GameInit(void)
 		do {
 			lightsOnDelay[i] = Random2(0);
 			i++;
-		} while (i < 20);
+		} while (i < MAX_CARS);
 	}
 
 	tracking_car = 1;
@@ -1447,7 +1446,7 @@ void StepSim(void)
 		}
 	}
 
-	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(car_data + furthestCivID), numCivCars < maxCivCars)))
+	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(&car_data[furthestCivID]), numCivCars < maxCivCars)))
 	{
 		requestStationaryCivCar = 0;
 	}
@@ -1827,6 +1826,7 @@ void StepGame(void)
 		PreLampStreak();
 
 	UpdatePadData();
+
 	if (FrameCnt == 5)
 		SetDispMask(1);
 
@@ -2040,7 +2040,7 @@ void StepGame(void)
 	// player flip cheat
 	if (gRightWayUp != 0)
 	{
-		TempBuildHandlingMatrix(car_data + player[0].playerCarId, 0);
+		TempBuildHandlingMatrix(&car_data[player[0].playerCarId], 0);
 		gRightWayUp = 0;
 	}
 

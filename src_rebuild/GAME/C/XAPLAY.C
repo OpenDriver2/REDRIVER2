@@ -7,6 +7,7 @@
 #include "PAUSE.H"
 #include "SOUND.H"
 #include "PRES.H"
+#include "SYSTEM.H"
 
 #ifndef PSX
 
@@ -19,7 +20,7 @@
 
 #include "LIBETC.H"
 
-const char* XANameFormat = "DRIVER2\\XA\\XABNK0%d.XA[%d].wav";
+const char* XANameFormat = "%sXA\\XABNK0%d.XA[%d].wav";
 ALuint g_XASource = AL_NONE;
 CSoundSource_WaveCache* g_wavData = NULL;
 CSoundSource_OpenALCache* g_XAWave = NULL;
@@ -27,10 +28,10 @@ CSoundSource_OpenALCache* g_XAWave = NULL;
 #else
 
 char* XANames[] = {
-	"\\DRIVER2\\XA\\XABNK01.XA;1",
-	"\\DRIVER2\\XA\\XABNK02.XA;1",
-	"\\DRIVER2\\XA\\XABNK03.XA;1",
-	"\\DRIVER2\\XA\\XABNK04.XA;1",
+	"%sXA\\XABNK01.XA;1",
+	"%sXA\\XABNK02.XA;1",
+	"%sXA\\XABNK03.XA;1",
+	"%sXA\\XABNK04.XA;1",
 };
 
 #endif
@@ -102,7 +103,10 @@ void GetMissionXAData(int number)
 {
 #ifdef PSX
 	CdlFILE fp;
+	char filename[64];
 
+	sprintf(fileName, XANames[number], gDataFolder);
+	
 	CdSearchFile(&fp, XANames[number]);
 	XAMissionMessages[number].start = CdPosToInt((CdlLOC *)&fp);
 #endif
@@ -337,7 +341,7 @@ void PlayXA(int num, int index)
 	if (xa_prepared && gPlaying != 1)
 	{
 		char fileName[250];
-		sprintf(fileName, XANameFormat, num+1, index);
+		sprintf(fileName, XANameFormat, gDataFolder, num+1, index);
 
 		g_wavData = new CSoundSource_WaveCache();
 

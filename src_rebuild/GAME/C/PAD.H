@@ -5,6 +5,30 @@
 
 #define PADBUFFER_SIZE 34
 
+enum ETannerPad
+{
+	TANNER_PAD_ACTION		= 0x10,
+	TANNER_PAD_POWER		= 0x20,
+	TANNER_PAD_GOFORWARD	= 0x40 | 0x1000,
+	TANNER_PAD_GOBACK		= 0x80 | 0x4000,
+	TANNER_PAD_TURNLEFT		= 0x8000,
+	TANNER_PAD_TURNRIGHT	= 0x2000,
+};
+
+enum ECarPads
+{
+	CAR_PAD_FASTSTEER	= 0x4,
+	CAR_PAD_HANDBRAKE	= 0x10,
+	CAR_PAD_WHEELSPIN	= 0x20,
+	CAR_PAD_ACCEL		= 0x40,
+	CAR_PAD_BRAKE		= 0x80,
+	CAR_PAD_UP			= 0x1000,
+	CAR_PAD_LEFT		= 0x8000,
+	CAR_PAD_RIGHT		= 0x2000,
+
+	CAR_PAD_LEAVECAR	= (CAR_PAD_UP | CAR_PAD_HANDBRAKE),	// fixme: combinations?
+};
+
 extern int pad_connected;
 extern int numPadsConnected;
 extern int gVibration;

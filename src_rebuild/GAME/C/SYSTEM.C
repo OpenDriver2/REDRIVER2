@@ -30,6 +30,7 @@ OTTYPE*	_OT2 = NULL;				// 0xF7200
 char*	_primTab1 = NULL;			// 0xFB400
 char*	_primTab2 = NULL;			// 0x119400
 char*	_replay_buffer = NULL;		// 0x1FABBC
+char gDataFolder[32] = "DRIVER2\\";
 
 #ifdef USE_CRT_MALLOC
 
@@ -348,7 +349,7 @@ int Loadfile(char *name, char *addr)
 #ifndef PSX
 	int fileSize = 0;
 
-	sprintf(namebuffer, "DRIVER2\\%s", name);
+	sprintf(namebuffer, "%s%s", gDataFolder, name);
 
 #ifdef __unix__
 	fixslashes(namebuffer);
@@ -378,7 +379,7 @@ int Loadfile(char *name, char *addr)
 	int nread;
 	unsigned char res[8];
 
-	sprintf(namebuffer, "\\DRIVER2\\%s;1", name);
+	sprintf(namebuffer, "\\%s%s;1", gDataFolder, name);
 
 	do {
 		nread = CdReadFile(namebuffer, (u_long*)addr, 0);
@@ -435,7 +436,7 @@ int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 #ifndef PSX
 	int fileSize = 0;
 
-	sprintf(namebuffer, "DRIVER2\\%s", name);
+	sprintf(namebuffer, "%s%s", gDataFolder, name);
 
 #ifdef __unix__
 	fixslashes(namebuffer);
@@ -477,7 +478,7 @@ int LoadfileSeg(char *name, char *addr, int offset, int loadsize)
 	CdlFILE info;
 	CdlLOC pos;
 
-	sprintf(namebuffer, "\\DRIVER2\\%s;1", name);
+	sprintf(namebuffer, "\\%s%s;1", gDataFolder, name);
 
 	if (strcmp(currentfilename, namebuffer) != 0)
 	{
@@ -1161,10 +1162,6 @@ void SetupDrawBuffers(void)
 // [D]
 void SetupDrawBufferData(int num_players)
 {
-	bool bVar1;
-	int iVar2;
-	char *pcVar3;
-	OTTYPE *puVar4;
 	int i;
 	int j;
 	int x[2];
@@ -1361,20 +1358,20 @@ void SetCityType(CITYTYPE type)
 	switch (type)
 	{
 		case CITYTYPE_NIGHT:
-			format = "DRIVER2\\N%s";
+			format = "%sN%s";
 			break;
 		case CITYTYPE_MULTI_DAY:
-			format = "DRIVER2\\M%s";
+			format = "%sM%s";
 			break;
 		case CITYTYPE_MULTI_NIGHT:
-			format = "DRIVER2\\MN%s";
+			format = "%sMN%s";
 			break;
 		default:
-			format = "DRIVER2\\%s";
+			format = "%s%s";
 			break;
 	}
 
-	sprintf(filename, format, LevelFiles[GameLevel]);
+	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
 
 #ifdef __unix__
 	fixslashes(filename);
@@ -1405,20 +1402,20 @@ void SetCityType(CITYTYPE type)
 	switch (type)
 	{
 	case CITYTYPE_NIGHT:
-		format = "\\DRIVER2\\N%s;1";
+		format = "\\%sN%s;1";
 		break;
 	case CITYTYPE_MULTI_DAY:
-		format = "\\DRIVER2\\M%s;1";
+		format = "\\%sM%s;1";
 		break;
 	case CITYTYPE_MULTI_NIGHT:
-		format = "\\DRIVER2\\MN%s;1";
+		format = "\\%sMN%s;1";
 		break;
 	default:
-		format = "\\DRIVER2\\%s;1";
+		format = "\\%s%s;1";
 		break;
 	}
 
-	sprintf(filename, format, LevelFiles[GameLevel]);
+	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
 
 LAB_0007f244:
 
@@ -1490,7 +1487,7 @@ int FileExists(char *filename)
 	CdlFILE cdfile;
 	char namebuffer[128];
 
-	sprintf(namebuffer, "\\DRIVER2\\%s;1", filename);
+	sprintf(namebuffer, "\\%s%s;1", gDataFolder, filename);
 	retries = 9;
 	do {
 		pCVar1 = CdSearchFile(&cdfile, namebuffer);
@@ -1504,7 +1501,7 @@ int FileExists(char *filename)
 #else
 	char namebuffer[128];
 
-	sprintf(namebuffer, "DRIVER2\\%s", filename);
+	sprintf(namebuffer, "%s%s", gDataFolder, filename);
 
 #ifdef __unix__
 	fixslashes(namebuffer);

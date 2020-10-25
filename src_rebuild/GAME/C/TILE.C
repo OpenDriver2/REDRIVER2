@@ -85,6 +85,7 @@ void Tile1x1(MODEL *model)
 {
 	int opz;
 	int Z;
+	int ofse;
 	PL_POLYFT4* polys;
 	int i;
 	u_char ptype;
@@ -93,6 +94,12 @@ void Tile1x1(MODEL *model)
 
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
+
+	// grass should be under pavements and other things
+	if ((model->shape_flags & 0x80) || (model->flags2 & 0x4000))
+		ofse = 229;
+	else
+		ofse = 133;
 
 	i = model->num_polys;
 	while (i > 0)
@@ -136,7 +143,7 @@ void Tile1x1(MODEL *model)
 			*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
 			*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
 
-			addPrim(plotContext.ot + (Z >> 1) + 133, prims);
+			addPrim(plotContext.ot + (Z >> 1) + ofse, prims);
 
 			plotContext.primptr += sizeof(POLY_FT4);
 		}
@@ -223,7 +230,7 @@ void Tile1x1(MODEL *model)
 	/* end block 4 */
 	// End Line: 464
 
-// [D]
+// [D] [T]
 void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 {
 	PACKED_CELL_OBJECT *ppco;
@@ -241,9 +248,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 		}
 		else if (gTimeOfDay == 3) 
 		{
-			plotContext.colour = ((int)((uint)combointensity >> 0x10 & 0xff) / 3) * 0x10000 |
-				((int)((uint)combointensity >> 8 & 0xff) / 3) * 0x100 |
-				(int)(combointensity & 0xffU) / 3 | 0x2c000000U;
+			plotContext.colour = ((combointensity >> 16 & 0xFF) / 3) << 16 | ((combointensity >> 8 & 0xFF) / 3) << 8 | (combointensity & 0xFF) / 3 | 0x2c000000U;
 		}
 	}
 
@@ -259,6 +264,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	tile_amount--;
 
 	plotContext.ot = current->ot;
+	plotContext.current = current;
 	plotContext.primptr = current->primptr;
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
@@ -290,12 +296,12 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			previous_matrix = yang;
 		}
 
-		if (Z < 7001)
+		if (Z <= 7000)
 		{
 			if (Low2HighDetailTable[model_number] != 0xffff)
 				model_number = Low2HighDetailTable[model_number];
 
-			if (Z < 2000) 
+			if (Z < 2000)
 				TileNxN(modelpointers[model_number], 4, 75);
 			else 
 				TileNxN(modelpointers[model_number], 2, 35);
@@ -898,7 +904,7 @@ void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 	/* end block 3 */
 	// End Line: 1571
 
-// [D]
+// [D] [T]
 void TileNxN(MODEL *model, int levels, int Dofse)
 {
 	uint ttype;
@@ -908,23 +914,19 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	int ofse;
 
 	ttype = 0;
-	ofse = 133;
 
 	polys = (unsigned char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
 	plotContext.polySizes = PolySizes;
 
+	// tile types comes right after model header it seems
 	tileTypes = *(uint *)(model + 1) >> 2;
 
-	// [A]
-	if ((*(uint *)model & 0x40000080) != 0)
-	{
-		// probably these are checked
-		//(model->shape_flags & 0x80);
-		//(model->flags2 & 0x4000);
-
+	// grass should be under pavements and other things
+	if((model->shape_flags & 0x80) || (model->flags2 & 0x4000))
 		ofse = 229;
-	}
+	else
+		ofse = 133;
 
 	i = 0;
 

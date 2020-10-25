@@ -2,10 +2,15 @@
 #define EMULATOR_H
 
 #include "EMULATOR_PLATFORM_SETUP.H"
+#include "TYPES.H"
+#include "PGXP_DEFS.H"
+#include "LIBGTE.H"
 #include "LIBGPU.H"
 
 #include <stdio.h>
 #include <stddef.h>
+
+
 
 #ifndef TRUE
 #define TRUE		1
@@ -169,15 +174,6 @@ enum TexFormat
 typedef GLuint TextureID;
 typedef GLuint ShaderID;
 typedef GLuint RenderTargetID;
-#elif defined(D3D9)
-typedef IDirect3DTexture9* TextureID;
-
-struct ShaderID {
-	IDirect3DVertexShader9* VS;
-	IDirect3DPixelShader9* PS;
-};
-
-typedef IDirect3DSurface9* RenderTargetID;
 #else
 #error
 #endif
@@ -189,14 +185,17 @@ typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
 extern GameDebugMouseHandlerFunc gameDebugMouse;
 
 extern int  Emulator_Initialise();
+extern void Emulator_ShutDown();
+
+extern void Emulator_SwapWindow();
+
 extern void Emulator_StoreFrameBuffer(int x, int y, int w, int h);
 extern void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
 extern void Emulator_CopyVRAM(unsigned short* src, int x, int y, int w, int h, int dst_x, int dst_y);
 extern void Emulator_ReadVRAM(unsigned short* dst, int x, int y, int dst_w, int dst_h);
 extern void Emulator_UpdateVRAM();
 extern void Emulator_BlitVRAM();
-extern void Emulator_ShutDown();
-extern void Emulator_SwapWindow();
+
 extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_SetPolygonOffset(float ofs);
 
@@ -226,9 +225,5 @@ extern void Emulator_SetRenderTarget(const RenderTargetID& render_target);
 extern void Emulator_SetWireframe(bool enable);
 extern void Emulator_UpdateVertexBuffer(const Vertex* vertices, int count);
 extern void Emulator_DrawTriangles(int start_vertex, int triangles);
-
-#if defined(D3D9)
-extern IDirect3DDevice9* d3ddev;
-#endif
 
 #endif

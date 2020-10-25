@@ -15,15 +15,23 @@ Dependencies (links for Windows):
 - [SDL 2](https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip)
 - [GLEW](https://netix.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip)
 - [OpenAL-Soft](https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip)
+- [JPEG](http://www.ijg.org/files/jpegsr9d.zip)
 
-Before running premake you need to download all dependencies.
-After set next environment variables:
+#### Before running premake ####
+You need to download all the dependencies and extract them.
+After set next environment variables like:
 ```
 SDL2_DIR = <your_dependency_folder>\SDL2-2.0.12
 GLEW_DIR = <your_dependency_folder>\glew-2.1.0
 OPENAL_DIR = <your_dependency_folder>\openal-soft-1.20.1-bin
+JPEG_DIR = <your_dependency_folder>\jpeg-9d
 ```
-and run premake.
+
+*JPEG* itself needs to be configured - go to your *JPEG_DIR* folder and rename `jconfig.xx` (proper one for your platform) to `jconfig.h`. 
+For *Windows / Visual Studio* you need to choose `jconfig.vc`
+
+Next you need to run `premake5 <target IDE>`, see premake documentation;
+Or just run `gen_vc2019.bat` (Windows only)
 
 #### Markers for decompiled function names, code, etc
 

@@ -2,40 +2,7 @@
 #define LIBGTE_H
 
 #include "TYPES.H"
-
-#ifdef PGXP
-#include "GTE/half_float.h"
-
-typedef half VERTTYPE;
-#define PGXP_LOOKUP_VALUE(x, y) (x.sh | (y.sh << 16))
-
-struct PGXPVector3D
-{
-	float px, py, pz;	// 32 bit values
-	VERTTYPE x, y, z;	// 16 bit values (for lookup and backwards compat if not found in cache)
-};
-
-extern PGXPVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
-extern PGXPVector3D g_FP_SXYZ1;
-extern PGXPVector3D g_FP_SXYZ2;
-
-struct PGXPVData
-{
-	uint lookup;
-	float px;
-	float py;
-	float pz;
-	float scr_h;
-};
-
-extern int g_pgxpVertexIndex;
-
-void PGXP_ClearCache();
-bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
-ushort PGXP_GetIndex();
-#else
-typedef short VERTTYPE;
-#endif
+#include "PGXP_DEFS.H"
 
 extern short rcossin_tbl[8192];
 
@@ -61,14 +28,6 @@ struct CVECTOR {		/* color type vector */
 typedef struct {		/* 2D short vector */
 	short vx, vy;
 } DVECTOR;
-
-// special PGXP type
-#ifdef PGXP
-typedef struct {		/* 2D short vector */
-	half vx, vy;
-	ushort pgxp_index;
-} DVECTORF;
-#endif
 
 extern void InitGeom();
 extern void SetGeomOffset(int ofx, int ofy);

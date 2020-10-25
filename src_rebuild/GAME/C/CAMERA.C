@@ -696,7 +696,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	camPosVy = MapHeight(&lp->cameraPos);
 	lp->cameraPos.vy = carheight - basePos[1];
 
-	cammapht = (carheight - camPosVy) -100;
+	cammapht = (carheight - camPosVy) - 100 + gCameraOffset.vy;
 
 	if (lp->cameraPos.vy > cammapht)
 	{
@@ -710,7 +710,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 		}
 	}
 
-	jcam = &car_data[20];
+	jcam = &car_data[CAMERA_COLLIDER_CARID];
 	ClearMem((char *)jcam, sizeof(_CAR_DATA));
 
 	jcam->controlType = CONTROL_TYPE_CAMERACOLLIDER;
@@ -834,7 +834,7 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 		scr_z = 256;
 
 	SetGeomScreen(scr_z);
-	switch_detail_distance = 10000 + d * 4;
+	switch_detail_distance = 10000 + (d >> 1);
 	BuildWorldMatrix();
 }
 
@@ -937,7 +937,7 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 	cp = NULL;
 
 	if (lp->cameraCarId > -1)
-		cp = car_data + lp->cameraCarId;
+		cp = &car_data[lp->cameraCarId];
 
 	viewer_position.vx = 0;
 

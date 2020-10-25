@@ -257,6 +257,37 @@ void SaveCurrentGame()
 	}
 }
 
+int LoadReplayFromFile(char* fileName)
+{
+	FILE* fp = fopen(fileName, "rb");
+	if (fp)
+	{
+		int replay_size = 0;
+		fseek(fp, 0, SEEK_END);
+		replay_size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+
+		fread(_other_buffer, replay_size, 1, fp);
+		fclose(fp);
+
+		if (LoadReplayFromBuffer(_other_buffer))
+		{
+			return 1;
+		}
+		else
+		{
+			printError("Error loading replay file '%s'!\n", fileName);
+		}
+	}
+	else
+	{
+		printError("Cannot open replay '%s'!\n", fileName);
+		return -1;
+	}
+
+	return 0;
+}
+
 #endif
 
 // decompiled code

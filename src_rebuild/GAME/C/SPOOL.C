@@ -943,7 +943,7 @@ void UpdateSpool(void)
 			// read tpage (4 sectors 4 times = 16)
 			for (int i = 0; i < 4; i++)
 			{
-				fread(current->addr + (loadbank_write & 1U) * TPAGE_WIDTH * 32, 2048, 4, fp);
+				fread(current->addr + (loadbank_write & 1U) * 256 * 32, 2048, 4, fp);
 				SendTPage();
 
 				nTPchunks++;
@@ -1293,7 +1293,7 @@ void SendTPage(void)
 	{
 		if (slot != tpageloaded[tpage2send] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
+			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * 256 * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
@@ -1965,8 +1965,6 @@ void ClearRegion(int target_region)
 	/* end block 2 */
 	// End Line: 3837
 
-extern bool gDemoLevel;
-extern bool gDriver1Level;
 
 // [D] [T]
 int LoadRegionData(int region, int target_region)
@@ -2010,6 +2008,16 @@ int LoadRegionData(int region, int target_region)
 	else if (gDriver1Level)
 	{
 		// TODO: ....
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[0];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], (char *)(cells + cell_slots_add[target_region]), NULL);
+		offset += spoolptr->cell_data_size[1];
+
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], packed_cell_pointers, GotRegion);
+		offset += spoolptr->cell_data_size[2];
+
 	}
 	else
 #endif
@@ -3007,10 +3015,12 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 // [D] [T]
 void StartSpooling(void)
 {
-	if (spoolcounter != 0 && !spoolactive)
-	{
-		if (!XAPrepared())
-		{
+	if (spoolcounter == 0 || spoolactive)
+		return;
+
+	if (XAPrepared())
+		return;
+
 #ifdef PSX
 			static unsigned char param[8];
 			static unsigned char result[8];
@@ -3023,13 +3033,11 @@ void StartSpooling(void)
 				WaitCloseLid();
 			}
 #endif // PSX
-			spoolactive = 1;
-			UpdateSpool();
+	spoolactive = 1;
+	UpdateSpool();
 
-			if (FastForward)
-				SpoolSYNC();
-		}
-	}
+	if (FastForward)
+		SpoolSYNC();
 }
 
 
@@ -3143,14 +3151,13 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	}
 	else 
 	{
-		if (FrameCnt != 0x78654321)
-		{
-			do {
-				trap(0x400);
-			} while (FrameCnt != 0x78654321);
+		printError("BAD PACKED CELL POINTER DATA, region = %d\n", region_to_unpack);
 
-			unpack_cellptr_flag = 0;
-		}
+		do {
+			trap(0x400);
+		} while (FrameCnt != 0x78654321);
+
+		unpack_cellptr_flag = 0;
 	}
 }
 
@@ -4064,7 +4071,7 @@ void CheckSpecialSpool(void)
 				return;
 
 			lcp++;
-		} while (lcp < &car_data[20]);
+		} while (lcp < &car_data[MAX_CARS]);
 
 
 		specModelValid = 0;

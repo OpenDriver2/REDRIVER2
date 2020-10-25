@@ -13,6 +13,8 @@ extern char* _primTab1;				// 0xFB400
 extern char* _primTab2;				// 0x119400
 extern char* _replay_buffer;		// 0x1FABBC
 
+extern char gDataFolder[32];
+
 extern const char* mallocptr_start;
 
 extern char* mallocptr;

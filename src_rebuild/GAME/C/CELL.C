@@ -73,26 +73,30 @@ void ClearCopUsage(void)
 	/* end block 2 */
 	// End Line: 135
 
+
 // [D] [T]
 PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
 {
 	PACKED_CELL_OBJECT *ppco;
-	CELL_DATA *celld;
+
 	uint value;
 	unsigned short index;
 	unsigned short num;
 	int cbr;
 
-	index = (cellx >> 5 & 1) + (cellz >> 5 & 1) * 2;
+	index = (cellx / MAP_REGION_SIZE & 1) + (cellz / MAP_REGION_SIZE & 1) * 2;
 
 	if (NumPlayers == 2)
 	{
-		if (RoadMapRegions[index] != (cellx >> 5) + (cellz >> 5) * (cells_across >> 5))
+		if (RoadMapRegions[index] != (cellx / MAP_REGION_SIZE) + (cellz / MAP_REGION_SIZE) * (cells_across / MAP_REGION_SIZE))
 			return NULL;
 	}
 
+#ifdef PSX
 	cbr = (cellz - (cellz & 0xffffffe0U)) * 32 + index * 1024 + (cellx - (cellx & 0xffffffe0U));
-
+#else
+	cbr = (cellz - (cellz & 0xffffffe0U)) * MAP_REGION_SIZE + index * (MAP_CELL_SIZE / 2) + (cellx - (cellx & 0xffffffe0U));
+#endif
 	if (cell_ptrs[cbr] == 0xffff)
 	{
 		return NULL;
@@ -122,8 +126,8 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 		}
 	}
 
-	pci->nearCell.x = (cellx - (cells_across >> 1)) * 0x800;
-	pci->nearCell.z = (cellz - (cells_down >> 1)) * 0x800;
+	pci->nearCell.x = (cellx - (cells_across / 2)) * MAP_CELL_SIZE;
+	pci->nearCell.z = (cellz - (cells_down / 2)) * MAP_CELL_SIZE;
 	pci->use_computed = use_computed;
 
 	num = pci->pcd->num;
