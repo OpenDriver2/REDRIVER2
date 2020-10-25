@@ -65,6 +65,6 @@ after_build:
   - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
   - cmd: copy %OPENAL_DIR%\bin\Win32\soft_oal.dll OpenAL32.dll /Y
   - cmd: copy %data_folder%\config.ini config.ini /Y
-  - 7z a REDRIVER2.zip ".\*"
+  - 7z a "REDRIVER2_%configuration%.zip" ".\*"
   
 #build: off
