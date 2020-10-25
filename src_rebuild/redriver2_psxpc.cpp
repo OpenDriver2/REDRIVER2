@@ -405,6 +405,8 @@ int main(int argc, char** argv)
 	int fullScreen = 0;
 	int enableFreecamera = 0;
 	extern int g_pgxpTextureCorrection;
+	extern int g_pgxpZBuffer;
+	extern int g_bilinearFiltering;
 
 	if (config)
 	{
@@ -414,6 +416,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
 		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
+		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
+		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 

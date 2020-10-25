@@ -52,6 +52,8 @@ int g_texturelessMode = 0;
 int g_emulatorPaused = 0;
 int g_polygonSelected = 0;
 int g_pgxpTextureCorrection = 1;
+int g_pgxpZBuffer = 1;
+int g_bilinearFiltering = 0;
 TextureID g_lastBoundTexture;
 
 // Remap a value in the range [A,B] to [C,D].
@@ -472,9 +474,9 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) {		\
 		v.x = vd.px + ofsX;\
 		v.y = vd.py + ofsY;\
+		v.scr_h = vd.scr_h;\
 		v.w = vd.pz;\
 		v.z = 0.0f;\
-		v.scr_h = vd.scr_h;\
 	} else { \
 		v.w = 1.0f; \
 		v.z = 0.0f; \
@@ -893,7 +895,7 @@ GLint u_Projection3D;
 	"		float f = floor(v);\n"\
 	"		vec2 c = vec2( (v - f) * 16.0, f );\n"\
 	"		vec2 clut_pos = v_page_clut.zw;\n"\
-	"		clut_pos.x += mix(c[0], c[1], fract(floor(index) / 2.0) * 2.0) / 1024.0;\n"\
+	"		clut_pos.x += mix(c[0], c[1], fract(float(index) / 2.0) * 2.0) / 1024.0;\n"\
 	"		return packRG(VRAM(clut_pos));\n"\
 	"	}\n"
 
@@ -981,6 +983,25 @@ GLint u_Projection3D;
 	"		v_z = (gl_Position.z - 40) * 0.005;\n"\
 	"	}\n"
 
+#define GPU_FRAGMENT_SAMPLE_SHADER(bit) \
+	GPU_PACK_RG_FUNC\
+	GPU_DECODE_RG_FUNC\
+	GPU_FETCH_VRAM_FUNC\
+	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
+	"#ifdef BILINEAR_FILTER\n"\
+	GPU_BILINEAR_SAMPLE_FUNC\
+	"#else\n"\
+	GPU_NEAREST_SAMPLE_FUNC\
+	"#endif\n"\
+	"	void main() {\n"\
+	"#ifdef BILINEAR_FILTER\n"\
+	"		fragColor = BilinearTextureSample(v_texcoord.xy);\n"\
+	"#else\n"\
+	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"\
+	"#endif\n"\
+	GPU_DITHERING\
+	"	}\n"
+
 const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
@@ -989,17 +1010,7 @@ const char* gte_shader_4 =
 	"#ifdef VERTEX\n"
 	GTE_VERTEX_SHADER
 	"#else\n"
-	GPU_PACK_RG_FUNC
-	GPU_DECODE_RG_FUNC
-	GPU_FETCH_VRAM_FUNC
-	GPU_SAMPLE_TEXTURE_4BIT_FUNC
-	//GPU_BILINEAR_SAMPLE_FUNC
-	GPU_NEAREST_SAMPLE_FUNC
-	"	void main() {\n"
-	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"
-	//"		fragColor.xyz = mix(fragColor.xyz, vec3(0.22, 0.20, 0.25), clamp(v_z, 0.0, 1.0));\n"
-	GPU_DITHERING
-	"	}\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(4)
 	"#endif\n";
 
 const char* gte_shader_8 =
@@ -1010,16 +1021,7 @@ const char* gte_shader_8 =
 	"#ifdef VERTEX\n"
 	GTE_VERTEX_SHADER
 	"#else\n"
-	GPU_PACK_RG_FUNC
-	GPU_DECODE_RG_FUNC
-	GPU_FETCH_VRAM_FUNC
-	GPU_SAMPLE_TEXTURE_8BIT_FUNC
-	//GPU_BILINEAR_SAMPLE_FUNC
-	GPU_NEAREST_SAMPLE_FUNC
-	"	void main() {\n"
-	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"
-	GPU_DITHERING
-	"	}\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(8)
 	"#endif\n";
 
 const char* gte_shader_16 =
@@ -1030,16 +1032,7 @@ const char* gte_shader_16 =
 	"#ifdef VERTEX\n"
 	GTE_VERTEX_SHADER
 	"#else\n"
-	GPU_PACK_RG_FUNC
-	GPU_DECODE_RG_FUNC
-	GPU_FETCH_VRAM_FUNC
-	GPU_SAMPLE_TEXTURE_16BIT_FUNC
-	//GPU_BILINEAR_SAMPLE_FUNC
-	GPU_NEAREST_SAMPLE_FUNC
-	"	void main() {\n"
-	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"
-	GPU_DITHERING
-	"	}\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(16)
 	"#endif\n";
 
 const char* blit_shader =
@@ -1132,20 +1125,30 @@ ShaderID Shader_Compile(const char *source)
         "out vec4 fragColor;\n";
 #endif
 
-    const char *vs_list[] = { GLSL_HEADER_VERT, source };
-    const char *fs_list[] = { GLSL_HEADER_FRAG, source };
+	char extra_vs_defines[1024];
+	char extra_fs_defines[1024];
+	extra_vs_defines[0] = 0;
+	extra_fs_defines[0] = 0;
+
+	if(g_bilinearFiltering)
+	{
+		strcat(extra_fs_defines, "#define BILINEAR_FILTER\n");
+	}
+
+    const char *vs_list[] = { GLSL_HEADER_VERT, extra_vs_defines, source };
+    const char *fs_list[] = { GLSL_HEADER_FRAG, extra_fs_defines, source };
 
     GLuint program = glCreateProgram();
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 2, vs_list, NULL);
+    glShaderSource(vertexShader, 3, vs_list, NULL);
     glCompileShader(vertexShader);
     Shader_CheckShaderStatus(vertexShader);
     glAttachShader(program, vertexShader);
     glDeleteShader(vertexShader);
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 2, fs_list, NULL);
+    glShaderSource(fragmentShader, 3, fs_list, NULL);
     glCompileShader(fragmentShader);
     Shader_CheckShaderStatus(fragmentShader);
     glAttachShader(program, fragmentShader);
@@ -1210,7 +1213,6 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
@@ -1784,6 +1786,10 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 			case SDL_SCANCODE_7:
 				g_pgxpTextureCorrection ^= 1;
 				break;
+			case SDL_SCANCODE_8:
+				g_pgxpZBuffer ^= 1;
+				break;
+				
 		}
 	}
 }
@@ -1898,6 +1904,20 @@ void Emulator_ShutDown()
 
 int g_PreviousBlendMode = BM_NONE;
 
+void Emulator_EnableDepth(int enable)
+{
+	if(enable && g_pgxpZBuffer)
+	{
+		glEnable(GL_DEPTH_TEST);
+		//glDepthMask(GL_TRUE);
+	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST);
+		//glDepthMask(GL_FALSE);
+	}
+}
+
 void Emulator_SetBlendMode(BlendMode blendMode)
 {
 	if (g_PreviousBlendMode == blendMode)
@@ -1915,32 +1935,27 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 	{
 		case BM_NONE:
 			glDisable(GL_BLEND);
-			glEnable(GL_DEPTH_TEST);
-			glDepthMask(GL_TRUE);
+			Emulator_EnableDepth(TRUE);
 			break;
 		case BM_AVERAGE:
 			glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
 			glBlendEquation(GL_FUNC_ADD);
-			glDisable(GL_DEPTH_TEST);
-			//glDepthMask(GL_FALSE);
+			Emulator_EnableDepth(FALSE);
 			break;
 		case BM_ADD:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
-			glDisable(GL_DEPTH_TEST);
-			//glDepthMask(GL_FALSE);
+			Emulator_EnableDepth(FALSE);
 			break;
 		case BM_SUBTRACT:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-			glDisable(GL_DEPTH_TEST);
-			//glDepthMask(GL_FALSE);
+			Emulator_EnableDepth(FALSE);
 			break;
 		case BM_ADD_QUATER_SOURCE:
 			glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
-			glDisable(GL_DEPTH_TEST);
-			//glDepthMask(GL_FALSE);
+			Emulator_EnableDepth(FALSE);
 			break;
 	}
 #endif
