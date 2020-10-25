@@ -174,15 +174,6 @@ enum TexFormat
 typedef GLuint TextureID;
 typedef GLuint ShaderID;
 typedef GLuint RenderTargetID;
-#elif defined(D3D9)
-typedef IDirect3DTexture9* TextureID;
-
-struct ShaderID {
-	IDirect3DVertexShader9* VS;
-	IDirect3DPixelShader9* PS;
-};
-
-typedef IDirect3DSurface9* RenderTargetID;
 #else
 #error
 #endif
@@ -234,9 +225,5 @@ extern void Emulator_SetRenderTarget(const RenderTargetID& render_target);
 extern void Emulator_SetWireframe(bool enable);
 extern void Emulator_UpdateVertexBuffer(const Vertex* vertices, int count);
 extern void Emulator_DrawTriangles(int start_vertex, int triangles);
-
-#if defined(D3D9)
-extern IDirect3DDevice9* d3ddev;
-#endif
 
 #endif
