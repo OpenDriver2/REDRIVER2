@@ -1058,11 +1058,11 @@ void CopControl1(_CAR_DATA *cp)
 	}
 
 	// calculate acceleration
-	maxPower = steeringFac = (gCopDifficultyLevel + 8) * 0x400;
+	maxPower = steeringFac = (gCopDifficultyLevel + 8) * 1024;
 	currentSpeed = cp->ai.p.desiredSpeed - currentSpeed;
 
 	if (pathStraight != 0)
-		maxPower += (gCopDifficultyLevel + 4) * 0x400;
+		maxPower += (gCopDifficultyLevel + 4) * 1024;
 
 	if (player[0].playerCarId < 0)
 		playerFelony = &pedestrianFelony;
