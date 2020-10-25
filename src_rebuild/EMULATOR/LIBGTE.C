@@ -487,6 +487,13 @@ ushort PGXP_GetIndex()
 	return 0xFFFF;
 }
 
+ushort PGXP_EmitCacheData(PGXPVData& newData)
+{
+	g_pgxpCache[g_pgxpVertexIndex++] = newData;
+	g_pgxpTransformed = 1;
+	return g_pgxpVertexIndex;
+}
+
 // sets copy of cached vertex data to out
 bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 {

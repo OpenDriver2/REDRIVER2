@@ -29,6 +29,8 @@ struct PGXPVData
 extern int g_pgxpVertexIndex;
 
 void PGXP_ClearCache();
+
+ushort PGXP_EmitCacheData(PGXPVData& newData);
 bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
 ushort PGXP_GetIndex();
 
