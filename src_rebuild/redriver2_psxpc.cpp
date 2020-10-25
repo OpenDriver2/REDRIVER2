@@ -2,16 +2,19 @@
 //
 
 #include "DRIVER2.H"
-#include "GAME/C/MAIN.H"
-#include "GAME/C/SYSTEM.H"
-#include "GAME/C/GLAUNCH.H"
-#include "GAME/C/PLAYERS.H"
+#include "C/MAIN.H"
+#include "C/SYSTEM.H"
+#include "C/GLAUNCH.H"
+#include "C/PLAYERS.H"
+#include "C/GAMESND.H"
 
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
+
+
 
 // eq engine console output
 typedef enum
@@ -420,6 +423,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
+		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
+		
 
 		if (dataFolderStr)
 		{

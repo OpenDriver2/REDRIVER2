@@ -60,9 +60,16 @@ GEAR_DESC geard[2][4] =
 };
 
 // XM song position
-int coptrackpos[8] = {
+int xm_coptrackpos_d2[8] = {
 	0x10, 0xB, 7, 0x12, 0xC, 9, 8, 0xA,
 };
+
+int xm_coptrackpos_d1[8] = {
+	0xC, 0xC, 0xB, 0xB, 8, 0xB, 0xF, 0xC,
+};
+
+int* xm_coptrackpos;
+int gDriver1Music = 0;
 
 // TODO: AI.C?
 SPEECH_QUEUE gSpeechQueue;
@@ -100,7 +107,7 @@ static int loudhail_time = 0;
 
 char _sbank_buffer[0x80000];		// 0x180000
 
-// [D]
+// [D] [T]
 void LoadBankFromLump(int bank, int lump)
 {
 	static unsigned int blockLimit[73] = {0};
@@ -138,53 +145,28 @@ void LoadBankFromLump(int bank, int lump)
 	/* end block 2 */
 	// End Line: 2854
 
-// [D]
+// [D] [T]
 int CarHasSiren(int index)
 {
-	int iVar1;
-	int iVar2;
-	int *piVar3;
-
 	if (index == 4) 
 	{
-		if (GameLevel == 2) 
+		if (GameLevel == 0)
 		{
-			iVar2 = MissionHeader->residentModels[4];
-			iVar1 = 9;
+			if (MissionHeader->residentModels[4] == 8)
+				return 0x110;
 		}
-		else 
+		else if (GameLevel == 2) 
 		{
-			if (GameLevel < 3)
-			{
-				if (GameLevel != 0) 
-				{
-					piVar3 = &MissionHeader->weather;
-					goto LAB_00052374;
-				}
-
-				iVar2 = MissionHeader->residentModels[4];
-				iVar1 = 8;
-			}
-			else
-			{
-				if (GameLevel != 3) 
-				{
-					piVar3 = &MissionHeader->weather;
-					goto LAB_00052374;
-				}
-
-				iVar2 = MissionHeader->residentModels[4];
-				iVar1 = 10;
-			}
+			if (MissionHeader->residentModels[4] == 9)
+				return 0x110;
 		}
-
-		if (iVar2 == iVar1) 
+		else if (GameLevel == 3)
 		{
-			return 0x110;
+			if (MissionHeader->residentModels[4] == 10)
+				return 0x110;
 		}
 	}
 
-LAB_00052374:
 	return (MissionHeader->residentModels[index] == 0) << 9;
 }
 
@@ -2582,7 +2564,7 @@ void FunkUpDaBGMTunez(int funk)
 		if (copmusic == 0) 
 		{
 			copmusic = 1;
-			XM_SetSongPos(Song_ID, coptrackpos[current_music_id]);
+			XM_SetSongPos(Song_ID, xm_coptrackpos[current_music_id]);
 		}
 	}
 }
@@ -2825,7 +2807,7 @@ void SoundTasks(void)
 	/* end block 3 */
 	// End Line: 2774
 
-// [D]
+// [D] [T]
 void InitMusic(int musicnum)
 {
 	static char *music_pt; // offset 0xc
@@ -2833,8 +2815,22 @@ void InitMusic(int musicnum)
 	static char xm_samples; // offset 0x4
 	int sample_len;
 	int music_len;
+	char* name;
 
-	char* name = "SOUND\\MUSIC.BIN";
+	char* d1musicName = "SOUND\\D1MUSIC.BIN";
+	char* musicname = "SOUND\\MUSIC.BIN";
+
+	if (FileExists(d1musicName) && gDriver1Music)
+	{
+		name = d1musicName;
+		xm_coptrackpos = xm_coptrackpos_d1;
+	}
+	else
+	{
+		name = musicname;
+		xm_coptrackpos = xm_coptrackpos_d2;
+		gDriver1Music = 0;
+	}
 
 	char *addr;
 	int musicpos[3];

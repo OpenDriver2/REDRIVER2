@@ -1669,8 +1669,10 @@ void GameLoop(void)
 		UnPauseSound();
 
 	StartGameSounds();
+
 	SetMasterVolume(gMasterVolume);
 	SetXMVolume(gMusicVolume);
+	
 	CloseControllers();
 	InitControllers();
 	VSync(0);
@@ -1813,7 +1815,7 @@ void StepGame(void)
 
 	if (CameraCnt == 3)
 	{
-		StartXM(0);
+		StartXM(gDriver1Music);
 	}
 
 	if (doSpooling)
