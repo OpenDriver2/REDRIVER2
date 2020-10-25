@@ -602,17 +602,85 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims = (POLY_FT4 *)current->primptr;
 	setPolyFT4(prims);
 
+	current->primptr += sizeof(POLY_FT4);
+
 	prims->x0 = v1[0] + FIXEDH(iVar5) + iVar8;
 	prims->y0 = v1[1] + FIXEDH(iVar7) + iVar9;
 
-	prims->x1 = (v1[0] - FIXEDH(iVar5)) + iVar8;
-	prims->y1 = (v1[1] - FIXEDH(iVar7)) + iVar9;
+	prims->x1 = v1[0] - FIXEDH(iVar5) + iVar8;
+	prims->y1 = v1[1] - FIXEDH(iVar7) + iVar9;
 
-	prims->x2 = (v2[0] + FIXEDH(iVar5)) - x;
-	prims->y2 = (v2[1] + FIXEDH(iVar7)) - y;
+	prims->x2 = v2[0] + FIXEDH(iVar5) - x;
+	prims->y2 = v2[1] + FIXEDH(iVar7) - y;
 
-	prims->x3 = (v2[0] - FIXEDH(iVar5)) - x;
-	prims->y3 = (v2[1] - FIXEDH(iVar7)) - y;
+	prims->x3 = v2[0] - FIXEDH(iVar5) - x;
+	prims->y3 = v2[1] - FIXEDH(iVar7) - y;
+
+#ifdef PGXP
+	uint index = 7; // PGXP_GetIndex();
+	
+	PGXPVData vdata1, vdata2;
+	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), index);
+	PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), index);
+
+	x = (vdata1.px - vdata2.px) * 10.0f;
+	y = (vdata1.py - vdata2.py) * 10.0f;
+
+	lVar2 = ratan2(y, x);
+
+	iVar9 = y >> bVar3;
+	iVar8 = x >> bVar3;
+
+	if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
+	{
+		y = -y >> 3;
+		x = -x >> 3;
+	}
+	else
+	{
+		uVar4 = MainPed[bone].cAdj >> 4;
+		y = y >> uVar4;
+		x = x >> uVar4;
+	}
+
+	iVar5 = (rcossin_tbl[(-lVar2 & 0xfffU) * 2] * 2 * (width & 0x3f));
+	iVar7 = (rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 2 * (width & 0x3f));
+
+	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
+		vdata1.px + (FIXEDH(iVar5) + iVar8) * 0.005f,
+		vdata1.py + (FIXEDH(iVar7) + iVar9) * 0.005f,
+		vdata1.pz, vdata1.scr_h };
+	
+
+	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
+		vdata1.px - (FIXEDH(iVar5) + iVar8) * 0.005f,
+		vdata1.py - (FIXEDH(iVar7) + iVar9) * 0.005f,
+		vdata1.pz, vdata1.scr_h };
+	
+
+	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
+		vdata2.px + (FIXEDH(iVar5) - x) * 0.005f,
+		vdata2.py + (FIXEDH(iVar7) - y) * 0.005f,
+		vdata2.pz, vdata2.scr_h };
+	
+
+	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
+		vdata2.px - (FIXEDH(iVar5) - x) * 0.005f,
+		vdata2.py - (FIXEDH(iVar7) - y) * 0.005f,
+		vdata2.pz, vdata2.scr_h };
+
+	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v1[0], v1[1]));
+	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v2[0], v2[1]));
+
+	SXYPAIR pa = {v1[0], v1[1]};
+	SXYPAIR pb = {v2[0], v2[1]};
+	CVECTOR col = { 128, 0, 0, 255 };
+
+	PGXP_EmitCacheData(v0data);
+	PGXP_EmitCacheData(v1data);
+	PGXP_EmitCacheData(v2data);
+	PGXP_EmitCacheData(v3data);
+#endif
 
 	if (bDoingShadow == 0)
 	{
@@ -689,10 +757,6 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		prims->g0 = (combointensity >> 8) & 0xFF;
 		prims->b0 = combointensity & 0xFF;
 	}
-
-#ifndef PSX
-	prims->pgxp_index = 0xFFFF;
-#endif
 	
 	if (bDoingShadow == 0)
 	{
@@ -704,7 +768,7 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		addPrim(current->ot + 0x107f, prims);
 	}
 
-	current->primptr += sizeof(POLY_FT4);
+	
 }
 
 
@@ -1306,6 +1370,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 
 						gte_ldv0(&SVECTOR_1f800200);
 						gte_ldv1(&SVECTOR_1f800208);
+
 
 						gte_rtpt();
 						gte_stsxy0(&v1_00[0]);
@@ -2032,22 +2097,6 @@ void DrawCiv(PEDESTRIAN *pPed)
 			{
 				gte_stsxy3(&plVar22[0], &plVar22[1], &plVar22[2]);
 				gte_stsz3(&plVar23[0], &plVar23[1], &plVar23[2]);
-
-				/*
-				lVar3 = getCopReg(2, 0xc);
-				*plVar22 = lVar3;
-				lVar3 = getCopReg(2, 0xd);
-				plVar22[1] = lVar3;
-				lVar3 = getCopReg(2, 0xe);
-				plVar22[2] = lVar3;
-				4
-				lVar3 = getCopReg(2, 0x11);
-				*plVar23 = lVar3;
-				lVar3 = getCopReg(2, 0x12);
-				plVar23[1] = lVar3;
-				lVar3 = getCopReg(2, 0x13);
-				plVar23[2] = lVar3;
-				*/
 			}
 
 			if (iVar26 < 27)
@@ -2060,19 +2109,6 @@ void DrawCiv(PEDESTRIAN *pPed)
 
 				gte_ldv3(&vert2[0], &vert2[1], &vert2[2]);
 				gte_rtpt();
-
-				/*
-				setCopReg(2, in_zero, *(undefined4 *)pSVar24);
-				setCopReg(2, in_at, *(undefined4 *)&vert2[3].vz);
-
-				setCopReg(2, (uint)bVar2, *(undefined4 *)(vert2 + 4));
-				setCopReg(2, lVar9, *(undefined4 *)&vert2[4].vz);
-
-				setCopReg(2, boneId, *(undefined4 *)(vert2 + 5));
-				setCopReg(2, v1, *(undefined4 *)&vert2[5].vz);
-
-				copFunction(2, 0x280030);
-				*/
 			}
 
 			boneId = *piVar25;
