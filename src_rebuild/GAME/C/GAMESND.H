@@ -1,6 +1,8 @@
 #ifndef GAMESND_H
 #define GAMESND_H
 
+extern int gDriver1Music;
+
 extern int TimeSinceLastSpeech;
 
 extern char phrase_top;

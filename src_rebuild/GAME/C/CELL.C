@@ -78,7 +78,7 @@ void ClearCopUsage(void)
 PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
 {
 	PACKED_CELL_OBJECT *ppco;
-	CELL_DATA *celld;
+
 	uint value;
 	unsigned short index;
 	unsigned short num;
@@ -92,11 +92,8 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 			return NULL;
 	}
 
-#ifdef PSX
-	cbr = (cellz - (cellz & 0xffffffe0U)) * 32 + index * 1024 + (cellx - (cellx & 0xffffffe0U));
-#else
-	cbr = (cellz - (cellz & 0xffffffe0U)) * MAP_REGION_SIZE + index * (MAP_CELL_SIZE / 2) + (cellx - (cellx & 0xffffffe0U));
-#endif
+	cbr = (cellz % MAP_REGION_SIZE) * MAP_REGION_SIZE + index * (MAP_REGION_SIZE*MAP_REGION_SIZE) + (cellx % MAP_REGION_SIZE);
+
 	if (cell_ptrs[cbr] == 0xffff)
 	{
 		return NULL;

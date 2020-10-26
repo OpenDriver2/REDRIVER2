@@ -5,9 +5,6 @@
 #include "EMULATOR_PRIVATE.H"
 #include "CRASHHANDLER.H"
 
-#include "EMULATOR_PLATFORM_SETUP.H"
-
-#include "LIBGPU.H"
 #include "LIBETC.H"
 #include "LIBPAD.H"
 
@@ -36,15 +33,9 @@ SDL_Window* g_window = NULL;
 TextureID vramTexture;
 TextureID whiteTexture;
 
-#if defined(OGLES) || defined(OGL)
-	GLuint dynamic_vertex_buffer;
-	GLuint dynamic_vertex_array;
-#elif defined(D3D9)
-	IDirect3DVertexBuffer9 *dynamic_vertex_buffer = NULL;
-	IDirect3D9             *d3d;
-	IDirect3DDevice9       *d3ddev;
-	D3DPRESENT_PARAMETERS  d3dpp;
-#endif
+GLuint dynamic_vertex_buffer;
+GLuint dynamic_vertex_array;
+
 
 int windowWidth = 0;
 int windowHeight = 0;
@@ -61,6 +52,8 @@ int g_texturelessMode = 0;
 int g_emulatorPaused = 0;
 int g_polygonSelected = 0;
 int g_pgxpTextureCorrection = 1;
+int g_pgxpZBuffer = 1;
+int g_bilinearFiltering = 0;
 TextureID g_lastBoundTexture;
 
 // Remap a value in the range [A,B] to [C,D].
@@ -88,76 +81,9 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 
 void Emulator_ResetDevice()
 {
-#if defined(OGLES) || defined(OGL)
 	SDL_GL_SetSwapInterval(g_swapInterval);
-#elif defined(D3D9)
-	if (dynamic_vertex_buffer) {
-		dynamic_vertex_buffer->Release();
-		dynamic_vertex_buffer = NULL;
-	}
-
-	d3dpp.PresentationInterval = g_swapInterval ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-	d3dpp.BackBufferWidth      = windowWidth;
-	d3dpp.BackBufferHeight     = windowHeight;
-	HRESULT hr = d3ddev->Reset(&d3dpp);
-	assert(!FAILED(hr));
-
-	hr = d3ddev->CreateVertexBuffer(sizeof(Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, D3DFMT_UNKNOWN, D3DPOOL_DEFAULT, &dynamic_vertex_buffer, NULL);
-	assert(!FAILED(hr));
-
-	d3ddev->SetRenderState(D3DRS_ZENABLE,  D3DZB_FALSE);
-	d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-#endif
 }
 
-#if defined(D3D9)
-static int Emulator_InitialiseD3D9Context(char* windowName, int fullscreen)
-{
-	int windowFlags = SDL_WINDOW_RESIZABLE;
-
-	if (fullscreen)
-	{
-		windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	}
-	
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
-	if (g_window == NULL)
-	{
-		eprinterr("Failed to initialise SDL window!\n");
-		return FALSE;
-	}
-
-	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
-	SDL_GetWindowWMInfo(g_window, &wmInfo);
-
-	memset(&d3dpp, 0, sizeof(d3dpp));
-	d3dpp.Windowed               = TRUE;
-	d3dpp.BackBufferCount        = 1;
-	d3dpp.BackBufferFormat       = D3DFMT_A8R8G8B8;
-	d3dpp.BackBufferWidth        = windowWidth;
-	d3dpp.BackBufferHeight       = windowHeight;
-	d3dpp.SwapEffect             = D3DSWAPEFFECT_DISCARD;
-	d3dpp.hDeviceWindow          = wmInfo.info.win.window;
-	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
-	d3dpp.PresentationInterval   = D3DPRESENT_INTERVAL_ONE;
-
-	d3d =  Direct3DCreate9(D3D_SDK_VERSION);
-	if (!d3d) {
-		eprinterr("Failed to initialise D3D\n");
-		return FALSE;
-	}
-
-	HRESULT hr = d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3ddev);
-	if (FAILED(hr)) {
-		eprinterr("Failed to obtain D3D9 device!\n");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-#endif
 
 static int Emulator_InitialiseGLContext(char* windowName, int fullscreen)
 {
@@ -328,12 +254,6 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 		eprinterr("Failed to Initialise GLES Context!\n");
 		return FALSE;
 	}
-#elif defined(D3D9)
-	if (Emulator_InitialiseD3D9Context(windowName, fullscreen) == FALSE)
-	{
-		eprinterr("Failed to Initialise D3D9 Context!\n");
-		return FALSE;
-	}
 #endif
 
 	return TRUE;
@@ -342,11 +262,9 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 static int Emulator_InitialiseGLEW()
 {
 #if defined(GLEW)
-	glewExperimental = GL_TRUE;
+	GLenum err = gladLoadGL();
 
-	GLenum err = glewInit();
-
-	if (err != GLEW_OK)
+	if (err == 0)
 	{
 		return FALSE;
 	}
@@ -541,6 +459,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 #ifdef PGXP
 	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
 	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
+	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
 	ScreenCoordsToEmulator(vertex, 4);
@@ -555,11 +474,13 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) {		\
 		v.x = vd.px + ofsX;\
 		v.y = vd.py + ofsY;\
+		v.scr_h = vd.scr_h;\
 		v.w = vd.pz;\
 		v.z = 0.0f;\
 	} else { \
 		v.w = 1.0f; \
 		v.z = 0.0f; \
+		v.scr_h = 0.0f; \
 	}\
 }
 
@@ -646,6 +567,7 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 #ifdef PGXP
 	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w = 1.0f;
 	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z = 0.0f;
+	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
 	ScreenCoordsToEmulator(vertex, 4);
@@ -936,18 +858,24 @@ ShaderID g_blit_shader;
 
 #if defined(OGLES) || defined(OGL)
 GLint u_Projection;
+GLint u_Projection3D;
 
-
-#define GTE_PACK_RG\
+#define GPU_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
 
-#define GTE_DISCARD\
+#define GPU_DISCARD\
 	"		if (color_16 == 0.0) { discard; }\n"
 
-#define GTE_DECODE_RG\
+#define GPU_DECODE_RG\
 	"		fragColor = fract(floor(color_16 / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0);\n"
 
-#define GTE_DITHERING\
+#define GPU_PACK_RG_FUNC\
+	"	float packRG(vec2 rg) { return (rg.y * 256.0 + rg.x) * 255.0;}\n"
+
+#define GPU_DECODE_RG_FUNC\
+	"	vec4 decodeRG(float rg) { return fract(floor(rg / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0); }\n"
+
+#define GPU_DITHERING\
 	"		fragColor *= v_color;\n"\
 	"		mat4 dither = mat4(\n"\
 	"			-4.0,  +0.0,  -3.0,  +1.0,\n"\
@@ -957,133 +885,154 @@ GLint u_Projection;
 	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"\
 	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
 
+#define GPU_SAMPLE_TEXTURE_4BIT_FUNC\
+	"	// returns 16 bit colour\n"\
+	"	float samplePSX(vec2 tc){\n"\
+	"		vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	"		vec2 comp = VRAM(uv);\n"\
+	"		int index = int(fract(tc.x / 4.0) * 4.0);\n"\
+	"		float v = comp[index / 2] * (255.0 / 16.0);\n"\
+	"		float f = floor(v);\n"\
+	"		vec2 c = vec2( (v - f) * 16.0, f );\n"\
+	"		vec2 clut_pos = v_page_clut.zw;\n"\
+	"		clut_pos.x += mix(c[0], c[1], fract(float(index) / 2.0) * 2.0) / 1024.0;\n"\
+	"		return packRG(VRAM(clut_pos));\n"\
+	"	}\n"
+
+#define GPU_SAMPLE_TEXTURE_8BIT_FUNC\
+	"	// returns 16 bit colour\n"\
+	"	float samplePSX(vec2 tc){\n"\
+	"		vec2 uv = (tc * vec2(0.5, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	"		vec2 comp = VRAM(uv);\n"\
+	"		vec2 clut_pos = v_page_clut.zw;\n"\
+	"		int index = int(mod(tc.x, 2.0));\n"\
+	"		clut_pos.x += comp[index] * 255.0 / 1024.0;\n"\
+	"		vec2 color_rg = VRAM(clut_pos);\n"\
+	"		return packRG(VRAM(clut_pos));\n"\
+	"	}\n"
+
+#define GPU_SAMPLE_TEXTURE_16BIT_FUNC\
+	"	float samplePSX(vec2 tc){\n"\
+	"		vec2 uv = (tc + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	"		vec2 color_rg = VRAM(uv);\n"\
+	"		return packRG(color_rg);\n"\
+	"	}\n"
+
+
+#define GPU_BILINEAR_SAMPLE_FUNC \
+	"	float c_textureSize = 1;\n"\
+	"	float c_onePixel = 1;\n"\
+	"	vec4 BilinearTextureSample(vec2 P) {\n"\
+	"		vec2 pixel = P + vec2(1.0, 1);\n"\
+	"		vec2 frac = fract(pixel);\n"\
+	"		pixel = floor(pixel) - vec2(c_onePixel * 0.5);\n"\
+	"		float C11 = samplePSX(pixel + vec2( 0.0        , 0.0));\n"\
+	"		float C21 = samplePSX(pixel + vec2( c_onePixel, 0.0));\n"\
+	"		float C12 = samplePSX(pixel + vec2( 0.0        , c_onePixel));\n"\
+	"		float C22 = samplePSX(pixel + vec2( c_onePixel, c_onePixel));\n"\
+	"		float ax1 = mix(float(C11 > 0), float(C21 > 0), frac.x);\n"\
+	"		float ax2 = mix(float(C12 > 0), float(C22 > 0), frac.x);\n"\
+	"		if(mix(ax1, ax2, frac.y) < 0.25) { discard; }\n"\
+	"		vec4 x1 = mix(decodeRG(C11), decodeRG(C21), frac.x);\n"\
+	"		vec4 x2 = mix(decodeRG(C12), decodeRG(C22), frac.x);\n"\
+	"		return mix(x1, x2, frac.y);\n"\
+	"	}\n"
+
+#define GPU_NEAREST_SAMPLE_FUNC \
+	"vec4 NearestTextureSample(vec2 P) {\n"\
+	"	float color_16 = samplePSX(P);\n"\
+	"	if(color_16 == 0.0) {discard;}\n"\
+	"	return decodeRG(color_16);\n"\
+	"}\n"
 
 #if (VRAM_FORMAT == GL_LUMINANCE_ALPHA)
 	#define GTE_FETCH_VRAM_FUNC\
 		"	uniform sampler2D s_texture;\n"\
 		"	vec2 VRAM(vec2 uv) { return texture2D(s_texture, uv).ra; }\n"
 #else
-	#define GTE_FETCH_VRAM_FUNC\
+	#define GPU_FETCH_VRAM_FUNC\
 		"	uniform sampler2D s_texture;\n"\
 		"	vec2 VRAM(vec2 uv) { return texture2D(s_texture, uv).rg; }\n"
 #endif
 
 #ifdef PGXP
 #define GTE_PERSPECTIVE_CORRECTION \
-		"	vec4 fragPosition = Projection * vec4(a_position.xy, a_zw.x, 1.0) * a_zw.y;\n"\
+		"	vec4 fragPosition = (a_zw.z != 0 ? (Projection3D * vec4(a_position.xy * vec2(1,-1) * a_zw.z, a_zw.y, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION \
 		"	gl_Position = Projection * vec4(a_position.xy, 0.0, 1.0);\n"
 #endif
 
+#define GTE_VERTEX_SHADER \
+	"	attribute vec4 a_position;\n"\
+	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"\
+	"	attribute vec4 a_color;\n"\
+	"	attribute vec4 a_zw;\n"\
+	"	uniform mat4 Projection;\n"\
+	"	uniform mat4 Projection3D;\n"\
+	"	void main() {\n"\
+	"		v_texcoord = a_texcoord;\n"\
+	"		v_color = a_color;\n"\
+	"		v_color.xyz *= a_texcoord.z;\n"\
+	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"\
+	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"\
+	"		v_page_clut.z = fract(a_position.w / 64.0);\n"\
+	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"\
+	GTE_PERSPECTIVE_CORRECTION\
+	"		v_z = (gl_Position.z - 40) * 0.005;\n"\
+	"	}\n"
+
+#define GPU_FRAGMENT_SAMPLE_SHADER(bit) \
+	GPU_PACK_RG_FUNC\
+	GPU_DECODE_RG_FUNC\
+	GPU_FETCH_VRAM_FUNC\
+	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
+	"#ifdef BILINEAR_FILTER\n"\
+	GPU_BILINEAR_SAMPLE_FUNC\
+	"#else\n"\
+	GPU_NEAREST_SAMPLE_FUNC\
+	"#endif\n"\
+	"	void main() {\n"\
+	"#ifdef BILINEAR_FILTER\n"\
+	"		fragColor = BilinearTextureSample(v_texcoord.xy);\n"\
+	"#else\n"\
+	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"\
+	"#endif\n"\
+	GPU_DITHERING\
+	"	}\n"
+
 const char* gte_shader_4 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
 	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
 	"#ifdef VERTEX\n"
-	"	attribute vec4 a_position;\n"
-	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
-	"	attribute vec4 a_color;\n"
-	"	attribute vec2 a_zw;\n"
-	"	uniform mat4 Projection;\n"
-	"	void main() {\n"
-	"		v_texcoord = a_texcoord;\n"
-	"		v_color = a_color;\n"
-	"		v_color.xyz *= a_texcoord.z;\n"
-	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"
-	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
-	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
-	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
-	GTE_PERSPECTIVE_CORRECTION
-	"	}\n"
+	GTE_VERTEX_SHADER
 	"#else\n"
-	GTE_FETCH_VRAM_FUNC
-	"	void main() {\n"
-	"		vec2 uv = (v_texcoord.xy * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
-	"		vec2 comp = VRAM(uv);\n"
-	"		int index = int(fract(v_texcoord.x / 4.0 + 0.0001) * 4.0);\n"
-	"\n"
-	"		float v = comp[index / 2] * (255.0 / 16.0);\n"
-	"		float f = floor(v);\n"
-	"\n"
-	"		vec2 c = vec2( (v - f) * 16.0, f );\n"
-	"\n"
-	"		vec2 clut_pos = v_page_clut.zw;\n"
-	"		clut_pos.x += mix(c[0], c[1], fract(float(index) / 2.0) * 2.0) / 1024.0;\n"
-	"		vec2 color_rg = VRAM(clut_pos);\n"
-	GTE_PACK_RG
-	GTE_DISCARD
-	GTE_DECODE_RG
-	GTE_DITHERING
-	"	}\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(4)
 	"#endif\n";
 
 const char* gte_shader_8 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
 	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
 	"#ifdef VERTEX\n"
-	"	attribute vec4 a_position;\n"
-	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
-	"	attribute vec4 a_color;\n"
-	"	attribute vec2 a_zw;\n"
-	"	uniform mat4 Projection;\n"
-	"	void main() {\n"
-	"		v_texcoord = a_texcoord;\n"
-	"		v_color = a_color;\n"
-	"		v_color.xyz *= a_texcoord.z;\n"
-	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"
-	"		v_page_clut.y = floor(a_position.z / 16.0) * 256.0;\n"
-	"		v_page_clut.z = fract(a_position.w / 64.0);\n"
-	"		v_page_clut.w = floor(a_position.w / 64.0) / 512.0;\n"
-	GTE_PERSPECTIVE_CORRECTION
-	"	}\n"
+	GTE_VERTEX_SHADER
 	"#else\n"
-	GTE_FETCH_VRAM_FUNC
-	"	void main() {\n"
-	"		vec2 uv = (v_texcoord.xy * vec2(0.5, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
-	"		vec2 comp = VRAM(uv);\n"
-	"\n"
-	"		vec2 clut_pos = v_page_clut.zw;\n"
-	"		clut_pos.x += comp[int(mod(v_texcoord.x, 2.0))] * 255.0 / 1024.0;\n"
-	"		vec2 color_rg = VRAM(clut_pos);\n"
-	GTE_PACK_RG
-	GTE_DISCARD
-	GTE_DECODE_RG
-	GTE_DITHERING
-	"	}\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(8)
 	"#endif\n";
 
 const char* gte_shader_16 =
 	"varying vec4 v_texcoord;\n"
 	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
 	"#ifdef VERTEX\n"
-	"	attribute vec4 a_position;\n"
-	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"
-	"	attribute vec4 a_color;\n"
-	"	attribute vec2 a_zw;\n"
-	"	uniform mat4 Projection;\n"
-	"	void main() {\n"
-	"		vec2 page\n;"
-	"		page.x = fract(a_position.z / 16.0) * 1024.0\n;"
-	"		page.y = floor(a_position.z / 16.0) * 256.0;\n;"
-	"		v_texcoord = a_texcoord;\n"
-	"		v_texcoord.xy += page;\n"
-	"		v_texcoord.xy *= vec2(1.0 / 1024.0, 1.0 / 512.0);\n"
-	"		v_color = a_color;\n"
-	"		v_color.xyz *= a_texcoord.z;\n"
-	GTE_PERSPECTIVE_CORRECTION
-	"	}\n"
+	GTE_VERTEX_SHADER
 	"#else\n"
-	GTE_FETCH_VRAM_FUNC
-	"	void main() {\n"
-	"		vec2 color_rg = VRAM(v_texcoord.xy);\n"
-	GTE_PACK_RG
-	GTE_DISCARD
-	GTE_DECODE_RG
-	GTE_DITHERING
-	"	}\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(16)
 	"#endif\n";
 
 const char* blit_shader =
@@ -1096,11 +1045,11 @@ const char* blit_shader =
 	"		gl_Position = vec4(a_position.xy, 0.0, 1.0);\n"
 	"	}\n"
 	"#else\n"
-	GTE_FETCH_VRAM_FUNC
+	GPU_FETCH_VRAM_FUNC
 	"	void main() {\n"
 	"		vec2 color_rg = VRAM(v_texcoord.xy);\n"
-	GTE_PACK_RG
-	GTE_DECODE_RG
+	GPU_PACK_RG
+	GPU_DECODE_RG
 	"	}\n"
 	"#endif\n";
 
@@ -1176,20 +1125,30 @@ ShaderID Shader_Compile(const char *source)
         "out vec4 fragColor;\n";
 #endif
 
-    const char *vs_list[] = { GLSL_HEADER_VERT, source };
-    const char *fs_list[] = { GLSL_HEADER_FRAG, source };
+	char extra_vs_defines[1024];
+	char extra_fs_defines[1024];
+	extra_vs_defines[0] = 0;
+	extra_fs_defines[0] = 0;
+
+	if(g_bilinearFiltering)
+	{
+		strcat(extra_fs_defines, "#define BILINEAR_FILTER\n");
+	}
+
+    const char *vs_list[] = { GLSL_HEADER_VERT, extra_vs_defines, source };
+    const char *fs_list[] = { GLSL_HEADER_FRAG, extra_fs_defines, source };
 
     GLuint program = glCreateProgram();
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 2, vs_list, NULL);
+    glShaderSource(vertexShader, 3, vs_list, NULL);
     glCompileShader(vertexShader);
     Shader_CheckShaderStatus(vertexShader);
     glAttachShader(program, vertexShader);
     glDeleteShader(vertexShader);
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 2, fs_list, NULL);
+    glShaderSource(fragmentShader, 3, fs_list, NULL);
     glCompileShader(fragmentShader);
     Shader_CheckShaderStatus(fragmentShader);
     glAttachShader(program, fragmentShader);
@@ -1215,34 +1174,6 @@ ShaderID Shader_Compile(const char *source)
 
     return program;
 }
-#elif defined(D3D9)
-
-#include "shaders/gte_shader_4_vs.h"
-#include "shaders/gte_shader_4_ps.h"
-#include "shaders/gte_shader_8_vs.h"
-#include "shaders/gte_shader_8_ps.h"
-#include "shaders/gte_shader_16_vs.h"
-#include "shaders/gte_shader_16_ps.h"
-#include "shaders/blit_shader_vs.h"
-#include "shaders/blit_shader_ps.h"
-
-// shader registers
-const int u_Projection = 0;
-
-LPDIRECT3DVERTEXDECLARATION9 vertexDecl;
-
-#define Shader_Compile(name) Shader_Compile_Internal((DWORD*)name##_vs, (DWORD*)name##_ps)
-
-ShaderID Shader_Compile_Internal(const DWORD *vs_data, const DWORD *ps_data)
-{
-	ShaderID shader;
-	HRESULT hr;
-	hr = d3ddev->CreateVertexShader(vs_data, &shader.VS);
-	assert(!FAILED(hr));
-	hr = d3ddev->CreatePixelShader(ps_data, &shader.PS);
-	assert(!FAILED(hr));
-	return shader;
-}
 #else
     #error
 #endif
@@ -1256,6 +1187,7 @@ void Emulator_CreateGlobalShaders()
 
 #if defined(OGL) || defined(OGLES)
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
+	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
 #endif
 }
 
@@ -1271,14 +1203,6 @@ void Emulator_GenerateCommonTextures()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixelData);
 	glBindTexture(GL_TEXTURE_2D, 0);
-#elif defined(D3D9)
-	HRESULT hr = d3ddev->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &whiteTexture, NULL);
-	assert(!FAILED(hr));
-	D3DLOCKED_RECT rect;
-	hr = whiteTexture->LockRect(0, &rect, NULL, 0);
-	assert(!FAILED(hr));
-	memcpy(rect.pBits, &pixelData, sizeof(pixelData));
-	whiteTexture->UnlockRect(0);
 #endif
 }
 
@@ -1289,7 +1213,6 @@ int Emulator_Initialise()
 	Emulator_CreateGlobalShaders();
 
 #if defined(OGL) || defined(OGLES)
-	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
@@ -1315,7 +1238,7 @@ int Emulator_Initialise()
 
 #if defined(PGXP)
 	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
-	glVertexAttribPointer(a_zw, 2,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+	glVertexAttribPointer(a_zw, 4,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
 
 	glEnableVertexAttribArray(a_zw);
 #else
@@ -1326,29 +1249,6 @@ int Emulator_Initialise()
 	glVertexAttribPointer(a_color,    4, GL_UNSIGNED_BYTE, GL_TRUE,  sizeof(Vertex), &((Vertex*)NULL)->r);
 
 	glBindVertexArray(0);
-#elif defined(D3D9)
-	if (FAILED(d3ddev->CreateTexture(VRAM_WIDTH, VRAM_HEIGHT, 1, 0, D3DFMT_A8L8, D3DPOOL_MANAGED, &vramTexture, NULL)))
-	{
-		eprinterr("Failed to create render target texture!\n");
-		return FALSE;
-	}
-
-	#define OFFSETOF(T, E)     ((size_t)&(((T*)0)->E))
-
-	const D3DVERTEXELEMENT9 VERTEX_DECL[] = {
-#if defined(PGXP)
-		{0, OFFSETOF(Vertex, x), D3DDECLTYPE_FLOAT4,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0}, // a_position
-#else
-		{0, OFFSETOF(Vertex, x), D3DDECLTYPE_SHORT4,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0}, // a_position
-#endif
-		{0, OFFSETOF(Vertex, u), D3DDECLTYPE_UBYTE4,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0}, // a_texcoord
-		{0, OFFSETOF(Vertex, r), D3DDECLTYPE_UBYTE4N,  D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,    0}, // a_color
-		D3DDECL_END()
-	};
-
-	d3ddev->CreateVertexDeclaration(VERTEX_DECL, &vertexDecl);
-
-	#undef OFFSETOF
 #else
 	#error
 #endif
@@ -1369,8 +1269,6 @@ void Emulator_Ortho2D(float left, float right, float bottom, float top, float zn
 
 #if defined(OGL) || defined(OGLES) // -1..1
 	float z = (znear + zfar) / (znear - zfar);
-#elif defined(D3D9) // 0..1
-	float z = znear / (znear - zfar);
 #endif
 
 	float ortho[16] = {
@@ -1382,8 +1280,29 @@ void Emulator_Ortho2D(float left, float right, float bottom, float top, float zn
 
 #if defined(OGL) || defined(OGLES)
 	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, ortho);
+#endif
+}
+
+void Emulator_Perspective3D(const float fov, const float width, const float height, const float zNear, const float zFar)
+{
+	float sinF, cosF;
+	sinF = sinf(0.5f * fov);
+	cosF = cosf(0.5f * fov);
+
+	float h = cosF / sinF;
+	float w = (h * height) / width;
+
+	float persp[16] = {
+		w, 0, 0, 0,
+		0, h, 0, 0,
+		0, 0, (zFar + zNear) / (zFar - zNear), -(2 * zFar * zNear) / (zFar - zNear),
+		0, 0, 1, 0
+	};
+
+#if defined(OGL) || defined(OGLES)
+	glUniformMatrix4fv(u_Projection3D, 1, GL_TRUE, persp);
 #elif defined(D3D9)
-	d3ddev->SetVertexShaderConstantF(u_Projection, ortho, 4);
+	d3ddev->SetVertexShaderConstantF(u_Projection3D, persp, 4);
 #endif
 }
 
@@ -1428,8 +1347,6 @@ void Emulator_SetupClipMode(const RECT16& rect)
 			  flipOffset - clipRectY * (float)windowHeight, 
 		      clipRectW * (float)windowWidth,
 		      clipRectH * (float)windowHeight);
-#elif defined(D3D9)
-
 #endif
 }
 
@@ -1437,9 +1354,6 @@ void Emulator_SetShader(const ShaderID &shader)
 {
 #if defined(OGL) || defined(OGLES)
 	glUseProgram(shader);
-#elif defined(D3D9)
-	d3ddev->SetVertexShader(shader.VS);
-	d3ddev->SetPixelShader(shader.PS);
 #else
 	#error
 #endif
@@ -1447,6 +1361,8 @@ void Emulator_SetShader(const ShaderID &shader)
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 
 	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
+
+	Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
@@ -1474,8 +1390,6 @@ void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
 
 #if defined(OGL) || defined(OGLES)
 	glBindTexture(GL_TEXTURE_2D, texture);
-#elif defined(D3D9)
-	d3ddev->SetTexture(0, texture);
 #endif
 
 	g_lastBoundTexture = texture;
@@ -1485,8 +1399,6 @@ void Emulator_DestroyTexture(TextureID texture)
 {
 #if defined(OGL) || defined(OGLES)
     glDeleteTextures(1, &texture);
-#elif defined(D3D9)
-    texture->Release();
 #else
     #error
 #endif
@@ -1498,8 +1410,6 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 #if defined(OGL) || defined(OGLES)
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-#elif defined(D3D9)
-	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, 0xFF000000 | (r << 16) | (g << 8) | (b), 1.0f, 0);
 #endif
 }
 
@@ -1547,9 +1457,6 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 	}
 
 	fclose(f);
-
-#elif defined(D3D9)
-	//D3DXSaveSurfaceToFile(outputFileName, D3DXIFF_TGA, vramFrameBuffer, NULL, NULL);
 #endif
 }
 #endif
@@ -1565,23 +1472,6 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 	glReadPixels(0, 0, windowWidth, windowHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	#define FLIP_Y (h - fy - 1)
-#elif defined(D3D9)
-	IDirect3DSurface9 *srcSurface, *dstSurface;
-	HRESULT hr;
-	D3DLOCKED_RECT rect;
-	hr = d3ddev->GetRenderTarget(0, &srcSurface);
-	assert(!FAILED(hr));
-	hr = d3ddev->CreateOffscreenPlainSurface(windowWidth, windowHeight, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &dstSurface, NULL);
-	assert(!FAILED(hr));
-	hr = d3ddev->GetRenderTargetData(srcSurface, dstSurface);
-	assert(!FAILED(hr));
-	hr = dstSurface->LockRect(&rect, NULL, D3DLOCK_READONLY);
-	assert(!FAILED(hr));
-	assert(windowWidth * 4 == rect.Pitch);
-
-	int *data = (int*)rect.pBits;
-
-	#define FLIP_Y (fy)
 #endif
 
 	unsigned int   *data_src = (unsigned int*)data;
@@ -1599,11 +1489,6 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 
 #if defined(OGL) || defined(OGLES)
 	SDL_free(data);
-#elif defined(D3D9)
-	dstSurface->UnlockRect();
-
-	dstSurface->Release();
-	srcSurface->Release();
 #endif
 
 	short *ptr = (short*)vram + VRAM_WIDTH * y + x;
@@ -1668,20 +1553,12 @@ void Emulator_UpdateVRAM()
 #if defined(OGL) || defined(OGLES)
 	glBindTexture(GL_TEXTURE_2D, vramTexture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
-#elif defined(D3D9)
-	D3DLOCKED_RECT rect;
-	HRESULT hr = vramTexture->LockRect(0, &rect, NULL, 0);
-	assert(!FAILED(hr));
-	memcpy(rect.pBits, vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(short));
-	vramTexture->UnlockRect(0);
 #endif
 }
 
 void Emulator_BlitVRAM()
 {
-	return; // is that needed?
-	// FIXME: sorry, this does not work
-
+#if 0
 	if (activeDispEnv.isinter)
 	{
 		//Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
@@ -1710,6 +1587,7 @@ void Emulator_BlitVRAM()
 	Emulator_UpdateVertexBuffer(blit_vertices, 6);
 	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
+#endif
 }
 
 void Emulator_DoDebugKeys(int nKey, bool down); // forward decl
@@ -1787,11 +1665,6 @@ bool Emulator_BeginScene()
 
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
-
-#elif defined(D3D9)
-	d3ddev->BeginScene();
-	d3ddev->SetVertexDeclaration(vertexDecl);
-	d3ddev->SetStreamSource(0, dynamic_vertex_buffer, 0, sizeof(Vertex));
 #endif
 
 	Emulator_UpdateVRAM();
@@ -1809,8 +1682,6 @@ bool Emulator_BeginScene()
 #if defined(OGL) || defined(OGLES)
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-#elif defined(D3D9)
-
 #endif
 	}
 
@@ -1915,6 +1786,10 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 			case SDL_SCANCODE_7:
 				g_pgxpTextureCorrection ^= 1;
 				break;
+			case SDL_SCANCODE_8:
+				g_pgxpZBuffer ^= 1;
+				break;
+				
 		}
 	}
 }
@@ -1955,10 +1830,6 @@ void Emulator_SwapWindow()
 	SDL_GL_SwapWindow(g_window);
 #elif defined(OGLES)
 	eglSwapBuffers(eglDisplay, eglSurface);
-#elif defined(D3D9)
-	if (d3ddev->Present(NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST) {
-		Emulator_ResetDevice();
-	}
 #endif
 #else
 	glFinish();
@@ -1997,8 +1868,6 @@ void Emulator_EndScene()
 
 #if defined(OGL) || defined(OGLES)
 	glBindVertexArray(0);
-#elif defined(D3D9)
-	d3ddev->EndScene();
 #endif
 
 	begin_scene_flag = false;
@@ -2028,17 +1897,26 @@ void Emulator_ShutDown()
 
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
 
-#if defined(D3D9)
-	d3ddev->Release();
-	d3d->Release();
-#endif
-
 	SDL_DestroyWindow(g_window);
 	SDL_Quit();
 	exit(0);
 }
 
 int g_PreviousBlendMode = BM_NONE;
+
+void Emulator_EnableDepth(int enable)
+{
+	if(enable && g_pgxpZBuffer)
+	{
+		glEnable(GL_DEPTH_TEST);
+		//glDepthMask(GL_TRUE);
+	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST);
+		//glDepthMask(GL_FALSE);
+	}
+}
 
 void Emulator_SetBlendMode(BlendMode blendMode)
 {
@@ -2057,56 +1935,27 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 	{
 		case BM_NONE:
 			glDisable(GL_BLEND);
+			Emulator_EnableDepth(TRUE);
 			break;
 		case BM_AVERAGE:
 			glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
 			glBlendEquation(GL_FUNC_ADD);
+			Emulator_EnableDepth(FALSE);
 			break;
 		case BM_ADD:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
+			Emulator_EnableDepth(FALSE);
 			break;
 		case BM_SUBTRACT:
 			glBlendFunc(GL_ONE, GL_ONE);
 			glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+			Emulator_EnableDepth(FALSE);
 			break;
 		case BM_ADD_QUATER_SOURCE:
 			glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE);
 			glBlendEquation(GL_FUNC_ADD);
-			break;
-	}
-#elif defined(D3D9)
-	if (g_PreviousBlendMode == BM_NONE)
-	{
-		d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	}
-
-	switch (blendMode)
-	{
-		case BM_NONE:
-			d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-			break;
-		case BM_AVERAGE:
-			d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(128, 128, 128, 128));
-			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_BLENDFACTOR);
-			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_BLENDFACTOR);
-			break;
-		case BM_ADD:
-			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-			break;
-		case BM_SUBTRACT:
-			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
-			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-			break;
-		case BM_ADD_QUATER_SOURCE:
-			d3ddev->SetRenderState(D3DRS_BLENDFACTOR, D3DCOLOR_RGBA(64, 64, 64, 64));
-			d3ddev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-			d3ddev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_BLENDFACTOR);
-			d3ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			Emulator_EnableDepth(FALSE);
 			break;
 	}
 #endif
@@ -2126,9 +1975,6 @@ extern void Emulator_SetPolygonOffset(float ofs)
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(0.0f, ofs);
 	}
-	
-#elif defined(D3D9)
-
 #endif
 }
 
@@ -2136,15 +1982,6 @@ void Emulator_SetViewPort(int x, int y, int width, int height)
 {
 #if defined(OGL) || defined(OGLES)
 	glViewport(x, y, width, height);
-#elif defined(D3D9)
-	D3DVIEWPORT9 viewport;
-	viewport.X      = x;
-	viewport.Y      = y;
-	viewport.Width  = width;
-	viewport.Height = height;
-	viewport.MinZ   = 0.0f;
-	viewport.MaxZ   = 1.0f;
-	d3ddev->SetViewport(&viewport);
 #endif
 }
 
@@ -2152,8 +1989,6 @@ void Emulator_SetRenderTarget(const RenderTargetID &frameBufferObject)
 {
 #if defined(OGL) || defined(OGLES)
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-#elif defined(D3D9)
-	d3ddev->SetRenderTarget(0, frameBufferObject);
 #else
     #error
 #endif
@@ -2163,8 +1998,6 @@ void Emulator_SetWireframe(bool enable)
 {
 #if defined(OGL)
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
-#elif defined(D3D9)
-	d3ddev->SetRenderState(D3DRS_FILLMODE, enable ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
 #endif
 }
 
@@ -2173,11 +2006,6 @@ void Emulator_UpdateVertexBuffer(const Vertex *vertices, int num_vertices)
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
 #if defined(OGL) || defined(OGLES)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(Vertex), vertices);
-#elif defined(D3D9)
-	void *ptr;
-	dynamic_vertex_buffer->Lock(0, 0, &ptr, D3DLOCK_DISCARD);
-	memcpy(ptr, vertices, num_vertices * sizeof(Vertex));
-	dynamic_vertex_buffer->Unlock();
 #else
 	#error
 #endif
@@ -2189,8 +2017,6 @@ void Emulator_DrawTriangles(int start_vertex, int triangles)
 {
 #if defined(OGL) || defined(OGLES)
 	glDrawArrays(GL_TRIANGLES, start_vertex, triangles * 3);
-#elif defined(D3D9)
-	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, start_vertex, triangles);
 #else
 	#error
 #endif

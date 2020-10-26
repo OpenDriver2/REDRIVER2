@@ -4,11 +4,6 @@
 #include <SDL_gamecontroller.h>
 #include <EMULATOR.H>
 
-#if defined(D3D9)
-extern LPDIRECT3DVERTEXBUFFER9 g_vertexBufferObject;
-#endif
-
-
 extern TextureID        whiteTexture;
 extern TextureID        vramTexture;
 

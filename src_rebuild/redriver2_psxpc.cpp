@@ -2,16 +2,19 @@
 //
 
 #include "DRIVER2.H"
-#include "GAME/C/MAIN.H"
-#include "GAME/C/SYSTEM.H"
-#include "GAME/C/GLAUNCH.H"
-#include "GAME/C/PLAYERS.H"
+#include "C/MAIN.H"
+#include "C/SYSTEM.H"
+#include "C/GLAUNCH.H"
+#include "C/PLAYERS.H"
+#include "C/GAMESND.H"
 
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
+
+
 
 // eq engine console output
 typedef enum
@@ -254,11 +257,12 @@ void FreeCameraKeyboardHandler(int nKey, bool down)
 	}
 }
 
+int gShowCollisionDebug = 0;
+
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 
 extern int g_texturelessMode;
 extern int g_wireframeMode;
-int gShowCollisionDebug = 0;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
 int gStopCivCars = 0;
@@ -404,16 +408,36 @@ int main(int argc, char** argv)
 	int fullScreen = 0;
 	int enableFreecamera = 0;
 	extern int g_pgxpTextureCorrection;
+	extern int g_pgxpZBuffer;
+	extern int g_bilinearFiltering;
 
 	if (config)
 	{
+		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
+		
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
 		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
+		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
+		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
+		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
+		
 
+		if (dataFolderStr)
+		{
+			strcpy(gDataFolder, dataFolderStr);
+	
+			int len = strlen(gDataFolder);
+			if (gDataFolder[len - 1] != '\\')
+			{
+				gDataFolder[len] = '\\';
+				gDataFolder[len + 1] = '\0';
+			}
+		}
+		
 #if defined(DEBUG_OPTIONS)
 		int unlockAll = 0;
 		ini_sget(config, "game", "unlockAll", "%d", &unlockAll);

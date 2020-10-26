@@ -38,9 +38,6 @@ install:
   - set SDL2_URL="https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip"
   - appveyor DownloadFile %SDL2_URL% -FileName SDL2.zip
   - 7z x SDL2.zip -o%dependency_folder%
-  - set GLEW_URL="https://netix.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip"
-  - appveyor DownloadFile %GLEW_URL% -FileName GLEW.zip
-  - 7z x GLEW.zip -o%dependency_folder%
   - set OPENAL_URL="https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip"
   - appveyor DownloadFile %OPENAL_URL% -FileName OPENAL.zip
   - 7z x OPENAL.zip -o%dependency_folder%
@@ -51,7 +48,6 @@ install:
   - appveyor DownloadFile %PREMAKE_URL% -FileName premake5.zip
   - 7z x premake5.zip -o%project_folder%
   - set SDL2_DIR=%dependency_folder%\SDL2-2.0.12
-  - set GLEW_DIR=%dependency_folder%\glew-2.1.0
   - set OPENAL_DIR=%dependency_folder%\openal-soft-1.20.1-bin
   - set JPEG_DIR=%dependency_folder%\jpeg-9d
 
@@ -67,9 +63,8 @@ artifacts:
 after_build:
   - cmd: cd %project_folder%\bin\%configuration%
   - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
-  - cmd: copy %GLEW_DIR%\bin\Release\Win32\glew32.dll glew32.dll /Y
   - cmd: copy %OPENAL_DIR%\bin\Win32\soft_oal.dll OpenAL32.dll /Y
   - cmd: copy %data_folder%\config.ini config.ini /Y
-  - 7z a REDRIVER2.zip ".\*"
+  - 7z a "REDRIVER2_%configuration%.zip" ".\*"
   
 #build: off

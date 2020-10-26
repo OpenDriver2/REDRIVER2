@@ -300,8 +300,8 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	int cbrX;
 	int cbr;
 
-	cellX = (pPosition->vx + units_across_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
-	cellZ = (pPosition->vz + units_down_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
+	cellX = (pPosition->vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cellZ = (pPosition->vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
 	
 	cbrX = cellX / MAP_REGION_SIZE;
 	cbrZ = cellZ / MAP_REGION_SIZE;
@@ -311,7 +311,7 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
 		return -1;
 
-	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_CELL_SIZE / 2) + cellX - cbrX * MAP_REGION_SIZE];
+	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_REGION_SIZE*MAP_REGION_SIZE) + cellX - cbrX * MAP_REGION_SIZE];
 }
 
 
@@ -1049,8 +1049,8 @@ void CheckScenaryCollisions(_CAR_DATA *cp)
 		extraDist = 580;
 
 	// [A] FIXME: replace with 'cell_header.cell_size'
-	cell.x = (player_pos.vx + units_across_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
-	cell.z = (player_pos.vz + units_down_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
+	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
 
 	SetCopListCell(cell.x, cell.z);
 
@@ -1252,8 +1252,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	player_pos.vx = pPos->vx;
 	player_pos.vz = pPos->vz;
 
-	cell.x = (player_pos.vx + units_across_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
-	cell.z = (player_pos.vz + units_down_halved - (MAP_CELL_SIZE / 2)) / MAP_CELL_SIZE;
+	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
 	
 	SetCopListCell(cell.x, cell.z);
 	mdcount = 0;

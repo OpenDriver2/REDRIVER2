@@ -1,7 +1,8 @@
 #ifndef LIBGPU_H
 #define LIBGPU_H
 
-#include "LIBGTE.H"
+#include "TYPES.H"
+#include "PGXP_DEFS.H"
 
 extern	int (*GPU_printf)(const char *fmt, ...);
 

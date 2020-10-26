@@ -20,6 +20,7 @@
 
 #include "INLINE_C.H"
 #include "LIBGTE.H"
+#include "MAP.H"
 
 
 VECTOR gCameraOffset = { 0};
@@ -435,8 +436,8 @@ int CameraCollisionCheck(void)
 	sphere = scr_z * 3 - 382;
 
 	do {
-		cellx = camera_position.vx + (count % 3) * 1024 - 1024 + units_across_halved >> 11;
-		cellz = camera_position.vz + (count / 3) * 1024 - 1024 + units_down_halved >> 11;
+		cellx = camera_position.vx + (count % 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_across_halved >> 11;
+		cellz = camera_position.vz + (count / 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_down_halved >> 11;
 
 		if (gCameraDistance > 0)
 		{

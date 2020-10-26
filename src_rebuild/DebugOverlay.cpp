@@ -140,6 +140,28 @@ void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color)
 	ld.posB.vy *= -1;
 }
 
+void Debug_Line2D(SXYPAIR& pointA, SXYPAIR& pointB, CVECTOR& color)
+{
+	LINE_F2* line = (LINE_F2*)current->primptr;
+	setLineF2(line);
+
+	line->x0 = pointA.x;
+	line->y0 = pointA.y;
+	
+	line->x1 = pointB.x;
+	line->y1 = pointB.y;
+
+	line->r0 = color.r;
+	line->g0 = color.g;
+	line->b0 = color.b;
+
+	line->pgxp_index = 0xFFFF;
+
+	addPrim(current->ot, line);
+
+	current->primptr += sizeof(LINE_F2);
+}
+
 void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color)
 {
 	if (gDebug_numLines + 1 > 512)

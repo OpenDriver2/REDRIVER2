@@ -16,9 +16,6 @@
 //Open Graphics Library
 #define OGL
 
-//Direct3D9
-//#define D3D9
-
 #if defined(OGL)
 #define SDL2
 #define GLEW
@@ -40,7 +37,7 @@
 
 #if defined(GLEW)
 #define GL_GLEXT_PROTOTYPES 1
-#include <GL/glew.h>
+#include <glad.h>
 #endif
 
 /*
@@ -79,9 +76,6 @@
 #include <GLES3/gl3.h>
 #endif
 #include <EGL/egl.h>
-#elif defined(D3D9)
-#include <Windows.h>
-#include <d3d9.h>
 #endif
 
 #if !defined (__EMSCRIPTEN__)

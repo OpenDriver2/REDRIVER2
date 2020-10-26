@@ -398,20 +398,9 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	cellx = (dx / MAP_CELL_SIZE) - ccx;
 	cellz = (dz / MAP_CELL_SIZE) - ccz;
 
-	if (cellx < 0)
-		ab = -cellx;
-	else
-		ab = cellx;
-
-	if (ab <= view_dist)
+	if (ABS(cellx) <= view_dist && ABS(cellz) <= view_dist)
 	{
-		if (cellz < 0)
-			ab = -cellz;
-		else
-			ab = cellz;
-	
-		if (ab <= view_dist)
-			return pvs[cellx + 10 + (cellz + 10) * pvs_square] != 0;
+		return pvs[cellx + 10 + (cellz + 10) * pvs_square] != 0;
 	}
 
 	return 0;

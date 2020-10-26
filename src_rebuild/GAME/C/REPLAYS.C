@@ -887,9 +887,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 {
 	stream->playbackrun = 0;
 	stream->length = 0;
-
-	if(CurrentGameMode != GAMEMODE_DIRECTOR && CurrentGameMode != GAMEMODE_REPLAY)
-		stream->padCount = 0;
+	stream->padCount = 0;
 
 	stream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 	stream->PadRecordBuffer = (PADRECORD*)replayptr;

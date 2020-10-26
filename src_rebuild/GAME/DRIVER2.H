@@ -2,12 +2,13 @@
 #define DRIVER2_H
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "KERNEL.H"
 #include "LIBCD.H"
+#include "LIBGTE.H"
 #include "LIBGPU.H"
 #include "LIBSPU.H"
-#include "LIBGTE.H"
 
 // from redriver2_psxpc
 void printMsg(char *fmt, ...);
@@ -28,13 +29,10 @@ void printError(char *fmt, ...);
 #define trap(ode) {_asm int 0x03}
 #endif
 
-// Emulator
-#include <EMULATOR.H>
-#include <EMULATOR_PRIVATE.H>
-#include "EMULATOR_PLATFORM_SETUP.H"
+#include "EMULATOR_PRIVATE.H"
 
 #ifdef USE_32_BIT_ADDR
-typedef uint64_t OTTYPE;
+typedef unsigned long long OTTYPE;
 #else
 typedef unsigned long OTTYPE;
 #endif // USE_32_BIT_ADDR

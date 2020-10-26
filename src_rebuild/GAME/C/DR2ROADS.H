@@ -62,6 +62,8 @@ extern int NumDriver2Curves;
 
 extern short* RoadMapDataRegions[4];
 
+extern sdPlane* GetSeaPlane();
+
 extern int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId);
 
 extern void ProcessStraightsDriver2Lump(char *lump_file, int lump_size); // 0x000136C0

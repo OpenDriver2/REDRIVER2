@@ -943,7 +943,7 @@ void UpdateSpool(void)
 			// read tpage (4 sectors 4 times = 16)
 			for (int i = 0; i < 4; i++)
 			{
-				fread(current->addr + (loadbank_write & 1U) * TPAGE_WIDTH * 32, 2048, 4, fp);
+				fread(current->addr + (loadbank_write & 1U) * 256 * 32, 2048, 4, fp);
 				SendTPage();
 
 				nTPchunks++;
@@ -1293,7 +1293,7 @@ void SendTPage(void)
 	{
 		if (slot != tpageloaded[tpage2send] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * TPAGE_WIDTH * 32));
+			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * 256 * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
@@ -3015,10 +3015,12 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 // [D] [T]
 void StartSpooling(void)
 {
-	if (spoolcounter != 0 && !spoolactive)
-	{
-		if (!XAPrepared())
-		{
+	if (spoolcounter == 0 || spoolactive)
+		return;
+
+	if (XAPrepared())
+		return;
+
 #ifdef PSX
 			static unsigned char param[8];
 			static unsigned char result[8];
@@ -3031,13 +3033,11 @@ void StartSpooling(void)
 				WaitCloseLid();
 			}
 #endif // PSX
-			spoolactive = 1;
-			UpdateSpool();
+	spoolactive = 1;
+	UpdateSpool();
 
-			if (FastForward)
-				SpoolSYNC();
-		}
-	}
+	if (FastForward)
+		SpoolSYNC();
 }
 
 

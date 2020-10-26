@@ -3,10 +3,6 @@
 #include "EMULATOR_PRIVATE.H"
 #include "EMULATOR.H"
 
-#if defined(_WINDOWS)
-#include <d3d9.h>
-#endif
-
 #include <SDL_timer.h>
 
 void(*vsync_callback)(void) = NULL;
