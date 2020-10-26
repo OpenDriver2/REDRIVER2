@@ -1448,7 +1448,7 @@ void ControlCopDetection(void)
 	bool spotted;
 	int dz;
 	short *playerFelony;
-	long distanceToPlayer;
+	uint distanceToPlayer;
 	int heading;
 	int dx;
 	_CAR_DATA *cp;
@@ -1506,12 +1506,13 @@ void ControlCopDetection(void)
 
 			while (car_data <= cp)
 			{
-				if (cp->controlType == 3 && cp->ai.p.dying == 0 || cp->controlFlags & CONTROL_FLAG_COP)
+				if (cp->controlType == 3 && cp->ai.p.dying == 0 || 
+					cp->controlFlags & CONTROL_FLAG_COP)
 				{
-					dx = ABS(cp->hd.where.t[0] - vec.vx);
-					dz = ABS(cp->hd.where.t[2] - vec.vz);
+					dx = ABS(cp->hd.where.t[0] - vec.vx) >> 8;
+					dz = ABS(cp->hd.where.t[2] - vec.vz) >> 8;
 
-					distanceToPlayer = SquareRoot0(dx * dx + dz * dz);
+					distanceToPlayer = SquareRoot0(dx * dx + dz * dz) << 8;
 
 					if (cp->controlType == 3)
 					{
