@@ -1668,96 +1668,95 @@ void DoDopplerSFX(void)
 			pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
 	}
 	
+	// count 4 noisy cars and stop unused noises
+	if (num_noisy_cars > (4 - sirens))
+		num_noisy_cars = 4 - sirens;
+	else
+		num_noisy_cars = num_noisy_cars;
+
+	car_flags = 0;
+
+	for (j = 0; j < num_noisy_cars; j++)
 	{
-		// count 4 noisy cars and stop unused noises
-		if (num_noisy_cars > (4 - sirens))
-			num_noisy_cars = 4 - sirens;
-		else
-			num_noisy_cars = num_noisy_cars;
+		car = indexlist[j];
 
-		car_flags = 0;
+		if (car_data[car].controlType != CONTROL_TYPE_PURSUER_AI || car_data[car].ai.p.dying == 0)
+			car_flags |= 1 << car;
+	}
 
-		for (j = 0; j < num_noisy_cars; j++)
+	for (j = 0; j < 4; j++)
+	{
+		int noise;
+
+		noise = (car_flags & (1 << car_noise[j].car)) != 0;
+		car_noise[j].in_use = noise;
+
+		car_flags &= ~(noise << car_noise[j].car);
+	}
+
+	for (j = 0; j < 4; j++)
+	{
+		if (car_noise[j].in_use == 0 && car_noise[j].stopped == 0)
 		{
-			car = indexlist[j];
+			StopChannel(car_noise[j].chan);
+			UnlockChannel(car_noise[j].chan);
 
-			if (car_data[car].controlType != CONTROL_TYPE_PURSUER_AI || car_data[car].ai.p.dying == 0)
-				car_flags |= 1 << car;
+			car_noise[j].chan = -1;
+			car_noise[j].car = 20;
+			car_noise[j].stopped = 1;
 		}
+	}
 
-		for (j = 0; j < 4; j++)
+	// start new sounds
+	// pick free car noise slot and play
+	for(i = 0; i < num_noisy_cars; i++)
+	{
+		if (car_flags & 1 << indexlist[i])
 		{
-			int noise;
-
-			noise = (car_flags & (1 << car_noise[j].car)) != 0;
-			car_noise[j].in_use = noise;
-
-			car_flags &= ~(noise << car_noise[j].car);
-		}
-
-		for (j = 0; j < 4; j++)
-		{
-			if (car_noise[j].in_use == 0 && car_noise[j].stopped == 0)
+			car = indexlist[i];
+			for (j = 0; j < 4; j++)
 			{
-				StopChannel(car_noise[j].chan);
-				UnlockChannel(car_noise[j].chan);
+				int bank, model;
 
-				car_noise[j].chan = -1;
-				car_noise[j].car = 20;
-				car_noise[j].stopped = 1;
-			}
-		}
+				if (car_noise[j].in_use)
+					continue;
 
-		// start new sounds
-		// pick free car noise slot and play
-		for(i = 0; i < num_noisy_cars; i++)
-		{
-			if (car_flags & 1 << indexlist[i])
-			{
-				car = indexlist[i];
-				for (j = 0; j < 4; j++)
-				{
-					int bank, model;
+				car_noise[j].in_use = 1;
+				car_noise[j].stopped = 0;
+				car_noise[j].car = car;
 
-					if (car_noise[j].in_use)
-						continue;
+				// determine which sound type it has to play
+				if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
+					car_noise[j].idle = force_idle[car];
+				else
+					car_noise[j].idle = (car_data[car].hd.speed < 17);
 
-					car_noise[j].in_use = 1;
-					car_noise[j].stopped = 0;
-					car_noise[j].car = car;
+				model = car_data[car].ap.model;
 
-					// determine which sound type it has to play
-					if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-						car_noise[j].idle = force_idle[car];
-					else
-						car_noise[j].idle = (car_data[car].hd.speed < 17);
+				if (model == 3)
+					model = cop_model;
 
-					model = car_data[car].ap.model;
+				// get bank id
+				if (model == 4)
+					bank = ResidentModelsBodge();
+				else if (model < 3)
+					bank = model;
+				else
+					bank = model - 1;
 
-					if (model == 3)
-						model = cop_model;
+				if (car_noise[j].idle)
+					sample = bank * 3 + 1;
+				else
+					sample = bank * 3;
 
-					// get bank id
-					if (model == 4)
-						bank = ResidentModelsBodge();
-					else if (model < 3)
-						bank = model;
-					else
-						bank = model - 1;
+				car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
 
-					if (car_noise[j].idle)
-						sample = bank * 3 + 1;
-					else
-						sample = bank * 3;
-
-					car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
-
-					LockChannel(car_noise[j].chan);
-
-				}
+				LockChannel(car_noise[j].chan);
+				break;
 			}
 		}
 	}
+
 
 	// update sounds of cars (swap between idle and rev)
 	for (j = 0; j < 4; j++)
