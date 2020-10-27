@@ -10,7 +10,7 @@
 
 #include "SDL.h"
 
-short distanceCache[16384];
+ushort distanceCache[16384];
 char omap[128][16];				// obstacle map
 long dunyet[32][2];				// scanned cell map
 int pathIterations;
@@ -1553,7 +1553,7 @@ int getInterpolatedDistance(VECTOR* pos)
 		else if (a > c)
 			a = c;
 
-		if (c < b)
+		if (b > c)
 			b = c;
 
 		x = dist - a;
@@ -2176,7 +2176,7 @@ void UpdateCopMap(void)
 			d = distanceCache[i] + 8192;
 
 			if ((d & 1) != 0)
-				d = d ^ 1;
+				d ^= 1;
 
 			if (d > 0xfffe)
 				d = 0xfffe;
