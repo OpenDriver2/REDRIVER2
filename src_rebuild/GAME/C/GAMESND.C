@@ -1470,18 +1470,14 @@ void InitDopplerSFX(void)
 char force_idle[8] = { 0 };
 char force_siren[8] = { 0 };
 
-// [D]
+// [D] [T]
 void DoDopplerSFX(void)
 {
 	int pitch, volume, sample;
 	short* playerFelony;
-	ushort* puVar7;
-	int vvar3;
-	int vvar4;
-	int i, j, count;
+	int i, j;
 	int car;
 	uint car_flags;
-	uint _car_flags;
 	int num_noisy_cars;
 	int sirens;
 
@@ -1593,7 +1589,7 @@ void DoDopplerSFX(void)
 			sirens++;
 	}
 
-	// stop old siren noises
+	// stop unused siren noises
 	for (i = 0; i < 2; i++)
 	{
 		int siren;
@@ -1613,7 +1609,7 @@ void DoDopplerSFX(void)
 		}
 	}
 
-#if 0
+	// start sirens
 	for(i = 0; i < num_noisy_cars; i++)
 	{
 		if(car_flags & 1 << indexlist[i])
@@ -1648,11 +1644,12 @@ void DoDopplerSFX(void)
 				}
 
 				LockChannel(siren_noise[j].chan);
+				break;
 			}
 		}
 	}
-
-	// update siren positions
+	
+	// update sirens
 	for (j = 0; j < 2; j++)
 	{
 		if (siren_noise[j].in_use == 0)
@@ -1665,14 +1662,14 @@ void DoDopplerSFX(void)
 		else
 			pitch = 0;
 
-		SetChannelPosition3(siren_noise[j].chan, 
-		                    (VECTOR*)car_data[car].hd.where.t, 
-		                    car_data[car].st.n.linearVelocity, 
-		                    pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
+		SetChannelPosition3(siren_noise[j].chan,
+			(VECTOR*)car_data[car].hd.where.t,
+			car_data[car].st.n.linearVelocity,
+			pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
 	}
 	
-	
 	{
+		// count 4 noisy cars and stop unused noises
 		if (num_noisy_cars > (4 - sirens))
 			num_noisy_cars = 4 - sirens;
 		else
@@ -1711,7 +1708,7 @@ void DoDopplerSFX(void)
 			}
 		}
 
-		// start new sound
+		// start new sounds
 		// pick free car noise slot and play
 		for(i = 0; i < num_noisy_cars; i++)
 		{
@@ -1756,11 +1753,13 @@ void DoDopplerSFX(void)
 					car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
 
 					LockChannel(car_noise[j].chan);
+
 				}
 			}
 		}
 	}
 
+	// update sounds of cars (swap between idle and rev)
 	for (j = 0; j < 4; j++)
 	{
 		char old_idle;
@@ -1846,276 +1845,6 @@ void DoDopplerSFX(void)
 				channels[j].srcvolume, channels[j].srcpitch, 0);
 		}
 	}
-	
-#else
-	// PLS HELP ME this is even more confusing than GetNextRoadInfo...
-	vvar4 = 0;
-	do {
-		do {
-
-			if (num_noisy_cars < 3)
-				vvar3 = num_noisy_cars;
-			else
-				vvar3 = 2;
-
-			if (vvar4 < vvar3)
-			{
-				puVar7 = indexlist + vvar4;
-				vvar4++;
-				continue;
-			}
-	
-			{
-				for (j = 0; j < 2; j++)
-				{
-					if (siren_noise[j].in_use != 0)
-					{
-						car = siren_noise[j].car;
-	
-						if (car_data[car].controlType == CONTROL_TYPE_PURSUER_AI)
-							pitch = (uint)car_data[car].ai.p.dying;
-						else
-							pitch = 0;
-
-						SetChannelPosition3(siren_noise[j].chan, 
-                                            (VECTOR*)car_data[car].hd.where.t, 
-                                            car_data[car].st.n.linearVelocity, 
-                                            pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
-					}
-				}
-				
-				if (num_noisy_cars > (4 - sirens))
-					count = 4 - sirens;
-				else
-					count = num_noisy_cars;
-
-				_car_flags = 0;
-				
-				for (j = 0; j < count; j++)
-				{
-					car = indexlist[j];
-
-					if (car_data[car].controlType != CONTROL_TYPE_PURSUER_AI || car_data[car].ai.p.dying == 0)
-						_car_flags |= 1 << car;
-				}
-
-				for (j = 0; j < 4; j++)
-				{
-					int noise;
-					
-					noise = (_car_flags & (1 << car_noise[j].car)) != 0;
-					car_noise[j].in_use = noise;
-
-					_car_flags &= ~(noise << car_noise[j].car);
-				}
-
-				for (j = 0; j < 4; j++)
-				{
-					if (car_noise[j].in_use == 0 && car_noise[j].stopped == 0)
-					{
-						StopChannel(car_noise[j].chan);
-						UnlockChannel(car_noise[j].chan);
-
-						car_noise[j].chan = -1;
-						car_noise[j].car = 20;
-						car_noise[j].stopped = 1;
-					}
-				}
-			}
-
-			vvar4 = 0;
-			do {
-				{
-					do {
-						
-						if (num_noisy_cars < 5)
-							vvar3 = num_noisy_cars;
-						else
-							vvar3 = 4;
-
-						if (vvar4 < vvar3)
-						{
-							puVar7 = indexlist + vvar4;
-							vvar4++;
-							continue;
-						}
-					
-						{
-							for (j = 0; j < 4; j++)
-							{
-								char old_idle;
-								
-								if (car_noise[j].in_use == 0)
-									continue;
-									
-								car = car_noise[j].car;
-								old_idle = car_noise[j].idle;
-
-								// determine which sound type it has to play
-								if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-									car_noise[j].idle = force_idle[car];
-								else
-									car_noise[j].idle = (car_data[car].hd.speed < 17);
-
-								// restart sound if it's changed
-								if (old_idle != car_noise[j].idle)
-								{
-									int bank, model;
-
-									StopChannel(car_noise[j].chan);
-									UnlockChannel(car_noise[j].chan);
-
-									model = car_data[car].ap.model;
-
-									if (model == 3)
-										model = cop_model;
-
-									// get bank id
-									if (model == 4)
-										bank = ResidentModelsBodge();
-									else if (model < 3)
-										bank = model;
-									else
-										bank = model - 1;
-
-									if (car_noise[j].idle)
-										sample = bank * 3 + 1;
-									else
-										sample = bank * 3;
-
-									car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
-									LockChannel(car_noise[j].chan);
-								}
-
-								if (car_data[car].controlType == CONTROL_TYPE_CIV_AI)
-									volume = -7000;
-								else
-									volume = -6250;
-
-								pitch = (car_data[car].hd.revs << 0x10) >> 0x12;
-
-								if (car_noise[j].idle != 0)
-									pitch += 4096;
-								else
-									pitch += 1500;
-
-								car_noise[j].in_use = 1;
-								
-								SetChannelPosition3(car_noise[j].chan, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity, volume, pitch, 0);
-							}
-
-							// bark on player
-							if (CopsCanSeePlayer != 0)
-							{
-								if (player[0].playerCarId < 0)
-									playerFelony = &pedestrianFelony;
-								else
-									playerFelony = &car_data[player[0].playerCarId].felonyRating;
-								
-								if (*playerFelony > FELONY_MIN_VALUE)
-									DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
-							}
-
-							// update each sound channel with new info
-							for (j = 0; j < 16; j++)
-							{
-								if (channels[j].loop == 0 && channels[j].time != 0 && channels[j].srcposition != NULL)
-								{
-									SetChannelPosition3(j,
-                                                        channels[j].srcposition, channels[j].srcvelocity,
-                                                        channels[j].srcvolume, channels[j].srcpitch, 0);
-								}
-							}
-						}
-
-						return;
-					} while ((_car_flags & 1 << ((uint)*puVar7 & 0x1f)) == 0);
-
-					car = *puVar7;
-
-					// start new sound
-					// pick free car noise slot and play
-					for (j = 0; j < 4; j++)
-					{
-						int bank, model;
-						
-						if (car_noise[j].in_use)
-							continue;
-
-						car_noise[j].in_use = 1;
-						car_noise[j].stopped = 0;
-						car_noise[j].car = car;
-
-						// determine which sound type it has to play
-						if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-							car_noise[j].idle = force_idle[car];
-						else
-							car_noise[j].idle = (car_data[car].hd.speed < 17);
-
-						model = car_data[car].ap.model;
-
-						if (model == 3)
-							model = cop_model;
-
-						// get bank id
-						if (model == 4)
-							bank = ResidentModelsBodge();
-						else if (model < 3)
-							bank = model;
-						else
-							bank = model - 1;
-
-						if (car_noise[j].idle)
-							sample = bank * 3 + 1;
-						else
-							sample = bank * 3;
-
-						car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
-						
-						LockChannel(car_noise[j].chan);
-						
-						break;
-					}
-				}
-
-			} while (true);
-		} while ((car_flags & 1 << ((uint)*puVar7 & 0x1f)) == 0);
-
-		// dispatch siren sounds
-		j = 0;
-		do {
-			if (siren_noise[j].in_use == 0)
-			{
-				siren_noise[j].in_use = 1;
-				siren_noise[j].stopped = 0;
-				siren_noise[j].car = *puVar7;
-
-				if (gCurrentMissionNumber == 26 || car_data[siren_noise[j].car].controlType != CONTROL_TYPE_CIV_AI)
-				{
-					int siren;
-					siren = CarHasSiren(car_data[siren_noise[j].car].ap.model);
-					
-					siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff, 
-																(VECTOR*)car_data[siren_noise[j].car].hd.where.t, 
-																car_data[siren_noise[j].car].st.n.linearVelocity);
-				}
-				else
-				{
-					// play music
-					siren_noise[j].chan = Start3DTrackingSound(-1, 4, 5, 
-																(VECTOR*)car_data[siren_noise[j].car].hd.where.t, 
-																car_data[siren_noise[j].car].st.n.linearVelocity);
-				}
-
-				LockChannel(siren_noise[j].chan);
-				break;
-			}
-
-			j++;
-		} while (j < 2);
-
-	} while (true);
-#endif
 }
 
 
@@ -2154,53 +1883,55 @@ void DoDopplerSFX(void)
 	/* end block 3 */
 	// End Line: 2219
 
-// [D]
+// [D] [T]
 void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 {
-	long lVar1;
-	uint uVar2;
-	uint uVar3;
-	int iVar4;
-	int iVar5;
+	long rnd;
+	int carId;
+	int i;
+	int time;
 
-	lVar1 = Random2(0x4e);
-	iVar5 = 275;
+	rnd = Random2(78);
 
 	if (GameType == GAME_GETAWAY)
-		iVar5 = 475;
+		time = 475;
+	else
+		time = 275;
 
-	if (gCurrentMissionNumber != 7 && gCurrentMissionNumber != 9 &&
-		gCurrentMissionNumber != 11 && gCurrentMissionNumber != 20 &&
-		gCurrentMissionNumber != 26 && gCurrentMissionNumber != 31 &&
-		gCurrentMissionNumber != 33 && gCurrentMissionNumber != 0x28)
+	if (gCurrentMissionNumber == 7 || gCurrentMissionNumber == 9 ||
+		gCurrentMissionNumber == 11 || gCurrentMissionNumber == 20 ||
+		gCurrentMissionNumber == 26 || gCurrentMissionNumber == 31 ||
+		gCurrentMissionNumber == 33 || gCurrentMissionNumber == 40)
 	{
-		iVar4 = 0;
+		return;
+	}
 
-		if (0 < cars)
+	i = 0;
+
+	while (i < cars)
+	{
+		_CAR_DATA *car_ptr;
+
+		carId = indexlist[i];
+
+		car_ptr = &car_data[carId];
+
+		if (dist[carId] > 0x6000)
+			dist[carId] -= 0x6000;
+
+		if (car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying == 0 && 
+			time < loudhail_time && rnd == (rnd / 31) * 31)
 		{
-			do {
-				uVar2 = (uint)*indexlist;
-				uVar3 = dist[uVar2];
-
-				if (0x6000 < uVar3)
-					dist[uVar2] = uVar3 - 0x6000;
-
-				if (car_data[uVar2].controlType == CONTROL_TYPE_PURSUER_AI && car_data[uVar2].ai.p.dying == 0 && iVar5 < loudhail_time && lVar1 == (lVar1 / 31) * 31)
-				{
-					Start3DTrackingSound(-1, 2, lVar1 % 2 + 13, (VECTOR*)car_data[uVar2].hd.where.t, car_data[uVar2].st.n.linearVelocity);
-					loudhail_time = 0;
-					break;
-				}
-
-				iVar4++;
-				indexlist++;
-			} while (iVar4 < cars);
+			Start3DTrackingSound(-1, 2, rnd % 2 + 13, (VECTOR*)car_ptr->hd.where.t, car_ptr->st.n.linearVelocity);
+			loudhail_time = 0;
+			break;
 		}
 
-		if (loudhail_time <= iVar5)
-			loudhail_time++;
-
+		i++;
 	}
+
+	if (loudhail_time <= time)
+		loudhail_time++;
 }
 
 
