@@ -277,7 +277,7 @@ int ResidentModelsBodge(void)
 	else if (GameLevel == 1)
 	{
 		i = 11;
-	
+
 		if (j - 8U > 1)
 			return 3;
 	}
@@ -606,7 +606,7 @@ void LoadLevelSFX(int missionNum)
 		gCurrentMissionNumber == 33 || gCurrentMissionNumber == 40)
 	{
 		gDoCopSpeech = 0;
-		
+
 		i = 0;
 
 		do {
@@ -689,10 +689,10 @@ void StartGameSounds(void)
 	lcp = player;
 
 	i = 0;
-	
+
 	while (i < NumPlayers)
 	{
-		if(lcp->playerType == 1)
+		if (lcp->playerType == 1)
 		{
 			cp = &car_data[lcp->playerCarId];
 			car_model = cp->ap.model;
@@ -704,12 +704,12 @@ void StartGameSounds(void)
 			else
 				sample = car_model;
 
-			if (i == 0) 
+			if (i == 0)
 			{
 				channel = 1;
 				pitch = 16383;
 			}
-			else 
+			else
 			{
 				channel = 4;
 				pitch = 129;
@@ -729,7 +729,7 @@ void StartGameSounds(void)
 				channel = 0;
 				pitch = 16383;
 			}
-			else 
+			else
 			{
 				channel = 3;
 				pitch = 129;
@@ -757,14 +757,14 @@ void StartGameSounds(void)
 					channel = 0;
 
 				SetPlayerOwnsChannel(channel, i);
-				
+
 				if (i != 0)
 					channel = 4;
 				else
 					channel = 1;
 
 				SetPlayerOwnsChannel(channel, i);
-				
+
 				if (i != 0)
 					channel = 5;
 				else
@@ -773,7 +773,7 @@ void StartGameSounds(void)
 				SetPlayerOwnsChannel(channel, i);
 			}
 		}
-	
+
 		lcp->crash_timer = 0;
 
 		lcp->revsvol = -10000;
@@ -781,7 +781,7 @@ void StartGameSounds(void)
 		lcp++;
 		i++;
 	}
-	
+
 	if (NumPlayers == 1)
 	{
 		SpuSetVoiceAR(2, 27);
@@ -798,7 +798,7 @@ void StartGameSounds(void)
 	InitSkidding();
 
 	AddTunnels(GameLevel);
-	
+
 	first_offence = 1;
 
 	InitializeMissionSound();
@@ -871,7 +871,7 @@ ushort GetEngineRevs(_CAR_DATA* cp)
 				lws = gd->low_ws;
 
 			lastgear = gear;
-	
+
 			if (ws < lws)
 			{
 				gd--;
@@ -886,9 +886,9 @@ ushort GetEngineRevs(_CAR_DATA* cp)
 
 			if (gear == lastgear)
 				break;
-	
+
 			gear = lastgear;
-			
+
 		} while (true);
 
 		cp->hd.gear = lastgear;
@@ -1010,7 +1010,7 @@ void ControlCarRevs(_CAR_DATA* cp)
 		else
 		{
 			int revsmax;
-	
+
 			if (acc != 0)
 				revsmax = -5500;
 			else
@@ -1061,7 +1061,7 @@ void DoSpeech(int chan, int sound)
 	if (sound >= 100)
 		StartSound(chan, 5, sound - 100, 0, 4096);
 	else if (sound != 0)
-		StartSound(chan, 2, sound, - 1500, 4096);
+		StartSound(chan, 2, sound, -1500, 4096);
 }
 
 
@@ -1102,7 +1102,7 @@ char PlaySpeech(SPEECH_QUEUE* pSpeechQueue, int sound)
 
 	while (i >= 0)
 	{
-		pSpeechQueue->slot[i+1] = pSpeechQueue->slot[i];
+		pSpeechQueue->slot[i + 1] = pSpeechQueue->slot[i];
 		i--;
 	}
 
@@ -1164,7 +1164,7 @@ void InitSpeechQueue(SPEECH_QUEUE* pSpeechQueue)
 void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 {
 	if (GameType == GAME_MISSION)
-	{		
+	{
 		if (bMissionTitleFade == 0)
 		{
 			if (pSpeechQueue->allowed == 1)
@@ -1337,9 +1337,9 @@ long jsqrt(ulong a)
 
 	if (a < 2)
 		return a;
-	
+
 	b0 = a >> 1;
-	
+
 	if (a < 0x40000000)
 	{
 		if (b0 >= 0x8000)
@@ -1354,13 +1354,12 @@ long jsqrt(ulong a)
 	do
 	{
 		b1 = b0 + a / b0 >> 1;
-	
+
 		if (ABS(b0 - b1) <= 100)
 			break;
 
 		b0 = b1;
-	}
-	while (true);
+	} while (true);
 
 	return b1;
 }
@@ -1507,7 +1506,7 @@ void DoDopplerSFX(void)
 
 	ulong car_dist[MAX_CARS];
 	ushort indexlist[MAX_CARS];
-	
+
 	_CAR_DATA* car_ptr;
 	int dx, dz;
 	ulong dist;
@@ -1521,7 +1520,7 @@ void DoDopplerSFX(void)
 
 		dx = car_ptr->hd.where.t[0] - camera_position.vx;
 		dz = car_ptr->hd.where.t[2] - camera_position.vz;
-	
+
 		if (ABS(dx) < 16384 && ABS(dz) < 16384)
 		{
 			if (car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ai.c.ctrlState != 5 && car_ptr->ai.c.ctrlState != 7)
@@ -1545,14 +1544,14 @@ void DoDopplerSFX(void)
 
 	// sort cars by distance distance
 	i = 0;
-	while (i < num_noisy_cars-1)
+	while (i < num_noisy_cars - 1)
 	{
 		j = i + 1;
 		while (j < num_noisy_cars)
 		{
 			int tmpi;
 			tmpi = indexlist[i];
-			
+
 			if (car_dist[indexlist[j]] < car_dist[tmpi])
 			{
 				indexlist[i] = indexlist[j];
@@ -1569,13 +1568,13 @@ void DoDopplerSFX(void)
 	sirens = 0;
 
 	// collect cop cars for siren sound
-	for(i = 0; i < num_noisy_cars && sirens < 2; i++)
+	for (i = 0; i < num_noisy_cars && sirens < 2; i++)
 	{
 		int siren;
 		car_ptr = &car_data[indexlist[i]];
 
 		siren = 0;
-		
+
 		if (handlingType[car_ptr->hndType].fourWheelDrive == 1 &&
 			car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying < 75 &&
 			CarHasSiren(car_ptr->ap.model) != 0)
@@ -1618,7 +1617,7 @@ void DoDopplerSFX(void)
 	{
 		int siren;
 		siren = (car_flags & 1 << siren_noise[i].car) != 0;
-		
+
 		siren_noise[i].in_use = siren;
 		car_flags &= ~(siren << siren_noise[i].car);
 
@@ -1634,18 +1633,18 @@ void DoDopplerSFX(void)
 	}
 
 	// start sirens
-	for(i = 0; i < num_noisy_cars; i++)
+	for (i = 0; i < num_noisy_cars; i++)
 	{
-		if(car_flags & 1 << indexlist[i])
+		if (car_flags & 1 << indexlist[i])
 		{
 			car = indexlist[i];
-					
+
 			// dispatch siren sounds
 			for (j = 0; j < 2; j++)
 			{
 				if (siren_noise[j].in_use != 0)
 					continue;
-				
+
 				siren_noise[j].in_use = 1;
 				siren_noise[j].stopped = 0;
 				siren_noise[j].car = car;
@@ -1655,16 +1654,16 @@ void DoDopplerSFX(void)
 					int siren;
 					siren = CarHasSiren(car_data[car].ap.model);
 
-					siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff, 
-					                                           (VECTOR*)car_data[car].hd.where.t, 
-					                                           car_data[car].st.n.linearVelocity);
+					siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff,
+						(VECTOR*)car_data[car].hd.where.t,
+						car_data[car].st.n.linearVelocity);
 				}
 				else
 				{
 					// play music
-					siren_noise[j].chan = Start3DTrackingSound(-1, 4, 5, 
-					                                           (VECTOR*)car_data[car].hd.where.t, 
-					                                           car_data[car].st.n.linearVelocity);
+					siren_noise[j].chan = Start3DTrackingSound(-1, 4, 5,
+						(VECTOR*)car_data[car].hd.where.t,
+						car_data[car].st.n.linearVelocity);
 				}
 
 				LockChannel(siren_noise[j].chan);
@@ -1672,7 +1671,7 @@ void DoDopplerSFX(void)
 			}
 		}
 	}
-	
+
 	// update sirens
 	for (j = 0; j < 2; j++)
 	{
@@ -1691,7 +1690,7 @@ void DoDopplerSFX(void)
 			car_data[car].st.n.linearVelocity,
 			pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
 	}
-	
+
 	// count 4 noisy cars and stop unused noises
 	if (num_noisy_cars > (4 - sirens))
 		num_noisy_cars = 4 - sirens;
@@ -1733,7 +1732,7 @@ void DoDopplerSFX(void)
 
 	// start new sounds
 	// pick free car noise slot and play
-	for(i = 0; i < num_noisy_cars; i++)
+	for (i = 0; i < num_noisy_cars; i++)
 	{
 		if (car_flags & 1 << indexlist[i])
 		{
@@ -1853,7 +1852,7 @@ void DoDopplerSFX(void)
 			playerFelony = &pedestrianFelony;
 		else
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-		
+
 		if (*playerFelony > FELONY_MIN_VALUE)
 			DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
 	}
@@ -1918,7 +1917,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 		return;
 
 	rnd = Random2(78);
-	
+
 	if (GameType == GAME_GETAWAY)
 		time = 475;
 	else
@@ -1928,7 +1927,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 
 	while (i < cars)
 	{
-		_CAR_DATA *car_ptr;
+		_CAR_DATA* car_ptr;
 
 		carId = indexlist[i];
 
@@ -1937,7 +1936,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 		if (dist[carId] > 0x6000)
 			dist[carId] -= 0x6000;
 
-		if (car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying == 0 && 
+		if (car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying == 0 &&
 			time < loudhail_time && rnd == (rnd / 31) * 31)
 		{
 			Start3DTrackingSound(-1, 2, rnd % 2 + 13, (VECTOR*)car_ptr->hd.where.t, car_ptr->st.n.linearVelocity);
@@ -2019,7 +2018,7 @@ void CollisionSound(char player_id, _CAR_DATA* cp, int impact, int car_car)
 		int dx, dz;
 		unsigned long p0dst;
 		unsigned long p1dst;
-		
+
 		dx = cp->hd.where.t[0] - player[0].pos[0];
 		dz = cp->hd.where.t[2] - player[0].pos[2];
 
@@ -2180,7 +2179,7 @@ void ExplosionSound(VECTOR* pos, int type)
 	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
 	P.vz = pos->vz * sc1 + player[0].cameraPos.vz * sc2;
 
-	Start3DSoundVolPitch(-1, 5, 
+	Start3DSoundVolPitch(-1, 5,
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
 		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 0xe00);
 }
@@ -2266,7 +2265,7 @@ void JerichoSpeak(void)
 // [D] [T]
 void FunkUpDaBGMTunez(int funk)
 {
-	if (funk == 0) 
+	if (funk == 0)
 	{
 		if (copmusic != 0)
 		{
@@ -2326,7 +2325,7 @@ void SoundTasks(void)
 	int vol;
 	VECTOR* position;
 	long* velocity;
-	
+
 	_PLAYER* lcp;
 	_CAR_DATA* cp;
 	int i;
@@ -2384,7 +2383,7 @@ void SoundTasks(void)
 				vol = lcp->revsvol;
 			else
 				vol = -10000;
-			
+
 			chan = i == 0 ? 0 : 3;
 			SetChannelPosition3(chan, position, velocity, vol, cp->hd.revs / 4 + lcp->revsvol / 64 + 1500, 0);
 
@@ -2392,7 +2391,7 @@ void SoundTasks(void)
 			if (CarHasSiren(cp->ap.model) != 0)
 			{
 				chan = i == 0 ? 2 : 5;
-				
+
 				if (lcp->horn.on == 0)
 					SpuSetVoicePitch(chan, 0);		// don't stop it really
 				else
@@ -2403,10 +2402,10 @@ void SoundTasks(void)
 		{
 			chan = i == 0 ? 1 : 4;
 			SetChannelVolume(chan, -10000, 0);
-			
+
 			chan = i == 0 ? 0 : 3;
 			SetChannelVolume(chan, -10000, 0);
-			
+
 			chan = i == 0 ? 2 : 5;
 			SetChannelVolume(chan, -10000, 0);
 		}
@@ -2515,7 +2514,7 @@ void InitMusic(int musicnum)
 	}
 
 	copmusic = 0;
-	
+
 	printInfo("NewLevel in InitMusic()\n");
 	AllocateReverb(3, 16384);
 
@@ -2524,7 +2523,7 @@ void InitMusic(int musicnum)
 
 	MALLOC_BEGIN()
 
-	sample_len = musicpos[2] - musicpos[1];
+		sample_len = musicpos[2] - musicpos[1];
 	music_len = musicpos[1] - musicpos[0];
 
 	if (NewLevel != 0)
@@ -2733,7 +2732,7 @@ void AddTunnels(int level)
 		AddTunnel(-48600, 0, -237000, -50350, -800, -235900);
 
 		AddTunnel(-219895, 0, 675067, -208647, -2500, 668935);
-		
+
 		AddTunnel(-294644, 0, 319973, -288508, -800, 316917);
 		AddTunnel(-282105, 0, 321774, -275985, -800, 315638);
 		AddTunnel(-268534, 0, 320244, -262410, -800, 314176);
@@ -2758,7 +2757,7 @@ void AddTunnels(int level)
 		AddTunnel(-292609, 0, 200184, -274181, -800, 194052);
 		AddTunnel(-267521, 0, 198136, -264453, -800, 192000);
 		AddTunnel(-268542, 0, 192000, -265477, -800, 185864);
-	
+
 		AddTunnel(-217585, 0, -352018, -199197, -800, -358146);
 	}
 	else if (level == 1)
@@ -2834,10 +2833,10 @@ void InitEnvSnd(int num_envsnds)
 	}
 
 	i = 0;
-	while(i < NumPlayers)
+	while (i < NumPlayers)
 	{
 		p = 0;
-		while(p < 4) 
+		while (p < 4)
 		{
 			ESdata[i].playing_sound[p] = -1;
 			p++;
@@ -3025,319 +3024,150 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long
 	/* end block 3 */
 	// End Line: 3740
 
-// [D] [A] unprocessed arrays
+// [D] [T]
 void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 {
-	bool bVar1;
-	int* piVar2;
-	int local_v0_412;
-	int local_v0_576;
-	float uVar3;
-	float uVar4;
-	double uVar16;
-	double uVar17;
-	float fVar5;
-	int local_v1_320;
-	int iVar6;
-	int local_v1_468;
-	int iVar7;
-	int uVar8;
-	int iVar9;
-	long lVar10;
-	int local_a0_1016;
-	int local_a0_1044;
-	int* local_a0_1248;
-	int* local_a0_1304;
-	int iVar11;
-	int local_a2_308;
-	int iVar12;
-	float* pfVar13;
-	int iVar14;
-	int iVar15;
+	int i, j;
+	int vol;
 
 	int tmp[4];
 	float _g[4];
 	__bitfield64 zones;
-	int* _tmp;
-	int* piStack48;
+	int snd;
 
-	_tmp = tmp;
-	iVar14 = 3;
-	piVar2 = tmp + 3;
 	zones.l = 0;
 	zones.h = 0;
 
+	i = 0;
 	do {
-		*piVar2 = -1;
-		iVar14 = iVar14 + -1;
-		piVar2 = piVar2 + -1;
-	} while (-1 < iVar14);
+		tmp[i++] = -1;
+	} while (i < 4);
 
-	(E->cam_pos).vx = player[pl].cameraPos.vx;
-	(E->cam_pos).vy = player[pl].cameraPos.vy;
-	(E->cam_pos).vz = player[pl].cameraPos.vz;
+	E->cam_pos.vx = player[pl].cameraPos.vx;
+	E->cam_pos.vy = player[pl].cameraPos.vy;
+	E->cam_pos.vz = player[pl].cameraPos.vz;
 
-	iVar14 = 0;
-	iVar15 = 0;
-
-	piStack48 = _tmp;
-	if (0 < EStags.envsnd_cnt)
+	j = 0;
+	for (i = 0; i < EStags.envsnd_cnt && tmp[3] < 0; i++)
 	{
-		do {
-			if (-1 < tmp[3])
-				break;
+		if (ep[i].type == 0 || ep[i].vol <= -7500)
+			continue;
 
-			if ((ep->type != 0) && (-7500 < ep->vol))
+		vol = (ep[i].vol + 7500) * 4;
+		vol = MAX(MIN(vol, 22000), 0);
+
+		if (MIN(ep[i].pos.vx, ep[i].pos2.vx) - vol < E->cam_pos.vx &&
+			MAX(ep[i].pos.vx, ep[i].pos2.vx) + vol > E->cam_pos.vx &&
+
+			MIN(ep[i].pos.vz, ep[i].pos2.vz) - vol < E->cam_pos.vz &&
+			MAX(ep[i].pos.vz, ep[i].pos2.vz) + vol > E->cam_pos.vz)
+		{
+			if ((ep[i].type == 2 || ep[i].type == 4) && (ep[i].flags & 3) == 0)
 			{
-				iVar9 = (ep->pos2).vx;
-				iVar11 = (ep->pos).vx;
-				iVar6 = iVar9;
-				if (iVar11 < iVar9) {
-					iVar6 = iVar11;
-				}
-				local_a2_308 = (ep->vol + 7500) * 4;
-				local_v1_320 = local_a2_308;
-				if (local_a2_308 < 0)
-					local_v1_320 = 0;
+				// what is that variant of distance to line?
+				float dp, dist, fpx1,fpz1,fpx2,fpz2;
+				fpx1 = ep[i].pos.vx;
+				fpz1 = ep[i].pos.vz;
+				fpx2 = ep[i].pos2.vx;
+				fpz2 = ep[i].pos2.vz;
+				
+				_g[j] = (fpz2 - fpz1) / (fpx2 - fpx1);
 
-				if (22000 < local_v1_320)
-					local_v1_320 = 22000;
+				dp = _g[j] * _g[j] + 1;
+				
+				if (dp <= 0.0f)
+					dp += 30.0f;
+				
+				dist = (_g[j] * E->cam_pos.vx - _g[j] * fpx1 - E->cam_pos.vz + fpz1) / sqrt(dp);
 
-				iVar12 = (E->cam_pos).vx;
-				if (iVar6 - local_v1_320 < iVar12)
+				if (ep->type == 2)
 				{
-					if (iVar9 < iVar11)
-						iVar9 = iVar11;
-
-					iVar6 = local_a2_308;
-					if (local_a2_308 < 0)
-						iVar6 = 0;
-
-					local_v0_412 = iVar9 + iVar6;
-					if (22000 < iVar6)
-						local_v0_412 = (22000 + iVar9);
-
-					if (iVar12 < local_v0_412)
-					{
-						iVar6 = (ep->pos2).vz;
-						iVar11 = (ep->pos).vz;
-						iVar9 = iVar6;
-						if (iVar11 < iVar6)
-							iVar9 = iVar11;
-
-						local_v1_468 = local_a2_308;
-						if (local_a2_308 < 0)
-							local_v1_468 = 0;
-
-						if (22000 < local_a2_308)
-							local_v1_468 = 22000;
-
-						iVar12 = (E->cam_pos).vz;
-						if (iVar9 - local_v1_468 < iVar12)
-						{
-							iVar9 = iVar6;
-							if (iVar6 < iVar11)
-								iVar9 = iVar11;
-
-							iVar7 = (ep->vol + 7500) * 4;
-
-							local_v0_576 = iVar7;
-							if (iVar7 < 0)
-								local_v0_576 = 0;
-
-							local_v0_576 = iVar9 + local_v0_576;
-							if (22000 < iVar7)
-								local_v0_576 = (22000 + iVar9);
-
-							if (iVar12 < local_v0_576)
-							{
-								if (((ep->type == 2) || (ep->type == 4)) && ((ep->flags & 3) == 0))
-								{
-									pfVar13 = _g + iVar14;
-									uVar3 = iVar6 - iVar11;// __floatsisf(iVar6 - iVar11);
-									iVar9 = (ep->pos).vx;
-									uVar4 = ep->pos2.vx - iVar9;//__floatsisf(ep->pos2.vx - iVar9);
-									fVar5 = uVar3 / uVar4;// (float)__divsf3(uVar3, uVar4);
-									lVar10 = (E->cam_pos).vx;
-									*pfVar13 = fVar5;
-									uVar3 = lVar10; //  __floatsisf(lVar10);
-									uVar3 = fVar5 * uVar3;//__mulsf3(fVar5, uVar3);
-									uVar4 = iVar9; // __floatsisf(iVar9);
-									uVar4 = fVar5 * uVar4;// __mulsf3(fVar5, uVar4);
-									uVar3 = uVar3 - uVar4;// __subsf3(uVar3, uVar4);
-									uVar4 = iVar12; // __floatsisf(iVar12);
-									uVar3 = uVar3 - uVar4;// __subsf3(uVar3, uVar4);
-									uVar4 = iVar11; // __floatsisf(iVar11);
-									uVar3 = uVar3 + uVar4; // __addsf3(uVar3, uVar4);
-									uVar16 = uVar3; // __extendsfdf2(uVar3);
-									iVar9 = *pfVar13; // __fixunssfsi(*pfVar13); // might be incorrectly working
-									iVar6 = *pfVar13; // __fixunssfsi(*pfVar13);
-									iVar9 = iVar9 * iVar6 + 1;
-									uVar17 = iVar9; // __floatsidf(iVar9);
-
-									if (iVar9 < 0)
-										uVar17 = uVar17 + 30.0f;// __adddf3((int)((ulonglong)uVar17 >> 0x20), (int)uVar17, 0, 0x41f00000);
-
-									uVar17 = sqrt(uVar17);
-
-									uVar17 = uVar16 / uVar17; // __divdf3((int)((ulonglong)uVar16 >> 0x20), (int)uVar16, (int)((ulonglong)uVar17 >> 0x20), (int)uVar17);
-									uVar3 = uVar17;// __truncdfsf2((int)((ulonglong)uVar17 >> 0x20), (int)uVar17);
-
-									if (ep->type == 2)
-									{
-										//iVar9 = __gesf2(uVar3, 0);
-										//if (iVar9 < 0) 
-										if (uVar3 < 0)
-										{
-										LAB_000511e8:
-											uVar3 = -uVar3;
-										}
-									}
-									else
-									{
-										if ((ep->flags & 8) != 0)
-											goto LAB_000511e8;
-									}
-
-									local_a0_1016 = (ep->vol + 7500) * 4;
-									local_a0_1044 = local_a0_1016;
-
-									if (local_a0_1016 < 0)
-										local_a0_1044 = 0;
-
-									if (22000 < local_a0_1016)
-										local_a0_1044 = 22000;
-
-									uVar4 = (local_a0_1044);
-									//iVar9 = __ltsf2(uVar3, uVar4);
-									//if (iVar9 < 0)
-									if (uVar3 < uVar4)
-									{
-										iVar14 = iVar14 + 1;
-										*piStack48 = iVar15;
-										piStack48 = piStack48 + 1;
-									}
-								}
-								else
-								{
-									iVar14 = iVar14 + 1;
-									*piStack48 = iVar15;
-									piStack48 = piStack48 + 1;
-								}
-							}
-						}
-					}
+					if (dist < 0)
+						dist = -dist;
 				}
-			}
-			iVar15 = iVar15 + 1;
-			ep = ep + 1;
-		} while (iVar15 < EStags.envsnd_cnt);
-	}
+				else if ((ep->flags & 8) != 0)
+					dist = -dist;
 
-	iVar14 = 0;
-	local_a0_1248 = _tmp;
+				if (dist < vol)
+				{
+					if (i < 32)
+						zones.l |= 1 << (i & 0x1f);
+					else
+						zones.h |= 1 << (i & 0x1f);
 
-	while (true)
-	{
-		bVar1 = iVar14 < EStags.envsnd_cnt;
-
-		if (4 < EStags.envsnd_cnt)
-			bVar1 = iVar14 < 4;
-
-		if (!bVar1)
-			break;
-		uVar8 = *local_a0_1248;
-
-		if (-1 < uVar8)
-		{
-			if (uVar8 < 0x20)
-				zones.l = zones.l | 1 << (uVar8 & 0x1f);
-			else
-				zones.h = zones.h | 1 << (uVar8 - 0x20 & 0x1f);
-		}
-		local_a0_1248 = local_a0_1248 + 1;
-		iVar14 = iVar14 + 1;
-	}
-
-	iVar14 = 3;
-	local_a0_1304 = E->thisS;
-
-	do {
-		uVar8 = *local_a0_1304;
-		if (-1 < uVar8)
-		{
-			if (uVar8 < 0x20)
-			{
-				if ((zones.l & 1 << (uVar8 & 0x1f)) != 0)
-					goto LAB_00051370;
-
-				*local_a0_1304 = -1;
+					tmp[j++] = i;
+				}
 			}
 			else
 			{
-				if ((zones.h & 1 << (uVar8 - 0x20 & 0x1f)) == 0)
-				{
-					*local_a0_1304 = -1;
-				}
+				if (i < 32)
+					zones.l |= 1 << (i & 0x1f);
 				else
-				{
-				LAB_00051370:
-					uVar8 = *local_a0_1304;
+					zones.h |= 1 << (i & 0x1f);
 
-					if (uVar8 < 0x20)
-						zones.l = zones.l & ~(1 << (uVar8 & 0x1f));
-					else
-						zones.h = zones.h & ~(1 << (uVar8 - 0x20 & 0x1f));
-				}
+				tmp[j++] = i;
+			}
+		}
+	}
+
+	// off the sound
+	for (i = 0; i < 4; i++)
+	{
+		snd = E->thisS[i];
+
+		if (snd == -1)
+			continue;
+
+		if (snd < 32)
+		{
+			if ((zones.l & 1 << (snd & 0x1f)) == 0)
+			{
+				E->thisS[i] = -1;
+				continue;
+			}
+		}
+		else
+		{
+			if ((zones.h & 1 << (snd & 0x1f)) == 0)
+			{
+				E->thisS[i] = -1;
+				continue;
 			}
 		}
 
-		iVar14 = iVar14 + -1;
-		local_a0_1304 = local_a0_1304 + 1;
+		if (snd < 32)
+			zones.l &= ~(1 << (snd & 0x1f));
+		else
+			zones.h &= ~(1 << (snd & 0x1f));
+	}
 
-		if (iVar14 < 0)
+	// assign to the envsound
+	for (i = 0; i < 4; i++)
+	{
+		snd = tmp[i];
+
+		if (snd == -1)
+			continue;
+
+		if (snd < 32)
+			snd = zones.l & 1 << (snd & 0x1f);
+		else
+			snd = zones.h & 1 << (snd & 0x1f);
+
+		if (snd == 0)
+			continue;
+
+		// assign free slot
+		for (j = 0; j < 4; j++)
 		{
-			iVar15 = 1;
-			iVar14 = 0;
-
-			do {
-				uVar8 = _tmp[iVar14];
-				iVar9 = iVar15;
-
-				if (-1 < uVar8)
-				{
-
-					if (uVar8 < 0x20)
-						uVar8 = zones.l & 1 << (uVar8 & 0x1f);
-					else
-						uVar8 = zones.h & 1 << (uVar8 - 0x20 & 0x1f);
-
-					if (uVar8 != 0)
-					{
-						iVar15 = 0;
-						while (iVar9 = iVar14 + 1, iVar15 < 4)
-						{
-							if (E->thisS[iVar15] < 0)
-							{
-								E->thisS[iVar15] = _tmp[iVar14];
-								E->g[iVar15] = _g[iVar14];
-								break;
-							}
-
-							iVar15 = iVar15 + 1;
-						}
-					}
-				}
-
-				iVar15 = iVar9 + 1;
-				iVar14 = iVar9;
-
-				if (3 < iVar9)
-					return;
-
-			} while (true);
+			if (E->thisS[j] < 0)
+			{
+				E->thisS[j] = tmp[i];
+				E->g[j] = _g[i];
+				break;
+			}
 		}
-	} while (true);
+	}
 }
 
 
@@ -3369,215 +3199,89 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 // [D] [A] unprocessed arrays
 void CalcEffPos(__envsound* ep, __envsoundinfo* E, int pl)
 {
-	bool bVar1;
-	long* local_a0_52;
-	int iVar2;
-	__envsound* p_Var3;
-	int iVar4;
-	int* piVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	long* local_t3_52;
-	int iVar9;
-	uint uVar10;
-	long* local_t6_52;
-	long* local_t7_28;
-	long* plVar11;
-	long* local_t9_52;
-	long* temp_79f679ea1b7;
-	long* temp_79f9c232453;
+	int minX, maxX;
+	int minZ, maxZ;
+	int i;
 
-	uVar10 = 0;
-	iVar9 = 0;
-	local_t7_28 = &E->eff_pos[0].vz;
-	local_a0_52 = (long*)E;
-	local_t3_52 = (long*)E;
-	local_t6_52 = local_t7_28;
-	plVar11 = local_t7_28;
-	local_t9_52 = (long*)E;
+	for (i = 0; i < 4; i++)
+	{
+		int snd;
+		
+		E->flags &= ~(1 << (i & 0x1f));
+	
+		snd = E->thisS[i];
+		
+		if (snd == -1)
+			continue;
 
-	do {
-		E->flags = E->flags & ~(1 << (uVar10 & 0x1f));
-		iVar8 = E->thisS[uVar10];
-
-		if (-1 < iVar8)
+		// BOX type
+		if (ep[snd].type == 1)
 		{
-			p_Var3 = ep + iVar8;
-			if (p_Var3->type == 1)
+			// clamp to bounds when outside
+			minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
+			maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
+			
+			if (minX > E->cam_pos.vx)
+				E->eff_pos[i].vx = minX;
+			else if (maxX < E->cam_pos.vx)
+				E->eff_pos[i].vx = maxX;
+			else
+				E->eff_pos[i].vx = E->cam_pos.vx;
+
+			minZ = MIN(ep[snd].pos.vz, ep[snd].pos2.vz);
+			maxZ = MAX(ep[snd].pos.vz, ep[snd].pos2.vz);
+
+			if (minZ > E->cam_pos.vz)
+				E->eff_pos[i].vz = minZ;
+			else if (maxZ < E->cam_pos.vz)
+				E->eff_pos[i].vz = maxZ;
+			else
+				E->eff_pos[i].vz = E->cam_pos.vz;
+		}
+		else if (ep[snd].type == 2)
+		{
+			// point type
+			// really can be a line in one axis (which is not used)
+			if ((ep[snd].flags & 1) != 0)
 			{
-				iVar2 = (p_Var3->pos2).vx;
-				iVar4 = (p_Var3->pos).vx;
-				iVar7 = iVar2;
+				E->eff_pos[i].vx = ep[snd].pos.vx;
+				
+				minZ = MIN(ep[snd].pos.vz, ep[snd].pos2.vz);
+				maxZ = MAX(ep[snd].pos.vz, ep[snd].pos2.vz);
 
-				if (iVar4 < iVar2)
-					iVar7 = iVar4;
-
-				iVar6 = (E->cam_pos).vx;
-				if (iVar6 < iVar7)
-				{
-					if (iVar4 < iVar2)
-						iVar2 = iVar4;
-
-					*local_t9_52 = iVar2;
-				}
+				if (minZ > E->cam_pos.vz)
+					E->eff_pos[i].vz = minZ;
+				else if (maxZ < E->cam_pos.vz)
+					E->eff_pos[i].vz = maxZ;
 				else
-				{
-					iVar7 = iVar2;
+					E->eff_pos[i].vz = E->cam_pos.vz;
+			}
+			else if ((ep[snd].flags & 2) != 0)
+			{
+				E->eff_pos[i].vz = ep[snd].pos.vz;
 
-					if (iVar2 < iVar4)
-						iVar7 = iVar4;
+				minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
+				maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
 
-					if (iVar7 < iVar6)
-					{
-						if (iVar2 < iVar4)
-							iVar2 = iVar4;
-
-						*local_a0_52 = iVar2;
-					}
-					else
-					{
-						*local_t3_52 = iVar6;
-					}
-				}
-				p_Var3 = ep + iVar8;
-				iVar8 = (p_Var3->pos2).vz;
-				iVar2 = (p_Var3->pos).vz;
-
-				if (iVar2 < iVar8)
-					iVar8 = iVar2;
-
-				iVar7 = (E->cam_pos).vz;
-
-				if (iVar7 < iVar8)
-				{
-					iVar8 = (p_Var3->pos2).vz;
-					if (iVar2 < iVar8)
-						iVar8 = iVar2;
-
-					*local_t6_52 = iVar8;
-				}
+				if (minX > E->cam_pos.vx)
+					E->eff_pos[i].vx = minX;
+				else if (maxX < E->cam_pos.vx)
+					E->eff_pos[i].vx = maxX;
 				else
-				{
-					iVar8 = (p_Var3->pos2).vz;
-
-					iVar4 = iVar8;
-					if (iVar8 < iVar2)
-						iVar4 = iVar2;
-
-					if (iVar4 < iVar7)
-					{
-						if (iVar8 < iVar2)
-							iVar8 = iVar2;
-
-						*plVar11 = iVar8;
-					}
-					else
-					{
-						local_t3_52[2] = iVar7;
-					}
-				}
+					E->eff_pos[i].vx = E->cam_pos.vx;
 			}
 			else
 			{
-				if (p_Var3->type != 2)
-					goto LAB_0005179c;
-
-				if ((p_Var3->flags & 1) == 0)
-				{
-					if ((p_Var3->flags & 2) == 0)
-						goto LAB_0005179c;
-
-					local_t3_52[2] = (p_Var3->pos).vz;
-					iVar8 = (p_Var3->pos2).vx;
-					iVar2 = (p_Var3->pos).vx;
-
-					if (iVar2 < iVar8)
-						iVar8 = iVar2;
-
-					iVar7 = (E->cam_pos).vx;
-					if (iVar8 <= iVar7)
-					{
-						iVar4 = (p_Var3->pos2).vx;
-						iVar8 = iVar4;
-						if (iVar4 < iVar2)
-							iVar8 = iVar2;
-
-						if (iVar7 <= iVar8)
-						{
-							temp_79f9c232453 = (long*)E->eff_pos;
-							goto LAB_00051788;
-						}
-
-						temp_79f679ea1b7 = (long*)E->eff_pos;
-						goto LAB_0005176c;
-					}
-
-					iVar4 = (p_Var3->pos2).vx;
-					piVar5 = (int*)((int)&E->eff_pos[0].vx + iVar9);
-					bVar1 = iVar2 < iVar4;
-				}
-				else
-				{
-					*local_t3_52 = (p_Var3->pos).vx;
-					iVar8 = (p_Var3->pos2).vz;
-					iVar2 = (p_Var3->pos).vz;
-
-					if (iVar2 < iVar8)
-						iVar8 = iVar2;
-
-					iVar7 = (E->cam_pos).vz;
-
-					if (iVar7 < iVar8)
-					{
-						iVar4 = (p_Var3->pos2).vz;
-						piVar5 = (int*)((int)local_t7_28 + iVar9);
-						bVar1 = iVar2 < iVar4;
-					}
-					else
-					{
-						iVar4 = (p_Var3->pos2).vz;
-						iVar8 = iVar4;
-
-						if (iVar4 < iVar2)
-							iVar8 = iVar2;
-
-						temp_79f679ea1b7 = local_t7_28;
-						temp_79f9c232453 = local_t7_28;
-
-						if (iVar7 <= iVar8)
-						{
-						LAB_00051788:
-							*(int*)((int)temp_79f9c232453 + iVar9) = iVar7;
-							goto LAB_0005178c;
-						}
-					LAB_0005176c:
-						piVar5 = (int*)((int)temp_79f679ea1b7 + iVar9);
-						bVar1 = iVar4 < iVar2;
-					}
-				}
-				if (bVar1) {
-					iVar4 = iVar2;
-				}
-				*piVar5 = iVar4;
+				// type 2 and type 4 (floating point ones) are processed in CalcEffPos2
+				// which are unused, too
+				continue;
 			}
-		LAB_0005178c:
-			E->flags = E->flags | 1 << (uVar10 & 0x1f);
 		}
+		else
+			continue;
 
-	LAB_0005179c:
-		iVar9 = iVar9 + 0x10;
-		local_t3_52 = local_t3_52 + 4;
-		plVar11 = plVar11 + 4;
-		local_t6_52 = local_t6_52 + 4;
-		local_a0_52 = local_a0_52 + 4;
-		uVar10 = uVar10 + 1;
-		local_t9_52 = local_t9_52 + 4;
-
-		if (3 < (int)uVar10)
-			return;
-
-	} while (true);
+		E->flags |= 1 << (i & 0x1f);
+	}
 }
 
 
