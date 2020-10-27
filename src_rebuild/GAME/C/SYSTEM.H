@@ -22,16 +22,25 @@ extern char* mallocptr;
 #ifdef USE_CRT_MALLOC
 
 extern char* sys_malloc(int size, char* funcname, int line);
+extern char* sys_tempalloc(int size);
+extern void sys_tempfree();
+
 extern void sys_freeall();
 
+#define D_TEMPFREE()		sys_tempfree()
+#define D_TEMPALLOC(size)	sys_tempalloc(size)
+
 #ifdef _DEBUG
-#define D_MALLOC(size)	sys_malloc(size, __FUNCTION__, __LINE__)
+#define D_MALLOC(size)		sys_malloc(size, __FUNCTION__, __LINE__)
+
 #else
-#define D_MALLOC(size)	sys_malloc(size, NULL, 0)
+#define D_MALLOC(size)		sys_malloc(size, NULL, 0)
 #endif
 
 #else
-#define D_MALLOC(size)	mallocptr; mallocptr += (size)
+#define D_MALLOC(size)		mallocptr; mallocptr += (size)
+#define D_TEMPALLOC(size)	mallocptr
+#define D_TEMPFREE()
 #endif
 
 #define MALLOC_BEGIN() \
@@ -40,11 +49,13 @@ extern void sys_freeall();
 
 #ifdef __GNUC__
 #define MALLOC_END() \
+		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
 			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
 	} // MALLOC_BEGIN block
 #else
 #define MALLOC_END() \
+		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
 			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
 	} // MALLOC_BEGIN block
