@@ -235,6 +235,10 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
+
+#if defined(OGL) || defined(OGLES)
+		SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 1 );
+#endif
 	}
 	else
 	{
@@ -478,7 +482,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 		v.w = vd.pz;\
 		v.z = 0.0f;\
 	} else { \
-		v.w = 1.0f; \
+		v.w = 0.0f; \
 		v.z = 0.0f; \
 		v.scr_h = 0.0f; \
 	}\
@@ -1214,6 +1218,7 @@ int Emulator_Initialise()
 
 #if defined(OGL) || defined(OGLES)
 	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
 	glGenTextures(1, &vramTexture);
@@ -1409,7 +1414,7 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 // TODO clear rect if it's necessary
 #if defined(OGL) || defined(OGLES)
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 }
 
@@ -1665,6 +1670,7 @@ bool Emulator_BeginScene()
 
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_STENCIL_BUFFER_BIT);
 #endif
 
 	Emulator_UpdateVRAM();
@@ -1918,6 +1924,20 @@ void Emulator_EnableDepth(int enable)
 	}
 }
 
+void Emulator_SetStencilMode(int drawPrim)
+{
+	if(drawPrim)
+	{
+		glStencilFunc( GL_ALWAYS, 1, 0x10 );
+		glStencilOp( GL_REPLACE, GL_REPLACE, GL_REPLACE );
+	}
+	else
+	{
+		glStencilFunc( GL_NOTEQUAL, 1, 0xFF );
+		glStencilOp( GL_REPLACE, GL_KEEP, GL_KEEP );
+	}
+}
+
 void Emulator_SetBlendMode(BlendMode blendMode)
 {
 	if (g_PreviousBlendMode == blendMode)
@@ -1963,7 +1983,7 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 	g_PreviousBlendMode = blendMode;
 }
 
-extern void Emulator_SetPolygonOffset(float ofs)
+void Emulator_SetPolygonOffset(float ofs)
 {
 #if defined(OGL) || defined(OGLES)
 	if (ofs == 0.0f)

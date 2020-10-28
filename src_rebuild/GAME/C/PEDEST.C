@@ -2888,13 +2888,14 @@ void AnimatePed(PEDESTRIAN* pPed)
 		int surfId;
 		surfId = PedSurfaceType((VECTOR*)&pPed->position);
 
+		// play footstep sounds
 		if (surfId != 4 && surfId != 6 && surfId != 11 && surfId != 9)
 		{
 			if (pPed->frame1 == 3)
-				Start3DSoundVolPitch(-1, 6, 0, pPed->position.vx, pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+				Start3DSoundVolPitch(-1, 6, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
 
 			if (pPed->frame1 == 11)
-				Start3DSoundVolPitch(-1, 6, 1, pPed->position.vx, pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+				Start3DSoundVolPitch(-1, 6, 1, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
 		}
 	}
 

@@ -722,7 +722,8 @@ void DrawOTag(u_long* p)
 	}
 
 	AggregatePTAGsToSplits(p, false);
-
+	
+	Emulator_SetStencilMode(0);
 	DrawAggregatedSplits();
 }
 
@@ -757,13 +758,11 @@ void DrawPrim(void* p)
 	{
 		Emulator_BlitVRAM();
 	}
-
-	Emulator_SetPolygonOffset(-0.5f);
-
 	AggregatePTAGsToSplits((u_long*)p, true);
-	DrawAggregatedSplits();
 
-	Emulator_SetPolygonOffset(0.0f);
+	// draw with mask 0x16
+	Emulator_SetStencilMode(1);
+	DrawAggregatedSplits();
 }
 
 // parses primitive and pushes it to VBO
@@ -773,6 +772,7 @@ int ParsePrimitive(uintptr_t primPtr)
 {
 	P_TAG* pTag = (P_TAG*)primPtr;
 
+	/*
 	int textured = (pTag->code & 0x4) != 0;
 
 	int blend_mode = 0;
@@ -791,7 +791,7 @@ int ParsePrimitive(uintptr_t primPtr)
 	else
 	{
 		blend_mode = 0;
-	}
+	}*/
 
 	bool semi_transparent = (pTag->code & 2) != 0;
 

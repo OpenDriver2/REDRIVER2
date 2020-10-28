@@ -332,15 +332,15 @@ struct LEAD_CAR // hashcode: 0x44C76F5F (dec: 1153920863)
 
 enum ECarControlType
 {
-	CONTROL_TYPE_NONE = 0,	// car is not in the world
-	CONTROL_TYPE_PLAYER = 1,	// controlled by player pads
-	CONTROL_TYPE_CIV_AI = 2,	// Civilian car. May be a passive cop car with CONTROL_FLAG_COP flag.
-	CONTROL_TYPE_PURSUER_AI = 3,	// Police pursuer car. Always chases player
-	CONTROL_TYPE_LEAD_AI = 4,	// really don't know wtf this type is
+	CONTROL_TYPE_NONE = 0,				// car is not in the world
+	CONTROL_TYPE_PLAYER = 1,			// controlled by player pads
+	CONTROL_TYPE_CIV_AI = 2,			// Civilian car. May be a passive cop car with CONTROL_FLAG_COP flag.
+	CONTROL_TYPE_PURSUER_AI = 3,		// Police pursuer car. Always chases player
+	CONTROL_TYPE_LEAD_AI = 4,			// FreeRoamer AI
 
 	CONTROL_TYPE_CAMERACOLLIDER = 5,	// Used as a camera collider
 	CONTROL_TYPE_TANNERCOLLIDER = 6,	// Used as collision box for tanner
-	CONTROL_TYPE_CUTSCENE = 7,	// Pretty same as player car but controllled by cutscene. Can be a chase car.
+	CONTROL_TYPE_CUTSCENE = 7,			// Pretty same as player car but controllled by cutscene. Can be a chase car.
 };
 
 enum ECarControlFlags

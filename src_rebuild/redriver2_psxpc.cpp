@@ -12,6 +12,7 @@
 #include "EMULATOR_PRIVATE.H"
 #include "utils/ini.h"
 
+#include <stdlib.h>
 #include <SDL_scancode.h>
 
 
@@ -29,9 +30,6 @@ typedef enum
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <conio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 static unsigned short g_InitialColor = 0xFFFF;
 static unsigned short g_LastColor = 0xFFFF;

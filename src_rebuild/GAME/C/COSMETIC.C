@@ -121,7 +121,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 
 		if (model != -1) 
 		{
-			offset = *(int*)(lump_ptr + model * 4);
+			offset = *(int*)(lump_ptr + model * sizeof(int));
 
 			ptr = (lump_ptr + offset);
 
@@ -136,7 +136,8 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 	// [A] fix vegas limo cosmetic bug in advance
 	if(GameLevel == 2)
 	{
-		offset = *(int*)(lump_ptr + 8 * 4);
+		model = 8;
+		offset = *(int*)(lump_ptr + model * sizeof(int));
 
 		ptr = (lump_ptr + offset);
 		memcpy(&gVegasLimoCosmetic, ptr, sizeof(CAR_COSMETICS));
@@ -418,83 +419,86 @@ void AddBrakeLight(_CAR_DATA *cp)
 
 	life2 = &cp->ap.life2;
 
-	if (car_cos->extraInfo & 8)
-	{
-		vec = car_cos->brakeLight;
+	if (!(car_cos->extraInfo & 8))
+		return;
 
-		vec.vx += car_cos->cog.vx;
-		vec.vy += car_cos->cog.vy;
-		vec.vz += car_cos->cog.vz;
+	vec = car_cos->brakeLight;
 
-		offset = ((car_cos->extraInfo & 0x300) >> 6) + 10;
-		cogOffset = vec.vz + car_cos->cog.vz;
+	vec.vx += car_cos->cog.vx;
+	vec.vy += car_cos->cog.vy;
+	vec.vz += car_cos->cog.vz;
 
-		if (car_cos->extraInfo & 8) 
+	offset = ((car_cos->extraInfo & 0x300) >> 6) + 10;
+	cogOffset = vec.vz + car_cos->cog.vz;
+
+	loop = 0;
+
+	doubleFlag = (car_cos->extraInfo & 0x4000) != 0;
+	verticalFlag = (car_cos->extraInfo & 0x1000) != 0;
+
+	do {
+		damIndex = (4 - loop);
+
+		if (doubleFlag)
 		{
-			loop = 0;
+			if (verticalFlag)
+			{
+				v1 = vec;
+				v2 = vec;
 
-			do {
-				damIndex = (4 - loop);
+				damageFac = cp->ap.damage[damIndex] >> 6;
 
-				if ((car_cos->extraInfo & 0x4000) == 0)
+				v1.vz = cogOffset + damageFac;
+				v2.vz = cogOffset + damageFac;
+
+				v1.vx = vec.vx;
+				v1.vy = offset + vec.vy;
+				v2.vy = vec.vy - offset;
+
+				if (cp->ap.damage[damIndex] < 500)
 				{
-					v1 = vec;
-
-					if (cp->ap.damage[damIndex] < 500)
-					{
-						ShowCarlight(&v1, cp, &col, 0x11, &light_texture, 0);
-						*life2 += 8;
-					}
+					ShowCarlight(&v1, cp, &col, 0x11, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, 0x11, &light_texture, 0);
+					*life2 += 8;
 				}
-				else if ((car_cos->extraInfo & 0x1000) == 0)
+			}
+			else
+			{
+				v1 = vec;
+				v2 = vec;
+
+				damageFac = cp->ap.damage[damIndex] >> 6;
+				v1.vz = cogOffset + damageFac;
+				v2.vz = cogOffset + damageFac;
+
+				v1.vx = offset + vec.vx;
+				v2.vx = vec.vx - offset;
+
+				if (cp->ap.damage[damIndex] < 500)
 				{
-					v1 = vec;
-					v2 = vec;
-
-					damageFac = cp->ap.damage[damIndex] >> 6;
-					v1.vz = cogOffset + damageFac;
-					v2.vz = cogOffset + damageFac;
-
-					v1.vx = offset + vec.vx;
-					v2.vx = vec.vx - offset;
-
-					if (cp->ap.damage[damIndex] < 500)
-					{
-						ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
-						ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
-						*life2 += 8;
-					}
+					ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
+					*life2 += 8;
 				}
-				else
-				{
-					v1 = vec;
-					v2 = vec;
-
-					damageFac = cp->ap.damage[damIndex] >> 6;
-
-					v1.vz = cogOffset + damageFac;
-					v2.vz = cogOffset + damageFac;
-
-					v1.vx = vec.vx;
-					v1.vy = offset + vec.vy;
-					v2.vy = vec.vy - offset;
-
-					if (cp->ap.damage[damIndex] < 500)
-					{
-						ShowCarlight(&v1, cp, &col, 0x11, &light_texture, 0);
-						ShowCarlight(&v2, cp, &col, 0x11, &light_texture, 0);
-						*life2 += 8;
-					}
-				}
-
-				offset = -offset;
-				
-				vec.vx = car_cos->cog.vx * 2 - vec.vx;
-
-				loop++;
-			} while (loop < 2);
+			}
 		}
-	}
+		else
+		{
+			v1 = vec;
+
+			if (cp->ap.damage[damIndex] < 500)
+			{
+				ShowCarlight(&v1, cp, &col, 0x11, &light_texture, 0);
+				*life2 += 8;
+			}
+		}
+
+		offset = -offset;
+				
+		vec.vx = car_cos->cog.vx * 2 - vec.vx;
+
+		loop++;
+	} while (loop < 2);
 }
 
 

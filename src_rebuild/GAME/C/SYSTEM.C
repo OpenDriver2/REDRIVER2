@@ -14,11 +14,7 @@
 #include "MAIN.H"
 #include "PAD.H"
 #include "DRAW.H"
-
-
 #include <string.h>
-
-#include <PLATFORM.H>
 
 // Initialized in redriver2_main
 char*	_overlay_buffer = NULL;		// 0x1C0000
@@ -42,6 +38,9 @@ int g_numDynamicAllocs = 0;
 
 char* sys_malloc(int size, char* funcname, int line)
 {
+	if(g_numDynamicAllocs & 0x10000)
+		sys_tempfree();
+
 #ifdef _DEBUG
 	printWarning("CRT malloc(%d) in %s, line %d\n", size, funcname, __LINE__);
 #endif // _DEBUG
@@ -54,12 +53,39 @@ char* sys_malloc(int size, char* funcname, int line)
 
 void sys_freeall()
 {
-	for (int i = 0; i < g_numDynamicAllocs; i++)
+	int numAlloc = g_numDynamicAllocs & 0xfff;
+	
+	for (int i = 0; i < numAlloc; i++)
 	{
 		free(g_dynamicAllocs[i]);
 		g_dynamicAllocs[i] = NULL;
 	}
+
 	g_numDynamicAllocs = 0;
+}
+
+char* sys_tempalloc(int size)
+{
+	if(g_numDynamicAllocs & 0x10000)
+	{
+		printError("sys_tempalloc: another alloc in use!\n");
+		trap(1000);
+		return NULL;
+	}
+	
+	char* tmp_ptr = (char*)malloc(size);
+	
+	g_dynamicAllocs[g_numDynamicAllocs] = tmp_ptr;
+	g_numDynamicAllocs |= 0x10000;
+
+	return tmp_ptr;
+}
+
+void sys_tempfree()
+{
+	g_numDynamicAllocs &= ~0x10000;
+	free(g_dynamicAllocs[g_numDynamicAllocs]);
+	g_dynamicAllocs[g_numDynamicAllocs] = NULL;
 }
 #else
 
