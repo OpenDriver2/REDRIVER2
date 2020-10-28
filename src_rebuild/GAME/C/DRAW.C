@@ -871,21 +871,27 @@ void DrawMapPSX(int* comp_val)
 
 	// walk through all cells
 	while (i >= 0)
-	{				
-		if (ABS(hloop) + ABS(vloop) < 16)
+	{
+		if (ABS(hloop) + ABS(vloop) < 21)
 		{
+			// clamped vis values
+			int vis_h = MIN(MAX(hloop, -9), 10);
+			int vis_v = MIN(MAX(vloop, -9), 10);
+			
 			cellx = cellxpos + hloop;
 			cellz = cellzpos + vloop;
+
+			
 
 			if (rightPlane < 0 &&
 				leftPlane > 0 &&
 				backPlane < farClipLimit &&  // check planes
 				cellx > -1 && cellx < cells_across &&							// check cell ranges
 				cellz > -1 && cellz < cells_down &&
-				PVS_ptr[hloop]) // check PVS table		// [A] please enable after PVSDecode will work properly
+				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
 			{
 				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
-
+				
 				// walk each cell object in cell
 				while (ppco != NULL)
 				{
@@ -1006,7 +1012,7 @@ void DrawMapPSX(int* comp_val)
 			rightPlane += rightsin;
 			vloop++;
 
-			PVS_ptr += pvs_square;
+			//PVS_ptr += pvs_square;
 
 			if (hloop == vloop)
 				dir = 2;
@@ -1028,7 +1034,7 @@ void DrawMapPSX(int* comp_val)
 			rightPlane -= rightsin;
 			vloop--;
 			
-			PVS_ptr -= pvs_square;
+			//PVS_ptr -= pvs_square;
 
 			if (hloop == vloop)
 				dir = 0;
