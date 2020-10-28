@@ -1024,6 +1024,30 @@ void SwirlLeaves(_CAR_DATA *cp)
 
 	if (cp->hd.wheel_speed + 39999U > 0x1d4be && gDoLeaves != 0 && pauseflag == 0)
 	{
+		if (next_leaf < 20)
+		{
+			int dir = cp->hd.direction;
+
+			if (FrameCnt & 2)
+				dir += 100;
+			else
+				dir -= 100;
+
+			VECTOR leafPos;
+
+			leafPos.vx = cp->hd.where.t[0] + ((rand() & 0x3F) + dir) + 0x200;
+			leafPos.vz = cp->hd.where.t[2] + ((rand() & 0x1F) + dir) + 0x200;
+
+			ROUTE_DATA routeData;
+			ROADS_GetRouteData(leafPos.vx, leafPos.vz, &routeData);
+
+			if (modelpointers[routeData.type])
+			{
+				leafPos.vy = -routeData.height;
+				AddLeaf(&leafPos, rand() & 7, 1);
+			}
+		}
+
 		count = 49;
 		do {
 			XDiff = cp->hd.where.t[0] - lpLeaf->position.vx;
