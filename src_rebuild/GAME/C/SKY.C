@@ -353,6 +353,7 @@ void DrawSkyDome(void)
 {
 	calc_sky_brightness();
 
+#ifdef PSX
 	if (((camera_angle.vy - 1450U) & 0xFFF) > 2250)
 		PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
 
@@ -364,6 +365,12 @@ void DrawSkyDome(void)
 
 	if (((camera_angle.vy - 400U) & 0xFFF) > 2300)
 		PlotHorizonMDL(modelpointers[1],HorizonLookup[GameLevel][3]);
+#else
+	PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
+	PlotHorizonMDL(modelpointers[2],HorizonLookup[GameLevel][1]);
+	PlotHorizonMDL(modelpointers[3],HorizonLookup[GameLevel][2]);
+	PlotHorizonMDL(modelpointers[1],HorizonLookup[GameLevel][3]);
+#endif
 
 }
 
@@ -1291,15 +1298,15 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 
 #ifndef PSX
 		// scale sky to get rid of vobbling
-		sv0.vx *= 100;
-		sv0.vy *= 100;
-		sv0.vz *= 100;
-		sv1.vx *= 100;
-		sv1.vy *= 100;
-		sv1.vz *= 100;
-		sv2.vx *= 100;
-		sv2.vy *= 100;
-		sv2.vz *= 100;
+		sv0.vx *= 110;
+		sv0.vy *= 110;
+		sv0.vz *= 110;
+		sv1.vx *= 110;
+		sv1.vy *= 110;
+		sv1.vz *= 110;
+		sv2.vx *= 110;
+		sv2.vy *= 110;
+		sv2.vz *= 110;
 #endif
 
 		gte_ldv3(&sv0, &sv1, &sv2);

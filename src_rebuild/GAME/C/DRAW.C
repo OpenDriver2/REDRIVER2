@@ -90,6 +90,11 @@ SVECTOR night_colours[4] =
   { 880, 880, 905, 0 }
 };
 
+void* model_object_ptrs[MAX_DRAWN_BUILDINGS];
+void* model_tile_ptrs[MAX_DRAWN_TILES];
+void* anim_obj_buffer[MAX_DRAWN_ANIMATING];
+void* spriteList[MAX_DRAWN_SPRITES];
+
 unsigned long planeColours[8];
 
 MATRIX inv_camera_matrix;
@@ -104,11 +109,6 @@ int fasterToggle = 0;
 int current_object_computed_value = 0;
 
 int combointensity;
-
-void* model_object_ptrs[192];
-void* model_tile_ptrs[320];
-void* anim_obj_buffer[20];
-void* spriteList[75];
 
 #ifndef PSX
 OUT_CELL_FILE_HEADER cell_header;
@@ -902,7 +902,7 @@ void DrawMapPSX(int* comp_val)
 						// sprity type
 						if (model->shape_flags & 0x4000)
 						{
-							if (sprites_found < 75)
+							if (sprites_found < MAX_DRAWN_SPRITES)
 								spriteList[sprites_found++] = ppco;
 
 							if ((model->flags2 & 1) && anim_objs_found < 20)
@@ -973,17 +973,17 @@ void DrawMapPSX(int* comp_val)
 									}
 								}
 								
-								if (tiles_found < 320)
+								if (tiles_found < MAX_DRAWN_TILES)
 									model_tile_ptrs[tiles_found++] = ppco;
 							}
 							else
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
 
-								if (other_models_found < 192)
+								if (other_models_found < MAX_DRAWN_BUILDINGS)
 									model_object_ptrs[other_models_found++] = cop;
 								
-								if ((model->flags2 & 1) && anim_objs_found < 20)
+								if ((model->flags2 & 1) && anim_objs_found < MAX_DRAWN_ANIMATING)
 									anim_obj_buffer[anim_objs_found++] = cop;
 							}
 						}

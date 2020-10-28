@@ -14,14 +14,29 @@ extern MATRIX face_camera;
 extern MATRIX2 matrixtable[64];
 extern MATRIX2 CompoundMatrix[64];
 
+#ifdef PSX
+
+#define MAX_DRAWN_BUILDINGS		192
+#define MAX_DRAWN_TILES			320
+#define MAX_DRAWN_ANIMATING		20
+#define MAX_DRAWN_SPRITES		75
+
+#else
+
+#define MAX_DRAWN_BUILDINGS		384
+#define MAX_DRAWN_TILES			750
+#define MAX_DRAWN_ANIMATING		48
+#define MAX_DRAWN_SPRITES		128
+
+#endif
+
+extern void* model_tile_ptrs[MAX_DRAWN_TILES];
 
 extern int units_across_halved;
 extern int units_down_halved;
 extern int pvs_square;
 extern int pvs_square_sq;
 extern int PolySizes[56];
-
-extern void* model_tile_ptrs[320];
 
 extern int combointensity;
 
