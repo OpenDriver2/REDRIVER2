@@ -35,6 +35,8 @@ using namespace gl;
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
+void CosmeticEditProcess();
+
 // Main code
 int main(int, char**)
 {
@@ -69,7 +71,7 @@ int main(int, char**)
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+	SDL_Window* window = SDL_CreateWindow("Driver 2 Cosmetic Editor 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
 	SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, gl_context);
 	SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -129,8 +131,6 @@ int main(int, char**)
 	//IM_ASSERT(font != NULL);
 
 	// Our state
-	bool show_demo_window = true;
-	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	// Main loop
@@ -146,6 +146,7 @@ int main(int, char**)
 		while (SDL_PollEvent(&event))
 		{
 			ImGui_ImplSDL2_ProcessEvent(&event);
+			
 			if (event.type == SDL_QUIT)
 				done = true;
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
@@ -157,42 +158,8 @@ int main(int, char**)
 		ImGui_ImplSDL2_NewFrame(window);
 		ImGui::NewFrame();
 
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		//if (show_demo_window)
-		//	ImGui::ShowDemoWindow(&show_demo_window);
-
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
-
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
-		}
-
-		// 3. Show another simple window.
-		if (show_another_window)
-		{
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
-			ImGui::End();
-		}
+		// FIXME: other apps?
+		CosmeticEditProcess();
 
 		// Rendering
 		ImGui::Render();
@@ -213,4 +180,270 @@ int main(int, char**)
 	SDL_Quit();
 
 	return 0;
+}
+
+// include some PSX stuff
+typedef long long OTTYPE;
+
+#include "LIBSPU.H"
+#include "LIBGTE.H"
+#include "LIBGPU.H"
+
+#include "DR2TYPES.H"
+
+#define MAX_COSMETICS 13
+
+CAR_COSMETICS gCosmetics[MAX_COSMETICS];
+int cosmeticOffsets[MAX_COSMETICS];
+int gNumCosmeticsLoaded = 0;
+
+void ReadCosmeticsFile(const char* name)
+{
+	char filename[512];
+	sprintf(filename, "DRIVER2/LEVELS/%s.LCF", name);
+	
+	gNumCosmeticsLoaded = 0;
+
+	FILE* fp = fopen(filename, "rb");
+	if(fp)
+	{
+		fread(cosmeticOffsets, sizeof(cosmeticOffsets), 1, fp);
+
+		for(int i = 0; i < MAX_COSMETICS; i++)
+		{
+			size_t curPos = ftell(fp);
+			
+			fseek(fp, cosmeticOffsets[i], SEEK_SET);
+			
+			fread(&gCosmetics[i], sizeof(CAR_COSMETICS), 1, fp);
+			gNumCosmeticsLoaded++;
+
+			fseek(fp, curPos, SEEK_SET);
+		}
+		
+		fclose(fp);
+	}
+}
+
+void CosmeticEditProcess()
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::BeginMenu("Open"))
+			{
+				if (ImGui::MenuItem("CHICAGO"))
+				{
+					ReadCosmeticsFile("CHICAGO");
+				}
+
+				if (ImGui::MenuItem("HAVANA"))
+				{
+					ReadCosmeticsFile("HAVANA");
+				}
+
+				if (ImGui::MenuItem("VEGAS"))
+				{
+					ReadCosmeticsFile("VEGAS");
+				}
+
+				if (ImGui::MenuItem("RIO"))
+				{
+					ReadCosmeticsFile("RIO");
+				}
+				
+				ImGui::EndMenu();
+			}
+			
+			if (ImGui::MenuItem("Save", "Ctrl+S"))
+			{
+
+			}
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	
+	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	static float f = 0.0f;
+	static int counter = 0;
+
+
+	if(gNumCosmeticsLoaded)
+	{
+		if(ImGui::Begin("Cosmetic editor", 0, ImGuiWindowFlags_AlwaysAutoResize))                          // Create a window called "Hello, world!" and append into it.
+		{
+			char text[32];
+			static int currentCosmetic = 0;
+
+			sprintf(text, "%d\n", currentCosmetic);
+			if (ImGui::BeginCombo("Car", text, 0))
+			{
+				for (int i = 0; i < gNumCosmeticsLoaded; i++)
+				{
+					sprintf(text, "Car %d\n", i);
+					const bool is_selected = (currentCosmetic == i);
+					
+					if (ImGui::Selectable(text, is_selected))
+						currentCosmetic = i;
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			CAR_COSMETICS* car_cos = &gCosmetics[currentCosmetic];
+			int dragval;
+			uint flagval;
+
+			dragval = car_cos->powerRatio;
+			ImGui::DragInt("Power ratio", &dragval);
+			car_cos->powerRatio = dragval;
+
+			dragval = car_cos->susCoeff;
+			ImGui::DragInt("Suspension coeff", &dragval);
+			car_cos->susCoeff = dragval;
+	
+			dragval = car_cos->traction;
+			ImGui::DragInt("Traction", &dragval);
+			car_cos->traction = dragval;
+
+			dragval = car_cos->wheelSize;
+			ImGui::DragInt("Wheel size", &dragval);
+			car_cos->wheelSize = dragval;
+
+			dragval = car_cos->mass;
+			ImGui::DragInt("mass", &dragval);
+			car_cos->mass = dragval;
+
+			// twist
+			ImGui::NewLine();
+
+			ImGui::BeginGroup();
+			{
+				
+				dragval = car_cos->twistRateX;
+				ImGui::DragInt("Angular twist X", &dragval);
+				car_cos->twistRateX = dragval;
+				ImGui::SameLine();
+
+				dragval = car_cos->twistRateY;
+				ImGui::DragInt("Angular twist Y", &dragval);
+				car_cos->twistRateY = dragval;
+				ImGui::SameLine();
+
+				dragval = car_cos->twistRateZ;
+				ImGui::DragInt("Angular twist Z", &dragval);
+				car_cos->twistRateZ = dragval;
+			}
+			ImGui::EndGroup();
+	
+			ImGui::NewLine();
+
+			ImGui::Text("Brake lights");
+			ImGui::BeginGroup();
+			{
+				flagval = car_cos->extraInfo;
+				ImGui::CheckboxFlags("Enabled", &flagval, 8);
+
+				if(flagval & 8)
+				{
+					ImGui::CheckboxFlags("Double brake lights", &flagval, 0x4000);
+
+					if(flagval & 0x4000)
+					{						
+						ImGui::CheckboxFlags("Vertical brake lights", &flagval, 0x1000);
+
+						int offset = (flagval & 0x300) >> 6;
+						flagval &= ~(12 << 6);
+						ImGui::SliderInt("Offset", &offset, 0, 12);
+						flagval |= offset << 6 & 0x300;
+					}
+				}
+
+				car_cos->extraInfo = flagval;
+			
+			}
+			ImGui::EndGroup();
+
+			ImGui::NewLine();
+
+			ImGui::Text("Head lights");
+			ImGui::BeginGroup();
+			{
+				flagval = car_cos->extraInfo;
+
+				ImGui::CheckboxFlags("Double headlight", &flagval, 0x8000);
+
+				if(flagval & 0x8000)
+				{
+					ImGui::CheckboxFlags("Vertical headlight", &flagval, 0x2000);
+
+					int offset = ((flagval & 0xC00) >> 8);
+					flagval &= ~(12 << 8);
+					ImGui::SliderInt("Offset", &offset, 0, 12);
+					flagval |= offset << 8 & 0xC00;
+				}
+
+				car_cos->extraInfo = flagval;
+
+			}
+			ImGui::EndGroup();
+
+			/*
+			struct SVECTOR headLight; // size=8, offset=0
+			struct SVECTOR frontInd; // size=8, offset=8
+			struct SVECTOR backInd; // size=8, offset=16
+			struct SVECTOR brakeLight; // size=8, offset=24
+			struct SVECTOR revLight; // size=8, offset=32
+			struct SVECTOR policeLight; // size=8, offset=40
+			struct SVECTOR exhaust; // size=8, offset=48
+			struct SVECTOR smoke; // size=8, offset=56
+			struct SVECTOR fire; // size=8, offset=64
+			struct SVECTOR wheelDisp[4]; // size=32, offset=72
+			
+			short extraInfo; // size=0, offset=104
+			
+			struct SVECTOR cPoints[12]; // size=96, offset=116
+			struct SVECTOR colBox; // size=8, offset=212
+			struct SVECTOR cog; // size=8, offset=220
+			/*
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			counter++;
+
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			*/
+			ImGui::End();
+		}
+	}
+
+
+	// 3. Show another simple window.
+	if (show_another_window)
+	{
+		ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("Hello from another window!");
+
+		if (ImGui::Button("Close Me"))
+			show_another_window = false;
+		
+		ImGui::End();
+	}
 }
