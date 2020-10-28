@@ -30,4 +30,11 @@
 #define MAX_LAMP_STREAKS		21
 #define MAX_RAIN_DROPS			180
 
+// sound limits
+#define MAX_SFX_CHANNELS		16		// DON'T CHANGE unless you have more than 24 channels (no PSX code)
+#define MAX_LEVEL_ENVSOUNDS		32
+#define MAX_SIREN_NOISES		2
+#define MAX_CAR_NOISES			4
+
+
 #endif // DRLIMITS_H

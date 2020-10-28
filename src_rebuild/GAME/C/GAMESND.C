@@ -71,13 +71,12 @@ int xm_coptrackpos_d1[8] = {
 int* xm_coptrackpos;
 int gDriver1Music = 0;
 
-// TODO: AI.C?
 SPEECH_QUEUE gSpeechQueue;
 static char cop_bank = 0;
 char phrase_top = 0;
 
-static struct __othercarsound siren_noise[2];
-static struct __othercarsound car_noise[4];
+static struct __othercarsound siren_noise[MAX_SIREN_NOISES];
+static struct __othercarsound car_noise[MAX_CAR_NOISES];
 static int loudhail_time = 0;
 
 static int copmusic = 0;
@@ -86,8 +85,8 @@ int current_music_id;
 static char header_pt[sizeof(XMHEADER)];
 static char song_pt[sizeof(XMSONG)];
 
-static struct __envsound envsnd[32];
-static struct __envsoundinfo ESdata[2];
+static __envsound envsnd[MAX_LEVEL_ENVSOUNDS];
+static __envsoundinfo ESdata[2];
 __tunnelinfo tunnels;
 
 char _sbank_buffer[0x80000];		// 0x180000
@@ -790,7 +789,7 @@ void StartGameSounds(void)
 
 	if (NumPlayers < 2 || NoPlayerControl != 0)
 	{
-		InitEnvSnd(32);
+		InitEnvSnd(MAX_LEVEL_ENVSOUNDS);
 		AddEnvSounds(GameLevel, gTimeOfDay);
 	}
 
@@ -1402,7 +1401,7 @@ void InitDopplerSFX(void)
 		siren_noise[i].car = 20;
 		siren_noise[i].in_use = 0;
 		i++;
-	} while (i < 2);
+	} while (i < MAX_SIREN_NOISES);
 
 	i = 0;
 	do {
@@ -1411,7 +1410,7 @@ void InitDopplerSFX(void)
 		car_noise[i].car = 20;
 		car_noise[i].in_use = 0;
 		i++;
-	} while (i < 4);
+	} while (i < MAX_CAR_NOISES);
 
 	if (GameType == GAME_GETAWAY)
 		loudhail_time = 245;
@@ -1582,7 +1581,7 @@ void DoDopplerSFX(void)
 			siren = 1;
 		}
 
-		// vegas ambulance
+		// sound up ambulance we're going to steal
 		if (gCurrentMissionNumber == 26)
 		{
 			if (car_ptr->ap.model == 4 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
@@ -1598,6 +1597,7 @@ void DoDopplerSFX(void)
 		}
 
 		// play car music
+		// vans in 'Caine's Compound' should not listen to it
 		if (gCurrentMissionNumber != 7 && car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ap.model <= 2 && indexlist[i] == 1)
 		{
 			siren = 1;
@@ -1613,7 +1613,7 @@ void DoDopplerSFX(void)
 	}
 
 	// stop unused siren noises
-	for (i = 0; i < 2; i++)
+	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
 		int siren;
 		siren = (car_flags & 1 << siren_noise[i].car) != 0;
@@ -1640,7 +1640,7 @@ void DoDopplerSFX(void)
 			car = indexlist[i];
 
 			// dispatch siren sounds
-			for (j = 0; j < 2; j++)
+			for (j = 0; j < MAX_SIREN_NOISES; j++)
 			{
 				if (siren_noise[j].in_use != 0)
 					continue;
@@ -1649,7 +1649,7 @@ void DoDopplerSFX(void)
 				siren_noise[j].stopped = 0;
 				siren_noise[j].car = car;
 
-				if (gCurrentMissionNumber == 26 || car_data[car].controlType != CONTROL_TYPE_CIV_AI)
+				if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
 				{
 					int siren;
 					siren = CarHasSiren(car_data[car].ap.model);
@@ -1673,7 +1673,7 @@ void DoDopplerSFX(void)
 	}
 
 	// update sirens
-	for (j = 0; j < 2; j++)
+	for (j = 0; j < MAX_SIREN_NOISES; j++)
 	{
 		if (siren_noise[j].in_use == 0)
 			continue;
@@ -1691,11 +1691,8 @@ void DoDopplerSFX(void)
 			pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
 	}
 
-	// count 4 noisy cars and stop unused noises
-	if (num_noisy_cars > (4 - sirens))
-		num_noisy_cars = 4 - sirens;
-	else
-		num_noisy_cars = num_noisy_cars;
+	// siren noises occupy car noise channels
+	num_noisy_cars = MIN(num_noisy_cars, MAX_CAR_NOISES - sirens);
 
 	car_flags = 0;
 
@@ -1707,7 +1704,7 @@ void DoDopplerSFX(void)
 			car_flags |= 1 << car;
 	}
 
-	for (j = 0; j < 4; j++)
+	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
 		int noise;
 
@@ -1717,7 +1714,7 @@ void DoDopplerSFX(void)
 		car_flags &= ~(noise << car_noise[j].car);
 	}
 
-	for (j = 0; j < 4; j++)
+	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
 		if (car_noise[j].in_use == 0 && car_noise[j].stopped == 0)
 		{
@@ -1737,7 +1734,7 @@ void DoDopplerSFX(void)
 		if (car_flags & 1 << indexlist[i])
 		{
 			car = indexlist[i];
-			for (j = 0; j < 4; j++)
+			for (j = 0; j < MAX_CAR_NOISES; j++)
 			{
 				int bank, model;
 
@@ -1782,7 +1779,7 @@ void DoDopplerSFX(void)
 
 
 	// update sounds of cars (swap between idle and rev)
-	for (j = 0; j < 4; j++)
+	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
 		char old_idle;
 
@@ -1858,7 +1855,7 @@ void DoDopplerSFX(void)
 	}
 
 	// update each sound channel with new info
-	for (j = 0; j < 16; j++)
+	for (j = 0; j < MAX_SFX_CHANNELS; j++)
 	{
 		if (channels[j].loop == 0 && channels[j].time != 0 && channels[j].srcposition != NULL)
 		{
@@ -2365,7 +2362,7 @@ void SoundTasks(void)
 		if (lcp->crash_timer > 0)
 			lcp->crash_timer--;
 
-		// car engine sound
+		// car engine sounds
 		if (cp)
 		{
 			position = (VECTOR*)cp->hd.where.t;
@@ -2561,7 +2558,8 @@ void InitMusic(int musicnum)
 
 	InitXMData((unsigned char*)music_pt, 0, 0);
 
-	Song_ID = XM_Init(VABID, 0, 0, 16, 1, -1, 0, 0);
+	// 8 XM channels start after first sfx channels
+	Song_ID = XM_Init(VABID, 0, 0, MAX_SFX_CHANNELS, 1, -1, 0, 0);
 
 	if (music_paused != 0)
 		XM_Pause(Song_ID);
@@ -2822,8 +2820,8 @@ void InitEnvSnd(int num_envsnds)
 {
 	int i, p;
 
-	if (num_envsnds > 32)
-		num_envsnds = 32;
+	if (num_envsnds > MAX_LEVEL_ENVSOUNDS)
+		num_envsnds = MAX_LEVEL_ENVSOUNDS;
 
 	i = 0;
 	while (i < num_envsnds)
@@ -3035,6 +3033,7 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 	__bitfield64 zones;
 	int snd;
 
+	// [A] does it really needed? we don't have that much sounds to be played
 	zones.l = 0;
 	zones.h = 0;
 
@@ -3750,6 +3749,7 @@ void UpdateEnvSnd(__envsound* ep, __envsoundinfo* E, int pl)
 
 unsigned int horn_time;
 
+// [D] [T]
 void InitLeadHorn(void)
 {
 	horn_time = 0;
@@ -3781,13 +3781,12 @@ void InitLeadHorn(void)
 	/* end block 3 */
 	// End Line: 7806
 
-// [D]
+// [D] [T]
 void LeadHorn(_CAR_DATA* cp)
 {
 	static unsigned int rnd = 0;
 
-	int bVar1;
-	int uVar2;
+	int carBank;
 
 	if (horn_time == 0)
 		rnd = (cp->hd.where.t[0] ^ cp->hd.where.t[2]) * (FrameCnt ^ cp->hd.where.t[1]) & 0x7f;
@@ -3797,13 +3796,13 @@ void LeadHorn(_CAR_DATA* cp)
 	if (horn_time == rnd)
 	{
 		if (cp->ap.model == 4)
-			uVar2 = ResidentModelsBodge();
+			carBank = ResidentModelsBodge();
 		else if (cp->ap.model < 3)
-			uVar2 = cp->ap.model;
+			carBank = cp->ap.model;
 		else
-			uVar2 = cp->ap.model - 1;
+			carBank = cp->ap.model - 1;
 
-		int ch = Start3DTrackingSound(-1, 3, uVar2 * 3 + 2, (VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity);
+		Start3DTrackingSound(-1, 3, carBank * 3 + 2, (VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity);
 
 		horn_time = 0;
 	}
