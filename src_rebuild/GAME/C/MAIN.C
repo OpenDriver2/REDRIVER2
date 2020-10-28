@@ -2732,6 +2732,7 @@ void UpdatePlayerInformation(void)
 	WHEEL* wheel;
 	int i, j;
 	int wheelsInWater;
+	int wheelsAboveWaterToDieWithFade;
 	_CAR_DATA* cp;
 
 	cp = NULL;
@@ -2763,6 +2764,7 @@ void UpdatePlayerInformation(void)
 			}
 
 			wheelsInWater = 0;
+			wheelsAboveWaterToDieWithFade = 0;
 
 			j = 0;
 			wheel = cp->hd.wheel;
@@ -2772,10 +2774,8 @@ void UpdatePlayerInformation(void)
 				{
 					if (wheel->susCompression == 0)
 					{
-						if (cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
-						{
-							gDieWithFade = wheel->surface & 7;
-						}
+						if (wheel->surface & 7)
+							wheelsAboveWaterToDieWithFade++;
 					}
 					else
 					{
@@ -2787,8 +2787,17 @@ void UpdatePlayerInformation(void)
 				j++;
 			} while (j < 4);
 
+			// YOU DROWNED!
+			if(wheelsAboveWaterToDieWithFade == 4 && 
+				cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
+			{
+				gDieWithFade = 1;
+			}
+
 			if (wheelsInWater == 4) // apply water damage
+			{
 				cp->totalDamage += MaxPlayerDamage[i] / 80;
+			}
 
 			if (cp->totalDamage > MaxPlayerDamage[i])
 				cp->totalDamage = MaxPlayerDamage[i];
