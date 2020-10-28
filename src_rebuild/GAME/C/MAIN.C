@@ -1906,24 +1906,24 @@ void StepGame(void)
 		{
 			if (!day_cycle_back)
 			{
-				day_vectors[GameLevel].vx += Random2(1) % 96;
+				day_vectors[GameLevel].vx += Random2(1) % 3;
 
 				if (day_vectors[GameLevel].vy > -4096)
-					day_vectors[GameLevel].vy -= Random2(1) % 64;
+					day_vectors[GameLevel].vy -= Random2(1) % 2;
 				if (day_vectors[GameLevel].vz > -3200)
-					day_vectors[GameLevel].vz -= Random2(1) % 72;
+					day_vectors[GameLevel].vz -= Random2(1) % 1;
 				
 				if (day_vectors[GameLevel].vx > 3072)
 					day_cycle_back = 1;
 			}
 			else
 			{
-				day_vectors[GameLevel].vx -= Random2(1) % 96;
+				day_vectors[GameLevel].vx -= Random2(1) % 2;
 				
 				if (day_vectors[GameLevel].vy < 4096)
-					day_vectors[GameLevel].vy += Random2(1) % 64;
+					day_vectors[GameLevel].vy += Random2(1) % 4;
 				if (day_vectors[GameLevel].vz < 3200)
-					day_vectors[GameLevel].vz += Random2(1) % 72;
+					day_vectors[GameLevel].vz += Random2(1) % 2;
 
 				if (day_vectors[GameLevel].vx < -3072)
 					day_cycle_back = 0;
