@@ -2327,6 +2327,9 @@ void SoundTasks(void)
 	_CAR_DATA* cp;
 	int i;
 
+	UpdateEnvSounds[EStags.func_cnt++](envsnd, ESdata, 0);
+	EStags.func_cnt %= 4;
+	
 	lcp = player;
 	i = 0;
 	while (i < NumPlayers)
@@ -2837,6 +2840,7 @@ void InitEnvSnd(int num_envsnds)
 		while (p < 4)
 		{
 			ESdata[i].playing_sound[p] = -1;
+			ESdata[i].thisS[p] = -1;
 			p++;
 		}
 		i++;
@@ -3063,29 +3067,35 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 		{
 			if ((ep[i].type == 2 || ep[i].type == 4) && (ep[i].flags & 3) == 0)
 			{
-				// what is that variant of distance to line?
-				float dp, dist, fpx1,fpz1,fpx2,fpz2;
-				fpx1 = ep[i].pos.vx;
-				fpz1 = ep[i].pos.vz;
-				fpx2 = ep[i].pos2.vx;
-				fpz2 = ep[i].pos2.vz;
-				
-				_g[j] = (fpz2 - fpz1) / (fpx2 - fpx1);
+				// [A] new distance estimation code, should be efficient enough
+				// Plane method
 
-				dp = _g[j] * _g[j] + 1;
+				// build a plane from line segment
+				float ldx, ldz, ndx, ndz, dist, l_inv_len, offset;
+				ldx = ep[i].pos2.vx - ep[i].pos.vx;
+				ldz = ep[i].pos2.vz - ep[i].pos.vz;
 				
-				if (dp <= 0.0f)
-					dp += 30.0f;
+				// find inverse length of line
+				l_inv_len = 1.0 / sqrtf(ldx * ldx + ldz * ldz);
 				
-				dist = (_g[j] * E->cam_pos.vx - _g[j] * fpx1 - E->cam_pos.vz + fpz1) / sqrt(dp);
+				// find normal (perpendicular) by using cross product and normalize
+				ndx = ldz * l_inv_len;
+				ndz = -ldx * l_inv_len;
+
+				// line pos1 offset along normal
+				offset = ndx * ep[i].pos.vx + ndz * ep[i].pos.vz;
+
+				dist = ndx * E->cam_pos.vx + ndz * E->cam_pos.vz - offset;
 
 				if (ep->type == 2)
 				{
 					if (dist < 0)
 						dist = -dist;
 				}
-				else if ((ep->flags & 8) != 0)
+				else if ((ep->flags & 8) != 0) // flipped flag
+				{
 					dist = -dist;
+				}
 
 				if (dist < vol)
 				{
@@ -3094,7 +3104,11 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 					else
 						zones.h |= 1 << (i & 0x1f);
 
-					tmp[j++] = i;
+					tmp[j] = i;
+					
+					// also store length
+					_g[j] = l_inv_len;
+					j++;
 				}
 			}
 			else
@@ -3104,7 +3118,8 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 				else
 					zones.h |= 1 << (i & 0x1f);
 
-				tmp[j++] = i;
+				tmp[j] = i;
+				j++;
 			}
 		}
 	}
@@ -3319,324 +3334,177 @@ void CalcEffPos(__envsound* ep, __envsoundinfo* E, int pl)
 // [D] [A] unprocessed arrays
 void CalcEffPos2(__envsound* ep, __envsoundinfo* E, int pl)
 {
-	bool bVar1;
-	int iVar2;
-	float uVar3;
-	float uVar4;
-	__envsound* p_Var5;
-	int iVar6;
-	int iVar7;
-	long lVar8;
-	uint uVar9;
-	int iVar10;
-	float* pfVar11;
-	float* local_s1_176;
-	float uVar12;
-	long* plVar13;
-	int* piVar14;
-	long lVar15;
-	__envsoundinfo* p_Var16;
-	int iVar17;
-	uint local_38;
-	int local_34;
-	int local_30;
+	int snd;
+	int i;
 
-	local_38 = 0;
-	local_34 = 0;
-	local_30 = 0;
-	p_Var16 = E;
-
+	i = 0;
 	do {
-		iVar17 = *(int*)((int)E->thisS + local_30);
+		snd = E->thisS[i];
 
-		if ((-1 < iVar17) && (uVar9 = 1 << (local_38 & 0x1f), (E->flags & uVar9) == 0))
+		if (snd > -1 && (E->flags & 1 << i) == 0)
 		{
-			p_Var5 = ep + iVar17;
-
-			if ((p_Var5->type == 2) || (p_Var5->type == 4))
+			if (ep[snd].type == 2 || ep[snd].type == 4)
 			{
-				pfVar11 = E->g;
-				local_s1_176 = (float*)((int)pfVar11 + local_30);
+				// [A] determine sound position on line
+				// Plane method
 
+				// build a plane from line segment
+				float ldx, ldz, ndx, ndz, dist, l_inv_len, offset;
+				ldx = ep[snd].pos2.vx - ep[snd].pos.vx;
+				ldz = ep[snd].pos2.vz - ep[snd].pos.vz;
 
-				//iVar2 = __gesf2(*local_s1_176, 0);
-				//if (iVar2 < 0)
-				if (*local_s1_176 < 0)
+				// find inverse length of line
+				l_inv_len = E->g[i];
+
+				// find normal (perpendicular) by using cross product and normalize
+				ndx = ldz * l_inv_len;
+				ndz = -ldx * l_inv_len;
+
+				// line pos1 offset along normal
+				offset = ndx * ep[snd].pos.vx + ndz * ep[snd].pos.vz;
+
+				// now need distance
+				dist = ndx * E->cam_pos.vx + ndz * E->cam_pos.vz - offset;
+
+				// clamp to side
+				E->eff_pos[i].vx = E->cam_pos.vx - ndx * dist;
+				E->eff_pos[i].vz = E->cam_pos.vz - ndz * dist;
+
+				if (ep[snd].type == 2)
 				{
-					uVar3 = -*local_s1_176;// __negsf2(*local_s1_176);
+					int minX, maxX, minZ, maxZ;
+					
+					maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
+					minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
 
-					//iVar2 = __ltsf2(uVar3, 0x3f800000);
-					//if (-1 < iVar2) 
-					if (uVar3 >= 1.0f)
-						goto LAB_000519c0;
+					if (E->eff_pos[i].vx > maxX)
+					{
+						E->eff_pos[i].vx = maxX;
+					}
+					else if (E->eff_pos[i].vx < minX)
+					{
+						E->eff_pos[i].vx = minX;
+					}
 
-				LAB_000518d8:
-					uVar3 = 1.0f / *(float*)((int)pfVar11 + local_30); //__divsf3(0x3f800000, *(float*)((int)pfVar11 + local_30));
-					uVar4 = (E->cam_pos).vx; // __floatsisf((E->cam_pos).vx);
-					uVar4 = uVar4 * uVar3; // __mulsf3(uVar4, uVar3);
-					p_Var5 = ep + iVar17;
-					uVar12 = (p_Var5->pos).vx; // __floatsisf((p_Var5->pos).vx);
-					uVar12 = uVar12 / uVar3; // __divsf3(uVar12, uVar3);
-					uVar4 = uVar4 + uVar12; // __addsf3(uVar4, uVar12);
-					uVar12 = (E->cam_pos).vz; // __floatsisf((E->cam_pos).vz);
-					uVar4 = uVar4 + uVar12; // __addsf3(uVar4, uVar12);
-					uVar12 = (p_Var5->pos).vz; // __floatsisf((p_Var5->pos).vz);
-					uVar4 = uVar4 - uVar12; // __subsf3(uVar4, uVar12);
-					uVar12 = 1.0f / uVar3; // __divsf3(0x3f800000, uVar3);
-					uVar12 = uVar12 + uVar3; // __addsf3(uVar12, uVar3);
-					uVar4 = uVar4 / uVar12; // __divsf3(uVar4, uVar12);
-					iVar2 = uVar4; // __fixsfsi(uVar4);
-					p_Var16->eff_pos[0].vx = iVar2;
-					uVar4 = iVar2 - (p_Var5->pos).vx; // __floatsisf(iVar2 - (p_Var5->pos).vx);
-					uVar3 = uVar4 / uVar3; //__divsf3(uVar4, uVar3);
+					maxZ = MAX(ep[snd].pos.vz, ep[snd].pos2.vz);
+					minZ = MIN(ep[snd].pos.vz, ep[snd].pos2.vz);
+
+					if (E->eff_pos[i].vz > maxZ)
+					{
+						E->eff_pos[i].vz = maxZ;
+					}
+					else if (E->eff_pos[i].vz < minZ)
+					{
+						E->eff_pos[i].vz = minZ;
+					}
+					
+					E->flags |= 1 << (i & 0x1f);
 				}
-				else
+				else if (ep[snd].type == 4)
 				{
-					//iVar2 = __ltsf2(*local_s1_176, 0x3f800000);
-					//if (iVar2 < 0) 
-					if (*local_s1_176 < 1.0f)
-						goto LAB_000518d8;
-
-				LAB_000519c0:
-					uVar3 = (E->cam_pos).vx; // __floatsisf((E->cam_pos).vx);
-					uVar12 = *(float*)((int)pfVar11 + local_30);
-					uVar3 = uVar3 / uVar12; // __divsf3(uVar3, uVar12);
-					p_Var5 = ep + iVar17;
-					uVar4 = (p_Var5->pos).vx; // __floatsisf((p_Var5->pos).vx);
-					uVar4 = uVar4 * uVar12;// __mulsf3(uVar4, uVar12);
-					uVar3 = uVar3 + uVar4;// __addsf3(uVar3, uVar4);
-					uVar4 = (E->cam_pos).vz; //  __floatsisf((E->cam_pos).vz);
-					uVar3 = uVar3 + uVar4; //__addsf3(uVar3, uVar4);
-					uVar4 = (p_Var5->pos).vz; // __floatsisf((p_Var5->pos).vz);
-					uVar3 = uVar3 - uVar4;// __subsf3(uVar3, uVar4);
-					uVar4 = 1.0f / uVar12; //__divsf3(0x3f800000, uVar12);
-					uVar4 = uVar12 + uVar4; // __addsf3(uVar12, uVar4);
-					uVar3 = uVar3 / uVar4; // __divsf3(uVar3, uVar4);
-					iVar2 = uVar3; // __fixsfsi(uVar3);
-					p_Var16->eff_pos[0].vx = iVar2;
-					uVar3 = iVar2 - (p_Var5->pos).vx; // __floatsisf(iVar2 - (p_Var5->pos).vx);
-					uVar3 = uVar3 * *(float*)((int)pfVar11 + local_30); // __mulsf3(uVar3, *(float*)((int)pfVar11 + local_30));
-				}
-
-				plVar13 = &E->eff_pos[0].vz;
-				uVar4 = ep[iVar17].pos.vz; // __floatsisf(ep[iVar17].pos.vz);
-				uVar3 = uVar3 + uVar4;//__addsf3(uVar3, uVar4);
-				uVar3 = uVar3;// __fixsfsi(uVar3);
-				*(float*)((int)plVar13 + local_34) = uVar3;
-				p_Var5 = ep + iVar17;
-
-				if (p_Var5->type == 2)
-				{
-					iVar2 = (p_Var5->pos2).vx;
-					iVar7 = (p_Var5->pos).vx;
-					iVar6 = iVar2;
-
-					if (iVar2 < iVar7)
-						iVar6 = iVar7;
-
-					iVar10 = p_Var16->eff_pos[0].vx;
-
-					if (iVar6 < iVar10)
+					if ((ep[snd].flags & 8) == 0) 
 					{
-						if (iVar2 < iVar7)
-							iVar2 = iVar7;
+						int minX, maxX, maxZ;
 
-						p_Var16->eff_pos[0].vx = iVar2;
-					}
-					else
-					{
-						iVar6 = iVar2;
-						if (iVar7 < iVar2)
-							iVar6 = iVar7;
-
-						if (iVar10 < iVar6)
+						maxZ = MAX(ep[snd].pos.vz, ep[snd].pos2.vz);
+						
+						if (E->cam_pos.vz > maxZ)
 						{
-							if (iVar7 < iVar2)
-								iVar2 = iVar7;
-
-							p_Var16->eff_pos[0].vx = iVar2;
+							E->eff_pos[i].vz = maxZ;
 						}
-					}
-					p_Var5 = ep + iVar17;
-					iVar17 = (p_Var5->pos2).vz;
-					iVar2 = (p_Var5->pos).vz;
-					piVar14 = (int*)((int)plVar13 + local_34);
-
-					if (iVar17 < iVar2)
-						iVar17 = iVar2;
-
-					if (iVar17 < *piVar14)
-					{
-						iVar17 = (p_Var5->pos2).vz;
-
-						if (iVar17 < iVar2)
-							iVar17 = iVar2;
-
-						*piVar14 = iVar17;
-					}
-					else
-					{
-						iVar17 = (p_Var5->pos2).vz;
-						iVar6 = iVar17;
-
-						if (iVar2 < iVar17)
-							iVar6 = iVar2;
-
-						if (*piVar14 < iVar6)
+						else if (E->cam_pos.vz > E->eff_pos[i].vz)
 						{
-							if (iVar2 < iVar17)
-								iVar17 = iVar2;
-
-							*piVar14 = iVar17;
+							E->eff_pos[i].vz = E->cam_pos.vz;
 						}
-					}
-					E->flags = E->flags | 1 << (local_38 & 0x1f);
-				}
-				else if (p_Var5->type == 4)
-				{
-					if ((p_Var5->flags & 8) == 0) {
-						iVar6 = (p_Var5->pos2).vz;
-						iVar7 = (p_Var5->pos).vz;
-						iVar2 = iVar6;
 
-						if (iVar6 < iVar7)
-							iVar2 = iVar7;
-
-						iVar10 = (E->cam_pos).vz;
-						if (iVar2 < iVar10)
+						// clamp axis select based on distance sign
+						if (E->g[i] < 0)
 						{
-							iVar10 = iVar6;
+							maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
 
-							if (iVar6 < iVar7)
-								iVar10 = iVar7;
-
-						LAB_00051d80:
-							*(int*)((int)plVar13 + local_34) = iVar10;
-						}
-						else
-						{
-							if (*(int*)((int)plVar13 + local_34) < iVar10)
-								goto LAB_00051d80;
-						}
-
-						//iVar2 = __ltsf2(*(float*)((int)pfVar11 + local_30), 0);
-						//if (-1 < iVar2)
-						if (*(float*)((int)pfVar11 + local_30) >= 0)
-							goto LAB_00051df8;
-
-						p_Var5 = ep + iVar17;
-						iVar17 = (p_Var5->pos2).vx;
-						lVar8 = (p_Var5->pos).vx;
-						if (iVar17 < lVar8) {
-							iVar17 = lVar8;
-						}
-						iVar2 = (E->cam_pos).vx;
-						if (iVar17 < iVar2)
-						{
-							lVar15 = (p_Var5->pos2).vx;
-							bVar1 = lVar15 < lVar8;
-							goto LAB_00051e40;
-						}
-						bVar1 = p_Var16->eff_pos[0].vx < iVar2;
-					LAB_00051e60:
-						if (bVar1) {
-							p_Var16->eff_pos[0].vx = iVar2;
-						}
-					}
-					else
-					{
-						iVar6 = (p_Var5->pos2).vz;
-						iVar7 = (p_Var5->pos).vz;
-						iVar2 = iVar6;
-
-						if (iVar7 < iVar6)
-							iVar2 = iVar7;
-
-						iVar10 = (E->cam_pos).vz;
-						if (iVar10 < iVar2)
-						{
-							iVar10 = iVar6;
-							if (iVar7 < iVar6)
-								iVar10 = iVar7;
-
-						LAB_00051c98:
-							*(int*)((int)plVar13 + local_34) = iVar10;
-						}
-						else
-						{
-							if (iVar10 < *(int*)((int)plVar13 + local_34))
-								goto LAB_00051c98;
-						}
-
-						//iVar2 = __gtsf2(*(float*)((int)pfVar11 + local_30), 0);
-						//if (iVar2 < 1) {
-						if (*(float*)((int)pfVar11 + local_30) <= 0)
-						{
-						LAB_00051df8:
-							p_Var5 = ep + iVar17;
-							iVar17 = (p_Var5->pos2).vx;
-							lVar8 = (p_Var5->pos).vx;
-
-							if (lVar8 < iVar17)
-								iVar17 = lVar8;
-
-							iVar2 = (E->cam_pos).vx;
-
-							if (iVar17 <= iVar2)
+							if (E->cam_pos.vx > maxX)
 							{
-								bVar1 = iVar2 < p_Var16->eff_pos[0].vx;
-								goto LAB_00051e60;
+								E->eff_pos[i].vx = maxX;
 							}
-
-							lVar15 = (p_Var5->pos2).vx;
-							bVar1 = lVar8 < lVar15;
+							else if (E->cam_pos.vx > E->eff_pos[i].vx) 
+							{
+								E->eff_pos[i].vx = (E->cam_pos).vx;
+							}
 						}
 						else
 						{
-							p_Var5 = ep + iVar17;
-							iVar17 = (p_Var5->pos2).vx;
-							lVar8 = (p_Var5->pos).vx;
-
-							if (iVar17 < lVar8)
-								iVar17 = lVar8;
-
-							iVar2 = (E->cam_pos).vx;
-
-							if (iVar2 <= iVar17)
+							minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
+							
+							if (minX > E->cam_pos.vx)
 							{
-								bVar1 = p_Var16->eff_pos[0].vx < iVar2;
-								goto LAB_00051e60;
+								E->eff_pos[i].vx = minX;
 							}
-
-							lVar15 = (p_Var5->pos2).vx;
-							bVar1 = lVar15 < lVar8;
+							else if (E->cam_pos.vx < E->eff_pos[i].vx)
+							{
+								E->eff_pos[i].vx = E->cam_pos.vx;
+							}
 						}
-					LAB_00051e40:
-						if (bVar1)
-							lVar15 = lVar8;
-
-						p_Var16->eff_pos[0].vx = lVar15;
 					}
+					else
+					{
+						int minX, maxX, minZ;
+
+						minZ = MIN(ep[snd].pos.vz, ep[snd].pos2.vz);
+						
+						if (E->cam_pos.vz < minZ)
+						{
+							E->eff_pos[i].vz = minZ;
+						}
+						else if (E->cam_pos.vz < E->eff_pos[i].vz)
+						{
+							E->eff_pos[i].vz = E->cam_pos.vz;
+						}
+
+						// clamp axis select based on distance sign
+						if (E->g[i] > 0)
+						{
+							maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
+
+							if (E->cam_pos.vx > maxX)
+							{
+								E->eff_pos[i].vx = maxX;
+							}
+							else if (E->cam_pos.vx > E->eff_pos[i].vx) 
+							{
+								E->eff_pos[i].vx = E->cam_pos.vx;
+							}
+						}
+						else
+						{
+							minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
+							
+							if (E->cam_pos.vx < minX)
+							{
+								E->eff_pos[i].vx = minX;
+							}
+							else if (E->cam_pos.vx < E->eff_pos[i].vx)
+							{
+								E->eff_pos[i].vx = E->cam_pos.vx;
+							}
+						}
+					}
+
+					
 				}
 			}
 			else
 			{
-				p_Var16->eff_pos[0].vx = (p_Var5->pos).vx;
-				*(long*)((int)&E->eff_pos[0].vz + local_34) = (p_Var5->pos).vz;
-				E->flags = E->flags | uVar9;
+				E->eff_pos[i].vx = ep[snd].pos.vx;
+				E->eff_pos[i].vz = ep[snd].pos.vz;
+				
+				E->flags |= (1 << i);
 			}
 		}
 
-		p_Var16 = (__envsoundinfo*)(p_Var16->eff_pos + 1);
-		local_30 = local_30 + 4;
-		local_38 = local_38 + 1;
-		*(int*)((int)&E->eff_pos[0].vy + local_34) = -(E->cam_pos).vy;
-		local_34 = local_34 + 0x10;
+		E->eff_pos[i].vy = -E->cam_pos.vy;
 
-		if (3 < (int)local_38)
-			return;
-
-	} while (true);
+		i++;
+	} while (i < 4);
 
 }
 
@@ -3665,73 +3533,52 @@ void CalcEffPos2(__envsound* ep, __envsoundinfo* E, int pl)
 	/* end block 3 */
 	// End Line: 4446
 
-// [D] [A] unprocessed arrays
+// [D] [T]
 void UpdateEnvSnd(__envsound* ep, __envsoundinfo* E, int pl)
 {
-	int iVar1;
 	int channel;
 	long* velocity;
-	int* piVar2;
-	int* piVar3;
-	int* piVar4;
-	int iVar5;
-	__envsoundinfo* p_Var6;
-	__envsoundinfo* position;
 	int i;
-	int local_2c;
+	int snd;
 
-	piVar3 = E->thisS;
-	iVar5 = 0;
-	piVar4 = E->playing_sound;
-	local_2c = 0;
-	i = 3;
-	p_Var6 = E;
-	position = E;
+	for (i = 0; i < 4; i++)
+	{
+		snd = E->thisS[i];
 
-	do {
-		channel = *piVar3;
-		if (channel < 0)
+		if (snd >= 0)
 		{
-			if (-1 < *piVar4)
+			// start the new sound if it's changed
+			if (E->playing_sound[i] != snd)
 			{
-				piVar2 = (int*)((int)E->chan + iVar5);
-				StopChannel(*piVar2);
-				UnlockChannel(*piVar2);
-				*piVar4 = -1;
-			}
-		}
-		else
-		{
-			if (*piVar4 != channel)
-			{
-				iVar1 = (int)&E->eff_pos[0].vx + local_2c;
-				channel = Start3DSoundVolPitch(-1, ep[channel].bank, ep[channel].sample, p_Var6->eff_pos[0].vx, *(int*)(iVar1 + 4), *(int*)(iVar1 + 8), 0, 0x1000);
-				piVar2 = (int*)((int)E->chan + iVar5);
-				*piVar2 = channel;
+				channel = Start3DSoundVolPitch(-1, ep[snd].bank, ep[snd].sample, E->eff_pos[i].vx, E->eff_pos[i].vy, E->eff_pos[i].vz, 0, 4096);
+				E->chan[i] = channel;
 
 				LockChannel(channel);
 
 				if (NumPlayers > 1 && NoPlayerControl == 0)
-					SetPlayerOwnsChannel(*piVar2, (char)pl);
+					SetPlayerOwnsChannel(channel, pl);
 
-				*(int*)((int)E->playing_sound + iVar5) = *piVar3;
+				E->playing_sound[i] = snd;
 			}
 
-			if ((ep[*piVar3].flags & 0x10) == 0)
-				velocity = NULL;
-			else
+			if (ep[snd].flags & 0x10)
 				velocity = player[pl].camera_vel;
+			else
+				velocity = NULL;
 
-			SetChannelPosition3(*(int*)((int)E->chan + iVar5), (VECTOR*)position, velocity, ep[*piVar3].vol + -2500, 0x1000, (uint)ep[*piVar3].flags & 0x20);
+			SetChannelPosition3(E->chan[i], &E->eff_pos[i], velocity, ep[snd].vol - 2500, 4096, ep[snd].flags & 0x20);
 		}
-		piVar3 = piVar3 + 1;
-		position = (__envsoundinfo*)(position->eff_pos + 1);
-		piVar4 = piVar4 + 1;
-		iVar5 = iVar5 + 4;
-		p_Var6 = (__envsoundinfo*)(p_Var6->eff_pos + 1);
-		local_2c = local_2c + 0x10;
-		i = i + -1;
-	} while (-1 < i);
+		else
+		{
+			if (E->playing_sound[i] > -1)
+			{
+				StopChannel(E->chan[i]);
+				UnlockChannel(E->chan[i]);
+				
+				E->playing_sound[i] = -1;
+			}
+		}
+	}
 }
 
 
