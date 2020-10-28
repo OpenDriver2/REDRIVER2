@@ -192,7 +192,7 @@ void ResetPolyState()
 //#define WIREFRAME_MODE
 
 #if defined(USE_32_BIT_ADDR)
-unsigned long terminator[2] = { -1, 0 };
+unsigned long terminator[2] = { 0, -1 };
 #else
 unsigned long terminator = -1;
 #endif
@@ -350,12 +350,6 @@ int StoreImage2(RECT16 *RECT16, u_long *p)
 	return result;
 }
 
-#ifdef USE_32_BIT_ADDR
-#	define OT_WIDTH 2	// two longs
-#else
-#	define OT_WIDTH 1	// single long
-#endif
-
 u_long* ClearOTag(u_long* ot, int n)
 {
 	//Nothing to do here.
@@ -365,7 +359,7 @@ u_long* ClearOTag(u_long* ot, int n)
 	//last is special terminator
 	ot[n - OT_WIDTH] = (unsigned long)&terminator;
 
-	for (int i = n - OT_WIDTH; i > -1; i -= OT_WIDTH)
+	for (int i = n - OT_WIDTH; i > -OT_WIDTH; i -= OT_WIDTH)
 	{
 		ot[i] = (unsigned long)&ot[i + OT_WIDTH];
 	}
@@ -1366,11 +1360,7 @@ int ParsePrimitive(uintptr_t primPtr)
 		}
 	}
 
-#ifdef USE_32_BIT_ADDR
-	return (pTag->len + 2) * sizeof(long);
-#else
-	return (pTag->len + 1) * sizeof(long);
-#endif
+	return (pTag->len + OT_WIDTH) * sizeof(long);
 }
 
 int ParseLinkedPrimitiveList(uintptr_t packetStart, uintptr_t packetEnd)

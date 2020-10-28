@@ -5,6 +5,12 @@
 
 extern	int (*GPU_printf)(const char *fmt, ...);
 
+#ifdef USE_32_BIT_ADDR
+#	define OT_WIDTH 2	// two longs
+#else
+#	define OT_WIDTH 1	// single long
+#endif
+
 #define WAIT_TIME	0x800000
 
 #define limitRange(x, l, h)	((x)=((x)<(l)?(l):(x)>(h)?(h):(x)))
@@ -230,15 +236,9 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 		((0xe1000000)|((dtd)?0x0200:0)| \
 		((dfe)?0x0400:0)|((tpage)&0x9ff))
 
-#if defined(USE_32_BIT_ADDR)
 #define setDrawTPage(p, dfe, dtd, tpage)	\
 	setlen(p, 1),	\
-	((u_long *)(p))[2] = _get_mode(dfe, dtd, tpage)
-#else
-#define setDrawTPage(p, dfe, dtd, tpage)	\
-	setlen(p, 1),	\
-	((u_long *)(p))[1] = _get_mode(dfe, dtd, tpage)
-#endif
+	((u_long *)(p))[OT_WIDTH] = _get_mode(dfe, dtd, tpage)
 
 #define _get_tw(tw)	\
 		(tw ? ((0xe2000000)|((((tw)->y&0xff)>>3)<<15)| \
@@ -269,18 +269,10 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 		((u_long *)p)[1] = 0xe6000000|(pbw?0x01:0),	\
 		((u_long *)p)[2] = 0
 
-#if defined(USE_32_BIT_ADDR)
 #define setDrawMode(p, dfe, dtd, tpage, tw) 		\
-		setlen(p, 3),					\
-		((u_long *)p)[2] = _get_mode(dfe, dtd, tpage),	\
-		((u_long *)p)[3] = _get_tw((RECT16 *)tw)
-#else
-#define setDrawMode(p, dfe, dtd, tpage, tw) 		\
-		setlen(p, 2),					\
-		((u_long *)p)[1] = _get_mode(dfe, dtd, tpage),	\
-		((u_long *)p)[2] = _get_tw((RECT16 *)tw)
-#endif
-
+		setlen(p, OT_WIDTH + 1),					\
+		((u_long *)p)[OT_WIDTH] = _get_mode(dfe, dtd, tpage),	\
+		((u_long *)p)[OT_WIDTH + 1] = _get_tw((RECT16 *)tw)
 	
 /*	Primitive 	Lentgh		Code				*/
 /*--------------------------------------------------------------------	*/
