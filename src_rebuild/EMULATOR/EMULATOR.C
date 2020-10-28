@@ -534,24 +534,41 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 
 #ifdef PGXP
 
-#define PGXP_APPLY(v, p) \
-{\
-	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);		\
-	PGXPVData vd;									\
-	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) {		\
-		v.x = vd.px + ofsX;\
-		v.y = vd.py + ofsY;\
-		v.w = vd.pz;\
-		v.z = 0.0f;\
-	} else { \
-		v.w = 1.0f; \
-		v.z = 0.0f; \
-	}\
+inline void Emulator_ApplyVertex(Vertex *vertex, VERTTYPE *p, float ofsX, float ofsY, ushort gteidx) {
+	float x = p[0];
+	float y = p[1];
+	float z = 0.0f;
+	float w = 1.0f;
+
+	if (g_pgxpTextureCorrection)
+	{
+		uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);
+		PGXPVData vd;
+
+		if (PGXP_GetCacheData(vd, lookup, gteidx))
+		{
+			x = vd.px;
+			y = vd.py;
+
+			if (g_pgxpTextureCorrection == 2)
+				w = vd.pz;
+		}
+	}
+
+	vertex->x = x + ofsX;
+	vertex->y = y + ofsY;
+	vertex->z = 0.0f;
+	vertex->w = w;
 }
 
 #else
 
-#define PGXP_APPLY(v, p)
+inline void Emulator_ApplyVertex(Vertex *vertex, VERTTYPE *p, short ofsX, short ofsY, ushort gteidx) {
+	vertex->x = p[0] + ofsX;
+	vertex->y = p[1] + ofsY;
+	vertex->z = 0.0f;
+	vertex->w = 1.0f;
+}
 
 #endif
 
@@ -564,18 +581,10 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
 	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-	vertex[0].x = p0[0] + ofsX;
-	vertex[0].y = p0[1] + ofsY;
+	VERTTYPE *p[] = { p0, p1, p2 };
 
-	vertex[1].x = p1[0] + ofsX;
-	vertex[1].y = p1[1] + ofsY;
-
-	vertex[2].x = p2[0] + ofsX;
-	vertex[2].y = p2[1] + ofsY;
-
-	PGXP_APPLY(vertex[0], p0);
-	PGXP_APPLY(vertex[1], p1);
-	PGXP_APPLY(vertex[2], p2);
+	for (int i = 0; i < 3; i++)
+		Emulator_ApplyVertex(&vertex[i], p[i], ofsX, ofsY, gteidx);
 
 	ScreenCoordsToEmulator(vertex, 3);
 }
@@ -590,22 +599,10 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
 	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
 
-	vertex[0].x = p0[0] + ofsX;
-	vertex[0].y = p0[1] + ofsY;
+	VERTTYPE *p[] = { p0, p1, p2, p3 };
 
-	vertex[1].x = p1[0] + ofsX;
-	vertex[1].y = p1[1] + ofsY;
-
-	vertex[2].x = p2[0] + ofsX;
-	vertex[2].y = p2[1] + ofsY;
-
-	vertex[3].x = p3[0] + ofsX;
-	vertex[3].y = p3[1] + ofsY;
-
-	PGXP_APPLY(vertex[0], p0);
-	PGXP_APPLY(vertex[1], p1);
-	PGXP_APPLY(vertex[2], p2);
-	PGXP_APPLY(vertex[3], p3);
+	for (int i = 0; i < 4; i++)
+		Emulator_ApplyVertex(&vertex[i], p[i], ofsX, ofsY, gteidx);
 
 	ScreenCoordsToEmulator(vertex, 4);
 }
