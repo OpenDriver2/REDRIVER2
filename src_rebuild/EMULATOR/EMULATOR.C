@@ -1429,11 +1429,14 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 #endif
 
 #if defined(OGL) || defined(OGLES)
-	FILE* f = fopen(outputFileName, "wb");
-	if (f == NULL)
-	{
+	
+	#define FLIP_Y (VRAM_HEIGHT - i - 1)
+	
+#endif
+
+	FILE* fp = fopen(outputFileName, "wb");
+	if (fp == NULL)
 		return;
-	}
 
 	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
 	unsigned char header[6];
@@ -1444,25 +1447,17 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 	header[4] = 16;
 	header[5] = 0;
 
-	fwrite(TGAheader, sizeof(unsigned char), 12, f);
-	fwrite(header, sizeof(unsigned char), 6, f);
+	fwrite(TGAheader, sizeof(unsigned char), 12, fp);
+	fwrite(header, sizeof(unsigned char), 6, fp);
 
-	//512 const is hdd sector size
-	int numSectorsToWrite = (width * height * sizeof(unsigned short)) / 512;
-	int numRemainingSectorsToWrite = (width * height * sizeof(unsigned short)) % 512;
-
-	for (int i = 0; i < numSectorsToWrite; i++)
+	for (int i = 0; i < VRAM_HEIGHT; i++) 
 	{
-		fwrite(&vram[i * 512 / sizeof(unsigned short)], 512, 1, f);
+		fwrite(vram + VRAM_WIDTH * FLIP_Y, sizeof(short), VRAM_WIDTH, fp );
 	}
 
-	for (int i = 0; i < numRemainingSectorsToWrite; i++)
-	{
-		fwrite(&vram[numSectorsToWrite * 512 / sizeof(unsigned short)], numRemainingSectorsToWrite, 1, f);
-	}
+	fclose(fp);
 
-	fclose(f);
-#endif
+	#undef FLIP_Y
 }
 #endif
 
@@ -1498,10 +1493,12 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 
 	short *ptr = (short*)vram + VRAM_WIDTH * y + x;
 
-	for (int fy = 0; fy < h; fy++) {
+	for (int fy = 0; fy < h; fy++)
+	{
 		short *fb_ptr = fb + (windowHeight * FLIP_Y / h) * windowWidth;
 
-		for (int fx = 0; fx < w; fx++) {
+		for (int fx = 0; fx < w; fx++)
+		{
 			ptr[fx] = fb_ptr[windowWidth * fx / w];
 		}
 
@@ -1702,6 +1699,7 @@ void Emulator_TakeScreenshot()
 	glReadPixels(0, 0, windowWidth, windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #endif
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(pixels, windowWidth, windowHeight, 8 * 4, windowWidth * 4, 0, 0, 0, 0);
+	
 	SDL_SaveBMP(surface, "SCREENSHOT.BMP");
 	SDL_FreeSurface(surface);
 
