@@ -48,6 +48,8 @@ extern void DrawEvents(int camera); // 0x00049C38
 
 extern void BoatOffset(SVECTOR *offset, _EVENT *ev); // 0x0004BE24
 
+extern void EventCameraOffset(SVECTOR* offset);
+
 extern int OnBoat(VECTOR *pos, _EVENT *ev, int *dist); // 0x0004BDA0
 
 extern _sdPlane * EventSurface(VECTOR *pos, _sdPlane *plane); // 0x0004A688

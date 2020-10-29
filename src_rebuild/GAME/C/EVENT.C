@@ -604,7 +604,7 @@ int GetVisValue(int index, int zDir)
 static unsigned short* xVis;
 static unsigned short* zVis;
 
-// [D]
+// [D] [T]
 void VisibilityLists(VisType type, int i)
 {
 	static unsigned short xList[128]; // offset 0x0
@@ -621,8 +621,7 @@ void VisibilityLists(VisType type, int i)
 	_EVENT* ev;
 	int tempList;
 	int num;
-	int n;
-	int j;
+	int n, j, vis;
 	int camera;
 	int table[128];
 
@@ -635,11 +634,13 @@ void VisibilityLists(VisType type, int i)
 
 			while (j < count)
 			{
-				table[j] = GetVisValue(list[num][j], num);
+				vis = GetVisValue(list[num][j], num);
 
+				table[j] = vis;
+				
 				// add sorted
 				// code is similar to sorting code in DrawAllTheCars
-				if (j != 0 && (table[j] < table[j - 1]))
+				if (j > 0 && vis < table[j - 1])
 				{
 					tempList = list[num][j];
 
@@ -654,9 +655,9 @@ void VisibilityLists(VisType type, int i)
 							break;
 
 						k--;
-					} while (table[j] < table[k]);
+					} while (vis < table[k]);
 
-					table[n] = table[j];
+					table[n] = vis;
 					list[num][n] = tempList;
 				}
 
@@ -1075,28 +1076,15 @@ void InitEvents(void)
 	/* end block 4 */
 	// End Line: 1144
 
-// [D] [A] long function, please debug
+// [D] [T] [A] long function, please debug more
 void SetUpEvents(int full)
 {
-	bool bVar1;
-	short sVar2;
-	long lVar3;
-	int iVar4;
-	int iVar5;
-	FixedEvent* ev;
-	int* piVar6;
-	_EVENT* ev_00;
-	int iVar7;
-	int loop;
-	int* piVar8;
-	_EVENT* p_Var9;
-	int i;
+	int direction;
+	int i, n;
+	int* p;
+	_EVENT* evt;
 	int detonatorModel;
-	uint __i;
-	uint _i;
-	uint uVar10;
 	int trainModel;
-	XYPAIR offset;
 	_EVENT** e;
 	int cEvents;
 	int ElTrackModel;
@@ -1114,229 +1102,240 @@ void SetUpEvents(int full)
 
 	MALLOC_BEGIN()
 
-		if (full)
-		{
-			EventCop = (CELL_OBJECT*)mallocptr;
-			event = (_EVENT*)(mallocptr + 256);
-			mallocptr = (char*)event;
-		}
+	if (full)
+	{
+		EventCop = (CELL_OBJECT*)D_MALLOC(sizeof(CELL_OBJECT) * 16);
+		event = (_EVENT*)mallocptr;
+	}
 
-	ev_00 = event;
+	evt = event;
 	cEvents = 0;
 
 	if (GameLevel == 0)
 	{
-		bVar1 = false;
-		piVar6 = LiftingBridges + 1;
-		__i = 0;
+		int count;
+		int cBridges;
 
-		while (__i < LiftingBridges[0])
+		cBridges = LiftingBridges[0];
+		
+		direction = 0;
+		p = &LiftingBridges[1];
+
+		// make lifting bridges
+		n = 0;
+		while (n < cBridges)
 		{
+			int timeOffset;
 			cameraEventsActive = 1;
 
-			if (*piVar6 == 0x8000)
+			if (p[0] == 0x8000)
 			{
-				bVar1 = true;
-				piVar6 = piVar6 + 1;
+				direction = true;
+				p++;
 			}
-			else if (*piVar6 == 0x100)
+			else if (p[0] == 0x100)
 			{
-				piVar6 = piVar6 + 1;
-				firstMissionEvent = event + cEvents;
+				firstMissionEvent = &event[cEvents];
+				p++;
 			}
 
-			ev_00 = event + cEvents;
-			ev_00->data = piVar6;
-			ev_00[1].data = piVar6 + 2;
+			evt = &event[cEvents];
 
-			if (bVar1)
+			evt[0].data = &p[0];
+			evt[1].data = &p[2];
+
+			if (direction)
 			{
-				ev_00->position.vz = (*piVar6 + piVar6[1]) / 2;
-				ev_00[1].position.vz = (piVar6[1] + piVar6[2]) / 2;
+				evt[0].position.vz = (p[0] + p[1]) / 2;
+				evt[1].position.vz = (p[1] + p[2]) / 2;
 			}
 			else
 			{
-				ev_00->position.vx = (*piVar6 + piVar6[1]) / 2;
-				ev_00[1].position.vx = (piVar6[1] + piVar6[2]) / 2;
+				evt[0].position.vx = (p[0] + p[1]) / 2;
+				evt[1].position.vx = (p[1] + p[2]) / 2;
 			}
 
-			i = piVar6[3];
-			piVar6 = piVar6 + 4;
-			lVar3 = Random2(0);
-			loop = 0;
-			iVar4 = (lVar3 >> (__i & 0x1f) & 0xffU) * 0x20;
-			uVar10 = __i + 1;
-			ev_00 = event + cEvents;
+			count = p[3];
+			p += 4;
 
-			do {
-				if (bVar1)
+			// randomize the timer of bridges
+			timeOffset = (Random2(0) >> (n & 31) & 255) * 32;
+
+			evt = &event[cEvents];
+			for (i = 0; i < 2; i++)
+			{
+				if (direction)
 				{
-					ev_00->flags = 1;
-					ev_00->position.vx = *piVar6;
+					evt[i].flags = 1;
+					evt[i].position.vx = *p;
 				}
 				else
 				{
-					ev_00->flags = 0x21;
-					ev_00->position.vz = *piVar6;
+					evt[i].flags = 0x21;
+					evt[i].position.vz = *p;
 				}
 
-				ev_00->node = piVar6;
-				ev_00->radius = 0x1000;
-				ev_00->timer = (short)iVar4 + (short)(iVar4 / 8000) * -8000;
-				ev_00->model = __i * 2 + loop;
-				loop = loop + 1;
-				ev_00 = ev_00 + 1;
-			} while (loop < 2);
-
-			while (i--, i != -1)
-			{
-				piVar6++;
-				VisibilityLists(VIS_ADD, cEvents | i * 0x100);
-				VisibilityLists(VIS_ADD, cEvents + 1 | i * 0x100);
+				evt[i].node = p;
+				evt[i].radius = 0x1000;
+				evt[i].timer = timeOffset % 8000;
+				evt[i].model = n * 2 + i;
 			}
 
-			*e = event + cEvents;
-			ev_00 = *e;
-			ev_00->next = event + cEvents + 1;
-			cEvents = cEvents + 2;
-			e = &ev_00->next->next;
-			__i = uVar10;
+			while (--count >= 0)
+			{
+				VisibilityLists(VIS_ADD, cEvents | count * 256);
+				VisibilityLists(VIS_ADD, cEvents + 1 | count * 256);
+				p++;
+			}
+
+			*e = &event[cEvents];
+			
+			evt = *e;
+			evt->next = &event[cEvents + 1];
+			
+			cEvents += 2;
+			
+			e = &evt->next->next;
+			n++;
 		}
 
-		if (full != 0)
+		if (full)
 			ElTrackModel = FindModelIdxWithName("ELTRAIN");
 
-		iVar5 = ElTrainData[0];
-		piVar6 = ElTrainData;
+		count = ElTrainData[0];
+		p = ElTrainData;
 
-		_i = 0;
-		missionTrain[0].engine = event + cEvents;
+		n = 0;
+		missionTrain[0].engine = &event[cEvents];
 		missionTrain[1].engine = missionTrain[0].engine;
 
-		while (_i < ElTrainData[0])
+		// add trains
+		while (n < count)
 		{
-			piVar6 = piVar6 + 1;
-			i = 5;
-			if (_i != 0)
+			if (n != 0)
+				i = (Random2(0) >> (n & 0x1f) & 3U) + 2;
+			else
+				i = 5;
+
+			direction = 1;
+			n++;
+			p++;
+
+			while (--i >= 0)
 			{
-				lVar3 = Random2(0);
-				i = (lVar3 >> (_i & 0x1f) & 3U) + 2;
-			}
+				evt = &event[cEvents];
+				evt->radius = 0;
+				evt->data = p;
 
-			bVar1 = true;
-			_i++;
+				InitTrain(evt, i, 0);
 
-			while (i = i + -1, i != -1)
-			{
-				ev_00 = event + cEvents;
-				ev_00->radius = 0;
-				ev_00->data = piVar6;
-
-				InitTrain(ev_00, i, 0);
-
-				if (bVar1)
+				if (direction)
 				{
-					bVar1 = false;
-					event[cEvents].flags |= 0x400;
+					direction = 0;
+					evt->flags |= 0x400;
 				}
 
-				if (full != 0)
-					event[cEvents].model = ElTrackModel;
+				if (full)
+					evt->model = ElTrackModel;
 
-				*e = event + cEvents;
+				*e = evt;
 				e = &(*e)->next;
 
 				VisibilityLists(VIS_ADD, cEvents);
 
-				cEvents = cEvents + 1;
+				cEvents++;
 			}
 
-			i = *piVar6;
+			i = *p;
 
-			while (1 < i + 0x80000000U)
+			while (i + 0x80000000U > 1)
 			{
-				i = piVar6[1];
-				piVar6 = piVar6 + 1;
+				i = p[1];
+				p++;
 			}
 		}
 
 		fixedEvent = chicagoDoor;
 
-		InitDoor(chicagoDoor, &e, &cEvents);
-		InitDoor(chicagoDoor + 1, &e, &cEvents);
+		InitDoor(&chicagoDoor[0], &e, &cEvents);
+		InitDoor(&chicagoDoor[1], &e, &cEvents);
 
-		*(FixedEvent**)e = chicagoDoor + 2;
+		*e = (_EVENT*)&chicagoDoor[2];
 		e = &(*e)->next;
+
 		VisibilityLists(VIS_ADD, 130);
 
 		if (full)
 		{
+			// these models are for ferris wheel
 			chicagoDoor[2].initialRotation = FindModelIdxWithName("HUB");
 			chicagoDoor[2].minSpeed = FindModelIdxWithName("CAR");
 			chicagoDoor[2].model = FindModelIdxWithName("FRAME");
 			chicagoDoor[0].model = FindModelIdxWithName(chicagoDoor[0].modelName);
 			chicagoDoor[1].model = FindModelIdxWithName(chicagoDoor[1].modelName);
+
+			// Caine's compund semi model
 			carModel = FindModelIdxWithName("LORRY");
 		}
 
+		// Caine's compound trucks
 		multiCar.count = 0;
-		multiCar.event = event + cEvents;
-		iVar5 = 0;
+		multiCar.event = &event[cEvents];
 
-		ev_00 = multiCar.event;
-		iVar4 = 0;
-		do {
-			ev_00->flags = 0x680;
+		evt = multiCar.event;
+		for (i = 0; i < 7; i++)
+		{
+			evt[i].flags = 0x680;
 
 			if (full)
-				ev_00->model = carModel;
+				evt[i].model = carModel;
 
-			ev_00->radius = 0;
-			ev_00->next = ev_00 + 1;
+			evt[i].radius = 0;
+			evt[i].next = &evt[i + 1];
+		}
 
-			ev_00++;
-			iVar4++;
-		} while (iVar4 < 7);
-
-		cEvents = cEvents + 7;
+		cEvents += 7;
 	}
 	else if (GameLevel == 1)
 	{
+		evt = event;
+		
 		cameraEventsActive = 1;
 
-		event->radius = 0;
-		event->position.vy = 0x6f;
-		event->position.vx = HavanaFerryData[3];
-		event->position.vz = HavanaFerryData[4];;
-		event->rotation = 0xc00;
-		event->flags = -0x77ad;
-		event->timer = -1;
-		event->node = HavanaFerryData + 4;
-		event->data = HavanaFerryData;
+		evt->radius = 0;
+		evt->position.vy = 111;
+		evt->position.vx = HavanaFerryData[3];
+		evt->position.vz = HavanaFerryData[4];;
+		evt->rotation = 3072;
+		evt->flags = -0x77ad;
+		evt->timer = -1;
+		evt->node = HavanaFerryData + 4;
+		evt->data = HavanaFerryData;
 
 		VisibilityLists(VIS_ADD, 0);
-		MakeEventTrackable(event);
+		MakeEventTrackable(evt);
 
-		*e = event;
+		*e = evt;
 		fixedEvent = havanaFixed;
 		e = &(*e)->next;
 
 		InitDoor(havanaFixed, &e, &cEvents);
 		InitDoor(havanaFixed + 2, &e, &cEvents);
 
-		*(FixedEvent**)e = havanaFixed + 1;
+		*e = (_EVENT*)(&havanaFixed[1]);
 		e = &(*e)->next;
+	
 		VisibilityLists(VIS_ADD, 129);
 
-		event[1].flags = 0x4212;
-		event[1].node = HavanaMiniData + 1;
-		event[1].position.vy = 0xf9b;
-		event[1].position.vx = -0x6f1ff;
-		event[1].position.vz = -0x1e9ff;
-		event[1].rotation = 0;
-		event[1].timer = -1;
-		event[1].radius = 0;
-		event[1].data = HavanaMiniData;
+		evt[1].flags = 0x4212;
+		evt[1].node = HavanaMiniData + 1;
+		evt[1].position.vy = 3995;
+		evt[1].position.vx = -455167;
+		evt[1].position.vz = -125439;
+		evt[1].rotation = 0;
+		evt[1].timer = -1;
+		evt[1].radius = 0;
+		evt[1].data = HavanaMiniData;
 
 		VisibilityLists(VIS_ADD, 1);
 		*e = event + 1;
@@ -1357,257 +1356,232 @@ void SetUpEvents(int full)
 	}
 	else if (GameLevel == 2)
 	{
-		if (full != 0)
+		int cCarriages;
+		
+		if (full)
 			trainModel = FindModelIdxWithName("TRAIN");
 
-		iVar5 = 2;
-
+		evt = event;
+		
+		// in Beat the train we spawn more train cars
 		if (gCurrentMissionNumber == 22)
-			iVar5 = 9;
+			cCarriages = 9;
+		else
+			cCarriages = 2;
 
-		i = 0;
-		piVar6 = VegasParkedTrains;
-
-		while (i < iVar5)
+		for (i = 0; i < cCarriages; i++)
 		{
-			piVar6++;
-			ev_00 = &event[i];
-			ev_00->radius = 4000;
+			evt[i].radius = 4000;
 
 			if (i < 2)
 			{
-				ev_00->flags = 0x302;
-				ev_00->position.vx = VegasParkedTrains[0];
-				ev_00->timer = 2;
-				ev_00->position.vz = *piVar6;
+				evt[i].flags = 0x302;
+				evt[i].position.vx = VegasParkedTrains[0];
+				evt[i].position.vz = VegasParkedTrains[i + 1];
+				evt[i].timer = 2;
 
 				VisibilityLists(VIS_ADD, i);
 			}
 
-			ev_00->position.vy = -734;
-			ev_00->rotation = 0;
+			evt[i].position.vy = -734;
+			evt[i].rotation = 0;
 
-			if (full != 0)
-				ev_00->model = trainModel;
+			if (full)
+				evt[i].model = trainModel;
 
-			*e = &event[i];
+			*e = &evt[i];
 			e = &(*e)->next;
-
-			i++;
 		}
-		event[iVar5 - 1].next = NULL;
-		event[1].next = NULL;
 
-		ev_00 = event;
-		ev = vegasDoor;
-		i = 4;
+		// zero first and last train links
+		evt[cCarriages - 1].next = NULL;
+		evt[1].next = NULL;
+
+		cEvents = cCarriages;
 
 		fixedEvent = vegasDoor;
-		cEvents = iVar5;
-
-		do {
-			InitDoor(ev, &e, &cEvents);
-			i--;
-			ev++;
-		} while (-1 < i);
-
-		if (full)
+		for (i = 0; i < 5; i++)
 		{
-			iVar5 = 0;
-			do {
-				vegasDoor[iVar5].model = FindModelIdxWithName(vegasDoor[iVar5].modelName);
-				iVar5++;
-			} while (iVar5 < 5);
-		}
+			InitDoor(&vegasDoor[i], &e, &cEvents);
 
-		ev_00 = event;
+			if (full)
+				vegasDoor[i].model = FindModelIdxWithName(vegasDoor[i].modelName);
+		}
 
 		if (gCurrentMissionNumber == 30)
 		{
-			event[cEvents].position.vx = -0x2ffb;
-			ev_00[cEvents].position.vy = -0x113;
-			ev_00[cEvents].position.vz = 0xcd61b;
-			ev_00[cEvents + 1].position.vx = -0x34aa;
-			ev_00[cEvents + 1].position.vy = -0xfa;
-			ev_00[cEvents + 1].position.vz = 0xcd5e0;
-			ev_00[cEvents + 2].position.vx = -0x382c;
-			ev_00[cEvents + 2].position.vy = -0x114;
-			ev_00[cEvents + 2].position.vz = 0xcd383;
+			// Destroy the yard
+			evt[cEvents].position.vx = -12283;
+			evt[cEvents].position.vy = -275;
+			evt[cEvents].position.vz = 841243;
 
-			iVar5 = 0;
-			do {
-				if (iVar5 == 2)
-					ev_00[cEvents + iVar5].rotation = 0;
-				else
-					ev_00[cEvents + iVar5].rotation = 0x800;
+			evt[cEvents + 1].position.vx = -13482;
+			evt[cEvents + 1].position.vy = -250;
+			evt[cEvents + 1].position.vz = 841184;
 
-				ev_00[cEvents + iVar5].flags = 0x400;
-				i = cEvents + iVar5;
-				iVar5 = iVar5 + 1;
-				ev_00[i].radius = 0;
-			} while (iVar5 < 3);
+			evt[cEvents + 2].position.vx = -14380;
+			evt[cEvents + 2].position.vy = -276;
+			evt[cEvents + 2].position.vz = 840579;
 
-			if (full != 0)
+			i = 0;
+			for (i = 0; i < 3; i++)
 			{
-				iVar5 = FindModelIdxWithName("DETONATOR");
-				ev_00 = event;
-				event[cEvents].model = iVar5;
-				ev_00[cEvents + 1].model = iVar5;
-				ev_00[cEvents + 2].model = iVar5;
+				if (i == 2)
+					evt[cEvents + i].rotation = 0;
+				else
+					evt[cEvents + i].rotation = 2048;
+
+				evt[cEvents + i].flags = 0x400;
+				evt[cEvents + i].radius = 0;
 			}
 
-			firstMissionEvent = event + cEvents;
-			cEvents = cEvents + 3;
+			if (full)
+			{
+				detonatorModel = FindModelIdxWithName("DETONATOR");
+
+				evt[cEvents].model = detonatorModel;
+				evt[cEvents + 1].model = detonatorModel;
+				evt[cEvents + 2].model = detonatorModel;
+			}
+
+			firstMissionEvent = &event[cEvents];
+			cEvents += 3;
 		}
 	}
 	else if (GameLevel == 3)
 	{
-		event->radius = 0;
+		evt = event;
+		
+		cameraEventsActive = 1;
 
 		if (full != 0)
-		{
-			iVar5 = FindModelIdxWithName("BOAT01");
-			event->model = iVar5;
-		}
-
-		ev_00 = event;
-		iVar5 = RioFerryData[3];
-		cameraEventsActive = 1;
-		(event->position).vy = 0x100;
-		ev_00->position.vx = iVar5;
-		iVar5 = RioFerryData[4];
-		ev_00->flags = -0x77ad;
-		ev_00->rotation = 0;
-		ev_00->timer = -1;
-		ev_00->node = RioFerryData + 4;
-		ev_00->data = RioFerryData;
-		ev_00->position.vz = iVar5;
+			evt->model = FindModelIdxWithName("BOAT01");
+		
+		evt->radius = 0;
+		evt->position.vy = 256;
+		evt->position.vx = RioFerryData[3];
+		evt->position.vz = RioFerryData[4];
+		evt->flags = -0x77ad;
+		evt->rotation = 0;
+		evt->timer = -1;
+		evt->node = RioFerryData + 4;
+		evt->data = RioFerryData;
+		
 		VisibilityLists(VIS_ADD, 0);
-		iVar5 = 5;
+	
 		MakeEventTrackable(event);
 		*e = event;
-		ev = rioDoor;
+
 		cEvents = 1;
 		fixedEvent = rioDoor;
 		e = &(*e)->next;
-
-		do {
-			InitDoor(ev, &e, &cEvents);
-			iVar5 = iVar5 + -1;
-			ev = ev + 1;
-		} while (-1 < iVar5);
-
-		if (full != 0)
+		
+		i = 0;
+		while (i < 6)
 		{
-			iVar5 = 5;
-			do {
-				rioDoor[iVar5].model = FindModelIdxWithName(rioDoor[iVar5].modelName);
-				iVar5--;
-			} while (-1 < iVar5);
+			InitDoor(&rioDoor[i++], &e, &cEvents);
 
+			if (full)
+				rioDoor[i].model = FindModelIdxWithName(rioDoor[i].modelName);
+		}
+
+		if (full)
+		{
 			foam.model = FindModelPtrWithName("FOAM");
 			detonatorModel = FindModelIdxWithName("DETONATOR");
 		}
 
-		ev_00 = event;
-		if (gCurrentMissionNumber != 0x23)
+		evt = event;
+		if (gCurrentMissionNumber == 35)
 		{
-			if (gCurrentMissionNumber - 0x27U < 2)
-			{
-				event[cEvents].flags = 0xc0;
+			// setup bombs on Boat Jump
+			int dz, dy;
+	
+			evt[cEvents].position.vx = 201520;
+			evt[cEvents].position.vy = -177;
+			evt[cEvents].position.vz = 385248;
+			
+			evt[cEvents + 1].position.vx = 201392;
+			evt[cEvents + 1].position.vy = -177;
+			evt[cEvents + 1].position.vz = 389200;
+			
+			evt[cEvents + 2].position.vx = 199376;
+			evt[cEvents + 2].position.vy = -177;
+			evt[cEvents + 2].position.vz = 389200;
 
-				if (gCurrentMissionNumber == 0x27)
-				{
-					ev_00[cEvents].position.vx = 0xfec7;
-					ev_00[cEvents].position.vy = -0x306;
-					ev_00[cEvents].position.vz = -0x7ead2;
-					ev_00[cEvents].rotation = 0xa40;
-					ev_00[cEvents].timer = -1;
-					HelicopterData.pitch = 0;
-					HelicopterData.roll = 0;
-				}
+			for (i = 0; i < 3; i++)
+			{
+				if (i == 2)
+					evt[cEvents + i].rotation = 3072;
 				else
-				{
-					ev_00[cEvents].position.vy = -1000;
-					ev_00[cEvents].rotation = -1;
-					ev_00[cEvents].timer = 0;
-					ev_00[cEvents].flags = ev_00[cEvents].flags | 0x100;
-				}
+					evt[cEvents + i].rotation = 1024;
 
-				lVar3 = Random2(0);
-				ev_00 = event;
-				HelicopterData.rotorrot = (ushort)lVar3 & 0xff;
-				HelicopterData.rotorvel = 1;
-				*(_TARGET**)&event[cEvents].node = MissionTargets + 4;
-				ev_00[cEvents].radius = 0;
+				evt[cEvents + i].flags = 0x80;
+				evt[cEvents + i].radius = 0;
+				evt[cEvents + i].data = &evt->data[1];
 
-				if (full != 0)
-				{
-					HelicopterData.cleanModel = FindModelIdxWithName("CHOPPERCLEAN");
-					HelicopterData.deadModel = FindModelIdxWithName("CHOPPERDAM");
-					GetTextureDetails("ROTOR", &HelicopterData.rotorTexture);
-				}
+				dz = evt->position.vz - evt[cEvents + i].position.vz;
+				dy = evt->position.vy - evt[cEvents + i].position.vy;
 
-				event[cEvents].model = HelicopterData.cleanModel;
-				VisibilityLists(VIS_ADD, cEvents);
-				MakeEventTrackable(event + cEvents);
-				*e = event + cEvents;
-				cEvents = cEvents + 1;
-				e = &(*e)->next;
+				evt[cEvents + i].node = (int*)ABS(SquareRoot0(dz * dz + dy * dy));
 			}
-			goto LAB_000474bc;
-		}
 
-		event[cEvents].position.vx = 0x31330;
-		ev_00[cEvents].position.vy = -0xb1;
-		ev_00[cEvents].position.vz = 0x5e0e0;
-		ev_00[cEvents + 1].position.vx = 0x312b0;
-		ev_00[cEvents + 1].position.vy = -0xb1;
-		ev_00[cEvents + 1].position.vz = 0x5f050;
-		ev_00[cEvents + 2].position.vx = 0x30ad0;
-		ev_00[cEvents + 2].position.vy = -0xb1;
-		ev_00[cEvents + 2].position.vz = 0x5f050;
-
-		iVar5 = 0;
-
-		do {
-			if (iVar5 == 2)
-				sVar2 = 0xc00;
-			else
-				sVar2 = 0x400;
-
-			event[cEvents + iVar5].rotation = sVar2;
-			ev_00 = event;
-			event[cEvents + iVar5].flags = 0x80;
-			ev_00[cEvents + iVar5].radius = 0;
-			ev_00[cEvents + iVar5].data = ev_00->data + 1;
-			p_Var9 = ev_00 + cEvents + iVar5;
-			iVar4 = ev_00->position.vz - (p_Var9->position).vz;
-			i = ev_00->position.vy - (p_Var9->position).vy;
-
-			piVar6 = (int*)SquareRoot0(iVar4 * iVar4 + i * i);
-			if (iVar4 < 0)
+			if (full != 0)
 			{
-				piVar6 = (int*)-(int)piVar6;
+				evt[cEvents].model = detonatorModel;
+				evt[cEvents + 1].model = detonatorModel;
+				evt[cEvents + 2].model = detonatorModel;
 			}
 
-			p_Var9->node = piVar6;
-			ev_00 = event;
-			iVar5 = iVar5 + 1;
-		} while (iVar5 < 3);
-
-		if (full != 0)
-		{
-			event[cEvents].model = detonatorModel;
-			ev_00[cEvents + 1].model = detonatorModel;
-			ev_00[cEvents + 2].model = detonatorModel;
+			firstMissionEvent = &event[cEvents];
+			cEvents += 3;
 		}
+		else if (gCurrentMissionNumber - 39U < 2)
+		{
+			// setup Lenny helicopter
+			evt[cEvents].flags = 0xC0;
 
-		firstMissionEvent = event + cEvents;
-		cEvents = cEvents + 3;
+			if (gCurrentMissionNumber == 39)
+			{
+				evt[cEvents].position.vx = 0xfec7;
+				evt[cEvents].position.vy = -0x306;
+				evt[cEvents].position.vz = -0x7ead2;
+				evt[cEvents].rotation = 0xa40;
+				evt[cEvents].timer = -1;
+				
+				HelicopterData.pitch = 0;
+				HelicopterData.roll = 0;
+			}
+			else
+			{
+				evt[cEvents].position.vy = -1000;
+				evt[cEvents].rotation = -1;
+				evt[cEvents].timer = 0;
+				evt[cEvents].flags |= 0x100;
+			}
+
+			HelicopterData.rotorrot = Random2(0) & 0xff;
+			HelicopterData.rotorvel = 1;
+
+			evt[cEvents].node = (int*)&MissionTargets[4];
+			evt[cEvents].radius = 0;
+
+			if (full)
+			{
+				HelicopterData.cleanModel = FindModelIdxWithName("CHOPPERCLEAN");
+				HelicopterData.deadModel = FindModelIdxWithName("CHOPPERDAM");
+				GetTextureDetails("ROTOR", &HelicopterData.rotorTexture);
+			}
+
+			evt[cEvents].model = HelicopterData.cleanModel;
+			VisibilityLists(VIS_ADD, cEvents);
+			MakeEventTrackable(event + cEvents);
+
+			*e = &evt[cEvents++];
+
+			e = &(*e)->next;
+		}
 	}
-
-LAB_000474bc:
 
 	*e = NULL;
 
@@ -1838,6 +1812,7 @@ void SetCamera(_EVENT* ev)
 		v0 = matrix.m[1][0];
 		a1 = matrix.m[0][2];
 		a2 = matrix.m[2][0];
+		
 		v1 = v1 ^ v0;
 		v0 = v0 ^ v1;
 		v1 = v1 ^ v0;
@@ -4174,7 +4149,19 @@ void BoatOffset(SVECTOR* offset, _EVENT* ev)
 	offset->vz = ev->data[4] - ev->position.vz;
 }
 
+// [A] camera offset for events
+void EventCameraOffset(SVECTOR* offset)
+{
+	offset->vx = 0;
+	offset->vy = 0;
+	offset->vz = 0;
 
+	if(gCurrentMissionNumber == 22)
+	{
+		offset->vy = 650;
+		offset->vz = -850;
+	}
+}
 
 // decompiled code
 // original method signature: 
@@ -4222,12 +4209,11 @@ int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
 		halfBoatLength = 5376;
 	}
 
-
-	if (ev->position.vx - halfBoatWidth < pos->vx && 
+	if (ev->position.vx - halfBoatWidth < pos->vx &&
 		ev->position.vx + halfBoatWidth > pos->vx)
 	{
 		*dist = pos->vz - ev->position.vz;
-			
+
 		if (*dist > -halfBoatLength && *dist < halfBoatLength)
 		{
 			return 1;
