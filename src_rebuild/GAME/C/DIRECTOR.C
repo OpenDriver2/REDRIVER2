@@ -1858,8 +1858,8 @@ void ControlReplay(void)
 				_EVENT* ev;
 				ev = events.track[-2 - cameraCar];
 				
-				basePos.vx = (ev->position).vx;
-				basePos.vz = (ev->position).vz;
+				basePos.vx = ev->position.vx;
+				basePos.vz = ev->position.vz;
 			}
 
 			dx = basePos.vx - player[0].cameraPos.vx;
@@ -3274,7 +3274,7 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	next = PlaybackCamera;
 
 	while (NextChange = next, count < MAX_REPLAY_CAMERAS && (NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
-		NextChange->next != -2 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
+		NextChange->next != 254 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
 	{
 		count++;
 	}
