@@ -270,28 +270,29 @@ int ResidentModelsBodge(void)
 	{
 		i = 11;
 
-		if (j == 9)
-			return 4;
+		if (j != 9)
+			return 3;
 	}
-	else if (GameLevel == 1)
+	else if (GameLevel == 1) 
 	{
-		i = 11;
-
-		if (j - 8U > 1)
+		if (j - 8U > 1) 
 			return 3;
 	}
 	else if (GameLevel == 2)
 	{
 		i = 8;
+
+		if (j != i)
+			return 3;
 	}
 	else if (GameLevel == 3)
 	{
 		i = 11;
+
+		if (j != i)
+			return 3;
 	}
 	else
-		return 3;
-
-	if (j != i)
 		return 3;
 
 	return 4;
@@ -2729,7 +2730,7 @@ void AddTunnels(int level)
 		InitTunnels(29);
 
 		AddTunnel(-78200, 0, -125000, -43800, -800, -159500);
-		AddTunnel(-65000, 0, -122700, -425984, -800, -125000);
+		AddTunnel(-65000, 0, -122700, -68000, -800, -125000);
 		AddTunnel(-48600, 0, -237000, -50350, -800, -235900);
 
 		AddTunnel(-219895, 0, 675067, -208647, -2500, 668935);

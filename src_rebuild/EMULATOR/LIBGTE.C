@@ -1414,19 +1414,19 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 	gte_rtir();
 
 	if (tmpLO.vx < 0)
-		tmpLO.vx = tmpLO.vx * 8;
+		tmpLO.vx *= 8;
 	else
-		tmpLO.vx = tmpLO.vx << 3;
+		tmpLO.vx <<= 3;
 
 	if (tmpLO.vy < 0)
-		tmpLO.vy = tmpLO.vy * 8;
+		tmpLO.vy *= 8;
 	else
-		tmpLO.vy = tmpLO.vy << 3;
+		tmpLO.vy <<= 3;
 
 	if (tmpLO.vz < 0)
-		tmpLO.vz = tmpLO.vz * 8;
+		tmpLO.vz *= 8;
 	else
-		tmpLO.vz = tmpLO.vz << 3;
+		tmpLO.vz <<= 3;
 
 	gte_stlvnl(&tmpHI);
 
@@ -1474,6 +1474,7 @@ VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 
 MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
 {
+	// correct Psy-Q implementation
 	int c0, c1, c2;
 	int s0, s1, s2;
 	int s2p0, s2m0, c2p0, c2m0;
@@ -1509,80 +1510,40 @@ MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
 
 MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
 {
-	int iVar1;
-	int iVar2;
-	short sVar3;
-	int uVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
+	// correct Psy-Q implementation
+	int c0, c1, c2;
+	int s0, s1, s2;
 
-	uVar4 = (r->vx);
+	c0 = rcos(r->vx);
+	c1 = rcos(r->vy);
+	c2 = rcos(r->vz);
+	s0 = rsin(r->vx);
+	s1 = rsin(r->vy);
+	s2 = rsin(r->vz);
 
-	if (uVar4 < 0)
-	{
-		iVar6 = *(int*)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
-		sVar3 = iVar6;
-		iVar5 = -sVar3;
-	}
-	else
-	{
-		iVar6 = *(int*)(rcossin_tbl + (uVar4 & 0xfff) * 2);
-		iVar5 = iVar6;
-		sVar3 = -iVar6;
-	}
+	// Y-axis
+	m->m[1][0] = FIXED(s2 * c0);
+	m->m[1][1] = FIXED(c2 * c0);
+	m->m[1][2] = -s0;
 
-	iVar6 = iVar6 >> 0x10;
-	uVar4 = (r->vy);
+	// X-axis
+	int x0 = FIXED(s1 * s0);
+	m->m[0][0] = FIXED(c1 * c2) + FIXED(x0 * s2);
+	m->m[0][1] = FIXED(x0 * c2) - FIXED(c1 * s2);
+	m->m[0][2] = FIXED(s1 * c0);
 
-	if (uVar4 < 0)
-	{
-		iVar7 = *(int*)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
-		iVar1 = -iVar7;
-	}
-	else
-	{
-		iVar7 = *(int*)(rcossin_tbl + (uVar4 & 0xfff) * 2);
-		iVar1 = iVar7;
-	}
-
-	iVar7 = iVar7 >> 0x10;
-	uVar4 = (r->vz);
-
-	m->m[1][2] = sVar3;
-	m->m[0][2] = FIXED(iVar1 * iVar6);
-	sVar3 = FIXED(iVar7 * iVar6);
-
-	if (uVar4 < 0)
-	{
-		m->m[2][2] = sVar3;
-		iVar8 = *(int*)(rcossin_tbl + (-uVar4 & 0xfff) * 2);
-		iVar2 = -iVar8;
-	}
-	else
-	{
-		m->m[2][2] = sVar3;
-		iVar8 = *(int*)(rcossin_tbl + (uVar4 & 0xfff) * 2);
-		iVar2 = iVar8;
-	}
-
-	iVar8 = iVar8 >> 0x10;
-
-	m->m[1][0] = FIXED(iVar2 * iVar6);
-	m->m[1][1] = FIXED(iVar8 * iVar6);
-	iVar6 = FIXED(iVar1 * iVar5);
-	m->m[0][0] = FIXED(iVar7 * iVar8) + FIXED(iVar6 * iVar2);
-	m->m[0][1] = FIXED(iVar6 * iVar8) - FIXED(iVar7 * iVar2);
-	iVar5 = FIXED(iVar7 * iVar5);
-	m->m[2][1] = FIXED(iVar1 * iVar2) + FIXED(iVar5 * iVar8);
-	m->m[2][0] = FIXED(iVar5 * iVar2) - FIXED(iVar1 * iVar8);
+	// Z-axis
+	int z0 = FIXED(c1 * s0);
+	m->m[2][1] = FIXED(s1 * s2) + FIXED(z0 * c2);
+	m->m[2][0] = FIXED(z0 * s2) - FIXED(s1 * c2);
+	m->m[2][2] = FIXED(c1 * c0);
 
 	return m;
 }
 
 MATRIX* RotMatrixX(long r, MATRIX* m)
 {
+	// correct Psy-Q implementation
 	int s0 = rsin(r);
 	int c0 = rcos(r);
 	int t1, t2;
@@ -1604,6 +1565,7 @@ MATRIX* RotMatrixX(long r, MATRIX* m)
 
 MATRIX* RotMatrixY(long r, MATRIX* m)
 {
+	// correct Psy-Q implementation
 	int s0 = rsin(r);
 	int c0 = rcos(r);
 	int t1, t2;
@@ -1625,6 +1587,7 @@ MATRIX* RotMatrixY(long r, MATRIX* m)
 
 MATRIX* RotMatrixZ(long r, MATRIX* m)
 {
+	// correct Psy-Q implementation
 	int s0 = rsin(r);
 	int c0 = rcos(r);
 	int t1, t2;
@@ -1647,9 +1610,8 @@ MATRIX* RotMatrixZ(long r, MATRIX* m)
 MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX* m)
 {
 #if 0
-	// TODO:...
+	// TODO: correct Psy-Q implementation
 #else
-	// FIXME: make a proper function
 	m->m[0][0] = 0x1000;
 	m->m[0][1] = 0;
 	m->m[0][2] = 0;
@@ -1713,29 +1675,23 @@ void SetFogNear(long a, long h)
 
 int rsin(int a)
 {
-	if (a < 0)
-		return -rcossin_tbl[(-a & 0xfffU) * 2];
+	//if (a < 0) // really not needed; bit mask does it all
+	//	return -rcossin_tbl[(-a & 0xfffU) * 2];
 
 	return rcossin_tbl[(a & 0xfffU) * 2];
 }
 
 int rcos(int a)
 {
-	if (a < 0)
-		return rcossin_tbl[(-a & 0xfffU) * 2 + 1];
+	//if (a < 0) // really not needed; bit mask does it all
+	//	return rcossin_tbl[(-a & 0xfffU) * 2 + 1];
 
 	return rcossin_tbl[(a & 0xfffU) * 2 + 1];
 }
 
 long ratan2(long y, long x)
 {
-#if 0 // don't use it
-	const double ONE_BY_2048 = 1.0 / 2048;
-	const double CONV = 2048.0 / M_PI;
-
-	float real = atan2(double(y) * ONE_BY_2048, double(x) * ONE_BY_2048);
-	return real * CONV;
-#else
+	// correct Psy-Q implementation
 	long v;
 	ulong ang;
 
@@ -1777,14 +1733,11 @@ long ratan2(long y, long x)
 		v = -v;
 
 	return v;
-#endif
 }
 
 long SquareRoot0(long a)
 {
-#if 0
-	return sqrtl(a);
-#else
+	// correct Psy-Q implementation
 	int idx;
 	int lzcs;
 	lzcs = gte_leadingzerocount(a);
@@ -1800,5 +1753,4 @@ long SquareRoot0(long a)
 		idx = a << (lzcs - 24);
 
 	return SQRT[idx - 64] << (31 - lzcs >> 1) >> 12;
-#endif
 }

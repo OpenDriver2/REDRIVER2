@@ -1,8 +1,6 @@
 #include "DRIVER2.H"
 #include "MAIN.H"
 
-#include <algorithm>
-
 
 #include "LIBETC.H"
 #include "LIBSPU.H"
@@ -2732,6 +2730,7 @@ void UpdatePlayerInformation(void)
 	WHEEL* wheel;
 	int i, j;
 	int wheelsInWater;
+	int wheelsAboveWaterToDieWithFade;
 	_CAR_DATA* cp;
 
 	cp = NULL;
@@ -2749,8 +2748,7 @@ void UpdatePlayerInformation(void)
 
 	FelonyBar.position = *playerFelony;
 
-	i = 0;
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		if (player[i].playerType == 1)
 		{
@@ -2763,29 +2761,37 @@ void UpdatePlayerInformation(void)
 			}
 
 			wheelsInWater = 0;
+			wheelsAboveWaterToDieWithFade = 0;
 
-			j = 0;
 			wheel = cp->hd.wheel;
 
-			do {
-				if ((wheel->surface & 0x7) == 1)
+			// [A] count the wheels above the water and in the water
+			for (j = 0; j < 4; j++)
+			{
+				if ((wheel->surface & 7) == 1)
 				{
 					if (wheel->susCompression == 0)
-					{
-						if (cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
-						{
-							gDieWithFade = wheel->surface & 7;
-						}
-					}
+						wheelsAboveWaterToDieWithFade++;
 					else
-					{
 						wheelsInWater++;
-					}
 				}
 
 				wheel++;
-				j++;
-			} while (j < 4);
+			}
+
+			// [A] if all wheels above the water surface and we are falling down
+			// fade out and end the game
+			if(cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
+			{
+				// fix for Havana tunnels
+				if (GameLevel == 1)
+				{
+					if(wheelsAboveWaterToDieWithFade == 4)
+						gDieWithFade = 1;
+				}
+				else // car drown as usual
+					gDieWithFade = 1;
+			}
 
 			if (wheelsInWater == 4) // apply water damage
 				cp->totalDamage += MaxPlayerDamage[i] / 80;
@@ -2813,8 +2819,6 @@ void UpdatePlayerInformation(void)
 		{
 			gDieWithFade = 1;
 		}
-
-		i++;
 	}
 }
 
