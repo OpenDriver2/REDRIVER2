@@ -103,7 +103,7 @@ MATRIX2 CompoundMatrix[64];
 
 uint farClip2Player = 36000;
 
-int goFaster = 1;
+int goFaster = 0;	// [A] was 1
 int fasterToggle = 0;
 
 int current_object_computed_value = 0;
