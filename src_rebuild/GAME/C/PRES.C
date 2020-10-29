@@ -313,7 +313,8 @@ void LoadFont(char *buffer)
 	dest.w = 64;
 	dest.h = 46;
 
-	fonttpage = GetTPage(0,0,0x3c0,0x1d2);
+	fonttpage = GetTPage(0,0,960,466);
+
 	LoadImage(&fontclutpos, (u_long *)(file + 0x100));
 	LoadImage(&dest, (u_long *)(file + 0x120));
 

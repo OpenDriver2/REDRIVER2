@@ -354,6 +354,7 @@ void DrawSkyDome(void)
 	calc_sky_brightness();
 
 #ifdef PSX
+	// FIXME: use frustrum angle instead?
 	if (((camera_angle.vy - 1450U) & 0xFFF) > 2250)
 		PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
 
@@ -366,6 +367,7 @@ void DrawSkyDome(void)
 	if (((camera_angle.vy - 400U) & 0xFFF) > 2300)
 		PlotHorizonMDL(modelpointers[1],HorizonLookup[GameLevel][3]);
 #else
+	// draw full sky - no need in frustrum culling
 	PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
 	PlotHorizonMDL(modelpointers[2],HorizonLookup[GameLevel][1]);
 	PlotHorizonMDL(modelpointers[3],HorizonLookup[GameLevel][2]);
