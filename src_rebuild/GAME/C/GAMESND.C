@@ -270,28 +270,29 @@ int ResidentModelsBodge(void)
 	{
 		i = 11;
 
-		if (j == 9)
-			return 4;
+		if (j != 9)
+			return 3;
 	}
-	else if (GameLevel == 1)
+	else if (GameLevel == 1) 
 	{
-		i = 11;
-
-		if (j - 8U > 1)
+		if (j - 8U > 1) 
 			return 3;
 	}
 	else if (GameLevel == 2)
 	{
 		i = 8;
+
+		if (j != i)
+			return 3;
 	}
 	else if (GameLevel == 3)
 	{
 		i = 11;
+
+		if (j != i)
+			return 3;
 	}
 	else
-		return 3;
-
-	if (j != i)
 		return 3;
 
 	return 4;
