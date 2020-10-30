@@ -1476,10 +1476,9 @@ void SetUpEvents(int full)
 		fixedEvent = rioDoor;
 		e = &(*e)->next;
 		
-		i = 0;
-		while (i < 6)
+		for (i = 0; i < 6; i++)
 		{
-			InitDoor(&rioDoor[i++], &e, &cEvents);
+			InitDoor(&rioDoor[i], &e, &cEvents);
 
 			if (full)
 				rioDoor[i].model = FindModelIdxWithName(rioDoor[i].modelName);
