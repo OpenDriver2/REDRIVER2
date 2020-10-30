@@ -3695,20 +3695,15 @@ int PingInCivCar(int minPingInDist)
 	}
 	else if (player[0].playerType == 1 && car_data[player[0].playerCarId].ap.model == model)
 	{
-		int rnd;
-		rnd = Random2(0);
+		civDat.palette = Random2(0) % 5; // [A] was % 4; use previously unused palette slot
 
-		civDat.palette = rnd - (rnd / 4) * 4 & 0xff;
-
+		// if player got the same color we better select other
 		if (car_data[player[0].playerCarId].ap.palette <= civDat.palette)
 			civDat.palette++;
 	}
 	else
 	{
-		int rnd;
-		rnd = Random2(0);
-
-		civDat.palette = rnd - (rnd / 5) * 5 & 0xff;
+		civDat.palette = Random2(0) % 6; // [A] was % 5; use previously unused palette slot
 	}
 
 	lbody = car_cosmetics[model].colBox.vz;
