@@ -153,12 +153,12 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					zs = ((collide->zsize + 10) * 2048 + radius * 4096);
 					xs = ((collide->xsize + 10) * 2048 + radius * 4096);
 
-					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
+					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos);	// [A] removed excessive height
 					
 #ifdef COLLISION_DEBUG
 					int result = 0;
 
-					if (collide->ysize / 2 + 60 > ABS(ypos) &&
+					if (collide->ysize / 2 > ABS(ypos) &&
 						xs * 2 > ABS(xd * cs - zd * sn) + xs &&
 						zs * 2 > ABS(zd * cs + xd * sn) + zs)
 					{
@@ -234,7 +234,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					if (result)
 						return 0;
 #else
-					if (collide->ysize / 2 + 60 > ABS(ypos) &&
+					if (collide->ysize / 2 > ABS(ypos) &&
 						xs * 2 > ABS(xd * cs - zd * sn) + xs &&
 						zs * 2 > ABS(zd * cs + xd * sn) + zs)
 					{
