@@ -649,25 +649,25 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
 		vdata1.px + (FIXEDH(iVar5) + iVar8) * 0.005f,
 		vdata1.py + (FIXEDH(iVar7) + iVar9) * 0.005f,
-		vdata1.pz, vdata1.scr_h };
+		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 	
 
 	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
 		vdata1.px - (FIXEDH(iVar5) + iVar8) * 0.005f,
 		vdata1.py - (FIXEDH(iVar7) + iVar9) * 0.005f,
-		vdata1.pz, vdata1.scr_h };
+		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 	
 
 	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
 		vdata2.px + (FIXEDH(iVar5) - x) * 0.005f,
 		vdata2.py + (FIXEDH(iVar7) - y) * 0.005f,
-		vdata2.pz, vdata2.scr_h };
+		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 	
 
 	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
 		vdata2.px - (FIXEDH(iVar5) - x) * 0.005f,
 		vdata2.py - (FIXEDH(iVar7) - y) * 0.005f,
-		vdata2.pz, vdata2.scr_h };
+		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v1[0], v1[1]));
 	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v2[0], v2[1]));

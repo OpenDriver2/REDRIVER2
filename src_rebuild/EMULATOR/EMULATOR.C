@@ -461,38 +461,52 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	} // TODO diagonal line alignment
 
 #ifdef PGXP
-	vertex[0].w = vertex[1].w = vertex[2].w = vertex[3].w = 1.0f;
-	vertex[0].z = vertex[1].z = vertex[2].z = vertex[3].z = 0.0f;
 	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
 	ScreenCoordsToEmulator(vertex, 4);
 }
 
-#ifdef PGXP
 
-#define PGXP_APPLY(v, p) \
-{\
-	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);		\
-	PGXPVData vd;									\
-	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) {		\
-		v.x = vd.px + ofsX;\
-		v.y = vd.py + ofsY;\
-		v.scr_h = vd.scr_h;\
-		v.w = vd.pz;\
-		v.z = 0.0f;\
-	} else { \
-		v.w = 0.0f; \
-		v.z = 0.0f; \
-		v.scr_h = 0.0f; \
-	}\
+
+inline void Emulator_ApplyVertexPGXP(Vertex* v, VERTTYPE* p, float ofsX, float ofsY, ushort gteidx)
+{
+#ifdef PGXP
+	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);
+	PGXPVData vd;
+	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) 
+	{
+		float gteOfsX = vd.ofx;
+		float gteOfsY = vd.ofy;
+
+		// FIXME: it must be clamped strictly to the current draw buffer bounds!
+		// this is bad approach but it works for now
+		if (gteOfsX > activeDispEnv.disp.w)
+			gteOfsX -= activeDispEnv.disp.w;
+		gteOfsX -= activeDispEnv.disp.w / 2;
+
+		if (gteOfsY > activeDispEnv.disp.h)
+			gteOfsY -= activeDispEnv.disp.h;
+		gteOfsY -= activeDispEnv.disp.h / 2;
+
+		
+		
+		v->x = vd.px;
+		v->y = vd.py;
+		v->z = vd.pz;
+		v->ofsX = (ofsX + gteOfsX) / float(activeDispEnv.disp.w) * 2.0f;
+		v->ofsY = (ofsY + gteOfsY) / float(activeDispEnv.disp.h) * 2.0f;
+
+		v->scr_h = vd.scr_h;
+	}
+	else
+	{
+		v->scr_h = 0.0f;
+	}
+#endif
 }
 
-#else
 
-#define PGXP_APPLY(v, p)
-
-#endif
 
 void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx)
 {
@@ -512,9 +526,9 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	vertex[2].x = p2[0] + ofsX;
 	vertex[2].y = p2[1] + ofsY;
 
-	PGXP_APPLY(vertex[0], p0);
-	PGXP_APPLY(vertex[1], p1);
-	PGXP_APPLY(vertex[2], p2);
+	Emulator_ApplyVertexPGXP(&vertex[0], p0, ofsX, ofsY, gteidx-2);
+	Emulator_ApplyVertexPGXP(&vertex[1], p1, ofsX, ofsY, gteidx-1);
+	Emulator_ApplyVertexPGXP(&vertex[2], p2, ofsX, ofsY, gteidx);
 
 	ScreenCoordsToEmulator(vertex, 3);
 }
@@ -541,10 +555,10 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	vertex[3].x = p3[0] + ofsX;
 	vertex[3].y = p3[1] + ofsY;
 
-	PGXP_APPLY(vertex[0], p0);
-	PGXP_APPLY(vertex[1], p1);
-	PGXP_APPLY(vertex[2], p2);
-	PGXP_APPLY(vertex[3], p3);
+	Emulator_ApplyVertexPGXP(&vertex[0], p0, ofsX, ofsY, gteidx-2);
+	Emulator_ApplyVertexPGXP(&vertex[1], p1, ofsX, ofsY, gteidx-2);
+	Emulator_ApplyVertexPGXP(&vertex[2], p2, ofsX, ofsY, gteidx-1);
+	Emulator_ApplyVertexPGXP(&vertex[3], p3, ofsX, ofsY, gteidx);
 
 	ScreenCoordsToEmulator(vertex, 4);
 }
@@ -569,8 +583,6 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 	vertex[3].y = vertex[0].y;
 
 #ifdef PGXP
-	vertex[1].w = vertex[2].w = vertex[3].w = vertex[0].w = 1.0f;
-	vertex[1].z = vertex[2].z = vertex[3].z = vertex[0].z = 0.0f;
 	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
@@ -961,7 +973,13 @@ GLint u_Projection3D;
 
 #ifdef PGXP
 #define GTE_PERSPECTIVE_CORRECTION \
-		"	vec4 fragPosition = (a_zw.z != 0 ? (Projection3D * vec4(a_position.xy * vec2(1,-1) * a_zw.z, a_zw.y, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
+		"	mat4 ofsMat = mat4(\n"\
+		"		vec4(1.0,  0.0,  0.0,  0.0),\n"\
+		"		vec4(0.0,  1.0,  0.0,  0.0),\n"\
+		"		vec4(0.0,  0.0,  1.0,  0.0),\n"\
+		"		vec4(a_zw.z, -a_zw.w,  0.0,  1.0));\n"\
+		"	vec2 geom_ofs = vec2(0.5, 0.5);\n"\
+		"	vec4 fragPosition = (a_zw.y != 0 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1,-1) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION \
@@ -1243,7 +1261,7 @@ int Emulator_Initialise()
 
 #if defined(PGXP)
 	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
-	glVertexAttribPointer(a_zw, 4,		 GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+	glVertexAttribPointer(a_zw,		  4, GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
 
 	glEnableVertexAttribArray(a_zw);
 #else
