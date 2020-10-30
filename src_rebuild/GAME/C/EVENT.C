@@ -1076,6 +1076,12 @@ void InitEvents(void)
 	/* end block 4 */
 	// End Line: 1144
 
+#ifdef PSX
+#define EVENT_RADIUS 4096
+#else
+#define EVENT_RADIUS 16000
+#endif
+
 // [D] [T] [A] long function, please debug more
 void SetUpEvents(int full)
 {
@@ -1176,7 +1182,7 @@ void SetUpEvents(int full)
 				}
 
 				evt[i].node = p;
-				evt[i].radius = 0x1000;
+				evt[i].radius = EVENT_RADIUS;
 				evt[i].timer = timeOffset % 8000;
 				evt[i].model = n * 2 + i;
 			}
@@ -1248,11 +1254,11 @@ void SetUpEvents(int full)
 
 			i = *p;
 
-			while (i + 0x80000000U > 1)
+			do
 			{
 				i = p[1];
 				p++;
-			}
+			} while (i + 0x80000000U > 1);
 		}
 
 		fixedEvent = chicagoDoor;
@@ -1371,7 +1377,7 @@ void SetUpEvents(int full)
 
 		for (i = 0; i < cCarriages; i++)
 		{
-			evt[i].radius = 4000;
+			evt[i].radius = EVENT_RADIUS;
 
 			if (i < 2)
 			{
@@ -1542,10 +1548,10 @@ void SetUpEvents(int full)
 
 			if (gCurrentMissionNumber == 39)
 			{
-				evt[cEvents].position.vx = 0xfec7;
-				evt[cEvents].position.vy = -0x306;
-				evt[cEvents].position.vz = -0x7ead2;
-				evt[cEvents].rotation = 0xa40;
+				evt[cEvents].position.vx = 65223;
+				evt[cEvents].position.vy = -774;
+				evt[cEvents].position.vz = -518866;
+				evt[cEvents].rotation = 2624;
 				evt[cEvents].timer = -1;
 				
 				HelicopterData.pitch = 0;
@@ -1699,15 +1705,12 @@ void ResetEventCamera(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void SetCamera(_EVENT* ev)
 {
-	ushort uVar1;
-	short ang;
-	int uVar2;
-	long lVar3;
-	ushort uVar4;
-	int iVar5;
+	int iPivot;
+	int axis;
+	int rotation;
 	VECTOR pivot;
 	SVECTOR offset;
 	MATRIX matrix;
@@ -1722,38 +1725,42 @@ void SetCamera(_EVENT* ev)
 
 	pivot.vy = 0;
 
-	if ((ev->flags & 0x800U) == 0)
+	if (ev->flags & 0x800)
 	{
-		uVar4 = ev->flags & 0x30;
-		iVar5 = (int)ev->rotation;
-		lVar3 = *ev->data;
+		iPivot = ev->position.vz;
+		rotation = ev->data[1];
+	
+		offset = boatOffset;
+		
+		if (GameLevel == 1)
+			pivot.vy = 111;
+		else
+			pivot.vy = 256;
+
+		axis = 0;
 	}
 	else
 	{
-		lVar3 = (ev->position).vz;
-		iVar5 = ev->data[1];
-		offset = boatOffset;
-		pivot.vy = 0x100;
+		axis = ev->flags & 0x30;
 
-		if (GameLevel == 1)
-			pivot.vy = 0x6f;
-
-		uVar4 = 0;
+		rotation = ev->rotation;
+		iPivot = *ev->data;
 	}
 
-	if (uVar4 == 0)
+	if (axis == 0)
 	{
-		iVar5 = -iVar5;
+		rotation = -rotation;
+		
 		pivot.vx = camera_position.vx;
-		pivot.vz = lVar3;
+		pivot.vz = iPivot;
 	}
 	else
 	{
 		pivot.vz = camera_position.vz;
-		pivot.vx = lVar3;
+		pivot.vx = iPivot;
 	}
 
-	if (iVar5 == 0)
+	if (rotation == 0)
 	{
 		camera_position.vx = eventCamera.position.vx + offset.vx;
 		camera_position.vy = eventCamera.position.vy + offset.vy;
@@ -1764,32 +1771,30 @@ void SetCamera(_EVENT* ev)
 	{
 		camera_position = eventCamera.position;
 
-		matrix.m[0][0] = 0x1000;
+		matrix.m[0][0] = ONE;
 		matrix.m[1][0] = 0;
 		matrix.m[2][0] = 0;
 
 		matrix.m[0][1] = 0;
-		matrix.m[1][1] = 0x1000;
+		matrix.m[1][1] = ONE;
 		matrix.m[2][1] = 0;
 
 		matrix.m[0][2] = 0;
 		matrix.m[1][2] = 0;
-		matrix.m[2][2] = 0x1000;
+		matrix.m[2][2] = ONE;
 
-		ang = (short)iVar5;
-
-		if (uVar4 == 0x10)
+		if (axis == 0x10)
 		{
-			camera_angle.vy = camera_angle.vy - ang;
-			_RotMatrixY(&matrix, ang);
+			camera_angle.vy = camera_angle.vy - rotation;
+			_RotMatrixY(&matrix, rotation);
 		}
-		else if (uVar4 == 0)
+		else if (axis == 0)
 		{
-			_RotMatrixX(&matrix, ang);
+			_RotMatrixX(&matrix, rotation);
 		}
-		else if (uVar4 == 0x20)
+		else if (axis == 0x20)
 		{
-			_RotMatrixZ(&matrix, ang);
+			_RotMatrixZ(&matrix, rotation);
 		}
 
 		temp.vx = camera_position.vx - pivot.vx;
@@ -1800,11 +1805,10 @@ void SetCamera(_EVENT* ev)
 		gte_SetTransVector(&pivot);
 
 		gte_ldv0(&temp);
-
 		gte_rtv0tr();
-
 		gte_stlvnl(&camera_position);
 
+		// this seems to reflect matrix by Y axis
 		short v1, v0, a1, a2;
 
 		v1 = matrix.m[0][1];
@@ -1815,15 +1819,17 @@ void SetCamera(_EVENT* ev)
 		v1 = v1 ^ v0;
 		v0 = v0 ^ v1;
 		v1 = v1 ^ v0;
-		a1 = a1 ^ a2;
-		matrix.m[0][1] = v1;
-		v1 = matrix.m[1][2];
-		a2 = a2 ^ a1;
 		matrix.m[1][0] = v0;
-		v0 = matrix.m[2][1];
+		matrix.m[0][1] = v1;
+	
+		a1 = a1 ^ a2;
+		a2 = a2 ^ a1;
 		a1 = a1 ^ a2;
 		matrix.m[2][0] = a2;
 		matrix.m[0][2] = a1;
+		
+		v0 = matrix.m[2][1];
+		v1 = matrix.m[1][2];
 		v1 = v1 ^ v0;
 		v0 = v0 ^ v1;
 		v1 = v1 ^ v0;
@@ -1838,7 +1844,6 @@ void SetCamera(_EVENT* ev)
 		// NEW
 		gte_MulMatrix0(&inv_camera_matrix, &matrix, &inv_camera_matrix);
 
-
 		camera_position.vx += offset.vx;
 		camera_position.vy += offset.vy;
 		camera_position.vz += offset.vz;
@@ -1846,23 +1851,23 @@ void SetCamera(_EVENT* ev)
 
 	SetCameraVector();
 
-	if ((iVar5 != 0) || (eventCamera.rotate != 0))
+	if (rotation != 0 || eventCamera.rotate != 0)
 	{
 		Set_Inv_CameraMatrix();
 		SetCameraVector();
 		SetupDrawMapPSX();
 	}
 
-	eventCamera.rotate = iVar5;
+	eventCamera.rotate = rotation;
 
-	if ((ev->flags & 0x800U) == 0)
+	if (ev->flags & 0x800)
 	{
-		events.draw = ev->model;
+		ev->flags &= ~0x1;
+		events.draw = 0;
 	}
 	else
 	{
-		ev->flags = ev->flags & 0xfffe;
-		events.draw = 0;
+		events.draw = ev->model;
 	}
 }
 
@@ -2002,18 +2007,15 @@ void NextNode(_EVENT* ev)
 	/* end block 3 */
 	// End Line: 3012
 
-// [D]
+// [D] [T]
 void StepFromToEvent(_EVENT* ev)
 {
-	int uVar1;
-	int uVar2;
-	int uVar3;
-	int iVar4;
-	int iVar5;
-	long* local_t0_132;
-	int iVar6;
-	int uVar7;
-	int* piVar8;
+	int df;
+	int md;
+	long* curr;
+	int* to;
+	int direction;
+	int d, d2;
 
 	if (ev->timer > 0)
 	{
@@ -2024,87 +2026,63 @@ void StepFromToEvent(_EVENT* ev)
 	if (ev->timer != 0)
 		return;
 
-	uVar2 = ev->flags & 0xc000;
-	piVar8 = ev->node + 1;
+	direction = ev->flags & 0xc000;
+	to = &ev->node[1];
 
-	if (uVar2 == 0x4000)
+	if (direction == 16384)
 	{
-		local_t0_132 = &(ev->position).vy;
+		curr = &ev->position.vy;
 	}
-	else if (uVar2 < 0x4001)
+	else if (direction <= 16384)
 	{
-		local_t0_132 = (long*)&ev->position;
+		if (direction != 0)
+			curr = (long*)&ev->position.vx;
+		else
+			curr = (long*)&ev->position.vz;
+	}
+	else if (direction == 32768)
+	{
+		curr = &ev->position.vz;
+	}
 
-		if (uVar2 != 0)
-			local_t0_132 = (long*)&ev->position;
+	d = md = *curr - *ev->node;
+	d2 = *to - *curr;
+
+	if (ABS(d2) < ABS(d))
+		md = d2;
+	else
+		md = d;
+
+	df = *to - ev->node[0] >> 31;
+
+	// movement speed
+	if ((ev->flags & 0xC000) == 0x4000)
+	{
+		if (md > 1024)
+			md = ev->data[0] ^ df;
+		else
+			md = FIXEDH((ev->data[0]-1) * rcossin_tbl[(md & 0xfff) * 2]) + 1 ^ df;
 	}
 	else
 	{
-		if (uVar2 == 0x8000)
-			local_t0_132 = &(ev->position).vz;
+		if (md > 2048)
+			md = ev->data[0] ^ df;
+		else
+			md = FIXEDH((ev->data[0]-1) * rcossin_tbl[(md >> 1 & 0xfff) * 2]) + 1U ^ df;
 	}
 
-	iVar6 = *local_t0_132;
-	iVar5 = *ev->node;
-	iVar4 = *piVar8;
-	uVar3 = iVar6 - iVar5;
-	uVar7 = iVar4 - iVar6;
-	uVar2 = uVar3;
+	*curr += (md - df);
 
-	if (uVar3 < 0)
-		uVar2 = -uVar3;
-
-	uVar1 = uVar7;
-
-	if (uVar7 < 0)
-		uVar1 = -uVar7;
-
-	if (uVar1 < uVar2)
-		uVar3 = uVar7;
-
-	uVar2 = iVar4 - iVar5 >> 0x1f;
-
-	if ((ev->flags & 0xc000U) == 0x4000)
+	if ((d2 ^ *to - *curr) < 0)
 	{
-		if (uVar3 < 0)
-			uVar3 = -uVar3;
-
-		if (0x400 < (int)uVar3)
-		{
-			uVar3 = *ev->data ^ uVar2;
-			goto LAB_00047b78;
-		}
-		iVar4 = (*ev->data + -1) * rcossin_tbl[(uVar3 & 0xfff) * 2];
-	}
-	else
-	{
-		if (uVar3 < 0)
-			uVar3 = -uVar3;
-
-		if (0x800 < uVar3)
-		{
-			uVar3 = *ev->data ^ uVar2;
-			goto LAB_00047b78;
-		}
-
-		iVar4 = (*ev->data + -1) * (int)*(short*)((int)rcossin_tbl + ((uVar3 - (uVar3 >> 0x1f)) * 2 & 0x3ffc));
-	}
-
-	uVar3 = FIXEDH(iVar4) + 1U ^ uVar2;
-LAB_00047b78:
-
-	*local_t0_132 = iVar6 + (uVar3 - uVar2);
-	iVar4 = *piVar8;
-
-	if ((uVar7 ^ iVar4 - *local_t0_132) < 0)
-	{
-		*local_t0_132 = iVar4;
+		*curr = *to;
 
 		ev->timer = -1;
 
 		if (ev == events.cameraEvent)
+		{
 			SpecialCamera(SPECIAL_CAMERA_RESET, 0);
-
+		}
 	}
 }
 
@@ -2184,298 +2162,280 @@ void StepPathEvent(_EVENT* ev)
 {
 	static int speed;
 
-	short* puVar1;
-	short sVar2;
-	ushort uVar3;
-	int iVar4;
-	long lVar5;
-	int iVar6;
-	int iVar7;
-	int* piVar8;
-	int iVar9;
+	int d1;
 	int* i;
+	int d;
 	int* from;
-	int iVar10;
-	uint uVar11;
 	int* to;
-	int iVar12;
+	Station station;
+	int direction;
 	long* curr;
-	int iVar13;
+	int dir;
 	int turn[4];
 	XZPAIR centre;
 	XZPAIR offset;
-
-	sVar2 = ev->timer;
+	short flags;
 
 	if (ev->timer != 0)
 	{
-		ev->timer = sVar2 + -1;
-
-		if (sVar2 == 1)
+		if (ev->timer == 1)
 		{
-			do {
+			ev->timer--;
+
+			do
+			{
 				NextNode(ev);
-				puVar1 = &ev->flags;
+				flags = ev->flags;
+
 				ev = ev->next;
-				if (ev == NULL) {
+
+				if (ev == NULL)
+				{
 					speed = 0;
 					return;
 				}
-			} while (ev->flags == (*puVar1 & 0xfbff));
+
+			}while (ev->flags == (flags & ~0x400));
 		}
-		else if ((ev->flags & 0x100U) != 0)
+		else
 		{
-			ev->timer = sVar2;
+			if (!(ev->flags & 0x100))
+				ev->timer--;
 		}
 
 		speed = 0;
 		return;
 	}
 
-	uVar3 = ev->flags;
+	flags = ev->flags;
 
-	if ((speed == 0) && ((uVar3 & 0x400) == 0))
+	if (speed == 0 && (flags & 0x400) == 0)
 		return;
 
+	// TODO:
+	//	#define STATION_NODE_2	0x80000002
+	//	#define STATION_NODE_1	0x80000001
+	//	#define STATION_NODE_0	0x80000000
+	
 	from = ev->node;
-	to = from + 2;
+	to = &from[2];
 
 	if (*from == -0x7ffffffe)
 	{
-		iVar12 = 2;
-		i = from + 1;
+		station = EVENT_LEAVING;
+		i = &from[1];
 	}
 	else
 	{
-		iVar12 = 1;
-		i = from;
+		station = EVENT_APPROACHING;
+		
+		i = &from[0];
 
 		if (from[2] == -0x7ffffffe)
 		{
-			to = from + 3;
+			to = &from[3];
 		}
 		else
 		{
-			iVar12 = 0;
+			station = EVENT_NO_STATION;
 
 			if (from[-1] == -0x7ffffffe)
-				i = from + -2;
+				i = &from[-2];
 			else if (from[2] == -0x7fffffff)
-				to = ev->data + 3;
-			else if ((from[1] == -0x7fffffff) && (ev->data + 3 < to))
-				to = ev->data + 4;
+				to = &ev->data[3];
+			else if (from[1] == -0x7fffffff && &ev->data[3] < to)
+				to = &ev->data[4];
 		}
 	}
-
-	if ((uVar3 & 0x7000) == 0x1000)
+	
+	if ((flags & 0x7000) == 0x1000)
 	{
-		iVar12 = -1;
+		uint loop; // unsigned on purspose
 
-		if ((uVar3 & 0x8000) == 0)
+		if (flags & 0x8000)
 		{
-			iVar12 = 1;
-			uVar11 = 0;
+			direction = -1;
+			loop = 3;
 		}
 		else
 		{
-			uVar11 = 3;
+			direction = 1;
+			loop = 0;
 		}
-		if (*from == -0x7ffffffe)
-			i = from + -2;
 
+		if (from[0] == -0x7ffffffe)
+			i = &from[-2];
 
-		if (uVar11 < 4)
+		while (loop < 4)
 		{
-			piVar8 = turn + uVar11;
-			do {
+			if (*i == -0x7fffffff)
+				i = &ev->data[3];
+			else if (*i == -0x7ffffffe)
+				i += 2;
 
-				if (*i == -0x7fffffff)
-					i = ev->data + 3;
-				else if (*i == -0x7ffffffe)
-					i = i + 2;
-
-				uVar11 = uVar11 + iVar12;
-				iVar4 = *i;
-				i = i + 1;
-				*piVar8 = iVar4;
-				piVar8 = piVar8 + iVar12;
-			} while (uVar11 < 4);
+			turn[loop] = *i;
+			i++;
+			loop += direction;
 		}
 
-		iVar4 = turn[2] + -0x800;
+		if (turn[0] - turn[2] > -1)
+			centre.x = turn[2] + 2048;
+		else
+			centre.x = turn[2] - 2048;
 
-		if (-1 < turn[0] - turn[2])
-			iVar4 = turn[2] + 0x800;
+		if (turn[3] - turn[1] > -1)
+			centre.z = turn[1] + 2048;
+		else
+			centre.z = turn[1] - 2048;
 
-		iVar10 = turn[1] - 0x800;
-
-		if (-1 < turn[3] - turn[1])
-			iVar10 = turn[1] + 0x800;
-
-		if ((ev->flags & 0x400U) != 0)
+		if (ev->flags & 0x400)
 			speed = *ev->data;
 
-		offset.x = ((ev->position).vz - iVar10) * speed;
+		offset.x = (ev->position.vz - centre.z) * speed / 2048;
+		offset.z = (centre.x - ev->position.vx) * speed / 2048;
 
-		offset.x = offset.x >> 0xb;
-		offset.z = (iVar4 - (ev->position).vx) * speed;
-		offset.z = offset.z >> 0xb;
-
-		if (((turn[2] - turn[0]) * offset.x + (turn[3] - turn[1]) * offset.z) * iVar12 < 0)
+		if (((turn[2] - turn[0]) * offset.x + (turn[3] - turn[1]) * offset.z) * direction < 0)
 		{
 			offset.x = -offset.x;
 			offset.z = -offset.z;
 		}
 
-		(ev->position).vx = (ev->position).vx + offset.x;
-		(ev->position).vz = (ev->position).vz + offset.z;
-		lVar5 = ratan2(offset.x, offset.z);
-		ev->rotation = (short)lVar5 + 0x400U & 0xfff;
+		ev->position.vx += offset.x;
+		ev->position.vz += offset.z;
 
-		if (((int)ev->flags & 0x8000U) == 0)
+		ev->rotation = ratan2(offset.x, offset.z) + 1024U & 0xfff;
+
+		if ((ev->flags & 0x8000) == 0)
 		{
-			iVar10 = (ev->position).vz - iVar10;
+			centre.z = ev->position.vz - centre.z;
 
 			if (turn[3] - turn[1] < 0)
 			{
-				if (-1 < iVar10)
+				if (centre.z > -1)
 					return;
-
 			}
-			else if (iVar10 < 1)
-				return;
+			else
+			{
+				if (centre.z < 1)
+					return;
+			}
 
-			(ev->position).vx = turn[2];
+			ev->position.vx = turn[2];
 			NextNode(ev);
 			return;
 		}
-		iVar4 = (ev->position).vx - iVar4;
 
-		if (turn[0] - turn[2] < 0) {
-			if (-1 < iVar4)
+		centre.x = ev->position.vx - centre.x;
+
+		if (turn[0] - turn[2] < 0)
+		{
+			if (centre.x > -1)
 				return;
-
 		}
-		else if (iVar4 < 1)
-			return;
+		else
+		{
+			if (centre.x < 1)
+				return;
+		}
 
-		(ev->position).vz = turn[1];
+		ev->position.vz = turn[1];
+	
 		NextNode(ev);
 		return;
 	}
 
-	curr = (long*)ev;
+	if (flags & 0x8000)
+		curr = &ev->position.vz;
+	else
+		curr = &ev->position.vx;
 
-	if ((uVar3 & 0x8000) != 0)
-		curr = &(ev->position).vz;
+	d = *to - *curr;
 
-	iVar10 = *curr;
-	iVar13 = -1;
-	iVar4 = *to - iVar10;
+	if (d < 0)
+		dir = -1;
+	else
+		dir = 1;
 
-	if (-1 < iVar4)
-		iVar13 = 1;
+	d = ABS(d);
+	d1 = ABS(*curr - *i);
 
-	iVar6 = *i;
-	if (iVar4 < 0)
-		iVar4 = -iVar4;
-
-	iVar9 = iVar10 - iVar6;
-	if (iVar9 < 0)
-		iVar9 = -iVar9;
-
-	if (iVar4 < iVar9)
+	if (d1 > d)
 	{
-		iVar7 = 2;
-		iVar9 = iVar4;
+		if (station == EVENT_LEAVING)
+			station = EVENT_NO_STATION;
+		
+		d1 = d;
 	}
 	else
-		iVar7 = 1;
-
-	iVar4 = iVar10 - iVar6;
-	if (iVar12 == iVar7)
-		iVar12 = 0;
-
-	if (iVar9 < 0)
-		iVar9 = -iVar9;
-
-	if (iVar4 < 0)
-		iVar4 = iVar6 - iVar10;
-
-	if (iVar4 <= iVar9)
 	{
-		iVar9 = *curr - iVar6;
-		if (iVar9 < 0)
-			iVar9 = iVar6 - *curr;
-
+		if (station == EVENT_APPROACHING)
+			station = EVENT_NO_STATION;
 	}
 
-	if ((uVar3 & 0x400) != 0)
+	d = ABS(*curr - *i);
+
+	if (d <= d1)
+		d1 = d;
+
+	// OK
+	if (ev->flags & 0x400)
 	{
-		if ((uVar3 & 0x80) != 0)
+		if (ev->flags & 0x80)
 		{
 			if (CameraCnt < 0x1000)
-			{
-				speed = ev->data[1] * (0x1000 - CameraCnt) + ev->data[2] * CameraCnt;
-
-				speed = FIXEDH(speed);
-			}
+				speed = (ev->data[1] * (4096 - CameraCnt) + ev->data[2] * CameraCnt) / 4096;
 			else
-			{
 				speed = ev->data[2];
-			}
 			//debugSpeed = speed;
 		}
+
 		speed = ev->data[1];
 	}
 
-	if (((iVar9 < 6000) || ((iVar12 == 0 && (iVar9 < 0x1f70)))) && ((ev->flags & 0x400U) != 0))
+	if ((d1 < 6000 || station == EVENT_NO_STATION && d1 < 8048) && (ev->flags & 0x400))
 	{
-		if (iVar12 == 0)
+		if (station == EVENT_NO_STATION)
 		{
-			if ((ev->flags & 0x7000U) != 0x3000)
-				goto LAB_00048238;
-			iVar4 = (speed - *ev->data) * (int)rcossin_tbl[(((iVar9 + -0x800) * 0x400) / 0x1f70 & 0xfffU) * 2];
-			uVar11 = iVar9 + -0x800 >> 0x1f;
-			speed = (*ev->data ^ uVar11) - uVar11;
+			if ((ev->flags & 0x7000U) == 0x3000)
+			{
+				speed = ev->data[0] + (speed - ev->data[0]) * rcossin_tbl[(((d1 - 2048) * 1024) / 8048 & 0xfffU) * 2] / 4096;
+			}
 		}
 		else
 		{
-			iVar4 = (speed + -5) * (int)rcossin_tbl[((iVar9 << 10) / 6000 & 0xfffU) * 2];
-			speed = (iVar9 >> 0x1f ^ 5U) - (iVar9 >> 0x1f);
+			// acceleration or slowdown
+			speed = 5 + (speed - 5) * rcossin_tbl[((d1 << 10) / 6000 & 0xfffU) * 2] / 4096;
 		}
-
-		speed = speed + FIXEDH(iVar4);
 	}
-LAB_00048238:
-	iVar4 = *curr + speed * iVar13;
-	*curr = iVar4;
 
-	if (iVar12 == 0)
+	*curr += speed * dir;
+
+	if (station == 0 && ev->flags & 0x7000)
 	{
-		uVar3 = ev->flags;
-		if ((uVar3 & 0x7000) != 0)
+		if ((*to - *curr) * dir > 2047)
 		{
-			if (0x7ff < (*to - iVar4) * iVar13)
-				return;
-
-			if ((uVar3 & 0x7000) == 0x3000)
-			{
-				ev->flags = uVar3 & 0x8fff | 0x1000;
-				return;
-			}
-
 			return;
 		}
+
+		if ((ev->flags & 0x7000) == 0x3000)
+		{
+			ev->flags &= ~0x7000;
+			ev->flags |= 0x1000;
+			return;
+		}
+		return;
 	}
 
-	if ((*to - iVar4) * iVar13 < 0)
+	if ((*to - *curr) * dir < 0)
 	{
-		if (iVar12 == 0)
+		if (station == 0)
+		{
 			InitTrain(ev, 0, 0);
-		else if ((ev->flags & 0x400U) != 0)
+		}
+		else if (ev->flags & 0x400)
+		{
 			ev->timer = 300;
-
+		}
 	}
 }
 
@@ -4718,7 +4678,7 @@ VECTOR* TriggerEvent(int i)
 						}
 						else
 						{
-							ev->flags = ev->flags & 0x7fff;
+							ev->flags = ev->flags & ~0x8000;
 							iVar4 = missionTrain[i].start;
 							(ev->position).vz = iVar5;
 							(ev->position).vx = iVar4 + iVar7 * count;
@@ -4728,7 +4688,7 @@ VECTOR* TriggerEvent(int i)
 						ev->data = &missionTrain[i].cornerSpeed;
 						ev->timer = 0;
 						ev->node = piVar3;
-						ev->flags = ev->flags & 0x8fffU | 0x3000;
+						ev->flags = ev->flags & ~0x7000 | 0x3000;
 
 						SetElTrainRotation(ev);
 
@@ -5379,7 +5339,7 @@ int DetonatorTimer(void)
 				_ev = firstMissionEvent + 1;
 				if (GameLevel == 3)
 				{
-					event->flags = event->flags & 0xfffeU | 0x20;
+					event->flags = event->flags & ~0x1 | 0x20;
 					_ev = ev;
 				}
 

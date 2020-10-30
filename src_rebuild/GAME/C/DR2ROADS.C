@@ -660,6 +660,10 @@ _sdPlane * sdGetCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
+	// [A] WARNING!
+	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
+	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
+
 	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^cells_down >> 5 & 2U];
 
 	plane = NULL;
