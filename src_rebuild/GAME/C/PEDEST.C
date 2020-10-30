@@ -2620,8 +2620,6 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 
 	lcp = &player[padid];
 
-	camera_position.vy = pPed->head_pos - 28 - lcp->pos[1];
-
 	if (Pads[padid].type == 4)
 	{
 		padSteer = Pads[padid].mapanalog[0];
