@@ -1302,7 +1302,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 
 				if ((pDrawingPed->pedType == TANNER_MODEL) && (pBone->id == HEAD))
 				{
-					pDrawingPed->head_pos = VECTOR_ARRAY_1f800020[uVar6].vy - Skel[uVar4].vCurrPos.vy;
+					pDrawingPed->head_pos = VECTOR_ARRAY_1f800020[uVar6].vy;
 				}
 
 				if (Skel[uVar4].pModel != NULL && bDoingShadow == 0 && pDrawingPed->pedType < OTHER_SPRITE && draw)

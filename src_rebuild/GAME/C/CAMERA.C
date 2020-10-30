@@ -933,11 +933,11 @@ int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 	/* end block 3 */
 	// End Line: 2200
 
-VECTOR viewer_position;
 
 // [D] [T]
 void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 {
+	VECTOR viewer_position;
 	int angle;
 	_CAR_DATA *cp;
 
@@ -947,6 +947,7 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 		cp = &car_data[lp->cameraCarId];
 
 	viewer_position.vx = 0;
+	viewer_position.vy = 0;
 
 	if (cp == NULL) 
 	{
