@@ -26,24 +26,27 @@
 #include "INLINE_C.H"
 #include "RAND.H"
 
+#define STATION_NODE_0	0x80000000	// -0x80000000
+#define STATION_NODE_1	0x80000001	// -0x7fffffff
+#define STATION_NODE_2	0x80000002	// -0x7ffffffe
+
+// TODO: put more meaning into those arrays
+
 int ElTrainData[83] = {
-	6, 80, 130, 32768, 336284, -220364, 283420, -2147483646,
-	-204500, -158924, 247580, -123084, 188624, -158924,
-	73520, -138444, 17200, -124148, -39120, -2147483646,
-	-109276, -82131, -80103, -17628, -203568, -124712,
-	-39728, -265000, 129620, -386012, 2147483648, 80,
-	130, 0, -158928, 189219, -123684, 246995, -2147483647,
-	0, 90, 32768, 188402, -425768, 354291, 2147483648,
-	0, 90, 32768, 354291, -425168, 188402, 2147483648,
-	60, 110, 0, -386012, 130215, -264404, -39132, -124688,
-	16619, -139048, 72943, -159520, 282863, -2147483646,
-	-204991, -220964, 336284, 2147483648, 70, 120, 0,
-	-82719, -39712, -2147483646, -115487, -124120, -202968,
-	-18216, -80683, -2147483647
+	6, 80, 130, 32768, 336284, -220364, 283420, STATION_NODE_2,
+	-204500, -158924, 247580, -123084, 188624, -158924, 73520, -138444, 17200, -124148, -39120, STATION_NODE_2,
+	-109276, -82131, -80103, -17628, -203568, -124712, -39728, -265000, 129620, -386012, STATION_NODE_0,
+	80, 130, 0, -158928, 189219, -123684, 246995, STATION_NODE_1,
+	0, 90, 32768, 188402, -425768, 354291, STATION_NODE_0,
+	0, 90, 32768, 354291, -425168, 188402, STATION_NODE_0,
+	60, 110, 0, -386012, 130215, -264404, -39132, -124688, 16619, -139048, 72943, -159520, 282863, STATION_NODE_2,
+	-204991, -220964, 336284, STATION_NODE_0,
+	70, 120, 0, -82719, -39712, STATION_NODE_2,
+	-115487, -124120, -202968,-18216, -80683, STATION_NODE_1
 };
 
 int VegasTrainData[7] = {
-	0, 123, 32768, 982000, -68855, 762717, 0x80000000
+	0, 123, 32768, 982000, -68855, 762717, STATION_NODE_0
 };
 
 int VegasParkedTrains[3] = {
@@ -67,11 +70,12 @@ int LiftingBridges[55] = {
 	7, -227328, -162304, -141824, -121344, -100864, -80384, -59904,
 	256, -312832, -305664, -298496,
 	1, 324096, -311808, -304640, -297472,
-	1, 247296, -256512, -249344, -242176, 1, 247296,
-	-262656, -255488, -248320, 1, 324096, 32768, 170496,
-	177664, 184832, 1, -271360, -12800, -5632, 1536,
-	5, -162304, -102912, -82432, -61952, -39936, -6656,
-	512, 7680, 3, 4137, 27648, 128000
+	1, 247296, -256512, -249344, -242176,
+	1, 247296, -262656, -255488, -248320,
+	1, 324096, 32768, 170496, 177664, 184832,
+	1, -271360, -12800, -5632, 1536,
+	5, -162304, -102912, -82432, -61952, -39936, -6656, 512, 7680,
+	3, 4137, 27648, 128000
 };
 
 
@@ -836,12 +840,12 @@ void InitTrain(_EVENT* ev, int count, int type)
 
 	ev->flags &= ~0x7000;
 
-	if (ev->node[3] != -0x80000000)
+	if (ev->node[3] != STATION_NODE_0)
 		ev->flags |= 0x3000;
 
 	to = ev->node;
 
-	if (to[2] == -0x7ffffffe)
+	if (to[2] == STATION_NODE_2)
 		mv = to[3] - to[0] >> 0x1f;
 	else
 		mv = to[2] - to[0] >> 0x1f;
@@ -1258,7 +1262,7 @@ void SetUpEvents(int full)
 			{
 				i = p[1];
 				p++;
-			} while (i + 0x80000000U > 1);
+			} while (i + STATION_NODE_0 > 1);
 		}
 
 		fixedEvent = chicagoDoor;
@@ -1945,7 +1949,7 @@ void EventCollisions(_CAR_DATA* cp, int type)
 // [D] [T]
 void NextNode(_EVENT* ev)
 {
-	if (ev->node[2] == -0x7ffffffe)
+	if (ev->node[2] == STATION_NODE_2)
 	{
 		ev->node = &ev->node[2];
 	}
@@ -1955,11 +1959,11 @@ void NextNode(_EVENT* ev)
 		ev->flags ^= 0x8000;
 	}
 
-	if (*ev->node == -0x7fffffff)
+	if (*ev->node == STATION_NODE_1)
 	{
 		ev->node = &ev->data[3];
 	}
-	else if (ev->node[3] == -0x80000000)
+	else if (ev->node[3] == STATION_NODE_0)
 	{
 		ev->flags &= ~0x7000;
 		return;
@@ -2212,15 +2216,10 @@ void StepPathEvent(_EVENT* ev)
 	if (speed == 0 && (flags & 0x400) == 0)
 		return;
 
-	// TODO:
-	//	#define STATION_NODE_2	0x80000002
-	//	#define STATION_NODE_1	0x80000001
-	//	#define STATION_NODE_0	0x80000000
-	
 	from = ev->node;
 	to = &from[2];
 
-	if (*from == -0x7ffffffe)
+	if (*from == STATION_NODE_2)
 	{
 		station = EVENT_LEAVING;
 		i = &from[1];
@@ -2231,7 +2230,7 @@ void StepPathEvent(_EVENT* ev)
 		
 		i = &from[0];
 
-		if (from[2] == -0x7ffffffe)
+		if (from[2] == STATION_NODE_2)
 		{
 			to = &from[3];
 		}
@@ -2239,15 +2238,16 @@ void StepPathEvent(_EVENT* ev)
 		{
 			station = EVENT_NO_STATION;
 
-			if (from[-1] == -0x7ffffffe)
+			if (from[-1] == STATION_NODE_2)
 				i = &from[-2];
-			else if (from[2] == -0x7fffffff)
+			else if (from[2] == STATION_NODE_1)
 				to = &ev->data[3];
-			else if (from[1] == -0x7fffffff && &ev->data[3] < to)
+			else if (from[1] == STATION_NODE_1 && &ev->data[3] < to)
 				to = &ev->data[4];
 		}
 	}
-	
+
+	// move train
 	if ((flags & 0x7000) == 0x1000)
 	{
 		uint loop; // unsigned on purspose
@@ -2263,14 +2263,14 @@ void StepPathEvent(_EVENT* ev)
 			loop = 0;
 		}
 
-		if (from[0] == -0x7ffffffe)
+		if (from[0] == STATION_NODE_2)
 			i = &from[-2];
 
 		while (loop < 4)
 		{
-			if (*i == -0x7fffffff)
+			if (*i == STATION_NODE_1)
 				i = &ev->data[3];
-			else if (*i == -0x7ffffffe)
+			else if (*i == STATION_NODE_2)
 				i += 2;
 
 			turn[loop] = *i;
@@ -2377,7 +2377,6 @@ void StepPathEvent(_EVENT* ev)
 	if (d <= d1)
 		d1 = d;
 
-	// OK
 	if (ev->flags & 0x400)
 	{
 		if (ev->flags & 0x80)
@@ -2481,7 +2480,7 @@ int GetBridgeRotation(int timer)
 	else if (timer > 1000)
 		timer = 1000;
 
-	return (4096 - rcossin_tbl[((timer << 0xb) / 1000 & 0xfffU) * 2 + 1]) * 800 >> 0xd;
+	return (4096 - rcossin_tbl[((timer * 2048) / 1000 & 0xfffU) * 2 + 1]) * 800 / 8192;
 }
 
 
@@ -2567,225 +2566,184 @@ int GetBridgeRotation(int timer)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-// [D]
+// [D] [T]
 void StepHelicopter(_EVENT* ev)
 {
 	static int rotating = 1;
 
-	short uVar1;
-	long lVar2;
-	int iVar3;
-	int uVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
-	int* piVar12;
+	short sign;
+	int rot;
+	int pitch, roll, d2p, d2r;
+	int direction;
+	int vx, vz;
 	XZPAIR vel;
 	VECTOR pos;
 	VECTOR drift = { 2,3,2 };
 
-	uVar1 = ev->timer;
-	iVar6 = (uint)uVar1 << 0x10;
-	if (iVar6 < 0) goto LAB_00048934;
-	iVar6 = iVar6 >> 0x13;
-	iVar8 = iVar6 * iVar6 + 0x800 >> 0xc;
-	piVar12 = ev->node;
-	iVar11 = *piVar12;
-	iVar3 = iVar8 * iVar6 + 0x800 >> 0xc;
-	iVar5 = (iVar3 * 3 + iVar8 * -5) / 2 + 0x1000;
-	iVar10 = iVar8 * 2 + (iVar6 + iVar3 * -3) / 2;
-	iVar3 = (iVar3 - iVar8) / 2;
-	iVar6 = piVar12[3];
-	iVar7 = piVar12[1];
-	iVar9 = piVar12[5];
-	iVar8 = piVar12[7];
-	(ev->position).vx = iVar11 + ((piVar12[2] - iVar11) * iVar5 + (piVar12[4] - iVar11) * iVar10 + (piVar12[6] - iVar11) * iVar3 + 0x800 >> 0xc);
-	(ev->position).vz = piVar12[1] + ((iVar6 - iVar7) * iVar5 + (iVar9 - iVar7) * iVar10 + (iVar8 - iVar7) * iVar3 + 0x800 >> 0xc);
-	uVar1 = uVar1 + HelicopterData.speed;
-	ev->timer = uVar1;
-
-	if ((uVar1 << 0x10) < 0)
+	if (ev->timer >= 0)
 	{
-		if ((uint)(piVar12[8] == 0) == piVar12[9])
+		int b, c, d, t, tt1, tt2;
+		t = ev->timer >> 3;
+	
+		tt1 = FIXEDH(t * t);
+		tt2 = FIXEDH(tt1 * t);
+		
+		b = (tt2 * 3 - tt1 * 5) / 2 + 4096;
+		c = tt1 * 2 + (t - tt2 * 3) / 2;
+		d = (tt2 - tt1) / 2;
+
+		ev->position.vx = ev->node[0] + FIXEDH((ev->node[2] - ev->node[0]) * b + (ev->node[4] - ev->node[0]) * c + (ev->node[6] - ev->node[0]) * d);
+		ev->position.vz = ev->node[1] + FIXEDH((ev->node[3] - ev->node[1]) * b + (ev->node[5] - ev->node[1]) * c + (ev->node[7] - ev->node[1]) * d);
+
+		ev->timer += HelicopterData.speed;
+
+		if ((ev->timer << 0x10) < 0)
 		{
-			ev->timer = -1;
+			if (ev->node[9] == (ev->node[8] == 0))
+			{
+				ev->timer = -1;
+			}
+			else
+			{
+				ev->timer = 0;
+				ev->node += 2;
+			}
+		}
+
+		if (ev->rotation == -1)
+		{
+			vel.x = (ev->node[4] - ev->node[0]) / 2;
+			vel.z = (ev->node[5] - ev->node[1]) / 2;
+
+			ev->rotation = ratan2(vel.x, vel.z);
+			
+			HelicopterData.pitch = 0;
+			HelicopterData.roll = 0;
+			HelicopterData.dp = 0;
+			HelicopterData.dr = 0;
 		}
 		else
 		{
-			ev->timer = 0;
-			ev->node = piVar12 + 2;
+			vel.x = ev->position.vx - HelicopterData.lastX;
+			vel.z = ev->position.vz - HelicopterData.lastZ;
 		}
-	}
 
-	if (ev->rotation == -1)
-	{
-		piVar12 = ev->node;
-		vel.x = (piVar12[4] - *piVar12) / 2;
-		vel.z = (piVar12[5] - piVar12[1]) / 2;
-		lVar2 = ratan2(vel.x, vel.z);
-		ev->rotation = (short)lVar2;
-		HelicopterData.pitch = 0;
-		HelicopterData.roll = 0;
-		HelicopterData.dp = 0;
-		HelicopterData.dr = 0;
-	}
-	else
-	{
-		vel.x = (ev->position).vx - HelicopterData.lastX;
-		vel.z = (ev->position).vz - HelicopterData.lastZ;
-	}
+		rot = ev->rotation & 0xfff;
 
-	lVar2 = ratan2(vel.x, vel.z);
-	uVar4 = ev->rotation & 0xfff;
-	iVar6 = vel.z * rcossin_tbl[uVar4 * 2];
-	vel.z = vel.z * rcossin_tbl[uVar4 * 2 + 1] + vel.x * rcossin_tbl[uVar4 * 2];
-	vel.x = vel.x * rcossin_tbl[uVar4 * 2 + 1] - iVar6;
-	iVar6 = vel.z;
+		vz = vel.z * rcossin_tbl[rot * 2 + 1] + vel.x * rcossin_tbl[rot * 2];
+		vx = vel.x * rcossin_tbl[rot * 2 + 1] - vel.z * rcossin_tbl[rot * 2];
+		
+		pitch = HelicopterData.pitch;
 
-	if (vel.z < 0)
-		iVar6 = -vel.z;
+		if (ABS(vz) <= 900000)
+			pitch = -HelicopterData.pitch - (rcossin_tbl[((vz * 1024) / 900000 & 0xfffU) * 2] >> 3);
+		else if (vz < 1)
+			pitch = 512 - pitch;
+		else
+			pitch = -512 - pitch;
 
-	iVar3 = (int)HelicopterData.pitch;
+		roll = HelicopterData.roll;
 
-	if (iVar6 < 0xdbba1)
-		iVar3 = -iVar3 - ((rcossin_tbl[((vel.z * 0x400) / 900000 & 0xfffU) * 2] << 0x10) >> 0x13);
-	else if (vel.z < 1)
-		iVar3 = 0x200 - iVar3;
-	else
-		iVar3 = -0x200 - iVar3;
+		if (ABS(vx) <= 150000)
+			roll = (rcossin_tbl[((vx * 1024) / 150000 & 0xfff) * 2] >> 3) - roll;
+		else if (vx < 1)
+			roll = -512 - roll;
+		else
+			roll = 512 - roll;
 
-	iVar5 = (int)HelicopterData.roll;
-	iVar6 = vel.x;
+		d2p = pitch - HelicopterData.dp;
 
-	if (vel.x < 0)
-		iVar6 = -vel.x;
-
-	if (iVar6 < 0x249f1)
-		iVar5 = ((rcossin_tbl[((vel.x * 0x400) / 150000 & 0xfffU) * 2] << 0x10) >> 0x13) - iVar5;
-	else if (vel.x < 1)
-		iVar5 = -0x200 - iVar5;
-	else
-		iVar5 = 0x200 - iVar5;
-
-
-	iVar8 = iVar3 - HelicopterData.dp;
-	iVar6 = iVar8;
-	if (iVar8 < 0)
-		iVar6 = -iVar8;
-
-	if (iVar6 < 5)
-	{
-		HelicopterData.dp = (short)iVar3;
-	}
-	else
-	{
-		uVar1 = (iVar8 >> 0x1f);
-		HelicopterData.dp = HelicopterData.dp + ((uVar1 ^ 5) - uVar1);
-	}
-
-	iVar3 = iVar5 - HelicopterData.dr;
-	iVar6 = iVar3;
-
-	if (iVar3 < 0)
-		iVar6 = -iVar3;
-
-	if (iVar6 < 5)
-	{
-		HelicopterData.dr = iVar5;
-	}
-	else
-	{
-		uVar1 = (iVar3 >> 0x1f);
-		HelicopterData.dr = HelicopterData.dr + ((uVar1 ^ 5) - uVar1);
-	}
-
-	HelicopterData.pitch = (HelicopterData.pitch + HelicopterData.dp + 0x800U & 0xfff) - 0x800;
-	HelicopterData.roll = (HelicopterData.roll + HelicopterData.dr + 0x800U & 0xfff) - 0x800;
-	iVar3 = ((lVar2 - ev->rotation) + 0x800U & 0xfff) - 0x800;
-	iVar6 = iVar3;
-
-	if (iVar3 < 0)
-		iVar6 = -iVar3;
-
-	if (iVar6 < 0x201)
-	{
-		iVar6 = (int)((uint) * (ushort*)((int)rcossin_tbl + (iVar3 * 8 & 0x3ff8U)) << 0x10) >> 0x12;
-	}
-	else
-	{
-		iVar6 = -0x400;
-		if (0 < iVar3)
-			iVar6 = 0x400;
-
-	}
-
-	ev->rotation = ev->rotation + (short)((iVar6 * iVar6 + 0x800 >> 0xc) * iVar6 + 0x800 >> 0xc) & 0xfff;
-
-	if (GetSurfaceIndex((VECTOR*)ev) == -23)
-	{
-		iVar3 = (ev->position).vy;
-		iVar6 = iVar3 + 10;
-
-		if (iVar3 < -0x32)
+		if (ABS(d2p) < 5)
 		{
-		LAB_000488b0:
-			(ev->position).vy = iVar6;
+			HelicopterData.dp = pitch;
 		}
 		else
 		{
-			pos.vy = 0;
-			pos.vx = (ev->position).vx;
-			pos.vz = (ev->position).vz;
-
-			Setup_Smoke(&pos, 100, 500, 2, 0, &dummy, 0);
+			sign = (d2p >> 0x1f);
+			HelicopterData.dp += (sign ^ 5) - sign;
 		}
-	}
-	else
-	{
-		iVar6 = (ev->position).vy;
 
-		if (-1000 < iVar6)
+		d2r = roll - HelicopterData.dr;
+
+		if (ABS(d2r) < 5)
 		{
-			iVar6 = iVar6 + -10;
-			goto LAB_000488b0;
+			HelicopterData.dr = roll;
+		}
+		else
+		{
+			sign = (d2r >> 0x1f);
+			HelicopterData.dr += (sign ^ 5) - sign;
+		}
+
+		HelicopterData.pitch = (HelicopterData.pitch + HelicopterData.dp + 2048U & 0xfff) - 2048;
+		HelicopterData.roll = (HelicopterData.roll + HelicopterData.dr + 2048U & 0xfff) - 2048;
+	
+		rot = (ratan2(vel.x, vel.z) - ev->rotation + 2048U & 0xfff) - 2048;
+
+		if (ABS(rot) > 512)
+		{
+			if (rot > 0)
+				direction = 1024;
+			else
+				direction = -1024;
+		}
+		else
+		{
+			direction = rcossin_tbl[(rot & 0x7ff) * 4] >> 2;
+		}
+
+		ev->rotation += FIXEDH(FIXEDH(direction * direction) * direction);
+		ev->rotation &= 0xfff;
+
+		if (GetSurfaceIndex((VECTOR*)&ev->position) == -23)
+		{
+			if (ev->position.vy < -50)
+			{
+				ev->position.vy += 10;
+			}
+			else
+			{
+				pos.vy = 0;
+				pos.vx = ev->position.vx;
+				pos.vz = ev->position.vz;
+
+				Setup_Smoke(&pos, 100, 500, 2, 0, &dummy, 0);
+			}
+		}
+		else
+		{
+			if (ev->position.vy > -1000)
+				ev->position.vy -= 10;
+		}
+
+		HelicopterData.lastX = ev->position.vx;
+		HelicopterData.lastZ = ev->position.vz;
+
+		SetMSoundVar((int)&ev->position, NULL);
+
+		if ((ev->flags & 0x100) && (Random2(0) & 3) == (CameraCnt & 3U))
+		{
+			Setup_Smoke((VECTOR*)&ev->position, 100, 500, 1, 0, &dummy, 0);
 		}
 	}
 
-	HelicopterData.lastX = (ev->position).vx;
-	HelicopterData.lastZ = (ev->position).vz;
-
-	SetMSoundVar((int)ev, NULL);
-
-	if (((ev->flags & 0x100U) != 0) && (uVar4 = Random2(0), (uVar4 & 3) == (CameraCnt & 3U)))
-	{
-		Setup_Smoke((VECTOR*)ev, 100, 500, 1, 0, &dummy, 0);
-	}
-
-LAB_00048934:
 	if (ev->model == HelicopterData.deadModel)
 	{
 		pos.vy = -200;
-		pos.vx = (ev->position).vx + (rand() & 0xff) + -0x80;
-		pos.vz = (ev->position).vz + (rand() & 0xff) + -0x80;
+		pos.vx = ev->position.vx + (rand() & 0xff) - 128;
+		pos.vz = ev->position.vz + (rand() & 0xff) - 128;
 
-		Setup_Smoke(&pos, 0x32, 100, 4, 0, &dummy, 0);
+		Setup_Smoke(&pos, 50, 100, 4, 0, &dummy, 0);
 		Setup_Smoke(&pos, 100, 500, 1, 0, &drift, 0);
+		
 		SetMSoundVar(0, NULL);
 	}
 	else
 	{
-		HelicopterData.rotorrot = HelicopterData.rotorrot + HelicopterData.rotorvel;
-		HelicopterData.rotorvel = HelicopterData.rotorvel + rotating;
+		HelicopterData.rotorrot += HelicopterData.rotorvel;
+		HelicopterData.rotorvel += rotating;
 
-		iVar6 = HelicopterData.rotorvel;
-		if (iVar6 < 0)
-			iVar6 = -iVar6;
-
-		if (0x100 < iVar6)
+		if (ABS(HelicopterData.rotorvel) > 256)
 			rotating = -rotating;
 	}
 }
@@ -3333,65 +3291,64 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 	VECTOR offset;
 	VECTOR carPos;
 
+	if (chicagoDoor[2].model == -1)
+		return;
+
+	RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
+
 	if (chicagoDoor[2].model != -1)
+		RenderModel(modelpointers[chicagoDoor[2].initialRotation], NULL, NULL, 0, 0, 1, 0);
+
+	matrix->m[0][0] = -matrix->m[0][0];
+	matrix->m[1][0] = -matrix->m[1][0];
+	matrix->m[2][0] = -matrix->m[2][0];
+
+	RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
+
+	if (chicagoDoor[2].minSpeed == -1)
+		return;
+
+	VECTOR spoke[2] = {
+		{0, 0, 2677},
+		{0, 2677, 0}
+	};
+
+	rotation = 0;
+
+	model = modelpointers[chicagoDoor[2].minSpeed];
+	
+	SetRotMatrix(&inv_camera_matrix);
+	_MatrixRotate(&spoke[0]);
+	_MatrixRotate(&spoke[1]);
+
+	for(loop = 0; loop < 5; loop++)
 	{
-		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
+		angle = chicagoDoor[2].rotation + rotation & 0xfff;
 
-		if (chicagoDoor[2].model != -1)
-		{
-			RenderModel(modelpointers[chicagoDoor[2].initialRotation], NULL, NULL, 0, 0, 1, 0);
-		}
+		cx = rcossin_tbl[angle * 2];
+		sx = rcossin_tbl[angle * 2 + 1];
 
-		matrix->m[0][0] = -matrix->m[0][0];
-		matrix->m[1][0] = -matrix->m[1][0];
-		matrix->m[2][0] = -matrix->m[2][0];
+		offset.vx = FIXEDH(spoke[0].vx * cx + spoke[1].vx * sx);
+		offset.vy = FIXEDH(spoke[0].vy * cx + spoke[1].vy * sx);
+		offset.vz = FIXEDH(spoke[0].vz * cx + spoke[1].vz * sx);
 
-		RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
+		carPos.vx = pos->vx + offset.vx;
+		carPos.vy = pos->vy + offset.vy;
+		carPos.vz = pos->vz + offset.vz;
+		gte_SetTransVector(&carPos);
 
-		if (chicagoDoor[2].minSpeed != -1)
-		{
-			VECTOR spoke[2] = {
-				{0, 0, 2677},
-				{0, 2677, 0}
-			};
+		RenderModel(model, NULL, NULL, 0, 0, 1, 0);
 
-			rotation = 0;
+		carPos.vx = pos->vx - offset.vx;
+		carPos.vy = pos->vy - offset.vy;
+		carPos.vz = pos->vz - offset.vz;
 
-			model = modelpointers[chicagoDoor[2].minSpeed];
-			loop = 4;
+		gte_SetTransVector(&carPos);
 
-			SetRotMatrix(&inv_camera_matrix);
-			_MatrixRotate(&spoke[0]);
-			_MatrixRotate(&spoke[1]);
+		RenderModel(model, NULL, NULL, 0, 0, 1, 0);
+		rotation += 410;
 
-			do {
-				angle = chicagoDoor[2].rotation + rotation & 0xfff;
-
-				cx = rcossin_tbl[angle * 2];
-				sx = rcossin_tbl[angle * 2 + 1];
-
-				offset.vx = FIXEDH(spoke[0].vx * cx + spoke[1].vx * sx);
-				offset.vy = FIXEDH(spoke[0].vy * cx + spoke[1].vy * sx);
-				offset.vz = FIXEDH(spoke[0].vz * cx + spoke[1].vz * sx);
-
-				carPos.vx = pos->vx + offset.vx;
-				carPos.vy = pos->vy + offset.vy;
-				carPos.vz = pos->vz + offset.vz;
-				gte_SetTransVector(&carPos);
-
-				RenderModel(model, NULL, NULL, 0, 0, 1, 0);
-
-				carPos.vx = pos->vx - offset.vx;
-				carPos.vy = pos->vy - offset.vy;
-				carPos.vz = pos->vz - offset.vz;
-
-				gte_SetTransVector(&carPos);
-
-				RenderModel(model, NULL, NULL, 0, 0, 1, 0);
-				loop--;
-				rotation += 410;
-			} while (-1 < loop);
-		}
+		loop++;
 	}
 }
 
@@ -3450,15 +3407,15 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 		{0,0,0},
 	};
 
-	localMat.m[0][0] = 0x1000;
+	localMat.m[0][0] = ONE;
 	localMat.m[1][0] = 0;
 	localMat.m[2][0] = 0;
 	localMat.m[0][1] = 0;
-	localMat.m[1][1] = 0x1000;
+	localMat.m[1][1] = ONE;
 	localMat.m[2][1] = 0;
 	localMat.m[0][2] = 0;
 	localMat.m[1][2] = 0;
-	localMat.m[2][2] = 0x1000;
+	localMat.m[2][2] = ONE;
 
 	pos.vx -= camera_position.vx;
 	pos.vy -= camera_position.vy;
@@ -3503,7 +3460,7 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 	*(ushort*)&poly->u0 = *(ushort*)&HelicopterData.rotorTexture.coords.u0;
 	*(ushort*)&poly->u1 = *(ushort*)&HelicopterData.rotorTexture.coords.u1;
 	*(ushort*)&poly->u2 = ((*(ushort*)&HelicopterData.rotorTexture.coords.u0 & 0xfefe) >> 1) + ((*(ushort*)&HelicopterData.rotorTexture.coords.u3 & 0xfefe) >> 1);
-	*(ushort*)&poly->u3 = *(ushort*)&HelicopterData.rotorTexture.coords.u3; // [A] FIXME: might be incorrect
+	*(ushort*)&poly->u3 = *(ushort*)&HelicopterData.rotorTexture.coords.u3; 
 
 	poly->tpage = HelicopterData.rotorTexture.tpageid | 0x40;
 	poly->clut = HelicopterData.rotorTexture.clutid;
@@ -3836,15 +3793,15 @@ void DrawEvents(int camera)
 								{
 									pos.vx = (ev->position).vx - camera_position.vx;
 									pos.vy = (ev->position).vy - camera_position.vy;
-									matrix.m[0][0] = 0x1000;
+									matrix.m[0][0] = ONE;
 									matrix.m[1][0] = 0;
 									matrix.m[2][0] = 0;
 									matrix.m[0][1] = 0;
-									matrix.m[1][1] = 0x1000;
+									matrix.m[1][1] = ONE;
 									matrix.m[2][1] = 0;
 									matrix.m[0][2] = 0;
 									matrix.m[1][2] = 0;
-									matrix.m[2][2] = 0x1000;
+									matrix.m[2][2] = ONE;
 									pos.vz = (ev->position).vz - camera_position.vz;
 									bVar1 = false;
 
@@ -4019,9 +3976,9 @@ void DrawEvents(int camera)
 										matrix.m[0][0] = 0;
 										matrix.m[0][1] = 0;
 										matrix.m[1][0] = 0;
-										matrix.m[1][1] = 0x1000;
+										matrix.m[1][1] = ONE;
 										matrix.m[1][2] = 0;
-										matrix.m[2][0] = 0x1000;
+										matrix.m[2][0] = ONE;
 										matrix.m[2][1] = 0;
 										matrix.m[2][2] = 0;
 
@@ -4029,11 +3986,11 @@ void DrawEvents(int camera)
 
 										if ((foam.rotate & 0x8000U) == 0)
 										{
-											matrix.m[0][2] = -0x1000;
+											matrix.m[0][2] = -ONE;
 										}
 										else
 										{
-											matrix.m[0][2] = 0x1000;
+											matrix.m[0][2] = ONE;
 										}
 
 										if (gTimeOfDay != 1)
@@ -4238,153 +4195,144 @@ int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
 
 int debugOffset = 0;
 
-// [D]
+// [D] [T]
 _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 {
-	short uVar1;
-	int* piVar2;
-	int uVar3;
-	short sVar4;
-	int iVar5;
-	int uVar6;
-	int iVar7;
-	int iVar8;
+	int d;
 	_EVENT* ev;
-	int iVar9;
+	int d1, d2;
 	int dist;
+	int sin;
+	int cos;
 
-	uVar6 = ((plane->surface & 0xffef));
-	ev = event + uVar6;
+	int i;
 
-	if (GameLevel == 1)
+	i = plane->surface & 0xffef;
+
+	ev = &event[i];
+
+	// chicago bridge plane
+	if (GameLevel == 0)
 	{
-	LAB_0004a880:
-		if ((ev->flags & 0x800U) != 0)
+		int dist;
+		int end;
+
+		if ((ev->flags & 0x30U) == 0)
+			dist = pos->vz;
+		else
+			dist = pos->vx;
+
+		if ((i & 1) == 0)
+			end = ev->data[1];
+		else
+			end = ev->data[-1];
+
+		d = ev->rotation & 0xfff;
+		sin = rcossin_tbl[d * 2];
+		cos = rcossin_tbl[d * 2 + 1];
+	
+		d1 = (end - ev->data[0]) * cos;
+		d2 = dist - ev->data[0];
+
+		if (ABS(d1) < ABS(d2) * 4096)
+			return GetSeaPlane();
+
+		plane->d = d2 * sin / cos;
+
+		if (d2 > 1024)
 		{
-			if (OnBoat(pos, ev, &dist) == 0)
+			if (pos->vy + 200 < plane->d)
 			{
-			LAB_0004aa60:
 				return GetSeaPlane();
 			}
 
-			iVar8 = 200;
-
-			if (GameLevel == 3)
-				iVar8 = 256;
-
-			piVar2 = ev->data;
-			uVar6 = ev->data[1] & 0xfff;
-			iVar5 = rcossin_tbl[uVar6 * 2];
-			iVar9 = rcossin_tbl[uVar6 * 2 + 1];
-
-			if (GameLevel == 3)
-			{
-				iVar7 = dist * -4096 - iVar9 * 3328;
-
-				if (0 < iVar7)
-				{
-					uVar3 = 0xa0U - ev->data[1] & 0xfff;
-					iVar9 = (int)rcossin_tbl[uVar3 * 2 + 1];
-
-					if (iVar9 << 0xb < iVar7)
-					{
-						debugOffset = iVar7;
-						return GetSeaPlane();
-					}
-
-					uVar6 = (iVar8 - (FIXEDH(iVar5 * 3328) + ev->data[2] + ev->position.vy)) + (FIXEDH(iVar7) * rcossin_tbl[uVar3 * 2]) / iVar9;
-					iVar5 = rcossin_tbl[uVar3 * 2];
-					goto LAB_0004a9f8;
-				}
-			}
-
-			uVar6 = iVar8 + (((iVar5 * dist) / iVar9 - ev->data[2]) - (ev->position).vy);
-
-		LAB_0004a9f8:
-			plane->b = (iVar9 << 2);
-			plane->a = 0;
-			plane->c = (iVar5 << 2);
-			plane->d = uVar6 ^ 0x40000000;
-			return plane;
+			plane->b = cos * 4;
+		}
+		else
+		{
+			plane->b = cos * 4;
 		}
 
-		uVar6 = -(ev->position).vy;
-
-		if (pos->vy < (int)(uVar6 - 100))
+		if ((ev->flags & 0x30U) == 0)
 		{
-			uVar6 = 0xbfffee02;
-			goto LAB_0004aa50;
+			plane->a = 0;
+			plane->c = sin * -4;
+			//plane->d = (sin * -0x40000) >> 0x10;	// [A] this is unused and incorrect!
+		}
+		else
+		{
+			plane->c = 0;
+			plane->a = sin * -4;
+		}
+
+		plane->d ^= 0x40000000;
+	}
+	else if (GameLevel == 1 || GameLevel == 3)
+	{
+		// Havana and Rio boats floating
+	
+		if (ev->flags & 0x800)
+		{
+			int height;
+			int offset;
+			
+			if (OnBoat(pos, ev, &dist) == 0)
+				return GetSeaPlane();
+
+			if (GameLevel == 3)
+				height = 256;
+			else
+				height = 200;
+
+			d = ev->data[1] & 0xfff;
+
+			sin = rcossin_tbl[d * 2];
+			cos = rcossin_tbl[d * 2 + 1];
+
+			offset = dist * -4096 - cos * 3328;
+			
+			if (GameLevel == 3 && offset > 0)
+			{
+				d = 160 - ev->data[1] & 0xfff;
+				sin = rcossin_tbl[d * 2];
+				cos = rcossin_tbl[d * 2 + 1];
+
+				if (cos * 2048 < offset)
+				{
+					debugOffset = offset;
+					return GetSeaPlane();
+				}
+
+				plane->b = cos * 4;
+				plane->a = 0;
+				plane->c = sin * 4;
+				plane->d = (height - (FIXEDH(sin * 3328) + ev->data[2] + ev->position.vy) + FIXEDH(offset) * sin / cos) ^ 0x40000000;
+			}
+			else
+			{
+				plane->b = cos * 4;
+				plane->a = 0;
+				plane->c = sin * 4;
+				plane->d = (height + (sin * dist / cos - ev->data[2] - ev->position.vy)) ^ 0x40000000;
+			}
+		}
+		else
+		{
+			if (pos->vy < -ev->position.vy - 100)
+			{
+				plane->d = 0xbfffee02;
+			}
+			else
+			{
+				plane->d = -ev->position.vy;
+			}
 		}
 	}
 	else
 	{
-		if (1 < GameLevel)
-		{
-			if (GameLevel != 3)
-			{
-				return GetSeaPlane();
-			}
-			goto LAB_0004a880;
-		}
-
-		if (GameLevel != 0)
-			return GetSeaPlane();
-
-		if ((ev->flags & 0x30U) == 0)
-			iVar8 = pos->vz;
-		else
-			iVar8 = pos->vx;
-
-		if ((uVar6 & 1) == 0)
-			iVar5 = ev->data[1];
-		else
-			iVar5 = ev->data[-1]; // [A] WTF?
-
-		uVar6 = ev->rotation & 0xfff;
-		iVar7 = (int)rcossin_tbl[uVar6 * 2 + 1];
-		iVar9 = (iVar5 - ev->data[0]) * iVar7;
-		iVar8 = iVar8 - ev->data[0];
-		iVar5 = iVar8;
-		if (iVar8 < 0)
-			iVar5 = -iVar8;
-
-		if (iVar9 < 0)
-			iVar9 = -iVar9;
-
-		if (iVar9 < iVar5 << 0xc)
-			goto LAB_0004aa60;
-
-		uVar6 = (iVar8 * rcossin_tbl[uVar6 * 2]) / iVar7;
-
-		sVar4 = (short)(iVar7 << 2);
-
-		if (iVar8 > 1024)
-		{
-			if (pos->vy + 200 < (int)uVar6)
-				goto LAB_0004aa60;
-
-			sVar4 = (iVar7 << 2);
-		}
-
-		plane->b = sVar4;
-
-		if ((ev->flags & 0x30U) == 0)
-		{
-			plane->a = 0;
-			uVar1 = rcossin_tbl[(ev->rotation & 0xfff) * 2];
-			plane->c = uVar1 * -4;
-			plane->d = (uVar1 * -0x40000) >> 0x10;
-		}
-		else
-		{
-			sVar4 = rcossin_tbl[(ev->rotation & 0xfff) * 2];
-			plane->c = 0;
-			plane->a = sVar4 * -4;
-		}
+		return GetSeaPlane();
 	}
-	uVar6 = uVar6 ^ 0x40000000;
-LAB_0004aa50:
-	plane->d = uVar6;
+
 	return plane;
 }
 
@@ -4664,7 +4612,7 @@ VECTOR* TriggerEvent(int i)
 					do {
 						piVar3 = missionTrain[i].node;
 
-						if (*piVar3 == -0x7ffffffe)
+						if (*piVar3 == STATION_NODE_2)
 							iVar5 = piVar3[-1];
 						else
 							iVar5 = piVar3[1];
@@ -5432,7 +5380,7 @@ void MultiCarEvent(_TARGET* target)
 	n = target->data[1];
 
 	i = 0;
-	while (n != -0x80000000)
+	while (n != 0x80000000)
 	{
 		n = (multiCar.event - event) + multiCar.count;
 
