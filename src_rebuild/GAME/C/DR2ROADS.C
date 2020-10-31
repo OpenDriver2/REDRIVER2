@@ -47,7 +47,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	if(IS_CURVED_SURFACE(surfId))
 	{
 		outRoadInfo->curve = curve = GET_CURVE(surfId);
-		outRoadInfo->ConnectIdx = (short(*)[4])curve->ConnectIdx;
+		outRoadInfo->ConnectIdx = &curve->ConnectIdx;
 		outRoadInfo->NumLanes = curve->NumLanes;
 		outRoadInfo->LaneDirs = curve->LaneDirs;
 		outRoadInfo->AILanes = curve->AILanes;
@@ -56,7 +56,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	else if (IS_STRAIGHT_SURFACE(surfId))
 	{
 		outRoadInfo->straight = straight = GET_STRAIGHT(surfId);
-		outRoadInfo->ConnectIdx = (short(*)[4])straight->ConnectIdx;
+		outRoadInfo->ConnectIdx = &straight->ConnectIdx;
 		outRoadInfo->NumLanes = straight->NumLanes;
 		outRoadInfo->LaneDirs = straight->LaneDirs;
 		outRoadInfo->AILanes = straight->AILanes;
