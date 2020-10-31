@@ -2021,8 +2021,8 @@ struct MR_MISSION
 	short message_priority[2];
 	char(*message_string[2]);
 	MR_TIMER timer[2];
-	_TARGET* CarTarget;
-	_TARGET* ChaseTarget;
+	MS_TARGET* CarTarget;
+	MS_TARGET* ChaseTarget;
 	int PhantomCarId;
 	int ChaseHitDelay;
 	char* StealMessage;
