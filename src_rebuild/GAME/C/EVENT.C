@@ -1083,7 +1083,7 @@ void InitEvents(void)
 #ifdef PSX
 #define EVENT_RADIUS 4096
 #else
-#define EVENT_RADIUS 16000
+#define EVENT_RADIUS 12000
 #endif
 
 // [D] [T] [A] long function, please debug more
@@ -2049,13 +2049,13 @@ void StepFromToEvent(_EVENT* ev)
 		curr = &ev->position.vz;
 	}
 
-	d = md = *curr - *ev->node;
+	d = *curr - *ev->node;
 	d2 = *to - *curr;
 
 	if (ABS(d2) < ABS(d))
-		md = d2;
+		md = ABS(d2);
 	else
-		md = d;
+		md = ABS(d);
 
 	df = *to - ev->node[0] >> 31;
 
@@ -2065,14 +2065,14 @@ void StepFromToEvent(_EVENT* ev)
 		if (md > 1024)
 			md = ev->data[0] ^ df;
 		else
-			md = FIXEDH((ev->data[0]-1) * rcossin_tbl[(md & 0xfff) * 2]) + 1 ^ df;
+			md = ((ev->data[0]-1) * rcossin_tbl[(md & 0xfff) * 2]) / 4096 + 1 ^ df;
 	}
 	else
 	{
 		if (md > 2048)
 			md = ev->data[0] ^ df;
 		else
-			md = FIXEDH((ev->data[0]-1) * rcossin_tbl[(md >> 1 & 0xfff) * 2]) + 1U ^ df;
+			md = ((ev->data[0]-1) * rcossin_tbl[(md >> 1 & 0xfff) * 2]) / 4096 + 1U ^ df;
 	}
 
 	*curr += (md - df);
@@ -4324,7 +4324,7 @@ _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 			}
 			else
 			{
-				plane->d = -ev->position.vy;
+				plane->d = ev->position.vy;
 			}
 		}
 	}
