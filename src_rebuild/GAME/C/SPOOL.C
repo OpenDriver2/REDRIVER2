@@ -112,7 +112,7 @@ int new_area_location;
 int LoadingArea = 0;
 unsigned short *newmodels;
 
-struct SPOOLQ spooldata[48];
+SPOOLQ spooldata[48];
 
 #ifdef _DEBUG
 #define SPOOL_INFO printInfo
@@ -302,7 +302,7 @@ void startReadLevSectorsPC(int sector)
 		// Start line: 534
 		// Start offset: 0x0007B228
 		// Variables:
-	// 		struct SPOOLQ *current; // $a3
+	// 		SPOOLQ *current; // $a3
 	/* end block 1 */
 	// End offset: 0x0007B3B4
 	// End Line: 588
@@ -414,7 +414,7 @@ void test_changemode(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ changemode(struct SPOOLQ *current /*$a0*/)
+// void /*$ra*/ changemode(SPOOLQ *current /*$a0*/)
  // line 591, offset 0x0007e1a8
 	/* begin block 1 */
 		// Start line: 1182
@@ -485,7 +485,7 @@ void changemode(SPOOLQ *current)
 		// Start line: 627
 		// Start offset: 0x0007B3C4
 		// Variables:
-	// 		struct AREA_LOAD_INFO regions_to_unpack[3]; // stack offset -160
+	// 		AREA_LOAD_INFO regions_to_unpack[3]; // stack offset -160
 	// 		int leftright_unpack; // $a2
 	// 		int topbottom_unpack; // $a3
 	// 		int num_regions_to_unpack; // $a1
@@ -737,7 +737,7 @@ void startgame(void)
 	// 		unsigned short *palette; // $a1
 	// 		int temp; // $a2
 	// 		int i; // $a0
-	// 		struct RECT dest; // stack offset -16
+	// 		RECT dest; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x0007E2CC
 	// End Line: 856
@@ -790,7 +790,7 @@ void DrawCDicon(void)
 		// Start line: 861
 		// Start offset: 0x0007E2CC
 		// Variables:
-	// 		struct RECT dest; // stack offset -16
+	// 		RECT dest; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x0007E35C
 	// End Line: 918
@@ -850,8 +850,8 @@ void CheckValidSpoolData(void)
 		// Start line: 927
 		// Start offset: 0x0007B6C4
 		// Variables:
-	// 		struct SPOOLQ *current; // $s0
-	// 		struct CdlLOC pos; // stack offset -16
+	// 		SPOOLQ *current; // $s0
+	// 		CdlLOC pos; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x0007B87C
 	// End Line: 977
@@ -1074,7 +1074,7 @@ void UpdateSpool(void)
 		// Start line: 1105
 		// Start offset: 0x0007E36C
 		// Variables:
-	// 		struct SPOOLQ *next; // $t0
+	// 		SPOOLQ *next; // $t0
 	// 		int sector; // $v0
 	/* end block 1 */
 	// End offset: 0x0007E3E4
@@ -1132,7 +1132,7 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 		// Variables:
 	// 		int i; // $s0
 	// 		char namebuffer[128]; // stack offset -152
-	// 		struct CdlLOC pos; // stack offset -24
+	// 		CdlLOC pos; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x0007E528
 	// End Line: 1158
@@ -1204,7 +1204,7 @@ void InitSpooling(void)
 			// Start line: 1176
 			// Start offset: 0x0007B900
 			// Variables:
-		// 		struct RECT cluts; // stack offset -32
+		// 		RECT cluts; // stack offset -32
 		// 		int npalettes; // $s1
 		// 		int i; // $a3
 		// 		unsigned long *clutptr; // $a1
@@ -1566,7 +1566,7 @@ void SendSBK(void)
 	// 		int size; // $s2
 	// 		int model_number; // $a1
 	// 		char *addr; // $s0
-	// 		struct MODEL *parentmodel; // $a1
+	// 		MODEL *parentmodel; // $a1
 
 		/* begin block 1.1 */
 			// Start line: 1519
@@ -1771,7 +1771,7 @@ void LoadInAreaModels(int area)
 		// Variables:
 	// 		int i; // $a2
 	// 		int nAreas; // $t0
-	// 		struct Spool *spoolptr; // $t1
+	// 		Spool *spoolptr; // $t1
 	// 		int load; // $a3
 	// 		int force_load_boundary; // $a0
 	/* end block 1 */
@@ -1953,7 +1953,7 @@ void ClearRegion(int target_region)
 		// Variables:
 	// 		int offset; // $s0
 	// 		char *target_unpacked_data; // $t1
-	// 		struct Spool *spoolptr; // $s1
+	// 		Spool *spoolptr; // $s1
 	// 		char *roadmap_buffer; // $s6
 	// 		char *cell_buffer; // $s3
 	/* end block 1 */
@@ -2264,7 +2264,7 @@ void WaitCloseLid(void)
 		// Start line: 1947
 		// Start offset: 0x0007E6D8
 		// Variables:
-	// 		struct CdlLOC p; // stack offset -16
+	// 		CdlLOC p; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x0007E724
 	// End Line: 1963
@@ -2486,7 +2486,7 @@ void data_cb_textures(void)
 			// Start line: 2050
 			// Start offset: 0x0007E0D8
 			// Variables:
-		// 		struct SPOOLQ *current; // $a2
+		// 		SPOOLQ *current; // $a2
 		/* end block 1.1 */
 		// End offset: 0x0007E188
 		// End Line: 2080
@@ -2575,7 +2575,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 			// Start line: 2110
 			// Start offset: 0x0007DF08
 			// Variables:
-		// 		struct SPOOLQ *current; // $v1
+		// 		SPOOLQ *current; // $v1
 		/* end block 1.1 */
 		// End offset: 0x0007DF08
 		// End Line: 2110
@@ -2646,7 +2646,7 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 			// Start line: 2136
 			// Start offset: 0x0007DDBC
 			// Variables:
-		// 		struct SPOOLQ *current; // $v0
+		// 		SPOOLQ *current; // $v0
 		/* end block 1.1 */
 		// End offset: 0x0007DE80
 		// End Line: 2167
@@ -2795,7 +2795,7 @@ void data_cb_soundbank(void)
 			// Start line: 2217
 			// Start offset: 0x0007DD04
 			// Variables:
-		// 		struct SPOOLQ *current; // $a0
+		// 		SPOOLQ *current; // $a0
 		/* end block 1.1 */
 		// End offset: 0x0007DD70
 		// End Line: 2237
@@ -2865,7 +2865,7 @@ void ready_cb_soundbank(unsigned char intr, unsigned char *result)
 			// Start line: 2250
 			// Start offset: 0x0007DA74
 			// Variables:
-		// 		struct SPOOLQ *current; // $v0
+		// 		SPOOLQ *current; // $v0
 		/* end block 1.1 */
 		// End offset: 0x0007DB28
 		// End Line: 2275
@@ -3212,7 +3212,7 @@ void Unpack_CellPtrs(void)
 	// 		int i; // $s1
 	// 		int j; // $s2
 	// 		int tpage; // $s0
-	// 		struct RECT specCluts; // stack offset -48
+	// 		RECT specCluts; // stack offset -48
 
 		/* begin block 1.1 */
 			// Start line: 2522
@@ -3583,7 +3583,7 @@ void LowModelSpooled(void)
 			// Start line: 2702
 			// Start offset: 0x0007CE8C
 			// Variables:
-		// 		struct MODEL *tempModel; // $a1
+		// 		MODEL *tempModel; // $a1
 		/* end block 1.1 */
 		// End offset: 0x0007CEE0
 		// End Line: 2713
@@ -3682,7 +3682,7 @@ void CleanSpooled(void)
 			// Start line: 2728
 			// Start offset: 0x0007E7D8
 			// Variables:
-		// 		struct MODEL *tempModel; // $a1
+		// 		MODEL *tempModel; // $a1
 		/* end block 1.1 */
 		// End offset: 0x0007E820
 		// End Line: 2737
@@ -3744,7 +3744,7 @@ void LowSpooled(void)
 			// Start line: 2751
 			// Start offset: 0x0007CF60
 			// Variables:
-		// 		struct RECT tpage; // stack offset -32
+		// 		RECT tpage; // stack offset -32
 		// 		int spec_tpage; // $a0
 		/* end block 1.1 */
 		// End offset: 0x0007D018
@@ -3754,7 +3754,7 @@ void LowSpooled(void)
 			// Start line: 2767
 			// Start offset: 0x0007D018
 			// Variables:
-		// 		struct RECT tpage; // stack offset -24
+		// 		RECT tpage; // stack offset -24
 		// 		int spec_tpage; // $a0
 		/* end block 1.2 */
 		// End offset: 0x0007D0EC
@@ -4000,7 +4000,7 @@ void SpecialStartNextBlock(void)
 		// Start line: 2958
 		// Start offset: 0x0007D4E0
 		// Variables:
-	// 		struct _CAR_DATA *lcp; // $a0
+	// 		CAR_DATA *lcp; // $a0
 	// 		int ret; // $a3
 
 		/* begin block 1.1 */
@@ -4035,7 +4035,7 @@ void CheckSpecialSpool(void)
 {
 	int ret;
 	int iVar2;
-	_CAR_DATA *lcp;
+	CAR_DATA *lcp;
 
 	if (startSpecSpool != -1 && startSpecSpool+400 < CameraCnt) 
 	{

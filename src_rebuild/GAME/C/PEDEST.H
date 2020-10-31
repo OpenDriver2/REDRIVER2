@@ -28,9 +28,9 @@ extern void DestroyCivPedestrians(); // 0x00072FD0
 
 extern void DestroyPedestrian(PEDESTRIAN *pPed); // 0x00071FB4
 
-extern int ActivatePlayerPedestrian(_CAR_DATA *pCar, char *padId, int direction, long (*position)[4], PED_MODEL_TYPES playerType); // 0x0006E6C4
+extern int ActivatePlayerPedestrian(CAR_DATA *pCar, char *padId, int direction, long (*position)[4], PED_MODEL_TYPES playerType); // 0x0006E6C4
 
-extern struct PEDESTRIAN * CreatePedestrian(); // 0x000720AC
+extern PEDESTRIAN * CreatePedestrian(); // 0x000720AC
 
 extern void PlaceRoadBlockCops(); // 0x0006EC88
 
@@ -64,7 +64,7 @@ extern void PedCarryOutAnimation(PEDESTRIAN *pPed); // 0x00072A10
 
 extern void PedGetOutCar(PEDESTRIAN *pPed); // 0x00072BEC
 
-extern void SetupGetOutCar(PEDESTRIAN *pPed, struct _CAR_DATA *pCar, int side); // 0x0006F80C
+extern void SetupGetOutCar(PEDESTRIAN *pPed, CAR_DATA *pCar, int side); // 0x0006F80C
 
 extern void SetupGetInCar(PEDESTRIAN *pPed); // 0x0006FA3C
 
@@ -92,13 +92,13 @@ extern void PingInPedestrians(); // 0x0007047C
 
 extern void TannerCollision(PEDESTRIAN *pPed); // 0x00072EE4
 
-extern int FindPointOfCollision(_CAR_DATA *pCar, PEDESTRIAN* pPed); // 0x00070878
+extern int FindPointOfCollision(CAR_DATA *pCar, PEDESTRIAN* pPed); // 0x00070878
 
 extern int TannerCarCollisionCheck(VECTOR *pPos, int dir, int bQuick); // 0x00070A9C
 
 extern int PingOutPed(PEDESTRIAN *pPed); // 0x000731F8
 
-extern void SetupCivJump(PEDESTRIAN *pPed, struct _CAR_DATA *cp); // 0x00071054
+extern void SetupCivJump(PEDESTRIAN *pPed, CAR_DATA *cp); // 0x00071054
 
 extern void CivPedJump(PEDESTRIAN *pPed); // 0x00072CF0
 
@@ -116,21 +116,21 @@ extern void CorrectPathPosition(PEDESTRIAN *pedestrian, VECTOR *position); // 0x
 
 extern int CalcPedestrianDirection(int last_dir, int wx, int wz, VECTOR *target); // 0x00071608
 
-extern int IsPavement(int x, int y, int z, struct PEDESTRIAN *pPed); // 0x000725B8
+extern int IsPavement(int x, int y, int z, PEDESTRIAN *pPed); // 0x000725B8
 
 extern void SetPedestrianTurn(PEDESTRIAN *pedestrian, int turn); // 0x00072500
 
-extern struct SEATED_PEDESTRIANS * FindSeated(); // 0x00072644
+extern SEATED_PEDESTRIANS * FindSeated(); // 0x00072644
 
-extern struct SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed); // 0x000717AC
+extern SEATED_PEDESTRIANS * FindTannerASeat(PEDESTRIAN *pPed); // 0x000717AC
 
 extern void add_seated(SEATED_PEDESTRIANS *seatedptr, int seat_index); // 0x000718C8
 
-extern void set_coll_box(int index, _CAR_DATA *cp, int offset); // 0x00071A5C
+extern void set_coll_box(int index, CAR_DATA *cp, int offset); // 0x00071A5C
 
 extern void BuildCarCollisionBox(); // 0x00071B7C
 
-extern struct _CAR_DATA * CheckForCar(PEDESTRIAN *pedestrian); // 0x00072738
+extern CAR_DATA * CheckForCar(PEDESTRIAN *pedestrian); // 0x00072738
 
 extern int CheckForPlayerCar(PEDESTRIAN *pedestrian, CAR_COLLISION_BOX *collision_box); // 0x000732C0
 

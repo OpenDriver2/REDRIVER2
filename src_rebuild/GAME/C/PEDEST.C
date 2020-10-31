@@ -110,7 +110,7 @@ static int oldCamView;
 		// Start line: 1139
 		// Start offset: 0x0006DD34
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $t4
+	// 		CAR_DATA *cp; // $t4
 
 		/* begin block 1.1 */
 			// Start line: 1152
@@ -142,7 +142,7 @@ int powerCounter = 0;
 // Havana easter egg.
 void IHaveThePower(void)
 {
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 	long force[4] = { 0x9000, 0, 0, 0 };
 	long point[4] = { 0, 0, 90, 0 };
 
@@ -203,24 +203,24 @@ void IHaveThePower(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ProcessTannerPad(struct PEDESTRIAN *pPed /*$s1*/, unsigned long pad /*$a1*/, char PadSteer /*$a2*/, char use_analogue /*$a3*/)
+// void /*$ra*/ ProcessTannerPad(PEDESTRIAN *pPed /*$s1*/, unsigned long pad /*$a1*/, char PadSteer /*$a2*/, char use_analogue /*$a3*/)
  // line 1191, offset 0x0006df54
 	/* begin block 1 */
 		// Start line: 1192
 		// Start offset: 0x0006DF54
 		// Variables:
-	// 		struct VECTOR vec; // stack offset -88
+	// 		VECTOR vec; // stack offset -88
 	// 		int mapheight; // $s2
-	// 		struct VECTOR normal; // stack offset -72
-	// 		struct VECTOR out; // stack offset -56
-	// 		struct _sdPlane *SurfacePtr; // stack offset -24
+	// 		VECTOR normal; // stack offset -72
+	// 		VECTOR out; // stack offset -56
+	// 		sdPlane *SurfacePtr; // stack offset -24
 
 		/* begin block 1.1 */
 			// Start line: 1224
 			// Start offset: 0x0006DFC8
 			// Variables:
-		// 		struct VECTOR tVec; // stack offset -40
-		// 		struct _sdPlane *plane; // $v0
+		// 		VECTOR tVec; // stack offset -40
+		// 		sdPlane *plane; // $v0
 		// 		int mH; // $v1
 		// 		int sI; // $a0
 		/* end block 1.1 */
@@ -255,14 +255,14 @@ void IHaveThePower(void)
 // [D] [T]
 void ProcessTannerPad(PEDESTRIAN* pPed, ulong pad, char PadSteer, char use_analogue)
 {
-	_sdPlane* SurfacePtr;
+	sdPlane* SurfacePtr;
 	int direction;
 	VECTOR vec;
 	VECTOR normal;
 	VECTOR out;
 	VECTOR tVec;
-	_sdPlane* plane;
-	_PLAYER* lcp;
+	sdPlane* plane;
+	PLAYER* lcp;
 
 	int padId;
 
@@ -511,13 +511,13 @@ void InitTanner(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetTannerPosition(struct VECTOR *pVec /*$a0*/)
+// void /*$ra*/ SetTannerPosition(VECTOR *pVec /*$a0*/)
  // line 1440, offset 0x00072478
 	/* begin block 1 */
 		// Start line: 1441
 		// Start offset: 0x00072478
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $a1
+	// 		PEDESTRIAN *pPed; // $a1
 	/* end block 1 */
 	// End offset: 0x00072500
 	// End Line: 1459
@@ -571,7 +571,7 @@ void SetTannerPosition(VECTOR* pVec)
 		// Start offset: 0x0006E5C4
 		// Variables:
 	// 		int loop; // $a1
-	// 		struct SEATED_PEDESTRIANS *seatedptr; // $s2
+	// 		SEATED_PEDESTRIANS *seatedptr; // $s2
 	/* end block 1 */
 	// End offset: 0x0006E6C4
 	// End Line: 1513
@@ -701,8 +701,8 @@ void DestroyPedestrians(void)
 		// Start line: 1543
 		// Start offset: 0x00072FD0
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $v1
-	// 		struct PEDESTRIAN *pHPed; // $s0
+	// 		PEDESTRIAN *pPed; // $v1
+	// 		PEDESTRIAN *pHPed; // $s0
 	/* end block 1 */
 	// End offset: 0x00073038
 	// End Line: 1559
@@ -749,7 +749,7 @@ void DestroyCivPedestrians(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DestroyPedestrian(struct PEDESTRIAN *pPed /*$a1*/)
+// void /*$ra*/ DestroyPedestrian(PEDESTRIAN *pPed /*$a1*/)
  // line 1567, offset 0x00071fb4
 	/* begin block 1 */
 		// Start line: 1568
@@ -759,7 +759,7 @@ void DestroyCivPedestrians(void)
 			// Start line: 1605
 			// Start offset: 0x00072064
 			// Variables:
-		// 		struct SEATED_PEDESTRIANS *seatedptr; // $a0
+		// 		SEATED_PEDESTRIANS *seatedptr; // $a0
 		/* end block 1.1 */
 		// End offset: 0x00072090
 		// End Line: 1608
@@ -828,15 +828,15 @@ void DestroyPedestrian(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ ActivatePlayerPedestrian(struct _CAR_DATA *pCar /*$s6*/, char *padId /*stack 4*/, int direction /*$a1*/, long (*position)[4] /*$a3*/, int playerType /*stack 16*/)
+// int /*$ra*/ ActivatePlayerPedestrian(CAR_DATA *pCar /*$s6*/, char *padId /*stack 4*/, int direction /*$a1*/, long (*position)[4] /*$a3*/, int playerType /*stack 16*/)
  // line 1623, offset 0x0006e6c4
 	/* begin block 1 */
 		// Start line: 1624
 		// Start offset: 0x0006E6C4
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $s1
-	// 		struct PEDESTRIAN *pSPed; // $a0
-	// 		struct VECTOR v; // stack offset -72
+	// 		PEDESTRIAN *pPed; // $s1
+	// 		PEDESTRIAN *pSPed; // $a0
+	// 		VECTOR v; // stack offset -72
 	// 		int nx; // $s4
 	// 		int nz; // $s2
 	// 		long w; // $s0
@@ -889,7 +889,7 @@ void DestroyPedestrian(PEDESTRIAN* pPed)
 /* WARNING: Type propagation algorithm not settling */
 
 // [D] [T]
-int ActivatePlayerPedestrian(_CAR_DATA* pCar, char* padId, int direction, long(*position)[4], PED_MODEL_TYPES playerType)
+int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, long(*position)[4], PED_MODEL_TYPES playerType)
 {
 	int wbody;
 	int side;
@@ -900,7 +900,7 @@ int ActivatePlayerPedestrian(_CAR_DATA* pCar, char* padId, int direction, long(*
 	VECTOR v;
 	long y;
 	long d;
-	_PLAYER* lp;
+	PLAYER* lp;
 	int x, z;
 
 	if (numTannerPeds > 7)
@@ -1099,7 +1099,7 @@ int ActivatePlayerPedestrian(_CAR_DATA* pCar, char* padId, int direction, long(*
 
 // decompiled code
 // original method signature: 
-// struct PEDESTRIAN * /*$ra*/ CreatePedestrian()
+// PEDESTRIAN * /*$ra*/ CreatePedestrian()
  // line 1842, offset 0x000720ac
 	/* begin block 1 */
 		// Start line: 1844
@@ -1167,8 +1167,8 @@ PEDESTRIAN* CreatePedestrian(void)
 		// Start line: 1879
 		// Start offset: 0x0006EC88
 		// Variables:
-	// 		struct _CAR_DATA *pCar; // $a0
-	// 		struct _CAR_DATA (*pCopCars[16]); // stack offset -152
+	// 		CAR_DATA *pCar; // $a0
+	// 		CAR_DATA (*pCopCars[16]); // stack offset -152
 	// 		int numCops; // $fp
 
 		/* begin block 1.1 */
@@ -1181,7 +1181,7 @@ PEDESTRIAN* CreatePedestrian(void)
 		// 		int i; // $s7
 		// 		int s1; // $s1
 		// 		int s2; // $a3
-		// 		struct VECTOR vert; // stack offset -88
+		// 		VECTOR vert; // stack offset -88
 		// 		long disp[4]; // stack offset -72
 		// 		long dir[4]; // stack offset -56
 		// 		int alpha; // $s1
@@ -1221,11 +1221,11 @@ void PlaceRoadBlockCops(void)
 	int lbody;
 	int cs, sn;
 	uint dir;
-	_CAR_DATA* cp;
-	_CAR_DATA* pCar;
+	CAR_DATA* cp;
+	CAR_DATA* pCar;
 	int i;
 	int numCops;
-	_CAR_DATA* pCopCars[16];
+	CAR_DATA* pCopCars[16];
 	long disp[4];
 
 	if (numCopPeds >= 8)
@@ -1294,7 +1294,7 @@ void PlaceRoadBlockCops(void)
 		// Start line: 1976
 		// Start offset: 0x0006F00C
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $s0
+	// 		PEDESTRIAN *pPed; // $s0
 	/* end block 1 */
 	// End offset: 0x0006F16C
 	// End Line: 2045
@@ -1369,9 +1369,9 @@ int CreatePedAtLocation(long(*pPos)[4], int pedType)
 		// Start line: 2054
 		// Start offset: 0x00072290
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $s0
+	// 		PEDESTRIAN *pPed; // $s0
 	// 		int pedType; // $s2
-	// 		struct MATRIX mStore; // stack offset -56
+	// 		MATRIX mStore; // stack offset -56
 
 		/* begin block 1.1 */
 			// Start line: 2071
@@ -1478,7 +1478,7 @@ void DrawAllPedestrians(void)
 		// Start line: 2147
 		// Start offset: 0x00072430
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $a0
+	// 		PEDESTRIAN *pPed; // $a0
 	/* end block 1 */
 	// End offset: 0x00072478
 	// End Line: 2158
@@ -1526,9 +1526,9 @@ int TannerActionHappening(void)
 		// Start line: 2170
 		// Start offset: 0x0006F16C
 		// Variables:
-	// 		struct PEDESTRIAN *pPed; // $s0
-	// 		struct PEDESTRIAN *pPedNext; // $s2
-	// 		struct _CAR_DATA *pCar; // $v0
+	// 		PEDESTRIAN *pPed; // $s0
+	// 		PEDESTRIAN *pPedNext; // $s2
+	// 		CAR_DATA *pCar; // $v0
 
 		/* begin block 1.1 */
 			// Start line: 2225
@@ -1568,7 +1568,7 @@ int bAvoidBomb = -1;
 // [D] [T]
 void ControlPedestrians(void)
 {
-	_CAR_DATA* pCar;
+	CAR_DATA* pCar;
 	PEDESTRIAN* pPed;
 	PEDESTRIAN* pPedNext;
 
@@ -1635,7 +1635,7 @@ void ControlPedestrians(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupDoNowt(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupDoNowt(PEDESTRIAN *pPed /*$s0*/)
  // line 2256, offset 0x00073038
 	/* begin block 1 */
 		// Start line: 20024
@@ -1663,7 +1663,7 @@ void SetupDoNowt(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupWalker(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupWalker(PEDESTRIAN *pPed /*$s0*/)
  // line 2275, offset 0x0007307c
 	/* begin block 1 */
 		// Start line: 20767
@@ -1684,7 +1684,7 @@ void SetupWalker(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupRunner(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupRunner(PEDESTRIAN *pPed /*$s0*/)
  // line 2291, offset 0x000730b8
 	/* begin block 1 */
 		// Start line: 20802
@@ -1706,7 +1706,7 @@ void SetupRunner(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupBack(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupBack(PEDESTRIAN *pPed /*$s0*/)
  // line 2302, offset 0x000730fc
 	/* begin block 1 */
 		// Start line: 20826
@@ -1728,14 +1728,14 @@ void SetupBack(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CivGetIn(struct PEDESTRIAN *pPed /*$s2*/)
+// void /*$ra*/ CivGetIn(PEDESTRIAN *pPed /*$s2*/)
  // line 2325, offset 0x00072dfc
 	/* begin block 1 */
 		// Start line: 2326
 		// Start offset: 0x00072DFC
 		// Variables:
-	// 		struct DRIVER2_STRAIGHT *str; // $s1
-	// 		struct DRIVER2_CURVE *crv; // $s0
+	// 		DRIVER2_STRAIGHT *str; // $s1
+	// 		DRIVER2_CURVE *crv; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 2326
@@ -1762,7 +1762,7 @@ void SetupBack(PEDESTRIAN* pPed)
 	/* end block 4 */
 	// End Line: 18694
 
-_CAR_DATA* pCivCarToGetIn = NULL;
+CAR_DATA* pCivCarToGetIn = NULL;
 
 // [D] [T]
 void CivGetIn(PEDESTRIAN* pPed)		// [A] UNUSED
@@ -1790,13 +1790,13 @@ void CivGetIn(PEDESTRIAN* pPed)		// [A] UNUSED
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CopStand(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ CopStand(PEDESTRIAN *pPed /*$s0*/)
  // line 2353, offset 0x00072da0
 	/* begin block 1 */
 		// Start line: 2354
 		// Start offset: 0x00072DA0
 		// Variables:
-	// 		struct VECTOR v; // stack offset -24
+	// 		VECTOR v; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00072DFC
 	// End Line: 2377
@@ -1826,7 +1826,7 @@ void CopStand(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedDoNothing(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedDoNothing(PEDESTRIAN *pPed /*$s0*/)
  // line 2385, offset 0x0006f2dc
 	/* begin block 1 */
 		// Start line: 5187
@@ -1958,7 +1958,7 @@ void PedDoNothing(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedUserRunner(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedUserRunner(PEDESTRIAN *pPed /*$s0*/)
  // line 2523, offset 0x0006f5ac
 	/* begin block 1 */
 		// Start line: 2524
@@ -2054,7 +2054,7 @@ void PedUserRunner(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedUserWalker(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedUserWalker(PEDESTRIAN *pPed /*$s0*/)
  // line 2639, offset 0x00072944
 	/* begin block 1 */
 		// Start line: 2640
@@ -2115,7 +2115,7 @@ void PedUserWalker(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedCarryOutAnimation(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedCarryOutAnimation(PEDESTRIAN *pPed /*$s0*/)
  // line 2702, offset 0x00072a10
 	/* begin block 1 */
 		// Start line: 17238
@@ -2196,7 +2196,7 @@ void PedCarryOutAnimation(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedGetOutCar(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedGetOutCar(PEDESTRIAN *pPed /*$s0*/)
  // line 2796, offset 0x00072bec
 	/* begin block 1 */
 		// Start line: 17673
@@ -2208,7 +2208,7 @@ void PedCarryOutAnimation(PEDESTRIAN* pPed)
 	/* end block 2 */
 	// End Line: 5593
 
-_CAR_DATA* carToGetIn;
+CAR_DATA* carToGetIn;
 int bReverseYRotation = 0;
 
 // [D] [T]
@@ -2242,7 +2242,7 @@ void PedGetOutCar(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupGetOutCar(struct PEDESTRIAN *pPed /*$s5*/, struct _CAR_DATA *pCar /*$s3*/, int side /*$s7*/)
+// void /*$ra*/ SetupGetOutCar(PEDESTRIAN *pPed /*$s5*/, CAR_DATA *pCar /*$s3*/, int side /*$s7*/)
  // line 2827, offset 0x0006f80c
 	/* begin block 1 */
 		// Start line: 2828
@@ -2251,7 +2251,7 @@ void PedGetOutCar(PEDESTRIAN* pPed)
 	// 		int alpha; // $s2
 	// 		long disp[4]; // stack offset -80
 	// 		long dir[4]; // stack offset -64
-	// 		struct SVECTOR vert; // stack offset -48
+	// 		SVECTOR vert; // stack offset -48
 	// 		int x; // $s4
 	// 		int z; // $s0
 	// 		int a; // $s6
@@ -2274,7 +2274,7 @@ void PedGetOutCar(PEDESTRIAN* pPed)
 int lastCarCameraView = 0;
 
 // [D] [T]
-void SetupGetOutCar(PEDESTRIAN* pPed, _CAR_DATA* pCar, int side)
+void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
 {
 	bool entrySide;
 	int sn, cs;
@@ -2323,7 +2323,7 @@ void SetupGetOutCar(PEDESTRIAN* pPed, _CAR_DATA* pCar, int side)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupGetInCar(struct PEDESTRIAN *pPed /*$s2*/)
+// void /*$ra*/ SetupGetInCar(PEDESTRIAN *pPed /*$s2*/)
  // line 2898, offset 0x0006fa3c
 	/* begin block 1 */
 		// Start line: 2899
@@ -2332,7 +2332,7 @@ void SetupGetOutCar(PEDESTRIAN* pPed, _CAR_DATA* pCar, int side)
 	// 		int alpha; // $s1
 	// 		long disp[4]; // stack offset -72
 	// 		long dir[4]; // stack offset -56
-	// 		struct SVECTOR vert; // stack offset -40
+	// 		SVECTOR vert; // stack offset -40
 
 		/* begin block 1.1 */
 			// Start line: 2934
@@ -2441,7 +2441,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedGetInCar(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedGetInCar(PEDESTRIAN *pPed /*$s0*/)
  // line 2994, offset 0x00072b5c
 	/* begin block 1 */
 		// Start line: 2995
@@ -2449,7 +2449,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 		// Variables:
 	// 		long disp[4]; // stack offset -48
 	// 		long dir[4]; // stack offset -32
-	// 		struct SVECTOR vert; // stack offset -16
+	// 		SVECTOR vert; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00072BEC
 	// End Line: 3018
@@ -2491,7 +2491,7 @@ void PedGetInCar(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupPressButton(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupPressButton(PEDESTRIAN *pPed /*$s0*/)
  // line 3026, offset 0x00072904
 	/* begin block 1 */
 		// Start line: 17494
@@ -2518,7 +2518,7 @@ void SetupPressButton(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedPressButton(struct PEDESTRIAN *pPed /*$v1*/)
+// void /*$ra*/ PedPressButton(PEDESTRIAN *pPed /*$v1*/)
  // line 3040, offset 0x00072c90
 	/* begin block 1 */
 		// Start line: 18175
@@ -2546,7 +2546,7 @@ void PedPressButton(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupTannerSitDown(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupTannerSitDown(PEDESTRIAN *pPed /*$s0*/)
  // line 3060, offset 0x000728c8
 	/* begin block 1 */
 		// Start line: 6120
@@ -2566,7 +2566,7 @@ void SetupTannerSitDown(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TannerCameraHandler(struct PEDESTRIAN *pPed /*$a0*/)
+// void /*$ra*/ TannerCameraHandler(PEDESTRIAN *pPed /*$a0*/)
  // line 3074, offset 0x0006fd08
 	/* begin block 1 */
 		// Start line: 3076
@@ -2612,7 +2612,7 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 	int value;
 	short extra;
 	int padSteer;
-	_PLAYER* lcp;
+	PLAYER* lcp;
 
 	int padid;
 
@@ -2690,13 +2690,13 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TannerSitDown(struct PEDESTRIAN *pPed /*$a2*/)
+// void /*$ra*/ TannerSitDown(PEDESTRIAN *pPed /*$a2*/)
  // line 3157, offset 0x0006ff48
 	/* begin block 1 */
 		// Start line: 3158
 		// Start offset: 0x0006FF48
 		// Variables:
-	// 		struct VECTOR angle; // stack offset -24
+	// 		VECTOR angle; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x000700D0
 	// End Line: 3219
@@ -2769,7 +2769,7 @@ void TannerSitDown(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AnimatePed(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ AnimatePed(PEDESTRIAN *pPed /*$s0*/)
  // line 3227, offset 0x000700d0
 	/* begin block 1 */
 		// Start line: 3228
@@ -2786,7 +2786,7 @@ void TannerSitDown(PEDESTRIAN* pPed)
 				// Start line: 3241
 				// Start offset: 0x000700F0
 				// Variables:
-			// 		struct VECTOR vec; // stack offset -32
+			// 		VECTOR vec; // stack offset -32
 			/* end block 1.1.1 */
 			// End offset: 0x0007015C
 			// End Line: 3266
@@ -2914,16 +2914,16 @@ void AnimatePed(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DeActivatePlayerPedestrian(struct PEDESTRIAN *pPed /*$s3*/)
+// void /*$ra*/ DeActivatePlayerPedestrian(PEDESTRIAN *pPed /*$s3*/)
  // line 3357, offset 0x0007216c
 	/* begin block 1 */
 		// Start line: 3358
 		// Start offset: 0x0007216C
 		// Variables:
 	// 		int distToCarSq; // stack offset -32
-	// 		struct _CAR_DATA *closestCar; // $s1
-	// 		struct _PLAYER *pPlayer; // $v0
-	// 		struct VECTOR point; // stack offset -48
+	// 		CAR_DATA *closestCar; // $s1
+	// 		PLAYER *pPlayer; // $v0
+	// 		VECTOR point; // stack offset -48
 	// 		int getIn; // $s2
 
 		/* begin block 1.1 */
@@ -2944,7 +2944,7 @@ void AnimatePed(PEDESTRIAN* pPed)
 // [D] [T]
 void DeActivatePlayerPedestrian(PEDESTRIAN* pPed)
 {
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 	int playerId;
 	int getIn;
 	int distToCarSq;
@@ -2981,7 +2981,7 @@ void DeActivatePlayerPedestrian(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CivPedDoNothing(struct PEDESTRIAN *pPed /*$a0*/)
+// void /*$ra*/ CivPedDoNothing(PEDESTRIAN *pPed /*$a0*/)
  // line 3402, offset 0x00072ce0
 	/* begin block 1 */
 		// Start line: 18899
@@ -3002,13 +3002,13 @@ void CivPedDoNothing(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupCivPedRouteData(struct VECTOR *pPos /*$s1*/)
+// void /*$ra*/ SetupCivPedRouteData(VECTOR *pPos /*$s1*/)
  // line 3411, offset 0x0007313c
 	/* begin block 1 */
 		// Start line: 3412
 		// Start offset: 0x0007313C
 		// Variables:
-	// 		struct VECTOR baseLoc; // stack offset -32
+	// 		VECTOR baseLoc; // stack offset -32
 	/* end block 1 */
 	// End offset: 0x000731F8
 	// End Line: 3435
@@ -3054,13 +3054,13 @@ void SetupCivPedRouteData(VECTOR* pPos)
 		// Start offset: 0x0007047C
 		// Variables:
 	// 		int bFound; // $s1
-	// 		struct VECTOR randomLoc; // stack offset -88
-	// 		struct VECTOR baseLoc; // stack offset -72
+	// 		VECTOR randomLoc; // stack offset -88
+	// 		VECTOR baseLoc; // stack offset -72
 	// 		int i; // $s2
 	// 		int pingInDist; // $a2
-	// 		struct VECTOR position; // stack offset -56
-	// 		struct VECTOR target; // stack offset -40
-	// 		struct PEDESTRIAN *pedestrian; // $s1
+	// 		VECTOR position; // stack offset -56
+	// 		VECTOR target; // stack offset -40
+	// 		PEDESTRIAN *pedestrian; // $s1
 
 		/* begin block 1.1 */
 			// Start line: 3484
@@ -3070,7 +3070,7 @@ void SetupCivPedRouteData(VECTOR* pPos)
 				// Start line: 3502
 				// Start offset: 0x000705F8
 				// Variables:
-			// 		struct PEDESTRIAN *pPed; // $a2
+			// 		PEDESTRIAN *pPed; // $a2
 
 				/* begin block 1.1.1.1 */
 					// Start line: 3520
@@ -3252,7 +3252,7 @@ void PingInPedestrians(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TannerCollision(struct PEDESTRIAN *pPed /*$s1*/)
+// void /*$ra*/ TannerCollision(PEDESTRIAN *pPed /*$s1*/)
  // line 3640, offset 0x00072ee4
 	/* begin block 1 */
 		// Start line: 3641
@@ -3281,14 +3281,14 @@ void PingInPedestrians(void)
 // [D] [T]
 void TannerCollision(PEDESTRIAN* pPed)
 {
-	_CAR_DATA* pcdTanner;
+	CAR_DATA* pcdTanner;
 
 	if (pPed->type == PED_ACTION_SIT)
 		return;
 
 	pcdTanner = &car_data[TANNER_COLLIDER_CARID];
 
-	ClearMem((char*)pcdTanner, sizeof(_CAR_DATA));
+	ClearMem((char*)pcdTanner, sizeof(CAR_DATA));
 
 	pcdTanner->id = 21;
 	pcdTanner->controlType = 6;
@@ -3319,7 +3319,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ FindPointOfCollision(struct _CAR_DATA *pCar /*$s3*/, struct VECTOR *pPos /*$a1*/)
+// int /*$ra*/ FindPointOfCollision(CAR_DATA *pCar /*$s3*/, VECTOR *pPos /*$a1*/)
  // line 3685, offset 0x00070878
 	/* begin block 1 */
 		// Start line: 3686
@@ -3336,7 +3336,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 	// 		int s1; // $a2
 	// 		int s2; // $v1
 	// 		int carLength[2]; // stack offset -40
-	// 		static struct CRET2D collisionResult; // offset 0x0
+	// 		static CRET2D collisionResult; // offset 0x0
 	/* end block 1 */
 	// End offset: 0x00070A9C
 	// End Line: 3753
@@ -3352,7 +3352,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 	// End Line: 8378
 
 // [D] [T]
-int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
+int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
 {
 	int dx, dz;
 	int minZ;
@@ -3433,16 +3433,16 @@ int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ TannerCarCollisionCheck(struct VECTOR *pPos /*$s5*/, int dir /*$a1*/, int bQuick /*stack 8*/)
+// int /*$ra*/ TannerCarCollisionCheck(VECTOR *pPos /*$s5*/, int dir /*$a1*/, int bQuick /*stack 8*/)
  // line 3762, offset 0x00070a9c
 	/* begin block 1 */
 		// Start line: 3763
 		// Start offset: 0x00070A9C
 		// Variables:
 	// 		int carLength[2]; // stack offset -120
-	// 		struct _CAR_DATA *cp0; // $s0
-	// 		struct _CAR_DATA *cp1; // $s1
-	// 		static struct CRET2D collisionResult; // offset 0x30
+	// 		CAR_DATA *cp0; // $s0
+	// 		CAR_DATA *cp1; // $s1
+	// 		static CRET2D collisionResult; // offset 0x30
 	// 		unsigned int dNewLBODY[2]; // stack offset -112
 	// 		int speed; // $v0
 
@@ -3461,7 +3461,7 @@ int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
 				// Start line: 3815
 				// Start offset: 0x00070C04
 				// Variables:
-			// 		struct VECTOR velocity; // stack offset -104
+			// 		VECTOR velocity; // stack offset -104
 			// 		long pointVel[4]; // stack offset -88
 			// 		long reaction[4]; // stack offset -72
 			// 		long lever[4]; // stack offset -56
@@ -3516,14 +3516,14 @@ int FindPointOfCollision(_CAR_DATA* pCar, PEDESTRIAN* pPed)
 // [D] [T]
 int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 {
-	_CAR_DATA* cp1;
+	CAR_DATA* cp1;
 	long pointVel[4];
 	long reaction[4];
 	long lever[4];
 	int strikeVel;
 	SVECTOR boxDisp;
 	CAR_COSMETICS* car_cos;
-	_CAR_DATA* pcdTanner;
+	CAR_DATA* pcdTanner;
 
 	CRET2D collisionResult; // offset 0x30
 	CDATA2D cd[2];
@@ -3630,7 +3630,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ PingOutPed(struct PEDESTRIAN *pPed /*$a2*/)
+// int /*$ra*/ PingOutPed(PEDESTRIAN *pPed /*$a2*/)
 // line 3915, offset 0x000731f8
 /* begin block 1 */
 // Start line: 3916
@@ -3675,7 +3675,7 @@ int PingOutPed(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupCivJump(struct PEDESTRIAN *pPed /*$s1*/, struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ SetupCivJump(PEDESTRIAN *pPed /*$s1*/, CAR_DATA *cp /*$s0*/)
 // line 3946, offset 0x00071054
 /* begin block 1 */
 // Start line: 3947
@@ -3715,7 +3715,7 @@ int PingOutPed(PEDESTRIAN* pPed)
 // End Line: 9331
 
 // [D] [T]
-void SetupCivJump(PEDESTRIAN* pPed, _CAR_DATA* cp)
+void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
 {
 	int dz;
 	short scale;
@@ -3793,7 +3793,7 @@ void SetupCivJump(PEDESTRIAN* pPed, _CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CivPedJump(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ CivPedJump(PEDESTRIAN *pPed /*$s0*/)
 // line 4047, offset 0x00072cf0
 /* begin block 1 */
 // Start line: 4048
@@ -3839,7 +3839,7 @@ void CivPedJump(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupCivPedWalk(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ SetupCivPedWalk(PEDESTRIAN *pPed /*$s0*/)
 // line 4080, offset 0x00073270
 /* begin block 1 */
 // Start line: 24276
@@ -3870,7 +3870,7 @@ void SetupCivPedWalk(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CivPedWalk(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ CivPedWalk(PEDESTRIAN *pPed /*$s0*/)
 // line 4101, offset 0x00071324
 /* begin block 1 */
 // Start line: 4102
@@ -3978,7 +3978,7 @@ void CivPedWalk(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CivPedSit(struct PEDESTRIAN *pPed /*$a0*/)
+// void /*$ra*/ CivPedSit(PEDESTRIAN *pPed /*$a0*/)
 // line 4190, offset 0x00072ce8
 /* begin block 1 */
 // Start line: 4192
@@ -4053,7 +4053,7 @@ void HandlePedestrians(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PedestrianActionInit_WalkToTarget(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ PedestrianActionInit_WalkToTarget(PEDESTRIAN *pPed /*$s0*/)
 // line 4465, offset 0x0007283c
 /* begin block 1 */
 // Start line: 4466
@@ -4101,13 +4101,13 @@ void PedestrianActionInit_WalkToTarget(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CorrectPathPosition(struct PEDESTRIAN *pedestrian /*$a0*/, struct VECTOR *position /*$a1*/)
+// void /*$ra*/ CorrectPathPosition(PEDESTRIAN *pedestrian /*$a0*/, VECTOR *position /*$a1*/)
 // line 4508, offset 0x000715fc
 /* begin block 1 */
 // Start line: 4510
 // Start offset: 0x000715FC
 // Variables:
-// 		struct VECTOR vec; // stack offset -16
+// 		VECTOR vec; // stack offset -16
 /* end block 1 */
 // End offset: 0x000715FC
 // End Line: 4610
@@ -4141,7 +4141,7 @@ void CorrectPathPosition(PEDESTRIAN* pedestrian, VECTOR* position)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CalcPedestrianDirection(int last_dir /*$a0*/, int wx /*$s5*/, int wz /*$s6*/, struct VECTOR *target /*$s3*/)
+// int /*$ra*/ CalcPedestrianDirection(int last_dir /*$a0*/, int wx /*$s5*/, int wz /*$s6*/, VECTOR *target /*$s3*/)
 // line 4619, offset 0x00071608
 /* begin block 1 */
 // Start line: 4620
@@ -4263,13 +4263,13 @@ int CalcPedestrianDirection(int last_dir, int wx, int wz, VECTOR* target)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ IsPavement(int x /*$a0*/, int y /*$a1*/, int z /*$a2*/, struct PEDESTRIAN *pPed /*$s0*/)
+// int /*$ra*/ IsPavement(int x /*$a0*/, int y /*$a1*/, int z /*$a2*/, PEDESTRIAN *pPed /*$s0*/)
 // line 4845, offset 0x000725b8
 /* begin block 1 */
 // Start line: 4846
 // Start offset: 0x000725B8
 // Variables:
-// 		struct VECTOR vec; // stack offset -24
+// 		VECTOR vec; // stack offset -24
 // 		int r; // $v1
 /* end block 1 */
 // End offset: 0x00072644
@@ -4319,7 +4319,7 @@ int IsPavement(int x, int y, int z, PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetPedestrianTurn(struct PEDESTRIAN *pedestrian /*$a0*/, int turn /*$a1*/)
+// void /*$ra*/ SetPedestrianTurn(PEDESTRIAN *pedestrian /*$a0*/, int turn /*$a1*/)
 // line 4924, offset 0x00072500
 /* begin block 1 */
 // Start line: 4925
@@ -4371,13 +4371,13 @@ void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
 
 // decompiled code
 // original method signature: 
-// struct SEATED_PEDESTRIANS * /*$ra*/ FindSeated()
+// SEATED_PEDESTRIANS * /*$ra*/ FindSeated()
 // line 4943, offset 0x00072644
 /* begin block 1 */
 // Start line: 4945
 // Start offset: 0x00072644
 // Variables:
-// 		struct SEATED_PEDESTRIANS *seatedptr; // $s0
+// 		SEATED_PEDESTRIANS *seatedptr; // $s0
 
 /* begin block 1.1 */
 // Start line: 4950
@@ -4461,14 +4461,14 @@ SEATED_PEDESTRIANS* FindSeated(void)
 
 // decompiled code
 // original method signature: 
-// struct SEATED_PEDESTRIANS * /*$ra*/ FindTannerASeat(struct PEDESTRIAN *pPed /*$t4*/)
+// SEATED_PEDESTRIANS * /*$ra*/ FindTannerASeat(PEDESTRIAN *pPed /*$t4*/)
 // line 4984, offset 0x000717ac
 /* begin block 1 */
 // Start line: 4985
 // Start offset: 0x000717AC
 // Variables:
-// 		struct SEATED_PEDESTRIANS *seatedptr; // $a2
-// 		struct SEATED_PEDESTRIANS *theOne; // $t1
+// 		SEATED_PEDESTRIANS *seatedptr; // $a2
+// 		SEATED_PEDESTRIANS *theOne; // $t1
 // 		int dx; // $a0
 // 		int dz; // $v1
 // 		int distsqr; // $v0
@@ -4543,13 +4543,13 @@ SEATED_PEDESTRIANS* FindTannerASeat(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ add_seated(struct SEATED_PEDESTRIANS *seatedptr /*$s0*/, int seat_index /*$s2*/)
+// void /*$ra*/ add_seated(SEATED_PEDESTRIANS *seatedptr /*$s0*/, int seat_index /*$s2*/)
 // line 5031, offset 0x000718c8
 /* begin block 1 */
 // Start line: 5032
 // Start offset: 0x000718C8
 // Variables:
-// 		struct PEDESTRIAN *pedestrian; // $s1
+// 		PEDESTRIAN *pedestrian; // $s1
 // 		int index; // $v0
 /* end block 1 */
 // End offset: 0x00071A44
@@ -4618,13 +4618,13 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ set_coll_box(int index /*$t2*/, struct _CAR_DATA *cp /*$t0*/, int offset /*$t3*/)
+// void /*$ra*/ set_coll_box(int index /*$t2*/, CAR_DATA *cp /*$t0*/, int offset /*$t3*/)
 // line 5084, offset 0x00071a5c
 /* begin block 1 */
 // Start line: 5085
 // Start offset: 0x00071A5C
 // Variables:
-// 		struct VECTOR BoxCentre; // stack offset -16
+// 		VECTOR BoxCentre; // stack offset -16
 // 		int boxsize; // $t1
 /* end block 1 */
 // End offset: 0x00071B74
@@ -4636,10 +4636,10 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 // End Line: 11715
 
 CAR_COLLISION_BOX collision_box[8];
-_CAR_DATA* collision_car_ptr[8];
+CAR_DATA* collision_car_ptr[8];
 
 // [D]
-void set_coll_box(int index, _CAR_DATA* cp, int offset)
+void set_coll_box(int index, CAR_DATA* cp, int offset)
 {
 	int isPlayerCar;
 	int boxSize;
@@ -4685,7 +4685,7 @@ void set_coll_box(int index, _CAR_DATA* cp, int offset)
 // Start line: 5120
 // Start offset: 0x00071B7C
 // Variables:
-// 		struct _CAR_DATA *cp; // $s3
+// 		CAR_DATA *cp; // $s3
 // 		int count1; // $s4
 // 		int i; // $t1
 
@@ -4731,8 +4731,8 @@ void BuildCarCollisionBox(void)
 	int dir;
 	int vx, vz;
 	int index;
-	_ExOBJECT* expl;
-	_CAR_DATA* cp;
+	EXOBJECT* expl;
+	CAR_DATA* cp;
 
 	if (player[0].playerCarId != -1) // [A] ASan bug fix
 	{
@@ -4796,7 +4796,7 @@ void BuildCarCollisionBox(void)
 
 // decompiled code
 // original method signature: 
-// struct _CAR_DATA * /*$ra*/ CheckForCar(struct PEDESTRIAN *pedestrian /*$s3*/)
+// CAR_DATA * /*$ra*/ CheckForCar(PEDESTRIAN *pedestrian /*$s3*/)
 // line 5178, offset 0x00072738
 /* begin block 1 */
 // Start line: 5179
@@ -4844,7 +4844,7 @@ void BuildCarCollisionBox(void)
 // End Line: 19532
 
 // [D] [T]
-_CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
+CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
 {
 	int count;
 
@@ -4881,7 +4881,7 @@ _CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CheckForPlayerCar(struct PEDESTRIAN *pedestrian /*$a0*/, struct CAR_COLLISION_BOX *collision_box /*$a1*/)
+// int /*$ra*/ CheckForPlayerCar(PEDESTRIAN *pedestrian /*$a0*/, CAR_COLLISION_BOX *collision_box /*$a1*/)
 // line 5231, offset 0x000732c0
 /* begin block 1 */
 // Start line: 26722
@@ -4911,7 +4911,7 @@ int CheckForPlayerCar(PEDESTRIAN* pedestrian, CAR_COLLISION_BOX* collision_box)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CalculatePedestrianInterest(struct PEDESTRIAN *pPed /*$s0*/)
+// void /*$ra*/ CalculatePedestrianInterest(PEDESTRIAN *pPed /*$s0*/)
 // line 5249, offset 0x00071e0c
 /* begin block 1 */
 // Start line: 5250
@@ -4919,9 +4919,9 @@ int CheckForPlayerCar(PEDESTRIAN* pedestrian, CAR_COLLISION_BOX* collision_box)
 // Variables:
 // 		int interest; // $a2
 // 		int dist; // $v1
-// 		struct _CAR_DATA *pCar; // $a2
-// 		struct VECTOR v1; // stack offset -40
-// 		struct VECTOR v2; // stack offset -24
+// 		CAR_DATA *pCar; // $a2
+// 		VECTOR v1; // stack offset -40
+// 		VECTOR v2; // stack offset -24
 /* end block 1 */
 // End offset: 0x00071F44
 // End Line: 5318
@@ -4946,7 +4946,7 @@ int basic_car_interest;
 // [D] [T]
 void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 {
-	_CAR_DATA* pCar;
+	CAR_DATA* pCar;
 	int carId;
 	int interest;
 	VECTOR v1;
@@ -4999,13 +4999,13 @@ void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ PedSurfaceType(struct VECTOR *ped_pos /*$a0*/)
+// int /*$ra*/ PedSurfaceType(VECTOR *ped_pos /*$a0*/)
 // line 5325, offset 0x00072584
 /* begin block 1 */
 // Start line: 5330
 // Start offset: 0x00072584
 // Variables:
-// 		struct _sdPlane *sfc_ptr; // $v0
+// 		sdPlane *sfc_ptr; // $v0
 /* end block 1 */
 // End offset: 0x000725B8
 // End Line: 5335
@@ -5028,7 +5028,7 @@ void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 // [D] [T]
 int PedSurfaceType(VECTOR* ped_pos)
 {
-	_sdPlane* sfc_ptr;
+	sdPlane* sfc_ptr;
 	sfc_ptr = sdGetCell(ped_pos);
 
 	if (!sfc_ptr)

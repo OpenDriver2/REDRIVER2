@@ -45,13 +45,13 @@ int FelonyDecreaseTimer = 0;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitFelonyDelayArray(struct FELONY_DELAY *pFelonyDelay /*$a0*/, short *pMaximum /*$a1*/, int count /*$a2*/)
+// void /*$ra*/ InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay /*$a0*/, short *pMaximum /*$a1*/, int count /*$a2*/)
  // line 413, offset 0x0004d364
 	/* begin block 1 */
 		// Start line: 414
 		// Start offset: 0x0004D364
 		// Variables:
-	// 		struct FELONY_DELAY *pCurrent; // $a0
+	// 		FELONY_DELAY *pCurrent; // $a0
 	/* end block 1 */
 	// End offset: 0x0004D3A0
 	// End Line: 422
@@ -86,7 +86,7 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitFelonyData(struct FELONY_DATA *pFelonyData /*$s0*/)
+// void /*$ra*/ InitFelonyData(FELONY_DATA *pFelonyData /*$s0*/)
  // line 431, offset 0x0004d3a0
 	/* begin block 1 */
 		// Start line: 432
@@ -96,9 +96,9 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 			// Start line: 432
 			// Start offset: 0x0004D3A0
 			// Variables:
-		// 		struct FELONY_VALUE *pSrc; // $v1
-		// 		struct FELONY_VALUE *pDest; // $s0
-		// 		struct FELONY_VALUE *pEnd; // $a0
+		// 		FELONY_VALUE *pSrc; // $v1
+		// 		FELONY_VALUE *pDest; // $s0
+		// 		FELONY_VALUE *pEnd; // $a0
 		/* end block 1.1 */
 		// End offset: 0x0004D420
 		// End Line: 445
@@ -161,7 +161,7 @@ int GetCarHeading(int direction)
 
 // decompiled code
 // original method signature: 
-// char /*$ra*/ GetCarDirectionOfTravel(struct _CAR_DATA *cp /*$s0*/)
+// char /*$ra*/ GetCarDirectionOfTravel(CAR_DATA *cp /*$s0*/)
  // line 454, offset 0x0004d430
 	/* begin block 1 */
 		// Start line: 455
@@ -178,7 +178,7 @@ int GetCarHeading(int direction)
 	// End Line: 1423
 
 // [D] [T]
-char GetCarDirectionOfTravel(_CAR_DATA *cp)
+char GetCarDirectionOfTravel(CAR_DATA *cp)
 {
 	int direction;
 
@@ -194,7 +194,7 @@ char GetCarDirectionOfTravel(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ NoteFelony(struct FELONY_DATA *pFelonyData /*$a3*/, char type /*$s3*/, short scale /*$t0*/)
+// void /*$ra*/ NoteFelony(FELONY_DATA *pFelonyData /*$a3*/, char type /*$s3*/, short scale /*$t0*/)
  // line 476, offset 0x0004c330
 	/* begin block 1 */
 		// Start line: 477
@@ -206,7 +206,7 @@ char GetCarDirectionOfTravel(_CAR_DATA *cp)
 			// Start line: 478
 			// Start offset: 0x0004C3A8
 			// Variables:
-		// 		struct FELONY_DELAY *pFelonyDelay; // $v1
+		// 		FELONY_DELAY *pFelonyDelay; // $v1
 		/* end block 1.1 */
 		// End offset: 0x0004C3CC
 		// End Line: 495
@@ -381,7 +381,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AdjustFelony(struct FELONY_DATA *pFelonyData /*$a0*/)
+// void /*$ra*/ AdjustFelony(FELONY_DATA *pFelonyData /*$a0*/)
  // line 597, offset 0x0004c8b4
 	/* begin block 1 */
 		// Start line: 598
@@ -391,7 +391,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 			// Start line: 649
 			// Start offset: 0x0004CBE8
 			// Variables:
-		// 		struct FELONY_DELAY *pFelonyDelay; // $v1
+		// 		FELONY_DELAY *pFelonyDelay; // $v1
 		/* end block 1.1 */
 		// End offset: 0x0004CC28
 		// End Line: 658
@@ -463,11 +463,11 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 		// Start line: 670
 		// Start offset: 0x0004CC28
 		// Variables:
-	// 		struct FELONY_DATA *pFelonyData; // $s4
-	// 		struct DRIVER2_CURVE *cv; // $s5
-	// 		struct DRIVER2_STRAIGHT *st; // $s6
-	// 		struct _CAR_DATA *cp; // $s3
-	// 		struct VECTOR *carPos; // $s2
+	// 		FELONY_DATA *pFelonyData; // $s4
+	// 		DRIVER2_CURVE *cv; // $s5
+	// 		DRIVER2_STRAIGHT *st; // $s6
+	// 		CAR_DATA *cp; // $s3
+	// 		VECTOR *carPos; // $s2
 	// 		int surfInd; // $s0
 
 		/* begin block 1.1 */
@@ -480,7 +480,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 				// Start line: 699
 				// Start offset: 0x0004CD64
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *jn; // $a2
+			// 		DRIVER2_JUNCTION *jn; // $a2
 			// 		short exitId; // $s1
 			/* end block 1.1.1 */
 			// End offset: 0x0004CE0C
@@ -564,7 +564,7 @@ void CheckPlayerMiscFelonies(void)
 	VECTOR *carPos;
 	DRIVER2_ROAD_INFO roadInfo;
 	DRIVER2_JUNCTION *jn;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 
 	// Do not register felony if player does not have a car
 	if (player[0].playerType == 2 || 
@@ -753,7 +753,7 @@ void InitFelonySystem(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CarHitByPlayer(struct _CAR_DATA *victim /*$a0*/, int howHard /*$a2*/)
+// void /*$ra*/ CarHitByPlayer(CAR_DATA *victim /*$a0*/, int howHard /*$a2*/)
  // line 824, offset 0x0004d2b8
 	/* begin block 1 */
 		// Start line: 1714
@@ -761,7 +761,7 @@ void InitFelonySystem(void)
 	// End Line: 1715
 
 // [D] [T]
-void CarHitByPlayer(_CAR_DATA *victim, int howHard)
+void CarHitByPlayer(CAR_DATA *victim, int howHard)
 {
 	char type;
 

@@ -190,14 +190,14 @@ void DebugDisplayObstacleMap()
 
 // decompiled code
 // original method signature: 
-// struct tNode /*$ra*/ popNode()
+// tNode /*$ra*/ popNode()
  // line 314, offset 0x000e7000
 	/* begin block 1 */
 		// Start line: 315
 		// Start offset: 0x000E7000
 		// Variables:
 	// 		unsigned int lNumHeapEntries; // $s0
-	// 		struct tNode res; // stack offset -24
+	// 		tNode res; // stack offset -24
 	// 		unsigned short f; // $t8
 	// 		unsigned int child; // $a1
 	// 		unsigned int here; // $t5
@@ -295,7 +295,7 @@ tNode* popNode(tNode* __return_storage_ptr__)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WunCell(struct VECTOR *pbase /*$s0*/)
+// void /*$ra*/ WunCell(VECTOR *pbase /*$s0*/)
  // line 426, offset 0x000e7194
 	/* begin block 1 */
 		// Start line: 427
@@ -303,8 +303,8 @@ tNode* popNode(tNode* __return_storage_ptr__)
 		// Variables:
 	// 		int i; // $s2
 	// 		int j; // $s4
-	// 		struct VECTOR v[2]; // stack offset -88
-	// 		struct VECTOR pos; // stack offset -56
+	// 		VECTOR v[2]; // stack offset -88
+	// 		VECTOR pos; // stack offset -56
 
 		/* begin block 1.1 */
 			// Start line: 440
@@ -412,7 +412,7 @@ void WunCell(VECTOR* pbase)
 		// Start line: 455
 		// Start offset: 0x000E735C
 		// Variables:
-	// 		struct VECTOR bPos; // stack offset -16
+	// 		VECTOR bPos; // stack offset -16
 	// 		int count; // $t4
 	// 		int dir; // $t1
 	// 		int p; // $t2
@@ -558,7 +558,7 @@ void InvalidateMap(void)
 		// Start line: 497
 		// Start offset: 0x000E74B0
 		// Variables:
-	// 		struct VECTOR bPos; // stack offset -48
+	// 		VECTOR bPos; // stack offset -48
 	// 		int count; // $s4
 	// 		int dir; // $s0
 	// 		int p; // $s1
@@ -706,13 +706,13 @@ void BloodyHell(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ blocked(struct tNode *v1 /*$a3*/, struct tNode *v2 /*$a2*/)
+// int /*$ra*/ blocked(tNode *v1 /*$a3*/, tNode *v2 /*$a2*/)
  // line 567, offset 0x000e76c4
 	/* begin block 1 */
 		// Start line: 568
 		// Start offset: 0x000E76C4
 		// Variables:
-	// 		struct VECTOR pos; // stack offset -24
+	// 		VECTOR pos; // stack offset -24
 	// 		int res; // $a0
 
 		/* begin block 1.1 */
@@ -782,7 +782,7 @@ int blocked(tNode* v1, tNode* v2)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ setDistance(struct tNode *n /*$a0*/, unsigned short dist /*$a1*/)
+// void /*$ra*/ setDistance(tNode *n /*$a0*/, unsigned short dist /*$a1*/)
  // line 659, offset 0x000e90a4
 	/* begin block 1 */
 		// Start line: 1316
@@ -813,8 +813,8 @@ void setDistance(tNode* n, ushort dist)
 		// Start offset: 0x000E7814
 		// Variables:
 	// 		int dir; // $s2
-	// 		struct tNode itHere; // stack offset -48
-	// 		struct tNode *nbr; // $s4
+	// 		tNode itHere; // stack offset -48
+	// 		tNode *nbr; // $s4
 
 		/* begin block 1.1 */
 			// Start line: 724
@@ -888,7 +888,7 @@ void setDistance(tNode* n, ushort dist)
 				// Start line: 773
 				// Start offset: 0x000E7AAC
 				// Variables:
-			// 		struct tNode *pnode; // $s0
+			// 		tNode *pnode; // $s0
 
 				/* begin block 1.2.2.1 */
 					// Start line: 773
@@ -1140,13 +1140,13 @@ void InitPathFinding(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ getInterpolatedDistance(struct VECTOR *pos /*$s2*/)
+// int /*$ra*/ getInterpolatedDistance(VECTOR *pos /*$s2*/)
  // line 821, offset 0x000e7ca8
 	/* begin block 1 */
 		// Start line: 822
 		// Start offset: 0x000E7CA8
 		// Variables:
-	// 		struct tNode n; // stack offset -72
+	// 		tNode n; // stack offset -72
 	// 		int fx; // $s4
 	// 		int fz; // $s5
 	// 		int a; // $s3
@@ -1159,8 +1159,8 @@ void InitPathFinding(void)
 			// Start line: 822
 			// Start offset: 0x000E7CA8
 			// Variables:
-		// 		struct VECTOR *where; // $s2
-		// 		struct tNode *node; // $s0
+		// 		VECTOR *where; // $s2
+		// 		tNode *node; // $s0
 
 			/* begin block 1.1.1 */
 				// Start line: 822
@@ -1172,13 +1172,13 @@ void InitPathFinding(void)
 					// Start line: 822
 					// Start offset: 0x000E7CA8
 					// Variables:
-				// 		struct tNode *pos; // $s0
+				// 		tNode *pos; // $s0
 
 					/* begin block 1.1.1.1.1 */
 						// Start line: 822
 						// Start offset: 0x000E7CA8
 						// Variables:
-					// 		struct VECTOR sp; // stack offset -56
+					// 		VECTOR sp; // stack offset -56
 
 						/* begin block 1.1.1.1.1.1 */
 							// Start line: 822
@@ -1242,7 +1242,7 @@ void InitPathFinding(void)
 				// Start line: 822
 				// Start offset: 0x000E7DA0
 				// Variables:
-			// 		struct VECTOR sp; // stack offset -56
+			// 		VECTOR sp; // stack offset -56
 
 				/* begin block 1.3.1.1 */
 					// Start line: 822
@@ -1300,7 +1300,7 @@ void InitPathFinding(void)
 				// Start line: 848
 				// Start offset: 0x000E7F28
 				// Variables:
-			// 		struct VECTOR sp; // stack offset -56
+			// 		VECTOR sp; // stack offset -56
 
 				/* begin block 1.5.1.1 */
 					// Start line: 848
@@ -1358,7 +1358,7 @@ void InitPathFinding(void)
 				// Start line: 864
 				// Start offset: 0x000E807C
 				// Variables:
-			// 		struct VECTOR sp; // stack offset -56
+			// 		VECTOR sp; // stack offset -56
 
 				/* begin block 1.7.1.1 */
 					// Start line: 864
@@ -1585,7 +1585,7 @@ int getInterpolatedDistance(VECTOR* pos)
 		// Start line: 893
 		// Start offset: 0x000E822C
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $t5
+	// 		CAR_DATA *cp; // $t5
 
 		/* begin block 1.1 */
 			// Start line: 898
@@ -1653,7 +1653,7 @@ void addCivs(void)
 	int rx, rz;
 	int x, z, vx, vz;
 	int vx2, vz2;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 
 	cp = car_data;
 	do {
@@ -1709,13 +1709,13 @@ void addCivs(void)
 			// Start line: 946
 			// Start offset: 0x000E83FC
 			// Variables:
-		// 		struct tNode startNode; // stack offset -72
+		// 		tNode startNode; // stack offset -72
 
 			/* begin block 1.2.1 */
 				// Start line: 952
 				// Start offset: 0x000E843C
 				// Variables:
-			// 		struct _CAR_DATA *cp; // $a0
+			// 		CAR_DATA *cp; // $a0
 			/* end block 1.2.1 */
 			// End offset: 0x000E843C
 			// End Line: 952
@@ -1777,7 +1777,7 @@ void addCivs(void)
 							// Start line: 934
 							// Start offset: 0x000E8564
 							// Variables:
-						// 		struct VECTOR sp; // stack offset -56
+						// 		VECTOR sp; // stack offset -56
 
 							/* begin block 1.2.3.1.1.1.1 */
 								// Start line: 934
@@ -1821,7 +1821,7 @@ void addCivs(void)
 				// Start line: 934
 				// Start offset: 0x000E862C
 				// Variables:
-			// 		struct tNode n; // stack offset -56
+			// 		tNode n; // stack offset -56
 			// 		int fx; // $v1
 			// 		int fz; // $v0
 
@@ -2155,7 +2155,7 @@ void UpdateCopMap(void)
 		// restart from new search target position
 		if (player[0].playerType == 1 && (CopsCanSeePlayer != 0 || numActiveCops == 0))
 		{
-			_CAR_DATA* cp;
+			CAR_DATA* cp;
 			cp = &car_data[player[0].playerCarId];
 
 			searchTarget.vx = cp->hd.where.t[0] + FIXEDH(cp->st.n.linearVelocity[0]) * 8;
@@ -2410,7 +2410,7 @@ void UpdateCopMap(void)
 	// 		int d1; // $s2
 	// 		int d2; // $s1
 	// 		int d3; // $s0
-	// 		struct VECTOR pos; // stack offset -48
+	// 		VECTOR pos; // stack offset -48
 
 		/* begin block 1.1 */
 			// Start line: 1051

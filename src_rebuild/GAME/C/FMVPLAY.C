@@ -71,7 +71,7 @@ void ReInitSystem(void)
 		// Start line: 69
 		// Start offset: 0x0004D518
 		// Variables:
-	// 		struct RENDER_ARGS args; // stack offset -40
+	// 		RENDER_ARGS args; // stack offset -40
 
 		/* begin block 1.1 */
 			// Start line: 75
@@ -129,7 +129,7 @@ void PlayFMV(unsigned char render)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlayRender(struct RENDER_ARGS *args /*$s0*/)
+// void /*$ra*/ PlayRender(RENDER_ARGS *args /*$s0*/)
  // line 107, offset 0x0004d5d0
 	/* begin block 1 */
 		// Start line: 108

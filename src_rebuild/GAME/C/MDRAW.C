@@ -120,7 +120,7 @@ void DrawMission(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawTimer(struct MR_TIMER *timer /*$s1*/)
+// void /*$ra*/ DrawTimer(MR_TIMER *timer /*$s1*/)
  // line 126, offset 0x0005fa88
 	/* begin block 1 */
 		// Start line: 127
@@ -394,7 +394,7 @@ void DrawFullscreenTargets(void)
 		iVar1 = 0;
 		do {
 			iVar2 = iVar2 + 1;
-			DrawFullscreenTarget((_TARGET *)((int)MissionTargets->data + iVar1));
+			DrawFullscreenTarget((MS_TARGET *)((int)MissionTargets->data + iVar1));
 			iVar1 = iVar2 * 0x40;
 		} while (iVar2 < 0x10);
 	}
@@ -451,13 +451,13 @@ void DrawMultiplayerTargets(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawOverheadTarget(struct _TARGET *target /*$s0*/)
+// void /*$ra*/ DrawOverheadTarget(MS_TARGET *target /*$s0*/)
  // line 230, offset 0x0005fd7c
 	/* begin block 1 */
 		// Start line: 231
 		// Start offset: 0x0005FD7C
 		// Variables:
-	// 		struct VECTOR tv; // stack offset -24
+	// 		VECTOR tv; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x0005FE84
 	// End Line: 269
@@ -468,7 +468,7 @@ void DrawMultiplayerTargets(void)
 	// End Line: 894
 
 // [D]
-void DrawOverheadTarget(_TARGET *target)
+void DrawOverheadTarget(MS_TARGET *target)
 {
 	int iVar1;
 	int *piVar2;
@@ -519,13 +519,13 @@ LAB_0005fe3c:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawFullscreenTarget(struct _TARGET *target /*$s0*/)
+// void /*$ra*/ DrawFullscreenTarget(MS_TARGET *target /*$s0*/)
  // line 271, offset 0x0005fe94
 	/* begin block 1 */
 		// Start line: 272
 		// Start offset: 0x0005FE94
 		// Variables:
-	// 		struct VECTOR tv; // stack offset -24
+	// 		VECTOR tv; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x0005FF9C
 	// End Line: 310
@@ -536,7 +536,7 @@ LAB_0005fe3c:
 	// End Line: 978
 
 // [D]
-void DrawFullscreenTarget(_TARGET *target)
+void DrawFullscreenTarget(MS_TARGET *target)
 {
 	int iVar1;
 	int *piVar2;
@@ -586,13 +586,13 @@ LAB_0005ff54:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawWorldTarget(struct _TARGET *target /*$s0*/)
+// void /*$ra*/ DrawWorldTarget(MS_TARGET *target /*$s0*/)
  // line 312, offset 0x0005f56c
 	/* begin block 1 */
 		// Start line: 313
 		// Start offset: 0x0005F56C
 		// Variables:
-	// 		struct VECTOR tv; // stack offset -32
+	// 		VECTOR tv; // stack offset -32
 	// 		int slot; // $v1
 	// 		int flags; // $s1
 	/* end block 1 */
@@ -610,7 +610,7 @@ LAB_0005ff54:
 	// End Line: 634
 
 // [D]
-void DrawWorldTarget(_TARGET *target)
+void DrawWorldTarget(MS_TARGET *target)
 {
 	int iVar1;
 	int iVar2;
@@ -744,13 +744,13 @@ LAB_0005f7dc:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawMultiplayerTarget(struct _TARGET *target /*$s0*/)
+// void /*$ra*/ DrawMultiplayerTarget(MS_TARGET *target /*$s0*/)
  // line 419, offset 0x0005f864
 	/* begin block 1 */
 		// Start line: 420
 		// Start offset: 0x0005F864
 		// Variables:
-	// 		struct VECTOR tv; // stack offset -40
+	// 		VECTOR tv; // stack offset -40
 	// 		unsigned char r; // $s3
 	// 		unsigned char g; // $s2
 	// 		unsigned char b; // $s1
@@ -764,7 +764,7 @@ LAB_0005f7dc:
 	// End Line: 860
 
 // [D] [A] - not drawn properly...
-void DrawMultiplayerTarget(_TARGET *target)
+void DrawMultiplayerTarget(MS_TARGET *target)
 {
 	int iVar1;
 	uint uVar2;

@@ -10,9 +10,9 @@
 		// Start line: 123
 		// Start offset: 0x0008730C
 		// Variables:
-	// 		struct REPLAY_SAVE_HEADER *rheader; // stack offset -40
-	// 		struct GAME_SAVE_HEADER *gheader; // stack offset -36
-	// 		struct CONFIG_SAVE_HEADER *cheader; // stack offset -32
+	// 		REPLAY_SAVE_HEADER *rheader; // stack offset -40
+	// 		GAME_SAVE_HEADER *gheader; // stack offset -36
+	// 		CONFIG_SAVE_HEADER *cheader; // stack offset -32
 	// 		char *pt; // stack offset -28
 	// 		int ret; // stack offset -24
 	// 		int size; // stack offset -20
@@ -345,7 +345,7 @@ void libcman_ReadControllers(void)
 		// Start line: 373
 		// Start offset: 0x00087A74
 		// Variables:
-	// 		struct RECT rect; // stack offset -56
+	// 		RECT rect; // stack offset -56
 	// 		char filename[32]; // stack offset -48
 	// 		char l; // stack offset -16
 	// 		int options; // stack offset -12
@@ -447,7 +447,7 @@ char * LoadMemCardOverlay(void)
 		// Start line: 464
 		// Start offset: 0x00087D78
 		// Variables:
-	// 		struct RECT rect; // stack offset -24
+	// 		RECT rect; // stack offset -24
 	// 		unsigned long *buffer; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00087DC4
@@ -491,7 +491,7 @@ void StorePermanentTPage(void)
 		// Start line: 474
 		// Start offset: 0x00087DEC
 		// Variables:
-	// 		struct RECT rect; // stack offset -24
+	// 		RECT rect; // stack offset -24
 	// 		unsigned long *buffer; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00087E38

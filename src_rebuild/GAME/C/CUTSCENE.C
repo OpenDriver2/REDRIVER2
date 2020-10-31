@@ -223,7 +223,7 @@ void HandleInGameCutscene(void)
 		// Start line: 648
 		// Start offset: 0x00031398
 		// Variables:
-	// 		struct TILE *tile; // $s0
+	// 		TILE *tile; // $s0
 	/* end block 1 */
 	// End offset: 0x000314E8
 	// End Line: 676
@@ -464,7 +464,7 @@ void TriggerInGameCutscene(int cutscene)
 		// Start line: 817
 		// Start offset: 0x0003283C
 		// Variables:
-	// 		struct CUTSCENE_HEADER header; // stack offset -136
+	// 		CUTSCENE_HEADER header; // stack offset -136
 	// 		char filename[64]; // stack offset -72
 	/* end block 1 */
 	// End offset: 0x000328C8
@@ -520,7 +520,7 @@ int CalcInGameCutsceneSize(void)
 			// Start line: 845
 			// Start offset: 0x00031748
 			// Variables:
-		// 		struct STREAM_SOURCE *pinfo; // $a0
+		// 		STREAM_SOURCE *pinfo; // $a0
 		// 		int i; // $s0
 		/* end block 1.1 */
 		// End offset: 0x00031978
@@ -565,7 +565,7 @@ void ReleaseInGameCutscene(void)
 		{
 			if (PlayerStartInfo[i]->flags & 4)
 			{
-				memcpy(&player[0], &player[i], sizeof(_PLAYER));
+				memcpy(&player[0], &player[i], sizeof(PLAYER));
 
 				if (player[0].playerType == 2)
 				{
@@ -843,7 +843,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 	static char padid[8];
 
 	int slot;
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 	REPLAY_STREAM *stream;
 	int player_id;
 	int bDamageOverride;
@@ -1188,8 +1188,8 @@ void FindNextCutChange(int cameracnt)
 		// Start line: 1301
 		// Start offset: 0x00032118
 		// Variables:
-	// 		struct REPLAY_SAVE_HEADER *rheader; // $a1
-	// 		struct REPLAY_STREAM_HEADER *sheader; // $t1
+	// 		REPLAY_SAVE_HEADER *rheader; // $a1
+	// 		REPLAY_STREAM_HEADER *sheader; // $t1
 	// 		char filename[64]; // stack offset -88
 	// 		char *pt; // $s1
 	// 		int i; // $a0
@@ -1274,7 +1274,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy(PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 
 	PingBufferPos = 0;
 
@@ -1291,8 +1291,8 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		// Start line: 1363
 		// Start offset: 0x0003243C
 		// Variables:
-	// 		struct CUTSCENE_HEADER header; // stack offset -440
-	// 		struct REPLAY_SAVE_HEADER rheader; // stack offset -376
+	// 		CUTSCENE_HEADER header; // stack offset -440
+	// 		REPLAY_SAVE_HEADER rheader; // stack offset -376
 	// 		char filename[64]; // stack offset -88
 	// 		int offset; // $a2
 	// 		int size; // $s0

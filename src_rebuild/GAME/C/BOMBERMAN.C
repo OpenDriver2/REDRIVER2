@@ -29,7 +29,7 @@ static BOMB ThrownBombs[MAX_THROWN_BOMBS];
 static int ThrownBombDelay = 0;
 static int CurrentBomb = 0;
 static int gWantFlash = 0;
-_CAR_DATA *gBombTargetVehicle = NULL;
+CAR_DATA *gBombTargetVehicle = NULL;
 static int flashval;
 
 // decompiled code
@@ -91,9 +91,9 @@ void InitThrownBombs(void)
 		// Start line: 247
 		// Start offset: 0x0001E3E8
 		// Variables:
-	// 		struct BOMB *bomb; // $s1
-	// 		struct VECTOR velocity; // stack offset -48
-	// 		struct _CAR_DATA *cp; // $s0
+	// 		BOMB *bomb; // $s1
+	// 		VECTOR velocity; // stack offset -48
+	// 		CAR_DATA *cp; // $s0
 	// 		int i; // $s5
 	// 		int y; // $a0
 
@@ -136,7 +136,7 @@ void InitThrownBombs(void)
 // [D] [T]
 void HandleThrownBombs(void)
 {
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 	BOMB *bomb;
 	int i;
 	int y;
@@ -250,10 +250,10 @@ void HandleThrownBombs(void)
 		// Start line: 383
 		// Start offset: 0x0001E810
 		// Variables:
-	// 		struct MATRIX object_matrix; // stack offset -80
-	// 		struct MATRIX *finalmatrix; // $s2
-	// 		struct BOMB *bomb; // $s0
-	// 		struct VECTOR pos; // stack offset -48
+	// 		MATRIX object_matrix; // stack offset -80
+	// 		MATRIX *finalmatrix; // $s2
+	// 		BOMB *bomb; // $s0
+	// 		VECTOR pos; // stack offset -48
 	// 		int i; // $s3
 
 		/* begin block 1.1 */
@@ -370,7 +370,7 @@ void DrawThrownBombs(void)
 		// Start line: 433
 		// Start offset: 0x0001EA00
 		// Variables:
-	// 		struct BOMB *bomb; // $t3
+	// 		BOMB *bomb; // $t3
 	/* end block 1 */
 	// End offset: 0x0001EC3C
 	// End Line: 486
@@ -453,13 +453,13 @@ void BombThePlayerToHellAndBack(int car)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ BombCollisionCheck(struct _CAR_DATA *cp /*$a0*/, struct VECTOR *pPos /*$a1*/)
+// int /*$ra*/ BombCollisionCheck(CAR_DATA *cp /*$a0*/, VECTOR *pPos /*$a1*/)
  // line 496, offset 0x0001ec58
 	/* begin block 1 */
 		// Start line: 497
 		// Start offset: 0x0001EC58
 		// Variables:
-	// 		struct CDATA2D cd[2]; // stack offset -216
+	// 		CDATA2D cd[2]; // stack offset -216
 	// 		int carLength[2]; // stack offset -16
 
 		/* begin block 1.1 */
@@ -483,7 +483,7 @@ void BombThePlayerToHellAndBack(int car)
 	// End Line: 1236
 
 // [D] [T]
-int BombCollisionCheck(_CAR_DATA *cp, VECTOR *pPos)
+int BombCollisionCheck(CAR_DATA *cp, VECTOR *pPos)
 {
 	CDATA2D cd[2] = {0};
 
@@ -510,13 +510,13 @@ int BombCollisionCheck(_CAR_DATA *cp, VECTOR *pPos)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ExplosionCollisionCheck(struct _CAR_DATA *cp /*$s1*/, struct _ExOBJECT *pE /*$s3*/)
+// void /*$ra*/ ExplosionCollisionCheck(CAR_DATA *cp /*$s1*/, _ExOBJECT *pE /*$s3*/)
  // line 534, offset 0x0001ed18
 	/* begin block 1 */
 		// Start line: 535
 		// Start offset: 0x0001ED18
 		// Variables:
-	// 		struct CDATA2D cd[2]; // stack offset -352
+	// 		CDATA2D cd[2]; // stack offset -352
 	// 		int carLength[2]; // stack offset -152
 	// 		static int setUsed; // offset 0x28
 	// 		int tanner; // $s6
@@ -545,7 +545,7 @@ int BombCollisionCheck(_CAR_DATA *cp, VECTOR *pPos)
 				// Variables:
 			// 		int x; // $a1
 			// 		int z; // $v1
-			// 		struct VECTOR *pos; // $v0
+			// 		VECTOR *pos; // $v0
 			/* end block 1.1.3 */
 			// End offset: 0x0001EF54
 			// End Line: 600
@@ -554,13 +554,13 @@ int BombCollisionCheck(_CAR_DATA *cp, VECTOR *pPos)
 				// Start line: 623
 				// Start offset: 0x0001EF94
 				// Variables:
-			// 		struct CRET2D collisionResult; // stack offset -144
+			// 		CRET2D collisionResult; // stack offset -144
 
 				/* begin block 1.1.4.1 */
 					// Start line: 626
 					// Start offset: 0x0001EF94
 					// Variables:
-				// 		struct VECTOR velocity; // stack offset -104
+				// 		VECTOR velocity; // stack offset -104
 				// 		long pointVel[4]; // stack offset -88
 				// 		long reaction[4]; // stack offset -72
 				// 		long lever[4]; // stack offset -56
@@ -615,7 +615,7 @@ const int halfStrike = 0x32000;
 const int fullStrike = 0x32000;
 
 // [D] [T]
-void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
+void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 {
 	static int setUsed = 0;
 
@@ -795,7 +795,7 @@ void ExplosionCollisionCheck(_CAR_DATA *cp, _ExOBJECT *pE)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddFlash(struct VECTOR *pos /*$a0*/)
+// void /*$ra*/ AddFlash(VECTOR *pos /*$a0*/)
  // line 747, offset 0x0001f4f4
 	/* begin block 1 */
 		// Start line: 748

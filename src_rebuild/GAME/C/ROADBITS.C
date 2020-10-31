@@ -4,7 +4,7 @@
 
 // decompiled code
 // original method signature: 
-// char /*$ra*/ ROADS_GetRouteData(int x /*$a0*/, int z /*$a1*/, struct ROUTE_DATA *pRouteData /*$a2*/)
+// char /*$ra*/ ROADS_GetRouteData(int x /*$a0*/, int z /*$a1*/, ROUTE_DATA *pRouteData /*$a2*/)
  // line 147, offset 0x00074eb4
 	/* begin block 1 */
 		// Start line: 294

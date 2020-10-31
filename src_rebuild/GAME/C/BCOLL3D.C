@@ -4,16 +4,16 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PointFaceCheck(struct _CAR_DATA *cp0 /*$t7*/, struct _CAR_DATA *cp1 /*$t8*/, int i /*$t9*/, struct TestResult *least /*$a3*/, int nSign /*stack 16*/)
+// void /*$ra*/ PointFaceCheck(CAR_DATA *cp0 /*$t7*/, CAR_DATA *cp1 /*$t8*/, int i /*$t9*/, TestResult *least /*$a3*/, int nSign /*stack 16*/)
  // line 83, offset 0x0001c160
 	/* begin block 1 */
 		// Start line: 84
 		// Start offset: 0x0001C160
 		// Variables:
 	// 		int k; // $t5
-	// 		struct VECTOR normal; // stack offset -56
-	// 		struct VECTOR diff; // stack offset -40
-	// 		struct VECTOR point; // stack offset -24
+	// 		VECTOR normal; // stack offset -56
+	// 		VECTOR diff; // stack offset -40
+	// 		VECTOR point; // stack offset -24
 	// 		int depth; // $t0
 
 		/* begin block 1.1 */
@@ -34,7 +34,7 @@
 	// End Line: 167
 
 // [D] [T]
-void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, int nSign)
+void PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int nSign)
 {
 	int partialDepth;
 	int depth;
@@ -126,7 +126,7 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ collided3d(struct _CAR_DATA *cp0 /*$s3*/, struct _CAR_DATA *cp1 /*$s2*/, struct TestResult *least /*$s1*/)
+// int /*$ra*/ collided3d(CAR_DATA *cp0 /*$s3*/, CAR_DATA *cp1 /*$s2*/, TestResult *least /*$s1*/)
  // line 133, offset 0x0001c408
 	/* begin block 1 */
 		// Start line: 134
@@ -148,7 +148,7 @@ void PointFaceCheck(_CAR_DATA *cp0, _CAR_DATA *cp1, int i, TestResult *least, in
 	// End Line: 267
 
 // [D] [T]
-int collided3d(_CAR_DATA *cp0, _CAR_DATA *cp1, TestResult *least)
+int collided3d(CAR_DATA *cp0, CAR_DATA *cp1, TestResult *least)
 {
 	int i;
 
@@ -182,13 +182,13 @@ int collided3d(_CAR_DATA *cp0, _CAR_DATA *cp1, TestResult *least)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CarCarCollision3(struct _CAR_DATA *c0 /*$a0*/, struct _CAR_DATA *c1 /*$a1*/, int *depth /*$s2*/, struct VECTOR *where /*$s0*/, struct VECTOR *normal /*stack 16*/)
+// int /*$ra*/ CarCarCollision3(CAR_DATA *c0 /*$a0*/, CAR_DATA *c1 /*$a1*/, int *depth /*$s2*/, VECTOR *where /*$s0*/, VECTOR *normal /*stack 16*/)
  // line 153, offset 0x0001c380
 	/* begin block 1 */
 		// Start line: 154
 		// Start offset: 0x0001C380
 		// Variables:
-	// 		struct TestResult tr; // stack offset -56
+	// 		TestResult tr; // stack offset -56
 	// 		int res; // $t1
 	/* end block 1 */
 	// End offset: 0x0001C408
@@ -205,7 +205,7 @@ int collided3d(_CAR_DATA *cp0, _CAR_DATA *cp1, TestResult *least)
 	// End Line: 361
 
 // [D] [T]
-int CarCarCollision3(_CAR_DATA *c0, _CAR_DATA *c1, int *depth, VECTOR *where, VECTOR *normal)
+int CarCarCollision3(CAR_DATA *c0, CAR_DATA *c1, int *depth, VECTOR *where, VECTOR *normal)
 {
 	int res;
 	TestResult tr;

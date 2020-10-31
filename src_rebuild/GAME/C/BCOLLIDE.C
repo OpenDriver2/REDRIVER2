@@ -23,13 +23,13 @@
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ bcollided2d(struct CDATA2D *body /*$t4*/, int needOverlap /*$fp*/)
+// int /*$ra*/ bcollided2d(CDATA2D *body /*$t4*/, int needOverlap /*$fp*/)
  // line 120, offset 0x0001c51c
 	/* begin block 1 */
 		// Start line: 121
 		// Start offset: 0x0001C51C
 		// Variables:
-	// 		struct VECTOR delta; // stack offset -56
+	// 		VECTOR delta; // stack offset -56
 	// 		int dtheta; // $v1
 	// 		int ac; // $s6
 	// 		int as; // $s5
@@ -160,7 +160,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ bFindCollisionPoint(struct CDATA2D *body /*$t6*/, struct CRET2D *collisionResult /*$s0*/)
+// void /*$ra*/ bFindCollisionPoint(CDATA2D *body /*$t6*/, CRET2D *collisionResult /*$s0*/)
  // line 195, offset 0x0001c8c0
 	/* begin block 1 */
 		// Start line: 196
@@ -330,7 +330,7 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ bFindCollisionTime(struct CDATA2D *cd /*$s5*/, struct CRET2D *collisionResult /*stack 4*/)
+// int /*$ra*/ bFindCollisionTime(CDATA2D *cd /*$s5*/, CRET2D *collisionResult /*stack 4*/)
  // line 275, offset 0x0001cc30
 	/* begin block 1 */
 		// Start line: 276
@@ -342,7 +342,7 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	// 		int neverfree; // $fp
 	// 		int time; // $s1
 	// 		int step; // $s3
-	// 		struct CDATA2D original[2]; // stack offset -248
+	// 		CDATA2D original[2]; // stack offset -248
 	/* end block 1 */
 	// End offset: 0x0001CEEC
 	// End Line: 357
@@ -459,7 +459,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ApplyDamage(struct _CAR_DATA *cp /*$a0*/, char region /*$a1*/, int value /*$a2*/, char fakeDamage /*$a3*/)
+// void /*$ra*/ ApplyDamage(CAR_DATA *cp /*$a0*/, char region /*$a1*/, int value /*$a2*/, char fakeDamage /*$a3*/)
  // line 384, offset 0x0001ceec
 	/* begin block 1 */
 		// Start line: 385
@@ -481,7 +481,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	// End Line: 994
 
 // [D] [T]
-void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
+void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 {
 	short *pRegion;
 
@@ -553,7 +553,7 @@ void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ DamageCar3D(struct _CAR_DATA *cp /*$s1*/, long (*delta)[4] /*$t4*/, int strikeVel /*$t6*/, struct _CAR_DATA *pOtherCar /*$s2*/)
+// int /*$ra*/ DamageCar3D(CAR_DATA *cp /*$s1*/, long (*delta)[4] /*$t4*/, int strikeVel /*$t6*/, CAR_DATA *pOtherCar /*$s2*/)
  // line 470, offset 0x0001d0b0
 	/* begin block 1 */
 		// Start line: 471
@@ -592,7 +592,7 @@ void ApplyDamage(_CAR_DATA *cp, char region, int value, char fakeDamage)
 	// End Line: 1169
 
 // [D] [T]
-int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOtherCar)
+int DamageCar3D(CAR_DATA *cp, long(*delta)[4], int strikeVel, CAR_DATA *pOtherCar)
 {
 	char region;
 	int value;
@@ -706,13 +706,13 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DamageCar(struct _CAR_DATA *cp /*$s2*/, struct CDATA2D *cd /*$s1*/, struct CRET2D *collisionResult /*$s3*/, int strikeVel /*$s0*/)
+// void /*$ra*/ DamageCar(CAR_DATA *cp /*$s2*/, CDATA2D *cd /*$s1*/, CRET2D *collisionResult /*$s3*/, int strikeVel /*$s0*/)
  // line 587, offset 0x0001d454
 	/* begin block 1 */
 		// Start line: 588
 		// Start offset: 0x0001D454
 		// Variables:
-	// 		struct VECTOR delta; // stack offset -48
+	// 		VECTOR delta; // stack offset -48
 	// 		int l; // $v1
 	// 		int w; // $v0
 	// 		int region; // $a1
@@ -735,7 +735,7 @@ int DamageCar3D(_CAR_DATA *cp, long(*delta)[4], int strikeVel, _CAR_DATA *pOther
 	// End Line: 1442
 
 // [D] [T]
-void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel)
+void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel)
 {
 	int impact;
 	int player_id;
@@ -805,24 +805,24 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CarBuildingCollision(struct _CAR_DATA *cp /*$s3*/, struct BUILDING_BOX *building /*$s2*/, struct CELL_OBJECT *cop /*$s6*/, int mightBeABarrier /*$s1*/)
+// int /*$ra*/ CarBuildingCollision(CAR_DATA *cp /*$s3*/, BUILDING_BOX *building /*$s2*/, CELL_OBJECT *cop /*$s6*/, int mightBeABarrier /*$s1*/)
  // line 839, offset 0x0001d68c
 	/* begin block 1 */
 		// Start line: 840
 		// Start offset: 0x0001D68C
 		// Variables:
-	// 		static struct CDATA2D cd[2]; // offset 0x0
-	// 		static struct CRET2D collisionResult; // offset 0xd0
+	// 		static CDATA2D cd[2]; // offset 0x0
+	// 		static CRET2D collisionResult; // offset 0xd0
 	// 		int debris_colour; // stack offset -48
-	// 		struct VECTOR tempwhere; // stack offset -168
-	// 		struct MODEL *pModel; // $s5
+	// 		VECTOR tempwhere; // stack offset -168
+	// 		MODEL *pModel; // $s5
 	// 		int player_id; // stack offset -44
 
 		/* begin block 1.1 */
 			// Start line: 866
 			// Start offset: 0x0001D794
 			// Variables:
-		// 		struct SVECTOR boxDisp; // stack offset -152
+		// 		SVECTOR boxDisp; // stack offset -152
 
 			/* begin block 1.1.1 */
 				// Start line: 908
@@ -844,7 +844,7 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 				// Start line: 977
 				// Start offset: 0x0001DA64
 				// Variables:
-			// 		struct VECTOR velocity; // stack offset -144
+			// 		VECTOR velocity; // stack offset -144
 			// 		long pointVel[4]; // stack offset -128
 			// 		long reaction[4]; // stack offset -112
 			// 		long lever[4]; // stack offset -96
@@ -867,8 +867,8 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 						// Start line: 1058
 						// Start offset: 0x0001DD28
 						// Variables:
-					// 		struct SMASHABLE_OBJECT *sip; // $a1
-					// 		struct SMASHABLE_OBJECT *match; // $s0
+					// 		SMASHABLE_OBJECT *sip; // $a1
+					// 		SMASHABLE_OBJECT *match; // $s0
 					// 		int chan; // $s1
 					// 		int adjust; // $s2
 					/* end block 1.2.1.2.1 */
@@ -882,7 +882,7 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 					// Start line: 1098
 					// Start offset: 0x0001DEF4
 					// Variables:
-				// 		struct VECTOR LeafPosition; // stack offset -80
+				// 		VECTOR LeafPosition; // stack offset -80
 				/* end block 1.2.1.3 */
 				// End offset: 0x0001DEF4
 				// End Line: 1098
@@ -895,7 +895,7 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 						// Start line: 1119
 						// Start offset: 0x0001DF90
 						// Variables:
-					// 		struct VECTOR lamp_velocity; // stack offset -64
+					// 		VECTOR lamp_velocity; // stack offset -64
 					/* end block 1.2.1.4.1 */
 					// End offset: 0x0001DFC4
 					// End Line: 1123
@@ -930,7 +930,7 @@ void DamageCar(_CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVe
 	// End Line: 1967
 
 // [D] [T]
-int CarBuildingCollision(_CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)
+int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)
 {
 	static CDATA2D cd[2] = {0}; // offset 0x0
 	static CRET2D collisionResult = { 0 }; // offset 0xd0

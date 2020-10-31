@@ -449,7 +449,7 @@ int StartSound(int channel, int bank, int sample, int volume, int pitch)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ Start3DTrackingSound(int channel /*$s1*/, int bank /*$s0*/, int sample /*$s3*/, struct VECTOR *position /*$s2*/, long *velocity /*stack 16*/)
+// int /*$ra*/ Start3DTrackingSound(int channel /*$s1*/, int bank /*$s0*/, int sample /*$s3*/, VECTOR *position /*$s2*/, long *velocity /*stack 16*/)
  // line 342, offset 0x0007a994
 	/* begin block 1 */
 		// Start line: 684
@@ -704,7 +704,7 @@ void SetChannelVolume(int channel, int volume, int proximity)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ComputeDoppler(struct CHANNEL_DATA *ch /*$s1*/)
+// void /*$ra*/ ComputeDoppler(CHANNEL_DATA *ch /*$s1*/)
  // line 501, offset 0x000795c4
 	/* begin block 1 */
 		// Start line: 502
@@ -712,7 +712,7 @@ void SetChannelVolume(int channel, int volume, int proximity)
 		// Variables:
 	// 		int dist; // $s0
 	// 		int seperationrate; // $v0
-	// 		struct _PLAYER *pl; // $s0
+	// 		PLAYER *pl; // $s0
 	/* end block 1 */
 	// End offset: 0x00079720
 	// End Line: 527
@@ -733,7 +733,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	int iVar6;
 	int iVar7;
 	long *srcVel;
-	_PLAYER *pl;
+	PLAYER *pl;
 
 	srcPos = ch->srcposition;
 
@@ -773,7 +773,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetChannelPosition3(int channel /*$s1*/, struct VECTOR *position /*$a0*/, long *velocity /*$t0*/, int volume /*$t2*/, int pitch /*stack 16*/, int proximity /*stack 20*/)
+// void /*$ra*/ SetChannelPosition3(int channel /*$s1*/, VECTOR *position /*$a0*/, long *velocity /*$t0*/, int volume /*$t2*/, int pitch /*stack 16*/, int proximity /*stack 20*/)
  // line 588, offset 0x0007abcc
 	/* begin block 1 */
 		// Start line: 589
@@ -1554,7 +1554,7 @@ void UpdateXMSamples(int num_samps)
 		// Start line: 905
 		// Start offset: 0x00079BCC
 		// Variables:
-	// 		static struct __LSBDinfo tabs; // offset 0x0
+	// 		static __LSBDinfo tabs; // offset 0x0
 	// 		int i; // $a3
 	// 		int num_samples; // $s1
 	// 		int slength; // $s0
@@ -1920,8 +1920,8 @@ int GetFreeChannel(void)
 	// 		long ang; // $s0
 	// 		long dist; // $s6
 	// 		int player_id; // $a3
-	// 		struct VECTOR *pos; // $s3
-	// 		struct VECTOR *cam_pos; // $s4
+	// 		VECTOR *pos; // $s3
+	// 		VECTOR *cam_pos; // $s4
 	// 		int cam_ang; // $fp
 	// 		long damp; // $v1
 
@@ -2184,7 +2184,7 @@ void UpdateVolumeAttributesM(int channel)
 		// Start offset: 0x0007A360
 		// Variables:
 	// 		int volume; // $s0
-	// 		struct VECTOR *pp; // $a3
+	// 		VECTOR *pp; // $a3
 
 		/* begin block 1.1 */
 			// Start line: 1266
@@ -2196,7 +2196,7 @@ void UpdateVolumeAttributesM(int channel)
 				// Start line: 1271
 				// Start offset: 0x0007A3F4
 				// Variables:
-			// 		struct VECTOR ofse; // stack offset -24
+			// 		VECTOR ofse; // stack offset -24
 			/* end block 1.1.1 */
 			// End offset: 0x0007A3F4
 			// End Line: 1274
@@ -2294,7 +2294,7 @@ int CalculateVolume(int channel)
 		// Start line: 1304
 		// Start offset: 0x0007AB3C
 		// Variables:
-	// 		struct SpuReverbAttr r_attr; // stack offset -40
+	// 		SpuReverbAttr r_attr; // stack offset -40
 	/* end block 1 */
 	// End offset: 0x0007AB94
 	// End Line: 1319

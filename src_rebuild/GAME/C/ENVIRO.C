@@ -61,7 +61,7 @@ void Env_MakeColourAddTable(short *shinysrc, char *polytable, int length)
 		// Start line: 74
 		// Start offset: 0x00044F08
 		// Variables:
-	// 		struct TPAN pos; // stack offset -16
+	// 		TPAN pos; // stack offset -16
 	// 		int count; // $v1
 	/* end block 1 */
 	// End offset: 0x00044F60

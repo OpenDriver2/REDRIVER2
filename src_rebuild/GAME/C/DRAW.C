@@ -125,7 +125,7 @@ _pct plotContext;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ addSubdivSpriteShadow(struct POLYFT4LIT *src /*$t3*/, struct SVECTOR *verts /*$t2*/, int z /*$a2*/)
+// void /*$ra*/ addSubdivSpriteShadow(POLYFT4LIT *src /*$t3*/, SVECTOR *verts /*$t2*/, int z /*$a2*/)
  // line 651, offset 0x0003ed7c
 	/* begin block 1 */
 		// Start line: 652
@@ -133,7 +133,7 @@ _pct plotContext;
 		// Variables:
 	// 		unsigned long word0; // $a0
 	// 		unsigned long vidx; // $t1
-	// 		struct _pct *pc; // $t0
+	// 		_pct *pc; // $t0
 	// 		int w; // $s0
 	/* end block 1 */
 	// End offset: 0x0003EF64
@@ -196,8 +196,8 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 		// Start line: 676
 		// Start offset: 0x0003EF64
 		// Variables:
-	// 		struct XZPAIR near; // stack offset -80
-	// 		struct PACKED_CELL_OBJECT **list; // stack offset -64
+	// 		XZPAIR near; // stack offset -80
+	// 		PACKED_CELL_OBJECT **list; // stack offset -64
 	// 		unsigned long spriteColour; // stack offset -60
 	// 		int numShadows; // stack offset -56
 
@@ -205,7 +205,7 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 			// Start line: 676
 			// Start offset: 0x0003EF64
 			// Variables:
-		// 		struct SVECTOR result; // stack offset -72
+		// 		SVECTOR result; // stack offset -72
 		// 		unsigned char lightLevel; // $a1
 		/* end block 1.1 */
 		// End offset: 0x0003F0FC
@@ -224,8 +224,8 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 			// Start line: 743
 			// Start offset: 0x0003F1F0
 			// Variables:
-		// 		struct PACKED_CELL_OBJECT *ppco; // $fp
-		// 		struct MODEL *model; // $s4
+		// 		PACKED_CELL_OBJECT *ppco; // $fp
+		// 		MODEL *model; // $s4
 		// 		int z; // stack offset -52
 		// 		int yang; // $a0
 
@@ -240,8 +240,8 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 				// Start line: 776
 				// Start offset: 0x0003F2F0
 				// Variables:
-			// 		struct POLYFT4LIT *src; // $s0
-			// 		struct SVECTOR *verts; // $s3
+			// 		POLYFT4LIT *src; // $s0
+			// 		SVECTOR *verts; // $s3
 			// 		int i; // $s1
 
 				/* begin block 1.3.2.1 */
@@ -435,7 +435,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ DrawAllBuildings(unsigned long *objects /*$t3*/, int num_buildings /*$s5*/, struct DB *disp /*$a2*/)
+// int /*$ra*/ DrawAllBuildings(unsigned long *objects /*$t3*/, int num_buildings /*$s5*/, DB *disp /*$a2*/)
 // line 2053, offset 0x000411f4
 /* begin block 1 */
 // Start line: 2054
@@ -444,8 +444,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 // 		int i; // $s3
 // 		int model_number; // $v0
 // 		int prev_mat; // $s4
-// 		struct MODEL *model; // $a0
-// 		struct CELL_OBJECT *building; // $s0
+// 		MODEL *model; // $a0
+// 		CELL_OBJECT *building; // $s0
 
 /* begin block 1.1 */
 // Start line: 2091
@@ -567,8 +567,8 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 		// Start line: 884
 		// Start offset: 0x0003F6B0
 		// Variables:
-	// 		struct CELL_ITERATOR ci; // stack offset -184
-	// 		struct PACKED_CELL_OBJECT *ppco; // $s0
+	// 		CELL_ITERATOR ci; // stack offset -184
+	// 		PACKED_CELL_OBJECT *ppco; // $s0
 	// 		int i; // $s1
 	// 		int dir; // $s7
 	// 		int cellxpos; // $a0
@@ -581,7 +581,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	// 		int tiles_found; // stack offset -100
 	// 		int other_models_found; // stack offset -96
 	// 		int anim_objs_found; // $s6
-	// 		struct MATRIX mRotStore; // stack offset -160
+	// 		MATRIX mRotStore; // stack offset -160
 	// 		int rightcos; // stack offset -92
 	// 		int rightsin; // stack offset -88
 	// 		int leftcos; // stack offset -84
@@ -597,7 +597,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 			// Start line: 967
 			// Start offset: 0x0003F964
 			// Variables:
-		// 		struct MODEL *model; // $s2
+		// 		MODEL *model; // $s2
 
 			/* begin block 1.1.1 */
 				// Start line: 975
@@ -609,19 +609,19 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 					// Start line: 986
 					// Start offset: 0x0003FA10
 					// Variables:
-				// 		struct CELL_OBJECT *cop; // $a2
+				// 		CELL_OBJECT *cop; // $a2
 
 					/* begin block 1.1.1.1.1 */
 						// Start line: 884
 						// Start offset: 0x0003FA10
 						// Variables:
-					// 		struct PACKED_CELL_OBJECT *ppco; // $s0
+					// 		PACKED_CELL_OBJECT *ppco; // $s0
 
 						/* begin block 1.1.1.1.1.1 */
 							// Start line: 884
 							// Start offset: 0x0003FA10
 							// Variables:
-						// 		struct CELL_OBJECT *pco; // $a1
+						// 		CELL_OBJECT *pco; // $a1
 						/* end block 1.1.1.1.1.1 */
 						// End offset: 0x0003FAB8
 						// End Line: 884
@@ -636,19 +636,19 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 					// Start line: 993
 					// Start offset: 0x0003FAF4
 					// Variables:
-				// 		struct CELL_OBJECT *cop; // $a2
+				// 		CELL_OBJECT *cop; // $a2
 
 					/* begin block 1.1.1.2.1 */
 						// Start line: 884
 						// Start offset: 0x0003FAF4
 						// Variables:
-					// 		struct PACKED_CELL_OBJECT *ppco; // $s0
+					// 		PACKED_CELL_OBJECT *ppco; // $s0
 
 						/* begin block 1.1.1.2.1.1 */
 							// Start line: 884
 							// Start offset: 0x0003FAF4
 							// Variables:
-						// 		struct CELL_OBJECT *pco; // $a1
+						// 		CELL_OBJECT *pco; // $a1
 						/* end block 1.1.1.2.1.1 */
 						// End offset: 0x0003FB9C
 						// End Line: 884
@@ -672,19 +672,19 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 					// Start line: 1018
 					// Start offset: 0x0003FD0C
 					// Variables:
-				// 		struct CELL_OBJECT *cop; // $a2
+				// 		CELL_OBJECT *cop; // $a2
 
 					/* begin block 1.1.1.4.1 */
 						// Start line: 884
 						// Start offset: 0x0003FD0C
 						// Variables:
-					// 		struct PACKED_CELL_OBJECT *ppco; // $s0
+					// 		PACKED_CELL_OBJECT *ppco; // $s0
 
 						/* begin block 1.1.1.4.1.1 */
 							// Start line: 884
 							// Start offset: 0x0003FD0C
 							// Variables:
-						// 		struct CELL_OBJECT *pco; // $a1
+						// 		CELL_OBJECT *pco; // $a1
 						/* end block 1.1.1.4.1.1 */
 						// End offset: 0x0003FDB4
 						// End Line: 884
@@ -699,19 +699,19 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 					// Start line: 1032
 					// Start offset: 0x0003FE34
 					// Variables:
-				// 		struct CELL_OBJECT *cop; // $a2
+				// 		CELL_OBJECT *cop; // $a2
 
 					/* begin block 1.1.1.5.1 */
 						// Start line: 884
 						// Start offset: 0x0003FE34
 						// Variables:
-					// 		struct PACKED_CELL_OBJECT *ppco; // $s0
+					// 		PACKED_CELL_OBJECT *ppco; // $s0
 
 						/* begin block 1.1.1.5.1.1 */
 							// Start line: 884
 							// Start offset: 0x0003FE34
 							// Variables:
-						// 		struct CELL_OBJECT *pco; // $a1
+						// 		CELL_OBJECT *pco; // $a1
 						/* end block 1.1.1.5.1.1 */
 						// End offset: 0x0003FEDC
 						// End Line: 884
@@ -746,8 +746,8 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 			// Start line: 1089
 			// Start offset: 0x00040138
 			// Variables:
-		// 		struct VECTOR newpos; // stack offset -128
-		// 		struct CELL_OBJECT *cop; // $s0
+		// 		VECTOR newpos; // stack offset -128
+		// 		CELL_OBJECT *cop; // $s0
 		/* end block 1.4 */
 		// End offset: 0x00040138
 		// End Line: 1090
@@ -1362,8 +1362,8 @@ void Set_Inv_CameraMatrix(void)
 		// Variables:
 	// 		int i; // $s1
 	// 		int j; // $a0
-	// 		struct SVECTOR ang; // stack offset -56
-	// 		struct MATRIX mat; // stack offset -48
+	// 		SVECTOR ang; // stack offset -56
+	// 		MATRIX mat; // stack offset -48
 	/* end block 1 */
 	// End offset: 0x000418BC
 	// End Line: 1341
@@ -1413,7 +1413,7 @@ void CalcObjectRotationMatrices(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlotMDL_less_than_128(struct MODEL *model /*$a0*/)
+// void /*$ra*/ PlotMDL_less_than_128(MODEL *model /*$a0*/)
  // line 1344, offset 0x000418bc
 	/* begin block 1 */
 		// Start line: 5018
@@ -1551,7 +1551,7 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	// 		int z; // $s1
 	// 		int xd; // $a0
 	// 		int zd; // $v1
-	// 		struct _CAR_DATA (*cars_to_draw[20]); // stack offset -112
+	// 		CAR_DATA (*cars_to_draw[20]); // stack offset -112
 	// 		int num_cars_to_draw; // $s4
 	// 		static int car_distance[20]; // offset 0x0
 	// 		static int temp; // offset 0x0
@@ -1560,7 +1560,7 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 			// Start line: 1712
 			// Start offset: 0x000407D8
 			// Variables:
-		// 		struct _CAR_DATA *lcp; // $s0
+		// 		CAR_DATA *lcp; // $s0
 
 			/* begin block 1.1.1 */
 				// Start line: 1738
@@ -1584,7 +1584,7 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 				// Start line: 1762
 				// Start offset: 0x00040920
 				// Variables:
-			// 		struct _CAR_DATA *car; // $t4
+			// 		CAR_DATA *car; // $t4
 			// 		int dist; // $t0
 			// 		int j; // $a3
 			/* end block 1.2.1 */
@@ -1628,12 +1628,12 @@ int num_cars_drawn = 0;
 void DrawAllTheCars(int view)
 {
 	static int car_distance[MAX_CARS]; // offset 0x0
-	_CAR_DATA* cars_to_draw[MAX_CARS];
+	CAR_DATA* cars_to_draw[MAX_CARS];
 
 	int dx, dz;
 	int dist;
 	int i, j;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 	int num_cars_to_draw;
 	int spacefree;
 	
@@ -1724,14 +1724,14 @@ void DrawAllTheCars(int view)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlotBuildingModelSubdivNxN(struct MODEL *model /*$t0*/, int rot /*stack 4*/, struct _pct *pc /*$s2*/, int n /*stack 12*/)
+// void /*$ra*/ PlotBuildingModelSubdivNxN(MODEL *model /*$t0*/, int rot /*stack 4*/, _pct *pc /*$s2*/, int n /*stack 12*/)
  // line 1857, offset 0x00040a90
 	/* begin block 1 */
 		// Start line: 1858
 		// Start offset: 0x00040A90
 		// Variables:
-	// 		struct SVECTOR *verts; // $s4
-	// 		struct PL_POLYFT4 *polys; // $s1
+	// 		SVECTOR *verts; // $s4
+	// 		PL_POLYFT4 *polys; // $s1
 	// 		int i; // $s7
 	// 		int asdf; // $fp
 
@@ -1786,7 +1786,7 @@ void DrawAllTheCars(int view)
 						// Start line: 1983
 						// Start offset: 0x00041060
 						// Variables:
-					// 		struct POLY_FT4 *prims; // $t2
+					// 		POLY_FT4 *prims; // $t2
 					// 		int uv0; // $v1
 					// 		int uv1; // $a2
 					// 		int uv2; // $t3
@@ -2009,7 +2009,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ RenderModel(struct MODEL *model /*$s2*/, struct MATRIX *matrix /*$a1*/, struct VECTOR *pos /*$a2*/, int zBias /*$s0*/, int flags /*stack 16*/)
+// void /*$ra*/ RenderModel(MODEL *model /*$s2*/, MATRIX *matrix /*$a1*/, VECTOR *pos /*$a2*/, int zBias /*$s0*/, int flags /*stack 16*/)
  // line 2181, offset 0x0004143c
 	/* begin block 1 */
 		// Start line: 2182
@@ -2022,7 +2022,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			// Start line: 2191
 			// Start offset: 0x00041468
 			// Variables:
-		// 		struct MATRIX comb; // stack offset -48
+		// 		MATRIX comb; // stack offset -48
 		/* end block 1.1 */
 		// End offset: 0x00041498
 		// End Line: 2196
@@ -2101,7 +2101,7 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 
 // decompiled code
 // original method signature: 
-// unsigned long /*$ra*/ normalIndex(struct SVECTOR *verts /*$a0*/, unsigned int vidx /*$a1*/)
+// unsigned long /*$ra*/ normalIndex(SVECTOR *verts /*$a0*/, unsigned int vidx /*$a1*/)
  // line 2267, offset 0x000415e4
 	/* begin block 1 */
 		// Start line: 2268
@@ -2111,8 +2111,8 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	// 		int nx; // $t4
 	// 		int ny; // $v1
 	// 		int nz; // $a2
-	// 		struct SVECTOR p; // stack offset -16
-	// 		struct SVECTOR q; // stack offset -8
+	// 		SVECTOR p; // stack offset -16
+	// 		SVECTOR q; // stack offset -8
 
 		/* begin block 1.1 */
 			// Start line: 2268

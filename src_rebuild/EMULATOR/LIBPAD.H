@@ -35,13 +35,13 @@
 
 #define MAX_CONTROLLERS 2
 
-struct PADRAW
+typedef struct PADRAW
 {
 	unsigned char status; // size=0, offset=0
 	unsigned char id; // size=0, offset=1
 	unsigned char buttons[2]; // size=2, offset=2
 	unsigned char analog[4]; // size=4, offset=4
-};
+} *LPPADRAW;
 
 extern void PadInitDirect(unsigned char* pad1, unsigned char* pad2);
 extern void PadInitMtap(unsigned char* unk00, unsigned char* unk01);

@@ -183,7 +183,7 @@ int gDemoLevel = 0;
 				// Start line: 2845
 				// Start offset: 0x00058F7C
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *dst; // $a0
+			// 		DRIVER2_JUNCTION *dst; // $a0
 			// 		unsigned long *src; // $a2
 			// 		int i; // $v1
 			/* end block 1.1.1 */
@@ -194,7 +194,7 @@ int gDemoLevel = 0;
 				// Start line: 2865
 				// Start offset: 0x00058FCC
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *dst; // $a0
+			// 		DRIVER2_JUNCTION *dst; // $a0
 			// 		unsigned long *src; // $a2
 			// 		int i; // $v1
 			/* end block 1.1.2 */
@@ -612,7 +612,7 @@ void InitModelNames(void)
 			// Start line: 3305
 			// Start offset: 0x000596B0
 			// Variables:
-		// 		struct STREAM_SOURCE *pinfo; // $s0
+		// 		STREAM_SOURCE *pinfo; // $s0
 		// 		char padid; // stack offset -48
 		// 		int i; // $s2
 		/* end block 1.4 */
@@ -682,7 +682,7 @@ void InitModelNames(void)
 void GameInit(void)
 {
 	long lVar1;
-	_PLAYER* p_Var2;
+	PLAYER* p_Var2;
 	STREAM_SOURCE* pSVar3;
 	int i;
 	int iVar5;
@@ -995,7 +995,7 @@ void GameInit(void)
 	// 		static char t1; // offset 0x4
 	// 		static char t2; // offset 0x5
 	// 		static int oldsp; // offset 0x8
-	// 		struct _CAR_DATA *lcp; // $s0
+	// 		CAR_DATA *lcp; // $s0
 	// 		int i; // $s2
 
 		/* begin block 1.1 */
@@ -1142,8 +1142,8 @@ void StepSim(void)
 	char padSteer;
 	short* playerFelony;
 	int stream;
-	_CAR_DATA* cp;
-	_PLAYER* pl;
+	CAR_DATA* cp;
+	PLAYER* pl;
 	int i, j;
 	int car;
 
@@ -1598,14 +1598,14 @@ void StepSim(void)
 		// Start offset: 0x0005A8DC
 		// Variables:
 	// 		int i; // $s0
-	// 		struct RECT dest; // stack offset -24
+	// 		RECT dest; // stack offset -24
 
 		/* begin block 1.1 */
 			// Start line: 4125
 			// Start offset: 0x0005AA2C
 			// Variables:
-		// 		static struct POLY_FT3 buffer[2]; // offset 0x10
-		// 		static struct POLY_FT3 *null; // offset 0xc
+		// 		static POLY_FT3 buffer[2]; // offset 0x10
+		// 		static POLY_FT3 *null; // offset 0xc
 		/* end block 1.1 */
 		// End offset: 0x0005AA98
 		// End Line: 4140
@@ -1809,7 +1809,7 @@ void StepGame(void)
 	int iVar2;
 	int i;
 	unsigned char* puVar4;
-	_PLAYER* pl;
+	PLAYER* pl;
 
 	if (CameraCnt == 3)
 	{
@@ -2161,7 +2161,7 @@ void DrawGame(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ EndGame(enum GAMEMODE mode /*$a0*/)
+// void /*$ra*/ EndGame(GAMEMODE mode /*$a0*/)
  // line 4586, offset 0x0005c574
 	/* begin block 1 */
 		// Start line: 10823
@@ -2193,7 +2193,7 @@ void EndGame(GAMEMODE mode)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ EnablePause(enum PAUSEMODE mode /*$a0*/)
+// void /*$ra*/ EnablePause(PAUSEMODE mode /*$a0*/)
  // line 4593, offset 0x0005c590
 	/* begin block 1 */
 		// Start line: 10842
@@ -2697,7 +2697,7 @@ void FadeScreen(int end_value)
 		// Start line: 4895
 		// Start offset: 0x0005B54C
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $s1
+	// 		CAR_DATA *cp; // $s1
 	// 		int count; // $s0
 	// 		int scale; // $v1
 	// 		int wheel; // $t1
@@ -2731,7 +2731,7 @@ void UpdatePlayerInformation(void)
 	int i, j;
 	int wheelsInWater;
 	int wheelsAboveWaterToDieWithFade;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 
 	cp = NULL;
 
@@ -2855,7 +2855,7 @@ void UpdatePlayerInformation(void)
 			// Start line: 5090
 			// Start offset: 0x0005BAE4
 			// Variables:
-		// 		struct POLY_F4 *poly; // $v1
+		// 		POLY_F4 *poly; // $v1
 		// 		int col; // $a1
 		/* end block 1.3 */
 		// End offset: 0x0005BC20
@@ -2892,7 +2892,7 @@ void RenderGame2(int view)
 	int notInDreaAndStevesEvilLair;
 
 	CurrentPlayerView = view;
-	InitCamera((_PLAYER*)(player + view));
+	InitCamera((PLAYER*)(player + view));
 
 #ifndef PSX
 	int screenW, screenH;
@@ -3262,7 +3262,7 @@ void InitGameVariables(void)
 		// Start line: 5346
 		// Start offset: 0x0005BF74
 		// Variables:
-	// 		struct _CAR_DATA *car; // $s0
+	// 		CAR_DATA *car; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 5348
@@ -3289,7 +3289,7 @@ void DealWithHorn(char* hr, int i)
 {
 	int channel;
 	int modelId;
-	_CAR_DATA* car;
+	CAR_DATA* car;
 
 	car = &car_data[player[i].playerCarId];
 

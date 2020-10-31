@@ -73,7 +73,7 @@ extern void ProcessRoadBoundsLump(char *lump_file, int lump_size); // 0x0005D6D4
 
 extern void ProcessJuncBoundsLump(char *lump_file, int lump_size); // 0x0005D6DC
 
-extern struct MODEL * FindModelPtrWithName(char *name); // 0x0005D40C
+extern MODEL * FindModelPtrWithName(char *name); // 0x0005D40C
 
 extern int FindModelIdxWithName(char *name); // 0x0005D4C4
 

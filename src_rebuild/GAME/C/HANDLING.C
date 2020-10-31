@@ -29,7 +29,7 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitCarPhysics(struct _CAR_DATA *cp /*$s0*/, long (*startpos)[4] /*$t0*/, int direction /*$a2*/)
+// void /*$ra*/ InitCarPhysics(CAR_DATA *cp /*$s0*/, long (*startpos)[4] /*$t0*/, int direction /*$a2*/)
  // line 998, offset 0x0005381c
 	/* begin block 1 */
 		// Start line: 999
@@ -63,7 +63,7 @@
 
 
 // [D] [T]
-void InitCarPhysics(_CAR_DATA* cp, long(*startpos)[4], int direction)
+void InitCarPhysics(CAR_DATA* cp, long(*startpos)[4], int direction)
 {
 	int ty;
 	int odz;
@@ -126,7 +126,7 @@ void InitCarPhysics(_CAR_DATA* cp, long(*startpos)[4], int direction)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TempBuildHandlingMatrix(struct _CAR_DATA *cp /*$s0*/, int init /*$a1*/)
+// void /*$ra*/ TempBuildHandlingMatrix(CAR_DATA *cp /*$s0*/, int init /*$a1*/)
  // line 1055, offset 0x000539e8
 	/* begin block 1 */
 		// Start line: 1056
@@ -154,7 +154,7 @@ void InitCarPhysics(_CAR_DATA* cp, long(*startpos)[4], int direction)
 	// End Line: 2179
 
 // [D] [T]
-void TempBuildHandlingMatrix(_CAR_DATA* cp, int init)
+void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 {
 	int dz;
 	int ang;
@@ -182,14 +182,14 @@ void TempBuildHandlingMatrix(_CAR_DATA* cp, int init)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ UpdateCarPoints(struct CAR_COSMETICS *carCos /*$a0*/)
+// void /*$ra*/ UpdateCarPoints(CAR_COSMETICS *carCos /*$a0*/)
  // line 1079, offset 0x00053b08
 	/* begin block 1 */
 		// Start line: 1080
 		// Start offset: 0x00053B08
 		// Variables:
-	// 		struct SVECTOR *groundCollPoints; // $a1
-	// 		struct SVECTOR *wheelPoints; // $a3
+	// 		SVECTOR *groundCollPoints; // $a1
+	// 		SVECTOR *wheelPoints; // $a3
 	// 		int i; // $a2
 	/* end block 1 */
 	// End offset: 0x00053C00
@@ -259,7 +259,7 @@ void UpdateCarPoints(CAR_COSMETICS* carCos)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ FixCarCos(struct CAR_COSMETICS *carCos /*$s0*/, int externalModelNumber /*$a1*/)
+// void /*$ra*/ FixCarCos(CAR_COSMETICS *carCos /*$s0*/, int externalModelNumber /*$a1*/)
  // line 1106, offset 0x00056c24
 	/* begin block 1 */
 		// Start line: 1107
@@ -398,17 +398,17 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 	// 		int i; // $fp
 	// 		int RKstep; // stack offset -84
 	// 		int subframe; // stack offset -80
-	// 		struct _CAR_DATA *c0; // $s0
-	// 		static union RigidBodyState _tp[20]; // offset 0x0
-	// 		static union RigidBodyState _d0[20]; // offset 0x410
-	// 		static union RigidBodyState _d1[20]; // offset 0x820
+	// 		CAR_DATA *c0; // $s0
+	// 		static RigidBodyState _tp[20]; // offset 0x0
+	// 		static RigidBodyState _d0[20]; // offset 0x410
+	// 		static RigidBodyState _d1[20]; // offset 0x820
 
 		/* begin block 1.1 */
 			// Start line: 1268
 			// Start offset: 0x00053C6C
 			// Variables:
-		// 		struct _CAR_DATA *c0; // $t2
-		// 		union RigidBodyState *st; // $t1
+		// 		CAR_DATA *c0; // $t2
+		// 		RigidBodyState *st; // $t1
 
 			/* begin block 1.1.1 */
 				// Start line: 1283
@@ -436,28 +436,28 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 			// Start line: 1334
 			// Start offset: 0x00054024
 			// Variables:
-		// 		union RigidBodyState *thisDelta; // stack offset -76
+		// 		RigidBodyState *thisDelta; // stack offset -76
 
 			/* begin block 1.2.1 */
 				// Start line: 1340
 				// Start offset: 0x00054038
 				// Variables:
-			// 		struct _CAR_DATA *c0; // $s4
+			// 		CAR_DATA *c0; // $s4
 
 				/* begin block 1.2.1.1 */
 					// Start line: 1348
 					// Start offset: 0x00054094
 					// Variables:
-				// 		union RigidBodyState *thisState_i; // $s6
+				// 		RigidBodyState *thisState_i; // $s6
 				// 		int j; // stack offset -72
 
 					/* begin block 1.2.1.1.1 */
 						// Start line: 1193
 						// Start offset: 0x000540EC
 						// Variables:
-					// 		union RigidBodyState *state; // $s6
-					// 		union RigidBodyState *delta; // $a3
-					// 		struct _CAR_DATA *cp; // $s4
+					// 		RigidBodyState *state; // $s6
+					// 		RigidBodyState *delta; // $a3
+					// 		CAR_DATA *cp; // $s4
 
 						/* begin block 1.2.1.1.1.1 */
 							// Start line: 1193
@@ -475,8 +475,8 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 						// Start line: 1367
 						// Start offset: 0x000542D8
 						// Variables:
-					// 		struct _CAR_DATA *c1; // $s3
-					// 		union RigidBodyState *thisState_j; // $s0
+					// 		CAR_DATA *c1; // $s3
+					// 		RigidBodyState *thisState_j; // $s0
 
 						/* begin block 1.2.1.1.2.1 */
 							// Start line: 1375
@@ -492,8 +492,8 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 								// Start line: 1378
 								// Start offset: 0x00054340
 								// Variables:
-							// 		struct BOUND_BOX *bb1; // $a2
-							// 		struct BOUND_BOX *bb2; // $a0
+							// 		BOUND_BOX *bb1; // $a2
+							// 		BOUND_BOX *bb2; // $a0
 							/* end block 1.2.1.1.2.1.1 */
 							// End offset: 0x00054440
 							// End Line: 1409
@@ -532,7 +532,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 									// Start line: 1487
 									// Start offset: 0x00054870
 									// Variables:
-								// 		struct VECTOR velocity; // stack offset -104
+								// 		VECTOR velocity; // stack offset -104
 
 									/* begin block 1.2.1.1.2.1.3.2.1 */
 										// Start line: 1506
@@ -600,16 +600,16 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 				// Start line: 1626
 				// Start offset: 0x00054FA4
 				// Variables:
-			// 		struct _CAR_DATA *c0; // $a1
+			// 		CAR_DATA *c0; // $a1
 
 				/* begin block 1.2.2.1 */
 					// Start line: 1630
 					// Start offset: 0x00054FC4
 					// Variables:
-				// 		union RigidBodyState *st; // $t2
-				// 		union RigidBodyState *tp; // $a0
-				// 		union RigidBodyState *d0; // $a2
-				// 		union RigidBodyState *d1; // $v1
+				// 		RigidBodyState *st; // $t2
+				// 		RigidBodyState *tp; // $a0
+				// 		RigidBodyState *d0; // $a2
+				// 		RigidBodyState *d1; // $v1
 				// 		int j; // $t1
 				/* end block 1.2.2.1 */
 				// End offset: 0x000550B0
@@ -685,9 +685,9 @@ int playerhitcopsanyway = 0;
 // [D] [T]
 void GlobalTimeStep(void)
 {
-	static union RigidBodyState _tp[MAX_CARS]; // offset 0x0
-	static union RigidBodyState _d0[MAX_CARS]; // offset 0x410
-	static union RigidBodyState _d1[MAX_CARS]; // offset 0x820
+	static RigidBodyState _tp[MAX_CARS]; // offset 0x0
+	static RigidBodyState _d0[MAX_CARS]; // offset 0x410
+	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
 	int howHard;
 	long tmp;
@@ -696,8 +696,8 @@ void GlobalTimeStep(void)
 	RigidBodyState* thisDelta;
 	BOUND_BOX* bb1;
 	BOUND_BOX* bb2;
-	_CAR_DATA* cp;
-	_CAR_DATA* c1;
+	CAR_DATA* cp;
+	CAR_DATA* c1;
 	RigidBodyState* st;
 	RigidBodyState* tp;
 	RigidBodyState* d0;
@@ -1200,24 +1200,24 @@ void GlobalTimeStep(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetShadowPoints(struct _CAR_DATA *c0 /*$s4*/)
+// void /*$ra*/ SetShadowPoints(CAR_DATA *c0 /*$s4*/)
  // line 1704, offset 0x000551ec
 	/* begin block 1 */
 		// Start line: 1705
 		// Start offset: 0x000551EC
 		// Variables:
 	// 		int j; // $s2
-	// 		struct CAR_COSMETICS *car_cos; // $v1
-	// 		struct _sdPlane *surfacePtr; // stack offset -48
+	// 		CAR_COSMETICS *car_cos; // $v1
+	// 		sdPlane *surfacePtr; // stack offset -48
 
 		/* begin block 1.1 */
 			// Start line: 1718
 			// Start offset: 0x000552A8
 			// Variables:
-		// 		struct SVECTOR disp; // stack offset -104
-		// 		struct VECTOR pointPos; // stack offset -96
-		// 		struct VECTOR surfaceNormal; // stack offset -80
-		// 		struct VECTOR surfacePoint; // stack offset -64
+		// 		SVECTOR disp; // stack offset -104
+		// 		VECTOR pointPos; // stack offset -96
+		// 		VECTOR surfaceNormal; // stack offset -80
+		// 		VECTOR surfacePoint; // stack offset -64
 		/* end block 1.1 */
 		// End offset: 0x00055388
 		// End Line: 1739
@@ -1243,7 +1243,7 @@ void GlobalTimeStep(void)
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
-void SetShadowPoints(_CAR_DATA* c0, VECTOR* outpoints)
+void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 {
 	int i;
 	SVECTOR disp;
@@ -1251,7 +1251,7 @@ void SetShadowPoints(_CAR_DATA* c0, VECTOR* outpoints)
 	VECTOR surfaceNormal;
 	CAR_COSMETICS* car_cos;
 
-	_sdPlane* surfacePtr;
+	sdPlane* surfacePtr;
 	surfacePtr = NULL;
 
 	gte_SetRotMatrix(&c0->hd.where);
@@ -1279,7 +1279,7 @@ void SetShadowPoints(_CAR_DATA* c0, VECTOR* outpoints)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ LongQuaternion2Matrix(long (*qua)[4] /*$a0*/, struct MATRIX *m /*$a1*/)
+// void /*$ra*/ LongQuaternion2Matrix(long (*qua)[4] /*$a0*/, MATRIX *m /*$a1*/)
  // line 1753, offset 0x000553cc
 	/* begin block 1 */
 		// Start line: 1754
@@ -1361,13 +1361,13 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX* m)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ initOBox(struct _CAR_DATA *cp /*$a2*/)
+// void /*$ra*/ initOBox(CAR_DATA *cp /*$a2*/)
  // line 1802, offset 0x000554f0
 	/* begin block 1 */
 		// Start line: 1803
 		// Start offset: 0x000554F0
 		// Variables:
-	// 		struct SVECTOR *boxDisp; // $a0
+	// 		SVECTOR *boxDisp; // $a0
 
 		/* begin block 1.1 */
 			// Start line: 1803
@@ -1392,7 +1392,7 @@ void LongQuaternion2Matrix(long(*qua)[4], MATRIX* m)
 	// End Line: 5020
 
 // [D] [T]
-void initOBox(_CAR_DATA* cp)
+void initOBox(CAR_DATA* cp)
 {
 	SVECTOR boxDisp;
 	CAR_COSMETICS* car_cos;
@@ -1448,7 +1448,7 @@ void initOBox(_CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ RebuildCarMatrix(union RigidBodyState *st /*$a2*/, struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ RebuildCarMatrix(RigidBodyState *st /*$a2*/, CAR_DATA *cp /*$s0*/)
  // line 1854, offset 0x00056ae4
 	/* begin block 1 */
 		// Start line: 1855
@@ -1481,7 +1481,7 @@ void initOBox(_CAR_DATA* cp)
 	// End Line: 3709
 
 // [D] [T]
-void RebuildCarMatrix(RigidBodyState* st, _CAR_DATA* cp)
+void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 {
 	int sm;
 	int osm;
@@ -1529,13 +1529,13 @@ void RebuildCarMatrix(RigidBodyState* st, _CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StepCarPhysics(struct _CAR_DATA *cp /*$a2*/)
+// void /*$ra*/ StepCarPhysics(CAR_DATA *cp /*$a2*/)
  // line 1875, offset 0x00056a0c
 	/* begin block 1 */
 		// Start line: 1876
 		// Start offset: 0x00056A0C
 		// Variables:
-	// 		struct _HANDLING_TYPE *hp; // $v0
+	// 		_HANDLING_TYPE *hp; // $v0
 	/* end block 1 */
 	// End offset: 0x00056A64
 	// End Line: 1899
@@ -1546,7 +1546,7 @@ void RebuildCarMatrix(RigidBodyState* st, _CAR_DATA* cp)
 	// End Line: 3751
 
 // [D] [T]
-void StepCarPhysics(_CAR_DATA* cp)
+void StepCarPhysics(CAR_DATA* cp)
 {
 	_HANDLING_TYPE* hp;
 	int car_id;
@@ -1633,14 +1633,14 @@ void InitialiseCarHandling(void)
 		// Start line: 1932
 		// Start offset: 0x000556E0
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $t2
-	// 		struct BOUND_BOX *bp; // $t1
-	// 		struct BOUND_BOX *bb1; // $t0
-	// 		struct BOUND_BOX *bb2; // $a1
+	// 		CAR_DATA *cp; // $t2
+	// 		BOUND_BOX *bp; // $t1
+	// 		BOUND_BOX *bb1; // $t0
+	// 		BOUND_BOX *bb2; // $a1
 	// 		int lbod; // $v1
 	// 		int wbod; // $a0
 	// 		int hbod; // $t0
-	// 		struct SVECTOR *colBox; // $a1
+	// 		SVECTOR *colBox; // $a1
 	// 		int loop1; // $t4
 	// 		int loop2; // $a3
 
@@ -1697,7 +1697,7 @@ void CheckCarToCarCollisions(void)
 	BOUND_BOX* bb;
 	BOUND_BOX* bb2;
 	BOUND_BOX* bb1;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 	SVECTOR* colBox;
 
 	cp = car_data;
@@ -1835,7 +1835,7 @@ void CheckCarToCarCollisions(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ProcessCarPad(struct _CAR_DATA *cp /*$s0*/, unsigned long pad /*$s3*/, char PadSteer /*$s4*/, char use_analogue /*$s5*/)
+// void /*$ra*/ ProcessCarPad(CAR_DATA *cp /*$s0*/, unsigned long pad /*$s3*/, char PadSteer /*$s4*/, char use_analogue /*$s5*/)
 // line 2027, offset 0x00055a9c
 /* begin block 1 */
 // Start line: 2028
@@ -1884,7 +1884,7 @@ void CheckCarToCarCollisions(void)
 // Start line: 2320
 // Start offset: 0x000560D4
 // Variables:
-// 		struct _CAR_DATA *tp; // $a1
+// 		CAR_DATA *tp; // $a1
 // 		int cx; // $v1
 // 		int cz; // $v0
 // 		int chase_square_dist; // $v0
@@ -1913,7 +1913,7 @@ void CheckCarToCarCollisions(void)
 // End Line: 5532
 
 // [D] [T]
-void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
+void ProcessCarPad(CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 {
 	int player_id;
 	int int_steer;
@@ -2124,7 +2124,7 @@ void ProcessCarPad(_CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 
 			if (cp->controlType == CONTROL_TYPE_PLAYER)
 			{
-				_CAR_DATA* tp;
+				CAR_DATA* tp;
 				int targetCarId, cx, cz, chase_square_dist;
 
 				if (player[0].playerCarId == cp->id)
@@ -2263,7 +2263,7 @@ void TerminateSkidding(int player_id)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CheckCarEffects(struct _CAR_DATA *cp /*$s2*/, int player_id /*$s3*/)
+// void /*$ra*/ CheckCarEffects(CAR_DATA *cp /*$s2*/, int player_id /*$s3*/)
 // line 2414, offset 0x00056350
 /* begin block 1 */
 // Start line: 2415
@@ -2328,7 +2328,7 @@ char continuous_track = 0;
 int last_track_state = -1;
 
 // [D] [T]
-void CheckCarEffects(_CAR_DATA* cp, int player_id)
+void CheckCarEffects(CAR_DATA* cp, int player_id)
 {
 	int channel;
 	int sample;
@@ -2530,7 +2530,7 @@ void CheckCarEffects(_CAR_DATA* cp, int player_id)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ jump_debris(struct _CAR_DATA *cp /*$s1*/)
+// void /*$ra*/ jump_debris(CAR_DATA *cp /*$s1*/)
 // line 2575, offset 0x000568d8
 /* begin block 1 */
 // Start line: 2576
@@ -2542,8 +2542,8 @@ void CheckCarEffects(_CAR_DATA* cp, int player_id)
 // Start line: 2599
 // Start offset: 0x00056964
 // Variables:
-// 		struct VECTOR position; // stack offset -48
-// 		struct VECTOR velocity; // stack offset -32
+// 		VECTOR position; // stack offset -48
+// 		VECTOR velocity; // stack offset -32
 /* end block 1.1 */
 // End offset: 0x000569F8
 // End Line: 2603
@@ -2564,7 +2564,7 @@ void CheckCarEffects(_CAR_DATA* cp, int player_id)
 char DebrisTimer = 0;
 
 // [D] [T]
-void jump_debris(_CAR_DATA* cp)
+void jump_debris(CAR_DATA* cp)
 {
 	WHEEL* wheel;
 	int count;
@@ -2619,7 +2619,7 @@ void jump_debris(_CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ nose_down(struct _CAR_DATA *cp /*$a0*/)
+// void /*$ra*/ nose_down(CAR_DATA *cp /*$a0*/)
 // line 2607, offset 0x00056a74
 /* begin block 1 */
 // Start line: 7459
@@ -2632,7 +2632,7 @@ void jump_debris(_CAR_DATA* cp)
 // End Line: 7462
 
 // [D] [T]
-void nose_down(_CAR_DATA* cp)
+void nose_down(CAR_DATA* cp)
 {
 	cp->st.n.angularVelocity[0] += cp->hd.where.m[0][0] * 50;
 	cp->st.n.angularVelocity[1] += cp->hd.where.m[1][0] * 50;
@@ -2643,7 +2643,7 @@ void nose_down(_CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ GetPlayerId(struct _CAR_DATA *cp /*$a0*/)
+// int /*$ra*/ GetPlayerId(CAR_DATA *cp /*$a0*/)
 // line 2664, offset 0x00056cec
 /* begin block 1 */
 // Start line: 2665
@@ -2666,7 +2666,7 @@ void nose_down(_CAR_DATA* cp)
 // End Line: 9346
 
 // [D] [T]
-int GetPlayerId(_CAR_DATA* cp)
+int GetPlayerId(CAR_DATA* cp)
 {
 	int i;
 	int p_id;

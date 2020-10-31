@@ -342,7 +342,7 @@ void InitializeCutsceneSound(int cutscene)
 					// Start line: 245
 					// Start offset: 0x0005DBAC
 					// Variables:
-				// 		struct _CAR_DATA *you; // $s0
+				// 		CAR_DATA *you; // $s0
 				/* end block 1.1.2.1 */
 				// End offset: 0x0005DBF0
 				// End Line: 248
@@ -658,8 +658,8 @@ void InitializeMissionSound(void)
 			// Start line: 475
 			// Start offset: 0x0005E348
 			// Variables:
-		// 		struct VECTOR Q[3]; // stack offset -96
-		// 		struct VECTOR P; // stack offset -48
+		// 		VECTOR Q[3]; // stack offset -96
+		// 		VECTOR P; // stack offset -48
 		/* end block 1.2 */
 		// End offset: 0x0005E410
 		// End Line: 478
@@ -677,8 +677,8 @@ void InitializeMissionSound(void)
 			// Start line: 523
 			// Start offset: 0x0005E6F0
 			// Variables:
-		// 		struct VECTOR Q[3]; // stack offset -96
-		// 		struct VECTOR P; // stack offset -48
+		// 		VECTOR Q[3]; // stack offset -96
+		// 		VECTOR P; // stack offset -48
 		/* end block 1.4 */
 		// End offset: 0x0005E7B8
 		// End Line: 526
@@ -728,7 +728,7 @@ void DoMissionSound(void)
 	char cVar1;
 	int y;
 	int z;
-	_TARGET* p_Var4;
+	MS_TARGET* p_Var4;
 	int x;
 	int y_00;
 	int z_00;
@@ -1076,7 +1076,7 @@ void DoMissionSound(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetMSoundVar(int var /*$a0*/, struct VECTOR *V /*$a1*/)
+// void /*$ra*/ SetMSoundVar(int var /*$a0*/, VECTOR *V /*$a1*/)
  // line 636, offset 0x0005f25c
 	/* begin block 1 */
 		// Start line: 1453

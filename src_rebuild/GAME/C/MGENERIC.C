@@ -17,8 +17,8 @@
 		// Start line: 64
 		// Start offset: 0x00060740
 		// Variables:
-	// 		struct _TARGET *target; // $s0
-	// 		struct SAVED_CAR_POS *carpos; // $s2
+	// 		MS_TARGET *target; // $s0
+	// 		SAVED_CAR_POS *carpos; // $s2
 	// 		int i; // $s1
 	/* end block 1 */
 	// End offset: 0x000607E4
@@ -44,7 +44,7 @@
 // [D]
 void StoreEndData(void)
 {
-	_TARGET *target;
+	MS_TARGET *target;
 	int i;
 	SAVED_CAR_POS *carpos;
 
@@ -79,7 +79,7 @@ void StoreEndData(void)
 		// Start line: 88
 		// Start offset: 0x000607E4
 		// Variables:
-	// 		struct SAVED_CAR_POS *carpos; // $s0
+	// 		SAVED_CAR_POS *carpos; // $s0
 	// 		int i; // $s1
 	/* end block 1 */
 	// End offset: 0x00060838
@@ -133,7 +133,7 @@ void RestoreStartData(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StorePlayerPosition(struct SAVED_PLAYER_POS *data /*$a2*/)
+// void /*$ra*/ StorePlayerPosition(SAVED_PLAYER_POS *data /*$a2*/)
  // line 109, offset 0x0005ffac
 	/* begin block 1 */
 		// Start line: 110
@@ -195,7 +195,7 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ RestorePlayerPosition(struct SAVED_PLAYER_POS *data /*$a2*/)
+// void /*$ra*/ RestorePlayerPosition(SAVED_PLAYER_POS *data /*$a2*/)
  // line 150, offset 0x00060248
 	/* begin block 1 */
 		// Start line: 151
@@ -251,7 +251,7 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StoreCarPosition(struct _TARGET *target /*$t1*/, struct SAVED_CAR_POS *data /*$t0*/)
+// void /*$ra*/ StoreCarPosition(MS_TARGET *target /*$t1*/, SAVED_CAR_POS *data /*$t0*/)
  // line 180, offset 0x000603b0
 	/* begin block 1 */
 		// Start line: 181
@@ -273,7 +273,7 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 	// End Line: 369
 
 // [D]
-void StoreCarPosition(_TARGET *target, SAVED_CAR_POS *data)
+void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 {
 	int slot;
 
@@ -312,7 +312,7 @@ void StoreCarPosition(_TARGET *target, SAVED_CAR_POS *data)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ RestoreCarPosition(struct SAVED_CAR_POS *data /*$a3*/)
+// void /*$ra*/ RestoreCarPosition(SAVED_CAR_POS *data /*$a3*/)
  // line 214, offset 0x000604e4
 	/* begin block 1 */
 		// Start line: 439

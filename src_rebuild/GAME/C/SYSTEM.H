@@ -149,15 +149,15 @@ extern void SetupDrawBuffers(); // 0x0007EDDC
 
 extern void SetupDrawBufferData(int num_players); // 0x0007EF0C
 
-extern void InitaliseDrawEnv(struct DB *pBuff, int x, int y, int w, int h); // 0x0007F7C0
+extern void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h); // 0x0007F7C0
 
 extern void ResetCityType(); // 0x0007F5B4
 
-extern void SetCityType(enum CITYTYPE type); // 0x0007F118
+extern void SetCityType(CITYTYPE type); // 0x0007F118
 
 extern int FileExists(char *filename); // 0x0007F5C8
 
-extern enum CDTYPE DiscSwapped(char *filename); // 0x0007F640
+extern CDTYPE DiscSwapped(char *filename); // 0x0007F640
 
 
 #endif

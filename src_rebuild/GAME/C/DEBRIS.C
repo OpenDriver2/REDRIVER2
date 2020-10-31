@@ -316,26 +316,26 @@ MATRIX leaf_mat;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlacePoolForCar(struct _CAR_DATA *cp /*$s4*/, struct CVECTOR *col /*stack 4*/, int front /*$a2*/)
+// void /*$ra*/ PlacePoolForCar(CAR_DATA *cp /*$s4*/, CVECTOR *col /*stack 4*/, int front /*$a2*/)
  // line 790, offset 0x00032c10
 	/* begin block 1 */
 		// Start line: 791
 		// Start offset: 0x00032C10
 		// Variables:
 	// 		int car_road_height; // $s2
-	// 		struct SVECTOR s[27]; // stack offset -832
-	// 		struct SVECTOR *ptr; // $s1
-	// 		struct SVECTOR sout[27]; // stack offset -616
-	// 		struct VECTOR s1[12]; // stack offset -400
-	// 		struct VECTOR *ptr1; // $s0
-	// 		struct POLY_FT4 *poly; // $t0
-	// 		struct MATRIX final_matrix; // stack offset -208
-	// 		struct VECTOR averagepos; // stack offset -176
+	// 		SVECTOR s[27]; // stack offset -832
+	// 		SVECTOR *ptr; // $s1
+	// 		SVECTOR sout[27]; // stack offset -616
+	// 		VECTOR s1[12]; // stack offset -400
+	// 		VECTOR *ptr1; // $s0
+	// 		POLY_FT4 *poly; // $t0
+	// 		MATRIX final_matrix; // stack offset -208
+	// 		VECTOR averagepos; // stack offset -176
 	// 		int in_car; // $t0
 	// 		int z; // stack offset -48
 	// 		int sub_level; // $fp
 	// 		int count; // $s3
-	// 		struct VECTOR mid_position; // stack offset -160
+	// 		VECTOR mid_position; // stack offset -160
 
 		/* begin block 1.1 */
 			// Start line: 813
@@ -358,7 +358,7 @@ MATRIX leaf_mat;
 			// Start line: 937
 			// Start offset: 0x00032FB4
 			// Variables:
-		// 		struct VECTOR toss; // stack offset -144
+		// 		VECTOR toss; // stack offset -144
 		// 		int temp_y; // $a1
 		/* end block 1.3 */
 		// End offset: 0x0003306C
@@ -426,7 +426,7 @@ MATRIX leaf_mat;
 //short light_col = 0;
 
 // [D]
-void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car)
+void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 {
 	unsigned char bVar1;
 	DB *pDVar3;
@@ -804,13 +804,13 @@ void ReleaseLeaf(short num)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddLeaf(struct VECTOR *Position /*$s1*/, int num_leaves /*$s5*/, int Type /*$s3*/)
+// void /*$ra*/ AddLeaf(VECTOR *Position /*$s1*/, int num_leaves /*$s5*/, int Type /*$s3*/)
  // line 1327, offset 0x00033574
 	/* begin block 1 */
 		// Start line: 1328
 		// Start offset: 0x00033574
 		// Variables:
-	// 		struct LEAF *myleaf; // $a1
+	// 		LEAF *myleaf; // $a1
 	// 		int num; // $v1
 	// 		int loop; // $s2
 	// 		int temprand; // $s0
@@ -968,17 +968,17 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SwirlLeaves(struct _CAR_DATA *cp /*$a0*/)
+// void /*$ra*/ SwirlLeaves(CAR_DATA *cp /*$a0*/)
  // line 1437, offset 0x00039e54
 	/* begin block 1 */
 		// Start line: 1438
 		// Start offset: 0x00039E54
 		// Variables:
 	// 		int count; // $s2
-	// 		struct LEAF *lpLeaf; // $s0
+	// 		LEAF *lpLeaf; // $s0
 	// 		int XDiff; // $v0
 	// 		int ZDiff; // $a1
-	// 		struct VECTOR *CarPos; // $s1
+	// 		VECTOR *CarPos; // $s1
 	// 		int WheelSpeed; // $a1
 
 		/* begin block 1.1 */
@@ -1007,7 +1007,7 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	// End Line: 17534
 
 // [D]
-void SwirlLeaves(_CAR_DATA *cp)
+void SwirlLeaves(CAR_DATA *cp)
 {
 	int XDiff;
 	int ZDiff;
@@ -1141,9 +1141,9 @@ void InitDebrisNames(void)
 		// Variables:
 	// 		int loop; // $v1
 	// 		int count; // $s0
-	// 		struct TPAN texnum; // stack offset -88
-	// 		struct TRI_POINT_LONG temptri; // stack offset -80
-	// 		struct BVECTOR *debrisPTR; // $a0
+	// 		TPAN texnum; // stack offset -88
+	// 		TRI_POINT_LONG temptri; // stack offset -80
+	// 		BVECTOR *debrisPTR; // $a0
 
 		/* begin block 1.1 */
 			// Start line: 1601
@@ -1422,15 +1422,15 @@ void ReleaseSmoke(short num)
 		// Start line: 1755
 		// Start offset: 0x00033FA8
 		// Variables:
-	// 		struct VECTOR Position; // stack offset -48
+	// 		VECTOR Position; // stack offset -48
 	// 		int seed; // $s0
 	// 		int number; // $v0
 	// 		int count; // $s3
 	// 		int xbound; // $a1
 	// 		int zbound; // $a0
 	// 		int type; // $a2
-	// 		struct CELL_OBJECT *cop; // $s1
-	// 		struct MODEL *model; // $s2
+	// 		CELL_OBJECT *cop; // $s1
+	// 		MODEL *model; // $s2
 
 		/* begin block 1.1 */
 			// Start line: 1783
@@ -1534,17 +1534,17 @@ void AddGroundDebris(void)
 		// Start offset: 0x00034138
 		// Variables:
 	// 		int count; // $s6
-	// 		struct VECTOR pos; // stack offset -128
-	// 		struct DAMAGED_OBJECT *dam; // $s2
+	// 		VECTOR pos; // stack offset -128
+	// 		DAMAGED_OBJECT *dam; // $s2
 
 		/* begin block 1.1 */
 			// Start line: 1826
 			// Start offset: 0x000341A4
 			// Variables:
-		// 		struct MATRIX object_matrix; // stack offset -112
-		// 		struct MATRIX spritematrix; // stack offset -80
-		// 		struct MATRIX *finalmatrix; // $s0
-		// 		struct MODEL *model; // $s3
+		// 		MATRIX object_matrix; // stack offset -112
+		// 		MATRIX spritematrix; // stack offset -80
+		// 		MATRIX *finalmatrix; // $s0
+		// 		MODEL *model; // $s3
 
 			/* begin block 1.1.1 */
 				// Start line: 1861
@@ -1672,7 +1672,7 @@ void DrawSmashable_sprites(void)
 		// Start offset: 0x0003A234
 		// Variables:
 	// 		int count; // $a3
-	// 		struct DAMAGED_OBJECT *dam; // $a1
+	// 		DAMAGED_OBJECT *dam; // $a1
 
 		/* begin block 1.1 */
 			// Start line: 1896
@@ -1741,24 +1741,24 @@ int MoveSmashable_object(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddSmallStreetLight(struct CELL_OBJECT *cop /*$s1*/, int x /*$s3*/, int y /*$s6*/, int z /*$s4*/, int type /*stack 16*/)
+// void /*$ra*/ AddSmallStreetLight(CELL_OBJECT *cop /*$s1*/, int x /*$s3*/, int y /*$s6*/, int z /*$s4*/, int type /*stack 16*/)
  // line 1925, offset 0x00034424
 	/* begin block 1 */
 		// Start line: 1926
 		// Start offset: 0x00034424
 		// Variables:
-	// 		struct VECTOR v1; // stack offset -112
-	// 		struct VECTOR v2; // stack offset -96
-	// 		struct VECTOR v3; // stack offset -80
-	// 		struct SVECTOR pos; // stack offset -64
-	// 		struct CVECTOR col; // stack offset -56
-	// 		struct CVECTOR col1; // stack offset -48
+	// 		VECTOR v1; // stack offset -112
+	// 		VECTOR v2; // stack offset -96
+	// 		VECTOR v3; // stack offset -80
+	// 		SVECTOR pos; // stack offset -64
+	// 		CVECTOR col; // stack offset -56
+	// 		CVECTOR col1; // stack offset -48
 	// 		int count; // $v1
 	// 		short angle; // $s2
 	// 		int halo_size; // $fp
 	// 		int size; // $s5
 	// 		int LampId; // $s7
-	// 		struct DAMAGED_LAMP *dam; // $s0
+	// 		DAMAGED_LAMP *dam; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 1961
@@ -1912,18 +1912,18 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddLightEffect(struct CELL_OBJECT *cop /*$t0*/, int x /*$t2*/, int y /*$a2*/, int z /*$a3*/, int type /*stack 16*/, int colour /*stack 20*/)
+// void /*$ra*/ AddLightEffect(CELL_OBJECT *cop /*$t0*/, int x /*$t2*/, int y /*$a2*/, int z /*$a3*/, int type /*stack 16*/, int colour /*stack 20*/)
  // line 2049, offset 0x00034858
 	/* begin block 1 */
 		// Start line: 2050
 		// Start offset: 0x00034858
 		// Variables:
-	// 		struct VECTOR v1; // stack offset -88
-	// 		struct VECTOR v2; // stack offset -72
-	// 		struct VECTOR v3; // stack offset -56
-	// 		struct SVECTOR pos; // stack offset -40
-	// 		struct CVECTOR col; // stack offset -32
-	// 		struct CVECTOR col1; // stack offset -24
+	// 		VECTOR v1; // stack offset -88
+	// 		VECTOR v2; // stack offset -72
+	// 		VECTOR v3; // stack offset -56
+	// 		SVECTOR pos; // stack offset -40
+	// 		CVECTOR col; // stack offset -32
+	// 		CVECTOR col1; // stack offset -24
 	// 		short angle; // $v1
 	// 		int size; // $s1
 	/* end block 1 */
@@ -2173,7 +2173,7 @@ int find_lamp_streak(int LampId)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ damage_lamp(struct CELL_OBJECT *cop /*$a2*/)
+// int /*$ra*/ damage_lamp(CELL_OBJECT *cop /*$a2*/)
  // line 2230, offset 0x00034d1c
 	/* begin block 1 */
 		// Start line: 2231
@@ -2234,19 +2234,19 @@ int damage_lamp(CELL_OBJECT *cop)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ damage_object(struct CELL_OBJECT *cop /*$s1*/, struct VECTOR *velocity /*$a1*/)
+// int /*$ra*/ damage_object(CELL_OBJECT *cop /*$s1*/, VECTOR *velocity /*$a1*/)
  // line 2255, offset 0x00034dac
 	/* begin block 1 */
 		// Start line: 2256
 		// Start offset: 0x00034DAC
 		// Variables:
-	// 		struct DAMAGED_OBJECT *dam; // $s0
+	// 		DAMAGED_OBJECT *dam; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 2256
 			// Start offset: 0x00034DAC
 			// Variables:
-		// 		struct PACKED_CELL_OBJECT *pcop; // $a0
+		// 		PACKED_CELL_OBJECT *pcop; // $a0
 		/* end block 1.1 */
 		// End offset: 0x00034DAC
 		// End Line: 2256
@@ -2326,17 +2326,17 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddTrafficLight(struct CELL_OBJECT *cop /*$t4*/, int x /*$t6*/, int y /*$t7*/, int z /*$a3*/, int flag /*stack 16*/, int yang /*stack 20*/)
+// void /*$ra*/ AddTrafficLight(CELL_OBJECT *cop /*$t4*/, int x /*$t6*/, int y /*$t7*/, int z /*$a3*/, int flag /*stack 16*/, int yang /*stack 20*/)
  // line 2326, offset 0x00034f64
 	/* begin block 1 */
 		// Start line: 2327
 		// Start offset: 0x00034F64
 		// Variables:
-	// 		struct CVECTOR a; // stack offset -80
-	// 		struct CVECTOR b; // stack offset -72
-	// 		struct CVECTOR c; // stack offset -64
-	// 		struct VECTOR v1; // stack offset -56
-	// 		struct VECTOR v2; // stack offset -40
+	// 		CVECTOR a; // stack offset -80
+	// 		CVECTOR b; // stack offset -72
+	// 		CVECTOR c; // stack offset -64
+	// 		VECTOR v1; // stack offset -56
+	// 		VECTOR v2; // stack offset -40
 	// 		int lDiffAnglesX; // $s2
 	// 		int lDiffAnglesY; // $s1
 	// 		int AbsX; // $a2
@@ -2477,13 +2477,13 @@ LAB_00035098:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitFXPos(struct VECTOR *vec /*$a0*/, struct SVECTOR *svec /*$a1*/, struct _CAR_DATA *cp /*$a2*/)
+// void /*$ra*/ InitFXPos(VECTOR *vec /*$a0*/, SVECTOR *svec /*$a1*/, CAR_DATA *cp /*$a2*/)
  // line 2428, offset 0x00039c90
 	/* begin block 1 */
 		// Start line: 2429
 		// Start offset: 0x00039C90
 		// Variables:
-	// 		struct SVECTOR svectmp; // stack offset -8
+	// 		SVECTOR svectmp; // stack offset -8
 	/* end block 1 */
 	// End offset: 0x00039D68
 	// End Line: 2437
@@ -2504,7 +2504,7 @@ LAB_00035098:
 	// End Line: 13203
 
 // [D] [T]
-void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
+void InitFXPos(VECTOR *vec, SVECTOR *svec, CAR_DATA *cp)
 {
 	SVECTOR svectmp;
 
@@ -2528,7 +2528,7 @@ void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ FindCarLightFade(struct MATRIX *carToCamera /*$a0*/)
+// void /*$ra*/ FindCarLightFade(MATRIX *carToCamera /*$a0*/)
  // line 2447, offset 0x00039c68
 	/* begin block 1 */
 		// Start line: 2449
@@ -2567,16 +2567,16 @@ void FindCarLightFade(MATRIX *carToCamera)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ShowCarlight(struct SVECTOR *v1 /*$s6*/, struct _CAR_DATA *cp /*$s3*/, struct CVECTOR *col /*$s1*/, short size /*$s5*/, struct TEXTURE_DETAILS *texture /*stack 16*/, int flag /*stack 20*/)
+// void /*$ra*/ ShowCarlight(SVECTOR *v1 /*$s6*/, CAR_DATA *cp /*$s3*/, CVECTOR *col /*$s1*/, short size /*$s5*/, TEXTURE_DETAILS *texture /*stack 16*/, int flag /*stack 20*/)
  // line 2462, offset 0x000352cc
 	/* begin block 1 */
 		// Start line: 2463
 		// Start offset: 0x000352CC
 		// Variables:
 	// 		int CarLightFade; // $a1
-	// 		struct VECTOR v1t; // stack offset -72
-	// 		struct VECTOR v1l; // stack offset -56
-	// 		struct CVECTOR flareCol; // stack offset -40
+	// 		VECTOR v1t; // stack offset -72
+	// 		VECTOR v1l; // stack offset -56
+	// 		CVECTOR flareCol; // stack offset -40
 	// 		int front; // $a0
 	/* end block 1 */
 	// End offset: 0x00035534
@@ -2588,7 +2588,7 @@ void FindCarLightFade(MATRIX *carToCamera)
 	// End Line: 6202
 
 // [D] [T
-void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
+void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
 {
 	int CarLightFade;
 	VECTOR v1t;
@@ -2657,14 +2657,14 @@ void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ShowLight1(struct VECTOR *v1 /*$a0*/, struct CVECTOR *col /*$a1*/, short size /*$a2*/, struct TEXTURE_DETAILS *texture /*$a3*/)
+// void /*$ra*/ ShowLight1(VECTOR *v1 /*$a0*/, CVECTOR *col /*$a1*/, short size /*$a2*/, TEXTURE_DETAILS *texture /*$a3*/)
  // line 2523, offset 0x0003555c
 	/* begin block 1 */
 		// Start line: 2524
 		// Start offset: 0x0003555C
 		// Variables:
-	// 		struct SVECTOR vert[4]; // stack offset -40
-	// 		struct POLY_FT4 *poly; // $t0
+	// 		SVECTOR vert[4]; // stack offset -40
+	// 		POLY_FT4 *poly; // $t0
 	// 		int z; // stack offset -8
 	/* end block 1 */
 	// End offset: 0x00035748
@@ -2751,14 +2751,14 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ShowLight(struct VECTOR *v1 /*$s0*/, struct CVECTOR *col /*$s3*/, short size /*$s4*/, struct TEXTURE_DETAILS *texture /*$s2*/)
+// void /*$ra*/ ShowLight(VECTOR *v1 /*$s0*/, CVECTOR *col /*$s3*/, short size /*$s4*/, TEXTURE_DETAILS *texture /*$s2*/)
  // line 2579, offset 0x00035750
 	/* begin block 1 */
 		// Start line: 2580
 		// Start offset: 0x00035750
 		// Variables:
-	// 		struct SVECTOR vert[4]; // stack offset -88
-	// 		struct POLY_FT4 *poly; // $s1
+	// 		SVECTOR vert[4]; // stack offset -88
+	// 		POLY_FT4 *poly; // $s1
 	// 		int z; // stack offset -40
 	// 		int index; // $a1
 	// 		int tail_width; // $s5
@@ -2776,7 +2776,7 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 			// Start line: 2654
 			// Start offset: 0x00035AD4
 			// Variables:
-		// 		struct POLY_G4 *poly1; // $s0
+		// 		POLY_G4 *poly1; // $s0
 		// 		int dx; // $a0
 		// 		int dy; // $v0
 		// 		int angle; // $v0
@@ -2784,8 +2784,8 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 		// 		int c; // $a0
 		// 		int s; // $a2
 		// 		int length; // $v0
-		// 		struct SVECTOR tail; // stack offset -56
-		// 		struct SVECTOR head; // stack offset -48
+		// 		SVECTOR tail; // stack offset -56
+		// 		SVECTOR head; // stack offset -48
 		/* end block 1.2 */
 		// End offset: 0x00035EB8
 		// End Line: 2709
@@ -2803,7 +2803,7 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 			// Start line: 2737
 			// Start offset: 0x00036024
 			// Variables:
-		// 		struct POLY_G4 *poly1; // $s0
+		// 		POLY_G4 *poly1; // $s0
 		// 		int dx; // $a2
 		// 		int dy; // $a1
 		// 		int angle; // $v0
@@ -2811,8 +2811,8 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 		// 		int c; // $a2
 		// 		int s; // $a1
 		// 		int length; // $v0
-		// 		struct SVECTOR tail; // stack offset -56
-		// 		struct SVECTOR head; // stack offset -48
+		// 		SVECTOR tail; // stack offset -56
+		// 		SVECTOR head; // stack offset -48
 		/* end block 1.4 */
 		// End offset: 0x00036408
 		// End Line: 2792
@@ -3226,14 +3226,14 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ShowGroundLight(struct VECTOR *v1 /*$a0*/, struct CVECTOR *col /*$a1*/, short size /*$a2*/)
+// void /*$ra*/ ShowGroundLight(VECTOR *v1 /*$a0*/, CVECTOR *col /*$a1*/, short size /*$a2*/)
  // line 2804, offset 0x0003642c
 	/* begin block 1 */
 		// Start line: 2805
 		// Start offset: 0x0003642C
 		// Variables:
-	// 		struct SVECTOR vert[4]; // stack offset -40
-	// 		struct POLY_FT4 *poly; // $t0
+	// 		SVECTOR vert[4]; // stack offset -40
+	// 		POLY_FT4 *poly; // $t0
 	// 		int z; // stack offset -8
 	/* end block 1 */
 	// End offset: 0x00036680
@@ -3316,14 +3316,14 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ RoundShadow(struct VECTOR *v1 /*$a0*/, struct CVECTOR *col /*$a1*/, short size /*$a2*/)
+// void /*$ra*/ RoundShadow(VECTOR *v1 /*$a0*/, CVECTOR *col /*$a1*/, short size /*$a2*/)
  // line 2869, offset 0x00036688
 	/* begin block 1 */
 		// Start line: 2870
 		// Start offset: 0x00036688
 		// Variables:
-	// 		struct SVECTOR vert[4]; // stack offset -40
-	// 		struct POLY_FT4 *poly; // $t0
+	// 		SVECTOR vert[4]; // stack offset -40
+	// 		POLY_FT4 *poly; // $t0
 	// 		int z; // stack offset -8
 	/* end block 1 */
 	// End offset: 0x000368D0
@@ -3411,16 +3411,16 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ShowFlare(struct VECTOR *v1 /*$a0*/, struct CVECTOR *col /*$s2*/, short size /*$a2*/, int rotation /*$a3*/)
+// void /*$ra*/ ShowFlare(VECTOR *v1 /*$a0*/, CVECTOR *col /*$s2*/, short size /*$a2*/, int rotation /*$a3*/)
  // line 2945, offset 0x000368d8
 	/* begin block 1 */
 		// Start line: 2946
 		// Start offset: 0x000368D8
 		// Variables:
-	// 		struct SVECTOR vert[4]; // stack offset -96
-	// 		struct POLY_FT4 *poly; // $t0
-	// 		struct SVECTOR direction; // stack offset -64
-	// 		struct MATRIX temp_matrix; // stack offset -56
+	// 		SVECTOR vert[4]; // stack offset -96
+	// 		POLY_FT4 *poly; // $t0
+	// 		SVECTOR direction; // stack offset -64
+	// 		MATRIX temp_matrix; // stack offset -56
 	// 		int z; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00036B54
@@ -3518,15 +3518,15 @@ void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplayWater(struct SMOKE *smoke /*$a0*/)
+// void /*$ra*/ DisplayWater(SMOKE *smoke /*$a0*/)
  // line 3029, offset 0x00036b6c
 	/* begin block 1 */
 		// Start line: 3030
 		// Start offset: 0x00036B6C
 		// Variables:
-	// 		struct POLY_FT4 *poly; // $t1
-	// 		struct VECTOR v; // stack offset -64
-	// 		struct SVECTOR vert[4]; // stack offset -48
+	// 		POLY_FT4 *poly; // $t1
+	// 		VECTOR v; // stack offset -64
+	// 		SVECTOR vert[4]; // stack offset -48
 	// 		int size; // $t1
 	// 		int z; // $v0
 	// 		int z1; // stack offset -16
@@ -3631,16 +3631,16 @@ void DisplayWater(SMOKE *smoke)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplaySpark(struct SMOKE *spark /*$t1*/)
+// void /*$ra*/ DisplaySpark(SMOKE *spark /*$t1*/)
  // line 3102, offset 0x00036e18
 	/* begin block 1 */
 		// Start line: 3103
 		// Start offset: 0x00036E18
 		// Variables:
 	// 		int z; // stack offset -8
-	// 		struct SVECTOR v[3]; // stack offset -40
-	// 		struct SVECTOR TrailPos; // stack offset -16
-	// 		struct POLY_G3 *poly; // $t0
+	// 		SVECTOR v[3]; // stack offset -40
+	// 		SVECTOR TrailPos; // stack offset -16
+	// 		POLY_G3 *poly; // $t0
 
 		/* begin block 1.1 */
 			// Start line: 3135
@@ -3762,7 +3762,7 @@ void DisplaySpark(SMOKE *spark)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ GetSmokeDrift(struct VECTOR *Wind /*$t2*/)
+// void /*$ra*/ GetSmokeDrift(VECTOR *Wind /*$t2*/)
  // line 3182, offset 0x00037158
 	/* begin block 1 */
 		// Start line: 3183
@@ -3822,13 +3822,13 @@ void GetSmokeDrift(VECTOR *Wind)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Setup_Debris(struct VECTOR *ipos /*$fp*/, struct VECTOR *ispeed /*$s6*/, int num_debris /*$s7*/, int type /*$s5*/)
+// void /*$ra*/ Setup_Debris(VECTOR *ipos /*$fp*/, VECTOR *ispeed /*$s6*/, int num_debris /*$s7*/, int type /*$s5*/)
  // line 3227, offset 0x00037250
 	/* begin block 1 */
 		// Start line: 3228
 		// Start offset: 0x00037250
 		// Variables:
-	// 		struct DEBRIS *mydebris; // $s1
+	// 		DEBRIS *mydebris; // $s1
 	// 		int num; // $v1
 	// 		int loop; // $s4
 	// 		int vx; // $s2
@@ -3941,13 +3941,13 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Setup_Smoke(struct VECTOR *ipos /*$s1*/, int start_w /*$s3*/, int end_w /*$s4*/, int SmokeType /*$s7*/, int WheelSpeed /*stack 16*/, struct VECTOR *Drift /*stack 20*/, int Exhaust /*stack 24*/)
+// void /*$ra*/ Setup_Smoke(VECTOR *ipos /*$s1*/, int start_w /*$s3*/, int end_w /*$s4*/, int SmokeType /*$s7*/, int WheelSpeed /*stack 16*/, VECTOR *Drift /*stack 20*/, int Exhaust /*stack 24*/)
  // line 3296, offset 0x00037474
 	/* begin block 1 */
 		// Start line: 3297
 		// Start offset: 0x00037474
 		// Variables:
-	// 		struct SMOKE *mysmoke; // $s0
+	// 		SMOKE *mysmoke; // $s0
 	// 		int num; // $v1
 
 		/* begin block 1.1 */
@@ -4166,13 +4166,13 @@ LAB_00037884:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Setup_Sparks(struct VECTOR *ipos /*$fp*/, struct VECTOR *ispeed /*$s7*/, int num_sparks /*stack 8*/, char SparkType /*$s5*/)
+// void /*$ra*/ Setup_Sparks(VECTOR *ipos /*$fp*/, VECTOR *ispeed /*$s7*/, int num_sparks /*stack 8*/, char SparkType /*$s5*/)
  // line 3475, offset 0x00037950
 	/* begin block 1 */
 		// Start line: 3476
 		// Start offset: 0x00037950
 		// Variables:
-	// 		struct SMOKE *mysmoke; // $s2
+	// 		SMOKE *mysmoke; // $s2
 	// 		int num; // $s0
 	// 		int loop; // $s4
 	// 		int vx; // $s1
@@ -4280,7 +4280,7 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplayDebris(struct DEBRIS *debris /*$t2*/, char type /*$t3*/)
+// void /*$ra*/ DisplayDebris(DEBRIS *debris /*$t2*/, char type /*$t3*/)
  // line 3564, offset 0x00037b14
 	/* begin block 1 */
 		// Start line: 3565
@@ -4288,11 +4288,11 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 		// Variables:
 	// 		int pos; // $a1
 	// 		int z; // stack offset -8
-	// 		struct SVECTOR v[4]; // stack offset -56
-	// 		struct TRI_POINT *tv; // $t1
-	// 		struct VECTOR debrisvec; // stack offset -24
-	// 		struct POLY_FT3 *poly; // $t0
-	// 		struct POLY_GT4 *poly1; // $t0
+	// 		SVECTOR v[4]; // stack offset -56
+	// 		TRI_POINT *tv; // $t1
+	// 		VECTOR debrisvec; // stack offset -24
+	// 		POLY_FT3 *poly; // $t0
+	// 		POLY_GT4 *poly1; // $t0
 
 		/* begin block 1.1 */
 			// Start line: 3607
@@ -4430,21 +4430,21 @@ void DisplayDebris(DEBRIS *debris, char type)
 		// Variables:
 	// 		int count; // $s0
 	// 		int i; // $s3
-	// 		struct DEBRIS *lpDebris; // $s1
-	// 		struct SMOKE *smokeptr; // $s0
-	// 		struct VECTOR dummy; // stack offset -80
-	// 		struct LEAF *lpLeaf; // $s1
+	// 		DEBRIS *lpDebris; // $s1
+	// 		SMOKE *smokeptr; // $s0
+	// 		VECTOR dummy; // stack offset -80
+	// 		LEAF *lpLeaf; // $s1
 	// 		int Height; // $v0
 	// 		int SinX; // $s2
 	// 		int CosX; // $v1
-	// 		struct VECTOR Drift; // stack offset -64
+	// 		VECTOR Drift; // stack offset -64
 
 		/* begin block 1.1 */
 			// Start line: 3852
 			// Start offset: 0x0003841C
 			// Variables:
 		// 		int offshore; // $s1
-		// 		struct ROUTE_DATA routeData; // stack offset -48
+		// 		ROUTE_DATA routeData; // stack offset -48
 		/* end block 1.1 */
 		// End offset: 0x000384B4
 		// End Line: 3864
@@ -4785,15 +4785,15 @@ void HandleDebris(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplaySmoke(struct SMOKE *smoke /*$s0*/)
+// void /*$ra*/ DisplaySmoke(SMOKE *smoke /*$s0*/)
  // line 3983, offset 0x0003877c
 	/* begin block 1 */
 		// Start line: 3984
 		// Start offset: 0x0003877C
 		// Variables:
-	// 		struct POLY_FT4 *poly; // $t0
-	// 		struct VECTOR v; // stack offset -80
-	// 		struct SVECTOR smokemesh[4]; // stack offset -64
+	// 		POLY_FT4 *poly; // $t0
+	// 		VECTOR v; // stack offset -80
+	// 		SVECTOR smokemesh[4]; // stack offset -64
 	// 		int x; // $s2
 	// 		int negx; // $s1
 	// 		int z; // stack offset -32
@@ -5050,7 +5050,7 @@ void DisplaySmoke(SMOKE *smoke)
 		// Start line: 4119
 		// Start offset: 0x00038CB4
 		// Variables:
-	// 		struct TILE *polys; // $a1
+	// 		TILE *polys; // $a1
 	/* end block 1 */
 	// End offset: 0x00038E00
 	// End Line: 4141
@@ -5216,12 +5216,12 @@ void ReleaseRainDrop(int RainIndex)
 		// Start line: 4210
 		// Start offset: 0x00038E08
 		// Variables:
-	// 		struct RAIN_TYPE *RainPtr; // $s0
-	// 		struct POLY_GT3 *poly; // $a3
+	// 		RAIN_TYPE *RainPtr; // $s0
+	// 		POLY_GT3 *poly; // $a3
 	// 		int Count; // $s2
 	// 		int z; // stack offset -48
-	// 		struct SVECTOR v[3]; // stack offset -88
-	// 		struct VECTOR drift; // stack offset -64
+	// 		SVECTOR v[3]; // stack offset -88
+	// 		VECTOR drift; // stack offset -64
 	// 		int tpage; // $fp
 	// 		int clut; // $s7
 	// 		int col; // $s1
@@ -5364,8 +5364,8 @@ void DrawRainDrops(void)
 		// Start line: 4415
 		// Start offset: 0x0003919C
 		// Variables:
-	// 		struct SVECTOR v; // stack offset -48
-	// 		struct RAIN_TYPE *RainPtr; // $a2
+	// 		SVECTOR v; // stack offset -48
+	// 		RAIN_TYPE *RainPtr; // $a2
 	// 		int RainIndex; // $s0
 	// 		int RainNo; // $s1
 	// 		int first; // $s3
@@ -5384,7 +5384,7 @@ void DrawRainDrops(void)
 			// Start line: 4466
 			// Start offset: 0x000393E4
 			// Variables:
-		// 		struct ROUTE_DATA routeData; // stack offset -40
+		// 		ROUTE_DATA routeData; // stack offset -40
 		/* end block 1.2 */
 		// End offset: 0x00039434
 		// End Line: 4474
@@ -5504,11 +5504,11 @@ void AddRainDrops(void)
 		// Variables:
 	// 		int SplashNo; // $s4
 	// 		int SplashFrac; // $v0
-	// 		struct VECTOR CamGnd; // stack offset -96
-	// 		struct VECTOR Gnd1; // stack offset -80
-	// 		struct VECTOR Gnd2; // stack offset -64
-	// 		struct VECTOR Position; // stack offset -48
-	// 		struct CVECTOR col; // stack offset -32
+	// 		VECTOR CamGnd; // stack offset -96
+	// 		VECTOR Gnd1; // stack offset -80
+	// 		VECTOR Gnd2; // stack offset -64
+	// 		VECTOR Position; // stack offset -48
+	// 		CVECTOR col; // stack offset -32
 	// 		static unsigned long rand; // offset 0x170
 	// 		int d1; // $a0
 	// 		int d2; // $a2
@@ -5596,15 +5596,15 @@ void DisplaySplashes(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplayLightReflections(struct VECTOR *v1 /*$s1*/, struct CVECTOR *col /*$s3*/, short size /*$a2*/, struct TEXTURE_DETAILS *texture /*$s2*/)
+// void /*$ra*/ DisplayLightReflections(VECTOR *v1 /*$s1*/, CVECTOR *col /*$s3*/, short size /*$a2*/, TEXTURE_DETAILS *texture /*$s2*/)
  // line 4550, offset 0x000397c0
 	/* begin block 1 */
 		// Start line: 4551
 		// Start offset: 0x000397C0
 		// Variables:
-	// 		struct SVECTOR vert[4]; // stack offset -80
-	// 		struct POLY_FT4 *poly; // $a1
-	// 		struct CVECTOR thiscol; // stack offset -48
+	// 		SVECTOR vert[4]; // stack offset -80
+	// 		POLY_FT4 *poly; // $a1
+	// 		CVECTOR thiscol; // stack offset -48
 	// 		int z; // stack offset -40
 	// 		int tpage; // $s5
 	// 		int clut; // $s4
@@ -5911,7 +5911,7 @@ void DoWeather(int weather)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ GetDebrisColour(struct _CAR_DATA *cp /*$a0*/)
+// int /*$ra*/ GetDebrisColour(CAR_DATA *cp /*$a0*/)
  // line 4725, offset 0x00039fa8
 	/* begin block 1 */
 		// Start line: 4726
@@ -5934,7 +5934,7 @@ void DoWeather(int weather)
 	// End Line: 24131
 
 // [D] [T]
-int GetDebrisColour(_CAR_DATA *cp)
+int GetDebrisColour(CAR_DATA *cp)
 {
 	int car_model;
 

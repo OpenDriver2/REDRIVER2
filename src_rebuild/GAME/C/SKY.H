@@ -18,7 +18,7 @@ extern void calc_sky_brightness(); // 0x00078964
 
 extern void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset); // 0x00078B18
 
-extern void PlotHorizonMDL(struct MODEL *model, int horizontaboffset); // 0x00078EC4
+extern void PlotHorizonMDL(MODEL *model, int horizontaboffset); // 0x00078EC4
 
 
 #endif

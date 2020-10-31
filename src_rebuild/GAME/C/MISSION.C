@@ -189,7 +189,7 @@ int gBatterPlayer = 1;
 
 int wantedCar[2] = { -1, -1 };
 
-_TARGET* MissionTargets;
+MS_TARGET* MissionTargets;
 unsigned long* MissionScript;
 char* MissionStrings;
 char* gMissionTitle = NULL;
@@ -335,7 +335,7 @@ void InitialiseMissionDefaults(void)
 			// Start line: 1767
 			// Start offset: 0x00060F84
 			// Variables:
-		// 		struct _ROUTE_INFO *rinfo; // $s0
+		// 		_ROUTE_INFO *rinfo; // $s0
 		/* end block 1.2 */
 		// End offset: 0x00061024
 		// End Line: 1793
@@ -421,9 +421,9 @@ void LoadMission(int missionnum)
 	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(_MISSION));
 
 	MissionHeader = MissionLoadAddress;
-	MissionTargets = (_TARGET *)((int)&MissionLoadAddress->id + MissionLoadAddress->size);
+	MissionTargets = (MS_TARGET *)((int)&MissionLoadAddress->id + MissionLoadAddress->size);
 	MissionScript = (ulong *)(MissionTargets + 16);
-	MissionStrings = (char *)(((_TARGET *)MissionScript)->data + MissionLoadAddress->strings);
+	MissionStrings = (char *)(((MS_TARGET *)MissionScript)->data + MissionLoadAddress->strings);
 
 	if (MissionLoadAddress->route && !NewLevel)
 		loadsize = (int)MissionStrings + (MissionLoadAddress->route - (int)MissionLoadAddress);
@@ -1155,7 +1155,7 @@ void HandleMission(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ HandleTimer(struct MR_TIMER *timer /*$s0*/)
+// void /*$ra*/ HandleTimer(MR_TIMER *timer /*$s0*/)
  // line 1962, offset 0x000614a4
 	/* begin block 1 */
 		// Start line: 4347
@@ -1187,7 +1187,7 @@ void HandleTimer(MR_TIMER *timer)
 
 					if (timer->flags & 0x10) 
 					{
-						events.cameraEvent = (_EVENT *)0x1;
+						events.cameraEvent = (EVENT *)0x1;
 						
 						BombThePlayerToHellAndBack(gCarWithABerm);
 					}
@@ -1394,7 +1394,7 @@ void SetPlayerMessage(int player, char *message, int priority, int seconds)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ TargetComplete(struct _TARGET *target /*$a0*/, int player /*$a1*/)
+// int /*$ra*/ TargetComplete(MS_TARGET *target /*$a0*/, int player /*$a1*/)
  // line 2094, offset 0x000643c4
 	/* begin block 1 */
 		// Start line: 2095
@@ -1416,7 +1416,7 @@ void SetPlayerMessage(int player, char *message, int priority, int seconds)
 	// End Line: 6689
 
 // [D] [T]
-int TargetComplete(_TARGET *target, int player)
+int TargetComplete(MS_TARGET *target, int player)
 {
 	unsigned long complete;
 
@@ -1447,7 +1447,7 @@ int TargetComplete(_TARGET *target, int player)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ TargetActive(struct _TARGET *target /*$a0*/, int player /*$a1*/)
+// int /*$ra*/ TargetActive(MS_TARGET *target /*$a0*/, int player /*$a1*/)
  // line 2117, offset 0x00064408
 	/* begin block 1 */
 		// Start line: 2118
@@ -1474,7 +1474,7 @@ int TargetComplete(_TARGET *target, int player)
 	// End Line: 6735
 
 // [D] [T]
-int TargetActive(_TARGET *target, int player)
+int TargetActive(MS_TARGET *target, int player)
 {
 	unsigned long active;
 
@@ -1508,8 +1508,8 @@ int TargetActive(_TARGET *target, int player)
 		// Start line: 2141
 		// Start offset: 0x00061784
 		// Variables:
-	// 		struct _CAR_DATA cd; // stack offset -704
-	// 		struct _CAR_DATA *cp; // $s0
+	// 		CAR_DATA cd; // stack offset -704
+	// 		CAR_DATA *cp; // $s0
 	// 		int ctrlNodeCurId; // $s4
 	// 		int pnodeCurId; // $s5
 	// 		int ctrlNodeNewId; // $t2
@@ -1528,14 +1528,14 @@ int TargetActive(_TARGET *target, int player)
 // [D] [T]
 int Swap2Cars(int curslot, int newslot)
 {
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 
 	int ctrlNodeNewId;
 	int pnodeNewId;
 	int ctrlNodeCurId;
 	int pnodeCurId;
 
-	_CAR_DATA cd;
+	CAR_DATA cd;
 
 	if (curslot == newslot)
 		return newslot;
@@ -1588,9 +1588,9 @@ int Swap2Cars(int curslot, int newslot)
 	cp = &car_data[newslot];
 
 	// do data swap
-	memcpy(&cd, &car_data[newslot], sizeof(_CAR_DATA));
-	memcpy(&car_data[newslot], &car_data[curslot], sizeof(_CAR_DATA));
-	memcpy(&car_data[curslot], &cd, sizeof(_CAR_DATA));
+	memcpy(&cd, &car_data[newslot], sizeof(CAR_DATA));
+	memcpy(&car_data[newslot], &car_data[curslot], sizeof(CAR_DATA));
+	memcpy(&car_data[curslot], &cd, sizeof(CAR_DATA));
 
 	// swap ids
 	car_data[newslot].id = newslot;
@@ -1707,7 +1707,7 @@ void SetConfusedCar(int slot)
 		// Start line: 2236
 		// Start offset: 0x00061C5C
 		// Variables:
-	// 		struct MR_THREAD *thread; // $s0
+	// 		MR_THREAD *thread; // $s0
 	// 		int running; // $s1
 	// 		unsigned long value; // $a1
 	// 		int i; // $a0
@@ -1787,7 +1787,7 @@ void HandleMissionThreads(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRCommand(struct MR_THREAD *thread /*$s1*/, unsigned long cmd /*$a1*/)
+// int /*$ra*/ MRCommand(MR_THREAD *thread /*$s1*/, unsigned long cmd /*$a1*/)
  // line 2279, offset 0x00061e3c
 	/* begin block 1 */
 		// Start line: 2280
@@ -2043,7 +2043,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MROperator(struct MR_THREAD *thread /*$s3*/, unsigned long op /*$s0*/)
+// int /*$ra*/ MROperator(MR_THREAD *thread /*$s3*/, unsigned long op /*$s0*/)
  // line 2441, offset 0x00064498
 	/* begin block 1 */
 		// Start line: 2442
@@ -2119,7 +2119,7 @@ int MROperator(MR_THREAD *thread, ulong op)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRFunction(struct MR_THREAD *thread /*$s0*/, unsigned long fnc /*$a1*/)
+// int /*$ra*/ MRFunction(MR_THREAD *thread /*$s0*/, unsigned long fnc /*$a1*/)
  // line 2494, offset 0x000645ac
 	/* begin block 1 */
 		// Start line: 2495
@@ -2165,7 +2165,7 @@ int MRFunction(MR_THREAD *thread, ulong fnc)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MRInitialiseThread(struct MR_THREAD *thread /*$a0*/, unsigned long *pc /*$a1*/, unsigned char player /*$a2*/)
+// void /*$ra*/ MRInitialiseThread(MR_THREAD *thread /*$a0*/, unsigned long *pc /*$a1*/, unsigned char player /*$a2*/)
  // line 2514, offset 0x00064614
 	/* begin block 1 */
 		// Start line: 7538
@@ -2195,7 +2195,7 @@ void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MRStartThread(struct MR_THREAD *callingthread /*$t0*/, unsigned long addr /*$a1*/, unsigned char player /*$a2*/)
+// void /*$ra*/ MRStartThread(MR_THREAD *callingthread /*$t0*/, unsigned long addr /*$a1*/, unsigned char player /*$a2*/)
  // line 2526, offset 0x00064630
 	/* begin block 1 */
 		// Start line: 2527
@@ -2234,7 +2234,7 @@ void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRStopThread(struct MR_THREAD *thread /*$a0*/)
+// int /*$ra*/ MRStopThread(MR_THREAD *thread /*$a0*/)
  // line 2545, offset 0x00064690
 	/* begin block 1 */
 		// Start line: 7613
@@ -2297,7 +2297,7 @@ void MRCommitThreadGenocide(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRJump(struct MR_THREAD *thread /*$a2*/, long jump /*$a1*/)
+// int /*$ra*/ MRJump(MR_THREAD *thread /*$a2*/, long jump /*$a1*/)
  // line 2560, offset 0x000646e0
 	/* begin block 1 */
 		// Start line: 7640
@@ -2323,7 +2323,7 @@ int MRJump(MR_THREAD *thread, long jump)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MRPush(struct MR_THREAD *thread /*$a0*/, long value /*$a1*/)
+// void /*$ra*/ MRPush(MR_THREAD *thread /*$a0*/, long value /*$a1*/)
  // line 2575, offset 0x0006472c
 	/* begin block 1 */
 		// Start line: 7678
@@ -2351,7 +2351,7 @@ void MRPush(MR_THREAD *thread, long value)
 
 // decompiled code
 // original method signature: 
-// long /*$ra*/ MRPop(struct MR_THREAD *thread /*$a0*/)
+// long /*$ra*/ MRPop(MR_THREAD *thread /*$a0*/)
  // line 2585, offset 0x00064744
 	/* begin block 1 */
 		// Start line: 2586
@@ -2381,7 +2381,7 @@ long MRPop(MR_THREAD *thread)
 
 // decompiled code
 // original method signature: 
-// long /*$ra*/ MRGetParam(struct MR_THREAD *thread /*$s0*/)
+// long /*$ra*/ MRGetParam(MR_THREAD *thread /*$s0*/)
  // line 2600, offset 0x00064760
 	/* begin block 1 */
 		// Start line: 2601
@@ -2425,7 +2425,7 @@ long MRGetParam(MR_THREAD *thread)
 
 // decompiled code
 // original method signature: 
-// long /*$ra*/ MRGetVariable(struct MR_THREAD *thread /*$a2*/, unsigned long var /*$a1*/)
+// long /*$ra*/ MRGetVariable(MR_THREAD *thread /*$a2*/, unsigned long var /*$a1*/)
  // line 2622, offset 0x000647cc
 	/* begin block 1 */
 		// Start line: 7773
@@ -2466,7 +2466,7 @@ long MRGetVariable(MR_THREAD *thread, ulong var)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MRSetVariable(struct MR_THREAD *thread /*$v1*/, unsigned long var /*$a1*/, long value /*$a2*/)
+// void /*$ra*/ MRSetVariable(MR_THREAD *thread /*$v1*/, unsigned long var /*$a1*/, long value /*$a2*/)
  // line 2648, offset 0x000648b0
 	/* begin block 1 */
 		// Start line: 7828
@@ -2527,14 +2527,14 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRProcessTarget(struct MR_THREAD *thread /*$s7*/, struct _TARGET *target /*$s5*/)
+// int /*$ra*/ MRProcessTarget(MR_THREAD *thread /*$s7*/, MS_TARGET *target /*$s5*/)
  // line 2701, offset 0x00062470
 	/* begin block 1 */
 		// Start line: 2702
 		// Start offset: 0x00062470
 		// Variables:
-	// 		struct VECTOR tv; // stack offset -96
-	// 		struct VECTOR pv; // stack offset -80
+	// 		VECTOR tv; // stack offset -96
+	// 		VECTOR pv; // stack offset -80
 	// 		int ret; // $fp
 	// 		unsigned long dist; // $s6
 	// 		int slot; // stack offset -48
@@ -2559,7 +2559,7 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 		// 		int direction; // $s0
 		// 		long pos[4]; // stack offset -64
 		// 		int *inform; // $s4
-		// 		struct _CAR_DATA *cp; // $v0
+		// 		CAR_DATA *cp; // $v0
 		/* end block 1.2 */
 		// End offset: 0x00062BFC
 		// End Line: 2940
@@ -2616,7 +2616,7 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
-int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
+int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 {
 	int phrase;
 	int playerId;
@@ -2835,7 +2835,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 		case 2: // car target
 		{
 			
-			_CAR_DATA* cp;
+			CAR_DATA* cp;
 			tv.vx = target->data[3];
 			tv.vz = target->data[4];
 			tv.vy = 0;
@@ -3293,7 +3293,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRRequestCar(struct _TARGET *target /*$a0*/)
+// int /*$ra*/ MRRequestCar(MS_TARGET *target /*$a0*/)
  // line 3296, offset 0x000649e4
 	/* begin block 1 */
 		// Start line: 9124
@@ -3306,7 +3306,7 @@ int MRProcessTarget(MR_THREAD *thread, _TARGET *target)
 	// End Line: 9126
 
 // [D] [T]
-int MRRequestCar(_TARGET *target)
+int MRRequestCar(MS_TARGET *target)
 {
 	if (Mission.CarTarget == NULL && GameType != GAME_SURVIVAL) 
 	{
@@ -3345,7 +3345,7 @@ void MRHandleCarRequests(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MRCreateCar(struct _TARGET *target /*$s1*/)
+// int /*$ra*/ MRCreateCar(MS_TARGET *target /*$s1*/)
  // line 3311, offset 0x00063728
 	/* begin block 1 */
 		// Start line: 3312
@@ -3375,7 +3375,7 @@ void MRHandleCarRequests(void)
 	// End Line: 7216
 
 // [D] [T]
-int MRCreateCar(_TARGET *target)
+int MRCreateCar(MS_TARGET *target)
 {
 	int curslot;
 	int newslot;
@@ -3416,7 +3416,7 @@ int MRCreateCar(_TARGET *target)
 	{
 		playerid = 0xff;
 
-		InitPlayer((_PLAYER *)(player + 1), &car_data[curslot], 4, target->data[5], (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
+		InitPlayer((PLAYER *)(player + 1), &car_data[curslot], 4, target->data[5], (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
 
 		EnablePercentageBar(&DamageBar, target->data[13]);
 		NewLeadDelay = 0;
@@ -3452,7 +3452,7 @@ int MRCreateCar(_TARGET *target)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MRCancelCarRequest(struct _TARGET *target /*$a0*/)
+// void /*$ra*/ MRCancelCarRequest(MS_TARGET *target /*$a0*/)
  // line 3392, offset 0x00064a50
 	/* begin block 1 */
 		// Start line: 9316
@@ -3465,7 +3465,7 @@ int MRCreateCar(_TARGET *target)
 	// End Line: 9318
 
 // [D] [T]
-void MRCancelCarRequest(_TARGET *target)
+void MRCancelCarRequest(MS_TARGET *target)
 {
 	if (Mission.CarTarget == target)
 		Mission.CarTarget = NULL;
@@ -3481,7 +3481,7 @@ void MRCancelCarRequest(_TARGET *target)
 		// Start line: 3400
 		// Start offset: 0x000639A0
 		// Variables:
-	// 		struct _TARGET *target; // $s0
+	// 		MS_TARGET *target; // $s0
 	// 		int i; // $s1
 	/* end block 1 */
 	// End offset: 0x00063B78
@@ -3512,7 +3512,7 @@ void MRCancelCarRequest(_TARGET *target)
 // [D] [T]
 void PreProcessTargets(void)
 {
-	_TARGET *target;
+	MS_TARGET *target;
 	int i;
 
 	for (i = 0; i < MissionHeader->nCutscenes; i++)
@@ -3638,8 +3638,8 @@ int Handle321Go(void)
 			// Start line: 3474
 			// Start offset: 0x00063BB8
 			// Variables:
-		// 		struct _PLAYER *lp; // $s0
-		// 		struct _CAR_DATA *cp; // $a2
+		// 		PLAYER *lp; // $s0
+		// 		CAR_DATA *cp; // $a2
 		// 		int i; // $s2
 		// 		int playersdead; // $s3
 
@@ -3684,8 +3684,8 @@ int HandleGameOver(void)
 	int player_id;
 	int playersdead;
 
-	_PLAYER* lp;
-	_CAR_DATA *cp;
+	PLAYER* lp;
+	CAR_DATA *cp;
 
 	if (Mission.gameover_delay != -1) 
 	{
@@ -3868,7 +3868,7 @@ int HandleGameOver(void)
 // [D] [T]
 void CompleteAllActiveTargets(int player)
 {
-	_TARGET *pTarget;
+	MS_TARGET *pTarget;
 	int i;
 	int flag2;
 	int flag1;
@@ -3982,7 +3982,7 @@ void SetMissionComplete(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetMissionFailed(enum FAIL_REASON reason /*$a0*/)
+// void /*$ra*/ SetMissionFailed(FAIL_REASON reason /*$a0*/)
  // line 3684, offset 0x00064b38
 	/* begin block 1 */
 		// Start line: 9846
@@ -4014,7 +4014,7 @@ void SetMissionFailed(FAIL_REASON reason)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetMissionOver(enum PAUSEMODE mode /*$a0*/)
+// void /*$ra*/ SetMissionOver(PAUSEMODE mode /*$a0*/)
  // line 3704, offset 0x00064bd8
 	/* begin block 1 */
 		// Start line: 9950
@@ -4072,7 +4072,7 @@ void SetMissionOver(PAUSEMODE mode)
 void ActivateNextFlag(void)
 {
 	int j;
-	_TARGET *target;
+	MS_TARGET *target;
 	int i;
 
 	if (last_flag == -1)
@@ -4149,7 +4149,7 @@ int CalcLapTime(int player, int time, int lap)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetCarToBeStolen(struct _TARGET *target /*$s0*/, int player /*$s1*/)
+// void /*$ra*/ SetCarToBeStolen(MS_TARGET *target /*$s0*/, int player /*$s1*/)
  // line 3770, offset 0x00064c60
 	/* begin block 1 */
 		// Start line: 10085
@@ -4162,7 +4162,7 @@ int CalcLapTime(int player, int time, int lap)
 	// End Line: 10089
 
 // [D]
-void SetCarToBeStolen(_TARGET *target, int player)
+void SetCarToBeStolen(MS_TARGET *target, int player)
 {
 	if (target->data[10] & 0x800000)
 		MakePhantomCarEqualPlayerCar();

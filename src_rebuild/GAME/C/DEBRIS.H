@@ -35,7 +35,7 @@ extern int main_cop_light_pos;
 extern int groundDebrisIndex;
 extern CELL_OBJECT ground_debris[16];
 
-extern void PlacePoolForCar(_CAR_DATA *cp, CVECTOR *col, int front, int in_car); // 0x00032C10
+extern void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car); // 0x00032C10
 
 extern int AllocateLeaf(); // 0x00039A90
 
@@ -43,7 +43,7 @@ extern void ReleaseLeaf(short num); // 0x00039D8C
 
 extern void AddLeaf(VECTOR *Position, int num_leaves, int Type); // 0x00033574
 
-extern void SwirlLeaves(_CAR_DATA *cp); // 0x00039E54
+extern void SwirlLeaves(CAR_DATA *cp); // 0x00039E54
 
 extern void InitDebrisNames(); // 0x000337AC
 
@@ -77,11 +77,11 @@ extern int damage_object(CELL_OBJECT *cop, VECTOR *velocity); // 0x00034DAC
 
 extern void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang); // 0x00034F64
 
-extern void InitFXPos(VECTOR *vec, SVECTOR *svec, _CAR_DATA *cp); // 0x00039C90
+extern void InitFXPos(VECTOR *vec, SVECTOR *svec, CAR_DATA *cp); // 0x00039C90
 
 extern void FindCarLightFade(MATRIX *carToCamera); // 0x00039C68
 
-extern void ShowCarlight(SVECTOR *v1, _CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture, int flag); // 0x000352CC
+extern void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture, int flag); // 0x000352CC
 
 extern void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture); // 0x0003555C
 
@@ -137,7 +137,7 @@ extern void DoThunder(); // 0x0003A144
 
 extern void DoWeather(int weather); // 0x0003A000
 
-extern int GetDebrisColour(_CAR_DATA *cp); // 0x00039FA8
+extern int GetDebrisColour(CAR_DATA *cp); // 0x00039FA8
 
 
 #endif

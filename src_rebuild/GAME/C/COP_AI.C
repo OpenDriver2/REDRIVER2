@@ -60,7 +60,7 @@ COP_SIGHT_DATA copSightData;
 int player_position_known = 0;
 VECTOR lastKnownPosition;
 VECTOR CarTail;
-_CAR_DATA *targetVehicle;
+CAR_DATA *targetVehicle;
 
 int numActiveCops = 0;
 int pathStraight = 0;
@@ -70,7 +70,7 @@ int OutOfSightCount = 0;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitCopState(struct _CAR_DATA *cp /*$s0*/, char *extraData /*$a1*/)
+// void /*$ra*/ InitCopState(CAR_DATA *cp /*$s0*/, char *extraData /*$a1*/)
  // line 577, offset 0x0002f680
 	/* begin block 1 */
 		// Start line: 2675
@@ -83,7 +83,7 @@ int OutOfSightCount = 0;
 	// End Line: 1155
 
 // [D] [T]
-void InitCopState(_CAR_DATA *cp, char *extraData)
+void InitCopState(CAR_DATA *cp, char *extraData)
 {
 	ClearMem((char *)&cp->ai.p, sizeof(COP));
 
@@ -121,7 +121,7 @@ int ReplayLog_Fnarr_He_Said_Log(int val)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WibbleDownTheRoad(struct VECTOR *from /*$a0*/, int distance /*$s1*/, struct VECTOR *to /*$s5*/)
+// void /*$ra*/ WibbleDownTheRoad(VECTOR *from /*$a0*/, int distance /*$s1*/, VECTOR *to /*$s5*/)
  // line 593, offset 0x0002d78c
 	/* begin block 1 */
 		// Start line: 594
@@ -130,15 +130,15 @@ int ReplayLog_Fnarr_He_Said_Log(int val)
 	// 		int th; // $s0
 	// 		int j; // $s3
 	// 		int thl[4]; // stack offset -136
-	// 		struct VECTOR pos; // stack offset -120
-	// 		struct VECTOR dir; // stack offset -104
+	// 		VECTOR pos; // stack offset -120
+	// 		VECTOR dir; // stack offset -104
 
 		/* begin block 1.1 */
 			// Start line: 604
 			// Start offset: 0x0002D810
 			// Variables:
-		// 		struct VECTOR p2; // stack offset -88
-		// 		struct VECTOR d2; // stack offset -72
+		// 		VECTOR p2; // stack offset -88
+		// 		VECTOR d2; // stack offset -72
 		// 		int colour[3]; // stack offset -56
 		/* end block 1.1 */
 		// End offset: 0x0002D89C
@@ -542,7 +542,7 @@ void ControlCops(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CopControl(struct _CAR_DATA *cp /*$s1*/)
+// void /*$ra*/ CopControl(CAR_DATA *cp /*$s1*/)
  // line 824, offset 0x0002f60c
 	/* begin block 1 */
 		// Start line: 825
@@ -562,7 +562,7 @@ void ControlCops(void)
 	// End Line: 1649
 
 // [D] [T]
-void CopControl(_CAR_DATA *cp)
+void CopControl(CAR_DATA *cp)
 {
 	CopControl1(cp);
 
@@ -579,7 +579,7 @@ void CopControl(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CopControl1(struct _CAR_DATA *cp /*$s1*/)
+// void /*$ra*/ CopControl1(CAR_DATA *cp /*$s1*/)
  // line 845, offset 0x0002defc
 	/* begin block 1 */
 		// Start line: 846
@@ -609,7 +609,7 @@ void CopControl(_CAR_DATA *cp)
 			// Start line: 912
 			// Start offset: 0x0002E070
 			// Variables:
-		// 		struct VECTOR pos; // stack offset -88
+		// 		VECTOR pos; // stack offset -88
 		/* end block 1.2 */
 		// End offset: 0x0002E23C
 		// End Line: 922
@@ -618,8 +618,8 @@ void CopControl(_CAR_DATA *cp)
 			// Start line: 935
 			// Start offset: 0x0002E23C
 			// Variables:
-		// 		enum AIZone targetZone; // $a0
-		// 		struct VECTOR doordir; // stack offset -72
+		// 		AIZone targetZone; // $a0
+		// 		VECTOR doordir; // stack offset -72
 		// 		int targetFound; // $a1
 		// 		int cx; // $s5
 		// 		int cz; // $s6
@@ -643,7 +643,7 @@ void CopControl(_CAR_DATA *cp)
 				// Start line: 1049
 				// Start offset: 0x0002E5E4
 				// Variables:
-			// 		struct iVectNT path[2]; // stack offset -56
+			// 		iVectNT path[2]; // stack offset -56
 			// 		int slidevel; // $a3
 
 				/* begin block 1.3.2.1 */
@@ -708,7 +708,7 @@ void CopControl(_CAR_DATA *cp)
 VECTOR targetPoint = { 0,0,0 };
 
 // [D]
-void CopControl1(_CAR_DATA *cp)
+void CopControl1(CAR_DATA *cp)
 {
 	int targetFound;
 	int steeringFac;
@@ -1099,7 +1099,7 @@ void CopControl1(_CAR_DATA *cp)
 	if (cp->ai.p.justPinged == 1)
 	{
 		cp->hd.direction = getHeadingToPlayer(cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2]);
-		TempBuildHandlingMatrix((_CAR_DATA*)cp, 0);
+		TempBuildHandlingMatrix((CAR_DATA*)cp, 0);
 
 		cp->ai.p.justPinged = 0;
 	}
@@ -1181,7 +1181,7 @@ int FindCost(int x, int z, int dvx, int dvz)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitCopData(struct COP_DATA *pCopData /*$a0*/)
+// void /*$ra*/ InitCopData(COP_DATA *pCopData /*$a0*/)
  // line 1267, offset 0x0002f7f8
 	/* begin block 1 */
 		// Start line: 1268
@@ -1296,11 +1296,11 @@ void UpdateCopSightData(void)
 		// Variables:
 	// 		int dx; // $v1
 	// 		int dz; // $a0
-	// 		struct VECTOR vec; // stack offset -64
+	// 		VECTOR vec; // stack offset -64
 	// 		int ccx; // stack offset -32
 	// 		int ccz; // stack offset -28
 	// 		char *scratch; // $s4
-	// 		struct _CAR_DATA *lcp; // $s1
+	// 		CAR_DATA *lcp; // $s1
 
 		/* begin block 1.1 */
 			// Start line: 1385
@@ -1339,7 +1339,7 @@ void UpdateCopSightData(void)
 				// Start line: 1369
 				// Start offset: 0x0002EF70
 				// Variables:
-			// 		struct _CAR_DATA *cp; // $s1
+			// 		CAR_DATA *cp; // $s1
 			// 		int distanceToPlayer; // $s0
 
 				/* begin block 1.3.1.1 */
@@ -1355,7 +1355,7 @@ void UpdateCopSightData(void)
 						// Start offset: 0x0002EF90
 						// Variables:
 					// 		int theta; // $v1
-					// 		struct VECTOR delta; // stack offset -48
+					// 		VECTOR delta; // stack offset -48
 
 						/* begin block 1.3.1.1.1.1 */
 							// Start line: 1369
@@ -1451,7 +1451,7 @@ void ControlCopDetection(void)
 	uint distanceToPlayer;
 	int heading;
 	int dx;
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 	VECTOR vec;
 	int ccx;
 	int ccz;
@@ -1657,7 +1657,7 @@ void ControlCopDetection(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PassiveCopTasks(struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ PassiveCopTasks(CAR_DATA *cp /*$s0*/)
  // line 1562, offset 0x0002f6fc
 	/* begin block 1 */
 		// Start line: 1563
@@ -1667,7 +1667,7 @@ void ControlCopDetection(void)
 			// Start line: 1563
 			// Start offset: 0x0002F76C
 			// Variables:
-		// 		struct _CAR_DATA *cp; // $s0
+		// 		CAR_DATA *cp; // $s0
 		/* end block 1.1 */
 		// End offset: 0x0002F7C4
 		// End Line: 1563
@@ -1686,7 +1686,7 @@ void ControlCopDetection(void)
 	// End Line: 4655
 
 // [D] [T]
-void PassiveCopTasks(_CAR_DATA *cp)
+void PassiveCopTasks(CAR_DATA *cp)
 {
 	short *playerFelony;
 
@@ -1763,7 +1763,7 @@ void PassiveCopTasks(_CAR_DATA *cp)
 				// Start line: 1638
 				// Start offset: 0x0002F580
 				// Variables:
-			// 		struct _CAR_DATA *lcp; // $a0
+			// 		CAR_DATA *lcp; // $a0
 			// 		int tempDist; // $a3
 
 				/* begin block 1.3.1.1 */
@@ -1812,7 +1812,7 @@ void ControlNumberOfCops(void)
 	short *pTrigger;
 	short *playerFelony;
 	int tempDist;
-	_CAR_DATA *lcp;
+	CAR_DATA *lcp;
 	int respawnTime;
 	int num_closer;
 	int cutOffDistance;

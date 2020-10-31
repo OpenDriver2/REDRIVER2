@@ -1,6 +1,32 @@
 #ifndef FEMAIN_H
 #define FEMAIN_H
 
+struct PSXBUTTON // hashcode: 0x41BD456C (dec: 1102923116)
+{
+	short x; // size=0, offset=0
+	short y; // size=0, offset=2
+	short w; // size=0, offset=4
+	short h; // size=0, offset=6
+	unsigned char l; // size=0, offset=8
+	unsigned char r; // size=0, offset=9
+	unsigned char u; // size=0, offset=10
+	unsigned char d; // size=0, offset=11
+	int userDrawFunctionNum; // size=0, offset=12
+	short s_x; // size=0, offset=16
+	short s_y; // size=0, offset=18
+	int action; // size=0, offset=20
+	int var; // size=0, offset=24
+	char Name[32]; // size=32, offset=28
+};
+
+struct PSXSCREEN // hashcode: 0x9E392939 (dec: -1640421063)
+{
+	unsigned char index; // size=0, offset=0
+	unsigned char numButtons; // size=0, offset=1
+	unsigned char userFunctionNum; // size=0, offset=2
+	PSXBUTTON buttons[8]; // size=480, offset=4
+};
+
 extern int gInFrontend;
 extern int bRedrawFrontend;
 
@@ -12,9 +38,9 @@ extern void LoadBackgroundFile(char *name); // 0x001C0F24
 
 extern void SetupBackgroundPolys(); // 0x001C10F4
 
-extern void SetupScreenSprts(struct PSXSCREEN *pScr); // 0x001C132C
+extern void SetupScreenSprts(PSXSCREEN *pScr); // 0x001C132C
 
-extern void DrawScreen(struct PSXSCREEN *pScr); // 0x001C147C
+extern void DrawScreen(PSXSCREEN *pScr); // 0x001C147C
 
 extern void DisplayOnScreenText(); // 0x001C18E4
 

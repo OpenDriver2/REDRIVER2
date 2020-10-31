@@ -53,7 +53,7 @@ int leadRand(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitLead(struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ InitLead(CAR_DATA *cp /*$s0*/)
  // line 278, offset 0x000e7128
 	/* begin block 1 */
 		// Start line: 279
@@ -63,8 +63,8 @@ int leadRand(void)
 			// Start line: 319
 			// Start offset: 0x000E71A0
 			// Variables:
-		// 		struct DRIVER2_STRAIGHT *straight; // $a3
-		// 		struct DRIVER2_CURVE *curve; // $t0
+		// 		DRIVER2_STRAIGHT *straight; // $a3
+		// 		DRIVER2_CURVE *curve; // $t0
 		// 		int i; // $a2
 		// 		int dx; // $a0
 		// 		int dz; // $a1
@@ -83,7 +83,7 @@ int leadRand(void)
 	// End Line: 560
 
 // [D]
-void InitLead(_CAR_DATA *cp)
+void InitLead(CAR_DATA *cp)
 {
 	int iVar1;
 	int iVar2;
@@ -198,7 +198,7 @@ void InitLead(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ LeadUpdateState(struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ LeadUpdateState(CAR_DATA *cp /*$s0*/)
  // line 382, offset 0x000e73e8
 	/* begin block 1 */
 		// Start line: 383
@@ -211,7 +211,7 @@ void InitLead(_CAR_DATA *cp)
 			// Start line: 399
 			// Start offset: 0x000E7498
 			// Variables:
-		// 		struct VECTOR tmpStart; // stack offset -48
+		// 		VECTOR tmpStart; // stack offset -48
 		/* end block 1.1 */
 		// End offset: 0x000E74EC
 		// End Line: 412
@@ -229,7 +229,7 @@ void InitLead(_CAR_DATA *cp)
 			// Start line: 542
 			// Start offset: 0x000E7938
 			// Variables:
-		// 		struct VECTOR pos; // stack offset -32
+		// 		VECTOR pos; // stack offset -32
 		/* end block 1.3 */
 		// End offset: 0x000E7980
 		// End Line: 557
@@ -248,7 +248,7 @@ void InitLead(_CAR_DATA *cp)
 	// End Line: 871
 
 // [D]
-void LeadUpdateState(_CAR_DATA *cp)
+void LeadUpdateState(CAR_DATA *cp)
 {
 	bool bVar1;
 	int iVar2;
@@ -502,7 +502,7 @@ void LeadUpdateState(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// unsigned long /*$ra*/ LeadPadResponse(struct _CAR_DATA *cp /*$t0*/)
+// unsigned long /*$ra*/ LeadPadResponse(CAR_DATA *cp /*$t0*/)
  // line 566, offset 0x000e7994
 	/* begin block 1 */
 		// Start line: 567
@@ -550,7 +550,7 @@ void LeadUpdateState(_CAR_DATA *cp)
 	// End Line: 1283
 
 // [D]
-ulong LeadPadResponse(_CAR_DATA *cp)
+ulong LeadPadResponse(CAR_DATA *cp)
 {
 	int iVar1;
 	int iVar2;
@@ -767,7 +767,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ FakeMotion(struct _CAR_DATA *cp /*$s1*/)
+// void /*$ra*/ FakeMotion(CAR_DATA *cp /*$s1*/)
  // line 718, offset 0x000e7de8
 	/* begin block 1 */
 		// Start line: 719
@@ -777,7 +777,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 			// Start line: 724
 			// Start offset: 0x000E7E40
 			// Variables:
-		// 		struct DRIVER2_STRAIGHT *straight; // $t1
+		// 		DRIVER2_STRAIGHT *straight; // $t1
 		// 		static int d; // offset 0x0
 		// 		static int toGo; // offset 0x4
 		// 		static int angle; // offset 0x8
@@ -791,7 +791,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 				// Start line: 757
 				// Start offset: 0x000E7FA4
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *junction; // $s0
+			// 		DRIVER2_JUNCTION *junction; // $s0
 			/* end block 1.1.1 */
 			// End offset: 0x000E7FA4
 			// End Line: 757
@@ -803,7 +803,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 			// Start line: 781
 			// Start offset: 0x000E8010
 			// Variables:
-		// 		struct DRIVER2_CURVE *curve; // $s0
+		// 		DRIVER2_CURVE *curve; // $s0
 		// 		int angle; // $a3
 		// 		int toGo; // $v0
 		// 		int radius; // $a2
@@ -815,7 +815,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 				// Start line: 813
 				// Start offset: 0x000E8104
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *junction; // $s0
+			// 		DRIVER2_JUNCTION *junction; // $s0
 			/* end block 1.2.1 */
 			// End offset: 0x000E8104
 			// End Line: 813
@@ -824,7 +824,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 				// Start line: 848
 				// Start offset: 0x000E81F0
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *junction; // $s0
+			// 		DRIVER2_JUNCTION *junction; // $s0
 			/* end block 1.2.2 */
 			// End offset: 0x000E81F0
 			// End Line: 848
@@ -836,7 +836,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 			// Start line: 877
 			// Start offset: 0x000E82E0
 			// Variables:
-		// 		struct DRIVER2_JUNCTION *junction; // $s0
+		// 		DRIVER2_JUNCTION *junction; // $s0
 		/* end block 1.3 */
 		// End offset: 0x000E8338
 		// End Line: 885
@@ -855,7 +855,7 @@ ulong LeadPadResponse(_CAR_DATA *cp)
 	// End Line: 1645
 
 // [D]
-void FakeMotion(_CAR_DATA *cp)
+void FakeMotion(CAR_DATA *cp)
 {
 	static int d; // offset 0x0
 	static int toGo; // offset 0x4
@@ -1047,7 +1047,7 @@ LAB_LEAD__000e824c:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PosToIndex(int *normal /*$t1*/, int *tangent /*$t4*/, int intention /*$a2*/, struct _CAR_DATA *cp /*$a3*/)
+// void /*$ra*/ PosToIndex(int *normal /*$t1*/, int *tangent /*$t4*/, int intention /*$a2*/, CAR_DATA *cp /*$a3*/)
  // line 932, offset 0x000e834c
 	/* begin block 1 */
 		// Start line: 933
@@ -1108,7 +1108,7 @@ LAB_LEAD__000e824c:
 	// End Line: 2159
 
 // [D]
-void PosToIndex(int *normal, int *tangent, int intention, _CAR_DATA *cp)
+void PosToIndex(int *normal, int *tangent, int intention, CAR_DATA *cp)
 {
 	int uVar1;
 	int iVar2;
@@ -1241,7 +1241,7 @@ void PosToIndex(int *normal, int *tangent, int intention, _CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ BlockToMap(struct MAP_DATA *data /*$s3*/)
+// void /*$ra*/ BlockToMap(MAP_DATA *data /*$s3*/)
  // line 1053, offset 0x000e86bc
 	/* begin block 1 */
 		// Start line: 1054
@@ -1255,7 +1255,7 @@ void PosToIndex(int *normal, int *tangent, int intention, _CAR_DATA *cp)
 	// 		static int right; // offset 0x20
 	// 		static int ldist; // offset 0x24
 	// 		static int rdist; // offset 0x28
-	// 		static struct MAP_DATA newdata; // offset 0x30
+	// 		static MAP_DATA newdata; // offset 0x30
 
 		/* begin block 1.1 */
 			// Start line: 1074
@@ -1274,7 +1274,7 @@ void PosToIndex(int *normal, int *tangent, int intention, _CAR_DATA *cp)
 			// Start line: 1166
 			// Start offset: 0x000E8AB0
 			// Variables:
-		// 		struct DRIVER2_CURVE *curve; // $s1
+		// 		DRIVER2_CURVE *curve; // $s1
 		// 		int dx; // $s6
 		// 		int dz; // $s5
 		// 		int v; // $a0
@@ -1439,7 +1439,7 @@ void BlockToMap(MAP_DATA *data)
 	static int right; // offset 0x20
 	static int ldist; // offset 0x24
 	static int rdist; // offset 0x28
-	static struct MAP_DATA newdata; // offset 0x30
+	static MAP_DATA newdata; // offset 0x30
 
 	static int offx;
 
@@ -1452,7 +1452,7 @@ void BlockToMap(MAP_DATA *data)
 	VECTOR* pVVar5;
 	CAR_COSMETICS* pCVar6;
 	VECTOR* pVVar7;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 	int x;
 	int iVar8;
 	int iVar9;
@@ -1982,7 +1982,7 @@ LAB_LEAD__000e97b4:
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ IsOnMap(int x /*$t0*/, int z /*$a1*/, struct VECTOR *basePos /*$a2*/, int intention /*$s4*/, struct _CAR_DATA *cp /*stack 16*/)
+// int /*$ra*/ IsOnMap(int x /*$t0*/, int z /*$a1*/, VECTOR *basePos /*$a2*/, int intention /*$s4*/, CAR_DATA *cp /*stack 16*/)
  // line 1563, offset 0x000e98a4
 	/* begin block 1 */
 		// Start line: 1564
@@ -2005,7 +2005,7 @@ LAB_LEAD__000e97b4:
 			// Start line: 1596
 			// Start offset: 0x000E99F4
 			// Variables:
-		// 		struct DRIVER2_CURVE *curve; // $s0
+		// 		DRIVER2_CURVE *curve; // $s0
 		// 		int tangent; // stack offset -36
 		// 		int normal; // stack offset -40
 		/* end block 1.2 */
@@ -2038,7 +2038,7 @@ LAB_LEAD__000e97b4:
 /* WARNING: Type propagation algorithm not settling */
 
 // [D]
-int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
+int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
 {
 	DRIVER2_CURVE* curve;
 	int dx;
@@ -2115,7 +2115,7 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ UpdateRoadPosition(struct _CAR_DATA *cp /*$s3*/, struct VECTOR *basePos /*stack 4*/, int intention /*stack 8*/)
+// void /*$ra*/ UpdateRoadPosition(CAR_DATA *cp /*$s3*/, VECTOR *basePos /*stack 4*/, int intention /*stack 8*/)
  // line 1657, offset 0x000e9bb8
 	/* begin block 1 */
 		// Start line: 1658
@@ -2124,7 +2124,7 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 	// 		int sindex; // $t0
 	// 		int i; // $s0
 	// 		int di; // $a2
-	// 		struct _CAR_DATA *lcp; // $s0
+	// 		CAR_DATA *lcp; // $s0
 	// 		int laneAvoid; // stack offset -56
 
 		/* begin block 1.1 */
@@ -2153,15 +2153,15 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 						// Start line: 1714
 						// Start offset: 0x000E9D94
 						// Variables:
-					// 		struct CELL_OBJECT *cop; // $s1
-					// 		struct CELL_ITERATOR ci; // stack offset -344
+					// 		CELL_OBJECT *cop; // $s1
+					// 		CELL_ITERATOR ci; // stack offset -344
 
 						/* begin block 1.1.1.1.1.1 */
 							// Start line: 1721
 							// Start offset: 0x000E9DB0
 							// Variables:
-						// 		struct COLLISION_PACKET *collide; // $s0
-						// 		struct MODEL *model; // $a0
+						// 		COLLISION_PACKET *collide; // $s0
+						// 		MODEL *model; // $a0
 						// 		int num_cb; // $a0
 						// 		int box_loop; // $s2
 
@@ -2169,11 +2169,11 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 								// Start line: 1739
 								// Start offset: 0x000E9E4C
 								// Variables:
-							// 		struct MATRIX *mat; // $a1
-							// 		struct VECTOR offset; // stack offset -320
-							// 		struct VECTOR vel; // stack offset -304
-							// 		struct VECTOR size; // stack offset -288
-							// 		struct MAP_DATA data; // stack offset -272
+							// 		MATRIX *mat; // $a1
+							// 		VECTOR offset; // stack offset -320
+							// 		VECTOR vel; // stack offset -304
+							// 		VECTOR size; // stack offset -288
+							// 		MAP_DATA data; // stack offset -272
 
 								/* begin block 1.1.1.1.1.1.1.1 */
 									// Start line: 1753
@@ -2210,11 +2210,11 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 			// Start line: 1814
 			// Start offset: 0x000EA0CC
 			// Variables:
-		// 		struct SVECTOR *colBox; // $a3
-		// 		struct VECTOR pos; // stack offset -344
-		// 		struct VECTOR vel; // stack offset -328
-		// 		struct VECTOR size; // stack offset -312
-		// 		struct MAP_DATA data; // stack offset -296
+		// 		SVECTOR *colBox; // $a3
+		// 		VECTOR pos; // stack offset -344
+		// 		VECTOR vel; // stack offset -328
+		// 		VECTOR size; // stack offset -312
+		// 		MAP_DATA data; // stack offset -296
 		/* end block 1.2 */
 		// End offset: 0x000EA260
 		// End Line: 1845
@@ -2309,7 +2309,7 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, _CAR_DATA *cp)
 			// Start line: 2226
 			// Start offset: 0x000EB0C4
 			// Variables:
-		// 		struct _CAR_DATA *cp; // $s3
+		// 		CAR_DATA *cp; // $s3
 		// 		int sindex; // $a0
 		// 		int intention; // stack offset 8
 		/* end block 1.10 */
@@ -2333,7 +2333,7 @@ int roadAhead[41]; // offset 0x000ecde8
 int localMap[41]; // offset 0x000ecd40
 
 // [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
-void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
+void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 {
 	short* psVar1;
 	short* psVar2;
@@ -2359,7 +2359,7 @@ void UpdateRoadPosition(_CAR_DATA *cp, VECTOR *basePos, int intention)
 	int iVar15;
 	int iVar16;
 	COLLISION_PACKET* collide;
-	_CAR_DATA* lcp;
+	CAR_DATA* lcp;
 	int uVar17;
 	VECTOR offset;
 	VECTOR pos;
@@ -3167,7 +3167,7 @@ LAB_LEAD__000eb0c8:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CheckCurrentRoad(struct _CAR_DATA *cp /*$s3*/)
+// void /*$ra*/ CheckCurrentRoad(CAR_DATA *cp /*$s3*/)
  // line 2242, offset 0x000eb1fc
 	/* begin block 1 */
 		// Start line: 2243
@@ -3177,14 +3177,14 @@ LAB_LEAD__000eb0c8:
 	// 		int cr; // $s5
 	// 		static int jdist; // offset 0x20
 	// 		static int nextJunction; // offset 0x50
-	// 		static struct VECTOR basePosition; // offset 0x60
+	// 		static VECTOR basePosition; // offset 0x60
 	// 		int checkNext; // $s6
 
 		/* begin block 1.1 */
 			// Start line: 2278
 			// Start offset: 0x000EB300
 			// Variables:
-		// 		struct DRIVER2_STRAIGHT *straight; // $t3
+		// 		DRIVER2_STRAIGHT *straight; // $t3
 		// 		static int d; // offset 0x70
 		// 		static int toGo; // offset 0x74
 		// 		static int angle; // offset 0x78
@@ -3200,7 +3200,7 @@ LAB_LEAD__000eb0c8:
 			// Start line: 2328
 			// Start offset: 0x000EB5C4
 			// Variables:
-		// 		struct DRIVER2_CURVE *curve; // $s2
+		// 		DRIVER2_CURVE *curve; // $s2
 		// 		static int angle; // offset 0x84
 		// 		static int radius; // offset 0x88
 		// 		static int dx; // offset 0x8c
@@ -3220,7 +3220,7 @@ LAB_LEAD__000eb0c8:
 				// Start line: 2420
 				// Start offset: 0x000EB98C
 				// Variables:
-			// 		struct DRIVER2_JUNCTION *junction; // $s0
+			// 		DRIVER2_JUNCTION *junction; // $s0
 			/* end block 1.3.1 */
 			// End offset: 0x000EB9D4
 			// End Line: 2428
@@ -3229,7 +3229,7 @@ LAB_LEAD__000eb0c8:
 				// Start line: 2440
 				// Start offset: 0x000EBA14
 				// Variables:
-			// 		struct DRIVER2_STRAIGHT *straight; // $v1
+			// 		DRIVER2_STRAIGHT *straight; // $v1
 			/* end block 1.3.2 */
 			// End offset: 0x000EBA5C
 			// End Line: 2446
@@ -3238,7 +3238,7 @@ LAB_LEAD__000eb0c8:
 				// Start line: 2449
 				// Start offset: 0x000EBA5C
 				// Variables:
-			// 		struct DRIVER2_CURVE *curve; // $v1
+			// 		DRIVER2_CURVE *curve; // $v1
 			// 		static int dx; // offset 0x9c
 			// 		static int dz; // offset 0xa0
 			/* end block 1.3.3 */
@@ -3249,7 +3249,7 @@ LAB_LEAD__000eb0c8:
 				// Start line: 2475
 				// Start offset: 0x000EBB2C
 				// Variables:
-			// 		struct DRIVER2_STRAIGHT *straight; // $t1
+			// 		DRIVER2_STRAIGHT *straight; // $t1
 			// 		static int dx; // offset 0xa4
 			// 		static int dz; // offset 0xa8
 			// 		static int dist; // offset 0xac
@@ -3263,7 +3263,7 @@ LAB_LEAD__000eb0c8:
 				// Start line: 2504
 				// Start offset: 0x000EBC5C
 				// Variables:
-			// 		struct DRIVER2_CURVE *curve; // $s4
+			// 		DRIVER2_CURVE *curve; // $s4
 			// 		static int angle; // offset 0xb8
 			// 		int radius; // $s2
 			// 		static int dx; // offset 0xbc
@@ -3296,7 +3296,7 @@ LAB_LEAD__000eb0c8:
 	// End Line: 5779
 
 // [D]
-void CheckCurrentRoad(_CAR_DATA *cp)
+void CheckCurrentRoad(CAR_DATA *cp)
 {
 	static int heading; // offset 0x1c
 	static int nextJunction; // offset 0x50
@@ -3739,7 +3739,7 @@ LAB_LEAD__000eb96c:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetTarget(struct _CAR_DATA *cp /*$s1*/, int cr /*$a0*/, int heading /*$s4*/, int *nextJunction /*$s3*/)
+// void /*$ra*/ SetTarget(CAR_DATA *cp /*$s1*/, int cr /*$a0*/, int heading /*$s4*/, int *nextJunction /*$s3*/)
  // line 2644, offset 0x000ec1c4
 	/* begin block 1 */
 		// Start line: 2645
@@ -3759,7 +3759,7 @@ LAB_LEAD__000eb96c:
 			// Start line: 2675
 			// Start offset: 0x000EC298
 			// Variables:
-		// 		struct DRIVER2_STRAIGHT *straight; // $t5
+		// 		DRIVER2_STRAIGHT *straight; // $t5
 		// 		int dx; // $a1
 		// 		int dz; // $a0
 		// 		int rx; // $v1
@@ -3777,7 +3777,7 @@ LAB_LEAD__000eb96c:
 			// Start line: 2720
 			// Start offset: 0x000EC444
 			// Variables:
-		// 		struct DRIVER2_CURVE *curve; // $s0
+		// 		DRIVER2_CURVE *curve; // $s0
 		// 		int angle; // $a1
 		// 		int radius; // $a2
 		/* end block 1.3 */
@@ -3793,7 +3793,7 @@ LAB_LEAD__000eb96c:
 	// End Line: 6938
 
 // [D]
-void SetTarget(_CAR_DATA *cp, int cr, int heading, int *nextJunction)
+void SetTarget(CAR_DATA *cp, int cr, int heading, int *nextJunction)
 {
 	static int dx = 0; // offset 0xd8
 	static int dz = 0; // offset 0xdc
@@ -3916,7 +3916,7 @@ void SetTarget(_CAR_DATA *cp, int cr, int heading, int *nextJunction)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SelectExit(struct _CAR_DATA *cp /*$s3*/, struct DRIVER2_JUNCTION *junction /*$a3*/)
+// void /*$ra*/ SelectExit(CAR_DATA *cp /*$s3*/, DRIVER2_JUNCTION *junction /*$a3*/)
  // line 2763, offset 0x000ec5e4
 	/* begin block 1 */
 		// Start line: 2764
@@ -3964,7 +3964,7 @@ void SetTarget(_CAR_DATA *cp, int cr, int heading, int *nextJunction)
 	// End Line: 7242
 
 // [D]
-void SelectExit(_CAR_DATA *cp, DRIVER2_JUNCTION *junction)
+void SelectExit(CAR_DATA *cp, DRIVER2_JUNCTION *junction)
 {
 	int uVar1;
 	int uVar2;
@@ -4106,7 +4106,7 @@ LAB_LEAD__000ec924:
 
 // decompiled code
 // original method signature: 
-// unsigned long /*$ra*/ FreeRoamer(struct _CAR_DATA *cp /*$s1*/)
+// unsigned long /*$ra*/ FreeRoamer(CAR_DATA *cp /*$s1*/)
  // line 2848, offset 0x000ec99c
 	/* begin block 1 */
 		// Start line: 2849
@@ -4116,7 +4116,7 @@ LAB_LEAD__000ec924:
 			// Start line: 2965
 			// Start offset: 0x000ECA4C
 			// Variables:
-		// 		struct _CAR_DATA *pCar; // $v0
+		// 		CAR_DATA *pCar; // $v0
 
 			/* begin block 1.1.1 */
 				// Start line: 2965
@@ -4153,7 +4153,7 @@ LAB_LEAD__000ec924:
 	// End Line: 7436
 
 // [D]
-ulong FreeRoamer(_CAR_DATA *cp)
+ulong FreeRoamer(CAR_DATA *cp)
 {	
 	int i;
 	int playerCarId;

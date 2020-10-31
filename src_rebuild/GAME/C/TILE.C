@@ -11,7 +11,7 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Tile1x1(struct MODEL *model /*$a0*/)
+// void /*$ra*/ Tile1x1(MODEL *model /*$a0*/)
  // line 79, offset 0x00041b10
 	/* begin block 1 */
 		// Start line: 80
@@ -19,8 +19,8 @@
 		// Variables:
 	// 		int i; // $t3
 	// 		unsigned char *polys; // $t0
-	// 		struct SVECTOR *verts; // $t1
-	// 		struct POLY_FT4 *prims; // $a2
+	// 		SVECTOR *verts; // $t1
+	// 		POLY_FT4 *prims; // $a2
 	// 		unsigned long clut; // $t6
 	// 		unsigned long tpage; // $a1
 
@@ -177,7 +177,7 @@ void Tile1x1(MODEL *model)
 			// Start line: 208
 			// Start offset: 0x00041EBC
 			// Variables:
-		// 		struct PACKED_CELL_OBJECT **tilePointers; // $s3
+		// 		PACKED_CELL_OBJECT **tilePointers; // $s3
 		// 		int previous_matrix; // $s4
 
 			/* begin block 1.2.1 */
@@ -192,7 +192,7 @@ void Tile1x1(MODEL *model)
 					// Start offset: 0x00041F34
 					// Variables:
 				// 		int yang; // $a1
-				// 		struct PACKED_CELL_OBJECT *ppco; // $a0
+				// 		PACKED_CELL_OBJECT *ppco; // $a0
 				/* end block 1.2.1.1 */
 				// End offset: 0x00041FB8
 				// End Line: 241
@@ -201,7 +201,7 @@ void Tile1x1(MODEL *model)
 					// Start line: 270
 					// Start offset: 0x0004202C
 					// Variables:
-				// 		struct MODEL *model; // $a0
+				// 		MODEL *model; // $a0
 				/* end block 1.2.1.2 */
 				// End offset: 0x00042060
 				// End Line: 279
@@ -326,7 +326,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ makeMesh(struct MVERTEX (*VSP)[5][5] /*$t4*/, int m /*$t2*/, int n /*$a2*/)
+// void /*$ra*/ makeMesh(MVERTEX (*VSP)[5][5] /*$t4*/, int m /*$t2*/, int n /*$a2*/)
  // line 292, offset 0x000420b0
 	/* begin block 1 */
 		// Start line: 293
@@ -646,7 +646,7 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ drawMesh(struct MVERTEX (*VSP)[5][5] /*$s2*/, int m /*$s3*/, int n /*$s1*/, struct _pct *pc /*$a3*/)
+// void /*$ra*/ drawMesh(MVERTEX (*VSP)[5][5] /*$s2*/, int m /*$s3*/, int n /*$s1*/, plotContext *pc /*$a3*/)
  // line 359, offset 0x00042650
 	/* begin block 1 */
 		// Start line: 360
@@ -654,7 +654,7 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 		// Variables:
 	// 		int j; // $t6
 	// 		int k; // $t9
-	// 		struct POLY_FT4 *prims; // $t1
+	// 		POLY_FT4 *prims; // $t1
 
 		/* begin block 1.1 */
 			// Start line: 370
@@ -662,7 +662,7 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 			// Variables:
 		// 		int Z1; // stack offset -24
 		// 		int Z2; // stack offset -20
-		// 		struct MVERTEX (*VST)[5][5]; // $t2
+		// 		MVERTEX (*VST)[5][5]; // $t2
 		// 		long *ot; // $t7
 
 			/* begin block 1.1.1 */
@@ -780,17 +780,17 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 		// Start line: 490
 		// Start offset: 0x00042AEC
 		// Variables:
-	// 		struct MVERTEX (*VSP)[5][5]; // $t3
-	// 		struct _pct *pc; // $t2
+	// 		MVERTEX (*VSP)[5][5]; // $t3
+	// 		plotContext *pc; // $t2
 
 		/* begin block 1.1 */
 			// Start line: 490
 			// Start offset: 0x00042AEC
 			// Variables:
 		// 		unsigned long indices; // $a0
-		// 		struct SVECTOR *v0; // $t1
-		// 		struct SVECTOR *v1; // $a1
-		// 		struct SVECTOR *v2; // $t0
+		// 		SVECTOR *v0; // $t1
+		// 		SVECTOR *v1; // $a1
+		// 		SVECTOR *v2; // $t0
 		/* end block 1.1 */
 		// End offset: 0x00042AEC
 		// End Line: 490
@@ -879,7 +879,7 @@ void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TileNxN(struct MODEL *model /*$s4*/, int levels /*$s2*/, int Dofse /*$s6*/)
+// void /*$ra*/ TileNxN(MODEL *model /*$s4*/, int levels /*$s2*/, int Dofse /*$s6*/)
  // line 581, offset 0x00042f40
 	/* begin block 1 */
 		// Start line: 582

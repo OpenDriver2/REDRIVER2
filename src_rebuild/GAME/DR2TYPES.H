@@ -80,23 +80,7 @@ struct GAP_INFO // hashcode: 0x468CC560 (dec: 1183630688)
 	char clear; // size=0, offset=4
 };
 
-struct PSXBUTTON // hashcode: 0x41BD456C (dec: 1102923116)
-{
-	short x; // size=0, offset=0
-	short y; // size=0, offset=2
-	short w; // size=0, offset=4
-	short h; // size=0, offset=6
-	unsigned char l; // size=0, offset=8
-	unsigned char r; // size=0, offset=9
-	unsigned char u; // size=0, offset=10
-	unsigned char d; // size=0, offset=11
-	int userDrawFunctionNum; // size=0, offset=12
-	short s_x; // size=0, offset=16
-	short s_y; // size=0, offset=18
-	int action; // size=0, offset=20
-	int var; // size=0, offset=24
-	char Name[32]; // size=32, offset=28
-};
+
 
 struct PADRECORD // hashcode: 0x0D20CEBD (dec: 220253885)
 {
@@ -157,14 +141,14 @@ struct DRIVER2_JUNCTION // hashcode: 0x7C27C3D0 (dec: 2082980816)
 	unsigned long flags; // size=0, offset=8
 };
 
-struct _sdPlane // hashcode: 0x873C357E (dec: -2026097282)
+typedef struct _sdPlane // hashcode: 0x873C357E (dec: -2026097282)
 {
 	short surface; // size=0, offset=0
 	short a; // size=0, offset=2
 	short b; // size=0, offset=4
 	short c; // size=0, offset=6
 	int d; // size=0, offset=8
-};
+} sdPlane;
 
 struct sdNodePACKED
 {
@@ -195,7 +179,7 @@ struct OrientedBox // hashcode: 0x8D87CFA2 (dec: -1920479326)
 	short length[3]; // size=6, offset=30
 };
 
-struct _HANDLING_DATA // hashcode: 0x9DD0BFD7 (dec: -1647263785)
+typedef struct _HANDLING_DATA // hashcode: 0x9DD0BFD7 (dec: -1647263785)
 {
 	MATRIX where; // size=32, offset=0
 	MATRIX drawCarMat; // size=32, offset=32
@@ -213,8 +197,8 @@ struct _HANDLING_DATA // hashcode: 0x9DD0BFD7 (dec: -1647263785)
 	VECTOR shadowPoints[4]; // size=64, offset=132
 	int front_vel; // size=0, offset=196
 	int rear_vel; // size=0, offset=200
-	struct OrientedBox oBox; // size=36, offset=204
-};
+	OrientedBox oBox; // size=36, offset=204
+} HANDLING_DATA;
 
 union RigidBodyState // Hashcode: 0x60B16C22 (dec: 1622240290)
 {
@@ -227,10 +211,59 @@ union RigidBodyState // Hashcode: 0x60B16C22 (dec: 1622240290)
 	} n; // size=52, offset=0, found in object files: obj\dr2roads.obj, obj\dr2roads.obj
 };
 
-struct _APPEARANCE_DATA // hashcode: 0x4A050E31 (dec: 1241845297)
+struct CAR_POLY // hashcode: 0x6DD9D398 (dec: 1842992024)
 {
-	struct SXYPAIR light_trails[4][4]; // size=64, offset=0
-	struct CAR_COSMETICS* carCos; // size=236, offset=64
+	int vindices; // size=0, offset=0
+	int nindices; // size=0, offset=4
+	int clut_uv0; // size=0, offset=8
+	int tpage_uv1; // size=0, offset=12
+	int uv3_uv2; // size=0, offset=16
+	short originalindex; // size=0, offset=20
+};
+
+struct CAR_MODEL // hashcode: 0xE3A253F1 (dec: -475900943)
+{
+	int numFT3; // size=0, offset=0
+	CAR_POLY* pFT3; // size=24, offset=4
+	int numGT3; // size=0, offset=8
+	CAR_POLY* pGT3; // size=24, offset=12
+	int numB3; // size=0, offset=16
+	CAR_POLY* pB3; // size=24, offset=20
+	SVECTOR* vlist; // size=8, offset=24
+	SVECTOR* nlist; // size=8, offset=28
+};
+
+struct CAR_COSMETICS // hashcode: 0x48DDA5C0 (dec: 1222485440)
+{
+	SVECTOR headLight; // size=8, offset=0
+	SVECTOR frontInd; // size=8, offset=8
+	SVECTOR backInd; // size=8, offset=16
+	SVECTOR brakeLight; // size=8, offset=24
+	SVECTOR revLight; // size=8, offset=32
+	SVECTOR policeLight; // size=8, offset=40
+	SVECTOR exhaust; // size=8, offset=48
+	SVECTOR smoke; // size=8, offset=56
+	SVECTOR fire; // size=8, offset=64
+	SVECTOR wheelDisp[4]; // size=32, offset=72
+	short extraInfo; // size=0, offset=104
+	short powerRatio; // size=0, offset=106
+	short cbYoffset; // size=0, offset=108
+	short susCoeff; // size=0, offset=110
+	short traction; // size=0, offset=112
+	short wheelSize; // size=0, offset=114
+	SVECTOR cPoints[12]; // size=96, offset=116
+	SVECTOR colBox; // size=8, offset=212
+	SVECTOR cog; // size=8, offset=220
+	short twistRateX; // size=0, offset=228
+	short twistRateY; // size=0, offset=230
+	short twistRateZ; // size=0, offset=232
+	short mass; // size=0, offset=234
+};
+
+typedef struct _APPEARANCE_DATA // hashcode: 0x4A050E31 (dec: 1241845297)
+{
+	SXYPAIR light_trails[4][4]; // size=64, offset=0
+	CAR_COSMETICS* carCos; // size=236, offset=64
 	short old_clock[4]; // size=8, offset=68
 	char life; // size=0, offset=76
 	char coplife; // size=0, offset=77
@@ -244,7 +277,7 @@ struct _APPEARANCE_DATA // hashcode: 0x4A050E31 (dec: 1241845297)
 	char flags : 7;			// [A] new: appearance flags, 1,2,3,4 = wheel hubcaps lost
 
 	short damage[6]; // size=12, offset=86
-};
+} APPEARANCE_DATA;
 
 struct CIV_ROUTE_ENTRY // hashcode: 0x7DE1E25F (dec: 2111955551)
 {
@@ -259,7 +292,7 @@ struct CIV_STATE // hashcode: 0x1B69CC52 (dec: 459918418)
 {
 	int currentRoad; // size=0, offset=0
 	int currentNode; // size=0, offset=4
-	struct CIV_ROUTE_ENTRY* ctrlNode; // size=16, offset=8
+	CIV_ROUTE_ENTRY* ctrlNode; // size=16, offset=8
 	unsigned char ctrlState; // size=0, offset=12
 	unsigned char trafficLightPhaseId; // size=0, offset=13
 	unsigned char changeLane; // size=0, offset=14
@@ -272,8 +305,8 @@ struct CIV_STATE // hashcode: 0x1B69CC52 (dec: 459918418)
 	int changeLaneIndicateCount; // size=0, offset=24
 	int carPauseCnt; // size=0, offset=28
 	int velRatio; // size=0, offset=32
-	struct CIV_ROUTE_ENTRY targetRoute[13]; // size=208, offset=36
-	struct CIV_ROUTE_ENTRY* pnode; // size=16, offset=244
+	CIV_ROUTE_ENTRY targetRoute[13]; // size=208, offset=36
+	CIV_ROUTE_ENTRY* pnode; // size=16, offset=244
 	unsigned char maxSpeed; // size=0, offset=248
 	unsigned char thrustState; // size=0, offset=249
 	unsigned char carMustDie; // size=0, offset=250
@@ -282,7 +315,7 @@ struct CIV_STATE // hashcode: 0x1B69CC52 (dec: 459918418)
 
 struct COP // hashcode: 0x03D1B2C7 (dec: 64074439)
 {
-	struct VECTOR2 targetHistory[2]; // size=16, offset=0
+	VECTOR2 targetHistory[2]; // size=16, offset=0
 	char routeInMemory; // size=0, offset=16
 	char justPinged; // size=0, offset=17
 	char close_pursuit; // size=0, offset=18
@@ -352,18 +385,18 @@ enum ECarControlFlags
 
 typedef struct _CAR_DATA // hashcode: 0x8D78CB99 (dec: -1921463399)
 {
-	struct _HANDLING_DATA hd; // size=240, offset=0
-	union RigidBodyState st; // size=52, offset=240
-	struct _APPEARANCE_DATA ap; // size=100, offset=292
+	HANDLING_DATA hd; // size=240, offset=0
+	RigidBodyState st; // size=52, offset=240
+	APPEARANCE_DATA ap; // size=100, offset=292
 	unsigned char hndType; // size=0, offset=392
 	unsigned char controlType; // size=0, offset=393
 	unsigned char controlFlags; // size=0, offset=394
 	char id; // size=0, offset=395
 	union {
 		char* padid; // size=0, offset=0
-		struct CIV_STATE c; // size=252, offset=0
-		struct COP p; // size=40, offset=0
-		struct LEAD_CAR l; // size=104, offset=0
+		CIV_STATE c; // size=252, offset=0
+		COP p; // size=40, offset=0
+		LEAD_CAR l; // size=104, offset=0
 	} ai; // size=252, offset=396, found in object files: obj\dr2roads.obj, obj\dr2roads.obj
 	int* inform; // size=0, offset=648
 	short thrust; // size=0, offset=652
@@ -375,42 +408,15 @@ typedef struct _CAR_DATA // hashcode: 0x8D78CB99 (dec: -1921463399)
 	short wheel_angle; // size=0, offset=660
 	unsigned short totalDamage; // size=0, offset=662
 	long lastPad; // size=0, offset=664
-} _CAR_DATA;
+} CAR_DATA;
 
-struct CAR_COSMETICS // hashcode: 0x48DDA5C0 (dec: 1222485440)
-{
-	struct SVECTOR headLight; // size=8, offset=0
-	struct SVECTOR frontInd; // size=8, offset=8
-	struct SVECTOR backInd; // size=8, offset=16
-	struct SVECTOR brakeLight; // size=8, offset=24
-	struct SVECTOR revLight; // size=8, offset=32
-	struct SVECTOR policeLight; // size=8, offset=40
-	struct SVECTOR exhaust; // size=8, offset=48
-	struct SVECTOR smoke; // size=8, offset=56
-	struct SVECTOR fire; // size=8, offset=64
-	struct SVECTOR wheelDisp[4]; // size=32, offset=72
-	short extraInfo; // size=0, offset=104
-	short powerRatio; // size=0, offset=106
-	short cbYoffset; // size=0, offset=108
-	short susCoeff; // size=0, offset=110
-	short traction; // size=0, offset=112
-	short wheelSize; // size=0, offset=114
-	struct SVECTOR cPoints[12]; // size=96, offset=116
-	struct SVECTOR colBox; // size=8, offset=212
-	struct SVECTOR cog; // size=8, offset=220
-	short twistRateX; // size=0, offset=228
-	short twistRateY; // size=0, offset=230
-	short twistRateZ; // size=0, offset=232
-	short mass; // size=0, offset=234
-};
-
-struct _COP_DATA // hashcode: 0xDE3D2698 (dec: -566417768)
+typedef struct _COP_DATA // hashcode: 0xDE3D2698 (dec: -566417768)
 {
 	int speed; // size=0, offset=0
 	int power; // size=0, offset=4
 	int min; // size=0, offset=8
 	int max; // size=0, offset=12
-};
+} MS_COP_DATA;
 
 struct LEAD_PARAMETERS // hashcode: 0x5849B382 (dec: 1481225090)
 {
@@ -432,7 +438,7 @@ struct LEAD_PARAMETERS // hashcode: 0x5849B382 (dec: 1481225090)
 	int hWidth80Mul; // size=0, offset=60
 };
 
-struct _EVENT // hashcode: 0xDD197EB3 (dec: -585531725)
+typedef struct _EVENT // hashcode: 0xDD197EB3 (dec: -585531725)
 {
 	VECTOR position; // size=16, offset=0
 	short rotation; // size=0, offset=16
@@ -442,8 +448,8 @@ struct _EVENT // hashcode: 0xDD197EB3 (dec: -585531725)
 	short flags; // size=0, offset=28
 	short radius; // size=0, offset=30
 	int model; // size=0, offset=32
-	struct _EVENT* next; // size=40, offset=36
-};
+	_EVENT* next; // size=40, offset=36
+} EVENT;
 
 struct FixedEvent // hashcode: 0xF758406C (dec: -145211284)
 {
@@ -457,16 +463,16 @@ struct FixedEvent // hashcode: 0xF758406C (dec: -145211284)
 	short flags; // size=0, offset=28
 	short radius; // size=0, offset=30
 	int model; // size=0, offset=32
-	_EVENT* next; // size=40, offset=36
+	EVENT* next; // size=40, offset=36
 	char* modelName; // size=0, offset=40
 };
 
-struct MAPPING // hashcode: 0x46E5EAED (dec: 1189473005)
+typedef struct MAPPING // hashcode: 0x46E5EAED (dec: 1189473005)
 {
 	unsigned short button_lookup[16]; // size=32, offset=0
 	unsigned short swap_analog; // size=0, offset=32
 	unsigned short reserved1; // size=0, offset=34
-};
+} *LPMAPPING;
 
 struct SAVED_PLAYER_POS // hashcode: 0x3269504F (dec: 845762639)
 {
@@ -495,8 +501,8 @@ struct SAVED_CAR_POS // hashcode: 0x02E940CC (dec: 48840908)
 
 struct MISSION_DATA // hashcode: 0x2CE3A08C (dec: 753115276)
 {
-	struct SAVED_PLAYER_POS PlayerPos; // size=36, offset=0
-	struct SAVED_CAR_POS CarPos[6]; // size=192, offset=36
+	SAVED_PLAYER_POS PlayerPos; // size=36, offset=0
+	SAVED_CAR_POS CarPos[6]; // size=192, offset=36
 };
 
 struct SCORE_ENTRY // hashcode: 0xD0B3A6C6 (dec: -793532730)
@@ -508,11 +514,11 @@ struct SCORE_ENTRY // hashcode: 0xD0B3A6C6 (dec: -793532730)
 
 struct SCORE_TABLES // hashcode: 0xDB95702F (dec: -610963409)
 {
-	struct SCORE_ENTRY GetawayTable[4][2][5]; // size=480, offset=0
-	struct SCORE_ENTRY GateRaceTable[4][2][5]; // size=480, offset=480
-	struct SCORE_ENTRY CheckpointTable[4][2][5]; // size=480, offset=960
-	struct SCORE_ENTRY TrailblazerTable[4][2][5]; // size=480, offset=1440
-	struct SCORE_ENTRY SurvivalTable[4][1][5]; // size=240, offset=1920
+	SCORE_ENTRY GetawayTable[4][2][5]; // size=480, offset=0
+	SCORE_ENTRY GateRaceTable[4][2][5]; // size=480, offset=480
+	SCORE_ENTRY CheckpointTable[4][2][5]; // size=480, offset=960
+	SCORE_ENTRY TrailblazerTable[4][2][5]; // size=480, offset=1440
+	SCORE_ENTRY SurvivalTable[4][1][5]; // size=240, offset=1920
 };
 
 struct ACTIVE_CHEATS // hashcode: 0x2127EFE8 (dec: 556265448)
@@ -545,122 +551,21 @@ struct STREAM_SOURCE // hashcode: 0x81E93B6E (dec: -2115421330)
 	char controlType; // size=0, offset=3
 	unsigned short flags; // size=0, offset=4
 	unsigned short rotation; // size=0, offset=6
-	struct VECTOR_NOPAD position; // size=12, offset=8
+	VECTOR_NOPAD position; // size=12, offset=8
 	int totaldamage; // size=0, offset=20
 	int damage[6]; // size=24, offset=24
 };
 
-typedef struct RVECTOR RVECTOR;
-
-typedef struct CRVECTOR3 CRVECTOR3;
-
-typedef struct CRVECTOR4 CRVECTOR4;
-
-typedef struct SndVolume2 SndVolume2;
-
-typedef struct VECTOR_NOPAD VECTOR_NOPAD;
-
-typedef struct SVECTOR_NOPAD SVECTOR_NOPAD;
-
-typedef struct BOX BOX;
-
-typedef struct BSPHERE BSPHERE;
-
-typedef struct RGB RGB;
-
-typedef struct UV_INFO UV_INFO;
-
-typedef struct XYPAIR XYPAIR;
-
-typedef struct SXYPAIR SXYPAIR;
-
-typedef struct GAP_INFO GAP_INFO;
-
-typedef struct PSXBUTTON PSXBUTTON;
-
-typedef struct PADRECORD PADRECORD;
-
-typedef struct ARC_ENTRY ARC_ENTRY;
-
-typedef struct USVECTOR_NOPAD USVECTOR_NOPAD;
-
-typedef struct DRIVER2_STRAIGHT DRIVER2_STRAIGHT;
-
-typedef struct OLD_DRIVER2_JUNCTION OLD_DRIVER2_JUNCTION;
-
-typedef struct DRIVER2_JUNCTION DRIVER2_JUNCTION;
-
-typedef struct DRIVER2_CURVE DRIVER2_CURVE;
-
-typedef struct _sdPlane sdPlane;
-
-typedef struct CIV_ROUTE_ENTRY CIV_ROUTE_ENTRY;
-
-typedef struct CIV_STATE CIV_STATE;
-
-typedef struct CAR_COSMETICS CAR_COSMETICS;
-
-typedef struct VECTOR2 VECTOR2;
-
-typedef struct COP COP;
-
-typedef struct LEAD_CAR LEAD_CAR;
-
-typedef union RigidBodyState RigidBodyState;
-
-typedef struct WHEEL WHEEL;
-
-typedef struct OrientedBox OrientedBox;
-
-typedef struct _HANDLING_DATA HANDLING_DATA;
-
-typedef struct _APPEARANCE_DATA APPEARANCE_DATA;
-
-typedef struct _COP_DATA MS_COP_DATA;
-
-typedef struct LEAD_PARAMETERS LEAD_PARAMETERS;
-
-typedef struct _EVENT EVENT;
-
-typedef struct MAPPING MAPPING;
-
-typedef struct SAVED_PLAYER_POS SAVED_PLAYER_POS;
-
-typedef struct SAVED_CAR_POS SAVED_CAR_POS;
-
-typedef struct MISSION_DATA MISSION_DATA;
-
-typedef struct SCORE_ENTRY SCORE_ENTRY;
-
-typedef struct SCORE_TABLES SCORE_TABLES;
-
-typedef struct ACTIVE_CHEATS ACTIVE_CHEATS;
-
-typedef struct STREAM_SOURCE STREAM_SOURCE;
-
 typedef unsigned char u_char;
-
 typedef unsigned short u_short;
-
 typedef unsigned int u_int;
-
 typedef unsigned long u_long;
 
+typedef char schar;
+typedef unsigned char uchar;
 typedef unsigned short ushort;
-
-typedef struct _physadr* physadr;
-
-// typedef long daddr_t;
-
-typedef char* caddr_t;
-
-typedef long* qaddr_t;
-
-typedef long swblk_t;
-
-// typedef unsigned int size_t;
-
-typedef long off_t;
+typedef unsigned int uint;
+typedef unsigned long ulong;
 
 #ifndef __GNUC__
 typedef unsigned short uid_t;
@@ -670,20 +575,12 @@ typedef unsigned short gid_t;
 
 typedef void (*SsMarkCallbackProc)();
 
-typedef long LONGVECTOR[4];
-
 typedef short SHORTVECTOR[4];
 
+typedef long LONGVECTOR[4];
 typedef long LONGQUATERNION[4];
 
-typedef unsigned long ulong;
 
-
-typedef struct PADRAW* LPPADRAW;
-
-typedef struct MAPPING* LPMAPPING;
-
-typedef struct PAD* LPPAD;
 
 struct MODEL // hashcode: 0x3A42A4FE (dec: 977446142)
 {
@@ -727,7 +624,7 @@ struct UV // hashcode: 0xB11A813B (dec: -1323663045)
 
 struct TEXTURE_DETAILS // hashcode: 0xBFBD097F (dec: -1078130305)
 {
-	struct UV coords; // size=8, offset=0
+	UV coords; // size=8, offset=0
 	unsigned short tpageid; // size=0, offset=8
 	unsigned short clutid; // size=0, offset=10
 	char texture_number; // size=0, offset=12
@@ -736,7 +633,7 @@ struct TEXTURE_DETAILS // hashcode: 0xBFBD097F (dec: -1078130305)
 
 struct CELL_OBJECT // hashcode: 0xD26720D4 (dec: -764993324)
 {
-	struct VECTOR_NOPAD pos; // size=12, offset=0
+	VECTOR_NOPAD pos; // size=12, offset=0
 	unsigned char pad; // size=0, offset=12
 	unsigned char yang; // size=0, offset=13
 	unsigned short type; // size=0, offset=14
@@ -761,9 +658,9 @@ struct SMASHABLE_OBJECT // hashcode: 0x15B5F719 (dec: 364246809)
 
 struct GARAGE_DOOR // hashcode: 0x830EFAED (dec: -2096170259)
 {
-	struct CELL_OBJECT* cop; // size=16, offset=0
-	struct VECTOR_NOPAD old_pos; // size=12, offset=4
-	struct VECTOR_NOPAD pos; // size=12, offset=16
+	CELL_OBJECT* cop; // size=16, offset=0
+	VECTOR_NOPAD old_pos; // size=12, offset=4
+	VECTOR_NOPAD pos; // size=12, offset=16
 	short rotation; // size=0, offset=28
 	char yang; // size=0, offset=30
 };
@@ -886,7 +783,7 @@ struct MS_TARGET_EVENT
 	int loseMessage;	// data 14
 };
 
-struct _TARGET// hashcode: 0xB3C67F7D (dec: -1278836867)
+typedef struct _TARGET// hashcode: 0xB3C67F7D (dec: -1278836867)
 {
 	union
 	{
@@ -896,7 +793,7 @@ struct _TARGET// hashcode: 0xB3C67F7D (dec: -1278836867)
 		MS_TARGET_CAR car;
 		MS_TARGET_EVENT event;
 	};
-};
+} MS_TARGET;
 
 struct MR_TIMER // hashcode: 0xEA39F36E (dec: -365300882)
 {
@@ -937,17 +834,16 @@ enum PED_MODEL_TYPES : char // Hashcode: 0x2858A7E3 (dec: 676898787)
 	CIVILIAN = 3,
 };
 
-struct PEDESTRIAN;
-typedef void(*pedFunc)(PEDESTRIAN* pPed);
+typedef void(*pedFunc)(struct PEDESTRIAN* pPed);
 
-struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
+typedef struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
 {
 	PEDESTRIAN* pNext; // size=92, offset=0
 	PEDESTRIAN* pPrev; // size=92, offset=4
 	pedFunc fpRestState; // size=0, offset=8
 	pedFunc fpAgitatedState; // size=0, offset=12
 	char padId; // size=0, offset=16
-	enum PED_MODEL_TYPES pedType; // size=1, offset=17
+	PED_MODEL_TYPES pedType; // size=1, offset=17
 	VECTOR_NOPAD position; // size=12, offset=20
 	SVECTOR dir; // size=8, offset=32
 	SVECTOR velocity; // size=8, offset=40
@@ -965,21 +861,21 @@ struct PEDESTRIAN // hashcode: 0xF569ED7C (dec: -177607300)
 	char finished_turn; // size=0, offset=86
 	char seat_index; // size=0, offset=87
 	unsigned char pallet; // size=0, offset=88
-	enum PED_ACTION_TYPE type; // size=1, offset=89
-};
+	PED_ACTION_TYPE type; // size=1, offset=89
+} *LPPEDESTRIAN;
 
-struct __skidinfo // hashcode: 0x807ED49D (dec: -2139171683)
+typedef struct __skidinfo // hashcode: 0x807ED49D (dec: -2139171683)
 {
 	char chan; // size=0, offset=0
 	char sound; // size=0, offset=1
-};
+} skidinfo;
 
-struct __horninfo // hashcode: 0x09E3B159 (dec: 165917017)
+typedef struct __horninfo // hashcode: 0x09E3B159 (dec: 165917017)
 {
 	char on; // size=0, offset=0
 	char time; // size=0, offset=1
 	char request; // size=0, offset=2
-};
+} horninfo;
 
 struct CYCLE_OBJECT // hashcode: 0x61BB6061 (dec: 1639669857)
 {
@@ -993,106 +889,15 @@ struct CYCLE_OBJECT // hashcode: 0x61BB6061 (dec: 1639669857)
 	short stop2; // size=0, offset=16
 	short speed2; // size=0, offset=18
 };
-/*
-typedef struct DRAWENV DRAWENV;
-
-typedef struct DISPENV DISPENV;
-
-typedef struct DR_LOAD DR_LOAD;
-
-typedef struct MODEL MODEL;
-
-typedef enum PAUSEMODE PAUSEMODE;
-
-typedef struct UV UV;
-
-typedef struct TEXTURE_DETAILS TEXTURE_DETAILS;
-
-typedef struct CELL_OBJECT CELL_OBJECT;
-
-typedef struct ANIMATED_OBJECT ANIMATED_OBJECT;
-
-typedef struct SMASHABLE_OBJECT SMASHABLE_OBJECT;
-
-typedef struct GARAGE_DOOR GARAGE_DOOR;
-
-typedef struct RGB16 RGB16;
-
-typedef struct BVECTOR BVECTOR;
-
-typedef struct ADJACENT_ROAD_INFO ADJACENT_ROAD_INFO;
-
-typedef struct SpuVolume SpuVolume;
-
-typedef struct SpuVoiceAttr SpuVoiceAttr;
-
-typedef struct SpuExtAttr SpuExtAttr;
-
-typedef struct SpuStVoiceAttr SpuStVoiceAttr;
-
-typedef struct FELONY_DELAY FELONY_DELAY;
-
-typedef struct FELONY_VALUE FELONY_VALUE;
-*/
-
-/*
-typedef struct _TARGET MS_TARGET;
-
-typedef struct MR_TIMER MR_TIMER;
-
-typedef struct PEDESTRIAN PEDESTRIAN;
-
-typedef enum PED_ACTION_TYPE PED_ACTION_TYPE;
-
-typedef enum PED_MODEL_TYPES PED_MODEL_TYPES;
-
-typedef struct __skidinfo skidinfo;
-
-typedef struct __horninfo horninfo;
-
-typedef struct CYCLE_OBJECT CYCLE_OBJECT;
-
-typedef void (*SpuIRQCallbackProc)();
-
-typedef void (*SpuTransferCallbackProc)();
-
-typedef void (*SpuStCallbackProc)();
-
-typedef unsigned char uchar;
-
-typedef char schar;
-
-typedef unsigned int uint;
-
-typedef void envsoundfunc();
-
-typedef struct MVERTEX SV5x5[5][5];
-
-typedef struct PEDESTRIAN *LPPEDESTRIAN;
-
-typedef struct SEATED_PEDESTRIANS *SEATEDPTR;
-
-typedef struct PEDESTRIAN_ROADS *LPPEDESTRIAN_ROADS;
-*/
-
-struct CAR_POLY // hashcode: 0x6DD9D398 (dec: 1842992024)
-{
-	int vindices; // size=0, offset=0
-	int nindices; // size=0, offset=4
-	int clut_uv0; // size=0, offset=8
-	int tpage_uv1; // size=0, offset=12
-	int uv3_uv2; // size=0, offset=16
-	short originalindex; // size=0, offset=20
-};
 
 struct COLOUR_BAND // hashcode: 0x1D8D5AB8 (dec: 495803064)
 {
-	struct CVECTOR colour; // size=4, offset=0
+	CVECTOR colour; // size=4, offset=0
 	int value; // size=0, offset=4
 	int flags; // size=0, offset=8
 };
 
-struct _PERCENTAGE_BAR // hashcode: 0x56E8855E (dec: 1458079070)
+typedef struct _PERCENTAGE_BAR // hashcode: 0x56E8855E (dec: 1458079070)
 {
 	char* tag; // size=0, offset=0
 	short xpos; // size=0, offset=4
@@ -1101,25 +906,10 @@ struct _PERCENTAGE_BAR // hashcode: 0x56E8855E (dec: 1458079070)
 	short height; // size=0, offset=10
 	unsigned short position; // size=0, offset=12
 	unsigned short max; // size=0, offset=14
-	struct COLOUR_BAND* pColourBand; // size=12, offset=16
+	COLOUR_BAND* pColourBand; // size=12, offset=16
 	int flags; // size=0, offset=20
 	int active; // size=0, offset=24
-};
-/*
-typedef struct POLY_G4 POLY_G4;
-
-typedef struct TILE TILE;
-
-typedef struct DR_TPAGE DR_TPAGE;
-
-typedef struct CAR_POLY CAR_POLY;
-
-typedef struct COLOUR_BAND COLOUR_BAND;
-
-typedef struct _PERCENTAGE_BAR PERCENTAGE_BAR;
-
-typedef struct _PERCENTAGE_BAR *LPPERCENTAGE_BAR;
-*/
+} PERCENTAGE_BAR, *LPPERCENTAGE_BAR;
 
 struct COP_SIGHT_DATA // hashcode: 0x4400B303 (dec: 1140896515)
 {
@@ -1146,37 +936,11 @@ struct OVERMAP // hashcode: 0x34D52BCC (dec: 886385612)
 	unsigned char dummy; // size=0, offset=17
 	int scale; // size=0, offset=20
 };
-/*
-typedef struct POLY_F3 POLY_F3;
 
-typedef struct POLY_F4 POLY_F4;
-
-typedef struct POLY_FT3 POLY_FT3;
-
-typedef struct POLY_FT4 POLY_FT4;
-
-typedef struct POLY_G3 POLY_G3;
-
-typedef struct LINE_F2 LINE_F2;
-
-typedef struct LINE_G2 LINE_G2;
-
-typedef struct LINE_F4 LINE_F4;
-
-typedef struct TILE_1 TILE_1;
-
-typedef struct DR_AREA DR_AREA;
-
-typedef struct COP_SIGHT_DATA COP_SIGHT_DATA;
-
-typedef struct MAPTEX MAPTEX;
-
-typedef struct OVERMAP OVERMAP;
-*/
 struct REPLAY_PARAMETER_BLOCK // hashcode: 0xA8ABCA42 (dec: -1465136574)
 {
 	int RecordingEnd; // size=0, offset=0
-	struct VECTOR_NOPAD lead_car_start; // size=12, offset=4
+	VECTOR_NOPAD lead_car_start; // size=12, offset=4
 	short Lead_car_dir; // size=0, offset=16
 	unsigned char timeofday; // size=0, offset=18
 	unsigned char weather; // size=0, offset=19
@@ -1193,8 +957,8 @@ struct REPLAY_SAVE_HEADER // hashcode: 0x7B872BEC (dec: 2072456172)
 	unsigned char RandomChase; // size=0, offset=9
 	unsigned char CutsceneEvent; // size=0, offset=10
 	unsigned char gCopDifficultyLevel; // size=0, offset=11
-	struct MISSION_DATA SavedData; // size=228, offset=12
-	struct ACTIVE_CHEATS ActiveCheats; // size=4, offset=240
+	MISSION_DATA SavedData; // size=228, offset=12
+	ACTIVE_CHEATS ActiveCheats; // size=4, offset=240
 	int wantedCar[2]; // size=8, offset=244
 	int MissionNumber; // size=0, offset=252
 	int HaveStoredData; // size=0, offset=256
@@ -1203,39 +967,29 @@ struct REPLAY_SAVE_HEADER // hashcode: 0x7B872BEC (dec: 2072456172)
 
 struct REPLAY_STREAM_HEADER // hashcode: 0x7D77518E (dec: 2104971662)
 {
-	struct STREAM_SOURCE SourceType; // size=48, offset=0
+	STREAM_SOURCE SourceType; // size=48, offset=0
 	int Size; // size=0, offset=48
 	int Length; // size=0, offset=52
 };
 
 struct REPLAY_STREAM // hashcode: 0xC894D541 (dec: -929770175)
 {
-	struct STREAM_SOURCE SourceType; // size=48, offset=0
-	struct PADRECORD* InitialPadRecordBuffer; // size=3, offset=48
-	struct PADRECORD* PadRecordBuffer; // size=3, offset=52
-	struct PADRECORD* PadRecordBufferEnd; // size=3, offset=56
+	STREAM_SOURCE SourceType; // size=48, offset=0
+	PADRECORD* InitialPadRecordBuffer; // size=3, offset=48
+	PADRECORD* PadRecordBuffer; // size=3, offset=52
+	PADRECORD* PadRecordBufferEnd; // size=3, offset=56
 	unsigned char playbackrun; // size=0, offset=60
 	int length; // size=0, offset=64
 	int padCount;
 };
 
-struct _PING_PACKET // hashcode: 0x9E8E7C27 (dec: -1634829273)
+typedef struct _PING_PACKET // hashcode: 0x9E8E7C27 (dec: -1634829273)
 {
 	unsigned short frame; // size=0, offset=0
 	char carId; // size=0, offset=2
 	char cookieCount; // size=0, offset=3
-};
-/*
-typedef struct REPLAY_PARAMETER_BLOCK REPLAY_PARAMETER_BLOCK;
+} PING_PACKET;
 
-typedef struct REPLAY_SAVE_HEADER REPLAY_SAVE_HEADER;
-
-typedef struct REPLAY_STREAM_HEADER REPLAY_STREAM_HEADER;
-
-typedef struct REPLAY_STREAM REPLAY_STREAM;
-
-typedef struct _PING_PACKET PING_PACKET;
-*/
 struct ROADBLOCK // hashcode: 0x006C3CDD (dec: 7093469)
 {
 	VECTOR position; // size=16, offset=0
@@ -1252,16 +1006,12 @@ struct ROADBLOCK // hashcode: 0x006C3CDD (dec: 7093469)
 	char AI_Slot[13]; // size=13, offset=41
 };
 
-//typedef struct ROADBLOCK ROADBLOCK;
-
 struct TestResult // hashcode: 0x105A4D3D (dec: 274353469)
 {
 	int depth; // size=0, offset=0
 	VECTOR location; // size=16, offset=4
 	VECTOR normal; // size=16, offset=20
 };
-
-//typedef struct TestResult TestResult;
 
 struct BUILDING_BOX // hashcode: 0x6B53A728 (dec: 1800644392)
 {
@@ -1293,20 +1043,19 @@ struct CRET2D // hashcode: 0x0DF86D8D (dec: 234384781)
 	int neverfree; // size=0, offset=36
 };
 
-struct __tunnelcoords // hashcode: 0x7711175C (dec: 1997608796)
+typedef struct __tunnelcoords // hashcode: 0x7711175C (dec: 1997608796)
 {
 	VECTOR p1; // size=16, offset=0
 	VECTOR p2; // size=16, offset=16
-};
-/*
-typedef struct BUILDING_BOX BUILDING_BOX;
+} tunnelcoords;
 
-typedef struct CDATA2D CDATA2D;
+typedef struct __tunnelinfo // hashcode: 0xC172C5A2 (dec: -1049442910)
+{
+	char num_tunnels; // size=0, offset=0
+	char tunnel_cnt; // size=0, offset=1
+	tunnelcoords coords[29]; // size=928, offset=4
+} tunnelinfo;
 
-typedef struct CRET2D CRET2D;
-
-typedef struct __tunnelcoords tunnelcoords;
-*/
 enum ExplosionType // Hashcode: 0xD0FDC1E0 (dec: -788676128)
 {
 	BIG_BANG = 0,
@@ -1315,7 +1064,7 @@ enum ExplosionType // Hashcode: 0xD0FDC1E0 (dec: -788676128)
 	BANG_USED = 999,
 };
 
-struct _ExOBJECT // hashcode: 0x1D4ED61D (dec: 491705885)
+typedef struct _ExOBJECT // hashcode: 0x1D4ED61D (dec: 491705885)
 {
 	int time; // size=0, offset=0
 	int speed; // size=0, offset=4
@@ -1323,7 +1072,7 @@ struct _ExOBJECT // hashcode: 0x1D4ED61D (dec: 491705885)
 	int rscale; // size=0, offset=12
 	ExplosionType type; // size=2, offset=16
 	VECTOR pos; // size=16, offset=20
-};
+} EXOBJECT;
 
 struct BOMB // hashcode: 0x9EA608A2 (dec: -1633285982)
 {
@@ -1333,11 +1082,7 @@ struct BOMB // hashcode: 0x9EA608A2 (dec: -1633285982)
 	VECTOR position; // size=16, offset=4
 	VECTOR velocity; // size=16, offset=20
 };
-/*
-typedef struct _ExOBJECT EXOBJECT;
 
-typedef struct BOMB BOMB;
-*/
 struct COLLISION_PACKET // hashcode: 0x404603E7 (dec: 1078330343)
 {
 	short type; // size=0, offset=0
@@ -1352,7 +1097,7 @@ struct COLLISION_PACKET // hashcode: 0x404603E7 (dec: 1078330343)
 	short zsize; // size=0, offset=18
 };
 
-struct _PLAYER // hashcode: 0x8C0D3284 (dec: -1945292156)
+typedef struct _PLAYER // hashcode: 0x8C0D3284 (dec: -1945292156)
 {
 	long pos[4]; // size=16, offset=0
 	int dir; // size=0, offset=16
@@ -1378,15 +1123,15 @@ struct _PLAYER // hashcode: 0x8C0D3284 (dec: -1945292156)
 	char car_is_sounding; // size=0, offset=75
 	long camera_vel[3]; // size=12, offset=76
 	int snd_cam_ang; // size=0, offset=88
-	__skidinfo skidding; // size=2, offset=92
-	__skidinfo wheelnoise; // size=2, offset=94
-	__horninfo horn; // size=3, offset=96
+	skidinfo skidding; // size=2, offset=92
+	skidinfo wheelnoise; // size=2, offset=94
+	horninfo horn; // size=3, offset=96
 	int car_sound_timer; // size=0, offset=100
 	short revsvol; // size=0, offset=104
 	short idlevol; // size=0, offset=106
-	PEDESTRIAN* pPed; // size=92, offset=108
+	LPPEDESTRIAN pPed; // size=92, offset=108
 	int crash_timer; // size=0, offset=112
-};
+} PLAYER;
 
 struct XZPAIR // hashcode: 0x0F1AD091 (dec: 253415569)
 {
@@ -1401,11 +1146,11 @@ struct CELL_DATA // hashcode: 0x016E4A08 (dec: 24005128)
 
 struct PACKED_CELL_OBJECT // hashcode: 0x4109E18D (dec: 1091166605)
 {
-	struct USVECTOR_NOPAD pos; // size=6, offset=0
+	USVECTOR_NOPAD pos; // size=6, offset=0
 	unsigned short value; // size=0, offset=6
 };
 
-struct PAD // hashcode: 0x3E7349EB (dec: 1047742955)
+typedef struct PAD // hashcode: 0x3E7349EB (dec: 1047742955)
 {
 	unsigned char active; // size=0, offset=0
 	unsigned char type; // size=0, offset=1
@@ -1417,7 +1162,7 @@ struct PAD // hashcode: 0x3E7349EB (dec: 1047742955)
 	unsigned short mapped; // size=0, offset=12
 	unsigned short mapnew; // size=0, offset=14
 	char mapanalog[4]; // size=4, offset=16
-	struct MAPPING mappings; // size=36, offset=20
+	MAPPING mappings; // size=36, offset=20
 	unsigned char alarmShakeCounter; // size=0, offset=56
 	unsigned char asd; // size=0, offset=57
 	unsigned char sdf; // size=0, offset=58
@@ -1430,13 +1175,13 @@ struct PAD // hashcode: 0x3E7349EB (dec: 1047742955)
 	unsigned char motors[2]; // size=2, offset=68
 	unsigned char shake_type; // size=0, offset=70
 	unsigned char vibrate; // size=0, offset=71
-};
+} *LPPAD;
 
 struct CELL_ITERATOR // hashcode: 0x4C2A91BE (dec: 1277858238)
 {
-	struct CELL_DATA* pcd; // size=2, offset=0
-	struct PACKED_CELL_OBJECT* ppco; // size=8, offset=4
-	struct XZPAIR nearCell; // size=8, offset=8
+	CELL_DATA* pcd; // size=2, offset=0
+	PACKED_CELL_OBJECT* ppco; // size=8, offset=4
+	XZPAIR nearCell; // size=8, offset=8
 	int use_computed; // size=0, offset=16
 };
 
@@ -1452,19 +1197,7 @@ struct TEX_INFO // hashcode: 0x7C1A76C5 (dec: 2082109125)
 
 struct TEXTURE_LOOKUP // hashcode: 0x531E7A41 (dec: 1394506305)
 {
-	struct TEX_INFO(*Damage[6]); // size=24, offset=0
-};
-
-struct CAR_MODEL // hashcode: 0xE3A253F1 (dec: -475900943)
-{
-	int numFT3; // size=0, offset=0
-	struct CAR_POLY* pFT3; // size=24, offset=4
-	int numGT3; // size=0, offset=8
-	struct CAR_POLY* pGT3; // size=24, offset=12
-	int numB3; // size=0, offset=16
-	struct CAR_POLY* pB3; // size=24, offset=20
-	struct SVECTOR* vlist; // size=8, offset=24
-	struct SVECTOR* nlist; // size=8, offset=28
+	TEX_INFO(*Damage[6]); // size=24, offset=0
 };
 
 struct plotCarGlobals // hashcode: 0xED466FF8 (dec: -314150920)
@@ -1480,7 +1213,7 @@ struct plotCarGlobals // hashcode: 0xED466FF8 (dec: -314150920)
 	int ghost; // size=0, offset=32
 };
 
-struct _EXTRA_CIV_DATA // hashcode: 0x98F5BF74 (dec: -1728725132)
+typedef struct _EXTRA_CIV_DATA // hashcode: 0x98F5BF74 (dec: -1728725132)
 {
 	int surfInd; // size=0, offset=0
 	int distAlongSegment; // size=0, offset=4
@@ -1489,23 +1222,7 @@ struct _EXTRA_CIV_DATA // hashcode: 0x98F5BF74 (dec: -1728725132)
 	int thrustState; // size=0, offset=12
 	unsigned char palette; // size=0, offset=16
 	unsigned char controlFlags; // size=0, offset=17
-};
-
-struct CIV_AI_234fake // hashcode: 0xF56A6FC4 (dec: -177573948)
-{
-	int NumPingedIn; // size=0, offset=0
-	int OffRoad; // size=0, offset=4
-	int NotDrivable; // size=0, offset=8
-	int TooShortStr; // size=0, offset=12
-	int NearEndStr; // size=0, offset=16
-	int TooShortCrv; // size=0, offset=20
-	int NearEndCrv; // size=0, offset=24
-	int TooCloseNuddaCar; // size=0, offset=28
-	int TooClosePlayer; // size=0, offset=32
-	int InvalidRegion; // size=0, offset=36
-};
-
-typedef struct _EXTRA_CIV_DATA EXTRA_CIV_DATA;
+} EXTRA_CIV_DATA;
 
 struct COP_DATA // hashcode: 0x2EAA754B (dec: 782923083)
 {
@@ -1522,9 +1239,9 @@ struct COP_DATA // hashcode: 0x2EAA754B (dec: 782923083)
 
 struct FELONY_DATA // hashcode: 0x2264AF24 (dec: 577023780)
 {
-	struct FELONY_DELAY occurrenceDelay[12]; // size=48, offset=0
-	struct FELONY_DELAY reoccurrenceDelay[12]; // size=48, offset=48
-	struct FELONY_VALUE value[12]; // size=48, offset=96
+	FELONY_DELAY occurrenceDelay[12]; // size=48, offset=0
+	FELONY_DELAY reoccurrenceDelay[12]; // size=48, offset=48
+	FELONY_VALUE value[12]; // size=48, offset=96
 	int pursuitFelonyScale; // size=0, offset=144
 };
 
@@ -1544,8 +1261,8 @@ struct iVectNT // hashcode: 0x3D8D0417 (dec: 1032651799)
 
 struct PLAYBACKCAMERA // hashcode: 0xF83C80A8 (dec: -130252632)
 {
-	struct VECTOR_NOPAD position; // size=12, offset=0
-	struct SVECTOR angle; // size=8, offset=12
+	VECTOR_NOPAD position; // size=12, offset=0
+	SVECTOR angle; // size=8, offset=12
 	int FrameCnt; // size=0, offset=20
 	short CameraPosvy; // size=0, offset=24
 	short scr_z; // size=0, offset=26
@@ -1576,7 +1293,7 @@ struct CUTSCENE_INFO // hashcode: 0x57BD570A (dec: 1472026378)
 struct CUTSCENE_HEADER // hashcode: 0xAC6560B4 (dec: -1402642252)
 {
 	int maxsize; // size=0, offset=0
-	struct CUTSCENE_INFO data[15]; // size=60, offset=4
+	CUTSCENE_INFO data[15]; // size=60, offset=4
 };
 
 struct TPAN // hashcode: 0x984DCD6C (dec: -1739731604)
@@ -1595,11 +1312,11 @@ struct POLYFT4 // hashcode: 0x0B933067 (dec: 194195559)
 	unsigned char v1; // size=0, offset=5
 	unsigned char v2; // size=0, offset=6
 	unsigned char v3; // size=0, offset=7
-	struct UV_INFO uv0; // size=2, offset=8
-	struct UV_INFO uv1; // size=2, offset=10
-	struct UV_INFO uv2; // size=2, offset=12
-	struct UV_INFO uv3; // size=2, offset=14
-	struct RGB color; // size=4, offset=16
+	UV_INFO uv0; // size=2, offset=8
+	UV_INFO uv1; // size=2, offset=10
+	UV_INFO uv2; // size=2, offset=12
+	UV_INFO uv3; // size=2, offset=14
+	RGB color; // size=4, offset=16
 };
 
 struct POLYGT4 // hashcode: 0x9BF00654 (dec: -1678768556)
@@ -1616,11 +1333,11 @@ struct POLYGT4 // hashcode: 0x9BF00654 (dec: -1678768556)
 	unsigned char n1; // size=0, offset=9
 	unsigned char n2; // size=0, offset=10
 	unsigned char n3; // size=0, offset=11
-	struct UV_INFO uv0; // size=2, offset=12
-	struct UV_INFO uv1; // size=2, offset=14
-	struct UV_INFO uv2; // size=2, offset=16
-	struct UV_INFO uv3; // size=2, offset=18
-	struct RGB color; // size=4, offset=20
+	UV_INFO uv0; // size=2, offset=12
+	UV_INFO uv1; // size=2, offset=14
+	UV_INFO uv2; // size=2, offset=16
+	UV_INFO uv3; // size=2, offset=18
+	RGB color; // size=4, offset=20
 };
 
 
@@ -1650,7 +1367,7 @@ struct DEBRIS // hashcode: 0x7F875F65 (dec: 2139578213)
 	unsigned short flags; // size=0, offset=26
 	unsigned short num; // size=0, offset=28
 	unsigned short pos; // size=0, offset=30
-	struct RGB rgb; // size=4, offset=32
+	RGB rgb; // size=4, offset=32
 	char step; // size=0, offset=36
 	char type; // size=0, offset=37
 };
@@ -1663,7 +1380,7 @@ struct LEAF // hashcode: 0x8E232930 (dec: -1910298320)
 	unsigned short flags; // size=0, offset=26
 	unsigned short num; // size=0, offset=28
 	unsigned short pos; // size=0, offset=30
-	struct RGB rgb; // size=4, offset=32
+	RGB rgb; // size=4, offset=32
 	char step; // size=0, offset=36
 	char type; // size=0, offset=37
 	short sin_index1; // size=0, offset=38
@@ -1674,43 +1391,43 @@ struct LEAF // hashcode: 0x8E232930 (dec: -1910298320)
 
 struct DAMAGED_LAMP // hashcode: 0x1240B5B5 (dec: 306230709)
 {
-	struct CELL_OBJECT* cop; // size=16, offset=0
+	CELL_OBJECT* cop; // size=16, offset=0
 	char damage; // size=0, offset=4
 };
 
 struct DAMAGED_OBJECT // hashcode: 0xC8C77ECE (dec: -926449970)
 {
-	struct CELL_OBJECT cop; // size=16, offset=0
+	CELL_OBJECT cop; // size=16, offset=0
 	char active; // size=0, offset=16
 	char damage; // size=0, offset=17
 	int rot_speed; // size=0, offset=20
-	struct SVECTOR velocity; // size=8, offset=24
+	SVECTOR velocity; // size=8, offset=24
 	int vx; // size=0, offset=32
 };
 
 struct TRI_POINT // hashcode: 0x50D0CFA0 (dec: 1355861920)
 {
-	struct BVECTOR v0; // size=4, offset=0
-	struct BVECTOR v1; // size=4, offset=4
-	struct BVECTOR v2; // size=4, offset=8
+	BVECTOR v0; // size=4, offset=0
+	BVECTOR v1; // size=4, offset=4
+	BVECTOR v2; // size=4, offset=8
 };
 
 struct TRI_POINT_LONG // hashcode: 0xAFB61D06 (dec: -1347019514)
 {
-	struct VECTOR_NOPAD v0; // size=12, offset=0
-	struct VECTOR_NOPAD v1; // size=12, offset=12
-	struct VECTOR_NOPAD v2; // size=12, offset=24
+	VECTOR_NOPAD v0; // size=12, offset=0
+	VECTOR_NOPAD v1; // size=12, offset=12
+	VECTOR_NOPAD v2; // size=12, offset=24
 };
 
 struct RAIN_TYPE // hashcode: 0x4B9D35B0 (dec: 1268594096)
 {
-	struct VECTOR_NOPAD position; // size=12, offset=0
-	struct SVECTOR oldposition; // size=8, offset=12
+	VECTOR_NOPAD position; // size=12, offset=0
+	SVECTOR oldposition; // size=8, offset=12
 };
 
 struct LAMP_STREAK // hashcode: 0xB0E3FA15 (dec: -1327236587)
 {
-	struct SXYPAIR light_trails[4]; // size=16, offset=0
+	SXYPAIR light_trails[4]; // size=16, offset=0
 	int id; // size=0, offset=16
 	short clock; // size=0, offset=20
 	char set; // size=0, offset=22
@@ -1740,15 +1457,11 @@ struct HUBCAP // hashcode: 0x8B4D12CD (dec: -1957883187)
 	int Duration; // size=0, offset=180
 };
 
-typedef struct DENTUVS DENTUVS;
-
-typedef struct HUBCAP HUBCAP;
-
 struct REPLAY_ICON // hashcode: 0x6B6009DA (dec: 1801456090)
 {
 	short x; // size=0, offset=0
 	short y; // size=0, offset=2
-	struct TEXTURE_DETAILS* texture; // size=14, offset=4
+	TEXTURE_DETAILS* texture; // size=14, offset=4
 	char* TextPtr; // size=0, offset=8
 	short tx; // size=0, offset=12
 	short ty; // size=0, offset=14
@@ -1767,7 +1480,7 @@ struct _pct // hashcode: 0x3CC33EEE (dec: 1019428590)
 	unsigned long tpage; // size=0, offset=156
 	unsigned long colour; // size=0, offset=160
 	int flags; // size=0, offset=164
-	struct SVECTOR* verts; // size=8, offset=168
+	SVECTOR* verts; // size=8, offset=168
 	unsigned long lastTexInfo; // size=0, offset=172
 	int scribble[8]; // size=32, offset=176
 	int model; // size=0, offset=208
@@ -1813,10 +1526,10 @@ struct PL_POLYFT4 // hashcode: 0x851A459F (dec: -2061875809)
 	unsigned char v1; // size=0, offset=5
 	unsigned char v2; // size=0, offset=6
 	unsigned char v3; // size=0, offset=7
-	struct UV_INFO uv0; // size=2, offset=8
-	struct UV_INFO uv1; // size=2, offset=10
-	struct UV_INFO uv2; // size=2, offset=12
-	struct UV_INFO uv3; // size=2, offset=14
+	UV_INFO uv0; // size=2, offset=8
+	UV_INFO uv1; // size=2, offset=10
+	UV_INFO uv2; // size=2, offset=12
+	UV_INFO uv3; // size=2, offset=14
 };
 
 struct MVERTEX // hashcode: 0xCC5E5250 (dec: -866233776)
@@ -1871,8 +1584,8 @@ struct EventGlobal // hashcode: 0xF4852999 (dec: -192599655)
 {
 	int camera; // size=0, offset=0
 	int draw; // size=0, offset=4
-	struct _EVENT** track; // size=40, offset=8
-	struct _EVENT* cameraEvent; // size=40, offset=12
+	EVENT** track; // size=40, offset=8
+	EVENT* cameraEvent; // size=40, offset=12
 };
 
 enum SpecialCamera // Hashcode: 0xB5557F2F (dec: -1252688081)
@@ -1885,7 +1598,7 @@ enum SpecialCamera // Hashcode: 0xB5557F2F (dec: -1252688081)
 
 struct MissionTrain // hashcode: 0x1C680836 (dec: 476579894)
 {
-	struct _EVENT* engine; // size=40, offset=0
+	EVENT* engine; // size=40, offset=0
 	int* node; // size=0, offset=4
 	int cornerSpeed; // size=0, offset=8
 	int initialStraightSpeed; // size=0, offset=12
@@ -1896,7 +1609,7 @@ struct MissionTrain // hashcode: 0x1C680836 (dec: 476579894)
 
 struct Foam // hashcode: 0xFD0C756C (dec: -49515156)
 {
-	struct MODEL* model; // size=36, offset=0
+	MODEL* model; // size=36, offset=0
 	int rotate; // size=0, offset=4
 };
 
@@ -1908,7 +1621,7 @@ struct EventCarriage // hashcode: 0xA136BEAC (dec: -1590247764)
 
 struct MultiCar // hashcode: 0x862F8E20 (dec: -2043703776)
 {
-	struct _EVENT* event; // size=40, offset=0
+	EVENT* event; // size=40, offset=0
 	int count; // size=0, offset=4
 };
 
@@ -1921,7 +1634,7 @@ struct Helicopter // hashcode: 0xE626A675 (dec: -433674635)
 	short dr; // size=0, offset=10
 	int lastX; // size=0, offset=12
 	int lastZ; // size=0, offset=16
-	struct TEXTURE_DETAILS rotorTexture; // size=14, offset=20
+	TEXTURE_DETAILS rotorTexture; // size=14, offset=20
 	short rotorrot; // size=0, offset=34
 	short rotorvel; // size=0, offset=36
 	int cleanModel; // size=0, offset=40
@@ -1985,7 +1698,7 @@ struct RENDER_ARGS // hashcode: 0x9CEEC3A3 (dec: -1662073949)
 	unsigned char subtitle; // size=0, offset=1
 	char screenx; // size=0, offset=2
 	char screeny; // size=0, offset=3
-	struct RENDER_ARG Args[4]; // size=16, offset=4
+	RENDER_ARG Args[4]; // size=16, offset=4
 };
 
 typedef struct __envsound // hashcode: 0x7218E697 (dec: 1914234519)
@@ -1997,15 +1710,15 @@ typedef struct __envsound // hashcode: 0x7218E697 (dec: 1914234519)
 	int bank; // size=0, offset=36
 	int sample; // size=0, offset=40
 	int vol; // size=0, offset=44
-} __envsound;
+} envsound;
 
-struct __envsoundtags // hashcode: 0x8645A61D (dec: -2042255843)
+typedef struct __envsoundtags // hashcode: 0x8645A61D (dec: -2042255843)
 {
 	int frame_cnt; // size=0, offset=0
 	int func_cnt; // size=0, offset=4
 	int num_envsnds; // size=0, offset=8
 	int envsnd_cnt; // size=0, offset=12
-};
+} envsoundtags;
 
 typedef struct __envsoundinfo // hashcode: 0x45AC9536 (dec: 1168938294)
 {
@@ -2016,7 +1729,7 @@ typedef struct __envsoundinfo // hashcode: 0x45AC9536 (dec: 1168938294)
 	int playing_sound[4]; // size=16, offset=112
 	int chan[4]; // size=16, offset=128
 	unsigned long flags; // size=0, offset=144
-} __envsoundinfo;
+} envsoundinfo;
 
 struct SPEECH_QUEUE // hashcode: 0xF7AB07B1 (dec: -139786319)
 {
@@ -2028,27 +1741,20 @@ struct SPEECH_QUEUE // hashcode: 0xF7AB07B1 (dec: -139786319)
 	int slot[7]; // size=28, offset=12
 };
 
-struct __othercarsound // hashcode: 0x88F0C520 (dec: -1997486816)
+typedef struct __othercarsound // hashcode: 0x88F0C520 (dec: -1997486816)
 {
 	int car; // size=0, offset=0
 	int chan; // size=0, offset=4
 	char in_use; // size=0, offset=8
 	char stopped; // size=0, offset=9
 	char idle; // size=0, offset=10
-};
+} othercarsound;
 
-typedef struct __tunnelinfo // hashcode: 0xC172C5A2 (dec: -1049442910)
-{
-	char num_tunnels; // size=0, offset=0
-	char tunnel_cnt; // size=0, offset=1
-	struct __tunnelcoords coords[29]; // size=928, offset=4
-} __tunnelinfo;
-
-struct __bitfield64 // hashcode: 0x2A3F54F0 (dec: 708793584)
+typedef struct __bitfield64 // hashcode: 0x2A3F54F0 (dec: 708793584)
 {
 	long h; // size=0, offset=0
 	long l; // size=0, offset=4
-};
+} bitfield64;
 
 struct GEAR_DESC // hashcode: 0xE4380123 (dec: -466091741)
 {
@@ -2057,14 +1763,6 @@ struct GEAR_DESC // hashcode: 0xE4380123 (dec: -466091741)
 	int hi_ws; // size=0, offset=8
 	int ratio_ac; // size=0, offset=12
 	int ratio_id; // size=0, offset=16
-};
-
-struct PSXSCREEN // hashcode: 0x9E392939 (dec: -1640421063)
-{
-	unsigned char index; // size=0, offset=0
-	unsigned char numButtons; // size=0, offset=1
-	unsigned char userFunctionNum; // size=0, offset=2
-	struct PSXBUTTON buttons[8]; // size=480, offset=4
 };
 
 enum GAMEMODE // Hashcode: 0xA71425E4 (dec: -1491851804)
@@ -2129,7 +1827,7 @@ struct BOXINFO // hashcode: 0x0A20DC94 (dec: 169925780)
 
 struct MAP_DATA // hashcode: 0x83C30077 (dec: -2084372361)
 {
-	_CAR_DATA* cp; // size=0, offset=0
+	CAR_DATA* cp; // size=0, offset=0
 	VECTOR* base; // size=16, offset=4
 	VECTOR* pos; // size=16, offset=8
 	VECTOR* vel; // size=16, offset=12
@@ -2146,7 +1844,7 @@ struct GAME_SAVE_HEADER // hashcode: 0xB1E0BE5E (dec: -1310671266)
 	unsigned char pad1; // size=0, offset=5
 	unsigned char pad2; // size=0, offset=6
 	unsigned char pad3; // size=0, offset=7
-	struct MISSION_DATA SavedData; // size=228, offset=8
+	MISSION_DATA SavedData; // size=228, offset=8
 	int reserved[8]; // size=32, offset=236
 };
 
@@ -2159,14 +1857,14 @@ struct CONFIG_SAVE_HEADER // hashcode: 0x6370AFC2 (dec: 1668329410)
 	int gVibration; // size=0, offset=16
 	int gCopDifficultyLevel; // size=0, offset=20
 	int gFurthestMission; // size=0, offset=24
-	struct MAPPING PadMapping[2]; // size=72, offset=28
-	struct SCORE_TABLES ScoreTables; // size=2160, offset=100
+	MAPPING PadMapping[2]; // size=72, offset=28
+	SCORE_TABLES ScoreTables; // size=2160, offset=100
 	int PALAdjustX; // size=0, offset=2260
 	int PALAdjustY; // size=0, offset=2264
 	int NTSCAdjustX; // size=0, offset=2268
 	int NTSCAdjustY; // size=0, offset=2272
 	int gSubtitles; // size=0, offset=2276
-	struct ACTIVE_CHEATS AvailableCheats; // size=4, offset=2280
+	ACTIVE_CHEATS AvailableCheats; // size=4, offset=2280
 	int reserved[6]; // size=24, offset=2284
 };
 
@@ -2200,7 +1898,7 @@ struct OUT_CELL_FILE_HEADER // hashcode: 0x5665F7D5 (dec: 1449523157)
 	int num_cell_objects; // size=0, offset=20
 	int num_cell_data; // size=0, offset=24
 	int ambient_light_level; // size=0, offset=28
-	struct VECTOR_NOPAD light_source; // size=12, offset=32
+	VECTOR_NOPAD light_source; // size=12, offset=32
 };
 
 enum EXIT_VALUE // Hashcode: 0x3F23BCE8 (dec: 1059306728)
@@ -2223,15 +1921,10 @@ struct XYWH // hashcode: 0x1C1E57F6 (dec: 471750646)
 	short h; // size=0, offset=6
 };
 
-struct MENU_HEADER // hashcode: 0x0BDA3805 (dec: 198850565)
-{
-	char* Title; // size=0, offset=0
-	struct XYWH Bound; // size=8, offset=4
-	unsigned char NumItems; // size=0, offset=12
-	struct MENU_ITEM* MenuItems; // size=20, offset=16
-};
-
 typedef void(*pauseFunc)(int dir);
+
+struct MENU_ITEM;
+struct MENU_HEADER;
 
 struct MENU_ITEM // hashcode: 0x9519D4FB (dec: -1793469189)
 {
@@ -2239,9 +1932,19 @@ struct MENU_ITEM // hashcode: 0x9519D4FB (dec: -1793469189)
 	unsigned char Type; // size=0, offset=4
 	unsigned char Justify; // size=0, offset=5
 	pauseFunc func; // size=0, offset=8
-	enum EXIT_VALUE ExitValue; // size=1, offset=12
-	struct MENU_HEADER* SubMenu; // size=0, offset=16
+	EXIT_VALUE ExitValue; // size=1, offset=12
+	MENU_HEADER* SubMenu; // size=0, offset=16
 };
+
+struct MENU_HEADER // hashcode: 0x0BDA3805 (dec: 198850565)
+{
+	char* Title; // size=0, offset=0
+	XYWH Bound; // size=8, offset=4
+	unsigned char NumItems; // size=0, offset=12
+	MENU_ITEM* MenuItems; // size=20, offset=16
+};
+
+
 
 struct AREA_LOAD_INFO // hashcode: 0xC55B5A7D (dec: -983868803)
 {
@@ -2279,13 +1982,13 @@ struct _MISSION // hashcode: 0x85F0EB6C (dec: -2047808660)
 	int city; // size=0, offset=8
 	int time; // size=0, offset=12
 	int weather; // size=0, offset=16
-	struct XYPAIR playerStartPosition; // size=8, offset=20
+	XYPAIR playerStartPosition; // size=8, offset=20
 	int playerStartRotation; // size=0, offset=28
 	int type; // size=0, offset=32
 	short timer; // size=0, offset=36
 	short timerFlags; // size=0, offset=38
 	int strings; // size=0, offset=40
-	struct _COP_DATA cops; // size=16, offset=44
+	MS_COP_DATA cops; // size=16, offset=44
 	int msgCarWrecked; // size=0, offset=60
 	int msgOutOfTime; // size=0, offset=64
 	int msgComplete; // size=0, offset=68
@@ -2306,18 +2009,18 @@ struct _ROUTE_INFO // hashcode: 0x5A21DB68 (dec: 1512168296)
 {
 	int nJunctions; // size=0, offset=0
 	char data[1000][4]; // size=4000, offset=4
-	struct LEAD_PARAMETERS parameters; // size=64, offset=4004
+	LEAD_PARAMETERS parameters; // size=64, offset=4004
 };
 
 struct MR_MISSION // hashcode: 0xF240F754 (dec: -230623404)
 {
 	int active; // size=0, offset=0
 	int gameover_delay; // size=0, offset=4
-	enum PAUSEMODE gameover_mode; // size=1, offset=8
+	PAUSEMODE gameover_mode; // size=1, offset=8
 	short message_timer[2]; // size=4, offset=10
 	short message_priority[2]; // size=4, offset=14
 	char(*message_string[2]); // size=8, offset=20
-	struct MR_TIMER timer[2]; // size=24, offset=28
+	MR_TIMER timer[2]; // size=24, offset=28
 	_TARGET* CarTarget; // size=64, offset=52
 	_TARGET* ChaseTarget; // size=64, offset=56
 	int PhantomCarId; // size=0, offset=60
@@ -2327,7 +2030,7 @@ struct MR_MISSION // hashcode: 0xF240F754 (dec: -230623404)
 
 struct STOPCOPS // hashcode: 0x145E8976 (dec: 341739894)
 {
-	struct VECTOR_NOPAD pos; // size=12, offset=0
+	VECTOR_NOPAD pos; // size=12, offset=0
 	int radius; // size=0, offset=12
 };
 
@@ -2357,11 +2060,11 @@ struct POLYFT3 // hashcode: 0xF42A702D (dec: -198545363)
 	unsigned char v1; // size=0, offset=5
 	unsigned char v2; // size=0, offset=6
 	unsigned char pad; // size=0, offset=7
-	struct UV_INFO uv0; // size=2, offset=8
-	struct UV_INFO uv1; // size=2, offset=10
-	struct UV_INFO uv2; // size=2, offset=12
-	struct UV_INFO pad2; // size=2, offset=14
-	struct RGB color; // size=4, offset=16
+	UV_INFO uv0; // size=2, offset=8
+	UV_INFO uv1; // size=2, offset=10
+	UV_INFO uv2; // size=2, offset=12
+	UV_INFO pad2; // size=2, offset=14
+	RGB color; // size=4, offset=16
 };
 
 struct POLYGT3
@@ -2378,11 +2081,11 @@ struct POLYGT3
 	unsigned char n1; // size=0, offset=9
 	unsigned char n2; // size=0, offset=10
 	unsigned char pad2; // size=0, offset=11
-	struct UV_INFO uv0; // size=2, offset=12
-	struct UV_INFO uv1; // size=2, offset=14
-	struct UV_INFO uv2; // size=2, offset=16
-	struct UV_INFO pad3; // size=2, offset=18
-	struct RGB color; // size=4, offset=20
+	UV_INFO uv0; // size=2, offset=12
+	UV_INFO uv1; // size=2, offset=14
+	UV_INFO uv2; // size=2, offset=16
+	UV_INFO pad3; // size=2, offset=18
+	RGB color; // size=4, offset=20
 };
 
 enum LIMBS // Hashcode: 0x200BA5A5 (dec: 537634213)
@@ -2414,8 +2117,8 @@ enum LIMBS // Hashcode: 0x200BA5A5 (dec: 537634213)
 
 struct BONE // hashcode: 0xC453A1B7 (dec: -1001152073)
 {
-	enum LIMBS id; // size=1, offset=0
-	struct BONE* pParent; // size=68, offset=4
+	LIMBS id; // size=1, offset=0
+	BONE* pParent; // size=68, offset=4
 	char numChildren; // size=0, offset=8
 	BONE(*pChildren[3]); // size=12, offset=12
 	SVECTOR_NOPAD* pvOrigPos; // size=6, offset=24
@@ -2437,8 +2140,8 @@ struct PED_DATA // hashcode: 0xF0838D4B (dec: -259814069)
 {
 	char cWidth; // size=0, offset=0
 	unsigned char cAdj; // size=0, offset=1
-	struct TEXTURE_DETAILS* ptd; // size=14, offset=4
-	enum TEXTURE_PALS texPal; // size=1, offset=8
+	TEXTURE_DETAILS* ptd; // size=14, offset=4
+	TEXTURE_PALS texPal; // size=1, offset=8
 };
 
 struct tRay // hashcode: 0x9D13B2B7 (dec: -1659653449)
@@ -2455,7 +2158,7 @@ struct tRange // hashcode: 0x2599E03D (dec: 630841405)
 
 struct tAABB // hashcode: 0x67B18B0E (dec: 1739688718)
 {
-	struct tRange slab[3]; // size=24, offset=0
+	tRange slab[3]; // size=24, offset=0
 };
 
 struct DUPLICATION // hashcode: 0x6B8217F0 (dec: 1803687920)
@@ -2494,14 +2197,14 @@ struct PLAYER_SCORE // hashcode: 0x4C80DCD4 (dec: 1283513556)
 	char name[6]; // size=6, offset=12
 };
 
-struct SEATED_PEDESTRIANS // hashcode: 0x75CFA44E (dec: 1976542286)
+typedef struct SEATED_PEDESTRIANS // hashcode: 0x75CFA44E (dec: 1976542286)
 {
 	int x; // size=0, offset=0
 	int z; // size=0, offset=4
 	short rotation; // size=0, offset=8
 	char index; // size=0, offset=10
 	char pad; // size=0, offset=11
-};
+} *SEATEDPTR;
 
 struct CAR_COLLISION_BOX // hashcode: 0xE148B668 (dec: -515328408)
 {
@@ -2511,14 +2214,14 @@ struct CAR_COLLISION_BOX // hashcode: 0xE148B668 (dec: -515328408)
 	int max_z; // size=0, offset=12
 };
 
-struct PEDESTRIAN_ROADS // hashcode: 0xC3763082 (dec: -1015664510)
+typedef struct PEDESTRIAN_ROADS // hashcode: 0xC3763082 (dec: -1015664510)
 {
 	short pos; // size=0, offset=0
 	short north; // size=0, offset=2
 	short south; // size=0, offset=4
 	short east; // size=0, offset=6
 	short west; // size=0, offset=8
-};
+} *LPPEDESTRIAN_ROADS;
 
 struct OUT_FONTINFO // hashcode: 0x22390EDA (dec: 574164698)
 {
@@ -2556,7 +2259,7 @@ struct SHADOWHDR // hashcode: 0x4ED3B57A (dec: 1322497402)
 	unsigned short nverts[4]; // size=8, offset=16
 	unsigned short npolys[4]; // size=8, offset=24
 	unsigned long(*poly_block[4]); // size=16, offset=32
-	struct SVECTOR* vertices; // size=8, offset=48
+	SVECTOR* vertices; // size=8, offset=48
 };
 
 struct TYRE_TRACK // hashcode: 0xF19415A8 (dec: -241953368)
@@ -2565,10 +2268,10 @@ struct TYRE_TRACK // hashcode: 0xF19415A8 (dec: -241953368)
 	char shade; // size=0, offset=1
 	char shade_type; // size=0, offset=2
 	char surface; // size=0, offset=3
-	struct SVECTOR_NOPAD p1; // size=6, offset=4
-	struct SVECTOR_NOPAD p2; // size=6, offset=10
-	struct SVECTOR_NOPAD p3; // size=6, offset=16
-	struct SVECTOR_NOPAD p4; // size=6, offset=22
+	SVECTOR_NOPAD p1; // size=6, offset=4
+	SVECTOR_NOPAD p2; // size=6, offset=10
+	SVECTOR_NOPAD p3; // size=6, offset=16
+	SVECTOR_NOPAD p4; // size=6, offset=22
 };
 
 struct S_XYZ // hashcode: 0x44EE024B (dec: 1156448843)
@@ -2580,7 +2283,7 @@ struct S_XYZ // hashcode: 0x44EE024B (dec: 1156448843)
 
 struct FLAREREC // hashcode: 0x61D9DD50 (dec: 1641667920)
 {
-	struct RGB16 transparency; // size=8, offset=0
+	RGB16 transparency; // size=8, offset=0
 	char size; // size=0, offset=8
 	short gapmod; // size=0, offset=10
 };
@@ -2700,7 +2403,7 @@ enum CITYTYPE // Hashcode: 0x89BC71DE (dec: -1984138786)
 
 struct TARGET_ARROW_MODEL // hashcode: 0x49188CA9 (dec: 1226345641)
 {
-	struct SVECTOR* pVerts; // size=8, offset=0
+	SVECTOR* pVerts; // size=8, offset=0
 	char* pTris; // size=0, offset=4
 	char numTris; // size=0, offset=8
 };
@@ -2736,7 +2439,7 @@ struct FE_CHARDATA // hashcode: 0x3BD93806 (dec: 1004091398)
 struct FE_FONT // hashcode: 0x602743A1 (dec: 1613185953)
 {
 	int NumFonts; // size=0, offset=0
-	struct FE_CHARDATA CharInfo[256]; // size=1024, offset=4
+	FE_CHARDATA CharInfo[256]; // size=1024, offset=4
 };
 
 struct SCREEN_LIMITS // hashcode: 0x445BA46E (dec: 1146856558)
