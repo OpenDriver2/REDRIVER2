@@ -443,7 +443,9 @@ struct LEAD_PARAMETERS
 	int hWidth80Mul;
 };
 
-typedef struct _EVENT
+typedef struct _EVENT EVENT;
+
+struct _EVENT
 {
 	VECTOR position;
 	short rotation;
@@ -453,8 +455,8 @@ typedef struct _EVENT
 	short flags;
 	short radius;
 	int model;
-	_EVENT* next;
-} EVENT;
+	EVENT* next;
+};
 
 struct FixedEvent
 {
