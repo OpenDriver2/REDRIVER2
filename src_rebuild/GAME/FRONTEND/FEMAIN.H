@@ -1,30 +1,30 @@
 #ifndef FEMAIN_H
 #define FEMAIN_H
 
-struct PSXBUTTON // hashcode: 0x41BD456C (dec: 1102923116)
+struct PSXBUTTON
 {
-	short x; // size=0, offset=0
-	short y; // size=0, offset=2
-	short w; // size=0, offset=4
-	short h; // size=0, offset=6
-	unsigned char l; // size=0, offset=8
-	unsigned char r; // size=0, offset=9
-	unsigned char u; // size=0, offset=10
-	unsigned char d; // size=0, offset=11
-	int userDrawFunctionNum; // size=0, offset=12
-	short s_x; // size=0, offset=16
-	short s_y; // size=0, offset=18
-	int action; // size=0, offset=20
-	int var; // size=0, offset=24
-	char Name[32]; // size=32, offset=28
+	short x;
+	short y;
+	short w;
+	short h;
+	unsigned char l;
+	unsigned char r;
+	unsigned char u;
+	unsigned char d;
+	int userDrawFunctionNum;
+	short s_x;
+	short s_y;
+	int action;
+	int var;
+	char Name[32];
 };
 
-struct PSXSCREEN // hashcode: 0x9E392939 (dec: -1640421063)
+struct PSXSCREEN
 {
-	unsigned char index; // size=0, offset=0
-	unsigned char numButtons; // size=0, offset=1
-	unsigned char userFunctionNum; // size=0, offset=2
-	PSXBUTTON buttons[8]; // size=480, offset=4
+	unsigned char index;
+	unsigned char numButtons;
+	unsigned char userFunctionNum;
+	PSXBUTTON buttons[8];
 };
 
 extern int gInFrontend;
