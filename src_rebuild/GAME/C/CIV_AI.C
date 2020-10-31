@@ -87,7 +87,7 @@ int test555 = 0;
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ InitCar(CAR_DATA *cp /*$s0*/, int direction /*$s6*/, long (*startPos)[4] /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)
+// int /*$ra*/ InitCar(CAR_DATA *cp /*$s0*/, int direction /*$s6*/, LONGVECTOR* startPos /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)
  // line 717, offset 0x00023de8
 	/* begin block 1 */
 		// Start line: 718
@@ -104,7 +104,7 @@ int test555 = 0;
 	// End Line: 1435
 
 // [D] [T]
-int InitCar(CAR_DATA* cp, int direction, long(*startPos)[4], unsigned char control, int model, int palette, char* extraData)
+int InitCar(CAR_DATA* cp, int direction, LONGVECTOR* startPos, unsigned char control, int model, int palette, char* extraData)
 {
 	VECTOR tmpStart;
 
@@ -132,7 +132,7 @@ int InitCar(CAR_DATA* cp, int direction, long(*startPos)[4], unsigned char contr
 	if (control == CONTROL_TYPE_NONE)
 		return 1;
 
-	InitCarPhysics(cp, (long(*)[4]) & tmpStart, direction);
+	InitCarPhysics(cp, (LONGVECTOR *)&tmpStart, direction);
 	cp->ap.palette = palette;
 
 	cp->controlType = control;
@@ -2907,7 +2907,7 @@ void InitCivCars(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CreateCivCarWotDrivesABitThenStops(int direction /*$s5*/, long (*startPos)[4] /*$s2*/, long (*stopPos)[4] /*$a2*/, unsigned char internalModel /*$s4*/, int palette /*stack 16*/)
+// int /*$ra*/ CreateCivCarWotDrivesABitThenStops(int direction /*$s5*/, LONGVECTOR* startPos /*$s2*/, LONGVECTOR* stopPos /*$a2*/, unsigned char internalModel /*$s4*/, int palette /*stack 16*/)
 	// line 2176, offset 0x000286e0
 	/* begin block 1 */
 		// Start line: 2177
@@ -2952,7 +2952,7 @@ const int EVENT_CAR_SPEED = 60;
 const int DistanceTriggerCarMoves = 700; // 5000;
 
 // [D] [T] [A]
-int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*stopPos)[4], unsigned char internalModel, int palette)
+int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR* startPos, LONGVECTOR* stopPos, unsigned char internalModel, int palette)
 {
 	unsigned char* slot;
 	CAR_DATA* carCnt;
@@ -3028,7 +3028,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CreateStationaryCivCar(int direction /*$t4*/, long orientX /*$s2*/, long orientZ /*$s1*/, long (*startPos)[4] /*$a2*/, int externalModel /*stack 16*/, int palette /*stack 20*/, int controlFlags /*stack 24*/)
+// int /*$ra*/ CreateStationaryCivCar(int direction /*$t4*/, long orientX /*$s2*/, long orientZ /*$s1*/, LONGVECTOR* startPos /*$a2*/, int externalModel /*stack 16*/, int palette /*stack 20*/, int controlFlags /*stack 24*/)
 	// line 2248, offset 0x00028960
 	/* begin block 1 */
 		// Start line: 2249
@@ -3070,7 +3070,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, long(*startPos)[4], long(*
 	// End Line: 5132
 
 // [D] [T]
-int CreateStationaryCivCar(int direction, long orientX, long orientZ, long(*startPos)[4], int externalModel, int palette, int controlFlags)
+int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR* startPos, int externalModel, int palette, int controlFlags)
 {
 	unsigned char* slot;
 	CAR_DATA* newCar;
@@ -6016,7 +6016,7 @@ void CreateRoadblock(void)
 		if((str && ROAD_IS_AI_LANE(str, laneNo) || crv && ROAD_IS_AI_LANE(crv, laneNo)) && 
 			CellEmpty(&currentPos, lbody))
 		{
-			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (laneNo) & 0x3ffU) - 512, 0, 0, (long(*)[4]) & currentPos, externalCopModel, 0, 2);
+			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (laneNo) & 0x3ffU) - 512, 0, 0, (LONGVECTOR *)&currentPos, externalCopModel, 0, 2);
 
 			if (newSlot == -1)
 				break;
@@ -6093,7 +6093,7 @@ void CreateRoadblock(void)
 
 			test42 = delta;
 
-			newSlot = CreateStationaryCivCar(faceDir + (Random2(0) * 0x10001 >> (delta >> 9 & 0x1fU) & 0x3ffU) - 512, 0, 0, (long(*)[4]) & currentPos, externalCopModel, 0, 2);
+			newSlot = CreateStationaryCivCar(faceDir + (Random2(0) * 0x10001 >> (delta >> 9 & 0x1fU) & 0x3ffU) - 512, 0, 0, (LONGVECTOR *)&currentPos, externalCopModel, 0, 2);
 
 			if (newSlot == -1)
 				break;

@@ -143,8 +143,8 @@ int powerCounter = 0;
 void IHaveThePower(void)
 {
 	CAR_DATA* cp;
-	long force[4] = { 0x9000, 0, 0, 0 };
-	long point[4] = { 0, 0, 90, 0 };
+	LONGVECTOR force = { 0x9000, 0, 0, 0 };
+	LONGVECTOR point = { 0, 0, 90, 0 };
 
 	if (GameLevel != 1)
 		return;
@@ -828,7 +828,7 @@ void DestroyPedestrian(PEDESTRIAN* pPed)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ ActivatePlayerPedestrian(CAR_DATA *pCar /*$s6*/, char *padId /*stack 4*/, int direction /*$a1*/, long (*position)[4] /*$a3*/, int playerType /*stack 16*/)
+// int /*$ra*/ ActivatePlayerPedestrian(CAR_DATA *pCar /*$s6*/, char *padId /*stack 4*/, int direction /*$a1*/, LONGVECTOR* position /*$a3*/, int playerType /*stack 16*/)
  // line 1623, offset 0x0006e6c4
 	/* begin block 1 */
 		// Start line: 1624
@@ -889,7 +889,7 @@ void DestroyPedestrian(PEDESTRIAN* pPed)
 /* WARNING: Type propagation algorithm not settling */
 
 // [D] [T]
-int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, long(*position)[4], PED_MODEL_TYPES playerType)
+int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVECTOR* position, PED_MODEL_TYPES playerType)
 {
 	int wbody;
 	int side;
@@ -1182,8 +1182,8 @@ PEDESTRIAN* CreatePedestrian(void)
 		// 		int s1; // $s1
 		// 		int s2; // $a3
 		// 		VECTOR vert; // stack offset -88
-		// 		long disp[4]; // stack offset -72
-		// 		long dir[4]; // stack offset -56
+		// 		LONGVECTOR disp; // stack offset -72
+		// 		LONGVECTOR dir; // stack offset -56
 		// 		int alpha; // $s1
 		/* end block 1.1 */
 		// End offset: 0x0006EFDC
@@ -1226,7 +1226,7 @@ void PlaceRoadBlockCops(void)
 	int i;
 	int numCops;
 	CAR_DATA* pCopCars[16];
-	long disp[4];
+	LONGVECTOR disp;
 
 	if (numCopPeds >= 8)
 		return;
@@ -1270,14 +1270,14 @@ void PlaceRoadBlockCops(void)
 		disp[1] = -pCar->hd.where.t[1];
 		disp[2] = pCar->hd.where.t[2] + FIXED(wbody * sn) + FIXED(lbody * cs);
 
-		if (CreatePedAtLocation((long(*)[4])disp, 12) != 0)
+		if (CreatePedAtLocation(&disp, 12) != 0)
 			numCopPeds++;
 
 		disp[0] = pCar->hd.where.t[0] - (FIXED(wbody * cs) - FIXED(-lbody * sn));
 		disp[1] = -pCar->hd.where.t[1];
 		disp[2] = pCar->hd.where.t[2] + FIXED(wbody * sn) + FIXED(-lbody * cs);
 
-		if (CreatePedAtLocation((long(*)[4])disp, 13) != 0)
+		if (CreatePedAtLocation(&disp, 13) != 0)
 			numCopPeds++;
 
 		i++;
@@ -1288,7 +1288,7 @@ void PlaceRoadBlockCops(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CreatePedAtLocation(long (*pPos)[4] /*$s2*/, int pedType /*$s1*/)
+// int /*$ra*/ CreatePedAtLocation(LONGVECTOR* pPos /*$s2*/, int pedType /*$s1*/)
  // line 1975, offset 0x0006f00c
 	/* begin block 1 */
 		// Start line: 1976
@@ -1305,7 +1305,7 @@ void PlaceRoadBlockCops(void)
 	// End Line: 4496
 
 // [D] [T]
-int CreatePedAtLocation(long(*pPos)[4], int pedType)
+int CreatePedAtLocation(LONGVECTOR* pPos, int pedType)
 {
 	PEDESTRIAN* pPed;
 
@@ -2249,8 +2249,8 @@ void PedGetOutCar(PEDESTRIAN* pPed)
 		// Start offset: 0x0006F80C
 		// Variables:
 	// 		int alpha; // $s2
-	// 		long disp[4]; // stack offset -80
-	// 		long dir[4]; // stack offset -64
+	// 		LONGVECTOR disp; // stack offset -80
+	// 		LONGVECTOR dir; // stack offset -64
 	// 		SVECTOR vert; // stack offset -48
 	// 		int x; // $s4
 	// 		int z; // $s0
@@ -2330,8 +2330,8 @@ void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
 		// Start offset: 0x0006FA3C
 		// Variables:
 	// 		int alpha; // $s1
-	// 		long disp[4]; // stack offset -72
-	// 		long dir[4]; // stack offset -56
+	// 		LONGVECTOR disp; // stack offset -72
+	// 		LONGVECTOR dir; // stack offset -56
 	// 		SVECTOR vert; // stack offset -40
 
 		/* begin block 1.1 */
@@ -2351,7 +2351,7 @@ void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
 			// Start line: 2968
 			// Start offset: 0x0006FC70
 			// Variables:
-		// 		long pos[4]; // stack offset -32
+		// 		LONGVECTOR pos; // stack offset -32
 		/* end block 1.2 */
 		// End offset: 0x0006FC70
 		// End Line: 2969
@@ -2383,7 +2383,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 	int playerId;
 	int entrySide;
 
-	long pos[4];
+	LONGVECTOR pos;
 
 	pPed->flags &= ~4;
 	pPed->speed = 0;
@@ -2447,8 +2447,8 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 		// Start line: 2995
 		// Start offset: 0x00072B5C
 		// Variables:
-	// 		long disp[4]; // stack offset -48
-	// 		long dir[4]; // stack offset -32
+	// 		LONGVECTOR disp; // stack offset -48
+	// 		LONGVECTOR dir; // stack offset -32
 	// 		SVECTOR vert; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00072BEC
@@ -3462,9 +3462,9 @@ int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
 				// Start offset: 0x00070C04
 				// Variables:
 			// 		VECTOR velocity; // stack offset -104
-			// 		long pointVel[4]; // stack offset -88
-			// 		long reaction[4]; // stack offset -72
-			// 		long lever[4]; // stack offset -56
+			// 		LONGVECTOR pointVel; // stack offset -88
+			// 		LONGVECTOR reaction; // stack offset -72
+			// 		LONGVECTOR lever; // stack offset -56
 			// 		int strikeVel; // $t1
 
 				/* begin block 1.1.2.1 */
@@ -3517,9 +3517,9 @@ int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
 int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 {
 	CAR_DATA* cp1;
-	long pointVel[4];
-	long reaction[4];
-	long lever[4];
+	LONGVECTOR pointVel;
+	LONGVECTOR reaction;
+	LONGVECTOR lever;
 	int strikeVel;
 	SVECTOR boxDisp;
 	CAR_COSMETICS* car_cos;
@@ -3681,8 +3681,8 @@ int PingOutPed(PEDESTRIAN* pPed)
 // Start line: 3947
 // Start offset: 0x00071054
 // Variables:
-// 		long disp[4]; // stack offset -48
-// 		long dir[4]; // stack offset -32
+// 		LONGVECTOR disp; // stack offset -48
+// 		LONGVECTOR dir; // stack offset -32
 // 		int angle; // $s0
 
 /* begin block 1.1 */
@@ -3721,7 +3721,7 @@ void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
 	short scale;
 	int dx;
 	short angle;
-	long dir[4];
+	LONGVECTOR dir;
 
 	if (pPed->type != PED_ACTION_JUMP)
 	{

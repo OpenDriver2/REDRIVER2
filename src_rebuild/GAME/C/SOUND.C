@@ -20,7 +20,7 @@
 
 #define SPU_CHANNEL_COUNT 24
 
-long dummylong[4] = { 0, 0, 0, 0 };
+LONGVECTOR dummylong = { 0, 0, 0, 0 };
 
 long bankaddr[2] = { 0 };
 long banksize[2] = { 88064, 412672 };

@@ -298,7 +298,7 @@ void LeadUpdateState(CAR_DATA *cp)
 		tmpStart.vy = MapHeight(&tmpStart);
 		tmpStart.vy = tmpStart.vy - ((cp->ap).carCos)->wheelDisp[0].vy;
 
-		InitCarPhysics(cp, (long(*)[4]) & tmpStart, (int)cp->ai.l.targetDir);
+		InitCarPhysics(cp, (LONGVECTOR *)&tmpStart, (int)cp->ai.l.targetDir);
 
 		cp->ai.l.dstate = 3;
 	}

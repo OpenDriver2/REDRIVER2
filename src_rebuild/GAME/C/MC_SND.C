@@ -976,7 +976,7 @@ void DoMissionSound(void)
 			}
 			else 
 			{
-				long V[4];
+				LONGVECTOR V;
 				long* C = (long*)bodgevar; // Ahhh, Reflections...
 
 				x = car_data[player[0].playerCarId].hd.where.t[0];

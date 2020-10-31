@@ -29,7 +29,7 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitCarPhysics(CAR_DATA *cp /*$s0*/, long (*startpos)[4] /*$t0*/, int direction /*$a2*/)
+// void /*$ra*/ InitCarPhysics(CAR_DATA *cp /*$s0*/, LONGVECTOR* startpos /*$t0*/, int direction /*$a2*/)
  // line 998, offset 0x0005381c
 	/* begin block 1 */
 		// Start line: 999
@@ -423,8 +423,8 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 				// Start line: 1301
 				// Start offset: 0x00053E18
 				// Variables:
-			// 		long AV[4]; // stack offset -248
-			// 		long delta_orientation[4]; // stack offset -232
+			// 		LONGVECTOR AV; // stack offset -248
+			// 		LONGQUATERNION delta_orientation; // stack offset -232
 			/* end block 1.1.2 */
 			// End offset: 0x00053FF8
 			// End Line: 1321
@@ -463,7 +463,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 							// Start line: 1193
 							// Start offset: 0x000540EC
 							// Variables:
-						// 		long AV[4]; // stack offset -248
+						// 		LONGVECTOR AV; // stack offset -248
 						/* end block 1.2.1.1.1.1 */
 						// End offset: 0x000540EC
 						// End Line: 1193
@@ -483,10 +483,10 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 							// Start offset: 0x00054340
 							// Variables:
 						// 		int strength; // $s5
-						// 		long centre0[4]; // stack offset -248
-						// 		long centre1[4]; // stack offset -232
-						// 		long normal[4]; // stack offset -216
-						// 		long collisionpoint[4]; // stack offset -200
+						// 		LONGVECTOR centre0; // stack offset -248
+						// 		LONGVECTOR centre1; // stack offset -232
+						// 		LONGVECTOR normal; // stack offset -216
+						// 		LONGVECTOR collisionpoint; // stack offset -200
 
 							/* begin block 1.2.1.1.2.1.1 */
 								// Start line: 1378
@@ -511,11 +511,11 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 								// Start line: 1419
 								// Start offset: 0x00054460
 								// Variables:
-							// 		long lever0[4]; // stack offset -184
-							// 		long lever1[4]; // stack offset -168
-							// 		long torque[4]; // stack offset -152
-							// 		long pointVel0[4]; // stack offset -136
-							// 		long pointVel1[4]; // stack offset -120
+							// 		LONGVECTOR lever0; // stack offset -184
+							// 		LONGVECTOR lever1; // stack offset -168
+							// 		LONGVECTOR torque; // stack offset -152
+							// 		LONGVECTOR pointVel0; // stack offset -136
+							// 		LONGVECTOR pointVel1; // stack offset -120
 							// 		int strikeVel; // stack offset -68
 
 								/* begin block 1.2.1.1.2.1.3.1 */
@@ -560,7 +560,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 										// Start line: 1548
 										// Start offset: 0x00054A50
 										// Variables:
-									// 		long force[4]; // stack offset -104
+									// 		LONGVECTOR force; // stack offset -104
 									// 		int strength1; // $a0
 									// 		int twistY; // $t4
 									/* end block 1.2.1.1.2.1.3.3.1 */
@@ -571,7 +571,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 										// Start line: 1581
 										// Start offset: 0x00054CA8
 										// Variables:
-									// 		long force[4]; // stack offset -104
+									// 		LONGVECTOR force; // stack offset -104
 									// 		int strength2; // $a1
 									// 		int twistY; // $t2
 									/* end block 1.2.1.1.2.1.3.3.2 */
@@ -702,14 +702,14 @@ void GlobalTimeStep(void)
 	RigidBodyState* tp;
 	RigidBodyState* d0;
 	RigidBodyState* d1;
-	long AV[4];
-	long delta_orientation[4];
-	long normal[4];
-	long collisionpoint[4];
-	long lever0[4];
-	long lever1[4];
-	long torque[4];
-	long pointVel0[4];
+	LONGVECTOR AV;
+	LONGQUATERNION delta_orientation;
+	LONGVECTOR normal;
+	LONGVECTOR collisionpoint;
+	LONGVECTOR lever0;
+	LONGVECTOR lever1;
+	LONGVECTOR torque;
+	LONGVECTOR pointVel0;
 	VECTOR velocity;
 	int depth;
 	int RKstep;
@@ -928,10 +928,10 @@ void GlobalTimeStep(void)
 
 								if (howHard > 0 && RKstep > -1)
 								{
-									if (DamageCar3D(c1, (long(*)[4])lever1, howHard >> 1, cp))
+									if (DamageCar3D(c1, &lever1, howHard >> 1, cp))
 										c1->ap.needsDenting = 1;
 
-									if (DamageCar3D(cp, (long(*)[4])lever0, howHard >> 1, c1))
+									if (DamageCar3D(cp, &lever0, howHard >> 1, c1))
 										cp->ap.needsDenting = 1;
 
 									if (howHard > 0x32000)
@@ -1279,7 +1279,7 @@ void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ LongQuaternion2Matrix(long (*qua)[4] /*$a0*/, MATRIX *m /*$a1*/)
+// void /*$ra*/ LongQuaternion2Matrix(LONGQUATERNION* qua /*$a0*/, MATRIX *m /*$a1*/)
  // line 1753, offset 0x000553cc
 	/* begin block 1 */
 		// Start line: 1754
@@ -1314,41 +1314,26 @@ void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 	// End Line: 4834
 
 // [D] [T]
-void LongQuaternion2Matrix(long(*qua)[4], MATRIX* m)
+void LongQuaternion2Matrix(LONGQUATERNION *qua, MATRIX* m)
 {
-	int xx;
-	int xy;
-	int xz;
-	int xw;
-	int yy;
-	int yz;
-	int yw;
-	int zz;
-	int zw;
+	int qx = (*qua)[0];
+	int qy = (*qua)[1];
+	int qz = (*qua)[2];
+	int qw = (*qua)[3];
 
-	int qy;
-	int qx;
-	int qw;
-	int qz;
+	int yy = FixHalfRound(qy * qy, 11);
+	int zz = FixHalfRound(qz * qz, 11);
+	int xx = FixHalfRound(qx * qx, 11);
+	int zw = FixHalfRound(qz * qw, 11);
+	int xy = FixHalfRound(qx * qy, 11);
+	int xz = FixHalfRound(qx * qz, 11);
+	int yw = FixHalfRound(qy * qw, 11);
+	int xw = FixHalfRound(qx * qw, 11);
+	int yz = FixHalfRound(qy * qz, 11);
 
-	qx = (*qua)[0];
-	qy = (*qua)[1];
-	qz = (*qua)[2];
-	qw = (*qua)[3];
-
-	yy = FixHalfRound(qy * qy, 11);
-	zz = FixHalfRound(qz * qz, 11);
-	xx = FixHalfRound(qx * qx, 11);
-	zw = FixHalfRound(qz * qw, 11);
-	xy = FixHalfRound(qx * qy, 11);
-	xz = FixHalfRound(qx * qz, 11);
-	yw = FixHalfRound(qy * qw, 11);
-	xw = FixHalfRound(qx * qw, 11);
-	yz = FixHalfRound(qy * qz, 11);
-
-	m->m[0][0] = 4096 - (yy + zz);
-	m->m[1][1] = 4096 - (xx + zz);
-	m->m[2][2] = 4096 - (xx + yy);
+	m->m[0][0] = ONE - (yy + zz);
+	m->m[1][1] = ONE - (xx + zz);
+	m->m[2][2] = ONE - (xx + yy);
 	m->m[0][1] = xy - zw;
 	m->m[0][2] = xz + yw;
 	m->m[1][0] = xy + zw;
@@ -1520,7 +1505,7 @@ void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 	}
 	st->n.orientation[3] = sm;
 
-	LongQuaternion2Matrix((long(*)[4])st->n.orientation, &cp->hd.where);
+	LongQuaternion2Matrix(&st->n.orientation, &cp->hd.where);
 
 	initOBox(cp);
 }

@@ -6,7 +6,7 @@ extern int playerghost;
 extern int playerhitcopsanyway;
 extern char continuous_track;
 
-extern void InitCarPhysics(CAR_DATA *cp, long (*startpos)[4], int direction); // 0x0005381C
+extern void InitCarPhysics(CAR_DATA *cp, LONGVECTOR* startpos, int direction); // 0x0005381C
 
 extern void TempBuildHandlingMatrix(CAR_DATA *cp, int init); // 0x000539E8
 
@@ -18,7 +18,7 @@ extern void GlobalTimeStep(); // 0x00053C00
 
 extern void SetShadowPoints(CAR_DATA *c0, VECTOR* outpoints); // 0x000551EC
 
-extern void LongQuaternion2Matrix(long (*qua)[4], MATRIX *m); // 0x000553CC
+extern void LongQuaternion2Matrix(LONGQUATERNION* qua, MATRIX *m); // 0x000553CC
 
 extern void initOBox(CAR_DATA *cp); // 0x000554F0
 

@@ -3,6 +3,11 @@
 
 // Driver 2 system types
 
+typedef short SHORTVECTOR[4];
+
+typedef long LONGVECTOR[4];
+typedef long LONGQUATERNION[4];
+
 struct VECTOR2 // hashcode: 0x7572A047 (dec: 1970446407)
 {
 	int vx; // size=0, offset=0
@@ -205,7 +210,7 @@ union RigidBodyState // Hashcode: 0x60B16C22 (dec: 1622240290)
 	long v[13]; // size=52, offset=0
 	struct {
 		long fposition[3]; // size=12, offset=0
-		long orientation[4]; // size=16, offset=12
+		LONGQUATERNION orientation; // size=16, offset=12
 		long linearVelocity[3]; // size=12, offset=28
 		long angularVelocity[3]; // size=12, offset=40
 	} n; // size=52, offset=0, found in object files: obj\dr2roads.obj, obj\dr2roads.obj
@@ -574,13 +579,6 @@ typedef unsigned short gid_t;
 #endif
 
 typedef void (*SsMarkCallbackProc)();
-
-typedef short SHORTVECTOR[4];
-
-typedef long LONGVECTOR[4];
-typedef long LONGQUATERNION[4];
-
-
 
 struct MODEL // hashcode: 0x3A42A4FE (dec: 977446142)
 {

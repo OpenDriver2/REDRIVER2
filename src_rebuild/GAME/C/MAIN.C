@@ -857,7 +857,7 @@ void GameInit(void)
 
 		gStartOnFoot = (pSVar3->type == 2);
 
-		InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (long(*)[4]) & pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
+		InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (LONGVECTOR *)&pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
 
 		if (gStartOnFoot == 0)
 		{

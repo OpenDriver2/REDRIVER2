@@ -368,7 +368,7 @@ MATRIX leaf_mat;
 			// Start line: 954
 			// Start offset: 0x000330A4
 			// Variables:
-		// 		long n[4]; // stack offset -128
+		// 		LONGVECTOR n; // stack offset -128
 		/* end block 1.4 */
 		// End offset: 0x0003316C
 		// End Line: 960
@@ -452,7 +452,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 	VECTOR averagepos;
 	VECTOR mid_position;
 	VECTOR toss;
-	long n[4];
+	LONGVECTOR n;
 	long z[15];
 	int local_30;
 

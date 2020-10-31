@@ -561,9 +561,9 @@ int BombCollisionCheck(CAR_DATA *cp, VECTOR *pPos)
 					// Start offset: 0x0001EF94
 					// Variables:
 				// 		VECTOR velocity; // stack offset -104
-				// 		long pointVel[4]; // stack offset -88
-				// 		long reaction[4]; // stack offset -72
-				// 		long lever[4]; // stack offset -56
+				// 		LONGVECTOR pointVel; // stack offset -88
+				// 		LONGVECTOR reaction; // stack offset -72
+				// 		LONGVECTOR lever; // stack offset -56
 				// 		int strikeVel; // $s0
 
 					/* begin block 1.1.4.1.1 */
@@ -630,9 +630,9 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 	int carLength[2];
 	CRET2D collisionResult;
 	VECTOR velocity;
-	long pointVel[4];
-	long reaction[4];
-	long lever[4];
+	LONGVECTOR pointVel;
+	LONGVECTOR reaction;
+	LONGVECTOR lever;
 
 	isCar = (cp != &car_data[CAMERA_COLLIDER_CARID]);
 

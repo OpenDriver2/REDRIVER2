@@ -914,7 +914,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 						InitPlayer(&player[player_id], cp,
 							stream->SourceType.controlType, 
 							stream->SourceType.rotation,
-							(long(*)[4])&stream->SourceType.position,
+							(LONGVECTOR* )&stream->SourceType.position,
 							stream->SourceType.model,
 							stream->SourceType.palette,
 							&padid[player_id]);
@@ -940,7 +940,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 					else 
 					{
 						slot = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024, 
-							(long(*)[4])&stream->SourceType.position,
+							(LONGVECTOR* )&stream->SourceType.position,
 							stream->SourceType.model, 
 							stream->SourceType.palette, 0);
 

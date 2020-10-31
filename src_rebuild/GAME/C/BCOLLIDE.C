@@ -553,7 +553,7 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ DamageCar3D(CAR_DATA *cp /*$s1*/, long (*delta)[4] /*$t4*/, int strikeVel /*$t6*/, CAR_DATA *pOtherCar /*$s2*/)
+// int /*$ra*/ DamageCar3D(CAR_DATA *cp /*$s1*/, LONGVECTOR* delta /*$t4*/, int strikeVel /*$t6*/, CAR_DATA *pOtherCar /*$s2*/)
  // line 470, offset 0x0001d0b0
 	/* begin block 1 */
 		// Start line: 471
@@ -562,8 +562,8 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 	// 		int l; // $v1
 	// 		int w; // $v0
 	// 		int region; // $a1
-	// 		long nose[4]; // stack offset -56
-	// 		long door[4]; // stack offset -40
+	// 		LONGVECTOR nose; // stack offset -56
+	// 		LONGVECTOR door; // stack offset -40
 	// 		int impact; // $s3
 	// 		int QQQ; // $t7
 
@@ -592,7 +592,7 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 	// End Line: 1169
 
 // [D] [T]
-int DamageCar3D(CAR_DATA *cp, long(*delta)[4], int strikeVel, CAR_DATA *pOtherCar)
+int DamageCar3D(CAR_DATA *cp, LONGVECTOR* delta, int strikeVel, CAR_DATA *pOtherCar)
 {
 	char region;
 	int value;
@@ -845,9 +845,9 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 				// Start offset: 0x0001DA64
 				// Variables:
 			// 		VECTOR velocity; // stack offset -144
-			// 		long pointVel[4]; // stack offset -128
-			// 		long reaction[4]; // stack offset -112
-			// 		long lever[4]; // stack offset -96
+			// 		LONGVECTOR pointVel; // stack offset -128
+			// 		LONGVECTOR reaction; // stack offset -112
+			// 		LONGVECTOR lever; // stack offset -96
 			// 		int strikeVel; // $s1
 
 				/* begin block 1.2.1.1 */
@@ -949,9 +949,9 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	VECTOR tempwhere;
 	SVECTOR boxDisp;
 	VECTOR velocity;
-	long pointVel[4];
-	long reaction[4];
-	long lever[4];
+	LONGVECTOR pointVel;
+	LONGVECTOR reaction;
+	LONGVECTOR lever;
 	VECTOR LeafPosition;
 	VECTOR lamp_velocity;
 	int debris_colour;

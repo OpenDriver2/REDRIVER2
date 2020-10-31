@@ -11,7 +11,7 @@ extern int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult); // 0x0001CC
 
 extern void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage); // 0x0001CEEC
 
-extern int DamageCar3D(CAR_DATA *cp, long (*delta)[4], int strikeVel, CAR_DATA *pOtherCar); // 0x0001D0B0
+extern int DamageCar3D(CAR_DATA *cp, LONGVECTOR* delta, int strikeVel, CAR_DATA *pOtherCar); // 0x0001D0B0
 
 extern void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel); // 0x0001D454
 

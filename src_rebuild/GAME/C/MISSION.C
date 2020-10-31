@@ -2557,7 +2557,7 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 			// Start offset: 0x00062BFC
 			// Variables:
 		// 		int direction; // $s0
-		// 		long pos[4]; // stack offset -64
+		// 		LONGVECTOR pos; // stack offset -64
 		// 		int *inform; // $s4
 		// 		CAR_DATA *cp; // $v0
 		/* end block 1.2 */
@@ -2568,7 +2568,7 @@ void MRSetVariable(MR_THREAD *thread, ulong var, long value)
 			// Start line: 3069
 			// Start offset: 0x00063028
 			// Variables:
-		// 		long pos[4]; // stack offset -64
+		// 		LONGVECTOR pos; // stack offset -64
 		/* end block 1.3 */
 		// End offset: 0x00063090
 		// End Line: 3076
@@ -2625,7 +2625,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	int ret;
 	VECTOR tv;
 	VECTOR pv;
-	long pos[4];
+	LONGVECTOR pos;
 	int slot;
 
 	ret = 0;
@@ -2880,7 +2880,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						cp->inform = NULL;
 
 						PingOutCar(&car_data[slot]);
-						slot = CreateCivCarWotDrivesABitThenStops(direction, (long(*)[4])pos, NULL, model, palette);
+						slot = CreateCivCarWotDrivesABitThenStops(direction, &pos, NULL, model, palette);
 
 						cp->inform = inform;
 
@@ -3351,7 +3351,7 @@ void MRHandleCarRequests(void)
 		// Start line: 3312
 		// Start offset: 0x00063728
 		// Variables:
-	// 		long pos[4]; // stack offset -64
+	// 		LONGVECTOR pos; // stack offset -64
 	// 		int actAsCop; // $s2
 	// 		int damaged; // $s7
 	// 		int model; // $s4
@@ -3379,7 +3379,7 @@ int MRCreateCar(MS_TARGET *target)
 {
 	int curslot;
 	int newslot;
-	long pos[4];
+	LONGVECTOR pos;
 	char playerid;
 
 	pos[0] = target->data[3];
@@ -3393,7 +3393,7 @@ int MRCreateCar(MS_TARGET *target)
 	}
 	else
 	{
-		curslot = CreateStationaryCivCar(target->data[5], 0, ((target->data[10] & 0x40000) != 0) << 10, (long(*)[4])pos, target->data[7], target->data[8], (target->data[10] & 8) != 0);
+		curslot = CreateStationaryCivCar(target->data[5], 0, ((target->data[10] & 0x40000) != 0) << 10, &pos, target->data[7], target->data[8], (target->data[10] & 8) != 0);
 	}
 
 	if (curslot < 0)
@@ -3416,7 +3416,7 @@ int MRCreateCar(MS_TARGET *target)
 	{
 		playerid = 0xff;
 
-		InitPlayer((PLAYER *)(player + 1), &car_data[curslot], 4, target->data[5], (long(*)[4])pos, target->data[7], target->data[8], (char *)&playerid);
+		InitPlayer((PLAYER *)(player + 1), &car_data[curslot], 4, target->data[5], &pos, target->data[7], target->data[8], (char *)&playerid);
 
 		EnablePercentageBar(&DamageBar, target->data[13]);
 		NewLeadDelay = 0;

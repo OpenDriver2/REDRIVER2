@@ -15,7 +15,7 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitPlayer(PLAYER *locPlayer /*$s1*/, CAR_DATA *cp /*$s2*/, char carCtrlType /*$s3*/, int direction /*$s6*/, long (*startPos)[4] /*stack 16*/, int externModel /*stack 20*/, int palette /*stack 24*/, char *padid /*stack 28*/)
+// void /*$ra*/ InitPlayer(PLAYER *locPlayer /*$s1*/, CAR_DATA *cp /*$s2*/, char carCtrlType /*$s3*/, int direction /*$s6*/, LONGVECTOR* startPos /*stack 16*/, int externModel /*stack 20*/, int palette /*stack 24*/, char *padid /*stack 28*/)
  // line 75, offset 0x000739d8
 	/* begin block 1 */
 		// Start line: 76
@@ -38,7 +38,7 @@ PEDESTRIAN *pPlayerPed = NULL;
 PLAYER player[8];
 
 // [D] [T]
-void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, long(*startPos)[4], int externModel, int palette, char *padid)
+void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR* startPos, int externModel, int palette, char *padid)
 {
 	int model;
 	uint playerType;
