@@ -2936,6 +2936,7 @@ void RenderGame2(int view)
 	DisplayMissionTitle();
 	DrawInGameCutscene();
 
+	// draw events from level itself
 	DrawEvents(1);
 
 	Set_Inv_CameraMatrix();
@@ -2945,6 +2946,7 @@ void RenderGame2(int view)
 	DrawThrownBombs();
 	AddGroundDebris();
 
+	// draw events that use cell object
 	DrawEvents(0);
 
 	current->ot += 10;

@@ -106,7 +106,7 @@ uint farClip2Player = 36000;
 int goFaster = 0;	// [A] was 1
 int fasterToggle = 0;
 
-int current_object_computed_value = 0;
+//int current_object_computed_value = 0;
 
 int combointensity;
 
@@ -810,7 +810,7 @@ void DrawMapPSX(int* comp_val)
 	int leftAng;
 	int rightAng;
 	int i;
-	
+	int current_object_computed_value;
 
 	backPlane = 6144;
 	rightPlane = -6144;

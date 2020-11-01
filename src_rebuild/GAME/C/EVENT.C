@@ -3612,7 +3612,7 @@ void DrawEvents(int camera)
 	static struct _EVENT* nearestTrain; // offset 0x28
 	static int distanceFromNearestTrain; // offset 0x2c
 
-	bool bVar1;
+	int reflection;
 	uint uVar2;
 	ushort uVar3;
 	uint uVar4;
@@ -3621,7 +3621,9 @@ void DrawEvents(int camera)
 	ushort* puVar7;
 	int iVar8;
 	int iVar9;
-	ushort* _xv;
+
+	unsigned short *x;
+	unsigned short *z;
 	_EVENT* ev;
 	MATRIX matrix;
 	VECTOR pos;
@@ -3658,21 +3660,18 @@ void DrawEvents(int camera)
 
 	VisibilityLists(VIS_NEXT, CurrentPlayerView);
 
-	_xv = xVis;
+	x = xVis;
 
 	do {
-		if ((*_xv & thisCamera) != 0)
+		if ((*x & thisCamera) != 0)
 		{
-			if (camera == 0)
-			{
-				if (eventHaze != 0)
-				{
-					add_haze(eventHaze, eventHaze, 7);
-				}
-			}
-			else
+			if (camera)
 			{
 				ResetEventCamera();
+			}
+			else if (eventHaze != 0)
+			{
+				add_haze(eventHaze, eventHaze, 7);
 			}
 
 			if (camera == 0 && (CurrentPlayerView == NumPlayers - 1) && es_mobile[0] != -1)
@@ -3691,293 +3690,261 @@ void DrawEvents(int camera)
 			return;
 		}
 
-		if ((*_xv & otherCamera) == 0)
+		if ((*x & otherCamera) == 0)
 		{
-			if ((*_xv & 0x80) == 0)
-				ev = &event[(*_xv & 0x7f)];
+			if ((*x & 0x80) == 0)
+				ev = &event[(*x & 0x7f)];
 			else
-				ev = (_EVENT*)&fixedEvent[(*_xv & 0x7f)];
-
-			uVar3 = ev->flags;
+				ev = (_EVENT*)&fixedEvent[(*x & 0x7f)];
 
 			if ((ev->flags & 4) == 0)
 			{
-				if (camera == 0)
+				if((ev->flags & 1) == camera)
 				{
-					if ((ev->flags & 1) != 1)
+					z = zVis;
+					if ((*z & thisCamera) == 0)
 					{
-					LAB_00049d90:
-						uVar4 = *zVis;
-						puVar7 = zVis;
-						if ((uVar4 & thisCamera) == 0)
+					LAB_00049db4:
+						if ((*z & otherCamera) != 0 || (*x & 0xfff) != (*z & 0xfff))
+							break;
+
+						ev->flags |= 4;
+
+						if (camera == 0)
 						{
-						LAB_00049db4:
-							if (((uVar4 & otherCamera) != 0) || ((*_xv & 0xfff) != (uVar4 & 0xfff)))
-								break;
-							
-							ev->flags |= 4;
-
-							if (camera == 0)
+							if (es_mobile[0] != -1 && (ev->flags & 2))
 							{
-								if (es_mobile[0] != -1 && (ev->flags & 2))
-								{
-									int dist;
+								int dist;
 
-									dist = ABS(ev->position.vx - camera_position.vx) + ABS(ev->position.vz - camera_position.vz);
-									
-									if (nearestTrain == NULL || dist < distanceFromNearestTrain)
-									{
-										nearestTrain = ev;
-										distanceFromNearestTrain = dist;
-									}
+								dist = ABS(ev->position.vx - camera_position.vx) + ABS(ev->position.vz - camera_position.vz);
+
+								if (nearestTrain == NULL || dist < distanceFromNearestTrain)
+								{
+									nearestTrain = ev;
+									distanceFromNearestTrain = dist;
 								}
-								
-								if (FrustrumCheck((VECTOR*)&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
+							}
+
+							if (FrustrumCheck((VECTOR*)&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
+							{
+								pos.vx = ev->position.vx - camera_position.vx;
+								pos.vy = ev->position.vy - camera_position.vy;
+								pos.vz = ev->position.vz - camera_position.vz;
+
+								matrix.m[0][0] = ONE;
+								matrix.m[1][0] = 0;
+								matrix.m[2][0] = 0;
+								matrix.m[0][1] = 0;
+								matrix.m[1][1] = ONE;
+								matrix.m[2][1] = 0;
+								matrix.m[0][2] = 0;
+								matrix.m[1][2] = 0;
+								matrix.m[2][2] = ONE;
+
+
+								reflection = 0;
+
+								if ((ev->flags & 2U) == 0)
 								{
-									pos.vx = ev->position.vx - camera_position.vx;
-									pos.vy = ev->position.vy - camera_position.vy;
-									pos.vz = ev->position.vz - camera_position.vz;
-									
-									matrix.m[0][0] = ONE;
-									matrix.m[1][0] = 0;
-									matrix.m[2][0] = 0;
-									matrix.m[0][1] = 0;
-									matrix.m[1][1] = ONE;
-									matrix.m[2][1] = 0;
-									matrix.m[0][2] = 0;
-									matrix.m[1][2] = 0;
-									matrix.m[2][2] = ONE;
-									
-									
-									bVar1 = false;
+									uVar3 = ev->flags & 0xcc0;
 
-									if ((ev->flags & 2U) == 0)
-									{
-										uVar3 = ev->flags & 0xcc0;
-
-										if (uVar3 == 0x400)
-											goto LAB_0004a118;
-
-										if (uVar3 < 0x401)
-										{
-											if (uVar3 == 0x80)
-											{
-												_RotMatrixY(&matrix, ev->rotation);
-												pos.vx = pos.vx - boatOffset.vx;
-												pos.vz = pos.vz - boatOffset.vz;
-												pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
-											}
-											else if (uVar3 != 0xc0)
-											{
-											LAB_0004a140:
-												uVar3 = ev->flags & 0x30;
-												if (uVar3 == 0x10) {
-													_RotMatrixY(&matrix, ev->rotation);
-												}
-												else if (uVar3 < 0x11)
-												{
-													if ((ev->flags & 0x30U) == 0)
-													{
-														_RotMatrixX(&matrix, ev->rotation);
-													}
-												}
-												else if (uVar3 == 0x20)
-												{
-													_RotMatrixZ(&matrix, ev->rotation);
-												}
-											}
-										}
-										else if (uVar3 == 0x440)
-										{
-											_RotMatrixX(&matrix, ev->rotation);
-										}
-										else
-										{
-											uVar4 = 0;
-
-											if (uVar3 != 0x480)
-												goto LAB_0004a140;
-
-											do {
-												if ((uVar4 & 1) == 0)
-													offset.x = -201;
-												else
-													offset.x = 201;
-
-												if ((uVar4 & 2) == 0)
-													offset.z = -1261;
-												else
-													offset.z = 1261;
-
-												uVar2 = ev->rotation + 0x200U & 0x400;
-
-												iVar9 = offset.x;
-												if (uVar2 != 0)
-													iVar9 = offset.z;
-
-												if (uVar2 != 0)
-													offset.z = offset.x;
-
-												shadow[uVar4].vx = (ev->position).vx + iVar9;
-												shadow[uVar4].vy = 0;
-												shadow[uVar4].vz = (ev->position).vz + offset.z;
-
-												uVar4++;
-											} while (uVar4 < 4);
-
-											PlaceShadowForCar(shadow, 0, 35, 4);
-
-										LAB_0004a118:
-											_RotMatrixY(&matrix, ev->rotation);
-										}
-									}
-									else
+									if (uVar3 == 0x400)
 									{
 										_RotMatrixY(&matrix, ev->rotation);
 									}
-
-									gte_SetRotMatrix(&inv_camera_matrix);
-
-									_MatrixRotate(&pos);
-
-									if ((ev->flags & 0xcc0U) == 0xc0)
+									else if (uVar3 < 0x401)
 									{
-										pMVar5 = &matrix;
-
-										if (ev->model == HelicopterData.cleanModel)
+										if (uVar3 == 0x80)
 										{
-											_RotMatrixZ(&matrix, HelicopterData.roll & 0xfff);
-											_RotMatrixX(&matrix, HelicopterData.pitch & 0xfff);
-											_RotMatrixY(&matrix, ev->rotation & 0xfff);
-
-											DrawRotor(ev->position, &matrix);
-
-											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, 0);
-											pos.vx = (ev->position).vx - camera_position.vx;
-											pos.vy = -camera_position.vy - (ev->position).vy;
-											pos.vz = (ev->position).vz - camera_position.vz;
-
-											gte_SetRotMatrix(&inv_camera_matrix);
-
-											_MatrixRotate(&pos);
-											bVar1 = true;
+											_RotMatrixY(&matrix, ev->rotation);
+											pos.vx = pos.vx - boatOffset.vx;
+											pos.vz = pos.vz - boatOffset.vz;
+											pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * (int)rcossin_tbl[(*ev->data & 0xfffU) * 2]);
 										}
-										else
+										else if (uVar3 != 0xc0)
 										{
-											local_d8 = 2;
-
-											do {
-												local_d8--;
-												pMVar5->m[0][0] = pMVar5->m[0][0] << 1;
-												pMVar5 = (MATRIX*)(pMVar5->m + 4);
-											} while (-1 < local_d8); // rotation???
-
-											_RotMatrixY(&matrix, 0xafd);
-											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, 0);
-										}
-									}
-
-									if ((ev->flags & 0x800U) != 0)
-									{
-										_RotMatrixX(&matrix, (short)ev->data[1]);
-
-										local_d8 = gTimeOfDay;
-										pos.vy = pos.vy - ev->data[2];
-										temp = combointensity;
-
-										if ((ev->flags & 0x20U) == 0)
-										{
-											ev->flags = ev->flags | 1;
-											if (local_d8 != 3)
+										LAB_0004a140:
+											uVar3 = ev->flags & 0x30;
+											if (uVar3 == 0x10) {
+												_RotMatrixY(&matrix, ev->rotation);
+											}
+											else if (uVar3 < 0x11)
 											{
-												bVar1 = true;
+												if ((ev->flags & 0x30U) == 0)
+												{
+													_RotMatrixX(&matrix, ev->rotation);
+												}
+											}
+											else if (uVar3 == 0x20)
+											{
+												_RotMatrixZ(&matrix, ev->rotation);
 											}
 										}
-										else
-										{
-											SetupPlaneColours(0x80a0c);
-										}
 									}
-
-									if (bVar1)
+									else if (uVar3 == 0x440)
 									{
-										matrix.m[1][0] = -matrix.m[1][0];
-										matrix.m[1][1] = -matrix.m[1][1];
-										matrix.m[1][2] = -matrix.m[1][2];
-
-										SetupPlaneColours(0x00464a40);
-
-										RenderModel(modelpointers[ev->model], &matrix, &pos, 400, 2, 1, ev->rotation >> 6);
+										_RotMatrixX(&matrix, ev->rotation);
 									}
 									else
 									{
-										if ((ev->flags & 0xcc0U) == 0x440)
-											DrawFerrisWheel(&matrix, &pos);
-										else
-											RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, ev->rotation >> 6);
-									}
+										uVar4 = 0;
 
-									if ((ev->flags & 0x800U) != 0) {
-										combointensity = temp;
-										matrix.m[0][0] = 0;
-										matrix.m[0][1] = 0;
-										matrix.m[1][0] = 0;
-										matrix.m[1][1] = ONE;
-										matrix.m[1][2] = 0;
-										matrix.m[2][0] = ONE;
-										matrix.m[2][1] = 0;
-										matrix.m[2][2] = 0;
+										if (uVar3 != 0x480)
+											goto LAB_0004a140;
 
-										pos.vy = pos.vy + ev->data[2];
+										do {
+											if ((uVar4 & 1) == 0)
+												offset.x = -201;
+											else
+												offset.x = 201;
 
-										if ((foam.rotate & 0x8000U) == 0)
-										{
-											matrix.m[0][2] = -ONE;
-										}
-										else
-										{
-											matrix.m[0][2] = ONE;
-										}
+											if ((uVar4 & 2) == 0)
+												offset.z = -1261;
+											else
+												offset.z = 1261;
 
-										if (gTimeOfDay != 1)
-										{
-											SetupPlaneColours(0x00282828);
-										}
+											uVar2 = ev->rotation + 0x200U & 0x400;
 
-										if ((foam.rotate & 0x8000U) == 0)
-											local_d8 = 1;
-										else
-											local_d8 = 3;
+											iVar9 = offset.x;
+											if (uVar2 != 0)
+												iVar9 = offset.z;
 
-										RenderModel(foam.model, &matrix, &pos, 200, local_d8, 1, 0);
-										SetupPlaneColours(combointensity);
+											if (uVar2 != 0)
+												offset.z = offset.x;
+
+											shadow[uVar4].vx = (ev->position).vx + iVar9;
+											shadow[uVar4].vy = 0;
+											shadow[uVar4].vz = (ev->position).vz + offset.z;
+
+											uVar4++;
+										} while (uVar4 < 4);
+
+										PlaceShadowForCar(shadow, 0, 35, 4);
+
+									LAB_0004a118:
+										_RotMatrixY(&matrix, ev->rotation);
 									}
 								}
-							}
-							else
-							{
-								SetCamera(ev);
-								DrawMapPSX(&ObjectDrawnValue);
+								else
+								{
+									_RotMatrixY(&matrix, ev->rotation);
+								}
+
+								gte_SetRotMatrix(&inv_camera_matrix);
+
+								_MatrixRotate(&pos);
+
+								if ((ev->flags & 0xcc0) == 0xc0)
+								{
+									if (ev->model == HelicopterData.cleanModel)
+									{
+										_RotMatrixZ(&matrix, HelicopterData.roll & 0xfff);
+										_RotMatrixX(&matrix, HelicopterData.pitch & 0xfff);
+										_RotMatrixY(&matrix, ev->rotation & 0xfff);
+
+										DrawRotor(ev->position, &matrix);
+
+										RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, 0);
+										pos.vx = (ev->position).vx - camera_position.vx;
+										pos.vy = -camera_position.vy - (ev->position).vy;
+										pos.vz = (ev->position).vz - camera_position.vz;
+
+										gte_SetRotMatrix(&inv_camera_matrix);
+
+										_MatrixRotate(&pos);
+										reflection = 1;
+									}
+									else
+									{
+										// scale matrix lil bit
+										matrix.m[0][0] <= 1;
+										matrix.m[1][0] <= 1;
+										matrix.m[2][0] <= 1;
+
+										_RotMatrixY(&matrix, 2813);
+										RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, 0);
+									}
+								}
+
+								if (ev->flags & 0x800)
+								{
+									_RotMatrixX(&matrix, ev->data[1]);
+
+									pos.vy = pos.vy - ev->data[2];
+									temp = combointensity;
+
+									if (ev->flags & 0x20)
+									{
+										SetupPlaneColours(0x80a0c);
+									}
+									else
+									{
+										ev->flags |= 1;
+										reflection = 1;	// [A] fix bug with ferry reflection at night
+									}
+								}
+
+								if (reflection)
+								{
+									matrix.m[1][0] = -matrix.m[1][0];
+									matrix.m[1][1] = -matrix.m[1][1];
+									matrix.m[1][2] = -matrix.m[1][2];
+
+									SetupPlaneColours(0x00464a40);
+
+									RenderModel(modelpointers[ev->model], &matrix, &pos, 400, 2, 1, ev->rotation >> 6);
+								}
+								else
+								{
+									if ((ev->flags & 0xcc0U) == 0x440)
+										DrawFerrisWheel(&matrix, &pos);
+									else
+										RenderModel(modelpointers[ev->model], &matrix, &pos, 0, 0, 1, ev->rotation >> 6);
+								}
+
+								if (ev->flags & 0x800) 
+								{
+									combointensity = temp;
+									
+									matrix.m[0][0] = 0;
+									matrix.m[0][1] = 0;
+									matrix.m[0][2] = (foam.rotate & 0x8000) ? ONE : -ONE;
+									matrix.m[1][0] = 0;
+									matrix.m[1][1] = ONE;
+									matrix.m[1][2] = 0;
+									matrix.m[2][0] = ONE;
+									matrix.m[2][1] = 0;
+									matrix.m[2][2] = 0;
+
+									pos.vy += ev->data[2];
+
+									if (gTimeOfDay != 1)
+										SetupPlaneColours(0x00282828);
+
+									RenderModel(foam.model, &matrix, &pos, 200, (foam.rotate & 0x8000) ? 0x3 : 0x1, 1, 0);
+									SetupPlaneColours(combointensity);
+								}
 							}
 						}
+						else
+						{
+							SetCamera(ev);
+							DrawMapPSX(&ObjectDrawnValue);
+						}
 					}
-				}
-				else
-				{
-					if ((uVar3 & 1) != 0)
-						goto LAB_00049d90;
 				}
 			}
 		}
 	LAB_0004a58c:
-		_xv++;
+		x++;
 	} while (true);
 
-	uVar4 = (uint)puVar7[1];
-	puVar7 = puVar7 + 1;
+	z++;
 
-	if ((uVar4 & thisCamera) != 0)
+	if ((*z & thisCamera) != 0)
+	{
 		goto LAB_0004a58c;
+	}
 
 	goto LAB_00049db4;
 }
