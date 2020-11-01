@@ -923,7 +923,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 				if (NumPlayers > 1 && NoPlayerControl == 0)
 					SetPlayerOwnsChannel(chan, player_id);
 
-				Start3DSoundVolPitch(chan, 1, 5, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2500, 400);
+				Start3DSoundVolPitch(chan, SOUND_BANK_SFX, 5, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2500, 400);
 				SetChannelPosition3(chan, (VECTOR*)cp->hd.where.t, NULL, -2500, 400, 0);
 			}
 

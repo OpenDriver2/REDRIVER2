@@ -1253,7 +1253,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 							if (NumPlayers > 1 && NoPlayerControl == 0)
 								SetPlayerOwnsChannel(chan, player_id);
 
-							Start3DSoundVolPitch(chan, 1, match->sound,
+							Start3DSoundVolPitch(chan, SOUND_BANK_SFX, match->sound,
 								collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, 
 								match->volume, match->pitch + (((velocity.vx ^ velocity.vz) * (collisionResult.hit.vx ^ collisionResult.hit.vz) & 0x3ff) - 0x200));
 						}

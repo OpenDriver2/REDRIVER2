@@ -29,6 +29,57 @@
 
 #include "FELONY.H"
 
+
+
+enum SoundBankIds
+{
+	SBK_ID_MENU					= 0,	// frontend, alpha 1.6 used it in ingame menu as well
+	
+	SBK_ID_SFX					= 1,
+	SBK_CAR_SOUNDS_START		= 2,
+	
+	SBK_ID_JERICHO				= 19,	// jericho_in_back
+	SBK_ID_JONES				= 20,
+	
+	SBK_CITY_EFFECTS_START		= 21,
+
+
+	
+	SBK_COP_PHRASES_START		= 29,
+	SBK_ID_COUNTDOWN			= 44,
+
+	// Mission banks start
+	// Jones banks
+	SBK_ID_MISSION_2			= 45,	// Chase the witness
+	SBK_ID_MISSION_3			= 46,	// Train pursuit
+	SBK_ID_MISSION_4			= 47,
+	SBK_ID_MISSION_10			= 48,
+
+	SBK_ID_MISSION_11			= 49,	// Hijack the truck
+	SBK_ID_MISSION_13			= 50,	// Steal the truck
+	SBK_ID_FERRY				= 51,	// Escape to ferry / To the docks
+	SBK_ID_MISSION_18			= 52,	// Tail Jericho
+	SBK_ID_MISSION_22			= 53,	// Beat the train
+	SBK_ID_MISSION_23			= 54,	// Car bomb
+	SBK_ID_MISSION_24			= 55,	// Stake out
+	SBK_ID_MISSION_27			= 56,
+	SBK_ID_MISSION_29			= 57,	// C4 deal
+	SBK_ID_MISSION_30			= 58,	// Destroy the yard
+	SBK_ID_MISSION_32			= 59,	// Steal the cop car
+	SBK_ID_MISSION_33			= 60,	// Caine's cash - UNUSED
+	SBK_ID_MISSION_35			= 61,	// Boat jump
+	SBK_ID_MISSION_39			= 62,	// Lenny escaping - UNUSED
+	SBK_ID_MISSION_40			= 63,	// Lenny gets caught
+
+	SBK_ID_HAVANA_TAKEADRIVE	= 64,
+	SBK_ID_VEGAS_TAKEADRIVE		= 65,
+
+	SBK_ID_TANNER				= 66,
+	SBK_ID_SPECIAL_SIREN1		= 67,
+	SBK_ID_SPECIAL_SIREN2		= 68,
+	SBK_COP_SIREN_START			= 69,
+};
+
 typedef void(*envsoundfunc)(__envsound* ep /*$s1*/, __envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);
@@ -426,21 +477,21 @@ void LoadLevelSFX(int missionNum)
 
 	// load car banks
 	do {
-		LoadBankFromLump(3, MapCarIndexToBank(i));
+		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(i));
 		i++;
 	} while (i < 3);
 
 	ShowLoading();
 
 	// load footsteps, car effects etc
-	LoadBankFromLump(1, 0);
-	LoadBankFromLump(1, 1);
-	LoadBankFromLump(6, 66);
+	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
+	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SFX);
+	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_TANNER );
 
 	if (GameLevel & 2)
-		LoadBankFromLump(2, (GameLevel & 1) * 2 + 69);
+		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 1) * 2);
 	else
-		LoadBankFromLump(2, (GameLevel & 3) + 69);
+		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3));
 
 	// Load cop voices except those missions
 	if (missionNum - 1U > 3 && missionNum != 6 && missionNum != 7 &&
@@ -453,13 +504,13 @@ void LoadLevelSFX(int missionNum)
 	{
 		if (GameLevel & 2)
 		{
-			LoadBankFromLump(2, (GameLevel & 1) * 8 + (GameLevel & 1) * 2 + 29);
-			LoadBankFromLump(2, (GameLevel & 1) * 10 + cop_bank + 29);
+			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
+			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 10 + cop_bank);
 		}
 		else
 		{
-			LoadBankFromLump(2, (GameLevel & 3) * 4 + (GameLevel & 3) + 29);
-			LoadBankFromLump(2, (GameLevel & 3) * 5 + cop_bank + 29);
+			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 4 + (GameLevel & 3));
+			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 5 + cop_bank);
 		}
 	}
 
@@ -469,133 +520,134 @@ void LoadLevelSFX(int missionNum)
 	if (NumPlayers < 2 || NoPlayerControl != 0)
 	{
 		if (GameLevel == 0)
-			LoadBankFromLump(4, city_night_fx + 21);
+			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx);
 		else if (GameLevel == 1)
-			LoadBankFromLump(4, city_night_fx + 23);
+			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 2);
 		else if (GameLevel == 2)
-			LoadBankFromLump(4, city_night_fx + 25);
+			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 4);
 		else if (GameLevel == 3)
-			LoadBankFromLump(4, city_night_fx + 27);
+			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 6);
 	}
 
+	// total phrases
 	phrase_top = 0;
 
 	if (missionNum - 2U < 3 || missionNum == 9 || missionNum == 10 || missionNum == 27)
 	{
-		LoadBankFromLump(5, 20);
+		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JONES);
 		phrase_top = 7;
 	}
 	else if (missionNum - 20U < 2 || missionNum == 25 || missionNum == 39)
 	{
-		LoadBankFromLump(5, 19);
+		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JERICHO);
 		phrase_top = 3;
 	}
 
 	switch (missionNum)
 	{
 		case 2:
-			index = 45;
+			index = SBK_ID_MISSION_2;
 			break;
 		case 3:
-			index = 46;
+			index = SBK_ID_MISSION_3;
 			break;
 		case 4:
-			index = 47;
+			index = SBK_ID_MISSION_4;
 			break;
 		case 10:
-			index = 48;
+			index = SBK_ID_MISSION_10;
 			break;
 		case 13:
-			index = 50;
+			index = SBK_ID_MISSION_13;
 			break;
 		case 15:
-			index = 51;
+			index = SBK_ID_FERRY;
 			break;
 		case 16:
-			index = 51;
+			index = SBK_ID_FERRY;
 			break;
 		case 18:
-			index = 52;
+			index = SBK_ID_MISSION_18;
 			break;
 		case 22:
-			index = 53;
+			index = SBK_ID_MISSION_22;
 			break;
 		case 23:
-			index = 54;
+			index = SBK_ID_MISSION_23;
 			break;
 		case 24:
-			index = 55;
+			index = SBK_ID_MISSION_24;
 			break;
 		case 27:
-			index = 56;
+			index = SBK_ID_MISSION_27;
 			break;
 		case 29:
-			index = 57;
+			index = SBK_ID_MISSION_29;
 			break;
 		case 30:
-			index = 58;
+			index = SBK_ID_MISSION_30;
 			break;
 		case 25:
 		case 32:
-			index = 59;
+			index = SBK_ID_MISSION_32;
 			break;
 		case 33:
-			index = 60;
+			index = SBK_ID_MISSION_33;
 			break;
 		case 35:
-			index = 61;
+			index = SBK_ID_MISSION_35;
 			break;
 		case 39:
-			index = 62;
+			index = SBK_ID_MISSION_39;
 			break;
 		case 40:
-			index = 63;
+			index = SBK_ID_MISSION_40;
+			break;
+		case 52:
+		case 53:
+			index = SBK_ID_HAVANA_TAKEADRIVE;	// [A] load Havana bank again
 			break;
 		case 54:
-			index = 65;
-			break;
 		case 55:
-			index = 65;
+			index = SBK_ID_VEGAS_TAKEADRIVE;
 			break;
 		case 11:
 		case 20:
 		case 21:
-		case 52:
-		case 53:
 		case 56:
 		case 57:
-			index = 49;
+			index = SBK_ID_MISSION_11;
 			break;
 		default:
 			index = 0;
 	}
 
 	if (index != 0)
-		LoadBankFromLump(5, index);
+		LoadBankFromLump(SOUND_BANK_MISSION, index);
 
 	if (GameLevel == 0 || GameLevel == 3)
-		LoadBankFromLump(1, 67);
+		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
 	else if (GameLevel == 2)
-		LoadBankFromLump(1, 68);
+		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
 
 	LoadSoundBankDynamic(NULL, 1, 0);
 	LoadSoundBankDynamic(NULL, 3, 3);
 
 	if (gCurrentMissionNumber - 39 < 2)
-		LoadBankFromLump(3, MapCarIndexToBank(4));
+		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
 	else
-		LoadBankFromLump(3, SpecialVehicleKludge(0));
+		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
 
 	if (missionNum != 24 && missionNum != 27 &&
 		missionNum != 29 && missionNum != 30 &&
 		missionNum != 35)
 	{
-		LoadBankFromLump(3, SpecialVehicleKludge(1));
+		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
 	}
 
 	if (missionNum - 50U < 16)
 	{
-		LoadBankFromLump(3, SpecialVehicleKludge(2));
+		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(2));
 	}
 
 	// disable cop speech on specific missions (gangs)
@@ -715,7 +767,7 @@ void StartGameSounds(void)
 				pitch = 129;
 			}
 
-			Start3DSoundVolPitch(channel, 3, sample * 3 + 1, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, pitch);
+			Start3DSoundVolPitch(channel, SOUND_BANK_CARS, sample * 3 + 1, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, pitch);
 
 			if (car_model == 4)
 				sample = ResidentModelsBodge() * 3;
@@ -735,7 +787,7 @@ void StartGameSounds(void)
 				pitch = 129;
 			}
 
-			Start3DSoundVolPitch(channel, 3, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, pitch);
+			Start3DSoundVolPitch(channel, SOUND_BANK_CARS, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, pitch);
 
 			siren = CarHasSiren(car_model);
 
@@ -1059,9 +1111,9 @@ void ControlCarRevs(CAR_DATA* cp)
 void DoSpeech(int chan, int sound)
 {
 	if (sound >= 100)
-		StartSound(chan, 5, sound - 100, 0, 4096);
+		StartSound(chan, SOUND_BANK_MISSION, sound - 100, 0, 4096);
 	else if (sound != 0)
-		StartSound(chan, 2, sound, -1500, 4096);
+		StartSound(chan, SOUND_BANK_VOICES, sound, -1500, 4096);
 }
 
 
@@ -1662,7 +1714,7 @@ void DoDopplerSFX(void)
 				else
 				{
 					// play music
-					siren_noise[j].chan = Start3DTrackingSound(-1, 4, 5,
+					siren_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_ENVIRONMENT, 5,
 						(VECTOR*)car_data[car].hd.where.t,
 						car_data[car].st.n.linearVelocity);
 				}
@@ -1770,7 +1822,7 @@ void DoDopplerSFX(void)
 				else
 					sample = bank * 3;
 
-				car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
+				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
 
 				LockChannel(car_noise[j].chan);
 				break;
@@ -1822,7 +1874,7 @@ void DoDopplerSFX(void)
 			else
 				sample = bank * 3;
 
-			car_noise[j].chan = Start3DTrackingSound(-1, 3, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
+			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
 			LockChannel(car_noise[j].chan);
 		}
 
@@ -1937,7 +1989,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 		if (car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying == 0 &&
 			time < loudhail_time && rnd == (rnd / 31) * 31)
 		{
-			Start3DTrackingSound(-1, 2, rnd % 2 + 13, (VECTOR*)car_ptr->hd.where.t, car_ptr->st.n.linearVelocity);
+			Start3DTrackingSound(-1, SOUND_BANK_VOICES, rnd % 2 + 13, (VECTOR*)car_ptr->hd.where.t, car_ptr->st.n.linearVelocity);
 			loudhail_time = 0;
 			break;
 		}
@@ -2066,7 +2118,7 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	chan = GetFreeChannel();
 
 	SetPlayerOwnsChannel(chan, playerid);
-	Start3DSoundVolPitch(chan, 1, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact - (impact / 1024) * 1024 + 3584);
+	Start3DSoundVolPitch(chan, SOUND_BANK_SFX, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact - (impact / 1024) * 1024 + 3584);
 
 	player[playerid].crash_timer = 2;
 
@@ -2177,7 +2229,7 @@ void ExplosionSound(VECTOR* pos, int type)
 	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
 	P.vz = pos->vz * sc1 + player[0].cameraPos.vz * sc2;
 
-	Start3DSoundVolPitch(-1, 5,
+	Start3DSoundVolPitch(-1, SOUND_BANK_MISSION,
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
 		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 0xe00);
 }
@@ -2357,7 +2409,7 @@ void SoundTasks(void)
 		// play engine start sound
 		if (cp && lcp->car_sound_timer == 4)
 		{
-			Start3DSoundVolPitch(-1, 6, 4, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2500, 3072);
+			Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 4, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2500, 3072);
 		}
 
 		if (lcp->car_sound_timer == 0)
@@ -3650,7 +3702,7 @@ void LeadHorn(CAR_DATA* cp)
 		else
 			carBank = cp->ap.model - 1;
 
-		Start3DTrackingSound(-1, 3, carBank * 3 + 2, (VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity);
+		Start3DTrackingSound(-1, SOUND_BANK_CARS, carBank * 3 + 2, (VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity);
 
 		horn_time = 0;
 	}

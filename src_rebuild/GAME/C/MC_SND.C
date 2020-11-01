@@ -464,7 +464,7 @@ void DoCutsceneSound(void)
 			if (cutscene_timer == 460) 
 			{
 				cVar1 = GetMissionSound(24);
-				Start3DTrackingSound(-1, 5, cVar1, (VECTOR *)car_data[2].hd.where.t, NULL);
+				Start3DTrackingSound(-1, SOUND_BANK_MISSION, cVar1, (VECTOR *)car_data[2].hd.where.t, NULL);
 				force_siren[7] = 1;
 				force_siren[6] = 1;
 				force_siren[5] = 1;
@@ -491,7 +491,7 @@ void DoCutsceneSound(void)
 				if (cutscene_timer == 0xb4) 
 				{
 					cVar1 = GetMissionSound(26);
-					Start3DTrackingSound(-1, 5, cVar1, (VECTOR *)car_data[2].hd.where.t,car_data[2].st.n.linearVelocity);
+					Start3DTrackingSound(-1, SOUND_BANK_MISSION, cVar1, (VECTOR *)car_data[2].hd.where.t,car_data[2].st.n.linearVelocity);
 				}
 
 				if (cutscene_timer < 0x281)
@@ -737,7 +737,7 @@ void DoMissionSound(void)
 	long lVar7;
 	VECTOR P;
 	long V[3];
-	static int channel;
+	static int channel = 0;
 
 	switch (gCurrentMissionNumber) 
 	{
@@ -748,7 +748,7 @@ void DoMissionSound(void)
 			{
 				channel = GetFreeChannel();
 				cVar1 = GetMissionSound(11);
-				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -764,7 +764,7 @@ void DoMissionSound(void)
 			{
 				channel = GetFreeChannel();
 				cVar1 = GetMissionSound(11);
-				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -796,7 +796,7 @@ void DoMissionSound(void)
 					{
 						x = GetFreeChannel();
 						cVar1 = GetMissionSound(20);
-						StartSound(x, 5, cVar1, -0x5dc, 0x1000);
+						StartSound(x, SOUND_BANK_MISSION, cVar1, -0x5dc, 0x1000);
 						SetChannelPosition3(x, (VECTOR*)car_data[z_00].hd.where.t, car_data[z_00].st.n.linearVelocity, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee, 0);
 					}
 				}
@@ -806,7 +806,7 @@ void DoMissionSound(void)
 			if (bodgevar == 1) {
 				channel = GetFreeChannel();
 				cVar1 = GetMissionSound(11);
-				Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				holdall++;
 				bodgevar = 2;
 			}
@@ -830,7 +830,7 @@ void DoMissionSound(void)
 				VECTOR *P = &Q[bodgevar - 1];
 
 				cVar1 = GetMissionSound(34);
-				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
 
 				bodgevar += 4;
 			}
@@ -841,7 +841,7 @@ void DoMissionSound(void)
 				if (Mission.timer[0].count / 3000 * 3000 == Mission.timer[0].count + 100)
 				{
 					cVar1 = GetMissionSound(29);
-					Start3DSoundVolPitch(-1, 5, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
+					Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 				}
 
 				if (bodgevar >= 5)
@@ -849,7 +849,7 @@ void DoMissionSound(void)
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
 
@@ -858,7 +858,7 @@ void DoMissionSound(void)
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
 			}
@@ -875,7 +875,7 @@ void DoMissionSound(void)
 				{
 					channel = GetFreeChannel();
 					cVar1 = GetMissionSound(11);
-					Start3DSoundVolPitch(channel, 5, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+					Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
 					bodgevar = 2;
 				}
 				else if (bodgevar == 3)
@@ -893,7 +893,7 @@ void DoMissionSound(void)
 		case 33:
 			if (holdall == -1) 
 			{
-				StartSound(2, 2, 0, -10000, 0x81);
+				StartSound(2, SOUND_BANK_VOICES, 0, -10000, 0x81);
 				holdall = 0;
 			}
 			break;
@@ -909,7 +909,7 @@ void DoMissionSound(void)
 				VECTOR *P = &Q[bodgevar - 1];
 
 				cVar1 = GetMissionSound(34);
-				Start3DSoundVolPitch(-1, 5, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
 
 				bodgevar += 4;
 			}
@@ -919,7 +919,7 @@ void DoMissionSound(void)
 
 				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -300) {
 					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, 5, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
+					Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
 				}
 
 				if (bodgevar >= 6)
@@ -927,7 +927,7 @@ void DoMissionSound(void)
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
 
@@ -936,7 +936,7 @@ void DoMissionSound(void)
 					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
 					{
 						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, 5, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
 					}
 				}
 			}
@@ -1019,13 +1019,14 @@ void DoMissionSound(void)
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], -pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
 			{
-				if (-1 < channel)
+				if (channel > -1)
 					StopChannel(channel);
+				channel = -1;
 
 				bodgevar = 4;
 			}
@@ -1036,7 +1037,7 @@ void DoMissionSound(void)
 			if (bodgevar == 1) 
 			{
 				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, 5, 1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 1, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -1049,7 +1050,7 @@ void DoMissionSound(void)
 			else if (bodgevar == 5)
 			{
 				// Vegas special garage door
-				Start3DSoundVolPitch(-1, 5, 0, -0x26868, -0xfa, 0x9d274, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, 0, -0x26868, -0xfa, 0x9d274, -1000, 0x1000);
 				bodgevar = 6;
 			}
 		// Rio sounds
@@ -1058,7 +1059,7 @@ void DoMissionSound(void)
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, 5, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)

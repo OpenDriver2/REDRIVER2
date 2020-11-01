@@ -21,6 +21,7 @@
 #include "SHADOW.H"
 #include "COSMETIC.H"
 #include "DENTING.H"
+#include "GAMESND.H"
 #include "ROADBITS.H"
 
 #include "../ASM/ASMTEST.H"
@@ -5858,7 +5859,7 @@ void DoThunder(void)
 		ThunderTimer--;
 		
 		if(ThunderTimer == 0) 
-			StartSound(-1, 1, 12, -ThunderDistance, (rand() % 2048) + 3072);
+			StartSound(-1, SOUND_BANK_SFX, 12, -ThunderDistance, (rand() % 2048) + 3072);
 	}
 }
 

@@ -3316,7 +3316,7 @@ void DealWithHorn(char* hr, int i)
 
 		channel = i != 0 ? 5 : 2;
 
-		Start3DSoundVolPitch(channel, 3, modelId * 3 + 2,
+		Start3DSoundVolPitch(channel, SOUND_BANK_CARS, modelId * 3 + 2,
 			car->hd.where.t[0],
 			car->hd.where.t[1],
 			car->hd.where.t[2], -10000,

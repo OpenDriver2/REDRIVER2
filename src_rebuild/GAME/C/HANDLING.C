@@ -2400,7 +2400,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 		if (player[player_id].skidding.sound > -1)
 		{
-			channel = StartSound(-1, 1, player[player_id].skidding.sound, skidsound - 10000, 0x1000);
+			channel = StartSound(-1, SOUND_BANK_SFX, player[player_id].skidding.sound, skidsound - 10000, 0x1000);
 
 			player[player_id].skidding.chan = channel;
 			LockChannel(channel);
@@ -2459,7 +2459,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 		if (player[player_id].wheelnoise.sound > -1)
 		{
-			channel = StartSound(-1, 1, player[player_id].wheelnoise.sound, -200, 4096);
+			channel = StartSound(-1, SOUND_BANK_SFX, player[player_id].wheelnoise.sound, -200, 4096);
 
 			player[player_id].wheelnoise.chan = channel;
 			LockChannel(channel);
