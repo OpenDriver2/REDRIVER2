@@ -41,7 +41,7 @@
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void StoreEndData(void)
 {
 	_TARGET *target;
@@ -107,7 +107,7 @@ void StoreEndData(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void RestoreStartData(void)
 {
 	SAVED_CAR_POS *data;
@@ -149,7 +149,7 @@ void RestoreStartData(void)
 	/* end block 2 */
 	// End Line: 219
 
-// [D]
+// [D] [T]
 void StorePlayerPosition(SAVED_PLAYER_POS *data)
 {
 	ushort type;
@@ -173,6 +173,7 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	if (player[0].playerType == 1)
 	{
 		data->totaldamage = car_data[player[0].playerCarId].totalDamage;
+	
 		data->damage[0] = car_data[player[0].playerCarId].ap.damage[0];
 		data->damage[1] = car_data[player[0].playerCarId].ap.damage[1];
 		data->damage[2] = car_data[player[0].playerCarId].ap.damage[2];
@@ -214,21 +215,22 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	/* end block 3 */
 	// End Line: 304
 
-// [D]
+// [D] [T]
 void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 {
 	if ((data->type & 0xf) == 1) 
 	{
 		PlayerStartInfo[0]->type = 1;
-		PlayerStartInfo[0]->model = (data->type >> 4) & 0xf;
-		PlayerStartInfo[0]->palette = (data->type >> 8) & 0xf;
+		PlayerStartInfo[0]->model = (data->type >> 4) & 15;
+		PlayerStartInfo[0]->palette = (data->type >> 8) & 15;
 	}
 	else 
 		PlayerStartInfo[0]->type = 2;
 
-	if (gCurrentMissionNumber != 0x10) 
+	if (gCurrentMissionNumber != 16) 
 	{
 		PlayerStartInfo[0]->position.vx = data->vx;
+		PlayerStartInfo[0]->position.vx = data->vy;
 		PlayerStartInfo[0]->position.vz = data->vz;
 		PlayerStartInfo[0]->rotation = data->direction;
 	}
@@ -272,20 +274,19 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 	/* end block 3 */
 	// End Line: 369
 
-// [D]
+// [D] [T]
 void StoreCarPosition(_TARGET *target, SAVED_CAR_POS *data)
 {
 	int slot;
 
-	slot = Mission.PhantomCarId;
-
-	if ((target->data[10] & 0x400000U) == 0)
+	if (target->data[10] & 0x400000)
+		slot = Mission.PhantomCarId;
+	else
 		slot = target->data[6];
 
 	if (slot == -1)
 		return;
 
-	data->active = 1;
 	data->model = MissionHeader->residentModels[car_data[slot].ap.model];
 
 	data->palette = car_data[slot].ap.palette;
@@ -304,8 +305,10 @@ void StoreCarPosition(_TARGET *target, SAVED_CAR_POS *data)
 
 	data->direction = car_data[slot].hd.direction;
 
-	if ((target->data[1] & 0x40U) != 0)
-		data->active = -0x7f;
+	if (target->data[1] & 0x40)
+		data->active = -127;
+	else
+		data->active = 1;
 }
 
 
@@ -324,7 +327,7 @@ void StoreCarPosition(_TARGET *target, SAVED_CAR_POS *data)
 	/* end block 2 */
 	// End Line: 442
 
-// [D]
+// [D] [T]
 void RestoreCarPosition(SAVED_CAR_POS *data)
 {
 	ReplayStreams[numPlayersToCreate].InitialPadRecordBuffer = (PADRECORD*)ReplayStart;
@@ -341,7 +344,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		ReplayStreams[numPlayersToCreate].SourceType.type = 1;
 		ReplayStreams[numPlayersToCreate].SourceType.model = data->model;
 		ReplayStreams[numPlayersToCreate].SourceType.palette = data->palette;
-		ReplayStreams[numPlayersToCreate].SourceType.position.vy = 0;
+		ReplayStreams[numPlayersToCreate].SourceType.position.vy = data->vy;
 		ReplayStreams[numPlayersToCreate].SourceType.position.vx = data->vx;
 		ReplayStreams[numPlayersToCreate].SourceType.position.vz = data->vz;
 		ReplayStreams[numPlayersToCreate].SourceType.rotation = data->direction;
@@ -363,16 +366,16 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		PlayerStartInfo[0]->model = data->model;
 		PlayerStartInfo[0]->palette = data->palette;
 		PlayerStartInfo[0]->position.vx = data->vx;
-		PlayerStartInfo[0]->position.vy = 0;
+		PlayerStartInfo[0]->position.vy = data->vy;
 		PlayerStartInfo[0]->position.vz = data->vz;
 		PlayerStartInfo[0]->rotation = data->direction;
-		PlayerStartInfo[0]->totaldamage = (uint)data->totaldamage;
-		PlayerStartInfo[0]->damage[0] = (uint)data->damage[0];
-		PlayerStartInfo[0]->damage[1] = (uint)data->damage[1];
-		PlayerStartInfo[0]->damage[2] = (uint)data->damage[2];
-		PlayerStartInfo[0]->damage[3] = (uint)data->damage[3];
-		PlayerStartInfo[0]->damage[4] = (uint)data->damage[4];
-		PlayerStartInfo[0]->damage[5] = (uint)data->damage[5];
+		PlayerStartInfo[0]->totaldamage = data->totaldamage;
+		PlayerStartInfo[0]->damage[0] = data->damage[0];
+		PlayerStartInfo[0]->damage[1] = data->damage[1];
+		PlayerStartInfo[0]->damage[2] = data->damage[2];
+		PlayerStartInfo[0]->damage[3] = data->damage[3];
+		PlayerStartInfo[0]->damage[4] = data->damage[4];
+		PlayerStartInfo[0]->damage[5] = data->damage[5];
 	}
 	numPlayersToCreate++;
 }
