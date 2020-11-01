@@ -3288,7 +3288,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 
 	ClearMem((char*)pcdTanner, sizeof(_CAR_DATA));
 
-	pcdTanner->id = 21;
+	pcdTanner->id = TANNER_COLLIDER_CARID;
 	pcdTanner->controlType = 6;
 
 	pcdTanner->hd.direction = pPed->dir.vy - 0x800U & 0xfff;
