@@ -62,7 +62,7 @@ extern VECTOR * TriggerEvent(int i); // 0x0004AA78
 
 extern void OffsetTarget(VECTOR *target); // 0x0004BD2C
 
-extern void SetSpecialCamera(enum SpecialCamera type, int change); // 0x0004B29C
+extern void SetSpecialCamera(SpecialCamera type, int change); // 0x0004B29C
 
 extern void ScreenShake(int count, SVECTOR *ang); // 0x0004C280
 
