@@ -6,10 +6,10 @@
 #define IS_ROADBLOCK_CAR(cp) (cp->controlType == CONTROL_TYPE_CIV_AI && (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING))
 
 // PHYSICS
-extern _CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
+extern CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
 // active cars
-extern _CAR_DATA* active_car_list[MAX_CARS];
+extern CAR_DATA* active_car_list[MAX_CARS];
 extern BOUND_BOX bbox[MAX_CARS];
 extern unsigned char lightsOnDelay[MAX_CARS];
 
@@ -44,17 +44,17 @@ extern void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *
 
 extern void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg, int palette); // 0x00023A20
 
-extern void DrawCar(_CAR_DATA *cp, int view); // 0x000210B8
+extern void DrawCar(CAR_DATA *cp, int view); // 0x000210B8
 
-extern void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CAR_DATA *cp, int detail); // 0x000233DC
+extern void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, CAR_DATA *cp, int detail); // 0x000233DC
 
-extern void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip); // 0x00021AF8
+extern void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip); // 0x00021AF8
 
 extern void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum); // 0x00022180
 
-extern void PlayerCarFX(_CAR_DATA *cp); // 0x000234DC
+extern void PlayerCarFX(CAR_DATA *cp); // 0x000234DC
 
-extern void ComputeCarLightingLevels(_CAR_DATA *cp, char detail); // 0x00022458
+extern void ComputeCarLightingLevels(CAR_DATA *cp, char detail); // 0x00022458
 
 extern void buildNewCars(); // 0x00022860
 

@@ -31,8 +31,8 @@ MODEL* pLodModels[1536];
 	// 		int size; // $v0
 	// 		int modelamt; // $a3
 	// 		char *mdsfile; // $a0
-	// 		struct MODEL *model; // $a0
-	// 		struct MODEL *parentmodel; // $a1
+	// 		MODEL *model; // $a0
+	// 		MODEL *parentmodel; // $a1
 	/* end block 1 */
 	// End offset: 0x00064E6C
 	// End Line: 94
@@ -156,7 +156,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			// Start line: 231
 			// Start offset: 0x00064EB0
 			// Variables:
-		// 		struct MODEL *model; // $v0
+		// 		MODEL *model; // $v0
 		// 		int mem; // $a1
 		/* end block 1.1 */
 		// End offset: 0x00064F88
@@ -316,13 +316,13 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 
 // decompiled code
 // original method signature: 
-// struct MODEL * /*$ra*/ GetCarModel(char *src /*$s2*/, char **dest /*$s1*/, int KeepNormals /*$s3*/)
+// MODEL * /*$ra*/ GetCarModel(char *src /*$s2*/, char **dest /*$s1*/, int KeepNormals /*$s3*/)
  // line 391, offset 0x00065134
 	/* begin block 1 */
 		// Start line: 392
 		// Start offset: 0x00065134
 		// Variables:
-	// 		struct MODEL *model; // $s0
+	// 		MODEL *model; // $s0
 	// 		int size; // $a2
 	// 		char *mem; // $v1
 

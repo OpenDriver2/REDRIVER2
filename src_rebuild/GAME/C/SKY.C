@@ -105,7 +105,7 @@ VECTOR tunnelPos[3][2] =
 		// Start line: 147
 		// Start offset: 0x000775C8
 		// Variables:
-	// 		struct RECT rect; // stack offset -96
+	// 		RECT rect; // stack offset -96
 	// 		char name[16]; // stack offset -88
 	// 		int x; // $s6
 	// 		int y; // $a1
@@ -380,15 +380,15 @@ void DrawSkyDome(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplaySun(struct DVECTOR *pos /*$a0*/, struct CVECTOR *col /*$a1*/, int flare_col /*$a2*/)
+// void /*$ra*/ DisplaySun(DVECTOR *pos /*$a0*/, CVECTOR *col /*$a1*/, int flare_col /*$a2*/)
  // line 527, offset 0x000780bc
 	/* begin block 1 */
 		// Start line: 528
 		// Start offset: 0x000780BC
 		// Variables:
-	// 		struct POLY_FT4 *polys; // $a1
-	// 		struct POLY_FT3 *null; // $a3
-	// 		struct VECTOR output; // stack offset -32
+	// 		POLY_FT4 *polys; // $a1
+	// 		POLY_FT3 *null; // $a3
+	// 		VECTOR output; // stack offset -32
 	// 		int width; // $t5
 	// 		int height; // $t4
 	/* end block 1 */
@@ -523,14 +523,14 @@ void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DisplayMoon(struct DVECTOR *pos /*$t4*/, struct CVECTOR *col /*$t6*/, int flip /*$a2*/)
+// void /*$ra*/ DisplayMoon(DVECTOR *pos /*$t4*/, CVECTOR *col /*$t6*/, int flip /*$a2*/)
  // line 609, offset 0x00078544
 	/* begin block 1 */
 		// Start line: 610
 		// Start offset: 0x00078544
 		// Variables:
-	// 		struct POLY_FT3 *null; // $a0
-	// 		struct VECTOR output; // stack offset -16
+	// 		POLY_FT3 *null; // $a0
+	// 		VECTOR output; // stack offset -16
 	// 		int width; // $t5
 	// 		int height; // $t3
 	/* end block 1 */
@@ -630,9 +630,9 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 		// Variables:
 	// 		static char last_attempt_failed; // offset 0x0
 	// 		static short buffer[160]; // offset 0x0
-	// 		struct DVECTOR sun_pers_conv_position; // stack offset -64
-	// 		struct RECT source; // stack offset -56
-	// 		struct DR_MOVE *sample_sun; // $s0
+	// 		DVECTOR sun_pers_conv_position; // stack offset -64
+	// 		RECT source; // stack offset -56
+	// 		DR_MOVE *sample_sun; // $s0
 	// 		int distance_to_sun; // $s0
 	// 		int xpos; // $t1
 	// 		int ypos; // $v0
@@ -641,8 +641,8 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 	// 		int flarez; // stack offset -40
 	// 		int shade; // $t4
 	// 		int sun_intensity; // $s3
-	// 		struct POLY_FT4 *polys; // $a1
-	// 		struct CVECTOR col; // stack offset -48
+	// 		POLY_FT4 *polys; // $a1
+	// 		CVECTOR col; // stack offset -48
 	// 		int r; // $a2
 	// 		int g; // $a3
 	// 		int b; // $a0
@@ -668,7 +668,7 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 				// Start line: 458
 				// Start offset: 0x00077DD0
 				// Variables:
-			// 		struct FLAREREC *pFlareInfo; // $t3
+			// 		FLAREREC *pFlareInfo; // $t3
 			// 		int flaresize; // $t0
 			/* end block 1.2.1 */
 			// End offset: 0x00077FAC
@@ -925,8 +925,8 @@ void DrawLensFlare(void)
 		// 		int dX; // $v1
 		// 		int dZ; // $v0
 		// 		int len; // $a1
-		// 		struct VECTOR *v1; // $t1
-		// 		struct VECTOR *v2; // $t0
+		// 		VECTOR *v1; // $t1
+		// 		VECTOR *v2; // $t0
 
 			/* begin block 1.1.1 */
 				// Start line: 725
@@ -1136,9 +1136,9 @@ void calc_sky_brightness(void)
 		// Start line: 856
 		// Start offset: 0x00078B18
 		// Variables:
-	// 		struct POLYFT4 *src; // $t1
-	// 		struct DVECTOR *outpoints; // $t0
-	// 		struct POLY_FT4 *prims; // $t2
+	// 		POLYFT4 *src; // $t1
+	// 		DVECTOR *outpoints; // $t0
+	// 		POLY_FT4 *prims; // $t2
 	/* end block 1 */
 	// End offset: 0x00078EBC
 	// End Line: 894
@@ -1218,13 +1218,13 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlotHorizonMDL(struct MODEL *model /*$s6*/, int horizontaboffset /*$a1*/)
+// void /*$ra*/ PlotHorizonMDL(MODEL *model /*$s6*/, int horizontaboffset /*$a1*/)
  // line 896, offset 0x00078ec4
 	/* begin block 1 */
 		// Start line: 897
 		// Start offset: 0x00078EC4
 		// Variables:
-	// 		struct SVECTOR *verts; // $v1
+	// 		SVECTOR *verts; // $v1
 	// 		char *polys; // $s1
 	// 		int i; // $s0
 	// 		int p; // stack offset -56

@@ -88,7 +88,7 @@ void PrintXASubtitles()
 		// Start line: 129
 		// Start offset: 0x00082EC0
 		// Variables:
-	// 		struct CdlFILE fp; // stack offset -32
+	// 		CdlFILE fp; // stack offset -32
 	/* end block 1 */
 	// End offset: 0x00082F18
 	// End Line: 144
@@ -123,7 +123,7 @@ void GetMissionXAData(int number)
 		// Start offset: 0x00082D60
 		// Variables:
 	// 		int i; // $s0
-	// 		struct CdlFILE fp; // stack offset -32
+	// 		CdlFILE fp; // stack offset -32
 	/* end block 1 */
 	// End offset: 0x00082DAC
 	// End Line: 167
@@ -295,8 +295,8 @@ void PrepareXA(void)
 		// Start line: 266
 		// Start offset: 0x00082C64
 		// Variables:
-	// 		struct CdlFILTER filt; // stack offset -40
-	// 		struct CdlLOC loc; // stack offset -32
+	// 		CdlFILTER filt; // stack offset -40
+	// 		CdlLOC loc; // stack offset -32
 	// 		unsigned char res[8]; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00082D48
@@ -549,7 +549,7 @@ void cbready(int intr, unsigned char *result)
 		// Start line: 388
 		// Start offset: 0x00082FC4
 		// Variables:
-	// 		struct CdlFILTER filt; // stack offset -32
+	// 		CdlFILTER filt; // stack offset -32
 	// 		unsigned char res[8]; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00083064

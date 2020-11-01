@@ -250,7 +250,7 @@ void PrintStringCentred(char *pString, short y)
 		// Start line: 361
 		// Start offset: 0x00073CC8
 		// Variables:
-	// 		struct RECT dest; // stack offset -24
+	// 		RECT dest; // stack offset -24
 	// 		char *file; // $s1
 	// 		int i; // $v1
 	// 		int nchars; // $s0
@@ -331,7 +331,7 @@ void LoadFont(char *buffer)
 		// Start line: 417
 		// Start offset: 0x00074C28
 		// Variables:
-	// 		struct RECT rect; // stack offset -16
+	// 		RECT rect; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00074C64
 	// End Line: 426
@@ -435,8 +435,8 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 		// Start line: 458
 		// Start offset: 0x00073EA0
 		// Variables:
-	// 		struct OUT_FONTINFO *pFontInfo; // $a1
-	// 		struct SPRT *font; // $s0
+	// 		OUT_FONTINFO *pFontInfo; // $a1
+	// 		SPRT *font; // $s0
 	// 		unsigned char width; // $s1
 	// 		unsigned char c; // $s1
 	// 		int index; // $v1
@@ -562,8 +562,8 @@ int PrintString(char *string, int x, int y)
 		// Start line: 540
 		// Start offset: 0x00074140
 		// Variables:
-	// 		struct FONT_DIGIT *pDigit; // $a1
-	// 		struct SPRT *font; // $t0
+	// 		FONT_DIGIT *pDigit; // $a1
+	// 		SPRT *font; // $t0
 	// 		char width; // $a3
 	// 		char fixedWidth; // $t1
 	// 		char vOff; // $t2
@@ -723,8 +723,8 @@ int PrintStringFeature(char *string, int x, int y, int w, int h, int transparent
 		// Start line: 644
 		// Start offset: 0x00074364
 		// Variables:
-	// 		struct OUT_FONTINFO *pFontInfo; // $a1
-	// 		struct SPRT *font; // $s0
+	// 		OUT_FONTINFO *pFontInfo; // $a1
+	// 		SPRT *font; // $s0
 	// 		char word[32]; // stack offset -64
 	// 		char *wpt; // $t0
 	// 		char c; // $a0
@@ -897,8 +897,8 @@ void InitButtonTextures(void)
 		// Start line: 727
 		// Start offset: 0x000745DC
 		// Variables:
-	// 		struct FONT_DIGIT *pDigit; // $a2
-	// 		struct POLY_FT4 *font; // $t0
+	// 		FONT_DIGIT *pDigit; // $a2
+	// 		POLY_FT4 *font; // $t0
 	// 		int x; // $s0
 	// 		int width; // $t3
 	// 		int height; // $t6
@@ -1068,8 +1068,8 @@ char * GetNextWord(char *string, char *word)
 		// Start line: 820
 		// Start offset: 0x00074858
 		// Variables:
-	// 		struct TEXTURE_DETAILS *btn; // $a1
-	// 		struct POLY_FT3 *null; // $s0
+	// 		TEXTURE_DETAILS *btn; // $a1
+	// 		POLY_FT3 *null; // $s0
 	/* end block 1 */
 	// End offset: 0x00074A10
 	// End Line: 853
@@ -1143,7 +1143,7 @@ void* DrawButton(unsigned char button, void *prim, int x, int y)
 		// Start line: 856
 		// Start offset: 0x00074D94
 		// Variables:
-	// 		struct POLY_FT3 *null; // $s0
+	// 		POLY_FT3 *null; // $s0
 	/* end block 1 */
 	// End offset: 0x00074E54
 	// End Line: 871

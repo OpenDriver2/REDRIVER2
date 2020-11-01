@@ -173,8 +173,8 @@ int cycle_timer = 0;
 		// Start offset: 0x000149B4
 		// Variables:
 	// 		int i; // $s0
-	// 		struct CYCLE_OBJECT *cyc; // $s1
-	// 		struct RECT vram; // stack offset -24
+	// 		CYCLE_OBJECT *cyc; // $s1
+	// 		RECT vram; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00014A58
 	// End Line: 278
@@ -225,8 +225,8 @@ void InitCyclingPals(void)
 		// Start offset: 0x00013980
 		// Variables:
 	// 		int i; // $s5
-	// 		struct CYCLE_OBJECT *cyc; // $s2
-	// 		struct RECT vram; // stack offset -56
+	// 		CYCLE_OBJECT *cyc; // $s2
+	// 		RECT vram; // stack offset -56
 	// 		unsigned short *bufaddr; // $s0
 	// 		unsigned short length; // $v0
 	// 		unsigned short temp; // $s1
@@ -370,7 +370,7 @@ void ColourCycle(void)
 		// Start line: 462
 		// Start offset: 0x00014950
 		// Variables:
-	// 		struct SMASHABLE_OBJECT *sip; // $s0
+	// 		SMASHABLE_OBJECT *sip; // $s0
 	/* end block 1 */
 	// End offset: 0x000149A8
 	// End Line: 468
@@ -420,11 +420,11 @@ void FindSmashableObjects(void)
 		// Start line: 483
 		// Start offset: 0x00013CAC
 		// Variables:
-	// 		struct ANIMATED_OBJECT *aop; // $s1
+	// 		ANIMATED_OBJECT *aop; // $s1
 	// 		int loop; // $s0
 	// 		int count1; // $a0
 	// 		int count; // $a2
-	// 		struct MODEL *modelPtr; // $a0
+	// 		MODEL *modelPtr; // $a0
 	/* end block 1 */
 	// End offset: 0x00013DF8
 	// End Line: 528
@@ -498,7 +498,7 @@ void InitAnimatingObjects(void)
 		// Start line: 537
 		// Start offset: 0x00014828
 		// Variables:
-	// 		struct ANIMATED_OBJECT *aop; // $a1
+	// 		ANIMATED_OBJECT *aop; // $a1
 	// 		int i; // $a2
 	/* end block 1 */
 	// End offset: 0x00014898
@@ -570,13 +570,13 @@ void int_garage_door(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ DrawAnimatingObject(struct MODEL *model /*$a0*/, struct CELL_OBJECT *cop /*$s3*/, struct VECTOR *pos /*$a2*/)
+// int /*$ra*/ DrawAnimatingObject(MODEL *model /*$a0*/, CELL_OBJECT *cop /*$s3*/, VECTOR *pos /*$a2*/)
  // line 578, offset 0x000148a0
 	/* begin block 1 */
 		// Start line: 579
 		// Start offset: 0x000148A0
 		// Variables:
-	// 		struct ANIMATED_OBJECT *aop; // $s1
+	// 		ANIMATED_OBJECT *aop; // $s1
 	// 		int loop; // $s2
 	// 		int type; // $s0
 	/* end block 1 */
@@ -627,7 +627,7 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ animate_object(struct CELL_OBJECT *cop /*$s2*/, int type /*$a1*/)
+// void /*$ra*/ animate_object(CELL_OBJECT *cop /*$s2*/, int type /*$a1*/)
  // line 613, offset 0x00013df8
 	/* begin block 1 */
 		// Start line: 614

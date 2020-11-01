@@ -83,7 +83,7 @@ short specialSlot;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ IncrementClutNum(struct RECT *clut /*$a0*/)
+// void /*$ra*/ IncrementClutNum(RECT *clut /*$a0*/)
  // line 116, offset 0x00080ddc
 	/* begin block 1 */
 		// Start line: 1163
@@ -116,7 +116,7 @@ void IncrementClutNum(RECT16 *clut)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ IncrementTPageNum(struct RECT *tpage /*$t0*/)
+// void /*$ra*/ IncrementTPageNum(RECT *tpage /*$t0*/)
  // line 126, offset 0x00080528
 	/* begin block 1 */
 		// Start line: 127
@@ -175,7 +175,7 @@ void IncrementTPageNum(RECT16 *tpage)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ LoadTPageAndCluts(struct RECT *tpage /*$s5*/, struct RECT *cluts /*$s2*/, int tpage2send /*$s6*/, char *tpageaddress /*$s0*/)
+// int /*$ra*/ LoadTPageAndCluts(RECT *tpage /*$s5*/, RECT *cluts /*$s2*/, int tpage2send /*$s6*/, char *tpageaddress /*$s0*/)
  // line 155, offset 0x00080e14
 	/* begin block 1 */
 		// Start line: 156
@@ -183,7 +183,7 @@ void IncrementTPageNum(RECT16 *tpage)
 		// Variables:
 	// 		int i; // $s3
 	// 		int npalettes; // $s4
-	// 		struct RECT temptpage; // stack offset -40
+	// 		RECT temptpage; // stack offset -40
 	/* end block 1 */
 	// End offset: 0x00080F3C
 	// End Line: 185
@@ -256,7 +256,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ Find_TexID(struct MODEL *model /*$t0*/, int t_id /*$a1*/)
+// int /*$ra*/ Find_TexID(MODEL *model /*$t0*/, int t_id /*$a1*/)
  // line 191, offset 0x000805ec
 	/* begin block 1 */
 		// Start line: 192
@@ -366,7 +366,7 @@ int Find_TexID(MODEL *model, int t_id)
 
 // decompiled code
 // original method signature: 
-// struct TEXINF * /*$ra*/ GetTEXINFName(char *name /*$fp*/, int *tpagenum /*stack 4*/, int *texturenum /*stack 8*/)
+// TEXINF * /*$ra*/ GetTEXINFName(char *name /*$fp*/, int *tpagenum /*stack 4*/, int *texturenum /*stack 8*/)
  // line 261, offset 0x00080f3c
 	/* begin block 1 */
 		// Start line: 262
@@ -375,7 +375,7 @@ int Find_TexID(MODEL *model, int t_id)
 	// 		int i; // $s4
 	// 		int j; // $s1
 	// 		int texamt; // $s2
-	// 		struct TEXINF *texinf; // $s3
+	// 		TEXINF *texinf; // $s3
 	// 		char *nametable; // $s6
 	/* end block 1 */
 	// End offset: 0x00081038
@@ -429,7 +429,7 @@ TEXINF* GetTEXINFName(char *name, int *tpagenum, int *texturenum)
 
 // decompiled code
 // original method signature: 
-// struct TEXINF * /*$ra*/ GetTextureInfoName(char *name /*$a0*/, struct TPAN *result /*$s0*/)
+// TEXINF * /*$ra*/ GetTextureInfoName(char *name /*$a0*/, TPAN *result /*$s0*/)
  // line 290, offset 0x00080da0
 	/* begin block 1 */
 		// Start line: 291
@@ -465,7 +465,7 @@ TEXINF* GetTextureInfoName(char *name, TPAN *result)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ update_slotinfo(int tpage /*$a0*/, int slot /*$a1*/, struct RECT *pos /*$a2*/)
+// void /*$ra*/ update_slotinfo(int tpage /*$a0*/, int slot /*$a1*/, RECT *pos /*$a2*/)
  // line 334, offset 0x00081038
 	/* begin block 1 */
 		// Start line: 1606
@@ -778,8 +778,8 @@ void LoadPermanentTPages(int *sector)
 		// Start line: 580
 		// Start offset: 0x00081118
 		// Variables:
-	// 		struct RECT tpage; // stack offset -88
-	// 		struct RECT clutpos; // stack offset -80
+	// 		RECT tpage; // stack offset -88
+	// 		RECT clutpos; // stack offset -80
 	// 		char name[64]; // stack offset -72
 	/* end block 1 */
 	// End offset: 0x00081140
@@ -818,7 +818,7 @@ void ReloadIcons(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ GetTextureDetails(char *name /*stack 0*/, struct TEXTURE_DETAILS *info /*$s3*/)
+// void /*$ra*/ GetTextureDetails(char *name /*stack 0*/, TEXTURE_DETAILS *info /*$s3*/)
  // line 602, offset 0x00080bb0
 	/* begin block 1 */
 		// Start line: 603
@@ -827,7 +827,7 @@ void ReloadIcons(void)
 	// 		int i; // $s2
 	// 		int j; // $s1
 	// 		int texamt; // $s4
-	// 		struct TEXINF *texinf; // $v1
+	// 		TEXINF *texinf; // $v1
 	// 		char *nametable; // stack offset -56
 	/* end block 1 */
 	// End offset: 0x00080D70

@@ -237,7 +237,7 @@ void DeleteCurrentCamera(int CameraCnt)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ setCamera(struct PLAYBACKCAMERA *Change /*$a0*/)
+// void /*$ra*/ setCamera(PLAYBACKCAMERA *Change /*$a0*/)
  // line 493, offset 0x0003e89c
 	/* begin block 1 */
 		// Start line: 3304
@@ -393,7 +393,7 @@ void EditCamera(int CameraCnt)
 		// Start line: 575
 		// Start offset: 0x0003B548
 		// Variables:
-	// 		struct PLAYBACKCAMERA *TempChange; // $a1
+	// 		PLAYBACKCAMERA *TempChange; // $a1
 	/* end block 1 */
 	// End offset: 0x0003B794
 	// End Line: 632
@@ -483,7 +483,7 @@ void RecordCamera(int CameraCnt)
 	// 		int count; // $a3
 	// 		int nextframe; // $a2
 	// 		int found; // $t0
-	// 		struct PLAYBACKCAMERA *RestoreChange; // $t1
+	// 		PLAYBACKCAMERA *RestoreChange; // $t1
 	/* end block 1 */
 	// End offset: 0x0003E9B8
 	// End Line: 655
@@ -609,7 +609,7 @@ int CheckCameraChange(int CameraCnt)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetPlaybackCamera(struct PLAYBACKCAMERA *camera /*$a0*/)
+// void /*$ra*/ SetPlaybackCamera(PLAYBACKCAMERA *camera /*$a0*/)
  // line 710, offset 0x0003ec0c
 	/* begin block 1 */
 		// Start line: 5354
@@ -659,13 +659,13 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ IsMovingCamera(struct PLAYBACKCAMERA *lastcam /*$t3*/, struct PLAYBACKCAMERA *nextcam /*$t0*/, int cameracnt /*$a2*/)
+// int /*$ra*/ IsMovingCamera(PLAYBACKCAMERA *lastcam /*$t3*/, PLAYBACKCAMERA *nextcam /*$t0*/, int cameracnt /*$a2*/)
  // line 731, offset 0x0003b8c8
 	/* begin block 1 */
 		// Start line: 732
 		// Start offset: 0x0003B8C8
 		// Variables:
-	// 		struct PLAYBACKCAMERA cam; // stack offset -56
+	// 		PLAYBACKCAMERA cam; // stack offset -56
 	// 		long xdist; // $t5
 	// 		long ydist; // $t6
 	// 		long zdist; // $t4
@@ -768,8 +768,8 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 		// Start line: 795
 		// Start offset: 0x0003BBA8
 		// Variables:
-	// 		struct POLY_G4 *camera; // $a2
-	// 		struct LINE_F2 *bar; // $t2
+	// 		POLY_G4 *camera; // $a2
+	// 		LINE_F2 *bar; // $t2
 	// 		int x; // $a2
 	// 		int min_x; // $t1
 	// 		int max_x; // $t0
@@ -1028,7 +1028,7 @@ void CameraBar(int CameraCnt)
 
 // decompiled code
 // original method signature: 
-// struct PLAYBACKCAMERA * /*$ra*/ FindFreeCamera()
+// PLAYBACKCAMERA * /*$ra*/ FindFreeCamera()
  // line 929, offset 0x0003e9b8
 	/* begin block 1 */
 		// Start line: 931
@@ -1118,7 +1118,7 @@ void deleteCamera(int count)
 		// Start line: 953
 		// Start offset: 0x0003EA40
 		// Variables:
-	// 		struct PLAYBACKCAMERA nextcamera; // stack offset -48
+	// 		PLAYBACKCAMERA nextcamera; // stack offset -48
 	// 		int count; // $s0
 	/* end block 1 */
 	// End offset: 0x0003EAA4
@@ -1172,15 +1172,15 @@ void DeleteAllCameras(void)
 		// Start offset: 0x0003C1B0
 		// Variables:
 	// 		static int FlashCnt; // offset 0x0
-	// 		struct REPLAY_ICON *IconPtr; // $s0
-	// 		struct SPRT *icon; // $a2
+	// 		REPLAY_ICON *IconPtr; // $s0
+	// 		SPRT *icon; // $a2
 	// 		int count; // $s6
 
 		/* begin block 1.1 */
 			// Start line: 1027
 			// Start offset: 0x0003C340
 			// Variables:
-		// 		struct TEXTURE_DETAILS *Icon_texture; // $s1
+		// 		TEXTURE_DETAILS *Icon_texture; // $s1
 		// 		int min_x; // $v1
 		// 		int min_y; // $a0
 
@@ -1571,7 +1571,7 @@ void ShowReplayMenu(void)
 				// Start line: 1327
 				// Start offset: 0x0003CC34
 				// Variables:
-			// 		struct ROUTE_DATA routeData; // stack offset -96
+			// 		ROUTE_DATA routeData; // stack offset -96
 			// 		int road_height; // $s1
 			/* end block 1.1.3 */
 			// End offset: 0x0003CCB0
@@ -1581,7 +1581,7 @@ void ShowReplayMenu(void)
 				// Start line: 1347
 				// Start offset: 0x0003CCBC
 				// Variables:
-			// 		struct VECTOR old_camera; // stack offset -88
+			// 		VECTOR old_camera; // stack offset -88
 			// 		int x; // $s5
 			// 		int z; // $s4
 			// 		int d; // $s3
@@ -1589,14 +1589,14 @@ void ShowReplayMenu(void)
 			// 		char cameraCar; // $a0
 			// 		int dx; // $s1
 			// 		int dz; // $s0
-			// 		struct VECTOR basePos; // stack offset -72
-			// 		struct VECTOR tmpPos; // stack offset -56
+			// 		VECTOR basePos; // stack offset -72
+			// 		VECTOR tmpPos; // stack offset -56
 
 				/* begin block 1.1.4.1 */
 					// Start line: 1372
 					// Start offset: 0x0003CD38
 					// Variables:
-				// 		struct _EVENT *event; // $a1
+				// 		EVENT *event; // $a1
 				/* end block 1.1.4.1 */
 				// End offset: 0x0003CD68
 				// End Line: 1376
@@ -1621,7 +1621,7 @@ void ShowReplayMenu(void)
 					// Start line: 1454
 					// Start offset: 0x0003CF74
 					// Variables:
-				// 		struct ROUTE_DATA routeData; // stack offset -40
+				// 		ROUTE_DATA routeData; // stack offset -40
 				// 		int road_height; // $s1
 				/* end block 1.1.4.4 */
 				// End offset: 0x0003D064
@@ -1855,7 +1855,7 @@ void ControlReplay(void)
 			}
 			else
 			{
-				_EVENT* ev;
+				EVENT* ev;
 				ev = events.track[-2 - cameraCar];
 				
 				basePos.vx = (ev->position).vx;
@@ -2616,7 +2616,7 @@ void ControlReplay(void)
 		// Start line: 1992
 		// Start offset: 0x0003DE60
 		// Variables:
-	// 		struct VECTOR pos; // stack offset -40
+	// 		VECTOR pos; // stack offset -40
 
 		/* begin block 1.1 */
 			// Start line: 1998
@@ -2822,9 +2822,9 @@ void DoAutoDirect(void)
 			// Start line: 2123
 			// Start offset: 0x0003E3A0
 			// Variables:
-		// 		struct _EVENT *event; // $a0
-		// 		struct _CAR_DATA *car; // $a3
-		// 		struct XZPAIR pos; // stack offset -16
+		// 		EVENT *event; // $a0
+		// 		CAR_DATA *car; // $a3
+		// 		XZPAIR pos; // stack offset -16
 
 			/* begin block 1.1.1 */
 				// Start line: 2168
@@ -2858,10 +2858,10 @@ int SelectCameraCar(int current)
 {
 	int count;
 
-	_EVENT* event;
+	EVENT* event;
 	int dz;
 	int dx;
-	_CAR_DATA* car;
+	CAR_DATA* car;
 	XZPAIR pos;
 
 	if (current >= MAX_CARS)
@@ -2964,8 +2964,8 @@ int SelectCameraCar(int current)
 				// Start offset: 0x0003E5D0
 				// Variables:
 			// 		char numEventModels; // $a0
-			// 		struct _EVENT *event; // $v1
-			// 		struct XZPAIR pos; // stack offset -24
+			// 		EVENT *event; // $v1
+			// 		XZPAIR pos; // stack offset -24
 
 				/* begin block 1.1.1.1 */
 					// Start line: 2208
@@ -3052,7 +3052,7 @@ int InvalidCamera(int car_num)
 	// check events
 	if (car_num < -1)
 	{
-		_EVENT* event;
+		EVENT* event;
 		XZPAIR pos;
 
 		numEventModels = 0;
@@ -3194,7 +3194,7 @@ int FirstCamera(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ dist(struct VECTOR *pos1 /*$a0*/, struct VECTOR *pos2 /*$a1*/)
+// int /*$ra*/ dist(VECTOR *pos1 /*$a0*/, VECTOR *pos2 /*$a1*/)
  // line 2289, offset 0x0003eb9c
 	/* begin block 1 */
 		// Start line: 2290
@@ -3243,7 +3243,7 @@ int dist(VECTOR* pos1, VECTOR* pos2)
 		// Start line: 2304
 		// Start offset: 0x0003ECC4
 		// Variables:
-	// 		struct PLAYBACKCAMERA *next; // $a1
+	// 		PLAYBACKCAMERA *next; // $a1
 	// 		int count; // $a2
 	/* end block 1 */
 	// End offset: 0x0003ED7C

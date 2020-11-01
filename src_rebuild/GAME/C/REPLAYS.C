@@ -30,7 +30,7 @@ char *replayptr = NULL;
 int ReplaySize = 0;
 
 unsigned long PingBufferPos = 0;
-_PING_PACKET *PingBuffer = NULL;
+PING_PACKET *PingBuffer = NULL;
 
 SXYPAIR *PlayerWayRecordPtr = NULL;
 PLAYBACKCAMERA *PlaybackCamera = NULL;
@@ -96,8 +96,8 @@ void InitPadRecording(void)
 
 		PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
 
-		PingBuffer = (_PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
-		setMem8((u_char*)PingBuffer, -1, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
+		PingBuffer = (PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+		setMem8((u_char*)PingBuffer, -1, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 
 		replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
@@ -140,7 +140,7 @@ void InitPadRecording(void)
 		// Start line: 658
 		// Start offset: 0x0001A234
 		// Variables:
-	// 		struct REPLAY_SAVE_HEADER *header; // $s2
+	// 		REPLAY_SAVE_HEADER *header; // $s2
 	// 		int i; // $a2
 	// 		int size; // $s1
 	// 		int numstreams; // $s6
@@ -236,8 +236,8 @@ int SaveReplayToBuffer(char *buffer)
 	memcpy(pt, PlaybackCamera, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(pt, PingBuffer, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
-	pt += sizeof(_PING_PACKET) * MAX_REPLAY_PINGS;
+	memcpy(pt, PingBuffer, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
 
 	// [A] is that ever valid?
 	if (gHaveStoredData)
@@ -263,8 +263,8 @@ int SaveReplayToBuffer(char *buffer)
 		// Start line: 742
 		// Start offset: 0x0001A798
 		// Variables:
-	// 		struct REPLAY_SAVE_HEADER *header; // $s3
-	// 		struct REPLAY_STREAM_HEADER *sheader; // $t0
+	// 		REPLAY_SAVE_HEADER *header; // $s3
+	// 		REPLAY_STREAM_HEADER *sheader; // $t0
 	// 		int i; // $a1
 	// 		int size; // $s0
 	/* end block 1 */
@@ -492,9 +492,9 @@ int LoadReplayFromBuffer(char *buffer)
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
 	PingBufferPos = 0;
-	PingBuffer = (_PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
-	memcpy(PingBuffer, pt, sizeof(_PING_PACKET) * MAX_REPLAY_PINGS);
-	pt += sizeof(_PING_PACKET) * MAX_REPLAY_PINGS;
+	PingBuffer = (PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+	memcpy(PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
 
 	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
@@ -558,7 +558,7 @@ int LoadAttractReplay(int mission)
 		// Start line: 1183
 		// Start offset: 0x0001B090
 		// Variables:
-	// 		struct _PING_PACKET *pp; // $a1
+	// 		_PING_PACKET *pp; // $a1
 	// 		char retCarId; // $v0
 	/* end block 1 */
 	// End offset: 0x0001B118
@@ -578,7 +578,7 @@ int LoadAttractReplay(int mission)
 char GetPingInfo(char *cookieCount)
 {
 	char retCarId;
-	_PING_PACKET *pp;
+	PING_PACKET *pp;
 
 	retCarId = -1;
 
@@ -606,7 +606,7 @@ char GetPingInfo(char *cookieCount)
 // [A] Stores ping info into replay buffer
 int StorePingInfo(int cookieCount, int carId)
 {
-	_PING_PACKET* packet;
+	PING_PACKET* packet;
 
 	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
 		return 0;
@@ -643,7 +643,7 @@ int IsPingInfoAvailable()
 		// Start line: 1224
 		// Start offset: 0x0001AF34
 		// Variables:
-	// 		struct XYPAIR region_coords; // stack offset -8
+	// 		XYPAIR region_coords; // stack offset -8
 	// 		int region; // $a0
 	/* end block 1 */
 	// End offset: 0x0001AFFC
@@ -860,7 +860,7 @@ void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AllocateReplayStream(struct REPLAY_STREAM *stream /*$a0*/, int maxpad /*$a1*/)
+// void /*$ra*/ AllocateReplayStream(REPLAY_STREAM *stream /*$a0*/, int maxpad /*$a1*/)
  // line 1383, offset 0x0001b17c
 	/* begin block 1 */
 		// Start line: 3101
@@ -915,7 +915,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 		// Start line: 1403
 		// Start offset: 0x0001B1F0
 		// Variables:
-	// 		struct REPLAY_STREAM *rstream; // $a2
+	// 		REPLAY_STREAM *rstream; // $a2
 	// 		unsigned long t0; // $a0
 	/* end block 1 */
 	// End offset: 0x0001B280
@@ -974,7 +974,7 @@ int Get(int stream, ulong *pt0)
 		// Start line: 1442
 		// Start offset: 0x0001B280
 		// Variables:
-	// 		struct REPLAY_STREAM *rstream; // $a0
+	// 		REPLAY_STREAM *rstream; // $a0
 	// 		unsigned char **pstream; // $a3
 	// 		unsigned long t0; // $a1
 	/* end block 1 */

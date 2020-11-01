@@ -46,7 +46,7 @@ unsigned short paddCamera;
 char cameraview = 0;
 int CameraCnt = 0;
 
-static long basePos[4]; // [A]
+static LONGVECTOR basePos; // [A]
 static long baseDir = 0;
 
 char tracking_car = 0;
@@ -57,10 +57,10 @@ int TargetCar = 0;
 int CameraCar = 0;
 
 // [A] custom function - recalculates base camera position (separated from InitCamera)
-void CalcCameraBasePos(_PLAYER* lp)
+void CalcCameraBasePos(PLAYER* lp)
 {
 	CAR_COSMETICS* car_cos;
-	_EVENT* event;
+	EVENT* event;
 	SVECTOR boxDisp = { 0 };
 
 	if (lp->cameraCarId < 0)
@@ -110,13 +110,13 @@ void CalcCameraBasePos(_PLAYER* lp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitCamera(struct _PLAYER *lp /*$s0*/)
+// void /*$ra*/ InitCamera(PLAYER *lp /*$s0*/)
  // line 422, offset 0x0001f5f4
 	/* begin block 1 */
 		// Start line: 423
 		// Start offset: 0x0001F5F4
 		// Variables:
-	// 		struct SVECTOR boxDisp; // stack offset -16
+	// 		SVECTOR boxDisp; // stack offset -16
 
 		/* begin block 1.1 */
 			// Start line: 428
@@ -129,7 +129,7 @@ void CalcCameraBasePos(_PLAYER* lp)
 			// Start line: 441
 			// Start offset: 0x0001F6AC
 			// Variables:
-		// 		struct _CAR_DATA *lcp; // $a0
+		// 		CAR_DATA *lcp; // $a0
 		/* end block 1.2 */
 		// End offset: 0x0001F6AC
 		// End Line: 441
@@ -138,7 +138,7 @@ void CalcCameraBasePos(_PLAYER* lp)
 			// Start line: 454
 			// Start offset: 0x0001F794
 			// Variables:
-		// 		struct _EVENT *event; // $a1
+		// 		EVENT *event; // $a1
 		/* end block 1.3 */
 		// End offset: 0x0001F794
 		// End Line: 455
@@ -152,7 +152,7 @@ void CalcCameraBasePos(_PLAYER* lp)
 	// End Line: 845
 
 // [D] [T]
-void InitCamera(_PLAYER *lp)
+void InitCamera(PLAYER *lp)
 {
 	if (events.cameraEvent == NULL) 
 	{
@@ -240,8 +240,8 @@ void InitCamera(_PLAYER *lp)
 		// Start line: 555
 		// Start offset: 0x0001FA20
 		// Variables:
-	// 		struct PAD *locPad; // $a3
-	// 		struct _PLAYER *lp; // $a2
+	// 		PAD *locPad; // $a3
+	// 		PLAYER *lp; // $a2
 
 		/* begin block 1.1 */
 			// Start line: 568
@@ -295,7 +295,7 @@ void ModifyCamera(void)
 		1,0,2,1
 	};
 
-	_PLAYER *lp;
+	PLAYER *lp;
 	char *pNextCameraView;
 	int angle;
 	int length;
@@ -352,13 +352,13 @@ void ModifyCamera(void)
 		// Start line: 611
 		// Start offset: 0x0001FC18
 		// Variables:
-	// 		struct MODEL *model; // $v1
-	// 		struct COLLISION_PACKET *collide; // $t2
-	// 		struct CELL_OBJECT *cop; // $t3
-	// 		struct CELL_ITERATOR ci; // stack offset -168
-	// 		struct VECTOR nearpoint; // stack offset -144
-	// 		struct VECTOR surfacenormal; // stack offset -128
-	// 		struct VECTOR surfacepoint; // stack offset -112
+	// 		MODEL *model; // $v1
+	// 		COLLISION_PACKET *collide; // $t2
+	// 		CELL_OBJECT *cop; // $t3
+	// 		CELL_ITERATOR ci; // stack offset -168
+	// 		VECTOR nearpoint; // stack offset -144
+	// 		VECTOR surfacenormal; // stack offset -128
+	// 		VECTOR surfacepoint; // stack offset -112
 	// 		int cell_x; // $a0
 	// 		int cell_z; // $a1
 	// 		int xd; // $v1
@@ -368,16 +368,16 @@ void ModifyCamera(void)
 	// 		int sphere_sq; // $a2
 	// 		int camera_size; // $s0
 	// 		int count; // $s1
-	// 		struct VECTOR temp_cam; // stack offset -96
+	// 		VECTOR temp_cam; // stack offset -96
 
 		/* begin block 1.1 */
 			// Start line: 659
 			// Start offset: 0x0001FDF4
 			// Variables:
-		// 		struct MATRIX *mat; // $a2
-		// 		struct VECTOR offset; // stack offset -80
-		// 		struct VECTOR cam_vec; // stack offset -64
-		// 		struct VECTOR normal; // stack offset -48
+		// 		MATRIX *mat; // $a2
+		// 		VECTOR offset; // stack offset -80
+		// 		VECTOR cam_vec; // stack offset -64
+		// 		VECTOR normal; // stack offset -48
 		// 		int xmin; // $a0
 		// 		int xmax; // $a3
 		// 		int ymin; // $t0
@@ -519,7 +519,7 @@ int CameraCollisionCheck(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TurnHead(struct _PLAYER *lp /*$a0*/)
+// void /*$ra*/ TurnHead(PLAYER *lp /*$a0*/)
  // line 716, offset 0x00020a10
 	/* begin block 1 */
 		// Start line: 717
@@ -539,7 +539,7 @@ int CameraCollisionCheck(void)
 	// End Line: 2115
 
 // [D] [T]
-void TurnHead(_PLAYER *lp)
+void TurnHead(PLAYER *lp)
 {
 	if ((paddCamera & 3) == 3) 
 	{
@@ -585,7 +585,7 @@ void TurnHead(_PLAYER *lp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlaceCameraFollowCar(struct _PLAYER *lp /*$s2*/)
+// void /*$ra*/ PlaceCameraFollowCar(PLAYER *lp /*$s2*/)
  // line 777, offset 0x0002003c
 	/* begin block 1 */
 		// Start line: 778
@@ -596,7 +596,7 @@ void TurnHead(_PLAYER *lp)
 	// 		int cammapht; // $s0
 	// 		int new_angle; // $a0
 	// 		int camPosVy; // $s1
-	// 		struct VECTOR locCameraPos; // stack offset -48
+	// 		VECTOR locCameraPos; // stack offset -48
 	// 		int lbody; // $a0
 	// 		int hbody; // $a3
 	// 		int camExpandSpeed; // $s6
@@ -605,7 +605,7 @@ void TurnHead(_PLAYER *lp)
 			// Start line: 800
 			// Start offset: 0x00020088
 			// Variables:
-		// 		struct _CAR_DATA *camCar; // $v1
+		// 		CAR_DATA *camCar; // $v1
 		/* end block 1.1 */
 		// End offset: 0x0002011C
 		// End Line: 810
@@ -626,11 +626,11 @@ void TurnHead(_PLAYER *lp)
 short gCameraDistance = 1000;
 short gCameraMaxDistance = 0;
 
-_CAR_DATA *jcam = NULL;
+CAR_DATA *jcam = NULL;
 int switch_detail_distance = 10000;
 
 // [D] [T]
-void PlaceCameraFollowCar(_PLAYER *lp)
+void PlaceCameraFollowCar(PLAYER *lp)
 {
 	CAR_COSMETICS *car_cos;
 	int camAngle;
@@ -649,7 +649,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	
 	if (lp->cameraCarId >= 0)
 	{
-		_CAR_DATA* camCar;
+		CAR_DATA* camCar;
 		int carSpeed;
 		camCar = &car_data[lp->cameraCarId];
 
@@ -712,7 +712,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	}
 
 	jcam = &car_data[CAMERA_COLLIDER_CARID];
-	ClearMem((char *)jcam, sizeof(_CAR_DATA));
+	ClearMem((char *)jcam, sizeof(CAR_DATA));
 
 	jcam->controlType = CONTROL_TYPE_CAMERACOLLIDER;
 
@@ -759,7 +759,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlaceCameraAtLocation(struct _PLAYER *lp /*$s1*/, int zoom /*$s2*/)
+// void /*$ra*/ PlaceCameraAtLocation(PLAYER *lp /*$s1*/, int zoom /*$s2*/)
  // line 904, offset 0x00020904
 	/* begin block 1 */
 		// Start line: 905
@@ -771,7 +771,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 			// Start line: 911
 			// Start offset: 0x00020930
 			// Variables:
-		// 		struct VECTOR temp; // stack offset -32
+		// 		VECTOR temp; // stack offset -32
 		/* end block 1.1 */
 		// End offset: 0x00020930
 		// End Line: 913
@@ -795,7 +795,7 @@ void PlaceCameraFollowCar(_PLAYER *lp)
 	// End Line: 2241
 
 // [D] [T]
-void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
+void PlaceCameraAtLocation(PLAYER *lp, int zoom)
 {
 	int d;
 	VECTOR temp;
@@ -843,13 +843,13 @@ void PlaceCameraAtLocation(_PLAYER *lp, int zoom)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ PointAtTarget(struct VECTOR *pPosition /*$a0*/, struct VECTOR *pTarget /*$a1*/, struct SVECTOR *pAngleVec /*$s0*/)
+// int /*$ra*/ PointAtTarget(VECTOR *pPosition /*$a0*/, VECTOR *pTarget /*$a1*/, SVECTOR *pAngleVec /*$s0*/)
  // line 960, offset 0x00020b08
 	/* begin block 1 */
 		// Start line: 961
 		// Start offset: 0x00020B08
 		// Variables:
-	// 		struct VECTOR delta; // stack offset -32
+	// 		VECTOR delta; // stack offset -32
 	// 		int d; // $s1
 	/* end block 1 */
 	// End offset: 0x00020BC0
@@ -892,13 +892,13 @@ int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlaceCameraInCar(struct _PLAYER *lp /*$s3*/, int BumperCam /*$a1*/)
+// void /*$ra*/ PlaceCameraInCar(PLAYER *lp /*$s3*/, int BumperCam /*$a1*/)
  // line 987, offset 0x0002050c
 	/* begin block 1 */
 		// Start line: 988
 		// Start offset: 0x0002050C
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $s2
+	// 		CAR_DATA *cp; // $s2
 
 		/* begin block 1.1 */
 			// Start line: 1044
@@ -930,10 +930,10 @@ int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 VECTOR viewer_position;
 
 // [D] [T]
-void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
+void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 {
 	int angle;
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 
 	cp = NULL;
 
@@ -1037,7 +1037,7 @@ void PlaceCameraInCar(_PLAYER *lp, int BumperCam)
 		// Start offset: 0x00020BC0
 		// Variables:
 	// 		int old_z; // $s0
-	// 		struct VECTOR temp; // stack offset -24
+	// 		VECTOR temp; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00020C70
 	// End Line: 1114
@@ -1092,7 +1092,7 @@ int OK_To_Zoom(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetBasePos(struct VECTOR *pVec /*$a0*/)
+// void /*$ra*/ SetBasePos(VECTOR *pVec /*$a0*/)
  // line 1119, offset 0x00020c70
 	/* begin block 1 */
 		// Start line: 2945

@@ -67,14 +67,14 @@ extern int pathAILoaded;
 
 extern char* LoadingScreenNames[];
 
-struct DB // hashcode: 0xE4F25C4D (dec: -453878707)
+struct DB
 {
-	char* primptr; // size=0, offset=0
-	OTTYPE* ot; // size=0, offset=4
-	char* primtab; // size=0, offset=8
-	int id; // size=0, offset=12
-	DRAWENV draw; // size=92, offset=16
-	DISPENV disp; // size=20, offset=108
+	char* primptr;
+	OTTYPE* ot;
+	char* primtab;
+	int id;
+	DRAWENV draw;
+	DISPENV disp;
 };
 
 extern DRAW_MODE draw_mode_pal;
@@ -149,15 +149,15 @@ extern void SetupDrawBuffers(); // 0x0007EDDC
 
 extern void SetupDrawBufferData(int num_players); // 0x0007EF0C
 
-extern void InitaliseDrawEnv(struct DB *pBuff, int x, int y, int w, int h); // 0x0007F7C0
+extern void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h); // 0x0007F7C0
 
 extern void ResetCityType(); // 0x0007F5B4
 
-extern void SetCityType(enum CITYTYPE type); // 0x0007F118
+extern void SetCityType(CITYTYPE type); // 0x0007F118
 
 extern int FileExists(char *filename); // 0x0007F5C8
 
-extern enum CDTYPE DiscSwapped(char *filename); // 0x0007F640
+extern CDTYPE DiscSwapped(char *filename); // 0x0007F640
 
 
 #endif

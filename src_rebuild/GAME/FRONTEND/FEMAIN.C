@@ -430,7 +430,7 @@ void SetVariable(int var)
 	// 		int iNumScreens; // $t6
 	// 		int i; // $t0
 	// 		int j; // $a3
-	// 		struct RECT rect; // stack offset -40
+	// 		RECT rect; // stack offset -40
 	// 		char *ptr; // $a2
 	/* end block 1 */
 	// End offset: 0x001C0F24
@@ -528,7 +528,7 @@ void LoadFrontendScreens(void)
 		// Start offset: 0x001C0F24
 		// Variables:
 	// 		int iTpage; // $s2
-	// 		struct RECT rect; // stack offset -72
+	// 		RECT rect; // stack offset -72
 	// 		int p; // $s0
 	// 		int pages[7]; // stack offset -64
 	/* end block 1 */
@@ -690,14 +690,14 @@ void SetupBackgroundPolys(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupScreenSprts(struct PSXSCREEN *pScr /*$a0*/)
+// void /*$ra*/ SetupScreenSprts(PSXSCREEN *pScr /*$a0*/)
  // line 1588, offset 0x001c132c
 	/* begin block 1 */
 		// Start line: 1589
 		// Start offset: 0x001C132C
 		// Variables:
 	// 		int tpage; // $a1
-	// 		struct POLY_FT3 *null; // $v0
+	// 		POLY_FT3 *null; // $v0
 	/* end block 1 */
 	// End offset: 0x001C147C
 	// End Line: 1650
@@ -766,7 +766,7 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawScreen(struct PSXSCREEN *pScr /*stack 0*/)
+// void /*$ra*/ DrawScreen(PSXSCREEN *pScr /*stack 0*/)
  // line 1658, offset 0x001c147c
 	/* begin block 1 */
 		// Start line: 1659
@@ -1003,7 +1003,7 @@ void DisplayOnScreenText(void)
 		// Variables:
 	// 		int i; // $s0
 	// 		int tpage; // $v1
-	// 		struct RECT rect; // stack offset -40
+	// 		RECT rect; // stack offset -40
 	/* end block 1 */
 	// End offset: 0x001C1CF4
 	// End Line: 1916
@@ -1182,8 +1182,8 @@ void ReInitScreens(void)
 		// Start line: 1992
 		// Start offset: 0x001C1E18
 		// Variables:
-	// 		struct RECT rect; // stack offset -48
-	// 		struct PSXBUTTON *pNewB; // $s2
+	// 		RECT rect; // stack offset -48
+	// 		PSXBUTTON *pNewB; // $s2
 	/* end block 1 */
 	// End offset: 0x001C227C
 	// End Line: 2085
@@ -1713,7 +1713,7 @@ void DoFrontEnd(void)
 		// Start line: 2632
 		// Start offset: 0x001C2C2C
 		// Variables:
-	// 		struct DRAW_MODE *dm; // $s3
+	// 		DRAW_MODE *dm; // $s3
 	/* end block 1 */
 	// End offset: 0x001C2D90
 	// End Line: 2687
@@ -1790,7 +1790,7 @@ void SetFEDrawMode(void)
 		// Start line: 2697
 		// Start offset: 0x001C6378
 		// Variables:
-	// 		struct DB *db_hold; // $a1
+	// 		DB *db_hold; // $a1
 	/* end block 1 */
 	// End offset: 0x001C6404
 	// End Line: 2716
@@ -1852,8 +1852,8 @@ void EndFrame(void)
 		// Start line: 2746
 		// Start offset: 0x001C2D90
 		// Variables:
-	// 		struct FE_CHARDATA *pFontInfo; // $a0
-	// 		struct SPRT *font; // $t0
+	// 		FE_CHARDATA *pFontInfo; // $a0
+	// 		SPRT *font; // $t0
 	// 		unsigned char let; // $a0
 	// 		int counter; // $t4
 
@@ -1991,8 +1991,8 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 		// Start line: 2818
 		// Start offset: 0x001C2FD8
 		// Variables:
-	// 		struct POLY_FT4 *font; // $t0
-	// 		struct FE_CHARDATA *pFontInfo; // $a2
+	// 		POLY_FT4 *font; // $t0
+	// 		FE_CHARDATA *pFontInfo; // $a2
 	// 		char let; // $v1
 	// 		int tpage; // $v0
 	// 		int w; // $t3
@@ -2188,7 +2188,7 @@ int CentreScreen(int bSetup)
 		// Start offset: 0x001C3430
 		// Variables:
 	// 		int i; // $a0
-	// 		struct RECT rect; // stack offset -32
+	// 		RECT rect; // stack offset -32
 
 		/* begin block 1.1 */
 			// Start line: 3145
@@ -2204,7 +2204,7 @@ int CentreScreen(int bSetup)
 					// Start line: 3030
 					// Start offset: 0x001C37BC
 					// Variables:
-				// 		struct RECT rect; // stack offset -24
+				// 		RECT rect; // stack offset -24
 				/* end block 1.1.1.1 */
 				// End offset: 0x001C37BC
 				// End Line: 3030
@@ -2229,7 +2229,7 @@ int CentreScreen(int bSetup)
 					// Start line: 3030
 					// Start offset: 0x001C3858
 					// Variables:
-				// 		struct RECT rect; // stack offset -24
+				// 		RECT rect; // stack offset -24
 				/* end block 1.2.1.1 */
 				// End offset: 0x001C3858
 				// End Line: 3030
@@ -2843,7 +2843,7 @@ int MissionSelectScreen(int bSetup)
 				// Start line: 3703
 				// Start offset: 0x001C449C
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.1.1 */
 			// End offset: 0x001C449C
 			// End Line: 3703
@@ -2859,7 +2859,7 @@ int MissionSelectScreen(int bSetup)
 				// Start line: 3709
 				// Start offset: 0x001C44C4
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.2.1 */
 			// End offset: 0x001C44C4
 			// End Line: 3709
@@ -2997,9 +2997,9 @@ int MissionCityScreen(int bSetup)
 		// Start line: 3730
 		// Start offset: 0x001C4600
 		// Variables:
-	// 		struct RENDER_ARGS renderArgs; // stack offset -48
+	// 		RENDER_ARGS renderArgs; // stack offset -48
 	// 		int extraVal; // $a0
-	// 		struct RECT rect; // stack offset -24
+	// 		RECT rect; // stack offset -24
 
 		/* begin block 1.1 */
 			// Start line: 3789
@@ -3009,7 +3009,7 @@ int MissionCityScreen(int bSetup)
 				// Start line: 3789
 				// Start offset: 0x001C4798
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.1.1 */
 			// End offset: 0x001C4798
 			// End Line: 3789
@@ -3027,7 +3027,7 @@ int MissionCityScreen(int bSetup)
 				// Start line: 3729
 				// Start offset: 0x001C4844
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.2.1 */
 			// End offset: 0x001C4844
 			// End Line: 3729
@@ -3043,7 +3043,7 @@ int MissionCityScreen(int bSetup)
 				// Start line: 3808
 				// Start offset: 0x001C4900
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.3.1 */
 			// End offset: 0x001C4900
 			// End Line: 3808
@@ -3059,7 +3059,7 @@ int MissionCityScreen(int bSetup)
 				// Start line: 3813
 				// Start offset: 0x001C4940
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.4.1 */
 			// End offset: 0x001C4940
 			// End Line: 3813
@@ -3238,7 +3238,7 @@ int CutSceneSelectScreen(int bSetup)
 		// Start line: 3857
 		// Start offset: 0x001C4B30
 		// Variables:
-	// 		struct RECT rect; // stack offset -24
+	// 		RECT rect; // stack offset -24
 
 		/* begin block 1.1 */
 			// Start line: 3856
@@ -3248,7 +3248,7 @@ int CutSceneSelectScreen(int bSetup)
 				// Start line: 3856
 				// Start offset: 0x001C4E6C
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.1.1 */
 			// End offset: 0x001C4E6C
 			// End Line: 3856
@@ -3264,7 +3264,7 @@ int CutSceneSelectScreen(int bSetup)
 				// Start line: 3856
 				// Start offset: 0x001C4E6C
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.2.1 */
 			// End offset: 0x001C4E6C
 			// End Line: 3856
@@ -3280,7 +3280,7 @@ int CutSceneSelectScreen(int bSetup)
 				// Start line: 3856
 				// Start offset: 0x001C4EB4
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.3.1 */
 			// End offset: 0x001C4EB4
 			// End Line: 3856
@@ -3296,7 +3296,7 @@ int CutSceneSelectScreen(int bSetup)
 				// Start line: 3856
 				// Start offset: 0x001C4FAC
 				// Variables:
-			// 		struct RECT rect; // stack offset -16
+			// 		RECT rect; // stack offset -16
 			/* end block 1.4.1 */
 			// End offset: 0x001C50A0
 			// End Line: 3856
@@ -3491,7 +3491,7 @@ int CutSceneCitySelectScreen(int bSetup)
 	// 		int last; // $s2
 	// 		char text[4]; // stack offset -48
 	// 		int ypos[2]; // stack offset -40
-	// 		struct RECT rect; // stack offset -32
+	// 		RECT rect; // stack offset -32
 
 		/* begin block 1.1 */
 			// Start line: 4048
@@ -3501,7 +3501,7 @@ int CutSceneCitySelectScreen(int bSetup)
 				// Start line: 4048
 				// Start offset: 0x001C5254
 				// Variables:
-			// 		struct DB *db_hold; // $a1
+			// 		DB *db_hold; // $a1
 			/* end block 1.1.1 */
 			// End offset: 0x001C5254
 			// End Line: 4048
@@ -3517,7 +3517,7 @@ int CutSceneCitySelectScreen(int bSetup)
 				// Start line: 4070
 				// Start offset: 0x001C5284
 				// Variables:
-			// 		struct DB *db_hold; // $a1
+			// 		DB *db_hold; // $a1
 			/* end block 1.2.1 */
 			// End offset: 0x001C5284
 			// End Line: 4070
@@ -3533,7 +3533,7 @@ int CutSceneCitySelectScreen(int bSetup)
 				// Start line: 4097
 				// Start offset: 0x001C52CC
 				// Variables:
-			// 		struct DB *db_hold; // $a1
+			// 		DB *db_hold; // $a1
 			/* end block 1.3.1 */
 			// End offset: 0x001C52CC
 			// End Line: 4097
@@ -3549,7 +3549,7 @@ int CutSceneCitySelectScreen(int bSetup)
 				// Start line: 4119
 				// Start offset: 0x001C5420
 				// Variables:
-			// 		struct DB *db_hold; // $a1
+			// 		DB *db_hold; // $a1
 			/* end block 1.4.1 */
 			// End offset: 0x001C5530
 			// End Line: 4122
@@ -3765,7 +3765,7 @@ int SetVolumeScreen(int bSetup)
 	// 		int offset; // $a2
 	// 		int i; // $s4
 	// 		char text[32]; // stack offset -80
-	// 		struct SCORE_ENTRY *pSE; // stack offset -48
+	// 		SCORE_ENTRY *pSE; // stack offset -48
 	// 		int min; // $v1
 	// 		int frac; // $t0
 	/* end block 1 */
@@ -4631,7 +4631,7 @@ int GameNameScreen(int bSetup)
 		// Start offset: 0x001C61AC
 		// Variables:
 	// 		int i; // $a0
-	// 		struct RECT dest; // stack offset -24
+	// 		RECT dest; // stack offset -24
 	// 		unsigned short *palette; // $a2
 	/* end block 1 */
 	// End offset: 0x001C62F8
@@ -4708,7 +4708,7 @@ void FEInitCdIcon(void)
 	// 		unsigned short *palette; // $a1
 	// 		int temp; // $a2
 	// 		int i; // $a0
-	// 		struct RECT dest; // stack offset -16
+	// 		RECT dest; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x001C6378
 	// End Line: 4735

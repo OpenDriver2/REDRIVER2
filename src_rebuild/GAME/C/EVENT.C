@@ -382,8 +382,8 @@ EventGlobal events;
 CELL_OBJECT* EventCop;
 int event_models_active = 0;
 
-static struct _EVENT(*trackingEvent[2]);
-static struct _TARGET(*carEvent[8]);
+static EVENT(*trackingEvent[2]);
+static MS_TARGET(*carEvent[8]);
 static int cameraEventsActive = 0;
 static CameraDelay cameraDelay;
 static Detonator detonator;
@@ -391,14 +391,15 @@ static int eventHaze = 0;
 static int carsOnBoat = 0;
 static int doneFirstHavanaCameraHack = 0;
 static SVECTOR boatOffset;
-static struct FixedEvent* fixedEvent = NULL;
+static FixedEvent* fixedEvent = NULL;
 
-static MultiCar multiCar;
-struct _EVENT* firstEvent;
-static _EVENT* firstMissionEvent;
-struct _EVENT* event;
+MultiCar multiCar;
 
-static struct EventCamera eventCamera;
+EVENT* firstEvent;
+EVENT* firstMissionEvent;
+EVENT* event;
+
+static EventCamera eventCamera;
 
 // decompiled code
 // original method signature: 
@@ -424,14 +425,14 @@ static struct EventCamera eventCamera;
 			// Start line: 263
 			// Start offset: 0x00045B30
 			// Variables:
-		// 		struct _EVENT *ev; // $a0
+		// 		EVENT *ev; // $a0
 		// 		int multiple; // $a2
 
 			/* begin block 1.2.1 */
 				// Start line: 274
 				// Start offset: 0x00045BBC
 				// Variables:
-			// 		struct VECTOR pos; // stack offset -16
+			// 		VECTOR pos; // stack offset -16
 			/* end block 1.2.1 */
 			// End offset: 0x00045C3C
 			// End Line: 281
@@ -452,7 +453,7 @@ int GetVisValue(int index, int zDir)
 {
 	int camera;
 	int radius;
-	_EVENT* ev;
+	EVENT* ev;
 	VECTOR pos;
 
 	if (index & 0xC000)
@@ -475,7 +476,7 @@ int GetVisValue(int index, int zDir)
 		int multiple;
 
 		if (index & 0x80)
-			ev = (_EVENT*)&fixedEvent[index & 0x7f];
+			ev = (EVENT*)&fixedEvent[index & 0x7f];
 		else
 			ev = &event[index & 0x7f];
 
@@ -526,7 +527,7 @@ int GetVisValue(int index, int zDir)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ VisibilityLists(enum VisType type /*$a0*/, int i /*$s2*/)
+// void /*$ra*/ VisibilityLists(VisType type /*$a0*/, int i /*$s2*/)
  // line 297, offset 0x00045c68
 	/* begin block 1 */
 		// Start line: 298
@@ -572,7 +573,7 @@ int GetVisValue(int index, int zDir)
 			// Start line: 365
 			// Start offset: 0x00045F90
 			// Variables:
-		// 		struct _EVENT *ev; // $a0
+		// 		EVENT *ev; // $a0
 		/* end block 1.3 */
 		// End offset: 0x00046068
 		// End Line: 384
@@ -581,7 +582,7 @@ int GetVisValue(int index, int zDir)
 			// Start line: 387
 			// Start offset: 0x00046068
 			// Variables:
-		// 		struct _EVENT *ev; // $v1
+		// 		EVENT *ev; // $v1
 		/* end block 1.4 */
 		// End offset: 0x000460BC
 		// End Line: 398
@@ -618,7 +619,7 @@ void VisibilityLists(VisType type, int i)
 	};
 
 	int k;
-	_EVENT* ev;
+	EVENT* ev;
 	int tempList;
 	int num;
 	int n;
@@ -715,7 +716,7 @@ void VisibilityLists(VisType type, int i)
 	else if (type == VIS_ADD)
 	{
 		if (i & 0x80)
-			ev = (_EVENT*)&fixedEvent[i & 0x7f];
+			ev = (EVENT*)&fixedEvent[i & 0x7f];
 		else
 			ev = &event[i & 0x7f];
 
@@ -756,7 +757,7 @@ void VisibilityLists(VisType type, int i)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetElTrainRotation(struct _EVENT *ev /*$a1*/)
+// void /*$ra*/ SetElTrainRotation(EVENT *ev /*$a1*/)
  // line 402, offset 0x0004be5c
 	/* begin block 1 */
 		// Start line: 804
@@ -764,7 +765,7 @@ void VisibilityLists(VisType type, int i)
 	// End Line: 805
 
 // [D] [T]
-void SetElTrainRotation(_EVENT* ev)
+void SetElTrainRotation(EVENT* ev)
 {
 	if (ev->flags & 0x8000)
 		ev->rotation = 0x400;
@@ -779,7 +780,7 @@ void SetElTrainRotation(_EVENT* ev)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitTrain(struct _EVENT *ev /*$s0*/, int count /*$s3*/, int type /*$a2*/)
+// void /*$ra*/ InitTrain(EVENT *ev /*$s0*/, int count /*$s3*/, int type /*$a2*/)
  // line 422, offset 0x000460ec
 	/* begin block 1 */
 		// Start line: 423
@@ -803,7 +804,7 @@ void SetElTrainRotation(_EVENT* ev)
 	// End Line: 942
 
 // [D] [T]
-void InitTrain(_EVENT* ev, int count, int type)
+void InitTrain(EVENT* ev, int count, int type)
 {
 	ushort uVar1;
 	uint mv;
@@ -861,7 +862,7 @@ void InitTrain(_EVENT* ev, int count, int type)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitDoor(struct FixedEvent *ev /*$a0*/, struct _EVENT ***e /*$a1*/, int *cEvents /*$a2*/)
+// void /*$ra*/ InitDoor(FixedEvent *ev /*$a0*/, EVENT ***e /*$a1*/, int *cEvents /*$a2*/)
  // line 471, offset 0x0004beb8
 	/* begin block 1 */
 		// Start line: 8350
@@ -874,7 +875,7 @@ void InitTrain(_EVENT* ev, int count, int type)
 	// End Line: 8353
 
 // [D] [T]
-void InitDoor(FixedEvent* ev, _EVENT*** e, int* cEvents)
+void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 {
 	ev->active = 0;
 	ev->rotation = ev->finalRotation;
@@ -951,7 +952,7 @@ void InitEvents(void)
 	// 		int count; // $s5
 	// 		int *p; // $s2
 	// 		int cEvents; // stack offset -52
-	// 		struct _EVENT **e; // stack offset -56
+	// 		EVENT **e; // stack offset -56
 
 		/* begin block 1.1 */
 			// Start line: 540
@@ -1039,7 +1040,7 @@ void InitEvents(void)
 					// Start line: 888
 					// Start offset: 0x00047094
 					// Variables:
-				// 		struct XYPAIR offset; // stack offset -64
+				// 		XYPAIR offset; // stack offset -64
 				/* end block 1.3.1.1 */
 				// End offset: 0x000471A0
 				// End Line: 896
@@ -1085,11 +1086,11 @@ void SetUpEvents(int full)
 	int iVar5;
 	FixedEvent* ev;
 	int* piVar6;
-	_EVENT* ev_00;
+	EVENT* ev_00;
 	int iVar7;
 	int loop;
 	int* piVar8;
-	_EVENT* p_Var9;
+	EVENT* p_Var9;
 	int i;
 	int detonatorModel;
 	uint __i;
@@ -1097,7 +1098,7 @@ void SetUpEvents(int full)
 	uint uVar10;
 	int trainModel;
 	XYPAIR offset;
-	_EVENT** e;
+	EVENT** e;
 	int cEvents;
 	int ElTrackModel;
 	int carModel;
@@ -1117,7 +1118,7 @@ void SetUpEvents(int full)
 		if (full)
 		{
 			EventCop = (CELL_OBJECT*)mallocptr;
-			event = (_EVENT*)(mallocptr + 256);
+			event = (EVENT*)(mallocptr + 256);
 			mallocptr = (char*)event;
 		}
 
@@ -1538,7 +1539,7 @@ void SetUpEvents(int full)
 				ev_00 = event;
 				HelicopterData.rotorrot = (ushort)lVar3 & 0xff;
 				HelicopterData.rotorvel = 1;
-				*(_TARGET**)&event[cEvents].node = MissionTargets + 4;
+				*(MS_TARGET**)&event[cEvents].node = MissionTargets + 4;
 				ev_00[cEvents].radius = 0;
 
 				if (full != 0)
@@ -1612,7 +1613,7 @@ LAB_000474bc:
 	*e = NULL;
 
 	if (full != 0)
-		mallocptr += cEvents * sizeof(_EVENT);
+		mallocptr += cEvents * sizeof(EVENT);
 
 	MALLOC_END();
 }
@@ -1681,7 +1682,7 @@ void ResetEventCamera(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetCamera(struct _EVENT *ev /*$s5*/)
+// void /*$ra*/ SetCamera(EVENT *ev /*$s5*/)
  // line 991, offset 0x00047538
 	/* begin block 1 */
 		// Start line: 992
@@ -1689,17 +1690,17 @@ void ResetEventCamera(void)
 		// Variables:
 	// 		int rotation; // $s4
 	// 		int axis; // $a3
-	// 		struct VECTOR pivot; // stack offset -96
+	// 		VECTOR pivot; // stack offset -96
 	// 		int iPivot; // $a2
 	// 		int height; // $a1
-	// 		struct SVECTOR offset; // stack offset -80
+	// 		SVECTOR offset; // stack offset -80
 
 		/* begin block 1.1 */
 			// Start line: 1037
 			// Start offset: 0x00047688
 			// Variables:
-		// 		struct MATRIX matrix; // stack offset -72
-		// 		struct SVECTOR temp; // stack offset -40
+		// 		MATRIX matrix; // stack offset -72
+		// 		SVECTOR temp; // stack offset -40
 
 			/* begin block 1.1.1 */
 				// Start line: 1045
@@ -1727,7 +1728,7 @@ void ResetEventCamera(void)
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D]
-void SetCamera(_EVENT* ev)
+void SetCamera(EVENT* ev)
 {
 	ushort uVar1;
 	short ang;
@@ -1896,13 +1897,13 @@ void SetCamera(_EVENT* ev)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ EventCollisions(struct _CAR_DATA *cp /*$a2*/, int type /*$a1*/)
+// void /*$ra*/ EventCollisions(CAR_DATA *cp /*$a2*/, int type /*$a1*/)
  // line 1107, offset 0x0004bc50
 	/* begin block 1 */
 		// Start line: 1108
 		// Start offset: 0x0004BC50
 		// Variables:
-	// 		static struct SVECTOR offset; // offset 0x18
+	// 		static SVECTOR offset; // offset 0x18
 	/* end block 1 */
 	// End offset: 0x0004BD2C
 	// End Line: 1125
@@ -1918,7 +1919,7 @@ void SetCamera(_EVENT* ev)
 	// End Line: 6985
 
 // [D] [T]
-void EventCollisions(_CAR_DATA* cp, int type)
+void EventCollisions(CAR_DATA* cp, int type)
 {
 	if (carsOnBoat >> CAR_INDEX(cp) == 0)
 		return;
@@ -1946,7 +1947,7 @@ void EventCollisions(_CAR_DATA* cp, int type)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ NextNode(struct _EVENT *ev /*$a0*/)
+// void /*$ra*/ NextNode(EVENT *ev /*$a0*/)
  // line 1127, offset 0x0004c0a4
 	/* begin block 1 */
 		// Start line: 9546
@@ -1964,7 +1965,7 @@ void EventCollisions(_CAR_DATA* cp, int type)
 	// End Line: 9688
 
 // [D] [T]
-void NextNode(_EVENT* ev)
+void NextNode(EVENT* ev)
 {
 	if (ev->node[2] == -0x7ffffffe)
 	{
@@ -1996,7 +1997,7 @@ void NextNode(_EVENT* ev)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StepFromToEvent(struct _EVENT *ev /*$a3*/)
+// void /*$ra*/ StepFromToEvent(EVENT *ev /*$a3*/)
  // line 1152, offset 0x000479dc
 	/* begin block 1 */
 		// Start line: 1153
@@ -2029,7 +2030,7 @@ void NextNode(_EVENT* ev)
 	// End Line: 3012
 
 // [D]
-void StepFromToEvent(_EVENT* ev)
+void StepFromToEvent(EVENT* ev)
 {
 	int uVar1;
 	int uVar2;
@@ -2138,7 +2139,7 @@ LAB_00047b78:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StepPathEvent(struct _EVENT *ev /*$s0*/)
+// void /*$ra*/ StepPathEvent(EVENT *ev /*$s0*/)
  // line 1214, offset 0x00047bd4
 	/* begin block 1 */
 		// Start line: 1215
@@ -2162,7 +2163,7 @@ LAB_00047b78:
 			// Start line: 1242
 			// Start offset: 0x00047C7C
 			// Variables:
-		// 		enum Station station; // $t2
+		// 		Station station; // $t2
 
 			/* begin block 1.2.1 */
 				// Start line: 1276
@@ -2172,8 +2173,8 @@ LAB_00047b78:
 			// 		int loop; // $a2
 			// 		int *i; // $a0
 			// 		int turn[4]; // stack offset -48
-			// 		struct XZPAIR centre; // stack offset -32
-			// 		struct XZPAIR offset; // stack offset -24
+			// 		XZPAIR centre; // stack offset -32
+			// 		XZPAIR offset; // stack offset -24
 			/* end block 1.2.1 */
 			// End offset: 0x00047F98
 			// End Line: 1348
@@ -2206,7 +2207,7 @@ LAB_00047b78:
 	// End Line: 3138
 
 // [D]
-void StepPathEvent(_EVENT* ev)
+void StepPathEvent(EVENT* ev)
 {
 	static int speed;
 
@@ -2554,7 +2555,7 @@ int GetBridgeRotation(int timer)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StepHelicopter(struct _EVENT *ev /*$s0*/)
+// void /*$ra*/ StepHelicopter(EVENT *ev /*$s0*/)
  // line 1478, offset 0x0004830c
 	/* begin block 1 */
 		// Start line: 1479
@@ -2583,7 +2584,7 @@ int GetBridgeRotation(int timer)
 				// Start line: 1522
 				// Start offset: 0x000484A0
 				// Variables:
-			// 		struct XZPAIR vel; // stack offset -56
+			// 		XZPAIR vel; // stack offset -56
 			// 		int direction; // $t1
 			// 		int temp; // $t1
 			// 		int dt; // $a0
@@ -2600,7 +2601,7 @@ int GetBridgeRotation(int timer)
 				// Start line: 1590
 				// Start offset: 0x00048854
 				// Variables:
-			// 		struct VECTOR pos; // stack offset -48
+			// 		VECTOR pos; // stack offset -48
 			/* end block 1.1.2 */
 			// End offset: 0x00048854
 			// End Line: 1591
@@ -2612,8 +2613,8 @@ int GetBridgeRotation(int timer)
 			// Start line: 1613
 			// Start offset: 0x00048948
 			// Variables:
-		// 		struct VECTOR pos; // stack offset -56
-		// 		struct VECTOR drift; // stack offset -32
+		// 		VECTOR pos; // stack offset -56
+		// 		VECTOR drift; // stack offset -32
 		/* end block 1.2 */
 		// End offset: 0x00048948
 		// End Line: 1613
@@ -2634,7 +2635,7 @@ int GetBridgeRotation(int timer)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 // [D]
-void StepHelicopter(_EVENT* ev)
+void StepHelicopter(EVENT* ev)
 {
 	static int rotating = 1;
 
@@ -2866,13 +2867,13 @@ LAB_00048934:
 		// Start line: 1645
 		// Start offset: 0x00048A60
 		// Variables:
-	// 		struct _EVENT *ev; // $s0
+	// 		EVENT *ev; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 1671
 			// Start offset: 0x00048AC4
 			// Variables:
-		// 		struct VECTOR old; // stack offset -72
+		// 		VECTOR old; // stack offset -72
 		// 		int onBoatLastFrame; // $s7
 
 			/* begin block 1.1.1 */
@@ -2881,7 +2882,7 @@ LAB_00048934:
 				// Variables:
 			// 		int dist; // stack offset -48
 			// 		int loop; // $s2
-			// 		struct _CAR_DATA *cp; // $s1
+			// 		CAR_DATA *cp; // $s1
 			/* end block 1.1.1 */
 			// End offset: 0x00048B98
 			// End Line: 1699
@@ -2906,7 +2907,7 @@ LAB_00048934:
 				// Start line: 1729
 				// Start offset: 0x00048D10
 				// Variables:
-			// 		struct XZPAIR speed; // stack offset -56
+			// 		XZPAIR speed; // stack offset -56
 
 				/* begin block 1.1.4.1 */
 					// Start line: 1733
@@ -2919,8 +2920,8 @@ LAB_00048934:
 						// Start line: 1740
 						// Start offset: 0x00048D60
 						// Variables:
-					// 		struct VECTOR *pos; // $a0
-					// 		struct VECTOR *vel; // $a1
+					// 		VECTOR *pos; // $a0
+					// 		VECTOR *vel; // $a1
 					/* end block 1.1.4.1.1 */
 					// End offset: 0x00048E4C
 					// End Line: 1775
@@ -2965,7 +2966,7 @@ LAB_00048934:
 				// Start line: 1889
 				// Start offset: 0x00049240
 				// Variables:
-			// 		struct CELL_OBJECT *cop; // $a2
+			// 		CELL_OBJECT *cop; // $a2
 			/* end block 1.3.1 */
 			// End offset: 0x000492C4
 			// End Line: 1936
@@ -3003,7 +3004,7 @@ void StepEvents(void)
 {
 	bool bVar1;
 	ushort uVar2;
-	_EVENT* ev;
+	EVENT* ev;
 	uint uVar3;
 	int i;
 	int iVar4;
@@ -3012,14 +3013,14 @@ void StepEvents(void)
 	int iVar7;
 	uint uVar8;
 	VECTOR* pos;
-	_EVENT* evt;
+	EVENT* evt;
 	VECTOR* vel;
 	CELL_OBJECT* cop;
 	int** ppiVar9;
 	ushort* puVar10;
 	ushort* puVar11;
-	_EVENT* _ev;
-	_CAR_DATA* cp;
+	EVENT* _ev;
+	CAR_DATA* cp;
 	uint uVar12;
 	int iVar13;
 	long* local_s4_736;
@@ -3078,7 +3079,7 @@ void StepEvents(void)
 							if ((uVar2 & 0x80) == 0)
 								evt = &event[uVar3 & 0x7f];
 							else
-								evt = (_EVENT*)&fixedEvent[uVar3 & 0x7f];
+								evt = (EVENT*)&fixedEvent[uVar3 & 0x7f];
 
 							if ((*(uint*)&evt->flags & 0x204) == 0x200)
 							{
@@ -3348,7 +3349,7 @@ void StepEvents(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawFerrisWheel(struct MATRIX *matrix /*$s0*/, struct VECTOR *pos /*$s1*/)
+// void /*$ra*/ DrawFerrisWheel(MATRIX *matrix /*$s0*/, VECTOR *pos /*$s1*/)
  // line 2110, offset 0x00049364
 	/* begin block 1 */
 		// Start line: 2111
@@ -3359,15 +3360,15 @@ void StepEvents(void)
 			// Start offset: 0x00049460
 			// Variables:
 		// 		int loop; // $s3
-		// 		struct MODEL *model; // $s2
-		// 		struct VECTOR spoke[2]; // stack offset -104
+		// 		MODEL *model; // $s2
+		// 		VECTOR spoke[2]; // stack offset -104
 
 			/* begin block 1.1.1 */
 				// Start line: 2138
 				// Start offset: 0x000494E4
 				// Variables:
-			// 		struct VECTOR offset; // stack offset -72
-			// 		struct VECTOR carPos; // stack offset -56
+			// 		VECTOR offset; // stack offset -72
+			// 		VECTOR carPos; // stack offset -56
 			// 		int rotation; // $v0
 			/* end block 1.1.1 */
 			// End offset: 0x000494E4
@@ -3465,16 +3466,16 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawRotor(struct VECTOR pos /*stack 0*/, struct MATRIX *matrix /*stack 16*/)
+// void /*$ra*/ DrawRotor(VECTOR pos /*stack 0*/, MATRIX *matrix /*stack 16*/)
  // line 2159, offset 0x00049684
 	/* begin block 1 */
 		// Start line: 2160
 		// Start offset: 0x00049684
 		// Variables:
-	// 		struct SVECTOR v[5]; // stack offset -120
-	// 		struct MATRIX local; // stack offset -80
-	// 		struct POLY_FT4 *poly; // $t0
-	// 		struct TEXTURE_DETAILS *tex; // $t3
+	// 		SVECTOR v[5]; // stack offset -120
+	// 		MATRIX local; // stack offset -80
+	// 		POLY_FT4 *poly; // $t0
+	// 		TEXTURE_DETAILS *tex; // $t3
 	// 		int z; // stack offset -48
 	// 		char *firstPoly; // $a1
 	/* end block 1 */
@@ -3631,14 +3632,14 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 	// 		unsigned short *z; // $a0
 	// 		int thisCamera; // stack offset -56
 	// 		int otherCamera; // stack offset -52
-	// 		static struct _EVENT *nearestTrain; // offset 0x28
+	// 		static EVENT *nearestTrain; // offset 0x28
 	// 		static int distanceFromNearestTrain; // offset 0x2c
 
 		/* begin block 1.1 */
 			// Start line: 2276
 			// Start offset: 0x00049D14
 			// Variables:
-		// 		struct _EVENT *ev; // $s1
+		// 		EVENT *ev; // $s1
 
 			/* begin block 1.1.1 */
 				// Start line: 2289
@@ -3657,9 +3658,9 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 					// Start line: 2316
 					// Start offset: 0x00049ED4
 					// Variables:
-				// 		struct MATRIX matrix; // stack offset -208
-				// 		struct MATRIX ext; // stack offset -176
-				// 		struct VECTOR pos; // stack offset -144
+				// 		MATRIX matrix; // stack offset -208
+				// 		MATRIX ext; // stack offset -176
+				// 		VECTOR pos; // stack offset -144
 				// 		int reflection; // $s5
 				// 		int temp; // stack offset -48
 
@@ -3678,14 +3679,14 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 							// Start line: 2346
 							// Start offset: 0x0004A038
 							// Variables:
-						// 		struct VECTOR shadow[4]; // stack offset -128
+						// 		VECTOR shadow[4]; // stack offset -128
 						// 		int loop; // $t0
 
 							/* begin block 1.1.2.1.2.1.1 */
 								// Start line: 2351
 								// Start offset: 0x0004A05C
 								// Variables:
-							// 		struct XZPAIR offset; // stack offset -64
+							// 		XZPAIR offset; // stack offset -64
 							// 		int rotate; // $a1
 							/* end block 1.1.2.1.2.1.1 */
 							// End offset: 0x0004A0E8
@@ -3764,7 +3765,7 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 // [D]
 void DrawEvents(int camera)
 {
-	static struct _EVENT* nearestTrain; // offset 0x28
+	static EVENT* nearestTrain; // offset 0x28
 	static int distanceFromNearestTrain; // offset 0x2c
 
 	bool bVar1;
@@ -3779,7 +3780,7 @@ void DrawEvents(int camera)
 	ushort* _xv;
 	int* piVar11;
 	VECTOR* pVVar12;
-	_EVENT* ev;
+	EVENT* ev;
 	MATRIX matrix;
 	MATRIX ext;
 	VECTOR pos;
@@ -3853,7 +3854,7 @@ void DrawEvents(int camera)
 			if ((*_xv & 0x80) == 0)
 				ev = &event[(*_xv & 0x7f)];
 			else
-				ev = (_EVENT*)&fixedEvent[(*_xv & 0x7f)];
+				ev = (EVENT*)&fixedEvent[(*_xv & 0x7f)];
 
 			uVar3 = ev->flags;
 
@@ -4149,7 +4150,7 @@ void DrawEvents(int camera)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ BoatOffset(SVECTOR *offset /*$a0*/, _EVENT *ev /*$a1*/)
+// void /*$ra*/ BoatOffset(SVECTOR *offset /*$a0*/, EVENT *ev /*$a1*/)
  // line 2520, offset 0x0004be24
 	/* begin block 1 */
 		// Start line: 10327
@@ -4167,7 +4168,7 @@ void DrawEvents(int camera)
 	// End Line: 10329
 
 // [D] [T]
-void BoatOffset(SVECTOR* offset, _EVENT* ev)
+void BoatOffset(SVECTOR* offset, EVENT* ev)
 {
 	offset->vx = 0;
 	offset->vy = -ev->data[2];
@@ -4178,7 +4179,7 @@ void BoatOffset(SVECTOR* offset, _EVENT* ev)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ OnBoat(struct VECTOR *pos /*$t1*/, struct _EVENT *ev /*$a1*/, int *dist /*$a2*/)
+// int /*$ra*/ OnBoat(VECTOR *pos /*$t1*/, EVENT *ev /*$a1*/, int *dist /*$a2*/)
  // line 2527, offset 0x0004bda0
 	/* begin block 1 */
 		// Start line: 2528
@@ -4206,7 +4207,7 @@ void BoatOffset(SVECTOR* offset, _EVENT* ev)
 	// End Line: 10309
 
 // [D] [T]
-int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
+int OnBoat(VECTOR* pos, EVENT* ev, int* dist)
 {
 	int halfBoatLength;
 	int halfBoatWidth;
@@ -4242,13 +4243,13 @@ int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
 
 // decompiled code
 // original method signature: 
-// struct _sdPlane * /*$ra*/ EventSurface(struct VECTOR *pos /*$a0*/, struct _sdPlane *plane /*$s1*/)
+// sdPlane * /*$ra*/ EventSurface(VECTOR *pos /*$a0*/, sdPlane *plane /*$s1*/)
  // line 2560, offset 0x0004a688
 	/* begin block 1 */
 		// Start line: 2561
 		// Start offset: 0x0004A688
 		// Variables:
-	// 		struct _EVENT *ev; // $s0
+	// 		EVENT *ev; // $s0
 	// 		int i; // $a2
 
 		/* begin block 1.1 */
@@ -4294,7 +4295,7 @@ int OnBoat(VECTOR* pos, _EVENT* ev, int* dist)
 int debugOffset = 0;
 
 // [D]
-_sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
+sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 {
 	short uVar1;
 	int* piVar2;
@@ -4304,7 +4305,7 @@ _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 	int uVar6;
 	int iVar7;
 	int iVar8;
-	_EVENT* ev;
+	EVENT* ev;
 	int iVar9;
 	int dist;
 
@@ -4447,13 +4448,13 @@ LAB_0004aa50:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MakeEventTrackable(struct _EVENT *ev /*$a0*/)
+// void /*$ra*/ MakeEventTrackable(EVENT *ev /*$a0*/)
  // line 2684, offset 0x0004bd6c
 	/* begin block 1 */
 		// Start line: 2685
 		// Start offset: 0x0004BD6C
 		// Variables:
-	// 		struct _EVENT **p; // $v1
+	// 		EVENT **p; // $v1
 	/* end block 1 */
 	// End offset: 0x0004BDA0
 	// End Line: 2694
@@ -4469,9 +4470,9 @@ LAB_0004aa50:
 	// End Line: 10455
 
 // [D] [T]
-void MakeEventTrackable(_EVENT* ev)
+void MakeEventTrackable(EVENT* ev)
 {
-	_EVENT** p;
+	EVENT** p;
 
 	p = trackingEvent;
 	while (*p)
@@ -4485,7 +4486,7 @@ void MakeEventTrackable(_EVENT* ev)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TriggerDoor(struct FixedEvent *door /*$a3*/, int *stage /*$a1*/, int sound /*$a2*/)
+// void /*$ra*/ TriggerDoor(FixedEvent *door /*$a3*/, int *stage /*$a1*/, int sound /*$a2*/)
  // line 2696, offset 0x0004c208
 	/* begin block 1 */
 		// Start line: 11604
@@ -4523,14 +4524,14 @@ void TriggerDoor(FixedEvent* door, int* stage, int sound)
 
 // decompiled code
 // original method signature: 
-// struct VECTOR * /*$ra*/ TriggerEvent(int i /*$s4*/)
+// VECTOR * /*$ra*/ TriggerEvent(int i /*$s4*/)
  // line 2718, offset 0x0004aa78
 	/* begin block 1 */
 		// Start line: 2719
 		// Start offset: 0x0004AA78
 		// Variables:
 	// 		static int stage[10]; // offset 0x200
-	// 		struct VECTOR *pos; // $s7
+	// 		VECTOR *pos; // $s7
 
 		/* begin block 1.1 */
 			// Start line: 2726
@@ -4545,7 +4546,7 @@ void TriggerDoor(FixedEvent* door, int* stage, int sound)
 			// Start line: 2739
 			// Start offset: 0x0004AB20
 			// Variables:
-		// 		struct _EVENT *ev; // $a2
+		// 		EVENT *ev; // $a2
 		/* end block 1.2 */
 		// End offset: 0x0004AB20
 		// End Line: 2740
@@ -4558,7 +4559,7 @@ void TriggerDoor(FixedEvent* door, int* stage, int sound)
 				// Start line: 2757
 				// Start offset: 0x0004AC08
 				// Variables:
-			// 		struct MissionTrain *train; // $s1
+			// 		MissionTrain *train; // $s1
 
 				/* begin block 1.3.1.1 */
 					// Start line: 2763
@@ -4571,7 +4572,7 @@ void TriggerDoor(FixedEvent* door, int* stage, int sound)
 					// Start line: 2774
 					// Start offset: 0x0004AC5C
 					// Variables:
-				// 		struct _EVENT *ev; // $s0
+				// 		EVENT *ev; // $s0
 				// 		int count; // $s2
 				// 		int offset; // $s6
 
@@ -4594,7 +4595,7 @@ void TriggerDoor(FixedEvent* door, int* stage, int sound)
 				// Start line: 2831
 				// Start offset: 0x0004ADB8
 				// Variables:
-			// 		struct _EVENT *ev; // $v1
+			// 		EVENT *ev; // $v1
 			// 		int count; // $a0
 			/* end block 1.3.2 */
 			// End offset: 0x0004AE04
@@ -4650,16 +4651,16 @@ VECTOR* TriggerEvent(int i)
 	static int stage[10];
 
 	short uVar1;
-	_EVENT* p_Var2;
+	EVENT* p_Var2;
 	int count;
 	int* piVar3;
 	int iVar4;
-	_EVENT* _ev;
+	EVENT* _ev;
 	int iVar5;
-	_EVENT* p_Var6;
-	_EVENT* ev;
+	EVENT* p_Var6;
+	EVENT* ev;
 	int iVar7;
-	_EVENT* ev_00;
+	EVENT* ev_00;
 
 	p_Var2 = firstEvent;
 	p_Var6 = firstMissionEvent;
@@ -4794,7 +4795,7 @@ VECTOR* TriggerEvent(int i)
 				break;
 			case 5:
 				PrepareSecretCar();
-				events.cameraEvent = (_EVENT*)chicagoDoor;
+				events.cameraEvent = (EVENT*)chicagoDoor;
 			case 6:
 				TriggerDoor(chicagoDoor + i - 5, stage + i, 1); // might be incorrect
 		}
@@ -4819,7 +4820,7 @@ VECTOR* TriggerEvent(int i)
 				break;
 			case 3:
 				PrepareSecretCar();
-				events.cameraEvent = (_EVENT*)(havanaFixed + 2);
+				events.cameraEvent = (EVENT*)(havanaFixed + 2);
 				TriggerDoor(havanaFixed + 2, stage + i, 0);
 				break;
 			case 4:
@@ -4864,7 +4865,7 @@ VECTOR* TriggerEvent(int i)
 				TriggerDoor(vegasDoor + i - 4, stage + i, 0);
 				break;
 			case 8:
-				events.cameraEvent = (_EVENT*)(vegasDoor + 4);
+				events.cameraEvent = (EVENT*)(vegasDoor + 4);
 				PrepareSecretCar();
 			case 5:
 			case 6:
@@ -4886,7 +4887,7 @@ VECTOR* TriggerEvent(int i)
 				TriggerDoor(rioDoor + 2, stage + i, 0);
 				TriggerDoor(rioDoor + 3, stage + i, 0);
 
-				events.cameraEvent = (_EVENT*)(rioDoor + 2);
+				events.cameraEvent = (EVENT*)(rioDoor + 2);
 				break;
 			case 5:
 			case 6:
@@ -4911,7 +4912,7 @@ VECTOR* TriggerEvent(int i)
 				PingOutAllSpecialCivCars();
 				TriggerDoor(rioDoor + 4, stage + i, 0);
 				TriggerDoor(rioDoor + 5, stage + i, 0);
-				events.cameraEvent = (_EVENT*)(rioDoor + 4);
+				events.cameraEvent = (EVENT*)(rioDoor + 4);
 		}
 	}
 
@@ -4927,7 +4928,7 @@ switchD_0004afa0_caseD_1:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ OffsetTarget(struct VECTOR *target /*$a0*/)
+// void /*$ra*/ OffsetTarget(VECTOR *target /*$a0*/)
  // line 2994, offset 0x0004bd2c
 	/* begin block 1 */
 		// Start line: 8890
@@ -5048,7 +5049,7 @@ void SpecialCamera(enum SpecialCamera type, int change)
 		{
 			boat = boatCamera;
 		LAB_0004b418:
-			events.cameraEvent = (_EVENT*)0x1;
+			events.cameraEvent = (EVENT*)0x1;
 		}
 		else
 		{
@@ -5092,7 +5093,7 @@ void SpecialCamera(enum SpecialCamera type, int change)
 			else if (gCurrentMissionNumber == 0x16)
 			{
 				hackCamera = VegasCameraHack + 0xd;
-				events.cameraEvent = (_EVENT*)0x1;
+				events.cameraEvent = (EVENT*)0x1;
 				camera_position.vy = -1800;
 			}
 			else if (gCurrentMissionNumber == 0x1e)
@@ -5150,7 +5151,7 @@ LAB_0004b5b8:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ScreenShake(int count /*$a0*/, struct SVECTOR *ang /*$s0*/)
+// void /*$ra*/ ScreenShake(int count /*$a0*/, SVECTOR *ang /*$s0*/)
  // line 3144, offset 0x0004c280
 	/* begin block 1 */
 		// Start line: 3145
@@ -5190,7 +5191,7 @@ void ScreenShake(int count, SVECTOR* ang)
 		// Start line: 3154
 		// Start offset: 0x0004B5FC
 		// Variables:
-	// 		static struct SVECTOR rememberCameraAngle; // offset 0x30
+	// 		static SVECTOR rememberCameraAngle; // offset 0x30
 
 		/* begin block 1.1 */
 			// Start line: 3168
@@ -5206,7 +5207,7 @@ void ScreenShake(int count, SVECTOR* ang)
 					// Start line: 3179
 					// Start offset: 0x0004B6CC
 					// Variables:
-				// 		struct VECTOR pos; // stack offset -32
+				// 		VECTOR pos; // stack offset -32
 				/* end block 1.1.1.1 */
 				// End offset: 0x0004B700
 				// End Line: 3184
@@ -5215,7 +5216,7 @@ void ScreenShake(int count, SVECTOR* ang)
 					// Start line: 3188
 					// Start offset: 0x0004B720
 					// Variables:
-				// 		struct VECTOR pos; // stack offset -32
+				// 		VECTOR pos; // stack offset -32
 				/* end block 1.1.1.2 */
 				// End offset: 0x0004B720
 				// End Line: 3189
@@ -5230,14 +5231,14 @@ void ScreenShake(int count, SVECTOR* ang)
 			// Start line: 3218
 			// Start offset: 0x0004B864
 			// Variables:
-		// 		struct _EVENT *ev; // $s0
-		// 		struct VECTOR pos; // stack offset -32
+		// 		EVENT *ev; // $s0
+		// 		VECTOR pos; // stack offset -32
 
 			/* begin block 1.2.1 */
 				// Start line: 3247
 				// Start offset: 0x0004B9B0
 				// Variables:
-			// 		struct VECTOR *epicentre; // $v1
+			// 		VECTOR *epicentre; // $v1
 			/* end block 1.2.1 */
 			// End offset: 0x0004BA08
 			// End Line: 3260
@@ -5273,13 +5274,13 @@ void ScreenShake(int count, SVECTOR* ang)
 // [D]
 int DetonatorTimer(void)
 {
-	static struct SVECTOR rememberCameraAngle; // offset 0x30
+	static SVECTOR rememberCameraAngle; // offset 0x30
 	static int count = 0; // offset 0x38
 
 	long* plVar1;
-	_EVENT* _ev;
+	EVENT* _ev;
 	int cnt;
-	_EVENT* ev;
+	EVENT* ev;
 	VECTOR pos;
 
 	_ev = firstMissionEvent;
@@ -5385,7 +5386,7 @@ int DetonatorTimer(void)
 
 				detonator.timer = 200;
 				SpecialCamera(SPECIAL_CAMERA_SET, 0);
-				events.cameraEvent = (_EVENT*)0x1;
+				events.cameraEvent = (EVENT*)0x1;
 
 				rememberCameraAngle = camera_angle;
 			}
@@ -5433,15 +5434,15 @@ LAB_0004ba8c:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MultiCarEvent(struct _TARGET *target /*$a0*/)
+// void /*$ra*/ MultiCarEvent(MS_TARGET *target /*$a0*/)
  // line 3288, offset 0x0004bab0
 	/* begin block 1 */
 		// Start line: 3289
 		// Start offset: 0x0004BAB0
 		// Variables:
-	// 		struct MULTICAR_DATA *data; // $s0
+	// 		MULTICAR_DATA *data; // $s0
 	// 		int i; // $s1
-	// 		struct _EVENT *ev; // $s2
+	// 		EVENT *ev; // $s2
 
 		/* begin block 1.1 */
 			// Start line: 3301
@@ -5471,11 +5472,11 @@ LAB_0004ba8c:
 	// End Line: 8399
 
 // [D] [T]
-void MultiCarEvent(_TARGET* target)
+void MultiCarEvent(MS_TARGET* target)
 {
-	_EVENT* first;
+	EVENT* first;
 	int n;
-	_EVENT* ev;
+	EVENT* ev;
 	MULTICAR_DATA* data;
 	int i;
 
