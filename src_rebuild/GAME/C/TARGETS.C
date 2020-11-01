@@ -369,10 +369,10 @@ void DrawStopZone(VECTOR *pPosition)
 	int flash;
 
 	VECTOR pStopZonePt[4] = {
-		{-500, 0, 500},
-		{500, 0, 500},
-		{-500, 0, -500},
-		{500, 0, -500},
+		{-256, 0, 256},
+		{256, 0, 256},
+		{-256, 0, -256},
+		{256, 0, -256},
 	};
 
 	flash = -CameraCnt % 16;
