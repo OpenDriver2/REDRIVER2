@@ -28,7 +28,7 @@ int loading_bar_pos = 0;
 		// Start line: 202
 		// Start offset: 0x0005816C
 		// Variables:
-	// 		struct POLY_G4 poly; // stack offset -56
+	// 		POLY_G4 poly; // stack offset -56
 	// 		int col; // $s0
 	/* end block 1 */
 	// End offset: 0x00058298
@@ -140,8 +140,8 @@ void SetupScreenFade(int start, int end, int speed)
 		// Start line: 269
 		// Start offset: 0x000582AC
 		// Variables:
-	// 		static struct POLY_F4 poly; // offset 0x0
-	// 		static struct POLY_FT4 p; // offset 0x20
+	// 		static POLY_F4 poly; // offset 0x0
+	// 		static POLY_FT4 p; // offset 0x20
 	// 		int do_fade; // $v0
 
 		/* begin block 1.1 */
@@ -233,9 +233,9 @@ void FadeGameScreen(int flag, int speed)
 	// 		int fcount; // $s0
 	// 		int j; // $s2
 	// 		int done; // $fp
-	// 		struct RECT dest; // stack offset -264
-	// 		struct SPRT prims[4]; // stack offset -256
-	// 		struct POLY_FT3 nulls[4]; // stack offset -176
+	// 		RECT dest; // stack offset -264
+	// 		SPRT prims[4]; // stack offset -256
+	// 		POLY_FT3 nulls[4]; // stack offset -176
 	// 		int fade; // $s5
 	// 		int fade_step; // stack offset -48
 	/* end block 1 */
@@ -436,7 +436,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 		// Start line: 483
 		// Start offset: 0x000589D0
 		// Variables:
-	// 		struct POLY_F4 poly[2]; // stack offset -80
+	// 		POLY_F4 poly[2]; // stack offset -80
 	// 		int h; // $s0
 	// 		int done; // $s2
 	/* end block 1 */
@@ -561,7 +561,7 @@ void SetupFadePolys(void)
 		// Start line: 558
 		// Start offset: 0x00058824
 		// Variables:
-	// 		struct POLY_G4 *fl_g4; // $a2
+	// 		POLY_G4 *fl_g4; // $a2
 	/* end block 1 */
 	// End offset: 0x000589B0
 	// End Line: 577

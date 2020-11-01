@@ -29,12 +29,12 @@
 
 #include "FELONY.H"
 
-typedef void(*envsoundfunc)(struct __envsound* ep /*$s1*/, struct __envsoundinfo* E /*$a1*/, int pl /*$a2*/);
+typedef void(*envsoundfunc)(__envsound* ep /*$s1*/, __envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
-void IdentifyZone(struct __envsound* ep, struct __envsoundinfo* E, int pl);
-void CalcEffPos(struct __envsound* ep, struct __envsoundinfo* E, int pl);
-void CalcEffPos2(struct __envsound* ep, struct __envsoundinfo* E, int pl);
-void UpdateEnvSnd(struct __envsound* ep, struct __envsoundinfo* E, int pl);
+void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);
+void CalcEffPos(envsound* ep, envsoundinfo* E, int pl);
+void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl);
+void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl);
 
 static envsoundfunc UpdateEnvSounds[] = {
 	IdentifyZone,
@@ -75,8 +75,8 @@ SPEECH_QUEUE gSpeechQueue;
 static char cop_bank = 0;
 char phrase_top = 0;
 
-static struct __othercarsound siren_noise[MAX_SIREN_NOISES];
-static struct __othercarsound car_noise[MAX_CAR_NOISES];
+static othercarsound siren_noise[MAX_SIREN_NOISES];
+static othercarsound car_noise[MAX_CAR_NOISES];
 static int loudhail_time = 0;
 
 static int copmusic = 0;
@@ -85,9 +85,9 @@ int current_music_id;
 static char header_pt[sizeof(XMHEADER)];
 static char song_pt[sizeof(XMSONG)];
 
-static __envsound envsnd[MAX_LEVEL_ENVSOUNDS];
-static __envsoundinfo ESdata[2];
-__tunnelinfo tunnels;
+static envsound envsnd[MAX_LEVEL_ENVSOUNDS];
+static envsoundinfo ESdata[2];
+tunnelinfo tunnels;
 
 char _sbank_buffer[0x80000];		// 0x180000
 
@@ -632,7 +632,7 @@ void LoadLevelSFX(int missionNum)
 		// Start line: 307
 		// Start offset: 0x0004DE30
 		// Variables:
-	// 		struct VECTOR *cp; // $s2
+	// 		VECTOR *cp; // $s2
 	// 		int i; // $s1
 
 		/* begin block 1.1 */
@@ -677,8 +677,8 @@ void StartGameSounds(void)
 {
 	int channel;
 	int i;
-	_PLAYER* lcp;
-	_CAR_DATA* cp;
+	PLAYER* lcp;
+	CAR_DATA* cp;
 	int sample;
 	int pitch;
 	int car_model;
@@ -806,7 +806,7 @@ void StartGameSounds(void)
 
 // decompiled code
 // original method signature: 
-// unsigned short /*$ra*/ GetEngineRevs(struct _CAR_DATA *cp /*$t2*/)
+// unsigned short /*$ra*/ GetEngineRevs(CAR_DATA *cp /*$t2*/)
  // line 404, offset 0x0004e188
 	/* begin block 1 */
 		// Start line: 405
@@ -834,7 +834,7 @@ void StartGameSounds(void)
 /* WARNING: Removing unreachable block (ram,0x0004e1b0) */
 
 // [D] [T]
-ushort GetEngineRevs(_CAR_DATA* cp)
+ushort GetEngineRevs(CAR_DATA* cp)
 {
 	int acc;
 	GEAR_DESC* gd;
@@ -904,7 +904,7 @@ ushort GetEngineRevs(_CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ControlCarRevs(struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ ControlCarRevs(CAR_DATA *cp /*$s0*/)
  // line 458, offset 0x0004e2e8
 	/* begin block 1 */
 		// Start line: 459
@@ -943,7 +943,7 @@ const int maxrevdrop = 1440;
 const int maxrevrise = 1600;
 
 // [D] [T]
-void ControlCarRevs(_CAR_DATA* cp)
+void ControlCarRevs(CAR_DATA* cp)
 {
 	char spin;
 	int player_id, acc, oldvol;
@@ -1068,7 +1068,7 @@ void DoSpeech(int chan, int sound)
 
 // decompiled code
 // original method signature: 
-// char /*$ra*/ PlaySpeech(struct SPEECH_QUEUE *pSpeechQueue /*$a0*/, int sound /*$a1*/)
+// char /*$ra*/ PlaySpeech(SPEECH_QUEUE *pSpeechQueue /*$a0*/, int sound /*$a1*/)
  // line 562, offset 0x0005228c
 	/* begin block 1 */
 		// Start line: 563
@@ -1116,7 +1116,7 @@ char PlaySpeech(SPEECH_QUEUE* pSpeechQueue, int sound)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitSpeechQueue(struct SPEECH_QUEUE *pSpeechQueue /*$s0*/)
+// void /*$ra*/ InitSpeechQueue(SPEECH_QUEUE *pSpeechQueue /*$s0*/)
  // line 587, offset 0x00052654
 	/* begin block 1 */
 		// Start line: 5265
@@ -1136,7 +1136,7 @@ void InitSpeechQueue(SPEECH_QUEUE* pSpeechQueue)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ControlSpeech(struct SPEECH_QUEUE *pSpeechQueue /*$s0*/)
+// void /*$ra*/ ControlSpeech(SPEECH_QUEUE *pSpeechQueue /*$s0*/)
  // line 595, offset 0x0004e560
 	/* begin block 1 */
 		// Start line: 596
@@ -1434,8 +1434,8 @@ void InitDopplerSFX(void)
 	// 		int num_noisy_cars; // $s5
 	// 		unsigned long car_dist[20]; // stack offset -176
 	// 		unsigned short indexlist[20]; // stack offset -96
-	// 		struct _CAR_DATA *car_ptr; // $s2
-	// 		struct VECTOR *pp; // $a1
+	// 		CAR_DATA *car_ptr; // $s2
+	// 		VECTOR *pp; // $a1
 	// 		unsigned long car_flags; // $s4
 	// 		char sirens; // stack offset -56
 
@@ -1507,7 +1507,7 @@ void DoDopplerSFX(void)
 	ulong car_dist[MAX_CARS];
 	ushort indexlist[MAX_CARS];
 
-	_CAR_DATA* car_ptr;
+	CAR_DATA* car_ptr;
 	int dx, dz;
 	ulong dist;
 
@@ -1885,7 +1885,7 @@ void DoDopplerSFX(void)
 			// Start line: 951
 			// Start offset: 0x0004F560
 			// Variables:
-		// 		struct _CAR_DATA *car_ptr; // $a3
+		// 		CAR_DATA *car_ptr; // $a3
 		/* end block 1.1 */
 		// End offset: 0x0004F624
 		// End Line: 959
@@ -1925,7 +1925,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 
 	while (i < cars)
 	{
-		_CAR_DATA* car_ptr;
+		CAR_DATA* car_ptr;
 
 		carId = indexlist[i];
 
@@ -1953,7 +1953,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CollisionSound(char player_id /*$s0*/, struct _CAR_DATA *cp /*$s5*/, int impact /*$s2*/, int car_car /*$s7*/)
+// void /*$ra*/ CollisionSound(char player_id /*$s0*/, CAR_DATA *cp /*$s5*/, int impact /*$s2*/, int car_car /*$s7*/)
  // line 975, offset 0x0004f668
 	/* begin block 1 */
 		// Start line: 976
@@ -1997,7 +1997,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 	// End Line: 2286
 
 // [D] [T]
-void CollisionSound(char player_id, _CAR_DATA* cp, int impact, int car_car)
+void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 {
 	int chan;
 	long rnd;
@@ -2112,7 +2112,7 @@ void CollisionSound(char player_id, _CAR_DATA* cp, int impact, int car_car)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ExplosionSound(struct VECTOR *pos /*$s4*/, int type /*$s0*/)
+// void /*$ra*/ ExplosionSound(VECTOR *pos /*$s4*/, int type /*$s0*/)
  // line 1019, offset 0x0004f984
 	/* begin block 1 */
 		// Start line: 1020
@@ -2121,7 +2121,7 @@ void CollisionSound(char player_id, _CAR_DATA* cp, int impact, int car_car)
 	// 		int bang; // $s5
 	// 		int pitch; // $t0
 	// 		int rnd; // $s3
-	// 		struct VECTOR P; // stack offset -48
+	// 		VECTOR P; // stack offset -48
 	// 		int sc1; // $s2
 	// 		int sc2; // $s1
 	/* end block 1 */
@@ -2292,7 +2292,7 @@ void FunkUpDaBGMTunez(int funk)
 		// Start offset: 0x0004FC90
 		// Variables:
 	// 		int i; // $s2
-	// 		struct _CAR_DATA *cp; // $s1
+	// 		CAR_DATA *cp; // $s1
 	/* end block 1 */
 	// End offset: 0x000500E4
 	// End Line: 1183
@@ -2317,15 +2317,15 @@ void FunkUpDaBGMTunez(int funk)
 // [D] [T]
 void SoundTasks(void)
 {
-	static struct __envsoundtags EStags;
+	static __envsoundtags EStags;
 
 	int chan;
 	int vol;
 	VECTOR* position;
 	long* velocity;
 
-	_PLAYER* lcp;
-	_CAR_DATA* cp;
+	PLAYER* lcp;
+	CAR_DATA* cp;
 	int i;
 
 	UpdateEnvSounds[EStags.func_cnt++](envsnd, ESdata, 0);
@@ -2579,7 +2579,7 @@ void InitMusic(int musicnum)
 		// Start line: 1318
 		// Start offset: 0x0005243C
 		// Variables:
-	// 		struct __tunnelinfo *T; // $a1
+	// 		tunnelinfo *T; // $a1
 	/* end block 1 */
 	// End offset: 0x00052460
 	// End Line: 1325
@@ -2614,7 +2614,7 @@ void InitTunnels(char n)
 		// Start line: 1332
 		// Start offset: 0x00052848
 		// Variables:
-	// 		struct __tunnelinfo *T; // $t0
+	// 		tunnelinfo *T; // $t0
 	/* end block 1 */
 	// End offset: 0x000528FC
 	// End Line: 1344
@@ -2645,7 +2645,7 @@ int AddTunnel(long x1, long y1, long z1, long x2, long y2, long z2)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Tunnels(struct __tunnelinfo *T /*$a0*/)
+// void /*$ra*/ Tunnels(tunnelinfo *T /*$a0*/)
  // line 1350, offset 0x0005027c
 	/* begin block 1 */
 		// Start line: 1351
@@ -2673,7 +2673,7 @@ int AddTunnel(long x1, long y1, long z1, long x2, long y2, long z2)
 	// End Line: 3120
 
 // [D] [T]
-void Tunnels(__tunnelinfo* T)
+void Tunnels(tunnelinfo* T)
 {
 	int i;
 	int verb;
@@ -2802,7 +2802,7 @@ void AddTunnels(int level)
 		// Variables:
 	// 		int i; // $v1
 	// 		int p; // $a1
-	// 		struct __envsoundtags *T; // $t1
+	// 		__envsoundtags *T; // $t1
 	/* end block 1 */
 	// End offset: 0x0005243C
 	// End Line: 1538
@@ -2817,7 +2817,7 @@ void AddTunnels(int level)
 	/* end block 3 */
 	// End Line: 5623
 
-static struct __envsoundtags EStags;
+static __envsoundtags EStags;
 
 // [D] [T]
 void InitEnvSnd(int num_envsnds)
@@ -2933,8 +2933,8 @@ void SetEnvSndPos(int snd, long px, long pz)
 		// Start offset: 0x00050C08
 		// Variables:
 	// 		void *data; // $a1
-	// 		struct __envsound *ep; // $t1
-	// 		struct __envsoundtags *T; // $t0
+	// 		envsound *ep; // $t1
+	// 		__envsoundtags *T; // $t0
 	// 		long s; // $a1
 	/* end block 1 */
 	// End offset: 0x00050E08
@@ -2948,7 +2948,7 @@ void SetEnvSndPos(int snd, long px, long pz)
 // [D] [T]
 int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz, long px2, long pz2)
 {
-	__envsound* ep;
+	envsound* ep;
 
 	if (EStags.envsnd_cnt >= EStags.num_envsnds)
 		return -1;
@@ -3001,7 +3001,7 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ IdentifyZone(struct __envsound *ep /*$a3*/, struct __envsoundinfo *E /*stack 4*/, int pl /*$a2*/)
+// void /*$ra*/ IdentifyZone(envsound *ep /*$a3*/, envsoundinfo *E /*stack 4*/, int pl /*$a2*/)
  // line 1646, offset 0x00050e08
 	/* begin block 1 */
 		// Start line: 1647
@@ -3012,7 +3012,7 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long
 	// 		int tmp[4]; // stack offset -96
 	// 		float d; // $s0
 	// 		float _g[4]; // stack offset -80
-	// 		struct __bitfield64 zones; // stack offset -64
+	// 		__bitfield64 zones; // stack offset -64
 	/* end block 1 */
 	// End offset: 0x000514BC
 	// End Line: 1704
@@ -3028,7 +3028,7 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long
 	// End Line: 3740
 
 // [D] [T]
-void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
+void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 {
 	int i, j;
 	int vol;
@@ -3189,7 +3189,7 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CalcEffPos(struct __envsound *ep /*$s1*/, struct __envsoundinfo *E /*$a1*/, int pl /*$a2*/)
+// void /*$ra*/ CalcEffPos(envsound *ep /*$s1*/, envsoundinfo *E /*$a1*/, int pl /*$a2*/)
  // line 1706, offset 0x000514bc
 	/* begin block 1 */
 		// Start line: 1707
@@ -3212,7 +3212,7 @@ void IdentifyZone(__envsound* ep, __envsoundinfo* E, int pl)
 	// End Line: 3907
 
 // [D] [A] unprocessed arrays
-void CalcEffPos(__envsound* ep, __envsoundinfo* E, int pl)
+void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 {
 	int minX, maxX;
 	int minZ, maxZ;
@@ -3303,7 +3303,7 @@ void CalcEffPos(__envsound* ep, __envsoundinfo* E, int pl)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CalcEffPos2(struct __envsound *ep /*stack 0*/, struct __envsoundinfo *E /*$s7*/, int pl /*$a2*/)
+// void /*$ra*/ CalcEffPos2(envsound *ep /*stack 0*/, envsoundinfo *E /*$s7*/, int pl /*$a2*/)
  // line 1744, offset 0x000517d0
 	/* begin block 1 */
 		// Start line: 1745
@@ -3333,7 +3333,7 @@ void CalcEffPos(__envsound* ep, __envsoundinfo* E, int pl)
 	// End Line: 4014
 
 // [D] [A] unprocessed arrays
-void CalcEffPos2(__envsound* ep, __envsoundinfo* E, int pl)
+void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 {
 	int snd;
 	int i;
@@ -3513,7 +3513,7 @@ void CalcEffPos2(__envsound* ep, __envsoundinfo* E, int pl)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ UpdateEnvSnd(struct __envsound *ep /*stack 0*/, struct __envsoundinfo *E /*$s4*/, int pl /*stack 8*/)
+// void /*$ra*/ UpdateEnvSnd(envsound *ep /*stack 0*/, envsoundinfo *E /*$s4*/, int pl /*stack 8*/)
  // line 1812, offset 0x00051f0c
 	/* begin block 1 */
 		// Start line: 1813
@@ -3535,7 +3535,7 @@ void CalcEffPos2(__envsound* ep, __envsoundinfo* E, int pl)
 	// End Line: 4446
 
 // [D] [T]
-void UpdateEnvSnd(__envsound* ep, __envsoundinfo* E, int pl)
+void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl)
 {
 	int channel;
 	long* velocity;
@@ -3608,7 +3608,7 @@ void InitLeadHorn(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ LeadHorn(struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ LeadHorn(CAR_DATA *cp /*$s0*/)
  // line 1855, offset 0x00052954
 	/* begin block 1 */
 		// Start line: 1856
@@ -3630,7 +3630,7 @@ void InitLeadHorn(void)
 	// End Line: 7806
 
 // [D] [T]
-void LeadHorn(_CAR_DATA* cp)
+void LeadHorn(CAR_DATA* cp)
 {
 	static unsigned int rnd = 0;
 

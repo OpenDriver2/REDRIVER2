@@ -1,6 +1,32 @@
 #ifndef FEMAIN_H
 #define FEMAIN_H
 
+struct PSXBUTTON
+{
+	short x;
+	short y;
+	short w;
+	short h;
+	unsigned char l;
+	unsigned char r;
+	unsigned char u;
+	unsigned char d;
+	int userDrawFunctionNum;
+	short s_x;
+	short s_y;
+	int action;
+	int var;
+	char Name[32];
+};
+
+struct PSXSCREEN
+{
+	unsigned char index;
+	unsigned char numButtons;
+	unsigned char userFunctionNum;
+	PSXBUTTON buttons[8];
+};
+
 extern int gInFrontend;
 extern int bRedrawFrontend;
 
@@ -12,9 +38,9 @@ extern void LoadBackgroundFile(char *name); // 0x001C0F24
 
 extern void SetupBackgroundPolys(); // 0x001C10F4
 
-extern void SetupScreenSprts(struct PSXSCREEN *pScr); // 0x001C132C
+extern void SetupScreenSprts(PSXSCREEN *pScr); // 0x001C132C
 
-extern void DrawScreen(struct PSXSCREEN *pScr); // 0x001C147C
+extern void DrawScreen(PSXSCREEN *pScr); // 0x001C147C
 
 extern void DisplayOnScreenText(); // 0x001C18E4
 

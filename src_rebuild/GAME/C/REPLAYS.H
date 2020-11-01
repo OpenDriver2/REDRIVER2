@@ -11,7 +11,7 @@ extern char *ReplayStart;
 extern char *replayptr;
 
 extern unsigned long PingBufferPos;
-extern _PING_PACKET *PingBuffer;
+extern PING_PACKET *PingBuffer;
 
 extern int TimeToWay;
 extern short PlayerWaypoints;
@@ -40,7 +40,7 @@ extern int cjpPlay(int stream, unsigned long *ppad, char *psteer, char *ptype); 
 
 extern void cjpRecord(int stream, unsigned long *ppad, char *psteer, char *ptype); // 0x0001AD50
 
-extern void AllocateReplayStream(struct REPLAY_STREAM *stream, int maxpad); // 0x0001B17C
+extern void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad); // 0x0001B17C
 
 extern int Get(int stream, unsigned long *pt0); // 0x0001B1F0
 

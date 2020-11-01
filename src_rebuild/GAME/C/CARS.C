@@ -36,25 +36,25 @@ MATRIX colour_matrix =
 { { { 4032, 0, 0 }, { 3936, 0, 0 }, { 3520, 0, 0 } }, { 0, 0, 0 } };
 
 // PHYSICS
-_CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
+CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
 HUBCAP gHubcap;
 
 // active cars
-_CAR_DATA* active_car_list[MAX_CARS];
+CAR_DATA* active_car_list[MAX_CARS];
 BOUND_BOX bbox[MAX_CARS];
 unsigned char lightsOnDelay[MAX_CARS];
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ plotNewCarModel(struct CAR_MODEL *car /*$s0*/, int palette /*$s2*/)
+// void /*$ra*/ plotNewCarModel(CAR_MODEL *car /*$s0*/, int palette /*$s2*/)
  // line 834, offset 0x00020c94
 	/* begin block 1 */
 		// Start line: 835
 		// Start offset: 0x00020C94
 		// Variables:
-	// 		struct plotCarGlobals _pg; // stack offset -72
-	// 		struct SVECTOR v0; // stack offset -32
+	// 		plotCarGlobals _pg; // stack offset -72
+	// 		SVECTOR v0; // stack offset -32
 	// 		unsigned long lightlevel; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00020E88
@@ -70,7 +70,7 @@ unsigned char lightsOnDelay[MAX_CARS];
 	/* end block 3 */
 	// End Line: 1671
 
-struct DENTUVS *gTempCarUVPtr;
+DENTUVS *gTempCarUVPtr;
 DENTUVS gTempHDCarUVDump[MAX_CARS][255];
 SVECTOR gTempCarVertDump[MAX_CARS][132];
 DENTUVS gTempLDCarUVDump[MAX_CARS][134];
@@ -153,13 +153,13 @@ void plotNewCarModel(CAR_MODEL *car, int palette)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ plotCarPolyB3(int numTris /*$a0*/, struct CAR_POLY *src /*$a1*/, struct SVECTOR *vlist /*$a2*/, struct plotCarGlobals *pg /*$a3*/)
+// void /*$ra*/ plotCarPolyB3(int numTris /*$a0*/, CAR_POLY *src /*$a1*/, SVECTOR *vlist /*$a2*/, plotCarGlobals *pg /*$a3*/)
  // line 917, offset 0x000237b8
 	/* begin block 1 */
 		// Start line: 918
 		// Start offset: 0x000237B8
 		// Variables:
-	// 		struct POLY_F3 *prim; // $t0
+	// 		POLY_F3 *prim; // $t0
 	// 		int i; // $t1
 	// 		long *ot; // $t3
 	// 		long F3rgb; // $t4
@@ -242,13 +242,13 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ plotCarPolyFT3(int numTris /*$a0*/, struct CAR_POLY *src /*$t1*/, struct SVECTOR *vlist /*$t4*/, struct plotCarGlobals *pg /*$t5*/)
+// void /*$ra*/ plotCarPolyFT3(int numTris /*$a0*/, CAR_POLY *src /*$t1*/, SVECTOR *vlist /*$t4*/, plotCarGlobals *pg /*$t5*/)
  // line 976, offset 0x000238c4
 	/* begin block 1 */
 		// Start line: 977
 		// Start offset: 0x000238C4
 		// Variables:
-	// 		struct POLY_FT3 *prim; // $t0
+	// 		POLY_FT3 *prim; // $t0
 	// 		long *ot; // $t6
 	// 		long FT3rgb; // stack offset -8
 	// 		int i; // $t2
@@ -350,13 +350,13 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ plotCarPolyGT3(int numTris /*$a0*/, struct CAR_POLY *src /*$t1*/, struct SVECTOR *vlist /*$s0*/, struct SVECTOR *nlist /*$a3*/, struct plotCarGlobals *pg /*stack 16*/, int palette /*stack 20*/)
+// void /*$ra*/ plotCarPolyGT3(int numTris /*$a0*/, CAR_POLY *src /*$t1*/, SVECTOR *vlist /*$s0*/, SVECTOR *nlist /*$a3*/, plotCarGlobals *pg /*stack 16*/, int palette /*stack 20*/)
  // line 1125, offset 0x00020ea0
 	/* begin block 1 */
 		// Start line: 1126
 		// Start offset: 0x00020EA0
 		// Variables:
-	// 		struct POLY_GT3 *prim; // $t0
+	// 		POLY_GT3 *prim; // $t0
 	// 		long *ot; // $s1
 	// 		long GT3rgb; // stack offset -24
 	// 		int i; // $t7
@@ -475,13 +475,13 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ plotCarPolyGT3nolight(int numTris /*$a0*/, struct CAR_POLY *src /*$t3*/, struct SVECTOR *vlist /*$t6*/, struct plotCarGlobals *pg /*$a3*/, int palette /*stack 16*/)
+// void /*$ra*/ plotCarPolyGT3nolight(int numTris /*$a0*/, CAR_POLY *src /*$t3*/, SVECTOR *vlist /*$t6*/, plotCarGlobals *pg /*$a3*/, int palette /*stack 16*/)
  // line 1349, offset 0x00023a20
 	/* begin block 1 */
 		// Start line: 1350
 		// Start offset: 0x00023A20
 		// Variables:
-	// 		struct POLY_FT3 *prim; // $t0
+	// 		POLY_FT3 *prim; // $t0
 	// 		long *ot; // $t7
 	// 		long GT3rgb; // stack offset -8
 	// 		int i; // $t4
@@ -588,7 +588,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawCar(struct _CAR_DATA *cp /*$s3*/, int view /*$a1*/)
+// void /*$ra*/ DrawCar(CAR_DATA *cp /*$s3*/, int view /*$a1*/)
  // line 1442, offset 0x000210b8
 	/* begin block 1 */
 		// Start line: 1443
@@ -596,13 +596,13 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 		// Variables:
 	// 		int WheelSpeed; // $s0
 	// 		int model; // $fp
-	// 		struct _PLAYER *lp; // $a2
+	// 		PLAYER *lp; // $a2
 
 		/* begin block 1.1 */
 			// Start line: 1454
 			// Start offset: 0x00021174
 			// Variables:
-		// 		struct CVECTOR col; // stack offset -312
+		// 		CVECTOR col; // stack offset -312
 		/* end block 1.1 */
 		// End offset: 0x00021244
 		// End Line: 1492
@@ -611,19 +611,19 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 			// Start line: 1496
 			// Start offset: 0x00021244
 			// Variables:
-		// 		struct MATRIX temp_mat1; // stack offset -304
-		// 		struct MATRIX temp_mat2; // stack offset -272
-		// 		struct MATRIX final_mat; // stack offset -240
-		// 		struct VECTOR pos; // stack offset -208
-		// 		struct VECTOR pos1; // stack offset -192
-		// 		struct SVECTOR temp_vec; // stack offset -176
+		// 		MATRIX temp_mat1; // stack offset -304
+		// 		MATRIX temp_mat2; // stack offset -272
+		// 		MATRIX final_mat; // stack offset -240
+		// 		VECTOR pos; // stack offset -208
+		// 		VECTOR pos1; // stack offset -192
+		// 		SVECTOR temp_vec; // stack offset -176
 		// 		int result; // $s4
 
 			/* begin block 1.2.1 */
 				// Start line: 1519
 				// Start offset: 0x00021290
 				// Variables:
-			// 		struct VECTOR corners[4]; // stack offset -168
+			// 		VECTOR corners[4]; // stack offset -168
 			/* end block 1.2.1 */
 			// End offset: 0x00021384
 			// End Line: 1538
@@ -632,8 +632,8 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 				// Start line: 1542
 				// Start offset: 0x00021384
 				// Variables:
-			// 		struct VECTOR d; // stack offset -104
-			// 		struct VECTOR dist; // stack offset -88
+			// 		VECTOR d; // stack offset -104
+			// 		VECTOR dist; // stack offset -88
 			/* end block 1.2.2 */
 			// End offset: 0x000214D8
 			// End Line: 1559
@@ -651,8 +651,8 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 				// Start line: 1627
 				// Start offset: 0x000215A4
 				// Variables:
-			// 		struct MATRIX workmatrix; // stack offset -104
-			// 		struct CAR_MODEL *CarModelPtr; // $s1
+			// 		MATRIX workmatrix; // stack offset -104
+			// 		CAR_MODEL *CarModelPtr; // $s1
 
 				/* begin block 1.2.4.1 */
 					// Start line: 1635
@@ -674,13 +674,13 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 					// Start line: 1706
 					// Start offset: 0x000217BC
 					// Variables:
-				// 		struct CAR_MODEL *CarModelPtr; // $s0
+				// 		CAR_MODEL *CarModelPtr; // $s0
 
 					/* begin block 1.2.5.1.1 */
 						// Start line: 1706
 						// Start offset: 0x000217BC
 						// Variables:
-					// 		struct MATRIX workmatrix; // stack offset -72
+					// 		MATRIX workmatrix; // stack offset -72
 					/* end block 1.2.5.1.1 */
 					// End offset: 0x000218BC
 					// End Line: 1735
@@ -719,7 +719,7 @@ char RightLight = 0;
 char TransparentObject = 0;
 
 // [D] [T] [A]
-void DrawCar(_CAR_DATA *cp, int view)
+void DrawCar(CAR_DATA *cp, int view)
 {
 	int yVal;
 	int maxDamage;
@@ -990,7 +990,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawCarObject(struct CAR_MODEL *car /*$s0*/, struct MATRIX *matrix /*$a1*/, struct VECTOR *pos /*$a2*/, struct VECTOR *pos1 /*$a3*/, int palette /*stack 16*/, struct _CAR_DATA *cp /*stack 20*/, int detail /*stack 24*/)
+// void /*$ra*/ DrawCarObject(CAR_MODEL *car /*$s0*/, MATRIX *matrix /*$a1*/, VECTOR *pos /*$a2*/, VECTOR *pos1 /*$a3*/, int palette /*stack 16*/, CAR_DATA *cp /*stack 20*/, int detail /*stack 24*/)
  // line 1793, offset 0x000233dc
 	/* begin block 1 */
 		// Start line: 1794
@@ -1000,8 +1000,8 @@ void DrawCar(_CAR_DATA *cp, int view)
 			// Start line: 1794
 			// Start offset: 0x000233DC
 			// Variables:
-		// 		struct SVECTOR cog; // stack offset -40
-		// 		struct VECTOR modelLocation; // stack offset -32
+		// 		SVECTOR cog; // stack offset -40
+		// 		VECTOR modelLocation; // stack offset -32
 		/* end block 1.1 */
 		// End offset: 0x000233DC
 		// End Line: 1794
@@ -1024,7 +1024,7 @@ void DrawCar(_CAR_DATA *cp, int view)
 	// End Line: 3587
 
 // [D] [T]
-void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CAR_DATA *cp, int detail)
+void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, CAR_DATA *cp, int detail)
 {
 	static unsigned long savedSP;
 	VECTOR modelLocation;
@@ -1054,17 +1054,17 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CA
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawCarWheels(struct _CAR_DATA *cp /*$fp*/, struct MATRIX *RearMatrix /*stack 4*/, struct VECTOR *pos /*stack 8*/, int zclip /*$a3*/)
+// void /*$ra*/ DrawCarWheels(CAR_DATA *cp /*$fp*/, MATRIX *RearMatrix /*stack 4*/, VECTOR *pos /*stack 8*/, int zclip /*$a3*/)
  // line 1850, offset 0x00021af8
 	/* begin block 1 */
 		// Start line: 1851
 		// Start offset: 0x00021AF8
 		// Variables:
-	// 		struct CAR_COSMETICS *car_cos; // $s0
-	// 		struct MATRIX FrontMatrix; // stack offset -144
-	// 		struct MODEL *WheelModel; // $s0
-	// 		struct MODEL *WheelModelBack; // stack offset -56
-	// 		struct MODEL *WheelModelFront; // stack offset -52
+	// 		CAR_COSMETICS *car_cos; // $s0
+	// 		MATRIX FrontMatrix; // stack offset -144
+	// 		MODEL *WheelModel; // $s0
+	// 		MODEL *WheelModelBack; // stack offset -56
+	// 		MODEL *WheelModelFront; // stack offset -52
 	// 		int i; // $s4
 	// 		static short FrontWheelRotation[20]; // offset 0x0
 	// 		static short BackWheelRotation[20]; // offset 0x30
@@ -1091,7 +1091,7 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CA
 		// 		int FW2z; // $a0
 		// 		int BW1z; // $v0
 		// 		int BW2z; // $a3
-		// 		struct SVECTOR *VertPtr; // $t6
+		// 		SVECTOR *VertPtr; // $t6
 		/* end block 1.2 */
 		// End offset: 0x00021CD0
 		// End Line: 1926
@@ -1100,7 +1100,7 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CA
 			// Start line: 1926
 			// Start offset: 0x00021CD0
 			// Variables:
-		// 		struct MATRIX SteerMatrix; // stack offset -112
+		// 		MATRIX SteerMatrix; // stack offset -112
 		/* end block 1.3 */
 		// End offset: 0x00021CD0
 		// End Line: 1926
@@ -1109,14 +1109,14 @@ void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, _CA
 			// Start line: 1988
 			// Start offset: 0x00021FA4
 			// Variables:
-		// 		struct SVECTOR *verts; // $s5
+		// 		SVECTOR *verts; // $s5
 
 			/* begin block 1.4.1 */
 				// Start line: 2007
 				// Start offset: 0x00021FF8
 				// Variables:
-			// 		struct VECTOR WheelPos; // stack offset -80
-			// 		struct SVECTOR sWheelPos; // stack offset -64
+			// 		VECTOR WheelPos; // stack offset -80
+			// 		SVECTOR sWheelPos; // stack offset -64
 			/* end block 1.4.1 */
 			// End offset: 0x00022028
 			// End Line: 2012
@@ -1146,7 +1146,7 @@ short FrontWheelRotation[MAX_CARS]; // offset 0x0
 short BackWheelRotation[MAX_CARS]; // offset 0x30
 
 // [D] [T]
-void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
+void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 {
 	short wheelSize;
 	int FW1z;
@@ -1361,14 +1361,14 @@ void DrawCarWheels(_CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawWheelObject(struct MODEL *model /*$t2*/, struct SVECTOR *verts /*$t4*/, int transparent /*$a2*/, int wheelnum /*$a3*/)
+// void /*$ra*/ DrawWheelObject(MODEL *model /*$t2*/, SVECTOR *verts /*$t4*/, int transparent /*$a2*/, int wheelnum /*$a3*/)
  // line 2058, offset 0x00022180
 	/* begin block 1 */
 		// Start line: 2059
 		// Start offset: 0x00022180
 		// Variables:
-	// 		struct POLY_FT4 *prims; // $t0
-	// 		struct POLYFT4LIT *src; // $t1
+	// 		POLY_FT4 *prims; // $t0
+	// 		POLYFT4LIT *src; // $t1
 	// 		int i; // $t2
 	// 		int Z; // stack offset -4
 	// 		int clut; // $t8
@@ -1505,7 +1505,7 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlayerCarFX(struct _CAR_DATA *cp /*$s0*/)
+// void /*$ra*/ PlayerCarFX(CAR_DATA *cp /*$s0*/)
  // line 2152, offset 0x000234dc
 	/* begin block 1 */
 		// Start line: 2153
@@ -1532,7 +1532,7 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 	// End Line: 6921
 
 // [D] [T]
-void PlayerCarFX(_CAR_DATA *cp)
+void PlayerCarFX(CAR_DATA *cp)
 {
 	int WheelSpeed;
 	WheelSpeed = cp->hd.wheel_speed;
@@ -1559,30 +1559,30 @@ void PlayerCarFX(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ComputeCarLightingLevels(struct _CAR_DATA *cp /*$s1*/, char detail /*$s3*/)
+// void /*$ra*/ ComputeCarLightingLevels(CAR_DATA *cp /*$s1*/, char detail /*$s3*/)
  // line 2198, offset 0x00022458
 	/* begin block 1 */
 		// Start line: 2199
 		// Start offset: 0x00022458
 		// Variables:
 	// 		int light; // $s2
-	// 		struct SVECTOR lightsourcevector; // stack offset -96
-	// 		struct SVECTOR colour; // stack offset -88
-	// 		struct VECTOR lightValues; // stack offset -80
-	// 		struct VECTOR *orient; // $s0
+	// 		SVECTOR lightsourcevector; // stack offset -96
+	// 		SVECTOR colour; // stack offset -88
+	// 		VECTOR lightValues; // stack offset -80
+	// 		VECTOR *orient; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 2270
 			// Start offset: 0x0002270C
 			// Variables:
-		// 		struct MODEL *model; // $v1
-		// 		struct SVECTOR *norms; // $a3
-		// 		struct SVECTOR *ppads; // $a2
+		// 		MODEL *model; // $v1
+		// 		SVECTOR *norms; // $a3
+		// 		SVECTOR *ppads; // $a2
 		// 		int num_norms; // $a1
 		// 		int count; // $a1
-		// 		struct CVECTOR c0; // stack offset -64
-		// 		struct CVECTOR c1; // stack offset -56
-		// 		struct CVECTOR c2; // stack offset -48
+		// 		CVECTOR c0; // stack offset -64
+		// 		CVECTOR c1; // stack offset -56
+		// 		CVECTOR c2; // stack offset -48
 
 			/* begin block 1.1.1 */
 				// Start line: 2276
@@ -1618,7 +1618,7 @@ void PlayerCarFX(_CAR_DATA *cp)
 
 
 // [D] [T]
-void ComputeCarLightingLevels(_CAR_DATA *cp, char detail)
+void ComputeCarLightingLevels(CAR_DATA *cp, char detail)
 {
 	MATRIX scratchPadMat; // 0x1f800344
 
@@ -1777,7 +1777,7 @@ void buildNewCars(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ buildNewCarFromModel(struct CAR_MODEL *car /*$s5*/, struct MODEL *model /*$s7*/, int first /*$a2*/)
+// void /*$ra*/ buildNewCarFromModel(CAR_MODEL *car /*$s5*/, MODEL *model /*$s7*/, int first /*$a2*/)
  // line 2357, offset 0x00022960
 	/* begin block 1 */
 		// Start line: 2358
@@ -1792,7 +1792,7 @@ void buildNewCars(void)
 			// Start line: 2394
 			// Start offset: 0x00022A9C
 			// Variables:
-		// 		struct CAR_POLY *p; // $s1
+		// 		CAR_POLY *p; // $s1
 		// 		char ptype; // $s6
 
 			/* begin block 1.1.1 */
@@ -2091,8 +2091,8 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 		// Start offset: 0x000230C8
 		// Variables:
 	// 		int i; // $v1
-	// 		struct MODEL *m; // $t0
-	// 		struct POLYFT4LIT *src; // $a0
+	// 		MODEL *m; // $t0
+	// 		POLYFT4LIT *src; // $a0
 
 		/* begin block 1.1 */
 			// Start line: 2610

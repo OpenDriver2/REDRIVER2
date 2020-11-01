@@ -49,9 +49,9 @@ extern void StepGame(); // 0x0005AB28
 
 extern void DrawGame(); // 0x0005C458
 
-extern void EndGame(enum GAMEMODE mode); // 0x0005C574
+extern void EndGame(GAMEMODE mode); // 0x0005C574
 
-extern void EnablePause(enum PAUSEMODE mode); // 0x0005C590
+extern void EnablePause(PAUSEMODE mode); // 0x0005C590
 
 extern void CheckForPause(); // 0x0005C5D0
 

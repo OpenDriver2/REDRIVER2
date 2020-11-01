@@ -30,7 +30,7 @@ extern void InitDirectorVariables(); // 0x0003E79C
 
 extern void DeleteCurrentCamera(int CameraCnt); // 0x0003E808
 
-extern void setCamera(struct PLAYBACKCAMERA *Change); // 0x0003E89C
+extern void setCamera(PLAYBACKCAMERA *Change); // 0x0003E89C
 
 extern void EditCamera(int CameraCnt); // 0x0003B2E4
 
@@ -40,13 +40,13 @@ extern void FindNextChange(int CameraCnt); // 0x0003E94C
 
 extern int CheckCameraChange(int CameraCnt); // 0x0003B794
 
-extern void SetPlaybackCamera(struct PLAYBACKCAMERA *camera); // 0x0003EC0C
+extern void SetPlaybackCamera(PLAYBACKCAMERA *camera); // 0x0003EC0C
 
-extern int IsMovingCamera(struct PLAYBACKCAMERA *lastcam, struct PLAYBACKCAMERA *nextcam, int cameracnt); // 0x0003B8C8
+extern int IsMovingCamera(PLAYBACKCAMERA *lastcam, PLAYBACKCAMERA *nextcam, int cameracnt); // 0x0003B8C8
 
 extern void CameraBar(int CameraCnt); // 0x0003BBA8
 
-extern struct PLAYBACKCAMERA * FindFreeCamera(); // 0x0003E9B8
+extern PLAYBACKCAMERA * FindFreeCamera(); // 0x0003E9B8
 
 extern void deleteCamera(int count); // 0x0003E9F8
 

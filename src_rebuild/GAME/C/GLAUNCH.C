@@ -109,7 +109,7 @@ int AttractMode = 0;
 		// Start line: 836
 		// Start offset: 0x00052A28
 		// Variables:
-	// 		struct RECT rect; // stack offset -16
+	// 		RECT rect; // stack offset -16
 	// 		int oldVMode; // $s0
 	// 		int SurvivalCopSettingsBackup; // $s0
 	/* end block 1 */
@@ -322,7 +322,7 @@ void StartRender(int renderNum)
 		// Start line: 1032
 		// Start offset: 0x00052E98
 		// Variables:
-	// 		struct RECT rect; // stack offset -24
+	// 		RECT rect; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00052FE8
 	// End Line: 1103
@@ -404,8 +404,8 @@ void ReInitFrontend(void)
 		// Start line: 1106
 		// Start offset: 0x00052FE8
 		// Variables:
-	// 		struct MISSION_STEP *CurrentStep; // $s0
-	// 		struct RENDER_ARGS RenderArgs; // stack offset -48
+	// 		MISSION_STEP *CurrentStep; // $s0
+	// 		RENDER_ARGS RenderArgs; // stack offset -48
 	// 		int quit; // $s3
 
 		/* begin block 1.1 */
@@ -679,7 +679,7 @@ int FindPrevMissionFromLadderPos(int pos)
 		// Start line: 1281
 		// Start offset: 0x000532B8
 		// Variables:
-	// 		struct RECT rect; // stack offset -16
+	// 		RECT rect; // stack offset -16
 	// 		int quit; // $s0
 	/* end block 1 */
 	// End offset: 0x000535D8
@@ -839,7 +839,7 @@ void LaunchGame(void)
 		// Start line: 1418
 		// Start offset: 0x00053740
 		// Variables:
-	// 		struct MISSION_STEP *step; // $a1
+	// 		MISSION_STEP *step; // $a1
 	// 		int pos; // $a2
 	/* end block 1 */
 	// End offset: 0x00053814

@@ -377,7 +377,7 @@ void ProcessMotionLump(char *lump_ptr, int lump_size)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupPedMotionData(struct PEDESTRIAN *pPed /*$a0*/)
+// void /*$ra*/ SetupPedMotionData(PEDESTRIAN *pPed /*$a0*/)
  // line 944, offset 0x00069ab8
 	/* begin block 1 */
 		// Start line: 5388
@@ -399,7 +399,7 @@ void SetupPedMotionData(PEDESTRIAN *pPed)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupPedestrian(struct PEDESTRIAN *pedptr /*$a0*/)
+// void /*$ra*/ SetupPedestrian(PEDESTRIAN *pedptr /*$a0*/)
  // line 955, offset 0x00069b6c
 	/* begin block 1 */
 		// Start line: 2236
@@ -444,7 +444,7 @@ void SetupPedestrian(PEDESTRIAN *pedptr)
 		// Start line: 979
 		// Start offset: 0x0006520C
 		// Variables:
-	// 		struct TEXTURE_DETAILS *body_texture; // $s2
+	// 		TEXTURE_DETAILS *body_texture; // $s2
 	// 		int x0; // $s5
 	// 		int x1; // $s6
 	// 		int y0; // $fp
@@ -462,7 +462,7 @@ void SetupPedestrian(PEDESTRIAN *pedptr)
 	// 		int s; // $a2
 	// 		int clut; // $a2
 	// 		int tpage; // $t0
-	// 		struct POLY_FT4 *prims; // $t2
+	// 		POLY_FT4 *prims; // $t2
 	// 		int z1; // stack offset -44
 	// 		int pal; // $v1
 
@@ -784,10 +784,10 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	// 		int i; // $t1
 	// 		int j; // $a3
 	// 		int numVerts; // $t3
-	// 		struct MODEL *pModel; // $t0
-	// 		struct SVECTOR *pVerts; // $a2
+	// 		MODEL *pModel; // $t0
+	// 		SVECTOR *pVerts; // $a2
 	// 		int counter; // $t4
-	// 		struct BONE *pBone; // $a0
+	// 		BONE *pBone; // $a0
 	/* end block 1 */
 	// End offset: 0x00065AD8
 	// End Line: 1346
@@ -918,10 +918,10 @@ void StoreVertexLists(void)
 		// Start offset: 0x00065AD8
 		// Variables:
 	// 		int i; // $t1
-	// 		struct BONE *pBone; // $a3
+	// 		BONE *pBone; // $a3
 	// 		char *pC; // $v0
-	// 		struct SVECTOR *store; // $t4
-	// 		struct SVECTOR_NOPAD *pSVNP; // $v1
+	// 		SVECTOR *store; // $t4
+	// 		SVECTOR_NOPAD *pSVNP; // $v1
 	/* end block 1 */
 	// End offset: 0x00065CD8
 	// End Line: 1413
@@ -1082,33 +1082,33 @@ void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 		// Start line: 1423
 		// Start offset: 0x00065CD8
 		// Variables:
-	// 		struct VECTOR *playerPos; // $a2
-	// 		struct VECTOR *camPos; // $a1
-	// 		struct VECTOR *vJPos; // $s1
-	// 		struct VECTOR v; // stack offset -128
-	// 		struct MODEL *pModel; // $t0
-	// 		struct SVECTOR *mVerts; // $a1
+	// 		VECTOR *playerPos; // $a2
+	// 		VECTOR *camPos; // $a1
+	// 		VECTOR *vJPos; // $s1
+	// 		VECTOR v; // stack offset -128
+	// 		MODEL *pModel; // $t0
+	// 		SVECTOR *mVerts; // $a1
 	// 		int i; // $s2
 	// 		int j; // $a3
 	// 		int c; // $a3
 	// 		int id; // $a2
 	// 		int limbs; // $a0
-	// 		struct BONE *pBone; // $s0
+	// 		BONE *pBone; // $s0
 	// 		int lval; // $t1
 
 		/* begin block 1.1 */
 			// Start line: 1530
 			// Start offset: 0x000660A0
 			// Variables:
-		// 		struct BONE *pBone; // $s0
-		// 		struct VECTOR *v1; // $a2
-		// 		struct VECTOR *v2; // $a1
+		// 		BONE *pBone; // $s0
+		// 		VECTOR *v1; // $a2
+		// 		VECTOR *v2; // $a1
 
 			/* begin block 1.1.1 */
 				// Start line: 1530
 				// Start offset: 0x000660A0
 				// Variables:
-			// 		struct SVECTOR *data; // $t1
+			// 		SVECTOR *data; // $t1
 			// 		long t1; // stack offset -92
 			// 		long t0; // stack offset -96
 			// 		int z2; // stack offset -80
@@ -1125,15 +1125,15 @@ void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 			// Start line: 1536
 			// Start offset: 0x000661F8
 			// Variables:
-		// 		struct BONE *pBone; // $s0
-		// 		struct VECTOR *v1; // $a0
-		// 		struct VECTOR *v2; // $a2
+		// 		BONE *pBone; // $s0
+		// 		VECTOR *v1; // $a0
+		// 		VECTOR *v2; // $a2
 
 			/* begin block 1.2.1 */
 				// Start line: 1536
 				// Start offset: 0x000661F8
 				// Variables:
-			// 		struct SVECTOR *data; // $t0
+			// 		SVECTOR *data; // $t0
 			// 		long t1; // stack offset -72
 			// 		long t0; // stack offset -76
 			// 		int z2; // stack offset -60
@@ -1150,8 +1150,8 @@ void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 			// Start line: 1542
 			// Start offset: 0x00066330
 			// Variables:
-		// 		struct SVECTOR v1; // stack offset -112
-		// 		struct SVECTOR v2; // stack offset -104
+		// 		SVECTOR v1; // stack offset -112
+		// 		SVECTOR v2; // stack offset -104
 		/* end block 1.3 */
 		// End offset: 0x00066330
 		// End Line: 1544
@@ -1160,15 +1160,15 @@ void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 			// Start line: 1569
 			// Start offset: 0x0006648C
 			// Variables:
-		// 		struct BONE *pBone; // $s0
-		// 		struct VECTOR *v1; // $a2
-		// 		struct VECTOR *v2; // $a1
+		// 		BONE *pBone; // $s0
+		// 		VECTOR *v1; // $a2
+		// 		VECTOR *v2; // $a1
 
 			/* begin block 1.4.1 */
 				// Start line: 1569
 				// Start offset: 0x0006648C
 				// Variables:
-			// 		struct SVECTOR *data; // $t1
+			// 		SVECTOR *data; // $t1
 			// 		long t1; // stack offset -52
 			// 		long t0; // stack offset -56
 			// 		int z2; // stack offset -40
@@ -1510,7 +1510,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 
 // decompiled code
 // original method signature: 
-// struct SVECTOR * /*$ra*/ GetModelVertPtr(int boneId /*$a1*/, int modelType /*$a1*/)
+// SVECTOR * /*$ra*/ GetModelVertPtr(int boneId /*$a1*/, int modelType /*$a1*/)
  // line 1774, offset 0x00066fb8
 	/* begin block 1 */
 		// Start line: 4462
@@ -1569,28 +1569,28 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN *pDrawingPed, int boneId, int modelType)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ newRotateBones(struct BONE *poBone /*$a0*/)
+// void /*$ra*/ newRotateBones(BONE *poBone /*$a0*/)
  // line 1606, offset 0x00066648
 	/* begin block 1 */
 		// Start line: 1608
 		// Start offset: 0x00066648
 		// Variables:
-	// 		struct MATRIX mStore[32]; // stack offset -1088
-	// 		struct MATRIX *pMatrix; // $s2
-	// 		struct MATRIX *oMatrix; // $s5
-	// 		struct SVECTOR *svBone; // $s6
-	// 		struct VECTOR *vBoneRotated; // $s3
-	// 		struct BONE *pBone; // $s1
+	// 		MATRIX mStore[32]; // stack offset -1088
+	// 		MATRIX *pMatrix; // $s2
+	// 		MATRIX *oMatrix; // $s5
+	// 		SVECTOR *svBone; // $s6
+	// 		VECTOR *vBoneRotated; // $s3
+	// 		BONE *pBone; // $s1
 	// 		int id; // $s0
-	// 		struct SVECTOR *pVerts; // $a3
-	// 		struct SVECTOR *pmVerts; // $s0
+	// 		SVECTOR *pVerts; // $a3
+	// 		SVECTOR *pmVerts; // $s0
 	// 		int numVerts; // $t0
-	// 		struct MODEL *pModel; // $v0
+	// 		MODEL *pModel; // $v0
 	// 		int i; // $a2
-	// 		struct SVECTOR *pD; // $a0
+	// 		SVECTOR *pD; // $a0
 	// 		int c; // $s4
 	// 		int j; // $a1
-	// 		struct VECTOR sv; // stack offset -64
+	// 		VECTOR sv; // stack offset -64
 
 		/* begin block 1.1 */
 			// Start line: 1609
@@ -1839,29 +1839,29 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawCiv(struct PEDESTRIAN *pPed /*$fp*/)
+// void /*$ra*/ DrawCiv(PEDESTRIAN *pPed /*$fp*/)
  // line 1834, offset 0x000670cc
 	/* begin block 1 */
 		// Start line: 1835
 		// Start offset: 0x000670CC
 		// Variables:
 	// 		int i; // $s5
-	// 		struct DVECTOR *outpoints; // $t9
+	// 		DVECTOR *outpoints; // $t9
 	// 		long *outlongs; // $s5
-	// 		struct SVECTOR *psrLerpData; // $t8
+	// 		SVECTOR *psrLerpData; // $t8
 	// 		long *zbuff; // $s4
-	// 		struct SVECTOR *pLerpData; // $s0
-	// 		struct SVECTOR pos; // stack offset -160
-	// 		struct VECTOR pos1; // stack offset -152
-	// 		struct SVECTOR *vert1; // $a1
-	// 		struct SVECTOR *vert2; // $a0
-	// 		struct SVECTOR temp1; // stack offset -136
-	// 		struct SVECTOR temp2; // stack offset -128
+	// 		SVECTOR *pLerpData; // $s0
+	// 		SVECTOR pos; // stack offset -160
+	// 		VECTOR pos1; // stack offset -152
+	// 		SVECTOR *vert1; // $a1
+	// 		SVECTOR *vert2; // $a0
+	// 		SVECTOR temp1; // stack offset -136
+	// 		SVECTOR temp2; // stack offset -128
 	// 		int cnt3; // $a2
 	// 		int bHeadModel; // stack offset -56
 	// 		int shift; // $t0
 	// 		int frame; // $a2
-	// 		struct MATRIX workmatrix; // stack offset -120
+	// 		MATRIX workmatrix; // stack offset -120
 	// 		int j; // $s7
 
 		/* begin block 1.1 */
@@ -1883,9 +1883,9 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 			// Start line: 1964
 			// Start offset: 0x000677C0
 			// Variables:
-		// 		struct SVECTOR sV; // stack offset -88
-		// 		struct SVECTOR sV2; // stack offset -80
-		// 		struct VECTOR v; // stack offset -72
+		// 		SVECTOR sV; // stack offset -88
+		// 		SVECTOR sV2; // stack offset -80
+		// 		VECTOR v; // stack offset -72
 		/* end block 1.2 */
 		// End offset: 0x000677FC
 		// End Line: 1976
@@ -1894,8 +1894,8 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 			// Start line: 1985
 			// Start offset: 0x000677FC
 			// Variables:
-		// 		struct CVECTOR cv; // stack offset -88
-		// 		struct VECTOR pos; // stack offset -80
+		// 		CVECTOR cv; // stack offset -88
+		// 		VECTOR pos; // stack offset -80
 		// 		int phase; // $s0
 		/* end block 1.3 */
 		// End offset: 0x000678A0
@@ -2211,16 +2211,16 @@ void SetSkelModelPointers(int type)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawTanner(struct PEDESTRIAN *pPed /*$s2*/)
+// void /*$ra*/ DrawTanner(PEDESTRIAN *pPed /*$s2*/)
  // line 2041, offset 0x000678d0
 	/* begin block 1 */
 		// Start line: 2042
 		// Start offset: 0x000678D0
 		// Variables:
-	// 		struct VECTOR v; // stack offset -112
-	// 		struct CVECTOR cV; // stack offset -96
-	// 		struct MATRIX mRotStore; // stack offset -88
-	// 		struct MATRIX iMatrix; // stack offset -56
+	// 		VECTOR v; // stack offset -112
+	// 		CVECTOR cV; // stack offset -96
+	// 		MATRIX mRotStore; // stack offset -88
+	// 		MATRIX iMatrix; // stack offset -56
 
 		/* begin block 1.1 */
 			// Start line: 2042
@@ -2306,16 +2306,16 @@ void DrawTanner(PEDESTRIAN *pPed)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ DrawCharacter(struct PEDESTRIAN *pPed /*$s1*/)
+// int /*$ra*/ DrawCharacter(PEDESTRIAN *pPed /*$s1*/)
  // line 2120, offset 0x00067d44
 	/* begin block 1 */
 		// Start line: 2121
 		// Start offset: 0x00067D44
 		// Variables:
-	// 		struct MATRIX mRotStore; // stack offset -128
-	// 		struct MATRIX iMatrix; // stack offset -96
-	// 		struct CVECTOR cV; // stack offset -64
-	// 		struct VECTOR v; // stack offset -56
+	// 		MATRIX mRotStore; // stack offset -128
+	// 		MATRIX iMatrix; // stack offset -96
+	// 		CVECTOR cV; // stack offset -64
+	// 		VECTOR v; // stack offset -56
 
 		/* begin block 1.1 */
 			// Start line: 2121
@@ -2336,8 +2336,8 @@ void DrawTanner(PEDESTRIAN *pPed)
 			// Start line: 2175
 			// Start offset: 0x00068134
 			// Variables:
-		// 		struct CVECTOR cv; // stack offset -40
-		// 		struct VECTOR pos; // stack offset -32
+		// 		CVECTOR cv; // stack offset -40
+		// 		VECTOR pos; // stack offset -32
 		// 		int phase; // $s0
 		/* end block 1.2 */
 		// End offset: 0x000681D0
@@ -2441,7 +2441,7 @@ int DrawCharacter(PEDESTRIAN *pPed)
 		// Start line: 2203
 		// Start offset: 0x000681EC
 		// Variables:
-	// 		struct CVECTOR cV; // stack offset -8
+	// 		CVECTOR cV; // stack offset -8
 	// 		int i; // $a3
 	/* end block 1 */
 	// End offset: 0x00068358
@@ -2557,7 +2557,7 @@ void InitTannerShadow(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ TannerShadow(struct VECTOR *pPedPos /*$s6*/, struct SVECTOR *pLightPos /*$s7*/, struct CVECTOR *col /*$a2*/, short angle /*$a3*/)
+// void /*$ra*/ TannerShadow(VECTOR *pPedPos /*$s6*/, SVECTOR *pLightPos /*$s7*/, CVECTOR *col /*$a2*/, short angle /*$a3*/)
  // line 2258, offset 0x00068358
 	/* begin block 1 */
 		// Start line: 2259
@@ -2568,15 +2568,15 @@ void InitTannerShadow(void)
 	// 		int z1; // stack offset -68
 	// 		int z2; // stack offset -64
 	// 		int z3; // stack offset -60
-	// 		struct SVECTOR vert[4]; // stack offset -272
-	// 		struct VECTOR d; // stack offset -240
-	// 		struct DR_ENV *pDE; // $s3
-	// 		struct DRAWENV drEnv; // stack offset -224
-	// 		struct VECTOR cp; // stack offset -128
-	// 		struct SVECTOR ca; // stack offset -112
-	// 		struct VECTOR v1; // stack offset -104
+	// 		SVECTOR vert[4]; // stack offset -272
+	// 		VECTOR d; // stack offset -240
+	// 		DR_ENV *pDE; // $s3
+	// 		DRAWENV drEnv; // stack offset -224
+	// 		VECTOR cp; // stack offset -128
+	// 		SVECTOR ca; // stack offset -112
+	// 		VECTOR v1; // stack offset -104
 	// 		int i; // $s4
-	// 		struct VECTOR myVector; // stack offset -88
+	// 		VECTOR myVector; // stack offset -88
 	// 		int avalue2; // $v0
 	// 		int w; // $v1
 
@@ -2777,19 +2777,19 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DoCivHead(struct SVECTOR *vert1 /*$s1*/, struct SVECTOR *vert2 /*$s3*/)
+// void /*$ra*/ DoCivHead(SVECTOR *vert1 /*$s1*/, SVECTOR *vert2 /*$s3*/)
  // line 2442, offset 0x00068b2c
 	/* begin block 1 */
 		// Start line: 2443
 		// Start offset: 0x00068B2C
 		// Variables:
-	// 		struct VECTOR headpos; // stack offset -184
-	// 		struct SVECTOR final_rotation; // stack offset -168
-	// 		struct SVECTOR spos1; // stack offset -160
-	// 		struct MODEL *model; // $s5
-	// 		struct MATRIX work2matrix; // stack offset -152
-	// 		struct MATRIX mRotStore; // stack offset -120
-	// 		struct VECTOR pos1; // stack offset -88
+	// 		VECTOR headpos; // stack offset -184
+	// 		SVECTOR final_rotation; // stack offset -168
+	// 		SVECTOR spos1; // stack offset -160
+	// 		MODEL *model; // $s5
+	// 		MATRIX work2matrix; // stack offset -152
+	// 		MATRIX mRotStore; // stack offset -120
+	// 		VECTOR pos1; // stack offset -88
 	// 		int pal; // $v1
 	// 		int ci; // $s6
 
@@ -2825,7 +2825,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, 
 			// Start line: 2535
 			// Start offset: 0x00069274
 			// Variables:
-		// 		struct MATRIX comb; // stack offset -72
+		// 		MATRIX comb; // stack offset -72
 		/* end block 1.3 */
 		// End offset: 0x00069274
 		// End Line: 2537
@@ -2916,15 +2916,15 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawObject(struct MODEL *model /*$t8*/, struct MATRIX *matrix /*$a1*/, struct VECTOR *pos /*$a2*/, int z_correct /*$a3*/)
+// void /*$ra*/ DrawObject(MODEL *model /*$t8*/, MATRIX *matrix /*$a1*/, VECTOR *pos /*$a2*/, int z_correct /*$a3*/)
  // line 2562, offset 0x00069438
 	/* begin block 1 */
 		// Start line: 2563
 		// Start offset: 0x00069438
 		// Variables:
-	// 		struct DVECTOR *outpoints; // $t7
+	// 		DVECTOR *outpoints; // $t7
 	// 		short *zbuff; // $t5
-	// 		struct SVECTOR *verts; // $t6
+	// 		SVECTOR *verts; // $t6
 	// 		char *polys; // $s0
 	// 		int cnt3; // $t1
 	// 		int i; // $s1
@@ -3120,10 +3120,10 @@ void DrawObject(MODEL *model, MATRIX *matrix, VECTOR *pos, int z_correct)
 		// Start line: 2692
 		// Start offset: 0x00069874
 		// Variables:
-	// 		struct POLYFT3 *src; // $a3
+	// 		POLYFT3 *src; // $a3
 	// 		short *zbuff; // $t2
 	// 		long *outlongs; // $a2
-	// 		struct POLY_FT3 *prims; // $t1
+	// 		POLY_FT3 *prims; // $t1
 	// 		unsigned long clut; // $t0
 	// 		unsigned long tpage; // $a1
 	// 		int z; // $a2

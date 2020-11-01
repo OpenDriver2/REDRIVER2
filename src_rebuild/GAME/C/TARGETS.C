@@ -90,13 +90,13 @@ int gDraw3DArrowBlue = 0;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Draw3DTarget(struct VECTOR *position /*$s0*/, int flags /*$s2*/)
+// void /*$ra*/ Draw3DTarget(VECTOR *position /*$s0*/, int flags /*$s2*/)
  // line 213, offset 0x0007fb44
 	/* begin block 1 */
 		// Start line: 214
 		// Start offset: 0x0007FB44
 		// Variables:
-	// 		struct VECTOR pos; // stack offset -32
+	// 		VECTOR pos; // stack offset -32
 	// 		int shadow; // $s1
 	/* end block 1 */
 	// End offset: 0x0007FD48
@@ -181,7 +181,7 @@ void Draw3DTarget(VECTOR *position, int flags)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawTargetArrowModel(struct TARGET_ARROW_MODEL *pTargetArrowModel /*$s1*/, struct VECTOR *pPosition /*$s2*/, int shadow /*$s4*/, int invert /*$s3*/)
+// void /*$ra*/ DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel /*$s1*/, VECTOR *pPosition /*$s2*/, int shadow /*$s4*/, int invert /*$s3*/)
  // line 267, offset 0x0007fd48
 	/* begin block 1 */
 		// Start line: 268
@@ -191,16 +191,16 @@ void Draw3DTarget(VECTOR *position, int flags)
 			// Start line: 271
 			// Start offset: 0x0007FD9C
 			// Variables:
-		// 		struct VECTOR tempVec; // stack offset -56
-		// 		struct SVECTOR *pVerts; // $s0
-		// 		struct SVECTOR temp; // stack offset -40
+		// 		VECTOR tempVec; // stack offset -56
+		// 		SVECTOR *pVerts; // $s0
+		// 		SVECTOR temp; // stack offset -40
 		// 		char *pVertIndex; // $a3
 
 			/* begin block 1.1.1 */
 				// Start line: 283
 				// Start offset: 0x0007FE2C
 				// Variables:
-			// 		struct POLY_F3 *poly; // $t0
+			// 		POLY_F3 *poly; // $t0
 			// 		int z; // stack offset -32
 			/* end block 1.1.1 */
 			// End offset: 0x00080044
@@ -320,15 +320,15 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawStopZone(struct VECTOR *pPosition /*$s5*/)
+// void /*$ra*/ DrawStopZone(VECTOR *pPosition /*$s5*/)
  // line 412, offset 0x000800f8
 	/* begin block 1 */
 		// Start line: 413
 		// Start offset: 0x000800F8
 		// Variables:
-	// 		struct VECTOR *pVector; // $s0
-	// 		struct VECTOR pStopZonePt[4]; // stack offset -128
-	// 		struct POLY_FT4 *pPoly; // $s1
+	// 		VECTOR *pVector; // $s0
+	// 		VECTOR pStopZonePt[4]; // stack offset -128
+	// 		POLY_FT4 *pPoly; // $s1
 	// 		long *pOut; // $s2
 	// 		long sz; // stack offset -48
 
@@ -336,7 +336,7 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 			// Start line: 430
 			// Start offset: 0x000801FC
 			// Variables:
-		// 		struct SVECTOR temp; // stack offset -64
+		// 		SVECTOR temp; // stack offset -64
 		// 		long p; // stack offset -56
 		// 		long flag; // stack offset -52
 		/* end block 1.1 */
@@ -448,7 +448,7 @@ void DrawStopZone(VECTOR *pPosition)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WorldToCameraPositions(struct VECTOR *pGlobalPositionIn /*$s1*/, struct VECTOR *pCameraPositionOut /*$s0*/, int count /*$s2*/)
+// void /*$ra*/ WorldToCameraPositions(VECTOR *pGlobalPositionIn /*$s1*/, VECTOR *pCameraPositionOut /*$s0*/, int count /*$s2*/)
  // line 496, offset 0x0008047c
 	/* begin block 1 */
 		// Start line: 497
@@ -458,7 +458,7 @@ void DrawStopZone(VECTOR *pPosition)
 			// Start line: 500
 			// Start offset: 0x000804B8
 			// Variables:
-		// 		struct VECTOR temp; // stack offset -48
+		// 		VECTOR temp; // stack offset -48
 		/* end block 1.1 */
 		// End offset: 0x000804B8
 		// End Line: 502

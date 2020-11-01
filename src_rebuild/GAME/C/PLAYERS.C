@@ -15,7 +15,7 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitPlayer(struct _PLAYER *locPlayer /*$s1*/, struct _CAR_DATA *cp /*$s2*/, char carCtrlType /*$s3*/, int direction /*$s6*/, long (*startPos)[4] /*stack 16*/, int externModel /*stack 20*/, int palette /*stack 24*/, char *padid /*stack 28*/)
+// void /*$ra*/ InitPlayer(PLAYER *locPlayer /*$s1*/, CAR_DATA *cp /*$s2*/, char carCtrlType /*$s3*/, int direction /*$s6*/, LONGVECTOR* startPos /*stack 16*/, int externModel /*stack 20*/, int palette /*stack 24*/, char *padid /*stack 28*/)
  // line 75, offset 0x000739d8
 	/* begin block 1 */
 		// Start line: 76
@@ -35,16 +35,16 @@
 	// End Line: 151
 
 PEDESTRIAN *pPlayerPed = NULL;
-_PLAYER player[8];
+PLAYER player[8];
 
 // [D] [T]
-void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int direction, long(*startPos)[4], int externModel, int palette, char *padid)
+void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR* startPos, int externModel, int palette, char *padid)
 {
 	int model;
 	uint playerType;
 
 	playerType = externModel & 0xFF;
-	ClearMem((char *)locPlayer, sizeof(_PLAYER));
+	ClearMem((char *)locPlayer, sizeof(PLAYER));
 
 	if (gStartOnFoot == 0 || carCtrlType == 4)
 	{
@@ -115,7 +115,7 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 		// Start line: 131
 		// Start offset: 0x00073334
 		// Variables:
-	// 		struct _CAR_DATA *lcp; // $s2
+	// 		CAR_DATA *lcp; // $s2
 	/* end block 1 */
 	// End offset: 0x0007350C
 	// End Line: 181
@@ -128,7 +128,7 @@ void InitPlayer(_PLAYER *locPlayer, _CAR_DATA *cp, char carCtrlType, int directi
 // [D] [T]
 void ChangeCarPlayerToPed(int playerID)
 {
-	_CAR_DATA *lcp = &car_data[player[playerID].playerCarId];
+	CAR_DATA *lcp = &car_data[player[playerID].playerCarId];
 
 	//my_sly_var = playerID;
 	player[playerID].headTimer = 0;
@@ -177,13 +177,13 @@ void ChangeCarPlayerToPed(int playerID)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ChangePedPlayerToCar(int playerID /*$s4*/, struct _CAR_DATA *newCar /*$s2*/)
+// void /*$ra*/ ChangePedPlayerToCar(int playerID /*$s4*/, CAR_DATA *newCar /*$s2*/)
  // line 184, offset 0x0007350c
 	/* begin block 1 */
 		// Start line: 185
 		// Start offset: 0x0007350C
 		// Variables:
-	// 		struct _PLAYER *lPlayer; // $s1
+	// 		PLAYER *lPlayer; // $s1
 	// 		int siren; // $s5
 	// 		long *pos; // $s3
 	// 		int carParked; // $s6
@@ -209,14 +209,14 @@ void ChangeCarPlayerToPed(int playerID)
 extern int lastCarCameraView;
 
 // [D] [T]
-void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
+void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 {
 	int carParked;
 	int siren;
 	int channel;
 	int carSampleId;
 
-	_PLAYER* lPlayer;
+	PLAYER* lPlayer;
 
 	lPlayer = &player[playerID];
 
@@ -313,8 +313,8 @@ void ChangePedPlayerToCar(int playerID, _CAR_DATA *newCar)
 		// Start line: 249
 		// Start offset: 0x00073898
 		// Variables:
-	// 		struct _PLAYER *locPlayer; // $t0
-	// 		struct _CAR_DATA *cp; // $v1
+	// 		PLAYER *locPlayer; // $t0
+	// 		CAR_DATA *cp; // $v1
 	/* end block 1 */
 	// End offset: 0x000739D8
 	// End Line: 286
@@ -346,8 +346,8 @@ void UpdatePlayers(void)
 {
 	int carId;
 	PEDESTRIAN *ped;
-	_PLAYER *locPlayer;
-	_CAR_DATA* cp;
+	PLAYER *locPlayer;
+	CAR_DATA* cp;
 
 	pedestrianFelony = 0;
 

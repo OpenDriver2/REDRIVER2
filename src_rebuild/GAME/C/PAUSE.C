@@ -28,7 +28,7 @@ static int gScorePosition = 0;
 static int allownameentry = 0;
 
 static MENU_ITEM* ActiveItem[3];
-static struct MENU_HEADER* ActiveMenu;
+static MENU_HEADER* ActiveMenu;
 static int ActiveMenuItem;
 static int VisibleMenu;
 static MENU_HEADER* VisibleMenus[3];
@@ -446,13 +446,13 @@ int playerwithcontrol[3] = { 0 };
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ ShowPauseMenu(enum PAUSEMODE mode /*$s0*/)
+// int /*$ra*/ ShowPauseMenu(PAUSEMODE mode /*$s0*/)
  // line 1004, offset 0x0006bf50
 	/* begin block 1 */
 		// Start line: 1005
 		// Start offset: 0x0006BF50
 		// Variables:
-	// 		enum PAUSEMODE passed_mode; // $s2
+	// 		PAUSEMODE passed_mode; // $s2
 
 		/* begin block 1.1 */
 			// Start line: 1062
@@ -465,7 +465,7 @@ int playerwithcontrol[3] = { 0 };
 			// Start line: 1092
 			// Start offset: 0x0006C178
 			// Variables:
-		// 		struct RECT rect; // stack offset -32
+		// 		RECT rect; // stack offset -32
 		/* end block 1.2 */
 		// End offset: 0x0006C1FC
 		// End Line: 1101
@@ -742,13 +742,13 @@ void EnterName(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ MaxMenuStringLength(struct MENU_HEADER *pMenu /*$v0*/)
+// int /*$ra*/ MaxMenuStringLength(MENU_HEADER *pMenu /*$v0*/)
  // line 1185, offset 0x0006da18
 	/* begin block 1 */
 		// Start line: 1186
 		// Start offset: 0x0006DA18
 		// Variables:
-	// 		struct MENU_ITEM *pItems; // $s1
+	// 		MENU_ITEM *pItems; // $s1
 	// 		int max; // $s2
 	// 		int temp; // $s0
 	/* end block 1 */
@@ -790,13 +790,13 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitaliseMenu(enum PAUSEMODE mode /*$a2*/)
+// void /*$ra*/ InitaliseMenu(PAUSEMODE mode /*$a2*/)
  // line 1216, offset 0x0006c2ac
 	/* begin block 1 */
 		// Start line: 1217
 		// Start offset: 0x0006C2AC
 		// Variables:
-	// 		struct MENU_ITEM *pItem; // $a0
+	// 		MENU_ITEM *pItem; // $a0
 	// 		int i; // $a1
 	/* end block 1 */
 	// End offset: 0x0006C6B8
@@ -1004,13 +1004,13 @@ LAB_0006c5d0:
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupMenu(struct MENU_HEADER *menu /*$a0*/, int back /*$a1*/)
+// void /*$ra*/ SetupMenu(MENU_HEADER *menu /*$a0*/, int back /*$a1*/)
  // line 1401, offset 0x0006c6b8
 	/* begin block 1 */
 		// Start line: 1402
 		// Start offset: 0x0006C6B8
 		// Variables:
-	// 		struct MENU_ITEM *pItem; // $a2
+	// 		MENU_ITEM *pItem; // $a2
 	// 		int count; // $a3
 	/* end block 1 */
 	// End offset: 0x0006C7F4
@@ -1089,9 +1089,9 @@ void SetupMenu(MENU_HEADER *menu, int back)
 		// Start line: 1445
 		// Start offset: 0x0006C7F4
 		// Variables:
-	// 		struct MENU_HEADER *pActive; // $s5
-	// 		struct MENU_ITEM *pItem; // $s1
-	// 		struct POLY_FT3 *null; // $a0
+	// 		MENU_HEADER *pActive; // $s5
+	// 		MENU_ITEM *pItem; // $s1
+	// 		POLY_FT3 *null; // $a0
 	// 		int i; // stack offset -48
 	// 		int ypos; // $s3
 	// 		int xpos; // $fp
@@ -1676,7 +1676,7 @@ void MusicVolume(int direction)
 		// Start line: 1789
 		// Start offset: 0x0006D044
 		// Variables:
-	// 		struct SCORE_ENTRY *table; // stack offset -40
+	// 		SCORE_ENTRY *table; // stack offset -40
 	// 		char *username; // $s3
 	// 		unsigned short npad; // $a1
 	// 		int so; // $s0
@@ -1896,7 +1896,7 @@ void EnterScoreName(void)
 		// Start line: 2021
 		// Start offset: 0x0006D694
 		// Variables:
-	// 		struct POLY_FT3 *null; // $a0
+	// 		POLY_FT3 *null; // $a0
 	// 		char text[4]; // stack offset -48
 	// 		unsigned char r; // $s3
 	// 		unsigned char g; // $s5
@@ -1996,7 +1996,7 @@ void DrawHighScoreMenu(int selection)
 //* Stack frame base $sp, size 80
 //* Saved registers at offset - 4: s0 s1 s2 s3 s4 s5 s6 s7 fp ra
 //* /
-//void /*$ra*/ CreateScoreNames(struct SCORE_ENTRY* table /*$s0*/, struct PLAYER_SCORE* score /*stack 4*/, int position /*stack 8*/)
+//void /*$ra*/ CreateScoreNames(SCORE_ENTRY* table /*$s0*/, PLAYER_SCORE* score /*stack 4*/, int position /*stack 8*/)
 //{ // line 1, offset 0x6d324
 //	char* text; // $s1
 //	int min; // $t1

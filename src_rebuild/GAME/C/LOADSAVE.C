@@ -464,7 +464,7 @@ int SaveGameData(char* buffer)
 		// Start line: 86
 		// Start offset: 0x000580CC
 		// Variables:
-	// 		struct GAME_SAVE_HEADER *header; // $a0
+	// 		GAME_SAVE_HEADER *header; // $a0
 	/* end block 1 */
 	// End offset: 0x00058164
 	// End Line: 99
@@ -543,7 +543,7 @@ int CalcConfigDataSize(void)
 		// Start line: 110
 		// Start offset: 0x00057BF0
 		// Variables:
-	// 		struct CONFIG_SAVE_HEADER *header; // $s0
+	// 		CONFIG_SAVE_HEADER *header; // $s0
 	// 		int i; // $t0
 	/* end block 1 */
 	// End offset: 0x00057DF0
@@ -597,7 +597,7 @@ int SaveConfigData(char* buffer)
 		// Start line: 141
 		// Start offset: 0x00057DF0
 		// Variables:
-	// 		struct CONFIG_SAVE_HEADER *header; // $t3
+	// 		CONFIG_SAVE_HEADER *header; // $t3
 	// 		int i; // $t4
 	/* end block 1 */
 	// End offset: 0x00057FD4

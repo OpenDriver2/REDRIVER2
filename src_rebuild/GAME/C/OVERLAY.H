@@ -1,11 +1,11 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
-extern _PERCENTAGE_BAR PlayerDamageBar;
-extern _PERCENTAGE_BAR Player2DamageBar;
-extern _PERCENTAGE_BAR DamageBar;
-extern _PERCENTAGE_BAR FelonyBar;
-extern _PERCENTAGE_BAR ProxyBar;
+extern PERCENTAGE_BAR PlayerDamageBar;
+extern PERCENTAGE_BAR Player2DamageBar;
+extern PERCENTAGE_BAR DamageBar;
+extern PERCENTAGE_BAR FelonyBar;
+extern PERCENTAGE_BAR ProxyBar;
 
 extern char OverlayFlashValue;
 
@@ -15,15 +15,15 @@ extern void DisplayOverlays(); // 0x00014C3C
 
 extern void SetFullscreenDrawing(); // 0x00015E70
 
-extern void InitPercentageBar(struct _PERCENTAGE_BAR *bar, int size, struct COLOUR_BAND *pColourBand, char *tag); // 0x00015F20
+extern void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, char *tag); // 0x00015F20
 
-extern void EnablePercentageBar(struct _PERCENTAGE_BAR *bar, int max); // 0x00015F58
+extern void EnablePercentageBar(PERCENTAGE_BAR *bar, int max); // 0x00015F58
 
-extern void DrawPercentageBar(struct _PERCENTAGE_BAR *bar); // 0x00014DA8
+extern void DrawPercentageBar(PERCENTAGE_BAR *bar); // 0x00014DA8
 
-extern void DrawProximityBar(struct _PERCENTAGE_BAR *bar); // 0x000152D4
+extern void DrawProximityBar(PERCENTAGE_BAR *bar); // 0x000152D4
 
-extern void SetColourByValue(struct COLOUR_BAND *pColourBand, int value, struct CVECTOR *pOut); // 0x00015F6C
+extern void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut); // 0x00015F6C
 
 extern void TransparencyOn(void *potz, unsigned short tpage); // 0x00016098
 

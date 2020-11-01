@@ -84,16 +84,16 @@ void InitTyreTracks(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ GetTyreTrackPositions(struct _CAR_DATA *cp /*$s3*/, int player_id /*$s7*/)
+// void /*$ra*/ GetTyreTrackPositions(CAR_DATA *cp /*$s3*/, int player_id /*$s7*/)
  // line 272, offset 0x00075408
 	/* begin block 1 */
 		// Start line: 273
 		// Start offset: 0x00075408
 		// Variables:
-	// 		struct CAR_COSMETICS *car_cos; // $s4
-	// 		struct VECTOR WheelPos; // stack offset -88
-	// 		struct VECTOR target_pos; // stack offset -72
-	// 		struct VECTOR normal; // stack offset -56
+	// 		CAR_COSMETICS *car_cos; // $s4
+	// 		VECTOR WheelPos; // stack offset -88
+	// 		VECTOR target_pos; // stack offset -72
+	// 		VECTOR normal; // stack offset -56
 	// 		int loop; // $s2
 
 		/* begin block 1.1 */
@@ -112,7 +112,7 @@ void InitTyreTracks(void)
 	// End Line: 545
 
 // [D] [T]
-void GetTyreTrackPositions(_CAR_DATA *cp, int player_id)
+void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 {
 	int track;
 	uint loop;
@@ -199,30 +199,30 @@ void SetTyreTrackOldPositions(int player_id)
 		// Start line: 331
 		// Start offset: 0x00075540
 		// Variables:
-	// 		struct VECTOR New1; // stack offset -168
-	// 		struct VECTOR New2; // stack offset -152
-	// 		struct VECTOR New3; // stack offset -136
-	// 		struct VECTOR New4; // stack offset -120
-	// 		struct VECTOR *old; // $s5
-	// 		struct VECTOR *new; // $s3
-	// 		struct TYRE_TRACK *tt_p; // $s1
+	// 		VECTOR New1; // stack offset -168
+	// 		VECTOR New2; // stack offset -152
+	// 		VECTOR New3; // stack offset -136
+	// 		VECTOR New4; // stack offset -120
+	// 		VECTOR *old; // $s5
+	// 		VECTOR *new; // $s3
+	// 		TYRE_TRACK *tt_p; // $s1
 	// 		int x; // $v1
 	// 		int z; // $a1
 	// 		int c; // $t1
 	// 		int s; // $t0
 	// 		unsigned int index; // $a2
 	// 		static int Cont[4]; // offset 0x0
-	// 		struct VECTOR psxoffset; // stack offset -104
-	// 		struct VECTOR SmokeDrift; // stack offset -88
-	// 		struct VECTOR SmokePosition; // stack offset -72
+	// 		VECTOR psxoffset; // stack offset -104
+	// 		VECTOR SmokeDrift; // stack offset -88
+	// 		VECTOR SmokePosition; // stack offset -72
 	// 		char trackSurface; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 364
 			// Start offset: 0x00075610
 			// Variables:
-		// 		struct ROUTE_DATA routeData; // stack offset -56
-		// 		struct _sdPlane *SurfaceDataPtr; // $v0
+		// 		ROUTE_DATA routeData; // stack offset -56
+		// 		sdPlane *SurfaceDataPtr; // $v0
 		/* end block 1.1 */
 		// End offset: 0x0007569C
 		// End Line: 399
@@ -238,7 +238,7 @@ void SetTyreTrackOldPositions(int player_id)
 			// Start line: 421
 			// Start offset: 0x0007572C
 			// Variables:
-		// 		struct VECTOR grass_vector; // stack offset -48
+		// 		VECTOR grass_vector; // stack offset -48
 		/* end block 1.3 */
 		// End offset: 0x0007572C
 		// End Line: 421
@@ -263,7 +263,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 
 	short x;
 	short z;
-	_sdPlane *SurfaceDataPtr;
+	sdPlane *SurfaceDataPtr;
 	char trackSurface;
 	TYRE_TRACK *tt_p;
 	VECTOR *newtp;
@@ -421,17 +421,17 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 		// Start line: 519
 		// Start offset: 0x000759E0
 		// Variables:
-	// 		struct VECTOR p[4]; // stack offset -136
-	// 		struct SVECTOR ps[4]; // stack offset -72
-	// 		struct TYRE_TRACK *tt_p; // $t0
+	// 		VECTOR p[4]; // stack offset -136
+	// 		SVECTOR ps[4]; // stack offset -72
+	// 		TYRE_TRACK *tt_p; // $t0
 	// 		int z; // stack offset -40
 	// 		int temp; // $a2
 	// 		int loop; // $t7
 	// 		int wheel_loop; // $s0
 	// 		int index; // $t2
 	// 		char last_duff; // $s1
-	// 		struct POLY_FT4 *poly; // $a3
-	// 		struct POLY_FT4 *lasttyre; // $t8
+	// 		POLY_FT4 *poly; // $a3
+	// 		POLY_FT4 *lasttyre; // $t8
 	/* end block 1 */
 	// End offset: 0x00075F34
 	// End Line: 645
@@ -599,8 +599,8 @@ void DrawTyreTracks(void)
 		// Start line: 661
 		// Start offset: 0x00075F34
 		// Variables:
-	// 		struct TPAN pos; // stack offset -16
-	// 		struct TEXINF *texinf; // $v0
+	// 		TPAN pos; // stack offset -16
+	// 		TEXINF *texinf; // $v0
 	// 		int i; // $a2
 	// 		int j; // $a3
 
@@ -681,13 +681,13 @@ void InitShadow(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SubdivShadow(long z0 /*$t7*/, long z1 /*$t9*/, long z2 /*$t8*/, long z3 /*$t6*/, struct POLY_FT4 *sps /*stack 16*/)
+// void /*$ra*/ SubdivShadow(long z0 /*$t7*/, long z1 /*$t9*/, long z2 /*$t8*/, long z3 /*$t6*/, POLY_FT4 *sps /*stack 16*/)
  // line 717, offset 0x00076108
 	/* begin block 1 */
 		// Start line: 718
 		// Start offset: 0x00076108
 		// Variables:
-	// 		struct POLY_FT4 *spd; // $t3
+	// 		POLY_FT4 *spd; // $t3
 	// 		int i; // $t4
 
 		/* begin block 1.1 */
@@ -971,19 +971,19 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ PlaceShadowForCar(struct VECTOR *shadowPoints /*$t0*/, int slot /*$s0*/, struct VECTOR *CarPos /*$a2*/, int zclip /*$a3*/)
+// void /*$ra*/ PlaceShadowForCar(VECTOR *shadowPoints /*$t0*/, int slot /*$s0*/, VECTOR *CarPos /*$a2*/, int zclip /*$a3*/)
  // line 864, offset 0x000766cc
 	/* begin block 1 */
 		// Start line: 865
 		// Start offset: 0x000766CC
 		// Variables:
-	// 		struct SVECTOR points[4]; // stack offset -64
+	// 		SVECTOR points[4]; // stack offset -64
 	// 		long z; // $a0
 	// 		long z0; // stack offset -32
 	// 		long z1; // stack offset -28
 	// 		long z2; // stack offset -24
 	// 		long z3; // stack offset -20
-	// 		struct POLY_FT4 *spt; // $a3
+	// 		POLY_FT4 *spt; // $a3
 	/* end block 1 */
 	// End offset: 0x00076A40
 	// End Line: 933
@@ -1074,9 +1074,9 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
 		// Variables:
 	// 		int srccount; // $t4
 	// 		int dstcount; // $t5
-	// 		struct SVECTOR *current; // $t2
-	// 		struct SVECTOR *previous; // $t1
-	// 		struct SVECTOR *dst; // $a3
+	// 		SVECTOR *current; // $t2
+	// 		SVECTOR *previous; // $t1
+	// 		SVECTOR *dst; // $a3
 	// 		int flags; // $t3
 
 		/* begin block 1.1 */
@@ -1223,7 +1223,7 @@ int clipAgainstZ(void)
 	// 		int i; // $a3
 	// 		int j; // $t0
 	// 		int z1; // $v1
-	// 		struct POLY_G3 *pg3; // $s0
+	// 		POLY_G3 *pg3; // $s0
 	// 		int z[3]; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x00077128
@@ -1403,7 +1403,7 @@ void clippedPoly(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ sQuad(struct SVECTOR *v0 /*$a0*/, struct SVECTOR *v1 /*$s5*/, struct SVECTOR *v2 /*$s6*/, struct SVECTOR *v3 /*$s4*/)
+// void /*$ra*/ sQuad(SVECTOR *v0 /*$a0*/, SVECTOR *v1 /*$s5*/, SVECTOR *v2 /*$s6*/, SVECTOR *v3 /*$s4*/)
  // line 1160, offset 0x00077138
 	/* begin block 1 */
 		// Start line: 1161
@@ -1416,7 +1416,7 @@ void clippedPoly(void)
 			// Start line: 1168
 			// Start offset: 0x000771B4
 			// Variables:
-		// 		struct POLY_G4 *pf4; // $t2
+		// 		POLY_G4 *pf4; // $t2
 		/* end block 1.1 */
 		// End offset: 0x000772B4
 		// End Line: 1190

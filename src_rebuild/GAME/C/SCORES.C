@@ -73,13 +73,13 @@ void InitialiseScoreTables(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ OnScoreTable(struct SCORE_ENTRY **tablept /*$s1*/)
+// int /*$ra*/ OnScoreTable(SCORE_ENTRY **tablept /*$s1*/)
  // line 86, offset 0x0007503c
 	/* begin block 1 */
 		// Start line: 87
 		// Start offset: 0x0007503C
 		// Variables:
-	// 		struct SCORE_ENTRY *table; // $s0
+	// 		SCORE_ENTRY *table; // $s0
 	// 		int position; // $v0
 	/* end block 1 */
 	// End offset: 0x000751F8
@@ -142,7 +142,7 @@ int OnScoreTable(SCORE_ENTRY **tablept)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddScoreToTable(struct SCORE_ENTRY *table /*$a2*/, int entry /*$a1*/)
+// void /*$ra*/ AddScoreToTable(SCORE_ENTRY *table /*$a2*/, int entry /*$a1*/)
  // line 133, offset 0x000751f8
 	/* begin block 1 */
 		// Start line: 134
@@ -192,7 +192,7 @@ void AddScoreToTable(SCORE_ENTRY *table, int entry)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CheckGetawayPlacing(struct SCORE_ENTRY *table /*$a0*/)
+// int /*$ra*/ CheckGetawayPlacing(SCORE_ENTRY *table /*$a0*/)
  // line 162, offset 0x0007526c
 	/* begin block 1 */
 		// Start line: 163
@@ -240,7 +240,7 @@ int CheckGetawayPlacing(SCORE_ENTRY *table)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CheckTrailblazerPlacing(struct SCORE_ENTRY *table /*$a0*/)
+// int /*$ra*/ CheckTrailblazerPlacing(SCORE_ENTRY *table /*$a0*/)
  // line 188, offset 0x000752bc
 	/* begin block 1 */
 		// Start line: 189
@@ -304,7 +304,7 @@ int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CheckCheckpointPlacing(struct SCORE_ENTRY *table /*$a0*/)
+// int /*$ra*/ CheckCheckpointPlacing(SCORE_ENTRY *table /*$a0*/)
  // line 218, offset 0x00075338
 	/* begin block 1 */
 		// Start line: 219
@@ -351,7 +351,7 @@ int CheckCheckpointPlacing(SCORE_ENTRY *table)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CheckSurvivalPlacing(struct SCORE_ENTRY *table /*$a0*/)
+// int /*$ra*/ CheckSurvivalPlacing(SCORE_ENTRY *table /*$a0*/)
  // line 243, offset 0x00075388
 	/* begin block 1 */
 		// Start line: 244
@@ -397,7 +397,7 @@ int CheckSurvivalPlacing(SCORE_ENTRY *table)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ResetTable(struct SCORE_ENTRY *table /*$a0*/)
+// void /*$ra*/ ResetTable(SCORE_ENTRY *table /*$a0*/)
  // line 261, offset 0x000753d8
 	/* begin block 1 */
 		// Start line: 262
