@@ -1203,15 +1203,15 @@ void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 		pSpeechQueue->count--;
 
 		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+		TimeSinceLastSpeech = 0;
 	}
 	else if (SpuGetKeyStatus(SPU_VOICECH(pSpeechQueue->chan)) == 0)
 	{
 		pSpeechQueue->count--;
 
 		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+		TimeSinceLastSpeech = 0;
 	}
-
-	TimeSinceLastSpeech = 0;
 }
 
 

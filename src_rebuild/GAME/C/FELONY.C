@@ -322,7 +322,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 	if (first_offence == 0 && numActiveCops)
 	{
 		// say something..
-		rnd = Random2(1) & 0xff;
+		rnd = Random2(1);
 		dir = GetCarDirectionOfTravel(&car_data[player[0].playerCarId]);
 
 		switch (type)
@@ -340,19 +340,19 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 				CopSay(5, 0);
 				break;
 			case 4:
-				if ((rnd - (((uint)((long long)rnd * 0xaaaaaaab >> 0x20) & 0xfffffffe) + rnd / 3) & 0xff) != 0)
+				if ((rnd % 3) & 0xff != 0)
 					break;
 
 				CopSay((rnd & 1) + 7, 0);
 
 				break;
 			default:
-				if ((rnd - (((uint)((long long)rnd * 0xf0f0f0f1 >> 0x20) & 0xfffffff0) + rnd / 17) & 0xff) == 0)
+				if ((rnd % 17) & 0xFF == 0)
 				{
-					if (MaxPlayerDamage[0] * 3 >> 2 < car_data[player[0].playerCarId].totalDamage)
-						phrase = rnd & 3;
+					if (MaxPlayerDamage[0] * 3 / 4 < car_data[player[0].playerCarId].totalDamage)
+						phrase = rnd & 4;
 					else
-						phrase = rnd - (((uint)((long long)rnd * 0xaaaaaaab >> 0x20) & 0xfffffffe) + rnd / 3) & 0xff;
+						phrase = rnd & 3;
 
 					if (last_cop_phrase != phrase && 0 < TimeSinceLastSpeech)
 					{
@@ -661,7 +661,8 @@ void CheckPlayerMiscFelonies(void)
 		}
 
 #if 0
-		printInfo("ROAD lane: %d / %d, (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
+		printInfo("ROAD %d lane: %d / %d, (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
+			roadInfo.surfId,
 			lane + 1,
 			((u_char)roadInfo.NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
 			IS_NARROW_ROAD(&roadInfo),
