@@ -3299,7 +3299,6 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 		carPos.vx = pos->vx - offset.vx;
 		carPos.vy = pos->vy - offset.vy;
 		carPos.vz = pos->vz - offset.vz;
-
 		gte_SetTransVector(&carPos);
 
 		RenderModel(model, NULL, NULL, 0, 0, 1, 0);
@@ -3623,11 +3622,8 @@ void DrawEvents(int camera)
 	int iVar8;
 	int iVar9;
 	ushort* _xv;
-	int* piVar11;
-	VECTOR* pVVar12;
 	_EVENT* ev;
 	MATRIX matrix;
-	MATRIX ext;
 	VECTOR pos;
 	VECTOR shadow[4];
 	XZPAIR offset;
@@ -3638,6 +3634,7 @@ void DrawEvents(int camera)
 	if (CurrentPlayerView == 0)
 	{
 		nearestTrain = NULL;
+	
 		thisCamera = 0x8000;
 		otherCamera = 0x4000;
 	}
@@ -3703,11 +3700,11 @@ void DrawEvents(int camera)
 
 			uVar3 = ev->flags;
 
-			if ((uVar3 & 4) == 0)
+			if ((ev->flags & 4) == 0)
 			{
 				if (camera == 0)
 				{
-					if ((uVar3 & 1) != 1)
+					if ((ev->flags & 1) != 1)
 					{
 					LAB_00049d90:
 						uVar4 = *zVis;
@@ -3717,37 +3714,30 @@ void DrawEvents(int camera)
 						LAB_00049db4:
 							if (((uVar4 & otherCamera) != 0) || ((*_xv & 0xfff) != (uVar4 & 0xfff)))
 								break;
-							ev->flags = uVar3 | 4;
+							
+							ev->flags |= 4;
 
 							if (camera == 0)
 							{
-								if ((es_mobile[0] != -1) && ((uVar3 & 2) != 0))
+								if (es_mobile[0] != -1 && (ev->flags & 2))
 								{
-									local_d8 = (ev->position).vx;
-									iVar9 = local_d8 - camera_position.vx;
-									if (iVar9 < 0)
-										iVar9 = camera_position.vx - local_d8;
+									int dist;
 
-									iVar8 = (ev->position).vz;
-									local_d8 = iVar8 - camera_position.vz;
-
-									if (local_d8 < 0)
-										local_d8 = camera_position.vz - iVar8;
-
-									if ((nearestTrain == NULL) ||
-										((uint)(iVar9 + local_d8) < distanceFromNearestTrain))
+									dist = ABS(ev->position.vx - camera_position.vx) + ABS(ev->position.vz - camera_position.vz);
+									
+									if (nearestTrain == NULL || dist < distanceFromNearestTrain)
 									{
 										nearestTrain = ev;
-										distanceFromNearestTrain = iVar9 + local_d8;
+										distanceFromNearestTrain = dist;
 									}
 								}
-
-								local_d8 = FrustrumCheck((VECTOR*)ev, (int)modelpointers[ev->model]->bounding_sphere);
-
-								if (local_d8 != -1)
+								
+								if (FrustrumCheck((VECTOR*)&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
 								{
-									pos.vx = (ev->position).vx - camera_position.vx;
-									pos.vy = (ev->position).vy - camera_position.vy;
+									pos.vx = ev->position.vx - camera_position.vx;
+									pos.vy = ev->position.vy - camera_position.vy;
+									pos.vz = ev->position.vz - camera_position.vz;
+									
 									matrix.m[0][0] = ONE;
 									matrix.m[1][0] = 0;
 									matrix.m[2][0] = 0;
@@ -3757,7 +3747,8 @@ void DrawEvents(int camera)
 									matrix.m[0][2] = 0;
 									matrix.m[1][2] = 0;
 									matrix.m[2][2] = ONE;
-									pos.vz = (ev->position).vz - camera_position.vz;
+									
+									
 									bVar1 = false;
 
 									if ((ev->flags & 2U) == 0)
@@ -4239,29 +4230,33 @@ _sdPlane* EventSurface(VECTOR* pos, _sdPlane* plane)
 			else
 				height = 200;
 
+
 			d = ev->data[1] & 0xfff;
 
 			sin = rcossin_tbl[d * 2];
 			cos = rcossin_tbl[d * 2 + 1];
-
-			offset = dist * -4096 - cos * 3328;
 			
+			offset = dist * -4096 + cos * -3328;
+
 			if (GameLevel == 3 && offset > 0)
 			{
+				int sin2;
 				d = 160 - ev->data[1] & 0xfff;
-				sin = rcossin_tbl[d * 2];
+				
 				cos = rcossin_tbl[d * 2 + 1];
+				sin2 = rcossin_tbl[d * 2];
 
-				if (cos * 2048 < offset)
+				if (offset > cos * 2048)
 				{
 					debugOffset = offset;
 					return GetSeaPlane();
 				}
 
+				plane->d = height - (FIXEDH(sin * 3328) + ev->data[2] + ev->position.vy) + (FIXEDH(offset) * sin2 / cos) ^ 0x40000000;	
+				
 				plane->b = cos * 4;
 				plane->a = 0;
-				plane->c = sin * 4;
-				plane->d = (height - (FIXEDH(sin * 3328) + ev->data[2] + ev->position.vy) + FIXEDH(offset) * sin / cos) ^ 0x40000000;
+				plane->c = sin2 * 4;
 			}
 			else
 			{
