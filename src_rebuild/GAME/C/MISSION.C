@@ -1968,7 +1968,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	{
 		MR_DebugWarn("MR %d command: SetCameraEvent\n", thread - MissionThreads);
 
-		SpecialCamera(SPECIAL_CAMERA_SET, 0);
+		SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 		return 1;
 	}
 	else if (cmd == 0x1000071)			// AwardPlayerCheat

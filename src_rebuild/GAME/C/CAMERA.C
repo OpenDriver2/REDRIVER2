@@ -214,7 +214,7 @@ void InitCamera(_PLAYER *lp)
 
 		if (gCurrentMissionNumber == 22 && lp->cameraPos.vx < 0 && lp->cameraPos.vz < 0xc1c47 && lp->cameraPos.vz > 700000)
 		{
-			SpecialCamera(SPECIAL_CAMERA_SET, 0);
+			SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 		}
 
 		camera_position.vx = lp->cameraPos.vx;

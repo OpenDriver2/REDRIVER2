@@ -500,7 +500,7 @@ int GetVisValue(int index, int zDir)
 			pos.vx = ev->position.vx;
 			pos.vz = ev->position.vz;
 
-			if ((ev->flags & 0xCC0U) == 0x80)
+			if ((ev->flags & 0xCC0) == 0x80)
 			{
 				pos.vx -= boatOffset.vx;
 				pos.vz -= boatOffset.vz;
@@ -772,12 +772,12 @@ void VisibilityLists(VisType type, int i)
 void SetElTrainRotation(_EVENT* ev)
 {
 	if (ev->flags & 0x8000)
-		ev->rotation = 0x400;
+		ev->rotation = 1024;
 	else
 		ev->rotation = 0;
 
 	if (ev->node[0] < ev->node[2])
-		ev->rotation += 0x800;
+		ev->rotation += 2048;
 }
 
 
@@ -810,8 +810,7 @@ void SetElTrainRotation(_EVENT* ev)
 // [D] [T]
 void InitTrain(_EVENT* ev, int count, int type)
 {
-	ushort uVar1;
-	uint mv;
+	int mv;
 	int* to;
 	int length;
 	int height;
@@ -845,6 +844,7 @@ void InitTrain(_EVENT* ev, int count, int type)
 
 	to = ev->node;
 
+	// get direction sign
 	if (to[2] == STATION_NODE_2)
 		mv = to[3] - to[0] >> 0x1f;
 	else
@@ -1119,7 +1119,7 @@ void SetUpEvents(int full)
 	}
 
 	evt = event;
-	cEvents = 0;
+	cEvents = 0;	// TODO: use D_MALLOC for each event?
 
 	if (GameLevel == 0)
 	{
@@ -1594,7 +1594,7 @@ void SetUpEvents(int full)
 
 	*e = NULL;
 
-	if (full != 0)
+	if (full)
 		mallocptr += cEvents * sizeof(_EVENT);
 
 	MALLOC_END();
@@ -2085,7 +2085,7 @@ void StepFromToEvent(_EVENT* ev)
 
 		if (ev == events.cameraEvent)
 		{
-			SpecialCamera(SPECIAL_CAMERA_RESET, 0);
+			SetSpecialCamera(SPECIAL_CAMERA_RESET, 0);
 		}
 	}
 }
@@ -2161,7 +2161,7 @@ void StepFromToEvent(_EVENT* ev)
 	/* end block 3 */
 	// End Line: 3138
 
-// [D]
+// [D] [T]
 void StepPathEvent(_EVENT* ev)
 {
 	static int speed;
@@ -2597,7 +2597,7 @@ void StepHelicopter(_EVENT* ev)
 
 		ev->timer += HelicopterData.speed;
 
-		if ((ev->timer << 0x10) < 0)
+		if (ev->timer < 0)
 		{
 			if (ev->node[9] == (ev->node[8] == 0))
 			{
@@ -2893,205 +2893,201 @@ void StepHelicopter(_EVENT* ev)
 // [D]
 void StepEvents(void)
 {
-	bool bVar1;
-	ushort uVar2;
 	_EVENT* ev;
-	uint uVar3;
 	int i;
-	int iVar4;
-	ushort uVar5;
-	int iVar6;
-	int iVar7;
-	uint uVar8;
+	VECTOR old;
+	XZPAIR speed;
 	VECTOR* pos;
 	_EVENT* evt;
 	VECTOR* vel;
 	CELL_OBJECT* cop;
-	int** ppiVar9;
-	ushort* puVar10;
-	ushort* puVar11;
-	_EVENT* _ev;
 	_CAR_DATA* cp;
-	uint uVar12;
-	int iVar13;
-	long* local_s4_736;
 	int onBoatLastFrame;
-	VECTOR old;
-	XZPAIR speed;
 	int dist;
+	int thisCamera, otherCamera;
 
-	uVar8 = carsOnBoat;
+	onBoatLastFrame = carsOnBoat;
 	ev = firstEvent;
-	onBoatLastFrame = 0;
 
-	if (detonator.timer != 0)
-	{
+	if (detonator.timer)
 		DetonatorTimer();
-		uVar8 = carsOnBoat;
-		ev = firstEvent;
-	}
 
-	do {
-		carsOnBoat = uVar8;
-		if (ev == NULL)
+	while (ev)
+	{
+		carsOnBoat = onBoatLastFrame;
+		
+		if (ev->flags & 2)
 		{
-			VisibilityLists(VIS_SORT, 0);
-
-			if (EventCop != NULL)
+			if (ev->flags & 0x40)
 			{
-				event_models_active = 0;
 				i = 0;
+				cp = car_data;
 
-				while (i < NumPlayers)
-				{
-					uVar8 = 0x4000;
+				carsOnBoat = 0;
+				do {
 
-					if (i == 0)
+					if (cp->controlType != CONTROL_TYPE_NONE && 
+						OnBoat((VECTOR*)cp->hd.where.t, ev, &dist))
 					{
-						uVar8 = 0x8000;
-						uVar12 = 0x4000;
+						carsOnBoat |= 1 << i;
+					}
+
+					i++;
+					cp++;
+				} while (i < MAX_CARS && i < 32);
+
+				// make Tanner on boat also
+				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist))
+					carsOnBoat |= 0x300000;
+
+				BoatOffset(&boatOffset, ev);
+
+				old.vx = ev->position.vx;
+				old.vz = ev->position.vz;
+			}
+
+			if (ev->flags & 0x10)
+				StepFromToEvent(ev);
+			else
+				StepPathEvent(ev);
+
+			if (ev->flags & 0x800)
+			{
+				int tmSqr;
+				
+				ev->data[1] = rcossin_tbl[(CameraCnt & 0x7f) * 64] >> 9 & 0xfff;
+				ev->data[2] = rcossin_tbl[(CameraCnt & 0xff) * 32 + 1] + 4096 >> 7;
+
+				tmSqr = detonator.timer * detonator.timer;
+
+				if (detonator.timer - 1U < 159) // HMM?
+				{
+					ev->data[1] -= rcossin_tbl[(detonator.timer & 0x3fU) * 128] * tmSqr >> 0x12;
+					ev->data[2] -= rcossin_tbl[(detonator.timer & 0x3fU) * 128] * tmSqr >> 0x10;
+				}
+				
+				if (foam.rotate & 0xffff7fffU) // HMMMMMM?
+					foam.rotate--;
+				else
+					foam.rotate ^= ((Random2(0) & 0xf00) >> 8) + 8U | 0x8000;
+			}
+
+			// move cars on boats
+			if ((ev->flags & 0x40) && (carsOnBoat != 0 || onBoatLastFrame != 0))
+			{
+				int bit;
+
+				speed.x = ev->position.vx - old.vx;
+				speed.z = ev->position.vz - old.vz;
+
+				// go thru cars
+				for (i = 0; i < MAX_CARS + 1 && i < 32; i++)
+				{
+					bit = (1 << i);
+					
+					if (i == TANNER_COLLIDER_CARID)
+					{
+						pos = (VECTOR*)player[0].pos;
+						vel = NULL;
 					}
 					else
 					{
-						uVar12 = 0x8000;
+						pos = (VECTOR*)car_data[i].hd.where.t;
+						vel = (VECTOR*)car_data[i].st.n.linearVelocity;
 					}
 
-					VisibilityLists(VIS_NEXT, i);
-
-					uVar2 = *xVis;
-					puVar11 = xVis;
-
-					i++;
-
-					while (uVar3 = uVar2, (uVar3& uVar8) == 0)
+					// update position and add velocity
+					if (carsOnBoat & bit)
 					{
-						if ((uVar3 & uVar12) == 0)
+						pos->vx += speed.x;
+						pos->vz += speed.z;
+
+						if (i == TANNER_COLLIDER_CARID)
 						{
-							if ((uVar2 & 0x80) == 0)
-								evt = &event[uVar3 & 0x7f];
-							else
-								evt = (_EVENT*)&fixedEvent[uVar3 & 0x7f];
-
-							if ((*(uint*)&evt->flags & 0x204) == 0x200)
-							{
-								uVar2 = *zVis;
-								puVar10 = zVis;
-
-								while (uVar3 = uVar2, (uVar3& uVar8) == 0)
-								{
-									if (((uVar3 & uVar12) == 0) && ((*puVar11 & 0xfff) == (uVar3 & 0xfff)))
-									{
-										cop = EventCop + event_models_active;
-
-										cop->pos.vx = evt->position.vx;
-										cop->pos.vy = evt->position.vy;
-										cop->pos.vz = evt->position.vz;
-										cop->yang = (evt->rotation >> 6);
-										cop->type = evt->model;
-
-										if ((*(uint*)&evt->flags & 0x12) == 2 && gCurrentMissionNumber == 22)
-											cop->pad = 1;
-										else
-											cop->pad = 0;
-
-										event_models_active++;
-										evt->flags |= 4;
-									}
-									puVar10++;
-									uVar2 = *puVar10;
-								}
-							}
+							SetTannerPosition((VECTOR*)pos);
+							carsOnBoat &= ~0x100000;
 						}
-						puVar11++;
-						uVar2 = *puVar11;
+						else if ((onBoatLastFrame & bit) == 0)
+						{
+							vel->vx -= speed.x * 4096;
+							vel->vz -= speed.z * 4096;
+						}
+
+						car_data[i].st.n.fposition[0] = car_data[i].hd.where.t[0] << 4;
+						car_data[i].st.n.fposition[2] = car_data[i].hd.where.t[2] << 4;
+					}
+					else if (vel && (onBoatLastFrame & bit))
+					{
+						vel->vx += speed.x * 4096;
+						vel->vz += speed.z * 4096;
 					}
 				}
 			}
-
-			i = cameraDelay.delay - 1;
-
-			if ((cameraDelay.delay != 0) && (cameraDelay.delay = i, i == 0))
-			{
-				SpecialCamera((enum SpecialCamera)cameraDelay.type, 1);
-			}
-
-			return;
 		}
-
-		uVar2 = ev->flags;
-
-		if ((uVar2 & 2) == 0)
+		else
 		{
-			uVar5 = uVar2 & 0xcc0;
+			ushort flags;
+			flags = ev->flags & 0xcc0;
 
-			if (uVar5 == 0x40)
+			if (flags == 0x40)
 			{
+				// perform rotation of doors
 				if (ev->timer != 0)
 				{
-					ppiVar9 = &ev->data;
-					if (ev->timer == 1)
-						ppiVar9 = (int**)((int)&ev->data + 2);
+					FixedEvent* door;
+					int sign, rotAngle;
+					unsigned short *target;
+					
+					door = (FixedEvent*)ev;
+					
+					if (door->active == 1)
+						target = &door->finalRotation;
+					else
+						target = &door->initialRotation;
 
-					uVar2 = *(ushort*)ppiVar9;
-					iVar4 = (int)ev->rotation;
-					uVar8 = (uint) * (ushort*)&ev->data;
-					i = iVar4 - uVar8;
+					rotAngle = ABS(door->rotation - door->initialRotation) * 2048 / ABS(door->finalRotation - door->initialRotation);
+					
+					sign = (*target - door->rotation) >> 0x1f;
+					door->rotation += (door->minSpeed + (rcossin_tbl[(rotAngle & 0xfffU) * 2] * (door->maxSpeed - door->minSpeed) >> 0xc) ^ sign) - sign;
 
-					if (i < 0)
-						i = uVar8 - iVar4;
-
-					uVar12 = (uint) * (ushort*)((int)&ev->data + 2);
-					iVar6 = uVar12 - uVar8;
-					iVar13 = uVar8 - uVar12;
-
-					if (iVar6 < 0)
-						iVar6 = iVar13;
-
-					uVar8 = (int)((uint)uVar2 - iVar4) >> 0x1f;
-					i = ev->rotation +
-						(((uint) * (ushort*)&ev->node +
-							((int)((int)rcossin_tbl[((i * 0x800) / iVar6 & 0xfffU) * 2] *
-								((uint) * (ushort*)((int)&ev->node + 2) - (uint) * (ushort*)&ev->node)) >> 0xc) ^ uVar8) - uVar8);
-
-					ev->rotation = i;
-
-					if ((int)((uint)uVar2 - iVar4 ^ (uint) * (ushort*)ppiVar9 - (i * 0x10000 >> 0x10)) < 0)
+					// check if complete
+					if (((*target - door->rotation) ^ sign) - sign < 0)
 					{
-						ev->rotation = *(ushort*)ppiVar9;
-						ev->timer = 0;
-
+						door->rotation = *target;
+						door->active = 0;
+						
 						if (gCurrentMissionNumber != 30)
-							SetMSoundVar(3, NULL);
+							SetMSoundVar(3,NULL);
 
-						if (ev == events.cameraEvent)
-							SpecialCamera(SPECIAL_CAMERA_RESET, 0);
+						if (door == (FixedEvent *)events.cameraEvent)
+							SetSpecialCamera(SPECIAL_CAMERA_RESET,0);
 					}
 				}
 			}
-			else if (uVar5 < 0x41)
+			else if (flags < 0x41)
 			{
-				if ((uVar2 & 0xcc0) == 0)
+				// perform bridge rotation
+				if ((ev->flags & 0xcc0) == 0)
 				{
-					i = GetBridgeRotation((int)ev->timer);
+					ev->rotation = GetBridgeRotation(ev->timer);
 
-					ev->rotation = (short)i;
+					if (ev->model & 1)
+						ev->rotation = -ev->rotation;
 
-					if ((ev->model & 1U) != 0)
-						ev->rotation = -(short)i;
-
-					if (((ev->flags & 0x100U) == 0) || (ev->timer < 0x3e9))
+					if ((ev->flags & 0x100) == 0 || ev->timer <= 1000)
 					{
-						i = (int)ev->timer + 1;
-						ev->timer = (short)i + (short)(i / 8000) * -8000;
+						ev->timer++;
+						ev->timer %= 8000;
 					}
 				}
 			}
-			else if (uVar5 == 0xc0)
+			else if (flags == 0xc0)
 			{
 				StepHelicopter(ev);
 			}
-			else if (uVar5 == 0x440)
+			else if (flags == 0x440)
 			{
+				// rotate ferris wheel
 				if ((CameraCnt & 0x1fU) == 0)
 				{
 					if ((chicagoDoor[2].active & 1U) == 0)
@@ -3111,129 +3107,90 @@ void StepEvents(void)
 					}
 				}
 
-				chicagoDoor[2].rotation = chicagoDoor[2].rotation - chicagoDoor[2].active & 0xfff;
+				chicagoDoor[2].rotation -= chicagoDoor[2].active;
+				chicagoDoor[2].rotation &= 0xfff;
 			}
 		}
-		else
-		{
-			if ((uVar2 & 0x40) != 0)
-			{
-				i = 0;
-				cp = car_data;
-
-				carsOnBoat = 0;
-				do {
-
-					if (cp->controlType != CONTROL_TYPE_NONE && OnBoat((VECTOR*)cp->hd.where.t, ev, &dist) != 0)
-					{
-						carsOnBoat |= 1 << i;
-					}
-
-					i++;
-					cp++;
-				} while (i < MAX_CARS && i < 32);
-
-				// make Tanner on boat also
-				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist) != 0)
-					carsOnBoat |= 0x300000;
-
-				BoatOffset(&boatOffset, ev);
-
-				old.vx = ev->position.vx;
-				old.vz = ev->position.vz;
-
-				onBoatLastFrame = uVar8;
-			}
-
-			if ((ev->flags & 0x10U) == 0)
-				StepPathEvent(ev);
-			else
-				StepFromToEvent(ev);
-
-			uVar8 = foam.rotate;
-
-			if ((ev->flags & 0x800U) != 0)
-			{
-				uVar8 = CameraCnt & 0xff;
-				ev->data[1] = (int)((uint)(ushort)rcossin_tbl[(CameraCnt & 0x7fU) * 0x40] << 0x10) >> 0x19 & 0xfff;
-				ev->data[2] = (int)rcossin_tbl[uVar8 * 0x20 + 1] + 0x1000 >> 7;
-
-				i = detonator.timer * detonator.timer;
-
-				if (detonator.timer - 1U < 0x9f)
-				{
-					ev->data[1] = ev->data[1] - (rcossin_tbl[(detonator.timer & 0x3fU) * 0x80] * i >> 0x12);
-					ev->data[2] = ev->data[2] - (rcossin_tbl[(detonator.timer & 0x3fU) * 0x80] * i >> 0x10);
-				}
-
-				uVar8 = foam.rotate + -1;
-				if ((foam.rotate & 0xffff7fffU) == 0)
-				{
-					uVar8 = Random2(0);
-					uVar8 = foam.rotate ^ (((int)(uVar8 & 0xf00) >> 8) + 8U | 0x8000);
-				}
-			}
-
-			foam.rotate = uVar8;
-			if ((ev->flags & 0x40U) != 0 && (carsOnBoat != 0 || onBoatLastFrame != 0))
-			{
-				iVar13 = 0;
-
-				iVar6 = (ev->position).vx - old.vx;
-				iVar4 = (ev->position).vz - old.vz;
-
-				uVar8 = 1;
-				i = 0;
-				do {
-					pos = (VECTOR*)car_data[i].hd.where.t;
-
-					if (i == TANNER_COLLIDER_CARID)
-					{
-						pos = (VECTOR*)player[0].pos;
-						vel = NULL;
-					}
-					else
-					{
-						vel = (VECTOR*)car_data[i].st.n.linearVelocity;
-					}
-
-					if ((carsOnBoat & uVar8) == 0)
-					{
-						if ((vel != NULL) && ((onBoatLastFrame & uVar8) != 0))
-						{
-							vel->vx += iVar6 * 0x1000;
-							vel->vz += iVar4 * 0x1000;
-						}
-					}
-					else
-					{
-						pos->vx += iVar6;
-						pos->vz += iVar4;
-
-						if (i == TANNER_COLLIDER_CARID)
-						{
-							SetTannerPosition((VECTOR*)pos);
-							carsOnBoat = carsOnBoat & 0xffefffff;
-						}
-						else if ((onBoatLastFrame & uVar8) == 0)
-						{
-							vel->vx += iVar6 * -0x1000;
-							vel->vz += iVar4 * -0x1000;
-						}
-
-						car_data[i].st.n.fposition[0] = car_data[i].hd.where.t[0] << 4;
-						car_data[i].st.n.fposition[2] = car_data[i].hd.where.t[2] << 4;
-					}
-
-					uVar8 = uVar8 << 1;
-
-					i++;
-				} while (i < 21);
-			}
-		}
-		uVar8 = carsOnBoat;
+		
+		onBoatLastFrame = carsOnBoat;
+	
 		ev = ev->next;
-	} while (true);
+	}
+
+	VisibilityLists(VIS_SORT, 0);
+
+	if (EventCop != NULL)
+	{
+		event_models_active = 0;
+
+		for (i = 0; i < NumPlayers; i++)
+		{
+			unsigned short *x;
+			unsigned short *z;
+
+			if (i == 0)
+			{
+				thisCamera = 0x8000;
+				otherCamera = 0x4000;
+
+			}
+			else
+			{
+				thisCamera = 0x4000;
+				otherCamera = 0x8000;
+			}
+
+			VisibilityLists(VIS_NEXT, i);
+
+			x = xVis;
+			while ((*x & thisCamera) == 0)
+			{
+				if ((*x & otherCamera) == 0)
+				{
+					if ((*x & 0x80) == 0)
+						evt = &event[*x & 0x7f];
+					else
+						evt = (_EVENT*)&fixedEvent[*x & 0x7f];
+
+					// events that enable drawing
+					if ((evt->flags & 0x204) == 0x200)
+					{
+						z = zVis;
+
+						while ((*z & thisCamera) == 0)
+						{
+							if ((*z & otherCamera) == 0 && (*x & 0xfff) == (*z & 0xfff))
+							{
+								cop = &EventCop[event_models_active++];
+
+								cop->pos.vx = evt->position.vx;
+								cop->pos.vy = evt->position.vy;
+								cop->pos.vz = evt->position.vz;
+								cop->yang = (evt->rotation >> 6);
+								cop->type = evt->model;
+
+								// [A] train should be only dangerous in "Beat the train"
+								if ((evt->flags & 0x12) == 2 && gCurrentMissionNumber == 22)
+									cop->pad = 1;
+								else
+									cop->pad = 0;
+
+								evt->flags |= 4;
+							}
+							z++;
+						}
+					}
+				}
+
+				x++;
+			}
+		}
+	}
+
+	if (cameraDelay.delay != 0 && --cameraDelay.delay == 0)
+	{
+		SetSpecialCamera((SpecialCamera)cameraDelay.type, 1);
+	}
 }
 
 
@@ -3347,8 +3304,6 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 
 		RenderModel(model, NULL, NULL, 0, 0, 1, 0);
 		rotation += 410;
-
-		loop++;
 	}
 }
 
@@ -4718,7 +4673,7 @@ VECTOR* TriggerEvent(int i)
 			case 4:
 				if (stage[i] != 0)
 				{
-					SpecialCamera(SPECIAL_CAMERA_WAIT, 0);
+					SetSpecialCamera(SPECIAL_CAMERA_WAIT, 0);
 					event[1].node = event[1].node + 1;
 				}
 
@@ -4884,7 +4839,7 @@ void OffsetTarget(VECTOR* target)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 //[D]
-void SpecialCamera(enum SpecialCamera type, int change)
+void SetSpecialCamera(enum SpecialCamera type, int change)
 {
 	static int rememberCamera[3]; // offset 0x230
 	static short boatCamera[6] = {
@@ -5218,12 +5173,12 @@ int DetonatorTimer(void)
 				}
 				else if (detonator.timer == 0)
 				{
-					SpecialCamera(SPECIAL_CAMERA_SET, 0);
+					SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 					detonator.timer = 0x46;
 				}
 				else if (detonator.timer == 0x16)
 				{
-					SpecialCamera(SPECIAL_CAMERA_SET2, 0);
+					SetSpecialCamera(SPECIAL_CAMERA_SET2, 0);
 				}
 				else if (detonator.timer == 40)
 				{
@@ -5277,7 +5232,7 @@ int DetonatorTimer(void)
 				}
 
 				detonator.timer = 200;
-				SpecialCamera(SPECIAL_CAMERA_SET, 0);
+				SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 				events.cameraEvent = (_EVENT*)0x1;
 
 				rememberCameraAngle = camera_angle;
