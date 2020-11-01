@@ -1457,6 +1457,7 @@ void ControlCopDetection(void)
 	int ccz;
 
 	vec.vx = player[0].pos[0];
+	vec.vy = player[0].pos[1];
 	vec.vz = player[0].pos[2];
 
 	GetVisSetAtPosition(&vec, CopWorkMem, &ccx, &ccz);
@@ -1490,6 +1491,7 @@ void ControlCopDetection(void)
 	if (player[0].playerType != 2 && 
 		player[0].playerCarId > -1)
 	{
+		// check roadblock visibility
 		if (numRoadblockCars != 0)
 		{
 			dx = ABS(roadblockLoc.vx - vec.vx);
@@ -1497,7 +1499,9 @@ void ControlCopDetection(void)
 
 			if (((dx >> 8) * (dx >> 8) + (dz >> 8) * (dz >> 8) < 1640) &&
 				newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
+			{
 				CopsCanSeePlayer = 1;
+			}
 		}
 
 		if (CopsCanSeePlayer == 0) 
@@ -1548,8 +1552,9 @@ void ControlCopDetection(void)
 								spotted = true;
 							}
 						}
-						
-						if (spotted) 
+
+						// [A] also check player elevation from cops (block cops vision from bridges, tunnels etc)
+						if (spotted && ABS(cp->hd.where.t[1] - vec.vy) < 1500) 
 						{
 							CopsCanSeePlayer = 1;
 							break;

@@ -957,16 +957,15 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	int debris_colour;
 	int displacement;
 	int denom;
-
+	int buildingHeightY;
+	
 	model = modelpointers[cop->type];
 	player_id = GetPlayerId(cp);
 
-	cd[0].isCameraOrTanner = (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER);
-
-	if (cp->controlType == 6)
-		cd[0].isCameraOrTanner += 2;
-
-	cd[1].isCameraOrTanner = (flags & 0x1) == 0;
+	if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER || cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
+		cd[0].isCameraOrTanner = 1;
+	else
+		cd[1].isCameraOrTanner = (flags & 0x1) == 0;
 
 	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
 	boxDiffY = ABS(boxDiffY);
@@ -975,7 +974,13 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 	car_cos = cp->ap.carCos;
 
-	if (boxDiffY <= (building->height >> 1) + (cp->hd.oBox.length[1] >> 1) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
+	// [A] Boat Jump: make player's life easier getting out
+	if (cop->type == 1246 && gCurrentMissionNumber == 35)
+		buildingHeightY = building->height / 5;
+	else
+		buildingHeightY = building->height / 2;
+
+	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] / 2) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
 	{
 		tempwhere.vx = cp->hd.where.t[0];
 		tempwhere.vz = cp->hd.where.t[2];

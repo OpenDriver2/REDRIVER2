@@ -649,25 +649,25 @@ void DrawBodySprite(PEDESTRIAN *pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
 		vdata1.px + (FIXEDH(iVar5) + iVar8) * 0.005f,
 		vdata1.py + (FIXEDH(iVar7) + iVar9) * 0.005f,
-		vdata1.pz, vdata1.scr_h };
+		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 	
 
 	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
 		vdata1.px - (FIXEDH(iVar5) + iVar8) * 0.005f,
 		vdata1.py - (FIXEDH(iVar7) + iVar9) * 0.005f,
-		vdata1.pz, vdata1.scr_h };
+		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 	
 
 	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
 		vdata2.px + (FIXEDH(iVar5) - x) * 0.005f,
 		vdata2.py + (FIXEDH(iVar7) - y) * 0.005f,
-		vdata2.pz, vdata2.scr_h };
+		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 	
 
 	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
 		vdata2.px - (FIXEDH(iVar5) - x) * 0.005f,
 		vdata2.py - (FIXEDH(iVar7) - y) * 0.005f,
-		vdata2.pz, vdata2.scr_h };
+		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v1[0], v1[1]));
 	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v2[0], v2[1]));
@@ -1260,15 +1260,17 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 	SVECTOR SVECTOR_1f800200;
 	SVECTOR SVECTOR_1f800208;
 
-	VECTOR_1f800000.vx = (pDrawingPed->position).vx;
-	VECTOR_1f800000.vy = (pDrawingPed->position).vy;
-	VECTOR_1f800000.vz = (pDrawingPed->position).vz;
+	VECTOR_1f800000.vx = pDrawingPed->position.vx;
+	VECTOR_1f800000.vy = pDrawingPed->position.vy - 21;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
+	VECTOR_1f800000.vz = pDrawingPed->position.vz;
+
 	VECTOR_1f800010.vx = camera_position.vx;
 	VECTOR_1f800010.vy = camera_position.vy;
 	VECTOR_1f800010.vz = camera_position.vz;
-	VECTOR_ARRAY_1f800020[0].vx = (long)(Skel[0].pvOrigPos)->vx;
-	VECTOR_ARRAY_1f800020[0].vy = -(int)(Skel[0].pvOrigPos)->vy;
-	VECTOR_ARRAY_1f800020[0].vz = (long)(Skel[0].pvOrigPos)->vz;
+
+	VECTOR_ARRAY_1f800020[0].vx = Skel[0].pvOrigPos->vx;
+	VECTOR_ARRAY_1f800020[0].vy = -Skel[0].pvOrigPos->vy;
+	VECTOR_ARRAY_1f800020[0].vz = Skel[0].pvOrigPos->vz;
 
 	v.vz = 0;
 	v.vy = 0;
@@ -1300,8 +1302,7 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 
 				if ((pDrawingPed->pedType == TANNER_MODEL) && (pBone->id == HEAD))
 				{
-					iVar3 = VECTOR_ARRAY_1f800020[uVar6].vy - 94;
-					pDrawingPed->head_pos = iVar3 / 3;
+					pDrawingPed->head_pos = VECTOR_ARRAY_1f800020[uVar6].vy;
 				}
 
 				if (Skel[uVar4].pModel != NULL && bDoingShadow == 0 && pDrawingPed->pedType < OTHER_SPRITE && draw)
@@ -1314,9 +1315,9 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 					{
 						do {
 							iVar3 = iVar3 + 1;
-							mVerts->vx = mVerts->vx + ((*(short *)&VECTOR_ARRAY_1f800020[uVar6].vx + (short)VECTOR_1f800000.vx) - (short)VECTOR_1f800010.vx);
-							mVerts->vy = mVerts->vy + ((*(short *)&VECTOR_ARRAY_1f800020[uVar6].vy + (short)VECTOR_1f800000.vy) - (short)VECTOR_1f800010.vy);
-							mVerts->vz = mVerts->vz + ((*(short *)&VECTOR_ARRAY_1f800020[uVar6].vz + (short)VECTOR_1f800000.vz) - (short)VECTOR_1f800010.vz);
+							mVerts->vx = mVerts->vx + (VECTOR_ARRAY_1f800020[uVar6].vx + VECTOR_1f800000.vx - VECTOR_1f800010.vx);
+							mVerts->vy = mVerts->vy + (VECTOR_ARRAY_1f800020[uVar6].vy + VECTOR_1f800000.vy - VECTOR_1f800010.vy);
+							mVerts->vz = mVerts->vz + (VECTOR_ARRAY_1f800020[uVar6].vz + VECTOR_1f800000.vz - VECTOR_1f800010.vz);
 							mVerts = mVerts + 1;
 						} while (iVar3 < model->num_vertices);
 					}
@@ -2157,9 +2158,9 @@ void DrawCiv(PEDESTRIAN *pPed)
 		ppos.vz = ppos.vz - camera_position.vz;
 
 		if (uVar15 < 8)
-			size = uVar15 + 0x50;
+			size = uVar15 + 80;
 		else
-			size = boneId * -2 + 0x70;
+			size = boneId * -2 + 112;
 
 		RoundShadow(&ppos, _cv, size);
 	}

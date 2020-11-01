@@ -1858,8 +1858,8 @@ void ControlReplay(void)
 				EVENT* ev;
 				ev = events.track[-2 - cameraCar];
 				
-				basePos.vx = (ev->position).vx;
-				basePos.vz = (ev->position).vz;
+				basePos.vx = ev->position.vx;
+				basePos.vz = ev->position.vz;
 			}
 
 			dx = basePos.vx - player[0].cameraPos.vx;
@@ -1911,12 +1911,12 @@ void ControlReplay(void)
 			player[0].cameraPos.vx = (player[0].cameraPos.vx + FIXED(z * rcossin_tbl[(dir & 0xfff) * 2])) - FIXED(x * rcossin_tbl[(dir & 0xfff) * 2 + 1]);
 			player[0].cameraPos.vz = (player[0].cameraPos.vz - FIXED(z * rcossin_tbl[(dir & 0xfff) * 2 + 1])) - FIXED(x * rcossin_tbl[(dir & 0xfff) * 2]);
 
+			tmpPos.vx = player[0].cameraPos.vx;
+			tmpPos.vy = -player[0].cameraPos.vy;
+			tmpPos.vz = player[0].cameraPos.vz;
+
 			if ( dist(player[0].spoolXZ, &player[0].cameraPos) < 18433)
 			{
-				tmpPos.vx = player[0].cameraPos.vx;
-				tmpPos.vy = -player[0].cameraPos.vy;
-				tmpPos.vz = player[0].cameraPos.vz;
-
 				if (QuickBuildingCollisionCheck(&tmpPos, dir, 10, 10, 10) != 0)
 				{
 					player[0].cameraPos.vx = old_camera.vx;
@@ -1931,19 +1931,18 @@ void ControlReplay(void)
 			}
 			
 			if (padd & 4)
-				player[0].cameraPos.vy = player[0].cameraPos.vy - speed * 16;
+				player[0].cameraPos.vy -= speed * 16;
 
 			if (padd & 1)
-				player[0].cameraPos.vy = player[0].cameraPos.vy + speed * 16;	
+				player[0].cameraPos.vy += speed * 16;	
 
-			height = -MapHeight(&player[0].cameraPos);
+			height = -MapHeight(&tmpPos);
 			
 			if (player[0].cameraPos.vy > height - MIN_TRIPOD_CAMERA_HEIGHT)
 				player[0].cameraPos.vy = height - MIN_TRIPOD_CAMERA_HEIGHT;
 
 			if (player[0].cameraPos.vy < height - 1050)
 				player[0].cameraPos.vy = height - 1050;
-
 
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
 
@@ -3274,7 +3273,7 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	next = PlaybackCamera;
 
 	while (NextChange = next, count < MAX_REPLAY_CAMERAS && (NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
-		NextChange->next != -2 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
+		NextChange->next != 254 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
 	{
 		count++;
 	}

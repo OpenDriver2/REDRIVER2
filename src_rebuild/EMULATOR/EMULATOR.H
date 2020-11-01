@@ -138,7 +138,7 @@ struct Vertex
 	u_char r, g, b, a;
 
 #if defined(PGXP)
-	float z, w, scr_h, _pad;
+	float z, scr_h, ofsX, ofsY;
 #endif
 };
 #pragma pack(pop)
@@ -146,9 +146,9 @@ struct Vertex
 enum ShaderAttrib
 {
 	a_position,
+	a_zw,
 	a_texcoord,
 	a_color,
-	a_zw,
 };
 
 enum BlendMode

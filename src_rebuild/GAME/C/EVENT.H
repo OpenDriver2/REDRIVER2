@@ -48,6 +48,8 @@ extern void DrawEvents(int camera); // 0x00049C38
 
 extern void BoatOffset(SVECTOR *offset, EVENT *ev); // 0x0004BE24
 
+extern void EventCameraOffset(SVECTOR* offset);
+
 extern int OnBoat(VECTOR *pos, EVENT *ev, int *dist); // 0x0004BDA0
 
 extern sdPlane * EventSurface(VECTOR *pos, sdPlane *plane); // 0x0004A688
@@ -60,7 +62,7 @@ extern VECTOR * TriggerEvent(int i); // 0x0004AA78
 
 extern void OffsetTarget(VECTOR *target); // 0x0004BD2C
 
-extern void SpecialCamera(enum SpecialCamera type, int change); // 0x0004B29C
+extern void SetSpecialCamera(SpecialCamera type, int change); // 0x0004B29C
 
 extern void ScreenShake(int count, SVECTOR *ang); // 0x0004C280
 

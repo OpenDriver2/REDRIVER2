@@ -339,12 +339,12 @@ void WunCell(VECTOR* pbase)
 	int i, j;
 
 	// [A] hack with height map (fixes some bits in Havana)
-	height1 = MapHeight(pbase) + 60;
+	height1 = MapHeight(pbase);
 	
 	pbase->vx += 512;
 	pbase->vz += 512;
 
-	v[0].vy = MapHeight(pbase) + 60;
+	v[0].vy = MapHeight(pbase);
 
 	pbase->vx -= 512;
 	pbase->vz -= 512;
@@ -352,7 +352,9 @@ void WunCell(VECTOR* pbase)
 	if (height1 - v[0].vy > 100)
 		v[0].vy = height1;
 
+	v[0].vy += 32;
 	v[1].vy = v[0].vy;
+
 
 	// [A] definitely better code
 	// new 16 vs old 12 passes but map is not leaky at all#
@@ -621,7 +623,8 @@ void BloodyHell(void)
 
 	cellsThisFrame = 0;
 	
-	bPos.vy = 8173;
+	// [A] really it should be based on player's height
+	bPos.vy = player[0].pos[1] ;
 
 	bPos.vx = player[0].pos[0] & 0xfffffc00;
 	bPos.vz = player[0].pos[2] & 0xfffffc00;

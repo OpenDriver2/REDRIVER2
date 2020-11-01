@@ -73,6 +73,12 @@ void CalcCameraBasePos(PLAYER* lp)
 			basePos[1] = -event->position.vy;
 			basePos[2] = event->position.vz;
 			baseDir = event->rotation + 0x400U & 0xfff;
+
+			EventCameraOffset(&boxDisp);	// [A]
+
+			basePos[0] += boxDisp.vx;
+			basePos[1] += boxDisp.vy - gCameraOffset.vy;
+			basePos[2] += boxDisp.vz;
 		}
 		else
 		{
@@ -208,7 +214,7 @@ void InitCamera(PLAYER *lp)
 
 		if (gCurrentMissionNumber == 22 && lp->cameraPos.vx < 0 && lp->cameraPos.vz < 0xc1c47 && lp->cameraPos.vz > 700000)
 		{
-			SpecialCamera(SPECIAL_CAMERA_SET, 0);
+			SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 		}
 
 		camera_position.vx = lp->cameraPos.vx;
@@ -927,11 +933,11 @@ int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 	/* end block 3 */
 	// End Line: 2200
 
-VECTOR viewer_position;
 
 // [D] [T]
 void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 {
+	VECTOR viewer_position;
 	int angle;
 	CAR_DATA *cp;
 
@@ -941,11 +947,13 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		cp = &car_data[lp->cameraCarId];
 
 	viewer_position.vx = 0;
+	viewer_position.vy = 0;
 
 	if (cp == NULL) 
 	{
 		viewer_position.vz = 0;
-		viewer_position.vy = viewer_position.vy + 42 + lp->pPed->head_pos;
+		if(lp->pPed)
+			viewer_position.vy += lp->pPed->head_pos;
 	}
 	else if (cp->ap.carCos != NULL) // [A] prevent crash from happening
 	{

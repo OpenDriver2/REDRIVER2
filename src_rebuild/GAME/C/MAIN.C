@@ -2781,16 +2781,18 @@ void UpdatePlayerInformation(void)
 
 			// [A] if all wheels above the water surface and we are falling down
 			// fade out and end the game
-			if(cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
+			if(wheelsAboveWaterToDieWithFade > 0 && cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
 			{
-				// fix for Havana tunnels
-				if (GameLevel == 1)
+				// fix for Havana tunnels and Chicago freeway
+				if (GameLevel <= 1)
 				{
 					if(wheelsAboveWaterToDieWithFade == 4)
 						gDieWithFade = 1;
 				}
 				else // car drown as usual
+				{
 					gDieWithFade = 1;
+				}
 			}
 
 			if (wheelsInWater == 4) // apply water damage
@@ -2934,6 +2936,7 @@ void RenderGame2(int view)
 	DisplayMissionTitle();
 	DrawInGameCutscene();
 
+	// draw events from level itself
 	DrawEvents(1);
 
 	Set_Inv_CameraMatrix();
@@ -2943,6 +2946,7 @@ void RenderGame2(int view)
 	DrawThrownBombs();
 	AddGroundDebris();
 
+	// draw events that use cell object
 	DrawEvents(0);
 
 	current->ot += 10;
