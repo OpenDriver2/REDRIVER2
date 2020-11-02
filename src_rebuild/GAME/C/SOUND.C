@@ -1668,7 +1668,7 @@ void SetXMVolume(int volume)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
-int GetFreeChannel(void)
+int GetFreeChannel(int force)
 {
 	int channel;
 	int it;
@@ -1688,6 +1688,9 @@ int GetFreeChannel(void)
 
 	if (channel < MAX_SFX_CHANNELS)
 		return channel;
+
+	if (!force)
+		return -1;
 	
 	// if not found free channels - free already playing one
 	channel = -1;
