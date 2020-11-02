@@ -128,35 +128,39 @@ static int bodgevar = 0;
 // [D]
 char GetMissionSound(char id)
 {
-	unsigned char bVar1;
-	long lVar2;
-	uint uVar3;
-	char *pcVar4;
-	uint uVar5;
+	int end;
+	long rnd;
+	int c;
+	int start;
 
-	bVar1 = missionstarts[gCurrentMissionNumber];
-	uVar5 = bVar1;
-	lVar2 = Random2(5);
-	if (bVar1 != 0xff) 
+	start =  missionstarts[gCurrentMissionNumber];
+	rnd = Random2(5);
+
+	if (end != 0xff)
 	{
-		uVar3 = 1;
-
+		c = 1;
 		do {
-			bVar1 = missionstarts[gCurrentMissionNumber + (uVar3 & 0xff)];
-			uVar3 = (uVar3 & 0xff) + 1;
-		} while (bVar1 == 0xff);
+			end = missionstarts[gCurrentMissionNumber + (c & 0xff)];
+			c = (c & 0xff) + 1;
+		} while (end == 0xff);
+	
+		while (start < end) 
+		{
+			c = start + 1;
+	
+			if (id_map[start].in == id) 
+			{
+				if (c == end)
+					return id_map[start].out + phrase_top;
+				
+				if(id_map[c].in == id)
+					return id_map[start + (rnd % 2 & 0xffU)].out + phrase_top;
 
-		while (uVar5 < (uint)bVar1) {
-			uVar3 = uVar5 + 1;
-			if (id_map[uVar5].in == id) {
-				pcVar4 = &id_map[uVar5].out;
-				if ((uVar3 != (uint)bVar1) && (pcVar4 = &id_map[uVar5].out, id_map[uVar3].in == id))
-				{
-					pcVar4 = &id_map[uVar5 + (lVar2 % 2 & 0xffU)].out;
-				}
-				return *pcVar4 + phrase_top;
+				return id_map[start].out + phrase_top;
+
 			}
-			uVar5 = uVar3 & 0xff;
+	
+			start = c & 0xff;
 		}
 	}
 	return -1;
@@ -189,10 +193,10 @@ char GetMissionSound(char id)
 
 __xa_request xa;
 
-// [D]
+// [D] [T]
 void RequestXA(void)
 {
-	__xa_request *pXA;
+	__xa_request* pXA;
 
 	xa.delay = 0xFFFF;
 	xa.bank = 0;
@@ -204,7 +208,7 @@ void RequestXA(void)
 
 	while (pXA->mission > -1)
 	{
-		if (pXA->mission == gCurrentMissionNumber && pXA->cutscene == gInGameCutsceneID) 
+		if (pXA->mission == gCurrentMissionNumber && pXA->cutscene == gInGameCutsceneID)
 		{
 			xa = *pXA;
 			break;
@@ -244,19 +248,19 @@ void RequestXA(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void HandleRequestedXA(void)
 {
-	if (xa.cutscene == 0 && xa.mission != 0) 
+	if (xa.cutscene == 0 && xa.mission != 0)
 	{
 		PrepareXA();
 		xa.mission = 0;
 	}
 
-	if (xa.delay == 0) 
+	if (xa.delay == 0)
 		PlayXA(xa.bank, xa.track);
 
-	if (xa.delay > -1) 
+	if (xa.delay > -1)
 		xa.delay--;
 }
 
@@ -290,7 +294,7 @@ void HandleRequestedXA(void)
 	/* end block 4 */
 	// End Line: 992
 
-// [D]
+// [D] [T]
 void InitializeCutsceneSound(int cutscene)
 {
 	int i;
@@ -371,50 +375,45 @@ void InitializeCutsceneSound(int cutscene)
 int jericho_in_back = 0;
 static int rio_alarm = 0;
 
-// [D]
+// [D] [T]
 void DoCutsceneSound(void)
 {
-	char cVar1;
-
 	cutscene_timer++;
 
 	switch (gCurrentMissionNumber)
 	{
 		case 2:
-			if (gInGameCutsceneID != 1) 
+			if (gInGameCutsceneID != 1)
 				return;
 
-			if (0x4a < cutscene_timer) 
-			{
+			if (cutscene_timer > 74)
 				force_idle[1] = -1;
-				return;
-			}
-
-			force_idle[1] = 0;
+			else
+				force_idle[1] = 0;
 			break;
 		case 5:
 			if (gInGameCutsceneID != 0)
 				return;
 
-			if (cutscene_timer < 0x97)
+			if (cutscene_timer > 150)
 			{
-				if (0x8c < cutscene_timer) 
-				{
-					force_siren[1] = 1;
-					force_siren[2] = 0;
-					return;
-				}
-
+				force_siren[2] = 1;
+				force_siren[1] = 1;
+			}
+			else if (cutscene_timer > 140)
+			{
+				force_siren[1] = 1;
+				force_siren[2] = 0;
+			}
+			else
+			{
 				force_siren[1] = 0;
 				force_siren[2] = 0;
-				return;
 			}
 
-			force_siren[2] = 1;
-			force_siren[1] = 1;
 			break;
 		case 7:
-			if (gInGameCutsceneID == 0) 
+			if (gInGameCutsceneID == 0)
 			{
 				if (cutscene_timer < 100)
 					force_idle[1] = 0;
@@ -426,45 +425,46 @@ void DoCutsceneSound(void)
 
 			force_idle[1] = 0;
 			break;
-		case 0x12:
-			if (gInGameCutsceneID == 0) 
+		case 18:
+			if (gInGameCutsceneID == 0)
 			{
 				if (cutscene_timer == 1)
 					MissionSay(15);
 
-				if (cutscene_timer == 0xce) 
-					Start3DSoundVolPitch(-1, 6, 4, car_data[2].hd.where.t[0], -car_data[2].hd.where.t[1], car_data[2].hd.where.t[2], -0x9c4, 0xc00);
-
+				if (cutscene_timer == 206)
+					Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 4, car_data[2].hd.where.t[0], -car_data[2].hd.where.t[1], car_data[2].hd.where.t[2], -2500, 3072);
 			}
+		
 			if (gInGameCutsceneID == 1 && cutscene_timer == 6)
+			{
 				PrepareXA();
+			}
 
 			break;
-		case 0x15:
+		case 21:
 			if (gInGameCutsceneID == 0)
 				jericho_in_back = 1;
 
 			break;
-		case 0x19:
-			if (gInGameCutsceneID == 1) 
+		case 25:
+			if (gInGameCutsceneID == 1)
 				jericho_in_back = gInGameCutsceneID;
 
 			break;
-		case 0x1a:
+		case 26:
 			if (gInGameCutsceneID != 0)
 				return;
 
 			force_siren[2] = 1;
 			force_siren[1] = 1;
 			break;
-		case 0x1b:
+		case 27:
 			if (gInGameCutsceneID != 0)
 				return;
 
-			if (cutscene_timer == 460) 
+			if (cutscene_timer == 460)
 			{
-				cVar1 = GetMissionSound(24);
-				Start3DTrackingSound(-1, SOUND_BANK_MISSION, cVar1, (VECTOR *)car_data[2].hd.where.t, NULL);
+				Start3DTrackingSound(-1, SOUND_BANK_MISSION, GetMissionSound(24), (VECTOR*)car_data[2].hd.where.t, NULL);
 				force_siren[7] = 1;
 				force_siren[6] = 1;
 				force_siren[5] = 1;
@@ -473,41 +473,40 @@ void DoCutsceneSound(void)
 				force_siren[2] = 1;
 			}
 
-			if (cutscene_timer == 0x1fe) 
+			if (cutscene_timer == 510)
 				MissionSay(23);
 
-			if (cutscene_timer < 0x33)
+			if (cutscene_timer < 51)
 				return;
 
 			force_idle[1] = 0;
 			break;
 
-		case 0x1d:
-			if (gInGameCutsceneID == 1) 
+		case 29:
+			if (gInGameCutsceneID == 1)
 			{
 				if (cutscene_timer == 6)
 					PrepareXA();
 
-				if (cutscene_timer == 0xb4) 
+				if (cutscene_timer == 180)
 				{
-					cVar1 = GetMissionSound(26);
-					Start3DTrackingSound(-1, SOUND_BANK_MISSION, cVar1, (VECTOR *)car_data[2].hd.where.t,car_data[2].st.n.linearVelocity);
+					Start3DTrackingSound(-1, SOUND_BANK_MISSION, GetMissionSound(26), (VECTOR*)car_data[2].hd.where.t, car_data[2].st.n.linearVelocity);
 				}
 
-				if (cutscene_timer < 0x281)
+				if (cutscene_timer < 641)
 					force_siren[3] = 0;
-				else 
+				else
 					force_siren[3] = 1;
 			}
 			break;
-		case 0x21:
+		case 33:
 			if (gInGameCutsceneID != 1)
 				return;
 
 			if (cutscene_timer == 6)
 				PrepareXA();
 
-			if (cutscene_timer == 0x3c0)
+			if (cutscene_timer == 960)
 				SetEnvSndVol(rio_alarm, 3000);
 
 			force_idle[1] = 0;
@@ -551,18 +550,11 @@ void DoCutsceneSound(void)
 char es_mobile[1];
 static int holdall;
 
-// [D]
+// [D] [T]
 void InitializeMissionSound(void)
 {
-	int iVar1;
-	char cVar2;
-	char* pcVar3;
-	int iVar4;
-
-	iVar4 = 0;
 	bodgevar = 0;
 	holdall = -1;
-	//MissionStartData.PlayerPos.vx = 0xffffffff;	// [A] something isn't quite right there
 
 	es_mobile[0] = -1;
 
@@ -570,14 +562,13 @@ void InitializeMissionSound(void)
 
 	if (GameLevel == 0)
 	{
-		es_mobile[0] = AddEnvSnd(3, 0, 4, 4, -10000, 0, 0, 0, 0);
+		es_mobile[0] = AddEnvSnd(3, 0, SOUND_BANK_ENVIRONMENT, 4, -10000, 0, 0, 0, 0);
 	}
-	else if (GameLevel == 1) 
+	else if (GameLevel == 1)
 	{
-		if (gCurrentMissionNumber - 0xfU < 2)
+		if (gCurrentMissionNumber - 15U < 2)
 		{
-			cVar2 = GetMissionSound(14);
-			es_mobile[0] = AddEnvSnd(3, 32, 5, cVar2, 0, -10000, 0, 0, 0);
+			es_mobile[0] = AddEnvSnd(3, 0x20, SOUND_BANK_MISSION, GetMissionSound(14), 0, -10000, 0, 0, 0);
 		}
 		else if (gCurrentMissionNumber == 0x14)
 		{
@@ -586,38 +577,32 @@ void InitializeMissionSound(void)
 	}
 	else if (GameLevel == 2)
 	{
-		if (gCurrentMissionNumber == 0x16) 
+		if (gCurrentMissionNumber == 22)
 		{
-			es_mobile[0] = AddEnvSnd(3, 0, 5, 0, -10000, 0, 0, 0, 0);
+			es_mobile[0] = AddEnvSnd(3, 0, SOUND_BANK_MISSION, 0, -10000, 0, 0, 0, 0);
 		}
-		else if (gCurrentMissionNumber == 0x18)
+		else if (gCurrentMissionNumber == 24)
 		{
-			cVar2 = GetMissionSound(31);
-			AddEnvSnd(3, ' ', 5,  cVar2, 3000, -37000, 0x420a4, 0, 0);
+			AddEnvSnd(3, 0x20, SOUND_BANK_MISSION, GetMissionSound(31), 3000, -37000, 270500, 0, 0);
 		}
 	}
 	else if (GameLevel == 3)
 	{
-		if (gCurrentMissionNumber == 0x20) 
+		if (gCurrentMissionNumber == 32)
 		{
-			cVar2 = GetMissionSound(31);
-			rio_alarm = AddEnvSnd(3, 32, 5, cVar2, -10000, -0x1e1c0, -0x3e300, 0, 0);
+			rio_alarm = AddEnvSnd(3, 32, SOUND_BANK_MISSION, GetMissionSound(31), -10000, -123328, -254720, 0, 0);
 		}
-		else if (gCurrentMissionNumber == 0x21) 
+		else if (gCurrentMissionNumber == 33)
 		{
-			cVar2 = GetMissionSound(31);
-			rio_alarm = AddEnvSnd(3, 32, 5, cVar2, -10000, -0x319f2, 0x52e2c, 0, 0);
+			rio_alarm = AddEnvSnd(3, 32, SOUND_BANK_MISSION, GetMissionSound(31), -10000, -203250, 339500, 0, 0);
 		}
-		else if (gCurrentMissionNumber == 0x23) 
+		else if (gCurrentMissionNumber == 35)
 		{
-			cVar2 = GetMissionSound(36);
-			iVar4 = AddEnvSnd(3, 32, 5, cVar2, -10000, 0, 0, 0, 0);
-			es_mobile[0] = (char)iVar4;
+			es_mobile[0] = AddEnvSnd(3, 32, SOUND_BANK_MISSION, GetMissionSound(36), -10000, 0, 0, 0, 0);
 		}
-		else if (gCurrentMissionNumber == 0x28) 
+		else if (gCurrentMissionNumber == 40)
 		{
-			cVar2 = GetMissionSound(39);
-			holdall = Start3DSoundVolPitch(-1, 5, cVar2, 0, 0, 0, -10000, 0x1000);
+			holdall = Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(39), 0, 0, 0, -10000, 4096);
 			LockChannel(holdall);
 		}
 	}
@@ -723,23 +708,16 @@ void InitializeMissionSound(void)
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void DoMissionSound(void)
 {
-	char cVar1;
-	int y;
-	int z;
-	MS_TARGET* p_Var4;
-	int x;
-	int y_00;
-	int z_00;
-	int x_00;
-	long lVar6;
-	long lVar7;
-	VECTOR P;
-	long V[3];
+	int chan;
+	LONGVECTOR V;
+	VECTOR* P;
+	int i;
 	static int channel = 0;
 
-	switch (gCurrentMissionNumber) 
+	switch (gCurrentMissionNumber)
 	{
 		case 11:
 		case 13:
@@ -747,8 +725,8 @@ void DoMissionSound(void)
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound(11);
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -760,11 +738,11 @@ void DoMissionSound(void)
 			}
 			break;
 		case 21:
-			if (bodgevar == 1) 
+			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound(11);
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 4096);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -776,9 +754,9 @@ void DoMissionSound(void)
 			}
 			break;
 		case 23:
-			if (holdall == -1) 
+			if (holdall == -1)
 			{
-				for (int i = 0; i < 16; i++)
+				for (i = 0; i < 16; i++)
 				{
 					if (MissionTargets[i].data[0] == 2)
 					{
@@ -789,24 +767,27 @@ void DoMissionSound(void)
 			}
 			else
 			{
-				z_00 = (int)player[0].playerCarId;
-				if (z_00 == holdall)
+				// car bomb timer
+				int carId = player[0].playerCarId;
+
+				if (carId == holdall)
 				{
-					if ((Mission.timer[0].count != 0) && (Mission.timer[0].count == (Mission.timer[0].count / 3000) * 3000)) 
+					if ((Mission.timer[0].count != 0) && (Mission.timer[0].count == (Mission.timer[0].count / 3000) * 3000))
 					{
-						x = GetFreeChannel();
-						cVar1 = GetMissionSound(20);
-						StartSound(x, SOUND_BANK_MISSION, cVar1, -0x5dc, 0x1000);
-						SetChannelPosition3(x, (VECTOR*)car_data[z_00].hd.where.t, car_data[z_00].st.n.linearVelocity, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee, 0);
+						chan = GetFreeChannel();
+
+						StartSound(chan, SOUND_BANK_MISSION, GetMissionSound(20), -1500, 4096);
+						SetChannelPosition3(chan, (VECTOR*)car_data[carId].hd.where.t, car_data[carId].st.n.linearVelocity, -1500, 4096 - Mission.timer[0].count / 750, 0);
 					}
 				}
 			}
 			break;
 		case 25:
-			if (bodgevar == 1) {
+			if (bodgevar == 1)
+			{
 				channel = GetFreeChannel();
-				cVar1 = GetMissionSound(11);
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
 				holdall++;
 				bodgevar = 2;
 			}
@@ -819,51 +800,39 @@ void DoMissionSound(void)
 			}
 			break;
 		case 30:
+		{
+			VECTOR Q[3] = {
+				{-12283,-275,841243},
+				{-13482,-250,841184},
+				{-14380,-276,840579},
+			};
+
 			if (bodgevar > 0 && bodgevar < 4)
 			{
-				VECTOR Q[3] = {
-					{0xFFFFD005,0xFFFFFEED,0xCD61B},
-					{0xFFFFCB56,0xFFFFFF06,0xCD5E0},
-					{0xFFFFC7D4,0xFFFFFEEC,0xCD383},
-				};
+				P = &Q[bodgevar - 1];
 
-				VECTOR *P = &Q[bodgevar - 1];
-
-				cVar1 = GetMissionSound(34);
-				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(34), P->vx, P->vy, P->vz, -1000, 0x1000);
 
 				bodgevar += 4;
 			}
-			else if (bodgevar >= 4)
+			else if (bodgevar >= 5)
 			{
-				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
-
-				if (Mission.timer[0].count / 3000 * 3000 == Mission.timer[0].count + 100)
+				// bomb ticks
+				for (i = 0; i < 3; i++)
 				{
-					cVar1 = GetMissionSound(29);
-					Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, -0x382c, -0x114, 0xcd383, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
-				}
-
-				if (bodgevar >= 5)
-				{
-					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
+					if ((bodgevar - 5) >= i)
 					{
-						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, -0x2ffb, -0x113, 0xcd61b, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
-					}
-				}
+						P = &Q[i];
 
-				if (bodgevar >= 6)
-				{
-					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
-					{
-						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, -0x34aa, -0xfa, 0xcd5e0, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+						if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count - (300 + 500 * i))
+						{
+							Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(20), P->vx, P->vy, P->vz, -1500, 4096 - Mission.timer[0].count / 750);
+						}
 					}
 				}
 			}
-
 			break;
+		}
 		case 32:
 			if (holdall == -1)
 			{
@@ -874,8 +843,7 @@ void DoMissionSound(void)
 				if (bodgevar == 1)
 				{
 					channel = GetFreeChannel();
-					cVar1 = GetMissionSound(11);
-					Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, cVar1, pos[0], pos[1], pos[2], -1000, 0x1000);
+					Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
 					bodgevar = 2;
 				}
 				else if (bodgevar == 3)
@@ -891,60 +859,51 @@ void DoMissionSound(void)
 			}
 			break;
 		case 33:
-			if (holdall == -1) 
+			if (holdall == -1)
 			{
 				StartSound(2, SOUND_BANK_VOICES, 0, -10000, 0x81);
 				holdall = 0;
 			}
 			break;
 		case 35:
-			if ((bodgevar > 0) && (bodgevar < 4))
+		{
+			VECTOR Q[3] = {
+				{201520, -177, 385248},
+				{201392, -177, 389200},
+				{199376, -177, 389200}
+			};
+
+			if (bodgevar > 0 && bodgevar < 4)
 			{
-				VECTOR Q[3] = {
-					{0x31330, 0xFFFFFF4F, 0x5E0E0},
-					{0x312B0, 0xFFFFFF4F, 0x5F050},
-					{0x30AD0, 0xFFFFFF4F, 0x5F050}
-				};
+				// make click sound
+				P = &Q[bodgevar - 1];
 
-				VECTOR *P = &Q[bodgevar - 1];
-
-				cVar1 = GetMissionSound(34);
-				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, P->vx, P->vy, P->vz, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(34), P->vx, P->vy, P->vz, -1000, 4096);
 
 				bodgevar += 4;
 			}
 			else if (bodgevar >= 5)
 			{
-				x = (int)(((long long)Mission.timer[0].count * 0x57619f1) >> 0x20);
-
-				if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -300) {
-					cVar1 = GetMissionSound(20);
-					Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, 0x31330, -0xb1, 0x5e0e0, -0x5dc, 0x1000 - ((x >> 4) - (Mission.timer[0].count >> 0x1f)));
-				}
-
-				if (bodgevar >= 6)
+				// bomb ticks
+				for (i = 0; i < 3; i++)
 				{
-					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -800)
+					if ((bodgevar - 5) >= i)
 					{
-						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, 0x312b0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
-					}
-				}
+						P = &Q[i];
 
-				if (bodgevar >= 7)
-				{
-					if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count + -0x514)
-					{
-						cVar1 = GetMissionSound(20);
-						Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, cVar1, 0x30ad0, -0xb1, 0x5f050, -0x5dc, 0x1000 - Mission.timer[0].count / 0x2ee);
+						if ((Mission.timer[0].count / 3000) * 3000 == Mission.timer[0].count - (300 + 500 * i))
+						{
+							Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(20), P->vx, P->vy, P->vz, -1500, 4096 - Mission.timer[0].count / 750);
+						}
 					}
 				}
 			}
 			break;
+		}
 		case 39:
-			if (holdall == -1) 
+			if (holdall == -1)
 			{
-				for (int i = 0; i < 16; i++)
+				for (i = 0; i < 16; i++)
 				{
 					if (MissionTargets[i].data[0] == 2)
 					{
@@ -967,60 +926,47 @@ void DoMissionSound(void)
 		case 40:
 			if (bodgevar == 0)
 			{
-				if (holdall != -1) 
+				if (holdall != -1)
 				{
 					StopChannel(holdall);
 					UnlockChannel(holdall);
 					holdall = -1;
 				}
 			}
-			else 
+			else
 			{
-				LONGVECTOR V;
+				int dx, dz;
 				long* C = (long*)bodgevar; // Ahhh, Reflections...
 
-				x = car_data[player[0].playerCarId].hd.where.t[0];
+				dx = C[0] - car_data[player[0].playerCarId].hd.where.t[0];
+				dz = C[2] - car_data[player[0].playerCarId].hd.where.t[2];
 
-				y_00 = C[0] - x;
-				x = x - C[0];
-
-				if (-1 < y_00)
-					x = y_00;
-
-				if (x < 0x8000)
+				if (ABS(dx) < 32768 && ABS(dz) < 32768)
 				{
-					x = car_data[player[0].playerCarId].hd.where.t[2];
+					V[0] = pos[0] - C[0];
+					V[1] = pos[1] - C[1];
+					V[2] = pos[2] - C[2];
 
-					y_00 = C[2] - x;
-					x = x - C[2];
+					SetChannelPosition3(holdall, (VECTOR*)C, (long*)V, 0, 4096, 0);
 
-					if (-1 < y_00)
-						x = y_00;
-
-					if (x < 0x8000)
-					{
-						V[0] = pos[0] - C[0];
-						V[1] = pos[1] - C[1];
-						V[2] = pos[2] - C[2];
-
-						SetChannelPosition3(holdall, (VECTOR*)C, (long*)V, 0, 0x1000, 0);
-
-						pos[0] = C[0];
-						pos[1] = C[1];
-						pos[2] = C[2];
-						return;
-					}
+					pos[0] = C[0];
+					pos[1] = C[1];
+					pos[2] = C[2];
 				}
 			}
 			break;
-		// Havana sounds
-		case 52:
+		case 52:	// Havana sounds
 		case 53:
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], -pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], pos[1], pos[2], -1000, 4096);
 				bodgevar = 2;
+			}
+			else if(bodgevar == 2)
+			{
+				if(channel > -1)
+					SetChannelPosition3(channel, (VECTOR*)pos, NULL, -1000, 4096, 0 );
 			}
 			else if (bodgevar == 3)
 			{
@@ -1031,13 +977,13 @@ void DoMissionSound(void)
 				bodgevar = 4;
 			}
 			break;
-		// Vegas sounds
-		case 54:
+
+		case 54:	// Vegas sounds
 		case 55:
-			if (bodgevar == 1) 
+			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 1, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 1, pos[0], pos[1], pos[2], -1000, 4096);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -1050,16 +996,16 @@ void DoMissionSound(void)
 			else if (bodgevar == 5)
 			{
 				// Vegas special garage door
-				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, 0, -0x26868, -0xfa, 0x9d274, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, 0, -157800, -250, 643700, -1000, 4096);
 				bodgevar = 6;
 			}
-		// Rio sounds
+			// Rio sounds
 		case 56:
 		case 57:
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], pos[1], pos[2], -1000, 4096);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -1089,13 +1035,13 @@ void DoMissionSound(void)
 	/* end block 2 */
 	// End Line: 1910
 
-// [D]
-void SetMSoundVar(int var, VECTOR *V)
+// [D] [T]
+void SetMSoundVar(int var, VECTOR* V)
 {
 	if (V)
 	{
 		pos[0] = V->vx;
-		pos[1] = V->vy;
+		pos[1] = -V->vy;
 		pos[2] = V->vz;
 	}
 
@@ -1123,165 +1069,162 @@ void SetMSoundVar(int var, VECTOR *V)
 // [D]
 char SilenceThisCar(int car)
 {
-	int iVar1;
-	bool bVar2;
-
 	if (gInGameCutsceneActive == 0)
 	{
-		bVar2 = false;
-
-		if (car_data[car].controlType == CONTROL_TYPE_CUTSCENE) 
-		{
-			bVar2 = car_data[car].ai.c.ctrlState == 7;
-		}
-
-		return (char)bVar2;
+		return car_data[car].controlType == CONTROL_TYPE_CUTSCENE && car_data[car].ai.c.ctrlState == 7;
 	}
 
-	switch (gCurrentMissionNumber) 
+	switch (gCurrentMissionNumber)
 	{
-	case 1:
-	case 0xe:
-	case 0x11:
-		if (gInGameCutsceneID != 0)
-			return 0;
+		case 1:
+		case 14:
+		case 17:
+			if (gInGameCutsceneID != 0)
+				return 0;
 
-		if (car == 1)
-			return 1;
+			if (car == 1)
+				return 1;
 
-		break;
-	case 2:
-		if (gInGameCutsceneID != 1)
-			return 0;
-	
-		if (car == 2 && cutscene_timer < 200)
-			return 1;
-
-		if (car != 1)
-			return 0;
-	
-		bVar2 = cutscene_timer < 0x23;
-		goto LAB_0005ef14;
-	case 3:
-	case 0x19:
-		if (gInGameCutsceneID != 0)
-			return 0;
-
-		iVar1 = 2;
-		goto LAB_0005ef3c;
-	case 6:
-		if (gInGameCutsceneID == 0) 
-		{
-			bVar2 = car - 2U < 2;
-		}
-		else 
-		{
+			break;
+		case 2:
 			if (gInGameCutsceneID != 1)
 				return 0;
-		
-			bVar2 = cutscene_timer < 0xfd;
-		}
-	LAB_0005ef14:
-		if (bVar2)
-			return 1;
 
-		return 0;
-	case 7:
-	case 0x13:
-	case 0x15:
-	case 0x1c:
-	case 0x1e:
-	case 0x1f:
-		if (gInGameCutsceneID != 0) {
+			if (car == 2 && cutscene_timer < 200)
+				return 1;
+
+			if (car != 1)
+				return 0;
+
+			if (cutscene_timer < 35)
+				return 1;
+
 			return 0;
-		}
-		return 1;
-	case 10:
-		if (gInGameCutsceneID != 0) {
+		case 3:
+		case 25:
+			if (gInGameCutsceneID != 0)
+				return 0;
+
+			if (car == 2)
+				return 1;
+
 			return 0;
-		}
-		iVar1 = 3;
-	LAB_0005ef3c:
-		if (car == iVar1) {
-			return 1;
-		}
-		return 0;
-	case 0x10:
-		if (gInGameCutsceneID != 0)
+		case 6:
+			if (gInGameCutsceneID == 0)
+			{
+				if (car - 2U < 2)
+					return 1;
+			}
+			else
+			{
+				if (gInGameCutsceneID != 1)
+					return 0;
+
+				if (cutscene_timer < 253)
+					return 1;
+			}
+
 			return 0;
+		case 7:
+		case 19:
+		case 21:
+		case 28:
+		case 30:
+		case 31:
+			if (gInGameCutsceneID != 0)
+				return 0;
 
-		if (car != 1)
 			return 1;
+		case 10:
+			if (gInGameCutsceneID != 0)
+				return 0;
 
-		break;
-	case 0x12:
-		if (gInGameCutsceneID == 0 && car != 1)
-			return 1;
+			if (car == 3)
+				return 1;
 
-		if (gInGameCutsceneID == 1 && car > 2)
-			return 1;
-
-		if (car == 1)
-		{
-			bVar2 = cutscene_timer < 471;
-			goto LAB_0005f098;
-		}
-
-		break;
-	case 0x17:
-		if (gInGameCutsceneID != 0) 
 			return 0;
+		case 16:
+			if (gInGameCutsceneID != 0)
+				return 0;
 
-		if (cutscene_timer < 160)
-			return 1;
+			if (car != 1)
+				return 1;
 
-		if (car != 1)
+			break;
+		case 18:
+			if (gInGameCutsceneID == 0 && car != 1)
+				return 1;
+
+			if (gInGameCutsceneID == 1 && car > 2)
+				return 1;
+
+			if (car == 1)
+			{
+				if (cutscene_timer >= 471)
+					return 1;
+
+				return 0;
+			}
+
+			break;
+		case 23:
+			if (gInGameCutsceneID != 0)
+				return 0;
+
+			if (cutscene_timer < 160)
+				return 1;
+
+			if (car != 1)
+				return 0;
+
+			if (cutscene_timer >= 416)
+				return 1;
+
 			return 0;
+		case 27:
+			if (gInGameCutsceneID != 0)
+				return 0;
 
-		bVar2 = cutscene_timer < 416;
-		goto LAB_0005f098;
-	case 0x1b:
-		if (gInGameCutsceneID != 0)
+			if (car - 6U < 2)
+				return 1;
+
+			if (car - 2U > 1)
+				return 0;
+
+			if (cutscene_timer >= 681)
+				return 1;
+
 			return 0;
+		case 29:
+			if (gInGameCutsceneID == 0)
+				return 1;
 
-		if (car - 6U < 2) {
-			return 1;
-		}
-		if (1 < car - 2U) {
-			return 0;
-		}
-		bVar2 = cutscene_timer < 681;
-	LAB_0005f098:
-		if (!bVar2)
-			return 1;
-	
-		return 0;
-	case 0x1d:
-		if (gInGameCutsceneID == 0)
-			return 1;
+			if (gInGameCutsceneID == 1)
+			{
+				if (car - 4U < 2)
+					return 1;
 
-		if (gInGameCutsceneID == 1) 
-		{
-			bVar2 = car - 4U < 2;
-			goto LAB_0005ef14;
-		}
-		break;
-	case 0x21:
-		if (gInGameCutsceneID == 1 && car != 1)
-			return 1;
+				return 0;
+			}
+			break;
+		case 33:
+			if (gInGameCutsceneID == 1 && car != 1)
+				return 1;
 
-		break;
-	case 0x26:
-		if (gInGameCutsceneID == 0) 
-		{
-			bVar2 = car - 2U < 2;
-			goto LAB_0005ef14;
-		}
+			break;
+		case 38:
+			if (gInGameCutsceneID == 0)
+			{
+				if (car - 2U < 2)
+					return 1;
 
-		break;
-	case 0x27:
-		if (gInGameCutsceneID == 0)
-			return 1;
+				return 0;
+			}
+
+			break;
+		case 39:
+			if (gInGameCutsceneID == 0)
+				return 1;
 	}
 
 	return 0;
@@ -1303,18 +1246,18 @@ char SilenceThisCar(int car)
 // [D]
 void AdjustPlayerCarVolume(void)
 {
-	if (gInGameCutsceneID == 0) 
+	if (gInGameCutsceneID != 0)
+		return;
+
+	if (gCurrentMissionNumber == 3 || gCurrentMissionNumber == 5 || gCurrentMissionNumber == 27)
 	{
-		if (gCurrentMissionNumber == 3 || gCurrentMissionNumber == 5 || gCurrentMissionNumber == 27)
-		{
-			player[0].revsvol = -6750;
-			player[0].idlevol = -10000;
-		}
-		else 
-		{
-			player[0].revsvol = -10000;
-			player[0].idlevol = -8000;
-		}
+		player[0].revsvol = -6750;
+		player[0].idlevol = -10000;
+	}
+	else
+	{
+		player[0].revsvol = -10000;
+		player[0].idlevol = -8000;
 	}
 }
 
