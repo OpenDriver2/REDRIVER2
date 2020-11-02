@@ -767,6 +767,28 @@ void GameInit(void)
 	PauseSound();
 	ThisMotion = 0;
 
+	// [A] Driver 1 music support
+#ifndef PSX
+	if (gDriver1Music)
+	{
+		if (GameType == GAME_TAKEADRIVE)
+		{
+			if(GameLevel == 0)
+				gMusicType = 0 + (gCurrentMissionNumber & 1);
+			else if (GameLevel == 1)
+				gMusicType = 5 + (gCurrentMissionNumber & 1);
+			else if (GameLevel == 2)
+				gMusicType = 2 + (gCurrentMissionNumber & 1) * 5;
+			else if (GameLevel == 3)
+				gMusicType = 3 + (gCurrentMissionNumber & 1);
+		}
+		else
+		{
+			gMusicType = gCurrentMissionNumber % 8;
+		}
+	}
+	else 
+#endif
 	if (GameLevel == 1)
 	{
 		gMusicType = 1;

@@ -350,9 +350,9 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 				if ((rnd % 17) & 0xFF == 0)
 				{
 					if (MaxPlayerDamage[0] * 3 / 4 < car_data[player[0].playerCarId].totalDamage)
-						phrase = rnd & 4;
+						phrase = rnd % 4;
 					else
-						phrase = rnd & 3;
+						phrase = rnd % 3;
 
 					if (last_cop_phrase != phrase && 0 < TimeSinceLastSpeech)
 					{
