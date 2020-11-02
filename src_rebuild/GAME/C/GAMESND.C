@@ -116,7 +116,7 @@ int xm_coptrackpos_d2[8] = {
 };
 
 int xm_coptrackpos_d1[8] = {
-	0xC, 0xC, 0xB, 0xB, 8, 0xB, 0xF, 0xC,
+	0xB, 0xC, 0xB, 0xB, 8, 0xB, 0xF, 0xC,
 };
 
 int* xm_coptrackpos;
@@ -2550,9 +2550,11 @@ void InitMusic(int musicnum)
 	char* addr;
 	int musicpos[3];
 
-	char* d1musicName = "SOUND\\D1MUSIC.BIN";
+	
 	char* musicname = "SOUND\\MUSIC.BIN";
 
+#ifndef PSX
+	char* d1musicName = "SOUND\\D1MUSIC.BIN";
 	// search for Driver 1 music file
 	if (gDriver1Music && FileExists(d1musicName))
 	{
@@ -2560,6 +2562,7 @@ void InitMusic(int musicnum)
 		xm_coptrackpos = xm_coptrackpos_d1;
 	}
 	else
+#endif
 	{
 		name = musicname;
 		xm_coptrackpos = xm_coptrackpos_d2;
