@@ -1316,6 +1316,9 @@ void SendTPage(void)
 			}
 		}
 	}
+
+	//extern void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
+	//Emulator_SaveVRAM("VRAM_CLUTS_TPAGES.TGA", 0, 0, 1024, 512, 1);
 }
 
 
@@ -1409,42 +1412,35 @@ void LoadInAreaTSets(int area)
 
 	slot = slotsused;
 
-	while (slot < 19)
+	// get available slots
+	for (slot = slotsused; slot < 19; slot++)
 	{
-		offset = 0;
-
-		if (tpageslots[slot] == 0xff) // [A]
+		// use free slot immediately
+		if (tpageslots[slot] == 0xff)
 		{
 			availableslots[navailable++] = slot;
+			continue;
 		}
-		else
+
+		i = 0;
+		for (i = 0; i < ntpages_to_load; i++)
 		{
-			i = 0;
-			while (tpageslots[slot] != tpages[i])  // [A]
-			{
-				if (ntpages_to_load <= i)
-					break;
-
-				i++;
-			};
-
-			if (i == ntpages_to_load)
+			// check if needed tpages are not already loaded
+			if (tpageslots[slot] != tpages[i])
 			{
 				availableslots[navailable++] = slot;
+				break;
 			}
 		}
-
-		slot++;
 	}
 
 	offset = AreaData[area].gfx_offset;
-
 
 	if (!ntpages_to_load)
 		return;
 
 	i = 0;
-	while (--navailable >= 0)
+	while(--navailable >= 0)
 	{
 		tsetinfo[tsetcounter * 2 + 1] = availableslots[navailable];
 
@@ -1848,11 +1844,11 @@ void CheckLoadAreaData(int cellx, int cellz)
 				new_area_location = load;
 
 				// [A] bounds?
-				if (load == 0 && (32-force_load_boundary < cellz))
+				if (load == 0 && (cellz > MAP_REGION_SIZE - force_load_boundary))
 				{
 					break;
 				}
-				else if (load == 1 && (32-force_load_boundary < cellx))
+				else if (load == 1 && (cellx > MAP_REGION_SIZE - force_load_boundary))
 				{
 					break;
 				}
