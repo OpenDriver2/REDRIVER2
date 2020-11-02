@@ -1253,7 +1253,7 @@ void SendTPage(void)
 
 	if (nTPchunks == 0) 
 	{
-		if (slot != tpageloaded[tpage2send]-1)
+		if (slot != tpageloaded[tpage2send] - 1)
 		{
 			npalettes = *(int *)(model_spool_buffer + 0xE000);
 
@@ -1407,6 +1407,9 @@ void LoadInAreaTSets(int area)
 	tpages = AreaTPages + area * 16;
 	ntpages_to_load = AreaData[area].num_tpages;
 
+	if (!ntpages_to_load)
+		return;
+
 	loadaddr = model_spool_buffer + 0xA000;
 	navailable = 0;
 
@@ -1422,7 +1425,6 @@ void LoadInAreaTSets(int area)
 			continue;
 		}
 
-		i = 0;
 		for (i = 0; i < ntpages_to_load; i++)
 		{
 			// check if needed tpages are not already loaded
@@ -1436,30 +1438,22 @@ void LoadInAreaTSets(int area)
 
 	offset = AreaData[area].gfx_offset;
 
-	if (!ntpages_to_load)
-		return;
-
 	i = 0;
-	while(--navailable >= 0)
+	for (slot = 0; slot < navailable; slot++)
 	{
-		tsetinfo[tsetcounter * 2 + 1] = availableslots[navailable];
-
-		while (i < ntpages_to_load)
+		if (i < ntpages_to_load)
 		{
+			tsetinfo[tsetcounter * 2 + 1] = availableslots[slot];
+			tsetinfo[tsetcounter * 2] = tpages[i];
+
 			RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
 			offset += 17;
 
-			i++;
-			tsetinfo[tsetcounter * 2] = *tpages;
-
 			tsetcounter++;
-			tpages++;
-
-			if (tpageloaded[*tpages] == 0)
-				break;
-
-			tsetinfo[tsetcounter * 2 + 1] = tpageloaded[*tpages] - 1;
+			i++;
 		}
+		else
+			break;
 	}
 }
 
