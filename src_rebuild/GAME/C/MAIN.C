@@ -3320,7 +3320,7 @@ void DealWithHorn(char* hr, int i)
 			car->hd.where.t[0],
 			car->hd.where.t[1],
 			car->hd.where.t[2], -10000,
-			0x1000);
+			4096);
 
 		if (NumPlayers > 1 && NoPlayerControl == 0)
 		{
@@ -3331,7 +3331,7 @@ void DealWithHorn(char* hr, int i)
 
 		channel = i != 0 ? 5 : 2;
 
-		SetChannelPosition3(channel, (VECTOR*)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 0x1000, 0);
+		SetChannelPosition3(channel, (VECTOR*)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 4096, 0);
 	}
 
 	*hr = (*hr + 1) % 3;
