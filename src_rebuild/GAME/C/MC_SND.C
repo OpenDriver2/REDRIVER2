@@ -125,25 +125,25 @@ static int bodgevar = 0;
 	/* end block 2 */
 	// End Line: 177
 
-// [D]
+// [D] [T]
 char GetMissionSound(char id)
 {
-	int end;
-	long rnd;
-	int c;
-	int start;
+	u_char end;
+	u_char rnd;
+	u_char c;
+	u_char start;
 
 	start =  missionstarts[gCurrentMissionNumber];
 	rnd = Random2(5);
 
-	if (end != 0xff)
+	if (start != 0xff)
 	{
 		c = 1;
 		do {
-			end = missionstarts[gCurrentMissionNumber + (c & 0xff)];
-			c = (c & 0xff) + 1;
+			end = missionstarts[gCurrentMissionNumber + c];
+			c++;
 		} while (end == 0xff);
-	
+
 		while (start < end) 
 		{
 			c = start + 1;
@@ -160,7 +160,7 @@ char GetMissionSound(char id)
 
 			}
 	
-			start = c & 0xff;
+			start = c;
 		}
 	}
 	return -1;
