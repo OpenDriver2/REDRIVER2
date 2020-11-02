@@ -3653,7 +3653,6 @@ unsigned int horn_time;
 void InitLeadHorn(void)
 {
 	horn_time = 0;
-	return;
 }
 
 

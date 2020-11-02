@@ -537,7 +537,7 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	}
 	else
 	{
-		if (gSoundMode == 1) 
+		if (gSoundMode == 1 && proximity != -1) 
 			UpdateVolumeAttributesS(channel, proximity);
 		else
 			UpdateVolumeAttributesM(channel);
@@ -1756,10 +1756,8 @@ int gSurround = 0;
 // [D]
 void UpdateVolumeAttributesS(int channel, int proximity)
 {
-	bool bVar1;
 	int volume;
 	int vol;
-	int iVar5;
 	int player_id;
 	VECTOR *pos;
 	VECTOR *cam_pos;
@@ -1774,11 +1772,11 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 	cam_ang = player[player_id].snd_cam_ang;
 
 	volume = CalculateVolume(channel);
-	
-	if (camera_change == 1 || old_camera_change == 1)
-		volume = 0;
 
 	vol = MAX(0, 10000 + volume);
+	
+	if (camera_change == 1 || old_camera_change == 1)
+		vol = 0;
 
 	vol = (vol + vol / 2 + vol / 8 + vol / 128) * master_volume / 16384;
 
@@ -1834,7 +1832,9 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 		dx = cam_pos->vx - pos->vx;
 		dz = cam_pos->vz - pos->vz;
 
-		if(jsqrt(dx * dx + dz * dz) >= 12000)
+		dist = jsqrt(dx * dx + dz * dz);
+
+		if(dist >= 12000)
 			proximity = 0;
 	}
 
@@ -1893,11 +1893,11 @@ void UpdateVolumeAttributesM(int channel)
 
 	volume = CalculateVolume(channel);
 
-	if (camera_change == 1 || old_camera_change == 1)
-		volume = 0;
-
 	vol = MAX(0, 10000 + volume);
-
+	
+	if (camera_change == 1 || old_camera_change == 1)
+		vol = 0;
+	
 	vol = (vol + vol / 2 + vol / 8 + vol / 128) * master_volume / 16384;
 	
 	channels[channel].attr.volume.left = vol;
@@ -2071,8 +2071,17 @@ void AllocateReverb(long mode, long depth)
 // [D] [T]
 int FESound(int sample)
 {
-	// [A] just use the standard StartSound
-	return StartSound(-1, 1, sample, 4096, 2048);
+	int channel;
+	channel = GetFreeChannel();
+
+	if (channel < 0 || channel >= MAX_SFX_CHANNELS)	// [A]
+		return -1;
+
+	channels[channel].srcposition = NULL;
+	channels[channel].srcvelocity = dummylong;
+	channels[channel].srcvolume = 4096;
+
+	return CompleteSoundSetup(channel, 1, sample, 2048, -1);
 }
 
 
