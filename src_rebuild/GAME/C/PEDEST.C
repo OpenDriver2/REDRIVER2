@@ -2510,6 +2510,7 @@ void SetupPressButton(PEDESTRIAN* pPed)
 	pPed->type = PED_ACTION_PRESSBUTTON;
 	SetupPedMotionData(pPed);
 
+	pPed->dir.vz = 0;
 	pPed->speed = 0;
 	pPed->frame1 = 0;
 	pPed->fpAgitatedState = PedPressButton;
@@ -2560,6 +2561,7 @@ void SetupTannerSitDown(PEDESTRIAN* pPed)
 	pPed->type = PED_ACTION_SIT;
 	SetupPedMotionData(pPed);
 
+	pPed->dir.vz = 0;
 	pPed->speed = 0;
 	pPed->frame1 = 0;
 	pPed->fpAgitatedState = TannerSitDown;
