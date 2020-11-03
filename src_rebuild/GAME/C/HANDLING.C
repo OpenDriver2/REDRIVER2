@@ -723,6 +723,12 @@ void GlobalTimeStep(void)
 	int m2;
 	int strength;
 	int carsDentedThisFrame;
+	short *felony;
+
+	if (player[0].playerCarId < 0)
+		felony = &pedestrianFelony;
+	else
+		felony = &car_data[player[0].playerCarId].felonyRating;
 
 	StepCars();
 	CheckCarToCarCollisions();
@@ -944,7 +950,9 @@ void GlobalTimeStep(void)
 									}
 
 									// wake up cops if they've ben touched
-									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY)
+									// [A] check player felony.
+									// If player touch them without felony player will be charged with felony (hit cop car)
+									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY && *felony >= FELONY_MIN_VALUE)
 									{
 										if (cp->controlType == CONTROL_TYPE_PLAYER && IS_ROADBLOCK_CAR(c1))
 										{
