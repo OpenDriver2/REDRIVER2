@@ -2091,6 +2091,11 @@ void StepFromToEvent(EVENT* ev)
 		if (ev == events.cameraEvent)
 		{
 			SetSpecialCamera(SPECIAL_CAMERA_RESET, 0);
+
+			if(direction == 16384)
+			{
+				SetMSoundVar(3, NULL);
+			}
 		}
 	}
 }
@@ -4577,7 +4582,7 @@ VECTOR* TriggerEvent(int i)
 					event->data = &HavanaFerryData[6];
 					break;
 				case 2:
-					TriggerDoor(&havanaFixed[0], stage + i, 1);
+					TriggerDoor(&havanaFixed[0], &stage[i], 1);
 					break;
 				case 3:
 					PrepareSecretCar();
@@ -4590,6 +4595,8 @@ VECTOR* TriggerEvent(int i)
 						SetSpecialCamera(SPECIAL_CAMERA_WAIT, 0);
 						event[1].node++;
 					}
+
+					SetMSoundVar(1, &event[1].position);
 
 					event[1].timer = 0;
 					events.cameraEvent = &event[1];

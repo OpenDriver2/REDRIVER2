@@ -4845,7 +4845,7 @@ void SetUpCivCollFlags(void)
 								else
 									sample = cp0->ap.model - 1;
 
-								Start3DSoundVolPitch(hornchanflag[i], 3, sample * 3 + 2, cp0->hd.where.t[0], cp0->hd.where.t[1], cp0->hd.where.t[2], -2000, 0x1000);
+								Start3DSoundVolPitch(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, cp0->hd.where.t[0], cp0->hd.where.t[1], cp0->hd.where.t[2], -2000, 0x1000);
 								horncarflag[i] = cp0;
 
 								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;

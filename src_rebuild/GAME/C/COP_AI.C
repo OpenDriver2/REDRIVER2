@@ -468,7 +468,7 @@ void ControlCops(void)
 					else
 						phrase = rnd % 3;
 
-					phrase = rnd + phrase;
+					//phrase = rnd + phrase;
 
 					if (first_offence == 0 && last_cop_phrase != phrase && TimeSinceLastSpeech > 720)
 					{

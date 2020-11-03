@@ -165,7 +165,7 @@ void ChangeCarPlayerToPed(int playerID)
 	StopChannel(player[playerID].wheelnoise.chan);
 	UnlockChannel(player[playerID].wheelnoise.chan);
 
-	Start3DSoundVolPitch(-1, 6, 3, lcp->hd.where.t[0], lcp->hd.where.t[1], lcp->hd.where.t[2], 0, 0x1000);
+	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, lcp->hd.where.t[0], lcp->hd.where.t[1], lcp->hd.where.t[2], 0, 0x1000);
 
 	first_offence = 1;
 
@@ -274,7 +274,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	}
 
 	// door close sound
-	Start3DSoundVolPitch(-1, 6, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
+	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
 
 	if (newCar->ap.model == 4)
 		carSampleId = ResidentModelsBodge();
@@ -285,11 +285,11 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 
 	// start idle sound
 	channel = playerID == 0 ? 1 : 4;	
-	Start3DSoundVolPitch(channel, 3, carSampleId * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
+	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
 
 	// rev sound
 	channel = playerID == 0 ? 0 : 3;	
-	Start3DSoundVolPitch(channel, 3, carSampleId * 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
+	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
 
 	if (siren != 0) 
 	{

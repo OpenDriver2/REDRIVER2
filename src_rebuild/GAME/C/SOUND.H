@@ -79,7 +79,7 @@ extern void StopXM(); // 0x0007B050
 
 extern void SetXMVolume(int volume); // 0x0007B074
 
-extern int GetFreeChannel(); // 0x00079E04
+extern int GetFreeChannel(int force = 1); // 0x00079E04
 
 extern void UpdateVolumeAttributesS(int channel, int proximity); // 0x00079F38
 
