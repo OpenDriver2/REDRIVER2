@@ -1297,14 +1297,24 @@ void CopSay(int phrase, int direction)
 
 		if (cop_bank != 2 && cop_bank != 3)
 			return;
+
 	}
 	else
 	{
 		if (phrase != 15)
 			return;
 
-		if (cop_bank != 4)
-			return;
+		if (cop_bank != 1) 
+		{
+			if (cop_bank == 2)
+				return;
+			
+			if (cop_bank == 3)
+				return;
+
+			if (cop_bank != 4)
+				return;
+		}
 	}
 
 	PlaySpeech(&gSpeechQueue, direction + 1);
