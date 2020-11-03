@@ -9,10 +9,7 @@
 #include "SYSTEM.H"
 #include "PAD.H"
 #include "SOUND.H"
-#include "FMVPLAY.H"
 #include "E3STUFF.H"
-#include "GAMESND.H"
-#include "SCORES.H"
 #include "MAIN.H"
 
 // FMV
@@ -42,7 +39,7 @@ int gNoFMV = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ReInitSystem(void)
 {
 	StopCallback();
@@ -50,9 +47,9 @@ void ReInitSystem(void)
 	ResetGraph(1);
 	SetVideoMode(video_mode);
 	InitGeom();
-	SetGeomOffset(0xa0, 0x80);
-	scr_z = 0x100;
-	SetGeomScreen(0x100);
+	SetGeomOffset(160, 128);
+	scr_z = 256;
+	SetGeomScreen(256);
 	MemCardInit(1);
 	InitControllers();
 	CdInit();
@@ -100,16 +97,16 @@ void ReInitSystem(void)
 	/* end block 3 */
 	// End Line: 137
 
-// [D]
+// [D] [T]
 void PlayFMV(unsigned char render)
 {
 	RENDER_ARGS args;
 	
-	if ((render - 16 < 13) || (render == 97))
+	if (render - 16U < 13 || render == 97)
 	{
 		CheckForCorrectDisc(1);
 	}
-	else if (((render - 1 & 0xff) < 0xf) || (render == 98))
+	else if ((render - 1U & 0xff) < 15 || render == 98)
 	{
 		CheckForCorrectDisc(0);
 	}
@@ -121,7 +118,7 @@ void PlayFMV(unsigned char render)
 
 	PlayRender(&args);
 
-	if ((render - 1 & 0xff) < 0x62)
+	if ((render - 1 & 0xff) < 98)
 		SetPleaseWait(NULL);
 }
 
@@ -159,7 +156,7 @@ void PlayFMV(unsigned char render)
 
 extern int FMV_main(RENDER_ARGS* args);
 
-// [D] [A]
+// [D] [T]
 void PlayRender(RENDER_ARGS *args)
 {
 	static unsigned long oldsp;
