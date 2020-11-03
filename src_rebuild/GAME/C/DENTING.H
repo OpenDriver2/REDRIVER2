@@ -4,9 +4,9 @@
 
 extern void InitialiseDenting(); // 0x0003B1C0
 
-extern void DentCar(struct _CAR_DATA *cp); // 0x0003A310
+extern void DentCar(CAR_DATA *cp); // 0x0003A310
 
-extern void CreateDentableCar(struct _CAR_DATA *cp); // 0x0003A6E4
+extern void CreateDentableCar(CAR_DATA *cp); // 0x0003A6E4
 
 extern void InitHubcap(); // 0x0003A874
 

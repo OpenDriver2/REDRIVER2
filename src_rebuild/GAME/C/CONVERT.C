@@ -5,7 +5,7 @@
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Calc_Object_MatrixYZX(struct MATRIX *mat /*$s0*/, struct SVECTOR *angles /*$s1*/)
+// void /*$ra*/ Calc_Object_MatrixYZX(MATRIX *mat /*$s0*/, SVECTOR *angles /*$s1*/)
  // line 149, offset 0x0002d3f8
 	/* begin block 1 */
 		// Start line: 298
@@ -36,7 +36,7 @@ void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ _RotMatrixX(struct MATRIX *m /*$v0*/, short ang /*$a1*/)
+// void /*$ra*/ _RotMatrixX(MATRIX *m /*$v0*/, short ang /*$a1*/)
  // line 182, offset 0x0002d470
 	/* begin block 1 */
 		// Start line: 508
@@ -53,7 +53,7 @@ void _RotMatrixX(MATRIX *m, short ang)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ _RotMatrixY(struct MATRIX *m /*$v0*/, short ang /*$a1*/)
+// void /*$ra*/ _RotMatrixY(MATRIX *m /*$v0*/, short ang /*$a1*/)
  // line 187, offset 0x0002d49c
 	/* begin block 1 */
 		// Start line: 519
@@ -70,7 +70,7 @@ void _RotMatrixY(MATRIX *m, short ang)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ _RotMatrixZ(struct MATRIX *m /*$v0*/, short ang /*$a1*/)
+// void /*$ra*/ _RotMatrixZ(MATRIX *m /*$v0*/, short ang /*$a1*/)
  // line 192, offset 0x0002d4c8
 	/* begin block 1 */
 		// Start line: 530
@@ -87,7 +87,7 @@ void _RotMatrixZ(MATRIX *m, short ang)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ RotMatrixXYZ(struct MATRIX *m /*$v0*/, struct SVECTOR *r /*$a1*/)
+// void /*$ra*/ RotMatrixXYZ(MATRIX *m /*$v0*/, SVECTOR *r /*$a1*/)
  // line 199, offset 0x0002d4f4
 	/* begin block 1 */
 		// Start line: 545
@@ -104,13 +104,13 @@ void RotMatrixXYZ(MATRIX *m, SVECTOR *r)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ _MatrixRotate(struct VECTOR *pos /*$s0*/)
+// void /*$ra*/ _MatrixRotate(VECTOR *pos /*$s0*/)
  // line 205, offset 0x0002d51c
 	/* begin block 1 */
 		// Start line: 206
 		// Start offset: 0x0002D51C
 		// Variables:
-	// 		struct VECTOR temp; // stack offset -24
+	// 		VECTOR temp; // stack offset -24
 	/* end block 1 */
 	// End offset: 0x0002D55C
 	// End Line: 214
@@ -136,7 +136,7 @@ void _MatrixRotate(VECTOR *pos)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InvertMatrix(struct MATRIX *a /*$a0*/, struct MATRIX *b /*$a1*/)
+// void /*$ra*/ InvertMatrix(MATRIX *a /*$a0*/, MATRIX *b /*$a1*/)
  // line 240, offset 0x0002d55c
 	/* begin block 1 */
 		// Start line: 620
@@ -177,7 +177,7 @@ void InvertMatrix(MATRIX *a, MATRIX *b)
 		// Start line: 274
 		// Start offset: 0x0002D304
 		// Variables:
-	// 		struct MATRIX newmatrix; // stack offset -48
+	// 		MATRIX newmatrix; // stack offset -48
 	/* end block 1 */
 	// End offset: 0x0002D3F8
 	// End Line: 289
@@ -242,12 +242,12 @@ void BuildWorldMatrix(void)
 		// Start line: 336
 		// Start offset: 0x0002D5C8
 		// Variables:
-	// 		struct MATRIX temp; // stack offset -160
-	// 		struct MATRIX temp2; // stack offset -128
-	// 		struct MATRIX scale; // stack offset -96
-	// 		struct MATRIX scaledcammat; // stack offset -64
-	// 		struct VECTOR pos; // stack offset -32
-	// 		struct SVECTOR tempang; // stack offset -16
+	// 		MATRIX temp; // stack offset -160
+	// 		MATRIX temp2; // stack offset -128
+	// 		MATRIX scale; // stack offset -96
+	// 		MATRIX scaledcammat; // stack offset -64
+	// 		VECTOR pos; // stack offset -32
+	// 		SVECTOR tempang; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x0002D678
 	// End Line: 361

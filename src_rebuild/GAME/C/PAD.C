@@ -64,7 +64,7 @@ DUPLICATION DuplicatePadData;		// [A]
 void InitControllers(void)
 {
 	int i, j;
-	struct PAD* pad;
+	PAD* pad;
 
 	DuplicatePadData.buffer = NULL;
 	DuplicatePadData.size = 0;
@@ -354,7 +354,7 @@ void SetDuplicatePadData(char *buffer, int size)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ MapPad(int pad /*$t2*/, struct PADRAW *pData /*$a3*/)
+// void /*$ra*/ MapPad(int pad /*$t2*/, PADRAW *pData /*$a3*/)
  // line 257, offset 0x0006b6f0
 	/* begin block 1 */
 		// Start line: 258

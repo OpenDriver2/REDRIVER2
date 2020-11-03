@@ -50,11 +50,11 @@ COLOUR_BAND damageColour[2] =
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-_PERCENTAGE_BAR PlayerDamageBar;
-_PERCENTAGE_BAR Player2DamageBar;
-_PERCENTAGE_BAR DamageBar;
-_PERCENTAGE_BAR FelonyBar;
-_PERCENTAGE_BAR ProxyBar;
+PERCENTAGE_BAR PlayerDamageBar;
+PERCENTAGE_BAR Player2DamageBar;
+PERCENTAGE_BAR DamageBar;
+PERCENTAGE_BAR FelonyBar;
+PERCENTAGE_BAR ProxyBar;
 
 int gDoOverlays = 1;
 
@@ -185,8 +185,8 @@ void DisplayOverlays(void)
 		// Start line: 380
 		// Start offset: 0x00015E70
 		// Variables:
-	// 		struct DRAWENV drawenv; // stack offset -104
-	// 		struct DR_ENV *dr_env; // $s0
+	// 		DRAWENV drawenv; // stack offset -104
+	// 		DR_ENV *dr_env; // $s0
 	/* end block 1 */
 	// End offset: 0x00015F20
 	// End Line: 388
@@ -234,7 +234,7 @@ void SetFullscreenDrawing(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitPercentageBar(struct _PERCENTAGE_BAR *bar /*$a0*/, int size /*$a1*/, struct COLOUR_BAND *pColourBand /*$a2*/, char *tag /*$a3*/)
+// void /*$ra*/ InitPercentageBar(PERCENTAGE_BAR *bar /*$a0*/, int size /*$a1*/, COLOUR_BAND *pColourBand /*$a2*/, char *tag /*$a3*/)
  // line 395, offset 0x00015f20
 	/* begin block 1 */
 		// Start line: 1476
@@ -252,7 +252,7 @@ void SetFullscreenDrawing(void)
 	// End Line: 1486
 
 // [D]
-void InitPercentageBar(_PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, char *tag)
+void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, char *tag)
 {
 	bar->xpos = 0x96;
 	bar->ypos = 10;
@@ -270,7 +270,7 @@ void InitPercentageBar(_PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand,
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ EnablePercentageBar(struct _PERCENTAGE_BAR *bar /*$a0*/, int max /*$a1*/)
+// void /*$ra*/ EnablePercentageBar(PERCENTAGE_BAR *bar /*$a0*/, int max /*$a1*/)
  // line 414, offset 0x00015f58
 	/* begin block 1 */
 		// Start line: 1524
@@ -288,7 +288,7 @@ void InitPercentageBar(_PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand,
 	// End Line: 1528
 
 // [D]
-void EnablePercentageBar(_PERCENTAGE_BAR *bar, int max)
+void EnablePercentageBar(PERCENTAGE_BAR *bar, int max)
 {
 	bar->position = 0;
 	bar->max = (ushort)max;
@@ -299,14 +299,14 @@ void EnablePercentageBar(_PERCENTAGE_BAR *bar, int max)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawPercentageBar(struct _PERCENTAGE_BAR *bar /*$fp*/)
+// void /*$ra*/ DrawPercentageBar(PERCENTAGE_BAR *bar /*$fp*/)
  // line 426, offset 0x00014da8
 	/* begin block 1 */
 		// Start line: 427
 		// Start offset: 0x00014DA8
 		// Variables:
-	// 		struct POLY_G4 *poly; // $s0
-	// 		struct CVECTOR temp; // stack offset -56
+	// 		POLY_G4 *poly; // $s0
+	// 		CVECTOR temp; // stack offset -56
 	// 		int min_x; // $s1
 	// 		int max_x; // $s7
 	// 		int min_y; // $s2
@@ -332,7 +332,7 @@ void EnablePercentageBar(_PERCENTAGE_BAR *bar, int max)
 	// End Line: 896
 
 // [D]
-void DrawPercentageBar(_PERCENTAGE_BAR *bar)
+void DrawPercentageBar(PERCENTAGE_BAR *bar)
 {
 	short sVar1;
 	short sVar3;
@@ -491,13 +491,13 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawProximityBar(struct _PERCENTAGE_BAR *bar /*$t3*/)
+// void /*$ra*/ DrawProximityBar(PERCENTAGE_BAR *bar /*$t3*/)
  // line 532, offset 0x000152d4
 	/* begin block 1 */
 		// Start line: 533
 		// Start offset: 0x000152D4
 		// Variables:
-	// 		struct TILE *tile; // $a1
+	// 		TILE *tile; // $a1
 	// 		int min_x; // $s1
 	// 		int max_x; // $s7
 	// 		int min_y; // $s2
@@ -529,7 +529,7 @@ void DrawPercentageBar(_PERCENTAGE_BAR *bar)
 	// End Line: 1179
 
 // [D]
-void DrawProximityBar(_PERCENTAGE_BAR *bar)
+void DrawProximityBar(PERCENTAGE_BAR *bar)
 {
 	int iVar3;
 	TILE *tile;
@@ -669,13 +669,13 @@ void DrawProximityBar(_PERCENTAGE_BAR *bar)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetColourByValue(struct COLOUR_BAND *pColourBand /*$a3*/, int value /*$a1*/, struct CVECTOR *pOut /*$t0*/)
+// void /*$ra*/ SetColourByValue(COLOUR_BAND *pColourBand /*$a3*/, int value /*$a1*/, CVECTOR *pOut /*$t0*/)
  // line 631, offset 0x00015f6c
 	/* begin block 1 */
 		// Start line: 632
 		// Start offset: 0x00015F6C
 		// Variables:
-	// 		struct COLOUR_BAND *pPrevColourBand; // $a2
+	// 		COLOUR_BAND *pPrevColourBand; // $a2
 	// 		int scale; // $a0
 	// 		int temp; // $a1
 	/* end block 1 */
@@ -740,7 +740,7 @@ void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 		// Start line: 670
 		// Start offset: 0x00016098
 		// Variables:
-	// 		struct DR_TPAGE *null; // $a2
+	// 		DR_TPAGE *null; // $a2
 	/* end block 1 */
 	// End offset: 0x00016114
 	// End Line: 676
@@ -842,7 +842,7 @@ void UpdateFlashValue(void)
 		// Start line: 709
 		// Start offset: 0x000157F4
 		// Variables:
-	// 		struct SCORE_ENTRY *table; // $s1
+	// 		SCORE_ENTRY *table; // $s1
 	// 		char string[32]; // stack offset -64
 	// 		int i; // $s1
 	// 		int x; // $s3

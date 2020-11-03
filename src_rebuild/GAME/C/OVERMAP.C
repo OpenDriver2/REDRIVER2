@@ -116,14 +116,14 @@ static int gUseRotatedMap = 0;
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawTargetBlip(struct VECTOR *pos /*$t0*/, unsigned char r /*$s2*/, unsigned char g /*$s3*/, unsigned char b /*$s4*/, unsigned long flags /*stack 16*/)
+// void /*$ra*/ DrawTargetBlip(VECTOR *pos /*$t0*/, unsigned char r /*$s2*/, unsigned char g /*$s3*/, unsigned char b /*$s4*/, unsigned long flags /*stack 16*/)
  // line 685, offset 0x00016280
 	/* begin block 1 */
 		// Start line: 686
 		// Start offset: 0x00016280
 		// Variables:
-	// 		struct POLY_FT4 *poly; // $t0
-	// 		struct VECTOR vec; // stack offset -40
+	// 		POLY_FT4 *poly; // $t0
+	// 		VECTOR vec; // stack offset -40
 	// 		int ysize; // $a2
 	/* end block 1 */
 	// End offset: 0x00016558
@@ -246,16 +246,16 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawTargetArrow(struct VECTOR *pos /*$a2*/, unsigned long flags /*$s3*/)
+// void /*$ra*/ DrawTargetArrow(VECTOR *pos /*$a2*/, unsigned long flags /*$s3*/)
  // line 815, offset 0x00016578
 	/* begin block 1 */
 		// Start line: 816
 		// Start offset: 0x00016578
 		// Variables:
-	// 		struct VECTOR vec; // stack offset -56
-	// 		struct VECTOR vec2; // stack offset -40
-	// 		struct POLY_FT3 *null; // $t1
-	// 		struct POLY_G3 *poly; // $s2
+	// 		VECTOR vec; // stack offset -56
+	// 		VECTOR vec2; // stack offset -40
+	// 		POLY_FT3 *null; // $t1
+	// 		POLY_G3 *poly; // $s2
 	// 		int dx; // $s1
 	// 		int dy; // $s0
 	/* end block 1 */
@@ -371,18 +371,18 @@ void DrawTargetArrow(VECTOR *pos, ulong flags)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawPlayerDot(struct VECTOR *pos /*$a1*/, short rot /*$s2*/, unsigned char r /*$s5*/, unsigned char g /*$s4*/, int b /*stack 16*/, unsigned long flags /*stack 20*/)
+// void /*$ra*/ DrawPlayerDot(VECTOR *pos /*$a1*/, short rot /*$s2*/, unsigned char r /*$s5*/, unsigned char g /*$s4*/, int b /*stack 16*/, unsigned long flags /*stack 20*/)
  // line 883, offset 0x00016814
 	/* begin block 1 */
 		// Start line: 884
 		// Start offset: 0x00016814
 		// Variables:
-	// 		struct MATRIX matrix; // stack offset -168
-	// 		struct VECTOR direction; // stack offset -136
-	// 		struct SVECTOR apos[3]; // stack offset -120
-	// 		struct VECTOR opos[3]; // stack offset -96
-	// 		struct POLY_F3 *poly; // $t0
-	// 		struct VECTOR vec; // stack offset -48
+	// 		MATRIX matrix; // stack offset -168
+	// 		VECTOR direction; // stack offset -136
+	// 		SVECTOR apos[3]; // stack offset -120
+	// 		VECTOR opos[3]; // stack offset -96
+	// 		POLY_F3 *poly; // $t0
+	// 		VECTOR vec; // stack offset -48
 	/* end block 1 */
 	// End offset: 0x00016AC4
 	// End Line: 946
@@ -501,7 +501,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 		// Start line: 955
 		// Start offset: 0x00016AE8
 		// Variables:
-	// 		struct TEXTURE_DETAILS info; // stack offset -32
+	// 		TEXTURE_DETAILS info; // stack offset -32
 	// 		int i; // $a1
 	// 		int x; // $v0
 	// 		int y; // $a0
@@ -553,13 +553,13 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 
 // decompiled code
 // original method signature: 
-// unsigned long /*$ra*/ Long2DDistance(struct VECTOR *pPoint1 /*$a0*/, struct VECTOR *pPoint2 /*$a2*/)
+// unsigned long /*$ra*/ Long2DDistance(VECTOR *pPoint1 /*$a0*/, VECTOR *pPoint2 /*$a2*/)
  // line 994, offset 0x00016c0c
 	/* begin block 1 */
 		// Start line: 995
 		// Start offset: 0x00016C0C
 		// Variables:
-	// 		struct VECTOR delta; // stack offset -24
+	// 		VECTOR delta; // stack offset -24
 	// 		unsigned int result; // $v0
 
 		/* begin block 1.1 */
@@ -736,15 +736,15 @@ void InitOverheadMap(void)
 	// 		int MeshWidth; // $s6
 	// 		int MeshHeight; // $s7
 	// 		long flag; // stack offset -104
-	// 		struct SVECTOR MapMesh[5][5]; // stack offset -784
-	// 		struct VECTOR MapMeshO[5][5]; // stack offset -584
-	// 		struct MAPTEX MapTex[4]; // stack offset -184
-	// 		struct SVECTOR direction; // stack offset -152
-	// 		struct POLY_FT4 *spt; // $a3
-	// 		struct POLY_F4 *sptb; // $a0
-	// 		struct DR_AREA *draw_area; // $s2
-	// 		struct RECT clipped_size; // stack offset -144
-	// 		struct VECTOR translate; // stack offset -136
+	// 		SVECTOR MapMesh[5][5]; // stack offset -784
+	// 		VECTOR MapMeshO[5][5]; // stack offset -584
+	// 		MAPTEX MapTex[4]; // stack offset -184
+	// 		SVECTOR direction; // stack offset -152
+	// 		POLY_FT4 *spt; // $a3
+	// 		POLY_F4 *sptb; // $a0
+	// 		DR_AREA *draw_area; // $s2
+	// 		RECT clipped_size; // stack offset -144
+	// 		VECTOR translate; // stack offset -136
 
 		/* begin block 1.1 */
 			// Start line: 1112
@@ -773,8 +773,8 @@ void InitOverheadMap(void)
 				// Start line: 1139
 				// Start offset: 0x00016FA8
 				// Variables:
-			// 		struct VECTOR vec; // stack offset -120
-			// 		struct TILE_1 *tile1; // $a0
+			// 		VECTOR vec; // stack offset -120
+			// 		TILE_1 *tile1; // $a0
 			/* end block 1.3.1 */
 			// End offset: 0x000170F4
 			// End Line: 1142
@@ -786,7 +786,7 @@ void InitOverheadMap(void)
 			// Start line: 1146
 			// Start offset: 0x000170F4
 			// Variables:
-		// 		struct _CAR_DATA *cp; // $s0
+		// 		CAR_DATA *cp; // $s0
 		/* end block 1.4 */
 		// End offset: 0x00017218
 		// End Line: 1161
@@ -874,7 +874,7 @@ void DrawOverheadMap(void)
 	SVECTOR *pSVar21;
 	char cVar22;
 	SVECTOR *v0;
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 	char *pcVar24;
 	char *pbVar25;
 	VECTOR *v1;
@@ -1330,12 +1330,12 @@ LAB_00016fac:
 		// Start line: 1376
 		// Start offset: 0x00017C30
 		// Variables:
-	// 		struct TILE *polys; // $v0
-	// 		struct POLY_FT4 *back; // $a1
-	// 		struct POLY_FT3 *null; // $a2
-	// 		struct SVECTOR Mesh[4]; // stack offset -192
-	// 		struct VECTOR MeshO[4]; // stack offset -160
-	// 		struct VECTOR target; // stack offset -96
+	// 		TILE *polys; // $v0
+	// 		POLY_FT4 *back; // $a1
+	// 		POLY_FT3 *null; // $a2
+	// 		SVECTOR Mesh[4]; // stack offset -192
+	// 		VECTOR MeshO[4]; // stack offset -160
+	// 		VECTOR target; // stack offset -96
 	// 		long flag; // stack offset -64
 	// 		long count; // $s4
 	// 		int width; // stack offset -60
@@ -1374,8 +1374,8 @@ LAB_00016fac:
 				// Start line: 1620
 				// Start offset: 0x000182B0
 				// Variables:
-			// 		struct VECTOR vec; // stack offset -80
-			// 		struct TILE_1 *tile1; // $v1
+			// 		VECTOR vec; // stack offset -80
+			// 		TILE_1 *tile1; // $v1
 			/* end block 1.3.1 */
 			// End offset: 0x000182B0
 			// End Line: 1620
@@ -1710,7 +1710,7 @@ LAB_00017f8c:
 		// Start offset: 0x000183E8
 		// Variables:
 	// 		static int ft[16]; // offset 0x188
-	// 		struct _CAR_DATA *cp; // $s0
+	// 		CAR_DATA *cp; // $s0
 	// 		int fade; // $s1
 	// 		int cc; // $s3
 	// 		int cs; // $s2
@@ -1769,7 +1769,7 @@ void DrawCopIndicators(void)
 	int iVar4;
 	int iVar5;
 	int iVar6;
-	_CAR_DATA *cp;
+	CAR_DATA *cp;
 
 	sVar1 = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
 	sVar2 = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
@@ -1814,7 +1814,7 @@ void DrawCopIndicators(void)
 		// Start line: 1680
 		// Start offset: 0x000198E0
 		// Variables:
-	// 		struct RECT rect; // stack offset -48
+	// 		RECT rect; // stack offset -48
 	// 		char filename[32]; // stack offset -40
 	/* end block 1 */
 	// End offset: 0x00019994
@@ -1871,9 +1871,9 @@ void InitMultiplayerMap(void)
 		// Start line: 1699
 		// Start offset: 0x000185A0
 		// Variables:
-	// 		struct POLY_FT4 *poly; // $a2
-	// 		struct LINE_F2 *line2; // $s1
-	// 		struct VECTOR target; // stack offset -64
+	// 		POLY_FT4 *poly; // $a2
+	// 		LINE_F2 *line2; // $s1
+	// 		VECTOR target; // stack offset -64
 	// 		int i; // $s3
 	// 		int y; // $s7
 	/* end block 1 */
@@ -1910,7 +1910,7 @@ void DrawMultiplayerMap(void)
 	ulong *puVar4;
 	POLY_FT4 *poly;
 	char *pcVar5;
-	_PLAYER *pPVar6;
+	PLAYER *pPVar6;
 	int iVar7;
 	char *pcVar8;
 	unsigned char g;
@@ -2034,7 +2034,7 @@ void DrawMultiplayerMap(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WorldToMultiplayerMap(struct VECTOR *in /*$a3*/, struct VECTOR *out /*$a2*/)
+// void /*$ra*/ WorldToMultiplayerMap(VECTOR *in /*$a3*/, VECTOR *out /*$a2*/)
  // line 1778, offset 0x00019994
 	/* begin block 1 */
 		// Start line: 1779
@@ -2184,7 +2184,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ load_civ_palettes(struct RECT *cluts /*$a0*/)
+// void /*$ra*/ load_civ_palettes(RECT *cluts /*$a0*/)
  // line 2043, offset 0x0001a094
 	/* begin block 1 */
 		// Start line: 8350
@@ -2216,7 +2216,7 @@ void load_civ_palettes(RECT16 *cluts)
 		// Start line: 2321
 		// Start offset: 0x00018980
 		// Variables:
-	// 		struct TILE *tile; // $a3
+	// 		TILE *tile; // $a3
 	/* end block 1 */
 	// End offset: 0x00018AA0
 	// End Line: 2341
@@ -2292,7 +2292,7 @@ void FlashOverheadMap(int r, int g, int b)
 		// Start line: 2351
 		// Start offset: 0x00018AA0
 		// Variables:
-	// 		struct RECT MapSegment; // stack offset -16
+	// 		RECT MapSegment; // stack offset -16
 	// 		int temp; // $a0
 	// 		int count; // $a2
 	// 		int idx; // $a3
@@ -2395,8 +2395,8 @@ void SetMapPos(void)
 		// Start line: 2407
 		// Start offset: 0x00018BF4
 		// Variables:
-	// 		struct LINE_F4 *line4; // $s0
-	// 		struct LINE_F2 *line2; // $s1
+	// 		LINE_F4 *line4; // $s0
+	// 		LINE_F2 *line2; // $s1
 	/* end block 1 */
 	// End offset: 0x00018D54
 	// End Line: 2427
@@ -2468,21 +2468,21 @@ void draw_box(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawN(struct VECTOR *pScreenPosition /*$s2*/, int direct /*$s7*/)
+// void /*$ra*/ DrawN(VECTOR *pScreenPosition /*$s2*/, int direct /*$s7*/)
  // line 2435, offset 0x00018d54
 	/* begin block 1 */
 		// Start line: 2436
 		// Start offset: 0x00018D54
 		// Variables:
-	// 		struct XYPAIR lastPoint; // stack offset -48
-	// 		struct XYPAIR *pPoint; // $s0
+	// 		XYPAIR lastPoint; // stack offset -48
+	// 		XYPAIR *pPoint; // $s0
 	// 		char loop; // $s4
 
 		/* begin block 1.1 */
 			// Start line: 2446
 			// Start offset: 0x00018DC4
 			// Variables:
-		// 		struct LINE_F2 *pLine; // $a2
+		// 		LINE_F2 *pLine; // $a2
 		/* end block 1.1 */
 		// End offset: 0x00018EC4
 		// End Line: 2469
@@ -2574,8 +2574,8 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 		// Start line: 2481
 		// Start offset: 0x00018F18
 		// Variables:
-	// 		struct VECTOR position[5]; // stack offset -88
-	// 		struct XYPAIR *pNorth; // $a1
+	// 		VECTOR position[5]; // stack offset -88
+	// 		XYPAIR *pNorth; // $a1
 	// 		int scale; // $a0
 
 		/* begin block 1.1 */
@@ -2583,14 +2583,14 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 			// Start offset: 0x00018F18
 			// Variables:
 		// 		char loop; // $t2
-		// 		struct VECTOR *pPosition; // $a3
+		// 		VECTOR *pPosition; // $a3
 		// 		void *pot; // $s0
 
 			/* begin block 1.1.1 */
 				// Start line: 2511
 				// Start offset: 0x000190B8
 				// Variables:
-			// 		struct LINE_G2 *pLine; // $a0
+			// 		LINE_G2 *pLine; // $a0
 			/* end block 1.1.1 */
 			// End offset: 0x000190B8
 			// End Line: 2511
@@ -2696,21 +2696,21 @@ void DrawCompass(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawBigCompass(struct VECTOR *root /*$a0*/, int angle /*$a1*/)
+// void /*$ra*/ DrawBigCompass(VECTOR *root /*$a0*/, int angle /*$a1*/)
  // line 2534, offset 0x00019194
 	/* begin block 1 */
 		// Start line: 2535
 		// Start offset: 0x00019194
 		// Variables:
-	// 		struct VECTOR position[5]; // stack offset -96
-	// 		struct VECTOR *pPosition; // $s0
+	// 		VECTOR position[5]; // stack offset -96
+	// 		VECTOR *pPosition; // $s0
 	// 		char loop; // $s1
 
 		/* begin block 1.1 */
 			// Start line: 2557
 			// Start offset: 0x00019300
 			// Variables:
-		// 		struct LINE_G2 *pLine; // $a1
+		// 		LINE_G2 *pLine; // $a1
 		/* end block 1.1 */
 		// End offset: 0x00019300
 		// End Line: 2557
@@ -2812,7 +2812,7 @@ void DrawBigCompass(VECTOR *root, int angle)
 		// Start line: 2578
 		// Start offset: 0x000193B4
 		// Variables:
-	// 		struct POLY_F3 *tri; // $a2
+	// 		POLY_F3 *tri; // $a2
 	// 		int str2; // $fp
 	// 		void *pot; // stack offset -56
 	/* end block 1 */
@@ -2896,14 +2896,14 @@ void CopIndicator(int xpos, int strength)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawSightCone(struct COP_SIGHT_DATA *pCopSightData /*$a0*/, struct VECTOR *pPosition /*$a1*/, int direction /*$t6*/)
+// void /*$ra*/ DrawSightCone(COP_SIGHT_DATA *pCopSightData /*$a0*/, VECTOR *pPosition /*$a1*/, int direction /*$t6*/)
  // line 2609, offset 0x00019594
 	/* begin block 1 */
 		// Start line: 2610
 		// Start offset: 0x00019594
 		// Variables:
-	// 		struct VECTOR vertex[9]; // stack offset -160
-	// 		struct VECTOR *pVertex; // $t0
+	// 		VECTOR vertex[9]; // stack offset -160
+	// 		VECTOR *pVertex; // $t0
 	// 		int angle; // $a3
 	// 		int frontViewAngle; // $t1
 	// 		int negFrontViewAngle; // $a2
@@ -2932,15 +2932,15 @@ void CopIndicator(int xpos, int strength)
 			// Start line: 2643
 			// Start offset: 0x0001966C
 			// Variables:
-		// 		struct VECTOR *pVertex; // $a2
+		// 		VECTOR *pVertex; // $a2
 		// 		void *pot; // $a3
 
 			/* begin block 1.2.1 */
 				// Start line: 2651
 				// Start offset: 0x000196B8
 				// Variables:
-			// 		struct POLY_G3 *poly; // $a1
-			// 		struct VECTOR *pNextVertex; // $a0
+			// 		POLY_G3 *poly; // $a1
+			// 		VECTOR *pNextVertex; // $a0
 			/* end block 1.2.1 */
 			// End offset: 0x000196DC
 			// End Line: 2659
@@ -3053,13 +3053,13 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WorldToOverheadMapPositions(struct VECTOR *pGlobalPosition /*$s1*/, struct VECTOR *pOverheadMapPosition /*$s3*/, int count /*$s2*/, char inputRelative /*$s5*/, int outputRelative /*stack 16*/)
+// void /*$ra*/ WorldToOverheadMapPositions(VECTOR *pGlobalPosition /*$s1*/, VECTOR *pOverheadMapPosition /*$s3*/, int count /*$s2*/, char inputRelative /*$s5*/, int outputRelative /*stack 16*/)
  // line 2703, offset 0x00019af0
 	/* begin block 1 */
 		// Start line: 2704
 		// Start offset: 0x00019AF0
 		// Variables:
-	// 		struct MATRIX TempMatrix; // stack offset -80
+	// 		MATRIX TempMatrix; // stack offset -80
 	// 		int sin; // $a1
 	// 		int cos; // $a2
 	// 		int angle; // $v1
@@ -3069,7 +3069,7 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 			// Start line: 2745
 			// Start offset: 0x00019C20
 			// Variables:
-		// 		struct SVECTOR tempVector; // stack offset -48
+		// 		SVECTOR tempVector; // stack offset -48
 		// 		long flag; // stack offset -40
 		/* end block 1.1 */
 		// End offset: 0x00019CC0
@@ -3154,8 +3154,8 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 		// Start line: 2773
 		// Start offset: 0x00019D0C
 		// Variables:
-	// 		struct VECTOR translate; // stack offset -32
-	// 		struct SVECTOR direction; // stack offset -16
+	// 		VECTOR translate; // stack offset -32
+	// 		SVECTOR direction; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00019DE8
 	// End Line: 2787
@@ -3203,7 +3203,7 @@ void SetFullscreenMapMatrix(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WorldToFullscreenMap(struct VECTOR *in /*$a0*/, struct VECTOR *out /*$a1*/)
+// void /*$ra*/ WorldToFullscreenMap(VECTOR *in /*$a0*/, VECTOR *out /*$a1*/)
  // line 2794, offset 0x00019de8
 	/* begin block 1 */
 		// Start line: 8983
@@ -3232,13 +3232,13 @@ void WorldToFullscreenMap(VECTOR *in, VECTOR *out)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ WorldToFullscreenMap2(struct VECTOR *in /*$a0*/, struct VECTOR *out /*$a1*/)
+// void /*$ra*/ WorldToFullscreenMap2(VECTOR *in /*$a0*/, VECTOR *out /*$a1*/)
  // line 2806, offset 0x00019e7c
 	/* begin block 1 */
 		// Start line: 2807
 		// Start offset: 0x00019E7C
 		// Variables:
-	// 		struct SVECTOR pos; // stack offset -24
+	// 		SVECTOR pos; // stack offset -24
 	// 		long flag; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x00019F44

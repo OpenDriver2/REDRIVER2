@@ -12,7 +12,7 @@
 
 #include "INLINE_C.H"
 
-_ExOBJECT explosion[MAX_EXPLOSION_OBJECTS];
+EXOBJECT explosion[MAX_EXPLOSION_OBJECTS];
 
 MATRIX SS = { 0 };
 
@@ -66,7 +66,7 @@ void InitExObjects(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddExplosion(struct VECTOR pos /*stack 0*/, int type /*stack 16*/)
+// void /*$ra*/ AddExplosion(VECTOR pos /*stack 0*/, int type /*stack 16*/)
  // line 129, offset 0x00056d54
 	/* begin block 1 */
 		// Start line: 130
@@ -90,7 +90,7 @@ void InitExObjects(void)
 // [D]
 void AddExplosion(VECTOR pos, int type)
 {
-	_ExOBJECT *newExplosion;
+	EXOBJECT *newExplosion;
 	int i;
 
 	i = 0;
@@ -141,7 +141,7 @@ void AddExplosion(VECTOR pos, int type)
 		// Start offset: 0x00056E44
 		// Variables:
 	// 		int i; // $s5
-	// 		struct _CAR_DATA *cp; // $s0
+	// 		CAR_DATA *cp; // $s0
 
 		/* begin block 1.1 */
 			// Start line: 212
@@ -178,8 +178,8 @@ void AddExplosion(VECTOR pos, int type)
 // [D]
 void HandleExplosion(void)
 {
-	_CAR_DATA *cp;
-	_ExOBJECT *exp;
+	CAR_DATA *cp;
+	EXOBJECT *exp;
 	int i;
 
 	if (pauseflag != 0)
@@ -412,7 +412,7 @@ void initExplosion(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawExplosion(int time /*stack 0*/, struct VECTOR position /*stack 4*/, int hscale /*stack 20*/, int rscale /*stack 24*/)
+// void /*$ra*/ DrawExplosion(int time /*stack 0*/, VECTOR position /*stack 4*/, int hscale /*stack 20*/, int rscale /*stack 24*/)
  // line 588, offset 0x000572a8
 	/* begin block 1 */
 		// Start line: 589
@@ -420,9 +420,9 @@ void initExplosion(void)
 		// Variables:
 	// 		int i; // $t1
 	// 		int j; // $s3
-	// 		struct POLY_FT4 *poly; // $a2
-	// 		struct SVECTOR *src; // $t0
-	// 		struct VECTOR v; // stack offset -136
+	// 		POLY_FT4 *poly; // $a2
+	// 		SVECTOR *src; // $t0
+	// 		VECTOR v; // stack offset -136
 	// 		int rgb; // $s0
 	// 		int z; // stack offset -56
 	// 		int sf1; // $t0
@@ -447,7 +447,7 @@ void initExplosion(void)
 			// Start line: 631
 			// Start offset: 0x000573F0
 			// Variables:
-		// 		struct MATRIX workmatrix; // stack offset -120
+		// 		MATRIX workmatrix; // stack offset -120
 		// 		int sf; // $v0
 		// 		int s; // $v1
 		// 		int c; // $a3
@@ -471,7 +471,7 @@ void initExplosion(void)
 			// Start line: 698
 			// Start offset: 0x000577A4
 			// Variables:
-		// 		struct MATRIX workmatrix; // stack offset -88
+		// 		MATRIX workmatrix; // stack offset -88
 		// 		int sf; // $v0
 		// 		int s; // $v1
 		// 		int c; // $a3

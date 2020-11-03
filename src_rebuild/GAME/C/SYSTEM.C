@@ -440,8 +440,8 @@ int Loadfile(char *name, char *addr)
 	// 		int sector; // $s2
 	// 		int nsectors; // $s5
 	// 		char sectorbuffer[2048]; // stack offset -2120
-	// 		struct CdlFILE info; // stack offset -72
-	// 		struct CdlLOC pos; // stack offset -48
+	// 		CdlFILE info; // stack offset -72
+	// 		CdlLOC pos; // stack offset -48
 	// 		int i; // $a2
 	// 		int toload; // $s4
 	// 		int first; // $a0
@@ -690,7 +690,7 @@ void data_ready(void)
 			// Start line: 1004
 			// Start offset: 0x0007FAE4
 			// Variables:
-		// 		struct CdlLOC p; // stack offset -16
+		// 		CdlLOC p; // stack offset -16
 		/* end block 1.1 */
 		// End offset: 0x0007FB34
 		// End Line: 1014
@@ -759,7 +759,7 @@ void sector_ready(unsigned char intr, unsigned char *result)
 		// Start line: 1018
 		// Start offset: 0x0007F904
 		// Variables:
-	// 		struct CdlLOC pos; // stack offset -16
+	// 		CdlLOC pos; // stack offset -16
 	/* end block 1 */
 	// End offset: 0x0007F984
 	// End Line: 1035
@@ -1076,7 +1076,7 @@ void UpdatePadData(void)
 		// Start line: 1366
 		// Start offset: 0x0007EDDC
 		// Variables:
-	// 		struct RECT rect; // stack offset -24
+	// 		RECT rect; // stack offset -24
 	// 		int i; // $v1
 	/* end block 1 */
 	// End offset: 0x0007EF0C
@@ -1266,7 +1266,7 @@ void SetupDrawBufferData(int num_players)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ InitaliseDrawEnv(struct DB *pBuff /*$s0*/, int x /*$s4*/, int y /*$s3*/, int w /*$s1*/, int h /*stack 16*/)
+// void /*$ra*/ InitaliseDrawEnv(DB *pBuff /*$s0*/, int x /*$s4*/, int y /*$s3*/, int w /*$s1*/, int h /*stack 16*/)
  // line 1535, offset 0x0007f7c0
 	/* begin block 1 */
 		// Start line: 4857
@@ -1325,14 +1325,14 @@ void ResetCityType(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetCityType(enum CITYTYPE type /*$a0*/)
+// void /*$ra*/ SetCityType(CITYTYPE type /*$a0*/)
  // line 1577, offset 0x0007f118
 	/* begin block 1 */
 		// Start line: 1578
 		// Start offset: 0x0007F118
 		// Variables:
-	// 		struct CdlFILE cdfile; // stack offset -120
-	// 		struct XYPAIR *info; // $s2
+	// 		CdlFILE cdfile; // stack offset -120
+	// 		XYPAIR *info; // $s2
 	// 		char namebuffer[64]; // stack offset -96
 	// 		unsigned char result[8]; // stack offset -32
 	// 		int i; // $a2
@@ -1491,7 +1491,7 @@ LAB_0007f244:
 		// Start line: 1683
 		// Start offset: 0x0007F5C8
 		// Variables:
-	// 		struct CdlFILE cdfile; // stack offset -176
+	// 		CdlFILE cdfile; // stack offset -176
 	// 		char namebuffer[128]; // stack offset -152
 	// 		unsigned char result[8]; // stack offset -24
 	// 		int retries; // $s1
@@ -1548,13 +1548,13 @@ int FileExists(char *filename)
 
 // decompiled code
 // original method signature: 
-// enum CDTYPE /*$ra*/ DiscSwapped(char *filename /*$s1*/)
+// CDTYPE /*$ra*/ DiscSwapped(char *filename /*$s1*/)
  // line 1723, offset 0x0007f640
 	/* begin block 1 */
 		// Start line: 1724
 		// Start offset: 0x0007F640
 		// Variables:
-	// 		struct CdlFILE cdfile; // stack offset -40
+	// 		CdlFILE cdfile; // stack offset -40
 	// 		int ret; // $v1
 	/* end block 1 */
 	// End offset: 0x0007F6FC

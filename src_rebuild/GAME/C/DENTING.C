@@ -52,17 +52,17 @@ void InitialiseDenting(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DentCar(struct _CAR_DATA *cp /*$t7*/)
+// void /*$ra*/ DentCar(CAR_DATA *cp /*$t7*/)
  // line 288, offset 0x0003a310
 	/* begin block 1 */
 		// Start line: 289
 		// Start offset: 0x0003A310
 		// Variables:
-	// 		struct SVECTOR *VertPtr; // $t0
+	// 		SVECTOR *VertPtr; // $t0
 	// 		int MaxDamage; // $s0
 	// 		unsigned char VertIndex; // $v0
 	// 		unsigned char PolyIndex; // $v0
-	// 		struct DENTUVS *dentptr; // $t1
+	// 		DENTUVS *dentptr; // $t1
 	// 		unsigned char *DamPtr; // $a2
 	// 		int model; // $t5
 	// 		int Poly; // $a1
@@ -70,9 +70,9 @@ void InitialiseDenting(void)
 	// 		int Zone; // $a3
 	// 		int VertNo; // $a2
 	// 		short *tempDamage; // $t1
-	// 		struct SVECTOR *DamVertPtr; // $a3
-	// 		struct SVECTOR *CleanVertPtr; // $a1
-	// 		struct MODEL *pCleanModel; // $t3
+	// 		SVECTOR *DamVertPtr; // $a3
+	// 		SVECTOR *CleanVertPtr; // $a1
+	// 		MODEL *pCleanModel; // $t3
 
 		/* begin block 1.1 */
 			// Start line: 421
@@ -95,7 +95,7 @@ void InitialiseDenting(void)
 	// End Line: 580
 
 // [D] [T]
-void DentCar(_CAR_DATA *cp)
+void DentCar(CAR_DATA *cp)
 {
 	int Zone;
 	int Damage;
@@ -225,13 +225,13 @@ void DentCar(_CAR_DATA *cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ CreateDentableCar(struct _CAR_DATA *cp /*$t2*/)
+// void /*$ra*/ CreateDentableCar(CAR_DATA *cp /*$t2*/)
  // line 458, offset 0x0003a6e4
 	/* begin block 1 */
 		// Start line: 459
 		// Start offset: 0x0003A6E4
 		// Variables:
-	// 		struct DENTUVS *dentptr; // $a3
+	// 		DENTUVS *dentptr; // $a3
 	// 		int Zone; // $v1
 	// 		int count; // $a2
 	// 		int model; // $t3
@@ -240,8 +240,8 @@ void DentCar(_CAR_DATA *cp)
 			// Start line: 478
 			// Start offset: 0x0003A710
 			// Variables:
-		// 		struct SVECTOR *dst; // $a2
-		// 		struct SVECTOR *src; // $a3
+		// 		SVECTOR *dst; // $a2
+		// 		SVECTOR *src; // $a3
 		// 		int count; // $t0
 
 			/* begin block 1.1.1 */
@@ -277,7 +277,7 @@ void DentCar(_CAR_DATA *cp)
 	// End Line: 1139
 
 // [D] [T]
-void CreateDentableCar(_CAR_DATA *cp)
+void CreateDentableCar(CAR_DATA *cp)
 {
 	MODEL *srcModel;
 	SVECTOR *dst;
@@ -404,15 +404,15 @@ void InitHubcap(void)
 		// Start line: 601
 		// Start offset: 0x0003A8F8
 		// Variables:
-	// 		struct _CAR_DATA *car_data_pt; // $s1
-	// 		struct SVECTOR InitialLocalAngle; // stack offset -64
+	// 		CAR_DATA *car_data_pt; // $s1
+	// 		SVECTOR InitialLocalAngle; // stack offset -64
 
 		/* begin block 1.1 */
 			// Start line: 671
 			// Start offset: 0x0003AA84
 			// Variables:
-		// 		struct VECTOR R; // stack offset -56
-		// 		struct VECTOR VW; // stack offset -40
+		// 		VECTOR R; // stack offset -56
+		// 		VECTOR VW; // stack offset -40
 		// 		long AY; // $t0
 		/* end block 1.1 */
 		// End offset: 0x0003AAE0
@@ -444,7 +444,7 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	SVECTOR InitialLocalAngle = { 0, 0, 10 };
 	VECTOR R;
 	VECTOR VW;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 
 	cp = &car_data[car];
 
@@ -500,10 +500,10 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 		// Start line: 708
 		// Start offset: 0x0003AB4C
 		// Variables:
-	// 		struct _CAR_DATA *car_data_pt; // $a1
-	// 		struct VECTOR Position; // stack offset -80
-	// 		struct MATRIX Orientation; // stack offset -64
-	// 		struct CVECTOR col; // stack offset -32
+	// 		CAR_DATA *car_data_pt; // $a1
+	// 		VECTOR Position; // stack offset -80
+	// 		MATRIX Orientation; // stack offset -64
+	// 		CVECTOR col; // stack offset -32
 	// 		int VelocityMagnitude; // $s0
 	// 		int CurrentMapHeight; // $a0
 	// 		int savecombo; // $s0
@@ -553,7 +553,7 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 void HandlePlayerHubcaps(int playerId)
 {
 	int VelocityMagnitude;
-	_CAR_DATA* cp;
+	CAR_DATA* cp;
 	int playerCarId;
 
 	playerCarId = player[playerId].playerCarId;

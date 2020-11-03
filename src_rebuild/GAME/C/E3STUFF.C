@@ -80,11 +80,11 @@ void ShowHiresScreens(char **names, int delay, int wait)
 		// Start line: 172
 		// Start offset: 0x00044244
 		// Variables:
-	// 		struct DISPENV disp; // stack offset -488
-	// 		struct DRAWENV draw; // stack offset -464
-	// 		struct SPRT prims[6]; // stack offset -368
-	// 		struct POLY_FT3 nulls[6]; // stack offset -248
-	// 		struct RECT rect; // stack offset -56
+	// 		DISPENV disp; // stack offset -488
+	// 		DRAWENV draw; // stack offset -464
+	// 		SPRT prims[6]; // stack offset -368
+	// 		POLY_FT3 nulls[6]; // stack offset -248
+	// 		RECT rect; // stack offset -56
 	// 		unsigned long ot; // stack offset -48
 	// 		int i; // $t5
 	// 		int col; // $s1
@@ -228,11 +228,11 @@ void FadeInHiresScreen(char *filename)
 		// Start line: 260
 		// Start offset: 0x000445F4
 		// Variables:
-	// 		struct DISPENV disp; // stack offset -496
-	// 		struct DRAWENV draw; // stack offset -472
-	// 		struct SPRT prims[6]; // stack offset -376
-	// 		struct POLY_FT3 nulls[6]; // stack offset -256
-	// 		struct RECT rect; // stack offset -64
+	// 		DISPENV disp; // stack offset -496
+	// 		DRAWENV draw; // stack offset -472
+	// 		SPRT prims[6]; // stack offset -376
+	// 		POLY_FT3 nulls[6]; // stack offset -256
+	// 		RECT rect; // stack offset -64
 	// 		unsigned long ot; // stack offset -56
 	// 		int i; // $t5
 	// 		int col; // $s1
@@ -360,7 +360,7 @@ void FadeOutHiresScreen(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupDefDrawEnv(struct DRAWENV *env /*$a0*/, int x /*$a1*/, int y /*$a2*/, int w /*$a3*/, int h /*stack 16*/)
+// void /*$ra*/ SetupDefDrawEnv(DRAWENV *env /*$a0*/, int x /*$a1*/, int y /*$a2*/, int w /*$a3*/, int h /*stack 16*/)
  // line 325, offset 0x00044e40
 	/* begin block 1 */
 		// Start line: 650
@@ -380,7 +380,7 @@ void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetupDefDispEnv(struct DISPENV *env /*$s0*/, int x /*$a1*/, int y /*$a2*/, int w /*$a3*/, int h /*stack 16*/)
+// void /*$ra*/ SetupDefDispEnv(DISPENV *env /*$s0*/, int x /*$a1*/, int y /*$a2*/, int w /*$a3*/, int h /*stack 16*/)
  // line 350, offset 0x00044da0
 	/* begin block 1 */
 		// Start line: 1213
@@ -429,9 +429,9 @@ void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 		// Start line: 392
 		// Start offset: 0x000448CC
 		// Variables:
-	// 		struct DISPENV disp; // stack offset -144
-	// 		struct DRAWENV draw; // stack offset -120
-	// 		struct RECT rect; // stack offset -24
+	// 		DISPENV disp; // stack offset -144
+	// 		DRAWENV draw; // stack offset -120
+	// 		RECT rect; // stack offset -24
 	// 		char *exe; // $a0
 	/* end block 1 */
 	// End offset: 0x00044A40
@@ -523,9 +523,9 @@ void SetPleaseWait(char *buffer)
 		// Start line: 444
 		// Start offset: 0x00044A40
 		// Variables:
-	// 		struct DISPENV disp; // stack offset -160
-	// 		struct DRAWENV draw; // stack offset -136
-	// 		struct RECT rect; // stack offset -40
+	// 		DISPENV disp; // stack offset -160
+	// 		DRAWENV draw; // stack offset -136
+	// 		RECT rect; // stack offset -40
 	// 		char *mess1; // $s6
 	// 		char *mess2; // $s3
 	// 		char *exe; // $s4

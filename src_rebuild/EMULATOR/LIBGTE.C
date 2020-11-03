@@ -107,32 +107,32 @@ int LIM(int value, int max, int min, unsigned int flag) {
 unsigned int MFC2(int reg)
 {
 	switch (reg) {
-	case 1:
-	case 3:
-	case 5:
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-		gteRegs.CP2D.p[reg].d = (int)gteRegs.CP2D.p[reg].sw.l;
-		break;
+		case 1:
+		case 3:
+		case 5:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+			gteRegs.CP2D.p[reg].d = (int)gteRegs.CP2D.p[reg].sw.l;
+			break;
 
-	case 7:
-	case 16:
-	case 17:
-	case 18:
-	case 19:
-		gteRegs.CP2D.p[reg].d = (unsigned int)gteRegs.CP2D.p[reg].w.l;
-		break;
+		case 7:
+		case 16:
+		case 17:
+		case 18:
+		case 19:
+			gteRegs.CP2D.p[reg].d = (unsigned int)gteRegs.CP2D.p[reg].w.l;
+			break;
 
-	case 15:
-		gteRegs.CP2D.p[reg].d = C2_SXY2;
-		break;
+		case 15:
+			gteRegs.CP2D.p[reg].d = C2_SXY2;
+			break;
 
-	case 28:
-	case 29:
-		gteRegs.CP2D.p[reg].d = LIM(C2_IR1 >> 7, 0x1f, 0, 0) | (LIM(C2_IR2 >> 7, 0x1f, 0, 0) << 5) | (LIM(C2_IR3 >> 7, 0x1f, 0, 0) << 10);
-		break;
+		case 28:
+		case 29:
+			gteRegs.CP2D.p[reg].d = LIM(C2_IR1 >> 7, 0x1f, 0, 0) | (LIM(C2_IR2 >> 7, 0x1f, 0, 0) << 5) | (LIM(C2_IR3 >> 7, 0x1f, 0, 0) << 10);
+			break;
 	}
 
 	return gteRegs.CP2D.p[reg].d;
@@ -142,32 +142,32 @@ int MFC2_S(int reg)
 {
 	// FIXME: Is that modifiers should be signed too?
 	switch (reg) {
-	case 1:
-	case 3:
-	case 5:
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-		gteRegs.CP2D.p[reg].d = (int)gteRegs.CP2D.p[reg].sw.l;
-		break;
+		case 1:
+		case 3:
+		case 5:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+			gteRegs.CP2D.p[reg].d = (int)gteRegs.CP2D.p[reg].sw.l;
+			break;
 
-	case 7:
-	case 16:
-	case 17:
-	case 18:
-	case 19:
-		gteRegs.CP2D.p[reg].d = (unsigned int)gteRegs.CP2D.p[reg].w.l;
-		break;
+		case 7:
+		case 16:
+		case 17:
+		case 18:
+		case 19:
+			gteRegs.CP2D.p[reg].d = (unsigned int)gteRegs.CP2D.p[reg].w.l;
+			break;
 
-	case 15:
-		gteRegs.CP2D.p[reg].d = C2_SXY2;
-		break;
+		case 15:
+			gteRegs.CP2D.p[reg].d = C2_SXY2;
+			break;
 
-	case 28:
-	case 29:
-		gteRegs.CP2D.p[reg].d = LIM(C2_IR1 >> 7, 0x1f, 0, 0) | (LIM(C2_IR2 >> 7, 0x1f, 0, 0) << 5) | (LIM(C2_IR3 >> 7, 0x1f, 0, 0) << 10);
-		break;
+		case 28:
+		case 29:
+			gteRegs.CP2D.p[reg].d = LIM(C2_IR1 >> 7, 0x1f, 0, 0) | (LIM(C2_IR2 >> 7, 0x1f, 0, 0) << 5) | (LIM(C2_IR3 >> 7, 0x1f, 0, 0) << 10);
+			break;
 	}
 
 	return gteRegs.CP2D.p[reg].sd;
@@ -175,24 +175,24 @@ int MFC2_S(int reg)
 
 void MTC2(unsigned int value, int reg) {
 	switch (reg) {
-	case 15:
-		C2_SXY0 = C2_SXY1;
-		C2_SXY1 = C2_SXY2;
-		C2_SXY2 = value;
-		break;
+		case 15:
+			C2_SXY0 = C2_SXY1;
+			C2_SXY1 = C2_SXY2;
+			C2_SXY2 = value;
+			break;
 
-	case 28:
-		C2_IR1 = (value & 0x1f) << 7;
-		C2_IR2 = (value & 0x3e0) << 2;
-		C2_IR3 = (value & 0x7c00) >> 3;
-		break;
+		case 28:
+			C2_IR1 = (value & 0x1f) << 7;
+			C2_IR2 = (value & 0x3e0) << 2;
+			C2_IR3 = (value & 0x7c00) >> 3;
+			break;
 
-	case 30:
-		C2_LZCR = gte_leadingzerocount(value);
-		break;
+		case 30:
+			C2_LZCR = gte_leadingzerocount(value);
+			break;
 
-	case 31:
-		return;
+		case 31:
+			return;
 	}
 
 	gteRegs.CP2D.p[reg].d = value;
@@ -200,24 +200,24 @@ void MTC2(unsigned int value, int reg) {
 
 void MTC2_S(int value, int reg) {
 	switch (reg) {
-	case 15:
-		C2_SXY0 = C2_SXY1;
-		C2_SXY1 = C2_SXY2;
-		C2_SXY2 = value;
-		break;
+		case 15:
+			C2_SXY0 = C2_SXY1;
+			C2_SXY1 = C2_SXY2;
+			C2_SXY2 = value;
+			break;
 
-	case 28:
-		C2_IR1 = (value & 0x1f) << 7;
-		C2_IR2 = (value & 0x3e0) << 2;
-		C2_IR3 = (value & 0x7c00) >> 3;
-		break;
+		case 28:
+			C2_IR1 = (value & 0x1f) << 7;
+			C2_IR2 = (value & 0x3e0) << 2;
+			C2_IR3 = (value & 0x7c00) >> 3;
+			break;
 
-	case 30:
-		C2_LZCR = gte_leadingzerocount(value);
-		break;
+		case 30:
+			C2_LZCR = gte_leadingzerocount(value);
+			break;
 
-	case 31:
-		return;
+		case 31:
+			return;
 	}
 
 	gteRegs.CP2D.p[reg].sd = value;
@@ -225,21 +225,21 @@ void MTC2_S(int value, int reg) {
 
 void CTC2(unsigned int value, int reg) {
 	switch (reg) {
-	case 4:
-	case 12:
-	case 20:
-	case 26:
-	case 27:
-	case 29:
-	case 30:
-		value = (int)(short)value;
-		break;
+		case 4:
+		case 12:
+		case 20:
+		case 26:
+		case 27:
+		case 29:
+		case 30:
+			value = (int)(short)value;
+			break;
 
-	case 31:
-		value = value & 0x7ffff000;
-		if ((value & 0x7f87e000) != 0)
-			value |= 0x80000000;
-		break;
+		case 31:
+			value = value & 0x7ffff000;
+			if ((value & 0x7f87e000) != 0)
+				value |= 0x80000000;
+			break;
 	}
 
 	gteRegs.CP2C.p[reg].d = value;
@@ -247,21 +247,21 @@ void CTC2(unsigned int value, int reg) {
 
 void CTC2_S(int value, int reg) {
 	switch (reg) {
-	case 4:
-	case 12:
-	case 20:
-	case 26:
-	case 27:
-	case 29:
-	case 30:
-		value = (int)(short)value;
-		break;
+		case 4:
+		case 12:
+		case 20:
+		case 26:
+		case 27:
+		case 29:
+		case 30:
+			value = (int)(short)value;
+			break;
 
-	case 31:
-		value = value & 0x7ffff000;
-		if ((value & 0x7f87e000) != 0)
-			value |= 0x80000000;
-		break;
+		case 31:
+			value = value & 0x7ffff000;
+			if ((value & 0x7f87e000) != 0)
+				value |= 0x80000000;
+			break;
 	}
 
 	gteRegs.CP2C.p[reg].sd = value;
@@ -503,6 +503,8 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 		out.py = 0.0f;
 		out.pz = 1.0f;
 		out.scr_h = 0.0f;
+		out.ofx = 0.0f;
+		out.ofx = 0.0f;
 		return false;
 	}
 
@@ -512,10 +514,8 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	{
 		if (g_pgxpCache[i].lookup == lookup)
 		{
-			out.px = g_pgxpCache[i].px;
-			out.py = g_pgxpCache[i].py;
-			out.pz = g_pgxpCache[i].pz;
-			out.scr_h = g_pgxpCache[i].scr_h;
+			out = g_pgxpCache[i];
+
 			return true;
 		}
 	}
@@ -524,11 +524,71 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	out.py = 0.0f;
 	out.pz = 1.0f;
 	out.scr_h = 0.0f;
+	out.ofx = 0.0f;
+	out.ofx = 0.0f;
 
 	return false;
 }
 
 #endif // PGXP
+
+int GTE_RotTransPers(int idx, int lm)
+{
+	int h_over_sz3;
+
+	C2_MAC1 = A1(/*int44*/(long long)((long long)C2_TRX << 12) + (C2_R11 * VX(idx)) + (C2_R12 * VY(idx)) + (C2_R13 * VZ(idx)));
+	C2_MAC2 = A2(/*int44*/(long long)((long long)C2_TRY << 12) + (C2_R21 * VX(idx)) + (C2_R22 * VY(idx)) + (C2_R23 * VZ(idx)));
+	C2_MAC3 = A3(/*int44*/(long long)((long long)C2_TRZ << 12) + (C2_R31 * VX(idx)) + (C2_R32 * VY(idx)) + (C2_R33 * VZ(idx)));
+	C2_IR1 = Lm_B1(C2_MAC1, lm);
+	C2_IR2 = Lm_B2(C2_MAC2, lm);
+	C2_IR3 = Lm_B3_sf(m_mac3, m_sf, lm);
+	C2_SZ0 = C2_SZ1;
+	C2_SZ1 = C2_SZ2;
+	C2_SZ2 = C2_SZ3;
+	C2_SZ3 = Lm_D(m_mac3, 1);
+	h_over_sz3 = Lm_E(gte_divide(C2_H, C2_SZ3));
+	C2_SXY0 = C2_SXY1;
+	C2_SXY1 = C2_SXY2;
+	C2_SX2 = Lm_G1(F((long long)C2_OFX + ((long long)C2_IR1 * h_over_sz3)) >> 16);
+	C2_SY2 = Lm_G2(F((long long)C2_OFY + ((long long)C2_IR2 * h_over_sz3)) >> 16);
+
+#if defined(PGXP)
+	// perform the same but in floating point
+	double fMAC1 = (/*int44*/(double)((float)C2_TRX * 4096.0f) + ((float)C2_R11 * (float)VX(idx)) + ((float)C2_R12 * (float)VY(idx)) + ((float)C2_R13 * (float)VZ(idx)));
+	double fMAC2 = (/*int44*/(double)((float)C2_TRY * 4096.0f) + ((float)C2_R21 * (float)VX(idx)) + ((float)C2_R22 * (float)VY(idx)) + ((float)C2_R23 * (float)VZ(idx)));
+	double fMAC3 = (/*int44*/(double)((float)C2_TRZ * 4096.0f) + ((float)C2_R31 * (float)VX(idx)) + ((float)C2_R32 * (float)VY(idx)) + ((float)C2_R33 * (float)VZ(idx)));
+
+	const double one_by_v = 1.0 / (512.0 * 1024.0);
+
+	g_FP_SXYZ0 = g_FP_SXYZ1;
+	g_FP_SXYZ1 = g_FP_SXYZ2;
+
+	g_FP_SXYZ2.px = (double(C2_OFX) + double(float(C2_IR1) * float(h_over_sz3))) / float(1 << 16);
+	g_FP_SXYZ2.py = (double(C2_OFY) + double(float(C2_IR2) * float(h_over_sz3))) / float(1 << 16);
+	g_FP_SXYZ2.pz = float(max(C2_SZ3, C2_H / 2)) / float(1 << 16);
+
+	// make half-float equivalents
+	g_FP_SXYZ2.x = g_FP_SXYZ2.px;
+	g_FP_SXYZ2.y = g_FP_SXYZ2.py;
+	g_FP_SXYZ2.z = g_FP_SXYZ2.pz;
+
+	// do not perform perspective multiplication so it stays in object space
+	// perspective is performed exclusively in shader
+	PGXPVData vdata;
+	vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
+	vdata.px = /*double(C2_OFX) / float(1 << 16) + */fMAC1 * one_by_v;
+	vdata.py = /*double(C2_OFY) / float(1 << 16) + */fMAC2 * one_by_v;
+	vdata.pz = fMAC3 * one_by_v;
+	vdata.ofx = float(C2_OFX) / float(1 << 16);
+	vdata.ofy = float(C2_OFY) / float(1 << 16);
+	vdata.scr_h = float(C2_H);// / float(1 << 16);
+
+	g_pgxpCache[g_pgxpVertexIndex++] = vdata;
+	g_pgxpTransformed = 1;
+#endif
+
+	return h_over_sz3;
+}
 
 int docop2(int op) {
 	int v;
@@ -542,242 +602,141 @@ int docop2(int op) {
 
 	C2_FLAG = 0;
 
-	switch (GTE_FUNCT(gteop(op))) {
-	case 0x00:
-	case 0x01:
+	switch (GTE_FUNCT(gteop(op)))
+	{
+		case 0x00:
+		case 0x01:
 #ifdef GTE_LOG
-		GTELOG("%08x RTPS", op);
+			GTELOG("%08x RTPS", op);
 #endif
+			h_over_sz3 = GTE_RotTransPers(0 ,lm);
 
-		C2_MAC1 = A1(/*int44*/(long long)((long long)C2_TRX << 12) + (C2_R11 * C2_VX0) + (C2_R12 * C2_VY0) + (C2_R13 * C2_VZ0));
-		C2_MAC2 = A2(/*int44*/(long long)((long long)C2_TRY << 12) + (C2_R21 * C2_VX0) + (C2_R22 * C2_VY0) + (C2_R23 * C2_VZ0));
-		C2_MAC3 = A3(/*int44*/(long long)((long long)C2_TRZ << 12) + (C2_R31 * C2_VX0) + (C2_R32 * C2_VY0) + (C2_R33 * C2_VZ0));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3_sf(m_mac3, m_sf, lm);
-		C2_SZ0 = C2_SZ1;
-		C2_SZ1 = C2_SZ2;
-		C2_SZ2 = C2_SZ3;
-		C2_SZ3 = Lm_D(m_mac3, 1);
-		h_over_sz3 = Lm_E(gte_divide(C2_H, C2_SZ3));
-		C2_SXY0 = C2_SXY1;
-		C2_SXY1 = C2_SXY2;
-		C2_SX2 = int(Lm_G1(F((long long)C2_OFX + ((long long)C2_IR1 * h_over_sz3)) >> 16));
-		C2_SY2 = int(Lm_G2(F((long long)C2_OFY + ((long long)C2_IR2 * h_over_sz3)) >> 16));
+			C2_MAC0 = int(F((long long)C2_DQB + ((long long)C2_DQA * h_over_sz3)));
+			C2_IR0 = Lm_H(m_mac0, 1);
+		
+			return 1;
 
-#if defined(PGXP)
-		{
-			double fMAC1 = (/*int44*/(double)((float)C2_TRX * 4096.0f) + ((float)C2_R11 * (float)C2_VX0) + ((float)C2_R12 * (float)C2_VY0) + ((float)C2_R13 * (float)C2_VZ0));
-			double fMAC2 = (/*int44*/(double)((float)C2_TRY * 4096.0f) + ((float)C2_R21 * (float)C2_VX0) + ((float)C2_R22 * (float)C2_VY0) + ((float)C2_R23 * (float)C2_VZ0));
-			double fMAC3 = (/*int44*/(double)((float)C2_TRZ * 4096.0f) + ((float)C2_R31 * (float)C2_VX0) + ((float)C2_R32 * (float)C2_VY0) + ((float)C2_R33 * (float)C2_VZ0));
-
-			double one_by_v = 1.0 / (512.0 * 1024.0);
-
-			g_FP_SXYZ0 = g_FP_SXYZ1;
-			g_FP_SXYZ1 = g_FP_SXYZ2;
-
-			g_FP_SXYZ2.px = (double(C2_OFX) + double(float(C2_IR1) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.py = (double(C2_OFY) + double(float(C2_IR2) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.pz = float(max(C2_SZ3, C2_H / 2)) / float(1 << 16);
-
-			// make half-float equivalents
-			g_FP_SXYZ2.x = g_FP_SXYZ2.px;
-			g_FP_SXYZ2.y = g_FP_SXYZ2.py;
-			g_FP_SXYZ2.z = g_FP_SXYZ2.pz;
-
-			PGXPVData vdata;
-			vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
-			vdata.px = double(C2_OFX) / float(1 << 16) + fMAC1 * one_by_v;
-			vdata.py = double(C2_OFY) / float(1 << 16) + fMAC2 * one_by_v;
-			vdata.pz = fMAC3 * one_by_v;
-			vdata.scr_h = float(C2_H);// / float(1 << 16);
-
-			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
-			g_pgxpTransformed = 1;
-		}
-#endif
-		C2_MAC0 = int(F((long long)C2_DQB + ((long long)C2_DQA * h_over_sz3)));
-		C2_IR0 = Lm_H(m_mac0, 1);
-		return 1;
-
-	case 0x06:
+		case 0x06:
 #ifdef GTE_LOG
-		GTELOG("%08x NCLIP", op);
+			GTELOG("%08x NCLIP", op);
 #endif
 
 #ifdef PGXP
-		{
-			float fSX0 = g_FP_SXYZ0.px;
-			float fSY0 = g_FP_SXYZ0.py;
+			{
+				float fSX0 = g_FP_SXYZ0.px;
+				float fSY0 = g_FP_SXYZ0.py;
 
-			float fSX1 = g_FP_SXYZ1.px;
-			float fSY1 = g_FP_SXYZ1.py;
+				float fSX1 = g_FP_SXYZ1.px;
+				float fSY1 = g_FP_SXYZ1.py;
 
-			float fSX2 = g_FP_SXYZ2.px;
-			float fSY2 = g_FP_SXYZ2.py;
+				float fSX2 = g_FP_SXYZ2.px;
+				float fSY2 = g_FP_SXYZ2.py;
 
-			float nclip = (fSX0 * fSY1) + (fSX1 * fSY2) + (fSX2 * fSY0) - (fSX0 * fSY2) - (fSX1 * fSY0) - (fSX2 * fSY1);
+				float nclip = (fSX0 * fSY1) + (fSX1 * fSY2) + (fSX2 * fSY0) - (fSX0 * fSY2) - (fSX1 * fSY0) - (fSX2 * fSY1);
 
-			float absNclip = fabs(nclip);
+				float absNclip = fabs(nclip);
 
-			if ((0.1f < absNclip) && (absNclip < 1.0f))
-				nclip += (nclip < 0.0f) ? -1.0f : 1.0f;
+				if ((0.1f < absNclip) && (absNclip < 1.0f))
+					nclip += (nclip < 0.0f) ? -1.0f : 1.0f;
 
-			C2_MAC0 = nclip;
-		}
+				C2_MAC0 = nclip;
+			}
 #else
-		MAC0 = int(F((long long)(SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1)));
+			MAC0 = int(F((long long)(SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1)));
 #endif
-		C2_FLAG = 0;
-		return 1;
+			C2_FLAG = 0;
+			return 1;
 
-	case 0x0c:
+		case 0x0c:
 #ifdef GTE_LOG
-		GTELOG("%08x OP", op);
+			GTELOG("%08x OP", op);
 #endif
 
-		C2_MAC1 = A1((long long)(C2_R22 * C2_IR3) - (C2_R33 * C2_IR2));
-		C2_MAC2 = A2((long long)(C2_R33 * C2_IR1) - (C2_R11 * C2_IR3));
-		C2_MAC3 = A3((long long)(C2_R11 * C2_IR2) - (C2_R22 * C2_IR1));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		return 1;
+			C2_MAC1 = A1((long long)(C2_R22 * C2_IR3) - (C2_R33 * C2_IR2));
+			C2_MAC2 = A2((long long)(C2_R33 * C2_IR1) - (C2_R11 * C2_IR3));
+			C2_MAC3 = A3((long long)(C2_R11 * C2_IR2) - (C2_R22 * C2_IR1));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			return 1;
 
-	case 0x10:
+		case 0x10:
 #ifdef GTE_LOG
-		GTELOG("%08x DPCS", op);
+			GTELOG("%08x DPCS", op);
 #endif
 
-		C2_MAC1 = A1((C2_R << 16) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - (C2_R << 16)), 0)));
-		C2_MAC2 = A2((C2_G << 16) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - (C2_G << 16)), 0)));
-		C2_MAC3 = A3((C2_B << 16) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - (C2_B << 16)), 0)));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
+			C2_MAC1 = A1((C2_R << 16) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - (C2_R << 16)), 0)));
+			C2_MAC2 = A2((C2_G << 16) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - (C2_G << 16)), 0)));
+			C2_MAC3 = A3((C2_B << 16) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - (C2_B << 16)), 0)));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
 
-	case 0x11:
+		case 0x11:
 #ifdef GTE_LOG
-		GTELOG("%08x INTPL", op);
+			GTELOG("%08x INTPL", op);
 #endif
 
-		C2_MAC1 = A1((C2_IR1 << 12) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - (C2_IR1 << 12)), 0)));
-		C2_MAC2 = A2((C2_IR2 << 12) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - (C2_IR2 << 12)), 0)));
-		C2_MAC3 = A3((C2_IR3 << 12) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - (C2_IR3 << 12)), 0)));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
+			C2_MAC1 = A1((C2_IR1 << 12) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - (C2_IR1 << 12)), 0)));
+			C2_MAC2 = A2((C2_IR2 << 12) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - (C2_IR2 << 12)), 0)));
+			C2_MAC3 = A3((C2_IR3 << 12) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - (C2_IR3 << 12)), 0)));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
 
-	case 0x12:
+		case 0x12:
 #ifdef GTE_LOG
-		GTELOG("%08x MVMVA", op);
+			GTELOG("%08x MVMVA", op);
 #endif
 
-		mx = GTE_MX(gteop(op));
-		v = GTE_V(gteop(op));
-		cv = GTE_CV(gteop(op));
+			mx = GTE_MX(gteop(op));
+			v = GTE_V(gteop(op));
+			cv = GTE_CV(gteop(op));
 
-		switch (cv) {
-		case 2:
-			C2_MAC1 = A1((long long)(MX12(mx) * VY(v)) + (MX13(mx) * VZ(v)));
-			C2_MAC2 = A2((long long)(MX22(mx) * VY(v)) + (MX23(mx) * VZ(v)));
-			C2_MAC3 = A3((long long)(MX32(mx) * VY(v)) + (MX33(mx) * VZ(v)));
-			Lm_B1(A1(((long long)CV1(cv) << 12) + (MX11(mx) * VX(v))), 0);
-			Lm_B2(A2(((long long)CV2(cv) << 12) + (MX21(mx) * VX(v))), 0);
-			Lm_B3(A3(((long long)CV3(cv) << 12) + (MX31(mx) * VX(v))), 0);
-			break;
+			switch (cv) {
+				case 2:
+					C2_MAC1 = A1((long long)(MX12(mx) * VY(v)) + (MX13(mx) * VZ(v)));
+					C2_MAC2 = A2((long long)(MX22(mx) * VY(v)) + (MX23(mx) * VZ(v)));
+					C2_MAC3 = A3((long long)(MX32(mx) * VY(v)) + (MX33(mx) * VZ(v)));
+					Lm_B1(A1(((long long)CV1(cv) << 12) + (MX11(mx) * VX(v))), 0);
+					Lm_B2(A2(((long long)CV2(cv) << 12) + (MX21(mx) * VX(v))), 0);
+					Lm_B3(A3(((long long)CV3(cv) << 12) + (MX31(mx) * VX(v))), 0);
+					break;
 
-		default:
-			C2_MAC1 = A1(/*int44*/(long long)((long long)CV1(cv) << 12) + (MX11(mx) * VX(v)) + (MX12(mx) * VY(v)) + (MX13(mx) * VZ(v)));
-			C2_MAC2 = A2(/*int44*/(long long)((long long)CV2(cv) << 12) + (MX21(mx) * VX(v)) + (MX22(mx) * VY(v)) + (MX23(mx) * VZ(v)));
-			C2_MAC3 = A3(/*int44*/(long long)((long long)CV3(cv) << 12) + (MX31(mx) * VX(v)) + (MX32(mx) * VY(v)) + (MX33(mx) * VZ(v)));
-			break;
-		}
+				default:
+					C2_MAC1 = A1(/*int44*/(long long)((long long)CV1(cv) << 12) + (MX11(mx) * VX(v)) + (MX12(mx) * VY(v)) + (MX13(mx) * VZ(v)));
+					C2_MAC2 = A2(/*int44*/(long long)((long long)CV2(cv) << 12) + (MX21(mx) * VX(v)) + (MX22(mx) * VY(v)) + (MX23(mx) * VZ(v)));
+					C2_MAC3 = A3(/*int44*/(long long)((long long)CV3(cv) << 12) + (MX31(mx) * VX(v)) + (MX32(mx) * VY(v)) + (MX33(mx) * VZ(v)));
+					break;
+			}
 
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		return 1;
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			return 1;
 
-	case 0x13:
+		case 0x13:
 #ifdef GTE_LOG
-		GTELOG("%08x NCDS", op);
+			GTELOG("%08x NCDS", op);
 #endif
 
-		C2_MAC1 = A1((long long)(C2_L11 * C2_VX0) + (C2_L12 * C2_VY0) + (C2_L13 * C2_VZ0));
-		C2_MAC2 = A2((long long)(C2_L21 * C2_VX0) + (C2_L22 * C2_VY0) + (C2_L23 * C2_VZ0));
-		C2_MAC3 = A3((long long)(C2_L31 * C2_VX0) + (C2_L32 * C2_VY0) + (C2_L33 * C2_VZ0));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
-		C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
-		C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1(((C2_R << 4) * C2_IR1) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - ((C2_R << 4) * C2_IR1)), 0)));
-		C2_MAC2 = A2(((C2_G << 4) * C2_IR2) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - ((C2_G << 4) * C2_IR2)), 0)));
-		C2_MAC3 = A3(((C2_B << 4) * C2_IR3) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - ((C2_B << 4) * C2_IR3)), 0)));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x14:
-#ifdef GTE_LOG
-		GTELOG("%08x CDP", op);
-#endif
-
-		C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
-		C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
-		C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1(((C2_R << 4) * C2_IR1) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - ((C2_R << 4) * C2_IR1)), 0)));
-		C2_MAC2 = A2(((C2_G << 4) * C2_IR2) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - ((C2_G << 4) * C2_IR2)), 0)));
-		C2_MAC3 = A3(((C2_B << 4) * C2_IR3) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - ((C2_B << 4) * C2_IR3)), 0)));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x16:
-#ifdef GTE_LOG
-		GTELOG("%08x NCDT", op);
-#endif
-
-		for (v = 0; v < 3; v++) {
-			C2_MAC1 = A1((long long)(C2_L11 * VX(v)) + (C2_L12 * VY(v)) + (C2_L13 * VZ(v)));
-			C2_MAC2 = A2((long long)(C2_L21 * VX(v)) + (C2_L22 * VY(v)) + (C2_L23 * VZ(v)));
-			C2_MAC3 = A3((long long)(C2_L31 * VX(v)) + (C2_L32 * VY(v)) + (C2_L33 * VZ(v)));
+			C2_MAC1 = A1((long long)(C2_L11 * C2_VX0) + (C2_L12 * C2_VY0) + (C2_L13 * C2_VZ0));
+			C2_MAC2 = A2((long long)(C2_L21 * C2_VX0) + (C2_L22 * C2_VY0) + (C2_L23 * C2_VZ0));
+			C2_MAC3 = A3((long long)(C2_L31 * C2_VX0) + (C2_L32 * C2_VY0) + (C2_L33 * C2_VZ0));
 			C2_IR1 = Lm_B1(C2_MAC1, lm);
 			C2_IR2 = Lm_B2(C2_MAC2, lm);
 			C2_IR3 = Lm_B3(C2_MAC3, lm);
@@ -799,158 +758,22 @@ int docop2(int op) {
 			C2_R2 = Lm_C1(C2_MAC1 >> 4);
 			C2_G2 = Lm_C2(C2_MAC2 >> 4);
 			C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		}
-		return 1;
+			return 1;
 
-	case 0x1b:
+		case 0x14:
 #ifdef GTE_LOG
-		GTELOG("%08x NCCS", op);
+			GTELOG("%08x CDP", op);
 #endif
 
-		C2_MAC1 = A1((long long)(C2_L11 * C2_VX0) + (C2_L12 * C2_VY0) + (C2_L13 * C2_VZ0));
-		C2_MAC2 = A2((long long)(C2_L21 * C2_VX0) + (C2_L22 * C2_VY0) + (C2_L23 * C2_VZ0));
-		C2_MAC3 = A3((long long)(C2_L31 * C2_VX0) + (C2_L32 * C2_VY0) + (C2_L33 * C2_VZ0));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
-		C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
-		C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1((C2_R << 4) * C2_IR1);
-		C2_MAC2 = A2((C2_G << 4) * C2_IR2);
-		C2_MAC3 = A3((C2_B << 4) * C2_IR3);
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x1c:
-#ifdef GTE_LOG
-		GTELOG("%08x CC", op);
-#endif
-
-		C2_MAC1 = A1(/*int44*/(long long)(((long long)C2_RBK) << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
-		C2_MAC2 = A2(/*int44*/(long long)(((long long)C2_GBK) << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
-		C2_MAC3 = A3(/*int44*/(long long)(((long long)C2_BBK) << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1((C2_R << 4) * C2_IR1);
-		C2_MAC2 = A2((C2_G << 4) * C2_IR2);
-		C2_MAC3 = A3((C2_B << 4) * C2_IR3);
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x1e:
-#ifdef GTE_LOG
-		GTELOG("%08x NCS", op);
-#endif
-
-		C2_MAC1 = A1((long long)(C2_L11 * C2_VX0) + (C2_L12 * C2_VY0) + (C2_L13 * C2_VZ0));
-		C2_MAC2 = A2((long long)(C2_L21 * C2_VX0) + (C2_L22 * C2_VY0) + (C2_L23 * C2_VZ0));
-		C2_MAC3 = A3((long long)(C2_L31 * C2_VX0) + (C2_L32 * C2_VY0) + (C2_L33 * C2_VZ0));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
-		C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
-		C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x20:
-#ifdef GTE_LOG
-		GTELOG("%08x NCT", op);
-#endif
-
-		for (v = 0; v < 3; v++) {
-			C2_MAC1 = A1((long long)(C2_L11 * VX(v)) + (C2_L12 * VY(v)) + (C2_L13 * VZ(v)));
-			C2_MAC2 = A2((long long)(C2_L21 * VX(v)) + (C2_L22 * VY(v)) + (C2_L23 * VZ(v)));
-			C2_MAC3 = A3((long long)(C2_L31 * VX(v)) + (C2_L32 * VY(v)) + (C2_L33 * VZ(v)));
-			C2_IR1 = Lm_B1(C2_MAC1, lm);
-			C2_IR2 = Lm_B2(C2_MAC2, lm);
-			C2_IR3 = Lm_B3(C2_MAC3, lm);
 			C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
 			C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
 			C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
 			C2_IR1 = Lm_B1(C2_MAC1, lm);
 			C2_IR2 = Lm_B2(C2_MAC2, lm);
 			C2_IR3 = Lm_B3(C2_MAC3, lm);
-			C2_RGB0 = C2_RGB1;
-			C2_RGB1 = C2_RGB2;
-			C2_CD2 = C2_CODE;
-			C2_R2 = Lm_C1(C2_MAC1 >> 4);
-			C2_G2 = Lm_C2(C2_MAC2 >> 4);
-			C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		}
-		return 1;
-
-	case 0x28:
-#ifdef GTE_LOG
-		GTELOG("%08x SQR", op);
-#endif
-
-		C2_MAC1 = A1(C2_IR1 * C2_IR1);
-		C2_MAC2 = A2(C2_IR2 * C2_IR2);
-		C2_MAC3 = A3(C2_IR3 * C2_IR3);
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		return 1;
-
-	case 0x29:
-#ifdef GTE_LOG
-		GTELOG("%08x DPCL", op);
-#endif
-
-		C2_MAC1 = A1(((C2_R << 4) * C2_IR1) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - ((C2_R << 4) * C2_IR1)), 0)));
-		C2_MAC2 = A2(((C2_G << 4) * C2_IR2) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - ((C2_G << 4) * C2_IR2)), 0)));
-		C2_MAC3 = A3(((C2_B << 4) * C2_IR3) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - ((C2_B << 4) * C2_IR3)), 0)));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x2a:
-#ifdef GTE_LOG
-		GTELOG("%08x DPCT", op);
-#endif
-
-		for (v = 0; v < 3; v++) {
-			C2_MAC1 = A1((C2_R0 << 16) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - (C2_R0 << 16)), 0)));
-			C2_MAC2 = A2((C2_G0 << 16) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - (C2_G0 << 16)), 0)));
-			C2_MAC3 = A3((C2_B0 << 16) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - (C2_B0 << 16)), 0)));
+			C2_MAC1 = A1(((C2_R << 4) * C2_IR1) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - ((C2_R << 4) * C2_IR1)), 0)));
+			C2_MAC2 = A2(((C2_G << 4) * C2_IR2) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - ((C2_G << 4) * C2_IR2)), 0)));
+			C2_MAC3 = A3(((C2_B << 4) * C2_IR3) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - ((C2_B << 4) * C2_IR3)), 0)));
 			C2_IR1 = Lm_B1(C2_MAC1, lm);
 			C2_IR2 = Lm_B2(C2_MAC2, lm);
 			C2_IR3 = Lm_B3(C2_MAC3, lm);
@@ -960,132 +783,49 @@ int docop2(int op) {
 			C2_R2 = Lm_C1(C2_MAC1 >> 4);
 			C2_G2 = Lm_C2(C2_MAC2 >> 4);
 			C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		}
-		return 1;
+			return 1;
 
-	case 0x2d:
+		case 0x16:
 #ifdef GTE_LOG
-		GTELOG("%08x AVSZ3", op);
+			GTELOG("%08x NCDT", op);
 #endif
 
-		C2_MAC0 = int(F((long long)(C2_ZSF3 * C2_SZ1) + (C2_ZSF3 * C2_SZ2) + (C2_ZSF3 * C2_SZ3)));
-		C2_OTZ = Lm_D(m_mac0, 1);
-		return 1;
+			for (v = 0; v < 3; v++) {
+				C2_MAC1 = A1((long long)(C2_L11 * VX(v)) + (C2_L12 * VY(v)) + (C2_L13 * VZ(v)));
+				C2_MAC2 = A2((long long)(C2_L21 * VX(v)) + (C2_L22 * VY(v)) + (C2_L23 * VZ(v)));
+				C2_MAC3 = A3((long long)(C2_L31 * VX(v)) + (C2_L32 * VY(v)) + (C2_L33 * VZ(v)));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
+				C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
+				C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_MAC1 = A1(((C2_R << 4) * C2_IR1) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - ((C2_R << 4) * C2_IR1)), 0)));
+				C2_MAC2 = A2(((C2_G << 4) * C2_IR2) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - ((C2_G << 4) * C2_IR2)), 0)));
+				C2_MAC3 = A3(((C2_B << 4) * C2_IR3) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - ((C2_B << 4) * C2_IR3)), 0)));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_RGB0 = C2_RGB1;
+				C2_RGB1 = C2_RGB2;
+				C2_CD2 = C2_CODE;
+				C2_R2 = Lm_C1(C2_MAC1 >> 4);
+				C2_G2 = Lm_C2(C2_MAC2 >> 4);
+				C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			}
+			return 1;
 
-	case 0x2e:
+		case 0x1b:
 #ifdef GTE_LOG
-		GTELOG("%08x AVSZ4", op);
+			GTELOG("%08x NCCS", op);
 #endif
 
-		C2_MAC0 = int(F((long long)(C2_ZSF4 * C2_SZ0) + (C2_ZSF4 * C2_SZ1) + (C2_ZSF4 * C2_SZ2) + (C2_ZSF4 * C2_SZ3)));
-		C2_OTZ = Lm_D(m_mac0, 1);
-		return 1;
-
-	case 0x30:
-#ifdef GTE_LOG
-		GTELOG("%08x RTPT", op);
-#endif
-
-		for (v = 0; v < 3; v++)
-		{
-			C2_MAC1 = A1(/*int44*/(long long)((long long)C2_TRX << 12) + (C2_R11 * VX(v)) + (C2_R12 * VY(v)) + (C2_R13 * VZ(v)));
-			C2_MAC2 = A2(/*int44*/(long long)((long long)C2_TRY << 12) + (C2_R21 * VX(v)) + (C2_R22 * VY(v)) + (C2_R23 * VZ(v)));
-			C2_MAC3 = A3(/*int44*/(long long)((long long)C2_TRZ << 12) + (C2_R31 * VX(v)) + (C2_R32 * VY(v)) + (C2_R33 * VZ(v)));
-			C2_IR1 = Lm_B1(C2_MAC1, lm);
-			C2_IR2 = Lm_B2(C2_MAC2, lm);
-			C2_IR3 = Lm_B3_sf(m_mac3, m_sf, lm);
-			C2_SZ0 = C2_SZ1;
-			C2_SZ1 = C2_SZ2;
-			C2_SZ2 = C2_SZ3;
-			C2_SZ3 = Lm_D(m_mac3, 1);
-			h_over_sz3 = Lm_E(gte_divide(C2_H, C2_SZ3));
-			C2_SXY0 = C2_SXY1;
-			C2_SXY1 = C2_SXY2;
-			C2_SX2 = Lm_G1(F((long long)C2_OFX + ((long long)C2_IR1 * h_over_sz3)) >> 16);
-			C2_SY2 = Lm_G2(F((long long)C2_OFY + ((long long)C2_IR2 * h_over_sz3)) >> 16);
-
-#if defined(PGXP)
-			double fMAC1 = (/*int44*/(double)((float)C2_TRX * 4096.0f) + ((float)C2_R11 * (float)VX(v)) + ((float)C2_R12 * (float)VY(v)) + ((float)C2_R13 * (float)VZ(v)));
-			double fMAC2 = (/*int44*/(double)((float)C2_TRY * 4096.0f) + ((float)C2_R21 * (float)VX(v)) + ((float)C2_R22 * (float)VY(v)) + ((float)C2_R23 * (float)VZ(v)));
-			double fMAC3 = (/*int44*/(double)((float)C2_TRZ * 4096.0f) + ((float)C2_R31 * (float)VX(v)) + ((float)C2_R32 * (float)VY(v)) + ((float)C2_R33 * (float)VZ(v)));
-
-			double one_by_v = 1.0 / (512.0 * 1024.0);
-
-			g_FP_SXYZ0 = g_FP_SXYZ1;
-			g_FP_SXYZ1 = g_FP_SXYZ2;
-
-			g_FP_SXYZ2.px = (double(C2_OFX) + double(float(C2_IR1) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.py = (double(C2_OFY) + double(float(C2_IR2) * float(h_over_sz3))) / float(1 << 16);
-			g_FP_SXYZ2.pz = float(max(C2_SZ3, C2_H / 2)) / float(1 << 16);
-
-			// make half-float equivalents
-			g_FP_SXYZ2.x = g_FP_SXYZ2.px;
-			g_FP_SXYZ2.y = g_FP_SXYZ2.py;
-			g_FP_SXYZ2.z = g_FP_SXYZ2.pz;
-
-			PGXPVData vdata;
-			vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
-			vdata.px = double(C2_OFX) / float(1 << 16) + fMAC1 * one_by_v;
-			vdata.py = double(C2_OFY) / float(1 << 16) + fMAC2 * one_by_v;
-			vdata.pz = fMAC3 * one_by_v;
-			vdata.scr_h = float(C2_H);// / float(1 << 16);
-
-			g_pgxpCache[g_pgxpVertexIndex++] = vdata;
-			g_pgxpTransformed = 1;
-#endif
-		}
-
-		C2_MAC0 = int(F((long long)C2_DQB + ((long long)C2_DQA * h_over_sz3)));
-		C2_IR0 = Lm_H(m_mac0, 1);
-		return 1;
-
-	case 0x3d:
-#ifdef GTE_LOG
-		GTELOG("%08x GPF", op);
-#endif
-
-		C2_MAC1 = A1(C2_IR0 * C2_IR1);
-		C2_MAC2 = A2(C2_IR0 * C2_IR2);
-		C2_MAC3 = A3(C2_IR0 * C2_IR3);
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x3e:
-#ifdef GTE_LOG
-		GTELOG("%08x GPL", op);
-#endif
-
-		C2_MAC1 = A1(gte_shift(C2_MAC1, -m_sf) + (C2_IR0 * C2_IR1));
-		C2_MAC2 = A2(gte_shift(C2_MAC2, -m_sf) + (C2_IR0 * C2_IR2));
-		C2_MAC3 = A3(gte_shift(C2_MAC3, -m_sf) + (C2_IR0 * C2_IR3));
-		C2_IR1 = Lm_B1(C2_MAC1, lm);
-		C2_IR2 = Lm_B2(C2_MAC2, lm);
-		C2_IR3 = Lm_B3(C2_MAC3, lm);
-		C2_RGB0 = C2_RGB1;
-		C2_RGB1 = C2_RGB2;
-		C2_CD2 = C2_CODE;
-		C2_R2 = Lm_C1(C2_MAC1 >> 4);
-		C2_G2 = Lm_C2(C2_MAC2 >> 4);
-		C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		return 1;
-
-	case 0x3f:
-#ifdef GTE_LOG
-		GTELOG("%08x NCCT", op);
-#endif
-
-		for (v = 0; v < 3; v++) {
-			C2_MAC1 = A1((long long)(C2_L11 * VX(v)) + (C2_L12 * VY(v)) + (C2_L13 * VZ(v)));
-			C2_MAC2 = A2((long long)(C2_L21 * VX(v)) + (C2_L22 * VY(v)) + (C2_L23 * VZ(v)));
-			C2_MAC3 = A3((long long)(C2_L31 * VX(v)) + (C2_L32 * VY(v)) + (C2_L33 * VZ(v)));
+			C2_MAC1 = A1((long long)(C2_L11 * C2_VX0) + (C2_L12 * C2_VY0) + (C2_L13 * C2_VZ0));
+			C2_MAC2 = A2((long long)(C2_L21 * C2_VX0) + (C2_L22 * C2_VY0) + (C2_L23 * C2_VZ0));
+			C2_MAC3 = A3((long long)(C2_L31 * C2_VX0) + (C2_L32 * C2_VY0) + (C2_L33 * C2_VZ0));
 			C2_IR1 = Lm_B1(C2_MAC1, lm);
 			C2_IR2 = Lm_B2(C2_MAC2, lm);
 			C2_IR3 = Lm_B3(C2_MAC3, lm);
@@ -1107,8 +847,238 @@ int docop2(int op) {
 			C2_R2 = Lm_C1(C2_MAC1 >> 4);
 			C2_G2 = Lm_C2(C2_MAC2 >> 4);
 			C2_B2 = Lm_C3(C2_MAC3 >> 4);
-		}
-		return 1;
+			return 1;
+
+		case 0x1c:
+#ifdef GTE_LOG
+			GTELOG("%08x CC", op);
+#endif
+
+			C2_MAC1 = A1(/*int44*/(long long)(((long long)C2_RBK) << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
+			C2_MAC2 = A2(/*int44*/(long long)(((long long)C2_GBK) << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
+			C2_MAC3 = A3(/*int44*/(long long)(((long long)C2_BBK) << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_MAC1 = A1((C2_R << 4) * C2_IR1);
+			C2_MAC2 = A2((C2_G << 4) * C2_IR2);
+			C2_MAC3 = A3((C2_B << 4) * C2_IR3);
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
+
+		case 0x1e:
+#ifdef GTE_LOG
+			GTELOG("%08x NCS", op);
+#endif
+
+			C2_MAC1 = A1((long long)(C2_L11 * C2_VX0) + (C2_L12 * C2_VY0) + (C2_L13 * C2_VZ0));
+			C2_MAC2 = A2((long long)(C2_L21 * C2_VX0) + (C2_L22 * C2_VY0) + (C2_L23 * C2_VZ0));
+			C2_MAC3 = A3((long long)(C2_L31 * C2_VX0) + (C2_L32 * C2_VY0) + (C2_L33 * C2_VZ0));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
+			C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
+			C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
+
+		case 0x20:
+#ifdef GTE_LOG
+			GTELOG("%08x NCT", op);
+#endif
+
+			for (v = 0; v < 3; v++) {
+				C2_MAC1 = A1((long long)(C2_L11 * VX(v)) + (C2_L12 * VY(v)) + (C2_L13 * VZ(v)));
+				C2_MAC2 = A2((long long)(C2_L21 * VX(v)) + (C2_L22 * VY(v)) + (C2_L23 * VZ(v)));
+				C2_MAC3 = A3((long long)(C2_L31 * VX(v)) + (C2_L32 * VY(v)) + (C2_L33 * VZ(v)));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
+				C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
+				C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_RGB0 = C2_RGB1;
+				C2_RGB1 = C2_RGB2;
+				C2_CD2 = C2_CODE;
+				C2_R2 = Lm_C1(C2_MAC1 >> 4);
+				C2_G2 = Lm_C2(C2_MAC2 >> 4);
+				C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			}
+			return 1;
+
+		case 0x28:
+#ifdef GTE_LOG
+			GTELOG("%08x SQR", op);
+#endif
+
+			C2_MAC1 = A1(C2_IR1 * C2_IR1);
+			C2_MAC2 = A2(C2_IR2 * C2_IR2);
+			C2_MAC3 = A3(C2_IR3 * C2_IR3);
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			return 1;
+
+		case 0x29:
+#ifdef GTE_LOG
+			GTELOG("%08x DPCL", op);
+#endif
+
+			C2_MAC1 = A1(((C2_R << 4) * C2_IR1) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - ((C2_R << 4) * C2_IR1)), 0)));
+			C2_MAC2 = A2(((C2_G << 4) * C2_IR2) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - ((C2_G << 4) * C2_IR2)), 0)));
+			C2_MAC3 = A3(((C2_B << 4) * C2_IR3) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - ((C2_B << 4) * C2_IR3)), 0)));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
+
+		case 0x2a:
+#ifdef GTE_LOG
+			GTELOG("%08x DPCT", op);
+#endif
+
+			for (v = 0; v < 3; v++) {
+				C2_MAC1 = A1((C2_R0 << 16) + (C2_IR0 * Lm_B1(A1(((long long)C2_RFC << 12) - (C2_R0 << 16)), 0)));
+				C2_MAC2 = A2((C2_G0 << 16) + (C2_IR0 * Lm_B2(A2(((long long)C2_GFC << 12) - (C2_G0 << 16)), 0)));
+				C2_MAC3 = A3((C2_B0 << 16) + (C2_IR0 * Lm_B3(A3(((long long)C2_BFC << 12) - (C2_B0 << 16)), 0)));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_RGB0 = C2_RGB1;
+				C2_RGB1 = C2_RGB2;
+				C2_CD2 = C2_CODE;
+				C2_R2 = Lm_C1(C2_MAC1 >> 4);
+				C2_G2 = Lm_C2(C2_MAC2 >> 4);
+				C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			}
+			return 1;
+
+		case 0x2d:
+#ifdef GTE_LOG
+			GTELOG("%08x AVSZ3", op);
+#endif
+
+			C2_MAC0 = int(F((long long)(C2_ZSF3 * C2_SZ1) + (C2_ZSF3 * C2_SZ2) + (C2_ZSF3 * C2_SZ3)));
+			C2_OTZ = Lm_D(m_mac0, 1);
+			return 1;
+
+		case 0x2e:
+#ifdef GTE_LOG
+			GTELOG("%08x AVSZ4", op);
+#endif
+
+			C2_MAC0 = int(F((long long)(C2_ZSF4 * C2_SZ0) + (C2_ZSF4 * C2_SZ1) + (C2_ZSF4 * C2_SZ2) + (C2_ZSF4 * C2_SZ3)));
+			C2_OTZ = Lm_D(m_mac0, 1);
+			return 1;
+
+		case 0x30:
+#ifdef GTE_LOG
+			GTELOG("%08x RTPT", op);
+#endif
+
+			for (v = 0; v < 3; v++)
+				h_over_sz3 = GTE_RotTransPers(v ,lm);
+
+			C2_MAC0 = int(F((long long)C2_DQB + ((long long)C2_DQA * h_over_sz3)));
+			C2_IR0 = Lm_H(m_mac0, 1);
+			return 1;
+
+		case 0x3d:
+#ifdef GTE_LOG
+			GTELOG("%08x GPF", op);
+#endif
+
+			C2_MAC1 = A1(C2_IR0 * C2_IR1);
+			C2_MAC2 = A2(C2_IR0 * C2_IR2);
+			C2_MAC3 = A3(C2_IR0 * C2_IR3);
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
+
+		case 0x3e:
+#ifdef GTE_LOG
+			GTELOG("%08x GPL", op);
+#endif
+
+			C2_MAC1 = A1(gte_shift(C2_MAC1, -m_sf) + (C2_IR0 * C2_IR1));
+			C2_MAC2 = A2(gte_shift(C2_MAC2, -m_sf) + (C2_IR0 * C2_IR2));
+			C2_MAC3 = A3(gte_shift(C2_MAC3, -m_sf) + (C2_IR0 * C2_IR3));
+			C2_IR1 = Lm_B1(C2_MAC1, lm);
+			C2_IR2 = Lm_B2(C2_MAC2, lm);
+			C2_IR3 = Lm_B3(C2_MAC3, lm);
+			C2_RGB0 = C2_RGB1;
+			C2_RGB1 = C2_RGB2;
+			C2_CD2 = C2_CODE;
+			C2_R2 = Lm_C1(C2_MAC1 >> 4);
+			C2_G2 = Lm_C2(C2_MAC2 >> 4);
+			C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			return 1;
+
+		case 0x3f:
+#ifdef GTE_LOG
+			GTELOG("%08x NCCT", op);
+#endif
+
+			for (v = 0; v < 3; v++) {
+				C2_MAC1 = A1((long long)(C2_L11 * VX(v)) + (C2_L12 * VY(v)) + (C2_L13 * VZ(v)));
+				C2_MAC2 = A2((long long)(C2_L21 * VX(v)) + (C2_L22 * VY(v)) + (C2_L23 * VZ(v)));
+				C2_MAC3 = A3((long long)(C2_L31 * VX(v)) + (C2_L32 * VY(v)) + (C2_L33 * VZ(v)));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_MAC1 = A1(/*int44*/(long long)((long long)C2_RBK << 12) + (C2_LR1 * C2_IR1) + (C2_LR2 * C2_IR2) + (C2_LR3 * C2_IR3));
+				C2_MAC2 = A2(/*int44*/(long long)((long long)C2_GBK << 12) + (C2_LG1 * C2_IR1) + (C2_LG2 * C2_IR2) + (C2_LG3 * C2_IR3));
+				C2_MAC3 = A3(/*int44*/(long long)((long long)C2_BBK << 12) + (C2_LB1 * C2_IR1) + (C2_LB2 * C2_IR2) + (C2_LB3 * C2_IR3));
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_MAC1 = A1((C2_R << 4) * C2_IR1);
+				C2_MAC2 = A2((C2_G << 4) * C2_IR2);
+				C2_MAC3 = A3((C2_B << 4) * C2_IR3);
+				C2_IR1 = Lm_B1(C2_MAC1, lm);
+				C2_IR2 = Lm_B2(C2_MAC2, lm);
+				C2_IR3 = Lm_B3(C2_MAC3, lm);
+				C2_RGB0 = C2_RGB1;
+				C2_RGB1 = C2_RGB2;
+				C2_CD2 = C2_CODE;
+				C2_R2 = Lm_C1(C2_MAC1 >> 4);
+				C2_G2 = Lm_C2(C2_MAC2 >> 4);
+				C2_B2 = Lm_C3(C2_MAC3 >> 4);
+			}
+			return 1;
 	}
 
 	return 0;
@@ -1378,13 +1348,13 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 		tmpLO.vx = -(-tmpHI.vx >> 0xf);
 		tmpHI.vx = -(-tmpHI.vx & 0x7fff);
 	}
-	else 
+	else
 	{
 		tmpLO.vx = tmpHI.vx >> 0xf;
 		tmpHI.vx = tmpHI.vx & 0x7fff;
 	}
 
-	if (tmpHI.vy < 0) 
+	if (tmpHI.vy < 0)
 	{
 		tmpLO.vy = -(-tmpHI.vy >> 0xf);
 		tmpHI.vy = -(-tmpHI.vy & 0x7fff);
@@ -1395,12 +1365,12 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 		tmpHI.vy = tmpHI.vy & 0x7fff;
 	}
 
-	if (tmpHI.vz < 0) 
+	if (tmpHI.vz < 0)
 	{
 		tmpLO.vz = -(-tmpHI.vz >> 0xf);
 		tmpHI.vz = -(-tmpHI.vz & 0x7fff);
 	}
-	else 
+	else
 	{
 		tmpLO.vz = tmpHI.vz >> 0xf;
 		tmpHI.vz = tmpHI.vz & 0x7fff;

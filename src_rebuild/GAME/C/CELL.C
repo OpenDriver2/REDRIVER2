@@ -41,13 +41,13 @@ void ClearCopUsage(void)
 
 // decompiled code
 // original method signature: 
-// struct PACKED_CELL_OBJECT * /*$ra*/ GetFirstPackedCop(int cellx /*$t3*/, int cellz /*$a1*/, struct CELL_ITERATOR *pci /*$a2*/, int use_computed /*$a3*/)
+// PACKED_CELL_OBJECT * /*$ra*/ GetFirstPackedCop(int cellx /*$t3*/, int cellz /*$a1*/, CELL_ITERATOR *pci /*$a2*/, int use_computed /*$a3*/)
  // line 67, offset 0x00023bac
 	/* begin block 1 */
 		// Start line: 68
 		// Start offset: 0x00023BAC
 		// Variables:
-	// 		struct PACKED_CELL_OBJECT *ppco; // $a1
+	// 		PACKED_CELL_OBJECT *ppco; // $a1
 	// 		unsigned short index; // $a0
 	// 		unsigned short num; // $t0
 	// 		int cbrx; // $t0
@@ -86,7 +86,9 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 
 	index = (cellx / MAP_REGION_SIZE & 1) + (cellz / MAP_REGION_SIZE & 1) * 2;
 
+#ifdef PSX
 	if (NumPlayers == 2)
+#endif // else do this check always
 	{
 		if (RoadMapRegions[index] != (cellx / MAP_REGION_SIZE) + (cellz / MAP_REGION_SIZE) * (cells_across / MAP_REGION_SIZE))
 			return NULL;
@@ -159,13 +161,13 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 
 // decompiled code
 // original method signature: 
-// struct PACKED_CELL_OBJECT * /*$ra*/ GetNextPackedCop(struct CELL_ITERATOR *pci /*$a0*/)
+// PACKED_CELL_OBJECT * /*$ra*/ GetNextPackedCop(CELL_ITERATOR *pci /*$a0*/)
  // line 813, offset 0x0003f5f0
 	/* begin block 1 */
 		// Start line: 814
 		// Start offset: 0x0003F5F0
 		// Variables:
-	// 		struct PACKED_CELL_OBJECT *ppco; // $a3
+	// 		PACKED_CELL_OBJECT *ppco; // $a3
 	// 		unsigned short num; // $a1
 	/* end block 1 */
 	// End offset: 0x0003F6B0
@@ -229,13 +231,13 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 
 // decompiled code
 // original method signature: 
-// struct CELL_OBJECT * /*$ra*/ UnpackCellObject(struct PACKED_CELL_OBJECT *ppco /*$a3*/, struct XZPAIR *near /*$t0*/)
+// CELL_OBJECT * /*$ra*/ UnpackCellObject(PACKED_CELL_OBJECT *ppco /*$a3*/, XZPAIR *near /*$t0*/)
  // line 854, offset 0x000418e8
 	/* begin block 1 */
 		// Start line: 855
 		// Start offset: 0x000418E8
 		// Variables:
-	// 		struct CELL_OBJECT *pco; // $a2
+	// 		CELL_OBJECT *pco; // $a2
 	/* end block 1 */
 	// End offset: 0x000419A8
 	// End Line: 870

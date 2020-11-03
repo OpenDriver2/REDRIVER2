@@ -37,8 +37,8 @@ _HANDLING_TYPE handlingType[7] =
 		// Start line: 68
 		// Start offset: 0x00082BD0
 		// Variables:
-	// 		struct _CAR_DATA **ppCar; // $s0
-	// 		struct _CAR_DATA **end; // $s1
+	// 		CAR_DATA **ppCar; // $s0
+	// 		CAR_DATA **end; // $s1
 
 		/* begin block 1.1 */
 			// Start line: 73
@@ -82,8 +82,8 @@ _HANDLING_TYPE handlingType[7] =
 // [D] [T]
 void StepCars(void)
 {
-	_CAR_DATA** ppCar;
-	_CAR_DATA** end;
+	CAR_DATA** ppCar;
+	CAR_DATA** end;
 
 	ppCar = active_car_list;
 	end = active_car_list + num_active_cars;
@@ -100,17 +100,17 @@ void StepCars(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ StepOneCar(struct _CAR_DATA *cp /*$s1*/)
+// void /*$ra*/ StepOneCar(CAR_DATA *cp /*$s1*/)
  // line 98, offset 0x00081178
 	/* begin block 1 */
 		// Start line: 99
 		// Start offset: 0x00081178
 		// Variables:
-	// 		struct CAR_LOCALS _cl; // stack offset -248
-	// 		struct CAR_LOCALS *cl; // $s3
+	// 		CAR_LOCALS _cl; // stack offset -248
+	// 		CAR_LOCALS *cl; // $s3
 	// 		int i; // $s0
 	// 		int speed; // $v1
-	// 		struct _sdPlane *SurfacePtr; // stack offset -48
+	// 		sdPlane *SurfacePtr; // stack offset -48
 
 		/* begin block 1.1 */
 			// Start line: 122
@@ -126,22 +126,22 @@ void StepCars(void)
 			// Start line: 133
 			// Start offset: 0x0008127C
 			// Variables:
-		// 		long deepestNormal[4]; // stack offset -208
-		// 		long deepestLever[4]; // stack offset -192
-		// 		long deepestPoint[4]; // stack offset -176
+		// 		LONGVECTOR deepestNormal; // stack offset -208
+		// 		LONGVECTOR deepestLever; // stack offset -192
+		// 		LONGVECTOR deepestPoint; // stack offset -176
 		// 		int lift; // $s5
 		// 		int count; // $a0
 		// 		int friToUse; // $s6
-		// 		struct SVECTOR *carDisp; // $a1
+		// 		SVECTOR *carDisp; // $a1
 
 			/* begin block 1.2.1 */
 				// Start line: 156
 				// Start offset: 0x00081314
 				// Variables:
-			// 		long pointPos[4]; // stack offset -160
-			// 		long surfacePoint[4]; // stack offset -144
-			// 		long surfaceNormal[4]; // stack offset -128
-			// 		long lever[4]; // stack offset -112
+			// 		LONGVECTOR pointPos; // stack offset -160
+			// 		LONGVECTOR surfacePoint; // stack offset -144
+			// 		LONGVECTOR surfaceNormal; // stack offset -128
+			// 		LONGVECTOR lever; // stack offset -112
 			// 		int newLift; // $a0
 			/* end block 1.2.1 */
 			// End offset: 0x00081410
@@ -151,8 +151,8 @@ void StepCars(void)
 				// Start line: 201
 				// Start offset: 0x00081428
 				// Variables:
-			// 		long pointVel[4]; // stack offset -112
-			// 		long reaction[4]; // stack offset -96
+			// 		LONGVECTOR pointVel; // stack offset -112
+			// 		LONGVECTOR reaction; // stack offset -96
 			// 		int strikeVel; // $a2
 			// 		int componant; // $t3
 			// 		static int frictionLimit[6]; // offset 0x0
@@ -187,7 +187,7 @@ void StepCars(void)
 						// Start line: 237
 						// Start offset: 0x000816CC
 						// Variables:
-					// 		struct VECTOR direction; // stack offset -80
+					// 		VECTOR direction; // stack offset -80
 					/* end block 1.2.2.3.1 */
 					// End offset: 0x000816CC
 					// End Line: 237
@@ -196,7 +196,7 @@ void StepCars(void)
 						// Start line: 242
 						// Start offset: 0x0008170C
 						// Variables:
-					// 		struct VECTOR direction; // stack offset -64
+					// 		VECTOR direction; // stack offset -64
 					/* end block 1.2.2.3.2 */
 					// End offset: 0x00081744
 					// End Line: 244
@@ -211,7 +211,7 @@ void StepCars(void)
 				// Start line: 256
 				// Start offset: 0x0008186C
 				// Variables:
-			// 		struct VECTOR offset; // stack offset -112
+			// 		VECTOR offset; // stack offset -112
 			/* end block 1.2.3 */
 			// End offset: 0x00081944
 			// End Line: 269
@@ -235,7 +235,7 @@ void StepCars(void)
 int impulse;
 
 // [D] [T]
-void StepOneCar(_CAR_DATA* cp)
+void StepOneCar(CAR_DATA* cp)
 {
 	static int frictionLimit[6] = {
 		0x3ED000, 0x178E000,
@@ -249,16 +249,16 @@ void StepOneCar(_CAR_DATA* cp)
 	int a, b, speed;
 	int count, i;
 	CAR_LOCALS _cl;
-	long deepestNormal[4];
-	long deepestLever[4];
-	long deepestPoint[4];
-	long pointPos[4];
-	long surfacePoint[4];
-	long surfaceNormal[4];
-	long lever[4];
-	long reaction[4];
+	LONGVECTOR deepestNormal;
+	LONGVECTOR deepestLever;
+	LONGVECTOR deepestPoint;
+	LONGVECTOR pointPos;
+	LONGVECTOR surfacePoint;
+	LONGVECTOR surfaceNormal;
+	LONGVECTOR lever;
+	LONGVECTOR reaction;
 	VECTOR direction;
-	_sdPlane* SurfacePtr;
+	sdPlane* SurfacePtr;
 
 	if (cp->controlType == CONTROL_TYPE_NONE)
 		return;
@@ -463,13 +463,13 @@ void StepOneCar(_CAR_DATA* cp)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ GetFrictionScalesDriver1(struct _CAR_DATA *cp /*$t0*/, struct CAR_LOCALS *cl /*$a1*/, int *frontFS /*$a2*/, int *rearFS /*$a3*/)
+// void /*$ra*/ GetFrictionScalesDriver1(CAR_DATA *cp /*$t0*/, CAR_LOCALS *cl /*$a1*/, int *frontFS /*$a2*/, int *rearFS /*$a3*/)
  // line 288, offset 0x0008198c
 	/* begin block 1 */
 		// Start line: 289
 		// Start offset: 0x0008198C
 		// Variables:
-	// 		struct _HANDLING_TYPE *hp; // $t2
+	// 		_HANDLING_TYPE *hp; // $t2
 
 		/* begin block 1.1 */
 			// Start line: 306
@@ -503,7 +503,7 @@ void StepOneCar(_CAR_DATA* cp)
 	// End Line: 808
 
 // [D] [T]
-void GetFrictionScalesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* rearFS)
+void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* rearFS)
 {
 	unsigned char bVar1;
 	int autoBrake;
@@ -625,13 +625,13 @@ void GetFrictionScalesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* 
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ ConvertTorqueToAngularAcceleration(struct _CAR_DATA *cp /*$a0*/, struct CAR_LOCALS *cl /*$t5*/)
+// void /*$ra*/ ConvertTorqueToAngularAcceleration(CAR_DATA *cp /*$a0*/, CAR_LOCALS *cl /*$t5*/)
  // line 412, offset 0x00081e20
 	/* begin block 1 */
 		// Start line: 413
 		// Start offset: 0x00081E20
 		// Variables:
-	// 		long nose[4]; // stack offset -16
+	// 		LONGVECTOR nose; // stack offset -16
 	// 		int zd; // $a3
 	// 		int i; // $t4
 	// 		int twistY; // $t0
@@ -661,7 +661,7 @@ void GetFrictionScalesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* 
 	// End Line: 1066
 
 // [D] [T]
-void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
+void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 {
 	int twistY;
 	int twistZ;
@@ -690,7 +690,7 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ AddWheelForcesDriver1(struct _CAR_DATA *cp /*$s2*/, struct CAR_LOCALS *cl /*$s7*/)
+// void /*$ra*/ AddWheelForcesDriver1(CAR_DATA *cp /*$s2*/, CAR_LOCALS *cl /*$s7*/)
  // line 442, offset 0x00081f50
 	/* begin block 1 */
 		// Start line: 443
@@ -706,8 +706,8 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
 	// 		int sdx; // stack offset -72
 	// 		int sdz; // stack offset -68
 	// 		int friction_coef; // $s6
-	// 		struct CAR_COSMETICS *car_cos; // stack offset -64
-	// 		struct _sdPlane *SurfacePtr; // stack offset -88
+	// 		CAR_COSMETICS *car_cos; // stack offset -64
+	// 		sdPlane *SurfacePtr; // stack offset -88
 	// 		int player_id; // stack offset -60
 
 		/* begin block 1.1 */
@@ -717,9 +717,9 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
 		// 		int oldCompression; // $s5
 		// 		int newCompression; // $s3
 		// 		int susForce; // $s0
-		// 		long wheelPos[4]; // stack offset -176
-		// 		long surfacePoint[4]; // stack offset -160
-		// 		long surfaceNormal[4]; // stack offset -144
+		// 		LONGVECTOR wheelPos; // stack offset -176
+		// 		LONGVECTOR surfacePoint; // stack offset -160
+		// 		LONGVECTOR surfaceNormal; // stack offset -144
 
 			/* begin block 1.1.1 */
 				// Start line: 488
@@ -743,8 +743,8 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
 				// Start line: 537
 				// Start offset: 0x00082380
 				// Variables:
-			// 		struct VECTOR force; // stack offset -128
-			// 		long pointVel[4]; // stack offset -112
+			// 		VECTOR force; // stack offset -128
+			// 		LONGVECTOR pointVel; // stack offset -112
 			// 		int lfx; // $a2
 			// 		int lfz; // $t2
 			// 		int sidevel; // $t0
@@ -797,7 +797,7 @@ void ConvertTorqueToAngularAcceleration(_CAR_DATA* cp, CAR_LOCALS* cl)
 	// End Line: 1173
 
 // [D] [T]
-void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
+void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 {
 	int oldCompression;
 	int dir;
@@ -813,14 +813,14 @@ void AddWheelForcesDriver1(_CAR_DATA* cp, CAR_LOCALS* cl)
 	int friction_coef;
 	int oldSpeed;
 	int wheelspd;
-	long wheelPos[4];
-	long surfacePoint[4];
-	long surfaceNormal[4];
+	LONGVECTOR wheelPos;
+	LONGVECTOR surfacePoint;
+	LONGVECTOR surfaceNormal;
 	VECTOR force;
-	long pointVel[4];
+	LONGVECTOR pointVel;
 	int frontFS;
 	int rearFS;
-	_sdPlane* SurfacePtr;
+	sdPlane* SurfacePtr;
 	int i;
 	int cdx;
 	int cdz;

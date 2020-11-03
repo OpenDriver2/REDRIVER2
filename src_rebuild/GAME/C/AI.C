@@ -40,7 +40,7 @@ void StoreGameFlags(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ TannerCanEnterCar(struct _CAR_DATA *cp /*$a0*/, int distToCarSq /*$a1*/)
+// int /*$ra*/ TannerCanEnterCar(CAR_DATA *cp /*$a0*/, int distToCarSq /*$a1*/)
  // line 297, offset 0x0001bbe8
 	/* begin block 1 */
 		// Start line: 298
@@ -50,7 +50,7 @@ void StoreGameFlags(void)
 			// Start line: 310
 			// Start offset: 0x0001BC7C
 			// Variables:
-		// 		struct SVECTOR *carCollBox; // $v0
+		// 		SVECTOR *carCollBox; // $v0
 		// 		int carRange; // $a0
 		/* end block 1.1 */
 		// End offset: 0x0001BCCC
@@ -70,7 +70,7 @@ void StoreGameFlags(void)
 	// End Line: 661
 
 // [D] [T]
-int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
+int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
 {
 	int carRange;
 
@@ -106,7 +106,7 @@ int TannerCanEnterCar(_CAR_DATA *cp, int distToCarSq)
 		// Start line: 325
 		// Start offset: 0x0001BA90
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $a2
+	// 		CAR_DATA *cp; // $a2
 	/* end block 1 */
 	// End offset: 0x0001BBB8
 	// End Line: 341
@@ -127,8 +127,8 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 	short *playerFelony;
 	int speed;
 
-	_CAR_DATA *cp;
-	_PLAYER* lp;
+	CAR_DATA *cp;
+	PLAYER* lp;
 	
 	cp = NULL;
 	lp = &player[player_id];

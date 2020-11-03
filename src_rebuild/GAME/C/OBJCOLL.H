@@ -19,7 +19,7 @@ extern void BuildCollisionCopList(int *count); // 0x0006B45C
 
 extern void CollisionCopList(XZPAIR *pos, int *count); // 0x0006A498
 
-extern void CheckScenaryCollisions(_CAR_DATA *cp); // 0x0006A64C
+extern void CheckScenaryCollisions(CAR_DATA *cp); // 0x0006A64C
 
 extern int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra); // 0x0006ADBC
 

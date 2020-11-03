@@ -132,8 +132,8 @@ void InitDrivingGames(void)
 		// Start line: 292
 		// Start offset: 0x0004326C
 		// Variables:
-	// 		struct _CAR_DATA *cp; // $a2
-	// 		struct VECTOR vel; // stack offset -96
+	// 		CAR_DATA *cp; // $a2
+	// 		VECTOR vel; // stack offset -96
 	// 		int i; // $s3
 	// 		int j; // $v1
 	// 		int k; // $a0
@@ -144,8 +144,8 @@ void InitDrivingGames(void)
 			// Start line: 351
 			// Start offset: 0x00043354
 			// Variables:
-		// 		struct VECTOR pos1; // stack offset -80
-		// 		struct VECTOR pos2; // stack offset -64
+		// 		VECTOR pos1; // stack offset -80
+		// 		VECTOR pos2; // stack offset -64
 		// 		int x; // $t0
 		// 		int z; // $a1
 		// 		int r; // $v0
@@ -159,7 +159,7 @@ void InitDrivingGames(void)
 			// Start line: 435
 			// Start offset: 0x00043700
 			// Variables:
-		// 		struct VECTOR pos; // stack offset -80
+		// 		VECTOR pos; // stack offset -80
 		/* end block 1.2 */
 		// End offset: 0x00043800
 		// End Line: 456
@@ -409,7 +409,7 @@ LAB_00043668:
 		// Start line: 479
 		// Start offset: 0x000438DC
 		// Variables:
-	// 		struct VECTOR wpos; // stack offset -24
+	// 		VECTOR wpos; // stack offset -24
 	// 		int i; // $s0
 	/* end block 1 */
 	// End offset: 0x000439FC
@@ -495,14 +495,14 @@ void DrawDrivingGames(void)
 
 // decompiled code
 // original method signature: 
-// int /*$ra*/ CarConeCollision(struct VECTOR *pPos /*$a0*/, int car /*$a1*/)
+// int /*$ra*/ CarConeCollision(VECTOR *pPos /*$a0*/, int car /*$a1*/)
  // line 545, offset 0x000439fc
 	/* begin block 1 */
 		// Start line: 546
 		// Start offset: 0x000439FC
 		// Variables:
-	// 		struct CDATA2D cd[2]; // stack offset -216
-	// 		struct _CAR_DATA *cp1; // $t0
+	// 		CDATA2D cd[2]; // stack offset -216
+	// 		CAR_DATA *cp1; // $t0
 	// 		int carLength[2]; // stack offset -16
 
 		/* begin block 1.1 */
@@ -561,13 +561,13 @@ int CarConeCollision(VECTOR *pPos, int car)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ SetSmashedCone(int cone /*$s1*/, struct VECTOR *velocity /*$a1*/, int player /*$s2*/, int side /*$a3*/)
+// void /*$ra*/ SetSmashedCone(int cone /*$s1*/, VECTOR *velocity /*$a1*/, int player /*$s2*/, int side /*$a3*/)
  // line 578, offset 0x00043ae8
 	/* begin block 1 */
 		// Start line: 579
 		// Start offset: 0x00043AE8
 		// Variables:
-	// 		struct SMASHED_CONE *sc; // $s0
+	// 		SMASHED_CONE *sc; // $s0
 	// 		int chan; // $s0
 	/* end block 1 */
 	// End offset: 0x00043CE0
@@ -730,8 +730,8 @@ void MoveSmashedCones(void)
 		// Start line: 664
 		// Start offset: 0x00044168
 		// Variables:
-	// 		struct SMASHED_CONE *sc; // $s0
-	// 		struct VECTOR wpos; // stack offset -40
+	// 		SMASHED_CONE *sc; // $s0
+	// 		VECTOR wpos; // stack offset -40
 	// 		int i; // $s1
 	/* end block 1 */
 	// End offset: 0x00044228
@@ -794,14 +794,14 @@ void DrawSmashedCones(void)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawCone(struct VECTOR *position /*$s0*/, int cone /*$s1*/)
+// void /*$ra*/ DrawCone(VECTOR *position /*$s0*/, int cone /*$s1*/)
  // line 703, offset 0x00044034
 	/* begin block 1 */
 		// Start line: 704
 		// Start offset: 0x00044034
 		// Variables:
-	// 		struct MATRIX matrix; // stack offset -64
-	// 		struct VECTOR pos; // stack offset -32
+	// 		MATRIX matrix; // stack offset -64
+	// 		VECTOR pos; // stack offset -32
 
 		/* begin block 1.1 */
 			// Start line: 713
@@ -874,15 +874,15 @@ void DrawCone(VECTOR *position, int cone)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ DrawSmashedCone(struct SMASHED_CONE *sc /*$s0*/, struct VECTOR *wpos /*$s1*/)
+// void /*$ra*/ DrawSmashedCone(SMASHED_CONE *sc /*$s0*/, VECTOR *wpos /*$s1*/)
  // line 730, offset 0x00043dec
 	/* begin block 1 */
 		// Start line: 731
 		// Start offset: 0x00043DEC
 		// Variables:
-	// 		struct MATRIX object_matrix; // stack offset -64
-	// 		struct MATRIX *finalmatrix; // $s2
-	// 		struct VECTOR pos; // stack offset -32
+	// 		MATRIX object_matrix; // stack offset -64
+	// 		MATRIX *finalmatrix; // $s2
+	// 		VECTOR pos; // stack offset -32
 	/* end block 1 */
 	// End offset: 0x00043F34
 	// End Line: 750
@@ -932,13 +932,13 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 
 // decompiled code
 // original method signature: 
-// void /*$ra*/ GetConePos(int cone /*$a0*/, struct VECTOR *pos /*$t2*/, int side /*$a2*/)
+// void /*$ra*/ GetConePos(int cone /*$a0*/, VECTOR *pos /*$t2*/, int side /*$a2*/)
  // line 757, offset 0x00043f34
 	/* begin block 1 */
 		// Start line: 758
 		// Start offset: 0x00043F34
 		// Variables:
-	// 		struct VECTOR offset; // stack offset -16
+	// 		VECTOR offset; // stack offset -16
 	// 		int x; // $t3
 	// 		int z; // $t4
 	// 		int r; // $v1

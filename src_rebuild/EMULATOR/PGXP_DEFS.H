@@ -23,7 +23,10 @@ struct PGXPVData
 	float px;
 	float py;
 	float pz;
+
 	float scr_h;
+	float ofx;
+	float ofy;
 };
 
 extern int g_pgxpVertexIndex;
