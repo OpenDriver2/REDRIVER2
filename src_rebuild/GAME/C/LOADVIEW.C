@@ -482,8 +482,8 @@ void CloseShutters(int speed, int width, int height)
 
 	} while (!done);
 
-	ClearOTagR((u_long*)current->ot, 0x1080);
-	ClearOTagR((u_long*)last->ot, 0x1080);
+	ClearOTagR((u_long*)current->ot, OTSIZE);
+	ClearOTagR((u_long*)last->ot, OTSIZE);
 
 	SetDispMask(0);
 }
