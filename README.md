@@ -1,7 +1,7 @@
 # REDRIVER2
 
 PC (Windows):
-[![Build status](https://ci.appveyor.com/api/projects/status/smxrjad2rf4fg0py/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/9abepvls6jexapqy/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2-10jm8/branch/master)
 <p align="center">
 <a href="https://streamable.com/rtjpoa"><img src="https://i.ibb.co/MG8qwqx/aaa.png"/><a>
  </p>
