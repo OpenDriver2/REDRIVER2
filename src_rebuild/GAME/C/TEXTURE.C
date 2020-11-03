@@ -764,8 +764,6 @@ void LoadPermanentTPages(int *sector)
 		IncrementTPageNum(&tpage);
 		clutpos.y += 8;
 	}
-
-	//Emulator_SaveVRAM("VRAM_CLUTS_TPAGES.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
 
 

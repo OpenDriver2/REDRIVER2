@@ -20,6 +20,7 @@
 #include "FELONY.H"
 #include "JOB_FX.H"
 #include "BCOLLIDE.H"
+#include "GAMESND.H"
 #include "MAP.H"
 #include "SYSTEM.H"
 #include "HANDLING.H"
@@ -1067,7 +1068,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	else
 	{
 		MakeTheCarShutUp(playerId);
-		Start3DSoundVolPitch(-1, 6, 2, lp->pos[0], lp->pos[1], lp->pos[2], 0, 0x1000);
+		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, lp->pos[0], lp->pos[1], lp->pos[2], 0, 0x1000);
 		SetupGetOutCar(pedptr, pCar, side);
 
 		//pedptr->padId = 0;
@@ -2430,7 +2431,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 
 			// HEY!
 			CreatePedAtLocation(&pos, 8);
-			Start3DSoundVolPitch(-1, 6, 5, pos[0], pos[1], pos[2], 0, 0x1000);
+			Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 5, pos[0], pos[1], pos[2], 0, 0x1000);
 
 			carToGetIn->controlFlags |= CONTROL_FLAG_WAS_PARKED;
 		}
@@ -2509,6 +2510,7 @@ void SetupPressButton(PEDESTRIAN* pPed)
 	pPed->type = PED_ACTION_PRESSBUTTON;
 	SetupPedMotionData(pPed);
 
+	pPed->dir.vz = 0;
 	pPed->speed = 0;
 	pPed->frame1 = 0;
 	pPed->fpAgitatedState = PedPressButton;
@@ -2559,6 +2561,7 @@ void SetupTannerSitDown(PEDESTRIAN* pPed)
 	pPed->type = PED_ACTION_SIT;
 	SetupPedMotionData(pPed);
 
+	pPed->dir.vz = 0;
 	pPed->speed = 0;
 	pPed->frame1 = 0;
 	pPed->fpAgitatedState = TannerSitDown;
@@ -2890,10 +2893,10 @@ void AnimatePed(PEDESTRIAN* pPed)
 		if (surfId != 4 && surfId != 6 && surfId != 11 && surfId != 9)
 		{
 			if (pPed->frame1 == 3)
-				Start3DSoundVolPitch(-1, 6, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
 
 			if (pPed->frame1 == 11)
-				Start3DSoundVolPitch(-1, 6, 1, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 1, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
 		}
 	}
 
@@ -2969,7 +2972,7 @@ void DeActivatePlayerPedestrian(PEDESTRIAN* pPed)
 		pPed->type = PED_ACTION_GETINCAR;
 		pPed->fpAgitatedState = PedGetInCar;
 
-		Start3DSoundVolPitch(-1, 6, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 0x1000);
+		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 0x1000);
 		SetupPedestrian(pPed);
 		SetupGetInCar(pPed);
 	}

@@ -1,6 +1,14 @@
 #ifndef GAMESND_H
 #define GAMESND_H
 
+// Game loaded sound banks. DO NOT EDIT!
+#define SOUND_BANK_SFX			1
+#define SOUND_BANK_VOICES		2
+#define SOUND_BANK_CARS			3
+#define SOUND_BANK_ENVIRONMENT	4
+#define SOUND_BANK_MISSION		5
+#define SOUND_BANK_TANNER		6
+
 extern int gDriver1Music;
 
 extern int TimeSinceLastSpeech;

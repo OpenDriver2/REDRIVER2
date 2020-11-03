@@ -12,6 +12,7 @@
 #include "BCOLLIDE.H"
 #include "CAMERA.H"
 #include "CONVERT.H"
+#include "GAMESND.H"
 #include "MAP.H"
 #include "SOUND.H"
 #include "GLAUNCH.H"
@@ -641,7 +642,7 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 			SetPlayerOwnsChannel(chan, player);
 
 		pTVar4 = gTrailblazerData + cone;
-		Start3DSoundVolPitch(chan, 1, 5, pTVar4->x, pTVar4->y, pTVar4->z, -2000, 800);
+		Start3DSoundVolPitch(chan, 1, SOUND_BANK_MISSION, pTVar4->x, pTVar4->y, pTVar4->z, -2000, 800);
 	}
 }
 

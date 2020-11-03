@@ -2,7 +2,6 @@
 #include "GLAUNCH.H"
 
 
-#include "LIBETC.H"
 
 #include "SYSTEM.H"
 #include "MAIN.H"
@@ -12,12 +11,13 @@
 #include "REPLAYS.H"
 #include "MISSION.H"
 #include "GAMESND.H"
-#include "SYSTEM.H"
 #include "CAMERA.H"
 #include "FMVPLAY.H"
 #include "../FRONTEND/FEMAIN.H"
 
-#include <string.h>
+
+#include "LIBETC.H"
+#include "STRINGS.H"
 
 MISSION_STEP MissionLadder[68] =
 {
@@ -92,7 +92,9 @@ MISSION_STEP MissionLadder[68] =
 };
 
 unsigned short RecapFrameLength[19] = {
-	0x203, 0x2FC, 0x3C2, 0x496, 0x56D, 0x616, 0x6D4, 0x70E, 0x800, 0x8CD, 0x99A, 0x430, 0x550, 0x5E3, 0x67B, 0x96D, 0xA17, 0xAC9, 0xBB6
+	515, 764, 962, 1174, 1389, 1558, 1748,
+	1806, 2048, 2253, 2458, 1072, 1360,
+	1507, 1659, 2413, 2583, 2761, 2998
 };
 
 ACTIVE_CHEATS AvailableCheats = { 0 };
@@ -147,13 +149,13 @@ int gFurthestMission = 0;
 int gWantNight = 0;
 
 
-// [D]
+// [D] [T]
 void GameStart(void)
 {
-	int iVar1;
+	int oldVibrationMode;
 	int SurvivalCopSettingsBackup;
 
-	if( GameType != GAME_CONTINUEMISSION && 
+	if (GameType != GAME_CONTINUEMISSION &&
 		GameType != GAME_MISSION &&
 		GameType != GAME_REPLAYMISSION)
 	{
@@ -173,7 +175,7 @@ void GameStart(void)
 	SurvivalCopSettingsBackup = gCopDifficultyLevel;
 	NewLevel = 1;
 
-	switch (GameType) 
+	switch (GameType)
 	{
 		case GAME_MISSION:
 			RunMissionLadder(1);
@@ -181,15 +183,17 @@ void GameStart(void)
 		case GAME_TAKEADRIVE:
 
 			if (NumPlayers == 1)
-				iVar1 = 50;
+				gCurrentMissionNumber = 50;
 			else
-				iVar1 = 58;
+				gCurrentMissionNumber = 58;
 
-			gCurrentMissionNumber = iVar1 + GameLevel * 2 + gWantNight + gSubGameNumber * 440;
+			gCurrentMissionNumber += GameLevel * 2 + gWantNight + gSubGameNumber * 440;
+
 			LaunchGame();
 			break;
 		case GAME_IDLEDEMO:
-			iVar1 = gVibration;
+			oldVibrationMode = gVibration;
+
 			if (LoadAttractReplay(gCurrentMissionNumber))
 			{
 				gVibration = 0;
@@ -199,50 +203,58 @@ void GameStart(void)
 				LaunchGame();
 
 				gLoadedReplay = 0;
-				gVibration = iVar1;
+				gVibration = oldVibrationMode;
 			}
+
 			break;
 		case GAME_PURSUIT:
-			gCurrentMissionNumber = GameLevel * 8 + 70 + gWantNight * 4 + gSubGameNumber;
+			gCurrentMissionNumber = 70 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_GETAWAY:
-			gCurrentMissionNumber = GameLevel * 8 + 102 + gWantNight * 4 + gSubGameNumber;
+			gCurrentMissionNumber = 102 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_GATERACE:
 			if (NumPlayers == 1)
-				iVar1 = 134;
+				gCurrentMissionNumber = 134;
 			else
-				iVar1 = 164;
+				gCurrentMissionNumber = 164;
 
-			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
 			break;
 		case GAME_CHECKPOINT:
 			if (NumPlayers == 1)
-				iVar1 = 196;
+				gCurrentMissionNumber = 196;
 			else
-				iVar1 = 228;
+				gCurrentMissionNumber = 228;
 
-			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_TRAILBLAZER:
 			gCurrentMissionNumber = GameLevel * 8 + 260 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_SURVIVAL:
 			gCopDifficultyLevel = 2;
-			
-			if (NumPlayers == 1)
-				iVar1 = 292;
-			else
-				iVar1 = 324;
 
-			gCurrentMissionNumber = iVar1 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+			if (NumPlayers == 1)
+				gCurrentMissionNumber = 292;
+			else
+				gCurrentMissionNumber = 324;
+
+			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
+
 			LaunchGame();
+
 			gCopDifficultyLevel = SurvivalCopSettingsBackup;
+
 			break;
 		case GAME_REPLAYMISSION:
 			GameType = GAME_MISSION;
@@ -251,34 +263,42 @@ void GameStart(void)
 				RunMissionLadder(0);
 
 			GameType = GAME_REPLAYMISSION;
+
 			break;
 		case GAME_COPSANDROBBERS:
-			gCurrentMissionNumber = GameLevel * 8 + 420 + gWantNight * 4 + gSubGameNumber;
+			gCurrentMissionNumber = 420 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_CAPTURETHEFLAG:
-			gCurrentMissionNumber = GameLevel * 8 + 352 + gSubGameNumber;
+			gCurrentMissionNumber = 352 + GameLevel * 8 + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_SECRET:
 			if (NumPlayers == 1)
-				iVar1 = 480;
+				gCurrentMissionNumber = 480;
 			else
-				iVar1 = 484;
+				gCurrentMissionNumber = 484;
 
-			gCurrentMissionNumber = iVar1 + gWantNight + gSubGameNumber;
+			gCurrentMissionNumber += gWantNight + gSubGameNumber;
 			LaunchGame();
+
 			break;
 		case GAME_CONTINUEMISSION:
 			GameType = GAME_MISSION;
 			RunMissionLadder(0);
+
 			break;
 		case GAME_LOADEDREPLAY:
 			CurrentGameMode = GAMEMODE_DIRECTOR;
 			gLoadedReplay = 1;
 			GameType = StoredGameType;
+
 			LaunchGame();
+
 			gLoadedReplay = 0;
+
 			break;
 	}
 
@@ -305,7 +325,7 @@ void GameStart(void)
 	/* end block 2 */
 	// End Line: 2538
 
-// [D]
+// [D] [T]
 void StartRender(int renderNum)
 {
 	PlayFMV(renderNum);
@@ -349,7 +369,7 @@ void StartRender(int renderNum)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ReInitFrontend(void)
 {
 	RECT16 rect;
@@ -360,14 +380,18 @@ void ReInitFrontend(void)
 	EnableDisplay();
 	DrawSync(0);
 	VSync(0);
+
 	gInFrontend = 1;
+
 	SetDispMask(0);
+
 	StopDualShockMotors();
 	FreeXM();
-	SpuSetReverbVoice(0, 0xffffff);
+
+	SpuSetReverbVoice(0, SPU_ALLCH);
 	UnPauseSound();
 
-	LoadSoundBankDynamic((char *)0x0, 0, 0);
+	LoadSoundBankDynamic((char*)0x0, 0, 0);
 	LoadBankFromLump(1, 0);
 
 #ifdef PSX
@@ -378,7 +402,7 @@ void ReInitFrontend(void)
 	DrawSync(0);
 	EnableDisplay();
 
-	setRECT16(&rect, 0,0, 320, 512);
+	setRECT16(&rect, 0, 0, 320, 512);
 	ClearImage(&rect, 0, 0, 0);
 
 	DrawSync(0);
@@ -386,12 +410,14 @@ void ReInitFrontend(void)
 	ReInitScreens();
 	DrawSync(0);
 	VSync(0);
-	ClearOTagR((u_long*)MPBuff[0][0].ot, 0x1080);
-	ClearOTagR((u_long*)MPBuff[0][1].ot, 0x1080);
+
+	ClearOTagR((u_long*)MPBuff[0][0].ot, OTSIZE);
+	ClearOTagR((u_long*)MPBuff[0][1].ot, OTSIZE);
+
 	SetDispMask(1);
+
 	//LoadedLevel = 0xff;
 	bRedrawFrontend = 1;
-	return;
 }
 
 
@@ -461,11 +487,11 @@ void ReInitFrontend(void)
 	/* end block 4 */
 	// End Line: 2250
 
-// [D]
+// [D] [T]
 void RunMissionLadder(int newgame)
 {
 	bool quit;
-	MISSION_STEP *CurrentStep;
+	MISSION_STEP* CurrentStep;
 	RENDER_ARGS RenderArgs;
 
 	quit = false;
@@ -484,16 +510,17 @@ void RunMissionLadder(int newgame)
 
 		RenderArgs.Args[0].credits = 0;
 		RenderArgs.Args[0].recap = RecapFrameLength[CurrentStep->recap - 1];
+
 		RenderArgs.nRenders = 1;
 	}
 
 	do {
 		if (CurrentStep->disc == 0)
 			CheckForCorrectDisc(0);
-		else 
+		else
 			CheckForCorrectDisc(1);
 
-		if (RenderArgs.nRenders == 4) 
+		if (RenderArgs.nRenders == 4)
 		{
 			SetPleaseWait(NULL);
 			PlayRender(&RenderArgs);
@@ -505,7 +532,7 @@ void RunMissionLadder(int newgame)
 
 		if (CurrentStep->flags == 2)
 		{
-			if (RenderArgs.nRenders != 0) 
+			if (RenderArgs.nRenders != 0)
 			{
 				SetPleaseWait(NULL);
 				PlayRender(&RenderArgs);
@@ -516,12 +543,12 @@ void RunMissionLadder(int newgame)
 			gCurrentMissionNumber = CurrentStep->data;
 			LaunchGame();
 
-			if (WantedGameMode == GAMEMODE_NEXTMISSION) 
+			if (WantedGameMode == GAMEMODE_NEXTMISSION)
 			{
-				if (gFurthestMission < gCurrentMissionNumber) 
+				if (gFurthestMission < gCurrentMissionNumber)
 					gFurthestMission = gCurrentMissionNumber;
 			}
-			else 
+			else
 			{
 				quit = true;
 			}
@@ -591,9 +618,11 @@ void RunMissionLadder(int newgame)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void GetRandomChase(void)
 {
+	int bump;
+
 	// [A] debug
 	if (gChaseNumber != 0)
 	{
@@ -601,18 +630,16 @@ void GetRandomChase(void)
 		return;
 	}
 
-	int bump = 0;
-
 	if (gLoadedReplay == 0)
 	{
 		gRandomChase = VSync(-1) % 0xd + 2;
 
-		if (gRandomChase == gLastChase)
+		bump = 0;
+
+		while (gRandomChase == gLastChase)
 		{
-			do {
-				gRandomChase = (VSync(-1) + bump) % 13 + 2;
-				bump++;
-			} while (gRandomChase == gLastChase);
+			gRandomChase = (VSync(-1) + bump) % 13 + 2;
+			bump++;
 		}
 
 		gLastChase = gRandomChase;
@@ -647,10 +674,10 @@ void GetRandomChase(void)
 	/* end block 4 */
 	// End Line: 3008
 
-// [D]
+// [D] [T]
 int FindPrevMissionFromLadderPos(int pos)
 {
-	MISSION_STEP *step = &MissionLadder[pos];
+	MISSION_STEP* step = &MissionLadder[pos];
 	while (pos-- > 0)
 	{
 		if (step->flags == 2)
@@ -662,7 +689,7 @@ int FindPrevMissionFromLadderPos(int pos)
 
 			return 1;
 		}
-			
+
 		step--;
 	}
 
@@ -719,9 +746,12 @@ int lead_car = 0;
 MISSION_DATA MissionStartData;
 MISSION_DATA MissionEndData;
 
-// [D]
+// [D] [T]
 void LaunchGame(void)
 {
+	int quit;
+	RECT16 rect{ 0, 0, 512, 512 };
+
 	fakeOtherPlayer = 0;
 
 	ResetGraph(1);
@@ -737,12 +767,12 @@ void LaunchGame(void)
 	if (gLoadedReplay == 0)
 		GetRandomChase();
 
-	if (CurrentGameMode == GAMEMODE_DIRECTOR) 
+	if (CurrentGameMode == GAMEMODE_DIRECTOR)
 	{
 		AttractMode = 0;
 		NoPlayerControl = 1;
 	}
-	else 
+	else
 	{
 		AttractMode = 0;
 		NoPlayerControl = 0;
@@ -766,7 +796,7 @@ void LaunchGame(void)
 	AutoDirect = 0;
 	NewLevel = 1;
 
-	bool quit = false;
+	quit = 0;
 
 	do {
 		GameInit();
@@ -778,26 +808,29 @@ void LaunchGame(void)
 			case GAMEMODE_QUIT:
 			case GAMEMODE_DEMO:
 			{
-				FadeScreen(0xff);
-				quit = true;
+				FadeScreen(255);
+				quit = 1;
 				break;
 			}
 			case GAMEMODE_RESTART:
 			{
-				FadeScreen(0xff);
+				FadeScreen(255);
+
 				NoPlayerControl = 0;
 				quick_replay = 0;
 				AutoDirect = 0;
 				WantedGameMode = GAMEMODE_NORMAL;
 				NewLevel = 0;
+
 				GetRandomChase();
+
 				break;
 			}
 			case GAMEMODE_REPLAY:
 			case GAMEMODE_DIRECTOR:
 			{
 				if (CurrentGameMode < GAMEMODE_NEXTMISSION)
-					FadeScreen(0xff);
+					FadeScreen(255);
 
 				NoPlayerControl = 1;
 				AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
@@ -809,13 +842,16 @@ void LaunchGame(void)
 			{
 				MissionStartData = MissionEndData;
 				gHaveStoredData = 1;
-				FadeScreen(0xff);
-				quit = true;
+
+				FadeScreen(255);
+				quit = 1;
+
 				NoPlayerControl = 0;
 				quick_replay = 0;
 				AutoDirect = 0;
 			}
 		}
+
 		CurrentGameMode = WantedGameMode;
 	} while (!quit);
 
@@ -824,7 +860,6 @@ void LaunchGame(void)
 	SetDispMask(0);
 	EnableDisplay();
 
-	RECT16 rect { 0, 0, 512, 512 };
 	ClearImage(&rect, 0, 0, 0);
 
 	DrawSync(0);
@@ -860,35 +895,37 @@ void LaunchGame(void)
 	/* end block 4 */
 	// End Line: 3337
 
-// [D]
+// [D] [T]
 int FindMissionLadderPos(int mission)
 {
-	MISSION_STEP *step = MissionLadder;
+	MISSION_STEP* step = MissionLadder;
 	int pos = 0;
 	bool end = false;
 
 	do {
-		switch (step->flags) {
-		case 1:
-		case 6:
+		switch (step->flags)
+		{
+			case 1:
+			case 6:
 			{
 				step++;
 				pos++;
-			} break;
-		case 2:
+				break;
+			}
+			case 2:
 			{
 				if (step->data == mission)
 				{
-					if (pos > 0) {
+					if (pos > 0)
+					{
 						step--;
-						if (step->flags != 2)
-						{
-							do {
-								if (--pos <= 0)
-									break;
 
-								step--;
-							} while (step->flags != 2);
+						while (step->flags != 2)
+						{
+							if (--pos <= 0)
+								break;
+
+							step--;
 						}
 					}
 
@@ -898,14 +935,15 @@ int FindMissionLadderPos(int mission)
 
 				step++;
 				pos++;
-			} break;
-		case 4:
-			// end of ladder
-			end = true;
-			break;
-		default:
-			// unhandled
-			return 0;
+				break;
+			}
+			case 4:
+				// end of ladder
+				end = true;
+				break;
+			default:
+				// unhandled
+				return 0;
 		}
 	} while (!end);
 
