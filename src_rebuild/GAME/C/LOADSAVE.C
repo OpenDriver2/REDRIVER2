@@ -323,7 +323,7 @@ int LoadReplayFromFile(char* fileName)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int CalcReplayDataSize(void)
 {
 	return SaveReplayToBuffer(NULL);
@@ -362,7 +362,7 @@ int CalcReplayDataSize(void)
 	/* end block 5 */
 	// End Line: 305
 
-// [D]
+// [D] [T]
 int SaveReplayData(char* buffer)
 {
 	return SaveReplayToBuffer(buffer);
@@ -389,7 +389,7 @@ int SaveReplayData(char* buffer)
 	/* end block 3 */
 	// End Line: 319
 
-// [D]
+// [D] [T]
 int LoadReplayData(char* buffer)
 {
 	return LoadReplayFromBuffer(buffer);
@@ -413,7 +413,7 @@ int LoadReplayData(char* buffer)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int CalcGameDataSize(void)
 {
 	return sizeof(GAME_SAVE_HEADER);
@@ -437,7 +437,7 @@ int CalcGameDataSize(void)
 	/* end block 2 */
 	// End Line: 344
 
-// [D]
+// [D] [T]
 int SaveGameData(char* buffer)
 {
 	GAME_SAVE_HEADER* saveHeader;
@@ -484,7 +484,7 @@ int SaveGameData(char* buffer)
 	/* end block 4 */
 	// End Line: 387
 
-// [D]
+// [D] [T]
 int LoadGameData(char* buffer)
 {
 	GAME_SAVE_HEADER* header;
@@ -527,7 +527,7 @@ int LoadGameData(char* buffer)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int CalcConfigDataSize(void)
 {
 	return sizeof(CONFIG_SAVE_HEADER);
@@ -554,7 +554,7 @@ int CalcConfigDataSize(void)
 	/* end block 2 */
 	// End Line: 219
 
-// [D]
+// [D] [T]
 int SaveConfigData(char* buffer)
 {
 	CONFIG_SAVE_HEADER* header;
@@ -618,6 +618,7 @@ int SaveConfigData(char* buffer)
 	/* end block 4 */
 	// End Line: 316
 
+// [D] [T]
 int LoadConfigData(char* buffer)
 {
 	CONFIG_SAVE_HEADER* header;
