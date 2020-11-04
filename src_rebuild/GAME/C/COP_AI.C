@@ -498,7 +498,7 @@ void ControlCops(void)
 
 		copsWereInPursuit = 0;
 
-		if (player_position_known > 0) 
+		if (CopsCanSeePlayer)  // [A] was player_position_known. Resolves speech in the beginning
 		{
 			if (*playerFelony > FELONY_MIN_VALUE)
 				copsWereInPursuit = 1;
@@ -1490,91 +1490,85 @@ void ControlCopDetection(void)
 
 	minDistanceToPlayer = 0xFFFFFFFF;
 
-	// if player is not on foot - check his visibility
-	//if (player[0].playerType != 2 && 
-	//	player[0].playerCarId > -1)
+	// check roadblock visibility
+	if (numRoadblockCars != 0)
 	{
-		// check roadblock visibility
-		if (numRoadblockCars != 0)
+		dx = ABS(roadblockLoc.vx - vec.vx) >> 8;
+		dz = ABS(roadblockLoc.vz - vec.vz) >> 8;
+
+		distanceToPlayer = dx * dx + dz * dz;
+		
+		if (distanceToPlayer < 1640 &&
+			newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
 		{
-			dx = ABS(roadblockLoc.vx - vec.vx) >> 8;
-			dz = ABS(roadblockLoc.vz - vec.vz) >> 8;
+			CopsCanSeePlayer = 1;
 
-			distanceToPlayer = dx * dx + dz * dz;
-			
-			if (distanceToPlayer < 1640 &&
-				newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
-			{
-				CopsCanSeePlayer = 1;
-
-				if (distanceToPlayer << 8 < minDistanceToPlayer)
-					minDistanceToPlayer = distanceToPlayer << 6;
-			}
+			if (distanceToPlayer << 8 < minDistanceToPlayer)
+				minDistanceToPlayer = distanceToPlayer << 6;
 		}
+	}
 
+	if (CopsCanSeePlayer == 0 && !((gCurrentMissionNumber == 30 || gCurrentMissionNumber == 24) && CameraCnt-frameStart < 100)) 
+	{
+		cp = &car_data[MAX_CARS-1];
 
-		if (CopsCanSeePlayer == 0) 
+		while (car_data <= cp)
 		{
-			cp = &car_data[MAX_CARS-1];
-
-			while (car_data <= cp)
+			if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || 
+				(cp->controlFlags & CONTROL_FLAG_COP))
 			{
-				if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || 
-					(cp->controlFlags & CONTROL_FLAG_COP))
+				dx = ABS(cp->hd.where.t[0] - vec.vx) >> 8;
+				dz = ABS(cp->hd.where.t[2] - vec.vz) >> 8;
+
+				distanceToPlayer = SquareRoot0(dx * dx + dz * dz) << 8;
+
+				if (distanceToPlayer < minDistanceToPlayer)
+					minDistanceToPlayer = distanceToPlayer;
+
+				if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 				{
-					dx = ABS(cp->hd.where.t[0] - vec.vx) >> 8;
-					dz = ABS(cp->hd.where.t[2] - vec.vz) >> 8;
+					cp->ai.p.DistanceToPlayer = distanceToPlayer;
 
-					distanceToPlayer = SquareRoot0(dx * dx + dz * dz) << 8;
-
-					if (distanceToPlayer < minDistanceToPlayer)
-						minDistanceToPlayer = distanceToPlayer;
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
+					if(cp->ai.p.close_pursuit != 0)
 					{
-						cp->ai.p.DistanceToPlayer = distanceToPlayer;
-
-						if(cp->ai.p.close_pursuit != 0)
-						{
-							CopsCanSeePlayer = 1;
-							break;
-						}
+						CopsCanSeePlayer = 1;
+						break;
 					}
+				}
 
-					if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) != 0)
+				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) != 0)
+				{
+					spotted = false;
+					
+					if (distanceToPlayer < copSightData.surroundViewDistance) 
 					{
-						spotted = false;
-						
-						if (distanceToPlayer < copSightData.surroundViewDistance) 
+						spotted = true;
+					}
+					else if (distanceToPlayer < copSightData.frontViewDistance)
+					{
+						int theta;
+
+						dz = vec.vx - cp->hd.where.t[0];
+						dx = vec.vz - cp->hd.where.t[2];
+
+						theta = ABS(ratan2(dz, dx) - cp->hd.direction);
+
+						if (theta < copSightData.frontViewAngle || 
+							theta < copSightData.frontViewAngle + 512)
 						{
 							spotted = true;
 						}
-						else if (distanceToPlayer < copSightData.frontViewDistance)
-						{
-							int theta;
+					}
 
-							dz = vec.vx - cp->hd.where.t[0];
-							dx = vec.vz - cp->hd.where.t[2];
-
-							theta = ABS(ratan2(dz, dx) - cp->hd.direction);
-
-							if (theta < copSightData.frontViewAngle || 
-								theta < copSightData.frontViewAngle + 512)
-							{
-								spotted = true;
-							}
-						}
-
-						// [A] also check player elevation from cops (block cops vision from bridges, tunnels etc)
-						if (spotted && ABS(cp->hd.where.t[1] - vec.vy) < 1500) 
-						{
-							CopsCanSeePlayer = 1;
-							break;
-						}
+					// [A] also check player elevation from cops (block cops vision from bridges, tunnels etc)
+					if (spotted && ABS(cp->hd.where.t[1] - vec.vy) < 1500) 
+					{
+						CopsCanSeePlayer = 1;
+						break;
 					}
 				}
-				cp--;
 			}
+			cp--;
 		}
 	}
 
@@ -1582,7 +1576,7 @@ void ControlCopDetection(void)
 	if(player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_MIN_VALUE)
 	{
 		player[0].dying = 1;
-
+		
 		SetMissionMessage("You've been caught.",3,2);
 		SetMissionFailed(FAILED_MESSAGESET);
 	}
@@ -1719,24 +1713,11 @@ void PassiveCopTasks(CAR_DATA *cp)
 	if (*playerFelony <= FELONY_MIN_VALUE)
 		return;
 
+	// [A] make an ambush on player in Destroy the yard
 	if (player_position_known < 1)
 		return;
 
-	ClearMem((char *)&cp->ai.p, sizeof(COP));
-
-	cp->controlType = CONTROL_TYPE_PURSUER_AI;
-	cp->controlFlags = 0;
-
-	cp->ai.p.justPinged = 1;
-
-	if (gCopDifficultyLevel == 2)
-		cp->hndType = 4;
-	else if (gCopDifficultyLevel == 1) 
-		cp->hndType = 3;
-	else if (gCopDifficultyLevel == 0)
-		cp->hndType = 2;
-	else
-		cp->hndType = 4;
+	InitCopState(cp, NULL);
 
 	cp->ai.p.justPinged = 0;
 	numCivCars--;
