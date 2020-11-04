@@ -898,13 +898,17 @@ void GameInit(void)
 		i++;
 	};
 
-#ifdef CUTSCENE_RECORDER
+	// FIXME: need to change streams properly
+#if 0 //def CUTSCENE_RECORDER
 	extern int gCutsceneAsReplay;
 	extern int gCutsceneAsReplay_PlayerId;
-	if (gCutsceneAsReplay != 0)
+	if (gCutsceneAsReplay != 0 && gCutsceneAsReplay_PlayerId >= 0)
 	{
-		player[0].playerCarId = gCutsceneAsReplay_PlayerId;
-		player[0].cameraCarId = gCutsceneAsReplay_PlayerId;
+		if(player[0].playerType == 1)
+		{
+			player[0].playerCarId = gCutsceneAsReplay_PlayerId;
+			player[0].cameraCarId = gCutsceneAsReplay_PlayerId;
+		}
 	}
 #endif
 
@@ -2383,7 +2387,7 @@ void PrintCommandLineArguments()
 #endif // DEBUG_OPTIONS
 		"  -replay <filename> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
-		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"
+		"  -recordcutscene : starts cutscene recording session\n"
 #endif
 		"  -nointro : disable intro screens\n"
 		"  -nofmv : disable all FMVs\n";
@@ -2555,6 +2559,8 @@ int redriver2_main(int argc, char** argv)
 
 			gCurrentMissionNumber = atoi(argv[i + 1]);
 			i++;
+
+			GameType = GAME_TAKEADRIVE;
 			LaunchGame();
 		}
 		else
@@ -2618,38 +2624,14 @@ int redriver2_main(int argc, char** argv)
 #ifdef CUTSCENE_RECORDER
 			else if (!_stricmp(argv[i], "-recordcutscene"))
 			{
-				if (argc - i < 3)
-				{
-					printWarning("Example: -recordcutscene <mission_number> <subindex> <base_mission>");
-					return 0;
-				}
-
 				SetFEDrawMode();
 
 				gInFrontend = 0;
 				AttractMode = 0;
 
-				int subindx = atoi(argv[i + 2]);
-
-				extern int LoadCutsceneAsReplay(int subindex);
-				extern int gCutsceneAsReplay;
-				extern int gCutsceneAsReplay_PlayerId;
-
-				gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
-				gCurrentMissionNumber = atoi(argv[i + 3]);		// acts as base mission. Some mission requires other base
-				gCutsceneAsReplay_PlayerId = 0;
-
-				if (LoadCutsceneAsReplay(subindx))
-				{
-					CurrentGameMode = GAMEMODE_REPLAY;
-					gLoadedReplay = 1;
-
-					LaunchGame();
-
-					gLoadedReplay = 0;
-				}
-				gCutsceneAsReplay = 0;
-				return 1;
+				extern void LoadCutsceneRecorder();
+				
+				LoadCutsceneRecorder();
 			}
 #endif
 			else

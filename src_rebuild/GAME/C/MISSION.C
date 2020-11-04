@@ -606,16 +606,22 @@ void LoadMission(int missionnum)
 		gCopData.immortal = 0;
 	}
 
-	// start on foot?
-	if (MissionHeader->type & 2) 
+#ifdef CUTSCENE_RECORDER
+	if (gCutsceneAsReplay == 0)
+#endif
 	{
-		PlayerStartInfo[0]->type = 2;
-		PlayerStartInfo[0]->model = 0;
+		// start on foot?
+		if (MissionHeader->type & 2)
+		{
+			PlayerStartInfo[0]->type = 2;
+			PlayerStartInfo[0]->model = 0;
+		}
+		else
+		{
+			PlayerStartInfo[0]->type = 1;
+		}
 	}
-	else
-	{
-		PlayerStartInfo[0]->type = 1;
-	}
+
 
 	// load specific AI for mission
 	if (NewLevel != 0) 

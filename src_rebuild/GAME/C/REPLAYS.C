@@ -292,6 +292,8 @@ int SaveReplayToBuffer(char *buffer)
 	// End Line: 1588
 
 #ifdef CUTSCENE_RECORDER
+#include "../utils/ini.h"
+
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
@@ -375,6 +377,83 @@ int LoadCutsceneAsReplay(int subindex)
 
 	return 0;
 }
+
+void LoadCutsceneRecorder()
+{
+	ini_t* config;
+	int loadExistingCutscene;
+	int subindex;
+
+	config = ini_load("cutscene_recorder.ini");
+
+	if(!config)
+	{
+		printError("Unable to open 'cutscene_recorder.ini!'\n");
+		return;
+	}
+
+	//const char* stream = ini_get(config, "fs", "dataFolder");
+
+	loadExistingCutscene = 0;
+	ini_sget(config, "settings", "loadExistingCutscene", "%d", &loadExistingCutscene);
+	ini_sget(config, "settings", "mission", "%d", &gCutsceneAsReplay);
+	ini_sget(config, "settings", "baseMission", "%d", &gCurrentMissionNumber);
+	ini_sget(config, "settings", "player", "%d", &gCutsceneAsReplay_PlayerId);
+	ini_sget(config, "settings", "subindex", "%d", &subindex);
+	
+	if(loadExistingCutscene)
+	{
+		if(!LoadCutsceneAsReplay(subindex))
+		{
+			ini_free(config);
+		
+			gLoadedReplay = 0;
+			gCutsceneAsReplay = 0;
+			return;
+		}
+
+		gLoadedReplay = 1;
+		CurrentGameMode = GAMEMODE_REPLAY;
+	}
+	else
+	{
+		int i;
+		char curStreamName[40];
+		STREAM_SOURCE* stream;
+
+		InitPadRecording();
+
+		ini_sget(config, "settings", "streams", "%d", &NumReplayStreams);
+		
+		// initialize all streams
+		for(i = 0; i < NumReplayStreams; i++)
+		{
+			stream = &ReplayStreams[i].SourceType;
+			sprintf(curStreamName, "stream%d", i);
+
+			stream->position.vy = 0;
+			
+			ini_sget(config, curStreamName, "type", "%hhd", &stream->type);
+			ini_sget(config, curStreamName, "model", "%hhd", &stream->model);
+			ini_sget(config, curStreamName, "palette", "%hhd", &stream->palette);
+			ini_sget(config, curStreamName, "controlType", "%hhd", &stream->controlType);
+			ini_sget(config, curStreamName, "startRot", "%d", &stream->rotation);
+			ini_sget(config, curStreamName, "startPosX", "%d", &stream->position.vx);
+			ini_sget(config, curStreamName, "startPosY", "%d", &stream->position.vy);
+			ini_sget(config, curStreamName, "startPosZ", "%d", &stream->position.vz);
+		}		
+	}
+
+	GameType = GAME_TAKEADRIVE;
+	CameraCnt = 0;
+	ini_free(config);
+
+	LaunchGame();
+
+	gLoadedReplay = 0;
+	gCutsceneAsReplay = 0;
+}
+
 #endif // CUTSCENE_RECORDER
 
 // [D] [T]
