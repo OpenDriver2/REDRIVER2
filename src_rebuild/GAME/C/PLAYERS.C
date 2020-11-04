@@ -301,8 +301,8 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	else
 		HaveCarSoundStraightAway(playerID);
 
-	// [A] carry over felony from Tanner to car if cops see player
-	if(CopsCanSeePlayer)
+	// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
+	if(CopsCanSeePlayer || gCurrentMissionNumber == 30)
 		newCar->felonyRating = pedestrianFelony;
 	else
 		pedestrianFelony = 0;
