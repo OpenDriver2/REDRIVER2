@@ -3189,8 +3189,9 @@ void InitGameVariables(void)
 	gStopPadReads = 0;
 	DawnCount = 0;
 	variable_weather = 0;
-	current_camera_angle = 0x800;
+	current_camera_angle = 2048;
 	gDieWithFade = 0;
+	pedestrianFelony = 0;	// [A]
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);

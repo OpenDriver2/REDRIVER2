@@ -354,8 +354,6 @@ void UpdatePlayers(void)
 	PLAYER *locPlayer;
 	CAR_DATA* cp;
 
-	//pedestrianFelony = 0;
-
 	locPlayer = player;
 
 	do {
