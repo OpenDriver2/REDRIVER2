@@ -264,8 +264,8 @@ void InitCops(void)
 
 	felonyData.pursuitFelonyScale = 3000;
 
-	gCopDesiredSpeedScale = 0x1000;
-	gCopMaxPowerScale = 0x1000;
+	gCopDesiredSpeedScale = 4096;
+	gCopMaxPowerScale = 4096;
 	gPuppyDogCop = 0;
 
 	copsAreInPursuit = 0;
@@ -492,10 +492,12 @@ void ControlCops(void)
 		if (player[0].playerCarId < 0)
 			playerFelony = &pedestrianFelony;
 		else 
-			playerFelony = &car_data[(int)player[0].playerCarId].felonyRating;
+			playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-		if (gCopData.autoBatterPlayerTrigger <= *playerFelony)
+		if (*playerFelony > gCopData.autoBatterPlayerTrigger)
 			gBatterPlayer = 1;
+		else if(player[0].playerType == 2)	// [A] everytime we exit car reset batter
+			gBatterPlayer = 0;
 
 		ControlCopDetection();
 
