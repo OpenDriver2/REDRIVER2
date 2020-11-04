@@ -941,7 +941,7 @@ void animate_garage_door(void)
 
 	int playerCarId = player[0].playerCarId;
 
-	if (gCurrentMissionNumber != 53 && CopsCanSeePlayer != 0)
+	if (gCurrentMissionNumber != 53 && CopsCanSeePlayer)
 	{
 		if (playerCarId < 0)
 			felony = &pedestrianFelony;

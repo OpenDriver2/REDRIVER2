@@ -156,7 +156,7 @@ void DisplayOverlays(void)
 			DrawDrivingGameOverlays();			
 			DrawOverheadMap();
 
-			if (CopsCanSeePlayer != 0)
+			if (CopsCanSeePlayer)
 			{
 				if (player[0].playerCarId < 0)
 					felony = &pedestrianFelony;

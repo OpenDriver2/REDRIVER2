@@ -255,7 +255,6 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	lPlayer->headTimer = 0;
 	lPlayer->pPed = NULL;
 
-
 	newCar->controlType = CONTROL_TYPE_PLAYER;
 	newCar->ai.padid = &lPlayer->padid;
 	newCar->hndType = 0;
@@ -301,6 +300,12 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 		RequestSlightPauseBeforeCarSoundStarts(playerID);
 	else
 		HaveCarSoundStraightAway(playerID);
+
+	// [A] carry over felony from Tanner to car if cops see player
+	if(CopsCanSeePlayer)
+		newCar->felonyRating = pedestrianFelony;
+	else
+		pedestrianFelony = 0;
 }
 
 
@@ -349,7 +354,7 @@ void UpdatePlayers(void)
 	PLAYER *locPlayer;
 	CAR_DATA* cp;
 
-	pedestrianFelony = 0;
+	//pedestrianFelony = 0;
 
 	locPlayer = player;
 

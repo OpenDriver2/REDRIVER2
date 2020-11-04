@@ -1,7 +1,6 @@
 #include "DRIVER2.H"
 #include "COP_AI.H"
 #include "CIV_AI.H"
-#include "AI.H"
 #include "MISSION.H"
 #include "SYSTEM.H"
 #include "FELONY.H"
@@ -14,10 +13,10 @@
 #include "MAP.H"
 #include "CAMERA.H"
 #include "HANDLING.H"
-#include "MISSION.H"
 #include "OBJCOLL.H"
 #include "WHEELFORCES.H"
 #include "PAD.H"
+#include "PEDEST.H"
 
 COP_DATA gCopData = {
 	0,
@@ -419,6 +418,11 @@ void ControlCops(void)
 	}
 #endif
 
+	if (player[0].playerCarId < 0)
+		playerFelony = &pedestrianFelony;
+	else 
+		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+
 	gCopData.autoBatterPlayerTrigger = 2048;
 
 	if (CopsAllowed == 0 || gInGameCutsceneActive != 0) 
@@ -432,6 +436,8 @@ void ControlCops(void)
 	{
 		if (player[0].playerCarId > -1) 
 			targetVehicle = &car_data[player[0].playerCarId];
+		else
+			targetVehicle = &car_data[TANNER_COLLIDER_CARID];	// [A] fix bug of chasing car
 
 		if (player_position_known > 0)
 		{
@@ -447,13 +453,8 @@ void ControlCops(void)
 		heading = LastHeading;
 
 		// play the phrases about direction
-		if (first_offence == 0 && CopsCanSeePlayer != 0 && numActiveCops != 0) 
+		if (first_offence == 0 && CopsCanSeePlayer && numActiveCops != 0) 
 		{
-			if (player[0].playerCarId < 0) 
-				playerFelony = &pedestrianFelony;
-			else
-				playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 			if (*playerFelony > 658 && TimeSinceLastSpeech > 720 && targetVehicle->hd.speed > 20)
 			{
 				int rnd;
@@ -489,11 +490,6 @@ void ControlCops(void)
 
 		LastHeading = heading;
 
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else 
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 		ControlCopDetection();
 
 		AdjustFelony(&felonyData);
@@ -504,15 +500,11 @@ void ControlCops(void)
 
 		if (player_position_known > 0) 
 		{
-			if (player[0].playerCarId < 0)
-				playerFelony = &pedestrianFelony;
-			else
-				playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 			if (*playerFelony > FELONY_MIN_VALUE)
 				copsWereInPursuit = 1;
 		}
 
+		// start pursuit
 		if (copsWereInPursuit != 0) 
 		{
 			if (copsAreInPursuit == 0) 
@@ -763,7 +755,7 @@ void CopControl1(CAR_DATA *cp)
 		else if (gCopDifficultyLevel == 1)
 			batterTrigger = 50;
 		else if (gCopDifficultyLevel == 2)
-			batterTrigger = 30;
+			batterTrigger = 0;
 
 		cp->ai.p.batterTimer++;
 
@@ -1019,7 +1011,7 @@ void CopControl1(CAR_DATA *cp)
 
 			cp->ai.p.desiredSpeed = FIXEDH(cp->ai.p.desiredSpeed * (maxPower + FIXEDH(*playerFelony * gCopData.autoDesiredSpeedScaleLimit)));
 
-			if (gPuppyDogCop != 0 && cp->ai.p.close_pursuit != 0)
+			if ((gPuppyDogCop || player[0].playerType == 2) && cp->ai.p.close_pursuit)
 			{
 				plcrspd = targetVehicle->hd.speed + 10;
 				
@@ -1471,11 +1463,10 @@ void UpdateCopSightData(void)
 void ControlCopDetection(void)
 {
 	bool spotted;
-	int dz;
-	short *playerFelony;
 	uint distanceToPlayer;
+	uint minDistanceToPlayer;
 	int heading;
-	int dx;
+	int dx, dz;
 	CAR_DATA *cp;
 	VECTOR vec;
 	int ccx;
@@ -1487,23 +1478,7 @@ void ControlCopDetection(void)
 
 	GetVisSetAtPosition(&vec, CopWorkMem, &ccx, &ccz);
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else 
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (*playerFelony > FELONY_MIN_VALUE)
-	{
-		copSightData.surroundViewDistance = 5440;
-		copSightData.frontViewDistance = 16320;
-		copSightData.frontViewAngle = 1024;
-	}
-	else
-	{
-		copSightData.surroundViewDistance = 2720;
-		copSightData.frontViewDistance = 7820;
-		copSightData.frontViewAngle = 512;
-	}
+	UpdateCopSightData();
 
 	if (player_position_known < 1) 
 		player_position_known = 1;
@@ -1512,22 +1487,30 @@ void ControlCopDetection(void)
 
 	CopsCanSeePlayer = 0;
 
+	minDistanceToPlayer = 0xFFFFFFFF;
+
 	// if player is not on foot - check his visibility
-	if (player[0].playerType != 2 && 
-		player[0].playerCarId > -1)
+	//if (player[0].playerType != 2 && 
+	//	player[0].playerCarId > -1)
 	{
 		// check roadblock visibility
 		if (numRoadblockCars != 0)
 		{
-			dx = ABS(roadblockLoc.vx - vec.vx);
-			dz = ABS(roadblockLoc.vz - vec.vz);
+			dx = ABS(roadblockLoc.vx - vec.vx) >> 8;
+			dz = ABS(roadblockLoc.vz - vec.vz) >> 8;
 
-			if (((dx >> 8) * (dx >> 8) + (dz >> 8) * (dz >> 8) < 1640) &&
+			distanceToPlayer = dx * dx + dz * dz;
+			
+			if (distanceToPlayer < 1640 &&
 				newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
 			{
 				CopsCanSeePlayer = 1;
+
+				if (distanceToPlayer << 8 < minDistanceToPlayer)
+					minDistanceToPlayer = distanceToPlayer << 6;
 			}
 		}
+
 
 		if (CopsCanSeePlayer == 0) 
 		{
@@ -1535,15 +1518,18 @@ void ControlCopDetection(void)
 
 			while (car_data <= cp)
 			{
-				if (cp->controlType == 3 && cp->ai.p.dying == 0 || 
-					cp->controlFlags & CONTROL_FLAG_COP)
+				if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || 
+					(cp->controlFlags & CONTROL_FLAG_COP))
 				{
 					dx = ABS(cp->hd.where.t[0] - vec.vx) >> 8;
 					dz = ABS(cp->hd.where.t[2] - vec.vz) >> 8;
 
 					distanceToPlayer = SquareRoot0(dx * dx + dz * dz) << 8;
 
-					if (cp->controlType == 3)
+					if (distanceToPlayer < minDistanceToPlayer)
+						minDistanceToPlayer = distanceToPlayer;
+
+					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 					{
 						cp->ai.p.DistanceToPlayer = distanceToPlayer;
 
@@ -1591,6 +1577,15 @@ void ControlCopDetection(void)
 		}
 	}
 
+	// [A] if Tanner is outside car, cops can arrest him if they are too close
+	if(player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_MIN_VALUE)
+	{
+		player[0].dying = 1;
+
+		SetMissionMessage("You've been caught.",3,2);
+		SetMissionFailed(FAILED_MESSAGESET);
+	}
+
 	if (numActiveCops == 0 && OutOfSightCount < 256 && CameraCnt > 8) 
 	{
 		OutOfSightCount = 256;
@@ -1608,12 +1603,7 @@ void ControlCopDetection(void)
 			player_position_known = -1;
 			OutOfSightCount = 257;
 
-			if (player[0].playerCarId < 0)
-				playerFelony = &pedestrianFelony;
-			else
-				playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-			if (*playerFelony > FELONY_MIN_VALUE && first_offence == 0)
+			if (first_offence == 0)
 			{
 				CopSay(12, 0);
 				FunkUpDaBGMTunez(0);
