@@ -2851,7 +2851,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 			if (slot == -1)
 			{
-				if (dist < 15900 || target->data[9] == 3 && (target->data[10] & 1U) == 0)
+				if (dist < 18000 || target->data[9] == 3 && (target->data[10] & 1U) == 0)
 					MRRequestCar(target);
 				else
 					MRCancelCarRequest(target);
