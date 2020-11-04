@@ -746,7 +746,7 @@ void CopControl1(CAR_DATA *cp)
 		doBatter = 0;
 
 	// [A] periodically beat player in ass
-	if (!doBatter && *playerFelony > gCopData.autoBatterPlayerTrigger && cp->ai.p.close_pursuit)
+	if (!doBatter && *playerFelony > gCopData.autoBatterPlayerTrigger)
 	{
 		int batterTrigger;
 
@@ -757,13 +757,14 @@ void CopControl1(CAR_DATA *cp)
 		else if (gCopDifficultyLevel == 2)
 			batterTrigger = 0;
 
-		cp->ai.p.batterTimer++;
-
 		if (cp->ai.p.batterTimer > batterTrigger)
 			doBatter = 1;
-
+		
+		cp->ai.p.batterTimer++;
 		cp->ai.p.batterTimer &= 127;
 	}
+
+
 
 	if (cp->ai.p.dying != 0 || 
 		cp->totalDamage > 27000 && gCopData.immortal == 0)
