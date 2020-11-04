@@ -334,6 +334,7 @@ struct COP
 	short hiddenTimer;
 	short frontLClear;
 	short frontRClear;
+	short batterTimer;	// [A] new gameplay feature
 };
 
 struct LEAD_CAR

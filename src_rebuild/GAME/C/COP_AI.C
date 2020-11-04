@@ -419,7 +419,7 @@ void ControlCops(void)
 	}
 #endif
 
-	gCopData.autoBatterPlayerTrigger = 0x800;
+	gCopData.autoBatterPlayerTrigger = 2048;
 
 	if (CopsAllowed == 0 || gInGameCutsceneActive != 0) 
 	{
@@ -493,11 +493,6 @@ void ControlCops(void)
 			playerFelony = &pedestrianFelony;
 		else 
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-		if (*playerFelony > gCopData.autoBatterPlayerTrigger)
-			gBatterPlayer = 1;
-		else if(player[0].playerType == 2)	// [A] everytime we exit car reset batter
-			gBatterPlayer = 0;
 
 		ControlCopDetection();
 
@@ -728,9 +723,15 @@ void CopControl1(CAR_DATA *cp)
 	int slidevel;
 	int maxPower;
 	int speedDif;
+	int doBatter;
 	VECTOR pos;
 	iVectNT path[2];
 	AIZone targetZone;
+
+	if (player[0].playerCarId < 0)
+		playerFelony = &pedestrianFelony;
+	else
+		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 	desiredSteerAngle = 0;
 
@@ -743,6 +744,33 @@ void CopControl1(CAR_DATA *cp)
 		cp->handbrake = 1;
 
 		return;
+	}
+
+	// [A] new cop batter logic
+	// survival setting really
+	if(gBatterPlayer)
+		doBatter = 1;
+	else
+		doBatter = 0;
+
+	// [A] periodically beat player in ass
+	if (!doBatter && *playerFelony > gCopData.autoBatterPlayerTrigger && cp->ai.p.close_pursuit)
+	{
+		int batterTrigger;
+
+		if(gCopDifficultyLevel == 0)
+			batterTrigger = 80;
+		else if (gCopDifficultyLevel == 1)
+			batterTrigger = 50;
+		else if (gCopDifficultyLevel == 2)
+			batterTrigger = 30;
+
+		cp->ai.p.batterTimer++;
+
+		if (cp->ai.p.batterTimer > batterTrigger)
+			doBatter = 1;
+
+		cp->ai.p.batterTimer &= 127;
 	}
 
 	if (cp->ai.p.dying != 0 || 
@@ -872,7 +900,7 @@ void CopControl1(CAR_DATA *cp)
 			
 			dd = (dx * idvx - dz * idvz) / (idvx * idvx + idvz * idvz + 1);
 
-			if (gBatterPlayer == 0) 
+			if (doBatter == 0)
 				dd = dd * 3 / 4;
 
 			if (dd < 0)
@@ -883,7 +911,7 @@ void CopControl1(CAR_DATA *cp)
 			dvz = targetVehicle->hd.where.t[0] + FIXEDH(targetVehicle->st.n.linearVelocity[0] * dd);
 			dvx = targetVehicle->hd.where.t[2] + FIXEDH(targetVehicle->st.n.linearVelocity[2] * dd);
 
-			if (gBatterPlayer == 0)
+			if (doBatter == 0)
 			{
 				CarTail.vx = dvz - (targetVehicle->hd.where.m[0][2] * 5 >> 7);
 				CarTail.vz = dvx - (targetVehicle->hd.where.m[2][2] * 5 >> 7);
@@ -984,11 +1012,6 @@ void CopControl1(CAR_DATA *cp)
 			else
 				cp->ai.p.desiredSpeed = speed2[gCopDifficultyLevel];
 
-			if (player[0].playerCarId < 0)
-				playerFelony = &pedestrianFelony;
-			else
-				playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 			if (gCopData.cutOffDistance < cp->ai.p.DistanceToPlayer)
 				maxPower = gCopData.cutOffPowerScale;
 			else
@@ -1049,7 +1072,7 @@ void CopControl1(CAR_DATA *cp)
 	}
 
 	// calculate the desired speed
-	if (dist < 4096 && cp->ai.p.desiredSpeed > 0 && gBatterPlayer == 0)
+	if (dist < 4096 && cp->ai.p.desiredSpeed > 0 && doBatter == 0)
 	{
 		plcrspd = targetVehicle->hd.speed - 20;
 
@@ -1617,7 +1640,7 @@ void ControlCopDetection(void)
 				vec.vz = cp->hd.where.t[2];
 
 				// make cop lose target if target is hidden
-				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && cp->ai.p.hiddenTimer++ > 0x32)
+				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) == 0 && cp->ai.p.hiddenTimer++ > 50)
 				{
 					cp->controlType = CONTROL_TYPE_NONE;
 					cp->ai.p.hiddenTimer = 0;
