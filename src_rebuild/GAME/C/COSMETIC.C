@@ -197,13 +197,13 @@ void AddReverseLight(CAR_DATA *cp)
 
 	if (cp->ap.damage[4] < 500)
 	{
-		ShowCarlight(&v1, cp, &col, 0xe, &light_texture, 0);
+		ShowCarlight(&v1, cp, &col, 14, &light_texture, 0);
 	}
 
 	if (cp->ap.damage[3] < 500) 
 	{
 		v1.vx = car_cos->cog.vx * 2 - v1.vx;
-		ShowCarlight(&v1, cp, &col, 0xe, &light_texture, 0);
+		ShowCarlight(&v1, cp, &col, 14, &light_texture, 0);
 	}
 }
 
@@ -335,12 +335,12 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		if (cp->ap.damage[4] < 500)
 		{
 			*life2 += brightness >> 3;
-			ShowCarlight(&vback, cp, &col, 0x14, &light_texture, 0);
+			ShowCarlight(&vback, cp, &col, 20, &light_texture, 0);
 		}
 
 		if (cp->ap.damage[0] < 500) 
 		{
-			ShowCarlight(&vfrnt, cp, &col, 0x14, &light_texture, 1);
+			ShowCarlight(&vfrnt, cp, &col, 20, &light_texture, 1);
 		}
 	}
 
@@ -457,8 +457,8 @@ void AddBrakeLight(CAR_DATA *cp)
 
 				if (cp->ap.damage[damIndex] < 500)
 				{
-					ShowCarlight(&v1, cp, &col, 0x11, &light_texture, 0);
-					ShowCarlight(&v2, cp, &col, 0x11, &light_texture, 0);
+					ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
 					*life2 += 8;
 				}
 			}
@@ -488,7 +488,7 @@ void AddBrakeLight(CAR_DATA *cp)
 
 			if (cp->ap.damage[damIndex] < 500)
 			{
-				ShowCarlight(&v1, cp, &col, 0x11, &light_texture, 0);
+				ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
 				*life2 += 8;
 			}
 		}
@@ -831,10 +831,7 @@ void AddNightLights(CAR_DATA *cp)
 			lightFlag = 2 << (loop & 0x1f);
 			damIndex = (4 - loop);
 
-			if (cp->controlType == CONTROL_TYPE_PLAYER)
-				col.r = 56;
-			else
-				col.r = 255;
+			col.r = 110;
 
 			col.b = 0;
 			col.g = 0;

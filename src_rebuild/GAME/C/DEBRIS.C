@@ -49,133 +49,133 @@ TRI_POINT* debris_rot_table[5] = {
 CVECTOR debris_colour[4][31] =
 {
 	{
-		{ 100u, 100u, 100u, 0u },
-		{ 214u, 214u, 244u, 0u },
-		{ 195u, 79u, 65u, 0u },
-		{ 83u, 83u, 101u, 0u },
-		{ 197u, 142u, 80u, 0u },
-		{ 222u, 204u, 196u, 0u },
-		{ 189u, 168u, 114u, 0u },
-		{ 203u, 180u, 121u, 0u },
-		{ 132u, 145u, 103u, 0u },
-		{ 168u, 143u, 122u, 0u },
-		{ 107u, 107u, 107u, 0u },
-		{ 192u, 110u, 110u, 0u },
-		{ 130u, 130u, 130u, 0u },
-		{ 101u, 129u, 145u, 0u },
-		{ 130u, 130u, 130u, 0u },
-		{ 181u, 88u, 88u, 0u },
-		{ 130u, 105u, 83u, 0u },
-		{ 164u, 164u, 164u, 0u },
-		{ 126u, 143u, 108u, 0u },
-		{ 140u, 163u, 181u, 0u },
-		{ 143u, 129u, 152u, 0u },
-		{ 156u, 138u, 118u, 0u },
-		{ 190u, 190u, 190u, 0u },
-		{ 203u, 112u, 112u, 0u },
-		{ 255u, 242u, 201u, 0u },
-		{ 167u, 145u, 90u, 0u },
-		{ 190u, 190u, 190u, 0u },
-		{ 150u, 164u, 184u, 0u },
-		{ 102u, 102u, 102u, 0u },
-		{ 140u, 114u, 99u, 0u },
-		{ 75u, 63u, 134u, 0u },
+		{ 100, 100, 100, 0 },
+		{ 214, 214, 244, 0 },
+		{ 195, 79, 65, 0 },
+		{ 83, 83, 101, 0 },
+		{ 197, 142, 80, 0 },
+		{ 222, 204, 196, 0 },
+		{ 189, 168, 114, 0 },
+		{ 203, 180, 121, 0 },
+		{ 132, 145, 103, 0 },
+		{ 168, 143, 122, 0 },
+		{ 107, 107, 107, 0 },
+		{ 192, 110, 110, 0 },
+		{ 130, 130, 130, 0 },
+		{ 101, 129, 145, 0 },
+		{ 130, 130, 130, 0 },
+		{ 181, 88, 88, 0 },
+		{ 130, 105, 83, 0 },
+		{ 164, 164, 164, 0 },
+		{ 126, 143, 108, 0 },
+		{ 140, 163, 181, 0 },
+		{ 143, 129, 152, 0 },
+		{ 156, 138, 118, 0 },
+		{ 190, 190, 190, 0 },
+		{ 203, 112, 112, 0 },
+		{ 255, 242, 201, 0 },
+		{ 167, 145, 90, 0 },
+		{ 190, 190, 190, 0 },
+		{ 150, 164, 184, 0 },
+		{ 102, 102, 102, 0 },
+		{ 140, 114, 99, 0 },
+		{ 75, 63, 134, 0 },
 	}, {
-		{ 100u, 100u, 100u, 0u },
-		{ 83u, 82u, 97u, 0u },
-		{ 138u, 179u, 201u, 0u },
-		{ 114u, 159u, 183u, 0u },
-		{ 107u, 61u, 46u, 0u },
-		{ 162u, 120u, 76u, 0u },
-		{ 235u, 227u, 214u, 0u },
-		{ 197u, 138u, 121u, 0u },
-		{ 159u, 169u, 131u, 0u },
-		{ 146u, 178u, 195u, 0u },
-		{ 181u, 151u, 101u, 0u },
-		{ 230u, 191u, 139u, 0u },
-		{ 147u, 147u, 151u, 0u },
-		{ 182u, 127u, 138u, 0u },
-		{ 160u, 165u, 127u, 0u },
-		{ 175u, 203u, 225u, 0u },
-		{ 211u, 175u, 117u, 0u },
-		{ 209u, 167u, 118u, 0u },
-		{ 157u, 147u, 140u, 0u },
-		{ 210u, 191u, 145u, 0u },
-		{ 155u, 185u, 148u, 0u },
-		{ 158u, 210u, 254u, 0u },
-		{ 206u, 176u, 134u, 0u },
-		{ 236u, 173u, 117u, 0u },
-		{ 146u, 146u, 146u, 0u },
-		{ 88u, 103u, 128u, 0u },
-		{ 96u, 96u, 96u, 0u },
-		{ 125u, 92u, 92u, 0u },
-		{ 184u, 174u, 155u, 0u },
-		{ 42u, 42u, 42u, 0u },
-		{ 219u, 37u, 130u, 0u },
+		{ 100, 100, 100, 0 },
+		{ 83, 82, 97, 0 },
+		{ 138, 179, 201, 0 },
+		{ 114, 159, 183, 0 },
+		{ 107, 61, 46, 0 },
+		{ 162, 120, 76, 0 },
+		{ 235, 227, 214, 0 },
+		{ 197, 138, 121, 0 },
+		{ 159, 169, 131, 0 },
+		{ 146, 178, 195, 0 },
+		{ 181, 151, 101, 0 },
+		{ 230, 191, 139, 0 },
+		{ 147, 147, 151, 0 },
+		{ 182, 127, 138, 0 },
+		{ 160, 165, 127, 0 },
+		{ 175, 203, 225, 0 },
+		{ 211, 175, 117, 0 },
+		{ 209, 167, 118, 0 },
+		{ 157, 147, 140, 0 },
+		{ 210, 191, 145, 0 },
+		{ 155, 185, 148, 0 },
+		{ 158, 210, 254, 0 },
+		{ 206, 176, 134, 0 },
+		{ 236, 173, 117, 0 },
+		{ 146, 146, 146, 0 },
+		{ 88, 103, 128, 0 },
+		{ 96, 96, 96, 0 },
+		{ 125, 92, 92, 0 },
+		{ 184, 174, 155, 0 },
+		{ 42, 42, 42, 0 },
+		{ 219, 37, 130, 0 },
 	}, {
-		{ 100u, 100u, 100u, 0u },
-		{ 112u, 110u, 112u, 0u },
-		{ 230u, 212u, 214u, 0u },
-		{ 178u, 181u, 175u, 0u },
-		{ 120u, 120u, 120u, 0u },
-		{ 102u, 101u, 115u, 0u },
-		{ 70u, 83u, 100u, 0u },
-		{ 206u, 108u, 88u, 0u },
-		{ 220u, 136u, 107u, 0u },
-		{ 97u, 97u, 97u, 0u },
-		{ 139u, 116u, 150u, 0u },
-		{ 173u, 173u, 173u, 0u },
-		{ 104u, 133u, 173u, 0u },
-		{ 224u, 196u, 139u, 0u },
-		{ 108u, 146u, 141u, 0u },
-		{ 82u, 82u, 82u, 0u },
-		{ 123u, 123u, 123u, 0u },
-		{ 140u, 67u, 67u, 0u },
-		{ 103u, 92u, 121u, 0u },
-		{ 219u, 192u, 148u, 0u },
-		{ 160u, 185u, 195u, 0u },
-		{ 158u, 173u, 130u, 0u },
-		{ 183u, 183u, 183u, 0u },
-		{ 126u, 98u, 84u, 0u },
-		{ 126u, 125u, 156u, 0u },
-		{ 36u, 74u, 203u, 0u },
-		{ 105u, 105u, 105u, 0u },
-		{ 162u, 179u, 183u, 0u },
-		{ 102u, 130u, 162u, 0u },
-		{ 149u, 88u, 88u, 0u },
-		{ 119u, 145u, 129u, 0u },
+		{ 100, 100, 100, 0 },
+		{ 112, 110, 112, 0 },
+		{ 230, 212, 214, 0 },
+		{ 178, 181, 175, 0 },
+		{ 120, 120, 120, 0 },
+		{ 102, 101, 115, 0 },
+		{ 70, 83, 100, 0 },
+		{ 206, 108, 88, 0 },
+		{ 220, 136, 107, 0 },
+		{ 97, 97, 97, 0 },
+		{ 139, 116, 150, 0 },
+		{ 173, 173, 173, 0 },
+		{ 104, 133, 173, 0 },
+		{ 224, 196, 139, 0 },
+		{ 108, 146, 141, 0 },
+		{ 82, 82, 82, 0 },
+		{ 123, 123, 123, 0 },
+		{ 140, 67, 67, 0 },
+		{ 103, 92, 121, 0 },
+		{ 219, 192, 148, 0 },
+		{ 160, 185, 195, 0 },
+		{ 158, 173, 130, 0 },
+		{ 183, 183, 183, 0 },
+		{ 126, 98, 84, 0 },
+		{ 126, 125, 156, 0 },
+		{ 36, 74, 203, 0 },
+		{ 105, 105, 105, 0 },
+		{ 162, 179, 183, 0 },
+		{ 102, 130, 162, 0 },
+		{ 149, 88, 88, 0 },
+		{ 119, 145, 129, 0 },
 	}, {
-		{ 100u, 100u, 100u, 0u },
-		{ 153u, 149u, 150u, 0u },
-		{ 118u, 110u, 131u, 0u },
-		{ 135u, 110u, 89u, 0u },
-		{ 191u, 102u, 66u, 0u },
-		{ 95u, 90u, 101u, 0u },
-		{ 157u, 171u, 186u, 0u },
-		{ 203u, 184u, 132u, 0u },
-		{ 221u, 100u, 100u, 0u },
-		{ 149u, 149u, 149u, 0u },
-		{ 100u, 118u, 145u, 0u },
-		{ 78u, 78u, 78u, 0u },
-		{ 105u, 128u, 107u, 0u },
-		{ 203u, 94u, 94u, 0u },
-		{ 163u, 178u, 152u, 0u },
-		{ 167u, 119u, 117u, 0u },
-		{ 117u, 139u, 142u, 0u },
-		{ 160u, 160u, 160u, 0u },
-		{ 92u, 92u, 92u, 0u },
-		{ 229u, 144u, 136u, 0u },
-		{ 145u, 167u, 149u, 0u },
-		{ 198u, 173u, 173u, 0u },
-		{ 137u, 163u, 175u, 0u },
-		{ 173u, 173u, 173u, 0u },
-		{ 143u, 143u, 143u, 0u },
-		{ 218u, 198u, 154u, 0u },
-		{ 104u, 134u, 78u, 0u },
-		{ 172u, 116u, 86u, 0u },
-		{ 155u, 170u, 185u, 0u },
-		{ 122u, 142u, 147u, 0u },
-		{ 193u, 193u, 193u, 0u }
+		{ 100, 100, 100, 0 },
+		{ 153, 149, 150, 0 },
+		{ 118, 110, 131, 0 },
+		{ 135, 110, 89, 0 },
+		{ 191, 102, 66, 0 },
+		{ 95, 90, 101, 0 },
+		{ 157, 171, 186, 0 },
+		{ 203, 184, 132, 0 },
+		{ 221, 100, 100, 0 },
+		{ 149, 149, 149, 0 },
+		{ 100, 118, 145, 0 },
+		{ 78, 78, 78, 0 },
+		{ 105, 128, 107, 0 },
+		{ 203, 94, 94, 0 },
+		{ 163, 178, 152, 0 },
+		{ 167, 119, 117, 0 },
+		{ 117, 139, 142, 0 },
+		{ 160, 160, 160, 0 },
+		{ 92, 92, 92, 0 },
+		{ 229, 144, 136, 0 },
+		{ 145, 167, 149, 0 },
+		{ 198, 173, 173, 0 },
+		{ 137, 163, 175, 0 },
+		{ 173, 173, 173, 0 },
+		{ 143, 143, 143, 0 },
+		{ 218, 198, 154, 0 },
+		{ 104, 134, 78, 0 },
+		{ 172, 116, 86, 0 },
+		{ 155, 170, 185, 0 },
+		{ 122, 142, 147, 0 },
+		{ 193, 193, 193, 0 }
 	}
 };
 
@@ -426,123 +426,99 @@ MATRIX leaf_mat;
 //POLY_G3 *spolys = NULL;
 //short light_col = 0;
 
-// [D]
+// [D] [T]
 void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 {
-	unsigned char bVar1;
-	DB *pDVar3;
-	unsigned char uVar4;
-	int iVar5;
-	int iVar6;
-	SVECTOR *pSVar7;
-	SVECTOR *pSVar8;
-	short sVar9;
+	short brightness;
 	POLY_FT4 *poly;
-	int uVar10;
-	int uVar11;
-	int uVar12;
-	VECTOR *pos;
-	uint uVar13;
-	int iVar14;
-	int iVar15;
-	int iVar16;
+	int i;
 	SVECTOR s[27];
 	SVECTOR sout[27];
 	VECTOR s1[12];
-	MATRIX final_matrix;
-	VECTOR averagepos;
 	VECTOR mid_position;
 	VECTOR toss;
-	LONGVECTOR n;
-	long z[15];
-	int local_30;
+	VECTOR *pos;
+	CAR_COSMETICS* car_cos;
+	int Z;
+	int sub_level;
+	int car_road_height;
+	int count;
 
-	pos = s1;
-	pSVar7 = s;
+	pos = (VECTOR*)cp->hd.where.t;
+	car_cos = &car_cosmetics[cp->ap.model];
 
-	if (cp < car_data) 
+	if (front) 
 	{
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
-
-	/*
-	if ((cameraview == 2 && CAR_INDEX(cp) == CameraCar) || 
-		player[CurrentPlayerView].cameraView == 2 && player[CurrentPlayerView].cameraCarId == CAR_INDEX(cp))	// bug fix
-		in_car = true;
-	*/
-
-	if (front == 0) 
-	{
-		iVar15 = 0;
-		s1[0].vx = -0xcc;
-		s1[1].vx = 0xcc;
-		s1[2].vx = -0xcc;
-		s1[3].vx = 0xcc;
-		s1[3].vz = ((car_cosmetics[cp->ap.model].colBox.vz - 10) * 0x10000) >> 0x10;
-		s1[1].vz = (s1[3].vz + 0xcc) * 0x10000 >> 0x10;
-	}
-	else
-	{
-		s1[3].vz = -(car_cosmetics[cp->ap.model].colBox.vz + 0x32);
-		s1[8].vz = (s1[3].vz + -0x488) * 0x10000 >> 0x10;
+		s1[3].vz = -(car_cos->colBox.vz + 50);
+		s1[8].vz = s1[3].vz - 1160;
 		s1[6].vz = s1[3].vz;
 		s1[7].vz = s1[3].vz;
 
 		if (in_car) 
 		{
 			s1[1].vz = s1[8].vz + 600;
-			s1[0].vx = 0x88;
-			s1[1].vx = -0x158;
-			s1[2].vx = -0x15;
-			s1[3].vx = -0x8f;
-			s1[4].vx = 0x158;
-			s1[5].vx = -0x88;
-			s1[6].vx = 0x8f;
-			s1[7].vx = 0x15;
-			s1[8].vz = s1[8].vz + -400;
+			s1[0].vx = 136;
+			s1[1].vx = -344;
+			s1[2].vx = -21;
+			s1[3].vx = -143;
+			s1[4].vx = 344;
+			s1[5].vx = -136;
+			s1[6].vx = 143;
+			s1[7].vx = 21;
+			s1[8].vz = s1[8].vz - 400;
 			s1[9].vz = s1[3].vz + 10;
-			s1[8].vx = -0x52;
-			s1[10].vx = 0x52;
-			s1[9].vx = -0x52;
-			s1[11].vx = 0x52;
+			s1[8].vx = -82;
+			s1[10].vx = 82;
+			s1[9].vx = -82;
+			s1[11].vx = 82;
 			s1[4].vz = s1[1].vz;
 			s1[5].vz = s1[1].vz;
 			s1[10].vz = s1[8].vz;
 			s1[11].vz = s1[9].vz;
 
 			LightSortCorrect = -800;
-			iVar15 = 3;
+			
+			sub_level = 3;
 		}
 		else 
 		{
 			s1[1].vz = s1[8].vz + 100;
-			s1[0].vx = 0x88;
-			s1[1].vx = -0x158;
-			s1[2].vx = -0x15;
-			s1[3].vx = -0x8f;
-			s1[4].vx = 0x158;
-			s1[5].vx = -0x88;
-			s1[6].vx = 0x8f;
-			s1[7].vx = 0x15;
-			s1[10].vx = 0x52;
-			s1[11].vx = 0x52;
-			s1[8].vx = -0x52;
-			s1[9].vx = -0x52;
+			s1[0].vx = 136;
+			s1[1].vx = -344;
+			s1[2].vx = -21;
+			s1[3].vx = -143;
+			s1[4].vx = 344;
+			s1[5].vx = -136;
+			s1[6].vx = 143;
+			s1[7].vx = 21;
+			s1[10].vx = 82;
+			s1[11].vx = 82;
+			s1[8].vx = -82;
+			s1[9].vx = -82;
 			s1[4].vz = s1[1].vz;
 			s1[5].vz = s1[1].vz;
 			s1[9].vz = s1[3].vz;
 			s1[10].vz = s1[8].vz;
 			s1[11].vz = s1[3].vz;
 
-			iVar15 = 3;
-		}
+			sub_level = 3;
 
-		if (player[CurrentPlayerView].cameraView == 2 && cp == &car_data[player[CurrentPlayerView].playerCarId])
-			LightSortCorrect = -320;
-		else
-			LightSortCorrect = -200;
+			if (player[CurrentPlayerView].cameraView == 2 && cp == &car_data[player[CurrentPlayerView].playerCarId])
+				LightSortCorrect = -320;
+			else
+				LightSortCorrect = -200;
+		}
+	}
+	else
+	{
+		s1[0].vx = -204;
+		s1[1].vx = 204;
+		s1[2].vx = -204;
+		s1[3].vx = 204;
+		s1[3].vz = (car_cos->colBox.vz - 10);
+		s1[1].vz = s1[3].vz + 204;
+
+		sub_level = 0;
 	}
 
 	s1[0].vz = s1[1].vz;
@@ -556,78 +532,57 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 	_MatrixRotate(&mid_position);
 
-	mid_position.vx += cp->hd.where.t[0];
-	mid_position.vy += cp->hd.where.t[1];
-	mid_position.vz += cp->hd.where.t[2];
+	mid_position.vx += pos->vx;
+	mid_position.vy += pos->vy;
+	mid_position.vz += pos->vz;
 
-	iVar5 = MapHeight(&mid_position);
-
-	pSVar8 = pSVar7;
-	iVar14 = 0;
-
-	while (true)
+	car_road_height = MapHeight(&mid_position);
+	
+	if (sub_level == 3)
+		count = 12;
+	else
+		count = 4;
+	
+	for(i = 0; i < count; i++)
 	{
-		in_car = iVar14 < 4;
+		int temp_y;
 
-		if (iVar15 == 3)
-			in_car = iVar14 < 0xc;
+		s1[i].vy = 0;
+		_MatrixRotate(&s1[i]);
 
-		if (!in_car)
-			break;
+		toss.vx = s1[i].vx + pos->vx;
+		toss.vy = s1[i].vy + pos->vy;
+		toss.vz = s1[i].vz + pos->vz;
 
-		pos->vy = 0;
-		_MatrixRotate(pos);
+		s[i].vx = toss.vx - camera_position.vx;
+		s[i].vz = toss.vz - camera_position.vz;
 
-		toss.vx = pos->vx + cp->hd.where.t[0];
-		toss.vy = pos->vy + cp->hd.where.t[1];
-		toss.vz = pos->vz + cp->hd.where.t[2];
+		temp_y = MapHeight(&toss);
 
-		pSVar8->vx = toss.vx - camera_position.vx;
-		pSVar8->vz = toss.vz - camera_position.vz;
-
-		iVar16 = MapHeight(&toss);
-
-		sVar9 = -iVar16;
-		iVar6 = -iVar16 + iVar5;
-
-		if (iVar6 < 0)
-			iVar6 = -iVar5 + iVar16;
-
-		if (500 < iVar6)
-			sVar9 = -iVar5;
-
-		pos = pos + 1;
-		pSVar8 = pSVar8 + 1;
-		s[iVar14].vy = sVar9 - camera_position.vy;
-
-		iVar14++;
+		if (ABS(-temp_y + car_road_height) > 500)
+			s[i].vy = -car_road_height - camera_position.vy;
+		else
+			s[i].vy = -temp_y - camera_position.vy;
 	}
 
-	iVar16 = FIXEDH(s[0].vx * s[1].vy - s[0].vy * s[1].vx) *	s[2].vz;
-	iVar5 =  FIXEDH(s[0].vy * s[1].vz - s[0].vz * s[1].vy) * s[2].vx +
-			 FIXEDH(s[0].vz * s[1].vx - s[0].vx * s[1].vz) * s[2].vy + iVar16;
-
-	if (-1 < iVar5)
+	if (FIXEDH(s[0].vy * s[1].vz - s[0].vz * s[1].vy) * s[2].vx +
+		FIXEDH(s[0].vz * s[1].vx - s[0].vx * s[1].vz) * s[2].vy + 
+		FIXEDH(s[0].vx * s[1].vy - s[0].vy * s[1].vx) * s[2].vz >= 0)
 	{
-		if (iVar14 == 0) 
-		{
-			trap(7);
-		}
-
 		gte_SetRotMatrix(&inv_camera_matrix);
 		gte_SetTransVector(&dummy);
 
-		if (iVar15 == 0) 
+		if (sub_level == 0) 
 		{
 			gte_ldv3(&s[0], &s[1], &s[2]);
 			gte_rtpt();
 
-			gte_stszotz(&local_30);
+			gte_stszotz(&Z);
 
-			if (local_30 > 40)
-				local_30 -= 40;
+			if (Z > 40)
+				Z -= 40;
 
-			if (local_30 > 49)
+			if (Z > 49)
 			{
 				poly = (POLY_FT4 *)current->primptr;
 
@@ -654,93 +609,54 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				poly->clut = light_pool_texture.clutid;
 
 				gte_ldv0(&s[3]);
-
 				gte_rtps();
-
 				gte_stsxy(&poly->x3);
 
-				addPrim(current->ot + (local_30 >> 1), poly);
+				addPrim(current->ot + (Z >> 1), poly);
 				current->primptr += sizeof(POLY_FT4);
 			}
 		}
-		else if (iVar15 == 3)
+		else if (sub_level == 3)
 		{
-			iVar15 = 11;
-			pSVar8 = sout;
-
-			do {
-				gte_ldv0(pSVar7);
-
+			for(i = 0; i < 12; i++)
+			{
+				gte_ldv0(&s[i]);
 				gte_rtv0tr();
+				gte_stsv(&sout[i]);
+			}
+			
+			for(i = 0; i < 4; i++)
+			{
+				char* VertIdx;
+				
+				VertIdx = PoolPrimData + i * 4;
 
-				// FIXME: here might be 'gte_stlvnl'
-				gte_stsv(pSVar8);
-
-				//uVar10 = getCopReg(2, 0x4800);
-				//uVar11 = getCopReg(2, 0x5000);
-				//uVar12 = getCopReg(2, 0x5800);
-				//pSVar8->vx = (short)uVar10;
-				//pSVar8->vy = (short)uVar11;
-				//pSVar8->vz = (short)uVar12;
-
-				pSVar8++;
-				iVar15--;
-				pSVar7++;
-			} while (-1 < iVar15);
-
-			uVar13 = 0;
-
-			do {
-				iVar15 = uVar13 * 4;
-
-				MATRIX tempmatrix;
-
-				{
-					tempmatrix.m[0][0] = 0x1000;
-					tempmatrix.m[1][0] = 0;
-					tempmatrix.m[2][0] = 0;
-
-					tempmatrix.m[0][1] = 0;
-					tempmatrix.m[1][1] = 0x1000;
-					tempmatrix.m[2][1] = 0;
-
-					tempmatrix.m[0][2] = 0;
-					tempmatrix.m[1][2] = 0;
-					tempmatrix.m[2][2] = 0x1000;
-				}
-
-				//spolys = current->primptr;	// I'm getting rid of this...
-				gte_SetRotMatrix(&tempmatrix);
+				gte_SetRotMatrix(&identity);
 				gte_SetTransVector(&dummy);
 
-				bVar1 = RightLight;
+				if (i & 2)
+					brightness = LeftLight + LeftLight * 4;
+				else
+					brightness = RightLight + RightLight * 4;
 
-				if ((uVar13 & 2) != 0)
-					bVar1 = LeftLight;
-
-				sVar9 = bVar1 * 4 + bVar1;
-
-				if (sVar9 != 0)
+				if (brightness)
 				{
-					if ((uVar13 & 1) == 0) 
+					if (i & 1) 
 					{
-						sQuad(sout + PoolPrimData[iVar15 + 1],
-							sout + PoolPrimData[iVar15 + 3],
-							sout + PoolPrimData[iVar15 + 2],
-							sout + PoolPrimData[iVar15], sVar9 * 12, LightSortCorrect);
+						sQuad(sout + VertIdx[0],
+						      sout + VertIdx[2],
+						      sout + VertIdx[3],
+						      sout + VertIdx[1], brightness * 12, LightSortCorrect);
 					}
 					else
 					{
-						sQuad(sout + PoolPrimData[iVar15],
-							sout + PoolPrimData[iVar15 + 2],
-							sout + PoolPrimData[iVar15 + 3],
-							sout + PoolPrimData[iVar15 + 1], sVar9 * 12, LightSortCorrect);
+						sQuad(sout + VertIdx[1],
+						      sout + VertIdx[3],
+						      sout + VertIdx[2],
+						      sout + VertIdx[0], brightness * 12, LightSortCorrect);
 					}
-
-					//current->primptr = spolys;
 				}
-				uVar13++;
-			} while (uVar13 < 4);
+			}
 		}
 
 		LightSortCorrect = -10;
@@ -861,17 +777,12 @@ void ReleaseLeaf(short num)
 	/* end block 3 */
 	// End Line: 2990
 
-// [D]
+// [D] [T]
 void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 {
-	int bVar2;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	uint uVar6;
-	uint uVar7;
-	long lVar8;
-	int iVar9;
+	int idx;
+	int temprand;
+	int i;
 
 	if (gDoLeaves == 0)
 		return;
@@ -879,89 +790,79 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	Position->vy = -Position->vy;
 	Position->pad = MapHeight(Position);
 
-	iVar9 = 0;
-	while (iVar9 < num_leaves)
+	for (i = 0; i < num_leaves; i++)
 	{
-		iVar3 = AllocateLeaf();
+		idx = AllocateLeaf();
 		
-		if (iVar3 < 0)
+		if (idx < 0)
 			return;
+	
+		LEAF* myleaf = &leaf[idx];
+		
+		temprand = rand();
 
-		uVar4 = rand();
-
-		LEAF* myleaf = &leaf[iVar3];
-
-		myleaf->position.vx = Position->vx + (uVar4 & 0xfe);
-		myleaf->position.vz = Position->vz + ((int)uVar4 >> 8 & 0xfeU);
+		myleaf->position.vx = Position->vx + (temprand & 0xfe);
+		myleaf->position.vz = Position->vz + (temprand >> 8 & 0xfe);
 
 		if (Type == 1)
-			iVar5 = Position->vy;
+			myleaf->position.vy = -Position->vy;
 		else
-			iVar5 = Position->pad;
+			myleaf->position.vy = -Position->pad;
+	
+		myleaf->position.pad = Position->pad;
 
-		myleaf->position.vy = -iVar5;
 		myleaf->life = 600;
 		myleaf->flags = 2;
+	
 		myleaf->direction.vx = 0;
 		myleaf->direction.vy = 0;
 		myleaf->direction.vz = 0;
-		myleaf->pos = (ushort)((int)uVar4 >> 7) & 0xff;
-		myleaf->step = (uVar4 & 7) + 1;
-		myleaf->position.pad = Position->pad;
+		
+		myleaf->pos = (temprand >> 7) & 0xff;
+		myleaf->step = (temprand & 7) + 1;
+		
 
 		if (Type == 1)
 		{
-			if ((uVar4 & 3) == 0)
+			if ((temprand & 3) == 0)
 			{
 				myleaf->rgb.r = 110;
-				bVar2 = 0xf;
 				myleaf->rgb.g = 112;
-				goto LAB_000336f4;
+				myleaf->rgb.b = 15;
 			}
-
-			if ((uVar4 & 3) != 1)
+			else if ((temprand & 3) == 1)
+			{
+				myleaf->rgb.r = 20;
+				myleaf->rgb.g = 44;
+				myleaf->rgb.b = 0;
+			}
+			else
 			{
 				myleaf->rgb.r = 60;
-				bVar2 = 30;
 				myleaf->rgb.g = 50;
-				goto LAB_000336f4;
+				myleaf->rgb.b = 30;
 			}
-
-			myleaf->rgb.r = 20;
-			myleaf->rgb.g = 44;
-			myleaf->rgb.b = 0;
 		}
 		else
 		{
-			bVar2 = uVar4 & 0x1f;
-			myleaf->rgb.r = bVar2;
-			myleaf->rgb.g = bVar2;
-		LAB_000336f4:
-			myleaf->rgb.b = bVar2;
+			myleaf->rgb.r = myleaf->rgb.g = myleaf->rgb.b = temprand & 0x1f;
 		}
 
 		if (gTimeOfDay == 3)
 		{
-			uVar7 = 0x3f3f3f3f;
-			uVar6 = *(int*)&myleaf->rgb >> 2;
-		LAB_00033744:
-			*(uint*)&myleaf->rgb = uVar6 & uVar7;
+			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
 		}
 		else if (gWeather - 1U < 2)
 		{
-			uVar7 = 0x7f7f7f7f;
-			uVar6 = *(int*)&myleaf->rgb >> 1;
-			goto LAB_00033744;
+			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
 		}
 
-
-		myleaf->sin_index1 = uVar4 & 0xfff;
-		myleaf->sin_index2 = ((int)uVar4 >> 4) & 0xfff;
-		myleaf->sin_addition2 = -((uVar4 >> 8) & 7);
-		myleaf->sin_addition1 = -(uVar4 & 3);
+		myleaf->sin_index1 = temprand & 0xfff;
+		myleaf->sin_index2 = temprand >> 4 & 0xfff;
+		myleaf->sin_addition2 = -(temprand >> 8 & 7);
+		myleaf->sin_addition1 = -(temprand & 3);
+	
 		myleaf->type = Type;
-
-		iVar9++;
 	}
 }
 
@@ -1007,40 +908,37 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	/* end block 4 */
 	// End Line: 17534
 
-// [D]
+// [D] [T]
 void SwirlLeaves(CAR_DATA *cp)
 {
 	int XDiff;
 	int ZDiff;
 	LEAF *lpLeaf;
 	int count;
-
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
-
+	VECTOR plpos;
+	
 	lpLeaf = leaf;
+	plpos.vx = cp->hd.where.t[0];
+	plpos.vy = cp->hd.where.t[1];
+	plpos.vz = cp->hd.where.t[2];
 
-	if (cp->hd.wheel_speed + 39999U > 0x1d4be && gDoLeaves != 0 && pauseflag == 0)
+	if (cp->hd.wheel_speed + 39999U <= 0x1d4be || gDoLeaves == 0 || pauseflag != 0)
+		return;
+
+	for (count = 0; count < MAX_LEAVES; count++)
 	{
-		count = 49;
-		do {
-			XDiff = cp->hd.where.t[0] - lpLeaf->position.vx;
-			ZDiff = cp->hd.where.t[2] - lpLeaf->position.vz;
+		XDiff = plpos.vx - lpLeaf->position.vx;
+		ZDiff = plpos.vz - lpLeaf->position.vz;
 
-			if ((lpLeaf->flags & 2) != 0 && 
-				(lpLeaf->position.vy + cp->hd.where.t[1]) > -180 &&
-				XDiff > -360 && XDiff < 360 && ZDiff > -360 && ZDiff < 360)
-			{
-				lpLeaf->direction.vy = -25 - (rand() & 0x1f);
-				lpLeaf->position.vy--;
-			}
-
-			count--;
-			lpLeaf++;
-		} while (-1 < count);
+		if ((lpLeaf->flags & 2) && 
+			lpLeaf->position.vy + plpos.vy > -180 &&
+			XDiff > -360 && XDiff < 360 && ZDiff > -360 && ZDiff < 360)
+		{
+			lpLeaf->direction.vy = -25 - (rand() & 0x1f);
+			lpLeaf->position.vy--;
+		}
+		
+		lpLeaf++;
 	}
 }
 
@@ -1069,7 +967,7 @@ void SwirlLeaves(CAR_DATA *cp)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitDebrisNames(void)
 {
 	GetTextureDetails("SMOKE", &smoke_texture);
@@ -1582,16 +1480,14 @@ void AddGroundDebris(void)
 extern _pct plotContext;
 
 
-// [D] [A]
+// [D] [T] [A]
 void DrawSmashable_sprites(void)
 {
-	//undefined4 uVar1;
 	DAMAGED_OBJECT *dam;
 	MODEL *model;
 	int count;
 	VECTOR pos;
 	MATRIX object_matrix;
-	MATRIX spritematrix;
 
 	dam = damaged_object;
 	count = 0;
@@ -1600,17 +1496,17 @@ void DrawSmashable_sprites(void)
 		{
 			model = modelpointers[dam->cop.type];
 
-			object_matrix.m[0][0] = 0x1000;
+			object_matrix.m[0][0] = ONE;
 			object_matrix.m[0][1] = 0;
 			object_matrix.m[0][2] = 0;
 
 			object_matrix.m[1][0] = 0;
-			object_matrix.m[1][1] = 0x1000;
+			object_matrix.m[1][1] = ONE;
 			object_matrix.m[1][2] = 0;
 
 			object_matrix.m[2][0] = 0;
 			object_matrix.m[2][1] = 0;
-			object_matrix.m[2][2] = 0x1000;
+			object_matrix.m[2][2] = ONE;
 
 			if ((model->shape_flags & 0x4000) == 0)
 				RotMatrixY(dam->rot_speed * dam->damage * 3 & 0xfff, &object_matrix);
@@ -1634,11 +1530,7 @@ void DrawSmashable_sprites(void)
 
 			if (FrustrumCheck(&pos, model->bounding_sphere) != -1)
 			{
-				if ((model->shape_flags & 0x4000) == 0)
-				{
-					PlotMDL_less_than_128(model);
-				}
-				else
+				if ((model->shape_flags & 0x4000) != 0)
 				{
 					UNIMPLEMENTED();
 
@@ -1652,11 +1544,16 @@ void DrawSmashable_sprites(void)
 					}
 
 					// [A]
+					// TODO:
 					//current->primptr = Asm_PlotSprite(model, current->primptr, current->ot, 0);
-
+				}
+				else
+				{
+					PlotMDL_less_than_128(model);
 				}
 			}
 		}
+	
 		count++;
 		dam++;
 	} while (count < MAX_SMASHED_OBJECTS);
@@ -1704,7 +1601,7 @@ void DrawSmashable_sprites(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int MoveSmashable_object(void)
 {
 	DAMAGED_OBJECT *dam;
@@ -1788,7 +1685,7 @@ int MoveSmashable_object(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 {
 	int count;
@@ -1802,6 +1699,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 	SVECTOR pos;
 	CVECTOR col;
 	CVECTOR col1;
+	SVECTOR dpos;
 
 	dam = damaged_lamp;
 	col = {140, 140, 140};
@@ -1842,6 +1740,10 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 		dam++;
 	} while (count < 4);
 
+	dpos.vx = cop->pos.vx - camera_position.vx;
+	dpos.vy = cop->pos.vy - camera_position.vy;
+	dpos.vz = cop->pos.vz - camera_position.vz;
+
 	if (angle & 0xf)
 	{
 		pos.vx = x;
@@ -1855,9 +1757,9 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 		gte_stsv(&pos);
 
-		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
-		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
-		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
+		v1.vx = dpos.vx + pos.vx;
+		v1.vy = dpos.vy + pos.vy;
+		v1.vz = dpos.vz + pos.vz;
 	}
 	else
 	{
@@ -1865,42 +1767,42 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 		if (angle == 0)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) + x;
-			v1.vz = (cop->pos.vz - camera_position.vz) + z;
+			v1.vx = dpos.vx + x;
+			v1.vz = dpos.vz + z;
 		}
 		else if (angle == 1)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) + z;
-			v1.vz = (cop->pos.vz - camera_position.vz) - x;
+			v1.vx = dpos.vx + z;
+			v1.vz = dpos.vz - x;
 		}
 		else if (angle == 2)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) - x;
-			v1.vz = (cop->pos.vz - camera_position.vz) - z;
+			v1.vx = dpos.vx - x;
+			v1.vz = dpos.vz - z;
 		}
 		else if (angle == 3)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) - z;
-			v1.vz = (cop->pos.vz - camera_position.vz) + x;
+			v1.vx = dpos.vx - z;
+			v1.vz = dpos.vz + x;
 		}
 
-		v1.vy = (cop->pos.vy - camera_position.vy) + y;
+		v1.vy = dpos.vy + y;
 	}
 
 	v2.vx = v1.vx;
 	v2.vz = v1.vz;
-	v2.vy = -camera_position.vy - MapHeight(&v1);
+	v2.vy = -camera_position.vy - MapHeight((VECTOR*)&cop->pos);
 
 	LightSortCorrect = -30;
 	col.cd = 0;
 
 	v3 = v1;
 
-	LightIndex = find_lamp_streak((int)&cop->pos.vx + x); // wtf?
+	LightIndex = find_lamp_streak(cop->pos.vx + x); // [A] pointer.
 
 	if (LightIndex > -1)
-		col.cd = 96;
-
+		col.cd = 0x60;
+	
 	ShowLight(&v3, &col, halo_size, &light_texture);
 	ShowLight1(&v3, &col1, size, &light_texture);
 
@@ -1938,23 +1840,25 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 {
 	short yang;
-	int iVar2;
 	int angle;
 	int size;
 	VECTOR v1;
 	VECTOR v2;
-	VECTOR v3;
+	VECTOR dpos;
 	SVECTOR pos;
 	CVECTOR col;
-	CVECTOR col1;
 
 	yang = cop->yang;
 	angle = yang;
 
+	dpos.vx = cop->pos.vx - camera_position.vx;
+	dpos.vy = cop->pos.vy - camera_position.vy;
+	dpos.vz = cop->pos.vz - camera_position.vz;
+	
 	if (yang & 0xf) 
 	{
 		pos.vx = x;
@@ -1968,9 +1872,9 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 		gte_stsv(&pos);
 
-		v1.vx = (cop->pos.vx - camera_position.vx) + pos.vx;
-		v1.vy = (cop->pos.vy - camera_position.vy) + pos.vy;
-		v1.vz = (cop->pos.vz - camera_position.vz) + pos.vz;
+		v1.vx = dpos.vx + pos.vx;
+		v1.vy = dpos.vy + pos.vy;
+		v1.vz = dpos.vz + pos.vz;
 	}
 	else
 	{
@@ -1978,26 +1882,26 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 		if (yang == 0)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) + x;
-			v1.vz = (cop->pos.vz - camera_position.vz) + z;
+			v1.vx = dpos.vx + x;
+			v1.vz = dpos.vz + z;
 		}
 		else if (yang == 1) 
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) + z;
-			v1.vz = (cop->pos.vz - camera_position.vz) - x;
+			v1.vx = dpos.vx + z;
+			v1.vz = dpos.vz - x;
 		}
 		else if (yang == 2)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) - x;
-			v1.vz = (cop->pos.vz - camera_position.vz) - z;
+			v1.vx = dpos.vx - x;
+			v1.vz = dpos.vz - z;
 		}
 		else if (yang == 3)
 		{
-			v1.vx = (cop->pos.vx - camera_position.vx) - z;
-			v1.vz = (cop->pos.vz - camera_position.vz) + x;
+			v1.vx = dpos.vx - z;
+			v1.vz = dpos.vz + x;
 		}
 
-		v1.vy = (cop->pos.vy - camera_position.vy) + y;
+		v1.vy = dpos.vy + y;
 	}
 
 	if (colour == 0)
@@ -2044,7 +1948,7 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 	v2.vx = v1.vx;
 	v2.vz = v1.vz;
-	v2.vy = -camera_position.vy - MapHeight(&v1);
+	v2.vy = -camera_position.vy - MapHeight((VECTOR*)&cop->pos);
 
 	LightSortCorrect = -10;
 	col.cd = 0;
@@ -2100,12 +2004,11 @@ void PreLampStreak(void)
 {
 	int count;
 
-	for (count = 0; count < MAX_LAMP_STREAKS && StreakCount1 != 0; count++)
+	for (count = 0; count < MAX_LAMP_STREAKS && StreakCount1 > 0; count++)
 	{
 		if (Known_Lamps[count].set == 0)
 		{
-			StreakCount1--;
-			Known_Lamps[count].id = NewLamp[StreakCount1];
+			Known_Lamps[count].id = NewLamp[--StreakCount1];
 			Known_Lamps[count].clock = FrameCnt - 2;
 		}
 	}
@@ -2156,16 +2059,18 @@ int find_lamp_streak(int LampId)
 
 	for (count = 0; count < MAX_LAMP_STREAKS; count++)
 	{
-		if (Known_Lamps[0].id == LampId)
+		if (Known_Lamps[count].id == LampId)
 		{
-			Known_Lamps[0].set = 1;
+			Known_Lamps[count].set = 1;
 			return count;
 		}
 	}
 
 	// allocate new streak
 	if (StreakCount1 < MAX_LAMP_STREAKS)
+	{
 		NewLamp[StreakCount1++] = LampId;
+	}
 
 	return -1;
 }
@@ -2207,7 +2112,7 @@ int damage_lamp(CELL_OBJECT *cop)
 	dam = damaged_lamp;
 
 	do {
-		count++;
+		
 		if (cop == dam->cop) 
 		{
 			old_damage = dam->damage;
@@ -2218,7 +2123,9 @@ int damage_lamp(CELL_OBJECT *cop)
 
 			return 0;
 		}
+
 		dam++;
+		count++;
 	} while (count < MAX_DAMAGED_LAMPS);
 
 	// store new cell object
@@ -2367,64 +2274,53 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	/* end block 3 */
 	// End Line: 5819
 
-// [D]
+// [D] [T]
 void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 {
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-	int iVar4;
-	int iVar5;
+	int tempfade;
+	int r;
+	int lDiffAnglesX;
+	int lDiffAnglesY;
+	int AbsX;
+	int AbsY;
 	CVECTOR a;
 	CVECTOR c;
 	VECTOR v1;
 	VECTOR v2;
 
-	uVar3 = yang & 0xfff;
+	r = yang & 0xfff;
 	v1.vy = (cop->pos.vy - camera_position.vy) + y;
-	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * x + rcossin_tbl[uVar3 * 2] * z);
-	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * z - rcossin_tbl[uVar3 * 2] * x);
+	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(rcossin_tbl[r * 2 + 1] * x + rcossin_tbl[r * 2] * z);
+	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(rcossin_tbl[r * 2 + 1] * z - rcossin_tbl[r * 2] * x);
 
-	if ((flag & 0x200U) == 0) 
-	{
-		if ((flag & 0x400U) != 0) 
-		{
-			a.r = 255;
-			a.g = 100;
-			a.b = 35;
-
-			goto LAB_00035098;
-		}
-
-		if ((flag & 0x800U) == 0) 
-			goto LAB_00035098;
-
-		a.r = 25;
-		a.g = 255;
-	}
-	else 
+	a.cd = 0;
+	
+	if (flag & 0x200) 
 	{
 		a.r = 255;
 		a.g = 25;
+		a.b = 25;
+	}
+	else if (flag & 0x400) 
+	{
+		a.r = 255;
+		a.g = 100;
+		a.b = 35;
+	}
+	else if (flag & 0x800)
+	{
+		a.r = 25;
+		a.g = 255;
+		a.b = 25;
 	}
 
-	a.b = 25;
+	lDiffAnglesX = ((camera_angle.vx + 2048) & 0xfff) - 2048;
+	AbsX = ABS(lDiffAnglesX);
 
-LAB_00035098:
-	a.cd = 0;
-	iVar5 = ((int)camera_angle.vx + 0x800U & 0xfff) - 0x800;
-	iVar1 = iVar5;
+	lDiffAnglesY = ((-camera_angle.vy & 0xfffU) - yang + 2048 & 0xfff) - 2048;
+	AbsY = ABS(lDiffAnglesY);
 
-	if (iVar5 < 0) 
-		iVar1 = -iVar5;
-
-	iVar4 = (((-(int)camera_angle.vy & 0xfffU) - (int)(short)yang) + 0x800 & 0xfff) - 0x800;
-	iVar2 = iVar4;
-
-	if (iVar4 < 0)
-		iVar2 = -iVar4;
-
-	if (iVar2 < 1001)
+	if (AbsY < 1001)
 	{
 		c.r = a.r >> 3;
 		c.b = a.b >> 3;
@@ -2432,42 +2328,39 @@ LAB_00035098:
 
 		v2.vx = v1.vx;
 		v2.vz = v1.vz;
+		v2.vy = -camera_position.vy - MapHeight((VECTOR*)&cop->pos);
 
-		if (iVar1 + iVar2 < 1000)
+		if (AbsX + AbsY < 1000)
 		{
-			iVar1 = 1000 - (iVar1 + iVar2);
+			tempfade = 1000 - (AbsX + AbsY);
 
-			if (iVar1 < 0)
-				iVar1 = 0;
+			if (tempfade < 0)
+				tempfade = 0;
 
-			a.r = (a.r * iVar1) >> 10;
-			a.b = (a.b * iVar1) >> 10;
-			a.g = (a.g * iVar1) >> 10;
+			a.r = (a.r * tempfade) >> 10;
+			a.b = (a.b * tempfade) >> 10;
+			a.g = (a.g * tempfade) >> 10;
 
 			LightSortCorrect = -140;
-			LightIndex = find_lamp_streak((int)&cop->pos.vx + y + x);
+			LightIndex = find_lamp_streak(cop->pos.vx + y + x);	// [A] pointer
 
-			if (LightIndex < 0) 
+			if (LightIndex < 0)
 				a.cd = 0;
-			else 
-				a.cd = 32;
+			else
+				a.cd = 0x20;
 
-			ShowLight(&v1, &a, 0x1e, &light_texture);
+			ShowLight(&v1, &a, 30, &light_texture);
 
 			a.r = a.r >> 1;
 			a.b = a.b >> 1;
 			a.g = a.g >> 1;
 
-			if (gNight != 0) 
-				ShowFlare(&v1, &a, 0x96, iVar5 + iVar4 + v1.vx + v1.vz >> 3 & 0x1ffe);
+			if (gNight) 
+				ShowFlare(&v1, &a, 150, lDiffAnglesX + lDiffAnglesY + v1.vx + v1.vz >> 3 & 0x1ffe);
 		}
 
-		iVar1 = MapHeight(&v1);
-		v2.vy = -camera_position.vy - iVar1;
-
-		if (gNight != 0) 
+		if (gNight) 
 			ShowGroundLight(&v2, &c, 300);
-
 
 		DisplayLightReflections(&v2, &a, 100, &lightref_texture);
 		LightSortCorrect = -10;
@@ -2508,12 +2401,6 @@ LAB_00035098:
 void InitFXPos(VECTOR *vec, SVECTOR *svec, CAR_DATA *cp)
 {
 	SVECTOR svectmp;
-
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
 
 	gte_SetRotMatrix(&cp->hd.drawCarMat);
 	gte_SetTransVector(vec);
@@ -2588,20 +2475,13 @@ void FindCarLightFade(MATRIX *carToCamera)
 	/* end block 2 */
 	// End Line: 6202
 
-// [D] [T
+// [D] [T]
 void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
 {
 	int CarLightFade;
 	VECTOR v1t;
 	VECTOR v1l;
 	CVECTOR flareCol;
-
-
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
 
 	CarLightFade = 255;
 
@@ -2618,40 +2498,37 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 	else
 		flag = 0;
 
-	col->r = ((col->r * CarLightFade) >> 10);
-	col->b = ((col->b * CarLightFade) >> 10);
-	col->g = ((col->g * CarLightFade) >> 10);
+	flareCol.r = (col->r * CarLightFade) >> 10;
+	flareCol.b = (col->b * CarLightFade) >> 10;
+	flareCol.g = (col->g * CarLightFade) >> 10;
+	flareCol.cd = flag;
 
 	gte_SetRotMatrix(&cp->hd.drawCarMat);
 
 	v1l.vx = cp->hd.where.t[0] - camera_position.vx;
-	v1l.vy = -camera_position.vy - cp->hd.where.t[1];
 	v1l.vz = cp->hd.where.t[2] - camera_position.vz;
+	v1l.vy = -camera_position.vy - cp->hd.where.t[1];
 
 	InitFXPos(&v1l, v1, cp);
 
 	if (wetness > 9) 
 	{
 		v1t.vx = v1l.vx;
-		v1t.vy = v1l.vy;
 		v1t.vz = v1l.vz;
-
-		v1t.pad = v1l.pad;
-
 		v1t.vy = -camera_position.vy - MapHeight((VECTOR *)cp->hd.where.t);
+
+		DisplayLightReflections(&v1t, &flareCol, size, &lightref_texture);
 	}
 
 	col->cd = flag;
 
-	ShowLight(&v1l, col, size, texture);
+	ShowLight(&v1l, &flareCol, size, texture);
 
-	flareCol.r = col->r / 2;
-	flareCol.g = col->g / 2;
-	flareCol.b = col->b / 2;
+	flareCol.r /= 2;
+	flareCol.g /= 2;
+	flareCol.b /= 2;
 
 	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
-
-	DisplayLightReflections(&v1t, col, size, &lightref_texture);
 }
 
 
@@ -2829,44 +2706,23 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 /* WARNING: Could not reconcile some variable overlaps */
 
 
-// [D]
+// [D] [T]
 void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 {
-	MATRIX norot;
-
-	unsigned char uVar1;
-	short sVar2;
-	short sVar3;
-	bool bVar4;
-	short sVar6;
-	long lVar7;
-	unsigned char bVar8;
-	short sVar9;
-	VECTOR *pVVar10;
-	LAMP_STREAK *pLVar11;
-	short *puVar12;
-	int y;
-	short sVar13;
-	CVECTOR *pCVar14;
-	int iVar15;
-	int iVar16;
-	int x;
-	uint uVar17;
-	short *psVar18;
-	int iVar19;
+	int x, y;
 	POLY_FT3 *null;
-	POLY_G4 *polys;
+	POLY_G4 *trail;
 	POLY_FT4 *poly;
-	int iVar20;
-	int iVar21;
+	int i;
 	SVECTOR vert[4];
-	SVECTOR tail;
-	SVECTOR head;
 	int z;
 	int index;
+	SXYPAIR* trails;
+	short* clock;
+	int tail_width;
 
-	pVVar10 = v1;
-	pCVar14 = col;
+	if (NumPlayers > 1)	// [A] don't draw in multiplayer
+		return;
 
 	Apply_Inv_CameraMatrix(v1);
 
@@ -2893,10 +2749,10 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 	gte_rtpt();
 
-	gte_stsz(&iVar21);
+	gte_stsz(&z);
 
 	// discard if too close
-	if (iVar21 < 38)
+	if (z < 20)
 		return;
 
 	poly = (POLY_FT4 *)current->primptr;
@@ -2925,302 +2781,179 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 	poly->tpage = texture->tpageid | 0x20;
 	poly->clut = texture->clutid;
-	z = (iVar21 >> 3) + LightSortCorrect;
+
+	z = (z >> 3) + LightSortCorrect;
 
 	if (z < 0)
 		z = 0;
 
 	if (z < 10000)
-		iVar21 = (10000 - z) >> 0xd;
+		tail_width = (10000 - z) >> 0xd;
 	else
-		iVar21 = 0;
+		tail_width = 0;
 
 	addPrim(current->ot + z, poly);
 	current->primptr += sizeof(POLY_FT4);
 
-	if (CameraCnt > 4)
-	{
-		bVar8 = col->cd;
-		index = -1;
+	if (CameraCnt <= 4)
+		return;
 
-		if ((bVar8 & 0x20) == 0 || gLightsOn == 0) 
+	if ((col->cd & 0x20) && gLightsOn) 
+	{
+		trails = Known_Lamps[LightIndex].light_trails;
+		clock = &Known_Lamps[LightIndex].clock;
+	}
+	else 
+	{
+		if (col->cd & 2) 
+			index = 0;
+		else if (col->cd & 4) 
+			index = 1;
+		else if (col->cd & 8) 
+			index = 2;
+		else if (col->cd & 0x10) 
+			index = 3;
+		else
+			index = -1;
+
+		if (index == -1)
+			return;
+		
+		trails = car_data[gcar_num].ap.light_trails[index];
+		clock = &car_data[gcar_num].ap.old_clock[index];
+	}
+
+#ifndef PSX
+	x = (poly->x0 + poly->x3) / 2.0f;
+	y = (poly->y0 + poly->y3) / 2.0f;
+#else
+	x = (poly->x0 + poly->x3) / 2;
+	y = (poly->y0 + poly->y3) / 2;
+#endif
+	
+	// unified drawing both for car and lamps
+	if (CameraChanged == 0 && *clock == (FrameCnt & 0xffffU)-1)
+	{
+		int old_x, old_y;
+
+		old_x = trails[FrameCnt - 3U & 3].x;
+		old_y = trails[FrameCnt - 3U & 3].y;
+
+		trails[FrameCnt & 3].x = x;
+		trails[FrameCnt & 3].y = y;
+
+		if (size > 1 && ABS(old_x - x) + ABS(old_y - y) > 1)
 		{
-			if ((bVar8 & 2) == 0) 
+			int angle, width;
+			VERTTYPE dx, dy;
+
+			trail = (POLY_G4 *)current->primptr;
+
+			setPolyG4(trail);
+			setSemiTrans(trail, 1);
+
+			angle = -ratan2(old_x - x,old_y - y) & 0xfff;
+			width = ABS(poly->x0 - poly->x3);
+
+#ifdef PSX
+			dx = rcossin_tbl[angle * 2 + 1] * width * 3;
+			dy = rcossin_tbl[angle * 2] * width * 3;
+			
+			if (col->cd & 0x40)
 			{
-				if ((bVar8 & 4) == 0) 
-				{
-					if ((bVar8 & 8) == 0) 
-					{
-						if ((bVar8 & 0x10) != 0) 
-						{
-							index = 3;
-						}
-					}
-					else 
-					{
-						index = 2;
-					}
-				}
-				else 
-				{
-					index = 1;
-				}
+				dx >>= 0x10;
+				dy >>= 0x10;
+			}
+			else
+			{
+				dx >>= 0xf;
+				dy >>= 0xf;
+			}
+			
+			trail->x0 = x + dx * tail_width;
+			trail->y0 = y + dy * tail_width;
+
+			trail->x1 = x - dx * tail_width;
+			trail->y1 = y - dy * tail_width;
+
+			trail->x2 = old_x + dx;
+			trail->y2 = old_y + dy;
+
+			trail->x3 = old_x - dx;
+			trail->y3 = old_y - dy;
+#else
+			dx = rcossin_tbl[angle * 2 + 1];
+			dy = rcossin_tbl[angle * 2];
+			
+			if (col->cd & 0x40)
+			{
+				dx = dx / 40000.0f;
+				dy = dy / 40000.0f;
+			}
+			else
+			{
+				dx = dx / 32768.0f;
+				dy = dy / 32768.0f;
+			}
+
+			trail->x0 = x + dx * width * 3 * tail_width;
+			trail->y0 = y + dy * width * 3 * tail_width;
+
+			trail->x1 = x - dx * width * 3 * tail_width;
+			trail->y1 = y - dy * width * 3 * tail_width;
+
+			trail->x2 = old_x + dx * width * 3;
+			trail->y2 = old_y + dy * width * 3;
+
+			trail->x3 = old_x - dx * width * 3;
+			trail->y3 = old_y - dy * width * 3;
+#endif
+
+			if (col->cd & 0x18) 
+			{
+				trail->r0 = trail->r1 = col->r / 2;
+				trail->g0 = trail->g1 = col->g / 2;
+				trail->b0 = trail->b1 = col->b / 2;
 			}
 			else 
 			{
-				index = 0;
+				trail->r0 = trail->r1 = col->r;
+				trail->g0 = trail->g1 = col->g;
+				trail->b0 = trail->b1 = col->b;
 			}
+			
+			trail->r2 = trail->r3 = 0;
+			trail->g2 = trail->g3 = 0;
+			trail->b2 = trail->b3 = 0;
+
+			addPrim(current->ot + z, trail);
+			current->primptr += sizeof(POLY_G4);
+
+			null = (POLY_FT3 *)current->primptr;
+
+			setPolyFT3(null);
+			null->x0 = -1;
+			null->y0 = -1;
+			null->x1 = -1;
+			null->y1 = -1;
+			null->x2 = -1;
+			null->y2 = -1;
+			null->tpage = 0x20;
+
+			addPrim(current->ot + z, null);
+			current->primptr += sizeof(POLY_FT3);
+	}
 		}
-		else 
+	else
+	{
+		for (i = 0; i < 4; i++)
 		{
-			if (CameraChanged == 0 && Known_Lamps[LightIndex].clock == (FrameCnt & 0xffffU) - 1)
-			{
-				sVar2 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].x;
-				sVar3 = Known_Lamps[LightIndex].light_trails[FrameCnt - 3U & 3].y;
-
-				iVar15 = (poly->x0 + poly->x3) / 2;
-
-				sVar9 = iVar15;
-				sVar13 = poly->y0;
-				sVar6 = poly->y3;
-
-				Known_Lamps[LightIndex].clock = FrameCnt;
-				Known_Lamps[LightIndex].light_trails[FrameCnt & 3].x = sVar9;
-
-				y = (sVar13 + sVar6) / 2;
-					
-				iVar15 = sVar2 - iVar15;
-
-				if (iVar15 < 0)
-					iVar15 = -iVar15;
-
-				sVar13 = y;
-
-				Known_Lamps[LightIndex].light_trails[FrameCnt & 3].y = sVar13;
-
-				y = sVar3 - y;
-
-				if (y < 0)
-					y = -y;
-
-				iVar16 = poly->x0 - poly->x3;
-				if (iVar16 < 0)
-					iVar16 = -iVar16;
-
-				if (1 < size && iVar15 + y > 1)
-				{
-					polys = (POLY_G4 *)current->primptr;
-
-					setPolyG4(polys);
-					setSemiTrans(polys, 1);
-
-					sVar6 = (poly->x0 + poly->x3) / 2;
-					//polys->x1 = sVar6;
-					//polys->x0 = sVar6;
-
-					lVar7 = ratan2(sVar2 - sVar9,sVar3 - sVar13);
-
-					if ((col->cd & 0x40) == 0) 
-					{
-						uVar17 = -lVar7 & 0xfff;
-						iVar19 = rcossin_tbl[uVar17 * 2 + 1] * iVar16 * 3 >> 0xf;
-						iVar16 = rcossin_tbl[uVar17 * 2] * iVar16 * 3 >> 0xf;
-					}
-					else 
-					{
-						uVar17 = -lVar7 & 0xfff;
-						iVar19 = rcossin_tbl[uVar17 * 2 + 1] * iVar16 * 3 >> 0x10;
-						iVar16 = rcossin_tbl[uVar17 * 2] * iVar16 * 3 >> 0x10;
-					}
-
-					polys->x0 = sVar9 + iVar19;
-					polys->y0 = sVar13 + iVar16;
-
-					polys->x1 = sVar9 - iVar19;
-					polys->y1 = sVar13 - iVar16;
-
-					polys->x2 = sVar2;
-					polys->y2 = sVar3 - iVar21;
-
-					polys->x3 = sVar2;
-					polys->y3 = sVar3 + iVar21;
-
-					//*(int *)&polys->x0 = (sVar13 + iVar16) * 0x10000 + sVar9 + iVar19;
-					//*(int *)&polys->x1 = (sVar13 - iVar16) * 0x10000 + (sVar9 - iVar19);
-					//*(int *)&polys->x2 = (sVar3 - iVar21) * 0x10000 + (int)sVar2;
-					//*(int *)&polys->x3 = (sVar3 + iVar21) * 0x10000 + (int)sVar2;
-
-					polys->r0 = col->r >> 1;
-					polys->g0 = col->g >> 1;
-					polys->b0 = col->b >> 1;
-					polys->r1 = col->r >> 1;
-					polys->g1 = col->g >> 1;
-					bVar8 = col->b;
-					polys->r2 = 0;
-					polys->g2 = 0;
-					polys->b2 = 0;
-					polys->r3 = 0;
-					polys->g3 = 0;
-					polys->b3 = 0;
-					polys->b1 = bVar8 >> 1;
-
-					addPrim(current->ot + z, polys);
-					current->primptr += sizeof(POLY_G4);
-
-					null = (POLY_FT3 *)current->primptr;
-
-					setPolyFT3(null);
-					null->x0 = -1;
-					null->y0 = -1;
-					null->x1 = -1;
-					null->y1 = -1;
-					null->x2 = -1;
-					null->y2 = -1;
-					null->tpage = 0x20;
-
-					addPrim(current->ot + z, null);
-					current->primptr += sizeof(POLY_FT3);
-				}
-			}
-			else
-			{
-				iVar16 = 3;
-
-				do {
-					Known_Lamps[LightIndex].light_trails[iVar16].x = (poly->x0 + poly->x3) / 2;
-					Known_Lamps[LightIndex].light_trails[iVar16].y = (poly->y0 + poly->y3) / 2;
-
-					iVar16--;
-				} while (-1 < iVar16);
-
-				Known_Lamps[LightIndex].clock = FrameCnt;
-			}
-		}
-
-		if (index > -1)
-		{
-			if (CameraChanged == 0 && car_data[gcar_num].ap.old_clock[index] == (FrameCnt & 0xffffU)-1)
-			{
-				sVar2 = car_data[gcar_num].ap.light_trails[index][FrameCnt - 3U & 3].x;
-				sVar3 = car_data[gcar_num].ap.light_trails[index][FrameCnt - 3U & 3].y;
-
-				y = (poly->x0 + poly->x3) / 2;
-				sVar9 = y;
-				sVar13 = poly->y0;
-				sVar6 = poly->y3;
-				y = sVar2 - y;
-
-				car_data[gcar_num].ap.old_clock[index] = FrameCnt;
-				x = (sVar13 + sVar6) / 2;
-				car_data[gcar_num].ap.light_trails[index][FrameCnt & 3U].x = sVar9;
-
-				iVar19 = y;
-				if (y < 0)
-					iVar19 = -y;
-
-				sVar13 = x;
-				car_data[gcar_num].ap.light_trails[index][FrameCnt & 3U].y = sVar13;
-
-				x = sVar3 - x;
-				iVar16 = poly->x0 - poly->x3;
-				if (iVar16 < 0)
-					iVar16 = -iVar16;
-
-				iVar15 = x;
-				if (x < 0)
-					iVar15 = -x;
-		
-				if (size < 2)
-					return;
-
-				if (iVar19 + iVar15 < 2)
-					return;
-
-				polys = (POLY_G4 *)current->primptr;
-
-				setPolyG4(polys);
-				setSemiTrans(polys, 1);
-
-				lVar7 = ratan2(y,x);
-				iVar19 = rcossin_tbl[(-lVar7 & 0xfffU) * 2 + 1] * iVar16 * 3 >> 0xf;
-				iVar20 = rcossin_tbl[(-lVar7 & 0xfffU) * 2] * iVar16 * 3 >> 0xf;
-
-				polys->x0 = sVar9 + iVar19;
-				polys->y0 = sVar13 + iVar20;
-
-				polys->x1 = sVar9 - iVar19;
-				polys->y1 = sVar13 - iVar20;
-
-				polys->x2 = sVar2;
-				polys->y2 = sVar3 - iVar21;
-
-				polys->x3 = sVar2;
-				polys->y3 = sVar3 + iVar21;
-
-				//*(int *)&polys->x0 = (sVar13 + iVar20) * 0x10000 + sVar9 + iVar19;
-				//*(int *)&polys->x1 = (sVar13 - iVar20) * 0x10000 + (sVar9 - iVar19);
-				//*(int *)&polys->x2 = (sVar3 - iVar21) * 0x10000 + (int)sVar2;
-				//*(int *)&polys->x3 = (sVar3 + iVar21) * 0x10000 + (int)sVar2;
-
-				if ((col->cd & 0x18) == 0) 
-				{
-					polys->r0 = col->r;
-					polys->g0 = col->g;
-					polys->b0 = col->b;
-					polys->r1 = col->r;
-					polys->g1 = col->g;
-					polys->b1 = col->b;
-				}
-				else 
-				{
-					polys->r0 = col->r >> 1;
-					polys->g0 = col->g >> 1;
-					polys->b0 = col->b >> 1;
-					polys->r1 = col->r >> 1;
-					polys->g1 = col->g >> 1;
-					polys->b1 = col->b >> 1;
-				}
-
-				polys->r2 = 0;
-				polys->g2 = 0;
-				polys->b2 = 0;
-				polys->r3 = 0;
-				polys->g3 = 0;
-				polys->b3 = 0;
-
-				addPrim(current->ot + z, polys);
-				current->primptr += sizeof(POLY_G4);
-
-				null = (POLY_FT3 *)current->primptr;
-				setPolyFT3(null);
-
-				null->x0 = -1;
-				null->y0 = -1;
-				null->x1 = -1;
-				null->y1 = -1;
-				null->x2 = -1;
-				null->y2 = -1;
-				null->tpage = 0x20;
-
-				addPrim(current->ot + z, null);
-				current->primptr += sizeof(POLY_FT3);
-			}
-			else
-			{
-				iVar20 = 0;
-
-				while (iVar20 < 4)
-				{
-					car_data[gcar_num].ap.light_trails[index][iVar20].x = (poly->x0 + poly->x3) / 2;
-					car_data[gcar_num].ap.light_trails[index][iVar20].y = (poly->y0 + poly->y3) / 2;
-
-					iVar20++;
-				}
-
-				car_data[gcar_num].ap.old_clock[index] = FrameCnt;
-			 }
+			trails[i].x = x;
+			trails[i].y = y;
 		}
 	}
+
+	*clock = FrameCnt;
 }
 
 
