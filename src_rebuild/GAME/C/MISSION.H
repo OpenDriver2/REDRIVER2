@@ -63,6 +63,9 @@ extern STOPCOPS gStopCops;
 extern MR_MISSION Mission;
 
 extern int wantedCar[2];
+extern int wantedTimeOfDay;
+extern int wantedWeather;
+
 extern int multiplayerregions[4];
 extern int MaxPlayerDamage[2];
 
