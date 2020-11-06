@@ -2291,8 +2291,8 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 
 	dam->vx = cop->pos.vx;
 
-	dam->velocity.vx = (velocity->vx >> 10);
-	dam->velocity.vz = (velocity->vz >> 10);
+	dam->velocity.vx = velocity->vx >> 10;
+	dam->velocity.vz = velocity->vz >> 10;
 
 	pcop = pcoplist[cop->pad];
 	pcop->value = 0xffff;
