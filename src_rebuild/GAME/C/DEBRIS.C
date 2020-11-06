@@ -4555,9 +4555,9 @@ void DisplaySmoke(SMOKE *smoke)
 	else if (smoke->flags & 0x1000)
 	{
 		if ((smoke->transparency >> 3) + 50 & 0xff < 60)
-			poly->g0 = (smoke->transparency >> 2);
+			poly->g0 = (smoke->transparency >> 3);
 		else
-			poly->g0 = smoke->transparency >> 3;
+			poly->g0 = smoke->transparency >> 2;
 
 		smoke_z_offset = 18;
 			

@@ -1681,7 +1681,7 @@ int GetFreeChannel(int force)
 	channel = 0;
 
 	// find free channel
-	while (channels[channel].locked || status[channel] != SPU_OFF && status[channel] != SPU_RESET)
+	while (channel < MAX_SFX_CHANNELS && (channels[channel].locked || status[channel] != SPU_OFF && status[channel] != SPU_RESET))
 	{
 		channel++;
 	}
