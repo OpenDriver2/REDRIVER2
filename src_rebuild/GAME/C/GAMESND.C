@@ -3697,8 +3697,15 @@ void InitLeadHorn(void)
 void LeadHorn(CAR_DATA* cp)
 {
 	static unsigned int rnd = 0;
-
 	int carBank;
+	int dx,dz;
+
+	// [A] do not horn if too far from camera
+	dx = cp->hd.where.t[0] - camera_position.vx >> 8;
+	dz = cp->hd.where.t[2] - camera_position.vz >> 8;
+
+	if (ABS(dx) < 64 && ABS(dz) > 64)
+		return;
 
 	if (horn_time == 0)
 		rnd = (cp->hd.where.t[0] ^ cp->hd.where.t[2]) * (FrameCnt ^ cp->hd.where.t[1]) & 0x7f;
