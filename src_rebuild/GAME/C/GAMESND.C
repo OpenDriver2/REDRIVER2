@@ -633,7 +633,7 @@ void LoadLevelSFX(int missionNum)
 	LoadSoundBankDynamic(NULL, 1, 0);
 	LoadSoundBankDynamic(NULL, 3, 3);
 
-	if (gCurrentMissionNumber - 39 < 2)
+	if (gCurrentMissionNumber - 39U < 2)
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
