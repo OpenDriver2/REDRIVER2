@@ -681,14 +681,9 @@ void InitModelNames(void)
 // [D] [T]
 void GameInit(void)
 {
-	long lVar1;
-	PLAYER* p_Var2;
-	STREAM_SOURCE* pSVar3;
+	STREAM_SOURCE* plStart;
 	int i;
-	int iVar5;
-	int iVar6;
 	char padid;
-	short totaldam;
 
 	if (NewLevel == 0)
 	{
@@ -710,7 +705,7 @@ void GameInit(void)
 #endif // PSX
 
 		MALLOC_BEGIN();
-		packed_cell_pointers = D_MALLOC(0x1000);
+		packed_cell_pointers = D_MALLOC(1024 * sizeof(void*));
 		MALLOC_END();
 	}
 
@@ -871,45 +866,37 @@ void GameInit(void)
 	i = 0;
 	while (i < numPlayersToCreate)
 	{
-		pSVar3 = PlayerStartInfo[i];
+		plStart = PlayerStartInfo[i];
 		padid = -i;
 
 		if (i < NumPlayers)
 			padid = i;
 
-		gStartOnFoot = (pSVar3->type == 2);
+		gStartOnFoot = (plStart->type == 2);
 
-		InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (LONGVECTOR *)&pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
+		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR *)&plStart->position, plStart->model, plStart->palette, &padid);
 
 		if (gStartOnFoot == 0)
 		{
-			car_data[i].ap.damage[0] = pSVar3->damage[0];
-			car_data[i].ap.damage[1] = pSVar3->damage[1];
-			car_data[i].ap.damage[2] = pSVar3->damage[2];
-			car_data[i].ap.damage[3] = pSVar3->damage[3];
-			car_data[i].ap.damage[4] = pSVar3->damage[4];
-			car_data[i].ap.damage[5] = pSVar3->damage[5];
+			car_data[i].ap.damage[0] = plStart->damage[0];
+			car_data[i].ap.damage[1] = plStart->damage[1];
+			car_data[i].ap.damage[2] = plStart->damage[2];
+			car_data[i].ap.damage[3] = plStart->damage[3];
+			car_data[i].ap.damage[4] = plStart->damage[4];
+			car_data[i].ap.damage[5] = plStart->damage[5];
 
-			car_data[i].totalDamage = pSVar3->totaldamage;
+			car_data[i].totalDamage = plStart->totaldamage;
 
 			car_data[i].ap.needsDenting = 1;
 		}
 
 		i++;
-	};
+	}
 
 	// FIXME: need to change streams properly
-#if 0 //def CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	extern int gCutsceneAsReplay_PlayerId;
-	if (gCutsceneAsReplay != 0 && gCutsceneAsReplay_PlayerId >= 0)
-	{
-		if(player[0].playerType == 1)
-		{
-			player[0].playerCarId = gCutsceneAsReplay_PlayerId;
-			player[0].cameraCarId = gCutsceneAsReplay_PlayerId;
-		}
-	}
+#ifdef CUTSCENE_RECORDER
+	extern void NextChase(int dir);
+	NextChase(0);
 #endif
 
 	if (pathAILoaded != 0)

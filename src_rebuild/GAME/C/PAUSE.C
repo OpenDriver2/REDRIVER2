@@ -59,6 +59,12 @@ void SetRightWayUp(int direction)
 	PauseReturnValue = MENU_QUIT_CONTINUE;
 }
 
+void SetDisplayPosition(int direction)
+{
+	extern int gDisplayPosition;
+	gDisplayPosition ^= 1;
+}
+
 void ToggleInvincibility(int direction)
 {
 	extern int gInvincibleCar;
@@ -210,6 +216,7 @@ MENU_ITEM DebugOptionsItems[] =
 	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&NextChase, MENU_QUIT_NONE, NULL },
 #endif
+	{ "Display position", 3, 	2,	SetDisplayPosition,		MENU_QUIT_NONE,		NULL},
 	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
 	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
 	{ "Fun Cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
