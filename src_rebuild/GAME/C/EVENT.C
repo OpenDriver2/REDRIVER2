@@ -2717,7 +2717,7 @@ void StepHelicopter(EVENT* ev)
 				pos.vx = ev->position.vx;
 				pos.vz = ev->position.vz;
 
-				Setup_Smoke(&pos, 100, 500, 2, 0, &dummy, 0);
+				Setup_Smoke(&pos, 100, 500, SMOKE_WHITE, 0, &dummy, 0);
 			}
 		}
 		else
@@ -2733,7 +2733,7 @@ void StepHelicopter(EVENT* ev)
 
 		if ((ev->flags & 0x100) && (Random2(0) & 3) == (CameraCnt & 3U))
 		{
-			Setup_Smoke((VECTOR*)&ev->position, 100, 500, 1, 0, &dummy, 0);
+			Setup_Smoke((VECTOR*)&ev->position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
 		}
 	}
 
@@ -2743,8 +2743,8 @@ void StepHelicopter(EVENT* ev)
 		pos.vx = ev->position.vx + (rand() & 0xff) - 128;
 		pos.vz = ev->position.vz + (rand() & 0xff) - 128;
 
-		Setup_Smoke(&pos, 50, 100, 4, 0, &dummy, 0);
-		Setup_Smoke(&pos, 100, 500, 1, 0, &drift, 0);
+		Setup_Smoke(&pos, 50, 100, SMOKE_FIRE, 0, &dummy, 0);
+		Setup_Smoke(&pos, 100, 500, SMOKE_BLACK, 0, &drift, 0);
 
 		SetMSoundVar(0, NULL);
 	}
@@ -5111,7 +5111,7 @@ int DetonatorTimer(void)
 		if (detonator.timer - 141U < 19)
 		{
 			ScreenShake(detonator.timer - 140, &rememberCameraAngle);
-			Setup_Smoke(&firstMissionEvent[0].position, 100, 500, 1, 0, &dummy, 0);
+			Setup_Smoke(&firstMissionEvent[0].position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
 		}
 		else
 		{

@@ -1341,7 +1341,6 @@ struct POLYGT4
 	RGB color;
 };
 
-
 struct SMOKE
 {
 	UnpaddedHackVector position;
@@ -2265,10 +2264,10 @@ struct SHADOWHDR
 
 struct TYRE_TRACK
 {
-	char type;
-	char shade;
-	char shade_type;
-	char surface;
+	u_char type;
+	u_char shade;
+	u_char shade_type;
+	u_char surface;
 	SVECTOR_NOPAD p1;
 	SVECTOR_NOPAD p2;
 	SVECTOR_NOPAD p3;

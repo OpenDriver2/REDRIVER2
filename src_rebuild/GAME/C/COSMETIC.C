@@ -959,10 +959,10 @@ void AddSmokingEngine(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		InitFXPos(&SmokePos, &svec, cp);
 		GetSmokeDrift(&Drift);
 
-		if (black_smoke == 0)
-			Setup_Smoke(&SmokePos, 100, 400, 2, WheelSpeed, &Drift, 0);
+		if (black_smoke)
+			Setup_Smoke(&SmokePos, 100, 500, SMOKE_BLACK, WheelSpeed, &Drift, 0);
 		else
-			Setup_Smoke(&SmokePos, 100, 500, 1, WheelSpeed, &Drift, 0);
+			Setup_Smoke(&SmokePos, 100, 400, SMOKE_WHITE, WheelSpeed, &Drift, 0);
 	}
 }
 
@@ -1014,10 +1014,10 @@ void AddExhaustSmoke(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		Drift.vx -= FIXEDH(smokedir.vx) / 2;
 		Drift.vz -= FIXEDH(smokedir.vz) / 2;
 
-		if (black_smoke == 0)
-			Setup_Smoke(&SmokePos, 10, 40, 2, WheelSpeed, &Drift, 1);
+		if (black_smoke)
+			Setup_Smoke(&SmokePos, 10, 40, SMOKE_BLACK, WheelSpeed, &Drift, 1);
 		else
-			Setup_Smoke(&SmokePos, 10, 40, 1, WheelSpeed, &Drift, 1);
+			Setup_Smoke(&SmokePos, 10, 40, SMOKE_WHITE, WheelSpeed, &Drift, 1);
 	}
 }
 
@@ -1071,7 +1071,7 @@ void AddFlamingEngine(CAR_DATA *cp)
 		Drift.vy = 0;
 		Drift.vz = 0;
 
-		Setup_Smoke(&SmokePos, 0x32, 100, 4, 0, &Drift, 0);
+		Setup_Smoke(&SmokePos, 50, 100, SMOKE_FIRE, 0, &Drift, 0);
 	}
 }
 

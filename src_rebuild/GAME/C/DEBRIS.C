@@ -4,7 +4,6 @@
 #include "TEXTURE.H"
 #include "PRES.H"
 #include "DIRECTOR.H"
-#include "MOTION_C.H"
 #include "PAUSE.H"
 #include "SOUND.H"
 #include "MAIN.H"
@@ -28,7 +27,6 @@
 
 #include "INLINE_C.H"
 #include "RAND.H"
-#include "STRINGS.H"
 
 TEXTURE_DETAILS digit_texture;
 
@@ -447,6 +445,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 	pos = (VECTOR*)cp->hd.where.t;
 	car_cos = &car_cosmetics[cp->ap.model];
 
+	// [A] there was check that prevented in_car lights in game, but it was working in quick replays...
+
 	if (front) 
 	{
 		s1[3].vz = -(car_cos->colBox.vz + 50);
@@ -456,6 +456,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 		if (in_car) 
 		{
+			// slightly shifted vertices to make it look more beautiful
 			s1[1].vz = s1[8].vz + 600;
 			s1[0].vx = 136;
 			s1[1].vx = -344;
@@ -511,6 +512,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 	}
 	else
 	{
+		// back light
+	
 		s1[0].vx = -204;
 		s1[1].vx = 204;
 		s1[2].vx = -204;
@@ -542,7 +545,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 		count = 12;
 	else
 		count = 4;
-	
+
+	// adjust height and poisition for each vertex
 	for(i = 0; i < count; i++)
 	{
 		int temp_y;
@@ -590,18 +594,14 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				setPolyFT4(poly);
 				setSemiTrans(poly, 1);
 
-				poly->u0 = light_pool_texture.coords.u0;
-				poly->v0 = light_pool_texture.coords.v0;
-				poly->u1 = light_pool_texture.coords.u1;
-				poly->v1 = light_pool_texture.coords.v1;
-				poly->u2 = light_pool_texture.coords.u2;
-				poly->v2 = light_pool_texture.coords.v2;
-				poly->u3 = light_pool_texture.coords.u3;
-				poly->v3 = light_pool_texture.coords.v3;
+				*(ushort*)&poly->u0 = *(ushort*)&light_pool_texture.coords.u0;
+				*(ushort*)&poly->u1 = *(ushort*)&light_pool_texture.coords.u1;
+				*(ushort*)&poly->u2 = *(ushort*)&light_pool_texture.coords.u2;
+				*(ushort*)&poly->u3 = *(ushort*)&light_pool_texture.coords.u3;
 
-				poly->r0 = col->r >> 1;
-				poly->g0 = col->b >> 1;
-				poly->b0 = col->g >> 1;
+				poly->r0 = col->r / 2;
+				poly->g0 = col->b / 2;
+				poly->b0 = col->g / 2;
 
 				gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -624,7 +624,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				gte_rtv0tr();
 				gte_stsv(&sout[i]);
 			}
-			
+
+			// draw front light quads
 			for(i = 0; i < 4; i++)
 			{
 				char* VertIdx;
@@ -820,10 +821,10 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		
 		myleaf->pos = (temprand >> 7) & 0xff;
 		myleaf->step = (temprand & 7) + 1;
-		
 
 		if (Type == 1)
 		{
+			// tree leaves
 			if ((temprand & 3) == 0)
 			{
 				myleaf->rgb.r = 110;
@@ -845,14 +846,16 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		}
 		else
 		{
+			// news, papers etc
 			myleaf->rgb.r = myleaf->rgb.g = myleaf->rgb.b = temprand & 0x1f;
 		}
 
+		// apply colors
 		if (gTimeOfDay == 3)
 		{
 			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
 		}
-		else if (gWeather - 1U < 2)
+		else if (gWeather == 1 || gWeather == 2)
 		{
 			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
 		}
@@ -916,7 +919,7 @@ void SwirlLeaves(CAR_DATA *cp)
 	LEAF *lpLeaf;
 	int count;
 	VECTOR plpos;
-	
+
 	lpLeaf = leaf;
 	plpos.vx = cp->hd.where.t[0];
 	plpos.vy = cp->hd.where.t[1];
@@ -934,8 +937,9 @@ void SwirlLeaves(CAR_DATA *cp)
 			lpLeaf->position.vy + plpos.vy > -180 &&
 			XDiff > -360 && XDiff < 360 && ZDiff > -360 && ZDiff < 360)
 		{
+			// set lifting direction
 			lpLeaf->direction.vy = -25 - (rand() & 0x1f);
-			lpLeaf->position.vy--;
+			lpLeaf->position.vy -= 1;
 		}
 		
 		lpLeaf++;
@@ -1018,7 +1022,7 @@ void InitDebrisNames(void)
 	GetTextureDetails("TSHADOW", &tannerShadow_texture);
 
 	texture_is_icon = 0;
-	head1_texture.coords.u1 = head1_texture.coords.u0 + '\b';
+	head1_texture.coords.u1 = head1_texture.coords.u0 + 8;
 	head1_texture.coords.u3 = head1_texture.coords.u1;
 
 	GetTextureDetails("LIGHTREF", &lightref_texture);
@@ -1100,10 +1104,11 @@ void InitDebris(void)
 
 	main_cop_light_pos = rand() % 7;
 
+	gDoLeaves = (NumPlayers == 1); // [A] disable in multiplayer (temporarily) due to their flicker
+
 	for (i = 0; i < MAX_LAMP_STREAKS; i++)
 	{
 		Known_Lamps[i].set = 0;
-		i++;
 	}
 
 	for (i = 0; i < MAX_DEBRIS; i++)
@@ -1112,15 +1117,12 @@ void InitDebris(void)
 
 		debris[i].pos = 0;
 		debris[i].num = i;
-
-		i++;
 	}
 
-	i = 0;
-	do {
+	for (i = 0; i < MAX_GROUND_DEBRIS; i++)
+	{
 		ground_debris[i].type = 0xffff;
-		i++;
-	} while (i < MAX_GROUND_DEBRIS);
+	}
 
 	groundDebrisIndex = 0;
 
@@ -1376,50 +1378,50 @@ void AddGroundDebris(void)
 	int count;
 	VECTOR Position;
 
-	if (car_data[0].hd.wheel_speed + 99999U > 0x30d3e)
-	{
-		count = 0;
-		cop = ground_debris;
+	if (car_data[0].hd.wheel_speed + 99999U <= 0x30d3e)
+		return;
 
-		do {
-			if (cop->type != 0xffff)
+	count = 0;
+	cop = ground_debris;
+
+	do {
+		if (cop->type != 0xffff)
+		{
+			model = modelpointers[cop->type];
+
+			xbound = ABS(cop->pos.vx - camera_position.vx);
+			zbound = ABS(cop->pos.vz - camera_position.vz);
+
+			if (xbound < 9001 && zbound < 9001 && (xbound > 7000 || zbound > 7000))
 			{
-				model = modelpointers[cop->type];
+				if (next_leaf > 39)
+					return;
 
-				xbound = ABS(cop->pos.vx - camera_position.vx);
-				zbound = ABS(cop->pos.vz - camera_position.vz);
+				seed = rand();
 
-				if (xbound < 9001 && zbound < 9001 && (xbound > 7000 || zbound > 7000))
+				Position.vy = -cop->pos.vy - 45;
+				Position.vx = cop->pos.vx + ((seed & 0x3ff) - 512);
+				Position.vz = cop->pos.vz + ((rand() & 0x3ff) - 512);
+
+				number = seed & 7;
+
+				if ((model->flags2 & 0x2000) == 0) 
 				{
-					if (next_leaf > 39)
-						return;
-
-					seed = rand();
-
-					Position.vy = 10000;
-					Position.vx = cop->pos.vx + ((seed & 0x3ff) - 0x200);
-					Position.vz = cop->pos.vz + ((rand() & 0x3ff) - 0x200);
-
-					number = seed & 7;
-
-					if ((model->flags2 & 0x2000) == 0) 
-					{
-						number = seed & 3;
-						type = 2;
-					}
-					else 
-					{
-						type = 1;
-					}
-
-					AddLeaf(&Position, number + 1, type);
+					number = seed & 3;
+					type = 2;	// paper
 				}
-			}
+				else 
+				{
+					type = 1;	// ground leaves
+				}
 
-			count++;
-			cop++;
-		} while (count < MAX_GROUND_DEBRIS);
-	}
+				AddLeaf(&Position, number + 1, type);
+			}
+		}
+
+		count++;
+		cop++;
+	} while (count < MAX_GROUND_DEBRIS);
 }
 
 
@@ -1492,7 +1494,7 @@ void DrawSmashable_sprites(void)
 	dam = damaged_object;
 	count = 0;
 	do {
-		if (dam->active != 0)
+		if (dam->active)
 		{
 			model = modelpointers[dam->cop.type];
 
@@ -1611,7 +1613,7 @@ int MoveSmashable_object(void)
 	count = 0;
 
 	do {
-		if (dam->active != 0) 
+		if (dam->active) 
 		{
 			if (dam->cop.pos.vy < 50 - player[0].pos[1]) 
 			{
@@ -1619,8 +1621,10 @@ int MoveSmashable_object(void)
 	
 				dam->cop.pos.vy += dam->velocity.vy;
 				dam->cop.pos.vz += dam->velocity.vz;
-				dam->damage++;
+
 				dam->velocity.vy += 10;
+
+				dam->damage++;
 			}
 			else 
 			{
@@ -1798,7 +1802,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 	v3 = v1;
 
-	LightIndex = find_lamp_streak(cop->pos.vx + x); // [A] pointer.
+	LightIndex = find_lamp_streak(cop->pos.vx + cop->pos.vz + x); // [A] was pointer.
 
 	if (LightIndex > -1)
 		col.cd = 0x60;
@@ -2320,16 +2324,19 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 	lDiffAnglesY = ((-camera_angle.vy & 0xfffU) - yang + 2048 & 0xfff) - 2048;
 	AbsY = ABS(lDiffAnglesY);
 
-	if (AbsY < 1001)
+	c.r = a.r >> 3;
+	c.b = a.b >> 3;
+	c.g = a.g >> 3;
+
+	v2.vx = v1.vx;
+	v2.vz = v1.vz;
+	v2.vy = -camera_position.vy - MapHeight((VECTOR*)&cop->pos);
+
+	if (gNight)
+		ShowGroundLight(&v2, &c, 300);
+	
+	if (AbsY < 1000)
 	{
-		c.r = a.r >> 3;
-		c.b = a.b >> 3;
-		c.g = a.g >> 3;
-
-		v2.vx = v1.vx;
-		v2.vz = v1.vz;
-		v2.vy = -camera_position.vy - MapHeight((VECTOR*)&cop->pos);
-
 		if (AbsX + AbsY < 1000)
 		{
 			tempfade = 1000 - (AbsX + AbsY);
@@ -2342,7 +2349,7 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 			a.g = (a.g * tempfade) >> 10;
 
 			LightSortCorrect = -140;
-			LightIndex = find_lamp_streak(cop->pos.vx + y + x);	// [A] pointer
+			LightIndex = find_lamp_streak(cop->pos.vx + cop->pos.vz + x + y); // [A] was pointer.
 
 			if (LightIndex < 0)
 				a.cd = 0;
@@ -2351,18 +2358,15 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 
 			ShowLight(&v1, &a, 30, &light_texture);
 
-			a.r = a.r >> 1;
-			a.b = a.b >> 1;
-			a.g = a.g >> 1;
+			a.r >>= 1;
+			a.b >>= 1;
+			a.g >>= 1;
 
-			if (gNight) 
+			if (gNight)
 				ShowFlare(&v1, &a, 150, lDiffAnglesX + lDiffAnglesY + v1.vx + v1.vz >> 3 & 0x1ffe);
 		}
 
-		if (gNight) 
-			ShowGroundLight(&v2, &c, 300);
-
-		DisplayLightReflections(&v2, &a, 100, &lightref_texture);
+		DisplayLightReflections(&v2, &a, 50, &lightref_texture);
 		LightSortCorrect = -10;
 	}
 }
@@ -2721,9 +2725,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	short* clock;
 	int tail_width;
 
-	if (NumPlayers > 1)	// [A] don't draw in multiplayer
-		return;
-
+	// apply transform
 	Apply_Inv_CameraMatrix(v1);
 
 	gte_SetRotMatrix(&identity);
@@ -2795,7 +2797,8 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	addPrim(current->ot + z, poly);
 	current->primptr += sizeof(POLY_FT4);
 
-	if (CameraCnt <= 4)
+	
+	if (CameraCnt <= 4 || NumPlayers > 1)	// [A] don't draw trails in multiplayer
 		return;
 
 	if ((col->cd & 0x20) && gLightsOn) 
@@ -2805,11 +2808,12 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	}
 	else 
 	{
-		if (col->cd & 2) 
+		// get light index by flag
+		if (col->cd & 0x2) 
 			index = 0;
-		else if (col->cd & 4) 
+		else if (col->cd & 0x4) 
 			index = 1;
-		else if (col->cd & 8) 
+		else if (col->cd & 0x8) 
 			index = 2;
 		else if (col->cd & 0x10) 
 			index = 3;
@@ -2887,7 +2891,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 			
 			if (col->cd & 0x40)
 			{
-				dx = dx / 40000.0f;
+				dx = dx / 40000.0f; // [A] slightly bigger light trail
 				dy = dy / 40000.0f;
 			}
 			else
@@ -2985,6 +2989,12 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 	SVECTOR vert[4];
 	int z;
 
+#ifndef PSX
+	// [A] limit drawing distance to avoid artifacts
+	if (ABS(v1->vx) > 32000 || ABS(v1->vz) > 32000)
+		return;
+#endif
+
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
 
@@ -3011,21 +3021,17 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 
 	gte_stsz(&z);
 
-	if (z - 150 < 0x267b) 
+	if (z - 150 < 9851) 
 	{
 		poly = (POLY_FT4 *)current->primptr;
 
 		setPolyFT4(poly);
 		setSemiTrans(poly, 1);
 
-		poly->u0 = light_texture.coords.u0;
-		poly->v0 = light_texture.coords.v0;
-		poly->u1 = light_texture.coords.u1;
-		poly->v1 = light_texture.coords.v1;
-		poly->u2 = light_texture.coords.u2;
-		poly->v2 = light_texture.coords.v2;
-		poly->u3 = light_texture.coords.u3;
-		poly->v3 = light_texture.coords.v3;
+		*(ushort*)&poly->u0 = *(ushort*)&light_texture.coords.u0;
+		*(ushort*)&poly->u1 = *(ushort*)&light_texture.coords.u1;
+		*(ushort*)&poly->u2 = *(ushort*)&light_texture.coords.u2;
+		*(ushort*)&poly->u3 = *(ushort*)&light_texture.coords.u3;
 
 		poly->tpage = light_texture.tpageid | 0x20;
 		poly->clut = light_texture.clutid;;
@@ -3718,7 +3724,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 
 	mysmoke = &smoke[num];
 
-	if (SmokeType == 4) 
+	if (SmokeType == SMOKE_FIRE) 
 	{
 		mysmoke->position.vx = ipos->vx;
 		mysmoke->position.vy = ipos->vy;
@@ -3737,7 +3743,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 
 		mysmoke->t_step = end_w - start_w >> 2;
 	}
-	else if (SmokeType == 1)
+	else if (SmokeType == SMOKE_BLACK)
 	{
 		if (Exhaust)
 		{
@@ -3772,81 +3778,75 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		mysmoke->life = 40;
 		mysmoke->halflife = 20;
 	}
-	else
+	else if (SmokeType == SMOKE_WHITE || SmokeType == 5)
 	{
-		if (SmokeType == 2 || SmokeType == 5)
+		if (Exhaust)
 		{
-			if (Exhaust)
-			{
-				mysmoke->position.vx = ipos->vx + (rand() & 7);
-				mysmoke->position.vy = ipos->vy;
-				mysmoke->position.vz = ipos->vz + (rand() & 7);
+			mysmoke->position.vx = ipos->vx + (rand() & 7);
+			mysmoke->position.vy = ipos->vy;
+			mysmoke->position.vz = ipos->vz + (rand() & 7);
 
-				mysmoke->flags = 0x4006;
-				mysmoke->transparency = 55;
-				mysmoke->t_step = 2;
-				mysmoke->step = 1;
-				mysmoke->life = 24;
-			}
-			else
-			{
-				mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
-				mysmoke->position.vy = ipos->vy;
-				mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
-				mysmoke->flags = 22;
-
-				if (SmokeType == 5)
-				{
-					mysmoke->life = 32;
-					mysmoke->step = end_w >> 5 << 2;
-					mysmoke->t_step = end_w - start_w >> 5;
-					mysmoke->transparency = WheelSpeed;
-				}
-				else
-				{
-					mysmoke->life = 128;
-					mysmoke->step = (end_w - start_w) / 128 * 8;
-					mysmoke->t_step = (end_w - start_w >> 6);
-					mysmoke->transparency = 80;
-				}
-			}
-
-			mysmoke->start_w = start_w;
-			mysmoke->final_w = end_w;
-			mysmoke->halflife = 64;
+			mysmoke->flags = 0x4006;
+			mysmoke->transparency = 55;
+			mysmoke->t_step = 2;
+			mysmoke->step = 1;
+			mysmoke->life = 24;
 		}
 		else
 		{
-			if (SmokeType == 6)
+			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
+			mysmoke->position.vy = ipos->vy;
+			mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
+			mysmoke->flags = 22;
+
+			if (SmokeType == 5) // UNUSED
 			{
-				mysmoke->position.vx = ipos->vx;
-				mysmoke->position.vy = ipos->vy;
-				mysmoke->position.vz = ipos->vz;
-				mysmoke->flags = 0x46;
-				mysmoke->transparency = 160;
-				mysmoke->step = 20;
-				mysmoke->t_step = 5;
-				mysmoke->start_w = start_w;
-				mysmoke->final_w = end_w;
-				mysmoke->life = 78;
-				mysmoke->halflife = 32;
+				mysmoke->life = 32;
+				mysmoke->step = end_w >> 5 << 2;
+				mysmoke->t_step = end_w - start_w >> 5;
+				mysmoke->transparency = WheelSpeed;
 			}
 			else
 			{
-				mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
-				mysmoke->position.vy = ipos->vy;
-				mysmoke->flags = 0x26;
-				mysmoke->transparency = 60;
-				mysmoke->t_step = 5;
-				mysmoke->start_w = start_w;
-				mysmoke->final_w = end_w;
-				mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
-
-				mysmoke->step = (end_w / 128) * 8;
 				mysmoke->life = 128;
-				mysmoke->halflife = 64;
+				mysmoke->step = (end_w - start_w) / 128 * 8;
+				mysmoke->t_step = (end_w - start_w >> 6);
+				mysmoke->transparency = 80;
 			}
 		}
+
+		mysmoke->start_w = start_w;
+		mysmoke->final_w = end_w;
+		mysmoke->halflife = 64;
+	}
+	else if (SmokeType == 6) // UNUSED
+	{
+		mysmoke->position.vx = ipos->vx;
+		mysmoke->position.vy = ipos->vy;
+		mysmoke->position.vz = ipos->vz;
+		mysmoke->flags = 0x46;
+		mysmoke->transparency = 160;
+		mysmoke->step = 20;
+		mysmoke->t_step = 5;
+		mysmoke->start_w = start_w;
+		mysmoke->final_w = end_w;
+		mysmoke->life = 78;
+		mysmoke->halflife = 32;
+	}
+	else
+	{
+		mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
+		mysmoke->position.vy = ipos->vy;
+		mysmoke->flags = 0x26;
+		mysmoke->transparency = 60;
+		mysmoke->t_step = 5;
+		mysmoke->start_w = start_w;
+		mysmoke->final_w = end_w;
+		mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
+
+		mysmoke->step = (end_w / 128) * 8;
+		mysmoke->life = 128;
+		mysmoke->halflife = 64;
 	}
 
 	if (Exhaust != 0) 
@@ -4245,24 +4245,43 @@ void HandleDebris(void)
 
 	lf = leaf;
 	i = next_leaf;
-	
+
+	// Move leaves
 	while (i >= 0)
 	{
 		if (lf->flags & 2) 
 		{
+			DisplayDebris((DEBRIS *)lf, lf->type);
+			
 			if (pauseflag == 0)
 			{
-				if (lf->life == 1) 
-				{
-					lf->flags = 0;
-					ReleaseLeaf(lf->num);
-				}
-				else
+				if (lf->life != 1) 
 				{
 					if (pauseflag == 0) 
 					{
 						int sn1, sn2, cs1, cs2;
-						
+
+						GetSmokeDrift(&Drift);
+
+						Height = -(lf->position.pad + 20);
+
+						// first we move debris
+						// SwirlLeaves basically changed direction vector
+						// in order to lift leaf from ground fast
+						if (lf->position.vy < Height) 
+						{
+							lf->position.vx += lf->direction.vx + Drift.vx;
+							lf->position.vy += lf->direction.vy + Drift.vy;
+							lf->position.vz += lf->direction.vz + Drift.vz;
+
+							lf->pos += lf->step;
+							lf->pos &= 0xff;
+						}
+						else
+						{
+							lf->position.vy = Height;
+						}
+
 						lf->sin_index1 += lf->sin_addition1;
 						lf->sin_index2 += lf->sin_addition2;
 						lf->sin_index1 &= 0xfff;
@@ -4274,33 +4293,18 @@ void HandleDebris(void)
 						cs1 = rcossin_tbl[lf->sin_index1 * 2 + 1];
 						cs2 = rcossin_tbl[lf->sin_index2 * 2 + 1];
 
+						// then we compute completely new direction
 						lf->direction.vy = ((sn1 + sn2) >> 0xb) + 4;
 						lf->direction.vx = ((sn1 + sn2) * 5 >> 0xb);
 						lf->direction.vz = ((cs1 + cs2) * 5 >> 0xb);
 					}
-
-					GetSmokeDrift(&Drift);
-					
-					Height = -(lf->position.pad + 20);
-
-					if (lf->position.vy < Height) 
-					{
-						lf->position.vx += lf->direction.vx + Drift.vx;
-						lf->position.vy += lf->direction.vy + Drift.vy;
-						lf->position.vz += lf->direction.vz + Drift.vz;
-						
-						lf->pos += lf->step & 0xff;
-					}
-					else
-					{
-						lf->position.vy = Height;
-					}
-
-					
+				}
+				else
+				{
+					lf->flags = 0;
+					ReleaseLeaf(lf->num);
 				}
 			}
-			
-			DisplayDebris((DEBRIS *)lf, lf->type);
 		}
 
 		i--;
@@ -4316,7 +4320,7 @@ void HandleDebris(void)
 			if (sm->flags & 4)
 			{
 				if (sm->flags & 0x8000) 
-					DisplayWater(sm);
+					DisplayWater(sm);	// Really obsolete, water was only a thing in Driver 1
 				else 
 					DisplaySmoke(sm);
 
@@ -4356,6 +4360,7 @@ void HandleDebris(void)
 			}
 			else if (sm->flags & 8)
 			{
+				// yup, smoke particles are sparks too
 				DisplaySpark(sm);
 
 				if(pauseflag == 0)
@@ -4878,6 +4883,8 @@ void ReleaseRainDrop(int RainIndex)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+#define RAIN_DROP_SPEED 30		// [A] was 20
+
 // [D] [T]
 void DrawRainDrops(void)
 {
@@ -4895,10 +4902,7 @@ void DrawRainDrops(void)
 
 	GetSmokeDrift(&drift);
 
-	//if (cameraview == 1)
-	//	iVar7 = 70;
-	//else
-	bright = 70;// -car_data[0].hd.wheel_speed;	// [A] WTF
+	bright = 70;
 
 	if (bright < 50)
 		bright = 50;
@@ -4917,42 +4921,61 @@ void DrawRainDrops(void)
 	RainPtr = gRain;
 	Count = gNextRainDrop-1;
 
-	while (Count >= 0) 
+	poly = (POLY_GT3 *)current->primptr;
+	
+	while (Count > 0) 
 	{
-		if (pauseflag == 0) 
-		{
-			RainPtr->position.vy = (RainPtr->position).vy + 0x14;
-			RainPtr->position.vx = (RainPtr->position).vx + drift.vx * -2;
-			RainPtr->position.vz = (RainPtr->position).vz + drift.vz * -2;
-		}
-
 		v.vx = RainPtr->position.vx - camera_position.vx;
 		v.vy = RainPtr->position.vy - camera_position.vy;
 		v.vz = RainPtr->position.vz - camera_position.vz;
 
-		poly = (POLY_GT3 *)current->primptr;
+		if (pauseflag) 
+		{
+			// [A] old position imitation
+			// works effectively when player not moving
+			gte_ldv0(&v);
+			gte_rtps();
+
+			gte_stsxy(&poly->x0);
+
+			v.vy += RAIN_DROP_SPEED;
+			v.vx -= drift.vx * 2;
+			v.vz -= drift.vz * 2;
+		}
+		else
+		{
+			RainPtr->position.vy += RAIN_DROP_SPEED;
+			RainPtr->position.vx -= drift.vx * 2;
+			RainPtr->position.vz -= drift.vz * 2;
+
+			*(uint *)&poly->x0 = *(uint *)&RainPtr->oldposition;
+		}
+
+		gte_ldv0(&v);
+		gte_rtps();
 
 		*(uint *)&poly->r2 = col;
 		*(uint *)&poly->r1 = col;
 		*(uint *)&poly->r0 = 0;
 
-		gte_ldv0(&v);
-		gte_rtps();
-
 		setPolyGT3(poly);
 		setSemiTrans(poly, 1);
-
-		*(uint *)&poly->x0 = *(uint *)&RainPtr->oldposition;
+		
 		gte_stsxy(&poly->x2);
+
 		gte_stsz(&z);
 
-		if (z - 0x97U < 850 && poly->x2 > -101 && poly->x2 < 421 && poly->y2 > -51 && poly->y2 < 257) 
+		if (z - 151U < 2000 && 
+			poly->x2 > -101 && poly->x2 < 421 && 
+			poly->y2 > -51 && poly->y2 < 257) 
 		{
-			if (*(uint *)&RainPtr->oldposition.vx != 0) 
-			{
+			if (*(uint *)&RainPtr->oldposition != 0) 
+			{				
 				poly->x1 = poly->x2 - ((z >> 10) - 1);
 				poly->x2 = poly->x2 + ((z >> 10) - 1);
 				poly->y1 = poly->y2;
+
+				*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
 
 				poly->clut = light_texture.clutid;
 				poly->tpage = light_texture.tpageid | 0x20;
@@ -4961,20 +4984,23 @@ void DrawRainDrops(void)
 				*(ushort *)&poly->u1 = *(ushort *)&light_texture.coords.u1;
 				*(ushort *)&poly->u2 = *(ushort *)&light_texture.coords.u2;
 
-				addPrim(current->ot + (z >> 3), poly);
-				current->primptr += sizeof(POLY_GT3);
+				addPrim(current->ot + (z >> 1), poly);
+				poly++;
 			}
-
-			*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
+			else
+				*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
 		}
 		else 
 		{
-			ReleaseRainDrop(RainPtr->oldposition.pad);
+			if(pauseflag == 0)
+				ReleaseRainDrop(RainPtr->oldposition.pad);
 		}
 
 		RainPtr++;
 		Count--;
 	}
+
+	current->primptr = (char*)poly;
 }
 
 
@@ -5051,7 +5077,6 @@ void AddRainDrops(void)
 	int count;
 	RAIN_TYPE* rt;
 
-	RainIndex = 0;
 	count = gRainCount;
 	first = 1;
 
@@ -5111,8 +5136,6 @@ void AddRainDrops(void)
 
 		first = 0;
 	}
-
-	ReleaseRainDrop(RainIndex);
 }
 
 
@@ -5193,7 +5216,7 @@ void DisplaySplashes(void)
 	Gnd1.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
 
 	Gnd1.vx = Gnd1.vx - CamGnd.vx;
-	Gnd1.vy = (-camera_position.vy - MapHeight(&Gnd1)) - CamGnd.vy;
+	Gnd1.vy = -camera_position.vy - MapHeight(&Gnd1) - CamGnd.vy;
 	Gnd1.vz = Gnd1.vz - CamGnd.vz;
 
 	ang = -FrAng - camera_angle.vy & 0xfff;
@@ -5283,7 +5306,7 @@ void DisplayLightReflections(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAI
 
 		gte_stsz(&z);
 
-		if (0x95 < z) 
+		if (z >= 150) 
 		{
 			poly = (POLY_FT4 *)current->primptr;
 			setPolyFT4(poly);
@@ -5514,7 +5537,10 @@ void DoThunder(void)
 // [D] [T]
 void DoWeather(int weather)
 {
-	if (weather == 1 && pauseflag == 0) 
+	if (weather != 1)
+		return;
+
+	if(pauseflag == 0)
 	{
 		if (gEffectsTimer < 41) 
 		{
@@ -5524,7 +5550,6 @@ void DoWeather(int weather)
 		else
 		{
 			AddRainDrops();
-			DrawRainDrops();
 
 			if ((FrameCnt & 7U) == 0)
 				gRainCount++;
@@ -5533,6 +5558,8 @@ void DoWeather(int weather)
 				gRainCount = 35;
 		}
 	}
+
+	DrawRainDrops();
 }
 
 

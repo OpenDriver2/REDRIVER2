@@ -2324,17 +2324,18 @@ int last_track_state = -1;
 void CheckCarEffects(CAR_DATA* cp, int player_id)
 {
 	int channel;
-	int sample;
 
 	int skidsound;
 	int cnt;
 	int wheels_on_ground;
 	char lay_down_tracks;
+	char tracks_and_smoke;
 	char desired_skid;
 	char desired_wheel;
 
 	wheels_on_ground = 0;
 	lay_down_tracks = 0;
+	tracks_and_smoke = 0;
 
 	if (cp->controlType != CONTROL_TYPE_PLAYER && cp->controlType != CONTROL_TYPE_LEAD_AI && cp->controlType != CONTROL_TYPE_CUTSCENE)
 	{
@@ -2362,24 +2363,30 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	// make tyre tracks and skid sound if needed
 	if (wheels_on_ground)
 	{
-		if (ABS(cp->hd.rear_vel) > 11100 || cp->wheelspin)
+		int rear_vel, front_vel;
+		rear_vel = ABS(cp->hd.rear_vel);
+		front_vel = ABS(cp->hd.front_vel);
+
+		if (rear_vel > 22000 || cp->wheelspin)
 		{
 			rear_only = 1;
 			lay_down_tracks = true;
 
 			if (cp->wheelspin == 0)
-				skidsound = (ABS(cp->hd.rear_vel) - 11100) / 2 + 1;
+				skidsound = (rear_vel - 11100) / 2 + 1;
 			else
 				skidsound = 13000;
 
 			if (skidsound > 13000)
 				skidsound = 13000;
 		}
-		else if (ABS(cp->hd.front_vel) > 11100)
+		else if (front_vel > 50000)
 		{
 			rear_only = 0;
 			lay_down_tracks = true;
 		}
+
+		tracks_and_smoke = (player_id < 2);
 	}
 
 	desired_skid = -1;
@@ -2424,8 +2431,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		SetChannelPosition3(player[player_id].skidding.chan,
 			(VECTOR*)cp->hd.where.t,
 			cp->st.n.linearVelocity,
-			(((skidsound - 10000) * 3) / 4) - 5000,
-			(skidsound * 1024) / 13000 + 3072 + player_id * 8, 0);
+			(skidsound - 10000) * 3 / 4 - 5000,
+			skidsound * 1024 / 13000 + 3072 + player_id * 8, 0);
 	}
 
 	// pick best wheel
@@ -2506,8 +2513,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	{
 		continuous_track = (last_track_state == rear_only);
 
-		AddTyreTrack(player_id * 2, (player_id < 2), player_id);
-		AddTyreTrack(player_id * 2 + 1, (player_id < 2), player_id);
+		AddTyreTrack(player_id * 2, tracks_and_smoke, player_id);
+		AddTyreTrack(player_id * 2 + 1, tracks_and_smoke, player_id);
 
 		last_track_state = rear_only;
 	}

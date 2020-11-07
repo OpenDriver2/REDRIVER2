@@ -343,12 +343,12 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 			grass_vector.vz = 0;
 			grass_vector.pad = 0;
 
-			Setup_Smoke(&SmokePosition, 100, 500, 3, 0, &SmokeDrift, 0);
+			Setup_Smoke(&SmokePosition, 50, 500, SMOKE_BROWN, 0, &SmokeDrift, 0);
 			Setup_Sparks(&SmokePosition, &grass_vector, 5, 2);
 		}
 		else if (wetness == 0) 
 		{
-			Setup_Smoke(&SmokePosition, 100, 500, 2, 0, &SmokeDrift, 0);
+			Setup_Smoke(&SmokePosition, 50, 500, SMOKE_WHITE, 0, &SmokeDrift, 0);
 		}
 	}
 

@@ -1,6 +1,11 @@
 #ifndef DEBRIS_H
 #define DEBRIS_H
 
+#define SMOKE_BLACK		1
+#define SMOKE_WHITE		2
+#define SMOKE_BROWN		3
+#define SMOKE_FIRE		4
+
 extern TEXTURE_DETAILS smoke_texture;
 extern TEXTURE_DETAILS debris_texture;
 extern TEXTURE_DETAILS litter_texture;
@@ -37,10 +42,6 @@ extern CELL_OBJECT ground_debris[16];
 
 extern void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car); // 0x00032C10
 
-extern int AllocateLeaf(); // 0x00039A90
-
-extern void ReleaseLeaf(short num); // 0x00039D8C
-
 extern void AddLeaf(VECTOR *Position, int num_leaves, int Type); // 0x00033574
 
 extern void SwirlLeaves(CAR_DATA *cp); // 0x00039E54
@@ -48,14 +49,6 @@ extern void SwirlLeaves(CAR_DATA *cp); // 0x00039E54
 extern void InitDebrisNames(); // 0x000337AC
 
 extern void InitDebris(); // 0x00033B9C
-
-extern int AllocateDebris(); // 0x00039A54
-
-extern void ReleaseDebris(short num); // 0x00039D68
-
-extern int AllocateSmoke(); // 0x00039ACC
-
-extern void ReleaseSmoke(short num); // 0x00039DD4
 
 extern void AddGroundDebris(); // 0x00033FA8
 
