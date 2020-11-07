@@ -681,14 +681,9 @@ void InitModelNames(void)
 // [D] [T]
 void GameInit(void)
 {
-	long lVar1;
-	PLAYER* p_Var2;
-	STREAM_SOURCE* pSVar3;
+	STREAM_SOURCE* plStart;
 	int i;
-	int iVar5;
-	int iVar6;
 	char padid;
-	short totaldam;
 
 	if (NewLevel == 0)
 	{
@@ -710,7 +705,7 @@ void GameInit(void)
 #endif // PSX
 
 		MALLOC_BEGIN();
-		packed_cell_pointers = D_MALLOC(0x1000);
+		packed_cell_pointers = D_MALLOC(1024 * sizeof(void*));
 		MALLOC_END();
 	}
 
@@ -871,41 +866,37 @@ void GameInit(void)
 	i = 0;
 	while (i < numPlayersToCreate)
 	{
-		pSVar3 = PlayerStartInfo[i];
+		plStart = PlayerStartInfo[i];
 		padid = -i;
 
 		if (i < NumPlayers)
 			padid = i;
 
-		gStartOnFoot = (pSVar3->type == 2);
+		gStartOnFoot = (plStart->type == 2);
 
-		InitPlayer(&player[i], &car_data[i], pSVar3->controlType, pSVar3->rotation, (LONGVECTOR *)&pSVar3->position, pSVar3->model, pSVar3->palette, &padid);
+		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR *)&plStart->position, plStart->model, plStart->palette, &padid);
 
 		if (gStartOnFoot == 0)
 		{
-			car_data[i].ap.damage[0] = pSVar3->damage[0];
-			car_data[i].ap.damage[1] = pSVar3->damage[1];
-			car_data[i].ap.damage[2] = pSVar3->damage[2];
-			car_data[i].ap.damage[3] = pSVar3->damage[3];
-			car_data[i].ap.damage[4] = pSVar3->damage[4];
-			car_data[i].ap.damage[5] = pSVar3->damage[5];
+			car_data[i].ap.damage[0] = plStart->damage[0];
+			car_data[i].ap.damage[1] = plStart->damage[1];
+			car_data[i].ap.damage[2] = plStart->damage[2];
+			car_data[i].ap.damage[3] = plStart->damage[3];
+			car_data[i].ap.damage[4] = plStart->damage[4];
+			car_data[i].ap.damage[5] = plStart->damage[5];
 
-			car_data[i].totalDamage = pSVar3->totaldamage;
+			car_data[i].totalDamage = plStart->totaldamage;
 
 			car_data[i].ap.needsDenting = 1;
 		}
 
 		i++;
-	};
-
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	extern int gCutsceneAsReplay_PlayerId;
-	if (gCutsceneAsReplay != 0)
-	{
-		player[0].playerCarId = gCutsceneAsReplay_PlayerId;
-		player[0].cameraCarId = gCutsceneAsReplay_PlayerId;
 	}
+
+	// FIXME: need to change streams properly
+#ifdef CUTSCENE_RECORDER
+	extern void NextChase(int dir);
+	NextChase(0);
 #endif
 
 	if (pathAILoaded != 0)
@@ -2383,7 +2374,7 @@ void PrintCommandLineArguments()
 #endif // DEBUG_OPTIONS
 		"  -replay <filename> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
-		"  -recordcutscene <mission_number> <subindex> <base_mission> : starts cutscene recorder session\n"
+		"  -recordcutscene : starts cutscene recording session\n"
 #endif
 		"  -nointro : disable intro screens\n"
 		"  -nofmv : disable all FMVs\n";
@@ -2555,6 +2546,8 @@ int redriver2_main(int argc, char** argv)
 
 			gCurrentMissionNumber = atoi(argv[i + 1]);
 			i++;
+
+			GameType = GAME_TAKEADRIVE;
 			LaunchGame();
 		}
 		else
@@ -2618,38 +2611,14 @@ int redriver2_main(int argc, char** argv)
 #ifdef CUTSCENE_RECORDER
 			else if (!_stricmp(argv[i], "-recordcutscene"))
 			{
-				if (argc - i < 3)
-				{
-					printWarning("Example: -recordcutscene <mission_number> <subindex> <base_mission>");
-					return 0;
-				}
-
 				SetFEDrawMode();
 
 				gInFrontend = 0;
 				AttractMode = 0;
 
-				int subindx = atoi(argv[i + 2]);
-
-				extern int LoadCutsceneAsReplay(int subindex);
-				extern int gCutsceneAsReplay;
-				extern int gCutsceneAsReplay_PlayerId;
-
-				gCutsceneAsReplay = atoi(argv[i + 1]);			// acts as cutscene mission
-				gCurrentMissionNumber = atoi(argv[i + 3]);		// acts as base mission. Some mission requires other base
-				gCutsceneAsReplay_PlayerId = 0;
-
-				if (LoadCutsceneAsReplay(subindx))
-				{
-					CurrentGameMode = GAMEMODE_REPLAY;
-					gLoadedReplay = 1;
-
-					LaunchGame();
-
-					gLoadedReplay = 0;
-				}
-				gCutsceneAsReplay = 0;
-				return 1;
+				extern void LoadCutsceneRecorder();
+				
+				LoadCutsceneRecorder();
 			}
 #endif
 			else
@@ -3207,8 +3176,9 @@ void InitGameVariables(void)
 	gStopPadReads = 0;
 	DawnCount = 0;
 	variable_weather = 0;
-	current_camera_angle = 0x800;
+	current_camera_angle = 2048;
 	gDieWithFade = 0;
+	pedestrianFelony = 0;	// [A]
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);

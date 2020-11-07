@@ -772,7 +772,7 @@ void DrawLensFlare(void)
 			}
 			while (bufferX < 12);
 
-			pwBuffer += 5;
+			pwBuffer += 4;
 		}
 		while (bufferY < 10);
 	}

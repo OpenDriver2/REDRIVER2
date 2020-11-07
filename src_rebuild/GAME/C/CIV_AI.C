@@ -593,10 +593,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		int widthInLanes;
 		int laneNo;
 		int count;
-		int junctionIdx;
 
-		junctionIdx = -1;
-		
 		widthInLanes = ROAD_WIDTH_IN_LANES(&currentRoadInfo);
 
 		currentLaneDir = ROAD_LANE_DIR(&currentRoadInfo, cp->ai.c.currentLane);
@@ -1120,6 +1117,13 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 		*turnAngle = 0;
 		newExit = -1;
+		numExits = 0;
+		
+		if (tmpNewRoad[0] != -1)
+			numExits++;
+		
+		if (tmpNewRoad[1] != -1)
+			numExits++;
 
 		// check the connections
 		// determine new lanes on possible new roads based on the old node position
@@ -1139,38 +1143,11 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					// determine new lane by old node position
 					if(roadInfo.straight)
 					{
-						int laneNo;
-						int count;
-						
 						dx = (oldNode->x - roadInfo.straight->Midx);
 						dz = (oldNode->z - roadInfo.straight->Midz);
 
-						//test555 = dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2];
-						//test42 = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(test555) + 512 >> 9);
-
 						tmpStr[roadCnt] = roadInfo.straight;
 						tmpNewLane[roadCnt] = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2]) + 512 >> 9);
-
-						// [A] I don't think that is needed
-
-						count = numLanes;
-						laneNo = numLanes;
-						do
-						{
-							if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-							{
-								// this line below needed because fucking compiler seem to be omitting it completely
-								test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-								laneNo = count;
-							}
-							count--;
-						} while (count >= 0);
-
-						if (laneNo < 0 || laneNo >= numLanes)
-						{
-							laneFit[roadCnt] = 666;
-							continue;
-						}
 
 					}
 					else
@@ -1181,6 +1158,17 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						tmpCrv[roadCnt] = roadInfo.curve;
 						tmpNewLane[roadCnt] = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo.curve->inside * 2;
 					}
+				}
+
+				// [A] if there are more than one connections we check the bounds strictly
+				if(numExits > 1)
+				{
+					if (tmpNewLane[roadCnt] < 0 || tmpNewLane[roadCnt] >= numLanes)
+					{
+						laneFit[roadCnt] = 666;
+						continue;
+					}
+					numExits--;	// there has to be one exit
 				}
 
 				// fit new lane
@@ -1219,133 +1207,11 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 	
 		newRoad = tmpNewRoad[newExit];
 		newLane = tmpNewLane[newExit];
-
+		
 		if (cp->ai.c.ctrlState != 7)
 		{
-			int laneFromLeft, laneFromRight;
-
-			if (GetSurfaceRoadInfo(&roadInfo, newRoad))
-			{
-				int numLanes;
-				int count;
-				int laneDirCorrect;
-	
-				laneDirCorrect = ROAD_LANE_DIR(&roadInfo, newLane);
-				numLanes = ROAD_WIDTH_IN_LANES(&roadInfo);
-				
-				if(roadInfo.straight)
-				{
-					oppDir = (oldNode->dir - roadInfo.straight->angle) + 0x400U & 0x800 > 0;
-				}
-				else
-				{
-					int dx, dz;
-					dx = oldNode->x - roadInfo.curve->Midx;
-					dz = oldNode->z - roadInfo.curve->Midz;
-
-					oppDir = (((oldNode->dir - ratan2(dx, dz)) + 0x800U & 0xfff) - 0x800) < 1;
-				}
-
-				// road width might be changed too, so we have to clamp it
-				if (laneDirCorrect != oppDir) //  && ROAD_WIDTH_IN_LANES(&currentRoadInfo) != numLanes)
-				{
-					// find drivable leftmost and rightmost lane
-					laneFromLeft = numLanes;
-					laneFromRight = -1;
-
-					count = numLanes;
-
-					do
-					{
-						if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-						{
-							test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-
-							if (test42 == 0)
-								break;
-
-							if (oppDir == 0)
-							{
-								laneFromLeft = count;
-								break;
-							}
-						}
-
-						count--;
-					} while (count >= 0);
-
-					count = ROAD_HAS_FAST_LANES(&roadInfo);
-
-					while (count < numLanes)
-					{
-						if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-						{
-							test555 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-							laneFromRight = count;
-
-							if (test555 == 0)
-							{
-								if (oppDir != 0) // bVar4
-									break;
-							}
-							else
-							{
-								if (oppDir == 0) // !bVar4
-									break;
-							}
-						}
-
-						count++;
-						laneFromRight = numLanes;
-					}
-
-					if (laneFromLeft < 0)
-						laneFromLeft = 42;
-
-					if (laneFromRight >= numLanes)
-						laneFromRight = 42;
-
-					if (laneFromLeft == 42 && laneFromRight == 42)
-					{
-						CIV_STATE_SET_CONFUSED(cp);
-						return 0;
-					}
-
-					// swap
-					if (ABS(laneFromRight - newLane) >= ABS(laneFromLeft - newLane))
-					{
-						int tmp = laneFromRight;
-						laneFromRight = laneFromLeft;
-						laneFromLeft = tmp;
-					}
-					/*
-					// it doesn't work well
-					laneFit[newExit] = laneFromRight;
-
-					if (laneFromRight > -1)
-					{
-						if (laneFromRight > numLanes - 1)
-							laneFit[newExit] = laneFromRight - numLanes - 1;
-						else
-							laneFit[newExit] = 0;
-					}
-
-					// [A] IDK... this is bugged. Might get back to it any time
-
-					int oldLane = newLane;
-
-					if (laneFromRight >= numLanes - 1)
-						newLane = numLanes - 1;
-					//else
-					//	newLane = laneFromRight;
-
-					if (newLane < 0)
-						newLane = 0;
-					*/
-					
-				}
-			}
-
+			// [A] removed old lane fitting code
+			
 			if (laneFit[newExit] != 0)
 			{
 				cp->ai.c.turnNode = GET_NODE_ID(cp, GET_NEXT_NODE(cp, oldNode));

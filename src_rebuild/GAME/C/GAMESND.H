@@ -32,6 +32,8 @@ extern int MapCarIndexToBank(int index); // 0x00052540
 
 extern void LoadLevelSFX(int missionNum); // 0x0004D784
 
+extern void StartPlayerCarSounds(int playerId, int model, VECTOR* pos);
+
 extern void StartGameSounds(); // 0x0004DE30
 
 extern ushort GetEngineRevs(CAR_DATA *cp); // 0x0004E188

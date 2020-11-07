@@ -16,65 +16,65 @@
 
 SVECTOR targetArrowVerts[] = 
 {
-	{  -0x2d, -0x10e,  0x0,  0x0 },
-	{  0x2d,  -0x10e,  0x0,  0x0 },
-	{  0x2d,  -0x5a,  0x0,  0x0 },
-	{  0x5a,  -0x5a,  0x0,  0x0 },
-	{  0x0,  0x0,  0x0,  0x0 },
-	{  -0x5a,  -0x5a,  0x0,  0x0 },
-	{  -0x2d,  -0x5a,  0x0,  0x0 },
-	{  -0x60,  -0x300,  0x0,  0x0 },
-	{  0x60,  -0x300,  0x0,  0x0 },
-	{  0x60,  -0xd8,  0x0,  0x0 },
-	{  -0x60,  -0xd8,  0x0,  0x0 },
-	{  0x58,  -0x3c,  0x0,  0x0 },
-	{  0x24,  -0x8,  0x0,  0x0 },
-	{  -0x24,  -0x8,  0x0,  0x0 },
-	{  -0x58,  -0x3c,  0x0,  0x0 },
-	{  -0x58,  -0x84,  0x0,  0x0 },
-	{  -0x24,  -0xb8,  0x0,  0x0 },
-	{  0x24,  -0xb8,  0x0,  0x0 },
-	{  0x58,  -0x84,  0x0,  0x0 },
-	{  0xb1,  -0x77,  0x0,  0x0 },
-	{  0x49,  -0xf,  0x0,  0x0 },
-	{  -0x49,  -0xf,  0x0,  0x0 },
-	{  -0xb1,  -0x77,  0x0,  0x0 },
-	{  -0xb1,  -0x109,  0x0,  0x0 },
-	{  -0x49,  -0x171,  0x0,  0x0 },
-	{  0x49,  -0x171,  0x0,  0x0 },
-	{  0xb1,  -0x109,  0x0,  0x0 },
-	{  -0x30,  -0x180,  0x0,  0x0 },
-	{  -0x30,  -0x1b0,  0x0,  0x0 },
-	{  -0x60,  -0x1b0,  0x0,  0x0 },
-	{  -0x60,  -0x1e0,  0x0,  0x0 },
-	{  0x60,  -0x1e0,  0x0,  0x0 },
-	{  0x60,  -0x1b0,  0x0,  0x0 },
-	{  0x30,  -0x1b0,  0x0,  0x0 },
-	{  0x30,  -0x180,  0x0,  0x0 },
-	{  0xdd,  -0x95,  0x0,  0x0 },
-	{  0x5b,  -0x13,  0x0,  0x0 },
-	{  -0x5b,  -0x13,  0x0,  0x0 },
-	{  -0xdd,  -0x95,  0x0,  0x0 },
-	{  -0xdd,  -0x14b,  0x0,  0x0 },
-	{  -0x5b,  -0x1cd,  0x0,  0x0 },
-	{  0x5b,  -0x1cd,  0x0,  0x0 },
-	{  0xdd,  -0x14b,  0x0,  0x0 }
+	{  -45, -270,  0,  0 },
+	{  45,  -270,  0,  0 },
+	{  45,  -90,  0,  0 },
+	{  90,  -90,  0,  0 },
+	{  0,  0,  0,  0 },
+	{  -90,  -90,  0,  0 },
+	{  -45,  -90,  0,  0 },
+	{  -96,  -768,  0,  0 },
+	{  96,  -768,  0,  0 },
+	{  96,  -216,  0,  0 },
+	{  -96,  -216,  0,  0 },
+	{  88,  -60,  0,  0 },
+	{  36,  -8,  0,  0 },
+	{  -36,  -8,  0,  0 },
+	{  -88,  -60,  0,  0 },
+	{  -88,  -132,  0,  0 },
+	{  -36,  -184,  0,  0 },
+	{  36,  -184,  0,  0 },
+	{  88,  -132,  0,  0 },
+	{  177,  -119,  0,  0 },
+	{  73,  -15,  0,  0 },
+	{  -73,  -15,  0,  0 },
+	{  -177,  -119,  0,  0 },
+	{  -177,  -265,  0,  0 },
+	{  -73,  -369,  0,  0 },
+	{  73,  -369,  0,  0 },
+	{  177,  -265,  0,  0 },
+	{  -48,  -384,  0,  0 },
+	{  -48,  -432,  0,  0 },
+	{  -96,  -432,  0,  0 },
+	{  -96,  -480,  0,  0 },
+	{  96,  -480,  0,  0 },
+	{  96,  -432,  0,  0 },
+	{  48,  -432,  0,  0 },
+	{  48,  -384,  0,  0 },
+	{  221,  -149,  0,  0 },
+	{  91,  -19,  0,  0 },
+	{  -91,  -19,  0,  0 },
+	{  -221,  -149,  0,  0 },
+	{  -221,  -331,  0,  0 },
+	{  -91,  -461,  0,  0 },
+	{  91,  -461,  0,  0 },
+	{  221,  -331,  0,  0 }
 };;
 
 char normalTargetArrowTris[] = { 0, 1, 2, 0, 2, 6, 5, 3, 4 };
 
-char loseTailTargetArrowTris[] = { 7, 8, 9, 7, 9, 0xA, 0xB, 0xC, 0xD, 0xB, 0xD, 0xE };
+char loseTailTargetArrowTris[] = { 7, 8, 9, 7, 9, 10, 11, 12, 13, 11, 13, 14 };
 
 char windowTargetArrowTris[] = {
-	0x13, 0x14, 0x15, 0x13, 0x15, 0x16, 0x1A, 0x13, 0x16,
-	0x1A, 0x16, 0x17, 0x19, 0x1A, 0x17, 0x19, 0x17, 0x18,
-	0x1B, 0x1C, 0x22, 0x1C, 0x21, 0x22, 0x1D, 0x1E, 0x1F,
-	0x1D, 0x1F, 0x20
+	19, 20, 21, 19, 21, 22, 26, 19, 22,
+	26, 22, 23, 25, 26, 23, 25, 23, 24,
+	27, 28, 34, 28, 33, 34, 29, 30, 31,
+	29, 31, 32
 };
 
 char maxSpeedTargetArrowTris[] = {
-	0x23, 0x24, 0x25, 0x23, 0x25, 0x26, 0x2A, 0x23, 0x26,
-	0x2A, 0x26, 0x27, 0x29, 0x2A, 0x27, 0x29, 0x27, 0x28
+	35, 36, 37, 35, 37, 38, 42, 35, 38,
+	42, 38, 39, 41, 42, 39, 41, 39, 40
 };
 
 TARGET_ARROW_MODEL targetArrowModel[4] =
@@ -113,10 +113,10 @@ void Draw3DTarget(VECTOR *position, int flags)
 	int shadow;
 	VECTOR pos;
 
-	shadow = (flags & 2U) != 0;
+	shadow = (flags & 2);
 
 	// arrow
-	if ((flags & 1U) != 0)
+	if (flags & 0x1)
 	{
 		pos.vx = position->vx;
 		pos.vz = position->vz;
@@ -130,7 +130,7 @@ void Draw3DTarget(VECTOR *position, int flags)
 	}
 
 	// flipped carrow
-	if ((flags & 0x20) != 0)
+	if (flags & 0x20)
 	{
 		pos.vx = position->vx;
 		pos.vz = position->vz;
@@ -144,7 +144,7 @@ void Draw3DTarget(VECTOR *position, int flags)
 	}
 
 	// exclamation mark
-	if ((flags & 4) != 0)
+	if (flags & 0x4)
 	{
 		pos.vx = position->vx;
 		pos.vz = position->vz;
@@ -155,7 +155,7 @@ void Draw3DTarget(VECTOR *position, int flags)
 	}
 
 	// timer
-	if ((flags & 8) != 0)
+	if (flags & 8)
 	{
 		pos.vx = position->vx;
 		pos.vz = position->vz;
@@ -166,7 +166,7 @@ void Draw3DTarget(VECTOR *position, int flags)
 	}
 
 	// stop zone
-	if ((flags & 0x10) != 0)
+	if (flags & 0x10)
 	{
 		pos.vx = position->vx;
 		pos.vz = position->vz;
@@ -367,6 +367,7 @@ void DrawStopZone(VECTOR *pPosition)
 	long flag;
 	long sz;
 	int flash;
+	int height;
 
 	VECTOR pStopZonePt[4] = {
 		{-256, 0, 256},
@@ -388,13 +389,15 @@ void DrawStopZone(VECTOR *pPosition)
 	setPolyFT4(pPoly);
 	setSemiTrans(pPoly, 1);
 
+	height = MapHeight(pPosition);
+
 	while (pVector < &pStopZonePt[4])
 	{
 		pVector->vy = pPosition->vy;
 
 		pVector->vx = (pVector->vx * flash >> 4) + pPosition->vx;
 		pVector->vz = (pVector->vz * flash >> 4) + pPosition->vz;
-		pVector->vy = -camera_position.vy - MapHeight(pVector);
+		pVector->vy = -camera_position.vy - height;
 
 		pVector->vx = pVector->vx - camera_position.vx;
 		pVector->vz = pVector->vz - camera_position.vz;
@@ -439,7 +442,7 @@ void DrawStopZone(VECTOR *pPosition)
 
 	pPoly->clut = light_texture.clutid;
 
-	addPrim(current->ot + (sz >> 4) + 128, pPoly);
+	addPrim(current->ot + (sz + 400 >> 3), pPoly);
 
 	current->primptr += sizeof(POLY_FT4);
 }

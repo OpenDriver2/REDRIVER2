@@ -5,15 +5,12 @@ extern MODEL dummyModel;
 
 extern char* modelname_buffer;
 extern char *car_models_lump;
-extern MODEL* modelpointers[1536];
+
+extern MODEL* modelpointers[MAX_MODEL_SLOTS];
+extern MODEL* pLodModels[MAX_MODEL_SLOTS];
 
 extern unsigned short *Low2HighDetailTable;
 extern unsigned short *Low2LowerDetailTable;
-extern MODEL* pLodModels[1536];
-
-extern MODEL* gCarLowModelPtr[5];
-extern MODEL* gCarDamModelPtr[5];
-extern MODEL* gCarCleanModelPtr[5];
 
 extern int num_models_in_pack;
 

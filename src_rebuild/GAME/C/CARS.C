@@ -559,8 +559,6 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 		if (Z > -1 && otz > 0)
 		{
-			indices = src->nindices;
-
 			*(uint*)&prim->r0 = GT3rgb;
 
 			ofse = pg->damageLevel[src->originalindex];

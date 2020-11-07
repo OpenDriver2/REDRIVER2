@@ -565,8 +565,14 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			if (arg->mask & SPU_VOICE_VOLR)
 				voice.attr.volume.right = arg->volume.right;
 
-			const float left_gain = float(voice.attr.volume.left) / float(16384);
-			const float right_gain = float(voice.attr.volume.right) / float(16384);
+			float left_gain = float(voice.attr.volume.left) / float(16384);
+			float right_gain = float(voice.attr.volume.right) / float(16384);
+
+			if(left_gain > 1.0f)
+				left_gain = 1.0f;
+
+			if(right_gain > 1.0f)
+				right_gain = 1.0f;
 
 			const float STEREO_FACTOR = 3.0f;
 

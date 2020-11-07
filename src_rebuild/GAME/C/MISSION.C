@@ -189,6 +189,10 @@ int gBatterPlayer = 1;
 
 int wantedCar[2] = { -1, -1 };
 
+// [A]
+int wantedTimeOfDay = -1;
+int wantedWeather = -1;
+
 MS_TARGET* MissionTargets;
 unsigned long* MissionScript;
 char* MissionStrings;
@@ -512,13 +516,19 @@ void LoadMission(int missionnum)
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
 
-	if (gTimeOfDay == 1 || gTimeOfDay < 2 || gTimeOfDay == 2 || gTimeOfDay != 3) 
-		gNight = 0;
-	else 
+	if(wantedTimeOfDay > -1 && !gWantNight)
+		gTimeOfDay = wantedTimeOfDay;
+
+	if (wantedWeather > -1)
+		gWeather = wantedWeather;
+
+	if (gTimeOfDay >= 3) 
 		gNight = 1;
+	else 
+		gNight = 0;
 
 	// setup weather
-	if (MissionHeader->weather == 1) 
+	if (gWeather == 1)
 	{
 		gRainCount = 30;
 		gEffectsTimer = 41;
@@ -541,16 +551,17 @@ void LoadMission(int missionnum)
 	if (MissionHeader->timer != 0 || (MissionHeader->timerFlags & 0x8000U) != 0)
 	{
 		int flag;
-		flag = 1;
 
-		if ((MissionHeader->timerFlags & 0x8000U) != 0)
-			flag = 3;
+		flag = 0x1;
+
+		if (MissionHeader->timerFlags & 0x8000)
+			flag |= 0x2;
 	
-		if ((MissionHeader->timerFlags & 0x4000U) != 0)
-			flag = flag | 8;
+		if (MissionHeader->timerFlags & 0x4000)
+			flag |= 0x8;
 
-		if ((MissionHeader->timerFlags & 0x2000U) != 0)
-			flag = flag | 0x10;
+		if (MissionHeader->timerFlags & 0x2000)
+			flag |= 0x10;
 
 		for (int i = 0; i < NumPlayers; i++)
 		{
@@ -606,16 +617,22 @@ void LoadMission(int missionnum)
 		gCopData.immortal = 0;
 	}
 
-	// start on foot?
-	if (MissionHeader->type & 2) 
+#ifdef CUTSCENE_RECORDER
+	if (gCutsceneAsReplay == 0)
+#endif
 	{
-		PlayerStartInfo[0]->type = 2;
-		PlayerStartInfo[0]->model = 0;
+		// start on foot?
+		if (MissionHeader->type & 2)
+		{
+			PlayerStartInfo[0]->type = 2;
+			PlayerStartInfo[0]->model = 0;
+		}
+		else
+		{
+			PlayerStartInfo[0]->type = 1;
+		}
 	}
-	else
-	{
-		PlayerStartInfo[0]->type = 1;
-	}
+
 
 	// load specific AI for mission
 	if (NewLevel != 0) 
@@ -2845,7 +2862,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 			if (slot == -1)
 			{
-				if (dist < 15900 || target->data[9] == 3 && (target->data[10] & 1U) == 0)
+				if (dist < 18000 || target->data[9] == 3 && (target->data[10] & 1U) == 0)
 					MRRequestCar(target);
 				else
 					MRCancelCarRequest(target);

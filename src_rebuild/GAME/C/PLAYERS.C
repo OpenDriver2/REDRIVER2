@@ -212,15 +212,10 @@ extern int lastCarCameraView;
 void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 {
 	int carParked;
-	int siren;
-	int channel;
-	int carSampleId;
 
 	PLAYER* lPlayer;
 
 	lPlayer = &player[playerID];
-
-	siren = CarHasSiren(newCar->ap.model);
 
 	if (newCar->controlType == CONTROL_TYPE_CIV_AI && 
 		newCar->ai.c.thrustState == 3 && (newCar->ai.c.ctrlState == 7 || newCar->ai.c.ctrlState == 5) || 
@@ -255,7 +250,6 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	lPlayer->headTimer = 0;
 	lPlayer->pPed = NULL;
 
-
 	newCar->controlType = CONTROL_TYPE_PLAYER;
 	newCar->ai.padid = &lPlayer->padid;
 	newCar->hndType = 0;
@@ -276,31 +270,18 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	// door close sound
 	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
 
-	if (newCar->ap.model == 4)
-		carSampleId = ResidentModelsBodge();
-	else if (newCar->ap.model < 3)
-		carSampleId = newCar->ap.model;
-	else
-		carSampleId = newCar->ap.model - 1;
-
-	// start idle sound
-	channel = playerID == 0 ? 1 : 4;	
-	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3 + 1, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
-
-	// rev sound
-	channel = playerID == 0 ? 0 : 3;	
-	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 0x1000);
-
-	if (siren != 0) 
-	{
-		channel = playerID == 0 ? 2 : 5;
-		Start3DSoundVolPitch(channel, (siren & 0xff00) >> 8, siren & 0xff, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], -10000, 129);
-	}
+	StartPlayerCarSounds(playerID, newCar->ap.model, (VECTOR*)newCar->hd.where.t);
 
 	if (carParked)
 		RequestSlightPauseBeforeCarSoundStarts(playerID);
 	else
 		HaveCarSoundStraightAway(playerID);
+
+	// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
+	if(CopsCanSeePlayer || gCurrentMissionNumber == 30)
+		newCar->felonyRating = pedestrianFelony;
+	else
+		pedestrianFelony = 0;
 }
 
 
@@ -349,7 +330,8 @@ void UpdatePlayers(void)
 	PLAYER *locPlayer;
 	CAR_DATA* cp;
 
-	pedestrianFelony = 0;
+	if(CopsAllowed == 0)
+		pedestrianFelony = 0;
 
 	locPlayer = player;
 

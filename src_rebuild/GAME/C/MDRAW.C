@@ -51,67 +51,67 @@
 
 int gDisplayPosition = 0;
 
-// [D]
+// [D] [T]
 void DrawMission(void)
 {
 	char *string;
 
-	if (!gShowMap && !NoPlayerControl && !gInGameCutsceneActive && !bMissionTitleFade) 
+	if (gShowMap || NoPlayerControl || gInGameCutsceneActive || bMissionTitleFade)
+		return;
+
+	if (gDisplayPosition)
+		DisplayPlayerPosition();
+
+	if ((MissionHeader->type & 4) == 0)
 	{
-		if (gDisplayPosition)
-			DisplayPlayerPosition();
-
-		if ((MissionHeader->type & 4) == 0)
+		if (!pauseflag)
 		{
-			if (!pauseflag)
+			if (Mission.message_timer[0] != 0) 
 			{
-				if (Mission.message_timer[0] != 0) 
-				{
-					if (NumPlayers == 1) 
-						DrawMessage(96, Mission.message_string[0]);
-					else 
-						DrawMessage(64, Mission.message_string[0]);
-				}
-
-				if (Mission.message_timer[1] != 0)
-					DrawMessage(192, Mission.message_string[1]);
+				if (NumPlayers == 1) 
+					DrawMessage(96, Mission.message_string[0]);
+				else 
+					DrawMessage(64, Mission.message_string[0]);
 			}
+
+			if (Mission.message_timer[1] != 0)
+				DrawMessage(192, Mission.message_string[1]);
+		}
+	}
+	else 
+	{
+		SetTextColour(128, 128, 64);
+
+		if (g321GoDelay < 32)
+			string = "3";
+		else if(g321GoDelay < 64)
+			string = "2";
+		else
+			string = "1";
+
+		if (NumPlayers == 1) 
+		{
+			PrintScaledString(96, string, 32 - (g321GoDelay & 0x1f));
 		}
 		else 
 		{
-			SetTextColour(128, 128, 64);
-
-			if (g321GoDelay < 32)
-				string = "3";
-			else if(g321GoDelay < 64)
-				string = "2";
-			else
-				string = "1";
-
-			if (NumPlayers == 1) 
-			{
-				PrintScaledString(96, string, 32 - (g321GoDelay & 0x1f));
-			}
-			else 
-			{
-				PrintScaledString(64, string, 32 - (g321GoDelay & 0x1f));
-				PrintScaledString(192, string, 32 - (g321GoDelay & 0x1f));
-			}
+			PrintScaledString(64, string, 32 - (g321GoDelay & 0x1f));
+			PrintScaledString(192, string, 32 - (g321GoDelay & 0x1f));
 		}
+	}
 
-		if (Mission.active && NoPlayerControl == 0)
+	if (Mission.active && NoPlayerControl == 0)
+	{
+		DrawWorldTargets();
+		DrawTimer(Mission.timer);
+		DrawTimer(Mission.timer + 1);
+
+		DrawProximityBar(&ProxyBar);
+
+		if (gOutOfTape)
 		{
-			DrawWorldTargets();
-			DrawTimer(Mission.timer);
-			DrawTimer(Mission.timer + 1);
-
-			DrawProximityBar(&ProxyBar);
-
-			if (gOutOfTape)
-			{
-				SetTextColour(128, 128, 64);
-				PrintString("Out of tape", 20, 236);
-			}
+			SetTextColour(128, 128, 64);
+			PrintString("Out of tape", 20, 236);
 		}
 	}
 }
@@ -136,31 +136,31 @@ void DrawMission(void)
 	/* end block 2 */
 	// End Line: 253
 
-// [D]
+// [D] [T]
 void DrawTimer(MR_TIMER *timer)
 {
-	short sVar1;
+	short digit_pos;
 	char string[16];
 
-	if (((timer->flags & 1) != 0) && ((timer->flags & 0x20) == 0)) {
-		if (NumPlayers == 1) {
-			SetTextColour(-0x80, -0x80, -0x80);
+	if ((timer->flags & 1) && (timer->flags & 0x20) == 0) 
+	{
+		if (NumPlayers == 1)
+		{
+			SetTextColour(128, 128, 128);
 		}
-		else {
-			if (timer == Mission.timer) {
-				SetTextColour(-0x80, ' ', ' ');
-			}
-			else {
-				SetTextColour(' ', -0x80, ' ');
-			}
+		else
+		{
+			if (timer == Mission.timer) 
+				SetTextColour(128, 32, 32);
+			else 
+				SetTextColour(32, 128, 32);
 		}
-		sprintf(string, "%02d:%02d", (uint)timer->min, (uint)timer->sec);
 
-		sVar1 = PrintDigit((int)timer->x, (int)timer->y, string);
+		sprintf(string, "%02d:%02d", (uint)timer->min, (uint)timer->sec);
+		digit_pos = PrintDigit((int)timer->x, (int)timer->y, string);
 
 		sprintf(string, ".%02d", (uint)timer->frac);
-
-		PrintString(string, sVar1, (int)timer->y + 0xd);
+		PrintString(string, digit_pos, (int)timer->y + 0xd);
 	}
 }
 
@@ -196,12 +196,12 @@ void DrawTimer(MR_TIMER *timer)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DisplayPlayerPosition(void)
 {
-	char string[32];
+	char string[40];
 
-	sprintf(string, "X: %d, Z: %d", player[0].pos[0], player[0].pos[2]);
+	sprintf(string, "X: %d, Y: %d, Z: %d", player[0].pos[0], player[0].pos[1], player[0].pos[2]);
 	PrintString(string, 20, 210);
 }
 
@@ -235,22 +235,18 @@ void DisplayPlayerPosition(void)
 	/* end block 3 */
 	// End Line: 752
 
-// [D]
+// [D] [T]
 void DrawMessage(int y, char *string)
 {
-	int iVar1;
+	if (!string )
+		return;
 
-	if (string != (char *)0x0) {
-		SetTextColour(-0x80, -0x80, '@');
-		iVar1 = StringWidth(string);
-		if (iVar1 < 0x111) {
-			PrintStringCentred(string, (short)((uint)((y + -10) * 0x10000) >> 0x10));
-		}
-		else {
-			PrintStringBoxed(string, 0x18, y + -10);
-		}
-	}
-	return;
+	SetTextColour(128, 128, 64);
+
+	if (StringWidth(string) < 273) 
+		PrintStringCentred(string, y - 10);
+	else
+		PrintStringBoxed(string, 24, y - 10);
 }
 
 
@@ -290,7 +286,7 @@ void DrawMessage(int y, char *string)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawWorldTargets(void)
 {
 	int i;
@@ -334,7 +330,7 @@ void DrawWorldTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawOverheadTargets(void)
 {
 	int i;
@@ -383,22 +379,19 @@ void DrawOverheadTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawFullscreenTargets(void)
 {
-	int iVar1;
-	int iVar2;
+	int i;
 
-	if (Mission.active != 0) {
-		iVar2 = 0;
-		iVar1 = 0;
-		do {
-			iVar2 = iVar2 + 1;
-			DrawFullscreenTarget((MS_TARGET *)((int)MissionTargets->data + iVar1));
-			iVar1 = iVar2 * 0x40;
-		} while (iVar2 < 0x10);
-	}
-	return;
+	if (Mission.active == 0) 
+		return;
+
+	i = 0;
+
+	do {
+		DrawFullscreenTarget(&MissionTargets[i++]);
+	} while (i < 16);
 }
 
 
@@ -433,7 +426,7 @@ void DrawFullscreenTargets(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawMultiplayerTargets(void)
 {
 	int i;
@@ -467,51 +460,39 @@ void DrawMultiplayerTargets(void)
 	/* end block 2 */
 	// End Line: 894
 
-// [D]
+
+// [D] [T]
 void DrawOverheadTarget(MS_TARGET *target)
 {
-	int iVar1;
-	int *piVar2;
 	VECTOR tv;
 
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->data[1] & 0x600U) == 0) 
+	if ((target->data[1] & 0x600) == 0)  // invisible flag
 		return;
 
-	iVar1 = target->data[0];
-
-	if (iVar1 != 2) 
+	switch(target->data[0])
 	{
-		if (2 < iVar1) 
+		case 1:	// point or car target
+		case 2:
 		{
-			if (iVar1 != 3) 
-				return;
-
-			piVar2 = (int *)target->data[4];
-			tv.vx = *piVar2;
-			tv.vy = piVar2[1];
-			tv.vz = piVar2[2];
-			tv.pad = piVar2[3];
-
-			goto LAB_0005fe3c;
+			tv.vx = target->data[3];
+			tv.vz = target->data[4];
+			tv.vy = 0;
+			break;
 		}
-
-		if (iVar1 != 1)
+		case 3:	// event target
+			tv = *(VECTOR*)target->data[4];
+			break;
+		default:
 			return;
 	}
 
-	tv.vx = target->data[3];
-	tv.vz = target->data[4];
-	tv.vy = 0;
-
-LAB_0005fe3c:
-
-	if ((target->data[2] & 0x10U) != 0)
+	if (target->data[2] & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x11);
 
-	if ((target->data[2] & 0x40U) != 0)
+	if (target->data[2] & 0x40)
 		DrawTargetArrow(&tv, 1);
 }
 
@@ -535,53 +516,39 @@ LAB_0005fe3c:
 	/* end block 2 */
 	// End Line: 978
 
-// [D]
+// [D] [T]
 void DrawFullscreenTarget(MS_TARGET *target)
 {
-	int iVar1;
-	int *piVar2;
 	VECTOR tv;
 
-	iVar1 = TargetComplete(target, -1);
-	if (iVar1 != 0)
+	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->data[1] & 0x600U) == 0)
+	if ((target->data[1] & 0x600) == 0)
 		return;
 
-	iVar1 = target->data[0];
-
-	if (iVar1 != 2) 
+	switch(target->data[0])
 	{
-		if (2 < iVar1) 
+		case 1:	// point or car target
+		case 2:
 		{
-			if (iVar1 != 3)
-				return;
-
-			piVar2 = (int *)target->data[4];
-			tv.vx = *piVar2;
-			tv.vy = piVar2[1];
-			tv.vz = piVar2[2];
-			tv.pad = piVar2[3];
-
-			goto LAB_0005ff54;
+			tv.vx = target->data[3];
+			tv.vz = target->data[4];
+			tv.vy = 0;
+			break;
 		}
-
-		if (iVar1 != 1)
+		case 3:	// event target
+			tv = *(VECTOR*)target->data[4];
+			break;
+		default:
 			return;
 	}
-	tv.vx = target->data[3];
-	tv.vz = target->data[4];
-	tv.vy = 0;
 
-LAB_0005ff54:
-	if ((target->data[2] & 0x10U) != 0)
-		DrawTargetBlip(&tv, 64, 64, 64, 20);
+	if (target->data[2] & 0x10)
+		DrawTargetBlip(&tv, 64, 64, 64, 0x14);
 
-	if ((target->data[2] & 0x40U) != 0)
+	if (target->data[2] & 0x40)
 		DrawTargetArrow(&tv, 4);
-
-	return;
 }
 
 // decompiled code
@@ -612,11 +579,6 @@ LAB_0005ff54:
 // [D]
 void DrawWorldTarget(MS_TARGET *target)
 {
-	int iVar1;
-	int iVar2;
-	ulong uVar3;
-	uint uVar4;
-	long *plVar5;
 	uint flags;
 	VECTOR tv;
 
@@ -626,116 +588,91 @@ void DrawWorldTarget(MS_TARGET *target)
 	if (TargetActive(target, CurrentPlayerView) == 0)
 		return;
 
-	iVar2 = target->data[0];
 	gDraw3DArrowBlue = 0;
-	flags = 0;
 
-	if (iVar2 == 2) 
-	{
-		iVar2 = target->data[6];
-
-		if (iVar2 == -1)
-		{
-			gDraw3DArrowBlue = 0;
-			return;
-		}
-
-		tv.vx = car_data[iVar2].hd.where.t[0];
-		tv.vz = car_data[iVar2].hd.where.t[2];
-		tv.vy = -car_data[iVar2].hd.where.t[1];
-		goto LAB_0005f7dc;
-	}
-
-	if (2 < iVar2)
-	{
-		if (iVar2 != 3)
-		{
-			gDraw3DArrowBlue = 0;
-			return;
-		}
-
-		plVar5 = (long *)target->data[4];
-		tv.vx = *plVar5;
-		tv.vy = (int)plVar5[1];
-		tv.vz = plVar5[2];
-		tv.pad = plVar5[3];
-		goto LAB_0005f7dc;
-	}
-
-	if (iVar2 != 1) 
-	{
-		gDraw3DArrowBlue = 0;
-		return;
-	}
-
-	tv.vx = target->data[3];
-	tv.vz = target->data[4];
-	tv.vy = 10000;
-	uVar4 = target->data[1] & 0x30000;
 	flags = 2;
-
-	if (uVar4 == 0x20000) 
+	
+	switch(target->data[0])
 	{
-	LAB_0005f69c:
-		gDraw3DArrowBlue = iVar2;
-	}
-	else 
-	{
-		if (uVar4 < 0x20001) 
+		case 1:
 		{
-			if (uVar4 != 0x10000)
-			{
-			LAB_0005f6c8:
-				gDraw3DArrowBlue = CurrentPlayerView;
-			}
-		}
-		else
-		{
-			if (uVar4 != 0x30000) 
-				goto LAB_0005f6c8;
+			tv.vx = target->data[3];
+			tv.vz = target->data[4];
+			tv.vy = 10000;
 
-			iVar1 = CurrentPlayerView;
-			if (gPlayerWithTheFlag != -1) 
+			switch(target->data[1] & 0x30000)
 			{
-				if (CurrentPlayerView == gPlayerWithTheFlag) 
+				case 0x20000:
 				{
-					gDraw3DArrowBlue = 0;
-					return;
+					gDraw3DArrowBlue = 1;
+					break;
 				}
+				case 0x30000:
+				{
+					if (gPlayerWithTheFlag == -1) 
+					{
+						if (CurrentPlayerView == 1)
+							gDraw3DArrowBlue = 1;
+					}
+					else
+					{
+						if (CurrentPlayerView == gPlayerWithTheFlag) 
+							return;
 
-				tv.vx = player[gPlayerWithTheFlag].pos[0];
-				tv.vz = player[gPlayerWithTheFlag].pos[2];
-				iVar1 = gPlayerWithTheFlag;
+						tv.vx = player[gPlayerWithTheFlag].pos[0];
+						tv.vz = player[gPlayerWithTheFlag].pos[2];
+
+						if (gPlayerWithTheFlag == 1)
+							gDraw3DArrowBlue = 1;
+					}
+
+					break;
+				}
+				case 0x10000:
+				{
+					gDraw3DArrowBlue = CurrentPlayerView;
+					break;
+				}
 			}
-			if (iVar1 == 1)
-				goto LAB_0005f69c;
+
+			if (target->data[7] != 0) 
+				tv.vy = target->data[6];
+			else 
+				tv.vy = -MapHeight(&tv);
+			
+			break;
 		}
+		case 2:
+		{
+			int slot;
+			slot = target->data[6];
+
+			if (slot == -1)
+				return;
+
+			tv.vx = car_data[slot].hd.where.t[0];
+			tv.vz = car_data[slot].hd.where.t[2];
+			tv.vy = -car_data[slot].hd.where.t[1];
+			break;
+		}
+		case 3:
+		{
+			tv = *(VECTOR*)target->data[4];
+			break;
+		}
+		default:
+			return;
 	}
 
-	if ((gMultiplayerLevels == 0 || doSpooling != 0) && Long2DDistance(player[0].spoolXZ, &tv) > 15900)
-		return;
-
-	if (target->data[7] == 0) 
+	if (gMultiplayerLevels != 0 && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
 	{
-		iVar2 = MapHeight(&tv);
-		tv.vy = -iVar2;
-	}
-	else 
-	{
-		tv.vy = target->data[6];
-	}
+		if (target->data[2] & 0x20)
+			flags |= 0x1;
 
-LAB_0005f7dc:
+		if (target->data[2] & 0x80)
+			flags |= 0x20;
 
-	if ((gMultiplayerLevels != 0 && doSpooling == 0) || Long2DDistance(player[0].spoolXZ, &tv) < 0x3e1d)
-	{
-		if ((target->data[2] & 0x20U) != 0)
-			flags = flags | 1;
-
-		if ((target->data[2] & 0x80U) != 0)
-			flags = flags | 0x20;
-
-		if (flags != 0) 
+		if (flags) 
 			Draw3DTarget(&tv, flags);
 	}
 }
@@ -763,100 +700,107 @@ LAB_0005f7dc:
 	/* end block 2 */
 	// End Line: 860
 
-// [D] [A] - not drawn properly...
+// [D] [T]
 void DrawMultiplayerTarget(MS_TARGET *target)
 {
-	int iVar1;
-	uint uVar2;
-	long *plVar3;
 	u_char b;
 	u_char g;
 	u_char r;
 	VECTOR tv;
+	int activeTargets;
 
 	if (TargetComplete(target, -1))
 		return;
 
-	if (TargetActive(target, 0) == 0 && TargetActive(target, 1) == 0)
+	activeTargets = TargetActive(target, 0) ? 0x1 : 0x0;
+	activeTargets |= TargetActive(target, 1) ? 0x2 : 0x0;
+
+	if (activeTargets == 0)
 		return;
 
 	r = 64;
 	g = 64;
 	b = 64;
 
-	if (target->data[0] == 2)
+	if(activeTargets == 1)
 	{
-		tv.vx = target->data[3];
-		tv.vz = target->data[4];
-		tv.vy = 0;
-		goto LAB_0005fa40;
-	}
-
-	if (target->data[0] > 2) 
-	{
-		if (target->data[0] != 3)
-			return;
-
-		plVar3 = (long *)target->data[4];
-		tv.vx = *plVar3;
-		tv.vy = plVar3[1];
-		tv.vz = plVar3[2];
-		tv.pad = plVar3[3];
-		goto LAB_0005fa40;
-	}
-
-	if (target->data[0] != 1)
-		return;
-
-	tv.vx = target->data[3];
-	tv.vz = target->data[4];
-	tv.vy = 0;
-	uVar2 = target->data[1] & 0x30000;
-
-	if (uVar2 == 0x20000) 
-	{
-	LAB_0005f9e4:
-		r = 0;
-		g = 128;
-		b = 0;
-	}
-	else 
-	{
-		if (uVar2 < 0x20001)
-		{
-			if (uVar2 != 0x10000) 
-			{
-			LAB_0005f998:
-				if (NumPlayers < 2 || TargetActive(target, -1) != 0)
-					goto LAB_0005fa40;
-
-				if (TargetActive(target, 0) == 0)
-					goto LAB_0005f9e4;
-			}
-		}
-		else 
-		{
-			if (uVar2 != 0x30000) 
-				goto LAB_0005f998;
-
-			if (gPlayerWithTheFlag == -1) 
-				goto LAB_0005fa40;
-
-			tv.vx = player[gPlayerWithTheFlag].pos[0];
-			tv.vz = player[gPlayerWithTheFlag].pos[2];
-			tv.vy = 0;
-
-			if (gPlayerWithTheFlag != 0) 
-				goto LAB_0005f9e4;
-		}
-
 		r = 128;
 		g = 0;
 		b = 0;
 	}
+	else if(activeTargets == 2)
+	{
+		r = 0;
+		g = 128;
+		b = 0;
+	}
 
-LAB_0005fa40:
-	if ((target->data[2] & 0x10U) != 0) 
+	switch(target->data[0])
+	{
+		case 1:
+		{
+			tv.vx = target->data[3];
+			tv.vz = target->data[4];
+			tv.vy = 10000;
+
+			switch(target->data[1] & 0x30000)
+			{
+				case 0x10000:
+				{
+					r = 128;
+					g = 0;
+					b = 0;
+					break;
+				}
+				case 0x20000:
+				{
+					r = 0;
+					g = 128;
+					b = 0;
+					break;
+				}
+				case 0x30000:
+				{
+					if(gPlayerWithTheFlag != -1)
+					{
+						tv.vx = player[gPlayerWithTheFlag].pos[0];
+						tv.vz = player[gPlayerWithTheFlag].pos[2];
+					}
+
+					break;
+				}
+			}
+
+			if (target->data[7] != 0) 
+				tv.vy = target->data[6];
+			else 
+				tv.vy = -MapHeight(&tv);
+
+			break;
+		}
+		case 2:
+		{
+			int slot;
+			slot = target->data[6];
+
+			if (slot == -1)
+				return;
+
+			tv.vx = car_data[slot].hd.where.t[0];
+			tv.vz = car_data[slot].hd.where.t[2];
+			tv.vy = -car_data[slot].hd.where.t[1];
+			break;
+		}
+		case 3:
+		{
+			tv = *(VECTOR*)target->data[4];
+			break;
+		}
+		default:
+			return;
+	}
+
+	if (target->data[2] & 0x10) 
 	{
 		DrawTargetBlip(&tv, r, g, b, 0x30);
 	}

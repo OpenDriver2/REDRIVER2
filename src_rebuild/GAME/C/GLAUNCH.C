@@ -304,6 +304,9 @@ void GameStart(void)
 
 	wantedCar[1] = -1;
 	wantedCar[0] = -1;
+	// [A]
+	wantedWeather = -1;
+	wantedTimeOfDay = -1;
 
 	gHaveStoredData = 0;
 

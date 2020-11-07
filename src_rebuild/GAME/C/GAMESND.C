@@ -633,7 +633,7 @@ void LoadLevelSFX(int missionNum)
 	LoadSoundBankDynamic(NULL, 1, 0);
 	LoadSoundBankDynamic(NULL, 3, 3);
 
-	if (gCurrentMissionNumber - 39 < 2)
+	if (gCurrentMissionNumber - 39U < 2)
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
@@ -724,17 +724,59 @@ void LoadLevelSFX(int missionNum)
 
 int TimeSinceLastSpeech = 0;
 
+// [A] start car sounds for player
+void StartPlayerCarSounds(int playerId, int model, VECTOR* pos)
+{
+	int carSampleId;
+	int channel;
+	int siren;
+
+	if (model == 4)
+		carSampleId = ResidentModelsBodge();
+	else if (model < 3)
+		carSampleId = model;
+	else
+		carSampleId = model - 1;
+
+	siren = CarHasSiren(model);
+
+	// rev sound
+	channel = playerId * 3;	
+	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3, pos->vx, pos->vy, pos->vz, -10000, 4096);
+
+	// idle sound
+	channel = playerId * 3 + 1;	
+	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3 + 1, pos->vx, pos->vy, pos->vz, -10000, 4096);
+
+	if (siren)
+	{
+		channel = playerId * 3 + 2;
+		Start3DSoundVolPitch(channel, (siren & 0xff00) >> 8, siren & 0xff, pos->vx, pos->vy, pos->vz, -10000, 129);
+	}
+
+	if (NumPlayers > 1 && NoPlayerControl == 0)
+	{
+		channel = playerId * 3;
+		SetPlayerOwnsChannel(channel, playerId);
+
+		channel = playerId * 3 + 1;
+		SetPlayerOwnsChannel(channel, playerId);
+
+		if (siren)
+		{
+			channel = playerId * 3 + 2;
+			SetPlayerOwnsChannel(channel, playerId);
+		}
+	}
+}
+
 // [D] [T]
 void StartGameSounds(void)
 {
-	int channel;
 	int i;
 	PLAYER* lcp;
 	CAR_DATA* cp;
-	int sample;
-	int pitch;
 	int car_model;
-	int siren;
 
 	TimeSinceLastSpeech = 0;
 
@@ -747,83 +789,7 @@ void StartGameSounds(void)
 		if (lcp->playerType == 1)
 		{
 			cp = &car_data[lcp->playerCarId];
-			car_model = cp->ap.model;
-
-			if (car_model == 4)
-				sample = ResidentModelsBodge();
-			else if (car_model > 2)
-				sample = car_model - 1;
-			else
-				sample = car_model;
-
-			if (i == 0)
-			{
-				channel = 1;
-				pitch = 16383;
-			}
-			else
-			{
-				channel = 4;
-				pitch = 129;
-			}
-
-			Start3DSoundVolPitch(channel, SOUND_BANK_CARS, sample * 3 + 1, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, pitch);
-
-			if (car_model == 4)
-				sample = ResidentModelsBodge() * 3;
-			else if (car_model < 3)
-				sample = car_model * 3;
-			else
-				sample = (car_model - 1) * 3;
-
-			if (i == 0)
-			{
-				channel = 0;
-				pitch = 16383;
-			}
-			else
-			{
-				channel = 3;
-				pitch = 129;
-			}
-
-			Start3DSoundVolPitch(channel, SOUND_BANK_CARS, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, pitch);
-
-			siren = CarHasSiren(car_model);
-
-			if (siren != 0)
-			{
-				if (i != 0)
-					channel = 5;
-				else
-					channel = 2;
-
-				Start3DSoundVolPitch(channel, (siren & 0xff00) >> 8, siren & 0xff, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -10000, 129);
-			}
-
-			if (NumPlayers > 1 && NoPlayerControl == 0)
-			{
-				if (i != 0)
-					channel = 3;
-				else
-					channel = 0;
-
-				SetPlayerOwnsChannel(channel, i);
-
-				if (i != 0)
-					channel = 4;
-				else
-					channel = 1;
-
-				SetPlayerOwnsChannel(channel, i);
-
-				if (i != 0)
-					channel = 5;
-				else
-					channel = 2;
-
-				SetPlayerOwnsChannel(channel, i);
-			}
+			StartPlayerCarSounds(i, cp->ap.model, (VECTOR*)cp->hd.where.t);
 		}
 
 		lcp->crash_timer = 0;
@@ -840,11 +806,10 @@ void StartGameSounds(void)
 		SpuSetVoiceAR(5, 27);
 	}
 
+	InitEnvSnd(MAX_LEVEL_ENVSOUNDS);
+	
 	if (NumPlayers < 2 || NoPlayerControl != 0)
-	{
-		InitEnvSnd(MAX_LEVEL_ENVSOUNDS);
 		AddEnvSounds(GameLevel, gTimeOfDay);
-	}
 
 	InitDopplerSFX();
 	InitSkidding();
@@ -900,14 +865,7 @@ ushort GetEngineRevs(CAR_DATA* cp)
 	acc = cp->thrust;
 	type = (cp->controlType == CONTROL_TYPE_CIV_AI);
 
-	if (ws < 1)
-	{
-		ws = -ws / 2048;
-		lastgear = 0;
-
-		cp->hd.gear = 0;
-	}
-	else
+	if (ws > 0)
 	{
 		ws >>= 11;
 
@@ -944,6 +902,13 @@ ushort GetEngineRevs(CAR_DATA* cp)
 		} while (true);
 
 		cp->hd.gear = lastgear;
+	}
+	else
+	{
+		ws = -ws / 2048;
+		lastgear = 0;
+
+		cp->hd.gear = 0;
 	}
 
 	if (acc != 0)
@@ -1906,7 +1871,7 @@ void DoDopplerSFX(void)
 	}
 
 	// bark on player
-	if (CopsCanSeePlayer != 0)
+	if (CopsCanSeePlayer)
 	{
 		if (player[0].playerCarId < 0)
 			playerFelony = &pedestrianFelony;
@@ -2434,26 +2399,26 @@ void SoundTasks(void)
 			position = (VECTOR*)cp->hd.where.t;
 			velocity = cp->st.n.linearVelocity;
 
-			if (lcp->car_is_sounding == 0)
-				vol = lcp->idlevol;
-			else
-				vol = -10000;
-
-			chan = i == 0 ? 1 : 4;
-			SetChannelPosition3(chan, position, velocity, vol, cp->hd.revs / 4 + 4096, 0);
-
 			if (lcp->car_is_sounding < 2)
 				vol = lcp->revsvol;
 			else
 				vol = -10000;
 
-			chan = i == 0 ? 0 : 3;
+			chan = i * 3;
 			SetChannelPosition3(chan, position, velocity, vol, cp->hd.revs / 4 + lcp->revsvol / 64 + 1500, 0);
+			
+			if (lcp->car_is_sounding == 0)
+				vol = lcp->idlevol;
+			else
+				vol = -10000;
+
+			chan = i * 3 + 1;
+			SetChannelPosition3(chan, position, velocity, vol, cp->hd.revs / 4 + 4096, 0);
 
 			// siren sound control
 			if (CarHasSiren(cp->ap.model) != 0)
 			{
-				chan = i == 0 ? 2 : 5;
+				chan = i  * 3 + 2;
 
 				if (lcp->horn.on == 0)
 					SpuSetVoicePitch(chan, 0);		// don't stop it really
@@ -2463,13 +2428,13 @@ void SoundTasks(void)
 		}
 		else
 		{
-			chan = i == 0 ? 1 : 4;
+			chan = i * 3;
 			SetChannelVolume(chan, -10000, 0);
 
-			chan = i == 0 ? 0 : 3;
+			chan = i * 3 + 1;
 			SetChannelVolume(chan, -10000, 0);
 
-			chan = i == 0 ? 2 : 5;
+			chan = i * 3 + 2;
 			SetChannelVolume(chan, -10000, 0);
 		}
 
@@ -3697,8 +3662,15 @@ void InitLeadHorn(void)
 void LeadHorn(CAR_DATA* cp)
 {
 	static unsigned int rnd = 0;
-
 	int carBank;
+	int dx,dz;
+
+	// [A] do not horn if too far from camera
+	dx = cp->hd.where.t[0] - camera_position.vx >> 8;
+	dz = cp->hd.where.t[2] - camera_position.vz >> 8;
+
+	if (ABS(dx) < 64 && ABS(dz) > 64)
+		return;
 
 	if (horn_time == 0)
 		rnd = (cp->hd.where.t[0] ^ cp->hd.where.t[2]) * (FrameCnt ^ cp->hd.where.t[1]) & 0x7f;
