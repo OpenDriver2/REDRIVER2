@@ -781,7 +781,7 @@ void ReleaseLeaf(short num)
 // [D] [T]
 void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 {
-	int idx;
+	int num;
 	int temprand;
 	int i;
 
@@ -793,12 +793,12 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 
 	for (i = 0; i < num_leaves; i++)
 	{
-		idx = AllocateLeaf();
+		num = AllocateLeaf();
 		
-		if (idx < 0)
+		if (num < 0)
 			return;
 	
-		LEAF* myleaf = &leaf[idx];
+		LEAF* myleaf = &leaf[num];
 		
 		temprand = rand();
 
@@ -1116,6 +1116,7 @@ void InitDebris(void)
 		debris_alloc[i] = i;
 
 		debris[i].pos = 0;
+		debris[i].flags = 0;
 		debris[i].num = i;
 	}
 
@@ -1185,6 +1186,7 @@ void InitDebris(void)
 		leaf_alloc[i] = i;
 
 		leaf[i].pos = 0;
+		leaf[i].flags = 0;
 		leaf[i].num = i;
 	}
 
@@ -1391,9 +1393,9 @@ void AddGroundDebris(void)
 			xbound = ABS(cop->pos.vx - camera_position.vx);
 			zbound = ABS(cop->pos.vz - camera_position.vz);
 
-			if (xbound < 9001 && zbound < 9001 && (xbound > 7000 || zbound > 7000))
+			if (xbound <= 9000 && zbound <= 9000 && (xbound > 7000 || zbound > 7000))
 			{
-				if (next_leaf > 39)
+				if (next_leaf >= MAX_LEAVES)
 					return;
 
 				seed = rand();
