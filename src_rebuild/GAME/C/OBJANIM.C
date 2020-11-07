@@ -467,15 +467,21 @@ void InitAnimatingObjects(void)
 		if (model_idx != -1 && modelpointers[model_idx] != &dummyModel)
 		{
 			modelPtr = modelpointers[model_idx];
-			modelPtr->flags2 |= 1;
+			modelPtr->flags2 |= 0x1;
 
+			if (aop->LitPoly)
+				modelPtr->flags2 |= 0x1000;
+			
 			aop->model_num = model_idx;
 
 			if (modelPtr->instance_number != -1 &&
 				modelpointers[modelPtr->instance_number] != &dummyModel)
 			{
 				modelPtr = modelpointers[modelPtr->instance_number];
-				modelPtr->flags2 |= 1;
+				modelPtr->flags2 |= 0x1;
+
+				if (aop->LitPoly)
+					modelPtr->flags2 |= 0x1000;
 			}
 		}
 		else
@@ -519,6 +525,7 @@ void InitSpooledAnimObj(int model_number)
 {
 	int i;
 	ANIMATED_OBJECT* aop;
+	MODEL* modelPtr;
 
 	if (model_number == -1)
 		return;
@@ -530,7 +537,12 @@ void InitSpooledAnimObj(int model_number)
 	{
 		if (aop->model_num == model_number)
 		{
-			modelpointers[model_number]->flags2 |= 1;
+			modelPtr = modelpointers[model_number];
+			modelPtr->flags2 |= 0x1;
+
+			if (aop->LitPoly)
+				modelPtr->flags2 |= 0x1000;
+			
 			break;
 		}
 		aop++;
@@ -825,7 +837,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 				if (gLightsOn == 0)
 					break;
 
-				if (cop->pos.vx - 0x217e6U < 0xc5ff && cop->pos.vz > 0xae29c && cop->pos.vz < 0xafa9c)
+				if (cop->pos.vx - 137190U < 50687 && cop->pos.vz > 713372 && cop->pos.vz < 719516)
 				{
 					AddSmallStreetLight(cop, -0x26c, -0x65, 0, 0);
 					break;

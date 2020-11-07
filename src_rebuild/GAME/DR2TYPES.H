@@ -1391,7 +1391,7 @@ struct LEAF
 
 struct DAMAGED_LAMP
 {
-	CELL_OBJECT* cop;
+	int index;
 	char damage;
 };
 

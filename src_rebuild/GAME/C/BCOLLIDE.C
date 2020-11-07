@@ -1280,13 +1280,13 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 						{
 							if (gNight != 0 && (modelpointers[gLastModelCollisionCheck]->flags2 & 0x1000) != 0)
 							{
-								if (damage_lamp(cop) != 0)
+								if (damage_lamp(cop))
 								{
 									memset(&lamp_velocity, 0, sizeof(lamp_velocity));
 
-									collisionResult.hit.vy = -730;
+									collisionResult.hit.vy -= 730;
 									Setup_Sparks(&collisionResult.hit, &lamp_velocity, 0x14, 0);
-									collisionResult.hit.vy = 730;
+									collisionResult.hit.vy += 730;
 								}
 							}
 

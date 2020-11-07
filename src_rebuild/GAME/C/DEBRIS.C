@@ -1188,8 +1188,7 @@ void InitDebris(void)
 		leaf[i].num = i;
 	}
 
-	for (i = 0; i < MAX_DAMAGED_LAMPS; i++)
-		damaged_lamp[i].cop = 0;
+	ClearMem((char*)&damaged_lamp, sizeof(damaged_lamp));
 
 	for (i = 0; i < MAX_SMASHED_OBJECTS; i++)
 		damaged_object[i].active = 0;
@@ -1729,11 +1728,12 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 	count = 0;
 	do {
-		if (cop == dam->cop) // flicker
+		if (dam->index == cop->pos.vx + cop->pos.vz) 
 		{
 			if (dam->damage > 2) 
 				return;
 
+			// do flicker
 			col.r = col.g = col.b = (rand() & 0x3f) - (dam->damage * 32 - 90);
 			col1.r = col1.g = col1.b = col.r / 2;
 
@@ -2116,8 +2116,9 @@ int damage_lamp(CELL_OBJECT *cop)
 	dam = damaged_lamp;
 
 	do {
-		
-		if (cop == dam->cop) 
+
+		// [A] slow but works
+		if (dam->index == cop->pos.vx + cop->pos.vz)
 		{
 			old_damage = dam->damage;
 			dam->damage++;
@@ -2133,8 +2134,9 @@ int damage_lamp(CELL_OBJECT *cop)
 	} while (count < MAX_DAMAGED_LAMPS);
 
 	// store new cell object
-	damaged_lamp[NextDamagedLamp].damage = 0;
-	damaged_lamp[NextDamagedLamp].cop = cop;
+	dam = &damaged_lamp[NextDamagedLamp];
+	dam->damage = 0;
+	dam->index = cop->pos.vx + cop->pos.vz; // copy
 
 	if (++NextDamagedLamp > MAX_DAMAGED_LAMPS)
 		NextDamagedLamp = 0;
