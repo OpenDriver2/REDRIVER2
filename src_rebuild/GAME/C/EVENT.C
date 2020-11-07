@@ -1121,6 +1121,7 @@ void SetUpEvents(int full)
 	firstEvent = NULL;
 	e = &firstEvent;
 
+	// Multiplayer level loaded?
 	if (doSpooling == 0)
 	{
 		firstEvent = NULL;

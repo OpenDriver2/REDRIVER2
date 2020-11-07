@@ -694,13 +694,14 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	int dx, dy, dz;
 
 	srcPos = ch->srcposition;
-	srcVel = ch->srcvelocity;
-
+	
 	if (srcPos == NULL) 
 	{
 		ch->dopplerScale = ONE;
 		return;
 	}
+
+	srcVel = ch->srcvelocity;
 
 	pl = &player[ch->player];
 
