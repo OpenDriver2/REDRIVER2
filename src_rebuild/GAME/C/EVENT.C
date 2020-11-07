@@ -26,27 +26,40 @@
 #include "INLINE_C.H"
 #include "RAND.H"
 
-#define STATION_NODE_0	0x80000000	// -0x80000000
-#define STATION_NODE_1	0x80000001	// -0x7fffffff
-#define STATION_NODE_2	0x80000002	// -0x7ffffffe
+#define PATH_NODE_WRAP		0x80000000	// go back to first node without interpolation
+#define PATH_NODE_CYCLE		0x80000001	// cycle nodes with interpolation
+#define PATH_NODE_STATION	0x80000002	// stop point
 
 // TODO: put more meaning into those arrays
 
 int ElTrainData[83] = {
-	6, 80, 130, 32768, 336284, -220364, 283420, STATION_NODE_2,
-	-204500, -158924, 247580, -123084, 188624, -158924, 73520, -138444, 17200, -124148, -39120, STATION_NODE_2,
-	-109276, -82131, -80103, -17628, -203568, -124712, -39728, -265000, 129620, -386012, STATION_NODE_0,
-	80, 130, 0, -158928, 189219, -123684, 246995, STATION_NODE_1,
-	0, 90, 32768, 188402, -425768, 354291, STATION_NODE_0,
-	0, 90, 32768, 354291, -425168, 188402, STATION_NODE_0,
-	60, 110, 0, -386012, 130215, -264404, -39132, -124688, 16619, -139048, 72943, -159520, 282863, STATION_NODE_2,
-	-204991, -220964, 336284, STATION_NODE_0,
-	70, 120, 0, -82719, -39712, STATION_NODE_2,
-	-115487, -124120, -202968,-18216, -80683, STATION_NODE_1
+	6, // train count (WRONG)
+
+	// train 1 (n 1)
+	80, 130, 32768, 336284, -220364, 283420, PATH_NODE_STATION,
+	-204500, -158924, 247580, -123084, 188624, -158924, 73520, -138444, 17200, -124148, -39120, PATH_NODE_STATION,
+	-109276, -82131, -80103, -17628, -203568, -124712, -39728, -265000, 129620, -386012, PATH_NODE_WRAP,
+
+	// train 2 (n 31)
+	80, 130, 0, -158928, 189219, -123684, 246995, PATH_NODE_CYCLE,
+
+	// train 3 (n 39)
+	0, 90, 32768, 188402, -425768, 354291, PATH_NODE_WRAP,
+
+	// train 4 (n 46)
+	0, 90, 32768, 354291, -425168, 188402, PATH_NODE_WRAP,
+
+	// train 4 (n 53)
+	60, 110, 0, -386012, 130215, -264404, -39132, -124688, 16619, -139048, 72943, -159520, 282863, PATH_NODE_STATION,
+	-204991, -220964, 336284, PATH_NODE_WRAP,
+
+	// train 5 (n 71)
+	70, 120, 0, -82719, -39712, PATH_NODE_STATION,
+	-115487, -124120, -202968,-18216, -80683, PATH_NODE_CYCLE
 };
 
 int VegasTrainData[7] = {
-	0, 123, 32768, 982000, -68855, 762717, STATION_NODE_0
+	0, 123, 32768, 982000, -68855, 762717, PATH_NODE_WRAP
 };
 
 int VegasParkedTrains[3] = {
@@ -840,13 +853,13 @@ void InitTrain(EVENT* ev, int count, int type)
 
 	ev->flags &= ~0x7000;
 
-	if (ev->node[3] != STATION_NODE_0)
+	if (ev->node[3] != PATH_NODE_WRAP)
 		ev->flags |= 0x3000;
 
 	to = ev->node;
 
 	// get direction sign
-	if (to[2] == STATION_NODE_2)
+	if (to[2] == PATH_NODE_STATION)
 		mv = to[3] - to[0] >> 0x1f;
 	else
 		mv = to[2] - to[0] >> 0x1f;
@@ -1117,11 +1130,11 @@ void SetUpEvents(int full)
 
 	MALLOC_BEGIN()
 
-		if (full)
-		{
-			EventCop = (CELL_OBJECT*)D_MALLOC(sizeof(CELL_OBJECT) * 16);
-			event = (EVENT*)mallocptr;
-		}
+	if (full)
+	{
+		EventCop = (CELL_OBJECT*)D_MALLOC(sizeof(CELL_OBJECT) * 16);
+		event = (EVENT*)mallocptr;
+	}
 
 	evt = event;
 	cEvents = 0;	// TODO: use D_MALLOC for each event?
@@ -1225,8 +1238,9 @@ void SetUpEvents(int full)
 		missionTrain[1].engine = missionTrain[0].engine;
 
 		// add trains
-		while (n < count)
+		while (n < count-1)
 		{
+			// randomize carriage count
 			if (n != 0)
 				i = (Random2(0) >> (n & 0x1f) & 3U) + 2;
 			else
@@ -1241,6 +1255,7 @@ void SetUpEvents(int full)
 				evt = &event[cEvents];
 				evt->radius = 0;
 				evt->data = p;
+				evt->position.pad = p - ElTrainData;
 
 				InitTrain(evt, i, 0);
 
@@ -1261,13 +1276,11 @@ void SetUpEvents(int full)
 				cEvents++;
 			}
 
-			i = *p;
+			//i = *p;
 
 			do
 			{
-				i = p[1];
-				p++;
-			} while (i + STATION_NODE_0 > 1);
+			} while (*++p + PATH_NODE_WRAP > 1);
 		}
 
 		fixedEvent = chicagoDoor;
@@ -1954,7 +1967,7 @@ void EventCollisions(CAR_DATA* cp, int type)
 // [D] [T]
 void NextNode(EVENT* ev)
 {
-	if (ev->node[2] == STATION_NODE_2)
+	if (ev->node[2] == PATH_NODE_STATION)
 	{
 		ev->node = &ev->node[2];
 	}
@@ -1964,11 +1977,11 @@ void NextNode(EVENT* ev)
 		ev->flags ^= 0x8000;
 	}
 
-	if (*ev->node == STATION_NODE_1)
+	if (*ev->node == PATH_NODE_CYCLE)
 	{
 		ev->node = &ev->data[3];
 	}
-	else if (ev->node[3] == STATION_NODE_0)
+	else if (ev->node[3] == PATH_NODE_WRAP)
 	{
 		ev->flags &= ~0x7000;
 		return;
@@ -2229,7 +2242,7 @@ void StepPathEvent(EVENT* ev)
 	from = ev->node;
 	to = &from[2];
 
-	if (*from == STATION_NODE_2)
+	if (*from == PATH_NODE_STATION)
 	{
 		station = EVENT_LEAVING;
 		i = &from[1];
@@ -2240,7 +2253,7 @@ void StepPathEvent(EVENT* ev)
 
 		i = &from[0];
 
-		if (from[2] == STATION_NODE_2)
+		if (from[2] == PATH_NODE_STATION)
 		{
 			to = &from[3];
 		}
@@ -2248,11 +2261,11 @@ void StepPathEvent(EVENT* ev)
 		{
 			station = EVENT_NO_STATION;
 
-			if (from[-1] == STATION_NODE_2)
+			if (from[-1] == PATH_NODE_STATION)
 				i = &from[-2];
-			else if (from[2] == STATION_NODE_1)
+			else if (from[2] == PATH_NODE_CYCLE)
 				to = &ev->data[3];
-			else if (from[1] == STATION_NODE_1 && &ev->data[3] < to)
+			else if (from[1] == PATH_NODE_CYCLE && &ev->data[3] < to)
 				to = &ev->data[4];
 		}
 	}
@@ -2273,14 +2286,14 @@ void StepPathEvent(EVENT* ev)
 			loop = 0;
 		}
 
-		if (from[0] == STATION_NODE_2)
+		if (from[0] == PATH_NODE_STATION)
 			i = &from[-2];
 
 		while (loop < 4)
 		{
-			if (*i == STATION_NODE_1)
+			if (*i == PATH_NODE_CYCLE)
 				i = &ev->data[3];
-			else if (*i == STATION_NODE_2)
+			else if (*i == PATH_NODE_STATION)
 				i += 2;
 
 			turn[loop] = *i;
@@ -2315,7 +2328,26 @@ void StepPathEvent(EVENT* ev)
 
 		ev->rotation = ratan2(offset.x, offset.z) + 1024U & 0xfff;
 
-		if ((ev->flags & 0x8000) == 0)
+		if (ev->flags & 0x8000)
+		{
+			centre.x = ev->position.vx - centre.x;
+
+			if (turn[0] - turn[2] < 0)
+			{
+				if (centre.x > -1)
+					return;
+			}
+			else
+			{
+				if (centre.x < 1)
+					return;
+			}
+
+			ev->position.vz = turn[1];
+
+			NextNode(ev);
+		}
+		else
 		{
 			centre.z = ev->position.vz - centre.z;
 
@@ -2332,25 +2364,8 @@ void StepPathEvent(EVENT* ev)
 
 			ev->position.vx = turn[2];
 			NextNode(ev);
-			return;
 		}
 
-		centre.x = ev->position.vx - centre.x;
-
-		if (turn[0] - turn[2] < 0)
-		{
-			if (centre.x > -1)
-				return;
-		}
-		else
-		{
-			if (centre.x < 1)
-				return;
-		}
-
-		ev->position.vz = turn[1];
-
-		NextNode(ev);
 		return;
 	}
 
@@ -2419,27 +2434,32 @@ void StepPathEvent(EVENT* ev)
 
 	*curr += speed * dir;
 
-	if (station == 0 && ev->flags & 0x7000)
+	if (station == EVENT_NO_STATION && (ev->flags & 0x7000))
 	{
-		if ((*to - *curr) * dir > 2047)
+		if ((*to - *curr) * dir < 2048)
 		{
-			return;
+			if ((ev->flags & 0x7000) == 0x3000)
+			{
+				ev->flags &= ~0x7000;
+				ev->flags |= 0x1000;
+			}
 		}
-
-		if ((ev->flags & 0x7000) == 0x3000)
-		{
-			ev->flags &= ~0x7000;
-			ev->flags |= 0x1000;
-			return;
-		}
+		
 		return;
 	}
 
 	if ((*to - *curr) * dir < 0)
 	{
-		if (station == 0)
+		if (station == EVENT_NO_STATION)
 		{
+			// [A] preserve direction flag or train will get stuck
+			// i might have been decompiled it wrong but now it works
+			dir = ev->flags & 0x400;
+			
 			InitTrain(ev, 0, 0);
+
+			if (dir)
+				ev->flags |= 0x400;
 		}
 		else if (ev->flags & 0x400)
 		{
@@ -3180,7 +3200,7 @@ void StepEvents(void)
 								cop->type = evt->model;
 
 								// [A] train should be only dangerous in "Beat the train"
-								if ((evt->flags & 0x12) == 2 && gCurrentMissionNumber == 22)
+								if ((evt->flags & 0x12) == 2 && evt->data == VegasTrainData)
 									cop->pad = 1;
 								else
 									cop->pad = 0;
@@ -4484,7 +4504,7 @@ VECTOR* TriggerEvent(int i)
 						loop = 0;
 
 						do {
-							if (missionTrain[i].node[0] == STATION_NODE_2)
+							if (missionTrain[i].node[0] == PATH_NODE_STATION)
 								nodePos = missionTrain[i].node[-1];
 							else
 								nodePos = missionTrain[i].node[1];
