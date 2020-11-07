@@ -12,12 +12,14 @@ MODEL dummyModel = { 0 };
 char* modelname_buffer = NULL;
 char *car_models_lump = NULL;
 
-MODEL* modelpointers[1536] = { NULL };
+MODEL* modelpointers[MAX_MODEL_SLOTS];
+MODEL* pLodModels[MAX_MODEL_SLOTS];
+
 int num_models_in_pack = 0;
 
 unsigned short *Low2HighDetailTable = NULL;
 unsigned short *Low2LowerDetailTable = NULL;
-MODEL* pLodModels[1536];
+
 
 // decompiled code
 // original method signature: 
@@ -47,93 +49,72 @@ MODEL* pLodModels[1536];
 	/* end block 3 */
 	// End Line: 79
 
-// [D]
+// [D] [T]
 void ProcessMDSLump(char *lump_file, int lump_size)
 {
-	int iVar1;
-	MODEL **ppMVar2;
-	char* ptr;
+	char* mdsfile;
 	MODEL *model;
 	MODEL *parentmodel;
-	int iVar4;
 	int modelAmts;
-
-	int i;
+	int i, size;
 
 	modelAmts = *(int *)lump_file;
-	ptr = (lump_file + 4);
+	mdsfile = (lump_file + 4);
 	num_models_in_pack = modelAmts;
 
 	// assign model pointers
-	if (0 < modelAmts) 
+	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
 	{
-		for (i = 0; i < 1536; i++) // [A] bug fix. Init with dummyModel
-			modelpointers[i] = &dummyModel;
+		modelpointers[i] = &dummyModel;
+		pLodModels[i] = &dummyModel;
+	}
 
-		ppMVar2 = modelpointers;
-		iVar4 = modelAmts;
+	for (i = 0; i < modelAmts; i++)
+	{
+		size = *(int*)mdsfile;
+		mdsfile += sizeof(int);
 
-		for (i = 0; i < modelAmts; i++)
+		if (size) 
+			modelpointers[i] = (MODEL*)mdsfile;
+
+		mdsfile += size;
+	}
+
+	// process parent instances
+	for (i = 0; i < modelAmts; i++)
+	{
+		model = modelpointers[i];
+
+		if (model->instance_number != -1) 
 		{
-			int size = *(int*)ptr;
-			ptr += sizeof(int);
+			parentmodel = modelpointers[model->instance_number];
 
-			if (size) 
-				modelpointers[i] = (MODEL*)ptr;
+			if (parentmodel->collision_block != 0)
+				model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
 
-			ptr += size;
+			// convert to real offsets
+			model->vertices = (int)(char*)parentmodel + parentmodel->vertices;
+			model->normals = (int)(char*)parentmodel + parentmodel->normals;
+			model->point_normals = (int)(char*)parentmodel + parentmodel->point_normals;
 		}
 	}
 
-	if (0 < modelAmts)
-	{
-		ppMVar2 = modelpointers;
-		iVar4 = modelAmts;
-
-		// process parent instances
-		do {
-			model = *ppMVar2;
-
-			if (model->instance_number != -1) 
-			{
-				parentmodel = modelpointers[model->instance_number];
-
-				if (parentmodel->collision_block != 0)
-					model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
-
-				// convert to real offsets
-				model->vertices = (int)(char*)parentmodel + parentmodel->vertices;
-				model->normals = (int)(char*)parentmodel + parentmodel->normals;
-				model->point_normals = (int)(char*)parentmodel + parentmodel->point_normals;
-			}
-
-			iVar4--;
-			ppMVar2++;
-		} while (iVar4 != 0);
-	}
-
 	// process models without parents
-	if (0 < modelAmts) 
+	for (i = 0; i < modelAmts; i++)
 	{
-		ppMVar2 = modelpointers;
-		do {
-			model = *ppMVar2;
+		model = modelpointers[i];
 
-			if (model->instance_number == -1) 
-			{
-				if (model->collision_block != 0)
-					model->collision_block += (int)(char*)model;
+		if (model->instance_number == -1) 
+		{
+			if (model->collision_block != 0)
+				model->collision_block += (int)(char*)model;
 
-				model->vertices += (int)(char*)model;
-				model->normals += (int)(char*)model;
-				model->point_normals += (int)(char*)model;
-			}
+			model->vertices += (int)(char*)model;
+			model->normals += (int)(char*)model;
+			model->point_normals += (int)(char*)model;
+		}
 
-			model->poly_block += (int)(char*)model;
-
-			modelAmts--;
-			ppMVar2++;
-		} while (modelAmts != 0);
+		model->poly_block += (int)(char*)model;
 	}
 }
 
@@ -185,10 +166,9 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	/* end block 5 */
 	// End Line: 460
 
-// [D]
+// [D] [T]
 int ProcessCarModelLump(char *lump_ptr, int lump_size)
 {
-	
 	int size;
 	int *offsets;
 	char *models_offset;
@@ -346,7 +326,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	/* end block 3 */
 	// End Line: 1175
 
-// [D]
+// [D] [T]
 MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 {
 	int size;
@@ -357,11 +337,11 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 	char* mem = src;
 
 	if (KeepNormals == 0)
-		size = ((MODEL*)src)->normals;
+		size = ((MODEL*)mem)->normals;
 	else 
-		size = ((MODEL*)src)->poly_block;
+		size = ((MODEL*)mem)->poly_block;
 
-	memcpy(*dest, src, size);
+	memcpy(*dest, mem, size);
 
 	if (KeepNormals == 0)
 		size = model->normals;
@@ -372,7 +352,7 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 
 	model->vertices += (int)model;
 	model->normals += (int)model;
-	model->poly_block = (int)src + model->poly_block;
+	model->poly_block = (int)mem + model->poly_block;
 
 	if (KeepNormals == 0)
 		model->point_normals = 0;
