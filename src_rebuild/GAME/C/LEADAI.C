@@ -15,8 +15,11 @@
 #include "MODELS.H"
 #include "MAIN.H"
 
+#define NUM_STATES 17
+
 static int randIndex;
-static int randState[17];
+static int randState[NUM_STATES];
+
 LEAD_PARAMETERS LeadValues;
 
 static int pathParams[5] = {
@@ -45,8 +48,9 @@ int road_c = 0;
 // [D]
 int leadRand(void)
 {
-	randIndex = (randIndex + 1) % 0x11;
-	return randState[randIndex] = randState[randIndex] + randState[(randIndex + 0xc) % 0x11];
+	randIndex = (randIndex + 1) % NUM_STATES;
+
+	return randState[randIndex] += randState[(randIndex + 12) % NUM_STATES];
 }
 
 
@@ -82,23 +86,9 @@ int leadRand(void)
 	/* end block 2 */
 	// End Line: 560
 
-// [D]
+// [D] [T]
 void InitLead(CAR_DATA *cp)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
-	int x;
-	int iVar4;
-	int z;
-	int uVar5;
-	DRIVER2_STRAIGHT* st;
-	DRIVER2_CURVE* cr;
-	int iVar6;
-
-	x = cp->hd.where.t[0];
-	z = cp->hd.where.t[2];
-
 	cp->hndType = 5;
 	cp->controlType = CONTROL_TYPE_LEAD_AI;
 	cp->ai.l.roadPosition = 512;
@@ -108,77 +98,66 @@ void InitLead(CAR_DATA *cp)
 	cp->ai.l.roadForward = 5120;
 	cp->ai.l.takeDamage = 0;
 
-	if (valid_region(x, z) == 0)
+	int x = cp->hd.where.t[0];
+	int z = cp->hd.where.t[2];
+
+	if (valid_region(x, z) != 0)
 	{
-		z = -1;
-
-		iVar1 = 0;
-
-		if (0 < NumDriver2Straights)
-		{
-			iVar6 = (cp->hd).where.t[0];
-			st = Driver2StraightsPtr;
-
-			do {
-				iVar4 = iVar6 - st->Midx;
-
-				iVar2 = (cp->hd).where.t[2] - st->Midz;
-				iVar4 = iVar4 >> 10;
-
-				iVar2 = iVar2 >> 10;
-				iVar3 = iVar4 * iVar4 + iVar2 * iVar2;
-
-				if (((iVar4 < 0x3e9) && (iVar2 < 0x3e9)) && ((iVar3 < z || (z == -1))))
-				{
-					cp->ai.l.currentRoad = iVar1;
-					z = iVar3;
-				}
-
-				iVar1 = iVar1 + 1;
-				st = st + 1;
-			} while (iVar1 < NumDriver2Straights);
-		}
-
-		uVar5 = 0;
-
-		if (0 < NumDriver2Curves) 
-		{
-			cr = Driver2CurvesPtr;
-			iVar1 = (cp->hd).where.t[0];
-			do {
-				iVar6 = iVar1 - cr->Midx;
-
-				iVar4 = (cp->hd).where.t[2] - cr->Midz;
-				iVar6 = iVar6 >> 10;
-
-				iVar4 = iVar4 >> 10;
-				iVar2 = iVar6 * iVar6 + iVar4 * iVar4;
-
-				if (((iVar6 < 0x3e9) && (iVar4 < 0x3e9)) && ((iVar2 < z || (z == -1)))) 
-				{
-					cp->ai.l.currentRoad = uVar5 & 0x4000;
-					z = iVar2;
-				}
-
-				uVar5 = uVar5 + 1;
-				cr = cr + 1;
-			} while ((int)uVar5 < NumDriver2Curves);
-		}
+		cp->ai.l.currentRoad = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
 	}
 	else
 	{
-		x = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
-		cp->ai.l.currentRoad = x;
+		DRIVER2_STRAIGHT* straight;
+		DRIVER2_CURVE* curve;
+		int i;
+		int dx;
+		int dz;
+		int sqrdist;
+		int min;
+
+		min = -1;
+
+		for (i = 0; i < NumDriver2Straights; i++)
+		{
+			straight = &Driver2StraightsPtr[i];
+
+			dx = (x - straight->Midx) >> 10;
+			dz = (z - straight->Midz) >> 10;
+
+			sqrdist = dx * dx + dz * dz;
+
+			if ((dx < 1001 && dz < 1001) && (sqrdist < min || min == -1))
+			{
+				cp->ai.l.currentRoad = i;
+				min = sqrdist;
+			}
+		}
+
+		for (i = 0; i < NumDriver2Curves; i++)
+		{
+			curve = &Driver2CurvesPtr[i];
+
+			dx = (x - curve->Midx) >> 10;
+			dz = (z - curve->Midz) >> 10;
+
+			sqrdist = dx * dx + dz * dz;
+
+			if ((dx < 1001 && dz < 1001) && (sqrdist < min || min == -1))
+			{
+				cp->ai.l.currentRoad = i & 0x4000;
+				min = sqrdist;
+			}
+		}
 	}
 
 	randState[0] = 0x27a2a;
-	randState[2] = 0x38b0;
-	randState[5] = 0xe;
-	randState[7] = 0x8748;
 	randState[1] = 0x717d58;
+	randState[2] = 0x38b0;
 	randState[3] = 0x701ced;
 	randState[4] = 0xbdfda3;
+	randState[5] = 0xe;
 	randState[6] = 0x268833;
+	randState[7] = 0x8748;
 	randState[8] = 0x180d85;
 	randState[9] = 0x127fba;
 	randState[10] = 0x1678874;
