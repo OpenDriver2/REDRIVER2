@@ -2368,9 +2368,11 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 
 			if (gNight)
 				ShowFlare(&v1, &a, 150, lDiffAnglesX + lDiffAnglesY + v1.vx + v1.vz >> 3 & 0x1ffe);
+
+			DisplayLightReflections(&v2, &a, 50, &lightref_texture);
 		}
 
-		DisplayLightReflections(&v2, &a, 50, &lightref_texture);
+		
 		LightSortCorrect = -10;
 	}
 }
