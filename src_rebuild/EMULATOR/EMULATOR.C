@@ -16,9 +16,9 @@
 #include <assert.h>
 
 #if defined(NTSC_VERSION)
-#define FIXED_TIME_STEP		16		// 16.6667	= 60 FPS
+#define FIXED_TIME_STEP		(1.0/60.0)		// 60 FPS clock
 #else
-#define FIXED_TIME_STEP		20		// 20.0		= 50 FPS
+#define FIXED_TIME_STEP		(1.0/50.0)		// 50 FPS clock
 #endif
 
 #define SWAP_INTERVAL		1
@@ -45,7 +45,7 @@ SysCounter counters[3] = { 0 };
 //std::thread counter_thread;
 #endif
 
-unsigned int g_swapTime;
+double g_swapTime;
 int g_swapInterval = SWAP_INTERVAL;
 int g_wireframeMode = 0;
 int g_texturelessMode = 0;
@@ -276,6 +276,48 @@ static int Emulator_InitialiseGLEW()
 	return TRUE;
 }
 
+#ifdef _WIN32
+LARGE_INTEGER	g_performanceFrequency;
+LARGE_INTEGER	g_clockStart;
+#else
+timeval			g_timeStart;
+#endif // _WIN32
+
+void Emulator_InitHPCTimer()
+{
+#ifdef _WIN32
+	QueryPerformanceFrequency(&g_performanceFrequency);
+#else
+	gettimeofday(&g_timeStart, NULL);
+#endif // _WIN32
+	
+}
+
+double Emulator_GetHPCTime(int reset = 0)
+{
+#ifdef _WIN32
+	LARGE_INTEGER curr;
+
+	QueryPerformanceCounter( &curr);
+
+	double value = double(curr.QuadPart - g_clockStart.QuadPart) / double(g_performanceFrequency.QuadPart);
+
+	if (reset)
+		g_clockStart = curr;
+#else
+	timeval curr;
+
+	gettimeofday(&curr, NULL);
+
+	double value = (float(curr.tv_sec - g_timeStart.tv_sec) + 0.000001f * float(curr.tv_usec - g_timeStart.tv_usec));
+
+	if (reset)
+		g_timeStart = curr;
+#endif // _WIN32
+
+	return value;
+}
+
 SDL_Thread* g_vblankThread = NULL;
 SDL_mutex* g_vblankMutex = NULL;
 volatile bool g_stopVblank = false;
@@ -309,26 +351,27 @@ int Emulator_DoVSyncCallback()
 
 	g_lastVblankCnt = g_vblanksDone;
 
-	SDL_UnlockMutex(g_vblankMutex);
-
 	if (g_swapInterval == 0)
 	{
 		// extra speedup.
 		// does not affect `vsync_callback` count
-		g_vblanksDone += 200;
-		g_lastVblankCnt += 200;
+		g_vblanksDone += 1;
+		g_lastVblankCnt += 1;
 	}
+
+
+	SDL_UnlockMutex(g_vblankMutex);
 
 	return g_vblanksDone;
 }
 
 int vblankThreadMain(void* data)
 {
-	int vblankTime = SDL_GetTicks();
+	double vblankTime = Emulator_GetHPCTime();
 
 	do
 	{
-		int delta = vblankTime + FIXED_TIME_STEP - SDL_GetTicks();
+		double delta = vblankTime + FIXED_TIME_STEP - Emulator_GetHPCTime();
 
 		if (delta < 0)
 		{
@@ -336,7 +379,7 @@ int vblankThreadMain(void* data)
 			SDL_LockMutex(g_vblankMutex);
 
 			g_vblanksDone++;
-			vblankTime = SDL_GetTicks();
+			vblankTime = Emulator_GetHPCTime();// SDL_GetTicks();
 
 			SDL_UnlockMutex(g_vblankMutex);
 		}
@@ -347,6 +390,8 @@ int vblankThreadMain(void* data)
 
 static int Emulator_InitialiseCore()
 {
+	Emulator_InitHPCTimer();
+	
 	g_vblankThread = SDL_CreateThread(vblankThreadMain, "vbl", NULL);
 
 	if (NULL == g_vblankThread)
@@ -361,6 +406,10 @@ static int Emulator_InitialiseCore()
 		eprintf("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return FALSE;
 	}
+
+	
+
+	g_swapTime = Emulator_GetHPCTime();
 
 	return TRUE;
 }
@@ -397,7 +446,6 @@ void Emulator_Initialise(char* windowName, int width, int height, int fullscreen
 		Emulator_ShutDown();
 	}
 
-	g_swapTime = SDL_GetTicks() - FIXED_TIME_STEP;
 }
 
 void Emulator_GetScreenSize(int& screenWidth, int& screenHeight)
@@ -979,7 +1027,7 @@ GLint u_Projection3D;
 		"		vec4(0.0,  0.0,  1.0,  0.0),\n"\
 		"		vec4(a_zw.z, -a_zw.w,  0.0,  1.0));\n"\
 		"	vec2 geom_ofs = vec2(0.5, 0.5);\n"\
-		"	vec4 fragPosition = (a_zw.y != 0 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1,-1) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
+		"	vec4 fragPosition = (a_zw.y > 100 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1,-1) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION \
@@ -1863,14 +1911,16 @@ void Emulator_WaitForTimestep(int count)
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
-		int delta = g_swapTime + FIXED_TIME_STEP * count - SDL_GetTicks();
-
-		if (delta > 0) {
-			SDL_Delay(delta);
-		}
+		double curTime;
+		double waitTime = FIXED_TIME_STEP * count;
+		do
+		{
+			SDL_Delay(0); // yield
+			curTime = Emulator_GetHPCTime();
+		} while (curTime - g_swapTime < waitTime);
 	}
 
-	g_swapTime = SDL_GetTicks();
+	g_swapTime = Emulator_GetHPCTime();
 }
 
 void Emulator_EndScene()
