@@ -226,254 +226,216 @@ void InitLead(CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 871
 
-// [D]
+// [D] [T] - needless to say, the AI isn't very smart :D
 void LeadUpdateState(CAR_DATA *cp)
 {
-	bool bVar1;
-	int iVar2;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
+	int dif;
+	int avel;
+	int end;
+	int dist;
+	int dx;
+	int dz;
 	VECTOR tmpStart;
 	VECTOR pos;
 
-	if (valid_region(cp->hd.where.t[0], cp->hd.where.t[2]) == 0)
+	int x = cp->hd.where.t[0];
+	int z = cp->hd.where.t[2];
+
+	// is he spooled in?
+	if (!valid_region(x, z)
+		|| ABS(x - player[0].pos[0]) > 15900
+		|| ABS(z - player[0].pos[2]) > 15900)
 	{
-	LAB_LEAD__000e7480:
+		// request that we spool him in
 		cp->ai.l.dstate = 8;
 		return;
 	}
 
-	iVar3 = cp->hd.where.t[0];
-	iVar2 = iVar3 - player[0].pos[0];
-
-	if (iVar2 < 0)
-		iVar2 = player[0].pos[0] - iVar3;
-
-	if (0x3e1c < iVar2) 
-		goto LAB_LEAD__000e7480;
-
-	iVar5 = cp->hd.where.t[2];
-	iVar2 = iVar5 - player[0].pos[2];
-
-	if (iVar2 < 0)
-		iVar2 = player[0].pos[2] - iVar5;
-
-	if (0x3e1c < iVar2)
-		goto LAB_LEAD__000e7480;
-
 	if (cp->ai.l.dstate == 8)
 	{
-		if (spoolactive != 0) 
-		{
-			cp->ai.l.dstate = 8;
+		// don't spool him in until everything is loaded
+		if (spoolactive)
 			return;
-		}
 
-		tmpStart.vz = cp->hd.where.t[2];
-		tmpStart.vx = iVar3;
-		tmpStart.vy = MapHeight(&tmpStart);
-		tmpStart.vy = tmpStart.vy - ((cp->ap).carCos)->wheelDisp[0].vy;
+		tmpStart.vx = x;
+		tmpStart.vz = z;
+		tmpStart.vy = MapHeight(&tmpStart) - cp->ap.carCos->wheelDisp[0].vy;
 
-		InitCarPhysics(cp, (LONGVECTOR *)&tmpStart, (int)cp->ai.l.targetDir);
+		InitCarPhysics(cp, (LONGVECTOR *)&tmpStart, cp->ai.l.targetDir);
 
+		// start him up
 		cp->ai.l.dstate = 3;
 	}
 
-	iVar2 = cp->ai.l.panicCount;
-
-	if (iVar2 < 0)
-		iVar2 = -iVar2;
-
-	iVar3 = FIXEDH(cp->st.n.angularVelocity[1]);
-
-	if (0 < iVar2)
+	if (ABS(cp->ai.l.panicCount) > 0)
 		cp->ai.l.dstate = 5;
 
 	if (cp->ai.l.dstate == 6)
 		cp->ai.l.dstate = 3;
 
 	if (cp->hd.speed < 10)
-		cp->ai.l.stuckCount++;
+		++cp->ai.l.stuckCount;
 	else
 		cp->ai.l.stuckCount = 0;
-
+	
 	if (cp->ai.l.dstate == 4)
 	{
-		if (0x14 < cp->ai.l.stuckCount)
+		if (cp->ai.l.stuckCount > 20)
 		{
-			cp->ai.l.recoverTime = 1;
 			cp->ai.l.stuckCount = 0;
+			cp->ai.l.recoverTime = 1;
 			cp->ai.l.roadForward = -cp->ai.l.roadForward;
 		}
 	}
 	else
 	{
-		if (10 < cp->ai.l.stuckCount)
+		if (cp->ai.l.stuckCount > 10)
 		{
-			cp->ai.l.dstate = 4;
-			cp->ai.l.recoverTime = 0;
 			cp->ai.l.stuckCount = 0;
+			cp->ai.l.recoverTime = 0;
+			cp->ai.l.dstate = 4;
 		}
 	}
 
+	dif = cp->hd.direction - cp->ai.l.targetDir;
+	avel = FIXEDH(cp->st.n.angularVelocity[1]);
+
+	end = (dif + 2048u & 0xfff) - 2048;
+
 	switch (cp->ai.l.dstate)
 	{
-		case 0:
-			CheckCurrentRoad(cp);
-			iVar2 = ((cp->hd.direction - (int)cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
+	case 0:
+		CheckCurrentRoad(cp);
 
-			if (cp->hd.speed < 20)
-				cp->ai.l.dstate =3;
+		if (cp->hd.speed < 20)
+			cp->ai.l.dstate = 3;
 
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
+		if (ABS(end) < LeadValues.hEnd)
+		{
+			if (ABS(avel) > 150)
+				cp->ai.l.dstate = 1;
+		}
 
-			if (iVar2 < LeadValues.hEnd) 
+		break;
+	case 1:
+		CheckCurrentRoad(cp);
+
+		if (ABS(end) < LeadValues.dEnd)
+		{
+			if (ABS(avel) < 24)
 			{
-				if (iVar3 < 0)
-					iVar3 = -iVar3;
-
-				if (0x96 < iVar3)
-					cp->ai.l.dstate = 1;
-
-			}
-			break;
-		case 1:
-			CheckCurrentRoad(cp);
-			iVar2 = ((cp->hd.direction - (int)cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
-
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
-
-			if (iVar2 < LeadValues.dEnd)
-				cp->ai.l.dstate = 2;
-
-			goto LAB_LEAD__000e7748;
-		case 2:
-			CheckCurrentRoad(cp);
-		LAB_LEAD__000e7748:
-			if (iVar3 < 0)
-				iVar3 = -iVar3;
-
-			if (iVar3 < 0x18) 
 				cp->ai.l.dstate = 3;
-
-			break;
-		case 3:
-			iVar2 = cp->ai.l.recoverTime;
-
-			if (0x28 < iVar2)
-				cp->ai.l.recoverTime = iVar2 + -1;
-
-			CheckCurrentRoad(cp);
-			uVar7 = cp->hd.direction;
-			uVar4 = uVar7 & 0xfff;
-			iVar3 = cp->hd.speed;
-			iVar2 = ((uVar7 - (int)cp->ai.l.targetDir) + 0x800 & 0xfff) - 0x800;
-			iVar5 = FIXEDH((cp->ai.l.targetX - cp->hd.where.t[0]) * (int)rcossin_tbl[uVar4 * 2] + (cp->ai.l.targetZ - cp->hd.where.t[2]) * (int)rcossin_tbl[uVar4 * 2 + 1]);
-			if (100 < iVar3) 
+			}
+			else
 			{
-			LAB_LEAD__000e7824:
-				if (iVar2 < 0)
-					iVar2 = -iVar2;
+				cp->ai.l.dstate = 2;
+			}
+		}
 
-				iVar6 = iVar2;
+		break;
+	case 2:
+		CheckCurrentRoad(cp);
 
-				if (iVar2 <= LeadValues.hEnd) 
-					goto LAB_LEAD__000e78ac;
+		if (ABS(avel) < 24)
+			cp->ai.l.dstate = 3;
+		
+		break;
+	case 3:
+		if (cp->ai.l.recoverTime > 40)
+			--cp->ai.l.recoverTime;
 
-				if (100 < iVar3)
+		CheckCurrentRoad(cp);
+
+		dx = (cp->ai.l.targetX - x) * rcossin_tbl[(cp->hd.direction & 0xfff) * 2];
+		dz = (cp->ai.l.targetZ - z) * rcossin_tbl[(cp->hd.direction & 0xfff) * 2 + 1];
+
+		dist = FIXEDH(dx + dz);
+			
+		if (cp->hd.speed > 100 || (cp->hd.speed > 30 && ABS(end) > 1024))
+		{
+			if (ABS(end) > LeadValues.hEnd)
+			{
+				if (cp->hd.speed > 100)
 				{
-					if (LeadValues.hDist + (iVar3 + -100) * LeadValues.hDistMul <= iVar5)
+					int hDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+
+					if (dist < hDist)
 					{
 						cp->ai.l.dstate = 6;
-						return;
 					}
-				LAB_LEAD__000e78a4:
-					cp->ai.l.dstate = 0;
-					return;
+					else
+					{
+						cp->ai.l.dstate = 0;
+					}
+
+					break;
 				}
-
-				if (iVar5 < LeadValues.tDist + iVar3 * LeadValues.tDistMul) 
-					goto LAB_LEAD__000e78a4;
-			}
-			else 
-			{
-				iVar6 = iVar2;
-				if (iVar2 < 0)
-					iVar6 = -iVar2;
-
-				if ((0x1e < iVar3) && (0x400 < iVar6))
-					goto LAB_LEAD__000e7824;
-
-			LAB_LEAD__000e78ac:
-				iVar2 = cp->hd.speed;
-				if (iVar6 <= iVar2 + LeadValues.tEnd)
-					return;
-
-				if (iVar2 < 0x65)
-					iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
 				else
-					iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
-
-				if (iVar5 < iVar2) 
 				{
-					cp->ai.l.dstate = 7;
-					return;
+					int tDist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
+
+					if (dist < tDist)
+					{
+						cp->ai.l.dstate = 0;
+						break;
+					}
 				}
 			}
+		}
 
-			cp->ai.l.dstate = 6;
-			break;
-		case 4:
-			pos.vx = cp->hd.where.t[0];
-			pos.vy = cp->hd.where.t[1];
-			pos.vz = cp->hd.where.t[2];
+		if (ABS(end) > cp->hd.speed + LeadValues.tEnd)
+		{
+			int lDist = 0;
 
-			UpdateRoadPosition(cp, &pos, 5);
+			if (cp->hd.speed > 100)
+				lDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+			else
+				lDist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 
-			cp->ai.l.recoverTime++;
-
-			if (cp->ai.l.roadForward == 0) 
+			if (dist < lDist)
 			{
-				cp->ai.l.dstate = 3;
-				cp->ai.l.stuckCount = 0;
+				cp->ai.l.dstate = 7;
 			}
+			else
+			{
+				cp->ai.l.dstate = 6;
+			}
+		}
 
-			break;
-		case 5:
-			CheckCurrentRoad(cp);
-			iVar2 = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
+		break;
+	case 4:
+		pos.vx = cp->hd.where.t[0];
+		pos.vy = cp->hd.where.t[1];
+		pos.vz = cp->hd.where.t[2];
 
-			if (cp->ai.l.panicCount != 0)
-				return;
+		UpdateRoadPosition(cp, &pos, 5);
 
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
-	
-			bVar1 = iVar2 < 200;
+		cp->ai.l.recoverTime++;
 
-			if (bVar1)
+		if (cp->ai.l.roadForward == 0) 
+		{
+			cp->ai.l.dstate = 3;
+			cp->ai.l.stuckCount = 0;
+		}
+
+		break;
+	case 5:
+		CheckCurrentRoad(cp);
+			
+		if (cp->ai.l.panicCount == 0)
+		{
+			if (ABS(end) < 200)
 				cp->ai.l.dstate = 2;
+		}
 
-			break;
-		case 7:
-			CheckCurrentRoad(cp);
+		break;
+	case 7:
+		CheckCurrentRoad(cp);
 
-			iVar2 = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
+		if (ABS(end) < cp->hd.speed + LeadValues.tEnd)
+			cp->ai.l.dstate = 2;
 
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
-
-			bVar1 = iVar2 < cp->hd.speed + LeadValues.tEnd;
-
-			if (bVar1) 
-				cp->ai.l.dstate = 2;
-
-			break;
+		break;
 	}
 }
 
