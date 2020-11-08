@@ -3,10 +3,8 @@
 #include "PRES.H"
 #include "MISSION.H"
 #include "OVERMAP.H"
-#include "PRES.H"
 #include "CUTSCENE.H"
 #include "GLAUNCH.H"
-#include "MDRAW.H"
 #include "OVERLAY.H"
 #include "REPLAYS.H"
 #include "PAUSE.H"
@@ -600,6 +598,7 @@ void DrawWorldTarget(MS_TARGET *target)
 			tv.vz = target->data[4];
 			tv.vy = 10000;
 
+			// Capture the Flag target properties
 			switch(target->data[1] & 0x30000)
 			{
 				case 0x20000:
@@ -743,6 +742,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 			tv.vz = target->data[4];
 			tv.vy = 10000;
 
+			// Capture the Flag target properties
 			switch(target->data[1] & 0x30000)
 			{
 				case 0x10000:

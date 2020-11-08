@@ -33,28 +33,34 @@
 // TODO: put more meaning into those arrays
 
 int ElTrainData[83] = {
-	6, // train count (WRONG)
+	6, // train count
 
 	// train 1 (n 1)
-	80, 130, 32768, 336284, -220364, 283420, PATH_NODE_STATION,
+	80, 130, 0x8000,	// speed 1, 2, start direction
+	336284, -220364, 283420, PATH_NODE_STATION,
 	-204500, -158924, 247580, -123084, 188624, -158924, 73520, -138444, 17200, -124148, -39120, PATH_NODE_STATION,
 	-109276, -82131, -80103, -17628, -203568, -124712, -39728, -265000, 129620, -386012, PATH_NODE_WRAP,
 
 	// train 2 (n 31)
-	80, 130, 0, -158928, 189219, -123684, 246995, PATH_NODE_CYCLE,
+	80, 130, 0,
+	-158928, 189219, -123684, 246995, PATH_NODE_CYCLE,
 
 	// train 3 (n 39)
-	0, 90, 32768, 188402, -425768, 354291, PATH_NODE_WRAP,
+	0, 90, 0x8000,
+	188402, -425768, 354291, PATH_NODE_WRAP,
 
 	// train 4 (n 46)
-	0, 90, 32768, 354291, -425168, 188402, PATH_NODE_WRAP,
+	0, 90, 0x8000,
+	354291, -425168, 188402, PATH_NODE_WRAP,
 
-	// train 4 (n 53)
-	60, 110, 0, -386012, 130215, -264404, -39132, -124688, 16619, -139048, 72943, -159520, 282863, PATH_NODE_STATION,
+	// train 5 (n 53)
+	60, 110, 0,
+	-386012, 130215, -264404, -39132, -124688, 16619, -139048, 72943, -159520, 282863, PATH_NODE_STATION,
 	-204991, -220964, 336284, PATH_NODE_WRAP,
 
-	// train 5 (n 71)
-	70, 120, 0, -82719, -39712, PATH_NODE_STATION,
+	// train 6 (n 71)
+	70, 120, 0,
+	-82719, -39712, PATH_NODE_STATION,
 	-115487, -124120, -202968,-18216, -80683, PATH_NODE_CYCLE
 };
 
@@ -79,15 +85,42 @@ int HavanaMiniData[4] = {
 };
 
 int LiftingBridges[55] = {
-	8, -182784, -175616, -168448,
+	8,	// bridge count
+
+	// 1
+	-182784, -175616, -168448,
 	7, -227328, -162304, -141824, -121344, -100864, -80384, -59904,
-	256, -312832, -305664, -298496,
-	1, 324096, -311808, -304640, -297472,
-	1, 247296, -256512, -249344, -242176,
-	1, 247296, -262656, -255488, -248320,
-	1, 324096, 32768, 170496, 177664, 184832,
-	1, -271360, -12800, -5632, 1536,
-	5, -162304, -102912, -82432, -61952, -39936, -6656, 512, 7680,
+
+	0x100, // goose island start
+
+	// 2
+	-312832, -305664, -298496, 
+	1, 324096,
+
+	// 3
+	-311808, -304640, -297472,
+	1, 247296,
+
+	// 4
+	-256512, -249344, -242176,
+	1, 247296,
+
+	// 5
+	-262656, -255488, -248320,
+	1, 324096,
+
+	0x8000,	// goose island end
+
+	// 6
+	170496, 177664, 184832,
+	1, -271360,
+
+	// 7
+	-12800, -5632, 1536,
+	5, -162304, -102912, -82432, -61952, -39936,
+
+	// 8
+	-6656, 512, 7680,
 	3, 4137, 27648, 128000
 };
 
@@ -1157,14 +1190,15 @@ void SetUpEvents(int full)
 			int timeOffset;
 			cameraEventsActive = 1;
 
-			if (p[0] == 0x8000)
-			{
-				direction = true;
-				p++;
-			}
-			else if (p[0] == 0x100)
+			// goose island bridges start/end?
+			if (p[0] == 0x100)
 			{
 				firstMissionEvent = &event[cEvents];
+				p++;
+			}
+			else if (p[0] == 0x8000)
+			{
+				direction = true;
 				p++;
 			}
 
@@ -1195,7 +1229,7 @@ void SetUpEvents(int full)
 			{
 				if (direction)
 				{
-					evt[i].flags = 1;
+					evt[i].flags = 0x1;
 					evt[i].position.vx = *p;
 				}
 				else
@@ -2313,7 +2347,7 @@ void StepPathEvent(EVENT* ev)
 			centre.z = turn[1] - 2048;
 
 		if (ev->flags & 0x400)
-			speed = *ev->data;
+			speed = ev->data[0];
 
 		offset.x = (ev->position.vz - centre.z) * speed / 2048;
 		offset.z = (centre.x - ev->position.vx) * speed / 2048;

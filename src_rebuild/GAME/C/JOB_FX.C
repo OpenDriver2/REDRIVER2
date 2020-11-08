@@ -51,7 +51,7 @@ MATRIX SS = { 0 };
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitExObjects(void)
 {
 	int i;
@@ -87,7 +87,7 @@ void InitExObjects(void)
 	/* end block 3 */
 	// End Line: 264
 
-// [D]
+// [D] [T]
 void AddExplosion(VECTOR pos, int type)
 {
 	EXOBJECT *newExplosion;
@@ -96,13 +96,10 @@ void AddExplosion(VECTOR pos, int type)
 	i = 0;
 	newExplosion = explosion;
 
-	while (newExplosion->time != -1) 
+	while (newExplosion->time != -1 && i < MAX_EXPLOSION_OBJECTS) 
 	{
-		i++;
 		newExplosion++;
-
-		if (i > 4) 
-			return;
+		i++;
 	}
 
 	newExplosion->time = 0;
@@ -111,21 +108,21 @@ void AddExplosion(VECTOR pos, int type)
 
 	if (type == LITTLE_BANG) 
 	{
-		newExplosion->speed = 0xc0;
-		newExplosion->hscale = 0x400;
-		newExplosion->rscale = 0x400;
+		newExplosion->speed = 192;
+		newExplosion->hscale = 1024;
+		newExplosion->rscale = 1024;
 	}
 	else if (type == BIG_BANG)
 	{
-		newExplosion->speed = 0x80;
-		newExplosion->hscale = 0x1000;
-		newExplosion->rscale = 0x1000;
+		newExplosion->speed = 128;
+		newExplosion->hscale = 4096;
+		newExplosion->rscale = 4096;
 	}
 	else if (type == HEY_MOMMA)
 	{
-		newExplosion->speed = 0x40;
-		newExplosion->hscale = 0x4000;
-		newExplosion->rscale = 0x4000;
+		newExplosion->speed = 64;
+		newExplosion->hscale = 16384;
+		newExplosion->rscale = 16384;
 	}
 
 }
@@ -175,7 +172,7 @@ void AddExplosion(VECTOR pos, int type)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void HandleExplosion(void)
 {
 	CAR_DATA *cp;
@@ -224,7 +221,7 @@ void HandleExplosion(void)
 
 		exp++;
 		i++;
-	};
+	}
 }
 
 
@@ -274,7 +271,7 @@ void HandleExplosion(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawAllExplosions(void)
 {
 	int i;
@@ -285,7 +282,7 @@ void DrawAllExplosions(void)
 			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
 
 		i++;
-	};
+	}
 }
 
 
@@ -332,79 +329,80 @@ void initExplosion(void)
 {
 	short sVar1;
 	short sVar2;
-	uint uVar3;
-	SVECTOR *pSVar4;
-	uint uVar5;
+	int uVar3;
+	SVECTOR *vert;
+	int uVar5;
 	int iVar6;
-	uint uVar7;
+	int uVar7;
 	int puVar8;
-	uint uVar9;
+	int uVar9;
 
 	uVar7 = 128;
-	pSVar4 = globemesh;
+	vert = globemesh;
 	uVar9 = 0;
 	do {
 		uVar3 = uVar7 & 0xfff;
 		uVar7 = uVar7 + 0x200;
 		uVar5 = uVar9 + 2;
 
-		pSVar4->vy = 5;
-		pSVar4[1].vy = -0x109;
+		vert[0].vy = 5;
+		vert[1].vy = -265;
 
-		pSVar4->vx = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 0x200 + 1] * 0x200);
-		pSVar4->vz = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 0x200] * 0x200);
+		vert[0].vx = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 512 + 1] * 512);
+		vert[0].vz = FIXEDH(rcossin_tbl[(uVar9 & 0xf) * 512] * 512);
 
-		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 0x1ea);
-		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 0x1ea);
+		vert[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 490);
+		vert[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 490);
 
-		pSVar4 = pSVar4 + 2;
+		vert += 2;
 		uVar9 = uVar5;
-	} while (uVar5 < 0x12);
+	} while (uVar5 < 18);
 
+	vert = globemesh + 18;
+	
 	uVar9 = 0x1300;
-	pSVar4 = globemesh + 18;
 	puVar8 = 0x1280;
 	iVar6 = 0x10;
 	do {
 		uVar3 = uVar9 & 0xfff;
-		uVar9 = uVar9 + 0x200;
-		uVar7 = (uint)puVar8 & 0xfff;
-		puVar8 = puVar8 + 0x200;
-		iVar6 = iVar6 + -2;
+		uVar9 = uVar9 + 512;
+		uVar7 = puVar8 & 0xfff;
+		puVar8 = puVar8 + 512;
+		iVar6 = iVar6 - 2;
 
-		pSVar4->vy = -0x109;
-		pSVar4[1].vy = -0x1f9;
+		vert[0].vy = -265;
+		vert[1].vy = -505;
 
-		pSVar4->vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 0x1ea);
-		pSVar4->vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 0x1ea);
+		vert[0].vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 490);
+		vert[0].vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 490);
 
-		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 0x14a);
-		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 0x14a);
+		vert[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 330);
+		vert[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 330);
 
-		pSVar4 = pSVar4 + 2;
-	} while (-1 < iVar6);
+		vert += 2;
+	} while (iVar6 > -1);
 
 	puVar8 = 9600;
-	pSVar4 = globemesh + 36;
+	vert = globemesh + 36;
 	uVar9 = 0x2500;
 	iVar6 = 0x10;
 	do {
 		uVar3 = (uint)puVar8 & 0xfff;
-		puVar8 = puVar8 + 0x200;
+		puVar8 = puVar8 + 512;
 		uVar7 = uVar9 & 0xfff;
-		uVar9 = uVar9 + 0x200;
-		iVar6 = iVar6 + -2;
+		uVar9 = uVar9 + 512;
+		iVar6 = iVar6 - 2;
 
-		pSVar4->vy = -0x1f9;
-		pSVar4[1].vy = -0x269;
+		vert[0].vy = -505;
+		vert[1].vy = -617;
 
-		pSVar4->vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 0x14a);
-		pSVar4->vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 0x14a);
+		vert[0].vx = FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * 330);
+		vert[0].vz = FIXEDH(rcossin_tbl[uVar7 * 2] * 330);
 
-		pSVar4[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 100);
-		pSVar4[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 100);
+		vert[1].vx = FIXEDH(rcossin_tbl[uVar3 * 2 + 1] * 100);
+		vert[1].vz = FIXEDH(rcossin_tbl[uVar3 * 2] * 100);
 
-		pSVar4 = pSVar4 + 2;
+		vert += 2;
 	} while (-1 < iVar6);
 }
 
@@ -531,12 +529,12 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	iVar9 = 1;
 
 	do {
-		iVar3 = (time * (0x37a0 - time) + 0x800 >> 0xc) + 0xc;
+		iVar3 = FIXEDH(time * (0x37a0 - time)) + 12;
 
-		i = CameraCnt * (0x40 - iVar12) & 0xfff;
-		SS.m[1][1] = (short)(iVar3 * hscale >> 0xc);
-		SS.m[0][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2 + 1] + 0x800 >> 0xc);
-		SS.m[2][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2] + 0x800 >> 0xc);
+		i = CameraCnt * (64 - iVar12) & 0xfff;
+		SS.m[1][1] = FIXED(iVar3 * hscale);
+		SS.m[0][0] = FIXEDH(FIXED(iVar3 * rscale) * rcossin_tbl[i * 2 + 1]);
+		SS.m[2][0] = FIXEDH(FIXED(iVar3 * rscale) * rcossin_tbl[i * 2]);
 		SS.m[0][2] = -SS.m[2][0];
 		SS.m[2][2] = SS.m[0][0];
 
@@ -556,13 +554,19 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 			*(uint *)&poly[0].r0 = uVar6;
 			*(uint *)&poly[1].r0 = uVar6;
 
+			setPolyFT4(&poly[0]);
+			setSemiTrans(&poly[0], 1);
+
+			setPolyFT4(&poly[1]);
+			setSemiTrans(&poly[1], 1);
+
 			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
 
 			gte_stsxy2(&poly[1].x0);
 
 			gte_stsz(&z);
 
-			iVar3 = 32; // 4 verts step?
+			
 
 			if (z > 32)
 			{
@@ -596,6 +600,8 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 
 			if ((i & 3) == 3)
 				iVar3 = 48;  // 6 verts step?
+			else
+				iVar3 = 32; // 4 verts step?
 
 			src = (SVECTOR *)((int)&src->vx + iVar3);
 
@@ -612,11 +618,11 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	uVar6 = (((uVar6 + (iVar9 * iVar9 >> 10)) >> 1) << 8 | (uVar6 + (((255 - iVar9) * (iVar9 >> 2) + iVar9 * uVar6) >> 8)) >> 1) << 8 | uVar6 | 0x2e000000;
 
 	do {
-		iVar3 = (time * (0x3930 - time) + 0x800 >> 0xc) + 0xc;
-		i = CameraCnt * (iVar12 * -0x5a + 0x40) & 0xfff;
-		SS.m[1][1] = (short)(iVar3 * hscale >> 0xc);
-		SS.m[0][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2 + 1] + 0x800 >> 0xc);
-		SS.m[2][0] = (short)((iVar3 * rscale >> 0xc) * (int)rcossin_tbl[i * 2] + 0x800 >> 0xc);
+		iVar3 = FIXEDH(time * (14640 - time)) + 12;
+		i = CameraCnt * (iVar12 * -90 + 64) & 0xfff;
+		SS.m[1][1] = FIXED(iVar3 * hscale);
+		SS.m[0][0] = FIXEDH(FIXED(iVar3 * rscale) * rcossin_tbl[i * 2 + 1]);
+		SS.m[2][0] = FIXEDH(FIXED(iVar3 * rscale) * rcossin_tbl[i * 2]);
 		SS.m[0][2] = -SS.m[2][0];
 		SS.m[2][2] = SS.m[0][0];
 
@@ -635,7 +641,7 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 			gte_rtpt();
 
 			*(uint *)&poly[1].r0 = uVar6;
-			*(uint *)&poly->r0 = uVar6;
+			*(uint *)&poly[0].r0 = uVar6;
 
 			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
 
@@ -648,10 +654,10 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				gte_ldv3(&src[3], &src[4], &src[5]);
 				gte_rtpt();
 
-				*(uint *)&poly->u0 = uVar8;
-				*(uint *)&poly->u1 = uVar7;
-				*(uint *)&poly->u2 = iVar11;
-				*(uint *)&poly->u3 = iVar10;
+				*(uint *)&poly[0].u0 = uVar8;
+				*(uint *)&poly[0].u1 = uVar7;
+				*(uint *)&poly[0].u2 = iVar11;
+				*(uint *)&poly[0].u3 = iVar10;
 				*(uint *)&poly[1].u0 = uVar8;
 				*(uint *)&poly[1].u1 = uVar7;
 				*(uint *)&poly[1].u2 = iVar11;
@@ -673,10 +679,10 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				current->primptr += sizeof(POLY_FT4) * 2;
 			}
 
-			iVar9 = 0x20;
-
 			if (i & 3 == 3)
 				iVar9 = 0x30;
+			else
+				iVar9 = 0x20;
 
 			src = (SVECTOR *)((int)&src->vx + iVar9);
 
