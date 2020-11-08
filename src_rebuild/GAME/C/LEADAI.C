@@ -14,8 +14,10 @@
 #include "DRAW.H"
 #include "MODELS.H"
 #include "MAIN.H"
+#include "PAD.H"
 
 #define NUM_STATES 17
+#define NUM_ITERATIONS 40
 
 static int randIndex;
 static int randState[NUM_STATES];
@@ -490,215 +492,177 @@ void LeadUpdateState(CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 1283
 
-// [D]
+// [D] [T] - again, sloppy driving skills
 ulong LeadPadResponse(CAR_DATA *cp)
 {
 	int iVar1;
 	int iVar2;
-	int steerDelta;
 	int iVar3;
+	int dif;
 	int avel;
+	int deltaAVel;
+	int deltaPos;
 	int deltaTh;
+	int steerDelta;
 	long t0;
 	uint uVar4;
+	int dx;
+	int dz;
+	int dist;
+	int diff;
 
 	t0 = 0;
-	deltaTh = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
+
+	dif = cp->hd.direction - cp->ai.l.targetDir;
+
+	deltaTh = (dif + 2048u & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
+
 	switch (cp->ai.l.dstate)
 	{
-		case 0:
-			t0 = 0x8010;
-			if (deltaTh < 0) {
-				t0 = 0x2010;
-			}
-			break;
+	case 0:
+		t0 = CAR_PAD_HANDBRAKE | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+		break;
+	case 1:
+		t0 = CAR_PAD_ACCEL;
+		break;
+	case 2:
+		t0 = CAR_PAD_ACCEL | ((avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 
-		case 1:
-			t0 = 0x40;
-			break;
+		if (ABS(avel) > 40)
+			t0 |= CAR_PAD_FASTSTEER;
 
-		case 2:
-			if (avel < 0) 
+		break;
+	case 3:
+		// FIXME: ugly spaghetti!
+
+		uVar4 = cp->ai.l.targetDir & 0xfff;
+
+		dx = -rcossin_tbl[uVar4 * 2 + 1] * (cp->hd.where.t[0] - cp->ai.l.targetX);
+		dz = rcossin_tbl[uVar4 * 2] * (cp->hd.where.t[2] - cp->ai.l.targetZ);
+
+		dist = FIXEDH(dx + dz);
+
+		iVar3 = pathParams[4];
+
+		if (iVar3 < dist || (iVar3 = -iVar3, dist < iVar3)) 
+			dist = iVar3;
+
+		steerDelta = FIXEDH(
+			pathParams[0] * FIXEDH(
+				-rcossin_tbl[uVar4 * 2 + 1] * FIXEDH(cp->st.n.linearVelocity[0])
+				+ rcossin_tbl[uVar4 * 2] * FIXEDH(cp->st.n.linearVelocity[2]))
+			+ pathParams[1] * avel
+			+ pathParams[2] * dist
+			+ pathParams[3] * deltaTh
+		) - cp->wheel_angle;
+
+		t0 = CAR_PAD_ACCEL;
+
+		if (steerDelta > 32)
+			t0 |= CAR_PAD_RIGHT;
+		if (steerDelta < -32)
+			t0 |= CAR_PAD_LEFT;
+
+		if (ABS(steerDelta) > 64)
+			t0 |= CAR_PAD_FASTSTEER;
+
+		if (steerDelta + 31u > 62)
+		{
+			if (ABS(avel) > 5)
 			{
-				if (avel < 0)
-					avel = -avel;
-
-				t0 = 0x2040;
-				if (0x28 < avel)
-					t0 = 0x2044;
-
+				if (t0 & CAR_PAD_ACCEL)
+					t0 |= CAR_PAD_WHEELSPIN;
 			}
-			else 
+		}
+
+		break;
+	case 4:
+		t0 = CAR_PAD_WHEELSPIN;
+		
+		diff = cp->ai.l.roadPosition - cp->hd.direction;
+
+		deltaPos = (diff + 2048u & 0xfff) - 2048;
+
+		if (cp->ai.l.roadForward < 0)
+			t0 = CAR_PAD_BRAKE;
+
+		if (deltaPos * cp->ai.l.roadForward < 1)
+			t0 |= CAR_PAD_LEFT;
+		else
+			t0 |= CAR_PAD_RIGHT;
+
+		if (ABS(deltaPos) > 200)
+		{
+			if (ABS(deltaTh) < 1848)
+				t0 |= CAR_PAD_FASTSTEER;
+		}
+
+		break;
+	case 5:
+		deltaAVel = ABS(avel);
+
+		if (ABS(cp->ai.l.panicCount) < 2 || deltaAVel > 150)
+		{
+			if (cp->hd.speed <= 100)
+				t0 |= CAR_PAD_ACCEL;
+		}
+		else 
+		{
+			t0 = (cp->hd.speed > 100) ? CAR_PAD_HANDBRAKE : CAR_PAD_WHEELSPIN;
+		}
+
+		if (deltaAVel < 80) 
+			t0 |= CAR_PAD_FASTSTEER;
+
+		if (cp->ai.l.panicCount < 1)
+		{
+			if (cp->ai.l.panicCount == 0)
 			{
-				if (avel < 0)
-					avel = -avel;
-
-				t0 = 0x8040;
-
-				if (0x28 < avel)
-					t0 = 0x8044;
-
-			}
-			break;
-		case 3:
-
-			uVar4 = cp->ai.l.targetDir & 0xfff;
-			iVar2 = FIXEDH(-rcossin_tbl[uVar4 * 2 + 1] * ((cp->hd).where.t[0] - cp->ai.l.targetX) + rcossin_tbl[uVar4 * 2] * ((cp->hd).where.t[2] - cp->ai.l.targetZ));
-			iVar3 = pathParams[4];
-
-			if ((pathParams[4] < iVar2) || (iVar3 = -pathParams[4], iVar2 < -pathParams[4])) 
-			{
-				iVar2 = iVar3;
-			}
-
-			steerDelta = FIXEDH(pathParams[0] * FIXEDH(-rcossin_tbl[uVar4 * 2 + 1] * FIXEDH((cp->st).n.linearVelocity[0]) + rcossin_tbl[uVar4 * 2] * FIXEDH((cp->st).n.linearVelocity[2])) + pathParams[1] * avel + pathParams[2] * iVar2 + pathParams[3] * deltaTh) - cp->wheel_angle;
-
-			t0 = 0x40;
-
-			if (0x20 < steerDelta)
-				t0 = 0x2040;
-
-			if (0x40 < steerDelta)
-				t0 = t0 | 4;
-
-			if (steerDelta < -0x20)
-				t0 = t0 | 0x8000;
-
-			if (steerDelta < -0x40)
-				t0 = t0 | 4;
-
-			if (0x3e < steerDelta + 0x1fU)
-				return t0;
-
-			if (avel < 0)
-				avel = -avel;
-
-			if (5 < avel)
-				return t0;
-
-			if ((t0 & 0x40U) == 0)
-				return t0;
-
-			goto LAB_LEAD__000e7d50;
-		case 4:
-
-			uVar4 = 0x20;
-			iVar2 = cp->ai.l.roadForward;
-			iVar3 = ((cp->ai.l.roadPosition - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
-
-			if (iVar2 < 0)
-				uVar4 = 0x80;
-
-			if (iVar3 * iVar2 < 1)
-				t0 = uVar4 | 0x8000;
-			else
-				t0 = uVar4 | 0x2000;
-
-			if (iVar3 < 0)
-				iVar3 = -iVar3;
-
-			if (200 < iVar3) 
-			{
-				if (deltaTh < 0)
-					deltaTh = -deltaTh;
-
-				if (deltaTh < 0x738)
-					t0 = t0 | 4;
-			}
-
-			break;
-		case 5:
-
-			iVar2 = cp->ai.l.panicCount;
-			iVar3 = avel;
-
-			if (avel < 0)
-				iVar3 = -avel;
-
-			iVar1 = iVar2;
-
-			if (iVar2 < 0) 
-				iVar1 = -iVar2;
-
-			if ((iVar1 < 2) || (0x96 < iVar3))
-			{
-				t0 = ((cp->hd).speed < 0x65) << 6;
-			}
-			else 
-			{
-				t0 = 0x20;
-
-				if (100 < (cp->hd).speed)
-					t0 = 0x10;
-
-			}
-
-			if (iVar3 < 0x50) 
-			{
-				t0 = t0 | 4;
-			}
-
-			if (iVar2 < 1) 
-			{
-				if (iVar2 < 0) 
+				if (deltaTh > 0)
 				{
-					if ((0x95 < iVar3) && (avel < 1)) 
-						return t0;
-
-					return t0 | 0x8000;
+					if (deltaAVel < 150 || avel > 0)
+						t0 |= CAR_PAD_LEFT;
 				}
 
-				if ((0 < deltaTh) && ((iVar3 < 0x96 || (0 < avel)))) 
-					t0 = t0 | 0x8000;
-
-
-				if (-1 < deltaTh)
-					return t0;
+				if (deltaTh > -1)
+					break;
 			}
-
-			if ((iVar3 < 0x96) || (avel < 0)) 
-				t0 = t0 | 0x2000;
-
-			break;
-		case 6:
-			uVar4 = 0x8000;
-			if (avel < 0)
-				uVar4 = 0x2000;
-
-			if ((cp->ai.l.roadForward < 0) && (100 < (cp->hd).speed))
-				t0 = uVar4 | 0x80;
 			else
-				t0 = uVar4 | 0x40;
-
-			break;
-		case 7:
-			if (avel < 0)
-				avel = -avel;
-
-			if (LeadValues.tAvelLimit <= avel) 
 			{
-				iVar3 = deltaTh;
-				if (deltaTh < 0)
-					iVar3 = -deltaTh;
+				if (deltaAVel < 150 || avel > 0)
+					t0 |= CAR_PAD_LEFT;
 
-				if (iVar3 < 0x401)
-					goto LAB_LEAD__000e7d50;
+				break;
 			}
+		}
 
-			t0 = 0x8004;
+		if (deltaAVel < 150 || avel < 0) 
+			t0 |= CAR_PAD_RIGHT;
 
-			if (deltaTh < 0)
-				t0 = 0x2004;
+		break;
+	case 6:
+		t0 = (avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT;
 
-		LAB_LEAD__000e7d50:
-			t0 = t0 | 0x20;
-			break;
+		if (cp->ai.l.roadForward < 0 && cp->hd.speed > 100)
+			t0 |= CAR_PAD_BRAKE;
+		else
+			t0 |= CAR_PAD_ACCEL;
 
-		case 8:
-			FakeMotion(cp);
-			t0 = 0;
-			break;
+		break;
+	case 7:
+		if (ABS(avel) > LeadValues.tAvelLimit)
+		{
+			if (ABS(deltaTh) > 1024)
+				t0 = CAR_PAD_FASTSTEER | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+		}
+
+		t0 |= CAR_PAD_WHEELSPIN;
+		break;
+
+	case 8:
+		FakeMotion(cp);
+		break;
 	}
 
 	return t0;
@@ -4093,22 +4057,17 @@ LAB_LEAD__000ec924:
 	/* end block 3 */
 	// End Line: 7436
 
-// [D]
+// [D] [T]
 ulong FreeRoamer(CAR_DATA *cp)
 {	
-	int i;
-	int playerCarId;
-	int seed;
-	int* piVar5;
-
 	LeadHorn(cp);
 	DamageBar.position = cp->totalDamage;
 
-	if ((((cp->hd).where.m[1][1] < 100) ||
-		((((cp->hd).wheel[1].surface & 7) == 1 && (((cp->hd).wheel[3].surface & 7) == 1)))) &&
-		(cp->ai.l.dstate != 8))
+	if (cp->ai.l.dstate != 8)
 	{
-		cp->totalDamage += 100;
+		// falling out of the world/sinking in water?
+		if (cp->hd.where.m[1][1] < 100 || ((cp->hd.wheel[1].surface & 7) == 1 && ((cp->hd.wheel[3].surface & 7) == 1)))
+			cp->totalDamage += 100;
 	}
 
 	cp->ai.l.ctt++;
@@ -4118,27 +4077,22 @@ ulong FreeRoamer(CAR_DATA *cp)
 
 	if (CameraCnt == 100)
 	{
-		playerCarId = player[0].playerCarId;
+		CAR_DATA *pCar = &car_data[player[0].playerCarId];
 
-		if (playerCarId >= 0) // [A] bug fix
+		if (CAR_INDEX(pCar) >= 0) // [A] bug fix
 		{
-			seed = (car_data[playerCarId].hd.where.t[0] + car_data[playerCarId].hd.where.t[2]) / (car_data[playerCarId].hd.speed + 1);
-
-			piVar5 = randState;
+			int seed = (pCar->hd.where.t[0] + pCar->hd.where.t[2]) / (pCar->hd.speed + 1);
 
 			randIndex = 0;
 
-			i = 16;
-			do {
-				randState[i--] = seed;
+			for (int i = NUM_STATES-1; i > -1; i--)
+			{
+				randState[i] = seed;
 				seed = seed * 0x751 + 0x10cc2af;
-			} while (-1 < i);
+			}
 
-			i = 39;
-			do {
-				i--;
+			for (int i = NUM_ITERATIONS-1; i > -1; i--)
 				leadRand();
-			} while (-1 < i);
 		}
 	}
 
@@ -4186,40 +4140,31 @@ ulong FreeRoamer(CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 10453
 
-// [D]
+// [D] [T]
 ulong hypot(long x, long y)
 {
-	bool bVar1;
-	int iVar2;
-	ulong uVar3;
-	int iVar4;
+	int t;
 
-	if (x < 0) {
-		x = -x;
-	}
-	bVar1 = x < y;
-	if (y < 0) {
-		y = -y;
-		bVar1 = x < y;
-	}
-	iVar2 = y;
-	if (bVar1) {
-		iVar2 = x;
+	x = ABS(x);
+	y = ABS(y);
+
+	if (x < y)
+	{
+		y = x;
 		x = y;
 	}
-	iVar4 = x >> 0xc;
 
 	if (x < 0x8000) 
 	{
-		uVar3 = SquareRoot0(x * x + iVar2 * iVar2);
+		t = SquareRoot0(x * x + y * y);
 	}
 	else 
 	{
-		iVar2 = SquareRoot0((iVar2 / iVar4) * (iVar2 / iVar4) + 0x1000800);
-		uVar3 = x + iVar4 * (iVar2 + -0x1000);
+		t = FIXED(x);
+		t = x + t * (SquareRoot0((y / t) * (y / t) + 0x1000800) - 0x1000);
 	}
 
-	return uVar3;
+	return t;
 }
 
 
