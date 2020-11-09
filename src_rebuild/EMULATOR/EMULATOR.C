@@ -3,10 +3,10 @@
 #include "EMULATOR_VERSION.H"
 #include "EMULATOR_GLOBALS.H"
 #include "EMULATOR_PRIVATE.H"
+
 #include "CRASHHANDLER.H"
 
 #include "LIBETC.H"
-#include "LIBPAD.H"
 
 //#include <stdio.h>
 //#include <string.h>
@@ -29,6 +29,8 @@
 #include <string.h>
 #include <SDL.h>
 
+#include "EMULATOR_TIMER.H"
+
 SDL_Window* g_window = NULL;
 TextureID vramTexture;
 TextureID whiteTexture;
@@ -45,8 +47,9 @@ SysCounter counters[3] = { 0 };
 //std::thread counter_thread;
 #endif
 
-double g_swapTime;
+timerCtx_t g_swapTimer;
 int g_swapInterval = SWAP_INTERVAL;
+
 int g_wireframeMode = 0;
 int g_texturelessMode = 0;
 int g_emulatorPaused = 0;
@@ -276,53 +279,12 @@ static int Emulator_InitialiseGLEW()
 	return TRUE;
 }
 
-#ifdef _WIN32
-LARGE_INTEGER	g_performanceFrequency;
-LARGE_INTEGER	g_clockStart;
-#else
-timeval			g_timeStart;
-#endif // _WIN32
-
-void Emulator_InitHPCTimer()
-{
-#ifdef _WIN32
-	QueryPerformanceFrequency(&g_performanceFrequency);
-#else
-	gettimeofday(&g_timeStart, NULL);
-#endif // _WIN32
-	
-}
-
-double Emulator_GetHPCTime(int reset = 0)
-{
-#ifdef _WIN32
-	LARGE_INTEGER curr;
-
-	QueryPerformanceCounter( &curr);
-
-	double value = double(curr.QuadPart - g_clockStart.QuadPart) / double(g_performanceFrequency.QuadPart);
-
-	if (reset)
-		g_clockStart = curr;
-#else
-	timeval curr;
-
-	gettimeofday(&curr, NULL);
-
-	double value = (float(curr.tv_sec - g_timeStart.tv_sec) + 0.000001f * float(curr.tv_usec - g_timeStart.tv_usec));
-
-	if (reset)
-		g_timeStart = curr;
-#endif // _WIN32
-
-	return value;
-}
-
 SDL_Thread* g_vblankThread = NULL;
 SDL_mutex* g_vblankMutex = NULL;
 volatile bool g_stopVblank = false;
 volatile int g_vblanksDone = 0;
 volatile int g_lastVblankCnt = 0;
+timerCtx_t g_vblankTimer;
 
 extern void(*vsync_callback)(void);
 
@@ -367,20 +329,19 @@ int Emulator_DoVSyncCallback()
 
 int vblankThreadMain(void* data)
 {
-	double vblankTime = Emulator_GetHPCTime();
+	Emulator_InitHPCTimer(&g_vblankTimer);
 
 	do
 	{
-		double delta = vblankTime + FIXED_TIME_STEP - Emulator_GetHPCTime();
-
-		if (delta < 0)
+		double delta = Emulator_GetHPCTime(&g_vblankTimer, 0);
+		
+		if (delta > FIXED_TIME_STEP)
 		{
 			// do vblank events
 			SDL_LockMutex(g_vblankMutex);
 
 			g_vblanksDone++;
-			vblankTime = Emulator_GetHPCTime();// SDL_GetTicks();
-
+			Emulator_GetHPCTime(&g_vblankTimer, 1);
 			SDL_UnlockMutex(g_vblankMutex);
 		}
 	} while (!g_stopVblank);
@@ -390,7 +351,7 @@ int vblankThreadMain(void* data)
 
 static int Emulator_InitialiseCore()
 {
-	Emulator_InitHPCTimer();
+	Emulator_InitHPCTimer(&g_swapTimer);
 	
 	g_vblankThread = SDL_CreateThread(vblankThreadMain, "vbl", NULL);
 
@@ -406,10 +367,6 @@ static int Emulator_InitialiseCore()
 		eprintf("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return FALSE;
 	}
-
-	
-
-	g_swapTime = Emulator_GetHPCTime();
 
 	return TRUE;
 }
@@ -1911,16 +1868,15 @@ void Emulator_WaitForTimestep(int count)
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
-		double curTime;
-		double waitTime = FIXED_TIME_STEP * count;
+		double delta;
 		do
 		{
 			SDL_Delay(0); // yield
-			curTime = Emulator_GetHPCTime();
-		} while (curTime - g_swapTime < waitTime);
-	}
+			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
+		} while (delta < FIXED_TIME_STEP * count);
 
-	g_swapTime = Emulator_GetHPCTime();
+		Emulator_GetHPCTime(&g_swapTimer, 1);
+	}
 }
 
 void Emulator_EndScene()
