@@ -1,0 +1,37 @@
+REDRIVER2 3.4 alpha
+
+Changelog since Oct 12 2000
+
+Gameplay:
+- Improved cop AI batter logic to better balance difficulty
+- Restored Tanner felony (can be seen in two Vegas missions)
+- Cops no longer can see player if on different heights
+- Fixed cop AI activation when player without felony touches roadblock car
+- Fixed and improved Cop AI navigation/pathfinding
+- Fixed player car drowning bug in tunnels
+- Fixed Tanner "drowning" by non-moving train in Vegas Ghost Town
+- Restored Tanner drowning movement in water
+- Fixed Tanner sitting on chairs
+- Easier jump in "Boat Jump"
+
+Effects/Visuals:
+- Improved draw distance and resolved glitches
+- Restored street lamp damage
+- Restored street light trails
+- Fixed some polygons not drawing (Chicago Goose island's white barrels)
+- Car lost hubcaps are now bound to single car
+- Restored Havana secret car elevator sound
+- Restored multiplayer follow camera
+- Restored car engine smoke
+- Leaves are now affected properly by player car and chased car
+
+Film Director:
+- Fix camera invalidation bugs
+- Added variable zoom for non-locked tripod camera
+- Added target height adjustment to locked tripod camera
+- Improved chase camera, restored height and distance editing
+
+Other:
+- PC version now automatically saves undercover campaign progress
+- PC version now has command line arguments
+- Memory card overlay removed
