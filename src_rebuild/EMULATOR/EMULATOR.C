@@ -292,6 +292,7 @@ int Emulator_DoVSyncCallback()
 {
 	SDL_LockMutex(g_vblankMutex);
 
+#if 0	// we now do vsync callback in vblank thread
 	int vblcnt = g_vblanksDone - g_lastVblankCnt;
 
 	static bool canDoCb = true;
@@ -310,7 +311,7 @@ int Emulator_DoVSyncCallback()
 
 		canDoCb = true;
 	}
-
+#endif
 	g_lastVblankCnt = g_vblanksDone;
 
 	if (g_swapInterval == 0)
@@ -320,7 +321,6 @@ int Emulator_DoVSyncCallback()
 		g_vblanksDone += 1;
 		g_lastVblankCnt += 1;
 	}
-
 
 	SDL_UnlockMutex(g_vblankMutex);
 
@@ -341,8 +341,12 @@ int vblankThreadMain(void* data)
 			SDL_LockMutex(g_vblankMutex);
 
 			g_vblanksDone++;
+
 			Emulator_GetHPCTime(&g_vblankTimer, 1);
 			SDL_UnlockMutex(g_vblankMutex);
+
+			if(vsync_callback)
+				vsync_callback();
 		}
 	} while (!g_stopVblank);
 
