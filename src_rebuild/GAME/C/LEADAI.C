@@ -492,24 +492,22 @@ void LeadUpdateState(CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 1283
 
-// [D] [T] - again, sloppy driving skills
+// [D] [T]
 ulong LeadPadResponse(CAR_DATA *cp)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
 	int dif;
 	int avel;
+	ulong t0;
+	int deltaVel;
 	int deltaAVel;
 	int deltaPos;
 	int deltaTh;
 	int steerDelta;
-	long t0;
-	uint uVar4;
 	int dx;
 	int dz;
 	int dist;
 	int diff;
+	int maxDist;
 
 	t0 = 0;
 
@@ -534,26 +532,24 @@ ulong LeadPadResponse(CAR_DATA *cp)
 
 		break;
 	case 3:
-		// FIXME: ugly spaghetti!
+		dx = -rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * (cp->hd.where.t[0] - cp->ai.l.targetX);
+		dz = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * (cp->hd.where.t[2] - cp->ai.l.targetZ);
 
-		uVar4 = cp->ai.l.targetDir & 0xfff;
+		deltaPos = FIXEDH(dx + dz);
 
-		dx = -rcossin_tbl[uVar4 * 2 + 1] * (cp->hd.where.t[0] - cp->ai.l.targetX);
-		dz = rcossin_tbl[uVar4 * 2] * (cp->hd.where.t[2] - cp->ai.l.targetZ);
+		maxDist = pathParams[4];
 
-		dist = FIXEDH(dx + dz);
+		if (deltaPos > maxDist || (maxDist = -maxDist, deltaPos < maxDist))
+			deltaPos = maxDist;
 
-		iVar3 = pathParams[4];
-
-		if (iVar3 < dist || (iVar3 = -iVar3, dist < iVar3)) 
-			dist = iVar3;
+		deltaVel = FIXEDH(
+			-rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * FIXEDH(cp->st.n.linearVelocity[0])
+			+ rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * FIXEDH(cp->st.n.linearVelocity[2]));
 
 		steerDelta = FIXEDH(
-			pathParams[0] * FIXEDH(
-				-rcossin_tbl[uVar4 * 2 + 1] * FIXEDH(cp->st.n.linearVelocity[0])
-				+ rcossin_tbl[uVar4 * 2] * FIXEDH(cp->st.n.linearVelocity[2]))
+			pathParams[0] * deltaVel
 			+ pathParams[1] * avel
-			+ pathParams[2] * dist
+			+ pathParams[2] * deltaPos
 			+ pathParams[3] * deltaTh
 		) - cp->wheel_angle;
 
@@ -615,30 +611,36 @@ ulong LeadPadResponse(CAR_DATA *cp)
 		if (deltaAVel < 80) 
 			t0 |= CAR_PAD_FASTSTEER;
 
-		if (cp->ai.l.panicCount < 1)
+		if (cp->ai.l.panicCount == 0)
 		{
-			if (cp->ai.l.panicCount == 0)
-			{
-				if (deltaTh > 0)
-				{
-					if (deltaAVel < 150 || avel > 0)
-						t0 |= CAR_PAD_LEFT;
-				}
+			// already straight ahead?
+			if (deltaTh == 0)
+				break;
 
-				if (deltaTh > -1)
-					break;
-			}
-			else
+			// straighten up if needed
+			if (deltaTh > 0)
 			{
 				if (deltaAVel < 150 || avel > 0)
 					t0 |= CAR_PAD_LEFT;
-
-				break;
+			}
+			else
+			{
+				if (deltaAVel < 150 || avel < 0)
+					t0 |= CAR_PAD_RIGHT;
 			}
 		}
-
-		if (deltaAVel < 150 || avel < 0) 
-			t0 |= CAR_PAD_RIGHT;
+		else if (cp->ai.l.panicCount < 0)
+		{
+			// panick to the left?
+			if (deltaAVel < 150 || avel > 0)
+				t0 |= CAR_PAD_LEFT;
+		}
+		else
+		{
+			// panick to the right?
+			if (deltaAVel < 150 || avel < 0)
+				t0 |= CAR_PAD_RIGHT;
+		}
 
 		break;
 	case 6:
