@@ -659,6 +659,28 @@ void LoadMission(int missionnum)
 #endif // PSX
 			memcpy(&LeadValues, routedata + 1001, sizeof(LEAD_PARAMETERS));
 
+#ifdef DEBUG
+			printInfo("---- LEAD VALUES ----\n");
+			printInfo("%d %d %d %d %d %d %d %d\n",
+				LeadValues.tEnd,
+				LeadValues.tAvelLimit,
+				LeadValues.tDist,
+				LeadValues.tDistMul,
+				LeadValues.tWidth,
+				LeadValues.tWidthMul,
+				LeadValues.tWidth80,
+				LeadValues.tWidth80Mul);
+			printInfo("%d %d %d %d %d %d %d %d\n",
+				LeadValues.hEnd,
+				LeadValues.dEnd,
+				LeadValues.hDist,
+				LeadValues.hDistMul,
+				LeadValues.hWidth,
+				LeadValues.hWidthMul,
+				LeadValues.hWidth80,
+				LeadValues.hWidth80Mul);
+#endif
+
 			leadAILoaded = 1;
 			pathAILoaded = 0;
 			CopsAllowed = 0;
