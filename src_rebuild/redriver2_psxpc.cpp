@@ -180,6 +180,26 @@ void printError(char *fmt, ...)
 
 int(*GPU_printf)(const char *fmt, ...);
 
+bool CtrlModifier;
+bool ShiftModifier;
+bool AltModifier;
+
+void CheckModifierKeys(int nKey, bool down)
+{
+	switch (nKey)
+	{
+	case SDL_SCANCODE_LCTRL:
+		CtrlModifier = down;
+		break;
+	case SDL_SCANCODE_LSHIFT:
+		ShiftModifier = down;
+		break;
+	case SDL_SCANCODE_LALT:
+		AltModifier = down;
+		break;
+	}
+}
+
 extern int gDrawDistance;
 
 int cursorX, cursorY, cursorOldX, cursorOldY;
@@ -269,6 +289,7 @@ extern void FunkUpDaBGMTunez(int funk);
 
 void GameDebugKeys(int nKey, bool down)
 {
+	CheckModifierKeys(nKey, down);
 	FreeCameraKeyboardHandler(nKey, down);
 
 	if (!down)
