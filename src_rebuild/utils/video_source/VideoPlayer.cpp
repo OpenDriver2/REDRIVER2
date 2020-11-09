@@ -1,5 +1,6 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
 #include <EMULATOR.H>
+#include <EMULATOR_TIMER.H>
 #include "DRIVER2.H"
 
 #include "C/PAD.H"
@@ -294,8 +295,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	alGenBuffers(4, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
-	int nextTime = SDL_GetTicks();
-	int oldTime = nextTime;
+	timerCtx_t fmvTimer;
+
+	Emulator_InitHPCTimer(&fmvTimer);
+
+	double nextFrameDelay = 0.0;
 
 	int frame_size;
 	int queue_counter = 0;
@@ -303,20 +307,19 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int fade_out = 0;
 	int done_frames = 0;
 
+	Emulator_GetHPCTime(&fmvTimer, 1);
+	
 	// main loop
 	while (true)
 	{
-		int curTime = SDL_GetTicks();
-		int deltaTime = curTime - oldTime;
+		double delta = Emulator_GetHPCTime(&fmvTimer, 1);
 
-		if (deltaTime > 1000)
-		{
-			nextTime += deltaTime;
-			oldTime = curTime;
-		}
+		if (delta > 1.0)
+			delta = 0.0;
 
+		nextFrameDelay -= delta;
 
-		if (curTime <= nextTime) // wait for frame
+		if (nextFrameDelay > 0) // wait for frame
 		{
 			Emulator_EndScene();
 			continue;
@@ -354,13 +357,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 					DrawFrame(stream_format, done_frames);
 
 				// set next step time
-				if (g_swapInterval == 0)
-					nextTime = curTime;
+				if (g_swapInterval == 1)
+					nextFrameDelay += double(avi_header.TimeBetweenFrames) / 1000000.0;
 				else
-					nextTime += avi_header.TimeBetweenFrames / 1000;
-
-				oldTime = curTime;
-
+					nextFrameDelay = 0.0;
+				
 				done_frames++;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
@@ -400,7 +401,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				if (queue_counter < 4)
 					QueueAudioBuffer(audioStreamBuffers[queue_counter++], audioStreamSource, frame_entry, audio_format, 0, frame_size);
 
-				if(queue_counter > 0 && state != AL_PLAYING)
+				if((queue_counter > 1 || numProcessed == -1) && state != AL_PLAYING)
 					alSourcePlay(audioStreamSource);
 			}
 		}
