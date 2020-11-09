@@ -414,6 +414,15 @@ void FMVPlayerInitGL()
 
 void FMVPlayerShutdownGL()
 {
+	RECT16 rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 512;
+	rect.h = 256;
+
+	ClearImage(&rect, 0, 0, 0);
+	Emulator_SwapWindow();
+
 	Emulator_DestroyTexture(g_FMVTexture);
 }
 
@@ -438,7 +447,6 @@ void InitSubtitles(const char* filename)
 	if (subFile)
 	{
 		fread(&g_NumSubtitles, sizeof(int), 1, subFile);
-		printInfo("Subtitle text count: %d\n", g_NumSubtitles);
 
 		fread(g_Subtitles, sizeof(g_Subtitles), g_NumSubtitles, subFile);
 
@@ -770,9 +778,20 @@ int FMV_main(RENDER_ARGS* args)
 
 	SetupDefDrawEnv(&draw, 0, 0, 512, 256);
 	SetupDefDispEnv(&disp, 0, 0, 512, 256);
+
 	draw.dfe = 1;
+
+	draw.clip.x = -512;
+	draw.clip.w = 1200;
+	draw.clip.y = -1;
+	draw.clip.h = 512;
+	
+	disp.isinter = 0;
+
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
+
+	Emulator_SetupClipMode(draw.clip);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{

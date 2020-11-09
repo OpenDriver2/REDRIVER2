@@ -1340,10 +1340,11 @@ void Emulator_Perspective3D(const float fov, const float width, const float heig
 
 void Emulator_SetupClipMode(const RECT16& rect)
 {
-	bool enabled = rect.x - activeDispEnv.disp.x > 0 ||
+	// [A] isinterlaced dirty hack for widescreen
+	bool enabled = activeDispEnv.isinter || (rect.x - activeDispEnv.disp.x > 0 ||
 		rect.y - activeDispEnv.disp.y > 0 ||
 		rect.w < activeDispEnv.disp.w - 1 ||
-		rect.h < activeDispEnv.disp.h - 1;
+		rect.h < activeDispEnv.disp.h - 1);
 
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
@@ -1440,6 +1441,7 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 {
 // TODO clear rect if it's necessary
 #if defined(OGL) || defined(OGLES)
+	
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
@@ -1888,9 +1890,6 @@ void Emulator_EndScene()
 	if (!begin_scene_flag)
 		return;
 
-	if (!vbo_was_dirty_flag)
-		return;
-
 	assert(begin_scene_flag);
 
 	if (g_wireframeMode)
@@ -1903,8 +1902,6 @@ void Emulator_EndScene()
 #endif
 
 	begin_scene_flag = false;
-	vbo_was_dirty_flag = false;
-
 	Emulator_SwapWindow();
 }
 
