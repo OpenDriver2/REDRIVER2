@@ -355,7 +355,7 @@ void GameDebugKeys(int nKey, bool down)
 
 #ifndef USE_CRT_MALLOC
 char g_Overlay_buffer[0x50000];		// 0x1C0000
-char g_Frontend_buffer[0x50000];	// 0xFB400
+char g_Frontend_buffer[0x60000];	// 0xFB400
 char g_Other_buffer[0x50000];		// 0xF3000
 char g_Other_buffer2[0x50000];		// 0xE7000
 OTTYPE g_OT1[OTSIZE];				// 0xF3000

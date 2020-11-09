@@ -1680,7 +1680,6 @@ void Emulator_DoPollEvent()
 }
 
 bool begin_scene_flag = false;
-bool vbo_was_dirty_flag = false;
 
 bool Emulator_BeginScene()
 {
@@ -1892,9 +1891,6 @@ void Emulator_EndScene()
 	if (!begin_scene_flag)
 		return;
 
-	if (!vbo_was_dirty_flag)
-		return;
-
 	assert(begin_scene_flag);
 
 	if (g_wireframeMode)
@@ -1907,7 +1903,7 @@ void Emulator_EndScene()
 #endif
 
 	begin_scene_flag = false;
-	vbo_was_dirty_flag = false;
+
 	Emulator_SwapWindow();
 }
 
@@ -2058,8 +2054,6 @@ void Emulator_UpdateVertexBuffer(const Vertex *vertices, int num_vertices)
 #else
 	#error
 #endif
-
-	vbo_was_dirty_flag = true;
 }
 
 void Emulator_DrawTriangles(int start_vertex, int triangles)
