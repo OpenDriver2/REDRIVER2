@@ -371,7 +371,7 @@ int main(int argc, char** argv)
 
 #ifdef USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
-	_frontend_buffer = (char*)malloc(0x50000);			// 0xFB400
+	_frontend_buffer = (char*)malloc(0x60000);			// 0xFB400
 	_other_buffer = (char*)malloc(0x50000);				// 0xF3000
 	_other_buffer2 = (char*)malloc(0x50000);			// 0xE7000
 	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000

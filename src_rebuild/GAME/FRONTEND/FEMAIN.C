@@ -1041,25 +1041,30 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	FEDrawCDicon();
 	Loadfile(fileName, _frontend_buffer + offset2);
 
-	setSprt(&extraSprt);
-	setXY0(&extraSprt, 100, 226);
-	setRGB0(&extraSprt, 128, 128, 128);
-	setUV0(&extraSprt, 0, 0);
-	setWH(&extraSprt, 255, 219);
-	setClut(&extraSprt, 960, 256);
-
 	rect.x = 896;
 	rect.y = 256;
 	rect.w = 64;
 	rect.h = 219;
-
+	
 	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
+	
 	DrawSync(0);
 	VSync(0);
 
-	setPolyFT3(&extraDummy);
-	setXY3(&extraDummy, -1, -1, -1, -1, -1, -1);
-	setTPage(&extraDummy, 0, 0, 896, 256);
+	if(bDrawExtra == 0)
+	{
+		setSprt(&extraSprt);
+		setPolyFT3(&extraDummy);
+
+		setXY0(&extraSprt, 100, 226);
+		setRGB0(&extraSprt, 128, 128, 128);
+		setUV0(&extraSprt, 0, 0);
+		setWH(&extraSprt, 255, 219);
+		setClut(&extraSprt, 960, 256);
+
+		setXY3(&extraDummy, -1, -1, -1, -1, -1, -1);
+		setTPage(&extraDummy, 0, 0, 896, 256);
+	}
 
 	bDrawExtra = 1;
 
@@ -3485,6 +3490,7 @@ int CutSceneCitySelectScreen(int bSetup)
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 
 	DrawSync(0);
+
 #ifdef PSX
 	DisplayOnScreenText();
 
