@@ -494,7 +494,12 @@ void InitCredits(const char* filename)
 				if (*++str == '\n')
 					numCreditsLines++;
 			}
-
+			else if(*str == '\n')
+			{
+				*str = '\0';
+				numCreditsLines++;
+			}
+			
 			str++;
 		}
 	}
