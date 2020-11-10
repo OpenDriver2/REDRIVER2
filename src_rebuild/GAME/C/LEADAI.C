@@ -1335,7 +1335,7 @@ void PosToIndex(int *normal, int *tangent, int intention, CAR_DATA *cp)
 
 /* WARNING: Type propagation algorithm not settling */
 
-// [D]
+// [D] [T] - seems to be working as expected
 void BlockToMap(MAP_DATA *data)
 {
 	static int carLength; // offset 0x14
@@ -1348,34 +1348,21 @@ void BlockToMap(MAP_DATA *data)
 	static int rdist; // offset 0x28
 	static MAP_DATA newdata; // offset 0x30
 
+	static int someVar;
 	static int offx;
 
-	int someTempVar;
+	bool overlap;
 
-	bool bVar1;
-	long uVar2;
-	long lVar3;
-	ulong uVar4;
-	VECTOR* pVVar5;
-	CAR_COSMETICS* pCVar6;
-	VECTOR* pVVar7;
-	CAR_DATA* cp;
-	int x;
-	int iVar8;
-	int iVar9;
-	int x_00;
-	long* plVar10;
-	int* tangent;
 	DRIVER2_CURVE* curve;
-	int* tangent_00;
-	int iVar11;
+	
+	int x;
 	int y;
-	int* normal;
-	int iVar12;
-	int* normal_00;
-	int uVar13;
-	int iVar14;
-	int iVar15;
+
+	int* ndist;
+	int* fdist;
+	int* nearest;
+	int* furthest;
+
 	int corners[4][3];
 	int temp;
 	int tdist;
@@ -1384,204 +1371,48 @@ void BlockToMap(MAP_DATA *data)
 	int localr;
 	int localrd;
 
-	pCVar6 = (data->cp->ap).carCos;
-	carLength = (int)(pCVar6->colBox).vz;
-	carWidth = (int)(pCVar6->colBox).vx;
+	int dx;
+	int dy;
+	int dz;
+	int v;
+	int angle;
+	int s;
+	int c;
+	int tangent;
+	int normal;
+
+	CAR_COSMETICS *pCarCos = data->cp->ap.carCos;
+
+	carLength = pCarCos->colBox.vz;
+	carWidth = pCarCos->colBox.vx;
 
 	switch (data->intention)
 	{
 		case 0:
 		case 2:
 		case 3:
-			pVVar7 = data->pos;
-			pVVar5 = data->base;
-			y = pVVar7->vx - pVVar5->vx;
-			x = pVVar5->vy - pVVar7->vy;
-			x_00 = pVVar7->vz - pVVar5->vz;
+			dx = data->pos->vx - data->base->vx;
+			dy = data->base->vy - data->pos->vy;
+			dz = data->pos->vz - data->base->vz;
 
-			if (x < 1)
-				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			if (dy < 1)
+				v = pCarCos->colBox.vy;
 			else
-				iVar15 = data->size->vy;
+				v = data->size->vy;
 
-			if (iVar15 < x)
+			if (dy > v)
 				return;
 
-			x = data->size->vx * road_s;
-			iVar15 = data->size->vz * road_c;
-			iVar9 = FIXEDH(y * road_s + x_00 * road_c);
+			normal = FIXEDH(dx * road_c - dz * road_s);
+			tangent = FIXEDH(dx * road_s + dz * road_c);
 
-			if (x < 0)
-				x = -x;
+			someVar = FIXEDH(ABS(data->size->vx * road_s) + ABS(data->size->vz * road_c));
 
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-
-			someTempVar = FIXEDH(x + iVar15);
-			x = FIXEDH(y * road_c - x_00 * road_s);
-
-			if ((data->intention == 0) || ((data->cp->ai.l).dstate == 3)) 
+			if (data->intention == 0 || data->cp->ai.l.dstate == 3) 
 			{
-				x_00 = iVar9;
-				if (iVar9 < 0)
-					x_00 = -iVar9;
+				v = (data->cp->hd.speed + 100) * 10;
 
-				y = ((data->cp->hd).speed + 100) * 10;
-
-				if (x_00 < y) 
-				{
-					x_00 = x;
-
-					if (x < 0) 
-						x_00 = -x;
-
-					if (x_00 < y) 
-					{
-						newdata.base = data->base;
-						newdata.pos = data->pos;
-						newdata.vel = data->vel;
-						newdata.size = data->size;
-						newdata.intention = 6;
-						newdata.map = data->local;
-						newdata.local = NULL;
-						newdata.cp = data->cp;
-						BlockToMap(&newdata);
-					}
-				}
-			}
-
-			if (iVar9 + someTempVar < 0)
-				return;
-
-			x_00 = data->size->vx * road_c;
-			y = data->size->vz * road_s;
-
-			if (x_00 < 0)
-				x_00 = -x_00;
-
-			if (y < 0)
-				y = -y;
-
-			pVVar5 = data->vel;
-			offx = FIXEDH(x_00 + y) + carWidth * 2;
-
-			if (pVVar5 != NULL) 
-			{
-				x_00 = pVVar5->vx * road_s + pVVar5->vz * road_c + 0x800;
-				y = FIXEDH(x_00) - (x_00 >> 0x1f) >> 1;
-				iVar9 = iVar9 + y;
-				x_00 = y;
-
-				if (y < 0)
-					x_00 = -y;
-
-				someTempVar = someTempVar + x_00;
-
-				if ((y < 0) && (data->intention == 0))
-					iVar9 = iVar9 / 2;
-	
-			}
-			rdist = (iVar9 - someTempVar) - carLength;
-
-			if (rdist < 0)
-				rdist = 0;
-
-			pVVar5 = data->vel;
-			left = x - offx;
-			x = x + offx;
-			right = x;
-			if (pVVar5 != NULL) 
-			{
-				x_00 = FIXEDH(pVVar5->vx * road_c + pVVar5->vz * road_s);
-				right = x + x_00;
-
-				if (x_00 < 1) 
-				{
-					left = left - x_00;
-					right = x;
-				}
-			}
-			break;
-		case 1:
-			pVVar5 = data->pos;
-			curve = Driver2CurvesPtr + (data->cp->ai.l).currentRoad + -0x4000;
-			y = pVVar5->vx - curve->Midx;
-			x = data->base->vy - pVVar5->vy;
-			x_00 = pVVar5->vz - curve->Midz;
-
-			if (x < 1)
-				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
-			else
-				iVar15 = data->size->vy;
-
-			if (iVar15 < x)
-				return;
-
-			lVar3 = ratan2(y, x_00);
-			iVar9 = data->size->vx;
-			uVar13 = lVar3 + 0x400U & 0xfff;
-			iVar12 = (int)rcossin_tbl[uVar13 * 2];
-			x = iVar9 * iVar12;
-			iVar8 = data->size->vz;
-			iVar11 = (int)rcossin_tbl[uVar13 * 2 + 1];
-			iVar15 = iVar8 * iVar11;
-			iVar14 = (((lVar3 - (data->cp->ai.l).base_Angle) + 0x800U & 0xfff) - 0x800) *
-				(data->cp->ai.l).base_Dir * ((int)(curve->inside * 0xb000) / 0x7000);
-			if (x < 0)
-				x = -x;
-
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-
-			someTempVar = FIXEDH(x + iVar15);
-
-			if (iVar14 + someTempVar < 0)
-				return;
-
-			iVar9 = iVar9 * iVar11;
-			iVar8 = iVar8 * iVar12;
-			if (iVar9 < 0)
-				iVar9 = -iVar9;
-
-			if (iVar8 < 0)
-				iVar8 = -iVar8;
-
-			pVVar5 = data->vel;
-			offx = FIXEDH(iVar9 + iVar8) + carWidth;
-
-			if (pVVar5 != NULL) 
-			{
-				x = pVVar5->vx * iVar12 + pVVar5->vz * iVar11 + 0x800;
-				iVar15 = FIXEDH(x) - (x >> 0x1f) >> 1;
-				iVar14 = iVar14 + iVar15;
-				x = iVar15;
-
-				if (iVar15 < 0)
-					x = -iVar15;
-
-				someTempVar = someTempVar + x;
-				if (iVar15 < 0)
-					iVar14 = iVar14 / 2;
-
-			}
-			x = (iVar14 - someTempVar) - carLength;
-
-			if (x < 0)
-				x = 0;
-
-			iVar15 = (data->cp->ai.l).base_Normal;
-			uVar2 = hypot(y, x_00);
-			cp = data->cp;
-			y = (iVar15 - uVar2) * cp->ai.l.base_Dir;
-			x_00 = ((cp->hd).speed + 100) * 10;
-			if (x < x_00)
-			{
-				iVar15 = y;
-
-				if (y < 0) 
-					iVar15 = -y;
-
-				if (iVar15 < x_00) 
+				if (v > ABS(tangent) && v > ABS(normal))
 				{
 					newdata.base = data->base;
 					newdata.pos = data->pos;
@@ -1590,212 +1421,306 @@ void BlockToMap(MAP_DATA *data)
 					newdata.intention = 6;
 					newdata.map = data->local;
 					newdata.local = NULL;
-					newdata.cp = cp;
+					newdata.cp = data->cp;
+
 					BlockToMap(&newdata);
 				}
 			}
 
-			pVVar5 = data->vel;
-			left = y - offx;
-			y = y + offx;
-			right = y;
-			rdist = x;
+			if (tangent + someVar < 0)
+				return;
 
-			if (pVVar5 != NULL)
+			if (data->vel != NULL)
 			{
-				x = FIXEDH(pVVar5->vx * iVar11 + pVVar5->vz * iVar12);
-				right = y + x;
-				if (x < 1) 
+				v = (data->vel->vx * road_s) + (data->vel->vz * road_c) + 2048;
+				v = FIXEDH(v) - (v >> 31) >> 1;
+
+				tangent += v;
+				someVar += ABS(v);
+
+				if (v < 0 && data->intention == 0)
+					tangent /= 2;
+			}
+
+			rdist = (tangent - someVar) - carLength;
+
+			if (rdist < 0)
+				rdist = 0;
+
+			offx = FIXEDH(ABS(data->size->vx * road_c) + ABS(data->size->vz * road_s)) + carWidth * 2;
+
+			left = normal - offx;
+			right = normal + offx;
+
+			if (data->vel != NULL)
+			{
+				v = FIXEDH((data->vel->vx * road_c) + (data->vel->vz * road_s));
+
+				if (v < 1)
 				{
-					left = left - x;
-					right = y;
+					left -= v;
+				}
+				else
+				{
+					right += v;
 				}
 			}
 
+			ldist = rdist;
+			break;
+		case 1:
+			curve = Driver2CurvesPtr + data->cp->ai.l.currentRoad - 0x4000;
+
+			dx = data->pos->vx - curve->Midx;
+			dy = data->base->vy - data->pos->vy;
+			dz = data->pos->vz - curve->Midz;
+
+			if (dy < 1)
+				v = pCarCos->colBox.vy;
+			else
+				v = data->size->vy;
+
+			if (dy > v)
+				return;
+
+			tangent = ratan2(dx, dz);
+			
+			s = (int)rcossin_tbl[((tangent + 1024u) & 0xfff) * 2];
+			c = (int)rcossin_tbl[((tangent + 1024u) & 0xfff) * 2 + 1];
+
+			tangent = (((tangent - data->cp->ai.l.base_Angle) + 2048u & 0xfff) - 2048) *
+				data->cp->ai.l.base_Dir * (((int)curve->inside * 0xb000) / 0x7000);
+
+			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
+
+			if (tangent + someVar < 0)
+				return;
+
+			if (data->vel != NULL)
+			{
+				v = (data->vel->vx * s) + (data->vel->vz * c) + 2048;
+				v = FIXEDH(v) - (v >> 31) >> 1;
+				
+				tangent += v;
+				someVar += ABS(v);
+
+				if (v < 0)
+					tangent /= 2;
+
+			}
+
+			rdist = (tangent - someVar) - carLength;
+
+			if (rdist < 0)
+				rdist = 0;
+
+			normal = (data->cp->ai.l.base_Normal - hypot(dx, dz)) * data->cp->ai.l.base_Dir;
+			v = (data->cp->hd.speed + 100) * 10;
+
+			if (v > rdist && v > ABS(normal))
+			{
+				newdata.base = data->base;
+				newdata.pos = data->pos;
+				newdata.vel = data->vel;
+				newdata.size = data->size;
+				newdata.intention = 6;
+				newdata.map = data->local;
+				newdata.local = NULL;
+				newdata.cp = data->cp;
+
+				BlockToMap(&newdata);
+			}
+
+			offx = FIXEDH(ABS(data->size->vx * c) + ABS(data->size->vy * s)) + carWidth;
+
+			left = normal - offx;
+			right = normal + offx;
+
+			if (data->vel != NULL)
+			{
+				v = FIXEDH(data->vel->vx * c + data->vel->vz * s);
+
+				if (v < 1) 
+				{
+					left -= v;
+					
+				}
+				else
+				{
+					right += v;
+				}
+			}
+
+			ldist = rdist;
 			break;
 		case 4:
 		case 5:
 		case 6:
-			pVVar7 = data->pos;
-			pVVar5 = data->base;
-			x_00 = pVVar7->vx - pVVar5->vx;
-			x = pVVar5->vy - pVVar7->vy;
-			y = pVVar7->vz - pVVar5->vz;
+			dx = data->pos->vx - data->base->vx;
+			dy = data->base->vy - data->pos->vy;
+			dz = data->pos->vz - data->base->vz;
 
-			if (x < 1)
-				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			if (dy < 1)
+				v = pCarCos->colBox.vy;
 			else
-				iVar15 = data->size->vy;
+				v = data->size->vy;
 	
-			if (iVar15 < x)
+			if (dy > v)
 				return;
 	
-			uVar2 = hypot(x_00, y);
-			lVar3 = ratan2(x_00, y);
-			uVar13 = (lVar3 + 0x800U & 0xfff) - 0x800;
-			pVVar5 = data->size;
-			iVar9 = pVVar5->vx;
-			x = iVar9 * (int)rcossin_tbl[(uVar13 & 0xfff) * 2];
-			iVar15 = pVVar5->vz * (int)rcossin_tbl[(uVar13 & 0xfff) * 2 + 1];
+			angle = (ratan2(dx, dz) + 2048u & 0xfff) - 2048;
 
-			if (x < 0)
-				x = -x;
+			s = (int)rcossin_tbl[(angle & 0xfff) * 2];
+			c = (int)rcossin_tbl[(angle & 0xfff) * 2 + 1];
 
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-	
-			someTempVar = FIXEDH(x + iVar15);
-			x = (uVar2 - someTempVar) - carLength;
+			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
 
-			if ((x < 2000) ||
-				(iVar15 = iVar9 * (int)rcossin_tbl[(uVar13 & 0xfff) * 2 + 1], data->intention == 6)) 
+			tangent = (hypot(dx, dz) - someVar) - carLength;
+
+			if (tangent < 2000 || data->intention == 6)
 			{
-				corners[0][0] = x_00 + iVar9;
-				corners[2][0] = x_00 - pVVar5->vx;
-				corners[0][1] = y + pVVar5->vz;
-				corners[1][1] = y - pVVar5->vz;
+				corners[0][0] = dx + data->size->vx;
+				corners[0][1] = dz + data->size->vz;
+				corners[2][0] = dx - data->size->vx;
+				corners[1][1] = dz - data->size->vz;
+
 				corners[1][0] = corners[0][0];
 				corners[2][1] = corners[0][1];
 				corners[3][0] = corners[2][0];
 				corners[3][1] = corners[1][1];
+
 				corners[0][2] = ratan2(corners[0][0], corners[0][1]);
 				corners[1][2] = ratan2(corners[1][0], corners[1][1]);
 				corners[2][2] = ratan2(corners[2][0], corners[2][1]);
 				corners[3][2] = ratan2(corners[3][0], corners[3][1]);
 
-				bVar1 = false;
-				x_00 = 1;
+				overlap = false;
+				
 				left = 0;
 				right = 0;
-				x = corners[0][2] + 0x800 >> 10;
-				//tangent = corners + 5;	// corners[1][2] = 5
+				
+				int quad1 = corners[0][2] + 2048 >> 10;
+				//fdist = corners + 5;	// corners[1][2] = 5
 
-				do {
-					y = corners[x_00][2];
-
-					if (0 < (int)(((corners[left][2] - y) + 0x800U & 0xfff) - 0x800)) 
-						left = x_00;
-
-					if (0 < (int)(((y - corners[right][2]) + 0x800U & 0xfff) - 0x800))
-						right = x_00;
-
-					iVar15 = y + 0x800 >> 10;
-					if ((x != iVar15) && (x + (x - (corners[0][2] + 0x800 >> 0x1f) >> 1) * -2 == iVar15 + (iVar15 - (y + 0x800 >> 0x1f) >> 1) * -2))
-						bVar1 = true;
-
-					x_00 = x_00 + 1;
-					//tangent = tangent + 3;
-				} while (x_00 < 4);
-
-				if (bVar1) 
+				for (int i = 1; i < 4; i++)
 				{
+					y = corners[i][2];
+
+					if (0 < (int)(((corners[left][2] - y) + 2048u & 0xfff) - 2048))
+						left = i;
+
+					if (0 < (int)(((y - corners[right][2]) + 2048u & 0xfff) - 2048))
+						right = i;
+
+					int quad2 = y + 2048 >> 10;
+
+					if ((quad1 != quad2) && (quad1 + (quad1 - (corners[0][2] + 2048 >> 0x1f) >> 1) * -2 == quad2 + (quad2 - (y + 2048 >> 0x1f) >> 1) * -2))
+						overlap = true;
+
+					//fdist = fdist + 3;
+				};
+
+				if (overlap) 
+				{
+					temp = angle - data->cp->hd.direction;
+
+					left = temp - 512;
+					right = temp + 512;
+
 					rdist = 0;
-					right = uVar13 - (data->cp->hd).direction;
-					left = right + -0x200;
-					right = right + 0x200;
 				}
 				else if (left + right == 3)
 				{
-					uVar2 = 0xffffffff;
-					x = 0;
-					do {
+					tangent = -1;
 
-						if (((x != left) && (x != right)) && ((uVar4 = hypot(corners[x][0], corners[x][1]), uVar4 < uVar2 || (uVar2 == 0xffffffff))))
+					for (int i = 0; i < 4; i++)
+					{
+						if (i != left && i != right)
 						{
-							uVar2 = uVar4;
+							temp = hypot(corners[i][0], corners[i][1]);
+
+							if (tangent < temp || tangent == -1)
+								tangent = temp;
 						}
+					}
 
-						x = x + 1;
+					left = corners[left][2] - data->cp->hd.direction;
+					right = corners[right][2] - data->cp->hd.direction;
 
-					} while (x < 4);
-
-					x = (data->cp->hd).direction;
-					left = corners[left][2] - x;
-					right = corners[right][2] - x;
-					rdist = uVar2;
+					rdist = tangent;
 				}
 				else
 				{
-					lVar3 = ratan2(corners[left][0] - corners[right][0], corners[left][1] - corners[right][1]);
-					uVar13 = (lVar3 + 0xc00U & 0xfff) - 0x800 & 0xfff;
+					dx = corners[left][1] - corners[right][1];
+					dy = corners[left][0] - corners[right][0];
 
-					y = (data->cp->hd).direction;
+					int theta = (ratan2(dy, dx) + 3072u & 0xfff) - 2048;
 
-					rdist = FIXEDH(rcossin_tbl[uVar13 * 2] * corners[left][0] + rcossin_tbl[uVar13 * 2 + 1] * corners[left][1]);
+					int vx = rcossin_tbl[(theta & 0xfff) * 2] * corners[left][0];
+					int vz = rcossin_tbl[(theta & 0xfff) * 2 + 1] * corners[left][1];
 
-					left = corners[left][2] - y;
-					right = corners[right][2] - y;
+					left = corners[left][2] - data->cp->hd.direction;
+					right = corners[right][2] - data->cp->hd.direction;
 
-					if (rdist < 0)
-						rdist = -rdist;
-
+					rdist = ABS(FIXEDH(vx + vz));
 				}
 
-				left = (left + 0x800U & 0xfff) - 0x800;
-				right = (right + 0x800U & 0xfff) - 0x800;
+				left = (left + 2048u & 0xfff) - 2048;
+				right = (right + 2048u & 0xfff) - 2048;
 			}
 			else
 			{
-				x_00 = pVVar5->vz * (int)rcossin_tbl[(uVar13 & 0xfff) * 2];
-				y = ((uVar13 - (data->cp->hd).direction) + 0x800 & 0xfff) - 0x800;
+				normal = ((angle - data->cp->hd.direction) + 2048 & 0xfff) - 2048;
 
-				if (iVar15 < 0)
-					iVar15 = -iVar15;
+				offx = ratan2(FIXEDH(ABS(data->size->vx * c) + ABS(data->size->vz * s)) + carWidth, tangent);
 
-				if (x_00 < 0)
-					x_00 = -x_00;
+				left = normal - offx;
+				right = normal + offx;
 
-				offx = ratan2(FIXEDH(iVar15 + x_00) + carWidth, x);
-				left = y - offx;
-				right = y + offx;
-				rdist = x;
+				rdist = tangent;
 			}
 
+			ldist = rdist;
 			break;
-		default:
-			goto LAB_LEAD__000e97b4;
 	}
-
-	ldist = rdist;
 
 	switch (data->intention)
 	{
 		case 2:
 		case 3:
-			tangent = &rdist;
-			tangent_00 = &ldist;
-			normal = &left;
-			normal_00 = &right;
-
-			if (data->intention != 2)
+			if (data->intention == 2)
 			{
-				normal_00 = &left;
-				tangent = &ldist;
-				tangent_00 = &rdist;
-				normal = &right;
+				nearest = &left;
+				furthest = &right;
+				ndist = &ldist;
+				fdist = &rdist;
+			}
+			else
+			{
+				nearest = &right;
+				furthest = &left;
+				ndist = &rdist;
+				fdist = &ldist;
 			}
 
-			x = LeadValues.hWidth + (data->cp->hd).speed * LeadValues.hWidthMul;
+			x = LeadValues.hWidth + data->cp->hd.speed * LeadValues.hWidthMul;
 
-			if ((x < ldist) && (x < rdist))  // [A] was rdist; ghidra bug?
+			if (x < ldist && x < rdist)
 			{
-				*tangent_00 = *tangent_00 + carLength * 2;
-				x = *tangent + carLength * -2;
-				*tangent = x;
+				*ndist += carLength * 2;
+				*fdist = ABS(*fdist + carLength * -2);
 
-				if (x < 0)
-					*tangent = 0;
+				left -= carWidth;
+				right -= carWidth;
 
-				left = left - carWidth;
-				right = right + carWidth;
-				temp = *normal;
-				tdist = *tangent_00 + someTempVar * 2;
+				temp = *nearest;
+				tdist = *ndist + someVar * 2;
 
 				PosToIndex(&temp, &tdist, data->intention, data->cp);
-				PosToIndex(normal, tangent_00, data->intention, data->cp);
-				PosToIndex(normal_00, tangent, data->intention, data->cp);
+				PosToIndex(nearest, ndist, data->intention, data->cp);
+				PosToIndex(furthest, fdist, data->intention, data->cp);
 
-				*normal = temp;
+				*nearest = temp;
 				break;
 			}
 		case 0:
@@ -1806,82 +1731,67 @@ void BlockToMap(MAP_DATA *data)
 		case 4:
 			locall = left;
 			localr = right;
-			localld = rdist;
+			localld = ldist;
 			localrd = rdist;
+
 			PosToIndex(&locall, &localld, 6, data->cp);
 			PosToIndex(&localr, &localrd, 6, data->cp);
 
-			uVar13 = locall;
-
 			if (localr < locall) 
 			{
-				while ((int)uVar13 < 0x29) 
+				for (int i = locall; i <= 40; i++)
 				{
-					if ((uVar13 < 0x29) && (localld < data->local[uVar13])) 
-						data->local[uVar13] = localld;
-
-					uVar13 = uVar13 + 1;
+					if (i <= 40 && localld < data->local[i])
+						data->local[i] = localld;
 				}
 
-				left = -0x800;
+				left = -2048;
 				PosToIndex(&locall, &localld, 6, data->cp);
-				uVar13 = locall;
-
-				if (localr < locall)
-					goto LAB_LEAD__000e96f0;
-
 			}
-			while ((int)uVar13 <= localr) 
+
+			for (int i = locall; i <= localr; i++)
 			{
-				if ((uVar13 < 0x29) && (localld < data->local[uVar13]))
-					data->local[uVar13] = localld;
-
-				uVar13 = uVar13 + 1;
+				if (i <= 40 && localld < data->local[i])
+					data->local[i] = localld;
 			}
+			/*
+			* 
+			* FALLTHROUGH
+			* 
+			*/
 		case 5:
 		case 6:
-		LAB_LEAD__000e96f0:
 			PosToIndex(&left, &ldist, data->intention, data->cp);
 			PosToIndex(&right, &rdist, data->intention, data->cp);
-			x = ldist;
-
+			
 			if (right < left) 
 			{
-				while (left < 0x29)
+				for (int i = left; i <= 40; i++)
 				{
-					if (((-1 < left) && (left < 0x29)) && (x < data->map[left])) 
-						data->map[left] = x;
-
-					left = left + 1;
+					if ((i >= 0 && i <= 40) && ldist < data->map[i])
+						data->map[i] = ldist;
 				}
-
-				left = -0x800;
+				
+				left = -2048;
 				PosToIndex(&left, &ldist, data->intention, data->cp);
 			}
 
 			break;
-		default:
-			break;
 	}
-LAB_LEAD__000e97b4:
-	y = right;
-	x = left;
-	x_00 = ldist;
+
+	tangent = ldist;
+
+	int dtan = 0;
 
 	if (left < right)
-		iVar15 = (rdist - ldist) / (right - left);
-	else 
-		iVar15 = 0;
+		dtan = (rdist - ldist) / (right - left);
 
-	while (x <= y) 
+	for (int i = left; i <= right; i++)
 	{
-		if (((-1 < x) && (x < 0x29)) && (x_00 < data->map[x]))
-		{
-			data->map[x] = x_00;
-		}
+		if ((i >= 0 && i <= 40) && tangent < data->map[i])
+			data->map[i] = tangent;
 
-		x = x + 1;
-		x_00 = x_00 + iVar15;
+		tangent += dtan;
 	}
 }
 
@@ -1953,21 +1863,11 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
 	int normal;
 	int tangent;
 
-	dx = x - basePos->vx;
+	dx = ABS(x - basePos->vx);
+	dz = ABS(z - basePos->vz);
 
-	if (dx < 0)
-		dx = -dx;
-
-	dz = z - basePos->vz;
-
-	if (dx < 3000)
-	{
-		if (dz < 0)
-			dz = -dz;
-
-		if (dz < 3000)
-			return 1;
-	}
+	if (dz < 3000)
+		return 1;
 
 	switch (intention) 
 	{
@@ -1976,23 +1876,24 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
 		case 3:
 			tangent = FIXEDH(dx * road_s + dz * road_c);
 			normal = FIXEDH(dx * road_c - dz * road_s);
+
 			PosToIndex(&normal, &tangent, intention, cp);
 			break;
 		case 1:
 			curve = Driver2CurvesPtr + cp->ai.l.currentRoad - 0x4000;
 
-			x = x - curve->Midx;
-			z = z - curve->Midz;
+			dx = x - curve->Midx;
+			dz = z - curve->Midz;
 
-			tangent = (((ratan2(x, z) - cp->ai.l.base_Angle) + 0x800U & 0xfff) - 0x800) * cp->ai.l.base_Dir *(((int)curve->inside * 0xb000) / 0x7000);
-			normal = (cp->ai.l.base_Normal - hypot(x, z)) * cp->ai.l.base_Dir;
+			tangent = (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048u & 0xfff) - 2048) * cp->ai.l.base_Dir *(((int)curve->inside * 0xb000) / 0x7000);
+			normal = (cp->ai.l.base_Normal - hypot(dx, dz)) * cp->ai.l.base_Dir;
 
 			PosToIndex(&normal, &tangent, intention, cp);
 			break;
 		case 4:
 		case 5:
 			tangent = hypot(dx, dz);
-			normal = ((ratan2(dx, dz) - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
+			normal = ((ratan2(dx, dz) - cp->hd.direction) + 2048u & 0xfff) - 2048;
 
 			PosToIndex(&normal, &tangent, intention, cp);
 
@@ -2006,13 +1907,13 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
 			return 0;
 	}
 
-	if (0x5800 < tangent + 0x800U)
+	if ((tangent + 2048) > 0x5800)
 		return 0;
 
 	if (normal < -4)
 		return 0;
 
-	if (normal < 0x2e)
+	if (normal <= 45)
 		return 1;
 
 	return 0;
