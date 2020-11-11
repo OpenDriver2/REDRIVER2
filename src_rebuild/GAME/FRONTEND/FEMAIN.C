@@ -16,6 +16,7 @@
 #include "C/PRES.H"
 #include "C/SOUND.H"
 #include "C/DEBRIS.H"
+#include "C/E3STUFF.H"
 #include "C/FMVPLAY.H"
 #include "C/SCORES.H"
 #include "C/LOADSAVE.H"
@@ -48,7 +49,7 @@ screenFunc fpUserFunctions[] = {
 	GamePlayScreen,
 	GameNameScreen,
 	CheatNumlayerSelect,
-	BonusGalleryScreen
+
 };
 
 char* gfxNames[4] = {
@@ -412,6 +413,12 @@ void SetVariable(int var)
 			GameType = GAME_IDLEDEMO;
 			gCurrentMissionNumber = (value + 400);
 			break;
+		case 14: // [A]
+		{
+			ShowBonusGallery();
+
+			LoadFrontendScreens();
+		}
 	}
 }
 
@@ -1422,12 +1429,10 @@ int HandleKeyPress(void)
 	{
 		if (ScreenDepth > 0)
 		{
-			if (!bDoneAllready) {
+			if (!bDoneAllready)
 				FESound(0);
-			}
-			else {
+			else 
 				bDoneAllready = 0;
-			}
 
 			if (--ScreenDepth == 0)
 			{
@@ -4290,11 +4295,11 @@ int CheatScreen(int bSetup)
 		0x121,
 		0x11E,
 		0x11F,
-		(40 & 0xFF) | (1 << 8)
+		0,
 	};
 
 	int hackLookup2[5] = {
-		0xC01, 0xC00, -1, -1, -1
+		0xC01, 0xC00, -1, -1, 0xE00
 	};
 
 	if (bSetup == 0)
@@ -4442,77 +4447,6 @@ int CheatScreen(int bSetup)
 	pCurrScreen->numButtons = 0;
 	currSelIndex = 0;
 
-	return 0;
-}
-
-int g_GalleryImage = 0;
-
-char* GalleryImageNames[] = {
-	"GFX\\GAL\\IMG1.TIM",
-	"GFX\\GAL\\IMG2.TIM",
-	"GFX\\GAL\\IMG3.TIM"
-};
-
-// [A]
-int BonusGalleryScreen(int bSetup)
-{
-	char tmpStr[64];
-	int imageChanged;
-	RECT16 rect;
-
-	imageChanged = 0;
-	
-	if(bSetup)
-	{
-		bDoingScores = 1;
-		g_GalleryImage = 0;
-		imageChanged = 1;
-	}
-
-	if (fePad & 0x10)
-	{
-		// goint back
-		bDoingScores = 0;
-		LoadFrontendScreens();
-		//LoadBackgroundFile("DATA\\GFX.RAW");
-	}
-	else if(fePad & 0x8000)
-	{
-		imageChanged = 1;
-		g_GalleryImage--;
-		if (g_GalleryImage < 0)
-			g_GalleryImage = 2;
-
-		FESound(3);
-	}
-	else if(fePad & 0x2000)
-	{
-		imageChanged = 1;
-		g_GalleryImage++;
-
-		if (g_GalleryImage > 2)
-			g_GalleryImage = 0;
-
-		FESound(3);
-	}
-
-	if(imageChanged)
-	{
-		FEDrawCDicon();
-		LoadfileSeg(GalleryImageNames[g_GalleryImage], _overlay_buffer, 20, 0x4ff80);
-		LoadClut((u_long*)_overlay_buffer, 640, 511);
-
-		DrawSync(0);
-		setRECT16(&rect, 640, 0, 320, 511);
-
-		LoadImage(&rect, (u_long*)&_overlay_buffer[512]);
-
-		DrawSync(0);
-	}
-
-	//sprintf(tmpStr, "Gallery %d of %d", g_GalleryImage + 1, 3);
-	//FEPrintStringSized(tmpStr, 10, 10, 4, 0, 128, 64, 0 );
-	
 	return 0;
 }
 

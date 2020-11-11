@@ -6,6 +6,7 @@
 #include "SYSTEM.H"
 #include "PRES.H"
 #include "PAUSE.H"
+#include "SOUND.H"
 
 #undef v0
 
@@ -171,7 +172,7 @@ void FadeInHiresScreen(char *filename)
 	DrawSync(0);
 	setRECT16(&rect, 640, 0, 320, 511);
 
-	LoadImage(&rect, (u_long*)&_overlay_buffer[512]);
+	LoadImage(&rect, (u_long*)&_overlay_buffer[524]);
 
 	DrawSync(0);
 	SetDispMask(1);
@@ -199,8 +200,6 @@ void FadeInHiresScreen(char *filename)
 				setRGB0(prim, 128, 128, 128);
 			}
 
-			// UNCERTAIN CODE
-			// LEARN TO DECOMPILE MIPS FIRST
 			addPrim(&ot, prim);
 			addPrim(&ot, poly);
 			poly++; prim++;
@@ -218,6 +217,158 @@ void FadeInHiresScreen(char *filename)
 	DrawSync(0);
 }
 
+#define GALLERY_IMAGES 21
+
+// [A] displays bonus gallery
+void ShowBonusGallery()
+{
+	char filename[64];
+	int currentImage;
+
+	DISPENV disp;
+	DRAWENV draw;
+	SPRT prims[6];
+	POLY_FT3 nulls[6];
+	RECT16 rect;
+	OTTYPE ot;
+
+	POLY_FT3 *poly;
+	SPRT *prim;
+	POLYCOORD *pc;
+
+	DrawSync(0);
+	VSync(0);
+	SetDispMask(0);
+	ResetGraph(3);
+
+	setRECT16(&rect, 0, 0, 512, 512);
+	ClearImage2(&rect, 0, 0, 0);
+	DrawSync(0);
+
+	setRECT16(&rect, 512, 0, 512, 512);
+	ClearImage2(&rect, 0, 0, 0);
+	DrawSync(0);
+
+	poly = nulls;
+	pc = polycoords;
+
+	prim = prims;
+
+	// prepare polygons
+	for(int i = 0; i < 6; i++)
+	{
+		// set primitive
+		setSprt(prim);
+		setUV0(prim, 0, 0);
+
+		setClut(prim, 640, 511);
+
+		setXY0(prim, pc->x, pc->y);
+		setWH(prim, pc->w, pc->h);
+
+		// set poly
+		setPolyFT3(poly);
+		setXY3(poly, -1,-1,-1,-1,-1,-1);
+
+		setTPage(poly, 1, 0, pc->u, pc->v);
+
+		prim++;
+		poly++;
+		pc++;
+	}
+
+	SetupDefDrawEnv(&draw, 0, 0, 640, 512);
+	SetupDefDispEnv(&disp, 0, 0, 640, 512);
+	VSync(0);
+	PutDispEnv(&disp);
+	PutDrawEnv(&draw);
+
+	currentImage = 0;
+
+	// draw image cycle
+	while(currentImage <= GALLERY_IMAGES)
+	{
+		if(currentImage == 0)
+			sprintf(filename, "GFX\\GAL\\INTRO.TIM");
+		else
+			sprintf(filename, "GFX\\GAL\\IMG%d.TIM", currentImage-1);
+		
+		LoadfileSeg(filename, _other_buffer, 20, 0x4ff80);
+		LoadClut((u_long*)_other_buffer, 640, 511);
+
+		DrawSync(0);
+		setRECT16(&rect, 640, 0, 320, 511);
+
+		LoadImage(&rect, (u_long*)&_other_buffer[524]);
+
+		DrawSync(0);
+		SetDispMask(1);
+
+		// now draw image
+		DrawSync(0);
+		VSync(0);
+
+		PutDispEnv(&disp);
+		PutDrawEnv(&draw);
+
+		ClearOTagR((u_long*)&ot, 1);
+
+		poly = nulls;
+		prim = prims;
+
+		for (int i = 0; i < 6; i++)
+		{
+			setRGB0(prim, 128, 128, 128);
+
+			addPrim(&ot, prim);
+			addPrim(&ot, poly);
+			poly++; prim++;
+		}
+
+		DrawOTag((u_long*)&ot);
+
+#ifndef PSX
+		Emulator_EndScene();
+#endif
+
+		// wait for user input
+		do {
+			ReadControllers();
+			VSync(-1);
+
+			if(Pads[0].dirnew & 0x8000)
+			{
+				currentImage--;
+				if (currentImage < 0)
+				{
+					FESound(1);
+					currentImage = 0;
+				}
+				else
+				{
+					FESound(3);
+					break;
+				}
+			}
+
+			if(Pads[0].dirnew & 0x2000)
+			{
+				FESound(3);
+				currentImage++;
+				break;
+			}
+
+			if(Pads[0].dirnew & 0x10)
+			{
+				FESound(0);
+				currentImage = GALLERY_IMAGES; // quit
+				break;
+			}
+		} while (true);
+	}
+
+	DrawSync(0);
+}
 
 
 // decompiled code
@@ -395,8 +546,6 @@ void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 // [D] [T]
 void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 {
-	short framey;
-
 	if (h < 257) 
 	{
 		SetDefDispEnv(env, x, y, w, 256);

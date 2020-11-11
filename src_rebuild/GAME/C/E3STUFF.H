@@ -16,5 +16,6 @@ extern void SetPleaseWait(char *buffer); // 0x000448CC
 
 extern void CheckForCorrectDisc(int disc); // 0x00044A40
 
+extern void ShowBonusGallery();
 
 #endif
