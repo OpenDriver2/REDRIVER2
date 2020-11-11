@@ -378,17 +378,17 @@ int LoadCutsceneAsReplay(int subindex)
 	return 0;
 }
 
-void LoadCutsceneRecorder()
+void LoadCutsceneRecorder(char* configFilename)
 {
 	ini_t* config;
 	int loadExistingCutscene;
 	int subindex;
 
-	config = ini_load("cutscene_recorder.ini");
+	config = ini_load(configFilename);
 
 	if(!config)
 	{
-		printError("Unable to open 'cutscene_recorder.ini!'\n");
+		printError("Unable to open '%s'!\n", configFilename);
 		return;
 	}
 
