@@ -361,7 +361,7 @@ void ShowBonusGallery()
 			if(Pads[0].dirnew & 0x10)
 			{
 				FESound(0);
-				currentImage = GALLERY_IMAGES; // quit
+				currentImage = GALLERY_IMAGES+1; // quit
 				break;
 			}
 		} while (true);
