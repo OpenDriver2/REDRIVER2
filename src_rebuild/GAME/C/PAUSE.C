@@ -686,12 +686,20 @@ void DrawPauseMenus(void)
 
 void SaveReplay(int direction)
 {
+	char filename[64];
 #ifdef PSX
 	CallMemoryCard(0x10, 1);
 #else
 	int size = SaveReplayToBuffer(_other_buffer);
-	
-	FILE* fp = fopen("chase.d2rp", "wb");
+
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if(gCutsceneAsReplay != 0)
+		sprintf(filename, "CUT_%d.D2RP", gCutsceneAsReplay);
+#else
+	sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);
+#endif
+	FILE* fp = fopen(filename, "wb");
 	if (fp)
 	{
 		fwrite(_other_buffer, 1, size, fp);
