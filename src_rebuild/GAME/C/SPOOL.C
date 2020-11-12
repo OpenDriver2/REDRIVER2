@@ -1159,26 +1159,6 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [A]
-void ClearSpooledModelSlots()
-{
-	if (!newmodels)
-		return;
-
-	// clear old model ids
-	int nmodels = *newmodels;
-	unsigned short* new_model_numbers = newmodels + 1;
-
-	// set old model ids to dummy
-	for (int i = 0; i < nmodels; i++)
-	{
-		int model_number = new_model_numbers[i];
-		modelpointers[model_number] = &dummyModel;
-	}
-
-	SPOOL_INFO("freed %d model slots\n", nmodels);
-}
-
 // [D] [T]
 void InitSpooling(void)
 {
@@ -1188,7 +1168,7 @@ void InitSpooling(void)
 		ClearRegion(i);
 	}
 
-	ClearSpooledModelSlots();
+	CleanSpooledModelSlots();
 
 	newmodels = NULL;
 	spool_regioncounter = 0;
@@ -1749,8 +1729,35 @@ void SetupModels(void)
 // [D] [T]
 void LoadInAreaModels(int area)
 {
-	ClearSpooledModelSlots();
-	
+	int i;
+	MODEL* model;
+	int nmodels;
+	unsigned short* new_model_numbers;
+	int model_number;
+
+	if(newmodels)
+	{
+		// clear old model ids
+		nmodels = *newmodels;
+		new_model_numbers = newmodels + 1;
+
+		// set old model ids to dummy
+		for (i = 0; i < nmodels; i++)
+		{
+			model_number = new_model_numbers[i];
+
+			model = modelpointers[model_number];
+			
+			if(model->shape_flags & 0x8000)
+			{
+				modelpointers[model_number] = &dummyModel;
+				pLodModels[model_number] = &dummyModel;
+			}
+		}
+
+		SPOOL_INFO("freed %d model slots\n", nmodels);
+	}
+
 	int length = AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (length-1) * 2048);
 
