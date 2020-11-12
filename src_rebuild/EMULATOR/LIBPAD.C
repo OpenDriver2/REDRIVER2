@@ -17,7 +17,6 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 
 		PADRAW* pad = (PADRAW*)pad1;
 		pad->id = 0x41;	// always init first controller
-		pad->id = 0;
 		pad->analog[0] = 128;
 		pad->analog[1] = 128;
 		pad->analog[2] = 128;
