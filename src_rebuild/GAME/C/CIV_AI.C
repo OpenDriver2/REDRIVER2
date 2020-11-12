@@ -3260,6 +3260,7 @@ int PingInCivCar(int minPingInDist)
 	int i;
 	int oldCookieCount;
 	uint retDistSq;
+	unsigned char* slot;
 
 	//straight = NULL;
 	//curve = NULL;
@@ -3286,12 +3287,12 @@ int PingInCivCar(int minPingInDist)
 		tryPingInParkedCars = 1;
 	}
 
-	playerNum = 0;
-
 	if (NumPlayers == 2)
 		playerNum = CameraCnt & 1;
+	else
+		playerNum = 0;
 
-	if ((MissionHeader->type & 4U) != 0)
+	if (MissionHeader->type & 0x4)
 	{
 		PingOutCivsOnly = 1;
 		return 0;
@@ -3317,6 +3318,27 @@ int PingInCivCar(int minPingInDist)
 
 	newCar = NULL;
 
+	// find a free slot
+	carCnt = car_data;
+	slot = reservedSlots;
+
+	do {
+		if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
+		{
+			newCar = carCnt;
+			break;
+		}
+
+		carCnt++;
+		slot++;
+	} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
+
+	if (newCar == NULL)
+	{
+		PingOutCivsOnly = 1;
+		return 0;
+	}
+
 	ClearMem((char*)&civDat, sizeof(civDat));
 
 	baseLoc.vx = player[playerNum].spoolXZ->vx;
@@ -3334,8 +3356,8 @@ int PingInCivCar(int minPingInDist)
 		if (newCarId == -1)
 			return 0;
 
-		if (newCarId > MAX_CARS - 1)
-			return 0;
+		//if (newCarId > MAX_CARS - 1)
+		//	return 0;
 
 		newCar = &car_data[newCarId];
 
@@ -3369,33 +3391,11 @@ int PingInCivCar(int minPingInDist)
 		// randomized pings
 		int angle;
 		int dx, dz;
-		unsigned char* slot;
-
+		
 		const int maxCookies = requestCopCar ? 55 : 43;
 
 		if (requestCopCar == 0 && cookieCount > 43)
 			cookieCount -= 25;
-
-		// find a free slot
-		carCnt = car_data;
-		slot = reservedSlots;
-
-		do {
-			if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
-			{
-				newCar = carCnt;
-				break;
-			}
-
-			carCnt++;
-			slot++;
-		} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
-
-		if (newCar == NULL)
-		{
-			PingOutCivsOnly = 1;
-			return 0;
-		}
 
 		oldCookieCount = cookieCount;
 
@@ -3406,7 +3406,9 @@ int PingInCivCar(int minPingInDist)
 				cookieCount = 0;
 
 			if (cookieCount == oldCookieCount)
+			{
 				break;
+			}
 
 			if (requestCopCar == 0)
 			{
@@ -3779,7 +3781,7 @@ int PingInCivCar(int minPingInDist)
 	PingOutCivsOnly = 0;
 
 	// [A] REDRIVER2 always stores pings
-	StorePingInfo(cookieCount, newCar->id);
+	StorePingInfo(cookieCount, newCar->id); // + 1 since car with id 1 is not getting pinged in chases
 
 	return newCar->id + 1;
 }
