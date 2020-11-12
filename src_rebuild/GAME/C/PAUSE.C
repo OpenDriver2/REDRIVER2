@@ -695,7 +695,25 @@ void SaveReplay(int direction)
 #ifdef CUTSCENE_RECORDER
 	extern int gCutsceneAsReplay;
 	if(gCutsceneAsReplay != 0)
-		sprintf(filename, "CUT_%d.D2RP", gCutsceneAsReplay);
+	{
+		FILE* temp;
+		int cnt;
+		cnt = 2;
+
+		while(cnt < 14)
+		{
+			sprintf(filename, "CUT%d_%d.D2RP", gCutsceneAsReplay, cnt);
+
+			temp = fopen(filename, "rb");
+			if (temp)
+			{
+				fclose(temp);
+				cnt++;
+			}
+			else
+				break;
+		}
+	}
 #else
 	sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);
 #endif
