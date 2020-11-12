@@ -675,6 +675,10 @@ char GetPingInfo(char *cookieCount)
 
 			PingBufferPos++;
 		}
+		else
+		{
+			printInfo("-1 frame!\n");
+		}
 
 		return retCarId;
 	}
@@ -694,7 +698,12 @@ int StorePingInfo(int cookieCount, int carId)
 	{
 		packet = &PingBuffer[PingBufferPos++];
 		packet->frame = (CameraCnt - frameStart & 0xffffU);
-		packet->carId = carId;
+
+		if(carId == 1)
+			packet->carId = MAX_CARS-1;
+		else
+			packet->carId = carId;
+		
 		packet->cookieCount = cookieCount;
 
 		return 1;
