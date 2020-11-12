@@ -360,10 +360,10 @@ void InternalPadUpdates()
 				pad->status = 0;	// PadStateStable?
 
 				// switch to analog state
-				if(pad->analog[0] == 255 || 
+				if((pad->analog[0] == 255 || 
 					pad->analog[1] == 255 || 
 					pad->analog[2] == 255 || 
-					pad->analog[3] == 255 || 
+					pad->analog[3] == 255) && 
 					pad->id == 0x41)
 				{
 					eprintf("Switched controller type to ANALOG\n");
