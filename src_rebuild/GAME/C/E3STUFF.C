@@ -217,7 +217,7 @@ void FadeInHiresScreen(char *filename)
 	DrawSync(0);
 }
 
-#define GALLERY_IMAGES 21
+#define GALLERY_IMAGES 24
 
 // [A] displays bonus gallery
 void ShowBonusGallery()
