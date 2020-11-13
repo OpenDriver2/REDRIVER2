@@ -7,10 +7,15 @@
 SDL_GameController* padHandle[MAX_CONTROLLERS];
 unsigned char* padData[MAX_CONTROLLERS];
 
-const unsigned char* keyboardState;
+const unsigned char* keyboardState = NULL;
+
 
 void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 {
+	// do not init second time!
+	if (keyboardState != NULL)
+		return;
+	
 	if (pad1 != NULL)
 	{
 		padData[0] = pad1;
