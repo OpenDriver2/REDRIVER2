@@ -19,10 +19,11 @@
 #include "PAUSE.H"
 #include "OVERMAP.H"
 #include "DIRECTOR.H"
+#include "XAPLAY.H"
 
 #include "LIBETC.H"
 #include "STRINGS.H"
-#include "XAPLAY.H"
+#include "RAND.H"
 
 int gSkipInGameCutscene = 0;
 
@@ -56,6 +57,52 @@ static int CutsceneCameraOffset = 0;
 
 #ifndef PSX
 char* gCustomCutsceneBuffer;
+
+char gUserReplayFolderList[MAX_USER_REPLAYS][48];
+int gNumUserChases = 0;
+int gUserChaseLoaded = -1;
+
+// [A] user replay folders initialization
+void InitUserReplays(const char* str)
+{
+	int quit;
+	char* ptr;
+	char* strStart;
+	gNumUserChases = 0;
+
+	if (!str)
+		return;
+
+	ptr = (char*)str;
+	strStart = NULL;
+	memset(gUserReplayFolderList, 0, sizeof(gUserReplayFolderList));
+
+	quit = 0;
+
+	while(true)
+	{
+		if (strStart == NULL)
+			strStart = ptr;
+
+		// if we're encountered string end go on
+		if(*ptr == ',' || *ptr == ' ' || *ptr == '\0')
+		{
+			if (*ptr == '\0')
+				quit = 1;
+
+			*ptr = '\0';
+			strcpy(gUserReplayFolderList[gNumUserChases++], strStart);
+			strStart = NULL;
+		}
+
+		ptr++;
+
+		if (quit)
+			break;
+	}
+}
+
+
 #endif
 
 // decompiled code
@@ -255,7 +302,21 @@ void DrawInGameCutscene(void)
 #endif
 	
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
+	{
+#ifndef PSX
+		if(gUserChaseLoaded != -1 && (CameraCnt - frameStart) < 200)
+		{
+			// [A] print user chaser name on screen
+			char tempStr[80];
+
+			sprintf(tempStr, "Getaway is %s", gUserReplayFolderList[gUserChaseLoaded]);
+
+			SetTextColour(128, 128, 64);
+			PrintString(tempStr, 16, 230);
+		}
+#endif
 		return;
+	}
 
 	tile = (TILE *)current->primptr;
 	SetTile(tile);
@@ -1315,6 +1376,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	/* end block 4 */
 	// End Line: 3091
 
+
 // [D] [T]
 int LoadCutsceneToBuffer(int subindex)
 {
@@ -1338,16 +1400,52 @@ int LoadCutsceneToBuffer(int subindex)
 
 		if (header.data[subindex].offset != 0xffff)
 		{
-			offset = header.data[subindex].offset * 4;
-			size = header.data[subindex].size;
-
 #ifndef PSX
+			int userFolderId;
+			
 			// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
-			sprintf(customFilename, "REPLAYS\\CUT%d\\%d.D2RP", gCurrentMissionNumber, subindex);
+			if (gNumUserChases)
+			{
+				userFolderId = rand() % (gNumUserChases + 1);
 
+				if (userFolderId == gNumUserChases)
+					userFolderId = -1;
+
+				if(userFolderId >= 0)
+				{
+					// optional randomization
+					sprintf(customFilename, "REPLAYS\\%s\\CUT%d\\CUT%d_%d.D2RP", gUserReplayFolderList[userFolderId], gCurrentMissionNumber, gCurrentMissionNumber, subindex);
+
+					if (!FileExists(customFilename))
+						userFolderId = -1;
+				}
+			}
+			else
+				userFolderId = -1;
+
+			if(userFolderId == -1)
+			{
+				// try load replaced replays from users
+				for(int i = 0; i < gNumUserChases; i++)
+				{
+					sprintf(customFilename, "REPLAYS\\REP\\CUT%d\\CUT%d_%d.%s", gCurrentMissionNumber, gCurrentMissionNumber, subindex, gUserReplayFolderList[i]);
+					if(FileExists(customFilename))
+					{
+						userFolderId = i;
+						break;
+					}
+				}
+
+				// if not found any user replays, try load D2RP
+				if(userFolderId == -1)
+					sprintf(customFilename, "REPLAYS\\REP\\CUT%d\\CUT%d_%d.D2RP", gCurrentMissionNumber, gCurrentMissionNumber, subindex);
+			}
+				
 			if (FileExists(customFilename))
 			{
-				printInfo("Custom cutscene replay file loaded\n");
+				gUserChaseLoaded = userFolderId;
+
+				printInfo("Custom chase '%s' loaded\n", customFilename);
 				size = LoadfileSeg(customFilename, gCustomCutsceneBuffer, 0, 0xffff);
 
 				// load into custom buffer
@@ -1358,7 +1456,13 @@ int LoadCutsceneToBuffer(int subindex)
 				gCustomCutsceneBuffer += size;
 				return 1;
 			}
+			else
+				gUserChaseLoaded = -1;
 #endif
+
+			offset = header.data[subindex].offset * 4;
+			size = header.data[subindex].size;
+			
 			if (CutsceneBuffer.bytesFree < size) 
 			{
 				// load into lead/path AI buffer
