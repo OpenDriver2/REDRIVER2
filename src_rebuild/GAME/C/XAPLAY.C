@@ -10,6 +10,7 @@
 #include "SYSTEM.H"
 
 #ifndef PSX
+#include "STRINGS.H"
 
 #include "../utils/riff.h"
 #include "../utils/audio_source/snd_al_source.h"
@@ -49,6 +50,16 @@ static unsigned long buffer[8];
 XA_TRACK XAMissionMessages[4];
 
 #ifndef PSX
+struct XA_SUBTITLE
+{
+	char text[48];
+	int startframe;
+	int endframe;
+};
+
+XA_SUBTITLE gXASubtitles[30];
+int gNumXASubtitles = 0;
+
 int gXASubtitleTime = 0;
 int gXASubtitlePauseTime = 0;
 
@@ -63,12 +74,12 @@ void PrintXASubtitles()
 	int curTime = (VSync(-1) - gXASubtitleTime) * 17;
 
 	// find subtitles
-	for(int i = 0; i < g_wavData->m_numSubtitles; i++)
+	for(int i = 0; i < gNumXASubtitles; i++)
 	{
-		CUESubtitle_t* sub = &g_wavData->m_subtitles[i];
+		XA_SUBTITLE* sub = &gXASubtitles[i];
 
-		int subStartFrame = sub->sampleStart;
-		int subEndFrame = sub->sampleStart + sub->sampleLength;
+		int subStartFrame = sub->startframe;
+		int subEndFrame = sub->endframe;
 
 		if(curTime >= subStartFrame && curTime <= subEndFrame)
 		{
@@ -347,6 +358,48 @@ void PlayXA(int num, int index)
 
 		if (g_wavData->Load(fileName))
 		{
+#if 0
+			// Save subtitles file
+			{
+				sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
+
+				FILE* fp = fopen(fileName, "wb");
+
+				if (fp)
+				{
+					int numSubtitles = g_wavData->m_numSubtitles;
+					XA_SUBTITLE subtitles[30];
+
+					// save subtitle count
+					fwrite(&numSubtitles, sizeof(int), 1, fp);
+
+					for (int i = 0; i < numSubtitles; i++)
+					{
+						CUESubtitle_t* sub = &g_wavData->m_subtitles[i];
+						strcpy(subtitles[i].text, sub->text);
+						subtitles[i].startframe = sub->sampleStart;
+						subtitles[i].endframe = sub->sampleStart + sub->sampleLength;
+					}
+
+					// write all subtitles
+					fwrite(subtitles, sizeof(XA_SUBTITLE), numSubtitles, fp);
+					fclose(fp);
+				}
+			}
+#else
+			// Load subtitles for XA
+			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
+
+			FILE* fp = fopen(fileName, "rb");
+
+			if (fp)
+			{
+				fread(&gNumXASubtitles, sizeof(int), 1, fp);
+				fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
+				fclose(fp);
+			}
+#endif
+			
 			g_XAWave = new CSoundSource_OpenALCache(g_wavData);
 
 			alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);
