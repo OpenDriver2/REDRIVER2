@@ -150,6 +150,10 @@ void InitInGameCutsceneVariables(void)
 
 	gSkipInGameCutscene = 0;
 
+#ifndef PSX
+	gUserChaseLoaded = -1;
+#endif
+
 	FreeCutsceneBuffer();
 }
 
@@ -304,7 +308,7 @@ void DrawInGameCutscene(void)
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 	{
 #ifndef PSX
-		if(gUserChaseLoaded != -1 && (CameraCnt - frameStart) < 200)
+		if(gInGameChaseActive && gUserChaseLoaded != -1 && (CameraCnt - frameStart) < 200)
 		{
 			// [A] print user chaser name on screen
 			char tempStr[80];
