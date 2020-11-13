@@ -12,6 +12,7 @@
 #include "CIV_AI.H"
 
 #include "STRINGS.H"
+#include "RAND.H"
 
 char AnalogueUnpack[16] = { 
 	0, -51, -63, -75, -87, -99, -111, -123,
@@ -616,7 +617,34 @@ int LoadAttractReplay(int mission)
 {
 	char filename[32];
 
+#ifndef PSX
+	int userFolderId;
+	
+	// [A] REDRIVER2 PC - custom attract replays
+	if (gNumUserChases)
+	{
+		userFolderId = rand() % (gNumUserChases + 1);
+
+		if (userFolderId == gNumUserChases)
+			userFolderId = -1;
+
+		if (userFolderId >= 0)
+		{
+			// optional randomization
+			sprintf(filename, "REPLAYS\\ATTRACT.%d.%s", mission, gUserReplayFolderList[userFolderId]);
+
+			if (!FileExists(filename))
+				userFolderId = -1;
+		}
+	}
+	else
+		userFolderId = -1;
+
+	if(userFolderId == -1)
+		sprintf(filename,"REPLAYS\\ATTRACT.%d", mission);
+#else
 	sprintf(filename,"REPLAYS\\ATTRACT.%d", mission);
+#endif
 
 	if (!FileExists(filename))
 		return 0;

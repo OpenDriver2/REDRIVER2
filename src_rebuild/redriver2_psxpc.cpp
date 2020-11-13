@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <SDL_scancode.h>
 
+#include "C/CUTSCENE.H"
 
 
 // eq engine console output
@@ -412,6 +413,9 @@ int main(int argc, char** argv)
 	if (config)
 	{
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
+		const char* userReplaysStr = ini_get(config, "game", "userChases");
+
+		InitUserReplays(userReplaysStr);
 		
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
@@ -422,7 +426,6 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
-		
 
 		if (dataFolderStr)
 		{
