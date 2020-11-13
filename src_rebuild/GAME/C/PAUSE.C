@@ -724,6 +724,7 @@ void SaveReplay(int direction)
 	FILE* fp = fopen(filename, "wb");
 	if (fp)
 	{
+		printInfo("Saving replay '%s'\n", filename);
 		fwrite(_other_buffer, 1, size, fp);
 		fclose(fp);
 	}
