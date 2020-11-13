@@ -3630,7 +3630,18 @@ unsigned int horn_time;
 // [D] [T]
 void InitLeadHorn(void)
 {
-	horn_time = 0;
+	// [A] disable horns in some missions
+	switch (gCurrentMissionNumber)
+	{
+		case 4:		// Tailing the drop
+		case 10:	// Follow up the lead
+		case 18:	// Tail Jericho
+		case 26:	// Steal the ambulance
+			horn_time = 0xFFFFFFFF;
+			break;
+		default:
+			horn_time = 0;
+	}
 }
 
 
@@ -3664,6 +3675,10 @@ void LeadHorn(CAR_DATA* cp)
 	static unsigned int rnd = 0;
 	int carBank;
 	int dx,dz;
+
+	// [A] disabled horn in those missions
+	if (horn_time == 0xFFFFFFFF)
+		return;
 
 	// [A] do not horn if too far from camera
 	dx = cp->hd.where.t[0] - camera_position.vx >> 8;
