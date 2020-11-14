@@ -913,18 +913,20 @@ GLint u_Projection3D;
 	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
 
 #define GPU_SAMPLE_TEXTURE_4BIT_FUNC\
-	"	// returns 16 bit colour\n"\
-	"	float samplePSX(vec2 tc){\n"\
-	"		vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
-	"		vec2 comp = VRAM(uv);\n"\
-	"		int index = int(mod(tc.x, 4.0));\n"\
-	"		float v = comp[index / 2] * (255.0 / 16.0);\n"\
-	"		float f = floor(v);\n"\
-	"		vec2 c = vec2( (v - f) * 16.0, f );\n"\
-	"		vec2 clut_pos = v_page_clut.zw;\n"\
-	"		clut_pos.x += mix(c[0], c[1], mod(index, 2)) / 1024.0;\n"\
-	"		return packRG(VRAM(clut_pos));\n"\
-	"	}\n"
+    "    // returns 16 bit colour\n"\
+    "    float samplePSX(vec2 tc){\n"\
+    "        vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+    "        vec2 comp = VRAM(uv);\n"\
+    "        int index = int(fract(tc.x / 4.0 + 0.0001) * 4.0);\n"\
+    "        float v = comp[index / 2] * (255.0 / 16.0);\n"\
+    "        float f = floor(v);\n"\
+    "        vec2 c = vec2( (v - f) * 16.0, f );\n"\
+    "        vec2 clut_pos = v_page_clut.zw;\n"\
+    "        clut_pos.x += mix(c[0], c[1], mod(index, 2)) / 1024.0;\n"\
+    "        clut_pos.x += 0.0001;\n"\
+    "        clut_pos.y += 0.0001;\n"\
+    "        return packRG(VRAM(clut_pos));\n"\
+    "    }\n"
 
 #define GPU_SAMPLE_TEXTURE_8BIT_FUNC\
 	"	// returns 16 bit colour\n"\
