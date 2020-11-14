@@ -1,4 +1,4 @@
-REDRIVER2 3.4 alpha
+REDRIVER2 4.2 alpha
 
 Changelog since Oct 12 2000
 

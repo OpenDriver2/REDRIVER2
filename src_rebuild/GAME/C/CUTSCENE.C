@@ -1377,12 +1377,14 @@ int LoadUserCutscene(int subindex, int userId = -1)
 
 	if (userId >= 0 && userId < gNumUserChases)
 	{
+		// get user chase instantly
 		sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[userId], gCurrentMissionNumber, subindex);
 
 		if (FileExists(customFilename))
 			userIndex = userId;
 	}
 
+	// if still no valid user replay from input
 	if (userIndex == -1)
 	{
 		// find first valid user replay
@@ -1468,6 +1470,7 @@ int LoadCutsceneToBuffer(int subindex)
 	{
 		userId = rand() % (gNumUserChases + 1);
 
+		// if random decides to have no user chase - get og or replacement one
 		if (userId == gNumUserChases)
 			userId = -1;
 	}
