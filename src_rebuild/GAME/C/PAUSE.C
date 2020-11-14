@@ -138,6 +138,7 @@ extern void LoadSky(void);
 
 void DebugTimeOfDayDay(int direction)
 {
+	wantedTimeOfDay = 1;
 	gTimeOfDay = 1;
 	gWantNight = 0;
 	LoadSky();
@@ -145,6 +146,7 @@ void DebugTimeOfDayDay(int direction)
 
 void DebugTimeOfDayNight(int direction)
 {
+	wantedTimeOfDay = 3;
 	gTimeOfDay = 3;
 	gWantNight = 1;
 	LoadSky();
@@ -152,6 +154,7 @@ void DebugTimeOfDayNight(int direction)
 
 void DebugTimeOfDayDusk(int direction)
 {
+	wantedTimeOfDay = 0;
 	gTimeOfDay = 0;
 	gWantNight = 0;
 	LoadSky();
@@ -159,6 +162,7 @@ void DebugTimeOfDayDusk(int direction)
 
 void DebugTimeOfDayDawn(int direction)
 {
+	wantedTimeOfDay = 2;
 	gTimeOfDay = 2;
 	gWantNight = 0;
 	LoadSky();
@@ -169,6 +173,7 @@ void DebugTimeOfDayRain(int direction)
 	//extern int weather;
 	//weather ^= weather;
 	gWeather ^= 1;
+	wantedWeather = gWeather;
 
 	if (gWeather == 1)
 		wetness = 7000;
