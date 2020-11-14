@@ -3440,9 +3440,9 @@ int PingInCivCar(int minPingInDist)
 	}
 
 	{
-		int numPossibleLanes;
-		int numLanes;
-		int allowedToPark;
+		volatile int numPossibleLanes;
+		volatile int numLanes;
+		volatile int allowedToPark;
 		
 		if (ROAD_LANES_COUNT(&roadInfo) == 0) // BAD ROAD
 		{
