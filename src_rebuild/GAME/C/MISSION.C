@@ -3354,6 +3354,12 @@ int MRRequestCar(MS_TARGET *target)
 // [D] [T]
 void MRHandleCarRequests(void)
 {
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay != 0)
+		return;
+#endif
+	
 	if (Mission.CarTarget)
 		MRCreateCar(Mission.CarTarget);
 }

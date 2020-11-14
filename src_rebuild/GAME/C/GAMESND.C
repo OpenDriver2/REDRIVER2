@@ -633,7 +633,7 @@ void LoadLevelSFX(int missionNum)
 	LoadSoundBankDynamic(NULL, 1, 0);
 	LoadSoundBankDynamic(NULL, 3, 3);
 
-	if (gCurrentMissionNumber - 39U < 2)
+	if (missionNum - 39U < 2 || missionNum >= 400 && missionNum <= 404)
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
@@ -645,17 +645,17 @@ void LoadLevelSFX(int missionNum)
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
 	}
 
-	if (missionNum - 50U < 16)
+	if (missionNum - 50U < 16 || missionNum >= 400)
 	{
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(2));
 	}
 
 	// disable cop speech on specific missions (gangs)
 	// and set cop model (car sound bank)
-	if (gCurrentMissionNumber == 7 || gCurrentMissionNumber == 9 ||
-		gCurrentMissionNumber == 11 || gCurrentMissionNumber == 20 ||
-		gCurrentMissionNumber == 26 || gCurrentMissionNumber == 31 ||
-		gCurrentMissionNumber == 33 || gCurrentMissionNumber == 40)
+	if (missionNum == 7 || missionNum == 9 ||
+		missionNum == 11 || missionNum == 20 ||
+		missionNum == 26 || missionNum == 31 ||
+		missionNum == 33 || missionNum == 40)
 	{
 		gDoCopSpeech = 0;
 
@@ -3630,7 +3630,18 @@ unsigned int horn_time;
 // [D] [T]
 void InitLeadHorn(void)
 {
-	horn_time = 0;
+	// [A] disable horns in some missions
+	switch (gCurrentMissionNumber)
+	{
+		case 4:		// Tailing the drop
+		case 10:	// Follow up the lead
+		case 18:	// Tail Jericho
+		case 26:	// Steal the ambulance
+			horn_time = 0xFFFFFFFF;
+			break;
+		default:
+			horn_time = 0;
+	}
 }
 
 
@@ -3664,6 +3675,10 @@ void LeadHorn(CAR_DATA* cp)
 	static unsigned int rnd = 0;
 	int carBank;
 	int dx,dz;
+
+	// [A] disabled horn in those missions
+	if (horn_time == 0xFFFFFFFF)
+		return;
 
 	// [A] do not horn if too far from camera
 	dx = cp->hd.where.t[0] - camera_position.vx >> 8;

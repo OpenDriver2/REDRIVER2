@@ -49,6 +49,22 @@ unsigned short *Low2LowerDetailTable = NULL;
 	/* end block 3 */
 	// End Line: 79
 
+// [A]
+void CleanSpooledModelSlots()
+{
+	int i;
+
+	// assign model pointers
+	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
+	{
+		if(!(modelpointers[i]->shape_flags & 0x8000))
+		{
+			modelpointers[i] = &dummyModel;
+			pLodModels[i] = &dummyModel;
+		}
+	}
+}
+
 // [D] [T]
 void ProcessMDSLump(char *lump_file, int lump_size)
 {
@@ -74,8 +90,13 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		size = *(int*)mdsfile;
 		mdsfile += sizeof(int);
 
-		if (size) 
-			modelpointers[i] = (MODEL*)mdsfile;
+		if (size)
+		{
+			model = (MODEL*)mdsfile;
+			model->shape_flags |= 0x8000;			// [A] non-spooled flag
+			
+			modelpointers[i] = model;
+		}
 
 		mdsfile += size;
 	}

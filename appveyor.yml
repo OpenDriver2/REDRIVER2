@@ -1,4 +1,4 @@
-version: 3.0.{build}
+version: 4.2.{build}
 
 branches:
   only:
@@ -64,7 +64,7 @@ after_build:
   - cmd: cd %project_folder%\bin\%configuration%
   - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
   - cmd: copy %OPENAL_DIR%\bin\Win32\soft_oal.dll OpenAL32.dll /Y
-  - cmd: copy %data_folder%\config.ini config.ini /Y
+  - cmd: xcopy /e /v %data_folder% .\ /Y
   - 7z a "REDRIVER2_%configuration%.zip" ".\*"
   
 #build: off

@@ -8,18 +8,18 @@
 extern TEXTURE_DETAILS digit_texture;
 
 FONT_DIGIT fontDigit[] = {
-	{ 2, 0xE },
-	{ 0x11, 0xE},
-	{ 0x20, 0x10},
-	{ 0x31, 0xF},
-	{ 0x41, 0xE },
-	{ 0x50, 0xE },
-	{ 4, 0x10 },
-	{ 0x15, 0xE },
-	{ 0x24, 0xF },
-	{ 0x34, 0x11 },
-	{ 0x46, 0xB },
-	{ 0x52, 7 },
+	{ 2, 14 },
+	{ 17, 14},
+	{ 32, 16},
+	{ 49, 15},
+	{ 65, 14 },
+	{ 80, 14 },
+	{ 4, 16 },
+	{ 21, 14 },
+	{ 36, 15 },
+	{ 52, 17 },
+	{ 70, 11 },
+	{ 82, 7 },
 };
 
 TEXTURE_DETAILS button_textures[11];

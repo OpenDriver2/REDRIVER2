@@ -1229,14 +1229,14 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[11].vz = -FW2z;
 	VertPtr[12].vz = -FW2z;
 
-	VertPtr[0x17].vz = 0;
-	VertPtr[0x16].vz = 0;
-	VertPtr[0x15].vy = 0;
-	VertPtr[0x14].vy = 0;
-	VertPtr[0x13].vy = 0;
-	VertPtr[0x12].vy = 0;
-	VertPtr[0x11].vz = 0;
-	VertPtr[0x10].vz = 0;
+	VertPtr[23].vz = 0;
+	VertPtr[22].vz = 0;
+	VertPtr[21].vy = 0;
+	VertPtr[20].vy = 0;
+	VertPtr[19].vy = 0;
+	VertPtr[18].vy = 0;
+	VertPtr[17].vz = 0;
+	VertPtr[16].vz = 0;
 
 	VertPtr[23].vy = wheelSize;
 	VertPtr[22].vy = wheelSize;
@@ -1273,14 +1273,14 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[11].vz = -BW2z;
 	VertPtr[12].vz = -BW2z;
 
-	VertPtr[0x17].vz = 0;
-	VertPtr[0x16].vz = 0;
-	VertPtr[0x15].vy = 0;
-	VertPtr[0x14].vy = 0;
-	VertPtr[0x13].vy = 0;
-	VertPtr[0x12].vy = 0;
-	VertPtr[0x11].vz = 0;
-	VertPtr[0x10].vz = 0;
+	VertPtr[23].vz = 0;
+	VertPtr[22].vz = 0;
+	VertPtr[21].vy = 0;
+	VertPtr[20].vy = 0;
+	VertPtr[19].vy = 0;
+	VertPtr[18].vy = 0;
+	VertPtr[17].vz = 0;
+	VertPtr[16].vz = 0;
 
 	VertPtr[23].vy = wheelSize;
 	VertPtr[22].vy = wheelSize;
@@ -1294,7 +1294,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 	SteerMatrix.m[0][0] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2 + 1];
 	SteerMatrix.m[0][2] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2];
-	SteerMatrix.m[1][1] = 4096;
+	SteerMatrix.m[1][1] = ONE;
 	SteerMatrix.m[2][1] = 0;
 	SteerMatrix.m[1][2] = 0;
 	SteerMatrix.m[1][0] = 0;

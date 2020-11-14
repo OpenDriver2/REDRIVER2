@@ -264,10 +264,10 @@ void HandleDrivingGames(void)
 									gPlayerScore.items++;
 								else
 									gPlayerScore.P2items++;
-							}
 
-							gTrailblazerConeIndex += i + 1;
-							gTrailblazerPrevConeDelay = 10;
+								gTrailblazerConeIndex += i + 1;
+								gTrailblazerPrevConeDelay = 10;
+							}
 
 							// reset side
 							for(j = 0; j < 2; j++)

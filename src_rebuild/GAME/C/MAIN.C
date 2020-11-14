@@ -2374,7 +2374,7 @@ void PrintCommandLineArguments()
 #endif // DEBUG_OPTIONS
 		"  -replay <filename> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
-		"  -recordcutscene : starts cutscene recording session\n"
+		"  -recordcutscene <filename> : starts cutscene recording session. Specify INI filename with it\n"
 #endif
 		"  -nointro : disable intro screens\n"
 		"  -nofmv : disable all FMVs\n";
@@ -2616,9 +2616,10 @@ int redriver2_main(int argc, char** argv)
 				gInFrontend = 0;
 				AttractMode = 0;
 
-				extern void LoadCutsceneRecorder();
+				extern void LoadCutsceneRecorder(char* filename);
 				
-				LoadCutsceneRecorder();
+				LoadCutsceneRecorder(argv[i+1]);
+				i++;
 			}
 #endif
 			else

@@ -1003,7 +1003,8 @@ void SwapDrawBuffers2(int player)
 
 	DrawSync(0);
 
-	if (player == 0) {
+	if (player == 0) 
+	{
 		PutDispEnv(&current->disp);
 	}
 
@@ -1265,6 +1266,8 @@ void SetupDrawBufferData(int num_players)
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
+	RECT16 clipRect;
+
 	SetDefDrawEnv(&pBuff[0].draw, x, y + 256, w, h);
 	SetDefDrawEnv(&pBuff[1].draw, x, y, w, h);
 

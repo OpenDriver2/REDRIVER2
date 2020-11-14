@@ -18,21 +18,23 @@
 
 COLOUR_BAND felonyColour[3] =
 {
-  { { 0u, 0u, 255u, 0u }, 0, 0 },
-  { { 255u, 0u, 0u, 0u }, 659, 0 },
-  { { 0u, 0u, 255u, 0u }, 4096, 2 }
+  { { 0, 0, 255, 0 }, 0, 0 },
+  { { 255, 0, 0, 0 }, 659, 0 },
+  { { 0, 0, 255, 0 }, 4096, 2 }
 };
 
 COLOUR_BAND playerDamageColour[3] =
 {
-  { { 0u, 255u, 0u, 0u }, 0, 0 },
-  { { 255u, 0u, 0u, 0u }, 3686, 0 },
-  { { 0u, 0u, 0u, 0u }, 4096, 2 }
+  { { 0, 255, 0, 0 }, 0, 0 },
+  { { 255, 0, 0, 0 }, 3686, 0 },
+  { { 0, 0, 0, 0 }, 4096, 2 }
 };
 
 COLOUR_BAND damageColour[2] =
-{ { { 0u, 255u, 0u, 0u }, 0, 0 }, { { 255u, 0u, 0u, 0u }, 4096, 0 } };
-
+{
+	{ { 0, 255, 0, 0 }, 0, 0 },
+	{ { 255, 0, 0, 0 }, 4096, 0 }
+};
 
 // decompiled code
 // original method signature: 
@@ -58,50 +60,53 @@ PERCENTAGE_BAR ProxyBar;
 
 int gDoOverlays = 1;
 
-// [D]
+// [D] [T]
 void InitOverlays(void)
 {
-	bool bVar1;
 	gDoOverlays = 1;
 
 	InitPercentageBar(&PlayerDamageBar, MaxPlayerDamage[0], playerDamageColour, "Damage");
 
-	PlayerDamageBar.xpos = 0x10;
-	PlayerDamageBar.ypos = 0x18;
+	PlayerDamageBar.xpos = 16;
+	PlayerDamageBar.ypos = 24;
 
-	bVar1 = 1 < NumPlayers;
 	PlayerDamageBar.active = 1;
 
-	if (bVar1)
+	if (NumPlayers > 1)
 	{
 		InitPercentageBar(&Player2DamageBar, MaxPlayerDamage[1], playerDamageColour, "Damage");
-		Player2DamageBar.xpos = 0x10;
-		Player2DamageBar.ypos = 0x8c;
+		Player2DamageBar.xpos = 16;
+		Player2DamageBar.ypos = 140;
+		Player2DamageBar.active = 1;
+	}
+	else
+	{
+		Player2DamageBar.active = 0;
 	}
 
-	Player2DamageBar.active = (bVar1);
-
 	InitPercentageBar(&FelonyBar, 0x1000, felonyColour, "Felony");
-	FelonyBar.xpos = 0x10;
-	FelonyBar.ypos = 0x2e;
+	FelonyBar.xpos = 16;
+	FelonyBar.ypos = 46;
 	FelonyBar.active = 0;
 
 	InitPercentageBar(&DamageBar, 1, damageColour, "Damage");
-	DamageBar.xpos = 0xd0;
-	DamageBar.ypos = 0x18;
+	DamageBar.xpos = 208;
+	DamageBar.ypos = 24;
 	DamageBar.flags = 1;
 	DamageBar.active = 0;
 
 	InitPercentageBar(&ProxyBar, TAIL_TOOFAR - TAIL_TOOCLOSE, felonyColour, "Proximity");
-	ProxyBar.xpos = 0x10;
-	ProxyBar.ypos = 0x2e;
+	ProxyBar.xpos = 16;
+	ProxyBar.ypos = 46;
 	ProxyBar.active = 0;
 
 	InitOverheadMap();
 
-	if (GameType == GAME_CAPTURETHEFLAG) {
+	if (GameType == GAME_CAPTURETHEFLAG)
+	{
 		PlayerDamageBar.active = 0;
 		Player2DamageBar.active = 0;
+	
 		gInvincibleCar = 1;
 	}
 }
@@ -124,54 +129,54 @@ void InitOverlays(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DisplayOverlays(void)
 {
 	short *felony;
 
-	if (NoPlayerControl == 0 && gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
+	if (NoPlayerControl != 0 || gInGameCutsceneActive != 0 || gInGameCutsceneDelay != 0)
+		return;
+
+	if (NumPlayers > 1) 
 	{
-		if (NumPlayers > 1) 
+		if (CurrentPlayerView == 0)
+			return;
+
+		SetFullscreenDrawing();
+	}
+
+	UpdateFlashValue();
+
+	if (gShowMap == 0)
+	{
+		FastForward = 0;
+
+		if (!gDoOverlays)
+			return;
+
+		DrawPercentageBar(&PlayerDamageBar);
+		DrawPercentageBar(&Player2DamageBar);
+		DrawPercentageBar(&DamageBar);
+		DrawPercentageBar(&FelonyBar);
+
+		DrawDrivingGameOverlays();			
+		DrawOverheadMap();
+
+		if (CopsCanSeePlayer)
 		{
-			if (CurrentPlayerView == 0)
-				return;
+			if (player[0].playerCarId < 0)
+				felony = &pedestrianFelony;
+			else 
+				felony = &car_data[player[0].playerCarId].felonyRating;
 
-			SetFullscreenDrawing();
+			if (*felony > FELONY_MIN_VALUE) 
+				DrawCopIndicators();
 		}
-
-		UpdateFlashValue();
-
-		if (gShowMap == 0)
-		{
-			FastForward = 0;
-
-			if (!gDoOverlays)
-				return;
-
-			DrawPercentageBar(&PlayerDamageBar);
-			DrawPercentageBar(&Player2DamageBar);
-			DrawPercentageBar(&DamageBar);
-			DrawPercentageBar(&FelonyBar);
-
-			DrawDrivingGameOverlays();			
-			DrawOverheadMap();
-
-			if (CopsCanSeePlayer)
-			{
-				if (player[0].playerCarId < 0)
-					felony = &pedestrianFelony;
-				else 
-					felony = &car_data[player[0].playerCarId].felonyRating;
-
-				if (*felony > FELONY_MIN_VALUE) 
-					DrawCopIndicators();
-			}
-		}
-		else 
-		{
-			FastForward = 1;
-			DrawFullscreenMap();
-		}
+	}
+	else 
+	{
+		FastForward = 1;
+		DrawFullscreenMap();
 	}
 }
 
@@ -213,7 +218,7 @@ void DisplayOverlays(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetFullscreenDrawing(void)
 {
 	DR_ENV *drenv;
@@ -222,7 +227,7 @@ void SetFullscreenDrawing(void)
 	drenv = (DR_ENV *)current->primptr;
 
 	drawenv.clip.x = 256;
-	SetDefDrawEnv((DRAWENV *)&drawenv, 0, current->draw.clip.y & 256, 320, 256);
+	SetDefDrawEnv(&drawenv, 0, current->draw.clip.y & 256, 320, 256);
 
 	SetDrawEnv(drenv, &drawenv);
 
@@ -251,15 +256,15 @@ void SetFullscreenDrawing(void)
 	/* end block 3 */
 	// End Line: 1486
 
-// [D]
+// [D] [T]
 void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, char *tag)
 {
-	bar->xpos = 0x96;
+	bar->xpos = 150;
 	bar->ypos = 10;
-	bar->width = 0x66;
+	bar->width = 102;
 	bar->height = 10;
 	bar->position = 0;
-	bar->max = (ushort)size;
+	bar->max = size;
 	bar->pColourBand = pColourBand;
 	bar->flags = 0;
 	bar->tag = tag;
@@ -287,11 +292,11 @@ void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, 
 	/* end block 3 */
 	// End Line: 1528
 
-// [D]
+// [D] [T]
 void EnablePercentageBar(PERCENTAGE_BAR *bar, int max)
 {
 	bar->position = 0;
-	bar->max = (ushort)max;
+	bar->max = max;
 	bar->active = 1;
 }
 
@@ -331,16 +336,15 @@ void EnablePercentageBar(PERCENTAGE_BAR *bar, int max)
 	/* end block 2 */
 	// End Line: 896
 
-// [D]
+// [D] [T]
 void DrawPercentageBar(PERCENTAGE_BAR *bar)
 {
-	short sVar1;
-	short sVar3;
-	uint uVar4;
 	POLY_G4 *poly;
 	POLY_G4 *poly2;
-	short sVar5;
-	short sVar9;
+	int min_x;
+	int max_x;
+	int min_y;
+	int max_y;
 	CVECTOR temp;
 
 	if (bar->active == 0)
@@ -353,69 +357,75 @@ void DrawPercentageBar(PERCENTAGE_BAR *bar)
 
 	if (bar->max == 0) 
 	{
-		sVar5 = bar->xpos;
-		uVar4 = bar->flags;
-		sVar9 = sVar5;
+		min_x = bar->xpos;
+		max_x = min_x;
 	}
 	else 
 	{
-		uVar4 = bar->flags;
-
-		if ((uVar4 & 1) == 0) 
+		if (bar->flags & 1) 
 		{
-			sVar5 = bar->xpos;
-			sVar9 = sVar5 + ((bar->width * bar->position) / bar->max);
+			max_x = bar->xpos + bar->width;
+			min_x = max_x - ((bar->width * bar->position) / bar->max);
 		}
 		else 
 		{
-			sVar9 = bar->xpos + bar->width;
-			sVar5 = sVar9 - ((bar->width * bar->position) / bar->max);
+			min_x = bar->xpos;
+			max_x = min_x + ((bar->width * bar->position) / bar->max);
 		}
 	}
 
-	sVar1 = bar->ypos;
-	sVar3 = bar->ypos + bar->height;
+	min_y = bar->ypos;
+	max_y = bar->ypos + bar->height;
 
-	if ((uVar4 & 2) == 0) 
+	// draw the colour band that fills the bar
+	if ((bar->flags & 2) == 0) 
 	{
 		poly = (POLY_G4 *)current->primptr;
 		setPolyG4(poly);
 
-		SetColourByValue(bar->pColourBand, (bar->position << 0xc) / bar->max, &temp);
+		SetColourByValue(bar->pColourBand, (bar->position * 4096) / bar->max, &temp);
 
 		poly->r0 = temp.r;
 		poly->g0 = temp.g;
 		poly->b0 = temp.b;
+	
 		poly->r1 = temp.r;
 		poly->g1 = temp.g;
 		poly->b1 = temp.b;
-		temp.r = temp.r >> 2;
-		temp.g = temp.g >> 2;
-		temp.b = temp.b >> 2;
+		
+		temp.r = temp.r / 4;
+		temp.g = temp.g / 4;
+		temp.b = temp.b / 4;
+		
 		poly->r2 = temp.r;
 		poly->g2 = temp.g;
 		poly->b2 = temp.b;
 		poly->r3 = temp.r;
 		poly->g3 = temp.g;
-		poly->x0 = sVar5;
-		poly->y0 = bar->ypos;
-		poly->x1 = sVar9;
-		poly->y1 = bar->ypos;
+		poly->x0 = min_x;
+		poly->y0 = min_y;
+		poly->x1 = max_x;
+		poly->y1 = min_y;
 		poly->b3 = temp.b;
-		poly->x2 = sVar5;
-		poly->x3 = sVar9;
-		poly->y2 = bar->ypos + bar->height;
-		poly->y3 = bar->ypos + bar->height;
+		poly->x2 = min_x;
+		poly->x3 = max_x;
+		poly->y2 = max_y;
+		poly->y3 = max_y;
 
 		addPrim((u_long*)(current->ot + 1), poly);
 		current->primptr += sizeof(POLY_G4);
 	}
 
+	// draw transparent part
+	min_x = bar->xpos;
+	max_x = bar->xpos + bar->width;
+
 	poly2 = (POLY_G4 *)current->primptr;
+
 	setPolyG4(poly2);
 	setSemiTrans(poly2,1);
-	poly2->x0 = bar->xpos;
-	poly2->x2 = bar->xpos;
+	poly2->x0 = min_x;
+	poly2->x2 = min_x;
 	poly2->r0 = 0;
 	poly2->g0 = 0;
 	poly2->b0 = 0;
@@ -428,33 +438,34 @@ void DrawPercentageBar(PERCENTAGE_BAR *bar)
 	poly2->r3 = 100;
 	poly2->g3 = 100;
 	poly2->b3 = 100;
-	poly2->y0 = bar->ypos;
-	poly2->x1 = bar->xpos + bar->width;
-	poly2->y1 = bar->ypos;
-	poly2->x3 = bar->xpos + bar->width;
-	poly2->y2 = bar->ypos + bar->height;
-	poly2->y3 = bar->ypos + bar->height;
+	poly2->y0 = min_y;
+	poly2->x1 = max_x;
+	poly2->y1 = min_y;
+	poly2->x3 = max_x;
+	poly2->y2 = max_y;
+	poly2->y3 = max_y;
 
 	addPrim((u_long*)(current->ot+1), poly2);
 	current->primptr += sizeof(POLY_G4);
 
+	// draw contours
 	LINE_F4* lineF4 = (LINE_F4*)current->primptr;
 	setLineF4(lineF4);
 	lineF4->r0 = 80;
 	lineF4->g0 = 80;
 	lineF4->b0 = 80;
 
-	lineF4->x0 = bar->xpos - 1;
-	lineF4->y0 = bar->ypos - 1;
+	lineF4->x0 = min_x - 1;
+	lineF4->y0 = min_y - 1;
 
-	lineF4->x1 = bar->xpos + bar->width;
-	lineF4->y1 = bar->ypos - 1;
+	lineF4->x1 = max_x;
+	lineF4->y1 = min_y - 1;
 
-	lineF4->x2 = bar->xpos + bar->width;
-	lineF4->x3 = bar->xpos - 1;
+	lineF4->x2 = max_x;
+	lineF4->x3 = min_x - 1;
 
-	lineF4->y2 = bar->ypos + bar->height;
-	lineF4->y3 = bar->ypos + bar->height;
+	lineF4->y2 = max_y;
+	lineF4->y3 = max_y;
 
 	addPrim((u_long*)(current->ot + 1), lineF4);
 	current->primptr += sizeof(LINE_F4);
@@ -465,25 +476,25 @@ void DrawPercentageBar(PERCENTAGE_BAR *bar)
 	lineF2->g0 = 80;
 	lineF2->b0 = 80;
 
-	lineF2->x0 = bar->xpos - 1;
-	lineF2->y0 = bar->ypos - 1;
+	lineF2->x0 = min_x - 1;
+	lineF2->y0 = min_y - 1;
 
-	lineF2->x1 = bar->xpos - 1;
-	lineF2->y1 = bar->ypos + bar->height;
+	lineF2->x1 = min_x - 1;
+	lineF2->y1 = max_y;
 
 	addPrim((u_long*)(current->ot + 1), lineF2);
 	current->primptr += sizeof(LINE_F2);
 
 	TransparencyOn(current->ot + 1, 0x20);
-		
+
 	if (bar->tag != NULL)
 	{
 		SetTextColour(128, 128, 64);
 
 		if ((bar->flags & 1U) == 0)
-			PrintString(bar->tag, bar->xpos + 8, bar->ypos - 11);
+			PrintString(bar->tag, min_x + 8, min_y - 11);
 		else
-			PrintStringRightAligned(bar->tag, bar->xpos + bar->width - 8, bar->ypos - 11);
+			PrintStringRightAligned(bar->tag, max_x - 8, min_y - 11);
 	}
 }
 
@@ -528,22 +539,35 @@ void DrawPercentageBar(PERCENTAGE_BAR *bar)
 	/* end block 3 */
 	// End Line: 1179
 
-// [D]
+// [D] [T]
 void DrawProximityBar(PERCENTAGE_BAR *bar)
 {
-	int iVar3;
 	TILE *tile;
-
+	short total;
+	int min_x;
+	int max_x;
+	int min_y;
+	int max_y;
+	int half_width;
+	
 	if (bar->active == 0)
 		return;
 
-	if (bar->position < TAIL_TOOCLOSE)
-		bar->position = TAIL_TOOCLOSE;
+	total = bar->position;
 	
-	if (TAIL_TOOFAR < bar->position)
-		bar->position = TAIL_TOOFAR;
+	if (total < TAIL_TOOCLOSE)
+		total = TAIL_TOOCLOSE;
+	
+	if (total > TAIL_TOOFAR)
+		total = TAIL_TOOFAR;
 
-	iVar3 = bar->position - TAIL_TOOCLOSE;
+	min_x = bar->xpos;
+	max_x = bar->xpos + bar->width;
+
+	min_y = bar->ypos;
+	max_y = bar->ypos + bar->height;
+
+	half_width = bar->width / 2;
 
 	tile = (TILE *)current->primptr;
 	setTile(tile);
@@ -551,9 +575,9 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 	tile->g0 = 16;
 	tile->b0 = 16;
 
-	tile->x0 = ((bar->width * iVar3) / (TAIL_TOOFAR - TAIL_TOOCLOSE) - 1) + bar->xpos;
+	tile->x0 = ((bar->width * (total - TAIL_TOOCLOSE)) / (TAIL_TOOFAR - TAIL_TOOCLOSE) - 1) + min_x;
 	tile->w = 2;
-	tile->y0 = bar->ypos;
+	tile->y0 = min_y;
 	tile->h = bar->height;
 
 	addPrim(current->ot + 1, tile);
@@ -574,14 +598,14 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 	poly2->g3 = 255;
 	poly2->b3 = 0;
 
-	poly2->x0 = bar->xpos;
-	poly2->y0 = bar->ypos;
-	poly2->x1 = bar->xpos + (bar->width / 2);
-	poly2->y1 = bar->ypos;
-	poly2->x2 = bar->xpos;
-	poly2->y2 = bar->ypos + bar->height;
-	poly2->x3 = bar->xpos + (bar->width / 2);
-	poly2->y3 = bar->ypos + bar->height;
+	poly2->x0 = min_x;
+	poly2->y0 = min_y;
+	poly2->x1 = min_x + half_width;
+	poly2->y1 = min_y;
+	poly2->x2 = min_x;
+	poly2->y2 = max_y;
+	poly2->x3 = min_x + half_width;
+	poly2->y3 = max_y;
 
 	addPrim(current->ot + 1, poly2);
 	current->primptr += sizeof(POLY_G4);
@@ -602,14 +626,14 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 	poly2->g3 = 0;
 	poly2->b3 = 0;
 
-	poly2->x0 = bar->xpos + (bar->width / 2);
-	poly2->y0 = bar->ypos;
-	poly2->x1 = bar->xpos + bar->width;
-	poly2->y1 = bar->ypos;
-	poly2->x2 = bar->xpos + (bar->width / 2);
-	poly2->y2 = bar->ypos + bar->height;
-	poly2->x3 = bar->xpos + bar->width;
-	poly2->y3 = bar->ypos + bar->height;
+	poly2->x0 = min_x + half_width;
+	poly2->y0 = min_y;
+	poly2->x1 = max_x;
+	poly2->y1 = min_y;
+	poly2->x2 = min_x + half_width;
+	poly2->y2 = max_y;
+	poly2->x3 = max_x;
+	poly2->y3 = max_y;
 
 	addPrim(current->ot + 1, poly2);
 	current->primptr += sizeof(POLY_G4);
@@ -620,17 +644,17 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 	lineF4->g0 = 80;
 	lineF4->b0 = 80;
 
-	lineF4->x0 = bar->xpos - 1;
-	lineF4->y0 = bar->ypos - 1;
+	lineF4->x0 = min_x - 1;
+	lineF4->y0 = min_y - 1;
 
-	lineF4->x1 = bar->xpos + bar->width;
-	lineF4->y1 = bar->ypos - 1;
+	lineF4->x1 = max_x;
+	lineF4->y1 = min_y - 1;
 
-	lineF4->x2 = bar->xpos + bar->width;
-	lineF4->x3 = bar->xpos - 1;
+	lineF4->x2 = max_x;
+	lineF4->x3 = min_x - 1;
 
-	lineF4->y2 = bar->ypos + bar->height;
-	lineF4->y3 = bar->ypos + bar->height;
+	lineF4->y2 = max_y;
+	lineF4->y3 = max_y;
 
 	addPrim((u_long*)(current->ot + 1), lineF4);
 	current->primptr += sizeof(LINE_F4);
@@ -641,16 +665,14 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 	lineF2->g0 = 80;
 	lineF2->b0 = 80;
 
-	lineF2->x0 = bar->xpos - 1;
-	lineF2->y0 = bar->ypos - 1;
+	lineF2->x0 = min_x - 1;
+	lineF2->y0 = min_y - 1;
 
-	lineF2->x1 = bar->xpos - 1;
-	lineF2->y1 = bar->ypos + bar->height;
+	lineF2->x1 = min_x - 1;
+	lineF2->y1 = max_y;
 
 	addPrim((u_long*)(current->ot + 1), lineF2);
 	current->primptr += sizeof(LINE_F2);
-
-	TransparencyOn(current->ot + 1, 0x20);
 
 	TransparencyOn(current->ot + 1, 0x20);
 
@@ -659,9 +681,9 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 		SetTextColour(128, 128, 64);
 
 		if ((bar->flags & 1U) == 0)
-			PrintString(bar->tag, bar->xpos + 8, bar->ypos - 11);
+			PrintString(bar->tag, min_x + 8, min_y - 11);
 		else 
-			PrintStringRightAligned(bar->tag, bar->xpos + bar->width - 8, bar->ypos - 11);
+			PrintStringRightAligned(bar->tag, max_x - 8, min_y - 11);
 	}
 }
 
@@ -694,40 +716,34 @@ void DrawProximityBar(PERCENTAGE_BAR *bar)
 
 char OverlayFlashValue = 0;
 
-// [D]
+// [D] [T]
 void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 {
-	COLOUR_BAND *pCVar1;
-	COLOUR_BAND *pCVar2;
+	COLOUR_BAND *pPrevColourBand;
 
-	int iVar3;
-	int iVar4;
+	int temp;
+	int scale;
+	int inv;
 
-	pCVar2 = pColourBand + 1;
-
-	if (pColourBand[1].value < value)
+	pPrevColourBand = pColourBand + 1;
+	while (pPrevColourBand->value < value)
 	{
-		pCVar1 = pColourBand + 2;
-		do {
-			pCVar2 = pCVar1;
-			pCVar1 = pCVar2 + 1;
-		} while (pCVar2->value < value);
+		pColourBand++;
+		pPrevColourBand++;
 	}
 
-	if ((pCVar2->flags != 0) && (pCVar2->flags == 2)) 
-	{
-		iVar3 = OverlayFlashValue * (pCVar2->value - pCVar2[-1].value);
-		value = pCVar2[-1].value + (iVar3 >> 3);
-	}
+	if (pPrevColourBand->flags == 2)
+		scale = pColourBand->value + OverlayFlashValue * (pPrevColourBand->value - pColourBand->value) / 8;
+	else
+		scale = value;
 
-	iVar3 = pCVar2->value - pCVar2[-1].value;
-	iVar4 = ((value - pCVar2[-1].value) * 0x1000) / iVar3;
+	temp = ((scale - pColourBand->value) * 0x1000) / (pPrevColourBand->value - pColourBand->value);
 
-	iVar3 = 0x1000 - iVar4;
+	inv = 4096 - temp;
 
-	pOut->r = ((iVar3 * pCVar2[-1].colour.r + iVar4 * (pCVar2->colour).r) >> 0xc);
-	pOut->g = ((iVar3 * pCVar2[-1].colour.g + iVar4 * (pCVar2->colour).g) >> 0xc);
-	pOut->b = ((iVar3 * pCVar2[-1].colour.b + iVar4 * (pCVar2->colour).b) >> 0xc);
+	pOut->r = FIXED(inv * pColourBand->colour.r + temp * pPrevColourBand->colour.r);
+	pOut->g = FIXED(inv * pColourBand->colour.g + temp * pPrevColourBand->colour.g);
+	pOut->b = FIXED(inv * pColourBand->colour.b + temp * pPrevColourBand->colour.b);
 }
 
 
@@ -760,16 +776,12 @@ void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 	/* end block 4 */
 	// End Line: 2049
 
-// [D] [A] - bugged
+// [D] [T]
 void TransparencyOn(void *potz, ushort tpage)
 {
 	DR_TPAGE *null;
 	null = (DR_TPAGE*)current->primptr;
-	setDrawTPage(null, 1, 0, tpage);	// [A] might be incorrect
-
-	// original mode:
-	//*(char *)((int)puVar2 + 3) = '\x01';
-	//puVar2[1] = (uint)tpage & 0x9ff | 0xe1000600;
+	setDrawTPage(null, 1, 0, tpage);
 
 	addPrim(potz, null);
 	current->primptr += sizeof(DR_TPAGE);
@@ -812,24 +824,23 @@ void TransparencyOn(void *potz, ushort tpage)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void UpdateFlashValue(void)
 {
-	int iVar1;
-	int iVar2;
-	uint uVar3;
-
-	iVar2 = CameraCnt;
+	int size;
+	int flash;
 
 	if (gShowMap != 0) 
-		iVar2 = FrameCnt;
+		size = FrameCnt;
+	else
+		size = CameraCnt;
+ 
+	flash = size % 16;
 
-	iVar1 = iVar2;
-
-	uVar3 = iVar2 - (iVar1 >> 4) * 16 & 0xff;
-	OverlayFlashValue = uVar3;
-
-	if (7 < uVar3) 
-		OverlayFlashValue = 16 - OverlayFlashValue;
+	if (flash > 7) 
+		flash = 16 - flash;
+	
+	OverlayFlashValue = flash;
 }
 
 
@@ -894,14 +905,13 @@ void UpdateFlashValue(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawDrivingGameOverlays(void)
 {
-	int iVar1;
-	int iVar2;
 	SCORE_ENTRY* table;
+	int x;
+	int i;
 	int y;
-	int y_00;
 	char string[32];
 
 	SetTextColour(128, 128, 64);
@@ -909,115 +919,137 @@ void DrawDrivingGameOverlays(void)
 	switch (GameType) 
 	{
 		case GAME_GETAWAY:
-			iVar1 = PrintString("Best: ", 0x10, 0x3c);
-			PrintScoreTableTime(iVar1 + 3, 0x3c, ScoreTables.GetawayTable[GameLevel][gSubGameNumber][0].time);
+			table = &ScoreTables.GetawayTable[GameLevel][gSubGameNumber][0];
+
+			x = PrintString("Best: ", 16, 60);
+			PrintScoreTableTime(x + 3, 60, table->time);
 			break;
 		case GAME_GATERACE:
 
-			if (NumPlayers != 1) 
+			if (NumPlayers == 1) 
 			{
-				y = PrintString("Gate:", 0x10, 0x24);
+				table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
+				PrintStringRightAligned("Gate:", 270, 16);
+
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
-				PrintString(string, y + 3, 0x24);
-				y = PrintString("Gate:", 0x10, 0x96);
-				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
-			LAB_00015b28:
-				PrintString(string, y + 3, 0x96);
-				return;
+				PrintString(string, 273, 16);
+
+				x = PrintString("Best:", 16, 36);
+				PrintScoreTableTime(x + 3, 36, table->time);
+
+				x = PrintString("Gate:", 16, 0x34);
+
+				if (table->items == -1)
+					sprintf(string, "-");
+				else
+					sprintf(string, "%d", table->items);
+
+				PrintString(string, x + 3, 52);
 			}
-
-			
-			table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
-			PrintStringRightAligned("Gate:", 0x10e, 0x10);
-			sprintf(string, "%d / %d", gPlayerScore.items, 100);
-			PrintString(string, 0x111, 0x10);
-			y = PrintString("Best:", 0x10, 0x24);
-			PrintScoreTableTime(y + 3, 0x24, table->time);
-			y = PrintString("Gate:", 0x10, 0x34);
-
-			if (table->items == -1)
-				goto LAB_00015c00;
-
-		LAB_00015c20:
-			sprintf(string, "%d", table->items);
-			goto LAB_00015c2c;
-
+			else
+			{
+				x = PrintString("Gate:", 16, 36);
+				sprintf(string, "%d / %d", gPlayerScore.items, 100);
+				
+				PrintString(string, x + 3, 36);
+				x = PrintString("Gate:", 16, 150);
+				
+				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
+				PrintString(string, x + 3, 150);
+			}
+			break;
 		case GAME_CHECKPOINT:
 
-			if (NumPlayers != 1) 
+			if (NumPlayers > 1) 
 			{
-				y = PrintString("Checks", 0x10, 0x24);
+				x = PrintString("Checks", 16, 36);
+				
 				sprintf(string, "%d/5", gPlayerScore.items);
-				PrintString(string, y + 3, 0x24);
-				y = PrintString("Checks", 0x10, 0x96);
+				PrintString(string, x + 3, 36);
+				
+				x = PrintString("Checks", 16, 150);
+				
 				sprintf(string, "%d/5", gPlayerScore.P2items);
-				goto LAB_00015b28;
+				PrintString(string, x + 3, 150);
 			}
+			else
+			{
+				table = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0];
+				PrintStringRightAligned("Checks", 270, 16);
 
-			table = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0];
-			PrintStringRightAligned("Checks", 0x10e, 0x10);
-			sprintf(string, "%d/5", gPlayerScore.items);
-			PrintString(string, 0x111, 0x10);
+				sprintf(string, "%d/5", gPlayerScore.items);
+				PrintString(string, 273, 16);
 
-			goto LAB_00015c88;
+				x = PrintString("Best:", 16, 36);
+				PrintScoreTableTime(x + 3, 36, table->time);
+			}
+		
+			break;
 		case GAME_TRAILBLAZER:
 			
 			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
-			PrintStringRightAligned("Cones:", 0xfa, 0x10);
+			PrintStringRightAligned("Cones:", 250, 16);
+		
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
-			PrintString(string, 0xfd, 0x10);
-			y = PrintString("Best", 0x10, 0x24);
-			PrintScoreTableTime(y + 3, 0x24, table->time);
-			y = PrintString("Cones:", 0x10, 0x34);
+			PrintString(string, 253, 16);
+		
+			x = PrintString("Best", 16, 36);
+			PrintScoreTableTime(x + 3, 36, table->time);
+			x = PrintString("Cones:", 16, 52);
 
 			if (table->items != -1)
-				goto LAB_00015c20;
-
-		LAB_00015c00:
-			sprintf(string, "-");
-		LAB_00015c2c:
-			PrintString(string, y + 3, 0x34);
+				sprintf(string, "%d", table->items);
+			else
+				sprintf(string, "-");
+			
+			PrintString(string, x + 3, 52);
+		
 			break;
 		case GAME_SURVIVAL:
 			table = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0];
-		LAB_00015c88:
-			y = PrintString("Best:", 0x10, 0x24);
-			PrintScoreTableTime(y + 3, 0x24, table->time);
+			x = PrintString("Best:", 16, 36);
+			PrintScoreTableTime(x + 3, 36, table->time);
 			break;
 		case GAME_CAPTURETHEFLAG:
-			y = PrintString("Flags:", 0x10, 0x10);
+			x = PrintString("Flags:", 16, 16);
 			sprintf(string, "%d", gPlayerScore.items);
-			PrintString(string, y + 3, 0x10);
-			y = PrintString("Flags:", 0x10, 0x84);
+			PrintString(string, x + 3, 16);
+		
+			x = PrintString("Flags:", 16, 132);
 			sprintf(string, "%d", gPlayerScore.P2items);
-			PrintString(string, y + 3, 0x84);
+			PrintString(string, x + 3, 132);
 			break;
 		case GAME_SECRET:
-			y_00 = 0x24;
-			y = 0;
-			if (0 < gNumRaceTrackLaps)
-			{
-				do {
-					iVar2 = y + 1;
-					sprintf(string, "%s %d:", "Lap", iVar2);
-					iVar1 = PrintString(string, 0x10, y_00);
-					PrintScoreTableTime(iVar1 + 3, y_00, gLapTimes[0][y]);
-					y = iVar2;
-					y_00 = y_00 + 0x10;
-				} while (iVar2 < gNumRaceTrackLaps);
-			}
+			y = 36;
 
-			y = 0x96;
-			if ((1 < NumPlayers) && (y_00 = 0, 0 < gNumRaceTrackLaps))
+			i = 0;
+			do
 			{
-				do {
-					iVar2 = y_00 + 1;
-					sprintf(string, "%s %d:", "Lap", iVar2);
-					iVar1 = PrintString(string, 0x10, y);
-					PrintScoreTableTime(iVar1 + 3, y, gLapTimes[1][y_00]);
-					y_00 = iVar2;
-					y = y + 0x10;
-				} while (iVar2 < gNumRaceTrackLaps);
+				sprintf(string, "%s %d:", "Lap", i+1);
+				
+				x = PrintString(string, 0x10, y);
+				PrintScoreTableTime(x + 3, y, gLapTimes[0][i]);
+				
+				y += 16;
+				i++;
+			} while (i < gNumRaceTrackLaps);
+
+		
+			if (NumPlayers > 1)
+			{
+				y = 150;
+				
+				i = 0;
+				do
+				{
+					sprintf(string, "%s %d:", "Lap", i+1);
+
+					x = PrintString(string, 0x10, y);
+					PrintScoreTableTime(x + 3, y, gLapTimes[1][i]);
+
+					y += 16;
+					i++;
+				} while (i < gNumRaceTrackLaps);
 			}
 			break;
 	}
@@ -1050,7 +1082,7 @@ void DrawDrivingGameOverlays(void)
 	/* end block 3 */
 	// End Line: 2407
 
-// [D]
+// [D] [T]
 void PrintScoreTableTime(int x, int y, int time)
 {
 	char string[32];

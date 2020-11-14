@@ -3009,6 +3009,10 @@ int InvalidCamera(int car_num)
 	int dz;
 	int numEventModels;
 
+	// [A] bug fix of invalid player camera
+	if (CameraCnt < 3)
+		return 0;
+	
 	// check if camera is not too far
 	if (cameraview != 2)
 	{

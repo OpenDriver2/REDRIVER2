@@ -1,11 +1,11 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
 #include <EMULATOR.H>
+#include <EMULATOR_TIMER.H>
 #include "DRIVER2.H"
 
 #include "C/PAD.H"
 #include "C/SYSTEM.H"
 #include "C/E3STUFF.H"
-#include "C/PRES.H"
 #include "C/PAUSE.H"
 
 #include "STRINGS.H"
@@ -14,7 +14,257 @@
 #include <AL/al.h>
 #include <jpeglib.h>
 
+struct UVWH
+{
+	uchar u, v;
+	uchar w, h;
+};
 
+struct FMV_FONT
+{
+	uchar u, v;
+	uchar w, h;
+	short unk1;
+};
+
+// TODO: NEED SAVE
+UVWH fontUV[256] = 
+{
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 222, 18, 3, 18 }, { 22, 36, 5, 18 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 94, 54, 6, 18 }, { 70, 54, 3, 18 },
+	{ 10, 36, 4, 18 }, { 16, 36, 4, 18 }, { 0, 0, 0, 0 }, { 34, 36, 6, 18 },
+	{ 246, 18, 2, 18 }, { 28, 36, 4, 18 }, { 0, 36, 2, 18 }, { 4, 36, 5, 18 },
+	{ 144, 18, 6, 18 }, { 152, 18, 4, 18 }, { 158, 18, 6, 18 }, { 166, 18, 6, 18 },
+	{ 174, 18, 7, 18 }, { 182, 18, 6, 18 }, { 190, 18, 6, 18 }, { 198, 18, 6, 18 },
+	{ 206, 18, 6, 18 }, { 214, 18, 6, 18 }, { 42, 36, 2, 18 }, { 66, 54, 3, 18 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 226, 18, 6, 18 },
+	{ 0, 0, 0, 0 }, { 0, 0, 7, 18 }, { 8, 0, 6, 18 }, { 16, 0, 6, 18 },
+	{ 24, 0, 6, 18 }, { 32, 0, 6, 18 }, { 40, 0, 5, 18 }, { 46, 0, 6, 18 },
+	{ 54, 0, 6, 18 }, { 62, 0, 3, 18 }, { 66, 0, 6, 18 }, { 74, 0, 6, 18 },
+	{ 82, 0, 5, 18 }, { 88, 0, 9, 18 }, { 98, 0, 6, 18 }, { 106, 0, 6, 18 },
+	{ 114, 0, 6, 18 }, { 122, 0, 6, 18 }, { 130, 0, 7, 18 }, { 138, 0, 7, 18 },
+	{ 146, 0, 6, 18 }, { 154, 0, 6, 18 }, { 162, 0, 7, 18 }, { 170, 0, 10, 18 },
+	{ 182, 0, 7, 18 }, { 190, 0, 7, 18 }, { 198, 0, 6, 18 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 206, 0, 6, 18 }, { 214, 0, 6, 18 }, { 222, 0, 5, 18 },
+	{ 228, 0, 5, 18 }, { 234, 0, 6, 18 }, { 242, 0, 5, 18 }, { 248, 0, 6, 18 },
+	{ 0, 18, 6, 18 }, { 8, 18, 3, 18 }, { 12, 18, 4, 18 }, { 18, 18, 6, 18 },
+	{ 26, 18, 3, 18 }, { 30, 18, 9, 18 }, { 40, 18, 6, 18 }, { 48, 18, 6, 18 },
+	{ 56, 18, 6, 18 }, { 64, 18, 6, 18 }, { 72, 18, 6, 18 }, { 80, 18, 6, 18 },
+	{ 88, 18, 5, 18 }, { 94, 18, 6, 18 }, { 102, 18, 7, 18 }, { 110, 18, 9, 18 },
+	{ 120, 18, 6, 18 }, { 128, 18, 7, 18 }, { 136, 18, 6, 18 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 238, 18, 6, 18 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 38, 54, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 30, 54, 6, 18 },
+	{ 50, 36, 8, 18 }, { 60, 36, 7, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 68, 36, 7, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 152, 36, 6, 18 },
+	{ 76, 36, 5, 18 }, { 82, 36, 5, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 88, 36, 3, 18 }, { 92, 36, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 144, 36, 7, 18 }, { 96, 36, 6, 18 }, { 104, 36, 7, 18 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 112, 36, 6, 18 }, { 0, 0, 0, 0 },
+	{ 120, 36, 7, 18 }, { 0, 0, 0, 0 }, { 128, 36, 6, 18 }, { 0, 0, 0, 0 },
+	{ 136, 36, 6, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 22, 54, 7, 18 },
+	{ 160, 36, 5, 18 }, { 166, 36, 6, 18 }, { 0, 54, 5, 18 }, { 0, 0, 0, 0 },
+	{ 174, 36, 5, 18 }, { 0, 0, 0, 0 }, { 84, 54, 8, 18 }, { 250, 36, 5, 18 },
+	{ 180, 36, 6, 18 }, { 188, 36, 6, 18 }, { 6, 54, 6, 18 }, { 0, 0, 0, 0 },
+	{ 196, 36, 3, 18 }, { 200, 36, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 50, 54, 6, 18 }, { 204, 36, 6, 18 }, { 212, 36, 6, 18 },
+	{ 58, 54, 6, 18 }, { 0, 0, 0, 0 }, { 220, 36, 6, 18 }, { 0, 0, 0, 0 },
+	{ 0, 0, 0, 0 }, { 228, 36, 6, 18 }, { 236, 36, 6, 18 }, { 14, 54, 6, 18 },
+	{ 244, 36, 5, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
+};
+
+FMV_FONT font[256];
+
+// Partially decompiled function from FMV EXE
+void InitFMVFont()
+{
+	int i;
+	RECT16 fontRect;
+
+	Loadfile("FMV\\FONT.TIM", _other_buffer);
+
+	//fontRect.x = 512;
+	//fontRect.y = 0;
+	//fontRect.w = 384;
+	//fontRect.h = 72;
+
+	//DrawSync(0);
+	//LoadImage2(&fontRect,(u_long *)(_other_buffer + 20));
+	//DrawSync(0);
+
+	DrawSync(0);
+	LoadClut((u_long *)(_other_buffer + 20),960,72);
+	DrawSync(0);
+
+	fontRect.x = 960;
+	fontRect.y = 0;
+	fontRect.w = 64;
+	fontRect.h = 72;
+
+	LoadImage2(&fontRect,(u_long *)(_other_buffer + 64));
+	DrawSync(0);
+
+	/*
+	i = 0;
+	while (i < 256) 
+	{
+		font[i].u = fontUV[i].u + (fontUV[i].u >> 1);
+		font[i].w = fontUV[i].w + (fontUV[i].w >> 1);
+	
+		if (fontUV[i].w & 1)
+			font[i].w += 1;
+	
+		if (i == 46) 
+			font[i].w += 1;
+
+		if (font[i].u + font[i].w < 256)
+		{
+			font[i].unk1 = 0x108;
+		}
+		else if (font[i].u >= 256) 
+		{
+			font[i].unk1 = 0x10c;
+		}
+		else if (font[i].u + font[i].w > 255) 
+		{
+			font[i].unk1 = 0x109;
+			font[i].u -= 64;
+		}
+
+		//font[i].u = local_14;
+		font[i].v = fontUV[i].v;
+		font[i].h = fontUV[i].h;
+		i = i + 1;
+	}
+
+	font[180].u = font[39].u;
+	font[180].v = font[39].v;
+	font[180].unk1 = font[39].unk1;
+	font[146].u = font[39].u;
+	font[146].v = font[39].v;
+	font[146].unk1 = font[39].unk1;
+	*/
+
+	i = 0;
+	while (i < 256)
+	{
+		font[i].u = fontUV[i].u;
+		font[i].v = fontUV[i].v;
+		font[i].w = fontUV[i].w;
+		font[i].h = fontUV[i].h;
+		i++;
+	}
+}
+
+POLY_FT4 fmvTextPolys[512];
+
+// partially decompiled
+void PrintFMVText(char *str, int x, short y, int brightness)
+{
+	char chr;
+	char *ptr;
+	int x_ofs;
+	int i;
+	int str_w;
+	int drawnChars;
+	OTTYPE ot;
+	POLY_FT4* poly;
+
+	ClearOTagR((ulong*)&ot, 1);
+	poly = fmvTextPolys;
+
+	str_w = 0;
+
+	if (brightness > 128) 
+		brightness = 128;
+
+	i = 0;
+	while (chr = str[i], chr != 0) 
+	{
+		if (chr == 32)
+			str_w += 4;
+		else
+			str_w += font[chr].w;
+		i++;
+	}
+
+	x_ofs = x - str_w / 2;
+
+	drawnChars = 0;
+
+	ptr = (char *)str;
+	while( true )
+	{
+		chr = *ptr;
+		ptr++;
+	
+		if (chr == 0 || drawnChars > 511) 
+			break;
+		
+		if (chr == 32)	// space
+		{
+			x_ofs += 4;
+		}
+		else
+		{
+			setPolyFT4(poly);
+			
+			poly->x0 = x_ofs;
+			poly->y0 = y;
+			poly->x1 = x_ofs + font[chr].w;
+			poly->y1 = y;
+			poly->x2 = x_ofs;
+			poly->y2 = y + font[chr].h;
+			poly->x3 = x_ofs + font[chr].w;
+			poly->y3 = y + font[chr].h;
+			poly->u0 = font[chr].u;
+			poly->v0 = font[chr].v;
+			poly->u1 = font[chr].u + font[chr].w;
+			poly->v1 = font[chr].v;
+			poly->u2 = font[chr].u;
+			poly->v2 = font[chr].v + font[chr].h;
+			poly->u3 = font[chr].u + font[chr].w;
+			poly->v3 = font[chr].v + font[chr].h;
+			poly->tpage = getTPage(0,0, 960, 0);
+			poly->clut = getClut(960, 72);
+
+			poly->r0 = brightness;
+			poly->g0 = brightness;
+			poly->b0 = brightness;
+
+			addPrim(&ot, poly);
+			
+			x_ofs += font[chr].w;
+			drawnChars++;
+			poly++;
+		}
+	}
+
+	DrawOTag((ulong*)&ot);
+}
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
 {
@@ -164,6 +414,15 @@ void FMVPlayerInitGL()
 
 void FMVPlayerShutdownGL()
 {
+	RECT16 rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 512;
+	rect.h = 256;
+
+	ClearImage(&rect, 0, 0, 0);
+	Emulator_SwapWindow();
+
 	Emulator_DestroyTexture(g_FMVTexture);
 }
 
@@ -178,7 +437,7 @@ struct SUBTITLE
 	char text[32];
 };
 
-SUBTITLE g_Subtitles[512];
+SUBTITLE g_Subtitles[128];
 int g_NumSubtitles = 0;
 
 void InitSubtitles(const char* filename)
@@ -188,7 +447,6 @@ void InitSubtitles(const char* filename)
 	if (subFile)
 	{
 		fread(&g_NumSubtitles, sizeof(int), 1, subFile);
-		printInfo("Subtitle text count: %d\n", g_NumSubtitles);
 
 		fread(g_Subtitles, sizeof(g_Subtitles), g_NumSubtitles, subFile);
 
@@ -196,10 +454,59 @@ void InitSubtitles(const char* filename)
 	}
 }
 
+char* g_CreditsBuffer = NULL;
+char* g_CreditsLines[512];
+
+void InitCredits(const char* filename)
+{
+	memset(g_CreditsLines, 0, sizeof(g_CreditsLines));
+	
+	FILE* credFile = fopen(filename, "rb");
+	if (credFile)
+	{
+		fseek(credFile, 0, SEEK_END);
+		int credits_buffer_size = ftell(credFile);
+		fseek(credFile, 0, SEEK_SET);
+
+		g_CreditsBuffer = (char*)malloc(credits_buffer_size + 1);
+
+		fread(g_CreditsBuffer, 1, credits_buffer_size, credFile);
+		g_CreditsBuffer[credits_buffer_size] = 0;
+
+		fclose(credFile);
+	}
+
+	if(g_CreditsBuffer)
+	{
+		// make credits into lines
+		char* str = g_CreditsBuffer;
+		int numCreditsLines = 0;
+
+		while(*str)
+		{
+			if(!g_CreditsLines[numCreditsLines])
+				g_CreditsLines[numCreditsLines] = str;
+			
+			if(*str == '\r')
+			{
+				*str = '\0';
+				
+				if (*++str == '\n')
+					numCreditsLines++;
+			}
+			else if(*str == '\n')
+			{
+				*str = '\0';
+				numCreditsLines++;
+			}
+			
+			str++;
+		}
+	}
+}
+
 void PrintSubtitleText(SUBTITLE* sub)
 {
-	gShowMap = 1;
-
 	char* str = sub->text;
 
 	// skip some trailing spaces
@@ -207,10 +514,7 @@ void PrintSubtitleText(SUBTITLE* sub)
 		str++;
 	}
 
-	SetTextColour(128, 128, 128);
-	PrintString(str, (600 - StringWidth(str)) * 0x8000 >> 0x10, sub->y - 25);
-
-	gShowMap = 0;
+	PrintFMVText(str, 256, sub->y - 25, 128);
 }
 
 void DisplaySubtitles(int frame_number)
@@ -223,9 +527,46 @@ void DisplaySubtitles(int frame_number)
 	}
 }
 
+#define CREDITS_START_FRAME				700
+#define CREDITS_STOP_FRAME				5450
+#define CREDITS_FADE_START_FRAME		5900
+
+void DisplayCredits(int frame_number)
+{
+	int i;
+
+	int frame = frame_number;
+
+	if (frame > CREDITS_STOP_FRAME)
+		frame = CREDITS_STOP_FRAME;
+	
+	int height = (frame - CREDITS_START_FRAME) * 30 >> 5;
+
+	int fade = 0;
+	if (frame_number > CREDITS_FADE_START_FRAME)
+	{
+		fade = (frame_number - CREDITS_FADE_START_FRAME) * 2;
+		if (fade > 128)
+			fade = 128;
+	}
+
+	for(i = 0; i < 512; i++)
+	{
+		int text_h = 250 - height + i * 16;
+		
+		if (text_h < -20 || text_h > 260)
+			continue;
+		
+		char* str = g_CreditsLines[i];
+
+		if(str)
+			PrintFMVText(str, 256, text_h, 128 - fade);
+	}
+}
+
 extern void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
-void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number)
+void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
@@ -248,6 +589,11 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number)
 
 	DisplaySubtitles(frame_number);
 
+	if(credits && frame_number >= CREDITS_START_FRAME)
+	{
+		DisplayCredits(frame_number);
+	}
+
 	Emulator_EndScene();
 }
 
@@ -261,7 +607,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
 
 	ReadAVI readAVI(filename);
-
+	
 	// also load subtitle file
 	if (subtitles)
 	{
@@ -271,6 +617,12 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	else
 	{
 		g_NumSubtitles = 0;
+	}
+
+	if(arg->credits)
+	{
+		sprintf(filename, "%sDATA\\CREDITS.ENG", gDataFolder);
+		InitCredits(filename);
 	}
 
 	ReadAVI::avi_header_t avi_header = readAVI.GetAviHeader();
@@ -294,8 +646,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	alGenBuffers(4, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
-	int nextTime = SDL_GetTicks();
-	int oldTime = nextTime;
+	timerCtx_t fmvTimer;
+
+	Emulator_InitHPCTimer(&fmvTimer);
+
+	double nextFrameDelay = 0.0;
 
 	int frame_size;
 	int queue_counter = 0;
@@ -303,20 +658,19 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int fade_out = 0;
 	int done_frames = 0;
 
+	Emulator_GetHPCTime(&fmvTimer, 1);
+	
 	// main loop
 	while (true)
 	{
-		int curTime = SDL_GetTicks();
-		int deltaTime = curTime - oldTime;
+		double delta = Emulator_GetHPCTime(&fmvTimer, 1);
 
-		if (deltaTime > 1000)
-		{
-			nextTime += deltaTime;
-			oldTime = curTime;
-		}
+		if (delta > 1.0)
+			delta = 0.0;
 
+		nextFrameDelay -= delta;
 
-		if (curTime <= nextTime) // wait for frame
+		if (nextFrameDelay > 0) // wait for frame
 		{
 			Emulator_EndScene();
 			continue;
@@ -351,16 +705,16 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
 
 				if (ret == 0)
-					DrawFrame(stream_format, done_frames);
+				{
+					DrawFrame(stream_format, done_frames, arg->credits);
+				}
 
 				// set next step time
-				if (g_swapInterval == 0)
-					nextTime = curTime;
+				if (g_swapInterval == 1)
+					nextFrameDelay += double(avi_header.TimeBetweenFrames) / 1000000.0;
 				else
-					nextTime += avi_header.TimeBetweenFrames / 1000;
-
-				oldTime = curTime;
-
+					nextFrameDelay = 0.0;
+				
 				done_frames++;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
@@ -400,7 +754,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				if (queue_counter < 4)
 					QueueAudioBuffer(audioStreamBuffers[queue_counter++], audioStreamSource, frame_entry, audio_format, 0, frame_size);
 
-				if(queue_counter > 0 && state != AL_PLAYING)
+				if((queue_counter > 1 || numProcessed == -1) && state != AL_PLAYING)
 					alSourcePlay(audioStreamSource);
 			}
 		}
@@ -423,13 +777,26 @@ int FMV_main(RENDER_ARGS* args)
 	DRAWENV draw;
 
 	FMVPlayerInitGL();
-	LoadFont(NULL);
+	//LoadFont(NULL);
 
-	SetupDefDrawEnv(&draw, 0, 0, 600, 250);
-	SetupDefDispEnv(&disp, 0, 0, 600, 250);
+	InitFMVFont();
+
+	SetupDefDrawEnv(&draw, 0, 0, 512, 256);
+	SetupDefDispEnv(&disp, 0, 0, 512, 256);
+
 	draw.dfe = 1;
+
+	draw.clip.x = -512;
+	draw.clip.w = 1200;
+	draw.clip.y = -1;
+	draw.clip.h = 512;
+	
+	disp.isinter = 0;
+
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
+
+	Emulator_SetupClipMode(draw.clip);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{
@@ -437,6 +804,10 @@ int FMV_main(RENDER_ARGS* args)
 	}
 
 	FMVPlayerShutdownGL();
+
+	if (g_CreditsBuffer)
+		free(g_CreditsBuffer);
+	g_CreditsBuffer = NULL;
 
 	return 0;
 }

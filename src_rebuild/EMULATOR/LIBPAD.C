@@ -7,17 +7,21 @@
 SDL_GameController* padHandle[MAX_CONTROLLERS];
 unsigned char* padData[MAX_CONTROLLERS];
 
-const unsigned char* keyboardState;
+const unsigned char* keyboardState = NULL;
+
 
 void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 {
+	// do not init second time!
+	if (keyboardState != NULL)
+		return;
+	
 	if (pad1 != NULL)
 	{
 		padData[0] = pad1;
 
 		PADRAW* pad = (PADRAW*)pad1;
 		pad->id = 0x41;	// always init first controller
-		pad->id = 0;
 		pad->analog[0] = 128;
 		pad->analog[1] = 128;
 		pad->analog[2] = 128;
@@ -361,10 +365,10 @@ void InternalPadUpdates()
 				pad->status = 0;	// PadStateStable?
 
 				// switch to analog state
-				if(pad->analog[0] != 127 || 
-					pad->analog[1] != 127 || 
-					pad->analog[2] != 127 || 
-					pad->analog[3] != 127 || 
+				if((pad->analog[0] == 255 || 
+					pad->analog[1] == 255 || 
+					pad->analog[2] == 255 || 
+					pad->analog[3] == 255) && 
 					pad->id == 0x41)
 				{
 					eprintf("Switched controller type to ANALOG\n");
