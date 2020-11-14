@@ -18,7 +18,6 @@
 #include "GAMESND.H"
 #include "SOUND.H"
 #include "BCOLLIDE.H"
-#include "GLAUNCH.H"
 #include "LEADAI.H"
 #include "MAIN.H"
 #include "PEDEST.H"
@@ -26,8 +25,9 @@
 
 #include "INLINE_C.H"
 #include "OVERLAY.H"
+#include "STRINGS.H"
 
-unsigned char speedLimits[3] = { 56, 97, 138 };
+const u_char speedLimits[3] = { 56, 97, 138 };
 
 struct
 {
@@ -43,7 +43,7 @@ struct
 	int InvalidRegion;
 } civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
+char modelRandomList[16];
 unsigned char reservedSlots[MAX_CARS] = { 0 };
 
 int distFurthestCivCarSq = 0;
@@ -2767,6 +2767,37 @@ void InitCivCars(void)
 	roadblockDelay = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 	PingOutCivsOnly = 0;
 	roadblockCount = roadblockDelay;
+
+	distFurthestCivCarSq = 0;
+	furthestCivID = 0;
+	makeLimoPullOver = 0;
+	frameStart = 0;
+
+	limoId = 0;
+	playerNum = 0;
+	roadSeg = 0;
+	testNumPingedOut = 0;
+	currentAngle = 0;
+	closeEncounter = 3;
+
+	modelRandomList[0] = 0;
+	modelRandomList[1] = 0;
+	modelRandomList[2] = 0; 
+	modelRandomList[3] = 0; 
+	modelRandomList[4] = 1; 
+	modelRandomList[5] = 1; 
+	modelRandomList[6] = 1; 
+	modelRandomList[7] = 1; 
+	modelRandomList[8] = 2; 
+	modelRandomList[9] = 2; 
+	modelRandomList[10] = 2; 
+	modelRandomList[11] = 2; 
+	modelRandomList[12] = 0; 
+	modelRandomList[13] = 1; 
+	modelRandomList[14] = 0;
+	modelRandomList[15] = 4;
+
+	memset(reservedSlots, 0, sizeof(reservedSlots));
 }
 
 
@@ -3258,7 +3289,7 @@ int PingInCivCar(int minPingInDist)
 	int lbody;
 	int lane;
 	int i;
-	int oldCookieCount;
+	unsigned char cookieCountStart;
 	uint retDistSq;
 	unsigned char* slot;
 
@@ -3397,7 +3428,7 @@ int PingInCivCar(int minPingInDist)
 		if (requestCopCar == 0 && cookieCount > 43)
 			cookieCount -= 25;
 
-		oldCookieCount = cookieCount;
+		cookieCountStart = cookieCount;
 
 		do {
 			if (cookieCount < maxCookies)
@@ -3405,7 +3436,7 @@ int PingInCivCar(int minPingInDist)
 			else
 				cookieCount = 0;
 
-			if (cookieCount == oldCookieCount)
+			if (cookieCount == cookieCountStart)
 			{
 				break;
 			}
