@@ -3,6 +3,8 @@
 
 #define TANNER_COLLIDER_CARID (MAX_CARS)
 
+extern SVECTOR tannerLookAngle;
+
 extern MODEL* pmTannerModels[17];
 extern MODEL* pmJerichoModels[6];
 
