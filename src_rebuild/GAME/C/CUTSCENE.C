@@ -313,7 +313,7 @@ void DrawInGameCutscene(void)
 			// [A] print user chaser name on screen
 			char tempStr[80];
 
-			sprintf(tempStr, "Recorded by %s", gUserReplayFolderList[gUserChaseLoaded]);
+			sprintf(tempStr, "Getaway is %s", gUserReplayFolderList[gUserChaseLoaded]);
 
 			SetTextColour(128, 128, 64);
 			PrintString(tempStr, 16, 230);
