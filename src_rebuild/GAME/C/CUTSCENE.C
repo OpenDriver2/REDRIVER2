@@ -313,7 +313,7 @@ void DrawInGameCutscene(void)
 			// [A] print user chaser name on screen
 			char tempStr[80];
 
-			sprintf(tempStr, "Getaway is %s", gUserReplayFolderList[gUserChaseLoaded]);
+			sprintf(tempStr, "Recorded by %s", gUserReplayFolderList[gUserChaseLoaded]);
 
 			SetTextColour(128, 128, 64);
 			PrintString(tempStr, 16, 230);
@@ -1346,7 +1346,71 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	return 1;
 }
 
+#ifndef PSX
+int LoadCutsceneFile(char *filename, int subindex, int userId = -1)
+{
+	gUserChaseLoaded = userId;
 
+	int size = LoadfileSeg(filename, gCustomCutsceneBuffer, 0, 0xffff);
+
+	if (size != 0)
+	{
+		// load into custom buffer
+		printInfo("Custom chase '%s' loaded\n", filename);
+
+		CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
+		CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = gCustomCutsceneBuffer;
+		CutsceneBuffer.numResident++;
+
+		gCustomCutsceneBuffer += size;
+
+		return 1;
+	}
+
+	return 0;
+}
+
+int LoadUserCutscene(int subindex, int userId = -1)
+{
+	char customFilename[64];
+	int userIndex = -1;
+
+	if (userId >= 0 && userId < gNumUserChases)
+	{
+		sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[userId], gCurrentMissionNumber, subindex);
+
+		if (FileExists(customFilename))
+			userIndex = userId;
+	}
+
+	if (userIndex == -1)
+	{
+		// find first valid user replay
+		for (int i = 0; i < gNumUserChases; i++)
+		{
+			sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[i], gCurrentMissionNumber, subindex);
+
+			if (FileExists(customFilename))
+			{
+				userIndex = i;
+				break;
+			}
+		}
+
+		// if it doesn't exist under someone's name, get an anonymous one
+		if (userIndex == -1)
+		{
+			sprintf(customFilename, "REPLAYS\\User\\CUT%d_%d.D2RP", gCurrentMissionNumber, subindex);
+
+			// and if it still doesn't exist, let the game handle it
+			if (!FileExists(customFilename))
+				return 0;
+		}
+	}
+
+	return LoadCutsceneFile(customFilename, subindex, userIndex);
+}
+#endif
 
 // decompiled code
 // original method signature: 
@@ -1380,7 +1444,6 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	/* end block 4 */
 	// End Line: 3091
 
-
 // [D] [T]
 int LoadCutsceneToBuffer(int subindex)
 {
@@ -1389,7 +1452,6 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
-	char customFilename[64];
 
 	if (gCurrentMissionNumber < 21) 
 		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
@@ -1398,72 +1460,28 @@ int LoadCutsceneToBuffer(int subindex)
 
 	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
 
+#ifndef PSX
+	int userId = -1;
+
+	// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
+	if (gNumUserChases)
+	{
+		userId = rand() % (gNumUserChases + 1);
+
+		if (userId == gNumUserChases)
+			userId = -1;
+	}
+
+	if (LoadUserCutscene(subindex, userId))
+		return 1;
+#endif
+
 	if (FileExists(filename))
 	{
 		LoadfileSeg(filename, (char *)&header, 0, sizeof(CUTSCENE_HEADER));
 
 		if (header.data[subindex].offset != 0xffff)
 		{
-#ifndef PSX
-			int userFolderId;
-			
-			// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
-			if (gNumUserChases)
-			{
-				userFolderId = rand() % (gNumUserChases + 1);
-
-				if (userFolderId == gNumUserChases)
-					userFolderId = -1;
-
-				if(userFolderId >= 0)
-				{
-					// optional randomization
-					sprintf(customFilename, "REPLAYS\\%s\\CUT%d\\CUT%d_%d.D2RP", gUserReplayFolderList[userFolderId], gCurrentMissionNumber, gCurrentMissionNumber, subindex);
-
-					if (!FileExists(customFilename))
-						userFolderId = -1;
-				}
-			}
-			else
-				userFolderId = -1;
-
-			if(userFolderId == -1)
-			{
-				// try load replaced replays from users
-				for(int i = 0; i < gNumUserChases; i++)
-				{
-					sprintf(customFilename, "REPLAYS\\REP\\CUT%d\\CUT%d_%d.%s", gCurrentMissionNumber, gCurrentMissionNumber, subindex, gUserReplayFolderList[i]);
-					if(FileExists(customFilename))
-					{
-						userFolderId = i;
-						break;
-					}
-				}
-
-				// if not found any user replays, try load D2RP
-				if(userFolderId == -1)
-					sprintf(customFilename, "REPLAYS\\REP\\CUT%d\\CUT%d_%d.D2RP", gCurrentMissionNumber, gCurrentMissionNumber, subindex);
-			}
-				
-			if (FileExists(customFilename))
-			{
-				gUserChaseLoaded = userFolderId;
-
-				printInfo("Custom chase '%s' loaded\n", customFilename);
-				size = LoadfileSeg(customFilename, gCustomCutsceneBuffer, 0, 0xffff);
-
-				// load into custom buffer
-				CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
-				CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = gCustomCutsceneBuffer;
-				CutsceneBuffer.numResident++;
-
-				gCustomCutsceneBuffer += size;
-				return 1;
-			}
-			else
-				gUserChaseLoaded = -1;
-#endif
-
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 			
