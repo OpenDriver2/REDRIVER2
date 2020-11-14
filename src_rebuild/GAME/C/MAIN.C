@@ -1152,7 +1152,7 @@ void StepSim(void)
 	static char t2; // offset 0x5
 	static int oldsp; // offset 0x8
 
-	char padSteer;
+	char padAcc;
 	short* playerFelony;
 	int stream;
 	CAR_DATA* cp;
@@ -1412,18 +1412,17 @@ void StepSim(void)
 		{
 			if (Pads[stream].type == 4)
 			{
-				padSteer = Pads[stream].mapanalog[3];
+				padAcc = Pads[stream].mapanalog[3];
 
-				if (padSteer < -64 && padSteer > -100)
+				// walk back
+				if (padAcc < -64)
 				{
-					Pads[stream].mapped |= 0x1008;
+					if(padAcc < -100)
+						Pads[stream].mapped |= 0x1000;
+					else
+						Pads[stream].mapped |= 0x1008;
 				}
-				else if (padSteer < -100 && padSteer > 127)
-				{
-					stream = pl->padid;
-					Pads[stream].mapped |= 0x1000;
-				}
-				else if (padSteer > 32)
+				else if (padAcc > 32)
 				{
 					stream = pl->padid;
 					Pads[stream].mapped |= 0x4000;
