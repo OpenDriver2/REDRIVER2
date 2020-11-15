@@ -814,7 +814,7 @@ void DrawOverheadMap(void)
 	POLY_FT3 *null;
 	CAR_DATA *cp;
 	DR_AREA *drarea;
-	int r;
+	int intens;
 	SVECTOR MapMesh[5][5];
 	VECTOR MapMeshO[5][5];
 	MAPTEX MapTex[4];
@@ -889,12 +889,10 @@ void DrawOverheadMap(void)
 		if (flashtimer)
 		{
 			flashtimer--;
-			r = -flashtimer;
+			intens = -flashtimer;
 
-			r = ptab2[r + 47 >> 2] + ptab2[r + 48 >> 2] + ptab2[r + 49 >> 2] + ptab2[r + 50 >> 2];
-			r = r >> 2;
-
-			FlashOverheadMap(r, r, r);
+			intens = ptab2[intens + 47 >> 2] + ptab2[intens + 48 >> 2] + ptab2[intens + 49 >> 2] + ptab2[intens + 50 >> 2] >> 2;
+			FlashOverheadMap(intens, intens, intens);
 		}
 	}
 
@@ -1031,20 +1029,17 @@ void DrawOverheadMap(void)
 		MapMesh[i][4].vz = 35;
 	}
 
-	MapTex[0].v = 32 - MapTex[0].v;
-	MapTex[0].u = 32 - MapTex[0].u;
-
 	MapTex[1].w = MapTex[2].w = tile_size;
 	MapTex[1].u = MapTex[2].u = MapTex[3].u = 0;
 
 	MapTex[1].h = MapTex[2].h = tile_size;
 	MapTex[1].v = MapTex[2].v = MapTex[3].v = 0;
 	
-	MapTex[0].u = ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
+	MapTex[0].u = 32 - ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
 	MapTex[0].w = ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
 
 	MapTex[3].w = ABS(MapMesh[3][0].vx - MapMesh[4][0].vx);
-	MapTex[0].v = ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
+	MapTex[0].v = 32 - ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
 	
 	MapTex[0].h = ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
 	MapTex[3].h = ABS(MapMesh[0][3].vz - MapMesh[0][4].vz);
@@ -1270,22 +1265,16 @@ void DrawOverheadMap(void)
 /* WARNING: Could not reconcile some variable overlaps */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+// [D] [T]
 void DrawFullscreenMap(void)
 {
-	ushort uVar1;
-	short sVar2;
 	TILE *polys;
-	int iVar3;
 	TILE_1 *tile1;
-	uint uVar4;
 	POLY_FT4 *back;
 	POLY_FT3 *null;
-	VECTOR *v1;
-	uint *puVar5;
-	SVECTOR *v0;
-	int y;
-	int iVar6;
-	int x;
+	int x, y;
+	int clipped;
+	int px, py;
 	SVECTOR mesh[4];
 	VECTOR meshO[4];
 	VECTOR target;
@@ -1294,9 +1283,10 @@ void DrawFullscreenMap(void)
 	int width;
 	int height;
 	int local_34;
-	VECTOR *local_30;
+	int count;
 
-	if ((Pads[0].dirnew & 0x20) != 0) 
+	// toggle rotated map
+	if (Pads[0].dirnew & 0x20) 
 	{
 		map_x_offset = 0;
 		map_z_offset = 0;
@@ -1327,91 +1317,96 @@ void DrawFullscreenMap(void)
 	width = overlaidmaps[GameLevel].width;
 	height = overlaidmaps[GameLevel].height;
 
-	WorldToFullscreenMap((VECTOR *)player, &player_position);
+	WorldToFullscreenMap((VECTOR *)player->pos, &player_position);
 
-	if (gUseRotatedMap != 0) 
+	// do map movement
+	if (gUseRotatedMap) 
 	{
-		if ((Pads[0].direct & 0x8000) == 0) {
-			if ((Pads[0].direct & 0x2000) != 0) {
-				map_x_offset = map_x_offset + -8;
-			}
-		}
-		else {
-			map_x_offset = map_x_offset + 8;
-		}
-		if ((Pads[0].direct & 0x1000) == 0) {
-			if ((Pads[0].direct & 0x4000) != 0) {
-				map_z_offset = map_z_offset + -8;
-			}
-		}
-		else {
-			map_z_offset = map_z_offset + 8;
-		}
-		if (map_x_offset < -0x80) {
-			map_x_offset = -0x80;
-		}
-		if (0x80 < map_x_offset) {
-			map_x_offset = 0x80;
-		}
-		if (map_z_offset < -0x80) {
-			map_z_offset = -0x80;
-		}
-		if (0x80 < map_z_offset) {
-			map_z_offset = 0x80;
-		}
+		if (Pads[0].direct & 0x8000)
+			map_x_offset += 8;
+		else if (Pads[0].direct & 0x2000)
+			map_x_offset -= 8;
+		
+		if (Pads[0].direct & 0x1000) 
+			map_z_offset += 8;
+		else if (Pads[0].direct & 0x4000)
+			map_z_offset -= 8;
+
+		if (map_x_offset < -128)
+			map_x_offset = -128;
+
+		if (map_x_offset > 128)
+			map_x_offset = 128;
+
+		if (map_z_offset < -128)
+			map_z_offset = -128;
+
+		if (map_z_offset > 128)
+			map_z_offset = 128;
+
 		map_x_shift = 0;
 		map_z_shift = 0;
-		goto LAB_00017f8c;
-	}
-
-	map_x_offset = (player_position.vx + 0xa0) - width;
-
-	if ((player_position.vx + 0xa0 <= width) &&
-		(map_x_offset = player_position.vx + -0xa0, -1 < map_x_offset))
-	{
-		map_x_offset = 0;
-	}
-
-	map_z_offset = (player_position.vz + 0x80) - height;
-
-	if ((player_position.vz + 0x80 <= height) && (map_z_offset = player_position.vz + -0x80, -1 < map_z_offset)) 
-	{
-		map_z_offset = 0;
-	}
-	if ((Pads[0].direct & 0x8000) == 0)
-	{
-		if (((Pads[0].direct & 0x2000) != 0) &&
-			(iVar3 = map_x_shift + -8,
-			((player_position.vx - map_x_offset) + 0xa0) - map_x_shift < width)) 
-			goto LAB_00017f0c;
 	}
 	else
 	{
-		iVar3 = map_x_shift + 8;
-		if (0 < ((player_position.vx - map_x_offset) + -0xa0) - map_x_shift) {
-		LAB_00017f0c:
-			map_x_shift = iVar3;
+		if(player_position.vx + 160 <= width)
+		{
+			map_x_offset = player_position.vx - 160;
+			
+			if(map_x_offset > -1)
+				map_x_offset = 0;
 		}
+		else
+		{
+			map_x_offset = (player_position.vx + 160) - width;
+		}
+
+		if(player_position.vz + 128 <= height)
+		{
+			map_z_offset = player_position.vz - 128;
+			
+			if (map_z_offset > -1) 
+				map_z_offset = 0;
+		}
+		else
+		{
+			map_z_offset = (player_position.vz + 128) - height;
+		}
+
+		if (Pads[0].direct & 0x8000)
+		{
+			if (player_position.vx - map_x_offset - 160 - map_x_shift > 0) 
+			{
+				map_x_shift += 8;
+			}
+		}
+		else if(Pads[0].direct & 0x2000)
+		{
+			if (player_position.vx - map_x_offset + 160 - map_x_shift < width)
+			{
+				map_x_shift -= 8;
+			}
+		}
+
+		if (Pads[0].direct & 0x1000) 
+		{
+			if (player_position.vz - map_z_offset - 128 - map_z_shift > 0)
+			{
+				map_z_shift += 8;
+			}
+		}
+		else if(Pads[0].direct & 0x4000)
+		{
+			if (player_position.vz - map_z_offset + 128 - map_z_shift < height)
+			{
+				map_z_shift -= 8;
+			}
+		}
+
+		map_x_offset += map_x_shift;
+		map_z_offset += map_z_shift;
 	}
 
-	if ((Pads[0].direct & 0x1000) == 0) 
-	{
-		if (((Pads[0].direct & 0x4000) != 0) &&
-			(iVar3 = map_z_shift + -8,
-			((player_position.vz - map_z_offset) + 0x80) - map_z_shift < height)) goto LAB_00017f64;
-	}
-	else 
-	{
-		iVar3 = map_z_shift + 8;
-		if (0 < ((player_position.vz - map_z_offset) + -0x80) - map_z_shift) {
-		LAB_00017f64:
-			map_z_shift = iVar3;
-		}
-	}
-
-	map_x_offset = map_x_offset + map_x_shift;
-	map_z_offset = map_z_offset + map_z_shift;
-LAB_00017f8c:
 
 	null = (POLY_FT3 *)current->primptr;
 
@@ -1427,96 +1422,82 @@ LAB_00017f8c:
 	DrawPrim(null);
 	DrawSync(0);
 
-	local_30 = &target;
-	local_34 = 0;
-	while (true) {
-		x = local_34;
-		iVar3 = width;
+	width >>= 5;
+	height >>= 5;
 
-		if (iVar3 >> 5 <= x)
-			break;
+	px = MapSegmentPos[0].x * 4;
+	py = MapSegmentPos[0].y;
 
-		local_34 = x + 1;
-		iVar3 = 0;
-
-		while (true) 
+	for(x = 0; x < width; x++)
+	{
+		for(y = 0; y < height; y++)
 		{
-			y = iVar3;
-			iVar3 = height;
-
-			iVar6 = 0;
-
-			if (iVar3 >> 5 <= y)
-				break;
-
-			puVar5 = (uint *)&meshO[0].vz;
-			v1 = meshO;
-			v0 = mesh;
-			iVar3 = 3;
 			mesh[0].vy = 0;
 			mesh[1].vy = 0;
 			mesh[2].vy = 0;
 			mesh[3].vy = 0;
-			mesh[0].vx = (short)x * 0x20 - (short)player_position.vx;
-			mesh[1].vx = mesh[0].vx + 0x20;
-			mesh[0].vz = (short)y * 0x20 - (short)player_position.vz;
-			mesh[2].vz = mesh[0].vz + 0x20;
+			mesh[0].vx = x * 32 - player_position.vx;
+			mesh[1].vx = mesh[0].vx + 32;
+			mesh[0].vz = y * 32 - player_position.vz;
+			mesh[2].vz = mesh[0].vz + 32;
 			mesh[1].vz = mesh[0].vz;
 			mesh[2].vx = mesh[0].vx;
 			mesh[3].vx = mesh[1].vx;
 			mesh[3].vz = mesh[2].vz;
 
-			do {
-				RotTrans(v0, v1, &flag);
-				v1->vx = v1->vx + map_x_offset;
-				uVar4 = *puVar5;
-				*puVar5 = uVar4 + map_z_offset;
+			// rotate and clip polygons
+			clipped = 0;
 
-				if ((0x140 < v1->vx) || (0x100 < uVar4 + map_z_offset)) {
-					iVar6 = iVar6 + 1;
-				}
-
-				puVar5 = puVar5 + 4;
-				v1 = v1 + 1;
-				iVar3 = iVar3 + -1;
-				v0 = v0 + 1;
-			} while (-1 < iVar3);
-
-			iVar3 = y + 1;
-
-			if(iVar6 != 4) 
+			for (count = 0; count < 4; count++)
 			{
-				LoadMapTile(0, x, y);
+				RotTrans(&mesh[count], &meshO[count], &flag);
 
-				back = (POLY_FT4 *)current->primptr;
-				setPolyFT4(back);
+				meshO[count].vx += map_x_offset;
+				meshO[count].vz += map_z_offset;
 
-				back->r0 = 88;
-				back->g0 = 88;
-				back->b0 = 88;
-
-				back->x0 = meshO[0].vx;
-				back->y0 = meshO[0].vz;
-				back->x1 = meshO[1].vx;
-				back->y1 = meshO[1].vz;
-				back->x2 = meshO[2].vx;
-				back->y2 = meshO[2].vz;
-				back->x3 = meshO[3].vx;
-				back->y3 = meshO[3].vz;
-				back->u0 = MapSegmentPos[0].x << 2;
-				back->v0 = MapSegmentPos[0].y;
-				back->u1 = MapSegmentPos[0].x * 4 + 31;
-				back->v1 = MapSegmentPos[0].y;
-				back->u2 = MapSegmentPos[0].x << 2;
-				back->v2 = MapSegmentPos[0].y + 31;
-				back->u3 = MapSegmentPos[0].x * 4 + 31;
-				back->v3 = MapSegmentPos[0].y + 31;
-				back->clut = MapClut;
-				back->tpage = MapTPage;
-
-				DrawPrim(back);
-				DrawSync(0);
+				if (meshO[count].vx > 320 || meshO[count].vz > 256)
+					clipped++;
 			}
+
+			if(clipped == 4)
+				continue;
+			
+			LoadMapTile(0, x, y);
+
+			back = (POLY_FT4 *)current->primptr;
+			setPolyFT4(back);
+
+			back->r0 = back->g0 = back->b0 = 88;
+
+			back->x0 = meshO[0].vx;
+			back->y0 = meshO[0].vz;
+			
+			back->x1 = meshO[1].vx;
+			back->y1 = meshO[1].vz;
+			
+			back->x2 = meshO[2].vx;
+			back->y2 = meshO[2].vz;
+			
+			back->x3 = meshO[3].vx;
+			back->y3 = meshO[3].vz;
+
+			back->u0 = px;
+			back->v0 = py;
+			
+			back->u1 = px + 31;
+			back->v1 = py;
+			
+			back->u2 = px;
+			back->v2 = py + 31;
+			
+			back->u3 = px + 31;
+			back->v3 = py + 31;
+			
+			back->clut = MapClut;
+			back->tpage = MapTPage;
+
+			DrawPrim(back);
+			DrawSync(0);
 		}
 	}
 
@@ -1525,12 +1506,12 @@ LAB_00017f8c:
 
 	DrawFullscreenTargets();
 
-	if (gUseRotatedMap == 0)
-		DrawBigCompass(local_30, 0);
+	if (gUseRotatedMap)
+		DrawBigCompass(&target, player[0].dir);
 	else 
-		DrawBigCompass(local_30, player[0].dir);
+		DrawBigCompass(&target, 0);
 
-	DrawTargetBlip(local_30, 64, 64, 64, 14);
+	DrawTargetBlip(&target, 64, 64, 64, 14);
 
 	vec.vx = target.vx + map_x_offset;
 	vec.vz = target.vz + map_z_offset;
@@ -1560,9 +1541,10 @@ LAB_00017f8c:
 	DrawPrim(null);
 	DrawSync(0);
 
-	SetTextColour(0x80, 0x80, 0x80);
+	SetTextColour(128, 128, 128);
 
-	PrintStringCentred("\x80 Exit \x81 Rotation \x8a Move", 0xe2);
+	// print string with special characters representing some images inserted into it
+	PrintStringCentred("\x80 Exit \x81 Rotation \x8a Move", 226);
 }
 
 
