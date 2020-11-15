@@ -39,7 +39,7 @@ extern void LoadMapTile(int tpage, int x, int y); // 0x00018AA0
 
 extern void SetMapPos(); // 0x00019A60
 
-extern void draw_box(); // 0x00018BF4
+extern void draw_box(int yPos, int h); // 0x00018BF4
 
 extern void DrawN(VECTOR *pScreenPosition, int direct); // 0x00018D54
 

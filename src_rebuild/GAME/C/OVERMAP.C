@@ -113,6 +113,11 @@ static unsigned short MapTPage = 0;
 
 static int gUseRotatedMap = 0;
 
+#define MAP_SIZE_W	64
+#define MAP_SIZE_H	60
+
+const int gMapXOffset = 249;
+const int gMapYOffset = 181;
 
 // decompiled code
 // original method signature: 
@@ -143,11 +148,19 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 	POLY_FT4 *poly;
 	VECTOR vec;
 
+	int map_minX, map_maxX;
+	int map_minY, map_maxY;
+	
+	map_minX = gMapXOffset;
+	map_maxX = gMapXOffset + MAP_SIZE_W;
+	map_minY = gMapYOffset;
+	map_maxY = gMapYOffset + MAP_SIZE_H;
+
 	if (flags & 0x20) 
 	{
 		WorldToMultiplayerMap(pos, &vec);
 
-		vec.vx += 240;
+		vec.vx += gMapXOffset;
 		vec.vz += 96;
 	}
 	else if (flags & 0x8)
@@ -159,11 +172,10 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 	{
 		WorldToOverheadMapPositions(pos, &vec, 1, 0, 0);
 
-		if (vec.vx - 233U > 94)
+		if (vec.vx <= map_minX || vec.vx >= map_maxX || vec.vz <= map_minY || vec.vz >= map_maxY)
+		{
 			return;
-
-		if (vec.vz < 174 || vec.vz > 250) 
-			return;
+		}
 	}
 	else 
 	{
@@ -389,7 +401,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int
 	{
 		WorldToMultiplayerMap(pos, &vec);
 	
-		vec.vx += 240;
+		vec.vx += gMapXOffset;
 		vec.vz += 96;
 	}
 	else 
@@ -829,6 +841,8 @@ void DrawOverheadMap(void)
 	int y_mod;
 	int MeshWidth;
 	int MeshHeight;
+	int map_minX, map_maxX;
+	int map_minY, map_maxY;
 
 	static int flashtimer = 0;
 	static u_char ptab[] = {
@@ -845,7 +859,16 @@ void DrawOverheadMap(void)
 		0
 	};
 
-	VECTOR translate = { 280, 0, 212 };
+	map_minX = gMapXOffset;
+	map_maxX = gMapXOffset + MAP_SIZE_W;
+	map_minY = gMapYOffset;
+	map_maxY = gMapYOffset + MAP_SIZE_H;
+
+	VECTOR translate = {
+		map_minX + MAP_SIZE_W/2,
+		0,
+		map_minY + MAP_SIZE_H/2
+	};
 
 	if (gMultiplayerLevels)
 	{
@@ -857,7 +880,7 @@ void DrawOverheadMap(void)
 		return;
 
 	SetMapPos();	
-	draw_box();
+	draw_box(map_minY, MAP_SIZE_H);
 
 	// flash the overhead map
 	if (player_position_known > 0) 
@@ -896,6 +919,7 @@ void DrawOverheadMap(void)
 		}
 	}
 
+	// for restoring
 	drarea = (DR_AREA *)current->primptr;
 	SetDrawArea(drarea, &current->draw.clip);
 
@@ -904,7 +928,8 @@ void DrawOverheadMap(void)
 
 	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
 
-	if (vec.vx - 233U < 95 && vec.vz > 173 && vec.vz < 251) 
+	// draw map center
+	if (vec.vx > map_minX && vec.vx < map_maxX && vec.vz > map_minY && vec.vz < map_maxY) 
 	{
 		tile1 = (TILE_1 *)current->primptr;
 		setTile1(tile1);
@@ -1142,14 +1167,14 @@ void DrawOverheadMap(void)
 	sptb->g0 = 60;
 	sptb->b0 = 60;
 
-	sptb->y0 = 182;
-	sptb->y1 = 182;
-	sptb->x0 = 245;
-	sptb->x1 = 315;
-	sptb->x2 = 245;
-	sptb->y2 = 242;
-	sptb->x3 = 315;
-	sptb->y3 = 242;
+	sptb->y0 = map_minY;
+	sptb->y1 = map_minY;
+	sptb->x0 = map_minX;
+	sptb->x1 = map_maxX;
+	sptb->x2 = map_minX;
+	sptb->y2 = map_maxY;
+	sptb->x3 = map_maxX;
+	sptb->y3 = map_maxY;
 
 	addPrim(current->ot, sptb);
 	current->primptr += sizeof(POLY_F4);
@@ -1168,10 +1193,10 @@ void DrawOverheadMap(void)
 	addPrim(current->ot, null);
 	current->primptr += sizeof(POLY_FT3);
 
-	clipped_size.x = 250;
-	clipped_size.w = 60;
-	clipped_size.h = 60;
-	clipped_size.y = current->draw.clip.y + 181;
+	clipped_size.x = map_minX + 1;
+	clipped_size.w = MAP_SIZE_W - 1;
+	clipped_size.h = MAP_SIZE_H - 1;
+	clipped_size.y = current->draw.clip.y + map_minY + 1;
 
 	drarea = (DR_AREA*)current->primptr;
 
@@ -1608,44 +1633,30 @@ void DrawFullscreenMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawCopIndicators(void)
 {
-	short sVar1;
-	short sVar2;
-	int iVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
+	int cc, cs;
+	int dx, dz;
+	int p, q;
 	CAR_DATA *cp;
 
-	sVar1 = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
-	sVar2 = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+	cc = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
+	cs = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
 
 	cp = car_data;
 	do {
-		if ((cp->controlType == CONTROL_TYPE_PURSUER_AI) && (cp->ai.p.dying == 0))
+		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0)
 		{
-			iVar6 = cp->hd.where.t[0] - player[0].pos[0];
-			iVar4 = cp->hd.where.t[2] - player[0].pos[2];
+			dx = cp->hd.where.t[0] - player[0].pos[0];
+			dz = cp->hd.where.t[2] - player[0].pos[2];
 
-			iVar5 = FIXEDH(iVar6 * sVar1 - iVar4 * sVar2) * 3;
-
-			iVar5 = iVar5 >> 2;
-			iVar3 = FIXEDH(iVar6 * sVar2 + iVar4 * sVar1);
-
-			iVar4 = -iVar3;
-			iVar6 = iVar5;
-
-			if (iVar5 < 0)
-				iVar6 = -iVar5;
+			p = FIXEDH(dx * cc - dz * cs) * 3 >> 2;
+			q = -FIXEDH(dx * cs + dz * cc);
 			
-			if (iVar6 < iVar4)
+			if (ABS(p) < q)
 			{
-				iVar5 = (iVar5 * 0x10a) / iVar4;
-				iVar4 = (iVar4 >> 3) + 600;
-
-				CopIndicator(iVar5 + 0xa0, 0x3fff0 / iVar4);
+				CopIndicator((p * 266) / q + 160, 0x3fff0 / ((q >> 3) + 600));
 			}
 		}
 		cp++;
@@ -1685,27 +1696,30 @@ void DrawCopIndicators(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void InitMultiplayerMap(void)
 {
 	RECT16 rect;
 	char filename[32];
 
-	if (MissionHeader->region != 0)
+	if (MissionHeader->region == 0)
+		return;
+
+	// multiplayer maps loaded externally
+	sprintf(filename, "MAPS\\REG%d.%d", MissionHeader->region, GameLevel);
+
+	if (FileExists(filename))
 	{
-		sprintf(filename, "MAPS\\REG%d.%d", MissionHeader->region, GameLevel);
+		Loadfile(filename, MapBitMaps);
+						
+		rect.x = MapRect.x + MapSegmentPos[0].x;
+		rect.y = MapRect.y + MapSegmentPos[0].y;
+		rect.w = 16;
+		rect.h = 64;
+	
+		LoadImage(&rect, (u_long *)MapBitMaps);
 
-		if (FileExists(filename) != 0)
-		{
-			Loadfile(filename, MapBitMaps);
-			rect.w = 0x10;
-			rect.h = 0x40;
-			rect.x = MapRect.x + MapSegmentPos[0].x;
-			rect.y = MapRect.y + MapSegmentPos[0].y;
-			LoadImage(&rect, (u_long *)MapBitMaps);
-
-			DrawSync(0);
-		}
+		DrawSync(0);
 	}
 }
 
@@ -1750,132 +1764,97 @@ void InitMultiplayerMap(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawMultiplayerMap(void)
 {
-	short uVar1;
-	ushort uVar2;
-	ulong *puVar4;
 	POLY_FT4 *poly;
-	char *pcVar5;
-	PLAYER *pPVar6;
-	int iVar7;
-	char *pcVar8;
-	unsigned char g;
-	unsigned char r;
-	int iVar9;
-	short sVar10;
+	PLAYER *pl;
+	int i;
+	u_char g;
+	u_char r;
 	int yPos;
 	VECTOR target;
-	int local_30;
-	int local_2c;
+	int px, py;
 
 	map_x_offset = 0;
 	map_z_offset = 0;
-	yPos = 96;
 
 	if (NumPlayers == 1)
-		yPos = 172;
+		yPos = gMapYOffset;
+	else
+		yPos = 96;
 
-	if (MissionHeader->region != 0) 
-	{
-		iVar7 = 0;
-		DrawMultiplayerTargets();
+	if (MissionHeader->region == 0)
+		return;
 
-		local_2c = yPos + 64;
-		local_30 = yPos - 1;
+	DrawMultiplayerTargets();
 
-		if (NumPlayers != 0) 
-		{
-			pPVar6 = player;
-			r = -1;
-			g = 0;
-			do {
-				target.vx = pPVar6->pos[0];
-				target.vz = pPVar6->pos[2];
-				iVar7 ++;
-				target.vy = 0;
+	pl = player;
+	r = 255;
+	g = 0;
 
-				WorldToMultiplayerMap(&target, &target);
-
-				target.vx += 240;
-				target.vz += yPos;
-
-				DrawPlayerDot(&target, -pPVar6->dir, r, g, 0, 8);
-
-				pPVar6++;
-				r++;
-				g--;
-			} while (iVar7 < (int)(uint)NumPlayers);
-		}
-
-		poly = (POLY_FT4 *)current->primptr;
-		setPolyFT4(poly);
-		setSemiTrans(poly, 1);
-		poly->x0 = 0xf0;
-		poly->y0 = yPos;
-		poly->x1 = 0x130;
-		poly->y1 = yPos;
-		poly->x2 = 0xf0;
-		poly->x3 = 0x130;
-		poly->y2 = local_2c;
-		poly->y3 = local_2c;
-		poly->u0 = MapSegmentPos[0].x << 2;
-		poly->v0 = MapSegmentPos[0].y;
-		poly->u1 = MapSegmentPos[0].x * 4 + 63;
-		poly->v1 = MapSegmentPos[0].y;
-		poly->u2 = MapSegmentPos[0].x << 2;
-		poly->v2 = MapSegmentPos[0].y + 63;
-		poly->u3 = MapSegmentPos[0].x * 4 + 63;
-		poly->v3 = MapSegmentPos[0].y + 63;
-		poly->clut = MapClut;
-		poly->tpage = MapTPage;
-
-		r = 100;
-		if (gTimeOfDay == 3) 
-			r = 50;
-
-		poly->r0 = r;
-		poly->g0 = r;
-		poly->b0 = r;
-
-		addPrim(current->ot, poly);
-		current->primptr += sizeof(POLY_FT4);
-
-		LINE_F4* linef4 = (LINE_F4*)current->primptr;
-		setLineF4(linef4);
+	i = 0;
+	do {
+		target.vx = pl->pos[0];
+		target.vz = pl->pos[2];
 		
-		linef4->r0 = 0;
-		linef4->g0 = 0;
-		linef4->b0 = 0x80;
+		target.vy = 0;
 
-		linef4->x0 = 239;
-		linef4->y0 = yPos - 1;
-		linef4->x1 = 304;
-		linef4->x2 = 304;
-		linef4->y1 = yPos - 1;
-		linef4->x3 = 240;
-		linef4->y2 = yPos + 64;
-		linef4->y3 = yPos + 64;
+		WorldToMultiplayerMap(&target, &target);
 
-		addPrim(current->ot+1, linef4);
-		current->primptr += sizeof(LINE_F4);
+		target.vx += gMapXOffset;
+		target.vz += yPos;
 
-		LINE_F2* linef2 = (LINE_F2*)current->primptr;
-		setLineF2(linef2);
+		DrawPlayerDot(&target, -pl->dir, r, g, 0, 0x8);
 
-		linef2->r0 = 0;
-		linef2->g0 = 0;
-		linef2->b0 = 0x80;
+		pl++;
+	
+		r++;
+		g--;
+	
+		i++;
+	} while (i < NumPlayers);
 
-		linef2->x0 = 239;
-		linef2->y0 = yPos;
-		linef2->x1 = 239;
-		linef2->y1 = yPos + 64;
+	draw_box(yPos, 64);
 
-		addPrim(current->ot + 1, linef2);
-		current->primptr += sizeof(LINE_F2);
-	}
+	// draw map image
+	poly = (POLY_FT4 *)current->primptr;
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+	
+	poly->x0 = gMapXOffset;
+	poly->y0 = yPos;
+	poly->x1 = gMapXOffset + MAP_SIZE_W;
+	poly->y1 = yPos;
+	poly->x2 = gMapXOffset;
+	poly->x3 = gMapXOffset + MAP_SIZE_W;
+	poly->y2 = yPos + 64;
+	poly->y3 = yPos + 64;
+
+	px = MapSegmentPos[0].x * 4;
+	py = MapSegmentPos[0].y;
+	
+	poly->u0 = px;
+	poly->v0 = py;
+	poly->u1 = px + 63;
+	poly->v1 = py;
+	poly->u2 = px;
+	poly->v2 = py + 63;
+	poly->u3 = px + 63;
+	poly->v3 = py + 63;
+
+	poly->clut = MapClut;
+	poly->tpage = MapTPage;
+
+	if (gTimeOfDay == 3) 
+		r = 50;
+	else
+		r = 100;
+
+	poly->r0 = poly->g0 = poly->b0 = r;
+	
+	addPrim(current->ot + 1, poly);
+	current->primptr += sizeof(POLY_FT4);
 }
 
 
@@ -1909,29 +1888,24 @@ void DrawMultiplayerMap(void)
 	/* end block 4 */
 	// End Line: 6899
 
-// [D]
+// [D] [T]
 void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
+	int z;
+	int x;
 
-	if (MissionHeader->region != 0)
+	if (MissionHeader->region == 0)
 	{
-		iVar3 = MissionHeader->region / regions_across;
-		iVar2 = in->vx - ((MissionHeader->region % regions_across) * 0x10000 - cells_across * 1024);
-		iVar1 = cells_down * -1024;
-
-		out->vx = iVar2 >> 0xb;
-
-		iVar1 = in->vz - ((iVar3-1) * 0x10000 + iVar1);
-
-		out->vz = 64 - (iVar1 >> 0xb);
+		out->vx = 32;
+		out->vz = 32;
 		return;
 	}
 
-	out->vx = 32;
-	out->vz = 32;
+	x = in->vx - (((MissionHeader->region % regions_across) << 16) - cells_across * MAP_CELL_SIZE/2);
+	z = in->vz - (((MissionHeader->region / regions_across) << 16) - cells_down * MAP_CELL_SIZE/2);
+
+	out->vx = x / MAP_CELL_SIZE;
+	out->vz = MAP_REGION_SIZE - z / MAP_CELL_SIZE;
 }
 
 
@@ -1988,42 +1962,46 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 	int iVar3;
 	int iVar4;
 	u_short *puVar5;
+	int total_cluts;
+	int clutValue;
 	unsigned short clutTable[320];
 
-	if ((*(int *)lump_ptr != 0) && (*(int *)(lump_ptr + 4) != -1)) 
-	{
-		local_s0_96 = (int *)(lump_ptr + 4);
+	//total_cluts = 
 
-		puVar5 = (u_short *)clutTable;
-		do {
-			iVar4 = *local_s0_96;
-			iVar3 = local_s0_96[1];
+	if (*(int *)lump_ptr == 0 || *(int *)(lump_ptr + 4) == -1)
+		return;
 
-			cVar1 = GetCarPalIndex(local_s0_96[2]);
+	local_s0_96 = (int *)(lump_ptr + 4);
 
-			local_s0_228 = local_s0_96 + 4;
+	puVar5 = (u_short *)clutTable;
+	do {
+		iVar4 = *local_s0_96;
+		iVar3 = local_s0_96[1];
 
-			if (local_s0_96[3] == -1) {
-				LoadImage(&clutpos, (u_long *)local_s0_228);
+		cVar1 = GetCarPalIndex(local_s0_96[2]);
 
-				local_s0_228 = local_s0_96 + 12;
+		local_s0_228 = local_s0_96 + 4;
 
-				uVar2 = GetClut((int)clutpos.x, (int)clutpos.y);
+		if (local_s0_96[3] == -1) {
+			LoadImage(&clutpos, (u_long *)local_s0_228);
 
-				*puVar5 = uVar2;
-				puVar5 = puVar5 + 1;
-				IncrementClutNum(&clutpos);
-			}
-			else {
-				uVar2 = clutTable[local_s0_96[3]];
-			}
+			local_s0_228 = local_s0_96 + 12;
 
-			civ_clut[cVar1][iVar3][iVar4 + 1] = uVar2;
+			uVar2 = GetClut((int)clutpos.x, (int)clutpos.y);
 
-			local_s0_96 = local_s0_228;
+			*puVar5 = uVar2;
+			puVar5 = puVar5 + 1;
+			IncrementClutNum(&clutpos);
+		}
+		else {
+			uVar2 = clutTable[local_s0_96[3]];
+		}
 
-		} while (*local_s0_228 != -1);
-	}
+		civ_clut[cVar1][iVar3][iVar4 + 1] = uVar2;
+
+		local_s0_96 = local_s0_228;
+
+	} while (*local_s0_228 != -1);
 
 	//Emulator_SaveVRAM("VRAM_CLUTS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 }
@@ -2089,7 +2067,7 @@ void load_civ_palettes(RECT16 *cluts)
 	/* end block 5 */
 	// End Line: 5651
 
-// [D]
+// [D] [T]
 void FlashOverheadMap(int r, int g, int b)
 {
 	TILE *prim;
@@ -2103,10 +2081,11 @@ void FlashOverheadMap(int r, int g, int b)
 	prim->g0 = g;
 	prim->b0 = b;
 
-	prim->x0 = 0xfa;
-	prim->y0 = 0xb6;
-	prim->w = 0x3c;
-	prim->h = 0x3c;
+	prim->x0 = gMapXOffset;
+	prim->y0 = gMapYOffset;
+	prim->w = MAP_SIZE_W;
+	prim->h = MAP_SIZE_H;
+
 
 	addPrim(current->ot, prim);
 
@@ -2163,7 +2142,7 @@ void FlashOverheadMap(int r, int g, int b)
 	/* end block 4 */
 	// End Line: 5743
 
-// [D]
+// [D] [T]
 void LoadMapTile(int tpage, int x, int y)
 {
 	int temp; // $a0
@@ -2222,15 +2201,15 @@ void LoadMapTile(int tpage, int x, int y)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetMapPos(void)
 {
-	int iVar1;
+	int scale;
 
-	iVar1 = overlaidmaps[GameLevel].scale;
+	scale = overlaidmaps[GameLevel].scale;
 
-	x_map = overlaidmaps[GameLevel].x_offset + player[0].pos[0] / iVar1;
-	y_map = overlaidmaps[GameLevel].y_offset - player[0].pos[2] / iVar1;
+	x_map = overlaidmaps[GameLevel].x_offset + player[0].pos[0] / scale;
+	y_map = overlaidmaps[GameLevel].y_offset - player[0].pos[2] / scale;
 }
 
 
@@ -2271,8 +2250,8 @@ void SetMapPos(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
-void draw_box(void)
+// [D] [T]
+void draw_box(int yPos, int h)
 {
 	LINE_F4* linef4 = (LINE_F4*)current->primptr;
 	setLineF4(linef4);
@@ -2281,17 +2260,17 @@ void draw_box(void)
 	linef4->g0 = 0;
 	linef4->b0 = 128;
 
-	linef4->x0 = 249;
-	linef4->y0 = 181;
+	linef4->x0 = gMapXOffset;
+	linef4->y0 = yPos;
 
-	linef4->x1 = 310;
-	linef4->x2 = 310;
+	linef4->x1 = gMapXOffset + MAP_SIZE_W;
+	linef4->x2 = gMapXOffset + MAP_SIZE_W;
 
-	linef4->y1 = 181;
-	linef4->x3 = 249;
+	linef4->y1 = yPos;
+	linef4->x3 = gMapXOffset;
 
-	linef4->y2 = 241;
-	linef4->y3 = 241;
+	linef4->y2 = yPos + h;
+	linef4->y3 = yPos + h;
 
 	addPrim(current->ot + 1, linef4);
 	current->primptr += sizeof(LINE_F4);
@@ -2303,10 +2282,11 @@ void draw_box(void)
 	linef2->g0 = 0;
 	linef2->b0 = 128;
 
-	linef2->x0 = 249;
-	linef2->y0 = 181;
-	linef2->x1 = 249;
-	linef2->y1 = 241;
+	linef2->x0 = gMapXOffset;
+	linef2->y0 = yPos;
+
+	linef2->x1 = gMapXOffset;
+	linef2->y1 = yPos + h;
 
 	addPrim(current->ot + 1, linef2);
 	current->primptr += sizeof(LINE_F2);
@@ -2350,7 +2330,7 @@ void draw_box(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void DrawN(VECTOR *pScreenPosition, int direct)
 {
 	int i;
@@ -2472,7 +2452,7 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 /* WARNING: Could not reconcile some variable overlaps */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawCompass(void)
 {
 	int i;
@@ -2483,12 +2463,12 @@ void DrawCompass(void)
 
 	position[1].vx = north[GameLevel].x * overlaidmaps[GameLevel].scale;
 	position[1].vz = north[GameLevel].y * overlaidmaps[GameLevel].scale;
-	position[0].vx = position[1].vx * 0x14 + 8 >> 4;
+	position[0].vx = position[1].vx * 20 + 8 >> 4;
 	position[2].vx = position[1].vx + 2 >> 2;
-	position[0].vz = position[1].vz * 0x14 + 8 >> 4;
+	position[0].vz = position[1].vz * 20 + 8 >> 4;
 	position[2].vz = position[1].vz + 2 >> 2;
-	position[3].vx = (position[1].vz - position[1].vx) * 0xab >> 10;
-	position[3].vz = (-position[1].vx - position[1].vz) * 0xab >> 10;
+	position[3].vx = (position[1].vz - position[1].vx) * 171 >> 10;
+	position[3].vz = (-position[1].vx - position[1].vz) * 171 >> 10;
 	position[4].vz = -position[3].vx;
 	position[4].vx = position[3].vz;
 
@@ -2503,8 +2483,9 @@ void DrawCompass(void)
 	potz = current->ot;
 
 	pPosition = position + 2;
-	i = 0;
-	do {
+
+	for (i = 0; i < 3; i++)
+	{
 		lineg2 = (LINE_G2 *)current->primptr;
 
 		setLineG2(lineg2);
@@ -2525,15 +2506,12 @@ void DrawCompass(void)
 		lineg2->g1 = 0;
 		lineg2->b1 = 0;
 
-		
-
 		addPrim(potz, lineg2);
 
 		current->primptr += sizeof(LINE_G2);
 
 		pPosition++;
-		i++;
-	} while (i < 3);
+	}
 
 	DrawN(position, 0);
 
@@ -2588,33 +2566,33 @@ void DrawCompass(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void DrawBigCompass(VECTOR *root, int angle)
 {
 	int i;
-	uint uVar3;
+	uint ang2;
 	LINE_G2 *lineg2;
-	int uVar4;
-	int uVar5;
+	int ang;
+	int ang3;
 	VECTOR *pPosition;
 	VECTOR position[5];
 
-	uVar4 = big_north[GameLevel] + angle & 0xfff;
+	ang = big_north[GameLevel] + angle & 0xfff;
 
 	position[2].vx = root->vx + map_x_offset;
 	position[2].vy = root->vz + map_z_offset;
-	position[1].vx = position[2].vx + (rcossin_tbl[uVar4 * 2] * 0x19 >> 0xc);
-	position[0].vx = position[2].vx + (rcossin_tbl[uVar4 * 2] * 0xf >> 0xb);
+	position[1].vx = position[2].vx + (rcossin_tbl[ang * 2] * 0x19 >> 0xc);
+	position[0].vx = position[2].vx + (rcossin_tbl[ang * 2] * 0xf >> 0xb);
 
-	uVar3 = uVar4 - 200 & 0xfff;
-	uVar5 = uVar4 + 200 & 0xfff;
+	ang2 = ang - 200 & 0xfff;
+	ang3 = ang + 200 & 0xfff;
 
-	position[1].vy = position[2].vy + (rcossin_tbl[uVar4 * 2 + 1] * 0x19 >> 0xc);
-	position[0].vz = position[2].vy + (rcossin_tbl[uVar4 * 2 + 1] * 0xf >> 0xb);
-	position[3].vx = position[2].vx + (rcossin_tbl[uVar3 * 2] * 5 >> 10);
-	position[3].vy = position[2].vy + (rcossin_tbl[uVar3 * 2 + 1] * 5 >> 10);
-	position[4].vx = position[2].vx + (rcossin_tbl[uVar5 * 2] * 5 >> 10);
-	position[4].vy = position[2].vy + (rcossin_tbl[uVar5 * 2 + 1] * 5 >> 10);
+	position[1].vy = position[2].vy + (rcossin_tbl[ang * 2 + 1] * 0x19 >> 0xc);
+	position[0].vz = position[2].vy + (rcossin_tbl[ang * 2 + 1] * 0xf >> 0xb);
+	position[3].vx = position[2].vx + (rcossin_tbl[ang2 * 2] * 5 >> 10);
+	position[3].vy = position[2].vy + (rcossin_tbl[ang2 * 2 + 1] * 5 >> 10);
+	position[4].vx = position[2].vx + (rcossin_tbl[ang3 * 2] * 5 >> 10);
+	position[4].vy = position[2].vy + (rcossin_tbl[ang3 * 2 + 1] * 5 >> 10);
 
 	i = 0;
 	pPosition = position + 2;
@@ -2682,17 +2660,15 @@ void DrawBigCompass(VECTOR *root, int angle)
 	/* end block 4 */
 	// End Line: 6681
 
-// [D] [A] colour values might be wrong
+// [D] [T]
 void CopIndicator(int xpos, int strength)
 {
 	int str2;
 	POLY_F3 *poly;
-	int iVar5;
 
 	if (strength > 255)
 		strength = 255;
 
-	iVar5 = strength * (strength + 0x100);
 	poly = (POLY_F3 *)current->primptr;
 
 	setPolyF3(poly);
@@ -2704,12 +2680,12 @@ void CopIndicator(int xpos, int strength)
 
 	poly->g0 = str2;
 	poly->b0 = str2;
-	poly->x0 = xpos - 0xc;
-	poly->y0 = 0x100;
+	poly->x0 = xpos - 12;
+	poly->y0 = 256;
 	poly->x1 = xpos;
-	poly->y1 = 0xe2;
-	poly->x2 = xpos + 0xc;
-	poly->y2 = 0x100;
+	poly->y1 = 226;
+	poly->x2 = xpos + 12;
+	poly->y2 = 256;
 
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
@@ -2721,17 +2697,17 @@ void CopIndicator(int xpos, int strength)
 	setPolyF3(poly);
 	setSemiTrans(poly, 1);
 
-	str2 = (iVar5 >> 9);
+	str2 = strength * (strength + 256) >> 9;
 
 	poly->r0 = str2;
 	poly->g0 = str2;
 	poly->b0 = str2;
 
-	poly->x0 = xpos - 0xc;
-	poly->y0 = 0x100;
-	poly->y1 = 0xe2;
-	poly->x2 = xpos + 0xc;
-	poly->y2 = 0x100;
+	poly->x0 = xpos - 12;
+	poly->y0 = 256;
+	poly->y1 = 226;
+	poly->x2 = xpos + 12;
+	poly->y2 = 256;
 	poly->x1 = xpos;
 
 	addPrim(current->ot + 1, poly);
@@ -2931,7 +2907,7 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 	/* end block 2 */
 	// End Line: 8755
 
-// [D]
+// [D] [T]
 void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPosition, int count, char inputRelative,int outputRelative)
 {
 	int scale;
@@ -2954,8 +2930,8 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 
 	if (outputRelative == 0)
 	{
-		tempMatrix.t[0] = 280;
-		tempMatrix.t[2] = 212;
+		tempMatrix.t[0] = gMapXOffset + MAP_SIZE_W/2;
+		tempMatrix.t[2] = gMapYOffset + MAP_SIZE_H/2;
 	}
 	else
 	{
@@ -3025,7 +3001,7 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void SetFullscreenMapMatrix(void)
 {
 	VECTOR translate = { 160, 0, 128 };
@@ -3068,7 +3044,7 @@ void SetFullscreenMapMatrix(void)
 	/* end block 3 */
 	// End Line: 8993
 
-// [D]
+// [D] [T]
 void WorldToFullscreenMap(VECTOR *in, VECTOR *out)
 {
 	out->vy = 0;
@@ -3102,7 +3078,7 @@ void WorldToFullscreenMap(VECTOR *in, VECTOR *out)
 	/* end block 3 */
 	// End Line: 9021
 
-// [D]
+// [D] [T]
 void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 {
 	SVECTOR pos;
