@@ -60,6 +60,14 @@ PERCENTAGE_BAR ProxyBar;
 
 int gDoOverlays = 1;
 
+
+#define PERCENTAGE_BAR_WIDTH 102
+#define PERCENTAGE_BAR_HEIGHT 10
+
+const int gOverlayXPos = 16;
+const int gOverlayXOppPos = 208; // 320 - 16 - PERCENTAGE_BAR_WIDTH;
+
+
 // [D] [T]
 void InitOverlays(void)
 {
@@ -67,7 +75,7 @@ void InitOverlays(void)
 
 	InitPercentageBar(&PlayerDamageBar, MaxPlayerDamage[0], playerDamageColour, "Damage");
 
-	PlayerDamageBar.xpos = 16;
+	PlayerDamageBar.xpos = gOverlayXPos;
 	PlayerDamageBar.ypos = 24;
 
 	PlayerDamageBar.active = 1;
@@ -75,7 +83,7 @@ void InitOverlays(void)
 	if (NumPlayers > 1)
 	{
 		InitPercentageBar(&Player2DamageBar, MaxPlayerDamage[1], playerDamageColour, "Damage");
-		Player2DamageBar.xpos = 16;
+		Player2DamageBar.xpos = gOverlayXPos;
 		Player2DamageBar.ypos = 140;
 		Player2DamageBar.active = 1;
 	}
@@ -84,19 +92,19 @@ void InitOverlays(void)
 		Player2DamageBar.active = 0;
 	}
 
-	InitPercentageBar(&FelonyBar, 0x1000, felonyColour, "Felony");
-	FelonyBar.xpos = 16;
+	InitPercentageBar(&FelonyBar, 4096, felonyColour, "Felony");
+	FelonyBar.xpos = gOverlayXPos;
 	FelonyBar.ypos = 46;
 	FelonyBar.active = 0;
 
 	InitPercentageBar(&DamageBar, 1, damageColour, "Damage");
-	DamageBar.xpos = 208;
+	DamageBar.xpos = gOverlayXOppPos;
 	DamageBar.ypos = 24;
 	DamageBar.flags = 1;
 	DamageBar.active = 0;
 
 	InitPercentageBar(&ProxyBar, TAIL_TOOFAR - TAIL_TOOCLOSE, felonyColour, "Proximity");
-	ProxyBar.xpos = 16;
+	ProxyBar.xpos = gOverlayXPos;
 	ProxyBar.ypos = 46;
 	ProxyBar.active = 0;
 
@@ -261,8 +269,8 @@ void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, 
 {
 	bar->xpos = 150;
 	bar->ypos = 10;
-	bar->width = 102;
-	bar->height = 10;
+	bar->width = PERCENTAGE_BAR_WIDTH;
+	bar->height = PERCENTAGE_BAR_HEIGHT;
 	bar->position = 0;
 	bar->max = size;
 	bar->pColourBand = pColourBand;
