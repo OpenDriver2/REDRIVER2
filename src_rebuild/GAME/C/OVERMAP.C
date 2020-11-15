@@ -803,46 +803,18 @@ void InitOverheadMap(void)
 /* WARNING: Could not reconcile some variable overlaps */
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D] [A] partially decompiled due to complexity
+// [D] [T]
 void DrawOverheadMap(void)
 {
-	unsigned char bVar1;
-	short sVar2;
-	short sVar3;
-	short uVar7;
-	short uVar8;
-	unsigned char uVar10;
+	u_char tmp;
 	short *playerFelony;
 	TILE_1 *tile1;
-	POLY_F4 *polyf4;
-	int x;
-	short *psVar12;
-	int y;
-	int y_00;
-	short *psVar13;
-	short *puVar14;
-	POLY_FT4 *local_a3_2816;
+	POLY_F4 *sptb;
+	POLY_FT4 *spt;
 	POLY_FT3 *null;
-	SVECTOR *pSVar15;
-	long *plVar16;
-	SVECTOR *pSVar17;
-	long *plVar18;
-	SVECTOR *pSVar19;
-	char cVar20;
-	SVECTOR *pSVar21;
-	char cVar22;
-	SVECTOR *v0;
 	CAR_DATA *cp;
-	char *pcVar24;
-	char *pbVar25;
-	VECTOR *v1;
 	DR_AREA *drarea;
 	int r;
-	int *puVar26;
-	int iVar27;
-	int uVar28;
-	int iVar29;
-	int uVar30;
 	SVECTOR MapMesh[5][5];
 	VECTOR MapMeshO[5][5];
 	MAPTEX MapTex[4];
@@ -850,20 +822,27 @@ void DrawOverheadMap(void)
 	RECT16 clipped_size;
 	VECTOR vec;
 	long flag;
+	int i, j;
+	int width; 
+	int height;
+	int x_mod;
+	int y_mod;
+	int MeshWidth;
+	int MeshHeight;
 
 	static int flashtimer = 0;
-	static int ptab[] = {
-		 0xFF, 0xF0, 0xAA, 0x78,
-		 0x50, 0x37, 0x26, 0x17,
-		 0xD,  0xA,  0x0,  0x0,
-		 0x0,  0x0,  0x0,  0x0,
+	static u_char ptab[] = {
+		255, 240, 170, 120,
+		80, 55, 38, 23,
+		13,  10,  0,  0,
+		0,  0,  0,  0,
 	};
 
-	static int ptab2[] = {
-		0xFF, 0xFF, 0xF0, 0xAA,
-		0x78, 0x50, 0x37, 0x26,
-		0x17, 0xD,  0xA,  0x0, 
-		0x0
+	static u_char ptab2[] = {
+		255, 255, 240, 170,
+		120, 80, 55, 38,
+		23, 13,  10,  0, 
+		0
 	};
 
 	VECTOR translate = { 280, 0, 212 };
@@ -943,8 +922,10 @@ void DrawOverheadMap(void)
 		current->primptr += sizeof(TILE_1);
 	}
 
-	DrawTargetBlip((VECTOR *)player, 64, 64, 64, 3);
+	DrawTargetBlip((VECTOR *)player->pos, 64, 64, 64, 3);
+	
 	DrawCompass();
+
 	DrawOverheadTargets();
 
 	// draw cop sight
@@ -956,163 +937,117 @@ void DrawOverheadMap(void)
 		cp++;
 	} while (cp <= &car_data[MAX_CARS]);
 
-	uVar28 = x_map & 0x1f;
-	uVar30 = y_map & 0x1f;
-	
-	sVar2 = -uVar28;
-	sVar3 = -uVar30;
+	x_mod = x_map & 31;
+	y_mod = y_map & 31;
+
+	// next code loads map tiles depending on player position changes
 	
 	// X axis
-	if ((uVar28 < 16) && (old_x_mod > 16))
+	if (x_mod < 16 && old_x_mod > 16)
 	{
 		// left
-		r = 0;
+		for (i = 0; i < 4; i++)
+		{
+			tmp = maptile[0][i];
 
-		do {
-			bVar1 = maptile[0][r];
+			maptile[0][i] = maptile[1][i];
+			maptile[1][i] = maptile[2][i];
+			maptile[2][i] = maptile[3][i];
+			maptile[3][i] = tmp;
 
-			maptile[0][r] = maptile[1][r];
-			maptile[1][r] = maptile[2][r]; 
-			maptile[2][r] = maptile[3][r];
-			maptile[3][r] = bVar1;
-
-			LoadMapTile(bVar1, (x_map >> 5) + 3, (y_map >> 5) + r);
-
-			r++;
-		} while (r < 4);
+			LoadMapTile(tmp, (x_map >> 5) + 3, (y_map >> 5) + i);
+		}
 	}
 
-	if ((uVar28 > 16) && (old_x_mod < 16)) 
+	if (x_mod > 16 && old_x_mod < 16) 
 	{
 		// right
-		r = 0;
+		for (i = 0; i < 4; i++)
+		{
+			tmp = maptile[3][i];
 
-		do {
-			bVar1 = maptile[3][r];
+			maptile[3][i] = maptile[2][i];
+			maptile[2][i] = maptile[1][i];
+			maptile[1][i] = maptile[0][i];
+			maptile[0][i] = tmp;
 
-			maptile[3][r] = maptile[2][r];
-			maptile[2][r] = maptile[1][r];
-			maptile[1][r] = maptile[0][r];
-			maptile[0][r] = bVar1;
-
-			LoadMapTile(bVar1, (x_map >> 5), (y_map >> 5) + r);
-			r++;
-		} while (r < 4);
+			LoadMapTile(tmp, (x_map >> 5), (y_map >> 5) + i);
+		}
 	}
 
 	// Z axis
-	if ((uVar30 < 16) && (old_y_mod > 16))
+	if (y_mod < 16 && old_y_mod > 16)
 	{
 		// down
-		r = 0;
-		do {
-			bVar1 = maptile[r][0];
+		for (i = 0; i < 4; i++)
+		{
+			tmp = maptile[i][0];
 
-			maptile[r][0] = maptile[r][1];
-			maptile[r][1] = maptile[r][2];
-			maptile[r][2] = maptile[r][3];
-			maptile[r][3] = bVar1;
+			maptile[i][0] = maptile[i][1];
+			maptile[i][1] = maptile[i][2];
+			maptile[i][2] = maptile[i][3];
+			maptile[i][3] = tmp;
 
-			LoadMapTile(bVar1, (x_map >> 5) + r, (y_map >> 5) + 3);
-			r++;
-		} while (r < 4);
+			LoadMapTile(tmp, (x_map >> 5) + i, (y_map >> 5) + 3);
+		}
 	}
 
-	if ((uVar30 > 16) && (old_y_mod < 16))
+	if (y_mod > 16 && old_y_mod < 16)
 	{
 		// up
-		r = 0;
-		do {
-			bVar1 = maptile[r][3];
+		for (i = 0; i < 4; i++)
+		{
+			tmp = maptile[i][3];
 
-			maptile[r][3] = maptile[r][2];
-			maptile[r][2] = maptile[r][1];
-			maptile[r][1] = maptile[r][0];
-			maptile[r][0] = bVar1;
+			maptile[i][3] = maptile[i][2];
+			maptile[i][2] = maptile[i][1];
+			maptile[i][1] = maptile[i][0];
+			maptile[i][0] = tmp;
 
-			LoadMapTile(bVar1, (x_map >> 5) + r, (y_map >> 5));
-			r++;
-		} while (r < 4);
+			LoadMapTile(tmp, (x_map >> 5) + i, (y_map >> 5));
+		}
 	}
 	
-	old_x_mod = uVar28;
-	old_y_mod = uVar30;
-
-	r = 3;
-	if (uVar28 != 0)
-		r = 4;
-
-	x = 3;
-
-	if (uVar30 != 0)
-		x = 4;
-
-	y_00 = 0;
+	old_x_mod = x_mod;
+	old_y_mod = y_mod;
 
 	// make grid coordinates
-	do {
+	for (i = 0; i < 5; i++)
+	{
 
-		MapMesh[0][y_00].vx = -35;
-		MapMesh[y_00][0].vz = -35;
+		MapMesh[0][i].vx = -35;
+		MapMesh[i][0].vz = -35;
 
-		MapMesh[1][y_00].vx = sVar2 - 16;
-		MapMesh[y_00][1].vz = sVar3 - 16;
+		MapMesh[1][i].vx = -x_mod - 16;
+		MapMesh[i][1].vz = -y_mod - 16;
 
-		MapMesh[2][y_00].vx = sVar2 + 16;
-		MapMesh[y_00][2].vz = sVar3 + 16;
+		MapMesh[2][i].vx = -x_mod + 16;
+		MapMesh[i][2].vz = -y_mod + 16;
 
-		MapMesh[3][y_00].vx = sVar2 + 48;
-		MapMesh[y_00][3].vz = sVar3 + 48;
+		MapMesh[3][i].vx = -x_mod + 48;
+		MapMesh[i][3].vz = -y_mod + 48;
 
-		MapMesh[4][y_00].vx = 35;
-		MapMesh[y_00][4].vz = 35;
+		MapMesh[4][i].vx = 35;
+		MapMesh[i][4].vz = 35;
+	}
 
-		y_00++;
-	} while (y_00 < 5);
-
-	MapTex[0].u = MapMesh[0][0].vx - MapMesh[1][0].vx;
-
-	if (MapMesh[0][0].vx - MapMesh[1][0].vx < 0) 
-		MapTex[0].u = MapMesh[1][0].vx - MapMesh[0][0].vx;
-
+	MapTex[0].v = 32 - MapTex[0].v;
 	MapTex[0].u = 32 - MapTex[0].u;
-	MapTex[0].w = MapMesh[0][0].vx - MapMesh[1][0].vx;
 
-	if (MapMesh[0][0].vx - MapMesh[1][0].vx < 0)
-		MapTex[0].w = MapMesh[1][0].vx - MapMesh[0][0].vx;
+	MapTex[1].w = MapTex[2].w = tile_size;
+	MapTex[1].u = MapTex[2].u = MapTex[3].u = 0;
 
-	MapTex[1].w = tile_size;
-	MapTex[1].u = 0;
-	MapTex[2].u = 0;
-	MapTex[3].u = 0;
-	MapTex[2].w = tile_size;
+	MapTex[1].h = MapTex[2].h = tile_size;
+	MapTex[1].v = MapTex[2].v = MapTex[3].v = 0;
+	
+	MapTex[0].u = ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
+	MapTex[0].w = ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
 
-	if (MapMesh[3][0].vx - MapMesh[4][0].vx < 0)
-		MapTex[3].w = MapMesh[4][0].vx - MapMesh[3][0].vx;
-	else
-		MapTex[3].w = MapMesh[3][0].vx - MapMesh[4][0].vx;
-
-	if (MapMesh[0][0].vz - MapMesh[0][1].vz < 0)
-		MapTex[0].v = MapMesh[0][1].vz - MapMesh[0][0].vz;
-	else
-		MapTex[0].v = MapMesh[0][0].vz - MapMesh[0][1].vz;
-
-	MapTex[0].v = 0x20 - MapTex[0].v;
-	MapTex[0].h = MapMesh[0][0].vz - MapMesh[0][1].vz;
-
-	if (MapMesh[0][0].vz - MapMesh[0][1].vz < 0)
-		MapTex[0].h = MapMesh[0][1].vz - MapMesh[0][0].vz;
-
-	MapTex[1].h = tile_size;
-	MapTex[1].v = 0;
-	MapTex[2].v = 0;
-	MapTex[3].v = 0;
-	MapTex[2].h = tile_size;
-
-	if (MapMesh[0][3].vz - MapMesh[0][4].vz < 0)
-		MapTex[3].h = MapMesh[0][4].vz - MapMesh[0][3].vz;
-	else
-		MapTex[3].h = MapMesh[0][3].vz - MapMesh[0][4].vz;
+	MapTex[3].w = ABS(MapMesh[3][0].vx - MapMesh[4][0].vx);
+	MapTex[0].v = ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
+	
+	MapTex[0].h = ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
+	MapTex[3].h = ABS(MapMesh[0][3].vz - MapMesh[0][4].vz);
 
 	direction.vx = 0;
 	direction.vz = 0;
@@ -1124,125 +1059,104 @@ void DrawOverheadMap(void)
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
 
-	y = 0;
-	while (y <= r)
+	if (x_mod != 0)
+		MeshWidth = 4;
+	else
+		MeshWidth = 3;
+
+	if (y_mod != 0)
+		MeshHeight = 4;
+	else
+		MeshHeight = 3;
+	
+	// transform the map mesh
+	for (i = 0; i <= MeshWidth; i++)
 	{
-		v1 = MapMeshO[y];
-		v0 = MapMesh[y];
-
-		iVar27 = x + 1;
-		while (iVar27 != 0)
+		for(j = 0; j <= MeshHeight; j++)
 		{
-			RotTrans(v0, v1, &flag);
-
-			v1++;
-			v0++;
-
-			iVar27--;
+			RotTrans(&MapMesh[i][j], &MapMeshO[i][j], &flag);
 		}
-		y++;
 	}
 
-	y = 0;
-	iVar27 = 0;
-
-	while (iVar27 < x)
+	// draw map mesh booooi
+	for (i = 0; i < MeshHeight; i++)
 	{
-		y_00 = 0;
-		iVar27 = y + 1;
-
-		pbVar25 = (char*)maptile + y;
-		plVar18 = &((VECTOR*)MapMeshO)[5].vz + iVar27 * 4;
-		plVar16 = &((VECTOR*)MapMeshO)[5].vz + y * 4;
-		playerFelony = &MapTex[0].w;
-
-		while (y_00 < r)
+		for (j = 0; j < MeshWidth; j++)
 		{
-			if ((MapSegmentPos[*pbVar25].x & 0x18U) == 24)
-				cVar22 = (char)MapTex[y_00].w - 1;
+			int tile;
+			tile = maptile[j][i];
+			
+			if ((MapSegmentPos[tile].x & 24) == 24)
+				width = MapTex[j].w - 1;
 			else
-				cVar22 = (char)MapTex[y_00].w;
+				width = MapTex[j].w;
 	
-			if ((MapSegmentPos[*pbVar25].y & 0x60U) == 96)
-				cVar20 = (char)MapTex[y].h - 1;
+			if ((MapSegmentPos[tile].y & 96) == 96)
+				height = MapTex[i].h - 1;
 			else
-				cVar20 = (char)MapTex[y].h;
+				height = MapTex[i].h;
 
-			local_a3_2816 = (POLY_FT4*)current->primptr;
+			spt = (POLY_FT4*)current->primptr;
 
-			setPolyFT4(local_a3_2816);
-			setSemiTrans(local_a3_2816, 1);
-
-			uVar10 = 100;
+			setPolyFT4(spt);
+			setSemiTrans(spt, 1);
+			
 			if (gTimeOfDay == 3) 
-			{
-				uVar10 = 50;
-			}
+				spt->r0 = spt->g0 = spt->b0 = 50;
+			else
+				spt->r0 = spt->g0 = spt->b0 = 100;
 
-			local_a3_2816->r0 = uVar10;
-			local_a3_2816->g0 = uVar10;
-			local_a3_2816->b0 = uVar10;
+			spt->clut = MapClut;
+			spt->tpage = MapTPage;
 
-			local_a3_2816->clut = MapClut;
-			local_a3_2816->tpage = MapTPage;
+			spt->x0 = MapMeshO[j][i].vx;
+			spt->y0 = MapMeshO[j][i].vz;
 
-			local_a3_2816->x0 = *(short*)(plVar16 - 22);
-			local_a3_2816->y0 = *(short*)(plVar16 - 20);
+			spt->x1 = MapMeshO[j+1][i].vx;
+			spt->y1 = MapMeshO[j+1][i].vz;
 
-			local_a3_2816->x1 = *(short*)(plVar16 - 2);
-			local_a3_2816->y1 = *(short*)plVar16;
+			spt->x2 = MapMeshO[j][i+1].vx;
+			spt->y2 = MapMeshO[j][i+1].vz;
 
-			local_a3_2816->x2 = *(short*)(plVar18 - 22);
-			local_a3_2816->y2 = *(short*)(plVar18 - 20);
+			spt->x3 = MapMeshO[j+1][i+1].vx;
+			spt->y3 = MapMeshO[j+1][i+1].vz;
 
-			local_a3_2816->x3 = *(short*)(plVar18 - 2);
-			local_a3_2816->y3 = *(short*)plVar18;
+			spt->u0 = MapTex[j].u + MapSegmentPos[tile].x * 4;
+			spt->v0 = MapTex[i].v + MapSegmentPos[tile].y;
 
-			local_a3_2816->u0 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4;
-			local_a3_2816->v0 = MapTex[y].v + MapSegmentPos[*pbVar25].y;
+			spt->u1 = MapTex[j].u + MapSegmentPos[tile].x * 4 + width;
+			spt->v1 = MapTex[i].v + MapSegmentPos[tile].y;
 
-			local_a3_2816->u1 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4 + cVar22;
-			local_a3_2816->v1 = MapTex[y].v + MapSegmentPos[*pbVar25].y;
+			spt->u2 = MapTex[j].u + MapSegmentPos[tile].x * 4;
+			spt->v2 = MapTex[i].v + MapSegmentPos[tile].y + height;
 
-			local_a3_2816->u2 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4;
-			local_a3_2816->v2 = MapTex[y].v + MapSegmentPos[*pbVar25].y + cVar20;
+			spt->u3 = MapTex[j].u + MapSegmentPos[tile].x * 4 + width;
+			spt->v3 = MapTex[i].v + MapSegmentPos[tile].y + height;
 
-			local_a3_2816->u3 = MapTex[y_00].u + MapSegmentPos[*pbVar25].x * 4 + cVar22;
-			local_a3_2816->v3 = MapTex[y].v + MapSegmentPos[*pbVar25].y + cVar20;
-
-			playerFelony = playerFelony + 4;
-			plVar16 = plVar16 + 0x14;
-			plVar18 = plVar18 + 0x14;
-			pbVar25 = pbVar25 + 4;
-
-			addPrim(current->ot, local_a3_2816);
+			addPrim(current->ot, spt);
 
 			current->primptr += sizeof(POLY_FT4);
-
-			y_00++;
 		}
-
-		y = iVar27;
 	}
 
-	polyf4 = (POLY_F4 *)current->primptr;
+	sptb = (POLY_F4 *)current->primptr;
 
-	setPolyF4(polyf4);
+	setPolyF4(sptb);
 
-	polyf4->r0 = 60;
-	polyf4->g0 = 60;
-	polyf4->b0 = 60;
+	sptb->r0 = 60;
+	sptb->g0 = 60;
+	sptb->b0 = 60;
 
-	polyf4->y0 = 0xb6;
-	polyf4->y1 = 0xb6;
-	polyf4->x0 = 0xf5;
-	polyf4->x1 = 0x13b;
-	polyf4->x2 = 0xf5;
-	polyf4->y2 = 0xf2;
-	polyf4->x3 = 0x13b;
-	polyf4->y3 = 0xf2;
+	sptb->y0 = 182;
+	sptb->y1 = 182;
+	sptb->x0 = 245;
+	sptb->x1 = 315;
+	sptb->x2 = 245;
+	sptb->y2 = 242;
+	sptb->x3 = 315;
+	sptb->y3 = 242;
 
-	addPrim(current->ot, polyf4);
+	addPrim(current->ot, sptb);
 	current->primptr += sizeof(POLY_F4);
 
 	null = (POLY_FT3 *)current->primptr;
@@ -1262,7 +1176,7 @@ void DrawOverheadMap(void)
 	clipped_size.x = 250;
 	clipped_size.w = 60;
 	clipped_size.h = 60;
-	clipped_size.y = (current->draw).clip.y + 181;
+	clipped_size.y = current->draw.clip.y + 181;
 
 	drarea = (DR_AREA*)current->primptr;
 
