@@ -19,16 +19,42 @@
 
 #include "INLINE_C.H"
 
+#define NUM_BONES 23
 
 LIMBS lRoutes[5][8] = {
-	{ROOT, LOWERBACK, HIPS, LHIP, LKNEE, LFOOT, LTOE, ROOT},
-	{HIPS, RHIP, RKNEE, RFOOT, RTOE, ROOT, ROOT, ROOT},
-	{LOWERBACK, JOINT_1, LSHOULDER, LELBOW, LHAND, LFINGERS, ROOT, ROOT},
-	{JOINT_1, RSHOULDER, RELBOW, RHAND, RFINGERS, ROOT, ROOT, ROOT},
-	{JOINT_1, NECK, HEAD, ROOT, ROOT, ROOT, ROOT, ROOT},
+	{
+		ROOT,		LOWERBACK,
+		HIPS,		LHIP,
+		LKNEE,		LFOOT,
+		LTOE,		ROOT
+	},
+	{
+		HIPS,		RHIP,
+		RKNEE,		RFOOT,
+		RTOE,		ROOT,
+		ROOT,		ROOT
+	},
+	{
+		LOWERBACK,	JOINT_1,
+		LSHOULDER,	LELBOW,
+		LHAND,		LFINGERS,
+		ROOT,		ROOT
+	},
+	{ 
+		JOINT_1,	RSHOULDER,
+		RELBOW,		RHAND,
+		RFINGERS,	ROOT,
+		ROOT,		ROOT
+	},
+	{
+		JOINT_1,	NECK,
+		HEAD,		ROOT,
+		ROOT,		ROOT,
+		ROOT,		ROOT
+	},
 };
 
-PED_DATA MainPed[23] =
+PED_DATA MainPed[NUM_BONES] =
 {
 	{ 0, 68u, &chest1_texture, CHEST_PAL },
 	{ 1, 68u, &chest1_texture, CHEST_PAL },
@@ -57,12 +83,12 @@ PED_DATA MainPed[23] =
 
 
 // FIXME: could be incorrect
-BONE Skel[23] =
+BONE Skel[NUM_BONES] =
 {
 	{
 		ROOT,
 		NULL,
-		1,
+		2,
 		{ &Skel[LOWERBACK], &Skel[HIPS], NULL },
 		NULL,
 		NULL,
@@ -204,8 +230,8 @@ BONE Skel[23] =
 	},
 	{
 		HIPS,
-		&Skel[0],
-		0,
+		&Skel[ROOT],
+		2,
 		{ &Skel[RHIP], &Skel[LHIP], NULL },
 		NULL,
 		NULL,
@@ -314,7 +340,32 @@ BONE Skel[23] =
 	}
 };
 
-int boneIdvals[15] = { 2, 3, 4, 6, 7, 8, 0xA, 0xB, 0xC, 0xF, 0x10, 0x11, 0x13, 0x14, 0x15 };
+int boneIdvals[] = {
+	// 1
+	JOINT_1,
+	NECK,
+	HEAD,
+
+	// 2
+	LELBOW,
+	LHAND,
+	LFINGERS,
+
+	// 3
+	RELBOW,
+	RHAND,
+	RFINGERS,
+
+	// 4
+	LKNEE,
+	LFOOT,
+	LTOE,
+
+	// 5
+	RKNEE,
+	RFOOT,
+	RTOE
+};
 
 TEXTURE_DETAILS jeans_texture;
 TEXTURE_DETAILS arm1_texture;
@@ -361,13 +412,13 @@ void ProcessMotionLump(char *lump_ptr, int lump_size)
 {
 	if (ThisMotion < 24)
 	{
-		int size = (lump_size + 3U & 0xfffffffc);
+		int size = (lump_size + 3) & ~3;
 
 		MALLOC_BEGIN();
 		MotionCaptureData[ThisMotion] = D_MALLOC(size);
 		MALLOC_END();
 
-		memcpy(MotionCaptureData[ThisMotion], lump_ptr, lump_size);
+		memcpy(MotionCaptureData[ThisMotion], lump_ptr, size);
 
 		ThisMotion++;
 	}
@@ -948,91 +999,88 @@ void StoreVertexLists(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-int bodyShiftValue = 0;
+#define BODY_OFFSET 8
+#define TORSO_OFFSET -2
+
+#define JERICHO_BODY_OFFSET 6
+#define JERICHO_TORSO_OFFSET -5
+
+int bodyShiftEnabled = 1;
+
+int bodyShiftValue = BODY_OFFSET;
+int torsoShiftValue = TORSO_OFFSET;
 
 // [D]
 void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 {
-	short sVar1;
-	SVECTOR_NOPAD *local_v0_180;
-	SVECTOR_NOPAD *pSVar2;
-	SVECTOR *local_a0_448;
-	short sVar3;
-	BONE *pBone;
-	BONE *pBone1;
-	SVECTOR *local_t0_244;
 	int i;
+	BONE *pBone;
+	char *pC;
+	SVECTOR *store;
+	SVECTOR_NOPAD *pSVNP;
 
-	Skel[0].pvOrigPos = (SVECTOR_NOPAD *)(pDrawingPed->motion + pDrawingPed->frame1 * 144 + 146);
-	Skel[0].pvRotation = (SVECTOR *)(pDrawingPed->motion + pDrawingPed->frame1 * 144 + 152);
+	Skel[ROOT].pvOrigPos = (SVECTOR_NOPAD *)(pDrawingPed->motion + pDrawingPed->frame1 * 0x90 + 0x92);
+	Skel[ROOT].pvRotation = (SVECTOR *)(pDrawingPed->motion + pDrawingPed->frame1 * 0x90 + 0x98);
 
-	Skel[0].vCurrPos.vx = Skel[0].pvOrigPos->vx;
-	Skel[0].vCurrPos.vy = -Skel[0].pvOrigPos->vy;
-	Skel[0].vCurrPos.vz = -Skel[0].pvOrigPos->vz;
+	Skel[ROOT].vCurrPos.vx = Skel[ROOT].pvOrigPos->vx;
+	Skel[ROOT].vCurrPos.vy = -Skel[ROOT].pvOrigPos->vy;
+	Skel[ROOT].vCurrPos.vz = -Skel[ROOT].pvOrigPos->vz;
 
-	Skel[0].vOffset.vx = 0;
-	Skel[0].vOffset.vy = 0;
-	Skel[0].vOffset.vz = 0;
+	Skel[ROOT].vOffset.vx = 0;
+	Skel[ROOT].vOffset.vy = 0;
+	Skel[ROOT].vOffset.vz = 0;
 
-	local_v0_180 = (SVECTOR_NOPAD *)(pDrawingPed->motion + pDrawingPed->frame1 * 144 + 158);
-	pSVar2 = (SVECTOR_NOPAD *)(pDrawingPed->motion + 14);
+	pC = (pDrawingPed->motion + pDrawingPed->frame1 * 0x90 + 0x9E);
+	pSVNP = (SVECTOR_NOPAD *)(pDrawingPed->motion + 0xE);
 
-	i = 21;
-	pBone = Skel;
-	do {
-		i--;
-		pBone[1].pvRotation = (SVECTOR*)local_v0_180;
-		pBone[1].pvOrigPos = pSVar2;
+	for (i = 1; i < NUM_BONES; i++)
+	{
+		pBone = &Skel[i];
 
-		local_v0_180++;
-		pSVar2++;
-		pBone++;
-	} while (-1 < i);
+		pBone->pvRotation = (SVECTOR*)pC;
+		pBone->pvOrigPos = &pSVNP[i - 1];
 
-	SVECTOR SVECTOR_ARRAY_1f800008[24];
+		pC += sizeof(SVECTOR_NOPAD);
+	}
 
-	i = 20;
+	static SVECTOR scratchpad[NUM_BONES];
 
-	SVECTOR_ARRAY_1f800008[0].vx = Skel[1].pvOrigPos->vx;
-	SVECTOR_ARRAY_1f800008[0].vy = -Skel[1].pvOrigPos->vy;
-	SVECTOR_ARRAY_1f800008[0].vz = -Skel[1].pvOrigPos->vz;
+	store = scratchpad;
 
-	local_t0_244 = SVECTOR_ARRAY_1f800008;
-	pBone = Skel + 1;
+	store[LOWERBACK].vx = Skel[LOWERBACK].pvOrigPos->vx;
+	store[LOWERBACK].vy = -Skel[LOWERBACK].pvOrigPos->vy;
+	store[LOWERBACK].vz = -Skel[LOWERBACK].pvOrigPos->vz;
 
-	do {
-		SVECTOR* _prev = local_t0_244;
-		local_t0_244++;
+	// start at the torso and traverse down
+	for (i = 2; i < NUM_BONES; i++)
+	{
+		pBone = &Skel[i];
 
-		local_t0_244->vx = pBone[1].pvOrigPos->vx - pBone[1].pParent->pvOrigPos->vx;
-		local_t0_244->vy = pBone[1].pParent->pvOrigPos->vy - pBone[1].pvOrigPos->vy;
-		local_t0_244->vz = pBone[1].pParent->pvOrigPos->vz - pBone[1].pvOrigPos->vz;
+		store[i].vx = pBone->pvOrigPos->vx - pBone->pParent->pvOrigPos->vx;
+		store[i].vy = pBone->pParent->pvOrigPos->vy - pBone->pvOrigPos->vy;
+		store[i].vz = pBone->pParent->pvOrigPos->vz - pBone->pvOrigPos->vz;
 
-		if (pBone[1].id == JOINT_1)
-			local_t0_244->vy -= bodyShiftValue;
+		if (pBone->id == JOINT_1 && bodyShiftEnabled)
+		{
+			store[i].vy -= bodyShiftValue;
+			store[i].vz -= torsoShiftValue;
+		}
+	}
 
-		i--;
-		pBone++;
-	} while (-1 < i);
+	// start at the lower back and traverse down
+	for (i = 1; i < NUM_BONES; i++)
+	{
+		pBone = &Skel[i];
 
-	pBone1 = Skel;
-	local_a0_448 = SVECTOR_ARRAY_1f800008;
-	i = 21;
-	do {
-		pBone1++;
+		pBone->vCurrPos.vx = store[i].vx;
+		pBone->vOffset.vx = store[i].vx;
 
-		pBone1->vCurrPos.vx = local_a0_448->vx;
-		pBone1->vOffset.vx = local_a0_448->vx;
+		pBone->vCurrPos.vy = store[i].vy;
+		pBone->vOffset.vy = store[i].vy;
 
-		pBone1->vCurrPos.vy = local_a0_448->vy;
-		pBone1->vOffset.vy = local_a0_448->vy;
-
-		pBone1->vCurrPos.vz = local_a0_448->vz;
-		pBone1->vOffset.vz = local_a0_448->vz;
-
-		local_a0_448++;
-		i--;
-	} while (-1 < i);
+		pBone->vCurrPos.vz = store[i].vz;
+		pBone->vOffset.vz = store[i].vz;
+	}
 
 #if 0
 	// Draw T POSE
@@ -1044,7 +1092,7 @@ void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 		CVECTOR rrcv = { 250, 0, 0 };
 		CVECTOR yycv = { 250, 250, 0 };
 
-		for (int i = 0; i < 23; i++)
+		for (int i = 0; i < NUM_BONES; i++)
 		{
 			pBone = &Skel[i];
 
@@ -1072,7 +1120,38 @@ void SetupTannerSkeleton(PEDESTRIAN *pDrawingPed)
 #endif
 }
 
+// [A] - was inlined in newShowTanner
+void DrawSprite(PEDESTRIAN *pDrawingPed, BONE *pBone, VECTOR *vJPos)
+{
+	// 0x1f800200
+	static char scratchpad[sizeof(SVECTOR) * 2];
 
+	VERTTYPE t0, t1;
+	int z, z1, z2;
+
+	SVECTOR *data = (SVECTOR *)scratchpad;
+
+	data[0].vx = vJPos[pBone->id & 0x7f].vx + pDrawingPed->position.vx - camera_position.vx;
+	data[0].vy = vJPos[pBone->id & 0x7f].vy + pDrawingPed->position.vy - camera_position.vy;
+	data[0].vz = vJPos[pBone->id & 0x7f].vz + pDrawingPed->position.vz - camera_position.vz;
+
+	data[1].vx = vJPos[pBone->pParent->id & 0x7f].vx + pDrawingPed->position.vx - camera_position.vx;
+	data[1].vy = vJPos[pBone->pParent->id & 0x7f].vy + pDrawingPed->position.vy - camera_position.vy;
+	data[1].vz = vJPos[pBone->pParent->id & 0x7f].vz + pDrawingPed->position.vz - camera_position.vz;
+
+	gte_ldv0(&data[0]);
+	gte_ldv1(&data[1]);
+
+	gte_rtpt();
+	gte_stsxy0(&t0);
+	gte_stsxy1(&t1);
+
+	gte_stsz3(&z, &z1, &z2);
+
+	gCurrentZ = z;
+
+	DrawBodySprite(pDrawingPed, pBone->id, &t0, &t1, z, z1);
+}
 
 // decompiled code
 // original method signature: 
@@ -1221,276 +1300,187 @@ int bAllreadyRotated = 0;
 // [D]
 void newShowTanner(PEDESTRIAN *pDrawingPed)
 {
-	LIMBS LVar1;
-	VERTTYPE v1_00[2];
-	VERTTYPE v2_00[2];
+	static VECTOR scratchpad[32];
 
-	int iVar3;
-	int sy;
-	BONE *pBone;
-	int vvar1;
-	SVECTOR *mVerts;
-	uint uVar4;
-	int iVar5;
-	MODEL *model;
-	uint uVar6;
-	VECTOR v;
-	SVECTOR v1;
-	SVECTOR v2;
-	long t0;
-	long t1;
-	int z;
-	int z1;
-	int z2;
-	long _t0;
-	long _t1;
-	int _z;
-	int _z1;
-	int _z2;
-	long __t0;
-	long __t1;
-	int __z;
-	int __z1;
-	int __z2;
-	int draw;
+	VECTOR *playerPos = &scratchpad[0];
+	VECTOR *cameraPos = &scratchpad[1];
+	VECTOR *vJPos = &scratchpad[2];
 
-	VECTOR VECTOR_1f800000;
-	VECTOR VECTOR_1f800010;
-	VECTOR VECTOR_ARRAY_1f800020[64];
-	SVECTOR SVECTOR_1f800200;
-	SVECTOR SVECTOR_1f800208;
+	playerPos->vx = pDrawingPed->position.vx;
+	playerPos->vy = pDrawingPed->position.vy - 21;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
+	playerPos->vz = pDrawingPed->position.vz;
 
-	VECTOR_1f800000.vx = pDrawingPed->position.vx;
-	VECTOR_1f800000.vy = pDrawingPed->position.vy - 21;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
-	VECTOR_1f800000.vz = pDrawingPed->position.vz;
+	cameraPos->vx = camera_position.vx;
+	cameraPos->vy = camera_position.vy;
+	cameraPos->vz = camera_position.vz;
 
-	VECTOR_1f800010.vx = camera_position.vx;
-	VECTOR_1f800010.vy = camera_position.vy;
-	VECTOR_1f800010.vz = camera_position.vz;
+	vJPos[ROOT].vx = Skel[ROOT].pvOrigPos->vx;
+	vJPos[ROOT].vy = -Skel[ROOT].pvOrigPos->vy;
+	vJPos[ROOT].vz = Skel[ROOT].pvOrigPos->vz;
 
-	VECTOR_ARRAY_1f800020[0].vx = Skel[0].pvOrigPos->vx;
-	VECTOR_ARRAY_1f800020[0].vy = -Skel[0].pvOrigPos->vy;
-	VECTOR_ARRAY_1f800020[0].vz = Skel[0].pvOrigPos->vz;
-
-	v.vz = 0;
-	v.vy = 0;
-	v.vx = 0;
-
+	VECTOR v = { 0, 0, 0 };
+	
 	gte_SetTransVector(&v);
 
-	vvar1 = 0;
-	Skel[0].id = (LIMBS)(Skel[0].id | 0x80);
-	sy = 0;
+	// do not draw the root
+	Skel[ROOT].id = (LIMBS)(Skel[ROOT].id | 0x80);
 
-	draw = (pDrawingPed->padId > -1 && pDrawingPed->padId == CurrentPlayerView) ? player[pDrawingPed->padId].cameraView != 2 : 1;
+	int draw = (pDrawingPed->padId > -1 && pDrawingPed->padId == CurrentPlayerView)
+		? player[pDrawingPed->padId].cameraView != 2
+		: 1;
 
-	do {
-		LVar1 = lRoutes[vvar1][1];
-		iVar5 = 1;
-
-		while (LVar1 != ROOT)
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 1; j < 8; j++)
 		{
-			LVar1 = lRoutes[vvar1][iVar5];
-			uVar4 = (uint)LVar1;
-			pBone = Skel + uVar4;
+			int id = lRoutes[i][j];
+
+			if (id == ROOT)
+				break;
+
+			BONE *pBone = &Skel[id];
+
 			if (pBone->id < 0x7f)
 			{
-				uVar6 = lRoutes[vvar1][iVar5 - 1];//  (uint)*(byte *)((int)MissionName37 + iVar5 + sy + 0x93);
-				VECTOR_ARRAY_1f800020[pBone->id].vx = VECTOR_ARRAY_1f800020[uVar6].vx + Skel[uVar4].vCurrPos.vx;
-				VECTOR_ARRAY_1f800020[pBone->id].vy = VECTOR_ARRAY_1f800020[uVar6].vy + Skel[uVar4].vCurrPos.vy;
-				VECTOR_ARRAY_1f800020[pBone->id].vz = VECTOR_ARRAY_1f800020[uVar6].vz + Skel[uVar4].vCurrPos.vz;
+				int lval = lRoutes[i][j - 1];
 
-				if ((pDrawingPed->pedType == TANNER_MODEL) && (pBone->id == HEAD))
+				vJPos[pBone->id].vx = vJPos[lval].vx + pBone->vCurrPos.vx;
+				vJPos[pBone->id].vy = vJPos[lval].vy + pBone->vCurrPos.vy;
+				vJPos[pBone->id].vz = vJPos[lval].vz + pBone->vCurrPos.vz;
+
+				if (pDrawingPed->pedType == TANNER_MODEL && pBone->id == HEAD)
+					pDrawingPed->head_pos = vJPos[lval].vy;
+
+				if (pBone->pModel != NULL
+					&& !bDoingShadow
+					&& pDrawingPed->pedType < OTHER_SPRITE
+					&& draw)
 				{
-					pDrawingPed->head_pos = VECTOR_ARRAY_1f800020[uVar6].vy;
-				}
+					MODEL *model = *pBone->pModel;
 
-				if (Skel[uVar4].pModel != NULL && bDoingShadow == 0 && pDrawingPed->pedType < OTHER_SPRITE && draw)
-				{
-					model = *Skel[uVar4].pModel;
-
-					mVerts = (SVECTOR *)model->vertices;
-					iVar3 = 0;
-					if (model->num_vertices != 0)
+					for (int c = 0; c < model->num_vertices; c++)
 					{
-						do {
-							iVar3 = iVar3 + 1;
-							mVerts->vx = mVerts->vx + (VECTOR_ARRAY_1f800020[uVar6].vx + VECTOR_1f800000.vx - VECTOR_1f800010.vx);
-							mVerts->vy = mVerts->vy + (VECTOR_ARRAY_1f800020[uVar6].vy + VECTOR_1f800000.vy - VECTOR_1f800010.vy);
-							mVerts->vz = mVerts->vz + (VECTOR_ARRAY_1f800020[uVar6].vz + VECTOR_1f800000.vz - VECTOR_1f800010.vz);
-							mVerts = mVerts + 1;
-						} while (iVar3 < model->num_vertices);
+						SVECTOR *mVerts = (SVECTOR *)model->vertices + c;
+
+						mVerts->vx += (vJPos[lval].vx + playerPos->vx - cameraPos->vx);
+						mVerts->vy += (vJPos[lval].vy + playerPos->vy - cameraPos->vy);
+						mVerts->vz += (vJPos[lval].vz + playerPos->vz - cameraPos->vz);
 					}
 				}
+
 				pBone->id = (LIMBS)(pBone->id | 0x80);
 			}
-			iVar5++;
-
 		}
-		vvar1++;
-		sy = vvar1 * 8;
-	} while (vvar1 < 5);
+	}
 
-	pBone = Skel + 1;
-
-	if (pDrawingPed->pedType < OTHER_SPRITE)
+	if (pDrawingPed->pedType < OTHER_SPRITE && (!bDoingShadow || draw))
 	{
-		if (draw || bDoingShadow != 0)
+		// draw LOWERBACK - RTOE
+		for (int i = 1; i < NUM_BONES-1; i++)
 		{
-			sy = 20;
-			do {
-				uVar4 = (uint)pBone->id & 0x7f;
-				if (bDoingShadow == 0)
+			BONE *pBone = &Skel[i];
+
+			int id = pBone->id & 0x7f;
+
+			if (bDoingShadow)
+			{
+				if (id != LSHOULDER
+					&& id != RSHOULDER
+					&& id != HEAD
+					&& id != HIPS
+					&& id != LOWERBACK
+					&& id != ROOT
+					&& id != JOINT
+					&& id != LHIP
+					&& id != RHIP)
 				{
-					if (pBone->pModel != NULL)
-					{
-						vvar1 = (uint)(uVar4 != 4) << 1;
-
-						if (uVar4 == 2)
-							vvar1 = 1;
-
-						RenderModel(*pBone->pModel, NULL, &v, vvar1, 0, 0, 0);
-					}
+					DrawSprite(pDrawingPed, pBone, vJPos);
 				}
-				else
-				{
-					if (((uVar4 != 5) && (uVar4 != 9)) &&
-						((uVar4 != 0xd &&
-						((((uVar4 != 1 && ((pBone->id & 0x7f) != 0)) && (uVar4 != 0x16)) &&
-							((uVar4 != 0xe && (uVar4 != 0x12))))))))
-					{
-						uVar6 = pBone->pParent->id & 0x7f;
+			}
+			else if (pBone->pModel != NULL)
+			{
+				MODEL *model = *pBone->pModel;
 
-						SVECTOR_1f800200.vx = VECTOR_ARRAY_1f800020[uVar4].vx + pDrawingPed->position.vx - camera_position.vx;
-						SVECTOR_1f800200.vy = VECTOR_ARRAY_1f800020[uVar4].vy + pDrawingPed->position.vy - camera_position.vy;
-						SVECTOR_1f800200.vz = VECTOR_ARRAY_1f800020[uVar4].vz + pDrawingPed->position.vz - camera_position.vz;
+				int bias = (id == HEAD) ? 0 : 2;
 
-						SVECTOR_1f800208.vx = VECTOR_ARRAY_1f800020[uVar6].vx + pDrawingPed->position.vx - camera_position.vx;
-						SVECTOR_1f800208.vy = VECTOR_ARRAY_1f800020[uVar6].vy + pDrawingPed->position.vy - camera_position.vy;
-						SVECTOR_1f800208.vz = VECTOR_ARRAY_1f800020[uVar6].vz + pDrawingPed->position.vz - camera_position.vz;
+				if (id == JOINT_1)
+					bias = 1;
 
-						gte_ldv0(&SVECTOR_1f800200);
-						gte_ldv1(&SVECTOR_1f800208);
-
-
-						gte_rtpt();
-						gte_stsxy0(&v1_00[0]);
-						gte_stsxy1(&v2_00[0]);
-
-						gte_stsz3(&z, &z1, &z2);
-
-						gCurrentZ = z1;
-
-						DrawBodySprite(pDrawingPed, pBone->id, v1_00, v2_00, z, z1);
-					}
-				}
+				RenderModel(model, NULL, &v, bias, 0, 0, 0);
+			}
 
 #if 0
-				// DEBUG DRAW SKELETON
-				{
-					uVar6 = (uint)pBone->pParent->id & 0x7f;
+			// DEBUG DRAW SKELETON
+			{
+				extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+				extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
 
-					extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
-					extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
+				CVECTOR bbcv = { 0, 0, 250 };
+				CVECTOR rrcv = { 250, 0, 0 };
+				CVECTOR yycv = { 250, 250, 0 };
 
-					CVECTOR bbcv = { 0, 0, 250 };
-					CVECTOR rrcv = { 250, 0, 0 };
-					CVECTOR yycv = { 250, 250, 0 };
+				VECTOR v0 = {
+					vJPos[pBone->id & 0x7f].vx,
+					-vJPos[pBone->id & 0x7f].vy,
+					vJPos[pBone->id & 0x7f].vz
+				};
 
-					VECTOR v0 = {
-						VECTOR_ARRAY_1f800020[uVar4].vx,
-						-VECTOR_ARRAY_1f800020[uVar4].vy,
-						VECTOR_ARRAY_1f800020[uVar4].vz
-					};
+				VECTOR v1 = {
+					vJPos[pBone->pParent->id & 0x7f].vx,
+					-vJPos[pBone->pParent->id & 0x7f].vy,
+					vJPos[pBone->pParent->id & 0x7f].vz
+				};
 
-					VECTOR v1 = {
-						VECTOR_ARRAY_1f800020[uVar6].vx,
-						-VECTOR_ARRAY_1f800020[uVar6].vy,
-						VECTOR_ARRAY_1f800020[uVar6].vz
-					};
+				VECTOR ofs = *(VECTOR*)&pDrawingPed->position;
+				ofs.vy = -ofs.vy;
+				//ofs.vy += 270;
 
-					VECTOR ofs = *(VECTOR*)&pDrawingPed->position;
-					ofs.vy = -ofs.vy;
-					//ofs.vy += 270;
-
-					Debug_AddLineOfs(v0, v1, ofs, bbcv);
-				}
+				Debug_AddLineOfs(v0, v1, ofs, bbcv);
+			}
 #endif
-
-				sy = sy + -1;
-				pBone = pBone + 1;
-			} while (-1 < sy);
 		}
 	}
 	else
 	{
-		sy = 21;
-		do {
-			uVar4 = (uint)pBone->id & 0x7f;
-			if ((((uVar4 != 5) && (uVar4 != 9)) && ((uVar4 != 4 && (((uVar4 != 0xd && (uVar4 != 1)) && ((pBone->id & 0x7f) != 0))))))
-				&& (((uVar4 != 0x16 && (uVar4 != 0xe)) && (uVar4 != 0x12))))
+		// draw LOWERBACK - RTOE
+		for (int i = 1; i < NUM_BONES-1; i++)
+		{
+			BONE *pBone = &Skel[i];
+
+			int id = pBone->id & 0x7f;
+
+			if (id != LSHOULDER
+				&& id != RSHOULDER
+				&& id != HEAD
+				&& id != HIPS
+				&& id != LOWERBACK
+				&& id != ROOT
+				&& id != JOINT
+				&& id != LHIP
+				&& id != RHIP)
 			{
-				uVar6 = (uint)pBone->pParent->id & 0x7f;
-
-				SVECTOR_1f800200.vx = VECTOR_ARRAY_1f800020[uVar4].vx + pDrawingPed->position.vx - camera_position.vx;
-				SVECTOR_1f800200.vy = VECTOR_ARRAY_1f800020[uVar4].vy + pDrawingPed->position.vy - camera_position.vy;
-				SVECTOR_1f800200.vz = VECTOR_ARRAY_1f800020[uVar4].vz + pDrawingPed->position.vz - camera_position.vz;
-
-				SVECTOR_1f800208.vx = VECTOR_ARRAY_1f800020[uVar6].vx + pDrawingPed->position.vx - camera_position.vx;
-				SVECTOR_1f800208.vy = VECTOR_ARRAY_1f800020[uVar6].vy + pDrawingPed->position.vy - camera_position.vy;
-				SVECTOR_1f800208.vz = VECTOR_ARRAY_1f800020[uVar6].vz + pDrawingPed->position.vz - camera_position.vz;
-
-				gte_ldv0(&SVECTOR_1f800200);
-				gte_ldv1(&SVECTOR_1f800208);
-
-				gte_rtpt();
-				gte_stsxy0(v1_00);
-				gte_stsxy1(v2_00);
-
-				gte_stsz3(&z, &z1, &z2);
-
-				gCurrentZ = z1;
-
-				DrawBodySprite(pDrawingPed, pBone->id, v1_00, v2_00, z, z1);
+				DrawSprite(pDrawingPed, pBone, vJPos);
 			}
-			sy = sy + -1;
-			pBone = pBone + 1;
-		} while (-1 < sy);
+		}
+
+		// draw HEAD
+		BONE *pBone = &Skel[HEAD];
 
 		if (switch_detail_distance >> 2 < gCurrentZ)
 		{
-			uVar4 = (uint)Skel[4].id & 0x7f;
-			uVar6 = (uint)(Skel[4].pParent)->id & 0x7f;
-
-			SVECTOR_1f800200.vx = VECTOR_ARRAY_1f800020[uVar4].vx + pDrawingPed->position.vx - camera_position.vx;
-			SVECTOR_1f800200.vy = VECTOR_ARRAY_1f800020[uVar4].vy + pDrawingPed->position.vy - camera_position.vy;
-			SVECTOR_1f800200.vz = VECTOR_ARRAY_1f800020[uVar4].vz + pDrawingPed->position.vz - camera_position.vz;
-
-			SVECTOR_1f800208.vx = VECTOR_ARRAY_1f800020[uVar6].vx + pDrawingPed->position.vx - camera_position.vx;
-			SVECTOR_1f800208.vy = VECTOR_ARRAY_1f800020[uVar6].vy + pDrawingPed->position.vy - camera_position.vy;
-			SVECTOR_1f800208.vz = VECTOR_ARRAY_1f800020[uVar6].vz + pDrawingPed->position.vz - camera_position.vz;
-
-			gte_ldv0(&SVECTOR_1f800200);
-			gte_ldv1(&SVECTOR_1f800208);
-
-			gte_rtpt();
-			gte_stsxy0(v1_00);
-			gte_stsxy1(v2_00);
-
-			gte_stsz3(&z, &z1, &z2);
-
-			gCurrentZ = z1;
-
-			DrawBodySprite(pDrawingPed, Skel[4].id, v1_00, v2_00, z, z1);
+			DrawSprite(pDrawingPed, pBone, vJPos);
 		}
 		else
 		{
-			v1.vx = *(short *)&VECTOR_ARRAY_1f800020[(uint)Skel[4].id & 0x7f].vx;
-			v1.vy = *(short *)&VECTOR_ARRAY_1f800020[(uint)Skel[4].id & 0x7f].vy;
-			v1.vz = *(short *)&VECTOR_ARRAY_1f800020[(uint)Skel[4].id & 0x7f].vz;
-			v2.vx = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vx;
-			v2.vy = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vy;
-			v2.vz = *(short *)&VECTOR_ARRAY_1f800020[(uint)(Skel[4].pParent)->id & 0x7f].vz;
+			SVECTOR v1, v2;
+
+			v1.vx = vJPos[pBone->id & 0x7f].vx;
+			v1.vy = vJPos[pBone->id & 0x7f].vy;
+			v1.vz = vJPos[pBone->id & 0x7f].vz;
+
+			v2.vx = vJPos[pBone->pParent->id & 0x7f].vx;
+			v2.vy = vJPos[pBone->pParent->id & 0x7f].vy;
+			v2.vz = vJPos[pBone->pParent->id & 0x7f].vz;
 
 			bAllreadyRotated = 1;
 			DoCivHead(pDrawingPed, &v2, &v1);
@@ -1498,13 +1488,9 @@ void newShowTanner(PEDESTRIAN *pDrawingPed)
 		}
 	}
 
-	pBone = Skel;
-	sy = 0;
-	do {
-		sy++;
-		pBone->id = (LIMBS)(pBone->id & 0x7f);
-		pBone++;
-	} while (sy < 23);
+	// clear all id flags
+	for (int i = 0; i < NUM_BONES; i++)
+		Skel[i].id = (LIMBS)(Skel[i].id & 0x7f);
 }
 
 
@@ -1542,22 +1528,22 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN *pDrawingPed, int boneId, int modelType)
 
 	switch (boneId)
 	{
-	case 2:
+	case JOINT_1:
 		startVertex = cJerichoVNumbers[0];
 		break;
-	case 4:
+	case HEAD:
 		startVertex = cJerichoVNumbers[1];
 		break;
-	case 6:
+	case LELBOW:
 		startVertex = cJerichoVNumbers[2];
 		break;
-	case 7:
+	case LHAND:
 		startVertex = cJerichoVNumbers[3];
 		break;
-	case 10:
+	case RELBOW:
 		startVertex = cJerichoVNumbers[4];
 		break;
-	case 11:
+	case RHAND:
 		startVertex = cJerichoVNumbers[5];
 	default:
 		return vTannerList + cTannerVNumbers[boneId & 0x7f];
@@ -1641,10 +1627,9 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN *pDrawingPed, int boneId, int modelType)
 void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 {
 	short *psVar1;
-	LIMBS LVar2;
 	uint uVar4;
-	SVECTOR *verts;
-	MODEL *pMVar5;
+	SVECTOR *pVerts;
+	MODEL *pModel;
 	int iVar6;
 	int iVar7;
 	SVECTOR *pSVar8;
@@ -1660,21 +1645,19 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 	short *psVar18;
 	MATRIX mStore[32];
 	VECTOR sv;
-	int local_30;
+	int i;
 
-	MATRIX MATRIX_1f800000;
-	MATRIX MATRIX_1f800020;
-	MATRIX MATRIX_1f800040;
+	MATRIX _sMatrix;
+	MATRIX _pMatrix;
+	MATRIX _oMatrix;
 
-	SVECTOR SVECTOR_ARRAY_1f800060[2];
-	SVECTOR SVECTOR_ARRAY_1f800080[80];
-	VECTOR VECTOR_1f800070;
+	SVECTOR _svBone[2];
+	SVECTOR _pD[80];
+	VECTOR _vBoneRotated;
 
-	SVECTOR* local_s0_2092;
-
-	MATRIX_1f800020.t[0] = Skel[0].pvOrigPos->vx;
-	MATRIX_1f800020.t[1] = Skel[0].pvOrigPos->vy;
-	MATRIX_1f800020.t[2] = Skel[0].pvOrigPos->vz;
+	_pMatrix.t[0] = Skel[0].pvOrigPos->vx;
+	_pMatrix.t[1] = Skel[0].pvOrigPos->vy;
+	_pMatrix.t[2] = Skel[0].pvOrigPos->vz;
 
 	// RotMatrix inline?
 	// TODO: pretty it
@@ -1692,147 +1675,118 @@ void newRotateBones(PEDESTRIAN *pDrawingPed, BONE *poBone)
 
 		uVar10 = FIXEDH(iVar14 * iVar13) + FIXEDH(FIXEDH(iVar6 * iVar12) * iVar17);
 		uVar16 = FIXEDH(iVar6 * iVar15);
-		iVar7 = uVar16;
 		uVar9 = -FIXEDH(iVar15 * iVar12);
 		uVar11 = FIXEDH(iVar14 * iVar15);
 		iVar6 = FIXEDH(-iVar14 * FIXEDH(iVar6 * iVar17)) + FIXEDH(iVar12 * iVar13);
 
-		MATRIX_1f800020.m[0][0] = uVar16;
-		MATRIX_1f800020.m[0][1] = iVar6;
-		MATRIX_1f800020.m[0][2] = uVar10;
+		_pMatrix.m[0][0] = uVar16;
+		_pMatrix.m[0][1] = iVar6;
+		_pMatrix.m[0][2] = uVar10;
 
-		MATRIX_1f800020.m[1][0] = rcossin_tbl[uVar4 * 2];
-		MATRIX_1f800020.m[1][1] = uVar11;
-		MATRIX_1f800020.m[1][2] = uVar9;
+		_pMatrix.m[1][0] = rcossin_tbl[uVar4 * 2];
+		_pMatrix.m[1][1] = uVar11;
+		_pMatrix.m[1][2] = uVar9;
 
-		MATRIX_1f800020.m[2][0] = -FIXEDH(iVar13 * iVar15);
-		MATRIX_1f800020.m[2][1] = FIXEDH(uVar10 * iVar17) - FIXEDH(iVar7 * uVar9);
-		MATRIX_1f800020.m[2][2] = FIXEDH(iVar7 * uVar11) - FIXEDH(iVar6 * iVar17);
+		_pMatrix.m[2][0] = -FIXEDH(iVar13 * iVar15);
+		_pMatrix.m[2][1] = FIXEDH(uVar10 * iVar17) - FIXEDH(uVar16 * uVar9);
+		_pMatrix.m[2][2] = FIXEDH(uVar16 * uVar11) - FIXEDH(iVar6 * iVar17);
 	}
 
-	SVECTOR_ARRAY_1f800060[0].vx = Skel[0].vOffset.vx;
-	SVECTOR_ARRAY_1f800060[0].vy = Skel[0].vOffset.vy;
-	SVECTOR_ARRAY_1f800060[0].vz = Skel[0].vOffset.vz;
+	_svBone[0].vx = Skel[0].vOffset.vx;
+	_svBone[0].vy = Skel[0].vOffset.vy;
+	_svBone[0].vz = Skel[0].vOffset.vz;
 
-	mStore[0] = MATRIX_1f800020;
+	mStore[0] = _pMatrix;
 
-	local_30 = 0;
-	do {
-		iVar7 = local_30 * 8;
-		iVar6 = 1;
-		LVar2 = lRoutes[local_30][iVar6];
-
-		while (LVar2 != ROOT)
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 1; j < 8; j++)
 		{
-			uVar4 = (uint)LVar2;
-			SVECTOR_ARRAY_1f800060[0].vx = Skel[uVar4].vOffset.vx;
-			SVECTOR_ARRAY_1f800060[0].vy = Skel[uVar4].vOffset.vy;
-			SVECTOR_ARRAY_1f800060[0].vz = Skel[uVar4].vOffset.vz;
+			int id = lRoutes[i][j];
 
-			if (bReverseYRotation == 0 || Skel[uVar4].pParent->id != ROOT)
+			if (id == ROOT)
+				break;
+
+			BONE *pBone = &Skel[id];
+
+			_svBone[0].vx = pBone->vOffset.vx;
+			_svBone[0].vy = pBone->vOffset.vy;
+			_svBone[0].vz = pBone->vOffset.vz;
+
+			if (bReverseYRotation == 0 || pBone->pParent->id != ROOT)
 			{
-				SVECTOR_ARRAY_1f800060[1].vx = -Skel[uVar4].pParent->pvRotation->vx;
-				SVECTOR_ARRAY_1f800060[1].vy = Skel[uVar4].pParent->pvRotation->vy;
-				SVECTOR_ARRAY_1f800060[1].vz = Skel[uVar4].pParent->pvRotation->vz;
+				_svBone[1].vx = -pBone->pParent->pvRotation->vx;
+				_svBone[1].vy = pBone->pParent->pvRotation->vy;
+				_svBone[1].vz = pBone->pParent->pvRotation->vz;
 			}
 			else
 			{
-				SVECTOR_ARRAY_1f800060[1].vx = Skel[uVar4].pParent->pvRotation->vx;
-				SVECTOR_ARRAY_1f800060[1].vy = -Skel[uVar4].pParent->pvRotation->vy;
-				SVECTOR_ARRAY_1f800060[1].vz = Skel[uVar4].pParent->pvRotation->vz;
+				_svBone[1].vx = pBone->pParent->pvRotation->vx;
+				_svBone[1].vy = -pBone->pParent->pvRotation->vy;
+				_svBone[1].vz = pBone->pParent->pvRotation->vz;
 			}
 
-			if (LVar2 == HEAD)
-			{
-				SVECTOR_ARRAY_1f800060[1].vy -= pDrawingPed->head_rot;
-			}
+			if (id == HEAD)
+				_svBone[1].vy -= pDrawingPed->head_rot;
 
-			RotMatrixZYX_gte(&SVECTOR_ARRAY_1f800060[1], &MATRIX_1f800000);
+			RotMatrixZYX_gte(&_svBone[1], &_sMatrix);
 
-			MATRIX_1f800000.t[0] = SVECTOR_ARRAY_1f800060[0].vx;
-			MATRIX_1f800000.t[1] = SVECTOR_ARRAY_1f800060[0].vy;
-			MATRIX_1f800000.t[2] = SVECTOR_ARRAY_1f800060[0].vz;
+			_sMatrix.t[0] = _svBone[0].vx;
+			_sMatrix.t[1] = _svBone[0].vy;
+			_sMatrix.t[2] = _svBone[0].vz;
 
-			uVar10 = Skel[uVar4].pParent->id & 0x7f;
+			_pMatrix = mStore[pBone->pParent->id & 0x7f];
 
-			MATRIX_1f800020 = mStore[uVar10];
+			gte_MulMatrix0(&_pMatrix, &_sMatrix, &_oMatrix);
+			gte_SetRotMatrix(&_oMatrix);
 
-			gte_MulMatrix0(&MATRIX_1f800020, &MATRIX_1f800000, &MATRIX_1f800040);
-
-			gte_SetRotMatrix(&MATRIX_1f800040);
-
-			gte_ldv0(&SVECTOR_ARRAY_1f800060[0]);
-
-			//setCopReg(2, in_zero, SVECTOR_ARRAY_1f800060[0]._0_4_);
-			//setCopReg(2, 0x1f800000, SVECTOR_ARRAY_1f800060[0]._4_4_);
-
+			gte_ldv0(&_svBone[0]);
 			gte_rtv0();
 
-			gte_stlvnl(&VECTOR_1f800070);
+			gte_stlvnl(&_vBoneRotated);
 
-			LVar2 = Skel[uVar4].id;
-			Skel[uVar4].vCurrPos.vx = VECTOR_1f800070.vx;
-			Skel[uVar4].vCurrPos.vy = VECTOR_1f800070.vy;
-			Skel[uVar4].vCurrPos.vz = VECTOR_1f800070.vz;
+			pBone->vCurrPos.vx = _vBoneRotated.vx;
+			pBone->vCurrPos.vy = _vBoneRotated.vy;
+			pBone->vCurrPos.vz = _vBoneRotated.vz;
 
-			verts = GetModelVertPtr(pDrawingPed, LVar2, 0);
-			LVar2 = Skel[uVar4].id;
-
-			/**/
-			if (((((LVar2 & 0x7f) == 4) || (pDrawingPed->pedType < OTHER_SPRITE)) &&
-				(-1 < (int)((uint)LVar2 << 0x18))) &&
-				((Skel[uVar4].pModel != NULL && (verts != NULL))))
+			if (pBone->id < 0x7f)
 			{
-				pMVar5 = *Skel[uVar4].pModel;
-				uVar9 = pMVar5->num_vertices;
-				uVar11 = (uint)uVar9;
-				local_s0_2092 = (SVECTOR *)pMVar5->vertices;
-				pSVar8 = SVECTOR_ARRAY_1f800080;
-				uVar10 = uVar11;
+				pVerts = GetModelVertPtr(pDrawingPed, pBone->id, 0);
 
-				if (uVar9 != 0)
+				if ((pDrawingPed->pedType < OTHER_SPRITE || pBone->id == HEAD)
+					&& pBone->pModel != NULL
+					&& pVerts != NULL)
 				{
-					do {
-						pSVar8->vx = verts->vx + SVECTOR_ARRAY_1f800060[0].vx;
-						pSVar8->vy = verts->vy + SVECTOR_ARRAY_1f800060[0].vy;
-						pSVar8->vz = verts->vz + SVECTOR_ARRAY_1f800060[0].vz;
+					pModel = *pBone->pModel;
 
-						verts = verts + 1;
-						uVar10 = uVar10 - 1;
-						pSVar8 = pSVar8 + 1;
-					} while (uVar10 != 0);
-				}
+					SVECTOR *pmVerts = (SVECTOR *)pModel->vertices;
+					int numVerts = pModel->num_vertices;
 
-				verts = SVECTOR_ARRAY_1f800080;
+					for (int c = 0; c < numVerts; c++)
+					{
+						_pD[c].vx = pVerts[c].vx + _svBone[0].vx;
+						_pD[c].vy = pVerts[c].vy + _svBone[0].vy;
+						_pD[c].vz = pVerts[c].vz + _svBone[0].vz;
+					}
 
-				if (uVar9 != 0)
-				{
-					do {
-						gte_ldv0(verts);
+					for (int c = 0; c < numVerts; c++)
+					{
+						gte_ldv0(&_pD[c]);
 
 						gte_rtv0();
 
-						gte_stlvnl(&VECTOR_1f800070);
+						gte_stlvnl(&_vBoneRotated);
 
-						local_s0_2092->vx = VECTOR_1f800070.vx;
-						local_s0_2092->vy = VECTOR_1f800070.vy;
-						local_s0_2092->vz = VECTOR_1f800070.vz;
-
-						local_s0_2092 = local_s0_2092 + 1;
-						verts = verts + 1;
-						uVar11 = uVar11 - 1;
-					} while (uVar11 != 0);
+						pmVerts[c].vx = _vBoneRotated.vx;
+						pmVerts[c].vy = _vBoneRotated.vy;
+						pmVerts[c].vz = _vBoneRotated.vz;
+					}
 				}
 			}
 
-			iVar6 = iVar6 + 1;
-			LVar2 = lRoutes[local_30][iVar6];
-
-			mStore[uVar4] = MATRIX_1f800040;
+			mStore[id] = _oMatrix;
 		}
-
-		local_30 = local_30 + 1;
-	} while (local_30 < 5);
+	};
 }
 
 
@@ -2187,23 +2141,29 @@ void SetSkelModelPointers(int type)
 {
 	if (type == OTHER_MODEL)
 	{
-		Skel[2].pModel = &pmJerichoModels[0];
-		Skel[4].pModel = &pmJerichoModels[1];
-		Skel[6].pModel = &pmJerichoModels[2];
-		Skel[7].pModel = &pmJerichoModels[3];
-		Skel[10].pModel = &pmJerichoModels[4];
-		Skel[11].pModel = &pmJerichoModels[5];
-		Skel[14].pModel = NULL;
+		Skel[JOINT_1].pModel = &pmJerichoModels[0];
+		Skel[HEAD].pModel = &pmJerichoModels[1];
+		Skel[LELBOW].pModel = &pmJerichoModels[2];
+		Skel[LHAND].pModel = &pmJerichoModels[3];
+		Skel[RELBOW].pModel = &pmJerichoModels[4];
+		Skel[RHAND].pModel = &pmJerichoModels[5];
+		Skel[LHIP].pModel = NULL;
+
+		bodyShiftValue = BODY_OFFSET + JERICHO_BODY_OFFSET;
+		torsoShiftValue = TORSO_OFFSET + JERICHO_TORSO_OFFSET;
 	}
 	else
 	{
-		Skel[2].pModel = &pmTannerModels[0];
-		Skel[4].pModel = &pmTannerModels[1];
-		Skel[6].pModel = &pmTannerModels[8];
-		Skel[7].pModel = &pmTannerModels[9];
-		Skel[10].pModel = &pmTannerModels[2];
-		Skel[11].pModel = &pmTannerModels[3];
-		Skel[14].pModel = &pmTannerModels[15];
+		Skel[JOINT_1].pModel = &pmTannerModels[0];
+		Skel[HEAD].pModel = &pmTannerModels[1];
+		Skel[LELBOW].pModel = &pmTannerModels[8];
+		Skel[LHAND].pModel = &pmTannerModels[9];
+		Skel[RELBOW].pModel = &pmTannerModels[2];
+		Skel[RHAND].pModel = &pmTannerModels[3];
+		Skel[LHIP].pModel = NULL; //&pmTannerModels[15]; // [A] Tanner looks better with no model here
+
+		bodyShiftValue = BODY_OFFSET;
+		torsoShiftValue = TORSO_OFFSET;
 	}
 }
 
@@ -2263,12 +2223,10 @@ void DrawTanner(PEDESTRIAN *pPed)
 
 	bDoingShadow = 0;
 
+	SetSkelModelPointers(pPed->pedType);
 	SetupTannerSkeleton(pPed);
 
-	SetSkelModelPointers(pPed->pedType);
-
-	//Skel[4].pModel = Skel[4].pModel + 1;
-	newRotateBones(pPed, Skel + 1);
+	newRotateBones(pPed, &Skel[LOWERBACK]);
 
 	// [A] I don't know but it works
 	gte_SetRotMatrix(&inv_camera_matrix);
@@ -2276,8 +2234,8 @@ void DrawTanner(PEDESTRIAN *pPed)
 	iCurrBone = 0;
 	newShowTanner(pPed);
 
-	v.vx = (pPed->position.vx - camera_position.vx) + Skel[0].pvOrigPos->vx;
-	v.vz = (pPed->position.vz - camera_position.vz) + Skel[0].pvOrigPos->vz;
+	v.vx = (pPed->position.vx - camera_position.vx) + Skel[ROOT].pvOrigPos->vx;
+	v.vz = (pPed->position.vz - camera_position.vz) + Skel[ROOT].pvOrigPos->vz;
 
 	bDoingShadow = 1;
 	v.vy = -camera_position.vy - MapHeight((VECTOR *)&pPed->position);
@@ -2369,9 +2327,10 @@ int DrawCharacter(PEDESTRIAN *pPed)
 	CVECTOR cv;
 	VECTOR pos;
 
-	SetupTannerSkeleton(pPed);
 	SetSkelModelPointers(pPed->pedType);
-	newRotateBones(pPed, Skel + 1);
+	SetupTannerSkeleton(pPed);
+
+	newRotateBones(pPed, &Skel[LOWERBACK]);
 
 	// [A] I don't know but it works
 	gte_SetRotMatrix(&inv_camera_matrix);
@@ -2381,8 +2340,8 @@ int DrawCharacter(PEDESTRIAN *pPed)
 
 	if (pUsedPeds->pNext == NULL && pPed->pedType == TANNER_MODEL)
 	{
-		v.vx = (pPed->position.vx - camera_position.vx) + Skel[0].pvOrigPos->vx;
-		v.vz = (pPed->position.vz - camera_position.vz) + Skel[0].pvOrigPos->vz;
+		v.vx = (pPed->position.vx - camera_position.vx) + Skel[ROOT].pvOrigPos->vx;
+		v.vz = (pPed->position.vz - camera_position.vz) + Skel[ROOT].pvOrigPos->vz;
 
 		bDoingShadow = 1;
 		v.vy = -camera_position.vy - MapHeight((VECTOR *)&pPed->position);
@@ -2392,14 +2351,14 @@ int DrawCharacter(PEDESTRIAN *pPed)
 			cV.b = 12;
 			cV.g = 12;
 			cV.r = 12;
-			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, (pPed->dir).vy);
+			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, pPed->dir.vy);
 		}
 		else
 		{
 			cV.b = 32;
 			cV.g = 32;
 			cV.r = 32;
-			TannerShadow(pPed, &v, sun_position + GameLevel, &cV, (pPed->dir).vy);
+			TannerShadow(pPed, &v, sun_position + GameLevel, &cV, pPed->dir.vy);
 		}
 
 		bDoingShadow = 0;
@@ -2864,16 +2823,16 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 	if (gPed1HeadModelPtr == NULL)
 		return;
 
+	pHeadRot = (MATRIX*)&matrixtable[((pPed->dir.vy - pPed->head_rot) / 64) & 0x3F];
+
 	if (bAllreadyRotated) // not needed to rotate vert1
 	{
-		pHeadRot = (MATRIX*)&matrixtable[((pPed->dir.vy - pPed->head_rot) / 64) & 0x3F];
 		headpos.vx = vert1->vx;
 		headpos.vy = vert1->vy;
 		headpos.vz = vert1->vz;
 	}
 	else
 	{
-		pHeadRot = (MATRIX*)&matrixtable[((pPed->dir.vy - pPed->head_rot) / 64) & 0x3F];
 		gte_SetRotMatrix(&matrixtable[((pPed->dir.vy) / 64) & 0x3F]);
 
 		gte_ldv0(vert1);
@@ -2904,7 +2863,7 @@ void DoCivHead(PEDESTRIAN *pPed, SVECTOR *vert1, SVECTOR *vert2)
 
 	oldcombointensity = combointensity;
 
-	if (gNight != 0)
+	if (gNight)
 		combointensity = 0x404040;
 
 	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags, 0, 0);
