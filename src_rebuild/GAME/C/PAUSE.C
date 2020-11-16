@@ -274,9 +274,9 @@ MENU_ITEM MainPauseItems[] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM MultiplayerPauseItems[7] =
+MENU_ITEM MultiplayerPauseItems[] =
 {
-	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },

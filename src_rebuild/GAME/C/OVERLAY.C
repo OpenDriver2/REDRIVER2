@@ -16,6 +16,10 @@
 #include "FELONY.H"
 #include "SCORES.H"
 
+#ifndef PSX
+#include "EMULATOR.H"
+#endif
+
 COLOUR_BAND felonyColour[3] =
 {
   { { 0, 0, 255, 0 }, 0, 0 },
@@ -59,19 +63,25 @@ PERCENTAGE_BAR FelonyBar;
 PERCENTAGE_BAR ProxyBar;
 
 int gDoOverlays = 1;
-
+int gWidescreenHudAlignment = 0; // [A] custom widescreen alignment by PSX hack
 
 #define PERCENTAGE_BAR_WIDTH 102
 #define PERCENTAGE_BAR_HEIGHT 10
 
-const int gOverlayXPos = 16;
-const int gOverlayXOppPos = 208; // 320 - 16 - PERCENTAGE_BAR_WIDTH;
-
+// [A]
+int gOverlayXPos = 16;
+int gOverlayXOppPos = 208;
 
 // [D] [T]
 void InitOverlays(void)
 {
 	gDoOverlays = 1;
+
+	// [A] init defaults
+	gOverlayXPos = 16;
+	gOverlayXOppPos = 208;
+	gMapXOffset = 249;
+	gMapYOffset = 181;
 
 	InitPercentageBar(&PlayerDamageBar, MaxPlayerDamage[0], playerDamageColour, "Damage");
 
@@ -161,6 +171,27 @@ void DisplayOverlays(void)
 
 		if (!gDoOverlays)
 			return;
+
+#ifndef PSX
+		if(gWidescreenHudAlignment)
+		{
+			// align to PSX-mapped screen coordinates
+			RECT16 emuViewport;
+			Emulator_GetPSXWidescreenMappedViewport(emuViewport);
+
+			// recalc pos
+			gOverlayXPos = 16 + emuViewport.x;
+			gOverlayXOppPos = emuViewport.w - 16 - PERCENTAGE_BAR_WIDTH;
+			gMapXOffset = emuViewport.w - 16 - MAP_SIZE_W;
+
+			// set up
+			PlayerDamageBar.xpos = gOverlayXPos;
+			Player2DamageBar.xpos = gOverlayXPos;
+			FelonyBar.xpos = gOverlayXPos;
+			DamageBar.xpos = gOverlayXOppPos;
+			ProxyBar.xpos = gOverlayXPos;
+		}
+#endif
 
 		DrawPercentageBar(&PlayerDamageBar);
 		DrawPercentageBar(&Player2DamageBar);

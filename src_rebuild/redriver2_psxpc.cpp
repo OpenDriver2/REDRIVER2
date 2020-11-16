@@ -16,6 +16,7 @@
 #include <SDL_scancode.h>
 
 #include "C/CUTSCENE.H"
+#include "C/OVERLAY.H"
 
 
 // eq engine console output
@@ -426,6 +427,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
+		ini_sget(config, "game", "widescreenHUD", "%d", &gWidescreenHudAlignment);
+		
 
 		if (dataFolderStr)
 		{
