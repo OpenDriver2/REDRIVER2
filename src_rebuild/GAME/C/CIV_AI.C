@@ -27,7 +27,7 @@
 #include "INLINE_C.H"
 #include "OVERLAY.H"
 
-unsigned char speedLimits[3] = { 56, 97, 138 };
+const u_char speedLimits[3] = { 56, 97, 138 };
 
 struct
 {
@@ -2767,6 +2767,17 @@ void InitCivCars(void)
 	roadblockDelay = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 	PingOutCivsOnly = 0;
 	roadblockCount = roadblockDelay;
+
+	// [A] clear out other values
+	distFurthestCivCarSq = 0;
+	furthestCivID = 0;
+	makeLimoPullOver = 0;
+	limoId = 0;
+	playerNum = 0;
+	roadSeg = 0;
+	testNumPingedOut = 0;
+	currentAngle = 0;
+	closeEncounter = 3;
 }
 
 
@@ -3258,7 +3269,7 @@ int PingInCivCar(int minPingInDist)
 	int lbody;
 	int lane;
 	int i;
-	int oldCookieCount;
+	u_char cookieCountStart;
 	uint retDistSq;
 	unsigned char* slot;
 
@@ -3397,7 +3408,7 @@ int PingInCivCar(int minPingInDist)
 		if (requestCopCar == 0 && cookieCount > 43)
 			cookieCount -= 25;
 
-		oldCookieCount = cookieCount;
+		cookieCountStart = cookieCount;
 
 		do {
 			if (cookieCount < maxCookies)
@@ -3405,7 +3416,7 @@ int PingInCivCar(int minPingInDist)
 			else
 				cookieCount = 0;
 
-			if (cookieCount == oldCookieCount)
+			if (cookieCount == cookieCountStart)
 			{
 				break;
 			}

@@ -1,4 +1,5 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
+
 #include <EMULATOR.H>
 #include <EMULATOR_TIMER.H>
 #include "DRIVER2.H"
@@ -6,13 +7,12 @@
 #include "C/PAD.H"
 #include "C/SYSTEM.H"
 #include "C/E3STUFF.H"
-#include "C/PAUSE.H"
-
 #include "STRINGS.H"
 
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
+
 
 struct UVWH
 {
@@ -266,7 +266,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 	DrawOTag((ulong*)&ot);
 }
 
-int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
+int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf, int& width, int& height)
 {
 	// it's rough but it works...
 	jpeg_decompress_struct cinfo;
@@ -279,7 +279,12 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	for (u_char* curr_scanline = dst_buf; cinfo.output_scanline < cinfo.output_height; curr_scanline += cinfo.output_width * cinfo.num_components)
+	width = cinfo.image_width;
+	height = cinfo.image_height;
+
+	for (u_char* curr_scanline = dst_buf; 
+		cinfo.output_scanline < cinfo.output_height; 
+		curr_scanline += cinfo.output_width * cinfo.num_components)
 	{
 		jpeg_read_scanlines(&cinfo, &curr_scanline, 1);
 	}
@@ -293,44 +298,31 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 // emulator window TODO: interface
 extern int g_swapInterval;
 
-void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
+void SetupMovieRectangle(int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
 
+	
 	float psxScreenW = 320.0f;
-	float psxScreenH = 240.0f;
+	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
 
-	int ideal_image_height = strFmt.image_height; // strFmt.image_height;
+	const float video_aspect = float(image_w) / float(image_h);
+	const float psx_aspect = (psxScreenH / psxScreenW);
+	
+	const float image_to_screen_w = float(psxScreenW) / float(windowWidth) * psx_aspect;
+	const float image_to_screen_h = float(psxScreenH) / float(windowHeight) * psx_aspect;
 
-	if (ideal_image_height < 220)
-		ideal_image_height = 220;
+	const float image_scale = float(windowWidth) / psxScreenW * video_aspect;
+	
+	float clipRectX = 0;
+	float clipRectY = 0;
+	float clipRectW = image_to_screen_w * image_scale * 2.0f;
+	float clipRectH = image_to_screen_h * image_scale * 2.0f;
 
-	RECT16 rect;
-	rect.x = 0;
-	rect.y = (psxScreenH - ideal_image_height);// / 2;
-	rect.w = strFmt.image_width;
-	rect.h = ideal_image_height;
-
-	const float video_aspect = float(strFmt.image_width) / float(ideal_image_height);
-	float emuScreenAspect = float(windowHeight) / float(windowWidth);
-
-	// first map to 0..1
-	float clipRectX = (float)(rect.x) / psxScreenW;
-	float clipRectY = (float)(rect.y) / psxScreenH;
-	float clipRectW = (float)(rect.w) / psxScreenW;
-	float clipRectH = (float)(rect.h) / psxScreenH;
-
-	// then map to screen
-	clipRectY -= 1.0f;
-	clipRectX -= 1.0f;
-
-	clipRectY /= video_aspect * emuScreenAspect;
-	clipRectH /= emuScreenAspect * video_aspect;
-
-	clipRectW *= 2.0f;
-	clipRectH *= 2.0f;
-
+	clipRectX -= clipRectW * 0.5f;
+	clipRectY -= clipRectH * 0.5f;
+	
 	u_char l = 0;
 	u_char t = 0;
 	u_char r = 1;
@@ -393,8 +385,16 @@ extern void Shader_CheckProgramStatus(GLuint program);
 extern ShaderID Shader_Compile(const char* source);
 extern void Emulator_SetShader(const ShaderID& shader);
 
+#define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
+
+u_char* g_FMVDecodedImageBuffer = NULL;
+
 void FMVPlayerInitGL()
 {
+	g_FMVDecodedImageBuffer = (u_char*)malloc(DECODE_BUFFER_ALLOC);	
+	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
+	// FIXME: double buffering?
+	
 #if defined(OGL) || defined(OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
@@ -403,12 +403,14 @@ void FMVPlayerInitGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 320, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4096, 4096, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	if(!g_FMVShader)
+	{
 		g_FMVShader = Shader_Compile(fmv_shader);
+	}
 #endif
 }
 
@@ -420,6 +422,9 @@ void FMVPlayerShutdownGL()
 	rect.w = 512;
 	rect.h = 256;
 
+	free(g_FMVDecodedImageBuffer);
+	g_FMVDecodedImageBuffer = NULL;
+	
 	ClearImage(&rect, 0, 0, 0);
 	Emulator_SwapWindow();
 
@@ -566,7 +571,7 @@ void DisplayCredits(int frame_number)
 
 extern void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
-void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits)
+void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits, int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
@@ -574,15 +579,15 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	Emulator_BeginScene();
 
 	Emulator_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
-
+	
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, stream_format.image_width, stream_format.image_height, 0, GL_RGB, GL_UNSIGNED_BYTE, _frontend_buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 	
 	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
 	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
 	Emulator_SetShader(g_FMVShader);
-
-	SetupMovieRectangle(stream_format);
+	
+	SetupMovieRectangle(stream_format.image_width, stream_format.image_height);
 
 	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
@@ -701,12 +706,15 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		{
 			if (frame_entry.type == ReadAVI::ctype_compressed_video_frame)
 			{
+				int real_frame_width;
+				int real_frame_height;
+				
 				// Do video frame
-				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
+				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, g_FMVDecodedImageBuffer, real_frame_width, real_frame_height);
 
 				if (ret == 0)
 				{
-					DrawFrame(stream_format, done_frames, arg->credits);
+					DrawFrame(stream_format, done_frames, arg->credits, real_frame_width, real_frame_height);
 				}
 
 				// set next step time

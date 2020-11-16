@@ -21,6 +21,7 @@
 #include "INLINE_C.H"
 #include "LIBGTE.H"
 #include "MAP.H"
+#include "PEDEST.H"
 
 
 VECTOR gCameraOffset = { 0};
@@ -1006,11 +1007,13 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 	{
 		_RotMatrixY(&inv_camera_matrix, 0x800);
 		_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
-
+	
 		if (cp != NULL) 
 			viewer_position.vz = -170;
+		else
+			_RotMatrixX(&inv_camera_matrix, -tannerLookAngle.vx);
 	}
-
+	
 	MulMatrix0(&aspect, &inv_camera_matrix, &inv_camera_matrix);
 	InvertMatrix(&inv_camera_matrix, &camera_matrix);
 

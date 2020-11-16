@@ -69,7 +69,7 @@ pedFunc fpPedPersonalityFunctions[] = {
 	CivGetIn,
 };
 
-VECTOR tannerLookAngle = { 0, 0, 0, 0 };
+SVECTOR tannerLookAngle = { 0, 0, 0, 0 };
 
 const int tannerTurnMax = 16;
 const int tannerTurnStep = 4;
@@ -2613,15 +2613,10 @@ void SetupTannerSitDown(PEDESTRIAN* pPed)
 void TannerCameraHandler(PEDESTRIAN* pPed)
 {
 	int value;
-	short extra;
 	int padSteer;
-	PLAYER* lcp;
-
 	int padid;
 
 	padid = pPed->padId;
-
-	lcp = &player[padid];
 
 	if (Pads[padid].type == 4)
 	{
@@ -2635,20 +2630,20 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 				value = padSteer;
 
 			if (padSteer < 0)
-				tannerLookAngle.vy = (value - 32) * -9;
+				tannerLookAngle.vy = (value - 32) * -11;
 			else
-				tannerLookAngle.vy = (value - 32) * 9;
+				tannerLookAngle.vy = (value - 32) * 11;
 		}
 		else
 		{
 			tannerLookAngle.vy = 0;
 		}
 
-		tannerLookAngle.vx = -Pads[padid].mapanalog[1];
+		tannerLookAngle.vx = -Pads[padid].mapanalog[1] * 2;
 
-		if (tannerLookAngle.vx < -32)
-			tannerLookAngle.vx = tannerLookAngle.vx - 128;
-		else if (tannerLookAngle.vx < 33)
+		if (tannerLookAngle.vx < -60)
+			tannerLookAngle.vx -= 128;
+		else if (tannerLookAngle.vx < 60)
 			tannerLookAngle.vx = 0;
 	}
 	else
@@ -2658,33 +2653,7 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 		tannerLookAngle.vz = 0;
 	}
 
-	if (padd & 1)
-	{
-		if (padd & 2)
-			extra = 2048;
-		else
-			extra = 1024;
-	}
-	else
-	{
-		if (padd & 2)
-			extra = -1024;
-		else
-			extra = 0;
-	}
-
-	camera_position.vx = lcp->pos[0];
-	camera_position.vz = lcp->pos[2];
-
-	camera_angle.vx = camAngle.vx + tannerLookAngle.vx;
-	camera_angle.vy = (camAngle.vy - tannerLookAngle.vy) + extra & 0xfff;
-	camera_angle.vz = camAngle.vz + tannerLookAngle.vz;
-
-	tracking_car = 0;
-
-	lcp->cameraPos.vx = lcp->pos[0];
-	lcp->cameraPos.vy = camera_position.vy;
-	lcp->cameraPos.vz = lcp->pos[2];
+	// [A] old non-functioning code bloat removed
 }
 
 

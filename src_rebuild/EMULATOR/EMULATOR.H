@@ -201,6 +201,8 @@ extern void Emulator_SetPolygonOffset(float ofs);
 extern void Emulator_SetStencilMode(int drawPrim);
 extern void Emulator_EnableDepth(int enable);
 
+extern void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect);
+
 extern void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1);
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);
 extern void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx);

@@ -85,7 +85,6 @@ void TogglePlayerGhost(int direction)
 
 void ToggleOverlays(int direction)
 {
-	extern int gDoOverlays;
 	gDoOverlays ^= 1;
 }
 
@@ -138,6 +137,7 @@ extern void LoadSky(void);
 
 void DebugTimeOfDayDay(int direction)
 {
+	wantedTimeOfDay = 1;
 	gTimeOfDay = 1;
 	gWantNight = 0;
 	LoadSky();
@@ -145,6 +145,7 @@ void DebugTimeOfDayDay(int direction)
 
 void DebugTimeOfDayNight(int direction)
 {
+	wantedTimeOfDay = 3;
 	gTimeOfDay = 3;
 	gWantNight = 1;
 	LoadSky();
@@ -152,6 +153,7 @@ void DebugTimeOfDayNight(int direction)
 
 void DebugTimeOfDayDusk(int direction)
 {
+	wantedTimeOfDay = 0;
 	gTimeOfDay = 0;
 	gWantNight = 0;
 	LoadSky();
@@ -159,6 +161,7 @@ void DebugTimeOfDayDusk(int direction)
 
 void DebugTimeOfDayDawn(int direction)
 {
+	wantedTimeOfDay = 2;
 	gTimeOfDay = 2;
 	gWantNight = 0;
 	LoadSky();
@@ -169,6 +172,7 @@ void DebugTimeOfDayRain(int direction)
 	//extern int weather;
 	//weather ^= weather;
 	gWeather ^= 1;
+	wantedWeather = gWeather;
 
 	if (gWeather == 1)
 		wetness = 7000;
@@ -269,9 +273,9 @@ MENU_ITEM MainPauseItems[] =
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM MultiplayerPauseItems[7] =
+MENU_ITEM MultiplayerPauseItems[] =
 {
-	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
 	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
 	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },

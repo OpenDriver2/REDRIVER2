@@ -1,7 +1,12 @@
 #ifndef OVERMAP_H
 #define OVERMAP_H
 
-extern unsigned short civ_clut[8][32][6];
+#define MAP_SIZE_W	64
+#define MAP_SIZE_H	60
+
+extern int gMapXOffset;
+extern int gMapYOffset;
+
 extern int map_x_shift;
 extern int map_z_shift;
 
@@ -39,7 +44,7 @@ extern void LoadMapTile(int tpage, int x, int y); // 0x00018AA0
 
 extern void SetMapPos(); // 0x00019A60
 
-extern void draw_box(); // 0x00018BF4
+extern void draw_box(int yPos, int h); // 0x00018BF4
 
 extern void DrawN(VECTOR *pScreenPosition, int direct); // 0x00018D54
 

@@ -4317,10 +4317,10 @@ void HandleDebris(void)
 		lf++;
 	}
 
-	sm = smoke;
-	i = 0;
+	for (i = 0; i < MAX_SMOKE; i++)
+	{
+		sm = &smoke[i];
 
-	do {
 		if (sm->flags & 2) 
 		{
 			if (sm->flags & 4)
@@ -4364,7 +4364,8 @@ void HandleDebris(void)
 					}
 				}
 			}
-			else if (sm->flags & 8)
+
+			if (sm->flags & 8)
 			{
 				// yup, smoke particles are sparks too
 				DisplaySpark(sm);
@@ -4391,6 +4392,7 @@ void HandleDebris(void)
 					{
 						sm->flags = 0;
 						ReleaseSmoke(sm->num);
+						continue;
 					}
 				}
 			}
@@ -4412,10 +4414,7 @@ void HandleDebris(void)
 				}
 			}
 		}
-	
-		i++;
-		sm++;
-	} while (i < MAX_SMOKE);
+	}
 
 	if (pauseflag == 0)
 	{
