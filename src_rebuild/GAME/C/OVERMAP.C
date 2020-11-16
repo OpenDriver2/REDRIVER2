@@ -113,11 +113,8 @@ static unsigned short MapTPage = 0;
 
 static int gUseRotatedMap = 0;
 
-#define MAP_SIZE_W	64
-#define MAP_SIZE_H	60
-
-const int gMapXOffset = 249;
-const int gMapYOffset = 181;
+int gMapXOffset = 249;
+int gMapYOffset = 181;
 
 // decompiled code
 // original method signature: 
@@ -1947,64 +1944,6 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 	/* end block 3 */
 	// End Line: 3941
 
-unsigned short civ_clut[8][32][6];
-
-// [D]
-void ProcessPalletLump(char *lump_ptr, int lump_size)
-{
-	if (gDriver1Level)
-		return;
-
-	char cVar1;
-	ushort uVar2;
-	int *local_s0_96;
-	int *local_s0_228;
-	int iVar3;
-	int iVar4;
-	u_short *puVar5;
-	int total_cluts;
-	int clutValue;
-	unsigned short clutTable[320];
-
-	//total_cluts = 
-
-	if (*(int *)lump_ptr == 0 || *(int *)(lump_ptr + 4) == -1)
-		return;
-
-	local_s0_96 = (int *)(lump_ptr + 4);
-
-	puVar5 = (u_short *)clutTable;
-	do {
-		iVar4 = *local_s0_96;
-		iVar3 = local_s0_96[1];
-
-		cVar1 = GetCarPalIndex(local_s0_96[2]);
-
-		local_s0_228 = local_s0_96 + 4;
-
-		if (local_s0_96[3] == -1) {
-			LoadImage(&clutpos, (u_long *)local_s0_228);
-
-			local_s0_228 = local_s0_96 + 12;
-
-			uVar2 = GetClut((int)clutpos.x, (int)clutpos.y);
-
-			*puVar5 = uVar2;
-			puVar5 = puVar5 + 1;
-			IncrementClutNum(&clutpos);
-		}
-		else {
-			uVar2 = clutTable[local_s0_96[3]];
-		}
-
-		civ_clut[cVar1][iVar3][iVar4 + 1] = uVar2;
-
-		local_s0_96 = local_s0_228;
-
-	} while (*local_s0_228 != -1);
-
-	//Emulator_SaveVRAM("VRAM_CLUTS.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
-}
 
 
 
@@ -2787,61 +2726,59 @@ void CopIndicator(int xpos, int strength)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	short sVar4;
-	int uVar7;
+	short temp;
+	int dir;
 	VECTOR *pVVar8;
 	VECTOR *pNextVertex;
 	POLY_G3 *poly;
-	int iVar9;
-	ulong *potz;
 	VECTOR *pVertex;
-	VECTOR *pVVar10;
 	VECTOR vertex[9];
+	int angle; 
+	int frontViewAngle;
+	int frontViewDistance;
+	int surroundViewDistance;
+	
+	
+	frontViewDistance = pCopSightData->frontViewDistance;
+	surroundViewDistance = pCopSightData->surroundViewDistance;
+	frontViewAngle = pCopSightData->frontViewAngle;
 
-	
-	
-	sVar1 = pCopSightData->frontViewDistance;
-	sVar2 = pCopSightData->surroundViewDistance;
-	sVar3 = pCopSightData->frontViewAngle;
 	vertex[0].vx = pPosition->vx;
 	vertex[0].vz = pPosition->vz;
 
-	pVVar10 = vertex + 1;
-	pVertex = pVVar10;
+	pVertex = vertex + 1;
 	
-	iVar9 = 0;
+	angle = 0;
 	do {
-		if ((iVar9 <= sVar3) || (sVar4 = sVar2, 0x1000 - sVar3 <= iVar9)) 
-		{
-			sVar4 = sVar1;
-		}
 
-		uVar7 = iVar9 + direction & 0xfff;
+		if(angle > frontViewAngle && angle < 4096 - frontViewAngle)
+			temp = surroundViewDistance;
+		else
+			temp = frontViewDistance;
 
-		iVar9 = iVar9 + 0x200;
-		pVertex->vx = vertex[0].vx + FIXEDH(rcossin_tbl[uVar7 * 2] * sVar4);
-		pVertex->vz = vertex[0].vz + FIXEDH(rcossin_tbl[uVar7 * 2 + 1] * sVar4);
-		pVertex = pVertex + 1;
-	} while (iVar9 < 0x1000);
+		dir = angle + direction & 0xfff;
+
+		angle += 512;
+		pVertex->vx = vertex[0].vx + FIXEDH(rcossin_tbl[dir * 2] * temp);
+		pVertex->vz = vertex[0].vz + FIXEDH(rcossin_tbl[dir * 2 + 1] * temp);
+		
+		pVertex++;
+	
+	} while (angle < 4096);
 
 	WorldToOverheadMapPositions(vertex, vertex, 9, 0, 0);
 
-	pVertex = pVVar10;
+	pVertex = vertex + 1;
 
 	while (pVertex < &vertex[9])
 	{
-		pVVar8 = pVertex + 1;
-		
-		pNextVertex = pVVar8;
+		pNextVertex = pVertex + 1;
 
-		if (vertex + 8 < pVVar8)
-			pNextVertex = pVVar10;
+		if (pNextVertex > vertex + 8)
+			pNextVertex = vertex + 1;
 	
 		poly = (POLY_G3 *)current->primptr;
 		setPolyG3(poly);
@@ -2854,20 +2791,14 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		poly->x2 = pNextVertex->vx;
 		poly->y2 = pNextVertex->vz;
 
-		poly->r0 = 96;
-		poly->g0 = 96;
-		poly->b0 = 96;
-		poly->r1 = 0;
-		poly->g1 = 0;
-		poly->b1 = 0;
-		poly->r2 = 0;
-		poly->g2 = 0;
-		poly->b2 = 0;
-		
+		poly->r0 = poly->g0 = poly->b0 = 96;
+		poly->r1 = poly->g1 = poly->b1 = 0;
+		poly->r2 = poly->g2 = poly->b2 = 0;
+
 		addPrim(current->ot, poly);
 
 		current->primptr += sizeof(POLY_G3);
-		pVertex = pVVar8;
+		pVertex++;
 	}
 
 	TransparencyOn(current->ot, 0x20);

@@ -1,7 +1,12 @@
 #ifndef OVERMAP_H
 #define OVERMAP_H
 
-extern unsigned short civ_clut[8][32][6];
+#define MAP_SIZE_W	64
+#define MAP_SIZE_H	60
+
+extern int gMapXOffset;
+extern int gMapYOffset;
+
 extern int map_x_shift;
 extern int map_z_shift;
 
