@@ -85,7 +85,6 @@ void TogglePlayerGhost(int direction)
 
 void ToggleOverlays(int direction)
 {
-	extern int gDoOverlays;
 	gDoOverlays ^= 1;
 }
 
