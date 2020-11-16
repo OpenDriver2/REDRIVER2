@@ -1,7 +1,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define GAME_VERSION_N		"4.2 alpha"
+#define GAME_VERSION_N		"5.0 alpha"
 #define GAME_TITLE			"REDRIVER2"
 #define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N
 
