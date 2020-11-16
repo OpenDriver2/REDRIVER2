@@ -1387,6 +1387,24 @@ void Emulator_SetupClipMode(const RECT16& rect)
 #endif
 }
 
+void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect)
+{
+	float emuScreenAspect = float(windowWidth) / float(windowHeight);
+
+	float psxScreenW = activeDispEnv.disp.w;
+	float psxScreenH = activeDispEnv.disp.h;
+
+	rect.x = activeDispEnv.screen.x;
+	rect.y = activeDispEnv.screen.y;
+
+	rect.w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
+	rect.h = psxScreenH; // windowHeight;
+
+	rect.x -= (rect.w - activeDispEnv.disp.w) / 2;
+
+	rect.w += rect.x;
+}
+
 void Emulator_SetShader(const ShaderID &shader)
 {
 #if defined(OGL) || defined(OGLES)
