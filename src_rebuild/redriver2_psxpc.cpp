@@ -427,7 +427,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
-		ini_sget(config, "game", "widescreenHUD", "%d", &gWidescreenHudAlignment);
+		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		
 
 		if (dataFolderStr)

@@ -7,7 +7,7 @@ extern PERCENTAGE_BAR DamageBar;
 extern PERCENTAGE_BAR FelonyBar;
 extern PERCENTAGE_BAR ProxyBar;
 
-extern int gWidescreenHudAlignment;
+extern int gWidescreenOverlayAlign;
 
 extern char OverlayFlashValue;
 

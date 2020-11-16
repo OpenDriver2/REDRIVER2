@@ -63,7 +63,7 @@ PERCENTAGE_BAR FelonyBar;
 PERCENTAGE_BAR ProxyBar;
 
 int gDoOverlays = 1;
-int gWidescreenHudAlignment = 0; // [A] custom widescreen alignment by PSX hack
+int gWidescreenOverlayAlign = 0; // [A] custom widescreen alignment by PSX hack
 
 #define PERCENTAGE_BAR_WIDTH 102
 #define PERCENTAGE_BAR_HEIGHT 10
@@ -173,7 +173,7 @@ void DisplayOverlays(void)
 			return;
 
 #ifndef PSX
-		if(gWidescreenHudAlignment)
+		if(gWidescreenOverlayAlign)
 		{
 			// align to PSX-mapped screen coordinates
 			RECT16 emuViewport;
