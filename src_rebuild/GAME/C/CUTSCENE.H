@@ -13,6 +13,7 @@ extern void InitUserReplays(const char* str);
 
 extern CUTSCENE_BUFFER CutsceneBuffer;
 
+extern int NumCutsceneStreams;
 extern int gSkipInGameCutscene;
 extern int gInGameCutsceneID;
 extern int gInGameCutsceneActive;

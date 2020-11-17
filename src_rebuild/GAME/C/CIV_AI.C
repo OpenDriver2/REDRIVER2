@@ -3792,7 +3792,7 @@ int PingInCivCar(int minPingInDist)
 	PingOutCivsOnly = 0;
 
 	// [A] REDRIVER2 always stores pings
-	StorePingInfo(cookieCount, newCar->id); // + 1 since car with id 1 is not getting pinged in chases
+	StorePingInfo(cookieCount, newCar->id);
 
 	return newCar->id + 1;
 }

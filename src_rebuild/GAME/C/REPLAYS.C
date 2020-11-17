@@ -116,6 +116,9 @@ void InitPadRecording(void)
 	}
 	else
 	{
+		// reset stream count as cutscene/chase can increase it
+		NumReplayStreams = NumPlayers;
+		
 		for (i = 0; i < NumReplayStreams; i++)
 		{
 			ReplayStreams[i].playbackrun = 0;
@@ -175,9 +178,9 @@ int SaveReplayToBuffer(char *buffer)
 	header->magic = 0x14793209;			// TODO: custom
 	header->GameLevel = GameLevel;
 	header->GameType = GameType;
-	header->NumReplayStreams = NumReplayStreams;
 	header->MissionNumber = gCurrentMissionNumber;
-	
+
+	header->NumReplayStreams = NumReplayStreams - NumCutsceneStreams; 
 	header->NumPlayers = NumPlayers;
 	header->CutsceneEvent = -1;
 	header->RandomChase = gRandomChase;
@@ -733,11 +736,10 @@ char GetPingInfo(char *cookieCount)
 // [A] Stores ping info into replay buffer
 int StorePingInfo(int cookieCount, int carId)
 {
+#ifdef CUTSCENE_RECORDER
 	PING_PACKET* packet;
 
-#ifdef CUTSCENE_RECORDER
-
-	extern int gCutsceneAsReplay;
+	//extern int gCutsceneAsReplay;
 	if (gCutsceneAsReplay == 0)
 		return 0;
 	
