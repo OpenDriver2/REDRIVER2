@@ -735,9 +735,15 @@ int StorePingInfo(int cookieCount, int carId)
 {
 	PING_PACKET* packet;
 
+#ifdef CUTSCENE_RECORDER
+
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay == 0)
+		return 0;
+	
 	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
 		return 0;
-
+	
 	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		packet = &PingBuffer[PingBufferPos++];
@@ -748,7 +754,7 @@ int StorePingInfo(int cookieCount, int carId)
 
 		return 1;
 	}
-
+#endif
 	return 0;
 }
 
