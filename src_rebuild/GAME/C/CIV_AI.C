@@ -3329,27 +3329,6 @@ int PingInCivCar(int minPingInDist)
 
 	newCar = NULL;
 
-	// find a free slot
-	carCnt = car_data;
-	slot = reservedSlots;
-
-	do {
-		if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
-		{
-			newCar = carCnt;
-			break;
-		}
-
-		carCnt++;
-		slot++;
-	} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
-
-	if (newCar == NULL)
-	{
-		PingOutCivsOnly = 1;
-		return 0;
-	}
-
 	ClearMem((char*)&civDat, sizeof(civDat));
 
 	baseLoc.vx = player[playerNum].spoolXZ->vx;
@@ -3409,6 +3388,27 @@ int PingInCivCar(int minPingInDist)
 			cookieCount -= 25;
 
 		cookieCountStart = cookieCount;
+
+		// find a free slot
+		carCnt = car_data;
+		slot = reservedSlots;
+
+		do {
+			if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
+			{
+				newCar = carCnt;
+				break;
+			}
+
+			carCnt++;
+			slot++;
+		} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
+
+		if (newCar == NULL)
+		{
+			PingOutCivsOnly = 1;
+			return 0;
+		}
 
 		do {
 			if (cookieCount < maxCookies)
@@ -3792,7 +3792,7 @@ int PingInCivCar(int minPingInDist)
 	PingOutCivsOnly = 0;
 
 	// [A] REDRIVER2 always stores pings
-	StorePingInfo(cookieCount, newCar->id); // + 1 since car with id 1 is not getting pinged in chases
+	StorePingInfo(cookieCount, newCar->id);
 
 	return newCar->id + 1;
 }
