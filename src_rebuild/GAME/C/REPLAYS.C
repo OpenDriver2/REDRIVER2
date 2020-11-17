@@ -298,6 +298,7 @@ int SaveReplayToBuffer(char *buffer)
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
+int gCutsceneAsReplay_ReserveSlots = 2;
 char gCutsceneRecorderPauseText[64] = { 0 };
 char gCurrentChasePauseText[64] = { 0 };
 
@@ -400,7 +401,12 @@ void LoadCutsceneRecorder(char* configFilename)
 	ini_sget(config, "settings", "mission", "%d", &gCutsceneAsReplay);
 	ini_sget(config, "settings", "baseMission", "%d", &gCurrentMissionNumber);
 	ini_sget(config, "settings", "player", "%d", &gCutsceneAsReplay_PlayerId);
+	ini_sget(config, "settings", "reserveSlots", "%d", &gCutsceneAsReplay_ReserveSlots);
 	ini_sget(config, "settings", "subindex", "%d", &subindex);
+
+	// totally limited by streams
+	if(gCutsceneAsReplay_ReserveSlots > 8)
+		gCutsceneAsReplay_ReserveSlots = 8;
 	
 	if(loadExistingCutscene)
 	{
@@ -736,11 +742,7 @@ int StorePingInfo(int cookieCount, int carId)
 	{
 		packet = &PingBuffer[PingBufferPos++];
 		packet->frame = (CameraCnt - frameStart & 0xffffU);
-
-		if(carId == 1)
-			packet->carId = MAX_CARS-1;
-		else
-			packet->carId = carId;
+		packet->carId = carId;
 		
 		packet->cookieCount = cookieCount;
 

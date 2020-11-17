@@ -288,6 +288,19 @@ void InitialiseMissionDefaults(void)
 	last_flag = -1;
 
 	ClearMem((char *)reservedSlots, sizeof(reservedSlots));
+
+#ifdef CUTSCENE_RECORDER
+	// [A] reserve slots to avoid their use for chases
+	extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay)
+	{
+		extern int gCutsceneAsReplay_ReserveSlots;
+
+		for (int i = 0; i < gCutsceneAsReplay_ReserveSlots; i++)
+			reservedSlots[i] = 1;
+	}
+#endif // CUTSCENE_RECORDER
+	
 	cop_adjust = 0;
 	playercollected[0] = 0;
 	playercollected[1] = 0;
