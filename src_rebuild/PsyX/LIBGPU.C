@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include <LIBETC.H>
+#include "LIBETC.H"
 
 #include <stdio.h>
 #include <stdlib.h>

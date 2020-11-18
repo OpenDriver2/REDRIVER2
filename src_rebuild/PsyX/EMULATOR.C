@@ -266,7 +266,7 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 	return TRUE;
 }
 
-static int Emulator_InitialiseGLEW()
+static int Emulator_InitialiseGLExt()
 {
 #if defined(GLEW)
 	GLenum err = gladLoadGL();
@@ -379,7 +379,7 @@ static int Emulator_InitialiseCore()
 
 void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
-	eprintf("Initialising Emulator.\n");
+	eprintf("Initialising Psy-X (Psy-Cross).\n");
 	eprintf("VERSION: %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
 	eprintf("Compile Date: %s Time: %s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
 
@@ -390,16 +390,16 @@ void Emulator_Initialise(char* windowName, int width, int height, int fullscreen
 	}
 
 #if defined(GLEW)
-	if (Emulator_InitialiseGLEW() == FALSE)
+	if (Emulator_InitialiseGLExt() == FALSE)
 	{
-		eprinterr("Failed to Intialise GLEW\n");
+		eprinterr("Failed to Intialise GL extensions\n");
 		Emulator_ShutDown();
 	}
 #endif
 
 	if (Emulator_InitialiseCore() == FALSE)
 	{
-		eprinterr("Failed to Intialise Emulator Core.\n");
+		eprinterr("Failed to Intialise Psy-X Core.\n");
 		Emulator_ShutDown();
 	}
 

@@ -478,7 +478,7 @@ int main(int argc, char** argv)
 
 	
 
-	Emulator_Initialise("DRIVER2", windowWidth, windowHeight, fullScreen);
+	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
 	redriver2_main(argc, argv);
 
 	Emulator_ShutDown();
