@@ -1,25 +1,21 @@
 
--- EMULATOR layer
-project "PSX"
+-- Psy-X (Psy-Cross) layer
+project "Psy-X"
     kind "StaticLib"
     language "C++"
     compileas "C++"
     targetdir "bin/%{cfg.buildcfg}"
 	removeplatforms "psx" 
 
-    includedirs { 
-        "EMULATOR"
-    }
-
     defines { GAME_REGION }
 
     files {
-        "EMULATOR/**.h", 
-        "EMULATOR/**.H", 
-        "EMULATOR/**.c", 
-        "EMULATOR/**.C", 
-        "EMULATOR/**.cpp",
-        "EMULATOR/**.CPP",
+        "**.h", 
+        "**.H", 
+        "**.c", 
+        "**.C", 
+        "**.cpp",
+        "**.CPP",
     }
 
     defines {  }

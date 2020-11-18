@@ -36,11 +36,11 @@
 
 #if defined(__ANDROID__)
 #include <android/log.h>
-#define LOG_TAG_EMU "[EMU] "
+#define LOG_TAG_EMU "[PsyX] "
 #define eprintf(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG_EMU, fmt, ##__VA_ARGS__)
 #define eprinterr(fmt, ...) eprintf("[%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #else
-#define eprintf(fmt, ...) printf("[EMU] " fmt, ##__VA_ARGS__)
+#define eprintf(fmt, ...) printf("[Psy-X] " fmt, ##__VA_ARGS__)
 #define eprinterr(fmt, ...) eprintf("[%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #endif
 

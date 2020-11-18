@@ -13,7 +13,6 @@ First use [premake5](https://github.com/premake/premake-core/releases/download/v
 
 Dependencies (links for Windows):
 - [SDL 2](https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip)
-- [GLEW](https://netix.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip)
 - [OpenAL-Soft](https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip)
 - [JPEG](http://www.ijg.org/files/jpegsr9d.zip)
 
@@ -22,7 +21,6 @@ You need to download all the dependencies and extract them.
 After set next environment variables like:
 ```
 SDL2_DIR = <your_dependency_folder>\SDL2-2.0.12
-GLEW_DIR = <your_dependency_folder>\glew-2.1.0
 OPENAL_DIR = <your_dependency_folder>\openal-soft-1.20.1-bin
 JPEG_DIR = <your_dependency_folder>\jpeg-9d
 ```
@@ -44,8 +42,4 @@ Or just run `gen_vc2019.bat` (Windows only)
 - **SLES-02996/SLES-12996** - 1.0 Italian version (look for ITALIAN.SYM existance)
 
 # Game Content
-
-After you have built game executable you would want to copy entire DRIVER2 folder from game CD or image to location where executable is located.
-STR files and XA files for now are converted using JPSXDec. 
-- STR -> AVI (mjpg) 
-- XA -> multiple WAV files
+See [Wiki/Installation Instructions](https://github.com/OpenDriver2/REDRIVER2/wiki/Installation-instructions)

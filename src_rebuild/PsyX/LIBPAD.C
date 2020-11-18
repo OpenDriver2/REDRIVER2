@@ -50,6 +50,9 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 		eprinterr("Failed to initialise subsystem GAMECONTROLLER\n");
 	}
 
+	// Add more controllers from custom file
+	SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+
 	if (SDL_NumJoysticks() < 1)
 	{
 		eprinterr("Failed to locate a connected gamepad!\n");

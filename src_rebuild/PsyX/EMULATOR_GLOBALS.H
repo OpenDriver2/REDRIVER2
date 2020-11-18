@@ -2,7 +2,7 @@
 #define EMULATOR_GLOBALS_H
 
 #include <SDL_gamecontroller.h>
-#include <EMULATOR.H>
+#include "EMULATOR.H"
 
 extern TextureID        whiteTexture;
 extern TextureID        vramTexture;

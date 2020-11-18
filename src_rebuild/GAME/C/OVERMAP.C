@@ -1304,7 +1304,6 @@ void DrawFullscreenMap(void)
 	long flag;
 	int width;
 	int height;
-	int local_34;
 	int count;
 
 	// toggle rotated map
