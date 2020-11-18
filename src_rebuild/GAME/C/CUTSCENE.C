@@ -36,7 +36,7 @@ int gThePlayerCar = -1;
 
 static int CutsceneStreamIndex = 0;
 int CutsceneFrameCnt = 0;
-static int NumCutsceneStreams = 0;
+int NumCutsceneStreams = 0;
 static int gHaveInGameCutscene = 0;
 static int gCSDestroyPlayer = 0;
 static int PreLoadedCutscene = -1;
@@ -692,10 +692,11 @@ void ReleaseInGameCutscene(void)
 		replayptr = CutsceneReplayStart;
 
 	NumReplayStreams -= NumCutsceneStreams;
+	NumCutsceneStreams = 0;
 
 	CutsceneReplayStart = NULL;
 	CutsceneStreamIndex = 0;
-	NumCutsceneStreams = 0;
+	
 	PreLoadedCutscene = -1;
 	gHaveInGameCutscene = 0;
 	gCSDestroyPlayer = 0;
@@ -1293,7 +1294,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		return 0;
 	}
 
-	CutsceneStreamIndex = NumReplayStreams;
+	CutsceneStreamIndex = NumReplayStreams; //rheader->NumReplayStreams;
 	NumCutsceneStreams = rheader->NumReplayStreams;
 	
 	CutsceneReplayStart = replayptr;
@@ -1329,7 +1330,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		pt += size;
 	}
 
-	NumReplayStreams += rheader->NumReplayStreams;
+	NumReplayStreams += NumCutsceneStreams;
 
 	// copy cutscene cameras and pings
 	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
