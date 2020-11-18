@@ -1,4 +1,5 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
+
 #include <EMULATOR.H>
 #include <EMULATOR_TIMER.H>
 #include "DRIVER2.H"
@@ -6,97 +7,12 @@
 #include "C/PAD.H"
 #include "C/SYSTEM.H"
 #include "C/E3STUFF.H"
-#include "C/PAUSE.H"
-
+#include "C/FMV_FONT.h"
 #include "STRINGS.H"
 
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
-
-struct UVWH
-{
-	uchar u, v;
-	uchar w, h;
-};
-
-struct FMV_FONT
-{
-	uchar u, v;
-	uchar w, h;
-	short unk1;
-};
-
-// TODO: NEED SAVE
-UVWH fontUV[256] = 
-{
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 222, 18, 3, 18 }, { 22, 36, 5, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 94, 54, 6, 18 }, { 70, 54, 3, 18 },
-	{ 10, 36, 4, 18 }, { 16, 36, 4, 18 }, { 0, 0, 0, 0 }, { 34, 36, 6, 18 },
-	{ 246, 18, 2, 18 }, { 28, 36, 4, 18 }, { 0, 36, 2, 18 }, { 4, 36, 5, 18 },
-	{ 144, 18, 6, 18 }, { 152, 18, 4, 18 }, { 158, 18, 6, 18 }, { 166, 18, 6, 18 },
-	{ 174, 18, 7, 18 }, { 182, 18, 6, 18 }, { 190, 18, 6, 18 }, { 198, 18, 6, 18 },
-	{ 206, 18, 6, 18 }, { 214, 18, 6, 18 }, { 42, 36, 2, 18 }, { 66, 54, 3, 18 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 226, 18, 6, 18 },
-	{ 0, 0, 0, 0 }, { 0, 0, 7, 18 }, { 8, 0, 6, 18 }, { 16, 0, 6, 18 },
-	{ 24, 0, 6, 18 }, { 32, 0, 6, 18 }, { 40, 0, 5, 18 }, { 46, 0, 6, 18 },
-	{ 54, 0, 6, 18 }, { 62, 0, 3, 18 }, { 66, 0, 6, 18 }, { 74, 0, 6, 18 },
-	{ 82, 0, 5, 18 }, { 88, 0, 9, 18 }, { 98, 0, 6, 18 }, { 106, 0, 6, 18 },
-	{ 114, 0, 6, 18 }, { 122, 0, 6, 18 }, { 130, 0, 7, 18 }, { 138, 0, 7, 18 },
-	{ 146, 0, 6, 18 }, { 154, 0, 6, 18 }, { 162, 0, 7, 18 }, { 170, 0, 10, 18 },
-	{ 182, 0, 7, 18 }, { 190, 0, 7, 18 }, { 198, 0, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 206, 0, 6, 18 }, { 214, 0, 6, 18 }, { 222, 0, 5, 18 },
-	{ 228, 0, 5, 18 }, { 234, 0, 6, 18 }, { 242, 0, 5, 18 }, { 248, 0, 6, 18 },
-	{ 0, 18, 6, 18 }, { 8, 18, 3, 18 }, { 12, 18, 4, 18 }, { 18, 18, 6, 18 },
-	{ 26, 18, 3, 18 }, { 30, 18, 9, 18 }, { 40, 18, 6, 18 }, { 48, 18, 6, 18 },
-	{ 56, 18, 6, 18 }, { 64, 18, 6, 18 }, { 72, 18, 6, 18 }, { 80, 18, 6, 18 },
-	{ 88, 18, 5, 18 }, { 94, 18, 6, 18 }, { 102, 18, 7, 18 }, { 110, 18, 9, 18 },
-	{ 120, 18, 6, 18 }, { 128, 18, 7, 18 }, { 136, 18, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 238, 18, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 38, 54, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 30, 54, 6, 18 },
-	{ 50, 36, 8, 18 }, { 60, 36, 7, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 68, 36, 7, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 152, 36, 6, 18 },
-	{ 76, 36, 5, 18 }, { 82, 36, 5, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 88, 36, 3, 18 }, { 92, 36, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 144, 36, 7, 18 }, { 96, 36, 6, 18 }, { 104, 36, 7, 18 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 112, 36, 6, 18 }, { 0, 0, 0, 0 },
-	{ 120, 36, 7, 18 }, { 0, 0, 0, 0 }, { 128, 36, 6, 18 }, { 0, 0, 0, 0 },
-	{ 136, 36, 6, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 22, 54, 7, 18 },
-	{ 160, 36, 5, 18 }, { 166, 36, 6, 18 }, { 0, 54, 5, 18 }, { 0, 0, 0, 0 },
-	{ 174, 36, 5, 18 }, { 0, 0, 0, 0 }, { 84, 54, 8, 18 }, { 250, 36, 5, 18 },
-	{ 180, 36, 6, 18 }, { 188, 36, 6, 18 }, { 6, 54, 6, 18 }, { 0, 0, 0, 0 },
-	{ 196, 36, 3, 18 }, { 200, 36, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 50, 54, 6, 18 }, { 204, 36, 6, 18 }, { 212, 36, 6, 18 },
-	{ 58, 54, 6, 18 }, { 0, 0, 0, 0 }, { 220, 36, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 228, 36, 6, 18 }, { 236, 36, 6, 18 }, { 14, 54, 6, 18 },
-	{ 244, 36, 5, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
-};
-
-FMV_FONT font[256];
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()
@@ -104,19 +20,8 @@ void InitFMVFont()
 	int i;
 	RECT16 fontRect;
 
-	Loadfile("FMV\\FONT.TIM", _other_buffer);
-
-	//fontRect.x = 512;
-	//fontRect.y = 0;
-	//fontRect.w = 384;
-	//fontRect.h = 72;
-
-	//DrawSync(0);
-	//LoadImage2(&fontRect,(u_long *)(_other_buffer + 20));
-	//DrawSync(0);
-
 	DrawSync(0);
-	LoadClut((u_long *)(_other_buffer + 20),960,72);
+	LoadClut((u_long *)(fmvFont + 20),960,72);
 	DrawSync(0);
 
 	fontRect.x = 960;
@@ -124,59 +29,8 @@ void InitFMVFont()
 	fontRect.w = 64;
 	fontRect.h = 72;
 
-	LoadImage2(&fontRect,(u_long *)(_other_buffer + 64));
+	LoadImage2(&fontRect,(u_long *)(fmvFont + 64));
 	DrawSync(0);
-
-	/*
-	i = 0;
-	while (i < 256) 
-	{
-		font[i].u = fontUV[i].u + (fontUV[i].u >> 1);
-		font[i].w = fontUV[i].w + (fontUV[i].w >> 1);
-	
-		if (fontUV[i].w & 1)
-			font[i].w += 1;
-	
-		if (i == 46) 
-			font[i].w += 1;
-
-		if (font[i].u + font[i].w < 256)
-		{
-			font[i].unk1 = 0x108;
-		}
-		else if (font[i].u >= 256) 
-		{
-			font[i].unk1 = 0x10c;
-		}
-		else if (font[i].u + font[i].w > 255) 
-		{
-			font[i].unk1 = 0x109;
-			font[i].u -= 64;
-		}
-
-		//font[i].u = local_14;
-		font[i].v = fontUV[i].v;
-		font[i].h = fontUV[i].h;
-		i = i + 1;
-	}
-
-	font[180].u = font[39].u;
-	font[180].v = font[39].v;
-	font[180].unk1 = font[39].unk1;
-	font[146].u = font[39].u;
-	font[146].v = font[39].v;
-	font[146].unk1 = font[39].unk1;
-	*/
-
-	i = 0;
-	while (i < 256)
-	{
-		font[i].u = fontUV[i].u;
-		font[i].v = fontUV[i].v;
-		font[i].w = fontUV[i].w;
-		font[i].h = fontUV[i].h;
-		i++;
-	}
 }
 
 POLY_FT4 fmvTextPolys[512];
@@ -184,7 +38,7 @@ POLY_FT4 fmvTextPolys[512];
 // partially decompiled
 void PrintFMVText(char *str, int x, short y, int brightness)
 {
-	char chr;
+	u_char chr;
 	char *ptr;
 	int x_ofs;
 	int i;
@@ -207,7 +61,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 		if (chr == 32)
 			str_w += 4;
 		else
-			str_w += font[chr].w;
+			str_w += fmvFontUV[chr].w;
 		i++;
 	}
 
@@ -234,20 +88,20 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 			
 			poly->x0 = x_ofs;
 			poly->y0 = y;
-			poly->x1 = x_ofs + font[chr].w;
+			poly->x1 = x_ofs + fmvFontUV[chr].w;
 			poly->y1 = y;
 			poly->x2 = x_ofs;
-			poly->y2 = y + font[chr].h;
-			poly->x3 = x_ofs + font[chr].w;
-			poly->y3 = y + font[chr].h;
-			poly->u0 = font[chr].u;
-			poly->v0 = font[chr].v;
-			poly->u1 = font[chr].u + font[chr].w;
-			poly->v1 = font[chr].v;
-			poly->u2 = font[chr].u;
-			poly->v2 = font[chr].v + font[chr].h;
-			poly->u3 = font[chr].u + font[chr].w;
-			poly->v3 = font[chr].v + font[chr].h;
+			poly->y2 = y + fmvFontUV[chr].h;
+			poly->x3 = x_ofs + fmvFontUV[chr].w;
+			poly->y3 = y + fmvFontUV[chr].h;
+			poly->u0 = fmvFontUV[chr].u;
+			poly->v0 = fmvFontUV[chr].v;
+			poly->u1 = fmvFontUV[chr].u + fmvFontUV[chr].w;
+			poly->v1 = fmvFontUV[chr].v;
+			poly->u2 = fmvFontUV[chr].u;
+			poly->v2 = fmvFontUV[chr].v + fmvFontUV[chr].h;
+			poly->u3 = fmvFontUV[chr].u + fmvFontUV[chr].w;
+			poly->v3 = fmvFontUV[chr].v + fmvFontUV[chr].h;
 			poly->tpage = getTPage(0,0, 960, 0);
 			poly->clut = getClut(960, 72);
 
@@ -257,7 +111,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 
 			addPrim(&ot, poly);
 			
-			x_ofs += font[chr].w;
+			x_ofs += fmvFontUV[chr].w;
 			drawnChars++;
 			poly++;
 		}
@@ -266,7 +120,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 	DrawOTag((ulong*)&ot);
 }
 
-int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
+int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf, int& width, int& height)
 {
 	// it's rough but it works...
 	jpeg_decompress_struct cinfo;
@@ -279,7 +133,12 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	for (u_char* curr_scanline = dst_buf; cinfo.output_scanline < cinfo.output_height; curr_scanline += cinfo.output_width * cinfo.num_components)
+	width = cinfo.image_width;
+	height = cinfo.image_height;
+
+	for (u_char* curr_scanline = dst_buf; 
+		cinfo.output_scanline < cinfo.output_height; 
+		curr_scanline += cinfo.output_width * cinfo.num_components)
 	{
 		jpeg_read_scanlines(&cinfo, &curr_scanline, 1);
 	}
@@ -293,44 +152,31 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 // emulator window TODO: interface
 extern int g_swapInterval;
 
-void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
+void SetupMovieRectangle(int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
 
+	
 	float psxScreenW = 320.0f;
-	float psxScreenH = 240.0f;
+	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
 
-	int ideal_image_height = strFmt.image_height; // strFmt.image_height;
+	const float video_aspect = float(image_w) / float(image_h);
+	const float psx_aspect = (psxScreenH / psxScreenW);
+	
+	const float image_to_screen_w = float(psxScreenW) / float(windowWidth) * psx_aspect;
+	const float image_to_screen_h = float(psxScreenH) / float(windowHeight) * psx_aspect;
 
-	if (ideal_image_height < 220)
-		ideal_image_height = 220;
+	const float image_scale = float(windowWidth) / psxScreenW * video_aspect;
+	
+	float clipRectX = 0;
+	float clipRectY = 0;
+	float clipRectW = image_to_screen_w * image_scale * 2.0f;
+	float clipRectH = image_to_screen_h * image_scale * 2.0f;
 
-	RECT16 rect;
-	rect.x = 0;
-	rect.y = (psxScreenH - ideal_image_height);// / 2;
-	rect.w = strFmt.image_width;
-	rect.h = ideal_image_height;
-
-	const float video_aspect = float(strFmt.image_width) / float(ideal_image_height);
-	float emuScreenAspect = float(windowHeight) / float(windowWidth);
-
-	// first map to 0..1
-	float clipRectX = (float)(rect.x) / psxScreenW;
-	float clipRectY = (float)(rect.y) / psxScreenH;
-	float clipRectW = (float)(rect.w) / psxScreenW;
-	float clipRectH = (float)(rect.h) / psxScreenH;
-
-	// then map to screen
-	clipRectY -= 1.0f;
-	clipRectX -= 1.0f;
-
-	clipRectY /= video_aspect * emuScreenAspect;
-	clipRectH /= emuScreenAspect * video_aspect;
-
-	clipRectW *= 2.0f;
-	clipRectH *= 2.0f;
-
+	clipRectX -= clipRectW * 0.5f;
+	clipRectY -= clipRectH * 0.5f;
+	
 	u_char l = 0;
 	u_char t = 0;
 	u_char r = 1;
@@ -393,8 +239,16 @@ extern void Shader_CheckProgramStatus(GLuint program);
 extern ShaderID Shader_Compile(const char* source);
 extern void Emulator_SetShader(const ShaderID& shader);
 
+#define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
+
+u_char* g_FMVDecodedImageBuffer = NULL;
+
 void FMVPlayerInitGL()
 {
+	g_FMVDecodedImageBuffer = (u_char*)malloc(DECODE_BUFFER_ALLOC);	
+	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
+	// FIXME: double buffering?
+	
 #if defined(OGL) || defined(OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
@@ -403,12 +257,14 @@ void FMVPlayerInitGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 320, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4096, 4096, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	if(!g_FMVShader)
+	{
 		g_FMVShader = Shader_Compile(fmv_shader);
+	}
 #endif
 }
 
@@ -420,6 +276,9 @@ void FMVPlayerShutdownGL()
 	rect.w = 512;
 	rect.h = 256;
 
+	free(g_FMVDecodedImageBuffer);
+	g_FMVDecodedImageBuffer = NULL;
+	
 	ClearImage(&rect, 0, 0, 0);
 	Emulator_SwapWindow();
 
@@ -566,7 +425,7 @@ void DisplayCredits(int frame_number)
 
 extern void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
-void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits)
+void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits, int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
@@ -574,15 +433,15 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	Emulator_BeginScene();
 
 	Emulator_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
-
+	
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, stream_format.image_width, stream_format.image_height, 0, GL_RGB, GL_UNSIGNED_BYTE, _frontend_buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 	
 	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
 	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
 	Emulator_SetShader(g_FMVShader);
-
-	SetupMovieRectangle(stream_format);
+	
+	SetupMovieRectangle(stream_format.image_width, stream_format.image_height);
 
 	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
@@ -701,12 +560,15 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		{
 			if (frame_entry.type == ReadAVI::ctype_compressed_video_frame)
 			{
+				int real_frame_width;
+				int real_frame_height;
+				
 				// Do video frame
-				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
+				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, g_FMVDecodedImageBuffer, real_frame_width, real_frame_height);
 
 				if (ret == 0)
 				{
-					DrawFrame(stream_format, done_frames, arg->credits);
+					DrawFrame(stream_format, done_frames, arg->credits, real_frame_width, real_frame_height);
 				}
 
 				// set next step time

@@ -266,7 +266,7 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 	return TRUE;
 }
 
-static int Emulator_InitialiseGLEW()
+static int Emulator_InitialiseGLExt()
 {
 #if defined(GLEW)
 	GLenum err = gladLoadGL();
@@ -379,9 +379,8 @@ static int Emulator_InitialiseCore()
 
 void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
-	eprintf("Initialising Emulator.\n");
-	eprintf("VERSION: %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
-	eprintf("Compile Date: %s Time: %s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
+	eprintf("Initialising Psy-X %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
+	eprintf("Build date: %s:%s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
 
 	if (Emulator_InitialiseSDL(windowName, width, height, fullscreen) == FALSE)
 	{
@@ -390,16 +389,16 @@ void Emulator_Initialise(char* windowName, int width, int height, int fullscreen
 	}
 
 #if defined(GLEW)
-	if (Emulator_InitialiseGLEW() == FALSE)
+	if (Emulator_InitialiseGLExt() == FALSE)
 	{
-		eprinterr("Failed to Intialise GLEW\n");
+		eprinterr("Failed to Intialise GL extensions\n");
 		Emulator_ShutDown();
 	}
 #endif
 
 	if (Emulator_InitialiseCore() == FALSE)
 	{
-		eprinterr("Failed to Intialise Emulator Core.\n");
+		eprinterr("Failed to Intialise Psy-X Core.\n");
 		Emulator_ShutDown();
 	}
 
@@ -1385,6 +1384,24 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		      clipRectW * (float)windowWidth,
 		      clipRectH * (float)windowHeight);
 #endif
+}
+
+void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect)
+{
+	float emuScreenAspect = float(windowWidth) / float(windowHeight);
+
+	float psxScreenW = activeDispEnv.disp.w;
+	float psxScreenH = activeDispEnv.disp.h;
+
+	rect.x = activeDispEnv.screen.x;
+	rect.y = activeDispEnv.screen.y;
+
+	rect.w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
+	rect.h = psxScreenH; // windowHeight;
+
+	rect.x -= (rect.w - activeDispEnv.disp.w) / 2;
+
+	rect.w += rect.x;
 }
 
 void Emulator_SetShader(const ShaderID &shader)

@@ -14,7 +14,7 @@ extern unsigned short *Low2LowerDetailTable;
 
 extern int num_models_in_pack;
 
-void CleanSpooledModelSlots();
+extern int CleanSpooledModelSlots();
 
 extern void ProcessMDSLump(char *lump_file, int lump_size); // 0x00064CFC
 

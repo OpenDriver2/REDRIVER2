@@ -111,7 +111,7 @@ void SetTextColour(unsigned char Red, unsigned char Green, unsigned char Blue)
 // [D] [T]
 int StringWidth(char *pString)
 {
-	char let;
+	u_char let;
 	int w;
 
 	w = 0;
@@ -781,7 +781,7 @@ void PrintStringBoxed(char *string, int ix, int iy)
 
 		wpt = word;
 
-		char c = 0;
+		u_char c = 0;
 		
 		while ((c = *wpt++) != 0) 
 		{

@@ -116,6 +116,9 @@ void InitPadRecording(void)
 	}
 	else
 	{
+		// reset stream count as cutscene/chase can increase it
+		NumReplayStreams = NumPlayers;
+		
 		for (i = 0; i < NumReplayStreams; i++)
 		{
 			ReplayStreams[i].playbackrun = 0;
@@ -175,9 +178,9 @@ int SaveReplayToBuffer(char *buffer)
 	header->magic = 0x14793209;			// TODO: custom
 	header->GameLevel = GameLevel;
 	header->GameType = GameType;
-	header->NumReplayStreams = NumReplayStreams;
 	header->MissionNumber = gCurrentMissionNumber;
-	
+
+	header->NumReplayStreams = NumReplayStreams - NumCutsceneStreams; 
 	header->NumPlayers = NumPlayers;
 	header->CutsceneEvent = -1;
 	header->RandomChase = gRandomChase;
@@ -298,6 +301,7 @@ int SaveReplayToBuffer(char *buffer)
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
+int gCutsceneAsReplay_ReserveSlots = 2;
 char gCutsceneRecorderPauseText[64] = { 0 };
 char gCurrentChasePauseText[64] = { 0 };
 
@@ -400,7 +404,12 @@ void LoadCutsceneRecorder(char* configFilename)
 	ini_sget(config, "settings", "mission", "%d", &gCutsceneAsReplay);
 	ini_sget(config, "settings", "baseMission", "%d", &gCurrentMissionNumber);
 	ini_sget(config, "settings", "player", "%d", &gCutsceneAsReplay_PlayerId);
+	ini_sget(config, "settings", "reserveSlots", "%d", &gCutsceneAsReplay_ReserveSlots);
 	ini_sget(config, "settings", "subindex", "%d", &subindex);
+
+	// totally limited by streams
+	if(gCutsceneAsReplay_ReserveSlots > 8)
+		gCutsceneAsReplay_ReserveSlots = 8;
 	
 	if(loadExistingCutscene)
 	{
@@ -727,26 +736,27 @@ char GetPingInfo(char *cookieCount)
 // [A] Stores ping info into replay buffer
 int StorePingInfo(int cookieCount, int carId)
 {
+#ifdef CUTSCENE_RECORDER
 	PING_PACKET* packet;
 
+	//extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay == 0)
+		return 0;
+	
 	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
 		return 0;
-
+	
 	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		packet = &PingBuffer[PingBufferPos++];
 		packet->frame = (CameraCnt - frameStart & 0xffffU);
-
-		if(carId == 1)
-			packet->carId = MAX_CARS-1;
-		else
-			packet->carId = carId;
+		packet->carId = carId;
 		
 		packet->cookieCount = cookieCount;
 
 		return 1;
 	}
-
+#endif
 	return 0;
 }
 

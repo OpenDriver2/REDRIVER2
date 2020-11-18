@@ -44,7 +44,7 @@ workspace "REDRIVER2"
 	end
 	
 	if os.target() ~= "psx" then
-		dofile("premake_emulator.lua")
+		dofile("PsyX/premake5.lua")
 	end
 	
 -- TODO: overlays
@@ -81,11 +81,11 @@ project "REDRIVER2"
 
     filter "system:Windows or linux"
         defines { "OGL", "SIMPLE_SPOOL" }
-        dependson { "PSX" }
-        links { "PSX", "jpeg" }
+        dependson { "PsyX" }
+        links { "Psy-X", "jpeg" }
 		
 		includedirs { 
-			"EMULATOR"
+			"PsyX"
 		}
 		
 		files {

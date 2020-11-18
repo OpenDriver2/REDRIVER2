@@ -1945,22 +1945,22 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 
 	FE_CHARDATA *pFontInfo;
 	SPRT *font;
-	char let;
+	unsigned char let;
 
 	font = (SPRT *)current->primptr;
-	
+
 	if (justification & 4)
 	{
 		char *pString = string;
-		char c = 0;
+		unsigned char c = 0;
 
 		int w = 0;
 
-		while ((c = *pString++) != 0) 
+		while ((c = *pString++) != 0)
 		{
-			if (c == ' ') 
+			if (c == ' ')
 				w += 4;
-			else 
+			else
 				w += feFont.CharInfo[c].w;
 		}
 

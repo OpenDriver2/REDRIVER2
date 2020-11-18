@@ -27,11 +27,14 @@ int gEnteringScore = 0;
 static int gScorePosition = 0;
 static int allownameentry = 0;
 
-static MENU_ITEM* ActiveItem[3];
+#define PAUSE_MENU_LEVELS 3
+
+static MENU_ITEM* ActiveItem[PAUSE_MENU_LEVELS];
+static MENU_HEADER* VisibleMenus[PAUSE_MENU_LEVELS];
 static MENU_HEADER* ActiveMenu;
 static int ActiveMenuItem;
 static int VisibleMenu;
-static MENU_HEADER* VisibleMenus[3];
+
 static char SfxVolumeText[8];
 static char MusicVolumeText[8];
 
@@ -39,7 +42,7 @@ static char ScoreTime[5][16];
 static char ScoreItems[5][16];
 static char ScoreName[5][7];
 
-static char validchars[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+!";
+static char validchars[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+!\xFF\xFE";
 
 void PauseMap(int direction);
 void SfxVolume(int direction);
@@ -49,6 +52,17 @@ void SaveGame(int direction);
 void EnterName();
 
 char EnterScoreText[32] = { 0 };
+
+enum MenuItemType
+{
+	//PAUSE_TYPE_ACTIVE		= (1 << 0),		// suggested - USUSED flag
+	PAUSE_TYPE_FUNC			= (1 << 1),		// simple function calling when pressing Cross
+	PAUSE_TYPE_DIRFUNC		= (1 << 2),		// function calling with direction (left/right)
+	PAUSE_TYPE_SFXVOLUME	= (1 << 3),
+	PAUSE_TYPE_MUSICVOLUME	= (1 << 4),
+	PAUSE_TYPE_SUBMENU		= (1 << 6),
+	PAUSE_TYPE_ENDITEMS		= (1 << 7),
+};
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 
@@ -85,7 +99,6 @@ void TogglePlayerGhost(int direction)
 
 void ToggleOverlays(int direction)
 {
-	extern int gDoOverlays;
 	gDoOverlays ^= 1;
 }
 
@@ -185,12 +198,12 @@ void DebugTimeOfDayRain(int direction)
 
 MENU_ITEM DebugTimeOfDayItems[] =
 {
-	{ "Day",	3, 	2,	DebugTimeOfDayDay,	MENU_QUIT_NONE,		NULL },
-	{ "Night", 	3,  2,  DebugTimeOfDayNight,MENU_QUIT_NONE,		NULL },
-	{ "Dusk", 	3, 	2,  DebugTimeOfDayDusk, MENU_QUIT_NONE,		NULL },
-	{ "Dawn", 	3, 	2,  DebugTimeOfDayDawn,	MENU_QUIT_NONE,		NULL },
-	{ "Rain", 	3, 	2,  DebugTimeOfDayRain,	MENU_QUIT_NONE,		NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ "Day",	PAUSE_TYPE_FUNC, 	2,	DebugTimeOfDayDay,	MENU_QUIT_NONE,		NULL },
+	{ "Night", 	PAUSE_TYPE_FUNC,  2,  DebugTimeOfDayNight,MENU_QUIT_NONE,		NULL },
+	{ "Dusk", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayDusk, MENU_QUIT_NONE,		NULL },
+	{ "Dawn", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayDawn,	MENU_QUIT_NONE,		NULL },
+	{ "Rain", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayRain,	MENU_QUIT_NONE,		NULL },
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER DebugTimeOfDayHeader =
@@ -198,10 +211,10 @@ MENU_HEADER DebugTimeOfDayHeader =
 
 MENU_ITEM DebugJustForFunItems[] =
 {
-	{ "Secret Car Fun", 3,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
-	{ "Mini Cars", 3,	2,  ToggleMiniCars, MENU_QUIT_NONE,	NULL },
-	{ "Jericho Mode",	3,	2,  ToggleJerichoMode,	MENU_QUIT_NONE,		NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ "Secret Car Fun", PAUSE_TYPE_FUNC,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
+	{ "Mini Cars", PAUSE_TYPE_FUNC,	2,  ToggleMiniCars, MENU_QUIT_NONE,	NULL },
+	{ "Jericho Mode",	PAUSE_TYPE_FUNC,	2,  ToggleJerichoMode,	MENU_QUIT_NONE,		NULL },
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER DebugJustForFunHeader =
@@ -221,35 +234,35 @@ MENU_ITEM DebugOptionsItems[] =
 	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&NextChase, MENU_QUIT_NONE, NULL },
 #endif
-	{ "Display position", 3, 	2,	SetDisplayPosition,		MENU_QUIT_NONE,		NULL},
-	{ "Back on Wheels",	3, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
-	{ "Time of Day", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
-	{ "Fun Cheats", 	65, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
-	{ "Invincibility", 	3, 	2,  ToggleInvincibility,MENU_QUIT_NONE,		NULL},
-	{ "Immunity", 		3, 	2,  ToggleImmunity,		MENU_QUIT_NONE,		NULL},
-	{ "Puppy Dog Cops",	3,	2,  TogglePuppyDogCops,	MENU_QUIT_NONE,		NULL },
-	{ "Toggle Overlay",	3,	2,  ToggleOverlays,		MENU_QUIT_NONE,		NULL },
-	{ "Player Ghost", 	3, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
-	{ "Next Mission",	1, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ "Display position", PAUSE_TYPE_FUNC, 	2,	SetDisplayPosition,		MENU_QUIT_NONE,		NULL},
+	{ "Back on Wheels",	PAUSE_TYPE_FUNC, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
+	{ "Time of Day", 	PAUSE_TYPE_SUBMENU, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugTimeOfDayHeader },
+	{ "Fun Cheats", 	PAUSE_TYPE_SUBMENU, 2,  NULL,		  		MENU_QUIT_NONE,		&DebugJustForFunHeader },
+	{ "Invincibility", 	PAUSE_TYPE_FUNC, 	2,  ToggleInvincibility,MENU_QUIT_NONE,		NULL},
+	{ "Immunity", 		PAUSE_TYPE_FUNC, 	2,  ToggleImmunity,		MENU_QUIT_NONE,		NULL},
+	{ "Puppy Dog Cops",	PAUSE_TYPE_FUNC,	2,  TogglePuppyDogCops,	MENU_QUIT_NONE,		NULL },
+	{ "Toggle Overlay",	PAUSE_TYPE_FUNC,	2,  ToggleOverlays,		MENU_QUIT_NONE,		NULL },
+	{ "Player Ghost", 	PAUSE_TYPE_FUNC, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
+	{ "Next Mission",	PAUSE_TYPE_FUNC, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER DebugOptionsHeader =
 { "Debug Options", { 0, 0, 0, 0 }, 0u, DebugOptionsItems };
 #endif
 
-MENU_ITEM YesNoRestartItems[3] =
+MENU_ITEM YesNoRestartItems[] =
 {
 	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
 	{ "YES", 1u, 2u, NULL, MENU_QUIT_RESTART, NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM YesNoQuitItems[3] =
+MENU_ITEM YesNoQuitItems[] =
 {
 	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
 	{ "YES", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER YesNoRestartHeader =
@@ -261,28 +274,28 @@ MENU_HEADER YesNoQuitHeader =
 MENU_ITEM MainPauseItems[] =
 {
 	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Show Map", 3u, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Show Map", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
+	{ "Debug Options", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
-	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM MultiplayerPauseItems[7] =
+MENU_ITEM MultiplayerPauseItems[] =
 {
-	{ "Resume", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Restart", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", 13u, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", 21u, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 void SkipCutscene(int dir)
@@ -303,7 +316,7 @@ MENU_ITEM CutscenePauseItems[] =
 	{ "Debug Options", 65u, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionCompleteItems[] =
@@ -327,7 +340,7 @@ MENU_ITEM MissionFailedItems[6] =
 	{ "Exit", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Retry Mission",65u,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM TakeARideFinishedItems[] =
@@ -337,10 +350,10 @@ MENU_ITEM TakeARideFinishedItems[] =
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM DrivingGameFinishedItems[7] =
+MENU_ITEM DrivingGameFinishedItems[] =
 {
 	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
@@ -348,48 +361,48 @@ MENU_ITEM DrivingGameFinishedItems[7] =
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM MultiplayerFinishedItems[5] =
+MENU_ITEM MultiplayerFinishedItems[] =
 {
 	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM ChaseGameFinishedItems[6] =
+MENU_ITEM ChaseGameFinishedItems[] =
 {
 	{ "Play Again", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ "Save Replay", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
 	{ "Exit", 65u, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM NoPadItems[1] =
+MENU_ITEM NoPadItems[] =
 {
 	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL}
 };
 
-MENU_ITEM NoMultiPadItems[2] =
+MENU_ITEM NoMultiPadItems[] =
 {
 	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-MENU_ITEM InvalidPadItems[1] =
+MENU_ITEM InvalidPadItems[] =
 {
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL}
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL}
 };
 
-MENU_ITEM InvalidMultiPadItems[2] =
+MENU_ITEM InvalidMultiPadItems[] =
 {
 	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
-	{ NULL, 128u, 0u, NULL, MENU_QUIT_NONE, NULL }
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 
@@ -490,7 +503,7 @@ int playerwithcontrol[3] = { 0 };
 	/* end block 2 */
 	// End Line: 2009
 
-// [D]
+// [D] [T]
 int ShowPauseMenu(PAUSEMODE mode)
 {
 	PAUSEMODE passed_mode;
@@ -528,15 +541,17 @@ int ShowPauseMenu(PAUSEMODE mode)
 	InitaliseMenu(mode);
 	gDrawPauseMenus = 1;
 
-	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry != 0) 
+	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry) 
 	{
 		gScoreEntered = 0;
+	
 		sprintf(EnterScoreText, "Enter Score");
 		sprintf(EnterNameText, "Enter Name:");
 	}
 	else
 	{
 		gScoreEntered = 1;
+		
 		sprintf(EnterScoreText, "View Table");
 		sprintf(EnterNameText, "High Scores");
 	}
@@ -582,19 +597,16 @@ int ShowPauseMenu(PAUSEMODE mode)
 
 	gDrawPauseMenus = 0;
 
-	if (1 < NumPlayers)
+	if (NumPlayers > 1)
 	{
 		rect.x = 0;
 		rect.w = 320;
 		rect.h = 1;
 		rect.y = current->draw.clip.y + current->draw.clip.h;
+		
 		ClearImage2(&rect, 0, 0, 0);
 		DrawGame();
-
-		rect.x = 0;
-		rect.w = 320;
-		rect.h = 1;
-		rect.y = current->draw.clip.y + current->draw.clip.h;
+		
 		ClearImage2(&rect, 0, 0, 0);
 		DrawGame();
 	}
@@ -647,9 +659,7 @@ int ShowPauseMenu(PAUSEMODE mode)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-
-
-// [D]
+// [D] [T]
 void DrawPauseMenus(void)
 {
 #if !defined(PSX) && defined(DEBUG_OPTIONS)
@@ -659,7 +669,7 @@ void DrawPauseMenus(void)
 		return;
 #endif
 
-	if (gDrawPauseMenus != 0 && gShowMap == 0) 
+	if (gDrawPauseMenus && gShowMap == 0) 
 	{
 		if (gEnteringScore == 0)
 			DrawVisibleMenus();
@@ -689,6 +699,7 @@ void DrawPauseMenus(void)
 	/* end block 3 */
 	// End Line: 3755
 
+// [D] [T]
 void SaveReplay(int direction)
 {
 	char filename[64];
@@ -752,6 +763,7 @@ void SaveReplay(int direction)
 	/* end block 2 */
 	// End Line: 3765
 
+// [D] [T]
 void SaveGame(int direction)
 {
 	CallMemoryCard(0x20, 1);
@@ -775,7 +787,7 @@ void SaveGame(int direction)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void EnterName(void)
 {
 	EnterScoreName();
@@ -803,7 +815,7 @@ void EnterName(void)
 	/* end block 2 */
 	// End Line: 3818
 
-// [D]
+// [D] [T]
 int MaxMenuStringLength(MENU_HEADER *pMenu)
 {
 	int max;
@@ -813,11 +825,11 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	pItems = pMenu->MenuItems;
 	max = StringWidth(pMenu->Title);
 
-	while ((pItems->Type & 0x80) == 0)
+	while ((pItems->Type & PAUSE_TYPE_ENDITEMS) == 0)
 	{
 		temp = StringWidth(pItems->Text);
 
-		if ((pItems->Type & 0x18) != 0) 
+		if (pItems->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME)) 
 			temp = temp + StringWidth(" 100");
 
 		if (max < temp)
@@ -855,30 +867,19 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	/* end block 3 */
 	// End Line: 2442
 
-// [D] [A] please get rid of inlined code
+// [D] [T]
 void InitaliseMenu(PAUSEMODE mode)
 {
-	unsigned char uVar1;
-	unsigned char bVar2;
-	unsigned char bVar3;
-	MENU_ITEM *pMVar4;
-	MENU_HEADER *pMVar5;
-	MENU_HEADER **ppMVar6;
-	char *pcVar7;
-	MENU_ITEM **ppMVar8;
-	unsigned char uVar9;
-	int iVar10;
+	MENU_HEADER* pNewMenu;
+	int i;
 
-	ppMVar8 = ActiveItem;
-	ppMVar6 = VisibleMenus;
-	iVar10 = 2;
+	for (i = 0; i < PAUSE_MENU_LEVELS; i++)
+	{
+		ActiveItem[i] = NULL;
+		VisibleMenus[i] = NULL;
+	}
 
-	do {
-		*ppMVar8++ = NULL;
-		*ppMVar6++ = NULL;
-
-		iVar10--;
-	} while (-1 < iVar10);
+	pNewMenu = NULL;
 
 	allownameentry = 0;
 
@@ -890,35 +891,28 @@ void InitaliseMenu(PAUSEMODE mode)
 			if (NumPlayers == 1 && gMultiplayerLevels == 0) 
 			{
 				if (gInGameCutsceneActive == 0)
-				{
-					ActiveMenu = &PauseMenuHeader;
-				}
+					pNewMenu = &PauseMenuHeader;
 				else 
-				{
-					ActiveMenu = &CutscenePauseMenuHeader;
-				}
+					pNewMenu = &CutscenePauseMenuHeader;
 			}
 			else 
-			{
-				ActiveMenu = &MultiplayerPauseHeader;
-			}
+				pNewMenu = &MultiplayerPauseHeader;
+
 			break;
 		case PAUSEMODE_GAMEOVER:
 			switch (GameType) 
 			{
 				case GAME_PURSUIT:
-				switchD_0006c3b4_caseD_3:
-					ActiveMenu = &ChaseGameFinishedHeader;
+					pNewMenu = &ChaseGameFinishedHeader;
 					gMissionCompletionState = mode;
-					goto LAB_0006c5d0;
+					break;
 				case GAME_GETAWAY:
 				case GAME_CHECKPOINT:
 					if (NumPlayers == 1)
 					{
-						ActiveMenu = &DrivingGameFinishedHeader;
+						pNewMenu = &DrivingGameFinishedHeader;
 						allownameentry = 0;
 						gMissionCompletionState = mode;
-						goto LAB_0006c5d0;
 					}
 					break;
 				case GAME_GATERACE:
@@ -926,121 +920,92 @@ void InitaliseMenu(PAUSEMODE mode)
 				case GAME_SURVIVAL:
 					if (NumPlayers == 1)
 					{
-						ActiveMenu = &DrivingGameFinishedHeader;
+						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
 						allownameentry = NumPlayers;
-						goto LAB_0006c5d0;
 					}
 					break;
 				default:
 					if (NumPlayers == 1)
-						goto switchD_0006c460_caseD_1;
+					{
+						pNewMenu = &TakeARideFinishedHeader;
+						gMissionCompletionState = mode;
+					}
+					break;
 			}
-		LAB_0006c4c0:
-			ActiveMenu = &MultiplayerFinishedHeader;
-			gMissionCompletionState = mode;
 			break;
 		case PAUSEMODE_COMPLETE:
-			if (true)
-			{
-				switch (GameType) 
-				{
-					case GAME_MISSION:
-						ActiveMenu = &MissionCompleteHeader;
-						gMissionCompletionState = mode;
-						goto LAB_0006c5d0;
-					case GAME_GETAWAY:
-					case GAME_GATERACE:
-					case GAME_CHECKPOINT:
-					case GAME_TRAILBLAZER:
-					case GAME_SURVIVAL:
-					case GAME_COPSANDROBBERS:
-						if (NumPlayers == 1) {
 
-							ActiveMenu = &DrivingGameFinishedHeader;
-							gMissionCompletionState = mode;
-							allownameentry = NumPlayers;
-							goto LAB_0006c5d0;
-						}
-						goto LAB_0006c4c0;
-					case GAME_PURSUIT:
-						goto switchD_0006c3b4_caseD_3;
-				}
+			switch (GameType) 
+			{
+				case GAME_MISSION:
+					pNewMenu = &MissionCompleteHeader;
+					gMissionCompletionState = mode;
+					break;
+				case GAME_GETAWAY:
+				case GAME_GATERACE:
+				case GAME_CHECKPOINT:
+				case GAME_TRAILBLAZER:
+				case GAME_SURVIVAL:
+				case GAME_COPSANDROBBERS:
+				case GAME_CAPTURETHEFLAG:
+					if (NumPlayers == 1) 
+					{
+						pNewMenu = &DrivingGameFinishedHeader;
+						gMissionCompletionState = mode;
+						allownameentry = NumPlayers;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
+						gMissionCompletionState = mode;
+					}
+					break;
+				case GAME_PURSUIT:
+					pNewMenu = &ChaseGameFinishedHeader;
+					gMissionCompletionState = mode;
+					break;
 			}
-		switchD_0006c460_caseD_1:
-			ActiveMenu = &TakeARideFinishedHeader;
-			gMissionCompletionState = mode;
 			break;
 		case PAUSEMODE_PADERROR:
 			if (pad_connected < 0) 
 			{
 				if (NumPlayers == 1) 
-				{
-					ActiveMenu = &InvalidPadHeader;
-				}
+					pNewMenu = &InvalidPadHeader;
 				else
-				{
-					ActiveMenu = &InvalidMultiPadHeader;
-					if (Pads[0].type != 1) 
-					{
-						pcVar7 = "Incorrect controller in Port 2";
-							goto LAB_0006c5cc;
-					}
-				}
-				pcVar7 = "Incorrect controller in Port 1";
+					pNewMenu = &InvalidMultiPadHeader;
+
+				if (Pads[0].type == 1)
+					pNewMenu->Title = "Incorrect controller in Port 1";
+				else
+					pNewMenu->Title = "Incorrect controller in Port 2";
 			}
 			else 
 			{
 				if (NumPlayers == 1) 
-				{
-					ActiveMenu = &NoPadHeader;
-				}
+					pNewMenu = &NoPadHeader;
 				else
-				{
-					ActiveMenu = &NoMultiPadHeader;
-					if (Pads[0].type != 0) 
-					{
-						pcVar7 = "Please insert controller into port";
-							goto LAB_0006c5cc;
-					}
-				}
-				pcVar7 = "Please insert controller into port";
+					pNewMenu = &NoMultiPadHeader;
+
+				if (Pads[0].type == 0)
+					pNewMenu->Title = "Please insert controller into Port 1";
+				else
+					pNewMenu->Title = "Please insert controller into Port 2";
 			}
-		LAB_0006c5cc:
-			ActiveMenu->Title = pcVar7;
+			break;
 	}
-LAB_0006c5d0:
-	ActiveItem[0] = ActiveMenu->MenuItems;
-	VisibleMenus[0] = ActiveMenu;
 
-	ActiveMenuItem = 0;
-	VisibleMenu = 0;
-
-	uVar1 = ActiveMenu->MenuItems->Type;
-	uVar9 = 0;
-	pMVar4 = ActiveMenu->MenuItems;
-
-	while (uVar1 != 0x80)
+	// [A]
+	if(pNewMenu)
 	{
-		uVar1 = (pMVar4+1)->Type;
-		uVar9++;
-		pMVar4++;
+		VisibleMenu = 0;
+		VisibleMenus[0] = pNewMenu;
+		SetupMenu(pNewMenu, 0);
 	}
-
-	ActiveMenu->NumItems = uVar9;
-	iVar10 = MaxMenuStringLength(ActiveMenu);
-
-	bVar2 = ActiveMenu->NumItems;
-	bVar3 = ActiveMenu->NumItems;
-	(ActiveMenu->Bound).x = (short)((0x130 - iVar10) / 2) + -4;
-	(ActiveMenu->Bound).w = (short)iVar10 + 0x18;
-	iVar10 = (int)(((uint)bVar2 + 1) * -0xf + 0x100) / 2;
-	(ActiveMenu->Bound).y = (short)iVar10;
-	(ActiveMenu->Bound).h = ((ushort)bVar3 + 1) * 0xf + 10;
-
-	if (iVar10 < 0x30)
-		(ActiveMenu->Bound).y = 0x30;
-
+	else
+	{
+		printError("pNewMenu is NULL!\n");
+	}
 }
 
 
@@ -1074,52 +1039,38 @@ LAB_0006c5d0:
 	/* end block 4 */
 	// End Line: 2841
 
-// [D]
+// [D] [T]
 void SetupMenu(MENU_HEADER *menu, int back)
 {
-	unsigned char bVar1;
-	unsigned char bVar2;
-	MENU_ITEM *pMVar3;
-	MENU_HEADER *pMVar4;
-	int iVar5;
-	MENU_ITEM *pMVar6;
-	int count;
+	int len;
+	MENU_ITEM *pItem;
+	int numItems;
 
-	count = 0;
+	numItems = 0;
 
 	ActiveMenuItem = 0;
-	if (menu->MenuItems->Type != 0x80) 
-	{
-		pMVar6 = menu->MenuItems;
-		do {
-			if ((back != 0) && (pMVar6 == ActiveItem[VisibleMenu]))
-			{
-				ActiveMenuItem = count;
-			}
-			pMVar3 = pMVar6 + 1;
-			count = count + 1;
 
-			pMVar6 = pMVar6 + 1;
-		} while (pMVar3->Type != 0x80);
+	pItem = menu->MenuItems;
+	while (pItem->Type != PAUSE_TYPE_ENDITEMS)
+	{
+		if (back && pItem == ActiveItem[VisibleMenu])
+			ActiveMenuItem = numItems;
+
+		numItems++;
+		pItem++;
 	}
+
 	ActiveMenu = menu;
-	menu->NumItems = count;
-	iVar5 = MaxMenuStringLength(ActiveMenu);
-	pMVar4 = ActiveMenu;
-	bVar1 = ActiveMenu->NumItems;
-	bVar2 = ActiveMenu->NumItems;
-	(ActiveMenu->Bound).x = (short)((0x130 - iVar5) / 2) + -4;
-	(pMVar4->Bound).w = (short)iVar5 + 0x18;
-	iVar5 = (int)(((uint)bVar1 + 1) * -0xf + 0x100) / 2;
-	(pMVar4->Bound).y = (short)iVar5;
-	(pMVar4->Bound).h = ((ushort)bVar2 + 1) * 0xf + 10;
+	ActiveMenu->NumItems = numItems;
 
-	if (iVar5 < 0x30)
-	{
-		(pMVar4->Bound).y = 0x30;
-	}
+	len = MaxMenuStringLength(ActiveMenu);
 
-	ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
+	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
+	ActiveMenu->Bound.w = len + 24;
+	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
+	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
+
+	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
 }
 
 
@@ -1177,97 +1128,112 @@ void SetupMenu(MENU_HEADER *menu, int back)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void DrawVisibleMenus(void)
 {
-	short sVar1;
-	short sVar2;
-	short sVar3;
-	DB *pDVar4;
-	uint uVar5;
-	int iVar6;
-	int x;
-	char *pString;
+	int width;
+	int itemXpos;
 	POLY_FT3 *null;
 	POLY_F4 *poly;
-	short sVar8;
-	MENU_ITEM *pMVar9;
-	int y;
-	int y_00;
-	MENU_HEADER *pMVar10;
-	int r;
-	int b;
-	int x_00;
+	MENU_ITEM *pItem;
+	MENU_HEADER *pActive;
+	int r, b;
 	int i;
+	int xpos, ypos;
+	int menuWidth;
+	
+	int x1, x2, y1, y2;
+	static int maxPercentageWidth = StringWidth(" 100");
 
-	if (1 < NumPlayers) {
+	if (NumPlayers > 1)
+	{
 		SetFullscreenDrawing();
 	}
-	pMVar10 = VisibleMenus[VisibleMenu];
-	y = (int)(pMVar10->Bound).y;
-	y_00 = y;
-	if (pMVar10->Title != NULL) 
-{
-		y_00 = y + 0xf;
-		OutputString(pMVar10->Title, 2, (int)(pMVar10->Bound).x, y, (int)(pMVar10->Bound).w, 0x80, 0x20, 0x20);
-	}
-	i = 0;
-	uVar5 = (uint)pMVar10->NumItems;
-	pMVar9 = pMVar10->MenuItems;
-	sVar1 = (pMVar10->Bound).x;
-	x_00 = (int)sVar1;
-	sVar2 = (pMVar10->Bound).w;
-	y = (int)sVar2;
-	if (pMVar10->NumItems != 0) {
-		do {
-			if (pMVar9->Text != NULL) {
-				r = 0x80;
-				if (pMVar9 == ActiveItem[VisibleMenu])
-				{
-					r = 0;
-					b = 0;
-				}
-				else
-				{
-					b = 0x80;
-				}
-				if ((pMVar9->Type & 8) == 0) 
-				{
-					if ((pMVar9->Type & 0x10) != 0) 
-					{
-						iVar6 = StringWidth(pMVar9->Text);
-						x = StringWidth(" 100");
-						x = x_00 + ((y - iVar6) - x >> 1);
-						iVar6 = StringWidth(pMVar9->Text);
-						iVar6 = x + iVar6;
-						OutputString(pMVar9->Text, 1, x, y_00, y, r, 0x80, b);
-						pString = MusicVolumeText;
-						goto LAB_0006c9ec;
-					}
 
-					OutputString(pMVar9->Text, (uint)pMVar9->Justify, x_00, y_00, y, r, 0x80, b);
-				}
-				else 
-				{
-					iVar6 = StringWidth(pMVar9->Text);
-					x = StringWidth(" 100");
-					x = x_00 + ((y - iVar6) - x >> 1);
-					iVar6 = StringWidth(pMVar9->Text);
-					iVar6 = x + iVar6;
-					OutputString(pMVar9->Text, 1, x, y_00, y, r, 0x80, b);
-					pString = SfxVolumeText;
-				LAB_0006c9ec:
-					OutputString(pString, 1, iVar6 + 10, y_00, y, r, 0x80, b);
-				}
+	pActive = VisibleMenus[VisibleMenu];
 
-				y_00 = y_00 + 0xf;
-				uVar5 = (uint)pMVar10->NumItems;
-			}
-			pMVar9 = pMVar9 + 1;
-			i = i + 1;
-		} while (i < (int)uVar5);
-	}
+	xpos = pActive->Bound.x;
+	ypos = pActive->Bound.y;
+	menuWidth = pActive->Bound.w;
 	
+	if (pActive->Title)
+	{
+		OutputString(pActive->Title, 2, xpos, ypos, menuWidth, 128, 32, 32);
+
+		ypos += 15;
+	}
+
+	// show all menu items
+	for (i = 0; i < pActive->NumItems; i++)
+	{
+		pItem = &pActive->MenuItems[i];
+
+		if (!pItem->Text)
+			continue;
+	
+		if (pItem == ActiveItem[VisibleMenu])
+		{
+			r = 0;
+			b = 0;
+		}
+		else
+		{
+			b = 128;
+			r = 128;
+		}
+
+		if(pItem->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME))
+		{
+			width = StringWidth(pItem->Text);
+
+			itemXpos = xpos + ((menuWidth - width) - maxPercentageWidth) / 2;
+
+			OutputString(pItem->Text, 1, itemXpos, ypos, menuWidth, r, 128, b);
+			
+			if (pItem->Type & PAUSE_TYPE_SFXVOLUME)
+				OutputString(SfxVolumeText, 1, itemXpos + width + 10, ypos, menuWidth, r, 128, b);
+			else if (pItem->Type & PAUSE_TYPE_MUSICVOLUME)
+				OutputString(MusicVolumeText, 1, itemXpos + width + 10, ypos, menuWidth, r, 128, b);
+		}
+		else
+		{
+			OutputString(pItem->Text, pItem->Justify, xpos, ypos, menuWidth, r, 128, b);
+		}
+
+		ypos += 15;
+	}
+
+	poly = (POLY_F4*)current->primptr;
+
+	ypos = pActive->Bound.y;
+	
+	setPolyF4(poly);
+	x1 = xpos - 5;
+	x2 = xpos + menuWidth + 5;
+
+	y1 = ypos - 5;
+	y2 = ypos + pActive->Bound.h;
+
+	poly->x0 = x1;
+	poly->x1 = x2;
+	poly->y0 = y1;
+	poly->x2 = x1;
+
+	poly->y1 = y1;
+	poly->y2 = y2;
+
+	poly->x3 = x2;
+	poly->y3 = y2;
+
+	poly->r0 = 16;
+	poly->g0 = 16;
+	poly->b0 = 16;
+
+	setSemiTrans(poly, 1);
+
+	addPrim(current->ot, poly);
+	current->primptr += sizeof(POLY_F4);
+
 	null = (POLY_FT3 *)current->primptr;
 	setPolyFT3(null);
 	null->x0 = -1;
@@ -1281,31 +1247,7 @@ void DrawVisibleMenus(void)
 	addPrim(current->ot, null);
 
 	current->primptr += sizeof(POLY_FT3);
-	poly = (POLY_F4*)current->primptr;
-	
-	setPolyF4(poly);
-	sVar8 = sVar1 + sVar2 + 5;	// x + w
-	sVar3 = (pMVar10->Bound).y;
 
-	poly->x0 = sVar1 + -5;
-	poly->x1 = sVar8;
-	poly->y0 = sVar3 + -5;
-	poly->x2 = sVar1 + -5;
-
-	poly->y1 = sVar3 + -5;
-	poly->y2 = sVar3 + (pMVar10->Bound).h;
-
-	poly->x3 = sVar8;
-	poly->y3 = sVar3 + (pMVar10->Bound).h;
-
-	poly->r0 = '\x10';
-	poly->g0 = '\x10';
-	poly->b0 = '\x10';
-
-	setSemiTrans(poly, 1);
-
-	addPrim(current->ot, poly);
-	current->primptr += sizeof(POLY_F4);
 
 }
 
@@ -1373,214 +1315,155 @@ void DrawVisibleMenus(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void ControlMenu(void)
 {
-	EXIT_VALUE EVar1;
-	bool bVar2;
-	int iVar3;
-	MENU_ITEM *pMVar4;
-	ushort uVar5;
-	MENU_HEADER *menu;
-	ushort uVar6;
-
-	if (playerwithcontrol[2] == 0) 
-	{
-		uVar5 = Pads[1].dirnew;
-		uVar6 = Pads[1].direct;
-
-		if (playerwithcontrol[0] != 0) 
-		{
-			uVar5 = Pads[0].dirnew;
-			uVar6 = Pads[0].direct;
-		}
-	}
-	else 
-	{
-		uVar5 = Pads[0].dirnew;
-		uVar6 = Pads[0].direct;
-
-		if (NumPlayers == 2) 
-		{
-			uVar5 = Pads[1].dirnew | Pads[0].dirnew;
-			uVar6 = Pads[1].direct | Pads[0].direct;
-		}
-	}
-
-	if (gShowMap != 0) 
-	{
-		if ((uVar5 & 0x50) == 0)
-			return;
-
-		PauseMap(0);
-		return;
-	}
-
 	static int controlmenu_debounce = 0;
+	MENU_ITEM* pItem;
+	int i;
+	ushort paddata;
+	MENU_HEADER* menu;
+	ushort paddirect;
+	int doit;
 
-	if (((uVar6 & 0xa000) == 0) || ((ActiveItem[VisibleMenu]->Type & 4) == 0)) 
+	if (playerwithcontrol[2] == 0)
 	{
-		controlmenu_debounce = 0;
-		if ((uVar5 & 0x1000) != 0)
+		paddata = Pads[1].dirnew;
+		paddirect = Pads[1].direct;
+
+		if (playerwithcontrol[0])
 		{
-			ActiveMenuItem--;
-
-			if (ActiveMenuItem < 0) 
-				ActiveMenuItem = (uint)ActiveMenu->NumItems - 1;
-
-			ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
-			return;
+			paddata = Pads[0].dirnew;
+			paddirect = Pads[0].direct;
 		}
-
-		if ((uVar5 & 0x4000) != 0) 
-		{
-			ActiveMenuItem++;
-
-			if (((uint)ActiveMenu->NumItems - 1) < ActiveMenuItem)
-				ActiveMenuItem = 0;
-
-			ActiveItem[VisibleMenu] = ActiveMenu->MenuItems + ActiveMenuItem;
-			return;
-		}
-
-		if ((uVar5 & 0x40) == 0) 
-		{
-			if ((uVar5 & 0x10) == 0) 
-			{
-				if ((uVar5 & 0x800) == 0) 
-				{
-					controlmenu_debounce = 0;
-					return;
-				}
-
-				if (VisibleMenu != 0) 
-				{
-					controlmenu_debounce = 0;
-					return;
-				}
-
-				iVar3 = 0;
-				if (ActiveMenu->NumItems == 0) 
-				{
-					controlmenu_debounce = 0;
-					return;
-				}
-
-				pMVar4 = ActiveMenu->MenuItems;
-				while (true)
-				{
-					if (pMVar4->ExitValue == MENU_QUIT_CONTINUE)
-					{
-						controlmenu_debounce = 0;
-						PauseReturnValue = (uint)pMVar4->ExitValue;
-						return;
-					}
-
-					iVar3++;
-					if ((uint)ActiveMenu->NumItems <= iVar3)
-						break;
-
-					pMVar4 = ActiveMenu->MenuItems + iVar3;
-				}
-
-				controlmenu_debounce = 0;
-				return;
-			}
-
-			if (VisibleMenu < 1)
-			{
-				iVar3 = 0;
-
-				if (ActiveMenu->NumItems == 0)
-				{
-					controlmenu_debounce = 0;
-					return;
-				}
-
-				EVar1 = ActiveMenu->MenuItems->ExitValue;
-				while (true)
-				{
-					if (EVar1 == MENU_QUIT_CONTINUE)
-					{
-						controlmenu_debounce = 0;
-						PauseReturnValue = (uint)EVar1;
-						return;
-					}
-
-					iVar3++;
-
-					if ((uint)ActiveMenu->NumItems <= iVar3) 
-						break;
-
-					EVar1 = ActiveMenu->MenuItems[iVar3].ExitValue;
-				}
-				controlmenu_debounce = 0;
-				return;
-			}
-		}
-		else 
-		{
-			pMVar4 = ActiveItem[VisibleMenu];
-
-			if ((pMVar4->Type & 0x40) != 0) 
-			{
-				menu = pMVar4->SubMenu;
-				VisibleMenu = VisibleMenu + 1;
-				VisibleMenus[VisibleMenu] = menu;
-				SetupMenu(menu, 0);
-				return;
-			}
-
-			if ((pMVar4->Type & 2) != 0) 
-			{
-				(*pMVar4->func)(0);
-			}
-
-			EVar1 = ActiveItem[VisibleMenu]->ExitValue;
-
-			if (EVar1 == MENU_QUIT_NONE) 
-			{
-				return;
-			}
-
-			if (EVar1 != MENU_QUIT_BACKMENU)
-			{
-				PauseReturnValue = (uint)ActiveItem[VisibleMenu]->ExitValue;
-				return;
-			}
-		}
-		VisibleMenu = VisibleMenu + -1;
-		SetupMenu(VisibleMenus[VisibleMenu], 1);
-		return;
-	}
-	bVar2 = false;
-
-	if (controlmenu_debounce < 1)
-	{
-		iVar3 = 10;
 	}
 	else
 	{
-		controlmenu_debounce = controlmenu_debounce + -1;
-		iVar3 = 2;
-
-		if (controlmenu_debounce != 0) 
-			goto LAB_0006cd08;
+		paddata = Pads[0].dirnew;
+		paddirect = Pads[0].direct;
+	
+		if (NumPlayers == 2)
+		{
+			paddata = Pads[1].dirnew | Pads[0].dirnew;
+			paddirect = Pads[1].direct | Pads[0].direct;
+		}
 	}
 
-	bVar2 = true;
-	controlmenu_debounce = iVar3;
-LAB_0006cd08:
-
-	if (bVar2)
+	// toggle map off
+	if (gShowMap)
 	{
-		if ((uVar6 & 0x8000) == 0)
+		if (paddata & 0x50)
+			PauseMap(0);
+
+		return;
+	}
+
+	pItem = ActiveItem[VisibleMenu];
+
+	if ((paddirect & 0xA000) && (pItem->Type & PAUSE_TYPE_DIRFUNC))
+	{
+		doit = 0;
+
+		if (controlmenu_debounce == 0)
 		{
-			(*ActiveItem[VisibleMenu]->func)(1);
+			doit = 1;
+			controlmenu_debounce = 10;
 		}
-		else 
+		else
 		{
-			(*ActiveItem[VisibleMenu]->func)(-1);
+			controlmenu_debounce--;
+
+			if (controlmenu_debounce == 0)
+			{
+				doit = 1;
+				controlmenu_debounce = 2;
+			}
+		}
+
+		if (doit)
+		{
+			// left/right
+			(*pItem->func)((paddirect & 0x8000) ? -1 : 1);
+		}
+
+		return;
+	}
+
+	controlmenu_debounce = 0;
+
+	if (paddata & 0x1000)
+	{
+		// go up
+		ActiveMenuItem--;
+		
+		if (ActiveMenuItem < 0)
+			ActiveMenuItem = ActiveMenu->NumItems - 1;
+
+		ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
+	}
+	else if (paddata & 0x4000)
+	{
+		// go down
+		ActiveMenuItem++;
+		
+		if (ActiveMenuItem > ActiveMenu->NumItems - 1)
+			ActiveMenuItem = 0;
+
+		ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
+	}
+	else if (paddata & 0x40)
+	{
+		// Enter submenu
+		if (pItem->Type & PAUSE_TYPE_SUBMENU)
+		{
+			menu = pItem->SubMenu;
+	
+			VisibleMenu++;
+			VisibleMenus[VisibleMenu] = menu;
+	
+			SetupMenu(menu, 0);
+			return;
+		}
+
+		// function flag
+		if (pItem->Type & PAUSE_TYPE_FUNC)
+			(*pItem->func)(0);
+			
+		if (pItem->ExitValue == MENU_QUIT_NONE)
+			return;
+
+		if (pItem->ExitValue == MENU_QUIT_BACKMENU)
+		{
+			VisibleMenu--;		// go back in menu stack
+			SetupMenu(VisibleMenus[VisibleMenu], 1);
+		}
+		else
+			PauseReturnValue = pItem->ExitValue;
+	}
+	else if ((paddata & 0x10) || (paddata & 0x800)) // Triangle or Start
+	{
+		// continue game if needed
+		if (VisibleMenu == 0)
+		{
+			for (i = 0; i < ActiveMenu->NumItems; i++)
+			{
+				pItem = &ActiveMenu->MenuItems[i];
+
+				if (pItem->ExitValue == MENU_QUIT_CONTINUE)
+				{
+					PauseReturnValue = pItem->ExitValue;
+					return;
+				}
+			}
+		}
+		else
+		{
+			// only triangle
+			if(paddata & 0x10)
+			{
+				VisibleMenu--;
+				SetupMenu(VisibleMenus[VisibleMenu], 1);
+			}
 		}
 	}
 }
@@ -1606,7 +1489,7 @@ LAB_0006cd08:
 	/* end block 3 */
 	// End Line: 4871
 
-// [D]
+// [D] [T]
 void PauseMap(int direction)
 {
 	gShowMap ^= 1;
@@ -1643,7 +1526,7 @@ void PauseMap(int direction)
 	/* end block 3 */
 	// End Line: 4906
 
-// [D]
+// [D] [T]
 void SfxVolume(int direction)
 {
 	if (direction < 0) 
@@ -1654,10 +1537,10 @@ void SfxVolume(int direction)
 	if (gMasterVolume < -10000) 
 		gMasterVolume = -10000;
 
-	if (0 < gMasterVolume) 
+	if (gMasterVolume > 0) 
 		gMasterVolume = 0;
 
-	sprintf(SfxVolumeText, "%d", (int)(10000 + gMasterVolume) / 100);
+	sprintf(SfxVolumeText, "%d", (10000 + gMasterVolume) / 100);
 
 	SetMasterVolume(gMasterVolume);
 }
@@ -1690,7 +1573,7 @@ void SfxVolume(int direction)
 	/* end block 4 */
 	// End Line: 4949
 
-// [D]
+// [D] [T]
 void MusicVolume(int direction)
 {
 	if (direction < 0)
@@ -1701,10 +1584,10 @@ void MusicVolume(int direction)
 	if (gMusicVolume < -10000)
 		gMusicVolume = -10000;
 
-	if (0 < gMusicVolume) 
+	if (gMusicVolume > 0) 
 		gMusicVolume = 0;
 
-	sprintf(MusicVolumeText, "%d", (int)(10000 + gMusicVolume) / 100);
+	sprintf(MusicVolumeText, "%d", (10000 + gMusicVolume) / 100);
 
 	SetXMVolume(gMusicVolume);
 }
@@ -1748,25 +1631,22 @@ void MusicVolume(int direction)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void EnterScoreName(void)
 {
-	bool bVar1;
-	short uVar2;
-	int uVar3;
-	char* pcVar4;
-	char cVar5;
-	int iVar6;
-	int uVar7;
-	int iVar8;
+	u_char chr;
+	int so;
+	int co;
+	int delay;
 	char* username;
-	int uVar9;
+	int toggle;
 	SCORE_ENTRY* table;
+	unsigned short npad, dpad;
 
 	username = NULL;
-	iVar8 = 0;
+	delay = 0;
 	gEnteringScore = 1;
-	uVar9 = 0;
+	toggle = 0;
 
 	if (gScoreEntered == 0) 
 	{
@@ -1781,148 +1661,139 @@ void EnterScoreName(void)
 		gScorePosition = -1;
 	}
 
-	uVar7 = 1;
-	iVar6 = 0;
+	co = 1;
+	so = 0;
 
 	CreateScoreNames(table, &gPlayerScore, gScorePosition);
 
 	do {
 		ReadControllers();
-		uVar2 = Pads[0].dirnew;
 
-		if (gScoreEntered == 0)
+		npad = Pads[0].dirnew;
+		dpad = Pads[0].direct;
+
+		if (gScoreEntered)
 		{
-			if ((Pads[0].dirnew & 0x10) != 0)
+			if (npad & 0x50)
+			{
+				gEnteringScore = 0;
+				return;
+			}
+		}
+		else
+		{
+			// cancel
+			if (npad & 0x10)
 			{
 				gEnteringScore = 0;
 				return;
 			}
 
-			if ((Pads[0].direct & 0x20) == 0)
+			if (dpad & 0x20)
 			{
-				if ((Pads[0].direct & 0x8000) == 0) 
+				// switch to end
+				delay = 1;
+				toggle = 0;
+				co = 67;
+			}
+			else if (dpad & 0x8000)
+			{
+				// move left/right to switch chars
+				if (delay-- == 0)
 				{
-					if ((Pads[0].direct & 0x2000) == 0)
-					{
-						iVar8 = 0;
-						goto LAB_0006d1e8;
-					}
-
-					bVar1 = iVar8 == 0;
-					iVar8 = iVar8 + -1;
-					if (bVar1) 
-					{
-						iVar8 = 0x14;
-					LAB_0006d1c4:
-						uVar9 = 0;
-						uVar7 = uVar7 + 1;
-					}
-					else if (iVar8 < 1)
-					{
-						iVar8 = 2;
-						goto LAB_0006d1c4;
-					}
-
-					if (0x43 < uVar7)
-						uVar7 = 0;
-
+					delay = 20;
+					toggle = 0;
+					co--;
 				}
-				else 
+				else if (delay < 1)
 				{
-					bVar1 = iVar8 == 0;
-					iVar8 = iVar8 + -1;
-
-					if (bVar1) 
-					{
-						iVar8 = 0x14;
-					LAB_0006d184:
-						uVar9 = 0;
-						uVar7 = uVar7 - 1;
-					}
-					else if (iVar8 < 1) 
-					{
-						iVar8 = 2;
-						goto LAB_0006d184;
-					}
-
-					if ((int)uVar7 < 0)
-						uVar7 = 0x43;
+					delay = 2;
+					toggle = 0;
+					co--;
 				}
+
+				if (co < 0)
+					co = 67;
 			}
-			else 
+			else if (dpad & 0x2000)
 			{
-				iVar8 = 1;
-				uVar9 = 0;
-				uVar7 = 0x43;
-			}
-
-		LAB_0006d1e8:
-			cVar5 = validchars[uVar7];
-			uVar3 = uVar9 + 1;
-
-			if (iVar6 == 5)
-				cVar5 = -2;
-
-			uVar9 = uVar3 & 0xff;
-
-			if ((uVar3 & 4) == 0)
-			{
-				if (cVar5 == ' ')
-					username[iVar6] = '.';
-				else
-					username[iVar6] = cVar5;
-			}
-			else 
-			{
-				username[iVar6] = 0;
-			}
-
-			pcVar4 = username + iVar6;
-
-			if ((uVar2 & 0x80) != 0) 
-			{
-				if (0 < iVar6)
-					iVar6--;
-
-				pcVar4 = username + iVar6;
-				*pcVar4 = 0;
-				pcVar4[1] = 0;
-			}
-
-			if ((uVar2 & 0x40) != 0) 
-			{
-				if (cVar5 == -2) 
+				if (delay-- == 0)
 				{
-					*pcVar4 = 0;
+					delay = 20;
+					toggle = 0;
+					co++;
+				}
+				else if (delay < 1)
+				{
+					delay = 2;
+					toggle = 0;
+					co++;
+				}
+
+				if (co > 67)
+					co = 0;
+			}
+			else
+			{
+				delay = 0;
+			}
+
+			if (so == 5)
+				chr = 254;
+			else
+				chr = validchars[co];
+
+			toggle++;
+
+			if (toggle & 4)
+				username[so] = 0;
+			else if (chr == ' ')
+				username[so] = '.';
+			else
+				username[so] = chr;
+
+			if (npad & 0x80)
+			{
+				if (so > 0)
+					so--;
+
+				username[so] = 0;
+				username[so+1] = 0;
+			}
+
+			if (npad & 0x40)
+			{
+				// complete
+				if (chr == 254)
+				{
+					username[so] = 0;
 					strcpy(gPlayerScore.name, username);
 					AddScoreToTable(table, gScorePosition);
+					
 					sprintf(EnterScoreText, "View Table");
 					sprintf(EnterNameText, "High Scores");
+					
 					gEnteringScore = 0;
 					gScoreEntered = 1;
 					return;
 				}
 
-				if (cVar5 == -1) 
+				// delete chars
+				if(chr == 255)
 				{
-					if (0 < iVar6)
-						iVar6--;
+					if (so > 0)
+						so--;
 
-					username[iVar6] = 0;
-					username[iVar6+1] = 0;
+					username[so] = 0;
+					username[so + 1] = 0;
 				}
-				else if (iVar6 < 5) 
+				else if (so < 5)
 				{
-					iVar6 = iVar6 + 1;
-					*pcVar4 = cVar5;
-					username[iVar6] = 0;
+					username[so] = chr;
+					username[so+1] = 0;
+					so++;
 				}
 			}
-		}
-		else if((Pads[0].dirnew & 0x50) != 0)
-		{
-			gEnteringScore = 0;
-			return;
 		}
 
 		DrawGame();
@@ -1955,52 +1826,72 @@ void EnterScoreName(void)
 	/* end block 2 */
 	// End Line: 4487
 
-// [D]
+// [D] [T]
 void DrawHighScoreMenu(int selection)
 {
 	POLY_FT3* null;
 	POLY_F4* prim;
-	int iVar1;
-	int iVar2;
+	int i;
 	int b;
 	int r;
-	int y;
-	int iVar3;
+	int ypos;
 	char text[8];
 
-	OutputString(EnterNameText, 2, 0xa0, 0x46, 0, 0x80, 0x20, 0x20);
-	OutputString("Name", 1, 0x28, 0x5a, 0, 0x80, 0x80, 0x20);
-	OutputString("Time", 4, 0x118, 0x5a, 0, 0x80, 0x80, 0x20);
-	y = 0x6e;
-	iVar3 = 0;
-	iVar1 = 0;
-	iVar2 = 0;
+	OutputString(EnterNameText, 2, 160, 70, 0, 128, 32, 32);
+	OutputString("Name", 1, 40, 90, 0, 128, 128, 32);
+	OutputString("Time", 4, 280, 90, 0, 128, 128, 32);
+
+	ypos = 110;
+
+	i = 0;
 	do {
-		r = 0x80;
-		if (iVar1 == selection) 
+		
+		if (i == selection) 
 		{
 			r = 0;
 			b = 0;
 		}
 		else
 		{
-			b = 0x80;
+			r = 128;
+			b = 128;
 		}
 
-		sprintf(text, "%d", iVar2);
+		sprintf(text, "%d", i+1);
 
-		OutputString(text, 1, 0x28, y, 0, r, 0x80, b);
-		OutputString(ScoreName[iVar2], 1, 0x3c, y, 0, r, 0x80, b);
-		OutputString(ScoreItems[iVar2], 4, 0xdc, y, 0, r, 0x80, b);
-		OutputString(ScoreTime[iVar2], 4, 0x118, y, 0, r, 0x80, b);
+		OutputString(text, 1, 40, ypos, 0, r, 128, b);
 
-		y = y + 0xf;
+		OutputString(ScoreName[i], 1, 60, ypos, 0, r, 128, b);
+		OutputString(ScoreItems[i], 4, 220, ypos, 0, r, 128, b);
+		OutputString(ScoreTime[i], 4, 280, ypos, 0, r, 128, b);
 
-		iVar2++;
-	} while (iVar2 < 5);
+		ypos += 15;
+
+		i++;
+	} while (i < 5);
+
+	prim = (POLY_F4*)current->primptr;
+	setPolyF4(prim);
+	setSemiTrans(prim, 1);
+	setShadeTex(prim, 1);
+
+	prim->y0 = 65;
+	prim->y1 = 65;
+	prim->y2 = 197;
+	prim->y3 = 197;
+	prim->x0 = 26;
+	prim->x1 = 294;
+	prim->x2 = 26;
+	prim->x3 = 294;
+
+	prim->r0 = 16;
+	prim->g0 = 16;
+	prim->b0 = 16;
+
+	addPrim(current->ot, prim);
+	current->primptr += sizeof(POLY_F4);
 
 	null = (POLY_FT3*)current->primptr;
-
 	setPolyFT3(null);
 
 	null->x0 = -1;
@@ -2012,27 +1903,7 @@ void DrawHighScoreMenu(int selection)
 	null->tpage = 0;
 
 	addPrim(current->ot, null);
-
 	current->primptr += sizeof(POLY_FT3);
-
-	prim = (POLY_F4*)current->primptr;
-	setPolyF4(prim);
-	setSemiTrans(prim, 1); // code is 43 '+';
-
-	prim->y0 = 0x41;
-	prim->y1 = 0x41;
-	prim->y2 = 0xc5;
-	prim->y3 = 0xc5;
-	prim->x0 = 0x1a;
-	prim->x1 = 0x126;
-	prim->x2 = 0x1a;
-	prim->x3 = 0x126;
-	prim->r0 = 16;
-	prim->g0 = 16;
-	prim->b0 = 16;
-
-	addPrim(current->ot, prim);
-	current->primptr += sizeof(POLY_F4);
 }
 
 //*Offset 0x6D324, from D : \driver2\game\C\PAUSE.C(lines 1943..2011)
@@ -2047,7 +1918,7 @@ void DrawHighScoreMenu(int selection)
 //	int i; // $s5
 //} // line 69, offset 0x6d664
 
-// [D]
+// [D] [T]
 void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 {
 	int time;
@@ -2073,7 +1944,6 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 	}
 
 	i = 0;
-
 	do {
 		if (i == position)
 		{
@@ -2085,7 +1955,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 
 			ScoreItems[i][0] = '\0';
 
-			if ((text != NULL) && (score->items != -1))
+			if (text != NULL && score->items != -1)
 				sprintf(ScoreItems[i], "%d %s", score->items, text);
 
 			ClearMem(ScoreName[i], 7);
@@ -2101,7 +1971,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 
 			ScoreItems[i][0] = '\0';
 
-			if ((text != NULL) && (table->items != -1))
+			if (text != NULL && table->items != -1)
 				sprintf(ScoreItems[i], "%d %s", table->items, text);
 
 			sprintf(ScoreName[i], "%s", table->name);

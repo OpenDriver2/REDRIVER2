@@ -1729,34 +1729,12 @@ void SetupModels(void)
 // [D] [T]
 void LoadInAreaModels(int area)
 {
-	int i;
-	MODEL* model;
-	int nmodels;
-	unsigned short* new_model_numbers;
-	int model_number;
+	int num_freed;
 
-	if(newmodels)
-	{
-		// clear old model ids
-		nmodels = *newmodels;
-		new_model_numbers = newmodels + 1;
+	// [A] invalidate previously used spooled slots
+	num_freed = CleanSpooledModelSlots();
 
-		// set old model ids to dummy
-		for (i = 0; i < nmodels; i++)
-		{
-			model_number = new_model_numbers[i];
-
-			model = modelpointers[model_number];
-			
-			if(model->shape_flags & 0x8000)
-			{
-				modelpointers[model_number] = &dummyModel;
-				pLodModels[model_number] = &dummyModel;
-			}
-		}
-
-		SPOOL_INFO("freed %d model slots\n", nmodels);
-	}
+	SPOOL_INFO("freed %d model slots\n", num_freed);
 
 	int length = AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (length-1) * 2048);

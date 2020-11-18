@@ -5,7 +5,6 @@
 #include "STRINGS.H"
 #include "MISSION.H"
 #include "TEXTURE.H"
-#include "OVERMAP.H"
 #include "CAMERA.H"
 #include "SHADOW.H"
 #include "DEBRIS.H"
@@ -14,8 +13,8 @@
 #include "SKY.H"
 #include "PLAYERS.H"
 #include "MAIN.H"
-#include "MOTION_C.H"
-#include "CONVERT.H"
+
+#include "CARS.H"
 
 #include "INLINE_C.H"
 
