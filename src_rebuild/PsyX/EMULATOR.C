@@ -379,9 +379,8 @@ static int Emulator_InitialiseCore()
 
 void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
-	eprintf("Initialising Psy-X (Psy-Cross).\n");
-	eprintf("VERSION: %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
-	eprintf("Compile Date: %s Time: %s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
+	eprintf("Initialising Psy-X %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
+	eprintf("Build date: %s:%s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
 
 	if (Emulator_InitialiseSDL(windowName, width, height, fullscreen) == FALSE)
 	{
