@@ -7,96 +7,12 @@
 #include "C/PAD.H"
 #include "C/SYSTEM.H"
 #include "C/E3STUFF.H"
+#include "C/FMV_FONT.h"
 #include "STRINGS.H"
 
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
-
-
-struct UVWH
-{
-	uchar u, v;
-	uchar w, h;
-};
-
-struct FMV_FONT
-{
-	uchar u, v;
-	uchar w, h;
-	short unk1;
-};
-
-// TODO: NEED SAVE
-UVWH fontUV[256] = 
-{
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 222, 18, 3, 18 }, { 22, 36, 5, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 94, 54, 6, 18 }, { 70, 54, 3, 18 },
-	{ 10, 36, 4, 18 }, { 16, 36, 4, 18 }, { 0, 0, 0, 0 }, { 34, 36, 6, 18 },
-	{ 246, 18, 2, 18 }, { 28, 36, 4, 18 }, { 0, 36, 2, 18 }, { 4, 36, 5, 18 },
-	{ 144, 18, 6, 18 }, { 152, 18, 4, 18 }, { 158, 18, 6, 18 }, { 166, 18, 6, 18 },
-	{ 174, 18, 7, 18 }, { 182, 18, 6, 18 }, { 190, 18, 6, 18 }, { 198, 18, 6, 18 },
-	{ 206, 18, 6, 18 }, { 214, 18, 6, 18 }, { 42, 36, 2, 18 }, { 66, 54, 3, 18 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 226, 18, 6, 18 },
-	{ 0, 0, 0, 0 }, { 0, 0, 7, 18 }, { 8, 0, 6, 18 }, { 16, 0, 6, 18 },
-	{ 24, 0, 6, 18 }, { 32, 0, 6, 18 }, { 40, 0, 5, 18 }, { 46, 0, 6, 18 },
-	{ 54, 0, 6, 18 }, { 62, 0, 3, 18 }, { 66, 0, 6, 18 }, { 74, 0, 6, 18 },
-	{ 82, 0, 5, 18 }, { 88, 0, 9, 18 }, { 98, 0, 6, 18 }, { 106, 0, 6, 18 },
-	{ 114, 0, 6, 18 }, { 122, 0, 6, 18 }, { 130, 0, 7, 18 }, { 138, 0, 7, 18 },
-	{ 146, 0, 6, 18 }, { 154, 0, 6, 18 }, { 162, 0, 7, 18 }, { 170, 0, 10, 18 },
-	{ 182, 0, 7, 18 }, { 190, 0, 7, 18 }, { 198, 0, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 206, 0, 6, 18 }, { 214, 0, 6, 18 }, { 222, 0, 5, 18 },
-	{ 228, 0, 5, 18 }, { 234, 0, 6, 18 }, { 242, 0, 5, 18 }, { 248, 0, 6, 18 },
-	{ 0, 18, 6, 18 }, { 8, 18, 3, 18 }, { 12, 18, 4, 18 }, { 18, 18, 6, 18 },
-	{ 26, 18, 3, 18 }, { 30, 18, 9, 18 }, { 40, 18, 6, 18 }, { 48, 18, 6, 18 },
-	{ 56, 18, 6, 18 }, { 64, 18, 6, 18 }, { 72, 18, 6, 18 }, { 80, 18, 6, 18 },
-	{ 88, 18, 5, 18 }, { 94, 18, 6, 18 }, { 102, 18, 7, 18 }, { 110, 18, 9, 18 },
-	{ 120, 18, 6, 18 }, { 128, 18, 7, 18 }, { 136, 18, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 238, 18, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 38, 54, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 30, 54, 6, 18 },
-	{ 50, 36, 8, 18 }, { 60, 36, 7, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 68, 36, 7, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 152, 36, 6, 18 },
-	{ 76, 36, 5, 18 }, { 82, 36, 5, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 88, 36, 3, 18 }, { 92, 36, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 144, 36, 7, 18 }, { 96, 36, 6, 18 }, { 104, 36, 7, 18 },
-	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 112, 36, 6, 18 }, { 0, 0, 0, 0 },
-	{ 120, 36, 7, 18 }, { 0, 0, 0, 0 }, { 128, 36, 6, 18 }, { 0, 0, 0, 0 },
-	{ 136, 36, 6, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 22, 54, 7, 18 },
-	{ 160, 36, 5, 18 }, { 166, 36, 6, 18 }, { 0, 54, 5, 18 }, { 0, 0, 0, 0 },
-	{ 174, 36, 5, 18 }, { 0, 0, 0, 0 }, { 84, 54, 8, 18 }, { 250, 36, 5, 18 },
-	{ 180, 36, 6, 18 }, { 188, 36, 6, 18 }, { 6, 54, 6, 18 }, { 0, 0, 0, 0 },
-	{ 196, 36, 3, 18 }, { 200, 36, 3, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 50, 54, 6, 18 }, { 204, 36, 6, 18 }, { 212, 36, 6, 18 },
-	{ 58, 54, 6, 18 }, { 0, 0, 0, 0 }, { 220, 36, 6, 18 }, { 0, 0, 0, 0 },
-	{ 0, 0, 0, 0 }, { 228, 36, 6, 18 }, { 236, 36, 6, 18 }, { 14, 54, 6, 18 },
-	{ 244, 36, 5, 18 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
-};
-
-FMV_FONT font[256];
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()
@@ -104,19 +20,8 @@ void InitFMVFont()
 	int i;
 	RECT16 fontRect;
 
-	Loadfile("FMV\\FONT.TIM", _other_buffer);
-
-	//fontRect.x = 512;
-	//fontRect.y = 0;
-	//fontRect.w = 384;
-	//fontRect.h = 72;
-
-	//DrawSync(0);
-	//LoadImage2(&fontRect,(u_long *)(_other_buffer + 20));
-	//DrawSync(0);
-
 	DrawSync(0);
-	LoadClut((u_long *)(_other_buffer + 20),960,72);
+	LoadClut((u_long *)(fmvFont + 20),960,72);
 	DrawSync(0);
 
 	fontRect.x = 960;
@@ -124,59 +29,8 @@ void InitFMVFont()
 	fontRect.w = 64;
 	fontRect.h = 72;
 
-	LoadImage2(&fontRect,(u_long *)(_other_buffer + 64));
+	LoadImage2(&fontRect,(u_long *)(fmvFont + 64));
 	DrawSync(0);
-
-	/*
-	i = 0;
-	while (i < 256) 
-	{
-		font[i].u = fontUV[i].u + (fontUV[i].u >> 1);
-		font[i].w = fontUV[i].w + (fontUV[i].w >> 1);
-	
-		if (fontUV[i].w & 1)
-			font[i].w += 1;
-	
-		if (i == 46) 
-			font[i].w += 1;
-
-		if (font[i].u + font[i].w < 256)
-		{
-			font[i].unk1 = 0x108;
-		}
-		else if (font[i].u >= 256) 
-		{
-			font[i].unk1 = 0x10c;
-		}
-		else if (font[i].u + font[i].w > 255) 
-		{
-			font[i].unk1 = 0x109;
-			font[i].u -= 64;
-		}
-
-		//font[i].u = local_14;
-		font[i].v = fontUV[i].v;
-		font[i].h = fontUV[i].h;
-		i = i + 1;
-	}
-
-	font[180].u = font[39].u;
-	font[180].v = font[39].v;
-	font[180].unk1 = font[39].unk1;
-	font[146].u = font[39].u;
-	font[146].v = font[39].v;
-	font[146].unk1 = font[39].unk1;
-	*/
-
-	i = 0;
-	while (i < 256)
-	{
-		font[i].u = fontUV[i].u;
-		font[i].v = fontUV[i].v;
-		font[i].w = fontUV[i].w;
-		font[i].h = fontUV[i].h;
-		i++;
-	}
 }
 
 POLY_FT4 fmvTextPolys[512];
@@ -184,7 +38,7 @@ POLY_FT4 fmvTextPolys[512];
 // partially decompiled
 void PrintFMVText(char *str, int x, short y, int brightness)
 {
-	char chr;
+	u_char chr;
 	char *ptr;
 	int x_ofs;
 	int i;
@@ -207,7 +61,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 		if (chr == 32)
 			str_w += 4;
 		else
-			str_w += font[chr].w;
+			str_w += fmvFontUV[chr].w;
 		i++;
 	}
 
@@ -234,20 +88,20 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 			
 			poly->x0 = x_ofs;
 			poly->y0 = y;
-			poly->x1 = x_ofs + font[chr].w;
+			poly->x1 = x_ofs + fmvFontUV[chr].w;
 			poly->y1 = y;
 			poly->x2 = x_ofs;
-			poly->y2 = y + font[chr].h;
-			poly->x3 = x_ofs + font[chr].w;
-			poly->y3 = y + font[chr].h;
-			poly->u0 = font[chr].u;
-			poly->v0 = font[chr].v;
-			poly->u1 = font[chr].u + font[chr].w;
-			poly->v1 = font[chr].v;
-			poly->u2 = font[chr].u;
-			poly->v2 = font[chr].v + font[chr].h;
-			poly->u3 = font[chr].u + font[chr].w;
-			poly->v3 = font[chr].v + font[chr].h;
+			poly->y2 = y + fmvFontUV[chr].h;
+			poly->x3 = x_ofs + fmvFontUV[chr].w;
+			poly->y3 = y + fmvFontUV[chr].h;
+			poly->u0 = fmvFontUV[chr].u;
+			poly->v0 = fmvFontUV[chr].v;
+			poly->u1 = fmvFontUV[chr].u + fmvFontUV[chr].w;
+			poly->v1 = fmvFontUV[chr].v;
+			poly->u2 = fmvFontUV[chr].u;
+			poly->v2 = fmvFontUV[chr].v + fmvFontUV[chr].h;
+			poly->u3 = fmvFontUV[chr].u + fmvFontUV[chr].w;
+			poly->v3 = fmvFontUV[chr].v + fmvFontUV[chr].h;
 			poly->tpage = getTPage(0,0, 960, 0);
 			poly->clut = getClut(960, 72);
 
@@ -257,7 +111,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 
 			addPrim(&ot, poly);
 			
-			x_ofs += font[chr].w;
+			x_ofs += fmvFontUV[chr].w;
 			drawnChars++;
 			poly++;
 		}
