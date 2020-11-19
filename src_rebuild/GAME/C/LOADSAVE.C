@@ -8,7 +8,6 @@
 #include "SOUND.H"
 #include "PAD.H"
 #include "MISSION.H"
-#include "COP_AI.H"
 #include "SCORES.H"
 #include "LIBGPU.H"
 #include "LIBETC.H"
@@ -17,9 +16,7 @@
 #include "PAUSE.H"
 
 #ifndef PSX
-#include <stdint.h>
 #include <stdlib.h>
-
 #include <PLATFORM.H>
 
 // [A]

@@ -464,6 +464,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 	char filename[250];
 	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
+	FixPathSlashes(filename);
 
 	ReadAVI readAVI(filename);
 	
@@ -471,6 +472,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	if (subtitles)
 	{
 		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
+		FixPathSlashes(filename);
+	
 		InitSubtitles(filename);
 	}
 	else
@@ -481,6 +484,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	if(arg->credits)
 	{
 		sprintf(filename, "%sDATA\\CREDITS.ENG", gDataFolder);
+		FixPathSlashes(filename);
+	
 		InitCredits(filename);
 	}
 
@@ -489,7 +494,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	ReadAVI::stream_format_t stream_format = readAVI.GetVideoFormat();
 	ReadAVI::stream_format_auds_t audio_format = readAVI.GetAudioFormat();
 
-	if (strcmp(stream_format.compression_type, "MJPG")) {
+	if (strcmp(stream_format.compression_type, "MJPG")) 
+	{
 		printf("Only MJPG supported\n");
 		return;
 	}
@@ -639,7 +645,6 @@ int FMV_main(RENDER_ARGS* args)
 	DRAWENV draw;
 
 	FMVPlayerInitGL();
-	//LoadFont(NULL);
 
 	InitFMVFont();
 

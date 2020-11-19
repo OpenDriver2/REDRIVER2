@@ -5,6 +5,7 @@
 #include "CAMERA.H"
 #include "FMVPLAY.H"
 #include "PAUSE.H"
+#include "PLATFORM.H"
 #include "SOUND.H"
 #include "PRES.H"
 #include "SYSTEM.H"
@@ -353,6 +354,7 @@ void PlayXA(int num, int index)
 	{
 		char fileName[250];
 		sprintf(fileName, XANameFormat, gDataFolder, num+1, index);
+		fixslashes(fileName);
 
 		g_wavData = new CSoundSource_WaveCache();
 
@@ -362,6 +364,7 @@ void PlayXA(int num, int index)
 			// Save subtitles file
 			{
 				sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
+				fixslashes(fileName);
 
 				FILE* fp = fopen(fileName, "wb");
 
@@ -389,6 +392,7 @@ void PlayXA(int num, int index)
 #else
 			// Load subtitles for XA
 			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
+			fixslashes(fileName);
 
 			FILE* fp = fopen(fileName, "rb");
 

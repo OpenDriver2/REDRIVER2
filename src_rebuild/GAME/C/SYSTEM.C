@@ -16,7 +16,8 @@
 #include "MAIN.H"
 #include "PAD.H"
 #include "DRAW.H"
-#include <string.h>
+#include "STRINGS.H"
+#include "PLATFORM.H"
 
 // Initialized in redriver2_main
 char* _overlay_buffer = NULL;		// 0x1C0000
@@ -377,10 +378,7 @@ int Loadfile(char* name, char* addr)
 	int fileSize;
 
 	sprintf(namebuffer, "%s%s", gDataFolder, name);
-
-#ifdef __unix__
-	fixslashes(namebuffer);
-#endif
+	FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
 	if (!fptr)
@@ -462,13 +460,10 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 {
 	char namebuffer[64];
 #ifndef PSX
-	int fileSize = 0;
+	int fileSize;
 
 	sprintf(namebuffer, "%s%s", gDataFolder, name);
-
-#ifdef __unix__
-	fixslashes(namebuffer);
-#endif
+	FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
 	if (!fptr)
@@ -793,13 +788,9 @@ void loadsectors(char* addr, int sector, int nsectors)
 // It has to be this way
 void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 {
-#ifdef __unix__
 	char namebuffer[64];
 	strcpy(namebuffer, filename);
-	fixslashes(namebuffer);
-#else
-	char* namebuffer = filename;
-#endif
+	FixPathSlashes(namebuffer);
 
 	FILE* fp = fopen(namebuffer, "rb");
 
@@ -1378,10 +1369,7 @@ void SetCityType(CITYTYPE type)
 	}
 
 	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
-
-#ifdef __unix__
-	fixslashes(filename);
-#endif
+	FixPathSlashes(filename);
 
 	FILE* levFp = fopen(filename, "rb");
 
@@ -1389,6 +1377,7 @@ void SetCityType(CITYTYPE type)
 	{
 		char errPrint[1024];
 		sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);
+	
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
 		return;
 	}
@@ -1508,10 +1497,7 @@ int FileExists(char* filename)
 	char namebuffer[128];
 
 	sprintf(namebuffer, "%s%s", gDataFolder, filename);
-
-#ifdef __unix__
-	fixslashes(namebuffer);
-#endif
+	FixPathSlashes(namebuffer);
 
 	FILE* fp = fopen(namebuffer, "rb");
 	if (fp)
