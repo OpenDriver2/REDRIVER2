@@ -17,6 +17,10 @@
 #include "CARS.H"
 #include "CONVERT.H"
 
+#ifdef PGXP
+#include <math.h>
+#endif
+
 #include "INLINE_C.H"
 
 #define NUM_BONES 23
@@ -381,10 +385,10 @@ MODEL* gPed4HeadModelPtr;
 char* MotionCaptureData[MAX_MOTION_CAPTURE];	// [A] actually, pointers
 int ThisMotion;
 
-u_char cTannerVNumbers[24];
+short cTannerVNumbers[24];
 SVECTOR vTannerList[210];
 
-u_char cJerichoVNumbers[7];
+short cJerichoVNumbers[7];
 SVECTOR vJerichoList[102];
 
 int vStored = 0;
@@ -541,9 +545,8 @@ void SetupPedestrian(PEDESTRIAN* pedptr)
 
 int bDoingShadow = 0;
 int gCurrentZ;
-//PEDESTRIAN *pDrawingPed = NULL;
 
-// [D] [A] changed to VERTTYPE
+// [D] [T] [A]
 void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
 {
 #if 0
@@ -568,45 +571,37 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 #endif
 
 	int clut;
-	long lVar2;
-	char bVar3;
-	int uVar4;
-	int iVar5;
+	int angle;
+	char tmp;
+	int tmp2;
+	int dx1, dy1,dx2,dy2;
 	int width;
-	int iVar7;
 	POLY_FT4* prims;
-	int iVar8;
-	int iVar9;
 	LIMBS bone;
 	TEXTURE_DETAILS* body_texture;
-	int x;
-	int y;
-	int iVar11;
+	int x, y, z, z2;
 	int tpage;
 	int pal;
-	int iVar13;
-	int y1;
-	int z1;
-
-	x = v1[0] - v2[0];
-	y = v1[1] - v2[1];
+	int cs, sn;
 
 	bone = (LIMBS)(boneId & 0x7f);
-
 	body_texture = MainPed[bone].ptd;
-	lVar2 = ratan2(y, x);
-
+	
 	if (bDoingShadow == 0)
-		iVar5 = gCurrentZ + (scr_z / 2);
+		z = gCurrentZ + (scr_z / 2);
 	else
-		iVar5 = sz + (scr_z / 2);
+		z = sz + (scr_z / 2);
 
-	iVar13 = (scr_z * 4096) / iVar5;
-
-	iVar13 = iVar13 * 25 >> 5;
+	z2 = ((scr_z * 4096) / z) * 25 >> 5;
 
 	if (bone == JOINT_1)
-		iVar13 = iVar13 + ((int)((uint) * (ushort*)((int)rcossin_tbl + (((int)(pDrawingPed->dir).vy + (int)camera_angle.vy) * 8 & 0x3ff8U) + 2) << 0x10) >> 0x16);
+	{
+		// make ped thinner from side view
+		uint ang;
+		ang = rcossin_tbl[((pDrawingPed->dir.vy + camera_angle.vy) * 4 & 0xfffU) + 1] >> 6;
+
+		z2 += ang;
+	}
 
 	if (pDrawingPed->type == PED_ACTION_JUMP)
 	{
@@ -614,40 +609,42 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	}
 	else if (bDoingShadow == 0)
 	{
-		if ((pDrawingPed->flags & 0x8000U) == 0)
-		{
-			if ((pDrawingPed->flags & 0x4000U) == 0)
-				width = MainPed[bone].cWidth + 3;
-			else
-				width = MainPed[bone].cWidth + 8;
-		}
-		else
-		{
+		if (pDrawingPed->flags & 0x8000)
 			width = MainPed[bone].cWidth - 3;
-		}
+		else if (pDrawingPed->flags & 0x4000)
+			width = MainPed[bone].cWidth + 8;
+		else
+			width = MainPed[bone].cWidth + 3;
 	}
 	else
 	{
 		width = MainPed[bone].cWidth;
 	}
 
-	iVar5 = FIXEDH(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2] * 2 * (width & 0x3f));
-	iVar7 = FIXEDH(iVar13 * rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 2 * (width & 0x3f));
+	x = v1[0] - v2[0];
+	y = v1[1] - v2[1];
 
-	bVar3 = MainPed[bone].cAdj & 0xf;
-	iVar9 = y >> bVar3;
-	iVar8 = x >> bVar3;
+	angle = ratan2(y, x);
+	
+	cs = FIXEDH(z2 * rcossin_tbl[(-angle & 0xfffU) * 2] * (width & 0x3f) * 2);
+	sn = FIXEDH(z2 * rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * (width & 0x3f) * 2);
+
+	tmp = MainPed[bone].cAdj & 0xf;
+
+	dx2 = x >> tmp;
+	dy2 = y >> tmp;
 
 	if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
 	{
-		y = -y >> 3;
-		x = -x >> 3;
+		dx1 = -x >> 3;
+		dy1 = -y >> 3;
 	}
 	else
 	{
-		uVar4 = MainPed[bone].cAdj >> 4;
-		y = y >> uVar4;
-		x = x >> uVar4;
+		tmp2 = MainPed[bone].cAdj >> 4;
+		
+		dx1 = x >>tmp2;
+		dy1 = y >> tmp2;
 	}
 
 	prims = (POLY_FT4*)current->primptr;
@@ -655,17 +652,17 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 	current->primptr += sizeof(POLY_FT4);
 
-	prims->x0 = v1[0] + FIXEDH(iVar5) + iVar8;
-	prims->y0 = v1[1] + FIXEDH(iVar7) + iVar9;
+	prims->x0 = v1[0] + FIXEDH(cs) + dx2;
+	prims->y0 = v1[1] + FIXEDH(sn) + dy2;
 
-	prims->x1 = v1[0] - FIXEDH(iVar5) + iVar8;
-	prims->y1 = v1[1] - FIXEDH(iVar7) + iVar9;
+	prims->x1 = v1[0] - FIXEDH(cs) + dx2;
+	prims->y1 = v1[1] - FIXEDH(sn) + dy2;
 
-	prims->x2 = v2[0] + FIXEDH(iVar5) - x;
-	prims->y2 = v2[1] + FIXEDH(iVar7) - y;
+	prims->x2 = v2[0] + FIXEDH(cs) - dx1;
+	prims->y2 = v2[1] + FIXEDH(sn) - dy1;
 
-	prims->x3 = v2[0] - FIXEDH(iVar5) - x;
-	prims->y3 = v2[1] - FIXEDH(iVar7) - y;
+	prims->x3 = v2[0] - FIXEDH(cs) - dx1;
+	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
 #ifdef PGXP
 	uint index = 7; // PGXP_GetIndex();
@@ -674,50 +671,70 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), index);
 	PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), index);
 
-	x = (vdata1.px - vdata2.px) * 10.0f;
-	y = (vdata1.py - vdata2.py) * 10.0f;
-
-	lVar2 = ratan2(y, x);
-
-	iVar9 = y >> bVar3;
-	iVar8 = x >> bVar3;
-
-	if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
 	{
-		y = -y >> 3;
-		x = -x >> 3;
-	}
-	else
-	{
-		uVar4 = MainPed[bone].cAdj >> 4;
-		y = y >> uVar4;
-		x = x >> uVar4;
-	}
+		float len;
+		
+		x = v1[0] - v2[0];
+		y = v1[1] - v2[1];
 
-	iVar5 = (rcossin_tbl[(-lVar2 & 0xfffU) * 2] * 2 * (width & 0x3f));
-	iVar7 = (rcossin_tbl[(-lVar2 & 0xfffU) * 2 + 1] * 2 * (width & 0x3f));
+		// compute normalization lengths
+		len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
+
+		angle = ratan2(y, x);
+
+		if(bone == JOINT_1)
+		{
+			width = MainPed[bone].cWidth * 12 >> 3;
+		}
+
+		sn = rcossin_tbl[(-angle & 0xfffU) * 2] * (width & 0x3f) * 2;
+		cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * (width & 0x3f) * 2;
+
+		tmp = MainPed[bone].cAdj & 0xf;
+		
+		dx2 = sn >> tmp;
+		dy2 = cs >> tmp;
+
+		if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
+		{
+			dx1 = -sn >> 3;
+			dy1 = -cs >> 3;
+		}
+		else
+		{
+			tmp2 = MainPed[bone].cAdj >> 4;
+
+			dx1 = sn >> tmp2;
+			dy1 = cs >> tmp2;
+		}
+
+		dx1 = FIXED(dx1);
+		dx2 = FIXED(dx2);
+		dy1 = FIXED(dy1);
+		dy2 = FIXED(dy2);
+	}
 
 	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
-		vdata1.px + (FIXEDH(iVar5) + iVar8) * 0.005f,
-		vdata1.py + (FIXEDH(iVar7) + iVar9) * 0.005f,
+		vdata1.px + (FIXEDH(sn) + dx2) * 0.005f,
+		vdata1.py + (FIXEDH(cs) + dy2) * 0.005f,
 		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
 	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
-		vdata1.px - (FIXEDH(iVar5) + iVar8) * 0.005f,
-		vdata1.py - (FIXEDH(iVar7) + iVar9) * 0.005f,
+		vdata1.px - (FIXEDH(sn) + dx2) * 0.005f,
+		vdata1.py - (FIXEDH(cs) + dy2) * 0.005f,
 		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
 	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
-		vdata2.px + (FIXEDH(iVar5) - x) * 0.005f,
-		vdata2.py + (FIXEDH(iVar7) - y) * 0.005f,
+		vdata2.px + (FIXEDH(sn) - dx1) * 0.005f,
+		vdata2.py + (FIXEDH(cs) - dy1) * 0.005f,
 		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 
 	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
-		vdata2.px - (FIXEDH(iVar5) - x) * 0.005f,
-		vdata2.py - (FIXEDH(iVar7) - y) * 0.005f,
+		vdata2.px - (FIXEDH(sn) - dx1) * 0.005f,
+		vdata2.py - (FIXEDH(cs) - dy1) * 0.005f,
 		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v1[0], v1[1]));
@@ -812,14 +829,12 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (bDoingShadow == 0)
 	{
 		x = sz + sy >> 4;
-		addPrim(current->ot + x + ((int)width >> 6), prims);
+		addPrim(current->ot + x + (width >> 6), prims);
 	}
 	else
 	{
 		addPrim(current->ot + 0x107f, prims);
 	}
-
-
 }
 
 
@@ -865,95 +880,83 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 void StoreVertexLists(void)
 {
-	short* psVar1;
-	BONE* pBVar2;
-	SVECTOR* pSVar3;
-	SVECTOR* local_a2_76;
-	SVECTOR* local_a2_308;
-	int iVar4;
-	MODEL* pMVar5;
-	MODEL* local_t0_256;
-	int iVar6;
-	int iVar7;
-	int iVar8;
+	BONE* pBone;
+	SVECTOR* destVerts;
+	SVECTOR* srcVerts;
+	MODEL* pModel;
+	int i,j,counter;
 
-	iVar7 = 0;
-	iVar8 = 0;
-	pBVar2 = Skel;
-	iVar6 = 21;
+	// store Tanner vertices
+	counter = 0;
+	for (i = 0; i < 23; i++)
+	{
+		pBone = &Skel[i];
 
-	do {
-		iVar4 = 0;
-
-		if (pBVar2->pModel == NULL)
+		if (pBone->pModel == NULL)
 		{
-			cTannerVNumbers[pBVar2->id] = -1;
+			cTannerVNumbers[i] = -1;
+			continue;
 		}
-		else if (*pBVar2->pModel != NULL)
+
+		pModel = *pBone->pModel;
+
+		if (pModel == NULL)
 		{
-			pMVar5 = *pBVar2->pModel;
-			local_a2_76 = (SVECTOR*)pMVar5->vertices;
-			cTannerVNumbers[pBVar2->id] = iVar8;
-
-			if (pMVar5->num_vertices != 0)
-			{
-				pSVar3 = vTannerList + iVar7;
-				do {
-					iVar8++;
-					iVar4++;
-					iVar7++;
-
-					pSVar3->vx = local_a2_76->vx;
-					pSVar3->vy = local_a2_76->vy;
-					pSVar3->vz = local_a2_76->vz;
-
-					local_a2_76++;
-					pSVar3++;
-				} while (iVar4 < pMVar5->num_vertices);
-			}
+			cTannerVNumbers[i] = -1;
+			continue;
 		}
-		pBVar2 = pBVar2 + 1;
-		iVar6 = iVar6 + -1;
-	} while (-1 < iVar6);
+		
+		// store start index
+		cTannerVNumbers[i] = counter;
 
-	iVar4 = 0;
-	iVar8 = 0;
-	iVar7 = 0;
-	iVar6 = 0;
+		destVerts = &vTannerList[counter];
+		srcVerts = (SVECTOR*)pModel->vertices;
 
-	do {
-		local_t0_256 = pmJerichoModels[iVar7];
-
-
-		if (local_t0_256 != NULL)
+		for (j = 0; j < pModel->num_vertices; j++)
 		{
-			local_a2_308 = (SVECTOR*)local_t0_256->vertices;
-			cJerichoVNumbers[iVar7] = iVar4;
-			iVar6 = 0;
+			destVerts->vx = srcVerts->vx;
+			destVerts->vy = srcVerts->vy;
+			destVerts->vz = srcVerts->vz;
 
-			if (local_t0_256->num_vertices != 0)
-			{
-				pSVar3 = vJerichoList + iVar8;
-				do {
-					iVar4++;
-					iVar6++;
-					iVar8++;
-
-					pSVar3->vx = local_a2_308->vx;
-					pSVar3->vy = local_a2_308->vy;
-					pSVar3->vz = local_a2_308->vz;
-
-					local_a2_308++;
-					pSVar3++;
-				} while (iVar6 < local_t0_256->num_vertices);
-			}
+			srcVerts++;
+			destVerts++;
+			counter++;
 		}
-		iVar7++;
+	}
 
-	} while (iVar7 < 6);
+	// Store Jericho vertices
+	counter = 0;
+	for (i = 0; i < 6; i++)
+	{
+		pModel = pmJerichoModels[i];
+
+		if (pModel == NULL)
+		{
+			cJerichoVNumbers[i] = -1;
+			continue;
+		}
+
+		srcVerts = (SVECTOR*)pModel->vertices;
+
+		// store start index
+		cJerichoVNumbers[i] = counter;
+
+		destVerts = &vJerichoList[counter];
+
+		for (j = 0; j < pModel->num_vertices; j++)
+		{
+			destVerts->vx = srcVerts->vx;
+			destVerts->vy = srcVerts->vy;
+			destVerts->vz = srcVerts->vz;
+
+			srcVerts++;
+			destVerts++;
+			counter++;
+		}
+	}
 
 	vStored = 1;
 }
