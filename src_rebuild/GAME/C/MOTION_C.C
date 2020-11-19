@@ -15,6 +15,7 @@
 #include "MAIN.H"
 
 #include "CARS.H"
+#include "CONVERT.H"
 
 #include "INLINE_C.H"
 
@@ -377,13 +378,13 @@ MODEL* gPed2HeadModelPtr;
 MODEL* gPed3HeadModelPtr;
 MODEL* gPed4HeadModelPtr;
 
-char* MotionCaptureData[24];	// [A] actually, pointers
+char* MotionCaptureData[MAX_MOTION_CAPTURE];	// [A] actually, pointers
 int ThisMotion;
 
-int cTannerVNumbers[24];
+u_char cTannerVNumbers[24];
 SVECTOR vTannerList[210];
 
-int cJerichoVNumbers[7];
+u_char cJerichoVNumbers[7];
 SVECTOR vJerichoList[102];
 
 int vStored = 0;
@@ -406,10 +407,10 @@ int vStored = 0;
 		// Start line: 5202
 	/* end block 3 */
 	// End Line: 5203
-// [D]
+// [D] [T]
 void ProcessMotionLump(char* lump_ptr, int lump_size)
 {
-	if (ThisMotion < 24)
+	if (ThisMotion < MAX_MOTION_CAPTURE)
 	{
 		int size = (lump_size + 3) & ~3;
 
@@ -439,7 +440,7 @@ void ProcessMotionLump(char* lump_ptr, int lump_size)
 	/* end block 2 */
 	// End Line: 5390
 
-// [D]
+// [D] [T]
 void SetupPedMotionData(PEDESTRIAN* pPed)
 {
 	pPed->motion = MotionCaptureData[pPed->type];
@@ -471,7 +472,7 @@ void SetupPedMotionData(PEDESTRIAN* pPed)
 	/* end block 4 */
 	// End Line: 6513
 
-// [D]
+// [D] [T]
 void SetupPedestrian(PEDESTRIAN* pedptr)
 {
 	pedptr->velocity.vy = 10;
@@ -1009,7 +1010,7 @@ int bodyShiftEnabled = 1;
 int bodyShiftValue = BODY_OFFSET;
 int torsoShiftValue = TORSO_OFFSET;
 
-// [D]
+// [D] [T]
 void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 {
 	int i;
@@ -1295,7 +1296,7 @@ void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 
 int bAllreadyRotated = 0;
 
-// [D]
+// [D] [T]
 void newShowTanner(PEDESTRIAN* pDrawingPed)
 {
 	int i, j;
@@ -1409,7 +1410,7 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 				{
 					MODEL* model = *pBone->pModel;
 
-					int bias = 8;
+					int bias = 2;
 
 					if (id == JOINT_1)
 						bias = 1;
@@ -1524,7 +1525,7 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 	/* end block 3 */
 	// End Line: 4473
 
-// [D]
+// [D] [T]
 SVECTOR* GetModelVertPtr(PEDESTRIAN* pDrawingPed, int boneId, int modelType)
 {
 	int startVertex;
@@ -2148,7 +2149,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	/* end block 2 */
 	// End Line: 7525
 
-// [D]
+// [D] [T]
 void SetSkelModelPointers(int type)
 {
 	if (type == OTHER_MODEL)
@@ -2226,7 +2227,7 @@ void SetSkelModelPointers(int type)
 
 int iCurrBone = 0;
 
-// [D]
+// [D] [T]
 void DrawTanner(PEDESTRIAN* pPed)
 {
 	int iVar1;
@@ -2326,13 +2327,12 @@ void DrawTanner(PEDESTRIAN* pPed)
 	/* end block 3 */
 	// End Line: 5345
 
-// [D]
+// [D] [T]
 int DrawCharacter(PEDESTRIAN* pPed)
 {
-	int iVar1;
-	uint uVar2;
-	ushort size;
-	uint uVar8;
+	int fr;
+	short size;
+	int phase;
 
 	CVECTOR cV;
 	VECTOR v;
@@ -2344,7 +2344,6 @@ int DrawCharacter(PEDESTRIAN* pPed)
 
 	newRotateBones(pPed, &Skel[LOWERBACK]);
 
-	// [A] I don't know but it works
 	gte_SetRotMatrix(&inv_camera_matrix);
 
 	iCurrBone = 0;
@@ -2360,16 +2359,12 @@ int DrawCharacter(PEDESTRIAN* pPed)
 
 		if (gTimeOfDay == 3)
 		{
-			cV.b = 12;
-			cV.g = 12;
-			cV.r = 12;
+			cV.b = cV.g = cV.r = 12;
 			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, pPed->dir.vy);
 		}
 		else
 		{
-			cV.b = 32;
-			cV.g = 32;
-			cV.r = 32;
+			cV.b = cV.g = cV.r = 32;
 			TannerShadow(pPed, &v, sun_position + GameLevel, &cV, pPed->dir.vy);
 		}
 
@@ -2381,21 +2376,21 @@ int DrawCharacter(PEDESTRIAN* pPed)
 		pos.vy = pPed->position.vy;
 		pos.vz = pPed->position.vz;
 
-		uVar2 = pPed->frame1 & 7;
-		uVar8 = uVar2 * 2;
+		fr = pPed->frame1 & 7;
+		phase = fr * 2;
 
-		cv.b = 40;
-		cv.g = 40;
-		cv.r = 40;
-		pos.vx = pos.vx - camera_position.vx;
-		pos.vy = (0x1e - MapHeight(&pos)) - camera_position.vy;
-		pos.vz = pos.vz - camera_position.vz;
+		pos.vy = (30 - MapHeight(&pos)) - camera_position.vy;
 
-		if (uVar8 < 8)
-			size = uVar8 | 0x50;
+		pos.vx -= camera_position.vx;
+		pos.vz -= camera_position.vz;
+
+		if (phase < 8)
+			size = phase + 80;
 		else
-			size = uVar2 * -2 + 0x60;
+			size = -phase + 96;
 
+		cv.b = cv.g = cv.r = 40;
+		
 		RoundShadow(&pos, &cv, size);
 	}
 
@@ -2441,87 +2436,56 @@ int DrawCharacter(PEDESTRIAN* pPed)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 POLY_FT4 ft4TannerShadow[2];
+TILE tileTannerClear[2];
 extern TEXTURE_DETAILS tannerShadow_texture;
 RECT16 rectTannerWindow;
-TILE tileTannerClear[2];
 
-// [D]
+// [D] [T]
 void InitTannerShadow(void)
 {
-	ushort uVar1;
-	ushort uVar2;
-	unsigned char uVar3;
 	unsigned char brightness;
 	TILE* tile;
 	POLY_FT4* poly;
 	int i;
-	uint uVar5;
-	unsigned char uVar6;
-	unsigned char uVar7;
-	unsigned char uVar8;
-
 	if (gTimeOfDay == 3)
 		brightness = 12;
 	else
 		brightness = 32;
 
 	poly = ft4TannerShadow;
-	i = 1;
+	tile = tileTannerClear;
+	
+	rectTannerWindow.w = 64;
+	rectTannerWindow.h = 128;
+	rectTannerWindow.x = tpagepos[nperms + 1].x;
+	rectTannerWindow.y = tpagepos[nperms + 1].y + 128;
 
-	uVar3 = tannerShadow_texture.coords.u0;
-	uVar8 = tannerShadow_texture.coords.u0 + 63;
-	uVar7 = tannerShadow_texture.coords.v0 + 127;
-	uVar6 = tannerShadow_texture.coords.v0 + 32;
-
-	uVar1 = tpagepos[nperms + 1].x;
-	uVar5 = (uint)(ushort)tpagepos[nperms + 1].y + 128;
-	uVar2 = (ushort)uVar5;
-
-	do {
-
-		rectTannerWindow.w = 64;
-		rectTannerWindow.h = 128;
-		rectTannerWindow.x = uVar1;
-		rectTannerWindow.y = uVar2;
-
-		poly->u0 = uVar8;
-		poly->v0 = uVar6;
-		poly->u1 = uVar3;
-		poly->v1 = uVar6;
-		poly->u2 = uVar8;
-		poly->v2 = uVar7;
-		poly->u3 = uVar3;
-		poly->v3 = uVar7;
-
-		poly->tpage = (short)(uVar2 & 0x100) >> 4 | (ushort)(((uint)uVar1 & 0x3ff) >> 6) | 0x100 | (ushort)((uVar5 & 0x200) << 2);
+	for (i = 0; i < 2; i++)
+	{
+		poly->u0 = poly->u2 = tannerShadow_texture.coords.u0 + 63;
+		poly->v0 = poly->v1 = tannerShadow_texture.coords.v0 + 32;
+		poly->u1 = poly->u3 = tannerShadow_texture.coords.u0;
+		poly->v2 = poly->v3 = tannerShadow_texture.coords.v0 + 127;
+		
+		poly->tpage = getTPage(2, 0, rectTannerWindow.x, rectTannerWindow.y);
 
 		setPolyFT4(poly);
 		setSemiTrans(poly, 1);
 
-		poly->r0 = brightness;
-		poly->g0 = brightness;
-		poly->b0 = brightness;
-
+		poly->r0 = poly->g0 = poly->b0 = brightness;
 		poly++;
-		i--;
-	} while (-1 < i);
-
-	tile = tileTannerClear;
-	i = 1;
-	do {
 
 		setTile(tile);
 
 		tile->x0 = 0;
 		tile->y0 = 0;
-		tile->w = 0x40;
-		tile->h = 0x80;
+		tile->w = 64;
+		tile->h = 128;
 		tile->r0 = 0;
 		tile->g0 = 0;
 		tile->b0 = 0;
-		i--;
 		tile++;
-	} while (-1 < i);
+	}
 }
 
 
@@ -2573,27 +2537,27 @@ void InitTannerShadow(void)
 
 /* WARNING: Could not reconcile some variable overlaps */
 
-// [D]
+// [D] [T]
 void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, CVECTOR* col, short angle)
 {
-	char cVar9;
+	char old_tr;
 	DR_ENV* dr_env;
 	SVECTOR vert[4];
 	VECTOR d;
 	DRAWENV drEnv;
 	VECTOR cp;
 	SVECTOR ca;
-	VECTOR v1;
 	VECTOR myVector;
 	int z0;
 	int z1;
 	int z2;
 	int z3;
-	SVECTOR* local_2c;
-	static int Tangle = 0;
+	
 	int i;
 	int cn, sn;
 	int vx, vz;
+
+	int Tangle;
 
 	// [A] not supported by emulator
 	// proposed change: double buffering of VRAM (one used as render target, second as texture)
@@ -2636,8 +2600,8 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 		vx = vert[i].vx;
 		vz = vert[i].vz;
 
-		vert[i].vx = (vx * cn >> 0xc) - (vz * sn >> 0xc);
-		vert[i].vz = (vx * sn >> 0xc) + (vz * cn >> 0xc);
+		vert[i].vx = FIXED(vx * cn) - FIXED(vz * sn);
+		vert[i].vz = FIXED(vx * sn) + FIXED(vz * cn);
 
 		vert[i].vx += pPedPos->vx;
 		vert[i].vy += pPedPos->vy;
@@ -2712,13 +2676,13 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	player[0].cameraPos.vz = camera_position.vz;
 
 	SetBasePos(&myVector);
-	cVar9 = tracking_car;
+	old_tr = tracking_car;
 
 	gte_SetGeomOffset(32, 128);
 
 	tracking_car = 1;
 	PlaceCameraAtLocation(&player[0], 0);
-	tracking_car = cVar9;
+	tracking_car = old_tr;
 
 	newShowTanner(pDrawingPed);
 
@@ -2823,7 +2787,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 extern _pct plotContext;
 
-// [A]
+// [A] - totally custom function but it works pretty much same as original
 void DoCivHead(PEDESTRIAN* pPed, SVECTOR* vert1, SVECTOR* vert2)
 {
 	SVECTOR spos;
