@@ -3316,7 +3316,7 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 	if (chicagoDoor[2].model == -1)
 		return;
 
-	RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
+	RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, PLOT_NO_CULL, 1, 0);
 
 	if (chicagoDoor[2].model != -1)
 		RenderModel(modelpointers[chicagoDoor[2].initialRotation], NULL, NULL, 0, 0, 1, 0);
@@ -3325,7 +3325,7 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 	matrix->m[1][0] = -matrix->m[1][0];
 	matrix->m[2][0] = -matrix->m[2][0];
 
-	RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, 4, 1, 0);
+	RenderModel(modelpointers[chicagoDoor[2].model], matrix, pos, 0, PLOT_NO_CULL, 1, 0);
 
 	if (chicagoDoor[2].minSpeed == -1)
 		return;
@@ -3904,7 +3904,7 @@ void DrawEvents(int camera)
 
 									SetupPlaneColours(0x00464a40);
 
-									RenderModel(modelpointers[ev->model], &matrix, &pos, 400, 2, 1, ev->rotation >> 6);
+									RenderModel(modelpointers[ev->model], &matrix, &pos, 400, PLOT_INV_CULL, 1, ev->rotation >> 6);
 								}
 								else
 								{
