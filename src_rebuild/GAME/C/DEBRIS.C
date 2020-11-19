@@ -4045,7 +4045,7 @@ void DisplayDebris(DEBRIS *debris, char type)
 
 	if (debrisvec.vx >= -10000 && debrisvec.vz >= -10000 && 10000 >= debrisvec.vx && 10000 >= debrisvec.vz)
 	{
-		tv = debris_rot_table[debris->type] + (debris->pos >> 3 & 0x1fU);
+		tv = debris_rot_table[type] + (debris->pos >> 3 & 0x1fU);
 
 		v[0].vx = tv->v0.vx + debrisvec.vx;
 		v[0].vy = tv->v0.vy + debrisvec.vy;
@@ -4062,7 +4062,7 @@ void DisplayDebris(DEBRIS *debris, char type)
 		gte_ldv3(&v[0], &v[1], &v[2]);
 		gte_rtpt();
 
-		if ((uint)type - 1 < 2) 
+		if (type - 1U < 2) 
 		{
 			poly1 = (POLY_GT4 *)current->primptr;
 
