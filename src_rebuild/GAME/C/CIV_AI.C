@@ -18,7 +18,6 @@
 #include "GAMESND.H"
 #include "SOUND.H"
 #include "BCOLLIDE.H"
-#include "GLAUNCH.H"
 #include "LEADAI.H"
 #include "MAIN.H"
 #include "PEDEST.H"
@@ -26,6 +25,7 @@
 
 #include "INLINE_C.H"
 #include "OVERLAY.H"
+#include "STRINGS.H"
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
