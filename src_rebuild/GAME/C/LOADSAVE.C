@@ -17,6 +17,7 @@
 #include "PAUSE.H"
 
 #ifndef PSX
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <PLATFORM.H>

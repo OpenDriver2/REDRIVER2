@@ -1,6 +1,7 @@
 #include "DRIVER2.H"
 
 #ifndef PSX
+#include <stdint.h>
 #include <SDL.h>
 #endif // !PSX
 

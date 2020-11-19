@@ -1,12 +1,14 @@
 #include "DRIVER2.H"
 
 #ifndef PSX
+#include <stdint.h>
 #include <SDL.h>
 #endif // !PSX
 
 #include "LIBETC.H"
 
 #include "SYSTEM.H"
+#include "PLATFORM.H"
 #include "XAPLAY.H"
 #include "LOADVIEW.H"
 #include "MISSION.H"

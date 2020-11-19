@@ -29,6 +29,7 @@
 #include <string.h>
 
 #ifndef PSX
+#include <stdint.h>
 #include <SDL.h>
 #endif // PSX
 

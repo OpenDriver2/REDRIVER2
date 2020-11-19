@@ -25,6 +25,7 @@
 #include "SKY.H"
 #include "DEBRIS.H"
 
+#include <stdint.h>
 #include <math.h>
 
 #include "FELONY.H"

@@ -4729,8 +4729,8 @@ int GameNameScreen(int bSetup)
 		else
 			offset = (GameType - 4U) * 8;
 
-		strcpy_s(pCurrScreen->buttons[0].Name, GAMEMODE_AREA_NAME(GameLevel, offset, 0));
-		strcpy_s(pCurrScreen->buttons[1].Name, GAMEMODE_AREA_NAME(GameLevel, offset, 1));
+		strcpy(pCurrScreen->buttons[0].Name, GAMEMODE_AREA_NAME(GameLevel, offset, 0));
+		strcpy(pCurrScreen->buttons[1].Name, GAMEMODE_AREA_NAME(GameLevel, offset, 1));
 	}
 
 	return 0;
