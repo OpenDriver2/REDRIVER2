@@ -1,4 +1,4 @@
-version: 5.0.{build}
+version: 5.3.{build}
 
 branches:
   only:
@@ -7,64 +7,44 @@ branches:
   
 skip_tags: true
 
-image: Visual Studio 2019
-
-configuration:
-- Debug
-- Release
-- 'Release Dev'
-
-clone_folder: 'c:\projects\REDRIVER2'
-#lib_folder: %clone_folder%\EXTERNAL
+image:
+- Visual Studio 2019
+- Ubuntu
 
 environment:
-  data_folder: 'c:\projects\REDRIVER2\data'
-  project_folder: 'c:\projects\REDRIVER2\src_rebuild'
-  dependency_folder: '%project_folder%\dependencies'
+  data_folder: '%APPVEYOR_BUILD_FOLDER%\data'
+  project_folder: '%APPVEYOR_BUILD_FOLDER%\\src_rebuild'
+  dependency_folder: '%APPVEYOR_BUILD_FOLDER%\dependencies'
+  # Dependency URLs
+  windows_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip'
+  windows_jpeg_url: 'http://www.ijg.org/files/jpegsr9d.zip'
+  windows_openal_url: 'https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip'
+  windows_sdl2_url: 'https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip'
+  linux_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz'
+  # Dependency Directories
+  windows_jpeg_dir: '%dependency_folder%\jpeg-9d'
+  windows_openal_dir: '%dependency_folder%\openal-soft-1.20.1-bin'
+  windows_sdl2_dir: '%dependency_folder%\SDL2-2.0.12'
 
 
-build:
-  project: c:\projects\REDRIVER2\src_rebuild\REDRIVER2.sln
-  verbosity: minimal
+install:
+  - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\Install.bat'
+  - sh: '${APPVEYOR_BUILD_FOLDER}/.appveyor/Install.sh'
+
+build_script:
+  - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\Build.bat'
+  - sh: '${APPVEYOR_BUILD_FOLDER}/.appveyor/Build.sh'
+
+after_build:
+  - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\AfterBuild.bat'
+  - sh: '${APPVEYOR_BUILD_FOLDER}/.appveyor/AfterBuild.sh'
 
 cache:
-  - '%project_folder%\obj\%configuration%\'
-  
-platform:
-  - Win32
-  #- x64
-  
-install:
-  - set SDL2_URL="https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip"
-  - appveyor DownloadFile %SDL2_URL% -FileName SDL2.zip
-  - 7z x SDL2.zip -o%dependency_folder%
-  - set OPENAL_URL="https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip"
-  - appveyor DownloadFile %OPENAL_URL% -FileName OPENAL.zip
-  - 7z x OPENAL.zip -o%dependency_folder%
-  - set JPEG_URL="http://www.ijg.org/files/jpegsr9d.zip"
-  - appveyor DownloadFile %JPEG_URL% -FileName JPEG.zip
-  - 7z x JPEG.zip -o%dependency_folder%
-  - set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip"
-  - appveyor DownloadFile %PREMAKE_URL% -FileName premake5.zip
-  - 7z x premake5.zip -o%project_folder%
-  - set SDL2_DIR=%dependency_folder%\SDL2-2.0.12
-  - set OPENAL_DIR=%dependency_folder%\openal-soft-1.20.1-bin
-  - set JPEG_DIR=%dependency_folder%\jpeg-9d
-
-before_build:
-  - cmd: cd %project_folder%
-  - cmd: premake5 vs2019
-  - cmd: ren "%JPEG_DIR%\jconfig.vc" "jconfig.h"
+  - 'src_rebuild\obj\'
   
 artifacts:
-   - path: src_rebuild\bin\%configuration%\*.zip
-     name: Binaries
-  
-after_build:
-  - cmd: cd %project_folder%\bin\%configuration%
-  - cmd: copy %SDL2_DIR%\lib\x86\SDL2.dll SDL2.dll /Y
-  - cmd: copy %OPENAL_DIR%\bin\Win32\soft_oal.dll OpenAL32.dll /Y
-  - cmd: xcopy /e /v %data_folder% .\ /Y
-  - 7z a "REDRIVER2_%configuration%.zip" ".\*"
-  
-#build: off
+  - path: src_rebuild\bin\*\*.zip
+    name: Windows Binaries
+
+  - path: src_rebuild\bin\*\*.tar.gz
+    name: Linux Binaries

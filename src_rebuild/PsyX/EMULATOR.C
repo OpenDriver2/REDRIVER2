@@ -235,8 +235,8 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #elif defined(OGL)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #endif
 
 #if defined(OGL) || defined(OGLES)
@@ -272,9 +272,19 @@ static int Emulator_InitialiseGLExt()
 	GLenum err = gladLoadGL();
 
 	if (err == 0)
-	{
 		return FALSE;
-	}
+
+	const char* rend = (const char *) glGetString(GL_RENDERER);
+	const char* vendor = (const char *) glGetString(GL_VENDOR);
+	eprintf("*Video adapter: %s by %s\n", rend, vendor);
+
+	const char* versionStr = (const char *) glGetString(GL_VERSION);
+	eprintf("*OpenGL version: %s\n", versionStr);
+
+	const char* glslVersionStr = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+	eprintf("*GLSL version: %s\n", glslVersionStr);
+	
+	
 #endif
 	return TRUE;
 }

@@ -1434,10 +1434,15 @@ void DrawAllPedestrians(void)
 		if (PositionVisible((VECTOR*)&pPed->position) &&
 			FrustrumCheck((VECTOR*)&pPed->position, 60) != -1)
 		{
-			if (pPed->pedType <= OTHER_MODEL)
+			if (pPed->pedType == TANNER_MODEL)
 			{
 				if (!bKillTanner)
 					DrawTanner(pPed);
+			}
+			else if (pPed->pedType == OTHER_MODEL)
+			{
+				if (!bKillTanner)
+					DrawCharacter(pPed);
 			}
 			else if (pPed->pedType == OTHER_SPRITE)
 			{

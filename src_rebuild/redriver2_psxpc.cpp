@@ -4,19 +4,18 @@
 #include "DRIVER2.H"
 #include "C/MAIN.H"
 #include "C/SYSTEM.H"
-#include "C/GLAUNCH.H"
-#include "C/PLAYERS.H"
 #include "C/GAMESND.H"
 
 #include "EMULATOR.H"
 #include "EMULATOR_PRIVATE.H"
 #include "utils/ini.h"
 
-#include <stdlib.h>
 #include <SDL_scancode.h>
 
 #include "C/CUTSCENE.H"
+#include "C/GLAUNCH.H"
 #include "C/OVERLAY.H"
+#include "C/PLAYERS.H"
 
 
 // eq engine console output

@@ -13,6 +13,7 @@
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
+#include "PLATFORM.H"
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()
@@ -164,15 +165,15 @@ void SetupMovieRectangle(int image_w, int image_h)
 	const float video_aspect = float(image_w) / float(image_h);
 	const float psx_aspect = (psxScreenH / psxScreenW);
 	
-	const float image_to_screen_w = float(psxScreenW) / float(windowWidth) * psx_aspect;
-	const float image_to_screen_h = float(psxScreenH) / float(windowHeight) * psx_aspect;
+	const float image_to_screen_w = float(psxScreenW) / float(windowWidth);// * psx_aspect;
+	const float image_to_screen_h = float(psxScreenH) / float(windowHeight);// * psx_aspect;
 
-	const float image_scale = float(windowWidth) / psxScreenW * video_aspect;
+	const float image_scale = float(windowHeight) / psxScreenH * video_aspect;
 	
 	float clipRectX = 0;
 	float clipRectY = 0;
-	float clipRectW = image_to_screen_w * image_scale * 2.0f;
-	float clipRectH = image_to_screen_h * image_scale * 2.0f;
+	float clipRectW = image_to_screen_w * image_scale;
+	float clipRectH = image_to_screen_h * image_scale;
 
 	clipRectX -= clipRectW * 0.5f;
 	clipRectY -= clipRectH * 0.5f;
@@ -463,7 +464,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		fd /= 10;
 
 	char filename[250];
-	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
+	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].avi", gDataFolder, fd, arg->render);
+	FixPathSlashes(filename);
 
 	ReadAVI readAVI(filename);
 	
@@ -471,6 +473,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	if (subtitles)
 	{
 		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
+		FixPathSlashes(filename);
+	
 		InitSubtitles(filename);
 	}
 	else
@@ -481,6 +485,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	if(arg->credits)
 	{
 		sprintf(filename, "%sDATA\\CREDITS.ENG", gDataFolder);
+		FixPathSlashes(filename);
+	
 		InitCredits(filename);
 	}
 
@@ -489,7 +495,8 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	ReadAVI::stream_format_t stream_format = readAVI.GetVideoFormat();
 	ReadAVI::stream_format_auds_t audio_format = readAVI.GetAudioFormat();
 
-	if (strcmp(stream_format.compression_type, "MJPG")) {
+	if (strcmp(stream_format.compression_type, "MJPG")) 
+	{
 		printf("Only MJPG supported\n");
 		return;
 	}
@@ -639,7 +646,6 @@ int FMV_main(RENDER_ARGS* args)
 	DRAWENV draw;
 
 	FMVPlayerInitGL();
-	//LoadFont(NULL);
 
 	InitFMVFont();
 

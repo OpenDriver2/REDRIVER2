@@ -1,5 +1,5 @@
 
--- Psy-X (Psy-Cross) layer
+-- Psy-Cross layer
 project "Psy-X"
     kind "StaticLib"
     language "C++"
@@ -62,5 +62,5 @@ project "Psy-X"
     filter "configurations:Release"
         optimize "Full"
 		
-	filter "configurations:Release Dev"
+	filter "configurations:Release_dev"
         optimize "Full"

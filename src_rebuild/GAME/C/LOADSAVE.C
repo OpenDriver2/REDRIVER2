@@ -8,18 +8,16 @@
 #include "SOUND.H"
 #include "PAD.H"
 #include "MISSION.H"
-#include "COP_AI.H"
 #include "SCORES.H"
 #include "LIBGPU.H"
 #include "LIBETC.H"
 #include "E3STUFF.H"
 #include "PRES.H"
 #include "PAUSE.H"
+#include "PLATFORM.H"
 
 #ifndef PSX
-#include <stdlib.h>
-
-#include <PLATFORM.H>
+#include <stdlib.h>		// getenv
 
 // [A]
 void ShowSavingWaitMessage(char *message, int height)
