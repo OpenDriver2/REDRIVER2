@@ -2499,13 +2499,14 @@ int PingOutAllSpecialCivCars(void)
 
 	lcp = car_data;
 
+	do
 	{
 		if (lcp->controlType == CONTROL_TYPE_CIV_AI && MissionHeader->residentModels[lcp->ap.model] > 4)
 			PingOutCar(lcp);
 
 		lcp++;
 	}
-	while (lcp < &car_data[MAX_CARS])
+	while (lcp < &car_data[MAX_CARS]);
 
 	return 1;
 }
