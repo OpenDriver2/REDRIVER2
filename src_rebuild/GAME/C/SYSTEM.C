@@ -792,6 +792,7 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 	strcpy(namebuffer, filename);
 	FixPathSlashes(namebuffer);
 
+
 	FILE* fp = fopen(namebuffer, "rb");
 
 	if (!fp)

@@ -13,6 +13,7 @@
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
+#include "PLATFORM.H"
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()

@@ -13,7 +13,9 @@
 #include <SDL_scancode.h>
 
 #include "C/CUTSCENE.H"
+#include "C/GLAUNCH.H"
 #include "C/OVERLAY.H"
+#include "C/PLAYERS.H"
 
 
 // eq engine console output

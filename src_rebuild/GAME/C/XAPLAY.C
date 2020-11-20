@@ -354,7 +354,7 @@ void PlayXA(int num, int index)
 	{
 		char fileName[250];
 		sprintf(fileName, XANameFormat, gDataFolder, num+1, index);
-		fixslashes(fileName);
+		FixPathSlashes(fileName);
 
 		g_wavData = new CSoundSource_WaveCache();
 
@@ -392,7 +392,7 @@ void PlayXA(int num, int index)
 #else
 			// Load subtitles for XA
 			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
-			fixslashes(fileName);
+			FixPathSlashes(fileName);
 
 			FILE* fp = fopen(fileName, "rb");
 
