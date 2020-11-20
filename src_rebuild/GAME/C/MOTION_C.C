@@ -60,7 +60,7 @@ LIMBS lRoutes[5][8] = {
 
 PED_DATA MainPed[NUM_BONES] =
 {
-	{ 0, 68u, &chest1_texture, CHEST_PAL },
+	{ 0, 68u, &chest1_texture, CHEST_PAL },   
 	{ 1, 68u, &chest1_texture, CHEST_PAL },
 	{ 17, 36u, &chest1_texture, CHEST_PAL },
 	{ 6, 68u, &forearm1_texture, ARM_PAL },
@@ -665,33 +665,27 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
 #ifdef PGXP
-	uint index = 7; // PGXP_GetIndex();
 
 	PGXPVData vdata1, vdata2;
-	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), index);
-	PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), index);
+	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
+	PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
 
 	{
 		float len;
 		
-		x = v1[0] - v2[0];
-		y = v1[1] - v2[1];
+		x = (v1[0] - v2[0]) * 4.0f;
+		y = (v1[1] - v2[1]) * 4.0f;
 
 		// compute normalization lengths
 		len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
 
 		angle = ratan2(y, x);
 
-		if(bone == JOINT_1)
-		{
-			width = MainPed[bone].cWidth * 12 >> 3;
-		}
-
-		sn = rcossin_tbl[(-angle & 0xfffU) * 2] * (width & 0x3f) * 2;
-		cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * (width & 0x3f) * 2;
+		sn = rcossin_tbl[(-angle & 0xfffU) * 2] * width;
+		cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * width;
 
 		tmp = MainPed[bone].cAdj & 0xf;
-		
+
 		dx2 = sn >> tmp;
 		dy2 = cs >> tmp;
 
@@ -710,39 +704,38 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 		dx1 = FIXED(dx1);
 		dx2 = FIXED(dx2);
-		dy1 = FIXED(dy1);
-		dy2 = FIXED(dy2);
+		dy1 = FIXED(dy1) + 2;
+		dy2 = FIXED(dy2) - 2;
+
+		if(bone == JOINT_1)
+		{
+			dx1 -= 5;
+			dy2 -= 10;
+		}
 	}
 
 	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
-		vdata1.px + (FIXEDH(sn) + dx2) * 0.005f,
-		vdata1.py + (FIXEDH(cs) + dy2) * 0.005f,
+		vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
+		vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
 		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
 	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
-		vdata1.px - (FIXEDH(sn) + dx2) * 0.005f,
-		vdata1.py - (FIXEDH(cs) + dy2) * 0.005f,
+		vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
+		vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
 		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
 	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
-		vdata2.px + (FIXEDH(sn) - dx1) * 0.005f,
-		vdata2.py + (FIXEDH(cs) - dy1) * 0.005f,
+		vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
+		vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
 		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 
 	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
-		vdata2.px - (FIXEDH(sn) - dx1) * 0.005f,
-		vdata2.py - (FIXEDH(cs) - dy1) * 0.005f,
+		vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
+		vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
 		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
-
-	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v1[0], v1[1]));
-	//PGXP_Invalidate(index, PGXP_LOOKUP_VALUE(v2[0], v2[1]));
-
-	SXYPAIR pa = { v1[0], v1[1] };
-	SXYPAIR pb = { v2[0], v2[1] };
-	CVECTOR col = { 128, 0, 0, 255 };
 
 	PGXP_EmitCacheData(v0data);
 	PGXP_EmitCacheData(v1data);
@@ -1639,29 +1632,13 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN* pDrawingPed, int boneId, int modelType)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-// [D] [A] it's fucked up... maybe
+// [D] [T]
 void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
 {
-	short* psVar1;
-	uint uVar4;
 	SVECTOR* pVerts;
 	MODEL* pModel;
-	int iVar6;
-	int iVar7;
-	SVECTOR* pSVar8;
-	ushort uVar9;
-	uint uVar10;
-	uint uVar11;
-	int iVar12;
-	int iVar13;
-	int iVar14;
-	int iVar15;
-	uint uVar16;
-	int iVar17;
-	short* psVar18;
 	MATRIX mStore[32];
-	VECTOR sv;
-	int i;
+	int i, j;
 
 	MATRIX _sMatrix;
 	MATRIX _pMatrix;
@@ -1675,38 +1652,14 @@ void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
 	_pMatrix.t[1] = Skel[0].pvOrigPos->vy;
 	_pMatrix.t[2] = Skel[0].pvOrigPos->vz;
 
-	// RotMatrix inline?
-	// TODO: pretty it
-	{
-		uVar11 = (int)(pDrawingPed->dir).vx & 0xfff;
-		uVar10 = (int)(pDrawingPed->dir).vy & 0xfff;
-		uVar4 = (int)(pDrawingPed->dir).vz & 0xfff;
+	// [A] it just happened to be bugged and weird implementation of YXZ rotation
+	// replaced with regular RotMatrixYXZ
+	SVECTOR r;
+	r.vx = pDrawingPed->dir.vx & 0xfff;
+	r.vy = pDrawingPed->dir.vy & 0xfff;
+	r.vz = pDrawingPed->dir.vz & 0xfff;
 
-		iVar6 = (int)rcossin_tbl[uVar10 * 2 + 1];
-		iVar17 = (int)rcossin_tbl[uVar4 * 2];
-		iVar15 = (int)rcossin_tbl[uVar4 * 2 + 1];
-		iVar14 = (int)rcossin_tbl[uVar11 * 2 + 1];
-		iVar12 = (int)rcossin_tbl[uVar11 * 2];
-		iVar13 = (int)rcossin_tbl[uVar10 * 2];
-
-		uVar10 = FIXEDH(iVar14 * iVar13) + FIXEDH(FIXEDH(iVar6 * iVar12) * iVar17);
-		uVar16 = FIXEDH(iVar6 * iVar15);
-		uVar9 = -FIXEDH(iVar15 * iVar12);
-		uVar11 = FIXEDH(iVar14 * iVar15);
-		iVar6 = FIXEDH(-iVar14 * FIXEDH(iVar6 * iVar17)) + FIXEDH(iVar12 * iVar13);
-
-		_pMatrix.m[0][0] = uVar16;
-		_pMatrix.m[0][1] = iVar6;
-		_pMatrix.m[0][2] = uVar10;
-
-		_pMatrix.m[1][0] = rcossin_tbl[uVar4 * 2];
-		_pMatrix.m[1][1] = uVar11;
-		_pMatrix.m[1][2] = uVar9;
-
-		_pMatrix.m[2][0] = -FIXEDH(iVar13 * iVar15);
-		_pMatrix.m[2][1] = FIXEDH(uVar10 * iVar17) - FIXEDH(uVar16 * uVar9);
-		_pMatrix.m[2][2] = FIXEDH(uVar16 * uVar11) - FIXEDH(iVar6 * iVar17);
-	}
+	RotMatrixYXZ(&r, &_pMatrix);
 
 	_svBone[0].vx = Skel[0].vOffset.vx;
 	_svBone[0].vy = Skel[0].vOffset.vy;
@@ -1714,9 +1667,9 @@ void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
 
 	mStore[0] = _pMatrix;
 
-	for (int i = 0; i < 5; i++)
+	for (i = 0; i < 5; i++)
 	{
-		for (int j = 1; j < 8; j++)
+		for (j = 1; j < 8; j++)
 		{
 			int id = lRoutes[i][j];
 
@@ -1891,105 +1844,64 @@ void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-// [D]
+// [D] [T]
 void DrawCiv(PEDESTRIAN* pPed)
 {
-	short* psVar1;
-	bool bVar2;
-	long lVar3;
-	int iVar8;
-	long lVar9;
 	SVECTOR* vert2;
-	int iVar10;
 	SVECTOR* vert1;
-	int iVar11;
-	int iVar12;
-	uint v1;
 	short size;
-	uint boneId;
-	int iVar13;
-	uint uVar14;
-	uint uVar15;
-	int iVar16;
-	uint uVar17;
-	uint uVar18;
-	int iVar19;
-	uint uVar20;
-	int iVar21;
-	SVECTOR* psrLerpData;
-	long* plVar22;
-	long* plVar23;
-	SVECTOR* pSVar24;
-
-	long* zbuff;
-	long* outlongs;
-	int* piVar25;
-	int iVar26;
+	int shift;
+	int boneId;
+	int frame;
+	int i, j;
+	uint phase;
 	SVECTOR pos;
 	VECTOR pos1;
-	SVECTOR temp1;
-	SVECTOR temp2;
+	SVECTOR rot;
 	MATRIX workmatrix;
 	CVECTOR cv;
 	VECTOR ppos;
-	int local_38;
-	CVECTOR* _cv;
-	VECTOR* _ppos;
+	int bHeadModel;
 
-	long LONG_ARRAY_1f800010[64];
-	long LONG_ARRAY_1f800210[64];
-	SVECTOR SVECTOR_ARRAY_1f800090[64];
+	long sxyList[40];
+	long szList[40];
+	SVECTOR srLerpData[40];
 
-	outlongs = LONG_ARRAY_1f800010;
-	zbuff = LONG_ARRAY_1f800210;
-	psrLerpData = SVECTOR_ARRAY_1f800090;
+	bHeadModel = 0;
 
-	local_38 = 0;
+	frame = pPed->frame1 / 2;
+
 	vert1 = (SVECTOR*)pPed->motion;
-	iVar26 = 0;
-	boneId = (uint)(pPed->frame1 >> 1);
-	vert2 = vert1 + boneId * 0x1e;
-	uVar15 = (uint)(*(char*)((int)&pPed->flags + 1) >> 7);	// [A] scale? height offset?
+	vert2 = vert1 + frame * 30;
 
-	if ((pPed->frame1 & 1U) == 0)
+	shift = (pPed->flags >> 15) & 0xFF; // HMMM?
+
+	if (pPed->frame1 & 1)
 	{
-		iVar13 = 30;
-		do {
-			psrLerpData->vx = vert2->vx;
-			psrLerpData->vy = (vert2->vy >> uVar15);
-			psrLerpData->vz = vert2->vz;
+		if (pPed->frame1 < 30)
+			vert1 += (frame + 1) * 30;
 
-			iVar13--;
-			psrLerpData++;
+		// interpolate between frames
+		for (i = 0; i < 31; i++)
+		{
+			srLerpData[i].vx = vert1->vx + vert2->vx >> 1;
+			srLerpData[i].vy = vert1->vy + vert2->vy >> shift + 1;
+			srLerpData[i].vz = vert1->vz + vert2->vz >> 1;
+
+			vert1++;
 			vert2++;
-		} while (0 < iVar13);
+		}
 	}
 	else
 	{
-		if (pPed->frame1 < 30)
-			vert1 += (boneId + 1) * 30;
+		for (i = 0; i < 31; i++)
+		{
+			srLerpData[i].vx = vert2->vx;
+			srLerpData[i].vy = vert2->vy >> shift;
+			srLerpData[i].vz = vert2->vz;
 
-		iVar13 = 30;
-		do {
-			// WTF?
-			temp1.vx = vert1->vx;
-			temp2.vx = vert2->vx;
-
-			temp1.vy = vert1->vy;
-			temp2.vy = vert2->vy;
-
-			temp1.vz = vert1->vz;
-			temp2.vz = vert2->vz;
-
-			psrLerpData->vx = (temp1.vx + temp2.vx >> 1);
-			psrLerpData->vy = (temp1.vy + temp2.vy >> uVar15 + 1);
-			psrLerpData->vz = (temp1.vz + temp2.vz >> 1);
-
-			iVar13--;
-			vert1++;
 			vert2++;
-			psrLerpData++;
-		} while (0 < iVar13);
+		}
 	}
 
 	pos.vx = pPed->position.vx - camera_position.vx;
@@ -1998,142 +1910,91 @@ void DrawCiv(PEDESTRIAN* pPed)
 
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_ldv0(&pos);
-	gte_rtv0(); // short vector transform
+	gte_rtv0();
 
 	gte_stlvnl(&pos1);
 	gte_SetTransVector(&pos1);
 
-	// RotMatrix inline?
-	// TODO: pretty it
-	{
-		int uVar11, uVar10, uVar4, iVar6, iVar14, iVar15, iVar17, uVar16, iVar7, uVar9;
+	// [A] it just happened to be bugged and weird implementation of YXZ rotation
+	// replaced with regular RotMatrixYXZ
+	rot.vx = pPed->dir.vx & 0xfff;
+	rot.vy = pPed->dir.vy & 0xfff;
+	rot.vz = pPed->dir.vz & 0xfff;
 
-		uVar11 = (int)(pPed->dir).vx & 0xfff;
-		uVar10 = (int)(pPed->dir).vy & 0xfff;
-		uVar4 = (int)(pPed->dir).vz & 0xfff;
-
-		iVar6 = (int)rcossin_tbl[uVar10 * 2 + 1];
-		iVar17 = (int)rcossin_tbl[uVar4 * 2];
-		iVar15 = (int)rcossin_tbl[uVar4 * 2 + 1];
-		iVar14 = (int)rcossin_tbl[uVar11 * 2 + 1];
-		iVar12 = (int)rcossin_tbl[uVar11 * 2];
-		iVar13 = (int)rcossin_tbl[uVar10 * 2];
-
-		uVar10 = FIXEDH(iVar14 * iVar13) + FIXEDH(FIXEDH(iVar6 * iVar12) * iVar17);
-		uVar16 = FIXEDH(iVar6 * iVar15);
-		iVar7 = uVar16;
-		uVar9 = -FIXEDH(iVar15 * iVar12);
-		uVar11 = FIXEDH(iVar14 * iVar15);
-		iVar6 = FIXEDH(-iVar14 * FIXEDH(iVar6 * iVar17)) + FIXEDH(iVar12 * iVar13);
-
-		workmatrix.m[0][0] = uVar16;
-		workmatrix.m[0][1] = iVar6;
-		workmatrix.m[0][2] = uVar10;
-
-		workmatrix.m[1][0] = rcossin_tbl[uVar4 * 2];
-		workmatrix.m[1][1] = uVar11;
-		workmatrix.m[1][2] = uVar9;
-
-		workmatrix.m[2][0] = -FIXEDH(iVar13 * iVar15);
-		workmatrix.m[2][1] = FIXEDH(uVar10 * iVar17) - FIXEDH(iVar7 * uVar9);
-		workmatrix.m[2][2] = FIXEDH(iVar7 * uVar11) - FIXEDH(iVar6 * iVar17);
-	}
-
+	RotMatrixYXZ(&rot, &workmatrix);
+	
 	gte_MulMatrix0(&inv_camera_matrix, &workmatrix, &workmatrix);
-
 	gte_SetRotMatrix(&workmatrix);
 
-	gte_ldv3(&SVECTOR_ARRAY_1f800090[0], &SVECTOR_ARRAY_1f800090[1], &SVECTOR_ARRAY_1f800090[2]);
-
+	gte_ldv3(&srLerpData[0], &srLerpData[1], &srLerpData[2]);
 	gte_rtpt();
-
 	gte_stsz(&gCurrentZ);
-	//gCurrentZ = getCopReg(2, 0x13);
 
-	LONG_ARRAY_1f800210[0] = gCurrentZ;
+	szList[0] = gCurrentZ;
 
-	if (gCurrentZ <= switch_detail_distance)
+	if (gCurrentZ > switch_detail_distance)
+		return;
+
+	// translate bones to screen and draw sprites
+	j = 0;
+	for (i = 0; i < 15; i++)
 	{
-		_cv = &cv;
-		piVar25 = boneIdvals;
-		lVar9 = 0;
-
-		plVar23 = LONG_ARRAY_1f800210;
-		plVar22 = LONG_ARRAY_1f800010;
-		vert2 = SVECTOR_ARRAY_1f800090;
-
-		iVar13 = 0xe;
-		do {
-			if (iVar26 < 30)
-			{
-				gte_stsxy3(&plVar22[0], &plVar22[1], &plVar22[2]);
-				gte_stsz3(&plVar23[0], &plVar23[1], &plVar23[2]);
-			}
-
-			if (iVar26 < 27)
-			{
-				vert2 += 3;
-
-				plVar23 = plVar23 + 3;
-				plVar22 = plVar22 + 3;
-				iVar26 = iVar26 + 3;
-
-				gte_ldv3(&vert2[0], &vert2[1], &vert2[2]);
-				gte_rtpt();
-			}
-
-			boneId = *piVar25;
-			if ((boneId == 4) &&
-				(v1 = 1, lVar9 = LONG_ARRAY_1f800210[0],
-					LONG_ARRAY_1f800210[0] <= switch_detail_distance >> 1))
-			{
-				local_38 = 1;
-			}
-			else
-			{
-				DrawBodySprite(pPed, boneId, (VERTTYPE*)&outlongs[0], (VERTTYPE*)&outlongs[1], *zbuff, zbuff[1]);
-			}
-
-			outlongs += 2;;
-			zbuff += 2;
-			iVar13--;
-			piVar25++;
-		} while (-1 < iVar13);
-
-		if (local_38 != 0)
+		if (j < 30)
 		{
-			bAllreadyRotated = 0;
-			DoCivHead(pPed, SVECTOR_ARRAY_1f800090 + 5, SVECTOR_ARRAY_1f800090 + 4);
-
-			ppos.vx = 0;
-			ppos.vy = 0;
-			ppos.vz = 0;
-
-			gte_SetTransVector(&ppos);
+			gte_stsxy3(&sxyList[j], &sxyList[j+1], &sxyList[j+2]);
+			gte_stsz3(&szList[j], &szList[j+1], &szList[j+2]);
 		}
 
-		ppos.vx = (pPed->position).vx;
-		ppos.vy = (pPed->position).vy;
-		ppos.vz = (pPed->position).vz;
-		boneId = pPed->frame1 & 0xf;
-		uVar15 = boneId * 2;
-		iVar26 = MapHeight(&ppos);
+		if (j < 27)
+		{
+			j += 3;
 
-		cv.b = 40;
-		cv.g = 40;
-		cv.r = 40;
+			gte_ldv3(&srLerpData[j], &srLerpData[j+1], &srLerpData[j+2]);
+			gte_rtpt();
+		}
 
-		ppos.vx = ppos.vx - camera_position.vx;
-		ppos.vy = (10 - iVar26) - camera_position.vy;
-		ppos.vz = ppos.vz - camera_position.vz;
-
-		if (uVar15 < 8)
-			size = uVar15 + 80;
+		boneId = boneIdvals[i];
+		
+		if (boneId == HEAD && szList[0] <= switch_detail_distance / 2)
+			bHeadModel = 1;
 		else
-			size = boneId * -2 + 112;
-
-		RoundShadow(&ppos, _cv, size);
+			DrawBodySprite(pPed, boneId, (VERTTYPE*)&sxyList[i*2], (VERTTYPE*)&sxyList[i*2 + 1], szList[i*2], szList[i*2+1]);
 	}
+
+	// show head
+	if (bHeadModel)
+	{
+		bAllreadyRotated = 0;
+		DoCivHead(pPed, &srLerpData[5], &srLerpData[4]);
+
+		ppos.vx = 0;
+		ppos.vy = 0;
+		ppos.vz = 0;
+
+		gte_SetTransVector(&ppos);
+	}
+
+	// make shadow
+	ppos.vx = pPed->position.vx;
+	ppos.vy = pPed->position.vy;
+	ppos.vz = pPed->position.vz;
+
+	phase = (pPed->frame1 & 0xf) * 2;
+
+	cv.b = 40;
+	cv.g = 40;
+	cv.r = 40;
+
+	ppos.vy = (10 - MapHeight(&ppos)) - camera_position.vy;
+	ppos.vx = ppos.vx - camera_position.vx;
+	ppos.vz = ppos.vz - camera_position.vz;
+
+	if (phase < 8)
+		size = phase + 80;
+	else
+		size = -phase + 112;
+
+	RoundShadow(&ppos, &cv, size);
 }
 
 
