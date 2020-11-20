@@ -309,7 +309,7 @@ void ModifyCamera(void)
 
 	int i;
 
-	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL);// && NumPlayers == 1)	// [A] allow switching cameras in multiplayer
+	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL) // && NumPlayers == 1)	// [A] allow switching cameras in multiplayer
 	{
 		for(i = 0; i < NumPlayers; i++)
 		{
