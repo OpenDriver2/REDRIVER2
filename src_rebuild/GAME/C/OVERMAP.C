@@ -75,16 +75,6 @@ static short big_north[] =
 
 VECTOR player_position = { 0, 0, 0, 0 };
 
-char* palettedir[] = {
-	"CHICAGO",
-	"HAVANA",
-	"VEGAS",
-	"RIO",
-	"CHICAGO",
-	"HAVANA",
-	"VEGAS",
-	"RIO",
-};
 
 MATRIX map_matrix;
 
@@ -526,6 +516,7 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 
 	MALLOC_END();
 
+	// load CLUT
 	LoadImage(&mapclutpos, (u_long *)(MapBitMaps + 512));
 	DrawSync(0);
 }

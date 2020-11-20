@@ -3658,7 +3658,7 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 			mydebris->direction.vy = -FIXED(ispeed->vy);
 			mydebris->direction.vz = FIXED(ispeed->vz);
 		}
-	
+
 		mydebris->type = type & 7;
 
 		mydebris->life = 128;
@@ -4045,7 +4045,7 @@ void DisplayDebris(DEBRIS *debris, char type)
 
 	if (debrisvec.vx >= -10000 && debrisvec.vz >= -10000 && 10000 >= debrisvec.vx && 10000 >= debrisvec.vz)
 	{
-		tv = debris_rot_table[type] + (debris->pos >> 3 & 0x1fU);
+		tv = debris_rot_table[debris->type & 7] + (debris->pos >> 3 & 0x1fU);
 
 		v[0].vx = tv->v0.vx + debrisvec.vx;
 		v[0].vy = tv->v0.vy + debrisvec.vy;
