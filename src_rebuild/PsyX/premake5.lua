@@ -62,5 +62,5 @@ project "Psy-X"
     filter "configurations:Release"
         optimize "Full"
 		
-	filter "configurations:Release Dev"
+	filter "configurations:Release_Dev"
         optimize "Full"

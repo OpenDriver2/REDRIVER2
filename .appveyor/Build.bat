@@ -10,7 +10,7 @@ set SDL2_DIR=%windows_sdl2_dir%
 
 premake5 vs2019
 
-set config=Debug:Release
+set config=Debug:Release:Release_Dev
 for %%c in (%config::= %) do (
     msbuild .\REDRIVER2.sln /p:Configuration="%%c" /p:Platform=Win32 /m ^
         /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" ^

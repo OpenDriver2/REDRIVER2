@@ -16,7 +16,7 @@ if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
 end
 	
 workspace "REDRIVER2"
-    configurations { "Debug", "Release", "Release Dev" }
+    configurations { "Debug", "Release", "Release_Dev" }
 
     defines { VERSION } 
 
@@ -34,7 +34,7 @@ workspace "REDRIVER2"
             "NDEBUG",
         }
 		
-	filter "configurations:Release Dev"
+	filter "configurations:Release_Dev"
         defines {
             "NDEBUG",
         }
@@ -167,7 +167,7 @@ project "REDRIVER2"
     filter "configurations:Release"
         optimize "Full"
 		
-	filter "configurations:Release Dev"
+	filter "configurations:Release_Dev"
 		targetsuffix "_dev"
         defines { 
             "DEBUG_OPTIONS",
