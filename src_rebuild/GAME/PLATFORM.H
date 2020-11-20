@@ -2,18 +2,34 @@
 #define PLATFORM_H
 
 #ifdef _WIN32
-#include <direct.h>
-#define HOME_ENV "USERPROFILE"
-#elif defined (__unix__)
-#include <sys/stat.h>
-#define HOME_ENV "HOME"
-#define _mkdir(str) mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
 
-inline void fixslashes(char* pathbuff)
+#include <direct.h>
+
+#define HOME_ENV "USERPROFILE"
+
+inline void FixPathSlashes(char* pathbuff)
 {
     while (*pathbuff)
     {
-        if (*pathbuff == '\\') *pathbuff = '/';
+        if (*pathbuff == '/') // make windows-style path
+            *pathbuff = '\\';
+        pathbuff++;
+    }
+}
+
+#elif defined (__unix__)
+
+#include <sys/stat.h>
+
+#define HOME_ENV "HOME"
+#define _mkdir(str) mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+
+inline void FixPathSlashes(char* pathbuff)
+{
+    while (*pathbuff)
+    {
+        if (*pathbuff == '\\') // make unix-style path
+            *pathbuff = '/';
         pathbuff++;
     }
 }

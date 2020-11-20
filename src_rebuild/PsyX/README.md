@@ -1,4 +1,6 @@
-# Psy-X (Psy-Cross)
+# Psy-Cross (Psy-X)
+![](https://i.ibb.co/PFNnw4G/PsyCross.jpg)
+
 Framework aiming to build and run originally targeted **Playstation** applications on other platforms based on Psy-Q SDK.
 
 ### Implementation details
@@ -13,6 +15,7 @@ Framework aiming to build and run originally targeted **Playstation** applicatio
 - Add some missing LibGTE functions
 - Add support for MDEC, CDXA decoding and playback
 - Extend BIN/CUE image support
+- SPU ADSR
 
 ### Credits
 - SoapyMan - more GTE functions, SPU-AL, PGXP-Z

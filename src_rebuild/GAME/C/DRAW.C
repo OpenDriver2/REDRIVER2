@@ -1854,7 +1854,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	combo = combointensity;
 
 	// transparent object flag
-	if (pc->flags & 1)
+	if (pc->flags & PLOT_TRANSPARENT)
 		combo |= 0x2000000;
 
 	i = model->num_polys;
@@ -1893,18 +1893,18 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 		r = rot;
 
-		if (pc->flags & 0x6)
+		if (pc->flags & (PLOT_INV_CULL | PLOT_NO_CULL))
 		{
 			if (opz < 0)
 				r = rot + 32 & 63;
 
-			if (pc->flags & 0x4)
+			if (pc->flags & PLOT_NO_CULL)
 				opz = 1;		// no culling
-			else
+			else // PLOT_FRONT_CULL
 				opz = -opz;		// front face
 		}
 
-		if (ptype == 21)
+		if (ptype == 21 || (pc->flags & PLOT_NO_SHADE))
 		{
 			pc->colour = combo & 0x2ffffffU | 0x2c000000;
 		}
@@ -1924,7 +1924,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
 
-			if ((pc->flags & 0x10) == 0) // [A] custom palette flag - for pedestrian heads
+			if ((pc->flags & PLOT_CUSTOM_PALETTE) == 0) // [A] custom palette flag - for pedestrian heads
 				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
 
 			minZ = pc->scribble[2];
@@ -2057,6 +2057,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 // [D] [T]
 void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
 {
+	int i;
+
 	if (matrix != NULL)
 	{
 		MATRIX comb;
@@ -2074,7 +2076,7 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	if (zBias > 0)
 		plotContext.ot += (zBias * 4);
 
-	for (int i = 0; i < 8; i++)
+	for (i = 0; i < 8; i++)
 	{
 		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
 		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;

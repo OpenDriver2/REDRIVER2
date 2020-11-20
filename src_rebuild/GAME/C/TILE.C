@@ -735,11 +735,11 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 		
 		gte_stotz(&z);
 
-		if (pc->flags & 0x6)
+		if (pc->flags & (PLOT_NO_CULL | PLOT_INV_CULL))
 		{
-			if (pc->flags & 0x4)
+			if (pc->flags & PLOT_NO_CULL)
 				opz = 1;		// no culling
-			else
+			else // PLOT_FRONT_CULL
 				opz = -opz;		// front face
 		}
 

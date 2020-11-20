@@ -14,6 +14,7 @@
 #define MAX_TRAFFIC_CARS		19
 #define MAX_EXPLOSION_OBJECTS	5
 #define MAX_THROWN_BOMBS		5
+#define MAX_MOTION_CAPTURE		24
 
 // replay definitions.
 // DO NOT EDIT, breaks compatibility!

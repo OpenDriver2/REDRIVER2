@@ -1,5 +1,5 @@
 
--- Psy-X (Psy-Cross) layer
+-- Psy-Cross layer
 project "Psy-X"
     kind "StaticLib"
     language "C++"

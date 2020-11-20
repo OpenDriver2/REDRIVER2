@@ -131,6 +131,7 @@ project "REDRIVER2"
             "GL",
             "openal",
             "SDL2",
+            "dl",
         }
 
         linkoptions {
