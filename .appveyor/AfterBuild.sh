@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-for config in rebug release Release_Dev
+for config in rebug release release_Dev
 do
     cd "${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin/${config^}"
     tar -czf "REDRIVER2_${config^}.tar.gz" *

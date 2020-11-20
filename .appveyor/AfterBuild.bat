@@ -1,6 +1,6 @@
 @echo off
 
-set config=Debug:Release:Release_Dev
+set config=Debug:Release:Release_dev
 for %%c in (%config::= %) do (
     cd %project_folder%\bin\%%c
     
