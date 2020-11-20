@@ -243,7 +243,7 @@ MENU_ITEM DebugOptionsItems[] =
 	{ "Puppy Dog Cops",	PAUSE_TYPE_FUNC,	2,  TogglePuppyDogCops,	MENU_QUIT_NONE,		NULL },
 	{ "Toggle Overlay",	PAUSE_TYPE_FUNC,	2,  ToggleOverlays,		MENU_QUIT_NONE,		NULL },
 	{ "Player Ghost", 	PAUSE_TYPE_FUNC, 	2,  TogglePlayerGhost,	MENU_QUIT_NONE,		NULL },
-	{ "Next Mission",	PAUSE_TYPE_FUNC, 	2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
+	{ "Next Mission",	0, 					2,  NULL,				MENU_QUIT_NEXTMISSION, 	NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
