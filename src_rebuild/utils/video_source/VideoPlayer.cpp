@@ -164,15 +164,15 @@ void SetupMovieRectangle(int image_w, int image_h)
 	const float video_aspect = float(image_w) / float(image_h);
 	const float psx_aspect = (psxScreenH / psxScreenW);
 	
-	const float image_to_screen_w = float(psxScreenW) / float(windowWidth) * psx_aspect;
-	const float image_to_screen_h = float(psxScreenH) / float(windowHeight) * psx_aspect;
+	const float image_to_screen_w = float(psxScreenW) / float(windowWidth);// * psx_aspect;
+	const float image_to_screen_h = float(psxScreenH) / float(windowHeight);// * psx_aspect;
 
-	const float image_scale = float(windowWidth) / psxScreenW * video_aspect;
+	const float image_scale = float(windowHeight) / psxScreenH * video_aspect;
 	
 	float clipRectX = 0;
 	float clipRectY = 0;
-	float clipRectW = image_to_screen_w * image_scale * 2.0f;
-	float clipRectH = image_to_screen_h * image_scale * 2.0f;
+	float clipRectW = image_to_screen_w * image_scale;
+	float clipRectH = image_to_screen_h * image_scale;
 
 	clipRectX -= clipRectW * 0.5f;
 	clipRectY -= clipRectH * 0.5f;
