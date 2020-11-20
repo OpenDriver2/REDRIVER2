@@ -464,7 +464,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		fd /= 10;
 
 	char filename[250];
-	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
+	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].avi", gDataFolder, fd, arg->render);
 	FixPathSlashes(filename);
 
 	ReadAVI readAVI(filename);
