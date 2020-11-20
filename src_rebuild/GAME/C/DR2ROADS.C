@@ -35,6 +35,57 @@ int NumDriver2Curves = 0;
 int NumDriver2Straights = 0;
 DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 
+#if 0
+const short ChicagoBridgeRoads1[] = {
+	434,
+	433,
+	65,
+	64,
+	63,
+	62,
+	61,
+	457,
+	458,
+	488,
+	-1,
+};
+
+const short ChicagoBridgeRoads2[] = {
+	336,
+	319,
+	297,
+	284,
+	260,
+	254,
+	222,
+	-1,
+};
+
+const short ChicagoBridgeRoads3[] = {
+	562,
+	570,
+	582,
+	586,
+	597,
+	600,
+	622,
+	623,
+	-1,
+};
+
+// [A] Chicago roads
+const short* ChicagoBridgeRoads[] = {
+	// Goose island
+	ChicagoBridgeRoads1,
+
+	// Downtown
+	ChicagoBridgeRoads2,
+
+	// Downtown 2
+	ChicagoBridgeRoads3,
+};
+#endif
+
 // [A] custom function for working with roads in very optimized way
 int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 {
@@ -92,6 +143,39 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 {
 	Getlong((char *)&NumDriver2Straights, lump_file);
 	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
+
+#if 0
+	// [A] patch chicago roads
+	if (GameLevel == 0)
+	{
+		DRIVER2_STRAIGHT* str;
+		int grp, i, j;
+		int numLanes;
+
+		for (grp = 0; grp < 3; grp++)
+		{
+			// don't activate those roads in Caine's Compound
+			if(grp == 0 && gCurrentMissionNumber == 7)
+				continue;
+
+			i = 0;
+			while (ChicagoBridgeRoads[grp][i] >= 0)
+			{
+				str = GET_STRAIGHT(ChicagoBridgeRoads[grp][i]);
+				numLanes = ROAD_LANES_COUNT(str);
+
+				for (j = 0; j < numLanes; j++)
+				{
+					if ((numLanes & 1) && j == numLanes / 2)
+						continue;
+
+					str->AILanes |= 1 << j;
+				}
+				i++;
+			}
+		}
+	}
+#endif
 }
 
 
