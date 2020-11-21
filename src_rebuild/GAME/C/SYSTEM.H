@@ -100,7 +100,7 @@ extern DB* current;
 extern int citystart[8];
 extern XYPAIR citylumps[8][4];
 
-#ifdef PAL
+#ifdef PAL_VERSION
 #define draw_mode draw_mode_pal
 #define video_mode MODE_PAL
 #else

@@ -881,8 +881,6 @@ void DrawMapPSX(int* comp_val)
 			cellx = cellxpos + hloop;
 			cellz = cellzpos + vloop;
 
-			
-
 			if (rightPlane < 0 &&
 				leftPlane > 0 &&
 				backPlane < farClipLimit &&  // check planes
@@ -1942,7 +1940,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			if (maxZ < pc->scribble[0])
 				diff = pc->scribble[0] - minZ;
 
-			if ((n == 0) || ((diff << 2) <= minZ - 350))
+			if (n == 0 || diff << 2 <= minZ - 350)
 			{
 				prims = (POLY_FT4*)pc->primptr;
 
