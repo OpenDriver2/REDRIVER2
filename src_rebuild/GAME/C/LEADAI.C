@@ -47,7 +47,7 @@ int road_c = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int leadRand(void)
 {
 	randIndex = (randIndex + 1) % NUM_STATES;
@@ -990,134 +990,128 @@ void FakeMotion(CAR_DATA* cp)
 	/* end block 2 */
 	// End Line: 2159
 
-// [D]
+// [D] [T]
 void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 {
-	int uVar1;
-	int iVar2;
-	int uVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int w;
+	int w80;
+	int t;
+	int t80;
+	int dist;
 
 	if (intention - 4U < 3)
-	{
-		uVar3 = (*normal + 0x800U & 0xfff) - 0x800;
-		*normal = uVar3;
+	{ 
+		*normal = (*normal + 2048U & 0xfff) - 2048;
 
 		if (intention == 6)
 		{
-			uVar1 = uVar3;
-			if (uVar3 < 0)
-				uVar1 = -uVar3;
-
-			if (uVar1 < 0xf0)
+			if (ABS(*normal) < 240)
 			{
-				iVar6 = FIXEDH(*tangent * (int)rcossin_tbl[(uVar3 & 0xfff) * 2]);
-				if (0x7d < iVar6)
+				dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
+				
+				if (dist > 125)
 				{
-					*normal = 0x17;
+					*normal = 23;
 					return;
 				}
 
-				if (0x32 < iVar6)
+				if (dist > 50)
 				{
-					*normal = 0x16;
+					*normal = 22;
 					return;
 				}
 
-				if (-0x32 < iVar6)
+				if (dist > -50)
 				{
-					*normal = 0x15;
+					*normal = 21;
 					return;
 				}
 
-				if (iVar6 < -0x7c)
+				if (dist < -124)
 				{
-					*normal = 0x13;
+					*normal = 19;
 					return;
 				}
 
-				*normal = 0x14;
+				*normal = 20;
 				return;
 			}
 		}
-		iVar6 = *normal * 0x15;
-		*normal = iVar6;
+	
+		*normal *= 21;
 
 		if (intention == 4)
-			iVar6 = (iVar6 / 6 + (iVar6 >> 0x1f) >> 8) - (iVar6 >> 0x1f);
+			*normal /= 1536; // [A] (*normal / 6 + (*normal >> 0x1f) >> 8) - (*normal >> 0x1f);
 		else if (intention == 5)
-			iVar6 = iVar6 >> 0xb;
+			*normal /= 2048;
 		else
-			iVar6 = iVar6 >> 10;
+			*normal /= 1024;
 
-		*normal = iVar6;
-		iVar6 = *normal;
+		t80 = *normal;
 	}
 	else
 	{
-		if (1 < intention)
+		if (intention > 1)
 		{
-			iVar2 = (cp->hd).speed;
-			iVar7 = LeadValues.tWidth;
-			iVar6 = LeadValues.tWidthMul;
-
-			if (100 < iVar2)
+			int myspeed;
+			
+			myspeed = cp->hd.speed;
+			w = LeadValues.tWidth;
+			t80 = LeadValues.tWidthMul;
+			
+			if (myspeed > 100)
 			{
-				iVar7 = LeadValues.hWidth;
-				iVar6 = LeadValues.hWidthMul;
+				w = LeadValues.hWidth;
+				t80 = LeadValues.hWidthMul;
 			}
-
-			iVar7 = iVar7 + iVar2 * iVar6;
-
-			if (iVar2 < 0x65)
-			{
-				iVar6 = LeadValues.tWidth80 + iVar2 / LeadValues.tWidth80Mul;
-			}
+			
+			w = w + myspeed * t80;
+			
+			if (myspeed > 100)
+				w80 = LeadValues.hWidth80 + myspeed * LeadValues.hWidth80Mul;
 			else
-			{
-				iVar6 = LeadValues.hWidth80 + iVar2 * LeadValues.hWidth80Mul;
-			}
-
-			if (iVar2 < 0x65)
-				iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
+				w80 = LeadValues.tWidth80 + myspeed / LeadValues.tWidth80Mul;
+			
+			if (myspeed > 100)
+				t = LeadValues.hDist + (myspeed + -100) * LeadValues.hDistMul;
 			else
-				iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+				t = LeadValues.tDist + myspeed * LeadValues.tDistMul;
 
-			iVar5 = (iVar2 << 3) / 10;
+			t80 = (t << 3) / 10;
 
 			if (intention == 2)
 				*normal = -*normal;
 
-			iVar4 = *normal;
-
-			if (iVar7 < iVar4)
+			if (w < *normal)
 			{
-				iVar6 = *tangent;
-				*tangent = (iVar2 + iVar4) - iVar7;
-				*normal = iVar2 - iVar6;
+				int temp;
+				temp = *tangent;
+				
+				*tangent = (t + *normal) - w;
+				*normal = t - temp;
 			}
-			else if (iVar6 < iVar4)
+			else if (w80 < *normal)
 			{
-				iVar5 = ((iVar4 - iVar6) * (iVar2 - iVar5)) / (iVar7 - iVar6) + iVar5;
-				*normal = iVar5 - *tangent;
-				*tangent = iVar5;
+				int temp;
+				temp = ((*normal - w80) * (t - t80)) / (w - w80) + t80;
+				
+				*normal = temp - *tangent;
+				*tangent = temp;
 			}
-			else if (0 < iVar4)
+			else if (*normal > 0)
 			{
-				iVar6 = (iVar5 * iVar6) / iVar4;
+				int temp;
+				temp = (t80 * w80) / *normal;
 
-				*normal = iVar6 - *tangent;
-				*tangent = iVar6;
+				*normal = temp - *tangent;
+				*tangent = temp;
 			}
 		}
 
-		iVar6 = *normal / 100;
+		t80 = *normal / 100;
 	}
 
-	*normal = iVar6 + 0x15;
+	*normal = t80 + 21;
 }
 
 
@@ -1856,7 +1850,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 			PosToIndex(&normal, &tangent, intention, cp);
 			break;
 		case 1:
-			curve = Driver2CurvesPtr + cp->ai.l.currentRoad - 0x4000;
+			curve = GET_CURVE(cp->ai.l.currentRoad);
 
 			dx = x - curve->Midx;
 			dz = z - curve->Midz;
@@ -4040,7 +4034,7 @@ ulong hypot(long x, long y)
 	else
 	{
 		t = FIXED(x);
-		t = x + t * (SquareRoot0((y / t) * (y / t) + 0x1000800) - 0x1000);
+		t = x + t * (SquareRoot0((y / t) * (y / t) + 0x1000800) - 4096);
 	}
 
 	return t;
