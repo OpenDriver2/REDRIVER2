@@ -553,19 +553,20 @@ ulong LeadPadResponse(CAR_DATA* cp)
 				+ pathParams[3] * deltaTh
 			) - cp->wheel_angle;
 
-			t0 = CAR_PAD_ACCEL;
 
+			t0 = CAR_PAD_ACCEL;
+		
 			if (steerDelta > 32)
 				t0 |= CAR_PAD_RIGHT;
-			if (steerDelta < -32)
+			else if (steerDelta < -32)
 				t0 |= CAR_PAD_LEFT;
 
 			if (ABS(steerDelta) > 64)
 				t0 |= CAR_PAD_FASTSTEER;
-
-			if (steerDelta + 31u > 62)
+		
+			if (steerDelta + 31U <= 62) 
 			{
-				if (ABS(avel) > 5)
+				if (ABS(avel) <= 5)
 				{
 					if (t0 & CAR_PAD_ACCEL)
 						t0 |= CAR_PAD_WHEELSPIN;
