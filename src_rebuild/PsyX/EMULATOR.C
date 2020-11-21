@@ -15,11 +15,8 @@
 #endif
 #include <assert.h>
 
-#if defined(NTSC_VERSION)
-#define FIXED_TIME_STEP		(1.0/60.0)		// 60 FPS clock
-#else
-#define FIXED_TIME_STEP		(1.0/50.0)		// 50 FPS clock
-#endif
+#define FIXED_TIME_STEP_NTSC		(1.0/60.0)		// 60 FPS clock
+#define FIXED_TIME_STEP_PAL			(1.0/50.0)		// 50 FPS clock
 
 #define SWAP_INTERVAL		1
 
@@ -340,12 +337,15 @@ int Emulator_DoVSyncCallback()
 int vblankThreadMain(void* data)
 {
 	Emulator_InitHPCTimer(&g_vblankTimer);
-
+	
 	do
 	{
+		const long vmode = GetVideoMode();
+		const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+		
 		double delta = Emulator_GetHPCTime(&g_vblankTimer, 0);
 		
-		if (delta > FIXED_TIME_STEP)
+		if (delta > timestep)
 		{
 			// do vblank events
 			SDL_LockMutex(g_vblankMutex);
@@ -1901,6 +1901,9 @@ void Emulator_SwapWindow()
 
 void Emulator_WaitForTimestep(int count)
 {
+	const long vmode = GetVideoMode();
+	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+	
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
@@ -1909,7 +1912,7 @@ void Emulator_WaitForTimestep(int count)
 		{
 			SDL_Delay(0); // yield
 			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
-		} while (delta < FIXED_TIME_STEP * count);
+		} while (delta < timestep * count);
 
 		Emulator_GetHPCTime(&g_swapTimer, 1);
 	}
