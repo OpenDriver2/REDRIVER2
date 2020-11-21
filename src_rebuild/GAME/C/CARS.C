@@ -2351,6 +2351,44 @@ char GetCarPalIndex(int tpage)
 }
 
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ ProcessPalletLump(char *lump_ptr /*$a0*/, int lump_size /*$a1*/)
+ // line 1970, offset 0x00019f44
+	/* begin block 1 */
+		// Start line: 1971
+		// Start offset: 0x00019F44
+		// Variables:
+	// 		int total_cluts; // $v0
+	// 		int clutValue; // $s1
+	// 		int tpageindex; // $s2
+	// 		int texnum; // $s3
+	// 		int palette; // $s4
+	// 		int clut_number; // $v1
+	// 		unsigned short clutTable[320]; // stack offset -680
+	// 		char *buffPtr; // $s0
+
+		/* begin block 1.1 */
+			// Start line: 2013
+			// Start offset: 0x00019FD0
+		/* end block 1.1 */
+		// End offset: 0x00019FD0
+		// End Line: 2013
+	/* end block 1 */
+	// End offset: 0x0001A094
+	// End Line: 2034
+
+	/* begin block 2 */
+		// Start line: 8209
+	/* end block 2 */
+	// End Line: 8210
+
+	/* begin block 3 */
+		// Start line: 3940
+	/* end block 3 */
+	// End Line: 3941
+
+
 // [D]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
@@ -2367,29 +2405,28 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 	int total_cluts;
 	int clut_number;
 
-	if (*(int*)lump_ptr == 0 || *(int*)(lump_ptr + 4) == -1)
+	total_cluts = *(int*)lump_ptr;
+	
+	if (total_cluts == 0)
 		return;
 
 	buffPtr = (int*)(lump_ptr + 4);
 	clutTablePtr = (u_short*)clutTable;
 
-	do
+	while (*buffPtr != -1)
 	{
 		palette = buffPtr[0];
 		texnum = buffPtr[1];
 		tpageindex = buffPtr[2];
-		total_cluts = buffPtr[3];
+		clut_number = buffPtr[3];
 
-		clut_number = GetCarPalIndex(tpageindex);
-
-		if (total_cluts == -1)
+		if (clut_number == -1)
 		{
+			// store clut
 			LoadImage(&clutpos, (u_long*)(buffPtr + 4));
 
 			clutValue = GetClut(clutpos.x, clutpos.y);
-
-			*clutTablePtr = clutValue;
-			clutTablePtr += 1;
+			*clutTablePtr++ = clutValue;
 
 			IncrementClutNum(&clutpos);
 
@@ -2397,11 +2434,11 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 		}
 		else
 		{
-			clutValue = clutTable[total_cluts];
+			// use stored clut
+			clutValue = clutTable[clut_number];
 			buffPtr += 4;
 		}
 
-		civ_clut[clut_number][texnum][palette + 1] = clutValue;
+		civ_clut[GetCarPalIndex(tpageindex)][texnum][palette + 1] = clutValue;
 	}
-	while (*buffPtr != -1);
 }
