@@ -90,6 +90,10 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	if (NumPlayers == 2)
 #endif // else do this check always
 	{
+		// [A] don't draw loading region
+		if (loading_region[index] != -1)
+			return NULL;
+		
 		if (RoadMapRegions[index] != (cellx / MAP_REGION_SIZE) + (cellz / MAP_REGION_SIZE) * (cells_across / MAP_REGION_SIZE))
 			return NULL;
 	}

@@ -1,6 +1,9 @@
 #ifndef	_SYS_TYPES_H
 #define	_SYS_TYPES_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 #if !defined(__APPLE__)
 /* major part of a device */
 #define	major(x)	((int)(((unsigned)(x)>>8)&0377))

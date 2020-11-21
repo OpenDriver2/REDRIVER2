@@ -30,6 +30,15 @@ extern MATRIX2 CompoundMatrix[64];
 
 #endif
 
+enum PlotFlags
+{
+	PLOT_TRANSPARENT = (1 << 0),
+	PLOT_INV_CULL = (1 << 1),
+	PLOT_NO_CULL = (1 << 2),
+	PLOT_NO_SHADE = (1 << 3),
+	PLOT_CUSTOM_PALETTE = (1 << 4),
+};
+
 extern void* model_tile_ptrs[MAX_DRAWN_TILES];
 
 extern int units_across_halved;

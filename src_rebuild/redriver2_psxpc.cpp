@@ -4,8 +4,6 @@
 #include "DRIVER2.H"
 #include "C/MAIN.H"
 #include "C/SYSTEM.H"
-#include "C/GLAUNCH.H"
-#include "C/PLAYERS.H"
 #include "C/GAMESND.H"
 #include "C/CAMERA.H"
 #include "C/CARS.H"
@@ -17,9 +15,12 @@
 #include "EMULATOR_PRIVATE.H"
 #include "utils/ini.h"
 
-#include <stdlib.h>
 #include <SDL_scancode.h>
 
+#include "C/CUTSCENE.H"
+#include "C/GLAUNCH.H"
+#include "C/OVERLAY.H"
+#include "C/PLAYERS.H"
 
 
 // eq engine console output
@@ -500,7 +501,7 @@ void GameDebugKeys(int nKey, bool down)
 
 #ifndef USE_CRT_MALLOC
 char g_Overlay_buffer[0x50000];		// 0x1C0000
-char g_Frontend_buffer[0x50000];	// 0xFB400
+char g_Frontend_buffer[0x60000];	// 0xFB400
 char g_Other_buffer[0x50000];		// 0xF3000
 char g_Other_buffer2[0x50000];		// 0xE7000
 OTTYPE g_OT1[OTSIZE];				// 0xF3000
@@ -516,7 +517,7 @@ int main(int argc, char** argv)
 
 #ifdef USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
-	_frontend_buffer = (char*)malloc(0x50000);			// 0xFB400
+	_frontend_buffer = (char*)malloc(0x60000);			// 0xFB400
 	_other_buffer = (char*)malloc(0x50000);				// 0xF3000
 	_other_buffer2 = (char*)malloc(0x50000);			// 0xE7000
 	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000
@@ -557,6 +558,9 @@ int main(int argc, char** argv)
 	if (config)
 	{
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
+		const char* userReplaysStr = ini_get(config, "game", "userChases");
+
+		InitUserReplays(userReplaysStr);
 		
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
@@ -567,6 +571,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
+		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		
 
 		if (dataFolderStr)
@@ -617,7 +622,7 @@ int main(int argc, char** argv)
 
 	
 
-	Emulator_Initialise("DRIVER2", windowWidth, windowHeight, fullScreen);
+	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
 	redriver2_main(argc, argv);
 
 	Emulator_ShutDown();

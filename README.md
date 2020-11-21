@@ -24,10 +24,11 @@ Start Date: 28 March 2019
 - All information (variables, types and function names) have been obtained from debugging symbols (.SYM), driver_psx_level and DLE
 - Ghidra project (based on Italian SYM) to deal with overlays, simple code complex branching - semi-auto decompilation
 - IDB based on Spanish SYM when dealing with things Ghidra can't handle properly - manual decompilation (mostly GTE code)
+- Originally targeted *Playstation* game built upon [Psy-X (Psy-Cross) (formely extended TOMB5 emulator)](https://github.com/OpenDriver2/REDRIVER2/tree/master/src_rebuild/PsyX)
 
-### Usage
-Assuming you have compiled the most recent code or got artifacts from Appveyor. 
-Copy DRIVER2 folder from your **game CD** to location where compiled EXE is located.
+### How to use
+See [Wiki/Installation Instructions](https://github.com/OpenDriver2/REDRIVER2/wiki/Installation-instructions)
+
 
 ### Credits
 - Soapy - lead programmer

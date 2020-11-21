@@ -3,10 +3,10 @@
 #include "EMULATOR_VERSION.H"
 #include "EMULATOR_GLOBALS.H"
 #include "EMULATOR_PRIVATE.H"
+
 #include "CRASHHANDLER.H"
 
 #include "LIBETC.H"
-#include "LIBPAD.H"
 
 //#include <stdio.h>
 //#include <string.h>
@@ -15,11 +15,8 @@
 #endif
 #include <assert.h>
 
-#if defined(NTSC_VERSION)
-#define FIXED_TIME_STEP		(1.0/60.0)		// 60 FPS clock
-#else
-#define FIXED_TIME_STEP		(1.0/50.0)		// 50 FPS clock
-#endif
+#define FIXED_TIME_STEP_NTSC		(1.0/60.0)		// 60 FPS clock
+#define FIXED_TIME_STEP_PAL			(1.0/50.0)		// 50 FPS clock
 
 #define SWAP_INTERVAL		1
 
@@ -28,6 +25,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <SDL.h>
+
+#include "EMULATOR_TIMER.H"
 
 SDL_Window* g_window = NULL;
 TextureID vramTexture;
@@ -45,8 +44,9 @@ SysCounter counters[3] = { 0 };
 //std::thread counter_thread;
 #endif
 
-double g_swapTime;
+timerCtx_t g_swapTimer;
 int g_swapInterval = SWAP_INTERVAL;
+
 int g_wireframeMode = 0;
 int g_texturelessMode = 0;
 int g_emulatorPaused = 0;
@@ -232,8 +232,8 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #elif defined(OGL)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #endif
 
 #if defined(OGL) || defined(OGLES)
@@ -263,59 +263,27 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 	return TRUE;
 }
 
-static int Emulator_InitialiseGLEW()
+static int Emulator_InitialiseGLExt()
 {
 #if defined(GLEW)
 	GLenum err = gladLoadGL();
 
 	if (err == 0)
-	{
 		return FALSE;
-	}
+
+	const char* rend = (const char *) glGetString(GL_RENDERER);
+	const char* vendor = (const char *) glGetString(GL_VENDOR);
+	eprintf("*Video adapter: %s by %s\n", rend, vendor);
+
+	const char* versionStr = (const char *) glGetString(GL_VERSION);
+	eprintf("*OpenGL version: %s\n", versionStr);
+
+	const char* glslVersionStr = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+	eprintf("*GLSL version: %s\n", glslVersionStr);
+	
+	
 #endif
 	return TRUE;
-}
-
-#ifdef _WIN32
-LARGE_INTEGER	g_performanceFrequency;
-LARGE_INTEGER	g_clockStart;
-#else
-timeval			g_timeStart;
-#endif // _WIN32
-
-void Emulator_InitHPCTimer()
-{
-#ifdef _WIN32
-	QueryPerformanceFrequency(&g_performanceFrequency);
-#else
-	gettimeofday(&g_timeStart, NULL);
-#endif // _WIN32
-	
-}
-
-double Emulator_GetHPCTime(int reset = 0)
-{
-#ifdef _WIN32
-	LARGE_INTEGER curr;
-
-	QueryPerformanceCounter( &curr);
-
-	double value = double(curr.QuadPart - g_clockStart.QuadPart) / double(g_performanceFrequency.QuadPart);
-
-	if (reset)
-		g_clockStart = curr;
-#else
-	timeval curr;
-
-	gettimeofday(&curr, NULL);
-
-	double value = (float(curr.tv_sec - g_timeStart.tv_sec) + 0.000001f * float(curr.tv_usec - g_timeStart.tv_usec));
-
-	if (reset)
-		g_timeStart = curr;
-#endif // _WIN32
-
-	return value;
 }
 
 SDL_Thread* g_vblankThread = NULL;
@@ -323,6 +291,7 @@ SDL_mutex* g_vblankMutex = NULL;
 volatile bool g_stopVblank = false;
 volatile int g_vblanksDone = 0;
 volatile int g_lastVblankCnt = 0;
+timerCtx_t g_vblankTimer;
 
 extern void(*vsync_callback)(void);
 
@@ -330,6 +299,7 @@ int Emulator_DoVSyncCallback()
 {
 	SDL_LockMutex(g_vblankMutex);
 
+#if 1
 	int vblcnt = g_vblanksDone - g_lastVblankCnt;
 
 	static bool canDoCb = true;
@@ -348,7 +318,7 @@ int Emulator_DoVSyncCallback()
 
 		canDoCb = true;
 	}
-
+#endif
 	g_lastVblankCnt = g_vblanksDone;
 
 	if (g_swapInterval == 0)
@@ -359,7 +329,6 @@ int Emulator_DoVSyncCallback()
 		g_lastVblankCnt += 1;
 	}
 
-
 	SDL_UnlockMutex(g_vblankMutex);
 
 	return g_vblanksDone;
@@ -367,20 +336,28 @@ int Emulator_DoVSyncCallback()
 
 int vblankThreadMain(void* data)
 {
-	double vblankTime = Emulator_GetHPCTime();
-
+	Emulator_InitHPCTimer(&g_vblankTimer);
+	
 	do
 	{
-		double delta = vblankTime + FIXED_TIME_STEP - Emulator_GetHPCTime();
-
-		if (delta < 0)
+		const long vmode = GetVideoMode();
+		const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+		
+		double delta = Emulator_GetHPCTime(&g_vblankTimer, 0);
+		
+		if (delta > timestep)
 		{
 			// do vblank events
 			SDL_LockMutex(g_vblankMutex);
 
 			g_vblanksDone++;
-			vblankTime = Emulator_GetHPCTime();// SDL_GetTicks();
 
+			Emulator_GetHPCTime(&g_vblankTimer, 1);
+
+#if 0
+			if(vsync_callback)
+				vsync_callback();
+#endif
 			SDL_UnlockMutex(g_vblankMutex);
 		}
 	} while (!g_stopVblank);
@@ -390,7 +367,7 @@ int vblankThreadMain(void* data)
 
 static int Emulator_InitialiseCore()
 {
-	Emulator_InitHPCTimer();
+	Emulator_InitHPCTimer(&g_swapTimer);
 	
 	g_vblankThread = SDL_CreateThread(vblankThreadMain, "vbl", NULL);
 
@@ -407,18 +384,13 @@ static int Emulator_InitialiseCore()
 		return FALSE;
 	}
 
-	
-
-	g_swapTime = Emulator_GetHPCTime();
-
 	return TRUE;
 }
 
 void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
-	eprintf("Initialising Emulator.\n");
-	eprintf("VERSION: %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
-	eprintf("Compile Date: %s Time: %s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
+	eprintf("Initialising Psy-X %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
+	eprintf("Build date: %s:%s\n", EMULATOR_COMPILE_DATE, EMULATOR_COMPILE_TIME);
 
 	if (Emulator_InitialiseSDL(windowName, width, height, fullscreen) == FALSE)
 	{
@@ -427,16 +399,16 @@ void Emulator_Initialise(char* windowName, int width, int height, int fullscreen
 	}
 
 #if defined(GLEW)
-	if (Emulator_InitialiseGLEW() == FALSE)
+	if (Emulator_InitialiseGLExt() == FALSE)
 	{
-		eprinterr("Failed to Intialise GLEW\n");
+		eprinterr("Failed to Intialise GL extensions\n");
 		Emulator_ShutDown();
 	}
 #endif
 
 	if (Emulator_InitialiseCore() == FALSE)
 	{
-		eprinterr("Failed to Intialise Emulator Core.\n");
+		eprinterr("Failed to Intialise Psy-X Core.\n");
 		Emulator_ShutDown();
 	}
 
@@ -950,18 +922,20 @@ GLint u_Projection3D;
 	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
 
 #define GPU_SAMPLE_TEXTURE_4BIT_FUNC\
-	"	// returns 16 bit colour\n"\
-	"	float samplePSX(vec2 tc){\n"\
-	"		vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
-	"		vec2 comp = VRAM(uv);\n"\
-	"		int index = int(fract(tc.x / 4.0) * 4.0);\n"\
-	"		float v = comp[index / 2] * (255.0 / 16.0);\n"\
-	"		float f = floor(v);\n"\
-	"		vec2 c = vec2( (v - f) * 16.0, f );\n"\
-	"		vec2 clut_pos = v_page_clut.zw;\n"\
-	"		clut_pos.x += mix(c[0], c[1], fract(float(index) / 2.0) * 2.0) / 1024.0;\n"\
-	"		return packRG(VRAM(clut_pos));\n"\
-	"	}\n"
+    "    // returns 16 bit colour\n"\
+    "    float samplePSX(vec2 tc){\n"\
+    "        vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+    "        vec2 comp = VRAM(uv);\n"\
+    "        int index = int(fract(tc.x / 4.0 + 0.0001) * 4.0);\n"\
+    "        float v = comp[index / 2] * (255.0 / 16.0);\n"\
+    "        float f = floor(v);\n"\
+    "        vec2 c = vec2( (v - f) * 16.0, f );\n"\
+    "        vec2 clut_pos = v_page_clut.zw;\n"\
+    "        clut_pos.x += mix(c[0], c[1], mod(index, 2)) / 1024.0;\n"\
+    "        clut_pos.x += 0.0001;\n"\
+    "        clut_pos.y += 0.0001;\n"\
+    "        return packRG(VRAM(clut_pos));\n"\
+    "    }\n"
 
 #define GPU_SAMPLE_TEXTURE_8BIT_FUNC\
 	"	// returns 16 bit colour\n"\
@@ -1379,10 +1353,11 @@ void Emulator_Perspective3D(const float fov, const float width, const float heig
 
 void Emulator_SetupClipMode(const RECT16& rect)
 {
-	bool enabled = rect.x - activeDispEnv.disp.x > 0 ||
+	// [A] isinterlaced dirty hack for widescreen
+	bool enabled = activeDispEnv.isinter || (rect.x - activeDispEnv.disp.x > 0 ||
 		rect.y - activeDispEnv.disp.y > 0 ||
 		rect.w < activeDispEnv.disp.w - 1 ||
-		rect.h < activeDispEnv.disp.h - 1;
+		rect.h < activeDispEnv.disp.h - 1);
 
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
@@ -1419,6 +1394,24 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		      clipRectW * (float)windowWidth,
 		      clipRectH * (float)windowHeight);
 #endif
+}
+
+void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect)
+{
+	float emuScreenAspect = float(windowWidth) / float(windowHeight);
+
+	float psxScreenW = activeDispEnv.disp.w;
+	float psxScreenH = activeDispEnv.disp.h;
+
+	rect.x = activeDispEnv.screen.x;
+	rect.y = activeDispEnv.screen.y;
+
+	rect.w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
+	rect.h = psxScreenH; // windowHeight;
+
+	rect.x -= (rect.w - activeDispEnv.disp.w) / 2;
+
+	rect.w += rect.x;
 }
 
 void Emulator_SetShader(const ShaderID &shader)
@@ -1479,6 +1472,7 @@ extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned
 {
 // TODO clear rect if it's necessary
 #if defined(OGL) || defined(OGLES)
+	
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
@@ -1715,7 +1709,6 @@ void Emulator_DoPollEvent()
 }
 
 bool begin_scene_flag = false;
-bool vbo_was_dirty_flag = false;
 
 bool Emulator_BeginScene()
 {
@@ -1908,27 +1901,26 @@ void Emulator_SwapWindow()
 
 void Emulator_WaitForTimestep(int count)
 {
+	const long vmode = GetVideoMode();
+	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+	
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
-		double curTime;
-		double waitTime = FIXED_TIME_STEP * count;
+		double delta;
 		do
 		{
 			SDL_Delay(0); // yield
-			curTime = Emulator_GetHPCTime();
-		} while (curTime - g_swapTime < waitTime);
-	}
+			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
+		} while (delta < timestep * count);
 
-	g_swapTime = Emulator_GetHPCTime();
+		Emulator_GetHPCTime(&g_swapTimer, 1);
+	}
 }
 
 void Emulator_EndScene()
 {
 	if (!begin_scene_flag)
-		return;
-
-	if (!vbo_was_dirty_flag)
 		return;
 
 	assert(begin_scene_flag);
@@ -1943,7 +1935,6 @@ void Emulator_EndScene()
 #endif
 
 	begin_scene_flag = false;
-	vbo_was_dirty_flag = false;
 
 	Emulator_SwapWindow();
 }
@@ -2095,8 +2086,6 @@ void Emulator_UpdateVertexBuffer(const Vertex *vertices, int num_vertices)
 #else
 	#error
 #endif
-
-	vbo_was_dirty_flag = true;
 }
 
 void Emulator_DrawTriangles(int start_vertex, int triangles)

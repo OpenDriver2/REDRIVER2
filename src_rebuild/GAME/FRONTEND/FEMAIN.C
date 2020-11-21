@@ -16,6 +16,7 @@
 #include "C/PRES.H"
 #include "C/SOUND.H"
 #include "C/DEBRIS.H"
+#include "C/E3STUFF.H"
 #include "C/FMVPLAY.H"
 #include "C/SCORES.H"
 #include "C/LOADSAVE.H"
@@ -48,7 +49,7 @@ screenFunc fpUserFunctions[] = {
 	GamePlayScreen,
 	GameNameScreen,
 	CheatNumlayerSelect,
-	BonusGalleryScreen
+
 };
 
 char* gfxNames[4] = {
@@ -108,72 +109,160 @@ char* CutSceneNames[28] =
 	"Credits",
 };
 
-
-static char* gameNames[64] = {
-	"Downtown",
-	"Wrigleyville",
-	"Necropolis De Colon",
-	"Capitolio",
-	"Downtown",
-	"Upper Strip",
-	"Centro",
-	"Copacabana",
-	"Greektown",
-	"Grant Park",
-	"Necropolis de Colon",
-	"Old Havana",
-	"Lakeside",
-	"Mid Strip",
-	"Copacabana",
-	"Santa Tereza",
-	"Downtown",
-	"Meigs Field",
-	"The Docks",
-	"Old Havana",
-	"North Vegas",
-	"Lakeside",
-	"Lagoa Rodrigo de Freitas",
-	"Praca da Bandeira",
-	"Grant Park",
-	"Downtown",
-	"Old Havana",
-	"Vedado",
-	"Downtown",
-	"Upper Strip",
-	"Leblon",
-	"Praca da Bandeira",
-	"Ukrainian Village",
-	"Downtown",
-	"Vedado",
-	"Necropolis de Colon",
-	"Mid Strip",
-	"Downtown",
-	"Copacabana",
-	"Centro",
-	"Cabrini Green",
-	"River North",
-	"Old Havana",
-	"Plaza",
-	"Lakes",
-	"Ghost Town",
-	"Flamengo",
-	"Centro",
-	"River North",
-	"Cabrini Green",
-	"Plaza",
-	"Old Havana",
-	"Downtown",
-	"Lakes",
-	"Centro",
-	"Flamengo",
-	"River North",
-	"Cabrini Green",
-	"Old Havana",
-	"Plaza de la Revolucion",
-	"Ghost Town",
-	"North Vegas",
-	"Centro",
+#ifndef PSX
+char *areaNames[4][8] = {
+	{
+		"Downtown",
+		"Wrigleyville",
+		"Greektown",
+		"Grant Park",
+		"Meigs Field",
+		"Ukrainian Village",
+		"River North",
+		"Cabrini Green",
+	},
+	{
+		"Necropolis de Colon",
+		"Capitolio",
+		"Old Havana",
+		"The Docks",
+		"Vedado",
+		"Plaza",
+		"Plaza de la Revolucion",
+		NULL,
+	},
+	{
+		"Downtown",
+		"Upper Strip",
+		"Lakeside",
+		"Mid Strip",
+		"North Vegas",
+		"Lakes",
+		"Ghost Town",
+		NULL,
+	},
+	{
+		"Centro",
+		"Copacabana",
+		"Santa Tereza",
+		"Lagoa Rodrigo de Freitas",
+		"Praca da Bandeira",
+		"Leblon",
+		"Flamengo",
+		NULL,
+	},
 };
+
+static char gameAreas[64] = {
+	// Getaway (0-6)
+	0, 1, // Downtown, Wrigleyville
+	0, 1, // Necropolis De Colon, Capitolio
+	0, 1, // Downtown, Upper Strip
+	0, 1, // Centro, Copacabana
+
+	// Gate race (8-14)
+	2, 3, // Greektown, Grant Park
+	0, 2, // Necropolis de Colon, Old Havana
+	2, 3, // Lakeside, Mid Strip
+	1, 2, // Copacabana, Santa Tereza
+
+	// Checkpoint (16-22)
+	0, 4, // Downtown, Meigs Field
+	3, 2, // The Docks, Old Havana
+	4, 2, // North Vegas, Lakeside
+	3, 4, // Lagoa Rodrigo de Freitas, Praca da Bandeira
+
+	// Trailblazer (24-30)
+	3, 0, // Grant Park, Downtown
+	2, 4, // Old Havana, Vedado
+	0, 1, // Downtown, Upper Strip
+	5, 4, // Leblon, Praca da Bandeira
+
+	// [MP] Cops 'n Robbers (32-38)
+	5, 0, // Ukrainian Village, Downtown
+	4, 0, // Vedado, Necropolis de Colon
+	3, 0, // Mid Strip, Downtown
+	1, 0, // Copacabana, Centro
+
+	// [MP] Capture the Flag (40-46)
+	7, 6, // Cabrini Green, River North
+	2, 5, // Old Havana, Plaza
+	5, 6, // Lakes, Ghost Town
+	6, 0, // Flamengo, Centro
+
+	// [MP] Take a Ride (48-54)
+	6, 7, // River North, Cabrini Green
+	5, 2, // Plaza, Old Havana
+	0, 5, // Downtown, Lakes
+	0, 6, // Centro, Flamengo
+
+	// [MP] Checkpoint (56-62)
+	6, 7, // River North, Cabrini Green
+	2, 6, // Old Havana, Plaza de la Revolucion
+	6, 4, // Ghost Town, North Vegas
+	0, 6, // Centro, Flamengo
+};
+
+#define AREA_NAME(level, index) areaNames[level][index]
+
+#define GAMEMODE_AREA(level, offset, index) gameAreas[offset + level * 2 + index]
+#define GAMEMODE_AREA_NAME(level, offset, index) AREA_NAME(level, GAMEMODE_AREA(level, offset, index))
+#else
+static char* gameNames[64] = {
+	// Getaway (0-6)
+	"Downtown",						"Wrigleyville",
+	"Necropolis De Colon",			"Capitolio",
+	"Downtown",						"Upper Strip",
+	"Centro",						"Copacabana",
+
+	// Gate race (8-14)
+	"Greektown",					"Grant Park",
+	"Necropolis de Colon",			"Old Havana",
+	"Lakeside",						"Mid Strip",
+	"Copacabana",					"Santa Tereza",
+
+	// Checkpoint (16-22)
+	"Downtown",						"Meigs Field",
+	"The Docks",					"Old Havana",
+	"North Vegas",					"Lakeside",
+	"Lagoa Rodrigo de Freitas",		"Praca da Bandeira",
+	
+	// Trailblazer (24-30)
+	"Grant Park",					"Downtown",
+	"Old Havana",					"Vedado",
+	"Downtown",						"Upper Strip",
+	"Leblon",						"Praca da Bandeira",
+
+	// [MP] Cops 'n Robbers (32-38)
+	"Ukrainian Village",			"Downtown",
+	"Vedado",						"Necropolis de Colon",
+	"Mid Strip",					"Downtown",
+	"Copacabana",					"Centro",
+
+	// [MP] Capture the Flag (40-46)
+	"Cabrini Green",				"River North",
+	"Old Havana",					"Plaza",
+	"Lakes",						"Ghost Town",
+	"Flamengo",						"Centro",
+	
+	// [MP] Take a Ride (48-54)
+	"River North",					"Cabrini Green",
+	"Plaza",						"Old Havana",
+	"Downtown",						"Lakes",
+	"Centro",						"Flamengo",
+
+	// [MP] Checkpoint (56-62)
+	"River North",					"Cabrini Green",
+	"Old Havana",					"Plaza de la Revolucion",
+	"Ghost Town",					"North Vegas",
+	"Centro",						"Flamengo",
+};
+
+#define AREA_NAME(level, index) "???"
+
+#define GAMEMODE_AREA(level, offset, index) (0)
+#define GAMEMODE_AREA_NAME(level, offset, index) gameNames[offset + level * 2 + index]
+#endif
 
 int CarAvailability[4][10] = {
 	{1,1,1,1,0,0,0,0,0,0},
@@ -337,7 +426,7 @@ void SetVariable(int var)
 #ifdef PSX
 				if (CallMemoryCard(0x11, 0) == 0)
 #else
-				if(LoadReplayFromFile("chase.d2rp") == 0)		// [A] temporary
+				if(LoadReplayFromFile("CHASE.D2RP") == 0)		// [A] temporary
 #endif
 				{
 					ReInitFrontend();
@@ -412,6 +501,12 @@ void SetVariable(int var)
 			GameType = GAME_IDLEDEMO;
 			gCurrentMissionNumber = (value + 400);
 			break;
+		case 14: // [A]
+		{
+			ShowBonusGallery();
+
+			LoadFrontendScreens();
+		}
 	}
 }
 
@@ -513,7 +608,6 @@ void LoadFrontendScreens(void)
 	DrawSync(0);
 
 	Loadfile("DATA\\FEFONT.BNK", (char*)&feFont);
-	//PadChecks();	// [A] there is a bug too
 }
 
 
@@ -790,7 +884,9 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 	/* end block 3 */
 	// End Line: 3526
 
-
+DR_MOVE In;
+DR_MOVE Out;
+RECT16 storeRect = { 768, 475, 255, 36 };
 
 // [D] [T]
 void DrawScreen(PSXSCREEN *pScr)
@@ -798,7 +894,15 @@ void DrawScreen(PSXSCREEN *pScr)
 	char version_info[32];
 	int numBtnsToDraw;
 	int i;
+#ifndef PSX
+	if (bRedrawFrontend)
+	{
+		// flush the old screen
+		//EndFrame();
 
+		bRedrawFrontend = 0;
+	}
+#endif
 	for (i = 0; i < 6; i++)
 		addPrim(current->ot + 11, &BackgroundPolys[i]);
 
@@ -815,12 +919,15 @@ void DrawScreen(PSXSCREEN *pScr)
 		{
 			numBtnsToDraw = pScr->numButtons;
 		}
-
+#ifndef PSX
+		NewSelection(0);
+#endif
 		for (i = 0; i < numBtnsToDraw; i++)
 		{
 			PSXBUTTON *button = &pScr->buttons[i];
 			int status = button->action >> 8;
 
+#ifdef PSX
 			if (status != 5)
 			{
 				if (button == pCurrButton)
@@ -864,6 +971,50 @@ void DrawScreen(PSXSCREEN *pScr)
 					}
 				}
 			}
+#else
+			int draw = (status != 5);
+
+			if (button == pCurrButton)
+			{
+				RECT16 rect;
+
+				rect.x = pCurrButton->s_x;
+				rect.y = pCurrButton->s_y;
+				rect.w = 255;
+				rect.h = 36;
+
+				SetDrawMove(&Out, &rect, storeRect.x, storeRect.y);
+				addPrim(current->ot + 8, &Out);
+
+				setXY0(&HighlightSprt, rect.x, rect.y);
+
+				addPrim(current->ot + 6, &HighlightSprt);
+				addPrim(current->ot + 7, &HighlightDummy);
+
+				draw = 1;
+			}
+
+			if (draw)
+			{
+				if (status == 3)
+				{
+					FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
+				}
+				else
+				{
+					if (bMissionSelect && (i == 0 || i == 5) ||
+						bDoingCarSelect && (i == 0 || i == 2) ||
+						bInCutSelect && (i == 0 || i == 2))
+					{
+						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
+					}
+					else
+					{
+						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+					}
+				}
+			}
+#endif
 		}
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
@@ -881,10 +1032,14 @@ void DrawScreen(PSXSCREEN *pScr)
 			addPrim(&current->ot[3], &extraDummy);
 		}
 	}
+#ifdef PSX
 	else 
 	{
 		EndFrame();
 	}
+#else
+	EndFrame();
+#endif
 }
 
 
@@ -1041,25 +1196,30 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	FEDrawCDicon();
 	Loadfile(fileName, _frontend_buffer + offset2);
 
-	setSprt(&extraSprt);
-	setXY0(&extraSprt, 100, 226);
-	setRGB0(&extraSprt, 128, 128, 128);
-	setUV0(&extraSprt, 0, 0);
-	setWH(&extraSprt, 255, 219);
-	setClut(&extraSprt, 960, 256);
-
 	rect.x = 896;
 	rect.y = 256;
 	rect.w = 64;
 	rect.h = 219;
-
+	
 	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
+	
 	DrawSync(0);
 	VSync(0);
 
-	setPolyFT3(&extraDummy);
-	setXY3(&extraDummy, -1, -1, -1, -1, -1, -1);
-	setTPage(&extraDummy, 0, 0, 896, 256);
+	if(bDrawExtra == 0)
+	{
+		setSprt(&extraSprt);
+		setPolyFT3(&extraDummy);
+
+		setXY0(&extraSprt, 100, 226);
+		setRGB0(&extraSprt, 128, 128, 128);
+		setUV0(&extraSprt, 0, 0);
+		setWH(&extraSprt, 255, 219);
+		setClut(&extraSprt, 960, 256);
+
+		setXY3(&extraDummy, -1, -1, -1, -1, -1, -1);
+		setTPage(&extraDummy, 0, 0, 896, 256);
+	}
 
 	bDrawExtra = 1;
 
@@ -1212,60 +1372,52 @@ void ReInitScreens(void)
 	/* end block 3 */
 	// End Line: 4370
 
-DR_MOVE In;
-DR_MOVE Out;
-RECT16 storeRect = { 768, 475, 255, 36 };
-
-// [D] [T]
-void NewSelection(short dir)
+int NewButton(short dir)
 {
 	PSXBUTTON *pNewB;
 	RECT16 rect;
 
-	if (pCurrScreen->numButtons == 0) 
-	{
-#ifndef PSX
-		EndFrame(); //do not overflow draw buffers
-#endif
-		return;
-	}
+	if (pCurrScreen->numButtons == 0)
+		return -1;
 
 	pNewB = pCurrButton;
+	int btn = 0;
 
 	// any buttons pressed?
 	if (dir != 0)
 	{
 		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
 		addPrim(current->ot+9, &In);
-	}
 
-	int btn = 0;
+		if ((dir & 0x1000) != 0)
+		{
+			btn = pCurrButton->u;
+		}
+		else if ((dir & 0x4000) != 0)
+		{
+			btn = pCurrButton->d;
+		}
+		else if ((dir & 0x8000) != 0)
+		{
+			btn = pCurrButton->l;
+		}
+		else if ((dir & 0x2000) != 0)
+		{
+			btn = pCurrButton->r;
+		}
 
-	if ((dir & 0x1000) != 0)
-	{
-		btn = pCurrButton->u;
+		if (btn != 0)
+		{
+			FESound(3);
+			pNewB = &pCurrScreen->buttons[btn - 1];
+		}
 	}
-	else if ((dir & 0x4000) != 0)
-	{
-		btn = pCurrButton->d;
-	}
-	else if ((dir & 0x8000) != 0)
-	{
-		btn = pCurrButton->l;
-	}
-	else if ((dir & 0x2000) != 0)
-	{
-		btn = pCurrButton->r;
-	}
+	
+	pCurrButton = pNewB;
 
-	if (btn != 0)
-	{
-		FESound(3);
-		pNewB = &pCurrScreen->buttons[btn - 1];
-	}
-
-	rect.x = pNewB->s_x;
-	rect.y = pNewB->s_y;
+#ifdef PSX
+	rect.x = pCurrButton->s_x;
+	rect.y = pCurrButton->s_y;
 	rect.w = 255;
 	rect.h = 36;
 
@@ -1276,8 +1428,6 @@ void NewSelection(short dir)
 	
 	addPrim(current->ot + 6, &HighlightSprt);
 	addPrim(current->ot + 7, &HighlightDummy);
-
-	pCurrButton = pNewB;
 
 	if ((pNewB->action >> 8) == 3) {
 		FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 32, 32, 32);
@@ -1293,8 +1443,19 @@ void NewSelection(short dir)
 			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 128, 128, 128);
 		}
 	}
+#endif
+	return btn;
+}
 
+// [D] [T]
+void NewSelection(short dir)
+{
+#ifdef PSX
+	NewButton(dir);
 	EndFrame();
+#else
+	NewButton(dir);
+#endif
 }
 
 
@@ -1417,12 +1578,10 @@ int HandleKeyPress(void)
 	{
 		if (ScreenDepth > 0)
 		{
-			if (!bDoneAllready) {
+			if (!bDoneAllready)
 				FESound(0);
-			}
-			else {
+			else 
 				bDoneAllready = 0;
-			}
 
 			if (--ScreenDepth == 0)
 			{
@@ -1580,7 +1739,52 @@ void PadChecks(void)
 	}
 }
 
+// [A] - was inlined in DoFrontEnd
+void InitFrontend(void)
+{
+	FEInitCdIcon();
 
+	ResetGraph(1);
+	SetDispMask(0);
+
+	bRedrawFrontend = 0;
+	gInFrontend = 1;
+
+	idle_timer = VSync(-1);
+
+	LoadFrontendScreens();
+
+	SetupBackgroundPolys();
+	SetupScreenSprts(&PsxScreens[0]);
+}
+
+// [A] - was inlined in DoFrontEnd
+void InitDisplay(void)
+{
+	SetDispMask(0);
+	ResetGraph(0);
+
+	SetFEDrawMode();
+
+	EnableDisplay();
+
+#ifdef PSX
+	DrawScreen(pCurrScreen);
+	EndFrame();
+
+	NewSelection(0);
+
+	// REALLY make sure the screen is cleared
+	EndFrame();
+	EndFrame();
+	EndFrame();
+	EndFrame();
+	EndFrame();
+	EndFrame();
+#endif
+
+	SetDispMask(1);
+}
 
 // decompiled code
 // original method signature: 
@@ -1620,46 +1824,9 @@ void PadChecks(void)
 // [D] [T]
 void DoFrontEnd(void)
 {
-	FEInitCdIcon();
+	InitFrontend();
+	InitDisplay();
 
-	ResetGraph(1);
-	SetDispMask(0);
-
-	bRedrawFrontend = 0;
-	gInFrontend = 1;
-
-	idle_timer = VSync(-1);
-
-	LoadFrontendScreens();
-
-	pCurrScreen = PsxScreens;
-	pCurrButton = PsxScreens[0].buttons;
-
-	SetupBackgroundPolys();
-	SetupScreenSprts(pCurrScreen);
-
-	SetDispMask(0);
-	ResetGraph(0);
-
-	SetFEDrawMode();
-
-	SetVideoMode(video_mode);
-	EnableDisplay();
-
-	DrawScreen(pCurrScreen);
-	EndFrame();
-
-	NewSelection(0);
-
-	EndFrame();
-	EndFrame();
-	EndFrame();
-	EndFrame();
-	EndFrame();
-	EndFrame();
-
-	SetDispMask(1);
-	
 	do
 	{
 		PadChecks();
@@ -1683,16 +1850,7 @@ void DoFrontEnd(void)
 		}
 
 #ifndef PSX
-		if (bRedrawFrontend)
-		{
-			// flush the old screen
-			EndFrame();
-
-			bRedrawFrontend = 0;
-		}
-
 		DrawScreen(pCurrScreen);
-		NewSelection(0);
 #else
 		if (bRedrawFrontend)
 		{
@@ -1935,22 +2093,22 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 
 	FE_CHARDATA *pFontInfo;
 	SPRT *font;
-	char let;
+	unsigned char let;
 
 	font = (SPRT *)current->primptr;
-	
+
 	if (justification & 4)
 	{
 		char *pString = string;
-		char c = 0;
+		unsigned char c = 0;
 
 		int w = 0;
 
-		while ((c = *pString++) != 0) 
+		while ((c = *pString++) != 0)
 		{
-			if (c == ' ') 
+			if (c == ' ')
 				w += 4;
-			else 
+			else
 				w += feFont.CharInfo[c].w;
 		}
 
@@ -3485,6 +3643,7 @@ int CutSceneCitySelectScreen(int bSetup)
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 
 	DrawSync(0);
+
 #ifdef PSX
 	DisplayOnScreenText();
 
@@ -3848,12 +4007,14 @@ void DisplayScoreTable(void)
 		offset = 32;
 	else if (GameType == GAME_CAPTURETHEFLAG)
 		offset = 40;
+	else if (GameType == GAME_CHECKPOINT && NumPlayers == 2)
+		offset = 56;
 	else
 		offset = (GameType - 4U) * 8;
 
 	if (GameType != GAME_PURSUIT && GameType != GAME_SURVIVAL) 
 	{
-		sprintf(text, "%s", gameNames[offset + GameLevel * 2 + GameNum]);
+		sprintf(text, "%s", GAMEMODE_AREA_NAME(GameLevel, offset, GameNum));
 		FEPrintStringSized(text, 420, 206, 0xc00, 2, otherCol.r, otherCol.g, otherCol.b);
 	}
 
@@ -3868,7 +4029,7 @@ void DisplayScoreTable(void)
 		{
 			if (pSE[i].items != -1) 
 			{
-				sprintf(text, "%d");
+				sprintf(text, "%d", pSE[i].items);
 				FEPrintString(text, 140, offset, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 			}
 		}
@@ -3913,9 +4074,12 @@ int ScoreScreen(int bSetup)
 	if (bSetup)
 	{
 		GameLevel = 0;
+
 		DisplayScoreTable();
+
 		bDoingScores = 1;
 		currSelIndex = 0;
+
 		return 0;
 	}
 
@@ -3923,57 +4087,37 @@ int ScoreScreen(int bSetup)
 	{
 		if (currSelIndex == 0)
 		{
-			if (GameType != GAME_SURVIVAL && GameType != GAME_PURSUIT)
+			if (GameType == GAME_SURVIVAL || GameType == GAME_PURSUIT)
 			{
-				if (GameNum == 1)
-				{
-					GameNum = 0;
-				}
-				else
-				{
-					GameNum = 1;
-					GameLevel--;
-					if (GameLevel < 0)
-						GameLevel = 3;
-				}
-
-				DisplayScoreTable();
-				bRedrawFrontend = 1;
-			}
-			else
-			{
-				GameLevel--;
-
-				if (GameLevel < 0)
+				if (--GameLevel < 0)
 					GameLevel = 3;
 
 				GameNum = 0;
-				DisplayScoreTable();
-				bRedrawFrontend = 1;
+			}
+			else
+			{
+				GameNum ^= 1;
 			}
 		}
 		else
 		{
-			if (GameType != GAME_SURVIVAL && GameType != GAME_PURSUIT && GameNum == 0)
+			if (GameType == GAME_SURVIVAL || GameType == GAME_PURSUIT)
 			{
-				GameNum = 1;
-
-				DisplayScoreTable();
-				bRedrawFrontend = 1;
-			}
-			else
-			{
-				GameLevel++;
-				
-				if (GameLevel > 3)
+				if (++GameLevel > 3)
 					GameLevel = 0;
 
 				GameNum = 0;
-				DisplayScoreTable();
-				bRedrawFrontend = 1;
 			}
-
+			else
+			{
+				GameNum ^= 1;
+			}
 		}
+
+#ifdef PSX
+		DisplayScoreTable();
+		bRedrawFrontend = 1;
+#endif
 	}
 	else if (fePad & 0x10)
 	{
@@ -3982,7 +4126,7 @@ int ScoreScreen(int bSetup)
 	}
 	else if ((fePad & 0x1000) || (fePad & 0x4000))
 	{
-		currSelIndex = currSelIndex ^ 1;
+		currSelIndex ^= 1;
 	}
 
 #ifndef PSX
@@ -4284,11 +4428,11 @@ int CheatScreen(int bSetup)
 		0x121,
 		0x11E,
 		0x11F,
-		(40 & 0xFF) | (1 << 8)
+		0,
 	};
 
 	int hackLookup2[5] = {
-		0xC01, 0xC00, -1, -1, -1
+		0xC01, 0xC00, -1, -1, 0xE00
 	};
 
 	if (bSetup == 0)
@@ -4439,77 +4583,6 @@ int CheatScreen(int bSetup)
 	return 0;
 }
 
-int g_GalleryImage = 0;
-
-char* GalleryImageNames[] = {
-	"GFX\\GAL\\IMG1.TIM",
-	"GFX\\GAL\\IMG2.TIM",
-	"GFX\\GAL\\IMG3.TIM"
-};
-
-// [A]
-int BonusGalleryScreen(int bSetup)
-{
-	char tmpStr[64];
-	int imageChanged;
-	RECT16 rect;
-
-	imageChanged = 0;
-	
-	if(bSetup)
-	{
-		bDoingScores = 1;
-		g_GalleryImage = 0;
-		imageChanged = 1;
-	}
-
-	if (fePad & 0x10)
-	{
-		// goint back
-		bDoingScores = 0;
-		LoadFrontendScreens();
-		//LoadBackgroundFile("DATA\\GFX.RAW");
-	}
-	else if(fePad & 0x8000)
-	{
-		imageChanged = 1;
-		g_GalleryImage--;
-		if (g_GalleryImage < 0)
-			g_GalleryImage = 2;
-
-		FESound(3);
-	}
-	else if(fePad & 0x2000)
-	{
-		imageChanged = 1;
-		g_GalleryImage++;
-
-		if (g_GalleryImage > 2)
-			g_GalleryImage = 0;
-
-		FESound(3);
-	}
-
-	if(imageChanged)
-	{
-		FEDrawCDicon();
-		LoadfileSeg(GalleryImageNames[g_GalleryImage], _overlay_buffer, 20, 0x4ff80);
-		LoadClut((u_long*)_overlay_buffer, 640, 511);
-
-		DrawSync(0);
-		setRECT16(&rect, 640, 0, 320, 511);
-
-		LoadImage(&rect, (u_long*)&_overlay_buffer[512]);
-
-		DrawSync(0);
-	}
-
-	//sprintf(tmpStr, "Gallery %d of %d", g_GalleryImage + 1, 3);
-	//FEPrintStringSized(tmpStr, 10, 10, 4, 0, 128, 64, 0 );
-	
-	return 0;
-}
-
 
 // decompiled code
 // original method signature: 
@@ -4646,18 +4719,18 @@ int GameNameScreen(int bSetup)
 	{
 		
 		if (GameType == GAME_TAKEADRIVE && NumPlayers == 2) 
-			offset = 0x30;
+			offset = 48;
 		else if (GameType == GAME_COPSANDROBBERS)
-			offset = 0x20;
+			offset = 32;
 		else if (GameType == GAME_CAPTURETHEFLAG)
-			offset = 0x28;
+			offset = 40;
 		else if (GameType == GAME_CHECKPOINT && NumPlayers == 2)
-			offset = 0x38;
+			offset = 56;
 		else
 			offset = (GameType - 4U) * 8;
 
-		sprintf(pCurrScreen->buttons[0].Name, gameNames[offset + GameLevel * 2]);
-		sprintf(pCurrScreen->buttons[1].Name, gameNames[offset + GameLevel * 2 + 1]);
+		strcpy(pCurrScreen->buttons[0].Name, GAMEMODE_AREA_NAME(GameLevel, offset, 0));
+		strcpy(pCurrScreen->buttons[1].Name, GAMEMODE_AREA_NAME(GameLevel, offset, 1));
 	}
 
 	return 0;

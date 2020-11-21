@@ -15,6 +15,7 @@
 #include "SPOOL.H"
 #include "MODELS.H"
 #include "OBJCOLL.H"
+#include "OVERLAY.H"
 #include "PRES.H"
 #include "SOUND.H"
 #include "SYSTEM.H"
@@ -150,10 +151,10 @@ int CursorX = 0;
 int ClearCameras = 0;
 int DirectorMenuActive = 0;
 
+
 // [D] [T]
 void InitDirectorVariables(void)
 {
-	char* pcVar1;
 	int count;
 
 	PlayMode = 0;
@@ -1391,11 +1392,20 @@ void ShowIcons(unsigned char* menu, int selected, int x_offset)
 // [D] [T]
 void ShowReplayOptions(void)
 {
-	if (gInGameCutsceneActive == 0 && quick_replay == 0)
-	{
-		ShowReplayMenu();
-		CameraBar(CameraCnt);
-	}
+	if (gInGameCutsceneActive || quick_replay)
+		return;
+
+	// [A] handle sound here
+	if (DirectorMenuActive)	// not a FastForward
+		PauseSound();
+	else if(PlayMode != 2 && PlayMode != 3)
+		UnPauseSound();
+	
+	if (!gDoOverlays && !DirectorMenuActive)
+		return;
+
+	ShowReplayMenu();
+	CameraBar(CameraCnt);
 }
 
 
@@ -1454,22 +1464,18 @@ void ShowReplayOptions(void)
 // [D] [T]
 void ShowReplayMenu(void)
 {
-	unsigned char* menu;
 	int strobe;
 	int selected;
 
 	if (DirectorMenuActive < 1 && PlayMode != 2 && PlayMode != 3)
 	{
-		UnPauseSound();
 		ShowIcons(menu0, 0, 0);
 	}
 	else
 	{
-		PauseSound();
-
-		selected = CursorX;
-
-		if (DirectorMenuActive != 1)
+		if (DirectorMenuActive == 1)
+			selected = CursorX;
+		else
 			selected = 99;
 
 		ShowIcons(menu1, selected, 0);
@@ -1481,9 +1487,7 @@ void ShowReplayMenu(void)
 		{
 			if (DirectorMenuActive == 2)
 			{
-				menu = menu2;
-				selected = 0;
-				ShowIcons(menu, CursorY - 1, selected);
+				ShowIcons(menu2, CursorY - 1, 0);
 			}
 			else
 			{
@@ -1494,9 +1498,7 @@ void ShowReplayMenu(void)
 		{
 			if (DirectorMenuActive == 2)
 			{
-				menu = menu6;
-				selected = MenuOffset;
-				ShowIcons(menu, CursorY - 1, selected);
+				ShowIcons(menu6, CursorY - 1, MenuOffset);
 			}
 			else
 			{
@@ -1526,9 +1528,8 @@ void ShowReplayMenu(void)
 			strobe = 32 - strobe;
 
 		SetTextColour((strobe << 3), 0, 0);
-		PrintString("Auto direct", 100, 0x1e);
+		PrintString("Auto direct", 100, 30);
 	}
-	return;
 }
 
 
@@ -1722,27 +1723,27 @@ void ControlReplay(void)
 	}
 
 	// register pads
-	if ((padd & 0x8000) != 0 && debounce == 0)
+	if ((padd & 0x8000) && debounce == 0)
 	{
 		move = 2;
 		debounce = 1;
 	}
-	if ((padd & 0x2000) != 0 && debounce == 0)
+	if ((padd & 0x2000) && debounce == 0)
 	{
 		move = 1;
 		debounce = 1;
 	}
-	if ((padd & 0x1000) != 0 && debounce == 0)
+	if ((padd & 0x1000) && debounce == 0)
 	{
 		move = 3;
 		debounce = 1;
 	}
-	if ((padd & 0x4000) != 0 && debounce == 0)
+	if ((padd & 0x4000) && debounce == 0)
 	{
 		move = 4;
 		debounce = 1;
 	}
-	if ((padd & 0x40) != 0 && debounce == 0)
+	if ((padd & 0x40) && debounce == 0)
 	{
 		if (DirectorMenuActive == 0)
 			pauseflag = 1;
@@ -3009,6 +3010,10 @@ int InvalidCamera(int car_num)
 	int dz;
 	int numEventModels;
 
+	// [A] bug fix of invalid player camera
+	if (CameraCnt < 3)
+		return 0;
+	
 	// check if camera is not too far
 	if (cameraview != 2)
 	{

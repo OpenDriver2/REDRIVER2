@@ -37,7 +37,7 @@
 
 #if defined(GLEW)
 #define GL_GLEXT_PROTOTYPES 1
-#include <glad.h>
+#include "glad.h"
 #endif
 
 /*

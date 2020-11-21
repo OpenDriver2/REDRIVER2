@@ -12,6 +12,7 @@
 #include "CIV_AI.H"
 
 #include "STRINGS.H"
+#include "RAND.H"
 
 char AnalogueUnpack[16] = { 
 	0, -51, -63, -75, -87, -99, -111, -123,
@@ -115,6 +116,9 @@ void InitPadRecording(void)
 	}
 	else
 	{
+		// reset stream count as cutscene/chase can increase it
+		NumReplayStreams = NumPlayers;
+		
 		for (i = 0; i < NumReplayStreams; i++)
 		{
 			ReplayStreams[i].playbackrun = 0;
@@ -174,9 +178,9 @@ int SaveReplayToBuffer(char *buffer)
 	header->magic = 0x14793209;			// TODO: custom
 	header->GameLevel = GameLevel;
 	header->GameType = GameType;
-	header->NumReplayStreams = NumReplayStreams;
 	header->MissionNumber = gCurrentMissionNumber;
-	
+
+	header->NumReplayStreams = NumReplayStreams - NumCutsceneStreams; 
 	header->NumPlayers = NumPlayers;
 	header->CutsceneEvent = -1;
 	header->RandomChase = gRandomChase;
@@ -297,6 +301,7 @@ int SaveReplayToBuffer(char *buffer)
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
+int gCutsceneAsReplay_ReserveSlots = 2;
 char gCutsceneRecorderPauseText[64] = { 0 };
 char gCurrentChasePauseText[64] = { 0 };
 
@@ -378,17 +383,17 @@ int LoadCutsceneAsReplay(int subindex)
 	return 0;
 }
 
-void LoadCutsceneRecorder()
+void LoadCutsceneRecorder(char* configFilename)
 {
 	ini_t* config;
 	int loadExistingCutscene;
 	int subindex;
 
-	config = ini_load("cutscene_recorder.ini");
+	config = ini_load(configFilename);
 
 	if(!config)
 	{
-		printError("Unable to open 'cutscene_recorder.ini!'\n");
+		printError("Unable to open '%s'!\n", configFilename);
 		return;
 	}
 
@@ -399,7 +404,12 @@ void LoadCutsceneRecorder()
 	ini_sget(config, "settings", "mission", "%d", &gCutsceneAsReplay);
 	ini_sget(config, "settings", "baseMission", "%d", &gCurrentMissionNumber);
 	ini_sget(config, "settings", "player", "%d", &gCutsceneAsReplay_PlayerId);
+	ini_sget(config, "settings", "reserveSlots", "%d", &gCutsceneAsReplay_ReserveSlots);
 	ini_sget(config, "settings", "subindex", "%d", &subindex);
+
+	// totally limited by streams
+	if(gCutsceneAsReplay_ReserveSlots > 8)
+		gCutsceneAsReplay_ReserveSlots = 8;
 	
 	if(loadExistingCutscene)
 	{
@@ -586,7 +596,25 @@ int LoadReplayFromBuffer(char *buffer)
 	return 1;
 }
 
+#ifndef PSX
+int LoadUserAttractReplay(int mission, int userId)
+{
+	char customFilename[64];
+	
+	if (userId >= 0 && userId < gNumUserChases)
+	{
+		sprintf(customFilename, "REPLAYS\\User\\%s\\ATTRACT.%d", gUserReplayFolderList[userId], mission);
 
+		if (FileExists(customFilename))
+		{
+			if (Loadfile(customFilename, _other_buffer))
+				return LoadReplayFromBuffer(_other_buffer);
+		}
+	}
+
+	return 0;
+}
+#endif
 
 // decompiled code
 // original method signature: 
@@ -616,7 +644,26 @@ int LoadAttractReplay(int mission)
 {
 	char filename[32];
 
-	sprintf(filename,"REPLAYS\\ATTRACT.%d", mission);
+#ifndef PSX
+	int userId = -1;
+	
+	// [A] REDRIVER2 PC - custom attract replays
+	if (gNumUserChases)
+	{
+		userId = rand() % (gNumUserChases + 1);
+
+		if (userId == gNumUserChases)
+			userId = -1;
+	}
+
+	if (LoadUserAttractReplay(mission, userId))
+	{
+		printInfo("Loaded custom attract replay (%d) by %s\n", mission, gUserReplayFolderList[userId]);
+		return 1;
+	}
+#endif
+
+	sprintf(filename, "REPLAYS\\ATTRACT.%d", mission);
 
 	if (!FileExists(filename))
 		return 0;
@@ -675,6 +722,10 @@ char GetPingInfo(char *cookieCount)
 
 			PingBufferPos++;
 		}
+		else
+		{
+			printInfo("-1 frame!\n");
+		}
 
 		return retCarId;
 	}
@@ -685,21 +736,27 @@ char GetPingInfo(char *cookieCount)
 // [A] Stores ping info into replay buffer
 int StorePingInfo(int cookieCount, int carId)
 {
+#ifdef CUTSCENE_RECORDER
 	PING_PACKET* packet;
 
+	//extern int gCutsceneAsReplay;
+	if (gCutsceneAsReplay == 0)
+		return 0;
+	
 	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
 		return 0;
-
+	
 	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		packet = &PingBuffer[PingBufferPos++];
 		packet->frame = (CameraCnt - frameStart & 0xffffU);
 		packet->carId = carId;
+		
 		packet->cookieCount = cookieCount;
 
 		return 1;
 	}
-
+#endif
 	return 0;
 }
 

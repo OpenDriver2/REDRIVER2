@@ -43,7 +43,9 @@ HUBCAP gHubcap;
 // active cars
 CAR_DATA* active_car_list[MAX_CARS];
 BOUND_BOX bbox[MAX_CARS];
-unsigned char lightsOnDelay[MAX_CARS];
+u_char lightsOnDelay[MAX_CARS];
+u_short civ_clut[8][32][6];
+
 
 // decompiled code
 // original method signature: 
@@ -1229,14 +1231,14 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[11].vz = -FW2z;
 	VertPtr[12].vz = -FW2z;
 
-	VertPtr[0x17].vz = 0;
-	VertPtr[0x16].vz = 0;
-	VertPtr[0x15].vy = 0;
-	VertPtr[0x14].vy = 0;
-	VertPtr[0x13].vy = 0;
-	VertPtr[0x12].vy = 0;
-	VertPtr[0x11].vz = 0;
-	VertPtr[0x10].vz = 0;
+	VertPtr[23].vz = 0;
+	VertPtr[22].vz = 0;
+	VertPtr[21].vy = 0;
+	VertPtr[20].vy = 0;
+	VertPtr[19].vy = 0;
+	VertPtr[18].vy = 0;
+	VertPtr[17].vz = 0;
+	VertPtr[16].vz = 0;
 
 	VertPtr[23].vy = wheelSize;
 	VertPtr[22].vy = wheelSize;
@@ -1273,14 +1275,14 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[11].vz = -BW2z;
 	VertPtr[12].vz = -BW2z;
 
-	VertPtr[0x17].vz = 0;
-	VertPtr[0x16].vz = 0;
-	VertPtr[0x15].vy = 0;
-	VertPtr[0x14].vy = 0;
-	VertPtr[0x13].vy = 0;
-	VertPtr[0x12].vy = 0;
-	VertPtr[0x11].vz = 0;
-	VertPtr[0x10].vz = 0;
+	VertPtr[23].vz = 0;
+	VertPtr[22].vz = 0;
+	VertPtr[21].vy = 0;
+	VertPtr[20].vy = 0;
+	VertPtr[19].vy = 0;
+	VertPtr[18].vy = 0;
+	VertPtr[17].vz = 0;
+	VertPtr[16].vz = 0;
 
 	VertPtr[23].vy = wheelSize;
 	VertPtr[22].vy = wheelSize;
@@ -1294,7 +1296,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 	SteerMatrix.m[0][0] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2 + 1];
 	SteerMatrix.m[0][2] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2];
-	SteerMatrix.m[1][1] = 4096;
+	SteerMatrix.m[1][1] = ONE;
 	SteerMatrix.m[2][1] = 0;
 	SteerMatrix.m[1][2] = 0;
 	SteerMatrix.m[1][0] = 0;
@@ -2349,6 +2351,57 @@ char GetCarPalIndex(int tpage)
 }
 
 
+// [D]
+void ProcessPalletLump(char *lump_ptr, int lump_size)
+{
+	if (gDriver1Level)	// [A]
+		return;	// TODO: load Driver 1 civ palettes
 
+	ushort clutValue;
+	int *buffPtr;
+	int texnum;
+	int palette;
+	u_short *clutTablePtr;
+	u_short clutTable[320];
+	int tpageindex;
+	int total_cluts;
+	int clut_number;
 
+	if (*(int*)lump_ptr == 0 || *(int*)(lump_ptr + 4) == -1)
+		return;
 
+	buffPtr = (int*)(lump_ptr + 4);
+	clutTablePtr = (u_short*)clutTable;
+
+	do
+	{
+		palette = buffPtr[0];
+		texnum = buffPtr[1];
+		tpageindex = buffPtr[2];
+		total_cluts = buffPtr[3];
+
+		clut_number = GetCarPalIndex(tpageindex);
+
+		if (total_cluts == -1)
+		{
+			LoadImage(&clutpos, (u_long*)(buffPtr + 4));
+
+			clutValue = GetClut(clutpos.x, clutpos.y);
+
+			*clutTablePtr = clutValue;
+			clutTablePtr += 1;
+
+			IncrementClutNum(&clutpos);
+
+			buffPtr += 12;
+		}
+		else
+		{
+			clutValue = clutTable[total_cluts];
+			buffPtr += 4;
+		}
+
+		civ_clut[clut_number][texnum][palette + 1] = clutValue;
+	}
+	while (*buffPtr != -1);
+}

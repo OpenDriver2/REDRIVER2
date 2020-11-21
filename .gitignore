@@ -15,10 +15,14 @@
 *.ilk
 *.code-workspace
 .vscode/*
-_OLD/
+.vs/*
+OTHER/*
+Driver1/*
 d1_xm_fix/*
 dump_music/*
 GAME/*
+Ghidra/*
+ART/*
 symdump-decompile/*
 PSX_BINS/*
 PSX_BINS_ITALIAN/*

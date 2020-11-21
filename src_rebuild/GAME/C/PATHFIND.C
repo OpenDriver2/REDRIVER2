@@ -8,6 +8,7 @@
 #include "CARS.H"
 #include "CAMERA.H"
 
+#include <stdint.h>
 #include "SDL.h"
 
 ushort distanceCache[16384];

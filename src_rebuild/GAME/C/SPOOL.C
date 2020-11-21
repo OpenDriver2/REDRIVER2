@@ -1,6 +1,7 @@
 #include "DRIVER2.H"
 
 #ifndef PSX
+#include <stdint.h>
 #include <SDL.h>
 #endif // !PSX
 
@@ -110,7 +111,7 @@ int chunk_complete;
 
 int new_area_location;
 int LoadingArea = 0;
-unsigned short *newmodels;
+unsigned short *newmodels = NULL;
 
 SPOOLQ spooldata[48];
 
@@ -1168,6 +1169,8 @@ void InitSpooling(void)
 		ClearRegion(i);
 	}
 
+	CleanSpooledModelSlots();
+
 	newmodels = NULL;
 	spool_regioncounter = 0;
 	spoolerror = 0;
@@ -1727,21 +1730,12 @@ void SetupModels(void)
 // [D] [T]
 void LoadInAreaModels(int area)
 {
-	if (newmodels)
-	{
-		// clear old model ids
-		int nmodels = *newmodels;
-		unsigned short* new_model_numbers = newmodels + 1;
+	int num_freed;
 
-		// set old model ids to dummy
-		for (int i = 0; i < nmodels; i++)
-		{
-			int model_number = new_model_numbers[i];
-			modelpointers[model_number] = &dummyModel;
-		}
+	// [A] invalidate previously used spooled slots
+	num_freed = CleanSpooledModelSlots();
 
-		SPOOL_INFO("freed %d model slots\n", nmodels);
-	}
+	SPOOL_INFO("freed %d model slots\n", num_freed);
 
 	int length = AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (length-1) * 2048);

@@ -49,6 +49,36 @@ unsigned short *Low2LowerDetailTable = NULL;
 	/* end block 3 */
 	// End Line: 79
 
+// [A]
+int staticModelSlotBitfield[48];
+
+// [A] returns freed slot count
+int CleanSpooledModelSlots()
+{
+	int i;
+	int num_freed;
+
+	num_freed = 0;
+
+	// assign model pointers
+	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
+	{
+		// if bit does not indicate usage - reset to dummy model
+		if((staticModelSlotBitfield[i >> 5] & 1 << (i & 31)) == 0)
+		{
+			if(modelpointers[i] != &dummyModel)
+			{
+				modelpointers[i] = &dummyModel;
+				pLodModels[i] = &dummyModel;
+
+				num_freed++;
+			}
+		}
+	}
+
+	return num_freed;
+}
+
 // [D] [T]
 void ProcessMDSLump(char *lump_file, int lump_size)
 {
@@ -62,6 +92,9 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	mdsfile = (lump_file + 4);
 	num_models_in_pack = modelAmts;
 
+	// [A] usage bits
+	ClearMem((char*)staticModelSlotBitfield, sizeof(staticModelSlotBitfield));
+
 	// assign model pointers
 	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
 	{
@@ -74,8 +107,14 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		size = *(int*)mdsfile;
 		mdsfile += sizeof(int);
 
-		if (size) 
-			modelpointers[i] = (MODEL*)mdsfile;
+		if (size)
+		{
+			// add the usage bit
+			staticModelSlotBitfield[i >> 5] |= 1 << (i & 31);
+			
+			model = (MODEL*)mdsfile;
+			modelpointers[i] = model;
+		}
 
 		mdsfile += size;
 	}

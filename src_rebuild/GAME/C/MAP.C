@@ -797,9 +797,10 @@ void ControlMap(void)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
 
 	current_region = region_to_unpack;
-	CheckUnpackNewRegions();
-
+	
 	CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
+
+	CheckUnpackNewRegions();
 
 	current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
 	current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;

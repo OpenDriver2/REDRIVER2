@@ -274,7 +274,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	SPRT prims[4];
 	POLY_FT3 nulls[4];
 	int fade_step;
-	
+
 	if (effect == 1) 
 		SetDispMask(0);
 
@@ -282,6 +282,13 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	SetupDefDispEnv(&load_disp, 0, 0, 320, 512);
 
 	load_draw.dfe = 1;
+#ifndef PSX
+	load_draw.clip.x = 0;
+	load_draw.clip.y = 0;
+	load_draw.clip.w = 320;
+	load_draw.clip.h = 512;
+	load_disp.isinter = 1;
+#endif
 
 	PutDispEnv(&load_disp);
 	PutDrawEnv(&load_draw);

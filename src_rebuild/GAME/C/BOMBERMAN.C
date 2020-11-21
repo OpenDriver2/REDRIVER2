@@ -144,40 +144,40 @@ void HandleThrownBombs(void)
 	int dx, dz;
 	VECTOR velocity;
 
-	if (gBombTargetVehicle == NULL)
-		return;
-
-	ThrownBombDelay--;
-
-	if (ThrownBombDelay == -1)
+	// throw bombs if we have vehicle
+	if (gBombTargetVehicle)
 	{
-		ThrownBombDelay = Random2(0) % 45 + 8;
+		ThrownBombDelay--;
 
-		bomb = &ThrownBombs[CurrentBomb++];
-		CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
+		if (ThrownBombDelay == -1)
+		{
+			ThrownBombDelay = Random2(0) % 45 + 8;
 
-		bomb->flags = 1;
-		bomb->active = 1;
+			bomb = &ThrownBombs[CurrentBomb++];
+			CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
-		bomb->position.vx = gBombTargetVehicle->hd.where.t[0];
-		bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
-		bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
+			bomb->flags = 1;
+			bomb->active = 1;
 
-		velocity.vx = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[0]);
-		velocity.vy = 0;
-		velocity.vz = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[2]);
+			bomb->position.vx = gBombTargetVehicle->hd.where.t[0];
+			bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
+			bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
 
-		bomb->velocity.vx = velocity.vx >> 10;
-		bomb->velocity.vz = velocity.vz >> 10;
-		bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR *)player[0].pos) >> 7);
+			velocity.vx = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[0]);
+			velocity.vz = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[2]);
 
-		if ((rand() & 1) == 0)
-			bomb->rot_speed = -bomb->velocity.vy;
-		else
-			bomb->rot_speed = bomb->velocity.vy;
+			bomb->velocity.vx = velocity.vx >> 10;
+			bomb->velocity.vz = velocity.vz >> 10;
+			bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR *)player[0].pos) >> 7);
 
-		if (bomb->velocity.vy < -100)
-			bomb->velocity.vy = -100;
+			if ((rand() & 1) == 0)
+				bomb->rot_speed = -bomb->velocity.vy;
+			else
+				bomb->rot_speed = bomb->velocity.vy;
+
+			if (bomb->velocity.vy < -100)
+				bomb->velocity.vy = -100;
+		}
 	}
 
 	bomb = ThrownBombs;
@@ -185,7 +185,7 @@ void HandleThrownBombs(void)
 	i = 0;
 	while (i < MAX_THROWN_BOMBS)
 	{
-		if ((bomb->flags & 1) != 0) 
+		if (bomb->flags & 1) 
 		{
 			bomb->position.vx += bomb->velocity.vx;
 			bomb->position.vy += bomb->velocity.vy;
@@ -237,7 +237,7 @@ void HandleThrownBombs(void)
 		}
 		bomb++;
 		i++;
-	};
+	}
 }
 
 

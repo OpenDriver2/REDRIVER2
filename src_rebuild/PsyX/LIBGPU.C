@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include <LIBETC.H>
+#include "LIBETC.H"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -246,7 +246,6 @@ int DrawSync(int mode)
 		drawsync_callback();
 	}
 
-
 	return 0;
 }
 
@@ -453,6 +452,8 @@ DRAWENV* SetDefDrawEnv(DRAWENV* env, int x, int y, int w, int h)//(F)
 	env->clip.x = x;
 	env->clip.y = y;
 	env->clip.w = w;
+	env->clip.h = h;
+
 	env->tw.x = 0;
 	env->tw.y = 0;
 	env->tw.w = 0;
@@ -461,7 +462,6 @@ DRAWENV* SetDefDrawEnv(DRAWENV* env, int x, int y, int w, int h)//(F)
 	env->g0 = 0;
 	env->b0 = 0;
 	env->dtd = 1;
-	env->clip.h = h;
 
 	if (GetVideoMode() == 0)
 	{

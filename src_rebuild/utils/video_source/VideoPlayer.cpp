@@ -1,22 +1,127 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
+
 #include <EMULATOR.H>
+#include <EMULATOR_TIMER.H>
 #include "DRIVER2.H"
 
 #include "C/PAD.H"
 #include "C/SYSTEM.H"
 #include "C/E3STUFF.H"
-#include "C/PRES.H"
-#include "C/PAUSE.H"
-
+#include "C/FMV_FONT.h"
 #include "STRINGS.H"
 
 #include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
+#include "PLATFORM.H"
 
+// Partially decompiled function from FMV EXE
+void InitFMVFont()
+{
+	int i;
+	RECT16 fontRect;
 
+	DrawSync(0);
+	LoadClut((u_long *)(fmvFont + 20),960,72);
+	DrawSync(0);
 
-int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf)
+	fontRect.x = 960;
+	fontRect.y = 0;
+	fontRect.w = 64;
+	fontRect.h = 72;
+
+	LoadImage2(&fontRect,(u_long *)(fmvFont + 64));
+	DrawSync(0);
+}
+
+POLY_FT4 fmvTextPolys[512];
+
+// partially decompiled
+void PrintFMVText(char *str, int x, short y, int brightness)
+{
+	u_char chr;
+	char *ptr;
+	int x_ofs;
+	int i;
+	int str_w;
+	int drawnChars;
+	OTTYPE ot;
+	POLY_FT4* poly;
+
+	ClearOTagR((ulong*)&ot, 1);
+	poly = fmvTextPolys;
+
+	str_w = 0;
+
+	if (brightness > 128) 
+		brightness = 128;
+
+	i = 0;
+	while (chr = str[i], chr != 0) 
+	{
+		if (chr == 32)
+			str_w += 4;
+		else
+			str_w += fmvFontUV[chr].w;
+		i++;
+	}
+
+	x_ofs = x - str_w / 2;
+
+	drawnChars = 0;
+
+	ptr = (char *)str;
+	while( true )
+	{
+		chr = *ptr;
+		ptr++;
+	
+		if (chr == 0 || drawnChars > 511) 
+			break;
+		
+		if (chr == 32)	// space
+		{
+			x_ofs += 4;
+		}
+		else
+		{
+			setPolyFT4(poly);
+			
+			poly->x0 = x_ofs;
+			poly->y0 = y;
+			poly->x1 = x_ofs + fmvFontUV[chr].w;
+			poly->y1 = y;
+			poly->x2 = x_ofs;
+			poly->y2 = y + fmvFontUV[chr].h;
+			poly->x3 = x_ofs + fmvFontUV[chr].w;
+			poly->y3 = y + fmvFontUV[chr].h;
+			poly->u0 = fmvFontUV[chr].u;
+			poly->v0 = fmvFontUV[chr].v;
+			poly->u1 = fmvFontUV[chr].u + fmvFontUV[chr].w;
+			poly->v1 = fmvFontUV[chr].v;
+			poly->u2 = fmvFontUV[chr].u;
+			poly->v2 = fmvFontUV[chr].v + fmvFontUV[chr].h;
+			poly->u3 = fmvFontUV[chr].u + fmvFontUV[chr].w;
+			poly->v3 = fmvFontUV[chr].v + fmvFontUV[chr].h;
+			poly->tpage = getTPage(0,0, 960, 0);
+			poly->clut = getClut(960, 72);
+
+			poly->r0 = brightness;
+			poly->g0 = brightness;
+			poly->b0 = brightness;
+
+			addPrim(&ot, poly);
+			
+			x_ofs += fmvFontUV[chr].w;
+			drawnChars++;
+			poly++;
+		}
+	}
+
+	DrawOTag((ulong*)&ot);
+}
+
+int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf, int& width, int& height)
 {
 	// it's rough but it works...
 	jpeg_decompress_struct cinfo;
@@ -29,7 +134,12 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	for (u_char* curr_scanline = dst_buf; cinfo.output_scanline < cinfo.output_height; curr_scanline += cinfo.output_width * cinfo.num_components)
+	width = cinfo.image_width;
+	height = cinfo.image_height;
+
+	for (u_char* curr_scanline = dst_buf; 
+		cinfo.output_scanline < cinfo.output_height; 
+		curr_scanline += cinfo.output_width * cinfo.num_components)
 	{
 		jpeg_read_scanlines(&cinfo, &curr_scanline, 1);
 	}
@@ -43,44 +153,31 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 // emulator window TODO: interface
 extern int g_swapInterval;
 
-void SetupMovieRectangle(ReadAVI::stream_format_t& strFmt)
+void SetupMovieRectangle(int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
 
+	
 	float psxScreenW = 320.0f;
-	float psxScreenH = 240.0f;
+	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
 
-	int ideal_image_height = strFmt.image_height; // strFmt.image_height;
+	const float video_aspect = float(image_w) / float(image_h);
+	const float psx_aspect = (psxScreenH / psxScreenW);
+	
+	const float image_to_screen_w = float(psxScreenW) / float(windowWidth);// * psx_aspect;
+	const float image_to_screen_h = float(psxScreenH) / float(windowHeight);// * psx_aspect;
 
-	if (ideal_image_height < 220)
-		ideal_image_height = 220;
+	const float image_scale = float(windowHeight) / psxScreenH * video_aspect;
+	
+	float clipRectX = 0;
+	float clipRectY = 0;
+	float clipRectW = image_to_screen_w * image_scale;
+	float clipRectH = image_to_screen_h * image_scale;
 
-	RECT16 rect;
-	rect.x = 0;
-	rect.y = (psxScreenH - ideal_image_height);// / 2;
-	rect.w = strFmt.image_width;
-	rect.h = ideal_image_height;
-
-	const float video_aspect = float(strFmt.image_width) / float(ideal_image_height);
-	float emuScreenAspect = float(windowHeight) / float(windowWidth);
-
-	// first map to 0..1
-	float clipRectX = (float)(rect.x) / psxScreenW;
-	float clipRectY = (float)(rect.y) / psxScreenH;
-	float clipRectW = (float)(rect.w) / psxScreenW;
-	float clipRectH = (float)(rect.h) / psxScreenH;
-
-	// then map to screen
-	clipRectY -= 1.0f;
-	clipRectX -= 1.0f;
-
-	clipRectY /= video_aspect * emuScreenAspect;
-	clipRectH /= emuScreenAspect * video_aspect;
-
-	clipRectW *= 2.0f;
-	clipRectH *= 2.0f;
-
+	clipRectX -= clipRectW * 0.5f;
+	clipRectY -= clipRectH * 0.5f;
+	
 	u_char l = 0;
 	u_char t = 0;
 	u_char r = 1;
@@ -143,8 +240,16 @@ extern void Shader_CheckProgramStatus(GLuint program);
 extern ShaderID Shader_Compile(const char* source);
 extern void Emulator_SetShader(const ShaderID& shader);
 
+#define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
+
+u_char* g_FMVDecodedImageBuffer = NULL;
+
 void FMVPlayerInitGL()
 {
+	g_FMVDecodedImageBuffer = (u_char*)malloc(DECODE_BUFFER_ALLOC);	
+	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
+	// FIXME: double buffering?
+	
 #if defined(OGL) || defined(OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
@@ -153,17 +258,31 @@ void FMVPlayerInitGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 320, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4096, 4096, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	if(!g_FMVShader)
+	{
 		g_FMVShader = Shader_Compile(fmv_shader);
+	}
 #endif
 }
 
 void FMVPlayerShutdownGL()
 {
+	RECT16 rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = 512;
+	rect.h = 256;
+
+	free(g_FMVDecodedImageBuffer);
+	g_FMVDecodedImageBuffer = NULL;
+	
+	ClearImage(&rect, 0, 0, 0);
+	Emulator_SwapWindow();
+
 	Emulator_DestroyTexture(g_FMVTexture);
 }
 
@@ -178,7 +297,7 @@ struct SUBTITLE
 	char text[32];
 };
 
-SUBTITLE g_Subtitles[512];
+SUBTITLE g_Subtitles[128];
 int g_NumSubtitles = 0;
 
 void InitSubtitles(const char* filename)
@@ -188,7 +307,6 @@ void InitSubtitles(const char* filename)
 	if (subFile)
 	{
 		fread(&g_NumSubtitles, sizeof(int), 1, subFile);
-		printInfo("Subtitle text count: %d\n", g_NumSubtitles);
 
 		fread(g_Subtitles, sizeof(g_Subtitles), g_NumSubtitles, subFile);
 
@@ -196,10 +314,59 @@ void InitSubtitles(const char* filename)
 	}
 }
 
+char* g_CreditsBuffer = NULL;
+char* g_CreditsLines[512];
+
+void InitCredits(const char* filename)
+{
+	memset(g_CreditsLines, 0, sizeof(g_CreditsLines));
+	
+	FILE* credFile = fopen(filename, "rb");
+	if (credFile)
+	{
+		fseek(credFile, 0, SEEK_END);
+		int credits_buffer_size = ftell(credFile);
+		fseek(credFile, 0, SEEK_SET);
+
+		g_CreditsBuffer = (char*)malloc(credits_buffer_size + 1);
+
+		fread(g_CreditsBuffer, 1, credits_buffer_size, credFile);
+		g_CreditsBuffer[credits_buffer_size] = 0;
+
+		fclose(credFile);
+	}
+
+	if(g_CreditsBuffer)
+	{
+		// make credits into lines
+		char* str = g_CreditsBuffer;
+		int numCreditsLines = 0;
+
+		while(*str)
+		{
+			if(!g_CreditsLines[numCreditsLines])
+				g_CreditsLines[numCreditsLines] = str;
+			
+			if(*str == '\r')
+			{
+				*str = '\0';
+				
+				if (*++str == '\n')
+					numCreditsLines++;
+			}
+			else if(*str == '\n')
+			{
+				*str = '\0';
+				numCreditsLines++;
+			}
+			
+			str++;
+		}
+	}
+}
+
 void PrintSubtitleText(SUBTITLE* sub)
 {
-	gShowMap = 1;
-
 	char* str = sub->text;
 
 	// skip some trailing spaces
@@ -207,10 +374,7 @@ void PrintSubtitleText(SUBTITLE* sub)
 		str++;
 	}
 
-	SetTextColour(128, 128, 128);
-	PrintString(str, (600 - StringWidth(str)) * 0x8000 >> 0x10, sub->y - 25);
-
-	gShowMap = 0;
+	PrintFMVText(str, 256, sub->y - 25, 128);
 }
 
 void DisplaySubtitles(int frame_number)
@@ -223,9 +387,46 @@ void DisplaySubtitles(int frame_number)
 	}
 }
 
+#define CREDITS_START_FRAME				700
+#define CREDITS_STOP_FRAME				5450
+#define CREDITS_FADE_START_FRAME		5900
+
+void DisplayCredits(int frame_number)
+{
+	int i;
+
+	int frame = frame_number;
+
+	if (frame > CREDITS_STOP_FRAME)
+		frame = CREDITS_STOP_FRAME;
+	
+	int height = (frame - CREDITS_START_FRAME) * 30 >> 5;
+
+	int fade = 0;
+	if (frame_number > CREDITS_FADE_START_FRAME)
+	{
+		fade = (frame_number - CREDITS_FADE_START_FRAME) * 2;
+		if (fade > 128)
+			fade = 128;
+	}
+
+	for(i = 0; i < 512; i++)
+	{
+		int text_h = 250 - height + i * 16;
+		
+		if (text_h < -20 || text_h > 260)
+			continue;
+		
+		char* str = g_CreditsLines[i];
+
+		if(str)
+			PrintFMVText(str, 256, text_h, 128 - fade);
+	}
+}
+
 extern void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
-void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number)
+void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits, int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
@@ -233,20 +434,25 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number)
 	Emulator_BeginScene();
 
 	Emulator_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
-
+	
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, stream_format.image_width, stream_format.image_height, 0, GL_RGB, GL_UNSIGNED_BYTE, _frontend_buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 	
 	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
 	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
 	Emulator_SetShader(g_FMVShader);
-
-	SetupMovieRectangle(stream_format);
+	
+	SetupMovieRectangle(stream_format.image_width, stream_format.image_height);
 
 	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
 
 	DisplaySubtitles(frame_number);
+
+	if(credits && frame_number >= CREDITS_START_FRAME)
+	{
+		DisplayCredits(frame_number);
+	}
 
 	Emulator_EndScene();
 }
@@ -258,14 +464,17 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		fd /= 10;
 
 	char filename[250];
-	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].AVI", gDataFolder, fd, arg->render);
+	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].avi", gDataFolder, fd, arg->render);
+	FixPathSlashes(filename);
 
 	ReadAVI readAVI(filename);
-
+	
 	// also load subtitle file
 	if (subtitles)
 	{
 		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
+		FixPathSlashes(filename);
+	
 		InitSubtitles(filename);
 	}
 	else
@@ -273,12 +482,21 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		g_NumSubtitles = 0;
 	}
 
+	if(arg->credits)
+	{
+		sprintf(filename, "%sDATA\\CREDITS.ENG", gDataFolder);
+		FixPathSlashes(filename);
+	
+		InitCredits(filename);
+	}
+
 	ReadAVI::avi_header_t avi_header = readAVI.GetAviHeader();
 
 	ReadAVI::stream_format_t stream_format = readAVI.GetVideoFormat();
 	ReadAVI::stream_format_auds_t audio_format = readAVI.GetAudioFormat();
 
-	if (strcmp(stream_format.compression_type, "MJPG")) {
+	if (strcmp(stream_format.compression_type, "MJPG")) 
+	{
 		printf("Only MJPG supported\n");
 		return;
 	}
@@ -294,8 +512,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	alGenBuffers(4, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
-	int nextTime = SDL_GetTicks();
-	int oldTime = nextTime;
+	timerCtx_t fmvTimer;
+
+	Emulator_InitHPCTimer(&fmvTimer);
+
+	double nextFrameDelay = 0.0;
 
 	int frame_size;
 	int queue_counter = 0;
@@ -303,20 +524,19 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int fade_out = 0;
 	int done_frames = 0;
 
+	Emulator_GetHPCTime(&fmvTimer, 1);
+	
 	// main loop
 	while (true)
 	{
-		int curTime = SDL_GetTicks();
-		int deltaTime = curTime - oldTime;
+		double delta = Emulator_GetHPCTime(&fmvTimer, 1);
 
-		if (deltaTime > 1000)
-		{
-			nextTime += deltaTime;
-			oldTime = curTime;
-		}
+		if (delta > 1.0)
+			delta = 0.0;
 
+		nextFrameDelay -= delta;
 
-		if (curTime <= nextTime) // wait for frame
+		if (nextFrameDelay > 0) // wait for frame
 		{
 			Emulator_EndScene();
 			continue;
@@ -347,20 +567,23 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		{
 			if (frame_entry.type == ReadAVI::ctype_compressed_video_frame)
 			{
+				int real_frame_width;
+				int real_frame_height;
+				
 				// Do video frame
-				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, (unsigned char*)_frontend_buffer);
+				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, g_FMVDecodedImageBuffer, real_frame_width, real_frame_height);
 
 				if (ret == 0)
-					DrawFrame(stream_format, done_frames);
+				{
+					DrawFrame(stream_format, done_frames, arg->credits, real_frame_width, real_frame_height);
+				}
 
 				// set next step time
-				if (g_swapInterval == 0)
-					nextTime = curTime;
+				if (g_swapInterval == 1)
+					nextFrameDelay += double(avi_header.TimeBetweenFrames) / 1000000.0;
 				else
-					nextTime += avi_header.TimeBetweenFrames / 1000;
-
-				oldTime = curTime;
-
+					nextFrameDelay = 0.0;
+				
 				done_frames++;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
@@ -400,7 +623,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				if (queue_counter < 4)
 					QueueAudioBuffer(audioStreamBuffers[queue_counter++], audioStreamSource, frame_entry, audio_format, 0, frame_size);
 
-				if(queue_counter > 0 && state != AL_PLAYING)
+				if((queue_counter > 1 || numProcessed == -1) && state != AL_PLAYING)
 					alSourcePlay(audioStreamSource);
 			}
 		}
@@ -423,13 +646,25 @@ int FMV_main(RENDER_ARGS* args)
 	DRAWENV draw;
 
 	FMVPlayerInitGL();
-	LoadFont(NULL);
 
-	SetupDefDrawEnv(&draw, 0, 0, 600, 250);
-	SetupDefDispEnv(&disp, 0, 0, 600, 250);
+	InitFMVFont();
+
+	SetupDefDrawEnv(&draw, 0, 0, 512, 256);
+	SetupDefDispEnv(&disp, 0, 0, 512, 256);
+
 	draw.dfe = 1;
+
+	draw.clip.x = -512;
+	draw.clip.w = 1200;
+	draw.clip.y = -1;
+	draw.clip.h = 512;
+	
+	disp.isinter = 0;
+
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
+
+	Emulator_SetupClipMode(draw.clip);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{
@@ -437,6 +672,10 @@ int FMV_main(RENDER_ARGS* args)
 	}
 
 	FMVPlayerShutdownGL();
+
+	if (g_CreditsBuffer)
+		free(g_CreditsBuffer);
+	g_CreditsBuffer = NULL;
 
 	return 0;
 }

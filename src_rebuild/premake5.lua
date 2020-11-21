@@ -16,9 +16,12 @@ if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
 end
 	
 workspace "REDRIVER2"
-    configurations { "Debug", "Release", "Release Dev" }
+    configurations { "Debug", "Release", "Release_dev" }
 
     defines { VERSION } 
+
+	filter "system:Windows"
+		disablewarnings { "4996", "4554", "4244", "4101", "4838", "4309" }
 
     filter "system:Windows or linux"
         defines { "USE_32_BIT_ADDR", "PGXP" }
@@ -34,7 +37,7 @@ workspace "REDRIVER2"
             "NDEBUG",
         }
 		
-	filter "configurations:Release Dev"
+	filter "configurations:Release_dev"
         defines {
             "NDEBUG",
         }
@@ -44,7 +47,7 @@ workspace "REDRIVER2"
 	end
 	
 	if os.target() ~= "psx" then
-		dofile("premake_emulator.lua")
+		dofile("PsyX/premake5.lua")
 	end
 	
 -- TODO: overlays
@@ -81,11 +84,11 @@ project "REDRIVER2"
 
     filter "system:Windows or linux"
         defines { "OGL", "SIMPLE_SPOOL" }
-        dependson { "PSX" }
-        links { "PSX", "jpeg" }
+        dependson { "PsyX" }
+        links { "Psy-X", "jpeg" }
 		
 		includedirs { 
-			"EMULATOR"
+			"PsyX"
 		}
 		
 		files {
@@ -131,6 +134,7 @@ project "REDRIVER2"
             "GL",
             "openal",
             "SDL2",
+            "dl",
         }
 
         linkoptions {
@@ -166,7 +170,7 @@ project "REDRIVER2"
     filter "configurations:Release"
         optimize "Full"
 		
-	filter "configurations:Release Dev"
+	filter "configurations:Release_dev"
 		targetsuffix "_dev"
         defines { 
             "DEBUG_OPTIONS",

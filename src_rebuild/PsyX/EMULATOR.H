@@ -36,11 +36,11 @@
 
 #if defined(__ANDROID__)
 #include <android/log.h>
-#define LOG_TAG_EMU "[EMU] "
+#define LOG_TAG_EMU "[PsyX] "
 #define eprintf(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG_EMU, fmt, ##__VA_ARGS__)
 #define eprinterr(fmt, ...) eprintf("[%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #else
-#define eprintf(fmt, ...) printf("[EMU] " fmt, ##__VA_ARGS__)
+#define eprintf(fmt, ...) printf("[Psy-X] " fmt, ##__VA_ARGS__)
 #define eprinterr(fmt, ...) eprintf("[%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #endif
 
@@ -200,6 +200,8 @@ extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_SetPolygonOffset(float ofs);
 extern void Emulator_SetStencilMode(int drawPrim);
 extern void Emulator_EnableDepth(int enable);
+
+extern void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect);
 
 extern void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1);
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);

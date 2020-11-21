@@ -18,7 +18,6 @@
 #include "GAMESND.H"
 #include "SOUND.H"
 #include "BCOLLIDE.H"
-#include "GLAUNCH.H"
 #include "LEADAI.H"
 #include "MAIN.H"
 #include "PEDEST.H"
@@ -26,8 +25,9 @@
 
 #include "INLINE_C.H"
 #include "OVERLAY.H"
+#include "STRINGS.H"
 
-unsigned char speedLimits[3] = { 56, 97, 138 };
+const u_char speedLimits[3] = { 56, 97, 138 };
 
 struct
 {
@@ -917,38 +917,9 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		{
 			cp->ai.c.ctrlState = 0;
 
-			if ((junctionFlags & 1) == 0)
+			if (junctionFlags & 1)
 			{
-				int yield = 0;
-
-				if (exitFrom == 0 || exitFrom == 2)
-					yield = 1;
-
-				if ((junctionFlags & 2) == 0)
-				{
-					cp->ai.c.ctrlState = 4;
-
-					if (!yield)
-						cp->ai.c.ctrlNode = oldNode;
-					else if (*turnAngle != 0)
-						cp->ai.c.ctrlNode = oldNode;
-					else
-						cp->ai.c.ctrlState = 6;
-				}
-				else
-				{
-					cp->ai.c.ctrlState = 4;
-
-					if (yield)
-						cp->ai.c.ctrlNode = oldNode;
-					else if (*turnAngle != 0)
-						cp->ai.c.ctrlNode = oldNode;
-					else
-						cp->ai.c.ctrlState = 6;
-				}
-			}
-			else
-			{
+				// wait for traffic light
 				cp->ai.c.trafficLightPhaseId = (exitFrom & 1);
 				cp->ai.c.ctrlState = 1;
 
@@ -961,6 +932,36 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				}
 				else
 					cp->ai.c.ctrlNode = oldNode;
+			}
+			else
+			{
+				int yield = 0;
+
+				if (exitFrom == 0 || exitFrom == 2)
+					yield = 1;
+
+				if (junctionFlags & 2)
+				{
+					cp->ai.c.ctrlState = 4;
+
+					if (yield)
+						cp->ai.c.ctrlNode = oldNode;
+					else if (*turnAngle != 0)
+						cp->ai.c.ctrlNode = oldNode;
+					else
+						cp->ai.c.ctrlState = 6;
+				}
+				else
+				{
+					cp->ai.c.ctrlState = 4;
+
+					if (!yield)
+						cp->ai.c.ctrlNode = oldNode;
+					else if (*turnAngle != 0)
+						cp->ai.c.ctrlNode = oldNode;
+					else
+						cp->ai.c.ctrlState = 6;
+				}
 			}
 		}
 
@@ -2248,8 +2249,8 @@ int CreateNewNode(CAR_DATA * cp)
 						if (tmp > 0)
 						{
 							newNode->x = start->x + FIXEDH(tmp * rcossin_tbl[(start->dir & 0xfff) * 2]);
-
 							newNode->z = start->z + FIXEDH(tmp * rcossin_tbl[(start->dir & 0xfff) * 2 + 1]);
+
 							newNode->pathType = 1;
 							newNode->dir = start->dir;
 
@@ -2263,6 +2264,7 @@ int CreateNewNode(CAR_DATA * cp)
 						{
 							retNode->x = tempNode.x + FIXEDH(tmp * rcossin_tbl[(tempNode.dir & 0xfff) * 2]);
 							retNode->z = tempNode.z + FIXEDH(tmp * rcossin_tbl[(tempNode.dir & 0xfff) * 2 + 1]);
+
 							retNode->pathType = 1;
 							retNode->dir = tempNode.dir;
 
@@ -2277,13 +2279,9 @@ int CreateNewNode(CAR_DATA * cp)
 						newNode->pathType = tempNode.pathType;
 						newNode->distAlongSegment = tempNode.distAlongSegment;
 						newNode->x = tempNode.x;
-
-						if (tempNode.x < 0)
-							tempNode.x = -tempNode.x;
-
 						newNode->z = tempNode.z;
 
-						if (tempNode.x < 600000)
+						if (ABS(tempNode.x) < 600000)
 						{
 							if (turnAngle != 0)
 							{
@@ -2292,6 +2290,7 @@ int CreateNewNode(CAR_DATA * cp)
 							}
 
 							newNode->pathType = 1;
+
 							return 1;
 						}
 					}
@@ -2499,13 +2498,14 @@ int PingOutAllSpecialCivCars(void)
 
 	lcp = car_data;
 
+	do
 	{
 		if (lcp->controlType == CONTROL_TYPE_CIV_AI && MissionHeader->residentModels[lcp->ap.model] > 4)
 			PingOutCar(lcp);
 
 		lcp++;
 	}
-	while (lcp < &car_data[MAX_CARS])
+	while (lcp < &car_data[MAX_CARS]);
 
 	return 1;
 }
@@ -2767,6 +2767,17 @@ void InitCivCars(void)
 	roadblockDelay = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 	PingOutCivsOnly = 0;
 	roadblockCount = roadblockDelay;
+
+	// [A] clear out other values
+	distFurthestCivCarSq = 0;
+	furthestCivID = 0;
+	makeLimoPullOver = 0;
+	limoId = 0;
+	playerNum = 0;
+	roadSeg = 0;
+	testNumPingedOut = 0;
+	currentAngle = 0;
+	closeEncounter = 3;
 }
 
 
@@ -3258,8 +3269,9 @@ int PingInCivCar(int minPingInDist)
 	int lbody;
 	int lane;
 	int i;
-	int oldCookieCount;
+	u_char cookieCountStart;
 	uint retDistSq;
+	unsigned char* slot;
 
 	//straight = NULL;
 	//curve = NULL;
@@ -3286,12 +3298,12 @@ int PingInCivCar(int minPingInDist)
 		tryPingInParkedCars = 1;
 	}
 
-	playerNum = 0;
-
 	if (NumPlayers == 2)
 		playerNum = CameraCnt & 1;
+	else
+		playerNum = 0;
 
-	if ((MissionHeader->type & 4U) != 0)
+	if (MissionHeader->type & 0x4)
 	{
 		PingOutCivsOnly = 1;
 		return 0;
@@ -3334,8 +3346,8 @@ int PingInCivCar(int minPingInDist)
 		if (newCarId == -1)
 			return 0;
 
-		if (newCarId > MAX_CARS - 1)
-			return 0;
+		//if (newCarId > MAX_CARS - 1)
+		//	return 0;
 
 		newCar = &car_data[newCarId];
 
@@ -3369,12 +3381,13 @@ int PingInCivCar(int minPingInDist)
 		// randomized pings
 		int angle;
 		int dx, dz;
-		unsigned char* slot;
-
+		
 		const int maxCookies = requestCopCar ? 55 : 43;
 
 		if (requestCopCar == 0 && cookieCount > 43)
 			cookieCount -= 25;
+
+		cookieCountStart = cookieCount;
 
 		// find a free slot
 		carCnt = car_data;
@@ -3397,16 +3410,16 @@ int PingInCivCar(int minPingInDist)
 			return 0;
 		}
 
-		oldCookieCount = cookieCount;
-
 		do {
 			if (cookieCount < maxCookies)
 				cookieCount++;
 			else
 				cookieCount = 0;
 
-			if (cookieCount == oldCookieCount)
+			if (cookieCount == cookieCountStart)
+			{
 				break;
+			}
 
 			if (requestCopCar == 0)
 			{
@@ -3438,9 +3451,9 @@ int PingInCivCar(int minPingInDist)
 	}
 
 	{
-		int numPossibleLanes;
-		int numLanes;
-		int allowedToPark;
+		volatile int numPossibleLanes;
+		volatile int numLanes;
+		volatile int allowedToPark;
 		
 		if (ROAD_LANES_COUNT(&roadInfo) == 0) // BAD ROAD
 		{
@@ -3958,6 +3971,11 @@ int CivControl(CAR_DATA * cp)
 
 						VECTOR b1p = { pn->x, cp->hd.where.t[1], pn->z };
 
+						if (pn->pathType == 2)
+						{
+							ofs.vy = 1000;
+						}
+
 						//Debug_AddLineOfs(_zero, _up, b1p, rrcv);
 						Debug_AddLineOfs(_zero, ofs, b1p, rrcv);
 					}
@@ -4167,77 +4185,68 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 	switch (cp->ai.c.thrustState)
 	{
-	case 0:
-	{
-		cp->ai.c.brakeLight = 0;
-
-		if (cp->ai.c.ctrlNode)
+		case 0:
 		{
-			int properVel;
-			int brakeDist;
+			cp->ai.c.brakeLight = 0;
 
-			if (!IS_NODE_VALID(cp, cp->ai.c.ctrlNode))
+			if (cp->ai.c.ctrlNode)
 			{
-				CIV_STATE_SET_CONFUSED(cp);
-				return 0;
-			}
+				int properVel;
+				int brakeDist;
 
-			properVel = cp->hd.wheel_speed;
-			brakeDist = (properVel * FIXEDH(properVel)) / (newAccel * 2);
-
-			if (ABS(brakeDist) > * distToNode)
-			{
-				properVel -= 120000;
-				brakeDist = *distToNode - lbody * 3;
-
-				if (brakeDist < 0)
+				if (!IS_NODE_VALID(cp, cp->ai.c.ctrlNode))
 				{
-					if (lbody * 3 - *distToNode > 2)
+					CIV_STATE_SET_CONFUSED(cp);
+					return 0;
+				}
+
+				properVel = cp->hd.wheel_speed;
+				brakeDist = (properVel * FIXEDH(properVel)) / (newAccel * 2);
+
+				if (ABS(brakeDist) > *distToNode)
+				{
+					properVel -= 120000;
+					brakeDist = *distToNode - lbody * 3;
+
+					if (brakeDist < 0)
+					{
+						if (lbody * 3 - *distToNode > 2)
+						{
+							properVel /= *distToNode - lbody * 3;
+						}
+					}
+					else if (brakeDist > 2)
 					{
 						properVel /= *distToNode - lbody * 3;
 					}
-				}
-				else if (brakeDist > 2)
-				{
-					properVel /= *distToNode - lbody * 3;
-				}
 
-				cp->ai.c.velRatio = properVel;
-				cp->ai.c.thrustState = 1;
+					cp->ai.c.velRatio = properVel;
+					cp->ai.c.thrustState = 1;
+				}
 			}
+
+
+			if (FIXEDH(cp->hd.wheel_speed) > cp->ai.c.maxSpeed)
+				return newAccel >> 2;
+
+			return newAccel;
 		}
-
-		if (FIXEDH(cp->hd.wheel_speed) > cp->ai.c.maxSpeed)
-			return newAccel >> 2;
-
-		return newAccel;
-	}
-	case 1:
-	{
-		int properVel;
-		int distToEnd;
-		int accelRatio;
-
-		if (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 8)
-			distToEnd = 100;
-		else
-			distToEnd = lbody * 3;
-
-		cp->ai.c.brakeLight = 1;
-
-		if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 127)
+		case 1:
 		{
-			if (cp->ai.c.ctrlState == 1 && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
-			{
-				cp->ai.c.thrustState = 0;
-				cp->ai.c.ctrlNode = NULL;
+			int properVel;
+			int distToEnd;
+			int accelRatio;
 
-				return newAccel;
-			}
+			if (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 8)
+				distToEnd = 100;
+			else
+				distToEnd = lbody * 3;
 
-			if (*distToNode < distToEnd)
+			cp->ai.c.brakeLight = 1;
+
+			if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 127)
 			{
-				if (cp->ai.c.ctrlState == 6)
+				if (cp->ai.c.ctrlState == 1 && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
 				{
 					cp->ai.c.thrustState = 0;
 					cp->ai.c.ctrlNode = NULL;
@@ -4245,138 +4254,150 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 					return newAccel;
 				}
 
-				accelRatio = (-cp->hd.wheel_speed) / 4;
+				
 
-				cp->ai.c.thrustState = 3;
-			}
-			else
-			{
-				if (cp->ai.c.ctrlState == 6)
+				if (*distToNode < distToEnd)
 				{
-					properVel = (*distToNode - distToEnd) * cp->ai.c.velRatio + 70000;
-				}
-				else if (distToEnd < *distToNode)
-				{
-					properVel = cp->ai.c.velRatio * ((*distToNode - distToEnd) + 100);
+					if (cp->ai.c.ctrlState == 6)
+					{
+						cp->ai.c.thrustState = 0;
+						cp->ai.c.ctrlNode = NULL;
+
+						return newAccel;
+					}
+
+					accelRatio = (-cp->hd.wheel_speed) / 4;
+
+					cp->ai.c.thrustState = 3;
 				}
 				else
 				{
-					properVel = 0;
+					if (cp->ai.c.ctrlState == 6)
+					{
+						properVel = (*distToNode - distToEnd) * cp->ai.c.velRatio + 70000;
+					}
+					else if (distToEnd < *distToNode)
+					{
+						properVel = cp->ai.c.velRatio * ((*distToNode - distToEnd) + 100);
+					}
+					else
+					{
+						properVel = 0;
+					}
+
+					accelRatio = ((properVel - cp->hd.wheel_speed) * newAccel) / 15;
 				}
 
-				accelRatio = ((properVel - cp->hd.wheel_speed) * newAccel) / 15;
+				if (IS_NODE_VALID(cp, cp->ai.c.ctrlNode))	// [A] Weird.
+				{
+					if (accelRatio <= newAccel)
+					{
+						if (accelRatio < newAccel * -2)
+							return newAccel * -2;
+						else
+							return accelRatio;
+					}
+
+					return newAccel;
+				}
 			}
 
-			if (IS_NODE_VALID(cp, cp->ai.c.ctrlNode))	// [A] Weird.
+			CIV_STATE_SET_CONFUSED(cp);
+			return 0;
+		}
+		case 3:
+		{
+			break;
+		}
+		case 5:
+		case 6:
+		{
+			int distToObstacle;
+			int checkObstDist;
+			int carDir;
+			int dx, dz;
+
+			cp->ai.c.brakeLight = 1;
+
+			if (cp->ai.c.ctrlState == 4)
+				checkObstDist = 2048;
+			else
+				checkObstDist = 512;
+
+			carDir = cp->hd.direction & 0xfff;
+			distToObstacle = 0x7fffff;
+
+			lcp = &car_data[MAX_CARS-1];
+			while (lcp >= car_data)
 			{
-				if (accelRatio <= newAccel)
+				if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
 				{
-					if (accelRatio < newAccel * -2)
+					dx = lcp->hd.where.t[0] - cp->hd.where.t[0];
+					dz = lcp->hd.where.t[2] - cp->hd.where.t[2];
+
+					tangent = FIXEDH(dx * rcossin_tbl[carDir * 2] + dz * rcossin_tbl[carDir * 2 + 1]);
+					normal = FIXEDH(dx * rcossin_tbl[carDir * 2 + 1] - dz * rcossin_tbl[carDir * 2]);
+
+					if (tangent > 0)
+					{
+						if (ABS(normal) < wbody * sideMul * 6 && tangent < distToObstacle)
+						{
+							distToObstacle = tangent;
+						}
+					}
+				}
+				lcp--;
+			}
+
+			if (distToObstacle <= checkObstDist)
+			{
+				int speed;
+				speed = (-cp->hd.wheel_speed) / 4; // is that a brake dist?
+
+				if (speed <= newAccel)
+				{
+					if (speed < newAccel * -2)
 						return newAccel * -2;
 					else
-						return accelRatio;
+						return speed;
 				}
 
 				return newAccel;
 			}
-		}
 
-		CIV_STATE_SET_CONFUSED(cp);
-		return 0;
-	}
-	case 3:
-	{
-		break;
-	}
-	case 5:
-	case 6:
-	{
-		int distToObstacle;
-		int checkObstDist;
-		int carDir;
-		int dx, dz;
-
-		cp->ai.c.brakeLight = 1;
-
-		if (cp->ai.c.ctrlState == 4)
-			checkObstDist = 2048;
-		else
-			checkObstDist = 512;
-
-		carDir = cp->hd.direction & 0xfff;
-		distToObstacle = 0x7fffff;
-
-		lcp = &car_data[MAX_CARS-1];
-		while (lcp >= car_data)
-		{
-			if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
-			{
-				dx = lcp->hd.where.t[0] - cp->hd.where.t[0];
-				dz = lcp->hd.where.t[2] - cp->hd.where.t[2];
-
-				tangent = FIXEDH(dx * rcossin_tbl[carDir * 2] + dz * rcossin_tbl[carDir * 2 + 1]);
-				normal = FIXEDH(dx * rcossin_tbl[carDir * 2 + 1] - dz * rcossin_tbl[carDir * 2]);
-
-				if (tangent > 0)
-				{
-					if (ABS(normal) < wbody * sideMul * 6 && tangent < distToObstacle)
-					{
-						distToObstacle = tangent;
-					}
-				}
-			}
-			lcp--;
-		}
-
-		if (distToObstacle <= checkObstDist)
-		{
-			int speed;
-			speed = (-cp->hd.wheel_speed) / 4; // is that a brake dist?
-
-			if (speed <= newAccel)
-			{
-				if (speed < newAccel * -2)
-					return newAccel * -2;
-				else
-					return speed;
-			}
+			cp->ai.c.ctrlState = 0;
+			cp->ai.c.thrustState = 0;
+			cp->ai.c.ctrlNode = 0;
 
 			return newAccel;
 		}
-
-		cp->ai.c.ctrlState = 0;
-		cp->ai.c.thrustState = 0;
-		cp->ai.c.ctrlNode = 0;
-
-		return newAccel;
-	}
-	default:
-	{
-		CIV_STATE_SET_CONFUSED(cp);
-		return 0;
-	}
+		default:
+		{
+			CIV_STATE_SET_CONFUSED(cp);
+			return 0;
+		}
 	}
 
 	// switch lights
 	switch (cp->ai.c.ctrlState)
 	{
-	case 1:
-		if (junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
-			cp->ai.c.thrustState = 0;
-	case 2:
-		cp->ai.c.brakeLight = 1;
-		return 0;
-	case 3:
-		cp->ai.c.thrustState = 5;
-		cp->ai.c.brakeLight = 1;
-		break;
-	case 4:
-		cp->ai.c.thrustState = 6;
-		cp->ai.c.brakeLight = 1;
-		break;
-	default:
-		cp->ai.c.brakeLight = 0;
-		break;
+		case 1:
+			if (junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+				cp->ai.c.thrustState = 0;
+		case 2:
+			cp->ai.c.brakeLight = 1;
+			return 0;
+		case 3:
+			cp->ai.c.thrustState = 5;
+			cp->ai.c.brakeLight = 1;
+			break;
+		case 4:
+			cp->ai.c.thrustState = 6;
+			cp->ai.c.brakeLight = 1;
+			break;
+		default:
+			cp->ai.c.brakeLight = 0;
+			break;
 	}
 
 	return 0;
