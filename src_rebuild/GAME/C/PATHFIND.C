@@ -9,6 +9,8 @@
 #include "CAMERA.H"
 
 #include <stdint.h>
+
+#include "MAP.H"
 #include "SDL.h"
 
 ushort distanceCache[16384];
@@ -517,7 +519,7 @@ void InvalidateMap(void)
 		if (dir == 0)
 		{
 			p++;
-			bPos.vx += 1024;
+			bPos.vx += MAP_CELL_SIZE;
 
 			if (p + q == 1)
 				dir = 1;
@@ -525,7 +527,7 @@ void InvalidateMap(void)
 		else if (dir == 1)
 		{
 			q++;
-			bPos.vz += 1024;
+			bPos.vz += MAP_CELL_SIZE;
 
 			if (p == q)
 				dir = 2;
@@ -533,7 +535,7 @@ void InvalidateMap(void)
 		else if (dir == 2)
 		{
 			p--;
-			bPos.vx -= 1024;
+			bPos.vx -= MAP_CELL_SIZE;
 
 			if (p + q == 0)
 				dir = 3;
@@ -541,7 +543,7 @@ void InvalidateMap(void)
 		else
 		{
 			q--;
-			bPos.vz -= 1024;
+			bPos.vz -= MAP_CELL_SIZE;
 	
 			if (p == q)
 				dir = 0;
@@ -671,7 +673,7 @@ void BloodyHell(void)
 		if (dir == 0)
 		{
 			p++;
-			bPos.vx += 1024;
+			bPos.vx += MAP_CELL_SIZE;
 
 			if (p + q == 1)
 				dir = 1;
@@ -679,7 +681,7 @@ void BloodyHell(void)
 		else if (dir == 1) 
 		{
 			q++;
-			bPos.vz += 1024;
+			bPos.vz += MAP_CELL_SIZE;
 			
 			if (p == q)
 				dir = 2;
@@ -688,7 +690,7 @@ void BloodyHell(void)
 		{
 			p--;
 
-			bPos.vx -= 1024;
+			bPos.vx -= MAP_CELL_SIZE;
 
 			if (p + q == 0)
 				dir = 3;
@@ -696,7 +698,7 @@ void BloodyHell(void)
 		else 
 		{
 			q--;
-			bPos.vz -= 1024;
+			bPos.vz -= MAP_CELL_SIZE;
 
 			if (p == q)
 				dir = 0;
