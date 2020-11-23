@@ -300,7 +300,7 @@ int CdSync(int mode, u_char * result)
 	switch (mode)
 	{
 	case 0:
-		UNIMPLEMENTED();
+		PSYX_UNIMPLEMENTED();
 		assert(FALSE);
 		break;
 	case 1:
@@ -460,24 +460,24 @@ int CdLastCom(void)
 
 int CdGetSector(void *madr, int size)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 CdlCB CdReadyCallback(CdlCB func)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return func;
 }
 
 void* CdDataCallback(void(*func)())
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return NULL;
 }
 
 int CdDiskReady(int mode)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return NULL;
 }

@@ -219,25 +219,25 @@ long MemCardWriteFile(long chan, char* file, unsigned long* adrs, long ofs, long
 
 long MemCardCreateFile(long chan, char* file, long blocks)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long MemCardDeleteFile(long chan, char* file)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long MemCardFormat(long chan)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long MemCardUnformat(long chan)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -270,7 +270,7 @@ long MemCardSync(long mode, long* cmds, long* rslt)
 
 MemCB MemCardCallback(MemCB func)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 

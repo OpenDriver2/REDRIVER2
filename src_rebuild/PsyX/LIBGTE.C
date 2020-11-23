@@ -1176,12 +1176,12 @@ void RotTrans(struct SVECTOR* v0, VECTOR* v1, long* flag)
 
 void NormalColorDpq(struct SVECTOR* v0, struct CVECTOR* v1, long p, struct CVECTOR* v2)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void NormalColorCol(struct SVECTOR* v0, struct CVECTOR* v1, struct CVECTOR* v2)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2, struct SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/)
@@ -1273,24 +1273,24 @@ MATRIX* MulRotMatrix(MATRIX* m0)
 
 MATRIX* MulMatrix(MATRIX* m0, MATRIX* m1)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return NULL;
 }
 
 MATRIX* MulMatrix2(MATRIX* m0, MATRIX* m1)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return NULL;
 }
 
 void SetBackColor(long rbk, long gbk, long bbk)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void SetFarColor(long rfc, long gfc, long bfc)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 #define	APPLYMATRIX(m,v0,v1)	{\

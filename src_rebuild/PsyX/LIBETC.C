@@ -10,7 +10,7 @@ void(*vsync_callback)(void) = NULL;
 
 int StopCallback(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 

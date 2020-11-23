@@ -415,7 +415,7 @@ unsigned long SpuSetTransferStartAddr(unsigned long addr)
 
 long SpuIsTransferCompleted(long flag)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -714,18 +714,18 @@ long SpuSetReverbModeParam(SpuReverbAttr* attr)
 	alEffectf(g_nAlReverbEffect, AL_REVERB_AIR_ABSORPTION_GAINHF, 0.1f);
 	*/
 
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void SpuGetReverbModeParam(SpuReverbAttr* attr)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long SpuSetReverbDepth(SpuReverbAttr* attr)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -736,7 +736,7 @@ long SpuReserveReverbWorkArea(long on_off)
 
 long SpuIsReverbWorkAreaReserved(long on_off)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -769,20 +769,20 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 
 unsigned long SpuGetReverbVoice(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long SpuClearReverbWorkArea(long mode)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 
 void SpuSetCommonAttr(SpuCommonAttr* attr)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 static long s_spuMallocVal = 0;
@@ -803,7 +803,7 @@ long SpuMalloc(long size)
 
 long SpuMallocWithStartAddr(unsigned long addr, long size)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -814,7 +814,7 @@ void SpuFree(unsigned long addr)
 
 unsigned long SpuFlush(unsigned long ev)
 {
-	//UNIMPLEMENTED();
+	//PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -826,13 +826,13 @@ void SpuSetCommonMasterVolume(short mvol_left, short mvol_right)// (F)
 
 long SpuSetReverbModeType(long mode)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void SpuSetReverbModeDepth(short depth_left, short depth_right)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void SpuSetVoiceVolume(int vNum, short volL, short volR)
