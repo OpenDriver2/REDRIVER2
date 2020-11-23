@@ -29,13 +29,7 @@ void printError(char *fmt, ...);
 #define trap(ode) {_asm int 0x03}
 #endif
 
-#include "EMULATOR_PRIVATE.H"
-
-#ifdef USE_32_BIT_ADDR
-typedef unsigned long long OTTYPE;
-#else
-typedef unsigned long OTTYPE;
-#endif // USE_32_BIT_ADDR
+#include "PSYX_COMPAT.H"
 
 #endif // PSX
 
