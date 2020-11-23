@@ -58,6 +58,53 @@ struct XA_SUBTITLE
 	int endframe;
 };
 
+void StoreXASubtitles()
+{
+	int i, j;
+	char fileName[250];
+
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 8; j++)
+		{
+			sprintf(fileName, XANameFormat, gDataFolder, i+1, j);
+			FixPathSlashes(fileName);
+
+			CSoundSource_WaveCache tmpWav;
+			if (tmpWav.Load(fileName))
+			{
+				// Save subtitles file
+				sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, i+1, j);
+				FixPathSlashes(fileName);
+
+				FILE* fp = fopen(fileName, "wb");
+
+				if (fp)
+				{
+					int numSubtitles = tmpWav.m_numSubtitles;
+					XA_SUBTITLE subtitles[30];
+
+					// save subtitle count
+					fwrite(&numSubtitles, sizeof(int), 1, fp);
+
+					for (int i = 0; i < numSubtitles; i++)
+					{
+						CUESubtitle_t* sub = &tmpWav.m_subtitles[i];
+						
+						strcpy(subtitles[i].text, sub->text);
+						subtitles[i].startframe = sub->sampleStart;
+						subtitles[i].endframe = sub->sampleStart + sub->sampleLength;
+					}
+
+					// write all subtitles
+					fwrite(subtitles, sizeof(XA_SUBTITLE), numSubtitles, fp);
+					fclose(fp);
+				}
+			}
+		}
+	}
+}
+
 XA_SUBTITLE gXASubtitles[30];
 int gNumXASubtitles = 0;
 
@@ -360,36 +407,6 @@ void PlayXA(int num, int index)
 
 		if (g_wavData->Load(fileName))
 		{
-#if 0
-			// Save subtitles file
-			{
-				sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
-				fixslashes(fileName);
-
-				FILE* fp = fopen(fileName, "wb");
-
-				if (fp)
-				{
-					int numSubtitles = g_wavData->m_numSubtitles;
-					XA_SUBTITLE subtitles[30];
-
-					// save subtitle count
-					fwrite(&numSubtitles, sizeof(int), 1, fp);
-
-					for (int i = 0; i < numSubtitles; i++)
-					{
-						CUESubtitle_t* sub = &g_wavData->m_subtitles[i];
-						strcpy(subtitles[i].text, sub->text);
-						subtitles[i].startframe = sub->sampleStart;
-						subtitles[i].endframe = sub->sampleStart + sub->sampleLength;
-					}
-
-					// write all subtitles
-					fwrite(subtitles, sizeof(XA_SUBTITLE), numSubtitles, fp);
-					fclose(fp);
-				}
-			}
-#else
 			// Load subtitles for XA
 			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
 			FixPathSlashes(fileName);
@@ -402,8 +419,8 @@ void PlayXA(int num, int index)
 				fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
 				fclose(fp);
 			}
-#endif
-			
+
+			// make OpenAL buffer
 			g_XAWave = new CSoundSource_OpenALCache(g_wavData);
 
 			alSourcei(g_XASource, AL_BUFFER, g_XAWave->m_alBuffer);

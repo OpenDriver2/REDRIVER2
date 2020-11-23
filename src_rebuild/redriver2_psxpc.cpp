@@ -5,6 +5,11 @@
 #include "C/MAIN.H"
 #include "C/SYSTEM.H"
 #include "C/GAMESND.H"
+#include "C/CAMERA.H"
+#include "C/CARS.H"
+#include "C/CIV_AI.H"
+#include "C/LEADAI.H"
+#include "C/MISSION.H"
 
 #include "EMULATOR.H"
 
@@ -181,6 +186,26 @@ void printError(char *fmt, ...)
 
 int(*GPU_printf)(const char *fmt, ...);
 
+bool CtrlModifier;
+bool ShiftModifier;
+bool AltModifier;
+
+void CheckModifierKeys(int nKey, bool down)
+{
+	switch (nKey)
+	{
+	case SDL_SCANCODE_LCTRL:
+		CtrlModifier = down;
+		break;
+	case SDL_SCANCODE_LSHIFT:
+		ShiftModifier = down;
+		break;
+	case SDL_SCANCODE_LALT:
+		AltModifier = down;
+		break;
+	}
+}
+
 extern int gDrawDistance;
 
 int cursorX, cursorY, cursorOldX, cursorOldY;
@@ -270,6 +295,7 @@ extern void FunkUpDaBGMTunez(int funk);
 
 void GameDebugKeys(int nKey, bool down)
 {
+	CheckModifierKeys(nKey, down);
 	FreeCameraKeyboardHandler(nKey, down);
 
 	if (!down)
@@ -331,6 +357,125 @@ void GameDebugKeys(int nKey, bool down)
 		FunkUpDaBGMTunez(1);
 		extern void CreateRoadblock();
 		CreateRoadblock();
+	}
+	else if (nKey == SDL_SCANCODE_R)
+	{
+		extern LEAD_PARAMETERS LeadValues;
+
+		static bool already = false;
+		static bool leadReady = false;
+		static int lastmodel = 1;
+
+		/*
+			---- LEAD VALUES ----
+			500 1000 428 21 885 10 487 2
+			700 350 1731 30 320 7 225 3
+		*/
+
+		// Find the clue
+		LeadValues.tEnd			= 500;	LeadValues.tAvelLimit	= 1000;
+		LeadValues.tDist		= 428;	LeadValues.tDistMul		= 21;
+		LeadValues.tWidth		= 885;	LeadValues.tWidthMul	= 10;
+		LeadValues.tWidth80		= 487;	LeadValues.tWidth80Mul	= 2;
+
+		LeadValues.hEnd			= 700;	LeadValues.dEnd			= 350;
+		LeadValues.hDist		= 1731; LeadValues.hDistMul		= 30;
+		LeadValues.hWidth		= 320;	LeadValues.hWidthMul	= 7;
+		LeadValues.hWidth80		= 225;	LeadValues.hWidth80Mul	= 3;
+
+		CAR_DATA *pCar = &car_data[player[0].playerCarId];
+
+		LONGVECTOR startpos = {
+			pCar->hd.where.t[0],
+			pCar->hd.where.t[1],
+			pCar->hd.where.t[2],
+		};
+
+		int dir = pCar->hd.direction;
+		int offset = 1000 + (pCar->hd.speed * 36);
+		int heading = (((dir + 512) & 0xfff) >> 10) + 2 & 3;
+
+		int which = (heading & 1) ? 0 : 2;
+
+		int model = lastmodel;
+		int palette = 1;
+
+		if (ShiftModifier)
+		{
+			// force a special car
+			model = MissionHeader->residentModels[4];
+			palette = 0;
+			lastmodel = model;
+		}
+		else
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				// horrible randomness
+				int newmodel = MissionHeader->residentModels[i];
+
+				if (newmodel == 0 || newmodel == lastmodel)
+					continue;
+
+				if (newmodel != model)
+				{
+					int tmp = CameraCnt % (newmodel + 1);
+
+					if (tmp & 4)
+					{
+						// rare chance of spawning special car
+						model = MissionHeader->residentModels[4];
+						palette = 0;
+						lastmodel = model;
+						break;
+					}
+					else if (tmp & 3)
+					{
+						model = newmodel;
+						palette = CameraCnt % 6;
+						lastmodel = model;
+						break;
+					}
+				}
+			}
+		}
+
+		// add a little more room
+		if (model > 4)
+			offset += 250;
+
+		// spawn it in front of us
+		if (ABS(dir) >= 750)
+		{
+			if ((heading >> 1) != 1)
+				offset = -offset;
+		}
+
+		startpos[which] += offset;
+
+		int slot = CreateStationaryCivCar(dir, 0, 0, &startpos, model, palette, 0);
+
+		if (slot == -1)
+		{
+			slot = PingInCivCar(15900);
+			slot--;
+		}
+
+		if (slot != -1)
+		{
+			char playerid = 0xff;
+
+			InitPlayer((PLAYER *)(player + 1), &car_data[slot], 4, dir, &startpos, model, palette, &playerid);
+			already = true;
+		}
+		else
+		{
+			requestStationaryCivCar = 1;
+		}
+	}
+	else if (nKey == SDL_SCANCODE_T)
+	{
+		PingOutAllCivCarsAndCopCars();
 	}
 }
 #endif
