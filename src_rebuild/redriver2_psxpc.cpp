@@ -7,7 +7,7 @@
 #include "C/GAMESND.H"
 
 #include "EMULATOR.H"
-#include "EMULATOR_PRIVATE.H"
+
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
@@ -275,44 +275,25 @@ void GameDebugKeys(int nKey, bool down)
 	if (!down)
 		return;
 
-	if (nKey == SDL_SCANCODE_F1)
-	{
-		gDrawDistance -= 100;
-
-		if (gDrawDistance < 441)
-			gDrawDistance = 441;
-
-		printf("gDrawDistance = %d\n", gDrawDistance);
-
-	}
-	else if (nKey == SDL_SCANCODE_F2)
-	{
-		gDrawDistance += 100;
-
-		if (gDrawDistance > 6000)
-			gDrawDistance = 6000;
-
-		printf("gDrawDistance = %d\n", gDrawDistance);
-	}
-	else if (nKey == SDL_SCANCODE_F3)
+	if (nKey == SDL_SCANCODE_1)
 	{
 		gDisplayPosition ^= 1;
 		printf("Position display %s\n", gDisplayPosition ? "ON" : "OFF");
 	}
-	else if (nKey == SDL_SCANCODE_F4)
+	else if (nKey == SDL_SCANCODE_2)
 	{
 		gShowCollisionDebug++;
 		if (gShowCollisionDebug > 3)
 			gShowCollisionDebug = 0;
 		printf("Collision debug: %d\n", gShowCollisionDebug);
 	}
-	else if (nKey == SDL_SCANCODE_F5)
+	else if (nKey == SDL_SCANCODE_3)
 	{
 		gDisplayDrawStats ^= 1;
 		printf("Stats %s\n", gDisplayDrawStats ? "ON" : "OFF");
 	}
 #ifdef _DEBUG
-	else if (nKey == SDL_SCANCODE_F6)
+	else if (nKey == SDL_SCANCODE_0)
 	{
 		gStopCivCars ^= 1;
 		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
