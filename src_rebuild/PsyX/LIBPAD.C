@@ -73,44 +73,44 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 
 void PadInitMtap(unsigned char* unk00, unsigned char* unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void PadInitGun(unsigned char* unk00, int unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 int PadChkVsync()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void PadStartCom()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void PadStopCom()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 unsigned int PadEnableCom(unsigned int unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void PadEnableGun(unsigned char unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void PadRemoveGun()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 int PadGetState(int port)
@@ -137,31 +137,31 @@ int PadInfoMode(int unk00, int unk01, int unk02)
 
 int PadInfoAct(int unk00, int unk01, int unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int PadInfoComb(int unk00, int unk01, int unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int PadSetActAlign(int unk00, unsigned char* unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int PadSetMainMode(int socket, int offs, int lock)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void PadSetAct(int unk00, unsigned char* unk01, int unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)

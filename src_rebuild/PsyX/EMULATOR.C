@@ -1806,37 +1806,39 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 		switch (nKey)
 		{
 #ifdef _DEBUG
-			case SDL_SCANCODE_1:
+			case SDL_SCANCODE_F1:
 				g_wireframeMode ^= 1;
 				eprintf("wireframe mode: %d\n", g_wireframeMode);
 				break;
 
-			case SDL_SCANCODE_2:
+			case SDL_SCANCODE_F2:
 				g_texturelessMode ^= 1;
 				eprintf("textureless mode: %d\n", g_texturelessMode);
 				break;
 
-			case SDL_SCANCODE_3:
+			case SDL_SCANCODE_F3:
 				g_emulatorPaused ^= 1;
 				break;
 
 			case SDL_SCANCODE_UP:
 			case SDL_SCANCODE_DOWN:
 				if (g_emulatorPaused)
+				{
 					g_polygonSelected += (nKey == SDL_SCANCODE_UP) ? 3 : -3;
+				}
 				break;
-#endif
-#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
-			case SDL_SCANCODE_4:
-				eprintf("saving screenshot\n");
-				Emulator_TakeScreenshot();
-				break;
-#endif
-			case SDL_SCANCODE_5:
+			case SDL_SCANCODE_F10:
 				eprintf("saving VRAM.TGA\n");
 				Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 				break;
-			case SDL_SCANCODE_6:
+#endif
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+			case SDL_SCANCODE_F12:
+				eprintf("Saving screenshot\n");
+				Emulator_TakeScreenshot();
+				break;
+#endif
+			case SDL_SCANCODE_F4:
 
 				activeControllers++;
 				activeControllers = activeControllers % 4;
@@ -1846,10 +1848,10 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 
 				eprintf("Active keyboard controller: %d\n", activeControllers);
 				break;
-			case SDL_SCANCODE_7:
+			case SDL_SCANCODE_F5:
 				g_pgxpTextureCorrection ^= 1;
 				break;
-			case SDL_SCANCODE_8:
+			case SDL_SCANCODE_F6:
 				g_pgxpZBuffer ^= 1;
 				break;
 				

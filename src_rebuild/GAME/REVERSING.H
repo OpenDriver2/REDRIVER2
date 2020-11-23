@@ -43,10 +43,7 @@ template<int x> struct compile_time_assert_test {};
 #undef eprintf
 #define eprintf(fmt, ...) printMsg("[GAME] " fmt, ##__VA_ARGS__)
 
-#define UNIMPLEMENTED_PRINTONCE()	{ static bool _stop = false; if(!_stop) eprintf("Unimplemented!\n"); _stop = true; }
-
-#undef UNIMPLEMENTED
-#define UNIMPLEMENTED() UNIMPLEMENTED_PRINTONCE() //eprinterr("Unimplemented!\n");
+#define UNIMPLEMENTED()	{ static bool _stop = false; if(!_stop) eprintf("Unimplemented!\n"); _stop = true; }
 
 //----------------------------------------
 

@@ -47,7 +47,7 @@
 #if defined(__EMSCRIPTEN__)
 #define UNIMPLEMENTED() 0;
 #else
-#define UNIMPLEMENTED() eprinterr("Unimplemented!\n");
+#define PSYX_UNIMPLEMENTED() eprinterr("Unimplemented!\n");
 #endif
 
 #if defined(OGL)

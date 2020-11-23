@@ -207,7 +207,7 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 			pci->pcd++;
 			num = pci->pcd->num;
 
-			if ((num & 0x4000) != 0)
+			if (num & 0x4000)
 				return NULL;
 
 			ppco = cell_objects + (num & 0x3fff);

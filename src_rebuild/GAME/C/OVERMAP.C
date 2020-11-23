@@ -1897,43 +1897,6 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 
 
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessPalletLump(char *lump_ptr /*$a0*/, int lump_size /*$a1*/)
- // line 1970, offset 0x00019f44
-	/* begin block 1 */
-		// Start line: 1971
-		// Start offset: 0x00019F44
-		// Variables:
-	// 		int total_cluts; // $v0
-	// 		int clutValue; // $s1
-	// 		int tpageindex; // $s2
-	// 		int texnum; // $s3
-	// 		int palette; // $s4
-	// 		int clut_number; // $v1
-	// 		unsigned short clutTable[320]; // stack offset -680
-	// 		char *buffPtr; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2013
-			// Start offset: 0x00019FD0
-		/* end block 1.1 */
-		// End offset: 0x00019FD0
-		// End Line: 2013
-	/* end block 1 */
-	// End offset: 0x0001A094
-	// End Line: 2034
-
-	/* begin block 2 */
-		// Start line: 8209
-	/* end block 2 */
-	// End Line: 8210
-
-	/* begin block 3 */
-		// Start line: 3940
-	/* end block 3 */
-	// End Line: 3941
-
 
 
 
