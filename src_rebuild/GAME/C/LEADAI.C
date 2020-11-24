@@ -516,6 +516,26 @@ ulong LeadPadResponse(CAR_DATA* cp)
 	deltaTh = (dif + 2048u & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
 
+#ifdef COLLISION_DEBUG
+	extern int gShowCollisionDebug;
+	//if (gShowCollisionDebug == 3)
+	{
+		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+		CVECTOR ggcv = { 0, 250, 0 };
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+
+		VECTOR _zero = { 0 };
+		VECTOR _up = { 0, 1000, 0 };
+
+		VECTOR pos = { cp->ai.l.targetX, cp->hd.where.t[1], cp->ai.l.targetZ };
+
+		Debug_AddLineOfs(_zero, _up, pos, rrcv);
+	}
+#endif
+
 	switch (cp->ai.l.dstate)
 	{
 		case 0:
@@ -3570,124 +3590,120 @@ LAB_LEAD__000eb96c:
 	/* end block 2 */
 	// End Line: 6938
 
-// [D]
-void SetTarget(CAR_DATA* cp, int cr, int heading, int* nextJunction)
+// [D] [T]
+void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 {
 	static int dx = 0; // offset 0xd8
 	static int dz = 0; // offset 0xdc
 
-	short sVar1;
-	short sVar2;
-	ushort uVar3;
-	uint uVar4;
-	uint uVar5;
-	long lVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
 	DRIVER2_STRAIGHT* straight;
 	DRIVER2_CURVE* curve;
 
 	if (cp->ai.l.offRoad == 1)
 	{
-		uVar3 = *(ushort*)&cp->ai.l.roadPosition;
-		iVar8 = cp->ai.l.roadForward;
-		cp->ai.l.targetDir = uVar3;
-		uVar4 = (uint)uVar3 & 0xfff;
+		cp->ai.l.targetDir = cp->ai.l.roadPosition;
 
-		dx = FIXEDH(rcossin_tbl[uVar4 * 2 + 1] * iVar8);
-		dz = FIXEDH(rcossin_tbl[uVar4 * 2] * iVar8);
+		// get the road
+		dx = FIXEDH(rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * cp->ai.l.roadForward);
+		dz = FIXEDH(rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * cp->ai.l.roadForward);
 
-		cp->ai.l.targetX = (cp->hd).where.t[0] + dx;
-		cp->ai.l.targetZ = (cp->hd).where.t[2] + dz;
+		cp->ai.l.targetX = cp->hd.where.t[0] + dx;
+		cp->ai.l.targetZ = cp->hd.where.t[2] + dz;
 
 		return;
 	}
 
-	if ((cr & 0xffffe000U) == 0)
+	if (IS_STRAIGHT_SURFACE(curRoad))
 	{
-		straight = Driver2StraightsPtr + cr;
+		int dx;
+		int dz;
+		int rx;
+		int rz;
+		int ux;
+		int uz;
+		int d;
+		int angle;
+		int mul;
+		
+		straight = GET_STRAIGHT(curRoad);
 		cp->ai.l.targetDir = straight->angle & 0xfff;
 
-		iVar8 = (int)straight->ConnectIdx[1];
+		if (straight->ConnectIdx[1] == -1)
+			*nextJunction = straight->ConnectIdx[0];
+		else
+			*nextJunction = straight->ConnectIdx[1];
 
-		if (iVar8 == -1)
-			iVar8 = (int)straight->ConnectIdx[0];
-
-		*nextJunction = iVar8;
-		iVar8 = cp->ai.l.direction;
-
-		if ((iVar8 == -1) || ((iVar8 == 0 && (((heading - cp->ai.l.targetDir) + 0x400U & 0x800) != 0))))
+		if (cp->ai.l.direction == -1 || 
+			cp->ai.l.direction == 0 && (heading - cp->ai.l.targetDir + 1024U & 2048) != 0)
 		{
-			cp->ai.l.targetDir = cp->ai.l.targetDir ^ 0x800;
-
-			iVar8 = (int)straight->ConnectIdx[3];
-
-			if (iVar8 == -1)
-				iVar8 = (int)straight->ConnectIdx[2];
-
-			*nextJunction = iVar8;
+			cp->ai.l.targetDir ^= 2048;
+			
+			if (straight->ConnectIdx[3] == -1)
+				*nextJunction = straight->ConnectIdx[2];
+			else
+				*nextJunction = straight->ConnectIdx[3];
 		}
 
-		iVar10 = (cp->hd).where.t[0];
-		uVar4 = (int)cp->ai.l.targetDir + 0x400U & 0xfff;
-		iVar9 = (cp->hd).where.t[2];
-		sVar1 = rcossin_tbl[uVar4 * 2 + 1];
-		iVar7 = cp->ai.l.roadForward;
-		uVar5 = (uint)(ushort)cp->ai.l.targetDir & 0xfff;
-		sVar2 = rcossin_tbl[uVar5 * 2 + 1];
-		iVar8 = FIXEDH(rcossin_tbl[uVar4 * 2] * (straight->Midx - iVar10) + sVar1 * (straight->Midz - iVar9)) +
-			((uint)(u_char)straight->NumLanes & 0xf) * -0x200 + cp->ai.l.roadPosition;
+		angle = cp->ai.l.targetDir + 1024U & 0xfff;
+		d = cp->ai.l.targetDir & 0xfff;
+		
+		dx = straight->Midx - cp->hd.where.t[0];
+		dz = straight->Midz - cp->hd.where.t[2];
 
-		cp->ai.l.targetX = iVar10 + FIXEDH(rcossin_tbl[uVar5 * 2] * iVar7) + FIXEDH(iVar8 * rcossin_tbl[uVar4 * 2]);
-		cp->ai.l.targetZ = iVar9 + FIXEDH(sVar2 * iVar7) + FIXEDH(iVar8 * sVar1);
+		rx = FIXEDH(rcossin_tbl[d * 2] * cp->ai.l.roadForward);
+		rz = FIXEDH(rcossin_tbl[d * 2 + 1] * cp->ai.l.roadForward);
 
-		return;
+		ux = rcossin_tbl[angle * 2];
+		uz = rcossin_tbl[angle * 2 + 1];
+
+		// l.roadPosition gives the lane offset
+		// [A] it's obviously bugged somewhere as car always tends to be on left lanes
+		// on curves it's even WORSE
+		mul = FIXEDH(ux * dx + uz * dz) - ROAD_LANES_COUNT(straight) * 512 + cp->ai.l.roadPosition;
+		
+		ux = FIXEDH(mul * ux);
+		uz = FIXEDH(mul * uz);
+		
+		cp->ai.l.targetX = cp->hd.where.t[0] + rx + ux;
+		cp->ai.l.targetZ = cp->hd.where.t[2] + rz + uz;
 	}
-
-	if ((cr & 0xffffe000U) != 0x4000)
+	else if (IS_CURVED_SURFACE(curRoad))
 	{
-		return;
-	}
+		int angle;
+		int radius;
+		
+		curve = GET_CURVE(curRoad);
+		angle = ratan2(cp->hd.where.t[0] - curve->Midx, cp->hd.where.t[2] - curve->Midz);
 
-	curve = Driver2CurvesPtr + cr + -0x4000;
-	lVar6 = ratan2((cp->hd).where.t[0] - curve->Midx, (cp->hd).where.t[2] - curve->Midz);
-	iVar8 = cp->ai.l.direction;
+		if (cp->ai.l.direction == 1 || 
+			cp->ai.l.direction == 0 && (angle - heading & 2048U) != 0)
+		{
+			radius = (curve->inside + ROAD_LANES_COUNT(curve)) * 1024 - cp->ai.l.roadPosition + cp->hd.speed * 2;
 
-	if ((iVar8 == 1) || ((iVar8 == 0 && ((lVar6 - heading & 0x800U) != 0))))
-	{
-		iVar8 = (((uint)(u_char)curve->inside + ((uint)(u_char)curve->NumLanes & 0xf)) * 0x400 -
-			cp->ai.l.roadPosition) + (cp->hd).speed * 2;
+			angle += cp->ai.l.roadForward / radius;
+			cp->ai.l.targetDir = angle + 1024;
 
-		uVar4 = lVar6 + cp->ai.l.roadForward / iVar8;
-		cp->ai.l.targetDir = (short)uVar4 + 0x400;
-
-		iVar7 = (int)curve->ConnectIdx[1];
-
-		if (iVar7 != -1)
-			*nextJunction = iVar7;
+			if (curve->ConnectIdx[1] != -1)
+				*nextJunction = curve->ConnectIdx[1];
+			else
+				*nextJunction = curve->ConnectIdx[0];
+		}
 		else
-			*nextJunction = (int)curve->ConnectIdx[0];
+		{
+			radius = curve->inside * 1024 + cp->ai.l.roadPosition - cp->hd.speed * 2;
+
+			angle -= cp->ai.l.roadForward / radius;
+			cp->ai.l.targetDir = angle - 1024;
+
+			if (curve->ConnectIdx[3] == -1)
+				*nextJunction = curve->ConnectIdx[2];
+			else
+				*nextJunction = curve->ConnectIdx[3];
+		}
+
+		cp->ai.l.targetX = curve->Midx + FIXEDH(radius * rcossin_tbl[(angle & 0xfff) * 2]);
+		cp->ai.l.targetZ = curve->Midz + FIXEDH(radius * rcossin_tbl[(angle & 0xfff) * 2 + 1]);
 	}
-	else
-	{
-		iVar8 = (uint)(u_char)curve->inside * 0x400 + cp->ai.l.roadPosition + (cp->hd).speed * -2;
-
-		uVar4 = lVar6 - cp->ai.l.roadForward / iVar8;
-		cp->ai.l.targetDir = (short)uVar4 + -0x400;
-
-		iVar7 = (int)curve->ConnectIdx[3];
-
-		if (iVar7 == -1)
-			iVar7 = (int)curve->ConnectIdx[2];
-
-		*nextJunction = iVar7;
-	}
-
-	cp->ai.l.targetX = curve->Midx + FIXEDH(iVar8 * rcossin_tbl[(uVar4 & 0xfff) * 2]);
-	cp->ai.l.targetZ = curve->Midz + FIXEDH(iVar8 * rcossin_tbl[(uVar4 & 0xfff) * 2 + 1]);
-
 }
 
 
@@ -3755,26 +3771,33 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 	int uVar9;
 	int iVar10;
 	int el[4][2];
+	int onward; // $s1
+	int numExits; // $s2
+	int tmp; // $a1
+	int i; // $a2
+	int total; // $s0
 
-	iVar10 = 0;
-	uVar6 = 0;
+	numExits = 0;
+	total = 0;
 	iVar3 = cp->ai.l.lastRoad;
-	iVar8 = 0;
+	onward = 0;
 
 	if (junction->ExitIdx[0] != iVar3)
 	{
 		psVar4 = junction->ExitIdx;
 
 		do {
-			psVar4 = psVar4 + 1;
-			iVar8 = iVar8 + 1;
+			psVar4++;
+			onward++;
 
 			if ((int)*psVar4 == iVar3)
-				goto LAB_LEAD__000ec664;
+			{
+				goto LAB_LEAD__000ec664; // break
+			}
 
-		} while (iVar8 < 4);
+		} while (onward < 4);
 
-		if (junction->ExitIdx[iVar8] != iVar3)
+		if (junction->ExitIdx[onward] != iVar3)
 		{
 			uVar9 = (cp->ai.l.targetDir + 0x200U & 0xfff) >> 10;
 			goto LAB_LEAD__000ec684;
@@ -3782,7 +3805,7 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 	}
 
 LAB_LEAD__000ec664:
-	uVar9 = iVar8 + 2U & 3;
+	uVar9 = onward + 2U & 3;
 LAB_LEAD__000ec684:
 
 	uVar1 = junction->ExitIdx[uVar9];
@@ -3790,25 +3813,25 @@ LAB_LEAD__000ec684:
 		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
 		(-1 < junction->ExitIdx[uVar9]))
 	{
-		iVar10 = 1;
+		numExits = 1;
 		el[0][0] = 0;
-		uVar6 = junction->flags >> (uVar9 << 3) & 0xf;
-		el[0][1] = uVar6;
+		total = junction->flags >> (uVar9 << 3) & 0xf;
+		el[0][1] = total;
 	}
 
 	uVar2 = uVar9 + 1;
 	uVar1 = junction->ExitIdx[uVar2 & 3];
-	iVar3 = iVar10;
+	iVar3 = numExits;
 
 	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
 		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar2 & 3]))
+		(junction->ExitIdx[uVar2 & 3] > -1))
 	{
-		iVar3 = iVar10 + 1;
-		el[iVar10][0] = 1;
+		iVar3 = numExits + 1;
+		el[numExits][0] = 1;
 		uVar2 = junction->flags >> ((uVar2 & 3) << 3) & 0xf;
-		uVar6 = uVar6 + uVar2;
-		el[iVar10][1] = uVar2;
+		total = total + uVar2;
+		el[numExits][1] = uVar2;
 	}
 
 	uVar2 = uVar9 - 1;
@@ -3817,21 +3840,21 @@ LAB_LEAD__000ec684:
 
 	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
 		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar2 & 3]))
+		(junction->ExitIdx[uVar2 & 3] > -1))
 	{
 		iVar8 = iVar3 + 1;
 		el[iVar3][0] = -1;
 		uVar2 = junction->flags >> ((uVar2 & 3) << 3) & 0xf;
-		uVar6 = uVar6 + uVar2;
+		total = total + uVar2;
 		el[iVar3][1] = uVar2;
 	}
 
 	iVar3 = iVar8;
 
-	if (uVar6 == 0)
+	if (total == 0)
 	{
 		iVar3 = iVar8 + 1;
-		uVar6 = 1;
+		total = 1;
 		el[iVar8][0] = 2;
 		el[iVar8][1] = 1;
 	}
@@ -3846,7 +3869,7 @@ LAB_LEAD__000ec684:
 		iVar10 = 1;
 		iVar7 = el[0][1];
 
-		if (iVar8 % uVar6 < el[0][1])
+		if (iVar8 % total < el[0][1])
 		{
 			cp->ai.l.nextTurn = el[0][0];
 		}
@@ -3856,11 +3879,13 @@ LAB_LEAD__000ec684:
 				iVar5 = iVar10;
 
 				if (iVar3 <= iVar5)
+				{
 					goto LAB_LEAD__000ec924;
+				}
 
 				iVar7 = iVar7 + el[iVar5][1];
 				iVar10 = iVar5 + 1;
-			} while (iVar7 <= iVar8 % uVar6);
+			} while (iVar7 <= iVar8 % total);
 
 			cp->ai.l.nextTurn = el[iVar5][0];
 		}
