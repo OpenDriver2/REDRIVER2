@@ -1,6 +1,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include "STRINGS.H"
+
 #ifdef _WIN32
 
 #include <direct.h>
@@ -36,7 +38,6 @@ inline void FixPathSlashes(char* pathbuff)
 #endif
 
 #ifdef __GNUC__
-#include <string.h>
 #define _stricmp(s1, s2) strcasecmp(s1, s2)
 #endif
 

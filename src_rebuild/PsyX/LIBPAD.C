@@ -1,4 +1,5 @@
 #include "LIBPAD.H"
+#include "LIBETC.H"
 
 #include "EMULATOR.H"
 
@@ -169,84 +170,52 @@ void UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
 	unsigned short ret = 0xFFFF;
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_X))//Square
-	{
 		ret &= ~0x8000;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_B))//Circle
-	{
 		ret &= ~0x2000;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_Y))//Triangle
-	{
 		ret &= ~0x1000;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_A))//Cross
-	{
 		ret &= ~0x4000;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))//L1
-	{
 		ret &= ~0x400;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))//R1
-	{
 		ret &= ~0x800;
-	}
-
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_UP))//UP
-	{
-		ret &= ~0x10;
-	}
-
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_DOWN))//DOWN
-	{
-		ret &= ~0x40;
-	}
-
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_LEFT))//LEFT
-	{
-		ret &= ~0x80;
-	}
-
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))//RIGHT
-	{
-		ret &= ~0x20;
-	}
 
 	if (SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_TRIGGERLEFT))//L2
-	{
 		ret &= ~0x100;
-	}
 
 	if (SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_TRIGGERRIGHT))//R2
-	{
 		ret &= ~0x200;
-	}
+
+	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_UP))//UP
+		ret &= ~0x10;
+
+	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_DOWN))//DOWN
+		ret &= ~0x40;
+
+	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_LEFT))//LEFT
+		ret &= ~0x80;
+
+	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))//RIGHT
+		ret &= ~0x20;
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_LEFTSTICK))//L3
-	{
 		ret &= ~0x2;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_RIGHTSTICK))//R3
-	{
 		ret &= ~0x4;
-	}
 	
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_BACK))//SELECT
-	{
 		ret &= ~0x1;
-	}
 
 	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_START))//START
-	{
 		ret &= ~0x8;
-	}
 
 	short leftX = SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_LEFTX);
 	short leftY = SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_LEFTY);
@@ -265,85 +234,62 @@ void UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
 
 unsigned short UpdateKeyboardInput()
 {
+	extern KeyboardMapping g_keyboard_mapping;
 	unsigned short ret = 0xFFFF;
 
 	//Not initialised yet
 	if (keyboardState == NULL)
-	{
 		return ret;
-	}
 
 	SDL_PumpEvents();
 
-	if (keyboardState[SDL_SCANCODE_X])//Square
-	{
+	if (keyboardState[g_keyboard_mapping.kc_square])//Square
 		ret &= ~0x8000;
-	}
 
-	if (keyboardState[SDL_SCANCODE_V])//Circle
-	{
+	if (keyboardState[g_keyboard_mapping.kc_circle])//Circle
 		ret &= ~0x2000;
-	}
 
-	if (keyboardState[SDL_SCANCODE_Z])//Triangle
-	{
+	if (keyboardState[g_keyboard_mapping.kc_triangle])//Triangle
 		ret &= ~0x1000;
-	}
 
-	if (keyboardState[SDL_SCANCODE_C])//Cross
-	{
+	if (keyboardState[g_keyboard_mapping.kc_cross])//Cross
 		ret &= ~0x4000;
-	}
 
-	if (keyboardState[SDL_SCANCODE_LSHIFT])//L1
-	{
+	if (keyboardState[g_keyboard_mapping.kc_l1])//L1
 		ret &= ~0x400;
-	}
 
-	if (keyboardState[SDL_SCANCODE_RSHIFT])//R1
-	{
-		ret &= ~0x800;
-	}
-
-	if (keyboardState[SDL_SCANCODE_UP])//UP
-	{
-		ret &= ~0x10;
-	}
-
-	if (keyboardState[SDL_SCANCODE_DOWN])//DOWN
-	{
-		ret &= ~0x40;
-	}
-
-	if (keyboardState[SDL_SCANCODE_LEFT])//LEFT
-	{
-		ret &= ~0x80;
-	}
-
-	if (keyboardState[SDL_SCANCODE_RIGHT])//RIGHT
-	{
-		ret &= ~0x20;
-	}
-
-	if (keyboardState[SDL_SCANCODE_LCTRL])//L2
-	{
+	if (keyboardState[g_keyboard_mapping.kc_l2])//L2
 		ret &= ~0x100;
-	}
 
-	if (keyboardState[SDL_SCANCODE_RCTRL])//R2
-	{
+	if (keyboardState[g_keyboard_mapping.kc_l3])//L3
+		ret &= ~0x2;
+
+	if (keyboardState[g_keyboard_mapping.kc_r1])//R1
+		ret &= ~0x800;
+
+	if (keyboardState[g_keyboard_mapping.kc_r2])//R2
 		ret &= ~0x200;
-	}
 
-	if (keyboardState[SDL_SCANCODE_SPACE])//SELECT
-	{
+	if (keyboardState[g_keyboard_mapping.kc_r3])//R3
+		ret &= ~0x4;
+	
+	if (keyboardState[g_keyboard_mapping.kc_dpad_up])//UP
+		ret &= ~0x10;
+
+	if (keyboardState[g_keyboard_mapping.kc_dpad_down])//DOWN
+		ret &= ~0x40;
+
+	if (keyboardState[g_keyboard_mapping.kc_dpad_left])//LEFT
+		ret &= ~0x80;
+
+	if (keyboardState[g_keyboard_mapping.kc_dpad_right])//RIGHT
+		ret &= ~0x20;
+
+	if (keyboardState[g_keyboard_mapping.kc_select])//SELECT
 		ret &= ~0x1;
-	}
 
-	if (keyboardState[SDL_SCANCODE_RETURN])//START
-	{
+	if (keyboardState[g_keyboard_mapping.kc_start])//START
 		ret &= ~0x8;
-	}
 
 	return ret;
 }

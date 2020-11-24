@@ -355,6 +355,8 @@ int bDrawExtra = 0;
 int mainScreenLoaded = 1;
 int bDoneAllready = 0;
 int allowVibration = 1;
+int bQuitToSystem = 0;
+int bQuitToSystemSel = 0;
 
 int carSelection = 0;
 int currSelIndex = 0;
@@ -1017,6 +1019,16 @@ void DrawScreen(PSXSCREEN *pScr)
 #endif
 		}
 
+#ifndef PSX
+		if(bQuitToSystem)
+		{
+			FEPrintString("Quit to system?", 220, 256, 0, 128, 128, 128);
+
+			FEPrintString("Yes", 240, 288, 0, 128, 128, bQuitToSystemSel ? 0 : 128);
+			FEPrintString("No", 340, 288, 0, 128, 128, bQuitToSystemSel ? 128 : 0);
+		}
+#endif
+
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 		FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
 		FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
@@ -1307,6 +1319,9 @@ void ReInitScreens(void)
 	gInFrontend = 1;
 	currMission = -1;
 	missionSetup = 0;
+
+	extern void SwitchMappings(int menu);
+	SwitchMappings(1);
 #endif // !PSX
 
 	if (!bCdIconSetup)
@@ -1677,6 +1692,40 @@ void PadChecks(void)
 		}
 	}
 
+#ifndef PSX
+	// [A] quit to system
+	if(fePad & 0x10)
+	{
+		if(ScreenDepth == 0)
+		{
+			bQuitToSystem ^= 1;
+			FESound(0);
+		}
+	}
+
+	if(bQuitToSystem)
+	{
+		if (fePad & 0x40)
+		{
+			if(bQuitToSystemSel == 1)
+				bQuitToSystem = 2;
+			else
+				bQuitToSystem = 0;
+
+			FESound(2);
+		}
+		else if ((fePad & 0x8000) || (fePad & 0x2000))
+		{
+			bQuitToSystemSel += 1;
+			bQuitToSystemSel &= 1;
+
+			FESound(3);
+		}
+
+		fePad = 0;
+	}
+#endif
+
 	if (oldnum != numPadsConnected && (oldnum == 2 || numPadsConnected == 2) && ScreenDepth == 0) 
 	{
 		bRedrawFrontend = 1;
@@ -1888,7 +1937,7 @@ void DoFrontEnd(void)
 
 			idle_timer = VSync(-1);
 		}
-	} while (true);
+	} while (bQuitToSystem != 2);
 }
 
 

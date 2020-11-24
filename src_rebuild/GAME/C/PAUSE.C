@@ -1391,6 +1391,14 @@ void ControlMenu(void)
 
 	controlmenu_debounce = 0;
 
+#ifndef PSX
+	// Pause fix for PC mapping
+	if ((paddata & 0x10) && paddata & (0x1000 | 0x4000))
+	{
+		paddata = 0;
+	}
+#endif
+
 	if (paddata & 0x1000)
 	{
 		// go up
@@ -1443,8 +1451,14 @@ void ControlMenu(void)
 	else if ((paddata & 0x10) || (paddata & 0x800)) // Triangle or Start
 	{
 		// continue game if needed
+
 		if (VisibleMenu == 0)
 		{
+#ifndef PSX
+			// hack for keyboard swap
+			if(!(paddata & 0x800))
+				return;
+#endif
 			for (i = 0; i < ActiveMenu->NumItems; i++)
 			{
 				pItem = &ActiveMenu->MenuItems[i];

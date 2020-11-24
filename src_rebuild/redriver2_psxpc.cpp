@@ -1,6 +1,10 @@
 ﻿// redriver2_psxpc.cpp
 //
 
+#include <SDL_keyboard.h>
+
+#include "PLATFORM.H"
+
 #include "DRIVER2.H"
 #include "C/MAIN.H"
 #include "C/SYSTEM.H"
@@ -8,7 +12,6 @@
 #include "C/CAMERA.H"
 #include "C/CARS.H"
 #include "C/CIV_AI.H"
-#include "C/LEADAI.H"
 #include "C/MISSION.H"
 
 #include "EMULATOR.H"
@@ -19,6 +22,7 @@
 
 #include "C/CUTSCENE.H"
 #include "C/GLAUNCH.H"
+#include "C/LOADVIEW.H"
 #include "C/OVERLAY.H"
 #include "C/PLAYERS.H"
 
@@ -318,17 +322,16 @@ void GameDebugKeys(int nKey, bool down)
 		gDisplayDrawStats ^= 1;
 		printf("Stats %s\n", gDisplayDrawStats ? "ON" : "OFF");
 	}
+	else if (nKey == SDL_SCANCODE_BACKSPACE)
+	{
+		extern int FastForward;
+		FastForward = 1;
+	}
 #ifdef _DEBUG
 	else if (nKey == SDL_SCANCODE_0)
 	{
 		gStopCivCars ^= 1;
 		printf("Civ cars stop %s\n", gStopCivCars ? "ON" : "OFF");
-	}
-#endif
-	else if (nKey == SDL_SCANCODE_BACKSPACE)
-	{
-		extern int FastForward;
-		FastForward = 1;
 	}
 	else if (nKey == SDL_SCANCODE_PAGEUP)
 	{
@@ -358,7 +361,7 @@ void GameDebugKeys(int nKey, bool down)
 		extern void CreateRoadblock();
 		CreateRoadblock();
 	}
-	else if (nKey == SDL_SCANCODE_R)
+	else if (nKey == SDL_SCANCODE_KP_PLUS)
 	{
 		extern LEAD_PARAMETERS LeadValues;
 
@@ -473,10 +476,11 @@ void GameDebugKeys(int nKey, bool down)
 			requestStationaryCivCar = 1;
 		}
 	}
-	else if (nKey == SDL_SCANCODE_T)
+	else if (nKey == SDL_SCANCODE_KP_MINUS)
 	{
 		PingOutAllCivCarsAndCopCars();
 	}
+#endif
 }
 #endif
 
@@ -491,6 +495,95 @@ char g_PrimTab1[PRIMTAB_SIZE];			// 0xFB400
 char g_PrimTab2[PRIMTAB_SIZE];			// 0x119400
 char g_Replay_buffer[0x50000];		// 0x1fABBC
 #endif
+
+int ParseKeyMapping(const char* str, int default_value)
+{
+	const char* scancodeName;
+	int i;
+
+	if(str)
+	{
+		for (i = 0; i < SDL_NUM_SCANCODES; i++)
+		{
+			scancodeName = SDL_GetScancodeName((SDL_Scancode)i);
+			if (strlen(scancodeName))
+			{
+				if (!_stricmp(scancodeName, str))
+				{
+					return i;
+				}
+			}
+		}
+	}
+
+	return default_value;
+}
+
+void LoadKeyMappings(ini_t* config, char* section, KeyboardMapping& outMapping)
+{
+	const char* str;
+
+	str = ini_get(config, section, "square");
+	outMapping.kc_square = ParseKeyMapping(str, SDL_SCANCODE_X);
+
+	str = ini_get(config, section, "circle");
+	outMapping.kc_circle = ParseKeyMapping(str, SDL_SCANCODE_V);
+
+	str = ini_get(config, section, "triangle");
+	outMapping.kc_triangle = ParseKeyMapping(str, SDL_SCANCODE_Z);
+
+	str = ini_get(config, section, "cross");
+	outMapping.kc_cross = ParseKeyMapping(str, SDL_SCANCODE_C);
+
+	str = ini_get(config, section, "l1");
+	outMapping.kc_l1 = ParseKeyMapping(str, SDL_SCANCODE_LSHIFT);
+
+	str = ini_get(config, section, "l2");
+	outMapping.kc_l2 = ParseKeyMapping(str, SDL_SCANCODE_LCTRL);
+
+	str = ini_get(config, section, "l3");
+	outMapping.kc_l3 = ParseKeyMapping(str, SDL_SCANCODE_LEFTBRACKET);
+
+	str = ini_get(config, section, "r1");
+	outMapping.kc_r1 = ParseKeyMapping(str, SDL_SCANCODE_RSHIFT);
+
+	str = ini_get(config, section, "r2");
+	outMapping.kc_r2 = ParseKeyMapping(str, SDL_SCANCODE_RCTRL);
+
+	str = ini_get(config, section, "r3");
+	outMapping.kc_r3 = ParseKeyMapping(str, SDL_SCANCODE_RIGHTBRACKET);
+
+	str = ini_get(config, section, "up");
+	outMapping.kc_dpad_up = ParseKeyMapping(str, SDL_SCANCODE_UP);
+
+	str = ini_get(config, section, "down");
+	outMapping.kc_dpad_down = ParseKeyMapping(str, SDL_SCANCODE_DOWN);
+
+	str = ini_get(config, section, "left");
+	outMapping.kc_dpad_left = ParseKeyMapping(str, SDL_SCANCODE_LEFT);
+
+	str = ini_get(config, section, "right");
+	outMapping.kc_dpad_right = ParseKeyMapping(str, SDL_SCANCODE_RIGHT);
+
+	str = ini_get(config, section, "select");
+	outMapping.kc_select = ParseKeyMapping(str, SDL_SCANCODE_SPACE);
+
+	str = ini_get(config, section, "start");
+	outMapping.kc_start = ParseKeyMapping(str, SDL_SCANCODE_RETURN);
+}
+
+KeyboardMapping g_gameMappings = { 0x123 };
+KeyboardMapping g_menuMappings = { 0x456 };
+
+void SwitchMappings(int menu)
+{
+	extern KeyboardMapping g_keyboard_mapping;
+
+	if(menu)
+		g_keyboard_mapping = g_menuMappings;
+	else
+		g_keyboard_mapping = g_gameMappings;
+}
 
 int main(int argc, char** argv)
 {
@@ -542,7 +635,7 @@ int main(int argc, char** argv)
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
 
 		InitUserReplays(userReplaysStr);
-		
+
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
@@ -553,12 +646,13 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
+		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		
 
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);
-	
+
 			int len = strlen(gDataFolder);
 			if (gDataFolder[len - 1] != '\\')
 			{
@@ -566,7 +660,7 @@ int main(int argc, char** argv)
 				gDataFolder[len + 1] = '\0';
 			}
 		}
-		
+
 #if defined(DEBUG_OPTIONS)
 		int unlockAll = 0;
 		ini_sget(config, "game", "unlockAll", "%d", &unlockAll);
@@ -585,11 +679,9 @@ int main(int argc, char** argv)
 			AvailableCheats.cheat4 = 1;
 		}
 #endif
-	
-		ini_free(config);
 	}
 #ifndef _DEBUG
-	if(enableFreecamera)
+	if (enableFreecamera)
 	{
 		gameDebugKeys = FreeCameraKeyboardHandler;
 		gameDebugMouse = FreeCameraMouseHandler;
@@ -598,14 +690,19 @@ int main(int argc, char** argv)
 
 	gameDebugKeys = GameDebugKeys;
 	gameDebugMouse = FreeCameraMouseHandler;
-	
+
 #endif
 
-	
-
 	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
-	redriver2_main(argc, argv);
 
-	Emulator_ShutDown();
-	
+	if (config)
+	{
+		LoadKeyMappings(config, "kbcontrols_game", g_gameMappings);
+		LoadKeyMappings(config, "kbcontrols_menu", g_menuMappings);
+
+		SwitchMappings(1);
+		
+		ini_free(config);
+	}
+	redriver2_main(argc, argv);		
 }

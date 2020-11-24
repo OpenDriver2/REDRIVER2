@@ -136,6 +136,9 @@ int gDieWithFade = 0;
 
 int FrameCnt = 0;
 
+static int WantPause = 0;
+static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
+
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
@@ -2190,9 +2193,6 @@ void DrawGame(void)
 	/* end block 3 */
 	// End Line: 10830
 
-static int WantPause = 0;
-static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
-
 // [D] [T]
 void EndGame(GAMEMODE mode)
 {
@@ -2268,7 +2268,7 @@ void CheckForPause(void)
 		WantPause = 1;
 	}
 
-	if (WantPause != 0)
+	if (WantPause)
 	{
 		WantPause = 0;
 		pauseflag = 1;
@@ -2662,10 +2662,12 @@ int redriver2_main(int argc, char** argv)
 // [D] [T]
 void FadeScreen(int end_value)
 {
-	int tmp2 = pauseflag;
+	int tmp2;
+
+	tmp2 = pauseflag;
 
 	pauseflag = 1;
-	SetupScreenFade(-32, end_value, 1);
+	SetupScreenFade(-32, end_value, gFastLoadingScreens ? 128 : 8);
 	FadingScreen = 1;
 
 	do {
@@ -3117,7 +3119,7 @@ void RenderGame(void)
 
 	DrawGame(); // [A] was inline
 
-	FadeGameScreen(0, 8);
+	FadeGameScreen(0);
 }
 
 // decompiled code
