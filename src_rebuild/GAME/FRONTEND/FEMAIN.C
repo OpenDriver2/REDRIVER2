@@ -1307,6 +1307,9 @@ void ReInitScreens(void)
 	gInFrontend = 1;
 	currMission = -1;
 	missionSetup = 0;
+
+	extern void SwitchMappings(int menu);
+	SwitchMappings(1);
 #endif // !PSX
 
 	if (!bCdIconSetup)
