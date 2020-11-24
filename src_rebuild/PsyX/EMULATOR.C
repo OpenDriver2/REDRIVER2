@@ -55,6 +55,7 @@ int g_pgxpTextureCorrection = 1;
 int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
 TextureID g_lastBoundTexture;
+KeyboardMapping g_keyboard_mapping;
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
@@ -387,6 +388,30 @@ static int Emulator_InitialiseCore()
 	return TRUE;
 }
 
+static void Emulator_InitialiseInput()
+{
+	g_keyboard_mapping.kc_square = SDL_SCANCODE_X;
+	g_keyboard_mapping.kc_circle = SDL_SCANCODE_V;
+	g_keyboard_mapping.kc_triangle = SDL_SCANCODE_Z;
+	g_keyboard_mapping.kc_cross = SDL_SCANCODE_C;
+
+	g_keyboard_mapping.kc_l1 = SDL_SCANCODE_LSHIFT;
+	g_keyboard_mapping.kc_l2 = SDL_SCANCODE_LCTRL;
+	g_keyboard_mapping.kc_l3 = SDL_SCANCODE_LEFTBRACKET;
+
+	g_keyboard_mapping.kc_r1 = SDL_SCANCODE_RSHIFT;
+	g_keyboard_mapping.kc_r2 = SDL_SCANCODE_RCTRL;
+	g_keyboard_mapping.kc_r3 = SDL_SCANCODE_RIGHTBRACKET;
+
+	g_keyboard_mapping.kc_dpad_up = SDL_SCANCODE_UP;
+	g_keyboard_mapping.kc_dpad_down = SDL_SCANCODE_DOWN;
+	g_keyboard_mapping.kc_dpad_left = SDL_SCANCODE_LEFT;
+	g_keyboard_mapping.kc_dpad_right = SDL_SCANCODE_RIGHT;
+
+	g_keyboard_mapping.kc_select = SDL_SCANCODE_SPACE;
+	g_keyboard_mapping.kc_start = SDL_SCANCODE_RETURN;
+}
+
 void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
 	eprintf("Initialising Psy-X %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
@@ -418,6 +443,7 @@ void Emulator_Initialise(char* windowName, int width, int height, int fullscreen
 		Emulator_ShutDown();
 	}
 
+	Emulator_InitialiseInput();
 }
 
 void Emulator_GetScreenSize(int& screenWidth, int& screenHeight)

@@ -167,6 +167,32 @@ enum TexFormat
 	TF_16_BIT
 };
 
+struct KeyboardMapping
+{
+	int id;
+	
+	int kc_square;
+	int kc_circle;
+	int kc_triangle;
+	int kc_cross;
+
+	int kc_l1;
+	int kc_l2;
+	int kc_l3;
+	
+	int kc_r1;
+	int kc_r2;
+	int kc_r3;
+
+	int kc_start;
+	int kc_select;
+
+	int kc_dpad_left;
+	int kc_dpad_right;
+	int kc_dpad_up;
+	int kc_dpad_down;
+};
+
 #define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
