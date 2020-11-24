@@ -3,6 +3,8 @@
 
 #include <SDL_keyboard.h>
 
+#include "PLATFORM.H"
+
 #include "DRIVER2.H"
 #include "C/MAIN.H"
 #include "C/SYSTEM.H"
@@ -10,7 +12,6 @@
 #include "C/CAMERA.H"
 #include "C/CARS.H"
 #include "C/CIV_AI.H"
-#include "C/LEADAI.H"
 #include "C/MISSION.H"
 
 #include "EMULATOR.H"
