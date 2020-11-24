@@ -3308,72 +3308,86 @@ LAB_LEAD__000eb96c:
 	if (bVar1)
 	{
 		static int diff;
-		cr_00 = nextJunction & 0xffffe000;
-		if (cr_00 == 0x2000)
+
+		if (IS_JUNCTION_SURFACE(nextJunction))
 		{
-			junction = Driver2JunctionsPtr + nextJunction + -0x2000;
+			junction = GET_JUNCTION(nextJunction);
+			
 			if (nextJunction != cp->ai.l.nextJunction)
 			{
 				SelectExit(cp, junction);
 				cp->ai.l.nextJunction = nextJunction;
 			}
-
-			cr_00 = cp->ai.l.nextExit;
-			cr = (junction->ExitIdx[cr_00]);
-			heading = (cr_00 & 3) << 10;
+			
+			cr = junction->ExitIdx[cp->ai.l.nextExit];
+			heading = (cp->ai.l.nextExit & 3) << 10;
 		}
 		else
 		{
-			if (cr_00 == 0)
+			if (IS_STRAIGHT_SURFACE(nextJunction))
 			{
-				heading = (uint)(ushort)Driver2StraightsPtr[nextJunction].angle & 0xfff;
+				straight = GET_STRAIGHT(nextJunction);
+				heading = straight->angle & 0xfff;
 
-				if ((((cp->hd).direction - heading) + 0x400 & 0x800) != 0)
+				if ((cp->hd.direction - heading + 0x400 & 0x800) != 0)
 				{
-					heading = heading ^ 0x800;
+					heading ^= 2048;
 				}
 			}
-			else if (cr_00 == 0x4000)
+			else if (IS_CURVED_SURFACE(nextJunction))
 			{
+				int angle;
 				static int dx; // offset 0x9c
 				static int dz; // offset 0xa0
 
-				dx = (cp->hd).where.t[0] - Driver2CurvesPtr[nextJunction + -0x4000].Midx;
-				dz = (cp->hd).where.t[2] - Driver2CurvesPtr[nextJunction + -0x4000].Midz;
-				lVar3 = ratan2(dx, dz);
+				curve = GET_CURVE(nextJunction);
 
-				if ((lVar3 - (cp->hd).direction & 0x800U) == 0)
-					heading = lVar3 - 0x400U & 0xfff;
+				dx = cp->hd.where.t[0] - curve->Midx;
+				dz = cp->hd.where.t[2] - curve->Midz;
+				
+				angle = ratan2(dx, dz);
+
+				if ((angle - cp->hd.direction & 2048U) != 0)
+					heading = angle + 1024U & 0xfff;
 				else
-					heading = lVar3 + 0x400U & 0xfff;
+					heading = angle - 1024U & 0xfff;
 			}
 		}
-		diff = ((heading - (cp->hd).direction) + 0x800 & 0xfff) - 0x800;
 
-		if ((cr & 0xffffe000) == 0)
+		diff = (heading - cp->hd.direction + 2048 & 0xfff) - 2048;
+
+		if (IS_STRAIGHT_SURFACE(cr))
 		{
+			int cs, sn;
 			static int dx; // offset 0xa4
 			static int dz; // offset 0xa8
 			static int dist; // offset 0xac
 			static int offx; // offset 0xb0
 			static int offz; // offset 0xb4
 
-			straight = Driver2StraightsPtr + cr;
-			iVar5 = (int)rcossin_tbl[(heading & 0xfff) * 2 + 1];
-			offx = straight->Midx - (cp->hd).where.t[0];
-			iVar6 = (int)rcossin_tbl[(heading & 0xfff) * 2];
-			offz = straight->Midz - (cp->hd).where.t[2];
-			dist = -FIXEDH(offx * iVar6 + offz * iVar5);
-			cp->ai.l.d = FIXEDH(iVar5 * offx - iVar6 * offz);
-			cp->ai.l.width = ((uint)(u_char)straight->NumLanes & 0xf) << 9;
-			dx = FIXEDH(iVar6 * dist);
+			straight = GET_STRAIGHT(cr);
+
+			sn = rcossin_tbl[(heading & 0xfff) * 2];
+			cs = rcossin_tbl[(heading & 0xfff) * 2 + 1];
+			
+			offx = straight->Midx - cp->hd.where.t[0];
+			offz = straight->Midz - cp->hd.where.t[2];
+			
+			dist = -FIXEDH(offx * sn + offz * cs);
+			
+			cp->ai.l.d = FIXEDH(cs * offx - sn * offz);
+			cp->ai.l.width = ROAD_LANES_COUNT(straight) * 512;
+			
+			dx = FIXEDH(sn * dist);
+			dz = FIXEDH(cs * dist);
+			
 			basePosition.vx = straight->Midx + dx;
-			basePosition.vy = (cp->hd).where.t[1];
-			dz = FIXEDH(iVar5 * dist);
+			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = straight->Midz + dz;
 		}
-		else if ((cr & 0xffffe000) == 0x4000)
+		else if (IS_CURVED_SURFACE(cr))
 		{
+			int radius;
 			static int angle; // offset 0xb8
 			static int dx; // offset 0xbc
 			static int dz; // offset 0xc0
@@ -3383,73 +3397,65 @@ LAB_LEAD__000eb96c:
 			static int offx; // offset 0xd0
 			static int offz; // offset 0xd4
 
-			curve = Driver2CurvesPtr + (cr - 0x4000);
-			dx = (cp->hd).where.t[0] - curve->Midx;
-			dz = (cp->hd).where.t[2] - curve->Midz;
-			iVar6 = (uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200;
+			curve = GET_CURVE(cr);
+			dx = cp->hd.where.t[0] - curve->Midx;
+			dz = cp->hd.where.t[2] - curve->Midz;
+			
+			radius = curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512;
 			angle = ratan2(dx, dz);
 
-			if ((angle - heading & 0x800) == 0)
+			// check directions
+			if (angle - heading & 0x800)
 			{
-				cr_00 = (uint)(ushort)curve->end & 0xfff;
-				basex = FIXEDH(rcossin_tbl[cr_00 * 2] * iVar6);
-				basez = FIXEDH(rcossin_tbl[cr_00 * 2 + 1] * iVar6);
-				uVar4 = hypot(dx, dz);
-				lVar3 = angle;
-				cp->ai.l.d = uVar4;
-				cp->ai.l.base_Normal = uVar4;
-				cp->ai.l.base_Dir = -1;
-				cp->ai.l.base_Angle = lVar3;
-				cp->ai.l.d = ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200) - uVar4;
+				basex = FIXEDH(rcossin_tbl[(curve->start & 0xfff) * 2] * radius);
+				basez = FIXEDH(rcossin_tbl[(curve->start & 0xfff) * 2 + 1] * radius);
+
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = 1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = cp->ai.l.d - radius;
 			}
 			else
 			{
-				cr_00 = (uint)(ushort)curve->start & 0xfff;
-				basex = FIXEDH(rcossin_tbl[cr_00 * 2] * iVar6);
-				basez = FIXEDH(rcossin_tbl[cr_00 * 2 + 1] * iVar6);
-				uVar4 = hypot(dx, dz);
-				lVar3 = angle;
-				cp->ai.l.d = uVar4;
-				cp->ai.l.base_Normal = uVar4;
-				cp->ai.l.base_Dir = 1;
-				cp->ai.l.base_Angle = lVar3;
-				cp->ai.l.d = uVar4 - ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200);
+				basex = FIXEDH(rcossin_tbl[(curve->end & 0xfff) * 2] * radius);
+				basez = FIXEDH(rcossin_tbl[(curve->end & 0xfff) * 2 + 1] * radius);
+
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = -1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = radius - cp->ai.l.d;
 			}
 
-			cp->ai.l.width = ((uint)(u_char)curve->NumLanes & 0xf) << 9;
-			offx = basex - (cp->hd).where.t[0];
-			offz = basez - (cp->hd).where.t[2];
+			cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
+			offx = basex - cp->hd.where.t[0];
+			offz = basez - cp->hd.where.t[2];
+			
 			dist = -FIXEDH(offx * rcossin_tbl[(heading & 0xfff) * 2] + offz * rcossin_tbl[(heading & 0xfff) * 2 + 1]);
 			dx = FIXEDH(rcossin_tbl[(heading & 0xfff) * 2] * dist);
-			basePosition.vx = basex + dx;
-			basePosition.vy = (cp->hd).where.t[1];
 			dz = FIXEDH(rcossin_tbl[(heading & 0xfff) * 2 + 1] * dist);
+			
+			basePosition.vx = basex + dx;
+			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = basez + dz;
 		}
 		else
 		{
-			basePosition.vx = (cp->hd).where.t[0];
-			basePosition.vy = (cp->hd).where.t[1];
-			basePosition.vz = (cp->hd).where.t[2];
+			basePosition.vx = cp->hd.where.t[0];
+			basePosition.vy = cp->hd.where.t[1];
+			basePosition.vz = cp->hd.where.t[2];
 		}
-
-		iVar5 = diff;
-		iVar6 = diff;
-
-		if (diff < 0)
-			iVar6 = -diff;
 
 		cp->ai.l.currentRoad = cr;
 
-		if (iVar6 < 0x200)
+		if (ABS(diff) < 512)
 		{
-			basePosition.vx = (cp->hd).where.t[0];
-			basePosition.vy = (cp->hd).where.t[1];
-			basePosition.vz = (cp->hd).where.t[2];
+			basePosition.vx = cp->hd.where.t[0];
+			basePosition.vy = cp->hd.where.t[1];
+			basePosition.vz = cp->hd.where.t[2];
 
 			UpdateRoadPosition(cp, &basePosition, 0);
 		}
-		else if (iVar5 < 1)
+		else if (diff < 1)
 		{
 			UpdateRoadPosition(cp, &basePosition, 2);
 		}
@@ -3462,46 +3468,29 @@ LAB_LEAD__000eb96c:
 	}
 	else
 	{
-		basePosition.vx = (cp->hd).where.t[0];
-		basePosition.vy = (cp->hd).where.t[1];
-		basePosition.vz = (cp->hd).where.t[2];
-		iVar6 = cp->ai.l.d;
+		basePosition.vx = cp->hd.where.t[0];
+		basePosition.vy = cp->hd.where.t[1];
+		basePosition.vz = cp->hd.where.t[2];
 
-		if (iVar6 < 0)
-			iVar6 = -iVar6;
-
-		if (((cp->ai.l.width + 0x800 < iVar6) && (((cp->hd).wheel[1].surface & 7) != 3)) && (((cp->hd).wheel[3].surface & 7) != 3))
-		{
-			cp->ai.l.offRoad = 1;
-			cp->ai.l.nextJunction = -1;
-			UpdateRoadPosition(cp, &basePosition, 4);
-			heading = (cp->hd).direction;
-			SetTarget(cp, cr_00, heading, &nextJunction);
-		}
-		else
+		// check for grass surface
+		// or if AI is too far from road
+		if (cp->ai.l.width + 2048 >= ABS(cp->ai.l.d) || 
+			(cp->hd.wheel[1].surface & 7) == 3 || 
+			(cp->hd.wheel[3].surface & 7) == 3)
 		{
 			cp->ai.l.currentRoad = cr_00;
 			cp->ai.l.lastRoad = cr_00;
 			cp->ai.l.lastDirection = cp->ai.l.direction;
 
-			if ((((cr_00 & 0xffffe000) == 0x4000) && ((int)(cr_00 & 0x1fff) < NumDriver2Curves)) && (-1 < (int)cr_00))
-			{
-				UpdateRoadPosition(cp, &basePosition, 1);
-			}
-			else
-			{
-				UpdateRoadPosition(cp, &basePosition, 0);
-			}
+			UpdateRoadPosition(cp, &basePosition, IS_CURVED_SURFACE(cr_00) ? 1 : 0);
 
-			heading = (cp->hd).direction;
-			SetTarget(cp, cr_00, heading, &nextJunction);
+			SetTarget(cp, cr_00, cp->hd.direction, &nextJunction);
 
-			if ((((nextJunction & 0xffffe000U) == 0x2000) &&
-				((int)(nextJunction & 0x1fffU) < NumDriver2Junctions)) && (-1 < nextJunction))
+			if (IS_JUNCTION_SURFACE(nextJunction))
 			{
 				if (nextJunction != cp->ai.l.nextJunction)
 				{
-					SelectExit(cp, Driver2JunctionsPtr + nextJunction + -0x2000);
+					SelectExit(cp, GET_JUNCTION(nextJunction));
 					cp->ai.l.nextJunction = nextJunction;
 				}
 			}
@@ -3509,6 +3498,14 @@ LAB_LEAD__000eb96c:
 			{
 				cp->ai.l.nextJunction = -1;
 			}
+		}
+		else
+		{
+			cp->ai.l.offRoad = 1;
+			cp->ai.l.nextJunction = -1;
+			
+			UpdateRoadPosition(cp, &basePosition, 4);
+			SetTarget(cp, cr_00, cp->hd.direction, &nextJunction);
 		}
 	}
 }
