@@ -2662,10 +2662,12 @@ int redriver2_main(int argc, char** argv)
 // [D] [T]
 void FadeScreen(int end_value)
 {
-	int tmp2 = pauseflag;
+	int tmp2;
+
+	tmp2 = pauseflag;
 
 	pauseflag = 1;
-	SetupScreenFade(-32, end_value, 1);
+	SetupScreenFade(-32, end_value, gFastLoadingScreens ? 128 : 8);
 	FadingScreen = 1;
 
 	do {
@@ -3117,7 +3119,7 @@ void RenderGame(void)
 
 	DrawGame(); // [A] was inline
 
-	FadeGameScreen(0, 8);
+	FadeGameScreen(0);
 }
 
 // decompiled code

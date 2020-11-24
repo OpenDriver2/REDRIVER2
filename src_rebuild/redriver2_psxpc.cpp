@@ -21,6 +21,7 @@
 
 #include "C/CUTSCENE.H"
 #include "C/GLAUNCH.H"
+#include "C/LOADVIEW.H"
 #include "C/OVERLAY.H"
 #include "C/PLAYERS.H"
 
@@ -644,6 +645,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
+		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
+		
 
 		if (dataFolderStr)
 		{

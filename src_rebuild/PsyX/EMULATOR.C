@@ -82,7 +82,9 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 
 void Emulator_ResetDevice()
 {
-	SDL_GL_SetSwapInterval(g_swapInterval);
+#if defined(OGL)
+	SDL_GL_SetSwapInterval(0);//g_swapInterval);
+#endif
 }
 
 

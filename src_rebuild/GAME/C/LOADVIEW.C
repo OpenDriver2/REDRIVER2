@@ -19,6 +19,7 @@ DISPENV load_disp = { 0 };
 
 int load_steps = 0;
 int loading_bar_pos = 0;
+int gFastLoadingScreens = 0;
 
 // decompiled code
 // original method signature: 
@@ -162,7 +163,7 @@ void SetupScreenFade(int start, int end, int speed)
 	// End Line: 566
 
 // [D] [T]
-void FadeGameScreen(int flag, int speed)
+void FadeGameScreen(int flag)
 {
 	static POLY_F4 poly; // offset 0x0
 	static POLY_FT4 p; // offset 0x20
@@ -198,9 +199,9 @@ void FadeGameScreen(int flag, int speed)
 #endif
 
 		if (flag == 0)
-			screen_fade_value += speed;
+			screen_fade_value += screen_fade_speed;
 		else
-			screen_fade_value -= speed;
+			screen_fade_value -= screen_fade_speed;
 
 		setPolyFT4(&p);
 		setSemiTrans(&p, 1);
@@ -370,20 +371,22 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 		i++;
 	}
 
+#define FADE_STEP 2
+
 	if (effect == 1) 
 	{
 		fade = 8;
-		fade_step = 2;
+		fade_step = FADE_STEP;
 	}
 	else if (effect == 2)
 	{
 		fade = 128;
-		fade_step = -2;
+		fade_step = -FADE_STEP;
 	}
 	else
 	{
 		fade = 255;
-		fade_step = -4;
+		fade_step = -FADE_STEP * 2;
 	}
 
 	i = 0;
@@ -406,10 +409,13 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 			DrawPrim(&nulls[j]);
 			DrawPrim(&prims[j]);
 		}
-
+		
 		DrawSync(0);
-		VSync(0);
 
+		// [A]
+		if(gFastLoadingScreens == 0)
+			VSync(0);
+	
 #ifndef PSX
 		Emulator_EndScene();
 #endif
@@ -485,6 +491,7 @@ void CloseShutters(int speed, int width, int height)
 		DrawPrim(&poly[0]);
 		DrawPrim(&poly[1]);
 
+		VSync(0);
 #ifndef PSX
 		Emulator_EndScene();
 #endif
