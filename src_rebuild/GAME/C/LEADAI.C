@@ -509,7 +509,7 @@ ulong LeadPadResponse(CAR_DATA* cp)
 
 	dif = cp->hd.direction - cp->ai.l.targetDir;
 
-	deltaTh = (dif + 2048u & 0xfff) - 2048;
+	deltaTh = (dif + 2048U & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
 
 #ifdef COLLISION_DEBUG
@@ -535,7 +535,10 @@ ulong LeadPadResponse(CAR_DATA* cp)
 	switch (cp->ai.l.dstate)
 	{
 		case 0:
-			t0 = CAR_PAD_HANDBRAKE | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+			// [A] check angular velocity when making this maneuver with handbrake
+			deltaAVel = ABS(avel);
+		
+			t0 = (deltaAVel < 100 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 			break;
 		case 1:
 			t0 = CAR_PAD_ACCEL;
@@ -3073,240 +3076,215 @@ LAB_LEAD__000eb0c8:
 	/* end block 2 */
 	// End Line: 5779
 
-// [D]
+// [D] [T]
 void CheckCurrentRoad(CAR_DATA* cp)
 {
 	static int heading; // offset 0x1c
 	static int nextJunction; // offset 0x50
 	static VECTOR basePosition; // offset 0x60
 
-	bool bVar1;
-	int iVar2;
-	long lVar3;
-	long uVar4;
-	int cr;
-	int iVar5;
+	int checkNext;
+	int currentRoad;
 	DRIVER2_STRAIGHT* straight;
 	DRIVER2_JUNCTION* junction;
 	DRIVER2_CURVE* curve;
-	int iVar6;
-	int cr_00;
 
-	bVar1 = false;
+	checkNext = 0;
 
-	if ((((cp->hd).wheel[1].surface & 7) == 3) || (((cp->hd).wheel[3].surface & 7) == 3))
-		cr_00 = cp->ai.l.currentRoad;
+	// check if on grass
+	if ((cp->hd.wheel[1].surface & 7) == 3 || (cp->hd.wheel[3].surface & 7) == 3)
+		currentRoad = cp->ai.l.currentRoad;
 	else
-		cr_00 = GetSurfaceIndex((VECTOR*)(cp->hd).where.t);
+		currentRoad = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
 
-	cr = cr_00 & 0xffffe000;
-	if (((cr == 0) || (cr == 0x4000)) || (cr == 0x2000))
+	if (IS_STRAIGHT_SURFACE(currentRoad) || IS_CURVED_SURFACE(currentRoad) || IS_JUNCTION_SURFACE(currentRoad))
 	{
 		cp->ai.l.offRoad = 0;
-		if ((cr_00 != cp->ai.l.lastRoad) && (cr_00 != cp->ai.l.currentRoad))
+
+		if (currentRoad != cp->ai.l.lastRoad && 
+			currentRoad != cp->ai.l.currentRoad)
 		{
 			cp->ai.l.direction = 0;
 		}
 	}
 	else
 	{
-		cr_00 = cp->ai.l.lastRoad;
+		currentRoad = cp->ai.l.lastRoad;
 		cp->ai.l.direction = cp->ai.l.lastDirection;
 	}
 
-	cr = cr_00 & 0xffffe000;
-
-	if (cr == 0x2000)
+	if (IS_JUNCTION_SURFACE(currentRoad))
 	{
-		bVar1 = true;
-		nextJunction = cr_00;
-		goto LAB_LEAD__000eb96c;
+		checkNext = 1;
+		nextJunction = currentRoad;
 	}
-
-	if (cr < 0x2001)
+	else if (IS_STRAIGHT_SURFACE(currentRoad))
 	{
-		if (cr == 0)
+		static int d; // offset 0x70
+		static int toGo; // offset 0x74
+		static int angle; // offset 0x78
+		static int s; // offset 0x7c
+		static int c; // offset 0x80
+		int fixedThresh;
+		int dx, dz;
+
+		straight = GET_STRAIGHT(currentRoad);
+		angle = straight->angle & 0xfff;
+
+		dx = cp->hd.where.t[0] - straight->Midx;
+		dz = cp->hd.where.t[2] - straight->Midz;
+		
+		if (straight->ConnectIdx[1] == -1)
+			nextJunction = straight->ConnectIdx[0];
+		else
+			nextJunction = straight->ConnectIdx[1];
+
+		if (cp->ai.l.direction == 0)
 		{
-			static int d; // offset 0x70
-			static int toGo; // offset 0x74
-			static int angle; // offset 0x78
-			static int s; // offset 0x7c
-			static int c; // offset 0x80
-
-			straight = Driver2StraightsPtr + cr_00;
-			angle = (uint)(ushort)straight->angle & 0xfff;
-			iVar5 = (cp->hd).where.t[2] - straight->Midz;
-			nextJunction = (int)straight->ConnectIdx[1];
-			iVar6 = (cp->hd).where.t[0] - straight->Midx;
-
-			if (nextJunction == -1)
-				nextJunction = (int)straight->ConnectIdx[0];
-
-			if (cp->ai.l.direction == 0)
-			{
-				iVar2 = -1;
-				if ((((cp->hd).direction - angle) + 0x400 & 0x800) == 0) {
-					iVar2 = 1;
-				}
-				cp->ai.l.direction = iVar2;
-			}
-
-			if (cp->ai.l.direction == -1)
-			{
-				angle = angle ^ 0x800;
-				nextJunction = (int)straight->ConnectIdx[3];
-				if (nextJunction == -1) {
-					nextJunction = (int)straight->ConnectIdx[2];
-				}
-			}
-
-			s = (int)rcossin_tbl[(angle & 0xfff) * 2];
-			c = (int)rcossin_tbl[(angle & 0xfff) * 2 + 1];
-			d = FIXEDH(s * iVar6 + c * iVar5);
-			iVar2 = (cp->hd).speed;
-			toGo = (uint)(straight->length >> 1) - d;
-
-			if (iVar2 < 0x65)
-				iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
+			if (cp->hd.direction - angle + 1024 & 2048)
+				cp->ai.l.direction = -1;
 			else
-				iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+				cp->ai.l.direction = 1;
+		}
 
-			if (((toGo < iVar2) && (cp->ai.l.offRoad == 0)) && (cp->ai.l.dstate != 5))
+		if (cp->ai.l.direction == -1)
+		{
+			angle ^= 2048;
+			
+			if (straight->ConnectIdx[3] == -1)
+				nextJunction = straight->ConnectIdx[2];
+			else
+				nextJunction = straight->ConnectIdx[3];
+		}
+
+		s = rcossin_tbl[(angle & 0xfff) * 2];
+		c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
+		
+		d = FIXEDH(s * dx + c * dz);
+
+		toGo = (straight->length / 2) - d;
+		
+		if (cp->hd.speed > 100)
+			fixedThresh = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+		else
+			fixedThresh = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
+
+		if (toGo < fixedThresh && cp->ai.l.offRoad == 0 && cp->ai.l.dstate != 5)
+		{
+			checkNext = 1;
+			cp->ai.l.direction = 0;
+		}
+		else
+		{
+			if (cp->hd.speed > 100)
+				fixedThresh = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+			else
+				fixedThresh = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
+
+			if (toGo < fixedThresh * 3)
+				cp->ai.l.nextTurn += 16;
+
+			cp->ai.l.d = FIXEDH(-c * dx + s * dz);
+			cp->ai.l.width = ROAD_LANES_COUNT(straight) * 512;
+		}
+	}
+	else if (IS_CURVED_SURFACE(currentRoad))
+	{
+		static int angle; // offset 0x84
+		static int radius; // offset 0x88
+		static int dx; // offset 0x8c
+		static int dz; // offset 0x90
+		static int fixedThresh; // offset 0x94
+
+		curve = GET_CURVE(currentRoad);
+		dx = cp->hd.where.t[0] - curve->Midx;
+		dz = cp->hd.where.t[2] - curve->Midz;
+		angle = ratan2(dx, dz);
+
+		if (cp->ai.l.direction == 0)
+		{
+
+			if (angle - cp->hd.direction & 2048U)
+				cp->ai.l.direction = 1;
+			else
+				cp->ai.l.direction = -1;
+		}
+
+		if (cp->ai.l.direction == 1)
+		{
+			radius = (curve->inside + ROAD_LANES_COUNT(curve)) * 1024 - cp->ai.l.roadPosition;
+
+			if (cp->hd.speed > 100)
+				fixedThresh = (LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul) / radius;
+			else
+				fixedThresh = (LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul) / radius;
+
+			if (fixedThresh >= 4096 && (curve->end - angle & 1U) != 0)
 			{
-				bVar1 = true;
+				if (curve->ConnectIdx[1] == -1)
+					nextJunction = curve->ConnectIdx[0];
+				else
+					nextJunction = curve->ConnectIdx[1];
+
+				checkNext = 1;
 				cp->ai.l.direction = 0;
 			}
 			else
 			{
-				iVar2 = (cp->hd).speed;
-				if (iVar2 < 0x65)
-					iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
-				else
-					iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+				if (fixedThresh * 3 >= 4096 && (curve->end - angle & 1U))
+				{
+					cp->ai.l.nextTurn += 16;
+				}
 
-				if (toGo < iVar2 * 3)
-					cp->ai.l.nextTurn = cp->ai.l.nextTurn + 0x10;
-
-				cp->ai.l.d = FIXEDH(-c * iVar6 + s * iVar5);
-				cp->ai.l.width = ((uint)(u_char)straight->NumLanes & 0xf) << 9;
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = 1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = cp->ai.l.d - (curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512);
+				cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
 			}
-			goto LAB_LEAD__000eb96c;
+		}
+		else
+		{
+			radius = curve->inside * 1024 + cp->ai.l.roadPosition;
+
+			if (cp->hd.speed > 100)
+				fixedThresh = (LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul) / radius;
+			else
+				fixedThresh = (LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul) / radius;
+
+			if (fixedThresh >= 4096 && (angle - curve->start & 1U))
+			{
+				if (curve->ConnectIdx[3] == -1)
+					nextJunction = curve->ConnectIdx[2];
+				else
+					nextJunction = curve->ConnectIdx[3];
+
+				checkNext = 1;
+				cp->ai.l.direction = 0;
+			}
+			else
+			{
+				if (fixedThresh * 3 >= 4096 && (angle - curve->start & 1U))
+					cp->ai.l.nextTurn += 16;
+
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = -1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512 - cp->ai.l.d;
+				cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
+			}
 		}
 	}
 	else
 	{
-		if (cr == 0x4000)
-		{
-			static int angle; // offset 0x84
-			static int radius; // offset 0x88
-			static int dx; // offset 0x8c
-			static int dz; // offset 0x90
-			static int fixedThresh; // offset 0x94
-
-			curve = Driver2CurvesPtr + (cr_00 - 0x4000);
-			dx = (cp->hd).where.t[0] - curve->Midx;
-			dz = (cp->hd).where.t[2] - curve->Midz;
-			angle = ratan2(dx, dz);
-
-			if (cp->ai.l.direction == 0)
-			{
-				iVar6 = 1;
-				if ((angle - (cp->hd).direction & 0x800U) == 0)
-					iVar6 = -1;
-
-				cp->ai.l.direction = iVar6;
-			}
-
-			if (cp->ai.l.direction == 1)
-			{
-				radius = ((uint)curve->inside + ((uint)(u_char)curve->NumLanes & 0xf)) * 0x400 - cp->ai.l.roadPosition;
-				iVar6 = (cp->hd).speed;
-				if (iVar6 < 0x65)
-				{
-					iVar6 = iVar6 * LeadValues.tDistMul;
-					iVar5 = LeadValues.tDist;
-				}
-				else
-				{
-					iVar6 = (iVar6 + -100) * LeadValues.hDistMul;
-					iVar5 = LeadValues.hDist;
-				}
-
-				fixedThresh = (iVar5 + iVar6) / radius;
-
-				if ((fixedThresh < 0x1000) || ((curve->end - angle & 1U) == 0))
-				{
-					if ((0xfff < fixedThresh * 3) && ((curve->end - angle & 1U) != 0))
-					{
-						cp->ai.l.nextTurn = cp->ai.l.nextTurn + 0x10;
-					}
-
-					uVar4 = hypot(dx, dz);
-					iVar6 = angle;
-					cp->ai.l.d = uVar4;
-					cp->ai.l.base_Normal = uVar4;
-					cp->ai.l.base_Dir = 1;
-					cp->ai.l.base_Angle = iVar6;
-					cp->ai.l.d = uVar4 - ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200);
-				LAB_LEAD__000eb940:
-					cp->ai.l.width = ((u_char)curve->NumLanes & 0xf) << 9;
-					goto LAB_LEAD__000eb96c;
-				}
-
-				nextJunction = (int)curve->ConnectIdx[1];
-
-				if (nextJunction == -1)
-					nextJunction = (int)curve->ConnectIdx[0];
-
-			}
-			else
-			{
-				iVar6 = (cp->hd).speed;
-				radius = curve->inside * 0x400 + cp->ai.l.roadPosition;
-
-				if (iVar6 < 0x65)
-				{
-					iVar6 = iVar6 * LeadValues.tDistMul;
-					iVar5 = LeadValues.tDist;
-				}
-				else
-				{
-					iVar6 = (iVar6 + -100) * LeadValues.hDistMul;
-					iVar5 = LeadValues.hDist;
-				}
-
-				fixedThresh = (iVar5 + iVar6) / radius;
-
-				if ((fixedThresh < 0x1000) || ((angle - curve->start & 1U) == 0))
-				{
-					if ((0xfff < fixedThresh * 3) && ((angle - curve->start & 1U) != 0))
-						cp->ai.l.nextTurn = cp->ai.l.nextTurn + 0x10;
-
-					uVar4 = hypot(dx, dz);
-					iVar6 = angle;
-					cp->ai.l.d = uVar4;
-					cp->ai.l.base_Normal = uVar4;
-					cp->ai.l.base_Dir = -1;
-					cp->ai.l.base_Angle = iVar6;
-					cp->ai.l.d = ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200) - uVar4;
-					goto LAB_LEAD__000eb940;
-				}
-				nextJunction = (int)curve->ConnectIdx[3];
-				if (nextJunction == -1)
-					nextJunction = (int)curve->ConnectIdx[2];
-
-			}
-
-			bVar1 = true;
-			cp->ai.l.direction = 0;
-			goto LAB_LEAD__000eb96c;
-		}
+		// continue
+		currentRoad = cp->ai.l.lastRoad;
 	}
-	cr_00 = cp->ai.l.lastRoad;
-LAB_LEAD__000eb96c:
-	cr = nextJunction;
-	if (bVar1)
+
+	if (checkNext)
 	{
+		currentRoad = nextJunction;
+		
 		static int diff;
 
 		if (IS_JUNCTION_SURFACE(nextJunction))
@@ -3319,7 +3297,7 @@ LAB_LEAD__000eb96c:
 				cp->ai.l.nextJunction = nextJunction;
 			}
 			
-			cr = junction->ExitIdx[cp->ai.l.nextExit];
+			currentRoad = junction->ExitIdx[cp->ai.l.nextExit];
 			heading = (cp->ai.l.nextExit & 3) << 10;
 		}
 		else
@@ -3356,7 +3334,7 @@ LAB_LEAD__000eb96c:
 
 		diff = (heading - cp->hd.direction + 2048 & 0xfff) - 2048;
 
-		if (IS_STRAIGHT_SURFACE(cr))
+		if (IS_STRAIGHT_SURFACE(currentRoad))
 		{
 			int cs, sn;
 			static int dx; // offset 0xa4
@@ -3365,7 +3343,7 @@ LAB_LEAD__000eb96c:
 			static int offx; // offset 0xb0
 			static int offz; // offset 0xb4
 
-			straight = GET_STRAIGHT(cr);
+			straight = GET_STRAIGHT(currentRoad);
 
 			sn = rcossin_tbl[(heading & 0xfff) * 2];
 			cs = rcossin_tbl[(heading & 0xfff) * 2 + 1];
@@ -3385,7 +3363,7 @@ LAB_LEAD__000eb96c:
 			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = straight->Midz + dz;
 		}
-		else if (IS_CURVED_SURFACE(cr))
+		else if (IS_CURVED_SURFACE(currentRoad))
 		{
 			int radius;
 			static int angle; // offset 0xb8
@@ -3397,7 +3375,7 @@ LAB_LEAD__000eb96c:
 			static int offx; // offset 0xd0
 			static int offz; // offset 0xd4
 
-			curve = GET_CURVE(cr);
+			curve = GET_CURVE(currentRoad);
 			dx = cp->hd.where.t[0] - curve->Midx;
 			dz = cp->hd.where.t[2] - curve->Midz;
 			
@@ -3445,7 +3423,7 @@ LAB_LEAD__000eb96c:
 			basePosition.vz = cp->hd.where.t[2];
 		}
 
-		cp->ai.l.currentRoad = cr;
+		cp->ai.l.currentRoad = currentRoad;
 
 		if (ABS(diff) < 512)
 		{
@@ -3464,7 +3442,7 @@ LAB_LEAD__000eb96c:
 			UpdateRoadPosition(cp, &basePosition, 3);
 		}
 
-		SetTarget(cp, cr, heading, &nextJunction);
+		SetTarget(cp, currentRoad, heading, &nextJunction);
 	}
 	else
 	{
@@ -3478,13 +3456,13 @@ LAB_LEAD__000eb96c:
 			(cp->hd.wheel[1].surface & 7) == 3 || 
 			(cp->hd.wheel[3].surface & 7) == 3)
 		{
-			cp->ai.l.currentRoad = cr_00;
-			cp->ai.l.lastRoad = cr_00;
+			cp->ai.l.currentRoad = currentRoad;
+			cp->ai.l.lastRoad = currentRoad;
 			cp->ai.l.lastDirection = cp->ai.l.direction;
 
-			UpdateRoadPosition(cp, &basePosition, IS_CURVED_SURFACE(cr_00) ? 1 : 0);
+			UpdateRoadPosition(cp, &basePosition, IS_CURVED_SURFACE(currentRoad) ? 1 : 0);
 
-			SetTarget(cp, cr_00, cp->hd.direction, &nextJunction);
+			SetTarget(cp, currentRoad, cp->hd.direction, &nextJunction);
 
 			if (IS_JUNCTION_SURFACE(nextJunction))
 			{
@@ -3505,7 +3483,7 @@ LAB_LEAD__000eb96c:
 			cp->ai.l.nextJunction = -1;
 			
 			UpdateRoadPosition(cp, &basePosition, 4);
-			SetTarget(cp, cr_00, cp->hd.direction, &nextJunction);
+			SetTarget(cp, currentRoad, cp->hd.direction, &nextJunction);
 		}
 	}
 }
