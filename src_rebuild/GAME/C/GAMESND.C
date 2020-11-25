@@ -3685,7 +3685,7 @@ void LeadHorn(CAR_DATA* cp)
 	dx = cp->hd.where.t[0] - camera_position.vx >> 8;
 	dz = cp->hd.where.t[2] - camera_position.vz >> 8;
 
-	if (ABS(dx) < 64 && ABS(dz) > 64)
+	if (ABS(dx) > 64 || ABS(dz) > 64)
 		return;
 
 	if (horn_time == 0)
