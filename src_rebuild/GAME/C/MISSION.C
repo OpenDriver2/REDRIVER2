@@ -690,8 +690,13 @@ void LoadMission(int missionnum)
 	}
 
 	// check if start data is required
-	if (MissionHeader->type & 1) 
+	if (MissionHeader->type & 1)
+	{
 		RestoreStartData();
+
+		if (PlayerStartInfo[0]->model > 4)
+			MissionHeader->residentModels[4] = PlayerStartInfo[0]->model;
+	}
 
 	PreProcessTargets();
 
