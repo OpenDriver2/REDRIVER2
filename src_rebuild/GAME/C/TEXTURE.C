@@ -241,7 +241,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	temptpage.x = tpage->x;
 	temptpage.y = tpage->y;
 	temptpage.w = tpage->w;
-	temptpage.h = 0x100;
+	temptpage.h = 256;
 
 	unpackTexture(_other_buffer, tpageaddress);
 	LoadImage(&temptpage, (u_long *)_other_buffer);

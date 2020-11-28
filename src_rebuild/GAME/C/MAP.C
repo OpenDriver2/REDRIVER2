@@ -191,31 +191,13 @@ void ProcessJuncBoundsLump(char *lump_file, int lump_size)
 	/* end block 3 */
 	// End Line: 579
 
-MODEL * FindModelPtrWithName(char *name)
+// [D] [T]
+MODEL* FindModelPtrWithName(char *name)
 {
-	char cVar1;
-	int iVar2;
-	int iVar3;
-	char *__s1;
-	int iVar4;
+	int idx;
+	idx = FindModelIdxWithName(name);
 
-	iVar4 = 0;
-	__s1 = modelname_buffer;
-	if (0 < num_models_in_pack) {
-		do {
-			iVar2 = strcmp(__s1, name);
-			iVar3 = iVar4 + 1;
-			if (iVar2 == 0) {
-				return modelpointers[iVar4];
-			}
-			do {
-				cVar1 = *__s1;
-				__s1 = __s1 + 1;
-			} while (cVar1 != '\0');
-			iVar4 = iVar3;
-		} while (iVar3 < num_models_in_pack);
-	}
-	return NULL;
+	return idx >= 0 ? modelpointers[idx] : NULL;
 }
 
 
