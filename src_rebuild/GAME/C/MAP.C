@@ -147,128 +147,6 @@ void ProcessJuncBoundsLump(char *lump_file, int lump_size)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// MODEL * /*$ra*/ FindModelPtrWithName(char *name /*$s4*/)
- // line 289, offset 0x0005d40c
-	/* begin block 1 */
-		// Start line: 290
-		// Start offset: 0x0005D40C
-		// Variables:
-	// 		int dummy; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 290
-			// Start offset: 0x0005D40C
-			// Variables:
-		// 		char *name; // $s4
-		// 		int *num; // $s2
-
-			/* begin block 1.1.1 */
-				// Start line: 290
-				// Start offset: 0x0005D40C
-				// Variables:
-			// 		int count; // $s1
-			// 		char *temp; // $s0
-			/* end block 1.1.1 */
-			// End offset: 0x0005D4A4
-			// End Line: 290
-		/* end block 1.1 */
-		// End offset: 0x0005D4A4
-		// End Line: 290
-	/* end block 1 */
-	// End offset: 0x0005D4C4
-	// End Line: 293
-
-	/* begin block 2 */
-		// Start line: 1545
-	/* end block 2 */
-	// End Line: 1546
-
-	/* begin block 3 */
-		// Start line: 578
-	/* end block 3 */
-	// End Line: 579
-
-// [D] [T]
-MODEL* FindModelPtrWithName(char *name)
-{
-	int idx;
-	idx = FindModelIdxWithName(name);
-
-	return idx >= 0 ? modelpointers[idx] : NULL;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FindModelIdxWithName(char *name /*$s3*/)
- // line 295, offset 0x0005d4c4
-	/* begin block 1 */
-		// Start line: 296
-		// Start offset: 0x0005D4C4
-		// Variables:
-	// 		int i; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 296
-			// Start offset: 0x0005D4C4
-			// Variables:
-		// 		char *name; // $s3
-		// 		int *num; // $s2
-
-			/* begin block 1.1.1 */
-				// Start line: 296
-				// Start offset: 0x0005D4C4
-				// Variables:
-			// 		int count; // $s1
-			// 		char *temp; // $s0
-			/* end block 1.1.1 */
-			// End offset: 0x0005D540
-			// End Line: 296
-		/* end block 1.1 */
-		// End offset: 0x0005D540
-		// End Line: 296
-	/* end block 1 */
-	// End offset: 0x0005D560
-	// End Line: 300
-
-	/* begin block 2 */
-		// Start line: 1554
-	/* end block 2 */
-	// End Line: 1555
-
-	/* begin block 3 */
-		// Start line: 1557
-	/* end block 3 */
-	// End Line: 1558
-
-// [D] [T]
-int FindModelIdxWithName(char *name)
-{
-	char *str;
-	int i;
-
-	i = 0;
-	str = modelname_buffer;
-
-	while (i < num_models_in_pack)
-	{
-		if (!strcmp(str, name))
-			return i;
-
-		while (*str++) {} // go to next string
-
-		i++;
-	}
-
-	return -1;
-}
-
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ InitCellData()
@@ -371,8 +249,6 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
  	int dz; // $a0
  	int cellx; // $v1
  	int cellz; // $v0
-
-	int ab;
 
 	dx = pos->vx + units_across_halved;
 	dz = pos->vz + units_down_halved;

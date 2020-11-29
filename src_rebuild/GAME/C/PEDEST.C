@@ -4,7 +4,7 @@
 #include "MISSION.H"
 #include "OBJCOLL.H"
 #include "COSMETIC.H"
-#include "MAIN.H"
+#include "MODELS.H"
 #include "DR2ROADS.H"
 #include "MOTION_C.H"
 #include "CONVERT.H"

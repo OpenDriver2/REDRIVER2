@@ -22,5 +22,8 @@ extern int ProcessCarModelLump(char *lump_ptr, int lump_size); // 0x00064E6C
 
 extern MODEL * GetCarModel(char *src, char **dest, int KeepNormals); // 0x00065134
 
+extern MODEL * FindModelPtrWithName(char *name); // 0x0005D40C
+
+extern int FindModelIdxWithName(char *name); // 0x0005D4C4
 
 #endif
