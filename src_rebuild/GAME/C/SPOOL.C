@@ -3795,10 +3795,23 @@ void Tada(void)
 			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], specialSlot, &tpagerect);
 
 		LoadImage(&tpagerect, (u_long *)specLoadBuffer);
+
+#ifndef PSX
+		if(specBlocksToLoad == 0)
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				int tpage = specTpages[GameLevel][(specspooldata[2] - 1) * 2 + i];
+
+				// [A] try override
+				LoadTPageFromTIMs(tpage);
+			}
+		}
+#endif
 	}
 	else
 	{
-		if (2 < specialState) 
+		if (specialState > 2) 
 		{
 			if (specialState != 4)
 				return;
