@@ -262,7 +262,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 
 		textureName = texturename_buffer + details[i].nameoffset;
 
-		sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s.TIM", LevelNames[GameLevel], tpage2send, textureName);
+		sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s_%d.TIM", LevelNames[GameLevel], tpage2send, textureName, i);
 
 		if(FileExists(filename))
 		{
