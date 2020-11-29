@@ -16,6 +16,9 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 	// do not init second time!
 	if (keyboardState != NULL)
 		return;
+
+	// init keyboard state
+	keyboardState = SDL_GetKeyboardState(NULL);
 	
 	if (pad1 != NULL)
 	{
@@ -48,28 +51,23 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 
 	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0)
 	{
-		eprinterr("Failed to initialise subsystem GAMECONTROLLER\n");
+		eprinterr("Failed to initialise SDL GameController subsystem!\n");
+		return;
 	}
 
 	// Add more controllers from custom file
 	SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
-	if (SDL_NumJoysticks() < 1)
+	// immediately open controllers
+	int numJoysticks = SDL_NumJoysticks();
+	
+	for (int i = 0; i < numJoysticks && i < MAX_CONTROLLERS; i++)
 	{
-		eprinterr("Failed to locate a connected gamepad!\n");
-	}
-	else
-	{
-		for (int i = 0; i < SDL_NumJoysticks(); i++)
+		if (SDL_IsGameController(i))
 		{
-			if (SDL_IsGameController(i) && i < MAX_CONTROLLERS)
-			{
-				padHandle[i] = SDL_GameControllerOpen(i);///@TODO close joysticks
-			}
+			padHandle[i] = SDL_GameControllerOpen(i);	//@TODO close joysticks
 		}
 	}
-
-	keyboardState = SDL_GetKeyboardState(NULL);
 }
 
 void PadInitMtap(unsigned char* unk00, unsigned char* unk01)
