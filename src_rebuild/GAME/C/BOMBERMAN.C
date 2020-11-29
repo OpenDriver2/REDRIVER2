@@ -294,7 +294,6 @@ void HandleThrownBombs(void)
 // [D] [T]
 void DrawThrownBombs(void)
 {
-	int iVar1;
 	BOMB *bomb;
 	int i;
 	MATRIX object_matrix;

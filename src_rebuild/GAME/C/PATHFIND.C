@@ -358,7 +358,6 @@ void WunCell(VECTOR* pbase)
 	v[0].vy += 32;
 	v[1].vy = v[0].vy;
 
-
 	// [A] definitely better code
 	// new 16 vs old 12 passes but map is not leaky at all#
 	for (i = 0; i < 4; i++)
@@ -371,40 +370,6 @@ void WunCell(VECTOR* pbase)
 			OMapSet(v[0].vx >> 8, v[0].vz >> 8, CellAtPositionEmpty(&v[0], 128) == 0);
 		}
 	}
-
-#if 0
-	iVar10 = 0;
-	do {
-		iVar8 = 0;
-
-		if (iVar10 != 0)
-			pbase->vx += 512;
-
-		v[0].vx = pbase->vx;
-		v[0].vz = pbase->vz;
-
-		do {
-
-			v[0].vx = pbase->vx + ends[iVar8][0].dx;
-			v[0].vz = pbase->vz + ends[iVar8][0].dz;
-
-			v[1].vx = pbase->vx + ends[iVar8][1].dx;
-			v[1].vz = pbase->vz + ends[iVar8][1].dz;
-
-			iVar4 = v[0].vx + v[1].vx >> 1;
-			iVar5 = v[0].vz + v[1].vz >> 1;
-
-			OMapSet(iVar4 >> 8, iVar5 >> 8, lineClear(&v[0], &v[1]) == 0);
-
-			iVar8++;
-		} while (iVar8 < 6);
-
-		if (iVar10 != 0)
-			pbase->vx -= 512;
-
-		iVar10++;
-	} while (iVar10 < 2);
-#endif
 }
 
 

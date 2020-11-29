@@ -439,55 +439,48 @@ void InitHubcap(void)
 // [D] [T]
 void LoseHubcap(int car, int Hubcap, int Velocity)
 {
-	int iVar1;
-	int iVar2;
 	SVECTOR InitialLocalAngle = { 0, 0, 10 };
-	VECTOR R;
-	VECTOR VW;
 	CAR_DATA* cp;
 
 	cp = &car_data[car];
 
-	if (cp->hd.wheel_speed > -1)
+	// check speed and if hubcap lost
+	if (cp->hd.wheel_speed < 0 || (cp->ap.flags & 1 << Hubcap))
+		return;
+
+	cp->ap.flags |= (1 << Hubcap);		// [A] cars now hold hubcaps
+
+	gHubcap.Position.vx = gHubcap.Offset[Hubcap].vx;
+	gHubcap.Position.vy = gHubcap.Offset[Hubcap].vy;
+	gHubcap.Position.vz = gHubcap.Offset[Hubcap].vz;
+
+	SetRotMatrix(&cp->hd.where);
+	_MatrixRotate(&gHubcap.Position);
+
+	gHubcap.Position.vx = gHubcap.Position.vx + cp->hd.where.t[0];
+	gHubcap.Position.vy = gHubcap.Position.vy - cp->hd.where.t[1];
+	gHubcap.Position.vz = gHubcap.Position.vz + cp->hd.where.t[2];
+
+	gHubcap.Orientation = cp->hd.where;
+
+	Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
+
+	if (Hubcap > 1)
 	{
-		if ((cp->ap.flags & (1 << Hubcap)) == 0) //gHubcap.Present[Hubcap] != 0) 
-		{
-			cp->ap.flags |= (1 << Hubcap);
-			//gHubcap.Present[Hubcap] = 0;
+		gHubcap.Orientation.m[0][0] = -gHubcap.Orientation.m[0][0];
+		gHubcap.Orientation.m[1][0] = -gHubcap.Orientation.m[1][0];
 
-			gHubcap.Position.vx = gHubcap.Offset[Hubcap].vx;
-			gHubcap.Position.vy = gHubcap.Offset[Hubcap].vy;
-			gHubcap.Position.vz = gHubcap.Offset[Hubcap].vz;
+		gHubcap.Orientation.m[2][0] = -gHubcap.Orientation.m[2][0];
+		gHubcap.Orientation.m[0][2] = -gHubcap.Orientation.m[0][2];
 
-			SetRotMatrix(&cp->hd.where);
-			_MatrixRotate(&gHubcap.Position);
-
-			gHubcap.Position.vx = gHubcap.Position.vx + cp->hd.where.t[0];
-			gHubcap.Position.vy = gHubcap.Position.vy - cp->hd.where.t[1];
-			gHubcap.Position.vz = gHubcap.Position.vz + cp->hd.where.t[2];
-
-			gHubcap.Orientation = cp->hd.where;
-
-			Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
-
-			if (Hubcap > 1)
-			{
-				gHubcap.Orientation.m[0][0] = -gHubcap.Orientation.m[0][0];
-				gHubcap.Orientation.m[1][0] = -gHubcap.Orientation.m[1][0];
-
-				gHubcap.Orientation.m[2][0] = -gHubcap.Orientation.m[2][0];
-				gHubcap.Orientation.m[0][2] = -gHubcap.Orientation.m[0][2];
-
-				gHubcap.Orientation.m[1][2] = -gHubcap.Orientation.m[1][2];
-				gHubcap.Orientation.m[2][2] = -gHubcap.Orientation.m[2][2];
-			}
-
-			gHubcap.Duration = 100;
-			gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXEDH(cp->st.n.linearVelocity[0]);
-			gHubcap.Direction.vy = FIXEDH(cp->st.n.linearVelocity[1]);
-			gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
-		}
+		gHubcap.Orientation.m[1][2] = -gHubcap.Orientation.m[1][2];
+		gHubcap.Orientation.m[2][2] = -gHubcap.Orientation.m[2][2];
 	}
+
+	gHubcap.Duration = 100;
+	gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXEDH(cp->st.n.linearVelocity[0]);
+	gHubcap.Direction.vy = FIXEDH(cp->st.n.linearVelocity[1]);
+	gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
 }
 
 

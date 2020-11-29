@@ -2315,7 +2315,6 @@ int GetEmpty(int old)
 {
 	unsigned char bVar1;
 	XMCHANNEL *j;
-	int iVar3;
 	int i;
 
 	de++;
