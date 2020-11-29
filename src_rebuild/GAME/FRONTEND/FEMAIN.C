@@ -395,7 +395,7 @@ void SetVariable(int var)
 	int code = (var >> 8);
 	int value = (var & 0xff);
 
-	switch (var >> 8)
+	switch (code)
 	{
 		case 1:
 			GameLevel = value;
@@ -411,8 +411,7 @@ void SetVariable(int var)
 			NumPlayers = (value + 1);
 			break;
 		case 4:
-			if (value != 0)
-				gWantNight = 1;
+			gWantNight = value > 0;
 
 			break;
 		case 5:

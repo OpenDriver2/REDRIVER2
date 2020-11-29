@@ -2208,7 +2208,7 @@ void ExplosionSound(VECTOR* pos, int type)
 
 	Start3DSoundVolPitch(-1, SOUND_BANK_MISSION,
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
-		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 0xe00);
+		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 3584);
 }
 
 

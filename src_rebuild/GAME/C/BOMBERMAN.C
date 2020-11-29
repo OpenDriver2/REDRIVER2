@@ -757,7 +757,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 					DamageCar(cp, cd, &collisionResult, strikeVel);
 
 				displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
-				displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;
+				displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 4096;
 
 				if (strikeVel < 0x7f001)
 					denom = (strikeVel * 4096) / displacement;
