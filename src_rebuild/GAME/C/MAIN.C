@@ -281,7 +281,13 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		else if (lump_type == LUMP_TEXTURENAMES)
 		{
 			printf("LUMP_TEXTURENAMES: size: %d\n", seg_size);
+#ifndef PSX
+			// we need to copy texture names
+			texturename_buffer = D_MALLOC(seg_size);
+			memcpy(texturename_buffer, ptr, seg_size);
+#else
 			texturename_buffer = (char*)ptr;
+#endif
 		}
 		else if (lump_type == LUMP_PALLET)
 		{
