@@ -65,6 +65,7 @@ extern int leadAIRequired;
 extern int leadAILoaded;
 extern int pathAILoaded;
 
+extern char* LevelNames[];
 extern char* LoadingScreenNames[];
 
 struct DB

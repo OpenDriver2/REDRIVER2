@@ -20,7 +20,7 @@ extern void ProcessMDSLump(char *lump_file, int lump_size); // 0x00064CFC
 
 extern int ProcessCarModelLump(char *lump_ptr, int lump_size); // 0x00064E6C
 
-extern MODEL * GetCarModel(char *src, char **dest, int KeepNormals); // 0x00065134
+extern MODEL * GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int type); // 0x00065134
 
 extern MODEL * FindModelPtrWithName(char *name); // 0x0005D40C
 

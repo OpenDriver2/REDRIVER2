@@ -20,6 +20,13 @@ int num_models_in_pack = 0;
 unsigned short *Low2HighDetailTable = NULL;
 unsigned short *Low2LowerDetailTable = NULL;
 
+enum CarModelType
+{
+	CAR_MODEL_CLEAN = 1,
+	CAR_MODEL_DAMAGED,
+	CAR_MODEL_LOWDETAIL
+};
+
 
 // decompiled code
 // original method signature: 
@@ -298,7 +305,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (cleanOfs != -1)
 			{
 				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1);
+				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1, model_number, CAR_MODEL_CLEAN);
 				gCarCleanModelPtr[i] = model;
 				MALLOC_END();
 			}
@@ -306,7 +313,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (damOfs != -1)
 			{
 				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + damOfs, &mallocptr, 0);
+				model = GetCarModel(models_offset + damOfs, &mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
 				gCarDamModelPtr[i] = model;
 				MALLOC_END();
 			}
@@ -314,7 +321,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (lowOfs != -1)
 			{
 				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1);
+				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
 				gCarLowModelPtr[i] = model;
 				MALLOC_END();
 			}
@@ -365,21 +372,44 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	/* end block 3 */
 	// End Line: 1175
 
+char* CarModelTypeNames[] = {
+	"CLEAN",
+	"DAMAGED",
+	"LOW",
+};
+
 // [D] [T]
-MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
+MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int type)
 {
 	int size;
 	MODEL *model;
+	char* mem;
 
+	mem = src;
+	
+#ifndef PSX
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
+	if(FileExists(filename))
+	{
+		mem = _other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000;
+		
+		// get model from file
+		Loadfile(filename, mem);
+	}
+#endif
+
+	
+	
 	model = (MODEL *)*dest;
-
-	char* mem = src;
-
+	
 	if (KeepNormals == 0)
 		size = ((MODEL*)mem)->normals;
 	else 
 		size = ((MODEL*)mem)->poly_block;
 
+	// if loaded externally don't copy from source lump
 	memcpy(*dest, mem, size);
 
 	if (KeepNormals == 0)

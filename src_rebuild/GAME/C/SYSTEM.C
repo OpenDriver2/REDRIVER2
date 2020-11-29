@@ -103,6 +103,13 @@ int leadAIRequired = 0;
 int leadAILoaded = 0;
 int pathAILoaded = 0;
 
+char* LevelNames[] = {
+	"CHICAGO",
+	"HAVANA",
+	"VEGAS",
+	"RIO",
+};
+
 char* LevelFiles[] = {
 	"LEVELS\\CHICAGO.LEV",
 	"LEVELS\\HAVANA.LEV",
